@@ -1,3 +1,8 @@
+2003-09-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Move invocation of AC_CANONICAL_HOST up to
+	suppress warning by autoconf.
+
 2003-08-30  Robert Schiele <rschiele@uni-mannheim.de>
 
 	* gpgme.spec.in: %{_infodir}/dir is not packaged,
