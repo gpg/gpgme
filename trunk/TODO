@@ -1,3 +1,19 @@
+* ABI's to break:
+** gpgme_data_new_from_filepart takes an off_t as count, but should
+   take a size_t.
+** GpgmePassphraseCb should have void **R_HD, not void *R_HD.
+** trustlist has the same start/end problem as keylist had.
+   In fact, all the _start functions have this problem!
+   In addition, the resulting error of the operation can not be
+   retrieved seperately; the op_foobar operations can't be implemented
+   by the user, they are not merely convenience, but necessity, while
+   the op_foobar_start functions for these are unusable (or render the
+   context unusable, your choice).
+** string representation of non-secret keys and ATTR_IS_SECRET is NULL,
+   which can not be differentiated from the case that it is not
+   representable.
+** Agree on gpgme_key_unref or gpgme_key_release and drop the other?
+
 * Implement posix-sema.c
 
 * Allow to use GTK's main loop instead of the select stuff in
@@ -16,7 +32,14 @@
 
 * Factor out common code in _op_*_start functions.
 
-* Move code common to all engines up from gpg to engine.
+* Documentation
+** Add note about GPGME clearing out pointer return values.
+** validity/trust
+
+* Engines
+** Move code common to all engines up from gpg to engine.
+** engine operations can return General Error on unknown protocol
+   (it's an internal error, as select_protocol checks already).
 
 * Error Values
 ** Map ASSUAN error values.
@@ -53,3 +76,8 @@ Bugs reported by Stephane Corthesy:
 > the  
 > callback has become invalid; if I use a brand new one, the callback  
 > is called recursively, when I ask to enumerate keys.
+
+> Talking about gpgme performances: did anyone make some profiling on
+> gpgme calls and can tell me why it takes so long to enumerate the
+> whole pubring? Listing keys with gpg is very fast, whereas with
+> gpgme_op_keylist_XXX() it's soooooo slow.
