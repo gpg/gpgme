@@ -153,7 +153,7 @@ static gpgme_error_t
 map_assuan_error (AssuanError err)
 {
   if (err == -1)
-    return gpg_error (GPG_ERR_GENERAL);
+    return gpg_error (GPG_ERR_INV_ENGINE);
 
   /* New code will use gpg_error_t values.  */
   if (gpg_err_source (err))
