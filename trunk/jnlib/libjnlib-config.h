@@ -26,8 +26,10 @@
 #ifndef LIBJNLIB_CONFIG_H
 #define LIBJNLIB_CONFIG_H
 
-#include <gcrypt.h> /* gcry_malloc & Cie. */
+#include "xmalloc.h"
 #include "logging.h"
+
+
 
 #ifdef USE_SIMPLE_GETTEXT
   int set_gettext_file( const char *filename );
@@ -56,11 +58,11 @@
 #endif /* !USE_SIMPLE_GETTEXT */
 
 
-#define jnlib_xmalloc(a)    gcry_xmalloc( (a) )
-#define jnlib_xcalloc(a,b)  gcry_xcalloc( (a), (b) )
-#define jnlib_xrealloc(a,n) gcry_xrealloc( (a), (n) )
-#define jnlib_xstrdup(a)    gcry_xstrdup( (a) )
-#define jnlib_free(a)	    gcry_free( (a) )
+#define jnlib_xmalloc(a)    xmalloc( (a) )
+#define jnlib_xcalloc(a,b)  xcalloc( (a), (b) )
+#define jnlib_xrealloc(a,n) xrealloc( (a), (n) )
+#define jnlib_xstrdup(a)    xstrdup( (a) )
+#define jnlib_free(a)	    free( (a) )
 
 #define jnlib_log_debug    log_debug
 #define jnlib_log_info	   log_info
@@ -70,6 +72,4 @@
 
 
 #endif /*LIBJNUTIL_CONFIG_H*/
-
-
 
