@@ -1,3 +1,7 @@
+2002-02-14  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (gpgme_op_keylist_start): Do not use a verbose listing.
+
 2002-02-13  Werner Koch  <wk@gnupg.org>
 
 	* vasprintf.c, fopencookie.c: Add replacement functions.
