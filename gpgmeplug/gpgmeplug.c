@@ -1181,18 +1181,7 @@ bool checkMessageSignature( char** cleartext,
 
       err = gpgme_get_sig_key (ctx, sig_idx, &key);
 
-      
-      
-
-      sigmeta->extended_info[sig_idx].fingerprint = malloc( strlen( fpr ) + 1 );
-      if( sigmeta->extended_info[sig_idx].fingerprint ) {
-        strcpy( sigmeta->extended_info[sig_idx].fingerprint, fpr );
-        sigmeta->extended_info[sig_idx].fingerprint[strlen( fpr )] = '\0';
-      }
-
-
-
-      if ( false && err == GPGME_No_Error) {
+      if ( err == GPGME_No_Error) {
         const char* attr_string;
         unsigned long attr_ulong;
 
@@ -1259,6 +1248,8 @@ bool checkMessageSignature( char** cleartext,
             storeNewCharPtr( &sigmeta->extended_info[sig_idx].comment,
                             attr_string );
       }
+      else
+        storeNewCharPtr( &sigmeta->extended_info[sig_idx].fingerprint, fpr );
 
       sig_status = sig_status_to_string( status );
       storeNewCharPtr( &sigmeta->extended_info[sig_idx].status_text,
