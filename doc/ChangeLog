@@ -1,5 +1,9 @@
 2002-05-09  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Multi Threading): Escape { and }.
+
+2002-05-09  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.texi (Overview): Replace note about thread-safeness.
 	(Multi Threading): New section.
 

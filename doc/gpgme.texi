@@ -442,18 +442,18 @@ before any function in the library:
 
 void
 initialize_gpgme (void)
-{
+@{
   static int gpgme_init;
   static pthread_mutext_t gpgme_init_lock = PTHREAD_MUTEX_INITIALIZER;
 
   pthread_mutex_lock (&gpgme_init_lock);
   if (!gpgme_init)
-    {
+    @{
       gpgme_check_version ();
       gpgme_init = 1;
-    }
+    @}
   pthread_mutex_unlock (&gpgme_init_lock);
-}
+@}
 @end example
 
 @item
