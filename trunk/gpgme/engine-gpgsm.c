@@ -445,40 +445,20 @@ gpgsm_new (void **engine, const char *lc_ctype, const char *lc_messages)
 	}
     }
 
-  if (ttyname_r (1, dft_ttyname, sizeof (dft_ttyname)))
+  if (isatty (1))
     {
-      err = gpg_error_from_errno (errno);
-      goto leave;
-    }
-  else
-    {
-      if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
-        {
+      if (ttyname_r (1, dft_ttyname, sizeof (dft_ttyname)))
+	{
 	  err = gpg_error_from_errno (errno);
 	  goto leave;
 	}
-      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
-			     NULL, NULL, NULL);
-      free (optstr);
-      if (err)
+      else
 	{
-	  err = map_assuan_error (err);
-	  goto leave;
-	}
-
-      err = _gpgme_getenv ("TERM", &dft_ttytype);
-      if (err)
-	goto leave;
-      if (dft_ttytype)
-	{
-	  if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
+	  if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
 	    {
-	      free (dft_ttytype);
 	      err = gpg_error_from_errno (errno);
 	      goto leave;
 	    }
-	  free (dft_ttytype);
-
 	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
 				 NULL, NULL, NULL);
 	  free (optstr);
@@ -487,39 +467,62 @@ gpgsm_new (void **engine, const char *lc_ctype, const char *lc_messages)
 	      err = map_assuan_error (err);
 	      goto leave;
 	    }
-	}
 
-      if (lc_ctype)
-	{
-	  if (asprintf (&optstr, "OPTION lc-ctype=%s", lc_ctype) < 0)
-	    err = gpg_error_from_errno (errno);
-	  else
+	  err = _gpgme_getenv ("TERM", &dft_ttytype);
+	  if (err)
+	    goto leave;
+	  if (dft_ttytype)
 	    {
+	      if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
+		{
+		  free (dft_ttytype);
+		  err = gpg_error_from_errno (errno);
+		  goto leave;
+		}
+	      free (dft_ttytype);
+
 	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
 				     NULL, NULL, NULL, NULL);
 	      free (optstr);
 	      if (err)
-		err = map_assuan_error (err);
+		{
+		  err = map_assuan_error (err);
+		  goto leave;
+		}
 	    }
-	}
-      if (err)
-	goto leave;
 
-      if (lc_messages)
-	{
-	  if (asprintf (&optstr, "OPTION lc-messages=%s", lc_messages) < 0)
-	    err = gpg_error_from_errno (errno);
-	  else
+	  if (lc_ctype)
 	    {
-	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
-				     NULL, NULL, NULL, NULL);
-	      free (optstr);
-	      if (err)
-		err = map_assuan_error (err);
+	      if (asprintf (&optstr, "OPTION lc-ctype=%s", lc_ctype) < 0)
+		err = gpg_error_from_errno (errno);
+	      else
+		{
+		  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
+					 NULL, NULL, NULL, NULL);
+		  free (optstr);
+		  if (err)
+		    err = map_assuan_error (err);
+		}
 	    }
+	  if (err)
+	    goto leave;
+
+	  if (lc_messages)
+	    {
+	      if (asprintf (&optstr, "OPTION lc-messages=%s", lc_messages) < 0)
+		err = gpg_error_from_errno (errno);
+	      else
+		{
+		  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
+					 NULL, NULL, NULL, NULL);
+		  free (optstr);
+		  if (err)
+		    err = map_assuan_error (err);
+		}
+	    }
+	  if (err)
+	    goto leave;
 	}
-      if (err)
-	goto leave;
     }
 
   if (!err
