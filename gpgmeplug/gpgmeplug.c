@@ -1997,7 +1997,7 @@ struct CertIterator {
   struct CertificateInfo info;
 };
 
-struct CertIterator* startListCertificates( const char* pattern )
+struct CertIterator* startListCertificates( const char* pattern, int remote )
 {
     GpgmeError err;
     struct CertIterator* it;
@@ -2013,6 +2013,8 @@ struct CertIterator* startListCertificates( const char* pattern )
     }
 
     gpgme_set_protocol (it->ctx, GPGME_PROTOCOL_CMS);
+    if( remote ) gpgme_set_keylist_mode ( it->ctx, GPGME_KEYLIST_MODE_EXTERN ); 
+    else gpgme_set_keylist_mode ( it->ctx, GPGME_KEYLIST_MODE_LOCAL );
     err =  gpgme_op_keylist_start ( it->ctx, pattern, 0);
     if( err != GPGME_No_Error ) {
       endListCertificates( it );
