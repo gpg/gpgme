@@ -21,6 +21,8 @@ Hey Emacs, this is -*- outline -*- mode!
    (it's an internal error, as select_protocol checks already).
 ** When server mode is implemented properly, more care has to be taken to
     release all resources on error (for example to free assuan_cmd).
+** GnuPG
+*** For pipemode, make sure to release the pipemode callback data object.
 
 * Operations
 ** Export status handler need much more work.

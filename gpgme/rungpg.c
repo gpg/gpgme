@@ -264,7 +264,7 @@ _gpgme_gpg_release (GpgObject gpg)
   xfree (gpg->colon.buffer);
   if (gpg->argv)
     free_argv (gpg->argv);
-  xfree (gpg->cmd.cb_data);
+  gpgme_data_release (gpg->cmd.cb_data);
   xfree (gpg->cmd.keyword);
 
   if (gpg->pid != -1) 
