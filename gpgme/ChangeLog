@@ -1,3 +1,10 @@
+2004-04-08  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (_gpgme_verify_status_handler): Ignore the error status
+	if we can't process it.
+	* decrypt-verify.c (decrypt_verify_status_handler): Backed out
+	yesterday's hack.  It is not any longer required.
+
 2004-04-07  Werner Koch  <wk@gnupg.org>
 
 	* decrypt-verify.c (decrypt_verify_status_handler): Hack to cope

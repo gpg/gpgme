@@ -104,6 +104,9 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       break;
 
     case GPGME_STATUS_ERROR:
+      /* Note that this is an informational status code which should
+         not lead to an erro retunr unless it is something not related
+         to the backend. */
       {
 	const char d_alg[] = "decrypt.algorithm";
 	const char u_alg[] = "Unsupported_Algorithm";
