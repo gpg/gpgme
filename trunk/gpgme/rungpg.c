@@ -84,6 +84,7 @@ struct gpg_object_s {
         int eof;
         GpgColonLineHandler fnc;  /* this indicate use of this structrue */
         void *fnc_value;
+        int simple;
     } colon;
 
     char **argv;  
@@ -376,7 +377,22 @@ _gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
     gpg->colon.eof = 0;
     gpg->colon.fnc = fnc;
     gpg->colon.fnc_value = fnc_value;
+    gpg->colon.simple = 0;
     return 0;
+}
+
+
+GpgmeError
+_gpgme_gpg_set_simple_line_handler ( GpgObject gpg,
+                                     GpgColonLineHandler fnc,
+                                     void *fnc_value ) 
+{
+    GpgmeError err;
+
+    err = _gpgme_gpg_set_colon_line_handler (gpg, fnc, fnc_value);
+    if (!err)
+        gpg->colon.simple = 1;
+    return err;
 }
 
 
@@ -1094,7 +1110,8 @@ read_colon_line ( GpgObject gpg )
                  * some other printed information.
                  */
                 *p = 0;
-                if ( *buffer && strchr (buffer, ':') ) {
+                if ( gpg->colon.simple
+                     || (*buffer && strchr (buffer, ':')) ) {
                     assert (gpg->colon.fnc);
                     gpg->colon.fnc ( gpg->colon.fnc_value, buffer );
                 }

@@ -72,6 +72,9 @@ gpgme_release ( GpgmeCtx c )
     gpgme_key_release ( c->tmp_key );
     gpgme_data_release ( c->help_data_1 );
     gpgme_data_release ( c->notation );
+    gpgme_signers_clear (c);
+    if (c->signers)
+        xfree (c->signers);
     /* fixme: release the key_queue */
     xfree (c);
 }
@@ -131,7 +134,6 @@ gpgme_get_notation ( GpgmeCtx c )
         return NULL;
     return _gpgme_data_get_as_string ( c->notation );
 }
-
 
 /**
  * gpgme_set_armor:
@@ -239,5 +241,12 @@ gpgme_set_progress_cb ( GpgmeCtx c, GpgmeProgressCb cb, void *cb_value )
     c->progress_cb = cb;
     c->progress_cb_value = cb_value;
 }
+
+
+
+
+
+
+
 
 

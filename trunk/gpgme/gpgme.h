@@ -85,6 +85,8 @@ typedef enum {
     GPGME_Decryption_Failed = 18,
     GPGME_No_Passphrase = 19,
     GPGME_Canceled = 20,
+    GPGME_Invalid_Key = 21,
+    GPGME_Invalid_Engine = 22,
 } GpgmeError;
 
 typedef enum {
@@ -158,6 +160,9 @@ void gpgme_set_passphrase_cb (GpgmeCtx c,
                               GpgmePassphraseCb cb, void *cb_value);
 void gpgme_set_progress_cb (GpgmeCtx c, GpgmeProgressCb cb, void *cb_value);
 
+void       gpgme_signers_clear (GpgmeCtx c);
+GpgmeError gpgme_signers_add (GpgmeCtx c, const GpgmeKey key);
+GpgmeKey   gpgme_signers_enum (const GpgmeCtx c, int seq);
 
 
 /* Functions to handle recipients */
@@ -200,6 +205,8 @@ GpgmeError    gpgme_data_write ( GpgmeData dh,
 
 
 /* Key and trust functions */
+void gpgme_key_ref (GpgmeKey key);
+void gpgme_key_unref (GpgmeKey key);
 void gpgme_key_release ( GpgmeKey key );
 char *gpgme_key_get_as_xml ( GpgmeKey key );
 const char  *gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
@@ -233,6 +240,8 @@ GpgmeError gpgme_op_export_start ( GpgmeCtx c, GpgmeRecipients recp,
                                    GpgmeData keydata );
 GpgmeError gpgme_op_genkey_start ( GpgmeCtx c, const char *parms,
                                    GpgmeData pubkey, GpgmeData seckey );
+GpgmeError gpgme_op_delete_start ( GpgmeCtx c, const GpgmeKey key,
+                                   int allow_secret );
 
 
 
@@ -261,12 +270,15 @@ GpgmeError gpgme_op_export ( GpgmeCtx c, GpgmeRecipients recp,
                              GpgmeData keydata );
 GpgmeError gpgme_op_genkey ( GpgmeCtx c, const char *parms,
                              GpgmeData pubkey, GpgmeData seckey );
+GpgmeError gpgme_op_delete ( GpgmeCtx c, const GpgmeKey key, int allow_secret);
 
 
 /* miscellaneous functions */
-const char *gpgme_check_version ( const char *req_version );
+const char *gpgme_check_version (const char *req_version);
+GpgmeError  gpgme_check_engine (void);
+const char *gpgme_get_engine_info (void);
 const char *gpgme_strerror (GpgmeError err);
-void gpgme_register_idle ( void (*fnc)(void) );
+void        gpgme_register_idle (void (*fnc)(void));
 
 
 #ifdef __cplusplus

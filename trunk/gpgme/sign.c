@@ -130,6 +130,7 @@ gpgme_op_sign_start ( GpgmeCtx c, GpgmeData in, GpgmeData out,
 {
     int rc = 0;
     int i;
+    GpgmeKey key;
 
     fail_on_pending_request( c );
     c->pending = 1;
@@ -170,8 +171,18 @@ gpgme_op_sign_start ( GpgmeCtx c, GpgmeData in, GpgmeData out,
         if ( c->use_textmode )
             _gpgme_gpg_add_arg ( c->gpg, "--textmode" );
     }
-    for ( i=0; i < c->verbosity; i++ )
+    for (i=0; i < c->verbosity; i++)
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
+    for (i=0; (key = gpgme_signers_enum (c, i)); i++ ) {
+        const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID,
+                                                   NULL, 0);
+        if (s) {
+            _gpgme_gpg_add_arg (c->gpg, "-u");
+            _gpgme_gpg_add_arg (c->gpg, s);
+        }
+        gpgme_key_unref (key);
+    }
+
     
     /* Check the supplied data */
     if ( gpgme_data_get_type (in) == GPGME_DATA_TYPE_NONE ) {

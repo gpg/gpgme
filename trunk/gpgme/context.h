@@ -63,6 +63,9 @@ struct gpgme_context_s {
     int use_textmode;
     int keylist_mode;
 
+    int signers_size;  /* size of the following array */
+    GpgmeKey *signers;
+
     ResultType result_type;
     union {
         VerifyResult verify;

@@ -148,7 +148,7 @@ autoconf
 if test "$*" = ""; then
     conf_options="--enable-maintainer-mode"
 else
-   conf_options=$*
+    conf_options=$*
 fi
 echo "Running ./configure $conf_options"
 ./configure $conf_options
