@@ -27,7 +27,7 @@ TESTS = t-encrypt t-sign t-signers t-decrypt t-verify	\
 	t-decrypt-verify t-keylist t-export t-import t-trustlist
 
 
-EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc
+EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 	geheim.txt pubkey-1.asc seckey-1.asc
 
 INCLUDES = -I$(top_srcdir)/gpgme
