@@ -680,12 +680,10 @@ GpgmeError gpgme_data_rewind (GpgmeData dh);
 
 /* Key and trust functions.  */
 
-/* Get the key with the fingerprint FPR from the key cache or from the
-   crypto backend.  If FORCE_UPDATE is true, force a refresh of the
-   key from the crypto backend and replace the key in the cache, if
-   any.  If SECRET is true, get the secret key.  */
+/* Get the key with the fingerprint FPR from the crypto backend.  If
+   SECRET is true, get the secret key.  */
 GpgmeError gpgme_get_key (GpgmeCtx ctx, const char *fpr, GpgmeKey *r_key,
-			  int secret, int force_update);
+			  int secret);
 
 /* Acquire a reference to KEY.  */
 void gpgme_key_ref (GpgmeKey key);

@@ -1,5 +1,16 @@
 2003-04-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (gpgme_get_key): Remove force_update argument.
+	* key-cache.c: File removed.
+	* Makefile.am (libgpgme_la_SOURCES): Remove key-cache.c.
+	* ops.h (_gpgme_key_cache_add, _gpgme_key_cache_get): Remove
+	prototypes.
+	* keylist.c (_gpgme_op_keylist_event_cb): Don't call
+	_gpgme_key_cache_add.
+	(gpgme_get_key): New function.
+	* verify.c (gpgme_get_sig_key): Remove last argument to
+	gpgme_get_key invocation.
+
 	* gpgme.h (struct _gpgme_trust_item): New structure.
 	(GpgmeTrustItem): New type.
 	(gpgme_trust_item_ref, gpgme_trust_item_unref): New prototypes.

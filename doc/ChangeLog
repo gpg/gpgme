@@ -1,5 +1,8 @@
 2003-04-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Listing Keys): Remove force_update argument from
+	gpgme_get_key.
+
 	* gpgme.texi (Trust Item Management): Add data members of
 	GpgmeTrustItem type.
 	(Information About Trust Items): Add note about obsoleteness.

@@ -582,7 +582,7 @@ gpgme_get_sig_key (GpgmeCtx ctx, int idx, GpgmeKey *r_key)
   if (!sig || idx)
     return GPGME_EOF;
 
-  return gpgme_get_key (ctx, sig->fpr, r_key, 0, 0);
+  return gpgme_get_key (ctx, sig->fpr, r_key, 0);
 }
 
 
