@@ -175,20 +175,23 @@ gpgme_get_op_info (GpgmeCtx ctx, int reserved)
 }
 
 
-/*
- * Store the data object with the operation info in the
- * context. Caller should not use that object anymore.
- */
+/* Store the data object INFO with the operation info in the context
+   CTX.  INFO is consumed.  Subsequent calls append the data.  */
 void
 _gpgme_set_op_info (GpgmeCtx ctx, GpgmeData info)
 {
   assert (ctx);
 
-  gpgme_data_release (ctx->op_info);
-  ctx->op_info = NULL;
-
-  if (info)
+  if (!ctx->op_info)
     ctx->op_info = info;
+  else
+    {
+      char *info_mem = 0;
+      size_t info_len;
+
+      info_mem = gpgme_data_release_and_get_mem (info, &info_len);
+      _gpgme_data_append (ctx->op_info, info_mem, info_len);
+    }
 }
 
 
