@@ -191,9 +191,14 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
       break;
 
     case STATUS_ERRSIG:
-      ctx->result.verify->status = GPGME_SIG_STAT_ERROR;
-      /* FIXME: Distinguish between a regular error and a missing key.
-	 This is encoded in the args.  */
+      /* The return code is the 6th argument, if it is 9, the problem
+	 is a missing key.  */
+      for (p = args, i = 0; p && i < 5; i++)
+	p = strchr (p, ' ');
+      if (p && *(++p) == '9' && *(++p) == '\0')
+	ctx->result.verify->status = GPGME_SIG_STAT_NOKEY;
+      else
+	ctx->result.verify->status = GPGME_SIG_STAT_ERROR;
       /* Store the keyID in the fpr field.  */
       p = ctx->result.verify->fpr;
       for (i = 0; i < DIM(ctx->result.verify->fpr)
