@@ -13,7 +13,7 @@ AM_MAINTAINER_MODE
 #    AGE, set REVISION to 0.
 # 3. Interfaces removed (BAD, breaks upward compatibility): Increment
 #    CURRENT, set AGE and REVISION to 0.
-AM_INIT_AUTOMAKE(gpgme,0.0.0)
+AM_INIT_AUTOMAKE(gpgme,0.0.1)
 LIBGPGME_LT_CURRENT=0
 LIBGPGME_LT_AGE=0
 LIBGPGME_LT_REVISION=0
@@ -63,11 +63,32 @@ dnl
 dnl Checks for system services
 dnl
 
+AC_PATH_PROG(GPG, gpg)
+if test -z "$GPG"; then
+    AC_MSG_ERROR([[
+***
+*** GnuPG not found. Please install GnuPG first. 
+*** See   http://www.gnupg.org/download.html
+***
+]])
+fi
+AC_DEFINE_UNQUOTED(GPG_PATH, "$GPG")
 
 
 dnl
 dnl Create config files 
 dnl
+dnl
+
+dnl Make the version number in gpgme/gpgme.h the same as the one here.
+dnl (this is easier than to have a *.in file just for one substitution)
+GNUPG_FIX_HDR_VERSION(gpgme/gpgme.h, GPGME_VERSION)
+
+dnl Substitution used for gpgme-config 
+GPGME_LIBS="-L${libdir} -lgpgme"
+GPGME_CFLAGS=""
+AC_SUBST(GPGME_LIBS)
+AC_SUBST(GPGME_CFLAGS)
 
 AC_OUTPUT_COMMANDS([
 chmod +x gpgme/gpgme-config

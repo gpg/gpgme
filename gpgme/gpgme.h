@@ -27,6 +27,17 @@ extern "C" {
 #endif
 #endif
 
+/*
+ * The version of this header should match the one of the library
+ * It should not be used by a program because gpgme_check_version(NULL)
+ * does return the same version.  The purpose of this macro is to
+ * let autoconf (using the AM_PATH_GPGME macro) check that this
+ * header matches the installed library.
+ * Warning: Do not edit the next line.  configure will do that for you! */
+#define GPGME_VERSION "0.0.1"
+
+
+
 struct gpgme_context_s;
 typedef struct gpgme_context_s *GpgmeCtx;
 
@@ -108,6 +119,7 @@ GpgmeError    gpgme_data_new_from_file ( GpgmeData *r_dh,
                                          const char *fname,
                                          int copy );
 void          gpgme_data_release ( GpgmeData dh );
+char *        gpgme_data_release_and_get_mem ( GpgmeData dh, size_t *r_len );
 GpgmeDataType gpgme_data_get_type ( GpgmeData dh );
 GpgmeError    gpgme_data_rewind ( GpgmeData dh );
 GpgmeError    gpgme_data_read ( GpgmeData dh,
@@ -144,6 +156,7 @@ GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
 
 
 /* miscellaneous functions */
+const char *gpgme_check_version ( const char *req_version );
 const char *gpgme_strerror (GpgmeError err);
 
 
