@@ -26,7 +26,7 @@
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed:		AGE=0)
 #
-AC_INIT(gpgme, 0.3.5, [gnupg-devel@gnupg.org])
+AC_INIT(gpgme, 0.3.6-cvs, [gnupg-devel@gnupg.org])
 LIBGPGME_LT_CURRENT=7
 LIBGPGME_LT_AGE=1
 LIBGPGME_LT_REVISION=1
