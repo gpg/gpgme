@@ -23,6 +23,9 @@
 
 #include "types.h"
 
+/*-- gpgme.c --*/
+void _gpgme_release_result ( GpgmeCtx c );
+
 
 /*-- recipient.c --*/
 void _gpgme_append_gpg_args_from_recipients (
@@ -33,8 +36,11 @@ void _gpgme_append_gpg_args_from_recipients (
 /*-- data.c --*/
 GpgmeDataMode _gpgme_query_data_mode ( GpgmeData dh );
 void          _gpgme_set_data_mode ( GpgmeData dh, GpgmeDataMode mode );
+GpgmeError    _gpgme_append_data ( GpgmeData dh,
+                                   const char *buffer, size_t length );
 
-
+/*-- verify.c --*/
+void _gpgme_release_verify_result ( VerifyResult res );
 
 
 #endif /* OPS_H */

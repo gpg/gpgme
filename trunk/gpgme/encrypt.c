@@ -39,7 +39,7 @@ encrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
 
 GpgmeError
-gpgme_req_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
+gpgme_start_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
                     GpgmeData plain, GpgmeData ciph )
 {
     int rc = 0;
@@ -87,7 +87,7 @@ gpgme_req_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
     _gpgme_gpg_add_arg ( c->gpg, "--output" );
     _gpgme_gpg_add_arg ( c->gpg, "-" );
     _gpgme_gpg_add_data ( c->gpg, ciph, 1 );
-
+    _gpgme_gpg_add_arg ( c->gpg, "--" );
     _gpgme_gpg_add_data ( c->gpg, plain, 0 );
 
     /* and kick off the process */
@@ -99,18 +99,6 @@ gpgme_req_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
         _gpgme_gpg_release_object ( c->gpg ); c->gpg = NULL;
     }
     return rc;
-}
-
-
-GpgmeError
-gpgme_wait_encrypt ( GpgmeCtx c, GpgmeData *r_out )
-{
-    wait_on_request_or_fail (c);
-
-    fprintf (stderr,"gpgme_wait_encrypt: main\n");
-
-    
-    return 0;
 }
 
 
@@ -131,9 +119,11 @@ GpgmeError
 gpgme_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
                 GpgmeData in, GpgmeData out )
 {
-    int rc = gpgme_req_encrypt ( c, recp, in, out );
-    if ( !rc ) 
-        rc = gpgme_wait_encrypt ( c, NULL );
+    int rc = gpgme_start_encrypt ( c, recp, in, out );
+    if ( !rc ) {
+        gpgme_wait (c, 1);
+        c->pending = 0;
+    }
     return rc;
 }
 

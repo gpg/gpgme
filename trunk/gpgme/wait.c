@@ -98,6 +98,53 @@ queue_item_from_context ( GpgmeCtx ctx )
 }
 
 
+static void
+propagate_term_results ( const struct wait_queue_item_s *first_q )
+{
+    struct wait_queue_item_s *q;
+    
+    for (q=wait_queue; q; q = q->next) {
+        if ( q->used && q != first_q && !q->exited
+             && q->pid == first_q->pid  ) {
+            q->exited = first_q->exited;
+            q->exit_status = first_q->exit_status;
+            q->exit_signal = first_q->exit_signal;
+        }
+    }
+}
+
+static int
+count_active_fds ( pid_t pid )
+{
+    struct wait_queue_item_s *q;
+    int count = 0;
+    
+    for (q=wait_queue; q; q = q->next) {
+        if ( q->used && q->active && q->pid == pid  ) 
+            count++;
+    }
+    return count;
+}
+
+
+/* remove the given process from the queue */
+static void
+remove_process ( pid_t pid )
+{
+    struct wait_queue_item_s *q;
+    
+    for (q=wait_queue; q; q = q->next) {
+        if ( q->used ) {
+            close (q->fd);
+            q->handler = NULL;
+            q->ctx = NULL;
+            q->used = 0;
+        }
+    }
+}
+
+
+
 /**
  * gpgme_wait:
  * @c: 
@@ -127,7 +174,9 @@ gpgme_wait ( GpgmeCtx c, int hang )
             q = queue_item_from_context ( c );
             assert (q);
             
-            if ( waitpid ( q->pid, &status, WNOHANG ) == q->pid ) {
+            if (q->exited)
+                ;
+            else if ( waitpid ( q->pid, &status, WNOHANG ) == q->pid ) {
                 q->exited = 1;     
                 if ( WIFSIGNALED (status) ) {
                     q->exit_status = 4; /* Need some value here */
@@ -140,8 +189,18 @@ gpgme_wait ( GpgmeCtx c, int hang )
                     q->exited++;
                     q->exit_status = 4;
                 }
-                /* okay, the process has terminated - we are ready */
-                hang = 0;
+                propagate_term_results (q);
+            }
+
+            if ( q->exited ) {
+                if ( !count_active_fds (q->pid) ) {
+                    /* Hmmm, as long as we don't have a callback for
+                     * the exit status, we have no use for these
+                     * values and therefore we can remove this from
+                     * the queue */
+                    remove_process (q->pid);
+                    hang = 0;
+                }
             }
         }
     } while (hang);

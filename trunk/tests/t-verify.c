@@ -1,4 +1,4 @@
-/* t-encrypt.c  - regression test
+/* t-verify.c  - regression test
  *	Copyright (C) 2000 Werner Koch (dd9jn)
  *
  * This file is part of GPGME.
@@ -25,28 +25,23 @@
 
 #include "../gpgme/gpgme.h"
 
+static const char test_text1[] = "Just GNU it!\n";
+static const char test_text1f[]= "Just GNU it?\n";
+static const char test_sig1[] =
+"-----BEGIN PGP SIGNATURE-----\n"
+"\n"
+"iEYEABECAAYFAjoKgjIACgkQLXJ8x2hpdzQMSwCeO/xUrhysZ7zJKPf/FyXA//u1\n"
+"ZgIAn0204PBR7yxSdQx6CFxugstNqmRv\n"
+"=yku6\n"
+"-----END PGP SIGNATURE-----\n"
+;
+
+
 #define fail_if_err(a) do { if(a) {                                       \
                                fprintf (stderr, "%s:%d: GpgmeError %s\n", \
                                 __FILE__, __LINE__, gpgme_strerror(a));   \
                                 exit (1); }                               \
                              } while(0)
-
-static void
-print_data ( GpgmeData dh )
-{
-    char buf[100];
-    size_t nread;
-    GpgmeError err;
-
-    err = gpgme_rewind_data ( dh );
-    fail_if_err (err);
-    while ( !(err = gpgme_read_data ( dh, buf, 100, &nread )) ) {
-        fwrite ( buf, nread, 1, stdout );
-    }
-    if (err != GPGME_EOF) 
-        fail_if_err (err);
-}
-
 
 
 int 
@@ -54,42 +49,37 @@ main (int argc, char **argv )
 {
     GpgmeCtx ctx;
     GpgmeError err;
-    GpgmeData in, out;
-    GpgmeRecipientSet rset;
+    GpgmeData sig, text;
 
-  do {
     err = gpgme_new_context (&ctx);
     fail_if_err (err);
 
-    err = gpgme_new_data ( &in, "Hallo Leute\n", 12, 0 );
+  do {
+    err = gpgme_new_data ( &text, test_text1, strlen (test_text1), 0 );
+    fail_if_err (err);
+    err = gpgme_new_data ( &sig, test_sig1, strlen (test_sig1), 0 );
     fail_if_err (err);
 
-    err = gpgme_new_data ( &out, NULL, 0,0 );
+    puts ("checking a valid message:\n");
+    err = gpgme_verify (ctx, sig, text );
     fail_if_err (err);
 
-    err = gpgme_new_recipient_set (&rset);
+    puts ("checking a manipulated message:\n");
+    gpgme_release_data (text);
+    err = gpgme_new_data ( &text, test_text1f, strlen (test_text1f), 0 );
     fail_if_err (err);
-    err = gpgme_add_recipient (rset, "Bob");
-    fail_if_err (err);
-    err = gpgme_add_recipient (rset, "Alpha");
-    fail_if_err (err);
-
-
-    err = gpgme_encrypt (ctx, rset, in, out );
+    gpgme_rewind_data ( sig );
+    err = gpgme_verify (ctx, sig, text );
     fail_if_err (err);
 
-    fflush (NULL);
-    fputs ("Begin Result:\n", stdout );
-    print_data (out);
-    fputs ("End Result.\n", stdout );
-   
-    gpgme_release_recipient_set (rset);
-    gpgme_release_data (in);
-    gpgme_release_data (out);
-    gpgme_release_context (ctx);
-  } while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
-   
+    gpgme_release_data (sig);
+    gpgme_release_data (text);
+ 
+} while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
+      gpgme_release_context (ctx);
+    
     return 0;
 }
+
 
 

@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in
 
-TESTS = t-encrypt 
+TESTS = t-encrypt t-verify
 
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
