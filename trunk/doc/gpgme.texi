@@ -2018,10 +2018,10 @@ This is true if the subkey is invalid.
 This is true if the subkey can be used for encryption.
 
 @item unsigned int can_sign : 1
-This is true if the subkey can be used for signing.
+This is true if the subkey can be used to create data signatures.
 
 @item unsigned int can_certify : 1
-This is true if the subkey can be used for certification.
+This is true if the subkey can be used to create key certificates.
 
 @item unsigned int secret : 1
 This is true if the subkey is a secret key.
@@ -2174,12 +2174,12 @@ This is true if the key (ie one of its subkeys) can be used for
 encryption.
 
 @item unsigned int can_sign : 1
-This is true if the key (ie one of its subkeys) can be used for
-signing.
+This is true if the key (ie one of its subkeys) can be used to create
+data signatures.
 
 @item unsigned int can_certify : 1
-This is true if the key (ie one of its subkeys) can be used for
-certification.
+This is true if the key (ie one of its subkeys) can be used to create
+key certificates.
 
 @item unsigned int secret : 1
 This is true if the key is a secret key.
@@ -2542,14 +2542,14 @@ representable as a number, and is @code{1} if the sub key can be used
 for encryption, and @code{0} otherwise.
 
 @item GPGME_ATTR_CAN_SIGN
-This specifies if a sub key can be used for signatures.  It is
-representable as a number, and is @code{1} if the sub key can be used
-for signatures, and @code{0} otherwise.
+This specifies if a sub key can be used to create data signatures.  It
+is representable as a number, and is @code{1} if the sub key can be
+used for signatures, and @code{0} otherwise.
 
 @item GPGME_ATTR_CAN_CERTIFY
-This specifies if a sub key can be used for certifications.  It is
-representable as a number, and is @code{1} if the sub key can be used
-for certifications, and @code{0} otherwise.
+This specifies if a sub key can be used to create key certificates.
+It is representable as a number, and is @code{1} if the sub key can be
+used for certifications, and @code{0} otherwise.
 
 @item GPGME_ATTR_SERIAL
 The X.509 issuer serial attribute of the key.  It is representable as
