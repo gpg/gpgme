@@ -43,13 +43,17 @@ struct
   char *issuer_name;
   char *chain_id;
   char *uid;
+  gpgme_validity_t validity;
+  unsigned int key_length;
 }
 keys[] =
   {
     { "3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E", 1, 1007372198, 1038908198, "00",
       "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=D\xc3\xbcsseldorf,C=DE",
       "3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E",
-      "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=D\xc3\xbcsseldorf,C=DE" },
+      "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=D\xc3\xbcsseldorf,C=DE",
+      GPGME_VALIDITY_ULTIMATE, 1024
+    },
     { "DFA56FB5FC41E3A8921F77AD1622EEFD9152A5AD", 0, 909684190, 1009821790, "01",
       "1.2.840.113549.1.9.1=#63657274696679407063612E64666E2E6465,"
       "CN=DFN Top Level Certification Authority,OU=DFN-PCA,"
@@ -57,7 +61,9 @@ keys[] =
       "DFA56FB5FC41E3A8921F77AD1622EEFD9152A5AD",
       "1.2.840.113549.1.9.1=#63657274696679407063612E64666E2E6465,"
       "CN=DFN Top Level Certification Authority,OU=DFN-PCA,"
-      "O=Deutsches Forschungsnetz,C=DE" },
+      "O=Deutsches Forschungsnetz,C=DE",
+      GPGME_VALIDITY_NEVER, 2048
+    },
     { "2C8F3C356AB761CB3674835B792CDA52937F9285", 0, 973183644, 1009735200, "15",
       "1.2.840.113549.1.9.1=#63657274696679407063612E64666E2E6465,"
       "CN=DFN Top Level Certification Authority,OU=DFN-PCA,"
@@ -65,7 +71,9 @@ keys[] =
       "DFA56FB5FC41E3A8921F77AD1622EEFD9152A5AD",
       "1.2.840.113549.1.9.1=#63657274696679407063612E64666E2E6465,"
       "CN=DFN Server Certification Authority,OU=DFN-PCA,"
-      "O=Deutsches Forschungsnetz,C=DE" },
+      "O=Deutsches Forschungsnetz,C=DE",
+      GPGME_VALIDITY_UNKNOWN, 2048
+    },
     { NULL }
   };
 
@@ -246,7 +254,7 @@ main (int argc, char **argv)
 		   gpgme_pubkey_algo_name (key->subkeys->pubkey_algo));
 	  exit (1);
 	}
-      if (key->subkeys->length != 1024)
+      if (key->subkeys->length != keys[i].key_length)
 	{
 	  fprintf (stderr, "Primary key has unexpected length: %i\n",
 		   key->subkeys->length);
@@ -292,7 +300,7 @@ main (int argc, char **argv)
 	  fprintf (stderr, "User ID unexpectedly invalid\n");
 	  exit (1);
 	}
-      if (key->uids->validity != GPGME_VALIDITY_UNKNOWN)
+      if (key->uids->validity != keys[i].validity)
 	{
 	  fprintf (stderr, "User ID unexpectedly validity: %i\n",
 		   key->uids->validity);

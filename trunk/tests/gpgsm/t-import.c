@@ -35,7 +35,8 @@
 
 
 void
-check_result (gpgme_import_result_t result, char *fpr, int total)
+check_result (gpgme_import_result_t result, char *fpr, int total,
+	      int total_stat)
 {
   if (result->considered != total)
     {
@@ -124,7 +125,7 @@ check_result (gpgme_import_result_t result, char *fpr, int total)
     for (n=0, r=result->imports; r; r=r->next)
       n++;
       
-    if (n != total)
+    if (n != total_stat)
     {
       fprintf (stderr, "Unexpected number of status reports\n");
       exit (1);
@@ -156,7 +157,7 @@ main (int argc, char **argv)
   err = gpgme_op_import (ctx, in);
   fail_if_err (err);
   result = gpgme_op_import_result (ctx);
-  check_result (result, "DFA56FB5FC41E3A8921F77AD1622EEFD9152A5AD", 1);
+  check_result (result, "DFA56FB5FC41E3A8921F77AD1622EEFD9152A5AD", 1, 1);
   gpgme_data_release (in);
 
   err = gpgme_data_new_from_file (&in, cert_2, 1);
@@ -165,7 +166,7 @@ main (int argc, char **argv)
   err = gpgme_op_import (ctx, in);
   fail_if_err (err);
   result = gpgme_op_import_result (ctx);
-  check_result (result, "2C8F3C356AB761CB3674835B792CDA52937F9285", 2);
+  check_result (result, "2C8F3C356AB761CB3674835B792CDA52937F9285", 1, 2);
   gpgme_data_release (in);
 
   gpgme_release (ctx);
