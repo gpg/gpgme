@@ -1600,9 +1600,11 @@ const char* requestCertificateDialog( void );
 
 /*! \ingroup groupCertAct
    \brief Generates a prototype certificate with the data provided
-        in the four parameter.
+        in the four parameter. The memory returned in \a generatedKey
+        must be freed with free() by the caller.
 */
-bool requestDecentralCertificate( const char* certparms, char** generatedKey );
+bool requestDecentralCertificate( const char* certparms, 
+                                  char** generatedKey, int* keyLength );
 
 /*! \ingroup groupCertAct
    \brief Requests a certificate in a PSE from the CA
