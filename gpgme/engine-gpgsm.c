@@ -34,6 +34,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <assert.h>
+#include <fcntl.h> /* FIXME */
 
 /* FIXME */
 #include "../assuan/assuan-defs.h"
@@ -126,6 +127,7 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
       goto leave;
     }
   gpgsm->input_fd = ip[1];
+  fcntl (ip[1], F_SETFD, FD_CLOEXEC); /* FIXME */
   gpgsm->input_fd_server = ip[0];
   if (_gpgme_io_pipe (op, 1) < 0)
     {
@@ -133,6 +135,7 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
       goto leave;
     }
   gpgsm->output_fd = op[0];
+  fcntl (op[0], F_SETFD, FD_CLOEXEC); /* FIXME */
   gpgsm->output_fd_server = op[1];
   if (_gpgme_io_pipe (mp, 0) < 0)
     {
@@ -140,6 +143,7 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
       goto leave;
     }
   gpgsm->message_fd = mp[1];
+  fcntl (mp[1], F_SETFD, FD_CLOEXEC); /* FIXME */
   gpgsm->message_fd_server = mp[0];
 
   err = assuan_pipe_connect (&gpgsm->assuan_ctx,
