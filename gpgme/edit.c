@@ -43,6 +43,10 @@ edit_status_handler (GpgmeCtx ctx, GpgmeStatusCode status, char *args)
   if (err)
     return err;
 
+  GpgmeError err = _gpgme_progress_status_handler (ctx, status, args);
+  if (err)
+    return err;
+
   err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &result,
 			       -1, NULL);
   if (err)
