@@ -193,9 +193,14 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
     case STATUS_ERRSIG:
       /* The return code is the 6th argument, if it is 9, the problem
 	 is a missing key.  */
-      for (p = args, i = 0; p && i < 5; i++)
-	p = strchr (p, ' ');
-      if (p && *(++p) == '9' && *(++p) == '\0')
+      for (p = args, i = 0; p && *p && i < 5; i++)
+        {
+          p = strchr (p, ' ');
+          if (p)
+            while (*p == ' ')
+              p++;
+        }
+      if (p && *(p++) == '9' && (*p == '\0' || *p == ' '))
 	ctx->result.verify->status = GPGME_SIG_STAT_NOKEY;
       else
 	ctx->result.verify->status = GPGME_SIG_STAT_ERROR;

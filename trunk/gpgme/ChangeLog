@@ -1,3 +1,7 @@
+2002-02-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* verify.c (_gpgme_verify_status_handler): Fix the last change.
+
 2002-02-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine.c (_gpgme_engine_op_encrypt_sign): New function.
