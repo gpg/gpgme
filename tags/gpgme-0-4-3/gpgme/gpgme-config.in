@@ -1,0 +1,117 @@
+#!/bin/sh
+# Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
+
+# Configure libgpg-error.
+gpg_error_cflags="@GPG_ERROR_CFLAGS@"
+gpg_error_libs="@GPG_ERROR_LIBS@"
+
+# Configure thread packages.
+thread_modules=""
+
+@HAVE_PTH_TRUE@thread_modules="$thread_modules pth"
+libs_pth="@PTH_LDFLAGS@ @PTH_LIBS@"
+cflags_pth="@PTH_CFLAGS@"
+
+@HAVE_PTHREAD_TRUE@thread_modules="$thread_modules pthread"
+libs_pthread="-lpthread"
+cflags_pthread=""
+
+output=""
+
+usage()
+{
+    cat <<EOF
+Usage: gpgme-config [OPTIONS]
+Options:
+	[--thread={${thread_modules}}]
+	[--prefix]
+	[--exec-prefix]
+	[--version]
+	[--libs]
+	[--cflags]
+EOF
+    exit $1
+}
+
+if test $# -eq 0; then
+    usage 1 1>&2
+fi
+
+while test $# -gt 0; do
+    case "$1" in
+	-*=*)
+	    optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
+	    ;;
+	*)
+	    optarg=
+	    ;;
+    esac
+
+    case $1 in
+        --prefix)
+	    output="$output $prefix"
+	    ;;
+        --exec-prefix)
+	    output="$output $exec_prefix"
+	    ;;
+        --version)
+            echo "@VERSION@"
+	    exit 0
+	    ;;
+        --cflags)
+            output="$output -I$includedir"
+	    case "$thread_module" in
+	        pthread)
+	            output="$output $cflags_pthread"
+		    ;;
+	        pth)
+		    output="$output $cflags_pth"
+		    ;;
+	    esac
+	    output="$output $gpg_error_cflags"
+	    ;;
+	--libs)
+            output="$output -L$libdir"
+	    case "$thread_module" in
+		pthread)
+	            output="$output -lgpgme-pthread $libs_pthread"
+		    ;;
+	        pth)
+	            output="$output -lgpgme-pth $libs_pth"
+		    ;;
+		*)
+		    output="$output -lgpgme"
+	    esac
+	    output="$output $gpg_error_libs"
+	    ;;
+	--thread=*)
+            for thread_mod in $thread_modules; do
+	    if test "$thread_mod" = "$optarg"; then
+		thread_module="$optarg";
+	    fi
+	    done
+	    if test "x$thread_module" = "x"; then
+		usage 1 1>&2
+	    fi
+	    ;;
+	*)
+            usage 1 1>&2
+	    ;;
+    esac
+    shift
+done
+
+echo $output

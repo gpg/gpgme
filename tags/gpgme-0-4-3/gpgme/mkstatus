@@ -1,0 +1,52 @@
+#!/bin/sh
+# mkstatus - Extract error strings from rungpg.h
+#            and create a lookup table
+#	Copyright (C) 2000 Werner Koch (dd9jn)
+#       Copyright (C) 2001 g10 Code GmbH
+#
+# This file is part of GPGME.
+#
+# GPGME is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# GPGME is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+
+# resetting collate is important, so that the bsearch works properly
+LC_ALL=C
+LC_COLLATE=C
+export LC_ALL LC_COLLATE
+
+cat <<EOF
+/* Generated automatically by mkstatus */
+/* Do not edit! */
+
+struct status_table_s {
+    const char *name;
+    gpgme_status_code_t code;
+};
+
+static struct status_table_s status_table[] = 
+{
+EOF
+
+awk '
+/GPGME_STATUS_ENTER/      { okay = 1 }
+!okay                     { next }
+/}/                       { exit 0 }
+/GPGME_STATUS_[A-Za-z_]*/ { sub (/,/, "", $1); printf "  { \"%s\", %s },\n", substr($1,14), $1 }
+' | sort  
+
+cat <<EOF
+  {NULL, 0}
+};
+
+EOF
