@@ -84,6 +84,8 @@ struct engine_ops
   
   void (*set_io_cbs) (void *engine, gpgme_io_cbs_t io_cbs);
   void (*io_event) (void *engine, gpgme_event_io_t type, void *type_data);
+
+  gpgme_error_t (*cancel) (void *engine);
 };
 
 

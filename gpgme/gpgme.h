@@ -995,6 +995,10 @@ unsigned long gpgme_key_sig_get_ulong_attr (gpgme_key_t key, int uid_idx,
 
 /* Crypto Operations.  */
 
+/* Cancel a pending asynchronous operation.  */
+gpgme_error_t gpgme_cancel (gpgme_ctx_t ctx);
+
+
 struct _gpgme_invalid_key
 {
   struct _gpgme_invalid_key *next;

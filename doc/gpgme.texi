@@ -201,6 +201,7 @@ Run Control
 
 * Waiting For Completion::        Waiting until an operation is completed.
 * Using External Event Loops::    Advanced control over what happens when.
+* Cancellation::                  How to end pending operations prematurely.
 
 Using External Event Loops
 
@@ -4315,6 +4316,7 @@ time.
 @menu
 * Waiting For Completion::        Waiting until an operation is completed.
 * Using External Event Loops::    Advanced control over what happens when.
+* Cancellation::                  How to end pending operations prematurely.
 @end menu
 
 
@@ -4896,6 +4898,43 @@ my_gpgme_register_io_callback (void *data, int fd, int dir, gpgme_io_cb_t fnc,
   return 0;
 @}
 @end example
+
+
+@node Cancellation
+@subsection Cancellation
+@cindex cryptographic operation, aborting
+@cindex cryptographic operation, cancelling
+@cindex aborting operations
+@cindex cancelling operations
+
+Sometimes you do not want to wait for an operation to finish.  If you
+use external I/O callbacks, you can cancel a pending operation.
+However, you must ensure that no other thread is currently using the
+context in which the operation you want to cancel runs.  This includes
+callback handlers.  So your external event loop must either be halted
+or otherwise it must be guaranteed that no installed I/O callbacks are
+run for this context.
+
+@deftypefun gpgme_ctx_t gpgme_cancel (@w{gpgme_ctx_t @var{ctx}})
+The function @code{gpgme_cancel} attempts to cancel a pending
+operation in the context @var{ctx}.  This only works if you use the
+global event loop or your own event loop.
+
+If you use the global event loop, you must not call @code{gpgme_wait}
+or @code{gpgme_wait} during cancellation.  After successful
+cancellation, you can call @code{gpgme_wait} (optionally waiting on
+@var{ctx}), and the context @var{ctx} will appear as if it had
+finished with the error code @code{GPG_ERR_CANCEL}.
+
+If you use your an external event loop, you must ensure that no I/O
+callbacks are invoked for this context (for example by halting the
+event loop).  On successful cancellation, all registered I/O callbacks
+for this context will be unregistered, and a @code{GPGME_EVENT_DONE}
+event with the error code @code{GPG_ERR_CANCEL} will be signaled.
+
+The function returns an error code if the cancellation failed (in this
+case the state of @var{ctx} is not modified).
+@end deftypefun
 
 
 @include gpl.texi

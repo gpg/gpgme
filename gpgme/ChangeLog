@@ -1,3 +1,14 @@
+2004-02-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (gpgme_cancel): New function.
+	* engine-backend.h (struct engine_ops): New member cancel.
+	* engine.h (_gpgme_engine_cancel): New prototype.
+	* engine.c (_gpgme_engine_cancel): New function.
+	* engine-gpgsm.c: Add new member cancel.
+	(gpgsm_cancel): New function.
+	(gpgsm_release): Use it.
+	* rungpg.c: Add new member cancel.
+
 2004-02-17  Werner Koch  <wk@gnupg.org>
 
 	* gpgme.h: Add GPGME_KEYLIST_MODE_VALIDATE. 

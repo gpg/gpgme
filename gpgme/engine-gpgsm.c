@@ -272,8 +272,8 @@ map_assuan_error (AssuanError err)
 }
 
 
-static void
-gpgsm_release (void *engine)
+static gpgme_error_t
+gpgsm_cancel (void *engine)
 {
   engine_gpgsm_t gpgsm = engine;
 
@@ -290,6 +290,18 @@ gpgsm_release (void *engine)
     _gpgme_io_close (gpgsm->message_cb.fd);
 
   assuan_disconnect (gpgsm->assuan_ctx);
+}
+
+
+static void
+gpgsm_release (void *engine)
+{
+  engine_gpgsm_t gpgsm = engine;
+
+  if (!gpgsm)
+    return;
+
+  gpgsm_cancel (engine);
 
   free (gpgsm->colon.attic.line);
   free (gpgsm);
@@ -1540,5 +1552,6 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     NULL,		/* trustlist */
     gpgsm_verify,
     gpgsm_set_io_cbs,
-    gpgsm_io_event
+    gpgsm_io_event,
+    gpgsm_cancel
   };

@@ -484,3 +484,16 @@ _gpgme_engine_io_event (engine_t engine,
 
   (*engine->ops->io_event) (engine->engine, type, type_data);
 }
+
+
+gpgme_error_t
+_gpgme_engine_cancel (engine_t engine)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->cancel)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->cancel) (engine->engine);
+}
