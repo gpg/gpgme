@@ -38,12 +38,10 @@
 #include "io.h"
 
 
-/* 
- * We assume that a HANDLE can be represented by an int which should be true   
- * for all i386 systems (HANDLE is defined as void *) and these are the only
- * systems for which Windows is available.
- * Further we assume that -1 denotes an invalid handle.
- */
+/* We assume that a HANDLE can be represented by an int which should
+   be true for all i386 systems (HANDLE is defined as void *) and
+   these are the only systems for which Windows is available.  Further
+   we assume that -1 denotes an invalid handle.  */
 
 #define fd_to_handle(a)  ((HANDLE)(a))
 #define handle_to_fd(a)  ((int)(a))

@@ -411,8 +411,8 @@ gpgsm_new (void **engine)
 	  err = GPGME_Out_Of_Core;
 	  goto leave;
 	}
-      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			     NULL);
+      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
+			     NULL, NULL, NULL);
       free (optstr);
       if (err)
 	{
@@ -428,8 +428,8 @@ gpgsm_new (void **engine)
 	      err = GPGME_Out_Of_Core;
 	      goto leave;
 	    }
-	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-				 NULL);
+	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
+				 NULL, NULL, NULL);
 	  free (optstr);
 	  if (err)
 	    {
@@ -488,8 +488,8 @@ gpgsm_new (void **engine)
 	    err = GPGME_Out_Of_Core;
 	  else
 	    {
-	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-				     NULL);
+	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
+				     NULL, NULL, NULL, NULL);
 	      free (optstr);
 	      if (err)
 		err = map_assuan_error (err);
@@ -541,7 +541,8 @@ gpgsm_new (void **engine)
 static gpgme_status_code_t parse_status (const char *name);
 
 static gpgme_error_t
-gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd, EngineStatusHandler status_fnc,
+gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd,
+			     EngineStatusHandler status_fnc,
 			     void *status_fnc_value)
 {
   AssuanError err;
@@ -1271,9 +1272,9 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
 
 
 static gpgme_error_t
-gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out, gpgme_sig_mode_t mode,
-	    int use_armor, int use_textmode, int include_certs,
-	    gpgme_ctx_t ctx /* FIXME */)
+gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
+	    gpgme_sig_mode_t mode, int use_armor, int use_textmode,
+	    int include_certs, gpgme_ctx_t ctx /* FIXME */)
 {
   GpgsmObject gpgsm = engine;
   gpgme_error_t err;

@@ -89,7 +89,8 @@ delete_start (gpgme_ctx_t ctx, int synchronous, const gpgme_key_t key,
 /* Delete KEY from the keyring.  If ALLOW_SECRET is non-zero, secret
    keys are also deleted.  */
 gpgme_error_t
-gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key, int allow_secret)
+gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
+		       int allow_secret)
 {
   return delete_start (ctx, 0, key, allow_secret);
 }

@@ -40,19 +40,21 @@ struct engine_ops
   void (*set_status_handler) (void *engine, EngineStatusHandler fnc,
 			      void *fnc_value);
   gpgme_error_t (*set_command_handler) (void *engine, EngineCommandHandler fnc,
-				     void *fnc_value, gpgme_data_t data);
+					void *fnc_value, gpgme_data_t data);
   gpgme_error_t (*set_colon_line_handler) (void *engine,
-					EngineColonLineHandler fnc,
-					void *fnc_value);
-  gpgme_error_t (*decrypt) (void *engine, gpgme_data_t ciph, gpgme_data_t plain);
+					   EngineColonLineHandler fnc,
+					   void *fnc_value);
+  gpgme_error_t (*decrypt) (void *engine, gpgme_data_t ciph,
+			    gpgme_data_t plain);
   gpgme_error_t (*delete) (void *engine, gpgme_key_t key, int allow_secret);
   gpgme_error_t (*edit) (void *engine, gpgme_key_t key, gpgme_data_t out,
 			 gpgme_ctx_t ctx /* FIXME */);
   gpgme_error_t (*encrypt) (void *engine, gpgme_recipients_t recp,
-			    gpgme_data_t plain, gpgme_data_t ciph, int use_armor);
+			    gpgme_data_t plain, gpgme_data_t ciph,
+			    int use_armor);
   gpgme_error_t (*encrypt_sign) (void *engine, gpgme_recipients_t recp,
-				  gpgme_data_t plain, gpgme_data_t ciph,
-				  int use_armor, gpgme_ctx_t ctx /* FIXME */);
+				 gpgme_data_t plain, gpgme_data_t ciph,
+				 int use_armor, gpgme_ctx_t ctx /* FIXME */);
   gpgme_error_t (*export) (void *engine, gpgme_recipients_t recp,
 			   gpgme_data_t keydata, int use_armor);
   gpgme_error_t (*genkey) (void *engine, gpgme_data_t help_data, int use_armor,
@@ -61,13 +63,15 @@ struct engine_ops
   gpgme_error_t (*keylist) (void *engine, const char *pattern,
 			    int secret_only, int keylist_mode);
   gpgme_error_t (*keylist_ext) (void *engine, const char *pattern[],
-				 int secret_only, int reserved,
+				int secret_only, int reserved,
 				int keylist_mode);
   gpgme_error_t (*sign) (void *engine, gpgme_data_t in, gpgme_data_t out,
-			 gpgme_sig_mode_t mode, int use_armor, int use_textmode,
+			 gpgme_sig_mode_t mode, int use_armor,
+			 int use_textmode,
 			 int include_certs, gpgme_ctx_t ctx /* FIXME */);
   gpgme_error_t (*trustlist) (void *engine, const char *pattern);
-  gpgme_error_t (*verify) (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
+  gpgme_error_t (*verify) (void *engine, gpgme_data_t sig,
+			   gpgme_data_t signed_text,
 			   gpgme_data_t plaintext);
   
   void (*set_io_cbs) (void *engine, gpgme_io_cbs_t io_cbs);
@@ -81,4 +85,3 @@ extern struct engine_ops _gpgme_engine_ops_gpgsm;	/* CMS.  */
 #endif
 
 #endif /* ENGINE_BACKEND_H */
-

@@ -184,7 +184,8 @@ ctx_wait (gpgme_ctx_t ctx, gpgme_error_t *status)
    event loops.  */
 
 void
-_gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type, void *type_data)
+_gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type,
+			     void *type_data)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) data;
 
@@ -315,7 +316,8 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 		  for (idx = 0; idx < ictx->fdt.size; idx++)
 		    if (ictx->fdt.fds[idx].fd != -1)
 		      _gpgme_io_close (ictx->fdt.fds[idx].fd);
-		  _gpgme_engine_io_event (ictx->engine, GPGME_EVENT_DONE, &err);
+		  _gpgme_engine_io_event (ictx->engine, GPGME_EVENT_DONE,
+					  &err);
 		}
 	    }
 	}

@@ -630,7 +630,8 @@ get_keysig (gpgme_key_t key, int uid_idx, int idx)
 
 
 const char *
-gpgme_key_sig_get_string_attr (gpgme_key_t key, int uid_idx, _gpgme_attr_t what,
+gpgme_key_sig_get_string_attr (gpgme_key_t key, int uid_idx,
+			       _gpgme_attr_t what,
 			       const void *reserved, int idx)
 {
   gpgme_key_sig_t certsig = get_keysig (key, uid_idx, idx);
