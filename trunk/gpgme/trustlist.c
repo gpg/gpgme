@@ -184,6 +184,8 @@ gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
   if (err)
     goto leave;
 
+  _gpgme_engine_set_status_handler (ctx->engine,
+				    trustlist_status_handler, ctx);
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
 					      trustlist_colon_handler, ctx);
   if (err)

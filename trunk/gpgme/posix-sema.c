@@ -37,13 +37,6 @@
 #include "sema.h"
 #include "ath.h"
 
-static void
-sema_fatal (const char *text)
-{
-  fprintf (stderr, "sema.c: %s\n", text);
-  abort ();
-}
-
 void
 _gpgme_sema_subsystem_init ()
 {

@@ -1,3 +1,11 @@
+2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* encrypt-sign.c (encrypt_sign_status_handler): Remove dead
+	variables encrypt_info and encrypt_info_len.
+	* trustlist.c (gpgme_op_trustlist_start): Set colon line handler.
+	* posix-sema.c (sema_fatal): Remove function.
+	All these reported by Stéphane Corthésy.
+
 2002-08-23  Werner Koch  <wk@gnupg.org>
 
 	* gpgme-config.in: Made --prefix work for --libs. 
