@@ -1,5 +1,14 @@
 2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* jnlib/argparse.c, jnlib/argparse.h, jnlib/ChangeLog,
+	jnlib/dotlock.c, jnlib/dotlock.h, jnlib/libjnlib-config.h,
+	jnlib/logging.c, jnlib/logging.h,jnlib/Makefile.am,
+	jnlib/mischelp.h, jnlib/README, jnlib/stringhelp.c,
+	jnlib/stringhelp.h, jnlib/strlist.c, jnlib/strlist.h,
+	jnlib/types.h, jnlib/xmalloc.c, jnlib/xmalloc.h: Remove files.
+
+2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
+
 	* Makefile.am (SUBDIRS): Remove jnlib.
 	* configure.ac: Don't check for unsigned short or unsigned long.
 	Don't check for memicmp, strlwr, strtoul, memmove, stricmp.
