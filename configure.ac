@@ -102,8 +102,8 @@ GNUPG_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(u16, HAVE_U16_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(u32, HAVE_U32_TYPEDEF)
 
-# We should not use them in this software;
-# However jnlib/types.h needs them - so we take the easy way.
+dnl We should not use them in this software;
+dnl However jnlib/types.h needs them - so we take the easy way.
 AC_CHECK_SIZEOF(unsigned short)
 AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long)
@@ -121,6 +121,10 @@ dnl Checks for library functions.
 dnl
 dnl These are needed by libjnlib
 AC_CHECK_FUNCS(memicmp stpcpy strlwr strtoul memmove stricmp)
+
+dnl We use jnlib, so tell other modules about it
+AC_DEFINE(HAVE_JNLIB_LOGGING, 1,
+        [Defined if jnlib style logging fucntions are available.])
 
 dnl
 dnl Checks for system services
@@ -185,10 +189,6 @@ fi
 AM_CONDITIONAL(RUN_GPGSM_TESTS,
   [test "$cross_compiling" != "yes" && test -n "$GPGSM" && test -r "$GPGSM"])
 
-dnl
-dnl Create config files 
-dnl
-
 dnl FIXME: Only build if supported.
 AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
 
@@ -210,6 +210,10 @@ GPGME_LIBS="-L${libdir} -lgpgme"
 GPGME_CFLAGS=""
 AC_SUBST(GPGME_LIBS)
 AC_SUBST(GPGME_CFLAGS)
+
+dnl
+dnl Create config files 
+dnl
 
 AC_CONFIG_FILES(Makefile assuan/Makefile jnlib/Makefile gpgme/Makefile
 		tests/Makefile tests/gpg/Makefile tests/gpgsm/Makefile
