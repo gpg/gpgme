@@ -228,6 +228,13 @@ get_engine_info (void)
         return engine_info;
 
     path = _gpgme_get_gpg_path ();
+    if (!path)
+      {
+	engine_info = "<GnupgInfo>\n"
+	  "  <error>Not supported</error>\n"
+	  "</GnupgInfo>\n";
+	goto leave;
+      }
     err = gpgme_new (&c);
     if (err) 
         goto leave;
@@ -299,9 +306,3 @@ get_engine_info (void)
     gpgme_release ( c );
     return engine_info;
 }
-
-
-
-
-
-

@@ -1,4 +1,7 @@
 
+ * GPGME can be compiled without GnuPG being installed (--with-gpg=PATH),
+   and even cross-compiled.
+
  * New operation gpgme_op_decrypt_verify to decrypt and verify
    signatures simultaneously.
 

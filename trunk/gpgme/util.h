@@ -123,8 +123,7 @@ char *stpcpy (char *a, const char *b);
 
 /*-- {posix,w32}-util.c --*/
 const char *_gpgme_get_gpg_path (void);
-
-
+const char *_gpgme_get_gpgsm_path (void);
 
 #endif /* UTIL_H */
 

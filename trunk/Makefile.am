@@ -26,13 +26,17 @@ bonobo = bonobo
 else
 bonobo = 
 endif
+
 if BUILD_COMPLUS
 complus = complus
 else
 complus = 
 endif
 
+if RUN_GPG_TESTS
+tests = tests
+else
+tests = 
+endif
 
-SUBDIRS = jnlib gpgme tests doc ${bonobo} ${complus}
-
-
+SUBDIRS = jnlib gpgme ${tests} doc ${bonobo} ${complus}

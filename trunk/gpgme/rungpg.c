@@ -786,8 +786,11 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
     int pid;
     struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
 
-    if ( !gpg )
-        return mk_error (Invalid_Value);
+    if (!gpg)
+      return mk_error (Invalid_Value);
+
+    if (! _gpgme_get_gpg_path ())
+      return mk_error (Invalid_Engine);
 
     /* Kludge, so that we don't need to check the return code of
      * all the gpgme_gpg_add_arg().  we bail out here instead */

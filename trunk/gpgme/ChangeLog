@@ -1,3 +1,18 @@
+2001-11-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* version.c (get_engine_info): If GnuPG is not available, return
+	an error message.
+	* posix-util.c (_gpgme_get_gpg_path): Allow GPG_PATH to be
+	undefined.
+	(_gpgme_get_gpgsm_path): New function.
+	* w32-util.c (find_program_in_registry): New static function.
+	(_gpgme_get_gpg_path): Allow GPG_PATH to be undefined.  Rework
+	to use find_program_in_registry.
+	(_gpgme_get_gpgsm_path): New function.
+	(util.h): Prototype _gpgme_get_gpgsm_path).
+	* rungpg.c (_gpgme_gpg_spawn): Verify that _gpgme_get_gpg_path()
+	returns non-null.
+
 2001-11-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* decrypt-verify.c: New file.
