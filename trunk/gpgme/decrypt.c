@@ -45,10 +45,51 @@ _gpgme_release_decrypt_result (DecryptResult result)
   xfree (result);
 }
 
+/* Check whether STRING starts with TOKEN and return true in this
+   case.  This is case insensitive.  If NEXT is not NULL return the
+   number of bytes to be added to STRING to get to the next token; a
+   returned value of 0 indicates end of line. 
+   Fixme: Duplicated from verify.c. */
+static int 
+is_token (const char *string, const char *token, size_t *next)
+{
+  size_t n = 0;
+
+  for (;*string && *token && *string == *token; string++, token++, n++)
+    ;
+  if (*token || (*string != ' ' && !*string))
+    return 0;
+  if (next)
+    {
+      for (; *string == ' '; string++, n++)
+        ;
+      *next = n;
+    }
+  return 1;
+}
+
+static int
+skip_token (const char *string, size_t *next)
+{
+  size_t n = 0;
+
+  for (;*string && *string != ' '; string++, n++)
+    ;
+  for (;*string == ' '; string++, n++)
+    ;
+  if (!*string)
+    return 0;
+  if (next)
+    *next = n;
+  return 1;
+}
+
 
 void
 _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
+  size_t n;
+
   _gpgme_passphrase_status_handler (ctx, code, args);
 
   if (ctx->error)
@@ -71,6 +112,45 @@ _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
     case GPGME_STATUS_DECRYPTION_FAILED:
       ctx->result.decrypt->failed = 1;
       break;
+
+    case GPGME_STATUS_ERROR:
+      if (is_token (args, "decrypt.algorithm", &n) && n)
+        {
+          args += n;
+          if (is_token (args, "Unsupported_Algorithm", &n))
+            {
+              GpgmeData dh;
+
+              args += n;
+              /* Fixme: This won't work when used with decrypt+verify */
+              if (!gpgme_data_new (&dh))
+                {
+                  _gpgme_data_append_string (dh,
+                                             "<GnupgOperationInfo>\n"
+                                             " <decryption>\n"
+                                             "  <error>\n"
+                                             "   <unsupportedAlgorithm>");
+                  if (skip_token (args, &n))
+                    {
+                      int c = args[n];
+                      args[n] = 0;
+                      _gpgme_data_append_percentstring_for_xml (dh, args);
+                      args[n] = c;
+                    }
+                  else
+                    _gpgme_data_append_percentstring_for_xml (dh, args);
+                  
+                  _gpgme_data_append_string (dh,
+                                             "</unsupportedAlgorithm>\n"
+                                             "  </error>\n"
+                                             " </decryption>\n"
+                                             "</GnupgOperationInfo>\n");
+                  _gpgme_set_op_info (ctx, dh);
+                }
+            }
+        }
+      break;
+
         
     default:
       /* Ignore all other codes.  */
@@ -153,6 +233,16 @@ gpgme_op_decrypt (GpgmeCtx ctx, GpgmeData in, GpgmeData out)
   GpgmeError err = _gpgme_decrypt_start (ctx, 1, in, out,
 					 _gpgme_decrypt_status_handler);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+      err = _gpgme_wait_one (ctx);
+
+  /* Work around the kludge in engine-gpgsm.c */
+  if (err == GPGME_Invalid_Engine && ctx->error)
+    {
+      if (ctx->result.decrypt->failed)
+	err = mk_error (Decryption_Failed);
+      else if (!ctx->result.decrypt->okay)
+	err = mk_error (No_Data);
+    }
+
   return err;
 }

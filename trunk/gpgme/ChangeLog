@@ -1,3 +1,9 @@
+2002-08-19  Werner Koch  <wk@gnupg.org>
+
+	* decrypt.c (is_token,skip_token): Duplicated from verify.c
+	(gpgme_op_decrypt): Hack to properly return Decryption_Failed..
+	(_gpgme_decrypt_status_handler): Create an operation info.
+
 2002-08-14  Werner Koch  <wk@gnupg.org>
 
 	* key.h (struct certsig_s): New.  Use it in gpgme_key_s.
