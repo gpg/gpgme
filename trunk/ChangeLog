@@ -1,3 +1,13 @@
+2002-07-02  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Bumbed version number to 0.3.9; add a comment on
+	when to change it.
+
+	* gpgme.spec.in: New. Contributed by Wojciech Polak.
+	* Makefile.am (dist-hook): New.
+
+	* AUTHORS: Added Wojciech and bug reporting addresses.
+
 2002-06-25  Werner Koch  <wk@gnupg.org>
 
 	Released 0.3.8.
