@@ -3738,12 +3738,16 @@ verification was attempted.
 
 @deftypefun gpgme_verify_result_t gpgme_op_verify_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_verify_result} returns a
-@code{gpgme_verify_result_t} pointer to a structure holding the result of
-a @code{gpgme_op_verify} operation.  The pointer is only valid if the
-last operation on the context was a @code{gpgme_op_verify} or
-@code{gpgme_op_verify_start} operation, and if this operation finished
-successfully.  The returned pointer is only valid until the next
-operation is started on the context.
+@code{gpgme_verify_result_t} pointer to a structure holding the result
+of a @code{gpgme_op_verify} operation.  The pointer is only valid if
+the last operation on the context was a @code{gpgme_op_verify},
+@code{gpgme_op_verify_start}, @code{gpgme_op_decrypt_verify} or
+@code{gpgme_op_decrypt_verify_start} operation, and if this operation
+finished successfully (for @code{gpgme_op_decrypt_verify} and
+@code{gpgme_op_decrypt_verify_start}, the error code
+@code{GPG_ERR_NO_DATA} counts as successful in this context).  The
+returned pointer is only valid until the next operation is started on
+the context.
 @end deftypefun
 
 
@@ -3995,6 +3999,11 @@ verified.
 After the operation completed, @code{gpgme_op_decrypt_result} and
 @code{gpgme_op_verify_result} can be used to retrieve more information
 about the signatures.
+
+If the error code @code{GPG_ERR_NO_DATA} is returned, @var{cipher}
+does not contain any data to decrypt.  However, it might still be
+signed.  The information about detected signatures is available with
+@code{gpgme_op_verify_result} in this case.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 ciphertext could be decrypted successfully, @code{GPG_ERR_INV_VALUE}
