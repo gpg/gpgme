@@ -111,7 +111,7 @@ print_sig_stat ( GpgmeCtx ctx, GpgmeSigStat status )
     printf ("Verification Status: %s\n", status_string (status));
     
     for(idx=0; (s=gpgme_get_sig_status (ctx, idx, &status, &created)); idx++ ) {
-        printf ("sig %d: created: %lu status: %s\n", idx, (ulong)created,
+        printf ("sig %d: created: %lu status: %s\n", idx, (unsigned long)created,
                 status_string(status) );
         printf ("sig %d: fpr/keyid=`%s'\n", idx, s );
         if ( !gpgme_get_sig_key (ctx, idx, &key) ) {

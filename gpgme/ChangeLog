@@ -1,5 +1,9 @@
 2001-02-13  Werner Koch  <wk@gnupg.org>
 
+	* rungpg.c (struct reap_s): Replaced pid_t by int.
+
+	* types.h: Add ulong typedef.
+
 	* rungpg.c (do_reaping,_gpgme_gpg_housecleaning): New.
 	(_gpgme_gpg_release): Reap children.
 	* io.h, posix-io.c (_gpgme_io_kill): New.

@@ -118,7 +118,7 @@ struct gpg_object_s {
 
 struct reap_s {
     struct reap_s *next;
-    pid_t pid;
+    int pid;
     time_t entered;
     int term_send;
 };
