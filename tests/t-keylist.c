@@ -35,10 +35,16 @@ static void
 doit ( GpgmeCtx ctx, const char *pattern )
 {
     GpgmeError err;
+    GpgmeKey key;
 
     err = gpgme_keylist_start (ctx, pattern, 0 );
     fail_if_err (err);
-    gpgme_wait (ctx, 1);
+    
+    while ( !(err = gpgme_keylist_next ( ctx, &key )) ) {
+        printf ("Got key object (%p)\n", key );
+    }
+    if ( err != GPGME_EOF )
+        fail_if_err (err);
 }
 
 

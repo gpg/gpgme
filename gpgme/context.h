@@ -31,6 +31,12 @@ typedef enum {
 } ResultType;
 
 
+struct key_queue_item_s {
+    struct key_queue_item_s *next;
+    GpgmeKey key;
+};
+
+
 /* Currently we need it at several places, so we put the definition 
  * into this header file */
 struct gpgme_context_s {
@@ -54,7 +60,9 @@ struct gpgme_context_s {
         VerifyResult verify;
     } result;
 
-    GpgmeKey tmp_key;  /* used by keylist.c */
+    GpgmeKey tmp_key;       /* used by keylist.c */
+    volatile int key_cond;  /* something new is available */
+    struct key_queue_item_s *key_queue;
 };
 
 

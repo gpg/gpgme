@@ -62,6 +62,7 @@ gpgme_release_context ( GpgmeCtx c )
     _gpgme_gpg_release_object ( c->gpg ); 
     _gpgme_release_result ( c );
     _gpgme_key_release ( c->tmp_key );
+    /* fixme: release the key_queue */
     xfree ( c );
 }
 
