@@ -1,3 +1,8 @@
+2001-12-19  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (VERSION,PACKAGE): Defined and subst.  Used for
+	AM_INIT_AUTOMAKE and moved all version number more to the top.
+
 2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* autogen.sh (libtool_vers): Bump to 1.4.

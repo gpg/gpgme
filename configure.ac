@@ -20,35 +20,44 @@
  
 # (Process this file with autoconf to produce a configure script.)
 
-AC_INIT(gpgme, 0.2.3a, [gnupg-devel@gnupg.org])
-AC_PREREQ(2.52)
-AC_REVISION($Revision$)
-
-AC_CONFIG_SRCDIR(gpgme/gpgme.h)
-AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(gpgme, 0.3.0)
-AM_MAINTAINER_MODE
-
-AC_PROG_CC
-
 # Version numbers (Remember to change them just before a release.)
 #   (Code changed:			REVISION++)
 #   (Interfaces added/removed/changed:	CURRENT++, REVISION=0)
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed:		AGE=0)
 # XXXX new functions
+AC_INIT(gpgme, 0.3.0a-cvs, [gnupg-devel@gnupg.org])
 LIBGPGME_LT_CURRENT=5
 LIBGPGME_LT_AGE=0
 LIBGPGME_LT_REVISION=0
 NEED_GPG_VERSION=1.0.6
 NEED_GPGSM_VERSION=0.0.0
 ##############################################
+AC_PREREQ(2.52)
+AC_REVISION($Revision$)
+
+PACKAGE=$PACKAGE_NAME
+VERSION=$PACKAGE_VERSION
+
+AC_CONFIG_SRCDIR(gpgme/gpgme.h)
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AM_MAINTAINER_MODE
+
+AC_PROG_CC
+
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
 AC_SUBST(LIBGPGME_LT_REVISION)
 AC_DEFINE_UNQUOTED(NEED_GPG_VERSION, "$NEED_GPG_VERSION")
 AC_DEFINE_UNQUOTED(NEED_GPGSM_VERSION, "$NEED_GPGSM_VERSION")
+
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
+AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
+
 
 dnl Don't default to build static libs.
 dnl AC_DISABLE_STATIC
