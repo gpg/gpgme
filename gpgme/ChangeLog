@@ -1,5 +1,15 @@
 2002-06-02  Marcus Brinkmann  <marcus@g10code.de>
 
+	* ath.h: Enable the _gpgme_ prefix.  Fix all those prefix macros.
+	* posix-sema.c: Use that prefix here.
+	* posix-io.c: Include "ath.h".
+	(_gpgme_io_read): Use _gpgme_ath_read instead read.
+	(_gpgme_io_write): Use _gpgme_ath_write instead write.
+	(_gpgme_io_waitpid): Use _gpgme_ath_waitpid instead waitpid.
+	(_gpgme_io_select): Use _gpgme_ath_select instead select.
+
+2002-06-02  Marcus Brinkmann  <marcus@g10code.de>
+
 	* Makefile.am (ath_components): New variable.
 	(ath_components_pthread): Likewise.
 	(ath_components_pth): Likewise.

@@ -48,24 +48,24 @@ void
 _gpgme_sema_subsystem_init ()
 {
   /* FIXME: we should check that there is only one thread running */
-  ath_init ();
+  _gpgme_ath_init ();
 }
 
 void
 _gpgme_sema_cs_enter (struct critsect_s *s)
 {
-  ath_mutex_lock (&s->private);
+  _gpgme_ath_mutex_lock (&s->private);
 }
 
 void
 _gpgme_sema_cs_leave (struct critsect_s *s)
 {
-  ath_mutex_unlock (&s->private);
+  _gpgme_ath_mutex_unlock (&s->private);
 }
 
 void
 _gpgme_sema_cs_destroy (struct critsect_s *s)
 {
-  ath_mutex_destroy (&s->private);
+  _gpgme_ath_mutex_destroy (&s->private);
   s->private = NULL;
 }

@@ -37,6 +37,7 @@
 #include "util.h"
 #include "io.h"
 #include "sema.h"
+#include "ath.h"
 
 static struct
 {
@@ -52,7 +53,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
   DEBUG2 ("fd %d: about to read %d bytes\n", fd, (int) count);
   do
     {
-      nread = read (fd, buffer, count);
+      nread = _gpgme_ath_read (fd, buffer, count);
     }
   while (nread == -1 && errno == EINTR );
   DEBUG2 ("fd %d: got %d bytes\n", fd, nread);
@@ -71,7 +72,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   _gpgme_debug (2, "fd %d: write `%.*s'\n", fd, (int) count, buffer);
   do
     {
-      nwritten = write (fd, buffer, count);
+      nwritten = _gpgme_ath_write (fd, buffer, count);
     }
   while (nwritten == -1 && errno == EINTR);
   DEBUG2 ("fd %d:          wrote %d bytes\n", fd, (int) nwritten);
@@ -255,7 +256,7 @@ _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal)
 
   *r_status = 0;
   *r_signal = 0;
-  if (waitpid (pid, &status, hang? 0 : WNOHANG) == pid)
+  if (_gpgme_ath_waitpid (pid, &status, hang? 0 : WNOHANG) == pid)
     {
       if (WIFSIGNALED (status))
 	{
@@ -332,7 +333,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds)
 
   do
     {
-      count = select (max_fd + 1, &readfds, &writefds, NULL, &timeout);
+      count = _gpgme_ath_select (max_fd + 1, &readfds, &writefds, NULL, &timeout);
     }
   while (count < 0 && errno == EINTR);
   if (count < 0)

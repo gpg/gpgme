@@ -25,29 +25,33 @@
 
 /* Define ATH_EXT_SYM_PREFIX if you want to give all external symbols
    a prefix.  */
-/* #define ATH_EXT_SYM_PREFIX _gpgme_ */
+#define ATH_EXT_SYM_PREFIX _gpgme_
 
 #ifdef ATH_EXT_SYM_PREFIX
-#define ath_pkg_init MUTEX_EXT_SYM_PREFIX##ath_pkg_init
-#define ath_mutex_init MUTEX_EXT_SYM_PREFIX##ath_mutex_init
-#define ath_mutex_destroy MUTEX_EXT_SYM_PREFIX##ath_mutex_destroy
-#define ath_mutex_lock MUTEX_EXT_SYM_PREFIX##ath_mutex_lock
+#define ATH_PREFIX1(x,y) x ## y
+#define ATH_PREFIX2(x,y) ATH_PREFIX1(x,y)
+#define ATH_PREFIX(x) ATH_PREFIX2(ATH_EXT_SYM_PREFIX,x)
+#define ath_init ATH_PREFIX(ath_init)
+#define ath_mutex_init ATH_PREFIX(ath_mutex_init)
+#define ath_mutex_destroy ATH_PREFIX(ath_mutex_destroy)
+#define ath_mutex_lock ATH_PREFIX(ath_mutex_lock)
+#define ath_mutex_unlock ATH_PREFIX(ath_mutex_unlock)
 #define ath_mutex_pthread_available \
-  MUTEX_EXT_SYM_PREFIX##ath_mutex_pthread_available
+  ATH_PREFIX(ath_mutex_pthread_available)
 #define ath_mutex_pth_available \
-  MUTEX_EXT_SYM_PREFIX##ath_mutex_pth_available
+  ATH_PREFIX(ath_mutex_pth_available)
 #define ath_mutex_dummy_available \
-  MUTEX_EXT_SYM_PREFIX##ath_mutex_dummy_available
-#define ath_read MUTEX_EXT_SYM##ath_read
-#define ath_write MUTEX_EXT_SYM##ath_write
-#define ath_select MUTEX_EXT_SYM##ath_select
-#define ath_waitpid MUTEX_EXT_SYM##ath_waitpid
+  ATH_PREFIX(ath_mutex_dummy_available)
+#define ath_read ATH_PREFIX(ath_read)
+#define ath_write ATH_PREFIX(ath_write)
+#define ath_select ATH_PREFIX(ath_select)
+#define ath_waitpid ATH_PREFIX(ath_waitpid)
 #define ath_mutex_pthread_available \
-  MUTEX_EXT_SYM_PREFIX##ath_mutex_pthread_available
+  ATH_PREFIX(ath_mutex_pthread_available)
 #define ath_mutex_pthr_available \
-  MUTEX_EXT_SYM_PREFIX##ath_mutex_pthr_available
+  ATH_PREFIX(ath_mutex_pthr_available)
 #define ath_mutex_dummy_available \
-  MUTEX_EXT_SYM_PREFIX##ath_mutex_dummy_available
+  ATH_PREFIX(ath_mutex_dummy_available)
 #endif
 
 
