@@ -21,6 +21,7 @@
 
 EXTRA_DIST = gpgme-config.in gpgme.m4 mkerrors mkstatus
 BUILT_SOURCES = errors.c status-table.h
+MOSTLYCLEANFILES = errors.c status-table.h
 bin_SCRIPTS = gpgme-config
 m4datadir = $(datadir)/aclocal
 m4data_DATA = gpgme.m4

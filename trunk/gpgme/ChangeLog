@@ -1,5 +1,9 @@
 2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (MOSTLYCLEANFILES): New variable.
+
+2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
 	* engine-gpgsm.c (gpgsm_status_handler): At error, terminate the
 	connection to the server.
 
