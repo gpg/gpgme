@@ -1,5 +1,9 @@
 2002-02-09  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgsm/Makefile.am (./private-keys-v1.d/$(key_id).key): Fix rule.
+
+2002-02-09  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgsm/t-genkey.c: New file (not added to Makefile.am because of
 	gpg-agent bug).
 

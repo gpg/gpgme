@@ -48,7 +48,7 @@ all-local: ./pubring.kbx ./gpg-agent.conf ./gpgsm.conf ./private-keys-v1.d/$(key
 
 ./private-keys-v1.d/$(key_id).key: $(srcdir)/$(key_id)
 	mkdir ./private-keys-v1.d
-	cp $(srcdir)/$(key_id) private-keys-v1.d
+	cp $(srcdir)/$(key_id) private-keys-v1.d/$(key_id).key
 
 ./trustlist.txt:
 	echo $(key_id) > ./trustlist.txt
