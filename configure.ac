@@ -230,6 +230,7 @@ else
   AC_DEFINE_UNQUOTED(GPGSM_PATH, "$GPGSM", [Path to the GPGSM binary.])
   AC_SUBST(GPGSM)
 fi
+AM_CONDITIONAL(HAVE_GPGSM, [test -n "$GPGSM" && test -r "$GPGSM"])
 AM_CONDITIONAL(RUN_GPGSM_TESTS,
   [test "$cross_compiling" != "yes" && test -n "$GPGSM" && test -r "$GPGSM"])
 
