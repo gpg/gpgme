@@ -304,6 +304,9 @@ gpgme_key_unref (gpgme_key_t key)
   gpgme_user_id_t uid;
   gpgme_subkey_t subkey;
 
+  if (!key)
+    return;
+
   LOCK (key_ref_lock);
   assert (key->_refs > 0);
   if (--key->_refs)
