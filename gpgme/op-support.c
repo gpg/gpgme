@@ -50,7 +50,7 @@ _gpgme_op_data_lookup (gpgme_ctx_t ctx, ctx_op_data_id_t type, void **hook,
       data->next = ctx->op_data;
       data->type = type;
       data->cleanup = cleanup;
-      data->hook = ((void *) data) + sizeof (struct ctx_op_data);
+      data->hook = (void *) (((char *) data) + sizeof (struct ctx_op_data));
       ctx->op_data = data;
     }
   *hook = data->hook;
