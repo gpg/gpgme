@@ -773,6 +773,28 @@ bool signMessage( const char*  cleartext,
   gpgme_set_armor (ctx, 1);
   gpgme_set_textmode (ctx, 1);
 
+  int sendCerts;
+  switch ( config.sendCertificates() ) {
+    case SendCert_undef:
+      break;
+    case SendCert_DontSend:
+      sendCerts = 0;
+      break;
+    case SendCert_SendOwn:
+      sendCerts = 1;
+      break;
+    case SendCert_SendChainWithoutRoot:
+      sendCerts = -2;
+      break;
+    case SendCert_SendChainWithRoot:
+      sendCerts = -1;
+      break;
+    default:
+      sendCerts = 0;
+      break;
+  }
+  gpgme_set_include_certs (ctx, sendCerts);
+
   gpgme_data_new_from_mem (&data, cleartext,
                             1+strlen( cleartext ), 1 );
   gpgme_data_new ( &sig );
