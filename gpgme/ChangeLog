@@ -1,3 +1,9 @@
+2004-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c (map_assuan_error): Return 0 if ERR is 0.
+	(start): Call map_assuan_error on return value of
+	assuan_write_line.
+
 2004-10-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* op-support.c (_gpgme_op_data_lookup): Use char pointer for

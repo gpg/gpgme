@@ -153,6 +153,9 @@ close_notify_handler (int fd, void *opaque)
 static gpgme_error_t
 map_assuan_error (AssuanError err)
 {
+  if (!err)
+    return 0;
+
   if (err == -1)
     return gpg_error (GPG_ERR_INV_ENGINE);
 
@@ -398,6 +401,7 @@ gpgsm_new (void **engine, const char *lc_ctype, const char *lc_messages)
 
   err = assuan_pipe_connect (&gpgsm->assuan_ctx,
 			     _gpgme_get_gpgsm_path (), argv, child_fds);
+  /* FIXME: Check error.  */
 
   /* We need to know the fd used by assuan for reads.  We do this by
      using the assumption that the first returned fd from
@@ -866,7 +870,7 @@ start (engine_gpgsm_t gpgsm, const char *command)
     err = add_io_cb (gpgsm, &gpgsm->message_cb, _gpgme_data_outbound_handler);
 
   if (!err)
-    err = assuan_write_line (gpgsm->assuan_ctx, command);
+    err = map_assuan_error (assuan_write_line (gpgsm->assuan_ctx, command));
 
   if (!err)
     (*gpgsm->io_cbs.event) (gpgsm->io_cbs.event_priv, GPGME_EVENT_START, NULL);
