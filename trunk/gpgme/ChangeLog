@@ -1,5 +1,8 @@
 2003-05-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (struct _gpgme_op_import_result): Add skipped_new_keys.
+	* import.c (parse_import_res): Add skipped_new_keys parser.
+
 	* op-support.c (_gpgme_parse_inv_userid): Add missing break
 	statements.
 	* encrypt.c (gpgme_op_encrypt): Use gpgme_error_t instead of int.

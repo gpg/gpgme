@@ -170,6 +170,7 @@ parse_import_res (char *args, gpgme_import_result_t result)
   PARSE_NEXT (result->secret_read);
   PARSE_NEXT (result->secret_imported);
   PARSE_NEXT (result->secret_unchanged);
+  PARSE_NEXT (result->skipped_new_keys);
   PARSE_NEXT (result->not_imported);
 
   return 0;
