@@ -1,5 +1,5 @@
 /* data.c - An abstraction for data objects.
-   Copyright (C) 2002 g10 Code GmbH
+   Copyright (C) 2002, 2003 g10 Code GmbH
 
    This file is part of GPGME.
  

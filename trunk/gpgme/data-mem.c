@@ -1,5 +1,5 @@
 /* data-mem.c - A memory based data object.
-   Copyright (C) 2002 g10 Code GmbH
+   Copyright (C) 2002, 2003 g10 Code GmbH
  
    This file is part of GPGME.
  
