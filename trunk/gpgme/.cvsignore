@@ -1,6 +1,0 @@
-Makefile.in Makefile .deps .libs
-*.lo *.la
-errors.c
-gpgme-config
-status-table.h
-
