@@ -94,7 +94,6 @@ _gpgme_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain,
 		      void *status_handler)
 {
   GpgmeError err = 0;
-  int i;
 
   fail_on_pending_request (ctx);
   ctx->pending = 1;
@@ -102,24 +101,12 @@ _gpgme_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain,
   _gpgme_release_result (ctx);
   ctx->out_of_core = 0;
 
-  /* Do some checks.  */
- 
   /* Create a process object.  */
-  _gpgme_gpg_release (ctx->gpg);
-  err = _gpgme_gpg_new (&ctx->gpg);
+  _gpgme_engine_release (ctx->engine);
+  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
+			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
   if (err)
     goto leave;
-
-  _gpgme_gpg_set_status_handler (ctx->gpg, status_handler, ctx);
-
-  err = _gpgme_passphrase_start (ctx);
-  if (err)
-    goto leave;
-
-  /* Build the commandline.  */
-  _gpgme_gpg_add_arg (ctx->gpg, "--decrypt");
-  for (i = 0; i < ctx->verbosity; i++)
-    _gpgme_gpg_add_arg (ctx->gpg, "--verbose");
 
   /* Check the supplied data.  */
   if (!ciph || gpgme_data_get_type (ciph) == GPGME_DATA_TYPE_NONE)
@@ -136,21 +123,24 @@ _gpgme_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain,
     }
   _gpgme_data_set_mode (plain, GPGME_DATA_MODE_IN);
 
-  /* Tell the gpg object about the data.  */
-  _gpgme_gpg_add_arg (ctx->gpg, "--output");
-  _gpgme_gpg_add_arg (ctx->gpg, "-");
-  _gpgme_gpg_add_data (ctx->gpg, plain, 1);
-  _gpgme_gpg_add_data (ctx->gpg, ciph, 0);
+  err = _gpgme_passphrase_start (ctx);
+  if (err)
+    goto leave;
 
-  /* And kick off the process.  */
-  err = _gpgme_gpg_spawn (ctx->gpg, ctx);
+  _gpgme_engine_set_status_handler (ctx->engine, status_handler, ctx);
+  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
+
+  err = _gpgme_engine_op_decrypt (ctx->engine, ciph, plain);
+
+  if (!err)	/* And kick off the process.  */
+    err = _gpgme_engine_start (ctx->engine, ctx);
 
  leave:
   if (err)
     {
       ctx->pending = 0; 
-      _gpgme_gpg_release (ctx->gpg);
-      ctx->gpg = NULL;
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
     }
   return err;
 }

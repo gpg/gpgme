@@ -1,3 +1,72 @@
+2001-11-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* context.h: Do not include rungpg.h, but engine.h.
+	(struct gpgme_context_s): Replace member gpg with engine.
+	* gpgme.c (gpgme_release): Release engine, not gpg.
+
+	* recipient.c (_gpgme_append_gpg_args_from_recifgpients): Function
+	moved ...
+	* rungpg.c (_gpgme_append_gpg_args_from_recipients): ... here.
+	Make static, change order of arguments, and return an error value.
+	* ops.h (_gpgme_append_gpg_args_from_recipients): Removed prototype.
+
+	* rungpg.h (_gpgme_gpg_op_verify): Add prototype.
+	(_gpgme_gpg_op_encrypt): Likewise.
+	(_gpgme_gpg_op_decrypt): Likewise.
+	(_gpgme_gpg_op_delete): Likewise.
+	(_gpgme_gpg_op_export): Likewise.
+	(_gpgme_gpg_op_genkey): Likewise.
+	(_gpgme_gpg_op_import): Likewise.
+	(_gpgme_gpg_op_keylist): Likewise.
+	(_gpgme_gpg_op_sign): Likewise.
+	(_gpgme_gpg_op_trustlist): Likewise.
+	* rungpg.c (_gpgme_gpg_op_verify): New function.
+	(_gpgme_gpg_op_encrypt): Likewise.
+	(_gpgme_gpg_op_decrypt): Likewise.
+	(_gpgme_gpg_op_delete): Likewise.
+	(_gpgme_gpg_op_export): Likewise.
+	(_gpgme_gpg_op_genkey): Likewise.
+	(_gpgme_gpg_op_import): Likewise.
+	(_gpgme_gpg_op_keylist): Likewise.
+	(_gpgme_gpg_op_sign): Likewise.
+	(_gpgme_gpg_op_trustlist): Likewise.
+
+	* engine.h (_gpgme_engine_set_status_handler): Add prototype.
+	(_gpgme_engine_set_command_handler): Likewise.
+	(_gpgme_engine_set_colon_line_handler): Likewise.
+	(_gpgme_engine_op_decrypt): Likewise.
+	(_gpgme_engine_op_delete): Likewise.
+	(_gpgme_engine_op_encrypt): Likewise.
+	(_gpgme_engine_op_export): Likewise.
+	(_gpgme_engine_op_genkey): Likewise.
+	(_gpgme_engine_op_import): Likewise.
+	(_gpgme_engine_op_keylist): Likewise.
+	(_gpgme_engine_op_sign): Likewise.
+	(_gpgme_engine_op_trustlist): Likewise.
+	(_gpgme_engine_op_verify): Likewise.
+	(_gpgme_engine_start): Likewise.
+	* engine.c (_gpgme_engine_set_status_handler): New function.
+	(_gpgme_engine_set_command_handler): Likewise.
+	(_gpgme_engine_set_colon_line_handler): Likewise.
+	(_gpgme_engine_op_decrypt): Likewise.
+	(_gpgme_engine_op_delete): Likewise.
+	(_gpgme_engine_op_encrypt): Likewise.
+	(_gpgme_engine_op_export): Likewise.
+	(_gpgme_engine_op_genkey): Likewise.
+	(_gpgme_engine_op_import): Likewise.
+	(_gpgme_engine_op_keylist): Likewise.
+	(_gpgme_engine_op_sign): Likewise.
+	(_gpgme_engine_op_trustlist): Likewise.
+	(_gpgme_engine_op_verify): Likewise.
+	(_gpgme_engine_start): Likewise.
+
+	* verify.c (gpgme_op_verify_start): Reimplement in terms of above
+	functions.
+	* encrypt.c (gpgme_op_encrypt_start): Likewise.
+	* decrypt.c (_gpgme_decrypt_start): Likewise.
+	* passphrase.c (_gpgme_passphrase_start): Likewise.
+	* keylist.c (gpgme_op_keylist_start): Likewise.
+
 2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
 
 	* types.h: Add types EngineObject and GpgsmObject.

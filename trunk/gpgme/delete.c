@@ -48,54 +48,45 @@ delete_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
 
 GpgmeError
-gpgme_op_delete_start ( GpgmeCtx c, const GpgmeKey key, int allow_secret )
+gpgme_op_delete_start (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
 {
-    GpgmeError rc = 0;
-    int i;
-    const char *s;
+  GpgmeError err = 0;
 
-    fail_on_pending_request( c );
-    c->pending = 1;
+  fail_on_pending_request (ctx);
+  ctx->pending = 1;
 
-    if (!key) {
-        rc = mk_error (Invalid_Value);
-        goto leave;
+  if (!key)
+    {
+      err = mk_error (Invalid_Value);
+      goto leave;
     }
 
-    if ( c->gpg ) {
-        _gpgme_gpg_release ( c->gpg ); 
-        c->gpg = NULL;
+  if (ctx->engine)
+    {
+      _gpgme_engine_release (ctx->engine); 
+      ctx->engine = NULL;
     }
     
-    rc = _gpgme_gpg_new ( &c->gpg );
-    if (rc)
-        goto leave;
+  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
+			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  if (err)
+    goto leave;
 
-    _gpgme_gpg_set_status_handler ( c->gpg, delete_status_handler, c );
+  _gpgme_engine_set_status_handler (ctx->engine, delete_status_handler, ctx);
+  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
-    /* build the commandline */
-    for ( i=0; i < c->verbosity; i++ )
-        _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
-    _gpgme_gpg_add_arg ( c->gpg, allow_secret?
-                         "--delete-secret-and-public-key":"--delete-key" );
-    
-    _gpgme_gpg_add_arg ( c->gpg, "--" );
-    s = gpgme_key_get_string_attr ( key, GPGME_ATTR_FPR, NULL, 0 );
-    if (!s) {
-        rc = mk_error (Invalid_Key);
-        goto leave;
-    }
-    _gpgme_gpg_add_arg ( c->gpg, s );
-
-    /* do it */
-    rc = _gpgme_gpg_spawn ( c->gpg, c );
+  err = _gpgme_engine_op_delete (ctx->engine, key, allow_secret);
+  if (!err)
+    err = _gpgme_engine_start (ctx->engine, ctx);
 
  leave:
-    if (rc) {
-        c->pending = 0; 
-        _gpgme_gpg_release ( c->gpg ); c->gpg = NULL;
+  if (err)
+    {
+      ctx->pending = 0; 
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
     }
-    return rc;
+  return err;
 }
 
 

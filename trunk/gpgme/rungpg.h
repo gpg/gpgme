@@ -119,14 +119,24 @@ GpgmeError _gpgme_gpg_set_command_handler ( GpgObject gpg,
                                             GpgCommandHandler fnc,
                                             void *fnc_value );
 
-GpgmeError _gpgme_gpg_spawn ( GpgObject gpg, void *opaque );
-
-
+GpgmeError _gpgme_gpg_op_decrypt (GpgObject gpg, GpgmeData ciph,
+				  GpgmeData plain);
+GpgmeError _gpgme_gpg_op_delete (GpgObject gpg, GpgmeKey key, int allow_secret);
+GpgmeError _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
+				  GpgmeData plain, GpgmeData ciph,
+				  int use_armor);
+GpgmeError _gpgme_gpg_op_export (GpgObject gpg, GpgmeRecipients recp,
+				 GpgmeData keydata, int use_armor);
+GpgmeError _gpgme_gpg_op_genkey (GpgObject gpg, GpgmeData help_data,
+				 int use_armor);
+GpgmeError _gpgme_gpg_op_import (GpgObject gpg, GpgmeData keydata);
+GpgmeError _gpgme_gpg_op_keylist (GpgObject gpg, const char *pattern,
+				  int secret_only, int keylist_mode);
+GpgmeError _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
+			       GpgmeSigMode mode, int use_armor,
+			       int use_textmode, GpgmeCtx ctx /* FIXME */);
+GpgmeError _gpgme_gpg_op_trustlist (GpgObject gpg, const char *pattern);
+GpgmeError _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData text);
+GpgmeError _gpgme_gpg_spawn (GpgObject gpg, void *opaque);
 
 #endif /* RUNGPG_H */
-
-
-
-
-
-

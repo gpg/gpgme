@@ -24,7 +24,7 @@
 
 #include "gpgme.h"
 #include "types.h"
-#include "rungpg.h"  /* for GpgObject */
+#include "engine.h"
 
 struct key_queue_item_s {
     struct key_queue_item_s *next;
@@ -51,7 +51,7 @@ struct gpgme_context_s {
     int cancel;    /* cancel operation request */
 
 
-    GpgObject gpg; /* the running gpg process */
+    EngineObject engine; /* The running engine process.  */
 
     int verbosity;  /* level of verbosity to use */
     int use_armor;  

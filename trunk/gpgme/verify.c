@@ -218,77 +218,67 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
     }
 }
 
-
-
 GpgmeError
-gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
+gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData text)
 {
-    int rc = 0;
-    int i;
-    int pipemode = 0; /*!!text; use pipemode for detached sigs */
+  int err = 0;
+  int pipemode = 0;	 /* !!text; use pipemode for detached sigs.  */
 
-    fail_on_pending_request( c );
-    c->pending = 1;
+  fail_on_pending_request(ctx);
+  ctx->pending = 1;
 
-    _gpgme_release_result (c);
-    c->out_of_core = 0;
+  _gpgme_release_result (ctx);
+  ctx->out_of_core = 0;
     
-    if ( !pipemode ) {
-        _gpgme_gpg_release ( c->gpg );
-        c->gpg = NULL;
+  if (!pipemode)
+    {
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
     }
 
-    if ( !c->gpg ) 
-        rc = _gpgme_gpg_new ( &c->gpg );
-    if (rc)
-        goto leave;
+  if (!ctx->engine)
+    err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
+			     : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  if (err)
+    goto leave;
 
-    if (pipemode)
-        _gpgme_gpg_enable_pipemode ( c->gpg ); 
-    _gpgme_gpg_set_status_handler (c->gpg, _gpgme_verify_status_handler, c);
+#if 0	/* FIXME */
+  if (pipemode)
+    _gpgme_gpg_enable_pipemode (c->engine->engine.gpg);
+#endif
 
-    /* build the commandline */
-    _gpgme_gpg_add_arg ( c->gpg, pipemode?"--pipemode" : "--verify" );
-    for ( i=0; i < c->verbosity; i++ )
-        _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
+  _gpgme_engine_set_status_handler (ctx->engine, _gpgme_verify_status_handler,
+				    ctx);
+  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
-    /* Check the supplied data */
-    if ( gpgme_data_get_type (sig) == GPGME_DATA_TYPE_NONE ) {
-        rc = mk_error (No_Data);
-        goto leave;
+  /* Check the supplied data.  */
+  if (gpgme_data_get_type (sig) == GPGME_DATA_TYPE_NONE)
+    {
+      err = mk_error (No_Data);
+      goto leave;
     }
-    if ( text && gpgme_data_get_type (text) == GPGME_DATA_TYPE_NONE ) {
-        rc = mk_error (No_Data);
-        goto leave;
+  if (text && gpgme_data_get_type (text) == GPGME_DATA_TYPE_NONE)
+    {
+      err = mk_error (No_Data);
+      goto leave;
     }
-    _gpgme_data_set_mode (sig, GPGME_DATA_MODE_OUT );
-    if (text) /* detached signature */
-        _gpgme_data_set_mode (text, GPGME_DATA_MODE_OUT );
-    /* Tell the gpg object about the data */
-    _gpgme_gpg_add_arg ( c->gpg, "--" );
-    if (pipemode) {
-        _gpgme_gpg_add_pm_data ( c->gpg, sig, 0 );
-        _gpgme_gpg_add_pm_data ( c->gpg, text, 1 );
-    }
-    else {
-        _gpgme_gpg_add_data ( c->gpg, sig, -1 );
-        if (text) {
-            _gpgme_gpg_add_arg ( c->gpg, "-" );
-            _gpgme_gpg_add_data ( c->gpg, text, 0 );
-        }
-    }
+  _gpgme_data_set_mode (sig, GPGME_DATA_MODE_OUT);
+  if (text)	    /* Detached signature.  */
+    _gpgme_data_set_mode (text, GPGME_DATA_MODE_OUT);
 
-    /* and kick off the process */
-    rc = _gpgme_gpg_spawn ( c->gpg, c );
+  err = _gpgme_engine_op_verify (ctx->engine, sig, text);
+  if (!err)	/* And kick off the process.  */
+    err = _gpgme_engine_start (ctx->engine, ctx);
 
  leave:
-    if (rc) {
-        c->pending = 0; 
-        _gpgme_gpg_release ( c->gpg ); c->gpg = NULL;
+  if (err)
+    {
+      ctx->pending = 0; 
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
     }
-    return rc;
+  return err;
 }
-
 
 /* 
  * Figure out a common status value for all signatures 

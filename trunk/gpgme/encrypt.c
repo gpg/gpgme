@@ -138,73 +138,64 @@ encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
 
 GpgmeError
-gpgme_op_encrypt_start ( GpgmeCtx c, GpgmeRecipients recp,
-                         GpgmeData plain, GpgmeData ciph )
+gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
+			GpgmeData ciph)
 {
-    int rc = 0;
-    int i;
+  int err = 0;
 
-    fail_on_pending_request( c );
-    c->pending = 1;
+  fail_on_pending_request (ctx);
+  ctx->pending = 1;
 
-    _gpgme_release_result (c);
-    c->out_of_core = 0;
+  _gpgme_release_result (ctx);
+  ctx->out_of_core = 0;
 
-    /* do some checks */
-    if ( !gpgme_recipients_count ( recp ) ) {
-        /* Fixme: In this case we should do symmentric encryption */
-        rc = mk_error (No_Recipients);
-        goto leave;
+  /* Do some checks.  */
+  if (!gpgme_recipients_count (recp))
+    {
+      /* Fixme: In this case we should do symmentric encryption.  */
+      err = mk_error (No_Recipients);
+      goto leave;
     }
-        
-    /* create a process object */
-    _gpgme_gpg_release (c->gpg); c->gpg = NULL;
-    rc = _gpgme_gpg_new ( &c->gpg );
-    if (rc)
-        goto leave;
 
-    _gpgme_gpg_set_status_handler ( c->gpg, encrypt_status_handler, c );
+  /* Create an engine object.  */
+  _gpgme_engine_release (ctx->engine);
+  ctx->engine = NULL;
+  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
+			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  if (err)
+    goto leave;
 
-    /* build the commandline */
-    _gpgme_gpg_add_arg ( c->gpg, "--encrypt" );
-    if ( c->use_armor )
-        _gpgme_gpg_add_arg ( c->gpg, "--armor" );
-    for ( i=0; i < c->verbosity; i++ )
-        _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
-    /* If we know that all recipients are valid (full or ultimate trust)
-     * we can suppress further checks */
-    if ( _gpgme_recipients_all_valid (recp) )
-        _gpgme_gpg_add_arg ( c->gpg, "--always-trust" );
-    
-    _gpgme_append_gpg_args_from_recipients ( recp, c->gpg );
+  _gpgme_engine_set_status_handler (ctx->engine, encrypt_status_handler, ctx);
+  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
-    /* Check the supplied data */
-    if ( gpgme_data_get_type (plain) == GPGME_DATA_TYPE_NONE ) {
-        rc = mk_error (No_Data);
-        goto leave;
+  /* Check the supplied data */
+  if (gpgme_data_get_type (plain) == GPGME_DATA_TYPE_NONE)
+    {
+      err = mk_error (No_Data);
+      goto leave;
     }
-    _gpgme_data_set_mode (plain, GPGME_DATA_MODE_OUT );
-    if ( !ciph || gpgme_data_get_type (ciph) != GPGME_DATA_TYPE_NONE ) {
-        rc = mk_error (Invalid_Value);
-        goto leave;
+  _gpgme_data_set_mode (plain, GPGME_DATA_MODE_OUT);
+  if (!ciph || gpgme_data_get_type (ciph) != GPGME_DATA_TYPE_NONE)
+    {
+      err = mk_error (Invalid_Value);
+      goto leave;
     }
-    _gpgme_data_set_mode (ciph, GPGME_DATA_MODE_IN );
-    /* Tell the gpg object about the data */
-    _gpgme_gpg_add_arg ( c->gpg, "--output" );
-    _gpgme_gpg_add_arg ( c->gpg, "-" );
-    _gpgme_gpg_add_data ( c->gpg, ciph, 1 );
-    _gpgme_gpg_add_arg ( c->gpg, "--" );
-    _gpgme_gpg_add_data ( c->gpg, plain, 0 );
+  _gpgme_data_set_mode (ciph, GPGME_DATA_MODE_IN);
 
-    /* and kick off the process */
-    rc = _gpgme_gpg_spawn ( c->gpg, c );
+  err = _gpgme_engine_op_encrypt (ctx->engine, recp, plain, ciph, ctx->use_armor);
+
+
+  if (!err)	/* And kick off the process.  */
+    err = _gpgme_engine_start (ctx->engine, ctx);
 
  leave:
-    if (rc) {
-        c->pending = 0; 
-        _gpgme_gpg_release ( c->gpg ); c->gpg = NULL;
+  if (err)
+    {
+      ctx->pending = 0; 
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
     }
-    return rc;
+  return err;
 }
 
 
