@@ -103,15 +103,19 @@ main (int argc, char **argv )
     GpgmeData in, out, pwdata = NULL;
     struct passphrase_cb_info_s info;
     const char *cipher_1_asc = mk_fname ("cipher-1.asc");
+    char *p;
 
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
-    if ( !getenv("GPG_AGENT_INFO") ) {
+
+    p = getenv("GPG_AGENT_INFO");
+    if (!(p && strchr (p, ':')))
+      {
         memset ( &info, 0, sizeof info );
         info.c = ctx;
         gpgme_set_passphrase_cb ( ctx, passphrase_cb, &info );
-    } 
+      } 
 
     err = gpgme_data_new_from_file ( &in, cipher_1_asc, 1 );
     fail_if_err (err);

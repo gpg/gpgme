@@ -86,6 +86,7 @@ main (int argc, char *argv[])
   GpgmeError err;
   GpgmeData in, out;
   GpgmeKey key[2];  /* There are two secret keys in the test area.  */
+  char *p;
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
@@ -101,7 +102,9 @@ main (int argc, char *argv[])
     {
       err = gpgme_new (&ctx);
       fail_if_err (err);
-      if (!getenv ("GPG_AGENT_INFO"))
+
+      p = getenv("GPG_AGENT_INFO");
+      if (!(p && strchr (p, ':')))
 	gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
       err = gpgme_signers_add (ctx, key[0]);
       fail_if_err (err);

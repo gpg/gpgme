@@ -87,13 +87,15 @@ main (int argc, char **argv )
     GpgmeCtx ctx;
     GpgmeError err;
     GpgmeData in, out;
+    char *p;
 
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
-    if ( !getenv("GPG_AGENT_INFO") ) {
-        gpgme_set_passphrase_cb ( ctx, passphrase_cb, NULL );
-    } 
+
+    p = getenv("GPG_AGENT_INFO");
+    if (!(p && strchr (p, ':')))
+      gpgme_set_passphrase_cb ( ctx, passphrase_cb, NULL );
 
     gpgme_set_textmode (ctx, 1);
     gpgme_set_armor (ctx, 1);

@@ -1,3 +1,13 @@
+2002-06-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm/t-sign.c (main): Also test a normal signature.
+
+	* gpg/Makefile (TESTS_ENVIRONMENT): Set GPG_AGENT_INFO empty.
+	* gpg/t-signers.c, gpg/t-sign.c, gpg/t-encrypt-sym.c
+	* gpg/t-encrypt-sign.c, gpg/t-decrypt.c
+	* gpg/t-decrypt-verify.c (main): Changed the GPG_AGENT_INFO check to
+	match the one in ../../gpgme/rungpg.c.
+
 2002-06-12  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm/t-keylist.c (doit): Print operation info if available.

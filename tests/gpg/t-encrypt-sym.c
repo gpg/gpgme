@@ -76,6 +76,7 @@ main (int argc, char **argv)
   GpgmeData plain, cipher;
   const char *text = "Hallo Leute\n";
   char *text2;
+  char *p;
   int i;
 
   err = gpgme_check_engine ();
@@ -86,8 +87,10 @@ main (int argc, char **argv)
       err = gpgme_new (&ctx);
       fail_if_err (err);
       gpgme_set_armor (ctx, 1);
-      if (!getenv("GPG_AGENT_INFO"))
-	gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
+
+      p = getenv("GPG_AGENT_INFO");
+      if (!(p && strchr (p, ':')))
+        gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
 
       err = gpgme_data_new_from_mem (&plain, text, strlen (text), 0);
       fail_if_err (err);
