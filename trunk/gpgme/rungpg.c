@@ -71,7 +71,7 @@ struct gpg_object_s
 {
   struct arg_and_data_s *arglist;
   struct arg_and_data_s **argtail;
-  int arg_error;  
+  int arg_error;
 
   struct
   {
@@ -85,7 +85,7 @@ struct gpg_object_s
     void *tag;
   } status;
 
-  /* This is a kludge - see the comment at gpg_colon_line_handler */
+  /* This is a kludge - see the comment at gpg_colon_line_handler.  */
   struct
   {
     int fd[2];  
@@ -96,7 +96,6 @@ struct gpg_object_s
     GpgColonLineHandler fnc;  /* this indicate use of this structrue */
     void *fnc_value;
     void *tag;
-    int simple;
   } colon;
 
   char **argv;  
@@ -220,6 +219,110 @@ close_notify_handler (int fd, void *opaque)
     _gpgme_gpg_io_event (gpg, GPGME_EVENT_DONE, NULL);
 }
 
+static GpgmeError
+add_arg (GpgObject gpg, const char *arg)
+{
+  struct arg_and_data_s *a;
+
+  assert (gpg);
+  assert (arg);
+
+  if (gpg->pm.active)
+    return 0;
+
+  a = malloc (sizeof *a + strlen (arg));
+  if (!a)
+    {
+      gpg->arg_error = 1;
+      return mk_error(Out_Of_Core);
+    }
+  a->next = NULL;
+  a->data = NULL;
+  a->dup_to = -1;
+  strcpy (a->arg, arg);
+  *gpg->argtail = a;
+  gpg->argtail = &a->next;
+  return 0;
+}
+
+static GpgmeError
+add_data (GpgObject gpg, GpgmeData data, int dup_to, int inbound)
+{
+  struct arg_and_data_s *a;
+
+  assert (gpg);
+  assert (data);
+  if (gpg->pm.active)
+    return 0;
+
+  a = malloc (sizeof *a - 1);
+  if (!a)
+    {
+      gpg->arg_error = 1;
+      return mk_error(Out_Of_Core);
+    }
+  a->next = NULL;
+  a->data = data;
+  a->inbound = inbound;
+  if (dup_to == -2)
+    {
+      a->print_fd = 1;
+      a->dup_to = -1;
+    }
+  else
+    {
+      a->print_fd = 0;
+      a->dup_to = dup_to;
+    }
+  *gpg->argtail = a;
+  gpg->argtail = &a->next;
+  return 0;
+}
+
+static GpgmeError
+add_pm_data (GpgObject gpg, GpgmeData data, int what)
+{
+  GpgmeError rc = 0;
+
+  assert (gpg->pm.used);
+    
+  if (!what)
+    {
+      /* the signature */
+      assert (!gpg->pm.sig);
+      gpg->pm.sig = data;
+    }
+  else if (what == 1)
+    {
+      /* the signed data */
+      assert (!gpg->pm.text);
+      gpg->pm.text = data;
+    }
+  else
+    assert (0);
+
+  if (gpg->pm.sig && gpg->pm.text)
+    {
+      if (!gpg->pm.active)
+	{
+	  /* Create the callback handler and connect it to stdin.  */
+	  GpgmeData tmp;
+
+	  rc = gpgme_data_new_with_read_cb (&tmp, pipemode_cb, gpg);
+	  if (!rc)
+	    rc = add_data (gpg, tmp, 0, 0);
+        }
+      if (!rc)
+	{
+	  /* Here we can reset the handler stuff.  */
+	  gpg->pm.stream_started = 0;
+        }
+    }
+
+  return rc;
+}
+
+
 const char *
 _gpgme_gpg_get_version (void)
 {
@@ -289,15 +392,15 @@ _gpgme_gpg_new (GpgObject *r_gpg)
       goto leave;
     }
   gpg->status.eof = 0;
-  _gpgme_gpg_add_arg (gpg, "--status-fd");
+  add_arg (gpg, "--status-fd");
   {
     char buf[25];
     sprintf (buf, "%d", gpg->status.fd[1]);
-    _gpgme_gpg_add_arg (gpg, buf);
+    add_arg (gpg, buf);
   }
-  _gpgme_gpg_add_arg (gpg, "--no-tty");
-  _gpgme_gpg_add_arg (gpg, "--charset");
-  _gpgme_gpg_add_arg (gpg, "utf8");
+  add_arg (gpg, "--no-tty");
+  add_arg (gpg, "--charset");
+  add_arg (gpg, "utf8");
 
  leave:
   if (rc)
@@ -347,181 +450,73 @@ _gpgme_gpg_release (GpgObject gpg)
 }
 
 void
-_gpgme_gpg_enable_pipemode ( GpgObject gpg )
+_gpgme_gpg_enable_pipemode (GpgObject gpg)
 {
-    gpg->pm.used = 1;
-    assert ( !gpg->pm.sig );
-    assert ( !gpg->pm.text );
-}
-    
-GpgmeError
-_gpgme_gpg_add_arg ( GpgObject gpg, const char *arg )
-{
-    struct arg_and_data_s *a;
-
-    assert (gpg);
-    assert (arg);
-
-    if (gpg->pm.active)
-        return 0;
-
-    a = malloc ( sizeof *a + strlen (arg) );
-    if ( !a ) {
-        gpg->arg_error = 1;
-        return mk_error(Out_Of_Core);
-    }
-    a->next = NULL;
-    a->data = NULL;
-    a->dup_to = -1;
-    strcpy ( a->arg, arg );
-    *gpg->argtail = a;
-    gpg->argtail = &a->next;
-    return 0;
+  gpg->pm.used = 1;
+  assert (!gpg->pm.sig);
+  assert (!gpg->pm.text);
 }
 
 GpgmeError
-_gpgme_gpg_add_data (GpgObject gpg, GpgmeData data, int dup_to, int inbound)
+_gpgme_gpg_set_verbosity (GpgObject gpg, int verbosity)
 {
-  struct arg_and_data_s *a;
+  GpgmeError err = 0;
+  while (!err && verbosity-- > 0)
+    err = add_arg (gpg, "--verbose");
+  return err;
+}
 
+/* Note, that the status_handler is allowed to modifiy the args
+   value.  */
+void
+_gpgme_gpg_set_status_handler (GpgObject gpg,
+			       GpgStatusHandler fnc, void *fnc_value)
+{
   assert (gpg);
-  assert (data);
+  if (gpg->pm.active)
+    return;
+
+  gpg->status.fnc = fnc;
+  gpg->status.fnc_value = fnc_value;
+}
+
+/* Kludge to process --with-colon output.  */
+GpgmeError
+_gpgme_gpg_set_colon_line_handler (GpgObject gpg,
+				   GpgColonLineHandler fnc, void *fnc_value)
+{
+  assert (gpg);
   if (gpg->pm.active)
     return 0;
 
-  a = malloc (sizeof *a - 1);
-  if (!a)
+  gpg->colon.bufsize = 1024;
+  gpg->colon.readpos = 0;
+  gpg->colon.buffer = malloc (gpg->colon.bufsize);
+  if (!gpg->colon.buffer)
+    return mk_error (Out_Of_Core);
+
+  if (_gpgme_io_pipe (gpg->colon.fd, 1) == -1) 
     {
-      gpg->arg_error = 1;
-      return mk_error(Out_Of_Core);
+      free (gpg->colon.buffer);
+      gpg->colon.buffer = NULL;
+      return mk_error (Pipe_Error);
     }
-  a->next = NULL;
-  a->data = data;
-  a->inbound = inbound;
-  if (dup_to == -2)
-    {
-      a->print_fd = 1;
-      a->dup_to = -1;
-    }
-  else
-    {
-      a->print_fd = 0;
-      a->dup_to = dup_to;
-    }
-  *gpg->argtail = a;
-  gpg->argtail = &a->next;
+  if (_gpgme_io_set_close_notify (gpg->colon.fd[0], close_notify_handler, gpg)
+      || _gpgme_io_set_close_notify (gpg->colon.fd[1],
+				     close_notify_handler, gpg))
+    return mk_error (General_Error);
+  gpg->colon.eof = 0;
+  gpg->colon.fnc = fnc;
+  gpg->colon.fnc_value = fnc_value;
   return 0;
 }
 
-GpgmeError
-_gpgme_gpg_add_pm_data ( GpgObject gpg, GpgmeData data, int what )
-{
-    GpgmeError rc=0;
 
-    assert ( gpg->pm.used );
-    
-    if ( !what ) {
-        /* the signature */
-        assert ( !gpg->pm.sig );
-        gpg->pm.sig = data;
-    }
-    else if (what == 1) {
-        /* the signed data */
-        assert ( !gpg->pm.text );
-        gpg->pm.text = data;
-    }
-    else {
-        assert (0);
-    }
-
-    if ( gpg->pm.sig && gpg->pm.text ) {
-        if ( !gpg->pm.active ) {
-            /* create the callback handler and connect it to stdin */
-            GpgmeData tmp;
-            
-            rc = gpgme_data_new_with_read_cb ( &tmp, pipemode_cb, gpg );
-            if (!rc )
-                rc = _gpgme_gpg_add_data (gpg, tmp, 0, 0);
-        }
-        if ( !rc ) {
-            /* here we can reset the handler stuff */
-            gpg->pm.stream_started = 0;
-        }
-    }
-
-    return rc;
-}
-
-/*
- * Note, that the status_handler is allowed to modifiy the args value
- */
-void
-_gpgme_gpg_set_status_handler ( GpgObject gpg,
-                                GpgStatusHandler fnc, void *fnc_value ) 
-{
-    assert (gpg);
-    if (gpg->pm.active)
-        return;
-
-    gpg->status.fnc = fnc;
-    gpg->status.fnc_value = fnc_value;
-}
-
-/* Kludge to process --with-colon output */
-GpgmeError
-_gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
-                                    GpgColonLineHandler fnc, void *fnc_value ) 
-{
-    assert (gpg);
-    if (gpg->pm.active)
-        return 0;
-
-    gpg->colon.bufsize = 1024;
-    gpg->colon.readpos = 0;
-    gpg->colon.buffer = malloc (gpg->colon.bufsize);
-    if (!gpg->colon.buffer) {
-        return mk_error (Out_Of_Core);
-    }
-    if (_gpgme_io_pipe (gpg->colon.fd, 1) == -1) {
-        free (gpg->colon.buffer); gpg->colon.buffer = NULL;
-        return mk_error (Pipe_Error);
-    }
-    if ( _gpgme_io_set_close_notify (gpg->colon.fd[0],
-                                     close_notify_handler, gpg)
-         ||  _gpgme_io_set_close_notify (gpg->colon.fd[1],
-                                         close_notify_handler, gpg) ) {
-        return mk_error (General_Error);
-    }
-    gpg->colon.eof = 0;
-    gpg->colon.fnc = fnc;
-    gpg->colon.fnc_value = fnc_value;
-    gpg->colon.simple = 0;
-    return 0;
-}
-
-
-GpgmeError
-_gpgme_gpg_set_simple_line_handler ( GpgObject gpg,
-                                     GpgColonLineHandler fnc,
-                                     void *fnc_value ) 
-{
-    GpgmeError err;
-
-    err = _gpgme_gpg_set_colon_line_handler (gpg, fnc, fnc_value);
-    if (!err)
-        gpg->colon.simple = 1;
-    return err;
-}
-
-
-/* 
- * The Fnc will be called to get a value for one of the commands with
- * a key KEY.  If the Code pssed to FNC is 0, the function may release
- * resources associated with the returned value from another call.  To
- * match such a second call to a first call, the returned value from
- * the first call is passed as keyword.
- */
-
+/* The Fnc will be called to get a value for one of the commands with
+   a key KEY.  If the Code pssed to FNC is 0, the function may release
+   resources associated with the returned value from another call.  To
+   match such a second call to a first call, the returned value from
+   the first call is passed as keyword.  */
 GpgmeError
 _gpgme_gpg_set_command_handler (GpgObject gpg,
 				GpgCommandHandler fnc, void *fnc_value,
@@ -538,8 +533,8 @@ _gpgme_gpg_set_command_handler (GpgObject gpg,
   if (err)
     return err;
         
-  _gpgme_gpg_add_arg (gpg, "--command-fd");
-  _gpgme_gpg_add_data (gpg, tmp, -2, 0);
+  add_arg (gpg, "--command-fd");
+  add_data (gpg, tmp, -2, 0);
   gpg->cmd.cb_data = tmp;
   gpg->cmd.fnc = fnc;
   gpg->cmd.fnc_value = fnc_value;
@@ -550,31 +545,33 @@ _gpgme_gpg_set_command_handler (GpgObject gpg,
 
 
 static void
-free_argv ( char **argv )
+free_argv (char **argv)
 {
-    int i;
+  int i;
 
-    for (i=0; argv[i]; i++ )
-        free (argv[i]);
-    free (argv);
+  for (i = 0; argv[i]; i++)
+    free (argv[i]);
+  free (argv);
 }
 
+
 static void
-free_fd_data_map ( struct fd_data_map_s *fd_data_map )
+free_fd_data_map (struct fd_data_map_s *fd_data_map)
 {
-    int i;
+  int i;
 
-    if ( !fd_data_map )
-        return;
+  if (!fd_data_map)
+    return;
 
-    for (i=0; fd_data_map[i].data; i++ ) {
-        if ( fd_data_map[i].fd != -1 )
-            _gpgme_io_close (fd_data_map[i].fd);
-        if ( fd_data_map[i].peer_fd != -1 )
-            _gpgme_io_close (fd_data_map[i].peer_fd);
-        /* don't release data because this is only a reference */
+  for (i = 0; fd_data_map[i].data; i++)
+    {
+      if (fd_data_map[i].fd != -1)
+	_gpgme_io_close (fd_data_map[i].fd);
+      if (fd_data_map[i].peer_fd != -1)
+	_gpgme_io_close (fd_data_map[i].peer_fd);
+      /* Don't release data because this is only a reference.  */
     }
-    free (fd_data_map);
+  free (fd_data_map);
 }
 
 
@@ -818,7 +815,7 @@ _gpgme_gpg_spawn (GpgObject gpg, void *opaque)
     return mk_error (Invalid_Engine);
 
   /* Kludge, so that we don't need to check the return code of all the
-     gpgme_gpg_add_arg().  we bail out here instead */
+     add_arg ().  We bail out here instead.  */
   if (gpg->arg_error)
     return mk_error (Out_Of_Core);
 
@@ -1133,12 +1130,10 @@ read_status (GpgObject gpg)
 }
 
 
-/*
- * This colonline handler thing is not the clean way to do it.
- * It might be better to enhance the GpgmeData object to act as
- * a wrapper for a callback.  Same goes for the status thing.
- * For now we use this thing here becuase it is easier to implement.
- */
+/* This colonline handler thing is not the clean way to do it.  It
+   might be better to enhance the GpgmeData object to act as a wrapper
+   for a callback.  Same goes for the status thing.  For now we use
+   this thing here because it is easier to implement.  */
 static void
 gpg_colon_line_handler (void *opaque, int fd)
 {
@@ -1199,11 +1194,11 @@ read_colon_line ( GpgObject gpg )
                  * some other printed information.
                  */
                 *p = 0;
-                if ( gpg->colon.simple
-                     || (*buffer && strchr (buffer, ':')) ) {
+                if (*buffer && strchr (buffer, ':'))
+		  {
                     assert (gpg->colon.fnc);
-                    gpg->colon.fnc ( gpg->colon.fnc_value, buffer );
-                }
+                    gpg->colon.fnc (gpg->colon.fnc_value, buffer);
+		  }
             
                 /* To reuse the buffer for the next line we have to
                  * shift the remaining data to the buffer start and
@@ -1376,17 +1371,17 @@ _gpgme_gpg_op_decrypt (GpgObject gpg, GpgmeData ciph, GpgmeData plain)
 {
   GpgmeError err;
 
-  err = _gpgme_gpg_add_arg (gpg, "--decrypt");
+  err = add_arg (gpg, "--decrypt");
 
   /* Tell the gpg object about the data.  */
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--output");
+    err = add_arg (gpg, "--output");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "-");
+    err = add_arg (gpg, "-");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, plain, 1, 1);
+    err = add_data (gpg, plain, 1, 1);
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, ciph, 0, 0);
+    err = add_data (gpg, ciph, 0, 0);
 
   return err;
 }
@@ -1396,18 +1391,17 @@ _gpgme_gpg_op_delete (GpgObject gpg, GpgmeKey key, int allow_secret)
 {
   GpgmeError err;
 
-  err = _gpgme_gpg_add_arg (gpg, allow_secret
-			    ? "--delete-secret-and-public-key"
-			    : "--delete-key");
+  err = add_arg (gpg, allow_secret ? "--delete-secret-and-public-key"
+		 : "--delete-key");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--");
+    err = add_arg (gpg, "--");
   if (!err)
     {
       const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, NULL, 0);
       if (!s)
 	err = mk_error (Invalid_Key);
       else
-	err = _gpgme_gpg_add_arg (gpg, s);
+	err = add_arg (gpg, s);
     }
 
   return err;
@@ -1429,9 +1423,9 @@ _gpgme_append_gpg_args_from_signers (GpgObject gpg,
       if (s)
 	{
 	  if (!err)
-	    err = _gpgme_gpg_add_arg (gpg, "-u");
+	    err = add_arg (gpg, "-u");
 	  if (!err)
-	    err = _gpgme_gpg_add_arg (gpg, s);
+	    err = add_arg (gpg, s);
 	}
       gpgme_key_unref (key);
       if (err) break;
@@ -1446,22 +1440,22 @@ _gpgme_gpg_op_edit (GpgObject gpg, GpgmeKey key, GpgmeData out,
 {
   GpgmeError err;
 
-  err = _gpgme_gpg_add_arg (gpg, "--with-colons");
+  err = add_arg (gpg, "--with-colons");
   if (!err)
     err = _gpgme_append_gpg_args_from_signers (gpg, ctx);
   if (!err)
-  err = _gpgme_gpg_add_arg (gpg, "--edit-key");
+  err = add_arg (gpg, "--edit-key");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, out, 1, 1);
+    err = add_data (gpg, out, 1, 1);
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--");
+    err = add_arg (gpg, "--");
   if (!err)
     {
       const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, NULL, 0);
       if (!s)
 	err = mk_error (Invalid_Key);
       else
-	err = _gpgme_gpg_add_arg (gpg, s);
+	err = add_arg (gpg, s);
     }
 
   return err;
@@ -1478,9 +1472,9 @@ _gpgme_append_gpg_args_from_recipients (GpgObject gpg,
   assert (rset);
   for (r = rset->list; r; r = r->next)
     {
-      err = _gpgme_gpg_add_arg (gpg, "-r");
+      err = add_arg (gpg, "-r");
       if (!err)
-	_gpgme_gpg_add_arg (gpg, r->name);
+	err = add_arg (gpg, r->name);
       if (err)
 	break;
     }    
@@ -1495,17 +1489,17 @@ _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
   GpgmeError err;
   int symmetric = !recp;
 
-  err = _gpgme_gpg_add_arg (gpg, symmetric ? "--symmetric" : "--encrypt");
+  err = add_arg (gpg, symmetric ? "--symmetric" : "--encrypt");
 
   if (!err && use_armor)
-    err = _gpgme_gpg_add_arg (gpg, "--armor");
+    err = add_arg (gpg, "--armor");
 
   if (!symmetric)
     {
       /* If we know that all recipients are valid (full or ultimate trust)
 	 we can suppress further checks.  */
       if (!err && !symmetric && _gpgme_recipients_all_valid (recp))
-	err = _gpgme_gpg_add_arg (gpg, "--always-trust");
+	err = add_arg (gpg, "--always-trust");
 
       if (!err)
 	err = _gpgme_append_gpg_args_from_recipients (gpg, recp);
@@ -1513,15 +1507,15 @@ _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
 
   /* Tell the gpg object about the data.  */
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--output");
+    err = add_arg (gpg, "--output");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "-");
+    err = add_arg (gpg, "-");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, ciph, 1, 1);
+    err = add_data (gpg, ciph, 1, 1);
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--");
+    err = add_arg (gpg, "--");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, plain, 0, 0);
+    err = add_data (gpg, plain, 0, 0);
 
   return err;
 }
@@ -1533,16 +1527,16 @@ _gpgme_gpg_op_encrypt_sign (GpgObject gpg, GpgmeRecipients recp,
 {
   GpgmeError err;
 
-  err = _gpgme_gpg_add_arg (gpg, "--encrypt");
+  err = add_arg (gpg, "--encrypt");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--sign");
+    err = add_arg (gpg, "--sign");
   if (!err && use_armor)
-    err = _gpgme_gpg_add_arg (gpg, "--armor");
+    err = add_arg (gpg, "--armor");
 
   /* If we know that all recipients are valid (full or ultimate trust)
    * we can suppress further checks */
   if (!err && _gpgme_recipients_all_valid (recp))
-    err = _gpgme_gpg_add_arg (gpg, "--always-trust");
+    err = add_arg (gpg, "--always-trust");
 
   if (!err)
     err = _gpgme_append_gpg_args_from_recipients (gpg, recp);
@@ -1552,15 +1546,15 @@ _gpgme_gpg_op_encrypt_sign (GpgObject gpg, GpgmeRecipients recp,
 
   /* Tell the gpg object about the data.  */
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--output");
+    err = add_arg (gpg, "--output");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "-");
+    err = add_arg (gpg, "-");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, ciph, 1, 1);
+    err = add_data (gpg, ciph, 1, 1);
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--");
+    err = add_arg (gpg, "--");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, plain, 0, 0);
+    err = add_data (gpg, plain, 0, 0);
 
   return err;
 }
@@ -1571,13 +1565,13 @@ _gpgme_gpg_op_export (GpgObject gpg, GpgmeRecipients recp,
 {
   GpgmeError err;
 
-  err = _gpgme_gpg_add_arg (gpg, "--export");
+  err = add_arg (gpg, "--export");
   if (!err && use_armor)
-    err = _gpgme_gpg_add_arg (gpg, "--armor");
+    err = add_arg (gpg, "--armor");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, keydata, 1, 1);
+    err = add_data (gpg, keydata, 1, 1);
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--");
+    err = add_arg (gpg, "--");
 
   if (!err)
     {
@@ -1586,7 +1580,7 @@ _gpgme_gpg_op_export (GpgObject gpg, GpgmeRecipients recp,
 
       err = gpgme_recipients_enum_open (recp, &ec);
       while (!err && (s = gpgme_recipients_enum_read (recp, &ec)))
-	err = _gpgme_gpg_add_arg (gpg, s);
+	err = add_arg (gpg, s);
       if (!err)
 	err = gpgme_recipients_enum_close (recp, &ec);
     }
@@ -1610,11 +1604,11 @@ _gpgme_gpg_op_genkey (GpgObject gpg, GpgmeData help_data, int use_armor,
   if (pubkey || seckey)
     return err = mk_error (Not_Implemented);
 
-  err = _gpgme_gpg_add_arg (gpg, "--gen-key");
+  err = add_arg (gpg, "--gen-key");
   if (!err && use_armor)
-    err = _gpgme_gpg_add_arg (gpg, "--armor");
+    err = add_arg (gpg, "--armor");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, help_data, 0, 0);
+    err = add_data (gpg, help_data, 0, 0);
 
   return err;
 }
@@ -1624,9 +1618,9 @@ _gpgme_gpg_op_import (GpgObject gpg, GpgmeData keydata)
 {
   GpgmeError err;
 
-  err = _gpgme_gpg_add_arg (gpg, "--import");
+  err = add_arg (gpg, "--import");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, keydata, 0, 0);
+    err = add_data (gpg, keydata, 0, 0);
 
   return err;
 }
@@ -1638,23 +1632,22 @@ _gpgme_gpg_op_keylist (GpgObject gpg, const char *pattern, int secret_only,
 {
   GpgmeError err;
 
-  err = _gpgme_gpg_add_arg (gpg, "--with-colons");
+  err = add_arg (gpg, "--with-colons");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--fixed-list-mode");
+    err = add_arg (gpg, "--fixed-list-mode");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--with-fingerprint");
+    err = add_arg (gpg, "--with-fingerprint");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, 
-                              (keylist_mode & GPGME_KEYLIST_MODE_SIGS)?
-                              "--check-sigs" :
-                              secret_only ? "--list-secret-keys"
-			      : "--list-keys");
+    err = add_arg (gpg, (keylist_mode & GPGME_KEYLIST_MODE_SIGS) ?
+		   "--check-sigs" :
+		   secret_only ? "--list-secret-keys"
+		   : "--list-keys");
   
-  /* Tell the gpg object about the data */
+  /* Tell the gpg object about the data.  */
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--");
+    err = add_arg (gpg, "--");
   if (!err && pattern && *pattern)
-    err = _gpgme_gpg_add_arg (gpg, pattern);
+    err = add_arg (gpg, pattern);
 
   return err;
 }
@@ -1669,22 +1662,21 @@ _gpgme_gpg_op_keylist_ext (GpgObject gpg, const char *pattern[],
   if (reserved)
     return mk_error (Invalid_Value);
 
-  err = _gpgme_gpg_add_arg (gpg, "--with-colons");
+  err = add_arg (gpg, "--with-colons");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--fixed-list-mode");
+    err = add_arg (gpg, "--fixed-list-mode");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--with-fingerprint");
+    err = add_arg (gpg, "--with-fingerprint");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, secret_only ? "--list-secret-keys"
-			      : "--list-keys");
+    err = add_arg (gpg, secret_only ? "--list-secret-keys" : "--list-keys");
   
-  /* Tell the gpg object about the data */
+  /* Tell the gpg object about the data.  */
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--");
+    err = add_arg (gpg, "--");
   if (!err && pattern && *pattern)
     {
       while (*pattern && **pattern)
-	err = _gpgme_gpg_add_arg (gpg, *(pattern++));
+	err = add_arg (gpg, *(pattern++));
     }
 
   return err;
@@ -1699,16 +1691,16 @@ _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
   GpgmeError err;
 
   if (mode == GPGME_SIG_MODE_CLEAR)
-    err = _gpgme_gpg_add_arg (gpg, "--clearsign");
+    err = add_arg (gpg, "--clearsign");
   else
     {
-      err = _gpgme_gpg_add_arg (gpg, "--sign");
+      err = add_arg (gpg, "--sign");
       if (!err && mode == GPGME_SIG_MODE_DETACH)
-	err = _gpgme_gpg_add_arg (gpg, "--detach");
+	err = add_arg (gpg, "--detach");
       if (!err && use_armor)
-	err = _gpgme_gpg_add_arg (gpg, "--armor");
+	err = add_arg (gpg, "--armor");
       if (!err && use_textmode)
-	_gpgme_gpg_add_arg (gpg, "--textmode");
+	add_arg (gpg, "--textmode");
     }
 
   if (!err)
@@ -1716,9 +1708,9 @@ _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
 
   /* Tell the gpg object about the data.  */
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, in, 0, 0);
+    err = add_data (gpg, in, 0, 0);
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, out, 1, 1);
+    err = add_data (gpg, out, 1, 1);
 
   return err;
 }
@@ -1728,21 +1720,22 @@ _gpgme_gpg_op_trustlist (GpgObject gpg, const char *pattern)
 {
   GpgmeError err;
 
-  err = _gpgme_gpg_add_arg (gpg, "--with-colons");
+  err = add_arg (gpg, "--with-colons");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--list-trust-path");
+    err = add_arg (gpg, "--list-trust-path");
   
-  /* Tell the gpg object about the data */
+  /* Tell the gpg object about the data.  */
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, "--");
+    err = add_arg (gpg, "--");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, pattern);
+    err = add_arg (gpg, pattern);
 
   return err;
 }
 
 GpgmeError
-_gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData signed_text, GpgmeData plaintext)
+_gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData signed_text,
+		      GpgmeData plaintext)
 {
   GpgmeError err = 0;
 
@@ -1750,41 +1743,41 @@ _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData signed_text, Gpgme
     {
       /* Normal or cleartext signature.  */
 
-      err = _gpgme_gpg_add_arg (gpg, "--output");
+      err = add_arg (gpg, "--output");
       if (!err)
-	err = _gpgme_gpg_add_arg (gpg, "-");
+	err = add_arg (gpg, "-");
       if (!err)
-	err = _gpgme_gpg_add_arg (gpg, "--");
+	err = add_arg (gpg, "--");
       if (!err)
-	err = _gpgme_gpg_add_data (gpg, sig, 0, 0);
+	err = add_data (gpg, sig, 0, 0);
       if (!err)
-	err = _gpgme_gpg_add_data (gpg, plaintext, 1, 1);
+	err = add_data (gpg, plaintext, 1, 1);
     }
   else
     {
       if (gpg->pm.used)
 	{
-	  err = _gpgme_gpg_add_arg (gpg, gpg->pm.used ? "--pipemode" : "--verify");
+	  err = add_arg (gpg, gpg->pm.used ? "--pipemode" : "--verify");
 	  if (!err)
-	    err = _gpgme_gpg_add_arg (gpg, "--");
+	    err = add_arg (gpg, "--");
 	  if (!err)
-	    err = _gpgme_gpg_add_pm_data (gpg, sig, 0);
+	    err = add_pm_data (gpg, sig, 0);
 	  if (!err)
-	    err = _gpgme_gpg_add_pm_data (gpg, signed_text, 1);
+	    err = add_pm_data (gpg, signed_text, 1);
 	}
       else
 	{
-	  err = _gpgme_gpg_add_arg (gpg, "--verify");
+	  err = add_arg (gpg, "--verify");
 	  if (!err)
-	    err = _gpgme_gpg_add_arg (gpg, "--");
+	    err = add_arg (gpg, "--");
 	  if (!err)
-	    err = _gpgme_gpg_add_data (gpg, sig, -1, 0);
+	    err = add_data (gpg, sig, -1, 0);
 	  if (signed_text)
 	    {
 	      if (!err)
-		err = _gpgme_gpg_add_arg (gpg, "-");
+		err = add_arg (gpg, "-");
 	      if (!err)
-		err = _gpgme_gpg_add_data (gpg, signed_text, 0, 0);
+		err = add_data (gpg, signed_text, 0, 0);
 	    }
 	}
     }

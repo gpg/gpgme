@@ -217,8 +217,7 @@ _gpgme_engine_set_verbosity (EngineObject engine, int verbosity)
   switch (engine->protocol)
     {
     case GPGME_PROTOCOL_OpenPGP:
-      while (verbosity-- > 0)
-	_gpgme_gpg_add_arg (engine->engine.gpg, "--verbose");
+      _gpgme_gpg_set_verbosity (engine->engine.gpg, verbosity);
       break;
     case GPGME_PROTOCOL_CMS:
       /* FIXME */
