@@ -1,5 +1,58 @@
 2002-10-09  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.h (GpgStatusHandler): Rename type to GpgmeStatusHandler
+	and move to ...
+	* types.h (GpgmeStatusHandler): ... here.
+	* rungpg.h (GpgColonLineHandler): Rename type to GpgmeColonLineHandler.
+	and move to ...
+	* types.h (GpgmeColonLineHandler): ... here.
+	* rungpg.h (GpgCommandHandler): Rename type to GpgmeCommandHandler.
+	and move to ...
+	* types.h (GpgmeCommandHandler): ... here.
+	* engine.h: Don't include "rungpg.h".
+	(_gpgme_engine_set_status_handler): Change type of
+	argument from GpgStatusHandler to GpgmeStatusHandler.
+	(_gpgme_engine_set_colon_line_handler): Change type of
+	argument from GpgColonLineHandler to GpgmeColonLineHandler.
+	(_gpgme_engine_set_command_handler): Change type of
+	argument from GpgCommandHandler to GpgmeCommandHandler.
+	* engine-gpgsm.h: Don't include "rungpg.h".
+	(_gpgme_gpgsm_set_status_handler): Change type of
+	argument from GpgStatusHandler to GpgmeStatusHandler.
+	(_gpgme_gpgsm_set_colon_line_handler): Change type of
+	argument from GpgColonLineHandler to GpgmeColonLineHandler.
+	* engine-gpgsm.c: Do not include "rungpg.h".
+	(struct gpgsm_object_s): Change type of
+	status.fnc to GpgmeStatusHandler.  Change type of colon.fnc to
+	GpgmeColonLineHandler.
+	(gpgsm_assuan_simple_command): Change type of argument from
+	GpgStatusHandler to GpgmeStatusHandler.
+	(_gpgme_gpgsm_set_status_handler): Likewise.
+	(_gpgme_gpgsm_set_colon_line_handler): Change type of argument from
+	GpgColonLineHandler to GpgmeColonLineHandler.
+	* rungpg.h (_gpgme_gpg_set_status_handler): Change type of
+	argument from GpgStatusHandler to GpgmeStatusHandler.
+	(_gpgme_gpg_set_colon_line_handler): Change type of
+	argument from GpgColonLineHandler to GpgmeColonLineHandler.
+	(_gpgme_gpg_set_command_handler): Change type of
+	argument from GpgCommandHandler to GpgmeCommandHandler.
+	* rungpg.c (struct gpg_object_s): Change type of status.fnc to
+	GpgmeStatusHandler.  Change type of colon.fnc to
+	GpgmeColonLineHandler.  Change type of cmd.fnc to
+	GpgmeCommandLineHandler.
+	(_gpgme_gpg_set_status_handler): Change type of argument FNC to
+	GpgmeStatusHandler.
+	(_gpgme_gpg_set_colon_line_handler): Change type of argument FNC
+	to GpgmeColonLineHandler.
+	(_gpgme_gpg_set_command_handler): Change type of argument FNC to
+	GpgmeCommandHandler.
+	* engine.c (_gpgme_engine_set_status_handler): Change type of
+	argument FNC to GpgmeStatusHandler.
+	(_gpgme_engine_set_colon_line_handler): Change type of argument FNC
+	to GpgmeColonLineHandler.
+	(_gpgme_engine_set_command_handler): Change type of argument FNC to
+	GpgmeCommandHandler.
+
 	* rungpg.h (_gpgme_gpg_enable_pipemode): Remove prototype.
 	* rungpg.c (struct gpg_object_s): Remove PM.
 	(pipemode_cb): Prototype removed.

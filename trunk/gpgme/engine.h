@@ -23,21 +23,20 @@
 #define ENGINE_H
 
 #include "types.h"
-#include "rungpg.h"
-
+ 
 const char *_gpgme_engine_get_path (GpgmeProtocol proto);
 const char *_gpgme_engine_get_version (GpgmeProtocol proto);
 const char * _gpgme_engine_get_info (GpgmeProtocol proto);
 GpgmeError _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine);
 void _gpgme_engine_release (EngineObject engine);
 void _gpgme_engine_set_status_handler (EngineObject engine,
-				       GpgStatusHandler fnc, void *fnc_value);
+				       GpgmeStatusHandler fnc, void *fnc_value);
 GpgmeError _gpgme_engine_set_command_handler (EngineObject engine,
-					      GpgCommandHandler fnc,
+					      GpgmeCommandHandler fnc,
 					      void *fnc_value,
 					      GpgmeData data);
 GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject gpg,
-						 GpgColonLineHandler fnc,
+						 GpgmeColonLineHandler fnc,
 						 void *fnc_value);
 void _gpgme_engine_set_verbosity (EngineObject engine, int verbosity);
 GpgmeError _gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph,

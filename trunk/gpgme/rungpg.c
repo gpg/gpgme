@@ -80,7 +80,7 @@ struct gpg_object_s
     char *buffer;
     size_t readpos;
     int eof;
-    GpgStatusHandler fnc;
+    GpgmeStatusHandler fnc;
     void *fnc_value;
     void *tag;
   } status;
@@ -93,7 +93,7 @@ struct gpg_object_s
     char *buffer;
     size_t readpos;
     int eof;
-    GpgColonLineHandler fnc;  /* this indicate use of this structrue */
+    GpgmeColonLineHandler fnc;  /* this indicate use of this structrue */
     void *fnc_value;
     void *tag;
   } colon;
@@ -110,7 +110,7 @@ struct gpg_object_s
     GpgmeData cb_data;   /* hack to get init the above idx later */
     GpgmeStatusCode code;  /* last code */
     char *keyword;       /* what has been requested (malloced) */
-    GpgCommandHandler fnc; 
+    GpgmeCommandHandler fnc; 
     void *fnc_value;
     /* The kludges never end.  This is used to couple command handlers
        with output data in edit key mode.  */
@@ -403,7 +403,7 @@ _gpgme_gpg_set_verbosity (GpgObject gpg, int verbosity)
    value.  */
 void
 _gpgme_gpg_set_status_handler (GpgObject gpg,
-			       GpgStatusHandler fnc, void *fnc_value)
+			       GpgmeStatusHandler fnc, void *fnc_value)
 {
   assert (gpg);
 
@@ -414,7 +414,7 @@ _gpgme_gpg_set_status_handler (GpgObject gpg,
 /* Kludge to process --with-colon output.  */
 GpgmeError
 _gpgme_gpg_set_colon_line_handler (GpgObject gpg,
-				   GpgColonLineHandler fnc, void *fnc_value)
+				   GpgmeColonLineHandler fnc, void *fnc_value)
 {
   assert (gpg);
 
@@ -448,7 +448,7 @@ _gpgme_gpg_set_colon_line_handler (GpgObject gpg,
    the first call is passed as keyword.  */
 GpgmeError
 _gpgme_gpg_set_command_handler (GpgObject gpg,
-				GpgCommandHandler fnc, void *fnc_value,
+				GpgmeCommandHandler fnc, void *fnc_value,
 				GpgmeData linked_data)
 {
   GpgmeData tmp;

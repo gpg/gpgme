@@ -1,6 +1,6 @@
 /* rungpg.h -  GPGME GnuPG engine calling functions.
- 	Copyright (C) 2000 Werner Koch (dd9jn)
-       Copyright (C) 2001, 2002 g10 Code GmbH
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -14,19 +14,14 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
  
-  You should have received a copy of the GNU General Public License
-  along with GPGME; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #ifndef RUNGPG_H
 #define RUNGPG_H
 
 #include "types.h"
-
-typedef void (*GpgStatusHandler) (GpgmeCtx, GpgmeStatusCode code, char *args);
-typedef void (*GpgColonLineHandler)( GpgmeCtx, char *line);
-typedef const char *(*GpgCommandHandler) (void*, GpgmeStatusCode code,
-					  const char *keyword);
 
 const char *_gpgme_gpg_get_version (void);
 GpgmeError _gpgme_gpg_check_version (void);
@@ -34,13 +29,13 @@ GpgmeError _gpgme_gpg_check_version (void);
 GpgmeError _gpgme_gpg_new (GpgObject *r_gpg);
 void _gpgme_gpg_release (GpgObject gpg);
 GpgmeError _gpgme_gpg_set_verbosity (GpgObject gpg, int verbosity);
-void _gpgme_gpg_set_status_handler (GpgObject gpg, GpgStatusHandler fnc,
+void _gpgme_gpg_set_status_handler (GpgObject gpg, GpgmeStatusHandler fnc,
 				    void *fnc_value);
 GpgmeError _gpgme_gpg_set_colon_line_handler (GpgObject gpg,
-					      GpgColonLineHandler fnc,
+					      GpgmeColonLineHandler fnc,
 					      void *fnc_value);
 GpgmeError _gpgme_gpg_set_command_handler (GpgObject gpg,
-					   GpgCommandHandler fnc,
+					   GpgmeCommandHandler fnc,
 					   void *fnc_value,
 					   GpgmeData linked_data);
 
