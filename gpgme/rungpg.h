@@ -31,24 +31,30 @@ typedef enum  {
     STATUS_ENTER	      , 
     STATUS_LEAVE	      ,
     STATUS_ABORT	      ,
+
     STATUS_GOODSIG	      ,
     STATUS_BADSIG	      ,
     STATUS_ERRSIG	      ,
+
+
     STATUS_BADARMOR           ,
+
     STATUS_RSA_OR_IDEA        ,
-    STATUS_SIGEXPIRED         ,
+    STATUS_KEYEXPIRED         ,
     STATUS_KEYREVOKED         ,
+
     STATUS_TRUST_UNDEFINED    ,
     STATUS_TRUST_NEVER        ,
     STATUS_TRUST_MARGINAL     ,
     STATUS_TRUST_FULLY        ,
     STATUS_TRUST_ULTIMATE     ,
+
     STATUS_SHM_INFO           ,
     STATUS_SHM_GET	      ,
     STATUS_SHM_GET_BOOL       ,
     STATUS_SHM_GET_HIDDEN     ,
+
     STATUS_NEED_PASSPHRASE    ,
-    STATUS_UNEXPECTED         ,
     STATUS_VALIDSIG           ,
     STATUS_SIG_ID	      ,
     STATUS_ENC_TO	      ,
@@ -69,10 +75,12 @@ typedef enum  {
     STATUS_FILE_START	      ,
     STATUS_FILE_DONE	      ,
     STATUS_FILE_ERROR	      ,
+
     STATUS_BEGIN_DECRYPTION   ,
     STATUS_END_DECRYPTION     ,
     STATUS_BEGIN_ENCRYPTION   ,
     STATUS_END_ENCRYPTION     ,
+
     STATUS_DELETE_PROBLEM     ,
     STATUS_GET_BOOL 	      ,
     STATUS_GET_LINE 	      ,
@@ -80,16 +88,21 @@ typedef enum  {
     STATUS_GOT_IT	      ,
     STATUS_PROGRESS 	      ,
     STATUS_SIG_CREATED	      ,
-    STATUS_KEY_CREATED	      ,
     STATUS_SESSION_KEY        ,
     STATUS_NOTATION_NAME      ,
     STATUS_NOTATION_DATA      ,
-    STATUS_USERID_HINT	      ,
     STATUS_POLICY_URL         ,
     STATUS_BEGIN_STREAM       ,
     STATUS_END_STREAM         ,
+    STATUS_KEY_CREATED	      ,
+    STATUS_USERID_HINT	      ,
+    STATUS_UNEXPECTED         ,
     STATUS_INV_RECP           ,
-    STATUS_NO_RECP        
+    STATUS_NO_RECP            ,
+    STATUS_ALREADY_SIGNED     ,
+    STATUS_SIGEXPIRED         ,
+    STATUS_EXPSIG             ,
+    STATUS_EXPKEYSIG
 } GpgStatusCode;
 
 typedef void (*GpgStatusHandler)( GpgmeCtx, GpgStatusCode code, char *args ); 

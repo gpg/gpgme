@@ -131,7 +131,9 @@ typedef enum
     GPGME_SIG_STAT_NOKEY = 3,
     GPGME_SIG_STAT_NOSIG = 4,
     GPGME_SIG_STAT_ERROR = 5,
-    GPGME_SIG_STAT_DIFF  = 6
+    GPGME_SIG_STAT_DIFF  = 6,
+    GPGME_SIG_STAT_GOOD_EXP = 7,
+    GPGME_SIG_STAT_GOOD_EXPKEY = 8
   }
 GpgmeSigStat;
 
@@ -144,7 +146,7 @@ typedef enum
   }
 GpgmeSigMode;
 
-/* The available key attributes.  */
+/* The available key and signature attributes.  */
 typedef enum
   {
     GPGME_ATTR_KEYID        = 1,
@@ -174,7 +176,8 @@ typedef enum
     GPGME_ATTR_KEY_DISABLED = 25,
     GPGME_ATTR_SERIAL       = 26,
     GPGME_ATTR_ISSUER       = 27,
-    GPGME_ATTR_CHAINID      = 28
+    GPGME_ATTR_CHAINID      = 28,
+    GPGME_ATTR_SIG_STATUS   = 29
   }
 GpgmeAttr;
 
@@ -288,6 +291,16 @@ GpgmeKey gpgme_signers_enum (const GpgmeCtx ctx, int seq);
    The function returns a string containing the fingerprint.  */
 const char *gpgme_get_sig_status (GpgmeCtx ctx, int idx,
                                   GpgmeSigStat *r_stat, time_t *r_created);
+
+/* Retrieve certain attributes of a signature.  IDX is the index
+   number of the signature after a successful verify operation.  WHAT
+   is an attribute where GPGME_ATTR_EXPIRE is probably the most useful
+   one.  RESERVED must be passed as 0. */
+unsigned long gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx,
+                                        GpgmeAttr what, int reserved);
+const char *gpgme_get_sig_string_attr (GpgmeCtx c, int idx,
+                                      GpgmeAttr what, int reserved);
+
 
 /* Get the key used to create signature IDX in CTX and return it in
    R_KEY.  */
