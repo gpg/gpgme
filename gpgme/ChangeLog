@@ -1,3 +1,62 @@
+2002-12-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h: Add prototype for gpgme_get_key.
+	* key.c (gpgme_get_key): New function.
+	* verify.c (gpgme_get_sig_key): Rewrite using gpgme_get_key.
+
+	* gpgme.h: Add prototypes for new interfaces
+	gpgme_key_sig_get_string_attr and gpgme_key_get_ulong_attr.
+	(enum GpgmeAttr): New attribute GPGME_ATTR_SIG_CLASS.
+	* gpgme.c (gpgme_set_keylist_mode): Allow GPGME_KEYLIST_MODE_SIGS.
+	* key.h (struct certsig_s): New members ALGO, NAME_PART,
+	EMAIL_PART, COMMENT_PART, NAME, SIG_STAT and SIG_CLASS.
+
+	* conversion.c (_gpgme_decode_c_string): Add new parameter LEN.
+	Use that to determine if allocation is desired or not.
+	* util.h: Adjust prototype of _gpgme_decode_c_string.
+	* keylist.c (keylist_colon_handler): Adjust caller of
+	_gpgme_decode_c_string.
+
+	* key.h (struct gpgme_key_s): New member last_uid.
+	* key.c (_gpgme_key_append_name): Rewritten using
+	_gpgme_decode_c_string and the last_uid pointer.
+	(my_isdigit): Macro removed.
+	(ALLOC_CHUNK): Likewise.
+	* keylist.c (set_userid_flags): Use last_uid member of KEY.
+
+	* context.h (struct user_id_s): New member last_certsig.
+	* key.h: Add prototype for _gpgme_key_add_certsig.
+	* key.c (_gpgme_key_add_certsig): New function.
+	(set_user_id_part): Move function before _gpgme_key_add_certsig.
+	(parse_user_id): Change first argument to SRC, add new arguments
+	NAME, EMAIL and COMMENT.  Change code to use these arguments
+	instead going through UID.  Move function before
+	_gpgme_add_certsig.
+	(parse_x509_user_id): Likewise.
+	(_gpgme_key_append_name): Adjust arguments to parse_x509_user_id
+	and parse_user_id invocation.
+	(one_certsig_as_xml): New function.
+	(one_uid_as_xml): Print signatures.
+	* context.h (struct gpgme_context_s): New member TMP_UID.
+	* keylist.c (keylist_colon_handler): Rewritten, implement "sig"
+	record entries.
+
+	* key.c (get_certsig): New function.
+	(gpgme_key_sig_get_string_attr): Likewise.
+	(gpgme_key_sig_get_ulong_attr): Likewise.
+
+	* keylist.c: Include <ctype.h>.
+	(my_isdigit): Macro removed.
+	(set_mainkey_trust_info): Use isdigit, not my_isdigit.
+	(set_userid_flags): Likewise.
+	(set_subkey_trust_info): Likewise.
+	(set_ownertrust): Likewise.
+	(finish_key): Move function up a bit and remove prototype.
+
+	* rungpg.c (gpg_keylist_ext): Correct precedence of signature
+	listing mode.
+	(gpg_keylist_ext): Implement signature listing mode.
+
 2002-11-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.c (_gpgme_gpg_spawn): Do not set parent fds to -1.

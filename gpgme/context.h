@@ -1,23 +1,22 @@
 /* context.h
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002 g10 Code GmbH
+
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #ifndef CONTEXT_H
 #define CONTEXT_H
@@ -93,6 +92,7 @@ struct gpgme_context_s
 
   /* Used by keylist.c.  */
   GpgmeKey tmp_key;
+  struct user_id_s *tmp_uid;
   /* Something new is available.  */
   volatile int key_cond;
   struct key_queue_item_s *key_queue;
@@ -124,6 +124,7 @@ struct user_id_s
   unsigned int invalid : 1;
   GpgmeValidity validity; 
   struct certsig_s *certsigs;
+  struct certsig_s *last_certsig;
   const char *name_part;	/* All 3 point into strings behind name  */
   const char *email_part;	/* or to read-only strings.  */
   const char *comment_part;

@@ -1,25 +1,26 @@
-/* key.c - Key and keyList objects
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+/* key.c - Key objects.
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002 g10 Code GmbH
 
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+
+#if HAVE_CONFIG_H
 #include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,13 +32,11 @@
 #include "key.h"
 #include "sema.h"
 
-#define ALLOC_CHUNK 1024
-#define my_isdigit(a) ((a) >='0' && (a) <= '9')
-
 #if SIZEOF_UNSIGNED_INT < 4
 #error unsigned int too short to be used as a hash value
 #endif
 
+
 struct key_cache_item_s
 {
   struct key_cache_item_s *next;
@@ -81,6 +80,7 @@ hash_key (const char *fpr, unsigned int *rhash)
   *rhash = hash;
   return 0;
 }
+
 
 void
 _gpgme_key_cache_init (void)
@@ -251,7 +251,7 @@ _gpgme_key_cache_get (const char *fpr)
   return NULL;
 }
 
-
+
 static const char *
 pkalgo_to_string (int algo)
 {
@@ -288,11 +288,13 @@ key_new (GpgmeKey *r_key, int secret)
   return 0;
 }
 
+
 GpgmeError
 _gpgme_key_new (GpgmeKey *r_key)
 {
   return key_new (r_key, 0);
 }
+
 
 GpgmeError
 _gpgme_key_new_secret (GpgmeKey *r_key)
@@ -317,7 +319,7 @@ gpgme_key_ref (GpgmeKey key)
   UNLOCK (key_ref_lock);
 }
 
-
+
 static struct subkey_s *
 add_subkey (GpgmeKey key, int secret)
 {
@@ -327,7 +329,7 @@ add_subkey (GpgmeKey key, int secret)
   if (!k)
     return NULL;
 
-  if(!(kk = key->keys.next))
+  if (!(kk = key->keys.next))
     key->keys.next = k;
   else
     {
@@ -354,7 +356,173 @@ _gpgme_key_add_secret_subkey (GpgmeKey key)
   return add_subkey (key, 1);
 }
 
+
+static char *
+set_user_id_part (char *tail, const char *buf, size_t len)
+{
+  while (len && (buf[len - 1] == ' ' || buf[len - 1] == '\t')) 
+    len--;
+  for (; len; len--)
+    *tail++ = *buf++;
+  *tail++ = 0;
+  return tail;
+}
 
+
+static void
+parse_user_id (const char *src, const char **name, const char **email,
+		    const char **comment, char *tail)
+{
+  const char *start = NULL;
+  int in_name = 0;
+  int in_email = 0;
+  int in_comment = 0;
+
+  while (*src)
+    {
+      if (in_email)
+	{
+	  if (*src == '<')
+	    /* Not legal but anyway.  */
+	    in_email++;
+	  else if (*src == '>')
+	    {
+	      if (!--in_email && !*email)
+		{
+		  *email = tail;
+		  tail = set_user_id_part (tail, start, src - start);
+		}
+	    }
+	}
+      else if (in_comment)
+	{
+	  if (*src == '(')
+	    in_comment++;
+	  else if (*src == ')')
+	    {
+	      if (!--in_comment && !*comment)
+		{
+		  *comment = tail;
+		  tail = set_user_id_part (tail, start, src - start);
+		}
+	    }
+	}
+      else if (*src == '<')
+	{
+	  if (in_name)
+	    {
+	      if (!*name)
+		{
+		  *name = tail;
+		  tail = set_user_id_part (tail, start, src - start);
+		}
+	      in_name = 0;
+	    }
+	  in_email = 1;
+	  start = src + 1;
+	}
+      else if (*src == '(')
+	{
+	  if (in_name)
+	    {
+	      if (!*name)
+		{
+		  *name = tail;
+		  tail = set_user_id_part (tail, start, src - start);
+		}
+	      in_name = 0;
+	    }
+	  in_comment = 1;
+	  start = src + 1;
+	}
+      else if (!in_name && *src != ' ' && *src != '\t')
+	{
+	  in_name = 1;
+	  start = src;
+	}    
+      src++;
+    }
+ 
+  if (in_name)
+    {
+      if (!*name)
+	{
+	  *name = tail;
+	  tail = set_user_id_part (tail, start, src - start);
+	}
+    }
+ 
+  /* Let unused parts point to an EOS.  */
+  tail--;
+  if (!*name)
+    *name = tail;
+  if (!*email)
+    *email = tail;
+  if (!*comment)
+    *comment = tail;
+}
+
+
+static void
+parse_x509_user_id (const char *src, const char **name, const char **email,
+		    const char **comment, char *tail)
+{
+  if (*src == '<' && src[strlen (src) - 1] == '>')
+    *email = src;
+  
+  /* Let unused parts point to an EOS.  */
+  tail--;
+  if (!*name)
+    *name = tail;
+  if (!*email)
+    *email = tail;
+  if (!*comment)
+    *comment = tail;
+}
+
+
+struct certsig_s *
+_gpgme_key_add_certsig (GpgmeKey key, char *src)
+{
+  int src_len = src ? strlen (src) : 0;
+  struct user_id_s *uid;
+  struct certsig_s *certsig;
+
+  assert (key);	/* XXX */
+
+  uid = key->last_uid;
+  assert (uid);	/* XXX */
+
+  /* We can malloc a buffer of the same length, because the converted
+     string will never be larger. Actually we allocate it twice the
+     size, so that we are able to store the parsed stuff there too.  */
+  certsig = calloc (1, sizeof (*certsig) + 2 * src_len + 3);
+  if (!certsig)
+    return NULL;
+
+  if (src)
+    {
+      char *dst = certsig->name;
+      _gpgme_decode_c_string (src, &dst, src_len + 1);
+      dst += src_len + 1;
+      if (key->x509)
+	parse_x509_user_id (src, &certsig->name_part, &certsig->email_part,
+			    &certsig->comment_part, dst);
+      else
+	parse_user_id (src, &certsig->name_part, &certsig->email_part,
+		       &certsig->comment_part, dst);
+    }
+
+  if (!uid->certsigs)
+    uid->certsigs = certsig;
+  if (uid->last_certsig)
+    uid->last_certsig->next = certsig;
+  uid->last_certsig = certsig;
+
+  return certsig;
+}
+
+
 /**
  * gpgme_key_release:
  * @key: Key Object or NULL
@@ -406,6 +574,7 @@ gpgme_key_release (GpgmeKey key)
   free (key);
 }
 
+
 /**
  * gpgme_key_unref:
  * @key: Key Object
@@ -418,237 +587,41 @@ gpgme_key_unref (GpgmeKey key)
   gpgme_key_release (key);
 }
 
-
-static char *
-set_user_id_part (char *tail, const char *buf, size_t len)
-{
-  while (len && (buf[len-1] == ' ' || buf[len-1] == '\t')) 
-    len--;
-  for (; len; len--)
-    *tail++ = *buf++;
-  *tail++ = 0;
-  return tail;
-}
-
-
-static void
-parse_user_id (struct user_id_s *uid, char *tail)
-{
-  const char *s, *start=NULL;
-  int in_name = 0;
-  int in_email = 0;
-  int in_comment = 0;
-
-    for (s = uid->name; *s; s++)
-      {
-        if (in_email)
-	  {
-            if (*s == '<')
-	      /* Not legal but anyway.  */
-	      in_email++;
-            else if (*s == '>')
-	      {
-                if (!--in_email)
-		  {
-                    if (!uid->email_part)
-		      {
-                        uid->email_part = tail;
-                        tail = set_user_id_part ( tail, start, s-start );
-		      }
-		  }
-	      }
-	  }
-        else if (in_comment)
-	  {
-            if (*s == '(')
-	      in_comment++;
-            else if (*s== ')')
-	      {
-                if (!--in_comment)
-		  {
-                    if (!uid->comment_part)
-		      {
-                        uid->comment_part = tail;
-                        tail = set_user_id_part ( tail, start, s-start );
-		      }
-		  }
-	      }
-	  }
-        else if (*s == '<')
-	  {
-            if (in_name)
-	      {
-                if (!uid->name_part)
-		  {
-                    uid->name_part = tail;
-                    tail = set_user_id_part (tail, start, s-start);
-		  }
-                in_name = 0;
-	      }
-            in_email = 1;
-            start = s+1;
-	  }
-        else if (*s == '(')
-	  {
-            if (in_name)
-	      {
-                if (!uid->name_part)
-		  {
-                    uid->name_part = tail;
-                    tail = set_user_id_part (tail, start, s-start );
-		  }
-                in_name = 0;
-	      }
-            in_comment = 1;
-            start = s+1;
-	  }
-        else if (!in_name && *s != ' ' && *s != '\t')
-	  {
-            in_name = 1;
-            start = s;
-	  }    
-      }
- 
-    if (in_name)
-      {
-        if (!uid->name_part)
-	  {
-            uid->name_part = tail;
-            tail = set_user_id_part (tail, start, s-start);
-	  }
-      }
- 
-    /* Let unused parts point to an EOS.  */
-    tail--;
-    if (!uid->name_part)
-      uid->name_part = tail;
-    if (!uid->email_part)
-      uid->email_part = tail;
-    if (!uid->comment_part)
-      uid->comment_part = tail;
-}
-
-static void
-parse_x509_user_id (struct user_id_s *uid, char *tail)
-{
-  const char *s;
-
-  s=uid->name; 
-  if (*s == '<' && s[strlen (s) - 1] == '>')
-    uid->email_part = s;
-  
-  /* Let unused parts point to an EOS.  */
-  tail--;
-  if (!uid->name_part)
-    uid->name_part = tail;
-  if (!uid->email_part)
-    uid->email_part = tail;
-  if (!uid->comment_part)
-    uid->comment_part = tail;
-}
-
-/* 
- * Take a name from the --with-colon listing, remove certain escape sequences
- * sequences and put it into the list of UIDs
- */
+
+/* Take a name from the --with-colon listing, remove certain escape
+   sequences sequences and put it into the list of UIDs.  */
 GpgmeError
-_gpgme_key_append_name (GpgmeKey key, const char *s)
+_gpgme_key_append_name (GpgmeKey key, const char *src)
 {
   struct user_id_s *uid;
-  char *d;
+  char *dst;
+  int src_len = strlen (src);
 
   assert (key);
   /* We can malloc a buffer of the same length, because the converted
      string will never be larger. Actually we allocate it twice the
      size, so that we are able to store the parsed stuff there too.  */
-  uid = malloc (sizeof *uid + 2*strlen (s)+3);
+  uid = malloc (sizeof (*uid) + 2 * src_len + 3);
   if (!uid)
     return mk_error (Out_Of_Core);
   memset (uid, 0, sizeof *uid);
-  d = uid->name;
 
-  while (*s)
-    {
-      if (*s != '\\')
-	*d++ = *s++;
-      else if (s[1] == '\\')
-	{
-	  s++;
-	  *d++ = *s++; 
-        }
-      else if (s[1] == 'n')
-	{
-	  s += 2;
-	  *d++ = '\n'; 
-        }
-      else if (s[1] == 'r')
-	{
-	  s += 2;
-	  *d++ = '\r'; 
-        }
-      else if (s[1] == 'v')
-	{
-	  s += 2;
-	  *d++ = '\v'; 
-        }
-      else if (s[1] == 'b')
-	{
-	  s += 2;
-	  *d++ = '\b'; 
-        }
-      else if (s[1] == '0')
-	{
-	  /* Hmmm: no way to express this */
-	  s += 2;
-	  *d++ = '\\';
-	  *d++ = '\0'; 
-        }
-      else if (s[1] == 'x' && isxdigit (s[2]) && isxdigit (s[3]))
-	{
-	  int val = _gpgme_hextobyte (&s[2]);
-	  if (val == -1)
-	    {
-	      /* Should not happen.  */
-	      *d++ = *s++;
-	      *d++ = *s++;
-	      *d++ = *s++;
-	      *d++ = *s++;
-	    }
-	  else
-	    {
-	      if (!val)
-		{
-		  *d++ = '\\';
-		  *d++ = '\0'; 
-		}
-	      else 
-		*(byte*)d++ = val;
-	      s += 4;
-	    }
-        }
-      else
-	{
-	  /* should not happen */
-	  s++;
-	  *d++ = '\\'; 
-	  *d++ = *s++;
-        } 
-    }
-  *d++ = 0;
+  dst = uid->name;
+  _gpgme_decode_c_string (src, &dst, src_len + 1);
+
+  dst += src_len + 1;
   if (key->x509)
-    parse_x509_user_id (uid, d);
+    parse_x509_user_id (src, &uid->name_part, &uid->email_part,
+			&uid->comment_part, dst);
   else
-    parse_user_id (uid, d);
+    parse_user_id (src, &uid->name_part, &uid->email_part,
+		   &uid->comment_part, dst);
 
-  if (key->uids)
-    {
-      struct user_id_s *u = key->uids;
-      while (u->next)
-	u = u->next;
-      u->next = uid;
-    }
-  else
+  if (!key->uids)
     key->uids = uid;
+  if (key->last_uid)
+    key->last_uid->next = uid;
+  key->last_uid = uid;
 
   return 0;
 }
@@ -662,6 +635,7 @@ add_otag (GpgmeData d, const char *tag)
   _gpgme_data_append_string (d, ">");
 }
 
+
 static void
 add_ctag (GpgmeData d, const char *tag)
 {
@@ -669,6 +643,7 @@ add_ctag (GpgmeData d, const char *tag)
   _gpgme_data_append_string (d, tag);
   _gpgme_data_append_string (d, ">\n");
 }
+
 
 static void
 add_tag_and_string (GpgmeData d, const char *tag, const char *string)
@@ -678,6 +653,7 @@ add_tag_and_string (GpgmeData d, const char *tag, const char *string)
   add_ctag (d, tag); 
 }
 
+
 static void
 add_tag_and_uint (GpgmeData d, const char *tag, unsigned int val)
 {
@@ -685,6 +661,7 @@ add_tag_and_uint (GpgmeData d, const char *tag, unsigned int val)
   sprintf (buf, "%u", val);
   add_tag_and_string (d, tag, buf);
 }
+
 
 static void
 add_tag_and_time (GpgmeData d, const char *tag, time_t val)
@@ -697,22 +674,55 @@ add_tag_and_time (GpgmeData d, const char *tag, time_t val)
   add_tag_and_string (d, tag, buf);
 }
 
+
 static void
-one_uid_as_xml (GpgmeData d, struct user_id_s *u)
+one_certsig_as_xml (GpgmeData data, struct certsig_s *certsig)
 {
-  _gpgme_data_append_string (d, "  <userid>\n");
-  if (u->invalid)
-    _gpgme_data_append_string (d, "    <invalid/>\n");
-  if (u->revoked)
-    _gpgme_data_append_string (d, "    <revoked/>\n");
-  add_tag_and_string (d, "raw", u->name);
-  if (*u->name_part)
-    add_tag_and_string (d, "name", u->name_part);
-  if (*u->email_part)
-    add_tag_and_string (d, "email", u->email_part);
-  if (*u->comment_part)
-    add_tag_and_string (d, "comment", u->comment_part);
-  _gpgme_data_append_string (d, "  </userid>\n");
+  _gpgme_data_append_string (data, "    <signature>\n");
+  if (certsig->flags.invalid)
+    _gpgme_data_append_string (data, "      <invalid/>\n");
+  if (certsig->flags.revoked)
+    _gpgme_data_append_string (data, "      <revoked/>\n");
+  if (certsig->flags.expired)
+    _gpgme_data_append_string (data, "      <expired/>\n");
+  add_tag_and_string (data, "keyid", certsig->keyid);
+  add_tag_and_uint (data, "algo", certsig->algo);
+  add_tag_and_time (data, "created", certsig->timestamp);
+  add_tag_and_time (data, "expire", certsig->expires_at);
+  if (*certsig->name)
+    add_tag_and_string (data, "raw", certsig->name);
+  if (*certsig->name_part)
+    add_tag_and_string (data, "name", certsig->name_part);
+  if (*certsig->email_part)
+    add_tag_and_string (data, "email", certsig->email_part);
+  if (*certsig->comment_part)
+    add_tag_and_string (data, "comment", certsig->comment_part);
+  _gpgme_data_append_string (data, "    </signature>\n");
+}
+
+
+static void
+one_uid_as_xml (GpgmeData data, struct user_id_s *uid)
+{
+  struct certsig_s *certsig;
+
+  _gpgme_data_append_string (data, "  <userid>\n");
+  if (uid->invalid)
+    _gpgme_data_append_string (data, "    <invalid/>\n");
+  if (uid->revoked)
+    _gpgme_data_append_string (data, "    <revoked/>\n");
+  add_tag_and_string (data, "raw", uid->name);
+  if (*uid->name_part)
+    add_tag_and_string (data, "name", uid->name_part);
+  if (*uid->email_part)
+    add_tag_and_string (data, "email", uid->email_part);
+  if (*uid->comment_part)
+    add_tag_and_string (data, "comment", uid->comment_part);
+
+  /* Now the signatures.  */
+  for (certsig = uid->certsigs; certsig; certsig = certsig->next)
+    one_certsig_as_xml (data, certsig);
+  _gpgme_data_append_string (data, "  </userid>\n");
 }
 
 
@@ -817,8 +827,8 @@ capabilities_to_string (struct subkey_s *k)
       "esc"
     };
   return strings[(!!k->flags.can_encrypt << 2)
-		 | (!!k->flags.can_sign    << 1)
-		 | (!!k->flags.can_certify     )];
+		 | (!!k->flags.can_sign << 1)
+		 | (!!k->flags.can_certify)];
 }
 
 
@@ -972,6 +982,7 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
     case GPGME_ATTR_SIG_STATUS:
     case GPGME_ATTR_SIG_SUMMARY:
     case GPGME_ATTR_ERRTOK:
+    case GPGME_ATTR_SIG_CLASS:
       /* Not of any use here.  */
       break;
     }
@@ -1102,3 +1113,154 @@ gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
   return val;
 }
 
+
+static struct certsig_s *
+get_certsig (GpgmeKey key, int uid_idx, int idx)
+{
+  struct user_id_s *uid;
+  struct certsig_s *certsig;
+
+  if (!key || uid_idx < 0 || idx < 0)
+    return NULL;
+
+  uid = key->uids;
+  while (uid && uid_idx > 0)
+    {
+      uid = uid->next;
+      uid_idx--;
+    }
+  if (!uid)
+    return NULL;
+
+  certsig = uid->certsigs;
+  while (certsig && idx > 0)
+    {
+      certsig = certsig->next;
+      idx--;
+    }
+  return certsig;
+}
+
+
+const char *
+gpgme_key_sig_get_string_attr (GpgmeKey key, int uid_idx, GpgmeAttr what,
+			       const void *reserved, int idx)
+{
+  struct certsig_s *certsig = get_certsig (key, uid_idx, idx);
+
+  if (!certsig || reserved)
+    return NULL;
+
+  switch (what)
+    {
+    case GPGME_ATTR_KEYID:
+      return certsig->keyid;
+
+    case GPGME_ATTR_ALGO:    
+      return pkalgo_to_string (certsig->algo);
+
+    case GPGME_ATTR_USERID:  
+      return certsig->name;
+
+    case GPGME_ATTR_NAME:   
+      return certsig->name_part;
+
+    case GPGME_ATTR_EMAIL:
+      return certsig->email_part;
+
+    case GPGME_ATTR_COMMENT:
+      return certsig->comment_part;
+   
+    default:
+      return NULL;
+    }
+}
+
+
+unsigned long
+gpgme_key_sig_get_ulong_attr (GpgmeKey key, int uid_idx, GpgmeAttr what,
+			      const void *reserved, int idx)
+{
+  struct certsig_s *certsig = get_certsig (key, uid_idx, idx);
+
+  if (!certsig || reserved)
+    return 0;
+
+  switch (what)
+    {
+    case GPGME_ATTR_ALGO:    
+      return (unsigned long) certsig->algo;
+
+    case GPGME_ATTR_CREATED: 
+      return certsig->timestamp < 0 ? 0L : (unsigned long) certsig->timestamp;
+
+    case GPGME_ATTR_EXPIRE: 
+      return certsig->expires_at < 0 ? 0L : (unsigned long) certsig->expires_at;
+
+    case GPGME_ATTR_KEY_REVOKED:
+      return certsig->flags.revoked;
+
+    case GPGME_ATTR_KEY_INVALID:
+      return certsig->flags.invalid;
+
+    case GPGME_ATTR_KEY_EXPIRED:
+      return certsig->flags.expired;
+
+    case GPGME_ATTR_SIG_CLASS:
+      return certsig->sig_class;
+
+    case GPGME_ATTR_SIG_STATUS:
+      return certsig->sig_stat;
+
+    default:
+      return 0;
+    }
+}
+
+
+/* Get the key with the fingerprint FPR from the key cache or from the
+   crypto backend.  If FORCE_UPDATE is true, force a refresh of the
+   key from the crypto backend and replace the key in the cache, if
+   any.  If SECRET is true, get the secret key.  */
+GpgmeError
+gpgme_get_key (GpgmeCtx ctx, const char *fpr, GpgmeKey *r_key,
+	       int secret, int force_update)
+{
+  GpgmeCtx listctx;
+  GpgmeError err;
+
+  if (!ctx || !r_key)
+    return mk_error (Invalid_Value);
+  if (ctx->pending)
+    return mk_error (Busy);
+  
+  if (strlen (fpr) < 16)	/* We have at least a key ID.  */
+    return mk_error (Invalid_Key);
+
+  if (!force_update)
+    {
+      *r_key = _gpgme_key_cache_get (fpr);
+      if (*r_key)
+	{
+	  /* If the primary UID (if available) has no signatures, and
+	     we are in the signature listing keylist mode, then try to
+	     update the key below before returning.  */
+	  if (!((ctx->keylist_mode & GPGME_KEYLIST_MODE_SIGS)
+		&& (*r_key)->uids && !(*r_key)->uids->certsigs))
+	    return 0;
+	}
+    }
+
+  /* Fixme: This can be optimized by keeping an internal context
+     used for such key listings.  */
+  err = gpgme_new (&listctx);
+  if (err)
+    return err;
+  gpgme_set_protocol (listctx, gpgme_get_protocol (ctx));
+  gpgme_set_keylist_mode (listctx, ctx->keylist_mode);
+  err = gpgme_op_keylist_start (listctx, fpr, secret);
+  if (!err)
+    err = gpgme_op_keylist_next (listctx, r_key);
+  gpgme_release (listctx);
+  return err;
+}

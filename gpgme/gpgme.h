@@ -196,7 +196,8 @@ typedef enum
     GPGME_ATTR_CHAINID      = 28,
     GPGME_ATTR_SIG_STATUS   = 29,
     GPGME_ATTR_ERRTOK       = 30,
-    GPGME_ATTR_SIG_SUMMARY  = 31
+    GPGME_ATTR_SIG_SUMMARY  = 31,
+    GPGME_ATTR_SIG_CLASS    = 32
   }
 GpgmeAttr;
 
@@ -611,6 +612,13 @@ GpgmeError gpgme_data_rewind (GpgmeData dh);
 
 /* Key and trust functions.  */
 
+/* Get the key with the fingerprint FPR from the key cache or from the
+   crypto backend.  If FORCE_UPDATE is true, force a refresh of the
+   key from the crypto backend and replace the key in the cache, if
+   any.  If SECRET is true, get the secret key.  */
+GpgmeError gpgme_get_key (GpgmeCtx ctx, const char *fpr, GpgmeKey *r_key,
+			  int secret, int force_update);
+
 /* Acquire a reference to KEY.  */
 void gpgme_key_ref (GpgmeKey key);
 
@@ -634,6 +642,21 @@ const char *gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
    user ID for attributes related to sub keys or user IDs.  */
 unsigned long gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
 					const void *reserved, int idx);
+
+/* Return the value of the attribute WHAT of a signature on user ID
+   UID_IDX in KEY, which has to be representable by a string.  IDX
+   specifies the signature.  */
+const char *gpgme_key_sig_get_string_attr (GpgmeKey key, int uid_idx,
+					   GpgmeAttr what,
+					   const void *reserved, int idx);
+
+/* Return the value of the attribute WHAT of a signature on user ID
+   UID_IDX in KEY, which has to be representable by an unsigned
+   integer string.  IDX specifies the signature.  */
+unsigned long gpgme_key_sig_get_ulong_attr (GpgmeKey key, int uid_idx,
+					    GpgmeAttr what,
+					    const void *reserved, int idx);
+
 
 /* Release the trust item ITEM.  */
 void gpgme_trust_item_release (GpgmeTrustItem item);

@@ -57,18 +57,29 @@ _gpgme_hextobyte (const byte *str)
 }
 
 
+/* Decode the C formatted string SRC and store the result in the
+   buffer *DESTP which is LEN bytes long.  If LEN is zero, then a
+   large enough buffer is allocated with malloc and *DESTP is set to
+   the result.  Currently, LEN is only used to specify if allocation
+   is desired or not, the caller is expected to make sure that *DESTP
+   is large enough if LEN is not zero.  */
 GpgmeError
-_gpgme_decode_c_string (const char *src, char **destp)
+_gpgme_decode_c_string (const char *src, char **destp, int len)
 {
   char *dest;
 
-  /* We can malloc a buffer of the same length, because the converted
-     string will never be larger.  */
-  dest = malloc (strlen (src) + 1);
-  if (!dest)
-    return mk_error (Out_Of_Core);
+  if (len)
+    dest = *destp;
+  else
+    {
+      /* We can malloc a buffer of the same length, because the converted
+	 string will never be larger.  */
+      dest = malloc (strlen (src) + 1);
+      if (!dest)
+	return mk_error (Out_Of_Core);
 
-  *destp = dest;
+      *destp = dest;
+    }
 
   while (*src)
     {
