@@ -2,6 +2,8 @@
 
 	* gpgme.texi (Importing Keys): Document gpgme_op_import_ext.
 
+	* gpgme.texi (Importing Keys): Undocument EOF.
+
 2002-08-14  Werner Koch  <wk@gnupg.org>
 
 	* gpgme.texi (Information About Keys): Changed GPGME_ATTR_TYPE.
