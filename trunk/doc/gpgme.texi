@@ -2774,6 +2774,30 @@ started successfully, and @code{GPGME_Invalid_Value} if @var{cipher}
 or @var{plain} is not a valid pointer.
 @end deftypefun
 
+@deftp {Data type} {GpgmeDecryptResult}
+This is a pointer to a structure used to store the result of a
+@code{gpgme_op_decrypt} operation.  After successfully encrypting
+data, you can retrieve the pointer to the result with
+@code{gpgme_op_decrypt_result}.  The structure contains the following
+members:
+
+@table @code
+@item char *unsupported_algorithm
+If an unsupported algorithm was encountered, this string describes the
+algorithm that is not supported.
+@end table
+@end deftp
+
+@deftypefun GpgmeDecryptResult gpgme_op_decrypt_result (@w{GpgmeCtx @var{ctx}})
+The function @code{gpgme_op_decrypt_result} returns a
+@code{GpgmeDecryptResult} pointer to a structure holding the result of
+a @code{gpgme_op_decrypt} operation.  The pointer is only valid if the
+last operation on the context was a @code{gpgme_op_decrypt} or
+@code{gpgme_op_decrypt_start} operation, and if this operation
+finished successfully.  The returned pointer is only valid until the
+next operation is started on the context.
+@end deftypefun
+
 
 @node Verify
 @subsection Verify

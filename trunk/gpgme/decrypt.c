@@ -22,152 +22,141 @@
 #include <config.h>
 #endif
 #include <stdlib.h>
+#include <string.h>
 
+#include "gpgme.h"
+#include "util.h"
 #include "context.h"
 #include "ops.h"
 
-
-struct decrypt_result
+
+typedef struct
 {
+  struct _gpgme_op_decrypt_result result;
+
   int okay;
   int failed;
-};
-typedef struct decrypt_result *DecryptResult;
+} *op_data_t;
 
 
-/* Check whether STRING starts with TOKEN and return true in this
-   case.  This is case insensitive.  If NEXT is not NULL return the
-   number of bytes to be added to STRING to get to the next token; a
-   returned value of 0 indicates end of line. 
-   Fixme: Duplicated from verify.c.  */
-static int 
-is_token (const char *string, const char *token, size_t *next)
+static void
+release_op_data (void *hook)
 {
-  size_t n = 0;
+  op_data_t opd = (op_data_t) hook;
 
-  for (;*string && *token && *string == *token; string++, token++, n++)
-    ;
-  if (*token || (*string != ' ' && !*string))
-    return 0;
-  if (next)
-    {
-      for (; *string == ' '; string++, n++)
-        ;
-      *next = n;
-    }
-  return 1;
+  if (opd->result.unsupported_algorithm)
+    free (opd->result.unsupported_algorithm);
 }
 
 
-static int
-skip_token (const char *string, size_t *next)
+GpgmeDecryptResult
+gpgme_op_decrypt_result (GpgmeCtx ctx)
 {
-  size_t n = 0;
+  op_data_t opd;
+  GpgmeError err;
 
-  for (;*string && *string != ' '; string++, n++)
-    ;
-  for (;*string == ' '; string++, n++)
-    ;
-  if (!*string)
-    return 0;
-  if (next)
-    *next = n;
-  return 1;
+  err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &opd, -1, NULL);
+  if (err || !opd)
+    return NULL;
+
+  return &opd->result;
 }
 
-
+
 GpgmeError
-_gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
+_gpgme_decrypt_status_handler (void *priv, GpgmeStatusCode code, char *args)
 {
-  DecryptResult result;
-  GpgmeError err = 0;
-  size_t n;
+  GpgmeCtx ctx = (GpgmeCtx) priv;
+  GpgmeError err;
+  op_data_t opd;
 
-  err = _gpgme_passphrase_status_handler (ctx, code, args);
+  err = _gpgme_passphrase_status_handler (priv, code, args);
+  if (err)
+    return err;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &opd, -1, NULL);
   if (err)
     return err;
 
   switch (code)
     {
     case GPGME_STATUS_EOF:
-      err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &result,
-				   -1, NULL);
-      if (!err)
-	{
-	  if (result && result->failed)
-	    err = GPGME_Decryption_Failed;
-	  else if (!result || !result->okay)
-	    err = GPGME_No_Data;
-	}
+      if (opd->failed)
+	return GPGME_Decryption_Failed;
+      else if (!opd->okay)
+	return GPGME_No_Data;
       break;
 
     case GPGME_STATUS_DECRYPTION_OKAY:
-      err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &result,
-				   sizeof (*result), NULL);
-      if (!err)
-	result->okay = 1;
+      opd->okay = 1;
       break;
 
     case GPGME_STATUS_DECRYPTION_FAILED:
-      err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &result,
-				   sizeof (*result), NULL);
-      if (!err)
-	result->failed = 1;
+      opd->failed = 1;
       break;
 
     case GPGME_STATUS_ERROR:
-      if (is_token (args, "decrypt.algorithm", &n) && n)
-        {
-          args += n;
-          if (is_token (args, "Unsupported_Algorithm", &n))
-            {
-              GpgmeData dh;
+      {
+	const char d_alg[] = "decrypt.algorithm";
+	const char u_alg[] = "Unsupported_Algorithm";
+	if (!strncmp (args, d_alg, sizeof (d_alg) - 1))
+	  {
+	    args += sizeof (d_alg);
+	    while (*args == ' ')
+	      args++;
 
-              args += n;
-              /* Fixme: This won't work when used with decrypt+verify */
-              if (!gpgme_data_new (&dh))
-                {
-                  _gpgme_data_append_string (dh,
-                                             "<GnupgOperationInfo>\n"
-                                             " <decryption>\n"
-                                             "  <error>\n"
-                                             "   <unsupportedAlgorithm>");
-                  if (skip_token (args, &n))
-                    {
-                      int c = args[n];
-                      args[n] = 0;
-                      _gpgme_data_append_percentstring_for_xml (dh, args);
-                      args[n] = c;
-                    }
-                  else
-                    _gpgme_data_append_percentstring_for_xml (dh, args);
-                  
-                  _gpgme_data_append_string (dh,
-                                             "</unsupportedAlgorithm>\n"
-                                             "  </error>\n"
-                                             " </decryption>\n"
-                                             "</GnupgOperationInfo>\n");
-                  _gpgme_set_op_info (ctx, dh);
-                }
-            }
-        }
+	    if (!strncmp (args, u_alg, sizeof (u_alg) - 1))
+	      {
+		char *end;
+
+		args += sizeof (u_alg);
+		while (*args == ' ')
+		  args++;
+
+		end = strchr (args, ' ');
+		if (end)
+		  *end = '\0';
+
+		if (!(*args == '?' && *(args + 1) == '\0'))
+		  {
+		    opd->result.unsupported_algorithm = strdup (args);
+		    if (!opd->result.unsupported_algorithm)
+		      return GPGME_Out_Of_Core;
+		  }
+	      }
+	  }
+      }
       break;
         
     default:
       break;
     }
 
-  return err;
+  return 0;
 }
 
 
 GpgmeError
-_gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
-		      GpgmeData cipher, GpgmeData plain, void *status_handler)
+_gpgme_op_decrypt_init_result (GpgmeCtx ctx)
+{
+  op_data_t opd;
+
+  return _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &opd,
+				sizeof (*opd), release_op_data);
+}
+
+
+static GpgmeError
+decrypt_start (GpgmeCtx ctx, int synchronous,
+		      GpgmeData cipher, GpgmeData plain)
 {
   GpgmeError err;
 
   err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  err = _gpgme_op_decrypt_init_result (ctx);
   if (err)
     return err;
 
@@ -188,38 +177,27 @@ _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
 	return err;
     }
 
-  _gpgme_engine_set_status_handler (ctx->engine, status_handler, ctx);
+  _gpgme_engine_set_status_handler (ctx->engine,
+				    _gpgme_decrypt_status_handler, ctx);
 
   return _gpgme_engine_op_decrypt (ctx->engine, cipher, plain);
 }
 
 
 GpgmeError
-gpgme_op_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain)
+gpgme_op_decrypt_start (GpgmeCtx ctx, GpgmeData cipher, GpgmeData plain)
 {
-  return _gpgme_decrypt_start (ctx, 0, ciph, plain,
-			       _gpgme_decrypt_status_handler);
+  return decrypt_start (ctx, 0, cipher, plain);
 }
 
 
-/**
- * gpgme_op_decrypt:
- * @ctx: The context
- * @in: ciphertext input
- * @out: plaintext output
- * 
- * This function decrypts @in to @out.
- * Other parameters are take from the context @ctx.
- * The function does wait for the result.
- * 
- * Return value:  0 on success or an errorcode. 
- **/
+/* Decrypt ciphertext CIPHER within CTX and store the resulting
+   plaintext in PLAIN.  */
 GpgmeError
-gpgme_op_decrypt (GpgmeCtx ctx, GpgmeData in, GpgmeData out)
+gpgme_op_decrypt (GpgmeCtx ctx, GpgmeData cipher, GpgmeData plain)
 {
-  GpgmeError err = _gpgme_decrypt_start (ctx, 1, in, out,
-					 _gpgme_decrypt_status_handler);
+  GpgmeError err = decrypt_start (ctx, 1, cipher, plain);
   if (!err)
-      err = _gpgme_wait_one (ctx);
+    err = _gpgme_wait_one (ctx);
   return err;
 }

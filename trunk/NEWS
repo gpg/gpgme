@@ -86,6 +86,14 @@ Noteworthy changes in version 0.4.1 (unreleased)
    information about the result of an encryption operation in
    a GpgmeEncryptResult object.
 
+ * The new gpgme_op_encrypt_result function provides detailed
+   information about the result of an encryption operation in
+   a GpgmeEncryptResult object.
+
+ * The new gpgme_op_decrypt_result function provides detailed
+   information about the result of an encryption operation in
+   a GpgmeDecryptResult object.
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
@@ -126,6 +134,8 @@ gpgme_pubkey_algo_name		NEW
 gpgme_hash_algo_name		NEW
 GpgmeEncryptResult		NEW
 gpgme_op_encrypt_result		NEW
+GpgmeDecryptResult		NEW
+gpgme_op_decrypt_result		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)
