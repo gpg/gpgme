@@ -976,13 +976,13 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
             val = u->invalid;
         break;
       case GPGME_ATTR_CAN_ENCRYPT:
-        val = key->gloflags.can_certify;
+        val = key->gloflags.can_encrypt;
         break;
       case GPGME_ATTR_CAN_SIGN:
         val = key->gloflags.can_sign;
         break;
       case GPGME_ATTR_CAN_CERTIFY:
-        val = key->gloflags.can_encrypt;
+        val = key->gloflags.can_certify;
         break;
       default:
         break;

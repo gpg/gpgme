@@ -1,3 +1,8 @@
+2002-04-23  Werner Koch  <wk@gnupg.org>
+
+	* key.c (gpgme_key_get_ulong_attr): Swapped use of can_encrypt and
+	can_certify to return the requested values.
+
 2002-04-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (gpgme_get_progress_cb): Allow either return parameter
