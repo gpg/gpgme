@@ -783,6 +783,9 @@ gpgme_key_get_as_xml (GpgmeKey key)
   add_tag_and_uint (d, "len", key->keys.key_len);
   add_tag_and_time (d, "created", key->keys.timestamp);
   add_tag_and_time (d, "expire", key->keys.expires_at);
+  add_tag_and_string (d, "otrust",
+		      gpgme_key_get_string_attr (key, GPGME_ATTR_OTRUST,
+						 NULL, 0));
   if (key->issuer_serial)
     add_tag_and_string (d, "serial", key->issuer_serial);
   if (key->issuer_name)
@@ -990,6 +993,7 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
       val = key->chain_id;
       break;
     case GPGME_ATTR_SIG_STATUS:
+    case GPGME_ATTR_SIG_SUMMARY:
     case GPGME_ATTR_ERRTOK:
       /* Not of any use here.  */
       break;

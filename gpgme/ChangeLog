@@ -6,6 +6,11 @@
 	* rungpg.c (_gpgme_gpg_op_keylist_ext): Skip empty string
 	patterns.  Reported by Stéphane Corthésy.
 
+	* key.c (gpgme_key_get_as_xml): Add OTRUST attribute.  Requested
+	by Stéphane Corthésy.
+	(gpgme_key_get_string_attr): Add GPGME_ATTR_SIG_SUMMARY case to
+	silence gcc warning.
+
 2002-07-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (gpgme_set_io_cbs): Deal with CTX being NULL.
