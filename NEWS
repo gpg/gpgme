@@ -1,7 +1,7 @@
 Noteworthy changes in version 0.3.14 (unreleased)
 -------------------------------------------------
 
-
+ * GPGME-Plug is now in its own package "cryptplug".
 
 Noteworthy changes in version 0.3.13 (2002-11-20)
 -------------------------------------------------
