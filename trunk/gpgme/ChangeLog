@@ -1,3 +1,8 @@
+2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (struct _gpgme_key): New member keylist_mode.
+	* keylist.c (keylist_colon_handler): Set the keylist_mode of KEY.
+
 2004-04-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (struct _gpgme_signature): Change member WRONG_KEY_USAGE

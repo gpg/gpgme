@@ -1,3 +1,14 @@
+Noteworthy changes in version 0.9.0 (unreleased)
+------------------------------------------------
+
+ * The type gpgme_key_t has now a new field keylist_mode that contains
+   the keylist mode that was active at the time the key was retrieved.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_key_t			EXTENDED: New field keylist_mode.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 Noteworthy changes in version 0.4.7 (2004-04-29)
 ------------------------------------------------
 
