@@ -28,9 +28,9 @@ AC_INIT(gpgme, 0.4.3, [bug-gpgme@gnupg.org])
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed:		AGE=0)
 #
-LIBGPGME_LT_CURRENT=11
-LIBGPGME_LT_AGE=0
-LIBGPGME_LT_REVISION=1
+LIBGPGME_LT_CURRENT=12
+LIBGPGME_LT_AGE=1
+LIBGPGME_LT_REVISION=0
 NEED_GPG_VERSION=1.2.2
 NEED_GPGSM_VERSION=0.9.0
 ##############################################

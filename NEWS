@@ -1,4 +1,4 @@
-Noteworthy changes in version 0.4.3 (unreleased)
+Noteworthy changes in version 0.4.3 (2003-10-06)
 ------------------------------------------------
 
  * libgpgme should not be used for threaded programs anymore.  This
@@ -854,7 +854,7 @@ Noteworthy changes in version 0.2.1 (2001-04-02)
  * Made the W32 support more robust.
 
 
- Copyright 2001, 2002 g10 Code GmbH
+ Copyright 2001, 2002, 2003 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
