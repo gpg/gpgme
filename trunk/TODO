@@ -16,6 +16,12 @@
 
 * Implement decrypt+verify
 
+* Tests
+** t-data
+*** Test gpgme_data_write and gpgme_data_release_and_get_mem.
+*** Test gpgme_data_rewind for invalid types.
+*** Test gpgme_data_read's readable feature.
+
 Bugs reported by Stephane Corthesy:
 > - When asking a GpgmeKey for one of its sub-userIDs (index > 0)  
 > GPGME_ATTR_EMAIL attribute, it returns the name + email, whereas for  

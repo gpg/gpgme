@@ -1,3 +1,8 @@
+2001-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh: Invoke automake with `-a' (add missing files).
+	Do not invoke configure.
+
 2001-09-17  Werner Koch  <wk@gnupg.org>
 
 	Released 0.2.3.
