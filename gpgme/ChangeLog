@@ -1,3 +1,20 @@
+2002-02-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* context.h (struct gpgme_context_s): New member include_certs.
+	* gpgme.h (gpgme_set_include_certs): Add prototype.
+	(gpgme_get_include_certs): Likewise.
+	* gpgme.c (gpgme_set_include_certs): New function.
+	(gpgme_get_include_certs): Likewise.
+	(gpgme_new): Set include_certs to 1 (the default).
+	* engine.c (_gpgme_engine_op_sign): Accept new argument include_certs,
+	and pass it to _gpgme_gpgsm_op_sign.
+	* engine.h (_gpgme_engine_op_sign): Likewise for prototype.
+	* engine-gpgsm.c (_gpgme_gpgsm_op_sign): Accept new argument
+	include_certs and handle it.
+	* engine-gpgsm.h (_gpgme_gpgsm_start): Add new argument include_certs.
+	* sign.c (gpgme_op_sign_start): Add new argument to
+	_gpgme_engine_op_sign call.
+
 2002-02-14  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (gpgme_op_keylist_start): Do not use a verbose listing.

@@ -53,7 +53,8 @@ GpgmeError _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
 GpgmeError _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in,
 				 GpgmeData out,
 				 GpgmeSigMode mode, int use_armor,
-				 int use_textmode, GpgmeCtx ctx /* FIXME */);
+				 int use_textmode, int include_certs,
+				 GpgmeCtx ctx /* FIXME */);
 GpgmeError _gpgme_gpgsm_op_trustlist (GpgsmObject gpgsm, const char *pattern);
 GpgmeError _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig,
 				   GpgmeData text);

@@ -591,9 +591,11 @@ _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
 GpgmeError
 _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
 		      GpgmeSigMode mode, int use_armor,
-		      int use_textmode, GpgmeCtx ctx /* FIXME */)
+		      int use_textmode, int include_certs,
+		      GpgmeCtx ctx /* FIXME */)
 {
   GpgmeError err;
+  char *assuan_cmd;
 
   if (!gpgsm)
     return mk_error (Invalid_Value);
@@ -602,6 +604,13 @@ _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
 			       ? "SIGN --detached" : "SIGN");
   if (!gpgsm->command)
     return mk_error (Out_Of_Core);
+
+  if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
+    return mk_error (Out_Of_Core);
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd);
+  free (assuan_cmd);
+  if (err)
+    return err;
 
   gpgsm->input_data = in;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 0);
@@ -979,7 +988,8 @@ _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
 GpgmeError
 _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
 		      GpgmeSigMode mode, int use_armor,
-		      int use_textmode, GpgmeCtx ctx /* FIXME */)
+		      int use_textmode, int include_certs,
+		      GpgmeCtx ctx /* FIXME */)
 {
   return mk_error (Invalid_Engine);
 }

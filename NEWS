@@ -1,3 +1,14 @@
+
+ * New interfaces gpgme_set_include_certs and gpgme_get_include_certs
+   to set and get the number of certifications to include in S/MIME
+   signed messages.
+
+ * Interface changes relative to the 0.3.3 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_set_include_certs		NEW
+gpgme_get_include_certs		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Noteworthy changes in version 0.3.3 (2002-02-12)
 ------------------------------------------------
 

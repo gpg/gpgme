@@ -58,6 +58,7 @@ GpgmeError _gpgme_engine_op_keylist (EngineObject engine, const char *pattern,
 GpgmeError _gpgme_engine_op_sign (EngineObject engine, GpgmeData in,
 				  GpgmeData out, GpgmeSigMode mode,
 				  int use_armor, int use_textmode,
+				  int include_certs,
 				  GpgmeCtx ctx /* FIXME */);
 GpgmeError _gpgme_engine_op_trustlist (EngineObject engine,
 				       const char *pattern);

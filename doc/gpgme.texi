@@ -138,6 +138,7 @@ Context Attributes
 * Protocol Selection::            Selecting the protocol used by a context.
 * @acronym{ASCII} Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
+* Included Certificates::         Including a number of certificates.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
@@ -961,6 +962,7 @@ The function @code{gpgme_release} destroys the context with the handle
 * Protocol Selection::            Selecting the protocol used by a context.
 * @acronym{ASCII} Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
+* Included Certificates::       Including a number of certificates.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
@@ -1024,6 +1026,9 @@ Text mode is for example used for the RFC2015 signatures; note that
 the updated RFC 3156 mandates that the mail user agent does some
 preparations so that text mode is not needed anymore.
 
+This option is only relevant to the OpenPGP crypto engine, and ignored
+by all other engines.
+
 Canonical text mode is disabled if @var{yes} is zero, and enabled
 otherwise.
 @end deftypefun
@@ -1032,6 +1037,42 @@ otherwise.
 The function @code{gpgme_get_textmode} returns 1 if canonical text
 mode is enabled, and @code{0} if it is not, or if @var{ctx} is not a
 valid pointer.
+@end deftypefun
+
+
+@node Included Certificates
+@subsection Included Certificates
+@cindex certificates, included
+
+@deftypefun void gpgme_set_include_certs (@w{GpgmeCtx @var{ctx}}, @w{int @var{nr_of_certs}})
+The function @code{gpgme_set_include_certs} specifies how many
+certificates should be included in an S/MIME signed message.  By
+default, only the sender's certificate is included.  The possible
+values of @var{nr_of_certs} are:
+
+@table @code
+@item -2
+Include all certificates except the root certificate.
+@item -1
+Include all certificates.
+@item 0
+Include no certificates.
+@item 1
+Include the sender's certificate only.
+@item n
+Include the first n certificates of the certificates path, starting
+from the sender's certificate.  The number @code{n} must be positive.
+@end table
+
+Values of @var{nr_of_certs} smaller than -2 are undefined.
+
+This option is only relevant to the CMS crypto engine, and ignored
+by all other engines.
+@end deftypefun
+
+@deftypefun int gpgme_get_include_certs (@w{GpgmeCtx @var{ctx}})
+The function @code{gpgme_get_include_certs} returns the number of
+certificates to include into an S/MIME signed message.
 @end deftypefun
 
 
@@ -2035,6 +2076,10 @@ the data object @var{plain} and returns it in the data object
 
 More information about the signatures is available with
 @code{gpgme_get_op_info}.  @xref{Detailed Results}.
+
+If an S/MIME signed message is created using the CMS crypto engine,
+the number of certificates to include in the message can be specified
+with @code{gpgme_set_include_certs}.  @xref{Included Certificates}.
 
 The function returns @code{GPGME_No_Error} if the signature could be
 created successfully, @code{GPGME_Invalid_Value} if @var{ctx},

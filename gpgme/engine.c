@@ -437,8 +437,9 @@ _gpgme_engine_op_keylist (EngineObject engine, const char *pattern, int secret_o
 
 GpgmeError
 _gpgme_engine_op_sign (EngineObject engine, GpgmeData in, GpgmeData out,
-		    GpgmeSigMode mode, int use_armor,
-		    int use_textmode, GpgmeCtx ctx /* FIXME */)
+		       GpgmeSigMode mode, int use_armor,
+		       int use_textmode, int include_certs,
+		       GpgmeCtx ctx /* FIXME */)
 {
   if (!engine)
     return mk_error (Invalid_Value);
@@ -450,7 +451,7 @@ _gpgme_engine_op_sign (EngineObject engine, GpgmeData in, GpgmeData out,
 				 use_textmode, ctx);
     case GPGME_PROTOCOL_CMS:
       return _gpgme_gpgsm_op_sign (engine->engine.gpgsm, in, out, mode,
-				   use_armor, use_textmode, ctx);
+				   use_armor, use_textmode, include_certs, ctx);
       break;
     default:
       break;
