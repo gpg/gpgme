@@ -1669,6 +1669,8 @@ _gpgme_gpg_op_keylist (GpgObject gpg, const char *pattern, int secret_only,
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "--with-fingerprint");
   if (!err)
+    err = _gpgme_gpg_add_arg (gpg, "--with-fingerprint");
+  if (!err)
     err = _gpgme_gpg_add_arg (gpg, 
                               (keylist_mode & GPGME_KEYLIST_MODE_SIGS)?
                               "--check-sigs" :
@@ -1697,6 +1699,8 @@ _gpgme_gpg_op_keylist_ext (GpgObject gpg, const char *pattern[],
   err = _gpgme_gpg_add_arg (gpg, "--with-colons");
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "--fixed-list-mode");
+  if (!err)
+    err = _gpgme_gpg_add_arg (gpg, "--with-fingerprint");
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "--with-fingerprint");
   if (!err)
