@@ -806,6 +806,12 @@ _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
   return mk_error (Invalid_Engine);
 }
 
+void
+_gpgme_gpgsm_set_colon_line_handler (GpgsmObject gpgsm,
+                                     GpgColonLineHandler fnc, void *fnc_value) 
+{
+}
+
 GpgmeError
 _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque)
 {

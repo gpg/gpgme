@@ -1,3 +1,8 @@
+2001-12-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_set_colon_line_handler): New
+	function [!ENABLE_GPGSM].
+
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_op_verify): Put TEXT into
