@@ -135,11 +135,19 @@ _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 }
 
 
+void
+_gpgme_encrypt_sym_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+{
+  _gpgme_passphrase_status_handler (ctx, code, args);
+}
+
+
 GpgmeError
 gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
 			GpgmeData ciph)
 {
   int err = 0;
+  int symmetric = 0;
 
   fail_on_pending_request (ctx);
   ctx->pending = 1;
@@ -147,9 +155,10 @@ gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
   _gpgme_release_result (ctx);
 
   /* Do some checks.  */
-  if (!gpgme_recipients_count (recp))
+  if (!recp)
+    symmetric = 1;
+  else if (!gpgme_recipients_count (recp))
     {
-      /* Fixme: In this case we should do symmentric encryption.  */
       err = mk_error (No_Recipients);
       goto leave;
     }
@@ -162,7 +171,17 @@ gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
   if (err)
     goto leave;
 
-  _gpgme_engine_set_status_handler (ctx->engine, _gpgme_encrypt_status_handler,
+  if (symmetric)
+    {
+      err = _gpgme_passphrase_start (ctx);
+      if (err)
+	goto leave;
+    }
+
+  _gpgme_engine_set_status_handler (ctx->engine,
+				    symmetric
+				    ? _gpgme_encrypt_sym_status_handler
+				    : _gpgme_encrypt_status_handler,
 				    ctx);
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 

@@ -1,5 +1,10 @@
 2002-03-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Encrypting a Plaintext): Document symmetric
+	encryption.
+
+2002-03-06  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.texi (Error Strings): Add example.
 	* gpgme.texi (Listing Keys): Likewise.
 

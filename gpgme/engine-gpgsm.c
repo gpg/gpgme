@@ -484,6 +484,8 @@ _gpgme_gpgsm_op_encrypt (GpgsmObject gpgsm, GpgmeRecipients recp,
 
   if (!gpgsm)
     return mk_error (Invalid_Value);
+  if (!recp)
+    return mk_error (Not_Implemented);
 
   gpgsm->command = xtrystrdup ("ENCRYPT");
   if (!gpgsm->command)

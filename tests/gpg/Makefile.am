@@ -23,8 +23,9 @@ GPG = @GPG@
 
 TESTS_ENVIRONMENT = GNUPGHOME=.
 
-TESTS = t-encrypt t-encrypt-sign t-sign t-signers t-decrypt t-verify \
-	t-decrypt-verify t-keylist t-export t-import t-trustlist
+TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers	\
+	t-decrypt t-verify t-decrypt-verify t-keylist t-export	\
+	t-import t-trustlist
 
 CLEANFILES = secring.gpg pubring.gpg trustdb.gpg
 DISTCLEANFILES = pubring.gpg~ random_seed

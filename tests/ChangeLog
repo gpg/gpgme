@@ -1,3 +1,8 @@
+2002-03-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-encrypt-sym.c: New file.
+	* gpg/Makefile.am (TESTS): Add t-encrypt-sym.
+
 2002-03-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/Makefile.am (CLEANFILES): Remove random_seed, which is now
