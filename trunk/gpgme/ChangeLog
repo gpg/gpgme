@@ -1,3 +1,12 @@
+2001-02-28  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c (destroy_reader): Set sop_me flag.
+	(writer,create_writer,destroy_writer,find_writer,kill_writer): New.
+	(_gpgme_io_write): Use a writer thread to avaoid blocking.
+	(_gpgme_io_close): Cleanup a writer thread
+	(_gpgme_io_select): Repalce tthe faked wait on writing by a real
+	waiting which is now possible due to the use of a writer thread.
+
 2001-02-20  Werner Koch  <wk@gnupg.org>
 
 	* w32-io.c (destroy_reader,kill_reader): New. 
