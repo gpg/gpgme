@@ -1,3 +1,28 @@
+2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* putc_unlocked.c, funopen.c: I just claim copyright on these
+	files and change their license to LGPL, because they are totally
+	trivial wrapper functions.
+	* isascii.c: Change copyright notice to the one from ctype/ctype.h
+	in the GNU C Library (CVS Head 2004-10-10), where isascii is
+	defined as a macro doing exactly the same as the function in this
+	file.
+	* memrchr.c: Update from the GNU C Library (CVS Head 2001-07-06).
+	* stpcpy.c: Update from the GNU C Library (CVS Head 2004-10-10).
+	* ath.c, ath-compat.c, ath.h, ath-pth.c, ath-pth-compat.c,
+	ath-pthread.c, ath-pthread-compat.c, context.h, conversion.c,
+	data.c, data-compat.c, data-fd.c, data.h, data-mem.c,
+	data-stream.c, data-user.c, debug.c, debug.h, decrypt.c,
+	decrypt-verify.c, delete.c, edit.c, encrypt.c, encrypt-sign.c,
+	engine-backend.h, engine.c, engine-gpgsm.c, engine.h, error.c,
+	export.c, genkey.c, get-env.c, gpgme.c, gpgme.h, import.c, io.h,
+	key.c, keylist.c, mkstatus, Makefile.am, ops.h, op-support.c,
+	passphrase.c, posix-io.c, posix-sema.c, posix-util.c, progress.c,
+	rungpg.c, sema.h, sign.c, signers.c, trust-item.c, trustlist.c,
+	util.h, verify.c, version.c, w32-io.c, w32-sema.c, w32-util.c,
+	wait.c, wait-global.c, wait.h, wait-private.c, wait-user.c: Change
+	license to LGPL.
+
 2004-10-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* verify.c (parse_trust): If no reason is provided, set

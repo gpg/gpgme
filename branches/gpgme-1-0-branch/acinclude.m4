@@ -3,18 +3,18 @@ dnl Copyright (C) 2004 g10 Code GmbH
 dnl
 dnl This file is part of GPGME.
 dnl
-dnl GPGME is free software; you can redistribute it and/or modify
-dnl it under the terms of the GNU General Public License as published by
-dnl the Free Software Foundation; either version 2 of the License, or
-dnl (at your option) any later version.
+dnl GPGME is free software; you can redistribute it and/or modify it
+dnl under the terms of the GNU Lesser General Public License as
+dnl published by the Free Software Foundation; either version 2.1 of the
+dnl License, or (at your option) any later version.
 dnl 
-dnl GPGME is distributed in the hope that it will be useful,
-dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
-dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-dnl GNU General Public License for more details.
+dnl GPGME is distributed in the hope that it will be useful, but WITHOUT
+dnl ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+dnl or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General
+dnl Public License for more details.
 dnl 
-dnl You should have received a copy of the GNU General Public License
-dnl along with this program; if not, write to the Free Software
+dnl You should have received a copy of the GNU Lesser General Public
+dnl License along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 dnl GNUPG_FIX_HDR_VERSION(FILE, NAME)
