@@ -1,5 +1,8 @@
 2003-07-31  Marcus Brinkmann  <marcus@g10code.de>
 
+	* keylist.c (gpgme_get_key): Check if there is more than one key
+	listed, and return GPG_ERR_AMBIGUOUS_NAME in that case.
+
 	* util.h (_gpgme_decode_c_string): Change type of LEN argument to
 	size_t.
 	(_gpgme_decode_percent_string): Likewise.

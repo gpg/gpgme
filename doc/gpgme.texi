@@ -1144,7 +1144,8 @@ were configured to exclude support for this engine, or because the
 engine is not installed properly.
 
 @item GPG_ERR_AMBIGUOUS_NAME
-This value indicates that a user ID did not specify a unique key.
+This value indicates that a user ID or other specifier did not specify
+a unique key.
 
 @item GPG_ERR_WRONG_KEY_USAGE
 This value indicates that a key is not used appropriately.
@@ -2377,8 +2378,9 @@ the error code @code{GPG_ERR_NO_ERROR} and *@var{r_key} will be set to
 
 The function returns the error code @code{GPG_ERR_INV_VALUE} if
 @var{ctx} or @var{r_key} is not a valid pointer or @var{fpr} is not a
-fingerprint or key ID, and @code{GPG_ERR_ENOMEM} if at some time
-during the operation there was not enough memory available.
+fingerprint or key ID, @code{GPG_ERR_AMBIGUOUS_NAME} if the key ID was
+not a unique specifier for a key, and @code{GPG_ERR_ENOMEM} if at some
+time during the operation there was not enough memory available.
 @end deftypefun
 
 

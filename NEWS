@@ -1,3 +1,15 @@
+Noteworthy changes in version 0.4.3 (unreleased)
+------------------------------------------------
+
+ * gpgme_get_key fails with GPG_ERR_AMBIGUOUS_NAME if the key ID
+   provided was not unique, instead returning the first matching key.
+
+ * Interface changes relative to the 0.4.3 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_get_key			CHANGED: Fails correctly if key ID not unique.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 Noteworthy changes in version 0.4.2 (2003-07-30)
 ------------------------------------------------
 
