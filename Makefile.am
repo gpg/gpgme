@@ -45,4 +45,10 @@ else
 tests = 
 endif
 
-SUBDIRS = ${assuan} jnlib gpgme ${tests} doc ${bonobo} ${complus}
+if BUILD_GPGMEPLUG
+gpgmeplug = gpgmeplug
+else
+gpgmeplug = 
+endif
+
+SUBDIRS = ${assuan} jnlib gpgme ${tests} doc ${bonobo} ${complus} ${gpgmeplug}
