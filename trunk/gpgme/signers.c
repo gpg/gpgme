@@ -1,6 +1,6 @@
 /* signers.c - maintain signer sets
  *	Copyright (C) 2001 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -43,21 +43,21 @@
  * Return value: The version string or NULL
  **/
 void
-gpgme_signers_clear (GpgmeCtx c)
+gpgme_signers_clear (GpgmeCtx ctx)
 {
   int i;
 
-  return_if_fail (c);
+  return_if_fail (ctx);
 
-  if (!c->signers)
+  if (!ctx->signers)
     return;
-  for (i = 0; i < c->signers_len; i++)
+  for (i = 0; i < ctx->signers_len; i++)
     {
-      assert (c->signers[i]);
-      gpgme_key_unref (c->signers[i]);
-      c->signers[i] = NULL;
+      assert (ctx->signers[i]);
+      gpgme_key_unref (ctx->signers[i]);
+      ctx->signers[i] = NULL;
     }
-  c->signers_len = 0;
+  ctx->signers_len = 0;
 }
 
 /**
@@ -71,28 +71,28 @@ gpgme_signers_clear (GpgmeCtx c)
  * Return value: NULL on success, or an error code.
  **/
 GpgmeError
-gpgme_signers_add (GpgmeCtx c, const GpgmeKey key)
+gpgme_signers_add (GpgmeCtx ctx, const GpgmeKey key)
 {
-  if (!c || !key)
+  if (!ctx || !key)
     return mk_error (Invalid_Value);
 
-  if (c->signers_len == c->signers_size)
+  if (ctx->signers_len == ctx->signers_size)
     {
       GpgmeKey *newarr;
-      int n = c->signers_size + 5;
+      int n = ctx->signers_size + 5;
       int j;
 
-      newarr = xtryrealloc (c->signers, n * sizeof (*newarr));
+      newarr = xtryrealloc (ctx->signers, n * sizeof (*newarr));
       if (!newarr)
 	return mk_error (Out_Of_Core);
-      for (j = c->signers_size; j < n; j++)
+      for (j = ctx->signers_size; j < n; j++)
 	newarr[j] = NULL;
-      c->signers = newarr;
-      c->signers_size = n;
+      ctx->signers = newarr;
+      ctx->signers_size = n;
     }
 
   gpgme_key_ref (key);
-  c->signers[c->signers_len++] = key;
+  ctx->signers[ctx->signers_len++] = key;
   return 0;
 }
 
@@ -107,14 +107,14 @@ gpgme_signers_add (GpgmeCtx c, const GpgmeKey key)
  * Return value: A GpgmeKey or NULL on failure.
  **/
 GpgmeKey
-gpgme_signers_enum (const GpgmeCtx c, int seq )
+gpgme_signers_enum (const GpgmeCtx ctx, int seq)
 {
-  return_null_if_fail (c);
+  return_null_if_fail (ctx);
   return_null_if_fail (seq >= 0);
 
-  if (seq >= c->signers_len)
+  if (seq >= ctx->signers_len)
     return NULL;
 
-  gpgme_key_ref (c->signers[seq]);
-  return c->signers[seq];
+  gpgme_key_ref (ctx->signers[seq]);
+  return ctx->signers[seq];
 }
