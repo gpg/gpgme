@@ -53,8 +53,8 @@ Noteworthy changes in version 0.4.1 (unreleased)
  * The FPR argument to gpgme_op_genkey was removed.  Instead, use the
    gpgme_op_genkey_result function to retrieve a GpgmeGenKeyResult
    pointer to a structure which contains the fingerprint.  This also
-   works with gpgme_op_genkey.  The structure also provides other
-   information about the generated keys.
+   works with gpgme_op_genkey_start.  The structure also provides
+   other information about the generated keys.
 
    So, instead:
 
