@@ -1,3 +1,10 @@
+2002-03-04  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.4.
+	
+	* configure.ac: Bumbed LT version numbers to (7,1,0), requires
+	gpgsm 0.3.1.
+
 2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac (AC_INIT): Change version number to snapshot CVS

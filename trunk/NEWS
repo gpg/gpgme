@@ -1,3 +1,5 @@
+Noteworthy changes in version 0.3.4 (2002-03-04)
+------------------------------------------------
 
  * gpgme_op_encrypt does now fail with GPGME_Invalid_Recipients if
    some recipients have been invalid, whereas earlier versions
