@@ -31,6 +31,7 @@
 
 #include "util.h"
 #include "context.h"
+#include "ops.h"
 #include "wait.h"
 
 /* Fixme: implement the following stuff to make the code MT safe.
@@ -159,13 +160,24 @@ remove_process ( pid_t pid )
  *  and no (or the given) request has finished.
  **/
 GpgmeCtx 
-gpgme_wait ( GpgmeCtx c, int hang )
+gpgme_wait ( GpgmeCtx c, int hang ) 
+{
+    return _gpgme_wait_on_condition ( c, hang, NULL );
+}
+
+GpgmeCtx 
+_gpgme_wait_on_condition ( GpgmeCtx c, int hang, volatile int *cond )
 {
     struct wait_queue_item_s *q;
 
     init_wait_queue ();
     do {
-        if ( !the_big_select() ) {
+        int did_work = the_big_select();
+
+        if ( cond && *cond )
+            hang = 0;
+
+        if ( !did_work ) {
             int status;
 
             /* We did no read/write - see whether this process is still

@@ -127,8 +127,6 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
     if (!line)
         return; /* EOF */
 
-    fprintf (stderr, "line=`%s'\n", line );
-
     for (p = line; p; p = pend) {
         field++;
         pend = strchr (p, ':');
@@ -254,20 +252,35 @@ finish_key ( GpgmeCtx ctx )
 {
     GpgmeKey key = ctx->tmp_key;
     struct user_id_s *u;
+    struct key_queue_item_s *q, *q2;
     
     assert (key);
     ctx->tmp_key = NULL;
     
-    fprintf (stderr, "finish_key: keyid=`%s'\n", key->keyid );
+    fprintf (stdout, "finish_key: keyid=`%s'\n", key->keyid );
     if ( key->fingerprint )
-        fprintf (stderr, "finish_key:  fpr=`%s'\n", key->fingerprint );
+        fprintf (stdout, "finish_key:  fpr=`%s'\n", key->fingerprint );
     for (u=key->uids; u; u = u->next ) 
-        fprintf (stderr, "finish_key:  uid=`%s'\n", u->name );
+        fprintf (stdout, "finish_key:  uid=`%s'\n", u->name );
         
-
-    /* fixme: call the callback or do something else with the key */
-    
-    _gpgme_key_release (key);
+    q = xtrymalloc ( sizeof *q );
+    if ( !q ) {
+        _gpgme_key_release (key);
+        ctx->out_of_core = 1;
+        return;
+    }
+    q->key = key;
+    q->next = NULL;
+    /* fixme: lock queue */
+    if ( !(q2 = ctx->key_queue) )
+        ctx->key_queue = q;
+    else {
+        for ( ; q2->next; q2 = q2->next )
+            ;
+        q2->next = q;
+    }
+    ctx->key_cond = 1;
+    /* fixme: unlock queue */
 }
 
 
@@ -291,6 +304,7 @@ gpgme_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
     }
     _gpgme_key_release (c->tmp_key);
     c->tmp_key = NULL;
+    /* Fixme: release key_queue */
     
     rc = _gpgme_gpg_new_object ( &c->gpg );
     if (rc)
@@ -326,6 +340,46 @@ gpgme_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
     }
     return rc;
 }
+
+
+GpgmeError
+gpgme_keylist_next ( GpgmeCtx c, GpgmeKey *r_key )
+{
+    struct key_queue_item_s *q;
+
+    if (!r_key)
+        return mk_error (Invalid_Value);
+    *r_key = NULL;
+    if (!c)
+        return mk_error (Invalid_Value);
+    if ( !c->pending )
+        return mk_error (No_Request);
+    if ( c->out_of_core )
+        return mk_error (Out_Of_Core);
+
+    if ( !c->key_queue ) {
+        _gpgme_wait_on_condition (c, 1, &c->key_cond );
+        if ( c->out_of_core )
+            return mk_error (Out_Of_Core);
+        if ( !c->key_cond )
+            return mk_error (EOF);
+        c->key_cond = 0; 
+        assert ( c->key_queue );
+    }
+    q = c->key_queue;
+    c->key_queue = q->next;
+
+    *r_key = q->key;
+    xfree (q);
+    return 0;
+}
+
+
+
+
+
+
+
 
 
 

@@ -36,6 +36,9 @@ typedef struct gpgme_data_s *GpgmeData;
 struct gpgme_recipient_set_s;
 typedef struct gpgme_recipient_set_s *GpgmeRecipientSet;
 
+struct gpgme_key_s;
+typedef struct gpgme_key_s *GpgmeKey;
+
 
 typedef enum {
     GPGME_EOF = -1,
@@ -97,6 +100,7 @@ GpgmeError gpgme_start_verify ( GpgmeCtx c,  GpgmeData sig, GpgmeData text );
 /* Key management functions */
 GpgmeError gpgme_keylist_start ( GpgmeCtx c,
                                  const char *pattern, int secret_only );
+GpgmeError gpgme_keylist_next ( GpgmeCtx c, GpgmeKey *r_key );
 
 
 

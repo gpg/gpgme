@@ -26,6 +26,10 @@
 /*-- gpgme.c --*/
 void _gpgme_release_result ( GpgmeCtx c );
 
+/*-- wait.c --*/
+GpgmeCtx _gpgme_wait_on_condition ( GpgmeCtx c,
+                                    int hang, volatile int *cond );
+
 
 /*-- recipient.c --*/
 void _gpgme_append_gpg_args_from_recipients (

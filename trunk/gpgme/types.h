@@ -48,8 +48,6 @@ struct verify_result_s;
 typedef struct verify_result_s *VerifyResult;
 
 /*-- key.c --*/
-struct gpgme_key_s;
-typedef struct gpgme_key_s *GpgmeKey;
 
 
 #endif /* TYPES_H */
