@@ -1,5 +1,5 @@
 /* debug.c
- *	Copyright (C) 2001 Werner Koch (dd9jn)
+ *      Copyright (C) 2001 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <ctype.h>
 #include <assert.h>
 
 #include "util.h"
@@ -37,6 +38,34 @@ struct debug_control_s {
 };
 
 static int debug_level = 0;
+static FILE *errfp = NULL;
+
+/****************
+ * remove leading and trailing white spaces
+ */
+static char *
+trim_spaces( char *str )
+{
+    char *string, *p, *mark;
+
+    string = str;
+    /* find first non space character */
+    for( p=string; *p && isspace( *(byte*)p ) ; p++ )
+	;
+    /* move characters */
+    for( (mark = NULL); (*string = *p); string++, p++ )
+	if( isspace( *(byte*)p ) ) {
+	    if( !mark )
+		mark = string ;
+	}
+	else
+	    mark = NULL ;
+    if( mark )
+	*mark = '\0' ;  /* remove trailing spaces */
+
+    return str ;
+}
+
 
 static void
 debug_init (void)
@@ -48,15 +77,51 @@ debug_init (void)
     LOCK (debug_lock);
     if (!initialized) {
         const char *e = getenv ("GPGME_DEBUG");
-        
-        debug_level =  e? atoi (e): 0;
+        const char *s1, *s2;;
+
         initialized = 1;
+        debug_level = 0;
+        errfp = stderr;
+        if (e) {
+            debug_level = atoi (e);
+            s1 = strchr (e, ':');
+            if (s1 
+#ifndef HAVE_DOSISH_SYSTEM
+                && getuid () == geteuid ()
+#endif
+                ) {
+                char *p;
+                FILE *fp;
+
+                s1++;
+                if ( !(s2 = strchr (s1, ':')) )
+                    s2 = s1 + strlen(s1);
+                p = xtrymalloc (s2-s1+1);
+                if (p) {
+                    memcpy (p, s1, s2-s1);
+                    p[s2-s1] = 0;
+                    trim_spaces (p);
+                    fp = fopen (p,"a");
+                    if (fp) {
+                        setvbuf (fp, NULL, _IOLBF, 0);
+                        errfp = fp;
+                    }
+                    xfree (p);
+                }
+            }
+        }
+
         if (debug_level > 0)
-            fprintf (stderr,"gpgme_debug: level=%d\n", debug_level);
+            fprintf (errfp,"gpgme_debug: level=%d\n", debug_level);
     }
     UNLOCK (debug_lock);
 }
 
+int
+_gpgme_debug_level ()
+{
+    return debug_level;
+}
 
 void
 _gpgme_debug (int level, const char *format, ...)
@@ -69,12 +134,12 @@ _gpgme_debug (int level, const char *format, ...)
     
     va_start ( arg_ptr, format ) ;
     LOCK (debug_lock);
-    vfprintf (stderr, format, arg_ptr) ;
+    vfprintf (errfp, format, arg_ptr) ;
     va_end ( arg_ptr ) ;
     if( format && *format && format[strlen(format)-1] != '\n' )
-        putc ('\n', stderr);
+        putc ('\n', errfp);
     UNLOCK (debug_lock);
-    fflush (stderr);
+    fflush (errfp);
 }
 
 
@@ -144,11 +209,11 @@ _gpgme_debug_end (void **helper, const char *text)
     rewind (ctl->fp);
     LOCK (debug_lock);
     while ( (c=getc (ctl->fp)) != EOF ) {
-        putc (c, stderr);
+        putc (c, errfp);
         last_c = c;
     }
     if (last_c != '\n')
-        putc ('\n', stderr);
+        putc ('\n', errfp);
     UNLOCK (debug_lock);
     
     fclose (ctl->fp);

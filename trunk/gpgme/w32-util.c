@@ -1,6 +1,7 @@
 /* w32-util.c - Utility functions for the W32 API
- *	Copyright (C) 2001 Werner Koch (dd9jn)
  *      Copyright (C) 1999 Free Software Foundation, Inc
+ *	Copyright (C) 2001 Werner Koch (dd9jn)
+ *      Copyright (C) 2001 g10 Code GmbH
  *
  * This file is part of GPGME.
  *

@@ -1,5 +1,6 @@
 /* t-keylist.c  - regression test
  *	Copyright (C) 2000 Werner Koch (dd9jn)
+ *      Copyright (C) 2001 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
