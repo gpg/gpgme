@@ -1,5 +1,8 @@
 2004-10-22  Marcus Brinkmann  <marcus@g10code.de>
 
+	* configure.ac (LIBGPGME_LT_REVISION): Bump up to 2.
+	(AC_INIT): Set version to 1.0.1.
+
 	* configure.ac: Set HAVE_GPGSM to true only if $GPGSM is not "no".
 
 2004-09-30  Marcus Brinkmann  <marcus@g10code.de>
