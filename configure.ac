@@ -200,7 +200,8 @@ AC_SUBST(GPGME_LIBS)
 AC_SUBST(GPGME_CFLAGS)
 
 AC_CONFIG_FILES(Makefile assuan/Makefile jnlib/Makefile gpgme/Makefile
-		tests/Makefile doc/Makefile
+		tests/Makefile tests/gpg/Makefile tests/gpgsm/Makefile
+		doc/Makefile
 		bonobo/Makefile complus/Makefile gpgmeplug/Makefile)
 AC_CONFIG_FILES(gpgme/gpgme-config, chmod +x gpgme/gpgme-config)
 AC_OUTPUT
