@@ -1,5 +1,7 @@
 2004-06-23  Marcus Brinkmann  <marcus@g10code.de>
 
+	* assuan-domain-connect.c [HAVE_SYS_UIO_H]: Include <sys/uio.h>.
+
 	* assuan-handler.c: Include <errno.h>.
 
 2004-06-08  Marcus Brinkmann  <marcus@g10code.de>

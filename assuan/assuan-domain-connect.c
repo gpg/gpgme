@@ -29,6 +29,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#if HAVE_SYS_UIO_H
+#include <sys/uio.h>
+#endif
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>

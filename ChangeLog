@@ -1,3 +1,15 @@
+2004-06-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for <sys/uio.h>.
+
+2004-06-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.9.0.
+
+	* configure.ac (AC_INIT): Set version number to 0.9.0.
+	(LIBGPGME_LT_CURRENT, LIBGPGME_LT_AGE): Bump up by one.
+	(LIBGPGME_LT_REVISION): Reset to zero.
+
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac (GPGME_CONFIG_API_VERSION): New variable,
