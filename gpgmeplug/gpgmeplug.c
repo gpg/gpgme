@@ -698,6 +698,7 @@ bool signMessage( const char*  cleartext,
                   const char*  certificate )
 {
   GpgmeCtx ctx;
+  GpgmeError err;
   GpgmeData data,  sig;
   size_t    rDLen, rSLen;
   char*  rData = 0;
@@ -721,7 +722,7 @@ bool signMessage( const char*  cleartext,
   if( !ciphertext )
     return false;
 
-  gpgme_new (&ctx);
+  err = gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
 
 
@@ -759,18 +760,24 @@ bool signMessage( const char*  cleartext,
 
   *ciphertext = malloc( rDLen + rSLen + 1000 );
   if( *ciphertext ) {
+/*
     strcpy( (char*)*ciphertext,
             "Content-Type: multipart/signed;\r\n"
             "              protocol=\"application/pgp-signature\";\r\n"
             "              boundary=\"42=.42=.42=.42\"\r\n"
-            "\r\n--42=.42=.42=.42\r\n" );
+            "\r\n--42=.42=.42=.42\r\n\r\n" );
+*/
+/*
+    strcpy( (char*)*ciphertext, "--42=.42=.42=.42\r\n"
+            "Content-Type: text/plain; charset=\"iso-8859-1\"\r\n"
+            "Content-Transfer-Encoding: 7bit\r\n\r\n" );
     strncat((char*)*ciphertext, rData, rDLen );
     strcat( (char*)*ciphertext,
-            "\r\n--42=.42=.42=.42\r\n"
+            "\r\n\r\n--42=.42=.42=.42\r\n"
             "Content-Type: application/pgp-signature\r\n\r\n" );
-    strncat((char*)*ciphertext, rSig, rSLen );
-    strcat( (char*)*ciphertext,
-            "\r\n--42=.42=.42=.42--\r\n" );
+*/
+    strncpy((char*)*ciphertext, rSig, rSLen );
+    ((char*)(*ciphertext))[rSLen] = 0;
   }
 
   gpgme_release (ctx);
