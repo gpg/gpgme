@@ -76,7 +76,9 @@ typedef struct encrypt_result_s *EncryptResult;
 struct passphrase_result_s;
 typedef struct passphrase_result_s *PassphraseResult;
 
-/*-- key.c --*/
+/*-- import.c --*/
+struct import_result_s;
+typedef struct import_result_s *ImportResult;
 
 
 #endif /* TYPES_H */

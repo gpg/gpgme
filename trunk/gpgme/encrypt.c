@@ -59,82 +59,82 @@ _gpgme_release_encrypt_result (EncryptResult result)
 static void
 append_xml_encinfo (GpgmeData *rdh, char *args)
 {
-    GpgmeData dh;
-    char helpbuf[100];
+  GpgmeData dh;
+  char helpbuf[100];
 
-    if ( !*rdh ) {
-        if (gpgme_data_new (rdh)) {
-            return; /* fixme: We are ignoring out-of-core */
-        }
-        dh = *rdh;
-        _gpgme_data_append_string (dh, "<GnupgOperationInfo>\n");
+  if (!*rdh)
+    {
+      if (gpgme_data_new (rdh))
+	return; /* FIXME: We are ignoring out-of-core.  */
+      dh = *rdh;
+      _gpgme_data_append_string (dh, "<GnupgOperationInfo>\n");
     }
-    else {
-        dh = *rdh;
-        _gpgme_data_append_string (dh, "  </encryption>\n");
-    }
-
-    if (!args) { /* just close the XML containter */
-        _gpgme_data_append_string (dh, "</GnupgOperationInfo>\n");
-        return;
+  else
+    {
+      dh = *rdh;
+      _gpgme_data_append_string (dh, "  </encryption>\n");
     }
 
-    _gpgme_data_append_string (dh, "  <encryption>\n"
-                                   "    <error>\n"
-                                   "      <invalidRecipient/>\n");
+  if (!args)
+    {
+      /* Just close the XML containter.  */
+      _gpgme_data_append_string (dh, "</GnupgOperationInfo>\n");
+      return;
+    }
+
+  _gpgme_data_append_string (dh, "  <encryption>\n"
+			     "    <error>\n"
+			     "      <invalidRecipient/>\n");
     
-    sprintf (helpbuf, "      <reason>%d</reason>\n", atoi (args));
-    _gpgme_data_append_string (dh, helpbuf);
-    SKIP_TOKEN_OR_RETURN (args);
+  sprintf (helpbuf, "      <reason>%d</reason>\n", atoi (args));
+  _gpgme_data_append_string (dh, helpbuf);
+  SKIP_TOKEN_OR_RETURN (args);
 
-    _gpgme_data_append_string (dh, "      <name>");
-    _gpgme_data_append_percentstring_for_xml (dh, args);
-    _gpgme_data_append_string (dh, "</name>\n"
-                                   "    </error>\n");
+  _gpgme_data_append_string (dh, "      <name>");
+  _gpgme_data_append_percentstring_for_xml (dh, args);
+  _gpgme_data_append_string (dh, "</name>\n"
+			     "    </error>\n");
 }
-
-
-
 
 
 static void
 encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
-    if (ctx->out_of_core)
-      return;
-    if (!ctx->result.encrypt)
-      {
-        ctx->result.encrypt = xtrycalloc (1, sizeof *ctx->result.encrypt);
-        if (!ctx->result.encrypt)
-	  {
-            ctx->out_of_core = 1;
-            return;
-	  }
-      }
-
-    switch (code) {
-      case STATUS_EOF:
-        if (ctx->result.encrypt->xmlinfo) {
-            append_xml_encinfo (&ctx->result.encrypt->xmlinfo, NULL);
-            _gpgme_set_op_info (ctx, ctx->result.encrypt->xmlinfo);
-            ctx->result.encrypt->xmlinfo = NULL;
-        }
-        break;
-
-      case STATUS_INV_RECP:
-        append_xml_encinfo (&ctx->result.encrypt->xmlinfo, args);
-        break;
-
-      case STATUS_NO_RECP:
-        ctx->result.encrypt->no_recipients = 1; /* i.e. no usable ones */
-        break;
-
-      default:
-        break;
+  if (ctx->out_of_core)
+    return;
+  if (!ctx->result.encrypt)
+    {
+      ctx->result.encrypt = xtrycalloc (1, sizeof *ctx->result.encrypt);
+      if (!ctx->result.encrypt)
+	{
+	  ctx->out_of_core = 1;
+	  return;
+	}
     }
 
-}
+  switch (code)
+    {
+    case STATUS_EOF:
+      if (ctx->result.encrypt->xmlinfo)
+	{
+	  append_xml_encinfo (&ctx->result.encrypt->xmlinfo, NULL);
+	  _gpgme_set_op_info (ctx, ctx->result.encrypt->xmlinfo);
+	  ctx->result.encrypt->xmlinfo = NULL;
+        }
+      break;
 
+    case STATUS_INV_RECP:
+      append_xml_encinfo (&ctx->result.encrypt->xmlinfo, args);
+      break;
+
+    case STATUS_NO_RECP:
+      ctx->result.encrypt->no_recipients = 1; /* i.e. no usable ones */
+      break;
+
+    default:
+      break;
+    }
+}
 
 
 GpgmeError
@@ -213,28 +213,30 @@ gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
  * Return value:  0 on success or an errorcode. 
  **/
 GpgmeError
-gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
-                   GpgmeData in, GpgmeData out )
+gpgme_op_encrypt (GpgmeCtx ctx, GpgmeRecipients recp,
+		  GpgmeData plain, GpgmeData cipher)
 {
-    int err = gpgme_op_encrypt_start ( c, recp, in, out );
-    if ( !err ) {
-        gpgme_wait (c, 1);
-        if (!c->result.encrypt)
-            err = mk_error (General_Error);
-        else if (c->out_of_core)
-            err = mk_error (Out_Of_Core);
-        else {
-            if (c->result.encrypt->no_recipients) 
-                err = mk_error (No_Recipients);
+  int err = gpgme_op_encrypt_start (ctx, recp, plain, cipher);
+  if (!err)
+    {
+      gpgme_wait (ctx, 1);
+      if (!ctx->result.encrypt)
+	err = mk_error (General_Error);
+      else if (ctx->out_of_core)
+	err = mk_error (Out_Of_Core);
+      else
+	{
+	  if (ctx->result.encrypt->no_recipients) 
+	    err = mk_error (No_Recipients);
         }
-        /* Old gpg versions don't return status info for invalid
-         * recipients, so we simply check whether we got any output at
-         * all and if not assume that we don't have valid recipients
-         * */
-        if (!err && gpgme_data_get_type (out) == GPGME_DATA_TYPE_NONE)
-            err = mk_error (No_Recipients);
+      /* Old gpg versions don't return status info for invalid
+	 recipients, so we simply check whether we got any output at
+	 all, and if not we assume that we don't have valid
+	 recipients.  */
+      if (!err && gpgme_data_get_type (cipher) == GPGME_DATA_TYPE_NONE)
+	err = mk_error (No_Recipients);
     }
-    return err;
+  return err;
 }
 
 

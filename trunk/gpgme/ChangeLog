@@ -1,5 +1,19 @@
 2002-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* import.c (struct import_result_s): New structure.
+	(_gpgme_release_import_result): New function.
+	(append_xml_impinfo): Likewise.
+	(import_status_handler): Implement.
+	* gpgme.c (_gpgme_release_result): Add call to
+	_gpgme_release_import_result.
+	* ops.h (_gpgme_release_impoer_result): Add prototype.
+	* types.h (ImportResult): New type.
+	* context.h (gpgme_context_s): Add ImportResult to member result.
+
+	* encrypt.c (gpgme_op_encrypt): Code clean up.
+
+2002-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.h: Add lots of comment and fix the formatting.  Add
 	gpgme_trustlist_end prototype.
 
