@@ -1,3 +1,10 @@
+2002-02-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* genkey.c (gpgme_op_genkey_start): Fix logic in validity check.
+	(gpgme_op_genkey_start): Skip newlines after opening tag.
+
+	* engine-gpgsm.c (_gpgme_gpgsm_start): Remove cruft.
+
 2002-02-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* genkey.c (gpgme_op_genkey_start): Allow PUBKEY and SECKEY to be
