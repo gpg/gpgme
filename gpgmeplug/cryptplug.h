@@ -865,6 +865,14 @@ void setEncryptionCRLNearExpiryInterval( int );
 int encryptionCRLNearExpiryInterval( void );
 
 
+/*! \ingroup groupConfigCrypt
+  \brief Returns the number of days the currently active certification
+  list is still valid. 
+*/
+int encryptionCRLsDaysLeftToExpiry( void );
+
+
+
 /*! \ingroup groupConfigDir
    \brief This function returns an XML representation of a
             configuration dialog for selecting a directory

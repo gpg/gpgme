@@ -681,11 +681,26 @@ bool receiverEmailAddressNotInCertificateWarning()
 void setEncryptionUseCRLs( bool flag )
 {
   config.encryptionUseCRLs = flag;
+
+  /* PENDING(g10) Store this setting in gpgme and use it. If true,
+     every certificate used for encryption should be checked against
+     applicable CRLs.
+  */
 }
 
 bool encryptionUseCRLs()
 {
   return config.encryptionUseCRLs;
+}
+
+
+int encryptionCRLsDaysLeftToExpiry()
+{
+    /* PENDING(g10)
+       Please return the number of days that are left until the
+       CRL used for encryption expires.
+    */
+    return 10; // dummy that triggers a warning in the MUA
 }
 
 void setEncryptionCRLExpiryNearWarning( bool flag )
