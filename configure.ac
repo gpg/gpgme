@@ -185,7 +185,7 @@ AM_CONDITIONAL(BUILD_BONOBO,  test "$component_system" = "Bonobo")
 
 GPGMEPLUG=no
 AC_ARG_ENABLE(gpgmeplug,
-	    AC_HELP_STRING([--enable-gpgmeplug], [build Gpgme Crypt Plug-In]),
+	    AC_HELP_STRING([--enable-gpgmeplug], [build GPGME Crypt Plug-In]),
 	    GPGMEPLUG=$enableval)
 AM_CONDITIONAL(BUILD_GPGMEPLUG, test "$GPGMEPLUG" = "yes")
 
@@ -214,5 +214,5 @@ echo "
         GpgSM version: min. $NEED_GPGSM_VERSION
 	GpgSM path:    $GPGSM
 
-	GpgME CryptPlug: $GPGMEPLUG
+	GPGME CryptPlug: $GPGMEPLUG
 "
