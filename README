@@ -32,15 +32,10 @@ The plug-ins are not installed by `make install'.
 Before building the CVS version following the generic install
 instructions in `INSTALL', you need to set up the build scripts with
 `./autogen.sh'.  To build the W32 version, use `./autogen.sh
---build-w32'.
+--build-w32'.  You also need to enable maintainer mode at configure
+time with `--enable-maintainer-mode', or the documentation will not
+built (because the version.texi won't be generated unless maintainer
+mode is enabled).
 
 Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
 to do serious work.
-
-
- 
-
-
-
-
-
