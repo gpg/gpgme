@@ -331,6 +331,7 @@ finish_key (GpgmeCtx ctx, op_data_t opd)
   GpgmeKey key = opd->tmp_key;
 
   opd->tmp_key = NULL;
+  opd->tmp_uid = NULL;
 
   if (key)
     _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_NEXT_KEY, key);
