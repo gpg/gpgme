@@ -122,7 +122,45 @@ parse_timestamp (char *timestamp)
   if (!*timestamp)
     return 0;
 
-  return (time_t) strtoul (timestamp, NULL, 10);
+  if (strlen (timestamp) >= 15 && timestamp[8] == 'T')
+    {
+      struct tm buf;
+      int year;
+
+      year = atoi_4 (timestamp);
+      if (year < 1900)
+        return (time_t)(-1);
+
+      /* Fixme: We would better use a configure test to see whether
+         mktime can handle dates beyond 2038. */
+      if (sizeof (time_t) <= 4 && year >= 2038)
+        return (time_t)2145914603; /* 2037-12-31 23:23:23 */
+
+      memset (&buf, 0, sizeof buf);
+      buf.tm_year = year - 1900;
+      buf.tm_mon = atoi_2 (timestamp+4) - 1; 
+      buf.tm_mday = atoi_2 (timestamp+6);
+      buf.tm_hour = atoi_2 (timestamp+9);
+      buf.tm_min = atoi_2 (timestamp+11);
+      buf.tm_sec = atoi_2 (timestamp+13);
+
+#ifdef HAVE_TIMEGM
+      return timegm (&buf);
+#else
+      {
+        time_t tim;
+        
+        putenv ("TZ=UTC");
+        tim = mktime (&buf);
+#ifdef __GNUC__
+#warning fixme: we must somehow reset TZ here.  It is not threadsafe anyway.
+#endif
+        return tim;
+      }
+#endif /* !HAVE_TIMEGM */
+    }
+  else
+    return (time_t) strtoul (timestamp, NULL, 10);
 }
 
 

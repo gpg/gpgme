@@ -1,3 +1,8 @@
+2003-10-31  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (parse_timestamp): Detect ISO 8601 timestamps and try
+	to convert them.
+
 2003-10-10  Marcus Brinkmann  <marcus@g10code.de>
 
 	* genkey.c (get_key_parameter): Make a copy of the key parameters.

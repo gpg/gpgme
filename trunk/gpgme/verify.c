@@ -259,6 +259,8 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
     {
       char *tail;
       errno = 0;
+
+      /* FIXME: We need to cope with ISO time strings here. */
       sig->timestamp = strtol (end, &tail, 0);
       if (errno || end == tail || (*tail && *tail != ' '))
 	return gpg_error (GPG_ERR_INV_ENGINE);

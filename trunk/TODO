@@ -26,12 +26,13 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Thread support:
 ** When GNU Pth supports sendmsg/recvmsg, wrap them properly.
+** Without timegm (3) support our ISO time parser is not thread safe.
 
 * New features:
 ** notification system
    We need a simple notification system, probably a simple callback
    with a string and some optional arguments.  This is for example
-   required to notify an application of a changed smartcard,  The
+   required to notify an application of a changed smartcard, The
    application can then do whatever is required.  There are other
    usages too.  This notfication system should be independent of any
    contextes of course.
@@ -56,7 +57,11 @@ Hey Emacs, this is -*- outline -*- mode!
     worked around in a different way
 *** Selecting the symmetric cipher.
 *** Exchanging keys with key servers.
-
+** Allow selection of subkeys
+** Allow to return time stamps in ISO format
+  This allows us to handle years later than 2037 properly.  With the
+  time_t interface they are all mapped to 2037-12-31
+   
 * Documentation
 ** Document validity and trust issues.
 
