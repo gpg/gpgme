@@ -1,21 +1,21 @@
 /* assuan-pipe-connect.c - Establish a pipe connection (client) 
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
- * This file is part of GnuPG.
+ * This file is part of Assuan.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Assuan is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- * GnuPG is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Assuan is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
  */
 
 #ifdef HAVE_CONFIG_H
@@ -28,10 +28,9 @@
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
 #include "assuan-defs.h"
 
@@ -104,9 +103,8 @@ do_deinit (ASSUAN_CONTEXT ctx)
    vector in ARGV.  FD_CHILD_LIST is a -1 terminated list of file
    descriptors not to close in the child.  */
 AssuanError
-assuan_pipe_connect2 (ASSUAN_CONTEXT *ctx, const char *name,
-                      char *const argv[], int *fd_child_list,
-                      unsigned int connect_flags)
+assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
+		     int *fd_child_list)
 {
   static int fixed_signals = 0;
   AssuanError err;
@@ -172,35 +170,9 @@ assuan_pipe_connect2 (ASSUAN_CONTEXT *ctx, const char *name,
     {
       int i, n;
       char errbuf[512];
-#ifdef HAVE_JNLIB_LOGGING
-      int log_fd = log_get_fd (); 
-#endif
-      /* close all files which will not be duped but keep stderr
-         and log_stream for now */
-      n = sysconf (_SC_OPEN_MAX);
-      if (n < 0)
-        n = MAX_OPEN_FDS;
-      for (i=0; i < n; i++)
-        {
-	  int *fdp = fd_child_list;
+      int *fdp;
 
-	  if (fdp)
-	    {
-	      while (*fdp != -1 && *fdp != i)
-		fdp++;
-	    }
-
-          if (!(fdp && *fdp != -1)
-	      && i != fileno (stderr) 
-#ifdef HAVE_JNLIB_LOGGING
-              && i != log_fd
-#endif
-              && i != rp[1] && i != wp[0])
-            close(i);
-        }
-      errno = 0;
-
-      /* Dup handles and to stdin/stdout and exec */
+      /* Dup handles to stdin/stdout. */
       if (rp[1] != STDOUT_FILENO)
         {
           if (dup2 (rp[1], STDOUT_FILENO) == -1)
@@ -208,7 +180,6 @@ assuan_pipe_connect2 (ASSUAN_CONTEXT *ctx, const char *name,
               LOGERROR1 ("dup2 failed in child: %s\n", strerror (errno));
               _exit (4);
             }
-          close (rp[1]);
         }
       if (wp[0] != STDIN_FILENO)
         {
@@ -217,25 +188,52 @@ assuan_pipe_connect2 (ASSUAN_CONTEXT *ctx, const char *name,
               LOGERROR1 ("dup2 failed in child: %s\n", strerror (errno));
               _exit (4);
             }
-          close (wp[0]);
         }
 
-      if ((connect_flags & 1))
-        { /* dup stderr to /dev/null so that the application output
-             won't get clobbered with output from the backend */
-          int fdzero = open ("/dev/null", O_WRONLY);
-          if (fdzero == -1)
-            {
-              LOGERROR1 ("can't open `/dev/null': %s\n", strerror (errno));
-              _exit (4);
+      /* Dup stderr to /dev/null unless it is in the list of FDs to be
+         passed to the child. */
+      fdp = fd_child_list;
+      if (fdp)
+        {
+          for (; *fdp != -1 && *fdp != STDERR_FILENO; fdp++)
+            ;
+        }
+      if (!fdp || *fdp == -1)
+        {
+	  int fd = open ("/dev/null", O_WRONLY);
+	  if (fd == -1)
+	    {
+	      LOGERROR1 ("can't open `/dev/null': %s\n", strerror (errno));
+	      _exit (4);
             }
-          if (dup2 (fdzero, 2) == -1)
+          if (dup2 (fd, STDERR_FILENO) == -1)
             {
               LOGERROR1 ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
               _exit (4);
             }
-          close (fdzero);
         }
+
+
+      /* Close all files which will not be duped and are not in the
+         fd_child_list. */
+      n = sysconf (_SC_OPEN_MAX);
+      if (n < 0)
+        n = MAX_OPEN_FDS;
+      for (i=0; i < n; i++)
+        {
+          if ( i == STDIN_FILENO || i == STDOUT_FILENO || i == STDERR_FILENO)
+            continue;
+	  fdp = fd_child_list;
+	  if (fdp)
+	    {
+	      while (*fdp != -1 && *fdp != i)
+		fdp++;
+	    }
+
+          if (!(fdp && *fdp != -1))
+            close(i);
+        }
+      errno = 0;
 
       execv (name, argv); 
       /* oops - use the pipe to tell the parent about it */
@@ -273,15 +271,6 @@ assuan_pipe_connect2 (ASSUAN_CONTEXT *ctx, const char *name,
 
   return err;
 }
-
-AssuanError
-assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
-		     int *fd_child_list)
-{
-  return assuan_pipe_connect2 (ctx, name, argv, fd_child_list, 0);
-}
-
-
 
 
 

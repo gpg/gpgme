@@ -1,3 +1,7 @@
+2003-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan/: Update files to 2002-11-10 version of assuan.
+
 2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* bonobo/gpgme.c, bonobo/main.c, bonobo/main.h, bonobo/Makefile,

@@ -228,7 +228,7 @@ map_assuan_error (AssuanError err)
       return GPGME_Invalid_Engine;  /* XXX:  Need something more useful.  */
 
     case ASSUAN_Bad_Certificate:
-    case ASSUAN_Bad_Certificate_Path:
+    case ASSUAN_Bad_Certificate_Chain:
     case ASSUAN_Missing_Certificate:
     case ASSUAN_No_Public_Key:
     case ASSUAN_No_Secret_Key:
@@ -365,9 +365,8 @@ gpgsm_new (void **engine)
   argv[1] = "--server";
   argv[2] = NULL;
 
-  err = assuan_pipe_connect2 (&gpgsm->assuan_ctx,
-                              _gpgme_get_gpgsm_path (), argv, child_fds,
-                              1 /* dup stderr to /dev/null */);
+  err = assuan_pipe_connect (&gpgsm->assuan_ctx,
+			     _gpgme_get_gpgsm_path (), argv, child_fds);
 
   /* We need to know the fd used by assuan for reads.  We do this by
      using the assumption that the first returned fd from

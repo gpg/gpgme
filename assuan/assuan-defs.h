@@ -1,21 +1,21 @@
 /* assuan-defs.c - Internal definitions to Assuan
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
- * This file is part of GnuPG.
+ * This file is part of Assuan.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Assuan is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- * GnuPG is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Assuan is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
  */
 
 #ifndef ASSUAN_DEFS_H
@@ -76,6 +76,7 @@ struct assuan_context_s {
   pid_t pid;	  /* In pipe mode, the pid of the child server process.  
                      In socket mode, the pid of the server */
   int listen_fd;  /* The fd we are listening on (used by socket servers) */
+  int connected_fd; /* helper */
 
   pid_t client_pid; /* for a socket server the PID of the client or -1
                        if not available */
@@ -99,6 +100,7 @@ struct assuan_context_s {
   int output_fd;  /* set by OUTPUT command */
 
 };
+
 
 
 /*-- assuan-pipe-server.c --*/
@@ -134,6 +136,12 @@ void  _assuan_free (void *p);
 void _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t  length);
 void _assuan_log_sanitized_string (const char *string);
 
+/*-- assuan-io.c --*/
+
+/* Wraps the standard read and write functions to do the Right
+   Thing depending on our linkage.  */
+ssize_t _assuan_read (int fd, void *buffer, size_t size);
+ssize_t _assuan_write (int fd, const void *buffer, size_t size);
 
 #endif /*ASSUAN_DEFS_H*/
 

@@ -1,21 +1,21 @@
-/* assuan.c - Definitions for the Assuna protocol
+/* assuan.c - Definitions for the Assuan protocol
  *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
- * This file is part of GnuPG.
+ * This file is part of Assuan.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Assuan is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- * GnuPG is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Assuan is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
  */
 
 #ifndef ASSUAN_H
@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#include <unistd.h> /* for ssize_t */
 
 #ifdef __cplusplus
 extern "C" { 
@@ -81,7 +82,7 @@ typedef enum {
   ASSUAN_Not_Confirmed = 128,
 
   ASSUAN_Bad_Certificate = 201,
-  ASSUAN_Bad_Certificate_Path = 202,
+  ASSUAN_Bad_Certificate_Chain = 202,
   ASSUAN_Missing_Certificate = 203,
   ASSUAN_Bad_Signature = 204,
   ASSUAN_No_Agent = 205,
@@ -170,15 +171,12 @@ void assuan_deinit_server (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-socket-server.c --*/
 int assuan_init_socket_server (ASSUAN_CONTEXT *r_ctx, int listen_fd);
+int assuan_init_connected_socket_server (ASSUAN_CONTEXT *r_ctx, int fd);
 
 
 /*-- assuan-pipe-connect.c --*/
 AssuanError assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name,
                                  char *const argv[], int *fd_child_list);
-AssuanError assuan_pipe_connect2 (ASSUAN_CONTEXT *ctx, const char *name,
-                                  char *const argv[], int *fd_child_list,
-                                  unsigned int connect_flags);
-
 /*-- assuan-socket-connect.c --*/
 AssuanError assuan_socket_connect (ASSUAN_CONTEXT *ctx, const char *name,
                                    pid_t server_pid);

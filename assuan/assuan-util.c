@@ -1,27 +1,28 @@
 /* assuan-util.c - Utility functions for Assuan 
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
- * This file is part of GnuPG.
+ * This file is part of Assuan.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Assuan is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- * GnuPG is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Assuan is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
  */
 
 #include <config.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "assuan-defs.h"
 
@@ -29,12 +30,9 @@
 #include "../jnlib/logging.h"
 #endif
 
-
 static void *(*alloc_func)(size_t n) = malloc;
 static void *(*realloc_func)(void *p, size_t n) = realloc;
 static void (*free_func)(void*) = free;
-
-
 
 void
 assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
@@ -73,7 +71,6 @@ _assuan_free (void *p)
   if (p)
     free_func (p);
 }
-
 
 
 /* Store the error in the context so that the error sending function
@@ -131,6 +128,8 @@ assuan_end_confidential (ASSUAN_CONTEXT ctx)
     }
 }
 
+/* Dump a possibly binary string (used for debugging).  Distinguish
+   ascii text from binary and print it accordingly.  */
 void
 _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
 {
@@ -138,26 +137,31 @@ _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
   int n;
 
   for (n=length,s=buffer; n; n--, s++)
-    {
-      if (*s < ' ' || (*s >= 0x7f && *s <= 0xa0))
-        break;
-    }
+    if  (!isascii (*s) || iscntrl (*s) || !isprint (*s))
+      break;
+
   s = buffer;
   if (!n && *s != '[')
     fwrite (buffer, length, 1, fp);
   else
     {
-      putc ('[', fp);
+#ifdef HAVE_FLOCKFILE
+      flockfile (fp);
+#endif
+      putc_unlocked ('[', fp);
       for (n=0; n < length; n++, s++)
           fprintf (fp, " %02x", *s);
-      putc (' ', fp);
-      putc (']', fp);
+      putc_unlocked (' ', fp);
+      putc_unlocked (']', fp);
+#ifdef HAVE_FUNLOCKFILE
+      funlockfile (fp);
+#endif
     }
 }
 
 
-/* print a user supplied string after filtering out potential bad
-   characters*/
+/* Log a user supplied string.  Escapes non-printable before
+   printing.  */
 void
 _assuan_log_sanitized_string (const char *string)
 {
@@ -168,29 +172,59 @@ _assuan_log_sanitized_string (const char *string)
   FILE *fp = stderr;
 #endif
 
+  if (! *s)
+    return;
+
+#ifdef HAVE_FLOCKFILE
+  flockfile (fp);
+#endif
+
   for (; *s; s++)
     {
-      if (*s < 0x20 || (*s >= 0x7f && *s <= 0xa0))
-        {
-          putc ('\\', fp);
-          if (*s == '\n')
-            putc ('n', fp);
-          else if (*s == '\r')
-            putc ('r', fp);
-          else if (*s == '\f')
-            putc ('f', fp);
-          else if (*s == '\v')
-            putc ('v', fp);
-          else if (*s == '\b')
-            putc ('b', fp);
-          else if (!*s)
-            putc ('0', fp);
-          else
-            fprintf (fp, "x%02x", *s );
+      int c = 0;
+
+      switch (*s)
+	{
+	case '\r':
+	  c = 'r';
+	  break;
+
+	case '\n':
+	  c = 'n';
+	  break;
+
+	case '\f':
+	  c = 'f';
+	  break;
+
+	case '\v':
+	  c = 'v';
+	  break;
+
+	case '\b':
+	  c = 'b';
+	  break;
+
+	default:
+	  if (isascii (*s) && isprint (*s))
+	    putc_unlocked (*s, fp);
+	  else
+	    {
+	      putc_unlocked ('\\', fp);
+	      fprintf (fp, "x%02x", *s);
+	    }
 	}
-      else
-        putc (*s, fp);
+
+      if (c)
+	{
+	  putc_unlocked ('\\', fp);
+	  putc_unlocked (c, fp);
+	}
     }
+
+#ifdef HAVE_FUNLOCKFILE
+  funlockfile (fp);
+#endif
 }
 
 
