@@ -1179,6 +1179,8 @@ bool checkMessageSignature( char** cleartext,
 {
   GpgmeCtx ctx;
   GpgmeSigStat status;
+  unsigned long sumGPGME;
+  SigStatusFlags sumPlug;
   GpgmeData datapart, sigpart;
   char* rClear = 0;
   size_t clearLen;
@@ -1267,6 +1269,28 @@ bool checkMessageSignature( char** cleartext,
         memcpy( sigmeta->extended_info[sig_idx].creation_time,
                 ctime_val, sizeof( struct tm ) );
       }
+
+      /* the extended signature verification status */
+      sumGPGME = gpgme_get_sig_ulong_attr( ctx,
+                                           sig_idx,
+                                           GPGME_ATTR_SIG_SUMMARY,
+                                           0 );
+      // translate GPGME status flags to common CryptPlug status flags
+      sumPlug = 0;
+      if( sumGPGME & GPGME_SIGSUM_VALID       ) sumPlug |= SigStat_VALID      ;
+      if( sumGPGME & GPGME_SIGSUM_GREEN       ) sumPlug |= SigStat_GREEN      ;
+      if( sumGPGME & GPGME_SIGSUM_RED         ) sumPlug |= SigStat_RED        ;
+      if( sumGPGME & GPGME_SIGSUM_KEY_REVOKED ) sumPlug |= SigStat_KEY_REVOKED;
+      if( sumGPGME & GPGME_SIGSUM_KEY_EXPIRED ) sumPlug |= SigStat_KEY_EXPIRED;
+      if( sumGPGME & GPGME_SIGSUM_SIG_EXPIRED ) sumPlug |= SigStat_SIG_EXPIRED;
+      if( sumGPGME & GPGME_SIGSUM_KEY_MISSING ) sumPlug |= SigStat_KEY_MISSING;
+      if( sumGPGME & GPGME_SIGSUM_CRL_MISSING ) sumPlug |= SigStat_CRL_MISSING;
+      if( sumGPGME & GPGME_SIGSUM_CRL_TOO_OLD ) sumPlug |= SigStat_CRL_TOO_OLD;
+      if( sumGPGME & GPGME_SIGSUM_BAD_POLICY  ) sumPlug |= SigStat_BAD_POLICY ;
+      if( sumGPGME & GPGME_SIGSUM_SYS_ERROR   ) sumPlug |= SigStat_SYS_ERROR  ;
+      if( !sumPlug )
+        sumPlug = SigStat_NUMERICAL_CODE | sumGPGME;
+      sigmeta->extended_info[sig_idx].sigStatusFlags = sumPlug;
 
       sigmeta->extended_info[sig_idx].validity = GPGME_VALIDITY_UNKNOWN;
 
