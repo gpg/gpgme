@@ -1,9 +1,9 @@
 2001-10-29  Marcus Brinkmann  <marcus@g10code.de>
 
-	* context.h: New member signers_len.  * signers.c
-	(gpgme_signers_clear): Require that signers are non-NULL with
-	assertion.  Use signers_len to determine how much keys to release.
-	Add documentation.
+	* context.h: New member signers_len.
+	* signers.c (gpgme_signers_clear): Require that signers are
+	non-NULL with assertion.  Use signers_len to determine how much
+	keys to release.  Add documentation.
 	(gpgme_signers_add): Use signers_len to determine if the buffer is
 	large enough.  Use xtryrealloc rather than xtrymalloc and copying.
 	Add documentation.
