@@ -138,7 +138,7 @@ Contexts
 Context Attributes
 
 * Protocol Selection::            Selecting the protocol used by a context.
-* @acronym{ASCII} Armor::                   Requesting @acronym{ASCII} armored output.
+* ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
 * Included Certificates::         Including a number of certificates.
 * Key Listing Mode::              Selecting key listing mode.
@@ -1164,7 +1164,7 @@ The function @code{gpgme_release} destroys the context with the handle
 
 @menu
 * Protocol Selection::            Selecting the protocol used by a context.
-* @acronym{ASCII} Armor::                   Requesting @acronym{ASCII} armored output.
+* ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
 * Included Certificates::       Including a number of certificates.
 * Key Listing Mode::              Selecting key listing mode.
@@ -1198,10 +1198,10 @@ The function @code{gpgme_get_protocol} retrieves the protocol currently
 use with the context @var{ctx}.
 @end deftypefun
 
-@node @acronym{ASCII} Armor
-@subsection @acronym{ASCII} Armor
+@node ASCII Armor
+@subsection ASCII Armor
 @cindex context, armor mode
-@cindex @acronym{ASCII} armor
+@cindex ASCII armor
 @cindex armor mode
 
 @deftypefun void gpgme_set_armor (@w{GpgmeCtx @var{ctx}}, @w{int @var{yes}})

@@ -1,3 +1,7 @@
+2003-11-19  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.texi (ASCII): Removed @acronym{} from nodenames.
+
 2002-11-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Verify): Fix prototype of gpgme_get_sig_key.
