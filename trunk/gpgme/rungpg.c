@@ -118,17 +118,6 @@ struct gpg_object_s {
     } cmd;
 };
 
-struct reap_s {
-    struct reap_s *next;
-    int pid;
-    time_t entered;
-    int term_send;
-};
-
-static struct reap_s *reap_list;
-DEFINE_STATIC_LOCK (reap_list_lock);
-
-
 static void free_argv ( char **argv );
 static void free_fd_data_map ( struct fd_data_map_s *fd_data_map );
 
@@ -290,81 +279,9 @@ _gpgme_gpg_release (GpgObject gpg)
     _gpgme_io_close (gpg->colon.fd[1]);
   free_fd_data_map (gpg->fd_data_map);
   if (gpg->running)
-    {
-      int pid = gpg->pid;
-      struct reap_s *r;
-
-      /* Reuse the memory, so that we don't need to allocate another
-	 memory block and to handle errors.  */
-      assert (sizeof *r < sizeof *gpg);
-      r = (void*)gpg;
-      memset (r, 0, sizeof *r);
-      r->pid = pid;
-      r->entered = time (NULL);
-      LOCK(reap_list_lock);
-      r->next = reap_list;
-      reap_list = r;
-      UNLOCK(reap_list_lock);
-    }
+    _gpgme_engine_add_child_to_reap_list (gpg, sizeof *gpg, gpg->pid);
   else
     xfree (gpg);
-}
-
-
-static void
-do_reaping (void)
-{
-    struct reap_s *r, *rlast;
-    static time_t last_check;
-    time_t cur_time = time (NULL);
-
-    /* a race does not matter here */
-    if (!last_check)
-        last_check = time(NULL);
-
-    if (last_check >= cur_time)
-        return;  /* we check only every second */
-
-    /* fixme: it would be nice if to have a TRYLOCK here */
-    LOCK (reap_list_lock);  
-    for (r=reap_list,rlast=NULL; r ; rlast=r, r=r?r->next:NULL) {
-        int dummy1, dummy2;
-
-        if ( _gpgme_io_waitpid (r->pid, 0, &dummy1, &dummy2) ) {
-            /* process has terminated - remove it from the queue */
-            void *p = r;
-            if (!rlast) {
-                reap_list = r->next;
-                r = reap_list;
-            }
-            else {
-                rlast->next = r->next;
-                r = rlast;
-            }
-            xfree (p);
-        }
-        else if ( !r->term_send ) {
-            if( r->entered+1 >= cur_time ) {
-                _gpgme_io_kill ( r->pid, 0);
-                r->term_send = 1;
-                r->entered = cur_time;
-            }
-        }
-        else {
-            /* give it 5 second before we are going to send the killer */
-            if ( r->entered+5 >= cur_time ) {
-                _gpgme_io_kill (r->pid, 1);
-                r->entered = cur_time; /* just in case we have to repat it */
-            }
-        }
-    }
-    UNLOCK (reap_list_lock);  
-}
-
-void
-_gpgme_gpg_housecleaning ()
-{
-    do_reaping ();
 }
 
 void

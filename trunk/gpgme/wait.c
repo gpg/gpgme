@@ -34,6 +34,7 @@
 #include "wait.h"
 #include "sema.h"
 #include "io.h"
+#include "engine.h"
 
 struct wait_item_s;
 struct proc_s;
@@ -382,8 +383,7 @@ gpgme_register_idle ( void (*fnc)(void) )
 static void
 run_idle ()
 {
-    _gpgme_gpg_housecleaning ();
-    if (idle_function)
-        idle_function ();
+  _gpgme_engine_housecleaning ();
+  if (idle_function)
+    idle_function ();
 }
-

@@ -22,9 +22,13 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+#include <time.h>
+#include <sys/types.h>
+#include <assert.h>
 
 #include "gpgme.h"
 #include "util.h"
+#include "sema.h"
 
 #include "engine.h"
 #include "rungpg.h"
@@ -43,6 +47,17 @@ struct engine_object_s
         GpgsmObject gpgsm;
       } engine;
 };
+
+struct reap_s
+{
+  struct reap_s *next;
+  int pid;
+  time_t entered;
+  int term_send;
+};
+
+static struct reap_s *reap_list;
+DEFINE_STATIC_LOCK (reap_list_lock);
 
 /* Get the path of the engine for PROTOCOL.  */
 const char *
@@ -433,7 +448,8 @@ _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig, GpgmeData text)
   return 0;
 }
 
-GpgmeError _gpgme_engine_start (EngineObject engine, void *opaque)
+GpgmeError
+_gpgme_engine_start (EngineObject engine, void *opaque)
 {
   if (!engine)
     return mk_error (Invalid_Value);
@@ -448,4 +464,85 @@ GpgmeError _gpgme_engine_start (EngineObject engine, void *opaque)
       break;
     }
   return 0;
+}
+
+void
+_gpgme_engine_add_child_to_reap_list (void *buf, int buflen, pid_t pid)
+{
+  /* Reuse the memory, so that we don't need to allocate another
+     memory block and to handle errors.  */
+  struct reap_s *child = buf;
+
+  assert (buflen >= sizeof *child);
+  memset (child, 0, sizeof *child);
+  child->pid = pid;
+  child->entered = time (NULL);
+  LOCK(reap_list_lock);
+  child->next = reap_list;
+  reap_list = child;
+  UNLOCK(reap_list_lock);
+}
+
+static void
+do_reaping (void)
+{
+  struct reap_s *r, *rlast;
+  static time_t last_check;
+  time_t cur_time = time (NULL);
+
+  /* A race does not matter here.  */
+  if (!last_check)
+    last_check = time (NULL);
+
+  if (last_check >= cur_time)
+    return;  /* We check only every second.  */
+
+  /* Fixme: it would be nice if to have a TRYLOCK here.  */
+  LOCK (reap_list_lock);
+  for (r = reap_list, rlast = NULL; r; rlast = r, r = r ? r->next : NULL)
+    {
+      int dummy1, dummy2;
+
+      if (_gpgme_io_waitpid (r->pid, 0, &dummy1, &dummy2))
+	{
+	  /* The process has terminated - remove it from the queue.  */
+	  void *p = r;
+	  if (!rlast)
+	    {
+	      reap_list = r->next;
+	      r = reap_list;
+            }
+	  else
+	    {
+	      rlast->next = r->next;
+	      r = rlast;
+            }
+	  xfree (p);
+        }
+      else if (!r->term_send)
+	{
+	  if (r->entered + 1 >= cur_time)
+	    {
+	      _gpgme_io_kill (r->pid, 0);
+	      r->term_send = 1;
+	      r->entered = cur_time;
+            }
+        }
+      else
+	{
+	  /* Give it 5 second before we are going to send the killer.  */
+	  if (r->entered + 5 >= cur_time)
+	    {
+	      _gpgme_io_kill (r->pid, 1);
+	      r->entered = cur_time; /* Just in case we have to repeat it.  */
+            }
+        }
+    }
+  UNLOCK (reap_list_lock);  
+}
+
+void
+_gpgme_engine_housecleaning (void)
+{
+  do_reaping ();
 }
