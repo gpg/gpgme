@@ -833,9 +833,9 @@ void appendDirectoryServer( const char* servername, int port,
 /*! \ingroup groupConfigDir
 */
 struct DirectoryServer {
-    const char* servername;
+    char* servername;
     int port;
-    const char* description;
+    char* description;
 };
 
 
@@ -952,7 +952,9 @@ bool storeCertificatesFromMessage( const char* ciphertext );
           \c true, otherwise
           \c false.
 */
-bool encryptMessage( const char* cleartext, const char** ciphertext );
+bool encryptMessage( const char*  cleartext,
+                     const char** ciphertext,
+                     const char*  addressee );
 
 /*! \ingroup groupCryptAct
    \brief Combines the functionality of
