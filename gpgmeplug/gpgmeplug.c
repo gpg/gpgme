@@ -636,29 +636,33 @@ bool signMessage( const char*  cleartext,
                   const char** ciphertext,
                   const char*  certificate )
 {
-/*
   GpgmeCtx ctx;
   GpgmeData data, sig;
 
+  char buf[1024];
+  size_t nread;
+
+  
   gpgme_new (&ctx);
   gpgme_set_armor (ctx, 1);
   gpgme_set_textmode (ctx, 1);
 
-  gpgme_data_new_from_mem (&data, mime_object,
-                            mime_object_len, TRUE );
+  gpgme_data_new_from_mem (&data, cleartext,
+                            strlen( cleartext ), 1 );
   gpgme_data_new ( &sig );
   gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
 
   fputs ( "Content-Type: multipart/signed;\r\n"
           "              protocol=\"application/pgp-signature\";\r\n"
           "              boundary=\"42=.42=.42=.42\"\r\n"
-          "\r\n--42=.42=.42=.42\r\n", stdout );
+          "\r\n--42=.42=.42=.42\r\n",
+          stdout );
 
   gpgme_data_rewind (data);
   while ( !gpgme_data_read (data, buf, sizeof buf, &nread ) ) {
         fwrite (buf, nread, 1, stdout );
   }
-  fputs ( "\r\n--42=.42=.42=.42--\r\n"
+  fputs ( "\r\n--42=.42=.42=.42\r\n"
           "Content-Type: application/pgp-signature\r\n\r\n", stdout);
 
   gpgme_data_rewind (sig);
@@ -670,7 +674,7 @@ bool signMessage( const char*  cleartext,
   gpgme_release (ctx);
   gpgme_data_release(data);
   gpgme_data_release(sig);
-*/
+
   return true;
 }
 
