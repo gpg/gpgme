@@ -32,21 +32,23 @@
 #include "context.h"
 #include "ops.h"
 #include "key.h"
+#include "debug.h"
 
 
-struct keylist_result_s
+struct keylist_result
 {
   int truncated;
   GpgmeData xmlinfo;
 };
+typedef struct keylist_result *KeylistResult;
 
-
-void
-_gpgme_release_keylist_result (KeylistResult result)
+static void
+release_keylist_result (void *hook)
 {
-  if (!result)
-    return;
-  free (result);
+  KeylistResult result = (KeylistResult) hook;
+
+  if (result->xmlinfo)
+    gpgme_data_release (result->xmlinfo);
 }
 
 
@@ -86,22 +88,28 @@ append_xml_keylistinfo (GpgmeData *rdh, char *args)
 static GpgmeError
 keylist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  test_and_allocate_result (ctx, keylist);
+  GpgmeError err;
+  KeylistResult result;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &result,
+			       sizeof (*result), release_keylist_result);
+  if (err)
+    return err;
 
   switch (code)
     {
     case GPGME_STATUS_TRUNCATED:
-      ctx->result.keylist->truncated = 1;
+      result->truncated = 1;
       break;
 
     case GPGME_STATUS_EOF:
-      if (ctx->result.keylist->truncated)
-        append_xml_keylistinfo (&ctx->result.keylist->xmlinfo, "1");
-      if (ctx->result.keylist->xmlinfo)
+      if (result->truncated)
+        append_xml_keylistinfo (&result->xmlinfo, "1");
+      if (result->xmlinfo)
 	{
-	  append_xml_keylistinfo (&ctx->result.keylist->xmlinfo, NULL);
-	  _gpgme_set_op_info (ctx, ctx->result.keylist->xmlinfo);
-	  ctx->result.keylist->xmlinfo = NULL;
+	  append_xml_keylistinfo (&result->xmlinfo, NULL);
+	  _gpgme_set_op_info (ctx, result->xmlinfo);
+	  result->xmlinfo = NULL;
         }
       break;
 

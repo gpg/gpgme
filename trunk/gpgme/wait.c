@@ -34,6 +34,7 @@
 #include "sema.h"
 #include "io.h"
 #include "engine.h"
+#include "debug.h"
 
 
 void

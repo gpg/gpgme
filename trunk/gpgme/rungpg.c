@@ -40,6 +40,7 @@
 #include "context.h"  /*temp hack until we have GpmeData methods to do I/O */
 #include "io.h"
 #include "sema.h"
+#include "debug.h"
 
 #include "status-table.h"
 #include "engine-backend.h"

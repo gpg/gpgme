@@ -32,44 +32,4 @@ typedef GpgmeError (*GpgmeCommandHandler) (void*, GpgmeStatusCode code,
 					   const char *keyword, const char **result);
 
 
-/*-- verify.c --*/
-struct verify_result_s;
-typedef struct verify_result_s *VerifyResult;
-
-/*-- decrypt.c --*/
-struct decrypt_result_s;
-typedef struct decrypt_result_s *DecryptResult;
-
-/*-- sign.c --*/
-struct sign_result_s;
-typedef struct sign_result_s *SignResult;
-
-/*-- encrypt.c --*/
-struct encrypt_result_s;
-typedef struct encrypt_result_s *EncryptResult;
-
-/*-- passphrase.c --*/
-struct passphrase_result_s;
-typedef struct passphrase_result_s *PassphraseResult;
-
-/*-- import.c --*/
-struct import_result_s;
-typedef struct import_result_s *ImportResult;
-
-/*-- delete.c --*/
-struct delete_result_s;
-typedef struct delete_result_s *DeleteResult;
-
-/*-- genkey.c --*/
-struct genkey_result_s;
-typedef struct genkey_result_s *GenKeyResult;
-
-/*-- keylist.c --*/
-struct keylist_result_s;
-typedef struct keylist_result_s *KeylistResult;
-
-/*-- edit.c --*/
-struct edit_result_s;
-typedef struct edit_result_s *EditResult;
-
 #endif /* TYPES_H */

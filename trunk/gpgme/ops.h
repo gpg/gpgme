@@ -21,21 +21,8 @@
 #ifndef OPS_H
 #define OPS_H
 
-#include "types.h"
-
-/* Support macros.  */
-
-#define test_and_allocate_result(ctx,field)				\
-  do									\
-    {									\
-      if (!ctx->result.field)						\
-        {								\
-          ctx->result.field = calloc (1, sizeof *ctx->result.field);	\
-          if (!ctx->result.field)					\
-            return GPGME_Out_Of_Core;					\
-        }								\
-    }									\
-  while (0)
+#include "gpgme.h"
+#include "context.h"
 
 /*-- gpgme.c --*/
 void _gpgme_release_result (GpgmeCtx ctx);
@@ -77,34 +64,31 @@ GpgmeError _gpgme_key_new ( GpgmeKey *r_key );
 GpgmeError _gpgme_key_new_secret ( GpgmeKey *r_key );
 
 /*-- op-support.c --*/
+GpgmeError _gpgme_op_data_lookup (GpgmeCtx ctx, ctx_op_data_type type,
+				  void **hook, int size,
+				  void (*cleanup) (void *));
 GpgmeError _gpgme_op_reset (GpgmeCtx ctx, int synchronous);
 
 /*-- verify.c --*/
-void _gpgme_release_verify_result (VerifyResult result);
 GpgmeError _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 					 char *args);
 
 /*-- decrypt.c --*/
-void _gpgme_release_decrypt_result (DecryptResult result);
 GpgmeError _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 					  char *args);
 GpgmeError _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
 				 GpgmeData ciph, GpgmeData plain,
 				 void *status_handler);
-GpgmeError _gpgme_decrypt_result (GpgmeCtx ctx);
 
 /*-- sign.c --*/
-void _gpgme_release_sign_result ( SignResult res );
 GpgmeError _gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 				       char *args);
 
 /*-- encrypt.c --*/
-void _gpgme_release_encrypt_result ( EncryptResult res );
 GpgmeError _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 					  char *args);
 
 /*-- passphrase.c --*/
-void _gpgme_release_passphrase_result (PassphraseResult result);
 GpgmeError _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 					     char *args);
 GpgmeError _gpgme_passphrase_command_handler (void *opaque,
@@ -116,24 +100,11 @@ GpgmeError _gpgme_passphrase_start (GpgmeCtx ctx);
 GpgmeError _gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 					   char *args);
 
-/*-- import.c --*/
-void _gpgme_release_import_result (ImportResult res);
-
-/*-- delete.c --*/
-void _gpgme_release_delete_result (DeleteResult res);
-
-/*-- genkey.c --*/
-void _gpgme_release_genkey_result (GenKeyResult res);
-
 /*-- keylist.c --*/
-void _gpgme_release_keylist_result (KeylistResult res);
 void _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data);
 
 /*-- trustlist.c --*/
 void _gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data);
-
-/*-- edit.c --*/
-void _gpgme_release_edit_result (EditResult res);
 
 /*-- version.c --*/
 const char *_gpgme_compare_versions (const char *my_version,

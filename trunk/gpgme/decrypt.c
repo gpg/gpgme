@@ -23,25 +23,17 @@
 #endif
 #include <stdlib.h>
 
-#include "util.h"
 #include "context.h"
 #include "ops.h"
 
 
-struct decrypt_result_s
+struct decrypt_result
 {
   int okay;
   int failed;
 };
+typedef struct decrypt_result *DecryptResult;
 
-
-void
-_gpgme_release_decrypt_result (DecryptResult result)
-{
-  if (!result)
-    return;
-  free (result);
-}
 
 /* Check whether STRING starts with TOKEN and return true in this
    case.  This is case insensitive.  If NEXT is not NULL return the
@@ -87,30 +79,40 @@ skip_token (const char *string, size_t *next)
 GpgmeError
 _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  GpgmeError err;
+  DecryptResult result;
+  GpgmeError err = 0;
   size_t n;
 
   err = _gpgme_passphrase_status_handler (ctx, code, args);
   if (err)
     return err;
 
-  test_and_allocate_result (ctx, decrypt);
-
   switch (code)
     {
     case GPGME_STATUS_EOF:
-      if (ctx->result.decrypt->failed)
-	return GPGME_Decryption_Failed;
-      else if (!ctx->result.decrypt->okay)
-	return GPGME_No_Data;
+      err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &result,
+				   -1, NULL);
+      if (!err)
+	{
+	  if (result && result->failed)
+	    err = GPGME_Decryption_Failed;
+	  else if (!result || !result->okay)
+	    err = GPGME_No_Data;
+	}
       break;
 
     case GPGME_STATUS_DECRYPTION_OKAY:
-      ctx->result.decrypt->okay = 1;
+      err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &result,
+				   sizeof (*result), NULL);
+      if (!err)
+	result->okay = 1;
       break;
 
     case GPGME_STATUS_DECRYPTION_FAILED:
-      ctx->result.decrypt->failed = 1;
+      err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &result,
+				   sizeof (*result), NULL);
+      if (!err)
+	result->failed = 1;
       break;
 
     case GPGME_STATUS_ERROR:
@@ -155,7 +157,7 @@ _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       break;
     }
 
-  return 0;
+  return err;
 }
 
 

@@ -38,21 +38,22 @@
         return; /* oops */ \
 } while (0)
 
-struct encrypt_result_s
+struct encrypt_result
 {
   int no_valid_recipients;
   int invalid_recipients;
   GpgmeData xmlinfo;
 };
+typedef struct encrypt_result *EncryptResult;
 
-void
-_gpgme_release_encrypt_result (EncryptResult result)
+static void
+release_encrypt_result (void *hook)
 {
-  if (!result)
-    return;
+  EncryptResult result = (EncryptResult) hook;
+
   gpgme_data_release (result->xmlinfo);
-  free (result);
 }
+
 
 /* Parse the args and save the information in an XML structure.  With
    args of NULL the xml structure is closed.  */
@@ -100,36 +101,50 @@ append_xml_encinfo (GpgmeData *rdh, char *args)
 GpgmeError
 _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  test_and_allocate_result (ctx, encrypt);
+  GpgmeError err = 0;
+  EncryptResult result;
 
   switch (code)
     {
     case GPGME_STATUS_EOF:
-      if (ctx->result.encrypt->xmlinfo)
+      err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &result,
+				   -1, NULL);
+      if (!err)
 	{
-	  append_xml_encinfo (&ctx->result.encrypt->xmlinfo, NULL);
-	  _gpgme_set_op_info (ctx, ctx->result.encrypt->xmlinfo);
-	  ctx->result.encrypt->xmlinfo = NULL;
+	  if (result && result->xmlinfo)
+	    {
+	      append_xml_encinfo (&result->xmlinfo, NULL);
+	      _gpgme_set_op_info (ctx, result->xmlinfo);
+	      result->xmlinfo = NULL;
+	    }
+	  if (result && result->no_valid_recipients) 
+	    return GPGME_No_Recipients;
+	  if (result && result->invalid_recipients) 
+	    return GPGME_Invalid_Recipients;
 	}
-      if (ctx->result.encrypt->no_valid_recipients) 
-	return GPGME_No_Recipients;
-      else if (ctx->result.encrypt->invalid_recipients) 
-	return GPGME_Invalid_Recipients;
       break;
 
     case GPGME_STATUS_INV_RECP:
-      ctx->result.encrypt->invalid_recipients++;
-      append_xml_encinfo (&ctx->result.encrypt->xmlinfo, args);
+      err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &result,
+				   sizeof (*result), release_encrypt_result);
+      if (!err)
+	{
+	  result->invalid_recipients++;
+	  append_xml_encinfo (&result->xmlinfo, args);
+	}
       break;
 
     case GPGME_STATUS_NO_RECP:
-      ctx->result.encrypt->no_valid_recipients = 1;
+      err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &result,
+				   sizeof (*result), release_encrypt_result);
+      if (!err)
+	result->no_valid_recipients = 1;
       break;
 
     default:
       break;
     }
-  return 0;
+  return err;
 }
 
 

@@ -20,10 +20,41 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
+#include <stdlib.h>
 
 #include "gpgme.h"
 #include "context.h"
 #include "ops.h"
+
+
+GpgmeError
+_gpgme_op_data_lookup (GpgmeCtx ctx, ctx_op_data_type type, void **hook,
+		       int size, void (*cleanup) (void *))
+{
+  struct ctx_op_data *data = ctx->op_data;
+  while (data && data->type != type)
+    data = data->next;
+  if (!data)
+    {
+      if (size < 0)
+	{
+	  *hook = NULL;
+	  return 0;
+	}
+
+      data = calloc (1, sizeof (struct ctx_op_data) + size);
+      if (!data)
+	return GPGME_Out_Of_Core;
+      data->next = ctx->op_data;
+      data->type = type;
+      data->cleanup = cleanup;
+      data->hook = ((void *) data) + sizeof (struct ctx_op_data);
+      ctx->op_data = data;
+    }
+  *hook = data->hook;
+  return 0;
+}
+
 
 /* type is: 0: asynchronous operation (use global or user event loop).
             1: synchronous operation (always use private event loop).
@@ -35,7 +66,9 @@ _gpgme_op_reset (GpgmeCtx ctx, int type)
   GpgmeError err = 0;
   struct GpgmeIOCbs io_cbs;
 
-  fail_on_pending_request (ctx);
+  if (ctx->pending)
+    return GPGME_Busy;
+
   _gpgme_release_result (ctx);
 
   /* Create an engine object.  */

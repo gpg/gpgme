@@ -806,7 +806,6 @@ status_handler (void *opaque, int fd)
     }
   while (!err && assuan_pending_line (gpgsm->assuan_ctx));
 	  
-  _gpgme_io_close (gpgsm->status_cb.fd);
   return err;
 }
 

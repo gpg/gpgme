@@ -1,5 +1,98 @@
 2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (status_handler): Do not close status fd at end
+	of function.
+
+	* ops.h (_gpgme_op_data_lookup): Add prototype.
+	* op-support.c: Include <stdlib.h>.
+	(_gpgme_op_data_lookup): New function.
+	* decrypt.c (_gpgme_release_decrypt_result): Function removed.
+	(struct decrypt_result_s): Rename to ...
+	(struct decrypt_resul): ... this.
+	(DecryptResult): New type.
+	(_gpgme_decrypt_status_handler): Don't use
+	test_and_allocate_result, but use _gpgme_op_data_lookup to
+	retrieve result data object.
+	* sign.c (_gpgme_release_sign_result): Function removed.
+	(release_sign_result): New function.
+	(struct sign_result_s): Rename to ...
+	(struct sign_result): ... this.
+	(SignResult): New type.
+	(_gpgme_sign_status_handler): Don't use
+	test_and_allocate_result, but use _gpgme_op_data_lookup to
+	retrieve result data object.
+	* encrypt.c (struct encrypt_result_s): Rename to ...
+	(struct encrypt_result): ... this.
+	(_gpgme_release_encrypt_result): Function removed.
+	(release_encrypt_result): New function.
+	(_gpgme_encrypt_status_handler): Don't use
+	test_and_allocate_result, but use _gpgme_op_data_lookup to
+	retrieve result data object.
+	* verify.c (struct verify_result_s): Rename to ...
+	(struct verify_result): ... this.  Remove member next.
+	(VerifyResult): New type.
+	(_gpgme_release_verify_result): Function removed.
+	(release_verify_result): New function.
+	(finish_sig): Change first argument to type VerifyResult.  Diddle
+	the type of the op_data structure.
+	(add_notation): Change first argument to type VerifyResult.
+	(_gpgme_verify_status_handler): Don't use
+	test_and_allocate_result, but use _gpgme_op_data_lookup to
+	retrieve result data object.
+	* passphrase.c (struct passphrase_result_s): Rename to ...
+	(struct passphrase_result): ... this.  Remove member next.
+	(PassphraseResult): New type.
+	(_gpgme_release_passphrase_result): Function removed.
+	(release_passphrase_result): New function.
+	(_gpgme_passphrase_status_handler): Don't use
+	test_and_allocate_result, but use _gpgme_op_data_lookup to
+	retrieve result data object.
+	(_gpgme_passphrase_command_handler): Likewise.
+	* keylist.c (struct keylist_result_s): Rename to ...
+	(struct keylist_result): ... this.  Remove member next.
+	(KeylistResult): New type.
+	(_gpgme_release_keylist_result): Function removed.
+	(release_keylist_result): New function.
+	(keylist_status_handler): Don't use
+	test_and_allocate_result, but use _gpgme_op_data_lookup to
+	retrieve result data object.
+	* edit.c (struct edit_result_s): Rename to ...
+	(struct edit_result): ... this.  Remove member next.
+	(EditResult): New type.
+	(_gpgme_release_edit_result): Function removed.
+	(release_edit_result): New function.
+	(edit_status_handler): Don't use
+	test_and_allocate_result, but use _gpgme_op_data_lookup to
+	retrieve result data object.
+	(command_handler): Likewise.
+	* types.h (DecryptResult, SignResult, EncryptResult,
+	PassphraseResult, ImportResult, DeleteResult, GenKeyResult,
+	KeylistResult, EditResult): Types removed.
+	* ops.h: Don't include "types.h", but "gpgme.h" and "context.h".
+	(test_and_allocate_result): Remove macro.
+	(_gpgme_release_decrypt_result): Remove prototype.
+	(_gpgme_decrypt_result): Remove prototype.
+	(_gpgme_release_sign_result): Remove prototype.
+	(_gpgme_release_encrypt_result): Remove prototype.
+	(_gpgme_release_passphrase_result): Remove prototype.
+	(_gpgme_release_import_result): Remove prototype.
+	(_gpgme_release_delete_result): Remove prototype.
+	(_gpgme_release_genkey_result): Remove prototype.
+	(_gpgme_release_keylist_result): Remove prototype.
+	(_gpgme_release_edit_result): Remove prototype.
+	(_gpgme_release_verify_result): Remove prototype.
+	* gpgme.c (_gpgme_release_result): Rewritten.
+	* context.h (enum ctx_op_data_type): New enum.
+	(struct ctx_op_data): New structure.
+	(struct gpgme_context_s): Replace the member result with a member
+	op_data.
+	(fail_on_pending_request): Remove macro.
+	* op-support.c (_gpgme_op_reset): Expand macro
+	fail_on_pending_request.
+	* util.h: Don't include "types.h" or "debug.h", but include "gpgme.h".
+
+2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
 	* types.h (EngineObject): Move typedef to ...
 	* engine.h: ... here.
 	* types.h (GpgObject): Move typedef to ...

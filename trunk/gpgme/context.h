@@ -26,11 +26,43 @@
 #include "engine.h"
 #include "wait.h"
 
+
+/* Operations might require to remember arbitrary information and data
+   objects during invocations of the status handler.  The
+   ctx_op_data structure provides a generic framework to hook in
+   such additional data.  */
+typedef enum
+  {
+    OPDATA_DECRYPT, OPDATA_SIGN, OPDATA_ENCRYPT, OPDATA_PASSPHRASE,
+    OPDATA_IMPORT, OPDATA_GENKEY, OPDATA_KEYLIST, OPDATA_EDIT,
+    OPDATA_VERIFY_COLLECTING, OPDATA_VERIFY
+  } ctx_op_data_type;
+
+struct ctx_op_data
+{
+  /* The next element in the linked list, or NULL if this is the last
+     element.  */
+  struct ctx_op_data *next;
+
+  /* The type of the hook data, which can be used by a routine to
+     lookup the hook data.  */
+  ctx_op_data_type type;
+
+  /* The function to release HOOK and all its associated resources.
+     Can be NULL if no special dealllocation routine is necessary.  */
+  void (*cleanup) (void *hook);
+
+  /* The hook that points to the operation data.  */
+  void *hook;
+};
+
+
 struct key_queue_item_s
 {
   struct key_queue_item_s *next;
   GpgmeKey key;
 };
+
 
 struct trust_queue_item_s
 {
@@ -68,19 +100,8 @@ struct gpgme_context_s
   int signers_size;
   GpgmeKey *signers;
 
-  struct
-  {
-    VerifyResult verify;
-    DecryptResult decrypt;
-    SignResult sign;
-    EncryptResult encrypt;
-    PassphraseResult passphrase;
-    ImportResult import;
-    DeleteResult delete;
-    GenKeyResult genkey;
-    KeylistResult keylist;
-    EditResult edit;
-  } result;
+  /* The operation data hooked into the context.  */
+  struct ctx_op_data *op_data;
 
   /* Last signature notation.  */
   GpgmeData notation;
@@ -132,14 +153,8 @@ struct user_id_s
 struct gpgme_recipients_s
 {
   struct user_id_s *list;
-  int checked;	/* Wether the recipients are all valid.  */
+  int checked;	/* Whether the recipients are all valid.  */
 };
 
-
-#define fail_on_pending_request(c)                            \
-          do {                                                \
-                if (!(c))         return GPGME_Invalid_Value; \
-                if ((c)->pending) return GPGME_Busy;          \
-             } while (0)
 
 #endif	/* CONTEXT_H */

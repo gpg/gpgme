@@ -32,9 +32,8 @@
 #include "key.h"
 
 
-struct verify_result_s
+struct verify_result
 {
-  struct verify_result_s *next;
   GpgmeSigStat status;
   GpgmeSigStat expstatus;	/* Only used by finish_sig.  */
   GpgmeData notation;		/* We store an XML fragment here.  */
@@ -48,19 +47,17 @@ struct verify_result_s
   int wrong_key_usage;  
   char trust_errtok[31];	/* Error token send with the trust status.  */
 };
+typedef struct verify_result *VerifyResult;
 
 
-void
-_gpgme_release_verify_result (VerifyResult result)
+static void
+release_verify_result (void *hook)
 {
-  while (result)
-    {
-      VerifyResult next_result = result->next;
-      gpgme_data_release (result->notation);
-      free (result);
-      result = next_result;
-    }
+  VerifyResult result = (VerifyResult) hook;
+
+  gpgme_data_release (result->notation);
 }
+
 
 /* Check whether STRING starts with TOKEN and return true in this
    case.  This is case insensitive.  If NEXT is not NULL return the
@@ -120,43 +117,43 @@ copy_token (const char *string, char *buffer, size_t length)
 
 /* FIXME: Check that we are adding this to the correct signature.  */
 static GpgmeError
-add_notation (GpgmeCtx ctx, GpgmeStatusCode code, const char *data)
+add_notation (VerifyResult result, GpgmeStatusCode code, const char *notation)
 {
-  GpgmeData dh = ctx->result.verify->notation;
+  GpgmeData dh = result->notation;
 
   if (!dh)
     {
       if (gpgme_data_new (&dh))
 	return GPGME_Out_Of_Core;
-      ctx->result.verify->notation = dh;
+      result->notation = dh;
       _gpgme_data_append_string (dh, "  <notation>\n");
     }
 
   if (code == GPGME_STATUS_NOTATION_DATA)
     {
-      if (!ctx->result.verify->notation_in_data)
+      if (!result->notation_in_data)
 	_gpgme_data_append_string (dh, "  <data>");
-      _gpgme_data_append_percentstring_for_xml (dh, data);
-      ctx->result.verify->notation_in_data = 1;
+      _gpgme_data_append_percentstring_for_xml (dh, notation);
+      result->notation_in_data = 1;
       return 0;
     }
 
-  if (ctx->result.verify->notation_in_data)
+  if (result->notation_in_data)
     {
       _gpgme_data_append_string (dh, "</data>\n");
-      ctx->result.verify->notation_in_data = 0;
+      result->notation_in_data = 0;
     }
 
   if (code == GPGME_STATUS_NOTATION_NAME)
     {
       _gpgme_data_append_string (dh, "  <name>");
-      _gpgme_data_append_percentstring_for_xml (dh, data);
+      _gpgme_data_append_percentstring_for_xml (dh, notation);
       _gpgme_data_append_string (dh, "</name>\n");
     }
   else if (code == GPGME_STATUS_POLICY_URL)
     {
       _gpgme_data_append_string (dh, "  <policy>");
-      _gpgme_data_append_percentstring_for_xml (dh, data);
+      _gpgme_data_append_percentstring_for_xml (dh, notation);
       _gpgme_data_append_string (dh, "</policy>\n");
     }
   else
@@ -165,53 +162,44 @@ add_notation (GpgmeCtx ctx, GpgmeStatusCode code, const char *data)
 }
 
 
-/* Finish a pending signature info collection and prepare for a new
-   signature info collection.  */
-static GpgmeError
-finish_sig (GpgmeCtx ctx, int stop)
+/* Finish a pending signature info collection.  */
+static void
+finish_sig (VerifyResult result)
 {
-  if (ctx->result.verify->status == GPGME_SIG_STAT_GOOD)
-    ctx->result.verify->status = ctx->result.verify->expstatus;
+  struct ctx_op_data *op_data;
 
-  if (stop)
-    return 0; /* nothing to do */
-
-  if (ctx->result.verify->collecting)
-    {
-      VerifyResult res2;
-
-      ctx->result.verify->collecting = 0;
-      /* Create a new result structure.  */
-      res2 = calloc (1, sizeof *res2);
-      if (!res2)
-	return GPGME_Out_Of_Core;
-
-      res2->next = ctx->result.verify;
-      ctx->result.verify = res2;
-    }
-    
-  ctx->result.verify->collecting = 1;
-  return 0;
+  /* We intimately know that gpgme_op_data_lookup appends the data to
+     the op_data structure.  We can use this here to change the type
+     knowing only the hook value.  */
+  op_data = (struct ctx_op_data *) ((void *) result
+				    - sizeof (struct ctx_op_data));
+  op_data->type = OPDATA_VERIFY;
 }
 
 
 GpgmeError
 _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
+  VerifyResult result;
   GpgmeError err;
   char *p;
   size_t n;
   int i;
 
-  test_and_allocate_result (ctx, verify);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY_COLLECTING, (void **) &result,
+			       -1, NULL);
+  if (err)
+    return err;
 
-  if (code == GPGME_STATUS_GOODSIG
-      || code == GPGME_STATUS_EXPSIG
-      || code == GPGME_STATUS_EXPKEYSIG
-      || code == GPGME_STATUS_BADSIG
+  if (code == GPGME_STATUS_GOODSIG || code == GPGME_STATUS_EXPSIG
+      || code == GPGME_STATUS_EXPKEYSIG || code == GPGME_STATUS_BADSIG
       || code == GPGME_STATUS_ERRSIG)
     {
-      err = finish_sig (ctx,0);
+      /* A new signature starts.  */
+      if (result)
+	finish_sig (result);
+      err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY_COLLECTING, (void **) &result,
+				   sizeof (*result), release_verify_result);
       if (err)
 	return err;
     }
@@ -220,44 +208,56 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
     {
     case GPGME_STATUS_NODATA:
     case GPGME_STATUS_UNEXPECTED:
-      ctx->result.verify->status = GPGME_SIG_STAT_NOSIG;
+      if (!result)
+	return GPGME_General_Error;
+      result->status = GPGME_SIG_STAT_NOSIG;
       break;
 
     case GPGME_STATUS_GOODSIG:
-      ctx->result.verify->expstatus = GPGME_SIG_STAT_GOOD;
+      if (!result)
+	return GPGME_General_Error;
+      result->expstatus = GPGME_SIG_STAT_GOOD;
       break;
-    
+
     case GPGME_STATUS_EXPSIG:
-      ctx->result.verify->expstatus = GPGME_SIG_STAT_GOOD_EXP;
+      if (!result)
+	return GPGME_General_Error;
+      result->expstatus = GPGME_SIG_STAT_GOOD_EXP;
       break;
 
     case GPGME_STATUS_EXPKEYSIG:
-      ctx->result.verify->expstatus = GPGME_SIG_STAT_GOOD_EXPKEY;
+      if (!result)
+	return GPGME_General_Error;
+      result->expstatus = GPGME_SIG_STAT_GOOD_EXPKEY;
       break;
 
     case GPGME_STATUS_VALIDSIG:
-      ctx->result.verify->status = GPGME_SIG_STAT_GOOD;
-      i = copy_token (args, ctx->result.verify->fpr,
-                      DIM(ctx->result.verify->fpr));
+      if (!result)
+	return GPGME_General_Error;
+      result->status = GPGME_SIG_STAT_GOOD;
+      i = copy_token (args, result->fpr, DIM (result->fpr));
       /* Skip the formatted date.  */
       while (args[i] && args[i] == ' ')
 	i++;
       while (args[i] && args[i] != ' ')
 	i++;
       /* And get the timestamp.  */
-      ctx->result.verify->timestamp = strtoul (args+i, &p, 10);
+      result->timestamp = strtoul (args + i, &p, 10);
       if (args[i])
-        ctx->result.verify->exptimestamp = strtoul (p, NULL, 10);
+        result->exptimestamp = strtoul (p, NULL, 10);
       break;
 
     case GPGME_STATUS_BADSIG:
-      ctx->result.verify->status = GPGME_SIG_STAT_BAD;
+      if (!result)
+	return GPGME_General_Error;
+      result->status = GPGME_SIG_STAT_BAD;
       /* Store the keyID in the fpr field.  */
-      copy_token (args, ctx->result.verify->fpr,
-                  DIM(ctx->result.verify->fpr));
+      copy_token (args, result->fpr, DIM (result->fpr));
       break;
 
     case GPGME_STATUS_ERRSIG:
+      if (!result)
+	return GPGME_General_Error;
       /* The return code is the 6th argument, if it is 9, the problem
 	 is a missing key.  Note that this is not emitted by gpgsm */
       for (p = args, i = 0; p && *p && i < 5; i++)
@@ -268,85 +268,97 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
               p++;
         }
       if (p && *(p++) == '9' && (*p == '\0' || *p == ' '))
-	ctx->result.verify->status = GPGME_SIG_STAT_NOKEY;
+	result->status = GPGME_SIG_STAT_NOKEY;
       else
-	ctx->result.verify->status = GPGME_SIG_STAT_ERROR;
+	result->status = GPGME_SIG_STAT_ERROR;
       /* Store the keyID in the fpr field.  */
-      copy_token (args, ctx->result.verify->fpr,
-                  DIM(ctx->result.verify->fpr));
+      copy_token (args, result->fpr, DIM (result->fpr));
       break;
 
     case GPGME_STATUS_NOTATION_NAME:
     case GPGME_STATUS_NOTATION_DATA:
     case GPGME_STATUS_POLICY_URL:
-      err = add_notation (ctx, code, args);
+      if (!result)
+	return GPGME_General_Error;
+      err = add_notation (result, code, args);
       if (err)
 	return err;
       break;
 
     case GPGME_STATUS_TRUST_UNDEFINED:
-      ctx->result.verify->validity = GPGME_VALIDITY_UNKNOWN;
-      copy_token (args, ctx->result.verify->trust_errtok,
-                  DIM(ctx->result.verify->trust_errtok));
+      if (!result)
+	return GPGME_General_Error;
+      result->validity = GPGME_VALIDITY_UNKNOWN;
+      copy_token (args, result->trust_errtok,
+                  DIM(result->trust_errtok));
       break;
     case GPGME_STATUS_TRUST_NEVER:
-      ctx->result.verify->validity = GPGME_VALIDITY_NEVER;
-      copy_token (args, ctx->result.verify->trust_errtok,
-                  DIM(ctx->result.verify->trust_errtok));
+      if (!result)
+	return GPGME_General_Error;
+      result->validity = GPGME_VALIDITY_NEVER;
+      copy_token (args, result->trust_errtok,
+                  DIM(result->trust_errtok));
       break;
     case GPGME_STATUS_TRUST_MARGINAL:
-      if (ctx->result.verify->status == GPGME_SIG_STAT_GOOD)
-        ctx->result.verify->validity = GPGME_VALIDITY_MARGINAL;
-      copy_token (args, ctx->result.verify->trust_errtok,
-                  DIM(ctx->result.verify->trust_errtok));
+      if (!result)
+	return GPGME_General_Error;
+      if (result->status == GPGME_SIG_STAT_GOOD)
+        result->validity = GPGME_VALIDITY_MARGINAL;
+      copy_token (args, result->trust_errtok,
+                  DIM(result->trust_errtok));
       break;
     case GPGME_STATUS_TRUST_FULLY:
     case GPGME_STATUS_TRUST_ULTIMATE:
-      if (ctx->result.verify->status == GPGME_SIG_STAT_GOOD)
-        ctx->result.verify->validity = GPGME_VALIDITY_FULL;
+      if (!result)
+	return GPGME_General_Error;
+      if (result->status == GPGME_SIG_STAT_GOOD)
+        result->validity = GPGME_VALIDITY_FULL;
       break;
 
     case GPGME_STATUS_END_STREAM:
       break;
 
     case GPGME_STATUS_ERROR:
+      if (!result)
+	return GPGME_General_Error;
       /* Generic error, we need this for gpgsm (and maybe for gpg in future)
          to get error descriptions. */
       if (is_token (args, "verify.findkey", &n) && n)
         {
           args += n;
           if (is_token (args, "No_Public_Key", NULL))
-            ctx->result.verify->status = GPGME_SIG_STAT_NOKEY;
+            result->status = GPGME_SIG_STAT_NOKEY;
           else
-            ctx->result.verify->status = GPGME_SIG_STAT_ERROR;
+            result->status = GPGME_SIG_STAT_ERROR;
 
         }
       else if (skip_token (args, &n) && n)
         {
           args += n;
           if (is_token (args, "Wrong_Key_Usage", NULL))
-            ctx->result.verify->wrong_key_usage = 1;
+            result->wrong_key_usage = 1;
         }
       break;
 
     case GPGME_STATUS_EOF:
-      err = finish_sig (ctx,1);
-      if (err)
-	return err;
-
-      /* FIXME: Put all notation data into one XML fragment.  */
-      if (ctx->result.verify->notation)
+      if (result)
 	{
-	  GpgmeData dh = ctx->result.verify->notation;
+	  finish_sig (result);
 
-	  if (ctx->result.verify->notation_in_data)
+	  /* FIXME: Put all notation data into one XML fragment.  */
+	  if (result->notation)
 	    {
-	      _gpgme_data_append_string (dh, "</data>\n");
-	      ctx->result.verify->notation_in_data = 0;
+	      GpgmeData dh = result->notation;
+	      
+	      if (result->notation_in_data)
+		{
+		  _gpgme_data_append_string (dh, "</data>\n");
+		  result->notation_in_data = 0;
+		}
+	      _gpgme_data_append_string (dh, "</notation>\n");
+	      ctx->notation = dh;
+	      result->notation = NULL;
 	    }
-	  _gpgme_data_append_string (dh, "</notation>\n");
-	  ctx->notation = dh;
-	  ctx->result.verify->notation = NULL;
 	}
       break;
  
@@ -465,20 +477,28 @@ gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
  *               when there are no more signatures.
  **/
 const char *
-gpgme_get_sig_status (GpgmeCtx c, int idx,
+gpgme_get_sig_status (GpgmeCtx ctx, int idx,
                       GpgmeSigStat *r_stat, time_t *r_created)
 {
+  struct ctx_op_data *op_data;
   VerifyResult result;
 
-  if (!c || c->pending || !c->result.verify)
+  if (!ctx || ctx->pending)
     return NULL;	/* No results yet or verification error.  */
 
-  for (result = c->result.verify;
-       result && idx > 0; result = result->next, idx--)
-    ;
-  if (!result)
+  op_data = ctx->op_data;
+  while (op_data)
+    {
+      while (op_data && op_data->type != OPDATA_VERIFY)
+	op_data = op_data->next;
+      if (idx-- == 0)
+	break;
+      op_data = op_data->next;	
+    }
+  if (!op_data)
     return NULL;	/* No more signatures.  */
 
+  result = (VerifyResult) op_data->hook;
   if (r_stat)
     *r_stat = result->status;
   if (r_created)
@@ -545,19 +565,27 @@ calc_sig_summary (VerifyResult result)
 
 
 const char *
-gpgme_get_sig_string_attr (GpgmeCtx c, int idx, GpgmeAttr what, int whatidx)
+gpgme_get_sig_string_attr (GpgmeCtx ctx, int idx, GpgmeAttr what, int whatidx)
 {
+  struct ctx_op_data *op_data;
   VerifyResult result;
 
-  if (!c || c->pending || !c->result.verify)
+  if (!ctx || ctx->pending)
     return NULL;	/* No results yet or verification error.  */
 
-  for (result = c->result.verify;
-       result && idx > 0; result = result->next, idx--)
-    ;
-  if (!result)
+  op_data = ctx->op_data;
+  while (op_data)
+    {
+      while (op_data && op_data->type != OPDATA_VERIFY)
+	op_data = op_data->next;
+      if (idx-- == 0)
+	break;
+      op_data = op_data->next;	
+    }
+  if (!op_data)
     return NULL;	/* No more signatures.  */
 
+  result = (VerifyResult) op_data->hook;
   switch (what)
     {
     case GPGME_ATTR_FPR:
@@ -575,19 +603,27 @@ gpgme_get_sig_string_attr (GpgmeCtx c, int idx, GpgmeAttr what, int whatidx)
 
 
 unsigned long
-gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
+gpgme_get_sig_ulong_attr (GpgmeCtx ctx, int idx, GpgmeAttr what, int reserved)
 {
+  struct ctx_op_data *op_data;
   VerifyResult result;
 
-  if (!c || c->pending || !c->result.verify)
+  if (!ctx || ctx->pending)
     return 0;	/* No results yet or verification error.  */
 
-  for (result = c->result.verify;
-       result && idx > 0; result = result->next, idx--)
-    ;
-  if (!result)
+  op_data = ctx->op_data;
+  while (op_data)
+    {
+      while (op_data && op_data->type != OPDATA_VERIFY)
+	op_data = op_data->next;
+      if (idx-- == 0)
+	break;
+      op_data = op_data->next;	
+    }
+  if (!op_data)
     return 0;	/* No more signatures.  */
 
+  result = (VerifyResult) op_data->hook;
   switch (what)
     {
     case GPGME_ATTR_CREATED:
@@ -595,9 +631,9 @@ gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
     case GPGME_ATTR_EXPIRE:
       return result->exptimestamp;
     case GPGME_ATTR_VALIDITY:
-      return (unsigned long)result->validity;
+      return (unsigned long) result->validity;
     case GPGME_ATTR_SIG_STATUS:
-      return (unsigned long)result->status;
+      return (unsigned long) result->status;
     case GPGME_ATTR_SIG_SUMMARY:
       return calc_sig_summary (result);
     default:
@@ -621,18 +657,28 @@ gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
 GpgmeError
 gpgme_get_sig_key (GpgmeCtx ctx, int idx, GpgmeKey *r_key)
 {
+  struct ctx_op_data *op_data;
   VerifyResult result;
 
   if (!ctx || !r_key)
     return GPGME_Invalid_Value;
-  if (ctx->pending || !ctx->result.verify)
+
+  if (ctx->pending)
     return GPGME_Busy;
-  
-  for (result = ctx->result.verify;
-       result && idx > 0; result = result->next, idx--)
-    ;
-  if (!result)
+
+  op_data = ctx->op_data;
+  while (op_data)
+    {
+      while (op_data && op_data->type != OPDATA_VERIFY)
+	op_data = op_data->next;
+      if (idx-- == 0)
+	break;
+      op_data = op_data->next;	
+    }
+  if (!op_data)
     return GPGME_EOF;
+
+  result = (VerifyResult) op_data->hook;
 
   return gpgme_get_key (ctx, result->fpr, r_key, 0, 0);
 }
