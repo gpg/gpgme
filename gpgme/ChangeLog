@@ -1,3 +1,8 @@
+2004-02-17  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.h: Add GPGME_KEYLIST_MODE_VALIDATE. 
+	* engine-gpgsm.c (gpgsm_keylist): Send this to gpgsm.
+
 2004-02-15  Werner Koch  <wk@gnupg.org>
 
 	* memrchr.c (memrchr): Fixed implementation.  Problem pointed out

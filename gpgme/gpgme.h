@@ -1,6 +1,6 @@
 /* gpgme.h - Public interface to GnuPG Made Easy.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -71,7 +71,7 @@ extern "C" {
    AM_PATH_GPGME macro) check that this header matches the installed
    library.  Warning: Do not edit the next line.  configure will do
    that for you!  */
-#define GPGME_VERSION "0.4.4"
+#define GPGME_VERSION "0.4.5-cvs"
 
 
 /* Some opaque data types used by GPGME.  */
@@ -698,7 +698,8 @@ typedef enum
   {
     GPGME_KEYLIST_MODE_LOCAL  = 1,
     GPGME_KEYLIST_MODE_EXTERN = 2,
-    GPGME_KEYLIST_MODE_SIGS   = 4
+    GPGME_KEYLIST_MODE_SIGS   = 4,
+    GPGME_KEYLIST_MODE_VALIDATE = 256
   }
 gpgme_keylist_mode_t;
 

@@ -144,4 +144,9 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Build suite
 ** Make sure everything is cleaned correctly (esp. test area).
-** Cofnigure test for gpg and gpgsm version (as a warning).
+** Configure test for gpg and gpgsm version (as a warning).
+
+
+* Error checking 
+** engine-gpgsm, with-validation
+  Add error checking some time after releasing a new gpgsm.
