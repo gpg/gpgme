@@ -5,6 +5,22 @@
 	unconditionally.
 	Reported by Jose Carlos Garcia Sogo <jsogo@debian.org>.
 
+2002-01-19  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (log_get_stream): New.
+
+2001-12-05  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (log_set_prefix): New.
+	(do_logv): Include prefix and pid only if enabled. Print time only
+	when explicitly enabled.
+	(log_logv): New.  
+	* logging.h: Include log_logv() only when requested.
+
+2001-11-06  Werner Koch  <wk@gnupg.org>
+
+	* strlist.c, strlist.h: New. Taken from pgnupg/util/strgutil.c
+
 2001-08-30  Werner Koch  <wk@gnupg.org>
 
 	* logging.c (log_printf): Don't pass NULL instead of arg_ptr.

@@ -31,26 +31,23 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <time.h>
+#include <sys/types.h>
+#include <unistd.h>
 #ifdef __MINGW32__
   #include <io.h>
 #endif
 
+#define JNLIB_NEED_LOG_LOGV 1
 #include "libjnlib-config.h"
 #include "logging.h"
 
-enum my_log_levels {
-    MY_LOG_BEGIN,  /* only print the timestamp if configured */
-    MY_LOG_CONT,
-    MY_LOG_INFO,
-    MY_LOG_WARN,
-    MY_LOG_ERROR,
-    MY_LOG_FATAL,
-    MY_LOG_BUG,
-    MY_LOG_DEBUG
-};
 
 static FILE *logstream;
-static int use_time;
+static char prefix_buffer[80];
+static int with_time;
+static int with_prefix;
+static int with_pid;
+
 static int missing_lf;
 static int errorcount;
 
@@ -95,10 +92,23 @@ log_set_file( const char *name )
     if( logstream && logstream != stderr )
 	fclose( logstream );
     logstream = fp;
-    use_time = fp != stderr;
     missing_lf = 0;
 }
 
+
+void
+log_set_prefix (const char *text, unsigned int flags)
+{
+  if (text)
+    {
+      strncpy (prefix_buffer, text, sizeof (prefix_buffer)-1);
+      prefix_buffer[sizeof (prefix_buffer)-1] = 0;
+    }
+  
+  with_prefix = (flags & 1);
+  with_time = (flags & 2);
+  with_pid  = (flags & 4);
+}
 
 int
 log_get_fd()
@@ -106,50 +116,69 @@ log_get_fd()
     return fileno(logstream?logstream:stderr);
 }
 
+FILE *
+log_get_stream ()
+{
+    return logstream?logstream:stderr;
+}
+
+
 static void
 do_logv( int level, const char *fmt, va_list arg_ptr )
 {
-    if( !logstream )
-	logstream = stderr;
+  if (!logstream)
+    logstream = stderr;
 
-    if( missing_lf && level != MY_LOG_CONT )
-	putc('\n', logstream );
-    missing_lf = 0;
+  if (missing_lf && level != JNLIB_LOG_CONT)
+    putc('\n', logstream );
+  missing_lf = 0;
 
-    if( use_time && level != MY_LOG_CONT ) {
-	/* Note this does not work for multiple line logging as we would
-	 * need to print to a buffer first */
-	struct tm *tp;
-	time_t atime = time(NULL);
-
-	tp = localtime( &atime );
-	fprintf( logstream, "%04d-%02d-%02d %02d:%02d:%02d ",
-		    1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-			 tp->tm_hour, tp->tm_min, tp->tm_sec );
+  if (level != JNLIB_LOG_CONT)
+    { /* Note this does not work for multiple line logging as we would
+       * need to print to a buffer first */
+      if (with_time)
+        {
+          struct tm *tp;
+          time_t atime = time (NULL);
+          
+          tp = localtime (&atime);
+          fprintf (logstream, "%04d-%02d-%02d %02d:%02d:%02d ",
+                   1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+                   tp->tm_hour, tp->tm_min, tp->tm_sec );
+        }
+      if (with_prefix)
+        fputs (prefix_buffer, logstream);
+      if (with_pid)
+        fprintf (logstream, "[%u]", (unsigned int)getpid ());
+      if (!with_time)
+        putc (':', logstream);
+      putc (' ', logstream);
     }
 
-    switch ( level ) {
-      case MY_LOG_BEGIN: break;
-      case MY_LOG_CONT: break;
-      case MY_LOG_INFO: break;
-      case MY_LOG_WARN: break;
-      case MY_LOG_ERROR: break;
-      case MY_LOG_FATAL: fputs("Fatal: ",logstream ); break;
-      case MY_LOG_BUG: fputs("Ohhhh jeeee: ", logstream); break;
-      case MY_LOG_DEBUG: fputs("DBG: ", logstream ); break;
-      default: fprintf(logstream,"[Unknown log level %d]: ", level ); break;
+  switch (level)
+    {
+    case JNLIB_LOG_BEGIN: break;
+    case JNLIB_LOG_CONT: break;
+    case JNLIB_LOG_INFO: break;
+    case JNLIB_LOG_WARN: break;
+    case JNLIB_LOG_ERROR: break;
+    case JNLIB_LOG_FATAL: fputs("Fatal: ",logstream ); break;
+    case JNLIB_LOG_BUG: fputs("Ohhhh jeeee: ", logstream); break;
+    case JNLIB_LOG_DEBUG: fputs("DBG: ", logstream ); break;
+    default: fprintf(logstream,"[Unknown log level %d]: ", level ); break;
     }
 
-    if( fmt ) {
-	vfprintf(logstream,fmt,arg_ptr) ;
-	if( *fmt && fmt[strlen(fmt)-1] != '\n' )
-	    missing_lf = 1;
+  if (fmt)
+    {
+      vfprintf(logstream,fmt,arg_ptr) ;
+      if (*fmt && fmt[strlen(fmt)-1] != '\n')
+        missing_lf = 1;
     }
 
-    if( level == MY_LOG_FATAL )
-	exit(2);
-    if( level == MY_LOG_BUG )
-	abort();
+  if (level == JNLIB_LOG_FATAL)
+    exit(2);
+  if (level == JNLIB_LOG_BUG)
+    abort();
 }
 
 static void
@@ -163,6 +192,11 @@ do_log( int level, const char *fmt, ... )
 }
 
 
+void
+log_logv (int level, const char *fmt, va_list arg_ptr)
+{
+  do_logv (level, fmt, arg_ptr);
+}
 
 void
 log_info( const char *fmt, ... )
@@ -170,7 +204,7 @@ log_info( const char *fmt, ... )
     va_list arg_ptr ;
 
     va_start( arg_ptr, fmt ) ;
-    do_logv( MY_LOG_INFO, fmt, arg_ptr );
+    do_logv( JNLIB_LOG_INFO, fmt, arg_ptr );
     va_end(arg_ptr);
 }
 
@@ -180,7 +214,7 @@ log_error( const char *fmt, ... )
     va_list arg_ptr ;
 
     va_start( arg_ptr, fmt ) ;
-    do_logv( MY_LOG_ERROR, fmt, arg_ptr );
+    do_logv( JNLIB_LOG_ERROR, fmt, arg_ptr );
     va_end(arg_ptr);
     /* protect against counter overflow */
     if( errorcount < 30000 )
@@ -194,7 +228,7 @@ log_fatal( const char *fmt, ... )
     va_list arg_ptr ;
 
     va_start( arg_ptr, fmt ) ;
-    do_logv( MY_LOG_FATAL, fmt, arg_ptr );
+    do_logv( JNLIB_LOG_FATAL, fmt, arg_ptr );
     va_end(arg_ptr);
     abort(); /* never called, bugs it makes the compiler happy */
 }
@@ -205,7 +239,7 @@ log_bug( const char *fmt, ... )
     va_list arg_ptr ;
 
     va_start( arg_ptr, fmt ) ;
-    do_logv( MY_LOG_BUG, fmt, arg_ptr );
+    do_logv( JNLIB_LOG_BUG, fmt, arg_ptr );
     va_end(arg_ptr);
     abort(); /* never called, but it makes the compiler happy */
 }
@@ -216,7 +250,7 @@ log_debug( const char *fmt, ... )
     va_list arg_ptr ;
 
     va_start( arg_ptr, fmt ) ;
-    do_logv( MY_LOG_DEBUG, fmt, arg_ptr );
+    do_logv( JNLIB_LOG_DEBUG, fmt, arg_ptr );
     va_end(arg_ptr);
 }
 
@@ -227,8 +261,27 @@ log_printf (const char *fmt, ...)
   va_list arg_ptr;
 
   va_start (arg_ptr, fmt);
-  do_logv (fmt ? MY_LOG_CONT : MY_LOG_BEGIN, fmt, arg_ptr);
+  do_logv (fmt ? JNLIB_LOG_CONT : JNLIB_LOG_BEGIN, fmt, arg_ptr);
   va_end (arg_ptr);
+}
+
+/* Print a hexdump of BUFFER.  With TEXT of NULL print just the raw
+   dump, with TEXT just an empty string, print a trailing linefeed,
+   otherwise print an entire debug line. */
+void
+log_printhex (const char *text, const void *buffer, size_t length)
+{
+  if (text && *text)
+    log_debug ("%s ", text);
+  if (length)
+    {
+      const unsigned char *p = buffer;
+      log_printf ("%02X", *p);
+      for (length--, p++; length--; p++)
+        log_printf (" %02X", *p);
+    }
+  if (text)
+    log_printf ("\n");
 }
 
 
@@ -236,7 +289,7 @@ log_printf (const char *fmt, ...)
 void
 bug_at( const char *file, int line, const char *func )
 {
-    do_log( MY_LOG_BUG,
+    do_log( JNLIB_LOG_BUG,
 	     ("... this is a bug (%s:%d:%s)\n"), file, line, func );
     abort(); /* never called, but it makes the compiler happy */
 }
@@ -244,7 +297,7 @@ bug_at( const char *file, int line, const char *func )
 void
 bug_at( const char *file, int line )
 {
-    do_log( MY_LOG_BUG,
+    do_log( JNLIB_LOG_BUG,
 	     _("you found a bug ... (%s:%d)\n"), file, line);
     abort(); /* never called, but it makes the compiler happy */
 }

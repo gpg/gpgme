@@ -35,12 +35,17 @@ struct cmdtbl_s {
 struct assuan_context_s {
   AssuanError err_no;
   const char *err_str;
+  int os_errno;  /* last system error number used with certain error codes*/
 
+  int confidential;
   int is_server;  /* set if this is context belongs to a server */
   int in_inquire;
   char *hello_line;
+  char *okay_line; /* see assan_set_okay_line() */
   
   void *user_pointer;  /* for assuan_[gs]et_pointer () */
+
+  FILE *log_fp;
 
   struct {
     int fd;
@@ -68,7 +73,13 @@ struct assuan_context_s {
 
   int pipe_mode;  /* We are in pipe mode, i.e. we can handle just one
                      connection and must terminate then */
-  pid_t pid;	/* In pipe mode, the pid of the child server process.  */
+  pid_t pid;	  /* In pipe mode, the pid of the child server process.  
+                     In socket mode, the pid of the server */
+  int listen_fd;  /* The fd we are listening on (used by socket servers) */
+
+  void (*deinit_handler)(ASSUAN_CONTEXT);  
+  int (*accept_handler)(ASSUAN_CONTEXT);
+  int (*finish_handler)(ASSUAN_CONTEXT);
 
   struct cmdtbl_s *cmdtbl;
   size_t cmdtbl_used; /* used entries */
@@ -77,6 +88,7 @@ struct assuan_context_s {
   void (*bye_notify_fnc)(ASSUAN_CONTEXT);
   void (*reset_notify_fnc)(ASSUAN_CONTEXT);
   void (*cancel_notify_fnc)(ASSUAN_CONTEXT);
+  int  (*option_handler_fnc)(ASSUAN_CONTEXT,const char*, const char*);
   void (*input_notify_fnc)(ASSUAN_CONTEXT, const char *);
   void (*output_notify_fnc)(ASSUAN_CONTEXT, const char *);
 
@@ -84,9 +96,12 @@ struct assuan_context_s {
   int input_fd;   /* set by INPUT command */
   int output_fd;  /* set by OUTPUT command */
 
-
-
 };
+
+
+/*-- assuan-pipe-server.c --*/
+int _assuan_new_context (ASSUAN_CONTEXT *r_ctx);
+void _assuan_release_context (ASSUAN_CONTEXT ctx);
 
 
 /*-- assuan-handler.c --*/
@@ -113,6 +128,9 @@ void  _assuan_free (void *p);
 #define xfree(a)         _assuan_free ((a))
 
 #define set_error(c,e,t) assuan_set_error ((c), ASSUAN_ ## e, (t))
+
+void _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t  length);
+void _assuan_log_sanitized_string (const char *string);
 
 
 #endif /*ASSUAN_DEFS_H*/
