@@ -1,3 +1,10 @@
+2002-04-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Passphrase Callback): Fix small typo.  Document the
+	new function gpgme_get_passphrase_cb.
+	(Progress Meter Callback): Document the new function
+	gpgme_get_progress_cb.
+
 2002-04-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Creating a Signature): Fix function name.  Reported

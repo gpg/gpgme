@@ -397,6 +397,32 @@ gpgme_set_passphrase_cb (GpgmeCtx ctx, GpgmePassphraseCb cb, void *cb_value)
     }
 }
 
+
+/**
+ * gpgme_get_passphrase_cb:
+ * @ctx: the context
+ * @cb: The current callback function
+ * @cb_value: The current value passed to the callback function
+ *
+ * This function returns the callback function to be used to pass a passphrase
+ * to the crypto engine.
+ **/
+void
+gpgme_get_passphrase_cb (GpgmeCtx ctx, GpgmePassphraseCb *cb, void **cb_value)
+{
+  if (ctx)
+    {
+      *cb = ctx->passphrase_cb;
+      *cb_value = ctx->passphrase_cb_value;
+    }
+  else
+    {
+      *cb = NULL;
+      *cb_value = NULL;
+    }
+}
+
+
 /**
  * gpgme_set_progress_cb:
  * @ctx: the context
@@ -421,5 +447,29 @@ gpgme_set_progress_cb (GpgmeCtx ctx, GpgmeProgressCb cb, void *cb_value)
     {
       ctx->progress_cb = cb;
       ctx->progress_cb_value = cb_value;
+    }
+}
+
+
+/**
+ * gpgme_get_progress_cb:
+ * @ctx: the context
+ * @cb: The current callback function
+ * @cb_value: The current value passed to the callback function
+ *
+ * This function returns the callback function to be used as a progress indicator.
+ **/
+void
+gpgme_get_progress_cb (GpgmeCtx ctx, GpgmeProgressCb *cb, void **cb_value)
+{
+  if (ctx)
+    {
+      *cb = ctx->progress_cb;
+      *cb_value = ctx->progress_cb_value;
+    }
+  else
+    {
+      *cb = NULL;
+      *cb_value = NULL;
     }
 }

@@ -249,9 +249,19 @@ int gpgme_get_keylist_mode (GpgmeCtx ctx);
 void gpgme_set_passphrase_cb (GpgmeCtx ctx,
                               GpgmePassphraseCb cb, void *hook_value);
 
+/* Get the current passphrase callback function in *CB and the current
+   hook value in *HOOK_VALUE.  */
+void gpgme_get_passphrase_cb (GpgmeCtx ctx, GpgmePassphraseCb *cb,
+			      void **hook_value);
+
 /* Set the progress callback function in CTX to CB.  HOOK_VALUE is
    passed as first argument to the progress callback function.  */
 void gpgme_set_progress_cb (GpgmeCtx c, GpgmeProgressCb cb, void *hook_value);
+
+/* Get the current progress callback function in *CB and the current
+   hook value in *HOOK_VALUE.  */
+void gpgme_get_progress_cb (GpgmeCtx ctx, GpgmeProgressCb *cb,
+			    void **hook_value);
 
 /* Delete all signers from CTX.  */
 void gpgme_signers_clear (GpgmeCtx ctx);

@@ -1,3 +1,10 @@
+2002-04-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (gpgme_get_passphrase_cb): New function.
+	(gpgme_get_progress_cb): New function.
+	* gpgme.h: Add new prototypes for gpgme_get_passphrase_cb and
+	gpgme_get_progress_cb.
+
 2002-03-28  Werner Koch  <wk@gnupg.org>
 
 	* gpgme.h (GpgmeAttr): Add values for issuer and chaining.
