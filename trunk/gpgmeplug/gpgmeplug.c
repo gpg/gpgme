@@ -914,8 +914,10 @@ bool signMessage( const char*  cleartext,
   err = gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
 
   if (!err) {
-    if( __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY )
+    if( __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY ) {
       *ciphertext = gpgme_data_release_and_get_mem( sig, (size_t*)cipherLen );
+      bOk = true;
+    }
     else {
       rSig = gpgme_data_release_and_get_mem( sig, (size_t*)cipherLen );
       *ciphertext = malloc( *cipherLen + 1 );
@@ -1314,8 +1316,10 @@ bool encryptMessage( const char*  cleartext,
   gpgme_data_release (gPlaintext);
 
   if( !err ) {
-    if( __GPGMEPLUG_ENCRYPTED_CODE_IS_BINARY )
+    if( __GPGMEPLUG_ENCRYPTED_CODE_IS_BINARY ) {
       *ciphertext = gpgme_data_release_and_get_mem( gCiphertext, (size_t*)cipherLen );
+      bOk = true;
+    }
     else {
       rCiph = gpgme_data_release_and_get_mem( gCiphertext, (size_t*)cipherLen );
       *ciphertext = malloc( *cipherLen + 1 );
