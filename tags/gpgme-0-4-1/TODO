@@ -1,0 +1,109 @@
+Hey Emacs, this is -*- outline -*- mode!
+
+* Before release:
+** gpgme-config must include info about libgpg-error.
+
+* ABI's to break:
+** Compatibility interfaces that can be removed in future versions:
+*** gpgme_data_new_from_filepart
+*** gpgme_data_new_from_file
+*** gpgme_data_new_with_read_cb
+*** gpgme_data_rewind
+*** gpgme_op_import_ext
+*** gpgme_get_sig_key
+*** gpgme_get_sig_ulong_attr
+*** gpgme_get_sig_string_attr
+*** GPGME_SIG_STAT_*
+*** gpgme_get_sig_status
+*** gpgme_trust_item_release
+*** gpgme_trust_item_get_string_attr
+*** gpgme_trust_item_get_ulong_attr
+*** gpgme_attr_t
+*** All Gpgme* typedefs.
+
+* Thread support:
+** Build thread modules for static linking (which just suck in the
+   desired symbols the hard way). !!
+** Ordering the libs is important, but libtool gets it wrong.  Argh.
+
+* New features:
+** notification system
+   We need a simple notification system, probably a simple callback
+   with a string and some optional arguments.  This is for example
+   required to notify an application of a changed smartcard,  The
+   application can then do whatever is required.  There are other
+   usages too.  This notfication system should be independent of any
+   contextes of course.
+** --learn-code support
+   This might be integrated with import. we still need to work out how
+   to learn a card when gpg and gpgsm have support for smartcards.
+** set_locale for thread safe and env independent locale selection.
+** How to terminate a pending operation?  Something like gpgme_op_reset,
+   but where are you allowed to call it (think callback handlers).
+   Then gpgme_op_*list_end can go.
+** Might need a stat() for data objects and use it for length param to gpg.
+** Allow to export secret keys.
+** Implement support for photo ids.
+** New features requested by our dear users, but rejected or left for
+   later consideration:
+*** Selecting the key ring, setting the version or comment in output.
+    Rejected because the naive implementation is engine specific, the
+    configuration is part of the engine's configuration or readily
+    worked around in a different way
+*** Selecting the symmetric cipher.
+*** Exchanging keys with key servers.
+
+* Documentation
+** Document validity and trust issues.
+
+* Engines
+** Do not create/destroy engines, but create engine and then reset it.
+   Internally the reset operation still spawns a new engine process,
+   but this can be replaced with a reset later.  Also, be very sure to
+   release everything properly at a reset and at an error.  Think hard
+   about where to guarantee what (ie, what happens if start fails, are
+   the fds unregistered immediately - i think so?)
+** Optimize the case where a data object has an underlying fd we can pass
+   directly to the engine.
+** Move code common to all engines up from gpg to engine.
+** engine operations can return General Error on unknown protocol
+   (it's an internal error, as select_protocol checks already).
+** When server mode is implemented properly, more care has to be taken to
+   release all resources on error (for example to free assuan_cmd).
+
+* Operations
+** If no passphrase cb is installed, status handler is not run even if
+   password is required by crypto engine. !!
+** Export status handler need much more work. !!!
+** Import should return a useful error when one happened.
+*** Import does not take notice of NODATA status report.
+*** When GPGSM does issue IMPORT_OK status reports, make sure to check for them
+    in tests/gpgs m/t-import.c.
+** Genkey should return something more useful than General_Error.
+** Factor out common code in _op_*_start functions.
+** Optimize the file descriptor list, so the number of open fds is
+   always known easily.
+** Encryption: It should be verified that the behaviour for partially untrusted
+   recipients is correct.
+** When GPG issues INV_something for invalid signers, catch them.
+
+* Error Values
+** Map ASSUAN/GpgSM ERR error values in a better way than is done now. !!
+** Some error values should identify the source more correctly (mostly error
+   values derived from status messages).
+
+* Tests
+** Write a fake gpg-agent so that we can supply known passphrases to
+   gpgsm and setup the configuration files to use the agent.  Without
+   this we are testing a currently running gpg-agent which is not a
+   clever idea. !
+** t-data
+*** Test gpgme_data_release_and_get_mem.
+*** Test gpgme_data_seek for invalid types.
+
+* Debug
+** Handle malloc and vasprintf errors.  But decide first if they should be
+   ignored (and logged with 255?!), or really be assertions. !
+
+* Build suite
+** Make sure everything is cleaned correctly (esp. test area).
