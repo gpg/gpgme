@@ -1,3 +1,12 @@
+Noteworthy changes in version 0.3.3 (2002-02-12)
+------------------------------------------------
+
+ * Fix the Makefile in jnlib.
+
+ * Fix the test suite (hopefully).  It should clean up all its state
+   with `make check' now.
+
+
 Noteworthy changes in version 0.3.2 (2002-02-10)
 ------------------------------------------------
 
