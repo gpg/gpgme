@@ -137,6 +137,14 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 }
 
 
+static gpgme_error_t
+decrypt_status_handler (void *priv, gpgme_status_code_t code, char *args)
+{
+  return _gpgme_progress_status_handler (priv, code, args)
+    || _gpgme_decrypt_status_handler (priv, code, args);
+}
+
+
 gpgme_error_t
 _gpgme_op_decrypt_init_result (gpgme_ctx_t ctx)
 {
@@ -177,8 +185,7 @@ decrypt_start (gpgme_ctx_t ctx, int synchronous,
 	return err;
     }
 
-  _gpgme_engine_set_status_handler (ctx->engine,
-				    _gpgme_decrypt_status_handler, ctx);
+  _gpgme_engine_set_status_handler (ctx->engine, decrypt_status_handler, ctx);
 
   return _gpgme_engine_op_decrypt (ctx->engine, cipher, plain);
 }

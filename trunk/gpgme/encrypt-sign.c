@@ -30,7 +30,8 @@
 static gpgme_error_t
 encrypt_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
-  return _gpgme_encrypt_status_handler (priv, code, args)
+  return _gpgme_progress_status_handler (priv, code, args)
+    || _gpgme_encrypt_status_handler (priv, code, args)
     || _gpgme_sign_status_handler (priv, code, args);
 }
 

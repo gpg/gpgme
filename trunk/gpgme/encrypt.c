@@ -109,11 +109,19 @@ _gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
 }
 
 
-gpgme_error_t
-_gpgme_encrypt_sym_status_handler (void *priv, gpgme_status_code_t code,
-				   char *args)
+static gpgme_error_t
+encrypt_sym_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
-  return _gpgme_passphrase_status_handler (priv, code, args);
+  return _gpgme_progress_status_handler (priv, code, args)
+    || _gpgme_passphrase_status_handler (priv, code, args);
+}
+
+
+static gpgme_error_t
+encrypt_status_handler (void *priv, gpgme_status_code_t code, char *args)
+{
+  return _gpgme_progress_status_handler (priv, code, args)
+    || _gpgme_encrypt_status_handler (priv, code, args);
 }
 
 
@@ -168,8 +176,8 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_recipients_t recp,
 
   _gpgme_engine_set_status_handler (ctx->engine,
 				    symmetric
-				    ? _gpgme_encrypt_sym_status_handler
-				    : _gpgme_encrypt_status_handler,
+				    ? encrypt_sym_status_handler
+				    : encrypt_status_handler,
 				    ctx);
 
   return _gpgme_engine_op_encrypt (ctx->engine, recp, plain, cipher,

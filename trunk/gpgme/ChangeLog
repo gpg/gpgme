@@ -1,5 +1,31 @@
 2003-05-26  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.c (gpg_new): Add --enable-progress-filter to gpg
+	invocation.
+	* decrypt-verify.c (_gpgme_op_decrypt_verify_start): Rename to
+	decrypt_verify_start.
+	(gpgme_op_decrypt_verify_start): Call decrypt_verify_start.
+	(gpgme_op_decrypt_verify): Likewise.
+	* verify.c (verify_status_handler): New function that also calls
+	progress status handler.
+	(_gpgme_op_verify_start): Set status handler to verify_status_handler.
+	Rename to (verify_start).
+	(gpgme_op_verify_start): Call verify_start.
+	(gpgme_op_verify): Likewise.
+	* encrypt.c (encrypt_status_handler): New function.
+	(_gpgme_encrypt_sym_status_handler): Call progress status handler.
+	Make static.  Rename to encrypt_sym_status_handler.
+	(encrypt_start): Set status handler to encrypt_sym_status_handler
+	or encrypt_status_handler.
+	* sign.c (sign_status_handler): New function.
+	(sign_start): Set status handler to sign_status_handler.
+	* decrypt.c (decrypt_status_handler): New function that also calls
+	progress status handler.
+	(decrypt_start): Set status handler to decrypt_status_handler.
+	* encrypt-sign.c (encrypt_sign_status_handler): Likewise.
+	* decrypt-verify.c (decrypt_verify_status_handler): Call
+	_gpgme_progress_status_handler.
+
 	* conversion.c (_gpgme_decode_c_string): Add missing break
 	statement.
 
