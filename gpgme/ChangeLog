@@ -1,3 +1,9 @@
+2002-09-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (assuan_libobjs): Remove @LTLIBOBJS@ as we link them
+	into gpgme unconditionally.
+	(libgpgme_la_LIBADD): Change @LIBOBJS@ into @LTLIBOBJS@.
+
 2002-09-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (assuan_libobjs): Use @LTLIBOBJS@ instead @LIBOBJS@.
