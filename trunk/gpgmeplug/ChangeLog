@@ -1,0 +1,9 @@
+2001-11-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c: Include config.h only if [HAVE_CONFIG_H].  Do not
+	include util.h.
+	(deinitialize): Use free, not _gpgme_free.
+	(setDirectoryServers): Use calloc, not xtrycalloc.  Use free, not
+	_gpgme_free.  Use malloc instead xtrymalloc.
+	(appendDirectoryServer): Use realloc, not xtryrealloc.
+
