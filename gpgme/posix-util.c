@@ -33,6 +33,9 @@
 const char *
 _gpgme_get_gpg_path (void)
 {
+    /*   #warning Forced to development version
+    return "/home/wk/work/gnupg-stable/g10/gpg";
+    */
     return GPG_PATH;
 }
 

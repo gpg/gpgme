@@ -455,6 +455,24 @@ gpgme_key_get_as_xml ( GpgmeKey key )
 }
 
 
+static const char *
+capabilities_to_string (struct subkey_s *k)
+{
+    static char *strings[8] = {
+        "",
+        "c",
+        "s",
+        "sc",
+        "e",
+        "ec",
+        "es",
+        "esc"
+    };
+    return strings[  (!!k->flags.can_encrypt << 2)
+                   | (!!k->flags.can_sign    << 1)
+                   | (!!k->flags.can_certify     ) ];
+}
+
 const char *
 gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
                             const void *reserved, int idx )
@@ -536,10 +554,19 @@ gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
       case GPGME_ATTR_KEY_INVALID:
       case GPGME_ATTR_UID_REVOKED:
       case GPGME_ATTR_UID_INVALID:
+      case GPGME_ATTR_CAN_ENCRYPT:
+      case GPGME_ATTR_CAN_SIGN:
+      case GPGME_ATTR_CAN_CERTIFY:
         break;
       case GPGME_ATTR_IS_SECRET:
         if (key->secret)
             val = "1";
+        break;
+      case GPGME_ATTR_KEY_CAPS:    
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = capabilities_to_string (k);
         break;
     }
     return val;
@@ -612,6 +639,15 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
             ;
         if (u)
             val = u->invalid;
+        break;
+      case GPGME_ATTR_CAN_ENCRYPT:
+        val = key->gloflags.can_encrypt;
+        break;
+      case GPGME_ATTR_CAN_SIGN:
+        val = key->gloflags.can_sign;
+        break;
+      case GPGME_ATTR_CAN_CERTIFY:
+        val = key->gloflags.can_encrypt;
         break;
       default:
         break;

@@ -135,6 +135,34 @@ set_subkey_trust_info ( struct subkey_s *k, const char *s )
     }
 }
 
+static void
+set_mainkey_capability ( GpgmeKey key, const char *s )
+{
+    for (; *s ; s++ ) {
+        switch (*s) {
+          case 'e': key->keys.flags.can_encrypt = 1; break;
+          case 's': key->keys.flags.can_sign = 1; break;
+          case 'c': key->keys.flags.can_certify = 1; break;
+          case 'E': key->gloflags.can_encrypt = 1; break;
+          case 'S': key->gloflags.can_sign = 1; break;
+          case 'C': key->gloflags.can_certify = 1; break;
+        }
+    }
+}
+
+static void
+set_subkey_capability ( struct subkey_s *k, const char *s )
+{
+    for (; *s; s++ ) {
+        switch (*s) {
+          case 'e': k->flags.can_encrypt = 1; break;
+          case 's': k->flags.can_sign = 1; break;
+          case 'c': k->flags.can_certify = 1; break;
+        }
+    }
+}
+
+
 
 /* Note: we are allowed to modify line */
 static void
@@ -245,9 +273,12 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 break;
               case 10: /* not used due to --fixed-list-mode option */
                 break;
-              case 11:  /* signature class  */
+              case 11: /* signature class  */
                 break;
-              case 12:
+              case 12: /* capabilities */
+                set_mainkey_capability (key, p );
+                break;
+              case 13:
                 pend = NULL;  /* we can stop here */
                 break;
             }
@@ -284,7 +315,10 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 break;
               case 11:  /* signature class  */
                 break;
-              case 12:
+              case 12: /* capability */
+                set_subkey_capability ( sk, p );
+                break;
+              case 13:
                 pend = NULL;  /* we can stop here */
                 break;
             }
