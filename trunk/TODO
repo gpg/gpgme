@@ -1,13 +1,13 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * ABI's to break:
+** Change GpgmeRecipient stuff to GpgmeUserID (encrypt, export, ...).
 ** Compatibility interfaces that can be removed in future versions:
 *** gpgme_data_new_from_filepart
 *** gpgme_data_new_from_file
 *** gpgme_data_new_with_read_cb
 *** gpgme_data_rewind
 *** GPGME_Busy, GPGME_No_Request
-*** GPGME_No_Passphrase
 *** GPGME_Invalid_Recipient, GPGME_No_Recipients
 *** GPGME_No_Passphrase
 *** gpgme_op_import_ext
@@ -25,6 +25,7 @@ Hey Emacs, this is -*- outline -*- mode!
 * Thread support:
 ** Build thread modules for static linking (which just suck in the
    desired symbols the hard way). !!
+** Ordering the libs is important, but libtool gets it wrong.  Argh.
 
 * New features:
 ** notification system
@@ -42,6 +43,16 @@ Hey Emacs, this is -*- outline -*- mode!
    but where are you allowed to call it (think callback handlers).
    Then gpgme_op_*list_end can go.
 ** Might need a stat() for data objects and use it for length param to gpg.
+** Allow to export secret keys.
+** Implement support for photo ids.
+** New features requested by our dear users, but rejected or left for
+   later consideration:
+*** Selecting the key ring, setting the version or comment in output.
+    Rejected because the naive implementation is engine specific, the
+    configuration is part of the engine's configuration or readily
+    worked around in a different way
+*** Selecting the symmetric cipher.
+*** Exchanging keys with key servers.
 
 * Documentation
 ** Document validity and trust issues.
@@ -50,9 +61,9 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Do not create/destroy engines, but create engine and then reset it.
    Internally the reset operation still spawns a new engine process,
    but this can be replaced with a reset later.  Also, be very sure to
-   release everything properly at a reset and at an error.
-   Think hard about where to guarantee what (ie, what happens if start fails,
-   are the fds unregistered immediately - i think so?)
+   release everything properly at a reset and at an error.  Think hard
+   about where to guarantee what (ie, what happens if start fails, are
+   the fds unregistered immediately - i think so?)
 ** Optimize the case where a data object has an underlying fd we can pass
    directly to the engine.
 ** Move code common to all engines up from gpg to engine.
@@ -65,6 +76,7 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Passphrase callback should not copy password. !!!
 *** If no passphrase cb is installed, status handler is not run even if
     password is required by crypto engine. !!
+*** Verify that passphrase callback beaves correctly with cancel etc.
 ** Export status handler need much more work. !!!
 ** Import should return a useful error when one happened.
 *** Import does not take notice of NODATA status report.
@@ -74,6 +86,8 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Factor out common code in _op_*_start functions.
 ** Optimize the file descriptor list, so the number of open fds is
    always known easily.
+** Encryption: It should be verified that the behaviour for partially untrusted
+   recipients is correct.
 ** When GPG issues INV_something for invalid signers, catch them.
 
 * Error Values
