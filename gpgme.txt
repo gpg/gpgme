@@ -25,7 +25,7 @@ support OpenPGP and the Cryptographic Message Syntax.
 
 %%maintainer: g10 Code GmbH <gpgme@g10code.com>
 
-%%updated: 2001-12-19
+%%updated: 2002-07-25
 
 %%keywords: encryption, public key, digital signature, GnuPG
 
@@ -61,7 +61,7 @@ support OpenPGP and the Cryptographic Message Syntax.
 
 %%supported-languages: C, C++
 
-%%use-requirements: GnuPG 1.0.6, GpgSM 0.0.0
+%%use-requirements: GnuPG 1.0.7, GpgSM 0.3.8
 
 %%build-prerequisites:
 
@@ -69,7 +69,7 @@ support OpenPGP and the Cryptographic Message Syntax.
 
 %%source-prerequisites:
 
-%%version: 0.3.0 released on 2001-12-19
+%%version: 0.3.8 released on 2002-06-25
 
 %%announce-list: announce@gnupg.org  announce-request@gnupg.org
 
