@@ -1,3 +1,13 @@
+Noteworthy changes in version 0.4.6 (unreleased)
+------------------------------------------------
+
+ * (none so far)
+
+ * Interface changes relative to the 0.4.5 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(none so far)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Noteworthy changes in version 0.4.5 (2004-03-07)
 ------------------------------------------------
 
@@ -81,6 +91,7 @@ Noteworthy changes in version 0.4.4 (2004-01-12)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_key_sig_t			CHANGED: class deprecated, use new sig_class.
 gpgme_new_signature_t		CHANGED: class deprecated, use new sig_class.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.3 (2003-10-06)
 ------------------------------------------------
