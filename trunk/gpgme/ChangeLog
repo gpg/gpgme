@@ -1,3 +1,7 @@
+2004-01-12  Werner Koch  <wk@gnupg.org>
+
+	* sign.c: Include util.h for prototype of _gpgme_parse_timestamp.
+
 2003-12-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (_GPGME_D_CLASS): Revert this change.
