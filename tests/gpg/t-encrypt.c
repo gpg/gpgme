@@ -36,10 +36,7 @@ main (int argc, char *argv[])
   gpgme_key_t key[3] = { NULL, NULL, NULL };
   gpgme_encrypt_result_t result;
 
-  gpgme_check_version (0);
-
-  err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
-  fail_if_err (err);
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
     
   err = gpgme_new (&ctx);
   fail_if_err (err);

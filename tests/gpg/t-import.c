@@ -203,6 +203,8 @@ main (int argc, char *argv[])
   const char *pubkey_1_asc = make_filename ("pubkey-1.asc");
   const char *seckey_1_asc = make_filename ("seckey-1.asc");
 
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
   err = gpgme_new (&ctx);
   fail_if_err (err);
 

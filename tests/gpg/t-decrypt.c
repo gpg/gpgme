@@ -39,6 +39,8 @@ main (int argc, char *argv[])
   const char *cipher_1_asc = make_filename ("cipher-1.asc");
   char *agent_info;
 
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
   err = gpgme_new (&ctx);
   fail_if_err (err);
 

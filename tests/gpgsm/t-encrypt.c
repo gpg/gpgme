@@ -35,8 +35,7 @@ main (int argc, char **argv)
   gpgme_key_t key[] = { NULL, NULL };
   gpgme_encrypt_result_t result;
 
-  err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);
-  fail_if_err (err);
+  init_gpgme (GPGME_PROTOCOL_CMS);
 
   err = gpgme_new (&ctx);
   fail_if_err (err);

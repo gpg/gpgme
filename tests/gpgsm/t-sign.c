@@ -81,8 +81,7 @@ main (int argc, char *argv[])
   gpgme_data_t in, out;
   gpgme_sign_result_t result;
 
-  err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);
-  fail_if_err (err);
+  init_gpgme (GPGME_PROTOCOL_CMS);
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
@@ -119,7 +118,3 @@ main (int argc, char *argv[])
   gpgme_release (ctx);
   return 0;
 }
-
-
-
-

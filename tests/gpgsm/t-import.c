@@ -161,8 +161,7 @@ main (int argc, char **argv)
   const char *cert_1 = make_filename ("cert_dfn_pca01.der");
   const char *cert_2 = make_filename ("cert_dfn_pca15.der");
 
-  err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);
-  fail_if_err (err);
+  init_gpgme (GPGME_PROTOCOL_CMS);
 
   err = gpgme_new (&ctx);
   fail_if_err (err);

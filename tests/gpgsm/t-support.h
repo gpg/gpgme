@@ -20,6 +20,8 @@
 
 #include <unistd.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <locale.h>
 
 #include <gpgme.h>
 
@@ -78,4 +80,19 @@ make_filename (const char *fname)
   strcat (buf, "/");
   strcat (buf, fname);
   return buf;
+}
+
+
+void
+init_gpgme (gpgme_protocol_t proto)
+{
+  gpgme_error_t err;
+
+  gpgme_check_version (NULL);
+  setlocale (LC_ALL, "");
+  gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
+  gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
+
+  err = gpgme_engine_check_version (proto);
+  fail_if_err (err);
 }

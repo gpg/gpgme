@@ -86,8 +86,7 @@ main (int argc, char **argv)
   gpgme_sign_result_t sign_result;
   char *agent_info;
 
-  err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
-  fail_if_err (err);
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
     
   err = gpgme_new (&ctx);
   fail_if_err (err);
