@@ -4,7 +4,7 @@
 
 @dircategory GNU Libraries
 @direntry
-* @acronym{GPGME}: (gpgme)           Adding support for cryptography to your program.
+* @acronym{GPGME}: (gpgme).          Adding support for cryptography to your program.
 @end direntry
 
 @include version.texi
@@ -2166,7 +2166,7 @@ through any errors that are reported by the crypto engine support
 routines.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_sign (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{sig}}, @w{GpgmeSigMode @var{mode}})
+@deftypefun GpgmeError gpgme_op_sign_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{sig}}, @w{GpgmeSigMode @var{mode}})
 The function @code{gpgme_op_sign_start} initiates a
 @code{gpgme_op_sign} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.

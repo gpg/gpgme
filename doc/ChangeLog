@@ -1,3 +1,13 @@
+2002-04-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Creating a Signature): Fix function name.  Reported
+	by Wichert Ackerman <wichert@debian.org>.
+
+2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (direntry): End index entry with a full stop.
+	Patch submitted by Jose Carlos Garcia Sogo <jsogo@debian.org>.
+	
 2002-03-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Detailed Results): Fix syntax error in last change.
