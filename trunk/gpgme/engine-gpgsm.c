@@ -207,6 +207,50 @@ gpgsm_set_fd (ASSUAN_CONTEXT ctx, const char *which, int fd)
 }
 
 GpgmeError
+_gpgme_gpgsm_op_decrypt (GpgsmObject gpgsm, GpgmeData ciph, GpgmeData plain)
+{
+  AssuanError err;
+
+  if (!gpgsm)
+    return mk_error (Invalid_Value);
+
+  gpgsm->input_data = ciph;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server);
+  if (err)
+    return mk_error (General_Error);	/* FIXME */
+  gpgsm->output_data = plain;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server);
+  if (err)
+    return mk_error (General_Error);	/* FIXME */
+  _gpgme_io_close (gpgsm->message_fd);
+  gpgsm->message_fd = -1;
+
+  gpgsm->command = "DECRYPT";
+  return 0;
+}
+
+GpgmeError
+_gpgme_gpgsm_op_import (GpgsmObject gpgsm, GpgmeData keydata)
+{
+  AssuanError err;
+
+  if (!gpgsm)
+    return mk_error (Invalid_Value);
+
+  gpgsm->input_data = keydata;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server);
+  if (err)
+    return mk_error (General_Error);	/* FIXME */
+  _gpgme_io_close (gpgsm->output_fd);
+  gpgsm->output_fd = -1;
+  _gpgme_io_close (gpgsm->message_fd);
+  gpgsm->message_fd = -1;
+
+  gpgsm->command = "DECRYPT";
+  return 0;
+}
+
+GpgmeError
 _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
 {
   AssuanError err;
@@ -347,7 +391,19 @@ _gpgme_gpgsm_set_status_handler (GpgsmObject gpgsm,
 }
 
 GpgmeError
- _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
+_gpgme_gpgsm_op_decrypt (GpgsmObject gpgsm, GpgmeData ciph, GpgmeData plain)
+{
+  return mk_error (Invalid_Engine);
+}
+
+GpgmeError
+_gpgme_gpgsm_op_import (GpgsmObject gpgsm, GpgmeData keydata)
+{
+  return mk_error (Invalid_Engine);
+}
+
+GpgmeError
+_gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
 {
   return mk_error (Invalid_Engine);
 }
