@@ -1185,7 +1185,7 @@ struct _gpgme_signature
   /* Signature exipration time or 0.  */
   unsigned long exp_timestamp;
 
-  int wrong_key_usage : 1;
+  unsigned int wrong_key_usage : 1;
 
   /* Internal to GPGME, do not use.  */
   int _unused : 31;
