@@ -5,6 +5,6 @@
 * Allow to use GTK's main loop instead of the select stuff in
   wait.c
 
-* Remove all that funny exit code handling - we donn't need it.
+* Remove all that funny exit code handling - we don't need it.
 
 

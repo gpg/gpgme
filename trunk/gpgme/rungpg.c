@@ -718,7 +718,8 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
     fd_parent_list[n].dup_to = -1;
 
 
-    pid = _gpgme_io_spawn (GPG_PATH, gpg->argv, fd_child_list, fd_parent_list);
+    pid = _gpgme_io_spawn (_gpgme_get_gpg_path (),
+                           gpg->argv, fd_child_list, fd_parent_list);
     xfree (fd_child_list);
     if (pid == -1) {
         return mk_error (Exec_Error);

@@ -1,0 +1,9 @@
+Program: gpgme
+Maintainer: Werner Koch <wk@gnupg.org>
+
+
+FSF <gnu@gnu.org>
+    * Code taken from GnuPG: gpgme/w32-util.c 
+
+Werner Koch <wk@gnupg.org>
+    * Design and most stuff.
