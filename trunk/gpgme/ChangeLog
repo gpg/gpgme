@@ -1,5 +1,9 @@
 2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (gpgme_set_protocol): New prototype.
+
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
 	* engine-gpgsm.c (_gpgme_gpgsm_op_decrypt): New function.
 	(_gpgme_gpgsm_op_import): Likewise.
 

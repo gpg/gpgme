@@ -24,22 +24,28 @@
 ## Process this file with automake to produce Makefile.in
 
 
-INCLUDES = -I.. -I../gpgme -I$(top_srcdir)/include
+INCLUDES = -I$(top_srcdir)/gpgme
 
 #LDADD = ../gpgme/libgpgme.la
 libgpgmeplug_la_LIBADD = ../gpgme/libgpgme.la
+libgpgsmplug_la_LIBADD = ../gpgme/libgpgme.la
 
 BUILT_SOURCES =
 
 #noinst_LIBRARIES = libgpgmeplug.a
 #noinst_LTLIBRARIES = libgpgmeplug.la
 
-lib_LTLIBRARIES = libgpgmeplug.la
+lib_LTLIBRARIES = libgpgmeplug.la libgpgsmplug.la
 
 
 libgpgmeplug_la_LDFLAGS = -shared -Wl,-soname,libgpgmeplug.so
+libgpgsmplug_la_LDFLAGS = -shared -Wl,-soname,libgpgsmplug.so
 
 libgpgmeplug_la_SOURCES = gpgme.h \
+	cryptplug.h \
+	gpgmeplug.c
+
+libgpgsmplug_la_SOURCES = gpgme.h \
 	cryptplug.h \
 	gpgmeplug.c
 

@@ -173,6 +173,7 @@ void       gpgme_cancel (GpgmeCtx c);
 GpgmeCtx   gpgme_wait (GpgmeCtx c, int hang);
 
 char *gpgme_get_notation (GpgmeCtx c);
+GpgmeError gpgme_set_protocol (GpgmeCtx c, GpgmeProtocol prot);
 void gpgme_set_armor (GpgmeCtx c, int yes);
 int  gpgme_get_armor (GpgmeCtx c);
 void gpgme_set_textmode (GpgmeCtx c, int yes);
