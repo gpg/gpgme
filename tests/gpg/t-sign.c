@@ -61,7 +61,7 @@ check_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
     }
   if (result->signatures->class != 1)
     {
-      fprintf (stderr, "Wrong signature class reported: %lu\n",
+      fprintf (stderr, "Wrong signature class reported: %u\n",
 	       result->signatures->class);
       exit (1);
     }

@@ -3937,7 +3937,7 @@ The public key algorithm used to create this signature.
 @item gpgme_hash_algo_t
 The hash algorithm used to create this signature.
 
-@item unsigned long class
+@item unsigned int class
 The signature class of this signature.
 
 @item long int timestamp

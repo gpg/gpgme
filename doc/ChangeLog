@@ -1,3 +1,8 @@
+2003-08-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Creating a Signature): Change type of member class
+	to unsigned int.
+
 2003-08-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Verify): Get error code from SIG->status in the code

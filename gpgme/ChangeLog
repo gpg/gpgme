@@ -1,3 +1,10 @@
+2003-08-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (struct _gpgme_new_signature): Rename member CLASS to
+	_OBSOLETE_CLASS, add member CLASS with type unsigned int.
+	* sign.c (parse_sig_created): Also set SIG->_unused_class for
+	backward compatibility.
+
 2003-08-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* verify.c (parse_new_sig): Fix status parsing case.
