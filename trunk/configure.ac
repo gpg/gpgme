@@ -241,8 +241,21 @@ else
 fi
 dnl Check for GnuPG version requirement.
 GPG_VERSION=unknown
-ok=no
-if test "$cross_compiling" != "yes" -a -n "$GPG" -a -r "$GPG"; then
+ok=maybe
+if test -z "$GPG" -o "x$GPG" = "xno"; then
+  ok=no
+else
+  if test "$cross_compiling" = "yes"; then
+    AC_MSG_WARN([GnuPG version can not be checked when cross compiling])
+    ok=no
+  else
+    if test ! -x "$GPG"; then
+      AC_MSG_WARN([GnuPG not executable, version check disabled])
+      ok=no
+    fi
+  fi
+fi
+if test "$ok" = "maybe"; then
   AC_MSG_CHECKING(for GnuPG >= $NEED_GPG_VERSION)
   req_major=`echo $NEED_GPG_VERSION | \
              sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
@@ -277,6 +290,7 @@ if test "$cross_compiling" != "yes" -a -n "$GPG" -a -r "$GPG"; then
   if test "$ok" = "yes"; then
     AC_MSG_RESULT(yes)
   else
+    AC_MSG_RESULT(no)
     AC_MSG_WARN([GnuPG must be at least version $NEED_GPG_VERSION])
   fi
 fi
@@ -318,8 +332,21 @@ fi
 AM_CONDITIONAL(HAVE_GPGSM, [test -n "$GPGSM"])
 dnl Check for GPGSM version requirement.
 GPGSM_VERSION=unknown
-ok=no
-if test "$cross_compiling" != "yes" -a -n "$GPGSM" -a -r "$GPGSM"; then
+ok=maybe
+if test -z "$GPGSM" -o "x$GPGSM" = "xno"; then
+  ok=no
+else
+  if test "$cross_compiling" = "yes"; then
+    AC_MSG_WARN([GPGSM version can not be checked when cross compiling])
+    ok=no
+  else
+    if test ! -x "$GPGSM"; then
+      AC_MSG_WARN([GPGSM not executable, version check disabled])
+      ok=no
+    fi
+  fi
+fi
+if test "$ok" = "maybe"; then
   AC_MSG_CHECKING(for GPGSM >= $NEED_GPGSM_VERSION)
   req_major=`echo $NEED_GPGSM_VERSION | \
              sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
@@ -354,6 +381,7 @@ if test "$cross_compiling" != "yes" -a -n "$GPGSM" -a -r "$GPGSM"; then
   if test "$ok" = "yes"; then
     AC_MSG_RESULT(yes)
   else
+    AC_MSG_RESULT(no)
     AC_MSG_WARN([GPGSM must be at least version $NEED_GPGSM_VERSION])
   fi
 fi
