@@ -77,12 +77,11 @@ GpgmeError _gpgme_parse_inv_userid (char *args, GpgmeInvalidUserID *userid);
 GpgmeError _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 					 char *args);
 
-/*-- decrypt.c --*/
-GpgmeError _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
+
+/* From decrypt.c.  */
+GpgmeError _gpgme_op_decrypt_init_result (GpgmeCtx ctx);
+GpgmeError _gpgme_decrypt_status_handler (void *priv, GpgmeStatusCode code,
 					  char *args);
-GpgmeError _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
-				 GpgmeData ciph, GpgmeData plain,
-				 void *status_handler);
 
 
 /* From sign.c.  */

@@ -39,7 +39,6 @@
   while (0)
 
 
-
 static char *
 make_filename (const char *fname)
 {

@@ -1,3 +1,34 @@
+2003-04-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (struct _gpgme_op_decrypt_result): New structure.
+	(GpgmeDecryptResult): New type.
+	(gpgme_op_decrypt_result): New prototype.
+	* ops.h (_gpgme_op_decrypt_init_result): New prototype.
+	(_gpgme_decrypt_status_handler): Fix prototype.
+	(_gpgme_decrypt_start): Remove prototype.
+	* decrypt-verify.c: Do not include <stdio.h>, <stdlib.h>,
+	<string.h> and <assert.h>, "util.h" and "context.h", but
+	"gpgme.h".
+	(decrypt_verify_status_handler): Change first argument to void *,
+	and rework error handling.
+	(_gpgme_op_decrypt_verify_start): New function.
+	(gpgme_op_decrypt_verify_start): Rewrite using
+	_gpgme_op_decrypt_verify_start.
+	(gpgme_op_decrypt_verify): Likewise.
+	* decrypt.c: Include <string.h>, "gpgme.h" and "util.h".
+	(struct decrypt_result): Change to typedef op_data_t, rewritten.
+	(is_token): Remove function.
+	(release_op_data): New function.
+	(skip_token): Remove function.
+	(gpgme_op_decrypt_result): New function.
+	(_gpgme_decrypt_status_handler): Change first argument to void *.
+	Rework error handling.
+	(_gpgme_decrypt_start): Rename to ...
+	(decrypt_start): ... this.  Call _gpgme_op_decrypt_init_result.
+	(_gpgme_op_decrypt_init_result): New function.
+	(gpgme_op_decrypt_start): Use decrypt_start.
+	(gpgme_op_decrypt): Likewise.
+
 2003-04-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* encrypt-sign.c: Do not include <stddef.h>, <stdio.h>,

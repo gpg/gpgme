@@ -1,4 +1,4 @@
-/* decrypt-verify.c -  decrypt and verify functions
+/* decrypt-verify.c - Decrypt and verify function.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003 g10 Code GmbH
 
@@ -21,56 +21,69 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
 
-#include "util.h"
-#include "context.h"
+#include "gpgme.h"
 #include "ops.h"
+
+
+static GpgmeError
+decrypt_verify_status_handler (void *priv, GpgmeStatusCode code, char *args)
+{
+  return _gpgme_decrypt_status_handler (priv, code, args)
+    || _gpgme_verify_status_handler (priv, code, args);
+}
 
 
 static GpgmeError
-decrypt_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
-{
-  GpgmeError err = _gpgme_decrypt_status_handler (ctx, code, args);
-  if (err)
-    return err;
-  return _gpgme_verify_status_handler (ctx, code, args);
-}
-
-
-GpgmeError
-gpgme_op_decrypt_verify_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain)
-{
-  return _gpgme_decrypt_start (ctx, 0, ciph, plain,
-			       decrypt_verify_status_handler);
-}
-
-
-/**
- * gpgme_op_decrypt_verify:
- * @ctx: The context
- * @in: ciphertext input
- * @out: plaintext output
- * 
- * This function decrypts @in to @out and performs a signature check.
- * Other parameters are take from the context @c.
- * The function does wait for the result.
- * 
- * Return value:  0 on success or an errorcode. 
- **/
-GpgmeError
-gpgme_op_decrypt_verify (GpgmeCtx ctx, GpgmeData in, GpgmeData out)
+_gpgme_op_decrypt_verify_start (GpgmeCtx ctx, int synchronous,
+				GpgmeData cipher, GpgmeData plain)
 {
   GpgmeError err;
 
-  gpgme_data_release (ctx->notation);
-  ctx->notation = NULL;
-    
-  err = _gpgme_decrypt_start (ctx, 1, in, out,
-			      decrypt_verify_status_handler);
+  err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  err = _gpgme_op_decrypt_init_result (ctx);
+  if (err)
+    return err;
+
+  if (!cipher)
+    return GPGME_No_Data;
+  if (!plain)
+    return GPGME_Invalid_Value;
+
+  if (ctx->passphrase_cb)
+    {
+      err = _gpgme_engine_set_command_handler (ctx->engine,
+					       _gpgme_passphrase_command_handler,
+					       ctx, NULL);
+      if (err)
+	return err;
+    }
+
+  _gpgme_engine_set_status_handler (ctx->engine,
+				    decrypt_verify_status_handler, ctx);
+  
+  return _gpgme_engine_op_decrypt (ctx->engine, cipher, plain);
+}
+
+
+/* Decrypt ciphertext CIPHER and make a signature verification within
+   CTX and store the resulting plaintext in PLAIN.  */
+GpgmeError
+gpgme_op_decrypt_verify_start (GpgmeCtx ctx, GpgmeData cipher, GpgmeData plain)
+{
+  return _gpgme_op_decrypt_verify_start (ctx, 0, cipher, plain);
+}
+
+
+/* Decrypt ciphertext CIPHER and make a signature verification within
+   CTX and store the resulting plaintext in PLAIN.  */
+GpgmeError
+gpgme_op_decrypt_verify (GpgmeCtx ctx, GpgmeData cipher, GpgmeData plain)
+{
+  GpgmeError err = _gpgme_op_decrypt_verify_start (ctx, 1, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

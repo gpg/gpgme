@@ -798,6 +798,16 @@ GpgmeError gpgme_op_encrypt_sign (GpgmeCtx ctx,
 				  GpgmeData plain, GpgmeData cipher);
 
 
+/* Decryption.  */
+struct _gpgme_op_decrypt_result
+{
+  char *unsupported_algorithm;
+};
+typedef struct _gpgme_op_decrypt_result *GpgmeDecryptResult;
+
+/* Retrieve a pointer to the result of the decrypt operation.  */
+GpgmeDecryptResult gpgme_op_decrypt_result (GpgmeCtx ctx);
+
 /* Decrypt ciphertext CIPHER within CTX and store the resulting
    plaintext in PLAIN.  */
 GpgmeError gpgme_op_decrypt_start (GpgmeCtx ctx,
