@@ -128,6 +128,9 @@ dnl FIXME: check whether Bonobo is installed
 dnl
 dnl Checks for header files.
 dnl
+AC_CHECK_HEADERS(sys/select.h)
+
+
 
 dnl
 dnl Checks for typedefs and structures.
