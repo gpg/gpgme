@@ -1,5 +1,10 @@
 2001-12-13  Marcus Brinkmann  <marcus@gnu.org>
 
+	* assuan-connect.c (assuan_pipe_connect): Remove code that closes
+	all the little file descriptors we set up.
+
+2001-12-13  Marcus Brinkmann  <marcus@gnu.org>
+
 	* assuan-buffer.c (assuan_read_line): Fix order of execution to
 	get correct return values.
 
