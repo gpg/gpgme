@@ -43,7 +43,14 @@ gpgme_recipients_new (GpgmeRecipients *r_rset)
 void
 gpgme_recipients_release ( GpgmeRecipients rset )
 {
-    /* fixme: release the linked list */
+    if (rset) {
+        struct user_id_s *u, *u2;
+
+        for (u = rset->list; u; u = u2) {
+            u2 = u->next;
+            xfree(u);
+        }
+    }
     xfree ( rset );
 }
 

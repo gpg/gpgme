@@ -31,6 +31,7 @@ typedef enum {
     RESULT_TYPE_VERIFY,
     RESULT_TYPE_DECRYPT,
     RESULT_TYPE_SIGN,
+    RESULT_TYPE_ENCRYPT
 } ResultType;
 
 
@@ -72,6 +73,7 @@ struct gpgme_context_s {
         VerifyResult verify;
         DecryptResult decrypt;
         SignResult sign;
+        EncryptResult encrypt;
     } result;
 
     GpgmeData notation;    /* last signature notation */

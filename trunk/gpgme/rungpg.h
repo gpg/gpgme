@@ -86,7 +86,8 @@ typedef enum  {
     STATUS_NOTATION_DATA      ,
     STATUS_POLICY_URL         ,
     STATUS_BEGIN_STREAM       ,
-    STATUS_END_STREAM
+    STATUS_END_STREAM         ,
+    STATUS_INV_RECP        
 } GpgStatusCode;
 
 typedef void (*GpgStatusHandler)( GpgmeCtx, GpgStatusCode code, char *args ); 
