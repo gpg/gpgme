@@ -1,17 +1,32 @@
 #!/bin/sh
+#    Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+PGM=gpgme-config
+libs="@GPGME_CONFIG_LIBS@"
+cflags="@GPGME_CONFIG_CFLAGS@"
 prefix=@prefix@
 exec_prefix=@exec_prefix@
+includes=""
+libdirs=""
 exec_prefix_set=no
-
-gpgme_libs="@GPGME_LIBS@"
-gpgme_cflags="@GPGME_CFLAGS@"
+echo_libs=no
+echo_cflags=no
+echo_prefix=no
+echo_exec_prefix=no
 
 
 usage()
 {
 	cat <<EOF
-Usage: gpgme-config [OPTIONS]
+Usage: $PGM [OPTIONS]
 Options:
 	[--prefix[=DIR]]
 	[--exec-prefix[=DIR]]
@@ -77,17 +92,24 @@ fi
 if test "$echo_cflags" = "yes"; then
     if test "@includedir@" != "/usr/include" ; then
       includes="-I@includedir@"
-      for i in $gpgme_cflags ; do
+      for i in $cflags ; do
 	if test "$i" = "-I@includedir@" ; then
 	  includes=""
 	fi
       done
     fi
-    echo $includes $gpgme_cflags
+    echo $includes $cflags
 fi
 
 if test "$echo_libs" = "yes"; then
-    echo ${gpgme_libs}
+    if test "@libdir@" != "/usr/lib" ; then
+      libdirs="-L@libdir@"
+      for i in $libs ; do
+	if test "$i" = "-L@libdir@" ; then
+	  libdirs=""
+	fi
+      done
+    fi
+    echo $libdirs $libs
 fi
-
 
