@@ -362,7 +362,7 @@ if test "$ok" = "maybe"; then
 	 sed 's/^gpgsm (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
   micro=`echo $gpgsm_version | \
 	 sed 's/^gpgsm (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
-  GPGSM_VERSION=`echo $gpgsm_version | sed 's/^gpgsm (GnuPG) //'`
+  GPGSM_VERSION=`echo $gpgsm_version | sed 's/^gpg (GnuPG) //'`
 
   if test "$major" -gt "$req_major"; then
     ok=yes
