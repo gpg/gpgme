@@ -295,7 +295,7 @@ if test "$ok" = "maybe"; then
     AC_MSG_WARN([GnuPG must be at least version $NEED_GPG_VERSION])
   fi
 fi
-AM_CONDITIONAL(RUN_GPG_TESTS, [test "$ok" = "yes" ])
+AM_CONDITIONAL(RUN_GPG_TESTS, test "$ok" = "yes")
 AC_SUBST(GPG_PATH)
 
 NO_OVERRIDE=no
@@ -330,7 +330,7 @@ else
   AC_DEFINE_UNQUOTED(GPGSM_PATH, "$GPGSM", [Path to the GPGSM binary.])
   AC_SUBST(GPGSM)
 fi
-AM_CONDITIONAL(HAVE_GPGSM, ["$GPGSM" != "no"])
+AM_CONDITIONAL(HAVE_GPGSM, test "$GPGSM" != "no")
 dnl Check for GPGSM version requirement.
 GPGSM_VERSION=unknown
 ok=maybe
@@ -386,7 +386,7 @@ if test "$ok" = "maybe"; then
     AC_MSG_WARN([GPGSM must be at least version $NEED_GPGSM_VERSION])
   fi
 fi
-AM_CONDITIONAL(RUN_GPGSM_TESTS, [test "$ok" = "yes" ])
+AM_CONDITIONAL(RUN_GPGSM_TESTS, test "$ok" = "yes")
 
 # FIXME: Only build if supported.
 AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
