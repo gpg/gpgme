@@ -1,5 +1,8 @@
 2003-09-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Multi Threading): Correct documentation on memory
+	synchronization requirement.
+
 	* gpgme.texi (Locale): New section.
 	(Multi Threading): Set locale in example.
 
