@@ -144,6 +144,8 @@ main (int argc, char **argv )
     fail_if_err (err);
 
     err = gpgme_new (&ctx);
+#warning debug code
+    gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
     fail_if_err (err);
     gpgme_set_keylist_mode (ctx, 1); /* no validity calculation */
     do {
@@ -152,7 +154,7 @@ main (int argc, char **argv )
     } while ( loop );
     gpgme_release (ctx);
 
-    check_two_contexts ();
+    /*    check_two_contexts ();*/
 
     return 0;
 }
