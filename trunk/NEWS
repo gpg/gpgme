@@ -1,3 +1,6 @@
+Noteworthy changes in version 0.3.5 (2002-04-01)
+------------------------------------------------
+
  * gpgme_op_encrypt can be called with RECIPIENTS being 0.  In this
    case, symmetric encryption is performed.  Note that this requires a
    passphrase from the user.
