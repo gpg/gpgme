@@ -49,7 +49,7 @@ gpgme_new (GpgmeCtx *r_ctx)
     if (!c)
         return mk_error (Out_Of_Core);
     c->verbosity = 1;
-    c->use_armor = 1;
+    c->use_armor = 1; /* fixme: reset this to 0 */
     *r_ctx = c;
     return 0;
 }
@@ -85,6 +85,9 @@ _gpgme_release_result ( GpgmeCtx c )
       case RESULT_TYPE_DECRYPT:
         _gpgme_release_decrypt_result ( c->result.decrypt );
         break;
+      case RESULT_TYPE_SIGN:
+        _gpgme_release_sign_result ( c->result.sign );
+        break;
     }
 
     c->result.verify = NULL;
@@ -101,8 +104,21 @@ gpgme_op_get_notation ( GpgmeCtx c )
 }
 
 
+void
+gpgme_op_set_armor ( GpgmeCtx c, int yes )
+{
+    if ( !c )
+        return; /* oops */
+    c->use_armor = yes;
+}
 
-
+void
+gpgme_op_set_textmode ( GpgmeCtx c, int yes )
+{
+    if ( !c )
+        return; /* oops */
+    c->use_textmode = yes;
+}
 
 
 

@@ -20,6 +20,7 @@ libgpgme_la_SOURCES = \
 	encrypt.c \
 	decrypt.c \
 	verify.c \
+	sign.c \
         key.c key.h \
 	keylist.c \
         rungpg.c rungpg.h status-table.h \

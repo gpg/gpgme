@@ -524,10 +524,12 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
             }
             /* We normally don't want all the normal output */
             if ( !duped_stderr ) {
-                if ( dup2 ( fd, 2 ) == -1 ) {
-                    fprintf (stderr,"dup2(dev/null, 2) failed: %s\n",
-                             strerror (errno) );
-                    _exit (8);
+                if (!getenv ("GPGME_DEBUG") ) {
+                    if ( dup2 ( fd, 2 ) == -1 ) {
+                        fprintf (stderr,"dup2(dev/null, 2) failed: %s\n",
+                                 strerror (errno) );
+                        _exit (8);
+                    }
                 }
             }
             close (fd);

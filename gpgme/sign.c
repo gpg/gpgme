@@ -1,4 +1,4 @@
-/* decrypt.c -  decrypt functions
+/* sign.c -  signing functions
  *	Copyright (C) 2000 Werner Koch (dd9jn)
  *
  * This file is part of GPGME.
@@ -29,15 +29,14 @@
 #include "ops.h"
 
 
-struct decrypt_result_s {
+struct  sign_result_s {
     int no_passphrase;
     int okay;
-    int failed;
 };
 
 
 void
-_gpgme_release_decrypt_result ( DecryptResult res )
+_gpgme_release_sign_result ( SignResult res )
 {
     xfree (res);
 }
@@ -45,20 +44,20 @@ _gpgme_release_decrypt_result ( DecryptResult res )
 
 
 static void
-decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
+sign_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 {
     if ( ctx->out_of_core )
         return;
     if ( ctx->result_type == RESULT_TYPE_NONE ) {
-        assert ( !ctx->result.decrypt );
-        ctx->result.decrypt = xtrycalloc ( 1, sizeof *ctx->result.decrypt );
-        if ( !ctx->result.decrypt ) {
+        assert ( !ctx->result.sign );
+        ctx->result.sign = xtrycalloc ( 1, sizeof *ctx->result.sign );
+        if ( !ctx->result.sign ) {
             ctx->out_of_core = 1;
             return;
         }
-        ctx->result_type = RESULT_TYPE_DECRYPT;
+        ctx->result_type = RESULT_TYPE_SIGN;
     }
-    assert ( ctx->result_type == RESULT_TYPE_DECRYPT );
+    assert ( ctx->result_type == RESULT_TYPE_SIGN );
 
     switch (code) {
       case STATUS_EOF:
@@ -71,21 +70,16 @@ decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
       case STATUS_MISSING_PASSPHRASE:
         fprintf (stderr, "Missing passphrase - stop\n");;
-        ctx->result.decrypt->no_passphrase = 1;
+        ctx->result.sign->no_passphrase = 1;
         break;
 
-      case STATUS_DECRYPTION_OKAY:
-        ctx->result.decrypt->okay = 1;
+      case STATUS_SIG_CREATED:
+        /* fixme: we have no error return for multible signatures */
+        ctx->result.sign->okay =1;
         break;
-
-      case STATUS_DECRYPTION_FAILED:
-        ctx->result.decrypt->failed = 1;
-        break;
-        
 
       default:
-        /* ignore all other codes */
-        fprintf (stderr, "decrypt_status: code=%d not handled\n", code );
+        fprintf (stderr, "sign_status: code=%d not handled\n", code );
         break;
     }
 }
@@ -93,7 +87,7 @@ decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
 
 GpgmeError
-gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData ciph, GpgmeData plain )
+gpgme_op_sign_start ( GpgmeCtx c, GpgmeData in, GpgmeData out )
 {
     int rc = 0;
     int i;
@@ -112,31 +106,33 @@ gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData ciph, GpgmeData plain )
     if (rc)
         goto leave;
 
-    _gpgme_gpg_set_status_handler ( c->gpg, decrypt_status_handler, c );
+    _gpgme_gpg_set_status_handler ( c->gpg, sign_status_handler, c );
 
     /* build the commandline */
-    _gpgme_gpg_add_arg ( c->gpg, "--decrypt" );
+    _gpgme_gpg_add_arg ( c->gpg, "--sign" );
+    _gpgme_gpg_add_arg ( c->gpg, "--detach" );
+    if ( c->use_armor )
+        _gpgme_gpg_add_arg ( c->gpg, "--armor" );
+    if ( c->use_textmode )
+        _gpgme_gpg_add_arg ( c->gpg, "--textmode" );
     for ( i=0; i < c->verbosity; i++ )
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
     
     /* Check the supplied data */
-    if ( !ciph || gpgme_data_get_type (ciph) == GPGME_DATA_TYPE_NONE ) {
+    if ( gpgme_data_get_type (in) == GPGME_DATA_TYPE_NONE ) {
         rc = mk_error (No_Data);
         goto leave;
     }
-
-    _gpgme_data_set_mode (ciph, GPGME_DATA_MODE_OUT );
-    if ( gpgme_data_get_type (plain) != GPGME_DATA_TYPE_NONE ) {
+    _gpgme_data_set_mode (in, GPGME_DATA_MODE_OUT );
+    if ( !out || gpgme_data_get_type (out) != GPGME_DATA_TYPE_NONE ) {
         rc = mk_error (Invalid_Value);
         goto leave;
     }
-    _gpgme_data_set_mode (plain, GPGME_DATA_MODE_IN );
+    _gpgme_data_set_mode (out, GPGME_DATA_MODE_IN );
 
     /* Tell the gpg object about the data */
-    _gpgme_gpg_add_arg ( c->gpg, "--output" );
-    _gpgme_gpg_add_arg ( c->gpg, "-" );
-    _gpgme_gpg_add_data ( c->gpg, plain, 1 );
-    _gpgme_gpg_add_data ( c->gpg, ciph, 0 );
+    _gpgme_gpg_add_data ( c->gpg, in, 0 );
+    _gpgme_gpg_add_data ( c->gpg, out, 1 );
 
     /* and kick off the process */
     rc = _gpgme_gpg_spawn ( c->gpg, c );
@@ -151,35 +147,33 @@ gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData ciph, GpgmeData plain )
 
 
 /**
- * gpgme_op_decrypt:
+ * gpgme_op_sign:
  * @c: The context
- * @in: ciphertext input
- * @out: plaintext output
+ * @in: Data to be signed
+ * @out: Detached signature
  * 
- * This function decrypts @in to @out.
- * Other parameters are take from the context @c.
- * The function does wait for the result.
+ * Create a detached signature for @in and write it to @out.
+ * The data will be signed using either the default key or the ones
+ * defined through @c.
  * 
- * Return value:  0 on success or an errorcode. 
+ * Return value: 0 on success or an error code.
  **/
 GpgmeError
-gpgme_op_decrypt ( GpgmeCtx c, GpgmeData in, GpgmeData out )
+gpgme_op_sign ( GpgmeCtx c, GpgmeData in, GpgmeData out )
 {
-    GpgmeError err = gpgme_op_decrypt_start ( c, in, out );
+    GpgmeError err = gpgme_op_sign_start ( c, in, out );
     if ( !err ) {
         gpgme_wait (c, 1);
-        if ( c->result_type != RESULT_TYPE_DECRYPT )
+        if ( c->result_type != RESULT_TYPE_SIGN )
             err = mk_error (General_Error);
         else if ( c->out_of_core )
             err = mk_error (Out_Of_Core);
         else {
-            assert ( c->result.decrypt );
-            if ( c->result.decrypt->no_passphrase ) 
+            assert ( c->result.sign );
+            if ( c->result.sign->no_passphrase ) 
                 err = mk_error (No_Passphrase);
-            else if ( c->result.decrypt->failed ) 
-                err = mk_error (Decryption_Failed);
-            else if (!c->result.decrypt->okay)
-                err = mk_error (No_Data);
+            else if (!c->result.sign->okay)
+                err = mk_error (No_Data); /* Hmmm: choose a better error? */
         }
         c->pending = 0;
     }
