@@ -155,6 +155,7 @@ Key Management
 
 * Listing Keys::                  Browsing the list of available keys.
 * Information About Keys::        Requesting detailed information about keys.
+* Key Signatures::                Listing the signatures on a key.
 * Manipulating Keys::             Operations on keys.
 * Generating Keys::               Creating new key pairs.
 * Exporting Keys::                Retrieving key data from the key ring.
@@ -1592,6 +1593,7 @@ A key can contain several user IDs and sub keys.
 @menu
 * Listing Keys::                  Browsing the list of available keys.
 * Information About Keys::        Requesting detailed information about keys.
+* Key Signatures::                Listing the signatures on a key.
 * Manipulating Keys::             Operations on keys.
 * Generating Keys::               Creating new key pairs.
 * Exporting Keys::                Retrieving key data from the key ring.
@@ -1711,6 +1713,26 @@ if (err)
     exit (1);
   @}
 @end example
+
+In a simple program, for which a blocking operation is acceptable, the
+following function can be used to retrieve a single key.
+
+@deftypefun GpgmeError gpgme_get_key (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{fpr}}, @w{GpgmeKey *@var{r_key}}, @w{int @var{secret}}, @w{int @var{force_update}})
+The function @code{gpgme_get_key} gets the key with the fingerprint
+(or key ID) @var{fpr} from the key cache or from the crypto backend
+and return it in @var{r_key}.  If @var{force_update} is true, force a
+refresh of the key from the crypto backend and replace the key in the
+cache, if any.  If @var{secret} is true, get the secret key.
+
+If the @code{GPGME_KEYLIST_MODE_SIGS} mode is active, the key will be
+retrieved with the key signatures (and updated if necessary).
+
+The function returns @code{GPGME_Invalid_Value} if @var{ctx} or
+@var{r_key} is not a valid pointer, @code{GPGME_Busy} if there is a
+pending operation, @code{GPGME_Invalid_Key} if @var{fpr} is not a
+fingerprint or key ID, @code{GPGME_Out_Of_Core} if at some time during
+the operation there was not enough memory available.
+@end deftypefun
 
 
 @node Information About Keys
@@ -1918,6 +1940,109 @@ should be @code{NULL}.
 The function returns @code{0} if the attribute can't be returned as a
 number, @var{key} is not a valid pointer, @var{idx} out of range,
 or @var{reserved} not @code{NULL}.
+@end deftypefun
+
+
+@node Key Signatures
+@subsection Key Signatures
+@cindex key, signatures
+@cindex signatures, on a key
+
+The signatures on a key are only available if the key was retrieved
+via a listing operation with the @code{GPGME_KEYLIST_MODE_SIGS} mode
+enabled, because it is expensive to retrieve all signatures of a key.
+
+So, before using the below interfaces to retrieve the signatures on a
+key, you have to make sure that the key was listed with signatures
+enabled.  One convenient, but blocking, way to do this is to use the
+function @code{gpgme_get_key}.
+
+@deftp {Data type} GpgmeAttr
+The @code{GpgmeAttr} type is used to specify a key signature
+attribute.  The following attributes are defined:
+
+@table @code
+@item GPGME_ATTR_KEYID
+This is the key ID of the key which was used for the signature.  It is
+representable as a string.
+
+@item GPGME_ATTR_ALGO
+This is the crypto algorithm used to create the signature.  It is
+representable as a string and as a number.  The numbers correspond to
+the @code{enum gcry_pk_algos} values in the gcrypt library.
+
+@item GPGME_ATTR_CREATED
+This is the timestamp at creation time of the signature.  It is
+representable as a number.
+
+@item GPGME_ATTR_EXPIRE
+This is the expiration time of the signature.  It is representable as
+a number.
+
+@item GPGME_ATTR_USERID
+This is the user ID associated with the signing key.  The user ID is
+representable as a number.
+
+@item GPGME_ATTR_NAME
+This is the name belonging to a user ID.  It is representable as a string.
+
+@item GPGME_ATTR_EMAIL
+This is the email address belonging to a user ID.  It is representable
+as a string.
+
+@item GPGME_ATTR_COMMENT
+This is the comment belonging to a user ID.  It is representable as a
+string.
+
+@item GPGME_ATTR_KEY_REVOKED
+This specifies if a key signature is a revocation signature.  It is
+representable as a number, and is @code{1} if the key is revoked, and
+@code{0} otherwise.
+
+@c @item GPGME_ATTR_KEY_EXPIRED
+@c This specifies if a key signature is expired.  It is representable as
+@c a number, and is @code{1} if the key is revoked, and @code{0}
+@c otherwise.
+@c
+@item GPGME_ATTR_SIG_CLASS
+This specifies the signature class of a key signature.  It is
+representable as a number.  The meaning is specific to the crypto
+engine.
+
+@item GPGME_ATTR_SIG_CLASS
+This specifies the signature class of a key signature.  It is
+representable as a number.  The meaning is specific to the crypto
+engine.
+
+@item GPGME_ATTR_SIG_STATUS
+This is the same value as returned by @code{gpgme_get_sig_status}.
+@end table
+@end deftp
+
+@deftypefun {const char *} gpgme_key_sig_get_string_attr (@w{GpgmeKey @var{key}}, @w{int @var{uid_idx}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
+The function @code{gpgme_key_sig_get_string_attr} returns the value of
+the string-representable attribute @var{what} of the signature
+@var{idx} on the user ID @var{uid_idx} in the key @var{key}.  The
+argument @var{reserved} is reserved for later use and should be
+@code{NULL}.
+
+The string returned is only valid as long as the key is valid.
+
+The function returns @code{0} if an attribute can't be returned as a
+string, @var{key} is not a valid pointer, @var{uid_idx} or @var{idx}
+out of range, or @var{reserved} not @code{NULL}.
+@end deftypefun
+
+@deftypefun {unsigned long} gpgme_key_sig_get_ulong_attr (@w{GpgmeKey @var{key}}, @w{int @var{uid_idx}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
+The function @code{gpgme_key_sig_get_ulong_attr} returns the value of
+the number-representable attribute @var{what} of the signature
+@var{idx} on the user ID @var{uid_idx} in the key @var{key}.  The
+argument @var{reserved} is reserved for later use and should be
+@code{NULL}.
+
+The function returns @code{0} if an attribute can't be returned as a
+string, @var{key} is not a valid pointer, @var{uid_idx} or @var{idx}
+out of range, or @var{reserved} not @code{NULL}.
 @end deftypefun
 
 
