@@ -1,3 +1,9 @@
+2004-03-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.4.5.
+
+	* Makefile.am (EXTRA_DIST): Remove autogen.sh and README.CVS.
+
 2004-02-18  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: Make the check for funopen fail with just a
@@ -30,7 +36,7 @@
 	* README.CVS: New.
 	* Makefile.am (EXTRA_DIST): Added README.CVS.
 	* autogen.sh: Updated.
-	
+
 2003-11-19  Werner Koch  <wk@gnupg.org>
 
 	* acinclude.m4: Add AM_PATH_GPG_ERROR.
