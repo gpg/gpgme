@@ -42,7 +42,9 @@
     \see cryptplug.h
 */
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,7 +52,6 @@
 #include <errno.h>
 
 #include <gpgme.h>
-#include <util.h>
 
 #include "cryptplug.h"
 
@@ -145,10 +146,10 @@ void deinitialize()
 {
   unsigned int i;
   for( i = 0; i < config.numDirectoryServers; ++i ) {
-    _gpgme_free( (char *)config.directoryServers[i].servername );
-    _gpgme_free( (char *)config.directoryServers[i].description );
+    free( (char *)config.directoryServers[i].servername );
+    free( (char *)config.directoryServers[i].description );
   }
-  _gpgme_free( config.directoryServers );
+  free( config.directoryServers );
 }
 
 
@@ -584,17 +585,17 @@ void appendDirectoryServer( const char* servername,
                             const char* description )
 {
   struct DirectoryServer *newServers = NULL;
-  newServers = xtryrealloc( config.directoryServers,
-                         (1+config.numDirectoryServers) * sizeof *newServers );
+  newServers = realloc( config.directoryServers,
+			(1+config.numDirectoryServers) * sizeof *newServers );
   if( newServers ) {
     config.directoryServers = newServers;
     newServers[ config.numDirectoryServers ].servername =
-      xtrymalloc( strlen( servername ) );
+      malloc( strlen( servername ) );
     if( newServers[ config.numDirectoryServers ].servername ) {
       strcpy( (char *)newServers[ config.numDirectoryServers ].servername,
         servername );
       newServers[ config.numDirectoryServers ].description =
-        xtrymalloc( strlen(  description ) );
+        malloc( strlen(  description ) );
       if( newServers[ config.numDirectoryServers ].description ) {
         strcpy( (char *)newServers[ config.numDirectoryServers ].description,
           description );
@@ -610,18 +611,18 @@ void setDirectoryServers( struct DirectoryServer server[], unsigned int size )
   unsigned int i;
   int oldSize = config.numDirectoryServers;
   struct DirectoryServer *newServers = NULL;
-  newServers = xtrycalloc ( size, sizeof *newServers );
+  newServers = calloc ( size, sizeof *newServers );
   if( newServers ) {
     for( i=0; i < oldSize; ++i ) {
-      _gpgme_free( (char *)config.directoryServers[i].servername );
-      _gpgme_free( (char *)config.directoryServers[i].description );
+      free( (char *)config.directoryServers[i].servername );
+      free( (char *)config.directoryServers[i].description );
     }
-    _gpgme_free( config.directoryServers );
+    free( config.directoryServers );
     for( i=0; i < size; ++i ) {
-      newServers[ i ].servername = xtrymalloc( strlen( server[i].servername ) );
+      newServers[ i ].servername = malloc( strlen( server[i].servername ) );
       if( newServers[ i ].servername ) {
         strcpy( (char *)newServers[ i ].servername, server[i].servername );
-        newServers[ i ].description = xtrymalloc( strlen( server[i].description ) );
+        newServers[ i ].description = malloc( strlen( server[i].description ) );
         if( newServers[ i ].description ) {
           strcpy( (char *)newServers[ i ].description, server[i].description );
           newServers[ i ].port = server[i].port;
