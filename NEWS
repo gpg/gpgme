@@ -1,9 +1,11 @@
-Noteworthy changes in version CVS-HEAD
+Noteworthy changes in version 0.3.7 (2002-06-04)
 ------------------------------------------------
 
- * Interface changes relative to the 0.3.6 release:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * GPGME_ATTR_OTRUST is implemented now.
+
+ * A first step toward thread safeness has been achieved, see the
+   documentation for details.  Supported thread libraries are pthread
+   and Pth.
 
 Noteworthy changes in version 0.3.6 (2002-05-03)
 ------------------------------------------------

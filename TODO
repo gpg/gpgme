@@ -5,6 +5,10 @@ Hey Emacs, this is -*- outline -*- mode!
    which can not be differentiated from the case that it is not
    representable.
 
+* Thread support:
+** Build thread modules for static linking (which just suck in the
+   desired symbols the hard way). !!
+
 * Allow to use GTK's main loop instead of the select stuff in
   wait.c. !!!
 
