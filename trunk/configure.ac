@@ -31,11 +31,11 @@ AC_INIT(gpgme, 0.9.1-cvs, [bug-gpgme@gnupg.org])
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed/changed:	AGE=0)
 #
-LIBGPGME_LT_CURRENT=13
+LIBGPGME_LT_CURRENT=14
 # Subtract 2 from this value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
-LIBGPGME_LT_AGE=2
-LIBGPGME_LT_REVISION=2
+LIBGPGME_LT_AGE=3
+LIBGPGME_LT_REVISION=0
 
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
@@ -299,10 +299,15 @@ if test $ac_cv_func_funopen != yes; then
     fi
 fi
 
+# More assuan replacement functions.
 AC_REPLACE_FUNCS(isascii)
 AC_REPLACE_FUNCS(putc_unlocked)
 AC_REPLACE_FUNCS(memrchr)
 
+# More assuan checks.
+AC_CHECK_HEADERS([sys/uio.h])
+
+# End of assuan checks.
 
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
 
