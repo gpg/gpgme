@@ -1,3 +1,26 @@
+2001-05-28  Werner Koch  <wk@gnupg.org>
+
+	* version.c (gpgme_check_engine): Stop version number parsing at
+	the opening angle and not the closing one.  By Tommy Reynolds.
+
+2001-05-01  José Carlos García Sogo <jose@jaimedelamo.eu.org>
+
+	* encrypt.c (gpgme_op_encrypt_start): Deleted the assert ( !c->gpg )
+	line, because it gave an error if another operation had been made 
+	before using the same context.
+	
+	* decrypt.c (gpgme_op_decrypt_start): The same as above. Also added 
+	one line to release the gpg object in the context (if any).
+	
+2001-04-26  Werner Koch  <wk@gnupg.org>
+
+	* key.c, key.h (_gpgme_key_cache_init): New.
+	(_gpgme_key_cache_add): New.
+	(_gpgme_key_cache_get): New.
+	* version.c (do_subsystem_inits): Init the cache.
+	* keylist.c (finish_key): Put key into the cache
+	* verify.c (gpgme_get_sig_key): First look into the cache.
+
 2001-04-19  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (parse_timestamp): Adjusted for the changed

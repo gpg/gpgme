@@ -132,6 +132,7 @@ main (int argc, char **argv )
     GpgmeData sig, text;
     GpgmeSigStat status;
     char *nota;
+    int n = 0;
 
     err = gpgme_new (&ctx);
     fail_if_err (err);
@@ -166,6 +167,7 @@ main (int argc, char **argv )
     fail_if_err (err);
     gpgme_data_rewind ( sig );
     err = gpgme_op_verify (ctx, sig, text, &status );
+
     print_sig_stat ( ctx, status );
     fail_if_err (err);
     if ( (nota=gpgme_get_notation (ctx)) )
@@ -174,7 +176,7 @@ main (int argc, char **argv )
     gpgme_data_release (sig);
     gpgme_data_release (text);
  
-} while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
+} while ( argc > 1 && !strcmp( argv[1], "--loop" ) && ++n < 20 );
       gpgme_release (ctx);
     
     return 0;

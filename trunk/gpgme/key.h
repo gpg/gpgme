@@ -61,6 +61,11 @@ struct gpgme_key_s {
     struct user_id_s *uids;
 };
 
+void _gpgme_key_cache_init (void);
+void _gpgme_key_cache_add (GpgmeKey key);
+GpgmeKey _gpgme_key_cache_get (const char *fpr);
+
+
 struct subkey_s *_gpgme_key_add_subkey (GpgmeKey key);
 struct subkey_s *_gpgme_key_add_secret_subkey (GpgmeKey key);
 GpgmeError _gpgme_key_append_name ( GpgmeKey key, const char *s );

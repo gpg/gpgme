@@ -195,9 +195,9 @@ gpgme_op_decrypt_start ( GpgmeCtx c,
     c->out_of_core = 0;
 
     /* do some checks */
-    assert ( !c->gpg );
-        
+ 
     /* create a process object */
+    _gpgme_gpg_release ( c->gpg );
     rc = _gpgme_gpg_new ( &c->gpg );
     if (rc)
         goto leave;
