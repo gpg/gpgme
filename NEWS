@@ -7,12 +7,12 @@
    from void* to void**.
 
  * New interface gpgme_op_trustlist_end() to match
-   gpgme_op_keylist_end.
+   gpgme_op_keylist_end().
 
  * The CryptPlug modules have been renamed to gpgme-openpgp and
    gpgme-smime, and they are installed in pkglibdir by `make install'.
 
- * An idle function can be registered.
+ * An idle function can be registered with gpgme_register_idle().
 
  * Interface changes relative to the 0.3.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
