@@ -2115,24 +2115,21 @@ The function @code{gpgme_key_release} is an alias for
 @cindex key, creation
 @cindex key ring, add
 
-@deftypefun GpgmeError gpgme_op_genkey (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{pubkey}}, @w{GpgmeData @var{seckey}})
+@deftypefun GpgmeError gpgme_op_genkey (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{public}}, @w{GpgmeData @var{secret}})
 The function @code{gpgme_op_genkey} generates a new key pair in the
-context @var{ctx} and puts it into the standard key ring if both
-@var{pubkey} and @var{seckey} are @code{NULL}.  In this case the
-function returns immediately after starting the operation, and does
-not wait for it to complete.  If @var{pubkey} is not @code{NULL} it
-should be the handle for an empty (newly created) data object, and
-upon successful completion the data object will contain the public
-key.  If @var{seckey} is not @code{NULL} it should be the handle for
-an empty (newly created) data object, and upon successful completion
-the data object will contain the secret key.
+context @var{ctx}.  The meaning of @var{public} and @var{secret}
+depends on the crypto backend.
 
-Note that not all crypto engines support this interface equally.
-GnuPG does not support @var{pubkey} and @var{subkey}, they should be
-both @code{NULL}, and the key pair will be added to the standard key
-ring.  GpgSM only supports @var{pubkey}, the secret key will be stored
-by @command{gpg-agent}.  GpgSM expects @var{pubkey} being not
-@code{NULL}.
+GnuPG does not support @var{public} and @var{secret}, they should be
+@code{NULL}.  GnuPG will generate a key pair and add it to the
+standard key ring.  The fingerprint of the generated key is available
+with @code{gpgme_op_genkey_result}.
+
+GpgSM requires @var{public} to be a writable data object.  GpgSM will
+generate a secret key (which will be stored by @command{gpg-agent},
+and return a certificate request in @var{public}, which then needs to
+be signed by the certification authority and imported before it can be
+used.  GpgSM does not make the fingerprint available.
 
 The argument @var{parms} specifies parameters for the key in an XML
 string.  The details about the format of @var{parms} are specific to
@@ -2154,6 +2151,7 @@ Passphrase: abc
 @end example
 
 Here is an example for GpgSM as the crypto engine:
+
 @example
 <GnupgKeyParms format="internal">
 Key-Type: RSA
@@ -2165,28 +2163,28 @@ Name-Email: joe@@foo.bar
 
 Strings should be given in UTF-8 encoding.  The only format supported
 for now is ``internal''.  The content of the @code{GnupgKeyParms}
-container is passed verbatim to GnuPG.  Control statements are not
-allowed.
+container is passed verbatim to the crypto backend.  Control
+statements are not allowed.
 
 After the operation completed successfully, the result can be
 retrieved with @code{gpgme_op_genkey_result}.
 
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{parms} is not
-a valid XML string, @code{GPGME_Not_Supported} if @var{pubkey} or
-@var{seckey} is not valid, and @code{GPGME_General_Error} if no key
+a valid XML string, @code{GPGME_Not_Supported} if @var{public} or
+@var{secret} is not valid, and @code{GPGME_General_Error} if no key
 was created by the backend.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_genkey_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{pubkey}}, @w{GpgmeData @var{seckey}})
+@deftypefun GpgmeError gpgme_op_genkey_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{public}}, @w{GpgmeData @var{secret}})
 The function @code{gpgme_op_genkey_start} initiates a
 @code{gpgme_op_genkey} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{parms} is not
-a valid XML string, and @code{GPGME_Not_Supported} if @var{pubkey} or
-@var{seckey} is not @code{NULL}.
+a valid XML string, and @code{GPGME_Not_Supported} if @var{public} or
+@var{secret} is not @code{NULL}.
 @end deftypefun
 
 @deftp {Data type} {GpgmeGenKeyResult}
