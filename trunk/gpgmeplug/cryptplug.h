@@ -301,6 +301,19 @@ typedef unsigned long SigStatusFlags;
 
 
 /*! \ingroup groupGeneral
+    \brief This function returns the version string of this cryptography
+           plug-in.
+
+   If the plugins initialization fails the calling process might want
+   to display the library version number to the user for checking if
+   there is an old version of the library installed...
+   
+   \note This function <b>must</b> be implemented by each plug-in using
+   this API specification.
+*/
+const char* libVersion( void );
+
+/*! \ingroup groupGeneral
     \brief This function returns a URL to be used for reporting a bug that
            you found (or suspect, resp.) in this cryptography plug-in.
 
