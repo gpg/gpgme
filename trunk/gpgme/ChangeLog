@@ -1,5 +1,8 @@
 2004-04-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (struct _gpgme_signature): Change member WRONG_KEY_USAGE
+	to unsigned int.  Same for member _unused.
+
 	* keylist.c (set_mainkey_trust_info): Rewritten.
 	(set_subkey_capability): Handle 'd' (disabled).
 	(set_mainkey_capability): Rewritten.
