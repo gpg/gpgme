@@ -1,5 +1,9 @@
 2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
 
+	* lesser.texi (Library Copying): Change from @appendixsec to
+	@appendix.
+	* gpgme.texi (Features): Change reference to GPL to one to LGPL.
+
 	* Makefile.am: Change license to LGPL.
 	(gpgme_TEXINFOS): Replace gpl.texi with lesser.texi.
 
