@@ -1,3 +1,10 @@
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Generating keys): New subsection.
+	(Exporting keys): Likewise.
+	(Importing keys): Likewise.
+	(Deleting keys): Likewise.
+
 2002-01-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi: g10Code -> g10 Code
