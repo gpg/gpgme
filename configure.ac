@@ -141,9 +141,11 @@ if test "$GPG" = no; then
   fi
 else
   AC_DEFINE_UNQUOTED(GPG_PATH, "$GPG")
+  AC_SUBST(GPG)
 fi
 AM_CONDITIONAL(RUN_GPG_TESTS,
   [test "$cross_compiling" != "yes" && test -n "$GPG" && test -r "$GPG"])
+AC_SUBST(GPG_PATH)
 
 NO_OVERRIDE=no
 AC_ARG_WITH(gpgsm,
@@ -169,6 +171,7 @@ if test "$GPGSM" = no; then
   fi
 else
   AC_DEFINE_UNQUOTED(GPGSM_PATH, "$GPGSM")
+  AC_SUBST(GPGSM)
 fi
 AM_CONDITIONAL(RUN_GPGSM_TESTS,
   [test "$cross_compiling" != "yes" && test -n "$GPGSM" && test -r "$GPGSM"])

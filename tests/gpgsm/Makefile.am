@@ -19,10 +19,11 @@
 
 ## Process this file with automake to produce Makefile.in
 
+GPGSM = @GPGSM@
 
 TESTS_ENVIRONMENT = GNUPGHOME=.
 
-TESTS = t-import t-keylist
+TESTS = t-import t-keylist t-encrypt
 
 EXTRA_DIST = cert_dfn_pca01.der cert_dfn_pca15.der cert_g10code_test1.der
 
@@ -31,3 +32,8 @@ INCLUDES = -I$(top_srcdir)/gpgme
 LDADD = ../../gpgme/libgpgme.la
 
 noinst_PROGRAMS = $(TESTS)
+
+all-local: ./pubcerts.kbx
+
+./pubcerts.kbx: $(srcdir)/cert_g10code_test1.der
+	$(GPGSM) --homedir . --import $(srcdir)/cert_g10code_test1.der

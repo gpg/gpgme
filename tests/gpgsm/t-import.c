@@ -65,7 +65,6 @@ main (int argc, char **argv)
   GpgmeData in;
   const char *cert_1 = make_filename ("cert_dfn_pca01.der");
   const char *cert_2 = make_filename ("cert_dfn_pca15.der");
-  const char *cert_3 = make_filename ("cert_g10code_test1.der");
 
   do
     {
@@ -84,14 +83,6 @@ main (int argc, char **argv)
       err = gpgme_data_new_from_file (&in, cert_2, 1);
       fail_if_err (err);
     
-      err = gpgme_op_import (ctx, in);
-      fail_if_err (err);
-
-      gpgme_data_release (in);
-
-      err = gpgme_data_new_from_file (&in, cert_3, 1);
-      fail_if_err (err);
-
       err = gpgme_op_import (ctx, in);
       fail_if_err (err);
 
