@@ -220,13 +220,14 @@ _gpgme_get_program_version (const char *const path)
   char *mark = NULL;
   int rp[2];
   int nread;
-  char *argv[] = {(char *) path, "--version", 0};
+  char *argv[] = {NULL /* path */, "--version", 0};
   struct spawn_fd_item_s pfd[] = { {0, -1}, {-1, -1} };
   struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */}, {-1, -1} };
   int status;
 
   if (!path)
     return NULL;
+  argv[0] = (char *) path;
 
   if (_gpgme_io_pipe (rp, 1) < 0)
     return NULL;

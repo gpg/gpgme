@@ -306,12 +306,14 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   fd_set readfds;
   fd_set writefds;
   int any, i, max_fd, n, count;
-  struct timeval timeout = { nonblock ? 0 : 1, 0 }; /* Use a 1s timeout.  */
+  struct timeval timeout = { 1, 0 }; /* Use a 1s timeout.  */
   void *dbg_help = NULL;
 
   FD_ZERO (&readfds);
   FD_ZERO (&writefds);
   max_fd = 0;
+  if (nonblock)
+    timeout.tv_sec = 0;
 
   DEBUG_BEGIN (dbg_help, 3, "gpgme:select on [ ");
   any = 0;
