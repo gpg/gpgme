@@ -1,5 +1,14 @@
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgsm/t-decrypt.c: New file.
+	* gpgsm/567064FE6D14A17B2D811ABB407728BC558AA455: Likewise.
+	* gpgsm/Makefile.am (TESTS): Add t-decrypt.
+	(key_id): New variable.
+	(all-local): New target ./private-keys-v1.d/$(key_id) added.
+	(./private-keys-v1.d/$(key_id)): New target.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgsm/t-verify.c: New file.
 	* gpgsm/Makefile.am (TESTS): Add t-verify.
 
