@@ -21,17 +21,12 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
 
-#include "util.h"
+#include "gpgme.h"
 #include "context.h"
 #include "ops.h"
 
-
+
 static GpgmeError
 encrypt_sign_status_handler (void *priv, GpgmeStatusCode code, char *args)
 {
@@ -41,9 +36,8 @@ encrypt_sign_status_handler (void *priv, GpgmeStatusCode code, char *args)
 
 
 static GpgmeError
-_gpgme_op_encrypt_sign_start (GpgmeCtx ctx, int synchronous,
-			      GpgmeRecipients recp,
-			      GpgmeData plain, GpgmeData cipher)
+encrypt_sign_start (GpgmeCtx ctx, int synchronous, GpgmeRecipients recp,
+		    GpgmeData plain, GpgmeData cipher)
 {
   GpgmeError err;
 
@@ -75,37 +69,31 @@ _gpgme_op_encrypt_sign_start (GpgmeCtx ctx, int synchronous,
 
   _gpgme_engine_set_status_handler (ctx->engine,
 				    encrypt_sign_status_handler, ctx);
-
+  
   return _gpgme_engine_op_encrypt_sign (ctx->engine, recp, plain, cipher,
 					ctx->use_armor, ctx /* FIXME */);
 }
 
+
+/* Encrypt plaintext PLAIN within CTX for the recipients RECP and
+   store the resulting ciphertext in CIPHER.  Also sign the ciphertext
+   with the signers in CTX.  */
 GpgmeError
 gpgme_op_encrypt_sign_start (GpgmeCtx ctx, GpgmeRecipients recp,
 			      GpgmeData plain, GpgmeData cipher)
 {
-  return _gpgme_op_encrypt_sign_start (ctx, 0, recp, plain, cipher);
+  return encrypt_sign_start (ctx, 0, recp, plain, cipher);
 }
 
 
-/**
- * gpgme_op_encrypt_sign:
- * @ctx: The context
- * @recp: The set of recipients
- * @plain: plaintext input
- * @cipher: signed ciphertext
- * 
- * This function encrypts @plain for all recipients in recp, signs it,
- * and returns the ciphertext in @out.  The function does wait for the
- * result.
- * 
- * Return value:  0 on success or an errorcode. 
- **/
+/* Encrypt plaintext PLAIN within CTX for the recipients RECP and
+   store the resulting ciphertext in CIPHER.  Also sign the ciphertext
+   with the signers in CTX.  */
 GpgmeError
 gpgme_op_encrypt_sign (GpgmeCtx ctx, GpgmeRecipients recp,
 		       GpgmeData plain, GpgmeData cipher)
 {
-  GpgmeError err = _gpgme_op_encrypt_sign_start (ctx, 1, recp, plain, cipher);
+  GpgmeError err = encrypt_sign_start (ctx, 1, recp, plain, cipher);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

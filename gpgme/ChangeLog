@@ -1,5 +1,13 @@
 2003-04-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* encrypt-sign.c: Do not include <stddef.h>, <stdio.h>,
+	<stdlib.h>, <string.h>, <assert.h> and "util.h", but "gpgme.h".
+	(_gpgme_op_encrypt_sign_start): Rename to ...
+	(encrypt_sign_start): ... this.
+	(gpgme_op_encrypt_sign_start): Use encrypt_sign_start, not
+	_gpgme_op_encrypt_sign_start.
+	(gpgme_op_encrypt_sign): Likewise.
+
 	* gpgme.h (GpgmeEncryptResult): New data type.
 	(gpgme_op_encrypt_result): New prototype.
 	* ops.h (_gpgme_op_encrypt_init_result): New prototype.
