@@ -293,7 +293,10 @@ gpg_cancel (void *engine)
   if (gpg->colon.fd[1] != -1)
     _gpgme_io_close (gpg->colon.fd[1]);
   if (gpg->fd_data_map)
-    free_fd_data_map (gpg->fd_data_map);
+    {
+      free_fd_data_map (gpg->fd_data_map);
+      gpg->fd_data_map = NULL;
+    }
   if (gpg->cmd.fd != -1)
     _gpgme_io_close (gpg->cmd.fd);
 
