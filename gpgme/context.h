@@ -83,6 +83,7 @@ struct gpgme_context_s
     DeleteResult delete;
     GenKeyResult genkey;
     KeylistResult keylist;
+    EditResult edit;
   } result;
 
   /* Last signature notation.  */

@@ -88,7 +88,7 @@ append_xml_keylistinfo (GpgmeData *rdh, char *args)
 
 
 static void
-keylist_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+keylist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   if (ctx->error)
     return;
@@ -96,11 +96,11 @@ keylist_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
   switch (code)
     {
-    case STATUS_TRUNCATED:
+    case GPGME_STATUS_TRUNCATED:
       ctx->result.keylist->truncated = 1;
       break;
 
-    case STATUS_EOF:
+    case GPGME_STATUS_EOF:
       finish_key (ctx);
       if (ctx->result.keylist->truncated)
         append_xml_keylistinfo (&ctx->result.keylist->xmlinfo, "1");

@@ -30,7 +30,7 @@
 
 
 void
-_gpgme_progress_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+_gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   char *p;
   char *args_cpy;
@@ -38,7 +38,7 @@ _gpgme_progress_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
   int current = 0;
   int total = 0;
 
-  if (code != STATUS_PROGRESS || !*args || !ctx->progress_cb)
+  if (code != GPGME_STATUS_PROGRESS || !*args || !ctx->progress_cb)
     return;
 
   args_cpy = xtrystrdup (args);

@@ -31,7 +31,7 @@
 
 
 static void
-decrypt_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+decrypt_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   _gpgme_decrypt_status_handler (ctx, code, args);
   _gpgme_verify_status_handler (ctx, code, args);

@@ -545,7 +545,7 @@ _gpgme_gpgsm_release (GpgsmObject gpgsm)
 }
 
 /* Forward declaration.  */
-static GpgStatusCode parse_status (const char *name);
+static GpgmeStatusCode parse_status (const char *name);
 
 static GpgmeError
 gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd, GpgStatusHandler status_fnc,
@@ -580,7 +580,7 @@ gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd, GpgStatusHandler sta
 	       && line[0] == 'S' && line[1] == ' ')
 	{
 	  char *rest;
-	  GpgStatusCode r;
+	  GpgmeStatusCode r;
 
 	  rest = strchr (line + 2, ' ');
 	  if (!rest)
@@ -772,7 +772,7 @@ gpgsm_set_recipients (GpgsmObject gpgsm, GpgmeRecipients recp)
     }
   xfree (line);
   if (!valid_recipients && gpgsm->status.fnc)
-    gpgsm->status.fnc (gpgsm->status.fnc_value, STATUS_NO_RECP, "");
+    gpgsm->status.fnc (gpgsm->status.fnc_value, GPGME_STATUS_NO_RECP, "");
   return 0;
 }
 
@@ -1166,7 +1166,7 @@ status_cmp (const void *ap, const void *bp)
 }
 
 
-static GpgStatusCode
+static GpgmeStatusCode
 parse_status (const char *name)
 {
   struct status_table_s t, *r;
@@ -1216,7 +1216,7 @@ gpgsm_status_handler (void *opaque, int fd)
 	    }
 
 	  if (gpgsm->status.fnc)
-	    gpgsm->status.fnc (gpgsm->status.fnc_value, STATUS_EOF, "");
+	    gpgsm->status.fnc (gpgsm->status.fnc_value, GPGME_STATUS_EOF, "");
 
 	  /* XXX: Try our best to terminate the connection.  */
 	  if (err)
@@ -1296,7 +1296,7 @@ gpgsm_status_handler (void *opaque, int fd)
 	  && line[0] == 'S' && line[1] == ' ')
 	{
 	  char *rest;
-	  GpgStatusCode r;
+	  GpgmeStatusCode r;
 
 	  rest = strchr (line + 2, ' ');
 	  if (!rest)

@@ -31,7 +31,7 @@
 
 
 static void
-export_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+export_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   if (ctx->error)
     return;

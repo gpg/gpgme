@@ -985,7 +985,7 @@ _gpgme_io_kill ( int pid, int hard )
  *          >0 = number of signaled fds
  */
 int
-_gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
+_gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds, int nonblock )
 {
     HANDLE waitbuf[MAXIMUM_WAIT_OBJECTS];
     int    waitidx[MAXIMUM_WAIT_OBJECTS];
@@ -1056,7 +1056,7 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
     if (!any) 
         return 0;
 
-    code = WaitForMultipleObjects ( nwait, waitbuf, 0, 1000);
+    code = WaitForMultipleObjects ( nwait, waitbuf, 0, nonblock ? 0 : 1000);
     if ( code >= WAIT_OBJECT_0 && code < WAIT_OBJECT_0 + nwait ) {
         /* This WFMO is a really silly function:  It does return either
          * the index of the signaled object or if 2 objects have been

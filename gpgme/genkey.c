@@ -46,7 +46,7 @@ _gpgme_release_genkey_result (GenKeyResult result)
 }
 
 static void
-genkey_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   _gpgme_progress_status_handler (ctx, code, args);
 
@@ -56,7 +56,7 @@ genkey_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
   switch (code)
     {
-    case STATUS_KEY_CREATED:
+    case GPGME_STATUS_KEY_CREATED:
       if (args && *args)
 	{
 	  if (*args == 'B' || *args == 'P')
@@ -66,7 +66,7 @@ genkey_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 	}
       break;
 
-    case STATUS_EOF:
+    case GPGME_STATUS_EOF:
       /* FIXME: Should return some more useful error value.  */
       if (!ctx->result.genkey->created_primary
 	  && !ctx->result.genkey->created_sub)

@@ -34,21 +34,21 @@
 
 
 static void
-encrypt_sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+encrypt_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   char *encrypt_info = 0;
   size_t encrypt_info_len;
 
   _gpgme_encrypt_status_handler (ctx, code, args);
 
-  if (code == STATUS_EOF)
+  if (code == GPGME_STATUS_EOF)
     {
       encrypt_info = gpgme_data_release_and_get_mem (ctx->op_info,
 						     &encrypt_info_len);
       ctx->op_info = NULL;
     }
   _gpgme_sign_status_handler (ctx, code, args);
-  if (code == STATUS_EOF && encrypt_info)
+  if (code == GPGME_STATUS_EOF && encrypt_info)
     _gpgme_data_append (ctx->op_info, encrypt_info, encrypt_info_len);
 }
 

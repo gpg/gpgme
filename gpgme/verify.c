@@ -119,7 +119,7 @@ copy_token (const char *string, char *buffer, size_t length)
 
 /* FIXME: Check that we are adding this to the correct signature.  */
 static void
-add_notation (GpgmeCtx ctx, GpgStatusCode code, const char *data)
+add_notation (GpgmeCtx ctx, GpgmeStatusCode code, const char *data)
 {
   GpgmeData dh = ctx->result.verify->notation;
 
@@ -134,7 +134,7 @@ add_notation (GpgmeCtx ctx, GpgStatusCode code, const char *data)
       _gpgme_data_append_string (dh, "  <notation>\n");
     }
 
-  if (code == STATUS_NOTATION_DATA)
+  if (code == GPGME_STATUS_NOTATION_DATA)
     {
       if (!ctx->result.verify->notation_in_data)
 	_gpgme_data_append_string (dh, "  <data>");
@@ -149,13 +149,13 @@ add_notation (GpgmeCtx ctx, GpgStatusCode code, const char *data)
       ctx->result.verify->notation_in_data = 0;
     }
 
-  if (code == STATUS_NOTATION_NAME)
+  if (code == GPGME_STATUS_NOTATION_NAME)
     {
       _gpgme_data_append_string (dh, "  <name>");
       _gpgme_data_append_percentstring_for_xml (dh, data);
       _gpgme_data_append_string (dh, "</name>\n");
     }
-  else if (code == STATUS_POLICY_URL)
+  else if (code == GPGME_STATUS_POLICY_URL)
     {
       _gpgme_data_append_string (dh, "  <policy>");
       _gpgme_data_append_percentstring_for_xml (dh, data);
@@ -201,7 +201,7 @@ finish_sig (GpgmeCtx ctx, int stop)
 
 
 void
-_gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+_gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   char *p;
   size_t n;
@@ -211,11 +211,11 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
     return;
   test_and_allocate_result (ctx, verify);
 
-  if (code == STATUS_GOODSIG
-      || code == STATUS_EXPSIG
-      || code == STATUS_EXPKEYSIG
-      || code == STATUS_BADSIG
-      || code == STATUS_ERRSIG)
+  if (code == GPGME_STATUS_GOODSIG
+      || code == GPGME_STATUS_EXPSIG
+      || code == GPGME_STATUS_EXPKEYSIG
+      || code == GPGME_STATUS_BADSIG
+      || code == GPGME_STATUS_ERRSIG)
     {
       finish_sig (ctx,0);
       if (ctx->error)
@@ -224,23 +224,23 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
   switch (code)
     {
-    case STATUS_NODATA:
+    case GPGME_STATUS_NODATA:
       ctx->result.verify->status = GPGME_SIG_STAT_NOSIG;
       break;
 
-    case STATUS_GOODSIG:
+    case GPGME_STATUS_GOODSIG:
       ctx->result.verify->expstatus = GPGME_SIG_STAT_GOOD;
       break;
     
-    case STATUS_EXPSIG:
+    case GPGME_STATUS_EXPSIG:
       ctx->result.verify->expstatus = GPGME_SIG_STAT_GOOD_EXP;
       break;
 
-    case STATUS_EXPKEYSIG:
+    case GPGME_STATUS_EXPKEYSIG:
       ctx->result.verify->expstatus = GPGME_SIG_STAT_GOOD_EXPKEY;
       break;
 
-    case STATUS_VALIDSIG:
+    case GPGME_STATUS_VALIDSIG:
       ctx->result.verify->status = GPGME_SIG_STAT_GOOD;
       i = copy_token (args, ctx->result.verify->fpr,
                       DIM(ctx->result.verify->fpr));
@@ -255,14 +255,14 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
         ctx->result.verify->exptimestamp = strtoul (p, NULL, 10);
       break;
 
-    case STATUS_BADSIG:
+    case GPGME_STATUS_BADSIG:
       ctx->result.verify->status = GPGME_SIG_STAT_BAD;
       /* Store the keyID in the fpr field.  */
       copy_token (args, ctx->result.verify->fpr,
                   DIM(ctx->result.verify->fpr));
       break;
 
-    case STATUS_ERRSIG:
+    case GPGME_STATUS_ERRSIG:
       /* The return code is the 6th argument, if it is 9, the problem
 	 is a missing key.  Note that this is not emitted by gpgsm */
       for (p = args, i = 0; p && *p && i < 5; i++)
@@ -281,38 +281,38 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
                   DIM(ctx->result.verify->fpr));
       break;
 
-    case STATUS_NOTATION_NAME:
-    case STATUS_NOTATION_DATA:
-    case STATUS_POLICY_URL:
+    case GPGME_STATUS_NOTATION_NAME:
+    case GPGME_STATUS_NOTATION_DATA:
+    case GPGME_STATUS_POLICY_URL:
       add_notation (ctx, code, args);
       break;
 
-    case STATUS_TRUST_UNDEFINED:
+    case GPGME_STATUS_TRUST_UNDEFINED:
       ctx->result.verify->validity = GPGME_VALIDITY_UNKNOWN;
       copy_token (args, ctx->result.verify->trust_errtok,
                   DIM(ctx->result.verify->trust_errtok));
       break;
-    case STATUS_TRUST_NEVER:
+    case GPGME_STATUS_TRUST_NEVER:
       ctx->result.verify->validity = GPGME_VALIDITY_NEVER;
       copy_token (args, ctx->result.verify->trust_errtok,
                   DIM(ctx->result.verify->trust_errtok));
       break;
-    case STATUS_TRUST_MARGINAL:
+    case GPGME_STATUS_TRUST_MARGINAL:
       if (ctx->result.verify->status == GPGME_SIG_STAT_GOOD)
         ctx->result.verify->validity = GPGME_VALIDITY_MARGINAL;
       copy_token (args, ctx->result.verify->trust_errtok,
                   DIM(ctx->result.verify->trust_errtok));
       break;
-    case STATUS_TRUST_FULLY:
-    case STATUS_TRUST_ULTIMATE:
+    case GPGME_STATUS_TRUST_FULLY:
+    case GPGME_STATUS_TRUST_ULTIMATE:
       if (ctx->result.verify->status == GPGME_SIG_STAT_GOOD)
         ctx->result.verify->validity = GPGME_VALIDITY_FULL;
       break;
 
-    case STATUS_END_STREAM:
+    case GPGME_STATUS_END_STREAM:
       break;
 
-    case STATUS_ERROR:
+    case GPGME_STATUS_ERROR:
       /* Generic error, we need this for gpgsm (and maybe for gpg in future)
          to get error descriptions. */
       if (is_token (args, "verify.findkey", &n) && n)
@@ -332,7 +332,7 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
         }
       break;
 
-    case STATUS_EOF:
+    case GPGME_STATUS_EOF:
       finish_sig (ctx,1);
 
       /* FIXME: Put all notation data into one XML fragment.  */

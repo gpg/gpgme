@@ -31,7 +31,7 @@ cat <<EOF
 
 struct status_table_s {
     const char *name;
-    GpgStatusCode code;
+    GpgmeStatusCode code;
 };
 
 static struct status_table_s status_table[] = 
@@ -39,10 +39,10 @@ static struct status_table_s status_table[] =
 EOF
 
 awk '
-/STATUS_ENTER/     { okay=1 }
+/GPGME_STATUS_ENTER/     { okay=1 }
 !okay              {next}
 /}/                { exit 0 }
-/STATUS_[A-Za-z_]*/ { printf "  { \"%s\", %s },\n", substr($1,8), $1 }
+/GPGME_STATUS_[A-Za-z_]*/ { printf "  { \"%s\", %s },\n", substr($1,14), $1 }
 ' | sort  
 
 cat <<EOF
@@ -50,12 +50,3 @@ cat <<EOF
 };
 
 EOF
-
-
-
-
-
-
-
-
-

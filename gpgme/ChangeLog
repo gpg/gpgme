@@ -1,3 +1,90 @@
+2002-07-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data.c (gpgme_data_read): For GPGME_DATA_TYPE_NONE, return EOF
+	instead an error.
+
+	The following changes make it possible to flush an inbound data
+	pipe before invoking a command handler:
+
+	* posix-io.c (_gpgme_io_select): Accept new argument NONBLOCK to
+	_gpgme_io_select.  Set timeout of 0 if this is set.
+	* w32-io.c (_gpgme_io_select): Likewise.
+	* io.h: Add new argument NONBLOCK to _gpgme_io_select prototype.
+	* wait.c (do_select): Add new argument to _gpgme_io_select
+	invocation.
+	* rungpg.h (_gpgme_gpg_set_command_handler): Add new argument
+	linked_data to prototype.
+	* engine.h (_gpgme_engine_set_command_handler): Likewise.
+	* engine.c (_gpgme_engine_set_command_handler): Likewise.
+	* passphrase.c (_gpgme_passphrase_start): Pass NULL as linked_data
+	argument to _gpgme_engine_set_command_handler.
+	* rungpg.c (struct gpg_object_s): New members linked_data and
+	linked_idx in CMD.
+	(_gpgme_gpg_new): Initialize those new members.
+	(_gpgme_gpg_set_command_handler): Accept new argument linked_data.
+	(build_argv): Handle linked_data in the same hack as cb_data.
+	(read_status): If linked_data is in use, flush the pipe before
+	activating the command handler.
+	* gpgme.h: Add prototypes for gpgme_op_edit_start and
+	gpgme_op_edit.
+
+	The next changes export the status codes to the user:
+
+	* decrypt.c (_gpgme_decrypt_status_handler): Likewise, also prefix
+	all STATUS_ with GPGME_.
+	* delete.c (delete_status_handler): Likewise.
+	* decrypt-verify.c (decrypt_verify_status_handler): Likewise.
+	* encrypt.c (_gpgme_encrypt_status_handler): Likewise.
+	(_gpgme_encrypt_sym_status_handler): Likewise.
+	* encrypt-sign.c (encrypt_sign_status_handler): Likewise.
+	* engine-gpgsm.c (parse_status): Likewise.
+	(gpgsm_status_handler): Likewise.
+	(gpgsm_set_recipients): Likewise.
+	* export.c (export_status_handler): Likewise.
+	* genkey.c (genkey_status_handler): Likewise.
+	* import.c (append_xml_impinfo): Likewise.
+	(import_status_handler): Likewise.
+	* keylist.c (keylist_status_handler): Likewise.
+	* passphrase.c (_gpgme_passphrase_status_handler): Likewise.
+	(command_handler): Likewise.
+	* progress.c (_gpgme_progress_status_handler): Likewise.
+	* sign.c (_gpgme_sign_status_handler): Likewise.
+	* trustlist.c (trustlist_status_handler): Likewise.
+	* verify.c (_gpgme_verify_status_handler): Likewise.
+	* gpgme.h (GpgmeEditCb): New type.
+	* rungpg.h (GpgStatusCode): Rename and move to ...
+	* gpgme.h (GpgmeStatusCode): ... this and here.
+	* Makefile.am (status-table.h): Run mkstatus on gpgme.h, not rungpg.h.
+	* mkstatus: Prefix STATUS with GPGME_.
+	* rungpg.h (GpgStatusHandler, GpgCommandHandler): Change type
+	accordingly.
+	* ops.h (_gpgme_verify_status_handler,
+	_gpgme_decrypt_status_handler, _gpgme_sign_status_handler,
+	_gpgme_encrypt_status_handler, _gpgme_passphrase_status_handler,
+	_gpgme_progress_status_handler): Likewise.
+	* rungpg.c (struct gpg_object_s): Likewise for CMD.code.
+
+	These changes add an edit operation to GPGME:
+	
+	* context.h (struct gpgme_context_s): New member RESULT.edit.  *
+	ops.h: Add prototype for _gpgme_release_edit_result and
+	_gpgme_passphrase_command_handler.
+	* passphrase.c (command_handler): Make non-static and rename to ...
+	(_gpgme_passphrase_command_handler): ... this.
+	(_gpgme_passphrase_start): Use new name for command handler.
+	* types.h: Add EditResult type.
+	* gpgme.c (_gpgme_release_result): Release EDIT result.
+	* edit.c: New file.
+	* Makefile.am (libgpgme_la_SOURCES): Add edit.c.
+	(libgpgme_la_LDADD): Rename to libgpgme_la_LIBADD, and include
+	assuan_libobjs.
+	(assuan_libobjs): New variable, set this instead
+	libgpgme_la_LIBADD.
+	* engine.h (_gpgme_engine_op_edit): New prototype.
+	* engine.c (_gpgme_engine_op_edit): New function.
+	* rungpg.h (_gpgme_gpg_op_edit): New prototype.
+	* rungpg.c (_gpgme_gpg_op_edit): New function.
+
 2002-07-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* delete.c (delete_problem): New case ambigious specification.

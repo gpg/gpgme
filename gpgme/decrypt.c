@@ -47,7 +47,7 @@ _gpgme_release_decrypt_result (DecryptResult result)
 
 
 void
-_gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+_gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   _gpgme_passphrase_status_handler (ctx, code, args);
 
@@ -57,18 +57,18 @@ _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
   switch (code)
     {
-    case STATUS_EOF:
+    case GPGME_STATUS_EOF:
       if (ctx->result.decrypt->failed)
 	ctx->error = mk_error (Decryption_Failed);
       else if (!ctx->result.decrypt->okay)
 	ctx->error = mk_error (No_Data);
       break;
 
-    case STATUS_DECRYPTION_OKAY:
+    case GPGME_STATUS_DECRYPTION_OKAY:
       ctx->result.decrypt->okay = 1;
       break;
 
-    case STATUS_DECRYPTION_FAILED:
+    case GPGME_STATUS_DECRYPTION_FAILED:
       ctx->result.decrypt->failed = 1;
       break;
         

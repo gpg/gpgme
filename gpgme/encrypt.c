@@ -100,7 +100,7 @@ append_xml_encinfo (GpgmeData *rdh, char *args)
 
 
 void
-_gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+_gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   if (ctx->error)
     return;
@@ -108,7 +108,7 @@ _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
   switch (code)
     {
-    case STATUS_EOF:
+    case GPGME_STATUS_EOF:
       if (ctx->result.encrypt->xmlinfo)
 	{
 	  append_xml_encinfo (&ctx->result.encrypt->xmlinfo, NULL);
@@ -121,12 +121,12 @@ _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 	ctx->error = mk_error (Invalid_Recipients);
       break;
 
-    case STATUS_INV_RECP:
+    case GPGME_STATUS_INV_RECP:
       ctx->result.encrypt->invalid_recipients++;
       append_xml_encinfo (&ctx->result.encrypt->xmlinfo, args);
       break;
 
-    case STATUS_NO_RECP:
+    case GPGME_STATUS_NO_RECP:
       ctx->result.encrypt->no_valid_recipients = 1;
       break;
 
@@ -137,7 +137,7 @@ _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
 
 void
-_gpgme_encrypt_sym_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+_gpgme_encrypt_sym_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   _gpgme_passphrase_status_handler (ctx, code, args);
 }

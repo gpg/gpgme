@@ -566,6 +566,11 @@ gpgme_data_read (GpgmeData dh, void *buffer, size_t length, size_t *nread)
   
   switch (dh->type)
     {
+    case GPGME_DATA_TYPE_NONE:
+      *nread = 0;
+      return mk_error(EOF);
+      break;
+
     case GPGME_DATA_TYPE_MEM:
       nbytes = dh->len - dh->readpos;
       if (!nbytes)

@@ -56,7 +56,7 @@ _gpgme_release_delete_result (DeleteResult result)
 
 
 static void
-delete_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+delete_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   if (ctx->error)
     return;
@@ -64,7 +64,7 @@ delete_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
   switch (code)
     {
-    case STATUS_EOF:
+    case GPGME_STATUS_EOF:
       switch (ctx->result.delete->problem)
 	{
 	case DELETE_No_Problem:
@@ -83,7 +83,7 @@ delete_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 	}
       break;
 
-    case STATUS_DELETE_PROBLEM:
+    case GPGME_STATUS_DELETE_PROBLEM:
       ctx->result.delete->problem = atoi (args);
       break;
 
