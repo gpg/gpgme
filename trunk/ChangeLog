@@ -1,5 +1,13 @@
 2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (SUBDIRS): Support building the assuan library
+	(currently if GPGSM_PATH is set)..
+	* configure.ac: Support building the assuan library.
+	* assuan: New directory, populated with the Assuan library
+	(copied from the newpg repository).
+
+2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
+
 	* configure.ac (NEED_GPGSM_VERSION): New variable.  Treat it
 	similarly to NEED_GPGSM_VERSION.
 	* acconfig.h: Likewise.

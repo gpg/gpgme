@@ -1,5 +1,11 @@
 2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (libgpgme_la_INCLUDES): Remove obsolete directive.
+	(AM_CPPFLAGS): New directive [BUILD_ASSUAN].
+	(libgpgme_la_LIBADD): Likewise.
+
+2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
+
 	* version.c: Remove global variables lineno and
 	tmp_engine_version.
 	(version_handler): Removed.
@@ -9,6 +15,7 @@
 	* ops.h (_gpgme_get_program_version): Add prototype for
 	_gpgme_get_program_version (we expect to use it elsewhere soon).
 
+>>>>>>> 1.44
 2001-11-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* version.c (get_engine_info): If GnuPG is not available, return
