@@ -37,6 +37,9 @@
   typedef long ssize_t;
 #else
 # include <sys/types.h>
+#ifdef _WIN32
+typedef long ssize_t;
+#endif
 #endif
 
 #ifdef __cplusplus
@@ -71,7 +74,7 @@ extern "C" {
    AM_PATH_GPGME macro) check that this header matches the installed
    library.  Warning: Do not edit the next line.  configure will do
    that for you!  */
-#define GPGME_VERSION "0.4.5-cvs"
+#define GPGME_VERSION "0.4.6-cvs"
 
 
 /* Some opaque data types used by GPGME.  */

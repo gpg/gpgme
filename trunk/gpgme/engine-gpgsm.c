@@ -1293,6 +1293,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
   int length = 15 + 1;
   char *linep;
+  int any_pattern = 0;
   int list_mode = 0;
 
   if (reserved)
@@ -1310,6 +1311,15 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
   if (err)
     return err;
 
+  /* Use the validation mode if required.  We don't check for an error
+     yet because this is a pretty fresh gpgsm features. */
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx, 
+                               (mode & GPGME_KEYLIST_MODE_VALIDATE)?
+                               "OPTION with-validation=1":
+                               "OPTION with-validation=0" ,
+                               NULL, NULL);
+
+
   if (pattern && *pattern)
     {
       const char **pat = pattern;
@@ -1326,7 +1336,6 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
 	      patlet++;
 	    }
 	  pat++;
-	  /* This will allocate one byte more than necessary.  */
 	  length++;
 	}
     }
@@ -1375,9 +1384,13 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
 		}
 	      patlet++;
 	    }
+          any_pattern = 1;
+          *linep++ = ' ';
 	  pattern++;
 	}
     }
+  if (any_pattern)
+    linep--;
   *linep = '\0';
 
   _gpgme_io_close (gpgsm->input_cb.fd);
