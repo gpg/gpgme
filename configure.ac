@@ -21,7 +21,7 @@
 # (Process this file with autoconf to produce a configure script.)
 
 # Version number: Remember to change it immediately *after* a release.
-AC_INIT(gpgme, 0.3.12, [bug-gpgme@gnupg.org])
+AC_INIT(gpgme, 0.4.0, [bug-gpgme@gnupg.org])
 # LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
 #   (Interfaces added/removed/changed:	CURRENT++, REVISION=0)
@@ -31,8 +31,8 @@ AC_INIT(gpgme, 0.3.12, [bug-gpgme@gnupg.org])
 LIBGPGME_LT_CURRENT=9
 LIBGPGME_LT_AGE=3
 LIBGPGME_LT_REVISION=2
-NEED_GPG_VERSION=1.0.7
-NEED_GPGSM_VERSION=0.3.8
+NEED_GPG_VERSION=1.2.0
+NEED_GPGSM_VERSION=0.9.0
 ##############################################
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
