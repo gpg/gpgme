@@ -1,3 +1,7 @@
+2001-06-12  Werner Koch  <wk@gnupg.org>
+
+	Releases 0.2.2.
+
 2001-04-05  Werner Koch  <wk@gnupg.org>
 
 	* configure.in (NEED_GPG_VERSION): Set to 1.0.4g 

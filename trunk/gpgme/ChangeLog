@@ -1,3 +1,8 @@
+2001-06-01  Werner Koch  <wk@gnupg.org>
+
+	* debug.c (_gpgme_debug_begin): Fixed a /tmp race.  Noted by
+	Johannes Poehlmann.
+
 2001-05-28  Werner Koch  <wk@gnupg.org>
 
 	* version.c (gpgme_check_engine): Stop version number parsing at

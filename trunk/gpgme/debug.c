@@ -25,6 +25,11 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <ctype.h>
+#ifndef HAVE_DOSISH_SYSTEM
+  #include <sys/types.h>
+  #include <sys/stat.h>
+  #include <fcntl.h>
+#endif
 #include <assert.h>
 
 #include "util.h"
@@ -163,7 +168,18 @@ _gpgme_debug_begin ( void **helper, int level, const char *text)
     /* Oh what a pitty that we don't have a asprintf or snprintf under
      * Windoze.  We definitely should write our own clib for W32! */
     sprintf ( ctl->fname, "/tmp/gpgme_debug.%d.%p", getpid (), ctl );
-    ctl->fp = fopen (ctl->fname, "w+");
+  #if defined (__GLIBC__) || defined (HAVE_DOSISH_SYSTEM)
+    ctl->fp = fopen (ctl->fname, "w+x");
+  #else 
+    {
+        int fd  = open (ctl->fname, O_WRONLY|O_TRUNC|O_CREAT|O_EXCL,
+                        S_IRUSR|S_IWUSR );
+        if (fd == -1)
+            ctl->fp = NULL;
+        else
+            ctl->fp = fdopen (fd, "w+");
+    }
+  #endif
     if (!ctl->fp) {
         _gpgme_debug (255,__FILE__ ":" STR2(__LINE__)": failed to create `%s'",
                       ctl->fname );

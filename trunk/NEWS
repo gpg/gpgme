@@ -1,3 +1,11 @@
+Noteworthy changes in version 0.2.2 (2001-06-12)
+------------------------------------------------
+ 
+ * Implemented a key cache.
+
+ * Fixed a race condition under W32 and some other bug fixes.
+
+
 Noteworthy changes in version 0.2.1 (2001-04-02)
 ------------------------------------------------
 
