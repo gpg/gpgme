@@ -186,6 +186,11 @@ typedef enum
 GpgmeProtocol;
 
 
+/* The available keylist mode flags.  */
+#define GPGME_KEYLIST_MODE_LOCAL 1
+#define GPGME_KEYLIST_MODE_EXTERN 2
+
+
 /* Types for callback functions.  */
 
 /* Request a passphrase from the user.  */
@@ -224,7 +229,10 @@ void gpgme_set_textmode (GpgmeCtx ctx, int yes);
 int gpgme_get_textmode (GpgmeCtx ctx);
 
 /* Set keylist mode in CTX to MODE.  */
-void gpgme_set_keylist_mode (GpgmeCtx ctx, int mode);
+GpgmeError gpgme_set_keylist_mode (GpgmeCtx ctx, int mode);
+
+/* Get keylist mode in CTX.  */
+int gpgme_get_keylist_mode (GpgmeCtx ctx);
 
 /* Set the passphrase callback function in CTX to CB.  HOOK_VALUE is
    passed as first argument to the passphrase callback function.  */

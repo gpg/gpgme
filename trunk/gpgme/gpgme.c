@@ -49,6 +49,7 @@ gpgme_new (GpgmeCtx *r_ctx)
   ctx = xtrycalloc (1, sizeof *ctx);
   if (!ctx)
     return mk_error (Out_Of_Core);
+  ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
   ctx->verbosity = 1;
   *r_ctx = ctx;
 
@@ -279,16 +280,45 @@ gpgme_get_textmode (GpgmeCtx ctx)
  * @ctx: the context
  * @mode: listing mode
  * 
- * This function changes the default behaviour of the keylisting functions.
- * Defines values for @mode are: %0 = normal, %1 = fast listing without
- * information about key validity.
+ * This function changes the default behaviour of the keylisting
+ * functions.  mode is a bitwise-OR of the GPGME_KEYLIST_* flags.
+ * The default mode is GPGME_KEYLIST_MODE_LOCAL.
+ *
+ * Return value: GPGME_Invalid_Value if ctx is not a context or mode
+ * not a valid mode.
  **/
-void
+GpgmeError
 gpgme_set_keylist_mode (GpgmeCtx ctx, int mode)
 {
   if (!ctx)
-    return;
+    return mk_error (Invalid_Value);
+
+  if (!((mode & GPGME_KEYLIST_MODE_LOCAL)
+	|| (mode & GPGME_KEYLIST_MODE_EXTERN)))
+    return mk_error (Invalid_Value);
+
   ctx->keylist_mode = mode;
+  return 0;
+}
+
+
+/**
+ * gpgme_get_keylist_mode:
+ * @ctx: the context
+ * 
+ * This function ch the default behaviour of the keylisting functions.
+ * Defines values for @mode are: %0 = normal, %1 = fast listing without
+ * information about key validity.
+ *
+ * Return value: 0 if ctx is not a valid context, or the current mode.
+ * Note that 0 is never a valid mode.
+ **/
+int
+gpgme_get_keylist_mode (GpgmeCtx ctx)
+{
+  if (!ctx)
+    return 0;
+  return ctx->keylist_mode;
 }
 
 

@@ -1042,15 +1042,47 @@ valid pointer.
 
 @deftypefun void gpgme_set_keylist_mode (@w{GpgmeCtx @var{ctx}}, @w{int @var{mode}})
 The function @code{gpgme_set_keylist_mode} changes the default
-behaviour of the key listing functions.  Defined values for @var{mode}
-are:
+behaviour of the key listing functions.  The value in @var{mode} is a
+bitwise-or combination of one or multiple of the following bit values:
 
 @table @code
-@item 0
-Normal listing.
-@item 1
-Fast listing without information about the key validity.
+@item GPGME_KEYLIST_MODE_LOCAL
+The @code{GPGME_KEYLIST_MODE_LOCAL} symbol specifies that the local
+keyring should be searched for keys in the keylisting operation.  This
+is the default.
+
+@item GPGME_KEYLIST_MODE_EXTERN
+The @code{GPGME_KEYLIST_MODE_EXTERN} symbol specifies that an external
+source should be should be searched for keys in the keylisting
+operation.  The type of external source is dependant on the crypto
+engine used.  For example, it can be a remote keyserver or LDAP
+certificate server.
 @end table
+
+At least one of @code{GPGME_KEYLIST_MODE_LOCAL} and
+@code{GPGME_KEYLIST_MODE_EXTERN} must be specified.  For future binary
+compatibility, you should get the current mode with
+@code{gpgme_get_keylist_mode} and modify it by setting or clearing the
+appropriate bits, and then using that calulcated value in the
+@code{gpgme_set_keylisting_mode} operation.  This will leave all other
+bits in the mode value intact (in particular those that are not used
+in the current version of the library).
+
+The function returns @code{GPGME_No_Error} if the mode could be set
+correctly, and @code{GPGME_Invalid_Value} if @var{ctx} is not a valid
+pointer or @var{mode} is not a valid mode.
+@end deftypefun
+
+
+@deftypefun int gpgme_get_keylist_mode (@w{GpgmeCtx @var{ctx}})
+The function @code{gpgme_get_keylist_mode} returns the current key
+listing mode of the context @var{ctx}.  This value can then be
+modified and used in a subsequent @code{gpgme_set_keylist_mode}
+operation to only affect the desired bits (and leave all others
+intact).
+
+The function returns 0 if @var{ctx} is not a valid pointer, and the
+current mode otherwise.  Note that 0 is not a valid mode value.
 @end deftypefun
 
 

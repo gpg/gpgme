@@ -1,14 +1,14 @@
+Hey Emacs, this is -*- outline -*- mode!
+
 * ABI's to break:
 ** The resulting error of an operation can not be retrieved
-   seperately; the op_foobar operations can't be implemented
-   by the user, they are not merely convenience, but necessity, while
-   the op_foobar_start functions for these are unusable (or render the
+   seperately; the op_foobar operations can't be implemented by the
+   user, they are not merely convenience, but necessity, while the
+   op_foobar_start functions for these are unusable (or render the
    context unusable, your choice).
 ** string representation of non-secret keys and ATTR_IS_SECRET is NULL,
    which can not be differentiated from the case that it is not
    representable.
-** keylisting mode can go
-** api to specify where to search, lokal and/or remote.
 
 * Implement posix-sema.c
 
@@ -20,8 +20,6 @@
 * GpgmeKey misses GPGME_ATTR_EXPIRE attribute
 
 * Add ATTR to return the number of subkeys or uids.
-
-* Return GPGME_Canceled when appropriate
 
 * Factor out common code in _op_*_start functions.
 
@@ -40,8 +38,7 @@
 ** Genkey should return something more useful than General_Error.
 
 * Error Values
-** Map ASSUAN error values.
-** Map GpgSM ERR messages.
+** Map ASSUAN/GpgSM ERR error values in a better way than is done now.
 ** Verify (and document) if Read_Error, Write_Error, Pipe_Error set errno.
 
 * Tests
@@ -52,6 +49,8 @@
 
 * Build suite
 ** Make sure everything is cleaned correctly (esp. test area).
+** There is a spurious 4/10 tests failed in some conditions.
+   Rebuilding from scratch works around that.
 
 Bugs reported by Stephane Corthesy:
 > - When returning a GpgmeKey GPGME_ATTR_COMMENT attribute, characters  
@@ -74,8 +73,3 @@ Bugs reported by Stephane Corthesy:
 > the  
 > callback has become invalid; if I use a brand new one, the callback  
 > is called recursively, when I ask to enumerate keys.
-
-> Talking about gpgme performances: did anyone make some profiling on
-> gpgme calls and can tell me why it takes so long to enumerate the
-> whole pubring? Listing keys with gpg is very fast, whereas with
-> gpgme_op_keylist_XXX() it's soooooo slow.
