@@ -453,62 +453,65 @@ bool warnNoCertificate()
 
 bool isEmailInCertificate( const char* email, const char* fingerprint )
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeKey rKey;
-  int UID_idx;
-  const char* attr_string;
-  int emailCount = 0;
   bool bOk = false;
-  int fprLen = strlen( fingerprint );
+  if( fingerprint ){
+    GpgmeCtx ctx;
+    GpgmeError err;
+    GpgmeKey rKey;
+    int UID_idx;
+    const char* attr_string;
+    int fprLen = strlen( fingerprint );
+    int emailCount = 0;
 
-  fprintf( stderr, "gpgmeplug isEmailInCertificate looking for fingerprint %s\n", fingerprint );
-  
-  gpgme_new( &ctx );
-  gpgme_set_protocol( ctx, GPGMEPLUG_PROTOCOL );
+    fprintf( stderr, "gpgmeplug isEmailInCertificate looking for fingerprint %s\n", fingerprint );
 
-  err = gpgme_op_keylist_start( ctx, fingerprint, 0 );
-  if ( GPGME_No_Error == err ) {
-    err = gpgme_op_keylist_next( ctx, &rKey );
-    gpgme_op_keylist_end( ctx );
+    gpgme_new( &ctx );
+    gpgme_set_protocol( ctx, GPGMEPLUG_PROTOCOL );
+
+    err = gpgme_op_keylist_start( ctx, fingerprint, 0 );
     if ( GPGME_No_Error == err ) {
-      /* extract email(s) */
-      for( UID_idx = 0; 
-           (attr_string = gpgme_key_get_string_attr(
-                            rKey, GPGME_ATTR_EMAIL, 0, UID_idx ) );
-          ++UID_idx ){
-        if (attr_string && *attr_string) {
-          ++emailCount;
-          fprintf( stderr, "gpgmeplug isEmailInCertificate found email: %s\n", attr_string );
-          if( 0 == strcasecmp(attr_string, email) ){
-            bOk = true;
-            break;
-          }else{
-            attr_string = gpgme_key_get_string_attr(
-                            rKey, GPGME_ATTR_USERID, 0, UID_idx );
-            if (attr_string && *attr_string == '<'){
-              ++attr_string;
-              if( 0 == strncasecmp(attr_string, email, fprLen) ){
-                bOk = true;
-                break;
+      err = gpgme_op_keylist_next( ctx, &rKey );
+      gpgme_op_keylist_end( ctx );
+      if ( GPGME_No_Error == err ) {
+        /* extract email(s) */
+        for( UID_idx = 0; 
+            (attr_string = gpgme_key_get_string_attr(
+                              rKey, GPGME_ATTR_EMAIL, 0, UID_idx ) );
+            ++UID_idx ){
+          if (attr_string && *attr_string) {
+            ++emailCount;
+            fprintf( stderr, "gpgmeplug isEmailInCertificate found email: %s\n", attr_string );
+            if( 0 == strcasecmp(attr_string, email) ){
+              bOk = true;
+              break;
+            }else{
+              attr_string = gpgme_key_get_string_attr(
+                              rKey, GPGME_ATTR_USERID, 0, UID_idx );
+              if (attr_string && *attr_string == '<'){
+                ++attr_string;
+                if( 0 == strncasecmp(attr_string, email, fprLen) ){
+                  bOk = true;
+                  break;
+                }
               }
             }
           }
         }
+        if( !emailCount )
+          fprintf( stderr, "gpgmeplug isEmailInCertificate found NO EMAIL\n" );
+        else if( !bOk )
+          fprintf( stderr, "gpgmeplug isEmailInCertificate found NO MATCHING email\n" );
+        gpgme_key_release( rKey );
+      }else{
+        fprintf( stderr, "gpgmeplug isEmailInCertificate found NO CERTIFICATE for fingerprint %s\n", fingerprint );
       }
-      if( !emailCount )
-        fprintf( stderr, "gpgmeplug isEmailInCertificate found NO EMAIL\n" );
-      else if( !bOk )
-        fprintf( stderr, "gpgmeplug isEmailInCertificate found NO MATCHING email\n" );
-      gpgme_key_release( rKey );
     }else{
-      fprintf( stderr, "gpgmeplug isEmailInCertificate found NO CERTIFICATE for fingerprint %s\n", fingerprint );
+      fprintf( stderr, "gpgmeplug isEmailInCertificate could NOT open KEYLIST for fingerprint %s\n", fingerprint );
     }
+    gpgme_release( ctx );
   }else{
-    fprintf( stderr, "gpgmeplug isEmailInCertificate could NOT open KEYLIST for fingerprint %s\n", fingerprint );
+    fprintf( stderr, "gpgmeplug isEmailInCertificate called with parameter FINGERPRINT being EMPTY\n" );
   }
-  gpgme_release( ctx );
-  
   return bOk;
 }
 
