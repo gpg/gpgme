@@ -1,5 +1,30 @@
 2003-04-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (GpgmeEncryptResult): New data type.
+	(gpgme_op_encrypt_result): New prototype.
+	* ops.h (_gpgme_op_encrypt_init_result): New prototype.
+	(_gpgme_op_encrypt_status_handler): Fix prototype.
+	* encrypt-sign.c (_gpgme_op_encrypt_sign_start): Call
+	_gpgme_op_encrypt_init_result.
+	* encrypt.c: Do not include <stdio.h>, <assert.h>, "util.h" and
+	"wait.h".  Include <errno.h> and "gpgme.h".
+	(SKIP_TOKEN_OR_RETURN): Remove macro.
+	(struct encrypt_result): Rename to ...
+	(op_data_t): ... new data type.  Rewrite for user result data.
+	(append_xml_encinfo): Remove function.
+	(release_op_data): New function.
+	(gpgme_op_encrypt_result): New function.
+	(_gpgme_op_encrypt_status_handler): Change first argument to void *.
+	Rewrite result parsing.
+	(_gpgme_op_encrypt_sym_status_handler): Change first argument to
+	void *.
+	(_gpgme_op_encrypt_init_result): New function.
+	(_gpgme_op_encrypt_start): Rename to ...
+	(encrypt_start): ... this.
+	(gpgme_op_encrypt_start): Use encrypt_start, not
+	gpgme_op_encrypt_start.
+	(gpgme_op_encrypt): Likewise.
+
 	* gpgme.h (GpgmePubKeyAlgo, GpgmeHashAlgo, GpgmeInvalidUserID,
 	GpgmeNewSignature, GpgmeSignResult): New data types.
 	(gpgme_op_sign_result, gpgme_pubkey_algo_name,
@@ -27,7 +52,6 @@
 	(sign_start): ... this.  Call _gpgme_op_sign_init_result.
 	(gpgme_op_sign_start): Use sign_start instead _gpgme_op_sign_start.
 	(gpgme_op_sign): Likewise.
-
 	* encrypt-sign.c (_gpgme_op_encrypt_sign_start): Call
 	_gpgme_op_sign_init_result.
 	

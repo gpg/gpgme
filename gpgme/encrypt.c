@@ -1,4 +1,4 @@
-/* encrypt.c - Encrypt functions.
+/* encrypt.c - Encrypt function.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003 g10 Code GmbH
 
@@ -21,149 +21,128 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <errno.h>
 
-#include "util.h"
+#include "gpgme.h"
 #include "context.h"
 #include "ops.h"
-#include "wait.h"
 
-#define SKIP_TOKEN_OR_RETURN(a) do { \
-    while (*(a) && *(a) != ' ') (a)++; \
-    while (*(a) == ' ') (a)++; \
-    if (!*(a)) \
-        return; /* oops */ \
-} while (0)
-
-struct encrypt_result
+
+typedef struct
 {
-  int no_valid_recipients;
-  int invalid_recipients;
-  GpgmeData xmlinfo;
-};
-typedef struct encrypt_result *EncryptResult;
+  struct _gpgme_op_encrypt_result result;
+
+  /* A pointer to the next pointer of the last invalid recipient in
+     the list.  This makes appending new invalid recipients painless
+     while preserving the order.  */
+  GpgmeInvalidUserID *lastp;
+} *op_data_t;
+
 
 static void
-release_encrypt_result (void *hook)
+release_op_data (void *hook)
 {
-  EncryptResult result = (EncryptResult) hook;
+  op_data_t opd = (op_data_t) hook;
+  GpgmeInvalidUserID invalid_recipient = opd->result.invalid_recipients;
 
-  gpgme_data_release (result->xmlinfo);
+  while (invalid_recipient)
+    {
+      GpgmeInvalidUserID next = invalid_recipient->next;
+      free (invalid_recipient->id);
+      invalid_recipient = next;
+    }
 }
 
 
-/* Parse the args and save the information in an XML structure.  With
-   args of NULL the xml structure is closed.  */
-static void
-append_xml_encinfo (GpgmeData *rdh, char *args)
+GpgmeEncryptResult
+gpgme_op_encrypt_result (GpgmeCtx ctx)
 {
-  GpgmeData dh;
-  char helpbuf[100];
+  op_data_t opd;
+  GpgmeError err;
 
-  if (!*rdh)
-    {
-      if (gpgme_data_new (rdh))
-	return; /* FIXME: We are ignoring out-of-core.  */
-      dh = *rdh;
-      _gpgme_data_append_string (dh, "<GnupgOperationInfo>\n");
-    }
-  else
-    {
-      dh = *rdh;
-      _gpgme_data_append_string (dh, "  </encryption>\n");
-    }
+  err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &opd, -1, NULL);
+  if (err || !opd)
+    return NULL;
 
-  if (!args)
-    {
-      /* Just close the XML containter.  */
-      _gpgme_data_append_string (dh, "</GnupgOperationInfo>\n");
-      return;
-    }
-
-  _gpgme_data_append_string (dh, "  <encryption>\n"
-			     "    <error>\n"
-			     "      <invalidRecipient/>\n");
-    
-  sprintf (helpbuf, "      <reason>%d</reason>\n", atoi (args));
-  _gpgme_data_append_string (dh, helpbuf);
-  SKIP_TOKEN_OR_RETURN (args);
-
-  _gpgme_data_append_string (dh, "      <name>");
-  _gpgme_data_append_percentstring_for_xml (dh, args);
-  _gpgme_data_append_string (dh, "</name>\n"
-			     "    </error>\n");
+  return &opd->result;
 }
 
-
+
 GpgmeError
-_gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
+_gpgme_encrypt_status_handler (void *priv, GpgmeStatusCode code, char *args)
 {
-  GpgmeError err = 0;
-  EncryptResult result;
+  GpgmeCtx ctx = (GpgmeCtx) priv;
+  GpgmeError err;
+  op_data_t opd;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &opd,
+			       -1, NULL);
+  if (err)
+    return err;
 
   switch (code)
     {
     case GPGME_STATUS_EOF:
-      err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &result,
-				   -1, NULL);
-      if (!err)
-	{
-	  if (result && result->xmlinfo)
-	    {
-	      append_xml_encinfo (&result->xmlinfo, NULL);
-	      _gpgme_set_op_info (ctx, result->xmlinfo);
-	      result->xmlinfo = NULL;
-	    }
-	  if (result && result->no_valid_recipients) 
-	    return GPGME_No_UserID;
-	  if (result && result->invalid_recipients) 
-	    return GPGME_Invalid_UserID;
-	}
+      if (opd->result.invalid_recipients)
+	return GPGME_Invalid_UserID;
       break;
 
     case GPGME_STATUS_INV_RECP:
-      err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &result,
-				   sizeof (*result), release_encrypt_result);
-      if (!err)
-	{
-	  result->invalid_recipients++;
-	  append_xml_encinfo (&result->xmlinfo, args);
-	}
+      err = _gpgme_parse_inv_userid (args, opd->lastp);
+      if (err)
+	return err;
+
+      opd->lastp = &(*opd->lastp)->next;
       break;
 
     case GPGME_STATUS_NO_RECP:
-      err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &result,
-				   sizeof (*result), release_encrypt_result);
-      if (!err)
-	result->no_valid_recipients = 1;
-      break;
+      /* Should not happen, because we require at least one recipient.  */
+      return GPGME_No_UserID;
 
     default:
       break;
     }
-  return err;
+  return 0;
 }
 
 
 GpgmeError
-_gpgme_encrypt_sym_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
+_gpgme_encrypt_sym_status_handler (void *priv, GpgmeStatusCode code,
 				   char *args)
 {
-  return _gpgme_passphrase_status_handler (ctx, code, args);
+  return _gpgme_passphrase_status_handler (priv, code, args);
+}
+
+
+GpgmeError
+_gpgme_op_encrypt_init_result (GpgmeCtx ctx)
+{
+  GpgmeError err;
+  op_data_t opd;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &opd,
+			       sizeof (*opd), release_op_data);
+  if (err)
+    return err;
+  opd->lastp = &opd->result.invalid_recipients;
+  return 0;
 }
 
 
 static GpgmeError
-_gpgme_op_encrypt_start (GpgmeCtx ctx, int synchronous,
-			 GpgmeRecipients recp, GpgmeData plain, GpgmeData cipher)
+encrypt_start (GpgmeCtx ctx, int synchronous, GpgmeRecipients recp,
+	       GpgmeData plain, GpgmeData cipher)
 {
   GpgmeError err;
   int symmetric = 0;
 
   err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  err = _gpgme_op_encrypt_init_result (ctx);
   if (err)
     return err;
 
@@ -200,30 +179,19 @@ _gpgme_op_encrypt_start (GpgmeCtx ctx, int synchronous,
 
 GpgmeError
 gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
-			GpgmeData ciph)
+			GpgmeData cipher)
 {
-  return _gpgme_op_encrypt_start (ctx, 0, recp, plain, ciph);
+  return encrypt_start (ctx, 0, recp, plain, cipher);
 }
 
 
-/**
- * gpgme_op_encrypt:
- * @c: The context
- * @recp: A set of recipients 
- * @in: plaintext input
- * @out: ciphertext output
- * 
- * This function encrypts @in to @out for all recipients from
- * @recp.  Other parameters are take from the context @c.
- * The function does wait for the result.
- * 
- * Return value:  0 on success or an errorcode. 
- **/
+/* Encrypt plaintext PLAIN within CTX for the recipients RECP and
+   store the resulting ciphertext in CIPHER.  */
 GpgmeError
 gpgme_op_encrypt (GpgmeCtx ctx, GpgmeRecipients recp,
 		  GpgmeData plain, GpgmeData cipher)
 {
-  int err = _gpgme_op_encrypt_start (ctx, 1, recp, plain, cipher);
+  int err = encrypt_start (ctx, 1, recp, plain, cipher);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

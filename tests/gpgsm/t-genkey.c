@@ -38,38 +38,25 @@
   while (0)
 
 
-void
-dump_data (GpgmeData dh)
+static void
+print_data (GpgmeData dh)
 {
 #define BUF_SIZE 512
-  char buffer[BUF_SIZE + 1];
-  int bufread;
-
-  gpgme_data_rewind (dh);
-
-  do
-    {
-      bufread = gpgme_data_read (dh, buffer, BUF_SIZE);
-      if (bufread > 0)
-	{
-	  buffer[bufread] = '\0';
-	  printf ("%s", buffer);
-	}
-    }
-  while (bufread > 0);
-
-  if (bufread < 0)
-    {
-      fprintf (stderr, "%s:%d: gpgme_data_read failed: %s\n",
-	       __FILE__, __LINE__, strerror (errno));
-      exit (1);
-    }
-  printf ("\n");
+  char buf[BUF_SIZE + 1];
+  int ret;
+  
+  ret = gpgme_data_seek (dh, 0, SEEK_SET);
+  if (ret)
+    fail_if_err (GPGME_File_Error);
+  while ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) > 0)
+    fwrite (buf, ret, 1, stdout);
+  if (ret < 0)
+    fail_if_err (GPGME_File_Error);
 }
 
 
 /* True if progress function printed something on the screen.  */
-int progress_called;
+static int progress_called;
 
 static void
 progress (void *self, const char *what, int type, int current, int total)
@@ -156,7 +143,7 @@ main (int argc, char **argv)
     }
   gpgme_release (ctx);
 
-  dump_data (certreq);
+  print_data (certreq);
   gpgme_data_release (certreq);
 
   return 0;

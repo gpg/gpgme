@@ -767,6 +767,17 @@ struct _gpgme_invalid_user_id
 typedef struct _gpgme_invalid_user_id *GpgmeInvalidUserID;
 
 
+/* Encryption.  */
+struct _gpgme_op_encrypt_result
+{
+  /* The list of invalid recipients.  */
+  GpgmeInvalidUserID invalid_recipients;
+};
+typedef struct _gpgme_op_encrypt_result *GpgmeEncryptResult;
+
+/* Retrieve a pointer to the result of the encrypt operation.  */
+GpgmeEncryptResult gpgme_op_encrypt_result (GpgmeCtx ctx);
+
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  */
 GpgmeError gpgme_op_encrypt_start (GpgmeCtx ctx,
@@ -786,6 +797,7 @@ GpgmeError gpgme_op_encrypt_sign (GpgmeCtx ctx,
 				  GpgmeRecipients recp,
 				  GpgmeData plain, GpgmeData cipher);
 
+
 /* Decrypt ciphertext CIPHER within CTX and store the resulting
    plaintext in PLAIN.  */
 GpgmeError gpgme_op_decrypt_start (GpgmeCtx ctx,

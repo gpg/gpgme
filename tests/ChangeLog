@@ -1,5 +1,10 @@
 2003-04-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/t-sign.c: Rewritten.
+	* gpgsm/t-sign.c: Rewritten.
+	* gpg/t-encrypt.c: Check for invalid recipients.
+	* gpgsm/t-encrypt.c: Likewise.
+
 	* gpg/t-import.c (check_result): Really use FPR.
 	* gpgsm/t-import.c (check_result): Rewritten.
 

@@ -51,6 +51,10 @@ _gpgme_op_encrypt_sign_start (GpgmeCtx ctx, int synchronous,
   if (err)
     return err;
 
+  err = _gpgme_op_encrypt_init_result (ctx);
+  if (err)
+    return err;
+
   err = _gpgme_op_sign_init_result (ctx);
   if (err)
     return err;
