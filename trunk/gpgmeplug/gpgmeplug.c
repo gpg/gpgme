@@ -51,6 +51,10 @@
 #include <errno.h>
 #include <time.h>
 
+#ifndef BUG_URL
+#define BUG_URL "http:://www.gnupg.org/aegypten/"
+#endif
+
 #include "gpgme.h"
 #ifndef GPGMEPLUG_PROTOCOL
 #define GPGMEPLUG_PROTOCOL GPGME_PROTOCOL_OpenPGP
@@ -120,6 +124,7 @@
 
 
 typedef struct {
+  const char*             bugURL;
   const char*             signatureKeyCertificate;
   SignatureAlgorithm      signatureAlgorithm;
   SendCertificates        sendCertificates;
@@ -189,7 +194,10 @@ passphrase_cb (void *opaque, const char *desc, void *r_hd)
 
 bool initialize()
 {
-  config.signatureKeyCertificate              = "";
+  config.bugURL                               = malloc( strlen( BUG_URL ) + 1 );
+  strcpy( (char* )config.bugURL,                BUG_URL );
+  config.signatureKeyCertificate              = malloc( 1 );
+  strcpy( (char* )config.signatureKeyCertificate, "" );
   config.signatureAlgorithm                   = SignAlg_SHA1;
   config.sendCertificates                     = SendCert_SendChainWithRoot;
   config.signEmail                            = SignEmail_SignAll;
@@ -252,6 +260,9 @@ bool hasFeature( Feature flag )
     default:                                      return false;
   }
 }
+
+
+const char* bugURL(){ return config.bugURL; }
 
 
 void unsafeStationery( void** pixmap, const char** menutext, char* accel,
@@ -755,13 +766,10 @@ bool certificateValidity( const char* certificate,
 
 void storeNewCharPtr( char** dest, const char* src )
 {
-  int sLen;
-  if( *dest && src ) {
-    sLen = strlen( src );
-    *dest = malloc( sLen + 1 );
-    strncpy( *dest, src, sLen );
-    *dest[sLen] = '\0';
-  }
+  int sLen = strlen( src );
+  *dest = malloc( sLen + 1 );
+  strncpy( *dest, src, sLen );
+  *dest[sLen] = '\0';
 }
 
 
