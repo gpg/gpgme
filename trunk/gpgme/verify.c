@@ -111,7 +111,13 @@ calc_sig_summary (gpgme_signature_t sig)
     }
   else if (gpg_err_code (sig->status) == GPG_ERR_BAD_SIGNATURE)
     sum |= GPGME_SIGSUM_RED;
-  
+
+  if (sig->validity == GPGME_VALIDITY_UNKNOWN)
+    {
+      if (gpg_err_code (sig->validity_reason) == GPG_ERR_CRL_TOO_OLD)
+	sum |= GPGME_SIGSUM_CRL_TOO_OLD;
+    }
+
   /* FIXME: handle the case when key and message are expired. */
   switch (gpg_err_code (sig->status))
     {
@@ -461,6 +467,8 @@ parse_trust (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 
   if (*args)
     sig->validity_reason = _gpgme_map_gnupg_error (args);
+  else
+    sig->validity_reason = 0;
 
   return 0;
 }
