@@ -9,10 +9,6 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Build thread modules for static linking (which just suck in the
    desired symbols the hard way). !!
 
-* Allow to use other event loops instead of the select stuff in
-  wait.c. !!!
-** This includes keylist and trustlist functions.
-
 * cleanup the namespace - we use log_* assuan_* ascii_*.
   But those are only used internally.  Some linker tricks should make
   it possible to hide them from the user (didn't work last time, try
@@ -62,9 +58,6 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Build suite
 ** Make sure everything is cleaned correctly (esp. test area).
-
-* Architecture support
-** (nothing currently)
 
 Bugs reported by Stephane Corthesy:
 > BTW, here's another bug: it it not possible to retrieve fingerprints  
