@@ -1,5 +1,22 @@
 2002-10-09  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.h (_gpgme_gpg_enable_pipemode): Remove prototype.
+	* rungpg.c (struct gpg_object_s): Remove PM.
+	(pipemode_cb): Prototype removed.
+	(add_pm_data): Function removed.
+	(_gpgme_gpg_enable_pipemode): Likewise.
+	(pipemode_copy): Likewise.
+	(pipemode_cb): Likewise.
+	(add_arg): Don't check for pipemode.
+	(add_data): Likewise.
+	(_gpgme_gpg_set_status_handler): Likewise.
+	(_gpgme_gpg_set_colon_line_handler): Likewise.
+	(_gpgme_gpg_set_command_handler): Likewise.
+	(_gpgme_gpg_spawn): Likewise.
+	(_gpgme_gpg_spawn): Don't set PM.active.
+	(_gpgme_gpg_op_verify): Remove pipemode case.
+	* verify.c (_gpgme_op_verify_start): Remove pipemode case.
+
 	* rungpg.h (_gpgme_gpg_add_arg, _gpgme_gpg_add_data,
 	_gpgme_gpg_add_pm_data, _gpgme_gpg_housecleaning,
 	_gpgme_gpg_set_simple_line_handler): Prototype removed.

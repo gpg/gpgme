@@ -362,20 +362,10 @@ _gpgme_op_verify_start (GpgmeCtx ctx, int synchronous,
 			GpgmeData sig, GpgmeData signed_text, GpgmeData plaintext)
 {
   int err = 0;
-  int pipemode = 0;	 /* !!text; use pipemode for detached sigs.  */
-
-  if (!pipemode)
-    ;	/* XXX I am not sure what should happen/not happen in
-	   pipemode.  */
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     goto leave;
-
-#if 0	/* FIXME */
-  if (pipemode)
-    _gpgme_gpg_enable_pipemode (c->engine->engine.gpg);
-#endif
 
   _gpgme_engine_set_status_handler (ctx->engine, _gpgme_verify_status_handler,
 				    ctx);
