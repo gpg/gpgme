@@ -1,8 +1,5 @@
 Hey Emacs, this is -*- outline -*- mode!
 
-* Before release:
-** gpgme-config must include info about libgpg-error.
-
 * ABI's to break:
 ** Compatibility interfaces that can be removed in future versions:
 *** gpgme_data_new_from_filepart
@@ -93,7 +90,8 @@ Hey Emacs, this is -*- outline -*- mode!
    Currently not, but it is easy to add this to GPGME 0.4.1.  At least the key
    ID and a user ID hint is available from gpg (of course key IDs are not
    necessarily unique!).  I will put it on the TODO list.
-
+** If possible, use --file-setsize to set the file size for proper progress
+   callback handling.
 ** Optimize the file descriptor list, so the number of open fds is
    always known easily.
 ** Encryption: It should be verified that the behaviour for partially untrusted
