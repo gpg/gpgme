@@ -36,7 +36,9 @@ typedef gpgme_error_t (*engine_command_handler_t) (void *priv,
 						   int fd);
 
 gpgme_error_t _gpgme_engine_new (gpgme_protocol_t proto,
-				 engine_t *r_engine);
+				 engine_t *r_engine,
+				 const char *lc_ctype,
+				 const char *lc_messages);
 void _gpgme_engine_release (engine_t engine);
 void _gpgme_engine_set_status_handler (engine_t engine,
 				       engine_status_handler_t fnc,

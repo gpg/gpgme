@@ -159,6 +159,7 @@ Context Attributes
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
+* Locale::                        Setting the locale of a context.
 
 Key Management
 
@@ -492,6 +493,31 @@ features are provided by the installed version of the library.
 @end deftypefun
 
 
+After initializing @acronym{GPGME}, you should set the locale
+information to the locale required for your output terminal (only
+required if your program runs on a text terminal, rather than in the X
+Window environment).  Here is an example of a complete initialization:
+
+@example
+#include <locale.h>
+#include <gpgme.h>
+
+void
+init_program (void)
+@{
+  /* Initialize the locale environment.  */
+  setlocale (LC_ALL, "");
+  gpgme_check_version (NULL);
+  gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
+  gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
+@}
+@end example
+
+Note that you are highly recommended to initialize the locale settings
+like this.  @acronym{GPGME} can not do this for you because it would
+not be thread safe.
+
+
 @node Multi Threading
 @section Multi Threading
 @cindex thread-safeness
@@ -548,7 +574,10 @@ call functions in @acronym{GPGME} could call the following function
 before any function in the library:
 
 @example
+#include <stdlib.h>
+#include <locale.h>
 #include <pthread.h>
+#include <gpgme.h>
 
 void
 initialize_gpgme (void)
@@ -559,7 +588,9 @@ initialize_gpgme (void)
   pthread_mutex_lock (&gpgme_init_lock);
   if (!gpgme_init)
     @{
-      gpgme_check_version ();
+      gpgme_check_version (NULL);
+      gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
+      gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
       gpgme_init = 1;
     @}
   pthread_mutex_unlock (&gpgme_init_lock);
@@ -950,21 +981,21 @@ error code part of an error value.  The error source is left
 unspecified and might be anything.
 @end deftp
 
-@deftypefun {static __inline__ gpgme_err_code_t} gpgme_err_code (@w{gpgme_error_t @var{err}})
+@deftypefun {static inline gpgme_err_code_t} gpgme_err_code (@w{gpgme_error_t @var{err}})
 The static inline function @code{gpgme_err_code} returns the
 @code{gpgme_err_code_t} component of the error value @var{err}.  This
 function must be used to extract the error code from an error value in
 order to compare it with the @code{GPG_ERR_*} error code macros.
 @end deftypefun
 
-@deftypefun {static __inline__ gpgme_err_source_t} gpgme_err_source (@w{gpgme_error_t @var{err}})
+@deftypefun {static inline gpgme_err_source_t} gpgme_err_source (@w{gpgme_error_t @var{err}})
 The static inline function @code{gpgme_err_source} returns the
 @code{gpgme_err_source_t} component of the error value @var{err}.  This
 function must be used to extract the error source from an error value in
 order to compare it with the @code{GPG_ERR_SOURCE_*} error source macros.
 @end deftypefun
 
-@deftypefun {static __inline__ gpgme_error_t} gpgme_err_make (@w{gpgme_err_source_t @var{source}}, @w{gpgme_err_code_t @var{code}})
+@deftypefun {static inline gpgme_error_t} gpgme_err_make (@w{gpgme_err_source_t @var{source}}, @w{gpgme_err_code_t @var{code}})
 The static inline function @code{gpgme_err_make} returns the error
 value consisting of the error source @var{source} and the error code
 @var{code}.
@@ -973,7 +1004,7 @@ This function can be used in callback functions to construct an error
 value to return it to the library.
 @end deftypefun
 
-@deftypefun {static __inline__ gpgme_error_t} gpgme_error (@w{gpgme_err_code_t @var{code}})
+@deftypefun {static inline gpgme_error_t} gpgme_error (@w{gpgme_err_code_t @var{code}})
 The static inline function @code{gpgme_error} returns the error value
 consisting of the default error source and the error code @var{code}.
 
@@ -1736,6 +1767,7 @@ The function @code{gpgme_release} destroys the context with the handle
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
+* Locale::                        Setting the locale of a context.
 @end menu
 
 
@@ -2010,6 +2042,43 @@ progress callback is set, or @var{ctx} is not a valid pointer,
 
 @var{progfunc} or @var{hook_value} can be @code{NULL}.  In this case,
 the corresponding value will not be returned.
+@end deftypefun
+
+
+@node Locale
+@subsection Locale
+@cindex locale, default
+@cindex locale, of a context
+
+A locale setting can be associated with a context.  This locale is
+passed to the crypto engine, and used for applications like the PIN
+entry, which is displayed to the user when entering a passphrase is
+required.
+
+The default locale is used to initialize the locale setting of all
+contexts created afterwards.
+
+@deftypefun gpgme_error_t gpgme_set_locale (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{category}}, @w{const char *@var{value}})
+The function @code{gpgme_set_locale} sets the locale of the context
+@var{ctx}, or the default locale if @var{ctx} is a null pointer.
+
+The locale settings that should be changed are specified by
+@var{category}.  Supported categories are @code{LC_CTYPE},
+@code{LC_MESSAGES}, and @code{LC_ALL}, which is a wildcard you can use
+if you want to change all the categories at once.
+
+The value to be used for the locale setting is @var{value}, which will
+be copied to @acronym{GPGME}'s internal data structures.  @var{value}
+can be a null pointer, which disables setting the locale, and will
+make PIN entry and other applications use their default setting, which
+is usually not what you want.
+
+Note that the settings are only used if the application runs on a text
+terminal, and that the settings should fit the configuration of the
+output terminal.  Normally, it is sufficient to initialize the default
+value at startup.
+
+The function returns an error if not enough memory is available.
 @end deftypefun
 
 

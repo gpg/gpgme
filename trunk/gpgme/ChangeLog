@@ -1,3 +1,20 @@
+2003-09-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* context.h (struct gpgme_context): New members lc_ctype and
+	lc_messages.
+	* gpgme.c: Include <locale.h>.
+	(def_lc_lock, def_lc_ctype, def_lc_messages): New static
+	variables.
+	(gpgme_set_locale): New function.
+	* engine.c (_gpgme_engine_new): Add arguments lc_ctype and
+	lc_messages.
+	* engine.h (_gpgme_engine_new): Likewise.
+	* engine-gpgsm.c (gpgsm_new): Likewise.
+	* rungpg.c (gpg_new): Likewise.
+	* engine-backend.h (struct engine_ops): Likewise to NEW.
+	* op-support.c (_gpgme_op_reset): Likewise to invocation of
+	_gpgme_engine_new.
+
 2003-09-13  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (gpgme_strerror_r): New prototype.

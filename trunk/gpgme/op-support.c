@@ -76,7 +76,8 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
       _gpgme_engine_release (ctx->engine);
       ctx->engine = NULL;
     }
-  err = _gpgme_engine_new (ctx->protocol, &ctx->engine);
+  err = _gpgme_engine_new (ctx->protocol, &ctx->engine,
+			   ctx->lc_ctype, ctx->lc_messages);
   if (err)
     return err;
 

@@ -294,7 +294,7 @@ gpgsm_release (void *engine)
 
 
 static gpgme_error_t
-gpgsm_new (void **engine)
+gpgsm_new (void **engine, const char *lc_ctype, const char *lc_messages)
 {
   gpgme_error_t err = 0;
   engine_gpgsm_t gpgsm;
@@ -304,8 +304,6 @@ gpgsm_new (void **engine)
   char *dft_display = NULL;
   char dft_ttyname[64];
   char *dft_ttytype = NULL;
-  char *old_lc = NULL;
-  char *dft_lc = NULL;
   char *optstr;
   int fdlist[5];
   int nfds;
@@ -470,52 +468,9 @@ gpgsm_new (void **engine)
 	    }
 	}
 
-      old_lc = setlocale (LC_CTYPE, NULL);
-      if (old_lc)
-        {
-          old_lc = strdup (old_lc);
-          if (!old_lc)
-            {
-              err = gpg_error_from_errno (errno);
-              goto leave;
-            }
-        }
-      dft_lc = setlocale (LC_CTYPE, "");
-      if (dft_lc)
+      if (lc_ctype)
 	{
-	  if (asprintf (&optstr, "OPTION lc-ctype=%s", dft_lc) < 0)
-	    err = gpg_error_from_errno (errno);
-	  else
-	    {
-	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
-                                     NULL, NULL, NULL, NULL);
-	      free (optstr);
-	      if (err)
-		err = map_assuan_error (err);
-	    }
-	}
-      if (old_lc)
-        {
-          setlocale (LC_CTYPE, old_lc);
-          free (old_lc);
-        }
-      if (err)
-	goto leave;
-
-      old_lc = setlocale (LC_MESSAGES, NULL);
-      if (old_lc)
-        {
-          old_lc = strdup (old_lc);
-          if (!old_lc)
-            {
-              err = gpg_error_from_errno (errno);
-              goto leave;
-            }
-        }
-      dft_lc = setlocale (LC_MESSAGES, "");
-      if (dft_lc)
-	{
-	  if (asprintf (&optstr, "OPTION lc-messages=%s", dft_lc) < 0)
+	  if (asprintf (&optstr, "OPTION lc-ctype=%s", lc_ctype) < 0)
 	    err = gpg_error_from_errno (errno);
 	  else
 	    {
@@ -526,24 +481,35 @@ gpgsm_new (void **engine)
 		err = map_assuan_error (err);
 	    }
 	}
-      if (old_lc)
-        {
-          setlocale (LC_MESSAGES, old_lc);
-          free (old_lc);
-        }
+      if (err)
+	goto leave;
+
+      if (lc_messages)
+	{
+	  if (asprintf (&optstr, "OPTION lc-messages=%s", lc_messages) < 0)
+	    err = gpg_error_from_errno (errno);
+	  else
+	    {
+	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
+				     NULL, NULL, NULL, NULL);
+	      free (optstr);
+	      if (err)
+		err = map_assuan_error (err);
+	    }
+	}
       if (err)
 	goto leave;
     }
 
-  if (!err &&
-      (_gpgme_io_set_close_notify (gpgsm->status_cb.fd,
-				   close_notify_handler, gpgsm)
-       || _gpgme_io_set_close_notify (gpgsm->input_cb.fd,
-				   close_notify_handler, gpgsm)
-       || _gpgme_io_set_close_notify (gpgsm->output_cb.fd,
+  if (!err
+      && (_gpgme_io_set_close_notify (gpgsm->status_cb.fd,
 				      close_notify_handler, gpgsm)
-       || _gpgme_io_set_close_notify (gpgsm->message_cb.fd,
-				      close_notify_handler, gpgsm)))
+	  || _gpgme_io_set_close_notify (gpgsm->input_cb.fd,
+					 close_notify_handler, gpgsm)
+	  || _gpgme_io_set_close_notify (gpgsm->output_cb.fd,
+					 close_notify_handler, gpgsm)
+	  || _gpgme_io_set_close_notify (gpgsm->message_cb.fd,
+					 close_notify_handler, gpgsm)))
     {
       err = gpg_error (GPG_ERR_GENERAL);
       goto leave;

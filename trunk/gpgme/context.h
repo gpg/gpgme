@@ -87,6 +87,10 @@ struct gpgme_context
   unsigned int signers_size;
   gpgme_key_t *signers;
 
+  /* The locale for the pinentry.  */
+  char *lc_ctype;
+  char *lc_messages;
+
   /* The operation data hooked into the context.  */
   ctx_op_data_t op_data;
 
