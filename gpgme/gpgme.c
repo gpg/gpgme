@@ -61,6 +61,7 @@ gpgme_release_context ( GpgmeCtx c )
     
     _gpgme_gpg_release_object ( c->gpg ); 
     _gpgme_release_result ( c );
+    _gpgme_key_release ( c->tmp_key );
     xfree ( c );
 }
 
@@ -75,6 +76,7 @@ _gpgme_release_result ( GpgmeCtx c )
         _gpgme_release_verify_result ( c->result.verify );
         break;
     }
+
     c->result.verify = NULL;
     c->result_type = RESULT_TYPE_NONE;
 }

@@ -82,6 +82,7 @@ typedef enum  {
 } GpgStatusCode;
 
 typedef void (*GpgStatusHandler)( GpgmeCtx, GpgStatusCode code, char *args ); 
+typedef void (*GpgColonLineHandler)( GpgmeCtx, char *line ); 
 
 GpgmeError _gpgme_gpg_new_object ( GpgObject *r_gpg );
 void       _gpgme_gpg_release_object ( GpgObject gpg );
@@ -90,6 +91,10 @@ GpgmeError _gpgme_gpg_add_data ( GpgObject gpg, GpgmeData data, int dup_to );
 void       _gpgme_gpg_set_status_handler ( GpgObject gpg,
                                            GpgStatusHandler fnc,
                                            void *fnc_value );
+GpgmeError _gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
+                                               GpgColonLineHandler fnc,
+                                               void *fnc_value );
+
 GpgmeError _gpgme_gpg_spawn ( GpgObject gpg, void *opaque );
 
 

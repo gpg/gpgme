@@ -95,6 +95,8 @@ GpgmeError gpgme_start_verify ( GpgmeCtx c,  GpgmeData sig, GpgmeData text );
 
 
 /* Key management functions */
+GpgmeError gpgme_keylist_start ( GpgmeCtx c,
+                                 const char *pattern, int secret_only );
 
 
 

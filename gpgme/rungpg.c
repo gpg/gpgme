@@ -73,6 +73,17 @@ struct gpg_object_s {
         void *fnc_value;
     } status;
 
+    /* This is a kludge - see the comment at gpg_colon_line_handler */
+    struct {
+        int fd[2];  
+        size_t bufsize;
+        char *buffer;
+        size_t readpos;
+        int eof;
+        GpgColonLineHandler fnc;  /* this indicate use of this structrue */
+        void *fnc_value;
+    } colon;
+
     char **argv;  
     struct fd_data_map_s *fd_data_map;
 
@@ -86,11 +97,15 @@ struct gpg_object_s {
 static void kill_gpg ( GpgObject gpg );
 static void free_argv ( char **argv );
 static void free_fd_data_map ( struct fd_data_map_s *fd_data_map );
-static int gpg_status_handler ( void *opaque, pid_t pid, int fd );
+
 static int gpg_inbound_handler ( void *opaque, pid_t pid, int fd );
 static int gpg_outbound_handler ( void *opaque, pid_t pid, int fd );
 
+static int gpg_status_handler ( void *opaque, pid_t pid, int fd );
 static GpgmeError read_status ( GpgObject gpg );
+
+static int gpg_colon_line_handler ( void *opaque, pid_t pid, int fd );
+static GpgmeError read_colon_line ( GpgObject gpg );
 
 
 
@@ -109,6 +124,8 @@ _gpgme_gpg_new_object ( GpgObject *r_gpg )
 
     gpg->status.fd[0] = -1;
     gpg->status.fd[1] = -1;
+    gpg->colon.fd[0] = -1;
+    gpg->colon.fd[1] = -1;
 
     /* allocate the read buffer for the status pipe */
     gpg->status.bufsize = 1024;
@@ -150,12 +167,17 @@ _gpgme_gpg_release_object ( GpgObject gpg )
     if ( !gpg )
         return;
     xfree (gpg->status.buffer);
+    xfree (gpg->colon.buffer);
     if ( gpg->argv )
         free_argv (gpg->argv);
     if (gpg->status.fd[0] != -1 )
         close (gpg->status.fd[0]);
     if (gpg->status.fd[1] != -1 )
         close (gpg->status.fd[1]);
+    if (gpg->colon.fd[0] != -1 )
+        close (gpg->colon.fd[0]);
+    if (gpg->colon.fd[1] != -1 )
+        close (gpg->colon.fd[1]);
     free_fd_data_map (gpg->fd_data_map);
     kill_gpg (gpg); /* fixme: should be done asyncronously */
     xfree (gpg);
@@ -231,6 +253,30 @@ _gpgme_gpg_set_status_handler ( GpgObject gpg,
     gpg->status.fnc = fnc;
     gpg->status.fnc_value = fnc_value;
 }
+
+/* Kludge to process --with-colon output */
+GpgmeError
+_gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
+                                    GpgColonLineHandler fnc, void *fnc_value ) 
+{
+    assert (gpg);
+
+    gpg->colon.bufsize = 1024;
+    gpg->colon.readpos = 0;
+    gpg->colon.buffer = xtrymalloc (gpg->colon.bufsize);
+    if (!gpg->colon.buffer) {
+        return mk_error (Out_Of_Core);
+    }
+    if (pipe (gpg->colon.fd) == -1) {
+        xfree (gpg->colon.buffer); gpg->colon.buffer = NULL;
+        return mk_error (Pipe_Error);
+    }
+    gpg->colon.eof = 0;
+    gpg->colon.fnc = fnc;
+    gpg->colon.fnc_value = fnc_value;
+    return 0;
+}
+
 
 static void
 free_argv ( char **argv )
@@ -431,6 +477,17 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
         int duped_stderr = 0;
 
         close (gpg->status.fd[0]);
+
+        if (gpg->colon.fnc) {
+            /* dup it to stdout */
+            if ( dup2 ( gpg->colon.fd[1], 1 ) == -1 ) {
+                fprintf (stderr,"dup2(colon, 1) failed: %s\n",
+                         strerror (errno) );
+                _exit (8);
+            }
+            close (gpg->colon.fd[0]);
+            close (gpg->colon.fd[1]);
+        }
             
         for (i=0; gpg->fd_data_map[i].data; i++ ) {
             close (gpg->fd_data_map[i].fd);
@@ -485,14 +542,29 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
 
     /*_gpgme_register_term_handler ( closure, closure_value, pid );*/
 
-    if ( gpg->status.fd[1] != -1 )
+    if ( gpg->status.fd[1] != -1 ) {
         close (gpg->status.fd[1]);
+        gpg->status.fd[1] = -1;
+    }
     if ( _gpgme_register_pipe_handler ( opaque, gpg_status_handler,
                                         gpg, pid, gpg->status.fd[0], 1 ) ) {
         /* FIXME: kill the child */
         return mk_error (General_Error);
 
     }
+
+    if ( gpg->colon.fd[1] != -1 ) {
+        close (gpg->colon.fd[1]);
+        gpg->colon.fd[1] = -1;
+        assert ( gpg->colon.fd[0] != -1 );
+        if ( _gpgme_register_pipe_handler ( opaque, gpg_colon_line_handler,
+                                            gpg, pid, gpg->colon.fd[0], 1 ) ) {
+            /* FIXME: kill the child */
+            return mk_error (General_Error);
+            
+        }
+    }
+
     for (i=0; gpg->fd_data_map[i].data; i++ ) {
         close (gpg->fd_data_map[i].peer_fd);
         gpg->fd_data_map[i].peer_fd = -1;
@@ -723,4 +795,99 @@ read_status ( GpgObject gpg )
     return 0;
 }
 
+
+/*
+ * This colonline handler thing is not the clean way to do it.
+ * It might be better to enhance the GpgmeData object to act as
+ * a wrapper for a callback.  Same goes for the status thing.
+ * For now we use this thing here becuase it is easier to implement.
+ */
+static int
+gpg_colon_line_handler ( void *opaque, pid_t pid, int fd )
+{
+    GpgObject gpg = opaque;
+    GpgmeError rc = 0;
+
+    assert ( fd == gpg->colon.fd[0] );
+    rc = read_colon_line ( gpg );
+    if ( rc ) {
+        fprintf (stderr, "gpg_colon_line_handler: "
+                 "read problem %d\n - stop", rc);
+        return 1;
+    }
+
+    return gpg->status.eof;
+}
+
+static GpgmeError
+read_colon_line ( GpgObject gpg )
+{
+    char *p;
+    int nread;
+    size_t bufsize = gpg->colon.bufsize; 
+    char *buffer = gpg->colon.buffer;
+    size_t readpos = gpg->colon.readpos; 
+
+    assert (buffer);
+    if (bufsize - readpos < 256) { 
+        /* need more room for the read */
+        bufsize += 1024;
+        buffer = xtryrealloc (buffer, bufsize);
+        if ( !buffer ) 
+            return mk_error (Out_Of_Core);
+    }
+    
+
+    do { 
+        nread = read ( gpg->colon.fd[0], buffer+readpos, bufsize-readpos );
+    } while (nread == -1 && errno == EINTR);
+
+    if (nread == -1)
+        return mk_error(Read_Error);
+
+    if (!nread) {
+        gpg->colon.eof = 1;
+        assert (gpg->colon.fnc);
+        gpg->colon.fnc ( gpg->colon.fnc_value, NULL );
+        return 0;
+    }
+
+    while (nread > 0) {
+        for (p = buffer + readpos; nread; nread--, p++) {
+            if ( *p == '\n' ) {
+                /* (we require that the last line is terminated by a
+                 * LF) and we skip empty lines.  Note: we use UTF8
+                 * encoding and escaping of special characters
+                 * We require at least one colon to cope with
+                 * some other printed information.
+                 */
+                *p = 0;
+                if ( *buffer && strchr (buffer, ':') ) {
+                    assert (gpg->colon.fnc);
+                    gpg->colon.fnc ( gpg->colon.fnc_value, buffer );
+                }
+            
+                /* To reuse the buffer for the next line we have to
+                 * shift the remaining data to the buffer start and
+                 * restart the loop Hmmm: We can optimize this
+                 * function by looking forward in the buffer to see
+                 * whether a second complete line is available and in
+                 * this case avoid the memmove for this line.  */
+                nread--; p++;
+                if (nread)
+                    memmove (buffer, p, nread);
+                readpos = 0;
+                break; /* the for loop */
+            }
+            else
+                readpos++;
+        }
+    } 
+    
+    /* Update the gpg object.  */
+    gpg->colon.bufsize = bufsize;
+    gpg->colon.buffer  = buffer;
+    gpg->colon.readpos = readpos;
+    return 0;
+}
 

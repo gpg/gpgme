@@ -1,4 +1,4 @@
-/* ops.h - internal operations stuff 
+/* key.h 
  *	Copyright (C) 2000 Werner Koch (dd9jn)
  *
  * This file is part of GPGME.
@@ -18,37 +18,40 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef OPS_H
-#define OPS_H
+#ifndef KEY_H
+#define KEY_H
 
+#include <time.h>
 #include "types.h"
 
-/*-- gpgme.c --*/
-void _gpgme_release_result ( GpgmeCtx c );
+struct user_id_s {
+    struct user_id_s *next;
+    int validity; /* 0 = undefined, 1 = not, 2 = marginal,
+                     3 = full, 4 = ultimate */
+    char name[1];
+};
+
+struct gpgme_key_s {
+    struct {
+        unsigned int revoked:1 ;
+        unsigned int expired:1 ;
+        unsigned int disabled:1 ;
+    } flags;
+    unsigned int key_algo;
+    unsigned int key_len;
+    char keyid[16+1]; 
+    char *fingerprint; /* malloced hex digits */
+    time_t timestamp; /* -1 for invalid, 0 for not available */
+    struct user_id_s *uids;
+    
+};
 
 
-/*-- recipient.c --*/
-void _gpgme_append_gpg_args_from_recipients (
-    const GpgmeRecipientSet rset,
-    GpgObject gpg );
+GpgmeError _gpgme_key_append_name ( GpgmeKey key, const char *s );
 
 
-/*-- data.c --*/
-GpgmeDataMode _gpgme_query_data_mode ( GpgmeData dh );
-void          _gpgme_set_data_mode ( GpgmeData dh, GpgmeDataMode mode );
-GpgmeError    _gpgme_append_data ( GpgmeData dh,
-                                   const char *buffer, size_t length );
 
-/*-- key.c --*/
-GpgmeError _gpgme_key_new( GpgmeKey *r_key );
-void       _gpgme_key_release ( GpgmeKey key );
-
-
-/*-- verify.c --*/
-void _gpgme_release_verify_result ( VerifyResult res );
-
-
-#endif /* OPS_H */
+#endif /* KEY_H */
 
 
 
