@@ -2389,11 +2389,15 @@ importCertificate( const char* fingerprint )
 /*
   Find all certificate for a given addressee and return them in a
   '\1' separated list.
-  NOTE: The certificate parameter must point to an allready allocated
-  block of memory which is large enough to hold the complete list.
+  NOTE: The certificate parameter must point to a not-yet allocated
+        char*.  The function will allocate the memory needed and
+        return the size in newSize.
   If secretOnly is true, only secret keys are returned.
 */
-bool findCertificates( const char* addressee, char** certificates, bool secretOnly )
+bool findCertificates( const char* addressee,
+                       char** certificates,
+                       /*int* newSize,*/
+                       bool secretOnly )
 {
   GpgmeCtx ctx;
   GpgmeError err;
@@ -2403,12 +2407,41 @@ bool findCertificates( const char* addressee, char** certificates, bool secretOn
   char* dn;
   struct DnPair* a;
   int nFound = 0;
-
+/*
+  if( ! newSize ){
+    fprintf( stderr, "findCertificates called without valid newSize pointer\n" );
+    return false;
+  }
+*/
   strcpy( *certificates, "" );
 
   gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
-
+/*
+  (*newSize) = 0;
+  err = gpgme_op_keylist_start(ctx, addressee, secretOnly ? 1 : 0);
+  while( GPGME_No_Error == err ) {
+    err = gpgme_op_keylist_next(ctx, &rKey);
+    if( GPGME_No_Error == err ) {
+      s = gpgme_key_get_string_attr (rKey, GPGME_ATTR_USERID, NULL, 0);
+      if( s ) {
+        s2 = gpgme_key_get_string_attr (rKey, GPGME_ATTR_FPR, NULL, 0);
+        if( s2 ) {
+          if( nFound )
+            ++(*newSize);
+          (*newSize) += strlen( s );
+          a = parse_dn( dn ); 
+          dn = reorder_dn( a );
+          (*newSize) += strlen( dn );
+          safe_free( (void **)&dn );
+          ++nFound;
+        }
+      }
+    }
+  }
+*/
+  gpgme_op_keylist_end( ctx );
+  nFound = 0;
   err = gpgme_op_keylist_start(ctx, addressee, secretOnly ? 1 : 0);
   while( GPGME_No_Error == err ) {
     err = gpgme_op_keylist_next(ctx, &rKey);
@@ -2424,7 +2457,7 @@ bool findCertificates( const char* addressee, char** certificates, bool secretOn
           a = parse_dn( dn ); 
           dn = reorder_dn( a );
 /*fprintf( stderr, "\nDN after reordering: \"%s\"\n", dn );*/
-          strcat( *certificates, s );
+          strcat( *certificates, dn );
           strcat( *certificates, "    (" );
           strcat( *certificates, s2 );
           strcat( *certificates, ")" );
