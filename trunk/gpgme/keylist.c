@@ -367,9 +367,6 @@ finish_key ( GpgmeCtx ctx )
     }
 }
 
-
-
-
 /**
  * gpgme_op_keylist_start:
  * @c: context 
@@ -430,52 +427,53 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
   return err;
 }
 
-
 /**
  * gpgme_op_keylist_next:
  * @c: Context
  * @r_key: Returned key object
  * 
  * Return the next key from the key listing started with
- * gpgme_op_keylist_start().  The caller must free the key using 
- * gpgme_key_release().
+ * gpgme_op_keylist_start().  The caller must free the key using
+ * gpgme_key_release().  If the last key has already been returned the
+ * last time the function was called, %GPGME_EOF is returned and the
+ * operation is finished.
  * 
- * Return value: 0 on success, %GPGME_EOF or anoter error code.
+ * Return value: 0 on success, %GPGME_EOF or another error code.
  **/
 GpgmeError
-gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key )
+gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
 {
-    struct key_queue_item_s *q;
+  struct key_queue_item_s *queue_item;
 
-    if (!r_key)
-        return mk_error (Invalid_Value);
-    *r_key = NULL;
-    if (!c)
-        return mk_error (Invalid_Value);
-    if ( !c->pending )
-        return mk_error (No_Request);
-    if ( c->out_of_core )
-        return mk_error (Out_Of_Core);
+  if (!r_key)
+    return mk_error (Invalid_Value);
+  *r_key = NULL;
+  if (!ctx)
+    return mk_error (Invalid_Value);
+  if (!ctx->pending )
+    return mk_error (No_Request);
+  if (ctx->out_of_core)
+    return mk_error (Out_Of_Core);
 
-    if ( !c->key_queue ) {
-        _gpgme_wait_on_condition (c, 1, &c->key_cond );
-        if ( c->out_of_core )
-            return mk_error (Out_Of_Core);
-        if ( !c->key_cond )
-            return mk_error (EOF);
-        c->key_cond = 0; 
-        assert ( c->key_queue );
+  if (!ctx->key_queue)
+    {
+      _gpgme_wait_on_condition (ctx, 1, &ctx->key_cond);
+      if (ctx->out_of_core)
+	return mk_error (Out_Of_Core);
+      if (!ctx->key_cond)
+	{
+	  ctx->pending = 0;
+	  return mk_error (EOF);
+	}
+      ctx->key_cond = 0; 
+        assert (ctx->key_queue);
     }
-    q = c->key_queue;
-    c->key_queue = q->next;
-    if (!c->key_queue)
-        c->key_cond = 0;
-
-    *r_key = q->key;
-    xfree (q);
-    return 0;
+  queue_item = ctx->key_queue;
+  ctx->key_queue = queue_item->next;
+  if (!ctx->key_queue)
+    ctx->key_cond = 0;
+  
+  *r_key = queue_item->key;
+  xfree (queue_item);
+  return 0;
 }
-
-
-
-
