@@ -1,3 +1,12 @@
+2003-11-19  Werner Koch  <wk@gnupg.org>
+
+	* conversion.c (_gpgme_parse_timestamp): New.
+	(atoi_1, atoi_2, atoi_4): New.
+	* keylist.c (parse_timestamp): Removed. Changed all callers to use
+	the new function.
+	* verify.c (parse_valid_sig): Ditto.  Repalced the errno check.
+	* sign.c (parse_sig_created): Ditto.
+
 2003-10-31  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (parse_timestamp): Detect ISO 8601 timestamps and try

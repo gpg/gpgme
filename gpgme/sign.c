@@ -153,8 +153,8 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
     }
   args = tail;
 
-  sig->timestamp = strtol (args, &tail, 0);
-  if (errno || args == tail || *tail != ' ')
+  sig->timestamp = _gpgme_parse_timestamp (args, &tail);
+  if (sig->timestamp == -1 || args == tail || *tail != ' ')
     {
       /* The crypto backend does not behave.  */
       free (sig);

@@ -70,6 +70,15 @@ gpgme_error_t _gpgme_decode_c_string (const char *src, char **destp,
 gpgme_error_t _gpgme_decode_percent_string (const char *src, char **destp,
 					    size_t len);
 
+
+/* Parse the string TIMESTAMP into a time_t.  The string may either be
+   seconds since Epoch or in the ISO 8601 format like
+   "20390815T143012".  Returns 0 for an empty string or seconds since
+   Epoch. Leading spaces are skipped. If ENDP is not NULL, it will
+   point to the next non-parsed character in TIMESTRING. */
+time_t _gpgme_parse_timestamp (const char *timestamp, char **endp);
+
+
 gpgme_error_t _gpgme_map_gnupg_error (char *err);
 
 
