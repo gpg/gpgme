@@ -96,8 +96,18 @@ _gpgme_get_gpg_path (void)
     if (!gpg_program) {
         gpg_program = read_w32_registry_string ( NULL,
                                   "Software\\GNU\\GnuPG", "gpgProgram" );
-        if (!gpg_program)
+        if (gpg_program) {
+            int i;
+            
+            DEBUG1 ("found gpgProgram in registry: `%s'", gpgProgram );
+            for (i=0; gpg_program[i]; s++) {
+                if (gpg_program[i] == '/')
+                    gpg_program[i] == '\\';
+            }
+        }
+        else {
             gpg_program = GPG_PATH;
+        }
     }
     
     return gpg_program;
