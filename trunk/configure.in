@@ -24,8 +24,6 @@ AC_SUBST(LIBGPGME_LT_AGE)
 AC_SUBST(LIBGPGME_LT_REVISION)
 
 
-AM_MAINTAINER_MODE
-
 dnl
 dnl Checks for programs
 dnl
