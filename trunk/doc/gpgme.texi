@@ -1033,7 +1033,7 @@ error.  If an error occurs, @var{errno} should be set to describe the
 type of the error.
 @end deftp
 
-@deftp {Data type} {void (*GpgmeDataReleaseCb) (@w{void *@var{handle}})
+@deftp {Data type} {void (*GpgmeDataReleaseCb) (@w{void *@var{handle}})}
 @tindex GpgmeDataReleaseCb
 The @code{GpgmeDataReleaseCb} type is the type of functions which
 @acronym{GPGME} calls if it wants to destroy a user-implemented data
@@ -1050,7 +1050,7 @@ described above.  It has the following members:
 This is the function called by @acronym{GPGME} to read data from the
 data object.  It is only required for input data object.
 
-@item GpgmeDataReadCb write
+@item GpgmeDataWriteCb write
 This is the function called by @acronym{GPGME} to write data to the
 data object.  It is only required for output data object.
 
