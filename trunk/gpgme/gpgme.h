@@ -699,11 +699,7 @@ const char *gpgme_get_sig_string_attr (GpgmeCtx c, int idx,
    R_KEY.  */
 GpgmeError gpgme_get_sig_key (GpgmeCtx ctx, int idx, GpgmeKey *r_key);
 
-/* Return a string with more info about the last crypto operating in CTX.
-   RESERVED should be zero.  The user has to free the string.  */
-char *gpgme_get_op_info (GpgmeCtx ctx, int reserved);
-
-
+
 /* Run control.  */
 
 /* The type of an I/O callback function.  */

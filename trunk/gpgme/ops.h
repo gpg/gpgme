@@ -24,32 +24,20 @@
 #include "gpgme.h"
 #include "context.h"
 
-/*-- gpgme.c --*/
+
+/* From gpgme.c.  */
 void _gpgme_release_result (GpgmeCtx ctx);
-void _gpgme_set_op_info (GpgmeCtx c, GpgmeData info);
 
-/*-- wait.c --*/
+
+/* From wait.c.  */
 GpgmeError _gpgme_wait_one (GpgmeCtx ctx);
 GpgmeError _gpgme_wait_on_condition (GpgmeCtx ctx, volatile int *cond);
 
-/*-- recipient.c --*/
+/* From recipient.c.  */
 int _gpgme_recipients_all_valid ( const GpgmeRecipients rset );
 
-
-/*-- data.c and conversion.c --*/
-char *        _gpgme_data_release_and_return_string ( GpgmeData dh );
-char *        _gpgme_data_get_as_string ( GpgmeData dh );
-GpgmeError    _gpgme_data_append ( GpgmeData dh,
-                                   const char *buffer, size_t length );
-GpgmeError    _gpgme_data_append_string ( GpgmeData dh, const char *s );
-GpgmeError    _gpgme_data_append_string_for_xml ( GpgmeData dh,
-                                                  const char *s);
-GpgmeError    _gpgme_data_append_for_xml ( GpgmeData dh,
-                                           const char *buffer,
-                                           size_t len );
-GpgmeError    _gpgme_data_append_percentstring_for_xml ( GpgmeData dh,
-                                                         const char *string );
-
+
+/* From data.c.  */
 GpgmeError _gpgme_data_inbound_handler (void *opaque, int fd);
 GpgmeError _gpgme_data_outbound_handler (void *opaque, int fd);
 
@@ -103,15 +91,16 @@ GpgmeError _gpgme_encrypt_status_handler (void *priv, GpgmeStatusCode code,
 					  char *args);
 
 
-/*-- passphrase.c --*/
+/* From passphrase.c.  */
 GpgmeError _gpgme_passphrase_status_handler (void *priv, GpgmeStatusCode code,
 					     char *args);
 GpgmeError _gpgme_passphrase_command_handler (void *opaque,
 					      GpgmeStatusCode code,
 					      const char *key, const char **result);
 
-/*-- progress.c --*/
-GpgmeError _gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
+
+/* From progress.c.  */
+GpgmeError _gpgme_progress_status_handler (void *priv, GpgmeStatusCode code,
 					   char *args);
 
 

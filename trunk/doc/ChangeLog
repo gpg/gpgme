@@ -1,5 +1,9 @@
 2003-04-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Encrypting a Plaintext): Remove reference to
+	gpgme_get_op_info.
+	(Detailed Results): Subsection removed.
+
 	* gpgme.texi (Key Listing Mode): Add GPGME_KEYLIST_MODE_SIGS.
 	(Manipulating Keys): Add obsoleteness note.
 	(Key Signatures): Likewise.

@@ -34,21 +34,6 @@
                              } while(0)
 
 static void
-print_op_info (GpgmeCtx ctx)
-{
-  char *str = gpgme_get_op_info (ctx, 0);
-
-  if (!str)
-    puts ("<!-- no operation info available -->");
-  else
-    {
-      puts (str);
-      free (str);
-    }
-}
-
-
-static void
 print_data (GpgmeData dh)
 {
   char buf[100];
@@ -233,7 +218,6 @@ main (int argc, char *argv[])
 
       my_wait ();
       fail_if_err (op_result.err);
-      print_op_info (ctx);
       fail_if_err (err);
 
       fflush (NULL);

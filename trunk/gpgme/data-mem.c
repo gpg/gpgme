@@ -197,30 +197,6 @@ gpgme_data_new_from_mem (GpgmeData *dh, const char *buffer,
 }
 
 
-/* This function does make sense when we know that it contains no nil
-   chars and if the underlying data object is memory based.  */
-char *
-_gpgme_data_get_as_string (GpgmeData dh)
-{
-  char *dst = NULL;
-  const char *src = NULL;
-
-  assert (dh->cbs == &mem_cbs);
-
-  src = dh->data.mem.buffer;
-  if (!src)
-    src = dh->data.mem.orig_buffer;
-  dst = malloc (dh->data.mem.length + 1);
-  if (dst)
-    {
-      if (src)
-	memcpy (dst, src, dh->data.mem.length);
-      dst[dh->data.mem.length] = '\0';
-    }
-  return dst;
-}
-
-
 char *
 gpgme_data_release_and_get_mem (GpgmeData dh, size_t *r_len)
 {
@@ -240,26 +216,6 @@ gpgme_data_release_and_get_mem (GpgmeData dh, size_t *r_len)
 
   if (r_len)
     *r_len = dh->data.mem.length;
-
-  return str;
-}
-
-
-/* This function does make sense when we know that it contains no nil
-   chars and if the underlying data object is memory based.  */
-char *
-_gpgme_data_release_and_return_string (GpgmeData dh)
-{
-  char *str = NULL;
-
-  if (!dh)
-    return NULL;
-
-  assert (dh->cbs == &mem_cbs);
-  if (gpgme_data_write (dh, "", 1) == 1)
-    str = gpgme_data_release_and_get_mem (dh, NULL);
-  else
-    gpgme_data_release (dh);
 
   return str;
 }
