@@ -158,7 +158,7 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
 
   if (_gpgme_io_pipe (fds, 0) < 0)
     {
-      err = mk_error (General_Error);
+      err = mk_error (Pipe_Error);
       goto leave;
     }
   gpgsm->input_fd = fds[1];
@@ -166,7 +166,7 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
 
   if (_gpgme_io_pipe (fds, 1) < 0)
     {
-      err = mk_error (General_Error);
+      err = mk_error (Pipe_Error);
       goto leave;
     }
   gpgsm->output_fd = fds[0];
@@ -174,7 +174,7 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
 
   if (_gpgme_io_pipe (fds, 0) < 0)
     {
-      err = mk_error (General_Error);
+      err = mk_error (Pipe_Error);
       goto leave;
     }
   gpgsm->message_fd = fds[1];
@@ -676,7 +676,7 @@ _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque)
   nfds = assuan_get_active_fds (gpgsm->assuan_ctx, 0 /* read fds */,
                                 fdlist, DIM (fdlist));
   if (nfds < 1)
-    return mk_error (General_Error);
+    return mk_error (General_Error);  /* FIXME */
   err = _gpgme_register_pipe_handler (opaque, gpgsm_status_handler, gpgsm, pid,
                                       fdlist[0], 1);
 
