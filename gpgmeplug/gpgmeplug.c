@@ -228,14 +228,27 @@ void deinitialize()
 
 bool hasFeature( Feature flag )
 {
+    // our own plugins are supposed to support everything
   switch ( flag ) {
-    case CryptPlugFeat_SignMessages:              return true;
-    case CryptPlugFeat_VerifySignatures:          return true;
-    case CryptPlugFeat_EncryptMessages:           return true;
-    case CryptPlugFeat_DecryptMessages:           return true;
-    // undefined or not yet implemented:
-    case CryptPlugFeat_undef:                     return false;
-    default:                                      return false;
+  case Feature_SignMessages:              return true;
+  case Feature_VerifySignatures:          return true;
+  case Feature_EncryptMessages:           return true;
+  case Feature_DecryptMessages:           return true;
+  case Feature_SendCertificates:          return true;
+  case Feature_WarnSignCertificateExpiry: return true;
+  case Feature_WarnSignEmailNotInCertificate: return true;
+  case Feature_PinEntrySettings:          return true;
+  case Feature_StoreMessagesWithSigs:     return true;
+  case Feature_EncryptionCRLs:            return true;
+  case Feature_WarnEncryptCertificateExpiry: return true;
+  case Feature_WarnEncryptEmailNotInCertificate: return true;
+  case Feature_StoreMessagesEncrypted:    return true;
+  case Feature_CheckCertificatePath:      return true;
+  case Feature_CertificateDirectoryService: return true;
+  case Feature_CRLDirectoryService:       return true;
+      // undefined or not yet implemented:
+  case Feature_undef:                     return false;
+  default:                                      return false;
   }
 }
 
