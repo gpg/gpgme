@@ -1,3 +1,10 @@
+2002-12-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-verify.c (main): Adjust caller of gpgme_op_verify.
+	* gpg/t-verify.c (main): Likewise.
+	* gpg/t-decrypt-verify.c (main): Likewise for
+	gpgme_op_decrypt_verify.
+
 2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm/Makefile.am (./gpgsm.conf): Add a faked system time to

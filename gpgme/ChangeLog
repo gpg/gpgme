@@ -1,5 +1,15 @@
 2002-12-24  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (gpgme_op_verify, gpgme_op_decrypt_verify): Drop R_STAT
+	argument.
+	* decrypt-verify.c (gpgme_op_decrypt_verify): Drop R_STAT
+	argument.
+	* verify.c (gpgme_op_verify): Drop R_STAT argument.
+	(_gpgme_intersect_stati): Function removed.
+	* ops.h (_gpgme_intersect_stati): Remove prototype.
+
+2002-12-24  Marcus Brinkmann  <marcus@g10code.de>
+
 	* libgpgme.vers: New file.
 	* Makefile.am (EXTRA_DIST): Add libgpgme.vers.
 	(libgpgme_version_script_cmd): New variable.

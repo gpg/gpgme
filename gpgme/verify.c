@@ -406,26 +406,11 @@ gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
 }
 
 
-/* Figure out a common status value for all signatures.  */
-GpgmeSigStat
-_gpgme_intersect_stati (VerifyResult result)
-{
-  GpgmeSigStat status = result->status;
-
-  for (result = result->next; result; result = result->next)
-    {
-      if (status != result->status) 
-	return GPGME_SIG_STAT_DIFF;
-    }
-  return status;
-}
-
 /**
  * gpgme_op_verify:
  * @c: the context
  * @sig: the signature data
  * @text: the signed text
- * @r_stat: returns the status of the signature
  * 
  * Perform a signature check on the signature given in @sig.  If @text
  * is a new and uninitialized data object, it is assumed that @sig
@@ -434,6 +419,34 @@ _gpgme_intersect_stati (VerifyResult result)
  *
  * If @text is initialized, it is assumed that @sig is a detached
  * signature for the material given in @text.
+ *
+ * Return value: 0 on success or an errorcode if something not related to
+ *               the signature itself did go wrong.
+ **/
+GpgmeError
+gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
+		 GpgmeData plaintext)
+{
+  GpgmeError err;
+
+  gpgme_data_release (ctx->notation);
+  ctx->notation = NULL;
+    
+  err = _gpgme_op_verify_start (ctx, 1, sig, signed_text, plaintext);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  return err;
+}
+
+
+/**
+ * gpgme_get_sig_status:
+ * @c: Context
+ * @idx: Index of the signature starting at 0
+ * @r_stat: Returns the status
+ * @r_created: Returns the creation timestamp
+ * 
+ * Return information about an already verified signatures. 
  *
  * The result of this operation is returned in @r_stat which can take these
  * values:
@@ -449,41 +462,6 @@ _gpgme_intersect_stati (VerifyResult result)
  *  GPGME_SIG_STAT_GOOD_EXP:  The signature is good but has expired.
  *  GPGME_SIG_STAT_GOOD_KEYEXP:  The signature is good but the key has expired.
  *
- * Return value: 0 on success or an errorcode if something not related to
- *               the signature itself did go wrong.
- **/
-GpgmeError
-gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
-		 GpgmeData plaintext, GpgmeSigStat *r_stat)
-{
-  GpgmeError err;
-
-  if (!r_stat)
-    return mk_error (Invalid_Value);
-
-  gpgme_data_release (ctx->notation);
-  ctx->notation = NULL;
-    
-  *r_stat = GPGME_SIG_STAT_NONE;
-  err = _gpgme_op_verify_start (ctx, 1, sig, signed_text, plaintext);
-  if (!err)
-    {
-      err = _gpgme_wait_one (ctx);
-      if (!err && ctx->result.verify)
-	*r_stat = _gpgme_intersect_stati (ctx->result.verify);
-    }
-    return err;
-}
-
-
-/**
- * gpgme_get_sig_status:
- * @c: Context
- * @idx: Index of the signature starting at 0
- * @r_stat: Returns the status
- * @r_created: Returns the creation timestamp
- * 
- * Return information about an already verified signatures. 
  * 
  * Return value: The fingerprint or NULL in case of an problem or
  *               when there are no more signatures.

@@ -1,23 +1,22 @@
 /* t-decrypt-verify.c  - regression test
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002 g10 Code GmbH
+
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -102,7 +101,7 @@ main (int argc, char **argv)
   GpgmeData in, out, pwdata = NULL;
   struct passphrase_cb_info_s info;
   const char *cipher_2_asc = mk_fname ("cipher-2.asc");
-  GpgmeSigStat stat;
+  GpgmeSigStat status;
   char *p;
 
   do
@@ -124,15 +123,20 @@ main (int argc, char **argv)
       err = gpgme_data_new (&out);
       fail_if_err (err);
 
-      err = gpgme_op_decrypt_verify (ctx, in, out, &stat);
+      err = gpgme_op_decrypt_verify (ctx, in, out);
       fail_if_err (err);
     
       fflush (NULL);
       fputs ("Begin Result:\n", stdout);
       print_data (out);
       fputs ("End Result.\n", stdout);
-   
-      if (stat != GPGME_SIG_STAT_GOOD)
+
+      if (!gpgme_get_sig_status (ctx, 0, &status, NULL))
+	{
+	  fprintf (stderr, "Signature check failed unexpectedly.\n");
+	  exit (1);
+	}
+      if (status != GPGME_SIG_STAT_GOOD)
 	{
 	  fprintf (stderr, "Signature check failed unexpectedly.\n");
 	  exit (1);

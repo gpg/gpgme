@@ -1,23 +1,22 @@
 /* t-verify.c  - regression test
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002 g10 Code GmbH
+
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -186,12 +185,14 @@ main (int argc, char **argv )
     fail_if_err (err);
 
     puts ("checking a valid message:\n");
-    err = gpgme_op_verify (ctx, sig, text, NULL, &status);
-    print_sig_stat (ctx, status);
-    print_sig_stat (ctx, status);
-    print_sig_stat (ctx, status);
-    print_sig_stat (ctx, status);
+    err = gpgme_op_verify (ctx, sig, text, NULL);
     fail_if_err (err);
+    if (!gpgme_get_sig_status (ctx, 0, &status, NULL))
+      {
+	fprintf (stderr, "%s:%d: No signature\n", __FILE__, __LINE__);
+	exit (1);
+      }
+    print_sig_stat (ctx, status);
 
     if ( (nota=gpgme_get_notation (ctx)) )
         printf ("---Begin Notation---\n%s---End Notation---\n", nota);
@@ -202,10 +203,15 @@ main (int argc, char **argv )
                                     test_text1f, strlen (test_text1f), 0);
     fail_if_err (err);
     gpgme_data_rewind ( sig );
-    err = gpgme_op_verify (ctx, sig, text, NULL, &status);
-
-    print_sig_stat (ctx, status);
+    err = gpgme_op_verify (ctx, sig, text, NULL);
     fail_if_err (err);
+    if (!gpgme_get_sig_status (ctx, 0, &status, NULL))
+      {
+	fprintf (stderr, "%s:%d: No signature\n", __FILE__, __LINE__);
+	exit (1);
+      }
+    print_sig_stat (ctx, status);
+
     if ((nota=gpgme_get_notation (ctx)))
         printf ("---Begin Notation---\n%s---End Notation---\n", nota);
 

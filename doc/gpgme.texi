@@ -2466,7 +2466,7 @@ have a different status.  You can get each key's status with
 @end deftp
 
 
-@deftypefun GpgmeError gpgme_op_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{sig}}, @w{GpgmeData @var{signed_text}}, @w{GpgmeData @var{plain}}, @w{GpgmeSigStat *@var{r_stat}})
+@deftypefun GpgmeError gpgme_op_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{sig}}, @w{GpgmeData @var{signed_text}}, @w{GpgmeData @var{plain}})
 The function @code{gpgme_op_verify} verifies that the signature in the
 data object @var{sig} is a valid signature.  If @var{sig} is a
 detached signature, then the signed text should be provided in
@@ -2476,7 +2476,6 @@ Otherwise, if @var{sig} is a normal (or cleartext) signature,
 writable data object that will contain the plaintext after successful
 verification.
 
-The combined status of all signatures is returned in @var{r_stat}.
 The results of the individual signature verifications can be retrieved
 with @code{gpgme_get_sig_status} and @code{gpgme_get_sig_key}.
 
@@ -2658,11 +2657,11 @@ The function returns a string if the notation data is available or
 @cindex signature check
 @cindex cryptographic operation, decryption and verification
 
-@deftypefun GpgmeError gpgme_op_decrypt_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{cipher}}, @w{GpgmeData @var{plain}}, @w{GpgmeSigStat *@var{r_stat}})
+@deftypefun GpgmeError gpgme_op_decrypt_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{cipher}}, @w{GpgmeData @var{plain}})
 The function @code{gpgme_op_decrypt_verify} decrypts the ciphertext in
 the data object @var{cipher} and stores it into the data object
 @var{plain}.  If @var{cipher} contains signatures, they will be
-verified and their combined status will be returned in @var{r_stat}.
+verified.
 
 After the operation completed, @code{gpgme_op_get_sig_status} and
 @code{gpgme_op_get_sig_key} can be used to retrieve more information
