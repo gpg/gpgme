@@ -1090,6 +1090,13 @@ _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
 
 
 GpgmeError
+_gpgme_gpgsm_op_keylist_ext (GpgsmObject gpgsm, const char *pattern[],
+			     int secret_only, int reserved, int keylist_mode)
+{
+  return mk_error (Invalid_Engine);
+}
+
+GpgmeError
 _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
 		      GpgmeSigMode mode, int use_armor,
 		      int use_textmode, int include_certs,
