@@ -125,7 +125,7 @@ main (int argc, char **argv)
   err = gpgme_new (&ctx);
   fail_if_err (err);
 
-  agent_info = getenv("GPG_AGENT_INFO");
+  agent_info = getenv ("GPG_AGENT_INFO");
   if (!(agent_info && strchr (agent_info, ':')))
     gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
 
