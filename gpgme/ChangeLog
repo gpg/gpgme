@@ -1,5 +1,8 @@
 2003-09-03  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme-config.in: Use $libdir, not @libdir@, for the echo
+	command.
+
 	* gpgme-config.in: Rewritten.
 	* gpgme.m4: Rewritten.
 

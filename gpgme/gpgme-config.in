@@ -1,5 +1,5 @@
 #!/bin/sh
-#    Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -36,12 +36,12 @@ usage()
     cat <<EOF
 Usage: gpgme-config [OPTIONS]
 Options:
+	[--thread={${thread_modules}}]
 	[--prefix]
 	[--exec-prefix]
 	[--version]
 	[--libs]
 	[--cflags]
-	[--thread={${thread_modules}}]
 EOF
     exit $1
 }
@@ -84,7 +84,7 @@ while test $# -gt 0; do
 	    output="$output $gpg_error_cflags"
 	    ;;
 	--libs)
-            output="$output -L@libdir@"
+            output="$output -L$libdir"
 	    case "$thread_module" in
 		pthread)
 	            output="$output -lgpgme-pthread $libs_pthread"
