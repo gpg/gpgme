@@ -22,7 +22,6 @@
 #define CONTEXT_H
 
 #include "gpgme.h"
-#include "types.h"
 #include "engine.h"
 #include "wait.h"
 

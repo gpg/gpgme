@@ -1,5 +1,5 @@
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -69,7 +69,7 @@ gpgsm_components =
 endif
 
 libgpgme_la_SOURCES =							\
-	gpgme.h types.h util.h conversion.c context.h ops.h		\
+	gpgme.h util.h conversion.c context.h ops.h			\
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
 	data-compat.c							\
 	recipient.c signers.c						\

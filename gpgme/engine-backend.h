@@ -20,14 +20,12 @@
 #ifndef ENGINE_BACKEND_H
 #define ENGINE_BACKEND_H
 
-#include "types.h"
-
+#include "engine.h"
 
 /* FIXME: Correct check?  */
 #ifdef GPGSM_PATH
 #define ENABLE_GPGSM 1
 #endif
-
 
 struct engine_ops
 {
@@ -39,12 +37,12 @@ struct engine_ops
 
   /* Member functions.  */
   void (*release) (void *engine);
-  void (*set_status_handler) (void *engine, GpgmeStatusHandler fnc,
+  void (*set_status_handler) (void *engine, EngineStatusHandler fnc,
 			      void *fnc_value);
-  GpgmeError (*set_command_handler) (void *engine, GpgmeCommandHandler fnc,
+  GpgmeError (*set_command_handler) (void *engine, EngineCommandHandler fnc,
 				     void *fnc_value, GpgmeData data);
   GpgmeError (*set_colon_line_handler) (void *engine,
-					GpgmeColonLineHandler fnc,
+					EngineColonLineHandler fnc,
 					void *fnc_value);
   GpgmeError (*set_verbosity) (void *engine, int verbosity);
   GpgmeError (*decrypt) (void *engine, GpgmeData ciph, GpgmeData plain);

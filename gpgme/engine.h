@@ -21,22 +21,29 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include "types.h"
+#include "gpgme.h"
  
 struct engine_object_s;
 typedef struct engine_object_s *EngineObject;
 
+typedef GpgmeError (*EngineStatusHandler) (void *priv, GpgmeStatusCode code,
+					   char *args);
+typedef GpgmeError (*EngineColonLineHandler) (void *priv, char *line);
+typedef GpgmeError (*EngineCommandHandler) (void *priv, GpgmeStatusCode code,
+					    const char *keyword,
+					    const char **result);
+
 GpgmeError _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine);
 void _gpgme_engine_release (EngineObject engine);
 void _gpgme_engine_set_status_handler (EngineObject engine,
-				       GpgmeStatusHandler fnc,
+				       EngineStatusHandler fnc,
 				       void *fnc_value);
 GpgmeError _gpgme_engine_set_command_handler (EngineObject engine,
-					      GpgmeCommandHandler fnc,
+					      EngineCommandHandler fnc,
 					      void *fnc_value,
 					      GpgmeData data);
 GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject engine,
-						 GpgmeColonLineHandler fnc,
+						 EngineColonLineHandler fnc,
 						 void *fnc_value);
 void _gpgme_engine_set_verbosity (EngineObject engine, int verbosity);
 GpgmeError _gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph,

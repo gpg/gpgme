@@ -32,7 +32,6 @@
 
 #include "gpgme.h"
 #include "util.h"
-#include "types.h"
 #include "ops.h"
 #include "wait.h"
 #include "io.h"
@@ -77,13 +76,13 @@ struct gpgsm_object_s
 
   struct
   {
-    GpgmeStatusHandler fnc;
+    EngineStatusHandler fnc;
     void *fnc_value;
   } status;
 
   struct
   {
-    GpgmeColonLineHandler fnc;
+    EngineColonLineHandler fnc;
     void *fnc_value;
     struct
     {
@@ -549,7 +548,7 @@ gpgsm_new (void **engine)
 static GpgmeStatusCode parse_status (const char *name);
 
 static GpgmeError
-gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd, GpgmeStatusHandler status_fnc,
+gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd, EngineStatusHandler status_fnc,
 			     void *status_fnc_value)
 {
   AssuanError err;
@@ -1391,7 +1390,7 @@ gpgsm_verify (void *engine, GpgmeData sig, GpgmeData signed_text,
 
 
 static void
-gpgsm_set_status_handler (void *engine, GpgmeStatusHandler fnc,
+gpgsm_set_status_handler (void *engine, EngineStatusHandler fnc,
 			  void *fnc_value) 
 {
   GpgsmObject gpgsm = engine;
@@ -1402,7 +1401,7 @@ gpgsm_set_status_handler (void *engine, GpgmeStatusHandler fnc,
 
 
 static GpgmeError
-gpgsm_set_colon_line_handler (void *engine, GpgmeColonLineHandler fnc,
+gpgsm_set_colon_line_handler (void *engine, EngineColonLineHandler fnc,
 			      void *fnc_value) 
 {
   GpgsmObject gpgsm = engine;

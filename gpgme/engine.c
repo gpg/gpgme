@@ -219,7 +219,7 @@ _gpgme_engine_set_verbosity (EngineObject engine, int verbosity)
 
 void
 _gpgme_engine_set_status_handler (EngineObject engine,
-				  GpgmeStatusHandler fnc, void *fnc_value)
+				  EngineStatusHandler fnc, void *fnc_value)
 {
   if (!engine)
     return;
@@ -231,7 +231,7 @@ _gpgme_engine_set_status_handler (EngineObject engine,
 
 GpgmeError
 _gpgme_engine_set_command_handler (EngineObject engine,
-				   GpgmeCommandHandler fnc, void *fnc_value,
+				   EngineCommandHandler fnc, void *fnc_value,
 				   GpgmeData linked_data)
 {
   if (!engine)
@@ -245,7 +245,7 @@ _gpgme_engine_set_command_handler (EngineObject engine,
 }
 
 GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject engine,
-						 GpgmeColonLineHandler fnc,
+						 EngineColonLineHandler fnc,
 						 void *fnc_value)
 {
   if (!engine)
