@@ -19,18 +19,31 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = WINE-LICENSE WINE-AUTHORS
+# Because there is no free IDL compiler for OLE, we have to distribute
+# a binary typelibrary.  To generate a new one, copy the idl file to a
+# system with an install MIDL and run the command
+#   midl /nocpp gpgcom.idl
+# Sorry, there is no other way yet.  
+EXTRA_DIST = gpgcom.idl gpgcom.tlb gpgcom.rc
 
-# No need to install this becuase we are cross-compiling anyway.
-noinst_PROGRAMS = gpgcom
+# No need to install this because we are cross-compiling anyway.
+noinst_PROGRAMS = gpgcom tgpgcom 
 
 INCLUDES = -I$(top_srcdir)/jnlib
-LDADD = -L ../jnlib -ljnlib 
+LDADD = ../gpgme/libgpgme.la -L ../jnlib -ljnlib -lole32 -loleaut32 
+gpgcom_LDADD = gpgcom_res.o $(LDADD)
 
-comheaders = obj_base.h basetsd.h guiddef.h  wtypes.h
+gpgcom_SOURCES = gpgcom.c main.h \
+		debug.c utf8.c \
+		igpgme.h igpgme.c
 
-gpgcom_SOURCES = main.c main.h \
-		$(comheaders) \
-		ignupg.c ignupg.h 
+tgpgcom_SOURCES = tgpgcom.c\
+		debug.c \
+		igpgme.h 
 
+#regtlb_SOURCES = regtlb.c 
+#guidgen_SOURCES = guidgen.c 
+
+gpgcom_res.o: gpgcom.rc
+	mingw32 windres $<  gpgcom_res.o
 

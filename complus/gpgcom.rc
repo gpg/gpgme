@@ -1,5 +1,5 @@
-/* main.h -  GPGME COM+ component
- *	Copyright (C) 2000 Werner Koch (dd9jn)
+/* gpgcom.rc - Resource file for gpgcom
+ *	Copyright (C) 2001 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -18,32 +18,5 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef COMPLUS_MAIN_H
-#define COMPLUS_MAIN_H
-
-#include "xmalloc.h"
-#include "stringhelp.h"
-#include "logging.h"
-
-
-#define _(a) (a)
-#define N_(a) (a)
-
-
-struct {
-    int verbose;
-    int quiet;
-    unsigned int debug;
-    char *homedir;
-} opt;
-
-
-
-#endif /* COMPLUS_MAIN_H */
-
-
-
-
-
-
+1 TYPELIB "gpgcom.tlb"
 

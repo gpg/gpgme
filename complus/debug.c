@@ -1,5 +1,5 @@
-/* main.h -  GPGME COM+ component
- *	Copyright (C) 2000 Werner Koch (dd9jn)
+/* debug.c - COM+ debug helpers
+ *	Copyright (C) 2001 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -18,32 +18,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef COMPLUS_MAIN_H
-#define COMPLUS_MAIN_H
-
-#include "xmalloc.h"
-#include "stringhelp.h"
-#include "logging.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <windows.h>
+#include <ole2.h>
 
 
-#define _(a) (a)
-#define N_(a) (a)
+const char *
+debugstr_guid (const GUID *id)
+{
+    static char str[100];
 
-
-struct {
-    int verbose;
-    int quiet;
-    unsigned int debug;
-    char *homedir;
-} opt;
-
-
-
-#endif /* COMPLUS_MAIN_H */
-
-
-
-
-
-
+    if (!id)
+        return "(null)";
+    sprintf( str, "{%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
+             id->Data1, id->Data2, id->Data3,
+             id->Data4[0], id->Data4[1], id->Data4[2], id->Data4[3],
+             id->Data4[4], id->Data4[5], id->Data4[6], id->Data4[7] );
+    return str;
+}
 
