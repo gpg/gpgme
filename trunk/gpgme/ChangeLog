@@ -1,3 +1,12 @@
+2003-06-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.c (struct engine_gpg): Remove arg_error.
+	(add_arg): Don't set arg_error.
+	(add_data): Likewise.
+	(start): Don't check arg_error.
+	(gpg_new): Check return value of add_arg.
+	* verify.c (parse_notation): Free allocated memory at error.
+
 2003-06-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	Everywhere: Use libgpg-error error codes.
