@@ -1,3 +1,10 @@
+2004-12-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-pipe-connect.c (do_finish): Do not wait for child to finish.
+	(assuan_pipe_connect): Use double-fork approach.
+	* assuan-connect.c (assuan_disconnect): Do not write BYE to the
+	status line.
+
 2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
 
 	* README.1st: Add copyright notice.
