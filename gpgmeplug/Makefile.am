@@ -47,5 +47,4 @@ libgpgmeplug_la_SOURCES = gpgme.h \
 
 libgpgsmplug_la_SOURCES = gpgme.h \
 	cryptplug.h \
-	gpgmeplug.c
-
+	gpgsmplug.c
