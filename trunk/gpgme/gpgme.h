@@ -120,8 +120,14 @@ gpgme_err_source (gpgme_error_t err)
 
 
 /* Return a pointer to a string containing a description of the error
-   code in the error value ERR.  */
+   code in the error value ERR.  This function is not thread safe.  */
 const char *gpgme_strerror (gpgme_error_t err);
+
+/* Return a pointer to a string containing a description of the error
+   code in the error value ERR.  The buffer for the string is
+   allocated with malloc(), and has to be released by the user.  On
+   error, NULL is returned.  */
+char *gpgme_strerror_r (gpgme_error_t err);
 
 
 /* Return a pointer to a string containing a description of the error

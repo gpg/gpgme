@@ -1232,6 +1232,18 @@ The function @code{gpgme_strerror} returns a pointer to a statically
 allocated string containing a description of the error code contained
 in the error value @var{err}.  This string can be used to output a
 diagnostic message to the user.
+
+This function is not thread safe.  Use @code{gpgme_strerror_r} in
+multi-threaded programs.
+@end deftypefun
+
+
+@deftypefun {char *} gpgme_strerror_r (@w{gpgme_error_t @var{err}})
+The function @code{gpgme_strerror_r} returns a pointer to a
+dynamically allocated string containing a description of the error
+code contained in the error value @var{err}.  This string can be used
+to output a diagnostic message to the user.  When it is not needed
+anymore, the user must deallocate it with @code{free}.
 @end deftypefun
 
 

@@ -33,6 +33,17 @@ gpgme_strerror (gpgme_error_t err)
 
 
 /* Return a pointer to a string containing a description of the error
+   code in the error value ERR.  The buffer for the string is
+   allocated with malloc(), and has to be released by the user.  On
+   error, NULL is returned.  */
+char *
+gpgme_strerror_r (gpgme_error_t err)
+{
+  return gpg_strerror_r (err);
+}
+
+
+/* Return a pointer to a string containing a description of the error
    source in the error value ERR.  */
 const char *
 gpgme_strsource (gpgme_error_t err)
