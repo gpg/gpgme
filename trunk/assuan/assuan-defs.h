@@ -22,17 +22,34 @@
 #define ASSUAN_DEFS_H
 
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+
 #include "assuan.h"
 
 #define LINELENGTH ASSUAN_LINELENGTH
 
-struct cmdtbl_s {
+struct cmdtbl_s
+{
   const char *name;
-  int cmd_id;
   int (*handler)(ASSUAN_CONTEXT, char *line);
 };
 
-struct assuan_context_s {
+struct assuan_io
+{
+  /* Routine to read from input_fd.  */
+  ssize_t (*read) (ASSUAN_CONTEXT, void *, size_t);
+  /* Routine to write to output_fd.  */
+  ssize_t (*write) (ASSUAN_CONTEXT, const void *, size_t);
+  /* Send a file descriptor.  */
+  AssuanError (*sendfd) (ASSUAN_CONTEXT, int);
+  /* Receive a file descriptor.  */
+  AssuanError (*receivefd) (ASSUAN_CONTEXT, int *);
+};  
+
+struct assuan_context_s
+{
   AssuanError err_no;
   const char *err_str;
   int os_errno;  /* last system error number used with certain error codes*/
@@ -81,6 +98,23 @@ struct assuan_context_s {
   pid_t client_pid; /* for a socket server the PID of the client or -1
                        if not available */
 
+  /* Used for Unix domain sockets.  */
+  struct sockaddr_un myaddr;
+  struct sockaddr_un serveraddr;
+  /* When reading from datagram sockets, we must read an entire
+     message at a time.  This means that we have to do our own
+     buffering to be able to get the semantics of read.  */
+  void *domainbuffer;
+  /* Offset of start of buffer.  */
+  int domainbufferoffset;
+  /* Bytes buffered.  */
+  int domainbuffersize;
+  /* Memory allocated.  */
+  int domainbufferallocated;
+
+  int *pendingfds;
+  int pendingfdscount;
+
   void (*deinit_handler)(ASSUAN_CONTEXT);  
   int (*accept_handler)(ASSUAN_CONTEXT);
   int (*finish_handler)(ASSUAN_CONTEXT);
@@ -99,14 +133,21 @@ struct assuan_context_s {
   int input_fd;   /* set by INPUT command */
   int output_fd;  /* set by OUTPUT command */
 
+  /* io routines.  */
+  struct assuan_io *io;
 };
-
-
 
 /*-- assuan-pipe-server.c --*/
 int _assuan_new_context (ASSUAN_CONTEXT *r_ctx);
 void _assuan_release_context (ASSUAN_CONTEXT ctx);
 
+/*-- assuan-domain-connect.c --*/
+/* Make a connection to the Unix domain socket NAME and return a new
+   Assuan context in CTX.  SERVER_PID is currently not used but may
+   become handy in the future.  */
+AssuanError _assuan_domain_init (ASSUAN_CONTEXT *r_ctx,
+				 int rendezvousfd,
+				 pid_t peer);
 
 /*-- assuan-handler.c --*/
 int _assuan_register_std_commands (ASSUAN_CONTEXT ctx);
@@ -137,11 +178,17 @@ void _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t  length);
 void _assuan_log_sanitized_string (const char *string);
 
 /*-- assuan-io.c --*/
+ssize_t _assuan_simple_read (ASSUAN_CONTEXT ctx, void *buffer, size_t size);
+ssize_t _assuan_simple_write (ASSUAN_CONTEXT ctx, const void *buffer,
+			      size_t size);
 
-/* Wraps the standard read and write functions to do the Right
-   Thing depending on our linkage.  */
-ssize_t _assuan_read (int fd, void *buffer, size_t size);
-ssize_t _assuan_write (int fd, const void *buffer, size_t size);
+#ifdef HAVE_FOPENCOOKIE
+/* We have to implement funopen in terms of glibc's fopencookie. */
+FILE *funopen(const void *cookie, cookie_read_function_t *readfn,
+              cookie_write_function_t *writefn,
+              cookie_seek_function_t *seekfn,
+              cookie_close_function_t *closefn);
+#endif /*HAVE_FOPENCOOKIE*/
 
 #endif /*ASSUAN_DEFS_H*/
 

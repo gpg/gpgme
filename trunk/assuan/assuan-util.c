@@ -1,5 +1,5 @@
 /* assuan-util.c - Utility functions for Assuan 
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -25,10 +25,6 @@
 #include <ctype.h>
 
 #include "assuan-defs.h"
-
-#ifdef HAVE_JNLIB_LOGGING
-#include "../jnlib/logging.h"
-#endif
 
 static void *(*alloc_func)(size_t n) = malloc;
 static void *(*realloc_func)(void *p, size_t n) = realloc;
@@ -159,18 +155,13 @@ _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
     }
 }
 
-
 /* Log a user supplied string.  Escapes non-printable before
    printing.  */
 void
 _assuan_log_sanitized_string (const char *string)
 {
   const unsigned char *s = string;
-#ifdef HAVE_JNLIB_LOGGING
-  FILE *fp = log_get_stream ();
-#else
-  FILE *fp = stderr;
-#endif
+  FILE *fp = assuan_get_assuan_log_stream ();
 
   if (! *s)
     return;
@@ -226,5 +217,3 @@ _assuan_log_sanitized_string (const char *string)
   funlockfile (fp);
 #endif
 }
-
-

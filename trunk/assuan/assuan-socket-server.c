@@ -98,7 +98,8 @@ deinit_socket_server (ASSUAN_CONTEXT ctx)
   finish_connection (ctx);
 }
 
-
+static struct assuan_io io = { _assuan_simple_read,
+			       _assuan_simple_write };
 
 /* Initialize a server for the socket LISTEN_FD which has already be
    put into listen mode */
@@ -125,6 +126,8 @@ assuan_init_socket_server (ASSUAN_CONTEXT *r_ctx, int listen_fd)
   ctx->accept_handler = accept_connection;
   ctx->finish_handler = finish_connection;
 
+  ctx->io = &io;
+
   rc = _assuan_register_std_commands (ctx);
   if (rc)
     xfree (ctx);
@@ -145,12 +148,14 @@ assuan_init_connected_socket_server (ASSUAN_CONTEXT *r_ctx, int fd)
   if (!ctx)
     return ASSUAN_Out_Of_Core;
   ctx->is_server = 1;
-  ctx->pipe_mode = 1; /* we wan't a second accept to indicate EOF */
+  ctx->pipe_mode = 1; /* we want a second accept to indicate EOF */
   ctx->input_fd = -1;
   ctx->output_fd = -1;
 
   ctx->inbound.fd = -1;
   ctx->outbound.fd = -1;
+
+  ctx->io = &io;
 
   ctx->listen_fd = -1;
   ctx->connected_fd = fd;

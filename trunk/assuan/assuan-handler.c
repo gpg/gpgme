@@ -1,5 +1,5 @@
 /* assuan-handler.c - dispatch commands 
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -25,27 +25,12 @@
 
 #include "assuan-defs.h"
 
+
+
 #define spacep(p)  (*(p) == ' ' || *(p) == '\t')
 #define digitp(a) ((a) >= '0' && (a) <= '9')
 
-
-#if !HAVE_FOPENCOOKIE
-/* Provide structure for our dummy replacement function.  Usually this
-   is defined in ../common/util.h but assuan should be self
-   contained. */
-/* Fixme: Remove fopencoookie :-(( */
-typedef struct
-{
-  ssize_t (*read)(void*,char*,size_t);
-  ssize_t (*write)(void*,const char*,size_t);
-  int (*seek)(void*,off_t*,int);
-  int (*close)(void*);
-} _IO_cookie_io_functions_t;
-typedef _IO_cookie_io_functions_t cookie_io_functions_t;
-FILE *fopencookie (void *cookie, const char *opentype,
-                   cookie_io_functions_t funclist);
-#endif /*!HAVE_FOPENCOOKIE*/
-
+static int my_strcasecmp (const char *a, const char *b);
 
 
 
@@ -149,25 +134,32 @@ std_handler_end (ASSUAN_CONTEXT ctx, char *line)
   return set_error (ctx, Not_Implemented, NULL); 
 }
 
-static int
-parse_cmd_input_output (ASSUAN_CONTEXT ctx, char *line, int *rfd)
+AssuanError
+assuan_command_parse_fd (ASSUAN_CONTEXT ctx, char *line, int *rfd)
 {
   char *endp;
 
-  if (strncmp (line, "FD=", 3))
-    return set_error (ctx, Syntax_Error, "FD=<n> expected");
-  line += 3;
-  if (!digitp (*line))
-    return set_error (ctx, Syntax_Error, "number required");
-  *rfd = strtoul (line, &endp, 10);
-  /* remove that argument so that a notify handler won't see it */
-  memset (line, ' ', endp? (endp-line):strlen(line));
+  if (strncmp (line, "FD", 2) != 0 || (line[2] != '=' && line[2] != '\0'))
+    return set_error (ctx, Syntax_Error, "FD[=<n>] expected");
+  line += 2;
+  if (*line == '=')
+    {
+      line ++;
+      if (!digitp (*line))
+	return set_error (ctx, Syntax_Error, "number required");
+      *rfd = strtoul (line, &endp, 10);
+      /* remove that argument so that a notify handler won't see it */
+      memset (line, ' ', endp? (endp-line):strlen(line));
 
-  if (*rfd == ctx->inbound.fd)
-    return set_error (ctx, Parameter_Conflict, "fd same as inbound fd");
-  if (*rfd == ctx->outbound.fd)
-    return set_error (ctx, Parameter_Conflict, "fd same as outbound fd");
-  return 0;
+      if (*rfd == ctx->inbound.fd)
+	return set_error (ctx, Parameter_Conflict, "fd same as inbound fd");
+      if (*rfd == ctx->outbound.fd)
+	return set_error (ctx, Parameter_Conflict, "fd same as outbound fd");
+      return 0;
+    }
+  else
+    /* Our peer has sent the file descriptor.  */
+    return assuan_receivefd (ctx, rfd);
 }
 
 /* Format is INPUT FD=<n> */
@@ -176,7 +168,7 @@ std_handler_input (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc, fd;
 
-  rc = parse_cmd_input_output (ctx, line, &fd);
+  rc = assuan_command_parse_fd (ctx, line, &fd);
   if (rc)
     return rc;
   ctx->input_fd = fd;
@@ -191,7 +183,7 @@ std_handler_output (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc, fd;
 
-  rc = parse_cmd_input_output (ctx, line, &fd);
+  rc = assuan_command_parse_fd (ctx, line, &fd);
   if (rc)
     return rc;
   ctx->output_fd = fd;
@@ -205,25 +197,24 @@ std_handler_output (ASSUAN_CONTEXT ctx, char *line)
   
 
 /* This is a table with the standard commands and handler for them.
-   The table is used to initialize a new context and assuciate strings
-   and handlers with cmd_ids */
+   The table is used to initialize a new context and associate strings
+   with default handlers */
 static struct {
   const char *name;
-  int cmd_id;
   int (*handler)(ASSUAN_CONTEXT, char *line);
   int always; /* always initialize this command */
 } std_cmd_table[] = {
-  { "NOP",    ASSUAN_CMD_NOP,    std_handler_nop, 1 },
-  { "CANCEL", ASSUAN_CMD_CANCEL, std_handler_cancel, 1 },
-  { "OPTION", ASSUAN_CMD_OPTION, std_handler_option, 1 },
-  { "BYE",    ASSUAN_CMD_BYE,    std_handler_bye, 1 },
-  { "AUTH",   ASSUAN_CMD_AUTH,   std_handler_auth, 1 },
-  { "RESET",  ASSUAN_CMD_RESET,  std_handler_reset, 1 },
-  { "END",    ASSUAN_CMD_END,    std_handler_end, 1 },
-
-  { "INPUT",  ASSUAN_CMD_INPUT,  std_handler_input },
-  { "OUTPUT", ASSUAN_CMD_OUTPUT, std_handler_output },
-  { "OPTION", ASSUAN_CMD_OPTION, std_handler_option, 1 },
+  { "NOP",    std_handler_nop, 1 },
+  { "CANCEL", std_handler_cancel, 1 },
+  { "OPTION", std_handler_option, 1 },
+  { "BYE",    std_handler_bye, 1 },
+  { "AUTH",   std_handler_auth, 1 },
+  { "RESET",  std_handler_reset, 1 },
+  { "END",    std_handler_end, 1 },
+              
+  { "INPUT",  std_handler_input },
+  { "OUTPUT", std_handler_output },
+  { "OPTION", std_handler_option, 1 },
   { NULL }
 };
 
@@ -231,54 +222,46 @@ static struct {
 /**
  * assuan_register_command:
  * @ctx: the server context
- * @cmd_id: An ID value for the command
  * @cmd_name: A string with the command name
- * @handler: The handler function to be called
+ * @handler: The handler function to be called or NULL to use a default
+ *           handler.
  * 
- * Register a handler to be used for a given command.
+ * Register a handler to be used for a given command.  Note that
+ * several default handlers are already regsitered with a new context.
+ * This function however allows to override them.
  * 
- * The @cmd_name must be %NULL or an empty string for all @cmd_ids
- * below %ASSUAN_CMD_USER because predefined values are used.
- * 
- * Return value: 
+ * Return value: 0 on success or an error code
  **/
 int
 assuan_register_command (ASSUAN_CONTEXT ctx,
-                         int cmd_id, const char *cmd_name,
+                         const char *cmd_name,
                          int (*handler)(ASSUAN_CONTEXT, char *))
 {
   int i;
+  const char *s;
 
   if (cmd_name && !*cmd_name)
     cmd_name = NULL;
 
-  if (cmd_id < ASSUAN_CMD_USER)
-    { 
-      if (cmd_name)
-        return ASSUAN_Invalid_Value; /* must be NULL for these values*/
-
-      for (i=0; std_cmd_table[i].name; i++)
-        {
-          if (std_cmd_table[i].cmd_id == cmd_id)
-            {
-              cmd_name = std_cmd_table[i].name;
-              if (!handler)
-                handler = std_cmd_table[i].handler;
-              break;
-            }
-        }
-      if (!std_cmd_table[i].name)
-        return ASSUAN_Invalid_Value; /* not a pre-registered one */
-    }
-  
-  if (!handler)
-    handler = dummy_handler;
-
   if (!cmd_name)
     return ASSUAN_Invalid_Value;
 
-/*    fprintf (stderr, "DBG-assuan: registering %d as `%s'\n", cmd_id, cmd_name); */
-
+  if (!handler)
+    { /* find a default handler. */
+      for (i=0; (s=std_cmd_table[i].name) && strcmp (cmd_name, s); i++)
+        ;
+      if (!s)
+        { /* Try again but case insensitive. */
+          for (i=0; (s=std_cmd_table[i].name)
+                    && my_strcasecmp (cmd_name, s); i++)
+            ;
+        }
+      if (s)
+        handler = std_cmd_table[i].handler;
+      if (!handler)
+        handler = dummy_handler; /* Last resort is the dummy handler. */
+    }
+  
   if (!ctx->cmdtbl)
     {
       ctx->cmdtbl_size = 50;
@@ -299,7 +282,6 @@ assuan_register_command (ASSUAN_CONTEXT ctx,
     }
 
   ctx->cmdtbl[ctx->cmdtbl_used].name = cmd_name;
-  ctx->cmdtbl[ctx->cmdtbl_used].cmd_id = cmd_id;
   ctx->cmdtbl[ctx->cmdtbl_used].handler = handler;
   ctx->cmdtbl_used++;
   return 0;
@@ -374,8 +356,7 @@ _assuan_register_std_commands (ASSUAN_CONTEXT ctx)
     {
       if (std_cmd_table[i].always)
         {
-          rc = assuan_register_command (ctx, std_cmd_table[i].cmd_id,
-                                        NULL, NULL);
+          rc = assuan_register_command (ctx, std_cmd_table[i].name, NULL);
           if (rc)
             return rc;
         }
@@ -624,17 +605,13 @@ assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
 FILE *
 assuan_get_data_fp (ASSUAN_CONTEXT ctx)
 {
-  cookie_io_functions_t cookie_fnc;
-
   if (ctx->outbound.data.fp)
     return ctx->outbound.data.fp;
   
-  cookie_fnc.read = NULL; 
-  cookie_fnc.write = _assuan_cookie_write_data;
-  cookie_fnc.seek = NULL;
-  cookie_fnc.close = _assuan_cookie_write_flush;
 
-  ctx->outbound.data.fp = fopencookie (ctx, "wb", cookie_fnc);
+  ctx->outbound.data.fp = funopen (ctx, 0,
+				   _assuan_cookie_write_data,
+				   0, _assuan_cookie_write_flush);
   ctx->outbound.data.error = 0;
   return ctx->outbound.data.fp;
 }

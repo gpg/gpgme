@@ -77,8 +77,8 @@ AC_SUBST(VERSION)
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
 
-dnl Don't default to build static libs.
-dnl AC_DISABLE_STATIC
+# Don't default to build static libs.
+AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
 AC_CANONICAL_HOST
@@ -125,38 +125,31 @@ case "${host}" in
 	  AC_DEFINE(HAVE_PTHREAD, ,[Define if we have pthread.])
 	fi
 
-dnl	# XXX: Probably use exec-prefix here?
-dnl	GPG_DEFAULT='/usr/bin/gpg'
-dnl	GPGSM_DEFAULT='/usr/bin/gpgsm'
+	# XXX: Probably use exec-prefix here?
+#	GPG_DEFAULT='/usr/bin/gpg'
+#	GPGSM_DEFAULT='/usr/bin/gpgsm'
 	;;
 esac
 AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = "yes")
 AM_CONDITIONAL(HAVE_PTH, test "$have_pth" = "yes")
 AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 
-dnl
-dnl Checks for header files.
-dnl
+
+# Checks for header files.
 AC_CHECK_HEADERS(sys/select.h)
 
-dnl
-dnl Type checks.
-dnl
 
+# Type checks.
 AC_CHECK_SIZEOF(unsigned int)
 
-dnl
-dnl Checks for compiler features.
-dnl
 
+# Checks for compiler features.
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
 fi
 
-dnl
-dnl Checks for library functions.
-dnl
 
+# Checks for library functions.
 AC_REPLACE_FUNCS(stpcpy)
 
 AC_REPLACE_FUNCS(vasprintf)
@@ -164,17 +157,11 @@ if test "$ac_cv_func_vasprintf" != yes; then
   GNUPG_CHECK_VA_COPY
 fi
 
-# Note: fopencokie is only a dummy stub and not used.  
-#       However some code in assuan/ links against it.
-AC_REPLACE_FUNCS(fopencookie)
-
 AM_PATH_GPG_ERROR(0.1,, AC_MSG_ERROR([libgpg-error was not found]))
 AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
           [The default error source for GPGME.])
-dnl
-dnl Checks for system services
-dnl
 
+# Checks for system services
 NO_OVERRIDE=no
 AC_ARG_WITH(gpg,
 	    AC_HELP_STRING([--with-gpg=PATH], [use GnuPG binary at PATH]),
@@ -235,8 +222,24 @@ AM_CONDITIONAL(HAVE_GPGSM, [test -n "$GPGSM" && test -r "$GPGSM"])
 AM_CONDITIONAL(RUN_GPGSM_TESTS,
   [test "$cross_compiling" != "yes" && test -n "$GPGSM" && test -r "$GPGSM"])
 
-dnl FIXME: Only build if supported.
+# FIXME: Only build if supported.
 AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
+
+if test "$GPGSM" != "no"; then
+  AC_CHECK_FUNCS(funopen)
+  if test $ac_cv_func_funopen != yes; then
+    # No funopen but we can implement that in terms of fopencookie.
+    AC_CHECK_FUNCS(fopencookie, AC_LIBOBJ(funopen),
+                   AC_MSG_ERROR([[
+No implementation of fopencookie or funopen available.
+]]))
+  fi
+
+  AC_REPLACE_FUNCS(isascii)
+  AC_REPLACE_FUNCS(putc_unlocked)
+  AC_REPLACE_FUNCS(memrchr)
+fi
+
 
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
 

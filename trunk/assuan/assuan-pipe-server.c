@@ -21,6 +21,7 @@
 #include <config.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "assuan-defs.h"
 
@@ -44,12 +45,15 @@ finish_connection (ASSUAN_CONTEXT ctx)
   return 0;
 }
 
-
 /* Create a new context.  Note that the handlers are set up for a pipe
    server/client - this way we don't need extra dummy functions */
 int
 _assuan_new_context (ASSUAN_CONTEXT *r_ctx)
 {
+  static struct assuan_io io = { _assuan_simple_read,
+				 _assuan_simple_write,
+				 0, 0 };
+
   ASSUAN_CONTEXT ctx;
   int rc;
 
@@ -62,10 +66,11 @@ _assuan_new_context (ASSUAN_CONTEXT *r_ctx)
 
   ctx->inbound.fd = -1;
   ctx->outbound.fd = -1;
+  ctx->io = &io;
 
   ctx->listen_fd = -1;
   ctx->client_pid = (pid_t)-1;
-  /* use the pipe server handler as a default */
+  /* Use the pipe server handler as a default.  */
   ctx->deinit_handler = deinit_pipe_server;
   ctx->accept_handler = accept_connection;
   ctx->finish_handler = finish_connection;
@@ -116,7 +121,7 @@ assuan_deinit_server (ASSUAN_CONTEXT ctx)
   if (ctx)
     {
       /* We use this function pointer to avoid linking other server
-         when not needed but still allow for a generic deinit function */
+         when not needed but still allow for a generic deinit function.  */
       ctx->deinit_handler (ctx);
       ctx->deinit_handler = NULL;
       _assuan_release_context (ctx);

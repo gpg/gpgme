@@ -1,5 +1,5 @@
 /* assuan-pipe-connect.c - Establish a pipe connection (client) 
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -40,17 +40,13 @@
 #define MAX_OPEN_FDS 20
 #endif
 
-#ifdef HAVE_JNLIB_LOGGING
-#include "../jnlib/logging.h"
-#define LOGERROR1(a,b)   log_error ((a), (b))
-#else
-#define LOGERROR1(a,b)   fprintf (stderr, (a), (b))
-#endif
-
-
+#define LOG(format, args...) \
+	fprintf (assuan_get_assuan_log_stream (), \
+	         assuan_get_assuan_log_prefix (), \
+	         "%s" format , ## args)
 
 static int
-writen ( int fd, const char *buffer, size_t length )
+writen (int fd, const char *buffer, size_t length)
 {
   while (length)
     {
@@ -174,21 +170,21 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
 
       /* Dup handles to stdin/stdout. */
       if (rp[1] != STDOUT_FILENO)
-        {
-          if (dup2 (rp[1], STDOUT_FILENO) == -1)
-            {
-              LOGERROR1 ("dup2 failed in child: %s\n", strerror (errno));
-              _exit (4);
-            }
-        }
+	{
+	  if (dup2 (rp[1], STDOUT_FILENO) == -1)
+	    {
+	      LOG ("dup2 failed in child: %s\n", strerror (errno));
+	      _exit (4);
+	    }
+	}
       if (wp[0] != STDIN_FILENO)
-        {
-          if (dup2 (wp[0], STDIN_FILENO) == -1)
-            {
-              LOGERROR1 ("dup2 failed in child: %s\n", strerror (errno));
-              _exit (4);
-            }
-        }
+	{
+	  if (dup2 (wp[0], STDIN_FILENO) == -1)
+	    {
+	      LOG ("dup2 failed in child: %s\n", strerror (errno));
+	      _exit (4);
+	    }
+	}
 
       /* Dup stderr to /dev/null unless it is in the list of FDs to be
          passed to the child. */
@@ -203,15 +199,15 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
 	  int fd = open ("/dev/null", O_WRONLY);
 	  if (fd == -1)
 	    {
-	      LOGERROR1 ("can't open `/dev/null': %s\n", strerror (errno));
+	      LOG ("can't open `/dev/null': %s\n", strerror (errno));
 	      _exit (4);
-            }
-          if (dup2 (fd, STDERR_FILENO) == -1)
-            {
-              LOGERROR1 ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
-              _exit (4);
-            }
-        }
+	    }
+	  if (dup2 (fd, STDERR_FILENO) == -1)
+	    {
+	      LOG ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
+	      _exit (4);
+	    }
+	}
 
 
       /* Close all files which will not be duped and are not in the
@@ -253,13 +249,11 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
 
     err = _assuan_read_from_server (*ctx, &okay, &off);
     if (err)
-      {
-        LOGERROR1 ("can't connect server: %s\n", assuan_strerror (err));
-      }
+      LOG ("can't connect server: %s\n", assuan_strerror (err));
     else if (okay != 1)
       {
-        LOGERROR1 ("can't connect server: `%s'\n", (*ctx)->inbound.line);
-        err = ASSUAN_Connect_Failed;
+	LOG ("can't connect server: `%s'\n", (*ctx)->inbound.line);
+	err = ASSUAN_Connect_Failed;
       }
   }
 

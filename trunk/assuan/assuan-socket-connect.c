@@ -1,5 +1,5 @@
 /* assuan-socket-connect.c - Assuan socket based client
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -29,20 +29,10 @@
 
 #include "assuan-defs.h"
 
-#ifdef HAVE_JNLIB_LOGGING
-#include "../jnlib/logging.h"
-#define LOGERROR(a)      log_error ((a))
-#define LOGERROR1(a,b)   log_error ((a), (b))
-#define LOGERROR2(a,b,c) log_error ((a), (b), (c))
-#define LOGERRORX(a)     log_printf ((a))
-#else
-#define LOGERROR(a)      fprintf (stderr, (a))
-#define LOGERROR1(a,b)   fprintf (stderr, (a), (b))
-#define LOGERROR2(a,b,c) fprintf (stderr, (a), (b), (c))
-#define LOGERRORX(a)     fputs ((a), stderr)
-#endif
-
-
+#define LOG(format, args...) \
+	fprintf (assuan_get_assuan_log_stream (), \
+	         assuan_get_assuan_log_prefix (), \
+	         "%s" format , ## args)
 
 static int
 do_finish (ASSUAN_CONTEXT ctx)
@@ -61,16 +51,16 @@ do_deinit (ASSUAN_CONTEXT ctx)
 {
   do_finish (ctx);
 }
-
-
-
 /* Make a connection to the Unix domain socket NAME and return a new
    Assuan context in CTX.  SERVER_PID is currently not used but may
-   become handy in the future. */
+   become handy in the future.  */
 AssuanError
 assuan_socket_connect (ASSUAN_CONTEXT *r_ctx,
                        const char *name, pid_t server_pid)
 {
+  static struct assuan_io io = { _assuan_simple_read,
+				 _assuan_simple_write };
+
   AssuanError err;
   ASSUAN_CONTEXT ctx;
   int fd;
@@ -95,30 +85,31 @@ assuan_socket_connect (ASSUAN_CONTEXT *r_ctx,
   ctx->deinit_handler = do_deinit;
   ctx->finish_handler = do_finish;
 
-  fd = socket (AF_UNIX, SOCK_STREAM, 0);
+  fd = socket (PF_LOCAL, SOCK_STREAM, 0);
   if (fd == -1)
     {
-      LOGERROR1 ("can't create socket: %s\n", strerror (errno));
+      LOG ("can't create socket: %s\n", strerror (errno));
       _assuan_release_context (ctx);
       return ASSUAN_General_Error;
     }
-    
-  memset (&srvr_addr, 0, sizeof srvr_addr );
-  srvr_addr.sun_family = AF_UNIX;
-  strcpy (srvr_addr.sun_path, name);
-  len = (offsetof (struct sockaddr_un, sun_path)
-         + strlen (srvr_addr.sun_path) + 1);
-    
-  if (connect (fd, (struct sockaddr*)&srvr_addr, len) == -1)
+
+  memset (&srvr_addr, 0, sizeof srvr_addr);
+  srvr_addr.sun_family = AF_LOCAL;
+  len = strlen (srvr_addr.sun_path) + 1;
+  memcpy (srvr_addr.sun_path, name, len);
+  len += (offsetof (struct sockaddr_un, sun_path));
+
+  if (connect (fd, (struct sockaddr *) &srvr_addr, len) == -1)
     {
-      LOGERROR2 ("can't connect to `%s': %s\n", name, strerror (errno));
+      LOG ("can't connect to `%s': %s\n", name, strerror (errno));
       _assuan_release_context (ctx);
-      close (fd );
+      close (fd);
       return ASSUAN_Connect_Failed;
     }
 
   ctx->inbound.fd = fd;
   ctx->outbound.fd = fd;
+  ctx->io = &io;
 
   /* initial handshake */
   {
@@ -126,15 +117,13 @@ assuan_socket_connect (ASSUAN_CONTEXT *r_ctx,
 
     err = _assuan_read_from_server (ctx, &okay, &off);
     if (err)
-      {
-        LOGERROR1 ("can't connect server: %s\n", assuan_strerror (err));
-      }
+      LOG ("can't connect to server: %s\n", assuan_strerror (err));
     else if (okay != 1)
       {
-        LOGERROR ("can't connect server: `");
-        _assuan_log_sanitized_string (ctx->inbound.line);
-        LOGERRORX ("'\n");
-        err = ASSUAN_Connect_Failed;
+	LOG ("can't connect to server: `");
+	_assuan_log_sanitized_string (ctx->inbound.line);
+	fprintf (assuan_get_assuan_log_stream (), "'\n");
+	err = ASSUAN_Connect_Failed;
       }
   }
 
@@ -146,5 +135,3 @@ assuan_socket_connect (ASSUAN_CONTEXT *r_ctx,
     *r_ctx = ctx;
   return 0;
 }
-
-
