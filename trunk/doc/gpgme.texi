@@ -2451,7 +2451,7 @@ Every context starts with an empty list.
 The function @code{gpgme_signers_add} adds the key @var{key} to the
 list of signers in the context @var{ctx}.
 
-One reference for the key is consumed.
+Calling this function acquires an additional reference for the key.
 @end deftypefun
 
 @deftypefun GpgmeKey gpgme_signers_enum (@w{const GpgmeCtx @var{ctx}}, @w{int @var{seq}})
