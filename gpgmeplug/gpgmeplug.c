@@ -278,8 +278,8 @@ bool hasFeature( Feature flag )
   case Feature_WarnEncryptEmailNotInCertificate: return true;
   case Feature_StoreMessagesEncrypted:    return true;
   case Feature_CheckCertificatePath:      return true;
-  case Feature_CertificateDirectoryService: return true;
-  case Feature_CRLDirectoryService:       return true;
+  case Feature_CertificateDirectoryService: return false;
+  case Feature_CRLDirectoryService:       return false;
   /* undefined or not yet implemented: */
   case Feature_undef:                     return false;
   default:                                      return false;
@@ -787,6 +787,38 @@ bool receiverCertificateExpiryNearWarning()
 
 int receiverCertificateDaysLeftToExpiry( const char* certificate )
 {
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeKey rKey;
+  time_t daysLeft = 0;
+
+  gpgme_new( &ctx );
+  gpgme_set_protocol( ctx, GPGMEPLUG_PROTOCOL );
+
+  err = gpgme_op_keylist_start( ctx, certificate, 0 );
+  if ( GPGME_No_Error == err ) {
+    err = gpgme_op_keylist_next( ctx, &rKey );
+    gpgme_op_keylist_end( ctx );
+    if ( GPGME_No_Error == err ) {
+      time_t expire_time = gpgme_key_get_ulong_attr(
+                             rKey,GPGME_ATTR_EXPIRE, NULL, 0 );
+      time_t cur_time = time (NULL);
+      daysLeft = expire_time - cur_time;
+      // convert seconds into days
+      daysLeft /= 43200;
+      gpgme_key_release( rKey );
+    }
+  }
+  gpgme_release( ctx );
+    
+  /*
+  fprintf( stderr, "gpgmeplug receiverCertificateDaysLeftToExpiry returned %d\n", daysLeft );
+  */
+
+  return daysLeft;
+    
+    
+    
     /* PENDING(g10)
        Please return the number of days that are left until the
        certificate specified in the parameter certificate expires.
