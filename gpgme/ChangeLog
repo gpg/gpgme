@@ -1,3 +1,9 @@
+2002-04-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_op_verify): Close the output
+	descriptor only when we don't need it anymore.  Close the message
+	descriptor if we don't need it.
+
 2002-04-26  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (libgpgme_la_LIBADD): Use libtool libraries.

@@ -878,6 +878,7 @@ _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
       gpgsm->output_data = text;
       err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
 			  0);
+      _gpgme_io_close (gpgsm->message_fd);
     }
   else
     {
@@ -885,10 +886,10 @@ _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
       gpgsm->message_data = text;
       err = gpgsm_set_fd (gpgsm->assuan_ctx, "MESSAGE",
 			  gpgsm->message_fd_server, 0);
+      _gpgme_io_close (gpgsm->output_fd);
     }
   if (err)
     return err;
-  _gpgme_io_close (gpgsm->output_fd);
 
   return 0;
 }
