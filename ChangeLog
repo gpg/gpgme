@@ -1,3 +1,8 @@
+2004-09-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (EXTRA_DIST): Remove README-alpha.
+	* README-alpha: Remove file.
+
 2004-09-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Disable AC_CONFIG_MACRO_DIR for now.
