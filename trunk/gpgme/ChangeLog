@@ -1,3 +1,11 @@
+2001-09-07  Werner Koch  <wk@gnupg.org>
+
+	* rungpg.h: Add NO_RECP.
+	* encrypt.c (encrypt_status_handler): Take on No_RECP.
+	(gpgme_op_encrypt): Better error return.
+
+	* verify.c (verify_status_handler): Take on NODATA.
+
 2001-09-03  Werner Koch  <wk@gnupg.org>
 
 	* rungpg.h: Added STATUS_INV_RECP.
