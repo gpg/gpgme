@@ -57,6 +57,15 @@ _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off)
       *okay = 2; /* data line */
       *off = 2;
     }
+  else if (linelen >= 1
+           && line[0] == 'S' 
+           && (line[1] == '\0' || line[1] == ' '))
+    {
+      *okay = 4;
+      *off = 1;
+      while (line[*off] == ' ')
+        ++*off;
+    }  
   else if (linelen >= 2
            && line[0] == 'O' && line[1] == 'K'
            && (line[2] == '\0' || line[2] == ' '))
@@ -86,6 +95,13 @@ _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off)
       while (line[*off] == ' ')
         ++*off;
     }
+  else if (linelen >= 3
+           && line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
+           && (line[3] == '\0' || line[3] == ' '))
+    {
+      *okay = 5; /* end line */
+      *off = 3;
+    }
   else
     rc = ASSUAN_Invalid_Response;
   return rc;
@@ -101,6 +117,8 @@ _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off)
  * @data_cb_arg: first argument passed to @data_cb
  * @inquire_cb: Callback function for a inquire response
  * @inquire_cb_arg: first argument passed to @inquire_cb
+ * @status_cb: Callback function for a status response
+ * @status_cb_arg: first argument passed to @status_cb
  * 
  * FIXME: Write documentation
  * 
@@ -114,7 +132,9 @@ assuan_transact (ASSUAN_CONTEXT ctx,
                  AssuanError (*data_cb)(void *, const void *, size_t),
                  void *data_cb_arg,
                  AssuanError (*inquire_cb)(void*, const char *),
-                 void *inquire_cb_arg)
+                 void *inquire_cb_arg,
+                 AssuanError (*status_cb)(void*, const char *),
+                 void *status_cb_arg)
 {
   int rc, okay, off;
   unsigned char *line;
@@ -181,6 +201,25 @@ assuan_transact (ASSUAN_CONTEXT ctx,
             goto again;
         }
     }
+  else if (okay == 4)
+    {
+      if (status_cb)
+        rc = status_cb (status_cb_arg, line);
+      if (!rc)
+        goto again;
+    }
+  else if (okay == 5)
+    {
+      if (!data_cb)
+        rc = ASSUAN_No_Data_Callback;
+      else 
+        {
+          rc = data_cb (data_cb_arg, NULL, 0);
+          if (!rc)
+            goto again;
+        }
+    }
 
   return rc;
 }
+

@@ -276,10 +276,12 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		    arg->r_opt = -arg->r_opt;
 		if( !opts[idx].short_opt )   /* unknown command/option */
 		    arg->r_opt = (opts[idx].flags & 256)? -7:-2;
-		else if( (opts[idx].flags & 8) ) /* no argument */
-		    arg->r_opt = -3;	       /* error */
-		else			       /* no or optional argument */
+		else if( !(opts[idx].flags & 7) ) /* does not take an arg */
 		    arg->r_type = 0;	       /* okay */
+		else if( (opts[idx].flags & 8) )  /* argument is optional */
+                    arg->r_type = 0;	       /* okay */
+		else			       /* required argument */
+		    arg->r_opt = -3;	       /* error */
 		break;
 	    }
 	    else if( state == 3 ) {	       /* no argument found */
@@ -900,7 +902,7 @@ strusage( int level )
     switch( level ) {
       case 11: p = "foo"; break;
       case 13: p = "0.0"; break;
-      case 14: p = "Copyright (C) 2001 Free Software Foundation, Inc."; break;
+      case 14: p = "Copyright (C) 2002 Free Software Foundation, Inc."; break;
       case 15: p =
 "This program comes with ABSOLUTELY NO WARRANTY.\n"
 "This is free software, and you are welcome to redistribute it\n"

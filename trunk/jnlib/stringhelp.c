@@ -263,6 +263,52 @@ compare_filenames( const char *a, const char *b )
   #endif
 }
 
+/* Print a BUFFER to stream FP while replacing all control characters
+   and the character DELIM with standard C eescape sequences.  Returns
+   the number of characters printed. */
+size_t 
+print_sanitized_buffer (FILE *fp, const void *buffer, size_t length, int delim)
+{
+  const unsigned char *p = buffer;
+  size_t count = 0;
+
+  for (; length; length--, p++, count++)
+    {
+      if (*p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim)
+        {
+          putc ('\\', fp);
+          count++;
+          if (*p == '\n')
+            putc ('n', fp);
+          else if (*p == '\r')
+            putc ('r', fp);
+          else if (*p == '\f')
+            putc ('f', fp);
+          else if (*p == '\v')
+            putc ('v', fp);
+          else if (*p == '\b')
+            putc ('b', fp);
+          else if (!*p)
+            putc('0', fp);
+          else
+            {
+              fprintf (fp, "x%02x", *p);
+              count += 2;
+            }
+	}
+      else
+        putc (*p, fp);
+    }
+
+  return count;
+}
+
+size_t 
+print_sanitized_string (FILE *fp, const char *string, int delim)
+{
+  return string? print_sanitized_buffer (fp, string, strlen (string), delim):0;
+}
+
 
 /****************************************************
  ******** locale insensitive ctype functions ********
@@ -336,6 +382,26 @@ ascii_strcmp( const char *a, const char *b )
 }
 
 
+void *
+ascii_memcasemem (const void *haystack, size_t nhaystack,
+                  const void *needle, size_t nneedle)
+{
+
+  if (!nneedle)
+    return (void*)haystack; /* finding an empty needle is really easy */
+  if (nneedle <= nhaystack)
+    {
+      const unsigned char *a = haystack;
+      const unsigned char *b = a + nhaystack - nneedle;
+      
+      for (; a <= b; a++)
+        {
+          if ( !ascii_memcasecmp (a, needle, nneedle) )
+            return (void *)a;
+        }
+    }
+  return NULL;
+}
 
 /*********************************************
  ********** missing string functions *********
