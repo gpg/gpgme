@@ -493,14 +493,14 @@ void gpgme_key_release (GpgmeKey key);
 char *gpgme_key_get_as_xml (GpgmeKey key);
 
 /* Return the value of the attribute WHAT of KEY, which has to be
-   representable by a string.  IDX specifies a running index if the
-   attribute appears more than once in the key.  */
+   representable by a string.  IDX specifies the sub key or
+   user ID for attributes related to sub keys or user IDs.  */
 const char *gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
 				       const void *reserved, int idx);
 
 /* Return the value of the attribute WHAT of KEY, which has to be
-   representable by an unsigned integer.  IDX specifies a running
-   index if the attribute appears more than once in the key.  */
+   representable by an unsigned integer.  IDX specifies the sub key or
+   user ID for attributes related to sub keys or user IDs.  */
 unsigned long gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
 					const void *reserved, int idx);
 
@@ -508,8 +508,7 @@ unsigned long gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
 void gpgme_trust_item_release (GpgmeTrustItem item);
 
 /* Return the value of the attribute WHAT of ITEM, which has to be
-   representable by a string.  IDX specifies a running index if the
-   attribute appears more than once in the key.  */
+   representable by a string.  */
 const char *gpgme_trust_item_get_string_attr (GpgmeTrustItem item,
 					      GpgmeAttr what,
 					      const void *reserved, int idx);
