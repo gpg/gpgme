@@ -171,6 +171,15 @@ if test "$ac_cv_func_vasprintf" != yes; then
   GNUPG_CHECK_VA_COPY
 fi
 
+# Try to find a thread-safe version of ttyname().
+AC_REPLACE_FUNCS(ttyname_r)
+if test "$ac_cv_func_ttyname_r" != yes; then
+  AC_MSG_WARN([
+***
+*** ttyname() is not thread-safe and ttyname_r() does not exist
+***])
+fi
+
 # Try to find a thread-safe version of getenv().
 have_thread_safe_getenv=no
 jm_GLIBC21

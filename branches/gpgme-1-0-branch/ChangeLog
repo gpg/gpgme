@@ -1,3 +1,8 @@
+2004-12-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Replace ttyname_r if it doesn't exist (and warn in
+	that case).
+
 2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
 
 	* README: Refer to COPYING.LESSER and "each file" instead of
