@@ -35,7 +35,7 @@ typedef struct
 {
   struct _gpgme_op_verify_result result;
 
-  GpgmeSignature current_sig;
+  gpgme_signature_t current_sig;
 } *op_data_t;
 
 
@@ -43,16 +43,16 @@ static void
 release_op_data (void *hook)
 {
   op_data_t opd = (op_data_t) hook;
-  GpgmeSignature sig = opd->result.signatures;
+  gpgme_signature_t sig = opd->result.signatures;
 
   while (sig)
     {
-      GpgmeSignature next = sig->next;
-      GpgmeSigNotation notation = sig->notations;
+      gpgme_signature_t next = sig->next;
+      gpgme_sig_notation_t notation = sig->notations;
 
       while (notation)
 	{
-	  GpgmeSigNotation next_nota = notation->next;
+	  gpgme_sig_notation_t next_nota = notation->next;
 
 	  if (notation->name)
 	    free (notation->name);
@@ -69,11 +69,11 @@ release_op_data (void *hook)
 }
 
 
-GpgmeVerifyResult
-gpgme_op_verify_result (GpgmeCtx ctx)
+gpgme_verify_result_t
+gpgme_op_verify_result (gpgme_ctx_t ctx)
 {
   op_data_t opd;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, (void **) &opd, -1, NULL);
   if (err || !opd)
@@ -85,7 +85,7 @@ gpgme_op_verify_result (GpgmeCtx ctx)
 
 /* Build a summary vector from RESULT. */
 static void
-calc_sig_summary (GpgmeSignature sig)
+calc_sig_summary (gpgme_signature_t sig)
 {
   unsigned long sum = 0;
 
@@ -143,10 +143,10 @@ calc_sig_summary (GpgmeSignature sig)
 }
   
 
-static GpgmeError
-parse_new_sig (op_data_t opd, GpgmeStatusCode code, char *args)
+static gpgme_error_t
+parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
 {
-  GpgmeSignature sig;
+  gpgme_signature_t sig;
   char *end = strchr (args, ' ');
 
   if (end)
@@ -225,8 +225,8 @@ parse_new_sig (op_data_t opd, GpgmeStatusCode code, char *args)
 }
 
 
-static GpgmeError
-parse_valid_sig (GpgmeSignature sig, char *args)
+static gpgme_error_t
+parse_valid_sig (gpgme_signature_t sig, char *args)
 {
   char *end = strchr (args, ' ');
 
@@ -264,12 +264,12 @@ parse_valid_sig (GpgmeSignature sig, char *args)
 }
 
 
-static GpgmeError
-parse_notation (GpgmeSignature sig, GpgmeStatusCode code, char *args)
+static gpgme_error_t
+parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 {
-  GpgmeError err;
-  GpgmeSigNotation *lastp = &sig->notations;
-  GpgmeSigNotation notation = sig->notations;
+  gpgme_error_t err;
+  gpgme_sig_notation_t *lastp = &sig->notations;
+  gpgme_sig_notation_t notation = sig->notations;
   char *end = strchr (args, ' ');
 
   if (end)
@@ -370,8 +370,8 @@ parse_notation (GpgmeSignature sig, GpgmeStatusCode code, char *args)
 }
 
 
-static GpgmeError
-parse_trust (GpgmeSignature sig, GpgmeStatusCode code, char *args)
+static gpgme_error_t
+parse_trust (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 {
   char *end = strchr (args, ' ');
 
@@ -406,10 +406,10 @@ parse_trust (GpgmeSignature sig, GpgmeStatusCode code, char *args)
 }
 
 
-static GpgmeError
-parse_error (GpgmeSignature sig, char *args)
+static gpgme_error_t
+parse_error (gpgme_signature_t sig, char *args)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   char *where = strchr (args, ' ');
   char *which;
 
@@ -438,13 +438,13 @@ parse_error (GpgmeSignature sig, char *args)
 }
 
 
-GpgmeError
-_gpgme_verify_status_handler (void *priv, GpgmeStatusCode code, char *args)
+gpgme_error_t
+_gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
-  GpgmeError err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
   op_data_t opd;
-  GpgmeSignature sig;
+  gpgme_signature_t sig;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, (void **) &opd, -1, NULL);
   if (err)
@@ -505,8 +505,8 @@ _gpgme_verify_status_handler (void *priv, GpgmeStatusCode code, char *args)
 }
 
 
-GpgmeError
-_gpgme_op_verify_init_result (GpgmeCtx ctx)
+gpgme_error_t
+_gpgme_op_verify_init_result (gpgme_ctx_t ctx)
 {  
   op_data_t opd;
 
@@ -515,11 +515,11 @@ _gpgme_op_verify_init_result (GpgmeCtx ctx)
 }
 
 
-static GpgmeError
-_gpgme_op_verify_start (GpgmeCtx ctx, int synchronous, GpgmeData sig,
-			GpgmeData signed_text, GpgmeData plaintext)
+static gpgme_error_t
+_gpgme_op_verify_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t sig,
+			gpgme_data_t signed_text, gpgme_data_t plaintext)
 {
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -543,9 +543,9 @@ _gpgme_op_verify_start (GpgmeCtx ctx, int synchronous, GpgmeData sig,
 
 /* Decrypt ciphertext CIPHER and make a signature verification within
    CTX and store the resulting plaintext in PLAIN.  */
-GpgmeError
-gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
-		       GpgmeData plaintext)
+gpgme_error_t
+gpgme_op_verify_start (gpgme_ctx_t ctx, gpgme_data_t sig, gpgme_data_t signed_text,
+		       gpgme_data_t plaintext)
 {
   return _gpgme_op_verify_start (ctx, 0, sig, signed_text, plaintext);
 }
@@ -553,11 +553,11 @@ gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
 
 /* Decrypt ciphertext CIPHER and make a signature verification within
    CTX and store the resulting plaintext in PLAIN.  */
-GpgmeError
-gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
-		 GpgmeData plaintext)
+gpgme_error_t
+gpgme_op_verify (gpgme_ctx_t ctx, gpgme_data_t sig, gpgme_data_t signed_text,
+		 gpgme_data_t plaintext)
 {
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_verify_start (ctx, 1, sig, signed_text, plaintext);
   if (!err)
@@ -570,11 +570,11 @@ gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
 
 /* Get the key used to create signature IDX in CTX and return it in
    R_KEY.  */
-GpgmeError
-gpgme_get_sig_key (GpgmeCtx ctx, int idx, GpgmeKey *r_key)
+gpgme_error_t
+gpgme_get_sig_key (gpgme_ctx_t ctx, int idx, gpgme_key_t *r_key)
 {
-  GpgmeVerifyResult result;
-  GpgmeSignature sig;
+  gpgme_verify_result_t result;
+  gpgme_signature_t sig;
 
   result = gpgme_op_verify_result (ctx);
   sig = result->signatures;
@@ -595,11 +595,11 @@ gpgme_get_sig_key (GpgmeCtx ctx, int idx, GpgmeKey *r_key)
    successful verify operation in R_STAT (if non-null).  The creation
    time stamp of the signature is returned in R_CREATED (if non-null).
    The function returns a string containing the fingerprint.  */
-const char *gpgme_get_sig_status (GpgmeCtx ctx, int idx,
-                                  GpgmeSigStat *r_stat, time_t *r_created)
+const char *gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
+                                  _gpgme_sig_stat_t *r_stat, time_t *r_created)
 {
-  GpgmeVerifyResult result;
-  GpgmeSignature sig;
+  gpgme_verify_result_t result;
+  gpgme_signature_t sig;
 
   result = gpgme_op_verify_result (ctx);
   sig = result->signatures;
@@ -655,11 +655,11 @@ const char *gpgme_get_sig_status (GpgmeCtx ctx, int idx,
    number of the signature after a successful verify operation.  WHAT
    is an attribute where GPGME_ATTR_EXPIRE is probably the most useful
    one.  WHATIDX is to be passed as 0 for most attributes . */
-unsigned long gpgme_get_sig_ulong_attr (GpgmeCtx ctx, int idx,
-                                        GpgmeAttr what, int whatidx)
+unsigned long gpgme_get_sig_ulong_attr (gpgme_ctx_t ctx, int idx,
+                                        _gpgme_attr_t what, int whatidx)
 {
-  GpgmeVerifyResult result;
-  GpgmeSignature sig;
+  gpgme_verify_result_t result;
+  gpgme_signature_t sig;
 
   result = gpgme_op_verify_result (ctx);
   sig = result->signatures;
@@ -718,11 +718,11 @@ unsigned long gpgme_get_sig_ulong_attr (GpgmeCtx ctx, int idx,
 }
 
 
-const char *gpgme_get_sig_string_attr (GpgmeCtx ctx, int idx,
-                                      GpgmeAttr what, int whatidx)
+const char *gpgme_get_sig_string_attr (gpgme_ctx_t ctx, int idx,
+                                      _gpgme_attr_t what, int whatidx)
 {
-  GpgmeVerifyResult result;
-  GpgmeSignature sig;
+  gpgme_verify_result_t result;
+  gpgme_signature_t sig;
 
   result = gpgme_op_verify_result (ctx);
   sig = result->signatures;

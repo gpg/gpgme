@@ -30,7 +30,7 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
                    __FILE__, __LINE__, gpgme_strerror (err));   \
           exit (1);						\
         }							\
@@ -76,10 +76,10 @@ keys[] =
 int 
 main (int argc, char **argv)
 {
-  GpgmeError err;
-  GpgmeCtx ctx;
-  GpgmeKey key;
-  GpgmeKeyListResult result;
+  gpgme_error_t err;
+  gpgme_ctx_t ctx;
+  gpgme_key_t key;
+  gpgme_keylist_result_t result;
   int i = 0;
 
   err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);

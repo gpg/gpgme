@@ -28,27 +28,27 @@
 
 
 static ssize_t
-fd_read (GpgmeData dh, void *buffer, size_t size)
+fd_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   return read (dh->data.fd, buffer, size);
 }
 
 
 static ssize_t
-fd_write (GpgmeData dh, const void *buffer, size_t size)
+fd_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   return write (dh->data.fd, buffer, size);
 }
 
 
 static off_t
-fd_seek (GpgmeData dh, off_t offset, int whence)
+fd_seek (gpgme_data_t dh, off_t offset, int whence)
 {
   return lseek (dh->data.fd, offset, whence);
 }
 
 
-static struct gpgme_data_cbs fd_cbs =
+static struct _gpgme_data_cbs fd_cbs =
   {
     fd_read,
     fd_write,
@@ -57,10 +57,10 @@ static struct gpgme_data_cbs fd_cbs =
   };
 
 
-GpgmeError
-gpgme_data_new_from_fd (GpgmeData *dh, int fd)
+gpgme_error_t
+gpgme_data_new_from_fd (gpgme_data_t *dh, int fd)
 {
-  GpgmeError err = _gpgme_data_new (dh, &fd_cbs);
+  gpgme_error_t err = _gpgme_data_new (dh, &fd_cbs);
   if (err)
     return err;
 

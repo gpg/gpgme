@@ -30,7 +30,7 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
                    __FILE__, __LINE__, gpgme_strerror (err));   \
           exit (1);						\
         }							\
@@ -82,10 +82,10 @@ static const char test_sig2[] =
 
 
 static void
-check_result (GpgmeVerifyResult result, int summary, char *fpr,
-	      GpgmeError status, int notation)
+check_result (gpgme_verify_result_t result, int summary, char *fpr,
+	      gpgme_error_t status, int notation)
 {
-  GpgmeSignature sig;
+  gpgme_signature_t sig;
 
   sig = result->signatures;
   if (!sig || sig->next)
@@ -157,10 +157,10 @@ check_result (GpgmeVerifyResult result, int summary, char *fpr,
 int 
 main (int argc, char *argv[])
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeData sig, text;
-  GpgmeVerifyResult result;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_data_t sig, text;
+  gpgme_verify_result_t result;
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
@@ -180,7 +180,7 @@ main (int argc, char *argv[])
   gpgme_data_release (text);
   err = gpgme_data_new_from_mem (&text, test_text1f, strlen (test_text1f), 0);
   fail_if_err (err);
-  gpgme_data_rewind (sig);
+  gpgme_data_seek (sig, 0, SEEK_SET);
   err = gpgme_op_verify (ctx, sig, text, NULL);
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);

@@ -40,7 +40,7 @@ static const char test_cip1[] =
 "-----END CMS OBJECT-----\n";
 
 #define fail_if_err(a) do { if(a) { int my_errno = errno; \
-            fprintf (stderr, "%s:%d: GpgmeError %s\n", \
+            fprintf (stderr, "%s:%d: gpgme_error_t %s\n", \
                  __FILE__, __LINE__, gpgme_strerror(a));   \
             if ((a) == GPGME_File_Error)                       \
                    fprintf (stderr, "\terrno=`%s'\n", strerror (my_errno)); \
@@ -48,7 +48,7 @@ static const char test_cip1[] =
                              } while(0)
 
 static void
-print_data (GpgmeData dh)
+print_data (gpgme_data_t dh)
 {
 #define BUF_SIZE 512
   char buf[BUF_SIZE + 1];
@@ -67,10 +67,10 @@ print_data (GpgmeData dh)
 int 
 main (int argc, char *argv[])
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeData in, out;
-  GpgmeDecryptResult result;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_data_t in, out;
+  gpgme_decrypt_result_t result;
 
   err = gpgme_new (&ctx);
   fail_if_err (err);

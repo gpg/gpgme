@@ -38,15 +38,15 @@
 struct key_queue_item_s
 {
   struct key_queue_item_s *next;
-  GpgmeKey key;
+  gpgme_key_t key;
 };
 
 typedef struct
 {
   struct _gpgme_op_keylist_result result;
 
-  GpgmeKey tmp_key;
-  GpgmeUserID tmp_uid;
+  gpgme_key_t tmp_key;
+  gpgme_user_id_t tmp_uid;
   /* Something new is available.  */
   int key_cond;
   struct key_queue_item_s *key_queue;
@@ -73,11 +73,11 @@ release_op_data (void *hook)
 }
 
 
-GpgmeKeyListResult
-gpgme_op_keylist_result (GpgmeCtx ctx)
+gpgme_keylist_result_t
+gpgme_op_keylist_result (gpgme_ctx_t ctx)
 {
   op_data_t opd;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
   if (err || !opd)
@@ -87,11 +87,11 @@ gpgme_op_keylist_result (GpgmeCtx ctx)
 }
 
 
-static GpgmeError
-keylist_status_handler (void *priv, GpgmeStatusCode code, char *args)
+static gpgme_error_t
+keylist_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
-  GpgmeError err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
   op_data_t opd;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
@@ -122,7 +122,7 @@ parse_timestamp (char *timestamp)
 
 
 static void
-set_mainkey_trust_info (GpgmeKey key, const char *src)
+set_mainkey_trust_info (gpgme_key_t key, const char *src)
 {
   /* Look at letters and stop at the first digit.  */
   while (*src && !isdigit (*src))
@@ -153,9 +153,9 @@ set_mainkey_trust_info (GpgmeKey key, const char *src)
 
 
 static void
-set_userid_flags (GpgmeKey key, const char *src)
+set_userid_flags (gpgme_key_t key, const char *src)
 {
-  GpgmeUserID uid = key->_last_uid;
+  gpgme_user_id_t uid = key->_last_uid;
 
   assert (uid);
   /* Look at letters and stop at the first digit.  */
@@ -193,7 +193,7 @@ set_userid_flags (GpgmeKey key, const char *src)
 
 
 static void
-set_subkey_trust_info (GpgmeSubkey subkey, const char *src)
+set_subkey_trust_info (gpgme_subkey_t subkey, const char *src)
 {
   /* Look at letters and stop at the first digit.  */
   while (*src && !isdigit (*src))
@@ -222,7 +222,7 @@ set_subkey_trust_info (GpgmeSubkey subkey, const char *src)
 
 
 static void
-set_mainkey_capability (GpgmeKey key, const char *src)
+set_mainkey_capability (gpgme_key_t key, const char *src)
 {
   while (*src)
     {
@@ -268,7 +268,7 @@ set_mainkey_capability (GpgmeKey key, const char *src)
 
 
 static void
-set_subkey_capability (GpgmeSubkey subkey, const char *src)
+set_subkey_capability (gpgme_subkey_t subkey, const char *src)
 {
   while (*src)
     {
@@ -291,7 +291,7 @@ set_subkey_capability (GpgmeSubkey subkey, const char *src)
 }
 
 static void
-set_ownertrust (GpgmeKey key, const char *src)
+set_ownertrust (gpgme_key_t key, const char *src)
 {
   /* Look at letters and stop at the first digit.  */
   while (*src && !isdigit (*src))
@@ -326,9 +326,9 @@ set_ownertrust (GpgmeKey key, const char *src)
 /* We have read an entire key into tmp_key and should now finish it.
    It is assumed that this releases tmp_key.  */
 static void
-finish_key (GpgmeCtx ctx, op_data_t opd)
+finish_key (gpgme_ctx_t ctx, op_data_t opd)
 {
-  GpgmeKey key = opd->tmp_key;
+  gpgme_key_t key = opd->tmp_key;
 
   opd->tmp_key = NULL;
   opd->tmp_uid = NULL;
@@ -339,10 +339,10 @@ finish_key (GpgmeCtx ctx, op_data_t opd)
 
 
 /* Note: We are allowed to modify LINE.  */
-static GpgmeError
+static gpgme_error_t
 keylist_colon_handler (void *priv, char *line)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   enum
     {
       RT_NONE, RT_SIG, RT_UID, RT_SUB, RT_PUB, RT_FPR,
@@ -353,10 +353,10 @@ keylist_colon_handler (void *priv, char *line)
   char *field[NR_FIELDS];
   int fields = 0;
   op_data_t opd;
-  GpgmeError err;
-  GpgmeKey key;
-  GpgmeSubkey subkey = NULL;
-  GpgmeKeySig keysig = NULL;
+  gpgme_error_t err;
+  gpgme_key_t key;
+  gpgme_subkey_t subkey = NULL;
+  gpgme_key_sig_t keysig = NULL;
 
   DEBUG3 ("keylist_colon_handler ctx = %p, key = %p, line = %s\n",
 	  ctx, key, line ? line : "(null)");
@@ -661,11 +661,11 @@ keylist_colon_handler (void *priv, char *line)
 
 
 void
-_gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data)
+_gpgme_op_keylist_event_cb (void *data, gpgme_event_io_t type, void *type_data)
 {
-  GpgmeError err;
-  GpgmeCtx ctx = (GpgmeCtx) data;
-  GpgmeKey key = (GpgmeKey) type_data;
+  gpgme_error_t err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) data;
+  gpgme_key_t key = (gpgme_key_t) type_data;
   op_data_t opd;
   struct key_queue_item_s *q, *q2;
 
@@ -700,10 +700,10 @@ _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data)
 /* Start a keylist operation within CTX, searching for keys which
    match PATTERN.  If SECRET_ONLY is true, only secret keys are
    returned.  */
-GpgmeError
-gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
+gpgme_error_t
+gpgme_op_keylist_start (gpgme_ctx_t ctx, const char *pattern, int secret_only)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   op_data_t opd;
 
   err = _gpgme_op_reset (ctx, 2);
@@ -730,11 +730,11 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
 /* Start a keylist operation within CTX, searching for keys which
    match PATTERN.  If SECRET_ONLY is true, only secret keys are
    returned.  */
-GpgmeError
-gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
+gpgme_error_t
+gpgme_op_keylist_ext_start (gpgme_ctx_t ctx, const char *pattern[],
 			    int secret_only, int reserved)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   op_data_t opd;
 
   err = _gpgme_op_reset (ctx, 2);
@@ -758,10 +758,10 @@ gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
 
 
 /* Return the next key from the keylist in R_KEY.  */
-GpgmeError
-gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
+gpgme_error_t
+gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   struct key_queue_item_s *queue_item;
   op_data_t opd;
 
@@ -799,8 +799,8 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
 
 
 /* Terminate a pending keylist operation within CTX.  */
-GpgmeError
-gpgme_op_keylist_end (GpgmeCtx ctx)
+gpgme_error_t
+gpgme_op_keylist_end (gpgme_ctx_t ctx)
 {
   if (!ctx)
     return GPGME_Invalid_Value;
@@ -811,12 +811,12 @@ gpgme_op_keylist_end (GpgmeCtx ctx)
 
 /* Get the key with the fingerprint FPR from the crypto backend.  If
    SECRET is true, get the secret key.  */
-GpgmeError
-gpgme_get_key (GpgmeCtx ctx, const char *fpr, GpgmeKey *r_key,
+gpgme_error_t
+gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
 	       int secret)
 {
-  GpgmeCtx listctx;
-  GpgmeError err;
+  gpgme_ctx_t listctx;
+  gpgme_error_t err;
 
   if (!ctx || !r_key)
     return GPGME_Invalid_Value;

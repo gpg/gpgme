@@ -31,7 +31,7 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
                    __FILE__, __LINE__, gpgme_strerror (err));   \
           exit (1);						\
         }							\
@@ -40,7 +40,7 @@
 
 
 static void
-print_data (GpgmeData dh)
+print_data (gpgme_data_t dh)
 {
 #define BUF_SIZE 512
   char buf[BUF_SIZE + 1];
@@ -56,7 +56,7 @@ print_data (GpgmeData dh)
 }
 
 
-static GpgmeError
+static gpgme_error_t
 passphrase_cb (void *opaque, const char *desc, void **hd, const char **result)
 {
   /* Cleanup by looking at *hd.  */
@@ -91,10 +91,10 @@ make_filename (const char *fname)
 
 
 static void
-check_verify_result (GpgmeVerifyResult result, int summary, char *fpr,
-		     GpgmeError status)
+check_verify_result (gpgme_verify_result_t result, int summary, char *fpr,
+		     gpgme_error_t status)
 {
-  GpgmeSignature sig;
+  gpgme_signature_t sig;
 
   sig = result->signatures;
   if (!sig || sig->next)
@@ -151,11 +151,11 @@ check_verify_result (GpgmeVerifyResult result, int summary, char *fpr,
 int 
 main (int argc, char *argv[])
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeData in, out;
-  GpgmeDecryptResult decrypt_result;
-  GpgmeVerifyResult verify_result;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_data_t in, out;
+  gpgme_decrypt_result_t decrypt_result;
+  gpgme_verify_result_t verify_result;
   const char *cipher_2_asc = make_filename ("cipher-2.asc");
   char *agent_info;
 

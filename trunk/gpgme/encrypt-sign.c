@@ -27,19 +27,19 @@
 #include "ops.h"
 
 
-static GpgmeError
-encrypt_sign_status_handler (void *priv, GpgmeStatusCode code, char *args)
+static gpgme_error_t
+encrypt_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   return _gpgme_encrypt_status_handler (priv, code, args)
     || _gpgme_sign_status_handler (priv, code, args);
 }
 
 
-static GpgmeError
-encrypt_sign_start (GpgmeCtx ctx, int synchronous, GpgmeRecipients recp,
-		    GpgmeData plain, GpgmeData cipher)
+static gpgme_error_t
+encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_recipients_t recp,
+		    gpgme_data_t plain, gpgme_data_t cipher)
 {
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -78,9 +78,9 @@ encrypt_sign_start (GpgmeCtx ctx, int synchronous, GpgmeRecipients recp,
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  Also sign the ciphertext
    with the signers in CTX.  */
-GpgmeError
-gpgme_op_encrypt_sign_start (GpgmeCtx ctx, GpgmeRecipients recp,
-			      GpgmeData plain, GpgmeData cipher)
+gpgme_error_t
+gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+			      gpgme_data_t plain, gpgme_data_t cipher)
 {
   return encrypt_sign_start (ctx, 0, recp, plain, cipher);
 }
@@ -89,11 +89,11 @@ gpgme_op_encrypt_sign_start (GpgmeCtx ctx, GpgmeRecipients recp,
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  Also sign the ciphertext
    with the signers in CTX.  */
-GpgmeError
-gpgme_op_encrypt_sign (GpgmeCtx ctx, GpgmeRecipients recp,
-		       GpgmeData plain, GpgmeData cipher)
+gpgme_error_t
+gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+		       gpgme_data_t plain, gpgme_data_t cipher)
 {
-  GpgmeError err = encrypt_sign_start (ctx, 1, recp, plain, cipher);
+  gpgme_error_t err = encrypt_sign_start (ctx, 1, recp, plain, cipher);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

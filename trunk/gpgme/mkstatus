@@ -31,7 +31,7 @@ cat <<EOF
 
 struct status_table_s {
     const char *name;
-    GpgmeStatusCode code;
+    gpgme_status_code_t code;
 };
 
 static struct status_table_s status_table[] = 

@@ -171,7 +171,7 @@ Key Management
 Trust Item Management
 
 * Listing Trust Items::           Browsing the list of available trust items.
-* Information About Trust Items:: Requesting detailed information about trust items.
+* Information About Trust Items:: Requesting information about trust items.
 * Manipulating Trust Items::      Operations on trust items.
 
 Crypto Operations
@@ -336,10 +336,9 @@ like this:
 #include <gpgme.h>
 @end example
 
-The name space of @acronym{GPGME} is @code{gpgme_*} for function
-names, @code{Gpgme*} for data types and @code{GPGME_*} for other
-symbols.  Symbols internal to @acronym{GPGME} take the form
-@code{_gpgme_*}.
+The name space of @acronym{GPGME} is @code{gpgme_*} for function names
+and data types and @code{GPGME_*} for other symbols.  Symbols internal
+to @acronym{GPGME} take the form @code{_gpgme_*} and @code{_GPGME_*}.
 
 Because @acronym{GPGME} links to the Assuan library, linking to
 @acronym{GPGME} will also use the @code{assuan_*} and @code{_assuan_*}
@@ -486,7 +485,8 @@ contact us if you have the need.
 @item
 If you link your program dynamically to @acronym{GPGME} and your
 supported thread library, @acronym{GPGME} will automatically detect
-the presence of this library and activate its use.  If you link to
+the presence of this library and activate its use.  You must link to
+the thread library before linking to @acronym{GPGME}.  If you link to
 both pthread and GNU Pth, @acronym{GPGME} will use the pthread
 support.  This feature requires weak symbol support.
 
@@ -541,7 +541,7 @@ initialize_gpgme (void)
 @end example
 
 @item
-Any @code{GpgmeData}, @code{GpgmeCtx} and @code{GpgmeRecipients}
+Any @code{gpgme_data_t}, @code{gpgme_ctx_t} and @code{gpgme_recipients_t}
 object must only be accessed by one thread at a time.  If multiple
 threads want to deal with the same object, the caller has to make sure
 that operations on that object are fully synchronized.
@@ -573,9 +573,9 @@ exchange of information between the application and the backend is
 necessary, @acronym{GPGME} provides the necessary callback function
 hooks and further interfaces.
 
-@deftp {Data type} {enum GpgmeProtocol}
-@tindex GpgmeProtocol
-The @code{GpgmeProtocol} type specifies the set of possible protocol
+@deftp {Data type} {enum gpgme_protocol_t}
+@tindex gpgme_protocol_t
+The @code{gpgme_protocol_t} type specifies the set of possible protocol
 values that are supported by @acronym{GPGME}.  The following protocols
 are supported:
 
@@ -588,7 +588,7 @@ This specifies the Cryptographic Message Syntax.
 @end deftp
 
 
-@deftypefun const char *gpgme_get_protocol_name (@w{GpgmeProtocol @var{protocol}})
+@deftypefun const char *gpgme_get_protocol_name (@w{gpgme_protocol_t @var{protocol}})
 The function @code{gpgme_get_protocol_name} returns a statically
 allocated string describing the protocol @var{protocol}, or
 @code{NULL} if the protocol number is not valid.
@@ -606,7 +606,7 @@ allocated string describing the protocol @var{protocol}, or
 @section Engine Version Check
 @cindex version check, of the engines
 
-@deftypefun GpgmeError gpgme_engine_check_version (@w{GpgmeProtocol @var{protocol}})
+@deftypefun gpgme_error_t gpgme_engine_check_version (@w{gpgme_protocol_t @var{protocol}})
 The function @code{gpgme_engine_check_version} verifies that the
 engine implementing the protocol @var{PROTOCOL} is installed in the
 expected path and meets the version requirement of @acronym{GPGME}.
@@ -620,18 +620,18 @@ and @code{GPGME_Invalid_Engine} if it is not.
 @section Engine Information
 @cindex engine, information about
 
-@deftp {Data type} {GpgmeEngineInfo}
-@tindex GpgmeProtocol
-The @code{GpgmeEngineInfo} type specifies a pointer to a structure
+@deftp {Data type} {gpgme_engine_info_t}
+@tindex gpgme_protocol_t
+The @code{gpgme_engine_info_t} type specifies a pointer to a structure
 describing a crypto backend engine.  The structure contains the
 following elements:
 
 @table @code
-@item GpgmeEngineInfo next
+@item gpgme_engine_info_t next
 This is a pointer to the next engine info structure in the linked
 list, or @code{NULL} if this is the last element.
 
-@item GpgmeProtocol protocol
+@item gpgme_protocol_t protocol
 This is the protocol for which the crypo engine is used.  You can
 convert this to a string with @code{gpgme_get_protocol_name} for
 printing.
@@ -655,7 +655,7 @@ reserved for future use, so always check before you use it.
 @end table
 @end deftp
 
-@deftypefun GpgmeError gpgme_get_engine_info (GpgmeEngineInfo *info)
+@deftypefun gpgme_error_t gpgme_get_engine_info (gpgme_engine_info_t *info)
 The function @code{gpgme_get_engine_info} returns a linked list of
 engine info structures in @var{info}.  Each info structure describes
 one configured crypto backend engine.
@@ -673,14 +673,14 @@ receive an error message which indicates that the crypto engine is
 invalid.
 
 @example
-GpgmeCtx ctx;
-GpgmeError err;
+gpgme_ctx_t ctx;
+gpgme_error_t err;
 
 [...]
 
 if (err == GPGME_Invalid_Engine)
   @{
-    GpgmeEngineInfo info;
+    gpgme_engine_info_t info;
     err = gpgme_get_engine_info (&info);
     if (!err)
       @{
@@ -755,9 +755,9 @@ denote such an algorithm.
 Public key algorithms are used for encryption, decryption, signing and
 verification of signatures.
 
-@deftp {Data type} {enum GpgmePubKeyAlgo}
-@tindex GpgmePubKeyAlgo
-The @code{GpgmePubKeyAlgo} type specifies the set of all public key
+@deftp {Data type} {enum gpgme_pubkey_algo_t}
+@tindex gpgme_pubkey_algo_t
+The @code{gpgme_pubkey_algo_t} type specifies the set of all public key
 algorithms that are supported by @acronym{GPGME}.  Possible values
 are:
 
@@ -784,7 +784,7 @@ This value also indicates ElGamal and is used specifically in GnuPG.
 @end table
 @end deftp
 
-@deftypefun {const char *} gpgme_pubkey_algo_name (@w{GpgmePubKeyAlgo @var{algo}})
+@deftypefun {const char *} gpgme_pubkey_algo_name (@w{gpgme_pubkey_algo_t @var{algo}})
 The function @code{gpgme_pubkey_algo_name} returns a pointer to a
 statically allocated string containing a description of the public key
 algorithm @var{algo}.  This string can be used to output the name of
@@ -805,9 +805,9 @@ returned.
 Hash (message digest) algorithms are used to compress a long message
 to make it suitable for public key cryptography.
 
-@deftp {Data type} {enum GpgmeHashAlgo}
-@tindex GpgmeHashAlgo
-The @code{GpgmeHashAlgo} type specifies the set of all hash algorithms
+@deftp {Data type} {enum gpgme_hash_algo_t}
+@tindex gpgme_hash_algo_t
+The @code{gpgme_hash_algo_t} type specifies the set of all hash algorithms
 that are supported by @acronym{GPGME}.  Possible values are:
 
 @table @code
@@ -827,7 +827,7 @@ that are supported by @acronym{GPGME}.  Possible values are:
 @end table
 @end deftp
 
-@deftypefun {const char *} gpgme_hash_algo_name (@w{GpgmeHashAlgo @var{algo}})
+@deftypefun {const char *} gpgme_hash_algo_name (@w{gpgme_hash_algo_t @var{algo}})
 The function @code{gpgme_hash_algo_name} returns a pointer to a
 statically allocated string containing a description of the hash
 algorithm @var{algo}.  This string can be used to output the name of
@@ -866,9 +866,9 @@ described in the documentation of those functions.
 @section Error Values
 @cindex error values, list of
 
-@deftp {Data type} {enum GpgmeError}
-@tindex GpgmeError
-The @code{GpgmeError} type specifies the set of all error values that
+@deftp {Data type} {enum gpgme_error_t}
+@tindex gpgme_error_t
+The @code{gpgme_error_t} type specifies the set of all error values that
 are used by @acronym{GPGME}.  Possible values are:
 
 @table @code
@@ -888,7 +888,7 @@ This value means that an out-of-memory condition occurred.
 
 @item GPGME_Invalid_Value
 This value means that some user provided data was out of range.  This
-can also refer to objects.  For example, if an empty @code{GpgmeData}
+can also refer to objects.  For example, if an empty @code{gpgme_data_t}
 object was expected, but one containing data was provided, this error
 value is returned.
 
@@ -910,7 +910,7 @@ This value means that some, but not all, recipients for a message have
 been invalid.
 
 @item GPGME_No_Data
-This value means that a @code{GpgmeData} object which was expected to
+This value means that a @code{gpgme_data_t} object which was expected to
 have content was found empty.
 
 @item GPGME_Conflict
@@ -1014,7 +1014,7 @@ available.
 @cindex error values, printing of
 @cindex error strings
 
-@deftypefun {const char *} gpgme_strerror (@w{GpgmeError @var{err}})
+@deftypefun {const char *} gpgme_strerror (@w{gpgme_error_t @var{err}})
 The function @code{gpgme_strerror} returns a pointer to a statically
 allocated string containing a description of the error with the error
 value @var{err}.  This string can be used to output a diagnostic
@@ -1023,8 +1023,8 @@ message to the user.
 The following example illustrates the use of @code{gpgme_strerror}:
 
 @example
-GpgmeCtx ctx;
-GpgmeError err = gpgme_new (&ctx);
+gpgme_ctx_t ctx;
+gpgme_error_t err = gpgme_new (&ctx);
 if (err)
   @{
     fprintf (stderr, "%s: creating GpgME context failed: %s\n",
@@ -1043,12 +1043,12 @@ A lot of data has to be exchanged between the user and the crypto
 engine, like plaintext messages, ciphertext, signatures and
 information about the keys.  The technical details about exchanging
 the data information are completely abstracted by @acronym{GPGME}.
-The user provides and receives the data via @code{GpgmeData} objects,
+The user provides and receives the data via @code{gpgme_data_t} objects,
 regardless of the communication protocol between @acronym{GPGME} and
 the crypto engine in use.
 
-@deftp {Data type} {GpgmeData}
-The @code{GpgmeData} type is a handle for a container for generic
+@deftp {Data type} {gpgme_data_t}
+The @code{gpgme_data_t} type is a handle for a container for generic
 data, which is used by @acronym{GPGME} to exchange data with the user.
 @end deftp
 
@@ -1084,8 +1084,8 @@ fraction of the available physical memory.  The data has to be copied
 from its source and to its destination, which can often be avoided by
 using one of the other data object 
 
-@deftypefun GpgmeError gpgme_data_new (@w{GpgmeData *@var{dh}})
-The function @code{gpgme_data_new} creates a new @code{GpgmeData}
+@deftypefun gpgme_error_t gpgme_data_new (@w{gpgme_data_t *@var{dh}})
+The function @code{gpgme_data_new} creates a new @code{gpgme_data_t}
 object and returns a handle for it in @var{dh}.  The data object is
 memory based and initially empty.
 
@@ -1095,9 +1095,9 @@ valid pointer, and @code{GPGME_Out_Of_Core} if not enough memory is
 available.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_data_new_from_mem (@w{GpgmeData *@var{dh}}, @w{const char *@var{buffer}}, @w{size_t @var{size}}, @w{int @var{copy}})
+@deftypefun gpgme_error_t gpgme_data_new_from_mem (@w{gpgme_data_t *@var{dh}}, @w{const char *@var{buffer}}, @w{size_t @var{size}}, @w{int @var{copy}})
 The function @code{gpgme_data_new_from_mem} creates a new
-@code{GpgmeData} object and fills it with @var{size} bytes starting
+@code{gpgme_data_t} object and fills it with @var{size} bytes starting
 from @var{buffer}.
 
 If @var{copy} is not zero, a private copy of the data is made.  If
@@ -1111,9 +1111,9 @@ successfully created, @code{GPGME_Invalid_Value} if @var{dh} or
 not enough memory is available.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_data_new_from_file (@w{GpgmeData *@var{dh}}, @w{const char *@var{filename}}, @w{int @var{copy}})
+@deftypefun gpgme_error_t gpgme_data_new_from_file (@w{gpgme_data_t *@var{dh}}, @w{const char *@var{filename}}, @w{int @var{copy}})
 The function @code{gpgme_data_new_from_file} creates a new
-@code{GpgmeData} object and fills it with the content of the file
+@code{gpgme_data_t} object and fills it with the content of the file
 @var{filename}.
 
 If @var{copy} is not zero, the whole file is read in at initialization
@@ -1129,9 +1129,9 @@ I/O operation fails, @code{GPGME_Not_Implemented} if @var{code} is
 zero, and @code{GPGME_Out_Of_Core} if not enough memory is available.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_data_new_from_filepart (@w{GpgmeData *@var{dh}}, @w{const char *@var{filename}}, @w{FILE *@var{fp}}, @w{off_t @var{offset}}, @w{size_t @var{length}})
+@deftypefun gpgme_error_t gpgme_data_new_from_filepart (@w{gpgme_data_t *@var{dh}}, @w{const char *@var{filename}}, @w{FILE *@var{fp}}, @w{off_t @var{offset}}, @w{size_t @var{length}})
 The function @code{gpgme_data_new_from_filepart} creates a new
-@code{GpgmeData} object and fills it with a part of the file specified
+@code{gpgme_data_t} object and fills it with a part of the file specified
 by @var{filename} or @var{fp}.
 
 Exactly one of @var{filename} and @var{fp} must be non-zero, the other
@@ -1154,9 +1154,9 @@ File based data objects operate directly on file descriptors or
 streams.  Only a small amount of data is stored in core at any time,
 so the size of the data objects is not limited by @acronym{GPGME}.
 
-@deftypefun GpgmeError gpgme_data_new_from_fd (@w{GpgmeData *@var{dh}}, @w{int @var{fd}})
+@deftypefun gpgme_error_t gpgme_data_new_from_fd (@w{gpgme_data_t *@var{dh}}, @w{int @var{fd}})
 The function @code{gpgme_data_new_from_fd} creates a new
-@code{GpgmeData} object and uses the file descriptor @var{fd} to read
+@code{gpgme_data_t} object and uses the file descriptor @var{fd} to read
 from (if used as an input data object) and write to (if used as an
 output data object).
 
@@ -1169,9 +1169,9 @@ successfully created, and @code{GPGME_Out_Of_Core} if not enough
 memory is available.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_data_new_from_stream (@w{GpgmeData *@var{dh}}, @w{FILE *@var{stream}})
+@deftypefun gpgme_error_t gpgme_data_new_from_stream (@w{gpgme_data_t *@var{dh}}, @w{FILE *@var{stream}})
 The function @code{gpgme_data_new_from_stream} creates a new
-@code{GpgmeData} object and uses the I/O stream @var{stream} to read
+@code{gpgme_data_t} object and uses the I/O stream @var{stream} to read
 from (if used as an input data object) and write to (if used as an
 output data object).
 
@@ -1192,9 +1192,9 @@ If neither memory nor file based data objects are a good fit for your
 application, you can implement the functions a data object provides
 yourself and create a data object from these callback functions.
 
-@deftp {Data type} {ssize_t (*GpgmeDataReadCb) (@w{void *@var{handle}}, @w{void @var{*buffer}}, @w{size_t @var{size}})}
-@tindex GpgmeDataReadCb
-The @code{GpgmeDataReadCb} type is the type of functions which
+@deftp {Data type} {ssize_t (*gpgme_data_read_cb_t) (@w{void *@var{handle}}, @w{void @var{*buffer}}, @w{size_t @var{size}})}
+@tindex gpgme_data_read_cb_t
+The @code{gpgme_data_read_cb_t} type is the type of functions which
 @acronym{GPGME} calls if it wants to read data from a user-implemented
 data object.  The function should read up to @var{size} bytes from the
 current read position into the space starting at @var{buffer}.  The
@@ -1205,9 +1205,9 @@ on error.  If an error occurs, @var{errno} should be set to describe
 the type of the error.
 @end deftp
 
-@deftp {Data type} {ssize_t (*GpgmeDataWriteCb) (@w{void *@var{handle}}, @w{const void @var{*buffer}}, @w{size_t @var{size}})}
-@tindex GpgmeDataWriteCb
-The @code{GpgmeDataWriteCb} type is the type of functions which
+@deftp {Data type} {ssize_t (*gpgme_data_write_cb_t) (@w{void *@var{handle}}, @w{const void @var{*buffer}}, @w{size_t @var{size}})}
+@tindex gpgme_data_write_cb_t
+The @code{gpgme_data_write_cb_t} type is the type of functions which
 @acronym{GPGME} calls if it wants to write data to a user-implemented
 data object.  The function should write up to @var{size} bytes to the
 current write position from the space starting at @var{buffer}.  The
@@ -1218,9 +1218,9 @@ error.  If an error occurs, @var{errno} should be set to describe the
 type of the error.
 @end deftp
 
-@deftp {Data type} {off_t (*GpgmeDataSeekCb) (@w{void *@var{handle}}, @w{off_t @var{offset}}, @w{int @var{whence}})}
-@tindex GpgmeDataSeekCb
-The @code{GpgmeDataSeekCb} type is the type of functions which
+@deftp {Data type} {off_t (*gpgme_data_seek_cb_t) (@w{void *@var{handle}}, @w{off_t @var{offset}}, @w{int @var{whence}})}
+@tindex gpgme_data_seek_cb_t
+The @code{gpgme_data_seek_cb_t} type is the type of functions which
 @acronym{GPGME} calls if it wants to change the current read/write
 position in a user-implemented data object, just like the @code{lseek}
 function.
@@ -1230,40 +1230,40 @@ error.  If an error occurs, @var{errno} should be set to describe the
 type of the error.
 @end deftp
 
-@deftp {Data type} {void (*GpgmeDataReleaseCb) (@w{void *@var{handle}})}
-@tindex GpgmeDataReleaseCb
-The @code{GpgmeDataReleaseCb} type is the type of functions which
+@deftp {Data type} {void (*gpgme_data_release_cb_t) (@w{void *@var{handle}})}
+@tindex gpgme_data_release_cb_t
+The @code{gpgme_data_release_cb_t} type is the type of functions which
 @acronym{GPGME} calls if it wants to destroy a user-implemented data
 object.  The @var{handle} is provided by the user at data object
 creation time.
 @end deftp
 
-@deftp {Data type} {struct GpgmeDataCbs}
+@deftp {Data type} {struct gpgme_data_cbs}
 This structure is used to store the data callback interface functions
 described above.  It has the following members:
 
 @table @code
-@item GpgmeDataReadCb read
+@item gpgme_data_read_cb_t read
 This is the function called by @acronym{GPGME} to read data from the
 data object.  It is only required for input data object.
 
-@item GpgmeDataWriteCb write
+@item gpgme_data_write_cb_t write
 This is the function called by @acronym{GPGME} to write data to the
 data object.  It is only required for output data object.
 
-@item GpgmeDataSeekCb seek
+@item gpgme_data_seek_cb_t seek
 This is the function called by @acronym{GPGME} to change the current
 read/write pointer in the data object (if available).  It is optional.
 
-@item GpgmeDataReleaseCb release
+@item gpgme_data_release_cb_t release
 This is the function called by @acronym{GPGME} to release a data
 object.  It is optional.
 @end table
 @end deftp
 
-@deftypefun GpgmeError gpgme_data_new_from_cbs (@w{GpgmeData *@var{dh}}, @w{struct GpgmeDataCbs *@var{cbs}}, @w{void *@var{handle}})
+@deftypefun gpgme_error_t gpgme_data_new_from_cbs (@w{gpgme_data_t *@var{dh}}, @w{gpgme_data_cbs_t @var{cbs}}, @w{void *@var{handle}})
 The function @code{gpgme_data_new_from_cbs} creates a new
-@code{GpgmeData} object and uses the user-provided callback functions
+@code{gpgme_data_t} object and uses the user-provided callback functions
 to operate on the data object.
 
 The handle @var{handle} is passed as first argument to the callback
@@ -1278,9 +1278,9 @@ The following interface is deprecated and only provided for backward
 compatibility.  Don't use it.  It will be removed in a future version
 of @acronym{GPGME}.
 
-@deftypefun GpgmeError gpgme_data_new_with_read_cb (@w{GpgmeData *@var{dh}}, @w{int (*@var{readfunc})} (@w{void *@var{hook}}, @w{char *@var{buffer}}, @w{size_t @var{count}}, @w{size_t *@var{nread}}), @w{void *@var{hook_value}})
+@deftypefun gpgme_error_t gpgme_data_new_with_read_cb (@w{gpgme_data_t *@var{dh}}, @w{int (*@var{readfunc})} (@w{void *@var{hook}}, @w{char *@var{buffer}}, @w{size_t @var{count}}, @w{size_t *@var{nread}}), @w{void *@var{hook_value}})
 The function @code{gpgme_data_new_with_read_cb} creates a new
-@code{GpgmeData} object and uses the callback function @var{readfunc}
+@code{gpgme_data_t} object and uses the callback function @var{readfunc}
 to retrieve the data on demand.  As the callback function can supply
 the data in any way it wants, this is the most flexible data type
 @acronym{GPGME} provides.  However, it can not be used to write data.
@@ -1306,13 +1306,13 @@ not enough memory is available.
 @section Destroying Data Buffers
 @cindex data buffer, destruction
 
-@deftypefun void gpgme_data_release (@w{GpgmeData @var{dh}})
+@deftypefun void gpgme_data_release (@w{gpgme_data_t @var{dh}})
 The function @code{gpgme_data_release} destroys the data object with
 the handle @var{dh}.  It releases all associated resources that were
 not provided by the user in the first place.
 @end deftypefun
 
-@deftypefun {char *} gpgme_data_release_and_get_mem (@w{GpgmeData @var{dh}}, @w{size_t *@var{length}})
+@deftypefun {char *} gpgme_data_release_and_get_mem (@w{gpgme_data_t @var{dh}}, @w{size_t *@var{length}})
 The function @code{gpgme_data_release_and_get_mem} is like
 @code{gpgme_data_release}, except that it returns the data buffer and
 its length that was provided by the object.
@@ -1330,7 +1330,7 @@ be returned to the user, the function will return @code{NULL}.
 @section Manipulating Data Buffers
 @cindex data buffere, manipulation
 
-@deftypefun ssize_t gpgme_data_read (@w{GpgmeData @var{dh}}, @w{void *@var{buffer}}, @w{size_t @var{length}})
+@deftypefun ssize_t gpgme_data_read (@w{gpgme_data_t @var{dh}}, @w{void *@var{buffer}}, @w{size_t @var{length}})
 The function @code{gpgme_data_read} reads up to @var{length} bytes
 from the data object with the handle @var{dh} into the space starting
 at @var{buffer}.
@@ -1342,7 +1342,7 @@ sets @var{nread} to zero.
 In all other cases, the function returns -1 and sets @var{errno}.
 @end deftypefun
 
-@deftypefun ssize_t gpgme_data_write (@w{GpgmeData @var{dh}}, @w{const void *@var{buffer}}, @w{size_t @var{size}})
+@deftypefun ssize_t gpgme_data_write (@w{gpgme_data_t @var{dh}}, @w{const void *@var{buffer}}, @w{size_t @var{size}})
 The function @code{gpgme_data_write} writes up to @var{size} bytes
 starting from @var{buffer} into the data object with the handle
 @var{dh} at the current write position.
@@ -1354,9 +1354,9 @@ error occurs.  If an error occurs, @var{errno} is set.
 /* Set the current position from where the next read or write starts
    in the data object with the handle DH to OFFSET, relativ to
    WHENCE.  */
-off_t gpgme_data_seek (GpgmeData dh, off_t offset, int whence);
+off_t gpgme_data_seek (gpgme_data_t dh, off_t offset, int whence);
 
-@deftypefun off_t gpgme_data_seek (@w{GpgmeData @var{dh}}, @w{off_t *@var{offset}}, @w{int @var{whence}})
+@deftypefun off_t gpgme_data_seek (@w{gpgme_data_t @var{dh}}, @w{off_t *@var{offset}}, @w{int @var{whence}})
 The function @code{gpgme_data_seek} changes the current read/write
 position.
 
@@ -1392,7 +1392,7 @@ If the function fails, -1 is returned and @var{errno} is set.
 The following function is deprecated and should not be used.  It will
 be removed in a future version of @acronym{GPGME}.
 
-@deftypefun GpgmeError gpgme_data_rewind (@w{GpgmeData @var{dh}})
+@deftypefun gpgme_error_t gpgme_data_rewind (@w{gpgme_data_t @var{dh}})
 The function @code{gpgme_data_rewind} is equivalent to:
 
 @example
@@ -1402,12 +1402,12 @@ The function @code{gpgme_data_rewind} is equivalent to:
 @end deftypefun
 
 @c
-@c  GpgmeDataEncoding
+@c  gpgme_data_encoding_t
 @c
-@deftp {Data type} {enum GpgmeDataEncoding}
-@tindex GpgmeDataEncoding
-The @code{GpgmeDataEncoding} type specifies the encoding of a
-@code{GpgmeData} object.  This encoding is useful to give the backend
+@deftp {Data type} {enum gpgme_data_encoding_t}
+@tindex gpgme_data_encoding_t
+The @code{gpgme_data_encoding_t} type specifies the encoding of a
+@code{gpgme_data_t} object.  This encoding is useful to give the backend
 a hint on the type of data.  The following data types are available:
 
 @table @code
@@ -1430,14 +1430,14 @@ OpenPGP and PEM.
 @end table
 @end deftp
 
-@deftypefun GpgmeDataEncoding gpgme_data_get_encoding (@w{GpgmeData @var{dh}})
+@deftypefun gpgme_data_encoding_t gpgme_data_get_encoding (@w{gpgme_data_t @var{dh}})
 The function @code{gpgme_data_get_encoding} returns the encoding of
 the data object with the handle @var{dh}.  If @var{dh} is not a valid
 pointer (e.g. @code{NULL}) @code{GPGME_DATA_ENCODING_NONE} is
 returned.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_data_set_encoding (@w{GpgmeData @var{dh}, GpgmeDataEncoding @var{enc}})
+@deftypefun gpgme_error_t gpgme_data_set_encoding (@w{gpgme_data_t @var{dh}, gpgme_data_encoding_t @var{enc}})
 The function @code{gpgme_data_set_encoding} changes the encoding of
 the data object with the handle @var{dh} to @var{enc}.
 @end deftypefun
@@ -1456,8 +1456,8 @@ configuration parameters.  By using several contexts you can run
 several cryptographic operations in parallel, with different
 configuration.
 
-@deftp {Data type} {GpgmeCtx}
-The @code{GpgmeCtx} type is a handle for a @acronym{GPGME} context,
+@deftp {Data type} {gpgme_ctx_t}
+The @code{gpgme_ctx_t} type is a handle for a @acronym{GPGME} context,
 which is used to hold the configuration, status and result of
 cryptographic operations.
 @end deftp
@@ -1477,8 +1477,8 @@ cryptographic operations.
 @section Creating Contexts
 @cindex context, creation
 
-@deftypefun GpgmeError gpgme_new (@w{GpgmeCtx *@var{ctx}})
-The function @code{gpgme_data_new} creates a new @code{GpgmeCtx}
+@deftypefun gpgme_error_t gpgme_new (@w{gpgme_ctx_t *@var{ctx}})
+The function @code{gpgme_data_new} creates a new @code{gpgme_ctx_t}
 object and returns a handle for it in @var{ctx}.
 
 The function returns @code{GPGME_No_Error} if the context was
@@ -1492,7 +1492,7 @@ available.
 @section Destroying Contexts
 @cindex context, destruction
 
-@deftypefun void gpgme_release (@w{GpgmeCtx @var{ctx}})
+@deftypefun void gpgme_release (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_release} destroys the context with the handle
 @var{ctx} and releases all associated resources.
 @end deftypefun
@@ -1518,7 +1518,7 @@ The function @code{gpgme_release} destroys the context with the handle
 @cindex context, selecting protocol
 @cindex protocol, selecting
 
-@deftypefun GpgmeError gpgme_set_protocol (@w{GpgmeCtx @var{ctx}}, @w{GpgmeProtocol @var{proto}})
+@deftypefun gpgme_error_t gpgme_set_protocol (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_protocol_t @var{proto}})
 The function @code{gpgme_set_protocol} sets the protocol used within
 the context @var{ctx} to @var{proto}.  All crypto operations will be
 performed by the crypto engine configured for that protocol.
@@ -1533,7 +1533,7 @@ set successfully, and @code{GPGME_Invalid_Value} if @var{protocol} is
 not a valid protocol.
 @end deftypefun
 
-@deftypefun GpgmeProtocol gpgme_get_protocol (@w{GpgmeCtx @var{ctx}})
+@deftypefun gpgme_protocol_t gpgme_get_protocol (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_get_protocol} retrieves the protocol currently
 use with the context @var{ctx}.
 @end deftypefun
@@ -1544,7 +1544,7 @@ use with the context @var{ctx}.
 @cindex @acronym{ASCII} armor
 @cindex armor mode
 
-@deftypefun void gpgme_set_armor (@w{GpgmeCtx @var{ctx}}, @w{int @var{yes}})
+@deftypefun void gpgme_set_armor (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{yes}})
 The function @code{gpgme_set_armor} specifies if the output should be
 @acronym{ASCII} armored.  By default, output is not @acronym{ASCII}
 armored.
@@ -1553,7 +1553,7 @@ armored.
 enabled otherwise.
 @end deftypefun
 
-@deftypefun int gpgme_get_armor (@w{GpgmeCtx @var{ctx}})
+@deftypefun int gpgme_get_armor (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_get_armor} returns 1 if the output is
 @acronym{ASCII} armored, and @code{0} if it is not, or if @var{ctx} is
 not a valid pointer.
@@ -1566,7 +1566,7 @@ not a valid pointer.
 @cindex text mode
 @cindex canonical text mode
 
-@deftypefun void gpgme_set_textmode (@w{GpgmeCtx @var{ctx}}, @w{int @var{yes}})
+@deftypefun void gpgme_set_textmode (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{yes}})
 The function @code{gpgme_set_textmode} specifies if canonical text mode
 should be used.  By default, text mode is not used.
 
@@ -1581,7 +1581,7 @@ Canonical text mode is disabled if @var{yes} is zero, and enabled
 otherwise.
 @end deftypefun
 
-@deftypefun int gpgme_get_textmode (@w{GpgmeCtx @var{ctx}})
+@deftypefun int gpgme_get_textmode (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_get_textmode} returns 1 if canonical text
 mode is enabled, and @code{0} if it is not, or if @var{ctx} is not a
 valid pointer.
@@ -1592,7 +1592,7 @@ valid pointer.
 @subsection Included Certificates
 @cindex certificates, included
 
-@deftypefun void gpgme_set_include_certs (@w{GpgmeCtx @var{ctx}}, @w{int @var{nr_of_certs}})
+@deftypefun void gpgme_set_include_certs (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{nr_of_certs}})
 The function @code{gpgme_set_include_certs} specifies how many
 certificates should be included in an S/MIME signed message.  By
 default, only the sender's certificate is included.  The possible
@@ -1618,7 +1618,7 @@ This option is only relevant to the CMS crypto engine, and ignored
 by all other engines.
 @end deftypefun
 
-@deftypefun int gpgme_get_include_certs (@w{GpgmeCtx @var{ctx}})
+@deftypefun int gpgme_get_include_certs (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_get_include_certs} returns the number of
 certificates to include into an S/MIME signed message.
 @end deftypefun
@@ -1629,7 +1629,7 @@ certificates to include into an S/MIME signed message.
 @cindex key listing mode
 @cindex key listing, mode of
 
-@deftypefun void gpgme_set_keylist_mode (@w{GpgmeCtx @var{ctx}}, @w{int @var{mode}})
+@deftypefun void gpgme_set_keylist_mode (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{mode}})
 The function @code{gpgme_set_keylist_mode} changes the default
 behaviour of the key listing functions.  The value in @var{mode} is a
 bitwise-or combination of one or multiple of the following bit values:
@@ -1667,7 +1667,7 @@ pointer or @var{mode} is not a valid mode.
 @end deftypefun
 
 
-@deftypefun int gpgme_get_keylist_mode (@w{GpgmeCtx @var{ctx}})
+@deftypefun int gpgme_get_keylist_mode (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_get_keylist_mode} returns the current key
 listing mode of the context @var{ctx}.  This value can then be
 modified and used in a subsequent @code{gpgme_set_keylist_mode}
@@ -1684,9 +1684,9 @@ current mode otherwise.  Note that 0 is not a valid mode value.
 @cindex callback, passphrase
 @cindex passphrase callback
 
-@deftp {Data type} {GpgmeError (*GpgmePassphraseCb)(void *@var{hook}, const char *@var{desc}, void **@var{r_hd}, const char **@var{result})}
-@tindex GpgmePassphraseCb
-The @code{GpgmePassphraseCb} type is the type of functions usable as
+@deftp {Data type} {gpgme_error_t (*gpgme_passphrase_cb_t)(void *@var{hook}, const char *@var{desc}, void **@var{r_hd}, const char **@var{result})}
+@tindex gpgme_passphrase_cb_t
+The @code{gpgme_passphrase_cb_t} type is the type of functions usable as
 passphrase callback function.
 
 The string @var{desc} contains a text usable to be displayed to the
@@ -1700,12 +1700,12 @@ needed by @acronym{GPGME}, the passphrase callback function will be
 called with @var{desc} being @var{NULL}, and @var{r_hd} being the same
 as at the first invocation.
 
-If an error occurs, return the corresponding @code{GpgmeError} value.
+If an error occurs, return the corresponding @code{gpgme_error_t} value.
 You can use @code{GPGME_Canceled} to abort the operation.  Otherwise,
 return @code{0}.
 @end deftp
 
-@deftypefun void gpgme_set_passphrase_cb (@w{GpgmeCtx @var{ctx}}, @w{GpgmePassphraseCb @var{passfunc}}, @w{void *@var{hook_value}})
+@deftypefun void gpgme_set_passphrase_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_passphrase_cb_t @var{passfunc}}, @w{void *@var{hook_value}})
 The function @code{gpgme_set_passphrase_cb} sets the function that is
 used when a passphrase needs to be provided by the user to
 @var{passfunc}.  The function @var{passfunc} needs to implemented by
@@ -1723,7 +1723,7 @@ calling @code{gpgme_set_passphrase_cb} with @var{passfunc} being
 @code{NULL}.
 @end deftypefun
 
-@deftypefun void gpgme_get_passphrase_cb (@w{GpgmeCtx @var{ctx}}, @w{GpgmePassphraseCb *@var{passfunc}}, @w{void **@var{hook_value}})
+@deftypefun void gpgme_get_passphrase_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_passphrase_cb_t *@var{passfunc}}, @w{void **@var{hook_value}})
 The function @code{gpgme_get_passphrase_cb} returns the function that
 is used when a passphrase needs to be provided by the user in
 @var{*passfunc}, and the first argument for this function in
@@ -1740,9 +1740,9 @@ the corresponding value will not be returned.
 @cindex callback, progress meter
 @cindex progress meter callback
 
-@deftp {Data type} {const char *(*GpgmeProgressCb)(void *@var{hook}, const char *@var{what}, int @var{type}, int @var{current}, int @var{total})}
-@tindex GpgmeProgressCb
-The @code{GpgmeProgressCb} type is the type of functions usable as
+@deftp {Data type} {const char *(*gpgme_progress_cb_t)(void *@var{hook}, const char *@var{what}, int @var{type}, int @var{current}, int @var{total})}
+@tindex gpgme_progress_cb_t
+The @code{gpgme_progress_cb_t} type is the type of functions usable as
 progress callback function.
 
 The arguments are specific to the crypto engine.  More information
@@ -1751,7 +1751,7 @@ found in the GnuPG source code in the file @file{doc/DETAILS} in the
 section PROGRESS.
 @end deftp
 
-@deftypefun void gpgme_set_progress_cb (@w{GpgmeCtx @var{ctx}}, @w{GpgmeProgressCb @var{progfunc}}, @w{void *@var{hook_value}})
+@deftypefun void gpgme_set_progress_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_progress_cb_t @var{progfunc}}, @w{void *@var{hook_value}})
 The function @code{gpgme_set_progress_cb} sets the function that is
 used when progress information about a cryptographic operation is
 available.  The function @var{progfunc} needs to implemented by the
@@ -1767,7 +1767,7 @@ calling @code{gpgme_set_progress_cb} with @var{progfunc} being
 @code{NULL}.
 @end deftypefun
 
-@deftypefun void gpgme_get_progress_cb (@w{GpgmeCtx @var{ctx}}, @w{GpgmeProgressCb *@var{progfunc}}, @w{void **@var{hook_value}})
+@deftypefun void gpgme_get_progress_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_progress_cb_t *@var{progfunc}}, @w{void **@var{hook_value}})
 The function @code{gpgme_get_progress_cb} returns the function that is
 used to inform the user about the progress made in @var{*progfunc},
 and the first argument for this function in @var{*hook_value}.  If no
@@ -1788,18 +1788,18 @@ signers are specified.  This is always done by specifying the
 respective keys that should be used for the operation.  The following
 section describes how such keys can be selected and manipulated.
 
-@deftp {Data type} GpgmeSubkey
-The @code{GpgmeSubKey} type is a pointer to a subkey structure.  Sub
-keys are one component of a @code{GpgmeKey} object.  In fact, subkeys
+@deftp {Data type} gpgme_sub_key_t
+The @code{gpgme_sub_key_t} type is a pointer to a subkey structure.  Sub
+keys are one component of a @code{gpgme_key_t} object.  In fact, subkeys
 are those parts that contains the real information about the
 individual cryptographic keys that belong to the same key object.  One
-@code{GpgmeKey} can contain several subkeys.  The first subkey in the
+@code{gpgme_key_t} can contain several subkeys.  The first subkey in the
 linked list is also called the primary key.
 
 The subkey structure has the following members:
 
 @table @code
-@item GpgmeSubkey next
+@item gpgme_sub_key_t next
 This is a pointer to the next subkey structure in the linked list, or
 @code{NULL} if this is the last element.
 
@@ -1827,7 +1827,7 @@ This is true if the subkey can be used for certification.
 @item unsigned int secret : 1
 This is true if the subkey is a secret key.
 
-@item GpgmePubKeyAlgo pubkey_algo
+@item gpgme_pubkey_algo_t pubkey_algo
 This is the public key algorithm supported by this subkey.
 
 @item unsigned int length
@@ -1850,9 +1850,9 @@ does not expire.
 @end table
 @end deftp
 
-@deftp {Data type} GpgmeKeySig
-The @code{GpgmeKeySig} type is a pointer to a key signature structure.
-Key signatures are one component of a @code{GpgmeKey} object, and
+@deftp {Data type} gpgme_key_sig_t
+The @code{gpgme_key_sig_t} type is a pointer to a key signature structure.
+Key signatures are one component of a @code{gpgme_key_t} object, and
 validate user IDs on the key.
 
 The signatures on a key are only available if the key was retrieved
@@ -1862,7 +1862,7 @@ enabled, because it is expensive to retrieve all signatures of a key.
 The key signature structure has the following members:
 
 @table @code
-@item GpgmeKeySig next
+@item gpgme_key_sig_t next
 This is a pointer to the next key signature structure in the linked
 list, or @code{NULL} if this is the last element.
 
@@ -1878,7 +1878,7 @@ This is true if the key signature is invalid.
 @item unsigned int disabled : 1
 This is true if the key signature is exportable.
 
-@item GpgmePubKeyAlgo pubkey_algo
+@item gpgme_pubkey_algo_t pubkey_algo
 This is the public key algorithm used to create the signature.
 
 @item char *keyid
@@ -1893,9 +1893,9 @@ the timestamp is invalid, and 0 if it is not available.
 This is the expiration timestamp of the key signature, or 0 if the key
 signature does not expire.
 
-@item GpgmeError status
+@item gpgme_error_t status
 This is the status of the signature and has the same meaning as the
-member of the same name in a @code{GpgmeSignature} object.
+member of the same name in a @code{gpgme_signature_t} object.
 
 @item unsigned int class
 This specifies the signature class of the key signature.  The meaning
@@ -1915,15 +1915,15 @@ This is the email component of @code{uid}, if available.
 @end table
 @end deftp
 
-@deftp {Data type} GpgmeUserID
-A user ID is a component of a @code{GpgmeKey} object.  One key can
+@deftp {Data type} gpgme_user_id_t
+A user ID is a component of a @code{gpgme_key_t} object.  One key can
 have many user IDs.  The first one in the list is the main (or
 primary) user ID.
 
 The user ID structure has the following members.
 
 @table @code
-@item GpgmeUserID next
+@item gpgme_user_id_t next
 This is a pointer to the next user ID structure in the linked list, or
 @code{NULL} if this is the last element.
 
@@ -1933,7 +1933,7 @@ This is true if the user ID is revoked.
 @item unsigned int invalid : 1
 This is true if the user ID is invalid.
 
-@item GpgmeValidity validity
+@item gpgme_validity_t validity
 This specifies the validity of the user ID.
 
 @item char *uid
@@ -1948,13 +1948,13 @@ This is the comment component of @code{uid}, if available.
 @item char *email
 This is the email component of @code{uid}, if available.
 
-@item GpgmeKeySig signatures
+@item gpgme_key_sig_t signatures
 This is a linked list with the signatures on this user ID.
 @end table
 @end deftp
 
-@deftp {Data type} GpgmeKey
-The @code{GpgmeKey} type is a pointer to a key object.  It has the
+@deftp {Data type} gpgme_key_t
+The @code{gpgme_key_t} type is a pointer to a key object.  It has the
 following members:
 
 @table @code
@@ -1985,7 +1985,7 @@ certification.
 @item unsigned int secret : 1
 This is true if the key is a secret key.
 
-@item GpgmeProtocol protocol
+@item gpgme_protocol_t protocol
 This is the protocol supported by this key.
 
 @item char *issuer_serial
@@ -2000,15 +2000,15 @@ issuer name.
 If @code{protocol} is @code{GPGME_PROTOCOL_CMS}, then this is the
 chain ID, which can be used to built the certificate chain.
  
-@item GpgmeValidity owner_trust
+@item gpgme_validity_t owner_trust
 If @code{protocol} is @code{GPGME_PROTOCOL_OpenPGP}, then this is the
 owner trust.
 
-@item GpgmeSubkey subkeys
+@item gpgme_sub_key_t subkeys
 This is a linked list with the subkeys of the key.  The first subkey
 in the list is the primary key and usually available.
 
-@item GpgmeUserID uids
+@item gpgme_user_id_t uids
 This is a linked list with the user IDs of the key.  The first user ID
 in the list is the main (or primary) user ID.
 @end table
@@ -2034,7 +2034,7 @@ in the list is the main (or primary) user ID.
 @cindex key ring, list
 @cindex key ring, search
 
-@deftypefun GpgmeError gpgme_op_keylist_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{pattern}}, @w{int @var{secret_only}})
+@deftypefun gpgme_error_t gpgme_op_keylist_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}}, @w{int @var{secret_only}})
 The function @code{gpgme_op_keylist_start} initiates a key listing
 operation inside the context @var{ctx}.  It sets everything up so that
 subsequent invocations of @code{gpgme_op_keylist_next} return the keys
@@ -2056,7 +2056,7 @@ valid pointer, and passes through any errors that are reported by the
 crypto engine support routines.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_keylist_ext_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{pattern}[]}, @w{int @var{secret_only}}, @w{int @var{reserved}})
+@deftypefun gpgme_error_t gpgme_op_keylist_ext_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}[]}, @w{int @var{secret_only}}, @w{int @var{reserved}})
 The function @code{gpgme_op_keylist_ext_start} initiates an extended
 key listing operation inside the context @var{ctx}.  It sets
 everything up so that subsequent invocations of
@@ -2081,13 +2081,13 @@ valid pointer, and passes through any errors that are reported by the
 crypto engine support routines.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_keylist_next (@w{GpgmeCtx @var{ctx}}, @w{GpgmeKey *@var{r_key}})
+@deftypefun gpgme_error_t gpgme_op_keylist_next (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t *@var{r_key}})
 The function @code{gpgme_op_keylist_next} returns the next key in the
 list created by a previous @code{gpgme_op_keylist_start} operation in
 the context @var{ctx}.  The key will have one reference for the user.
 @xref{Manipulating Keys}.
 
-This is the only way to get at @code{GpgmeKey} objects in
+This is the only way to get at @code{gpgme_key_t} objects in
 @acronym{GPGME}.
 
 If the last key in the list has already been returned,
@@ -2098,7 +2098,7 @@ The function returns @code{GPGME_Invalid_Value} if @var{ctx} or
 there is not enough memory for the operation.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_keylist_end (@w{GpgmeCtx @var{ctx}})
+@deftypefun gpgme_error_t gpgme_op_keylist_end (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_keylist_next} ends a pending key list
 operation in the context @var{ctx}.
 
@@ -2116,8 +2116,8 @@ string (@code{g10code}) can be listed with their key ID and the name
 and e-mail address of the main user ID:
 
 @example
-GpgmeCtx ctx;
-GpgmeError err = gpgme_new (&ctx);
+gpgme_ctx_t ctx;
+gpgme_error_t err = gpgme_new (&ctx);
 
 if (!err)
   @{
@@ -2140,7 +2140,7 @@ if (err)
   @}
 @end example
 
-@deftp {Data type} {GpgmeKeyListResult}
+@deftp {Data type} {gpgme_keylist_result_t}
 This is a pointer to a structure used to store the result of a
 @code{gpgme_op_keylist_*} operation.  After successfully ending a key
 listing operation, you can retrieve the pointer to the result with
@@ -2154,9 +2154,9 @@ less than the desired keys could be listed.
 @end table
 @end deftp
 
-@deftypefun GpgmeKeyListResult gpgme_op_keylist_result (@w{GpgmeCtx @var{ctx}})
+@deftypefun gpgme_keylist_result_t gpgme_op_keylist_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_keylist_result} returns a
-@code{GpgmeKeyListResult} pointer to a structure holding the result of
+@code{gpgme_keylist_result_t} pointer to a structure holding the result of
 a @code{gpgme_op_keylist_*} operation.  The pointer is only valid if
 the last operation on the context was a key listing operation, and if
 this operation finished successfully.  The returned pointer is only
@@ -2166,7 +2166,7 @@ valid until the next operation is started on the context.
 In a simple program, for which a blocking operation is acceptable, the
 following function can be used to retrieve a single key.
 
-@deftypefun GpgmeError gpgme_get_key (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{fpr}}, @w{GpgmeKey *@var{r_key}}, @w{int @var{secret}})
+@deftypefun gpgme_error_t gpgme_get_key (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{fpr}}, @w{gpgme_key_t *@var{r_key}}, @w{int @var{secret}})
 The function @code{gpgme_get_key} gets the key with the fingerprint
 (or key ID) @var{fpr} from the crypto backend and return it in
 @var{r_key}.  If @var{force_update} is true, force a refresh of the
@@ -2192,10 +2192,10 @@ available.
 @cindex attributes, of a key
 
 Please see the beginning of this section for more information about
-@code{GpgmeKey} objects.
+@code{gpgme_key_t} objects.
 
-@deftp {Data type} GpgmeValidity
-The @code{GpgmeValidity} type is used to specify the validity of a user ID
+@deftp {Data type} gpgme_validity_t
+The @code{gpgme_validity_t} type is used to specify the validity of a user ID
 in a key.  The following validities are defined:
 
 @table @code
@@ -2230,8 +2230,8 @@ The following interfaces are deprecated and only provided for backward
 compatibility.  Don't use them.  They will be removed in a future
 version of @acronym{GPGME}.
 
-@deftp {Data type} GpgmeAttr
-The @code{GpgmeAttr} type is used to specify a key or trust item
+@deftp {Data type} gpgme_attr_t
+The @code{gpgme_attr_t} type is used to specify a key or trust item
 attribute.  The following attributes are defined:
 
 @table @code
@@ -2266,7 +2266,7 @@ XXX FIXME  (also for trust items)
 
 @item GPGME_ATTR_USERID
 This is a user ID.  There can be more than one user IDs in a
-@var{GpgmeKey} object.  The first one (with index 0) is the primary
+@var{gpgme_key_t} object.  The first one (with index 0) is the primary
 user ID.  The user ID is representable as a number.
 
 For trust items, this is the user ID associated with this trust item.
@@ -2362,7 +2362,7 @@ is representable as a string.
 @end table
 @end deftp
 
-@deftypefun {const char *} gpgme_key_get_string_attr (@w{GpgmeKey @var{key}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
+@deftypefun {const char *} gpgme_key_get_string_attr (@w{gpgme_key_t @var{key}}, @w{gpgme_attr_t @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
 The function @code{gpgme_key_get_string_attr} returns the value of the
 string-representable attribute @var{what} of key @var{key}.  If the
 attribute is an attribute of a sub key or an user ID, @var{idx}
@@ -2377,7 +2377,7 @@ string, @var{key} is not a valid pointer, @var{idx} out of range,
 or @var{reserved} not @code{NULL}.
 @end deftypefun
 
-@deftypefun {unsigned long} gpgme_key_get_ulong_attr (@w{GpgmeKey @var{key}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
+@deftypefun {unsigned long} gpgme_key_get_ulong_attr (@w{gpgme_key_t @var{key}}, @w{gpgme_attr_t @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
 The function @code{gpgme_key_get_ulong_attr} returns the value of the
 number-representable attribute @var{what} of key @var{key}.  If the
 attribute is an attribute of a sub key or an user ID, @var{idx}
@@ -2409,8 +2409,8 @@ key, you have to make sure that the key was listed with signatures
 enabled.  One convenient, but blocking, way to do this is to use the
 function @code{gpgme_get_key}.
 
-@deftp {Data type} GpgmeAttr
-The @code{GpgmeAttr} type is used to specify a key signature
+@deftp {Data type} gpgme_attr_t
+The @code{gpgme_attr_t} type is used to specify a key signature
 attribute.  The following attributes are defined:
 
 @table @code
@@ -2471,7 +2471,7 @@ This is the same value as returned by @code{gpgme_get_sig_status}.
 @end table
 @end deftp
 
-@deftypefun {const char *} gpgme_key_sig_get_string_attr (@w{GpgmeKey @var{key}}, @w{int @var{uid_idx}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
+@deftypefun {const char *} gpgme_key_sig_get_string_attr (@w{gpgme_key_t @var{key}}, @w{int @var{uid_idx}}, @w{gpgme_attr_t @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
 The function @code{gpgme_key_sig_get_string_attr} returns the value of
 the string-representable attribute @var{what} of the signature
 @var{idx} on the user ID @var{uid_idx} in the key @var{key}.  The
@@ -2485,7 +2485,7 @@ string, @var{key} is not a valid pointer, @var{uid_idx} or @var{idx}
 out of range, or @var{reserved} not @code{NULL}.
 @end deftypefun
 
-@deftypefun {unsigned long} gpgme_key_sig_get_ulong_attr (@w{GpgmeKey @var{key}}, @w{int @var{uid_idx}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
+@deftypefun {unsigned long} gpgme_key_sig_get_ulong_attr (@w{gpgme_key_t @var{key}}, @w{int @var{uid_idx}}, @w{gpgme_attr_t @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
 The function @code{gpgme_key_sig_get_ulong_attr} returns the value of
 the number-representable attribute @var{what} of the signature
 @var{idx} on the user ID @var{uid_idx} in the key @var{key}.  The
@@ -2502,12 +2502,12 @@ out of range, or @var{reserved} not @code{NULL}.
 @subsection Manipulating Keys
 @cindex key, manipulation
 
-@deftypefun void gpgme_key_ref (@w{GpgmeKey @var{key}})
+@deftypefun void gpgme_key_ref (@w{gpgme_key_t @var{key}})
 The function @code{gpgme_key_ref} acquires an additional reference for
 the key @var{key}.
 @end deftypefun
 
-@deftypefun void gpgme_key_unref (@w{GpgmeKey @var{key}})
+@deftypefun void gpgme_key_unref (@w{gpgme_key_t @var{key}})
 The function @code{gpgme_key_unref} releases a reference for the key
 @var{key}.  If this was the last reference, the key will be destroyed
 and all resources associated to it will be released.
@@ -2518,7 +2518,7 @@ The following interface is deprecated and only provided for backward
 compatibility.  Don't use it.  It will be removed in a future version
 of @acronym{GPGME}.
 
-@deftypefun void gpgme_key_release (@w{GpgmeKey @var{key}})
+@deftypefun void gpgme_key_release (@w{gpgme_key_t @var{key}})
 The function @code{gpgme_key_release} is equivalent to
 @code{gpgme_key_unref}.
 @end deftypefun
@@ -2529,7 +2529,7 @@ The function @code{gpgme_key_release} is equivalent to
 @cindex key, creation
 @cindex key ring, add
 
-@deftypefun GpgmeError gpgme_op_genkey (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{public}}, @w{GpgmeData @var{secret}})
+@deftypefun gpgme_error_t gpgme_op_genkey (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{parms}}, @w{gpgme_data_t @var{public}}, @w{gpgme_data_t @var{secret}})
 The function @code{gpgme_op_genkey} generates a new key pair in the
 context @var{ctx}.  The meaning of @var{public} and @var{secret}
 depends on the crypto backend.
@@ -2590,7 +2590,7 @@ a valid XML string, @code{GPGME_Not_Supported} if @var{public} or
 was created by the backend.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_genkey_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{public}}, @w{GpgmeData @var{secret}})
+@deftypefun gpgme_error_t gpgme_op_genkey_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{parms}}, @w{gpgme_data_t @var{public}}, @w{gpgme_data_t @var{secret}})
 The function @code{gpgme_op_genkey_start} initiates a
 @code{gpgme_op_genkey} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -2601,7 +2601,7 @@ a valid XML string, and @code{GPGME_Not_Supported} if @var{public} or
 @var{secret} is not @code{NULL}.
 @end deftypefun
 
-@deftp {Data type} {GpgmeGenKeyResult}
+@deftp {Data type} {gpgme_genkey_result_t}
 This is a pointer to a structure used to store the result of a
 @code{gpgme_op_genkey} operation.  After successfully generating a
 key, you can retrieve the pointer to the result with
@@ -2625,9 +2625,9 @@ fingerprint, @code{fpr} will be a null pointer.
 @end table
 @end deftp
 
-@deftypefun GpgmeGenKeyResult gpgme_op_genkey_result (@w{GpgmeCtx @var{ctx}})
+@deftypefun gpgme_genkey_result_t gpgme_op_genkey_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_genkey_result} returns a
-@code{GpgmeGenKeyResult} pointer to a structure holding the result of
+@code{gpgme_genkey_result_t} pointer to a structure holding the result of
 a @code{gpgme_op_genkey} operation.  The pointer is only valid if the
 last operation on the context was a @code{gpgme_op_genkey} or
 @code{gpgme_op_genkey_start} operation, and if this operation finished
@@ -2641,7 +2641,7 @@ operation is started on the context.
 @cindex key, export
 @cindex key ring, export from
 
-@deftypefun GpgmeError gpgme_op_export (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{recipients}}, @w{GpgmeData @var{keydata}})
+@deftypefun gpgme_error_t gpgme_op_export (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{recipients}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_export} extracts the public keys of the
 user IDs in @var{recipients} and returns them in the data buffer
 @var{keydata}.  The type of the public keys returned is determined by
@@ -2654,7 +2654,7 @@ passes through any errors that are reported by the crypto engine
 support routines.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_export_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{recipients}}, @w{GpgmeData @var{keydata}})
+@deftypefun gpgme_error_t gpgme_op_export_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{recipients}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_export_start} initiates a
 @code{gpgme_op_export} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -2671,7 +2671,7 @@ data buffer.
 @cindex key, import
 @cindex key ring, import to
 
-@deftypefun GpgmeError gpgme_op_import (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{keydata}})
+@deftypefun gpgme_error_t gpgme_op_import (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_import} adds the keys in the data buffer
 @var{keydata} to the key ring of the crypto engine used by @var{ctx}.
 The format of @var{keydata} can be @var{ASCII} armored, for example,
@@ -2686,7 +2686,7 @@ or @var{keydata} is not a valid pointer, and @code{GPGME_No_Data} if
 @var{keydata} is an empty data buffer.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_import_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{keydata}})
+@deftypefun gpgme_error_t gpgme_op_import_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_import_start} initiates a
 @code{gpgme_op_import} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -2697,21 +2697,21 @@ started successfully, @code{GPGME_Invalid_Value} if @var{keydata} if
 @code{GPGME_No_Data} if @var{keydata} is an empty data buffer.
 @end deftypefun
 
-@deftp {Data type} {GpgmeImportStatus}
+@deftp {Data type} {gpgme_import_status_t}
 This is a pointer to a structure used to store a part of the result of
 a @code{gpgme_op_import} operation.  For each considered key one
 status is added that contains information about the result of the
 import.  The structure contains the following members:
 
 @table @code
-@item GpgmeImportStatus next
+@item gpgme_import_status_t next
 This is a pointer to the next status structure in the linked list, or
 @code{NULL} if this is the last element.
 
 @item char *fpr
 This is the fingerprint of the key that was considered.
 
-@item GpgmeError result
+@item gpgme_error_t result
 If the import was not successful, this is the error value that caused
 the import to fail.  Otherwise it is @code{GPGME_No_Error}.
 
@@ -2739,7 +2739,7 @@ The key contained a secret key.
 @end table
 @end deftp
 
-@deftp {Data type} {GpgmeImportResult}
+@deftp {Data type} {gpgme_import_result_t}
 This is a pointer to a structure used to store the result of a
 @code{gpgme_op_import} operation.  After a successful import
 operation, you can retrieve the pointer to the result with
@@ -2786,15 +2786,15 @@ The number of unchanged secret keys.
 @item not_imported
 The number of keys not imported.
 
-@item GpgmeImportStatus imports
-A list of GpgmeImportStatus objects which contain more information
+@item gpgme_import_status_t imports
+A list of gpgme_import_status_t objects which contain more information
 about the keys for which an import was attempted.
 @end table
 @end deftp
 
-@deftypefun GpgmeImportResult gpgme_op_import_result (@w{GpgmeCtx @var{ctx}})
+@deftypefun gpgme_import_result_t gpgme_op_import_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_import_result} returns a
-@code{GpgmeImportResult} pointer to a structure holding the result of
+@code{gpgme_import_result_t} pointer to a structure holding the result of
 a @code{gpgme_op_import} operation.  The pointer is only valid if the
 last operation on the context was a @code{gpgme_op_import} or
 @code{gpgme_op_import_start} operation, and if this operation finished
@@ -2806,14 +2806,14 @@ The following interface is deprecated and only provided for backward
 compatibility.  Don't use it.  It will be removed in a future version
 of @acronym{GPGME}.
 
-@deftypefun GpgmeError gpgme_op_import_ext (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{keydata}}, @w{int *@var{nr}})
+@deftypefun gpgme_error_t gpgme_op_import_ext (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{keydata}}, @w{int *@var{nr}})
 The function @code{gpgme_op_import_ext} is equivalent to:
 
 @example
-  GpgmeError err = gpgme_op_import (ctx, keydata);
+  gpgme_error_t err = gpgme_op_import (ctx, keydata);
   if (!err)
     @{
-      GpgmeImportResult result = gpgme_op_import_result (ctx);
+      gpgme_import_result_t result = gpgme_op_import_result (ctx);
       *nr = result->considered;
     @}
 @end example
@@ -2825,7 +2825,7 @@ The function @code{gpgme_op_import_ext} is equivalent to:
 @cindex key, delete
 @cindex key ring, delete from
 
-@deftypefun GpgmeError gpgme_op_delete (@w{GpgmeCtx @var{ctx}}, @w{const GpgmeKey @var{key}}, @w{int @var{allow_secret}})
+@deftypefun gpgme_error_t gpgme_op_delete (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{int @var{allow_secret}})
 The function @code{gpgme_op_delete} deletes the key @var{key} from the
 key ring of the crypto engine used by @var{ctx}.  If
 @var{allow_secret} is @code{0}, only public keys are deleted,
@@ -2839,7 +2839,7 @@ key was not specified unambiguously, and @code{GPGME_Conflict} if the
 secret key for @var{key} is available, but @var{allow_secret} is zero.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_delete_start (@w{GpgmeCtx @var{ctx}}, @w{const GpgmeKey @var{key}}, @w{int @var{allow_secret}})
+@deftypefun gpgme_error_t gpgme_op_delete_start (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{int @var{allow_secret}})
 The function @code{gpgme_op_delete_start} initiates a
 @code{gpgme_op_delete} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -2856,8 +2856,8 @@ started successfully, and @code{GPGME_Invalid_Value} if @var{ctx} or
 
 @strong{Caution:} The trust items interface is experimental.
 
-@deftp {Data type} GpgmeTrustItem
-The @code{GpgmeTrustItem} type is a pointer to a trust item object.
+@deftp {Data type} gpgme_trust_item_t
+The @code{gpgme_trust_item_t} type is a pointer to a trust item object.
 It has the following members:
 
 @table @code
@@ -2884,7 +2884,7 @@ The user name if @code{type} is 2.
 
 @menu
 * Listing Trust Items::           Browsing the list of available trust items.
-* Information About Trust Items:: Requesting detailed information about trust items.
+* Information About Trust Items:: Requesting information about trust items.
 * Manipulating Trust Items::      Operations on trust items.
 @end menu
 
@@ -2893,7 +2893,7 @@ The user name if @code{type} is 2.
 @subsection Listing Trust Items
 @cindex trust item list
 
-@deftypefun GpgmeError gpgme_op_trustlist_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{pattern}}, @w{int @var{max_level}})
+@deftypefun gpgme_error_t gpgme_op_trustlist_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}}, @w{int @var{max_level}})
 The function @code{gpgme_op_trustlist_start} initiates a trust item
 listing operation inside the context @var{ctx}.  It sets everything up
 so that subsequent invocations of @code{gpgme_op_trustlist_next} return
@@ -2914,13 +2914,13 @@ valid pointer, and passes through any errors that are reported by the
 crypto engine support routines.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_trustlist_next (@w{GpgmeCtx @var{ctx}}, @w{GpgmeTrustItem *@var{r_item}})
+@deftypefun gpgme_error_t gpgme_op_trustlist_next (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_trust_item_t *@var{r_item}})
 The function @code{gpgme_op_trustlist_next} returns the next trust
 item in the list created by a previous @code{gpgme_op_trustlist_start}
 operation in the context @var{ctx}.  The trust item can be destroyed
 with @code{gpgme_trust_item_release}.  @xref{Manipulating Trust Items}.
 
-This is the only way to get at @code{GpgmeTrustItem} objects in
+This is the only way to get at @code{gpgme_trust_item_t} objects in
 @acronym{GPGME}.
 
 If the last trust item in the list has already been returned,
@@ -2931,7 +2931,7 @@ The function returns @code{GPGME_Invalid_Value} if @var{ctx} or
 there is not enough memory for the operation.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_trustlist_end (@w{GpgmeCtx @var{ctx}})
+@deftypefun gpgme_error_t gpgme_op_trustlist_end (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_trustlist_next} ends a pending key list
 operation in the context @var{ctx}.
 
@@ -2955,7 +2955,7 @@ Trust items have attributes which can be queried using the interfaces
 below.  The attribute identifiers are shared with those for key
 attributes.  @xref{Information About Keys}.
 
-@deftypefun {const char *} gpgme_trust_item_get_string_attr (@w{GpgmeTrustItem @var{item}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
+@deftypefun {const char *} gpgme_trust_item_get_string_attr (@w{gpgme_trust_item_t @var{item}}, @w{gpgme_attr_t @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
 The function @code{gpgme_trust_item_get_string_attr} returns the value
 of the string-representable attribute @var{what} of trust item
 @var{item}.  The arguments @var{idx} and @var{reserved} are reserved
@@ -2968,7 +2968,7 @@ string, @var{key} is not a valid pointer, @var{idx} out of range,
 or @var{reserved} not @code{NULL}.
 @end deftypefun
 
-@deftypefun int gpgme_trust_item_get_int_attr (@w{GpgmeTrustItem @var{item}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
+@deftypefun int gpgme_trust_item_get_int_attr (@w{gpgme_trust_item_t @var{item}}, @w{gpgme_attr_t @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
 The function @code{gpgme_trust_item_get_int_attr} returns the value of
 the number-representable attribute @var{what} of trust item
 @var{item}.  If the attribute occurs more than once in the trust item,
@@ -2986,12 +2986,12 @@ or @var{reserved} not @code{NULL}.
 @subsection Manipulating Trust Items
 @cindex trust item, manipulation
 
-@deftypefun void gpgme_trust_item_ref (@w{GpgmeTrustItem @var{item}})
+@deftypefun void gpgme_trust_item_ref (@w{gpgme_trust_item_t @var{item}})
 The function @code{gpgme_trust_item_ref} acquires an additional
 reference for the trust item @var{item}.
 @end deftypefun
 
-@deftypefun void gpgme_trust_item_unref (@w{GpgmeTrustItem @var{item}})
+@deftypefun void gpgme_trust_item_unref (@w{gpgme_trust_item_t @var{item}})
 The function @code{gpgme_trust_item_unref} releases a reference for
 the trust item @var{item}.  If this was the last reference, the trust
 item will be destroyed and all resources associated to it will be
@@ -3003,7 +3003,7 @@ The following interface is deprecated and only provided for backward
 compatibility.  Don't use it.  It will be removed in a future version
 of @acronym{GPGME}.
 
-@deftypefun void gpgme_trust_item_release (@w{GpgmeTrustItem @var{item}})
+@deftypefun void gpgme_trust_item_release (@w{gpgme_trust_item_t @var{item}})
 The function @code{gpgme_trust_item_release} is an alias for
 @code{gpgme_trust_item_unref}.
 @end deftypefun
@@ -3017,20 +3017,20 @@ Sometimes, the result of a crypto operation returns a list of invalid
 user IDs encountered in processing the request.  The following
 structure is used to hold information about such an user ID.
 
-@deftp {Data type} {GpgmeInvalidUserID}
+@deftp {Data type} {gpgme_invalid_user_id_t}
 This is a pointer to a structure used to store a part of the result of
 a crypto operation which takes user IDs as one input parameter.  The
 structure contains the following members:
 
 @table @code
-@item GpgmeInvalidUserID next
+@item gpgme_invalid_user_id_t next
 This is a pointer to the next invalid user ID structure in the linked
 list, or @code{NULL} if this is the last element.
 
 @item char *id
 The invalid user ID encountered.
 
-@item GpgmeError reason
+@item gpgme_error_t reason
 An error code describing the reason why the user ID was found invalid.
 @end table
 @end deftp
@@ -3050,7 +3050,7 @@ An error code describing the reason why the user ID was found invalid.
 @cindex decryption
 @cindex cryptographic operation, decryption
 
-@deftypefun GpgmeError gpgme_op_decrypt (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{cipher}}, @w{GpgmeData @var{plain}})
+@deftypefun gpgme_error_t gpgme_op_decrypt (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{cipher}}, @w{gpgme_data_t @var{plain}})
 The function @code{gpgme_op_decrypt} decrypts the ciphertext in the
 data object @var{cipher} and stores it into the data object
 @var{plain}.
@@ -3065,7 +3065,7 @@ secret key could not be retrieved, and passes through any errors that
 are reported by the crypto engine support routines.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_decrypt_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{cipher}}, @w{GpgmeData @var{plain}})
+@deftypefun gpgme_error_t gpgme_op_decrypt_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{cipher}}, @w{gpgme_data_t @var{plain}})
 The function @code{gpgme_op_decrypt_start} initiates a
 @code{gpgme_op_decrypt} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -3075,7 +3075,7 @@ started successfully, and @code{GPGME_Invalid_Value} if @var{cipher}
 or @var{plain} is not a valid pointer.
 @end deftypefun
 
-@deftp {Data type} {GpgmeDecryptResult}
+@deftp {Data type} {gpgme_decrypt_result_t}
 This is a pointer to a structure used to store the result of a
 @code{gpgme_op_decrypt} operation.  After successfully encrypting
 data, you can retrieve the pointer to the result with
@@ -3089,9 +3089,9 @@ algorithm that is not supported.
 @end table
 @end deftp
 
-@deftypefun GpgmeDecryptResult gpgme_op_decrypt_result (@w{GpgmeCtx @var{ctx}})
+@deftypefun gpgme_decrypt_result_t gpgme_op_decrypt_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_decrypt_result} returns a
-@code{GpgmeDecryptResult} pointer to a structure holding the result of
+@code{gpgme_decrypt_result_t} pointer to a structure holding the result of
 a @code{gpgme_op_decrypt} operation.  The pointer is only valid if the
 last operation on the context was a @code{gpgme_op_decrypt} or
 @code{gpgme_op_decrypt_start} operation, and if this operation
@@ -3107,7 +3107,7 @@ next operation is started on the context.
 @cindex cryptographic operation, verification
 @cindex cryptographic operation, signature check
 
-@deftypefun GpgmeError gpgme_op_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{sig}}, @w{GpgmeData @var{signed_text}}, @w{GpgmeData @var{plain}})
+@deftypefun gpgme_error_t gpgme_op_verify (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{sig}}, @w{gpgme_data_t @var{signed_text}}, @w{gpgme_data_t @var{plain}})
 The function @code{gpgme_op_verify} verifies that the signature in the
 data object @var{sig} is a valid signature.  If @var{sig} is a
 detached signature, then the signed text should be provided in
@@ -3128,7 +3128,7 @@ and passes through any errors that are reported by the crypto engine
 support routines.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_verify_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{sig}}, @w{GpgmeData @var{signed_text}}, @w{GpgmeData @var{plain}})
+@deftypefun gpgme_error_t gpgme_op_verify_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{sig}}, @w{gpgme_data_t @var{signed_text}}, @w{gpgme_data_t @var{plain}})
 The function @code{gpgme_op_verify_start} initiates a
 @code{gpgme_op_verify} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -3140,13 +3140,13 @@ started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 data to verify.
 @end deftypefun
 
-@deftp {Data type} {GpgmeSigNotation}
+@deftp {Data type} {gpgme_sig_notation_t}
 This is a pointer to a structure used to store a part of the result of
 a @code{gpgme_op_verify} operation.  The structure contains the
 following members:
 
 @table @code
-@item GpgmeSigNotation next
+@item gpgme_sig_notation_t next
 This is a pointer to the next new signature notation structure in the
 linked list, or @code{NULL} if this is the last element.
 
@@ -3160,13 +3160,13 @@ this is a policy URL.
 @end table
 @end deftp
 
-@deftp {Data type} {GpgmeSignature}
+@deftp {Data type} {gpgme_signature_t}
 This is a pointer to a structure used to store a part of the result of
 a @code{gpgme_op_verify} operation.  The structure contains the
 following members:
 
 @table @code
-@item GpgmeSignature next
+@item gpgme_signature_t next
 This is a pointer to the next new signature structure in the linked
 list, or @code{NULL} if this is the last element.
 
@@ -3220,7 +3220,7 @@ The defined bits are:
 @item char *fpr
 This is the fingerprint or key ID of the signature.
 
-@item GpgmeError status
+@item gpgme_error_t status
 This is the status of the signature.  In particular, the following
 status codes are of interest:
 
@@ -3253,7 +3253,7 @@ status codes are of interest:
   the signature verification.
   @end table
 
-@item GpgmeSigNotation notations
+@item gpgme_sig_notation_t notations
 This is a linked list with the notation data and policy URLs.
 
 @item unsigned long timestamp
@@ -3265,13 +3265,13 @@ not expire.
 
 @item int wrong_key_usage : 1;
 
-@item GpgmeValidity validity
+@item gpgme_validity_t validity
 
-@item GpgmeError validity_reason
+@item gpgme_error_t validity_reason
 @end table
 @end deftp
 
-@deftp {Data type} {GpgmeVerifyResult}
+@deftp {Data type} {gpgme_verify_result_t}
 This is a pointer to a structure used to store the result of a
 @code{gpgme_op_verify} operation.  After successfully verifying a
 signature, you can retrieve the pointer to the result with
@@ -3279,15 +3279,15 @@ signature, you can retrieve the pointer to the result with
 member:
 
 @table @code
-@item GpgmeSignature signatures
+@item gpgme_signature_t signatures
 A linked list with information about all signatures for which a
 verification was attempted.
 @end table
 @end deftp
 
-@deftypefun GpgmeSignResult gpgme_op_verify_result (@w{GpgmeCtx @var{ctx}})
+@deftypefun gpgme_sign_result_t gpgme_op_verify_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_verify_result} returns a
-@code{GpgmeVerifyResult} pointer to a structure holding the result of
+@code{gpgme_verify_result_t} pointer to a structure holding the result of
 a @code{gpgme_op_verify} operation.  The pointer is only valid if the
 last operation on the context was a @code{gpgme_op_verify} or
 @code{gpgme_op_verify_start} operation, and if this operation finished
@@ -3300,9 +3300,9 @@ The following interfaces are deprecated and only provided for backward
 compatibility.  Don't use them.  They will be removed in a future
 version of @acronym{GPGME}.
 
-@deftp {Data type} {enum GpgmeSigStat}
-@tindex GpgmeSigStat
-The @code{GpgmeSigStat} type holds the result of a signature check, or
+@deftp {Data type} {enum gpgme_sig_stat_t}
+@tindex gpgme_sig_stat_t
+The @code{gpgme_sig_stat_t} type holds the result of a signature check, or
 the combined result of all signatures.  The following results are
 possible:
 
@@ -3348,12 +3348,12 @@ have a different status.  You can get each key's status with
 @end table
 @end deftp
 
-@deftypefun {const char *} gpgme_get_sig_status (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeSigStat *@var{r_stat}}, @w{time_t *@var{r_created}})
+@deftypefun {const char *} gpgme_get_sig_status (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{idx}}, @w{gpgme_sig_stat_t *@var{r_stat}}, @w{time_t *@var{r_created}})
 The function @code{gpgme_get_sig_status} is equivalent to:
  
 @example
-  GpgmeVerifyResult result;
-  GpgmeSignature sig;
+  gpgme_verify_result_t result;
+  gpgme_signature_t sig;
 
   result = gpgme_op_verify_result (ctx);
   sig = result->signatures;
@@ -3405,12 +3405,12 @@ The function @code{gpgme_get_sig_status} is equivalent to:
 @end example
 @end deftypefun
 
-@deftypefun {const char *} gpgme_get_sig_string_attr (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeAttr @var{what}}, @w{int @var{whatidx}})
+@deftypefun {const char *} gpgme_get_sig_string_attr (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{idx}}, @w{gpgme_attr_t @var{what}}, @w{int @var{whatidx}})
 The function @code{gpgme_get_sig_string_attr} is equivalent to:
  
 @example
-  GpgmeVerifyResult result;
-  GpgmeSignature sig;
+  gpgme_verify_result_t result;
+  gpgme_signature_t sig;
 
   result = gpgme_op_verify_result (ctx);
   sig = result->signatures;
@@ -3441,12 +3441,12 @@ The function @code{gpgme_get_sig_string_attr} is equivalent to:
 @end example
 @end deftypefun
 
-@deftypefun {const char *} gpgme_get_sig_ulong_attr (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeAttr @var{waht}}, @w{int @var{whatidx}})
+@deftypefun {const char *} gpgme_get_sig_ulong_attr (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{idx}}, @w{gpgme_attr_t @var{waht}}, @w{int @var{whatidx}})
 The function @code{gpgme_get_sig_ulong_attr} is equivalent to:
  
 @example
-  GpgmeVerifyResult result;
-  GpgmeSignature sig;
+  gpgme_verify_result_t result;
+  gpgme_signature_t sig;
 
   result = gpgme_op_verify_result (ctx);
   sig = result->signatures;
@@ -3505,12 +3505,12 @@ The function @code{gpgme_get_sig_ulong_attr} is equivalent to:
 @end example
 @end deftypefun
 
-@deftypefun {const char *} gpgme_get_sig_key (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeKey *@var{r_key}})
+@deftypefun {const char *} gpgme_get_sig_key (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{idx}}, @w{gpgme_key_t *@var{r_key}})
 The function @code{gpgme_get_sig_key} is equivalent to:
 
 @example
-  GpgmeVerifyResult result;
-  GpgmeSignature sig;
+  gpgme_verify_result_t result;
+  gpgme_signature_t sig;
 
   result = gpgme_op_verify_result (ctx);
   sig = result->signatures;
@@ -3535,7 +3535,7 @@ The function @code{gpgme_get_sig_key} is equivalent to:
 @cindex signature check
 @cindex cryptographic operation, decryption and verification
 
-@deftypefun GpgmeError gpgme_op_decrypt_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{cipher}}, @w{GpgmeData @var{plain}})
+@deftypefun gpgme_error_t gpgme_op_decrypt_verify (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{cipher}}, @w{gpgme_data_t @var{plain}})
 The function @code{gpgme_op_decrypt_verify} decrypts the ciphertext in
 the data object @var{cipher} and stores it into the data object
 @var{plain}.  If @var{cipher} contains signatures, they will be
@@ -3555,7 +3555,7 @@ secret key could not be retrieved, and passes through any errors that
 are reported by the crypto engine support routines.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_decrypt_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{cipher}}, @w{GpgmeData @var{plain}})
+@deftypefun gpgme_error_t gpgme_op_decrypt_verify (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{cipher}}, @w{gpgme_data_t @var{plain}})
 The function @code{gpgme_op_decrypt_verify_start} initiates a
 @code{gpgme_op_decrypt_verify} operation.  It can be completed by
 calling @code{gpgme_wait} on the context.  @xref{Waiting For
@@ -3591,7 +3591,7 @@ set is changed).
 @cindex signature, selecting signers
 @cindex signers, selecting
 
-@deftypefun void gpgme_signers_clear (@w{GpgmeCtx @var{ctx}})
+@deftypefun void gpgme_signers_clear (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_signers_clear} releases a reference for each
 key on the signers list and removes the list of signers from the
 context @var{ctx}.
@@ -3599,14 +3599,14 @@ context @var{ctx}.
 Every context starts with an empty list.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_signers_add (@w{GpgmeCtx @var{ctx}}, @w{const GpgmeKey @var{key}})
+@deftypefun gpgme_error_t gpgme_signers_add (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}})
 The function @code{gpgme_signers_add} adds the key @var{key} to the
 list of signers in the context @var{ctx}.
 
 Calling this function acquires an additional reference for the key.
 @end deftypefun
 
-@deftypefun GpgmeKey gpgme_signers_enum (@w{const GpgmeCtx @var{ctx}}, @w{int @var{seq}})
+@deftypefun gpgme_key_t gpgme_signers_enum (@w{const gpgme_ctx_t @var{ctx}}, @w{int @var{seq}})
 The function @code{gpgme_signers_enum} returns the @var{seq}th key in
 the list of signers in the context @var{ctx}.  An additional reference
 is acquired for the user.
@@ -3618,9 +3618,9 @@ If @var{seq} is out of range, @code{NULL} is returned.
 @node Creating a Signature
 @subsubsection Creating a Signature
 
-@deftp {Data type} {enum GpgmeSigMode}
-@tindex GpgmeSigMode
-The @code{GpgmeSigMode} type is used to specify the desired type of a
+@deftp {Data type} {enum gpgme_sig_mode_t}
+@tindex gpgme_sig_mode_t
+The @code{gpgme_sig_mode_t} type is used to specify the desired type of a
 signature.  The following modes are available:
 
 @table @code
@@ -3637,7 +3637,7 @@ mode settings of the context are ignored.
 @end table
 @end deftp
 
-@deftypefun GpgmeError gpgme_op_sign (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{sig}}, @w{GpgmeSigMode @var{mode}})
+@deftypefun gpgme_error_t gpgme_op_sign (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{sig}}, @w{gpgme_sig_mode_t @var{mode}})
 The function @code{gpgme_op_sign} creates a signature for the text in
 the data object @var{plain} and returns it in the data object
 @var{sig}.  The type of the signature created is determined by the
@@ -3660,7 +3660,7 @@ through any errors that are reported by the crypto engine support
 routines.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_sign_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{sig}}, @w{GpgmeSigMode @var{mode}})
+@deftypefun gpgme_error_t gpgme_op_sign_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{sig}}, @w{gpgme_sig_mode_t @var{mode}})
 The function @code{gpgme_op_sign_start} initiates a
 @code{gpgme_op_sign} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -3670,23 +3670,23 @@ started successfully, and @code{GPGME_Invalid_Value} if @var{ctx},
 @var{plain} or @var{sig} is not a valid pointer.
 @end deftypefun
 
-@deftp {Data type} {GpgmeNewSignature}
+@deftp {Data type} {gpgme_new_signature_t}
 This is a pointer to a structure used to store a part of the result of
 a @code{gpgme_op_sign} operation.  The structure contains the
 following members:
 
 @table @code
-@item GpgmeNewSignature next
+@item gpgme_new_signature_t next
 This is a pointer to the next new signature structure in the linked
 list, or @code{NULL} if this is the last element.
 
-@item GpgmeSigMode type
+@item gpgme_sig_mode_t type
 The type of this signature.
 
-@item GpgmePubKeyAlgo
+@item gpgme_pubkey_algo_t
 The public key algorithm used to create this signature.
 
-@item GpgmeHashAlgo
+@item gpgme_hash_algo_t
 The hash algorithm used to create this signature.
 
 @item unsigned long class
@@ -3700,7 +3700,7 @@ The fingerprint of the key which was used to create this signature.
 @end table
 @end deftp
 
-@deftp {Data type} {GpgmeSignResult}
+@deftp {Data type} {gpgme_sign_result_t}
 This is a pointer to a structure used to store the result of a
 @code{gpgme_op_sign} operation.  After successfully generating a
 signature, you can retrieve the pointer to the result with
@@ -3708,18 +3708,18 @@ signature, you can retrieve the pointer to the result with
 members:
 
 @table @code
-@item GpgmeInvalidUserID invalid_signers
+@item gpgme_invalid_user_id_t invalid_signers
 A linked list with information about all invalid user IDs for which a
 signature could not be created.
 
-@item GpgmeNewSignature signatures
+@item gpgme_new_signature_t signatures
 A linked list with information about all signatures created.
 @end table
 @end deftp
 
-@deftypefun GpgmeSignResult gpgme_op_sign_result (@w{GpgmeCtx @var{ctx}})
+@deftypefun gpgme_sign_result_t gpgme_op_sign_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_sign_result} returns a
-@code{GpgmeSignResult} pointer to a structure holding the result of a
+@code{gpgme_sign_result_t} pointer to a structure holding the result of a
 @code{gpgme_op_sign} operation.  The pointer is only valid if the last
 operation on the context was a @code{gpgme_op_sign} or
 @code{gpgme_op_sign_start} operation, and if this operation finished
@@ -3748,12 +3748,12 @@ and then passed to the encryption operation.
 @cindex encryption, selecting recipients
 @cindex recipients
 
-@deftp {Data type} GpgmeRecipients
-The @code{GpgmeRecipients} type is a handle for a set of recipients
+@deftp {Data type} gpgme_recipients_t
+The @code{gpgme_recipients_t} type is a handle for a set of recipients
 that can be used in an encryption process.
 @end deftp
 
-@deftypefun GpgmeError gpgme_recipients_new (@w{GpgmeRecipients *@var{r_rset}})
+@deftypefun gpgme_error_t gpgme_recipients_new (@w{gpgme_recipients_t *@var{r_rset}})
 The function @code{gpgme_recipients_new} creates a new, empty set of
 recipients and returns a handle for it in @var{r_rset}.
 
@@ -3762,12 +3762,12 @@ be created successfully, and @code{GPGME_Out_Of_Core} if not enough
 memory was available.
 @end deftypefun
 
-@deftypefun void gpgme_recipients_release (@w{GpgmeRecipients @var{rset}})
+@deftypefun void gpgme_recipients_release (@w{gpgme_recipients_t @var{rset}})
 The function @code{gpgme_recipients_release} destroys the set of
 recipients @var{rset} and releases all associated resources.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_recipients_add_name (@w{GpgmeRecipients @var{rset}}, @w{const char *@var{name}})
+@deftypefun gpgme_error_t gpgme_recipients_add_name (@w{gpgme_recipients_t @var{rset}}, @w{const char *@var{name}})
 The function @code{gpgme_recipients_add_name} adds the recipient
 @var{name} to the set of recipients @var{rset}.  This is equivalent to
 @code{gpgme_recipients_add_name_with_validity} with a validity of
@@ -3779,7 +3779,7 @@ is not a valid pointer, and @code{GPGME_Out_Of_Core} if not enough
 memory is available.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_recipients_add_name_with_validity (@w{GpgmeRecipients @var{rset}}, @w{const char *@var{name}}, @w{GpgmeValidity @var{val}})
+@deftypefun gpgme_error_t gpgme_recipients_add_name_with_validity (@w{gpgme_recipients_t @var{rset}}, @w{const char *@var{name}}, @w{gpgme_validity_t @var{val}})
 The function @code{gpgme_recipients_add_name_with_validity} adds the
 recipient @var{name} with the validity @var{val} to the set of
 recipients @var{rset}.  If the validity is not known, the function
@@ -3792,12 +3792,12 @@ is not a valid pointer, and @code{GPGME_Out_Of_Core} if not enough
 memory is available.
 @end deftypefun
 
-@deftypefun {unsigned int} gpgme_recipients_count (@w{const @var{GpgmeRecipients rset}})
+@deftypefun {unsigned int} gpgme_recipients_count (@w{const @var{gpgme_recipients_t rset}})
 The function @code{gpgme_recipients_count} returns the number of
 recipients in the set @var{rset}.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_recipients_enum_open (@w{const GpgmeRecipients @var{rset}}, @w{void **@var{iter}})
+@deftypefun gpgme_error_t gpgme_recipients_enum_open (@w{const gpgme_recipients_t @var{rset}}, @w{void **@var{iter}})
 The function @code{gpgme_recipients_enum_open} creates a new iterator
 @var{iter} that can be used to walk through the set of recipients in
 @var{rset}, using @code{gpgme_recipients_enum_read}.
@@ -3810,7 +3810,7 @@ successfully created and @code{GPGME_Invalid_Value} if @var{rset} or
 @var{iter} is not a valid pointer.
 @end deftypefun
 
-@deftypefun {const char *} gpgme_recipients_enum_read (@w{const GpgmeRecipients @var{rset}}, @w{void **@var{iter}})
+@deftypefun {const char *} gpgme_recipients_enum_read (@w{const gpgme_recipients_t @var{rset}}, @w{void **@var{iter}})
 The function @code{gpgme_recipients_enum_read} returns a string
 containing the name of the next recipient in the set @var{rset} for
 the iterator @var{iter}.  The string is valid as long as @var{rset} is
@@ -3818,7 +3818,7 @@ valid or the function is called the next time with the same recipient
 set and iterator, whatever is earlier.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_recipients_enum_close (@w{const GpgmeRecipients @var{rset}}, @w{void **@var{iter}})
+@deftypefun gpgme_error_t gpgme_recipients_enum_close (@w{const gpgme_recipients_t @var{rset}}, @w{void **@var{iter}})
 The function @code{gpgme_recipients_enum_close} releases the iterator
 @var{iter} for the recipient set @var{rset}.
 @end deftypefun
@@ -3827,7 +3827,7 @@ The function @code{gpgme_recipients_enum_close} releases the iterator
 @node Encrypting a Plaintext
 @subsubsection Encrypting a Plaintext
 
-@deftypefun GpgmeError gpgme_op_encrypt (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{rset}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt} encrypts the plaintext in the data
 object @var{plain} for the recipients @var{rset} and stores the
 ciphertext in the data object @var{cipher}.  The type of the
@@ -3857,7 +3857,7 @@ the secret key could not be retrieved, and passes through any errors
 that are reported by the crypto engine support routines.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_encrypt_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{rset}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt_start} initiates a
 @code{gpgme_op_encrypt} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -3869,7 +3869,7 @@ started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 recipients.
 @end deftypefun
 
-@deftp {Data type} {GpgmeEncryptResult}
+@deftp {Data type} {gpgme_encrypt_result_t}
 This is a pointer to a structure used to store the result of a
 @code{gpgme_op_encrypt} operation.  After successfully encrypting
 data, you can retrieve the pointer to the result with
@@ -3877,15 +3877,15 @@ data, you can retrieve the pointer to the result with
 members:
 
 @table @code
-@item GpgmeInvalidUserID invalid_recipients
+@item gpgme_invalid_user_id_t invalid_recipients
 A linked list with information about all invalid user IDs for which
 the data could not be encrypted.
 @end table
 @end deftp
 
-@deftypefun GpgmeEncryptResult gpgme_op_encrypt_result (@w{GpgmeCtx @var{ctx}})
+@deftypefun gpgme_encrypt_result_t gpgme_op_encrypt_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_encrypt_result} returns a
-@code{GpgmeEncryptResult} pointer to a structure holding the result of
+@code{gpgme_encrypt_result_t} pointer to a structure holding the result of
 a @code{gpgme_op_encrypt} operation.  The pointer is only valid if the
 last operation on the context was a @code{gpgme_op_encrypt} or
 @code{gpgme_op_encrypt_start} operation, and if this operation
@@ -3894,7 +3894,7 @@ next operation is started on the context.
 @end deftypefun
 
 
-@deftypefun GpgmeError gpgme_op_encrypt_sign (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{rset}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt_sign (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt_sign} does a combined encrypt and
 sign operation.  It is used like @code{gpgme_op_encrypt}, but the
 ciphertext also contains signatures for the signers listed in
@@ -3904,7 +3904,7 @@ The combined encrypt and sign operation is currently only available
 for the OpenPGP crypto engine.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_encrypt_sign_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{rset}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt_sign_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt_sign_start} initiates a
 @code{gpgme_op_encrypt_sign} operation.  It can be completed by
 calling @code{gpgme_wait} on the context.  @xref{Waiting For
@@ -3944,7 +3944,7 @@ time.
 @cindex cryptographic operation, wait for
 @cindex wait for completion
 
-@deftypefun GpgmeCtx gpgme_wait (@w{GpgmeCtx @var{ctx}}, @w{GpgmeError *@var{status}}, @w{int @var{hang}})
+@deftypefun gpgme_ctx_t gpgme_wait (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_error_t *@var{status}}, @w{int @var{hang}})
 The function @code{gpgme_wait} continues the pending operation within
 the context @var{ctx}.  In particular, it ensures the data exchange
 between @acronym{GPGME} and the crypto backend and watches over the
@@ -4025,11 +4025,11 @@ programs.
 @node I/O Callback Interface
 @subsubsection I/O Callback Interface
 
-@deftp {Data type} {GpgmeError (*GpgmeIOCb) (@w{void *@var{data}}, @w{int @var{fd}})}
-@tindex GpgmeIOCb
-The @code{GpgmeIOCb} type is the type of functions which
+@deftp {Data type} {gpgme_error_t (*gpgme_io_cb_t) (@w{void *@var{data}}, @w{int @var{fd}})}
+@tindex gpgme_io_cb_t
+The @code{gpgme_io_cb_t} type is the type of functions which
 @acronym{GPGME} wants to register as I/O callback handlers using the
-@code{GpgmeRegisterIOCb} functions provided by the user.
+@code{gpgme_register_io_cb_t} functions provided by the user.
 
 @var{data} and @var{fd} are provided by @acronym{GPGME} when the I/O
 callback handler is registered, and should be passed through to the
@@ -4040,9 +4040,9 @@ The callback handler always returns @code{0}, but you should consider
 the return value to be reserved for later use.
 @end deftp
 
-@deftp {Data type} {GpgmeError (*GpgmeRegisterIOCb) (@w{void *@var{data}}, @w{int @var{fd}}, @w{int @var{dir}}, @w{GpgmeIOCb @var{fnc}}, @w{void *@var{fnc_data}}, @w{void **@var{tag}})}
-@tindex GpgmeRegisterIOCb
-The @code{GpgmeRegisterIOCb} type is the type of functions which can
+@deftp {Data type} {gpgme_error_t (*gpgme_register_io_cb_t) (@w{void *@var{data}}, @w{int @var{fd}}, @w{int @var{dir}}, @w{gpgme_io_cb_t @var{fnc}}, @w{void *@var{fnc_data}}, @w{void **@var{tag}})}
+@tindex gpgme_register_io_cb_t
+The @code{gpgme_register_io_cb_t} type is the type of functions which can
 be called by @acronym{GPGME} to register an I/O callback funtion
 @var{fnc} for the file descriptor @var{fd} with the user.
 @var{fnc_data} should be passed as the first argument to @var{fnc}
@@ -4052,7 +4052,7 @@ If @var{dir} is 0, @var{fnc} should be called by the user when
 called when @var{fd} is ready for reading.
 
 @var{data} was provided by the user when registering the
-@code{GpgmeRegisterIOCb} function with @acronym{GPGME} and will always
+@code{gpgme_register_io_cb_t} function with @acronym{GPGME} and will always
 be passed as the first argument when registering a callback function.
 For example, the user can use this to determine the event loop to
 which the file descriptor should be added.
@@ -4065,24 +4065,24 @@ associated to this context.
 
 The user should return a unique handle in @var{tag} identifying this
 I/O callback registration, which will be passed to the
-@code{GpgmeRegisterIOCb} function without interpretation when the file
+@code{gpgme_register_io_cb_t} function without interpretation when the file
 descriptor should not be monitored anymore.
 @end deftp
 
-@deftp {Data type} {void (*GpgmeRemoveIOCb) (@w{void *@var{tag}})}
-The @code{GpgmeRemoveIOCb} type is the type of functions which can be
+@deftp {Data type} {void (*gpgme_remove_io_cb_t) (@w{void *@var{tag}})}
+The @code{gpgme_remove_io_cb_t} type is the type of functions which can be
 called by @acronym{GPGME} to remove an I/O callback handler that was
 registered before.  @var{tag} is the handle that was returned by the
-@code{GpgmeRegisterIOCb} for this I/O callback.
+@code{gpgme_register_io_cb_t} for this I/O callback.
 
 @acronym{GPGME} can call this function when a crypto operation is in
 an I/O callback.  It will also call this function when the context is
 destroyed while an operation is pending.
 @end deftp
 
-@deftp {Data type} {enum GpgmeEventIO}
-@tindex GpgmeEventIO
-The @code{GpgmeEventIO} type specifies the type of an event that is
+@deftp {Data type} {enum gpgme_event_io_t}
+@tindex gpgme_event_io_t
+The @code{gpgme_event_io_t} type specifies the type of an event that is
 reported to the user by @acronym{GPGME} as a consequence of an I/O
 operation.  The following events are defined:
 
@@ -4096,38 +4096,38 @@ callback handlers must not be run before this event is signalled.
 @item GPGME_EVENT_DONE
 The operation is finished, the last I/O callback for this operation
 was removed.  The accompanying @var{type_data} points to a
-@code{GpgmeError} variable that contains the status of the operation
+@code{gpgme_error_t} variable that contains the status of the operation
 that finished.  This event is signalled after the last I/O callback
 has been removed.
 
 @item GPGME_EVENT_NEXT_KEY
 In a @code{gpgme_op_keylist_start} operation, the next key was
 received from the crypto engine.  The accompanying @var{type_data} is
-a @code{GpgmeKey} variable that contains the key with one reference
+a @code{gpgme_key_t} variable that contains the key with one reference
 for the user.
 
 @item GPGME_EVENT_NEXT_TRUSTITEM
 In a @code{gpgme_op_trustlist_start} operation, the next trust item
 was received from the crypto engine.  The accompanying @var{type_data}
-is a @code{GpgmeTrustItem} variable that contains the trust item with
+is a @code{gpgme_trust_item_t} variable that contains the trust item with
 one reference for the user.
 @end table
 @end deftp
 
-@deftp {Data type} {void (*GpgmeEventIOCb) (@w{void *@var{data}}, @w{GpgmeEventIO @var{type}}, @w{void *@var{type_data}})}
-The @code{GpgmeEventIOCb} type is the type of functions which can be
+@deftp {Data type} {void (*gpgme_event_io_cb_t) (@w{void *@var{data}}, @w{gpgme_event_io_t @var{type}}, @w{void *@var{type_data}})}
+The @code{gpgme_event_io_cb_t} type is the type of functions which can be
 called by @acronym{GPGME} to signal an event for an operation running
 in a context which has I/O callback functions registered by the user.
 
 @var{data} was provided by the user when registering the
-@code{GpgmeEventIOCb} function with @acronym{GPGME} and will always be
+@code{gpgme_event_io_cb_t} function with @acronym{GPGME} and will always be
 passed as the first argument when registering a callback function.
 For example, the user can use this to determine the context in which
 this event has occured.
 
 @var{type} will specify the type of event that has occured.
 @var{type_data} specifies the event further, as described in the above
-list of possible @code{GpgmeEventIO} types.
+list of possible @code{gpgme_event_io_t} types.
 
 @acronym{GPGME} can call this function in an I/O callback handler.
 @end deftp
@@ -4136,13 +4136,13 @@ list of possible @code{GpgmeEventIO} types.
 @node Registering I/O Callbacks
 @subsubsection Registering I/O Callbacks
 
-@deftp {Data type} {struct GpgmeIOCbs}
-@tindex GpgmeEventIO
+@deftp {Data type} {struct gpgme_io_cb_ts}
+@tindex gpgme_event_io_t
 This structure is used to store the I/O callback interface functions
 described in the previous section.  It has the following members:
 
 @table @code
-@item GpgmeRegisterIOCb add
+@item gpgme_register_io_cb_t add
 This is the function called by @acronym{GPGME} to register an I/O
 callback handler.  It must be specified.
 
@@ -4151,11 +4151,11 @@ This is passed as the first argument to the @code{add} function when
 it is called by @acronym{GPGME}.  For example, it can be used to
 determine the event loop to which the file descriptor should be added.
 
-@item GpgmeRemoveIOCb remove
+@item gpgme_remove_io_cb_t remove
 This is the function called by @acronym{GPGME} to remove an I/O
 callback handler.  It must be specified.
 
-@item GpgmeEventIOCb event
+@item gpgme_event_io_cb_t event
 This is the function called by @acronym{GPGME} to signal an event for
 an operation.  It is optional, but if you don't specify it, you can
 not retrieve the return value of the operation.
@@ -4167,7 +4167,7 @@ determine the context in which the event has occured.
 @end table
 @end deftp
 
-@deftypefun void gpgme_set_io_cbs (@w{GpgmeCtx @var{ctx}}, @w{struct GpgmeIOCbs *@var{io_cbs}})
+@deftypefun void gpgme_set_io_cbs (@w{gpgme_ctx_t @var{ctx}}, @w{struct gpgme_io_cb_ts *@var{io_cbs}})
 The function @code{gpgme_set_io_cbs} enables the I/O callback
 interface for the context @var{ctx}.  The I/O callback functions are
 specified by @var{io_cbs}.
@@ -4176,7 +4176,7 @@ If @var{io_cbs}->@code{add} is @code{NULL}, the I/O callback interface
 is disabled for the context, and normal operation is restored.
 @end deftypefun
 
-@deftypefun void gpgme_get_io_cbs (@w{GpgmeCtx @var{ctx}}, @w{struct GpgmeIOCbs *@var{io_cbs}})
+@deftypefun void gpgme_get_io_cbs (@w{gpgme_ctx_t @var{ctx}}, @w{struct gpgme_io_cb_ts *@var{io_cbs}})
 The function @code{gpgme_get_io_cbs} returns the I/O callback
 functions set with @code{gpgme_set_io_cbs} in @var{io_cbs}.
 @end deftypefun
@@ -4207,7 +4207,7 @@ operation in @acronym{GPGME} is not predictable.
 struct op_result
 @{
   int done;
-  GpgmeError err;
+  gpgme_error_t err;
 @};
 
 /* The following structure holds the data associated with one I/O
@@ -4216,7 +4216,7 @@ struct one_fd
 @{
   int fd;
   int dir;
-  GpgmeIOCb fnc;
+  gpgme_io_cb_t fnc;
   void *fnc_data;
 @};
 
@@ -4232,8 +4232,8 @@ struct event_loop
 The following functions implement the I/O callback interface.
 
 @example
-GpgmeError
-add_io_cb (void *data, int fd, int dir, GpgmeIOCb fnc, void *fnc_data,
+gpgme_error_t
+add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc, void *fnc_data,
 	   void **r_tag)
 @{
   struct event_loop *loop = data;
@@ -4270,10 +4270,10 @@ remove_io_cb (void *tag)
 @}
 
 void
-event_io_cb (void *data, GpgmeEventIO type, void *type_data)
+event_io_cb (void *data, gpgme_event_io_t type, void *type_data)
 @{
   struct op_result *result = data;
-  GpgmeError *err = data;
+  gpgme_error_t *err = data;
 
   /* We don't support list operations here.  */
   if (type == GPGME_EVENT_DONE)
@@ -4357,12 +4357,12 @@ main (int argc, char *argv[])
 @{
   struct event_loop loop;
   struct op_result result;
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeData sig, text;
-  GpgmeSigStat status;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_data_t sig, text;
+  gpgme_sig_stat_t status;
   int i;
-  struct GpgmeIOCbs io_cbs =
+  struct gpgme_io_cb_ts io_cbs =
   @{
     add_io_cb,
     &loop,
@@ -4429,7 +4429,7 @@ because it does not require any GTK+ specific setup.
 
 struct my_gpgme_io_cb
 @{
-  GpgmeIOCb fnc;
+  gpgme_io_cb_t fnc;
   void *fnc_data;
   guint input_handler_id
 @};
@@ -4449,7 +4449,7 @@ my_gpgme_remove_io_cb (void *data)
 @}
 
 void
-my_gpgme_register_io_callback (void *data, int fd, int dir, GpgmeIOCb fnc,
+my_gpgme_register_io_callback (void *data, int fd, int dir, gpgme_io_cb_t fnc,
                                void *fnc_data, void **tag)
 @{
   struct my_gpgme_io_cb *iocb = g_malloc (sizeof (struct my_gpgme_io_cb));
@@ -4484,7 +4484,7 @@ It is very similar to the GTK+ example in the previous section.
 
 struct my_gpgme_io_cb
 @{
-  GpgmeIOCb fnc;
+  gpgme_io_cb_t fnc;
   void *fnc_data;
   gint tag;
 @};
@@ -4504,7 +4504,7 @@ my_gpgme_remove_io_cb (void *data)
 @}
 
 void
-my_gpgme_register_io_callback (void *data, int fd, int dir, GpgmeIOCb fnc,
+my_gpgme_register_io_callback (void *data, int fd, int dir, gpgme_io_cb_t fnc,
                                void *fnc_data, void **tag)
 @{
   struct my_gpgme_io_cb *iocb = g_malloc (sizeof (struct my_gpgme_io_cb));

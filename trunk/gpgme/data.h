@@ -33,24 +33,24 @@
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle DH.  Return the number of characters read, 0 on EOF and
    -1 on error.  If an error occurs, errno is set.  */
-typedef ssize_t (*gpgme_data_read_cb) (GpgmeData dh, void *buffer,
+typedef ssize_t (*gpgme_data_read_cb) (gpgme_data_t dh, void *buffer,
 				       size_t size);
 
 /* Write up to SIZE bytes from buffer BUFFER to the data object with
    the handle DH.  Return the number of characters written, or -1 on
    error.  If an error occurs, errno is set.  */
-typedef ssize_t (*gpgme_data_write_cb) (GpgmeData dh, const void *buffer,
+typedef ssize_t (*gpgme_data_write_cb) (gpgme_data_t dh, const void *buffer,
 					size_t size);
 
 /* Set the current position from where the next read or write starts
    in the data object with the handle DH to OFFSET, relativ to
    WHENCE.  */
-typedef off_t (*gpgme_data_seek_cb) (GpgmeData dh, off_t offset, int whence);
+typedef off_t (*gpgme_data_seek_cb) (gpgme_data_t dh, off_t offset, int whence);
 
 /* Release the data object with the handle DH.  */
-typedef void (*gpgme_data_release_cb) (GpgmeData dh);
+typedef void (*gpgme_data_release_cb) (gpgme_data_t dh);
 
-struct gpgme_data_cbs
+struct _gpgme_data_cbs
 {
   gpgme_data_read_cb read;
   gpgme_data_write_cb write;
@@ -58,10 +58,10 @@ struct gpgme_data_cbs
   gpgme_data_release_cb release;
 };
 
-struct gpgme_data_s
+struct gpgme_data
 {
-  struct gpgme_data_cbs *cbs;
-  GpgmeDataEncoding encoding;
+  struct _gpgme_data_cbs *cbs;
+  gpgme_data_encoding_t encoding;
 
 #ifdef PIPE_BUF
 #define BUFFER_SIZE PIPE_BUF
@@ -86,7 +86,7 @@ struct gpgme_data_s
     /* For gpgme_data_new_from_cbs.  */
     struct
     {
-      struct GpgmeDataCbs *cbs;
+      gpgme_data_cbs_t cbs;
       void *handle;
     } user;
 
@@ -111,8 +111,8 @@ struct gpgme_data_s
 };
 
 
-GpgmeError _gpgme_data_new (GpgmeData *r_dh, struct gpgme_data_cbs *cbs);
+gpgme_error_t _gpgme_data_new (gpgme_data_t *r_dh, struct _gpgme_data_cbs *cbs);
 
-void _gpgme_data_release (GpgmeData dh);
+void _gpgme_data_release (gpgme_data_t dh);
 
 #endif	/* DATA_H */

@@ -26,19 +26,19 @@
 #include "ops.h"
 
 
-static GpgmeError
-decrypt_verify_status_handler (void *priv, GpgmeStatusCode code, char *args)
+static gpgme_error_t
+decrypt_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   return _gpgme_decrypt_status_handler (priv, code, args)
     || _gpgme_verify_status_handler (priv, code, args);
 }
 
 
-static GpgmeError
-_gpgme_op_decrypt_verify_start (GpgmeCtx ctx, int synchronous,
-				GpgmeData cipher, GpgmeData plain)
+static gpgme_error_t
+_gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, int synchronous,
+				gpgme_data_t cipher, gpgme_data_t plain)
 {
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -75,8 +75,8 @@ _gpgme_op_decrypt_verify_start (GpgmeCtx ctx, int synchronous,
 
 /* Decrypt ciphertext CIPHER and make a signature verification within
    CTX and store the resulting plaintext in PLAIN.  */
-GpgmeError
-gpgme_op_decrypt_verify_start (GpgmeCtx ctx, GpgmeData cipher, GpgmeData plain)
+gpgme_error_t
+gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
 {
   return _gpgme_op_decrypt_verify_start (ctx, 0, cipher, plain);
 }
@@ -84,10 +84,10 @@ gpgme_op_decrypt_verify_start (GpgmeCtx ctx, GpgmeData cipher, GpgmeData plain)
 
 /* Decrypt ciphertext CIPHER and make a signature verification within
    CTX and store the resulting plaintext in PLAIN.  */
-GpgmeError
-gpgme_op_decrypt_verify (GpgmeCtx ctx, GpgmeData cipher, GpgmeData plain)
+gpgme_error_t
+gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
 {
-  GpgmeError err = _gpgme_op_decrypt_verify_start (ctx, 1, cipher, plain);
+  gpgme_error_t err = _gpgme_op_decrypt_verify_start (ctx, 1, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

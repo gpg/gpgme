@@ -30,7 +30,7 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
                    __FILE__, __LINE__, gpgme_strerror (err));   \
           exit (1);						\
         }							\
@@ -39,7 +39,7 @@
 
 
 static void
-print_data (GpgmeData dh)
+print_data (gpgme_data_t dh)
 {
 #define BUF_SIZE 512
   char buf[BUF_SIZE + 1];
@@ -81,16 +81,16 @@ progress (void *self, const char *what, int type, int current, int total)
 int 
 main (int argc, char **argv)
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
   const char *parms = "<GnupgKeyParms format=\"internal\">\n"
     "Key-Type: RSA\n"
     "Key-Length: 1024\n"
     "Name-DN: C=de,O=g10 code,OU=Testlab,CN=Joe 2 Tester\n"
     "Name-Email: joe@foo.bar\n"
     "</GnupgKeyParms>\n";
-  GpgmeGenKeyResult result;
-  GpgmeData certreq;
+  gpgme_genkey_result_t result;
+  gpgme_data_t certreq;
 
   err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);
   fail_if_err (err);

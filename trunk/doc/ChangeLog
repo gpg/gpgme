@@ -1,3 +1,9 @@
+2003-05-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Header): Remove Gpgme as namespace prefix.  Add
+	_GPGME to namespace prefix.
+	* gpgme.texi (Multi Threading): Add note about link order.
+
 2003-05-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Listing Keys): Document what happens if key is not

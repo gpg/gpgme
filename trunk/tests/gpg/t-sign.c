@@ -29,7 +29,7 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
                    __FILE__, __LINE__, gpgme_strerror (err));   \
           exit (1);						\
         }							\
@@ -38,7 +38,7 @@
 
 
 static void
-print_data (GpgmeData dh)
+print_data (gpgme_data_t dh)
 {
 #define BUF_SIZE 512
   char buf[BUF_SIZE + 1];
@@ -54,7 +54,7 @@ print_data (GpgmeData dh)
 }
 
 
-static GpgmeError
+static gpgme_error_t
 passphrase_cb (void *opaque, const char *desc, void **hd, const char **result)
 {
   /* Cleanup by looking at *hd.  */
@@ -67,7 +67,7 @@ passphrase_cb (void *opaque, const char *desc, void **hd, const char **result)
 
 
 static void
-check_result (GpgmeSignResult result, GpgmeSigMode type)
+check_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
 {
   if (result->invalid_signers)
     {
@@ -116,10 +116,10 @@ check_result (GpgmeSignResult result, GpgmeSigMode type)
 int 
 main (int argc, char **argv)
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeData in, out;
-  GpgmeSignResult result;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_data_t in, out;
+  gpgme_sign_result_t result;
   char *agent_info;
 
   err = gpgme_new (&ctx);
@@ -146,7 +146,7 @@ main (int argc, char **argv)
   gpgme_data_release (out);
     
   /* Now a detached signature.  */ 
-  gpgme_data_rewind (in);
+  gpgme_data_seek (in, 0, SEEK_SET);
   err = gpgme_data_new (&out);
   fail_if_err (err);
   err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_DETACH);
@@ -157,7 +157,7 @@ main (int argc, char **argv)
   gpgme_data_release (out);
 
   /* And finally a cleartext signature.  */
-  gpgme_data_rewind (in);
+  gpgme_data_seek (in, 0, SEEK_SET);
   err = gpgme_data_new (&out);
   fail_if_err (err);
   err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_CLEAR);

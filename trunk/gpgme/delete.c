@@ -28,8 +28,8 @@
 #include "ops.h"
 
 
-static GpgmeError
-delete_status_handler (void *priv, GpgmeStatusCode code, char *args)
+static gpgme_error_t
+delete_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   if (code == GPGME_STATUS_DELETE_PROBLEM)
     {
@@ -70,11 +70,11 @@ delete_status_handler (void *priv, GpgmeStatusCode code, char *args)
 }
 
 
-static GpgmeError
-delete_start (GpgmeCtx ctx, int synchronous, const GpgmeKey key,
+static gpgme_error_t
+delete_start (gpgme_ctx_t ctx, int synchronous, const gpgme_key_t key,
 	      int allow_secret)
 {
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -88,8 +88,8 @@ delete_start (GpgmeCtx ctx, int synchronous, const GpgmeKey key,
 
 /* Delete KEY from the keyring.  If ALLOW_SECRET is non-zero, secret
    keys are also deleted.  */
-GpgmeError
-gpgme_op_delete_start (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
+gpgme_error_t
+gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key, int allow_secret)
 {
   return delete_start (ctx, 0, key, allow_secret);
 }
@@ -97,10 +97,10 @@ gpgme_op_delete_start (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
 
 /* Delete KEY from the keyring.  If ALLOW_SECRET is non-zero, secret
    keys are also deleted.  */
-GpgmeError
-gpgme_op_delete (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
+gpgme_error_t
+gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key, int allow_secret)
 {
-  GpgmeError err = delete_start (ctx, 1, key, allow_secret);
+  gpgme_error_t err = delete_start (ctx, 1, key, allow_secret);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

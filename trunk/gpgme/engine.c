@@ -53,7 +53,7 @@ static struct engine_ops *engine_ops[] =
 
 /* Get the file name of the engine for PROTOCOL.  */
 static const char *
-engine_get_file_name (GpgmeProtocol proto)
+engine_get_file_name (gpgme_protocol_t proto)
 {
   if (proto > DIM (engine_ops))
     return NULL;
@@ -67,7 +67,7 @@ engine_get_file_name (GpgmeProtocol proto)
 
 /* Get the version number of the engine for PROTOCOL.  */
 static const char *
-engine_get_version (GpgmeProtocol proto)
+engine_get_version (gpgme_protocol_t proto)
 {
   if (proto > DIM (engine_ops))
     return NULL;
@@ -81,7 +81,7 @@ engine_get_version (GpgmeProtocol proto)
 
 /* Get the required version number of the engine for PROTOCOL.  */
 static const char *
-engine_get_req_version (GpgmeProtocol proto)
+engine_get_req_version (gpgme_protocol_t proto)
 {
   if (proto > DIM (engine_ops))
     return NULL;
@@ -94,8 +94,8 @@ engine_get_req_version (GpgmeProtocol proto)
 
 
 /* Verify the version requirement for the engine for PROTOCOL.  */
-GpgmeError
-gpgme_engine_check_version (GpgmeProtocol proto)
+gpgme_error_t
+gpgme_engine_check_version (gpgme_protocol_t proto)
 {
   return _gpgme_compare_versions (engine_get_version (proto),
 				  engine_get_req_version (proto))
@@ -106,17 +106,17 @@ gpgme_engine_check_version (GpgmeProtocol proto)
 /* Get the information about the configured and installed engines.  A
    pointer to the first engine in the statically allocated linked list
    is returned in *INFO.  If an error occurs, it is returned.  */
-GpgmeError
-gpgme_get_engine_info (GpgmeEngineInfo *info)
+gpgme_error_t
+gpgme_get_engine_info (gpgme_engine_info_t *info)
 {
-  static GpgmeEngineInfo engine_info;
+  static gpgme_engine_info_t engine_info;
   DEFINE_STATIC_LOCK (engine_info_lock);
 
   LOCK (engine_info_lock);
   if (!engine_info)
     {
-      GpgmeEngineInfo *lastp = &engine_info;
-      GpgmeProtocol proto_list[] = { GPGME_PROTOCOL_OpenPGP,
+      gpgme_engine_info_t *lastp = &engine_info;
+      gpgme_protocol_t proto_list[] = { GPGME_PROTOCOL_OpenPGP,
 				     GPGME_PROTOCOL_CMS };
       int proto;
 
@@ -132,7 +132,7 @@ gpgme_get_engine_info (GpgmeEngineInfo *info)
 	    {
 	      while (engine_info)
 		{
-		  GpgmeEngineInfo next_info = engine_info->next;
+		  gpgme_engine_info_t next_info = engine_info->next;
 		  free (engine_info);
 		  engine_info = next_info;
 		}
@@ -153,8 +153,8 @@ gpgme_get_engine_info (GpgmeEngineInfo *info)
 }
 
 
-GpgmeError
-_gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine)
+gpgme_error_t
+_gpgme_engine_new (gpgme_protocol_t proto, EngineObject *r_engine)
 {
   EngineObject engine;
 
@@ -179,7 +179,7 @@ _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine)
   engine->ops = engine_ops[proto];
   if (engine_ops[proto]->new)
     {
-      GpgmeError err = (*engine_ops[proto]->new) (&engine->engine);
+      gpgme_error_t err = (*engine_ops[proto]->new) (&engine->engine);
       if (err)
 	{
 	  free (engine);
@@ -218,10 +218,10 @@ _gpgme_engine_set_status_handler (EngineObject engine,
 }
 
 
-GpgmeError
+gpgme_error_t
 _gpgme_engine_set_command_handler (EngineObject engine,
 				   EngineCommandHandler fnc, void *fnc_value,
-				   GpgmeData linked_data)
+				   gpgme_data_t linked_data)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -233,7 +233,7 @@ _gpgme_engine_set_command_handler (EngineObject engine,
 					      fnc, fnc_value, linked_data);
 }
 
-GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject engine,
+gpgme_error_t _gpgme_engine_set_colon_line_handler (EngineObject engine,
 						 EngineColonLineHandler fnc,
 						 void *fnc_value)
 {
@@ -247,8 +247,8 @@ GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject engine,
 						 fnc, fnc_value);
 }
 
-GpgmeError
-_gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph, GpgmeData plain)
+gpgme_error_t
+_gpgme_engine_op_decrypt (EngineObject engine, gpgme_data_t ciph, gpgme_data_t plain)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -259,8 +259,8 @@ _gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph, GpgmeData plain)
   return (*engine->ops->decrypt) (engine->engine, ciph, plain);
 }
 
-GpgmeError
-_gpgme_engine_op_delete (EngineObject engine, GpgmeKey key, int allow_secret)
+gpgme_error_t
+_gpgme_engine_op_delete (EngineObject engine, gpgme_key_t key, int allow_secret)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -272,9 +272,9 @@ _gpgme_engine_op_delete (EngineObject engine, GpgmeKey key, int allow_secret)
 }
 
 
-GpgmeError
-_gpgme_engine_op_edit (EngineObject engine, GpgmeKey key, GpgmeData out,
-		       GpgmeCtx ctx /* FIXME */)
+gpgme_error_t
+_gpgme_engine_op_edit (EngineObject engine, gpgme_key_t key, gpgme_data_t out,
+		       gpgme_ctx_t ctx /* FIXME */)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -286,9 +286,9 @@ _gpgme_engine_op_edit (EngineObject engine, GpgmeKey key, GpgmeData out,
 }
 
 
-GpgmeError
-_gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
-			  GpgmeData plain, GpgmeData ciph, int use_armor)
+gpgme_error_t
+_gpgme_engine_op_encrypt (EngineObject engine, gpgme_recipients_t recp,
+			  gpgme_data_t plain, gpgme_data_t ciph, int use_armor)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -301,10 +301,10 @@ _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
 }
 
 
-GpgmeError
-_gpgme_engine_op_encrypt_sign (EngineObject engine, GpgmeRecipients recp,
-			       GpgmeData plain, GpgmeData ciph, int use_armor,
-			       GpgmeCtx ctx /* FIXME */)
+gpgme_error_t
+_gpgme_engine_op_encrypt_sign (EngineObject engine, gpgme_recipients_t recp,
+			       gpgme_data_t plain, gpgme_data_t ciph, int use_armor,
+			       gpgme_ctx_t ctx /* FIXME */)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -317,9 +317,9 @@ _gpgme_engine_op_encrypt_sign (EngineObject engine, GpgmeRecipients recp,
 }
 
 
-GpgmeError
-_gpgme_engine_op_export (EngineObject engine, GpgmeRecipients recp,
-			 GpgmeData keydata, int use_armor)
+gpgme_error_t
+_gpgme_engine_op_export (EngineObject engine, gpgme_recipients_t recp,
+			 gpgme_data_t keydata, int use_armor)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -332,9 +332,9 @@ _gpgme_engine_op_export (EngineObject engine, GpgmeRecipients recp,
 }
 
 
-GpgmeError
-_gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data,
-			 int use_armor, GpgmeData pubkey, GpgmeData seckey)
+gpgme_error_t
+_gpgme_engine_op_genkey (EngineObject engine, gpgme_data_t help_data,
+			 int use_armor, gpgme_data_t pubkey, gpgme_data_t seckey)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -347,8 +347,8 @@ _gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data,
 }
 
 
-GpgmeError
-_gpgme_engine_op_import (EngineObject engine, GpgmeData keydata)
+gpgme_error_t
+_gpgme_engine_op_import (EngineObject engine, gpgme_data_t keydata)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -360,7 +360,7 @@ _gpgme_engine_op_import (EngineObject engine, GpgmeData keydata)
 }
 
 
-GpgmeError
+gpgme_error_t
 _gpgme_engine_op_keylist (EngineObject engine, const char *pattern,
 			  int secret_only, int keylist_mode)
 {
@@ -375,7 +375,7 @@ _gpgme_engine_op_keylist (EngineObject engine, const char *pattern,
 }
 
 
-GpgmeError
+gpgme_error_t
 _gpgme_engine_op_keylist_ext (EngineObject engine, const char *pattern[],
 			      int secret_only, int reserved, int keylist_mode)
 {
@@ -390,11 +390,11 @@ _gpgme_engine_op_keylist_ext (EngineObject engine, const char *pattern[],
 }
 
 
-GpgmeError
-_gpgme_engine_op_sign (EngineObject engine, GpgmeData in, GpgmeData out,
-		       GpgmeSigMode mode, int use_armor,
+gpgme_error_t
+_gpgme_engine_op_sign (EngineObject engine, gpgme_data_t in, gpgme_data_t out,
+		       gpgme_sig_mode_t mode, int use_armor,
 		       int use_textmode, int include_certs,
-		       GpgmeCtx ctx /* FIXME */)
+		       gpgme_ctx_t ctx /* FIXME */)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -407,7 +407,7 @@ _gpgme_engine_op_sign (EngineObject engine, GpgmeData in, GpgmeData out,
 }
 
 
-GpgmeError
+gpgme_error_t
 _gpgme_engine_op_trustlist (EngineObject engine, const char *pattern)
 {
   if (!engine)
@@ -420,9 +420,9 @@ _gpgme_engine_op_trustlist (EngineObject engine, const char *pattern)
 }
 
 
-GpgmeError
-_gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
-			 GpgmeData signed_text, GpgmeData plaintext)
+gpgme_error_t
+_gpgme_engine_op_verify (EngineObject engine, gpgme_data_t sig,
+			 gpgme_data_t signed_text, gpgme_data_t plaintext)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -435,8 +435,7 @@ _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
 
 
 void
-_gpgme_engine_set_io_cbs (EngineObject engine,
-			  struct GpgmeIOCbs *io_cbs)
+_gpgme_engine_set_io_cbs (EngineObject engine, gpgme_io_cbs_t io_cbs)
 {
   if (!engine)
     return;
@@ -447,7 +446,7 @@ _gpgme_engine_set_io_cbs (EngineObject engine,
 
 void
 _gpgme_engine_io_event (EngineObject engine,
-			GpgmeEventIO type, void *type_data)
+			gpgme_event_io_t type, void *type_data)
 {
   if (!engine)
     return;

@@ -33,10 +33,10 @@
 #include "io.h"
 
 
-GpgmeError
-_gpgme_data_new (GpgmeData *r_dh, struct gpgme_data_cbs *cbs)
+gpgme_error_t
+_gpgme_data_new (gpgme_data_t *r_dh, struct _gpgme_data_cbs *cbs)
 {
-  GpgmeData dh;
+  gpgme_data_t dh;
 
   if (!r_dh)
     return GPGME_Invalid_Value;
@@ -54,7 +54,7 @@ _gpgme_data_new (GpgmeData *r_dh, struct gpgme_data_cbs *cbs)
 
 
 void
-_gpgme_data_release (GpgmeData dh)
+_gpgme_data_release (gpgme_data_t dh)
 {
   if (dh)
     free (dh);
@@ -65,7 +65,7 @@ _gpgme_data_release (GpgmeData dh)
    the handle DH.  Return the number of characters read, 0 on EOF and
    -1 on error.  If an error occurs, errno is set.  */
 ssize_t
-gpgme_data_read (GpgmeData dh, void *buffer, size_t size)
+gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   if (!dh)
     {
@@ -85,7 +85,7 @@ gpgme_data_read (GpgmeData dh, void *buffer, size_t size)
    the handle DH.  Return the number of characters written, or -1 on
    error.  If an error occurs, errno is set.  */
 ssize_t
-gpgme_data_write (GpgmeData dh, const void *buffer, size_t size)
+gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   if (!dh)
     {
@@ -105,7 +105,7 @@ gpgme_data_write (GpgmeData dh, const void *buffer, size_t size)
    in the data object with the handle DH to OFFSET, relativ to
    WHENCE.  */
 off_t
-gpgme_data_seek (GpgmeData dh, off_t offset, int whence)
+gpgme_data_seek (gpgme_data_t dh, off_t offset, int whence)
 {
   if (!dh)
     {
@@ -123,7 +123,7 @@ gpgme_data_seek (GpgmeData dh, off_t offset, int whence)
 
 /* Release the data object with the handle DH.  */
 void
-gpgme_data_release (GpgmeData dh)
+gpgme_data_release (gpgme_data_t dh)
 {
   if (!dh)
     return;
@@ -136,8 +136,8 @@ gpgme_data_release (GpgmeData dh)
 
 /* Get the current encoding meta information for the data object with
    handle DH.  */
-GpgmeDataEncoding
-gpgme_data_get_encoding (GpgmeData dh)
+gpgme_data_encoding_t
+gpgme_data_get_encoding (gpgme_data_t dh)
 {
   return dh ? dh->encoding : GPGME_DATA_ENCODING_NONE;
 }
@@ -145,8 +145,8 @@ gpgme_data_get_encoding (GpgmeData dh)
 
 /* Set the encoding meta information for the data object with handle
    DH to ENC.  */
-GpgmeError
-gpgme_data_set_encoding (GpgmeData dh, GpgmeDataEncoding enc)
+gpgme_error_t
+gpgme_data_set_encoding (gpgme_data_t dh, gpgme_data_encoding_t enc)
 {
   if (!dh)
     return GPGME_Invalid_Value;
@@ -159,10 +159,10 @@ gpgme_data_set_encoding (GpgmeData dh, GpgmeDataEncoding enc)
 
 /* Functions to support the wait interface.  */
 
-GpgmeError
+gpgme_error_t
 _gpgme_data_inbound_handler (void *opaque, int fd)
 {
-  GpgmeData dh = (GpgmeData) opaque;
+  gpgme_data_t dh = (gpgme_data_t) opaque;
   char buffer[BUFFER_SIZE];
   char *bufp = buffer;
   ssize_t buflen;
@@ -189,10 +189,10 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
 }
 
 
-GpgmeError
+gpgme_error_t
 _gpgme_data_outbound_handler (void *opaque, int fd)
 {
-  GpgmeData dh = (GpgmeData) opaque;
+  gpgme_data_t dh = (gpgme_data_t) opaque;
   ssize_t nwritten;
 
   if (!dh->pending_len)

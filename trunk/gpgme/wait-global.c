@@ -68,9 +68,9 @@ struct ctx_list_item
   struct ctx_list_item *next;
   struct ctx_list_item *prev;
 
-  GpgmeCtx ctx;
+  gpgme_ctx_t ctx;
   /* The status is set when the ctx is moved to the done list.  */
-  GpgmeError status;
+  gpgme_error_t status;
 };
 
 /* The active list contains all contexts that are in the global event
@@ -87,8 +87,8 @@ static struct ctx_list_item *ctx_done_list;
 
 
 /* Enter the context CTX into the active list.  */
-static GpgmeError
-ctx_active (GpgmeCtx ctx)
+static gpgme_error_t
+ctx_active (gpgme_ctx_t ctx)
 {
   struct ctx_list_item *li = malloc (sizeof (struct ctx_list_item));
   if (!li)
@@ -109,7 +109,7 @@ ctx_active (GpgmeCtx ctx)
 
 /* Enter the context CTX into the done list with status STATUS.  */
 static void
-ctx_done (GpgmeCtx ctx, GpgmeError status)
+ctx_done (gpgme_ctx_t ctx, gpgme_error_t status)
 {
   struct ctx_list_item *li;
 
@@ -143,8 +143,8 @@ ctx_done (GpgmeCtx ctx, GpgmeError status)
    return its status in STATUS after removing it from the done list.
    If a matching context could be found, return it.  Return NULL if no
    context could be found.  */
-static GpgmeCtx
-ctx_wait (GpgmeCtx ctx, GpgmeError *status)
+static gpgme_ctx_t
+ctx_wait (gpgme_ctx_t ctx, gpgme_error_t *status)
 {
   struct ctx_list_item *li;
 
@@ -184,9 +184,9 @@ ctx_wait (GpgmeCtx ctx, GpgmeError *status)
    event loops.  */
 
 void
-_gpgme_wait_global_event_cb (void *data, GpgmeEventIO type, void *type_data)
+_gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type, void *type_data)
 {
-  GpgmeCtx ctx = (GpgmeCtx) data;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) data;
 
   assert (ctx);
 
@@ -194,7 +194,7 @@ _gpgme_wait_global_event_cb (void *data, GpgmeEventIO type, void *type_data)
     {
     case GPGME_EVENT_START:
       {
-	GpgmeError err = ctx_active (ctx);
+	gpgme_error_t err = ctx_active (ctx);
 
 	if (err)
 	  {
@@ -212,7 +212,7 @@ _gpgme_wait_global_event_cb (void *data, GpgmeEventIO type, void *type_data)
 
     case GPGME_EVENT_DONE:
       {
-	GpgmeError *errp = (GpgmeError *) type_data;
+	gpgme_error_t *errp = (gpgme_error_t *) type_data;
 	assert (errp);
 	ctx_done (ctx, *errp);
       }
@@ -248,8 +248,8 @@ _gpgme_wait_global_event_cb (void *data, GpgmeEventIO type, void *type_data)
    the timeout expires, NULL is returned and *STATUS is 0.  If an
    error occurs, NULL is returned and *STATUS is set to the error
    value.  */
-GpgmeCtx
-gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
+gpgme_ctx_t
+gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 {
   do
     {
@@ -293,8 +293,8 @@ gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 	{
 	  if (fdt.fds[i].fd != -1 && fdt.fds[i].signaled)
 	    {
-	      GpgmeCtx ictx;
-	      GpgmeError err;
+	      gpgme_ctx_t ictx;
+	      gpgme_error_t err;
 	      struct wait_item_s *item;
 	      
 	      assert (nr);
@@ -330,14 +330,14 @@ gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 	      break;
 	  if (i == ctx->fdt.size)
 	    {
-	      GpgmeError err = 0;
+	      gpgme_error_t err = 0;
 	      _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &err);
 	    }
 	}
       UNLOCK (ctx_list_lock);
 
       {
-	GpgmeCtx dctx = ctx_wait (ctx, status);
+	gpgme_ctx_t dctx = ctx_wait (ctx, status);
 
 	if (dctx)
 	  {

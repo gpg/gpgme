@@ -34,7 +34,7 @@
 struct trust_queue_item_s
 {
   struct trust_queue_item_s *next;
-  GpgmeTrustItem item;
+  gpgme_trust_item_t item;
 };
 
 typedef struct
@@ -46,8 +46,8 @@ typedef struct
 
 
 
-static GpgmeError
-trustlist_status_handler (void *priv, GpgmeStatusCode code, char *args)
+static gpgme_error_t
+trustlist_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   return 0;
 }
@@ -64,14 +64,14 @@ trustlist_status_handler (void *priv, GpgmeStatusCode code, char *args)
    counter and only available on U lines CC is the same for the
    complete count NAME ist the username and only printed on U
    lines.  */
-static GpgmeError
+static gpgme_error_t
 trustlist_colon_handler (void *priv, char *line)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
-  GpgmeError err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
   char *p, *pend;
   int field = 0;
-  GpgmeTrustItem item = NULL;
+  gpgme_trust_item_t item = NULL;
 
   if (!line)
     return 0; /* EOF */
@@ -121,12 +121,12 @@ trustlist_colon_handler (void *priv, char *line)
 
 
 void
-_gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data)
+_gpgme_op_trustlist_event_cb (void *data, gpgme_event_io_t type, void *type_data)
 {
-  GpgmeCtx ctx = (GpgmeCtx) data;
-  GpgmeError err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) data;
+  gpgme_error_t err;
   op_data_t opd;
-  GpgmeTrustItem item = (GpgmeTrustItem) type_data;
+  gpgme_trust_item_t item = (gpgme_trust_item_t) type_data;
   struct trust_queue_item_s *q, *q2;
 
   assert (type == GPGME_EVENT_NEXT_TRUSTITEM);
@@ -160,10 +160,10 @@ _gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data)
 }
 
 
-GpgmeError
-gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
+gpgme_error_t
+gpgme_op_trustlist_start (gpgme_ctx_t ctx, const char *pattern, int max_level)
 {
-  GpgmeError err = 0;
+  gpgme_error_t err = 0;
   op_data_t opd;
 
   if (!pattern || !*pattern)
@@ -189,10 +189,10 @@ gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
 }
 
 
-GpgmeError
-gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
+gpgme_error_t
+gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   op_data_t opd;
   struct trust_queue_item_s *q;
 
@@ -227,8 +227,8 @@ gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
 
 
 /* Terminate a pending trustlist operation within CTX.  */
-GpgmeError
-gpgme_op_trustlist_end (GpgmeCtx ctx)
+gpgme_error_t
+gpgme_op_trustlist_end (gpgme_ctx_t ctx)
 {
   if (!ctx)
     return GPGME_Invalid_Value;

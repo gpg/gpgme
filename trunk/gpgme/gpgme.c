@@ -33,10 +33,10 @@
 
 /* Create a new context as an environment for GPGME crypto
    operations.  */
-GpgmeError
-gpgme_new (GpgmeCtx *r_ctx)
+gpgme_error_t
+gpgme_new (gpgme_ctx_t *r_ctx)
 {
-  GpgmeCtx ctx;
+  gpgme_ctx_t ctx;
 
   if (!r_ctx)
     return GPGME_Invalid_Value;
@@ -60,7 +60,7 @@ gpgme_new (GpgmeCtx *r_ctx)
  * Release all resources associated with the given context.
  **/
 void
-gpgme_release (GpgmeCtx ctx)
+gpgme_release (gpgme_ctx_t ctx)
 {
   if (!ctx)
     return;
@@ -74,7 +74,7 @@ gpgme_release (GpgmeCtx ctx)
 }
 
 void
-_gpgme_release_result (GpgmeCtx ctx)
+_gpgme_release_result (gpgme_ctx_t ctx)
 {
   struct ctx_op_data *data = ctx->op_data;
 
@@ -90,8 +90,8 @@ _gpgme_release_result (GpgmeCtx ctx)
 }
 
 
-GpgmeError
-gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol protocol)
+gpgme_error_t
+gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
 {
   if (protocol != GPGME_PROTOCOL_OpenPGP && protocol != GPGME_PROTOCOL_CMS)
     return GPGME_Invalid_Value;
@@ -101,15 +101,15 @@ gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol protocol)
 }
 
 
-GpgmeProtocol
-gpgme_get_protocol (GpgmeCtx ctx)
+gpgme_protocol_t
+gpgme_get_protocol (gpgme_ctx_t ctx)
 {
   return ctx->protocol;
 }
 
 
 const char *
-gpgme_get_protocol_name (GpgmeProtocol protocol)
+gpgme_get_protocol_name (gpgme_protocol_t protocol)
 {
   switch (protocol)
     {
@@ -132,7 +132,7 @@ gpgme_get_protocol_name (GpgmeProtocol protocol)
  * Enable or disable the use of an ascii armor for all output.
  **/
 void
-gpgme_set_armor (GpgmeCtx ctx, int yes)
+gpgme_set_armor (gpgme_ctx_t ctx, int yes)
 {
   if (!ctx)
     return;
@@ -150,7 +150,7 @@ gpgme_set_armor (GpgmeCtx ctx, int yes)
  * Return value: Boolean whether armor mode is to be used.
  **/
 int
-gpgme_get_armor (GpgmeCtx ctx)
+gpgme_get_armor (gpgme_ctx_t ctx)
 {
   return ctx && ctx->use_armor;
 }
@@ -166,7 +166,7 @@ gpgme_get_armor (GpgmeCtx ctx)
  * that the MUA does some preparations so that textmode is not needed anymore.
  **/
 void
-gpgme_set_textmode (GpgmeCtx ctx, int yes)
+gpgme_set_textmode (gpgme_ctx_t ctx, int yes)
 {
   if (!ctx)
     return;
@@ -183,7 +183,7 @@ gpgme_set_textmode (GpgmeCtx ctx, int yes)
  * Return value: Boolean whether textmode is to be used.
  **/
 int
-gpgme_get_textmode (GpgmeCtx ctx)
+gpgme_get_textmode (gpgme_ctx_t ctx)
 {
   return ctx && ctx->use_textmode;
 }
@@ -200,7 +200,7 @@ gpgme_get_textmode (GpgmeCtx ctx)
  * Return value: Boolean whether textmode is to be used.
  **/
 void
-gpgme_set_include_certs (GpgmeCtx ctx, int nr_of_certs)
+gpgme_set_include_certs (gpgme_ctx_t ctx, int nr_of_certs)
 {
   if (nr_of_certs < -2)
     ctx->include_certs = -2;
@@ -218,7 +218,7 @@ gpgme_set_include_certs (GpgmeCtx ctx, int nr_of_certs)
  * Return value: Boolean whether textmode is to be used.
  **/
 int
-gpgme_get_include_certs (GpgmeCtx ctx)
+gpgme_get_include_certs (gpgme_ctx_t ctx)
 {
   return ctx->include_certs;
 }
@@ -236,8 +236,8 @@ gpgme_get_include_certs (GpgmeCtx ctx)
  * Return value: GPGME_Invalid_Value if ctx is not a context or mode
  * not a valid mode.
  **/
-GpgmeError
-gpgme_set_keylist_mode (GpgmeCtx ctx, int mode)
+gpgme_error_t
+gpgme_set_keylist_mode (gpgme_ctx_t ctx, int mode)
 {
   if (!ctx)
     return GPGME_Invalid_Value;
@@ -264,7 +264,7 @@ gpgme_set_keylist_mode (GpgmeCtx ctx, int mode)
  * Note that 0 is never a valid mode.
  **/
 int
-gpgme_get_keylist_mode (GpgmeCtx ctx)
+gpgme_get_keylist_mode (gpgme_ctx_t ctx)
 {
   if (!ctx)
     return 0;
@@ -285,7 +285,7 @@ gpgme_get_keylist_mode (GpgmeCtx ctx)
  *
  * The callback function is defined as:
  * <literal>
- * typedef const char *(*GpgmePassphraseCb)(void*cb_value,
+ * typedef const char *(*gpgme_passphrase_cb_t)(void*cb_value,
  *                                          const char *desc,
  *                                          void **r_hd);
  * </literal>
@@ -300,7 +300,7 @@ gpgme_get_keylist_mode (GpgmeCtx ctx)
  *
  **/
 void
-gpgme_set_passphrase_cb (GpgmeCtx ctx, GpgmePassphraseCb cb, void *cb_value)
+gpgme_set_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t cb, void *cb_value)
 {
   if (ctx)
     {
@@ -320,7 +320,7 @@ gpgme_set_passphrase_cb (GpgmeCtx ctx, GpgmePassphraseCb cb, void *cb_value)
  * to the crypto engine.
  **/
 void
-gpgme_get_passphrase_cb (GpgmeCtx ctx, GpgmePassphraseCb *r_cb, void **r_cb_value)
+gpgme_get_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t *r_cb, void **r_cb_value)
 {
   if (ctx)
     {
@@ -349,7 +349,7 @@ gpgme_get_passphrase_cb (GpgmeCtx ctx, GpgmePassphraseCb *r_cb, void **r_cb_valu
  *
  * The callback function is defined as:
  * <literal>
- * typedef void (*GpgmeProgressCb) (void *cb_value,
+ * typedef void (*gpgme_progress_cb_t) (void *cb_value,
  *                                  const char *what, int type,
  *                                  int curretn, int total);
  * </literal>
@@ -357,7 +357,7 @@ gpgme_get_passphrase_cb (GpgmeCtx ctx, GpgmePassphraseCb *r_cb, void **r_cb_valu
  * status in the file doc/DETAILS of the GnuPG distribution.
  **/
 void
-gpgme_set_progress_cb (GpgmeCtx ctx, GpgmeProgressCb cb, void *cb_value)
+gpgme_set_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t cb, void *cb_value)
 {
   if (ctx)
     {
@@ -377,7 +377,7 @@ gpgme_set_progress_cb (GpgmeCtx ctx, GpgmeProgressCb cb, void *cb_value)
  * progress indicator.
  **/
 void
-gpgme_get_progress_cb (GpgmeCtx ctx, GpgmeProgressCb *r_cb, void **r_cb_value)
+gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *r_cb, void **r_cb_value)
 {
   if (ctx)
     {
@@ -405,7 +405,7 @@ gpgme_get_progress_cb (GpgmeCtx ctx, GpgmeProgressCb *r_cb, void **r_cb_value)
  *
  **/
 void
-gpgme_set_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs)
+gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 {
   if (!ctx)
     return;
@@ -435,7 +435,7 @@ gpgme_set_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs)
  * to the crypto engine.
  **/
 void
-gpgme_get_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs)
+gpgme_get_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 {
   if (ctx && io_cbs)
     *io_cbs = ctx->io_cbs;
@@ -443,7 +443,7 @@ gpgme_get_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs)
 
 
 const char *
-gpgme_pubkey_algo_name (GpgmePubKeyAlgo algo)
+gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo)
 {
   switch (algo)
     {
@@ -472,7 +472,7 @@ gpgme_pubkey_algo_name (GpgmePubKeyAlgo algo)
 
 
 const char *
-gpgme_hash_algo_name (GpgmeHashAlgo algo)
+gpgme_hash_algo_name (gpgme_hash_algo_t algo)
 {
   switch (algo)
     {

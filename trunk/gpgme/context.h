@@ -58,10 +58,10 @@ struct ctx_op_data
 
 /* The context defines an environment in which crypto operations can
    be performed (sequentially).  */
-struct gpgme_context_s
+struct gpgme_context
 {
   /* The protocol used by this context.  */
-  GpgmeProtocol protocol;
+  gpgme_protocol_t protocol;
 
   /* The running engine process.  */
   EngineObject engine;
@@ -83,31 +83,31 @@ struct gpgme_context_s
 
   /* Size of the following array.  */
   unsigned int signers_size;
-  GpgmeKey *signers;
+  gpgme_key_t *signers;
 
   /* The operation data hooked into the context.  */
   struct ctx_op_data *op_data;
 
   /* The user provided passphrase callback and its hook value.  */
-  GpgmePassphraseCb passphrase_cb;
+  gpgme_passphrase_cb_t passphrase_cb;
   void *passphrase_cb_value;
 
   /* The user provided progress callback and its hook value.  */
-  GpgmeProgressCb progress_cb;
+  gpgme_progress_cb_t progress_cb;
   void *progress_cb_value;
 
   /* A list of file descriptors in active use by the current
      operation.  */
   struct fd_table fdt;
-  struct GpgmeIOCbs io_cbs;
+  struct gpgme_io_cbs io_cbs;
 };
 
 
 /* A recipient is defined by a user ID, but we define it as an opaque
    type for the user.  */
-struct gpgme_recipients_s
+struct gpgme_recipients
 {
-  GpgmeUserID list;
+  gpgme_user_id_t list;
 };
 
 #endif	/* CONTEXT_H */

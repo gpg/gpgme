@@ -35,12 +35,12 @@
 
 /* Internal I/O Callbacks.  */
 
-GpgmeError
+gpgme_error_t
 _gpgme_user_io_cb_handler (void *data, int fd)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   struct tag *tag = (struct tag *) data;
-  GpgmeCtx ctx;
+  gpgme_ctx_t ctx;
   struct wait_item_s *item;
 
   assert (data);
@@ -77,13 +77,13 @@ _gpgme_user_io_cb_handler (void *data, int fd)
    FNC_DATA as its first argument) for the direction DIR.  DATA should
    be the context for which the fd is added.  R_TAG will hold the tag
    that can be used to remove the fd.  */
-GpgmeError
-_gpgme_wait_user_add_io_cb (void *data, int fd, int dir, GpgmeIOCb fnc,
+gpgme_error_t
+_gpgme_wait_user_add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc,
 			    void *fnc_data, void **r_tag)
 {
-  GpgmeCtx ctx = (GpgmeCtx) data;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) data;
   struct tag *tag;
-  GpgmeError err;
+  gpgme_error_t err;
 
   assert (ctx);
   err = _gpgme_add_io_cb (data, fd, dir, fnc, fnc_data, r_tag);
@@ -104,7 +104,7 @@ void
 _gpgme_wait_user_remove_io_cb (void *data)
 {
   struct tag *tag = (struct tag *) data;
-  GpgmeCtx ctx;
+  gpgme_ctx_t ctx;
 
   assert (tag);
   ctx = tag->ctx;
@@ -115,9 +115,9 @@ _gpgme_wait_user_remove_io_cb (void *data)
 
 
 void
-_gpgme_wait_user_event_cb (void *data, GpgmeEventIO type, void *type_data)
+_gpgme_wait_user_event_cb (void *data, gpgme_event_io_t type, void *type_data)
 {
-  GpgmeCtx ctx = data;
+  gpgme_ctx_t ctx = data;
 
   if (ctx->io_cbs.event)
     (*ctx->io_cbs.event) (ctx->io_cbs.event_priv, type, type_data);

@@ -33,45 +33,45 @@ struct engine_ops
   const char *(*get_file_name) (void);
   const char *(*get_version) (void);
   const char *(*get_req_version) (void);
-  GpgmeError (*new) (void **r_engine);
+  gpgme_error_t (*new) (void **r_engine);
 
   /* Member functions.  */
   void (*release) (void *engine);
   void (*set_status_handler) (void *engine, EngineStatusHandler fnc,
 			      void *fnc_value);
-  GpgmeError (*set_command_handler) (void *engine, EngineCommandHandler fnc,
-				     void *fnc_value, GpgmeData data);
-  GpgmeError (*set_colon_line_handler) (void *engine,
+  gpgme_error_t (*set_command_handler) (void *engine, EngineCommandHandler fnc,
+				     void *fnc_value, gpgme_data_t data);
+  gpgme_error_t (*set_colon_line_handler) (void *engine,
 					EngineColonLineHandler fnc,
 					void *fnc_value);
-  GpgmeError (*decrypt) (void *engine, GpgmeData ciph, GpgmeData plain);
-  GpgmeError (*delete) (void *engine, GpgmeKey key, int allow_secret);
-  GpgmeError (*edit) (void *engine, GpgmeKey key, GpgmeData out,
-			 GpgmeCtx ctx /* FIXME */);
-  GpgmeError (*encrypt) (void *engine, GpgmeRecipients recp,
-			    GpgmeData plain, GpgmeData ciph, int use_armor);
-  GpgmeError (*encrypt_sign) (void *engine, GpgmeRecipients recp,
-				  GpgmeData plain, GpgmeData ciph,
-				  int use_armor, GpgmeCtx ctx /* FIXME */);
-  GpgmeError (*export) (void *engine, GpgmeRecipients recp,
-			   GpgmeData keydata, int use_armor);
-  GpgmeError (*genkey) (void *engine, GpgmeData help_data, int use_armor,
-			   GpgmeData pubkey, GpgmeData seckey);
-  GpgmeError (*import) (void *engine, GpgmeData keydata);
-  GpgmeError (*keylist) (void *engine, const char *pattern,
+  gpgme_error_t (*decrypt) (void *engine, gpgme_data_t ciph, gpgme_data_t plain);
+  gpgme_error_t (*delete) (void *engine, gpgme_key_t key, int allow_secret);
+  gpgme_error_t (*edit) (void *engine, gpgme_key_t key, gpgme_data_t out,
+			 gpgme_ctx_t ctx /* FIXME */);
+  gpgme_error_t (*encrypt) (void *engine, gpgme_recipients_t recp,
+			    gpgme_data_t plain, gpgme_data_t ciph, int use_armor);
+  gpgme_error_t (*encrypt_sign) (void *engine, gpgme_recipients_t recp,
+				  gpgme_data_t plain, gpgme_data_t ciph,
+				  int use_armor, gpgme_ctx_t ctx /* FIXME */);
+  gpgme_error_t (*export) (void *engine, gpgme_recipients_t recp,
+			   gpgme_data_t keydata, int use_armor);
+  gpgme_error_t (*genkey) (void *engine, gpgme_data_t help_data, int use_armor,
+			   gpgme_data_t pubkey, gpgme_data_t seckey);
+  gpgme_error_t (*import) (void *engine, gpgme_data_t keydata);
+  gpgme_error_t (*keylist) (void *engine, const char *pattern,
 			    int secret_only, int keylist_mode);
-  GpgmeError (*keylist_ext) (void *engine, const char *pattern[],
+  gpgme_error_t (*keylist_ext) (void *engine, const char *pattern[],
 				 int secret_only, int reserved,
 				int keylist_mode);
-  GpgmeError (*sign) (void *engine, GpgmeData in, GpgmeData out,
-			 GpgmeSigMode mode, int use_armor, int use_textmode,
-			 int include_certs, GpgmeCtx ctx /* FIXME */);
-  GpgmeError (*trustlist) (void *engine, const char *pattern);
-  GpgmeError (*verify) (void *engine, GpgmeData sig, GpgmeData signed_text,
-			   GpgmeData plaintext);
+  gpgme_error_t (*sign) (void *engine, gpgme_data_t in, gpgme_data_t out,
+			 gpgme_sig_mode_t mode, int use_armor, int use_textmode,
+			 int include_certs, gpgme_ctx_t ctx /* FIXME */);
+  gpgme_error_t (*trustlist) (void *engine, const char *pattern);
+  gpgme_error_t (*verify) (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
+			   gpgme_data_t plaintext);
   
-  void (*set_io_cbs) (void *engine, struct GpgmeIOCbs *io_cbs);
-  void (*io_event) (void *engine, GpgmeEventIO type, void *type_data);
+  void (*set_io_cbs) (void *engine, gpgme_io_cbs_t io_cbs);
+  void (*io_event) (void *engine, gpgme_event_io_t type, void *type_data);
 };
 
 

@@ -27,13 +27,13 @@
 #include <gpgme.h>
 
 #define fail_if_err(a) do { if(a) {                                       \
-                               fprintf (stderr, "%s:%d: GpgmeError %s\n", \
+                               fprintf (stderr, "%s:%d: gpgme_error_t %s\n", \
                                 __FILE__, __LINE__, gpgme_strerror(a));   \
                                 exit (1); }                               \
                              } while(0)
 
 static void
-print_data (GpgmeData dh)
+print_data (gpgme_data_t dh)
 {
   char buf[100];
   int ret;
@@ -51,10 +51,10 @@ print_data (GpgmeData dh)
 int 
 main (int argc, char **argv )
 {
-    GpgmeCtx ctx;
-    GpgmeError err;
-    GpgmeData  out;
-    GpgmeRecipients rset;
+    gpgme_ctx_t ctx;
+    gpgme_error_t err;
+    gpgme_data_t  out;
+    gpgme_recipients_t rset;
 
   do {
     err = gpgme_new (&ctx);

@@ -53,7 +53,7 @@ _gpgme_fd_table_deinit (fd_table_t fdt)
 
 
 /* XXX We should keep a marker and roll over for speed.  */
-static GpgmeError
+static gpgme_error_t
 fd_table_put (fd_table_t fdt, int fd, int dir, void *opaque, int *idx)
 {
   int i, j;
@@ -93,12 +93,12 @@ fd_table_put (fd_table_t fdt, int fd, int dir, void *opaque, int *idx)
    FNC_DATA as its first argument) for the direction DIR.  DATA should
    be the context for which the fd is added.  R_TAG will hold the tag
    that can be used to remove the fd.  */
-GpgmeError
-_gpgme_add_io_cb (void *data, int fd, int dir, GpgmeIOCb fnc, void *fnc_data,
-		  void **r_tag)
+gpgme_error_t
+_gpgme_add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc,
+		  void *fnc_data, void **r_tag)
 {
-  GpgmeError err;
-  GpgmeCtx ctx = (GpgmeCtx) data;
+  gpgme_error_t err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) data;
   fd_table_t fdt;
   struct wait_item_s *item;
   struct tag *tag;
@@ -143,7 +143,7 @@ void
 _gpgme_remove_io_cb (void *data)
 {
   struct tag *tag = data;
-  GpgmeCtx ctx;
+  gpgme_ctx_t ctx;
   fd_table_t fdt;
   int idx;
 

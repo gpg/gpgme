@@ -35,8 +35,8 @@ typedef struct fd_table *fd_table_t;
    a callback handler.  */
 struct wait_item_s
 {
-  GpgmeCtx ctx;
-  GpgmeIOCb handler;
+  gpgme_ctx_t ctx;
+  gpgme_io_cb_t handler;
   void *handler_value;
   int dir;
 };
@@ -46,7 +46,7 @@ struct wait_item_s
 struct tag
 {
   /* The context for which the fd was registered.  */
-  GpgmeCtx ctx;
+  gpgme_ctx_t ctx;
 
   /* The index into the fd table for this context.  */
   int idx;
@@ -59,17 +59,18 @@ struct tag
 void _gpgme_fd_table_init (fd_table_t fdt);
 void _gpgme_fd_table_deinit (fd_table_t fdt);
 
-GpgmeError _gpgme_add_io_cb (void *data, int fd, int dir,
-			     GpgmeIOCb fnc, void *fnc_data, void **r_tag);
+gpgme_error_t _gpgme_add_io_cb (void *data, int fd, int dir,
+			     gpgme_io_cb_t fnc, void *fnc_data, void **r_tag);
 void _gpgme_remove_io_cb (void *tag);
-void _gpgme_wait_private_event_cb (void *data, GpgmeEventIO type, void *type_data);
-void _gpgme_wait_global_event_cb (void *data, GpgmeEventIO type, void *type_data);
+void _gpgme_wait_private_event_cb (void *data, gpgme_event_io_t type, void *type_data);
+void _gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type, void *type_data);
 
-GpgmeError _gpgme_wait_user_add_io_cb (void *data, int fd, int dir,
-				       GpgmeIOCb fnc, void *fnc_data, void **r_tag);
+gpgme_error_t _gpgme_wait_user_add_io_cb (void *data, int fd, int dir,
+					  gpgme_io_cb_t fnc, void *fnc_data,
+					  void **r_tag);
 void _gpgme_wait_user_remove_io_cb (void *tag);
-void _gpgme_wait_user_event_cb (void *data, GpgmeEventIO type, void *type_data);
+void _gpgme_wait_user_event_cb (void *data, gpgme_event_io_t type, void *type_data);
 
-GpgmeError _gpgme_wait_one (GpgmeCtx ctx);
+gpgme_error_t _gpgme_wait_one (gpgme_ctx_t ctx);
 
 #endif	/* WAIT_H */

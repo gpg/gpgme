@@ -29,8 +29,8 @@
 #include "ops.h"
 
 
-GpgmeError
-_gpgme_op_data_lookup (GpgmeCtx ctx, ctx_op_data_type type, void **hook,
+gpgme_error_t
+_gpgme_op_data_lookup (gpgme_ctx_t ctx, ctx_op_data_type type, void **hook,
 		       int size, void (*cleanup) (void *))
 {
   struct ctx_op_data *data = ctx->op_data;
@@ -62,11 +62,11 @@ _gpgme_op_data_lookup (GpgmeCtx ctx, ctx_op_data_type type, void **hook,
             1: synchronous operation (always use private event loop).
             2: asynchronous private operation (use private or user
             event loop).  */
-GpgmeError
-_gpgme_op_reset (GpgmeCtx ctx, int type)
+gpgme_error_t
+_gpgme_op_reset (gpgme_ctx_t ctx, int type)
 {
-  GpgmeError err = 0;
-  struct GpgmeIOCbs io_cbs;
+  gpgme_error_t err = 0;
+  struct gpgme_io_cbs io_cbs;
 
   _gpgme_release_result (ctx);
 
@@ -109,10 +109,10 @@ _gpgme_op_reset (GpgmeCtx ctx, int type)
 }
 
 
-GpgmeError
-_gpgme_parse_inv_userid (char *args, GpgmeInvalidUserID *userid)
+gpgme_error_t
+_gpgme_parse_inv_userid (char *args, gpgme_invalid_user_id_t *userid)
 {
-  GpgmeInvalidUserID inv_userid;
+  gpgme_invalid_user_id_t inv_userid;
   char *tail;
   long int reason;
 

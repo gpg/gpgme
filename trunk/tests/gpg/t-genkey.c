@@ -29,7 +29,7 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
                    __FILE__, __LINE__, gpgme_strerror (err));   \
           exit (1);						\
         }							\
@@ -62,8 +62,8 @@ progress (void *self, const char *what, int type, int current, int total)
 int 
 main (int argc, char **argv)
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
   const char *parms = "<GnupgKeyParms format=\"internal\">\n"
     "Key-Type: DSA\n"
     "Key-Length: 1024\n"
@@ -75,7 +75,7 @@ main (int argc, char **argv)
     "Expire-Date: 0\n"
     "Passphrase: abc\n"
     "</GnupgKeyParms>\n";
-  GpgmeGenKeyResult result;
+  gpgme_genkey_result_t result;
 
   err = gpgme_new (&ctx);
   fail_if_err (err);

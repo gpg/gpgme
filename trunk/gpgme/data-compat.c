@@ -32,11 +32,11 @@
 /* Create a new data buffer filled with LENGTH bytes starting from
    OFFSET within the file FNAME or stream STREAM (exactly one must be
    non-zero).  */
-GpgmeError
-gpgme_data_new_from_filepart (GpgmeData *dh, const char *fname, FILE *stream,
-			      off_t offset, size_t length)
+gpgme_error_t
+gpgme_data_new_from_filepart (gpgme_data_t *dh, const char *fname,
+			      FILE *stream, off_t offset, size_t length)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   char *buf = NULL;
 
   if (stream && fname)
@@ -92,8 +92,8 @@ gpgme_data_new_from_filepart (GpgmeData *dh, const char *fname, FILE *stream,
 
 /* Create a new data buffer filled with the content of file FNAME.
    COPY must be non-zero (delayed reads are not supported yet).  */
-GpgmeError
-gpgme_data_new_from_file (GpgmeData *dh, const char *fname, int copy)
+gpgme_error_t
+gpgme_data_new_from_file (gpgme_data_t *dh, const char *fname, int copy)
 {
   struct stat statbuf;
 
@@ -108,7 +108,7 @@ gpgme_data_new_from_file (GpgmeData *dh, const char *fname, int copy)
 
 
 static int
-gpgme_error_to_errno (GpgmeError err)
+gpgme_error_to_errno (gpgme_error_t err)
 {
   switch (err)
     {
@@ -131,11 +131,11 @@ gpgme_error_to_errno (GpgmeError err)
 }
 
 static ssize_t
-old_user_read (GpgmeData dh, void *buffer, size_t size)
+old_user_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   size_t amt;
-  GpgmeError err = (*dh->data.old_user.cb) (dh->data.old_user.handle,
-					    buffer, size, &amt);
+  gpgme_error_t err = (*dh->data.old_user.cb) (dh->data.old_user.handle,
+					       buffer, size, &amt);
   if (err)
     return gpgme_error_to_errno (err);
   return amt;
@@ -143,9 +143,9 @@ old_user_read (GpgmeData dh, void *buffer, size_t size)
 
 
 static off_t
-old_user_seek (GpgmeData dh, off_t offset, int whence)
+old_user_seek (gpgme_data_t dh, off_t offset, int whence)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   if (whence != SEEK_SET || offset)
     return EINVAL;
   err = (*dh->data.old_user.cb) (dh->data.old_user.handle, NULL, 0, NULL);
@@ -155,7 +155,7 @@ old_user_seek (GpgmeData dh, off_t offset, int whence)
 }
 
 
-static struct gpgme_data_cbs old_user_cbs =
+static struct _gpgme_data_cbs old_user_cbs =
   {
     old_user_read,
     NULL,
@@ -166,12 +166,12 @@ static struct gpgme_data_cbs old_user_cbs =
 
 /* Create a new data buffer which retrieves the data from the callback
    function READ_CB.  */
-GpgmeError
-gpgme_data_new_with_read_cb (GpgmeData *dh,
+gpgme_error_t
+gpgme_data_new_with_read_cb (gpgme_data_t *dh,
                              int (*read_cb) (void *, char *, size_t, size_t *),
                              void *read_cb_value)
 {
-  GpgmeError err = _gpgme_data_new (dh, &old_user_cbs);
+  gpgme_error_t err = _gpgme_data_new (dh, &old_user_cbs);
   if (err)
     return err;
 
@@ -181,8 +181,8 @@ gpgme_data_new_with_read_cb (GpgmeData *dh,
 }
 
 
-GpgmeError
-gpgme_data_rewind (GpgmeData dh)
+gpgme_error_t
+gpgme_data_rewind (gpgme_data_t dh)
 {
   return (gpgme_data_seek (dh, 0, SEEK_SET) == -1)
     ? GPGME_File_Error : 0;

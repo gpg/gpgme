@@ -27,13 +27,13 @@
 #include <gpgme.h>
 
 #define fail_if_err(a) do { if(a) {                                       \
-                               fprintf (stderr, "%s:%d: GpgmeError %s\n", \
+                               fprintf (stderr, "%s:%d: gpgme_error_t %s\n", \
                                 __FILE__, __LINE__, gpgme_strerror(a));   \
                                 exit (1); }                               \
                              } while(0)
 
 static void
-print_data (GpgmeData dh)
+print_data (gpgme_data_t dh)
 {
   char buf[100];
   int ret;
@@ -47,7 +47,7 @@ print_data (GpgmeData dh)
     fail_if_err (GPGME_File_Error);
 }
 
-static GpgmeError
+static gpgme_error_t
 passphrase_cb (void *opaque, const char *desc,
 	       void **r_hd, const char **result)
 {
@@ -66,9 +66,9 @@ passphrase_cb (void *opaque, const char *desc,
 int 
 main (int argc, char **argv)
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeData plain, cipher;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_data_t plain, cipher;
   const char *text = "Hallo Leute\n";
   char *text2;
   char *p;
@@ -101,8 +101,7 @@ main (int argc, char **argv)
       print_data (cipher);
       fputs ("End Result.\n", stdout);
 
-      err = gpgme_data_rewind (cipher);
-      fail_if_err (err);
+      gpgme_data_seek (cipher, 0, SEEK_SET);
 
       gpgme_data_release (plain);
       err = gpgme_data_new (&plain);

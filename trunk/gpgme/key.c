@@ -37,10 +37,10 @@ DEFINE_STATIC_LOCK (key_ref_lock);
 
 
 /* Create a new key.  */
-GpgmeError
-_gpgme_key_new (GpgmeKey *r_key)
+gpgme_error_t
+_gpgme_key_new (gpgme_key_t *r_key)
 {
-  GpgmeKey key;
+  gpgme_key_t key;
 
   key = calloc (1, sizeof *key);
   if (!key)
@@ -52,10 +52,10 @@ _gpgme_key_new (GpgmeKey *r_key)
 }
 
 
-GpgmeError
-_gpgme_key_add_subkey (GpgmeKey key, GpgmeSubkey *r_subkey)
+gpgme_error_t
+_gpgme_key_add_subkey (gpgme_key_t key, gpgme_subkey_t *r_subkey)
 {
-  GpgmeSubkey subkey;
+  gpgme_subkey_t subkey;
 
   subkey = calloc (1, sizeof *subkey);
   if (!subkey)
@@ -200,10 +200,10 @@ parse_x509_user_id (char *src, char **name, char **email,
 
 /* Take a name from the --with-colon listing, remove certain escape
    sequences sequences and put it into the list of UIDs.  */
-GpgmeError
-_gpgme_key_append_name (GpgmeKey key, char *src)
+gpgme_error_t
+_gpgme_key_append_name (gpgme_key_t key, char *src)
 {
-  GpgmeUserID uid;
+  gpgme_user_id_t uid;
   char *dst;
   int src_len = strlen (src);
 
@@ -238,12 +238,12 @@ _gpgme_key_append_name (GpgmeKey key, char *src)
 }
 
 
-GpgmeKeySig
-_gpgme_key_add_sig (GpgmeKey key, char *src)
+gpgme_key_sig_t
+_gpgme_key_add_sig (gpgme_key_t key, char *src)
 {
   int src_len = src ? strlen (src) : 0;
-  GpgmeUserID uid;
-  GpgmeKeySig sig;
+  gpgme_user_id_t uid;
+  gpgme_key_sig_t sig;
 
   assert (key);	/* XXX */
 
@@ -285,7 +285,7 @@ _gpgme_key_add_sig (GpgmeKey key, char *src)
 
 /* Acquire a reference to KEY.  */
 void
-gpgme_key_ref (GpgmeKey key)
+gpgme_key_ref (gpgme_key_t key)
 {
   LOCK (key_ref_lock);
   key->_refs++;
@@ -299,10 +299,10 @@ gpgme_key_ref (GpgmeKey key)
    created key object as well as for every gpgme_key_ref() done on the
    key object.  */
 void
-gpgme_key_unref (GpgmeKey key)
+gpgme_key_unref (gpgme_key_t key)
 {
-  GpgmeUserID uid;
-  GpgmeSubkey subkey;
+  gpgme_user_id_t uid;
+  gpgme_subkey_t subkey;
 
   LOCK (key_ref_lock);
   assert (key->_refs > 0);
@@ -316,7 +316,7 @@ gpgme_key_unref (GpgmeKey key)
   subkey = key->subkeys;
   while (subkey)
     {
-      GpgmeSubkey next = subkey->next;
+      gpgme_subkey_t next = subkey->next;
       if (subkey->fpr)
 	free (subkey->fpr);
       free (subkey);
@@ -326,12 +326,12 @@ gpgme_key_unref (GpgmeKey key)
   uid = key->uids;
   while (uid)
     {
-      GpgmeUserID next_uid = uid->next;
-      GpgmeKeySig keysig = uid->signatures;
+      gpgme_user_id_t next_uid = uid->next;
+      gpgme_key_sig_t keysig = uid->signatures;
 
       while (keysig)
 	{
-	  GpgmeKeySig next = keysig->next;
+	  gpgme_key_sig_t next = keysig->next;
           free (keysig);
 	  keysig = next;
         }
@@ -354,7 +354,7 @@ gpgme_key_unref (GpgmeKey key)
 /* Compatibility interfaces.  */
 
 void
-gpgme_key_release (GpgmeKey key)
+gpgme_key_release (gpgme_key_t key)
 {
   gpgme_key_unref (key);
 }
@@ -411,7 +411,7 @@ validity_to_string (int validity)
 
 
 static const char *
-capabilities_to_string (GpgmeSubkey subkey)
+capabilities_to_string (gpgme_subkey_t subkey)
 {
   static const char *const strings[8] =
     {
@@ -433,11 +433,11 @@ capabilities_to_string (GpgmeSubkey subkey)
 /* Return the value of the attribute WHAT of ITEM, which has to be
    representable by a string.  */
 const char *
-gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
+gpgme_key_get_string_attr (gpgme_key_t key, _gpgme_attr_t what,
 			   const void *reserved, int idx)
 {
-  GpgmeSubkey subkey;
-  GpgmeUserID uid;
+  gpgme_subkey_t subkey;
+  gpgme_user_id_t uid;
   int i;
 
   if (!key || reserved || idx < 0)
@@ -512,11 +512,11 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
 
 
 unsigned long
-gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
+gpgme_key_get_ulong_attr (gpgme_key_t key, _gpgme_attr_t what,
 			  const void *reserved, int idx)
 {
-  GpgmeSubkey subkey;
-  GpgmeUserID uid;
+  gpgme_subkey_t subkey;
+  gpgme_user_id_t uid;
   int i;
 
   if (!key || reserved || idx < 0)
@@ -601,11 +601,11 @@ gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
 }
 
 
-static GpgmeKeySig
-get_keysig (GpgmeKey key, int uid_idx, int idx)
+static gpgme_key_sig_t
+get_keysig (gpgme_key_t key, int uid_idx, int idx)
 {
-  GpgmeUserID uid;
-  GpgmeKeySig sig;
+  gpgme_user_id_t uid;
+  gpgme_key_sig_t sig;
 
   if (!key || uid_idx < 0 || idx < 0)
     return NULL;
@@ -630,10 +630,10 @@ get_keysig (GpgmeKey key, int uid_idx, int idx)
 
 
 const char *
-gpgme_key_sig_get_string_attr (GpgmeKey key, int uid_idx, GpgmeAttr what,
+gpgme_key_sig_get_string_attr (gpgme_key_t key, int uid_idx, _gpgme_attr_t what,
 			       const void *reserved, int idx)
 {
-  GpgmeKeySig certsig = get_keysig (key, uid_idx, idx);
+  gpgme_key_sig_t certsig = get_keysig (key, uid_idx, idx);
 
   if (!certsig || reserved)
     return NULL;
@@ -665,10 +665,10 @@ gpgme_key_sig_get_string_attr (GpgmeKey key, int uid_idx, GpgmeAttr what,
 
 
 unsigned long
-gpgme_key_sig_get_ulong_attr (GpgmeKey key, int uid_idx, GpgmeAttr what,
+gpgme_key_sig_get_ulong_attr (gpgme_key_t key, int uid_idx, _gpgme_attr_t what,
 			      const void *reserved, int idx)
 {
-  GpgmeKeySig certsig = get_keysig (key, uid_idx, idx);
+  gpgme_key_sig_t certsig = get_keysig (key, uid_idx, idx);
 
   if (!certsig || reserved)
     return 0;

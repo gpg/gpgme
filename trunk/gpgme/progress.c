@@ -28,10 +28,10 @@
 #include "context.h"
 
 
-GpgmeError
-_gpgme_progress_status_handler (void *priv, GpgmeStatusCode code, char *args)
+gpgme_error_t
+_gpgme_progress_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   char *p;
   char *args_cpy;
   int type = 0;

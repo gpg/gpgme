@@ -63,7 +63,7 @@ _gpgme_hextobyte (const unsigned char *str)
    the result.  Currently, LEN is only used to specify if allocation
    is desired or not, the caller is expected to make sure that *DESTP
    is large enough if LEN is not zero.  */
-GpgmeError
+gpgme_error_t
 _gpgme_decode_c_string (const char *src, char **destp, int len)
 {
   char *dest;
@@ -165,7 +165,7 @@ _gpgme_decode_c_string (const char *src, char **destp, int len)
    the result.  Currently, LEN is only used to specify if allocation
    is desired or not, the caller is expected to make sure that *DESTP
    is large enough if LEN is not zero.  */
-GpgmeError
+gpgme_error_t
 _gpgme_decode_percent_string (const char *src, char **destp, int len)
 {
   char *dest;
@@ -234,7 +234,7 @@ _gpgme_decode_percent_string (const char *src, char **destp, int len)
 static struct
 {
   char *name;
-  GpgmeError err;
+  gpgme_error_t err;
 } gnupg_errors[] =
   {
     { "EOF", GPGME_EOF },
@@ -318,7 +318,7 @@ static struct
   };
     
 
-GpgmeError
+gpgme_error_t
 _gpgme_map_gnupg_error (char *err)
 {
   int i;

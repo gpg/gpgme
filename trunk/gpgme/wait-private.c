@@ -42,7 +42,7 @@
    event loops.  */
 
 void
-_gpgme_wait_private_event_cb (void *data, GpgmeEventIO type, void *type_data)
+_gpgme_wait_private_event_cb (void *data, gpgme_event_io_t type, void *type_data)
 {
   switch (type)
     {
@@ -68,10 +68,10 @@ _gpgme_wait_private_event_cb (void *data, GpgmeEventIO type, void *type_data)
 /* If COND is a null pointer, wait until the blocking operation in CTX
    finished and return its error value.  Otherwise, wait until COND is
    satisfied or the operation finished.  */
-GpgmeError
-_gpgme_wait_on_condition (GpgmeCtx ctx, volatile int *cond)
+gpgme_error_t
+_gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond)
 {
-  GpgmeError err = 0;
+  gpgme_error_t err = 0;
   int hang = 1;
 
   do
@@ -141,8 +141,8 @@ _gpgme_wait_on_condition (GpgmeCtx ctx, volatile int *cond)
 
 /* Wait until the blocking operation in context CTX has finished and
    return the error value.  */
-GpgmeError
-_gpgme_wait_one (GpgmeCtx ctx)
+gpgme_error_t
+_gpgme_wait_one (gpgme_ctx_t ctx)
 {
   return _gpgme_wait_on_condition (ctx, NULL);
 }

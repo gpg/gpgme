@@ -50,11 +50,11 @@ release_op_data (void *hook)
 }
 
 
-GpgmeError
-_gpgme_passphrase_status_handler (void *priv, GpgmeStatusCode code, char *args)
+gpgme_error_t
+_gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
-  GpgmeError err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
   op_data_t opd;
 
   if (!ctx->passphrase_cb)
@@ -110,12 +110,12 @@ _gpgme_passphrase_status_handler (void *priv, GpgmeStatusCode code, char *args)
 }
 
 
-GpgmeError
-_gpgme_passphrase_command_handler (void *priv, GpgmeStatusCode code,
+gpgme_error_t
+_gpgme_passphrase_command_handler (void *priv, gpgme_status_code_t code,
 				   const char *key, const char **result)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
-  GpgmeError err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
   op_data_t opd;
 
   if (!ctx->passphrase_cb)

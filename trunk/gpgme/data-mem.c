@@ -32,7 +32,7 @@
 
 
 static ssize_t
-mem_read (GpgmeData dh, void *buffer, size_t size)
+mem_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   size_t amt = dh->data.mem.length - dh->data.mem.offset;
   const char *src;
@@ -51,7 +51,7 @@ mem_read (GpgmeData dh, void *buffer, size_t size)
 
 
 static ssize_t
-mem_write (GpgmeData dh, const void *buffer, size_t size)
+mem_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   size_t unused;
 
@@ -104,7 +104,7 @@ mem_write (GpgmeData dh, const void *buffer, size_t size)
 
 
 static off_t
-mem_seek (GpgmeData dh, off_t offset, int whence)
+mem_seek (gpgme_data_t dh, off_t offset, int whence)
 {
   switch (whence)
     {
@@ -142,14 +142,14 @@ mem_seek (GpgmeData dh, off_t offset, int whence)
 
 
 static void
-mem_release (GpgmeData dh)
+mem_release (gpgme_data_t dh)
 {
   if (dh->data.mem.buffer)
     free (dh->data.mem.buffer);
 }
 
 
-static struct gpgme_data_cbs mem_cbs =
+static struct _gpgme_data_cbs mem_cbs =
   {
     mem_read,
     mem_write,
@@ -158,10 +158,10 @@ static struct gpgme_data_cbs mem_cbs =
   };
 
 
-GpgmeError
-gpgme_data_new (GpgmeData *dh)
+gpgme_error_t
+gpgme_data_new (gpgme_data_t *dh)
 {
-  GpgmeError err = _gpgme_data_new (dh, &mem_cbs);
+  gpgme_error_t err = _gpgme_data_new (dh, &mem_cbs);
   if (err)
     return err;
 
@@ -172,11 +172,11 @@ gpgme_data_new (GpgmeData *dh)
 /* Create a new data buffer filled with SIZE bytes starting from
    BUFFER.  If COPY is zero, copying is delayed until necessary, and
    the data is taken from the original location when needed.  */
-GpgmeError
-gpgme_data_new_from_mem (GpgmeData *dh, const char *buffer,
+gpgme_error_t
+gpgme_data_new_from_mem (gpgme_data_t *dh, const char *buffer,
 			 size_t size, int copy)
 {
-  GpgmeError err = _gpgme_data_new (dh, &mem_cbs);
+  gpgme_error_t err = _gpgme_data_new (dh, &mem_cbs);
   if (err)
     return err;
 
@@ -198,7 +198,7 @@ gpgme_data_new_from_mem (GpgmeData *dh, const char *buffer,
 
 
 char *
-gpgme_data_release_and_get_mem (GpgmeData dh, size_t *r_len)
+gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
 {
   char *str = NULL;
 

@@ -1,5 +1,63 @@
 2003-05-18  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h: The following types are renamed.  The old name is kept
+	as a deprecated typedef.
+	(GpgmeCtx): Rename to gpgme_ctx_t.
+	(GpgmeData): Rename to gpgme_data_t.
+	(GpgmeRecipients): Rename to gpgme_recipients_t.
+	(GpgmeError): Rename to gpgme_error_t.
+	(GpgmeDataEncoding): Rename to gpgme_data_encoding_t.
+	(GpgmePubKeyAlgo): Rename to gpgme_pubkey_algo_t.
+	(GpgmeHashAlgo): Rename to gpgme_hash_algo_t.
+	(GpgmeSigStat): Rename to gpgme_sig_stat_t.
+	(GpgmeSigMode): Rename to gpgme_sig_mode_t.
+	(GpgmeAttr): Rename to gpgme_attr_t.
+	(GpgmeValidity): Rename to gpgme_validity_t.
+	(GpgmeProtocol): Rename to gpgme_protocol_t.
+	(GpgmeStatusCode): Rename to gpgme_status_code_t.
+	(GpgmeEngineInfo): Rename to gpgme_engine_info_t.
+	(GpgmeSubkey): Rename to gpgme_subkey_t.
+	(GpgmeKeySig): Rename to gpgme_keysig_t.
+	(GpgmeUserID): Rename to gpgme_user_id_t.
+	(GpgmePassphraseCb): Rename to gpgme_passphrase_cb_t.
+	(GpgmeProgressCb): Rename to gpgme_progress_cb_t.
+	(GpgmeEditCb): Rename to gpgme_edit_cb_t.
+	(GpgmeIOCb): Rename to gpgme_io_cb_t.
+	(GpgmeRegisterIOCb): Rename to gpgme_register_io_cb_t.
+	(GpgmeRemoveIOCb): Rename to gpgme_remove_io_cb_t.
+	(GpgmeEventIO): Rename to gpgme_event_io_t.
+	(GpgmeEventIOCb): Rename to gpgme_event_io_cb_t.
+	(GpgmeIOCbs): Rename to gpgme_io_cbs.
+	(gpgme_io_cbs_t): New type.
+	(GpgmeDataReadCb): Rename to gpgme_data_read_cb_t.
+	(GpgmeDataWriteCb): Rename to gpgme_data_write_cb_t.
+	(GpgmeDataSeekCb): Rename to gpgme_data_seek_cb_t.
+	(GpgmeDataReleaseCb): Rename to gpgme_data_release_cb_t.
+	(GpgmeDataCbs): Rename to gpgme_data_cbs.
+	(gpgme_data_cbs_t): New type.
+	(GpgmeInvalidUserID): Rename to gpgme_invalid_user_id_t.
+	(GpgmeEncryptResult): Rename to gpgme_encrypt_result_t.
+	(GpgmeDecryptResult): Rename to gpgme_decrypt_result_t.
+	(GpgmeNewSignature): Rename to gpgme_new_signature_t.
+	(GpgmeSignResult): Rename to gpgme_sign_result_t.
+	(GpgmeSigNotation): Rename to gpgme_sig_notation_t.
+	(GpgmeSignature): Rename to gpgme_signature_t.
+	(GpgmeVerifyResult): Rename to gpgme_verify_result_t.
+	(GpgmeImportStatus): Rename to gpgme_import_status_t.
+	(GpgmeImportResult): Rename to gpgme_import_result_t.
+	(GpgmeGenKeyResult): Rename to gpgme_genkey_result_t.
+	(GpgmeKeyListResult): Rename to gpgme_keylist_result_t.
+	(GpgmeTrustItem): Rename to gpgme_trust_item_t.
+	* gpgme.h (gpgme_deprecated_error_t): New type, swallowing macros
+	GPGME_No_Recipients, GPGME_Invalid_Recipient and
+	GPGME_No_Passphrase.
+	* data.h (struct gpgme_data_s): Rename to struct gpgme_data.
+	* context.h (struct gpgme_context_s): Rename to struct
+	gpgme_context.
+	(struct gpgme_recipients_s): Rename to gpgme_recipients.
+
+2003-05-18  Marcus Brinkmann  <marcus@g10code.de>
+
 	* keylist.c (finish_key): Clear OPD->tmp_uid.
 
 2003-05-18  Marcus Brinkmann  <marcus@g10code.de>

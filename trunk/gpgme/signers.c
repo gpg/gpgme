@@ -35,7 +35,7 @@
 
 /* Delete all signers from CTX.  */
 void
-gpgme_signers_clear (GpgmeCtx ctx)
+gpgme_signers_clear (gpgme_ctx_t ctx)
 {
   int i;
 
@@ -52,15 +52,15 @@ gpgme_signers_clear (GpgmeCtx ctx)
 }
 
 /* Add KEY to list of signers in CTX.  */
-GpgmeError
-gpgme_signers_add (GpgmeCtx ctx, const GpgmeKey key)
+gpgme_error_t
+gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 {
   if (!ctx || !key)
     return GPGME_Invalid_Value;
 
   if (ctx->signers_len == ctx->signers_size)
     {
-      GpgmeKey *newarr;
+      gpgme_key_t *newarr;
       int n = ctx->signers_size + 5;
       int j;
 
@@ -80,8 +80,8 @@ gpgme_signers_add (GpgmeCtx ctx, const GpgmeKey key)
 
 
 /* Return the SEQth signer's key in CTX with one reference.  */
-GpgmeKey
-gpgme_signers_enum (const GpgmeCtx ctx, int seq)
+gpgme_key_t
+gpgme_signers_enum (const gpgme_ctx_t ctx, int seq)
 {
   if (!ctx || seq < 0)
     return NULL;
