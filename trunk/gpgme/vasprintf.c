@@ -26,6 +26,19 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #include <stdarg.h>
 
+
+#ifndef va_copy
+#if defined (__GNUC__) && defined (__PPC__) \
+     && (defined (_CALL_SYSV) || defined (_WIN32))
+#define va_copy(d, s) (*(d) = *(s))
+#elif defined (MUST_COPY_VA_BYVAL)
+#define va_copy(d, s) ((d) = (s))
+#else 
+#define va_copy(d, s) memcpy ((d), (s), sizeof (va_list))
+#endif 
+#endif 
+
+
 #ifdef TEST
 int global_total_width;
 #endif
@@ -44,8 +57,7 @@ int_vasprintf (result, format, args)
   int total_width = strlen (format) + 1;
   va_list ap;
 
-  /* FIXME: use va_copy() */
-  memcpy (&ap, args, sizeof (va_list));
+  va_copy (ap, *args);
 
   while (*p != '\0')
     {

@@ -68,10 +68,12 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args
 
     case GPGME_STATUS_BAD_PASSPHRASE:
       ctx->result.passphrase->bad_passphrase++;
+      ctx->result.passphrase->no_passphrase = 0;
       break;
 
     case GPGME_STATUS_GOOD_PASSPHRASE:
       ctx->result.passphrase->bad_passphrase = 0;
+      ctx->result.passphrase->no_passphrase = 0;
       break;
 
     case GPGME_STATUS_NEED_PASSPHRASE:

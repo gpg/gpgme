@@ -1,3 +1,9 @@
+2002-08-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* passphrase.c (_gpgme_passphrase_status_handler): Reset
+	CTX->result.passphrase->no_passphrase if passphrase is given (good
+	or bad).  Submitted by Jean DIRAISON <jean.diraison@free.fr>.
+
 2002-08-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* posix-io.c (_gpgme_io_spawn): Use a double-fork approach.
