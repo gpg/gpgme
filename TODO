@@ -14,24 +14,18 @@
 
 * Return GPGME_Canceled when appropriate
 
-* Implement decrypt+verify
-
 * Tests
 ** t-data
 *** Test gpgme_data_release_and_get_mem.
 *** Test gpgme_data_rewind for invalid types.
 *** Test gpgme_data_read's readable feature.
 
-Bugs reported by Stephane Corthesy:
-> - When asking a GpgmeKey for one of its sub-userIDs (index > 0)  
-> GPGME_ATTR_EMAIL attribute, it returns the name + email, whereas for  
-> the main (index = 0) userID it returns only the email.
+* Changes breaking the ABI
+** GpgmeKey's main userID is not index == 0.
 
+Bugs reported by Stephane Corthesy:
 > - When returning a GpgmeKey GPGME_ATTR_COMMENT attribute, characters  
 > like ":" are not un-escaped, they are returned as \x3a
-
-> - When asking a GpgmeKey its main userID (index = 0), it returns the  
-> last userID it was asked (can be a sub, or the main).
 
 > BTW, here's another bug: it it not possible to retrieve fingerprints  
 > for subkeys
