@@ -1,5 +1,9 @@
 2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Information About Keys): Document GPGME_ATTR_EXPIRE.
+
+2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.texi (Verify): Document verification of normal and
 	cleartext signatures.
 

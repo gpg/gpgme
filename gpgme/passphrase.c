@@ -88,7 +88,8 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
       break;
 
     case STATUS_EOF:
-      if (ctx->result.passphrase->no_passphrase)
+      if (ctx->result.passphrase->no_passphrase
+	  || ctx->result.passphrase->bad_passphrase)
 	ctx->error = mk_error (No_Passphrase);
       break;
 
