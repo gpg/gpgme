@@ -71,9 +71,11 @@ writen ( int fd, const char *buffer, size_t length )
 
 /* Connect to a server over a pipe, creating the assuan context and
    returning it in CTX.  The server filename is NAME, the argument
-   vector in ARGV.  */
+   vector in ARGV.  FD_CHILD_LIST is a -1 terminated list of file
+   descriptors not to close in the child.  */
 AssuanError
-assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[])
+assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
+		     int *fd_child_list)
 {
   static int fixed_signals = 0;
   AssuanError err;
@@ -137,10 +139,35 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[])
 
   if ((*ctx)->pid == 0)
     {
+      int i, n;
       char errbuf[512];
+#ifdef HAVE_JNLIB_LOGGING
+      int log_fd = log_get_fd (); 
+#endif
+      /* close all files which will not be duped but keep stderr
+         and log_stream for now */
+      n = sysconf (_SC_OPEN_MAX);
+      if (n < 0)
+        n = MAX_OPEN_FDS;
+      for (i=0; i < n; i++)
+        {
+	  int *fdp = fd_child_list;
 
-      close (rp[0]);
-      close (wp[1]);
+	  if (fdp)
+	    {
+	      while (*fdp != -1 && *fdp != i)
+		fdp++;
+	    }
+
+          if (!(fdp && *fdp != -1)
+	      && i != fileno (stderr) 
+#ifdef HAVE_JNLIB_LOGGING
+              && i != log_fd
+#endif
+              && i != rp[1] && i != wp[0])
+            close(i);
+        }
+      errno = 0;
 
       /* Dup handles and to stdin/stdout and exec */
       if (rp[1] != STDOUT_FILENO)
