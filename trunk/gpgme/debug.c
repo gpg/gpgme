@@ -85,7 +85,7 @@ debug_init (void)
   if (!initialized)
     {
       gpgme_error_t err;
-      const char *e;
+      char *e;
       const char *s1, *s2;;
 
       err = _gpgme_getenv ("GPGME_DEBUG", &e);
