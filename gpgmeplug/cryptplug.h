@@ -194,7 +194,15 @@ typedef enum {
   PinRequest_AfterMinutes     = 5
 } PinRequests;
 
-/* dummy values: */
+
+typedef enum {
+  SignatureCompoundMode_undef    = 0,
+
+  SignatureCompoundMode_Opaque   = 1,
+  SignatureCompoundMode_Detached = 2
+} SignatureCompoundMode;
+
+
 typedef enum {
   SendCert_undef              = 0,
 
@@ -204,7 +212,7 @@ typedef enum {
   SendCert_SendChainWithRoot  = 4
 } SendCertificates;
 
-/* dummy values: */
+
 typedef enum {
   SignAlg_undef               = 0,
 
@@ -406,6 +414,20 @@ void setSignatureAlgorithm( SignatureAlgorithm );
    \brief Returns the algorithm used for signing.
 */
 SignatureAlgorithm signatureAlgorithm( void );
+        
+/*! \ingroup groupConfigSign
+\brief Sets whether signatures and signed data should be send
+            as opaque signed or
+            as multipart/signed message parts.
+*/
+void setSignatureCompoundMode( SignatureCompoundMode );
+
+/*! \ingroup groupConfigSign
+\brief Returns whether signatures and signed data will be send
+            as opaque signed or
+            as multipart/signed message parts.
+*/
+SignatureCompoundMode signatureCompoundMode( void );
 
 /*! \ingroup groupConfigSign
    \brief Sets which certificates should be sent with the

@@ -62,26 +62,51 @@
 #endif
 
 /* definitions for signing */
-#ifndef GPGMEPLUG_SIGN_MAKE_MIME_OBJECT
-#define GPGMEPLUG_SIGN_INCLUDE_CLEARTEXT true
-#define GPGMEPLUG_SIGN_MAKE_MIME_OBJECT  true
-#define GPGMEPLUG_SIGN_MAKE_MULTI_MIME   true
-#define GPGMEPLUG_SIGN_CTYPE_MAIN        "multipart/signed;protocol=application/pgp-signature;micalg=pgp-sha1"
-#define GPGMEPLUG_SIGN_CDISP_MAIN        ""
-#define GPGMEPLUG_SIGN_CTENC_MAIN        ""
-#define GPGMEPLUG_SIGN_CTYPE_VERSION     ""
-#define GPGMEPLUG_SIGN_CDISP_VERSION     ""
-#define GPGMEPLUG_SIGN_CTENC_VERSION     ""
-#define GPGMEPLUG_SIGN_BTEXT_VERSION     ""
-#define GPGMEPLUG_SIGN_CTYPE_CODE        "application/pgp-signature"
-#define GPGMEPLUG_SIGN_CDISP_CODE        ""
-#define GPGMEPLUG_SIGN_CTENC_CODE        ""
-#define GPGMEPLUG_SIGN_FLAT_PREFIX       ""
-#define GPGMEPLUG_SIGN_FLAT_SEPARATOR    ""
-#define GPGMEPLUG_SIGN_FLAT_POSTFIX      ""
+// 1. opaque signatures (only used for S/MIME)
+#ifndef GPGMEPLUG_OPA_SIGN_MAKE_MIME_OBJECT
+#define GPGMEPLUG_OPA_SIGN_INCLUDE_CLEARTEXT false
+#define GPGMEPLUG_OPA_SIGN_MAKE_MIME_OBJECT  false
+#define GPGMEPLUG_OPA_SIGN_MAKE_MULTI_MIME   false
+#define GPGMEPLUG_OPA_SIGN_CTYPE_MAIN        ""
+#define GPGMEPLUG_OPA_SIGN_CDISP_MAIN        ""
+#define GPGMEPLUG_OPA_SIGN_CTENC_MAIN        ""
+#define GPGMEPLUG_OPA_SIGN_CTYPE_VERSION     ""
+#define GPGMEPLUG_OPA_SIGN_CDISP_VERSION     ""
+#define GPGMEPLUG_OPA_SIGN_CTENC_VERSION     ""
+#define GPGMEPLUG_OPA_SIGN_BTEXT_VERSION     ""
+#define GPGMEPLUG_OPA_SIGN_CTYPE_CODE        ""
+#define GPGMEPLUG_OPA_SIGN_CDISP_CODE        ""
+#define GPGMEPLUG_OPA_SIGN_CTENC_CODE        ""
+#define GPGMEPLUG_OPA_SIGN_FLAT_PREFIX       ""
+#define GPGMEPLUG_OPA_SIGN_FLAT_SEPARATOR    ""
+#define GPGMEPLUG_OPA_SIGN_FLAT_POSTFIX      ""
+#endif
+// 2. detached signatures (used for S/MIME and for OpenPGP)
+#ifndef GPGMEPLUG_DET_SIGN_MAKE_MIME_OBJECT
+#define GPGMEPLUG_DET_SIGN_INCLUDE_CLEARTEXT true
+#define GPGMEPLUG_DET_SIGN_MAKE_MIME_OBJECT  true
+#define GPGMEPLUG_DET_SIGN_MAKE_MULTI_MIME   true
+#define GPGMEPLUG_DET_SIGN_CTYPE_MAIN        "multipart/signed;protocol=application/pgp-signature;micalg=pgp-sha1"
+#define GPGMEPLUG_DET_SIGN_CDISP_MAIN        ""
+#define GPGMEPLUG_DET_SIGN_CTENC_MAIN        ""
+#define GPGMEPLUG_DET_SIGN_CTYPE_VERSION     ""
+#define GPGMEPLUG_DET_SIGN_CDISP_VERSION     ""
+#define GPGMEPLUG_DET_SIGN_CTENC_VERSION     ""
+#define GPGMEPLUG_DET_SIGN_BTEXT_VERSION     ""
+#define GPGMEPLUG_DET_SIGN_CTYPE_CODE        "application/pgp-signature"
+#define GPGMEPLUG_DET_SIGN_CDISP_CODE        ""
+#define GPGMEPLUG_DET_SIGN_CTENC_CODE        ""
+#define GPGMEPLUG_DET_SIGN_FLAT_PREFIX       ""
+#define GPGMEPLUG_DET_SIGN_FLAT_SEPARATOR    ""
+#define GPGMEPLUG_DET_SIGN_FLAT_POSTFIX      ""
+#endif
+// 3. common definitions for opaque and detached signing
+#ifndef __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY
 #define __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY false
 #endif
+
 #define __GPGMEPLUG_ERROR_CLEARTEXT_IS_ZERO "Error: Cannot run checkMessageSignature() with cleartext == 0"
+
 /* definitions for encoding */
 #ifndef GPGMEPLUG_ENC_MAKE_MIME_OBJECT
 #define GPGMEPLUG_ENC_INCLUDE_CLEARTEXT  false
@@ -133,6 +158,7 @@ typedef struct {
   const char*             bugURL;
   const char*             signatureKeyCertificate;
   SignatureAlgorithm      signatureAlgorithm;
+  SignatureCompoundMode   signatureCompoundMode;
   SendCertificates        sendCertificates;
   SignEmail               signEmail;
   bool                    saveSentSignatures;
@@ -180,6 +206,10 @@ bool initialize()
   config.signatureKeyCertificate              = malloc( 1 );
   strcpy( (char* )config.signatureKeyCertificate, "" );
   config.signatureAlgorithm                   = SignAlg_SHA1;
+  if( GPGMEPLUG_PROTOCOL == GPGME_PROTOCOL_CMS )
+    config.signatureCompoundMode              = SignatureCompoundMode_Opaque;
+  else
+    config.signatureCompoundMode              = SignatureCompoundMode_Detached;
   config.sendCertificates                     = SendCert_SendChainWithRoot;
   config.signEmail                            = SignEmail_SignAll;
   config.saveSentSignatures                   = true;
@@ -299,6 +329,16 @@ void setSignatureAlgorithm( SignatureAlgorithm sigAlg )
 SignatureAlgorithm signatureAlgorithm()
 {
   return config.signatureAlgorithm;
+}
+
+void setSignatureCompoundMode( SignatureCompoundMode signComp )
+{
+  config.signatureCompoundMode = signComp;
+}
+
+SignatureCompoundMode signatureCompoundMode()
+{
+  return config.signatureCompoundMode;
 }
 
 void setSendCertificates( SendCertificates sendCert )
@@ -893,6 +933,7 @@ bool signMessage( const char*  cleartext,
                   int* errId,
                   char** errTxt )
 {
+  bool bIsOpaque;
   GpgmeCtx ctx;
   GpgmeError err;
   GpgmeKey rKey;
@@ -958,7 +999,20 @@ bool signMessage( const char*  cleartext,
   gpgme_data_new_from_mem (&data, cleartext,
                             strlen( cleartext ), 1 );
   gpgme_data_new ( &sig );
-  err = gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
+
+  // NOTE: Currently we support Opaque signed messages only for S/MIME,
+  //       but not for OpenPGP mode!
+  if( GPGMEPLUG_PROTOCOL == GPGME_PROTOCOL_CMS )
+    bIsOpaque = (SignatureCompoundMode_Opaque == signatureCompoundMode());
+  else
+    bIsOpaque = false;
+
+  err = gpgme_op_sign ( ctx,
+                        data,
+                        sig,
+                        bIsOpaque
+                        ? GPGME_SIG_MODE_NORMAL
+                        : GPGME_SIG_MODE_DETACH );
 
   if ( err == GPGME_No_Error ) {
     if( __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY ) {
@@ -1005,39 +1059,76 @@ err = 0;
   gpgme_release (ctx);
 
   if( bOk && structuring ) {
-    structuring->includeCleartext = GPGMEPLUG_SIGN_INCLUDE_CLEARTEXT;
-    structuring->makeMimeObject   = GPGMEPLUG_SIGN_MAKE_MIME_OBJECT;
-    if( structuring->makeMimeObject ) {
-      structuring->makeMultiMime  = GPGMEPLUG_SIGN_MAKE_MULTI_MIME;
-      storeNewCharPtr( &structuring->contentTypeMain,
-                       GPGMEPLUG_SIGN_CTYPE_MAIN );
-      storeNewCharPtr( &structuring->contentDispMain,
-                       GPGMEPLUG_SIGN_CDISP_MAIN );
-      storeNewCharPtr( &structuring->contentTEncMain,
-                       GPGMEPLUG_SIGN_CTENC_MAIN );
-      if( structuring->makeMultiMime ) {
-        storeNewCharPtr( &structuring->contentTypeVersion,
-                         GPGMEPLUG_SIGN_CTYPE_VERSION );
-        storeNewCharPtr( &structuring->contentDispVersion,
-                         GPGMEPLUG_SIGN_CDISP_VERSION );
-        storeNewCharPtr( &structuring->contentTEncVersion,
-                         GPGMEPLUG_SIGN_CTENC_VERSION );
-        storeNewCharPtr( &structuring->bodyTextVersion,
-                         GPGMEPLUG_SIGN_BTEXT_VERSION );
-        storeNewCharPtr( &structuring->contentTypeCode,
-                         GPGMEPLUG_SIGN_CTYPE_CODE );
-        storeNewCharPtr( &structuring->contentDispCode,
-                         GPGMEPLUG_SIGN_CDISP_CODE );
-        storeNewCharPtr( &structuring->contentTEncCode,
-                         GPGMEPLUG_SIGN_CTENC_CODE );
+    if( bIsOpaque ) {
+      structuring->includeCleartext = GPGMEPLUG_OPA_SIGN_INCLUDE_CLEARTEXT;
+      structuring->makeMimeObject   = GPGMEPLUG_OPA_SIGN_MAKE_MIME_OBJECT;
+      if( structuring->makeMimeObject ) {
+        structuring->makeMultiMime  = GPGMEPLUG_OPA_SIGN_MAKE_MULTI_MIME;
+        storeNewCharPtr( &structuring->contentTypeMain,
+                        GPGMEPLUG_OPA_SIGN_CTYPE_MAIN );
+        storeNewCharPtr( &structuring->contentDispMain,
+                        GPGMEPLUG_OPA_SIGN_CDISP_MAIN );
+        storeNewCharPtr( &structuring->contentTEncMain,
+                        GPGMEPLUG_OPA_SIGN_CTENC_MAIN );
+        if( structuring->makeMultiMime ) {
+            storeNewCharPtr( &structuring->contentTypeVersion,
+                            GPGMEPLUG_OPA_SIGN_CTYPE_VERSION );
+            storeNewCharPtr( &structuring->contentDispVersion,
+                            GPGMEPLUG_OPA_SIGN_CDISP_VERSION );
+            storeNewCharPtr( &structuring->contentTEncVersion,
+                            GPGMEPLUG_OPA_SIGN_CTENC_VERSION );
+            storeNewCharPtr( &structuring->bodyTextVersion,
+                            GPGMEPLUG_OPA_SIGN_BTEXT_VERSION );
+            storeNewCharPtr( &structuring->contentTypeCode,
+                            GPGMEPLUG_OPA_SIGN_CTYPE_CODE );
+            storeNewCharPtr( &structuring->contentDispCode,
+                            GPGMEPLUG_OPA_SIGN_CDISP_CODE );
+            storeNewCharPtr( &structuring->contentTEncCode,
+                            GPGMEPLUG_OPA_SIGN_CTENC_CODE );
+        }
+      } else {
+        storeNewCharPtr( &structuring->flatTextPrefix,
+                        GPGMEPLUG_OPA_SIGN_FLAT_PREFIX );
+        storeNewCharPtr( &structuring->flatTextSeparator,
+                        GPGMEPLUG_OPA_SIGN_FLAT_SEPARATOR );
+        storeNewCharPtr( &structuring->flatTextPostfix,
+                        GPGMEPLUG_OPA_SIGN_FLAT_POSTFIX );
       }
     } else {
-      storeNewCharPtr( &structuring->flatTextPrefix,
-                       GPGMEPLUG_SIGN_FLAT_PREFIX );
-      storeNewCharPtr( &structuring->flatTextSeparator,
-                       GPGMEPLUG_SIGN_FLAT_SEPARATOR );
-      storeNewCharPtr( &structuring->flatTextPostfix,
-                       GPGMEPLUG_SIGN_FLAT_POSTFIX );
+      structuring->includeCleartext = GPGMEPLUG_DET_SIGN_INCLUDE_CLEARTEXT;
+      structuring->makeMimeObject   = GPGMEPLUG_DET_SIGN_MAKE_MIME_OBJECT;
+      if( structuring->makeMimeObject ) {
+        structuring->makeMultiMime  = GPGMEPLUG_DET_SIGN_MAKE_MULTI_MIME;
+        storeNewCharPtr( &structuring->contentTypeMain,
+                        GPGMEPLUG_DET_SIGN_CTYPE_MAIN );
+        storeNewCharPtr( &structuring->contentDispMain,
+                        GPGMEPLUG_DET_SIGN_CDISP_MAIN );
+        storeNewCharPtr( &structuring->contentTEncMain,
+                        GPGMEPLUG_DET_SIGN_CTENC_MAIN );
+        if( structuring->makeMultiMime ) {
+            storeNewCharPtr( &structuring->contentTypeVersion,
+                            GPGMEPLUG_DET_SIGN_CTYPE_VERSION );
+            storeNewCharPtr( &structuring->contentDispVersion,
+                            GPGMEPLUG_DET_SIGN_CDISP_VERSION );
+            storeNewCharPtr( &structuring->contentTEncVersion,
+                            GPGMEPLUG_DET_SIGN_CTENC_VERSION );
+            storeNewCharPtr( &structuring->bodyTextVersion,
+                            GPGMEPLUG_DET_SIGN_BTEXT_VERSION );
+            storeNewCharPtr( &structuring->contentTypeCode,
+                            GPGMEPLUG_DET_SIGN_CTYPE_CODE );
+            storeNewCharPtr( &structuring->contentDispCode,
+                            GPGMEPLUG_DET_SIGN_CDISP_CODE );
+            storeNewCharPtr( &structuring->contentTEncCode,
+                            GPGMEPLUG_DET_SIGN_CTENC_CODE );
+        }
+      } else {
+        storeNewCharPtr( &structuring->flatTextPrefix,
+                        GPGMEPLUG_DET_SIGN_FLAT_PREFIX );
+        storeNewCharPtr( &structuring->flatTextSeparator,
+                        GPGMEPLUG_DET_SIGN_FLAT_SEPARATOR );
+        storeNewCharPtr( &structuring->flatTextPostfix,
+                        GPGMEPLUG_DET_SIGN_FLAT_POSTFIX );
+      }
     }
   }
   return bOk;
