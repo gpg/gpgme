@@ -44,6 +44,7 @@ struct verify_result_s
   ulong timestamp;	/* Signature creation time.  */
   ulong exptimestamp;   /* signature exipration time or 0 */
   GpgmeValidity validity;
+  char trust_errtok[31]; /* error token send with the trust status */
 };
 
 
@@ -57,6 +58,44 @@ _gpgme_release_verify_result (VerifyResult result)
       xfree (result);
       result = next_result;
     }
+}
+
+/* Check whether STRING starts with TOKEN and return true in this
+   case.  This is case insensitive.  If NEXT is not NULL return the
+   number of bytes to be added to STRING to get to the next token; a
+   returned value of 0 indicates end of line. */
+static int 
+is_token (const char *string, const char *token, size_t *next)
+{
+  size_t n = 0;
+
+  for (;*string && *token && *string == *token; string++, token++, n++)
+    ;
+  if (*token || (*string != ' ' && !*string))
+    return 0;
+  if (next)
+    {
+      for (; *string == ' '; string++, n++)
+        ;
+      *next = n;
+    }
+  return 1;
+}
+
+static size_t
+copy_token (const char *string, char *buffer, size_t length)
+{
+  const char *s = string;
+  char *p = buffer;
+  size_t i;
+
+  for (i = 1; i < length && *s && *s != ' ' ; i++)
+    *p++ = *s++;
+  *p = 0;
+  /* conmtinue scanning in case the copy was truncated */
+  while (*s && *s != ' ')
+    s++;
+  return s - string;
 }
 
 
@@ -147,6 +186,7 @@ void
 _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
   char *p;
+  size_t n;
   int i;
 
   if (ctx->error)
@@ -184,11 +224,8 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
     case STATUS_VALIDSIG:
       ctx->result.verify->status = GPGME_SIG_STAT_GOOD;
-      p = ctx->result.verify->fpr;
-      for (i = 0; i < DIM(ctx->result.verify->fpr)
-	     && args[i] && args[i] != ' ' ; i++)
-	*p++ = args[i];
-      *p = 0;
+      i = copy_token (args, ctx->result.verify->fpr,
+                      DIM(ctx->result.verify->fpr));
       /* Skip the formatted date.  */
       while (args[i] && args[i] == ' ')
 	i++;
@@ -203,16 +240,13 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
     case STATUS_BADSIG:
       ctx->result.verify->status = GPGME_SIG_STAT_BAD;
       /* Store the keyID in the fpr field.  */
-      p = ctx->result.verify->fpr;
-      for (i = 0; i < DIM(ctx->result.verify->fpr)
-	     && args[i] && args[i] != ' ' ; i++)
-	*p++ = args[i];
-      *p = 0;
+      copy_token (args, ctx->result.verify->fpr,
+                  DIM(ctx->result.verify->fpr));
       break;
 
     case STATUS_ERRSIG:
       /* The return code is the 6th argument, if it is 9, the problem
-	 is a missing key.  */
+	 is a missing key.  Note that this is not emitted by gpgsm */
       for (p = args, i = 0; p && *p && i < 5; i++)
         {
           p = strchr (p, ' ');
@@ -225,11 +259,8 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
       else
 	ctx->result.verify->status = GPGME_SIG_STAT_ERROR;
       /* Store the keyID in the fpr field.  */
-      p = ctx->result.verify->fpr;
-      for (i = 0; i < DIM(ctx->result.verify->fpr)
-	     && args[i] && args[i] != ' ' ; i++)
-	*p++ = args[i];
-      *p = 0;
+      copy_token (args, ctx->result.verify->fpr,
+                  DIM(ctx->result.verify->fpr));
       break;
 
     case STATUS_NOTATION_NAME:
@@ -240,13 +271,19 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
     case STATUS_TRUST_UNDEFINED:
       ctx->result.verify->validity = GPGME_VALIDITY_UNKNOWN;
+      copy_token (args, ctx->result.verify->trust_errtok,
+                  DIM(ctx->result.verify->trust_errtok));
       break;
     case STATUS_TRUST_NEVER:
       ctx->result.verify->validity = GPGME_VALIDITY_NEVER;
+      copy_token (args, ctx->result.verify->trust_errtok,
+                  DIM(ctx->result.verify->trust_errtok));
       break;
     case STATUS_TRUST_MARGINAL:
       if (ctx->result.verify->status == GPGME_SIG_STAT_GOOD)
         ctx->result.verify->validity = GPGME_VALIDITY_MARGINAL;
+      copy_token (args, ctx->result.verify->trust_errtok,
+                  DIM(ctx->result.verify->trust_errtok));
       break;
     case STATUS_TRUST_FULLY:
     case STATUS_TRUST_ULTIMATE:
@@ -255,6 +292,20 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
       break;
 
     case STATUS_END_STREAM:
+      break;
+
+    case STATUS_ERROR:
+      /* Generic error, we need this for gpgsm (and maybe for gpg in future)
+         to get error descriptions. */
+      if (is_token (args, "verify.findkey", &n) && n)
+        {
+          args += n;
+          if (is_token (args, "No_Public_Key", NULL))
+            ctx->result.verify->status = GPGME_SIG_STAT_NOKEY;
+          else
+            ctx->result.verify->status = GPGME_SIG_STAT_ERROR;
+
+        }
       break;
 
     case STATUS_EOF:
@@ -451,6 +502,55 @@ gpgme_get_sig_status (GpgmeCtx c, int idx,
   return result->fpr;
 }
 
+
+/* Build a summary vector from RESULT. */
+static unsigned long
+calc_sig_summary (VerifyResult result)
+{
+  unsigned long sum = 0;
+
+  if (result->validity == GPGME_VALIDITY_FULL
+     || result->validity == GPGME_VALIDITY_ULTIMATE)
+    {
+      if (result->status == GPGME_SIG_STAT_GOOD
+          || result->status == GPGME_SIG_STAT_GOOD_EXP
+          || result->status == GPGME_SIG_STAT_GOOD_EXPKEY)
+        sum |= GPGME_SIGSUM_GREEN;
+    }
+  else if (result->validity == GPGME_VALIDITY_NEVER)
+    {
+      if (result->status == GPGME_SIG_STAT_GOOD
+          || result->status == GPGME_SIG_STAT_GOOD_EXP
+          || result->status == GPGME_SIG_STAT_GOOD_EXPKEY)
+        sum |= GPGME_SIGSUM_RED;
+    }
+  else if (result->status == GPGME_SIG_STAT_BAD)
+    sum |= GPGME_SIGSUM_RED;
+
+  /* fixme: handle the case when key and message are expired. */
+  if (result->status == GPGME_SIG_STAT_GOOD_EXP)
+    sum |= GPGME_SIGSUM_SIG_EXPIRED;
+  else if (result->status == GPGME_SIG_STAT_GOOD_EXPKEY)
+    sum |= GPGME_SIGSUM_KEY_EXPIRED;
+  else if (result->status == GPGME_SIG_STAT_NOKEY)
+    sum |= GPGME_SIGSUM_KEY_MISSING;
+  else if (result->status == GPGME_SIG_STAT_ERROR)
+    sum |= GPGME_SIGSUM_SYS_ERROR;
+
+  /* FIXME: Set GPGME_SIGSUM_KEY_REVOKED. */
+  /* FIXME: Set GPGME_SIGSUM_CRL_MISSING. */
+  /* FIXME: Set GPGME_SIGSUM_CRL_TOO_OLD. */
+  /* FIXME: Set GPGME_SIGSUM_BAD_POLICY. */
+
+  /* That the valid flag when the signature is unquestionable
+     valid. */
+  if ((sum & GPGME_SIGSUM_GREEN) && !(sum & ~GPGME_SIGSUM_GREEN))
+    sum |= GPGME_SIGSUM_VALID;
+
+  return sum;
+}
+
+
 const char *
 gpgme_get_sig_string_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
 {
@@ -471,6 +571,8 @@ gpgme_get_sig_string_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
     {
     case GPGME_ATTR_FPR:
       return result->fpr;
+    case GPGME_ATTR_ERRTOK:
+      return result->trust_errtok;
     default:
       break;
     }
@@ -502,6 +604,8 @@ gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
       return (unsigned long)result->validity;
     case GPGME_ATTR_SIG_STATUS:
       return (unsigned long)result->status;
+    case GPGME_ATTR_SIG_SUMMARY:
+      return calc_sig_summary (result);
     default:
       break;
     }

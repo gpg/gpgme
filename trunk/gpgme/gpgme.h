@@ -137,6 +137,23 @@ typedef enum
   }
 GpgmeSigStat;
 
+/* Flags used with the GPGME_ATTR_SIG_SUMMARY. */
+enum 
+  {
+    GPGME_SIGSUM_VALID       = 0x0001,  /* The signature is fully valid */
+    GPGME_SIGSUM_GREEN       = 0x0002,  /* The signature is good. */
+    GPGME_SIGSUM_RED         = 0x0004,  /* The signature is bad. */
+    GPGME_SIGSUM_KEY_REVOKED = 0x0010,  /* One key has been revoked. */
+    GPGME_SIGSUM_KEY_EXPIRED = 0x0020,  /* One key has expired. */
+    GPGME_SIGSUM_SIG_EXPIRED = 0x0040,  /* The signature has expired. */
+    GPGME_SIGSUM_KEY_MISSING = 0x0080,  /* Can't verify: key missing. */
+    GPGME_SIGSUM_CRL_MISSING = 0x0100,  /* CRL not available. */
+    GPGME_SIGSUM_CRL_TOO_OLD = 0x0200,  /* Available CRL is too old. */
+    GPGME_SIGSUM_BAD_POLICY  = 0x0400,  /* A policy was not met. */
+    GPGME_SIGSUM_SYS_ERROR   = 0x0800   /* A system error occured. */
+  };
+
+
 /* The available signature modes.  */
 typedef enum
   {
@@ -177,7 +194,9 @@ typedef enum
     GPGME_ATTR_SERIAL       = 26,
     GPGME_ATTR_ISSUER       = 27,
     GPGME_ATTR_CHAINID      = 28,
-    GPGME_ATTR_SIG_STATUS   = 29
+    GPGME_ATTR_SIG_STATUS   = 29,
+    GPGME_ATTR_ERRTOK       = 30,
+    GPGME_ATTR_SIG_SUMMARY  = 31
   }
 GpgmeAttr;
 

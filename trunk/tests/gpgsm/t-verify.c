@@ -118,8 +118,9 @@ print_sig_stat ( GpgmeCtx ctx, GpgmeSigStat status )
                 idx, (unsigned long)created, 
                 gpgme_get_sig_ulong_attr (ctx, idx, GPGME_ATTR_EXPIRE, 0),
                 status_string(status) );
-        printf ("sig %d: fpr/keyid: `%s' validity: %s\n",
+        printf ("sig %d: fpr/keyid: `%s' exterr: `%s' validity: %s\n",
                 idx, s,
+                gpgme_get_sig_string_attr (ctx, idx, GPGME_ATTR_ERRTOK, 0),
                 validity_string (gpgme_get_sig_ulong_attr
                                  (ctx, idx, GPGME_ATTR_VALIDITY, 0)) );
         if ( !gpgme_get_sig_key (ctx, idx, &key) ) {

@@ -102,7 +102,9 @@ typedef enum  {
     STATUS_ALREADY_SIGNED     ,
     STATUS_SIGEXPIRED         ,
     STATUS_EXPSIG             ,
-    STATUS_EXPKEYSIG
+    STATUS_EXPKEYSIG          ,
+    STATUS_TRUNCATED          ,
+    STATUS_ERROR              ,
 } GpgStatusCode;
 
 typedef void (*GpgStatusHandler)( GpgmeCtx, GpgStatusCode code, char *args ); 
