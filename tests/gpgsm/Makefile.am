@@ -32,7 +32,7 @@ EXTRA_DIST = cert_dfn_pca01.der cert_dfn_pca15.der cert_g10code_test1.der \
 INCLUDES = -I$(top_srcdir)/gpgme
 
 AM_CPPFLAGS = @GPG_ERROR_CFLAGS@
-LDADD = ../../gpgme/libgpgme.la @GPG_ERROR_LIBS@
+LDADD = ../../gpgme/libgpgme.la
 
 # We don't run t-genkey in the test suite, because it takes too long
 # and needs a working pinentry.
