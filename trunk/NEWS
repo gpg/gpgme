@@ -198,7 +198,7 @@ Noteworthy changes in version 0.4.1 (unreleased)
 
  * The new gpgme_op_sign_result function provides detailed information
    about the result of a signing operation in gpgme_sign_result_t,
-   gpgme_invalid_user_id_t and gpgme_new_signature_t objects.
+   gpgme_invalid_key_t and gpgme_new_signature_t objects.
 
  * The new gpgme_op_encrypt_result function provides detailed
    information about the result of an encryption operation in
@@ -352,7 +352,7 @@ gpgme_import_status_t		NEW
 gpgme_import_result_t		NEW
 gpgme_pubkey_algo_t		NEW
 gpgme_hash_algo_t		NEW
-gpgme_invalid_user_id_t		NEW
+gpgme_invalid_key_t		NEW
 gpgme_new_signature_t		NEW
 gpgme_sign_result_t		NEW
 gpgme_op_sign_result		NEW

@@ -34,7 +34,7 @@ check_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
   if (result->invalid_signers)
     {
       fprintf (stderr, "Invalid signer found: %s\n",
-	       result->invalid_signers->id);
+	       result->invalid_signers->fpr);
       exit (1);
     }
   if (!result->signatures || result->signatures->next)
@@ -117,7 +117,7 @@ main (int argc, char **argv)
   if (result->invalid_recipients)
     {
       fprintf (stderr, "Invalid recipient encountered: %s\n",
-	       result->invalid_recipients->id);
+	       result->invalid_recipients->fpr);
       exit (1);
     }
   sign_result = gpgme_op_sign_result (ctx);

@@ -49,10 +49,9 @@ gpgme_error_t _gpgme_op_data_lookup (gpgme_ctx_t ctx, ctx_op_data_id_t type,
 /* Prepare a new operation on CTX.  */
 gpgme_error_t _gpgme_op_reset (gpgme_ctx_t ctx, int synchronous);
 
-/* Parse the invalid user ID status line in ARGS and return the result
-   in USERID.  */
-gpgme_error_t _gpgme_parse_inv_userid (char *args,
-				       gpgme_invalid_user_id_t *userid);
+/* Parse the INV_RECP status line in ARGS and return the result in
+   KEY.  */
+gpgme_error_t _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key);
 
 
 /* From verify.c.  */

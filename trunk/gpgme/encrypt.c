@@ -37,7 +37,7 @@ typedef struct
   /* A pointer to the next pointer of the last invalid recipient in
      the list.  This makes appending new invalid recipients painless
      while preserving the order.  */
-  gpgme_invalid_user_id_t *lastp;
+  gpgme_invalid_key_t *lastp;
 } *op_data_t;
 
 
@@ -45,12 +45,13 @@ static void
 release_op_data (void *hook)
 {
   op_data_t opd = (op_data_t) hook;
-  gpgme_invalid_user_id_t invalid_recipient = opd->result.invalid_recipients;
+  gpgme_invalid_key_t invalid_recipient = opd->result.invalid_recipients;
 
   while (invalid_recipient)
     {
-      gpgme_invalid_user_id_t next = invalid_recipient->next;
-      free (invalid_recipient->id);
+      gpgme_invalid_key_t next = invalid_recipient->next;
+      if (invalid_recipient->fpr)
+	free (invalid_recipient->fpr);
       invalid_recipient = next;
     }
 }
@@ -95,7 +96,7 @@ _gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
       break;
 
     case GPGME_STATUS_INV_RECP:
-      err = _gpgme_parse_inv_userid (args, opd->lastp);
+      err = _gpgme_parse_inv_recp (args, opd->lastp);
       if (err)
 	return err;
 

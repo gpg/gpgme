@@ -142,11 +142,11 @@ int gpgme_err_code_to_errno (gpgme_err_code_t code);
   
 /* Return an error value with the error source SOURCE and the system
    error ERR.  */
-gpgme_error_t gpgme_err_make_from_errno (gpg_err_source_t source, int err);
+gpgme_error_t gpgme_err_make_from_errno (gpgme_err_source_t source, int err);
 
 
 /* Return an error value with the system error ERR.  */
-gpgme_err_code_t gpg_error_from_errno (int err);
+gpgme_err_code_t gpgme_error_from_errno (int err);
 
 
 /* The possible encoding mode of gpgme_data_t objects.  */
@@ -968,20 +968,20 @@ unsigned long gpgme_key_sig_get_ulong_attr (gpgme_key_t key, int uid_idx,
 
 /* Crypto Operations.  */
 
-struct _gpgme_invalid_user_id
+struct _gpgme_invalid_key
 {
-  struct _gpgme_invalid_user_id *next;
-  char *id;
+  struct _gpgme_invalid_key *next;
+  char *fpr;
   gpgme_error_t reason;
 };
-typedef struct _gpgme_invalid_user_id *gpgme_invalid_user_id_t;
+typedef struct _gpgme_invalid_key *gpgme_invalid_key_t;
 
 
 /* Encryption.  */
 struct _gpgme_op_encrypt_result
 {
   /* The list of invalid recipients.  */
-  gpgme_invalid_user_id_t invalid_recipients;
+  gpgme_invalid_key_t invalid_recipients;
 };
 typedef struct _gpgme_op_encrypt_result *gpgme_encrypt_result_t;
 
@@ -1059,7 +1059,7 @@ typedef struct _gpgme_new_signature *gpgme_new_signature_t;
 struct _gpgme_op_sign_result
 {
   /* The list of invalid signers.  */
-  gpgme_invalid_user_id_t invalid_signers;
+  gpgme_invalid_key_t invalid_signers;
   gpgme_new_signature_t signatures;
 };
 typedef struct _gpgme_op_sign_result *gpgme_sign_result_t;
@@ -1466,7 +1466,6 @@ typedef gpgme_data_write_cb_t GpgmeDataWriteCb _GPGME_DEPRECATED;
 typedef gpgme_data_seek_cb_t GpgmeDataSeekCb _GPGME_DEPRECATED;
 typedef gpgme_data_release_cb_t GpgmeDataReleaseCb _GPGME_DEPRECATED;
 #define GpgmeDataCbs gpgme_data_cbs
-typedef gpgme_invalid_user_id_t GpgmeInvalidUserID _GPGME_DEPRECATED;
 typedef gpgme_encrypt_result_t GpgmeEncryptResult _GPGME_DEPRECATED;
 typedef gpgme_sig_notation_t GpgmeSigNotation _GPGME_DEPRECATED;
 typedef	gpgme_signature_t GpgmeSignature _GPGME_DEPRECATED;

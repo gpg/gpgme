@@ -113,22 +113,22 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
 
 
 gpgme_error_t
-_gpgme_parse_inv_userid (char *args, gpgme_invalid_user_id_t *userid)
+_gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
 {
-  gpgme_invalid_user_id_t inv_userid;
+  gpgme_invalid_key_t inv_key;
   char *tail;
   long int reason;
 
-  inv_userid = malloc (sizeof (*inv_userid));
-  if (!inv_userid)
+  inv_key = malloc (sizeof (*inv_key));
+  if (!inv_key)
     return gpg_error_from_errno (errno);
-  inv_userid->next = NULL;
+  inv_key->next = NULL;
   errno = 0;
   reason = strtol (args, &tail, 0);
   if (errno || args == tail || *tail != ' ')
     {
       /* The crypto backend does not behave.  */
-      free (inv_userid);
+      free (inv_key);
       return gpg_error (GPG_ERR_INV_ENGINE);
     }
 
@@ -136,48 +136,47 @@ _gpgme_parse_inv_userid (char *args, gpgme_invalid_user_id_t *userid)
     {
     default:
     case 0:
-      inv_userid->reason = gpg_error (GPG_ERR_GENERAL);
+      inv_key->reason = gpg_error (GPG_ERR_GENERAL);
       break;
 
     case 1:
-      inv_userid->reason = gpg_error (GPG_ERR_NO_PUBKEY);
+      inv_key->reason = gpg_error (GPG_ERR_NO_PUBKEY);
       break;
 
     case 2:
-      /* FIXME: Ambiguous specification.  */
-      inv_userid->reason = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+      inv_key->reason = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
       break;
 
     case 3:
-      inv_userid->reason = gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+      inv_key->reason = gpg_error (GPG_ERR_WRONG_KEY_USAGE);
       break;
 
     case 4:
-      inv_userid->reason = gpg_error (GPG_ERR_CERT_REVOKED);
+      inv_key->reason = gpg_error (GPG_ERR_CERT_REVOKED);
       break;
 
     case 5:
-      inv_userid->reason = gpg_error (GPG_ERR_CERT_EXPIRED);
+      inv_key->reason = gpg_error (GPG_ERR_CERT_EXPIRED);
       break;
 
     case 6:
-      inv_userid->reason = gpg_error (GPG_ERR_NO_CRL_KNOWN);
+      inv_key->reason = gpg_error (GPG_ERR_NO_CRL_KNOWN);
       break;
 
     case 7:
-      inv_userid->reason = gpg_error (GPG_ERR_CRL_TOO_OLD);
+      inv_key->reason = gpg_error (GPG_ERR_CRL_TOO_OLD);
       break;
 
     case 8:
-      inv_userid->reason = gpg_error (GPG_ERR_NO_POLICY_MATCH);
+      inv_key->reason = gpg_error (GPG_ERR_NO_POLICY_MATCH);
       break;
 
     case 9:
-      inv_userid->reason = gpg_error (GPG_ERR_NO_SECKEY);
+      inv_key->reason = gpg_error (GPG_ERR_NO_SECKEY);
       break;
 
     case 10:
-      inv_userid->reason = gpg_error (GPG_ERR_PUBKEY_NOT_TRUSTED);
+      inv_key->reason = gpg_error (GPG_ERR_PUBKEY_NOT_TRUSTED);
       break;
     }
 
@@ -185,17 +184,17 @@ _gpgme_parse_inv_userid (char *args, gpgme_invalid_user_id_t *userid)
     tail++;
   if (*tail)
     {
-      inv_userid->id = strdup (tail);
-      if (!inv_userid->id)
+      inv_key->fpr = strdup (tail);
+      if (!inv_key->fpr)
 	{
 	  int saved_errno = errno;
-	  free (inv_userid);
+	  free (inv_key);
 	  return gpg_error_from_errno (saved_errno);
 	}
     }
   else
-    inv_userid->id = NULL;
+    inv_key->fpr = NULL;
 
-  *userid = inv_userid;
+  *key = inv_key;
   return 0;
 }

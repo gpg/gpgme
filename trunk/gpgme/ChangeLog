@@ -1,5 +1,18 @@
 2003-06-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* op-support.c (_gpgme_parse_inv_userid): Rename to
+	_gpgme_parse_inv_recp and change to new datatype.
+	* ops.h (_gpgme_parse_inv_key): Fix prototype.
+	* gpgme.h (struct _gpgme_invalid_user_id): Rename to
+	__gpgme_invalid_key.  Rename field ID to KEY.
+	(gpgme_invalid_user_id_t): Rename to gpgme_invalid_key_t.
+	(struct _gpgme_op_encrypt_result): Here, too.
+	(struct _gpgme_op_sign_result): Likewise.
+	* encrypt.c (struct op_data): Likewise.
+	(release_op_data): Likewise.
+	* sign.c (struct op_data): Likewise.
+	(release_op_data): Likewise.
+
 	* posix-io.c (_gpgme_io_read): Save errno across debug calls.
 	(_gpgme_io_write): Likewise.
 	(_gpgme_io_pipe): Likewise.
