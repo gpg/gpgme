@@ -1,3 +1,7 @@
+2003-01-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgme_la_DEPENDENCIES): Correct bug in last change.
+
 2002-12-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (gpgme_op_verify, gpgme_op_decrypt_verify): Drop R_STAT

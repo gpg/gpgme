@@ -82,7 +82,7 @@ libgpgme_la_SOURCES =							\
 	debug.c debug.h gpgme.c version.c errors.c
 
 libgpgme_la_DEPENDENCIES = ${assuan_libobjs} @LTLIBOBJS@ \
-	$(srcdir)/libgcrypt.vers
+	$(srcdir)/libgpgme.vers
 
 libgpgme_la_LIBADD = ${assuan_libobjs} @LTLIBOBJS@
 
