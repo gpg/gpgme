@@ -6,11 +6,38 @@ Noteworthy changes in version 0.4.1 (unreleased)
  * gpgme_op_verify and gpgme_op_decrypt_verify don't return a status
    summary anymore.  Use gpgme_get_sig_status to retrieve the individual stati.
 
+ * GpgmeIOCb changed from a void function to a function returning a
+   GpgmeError value.  However, it will always return 0, so you can
+   safely ignore the return value.
+
+ * A new I/O callback event GPGME_EVENT_START has been added.  The new
+   requirement is that you must wait until this event until you are
+   allowed to call the I/O callback handlers previously registered for
+   this context operation.  Calling I/O callback functions for this
+   context operation before the start event happened is unsafe because
+   it can lead to race conditions in a multi-threaded environment.
+
+ * The idle function feature has been removed.  It was not precisely
+   defined in a multi-threaded environment and is obsoleted by the
+   user I/O callback functions.  If you still need a simple way to
+   call something while waiting on one or multiple asynchronous
+   operations to complete, don't set the HANG flag in gpgme_wait (note
+   that this will return to your program more often than the idle
+   function did).
+
+ * gpgme_wait can return NULL even if hang is true, if an error
+   occurs.  In that case *status contains the error code.
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
+GpgmeEventIO			CHANGED: New event type (all numbers changed).
 gpgme_key_get_string_attr	CHANGED: Don't handle GPGME_ATTR_IS_SECRET.
 gpgme_op_verify			CHANGED: Drop R_STAT argument.
 gpgme_op_decrypt_verify		CHANGED: Drop R_STAT argument.
+gpgme_wait			CHANGED: Can return NULL even if hang is true.
+GpgmeIdleFunc                   REMOVED
+gpgme_register_idle             REMOVED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)

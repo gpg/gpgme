@@ -1,4 +1,4 @@
-/* trustlist.c -  key listing
+/* trustlist.c - Trust item listing.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002 g10 Code GmbH
 
@@ -52,12 +52,9 @@ trust_item_new (void)
 }
 
 
-static void
+static GpgmeError
 trustlist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  if (ctx->error)
-    return;
-
   switch (code)
     {
     case GPGME_STATUS_EOF:
@@ -66,6 +63,7 @@ trustlist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
     default:
       break;
     }
+  return 0;
 }
 
 
@@ -80,17 +78,15 @@ trustlist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
    counter and only available on U lines CC is the same for the
    complete count NAME ist the username and only printed on U
    lines.  */
-static void
+static GpgmeError
 trustlist_colon_handler (GpgmeCtx ctx, char *line)
 {
   char *p, *pend;
   int field = 0;
   GpgmeTrustItem item = NULL;
 
-  if (ctx->error)
-    return;
   if (!line)
-    return; /* EOF */
+    return 0; /* EOF */
 
   for (p = line; p; p = pend)
     {
@@ -104,10 +100,7 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
 	case 1: /* level */
 	  item = trust_item_new ();
 	  if (!item)
-	    {
-	      ctx->error = mk_error (Out_Of_Core);
-	      return;
-            }
+	    return mk_error (Out_Of_Core);
 	  item->level = atoi (p);
 	  break;
 	case 2: /* long keyid */
@@ -128,13 +121,14 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
 	case 9: /* user ID */
 	  item->name = strdup (p);
 	  if (!item->name)
-	    ctx->error = mk_error (Out_Of_Core);
+	    return mk_error (Out_Of_Core);
 	  break;
         }
     }
 
   if (item)
     _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_NEXT_TRUSTITEM, item);
+  return 0;
 }
 
 
@@ -145,13 +139,14 @@ _gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data)
   GpgmeTrustItem item = (GpgmeTrustItem) type_data;
   struct trust_queue_item_s *q, *q2;
 
-  assert (type == GPGME_EVENT_NEXT_KEY);
+  assert (type == GPGME_EVENT_NEXT_TRUSTITEM);
 
   q = malloc (sizeof *q);
   if (!q)
     {
       gpgme_trust_item_release (item);
-      ctx->error = mk_error (Out_Of_Core);
+      /* FIXME */
+      /* ctx->error = mk_error (Out_Of_Core); */
       return;
     }
   q->item = item;
@@ -215,8 +210,6 @@ gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
     return mk_error (Invalid_Value);
   if (!ctx->pending)
     return mk_error (No_Request);
-  if (ctx->error)
-    return ctx->error;
 
   if (!ctx->trust_queue)
     {
@@ -266,8 +259,6 @@ gpgme_op_trustlist_end (GpgmeCtx ctx)
     return mk_error (Invalid_Value);
   if (!ctx->pending)
     return mk_error (No_Request);
-  if (ctx->error)
-    return ctx->error;
 
   ctx->pending = 0;
   return 0;

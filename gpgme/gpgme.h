@@ -424,7 +424,7 @@ char *gpgme_get_op_info (GpgmeCtx ctx, int reserved);
 /* Run control.  */
 
 /* The type of an I/O callback function.  */
-typedef void (*GpgmeIOCb) (void *data, int fd);
+typedef GpgmeError (*GpgmeIOCb) (void *data, int fd);
 
 /* The type of a function that can register FNC as the I/O callback
    function for the file descriptor FD with direction dir (0: for writing,
@@ -440,7 +440,8 @@ typedef GpgmeError (*GpgmeRegisterIOCb) (void *data, int fd, int dir,
    function.  */
 typedef void (*GpgmeRemoveIOCb) (void *tag);
 
-typedef enum { GPGME_EVENT_DONE,
+typedef enum { GPGME_EVENT_START,
+	       GPGME_EVENT_DONE,
 	       GPGME_EVENT_NEXT_KEY,
 	       GPGME_EVENT_NEXT_TRUSTITEM } GpgmeEventIO;
 
@@ -801,10 +802,6 @@ const char *gpgme_get_engine_info (void);
 
 /* Return a string describing ERR.  */
 const char *gpgme_strerror (GpgmeError err);
-
-/* Register an idle function.  */
-typedef void (*GpgmeIdleFunc)(void);
-GpgmeIdleFunc gpgme_register_idle (GpgmeIdleFunc idle);
 
 
 /* Engine support functions.  */

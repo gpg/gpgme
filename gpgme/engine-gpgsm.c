@@ -125,49 +125,32 @@ static void
 close_notify_handler (int fd, void *opaque)
 {
   GpgsmObject gpgsm = opaque;
-  int possibly_done = 0;
 
   assert (fd != -1);
   if (gpgsm->status_cb.fd == fd)
     {
       if (gpgsm->status_cb.tag)
-	{
-	  (*gpgsm->io_cbs.remove) (gpgsm->status_cb.tag);
-	  possibly_done = 1;
-	}
+	(*gpgsm->io_cbs.remove) (gpgsm->status_cb.tag);
       gpgsm->status_cb.fd = -1;
     }
   else if (gpgsm->input_cb.fd == fd)
     {
       if (gpgsm->input_cb.tag)
-	{
-	  (*gpgsm->io_cbs.remove) (gpgsm->input_cb.tag);
-	  possibly_done = 1;
-	}
+	(*gpgsm->io_cbs.remove) (gpgsm->input_cb.tag);
       gpgsm->input_cb.fd = -1;
     }
   else if (gpgsm->output_cb.fd == fd)
     {
       if (gpgsm->output_cb.tag)
-	{      
-	  (*gpgsm->io_cbs.remove) (gpgsm->output_cb.tag);
-	  possibly_done = 1;
-	}
+	(*gpgsm->io_cbs.remove) (gpgsm->output_cb.tag);
       gpgsm->output_cb.fd = -1;
     }
   else if (gpgsm->message_cb.fd == fd)
     {
       if (gpgsm->message_cb.tag)
-	{
-	  (*gpgsm->io_cbs.remove) (gpgsm->message_cb.tag);
-	  possibly_done = 1;
-	}
+	(*gpgsm->io_cbs.remove) (gpgsm->message_cb.tag);
       gpgsm->message_cb.fd = -1;
     }
-  if (possibly_done && gpgsm->io_cbs.event
-      && gpgsm->status_cb.fd == -1 && gpgsm->input_cb.fd == -1
-      && gpgsm->output_cb.fd == -1 && gpgsm->message_cb.fd == -1)
-    (*gpgsm->io_cbs.event) (gpgsm->io_cbs.event_priv, GPGME_EVENT_DONE, NULL);
 }
 
 
@@ -677,68 +660,57 @@ parse_status (const char *name)
 }
 
 
-static void
+static GpgmeError
 status_handler (void *opaque, int fd)
 {
-  AssuanError err;
+  AssuanError assuan_err;
+  GpgmeError err = 0;
   GpgsmObject gpgsm = opaque;
   char *line;
   size_t linelen;
 
   do
     {
-      err = assuan_read_line (gpgsm->assuan_ctx, &line, &linelen);
-
-      if (err
-          || (linelen >= 2
-              && line[0] == 'O' && line[1] == 'K'
-              && (line[2] == '\0' || line[2] == ' '))
-	  || (linelen >= 3
-	      && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
-	      && (line[3] == '\0' || line[3] == ' ')))
+      assuan_err = assuan_read_line (gpgsm->assuan_ctx, &line, &linelen);
+      if (assuan_err)
 	{
-	  /* XXX: If an error occured, find out what happened, then
-	     save the error value before running the status handler
-	     (so it takes precedence).  */
-	  if (!err && line[0] == 'E' && line[3] == ' ')
-	    {
-	      err = map_assuan_error (atoi (&line[4]));
-	      if (!err)
-		err = mk_error (General_Error);
-	    }
-	  if (err)
-	    {
-	      /* XXX Kludge ahead.  We really, really, really must not
-		 make use of status.fnc_value.  */
-	      GpgmeCtx ctx = (GpgmeCtx) gpgsm->status.fnc_value;
-	      if (!ctx->error)
-		ctx->error = err;
-	    }
-
+	  /* Try our best to terminate the connection friendly.  */
+	  assuan_write_line (gpgsm->assuan_ctx, "BYE");
+	  err = map_assuan_error (assuan_err);
+	}
+      else if (linelen >= 3
+	       && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
+	       && (line[3] == '\0' || line[3] == ' '))
+	{
+	  if (line[3] == ' ')
+	    err = map_assuan_error (atoi (&line[4]));
+	  else
+	    err = mk_error (General_Error);
+	}
+      else if (linelen >= 2
+	       && line[0] == 'O' && line[1] == 'K'
+	       && (line[2] == '\0' || line[2] == ' '))
+	{
 	  if (gpgsm->status.fnc)
-	    gpgsm->status.fnc (gpgsm->status.fnc_value, GPGME_STATUS_EOF, "");
-	  if (gpgsm->colon.fnc && gpgsm->colon.any )
+	    err = gpgsm->status.fnc (gpgsm->status.fnc_value,
+				     GPGME_STATUS_EOF, "");
+	  
+	  if (!err && gpgsm->colon.fnc && gpgsm->colon.any )
             {
-              /* We must tell a colon fucntion about the EOF. We do
+              /* We must tell a colon function about the EOF. We do
                  this only when we have seen any data lines.  Note
                  that this inlined use of colon data lines will
                  eventually be changed into using a regular data
                  channel. */
               gpgsm->colon.any = 0;
-              gpgsm->colon.fnc (gpgsm->colon.fnc_value, NULL);
+              err = gpgsm->colon.fnc (gpgsm->colon.fnc_value, NULL);
             }
-
-	  /* XXX: Try our best to terminate the connection.  */
-	  if (err)
-	    assuan_write_line (gpgsm->assuan_ctx, "BYE");
-
 	  _gpgme_io_close (gpgsm->status_cb.fd);
-	  return;
+	  return err;
 	}
-
-      if (linelen > 2
-	  && line[0] == 'D' && line[1] == ' '
-          && gpgsm->colon.fnc)
+      else if (linelen > 2
+	       && line[0] == 'D' && line[1] == ' '
+	       && gpgsm->colon.fnc)
         {
 	  /* We are using the colon handler even for plain inline data
              - strange name for that function but for historic reasons
@@ -756,59 +728,64 @@ status_handler (void *opaque, int fd)
 	      < *alinelen + linelen + 1)
 	    {
 	      unsigned char *newline = realloc (*aline,
-						    *alinelen + linelen + 1);
+						*alinelen + linelen + 1);
 	      if (!newline)
-		{
-		  _gpgme_io_close (gpgsm->status_cb.fd);
-		  return;
-		}
-	      *aline = newline;
-	      gpgsm->colon.attic.linesize += linelen + 1;
-	    }
-
-	  dst = *aline + *alinelen;
-
-          while (src < end)
-            {
-              if (*src == '%' && src + 2 < end)
-                {
-		  /* Handle escaped characters.  */
-		  ++src;
-                  *dst = xtoi_2 (src);
-		  (*alinelen)++;
-                  src += 2;
-                }
-              else
-		{
-		  *dst = *src++;
-		  (*alinelen)++;
-		}
-
-	      if (*dst == '\n')
-		{
-		  /* Terminate the pending line, pass it to the colon
-		     handler and reset it.  */
-
-                  gpgsm->colon.any = 1;
-		  if (*alinelen > 1 && *(dst - 1) == '\r')
-		    dst--;
-		  *dst = '\0';
-
-		  /* FIXME How should we handle the return code? */
-		  gpgsm->colon.fnc (gpgsm->colon.fnc_value, *aline);
-		  dst = *aline;
-		  *alinelen = 0;
-		}
+		err = mk_error (Out_Of_Core);
 	      else
-		dst++;
-            }
+		{
+		  *aline = newline;
+		  gpgsm->colon.attic.linesize += linelen + 1;
+		}
+	    }
+	  if (!err)
+	    {
+	      dst = *aline + *alinelen;
+
+	      while (!err && src < end)
+		{
+		  if (*src == '%' && src + 2 < end)
+		    {
+		      /* Handle escaped characters.  */
+		      ++src;
+		      *dst = xtoi_2 (src);
+		      (*alinelen)++;
+		      src += 2;
+		    }
+		  else
+		    {
+		      *dst = *src++;
+		      (*alinelen)++;
+		    }
+		  
+		  if (*dst == '\n')
+		    {
+		      /* Terminate the pending line, pass it to the colon
+			 handler and reset it.  */
+		      
+		      gpgsm->colon.any = 1;
+		      if (*alinelen > 1 && *(dst - 1) == '\r')
+			dst--;
+		      *dst = '\0';
+
+		      /* FIXME How should we handle the return code?  */
+		      err = gpgsm->colon.fnc (gpgsm->colon.fnc_value, *aline);
+		      if (!err)
+			{
+			  dst = *aline;
+			  *alinelen = 0;
+			}
+		    }
+		  else
+		    dst++;
+		}
+	    }
         }
       else if (linelen > 2
-	  && line[0] == 'S' && line[1] == ' ')
+	       && line[0] == 'S' && line[1] == ' ')
 	{
 	  char *rest;
 	  GpgmeStatusCode r;
-
+	  
 	  rest = strchr (line + 2, ' ');
 	  if (!rest)
 	    rest = line + linelen; /* set to an empty string */
@@ -820,13 +797,16 @@ status_handler (void *opaque, int fd)
 	  if (r >= 0)
 	    {
 	      if (gpgsm->status.fnc)
-		gpgsm->status.fnc (gpgsm->status.fnc_value, r, rest);
+		err = gpgsm->status.fnc (gpgsm->status.fnc_value, r, rest);
 	    }
 	  else
 	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", line + 2, rest);
 	}
     }
-  while (assuan_pending_line (gpgsm->assuan_ctx));
+  while (!err && assuan_pending_line (gpgsm->assuan_ctx));
+	  
+  _gpgme_io_close (gpgsm->status_cb.fd);
+  return err;
 }
 
 
@@ -862,6 +842,8 @@ start (GpgsmObject gpgsm, const char *command)
 
   if (!err)
     err = assuan_write_line (gpgsm->assuan_ctx, command);
+
+  (*gpgsm->io_cbs.event) (gpgsm->io_cbs.event_priv, GPGME_EVENT_START, NULL);
 
   return err;
 }

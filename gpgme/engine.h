@@ -35,7 +35,8 @@ const char *_gpgme_engine_get_info (GpgmeProtocol proto);
 GpgmeError _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine);
 void _gpgme_engine_release (EngineObject engine);
 void _gpgme_engine_set_status_handler (EngineObject engine,
-				       GpgmeStatusHandler fnc, void *fnc_value);
+				       GpgmeStatusHandler fnc,
+				       void *fnc_value);
 GpgmeError _gpgme_engine_set_command_handler (EngineObject engine,
 					      GpgmeCommandHandler fnc,
 					      void *fnc_value,
@@ -80,7 +81,8 @@ GpgmeError _gpgme_engine_op_sign (EngineObject engine, GpgmeData in,
 GpgmeError _gpgme_engine_op_trustlist (EngineObject engine,
 				       const char *pattern);
 GpgmeError _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
-				    GpgmeData signed_text, GpgmeData plaintext);
+				    GpgmeData signed_text,
+				    GpgmeData plaintext);
 
 void _gpgme_engine_set_io_cbs (EngineObject engine,
 			       struct GpgmeIOCbs *io_cbs);

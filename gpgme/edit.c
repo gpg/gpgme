@@ -1,4 +1,4 @@
-/* edit.c - key edit functions
+/* edit.c - Key edit functions.
    Copyright (C) 2002 g10 Code GmbH
 
    This file is part of GPGME.
@@ -20,9 +20,7 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 
 #include "util.h"
@@ -44,30 +42,37 @@ _gpgme_release_edit_result (EditResult result)
   free (result);
 }
 
-void
-_gpgme_edit_status_handler (GpgmeCtx ctx, GpgmeStatusCode status, char *args)
+
+static GpgmeError
+edit_status_handler (GpgmeCtx ctx, GpgmeStatusCode status, char *args)
 {
-  _gpgme_passphrase_status_handler (ctx, status, args);
+  GpgmeError err = _gpgme_passphrase_status_handler (ctx, status, args);
+  if (err)
+    return err;
 
-  if (ctx->error)
-    return;
-
-  ctx->error = (*ctx->result.edit->fnc) (ctx->result.edit->fnc_value, status, args, NULL);
+  return (*ctx->result.edit->fnc) (ctx->result.edit->fnc_value, status,
+				   args, NULL);
 }
 
-static const char *
-command_handler (void *opaque, GpgmeStatusCode status, const char *args)
-{
-  GpgmeCtx ctx = opaque;
-  const char *result;
 
-  result = _gpgme_passphrase_command_handler (ctx, status, args);
+static GpgmeError
+command_handler (void *opaque, GpgmeStatusCode status, const char *args,
+		 const char **result)
+{
+  GpgmeError err;
+  GpgmeCtx ctx = opaque;
+
+  err = _gpgme_passphrase_command_handler (ctx, status, args, result);
+  if (err)
+    return err;
 
   if (!result)
-    ctx->error = (*ctx->result.edit->fnc) (ctx->result.edit->fnc_value, status, args, &result);
+    err = (*ctx->result.edit->fnc) (ctx->result.edit->fnc_value, status,
+				    args, result);
 
-  return result;
+  return err;
 }
+
 
 static GpgmeError
 _gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
@@ -106,8 +111,7 @@ _gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
   if (err)
     goto leave;
 
-  _gpgme_engine_set_status_handler (ctx->engine, _gpgme_edit_status_handler,
-				    ctx);
+  _gpgme_engine_set_status_handler (ctx->engine, edit_status_handler, ctx);
 
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 

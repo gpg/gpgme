@@ -31,11 +31,13 @@
 #include "ops.h"
 
 
-static void
+static GpgmeError
 decrypt_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  _gpgme_decrypt_status_handler (ctx, code, args);
-  _gpgme_verify_status_handler (ctx, code, args);
+  GpgmeError err = _gpgme_decrypt_status_handler (ctx, code, args);
+  if (err)
+    return err;
+  return _gpgme_verify_status_handler (ctx, code, args);
 }
 
 

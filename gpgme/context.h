@@ -49,9 +49,6 @@ struct gpgme_context_s
 
   int use_cms;
 
-  /* At some points we need to remember an error which we can't report
-     immediately.  */
-  GpgmeError error;
   /* Cancel operation requested.  */
   int cancel;
 
@@ -105,7 +102,7 @@ struct gpgme_context_s
   void *progress_cb_value;
 
   /* A list of file descriptors in active use by the current
-     (synchronous) operation.  */
+     operation.  */
   struct fd_table fdt;
   struct GpgmeIOCbs io_cbs;
   

@@ -22,6 +22,7 @@
 #endif
 
 #include <stdlib.h>
+#include <assert.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -158,65 +159,58 @@ gpgme_data_set_encoding (GpgmeData dh, GpgmeDataEncoding enc)
 
 /* Functions to support the wait interface.  */
 
-void
+GpgmeError
 _gpgme_data_inbound_handler (void *opaque, int fd)
 {
-  GpgmeData dh = opaque;
-  GpgmeError err;
+  GpgmeData dh = (GpgmeData) opaque;
   char buffer[BUFFER_SIZE];
   ssize_t buflen;
 
+  assert (dh);
+
   buflen = read (fd, buffer, BUFFER_SIZE);
-  if (buflen <= 0)
+  if (buflen < 0)
+    return mk_error (File_Error);
+  if (buflen == 0)
     {
       _gpgme_io_close (fd);
-      return;
+      return 0;
     }
 
-  err = _gpgme_data_append (dh, buffer, buflen);
-  if (err)
-    {
-      DEBUG1 ("_gpgme_data_append failed: %s\n", gpgme_strerror (err));
-      /* Fixme: we should close the pipe or read it to /dev/null in
-       * this case.  Returning EOF is not sufficient */
-      _gpgme_io_close (fd);     /* XXX ??? */
-      return;
-    }
-  return;
+  return _gpgme_data_append (dh, buffer, buflen);
 }
 
 
-void
+GpgmeError
 _gpgme_data_outbound_handler (void *opaque, int fd)
 {
-  GpgmeData dh = opaque;
+  GpgmeData dh = (GpgmeData) opaque;
   ssize_t nwritten;
+
+  assert (dh);
 
   if (!dh->pending_len)
     {
       ssize_t amt = gpgme_data_read (dh, dh->pending, BUFFER_SIZE);
-      if (amt <= 0)
+      if (amt < 0)
+	return mk_error (File_Error);
+      if (amt == 0)
 	{
 	  _gpgme_io_close (fd);
-	  return;
+	  return 0;
 	}
       dh->pending_len = amt;
     }
 
   nwritten = _gpgme_io_write (fd, dh->pending, dh->pending_len);
   if (nwritten == -1 && errno == EAGAIN )
-    return;
+    return 0;
 
   if (nwritten <= 0)
-    {
-      DEBUG3 ("_gpgme_data_outbound_handler (%d): write failed (n=%d): %s",
-              fd, nwritten, strerror (errno));
-      _gpgme_io_close (fd);
-      return;
-    }
+    return mk_error (File_Error);
 
   if (nwritten < dh->pending_len)
     memmove (dh->pending, dh->pending + nwritten, dh->pending_len - nwritten);
   dh->pending_len -= nwritten;
-  return;
+  return 0;
 }

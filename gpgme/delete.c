@@ -1,4 +1,4 @@
-/* delete.c -  delete a key 
+/* delete.c - Delete a key.
    Copyright (C) 2001, 2002 g10 Code GmbH
 
    This file is part of GPGME.
@@ -20,11 +20,7 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <assert.h>
 
 #include "util.h"
 #include "context.h"
@@ -56,11 +52,9 @@ _gpgme_release_delete_result (DeleteResult result)
 }
 
 
-static void
+static GpgmeError
 delete_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  if (ctx->error)
-    return;
   test_and_allocate_result (ctx, delete);
 
   switch (code)
@@ -71,15 +65,15 @@ delete_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 	case DELETE_No_Problem:
 	  break;
 	case DELETE_No_Such_Key:
-	  ctx->error = mk_error(Invalid_Key);
+	  return mk_error(Invalid_Key);
 	  break;
 	case DELETE_Must_Delete_Secret_Key:
-	  ctx->error = mk_error(Conflict);
+	  return mk_error(Conflict);
 	  break;
 	case DELETE_Ambiguous_Specification:
 	  /* XXX Need better error value.  Fall through.  */
 	default:
-	  ctx->error = mk_error(General_Error);
+	  return mk_error(General_Error);
 	  break;
 	}
       break;
@@ -89,9 +83,9 @@ delete_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       break;
 
     default:
-      /* Ignore all other codes.  */
       break;
     }
+  return 0;
 }
 
 
@@ -119,6 +113,7 @@ _gpgme_op_delete_start (GpgmeCtx ctx, int synchronous,
     }
   return err;
 }
+
 
 GpgmeError
 gpgme_op_delete_start (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)

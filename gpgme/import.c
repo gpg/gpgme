@@ -1,4 +1,4 @@
-/* import.c -  encrypt functions
+/* import.c - Import functions.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002 g10 Code GmbH
 
@@ -21,10 +21,8 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "util.h"
 #include "context.h"
@@ -142,11 +140,9 @@ append_xml_impinfo (GpgmeData *rdh, GpgmeStatusCode code, char *args)
 }
 
 
-static void
+static GpgmeError
 import_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  if (ctx->error)
-    return;
   test_and_allocate_result (ctx, import);
 
   switch (code)
@@ -174,6 +170,7 @@ import_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
     default:
       break;
     }
+  return 0;
 }
 
 

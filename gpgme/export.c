@@ -1,4 +1,4 @@
-/* export.c -  encrypt functions
+/* export.c - Encrypt functions.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002 g10 Code GmbH
 
@@ -21,24 +21,19 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <assert.h>
 
 #include "util.h"
 #include "context.h"
 #include "ops.h"
 
 
-static void
+static GpgmeError
 export_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  if (ctx->error)
-    return;
-
   DEBUG2 ("export_status: code=%d args=`%s'\n", code, args);
   /* FIXME: Need to do more */
+  return 0;
 }
 
 

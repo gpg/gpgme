@@ -1,4 +1,4 @@
-/* encrypt.c -  encrypt functions
+/* encrypt.c - Encrypt functions.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002 g10 Code GmbH
 
@@ -54,11 +54,8 @@ _gpgme_release_encrypt_result (EncryptResult result)
   free (result);
 }
 
-/* 
- * Parse the args and save the information 
- * in an XML structure.
- * With args of NULL the xml structure is closed.
- */
+/* Parse the args and save the information in an XML structure.  With
+   args of NULL the xml structure is closed.  */
 static void
 append_xml_encinfo (GpgmeData *rdh, char *args)
 {
@@ -100,38 +97,24 @@ append_xml_encinfo (GpgmeData *rdh, char *args)
 }
 
 
-static void
-status_handler_finish (GpgmeCtx ctx)
-{
-  if (ctx->result.encrypt->xmlinfo)
-    {
-      append_xml_encinfo (&ctx->result.encrypt->xmlinfo, NULL);
-      _gpgme_set_op_info (ctx, ctx->result.encrypt->xmlinfo);
-      ctx->result.encrypt->xmlinfo = NULL;
-    }
-  if (ctx->error)
-    ; /* already set by kludge in engine-gpgsm */
-  else if (ctx->result.encrypt->no_valid_recipients) 
-    ctx->error = mk_error (No_Recipients);
-  else if (ctx->result.encrypt->invalid_recipients) 
-    ctx->error = mk_error (Invalid_Recipients);
-}
-
-void
+GpgmeError
 _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  if (ctx->error)
-    {
-      if (ctx->result.encrypt) /* check that we have allocated it. */
-        status_handler_finish (ctx);
-      return;
-    }
   test_and_allocate_result (ctx, encrypt);
 
   switch (code)
     {
     case GPGME_STATUS_EOF:
-      status_handler_finish (ctx);
+      if (ctx->result.encrypt->xmlinfo)
+	{
+	  append_xml_encinfo (&ctx->result.encrypt->xmlinfo, NULL);
+	  _gpgme_set_op_info (ctx, ctx->result.encrypt->xmlinfo);
+	  ctx->result.encrypt->xmlinfo = NULL;
+	}
+      if (ctx->result.encrypt->no_valid_recipients) 
+	return mk_error (No_Recipients);
+      else if (ctx->result.encrypt->invalid_recipients) 
+	return mk_error (Invalid_Recipients);
       break;
 
     case GPGME_STATUS_INV_RECP:
@@ -146,13 +129,15 @@ _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
     default:
       break;
     }
+  return 0;
 }
 
 
-void
-_gpgme_encrypt_sym_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
+GpgmeError
+_gpgme_encrypt_sym_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
+				   char *args)
 {
-  _gpgme_passphrase_status_handler (ctx, code, args);
+  return _gpgme_passphrase_status_handler (ctx, code, args);
 }
 
 
@@ -202,7 +187,8 @@ _gpgme_op_encrypt_start (GpgmeCtx ctx, int synchronous,
       goto leave;
     }
 
-  err = _gpgme_engine_op_encrypt (ctx->engine, recp, plain, ciph, ctx->use_armor);
+  err = _gpgme_engine_op_encrypt (ctx->engine, recp, plain, ciph,
+				  ctx->use_armor);
 
  leave:
   if (err)

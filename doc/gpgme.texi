@@ -105,7 +105,7 @@ Preparation
 * Building the Source::           Compiler options to be used.
 * Using Automake::                Compiler options to be used the easy way.
 * Library Version Check::         Getting and verifying the library version.
-* Multi Threading::               How GPGME can be used in an MT environment.
+* Multi Threading::               How @acronym{GPGME} can be used in an MT environment.
 
 Protocols and Engines
 
@@ -191,7 +191,6 @@ Run Control
 
 * Waiting For Completion::        Waiting until an operation is completed.
 * Cancelling an Operation::       Interrupting a running operation.
-* Hooking Up Into Idle Time::     Doing something when nothing has to be done.
 * Using External Event Loops::    Advanced control over what happens when.
 
 Using External Event Loops
@@ -228,7 +227,7 @@ OpenPGP and the Cryptographic Message Syntax (CMS).
 @node Getting Started
 @section Getting Started
 
-This library documents the @acronym{GPGME} library programming
+This manual documents the @acronym{GPGME} library programming
 interface.  All functions and data types provided by the library are
 explained.
 
@@ -315,7 +314,7 @@ of the library are verified.
 * Building the Source::           Compiler options to be used.
 * Using Automake::                Compiler options to be used the easy way.
 * Library Version Check::         Getting and verifying the library version.
-* Multi Threading::               How GPGME can be used in an MT environment.
+* Multi Threading::               How @acronym{GPGME} can be used in an MT environment.
 @end menu
 
 
@@ -541,12 +540,13 @@ initialize_gpgme (void)
 Any @code{GpgmeData}, @code{GpgmeCtx} and @code{GpgmeRecipients}
 object must only be accessed by one thread at a time.  If multiple
 threads want to deal with the same object, the caller has to make sure
-that operations on this object are fully synchronized.
+that operations on that object are fully synchronized.
 
 @item
 Only one thread at any time is allowed to call @code{gpgme_wait}.  If
 multiple threads call this function, the caller must make sure that
-all invocations are fully synchronized.
+all invocations are fully synchronized.  It is safe to start
+asynchronous operations while a thread is running in gpgme_wait.
 @end itemize
 
 
@@ -3012,7 +3012,6 @@ time.
 @menu
 * Waiting For Completion::        Waiting until an operation is completed.
 * Cancelling an Operation::       Interrupting a running operation.
-* Hooking Up Into Idle Time::     Doing something when nothing has to be done.
 * Using External Event Loops::    Advanced control over what happens when.
 @end menu
 
@@ -3050,10 +3049,14 @@ and trust item list operations, do not affect @code{gpgme_wait}.
 In a multi-threaded environment, only one thread should ever call
 @code{gpgme_wait} at any time, irregardless if @var{ctx} is specified
 or not.  This means that all calls to this function should be fully
-synchronized by locking primitives.
+synchronized by locking primitives.  It is safe to start asynchronous
+operations while a thread is running in @code{gpgme_wait}.
 
 The function returns the @var{ctx} of the context which has finished
-the operation.
+the operation.  If @var{hang} is false, and the timeout expires,
+@code{NULL} is returned and @code{*status} will be set to 0.  If an
+error occurs, @code{NULL} is returned and the error is returned in
+@code{*status}.
 @end deftypefun
 
 
@@ -3070,30 +3073,6 @@ might notice the cancellation flag and return.  It is currently not
 guaranteed to work under all circumstances.  Its current primary
 purpose is to prevent asking for a passphrase again in the passphrase
 callback.
-@end deftypefun
-
-
-@node Hooking Up Into Idle Time
-@subsection Hooking Up Into Idle Time
-@cindex idle time
-@cindex idle function
-
-@deftp {Data type} {void (*GpgmeIdleFunc) (void)}
-@tindex GpgmeIdleFunc
-The @code{GpgmeIdleFunc} type is the type of functions usable as
-an idle function that can be registered with @code{gpgme_register_idle}.
-@end deftp
-
-@deftypefun GpgmeIdleFunc gpgme_register_idle (@w{GpgmeIdleFunc @var{idle}})
-The function @code{gpgme_register_idle} can be used to register
-@var{idle} as the idle function.
-
-@var{idle} will be called whenever @acronym{GPGME} thinks that it is
-idle and time can better be spent elsewhere.  Setting @var{idle} to
-@code{NULL} disables use of the idle function (this is the default).
-
-The function returns the old idle function, or @code{NULL} if none was
-registered yet.
 @end deftypefun
 
 
@@ -3139,7 +3118,7 @@ programs.
 @node I/O Callback Interface
 @subsubsection I/O Callback Interface
 
-@deftp {Data type} {void (*GpgmeIOCb) (@w{void *@var{data}}, @w{int @var{fd}})}
+@deftp {Data type} {GpgmeError (*GpgmeIOCb) (@w{void *@var{data}}, @w{int @var{fd}})}
 @tindex GpgmeIOCb
 The @code{GpgmeIOCb} type is the type of functions which
 @acronym{GPGME} wants to register as I/O callback handlers using the
@@ -3149,6 +3128,9 @@ The @code{GpgmeIOCb} type is the type of functions which
 callback handler is registered, and should be passed through to the
 handler when it is invoked by the user because it noticed activity on
 the file descriptor @var{fd}.
+
+The callback handler always returns @code{0}, but you should consider
+the return value to be reserved for later use.
 @end deftp
 
 @deftp {Data type} {GpgmeError (*GpgmeRegisterIOCb) (@w{void *@var{data}}, @w{int @var{fd}}, @w{int @var{dir}}, @w{GpgmeIOCb @var{fnc}}, @w{void *@var{fnc_data}}, @w{void **@var{tag}})}
@@ -3198,6 +3180,12 @@ reported to the user by @acronym{GPGME} as a consequence of an I/O
 operation.  The following events are defined:
 
 @table @code
+@item GPGME_EVENT_START
+The operation is fully initialized now, and you can start to run the
+registered I/O callback handlers now.  Note that registered I/O
+callback handlers must not be run before this event is signalled.
+@var{type_data} is @code{NULL} and reserved for later use.
+
 @item GPGME_EVENT_DONE
 The operation is finished, the last I/O callback for this operation
 was removed.  The accompanying @var{type_data} points to a

@@ -83,14 +83,12 @@ append_xml_keylistinfo (GpgmeData *rdh, char *args)
 }
 
 
-static void
+static GpgmeError
 keylist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  if (ctx->error)
-    return;
   test_and_allocate_result (ctx, keylist);
 
-   switch (code)
+  switch (code)
     {
     case GPGME_STATUS_TRUNCATED:
       ctx->result.keylist->truncated = 1;
@@ -108,9 +106,9 @@ keylist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       break;
 
     default:
-      /* Ignore all other codes.  */
       break;
     }
+  return 0;
 }
 
 
@@ -341,7 +339,7 @@ finish_key (GpgmeCtx ctx)
 
 
 /* Note: We are allowed to modify LINE.  */
-static void
+static GpgmeError
 keylist_colon_handler (GpgmeCtx ctx, char *line)
 {
   enum
@@ -360,14 +358,11 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
   DEBUG3 ("keylist_colon_handler ctx = %p, key = %p, line = %s\n",
 	  ctx, key, line ? line : "(null)");
 
-  if (ctx->error)
-    return;
-
   if (!line)
     {
       /* End Of File.  */
       finish_key (ctx);
-      return; 
+      return 0;
     }
 
   while (line && fields < NR_FIELDS)
@@ -389,30 +384,21 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
       /* Start a new subkey.  */
       rectype = RT_SUB; 
       if (!(subkey = _gpgme_key_add_subkey (key)))
-	{
-	  ctx->error = mk_error (Out_Of_Core);
-	  return;
-	}
+	return mk_error (Out_Of_Core);
     }
   else if (!strcmp (field[0], "ssb") && key)
     {
       /* Start a new secret subkey.  */
       rectype = RT_SSB;
       if (!(subkey = _gpgme_key_add_secret_subkey (key)))
-	{
-	  ctx->error = mk_error (Out_Of_Core);
-	  return;
-	}
+	return mk_error (Out_Of_Core);
     }
   else if (!strcmp (field[0], "pub"))
     {
       /* Start a new keyblock.  */
       if (_gpgme_key_new (&key))
-	{
-	  /* The only kind of error we can get.  */
-	  ctx->error = mk_error (Out_Of_Core);
-	  return;
-	}
+	/* The only kind of error we can get.  */
+	return mk_error (Out_Of_Core);
       rectype = RT_PUB;
       finish_key (ctx);
       assert (!ctx->tmp_key);
@@ -422,11 +408,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
     {
       /* Start a new keyblock,  */
       if (_gpgme_key_new_secret (&key))
-	{
-	  /* The only kind of error we can get.  */
-	  ctx->error = mk_error (Out_Of_Core);
-	  return;
-	}
+	return mk_error (Out_Of_Core);
       rectype = RT_SEC;
       finish_key (ctx);
       assert (!ctx->tmp_key);
@@ -436,11 +418,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
     {
       /* Start a new certificate.  */
       if (_gpgme_key_new (&key))
-	{
-	  /* The only kind of error we can get.  */
-	  ctx->error = mk_error (Out_Of_Core);
-	  return;
-	}
+	return mk_error (Out_Of_Core);
       key->x509 = 1;
       rectype = RT_CRT;
       finish_key (ctx);
@@ -451,11 +429,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
     {
       /* Start a new certificate.  */
       if (_gpgme_key_new_secret (&key))
-	{
-	  /* The only kind of error we can get.  */
-	  ctx->error = mk_error (Out_Of_Core);
-	  return;
-	}
+	return mk_error (Out_Of_Core);
       key->x509 = 1;
       rectype = RT_CRS;
       finish_key (ctx);
@@ -482,14 +456,14 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	{
 	  key->issuer_serial = strdup (field[7]);
 	  if (!key->issuer_serial)
-	    ctx->error = mk_error (Out_Of_Core);
+	    return mk_error (Out_Of_Core);
 	}
 
       /* Field 10 is not used for gpg due to --fixed-list-mode option
 	 but GPGSM stores the issuer name.  */
       if (fields >= 10 && _gpgme_decode_c_string (field[9],
 						  &key->issuer_name, 0))
-	  ctx->error = mk_error (Out_Of_Core);
+	return mk_error (Out_Of_Core);
       /* Fall through!  */
 
     case RT_PUB:
@@ -589,7 +563,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
       if (fields >= 10)
 	{
 	  if (_gpgme_key_append_name (key, field[9]))
-	    ctx->error = mk_error (Out_Of_Core);
+	    return mk_error (Out_Of_Core);
 	  else
 	    {
 	      if (field[1])
@@ -605,7 +579,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	{
 	  key->keys.fingerprint = strdup (field[9]);
 	  if (!key->keys.fingerprint)
-	    ctx->error = mk_error (Out_Of_Core);
+	    return mk_error (Out_Of_Core);
 	}
 
       /* Field 13 has the gpgsm chain ID (take only the first one).  */
@@ -613,23 +587,20 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	{
 	  key->chain_id = strdup (field[12]);
 	  if (!key->chain_id)
-	    ctx->error = mk_error (Out_Of_Core);
+	    return mk_error (Out_Of_Core);
 	}
       break;
 
     case RT_SIG:
     case RT_REV:
       if (!ctx->tmp_uid)
-	return;
+	return 0;
 
       /* Start a new (revoked) signature.  */
       assert (ctx->tmp_uid == key->last_uid);
       certsig = _gpgme_key_add_certsig (key, (fields >= 10) ? field[9] : NULL);
       if (!certsig)
-	{
-	  ctx->error = mk_error (Out_Of_Core);
-	  return;
-	}
+	return mk_error (Out_Of_Core);
 
       /* Field 2 has the calculated trust ('!', '-', '?', '%').  */
       if (fields >= 2)
@@ -696,6 +667,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
       /* Unknown record.  */
       break;
     }
+  return 0;
 }
 
 
@@ -714,7 +686,7 @@ _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data)
   if (!q)
     {
       gpgme_key_release (key);
-      ctx->error = mk_error (Out_Of_Core);
+      /* FIXME       return mk_error (Out_Of_Core); */
       return;
     }
   q->key = key;
@@ -859,8 +831,6 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
     return mk_error (Invalid_Value);
   if (!ctx->pending)
     return mk_error (No_Request);
-  if (ctx->error)
-    return ctx->error;
 
   if (!ctx->key_queue)
     {
@@ -912,8 +882,6 @@ gpgme_op_keylist_end (GpgmeCtx ctx)
     return mk_error (Invalid_Value);
   if (!ctx->pending)
     return mk_error (No_Request);
-  if (ctx->error)
-    return ctx->error;
 
   ctx->pending = 0;
   return 0;
