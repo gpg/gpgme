@@ -1,3 +1,8 @@
+2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* key.c (gpgme_key_sig_get_string_attr): Use validity_to_string
+	instead otrust_to_string to calculate validity.
+	
 2003-01-19  Miguel Coca  <mcoca@gnu.org>
 
 	* w32-io.c (_gpgme_io_select): Add missing argument in calls to
