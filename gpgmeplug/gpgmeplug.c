@@ -154,6 +154,9 @@
 #include "cryptplug.h"
 
 
+#define days_from_seconds(x) ((x)/86400)
+
+
 typedef struct {
   const char*             bugURL;
   const char*             signatureKeyCertificate;
@@ -512,9 +515,7 @@ int signatureCertificateDaysLeftToExpiry( const char* certificate )
       time_t expire_time = gpgme_key_get_ulong_attr(
                              rKey,GPGME_ATTR_EXPIRE, NULL, 0 );
       time_t cur_time = time (NULL);
-      daysLeft = expire_time - cur_time;
-      // convert seconds into days
-      daysLeft /= 43200;
+      daysLeft = days_from_seconds(expire_time - cur_time);
       gpgme_key_release( rKey );
     }
   }
@@ -576,9 +577,7 @@ int caCertificateDaysLeftToExpiry( const char* certificate )
                              
                              NULL, 0 );
       time_t cur_time = time (NULL);
-      daysLeft = expire_time - cur_time;
-      // convert seconds into days
-      daysLeft /= 43200;
+      daysLeft = days_from_seconds(expire_time - cur_time);
       gpgme_key_release( rKey );
     }
   }
@@ -640,9 +639,7 @@ int rootCertificateDaysLeftToExpiry( const char* certificate )
                              
                              NULL, 0 );
       time_t cur_time = time (NULL);
-      daysLeft = expire_time - cur_time;
-      // convert seconds into days
-      daysLeft /= 43200;
+      daysLeft = days_from_seconds(expire_time - cur_time);
       gpgme_key_release( rKey );
     }
   }
@@ -803,9 +800,7 @@ int receiverCertificateDaysLeftToExpiry( const char* certificate )
       time_t expire_time = gpgme_key_get_ulong_attr(
                              rKey,GPGME_ATTR_EXPIRE, NULL, 0 );
       time_t cur_time = time (NULL);
-      daysLeft = expire_time - cur_time;
-      // convert seconds into days
-      daysLeft /= 43200;
+      daysLeft = days_from_seconds(expire_time - cur_time);
       gpgme_key_release( rKey );
     }
   }
