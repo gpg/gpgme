@@ -1,5 +1,20 @@
 2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (libgpgme_la_LDADD): Add @LIBOBJS@ for vasprintf and
+	fopencookie.
+	* vasprintf.c: Update to more recent libiberty version.
+	* debug.h: Replace #elsif with #elif.
+
+	Submitted by Stéphane Corthésy:
+	* util.h (vasprintf): Correct prototype.
+	* encrypt-sign.c: Include <stddef.h>.
+	(encrypt_sign_status_handler): Change type of ENCRYPT_INFO_LEN to
+	size_t.
+	* ath-pthread.c: Include <stdlib.h>, not <malloc.h>.
+	* ath-pth.c: Likewise.
+
+2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
+
 	* wait.c (fdt_global): Make static.  Reported by Stéphane
 	Corthésy.
 

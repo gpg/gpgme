@@ -30,8 +30,13 @@ Boston, MA 02111-1307, USA.  */
 int global_total_width;
 #endif
 
-int
-vasprintf (char **result, const char *format, va_list *args)
+static int int_vasprintf (char **, const char *, va_list *);
+
+static int
+int_vasprintf (result, format, args)
+     char **result;
+     const char *format;
+     va_list *args;
 {
   const char *p = format;
   /* Add one to make sure that it is never zero, which might cause malloc
@@ -54,7 +59,7 @@ vasprintf (char **result, const char *format, va_list *args)
 	      total_width += abs (va_arg (ap, int));
 	    }
 	  else
-	    total_width += strtoul (p, (char**)&p, 10);
+	    total_width += strtoul (p, (char **) &p, 10);
 	  if (*p == '.')
 	    {
 	      ++p;
@@ -64,7 +69,7 @@ vasprintf (char **result, const char *format, va_list *args)
 		  total_width += abs (va_arg (ap, int));
 		}
 	      else
-	      total_width += strtoul (p, (char**)&p, 10);
+	      total_width += strtoul (p, (char **) &p, 10);
 	    }
 	  while (strchr ("hlL", *p))
 	    ++p;
@@ -99,6 +104,7 @@ vasprintf (char **result, const char *format, va_list *args)
 	      (void) va_arg (ap, char *);
 	      break;
 	    }
+	  p++;
 	}
     }
 #ifdef TEST
@@ -109,6 +115,19 @@ vasprintf (char **result, const char *format, va_list *args)
     return vsprintf (*result, format, *args);
   else
     return 0;
+}
+
+int
+vasprintf (result, format, args)
+     char **result;
+     const char *format;
+#if defined (_BSD_VA_LIST_) && defined (__FreeBSD__)
+     _BSD_VA_LIST_ args;
+#else
+     va_list args;
+#endif
+{
+  return int_vasprintf (result, format, &args);
 }
 
 

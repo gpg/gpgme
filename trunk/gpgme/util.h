@@ -77,7 +77,7 @@ const char *_gpgme_get_gpgsm_path (void);
 #ifdef HAVE_CONFIG_H
 #if !HAVE_VASPRINTF
 #include <stdarg.h>
-int vasprintf (char **result, const char *format, va_list *args);
+int vasprintf (char **result, const char *format, va_list args);
 int asprintf (char **result, const char *format, ...);
 #endif
 
