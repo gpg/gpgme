@@ -1,5 +1,7 @@
 2002-03-04  Werner Koch  <wk@gnupg.org>
 
+	* configure.ac: Bumbed version to 0.3.4-cvs to continue development.
+
 	Released 0.3.4.
 	
 	* configure.ac: Bumbed LT version numbers to (7,1,0), requires
