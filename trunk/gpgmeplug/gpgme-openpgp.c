@@ -22,7 +22,7 @@
 #define GPGMEPLUG_DET_SIGN_INCLUDE_CLEARTEXT true
 #define GPGMEPLUG_DET_SIGN_MAKE_MIME_OBJECT  true
 #define GPGMEPLUG_DET_SIGN_MAKE_MULTI_MIME   true
-#define GPGMEPLUG_DET_SIGN_CTYPE_MAIN        "multipart/signed;protocol=application/pgp-signature;micalg=pgp-sha1"
+#define GPGMEPLUG_DET_SIGN_CTYPE_MAIN        "multipart/signed; protocol=\"application/pgp-signature\"; micalg=pgp-sha1"
 #define GPGMEPLUG_DET_SIGN_CDISP_MAIN        ""
 #define GPGMEPLUG_DET_SIGN_CTENC_MAIN        ""
 #define GPGMEPLUG_DET_SIGN_CTYPE_VERSION     ""
