@@ -1,3 +1,16 @@
+2002-06-28  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c (xmalloc): New.
+	(safe_malloc): Removed this macro and replaced it at all places
+	without return values checks by xmalloc.
+	(xstrdup): New. Replaces funny named macro with different
+	semantics.  Changed all callers to the new semantic.
+	(findCertificates): Don't free duplicate free the FPR array
+	values.  Removed the unneeded initialization.  Replaces the
+	gcc-ish use dynamic allocation of automatic variables by repalce
+	maxCerts with a macro MAXCERTS.  Made some comments Real C (tm).
+	(startListCertificates): Removed uneeded cast from xmalloc.
+
 2002-06-28  Bernhard Reiter <bernhard@intevation.de>
 
 	* gpgmeplug.c: new macro days_to_seconds().

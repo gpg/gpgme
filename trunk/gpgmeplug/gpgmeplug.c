@@ -1714,8 +1714,30 @@ void updateCRL(){}
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 
-#define safe_malloc( x ) malloc( x )
-#define xstrdup( x ) (x)?strdup(x):0
+static void *
+xmalloc (size_t n)
+{
+  char *p = malloc (n);
+  if (!p)
+    { 
+      fputs ("\nfatal: out of core\n", stderr);
+      exit (4);
+    }
+  return p;
+}
+
+/* Please: Don't call an allocation function xfoo when it may return NULL. */
+/* Wrong: #define xstrdup( x ) (x)?strdup(x):0 */
+/* Right: */
+static char *
+xstrdup (const char *string)
+{
+  char *p = xmalloc (strlen (string));
+  strcpy (p, string);
+  return p;
+}
+    
+
 
 static void 
 safe_free( void** x ) 
@@ -1723,6 +1745,7 @@ safe_free( void** x )
   free( *x );
   *x = 0;
 }
+
 char *
 trim_trailing_spaces( char *string )
 {
@@ -1761,7 +1784,7 @@ parse_dn_part (struct DnPair *array, const unsigned char *string)
   n = s - string;
   if (!n)
     return NULL; /* empty key */
-  array->key = p = safe_malloc (n+1);
+  array->key = p = xmalloc (n+1);
   
   
   memcpy (p, string, n);
@@ -1780,7 +1803,7 @@ parse_dn_part (struct DnPair *array, const unsigned char *string)
       if (!n || (n & 1))
         return NULL; /* empty or odd number of digits */
       n /= 2;
-      array->value = p = safe_malloc (n+1);
+      array->value = p = xmalloc (n+1);
       
       
       for (s1=string; n; s1 += 2, n--)
@@ -1815,7 +1838,7 @@ parse_dn_part (struct DnPair *array, const unsigned char *string)
             n++;
         }
 
-      array->value = p = safe_malloc (n+1);
+      array->value = p = xmalloc (n+1);
       
       
       for (s=string; n; s++, n--)
@@ -1855,7 +1878,7 @@ parse_dn (const unsigned char *string)
 
   arraysize = 7; /* C,ST,L,O,OU,CN,email */
   arrayidx = 0;
-  array = safe_malloc ((arraysize+1) * sizeof *array);
+  array = xmalloc ((arraysize+1) * sizeof *array);
   
   
   while (*string)
@@ -1869,7 +1892,7 @@ parse_dn (const unsigned char *string)
           struct DnPair *a2;
 
           arraysize += 5;
-          a2 = safe_malloc ((arraysize+1) * sizeof *array);
+          a2 = xmalloc ((arraysize+1) * sizeof *array);
           for (i=0; i < arrayidx; i++)
             {
               a2[i].key = array[i].key;
@@ -1948,7 +1971,7 @@ reorder_dn( struct DnPair *dn )
       len += 4; /* ',' and '=', and possibly "(" and ")" */
     }
   }
-  result = (char*)safe_malloc( (len+1)*sizeof(char) );
+  result = xmalloc( (len+1)*sizeof(char) );
   *result = 0;
 
   /* add standard parts */
@@ -1992,7 +2015,7 @@ startListCertificates( const char* pattern, int remote )
     const char* patterns[] = { pattern, NULL };
     fprintf( stderr,  "startListCertificates( \"%s\", %d )", pattern, remote );
 
-    it = (struct CertIterator*)safe_malloc( sizeof( struct CertIterator ) );
+    it = xmalloc( sizeof( struct CertIterator ) );
 
     err = gpgme_new (&(it->ctx));
     /*fprintf( stderr,  "2: gpgme returned %d\n", err );*/
@@ -2053,7 +2076,7 @@ static char* make_fingerprint( const char* fpr )
 {
   int len = strlen(fpr);
   int i = 0;
-  char* result = safe_malloc( (len + len/2 + 1)*sizeof(char) );
+  char* result = xmalloc( (len + len/2 + 1)*sizeof(char) );
   if( !result ) return NULL;
   for(; *fpr; ++fpr, ++i ) {
     if( i%3 == 2) {
@@ -2088,7 +2111,7 @@ nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
       names[idx] = xstrdup( s );
     }
     
-    it->info.userid = safe_malloc( sizeof( char* ) * (idx+1) );
+    it->info.userid = xmalloc( sizeof( char* ) * (idx+1) );
     memset( it->info.userid, 0, sizeof( char* ) * (idx+1) );
     it->info.dnarray = 0;
     for( idx = 0; names[idx] != 0; ++idx ) {
@@ -2104,7 +2127,7 @@ nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
     it->info.userid[idx] = 0;
 
     s = gpgme_key_get_string_attr (key, GPGME_ATTR_SERIAL, 0, 0); 
-    it->info.serial = xstrdup(s);
+    it->info.serial = s? xstrdup(s) : NULL;
 
     s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, 0, 0); 
     it->info.fingerprint = make_fingerprint( s );
@@ -2124,10 +2147,10 @@ nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
       it->info.issuer = NULL;
     }
     s = gpgme_key_get_string_attr (key, GPGME_ATTR_CHAINID, 0, 0); 
-    it->info.chainid = xstrdup(s);
+    it->info.chainid = s? xstrdup(s): NULL;
 
     s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEY_CAPS, 0, 0); 
-    it->info.caps = xstrdup(s);
+    it->info.caps = s? xstrdup(s) : NULL;
 
     u = gpgme_key_get_ulong_attr (key, GPGME_ATTR_CREATED, 0, 0); 
     it->info.created = u;
@@ -2205,7 +2228,7 @@ importCertificate( const char* fingerprint )
     return err;
   }
   
-  buf = safe_malloc( sizeof(char)*( strlen( fingerprint ) + 1 ) );
+  buf = malloc( sizeof(char)*( strlen( fingerprint ) + 1 ) );
   if( !buf ) {
     gpgme_recipients_release( recips );
     gpgme_data_release( keydata );    
@@ -2256,11 +2279,11 @@ importCertificate( const char* fingerprint )
   return 0;
 }
 
-    // // // // // // // // // // // // // // // // // // // // // // // // //
+/*  // // // // // // // // // // // // // // // // // // // // // // // // //
    //                                                                      //
   //         Continuation of CryptPlug code                               //
  //                                                                      //
-// // // // // // // // // // // // // // // // // // // // // // // // //
+// // // // // // // // // // // // // // // // // // // // // // // // //*/
 
 
 /*
@@ -2276,8 +2299,8 @@ bool findCertificates( const char* addressee,
                        int* newSize,
                        bool secretOnly )
 {
-  static int maxCerts = 1024;
-  // use const char declarations since all of them are needed twice
+#define MAXCERTS 1024;
+  /* use const char declarations since all of them are needed twice *.
   const char* delimiter = "\1";
   const char* openBracket = "    (";
   const char* closeBracket = ")";
@@ -2292,8 +2315,8 @@ bool findCertificates( const char* addressee,
   int nFound = 0;
   int iFound = 0;
   int siz = 0;
-  char* DNs[maxCerts];
-  char* FPRs[maxCerts];
+  char* DNs[MAXCERTS];
+  char* FPRs[MAXCERTS];
   
   if( ! certificates ){
     fprintf( stderr, "gpgme: findCertificates called with invalid *certificates pointer\n" );
@@ -2308,9 +2331,7 @@ bool findCertificates( const char* addressee,
   *certificates = 0;
   *newSize = 0;
   
-  // calculate length of buffer needed for certs plus fingerprints
-  memset( DNs,  0, sizeof( DNs  ) );
-  memset( FPRs, 0, sizeof( FPRs ) );
+  /* calculate length of buffer needed for certs plus fingerprints */
   gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
   err = gpgme_op_keylist_start(ctx, addressee, secretOnly ? 1 : 0);
@@ -2332,12 +2353,13 @@ bool findCertificates( const char* addressee,
           siz += strlen( s2 );
           siz += strlen( closeBracket );
           DNs[ nFound ] = dn;
+          dn = NULL;
           FPRs[nFound ] = xstrdup( s2 );
           ++nFound;
           if( nFound >= maxCerts ) {
             fprintf( stderr,
                      "gpgme: findCertificates found too many certificates (%d)\n",
-                     maxCerts );
+                     MAXCERTS );
             break;
           }
         }
@@ -2350,13 +2372,13 @@ bool findCertificates( const char* addressee,
   
   
   if( 0 < siz ) {
-    // add one for trailing ZERO char
+    /* add one for trailing ZERO char */
     ++siz;
     *newSize = siz;
-    // allocate the buffer
-    *certificates = malloc(   sizeof(char) * siz );
+    /* allocate the buffer */
+    *certificates = xmalloc(   sizeof(char) * siz );
     memset( *certificates, 0, sizeof(char) * siz );
-    // fill the buffer
+    /* fill the buffer */
     for( iFound=0; iFound < nFound; ++iFound ) {
       if( !iFound )
         strcpy(*certificates, DNs[iFound] );
