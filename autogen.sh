@@ -34,6 +34,8 @@ if test "$1" = "--build-w32"; then
     crossinstalldir=`mingw32 --install-dir`
     crossbindir=`mingw32 --get-bindir 2>/dev/null` \
                || crossbindir="$crossinstalldir/bin"
+    crossdatadir=`mingw32 --get-datadir 2>/dev/null` \
+               || crossdatadir="$crossinstalldir/share"
     crosslibdir=`mingw32 --get-libdir 2>/dev/null` \
                || crosslibdir="$crossinstalldir/i386--mingw32/lib"
     crossincdir=`mingw32 --get-includedir 2>/dev/null` \
@@ -62,7 +64,8 @@ if test "$1" = "--build-w32"; then
 
     ./configure --host=${host} --target=${target}  ${disable_foo_tests} \
                 --bindir=${crossbindir} --libdir=${crosslibdir} \
-                --includedir=${crossincdir}  --enable-maintainer-mode $*
+                --datadir=${crossdatadir} --includedir=${crossincdir} \
+                --enable-maintainer-mode $*
     exit $?
 fi
 
