@@ -683,7 +683,7 @@ gpgme_key_get_as_xml ( GpgmeKey key )
     add_tag_and_uint (d, "algo", key->keys.key_algo );
     add_tag_and_uint (d, "len", key->keys.key_len );
     add_tag_and_time (d, "created", key->keys.timestamp );
-    /*add_tag_and_time (d, "expires", key->expires );*/
+    add_tag_and_time (d, "expire", key->keys.expires_at );
     _gpgme_data_append_string (d, "  </mainkey>\n");
 
     /* Now the user IDs.  */
@@ -709,6 +709,7 @@ gpgme_key_get_as_xml ( GpgmeKey key )
         add_tag_and_uint (d, "algo", k->key_algo );
         add_tag_and_uint (d, "len", k->key_len );
         add_tag_and_time (d, "created", k->timestamp );
+        add_tag_and_time (d, "expire", k->expires_at );
         _gpgme_data_append_string (d, "  </subkey>\n");
     }
     _gpgme_data_append_string ( d, "</GnupgKeyblock>\n" );
@@ -903,6 +904,12 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
             ;
         if (k) 
             val = k->timestamp < 0? 0L:(unsigned long)k->timestamp;
+        break;
+      case GPGME_ATTR_EXPIRE: 
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = k->expires_at < 0? 0L:(unsigned long)k->expires_at;
         break;
       case GPGME_ATTR_VALIDITY:
         for (u=key->uids; u && idx; u=u->next, idx-- )
