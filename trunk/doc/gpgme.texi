@@ -887,6 +887,9 @@ writing, and @code{GPGME_Out_Of_Core} if not enough memory is
 available.
 @end deftypefun
 
+@c
+@c  GpgmeDataType
+@c
 @deftp {Data type} {enum GpgmeDataType}
 @tindex GpgmeDataType
 The @code{GpgmeDataType} type specifies the type of a @code{GpgmeData} object.
@@ -917,7 +920,50 @@ object with the handle @var{dh}.  If @var{dh} is not a valid pointer,
 @code{GPGME_DATA_TYPE_NONE} is returned.
 @end deftypefun
 
+@c
+@c  GpgmeDataEncoding
+@c
+@deftp {Data type} {enum GpgmeDataEncoding}
+@tindex GpgmeDataEncoding
+The @code{GpgmeDataEncoding} type specifies the encoding of a
+@code{GpgmeData} object.  This encoding is useful to give the backend a
+hint on the type of data.  The following data types are available:
 
+@table @code
+@item GPGME_DATA_ENCODING_NONE
+This specifies that the encoding is not known.  Thsi si the default for
+a new data object.
+
+@item GPGME_DATA_ENCODING_BINARY
+This specifies that the data is encoding in binary form; i.e. there is
+no special encoding.
+
+@item GPGME_DATA_ENCODING_BASE64
+This specifies that the data is encoded using the Base-64 encoding
+scheme as used by @acronym{MIME} and other protocols.
+
+@item GPGME_DATA_ENCODING_ARMOR
+This specifies that the data is encoded in an armored form as used by
+OpenPGP and PEM.
+
+@end table
+@end deftp
+
+@deftypefun GpgmeDataEncoding gpgme_data_get_encoding (@w{GpgmeData @var{dh}})
+The function @code{gpgme_data_get_encoding} returns the encoding of the data
+object with the handle @var{dh}.  If @var{dh} is not a valid pointer
+(e.g. @code{NULL})@code{GPGME_DATA_ENCODING_NONE} is returned.
+@end deftypefun
+
+@deftypefun GpgmeError gpgme_data_set_encoding (@w{GpgmeData @var{dh}, GpgmeDataEncoding @var{enc}})
+The function @code{gpgme_data_set_encoding} changes the encoding of the data
+object with the handle @var{dh} to @var{enc}. 
+@end deftypefun
+
+
+@c
+@c    Chapter Contexts
+@c 
 @node Contexts
 @chapter Contexts
 @cindex context
