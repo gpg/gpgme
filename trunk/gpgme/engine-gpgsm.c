@@ -1563,7 +1563,8 @@ _gpgme_gpgsm_op_trustlist (GpgsmObject gpgsm, const char *pattern)
 
 
 GpgmeError
-_gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
+_gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData signed_text,
+			GpgmeData plaintest)
 {
   return mk_error (Invalid_Engine);
 }
