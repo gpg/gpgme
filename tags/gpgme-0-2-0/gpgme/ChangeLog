@@ -1,0 +1,132 @@
+2001-02-28  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c (destroy_reader): Set sop_me flag.
+	(writer,create_writer,destroy_writer,find_writer,kill_writer): New.
+	(_gpgme_io_write): Use a writer thread to avaoid blocking.
+	(_gpgme_io_close): Cleanup a writer thread
+	(_gpgme_io_select): Repalce tthe faked wait on writing by a real
+	waiting which is now possible due to the use of a writer thread.
+
+2001-02-20  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c (destroy_reader,kill_reader): New. 
+	(create_reader, reader): Add a new event to stop the thread.
+	(_gpgme_io_close): Kill the reader thread.
+
+	* posix-io.c (_gpgme_io_select): Handle frozen fds here. 
+	* 32-io.c (_gpgme_io_select): Ditto. Removed a bunch of unused code.
+
+	* wait.c: Reworked the whole thing.
+	* rungpg.c (_gpgme_gpg_new): Init pid to -1.
+	(_gpgme_gpg_release): Remove the process from the wait queue.
+
+2001-02-19  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c (_gpgme_io_set_close_notify): New.
+	(_gpgme_io_close): Do the notification.
+
+	* posix-io.c (_gpgme_io_select): Use a 1 sec timeout and not 200
+	microseconds.
+
+	* wait.c (remove_process): Don't close the fd here.
+	(do_select): Set the fd to -1 and remove the is_closed flag everywhere.
+	(_gpgme_wait_on_condition): Remove the assert on the queue and
+	break out if we could not find the queue.  The whole thing should
+	be reworked.
+
+	* posix-io.c (_gpgme_io_set_close_notify): New.
+	(_gpgme_io_close): Do the notification.
+
+	* rungpg.c (close_notify_handler): New. 
+	(_gpgme_gpg_new): Register a callback for the fd.
+	(_gpgme_gpg_set_colon_line_handler): Ditto.
+	(build_argv): Ditto
+
+2001-02-13  Werner Koch  <wk@gnupg.org>
+
+	* rungpg.c (struct reap_s): Replaced pid_t by int.
+
+	* types.h: Add ulong typedef.
+
+	* rungpg.c (do_reaping,_gpgme_gpg_housecleaning): New.
+	(_gpgme_gpg_release): Reap children.
+	* io.h, posix-io.c (_gpgme_io_kill): New.
+	* w32-io.c (_gpgme_io_kill): New (dummy).
+
+	* keylist.c (gpgme_op_keylist_start): Cancel a pending request.
+
+	* posix-io.c (_gpgme_io_read): Add some debug output. 
+	(_gpgme_io_write): Ditto.
+	(_gpgme_io_select): Increased the timeout.
+
+2001-02-12  Werner Koch  <wk@gnupg.org>
+
+	Enhanced the signature verification, so that it can how handle
+	more than one signature and is able to return more information on 
+	the signatures.
+	* verify.c (gpgme_get_sig_key): New.
+	(gpgme_get_sig_status): New.
+
+	* gpgme.h: Add stdio.h. 
+	(GpgmeSigStat): New status DIFF.
+
+2001-02-01  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c (set_synchronize): Add EVENT_MODIFY_STATE.  Add Debug
+	code to all Set/ResetEvent().
+
+	* rungpg.c (read_status): Check for end of stream only if we have
+	an r.  By Timo.
+
+2001-01-31  Werner Koch  <wk@gnupg.org>
+
+	* wait.c (_gpgme_wait_on_condition): Removed all exit code processing.
+	(propagate_term_results,clear_active_fds): Removed.
+	(count_active_fds): Renamed to .. 
+	(count_active_and_thawed_fds): .. this and count only thawed fds. 
+
+	* rungpg.c (gpg_colon_line_handler): Return colon.eof and not
+	status.eof ;-)
+
+2001-01-30  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c (_gpgme_io_spawn): Use the supplied path arg.
+
+	* version.c (get_engine_info): Return better error information.
+
+	* posix-util.c, w32-util.c: New.
+	(_gpgme_get_gpg_path): New, suggested by Jan-Oliver.
+	* rungpg.c (_gpgme_gpg_spawn): Use new function to get GPG's path.
+
+	* signers.c (gpgme_signers_add): Ooops, one should test code and
+	not just write it; the newarr was not assigned.  Thanks to José
+	for pointing this out.  Hmmm, still not tested, why shoudl a coder
+	test his fix :-)
+
+	* w32-io.c: Does now use reader threads, so that we can use
+	WaitForMultipleObjects. 
+	* sema.h, posix-sema.c, w32-sema.c: Support for Critcial sections.
+	Does currently only work for W32.
+
+	* debug.c, util.h : New. Changed all fprintfs to use this new
+	set of debugging functions.
+
+2001-01-23  Werner Koch  <wk@gnupg.org>
+
+	* data.c (_gpgme_data_release_and_return_string): Fixed string
+	termination.
+
+2001-01-22  Werner Koch  <wk@gnupg.org>
+
+	* delete.c: New.
+
+	* signers.c: New.
+	* key.c (gpgme_key_ref, gpgme_key_unref): New.
+	* sign.c (gpgme_op_sign_start): Allow the use of other keys.
+
+	* version.c (gpgme_get_engine_info,gpgme_check_engine): New.
+	* rungpg.c (_gpgme_gpg_set_simple_line_handler): New.
+
+2001-01-05  Werner Koch  <wk@gnupg.org>
+
+	* data.c (gpgme_data_rewind): Allow to rewind data_type_none.

@@ -1,0 +1,26 @@
+                  GPGME - GnuPG Made Easy
+                ---------------------------
+
+             !!!! THIS IS WORK IN PROGRESS !!!
+
+If you want to hack on it, start with one of the tests/t-foo programs.
+You need the latest CVS version of GnuPG 1.0, see
+http://www.gnupg.org/cvs-access.html .  
+
+You need at least GnuPG 1.0.4d  (but don't use a 1.1.x version).
+
+
+To build the W32 version, use 
+./autogen.sh --build-w32
+
+
+Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
+to do serious work. 
+
+
+ 
+
+
+
+
+
