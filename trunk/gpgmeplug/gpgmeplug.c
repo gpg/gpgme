@@ -2353,7 +2353,7 @@ bool findCertificates( const char* addressee,
           siz += strlen( s2 );
           siz += strlen( closeBracket );
           DNs[ nFound ] = dn;
-          dn = NULL;
+          dn = NULL; // prevent it from being free'ed below
           FPRs[nFound ] = xstrdup( s2 );
           ++nFound;
           if( nFound >= MAXCERTS ) {
@@ -2376,7 +2376,7 @@ bool findCertificates( const char* addressee,
     ++siz;
     *newSize = siz;
     /* allocate the buffer */
-    *certificates = xmalloc(   sizeof(char) * siz );
+    *certificates = xmalloc( sizeof(char) * siz );
     memset( *certificates, 0, sizeof(char) * siz );
     /* fill the buffer */
     for (iFound=0; iFound < nFound; iFound++) {
@@ -2451,7 +2451,6 @@ bool checkMessageSignature( char** cleartext,
   GpgmeKey key;
   time_t created;
   struct DnPair* a;
-  char* dn;
   int sig_idx=0;
   int UID_idx=0;
   const char* statusStr;
@@ -2599,9 +2598,7 @@ bool checkMessageSignature( char** cleartext,
         attr_string = gpgme_key_get_string_attr(key, GPGME_ATTR_USERID, 0, 0);
         if (attr_string != 0) {
             a = parse_dn( attr_string );
-            dn = reorder_dn( a );
-            storeNewCharPtr( &sigmeta->extended_info[sig_idx].userid,
-                             dn );
+            sigmeta->extended_info[sig_idx].userid = reorder_dn( a );
         }
         
         attr_ulong = gpgme_key_get_ulong_attr(key, GPGME_ATTR_USERID, 0, 0);
@@ -2623,9 +2620,7 @@ bool checkMessageSignature( char** cleartext,
         attr_string = gpgme_key_get_string_attr(key, GPGME_ATTR_NAME, 0, 0);
         if (attr_string != 0) {
             a = parse_dn( attr_string );
-            dn = reorder_dn( a );
-            storeNewCharPtr( &sigmeta->extended_info[sig_idx].name,
-                             dn );
+            sigmeta->extended_info[sig_idx].name = reorder_dn( a );
         }
 
         /* extract email(s) */
