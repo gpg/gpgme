@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include <stdarg.h>
 
 
-#ifndef va_copy
+#ifndef va_copy /* accroding to POSIX, va_copy is a macro */
 #if defined (__GNUC__) && defined (__PPC__) \
      && (defined (_CALL_SYSV) || defined (_WIN32))
 #define va_copy(d, s) (*(d) = *(s))
