@@ -96,7 +96,8 @@ case "${target}" in
 		  [Defined if the filesystem uses driver letters.])
 	have_dosish_system=yes
         GPG_DEFAULT='c:\\gnupg\\gpg.exe'
-        GPGSM_DEFAULT='c:\\gnupg\\gpgsm.exe'
+	# XXX Assuan is not supported in this configuration.
+	#GPGSM_DEFAULT='c:\\gnupg\\gpgsm.exe'
         #component_system='COM+'
         ;;
     *)
