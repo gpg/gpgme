@@ -153,7 +153,9 @@ Hey Emacs, this is -*- outline -*- mode!
 * Build suite
 ** Make sure everything is cleaned correctly (esp. test area).
 ** Configure test for gpg and gpgsm version (as a warning).
-
+** Enable AC_CONFIG_MACRO_DIR and bump up autoconf version requirement.
+   (To fix "./autogen.sh; ./configure --enable-maintainer-mode; touch
+   configure.ac; make").
 
 * Error checking 
 ** engine-gpgsm, with-validation
