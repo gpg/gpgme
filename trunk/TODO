@@ -5,18 +5,12 @@ Hey Emacs, this is -*- outline -*- mode!
    which can not be differentiated from the case that it is not
    representable.
 
-* Implement posix-sema.c
-
 * Allow to use GTK's main loop instead of the select stuff in
   wait.c
 
 * add locking to the key cache?
 
 * GpgmeKey misses GPGME_ATTR_EXPIRE attribute
-
-* Add ATTR to return the number of subkeys or uids.
-
-* Factor out common code in _op_*_start functions.
 
 * Documentation
 ** Add note about GPGME clearing out pointer return values.
@@ -31,10 +25,20 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Export status handler need much more work.
 ** Import should return a useful error when one happened.
 ** Genkey should return something more useful than General_Error.
+** Factor out common code in _op_*_start functions.
+** Add ATTR to return the number of subkeys or uids.
+** "When returning a GpgmeKey GPGME_ATTR_COMMENT attribute, characters  
+   like ":" are not un-escaped, they are returned as \x3a" Bug
+   reported by Stephane Corthesy.
+
 
 * Error Values
 ** Map ASSUAN/GpgSM ERR error values in a better way than is done now.
 ** Verify (and document) if Read_Error, Write_Error, Pipe_Error set errno.
+** "There is an inconsistent behaviour: if we pass three times an  
+   invalid (but non empty) passphrase, return code is GPGME_No_Data,
+   but if we pass three times an empty (and invalid) passphrase, we
+   get GPGME_No_Passphrase." Bug reported by Stephane Corthesy.
 
 * Tests
 ** t-data
@@ -47,21 +51,16 @@ Hey Emacs, this is -*- outline -*- mode!
 ** There is a spurious 4/10 tests failed in some conditions.
    Rebuilding from scratch works around that.
 
-Bugs reported by Stephane Corthesy:
-> - When returning a GpgmeKey GPGME_ATTR_COMMENT attribute, characters  
-> like ":" are not un-escaped, they are returned as \x3a
+* Architecture support
+** Implement posix-sema.c
 
+Bugs reported by Stephane Corthesy:
 > BTW, here's another bug: it it not possible to retrieve fingerprints  
 > for subkeys
 
 > In GpgmeRecipients, would it be possible to provide a function which  
 > would return the validity assigned to a name contained in the  
 > GpgmeRecipients instance?
-
-> - There is an inconsistent behaviour: if we pass three times an  
-> invalid (but non empty) passphrase, return code is GPGME_No_Data, but  
-> if we pass three times an empty (and invalid) passphrase, we get  
-> GPGME_No_Passphrase.
 
 > passphrase callback. If I use the same GpgmeContext as the one which  
 > is currently asking for a passphrase, my app crashes: the r_hd in
