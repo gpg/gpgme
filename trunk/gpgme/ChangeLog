@@ -1,3 +1,14 @@
+2003-09-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* get-env.c: New file.
+	* util.h (_gpgme_getenv): Add prototype.
+	* Makefile.am (libgpgme_real_la_SOURCES): Add get-env.c.
+	* rungpg.c (build_argv): Use _gpgme_getenv.
+	* debug.c (debug_init): Likewise.
+	* engine-gpgsm.c (gpgsm_new): Likewise.
+	(gpgsm_new): Use ttyname_r.
+	* w32-io.c (_gpgme_io_spawn): Disable debugging for now.
+
 2003-09-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme-config.in: Use $libdir, not @libdir@, for the echo

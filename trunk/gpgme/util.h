@@ -72,4 +72,10 @@ gpgme_error_t _gpgme_decode_percent_string (const char *src, char **destp,
 
 gpgme_error_t _gpgme_map_gnupg_error (char *err);
 
+
+/* Retrieve the environment variable NAME and return a copy of it in a
+   malloc()'ed buffer in *VALUE.  If the environment variable is not
+   set, return NULL in *VALUE.  */
+gpgme_error_t _gpgme_getenv (const char *name, char **value);
+
 #endif /* UTIL_H */

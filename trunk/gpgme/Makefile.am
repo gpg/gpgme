@@ -68,7 +68,7 @@ gpgsm_components =
 endif
 
 libgpgme_real_la_SOURCES =						\
-	gpgme.h util.h conversion.c context.h ops.h			\
+	gpgme.h util.h conversion.c get-env.c context.h ops.h		\
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
 	data-compat.c							\
 	signers.c							\

@@ -302,7 +302,7 @@ gpgsm_new (void **engine)
   int fds[2];
   int child_fds[4];
   char *dft_display = NULL;
-  char *dft_ttyname = NULL;
+  char dft_ttyname[64];
   char *dft_ttytype = NULL;
   char *old_lc = NULL;
   char *dft_lc = NULL;
@@ -403,14 +403,19 @@ gpgsm_new (void **engine)
   gpgsm->status_cb.dir = 1;
   gpgsm->status_cb.data = gpgsm;
 
-  dft_display = getenv ("DISPLAY");
+  err = _gpgme_getenv ("DISPLAY", &dft_display);
+  if (err)
+    goto leave;
   if (dft_display)
     {
       if (asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
         {
+	  free (dft_display);
 	  err = gpg_error_from_errno (errno);
 	  goto leave;
 	}
+      free (dft_display);
+
       err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
 			     NULL, NULL, NULL);
       free (optstr);
@@ -420,8 +425,13 @@ gpgsm_new (void **engine)
 	  goto leave;
 	}
     }
-  dft_ttyname = ttyname (1);
-  if (dft_ttyname)
+
+  if (ttyname_r (1, dft_ttyname, sizeof (dft_ttyname)))
+    {
+      err = gpg_error_from_errno (errno);
+      goto leave;
+    }
+  else
     {
       if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
         {
@@ -437,14 +447,19 @@ gpgsm_new (void **engine)
 	  goto leave;
 	}
 
-      dft_ttytype = getenv ("TERM");
+      err = _gpgme_getenv ("TERM", &dft_ttytype);
+      if (err)
+	goto leave;
       if (dft_ttytype)
 	{
 	  if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
 	    {
+	      free (dft_ttytype);
 	      err = gpg_error_from_errno (errno);
 	      goto leave;
 	    }
+	  free (dft_ttytype);
+
 	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
 				 NULL, NULL, NULL);
 	  free (optstr);

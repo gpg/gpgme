@@ -1,7 +1,8 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * Before release:
-** currently nothing
+** set_locale for thread safe and env independent locale selection.
+** Add gpgme_strerror_r() when gpg_strerror_r() exists.
 
 * ABI's to break:
 ** I/O and User Data could be made extensible.  But this can be done
@@ -38,7 +39,6 @@ Hey Emacs, this is -*- outline -*- mode!
 ** --learn-code support
    This might be integrated with import. we still need to work out how
    to learn a card when gpg and gpgsm have support for smartcards.
-** set_locale for thread safe and env independent locale selection.
 ** How to terminate a pending operation?  Something like gpgme_op_reset,
    but where are you allowed to call it (think callback handlers).
    Then gpgme_op_*list_end can go.  Update: The only place where this
