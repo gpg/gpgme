@@ -83,8 +83,13 @@ struct gpgsm_object_s
   {
     GpgColonLineHandler fnc;
     void *fnc_value;
-  } colon;
-  
+    struct
+    {
+      unsigned char *line;
+      int linesize;
+      int linelen;
+    } attic;
+  } colon; 
 };
 
 const char *
@@ -143,6 +148,12 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
   gpgsm->output_fd_server = -1;
   gpgsm->message_fd = -1;
   gpgsm->message_fd_server = -1;
+
+  gpgsm->status.fnc = 0;
+  gpgsm->colon.fnc = 0;
+  gpgsm->colon.attic.line = 0;
+  gpgsm->colon.attic.linesize = 0;
+  gpgsm->colon.attic.linelen = 0;
 
   if (_gpgme_io_pipe (fds, 0) < 0)
     {
@@ -222,6 +233,7 @@ _gpgme_gpgsm_release (GpgsmObject gpgsm)
 
   assuan_pipe_disconnect (gpgsm->assuan_ctx);
 
+  xfree (gpgsm->colon.attic.line);
   xfree (gpgsm->command);
   xfree (gpgsm);
 }
@@ -529,36 +541,66 @@ gpgsm_status_handler (void *opaque, int pid, int fd)
 
       if (linelen > 2
 	  && line[0] == 'D' && line[1] == ' '
-          && gpgsm->colon.fnc )
+          && gpgsm->colon.fnc)
         {
-          unsigned char *s, *d;
+	  /* We are using the colon handler even for plain inline data
+             - strange name for that function but for historic reasons
+             we keep it.  */
+          /* FIXME We can't use this for binary data because we
+             assume this is a string.  For the current usage of colon
+             output it is correct.  */
+          unsigned char *src = line + 2;
+	  unsigned char *end = line + linelen;
+	  unsigned char *dst;
+          unsigned char **aline = &gpgsm->colon.attic.line;
+	  int *alinelen = &gpgsm->colon.attic.linelen;
 
-          line += 2;
-          linelen -= 2;
-          /* Hmmm, we are using the colon handler even for plain
-             inline data - strange name for that fucntion but for
-             historic reasons we keep it */
-          for (s=d=line; linelen; linelen--)
+	  if (gpgsm->colon.attic.linesize
+	      < *alinelen + linelen + 1)
+	    {
+	      unsigned char *newline = xtryrealloc (*aline,
+						    *alinelen + linelen + 1);
+	      if (!newline)
+		return mk_error (Out_Of_Core);
+	      *aline = newline;
+	      gpgsm->colon.attic.linesize += linelen + 1;
+	    }
+
+	  dst = *aline + *alinelen;
+
+          while (src < end)
             {
-              if (*s == '%' && linelen > 2)
-                { /* handle escaping */
-                  s++;
-                  *d++ = xtoi_2 (s);
-                  s += 2;
-                  linelen -= 2;
+              if (*src == '%' && src + 2 < end)
+                {
+		  /* Handle escaped characters.  */
+		  ++src;
+                  *dst = xtoi_2 (src);
+		  (*alinelen)++;
+                  src += 2;
                 }
               else
-                *d++ = *s++;
-            }
-          *d = 0; /* add a hidden string terminator */
+		{
+		  *dst = *src++;
+		  (*alinelen)++;
+		}
 
-          /* fixme: should we handle the return code? */
-          /* fixme: Hmmm: we can't use this for binary data because we
-             assume this is a string.  For the current usage of colon
-             output it is correct */
-          /* FIXME: we need extra bufferring to pass colon lines line
-             by line */
-          gpgsm->colon.fnc (gpgsm->colon.fnc_value, line);
+	      if (*dst == '\n')
+		{
+		  /* Terminate the pending line, pass it to the colon
+		     handler and reset it.  */
+
+		  if (*alinelen > 1 && *(dst - 1) == '\r')
+		    dst--;
+		  *dst = '\0';
+
+		  /* FIXME How should we handle the return code? */
+		  gpgsm->colon.fnc (gpgsm->colon.fnc_value, *aline);
+		  dst = *aline;
+		  *alinelen = 0;
+		}
+	      else
+		dst++;
+            }
         }
       else if (linelen > 2
 	  && line[0] == 'S' && line[1] == ' ')
