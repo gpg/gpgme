@@ -2,6 +2,10 @@
 
 	* engine-gpgsm.c (_gpgme_gpgsm_op_verify): Put TEXT into
 	message_data, not SIG.
+	(_gpgme_gpgsm_op_sign): Use `--detached', not `--detach'.
+
+	* sign.c (sign_status_handler): Call
+	_gpgme_passphrase_status_handler early.
 
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
 
