@@ -1,6 +1,6 @@
 /* t-verify.c  - regression test
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -62,6 +62,12 @@ status_string (GpgmeSigStat status)
       case GPGME_SIG_STAT_GOOD:
         s = "Good";
         break;
+      case GPGME_SIG_STAT_GOOD_EXP:
+        s = "Good but expired";
+        break;
+      case GPGME_SIG_STAT_GOOD_EXPKEY:
+        s = "Good but key exipired";
+        break;
       case GPGME_SIG_STAT_BAD:
         s = "Bad";
         break;
@@ -78,6 +84,24 @@ status_string (GpgmeSigStat status)
     return s;
 }
 
+static const char *
+validity_string (GpgmeValidity val)
+{
+  const char *s = "?";
+
+  switch (val)
+    {
+    case GPGME_VALIDITY_UNKNOWN: s = "unknown"; break;
+    case GPGME_VALIDITY_NEVER:   s = "not trusted"; break;
+    case GPGME_VALIDITY_MARGINAL:s = "marginal trusted"; break;
+    case GPGME_VALIDITY_FULL:   s = "fully trusted"; break;
+    case GPGME_VALIDITY_UNDEFINED:
+    case GPGME_VALIDITY_ULTIMATE:
+      break;
+    }
+  return s;
+}
+
 
 static void
 print_sig_stat ( GpgmeCtx ctx, GpgmeSigStat status )
@@ -90,9 +114,14 @@ print_sig_stat ( GpgmeCtx ctx, GpgmeSigStat status )
     printf ("Verification Status: %s\n", status_string (status));
     
     for(idx=0; (s=gpgme_get_sig_status (ctx, idx, &status, &created)); idx++ ) {
-        printf ("sig %d: created: %lu status: %s\n", idx, (unsigned long)created,
+        printf ("sig %d: created: %lu expires: %lu status: %s\n",
+                idx, (unsigned long)created, 
+                gpgme_get_sig_ulong_attr (ctx, idx, GPGME_ATTR_EXPIRE, 0),
                 status_string(status) );
-        printf ("sig %d: fpr/keyid=`%s'\n", idx, s );
+        printf ("sig %d: fpr/keyid: `%s' validity: %s\n",
+                idx, s,
+                validity_string (gpgme_get_sig_ulong_attr
+                                 (ctx, idx, GPGME_ATTR_VALIDITY, 0)) );
         if ( !gpgme_get_sig_key (ctx, idx, &key) ) {
             char *p = gpgme_key_get_as_xml ( key );
             printf ("sig %d: key object:\n%s\n", idx, p );
