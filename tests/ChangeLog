@@ -1,5 +1,7 @@
 2003-10-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgsm/Makefile.am (DISTCLEANFILES): Add random_seed.
+
 	* gpg/t-thread1.c (thread_one): Do not call initialize_gpgme.
 	Likewise.
 
