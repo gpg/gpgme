@@ -25,6 +25,31 @@
 	* t-data-2.txt: Likewise.
 	* Makefile.am (TESTS): Add t-version, t-data.
 
+2001-09-17  Werner Koch  <wk@gnupg.org>
+
+	* t-keylist.c (check_two_contexts): New. 
+
+2001-09-03  Werner Koch  <wk@gnupg.org>
+
+	* t-encrypt.c (print_op_info): New and use it after each operation.. 
+
+2001-08-28  Werner Koch  <wk@gnupg.org>
+
+	* t-sign.c (print_op_info): New and use it after each operation.
+
+2001-03-15  Werner Koch  <wk@gnupg.org>
+
+	* t-keylist.c (doit): List subkeys too, show caps.
+
+2001-02-13  Werner Koch  <wk@gnupg.org>
+
+	* t-verify.c (print_sig_stat): Repaled ulong by unsigned long
+	because we don't use the config stuff here.
+
+2001-02-12  Werner Koch  <wk@gnupg.org>
+
+	* tests/t-verify.c (print_sig_stat): Print info about the keys.
+
 
  Copyright 2001 g10 Code GmbH
 
@@ -36,3 +61,10 @@
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  
+
+
+
+
+
+
+	
