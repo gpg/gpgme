@@ -1,5 +1,9 @@
 2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (_gpgme_gpgsm_op_delete): Implement this.
+
+2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
+
 	* Makefile.am (libgpgme_la_LDADD): Add @LIBOBJS@ for vasprintf and
 	fopencookie.
 	* vasprintf.c: Update to more recent libiberty version.

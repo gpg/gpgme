@@ -669,8 +669,63 @@ _gpgme_gpgsm_op_decrypt (GpgsmObject gpgsm, GpgmeData ciph, GpgmeData plain)
 GpgmeError
 _gpgme_gpgsm_op_delete (GpgsmObject gpgsm, GpgmeKey key, int allow_secret)
 {
-  /* FIXME */
-  return mk_error (Not_Implemented);
+  char *fpr = (char *) gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, NULL, 0);
+  char *linep = fpr;
+  char *line;
+  int length = 8;	/* "DELKEYS " */
+
+  if (!fpr)
+    return mk_error (Invalid_Key);
+
+  while (*linep)
+    {
+      length++;
+      if (*linep == '%' || *linep == ' ' || *linep == '+')
+	length += 2;
+      linep++;
+    }
+  length++;
+
+  line = xtrymalloc (length);
+  if (!line)
+    return mk_error (Out_Of_Core);
+
+  strcpy (line, "DELKEYS ");
+  linep = &line[8];
+
+  while (*fpr)
+    {
+      switch (*fpr)
+	{
+	case '%':
+	  *(linep++) = '%';
+	  *(linep++) = '2';
+	  *(linep++) = '5';
+	  break;
+	case ' ':
+	  *(linep++) = '%';
+	  *(linep++) = '2';
+	  *(linep++) = '0';
+	  break;
+	case '+':
+	  *(linep++) = '%';
+	  *(linep++) = '2';
+	  *(linep++) = 'B';
+	  break;
+	default:
+	  *(linep++) = *fpr;
+	  break;
+	}
+      fpr++;
+    }
+  *linep = '\0';
+
+  gpgsm->command = line;
+  _gpgme_io_close (gpgsm->output_cb.fd);
+  _gpgme_io_close (gpgsm->input_cb.fd);
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  return 0;
 }
 
 
