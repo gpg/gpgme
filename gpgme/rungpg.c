@@ -841,29 +841,6 @@ read_status (engine_gpg_t gpg)
 			  if (nread > 1)
 			    DEBUG0 ("ERROR, unexpected data in read_status");
 
-			  /* Before we can actually add the command
-			     fd, we might have to flush the linked
-			     output data pipe.  */
-			  if (gpg->cmd.linked_idx != -1
-			      && gpg->fd_data_map[gpg->cmd.linked_idx].fd != -1)
-			    {
-			      struct io_select_fd_s fds;
-			      fds.fd = gpg->fd_data_map[gpg->cmd.linked_idx].fd;
-			      fds.for_read = 1;
-			      fds.for_write = 0;
-			      fds.frozen = 0;
-			      fds.opaque = NULL;
-			      do
-				{
-				  fds.signaled = 0;
-				  _gpgme_io_select (&fds, 1, 1);
-				  if (fds.signaled)
-				    _gpgme_data_inbound_handler
-				      (gpg->cmd.linked_data, fds.fd);
-				}
-			      while (fds.signaled);
-			    }
-
 			  add_io_cb (gpg, gpg->cmd.fd, 0,
 				     command_handler, gpg,
 				     &gpg->fd_data_map[gpg->cmd.idx].tag);
@@ -883,6 +860,31 @@ read_status (engine_gpg_t gpg)
 			{
 			  if (gpg->cmd.used)
 			    {
+			      /* Before we can actually add the
+				 command fd, we might have to flush
+				 the linked output data pipe.  */
+			      if (gpg->cmd.linked_idx != -1
+				  && gpg->fd_data_map[gpg->cmd.linked_idx].fd
+				  != -1)
+				{
+				  struct io_select_fd_s fds;
+				  fds.fd =
+				    gpg->fd_data_map[gpg->cmd.linked_idx].fd;
+				  fds.for_read = 1;
+				  fds.for_write = 0;
+				  fds.frozen = 0;
+				  fds.opaque = NULL;
+				  do
+				    {
+				      fds.signaled = 0;
+				      _gpgme_io_select (&fds, 1, 1);
+				      if (fds.signaled)
+					_gpgme_data_inbound_handler
+					  (gpg->cmd.linked_data, fds.fd);
+				    }
+				  while (fds.signaled);
+				}
+
 			      /* XXX We must check if there are any
 				 more fds active after removing this
 				 one.  */

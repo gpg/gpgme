@@ -1,5 +1,9 @@
 2004-09-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.c (read_status): Move the polling of the output data pipe
+	to just before removing the command fd, from just before adding
+	it.  This avoids buffering problems.
+
 	* data.c (_gpgme_data_inbound_handler): Use _gpgme_io_read, not
 	read, to improve debug output.
 
