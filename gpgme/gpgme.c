@@ -21,6 +21,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "util.h"
 #include "context.h"
@@ -69,7 +70,8 @@ gpgme_release ( GpgmeCtx c )
     _gpgme_key_release ( c->tmp_key );
     gpgme_data_release ( c->notation );
     /* fixme: release the key_queue */
-    xfree ( c );
+    xfree (c->prompt_1);
+    xfree (c);
 }
 
 
@@ -145,16 +147,31 @@ gpgme_set_textmode ( GpgmeCtx c, int yes )
     c->use_textmode = yes;
 }
 
-#if 0
+/* 
+ * The only which currently allowed is 1
+ */
 void
-gpgme_set_passphrase_cb ( GpgmeCtx c, GpgmePassphraseCb fnc, void *fncval )
+_gpgme_set_prompt ( GpgmeCtx c, int which, const char *text )
 {
-    if ( c ) {
-        c->passphrase_cb = fnc;
-        c->passphrase_cb_value = fncval;
+    assert ( which == 1 );
+
+    xfree (c->prompt_1); c->prompt_1 = NULL;
+    if (text) {
+        c->prompt_1 = xtrystrdup (text);
+        if ( !c->prompt_1 )
+            c->out_of_core = 1;
     }
 }
-#endif
+
+const char *
+gpgme_get_prompt ( GpgmeCtx c, int which )
+{
+    if ( which != 1 )
+        return NULL;
+    return c->prompt_1;
+}
+
+
 
 
 

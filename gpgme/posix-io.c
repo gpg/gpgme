@@ -68,8 +68,9 @@ _gpgme_io_write ( int fd, const void *buffer, size_t count )
 }
 
 int
-_gpgme_io_pipe ( int filedes[2] )
+_gpgme_io_pipe ( int filedes[2], int inherit_idx )
 {
+    /* we don't need inherit_idx in this implementation */
     return pipe ( filedes );
 }
 

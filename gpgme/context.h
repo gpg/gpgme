@@ -56,9 +56,6 @@ struct gpgme_context_s {
     int use_armor;  
     int use_textmode;
 
-    /*   GpgmePassphraseCb passphrase_cb;*/
-    /* void *            passphrase_cb_value;*/
-    
     ResultType result_type;
     union {
         VerifyResult verify;
@@ -71,6 +68,8 @@ struct gpgme_context_s {
     GpgmeKey tmp_key;       /* used by keylist.c */
     volatile int key_cond;  /* something new is available */
     struct key_queue_item_s *key_queue;
+
+    char *prompt_1;
 };
 
 
@@ -79,6 +78,11 @@ struct gpgme_data_s {
     const char *data;
     GpgmeDataType type;
     GpgmeDataMode mode;
+
+    int (*read_cb)( void *, char *, size_t, size_t *);
+    void *read_cb_value;
+    int read_cb_eof;
+
     size_t readpos;
     size_t writepos;
     size_t private_len;

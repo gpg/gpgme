@@ -40,12 +40,14 @@
 
 #include "status-table.h"
 
+
 /* This type is used to build a list of gpg arguments and
  * data sources/sinks */
 struct arg_and_data_s {
     struct arg_and_data_s *next;
     GpgmeData data;  /* If this is not NULL .. */
     int dup_to;
+    int print_fd;    /* print the fd number and not the special form of it */
     char arg[1];     /* .. this is used */
 };
 
@@ -137,7 +139,7 @@ _gpgme_gpg_new ( GpgObject *r_gpg )
     }
     /* In any case we need a status pipe - create it right here  and
      * don't handle it with our generic GpgmeData mechanism */
-    if (_gpgme_io_pipe (gpg->status.fd) == -1) {
+    if (_gpgme_io_pipe (gpg->status.fd, 1) == -1) {
         rc = mk_error (Pipe_Error);
         goto leave;
     }
@@ -150,6 +152,7 @@ _gpgme_gpg_new ( GpgObject *r_gpg )
     }
     _gpgme_gpg_add_arg ( gpg, "--batch" );
     _gpgme_gpg_add_arg ( gpg, "--no-tty" );
+
 
  leave:
     if (rc) {
@@ -170,6 +173,11 @@ _gpgme_gpg_release ( GpgObject gpg )
     xfree (gpg->colon.buffer);
     if ( gpg->argv )
         free_argv (gpg->argv);
+  #if 0
+    /* fixme: We need a way to communicate back closed fds, so that we
+     * don't do it a second time.  One way to do it is by using a global
+     * table of open fds associated with gpg objects - but this requires
+     * additional locking. */
     if (gpg->status.fd[0] != -1 )
         _gpgme_io_close (gpg->status.fd[0]);
     if (gpg->status.fd[1] != -1 )
@@ -178,6 +186,7 @@ _gpgme_gpg_release ( GpgObject gpg )
         _gpgme_io_close (gpg->colon.fd[0]);
     if (gpg->colon.fd[1] != -1 )
         _gpgme_io_close (gpg->colon.fd[1]);
+  #endif
     free_fd_data_map (gpg->fd_data_map);
     kill_gpg (gpg); /* fixme: should be done asyncronously */
     xfree (gpg);
@@ -237,7 +246,14 @@ _gpgme_gpg_add_data ( GpgObject gpg, GpgmeData data, int dup_to )
     }
     a->next = NULL;
     a->data = data;
-    a->dup_to = dup_to;
+    if ( dup_to == -2 ) {
+        a->print_fd = 1;
+        a->dup_to = -1;
+    }
+    else {
+        a->print_fd = 0;
+        a->dup_to = dup_to;
+    }
     *gpg->argtail = a;
     gpg->argtail = &a->next;
     return 0;
@@ -268,7 +284,7 @@ _gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
     if (!gpg->colon.buffer) {
         return mk_error (Out_Of_Core);
     }
-    if (_gpgme_io_pipe (gpg->colon.fd) == -1) {
+    if (_gpgme_io_pipe (gpg->colon.fd, 1) == -1) {
         xfree (gpg->colon.buffer); gpg->colon.buffer = NULL;
         return mk_error (Pipe_Error);
     }
@@ -294,11 +310,16 @@ free_fd_data_map ( struct fd_data_map_s *fd_data_map )
 {
     int i;
 
+    if ( !fd_data_map )
+        return;
+
     for (i=0; fd_data_map[i].data; i++ ) {
+#if 0 /* fixme -> see gpg_release */
         if ( fd_data_map[i].fd != -1 )
             _gpgme_io_close (fd_data_map[i].fd);
         if ( fd_data_map[i].peer_fd != -1 )
             _gpgme_io_close (fd_data_map[i].peer_fd);
+#endif
         /* don't realease data because this is only a reference */
     }
     xfree (fd_data_map);
@@ -330,7 +351,7 @@ build_argv ( GpgObject gpg )
         if (a->data) {
             /*fprintf (stderr, "build_argv: data\n" );*/
             datac++;
-            if ( a->dup_to == -1 )
+            if ( a->dup_to == -1 && !a->print_fd )
                 need_special = 1;
         }
         else {
@@ -403,6 +424,7 @@ build_argv ( GpgObject gpg )
                 free_argv (argv);
                 return mk_error (Invalid_Type);
               case GPGME_DATA_TYPE_MEM:
+              case GPGME_DATA_TYPE_CB:
                 break;
               case GPGME_DATA_TYPE_FD:
               case GPGME_DATA_TYPE_FILE:
@@ -415,7 +437,8 @@ build_argv ( GpgObject gpg )
             {   
                 int fds[2];
                 
-                if (_gpgme_io_pipe (fds) == -1) {
+                if (_gpgme_io_pipe (fds, fd_data_map[datac].inbound?1:0 )
+                    == -1) {
                     xfree (fd_data_map);
                     free_argv (argv);
                     return mk_error (Pipe_Error);
@@ -439,7 +462,9 @@ build_argv ( GpgObject gpg )
                     free_argv (argv);
                     return mk_error (Out_Of_Core);
                 }
-                sprintf ( argv[argc], "-&%d", fd_data_map[datac].peer_fd );
+                sprintf ( argv[argc], 
+                          a->print_fd? "%d" : "-&%d",
+                          fd_data_map[datac].peer_fd );
                 argc++;
             }
             datac++;
@@ -490,7 +515,7 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
 
     /* build the fd list for the child */
     n=0;
-    fd_child_list[n].fd = gpg->status.fd[0];
+    fd_child_list[n].fd = gpg->status.fd[0]; 
     fd_child_list[n].dup_to = -1;
     n++;
     if ( gpg->colon.fnc ) {
@@ -538,7 +563,6 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
     fd_parent_list[n].dup_to = -1;
 
 
-    fflush (stderr);
     pid = _gpgme_io_spawn (GPG_PATH, gpg->argv, fd_child_list, fd_parent_list);
     xfree (fd_child_list);
     if (pid == -1) {
@@ -604,7 +628,6 @@ gpg_inbound_handler ( void *opaque, int pid, int fd )
     assert ( _gpgme_data_get_mode (dh) == GPGME_DATA_MODE_IN );
 
     nread = _gpgme_io_read (fd, buf, 200 );
-    fprintf(stderr, "inbound on fd %d: nread=%d\n", fd, nread );
     if ( nread < 0 ) {
         fprintf (stderr, "read_mem_data: read failed on fd %d (n=%d): %s\n",
                  fd, nread, strerror (errno) );
@@ -638,7 +661,6 @@ write_mem_data ( GpgmeData dh, int fd )
 
     nbytes = dh->len - dh->readpos;
     if ( !nbytes ) {
-        fprintf (stderr, "write_mem_data(%d): closing\n", fd );
         _gpgme_io_close (fd);
         return 1;
     }
@@ -650,11 +672,7 @@ write_mem_data ( GpgmeData dh, int fd )
      * To avoid that we have set the pipe to nonblocking.
      */
 
-
-    fprintf (stderr, "write_mem_data(%d): about to write %d bytes len=%d rpos=%d\n",
-                 fd, (int)nbytes, (int)dh->len, dh->readpos );
     nwritten = _gpgme_io_write ( fd, dh->data+dh->readpos, nbytes );
-    fprintf (stderr, "write_mem_data(%d): wrote %d bytes\n", fd, nwritten );
     if (nwritten == -1 && errno == EAGAIN )
         return 0;
     if ( nwritten < 1 ) {
@@ -665,6 +683,40 @@ write_mem_data ( GpgmeData dh, int fd )
     }
 
     dh->readpos += nwritten;
+    return 0;
+}
+
+static int
+write_cb_data ( GpgmeData dh, int fd )
+{
+    size_t nbytes;
+    int  err, nwritten; 
+    char buffer[512];
+
+    err = gpgme_data_read ( dh, buffer, DIM(buffer), &nbytes );
+    if (err == GPGME_EOF) {
+        _gpgme_io_close (fd);
+        return 1;
+    }
+    
+    nwritten = _gpgme_io_write ( fd, dh->data+dh->readpos, nbytes );
+    if (nwritten == -1 && errno == EAGAIN )
+        return 0;
+    if ( nwritten < 1 ) {
+        fprintf (stderr, "write_cb_data(%d): write failed (n=%d): %s\n",
+                 fd, nwritten, strerror (errno) );
+        _gpgme_io_close (fd);
+        return 1;
+    }
+
+    if ( nwritten < nbytes ) {
+        if ( _gpgme_data_unread (dh, buffer + nwritten, nbytes - nwritten ) )
+            fprintf (stderr, "wite_cb_data: unread of %d bytes failed\n",
+                     nbytes - nwritten );
+        _gpgme_io_close (fd);
+        return 1;
+    }
+
     return 0;
 }
 
@@ -680,10 +732,13 @@ gpg_outbound_handler ( void *opaque, int pid, int fd )
         if ( write_mem_data ( dh, fd ) )
             return 1; /* ready */
         break;
+      case GPGME_DATA_TYPE_CB:
+        if (write_cb_data (dh, fd))
+            return 1; /* ready */
+        break;
       default:
         assert (0);
     }
-
 
     return 0;
 }

@@ -13,10 +13,10 @@ AM_MAINTAINER_MODE
 #    AGE, set REVISION to 0.
 # 3. Interfaces removed (BAD, breaks upward compatibility): Increment
 #    CURRENT, set AGE and REVISION to 0.
-AM_INIT_AUTOMAKE(gpgme,0.1.0)
+AM_INIT_AUTOMAKE(gpgme,0.1.1)
 LIBGPGME_LT_CURRENT=0
 LIBGPGME_LT_AGE=0
-LIBGPGME_LT_REVISION=2
+LIBGPGME_LT_REVISION=3
 ##############################################
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
@@ -38,6 +38,7 @@ if test "$GCC" = yes; then
 fi
 
 GPG=
+component_system=None
 case "${target}" in
     *-*-mingw32* | i?86-emx-os2 | i?86-*-os2*emx | i?86-*-msdosdjgpp* )
         # special stuff for Windoze NT
@@ -46,6 +47,7 @@ case "${target}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         AC_DEFINE(HAVE_DOSISH_SYSTEM)
         GPG='c:\\gnupg\\gpg.exe'
+        component_system='COM+'
         ;;
     *)
        ;;
@@ -63,9 +65,27 @@ dnl Checks for header files
 dnl
 
 
+
 dnl
 dnl Checks for typedefs and structures
 dnl
+GNUPG_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
+GNUPG_CHECK_TYPEDEF(ushort, HAVE_USHORT_TYPEDEF)
+GNUPG_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
+GNUPG_CHECK_TYPEDEF(u16, HAVE_U16_TYPEDEF)
+GNUPG_CHECK_TYPEDEF(u32, HAVE_U32_TYPEDEF)
+# We should not use them in this software;
+# However jnlib/types.h needs them - so we take the easy way.
+AC_CHECK_SIZEOF(unsigned short, 2)
+AC_CHECK_SIZEOF(unsigned int, 4)
+AC_CHECK_SIZEOF(unsigned long, 4)
+if test "$ac_cv_sizeof_unsigned_short" = "0" \
+   || test "$ac_cv_sizeof_unsigned_int" = "0" \
+   || test "$ac_cv_sizeof_unsigned_long" = "0"; then
+    AC_MSG_WARN([Hmmm, something is wrong with the sizes - using defaults]);
+fi
+
+
 
 dnl
 dnl Checks for compiler features
@@ -74,14 +94,15 @@ dnl
 dnl
 dnl Checks for library functions
 dnl
-AC_CHECK_FUNCS(stpcpy)
+dnl These are needed by libjnlib
+AC_CHECK_FUNCS(memicmp stpcpy strlwr strtoul memmove stricmp)
 
 
 dnl
 dnl Checks for system services
 dnl
 
-if test -z "GPG"; then
+if test -z "$GPG"; then
   AC_PATH_PROG(GPG, gpg)
   if test -z "$GPG"; then
        AC_MSG_ERROR([[
@@ -96,9 +117,17 @@ AC_DEFINE_UNQUOTED(GPG_PATH, "$GPG")
 
 
 dnl
+dnl FIXME: check whether Bonobo is installed
+dnl 
+
+
+dnl
 dnl Create config files 
 dnl
 dnl
+
+AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
+AM_CONDITIONAL(BUILD_BONOBO,  test "$component_system" = "Bonobo")
 
 dnl Make the version number in gpgme/gpgme.h the same as the one here.
 dnl (this is easier than to have a *.in file just for one substitution)
@@ -116,11 +145,20 @@ chmod +x gpgme/gpgme-config
 
 AC_OUTPUT([
 Makefile
+jnlib/Makefile
 gpgme/Makefile
 gpgme/gpgme-config
 tests/Makefile
+bonobo/Makefile
+complus/Makefile
 ])
 
+echo "
+	GPGME v${VERSION} has been configured as follows:
+
+	GPG path:   $GPG
+	Component:  $component_system
+"
 
 
 
