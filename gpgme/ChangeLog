@@ -1,5 +1,9 @@
 2001-01-30  Werner Koch  <wk@gnupg.org>
 
+	* posix-util.c, w32-util.c: New.
+	(_gpgme_get_gpg_path): New, suggested by Jan-Oliver.
+	* rungpg.c (_gpgme_gpg_spawn): Use new function to get GPG's path.
+
 	* signers.c (gpgme_signers_add): Ooops, one should test code and
 	not just write it; the newarr was not assigned.  Thanks to José
 	for pointing this out.  Hmmm, still not tested, why shoudl a coder

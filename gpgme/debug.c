@@ -94,7 +94,7 @@ _gpgme_debug_begin ( void **helper, int level, const char *text)
         return;
     }
 
-    /* Oh what a pitty sthat we don't have a asprintf or snprintf under
+    /* Oh what a pitty that we don't have a asprintf or snprintf under
      * Windoze.  We definitely should write our own clib for W32! */
     sprintf ( ctl->fname, "/tmp/gpgme_debug.%d.%p", getpid (), ctl );
     ctl->fp = fopen (ctl->fname, "w+");
