@@ -96,6 +96,8 @@ GpgmeError _gpgme_passphrase_start (GpgmeCtx ctx);
 GpgmeError _gpgme_passphrase_result (GpgmeCtx ctx);
 
 /*-- version.c --*/
+const char *_gpgme_compare_versions (const char *my_version,
+				     const char *req_version);
 char *_gpgme_get_program_version (const char *const path);
 
 #endif /* OPS_H */

@@ -1,5 +1,28 @@
 2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
 
+	* types.h: Add types EngineObject and GpgsmObject.
+
+	* Makefile.am (libgpgme_la_SOURCES): Add engine-gpgsm.h,
+	engine-gpgsm.c, engine.h and engine.c.
+	* engine.h: New file.
+	* engine.c: Likewise.
+	* engine-gpgsm.h: Likewise.
+	* engine-gpgsm.c: Likewise.
+	
+	* rungpg.c (_gpgme_gpg_get_version): New function.
+	(_gpgme_gpg_check_version): Likewise.
+	* rungpg.h: Add prototypes for _gpgme_gpg_get_version and
+	_gpgme_gpg_check_version.
+
+	* version.c (compare_versions): Rename to ...
+	(_gpgme_compare_versions): ... this.  Make non-static.
+	(gpgme_check_version): Use _gpgme_compare_versions rather than
+	compare_versions.
+	(gpgme_check_engine): Likewise.
+	* ops.h (_gpgme_get_program_version): Add prototype.
+
+2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
+
 	* Makefile.am (libgpgme_la_INCLUDES): Remove obsolete directive.
 	(AM_CPPFLAGS): New directive [BUILD_ASSUAN].
 	(libgpgme_la_LIBADD): Likewise.

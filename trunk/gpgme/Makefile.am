@@ -54,20 +54,14 @@ libgpgme_la_SOURCES = \
 	genkey.c \
 	delete.c \
         rungpg.c rungpg.h status-table.h \
+	engine-gpgsm.c engine-gpgsm.h \
+	engine.c engine.h \
 	sema.h posix-sema.c w32-sema.c \
 	syshdr.h io.h posix-io.c w32-io.c \
 	gpgme.c debug.c version.c errors.c
-
 
 errors.c : gpgme.h
 	$(srcdir)/mkerrors < $(srcdir)/gpgme.h > errors.c
 
 status-table.h : rungpg.h
 	$(srcdir)/mkstatus < $(srcdir)/rungpg.h > status-table.h
-
-
-
-
-
-
-

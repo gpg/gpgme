@@ -96,6 +96,8 @@ typedef void (*GpgColonLineHandler)( GpgmeCtx, char *line );
 typedef const char *(*GpgCommandHandler)(void*, GpgStatusCode code,
                                          const char *keyword);
 
+const char *_gpgme_gpg_get_version (void);
+GpgmeError _gpgme_gpg_check_version (void);
 
 GpgmeError _gpgme_gpg_new ( GpgObject *r_gpg );
 void       _gpgme_gpg_release ( GpgObject gpg );
