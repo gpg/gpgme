@@ -563,7 +563,9 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
 {
   GpgmeError err = 0;
 
-  err = _gpgme_op_reset (ctx, 0);
+  /* Keylist operations are always "synchronous" in the sense that we
+     don't add ourself to the global FD table.  */
+  err = _gpgme_op_reset (ctx, 1);
   if (err)
     goto leave;
 
@@ -682,9 +684,21 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
 
   if (!ctx->key_queue)
     {
-      _gpgme_wait_on_condition (ctx, 1, &ctx->key_cond);
-      if (ctx->error)
-	return ctx->error;
+      GpgmeError err = _gpgme_wait_on_condition (ctx, &ctx->key_cond);
+      if (err)
+	{
+	  ctx->pending = 0;
+	  return err;
+	}
+      if (!ctx->pending)
+	{
+	  /* The operation finished.  Because not all keys might have
+	     been returned to the caller yet, we just reset the
+	     pending flag to 1.  This will cause us to call
+	     _gpgme_wait_on_condition without any active file
+	     descriptors, but that is a no-op, so it is safe.  */
+	  ctx->pending = 1;
+	}
       if (!ctx->key_cond)
 	{
 	  ctx->pending = 0;

@@ -1,3 +1,25 @@
+2002-06-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* ops.h (_gpgme_wait_on_condition): Remove HANG argument from
+	prototype and change return type to GpgmeError.
+	(_gpgme_wait_one): New prototype.
+	* wait.c (gpgme_wait): Replace with the meat from
+	_gpgme_wait_on_condition here, and remove the support for
+	conditions.
+	(_gpgme_wait_on_condition): Remove HANG argument from prototype
+	and change return type to GpgmeError.  Replace with meat from
+	_gpgme_wait_one and add support for conditions.
+	(_gpgme_wait_one): Just call _gpgme_wait_on_condition without
+	condition.
+	* keylist.c (gpgme_op_keylist_ext_start): Always use our own FD
+	table (eg use synchronous mode).
+	(gpgme_op_keylist_next): Remove HANG argument from
+	_gpgme_wait_on_condition.  Check its return value.
+	* trustlist.c (gpgme_op_trustlist_start): Always use our own FD
+	table (eg use synchronous mode).
+	(gpgme_op_trustlist_next): Remove HANG argument from
+	_gpgme_wait_on_condition.  Check its return value.
+	
 2002-06-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h: Fix documentation of key attribute retrieval functions.

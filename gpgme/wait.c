@@ -227,14 +227,61 @@ _gpgme_wait_event_cb (void *data, GpgmeEventIO type, void *type_data)
 GpgmeCtx 
 gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 {
-  ctx = _gpgme_wait_on_condition (ctx, hang, NULL);
+  DEBUG2 ("waiting... ctx=%p hang=%d", ctx, hang);
+  do
+    {
+      int i;
+
+      /* XXX We are ignoring all errors from select here.  */
+      do_select (&fdt_global);
+      
+      LOCK (ctx_done_list_lock);
+      /* A process that is done is eligible for election if it is the
+	 requested context or if it was not yet reported.  */
+      for (i = 0; i < ctx_done_list_length; i++)
+	if (!ctx || ctx == ctx_done_list[i])
+	  break;
+      if (i < ctx_done_list_length)
+	{
+	  if (!ctx)
+	    ctx = ctx_done_list[i];
+	  hang = 0;
+	  ctx->pending = 0;
+	  if (--ctx_done_list_length)
+	    memcpy (&ctx_done_list[i],
+		    &ctx_done_list[i + 1],
+		    (ctx_done_list_length - i) * sizeof (GpgmeCtx *));
+	}
+      UNLOCK (ctx_done_list_lock);
+
+      if (hang)
+	run_idle ();
+    }
+  while (hang && (!ctx || !ctx->cancel));
+
+  if (ctx && ctx->cancel)
+    {
+      /* FIXME: Paranoia?  */
+      ctx->cancel = 0;
+      ctx->pending = 0;
+      ctx->error = mk_error (Canceled);
+    }
+
   if (ctx && status)
     *status = ctx->error;
   return ctx;
 }
 
+
 GpgmeError
 _gpgme_wait_one (GpgmeCtx ctx)
+{
+  return _gpgme_wait_on_condition (ctx, NULL);
+}
+
+
+GpgmeError
+_gpgme_wait_on_condition (GpgmeCtx ctx, volatile int *cond)
 {
   GpgmeError err = 0;
   int hang = 1;
@@ -246,7 +293,9 @@ _gpgme_wait_one (GpgmeCtx ctx)
 	  err = mk_error (File_Error);
 	  hang = 0;
 	}
-      else
+      else if (cond && *cond)
+	hang = 0;
+      else	  
 	{
 	  int any = 0;
 	  int i;
@@ -274,55 +323,6 @@ _gpgme_wait_one (GpgmeCtx ctx)
       ctx->error = mk_error (Canceled);
     }
   return err ? err : ctx->error;
-}
-
-
-GpgmeCtx 
-_gpgme_wait_on_condition (GpgmeCtx ctx, int hang, volatile int *cond)
-{
-  DEBUG3 ("waiting... ctx=%p hang=%d cond=%p", ctx, hang, cond);
-  do
-    {
-      /* XXX We are ignoring all errors from select here.  */
-      do_select (&fdt_global);
-      
-      if (cond && *cond)
-	hang = 0;
-      else
-	{
-	  int i;
-
-	  LOCK (ctx_done_list_lock);
-	  /* A process that is done is eligible for election if it is
-	     the requested context or if it was not yet reported.  */
-	  for (i = 0; i < ctx_done_list_length; i++)
-	    if (!ctx || ctx == ctx_done_list[i])
-	      break;
-	  if (i < ctx_done_list_length)
-	    {
-	      if (!ctx)
-		ctx = ctx_done_list[i];
-	      hang = 0;
-	      ctx->pending = 0;
-	      if (--ctx_done_list_length)
-		memcpy (&ctx_done_list[i],
-			&ctx_done_list[i + 1],
-			(ctx_done_list_length - i) * sizeof (GpgmeCtx *));
-	    }
-	  UNLOCK (ctx_done_list_lock);
-        }
-      if (hang)
-	run_idle ();
-    }
-  while (hang && (!ctx || !ctx->cancel));
-  if (ctx && ctx->cancel)
-    {
-      /* FIXME: Paranoia?  */
-      ctx->cancel = 0;
-      ctx->pending = 0;
-      ctx->error = mk_error (Canceled);
-    }
-  return ctx;
 }
 
 

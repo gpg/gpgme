@@ -49,8 +49,8 @@ void _gpgme_set_op_info (GpgmeCtx c, GpgmeData info);
 void _gpgme_op_event_cb (void *data, GpgmeEventIO type, void *type_data);
 
 /*-- wait.c --*/
-GpgmeCtx _gpgme_wait_on_condition ( GpgmeCtx c,
-                                    int hang, volatile int *cond );
+GpgmeError _gpgme_wait_one (GpgmeCtx ctx);
+GpgmeError _gpgme_wait_on_condition (GpgmeCtx ctx, volatile int *cond);
 
 /*-- recipient.c --*/
 int _gpgme_recipients_all_valid ( const GpgmeRecipients rset );
