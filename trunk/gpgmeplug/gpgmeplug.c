@@ -452,6 +452,8 @@ bool signatureCertificateExpiryNearWarning( void )
 
 int signatureCertificateDaysLeftToExpiry( const char* certificate )
 {
+  // pending (khz): make this work!
+  /*
   GpgmeCtx ctx;
   GpgmeError err;
   GpgmeKey rKey;
@@ -477,6 +479,8 @@ int signatureCertificateDaysLeftToExpiry( const char* certificate )
   gpgme_release( ctx );
 
   return daysLeft;
+  */
+  return 10;
 }
 
 
