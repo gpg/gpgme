@@ -31,7 +31,9 @@ INCLUDES = -I$(top_srcdir)/gpgme
 
 LDADD = ../../gpgme/libgpgme.la
 
-noinst_PROGRAMS = $(TESTS)
+# We don't run t-genkey in the test suite, because it takes too long
+# and needs a working pinentry.
+noinst_PROGRAMS = $(TESTS) t-genkey
 
 key_id := 32100C27173EF6E9C4E9A25D3D69F86D37A4F939
 

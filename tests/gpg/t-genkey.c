@@ -18,6 +18,7 @@
    along with GPGME; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -98,7 +99,7 @@ main (int argc, char **argv)
 	  result->primary ? (result->sub ? "primary, sub" : "primary")
 	  : (result->sub ? "sub" : "none"));
 
-  if (strlen (result->fpr) != 40)
+  if (result->fpr && strlen (result->fpr) != 40)
     {
       fprintf (stderr, "%s:%d: generated key has unexpected fingerprint\n",
 	       __FILE__, __LINE__);

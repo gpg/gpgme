@@ -1,3 +1,10 @@
+2003-04-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-genkey.c: Rewritten.
+	* gpgsm/Makefile.am (noinst_PROGRAMS): Add t-genkey.
+	* gpg/t-genkey.c: Include <stdlib.h>.
+	(main): Check result->fpr before checking its length.
+
 2003-04-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-genkey.c: Rewritten to match new semantics.
