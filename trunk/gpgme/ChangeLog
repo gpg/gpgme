@@ -1,3 +1,11 @@
+2002-05-10  Werner Koch  <wk@gnupg.org>
+
+	* key.h (gpgme_key_s): Add OTRUST.
+	* keylist.c (set_ownertrust): New.
+	(keylist_colon_handler): Get the ownertrust value
+	* key.c (gpgme_key_get_string_attr,gpgme_key_get_ulong_attr):
+	Return that value.
+
 2002-05-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* w32-util.c: New static variable GET_PATH_LOCK.
