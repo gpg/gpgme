@@ -1240,6 +1240,9 @@ struct _gpgme_op_import_result
   /* Number of secret keys unchanged.  */
   int secret_unchanged;
 
+  /* Number of new keys skipped.  */
+  int skipped_new_keys;
+
   /* Number of keys not imported.  */
   int not_imported;
 
