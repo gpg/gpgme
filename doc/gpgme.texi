@@ -1653,7 +1653,9 @@ otherwise.
 This is the trust level of a trust item.
 
 @item GPGME_ATTR_TYPE
-This is the type of a trust item.
+This returns information about the type of key.  For the string function
+this will eother be "PGP" or "X.509".  The integer function returns 0
+for PGP and 1 for X.509.  It is also used for the type of a trust item.
 
 @item GPGME_ATTR_IS_SECRET
 This specifies if the key is a secret key.  It is representable as a

@@ -1,3 +1,7 @@
+2002-08-14  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.texi (Information About Keys): Changed GPGME_ATTR_TYPE.
+
 2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Deleting Keys): Say that secret keys might not be
