@@ -36,22 +36,12 @@
 #define ath_mutex_destroy ATH_PREFIX(ath_mutex_destroy)
 #define ath_mutex_lock ATH_PREFIX(ath_mutex_lock)
 #define ath_mutex_unlock ATH_PREFIX(ath_mutex_unlock)
-#define ath_mutex_pthread_available \
-  ATH_PREFIX(ath_mutex_pthread_available)
-#define ath_mutex_pth_available \
-  ATH_PREFIX(ath_mutex_pth_available)
-#define ath_mutex_dummy_available \
-  ATH_PREFIX(ath_mutex_dummy_available)
 #define ath_read ATH_PREFIX(ath_read)
 #define ath_write ATH_PREFIX(ath_write)
 #define ath_select ATH_PREFIX(ath_select)
 #define ath_waitpid ATH_PREFIX(ath_waitpid)
-#define ath_mutex_pthread_available \
-  ATH_PREFIX(ath_mutex_pthread_available)
-#define ath_mutex_pthr_available \
-  ATH_PREFIX(ath_mutex_pthr_available)
-#define ath_mutex_dummy_available \
-  ATH_PREFIX(ath_mutex_dummy_available)
+#define ath_pthread_available ATH_PREFIX(ath_pthread_available)
+#define ath_pth_available ATH_PREFIX(ath_pth_available)
 #endif
 
 
