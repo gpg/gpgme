@@ -167,7 +167,9 @@ gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
   if (!pattern || !*pattern)
     return mk_error (Invalid_Value);
 
-  err = _gpgme_op_reset (ctx, 0);
+  /* Trustlist operations are always "synchronous" in the sense that
+     we don't add ourself to the global FD table.  */
+  err = _gpgme_op_reset (ctx, 1);
   if (err)
     goto leave;
 
@@ -209,11 +211,26 @@ gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
 
   if (!ctx->trust_queue)
     {
-      _gpgme_wait_on_condition (ctx, 1, &ctx->key_cond);
-      if (ctx->error)
-	return ctx->error;
+      GpgmeError err = _gpgme_wait_on_condition (ctx, &ctx->key_cond);
+      if (err)
+	{
+	  ctx->pending = 0;
+	  return err;
+	}
+      if (!ctx->pending)
+	{
+	  /* The operation finished.  Because not all keys might have
+	     been returned to the caller yet, we just reset the
+	     pending flag to 1.  This will cause us to call
+	     _gpgme_wait_on_condition without any active file
+	     descriptors, but that is a no-op, so it is safe.  */
+	  ctx->pending = 1;
+	}
       if (!ctx->key_cond)
-	return mk_error (EOF);
+	{
+	  ctx->pending = 0;
+	  return mk_error (EOF);
+	}
       ctx->key_cond = 0; 
       assert (ctx->trust_queue);
     }
