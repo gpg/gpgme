@@ -1,3 +1,14 @@
+2002-02-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/Makefile.am (key_id): Update value.
+	(all-local): Add .key to keyid filename.
+	(./private-keys-v1.d/$(key_id)): Renamed to ...
+	(./private-keys-v1.d/$(key_id).key): ... this.
+	(all-local): Add ./gpgsm.conf, ./trustlist.txt.
+	(./gpgsm.conf, ./trustlist.txt): New target.
+	* gpgsm/567064FE6D14A17B2D811ABB407728BC558AA455: Renamed to ...
+	* gpgsm/32100C27173EF6E9C4E9A25D3D69F86D37A4F939: ... this.
+
 2002-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-import.c (print_op_info): New function.
