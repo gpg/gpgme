@@ -24,7 +24,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../gpgme/gpgme.h"
+#include <gpgme.h>
 
 #define fail_if_err(a) do { if(a) {                                       \
                                fprintf (stderr, "%s:%d: GpgmeError %s\n", \
