@@ -120,12 +120,8 @@ main (int argc, char **argv )
     err = gpgme_data_new_from_mem ( &text,
                                     test_text1, strlen (test_text1), 0 );
     fail_if_err (err);
-  #if 1
     err = gpgme_data_new_from_mem ( &sig,
                                     test_sig1, strlen (test_sig1), 0 );
-  #else
-    err = gpgme_data_new_from_file ( &sig, "xx1", 1 );
-  #endif
     fail_if_err (err);
 
     puts ("checking a valid message:\n");
