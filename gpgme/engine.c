@@ -158,7 +158,8 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 
 
 gpgme_error_t
-_gpgme_engine_new (gpgme_protocol_t proto, engine_t *r_engine)
+_gpgme_engine_new (gpgme_protocol_t proto, engine_t *r_engine,
+		   const char *lc_ctype, const char *lc_messages)
 {
   engine_t engine;
 
@@ -183,7 +184,9 @@ _gpgme_engine_new (gpgme_protocol_t proto, engine_t *r_engine)
   engine->ops = engine_ops[proto];
   if (engine_ops[proto]->new)
     {
-      gpgme_error_t err = (*engine_ops[proto]->new) (&engine->engine);
+      gpgme_error_t err = (*engine_ops[proto]->new) (&engine->engine,
+						     lc_ctype,
+						     lc_messages);
       if (err)
 	{
 	  free (engine);

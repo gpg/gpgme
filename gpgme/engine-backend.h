@@ -33,7 +33,8 @@ struct engine_ops
   const char *(*get_file_name) (void);
   const char *(*get_version) (void);
   const char *(*get_req_version) (void);
-  gpgme_error_t (*new) (void **r_engine);
+  gpgme_error_t (*new) (void **r_engine,
+			const char *lc_ctype, const char *lc_messages);
 
   /* Member functions.  */
   void (*release) (void *engine);

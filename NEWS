@@ -38,6 +38,24 @@ Noteworthy changes in version 0.4.3 (unreleased)
    than an unsigned long (the old class field is preserved for
    backwards compatibility).
 
+ * A new function gpgme_set_locale() is provided to allow configuring
+   the locale for the crypto backend.  This is necessary for text
+   terminals so that programs like the pinentry can be started with
+   the right locale settings for the terminal the application is running
+   on, in case the terminal has different settings than the system
+   default (for example, if it is a remote terminal).  You are highly
+   recommended to call the following functions directly after
+   gpgme_check_version:
+
+   #include <locale.h>
+
+   setlocale (LC_ALL, "");
+   gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
+   gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
+
+   GPGME can not do this for you, as setlocale is not thread safe, and
+   there is no alternative.
+
  * Interface changes relative to the 0.4.2 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_strerror_t		NEW
@@ -45,6 +63,7 @@ gpgme_get_key			CHANGED: Fails correctly if key ID not unique.
 gpgme_key_t			EXTENDED: New field can_authenticate.
 gpgme_subkey_t			EXTENDED: New field can_authenticate.
 gpgme_new_signature_t		CHANGED: New type for class field.
+gpgme_set_locale		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

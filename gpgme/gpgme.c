@@ -26,12 +26,20 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <locale.h>
 
 #include "util.h"
 #include "context.h"
 #include "ops.h"
 #include "wait.h"
 
+
+/* The default locale.  */
+DEFINE_STATIC_LOCK (def_lc_lock);
+static char *def_lc_ctype;
+static char *def_lc_messages;
+
+
 /* Create a new context as an environment for GPGME crypto
    operations.  */
 gpgme_error_t
@@ -46,6 +54,37 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   ctx->include_certs = 1;
   ctx->protocol = GPGME_PROTOCOL_OpenPGP;
   _gpgme_fd_table_init (&ctx->fdt);
+
+  LOCK (def_lc_lock);
+  if (def_lc_ctype)
+    {
+      ctx->lc_ctype = strdup (def_lc_ctype);
+      if (!ctx->lc_ctype)
+	{
+	  UNLOCK (def_lc_lock);
+	  free (ctx);
+	  return gpg_error_from_errno (errno);
+	}
+    }
+  else
+    def_lc_ctype = NULL;
+
+  if (def_lc_messages)
+    {
+      ctx->lc_messages = strdup (def_lc_messages);
+      if (!ctx->lc_messages)
+	{
+	  UNLOCK (def_lc_lock);
+	  if (ctx->lc_ctype)
+	    free (ctx->lc_ctype);
+	  free (ctx);
+	  return gpg_error_from_errno (errno);
+	}
+    }
+  else
+    def_lc_messages = NULL;
+  UNLOCK (def_lc_lock);
+
   *r_ctx = ctx;
   return 0;
 }
@@ -61,6 +100,10 @@ gpgme_release (gpgme_ctx_t ctx)
   gpgme_signers_clear (ctx);
   if (ctx->signers)
     free (ctx->signers);
+  if (ctx->lc_ctype)
+    free (ctx->lc_ctype);
+  if (ctx->lc_messages)
+    free (ctx->lc_messages);
   free (ctx);
 }
 
@@ -267,7 +310,70 @@ gpgme_get_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
   *io_cbs = ctx->io_cbs;
 }
 
+
+/* This function sets the locale for the context CTX, or the default
+   locale if CTX is a null pointer.  */
+gpgme_error_t
+gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
+{
+  int failed = 0;
+  char *new_lc_ctype;
+  char *new_lc_messages;
 
+#define PREPARE_ONE_LOCALE(lcat, ucat)				\
+  if (!failed && value						\
+      && (category == LC_ALL || category == LC_ ## ucat))	\
+    {								\
+      new_lc_ ## lcat = strdup (value);				\
+      if (!new_lc_ ## lcat)					\
+        failed = 1;						\
+    }								\
+  else								\
+    new_lc_ ## lcat = NULL;
+
+  PREPARE_ONE_LOCALE (ctype, CTYPE);
+  PREPARE_ONE_LOCALE (messages, MESSAGES);
+
+  if (failed)
+    {
+      int saved_errno = errno;
+
+      if (new_lc_ctype)
+	free (new_lc_ctype);
+      if (new_lc_messages)
+	free (new_lc_messages);
+
+      return gpg_error_from_errno (saved_errno);
+    }
+
+#define SET_ONE_LOCALE(lcat, ucat)			\
+  if (category == LC_ALL || category == LC_ ## ucat)	\
+    {							\
+      if (ctx)						\
+	{						\
+	  if (ctx->lc_ ## lcat)				\
+	    free (ctx->lc_ ## lcat);			\
+	  ctx->lc_ ## lcat = new_lc_ ## lcat;		\
+	}						\
+      else						\
+	{						\
+	  if (def_lc_ ## lcat)				\
+	    free (def_lc_ ## lcat);			\
+	  def_lc_ ## lcat = new_lc_ ## lcat;		\
+	}						\
+    }
+
+  if (!ctx)
+    LOCK (def_lc_lock);
+  SET_ONE_LOCALE (ctype, CTYPE);
+  SET_ONE_LOCALE (messages, MESSAGES);
+  if (!ctx)
+    UNLOCK (def_lc_lock);
+
+  return 0;
+}
+
+
 const char *
 gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo)
 {

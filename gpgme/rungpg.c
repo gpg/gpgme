@@ -325,7 +325,7 @@ gpg_release (void *engine)
 
 
 static gpgme_error_t
-gpg_new (void **engine)
+gpg_new (void **engine, const char *lc_ctype, const char *lc_messages)
 {
   engine_gpg_t gpg;
   gpgme_error_t rc = 0;
