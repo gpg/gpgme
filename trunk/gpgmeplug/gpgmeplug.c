@@ -2243,6 +2243,7 @@ importCertificateWithFPR( const char* fingerprint, char** additional_info )
   char* buf;
   const char* tmp1;
   char* tmp2;
+  int count = 0;
 
   err = gpgme_new( &ctx );
   /*fprintf( stderr,  "2: gpgme returned %d\n", err );*/
@@ -2305,14 +2306,22 @@ importCertificateWithFPR( const char* fingerprint, char** additional_info )
   free (buf);
   buf = NULL;
 
-  err = gpgme_op_import( ctx, keydata );
+  err = gpgme_op_import_ext( ctx, keydata, &count );
   *additional_info = gpgme_get_op_info( ctx, 0 );
   if( err ) {    
-    fprintf( stderr,  "gpgme_op_import returned %d\n", err );
+    fprintf( stderr,  "gpgme_op_import_ext returned %d\n", err );
     gpgme_recipients_release( recips );
     gpgme_data_release( keydata );
     gpgme_release( ctx );
     return err;
+  }
+  if( count < 1 ) {
+    /* we didn't import anything?!? */
+    fprintf( stderr,  "gpgme_op_import_ext did not import any certificates\n" );
+    gpgme_recipients_release( recips );
+    gpgme_data_release( keydata );
+    gpgme_release( ctx );
+    return -1; /* FIXME */
   }
 
   gpgme_recipients_release( recips );
@@ -2326,6 +2335,7 @@ importCertificateFromMem( const char* data, size_t length , char** additional_in
   GpgmeError err;
   GpgmeCtx  ctx;
   GpgmeData keydata;
+  int count = 0;
 
   err = gpgme_new( &ctx );
   /*fprintf( stderr,  "2: gpgme returned %d\n", err );*/
@@ -2342,13 +2352,20 @@ importCertificateFromMem( const char* data, size_t length , char** additional_in
     return err;
   }
 
-  err = gpgme_op_import( ctx, keydata );
+  err = gpgme_op_import_ext( ctx, keydata, &count );
   *additional_info = gpgme_get_op_info( ctx, 0 );
-  if( err ) {    
-    fprintf( stderr,  "gpgme_op_import returned %d\n", err );
+  if( err) {
+    fprintf( stderr,  "gpgme_op_import_ext returned %d\n", err );
     gpgme_data_release( keydata );    
     gpgme_release( ctx );
     return err;
+  }
+  if( count < 1 ) {
+    /* we didn't import anything?!? */
+    fprintf( stderr,  "gpgme_op_import_ext did not import any certificate\n", err );    
+    gpgme_data_release( keydata );    
+    gpgme_release( ctx );
+    return -1; /* FIXME */
   }
 
   gpgme_data_release( keydata );    
