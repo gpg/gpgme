@@ -1,3 +1,7 @@
+2004-03-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (I/O Callback Example Qt): New section by Marc Mutz.
+
 2004-02-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (cancellation): New section.
