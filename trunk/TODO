@@ -36,8 +36,6 @@
 
 * Operations
 ** Import, export status handler.
-** Should --delete silently delete secret keys or is there a need for
-   another flag or a callback?
 
 * Error Values
 ** Map ASSUAN error values.
