@@ -30,6 +30,11 @@
 #include "data.h"
 #include "util.h"
 
+#if defined(HAVE_W32_SYSTEM) && !defined(EOPNOTSUPP)
+#define EOPNOTSUPP VALUE_FOR_EOPNOTSUPP
+#endif
+
+
 
 /* Create a new data buffer filled with LENGTH bytes starting from
    OFFSET within the file FNAME or stream STREAM (exactly one must be

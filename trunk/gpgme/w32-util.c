@@ -51,6 +51,10 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
   DWORD n1, nbytes;
   char *result = NULL;
 
+#ifdef HAVE_W32_SYSTEM
+#warning Check that this code matches the one used by gnupg
+#endif
+
   if (!root)
     root_key = HKEY_CURRENT_USER;
   else if (!strcmp (root, "HKEY_CLASSES_ROOT"))
@@ -120,7 +124,7 @@ _gpgme_get_gpg_path (void)
 
   LOCK (get_path_lock);
   if (!gpg_program)
-    gpg_program = (char*)find_program_in_registry ("gpgProgram");
+    gpg_program = find_program_in_registry ("gpgProgram");
 #ifdef GPG_PATH
   if (!gpg_program)
     gpg_program = GPG_PATH;
@@ -136,7 +140,7 @@ _gpgme_get_gpgsm_path (void)
 
   LOCK (get_path_lock);
   if (!gpgsm_program)
-    gpgsm_program = (char*)find_program_in_registry ("gpgsmProgram");
+    gpgsm_program = find_program_in_registry ("gpgsmProgram");
 #ifdef GPGSM_PATH
   if (!gpgsm_program)
     gpgsm_program = GPGSM_PATH;

@@ -123,7 +123,7 @@ main (int argc, char **argv )
 
     opt.homedir = getenv("GNUPGHOME");
     if( !opt.homedir || !*opt.homedir ) {
-      #ifdef HAVE_DRIVE_LETTERS
+      #ifdef HAVE_DOSISH_SYSTEM
 	opt.homedir = "c:/gnupg";
       #else
 	opt.homedir = "~/.gnupg";

@@ -19,10 +19,11 @@
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA.  */
 
-#ifndef _WIN32
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
+
+#ifndef HAVE_W32_SYSTEM
 
 #include <stdlib.h>
 #include <string.h>
@@ -1597,4 +1598,5 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_io_event,
     gpgsm_cancel
   };
-#endif
+
+#endif /*!HAVE_W32_SYSTEM*/

@@ -33,6 +33,11 @@
 #include "ops.h"
 #include "io.h"
 
+#if defined(HAVE_W32_SYSTEM) && !defined(EOPNOTSUPP)
+#define EOPNOTSUPP VALUE_FOR_EOPNOTSUPP
+#endif
+
+
 
 gpgme_error_t
 _gpgme_data_new (gpgme_data_t *r_dh, struct _gpgme_data_cbs *cbs)

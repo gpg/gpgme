@@ -1,3 +1,17 @@
+2005-03-09  Werner Koch  <wk@g10code.com>
+
+	* acinclude.m4 (GNUPG_CHECK_VA_COPY): Assume no when cross-compiling.
+
+	* Makefile.am (EXTRA_DIST): Include autogen.sh
+
+	* autogen.sh: Added the usual code to build for W32 (--build-w32).
+
+	* configure.ac: Fixed the mingw32 host string, removed OS/2 stuff.
+	(HAVE_DRIVE_LETTERS): Removed.
+	(HAVE_W32_SYSTEM): Added.
+	(AC_GNU_SOURCE): New to replace the identical AH_VERBATIM.
+	(AH_BOTTOM): Added.
+
 2004-12-28  Werner Koch  <wk@g10code.com>
 
 	Released 1.0.2.
@@ -564,7 +578,7 @@
 	* autogen.sh: Added option --build-w32.
 
 
- Copyright 2001, 2002, 2003, 2004 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

@@ -50,8 +50,11 @@ dnl   Actual test code taken from glib-1.1.
 AC_DEFUN([GNUPG_CHECK_VA_COPY],
 [ AC_MSG_CHECKING(whether va_lists must be copied by value)
   AC_CACHE_VAL(gnupg_cv_must_copy_va_byval,[
-    gnupg_cv_must_copy_va_byval=no
-    AC_TRY_RUN([
+    if test "$cross_compiling" = yes; then
+      gnupg_cv_must_copy_va_byval=no
+    else
+      gnupg_cv_must_copy_va_byval=no
+      AC_TRY_RUN([
        #include <stdarg.h>
        void f (int i, ...)
        {
@@ -69,10 +72,15 @@ AC_DEFUN([GNUPG_CHECK_VA_COPY],
           f (0, 42);
             return 0;
        }
-    ],gnupg_cv_must_copy_va_byval=yes)
+      ],gnupg_cv_must_copy_va_byval=yes)
+    fi
   ])
   if test "$gnupg_cv_must_copy_va_byval" = yes; then
      AC_DEFINE(MUST_COPY_VA_BYVAL,1,[used to implement the va_copy macro])
   fi
-  AC_MSG_RESULT($gnupg_cv_must_copy_va_byval)
+  if test "$cross_compiling" = yes; then
+    AC_MSG_RESULT(assuming $gnupg_cv_must_copy_va_byval)
+  else
+    AC_MSG_RESULT($gnupg_cv_must_copy_va_byval)
+  fi
 ])

@@ -29,6 +29,62 @@ check_version () {
 }
 
 
+DIE=no
+
+# Used to cross-compile for Windows.
+if test "$1" = "--build-w32"; then
+    tmp=`dirname $0`
+    tsdir=`cd "$tmp"; pwd`
+    shift
+    if [ ! -f $tsdir/config.guess ]; then
+        echo "$tsdir/config.guess not found" >&2
+        exit 1
+    fi
+    build=`$tsdir/config.guess`
+
+    [ -z "$w32root" ] && w32root="$HOME/w32root"
+    echo "Using $w32root as standard install directory" >&2
+    
+    # See whether we have the Debian cross compiler package or the
+    # old mingw32/cpd system
+    if i586-mingw32msvc-gcc --version >/dev/null 2>&1 ; then
+        host=i586-mingw32msvc
+        crossbindir=/usr/$host/bin
+    else
+       host=i386--mingw32
+       if ! mingw32 --version >/dev/null; then
+          echo "We need at least version 0.3 of MingW32/CPD" >&2
+          exit 1
+       fi
+       crossbindir=`mingw32 --install-dir`/bin
+       # Old autoconf version required us to setup the environment
+       # with the proper tool names.
+       CC=`mingw32 --get-path gcc`
+       CPP=`mingw32 --get-path cpp`
+       AR=`mingw32 --get-path ar`
+       RANLIB=`mingw32 --get-path ranlib`
+       export CC CPP AR RANLIB 
+    fi
+   
+    if [ -f "$tsdir/config.log" ]; then
+        if ! head $tsdir/config.log | grep "$host" >/dev/null; then
+            echo "Pease run a 'make distclean' first" >&2
+            exit 1
+        fi
+    fi
+
+    ./configure --enable-maintainer-mode  --prefix=${w32root}  \
+            --host=i586-mingw32msvc --build=${build} \
+            --with-gpg-error-prefix=${w32root}  \
+            --disable-shared --with-gpgsm=c:/gnupg/gpgsm.exe
+
+    exit $?
+fi
+
+
+
+
+
 # Grep the required versions from configure.ac
 autoconf_vers=`sed -n '/^AC_PREREQ(/ { 
 s/^.*(\(.*\))/\1/p

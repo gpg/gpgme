@@ -21,12 +21,15 @@
 #ifndef ATH_H
 #define ATH_H
 
-#ifdef _WIN32
-struct msghdr { int dummy; };
-typedef int socklen_t;
+#ifdef HAVE_W32_SYSTEM
+  /* fixme: Check how we did it in libgcrypt.  */
+  struct msghdr { int dummy; };
+  typedef int socklen_t;
 # include <windows.h>
 # include <io.h>
-#else
+
+#else /*!HAVE_W32_SYSTEM*/
+
 # ifdef HAVE_SYS_SELECT_H
 #  include <sys/select.h>
 # else
@@ -34,7 +37,8 @@ typedef int socklen_t;
 # endif
 # include <sys/types.h>
 # include <sys/socket.h>
-#endif
+
+#endif  /*!HAVE_W32_SYSTEM*/
 
 
 
