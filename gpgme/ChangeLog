@@ -1,3 +1,38 @@
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.c (gpg_inbound_handler, write_mem_data, write_cb_data,
+	gpg_outbound_handler): Moved to ...
+	* data.c (_gpgme_data_inbound_handler, write_mem_data,
+	write_cb_data, _gpgme_data_outbound_handler): ... here.  Make the
+	_gpgme_* ones non-static.
+	* data.c: Include io.h.
+
+	* ops.h (_gpgme_data_inbound_handler): New prototype.
+	(_gpgme_data_outbound_handler): Likewise.
+	(_gpgme_gpg_spawn): Use these new functions.
+
+	* engine-gpgsm.h (_gpgme_gpgsm_op_decrypt, _gpgme_gpgsm_op_delete,
+	_gpgme_gpgsm_op_encrypt, _gpgme_gpgsm_op_export,
+	_gpgme_gpgsm_op_genkey, _gpgme_gpgsm_op_import,
+	_gpgme_gpgsm_op_keylist, _gpgme_gpgsm_op_sign,
+	_gpgme_gpgsm_op_trustlist, _gpgme_gpgsm_op_verify,
+	_gpgme_gpgsm_start, _gpgme_gpgsm_set_status_handler): New prototype.
+	Include <rungpg.h> for status handler function.
+
+	* engine-gpgsm.c (struct gpgsm_object_s): New members input_fd,
+	input_data, output_fd, output_data, message_fd, message_data, command
+	and status.
+	(_gpgme_gpgsm_new): Open input, output and message pipes before
+	connecting to the client.  Close server's ends afterwards.
+	(_gpgme_gpgsm_release): Close open file descriptors.  Remove
+	server process from wait queue.
+	(_gpgme_gpgsm_op_verify, _gpgme_gpgsm_start,
+	_gpgme_gpgsm_set_status_handler, gpgms_status_handler): New function.
+	
+	* engine.c (_gpgme_engine_start): Implement for GPGME_PROTOCOL_CMS.
+	(_gpgme_engine_set_status_handler): Likewise.
+	(_gpgme_engine_op_verify): Likewise.
+
 2001-11-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* context.h: Do not include rungpg.h, but engine.h.
