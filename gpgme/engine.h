@@ -23,10 +23,44 @@
 #define ENGINE_H
 
 #include "types.h"
+#include "rungpg.h"
 
 const char *_gpgme_engine_get_path (GpgmeProtocol proto);
 const char *_gpgme_engine_get_version (GpgmeProtocol proto);
 GpgmeError _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine);
 void _gpgme_engine_release (EngineObject engine);
+void _gpgme_engine_set_status_handler (EngineObject engine,
+				       GpgStatusHandler fnc, void *fnc_value);
+GpgmeError _gpgme_engine_set_command_handler (EngineObject engine,
+					      GpgCommandHandler fnc,
+					      void *fnc_value);
+GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject gpg,
+						 GpgColonLineHandler fnc,
+						 void *fnc_value);
+void _gpgme_engine_set_verbosity (EngineObject engine, int verbosity);
+GpgmeError _gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph,
+				     GpgmeData plain);
+GpgmeError _gpgme_engine_op_delete (EngineObject engine, GpgmeKey key,
+				    int allow_secret);
+GpgmeError _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
+				     GpgmeData plain, GpgmeData ciph,
+				     int use_armor);
+GpgmeError _gpgme_engine_op_export (EngineObject engine, GpgmeRecipients recp,
+				    GpgmeData keydata, int use_armor);
+GpgmeError _gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data,
+				    int use_armor);
+GpgmeError _gpgme_engine_op_import (EngineObject engine, GpgmeData keydata);
+GpgmeError _gpgme_engine_op_keylist (EngineObject engine, const char *pattern,
+				     int secret_only,
+				     int keylist_mode);
+GpgmeError _gpgme_engine_op_sign (EngineObject engine, GpgmeData in,
+				  GpgmeData out, GpgmeSigMode mode,
+				  int use_armor, int use_textmode,
+				  GpgmeCtx ctx /* FIXME */);
+GpgmeError _gpgme_engine_op_trustlist (EngineObject engine,
+				       const char *pattern);
+GpgmeError _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
+				    GpgmeData text);
+GpgmeError _gpgme_engine_start (EngineObject engine, void *opaque);
 
 #endif /* ENGINE_H */

@@ -38,49 +38,46 @@ import_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
      * a progress callback */
 }
 
-
-
 GpgmeError
-gpgme_op_import_start ( GpgmeCtx c, GpgmeData keydata )
+gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
 {
-    int rc = 0;
-    int i;
+  int err = 0;
 
-    fail_on_pending_request( c );
-    c->pending = 1;
+  fail_on_pending_request (ctx);
+  ctx->pending = 1;
 
-    /* create a process object */
-    _gpgme_gpg_release (c->gpg); c->gpg = NULL;
-    rc = _gpgme_gpg_new ( &c->gpg );
-    if (rc)
-        goto leave;
+  _gpgme_engine_release (ctx->engine);
+  ctx->engine = NULL;
+  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
+			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  if (err)
+    goto leave;
 
-    _gpgme_gpg_set_status_handler ( c->gpg, import_status_handler, c );
-
-    /* build the commandline */
-    _gpgme_gpg_add_arg ( c->gpg, "--import" );
-    for ( i=0; i < c->verbosity; i++ )
-        _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
-    
-    /* Check the supplied data */
-    if ( gpgme_data_get_type (keydata) == GPGME_DATA_TYPE_NONE ) {
-        rc = mk_error (No_Data);
-        goto leave;
+  /* Check the supplied data */
+  if (gpgme_data_get_type (keydata) == GPGME_DATA_TYPE_NONE)
+    {
+      err = mk_error (No_Data);
+      goto leave;
     }
-    _gpgme_data_set_mode (keydata, GPGME_DATA_MODE_OUT );
+  _gpgme_data_set_mode (keydata, GPGME_DATA_MODE_OUT);
 
-    _gpgme_gpg_add_data ( c->gpg, keydata, 0 );
+  _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
+  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
-    rc = _gpgme_gpg_spawn ( c->gpg, c );
+  _gpgme_engine_op_import (ctx->engine, keydata);
+
+  if (!err)
+    err = _gpgme_engine_start (ctx->engine, ctx);
 
  leave:
-    if (rc) {
-        c->pending = 0; 
-        _gpgme_gpg_release ( c->gpg ); c->gpg = NULL;
+  if (err)
+    {
+      ctx->pending = 0;
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
     }
-    return rc;
+  return err;
 }
-
 
 /**
  * gpgme_op_import:

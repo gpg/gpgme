@@ -37,9 +37,6 @@ void _gpgme_thaw_fd ( int fd );
 
 
 /*-- recipient.c --*/
-void _gpgme_append_gpg_args_from_recipients (
-    const GpgmeRecipients rset,
-    GpgObject gpg );
 int _gpgme_recipients_all_valid ( const GpgmeRecipients rset );
 
 

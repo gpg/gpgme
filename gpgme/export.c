@@ -36,65 +36,45 @@ export_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
     /* FIXME: Need to do more */
 }
 
-
 GpgmeError
-gpgme_op_export_start ( GpgmeCtx c, GpgmeRecipients recp,
-                         GpgmeData keydata )
+gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData keydata)
 {
-    int rc = 0;
-    int i;
+  GpgmeError err = 0;
 
-    fail_on_pending_request( c );
-    c->pending = 1;
+  fail_on_pending_request (ctx);
+  ctx->pending = 1;
 
-    /* create a process object */
-    _gpgme_gpg_release (c->gpg); c->gpg = NULL;
-    rc = _gpgme_gpg_new ( &c->gpg );
-    if (rc)
-        goto leave;
+  _gpgme_engine_release (ctx->engine);
+  ctx->engine = NULL;
 
-    _gpgme_gpg_set_status_handler ( c->gpg, export_status_handler, c );
+  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
+			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  if (err)
+    goto leave;
 
-    /* build the commandline */
-    _gpgme_gpg_add_arg ( c->gpg, "--export" );
-    if ( c->use_armor )
-        _gpgme_gpg_add_arg ( c->gpg, "--armor" );
-    for ( i=0; i < c->verbosity; i++ )
-        _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
-
-    if ( !keydata || gpgme_data_get_type (keydata) != GPGME_DATA_TYPE_NONE ) {
-        rc = mk_error (Invalid_Value);
-        goto leave;
+  if (!keydata || gpgme_data_get_type (keydata) != GPGME_DATA_TYPE_NONE)
+    {
+      err = mk_error (Invalid_Value);
+      goto leave;
     }
-    _gpgme_data_set_mode (keydata, GPGME_DATA_MODE_IN );
-    _gpgme_gpg_add_data ( c->gpg, keydata, 1 );
-    _gpgme_gpg_add_arg ( c->gpg, "--" );
+  _gpgme_data_set_mode (keydata, GPGME_DATA_MODE_IN);
 
-    { 
-       void *ec;
-       const char *s;
-    
-       rc = gpgme_recipients_enum_open ( recp, &ec );
-       if ( rc )
-           goto leave;
-       while ( (s = gpgme_recipients_enum_read ( recp, &ec )) )
-           _gpgme_gpg_add_arg (c->gpg, s);
-       rc = gpgme_recipients_enum_close ( recp, &ec );
-       if ( rc )
-           goto leave;
-    }
+  _gpgme_engine_set_status_handler (ctx->engine, export_status_handler, ctx);
+  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
-    rc = _gpgme_gpg_spawn ( c->gpg, c );
+  err = _gpgme_engine_op_export (ctx->engine, recp, keydata, ctx->use_armor);
+  if (!err)
+    err = _gpgme_engine_start (ctx->engine, ctx);
 
  leave:
-    if (rc) {
-        c->pending = 0; 
-        _gpgme_gpg_release ( c->gpg ); c->gpg = NULL;
+  if (err)
+    {
+      ctx->pending = 0; 
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
     }
-    return rc;
+  return err;
 }
-
-
 
 /**
  * gpgme_op_export:

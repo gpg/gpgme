@@ -154,55 +154,49 @@ trustlist_colon_handler ( GpgmeCtx ctx, char *line )
         ctx->key_cond = 1;
 }
 
-
-
 GpgmeError
-gpgme_op_trustlist_start ( GpgmeCtx c, const char *pattern, int max_level )
+gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
 {
-    GpgmeError rc = 0;
+  GpgmeError err = 0;
 
-    fail_on_pending_request( c );
-    if ( !pattern || !*pattern ) {
-        return mk_error (Invalid_Value);
-    }
+  fail_on_pending_request (ctx);
+  if (!pattern || !*pattern)
+    return mk_error (Invalid_Value);
 
-    c->pending = 1;
+  ctx->pending = 1;
 
-    _gpgme_release_result (c);
-    c->out_of_core = 0;
+  _gpgme_release_result (ctx);
+  ctx->out_of_core = 0;
 
-    if ( c->gpg ) {
-        _gpgme_gpg_release ( c->gpg ); 
-        c->gpg = NULL;
+  if (ctx->engine)
+    {
+      _gpgme_engine_release (ctx->engine); 
+      ctx->engine = NULL;
     }
     
-    rc = _gpgme_gpg_new ( &c->gpg );
-    if (rc)
-        goto leave;
+  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
+			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  if (err)
+    goto leave;
 
-    _gpgme_gpg_set_status_handler ( c->gpg, trustlist_status_handler, c );
-    rc = _gpgme_gpg_set_colon_line_handler ( c->gpg,
-                                             trustlist_colon_handler, c );
-    if (rc)
-        goto leave;
+  _gpgme_engine_set_status_handler (ctx->engine, trustlist_status_handler, ctx);
+  err = _gpgme_engine_set_colon_line_handler (ctx->engine,
+					      trustlist_colon_handler, ctx);
+  if (err)
+    goto leave;
 
-    /* build the commandline */
-    _gpgme_gpg_add_arg ( c->gpg, "--with-colons" );
-    _gpgme_gpg_add_arg ( c->gpg, "--list-trust-path" );
-    
-    /* Tell the gpg object about the data */
-    _gpgme_gpg_add_arg ( c->gpg, "--" );
-    _gpgme_gpg_add_arg ( c->gpg, pattern );
+  err =_gpgme_engine_op_trustlist (ctx->engine, pattern);
 
-    /* and kick off the process */
-    rc = _gpgme_gpg_spawn ( c->gpg, c );
+  if (!err)	/* And kick off the process.  */
+    err = _gpgme_engine_start (ctx->engine, ctx);
 
  leave:
-    if (rc) {
-        c->pending = 0; 
-        _gpgme_gpg_release ( c->gpg ); c->gpg = NULL;
-    }
-    return rc;
+  if (err) {
+    ctx->pending = 0; 
+    _gpgme_engine_release (ctx->engine);
+    ctx->engine = NULL;
+  }
+  return err;
 }
 
 

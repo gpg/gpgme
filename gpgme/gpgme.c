@@ -64,22 +64,21 @@ gpgme_new (GpgmeCtx *r_ctx)
  * Release all resources associated with the given context.
  **/
 void
-gpgme_release ( GpgmeCtx c )
+gpgme_release (GpgmeCtx c)
 {
-    if (!c)
-        return;
-    _gpgme_gpg_release ( c->gpg ); 
-    _gpgme_release_result ( c );
-    gpgme_key_release ( c->tmp_key );
-    gpgme_data_release ( c->help_data_1 );
-    gpgme_data_release ( c->notation );
-    gpgme_signers_clear (c);
-    if (c->signers)
-        xfree (c->signers);
-    /* fixme: release the key_queue */
-    xfree (c);
+  if (!c)
+    return;
+  _gpgme_engine_release (c->engine); 
+  _gpgme_release_result (c);
+  gpgme_key_release (c->tmp_key);
+  gpgme_data_release (c->help_data_1);
+  gpgme_data_release (c->notation);
+  gpgme_signers_clear (c);
+  if (c->signers)
+    xfree (c->signers);
+  /* FIXME: Release the key_queue.  */
+  xfree (c);
 }
-
 
 void
 _gpgme_release_result (GpgmeCtx c)

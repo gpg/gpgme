@@ -104,92 +104,91 @@ genkey_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
  * 
  * Return value: 0 for success or an error code
  **/
-
 GpgmeError
-gpgme_op_genkey_start ( GpgmeCtx c, const char *parms,
-                        GpgmeData pubkey, GpgmeData seckey )
+gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
+		       GpgmeData pubkey, GpgmeData seckey)
 {
-    int rc = 0;
-    int i;
-    const char *s, *s2, *sx;
+  int err = 0;
+  int i;
+  const char *s, *s2, *sx;
 
-    fail_on_pending_request( c );
-    c->pending = 1;
+  fail_on_pending_request (ctx);
+  ctx->pending = 1;
 
-    gpgme_data_release (c->help_data_1); c->help_data_1 = NULL;
+  gpgme_data_release (ctx->help_data_1);
+  ctx->help_data_1 = NULL;
 
-    /* create a process object */
-    _gpgme_gpg_release (c->gpg); c->gpg = NULL;
-    rc = _gpgme_gpg_new ( &c->gpg );
-    if (rc)
-        goto leave;
+  _gpgme_engine_release (ctx->engine);
+  ctx->engine = NULL;
+  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
+			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  if (err)
+    goto leave;
 
-    /* We need a special mechanism to get the fd of a pipe here, so
-     * that we can use this for the %pubring and %secring parameters.
-     * We don't have this yet, so we implement only the adding to the
-     * standard keyrings */
-    if ( pubkey || seckey ) {
-        rc = mk_error (Not_Implemented);
-        goto leave;
+  /* We need a special mechanism to get the fd of a pipe here, so
+   * that we can use this for the %pubring and %secring parameters.
+   * We don't have this yet, so we implement only the adding to the
+   * standard keyrings */
+  if (pubkey || seckey)
+    {
+      err = mk_error (Not_Implemented);
+      goto leave;
     }
 
-    _gpgme_gpg_set_status_handler ( c->gpg, genkey_status_handler, c );
-
-    /* build the commandline */
-    _gpgme_gpg_add_arg ( c->gpg, "--gen-key" );
-    if ( c->use_armor )
-        _gpgme_gpg_add_arg ( c->gpg, "--armor" );
-    for ( i=0; i < c->verbosity; i++ )
-        _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
-
-    if ( !pubkey && !seckey )
-        ; /* okay: Add key to the keyrings */
-    else if ( !pubkey
-              || gpgme_data_get_type (pubkey) != GPGME_DATA_TYPE_NONE ) {
-        rc = mk_error (Invalid_Value);
-        goto leave;
+  if (!pubkey && !seckey)
+    ; /* okay: Add key to the keyrings */
+  else if (!pubkey || gpgme_data_get_type (pubkey) != GPGME_DATA_TYPE_NONE)
+    {
+      err = mk_error (Invalid_Value);
+      goto leave;
     }
-    else if ( !seckey
-              || gpgme_data_get_type (seckey) != GPGME_DATA_TYPE_NONE ) {
-        rc = mk_error (Invalid_Value);
-        goto leave;
+  else if (!seckey || gpgme_data_get_type (seckey) != GPGME_DATA_TYPE_NONE)
+    {
+      err = mk_error (Invalid_Value);
+      goto leave;
     }
     
-    if ( pubkey ) {
-        _gpgme_data_set_mode (pubkey, GPGME_DATA_MODE_IN );
-        _gpgme_data_set_mode (seckey, GPGME_DATA_MODE_IN );
-        /* need some more things here */
+  if (pubkey)
+    {
+      _gpgme_data_set_mode (pubkey, GPGME_DATA_MODE_IN);
+      _gpgme_data_set_mode (seckey, GPGME_DATA_MODE_IN);
+      /* FIXME: Need some more things here.  */
     }
 
-
-    if ( (parms = strstr (parms, "<GnupgKeyParms ")) 
-         && (s = strchr (parms, '>'))
-         && (sx = strstr (parms, "format=\"internal\""))
-         && sx < s
-         && (s2 = strstr (s+1, "</GnupgKeyParms>")) ) {
-        /* fixme: check that there are no control statements inside */
-        rc = gpgme_data_new_from_mem ( &c->help_data_1, s+1, s2-s-1, 1 );
+  if ((parms = strstr (parms, "<GnupgKeyParms ")) 
+      && (s = strchr (parms, '>'))
+      && (sx = strstr (parms, "format=\"internal\""))
+      && sx < s
+      && (s2 = strstr (s+1, "</GnupgKeyParms>")))
+    {
+      /* FIXME: Check that there are no control statements inside.  */
+      err = gpgme_data_new_from_mem (&ctx->help_data_1, s+1, s2-s-1, 1);
     }
-    else 
-        rc = mk_error (Invalid_Value);
+  else 
+    err = mk_error (Invalid_Value);
 
-    if (rc )
-        goto leave;
+  if (err)
+    goto leave;
     
-    _gpgme_data_set_mode (c->help_data_1, GPGME_DATA_MODE_OUT );
-    _gpgme_gpg_add_data (c->gpg, c->help_data_1, 0);
+  _gpgme_data_set_mode (ctx->help_data_1, GPGME_DATA_MODE_OUT);
 
-    rc = _gpgme_gpg_spawn ( c->gpg, c );
-    
+  _gpgme_engine_set_status_handler (ctx->engine, genkey_status_handler, ctx);
+  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
+
+  err = _gpgme_engine_op_genkey (ctx->engine, ctx->help_data_1, ctx->use_armor);
+
+  if (!err)
+    err = _gpgme_engine_start (ctx->engine, ctx);
+
  leave:
-    if (rc) {
-        c->pending = 0; 
-        _gpgme_gpg_release ( c->gpg ); c->gpg = NULL;
+  if (err)
+    {
+      ctx->pending = 0; 
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
     }
-    return rc;
+  return err;
 }
-
-
 
 /**
  * gpgme_op_genkey:

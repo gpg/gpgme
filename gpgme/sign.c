@@ -177,8 +177,6 @@ gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData in, GpgmeData out,
 		     GpgmeSigMode mode)
 {
   GpgmeError err = 0;
-  int i;
-  GpgmeKey key;
 
   fail_on_pending_request (ctx);
   ctx->pending = 1;
@@ -192,45 +190,13 @@ gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData in, GpgmeData out,
     return mk_error (Invalid_Value);
         
   /* Create a process object.  */
-  _gpgme_gpg_release (ctx->gpg);
-  ctx->gpg = NULL;
-  err = _gpgme_gpg_new (&ctx->gpg);
+  _gpgme_engine_release (ctx->engine);
+  ctx->engine = NULL;
+  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
+			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
   if (err)
     goto leave;
 
-  _gpgme_gpg_set_status_handler (ctx->gpg, sign_status_handler, ctx);
-
-  err = _gpgme_passphrase_start (ctx);
-  if (err)
-    goto leave;
-
-  /* Build the commandline.  */
-  if (mode == GPGME_SIG_MODE_CLEAR)
-    _gpgme_gpg_add_arg (ctx->gpg, "--clearsign");
-  else
-    {
-      _gpgme_gpg_add_arg (ctx->gpg, "--sign");
-      if (mode == GPGME_SIG_MODE_DETACH)
-	_gpgme_gpg_add_arg (ctx->gpg, "--detach");
-      if (ctx->use_armor)
-	_gpgme_gpg_add_arg (ctx->gpg, "--armor");
-      if (ctx->use_textmode)
-	_gpgme_gpg_add_arg (ctx->gpg, "--textmode");
-    }
-  for (i = 0; i < ctx->verbosity; i++)
-    _gpgme_gpg_add_arg (ctx->gpg, "--verbose");
-  for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
-    {
-      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID,
-						 NULL, 0);
-        if (s)
-	  {
-            _gpgme_gpg_add_arg (ctx->gpg, "-u");
-            _gpgme_gpg_add_arg (ctx->gpg, s);
-	  }
-        gpgme_key_unref (key);
-    }
-    
   /* Check the supplied data.  */
   if (gpgme_data_get_type (in) == GPGME_DATA_TYPE_NONE)
     {
@@ -245,19 +211,25 @@ gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData in, GpgmeData out,
     }
   _gpgme_data_set_mode (out, GPGME_DATA_MODE_IN);
 
-  /* Tell the gpg object about the data.  */
-  _gpgme_gpg_add_data (ctx->gpg, in, 0);
-  _gpgme_gpg_add_data (ctx->gpg, out, 1);
+  err = _gpgme_passphrase_start (ctx);
+  if (err)
+    goto leave;
+
+  _gpgme_engine_set_status_handler (ctx->engine, sign_status_handler, ctx);
+  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
+
+  _gpgme_engine_op_sign (ctx->engine, in, out, mode, ctx->use_armor,
+			 ctx->use_textmode, ctx /* FIXME */);
 
   /* And kick off the process.  */
-  err = _gpgme_gpg_spawn (ctx->gpg, ctx);
+  err = _gpgme_engine_start (ctx->engine, ctx);
   
  leave:
   if (err)
     {
       ctx->pending = 0; 
-      _gpgme_gpg_release (ctx->gpg);
-      ctx->gpg = NULL;
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
     }
   return err;
 }

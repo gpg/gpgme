@@ -222,21 +222,6 @@ gpgme_recipients_enum_close ( const GpgmeRecipients rset, void **ctx )
     return 0;
 }
 
-
-void
-_gpgme_append_gpg_args_from_recipients (
-    const GpgmeRecipients rset,
-    GpgObject gpg )
-{
-    struct user_id_s *r;
-
-    assert (rset);
-    for (r=rset->list ; r; r = r->next ) {
-        _gpgme_gpg_add_arg ( gpg, "-r" );
-        _gpgme_gpg_add_arg ( gpg, r->name );
-    }    
-}
-
 int
 _gpgme_recipients_all_valid ( const GpgmeRecipients rset )
 {

@@ -155,3 +155,301 @@ _gpgme_engine_release (EngineObject engine)
     }
   xfree (engine);
 }
+
+void
+_gpgme_engine_set_verbosity (EngineObject engine, int verbosity)
+{
+  if (!engine)
+    return;
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      while (verbosity-- > 0)
+	_gpgme_gpg_add_arg (engine->engine.gpg, "--verbose");
+      break;
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+}
+
+void
+_gpgme_engine_set_status_handler (EngineObject engine,
+				  GpgStatusHandler fnc, void *fnc_value)
+{
+  if (!engine)
+    return;
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      _gpgme_gpg_set_status_handler (engine->engine.gpg, fnc, fnc_value);
+      break;
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+}
+
+GpgmeError
+_gpgme_engine_set_command_handler (EngineObject engine,
+				  GpgCommandHandler fnc, void *fnc_value)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_set_command_handler (engine->engine.gpg, fnc, fnc_value);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject engine,
+						 GpgColonLineHandler fnc,
+						 void *fnc_value)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_set_colon_line_handler (engine->engine.gpg, fnc,
+						fnc_value);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError
+_gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph, GpgmeData plain)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_decrypt (engine->engine.gpg, ciph, plain);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError
+_gpgme_engine_op_delete (EngineObject engine, GpgmeKey key, int allow_secret)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_delete (engine->engine.gpg, key, allow_secret);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError
+_gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
+			  GpgmeData plain, GpgmeData ciph, int use_armor)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_encrypt (engine->engine.gpg, recp, plain, ciph,
+				    use_armor);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError
+_gpgme_engine_op_export (EngineObject engine, GpgmeRecipients recp,
+			 GpgmeData keydata, int use_armor)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_export (engine->engine.gpg, recp, keydata,
+				   use_armor);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError
+_gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data, int use_armor)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_genkey (engine->engine.gpg, help_data, use_armor);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError
+_gpgme_engine_op_import (EngineObject engine, GpgmeData keydata)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_import (engine->engine.gpg, keydata);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError
+_gpgme_engine_op_keylist (EngineObject engine, const char *pattern, int secret_only,
+			  int keylist_mode)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_keylist (engine->engine.gpg, pattern, secret_only,
+				    keylist_mode);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError
+_gpgme_engine_op_sign (EngineObject engine, GpgmeData in, GpgmeData out,
+		    GpgmeSigMode mode, int use_armor,
+		    int use_textmode, GpgmeCtx ctx /* FIXME */)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_sign (engine->engine.gpg, in, out, mode, use_armor,
+				 use_textmode, ctx);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError
+_gpgme_engine_op_trustlist (EngineObject engine, const char *pattern)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_trustlist (engine->engine.gpg, pattern);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError
+_gpgme_engine_op_verify (EngineObject engine, GpgmeData sig, GpgmeData text)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_verify (engine->engine.gpg, sig, text);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+GpgmeError _gpgme_engine_start (EngineObject engine, void *opaque)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_spawn (engine->engine.gpg, opaque);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      break;
+    default:
+      break;
+    }
+  return 0;
+}

@@ -168,7 +168,7 @@ _gpgme_passphrase_start (GpgmeCtx ctx)
   GpgmeError err = 0;
 
   if (ctx->passphrase_cb)
-    err = _gpgme_gpg_set_command_handler (ctx->gpg, command_handler, ctx);
+    err = _gpgme_engine_set_command_handler (ctx->engine, command_handler, ctx);
   return err;
 }
 
