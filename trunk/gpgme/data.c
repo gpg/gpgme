@@ -22,11 +22,11 @@
 #endif
 
 #include <stdlib.h>
-#include <assert.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
 
+#include "gpgme.h"
 #include "data.h"
 #include "util.h"
 #include "ops.h"
@@ -164,9 +164,8 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
 {
   GpgmeData dh = (GpgmeData) opaque;
   char buffer[BUFFER_SIZE];
+  char *bufp = buffer;
   ssize_t buflen;
-
-  assert (dh);
 
   buflen = read (fd, buffer, BUFFER_SIZE);
   if (buflen < 0)
@@ -177,7 +176,16 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
       return 0;
     }
 
-  return _gpgme_data_append (dh, buffer, buflen);
+  do
+    {
+      ssize_t amt = gpgme_data_write (dh, bufp, buflen);
+      if (amt == 0 || (amt < 0 && errno != EINTR))
+	return GPGME_File_Error;
+      bufp += amt;
+      buflen -= amt;
+    }
+  while (buflen > 0);
+  return 0;
 }
 
 
@@ -186,8 +194,6 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
 {
   GpgmeData dh = (GpgmeData) opaque;
   ssize_t nwritten;
-
-  assert (dh);
 
   if (!dh->pending_len)
     {
