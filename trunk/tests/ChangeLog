@@ -1,3 +1,7 @@
+2004-03-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-keylist.c: Add chain IDs.
+
 2004-03-03  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm/t-export.c (main): Also check exporting 2 certificates.

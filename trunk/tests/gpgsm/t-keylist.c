@@ -48,12 +48,13 @@ keys[] =
   {
     { "3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E", 1, 1007372198, 1038908198, "00",
       "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=D\xc3\xbcsseldorf,C=DE",
-      NULL,
+      "3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E",
       "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=D\xc3\xbcsseldorf,C=DE" },
     { "DFA56FB5FC41E3A8921F77AD1622EEFD9152A5AD", 0, 909684190, 1009821790, "01",
       "1.2.840.113549.1.9.1=#63657274696679407063612E64666E2E6465,"
       "CN=DFN Top Level Certification Authority,OU=DFN-PCA,"
-      "O=Deutsches Forschungsnetz,C=DE", NULL,
+      "O=Deutsches Forschungsnetz,C=DE",
+      "DFA56FB5FC41E3A8921F77AD1622EEFD9152A5AD",
       "1.2.840.113549.1.9.1=#63657274696679407063612E64666E2E6465,"
       "CN=DFN Top Level Certification Authority,OU=DFN-PCA,"
       "O=Deutsches Forschungsnetz,C=DE" },
