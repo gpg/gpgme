@@ -26,10 +26,10 @@
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed:		AGE=0)
 #
-AC_INIT(gpgme, 0.3.7-cvs, [gnupg-devel@gnupg.org])
+AC_INIT(gpgme, 0.3.7, [gnupg-devel@gnupg.org])
 LIBGPGME_LT_CURRENT=8
 LIBGPGME_LT_AGE=2
-LIBGPGME_LT_REVISION=0
+LIBGPGME_LT_REVISION=1
 NEED_GPG_VERSION=1.0.7
 NEED_GPGSM_VERSION=0.3.7
 ##############################################
