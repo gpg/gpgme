@@ -7,6 +7,9 @@ Noteworthy changes in version 0.4.3 (unreleased)
  * gpgme_key_t and gpgme_subkey_t have a new field, can_authenticate,
    that indicates if the key can be used for authentication.
 
+ * gpgme_signature_t's status field is now correctly set to an error
+   with error code GPG_ERR_NO_PUBKEY if public key is not found.
+
  * Interface changes relative to the 0.4.3 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_get_key			CHANGED: Fails correctly if key ID not unique.
