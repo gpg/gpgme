@@ -2255,6 +2255,54 @@ is one of @code{GPGME_VALIDITY_UNKNOWN}, @code{GPGME_VALIDITY_NEVER},
 @item GPGME_ATTR_SIG_STATUS
 This is the same value as returned by @code{gpgme_get_sig_status}.
 
+@item GPGME_ATTR_SIG_SUMMARY
+This returns a bit vector giving a summary of the signature status.
+Itprovides an easy interface to a defined semantic of the signature
+status.  Checking just one bit is sufficient to see whether a signature
+is valid without any restrictions.
+
+The defined bits are:
+  @table @code
+  @item GPGME_SIGSUM_VALID
+  The signature is fully valid.
+
+  @item GPGME_SIGSUM_GREEN
+  The signature is good but one might want to display some extra
+  information.  Check the other bits.
+
+  @item GPGME_SIGSUM_RED
+  The signature is bad. It might be useful to checkother bits and
+  display moe information, i.e. a revoked certificate might not render a
+  signature invalid when the message was received prior to the cause for
+  the revocation.
+
+  @item GPGME_SIGSUM_KEY_REVOKED
+  The key or at least one certificate has been revoked.
+
+  @item GPGME_SIGSUM_KEY_EXPIRED
+  The key or one of the certificates has expired. It is probably a good
+  idea to display the date of the expiration.
+
+  @item GPGME_SIGSUM_SIG_EXPIRED
+  The signature has expired.
+
+  @item GPGME_SIGSUM_KEY_MISSING
+  Can't verifydue to a missing key o certificate.
+
+  @item GPGME_SIGSUM_CRL_MISSING
+  The CRL (or an equivalent mechanism) is not available. 
+
+  @item GPGME_SIGSUM_CRL_TOO_OLD
+  Available CRL is too old.
+
+  @item GPGME_SIGSUM_BAD_POLICY
+  A policy requirement was not met. 
+
+  @item GPGME_SIGSUM_SYS_ERROR
+  A system error occured. 
+
+  @end table
+
 @end table
 @end deftypefun
 

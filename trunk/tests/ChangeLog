@@ -1,3 +1,7 @@
+2002-06-12  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm/t-keylist.c (doit): Print operation info if available.
+
 2002-06-10  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm/t-verify.c (print_sig_stat): Print the error token.
