@@ -25,7 +25,7 @@
 
 #include <gpgme.h>
 
-
+
 #define fail_if_err(err)					\
   do								\
     {								\

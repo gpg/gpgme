@@ -1,3 +1,11 @@
+2003-04-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Trust Item Management): Add data members of
+	GpgmeTrustItem type.
+	(Information About Trust Items): Add note about obsoleteness.
+	(Manipulating Trust Items): Add gpgme_trust_item_ref and
+	gpgme_trust_item_unref.
+
 2003-04-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Verify): Rewritten to take into account new and

@@ -97,6 +97,12 @@ Noteworthy changes in version 0.4.1 (unreleased)
    gpgme_get_sig_string_attr and gpgme_get_sig_key are now deprecated,
    and gpgme_get_notation is removed.
 
+ * GpgmeTrustItem objects have now directly accessible data, so the
+   gpgme_trust_item_get_string_attr and gpgme_trust_item_get_ulong_attr
+   accessor functions are deprecated.  Also, reference counting is
+   available through gpgme_trust_item_ref and gpgme_trust_item_unref
+   (the gpgme_trust_item_release alias for the latter is deprecated).
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
@@ -147,6 +153,12 @@ gpgme_get_sig_ulong_attr	DEPRECATED: Use verify result directly.
 gpgme_get_sig_string_attr	DEPRECATED: Use verify result directly.
 GPGME_SIG_STAT_*		DEPRECATED: Use error value in sig status.
 gpgme_get_sig_status		DEPRECATED: Use verify result directly.
+GpgmeTrustItem			CHANGED: Now has user accessible data members.
+gpgme_trust_item_ref		NEW
+gpgme_trust_item_unref		NEW
+gpgme_trust_item_release	DEPRECATED: Use gpgme_trust_item_unref.
+gpgme_trust_item_get_string_attr DEPRECATED
+gpgme_trust_item_get_ulong_attr	DEPRECATED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)

@@ -63,13 +63,6 @@ struct key_queue_item_s
 };
 
 
-struct trust_queue_item_s
-{
-  struct trust_queue_item_s *next;
-  GpgmeTrustItem item;
-};
-
-
 /* Currently we need it at several places, so we put the definition
    into this header file.  */
 struct gpgme_context_s
@@ -111,7 +104,6 @@ struct gpgme_context_s
   /* Something new is available.  */
   volatile int key_cond;
   struct key_queue_item_s *key_queue;
-  struct trust_queue_item_s *trust_queue;
 
   /* The user provided passphrase callback and its hook value.  */
   GpgmePassphraseCb passphrase_cb;

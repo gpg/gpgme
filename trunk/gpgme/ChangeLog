@@ -1,5 +1,25 @@
 2003-04-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (struct _gpgme_trust_item): New structure.
+	(GpgmeTrustItem): New type.
+	(gpgme_trust_item_ref, gpgme_trust_item_unref): New prototypes.
+	* context.h (struct trust_queue_item_s): Remove structure.
+	(struct gpgme_context_s): Remove trust_queue member.
+	* Makefile.am (libgpgme_la_SOURCES): Add trust-item.c.
+	* trust-item.c: New file.
+	* trustlist.c: Do not include <stdio.h> or <time.h>, but
+	"gpgme.h".
+	(struct trust_queue_item_s): Change to new type op_data_t.
+	(trust_status_handler): Change first argument to void *.
+	(trust_colon_handler): Likewise.
+	(_gpgme_op_trustlist_event_cb): Use op_data_t type.
+	(gpgme_op_trustlist_start): Use op_data_t and rework error
+	handling.
+	(gpgme_op_trustlist_next): Use op_data_t.
+	(gpgme_trust_item_release): Remove function.
+	(gpgme_trust_item_get_string_attr): Likewise.
+	(gpgme_trust_item_get_int_attr): Likewise.
+
 	* verify.c (calc_sig_summary): Do not set GPGME_SIGSUM_SYS_ERROR
 	for bad signatures.
 
