@@ -61,7 +61,7 @@
 #define GPGMEPLUG_PROTOCOL GPGME_PROTOCOL_OpenPGP
 #endif
 
-// definitions for signing
+/* definitions for signing */
 #ifndef GPGMEPLUG_SIGN_MAKE_MIME_OBJECT
 #define GPGMEPLUG_SIGN_INCLUDE_CLEARTEXT true
 #define GPGMEPLUG_SIGN_MAKE_MIME_OBJECT  true
@@ -81,7 +81,7 @@
 #define GPGMEPLUG_SIGN_FLAT_POSTFIX      ""
 #define __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY false
 #endif
-// definitions for encoding
+/* definitions for encoding */
 #ifndef GPGMEPLUG_ENC_MAKE_MIME_OBJECT
 #define GPGMEPLUG_ENC_INCLUDE_CLEARTEXT  false
 #define GPGMEPLUG_ENC_MAKE_MIME_OBJECT   true
@@ -101,11 +101,11 @@
 #define GPGMEPLUG_ENC_FLAT_POSTFIX       ""
 #define __GPGMEPLUG_ENCRYPTED_CODE_IS_BINARY false
 #endif
-// Note: The following specification will result in
-//       function encryptAndSignMessage() producing
-//       _empty_ mails.
-//       This must be changed as soon as our plugin
-//       is supporting the encryptAndSignMessage() function.
+/* Note: The following specification will result in
+       function encryptAndSignMessage() producing
+       _empty_ mails.
+       This must be changed as soon as our plugin
+       is supporting the encryptAndSignMessage() function. */
 #ifndef GPGMEPLUG_ENCSIGN_MAKE_MIME_OBJECT
 #define GPGMEPLUG_ENCSIGN_INCLUDE_CLEARTEXT false
 #define GPGMEPLUG_ENCSIGN_MAKE_MIME_OBJECT  false
@@ -230,7 +230,7 @@ void deinitialize()
 
 bool hasFeature( Feature flag )
 {
-    // our own plugins are supposed to support everything
+  /* our own plugins are supposed to support everything */
   switch ( flag ) {
   case Feature_SignMessages:              return true;
   case Feature_VerifySignatures:          return true;
@@ -248,7 +248,7 @@ bool hasFeature( Feature flag )
   case Feature_CheckCertificatePath:      return true;
   case Feature_CertificateDirectoryService: return true;
   case Feature_CRLDirectoryService:       return true;
-      // undefined or not yet implemented:
+  /* undefined or not yet implemented: */
   case Feature_undef:                     return false;
   default:                                      return false;
   }
@@ -373,7 +373,7 @@ bool isEmailInCertificate( const char* email, const char* certificate )
        Another note: OK, OK, we'll handle that in the MUA. You can
        assume that you only get the email address.
     */
-    return false; // dummy
+  return false; /* dummy*/
 }
 
 
@@ -455,7 +455,7 @@ int signatureCertificateDaysLeftToExpiry( const char* certificate )
        Please return the number of days that are left until the
        certificate specified in the parameter certificate expires.
     */
-    return 10; // dummy that triggers a warning in the MUA
+  return 10; /* dummy that triggers a warning in the MUA */
 }
 
 
@@ -486,7 +486,7 @@ int caCertificateDaysLeftToExpiry( const char* certificate )
        CA certificate for the certificate specified in the parameter
        certificate expires.
     */
-    return 10; // dummy that triggers a warning in the MUA
+  return 10; /* dummy that triggers a warning in the MUA */
 }
 
 void setCACertificateExpiryNearInterval( int interval )
@@ -516,7 +516,7 @@ int rootCertificateDaysLeftToExpiry( const char* certificate )
        root certificate for the certificate specified in the parameter
        certificate expires.
     */
-    return 10; // dummy that triggers a warning in the MUA
+  return 10; /* dummy that triggers a warning in the MUA */
 }
 
 
@@ -654,7 +654,7 @@ int receiverCertificateDaysLeftToExpiry( const char* certificate )
        Please return the number of days that are left until the
        certificate specified in the parameter certificate expires.
     */
-    return 10; // dummy that triggers a warning in the MUA
+  return 10; /* dummy that triggers a warning in the MUA */
 }
 
 
@@ -686,7 +686,7 @@ int certificateInChainDaysLeftToExpiry( const char* certificate )
        the first certificate in the chain of the specified certificate
        expires.
     */
-    return 10; // dummy that triggers a warning in the MUA
+  return 10; /* dummy that triggers a warning in the MUA */
 }
 
 
@@ -739,7 +739,7 @@ int encryptionCRLsDaysLeftToExpiry()
        Please return the number of days that are left until the
        CRL used for encryption expires.
     */
-    return 10; // dummy that triggers a warning in the MUA
+  return 10; /* dummy that triggers a warning in the MUA */
 }
 
 void setEncryptionCRLExpiryNearWarning( bool flag )
@@ -882,7 +882,7 @@ bool signMessage( const char*  cleartext,
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
 
   gpgme_set_armor (ctx, __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY ? 0 : 1);
-//  gpgme_set_textmode (ctx, 1);
+  /*  gpgme_set_textmode (ctx, 1); */
 
   switch ( config.sendCertificates ) {
     case SendCert_undef:
@@ -905,8 +905,11 @@ bool signMessage( const char*  cleartext,
   }
   gpgme_set_include_certs (ctx, sendCerts);
 
-  // PENDING(g10) Implement this
-  //gpgme_set_signature_algorithm( ctx, config.signatureAlgorithm );
+  /* PENDING(g10) Implement this 
+
+     gpgme_set_signature_algorithm( ctx, config.signatureAlgorithm )
+     --> This does not make sense.  The algorithm is a property of
+     the certificate used [wk 2002-03-23] */
 
   gpgme_data_new_from_mem (&data, cleartext,
                             strlen( cleartext ), 1 );
@@ -934,8 +937,8 @@ bool signMessage( const char*  cleartext,
   else {
     gpgme_data_release( sig );
     *ciphertext = 0;
-    // hier fehlt eine Fehlerbehandlung, falls das
-    // Signieren schiefging
+    /* erro handling missing to detect wther signing failed (hier
+       fehlt eine Fehlerbehandlung, falls das Signieren schiefging) */
   }
   gpgme_data_release( data );
   gpgme_release (ctx);
@@ -1035,7 +1038,7 @@ bool checkMessageSignature( const char* ciphertext,
   gpgme_new( &ctx );
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
   gpgme_set_armor (ctx,    signatureIsBinary ? 0 : 1);
-//  gpgme_set_textmode (ctx, signatureIsBinary ? 0 : 1);
+  /*  gpgme_set_textmode (ctx, signatureIsBinary ? 0 : 1); */
 
   gpgme_data_new_from_mem( &datapart, ciphertext,
                           strlen( ciphertext ), 1 );
@@ -1059,9 +1062,9 @@ bool checkMessageSignature( const char* ciphertext,
     strcpy( sigmeta->status, statusStr );
     sigmeta->status[strlen( statusStr )] = '\0';
   } else
-    ; // nothing to do, is already 0
+    ; /* nothing to do, is already 0 */
 
-  // Extended information for any number of signatures.
+  /* Extended information for any number of signatures. */
   fpr = gpgme_get_sig_status( ctx, sig_idx, &status, &created );
   sigmeta->extended_info = 0;
   while( fpr != NULL ) {
@@ -1072,7 +1075,7 @@ bool checkMessageSignature( const char* ciphertext,
                                     sizeof( struct SignatureMetaDataExtendedInfo ) * ( sig_idx + 1 ) );
     if( realloc_return ) {
       sigmeta->extended_info = realloc_return;
-      // the creation time
+      /* the creation time */
       sigmeta->extended_info[sig_idx].creation_time = malloc( sizeof( struct tm ) );
       if( sigmeta->extended_info[sig_idx].creation_time ) {
         ctime_val = localtime( &created );
@@ -1095,8 +1098,8 @@ bool checkMessageSignature( const char* ciphertext,
         sigmeta->extended_info[sig_idx].fingerprint[strlen( fpr )] = '\0';
       }
     } else
-      break; // if allocation fails once, it isn't likely to
-              // succeed the next time either
+      break; /* if allocation fails once, it isn't likely to
+                succeed the next time either */
 
     fpr = gpgme_get_sig_status (ctx, ++sig_idx, &status, &created);
   }
@@ -1263,7 +1266,7 @@ bool encryptMessage( const char*  cleartext,
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
 
   gpgme_set_armor (ctx, __GPGMEPLUG_ENCRYPTED_CODE_IS_BINARY ? 0 : 1);
-//  gpgme_set_textmode (ctx, 1);
+  /*  gpgme_set_textmode (ctx, 1); */
 
   gpgme_data_new_from_mem (&gPlaintext, cleartext,
                             1+strlen( cleartext ), 1 );
@@ -1294,18 +1297,28 @@ bool encryptMessage( const char*  cleartext,
     }
   }
 
-  // PENDING(g10) Implement this
-  // Possible values: RSA = 1, SHA1 = 2, TripleDES = 3
-  //gpgme_set_encryption_algorithm( ctx, config.encryptionAlgorithm );
+  /* PENDING(g10) Implement this
+     Possible values: RSA = 1, SHA1 = 2, TripleDES = 3
+     gpgme_set_encryption_algorithm( ctx, config.encryptionAlgorithm );
 
+     -> Your are mixing public key and symmetric algorithms.  The
+     latter may be configured but the sphix specifications do opnly
+     allow 3-DES so this is not nothing we need to do.  The proper way
+     to select the symmetric algorithm is anyway by looking at the
+     capabilities of the certificate because this is the only way to
+     know what the recipient can accept. [wk 2002-03-23]
 
-  // PENDING(g10) Implement this
-  // gpgme_set_encryption_check_certificate_path(
-  // config.checkCertificatePath )
+     PENDING(g10) Implement this
+     gpgme_set_encryption_check_certificate_path(
+     config.checkCertificatePath )
 
-  // PENDING(g10) Implement this
-  // gpgme_set_encryption_check_certificate_path_to_root(
-  // config.checkEncryptionCertificatePathToRoot )
+     PENDING(g10) Implement this
+     gpgme_set_encryption_check_certificate_path_to_root(
+     config.checkEncryptionCertificatePathToRoot )
+
+     -> Not checking a certificate up to the ROOT CA is dangerous and
+     stupid. There is no need for those options.  [wk 2002-03-23] */
+
 
 
   err = gpgme_op_encrypt (ctx, rset, gPlaintext, gCiphertext );
@@ -1336,9 +1349,11 @@ bool encryptMessage( const char*  cleartext,
   else {
     gpgme_data_release ( gCiphertext );
     *ciphertext = 0;
-    // hier fehlt eine Fehlerbehandlung: fuer einen Recipient nur ein
-    // untrusted key (oder gar keiner) gefunden wurde, verweigert gpg
-    // das signieren.
+    /* error handling is missing: if only one untrusted key was found
+      (or none at all), gpg won't sign the message.  (hier fehlt eine
+      Fehlerbehandlung: fuer einen Recipient nur ein untrusted key
+      (oder gar keiner) gefunden wurde, verweigert gpg das signieren.)
+    */
   }
 
   gpgme_release (ctx);
@@ -1396,7 +1411,7 @@ bool encryptAndSignMessage( const char* cleartext,
 
   bOk = false;
 
-  // implementation of this function is still missing
+  /* implementation of this function is still missing */
 
   if( bOk && structuring ) {
     structuring->includeCleartext = GPGMEPLUG_ENCSIGN_INCLUDE_CLEARTEXT;
@@ -1458,12 +1473,11 @@ bool decryptMessage( const char* ciphertext,
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
   
   gpgme_set_armor (ctx, cipherIsBinary ? 0 : 1);
-//  gpgme_set_textmode (ctx, cipherIsBinary ? 0 : 1);
+  /*  gpgme_set_textmode (ctx, cipherIsBinary ? 0 : 1); */
 
   /*
   gpgme_data_new_from_mem( &gCiphertext, ciphertext,
-                           1+strlen( ciphertext ), 1 );
-  */
+                           1+strlen( ciphertext ), 1 ); */
   gpgme_data_new_from_mem( &gCiphertext,
                            ciphertext,
                            cipherIsBinary
