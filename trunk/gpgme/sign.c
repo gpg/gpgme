@@ -72,10 +72,12 @@ release_op_data (void *hook)
 gpgme_sign_result_t
 gpgme_op_sign_result (gpgme_ctx_t ctx)
 {
+  void *hook;
   op_data_t opd;
   gpgme_error_t err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, &hook, -1, NULL);
+  opd = hook;
   if (err || !opd)
     return NULL;
 
@@ -187,13 +189,15 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
   err = _gpgme_passphrase_status_handler (priv, code, args);
   if (err)
     return err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return err;
 
@@ -239,10 +243,12 @@ gpgme_error_t
 _gpgme_op_sign_init_result (gpgme_ctx_t ctx)
 {
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &opd,
+  err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, &hook,
 			       sizeof (*opd), release_op_data);
+  opd = hook;
   if (err)
     return err;
   opd->last_signer_p = &opd->result.invalid_signers;

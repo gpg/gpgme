@@ -1,5 +1,40 @@
 2003-05-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* encrypt.c (gpgme_op_encrypt_result): Use intermediate variable
+	HOOK to avoid compiler warning.  Don't ask, you don't want to know.
+	(_gpgme_encrypt_status_handler): Likewise.
+	(_gpgme_op_encrypt_init_result): Likewise.
+	* decrypt.c (gpgme_op_decrypt_result): Likewise.
+	(_gpgme_decrypt_status_handler): Likewise.
+	(_gpgme_op_decrypt_init_result): Likewise.
+	* verify.c (gpgme_op_verify_result): Likewise.
+	(_gpgme_verify_status_handler): Likewise.
+	(_gpgme_op_verify_init_result): Likewise.
+	* edit.c (edit_status_handler): Likewise.
+	(command_handler): Likewise.
+	(edit_start): Likewise.
+	* genkey.c (gpgme_op_genkey_result): Likewise.
+	(genkey_status_handler): Likewise.
+	(genkey_start): Likewise.
+	* import.c (gpgme_op_import_result): Likewise.
+	(import_status_handler): Likewise.
+	(_gpgme_op_import_start): Likewise.
+	* trustlist.c (gpgme_op_trustlist_next): Likewise.
+	(_gpgme_op_trustlist_event_cb): Likewise.
+	(gpgme_op_trustlist_start): Likewise.
+	* keylist.c (gpgme_op_keylist_result): Likewise.
+	(keylist_colon_handler): Likewise.
+	(keylist_status_handler): Likewise.
+	(_gpgme_op_keylist_event_cb): Likewise.
+	(gpgme_op_keylist_start): Likewise.
+	(gpgme_op_keylist_ext_start): Likewise.
+	(gpgme_op_keylist_next): Likewise.
+	* passphrase.c (_gpgme_passphrase_status_handler): Likewise.
+	(_gpgme_passphrase_command_handler_internal): Likewise.
+	* sign.c (gpgme_op_sign_result): Likewise.
+	(_gpgme_sign_status_handler): Likewise.
+	(_gpgme_op_sign_init_result): Likewise.
+
 	* passphrase.c (_gpgme_passphrase_command_handler_internal): Fix
 	access to pointer type.
 
