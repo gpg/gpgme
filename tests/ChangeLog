@@ -1,5 +1,7 @@
 2003-05-04  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgsm/t-keylist.c: Add check for timestamp.
+
 	* gpg/Makefile.am (TESTS): Add t-keylist-sig.
 	* gpg/t-keylist-sig.c: New file.
 
