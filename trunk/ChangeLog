@@ -1,3 +1,11 @@
+2002-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_INIT): Bump version up to 0.4.0.
+	(NEED_GPG_VERSION): Bump up to 1.2.0.
+	(NEED_GPGSM_VERSION): Bump up to 0.9.0.
+	* README: Update version numbers.
+	* NEWS: Start entry for 0.4.0.
+
 2002-09-20  Werner Koch  <wk@gnupg.org>
 
 	Released 0.3.11.
