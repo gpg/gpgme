@@ -1,3 +1,9 @@
+2003-02-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.3.15.
+	
+	* configure.ac (LIBGPGME_LT_REVISION): Bumped to 6.
+
 2002-12-04  Werner Koch  <wk@gnupg.org>
 
 	Released 0.3.14.
