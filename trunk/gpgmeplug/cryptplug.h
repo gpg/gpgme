@@ -161,14 +161,25 @@ typedef char bool;
 */
 
 
-// dummy values:
 typedef enum {
-  CryptPlugFeat_undef             = 0,
+  Feature_undef             = 0,
 
-  CryptPlugFeat_SignMessages      = 1,
-  CryptPlugFeat_VerifySignatures  = 2,
-  CryptPlugFeat_EncryptMessages   = 3,
-  CryptPlugFeat_DecryptMessages   = 4   // more to follow ...
+  Feature_SignMessages      = 1,
+  Feature_VerifySignatures  = 2,
+  Feature_EncryptMessages   = 3,
+  Feature_DecryptMessages   = 4,
+  Feature_SendCertificates  = 5,
+  Feature_WarnSignCertificateExpiry = 6,
+  Feature_WarnSignEmailNotInCertificate = 7,
+  Feature_PinEntrySettings  = 8,
+  Feature_StoreMessagesWithSigs = 9,
+  Feature_EncryptionCRLs    = 10,
+  Feature_WarnEncryptCertificateExpiry = 11,
+  Feature_WarnEncryptEmailNotInCertificate = 12,
+  Feature_StoreMessagesEncrypted = 13,
+  Feature_CheckCertificatePath = 14,
+  Feature_CertificateDirectoryService = 15,
+  Feature_CRLDirectoryService = 16
 } Feature;
 
 // dummy values
