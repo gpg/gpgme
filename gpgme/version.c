@@ -82,35 +82,36 @@ parse_version_string( const char *s, int *major, int *minor, int *micro )
     return s; /* patchlevel */
 }
 
-static const char *
-compare_versions ( const char *my_version, const char *req_version )
+const char *
+_gpgme_compare_versions (const char *my_version,
+			 const char *req_version)
 {
-    int my_major, my_minor, my_micro;
-    int rq_major, rq_minor, rq_micro;
-    const char *my_plvl, *rq_plvl;
+  int my_major, my_minor, my_micro;
+  int rq_major, rq_minor, rq_micro;
+  const char *my_plvl, *rq_plvl;
 
-    if ( !req_version )
-	return my_version;
+  if (!req_version)
+    return my_version;
 
-    my_plvl = parse_version_string ( my_version,
-                                     &my_major, &my_minor, &my_micro );
-    if ( !my_plvl )
-	return NULL;  /* very strange: our own version is bogus */
-    rq_plvl = parse_version_string( req_version,
-                                    &rq_major, &rq_minor, &rq_micro );
-    if ( !rq_plvl )
-	return NULL;  /* req version string is invalid */
+  my_plvl = parse_version_string (my_version, &my_major, &my_minor, &my_micro);
+  if (!my_plvl)
+    return NULL;	/* Very strange: our own version is bogus.  */
+  rq_plvl = parse_version_string(req_version,
+				 &rq_major, &rq_minor, &rq_micro);
+  if (!rq_plvl)
+    return NULL;	/* Requested version string is invalid.  */
 
-    if ( my_major > rq_major
-         || (my_major == rq_major && my_minor > rq_minor)
-         || (my_major == rq_major && my_minor == rq_minor 
-             && my_micro > rq_micro)
-         || (my_major == rq_major && my_minor == rq_minor
-             && my_micro == rq_micro
-             && strcmp( my_plvl, rq_plvl ) >= 0) ) {
-	return my_version;
+  if (my_major > rq_major
+	|| (my_major == rq_major && my_minor > rq_minor)
+      || (my_major == rq_major && my_minor == rq_minor 
+	  && my_micro > rq_micro)
+      || (my_major == rq_major && my_minor == rq_minor
+	  && my_micro == rq_micro
+	  && strcmp( my_plvl, rq_plvl ) >= 0))
+    {
+      return my_version;
     }
-    return NULL;
+  return NULL;
 }
 
 
@@ -129,12 +130,11 @@ compare_versions ( const char *my_version, const char *req_version )
  * Return value: The version string or NULL
  **/
 const char *
-gpgme_check_version ( const char *req_version )
+gpgme_check_version (const char *req_version)
 {
-    do_subsystem_inits ();
-    return compare_versions ( VERSION, req_version );
+  do_subsystem_inits ();
+  return _gpgme_compare_versions (VERSION, req_version);
 }
-
 
 /**
  * gpgme_get_engine_info:
@@ -179,7 +179,7 @@ gpgme_check_engine ()
                 return mk_error (Out_Of_Core);
             memcpy (ver, s, s2-s);
             ver[s2-s] = 0;
-            s = compare_versions ( ver, NEED_GPG_VERSION );
+            s = _gpgme_compare_versions ( ver, NEED_GPG_VERSION );
             xfree (ver);
             if (s)
                 return 0;

@@ -177,8 +177,25 @@ close_notify_handler ( int fd, void *opaque )
     }
 }
 
+const char *
+_gpgme_gpg_get_version (void)
+{
+  static const char *gpg_version;
 
+  /* FIXME: Locking.  */
+  if (!gpg_version)
+    gpg_version = _gpgme_get_program_version (_gpgme_get_gpg_path ());
 
+  return gpg_version;
+}
+
+GpgmeError
+_gpgme_gpg_check_version (void)
+{
+  return _gpgme_compare_versions (_gpgme_gpg_get_version (),
+                                  NEED_GPG_VERSION)
+    ? 0 : mk_error (Invalid_Engine);
+}
 
 GpgmeError
 _gpgme_gpg_new ( GpgObject *r_gpg )
