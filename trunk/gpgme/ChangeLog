@@ -38,7 +38,6 @@
 	* ops.h (_gpgme_get_program_version): Add prototype for
 	_gpgme_get_program_version (we expect to use it elsewhere soon).
 
->>>>>>> 1.44
 2001-11-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* version.c (get_engine_info): If GnuPG is not available, return
