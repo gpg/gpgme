@@ -44,6 +44,10 @@ char *stpcpy (char *a, const char *b);
 int vasprintf (char **result, const char *format, va_list args);
 int asprintf (char **result, const char *format, ...);
 #endif
+
+#ifndef HAVE_TTYNAME_R
+int ttyname_r (int fd, char *buf, size_t buflen);
+#endif
 #endif
 
 
