@@ -92,6 +92,17 @@ edit_fnc (void *opaque, gpgme_status_code_t status, const char *args, int fd)
 	    case 1:
 	      result = "expire";
 	      break;
+
+	      /* Work around a bug in GPG 1.2.2, which causes the
+		 primary UID to change when setting the expiration
+		 date.  */
+	    case 2:
+	      result = "1";
+	      break;
+	    case 3:
+	      result = "primary";
+	      break;
+
 	    default:
 	      result = "quit";
 	      break;

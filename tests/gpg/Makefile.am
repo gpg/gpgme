@@ -23,9 +23,11 @@ GPG = @GPG@
 
 TESTS_ENVIRONMENT = GNUPGHOME=. GPG_AGENT_INFO=
 
+# The keylist test must come after the import test.
 TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers	\
-	t-decrypt t-verify t-decrypt-verify t-keylist t-keylist-sig \
-	t-export t-import t-trustlist t-eventloop t-edit
+	t-decrypt t-verify t-decrypt-verify \
+	t-export t-import t-trustlist t-eventloop t-edit \
+	t-keylist t-keylist-sig
 
 CLEANFILES = secring.gpg pubring.gpg trustdb.gpg
 DISTCLEANFILES = pubring.gpg~ random_seed

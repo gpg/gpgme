@@ -105,7 +105,10 @@ check_result (gpgme_import_result_t result, char *fpr, int secret)
 	       result->new_sub_keys);
       exit (1);
     }
-  if (result->new_signatures != 0)
+  if ((secret
+       && ((result->secret_imported == 0 && result->new_signatures != 0)
+	   || (result->secret_imported == 1 && result->new_signatures != 1)))
+      || (!secret && result->new_signatures != 0))
     {
       fprintf (stderr, "Unexpected number of new signatures %i\n",
 	       result->new_signatures);
@@ -146,15 +149,33 @@ check_result (gpgme_import_result_t result, char *fpr, int secret)
 	       result->not_imported);
       exit (1);
     }
-  if (!result->imports || result->imports->next)
+  if (secret)
     {
-      fprintf (stderr, "Unexpected number of status reports\n");
-      exit (1);
+      if (!result->imports
+	  || (result->imports->next && result->imports->next->next))
+	{
+	  fprintf (stderr, "Unexpected number of status reports\n");
+	  exit (1);
+	}
+    }
+  else
+    {
+      if (!result->imports || result->imports->next)
+	{
+	  fprintf (stderr, "Unexpected number of status reports\n");
+	  exit (1);
+	}
     }
   if (strcmp (fpr, result->imports->fpr))
     {
       fprintf (stderr, "Unexpected fingerprint %s\n",
 	       result->imports->fpr);
+      exit (1);
+    }
+  if (result->imports->next && strcmp (fpr, result->imports->next->fpr))
+    {
+      fprintf (stderr, "Unexpected fingerprint on second status %s\n",
+	       result->imports->next->fpr);
       exit (1);
     }
   if (result->imports->result != 0)
@@ -163,19 +184,40 @@ check_result (gpgme_import_result_t result, char *fpr, int secret)
 	       gpgme_strerror (result->imports->result));
       exit (1);
     }
-  if ((secret
-       && ((result->secret_imported == 0
-	    && result->imports->status != GPGME_IMPORT_SECRET)
-	   || (result->secret_imported == 1
-	       && result->imports->status != (GPGME_IMPORT_SECRET | GPGME_IMPORT_NEW))))
-      || (!secret
-	  && ((result->imported == 0 && result->imports->status != 0)
-	      || (result->imported == 1
-		  && result->imports->status != GPGME_IMPORT_NEW))))
+  if (secret)
     {
-      fprintf (stderr, "Unexpected status %i\n",
-	       result->imports->status);
-      exit (1);
+      if (result->secret_imported == 0)
+	{
+	  if (result->imports->status != GPGME_IMPORT_SECRET)
+	    {
+	      fprintf (stderr, "Unexpected status %i\n",
+		       result->imports->status);
+	      exit (1);
+	    }
+	}
+      else
+	{
+	  if (result->imports->status
+	      != (GPGME_IMPORT_SECRET | GPGME_IMPORT_NEW)
+	      || !result->imports->next
+	      || result->imports->next->status != GPGME_IMPORT_SIG)
+	    {
+	      fprintf (stderr, "Unexpected status %i\n",
+		       result->imports->status);
+	      exit (1);
+	    }
+	}
+    }
+  else
+    {
+      if ((result->imported == 0 && result->imports->status != 0)
+	  || (result->imported == 1
+	      && result->imports->status != GPGME_IMPORT_NEW))
+	{
+	  fprintf (stderr, "Unexpected status %i\n",
+		   result->imports->status);
+	  exit (1);
+	}
     }
 }
 
