@@ -20,6 +20,10 @@
  * New operation gpgme_op_decrypt_verify() to decrypt and verify
    signatures simultaneously.
 
+ * The new interface gpgme_op_keylist_end() terminates a pending
+   keylist operation.  A keylist operation is also terminated when
+   gpgme_op_keylist_next() returns GPGME_EOF.
+
  * GPGME can be compiled without GnuPG being installed (`--with-gpg=PATH'),
    cross-compiled, or even compiled without support for GnuPG
    (`--without-gpg').
@@ -43,6 +47,7 @@ gpgme_get_engine_info		CHANGED: New format, extended content.
 gpgme_engine_check_version	NEW
 gpgme_decrypt_verify_start	NEW
 gpgme_decrypt_verify		NEW
+gpgme_op_keylist_next		NEW
 gpgme_set_protocol		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

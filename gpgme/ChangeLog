@@ -1,5 +1,15 @@
 2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
 
+	* keylist.c (gpgme_op_keylist_end): New function.
+	* gpgme.h (gpgme_op_keylist_end): New prototype.
+
+	* engine.h (gpgme_engine_check_version): Move prototype to ...
+	* gpgme.h (gpgme_engine_check_version): ... here.
+
+	* genkey.c (gpgme_op_genkey_start): Remove unused variable.
+
+2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
+
 	* version.c (gpgme_get_engine_info): Reimplemented.
 	(gpgme_check_engine): Reimplemented.
 	(_gpgme_compare_versions): Return NULL if MY_VERSION is NULL.

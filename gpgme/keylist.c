@@ -482,7 +482,7 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
 	  return mk_error (EOF);
 	}
       ctx->key_cond = 0; 
-        assert (ctx->key_queue);
+      assert (ctx->key_queue);
     }
   queue_item = ctx->key_queue;
   ctx->key_queue = queue_item->next;
@@ -491,5 +491,26 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
   
   *r_key = queue_item->key;
   xfree (queue_item);
+  return 0;
+}
+
+/**
+ * gpgme_op_keylist_end:
+ * @c: Context
+ * 
+ * Ends the keylist operation and allows to use the context for some
+ * other operation next.
+ **/
+GpgmeError
+gpgme_op_keylist_end (GpgmeCtx ctx)
+{
+  if (!ctx)
+    return mk_error (Invalid_Value);
+  if (!ctx->pending )
+    return mk_error (No_Request);
+  if (ctx->out_of_core)
+    return mk_error (Out_Of_Core);
+
+  ctx->pending = 0;
   return 0;
 }
