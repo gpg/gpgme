@@ -1664,5 +1664,6 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_trustlist,
     gpg_verify,
     gpg_set_io_cbs,
-    gpg_io_event
+    gpg_io_event,
+    NULL
   };

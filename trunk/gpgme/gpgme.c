@@ -90,6 +90,22 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 }
 
 
+/* Cancel a pending asynchronous operation.  */
+gpgme_error_t
+gpgme_cancel (gpgme_ctx_t ctx)
+{
+  gpgme_error_t err;
+
+  err = _gpgme_engine_cancel (ctx->engine);
+  if (err)
+    return err;
+
+  err = gpg_error (GPG_ERR_CANCELED);
+  _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &err);
+
+  return 0;
+}
+
 /* Release all resources associated with the given context.  */
 void
 gpgme_release (gpgme_ctx_t ctx)

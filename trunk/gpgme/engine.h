@@ -110,4 +110,6 @@ void _gpgme_engine_set_io_cbs (engine_t engine,
 void _gpgme_engine_io_event (engine_t engine,
 			     gpgme_event_io_t type, void *type_data);
 
+gpgme_error_t _gpgme_engine_cancel (engine_t engine);
+
 #endif /* ENGINE_H */
