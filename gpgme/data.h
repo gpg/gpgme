@@ -1,22 +1,21 @@
 /* data.h - Internal data object abstraction interface.
- *      Copyright (C) 2002 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+   Copyright (C) 2002 g10 Code GmbH
+ 
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #ifndef DATA_H
 #define DATA_H
@@ -34,7 +33,8 @@
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle DH.  Return the number of characters read, 0 on EOF and
    -1 on error.  If an error occurs, errno is set.  */
-typedef int (*gpgme_data_read_cb) (GpgmeData dh, void *buffer, size_t size);
+typedef ssize_t (*gpgme_data_read_cb) (GpgmeData dh, void *buffer,
+				       size_t size);
 
 /* Write up to SIZE bytes from buffer BUFFER to the data object with
    the handle DH.  Return the number of characters written, or -1 on
@@ -48,7 +48,7 @@ typedef ssize_t (*gpgme_data_write_cb) (GpgmeData dh, const void *buffer,
 typedef off_t (*gpgme_data_seek_cb) (GpgmeData dh, off_t offset, int whence);
 
 /* Release the data object with the handle DH.  */
-typedef int (*gpgme_data_release_cb) (GpgmeData dh);
+typedef void (*gpgme_data_release_cb) (GpgmeData dh);
 
 struct gpgme_data_cbs
 {

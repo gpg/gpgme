@@ -511,7 +511,7 @@ GpgmeError gpgme_recipients_enum_close (const GpgmeRecipients rset,
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle HANDLE.  Return the number of characters read, 0 on EOF
    and -1 on error.  If an error occurs, errno is set.  */
-typedef int (*GpgmeDataReadCb) (void *handle, void *buffer, size_t size);
+typedef ssize_t (*GpgmeDataReadCb) (void *handle, void *buffer, size_t size);
 
 /* Write up to SIZE bytes from buffer BUFFER to the data object with
    the handle HANDLE.  Return the number of characters written, or -1
@@ -522,7 +522,7 @@ typedef ssize_t (*GpgmeDataWriteCb) (void *handle, const void *buffer,
 /* Set the current position from where the next read or write starts
    in the data object with the handle HANDLE to OFFSET, relativ to
    WHENCE.  */
-typedef int (*GpgmeDataSeekCb) (void *handle, off_t offset, int whence);
+typedef off_t (*GpgmeDataSeekCb) (void *handle, off_t offset, int whence);
 
 /* Close the data object with the handle DL.  */
 typedef void (*GpgmeDataReleaseCb) (void *handle);
@@ -538,7 +538,7 @@ struct GpgmeDataCbs
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle DH.  Return the number of characters read, 0 on EOF and
    -1 on error.  If an error occurs, errno is set.  */
-int gpgme_data_read (GpgmeData dh, void *buffer, size_t size);
+ssize_t gpgme_data_read (GpgmeData dh, void *buffer, size_t size);
 
 /* Write up to SIZE bytes from buffer BUFFER to the data object with
    the handle DH.  Return the number of characters written, or -1 on

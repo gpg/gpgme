@@ -63,7 +63,7 @@ _gpgme_data_release (GpgmeData dh)
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle DH.  Return the number of characters read, 0 on EOF and
    -1 on error.  If an error occurs, errno is set.  */
-int
+ssize_t
 gpgme_data_read (GpgmeData dh, void *buffer, size_t size)
 {
   if (!dh)
