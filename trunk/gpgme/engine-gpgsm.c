@@ -1076,6 +1076,8 @@ _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
 {
   GpgmeError err;
   char *assuan_cmd;
+  int i;
+  GpgmeKey key;
 
   if (!gpgsm)
     return mk_error (Invalid_Value);
@@ -1087,10 +1089,35 @@ _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
 
   if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
     return mk_error (Out_Of_Core);
-  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd, NULL, NULL);
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd, NULL,NULL);
   free (assuan_cmd);
   if (err)
     return err;
+
+  /* We must do a reset becuase we need to reset the list of signers.  Note
+     that RESET does not reset OPTION commands. */
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, "RESET", NULL, NULL);
+  if (err)
+    return err;
+
+  for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
+    {
+      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR,
+						 NULL, 0);
+      if (s && strlen (s) < 80)
+	{
+          char buf[100];
+
+          strcpy (stpcpy (buf, "SIGNER "), s);
+          err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, buf,
+                                             NULL, NULL);
+	}
+      else
+        err = GPGME_Invalid_Key;
+      gpgme_key_unref (key);
+      if (err) 
+        return err;
+    }
 
   gpgsm->input_cb.data = in;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
