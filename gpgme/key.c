@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "util.h"
 #include "ops.h"
@@ -627,17 +628,28 @@ _gpgme_key_append_name (GpgmeKey key, const char *s)
 	  *d++ = '\\';
 	  *d++ = '\0'; 
         }
-      else if (s[1] == 'x' && my_isdigit (s[2]) && my_isdigit (s[3]))
+      else if (s[1] == 'x' && isxdigit (s[2]) && isxdigit (s[3]))
 	{
-	  unsigned int val = (s[2]-'0')*16 + (s[3]-'0');
-	  if (!val)
+	  int val = hextobyte (&s[2]);
+	  if (val == -1)
 	    {
-	      *d++ = '\\';
-	      *d++ = '\0'; 
-            }
-	  else 
-	    *(byte*)d++ = val;
-	  s += 3;
+	      /* Should not happen.  */
+	      *d++ = *s++;
+	      *d++ = *s++;
+	      *d++ = *s++;
+	      *d++ = *s++;
+	    }
+	  else
+	    {
+	      if (!val)
+		{
+		  *d++ = '\\';
+		  *d++ = '\0'; 
+		}
+	      else 
+		*(byte*)d++ = val;
+	      s += 4;
+	    }
         }
       else
 	{
