@@ -1,3 +1,7 @@
+2004-09-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.m4: Add copyright notice.
+
 2004-08-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* passphrase.c (_gpgme_passphrase_status_handler): Always run the
