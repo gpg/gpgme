@@ -1,3 +1,8 @@
+2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_INIT): Change version number to snapshot CVS
+	version.
+
 2002-02-13  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (vasprintf,fopencookie): Add checks.
