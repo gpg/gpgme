@@ -1192,6 +1192,8 @@ bool findCertificates( const char* addressee, char** certificates )
   const char *s;
   const char *s2;
   bool bOk = false;
+  
+  strcpy( *certificates, "" );
 
   gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
