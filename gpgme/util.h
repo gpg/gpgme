@@ -125,8 +125,29 @@ char *stpcpy (char *a, const char *b);
 const char *_gpgme_get_gpg_path (void);
 const char *_gpgme_get_gpgsm_path (void);
 
+/*-- replacement functions in <funcname>.c --*/
+#ifdef HAVE_CONFIG_H
+#if !HAVE_VASPRINTF
+#include <stdarg.h>
+int vasprintf (char **result, const char *format, va_list *args);
+int asprintf (char **result, const char *format, ...);
+#endif
+
+#if !HAVE_FOPENCOOKIE
+typedef struct
+{
+  ssize_t (*read)(void*,char*,size_t);
+  ssize_t (*write)(void*,const char*,size_t);
+  int (*seek)(void*,off_t*,int);
+  int (*close)(coid*);
+} _IO_cookie_io_functions_t;
+typedef _IO_cookie_io_functions_t cookie_io_functions_t;
+FILE *fopencookie (void *cookie, const char *opentype,
+                   cookie_io_functions_t funclist);
+#endif /*!HAVE_FOPENCOOKIE*/
+#endif /*HAVE_CONFIG_H*/
+
+
+
+
 #endif /* UTIL_H */
-
-
-
-
