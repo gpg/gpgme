@@ -832,6 +832,7 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
 {
   gpgme_ctx_t listctx;
   gpgme_error_t err;
+  gpgme_key_t key;
 
   if (!ctx || !r_key)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -849,6 +850,21 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   err = gpgme_op_keylist_start (listctx, fpr, secret);
   if (!err)
     err = gpgme_op_keylist_next (listctx, r_key);
+  if (!err)
+    {
+      err = gpgme_op_keylist_next (listctx, &key);
+      if (gpgme_err_code (err) == GPG_ERR_EOF)
+	err = gpg_error (GPG_ERR_NO_ERROR);
+      else
+	{
+	  if (!err)
+	    {
+	      gpgme_key_unref (key);
+	      err = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+	    }
+	  gpgme_key_unref (*r_key);
+	}
+    }
   gpgme_release (listctx);
   return err;
 }
