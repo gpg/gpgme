@@ -1,3 +1,10 @@
+2004-04-06  Werner Koch  <wk@gnupg.org>
+
+	Released 0.4.6.
+	
+	* config.guess, config.sub, ltmain.sh: Updated to those from
+	libtools 1.5.4.
+
 2004-03-07  Marcus Brinkmann  <marcus@g10code.de>
 
 	Released 0.4.5.

@@ -24,7 +24,7 @@ AC_PREREQ(2.57)
 min_automake_version="1.7.6"
 
 # Version number: Remember to change it immediately *after* a release.
-AC_INIT(gpgme, 0.4.6-cvs, [bug-gpgme@gnupg.org])
+AC_INIT(gpgme, 0.4.6, [bug-gpgme@gnupg.org])
 # LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
 #   (Interfaces added/removed/changed:	CURRENT++, REVISION=0)
@@ -35,7 +35,7 @@ LIBGPGME_LT_CURRENT=13
 # Subtract 2 from this value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
 LIBGPGME_LT_AGE=2
-LIBGPGME_LT_REVISION=0
+LIBGPGME_LT_REVISION=1
 NEED_GPG_VERSION=1.2.2
 NEED_GPGSM_VERSION=1.9.6
 ##############################################
