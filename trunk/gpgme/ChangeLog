@@ -1,3 +1,8 @@
+2003-12-22  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.h (_GPGME_D_CLASS): Kludge for C++ compatibility without
+	changing the C API.
+
 2003-11-19  Werner Koch  <wk@gnupg.org>
 
 	* conversion.c (_gpgme_parse_timestamp): New.
