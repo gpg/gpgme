@@ -129,7 +129,7 @@ _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 
   switch (code)
     {
-    case STATUS_EOF:
+    case GPGME_STATUS_EOF:
       status_handler_finish (ctx);
       break;
 
