@@ -1,3 +1,10 @@
+2003-07-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Key Management): Clarify difference between can_sign
+	and can_certify.
+	(Information About Keys): Likewise for GPGME_ATTR_CAN_SIGN and
+	GPGME_ATTR_CAN_CERTIFY.
+
 2003-07-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Progress Meter Callback): Change return type of
