@@ -2301,16 +2301,17 @@ importCertificate( const char* fingerprint )
   GpgmeCtx  ctx;
   GpgmeData keydata;
   GpgmeRecipients recips;
-  /*
   char* buf;
-  char* tmp1;
+  const char* tmp1;
   char* tmp2;
-  */
+
   err = gpgme_new( &ctx );
   /*fprintf( stderr,  "2: gpgme returned %d\n", err );*/
   if( err != GPGME_No_Error ) {
     return err;
   }
+  gpgme_set_protocol( ctx, GPGME_PROTOCOL_CMS );
+  gpgme_set_keylist_mode( ctx, GPGME_KEYLIST_MODE_LOCAL );
 
   err = gpgme_data_new( &keydata );
   if( err ) {
@@ -2327,7 +2328,6 @@ importCertificate( const char* fingerprint )
     return err;
   }
   
-  /*
   buf = safe_malloc( sizeof(char)*( strlen( fingerprint ) + 1 ) );
   if( !buf ) {
     gpgme_recipients_release( recips );
@@ -2343,12 +2343,10 @@ importCertificate( const char* fingerprint )
   }
   *tmp2 = 0;
   fprintf( stderr,  "calling gpgme_recipients_add_name( %s )\n", buf );  
-  */
-
-  err = gpgme_recipients_add_name( recips, fingerprint ); 
+  err = gpgme_recipients_add_name( recips, buf ); 
   if( err ) {
     fprintf( stderr,  "gpgme_recipients_add_name returned %d\n", err );
-    /*safe_free( (void**)&buf );*/
+    safe_free( (void**)&buf );
     gpgme_recipients_release( recips );
     gpgme_data_release( keydata );    
     gpgme_release( ctx );
@@ -2358,13 +2356,13 @@ importCertificate( const char* fingerprint )
   err = gpgme_op_export( ctx, recips, keydata );
   if( err ) {
     fprintf( stderr,  "gpgme_op_export returned %d\n", err );
-    /*safe_free( (void**)&buf );*/
+    safe_free( (void**)&buf );
     gpgme_recipients_release( recips );
     gpgme_data_release( keydata );    
     gpgme_release( ctx );
     return err;
   }
-  /*safe_free( (void**)&buf );*/
+  safe_free( (void**)&buf );
 
   err = gpgme_op_import( ctx, keydata );
   if( err ) {    
