@@ -258,16 +258,14 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
   if (end)
     {
       char *tail;
-      errno = 0;
 
-      /* FIXME: We need to cope with ISO time strings here. */
-      sig->timestamp = strtol (end, &tail, 0);
-      if (errno || end == tail || (*tail && *tail != ' '))
+      sig->timestamp = _gpgme_parse_timestamp (end, &tail);
+      if (sig->timestamp == -1 || end == tail || (*tail && *tail != ' '))
 	return gpg_error (GPG_ERR_INV_ENGINE);
       end = tail;
      
-      sig->exp_timestamp = strtol (end, &tail, 0);
-      if (errno || end == tail || (*tail && *tail != ' '))
+      sig->exp_timestamp = _gpgme_parse_timestamp (end, &tail);
+      if (sig->exp_timestamp == -1 || end == tail || (*tail && *tail != ' '))
 	return gpg_error (GPG_ERR_INV_ENGINE);
     }
   return 0;

@@ -116,53 +116,6 @@ keylist_status_handler (void *priv, gpgme_status_code_t code, char *args)
 }
 
 
-static time_t
-parse_timestamp (char *timestamp)
-{
-  if (!*timestamp)
-    return 0;
-
-  if (strlen (timestamp) >= 15 && timestamp[8] == 'T')
-    {
-      struct tm buf;
-      int year;
-
-      year = atoi_4 (timestamp);
-      if (year < 1900)
-        return (time_t)(-1);
-
-      /* Fixme: We would better use a configure test to see whether
-         mktime can handle dates beyond 2038. */
-      if (sizeof (time_t) <= 4 && year >= 2038)
-        return (time_t)2145914603; /* 2037-12-31 23:23:23 */
-
-      memset (&buf, 0, sizeof buf);
-      buf.tm_year = year - 1900;
-      buf.tm_mon = atoi_2 (timestamp+4) - 1; 
-      buf.tm_mday = atoi_2 (timestamp+6);
-      buf.tm_hour = atoi_2 (timestamp+9);
-      buf.tm_min = atoi_2 (timestamp+11);
-      buf.tm_sec = atoi_2 (timestamp+13);
-
-#ifdef HAVE_TIMEGM
-      return timegm (&buf);
-#else
-      {
-        time_t tim;
-        
-        putenv ("TZ=UTC");
-        tim = mktime (&buf);
-#ifdef __GNUC__
-#warning fixme: we must somehow reset TZ here.  It is not threadsafe anyway.
-#endif
-        return tim;
-      }
-#endif /* !HAVE_TIMEGM */
-    }
-  else
-    return (time_t) strtoul (timestamp, NULL, 10);
-}
-
 
 static void
 set_mainkey_trust_info (gpgme_key_t key, const char *src)
@@ -519,11 +472,11 @@ keylist_colon_handler (void *priv, char *line)
 
       /* Field 6 has the timestamp (seconds).  */
       if (fields >= 6)
-	subkey->timestamp = parse_timestamp (field[5]);
+	subkey->timestamp = _gpgme_parse_timestamp (field[5], NULL);
 
       /* Field 7 has the expiration time (seconds).  */
       if (fields >= 7)
-	subkey->expires = parse_timestamp (field[6]);
+	subkey->expires = _gpgme_parse_timestamp (field[6], NULL);
 
       /* Field 8 has the X.509 serial number.  */
       if (fields >= 8 && (rectype == RT_CRT || rectype == RT_CRS))
@@ -587,11 +540,11 @@ keylist_colon_handler (void *priv, char *line)
 
       /* Field 6 has the timestamp (seconds).  */
       if (fields >= 6)
-	subkey->timestamp = parse_timestamp (field[5]);
+	subkey->timestamp = _gpgme_parse_timestamp (field[5], NULL);
 
       /* Field 7 has the expiration time (seconds).  */
       if (fields >= 7)
-	subkey->expires = parse_timestamp (field[6]);
+	subkey->expires = _gpgme_parse_timestamp (field[6], NULL);
 
       /* Field 8 is reserved (LID).  */
       /* Field 9 has the ownertrust.  */
@@ -687,11 +640,11 @@ keylist_colon_handler (void *priv, char *line)
       
       /* Field 6 has the timestamp (seconds).  */
       if (fields >= 6)
-	keysig->timestamp = parse_timestamp (field[5]);
+	keysig->timestamp = _gpgme_parse_timestamp (field[5], NULL);
 
       /* Field 7 has the expiration time (seconds).  */
       if (fields >= 7)
-	keysig->expires = parse_timestamp (field[6]);
+	keysig->expires = _gpgme_parse_timestamp (field[6], NULL);
 
       /* Field 11 has the signature class (eg, 0x30 means revoked).  */
       if (fields >= 11)

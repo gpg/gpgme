@@ -24,10 +24,17 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <errno.h>
 
 #include "gpgme.h"
 #include "util.h"
+
+
+#define atoi_1(p)   (*(p) - '0' )
+#define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
+#define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
+
 
 
 /* Convert two hexadecimal digits from STR to the value they
@@ -231,6 +238,67 @@ _gpgme_decode_percent_string (const char *src, char **destp, size_t len)
 
   return 0;
 }
+
+
+/* Parse the string TIMESTAMP into a time_t.  The string may either be
+   seconds since Epoch or in the ISO 8601 format like
+   "20390815T143012".  Returns 0 for an empty string or seconds since
+   Epoch. Leading spaces are skipped. If ENDP is not NULL, it will
+   point to the next non-parsed character in TIMESTRING. */
+time_t
+_gpgme_parse_timestamp (const char *timestamp, char **endp)
+{
+  /* Need to skip leading spaces, because that is what strtoul does
+     but not our ISO 8601 checking code. */
+  while (*timestamp && *timestamp== ' ')
+    timestamp++;
+  if (!*timestamp)
+    return 0;
+
+  if (strlen (timestamp) >= 15 && timestamp[8] == 'T')
+    {
+      struct tm buf;
+      int year;
+
+      year = atoi_4 (timestamp);
+      if (year < 1900)
+        return (time_t)(-1);
+
+      /* Fixme: We would better use a configure test to see whether
+         mktime can handle dates beyond 2038. */
+      if (sizeof (time_t) <= 4 && year >= 2038)
+        return (time_t)2145914603; /* 2037-12-31 23:23:23 */
+
+      memset (&buf, 0, sizeof buf);
+      buf.tm_year = year - 1900;
+      buf.tm_mon = atoi_2 (timestamp+4) - 1; 
+      buf.tm_mday = atoi_2 (timestamp+6);
+      buf.tm_hour = atoi_2 (timestamp+9);
+      buf.tm_min = atoi_2 (timestamp+11);
+      buf.tm_sec = atoi_2 (timestamp+13);
+
+      if (endp)
+        *endp = (char*)(timestamp + 15);
+#ifdef HAVE_TIMEGM
+      return timegm (&buf);
+#else
+      {
+        time_t tim;
+        
+        putenv ("TZ=UTC");
+        tim = mktime (&buf);
+#ifdef __GNUC__
+#warning fixme: we must somehow reset TZ here.  It is not threadsafe anyway.
+#endif
+        return tim;
+      }
+#endif /* !HAVE_TIMEGM */
+    }
+  else
+    return (time_t)strtoul (timestamp, endp, 10);
+}
+
+
 
 
 static struct
