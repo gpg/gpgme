@@ -916,7 +916,9 @@ bool signMessage( const char* cleartext,
     Dummy!!  To be replaced by real structure information...
 */
 struct SignatureMetaData {
-  int data;
+  char* status;
+  char* extStatus;
+  char* nota_xml;
 };
 
 /*! \ingroup groupSignAct
