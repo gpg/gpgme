@@ -755,34 +755,21 @@ bool signMessage( const char*  cleartext,
   gpgme_data_new ( &sig );
   gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
 
-  rData = gpgme_data_release_and_get_mem( data, &rDLen );
   rSig  = gpgme_data_release_and_get_mem( sig,  &rSLen );
+  gpgme_release( data );
 
-  *ciphertext = malloc( rDLen + rSLen + 1000 );
+  *ciphertext = malloc( rSLen + 1 );
   if( *ciphertext ) {
-/*
-    strcpy( (char*)*ciphertext,
-            "Content-Type: multipart/signed;\r\n"
-            "              protocol=\"application/pgp-signature\";\r\n"
-            "              boundary=\"42=.42=.42=.42\"\r\n"
-            "\r\n--42=.42=.42=.42\r\n\r\n" );
-*/
-/*
-    strcpy( (char*)*ciphertext, "--42=.42=.42=.42\r\n"
-            "Content-Type: text/plain; charset=\"iso-8859-1\"\r\n"
-            "Content-Transfer-Encoding: 7bit\r\n\r\n" );
-    strncat((char*)*ciphertext, rData, rDLen );
-    strcat( (char*)*ciphertext,
-            "\r\n\r\n--42=.42=.42=.42\r\n"
-            "Content-Type: application/pgp-signature\r\n\r\n" );
-*/
-    strncpy((char*)*ciphertext, rSig, rSLen );
+    if( rSLen ) {
+      bOk = true;
+      strncpy((char*)*ciphertext, rSig, rSLen );
+    }
     ((char*)(*ciphertext))[rSLen] = 0;
   }
 
   gpgme_release (ctx);
 
-  return true;
+  return bOk;
 }
 
 bool checkMessageSignature( const char* ciphertext, const char**
@@ -793,7 +780,11 @@ bool storeCertificatesFromMessage(
 
 
 bool encryptMessage( const char* cleartext,
-                     const char** ciphertext ){ return true; }
+                     const char** ciphertext,
+                     const char* addressee )
+{
+  return true;
+}
 
 bool encryptAndSignMessage( const char* cleartext,
           const char** ciphertext, const char* certificate,
