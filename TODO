@@ -14,6 +14,18 @@ Hey Emacs, this is -*- outline -*- mode!
   it possible to hide them from the user (didn't work last time, try
   again). !!
 
+* New features:
+** notification system
+   We need a simple notification system, probably a a simple callback
+   with a string and some optional arguments.  This is for example
+   required to notify an application of a changed smartcard,  The
+   application can then do whatever is required.  There are other
+   usages too.  This notfication system should be independent of any
+   contextes of course.
+** --learn-code support
+   This might be integrated with import. we still need to work out how
+   to learn a card when gpg and gpgsm have support for smartcards.
+
 * Documentation
 ** Add note about GPGME clearing out pointer return values.
 ** validity/trust
@@ -26,6 +38,7 @@ Hey Emacs, this is -*- outline -*- mode!
     release all resources on error (for example to free assuan_cmd).
 ** GnuPG
 *** For pipemode, make sure to release the pipemode callback data object.
+    Note, pipemode will eventually be replaced by an Assuan interface to gpg.
 
 * Operations
 ** Passphrase callback should not copy password. !!!
@@ -62,6 +75,7 @@ Hey Emacs, this is -*- outline -*- mode!
 Bugs reported by Stephane Corthesy:
 > BTW, here's another bug: it it not possible to retrieve fingerprints  
 > for subkeys
+--> This seems to work now (wk 2002-08-20)
 
 > In GpgmeRecipients, would it be possible to provide a function which  
 > would return the validity assigned to a name contained in the  
@@ -72,3 +86,7 @@ Bugs reported by Stephane Corthesy:
 > the  
 > callback has become invalid; if I use a brand new one, the callback  
 > is called recursively, when I ask to enumerate keys.
+
+
+
+
