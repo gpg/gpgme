@@ -576,9 +576,9 @@ features are provided by the installed version of the library.
 
 
 After initializing @acronym{GPGME}, you should set the locale
-information to the locale required for your output terminal (only
-required if your program runs on a text terminal, rather than in the X
-Window environment).  Here is an example of a complete initialization:
+information to the locale required for your output terminal.  This
+locale information is needed for example for the curses and Gtk
+pinentry.  Here is an example of a complete initialization:
 
 @example
 #include <locale.h>
