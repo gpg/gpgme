@@ -192,7 +192,6 @@ gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
  leave:
   if (err)
     {
-      ctx->pending = 0; 
       _gpgme_engine_release (ctx->engine);
       ctx->engine = NULL;
     }
@@ -210,31 +209,14 @@ gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
   *r_item = NULL;
   if (!ctx)
     return GPGME_Invalid_Value;
-  if (!ctx->pending)
-    return GPGME_No_Request;
 
   if (!ctx->trust_queue)
     {
       GpgmeError err = _gpgme_wait_on_condition (ctx, &ctx->key_cond);
       if (err)
-	{
-	  ctx->pending = 0;
-	  return err;
-	}
-      if (!ctx->pending)
-	{
-	  /* The operation finished.  Because not all keys might have
-	     been returned to the caller yet, we just reset the
-	     pending flag to 1.  This will cause us to call
-	     _gpgme_wait_on_condition without any active file
-	     descriptors, but that is a no-op, so it is safe.  */
-	  ctx->pending = 1;
-	}
+	return err;
       if (!ctx->key_cond)
-	{
-	  ctx->pending = 0;
-	  return GPGME_EOF;
-	}
+	return GPGME_EOF;
       ctx->key_cond = 0; 
       assert (ctx->trust_queue);
     }
@@ -259,10 +241,7 @@ gpgme_op_trustlist_end (GpgmeCtx ctx)
 {
   if (!ctx)
     return GPGME_Invalid_Value;
-  if (!ctx->pending)
-    return GPGME_No_Request;
 
-  ctx->pending = 0;
   return 0;
 }
 

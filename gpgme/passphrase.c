@@ -97,7 +97,7 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args
     case GPGME_STATUS_EOF:
       if (result->no_passphrase
 	  || result->bad_passphrase)
-	return GPGME_No_Passphrase;
+	return GPGME_Bad_Passphrase;
       break;
 
     default:

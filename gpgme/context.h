@@ -75,8 +75,6 @@ struct trust_queue_item_s
 struct gpgme_context_s
 {
   int initialized;
-  /* An engine request is still pending.  */
-  int pending;
 
   int use_cms;
 

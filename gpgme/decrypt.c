@@ -195,7 +195,6 @@ _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
  leave:
   if (err)
     {
-      ctx->pending = 0; 
       _gpgme_engine_release (ctx->engine);
       ctx->engine = NULL;
     }

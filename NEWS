@@ -41,6 +41,11 @@ Noteworthy changes in version 0.4.1 (unreleased)
    function has been removed, just return GPGME_Canceled in the
    passphrase callback directly.
 
+ * For clarity and better reusability, the error codes
+   GPGME_No_Recipients, GPGME_Invalid_Recipient and
+   GPGME_No_Passphrase have been renamed to GPGME_No_UserID,
+   GPGME_Invalid_UserID and GPGME_Bad_Passphrase resp.
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
@@ -56,6 +61,9 @@ gpgme_get_engine_info		CHANGED: Return info structure instead XML.
 gpgme_get_protocol_name		NEW
 GpgmePassphraseCb		CHANGED: Return error value, new argument.
 gpgme_cancel			REMOVED: Return error in callback directly.
+GPGME_No_Recipients		CHANGED: GPGME_No_UserID
+GPGME_Invalid_Recipient		CHANGED: GPGME_Invalid_UserID
+GPGME_No_Passphrase		CHANGED: GPGME_Bad_Passphrase
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)

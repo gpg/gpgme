@@ -343,7 +343,6 @@ gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 	  {
 	    ctx = dctx;
 	    hang = 0;
-	    ctx->pending = 0;
 	  }
       }
     }

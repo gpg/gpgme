@@ -755,7 +755,6 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
  leave:
   if (err)
     {
-      ctx->pending = 0; 
       _gpgme_engine_release (ctx->engine);
       ctx->engine = NULL;
     }
@@ -806,7 +805,6 @@ gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
  leave:
   if (err)
     {
-      ctx->pending = 0; 
       _gpgme_engine_release (ctx->engine);
       ctx->engine = NULL;
     }
@@ -837,31 +835,14 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
   *r_key = NULL;
   if (!ctx)
     return GPGME_Invalid_Value;
-  if (!ctx->pending)
-    return GPGME_No_Request;
 
   if (!ctx->key_queue)
     {
       GpgmeError err = _gpgme_wait_on_condition (ctx, &ctx->key_cond);
       if (err)
-	{
-	  ctx->pending = 0;
-	  return err;
-	}
-      if (!ctx->pending)
-	{
-	  /* The operation finished.  Because not all keys might have
-	     been returned to the caller yet, we just reset the
-	     pending flag to 1.  This will cause us to call
-	     _gpgme_wait_on_condition without any active file
-	     descriptors, but that is a no-op, so it is safe.  */
-	  ctx->pending = 1;
-	}
+	return err;
       if (!ctx->key_cond)
-	{
-	  ctx->pending = 0;
-	  return GPGME_EOF;
-	}
+	return GPGME_EOF;
       ctx->key_cond = 0; 
       assert (ctx->key_queue);
     }
@@ -888,9 +869,6 @@ gpgme_op_keylist_end (GpgmeCtx ctx)
 {
   if (!ctx)
     return GPGME_Invalid_Value;
-  if (!ctx->pending)
-    return GPGME_No_Request;
 
-  ctx->pending = 0;
   return 0;
 }

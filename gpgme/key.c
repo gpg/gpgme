@@ -1195,8 +1195,6 @@ gpgme_get_key (GpgmeCtx ctx, const char *fpr, GpgmeKey *r_key,
 
   if (!ctx || !r_key)
     return GPGME_Invalid_Value;
-  if (ctx->pending)
-    return GPGME_Busy;
   
   if (strlen (fpr) < 16)	/* We have at least a key ID.  */
     return GPGME_Invalid_Key;

@@ -66,15 +66,11 @@ _gpgme_op_reset (GpgmeCtx ctx, int type)
   GpgmeError err = 0;
   struct GpgmeIOCbs io_cbs;
 
-  if (ctx->pending)
-    return GPGME_Busy;
-
   _gpgme_release_result (ctx);
 
   /* Create an engine object.  */
   _gpgme_engine_release (ctx->engine);
   ctx->engine = NULL;
-  ctx->pending = 1;
   err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
 			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
   if (err)

@@ -1,3 +1,48 @@
+2003-04-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (GpgmeError): Rename GPGME_No_Passphrase to
+	GPGME_Bad_Passphrase.
+	* passphrase.c (_gpgme_passphrase_status_handler): Use
+	GPGME_Bad_Passphrase instead GPGME_No_Passphrase.
+
+	* gpgme.h (GpgmeError): Rename GPGME_No_Recipients to
+	GPGME_No_UserID and GPGME_Invalid_Recipient to
+	GPGME_Invalid_UserID.
+	* encrypt.c (_gpgme_encrypt_status_handler): Use GPGME_No_UserID
+	instead GPGME_No_Recipients and GPGME_Invalid_UserID instead
+	GPGME_Invalid_Recipient.
+	(_gpgme_op_encrypt_start): Likewise.
+
+	* gpgme.h (GpgmeError): Remove GPGME_Busy and GPGME_No_Request.
+	* wait-user.c (_gpgme_wait_user_event_cb): Don't clear CTX->pending.
+	* wait-private.c (_gpgme_wait_private_event_cb): Likewise.
+	* wait-global.c (gpgme_wait): Likewise.
+	* verify.c (_gpgme_op_verify_start): Likewise.
+	(gpgme_get_sig_status): Don't check pending flag.
+	(gpgme_get_sig_string_attr): Likewise.
+	(gpgme_get_sig_ulong_attr): Likewise.
+	(gpgme_get_sig_key): Likewise.
+	* op-support.c (_gpgme_op_reset): Likewise.
+	* trustlist.c (gpgme_op_trustlist_start): Don't clear pending flag.
+	(gpgme_op_trustlist_next): Don't check or clear pending flag.
+	(gpgme_op_trustlist_end): Likewise.
+	* sign.c (_gpgme_op_sign_start): Likewise.
+	* context.h (struct gpgme_context_s): Remove member PENDING.
+	* decrypt.c (_gpgme_decrypt_start): Likewise.
+	* delete.c (_gpgme_op_delete_start): Likewise.
+	* edit.c (_gpgme_op_edit_start): Likewise.
+	* encrypt.c (_gpgme_op_encrypt_start): Likewise.
+	* encrypt-sign.c (_gpgme_op_encrypt_sign_start): Likewise.
+	* export.c (_gpgme_op_export_start): Likewise.
+	* genkey.c (_gpgme_op_genkey_start): Likewise.
+	* import.c (_gpgme_op_import_start): Likewise.
+	* key.c (gpgme_get_key): Likewise.
+	* keylist.c (gpgme_op_keylist_start): Likewise.
+	(gpgme_op_keylist_ext_start): Likewise.
+	(gpgme_op_keylist_next): Likewise.
+	(gpgme_op_keylist_end): Likewise.
+	* data-compat.c (gpgme_error_to_errno): Don't convert EBUSY.
+
 2003-02-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (GpgmePassphraseCb): Change type to return GpgmeError,
