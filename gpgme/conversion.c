@@ -62,6 +62,8 @@ _gpgme_decode_c_string (const char *src, char **destp)
   if (!dest)
     return mk_error (Out_Of_Core);
 
+  *destp = dest;
+
   while (*src)
     {
       if (*src != '\\')
@@ -130,7 +132,6 @@ _gpgme_decode_c_string (const char *src, char **destp)
         } 
     }
   *(dest++) = 0;
-  *destp = dest;
 
   return 0;
 }
