@@ -713,9 +713,17 @@ _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
 			 int secret_only, int keylist_mode)
 {
   char *line;
+  GpgmeError err;
 
   if (!pattern)
     pattern = "";
+
+  if (asprintf (&line, "OPTION list-mode=%d", (keylist_mode & 3)) < 0)
+    return mk_error (Out_Of_Core);
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line);
+  free (line);
+  if (err)
+    return err;
 
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
   line = xtrymalloc (15 + strlen (pattern) + 1);
@@ -752,6 +760,13 @@ _gpgme_gpgsm_op_keylist_ext (GpgsmObject gpgsm, const char *pattern[],
 
   if (reserved)
     return mk_error (Invalid_Value);
+
+  if (asprintf (&line, "OPTION list-mode=%d", (keylist_mode & 3)) < 0)
+    return mk_error (Out_Of_Core);
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line);
+  free (line);
+  if (err)
+    return err;
 
   if (pattern && *pattern)
     {
