@@ -1,3 +1,9 @@
+2002-02-28  Werner Koch  <wk@gnupg.org>
+
+	* key.h (subkey_s): New member expires_at.
+	* keylist.c (keylist_colon_handler): Set it here
+	* key.c (gpgme_key_get_as_xml,gpgme_key_get_ulong_attr): Return it.
+
 2002-02-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.h (_gpgme_gpg_op_keylist_ext): New prototype.

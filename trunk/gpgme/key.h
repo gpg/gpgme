@@ -27,39 +27,40 @@
 #include "context.h"
 
 struct subkey_s {
-    struct subkey_s *next;
-    unsigned int secret:1;
-    struct {
-        unsigned int revoked:1 ;
-        unsigned int expired:1 ;
-        unsigned int disabled:1 ;
-        unsigned int invalid:1 ;
-        unsigned int can_encrypt:1;
-        unsigned int can_sign:1;
-        unsigned int can_certify:1;
-    } flags;
-    unsigned int key_algo;
-    unsigned int key_len;
-    char keyid[16+1]; 
-    char *fingerprint; /* malloced hex digits */
-    time_t timestamp; /* -1 for invalid, 0 for not available */
+  struct subkey_s *next;
+  unsigned int secret:1;
+  struct {
+    unsigned int revoked:1 ;
+    unsigned int expired:1 ;
+    unsigned int disabled:1 ;
+    unsigned int invalid:1 ;
+    unsigned int can_encrypt:1;
+    unsigned int can_sign:1;
+    unsigned int can_certify:1;
+  } flags;
+  unsigned int key_algo;
+  unsigned int key_len;
+  char keyid[16+1]; 
+  char *fingerprint; /* malloced hex digits */
+  time_t timestamp;  /* -1 for invalid, 0 for not available */
+  time_t expires_at; /* 0 for does not expires */
 };
 
 struct gpgme_key_s {
-    struct {
-        unsigned int revoked:1 ;
-        unsigned int expired:1 ;
-        unsigned int disabled:1 ;
-        unsigned int invalid:1 ;
-        unsigned int can_encrypt:1;
-        unsigned int can_sign:1;
-        unsigned int can_certify:1;
-    } gloflags; 
-    unsigned int ref_count;
-    unsigned int secret:1;
-    unsigned int x509:1;
-    struct subkey_s   keys; 
-    struct user_id_s *uids;
+  struct {
+    unsigned int revoked:1 ;
+    unsigned int expired:1 ;
+    unsigned int disabled:1 ;
+    unsigned int invalid:1 ;
+    unsigned int can_encrypt:1;
+    unsigned int can_sign:1;
+    unsigned int can_certify:1;
+  } gloflags; 
+  unsigned int ref_count;
+  unsigned int secret:1;
+  unsigned int x509:1;
+  struct subkey_s   keys; 
+  struct user_id_s *uids;
 };
 
 void _gpgme_key_cache_init (void);

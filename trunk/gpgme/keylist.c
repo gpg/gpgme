@@ -300,7 +300,8 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	    case 6: /* timestamp (seconds) */
 	      key->keys.timestamp = parse_timestamp (p);
 	      break;
-	    case 7: /* valid for n days */
+	    case 7: /* expiration time (seconds) */
+	      key->keys.expires_at = parse_timestamp (p);
 	      break;
 	    case 8: /* X.509 serial number */
 	      /* fixme: store it */
@@ -345,7 +346,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
               case 6: /* timestamp (seconds) */
                 sk->timestamp = parse_timestamp (p);
                 break;
-              case 7: /* valid for n days */
+              case 7: /* expiration time (seconds) */
                 break;
               case 8: /* reserved (LID) */
                 break;
