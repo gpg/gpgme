@@ -38,9 +38,9 @@ print_data ( GpgmeData dh )
     size_t nread;
     GpgmeError err;
 
-    err = gpgme_rewind_data ( dh );
+    err = gpgme_data_rewind ( dh );
     fail_if_err (err);
-    while ( !(err = gpgme_read_data ( dh, buf, 100, &nread )) ) {
+    while ( !(err = gpgme_data_read ( dh, buf, 100, &nread )) ) {
         fwrite ( buf, nread, 1, stdout );
     }
     if (err != GPGME_EOF) 
@@ -55,27 +55,27 @@ main (int argc, char **argv )
     GpgmeCtx ctx;
     GpgmeError err;
     GpgmeData in, out;
-    GpgmeRecipientSet rset;
+    GpgmeRecipients rset;
 
   do {
-    err = gpgme_new_context (&ctx);
+    err = gpgme_new (&ctx);
     fail_if_err (err);
 
-    err = gpgme_new_data ( &in, "Hallo Leute\n", 12, 0 );
+    err = gpgme_data_new ( &in, "Hallo Leute\n", 12, 0 );
     fail_if_err (err);
 
-    err = gpgme_new_data ( &out, NULL, 0,0 );
+    err = gpgme_data_new ( &out, NULL, 0,0 );
     fail_if_err (err);
 
-    err = gpgme_new_recipient_set (&rset);
+    err = gpgme_recipients_new (&rset);
     fail_if_err (err);
-    err = gpgme_add_recipient (rset, "Bob");
+    err = gpgme_recipients_add_name (rset, "Bob");
     fail_if_err (err);
-    err = gpgme_add_recipient (rset, "Alpha");
+    err = gpgme_recipients_add_name (rset, "Alpha");
     fail_if_err (err);
 
 
-    err = gpgme_encrypt (ctx, rset, in, out );
+    err = gpgme_op_encrypt (ctx, rset, in, out );
     fail_if_err (err);
 
     fflush (NULL);
@@ -83,10 +83,10 @@ main (int argc, char **argv )
     print_data (out);
     fputs ("End Result.\n", stdout );
    
-    gpgme_release_recipient_set (rset);
-    gpgme_release_data (in);
-    gpgme_release_data (out);
-    gpgme_release_context (ctx);
+    gpgme_recipients_release (rset);
+    gpgme_data_release (in);
+    gpgme_data_release (out);
+    gpgme_release (ctx);
   } while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
    
     return 0;

@@ -77,13 +77,15 @@ struct gpgme_data_s {
     char *private_buffer;
 };
 
-struct recipient_s {
-    struct recipient_s *next;
+struct user_id_s {
+    struct user_id_s *next;
+    int validity; /* 0 = undefined, 1 = not, 2 = marginal,
+                     3 = full, 4 = ultimate */
     char name[1];
 };
 
-struct gpgme_recipient_set_s {
-    struct recipient_s *list;
+struct gpgme_recipients_s {
+    struct user_id_s *list;
     int checked;   /* wether the recipients are all valid */
 };
 

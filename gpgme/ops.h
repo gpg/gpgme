@@ -33,14 +33,14 @@ GpgmeCtx _gpgme_wait_on_condition ( GpgmeCtx c,
 
 /*-- recipient.c --*/
 void _gpgme_append_gpg_args_from_recipients (
-    const GpgmeRecipientSet rset,
+    const GpgmeRecipients rset,
     GpgObject gpg );
 
 
 /*-- data.c --*/
-GpgmeDataMode _gpgme_query_data_mode ( GpgmeData dh );
-void          _gpgme_set_data_mode ( GpgmeData dh, GpgmeDataMode mode );
-GpgmeError    _gpgme_append_data ( GpgmeData dh,
+GpgmeDataMode _gpgme_data_get_mode ( GpgmeData dh );
+void          _gpgme_data_set_mode ( GpgmeData dh, GpgmeDataMode mode );
+GpgmeError    _gpgme_data_append ( GpgmeData dh,
                                    const char *buffer, size_t length );
 
 /*-- key.c --*/

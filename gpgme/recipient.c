@@ -28,9 +28,9 @@
 #include "rungpg.h"
 
 GpgmeError
-gpgme_new_recipient_set (GpgmeRecipientSet *r_rset)
+gpgme_recipients_new (GpgmeRecipients *r_rset)
 {
-    GpgmeRecipientSet rset;
+    GpgmeRecipients rset;
 
     rset = xtrycalloc ( 1, sizeof *rset  );
     if (!rset)
@@ -40,7 +40,7 @@ gpgme_new_recipient_set (GpgmeRecipientSet *r_rset)
 }
 
 void
-gpgme_release_recipient_set ( GpgmeRecipientSet rset )
+gpgme_recipients_release ( GpgmeRecipients rset )
 {
     /* fixme: release the linked list */
     xfree ( rset );
@@ -48,9 +48,9 @@ gpgme_release_recipient_set ( GpgmeRecipientSet rset )
 
 
 GpgmeError
-gpgme_add_recipient (GpgmeRecipientSet rset, const char *name )
+gpgme_recipients_add_name (GpgmeRecipients rset, const char *name )
 {
-    struct recipient_s *r;
+    struct user_id_s *r;
 
     if (!name || !rset )
         return mk_error (Invalid_Value);
@@ -64,9 +64,9 @@ gpgme_add_recipient (GpgmeRecipientSet rset, const char *name )
 }
 
 unsigned int 
-gpgme_count_recipients ( const GpgmeRecipientSet rset )
+gpgme_recipients_count ( const GpgmeRecipients rset )
 {
-    struct recipient_s *r;
+    struct user_id_s *r;
     unsigned int count = 0;
     
     if ( rset ) {
@@ -79,10 +79,10 @@ gpgme_count_recipients ( const GpgmeRecipientSet rset )
 
 void
 _gpgme_append_gpg_args_from_recipients (
-    const GpgmeRecipientSet rset,
+    const GpgmeRecipients rset,
     GpgObject gpg )
 {
-    struct recipient_s *r;
+    struct user_id_s *r;
 
     assert (rset);
     for (r=rset->list ; r; r = r->next ) {
@@ -90,10 +90,5 @@ _gpgme_append_gpg_args_from_recipients (
         _gpgme_gpg_add_arg ( gpg, r->name );
     }    
 }
-
-
-
-
-
 
 

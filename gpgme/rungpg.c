@@ -110,7 +110,7 @@ static GpgmeError read_colon_line ( GpgObject gpg );
 
 
 GpgmeError
-_gpgme_gpg_new_object ( GpgObject *r_gpg )
+_gpgme_gpg_new ( GpgObject *r_gpg )
 {
     GpgObject gpg;
     int rc = 0;
@@ -153,7 +153,7 @@ _gpgme_gpg_new_object ( GpgObject *r_gpg )
 
  leave:
     if (rc) {
-        _gpgme_gpg_release_object (gpg);
+        _gpgme_gpg_release (gpg);
         *r_gpg = NULL;
     }
     else
@@ -162,7 +162,7 @@ _gpgme_gpg_new_object ( GpgObject *r_gpg )
 }
 
 void
-_gpgme_gpg_release_object ( GpgObject gpg )
+_gpgme_gpg_release ( GpgObject gpg )
 {
     if ( !gpg )
         return;
@@ -366,7 +366,7 @@ build_argv ( GpgObject gpg )
     }
     for ( a=gpg->arglist; a; a = a->next ) {
         if ( a->data ) {
-            switch ( _gpgme_query_data_mode (a->data) ) {
+            switch ( _gpgme_data_get_mode (a->data) ) {
               case GPGME_DATA_MODE_NONE:
               case GPGME_DATA_MODE_INOUT:
                 xfree (fd_data_map);
@@ -382,7 +382,7 @@ build_argv ( GpgObject gpg )
                 break;
             }
 
-            switch ( gpgme_query_data_type (a->data) ) {
+            switch ( gpgme_data_get_type (a->data) ) {
               case GPGME_DATA_TYPE_NONE:
                 if ( fd_data_map[datac].inbound )
                     break;  /* allowed */
@@ -596,7 +596,7 @@ gpg_inbound_handler ( void *opaque, pid_t pid, int fd )
     int nread;
     char buf[200];
 
-    assert ( _gpgme_query_data_mode (dh) == GPGME_DATA_MODE_IN );
+    assert ( _gpgme_data_get_mode (dh) == GPGME_DATA_MODE_IN );
 
     do {
         nread = read (fd, buf, 200 );
@@ -614,7 +614,7 @@ gpg_inbound_handler ( void *opaque, pid_t pid, int fd )
      * the read function or provides a memory area for writing to it.
      */
     
-    err = _gpgme_append_data ( dh, buf, nread );
+    err = _gpgme_data_append ( dh, buf, nread );
     if ( err ) {
         fprintf (stderr, "_gpgme_append_data failed: %s\n",
                  gpgme_strerror(err));
@@ -659,8 +659,8 @@ gpg_outbound_handler ( void *opaque, pid_t pid, int fd )
 {
     GpgmeData dh = opaque;
 
-    assert ( _gpgme_query_data_mode (dh) == GPGME_DATA_MODE_OUT );
-    switch ( gpgme_query_data_type (dh) ) {
+    assert ( _gpgme_data_get_mode (dh) == GPGME_DATA_MODE_OUT );
+    switch ( gpgme_data_get_type (dh) ) {
       case GPGME_DATA_TYPE_MEM:
         if ( write_mem_data ( dh, fd ) )
             return 1; /* ready */
