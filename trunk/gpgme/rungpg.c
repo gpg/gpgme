@@ -1224,7 +1224,7 @@ append_args_from_signers (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 
 
 static gpgme_error_t
-gpg_edit (void *engine, gpgme_key_t key, gpgme_data_t out,
+gpg_edit (void *engine, int type, gpgme_key_t key, gpgme_data_t out,
 	  gpgme_ctx_t ctx /* FIXME */)
 {
   engine_gpg_t gpg = engine;
@@ -1234,7 +1234,7 @@ gpg_edit (void *engine, gpgme_key_t key, gpgme_data_t out,
   if (!err)
     err = append_args_from_signers (gpg, ctx);
   if (!err)
-  err = add_arg (gpg, "--edit-key");
+  err = add_arg (gpg, type == 0 ? "--edit-key" : "--card-edit");
   if (!err)
     err = add_data (gpg, out, 1, 1);
   if (!err)

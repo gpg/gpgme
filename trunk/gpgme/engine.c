@@ -284,8 +284,8 @@ _gpgme_engine_op_delete (engine_t engine, gpgme_key_t key,
 
 
 gpgme_error_t
-_gpgme_engine_op_edit (engine_t engine, gpgme_key_t key, gpgme_data_t out,
-		       gpgme_ctx_t ctx /* FIXME */)
+_gpgme_engine_op_edit (engine_t engine, int type, gpgme_key_t key,
+		       gpgme_data_t out, gpgme_ctx_t ctx /* FIXME */)
 {
   if (!engine)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -293,7 +293,7 @@ _gpgme_engine_op_edit (engine_t engine, gpgme_key_t key, gpgme_data_t out,
   if (!engine->ops->edit)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->edit) (engine->engine, key, out, ctx);
+  return (*engine->ops->edit) (engine->engine, type, key, out, ctx);
 }
 
 

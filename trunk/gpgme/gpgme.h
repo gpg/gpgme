@@ -1349,6 +1349,15 @@ gpgme_error_t gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 			     gpgme_edit_cb_t fnc, void *fnc_value,
 			     gpgme_data_t out);
 
+/* Edit the card for the key KEY.  Send status and command requests to
+   FNC and output of edit commands to OUT.  */
+gpgme_error_t gpgme_op_card_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
+					gpgme_edit_cb_t fnc, void *fnc_value,
+					gpgme_data_t out);
+gpgme_error_t gpgme_op_card_edit (gpgme_ctx_t ctx, gpgme_key_t key,
+				  gpgme_edit_cb_t fnc, void *fnc_value,
+				  gpgme_data_t out);
+
 
 /* Key management functions.  */
 struct _gpgme_op_keylist_result
