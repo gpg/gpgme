@@ -37,6 +37,7 @@
 #include "rungpg.h"
 #include "context.h"  /*temp hack until we have GpmeData methods to do I/O */
 #include "io.h"
+#include "sema.h"
 
 #include "status-table.h"
 
@@ -93,8 +94,6 @@ struct gpg_object_s {
     int pid; /* we can't use pid_t because we don't use it in Windoze */
 
     int running;
-    int exit_status;
-    int exit_signal;
     
     /* stuff needed for pipemode */
     struct {
@@ -117,7 +116,17 @@ struct gpg_object_s {
     } cmd;
 };
 
-static void kill_gpg ( GpgObject gpg );
+struct reap_s {
+    struct reap_s *next;
+    pid_t pid;
+    time_t entered;
+    int term_send;
+};
+
+static struct reap_s *reap_list;
+DEFINE_STATIC_LOCK (reap_list_lock);
+
+
 static void free_argv ( char **argv );
 static void free_fd_data_map ( struct fd_data_map_s *fd_data_map );
 
@@ -217,25 +226,80 @@ _gpgme_gpg_release ( GpgObject gpg )
         _gpgme_io_close (gpg->colon.fd[1]);
   #endif
     free_fd_data_map (gpg->fd_data_map);
-    kill_gpg (gpg); /* fixme: should be done asyncronously */
-    xfree (gpg);
+    if (gpg->running) {
+        int pid = gpg->pid;
+        struct reap_s *r;
+
+        /* resuse the memory, so that we don't need to allocate another
+         * mem block and have to handle errors */
+        assert (sizeof *r < sizeof *gpg );
+        r = (void*)gpg;
+        memset (r, 0, sizeof *r);
+        r->pid = pid;
+        r->entered = time (NULL);
+        LOCK(reap_list_lock);
+        r->next = reap_list;
+        reap_list = r;
+        UNLOCK(reap_list_lock);
+    }
+    else
+        xfree (gpg);
 }
 
 static void
-kill_gpg ( GpgObject gpg )
+do_reaping (void)
 {
-  #if 0
-    if ( gpg->running ) {
-        /* still running? Must send a killer */
-        kill ( gpg->pid, SIGTERM);
-        sleep (2);
-        if ( !waitpid (gpg->pid, NULL, WNOHANG) ) {
-            /* pay the murderer better and then forget about it */
-            kill (gpg->pid, SIGKILL);
+    struct reap_s *r, *rlast;
+    static time_t last_check;
+    time_t cur_time = time (NULL);
+
+    /* a race does not matter here */
+    if (!last_check)
+        last_check = time(NULL);
+
+    if (last_check >= cur_time)
+        return;  /* we check only every second */
+
+    /* fixme: it would be nice if to have a TRYLOCK here */
+    LOCK (reap_list_lock);  
+    for (r=reap_list,rlast=NULL; r ; rlast=r, r=r?r->next:NULL) {
+        int dummy1, dummy2;
+
+        if ( _gpgme_io_waitpid (r->pid, 0, &dummy1, &dummy2) ) {
+            /* process has terminated - remove it from the queue */
+            void *p = r;
+            if (!rlast) {
+                reap_list = r->next;
+                r = reap_list;
+            }
+            else {
+                rlast->next = r->next;
+                r = rlast;
+            }
+            xfree (p);
         }
-        gpg->running = 0;
+        else if ( !r->term_send ) {
+            if( r->entered+1 >= cur_time ) {
+                _gpgme_io_kill ( r->pid, 0);
+                r->term_send = 1;
+                r->entered = cur_time;
+            }
+        }
+        else {
+            /* give it 5 second before we are going to send the killer */
+            if ( r->entered+5 >= cur_time ) {
+                _gpgme_io_kill (r->pid, 1);
+                r->entered = cur_time; /* just in case we have to repat it */
+            }
+        }
     }
-  #endif
+    UNLOCK (reap_list_lock);  
+}
+
+void
+_gpgme_gpg_housecleaning ()
+{
+    do_reaping ();
 }
 
 void
