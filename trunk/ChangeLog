@@ -1,5 +1,11 @@
 2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
 
+	* configure.ac: Bump up to 0.4.1.
+	
+	Released 0.4.0.
+
+2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
+
 	* autogen.sh (automake_vers): Require 1.7 (really 1.7.1) for the
 	conditional source distribution bug fix.
 
