@@ -1,5 +1,18 @@
 2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* types.h: Remove byte and ulong types.
+	* util.h (_gpgme_hextobyte): Change prototype to unsigned char
+	instead byte.
+	* conversion.c (_gpgme_hextobyte): Change argument to unsigned
+	char instead byte.
+	(_gpgme_decode_c_string): Likewise, and beautify.  Also support a
+	few more escaped characters.  Be more strict about buffer size.
+	(_gpgme_data_append_percentstring_for_xml): Change type of SRC,
+	BUF and DST to unsigned char instead byte.
+	* progress.c (_gpgme_progress_status_handler): Use unsigned char
+	instead byte.
+	* debug.c (trim_spaces): Likewise.
+
 	* util.h (mk_error): Remove macro.
 	* conversion.c, data.c, data-compat.c, decrypt.c, delete.c,
 	edit.c, encrypt.c, encrypt-sign.c, engine.c, engine-gpgsm.c,

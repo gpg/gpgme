@@ -145,16 +145,9 @@ dnl Checks for header files.
 dnl
 AC_CHECK_HEADERS(sys/select.h)
 
-
-
 dnl
-dnl Checks for typedefs and structures.
+dnl Type checks.
 dnl
-GNUPG_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
-GNUPG_CHECK_TYPEDEF(ushort, HAVE_USHORT_TYPEDEF)
-GNUPG_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
-GNUPG_CHECK_TYPEDEF(u16, HAVE_U16_TYPEDEF)
-GNUPG_CHECK_TYPEDEF(u32, HAVE_U32_TYPEDEF)
 
 AC_CHECK_SIZEOF(unsigned int)
 
