@@ -67,10 +67,6 @@ typedef struct gpgme_recipients_s *GpgmeRecipients;
 struct gpgme_key_s;
 typedef struct gpgme_key_s *GpgmeKey;
 
-/* A trust item.  */
-struct gpgme_trust_item_s;
-typedef struct gpgme_trust_item_s *GpgmeTrustItem;
-
 
 /* The error numbers used by GPGME.  */
 typedef enum
@@ -729,21 +725,6 @@ unsigned long gpgme_key_sig_get_ulong_attr (GpgmeKey key, int uid_idx,
 					    GpgmeAttr what,
 					    const void *reserved, int idx);
 
-
-/* Release the trust item ITEM.  */
-void gpgme_trust_item_release (GpgmeTrustItem item);
-
-/* Return the value of the attribute WHAT of ITEM, which has to be
-   representable by a string.  */
-const char *gpgme_trust_item_get_string_attr (GpgmeTrustItem item,
-					      GpgmeAttr what,
-					      const void *reserved, int idx);
-
-/* Return the value of the attribute WHAT of KEY, which has to be
-   representable by an integer.  IDX specifies a running index if the
-   attribute appears more than once in the key.  */
-int gpgme_trust_item_get_int_attr (GpgmeTrustItem item, GpgmeAttr what,
-				   const void *reserved, int idx);
 
 /* Crypto Operations.  */
 
@@ -1082,6 +1063,42 @@ GpgmeError gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key);
 /* Terminate a pending keylist operation within CTX.  */
 GpgmeError gpgme_op_keylist_end (GpgmeCtx ctx);
 
+
+/* Trust items and operations.  */
+
+struct _gpgme_trust_item
+{
+  /* Internal to GPGME, do not use.  */
+  unsigned int _refs;
+
+  /* The key ID to which the trust item belongs.  */
+  char *keyid;
+
+  /* Internal to GPGME, do not use.  */
+  char _keyid[16 + 1];
+
+  /* The type of the trust item, 1 refers to a key, 2 to a user ID.  */
+  int type;
+
+  /* The trust level.  */
+  int level;
+
+  /* The owner trust if TYPE is 1.  */
+  char *otrust;
+
+  /* Internal to GPGME, do not use.  */
+  char _otrust[2];
+
+  /* The calculated validity.  */
+  char *val;
+ 
+  /* Internal to GPGME, do not use.  */
+  char _val[2];
+
+  /* The user name if TYPE is 2.  */
+  char *name;
+};
+typedef struct _gpgme_trust_item *GpgmeTrustItem;
 
 /* Start a trustlist operation within CTX, searching for trust items
    which match PATTERN.  */
@@ -1094,7 +1111,29 @@ GpgmeError gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item);
 /* Terminate a pending trustlist operation within CTX.  */
 GpgmeError gpgme_op_trustlist_end (GpgmeCtx ctx);
 
+/* Acquire a reference to ITEM.  */
+void gpgme_trust_item_ref (GpgmeTrustItem item);
 
+/* Release a reference to ITEM.  If this was the last one the trust
+   item is destroyed.  */
+void gpgme_trust_item_unref (GpgmeTrustItem item);
+
+/* Release the trust item ITEM.  */
+void gpgme_trust_item_release (GpgmeTrustItem item);
+
+/* Return the value of the attribute WHAT of ITEM, which has to be
+   representable by a string.  */
+const char *gpgme_trust_item_get_string_attr (GpgmeTrustItem item,
+					      GpgmeAttr what,
+					      const void *reserved, int idx);
+
+/* Return the value of the attribute WHAT of KEY, which has to be
+   representable by an integer.  IDX specifies a running index if the
+   attribute appears more than once in the key.  */
+int gpgme_trust_item_get_int_attr (GpgmeTrustItem item, GpgmeAttr what,
+				   const void *reserved, int idx);
+
+
 /* Various functions.  */
 
 /* Check that the library fulfills the version requirement.  */

@@ -21,48 +21,34 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <assert.h>
 
+#include "gpgme.h"
 #include "util.h"
 #include "context.h"
 #include "ops.h"
 
-struct gpgme_trust_item_s
+
+struct trust_queue_item_s
 {
-  int level;
-  char keyid[16+1];
-  int type;   
-  char ot[2];
-  char val[2];
-  char *name;
+  struct trust_queue_item_s *next;
+  GpgmeTrustItem item;
 };
 
-
-static GpgmeTrustItem
-trust_item_new (void)
+typedef struct
 {
-  GpgmeTrustItem item;
+  /* Something new is available.  */
+  int trust_cond;
+  struct trust_queue_item_s *trust_queue;
+} *op_data_t;
 
-  item = calloc (1, sizeof *item);
-  return item;
-}
 
-
+
 static GpgmeError
-trustlist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
+trustlist_status_handler (void *priv, GpgmeStatusCode code, char *args)
 {
-  switch (code)
-    {
-    case GPGME_STATUS_EOF:
-      break;
-
-    default:
-      break;
-    }
   return 0;
 }
 
@@ -79,8 +65,10 @@ trustlist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
    complete count NAME ist the username and only printed on U
    lines.  */
 static GpgmeError
-trustlist_colon_handler (GpgmeCtx ctx, char *line)
+trustlist_colon_handler (void *priv, char *line)
 {
+  GpgmeCtx ctx = (GpgmeCtx) priv;
+  GpgmeError err;
   char *p, *pend;
   int field = 0;
   GpgmeTrustItem item = NULL;
@@ -98,9 +86,9 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
       switch (field)
 	{
 	case 1: /* level */
-	  item = trust_item_new ();
-	  if (!item)
-	    return GPGME_Out_Of_Core;
+	  err = _gpgme_trust_item_new (&item);
+	  if (err)
+	    return err;
 	  item->level = atoi (p);
 	  break;
 	case 2: /* long keyid */
@@ -111,17 +99,15 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
 	  item->type = *p == 'K'? 1 : *p == 'U'? 2 : 0;
 	  break;
 	case 5: /* owner trust */
-	  item->ot[0] = *p;
-	  item->ot[1] = 0;
+	  item->_otrust[0] = *p;
 	  break;
 	case 6: /* validity */
-	  item->val[0] = *p;
-	  item->val[1] = 0;
+	  item->_val[0] = *p;
 	  break;
 	case 9: /* user ID */
 	  item->name = strdup (p);
 	  if (!item->name) {
-	    gpgme_trust_item_release (item);
+	    gpgme_trust_item_unref (item);
 	    return GPGME_Out_Of_Core;
 	  }
 	  break;
@@ -138,25 +124,31 @@ void
 _gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data)
 {
   GpgmeCtx ctx = (GpgmeCtx) data;
+  GpgmeError err;
+  op_data_t opd;
   GpgmeTrustItem item = (GpgmeTrustItem) type_data;
   struct trust_queue_item_s *q, *q2;
 
   assert (type == GPGME_EVENT_NEXT_TRUSTITEM);
 
+  err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, (void **) &opd,
+			       -1, NULL);
+  if (err)
+    return;
+
   q = malloc (sizeof *q);
   if (!q)
     {
-      gpgme_trust_item_release (item);
-      /* FIXME */
-      /* ctx->error = GPGME_Out_Of_Core; */
+      gpgme_trust_item_unref (item);
+      /* FIXME: GPGME_Out_Of_Core; */
       return;
     }
   q->item = item;
   q->next = NULL;
-  /* FIXME: lock queue, keep a tail pointer */
-  q2 = ctx->trust_queue;
+  /* FIXME: Use a tail pointer */
+  q2 = opd->trust_queue;
   if (!q2)
-    ctx->trust_queue = q;
+    opd->trust_queue = q;
   else
     {
       while (q2->next)
@@ -164,7 +156,7 @@ _gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data)
       q2->next = q;
     }
   /* FIXME: unlock queue */
-  ctx->key_cond = 1;
+  opd->trust_cond = 1;
 }
 
 
@@ -172,36 +164,36 @@ GpgmeError
 gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
 {
   GpgmeError err = 0;
+  op_data_t opd;
 
   if (!pattern || !*pattern)
     return GPGME_Invalid_Value;
 
   err = _gpgme_op_reset (ctx, 2);
   if (err)
-    goto leave;
+    return err;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, (void **) &opd,
+			       sizeof (*opd), NULL);
+  if (err)
+    return err;
 
   _gpgme_engine_set_status_handler (ctx->engine,
 				    trustlist_status_handler, ctx);
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
 					      trustlist_colon_handler, ctx);
   if (err)
-    goto leave;
+    return err;
 
-  err =_gpgme_engine_op_trustlist (ctx->engine, pattern);
-
- leave:
-  if (err)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
-  return err;
+  return _gpgme_engine_op_trustlist (ctx->engine, pattern);
 }
 
 
 GpgmeError
 gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
 {
+  GpgmeError err;
+  op_data_t opd;
   struct trust_queue_item_s *q;
 
   if (!r_item)
@@ -210,18 +202,23 @@ gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
   if (!ctx)
     return GPGME_Invalid_Value;
 
-  if (!ctx->trust_queue)
+  err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, (void **) &opd,
+			       -1, NULL);
+  if (err)
+    return err;
+
+  if (!opd->trust_queue)
     {
-      GpgmeError err = _gpgme_wait_on_condition (ctx, &ctx->key_cond);
+      err = _gpgme_wait_on_condition (ctx, &opd->trust_cond);
       if (err)
 	return err;
-      if (!ctx->key_cond)
+      if (!opd->trust_cond)
 	return GPGME_EOF;
-      ctx->key_cond = 0; 
-      assert (ctx->trust_queue);
+      opd->trust_cond = 0; 
+      assert (opd->trust_queue);
     }
-  q = ctx->trust_queue;
-  ctx->trust_queue = q->next;
+  q = opd->trust_queue;
+  opd->trust_queue = q->next;
 
   *r_item = q->item;
   free (q);
@@ -229,13 +226,7 @@ gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
 }
 
 
-/**
- * gpgme_op_trustlist_end:
- * @c: Context
- *
- * Ends the trustlist operation and allows to use the context for some
- * other operation next.
- **/
+/* Terminate a pending trustlist operation within CTX.  */
 GpgmeError
 gpgme_op_trustlist_end (GpgmeCtx ctx)
 {
@@ -243,77 +234,4 @@ gpgme_op_trustlist_end (GpgmeCtx ctx)
     return GPGME_Invalid_Value;
 
   return 0;
-}
-
-
-void
-gpgme_trust_item_release (GpgmeTrustItem item)
-{
-  if (!item)
-    return;
-  if (item->name)
-    free (item->name);
-  free (item);
-}
-
-
-const char *
-gpgme_trust_item_get_string_attr (GpgmeTrustItem item, GpgmeAttr what,
-				  const void *reserved, int idx)
-{
-  const char *val = NULL;
-
-  if (!item)
-    return NULL;
-  if (reserved)
-    return NULL;
-  if (idx)
-    return NULL;
-
-  switch (what)
-    {
-    case GPGME_ATTR_KEYID:
-      val = item->keyid;
-      break;
-    case GPGME_ATTR_OTRUST:  
-      val = item->ot;
-      break;
-    case GPGME_ATTR_VALIDITY:
-      val = item->val;
-      break;
-    case GPGME_ATTR_USERID:  
-      val = item->name;
-      break;
-    default:
-      break;
-    }
-  return val;
-}
-
-
-int
-gpgme_trust_item_get_int_attr (GpgmeTrustItem item, GpgmeAttr what,
-			       const void *reserved, int idx)
-{
-  int val = 0;
-  
-  if (!item)
-    return 0;
-  if (reserved)
-    return 0;
-  if (idx)
-    return 0;
-
-  switch (what)
-    {
-    case GPGME_ATTR_LEVEL:    
-      val = item->level;
-      break;
-    case GPGME_ATTR_TYPE:    
-      val = item->type;
-      break;
-    default:
-      break;
-    }
-  return val;
 }

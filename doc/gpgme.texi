@@ -2256,7 +2256,7 @@ the key @var{key}.
 
 @deftypefun void gpgme_key_unref (@w{GpgmeKey @var{key}})
 @deftypefunx void gpgme_key_release (@w{GpgmeKey @var{key}})
-The function @code{gpgme_key_ref} releases a reference for the key
+The function @code{gpgme_key_unref} releases a reference for the key
 @var{key}.  If this was the last reference, the key will be destroyed
 and all resources associated to it will be released.
 
@@ -2598,7 +2598,29 @@ started successfully, and @code{GPGME_Invalid_Value} if @var{ctx} or
 @strong{Caution:} The trust items interface is experimental.
 
 @deftp {Data type} GpgmeTrustItem
-The @code{GpgmeTrustItem} type is a handle for a trust item.
+The @code{GpgmeTrustItem} type is a pointer to a trust item object.
+It has the following members:
+
+@table @code
+@item char *keyid
+This is a string describing the key to which this trust items belongs.
+
+@item int type
+This is the type of the trust item.  A value of 1 refers to a key, a
+value of 2 refers to a user ID.
+
+@item int level
+This is the trust level.
+
+@item char *otrust
+The owner trust if @code{type} is 1.
+
+@item char *val
+The calculated validity.
+
+@item char *name
+The user name if @code{type} is 2.
+@end table
 @end deftp
 
 @menu
@@ -2666,6 +2688,10 @@ operation there was not enough memory available.
 @cindex trust item, attributes
 @cindex attributes, of a trust item
 
+The following interfaces are deprecated and only provided for backward
+compatibility.  Don't use them.  They will be removed in a future
+version of @acronym{GPGME}.
+
 Trust items have attributes which can be queried using the interfaces
 below.  The attribute identifiers are shared with those for key
 attributes.  @xref{Information About Keys}.
@@ -2701,9 +2727,26 @@ or @var{reserved} not @code{NULL}.
 @subsection Manipulating Trust Items
 @cindex trust item, manipulation
 
+@deftypefun void gpgme_trust_item_ref (@w{GpgmeTrustItem @var{item}})
+The function @code{gpgme_trust_item_ref} acquires an additional
+reference for the trust item @var{item}.
+@end deftypefun
+
+@deftypefun void gpgme_trust_item_unref (@w{GpgmeTrustItem @var{item}})
+The function @code{gpgme_trust_item_unref} releases a reference for
+the trust item @var{item}.  If this was the last reference, the trust
+item will be destroyed and all resources associated to it will be
+released.
+@end deftypefun
+
+
+The following interface is deprecated and only provided for backward
+compatibility.  Don't use it.  It will be removed in a future version
+of @acronym{GPGME}.
+
 @deftypefun void gpgme_trust_item_release (@w{GpgmeTrustItem @var{item}})
-The function @code{gpgme_trust_item_release} destroys a
-@code{GpgmeTrustItem} object and releases all associated resources.
+The function @code{gpgme_trust_item_release} is an alias for
+@code{gpgme_trust_item_unref}.
 @end deftypefun
 
 

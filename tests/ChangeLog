@@ -1,5 +1,7 @@
 2003-04-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/t-trustlist.c: Rewritten.
+
 	* gpg/t-verify.c (main): Rewritten.
 	* gpg/t-decrypt-verify.c: Rewritten.
 	* gpgsm/t-verify.c (main): Rewritten.
