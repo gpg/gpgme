@@ -1,5 +1,10 @@
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgsm/t-sign.c: New file.
+	* gpgsm/Makefile.am (TESTS): Add t-sign.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgsm/t-decrypt.c: New file.
 	* gpgsm/567064FE6D14A17B2D811ABB407728BC558AA455: Likewise.
 	* gpgsm/Makefile.am (TESTS): Add t-decrypt.
