@@ -1,0 +1,147 @@
+Noteworthy changes in version 0.3.1 (2002-02-09)
+------------------------------------------------
+
+ * There is a Texinfo manual documenting the API.
+
+ * The gpgme_set_keylist_mode function returns an error, and changed
+   its meaning.  It is no longer usable to select between normal and
+   fast mode (newer versions of GnuPG will always be fast), but
+   selects between local keyring, remote keyserver, or both.
+   For this, two new macros are defined, GPGME_KEYLIST_MODE_LOCAL
+   and GPGME_KEYLIST_MODE_EXTERN.  To make it possible to modify the
+   current setting, a fucntion gpgme_get_keylist_mode was added to
+   retrieve the current mode.
+
+ * gpgme_wait accepts a new argument STATUS to return the error status
+   of the operation on the context.  Its definition is closer to
+   waitpid() now than before.
+
+ * The LENGTH argument to gpgme_data_new_from_filepart changed its
+   type from off_t to the unsigned size_t.
+
+ * The R_HD argument to the GpgmePassphraseCb type changed its type
+   from void* to void**.
+
+ * New interface gpgme_op_trustlist_end() to match
+   gpgme_op_keylist_end().
+
+ * The CryptPlug modules have been renamed to gpgme-openpgp and
+   gpgme-smime, and they are installed in pkglibdir by `make install'.
+
+ * An idle function can be registered with gpgme_register_idle().
+
+ * The GpgSM backend supports key generation with gpgme_op_genkey().
+
+ * Interface changes relative to the 0.3.0 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_data_new_from_filepart	CHANGED: Type of LENGTH is size_t.
+GpgmePassphraseCb               CHANGED: Type of R_HD is void **.
+gpgme_wait                      CHANGED: New argument STATUS.
+gpgme_set_keylist_mode          CHANGED: Type of return value is GpgmeError.
+                                The function has a new meaning!
+gpgme_get_keylist_mode          NEW
+GPGME_KEYLIST_MODE_LOCAL        NEW
+GPGME_KEYLIST_MODE_EXTERN       NEW
+gpgme_op_trustlist_next		NEW
+GpgmeIdleFunc                   NEW
+gpgme_register_idle             NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.3.0 (2001-12-19)
+------------------------------------------------
+ 
+ * New interface gpgme_set_protocol() to set the protocol and thus the
+   crypto engine to be used by the context.  Currently, the OpenPGP
+   and the CMS protocols are supported.  They are specified by the new
+   preprocessor symbols GPGME_PROTOCOL_OpenPGP and GPGME_PROTOCOL_CMS.
+   A new context uses the OpenPGP engine by default.
+
+ * gpgme_get_engine_info() returns information for all crypto engines
+   compiled into the library.  The XML format has changed.  To
+   reliably get the version of a crypto engine, the <version> tag
+   after the appropriate <protocol> tag has to be looked for.
+
+ * New interface gpgme_engine_check_version(), obsoleting
+   gpgme_check_engine().  Check the version of all engines you are
+   supporting in your software.
+
+ * GpgmeKey lists the user ids in the order as they are returned by
+   GnuPG, first the primary key with index 0, then the sub-user ids.
+
+ * New operation gpgme_op_decrypt_verify() to decrypt and verify
+   signatures simultaneously.
+
+ * The new interface gpgme_op_keylist_end() terminates a pending
+   keylist operation.  A keylist operation is also terminated when
+   gpgme_op_keylist_next() returns GPGME_EOF.
+
+ * GPGME can be compiled without GnuPG being installed (`--with-gpg=PATH'),
+   cross-compiled, or even compiled without support for GnuPG
+   (`--without-gpg').
+
+ * GPGME can be compiled with support for GpgSM (GnuPG for S/MIME,
+   `--with-gpgsm=PATH').  It is enabled by default if the `gpgsm' is found
+   in the path, but it can also be compiled without support for GpgSM
+   (`--without-gpgsm').
+
+ * CryptPlug modules for GPGME are included and can be enabled at
+   configure time (`--enable-gpgmeplug').  There is one module which
+   uses the GnuPG engine (`gpgmeplug') and one module which uses the
+   GpgSM engine (`gpgsmplug').
+
+ * Interface changes relative to the latest 0.2.x release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_key_get_as_xml		CHANGED: Sub-user ids reversed in order.
+gpgme_key_get_string_attr	CHANGED: User ids reversed in order.
+gpgme_key_get_ulong_attr	CHANGED: User ids reversed in order.
+gpgme_get_engine_info		CHANGED: New format, extended content.
+gpgme_engine_check_version	NEW
+gpgme_decrypt_verify_start	NEW
+gpgme_decrypt_verify		NEW
+gpgme_op_keylist_next		NEW
+gpgme_set_protocol		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 0.2.3 (2001-09-17)
+------------------------------------------------
+
+ * New function gpgme_get_op_info which can be used to get the micalg
+   parameter needed for MOSS.
+
+ * New functions gpgme_get_armor and gpgme_get_textmode.
+
+ * The usual bug fixes and some minor functionality improvements.
+
+ * Added a simple encryption component for MS-Windows; however the
+   build procedure might have some problems.
+
+
+Noteworthy changes in version 0.2.2 (2001-06-12)
+------------------------------------------------
+ 
+ * Implemented a key cache.
+
+ * Fixed a race condition under W32 and some other bug fixes.
+
+
+Noteworthy changes in version 0.2.1 (2001-04-02)
+------------------------------------------------
+
+ * Changed debug output and GPGME_DEBUG variable (gpgme/debug.c)
+
+ * Handle GnuPG's new key capabilities output and support revocation
+   et al. attributes
+
+ * Made the W32 support more robust.
+
+
+ Copyright 2001, 2002 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
