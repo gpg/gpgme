@@ -2,6 +2,11 @@
 
 	* gpgme.h [_MSC_VER]: Define ssize_t as long.
 
+2002-11-22  Werner Koch  <wk@gnupg.org>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_new): Save the result of a first
+	setlocale before doing another setlocale.
+
 2002-11-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* decrypt.c: Some beautyfication.
