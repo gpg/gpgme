@@ -43,12 +43,10 @@ noinst_PROGRAMS = $(TESTS) t-genkey
 clean-local:
 	$(srcdir)/mkdemodirs --clean
 
-all-local: ./pubring.gpg ./secring.gpg
+all-local: ./pubring.gpg
 
-./pubring.gpg: $(srcdir)/pubdemo.asc
+./pubring.gpg: $(srcdir)/pubdemo.asc ./Alpha/Secret.gpg 
 	$(GPG) --homedir . --import $(srcdir)/pubdemo.asc
-
-./secring.gpg: ./Alpha/Secret.gpg 
 	$(GPG) --homedir . --allow-secret-key-import --import Alpha/Secret.gpg Zulu/Secret.gpg
 
 ./Alpha/Secret.gpg: secdemo.asc 

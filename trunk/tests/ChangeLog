@@ -1,3 +1,11 @@
+2002-05-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/Makefile.am (all-local): Remove dependency on ./secring.gpg.
+	(./secring.gpg): Remove target, and move all rules for this target
+	to ...
+	(./pubring.gpg): ... here.  This was necessary because GnuPG 1.0.7
+	does create an empty secring.gpg file when importing public keys.
+
 2002-05-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm/t-verify.c (validity_string): New.
