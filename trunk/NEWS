@@ -11,6 +11,13 @@ gpgme_ctx_set_engine_info	NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+Noteworthy changes in version 1.0.2 (2004-12-28)
+------------------------------------------------
+
+ * Changed the license of the library to the GNU Lesser General Public
+   License (LGPL), version 2.1 or later.
+
+
 Noteworthy changes in version 1.0.1 (2004-10-22)
 ------------------------------------------------
 

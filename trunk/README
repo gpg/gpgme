@@ -44,7 +44,7 @@ To build GPGME, you need to install libgpg-error.  You need at least
 libgpg-error 0.5.
 
 For support of the OpenPGP protocol (default), you should use the
-latest version of GnuPG 1.2, available at:
+latest version of GnuPG 1.2 or 1.4, available at:
 ftp://ftp.gnupg.org/gcrypt/gnupg/
 
 You need at least GnuPG 1.2.2.
@@ -55,7 +55,7 @@ the location with the --with-gpg=/path/to/gpg argument to configure.
 For support of the CMS (Cryptographic Message Syntax) protocol, you
 need the latest CVS version of GnuPG 1.9, which is available in the
 GnuPG repository:
-http://www.gnupg.org/(en)/download/cvs_access.html
+http://www.gnupg.org/download/cvs_access.html
 Use the tag `GNUPG-1-9-BRANCH'.  There are also snapshots available at:
 ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/
 
@@ -99,13 +99,13 @@ a) If you have a trusted Version of GnuPG installed, you can simply check
    with the fingerprint published elsewhere.
 
 b) If you don't have any of the above programs, you have to verify
-   the MD5 checksum:
+   the SHA1 checksum:
 
-	$ md5sum gpgme-x.y.z.tar.gz
+	$ sha1sum gpgme-x.y.z.tar.gz
 
    This should yield an output _similar_ to this:
 
-   fd9351b26b3189c1d577f0970f9dcadc  gpgme-x.y.z.tar.gz
+   fd9351b26b3189c1d577f0970f9dcadc3412def1  gpgme-x.y.z.tar.gz
 
    Now check that this checksum is _exactly_ the same as the one
    published via the announcement list and probably via Usenet.

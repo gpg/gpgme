@@ -1,6 +1,6 @@
 # Makefile.am - Top level Makefile for GPGME.
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2004 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2004, 2005 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -19,6 +19,9 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 ## Process this file with automake to produce Makefile.in
+
+ACLOCAL_AMFLAGS = -I m4
+AUTOMAKE_OPTIONS = dist-bzip2
 
 EXTRA_DIST = gpgme.spec.in
 

@@ -1,3 +1,13 @@
+2004-12-28  Werner Koch  <wk@g10code.com>
+
+	Released 1.0.2.
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Build bzip 2 version.
+	(ACLOCAL_AMFLAGS): Add -I m4.
+	* configure.ac: Require automake 1.9.3 and autoconf 2.59.
+	* acinclude.m4: Changed quoting for automake 1.9.
+	* README: Use SHA1 instead of MD5.
+
 2004-12-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Replace ttyname_r if it doesn't exist (and warn in
