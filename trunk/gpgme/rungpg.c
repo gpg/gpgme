@@ -818,9 +818,9 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
     if ( rc )
         return rc;
 
-    n = 4; /* status fd, 2*colon_fd and end of list */
+    n = 3; /* status_fd, colon_fd and end of list */
     for (i=0; gpg->fd_data_map[i].data; i++ ) 
-        n += 2;
+        n++;
     fd_child_list = xtrycalloc ( n+n, sizeof *fd_child_list );
     if (!fd_child_list)
         return mk_error (Out_Of_Core);
@@ -828,21 +828,12 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
 
     /* build the fd list for the child */
     n=0;
-    fd_child_list[n].fd = gpg->status.fd[0]; 
-    fd_child_list[n].dup_to = -1;
-    n++;
     if ( gpg->colon.fnc ) {
-        fd_child_list[n].fd = gpg->colon.fd[0];
-        fd_child_list[n].dup_to = -1;
-        n++;
         fd_child_list[n].fd = gpg->colon.fd[1]; 
         fd_child_list[n].dup_to = 1; /* dup to stdout */
         n++;
     }
     for (i=0; gpg->fd_data_map[i].data; i++ ) {
-        fd_child_list[n].fd = gpg->fd_data_map[i].fd;
-        fd_child_list[n].dup_to = -1;
-        n++;
         if (gpg->fd_data_map[i].dup_to != -1) {
             fd_child_list[n].fd = gpg->fd_data_map[i].peer_fd;
             fd_child_list[n].dup_to = gpg->fd_data_map[i].dup_to;

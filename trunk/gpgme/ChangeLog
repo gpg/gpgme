@@ -1,5 +1,13 @@
 2001-12-13  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.c (_gpgme_gpg_spawn): Do not add the fds to the child
+	list that are not dup'ed, for those the close-on-exec flag is set
+	now.
+	* version.c (_gpgme_get_program_version): Remove first entry in
+	CFD, as the close-on-exec flag is now set for this fd.
+
+2001-12-13  Marcus Brinkmann  <marcus@g10code.de>
+
 	* engine-gpgsm.c (_gpgme_gpgsm_op_encrypt): Do not add `armor'
 	option to `ENCRYPT'.
 	* engine-gpgsm.c (gpgsm_set_recipients): Free LINE when returning
