@@ -223,6 +223,10 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
       sig->status = gpg_error (GPG_ERR_BAD_SIGNATURE);
       break;
 
+    case GPGME_STATUS_REVKEYSIG:
+      sig->status = gpg_error (GPG_ERR_CERT_REVOKED);
+      break;
+
     case GPGME_STATUS_ERRSIG:
       if (end)
 	{
@@ -531,6 +535,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_EXPKEYSIG:
     case GPGME_STATUS_BADSIG:
     case GPGME_STATUS_ERRSIG:
+    case GPGME_STATUS_REVKEYSIG:
       if (sig && !opd->did_prepare_new_sig)
 	calc_sig_summary (sig);
       opd->only_newsig_seen = 0;
