@@ -1,3 +1,13 @@
+ * The current passphrase callback and progress meter callback can be
+   retrieved with the new functions gpgme_get_passphrase_cb and
+   gpgme_get_progress_cb respectively.
+
+ * Interface changes relative to the 0.3.5 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_get_passphrase_cb		NEW
+gpgme_get_progress_cb		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Noteworthy changes in version 0.3.5 (2002-04-01)
 ------------------------------------------------
 

@@ -1153,7 +1153,7 @@ current mode otherwise.  Note that 0 is not a valid mode value.
 The @code{GpgmePassphraseCb} type is the type of functions usable as
 passphrase callback function.
 
-The string @var{desc} contains a test usable to be displayed to the
+The string @var{desc} contains a text usable to be displayed to the
 user of the application.  The function should return a passphrase for
 the context when invoked with @var{desc} not being @code{NULL}.
 
@@ -1180,6 +1180,14 @@ implement their own passphrase query.
 The user can disable the use of a passphrase callback function by
 calling @code{gpgme_set_passphrase_cb} with @var{passfunc} being
 @code{NULL}.
+@end deftypefun
+
+@deftypefun void gpgme_get_passphrase_cb (@w{GpgmeCtx @var{ctx}}, @w{GpgmePassphraseCb *@var{passfunc}}, @w{void **@var{hook_value}})
+The function @code{gpgme_get_passphrase_cb} returns the function that
+is used when a passphrase needs to be provided by the user in
+@var{*passfunc}, and the first argument for this function in
+@var{*hook_value}.  If no passphrase callback is set, or @var{ctx} is
+not a valid pointer, @code{NULL} is returned in both variables.
 @end deftypefun
 
 
@@ -1213,6 +1221,14 @@ progress information about a long operation to the user.
 The user can disable the use of a progress callback function by
 calling @code{gpgme_set_progress_cb} with @var{progfunc} being
 @code{NULL}.
+@end deftypefun
+
+@deftypefun void gpgme_get_progress_cb (@w{GpgmeCtx @var{ctx}}, @w{GpgmeProgressCb *@var{progfunc}}, @w{void **@var{hook_value}})
+The function @code{gpgme_get_progress_cb} returns the function that is
+used to inform the user about the progress made in @var{*progfunc},
+and the first argument for this function in @var{*hook_value}.  If no
+progress callback is set, or @var{ctx} is not a valid pointer,
+@code{NULL} is returned in both variables.
 @end deftypefun
 
 
