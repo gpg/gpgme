@@ -103,6 +103,7 @@ Preparation
 
 * Header::                        What header file you need to include.
 * Building the Source::           Compiler options to be used.
+* Using Automake::                Compiler options to be used the easy way.
 * Library Version Check::         Getting and verifying the library version.
 * Multi Threading::               How GPGME can be used in an MT environment.
 
@@ -296,6 +297,7 @@ of the library are verified.
 @menu
 * Header::                        What header file you need to include.
 * Building the Source::           Compiler options to be used.
+* Using Automake::                Compiler options to be used the easy way.
 * Library Version Check::         Getting and verifying the library version.
 * Multi Threading::               How GPGME can be used in an MT environment.
 @end menu
@@ -366,6 +368,41 @@ specifying both options to @command{gpgme-config}:
 
 @example
 gcc -o foo foo.c `gpgme-config --cflags --libs`
+@end example
+
+
+@node Using Automake
+@section Using Automake
+@cindex automake
+@cindex autoconf
+
+It is much easier if you use GNU Automake instead writing your own
+Makefiles.  If you do that you don't have to worry about finding and
+invoking the @command{gpgme-config} script at all.  @acronym{GPGME}
+provides an extension to Automake that does all the work for you.
+
+@c A simple macro for optional variables.
+@macro ovar{varname}
+@r{[}@var{\varname\}@r{]}
+@end macro
+@defmac AM_PATH_GPGME (@ovar{minimum-version}, @ovar{action-if-found}, @ovar{action-if-not-found})
+Check whether @acronym{GPGME} (at least version @var{minimum-version},
+if given) exists on the host system.  If it is found, execute
+@var{action-if-found}, otherwise do @var{action-if-not-found}, if
+given.
+
+Additionally, the function defines @code{GPGME_CFLAGS} to the flags
+needed for compilation of the program to find the @file{gpgme.h}
+header file, and @code{GPGME_LIBS} to the linker flags needed to link
+the program to the @acronym{GPGME} library.
+@end defmac
+
+You can use the defined Autoconf variables like this in your
+@file{Makefile.am}:
+
+@example
+AM_CPPFLAGS = $(GPGME_CFLAGS)
+LDADD = $(GPGME_LIBS)
 @end example
 
 
