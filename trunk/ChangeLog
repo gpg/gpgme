@@ -1,3 +1,7 @@
+2003-09-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Remove GPGME_CONFIG_LIBS and GPGME_CONFIG_CFLAGS.
+
 2003-09-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Move invocation of AC_CANONICAL_HOST up to

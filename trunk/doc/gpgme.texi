@@ -105,6 +105,7 @@ Preparation
 * Header::                        What header file you need to include.
 * Building the Source::           Compiler options to be used.
 * Using Automake::                Compiler options to be used the easy way.
+* Using Libtool::                 Avoiding compiler options entirely.
 * Library Version Check::         Getting and verifying the library version.
 * Multi Threading::               How @acronym{GPGME} can be used in an MT environment.
 
@@ -318,6 +319,7 @@ of the library are verified.
 * Header::                        What header file you need to include.
 * Building the Source::           Compiler options to be used.
 * Using Automake::                Compiler options to be used the easy way.
+* Using Libtool::                 Avoiding compiler options entirely.
 * Library Version Check::         Getting and verifying the library version.
 * Multi Threading::               How @acronym{GPGME} can be used in an MT environment.
 @end menu
@@ -340,10 +342,6 @@ like this:
 The name space of @acronym{GPGME} is @code{gpgme_*} for function names
 and data types and @code{GPGME_*} for other symbols.  Symbols internal
 to @acronym{GPGME} take the form @code{_gpgme_*} and @code{_GPGME_*}.
-
-Because @acronym{GPGME} links to the Assuan library, linking to
-@acronym{GPGME} will also use the @code{assuan_*} and @code{_assuan_*}
-name space indirectly.
 
 Because @acronym{GPGME} makes use of the GPG Error library, using
 @acronym{GPGME} will also use the @code{GPG_ERR_*} name space
@@ -399,6 +397,12 @@ specifying both options to @command{gpgme-config}:
 gcc -o foo foo.c `gpgme-config --cflags --libs`
 @end example
 
+If you want to link to one of the thread-safe versions of
+@acronym{GPGME}, you must specify the @option{--thread} option before
+any other option to select the thread package you want to link with.
+Supported thread packages are @option{--thread=pth} and
+@option{--thread=pthread}.
+
 
 @node Using Automake
 @section Using Automake
@@ -415,6 +419,8 @@ provides an extension to Automake that does all the work for you.
 @r{[}@var{\varname\}@r{]}
 @end macro
 @defmac AM_PATH_GPGME (@ovar{minimum-version}, @ovar{action-if-found}, @ovar{action-if-not-found})
+@defmacx AM_PATH_GPGME_PTH (@ovar{minimum-version}, @ovar{action-if-found}, @ovar{action-if-not-found})
+@defmacx AM_PATH_GPGME_PTHREAD (@ovar{minimum-version}, @ovar{action-if-found}, @ovar{action-if-not-found})
 Check whether @acronym{GPGME} (at least version @var{minimum-version},
 if given) exists on the host system.  If it is found, execute
 @var{action-if-found}, otherwise do @var{action-if-not-found}, if
@@ -424,6 +430,14 @@ Additionally, the function defines @code{GPGME_CFLAGS} to the flags
 needed for compilation of the program to find the @file{gpgme.h}
 header file, and @code{GPGME_LIBS} to the linker flags needed to link
 the program to the @acronym{GPGME} library.
+
+@code{AM_PATH_GPGME_PTH} checks for the version of @acronym{GPGME}
+that can be used with GNU Pth, and defines @code{GPGME_PTH_CFLAGS} and
+@code{GPGME_PTH_LIBS}.
+
+@code{AM_PATH_GPGME_PTHREAD} checks for the version of @acronym{GPGME}
+that can be used with the native pthread implementation, and defines
+@code{GPGME_PTHREAD_CFLAGS} and @code{GPGME_PTHREAD_LIBS}.
 @end defmac
 
 You can use the defined Autoconf variables like this in your
@@ -433,6 +447,16 @@ You can use the defined Autoconf variables like this in your
 AM_CPPFLAGS = $(GPGME_CFLAGS)
 LDADD = $(GPGME_LIBS)
 @end example
+
+
+@node Using Libtool
+@section Using Libtool
+@cindex libtool
+
+The easiest way is to just use GNU Libtool.  If you use libtool, and
+link to @code{libgpgme.la}, @code{libgpgme-pth.la} or
+@code{libgpgme-pthread.la} respectively, everything will be done
+automatically by Libtool.
 
 
 @node Library Version Check

@@ -1,3 +1,8 @@
+2003-09-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Header): We don't use the assuan namespace anymore.
+	Document new thread options.
+
 2003-08-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Creating a Signature): Change type of member class
