@@ -1,16 +1,12 @@
                   GPGME - GnuPG Made Easy
                 ---------------------------
 
-             !!!! THIS IS WORK IN PROGRESS !!!
-
-If you want to hack on it, start with one of the `tests/gpg/t-foo'
-programs.
-
 To build GPGME, you need to install libgpg-error.  You need at least
 libgpg-error 0.5.
 
-For support of the OpenPGP protocol (default), you need the latest CVS
-version of GnuPG 1.2, see `http://www.gnupg.org/cvs-access.html'.
+For support of the OpenPGP protocol (default), you should use the
+latest version of GnuPG 1.2, available at:
+ftp://ftp.gnupg.org/gcrypt/gnupg/
 
 You need at least GnuPG 1.2.2.
 
@@ -18,8 +14,11 @@ If configure can't find the `gpg' binary in your path, you can specify
 the location with the --with-gpg=/path/to/gpg argument to configure.
 
 For support of the CMS (Cryptographic Message Syntax) protocol, you
-need the latest CVS version of GpgSM, module name `newpg', at
-`:pserver:anoncvs@cvs.gnupg.org:/cvs/aegypten'.
+need the latest CVS version of GnuPG 1.9, which is available in the
+GnuPG repository:
+http://www.gnupg.org/(en)/download/cvs_access.html
+Use the tag `GNUPG-1-9-BRANCH'.  There are also snapshots available at:
+ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/
 
 You need at least GpgSM 1.9.6.
 
@@ -27,7 +26,12 @@ If configure can't find the `gpgsm' binary in your path, you can
 specify the location with the --with-gpgsm=/path/to/gpgsm argument to
 configure.
 
-For building the CVS version please see the file README.CVS
+For building the CVS version of GPGME please see the file README.CVS
+for more information.
+
+For information how to use the library you can read the info manual,
+which is also a reference book, in the doc/ directory.  The programs
+in the tests/gpg/ directory may also prove useful.
 
 Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
 to do serious work.
