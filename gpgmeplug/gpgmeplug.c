@@ -2279,11 +2279,11 @@ importCertificate( const char* fingerprint )
   return 0;
 }
 
-/*  // // // // // // // // // // // // // // // // // // // // // // // // //
+    // // // // // // // // // // // // // // // // // // // // // // // // //
    //                                                                      //
   //         Continuation of CryptPlug code                               //
  //                                                                      //
-// // // // // // // // // // // // // // // // // // // // // // // // //*/
+// // // // // // // // // // // // // // // // // // // // // // // // //
 
 
 /*
@@ -2299,7 +2299,7 @@ bool findCertificates( const char* addressee,
                        int* newSize,
                        bool secretOnly )
 {
-#define MAXCERTS 1024;
+#define MAXCERTS 1024
   /* use const char declarations since all of them are needed twice */
   const char* delimiter = "\1";
   const char* openBracket = "    (";
@@ -2356,7 +2356,7 @@ bool findCertificates( const char* addressee,
           dn = NULL;
           FPRs[nFound ] = xstrdup( s2 );
           ++nFound;
-          if( nFound >= maxCerts ) {
+          if( nFound >= MAXCERTS ) {
             fprintf( stderr,
                      "gpgme: findCertificates found too many certificates (%d)\n",
                      MAXCERTS );
