@@ -1,3 +1,7 @@
+2003-11-19  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm/Makefile.am (DISTCLEANFILES): Add random_seed.
+
 2002-12-04  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm/Makefile.am (./gpgsm.conf): Use a faked system time
