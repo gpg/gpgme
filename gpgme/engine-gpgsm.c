@@ -369,6 +369,7 @@ gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd)
 
   if (!err)
     err = mk_error (General_Error);
+  return 0;
 }
 
 

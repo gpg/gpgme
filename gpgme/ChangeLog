@@ -1,5 +1,10 @@
 2002-02-09  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (gpgsm_assuan_simple_command): Return 0 if we
+	reach the end of the function.
+
+2002-02-09  Marcus Brinkmann  <marcus@g10code.de>
+
 	* genkey.c (gpgme_op_genkey_start): Fix logic in validity check.
 	(gpgme_op_genkey_start): Skip newlines after opening tag.
 
