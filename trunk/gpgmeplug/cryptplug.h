@@ -1849,10 +1849,20 @@ endListCertificates( struct CertIterator* );
   Import a certificate that was a result from a search-operation using the startListCertificates(), nextCertificate() funtions.
 
   The fingerprint must be passed to identify the key.
+
+  Additional info about the import operation is available in the additional_info parameter. The string must be free'd by the user with free().
  */
 
 int
-importCertificate( const char* fingerprint );
+importCertificateWithFPR( const char* fingerprint, char** additional_info );
+
+/*!
+  Import a certificate from memory.
+
+  Additional info about the import operation is available in the additional_info parameter. The string must be free'd by the user with free().
+*/
+int
+importCertificateFromMem( const char* data, size_t length, char** additional_info );
 
 #ifdef __cplusplus
 }

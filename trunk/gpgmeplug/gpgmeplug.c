@@ -2234,7 +2234,7 @@ endListCertificates( struct CertIterator* it )
 }
 
 int
-importCertificate( const char* fingerprint )
+importCertificateWithFPR( const char* fingerprint, char** additional_info )
 {
   GpgmeError err;
   GpgmeCtx  ctx;
@@ -2296,6 +2296,7 @@ importCertificate( const char* fingerprint )
   if( err ) {
     fprintf( stderr,  "gpgme_op_export returned %d\n", err );
     free (buf);
+    *additional_info = gpgme_get_op_info( ctx, 0 );
     gpgme_recipients_release( recips );
     gpgme_data_release( keydata );    
     gpgme_release( ctx );
@@ -2305,15 +2306,51 @@ importCertificate( const char* fingerprint )
   buf = NULL;
 
   err = gpgme_op_import( ctx, keydata );
+  *additional_info = gpgme_get_op_info( ctx, 0 );
   if( err ) {    
     fprintf( stderr,  "gpgme_op_import returned %d\n", err );
     gpgme_recipients_release( recips );
-    gpgme_data_release( keydata );    
+    gpgme_data_release( keydata );
     gpgme_release( ctx );
     return err;
   }
 
   gpgme_recipients_release( recips );
+  gpgme_data_release( keydata );    
+  gpgme_release( ctx );
+  return 0;
+}
+int
+importCertificateFromMem( const char* data, size_t length , char** additional_info )
+{
+  GpgmeError err;
+  GpgmeCtx  ctx;
+  GpgmeData keydata;
+
+  err = gpgme_new( &ctx );
+  /*fprintf( stderr,  "2: gpgme returned %d\n", err );*/
+  if( err != GPGME_No_Error ) {
+    return err;
+  }
+  gpgme_set_protocol( ctx, GPGME_PROTOCOL_CMS );
+  gpgme_set_keylist_mode( ctx, GPGME_KEYLIST_MODE_LOCAL );
+
+  err = gpgme_data_new_from_mem( &keydata, data, length, 0 );
+  if( err ) {
+    fprintf( stderr,  "gpgme_data_new returned %d\n", err );
+    gpgme_release( ctx );
+    return err;
+  }
+
+  err = gpgme_op_import( ctx, keydata );
+  *additional_info = gpgme_get_op_info( ctx, 0 );
+  if( err ) {    
+    fprintf( stderr,  "gpgme_op_import returned %d\n", err );
+    gpgme_data_release( keydata );    
+    gpgme_release( ctx );
+    return err;
+  }
+
   gpgme_data_release( keydata );    
   gpgme_release( ctx );
   return 0;
