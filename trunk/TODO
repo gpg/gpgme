@@ -74,6 +74,7 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Factor out common code in _op_*_start functions.
 ** Optimize the file descriptor list, so the number of open fds is
    always known easily.
+** When GPG issues INV_something for invalid signers, catch them.
 
 * Error Values
 ** Map ASSUAN/GpgSM ERR error values in a better way than is done now. !!
