@@ -1,3 +1,8 @@
+2002-01-31  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Generating Keys): Document error at creation
+	failure.
+
 2002-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Deleting Keys): Document new error values.
