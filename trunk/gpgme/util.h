@@ -85,7 +85,13 @@ FILE *fopencookie (void *cookie, const char *opentype,
 
 
 /*-- conversion.c --*/
-GpgmeError _gpgme_decode_c_string (const char *src, char **destp);
+/* Decode the C formatted string SRC and store the result in the
+   buffer *DESTP which is LEN bytes long.  If LEN is zero, then a
+   large enough buffer is allocated with malloc and *DESTP is set to
+   the result.  Currently, LEN is only used to specify if allocation
+   is desired or not, the caller is expected to make sure that *DESTP
+   is large enough if LEN is not zero.  */
+GpgmeError _gpgme_decode_c_string (const char *src, char **destp, int len);
 int _gpgme_hextobyte (const byte *str);
 
 #endif /* UTIL_H */

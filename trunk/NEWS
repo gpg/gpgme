@@ -1,6 +1,12 @@
 Noteworthy changes in version 0.4.0 (unreleased)
 ------------------------------------------------
 
+ * Supports signatures of user IDs in keys via the new
+   GPGME_KEYLIST_MODE_SIGS keylist mode and the
+   gpgme_key_sig_get_string_attr and gpgme_key_sig_get_ulong_attr
+   interfaces.  The XML info about a key also includes the signatures
+   if available.
+
  * New data object interface, which is more flexible and transparent.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,6 +29,11 @@ gpgme_op_verify			CHANGED: Take different data objects for
 gpgme_op_verify_start		CHANGED: See gpgme_op_verify.
 gpgme_check_engine		REMOVED: Deprecated since 0.3.0.
 gpgme_op_genkey			CHANGED: New parameter FPR.
+GPGME_KEYLIST_MODE_SIGS		NEW
+gpgme_key_sig_get_string_attr	NEW
+gpgme_key_sig_get_ulong_attr	NEW
+gpgme_get_key			NEW
+GPGME_ATTR_SIG_CLASS		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.13 (2002-11-20)

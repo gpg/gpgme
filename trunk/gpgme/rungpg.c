@@ -1486,10 +1486,9 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
   if (!err)
     err = add_arg (gpg, "--with-fingerprint");
   if (!err)
-    err = add_arg (gpg, (keylist_mode & GPGME_KEYLIST_MODE_SIGS) ?
-		   "--check-sigs" :
-		   secret_only ? "--list-secret-keys"
-		   : "--list-keys");
+    err = add_arg (gpg, secret_only ? "--list-secret-keys"
+		   : ((keylist_mode & GPGME_KEYLIST_MODE_SIGS)
+		      ? "--check-sigs" : "--list-keys"));
   
   /* Tell the gpg object about the data.  */
   if (!err)
@@ -1519,8 +1518,10 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
   if (!err)
     err = add_arg (gpg, "--with-fingerprint");
   if (!err)
-    err = add_arg (gpg, secret_only ? "--list-secret-keys" : "--list-keys");
-  
+    err = add_arg (gpg, secret_only ? "--list-secret-keys"
+		   : ((keylist_mode & GPGME_KEYLIST_MODE_SIGS)
+		      ? "--check-sigs" : "--list-keys"));
+
   /* Tell the gpg object about the data.  */
   if (!err)
     err = add_arg (gpg, "--");

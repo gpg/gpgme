@@ -643,42 +643,20 @@ gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
  *               indicate that there are no more signatures. 
  **/
 GpgmeError
-gpgme_get_sig_key (GpgmeCtx c, int idx, GpgmeKey *r_key)
+gpgme_get_sig_key (GpgmeCtx ctx, int idx, GpgmeKey *r_key)
 {
   VerifyResult result;
-  GpgmeError err = 0;
 
-  if (!c || !r_key)
+  if (!ctx || !r_key)
     return mk_error (Invalid_Value);
-  if (c->pending || !c->result.verify)
+  if (ctx->pending || !ctx->result.verify)
     return mk_error (Busy);
   
-  for (result = c->result.verify;
+  for (result = ctx->result.verify;
        result && idx > 0; result = result->next, idx--)
     ;
   if (!result)
     return mk_error (EOF);
-  
-  if (strlen(result->fpr) < 16)	/* We have at least a key ID.  */
-    return mk_error (Invalid_Key);
-  
-  *r_key = _gpgme_key_cache_get (result->fpr);
-  if (!*r_key)
-    {
-      GpgmeCtx listctx;
-      
-      /* Fixme: This can be optimized by keeping an internal context
-	 used for such key listings.  */
-      err = gpgme_new (&listctx);
-      if (err)
-	return err;
-      gpgme_set_protocol (listctx, gpgme_get_protocol (c));
-      gpgme_set_keylist_mode (listctx, c->keylist_mode);
-      err = gpgme_op_keylist_start (listctx, result->fpr, 0);
-      if (!err)
-	err = gpgme_op_keylist_next (listctx, r_key);
-      gpgme_release (listctx);
-    }
-  return err;
-}
 
+  return gpgme_get_key (ctx, result->fpr, r_key, 0, 0);
+}
