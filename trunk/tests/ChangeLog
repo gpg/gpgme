@@ -1,5 +1,9 @@
 2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/Makefile.am (EXTRA_DIST): Add missing line continuation.
+
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgsm/Makefile.am (EXTRA_DIST): Add $(key_id).
 
 2001-12-16  Marcus Brinkmann  <marcus@g10code.de>
