@@ -56,7 +56,8 @@ GpgmeError _gpgme_gpg_set_command_handler (GpgObject gpg,
 GpgmeError _gpgme_gpg_op_decrypt (GpgObject gpg, GpgmeData ciph,
 				  GpgmeData plain);
 GpgmeError _gpgme_gpg_op_delete (GpgObject gpg, GpgmeKey key, int allow_secret);
-GpgmeError _gpgme_gpg_op_edit (GpgObject gpg, GpgmeKey key, GpgmeData out);
+GpgmeError _gpgme_gpg_op_edit (GpgObject gpg, GpgmeKey key, GpgmeData out,
+			       GpgmeCtx ctx /* FIXME */);
 GpgmeError _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
 				  GpgmeData plain, GpgmeData ciph,
 				  int use_armor);

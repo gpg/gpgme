@@ -3,6 +3,12 @@
 	* rungpg.c (_gpgme_gpg_op_edit): Add args from signers.
 	Suggested by Miguel Coca <e970095@zipi.fi.upm.es>.
 
+	* rungpg.c (_gpgme_gpg_op_edit): Add bogus ctx argument.
+	* rungpg.h: Also to prototype.
+	* engine.c (_gpgme_engine_op_edit): Likewise.
+	* engine.h: Likewise.
+	* edit.c (_gpgme_op_edit_start): Likewise.
+
 2002-08-29  Werner Koch  <wk@gnupg.org>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_op_sign): Implement signer
