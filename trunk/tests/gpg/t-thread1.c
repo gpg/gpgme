@@ -37,8 +37,6 @@ thread_one (void *name)
 {
   int i;
 
-  initialize_gpgme ();
-
   for (i = 0; i < ROUNDS; i++)
     {
       gpgme_ctx_t ctx;
@@ -89,7 +87,6 @@ void *
 thread_two (void *name)
 {
   int i;
-  initialize_gpgme ();
   const char *cipher_1_asc = make_filename ("cipher-1.asc");
   char *agent_info;
 
@@ -143,7 +140,7 @@ main (int argc, char *argv[])
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
   pthread_create (&tone, NULL, thread_one, "A");
-  pthread_create (&ttwo, NULL, thread_two, "A");
+  pthread_create (&ttwo, NULL, thread_two, "B");
 
   pthread_join (tone, NULL);
   pthread_join (ttwo, NULL);

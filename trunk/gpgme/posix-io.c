@@ -39,6 +39,23 @@
 #include "ath.h"
 #include "debug.h"
 
+
+void
+_gpgme_io_subsystem_init (void)
+{
+  struct sigaction act;
+
+  sigaction (SIGPIPE, NULL, &act);
+  if (act.sa_handler == SIG_DFL)
+    {
+      act.sa_handler = SIG_IGN;
+      sigemptyset (&act.sa_mask);
+      act.sa_flags = 0;
+      sigaction (SIGPIPE, &act, NULL);
+    }
+}
+
+
 static struct
 {
   void (*handler) (int,void*);
@@ -162,27 +179,9 @@ _gpgme_io_spawn (const char *path, char **argv,
 		 struct spawn_fd_item_s *fd_child_list,
 		 struct spawn_fd_item_s *fd_parent_list)
 {
-  static int fixed_signals;
-  DEFINE_STATIC_LOCK (fixed_signals_lock);
   pid_t pid;
   int i;
   int status, signo;
-  LOCK (fixed_signals_lock);
-  if (!fixed_signals)
-    { 
-      struct sigaction act;
-        
-      sigaction (SIGPIPE, NULL, &act);
-      if (act.sa_handler == SIG_DFL)
-	{
-	  act.sa_handler = SIG_IGN;
-	  sigemptyset (&act.sa_mask);
-	  act.sa_flags = 0;
-	  sigaction (SIGPIPE, &act, NULL);
-        }
-      fixed_signals = 1;
-    }
-  UNLOCK (fixed_signals_lock);
 
   pid = fork ();
   if (pid == -1) 
