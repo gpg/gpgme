@@ -1,5 +1,16 @@
 2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
 
+	* version.c (gpgme_get_engine_info): Reimplemented.
+	(gpgme_check_engine): Reimplemented.
+	(_gpgme_compare_versions): Return NULL if MY_VERSION is NULL.
+
+	* engine.c: Include `io.h'.
+	(gpgme_engine_get_info): New function.
+	* engine.h (gpgme_engine_check_version, _gpgme_engine_get_info):
+	Add prototype.
+
+2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
+
 	* rungpg.c (struct reap_s, reap_list, reap_list_lock): Moved to ...
 	* engine.c (struct reap_s, reap_list, reap_list_lock): ... here.
 	Include `time.h', `sys/types.h', `assert.h', and `sema.h'.

@@ -35,7 +35,6 @@
 
 static const char *get_engine_info (void);
 
-
 static void
 do_subsystem_inits (void)
 {
@@ -46,8 +45,6 @@ do_subsystem_inits (void)
     _gpgme_sema_subsystem_init ();
     _gpgme_key_cache_init ();
 }
-
-
 
 static const char*
 parse_version_number ( const char *s, int *number )
@@ -63,7 +60,6 @@ parse_version_number ( const char *s, int *number )
     *number = val;
     return val < 0? NULL : s;
 }
-
 
 static const char *
 parse_version_string( const char *s, int *major, int *minor, int *micro )
@@ -92,6 +88,8 @@ _gpgme_compare_versions (const char *my_version,
 
   if (!req_version)
     return my_version;
+  if (!my_version)
+    return NULL;
 
   my_plvl = parse_version_string (my_version, &my_major, &my_minor, &my_micro);
   if (!my_plvl)
@@ -113,7 +111,6 @@ _gpgme_compare_versions (const char *my_version,
     }
   return NULL;
 }
-
 
 /**
  * gpgme_check_version:
@@ -139,55 +136,72 @@ gpgme_check_version (const char *req_version)
 /**
  * gpgme_get_engine_info:
  *  
- * Return information about the underlying crypto engine.  This is an
- * XML string with various information.  To get the version of the
- * crypto engine it should be sufficient to grep for the first
- * <literal>version</literal> tag and use it's content.  A string is
- * always returned even if the crypto engine is not installed; in this
- * case a XML string with some error information is returned.
+ * Return information about the underlying crypto engines.  This is an
+ * XML string with various information.  A string is always returned
+ * even if the crypto engines is not installed; in this case a XML
+ * string with some error information is returned.
  * 
- * Return value: A XML string with information about the crypto engine.
+ * Return value: A XML string with information about the crypto
+ * engines.
  **/
 const char *
 gpgme_get_engine_info ()
 {
-    do_subsystem_inits ();
-    return get_engine_info ();
+  static const char *engine_info;
+  const char *openpgp_info = _gpgme_engine_get_info (GPGME_PROTOCOL_OpenPGP);
+  const char *cms_info = _gpgme_engine_get_info (GPGME_PROTOCOL_CMS);
+  char *info;
+
+  /* FIXME: Make sure that only one instance does run.  */
+  if (engine_info)
+    return engine_info;
+
+  if (!openpgp_info && !cms_info)
+    info = "<EngineInfo>\n</EngineInfo>\n";
+  else if (!openpgp_info || !cms_info)
+    {
+      const char *fmt = "<EngineInfo>\n"
+        "%s"
+        "</EngineInfo>\n";
+
+      info = xtrymalloc (strlen(fmt) + strlen(openpgp_info
+                                              ? openpgp_info : cms_info) + 1);
+      if (info)
+        sprintf (info, fmt, openpgp_info ? openpgp_info : cms_info);
+    }
+  else
+    {
+      const char *fmt = "<EngineInfo>\n"
+        "%s%s"
+        "</EngineInfo>\n";
+      info = xtrymalloc (strlen(fmt) + strlen(openpgp_info)
+                         + strlen (cms_info) + 1);
+      if (info)
+        sprintf (info, fmt, openpgp_info, cms_info);
+    }
+  if (!info)
+    info = "<EngineInfo>\n"
+      "  <error>Out of core</error>\n"
+      "</EngineInfo>\n";
+  engine_info = info;
+  return engine_info;
 }
 
 /**
  * gpgme_check_engine:
  * 
- * Check whether the installed crypto engine matches the requirement of
- * GPGME.
+ * Check whether the installed crypto engine for the OpenPGP protocol
+ * matches the requirement of GPGME.  This function is deprecated,
+ * instead use gpgme_engine_get_info() with the specific protocol you
+ * need.
  *
  * Return value: 0 or an error code.
  **/
 GpgmeError
 gpgme_check_engine ()
 {
-    const char *info = gpgme_get_engine_info ();
-    const char *s, *s2;
-
-    s = strstr (info, "<version>");
-    if (s) {
-        s += 9;
-        s2 = strchr (s, '<');
-        if (s2) {
-            char *ver = xtrymalloc (s2 - s + 1);
-            if (!ver)
-                return mk_error (Out_Of_Core);
-            memcpy (ver, s, s2-s);
-            ver[s2-s] = 0;
-            s = _gpgme_compare_versions ( ver, NEED_GPG_VERSION );
-            xfree (ver);
-            if (s)
-                return 0;
-        }
-    }
-    return mk_error (Invalid_Engine);
+  return gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
 }
-
 
 
 #define LINELENGTH 80
@@ -252,78 +266,4 @@ _gpgme_get_program_version (const char *const path)
     }
 
   return NULL;
-}
-
-static const char *
-get_engine_info (void)
-{
-    static const char *engine_info =NULL;
-    GpgmeError err = 0;
-    const char *path = NULL;
-    char *version;
-
-    /* FIXME: make sure that only one instance does run */
-    if (engine_info)
-        return engine_info;
-
-    path = _gpgme_get_gpg_path ();
-    if (!path)
-      {
-	engine_info = "<GnupgInfo>\n"
-	  "  <error>Not supported</error>\n"
-	  "</GnupgInfo>\n";
-	goto leave;
-      }
-    version = _gpgme_get_program_version (path);
-
-    if (version) {
-        const char *fmt;
-        char *p;
-
-        fmt = "<GnupgInfo>\n"
-              " <engine>\n"
-              "  <version>%s</version>\n"
-              "  <path>%s</path>\n"
-              " </engine>\n"
-              "</GnupgInfo>\n";
-        /*(yes, I know that we allocating 2 extra bytes)*/
-        p = xtrymalloc ( strlen(fmt) + strlen(path)
-                         + strlen (version) + 1);
-        if (!p) {
-            err = mk_error (Out_Of_Core);
-            goto leave;
-        }
-        sprintf (p, fmt, version, path);
-        engine_info = p;
-        xfree (version);
-    }
-    else {
-        err = mk_error (General_Error);
-    }
-
- leave:
-    if (err) {
-        const char *fmt;
-        const char *errstr = gpgme_strerror (err);
-        char *p;
-
-        fmt = "<GnupgInfo>\n"
-            " <engine>\n"
-            "  <error>%s</error>\n"                
-            "  <path>%s</path>\n"
-            " </engine>\n"
-            "</GnupgInfo>\n";
-
-        p = xtrymalloc ( strlen(fmt) + strlen(errstr) + strlen(path) + 1);
-        if (p) { 
-            sprintf (p, fmt, errstr, path);
-            engine_info = p;
-        }
-        else {
-            engine_info = "<GnupgInfo>\n"
-                          "  <error>Out of core</error>\n"
-                          "</GnupgInfo>\n";
-        }
-    }
-    return engine_info;
 }
