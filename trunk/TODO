@@ -5,6 +5,9 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Some gpg tests fail with gpg 1.3.4-cvs (gpg/t-keylist-sig)
    The test is currently disabled there and in gpg/t-import.
 ** Add notation data to key signatures.
+** Document gpgme_set_engine_info, gpgme_ctx_get_engine_info,
+   gpgme_ctx_set_engine_info.
+
 
 * ABI's to break:
 ** I/O and User Data could be made extensible.  But this can be done
@@ -27,6 +30,7 @@ Hey Emacs, this is -*- outline -*- mode!
 *** gpgme_trust_item_get_ulong_attr
 *** gpgme_attr_t
 *** All Gpgme* typedefs.
+
 
 * Thread support:
 ** When GNU Pth supports sendmsg/recvmsg, wrap them properly.
@@ -60,9 +64,6 @@ Hey Emacs, this is -*- outline -*- mode!
   This allows us to handle years later than 2037 properly.  With the
   time_t interface they are all mapped to 2037-12-31
 
-* Support
-** gpgme.m4 should check --api-version of gpgme-config.
- 
 * Documentation
 ** Document validity and trust issues.
 
