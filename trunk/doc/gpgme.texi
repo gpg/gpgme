@@ -2198,15 +2198,16 @@ have a different status.  You can get each key's status with
 @end table
 @end deftp
 
-@deftypefun GpgmeError gpgme_op_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{sig}}, @w{GpgmeData @var{plain}}, @w{GpgmeSigStat *@var{r_stat}})
+
+@deftypefun GpgmeError gpgme_op_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{sig}}, @w{GpgmeData @var{signed_text}}, @w{GpgmeData @var{plain}}, @w{GpgmeSigStat *@var{r_stat}})
 The function @code{gpgme_op_verify} verifies that the signature in the
-data object @var{sig} is a valid signature.  If @var{plain} is
-initialized with plaintext data, it is assumed that @var{sig} is a
-detached signature, and its validity for the plaintext given in
-@var{plain} is verified.  If @var{plain} is an uninitialized data
-object, it is assumed that @var{sig} is a normal (or cleartext)
-signature, and the plaintext is available in @var{plain} after
-successful verification.
+data object @var{sig} is a valid signature.  If @var{sig} is a
+detached signature, then the signed text should be provided in
+@var{signed_text} and @var{plain} should be a null pointer.
+Otherwise, if @var{sig} is a normal (or cleartext) signature,
+@var{signed_text} should be a null pointer and @var{plain} should be a
+writable data object that will contain the plaintext after successful
+verification.
 
 The combined status of all signatures is returned in @var{r_stat}.
 The results of the individual signature verifications can be retrieved
@@ -2220,7 +2221,7 @@ and passes through any errors that are reported by the crypto engine
 support routines.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_op_verify_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{sig}}, @w{GpgmeData @var{plain}})
+@deftypefun GpgmeError gpgme_op_verify_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{sig}}, @w{GpgmeData @var{signed_text}}, @w{GpgmeData @var{plain}})
 The function @code{gpgme_op_verify_start} initiates a
 @code{gpgme_op_verify} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
