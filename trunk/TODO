@@ -48,3 +48,8 @@ Bugs reported by Stephane Corthesy:
 > the  
 > callback has become invalid; if I use a brand new one, the callback  
 > is called recursively, when I ask to enumerate keys.
+
+
+
+
+
