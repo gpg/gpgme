@@ -2442,7 +2442,12 @@ in the list.
 
 If @var{pattern} is @code{NULL}, all available keys are returned.
 Otherwise, @var{pattern} contains an engine specific expression that
-is used to limit the list to all keys matching the pattern.
+is used to limit the list to all keys matching the pattern.  Note that
+the total length of the pattern is restricted to an engine-specific
+maximum (a couple of hundred characters are usually accepted).  The
+pattern should be used to restrict the search to a certain common name
+or user, not to list many specific keys at once by listing their
+fingerprints or key IDs.
 
 If @var{secret_only} is not @code{0}, the list is restricted to secret
 keys only.
@@ -2465,7 +2470,13 @@ everything up so that subsequent invocations of
 If @var{pattern} or @var{*pattern} is @code{NULL}, all available keys
 are returned.  Otherwise, @var{pattern} is a @code{NULL} terminated
 array of strings that are used to limit the list to all keys matching
-at least one of the patterns verbatim.
+at least one of the patterns verbatim.  Note that the total length of
+all patterns is restricted to an engine-specific maximum (the exact
+limit also depends on the number of patterns and amount of quoting
+required, but a couple of hundred characters are usually accepted).
+Patterns should be used to restrict the search to a certain common
+name or user, not to list many specific keys at once by listing their
+fingerprints or key IDs.
 
 If @var{secret_only} is not @code{0}, the list is restricted to secret
 keys only.
