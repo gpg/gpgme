@@ -217,6 +217,77 @@ gpgme_data_new_from_file ( GpgmeData *r_dh, const char *fname, int copy )
 }
 
 
+GpgmeError
+gpgme_data_new_from_filepart ( GpgmeData *r_dh, const char *fname, FILE *fp,
+                               off_t offset, off_t length )
+{
+    GpgmeData dh;
+    GpgmeError err;
+
+    if (!r_dh)
+        return mk_error (Invalid_Value);
+    *r_dh = NULL;
+    if ( fname && fp ) /* these are mutual exclusive */
+        return mk_error (Invalid_Value);
+    if (!fname && !fp)
+        return mk_error (Invalid_Value);
+    if (!length)
+        return mk_error (Invalid_Value);
+
+    err = gpgme_data_new ( &dh );
+    if (err)
+        return err;
+
+    if (!fp) {
+        fp = fopen (fname, "rb");
+        if (!fp) {
+            int save_errno = errno;
+            gpgme_data_release (dh);
+            errno = save_errno;
+            return mk_error (File_Error);
+        }
+    }
+
+    if ( fseek ( fp, (long)offset, SEEK_SET) ) {
+        int save_errno = errno;
+        if (fname)
+            fclose (fp);
+        gpgme_data_release (dh);
+        errno = save_errno;
+        return mk_error (File_Error);
+    }
+
+
+    dh->private_buffer = xtrymalloc ( length );
+    if ( !dh->private_buffer ) {
+        if (fname)
+            fclose (fp);
+        gpgme_data_release (dh);
+        return mk_error (Out_Of_Core);
+    }
+    dh->private_len = length;
+
+    if ( fread ( dh->private_buffer, dh->private_len, 1, fp ) != 1 ) {
+        int save_errno = errno;
+        if (fname)
+            fclose (fp);
+        gpgme_data_release (dh);
+        errno = save_errno;
+        return mk_error (File_Error);
+    }
+
+    if (fname)
+        fclose (fp);
+
+    dh->len = dh->private_len;
+    dh->data = dh->private_buffer;
+    dh->writepos = dh->len;
+    dh->type = GPGME_DATA_TYPE_MEM;
+    
+    *r_dh = dh;
+    return 0;
+}
+
 
 /**
  * gpgme_data_release:
@@ -454,6 +525,26 @@ _gpgme_data_get_as_string ( GpgmeData dh )
     return val;
 }
 
+
+/**
+ * gpgme_data_write:
+ * @dh: the context
+ * @buffer: data to be written to the data object
+ * @length: length o this data
+ * 
+ * Write the content of @buffer to the data object @dh at the current write
+ * position. 
+ * 
+ * Return value: 0 on succress or an errorcode
+ **/
+GpgmeError
+gpgme_data_write ( GpgmeData dh, const char *buffer, size_t length )
+{
+    if (!dh || !buffer)
+        return mk_error (Invalid_Value);
+      
+    return _gpgme_data_append (dh, buffer, length );
+}
 
 
 GpgmeError

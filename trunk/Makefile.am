@@ -1,5 +1,5 @@
 
-EXTRA_DIST = README-alpha build-w32
+EXTRA_DIST = README-alpha autogen.sh
 
 if BUILD_BONOBO
 bonobo = bonobo
