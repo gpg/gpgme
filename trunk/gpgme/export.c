@@ -94,9 +94,6 @@ gpgme_op_export (GpgmeCtx ctx, GpgmeRecipients recipients, GpgmeData keydata)
 {
   GpgmeError err = gpgme_op_export_start (ctx, recipients, keydata);
   if (!err)
-    {
-      gpgme_wait (ctx, 1);
-      ctx->pending = 0;
-    }
+    gpgme_wait (ctx, 1);
   return err;
 }

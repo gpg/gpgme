@@ -195,7 +195,6 @@ gpgme_op_decrypt (GpgmeCtx ctx, GpgmeData in, GpgmeData out)
     {
       gpgme_wait (ctx, 1);
       err = _gpgme_decrypt_result (ctx);
-      ctx->pending = 0;
     }
   return err;
 }

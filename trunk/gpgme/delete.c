@@ -102,17 +102,13 @@ gpgme_op_delete_start (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
  * Return value: 0 on success or an error code.
  **/
 GpgmeError
-gpgme_op_delete ( GpgmeCtx c, const GpgmeKey key, int allow_secret )
+gpgme_op_delete (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
 {
-    int rc = gpgme_op_delete_start ( c, key, allow_secret );
-    if ( !rc ) {
-        gpgme_wait (c, 1);
-        c->pending = 0;
-        /* FIXME: check for success */
+  GpgmeError err = gpgme_op_delete_start (ctx, key, allow_secret);
+  if (!err)
+    {
+      gpgme_wait (ctx, 1);
+      /* FIXME: check for success */
     }
-    return rc;
+  return err;
 }
-
-
-
-

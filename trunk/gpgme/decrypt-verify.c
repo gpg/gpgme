@@ -74,7 +74,6 @@ gpgme_op_decrypt_verify (GpgmeCtx ctx,
           if (! err)
 	    *r_stat = _gpgme_intersect_stati (ctx->result.verify);
 	}
-      ctx->pending = 0;
     }
   return err;
 }
