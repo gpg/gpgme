@@ -2125,8 +2125,8 @@ nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
       /*it->info.issuer = xstrdup(s);*/
       it->info.issuer = reorder_dn( issuer_dn );
       while( tmp_dn->key ) {
-	free( issuer_dn->key );
-	free( issuer_dn->value );
+	free( tmp_dn->key );
+	free( tmp_dn->value );
 	++tmp_dn;
       }
       free( issuer_dn );
