@@ -390,5 +390,6 @@ _gpgme_remove_io_cb (void *data)
   fdt->fds[idx].for_read = 0;
   fdt->fds[idx].for_write = 0;
   fdt->fds[idx].opaque = NULL;
+  UNLOCK (fdt->lock);
 }
 
