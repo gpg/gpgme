@@ -13,6 +13,8 @@
    which can not be differentiated from the case that it is not
    representable.
 ** Agree on gpgme_key_unref or gpgme_key_release and drop the other?
+** keylisting mode can go
+** api to specify where to search, lokal and/or remote.
 
 * Implement posix-sema.c
 
@@ -40,6 +42,9 @@
 ** Move code common to all engines up from gpg to engine.
 ** engine operations can return General Error on unknown protocol
    (it's an internal error, as select_protocol checks already).
+
+* Operations
+** Import, export status handler.
 
 * Error Values
 ** Map ASSUAN error values.
