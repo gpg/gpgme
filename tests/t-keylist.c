@@ -76,10 +76,11 @@ main (int argc, char **argv )
     err = gpgme_new (&ctx);
     fail_if_err (err);
     do {
+        fprintf (stderr, "** pattern=`%s'\n", pattern );
         doit ( ctx, pattern );
     } while ( loop );
     gpgme_release (ctx);
-    
+
     return 0;
 }
 

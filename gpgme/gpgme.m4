@@ -29,7 +29,7 @@ dnl
 
   AC_PATH_PROG(GPGME_CONFIG, gpgme-config, no)
   min_gpgme_version=ifelse([$1], ,1.0.0,$1)
-  AC_MSG_CHECKING(for gpgme - version >= $min_gpgme_version)
+  AC_MSG_CHECKING(for GPGME - version >= $min_gpgme_version)
   no_gpgme=""
   if test "$GPGME_CONFIG" = "no" ; then
     no_gpgme=yes

@@ -20,12 +20,20 @@
 
 #ifndef GPGME_H
 #define GPGME_H
+
+#ifdef _MSC_VER
+  typedef long off_t 
+#else
+# include <sys/types.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" { 
 #if 0 /* just to make Emacs auto-indent happy */
 }
 #endif
 #endif
+
 
 /*
  * The version of this header should match the one of the library
@@ -34,7 +42,7 @@ extern "C" {
  * let autoconf (using the AM_PATH_GPGME macro) check that this
  * header matches the installed library.
  * Warning: Do not edit the next line.  configure will do that for you! */
-#define GPGME_VERSION "0.1.3"
+#define GPGME_VERSION "0.1.3a"
 
 
 
@@ -73,6 +81,7 @@ typedef enum {
     GPGME_File_Error = 17,  /* errno is set in this case */
     GPGME_Decryption_Failed = 18,
     GPGME_No_Passphrase = 19,
+    GPGME_Canceled = 20,
 } GpgmeError;
 
 typedef enum {
@@ -109,6 +118,7 @@ typedef void (*GpgmeProgressCb)(void *opaque,
 /* Context management */
 GpgmeError gpgme_new (GpgmeCtx *r_ctx);
 void       gpgme_release (GpgmeCtx c);
+void       gpgme_cancel (GpgmeCtx c);
 GpgmeCtx   gpgme_wait (GpgmeCtx c, int hang);
 
 char *gpgme_get_notation (GpgmeCtx c);
@@ -143,12 +153,18 @@ GpgmeError    gpgme_data_new_with_read_cb ( GpgmeData *r_dh,
 GpgmeError    gpgme_data_new_from_file ( GpgmeData *r_dh,
                                          const char *fname,
                                          int copy );
+GpgmeError    gpgme_data_new_from_filepart ( GpgmeData *r_dh,
+                                             const char *fname, FILE *fp,
+                                             off_t offset, off_t length );
 void          gpgme_data_release ( GpgmeData dh );
 char *        gpgme_data_release_and_get_mem ( GpgmeData dh, size_t *r_len );
 GpgmeDataType gpgme_data_get_type ( GpgmeData dh );
 GpgmeError    gpgme_data_rewind ( GpgmeData dh );
 GpgmeError    gpgme_data_read ( GpgmeData dh,
                                 char *buffer, size_t length, size_t *nread );
+GpgmeError    gpgme_data_write ( GpgmeData dh,
+                                 const char *buffer, size_t length );
+
 
 /* Key functions */
 char *gpgme_key_get_as_xml ( GpgmeKey key );

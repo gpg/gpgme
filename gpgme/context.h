@@ -49,6 +49,8 @@ struct gpgme_context_s {
      * able to handle a malloc problem at that point, so we set this
      * flag to indicate this condition */
     int out_of_core;   
+    int cancel;    /* cancel operation request */
+
 
     GpgObject gpg; /* the running gpg process */
 
