@@ -50,7 +50,7 @@ int asprintf (char **result, const char *format, ...);
 /* Convert two hexadecimal digits from STR to the value they
    represent.  Returns -1 if one of the characters is not a
    hexadecimal digit.  */
-int _gpgme_hextobyte (const unsigned char *str);
+int _gpgme_hextobyte (const char *str);
 
 /* Decode the C formatted string SRC and store the result in the
    buffer *DESTP which is LEN bytes long.  If LEN is zero, then a
