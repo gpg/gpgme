@@ -95,8 +95,6 @@ Hey Emacs, this is -*- outline -*- mode!
 ** If an operation failed, make sure that the result functions don't return
    corrupt partial information. !!!
    NOTE: The EOF status handler is not called in this case !!!
-** If no passphrase cb is installed, status handler is not run even if
-   password is required by crypto engine. !!
 ** Verify must not fail on NODATA premature if auto-key-retrieval failed.
    It should not fail silently if it knows there is an error. !!!
 ** All operations: Better error reporting. !!
