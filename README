@@ -17,7 +17,7 @@ If configure can't find the `gpg' binary in your path, you can specify
 the location with the --with-gpg=/path/to/gpg argument to configure.
 
 For support of the CMS (Cryptographic Message Syntax) protocol, you
-need at least newpg 0.9.2
+need at least newpg 0.9.2 or GnuPG > 1.9.2.
 
 If configure can't find the `gpgsm' binary in your path, you can
 specify the location with the --with-gpgsm=/path/to/gpgsm argument to
