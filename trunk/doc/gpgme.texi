@@ -210,6 +210,7 @@ Using External Event Loops
 * I/O Callback Example::          An example how to use I/O callbacks.
 * I/O Callback Example GTK+::     How to integrate @acronym{GPGME} in GTK+.
 * I/O Callback Example GDK::      How to integrate @acronym{GPGME} in GDK.
+* I/O Callback Example Qt::       How to integrate @acronym{GPGME} in Qt.
 
 @end detailmenu
 @end menu
@@ -4400,6 +4401,7 @@ programs.
 * I/O Callback Example::          An example how to use I/O callbacks.
 * I/O Callback Example GTK+::     How to use @acronym{GPGME} with GTK+.
 * I/O Callback Example GDK::      How to use @acronym{GPGME} with GDK.
+* I/O Callback Example Qt::       How to use @acronym{GPGME} with Qt.
 @end menu
 
 
@@ -4897,6 +4899,74 @@ my_gpgme_register_io_callback (void *data, int fd, int dir, gpgme_io_cb_t fnc,
   *tag = iocb;
   return 0;
 @}
+@end example
+
+
+@node I/O Callback Example Qt
+@subsubsection I/O Callback Example Qt
+@cindex Qt, using @acronym{GPGME} with
+
+The I/O callback interface can also be used to integrate
+@acronym{GPGME} with the Qt event loop.  The following code snippets
+show how this can be done using the appropriate register and remove
+I/O callback functions.  In this example, the private data of the
+register I/O callback function is unused.  The event notifications is
+missing because it does not require any Qt specific setup.
+
+@example
+#include <qsocketnotifier.h>
+#include <qapplication.h>
+
+struct IOCB @{
+  IOCB( GpgmeIOCb f, void * d, QSocketNotifier * n )
+    : func( f ), data( d ), notifier( n ) @{@}
+  GpgmeIOCb func;
+  void * data;
+  QSocketNotifier * notifier;
+@}
+
+class MyApp : public QApplication @{
+
+  // ...
+  
+  static void registerGpgmeIOCallback( void * data, int fd, int dir,
+                                       GpgmeIOCb func, void * func_data,
+                                       void ** tag ) @{
+    QSocketNotifier * n =
+      new QSocketNotifier( fd, dir ? QSocketNotifier::Read
+                                   : QSocketNotifier::Write );
+    connect( n, SIGNAL(activated(int)),
+             qApp, SLOT(slotGpgmeIOCallback(int)) );
+    qApp->mIOCBs.push_back( IOCB( func, func_data, n ) );
+    *tag = (void*)n;
+  @}
+
+  static void removeGpgmeIOCallback( void * tag ) @{
+    if ( !tag ) return;
+    QSocketNotifier * n = static_cast<QSocketNotifier*>( tag );
+    for ( QValueList<IOCB>::iterator it = qApp->mIOCBs.begin() ;
+          it != qApp->mIOCBs.end() ; ++it )
+      if ( it->notifier == n ) @{
+        delete it->notifier;
+        qApp->mIOCBs.erase( it );
+        return;
+      @}
+  @}
+
+public slots:
+  void slotGpgmeIOCallback( int fd ) @{
+    for ( QValueList<IOCB>::const_iterator it = mIOCBs.begin() ;
+          it != mIOCBs.end() ; ++it )
+      if ( it->notifier && it->notifier->socket() == fd )
+        (*(it->func)) ( it->func_data, fd );
+  @}
+
+  // ...
+
+private:
+  QValueList<IOCB> mIOCBs;
+  // ...
+@};
 @end example
 
 
