@@ -141,6 +141,8 @@ set_mainkey_trust_info (GpgmeKey key, const char *src)
 	  break;
 
 	case 'd':
+          /* Note that gpg 1.3 won't print that anymore but only uses
+             the capabilities field. */
 	  key->keys.flags.disabled = 1;
 	  break;
 
@@ -240,6 +242,16 @@ set_mainkey_capability (GpgmeKey key, const char *src)
 	case 'c':
 	  key->keys.flags.can_certify = 1;
 	  break;
+
+        case 'd':
+        case 'D':
+          /* Note, that this flag is also set using the key validity
+             field for backward compatibility with gpg 1.2.  We use d
+             and D, so that a future gpg version will be able to
+             disable certain subkeys. Currently it is expected that
+             gpg sets this for the primary key. */
+       	  key->keys.flags.disabled = 1;
+          break;
 
 	case 'E':
 	  key->gloflags.can_encrypt = 1;
