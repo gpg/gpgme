@@ -134,36 +134,47 @@ _gpgme_parse_inv_userid (char *args, gpgme_invalid_user_id_t *userid)
     default:
     case 0:
       inv_userid->reason = GPGME_Unknown_Reason;
+      break;
 
     case 1:
       inv_userid->reason = GPGME_Not_Found;
+      break;
 
     case 2:
       inv_userid->reason = GPGME_Ambiguous_Specification;
+      break;
 
     case 3:
       inv_userid->reason = GPGME_Wrong_Key_Usage;
+      break;
 
     case 4:
       inv_userid->reason = GPGME_Key_Revoked;
+      break;
 
     case 5:
       inv_userid->reason = GPGME_Key_Expired;
+      break;
 
     case 6:
       inv_userid->reason = GPGME_No_CRL_Known;
+      break;
 
     case 7:
       inv_userid->reason = GPGME_CRL_Too_Old;
+      break;
 
     case 8:
       inv_userid->reason = GPGME_Policy_Mismatch;
+      break;
 
     case 9:
       inv_userid->reason = GPGME_No_Secret_Key;
+      break;
 
     case 10:
       inv_userid->reason = GPGME_Key_Not_Trusted;
+      break;
     }
 
   while (*tail == ' ')
