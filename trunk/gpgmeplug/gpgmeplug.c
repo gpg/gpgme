@@ -51,8 +51,7 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "../gpgme/gpgme.h"
-#include "../gpgme/util.h"
+#include "gpgme.h"
 
 #include "cryptplug.h"
 
