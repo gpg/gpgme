@@ -1,0 +1,72 @@
+          How to install and use the Gpgcom Windows Component
+          ===================================================
+                              2001-07-31
+
+
+Installation should be pretty easy:
+-----------------------------------
+
+  * Get and install the latest GnuPG binary for windows
+    (ftp://ftp.gnupg.org/gcrypt/binary/gnupg-w32-1.0.6.zip)
+  
+  * Check that you have an untampered version of this package by
+    comparing an MD5SUM against the one on the webpage or by checking
+    the signature of the package using "gpg --verify".  See the
+    webpacge for details.
+
+  * Because you are reading this file, you probably have already
+    unpacked it distribution using a unzip utility :-). You should
+    find these files:
+
+       README      - This file
+       gpgcom.exe  - The Gpgcom server
+       vbtest.html - A Test webpage 
+       vbtest.vbs  - A VB script to be used with the cscript utility
+
+   * If you are updating Gpgcom, run the old Gpgcom like this:
+
+       c:\gnupg\gpgcom -UnregServer
+
+     (Replace c:\gnupg with the actually used path)
+
+   * Copy the file gpgcom.exe to a some location. C:\gnupg seems to be
+     a good choice. 
+
+   * Register the component using this command:
+
+      c:\gnupg\gpgcom -RegServer
+
+   * Ready
+
+Testing the installation:
+-------------------------
+
+  * Make sure that you have a working GnuPG (gpg.exe) and that at least
+    one key is installed.
+
+  * Edit the vbtest.vbs script and replace "alice" in the line
+
+      gpg.AddRecipient "alice"
+
+   with a keyID or user name you have in your key ring.
+
+  * Run the test script:
+
+      cscript vbtest.vbs
+
+    and you should see a valid MIME message with the encrypted text.
+
+    
+Using Gpgcom
+------------ 
+
+Gpgcom currently support only encryption but will be extended to the
+full range of operations GnuPG provides. The 2 examples should goive
+yopu a hint on how to use it.  We suggest that you always set armor to
+true, so that the returned text is a string.  If you don't use armor,
+the "ciphertext" property will return an array with the binary
+message.
+
+
+
+

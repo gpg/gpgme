@@ -1,0 +1,35 @@
+                  GPGME - GnuPG Made Easy
+                ---------------------------
+                       Version 0.3
+
+This is the stable branch of GPGME.  We don't intend to make any
+changes to the API anymore but OTOH we won't add any new features.
+The development version is available in the CVS; after we have
+released that onem we will slowly fade out support for this 0.3 branch.
+
+If you want to hack on it, start with one of the `tests/gpg/t-foo'
+programs.
+
+For support of the OpenPGP protocol (default), you need at least GnuPG
+1.2.0.
+
+If configure can't find the `gpg' binary in your path, you can specify
+the location with the --with-gpg=/path/to/gpg argument to configure.
+
+For support of the CMS (Cryptographic Message Syntax) protocol, you
+need at least newpg 0.9.2 or GnuPG > 1.9.2.
+
+If configure can't find the `gpgsm' binary in your path, you can
+specify the location with the --with-gpgsm=/path/to/gpgsm argument to
+configure.
+
+Before building the CVS version following the generic install
+instructions in `INSTALL', you need to set up the build scripts with
+`./autogen.sh'.  To build the W32 version, use `./autogen.sh
+--build-w32'.  You also need to enable maintainer mode at configure
+time with `--enable-maintainer-mode', or the documentation will not
+built (because the version.texi won't be generated unless maintainer
+mode is enabled).
+
+Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
+to do serious work.
