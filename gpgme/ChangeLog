@@ -1,3 +1,12 @@
+2005-03-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* io.h: Rename to ...
+	* priv-io.h: ... this.
+	* Makefile.am (libgpgme_real_la_SOURCES): Change io.h to priv-io.h.
+	* data.c, engine-gpgsm.c, posix-io.c, rungpg.c, version.c,
+	w32-io.c, wait-private.c, wait-global.c, wait-user.c, wait.c:
+	Change all includes of "io.h" to "priv-io.h"
+	
 2005-03-09  Werner Koch  <wk@g10code.com>
 
 	* w32-util.c (_gpgme_get_gpg_path, _gpgme_get_gpgsm_path): Do not

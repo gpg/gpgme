@@ -1,5 +1,5 @@
 /* data.c - An abstraction for data objects.
-   Copyright (C) 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2002, 2003, 2004, 2005 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -31,7 +31,7 @@
 #include "data.h"
 #include "util.h"
 #include "ops.h"
-#include "io.h"
+#include "priv-io.h"
 
 #if defined(HAVE_W32_SYSTEM) && !defined(EOPNOTSUPP)
 #define EOPNOTSUPP VALUE_FOR_EOPNOTSUPP

@@ -1,5 +1,5 @@
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -79,7 +79,7 @@ libgpgme_real_la_SOURCES =						\
 	key.c keylist.c trust-item.c trustlist.c			\
 	import.c export.c genkey.c delete.c edit.c			\
 	engine.h engine-backend.h engine.c rungpg.c status-table.h	\
-	$(gpgsm_components) sema.h io.h $(system_components)		\
+	$(gpgsm_components) sema.h priv-io.h $(system_components)	\
 	debug.c debug.h gpgme.c version.c error.c
 
 # libgpgme_la_SOURCES = ath.h ath.c

@@ -36,7 +36,7 @@
 
 #include "util.h"
 #include "sema.h"
-#include "io.h"
+#include "priv-io.h"
 #include "debug.h"
 
 /* We assume that a HANDLE can be represented by an int which should
