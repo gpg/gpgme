@@ -1,6 +1,18 @@
-Noteworthy changes in version 0.9.1 (unreleased)
+Noteworthy changes in version 1.0.0 (2004-09-30)
 ------------------------------------------------
 
+ * Version 1.0.0!  We are proud to present you with a thoroughly
+   tested and stable version of the GPGME library.  A big Thank You!
+   to all the people who made this possible.
+
+   The development will be branched into a stable 1.x.y series and the
+   head.
+
+ * The gpgme.m4 macro supports checking the API version.  Just prepend
+   it to the required version string, separated by a colon.  For
+   example, this release has the version "1:1.0.0".  The last release
+   to which this version is (mostly) ABI compatible is "1:0.4.2",
+   which is the default required version.
 
 Noteworthy changes in version 0.9.0 (2004-06-08)
 ------------------------------------------------
