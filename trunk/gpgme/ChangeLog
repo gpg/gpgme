@@ -1,5 +1,10 @@
 2001-01-30  Werner Koch  <wk@gnupg.org>
 
+	* signers.c (gpgme_signers_add): Ooops, one should test code and
+	not just write it; the newarr was not assigned.  Thanks to José
+	for pointing this out.  Hmmm, still not tested, why shoudl a coder
+	test his fix :-)
+
 	* w32-io.c: Does now use reader threads, so that we can use
 	WaitForMultipleObjects. 
 	* sema.h, posix-sema.c, w32-sema.c: Support for Critcial sections.

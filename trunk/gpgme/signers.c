@@ -74,6 +74,8 @@ gpgme_signers_add (GpgmeCtx c, const GpgmeKey key)
         for (j=0; j < c->signers_size; j++ )
             newarr[j] = c->signers[j];
         c->signers_size = n;
+        xfree (c->signers);
+        c->signers = newarr;
     }
     gpgme_key_ref (key);
     c->signers[i] = key;
