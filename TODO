@@ -1,18 +1,15 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * Before release:
-** Switch to LGPL?
 ** Some gpg tests fail with gpg 1.3.4-cvs (gpg/t-keylist-sig)
    The test is currently disabled there and in gpg/t-import.
 ** Add notation data to key signatures.
-** Document gpgme_set_engine_info, gpgme_ctx_get_engine_info,
-   gpgme_ctx_set_engine_info.
-
 
 * ABI's to break:
 ** I/O and User Data could be made extensible.  But this can be done
    without breaking the ABI hopefully.
-*  All enums that should be enums need to have a maximum value to ensure	  a certain minimum width for extensibility.
+*  All enums that should be enums need to have a maximum value to ensure
+   a certain minimum width for extensibility.
 ** Compatibility interfaces that can be removed in future versions:
 *** ath compatibility modules.
 *** gpgme_data_new_from_filepart
@@ -144,14 +141,13 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Build suite
 ** Make sure everything is cleaned correctly (esp. test area).
-** Configure test for gpg and gpgsm version (as a warning).
 ** Enable AC_CONFIG_MACRO_DIR and bump up autoconf version requirement.
    (To fix "./autogen.sh; ./configure --enable-maintainer-mode; touch
-   configure.ac; make").
+   configure.ac; make").  Currently worked around with ACLOCAL_AMFLAGS???
 
 * Error checking 
 ** engine-gpgsm, with-validation
-  Add error checking some time after releasing a new gpgsm.
+   Add error checking some time after releasing a new gpgsm.
 
 
 Copyright 2004 g10 Code GmbH
