@@ -1,5 +1,18 @@
 2002-06-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (gpgsm_assuan_simple_command): Return ERR.
+	(parse_status): New function.
+	(gpgsm_status_handler): Use parse_status.
+	(gpgsm_assuan_simple_command): Accept new arguments STATUS_FNC and
+	STATUS_FNC_VALUE and process status messages.
+	(gpgsm_set_recipients): Pass new arugments to gpgsm_assuan_simple_command.
+	(gpgsm_set_fd): Likewise.
+	(_gpgme_gpgsm_op_keylist): Likewise.
+	(_gpgme_gpgsm_op_keylist_ext): Likewise.
+	(_gpgme_gpgsm_op_sign): Likewise.
+
+2002-06-21  Marcus Brinkmann  <marcus@g10code.de>
+
 	* wait.c (_gpgme_remove_io_cb): Unlock FDT->lock.
 
 2002-06-20  Werner Koch  <wk@gnupg.org>
