@@ -306,14 +306,12 @@ gpgme_protocol_t;
 
 
 /* The available keylist mode flags.  */
-typedef enum
-  {
-    GPGME_KEYLIST_MODE_LOCAL  = 1,
-    GPGME_KEYLIST_MODE_EXTERN = 2,
-    GPGME_KEYLIST_MODE_SIGS   = 4,
-    GPGME_KEYLIST_MODE_VALIDATE = 256
-  }
-gpgme_keylist_mode_t;
+#define GPGME_KEYLIST_MODE_LOCAL	1
+#define GPGME_KEYLIST_MODE_EXTERN	2
+#define GPGME_KEYLIST_MODE_SIGS		4
+#define GPGME_KEYLIST_MODE_VALIDATE	256
+
+typedef unsigned int gpgme_keylist_mode_t;
 
 
 /* The possible stati for the edit operation.  */
@@ -653,10 +651,7 @@ struct _gpgme_key
   gpgme_user_id_t _last_uid;
 
   /* The keylist mode that was active when listing the key.  */
-  /* Implementation note: We are using unsigned int here, and not
-     gpgme_keylist_mode_t, as the latter is currently an enum of
-     unknown size.  */
-  unsigned int keylist_mode;
+  gpgme_keylist_mode_t keylist_mode;
 };
 typedef struct _gpgme_key *gpgme_key_t;
 
@@ -1229,23 +1224,22 @@ gpgme_error_t gpgme_op_verify (gpgme_ctx_t ctx, gpgme_data_t sig,
 
 
 /* Import.  */
-enum
-  {
-    /* The key was new.  */
-    GPGME_IMPORT_NEW = 1,
 
-    /* The key contained new user IDs.  */
-    GPGME_IMPORT_UID = 2,
+/* The key was new.  */
+#define GPGME_IMPORT_NEW	1
 
-    /* The key contained new signatures.  */
-    GPGME_IMPORT_SIG = 4,
+/* The key contained new user IDs.  */
+#define GPGME_IMPORT_UID	2
 
-    /* The key contained new sub keys.  */
-    GPGME_IMPORT_SUBKEY	= 8,
+/* The key contained new signatures.  */
+#define GPGME_IMPORT_SIG	4
 
-    /* The key contained a secret key.  */
-    GPGME_IMPORT_SECRET = 16
-  };
+/* The key contained new sub keys.  */
+#define GPGME_IMPORT_SUBKEY	8
+
+/* The key contained a secret key.  */
+#define GPGME_IMPORT_SECRET	16
+
 
 struct _gpgme_import_status
 {
