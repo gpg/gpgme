@@ -2094,7 +2094,7 @@ struct CertificateInfo* nextCertificate( struct CertIterator* it )
       struct DnPair* a = parse_dn( names[idx] ); 
       if( idx == 0 ) {
 	it->info.userid[idx] = reorder_dn( a );
-	safe_free( &(names[idx]) );
+	safe_free( (void **)&(names[idx]) );
       } else {
 	it->info.userid[idx] = names[idx];
 	it->info.dnarray = a;
