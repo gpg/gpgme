@@ -344,6 +344,7 @@ gpgme_get_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 gpgme_error_t
 gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
 {
+#ifndef _WIN32
   int failed = 0;
   char *new_lc_ctype;
   char *new_lc_messages;
@@ -397,7 +398,8 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
   SET_ONE_LOCALE (messages, MESSAGES);
   if (!ctx)
     UNLOCK (def_lc_lock);
-
+#endif
+  
   return 0;
 }
 

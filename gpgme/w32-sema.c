@@ -36,6 +36,7 @@
 
 #include "util.h"
 #include "sema.h"
+#include "debug.h"
 
 static void
 sema_fatal (const char *text)

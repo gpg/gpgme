@@ -1,3 +1,12 @@
+2005-03-07  Timo Schulz  <twoaday@g10code.de>
+ 
+        * gpgme.h: [_WIN32] Removed ssize_t typedef.
+        * ath.h: [_WIN32] Added some (dummy) types.
+        * io.h: [_WIN32] include stdio.h.
+        * data.h: [_WIN32] Define EOPNOTSUPP.
+        * w32-io.c [_WIN32] (_gpgme_io_subsystem_init): New.
+        * gpgme.c [_WIN32] (gpgme_set_locale): Disabled.
+
 2004-12-12  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine.c (_gpgme_set_engine_info): Fix assertion.

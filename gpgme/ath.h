@@ -21,13 +21,21 @@
 #ifndef ATH_H
 #define ATH_H
 
-#ifdef HAVE_SYS_SELECT_H
-# include <sys/select.h>
+#ifdef _WIN32
+struct msghdr { int dummy; };
+typedef int socklen_t;
+# include <windows.h>
+# include <io.h>
 #else
-# include <sys/time.h>
+# ifdef HAVE_SYS_SELECT_H
+#  include <sys/select.h>
+# else
+#  include <sys/time.h>
+# endif
+# include <sys/types.h>
+# include <sys/socket.h>
 #endif
-#include <sys/types.h>
-#include <sys/socket.h>
+
 
 
 /* Define _ATH_EXT_SYM_PREFIX if you want to give all external symbols

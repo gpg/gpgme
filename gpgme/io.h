@@ -22,6 +22,10 @@
 #ifndef IO_H
 #define IO_H
 
+#ifdef _WIN32
+#include <stdio.h>
+#endif
+
 /* A single file descriptor passed to spawn.  For child fds, dup_to
    specifies the fd it should become in the child.  */
 struct spawn_fd_item_s
