@@ -149,8 +149,8 @@ Key Management
 * Manipulating Keys::             Operations on keys.
 * Generating Keys::               Creating new key pairs.
 * Exporting Keys::                Retrieving key data from the key ring.
-* Importing Keys::                Adding keys to the keyring.
-* Deleting Keys::                 Removing keys from the keyring.
+* Importing Keys::                Adding keys to the key ring.
+* Deleting Keys::                 Removing keys from the key ring.
 
 Trust Item Management
 
@@ -165,7 +165,7 @@ Crypto Operations
 * Decrypt and Verify::            Decrypting a signed ciphertext.
 * Sign::                          Creating a signature.
 * Encrypt::                       Encrypting a plaintext.
-* More Information::              How to obtain more info about the operation.
+* Detailed Results::              How to obtain more info about the operation.
 
 Sign
 
@@ -213,7 +213,7 @@ This library documents the @acronym{GPGME} library programming
 interface.  All functions and data types provided by the library are
 explained.
 
-The reader is assumed to posess basic knowledge about cryptography in
+The reader is assumed to possess basic knowledge about cryptography in
 general, and public key cryptography in particular.  The underlying
 cryptographic engines that are used by the library are not explained,
 but where necessary, special features or requirements by an engine are
@@ -277,6 +277,8 @@ including listing keys, querying their attributes, generating,
 importing, exporting and deleting keys, and acquiring information
 about the trust path.
 
+@cindex thread-safeness
+@cindex multi-threading
 @strong{Caution:} The @acronym{GPGME} library is not thread-safe.  It
 will be to some extent in the future, but currently great care has to
 be taken if @acronym{GPGME} is used in a multi-threaded environment.
@@ -300,6 +302,8 @@ of the library are verified.
 
 @node Header
 @section Header
+@cindex header file
+@cindex include file
 
 All interfaces (data types and functions) of the library are defined
 in the header file `gpgme.h'.  You must include this in all programs
@@ -317,6 +321,8 @@ symbols.
 
 @node Building the Source
 @section Building the Source
+@cindex compiler options
+@cindex compiler flags
 
 If you want to compile a source file including the `gpgme.h' header
 file, you must make sure that the compiler can find it in the
@@ -364,6 +370,7 @@ gcc -o foo foo.c `gpgme-config --cflags --libs`
 
 @node Library Version Check
 @section Library Version Check
+@cindex version check, of the library
 
 @deftypefun {const char *} gpgme_check_version (@w{const char *@var{required_version}})
 The function @code{gpgme_check_version} has three purposes.  It can be
@@ -396,6 +403,11 @@ features are provided by the installed version of the library.
 
 @node Protocols and Engines
 @chapter Protocols and Engines
+@cindex protocol
+@cindex engine
+@cindex crypto engine
+@cindex backend
+@cindex crypto backend
 
 @acronym{GPGME} supports several cryptographic protocols, however, it
 does not implement them.  Rather it uses backends (also called
@@ -409,6 +421,7 @@ necessary, @acronym{GPGME} provides the necessary callback function
 hooks and further interfaces.
 
 @deftp {Data type} {enum GpgmeProtocol}
+@tindex GpgmeProtocol
 The @code{GpgmeProtocol} type specifies the set of possible protocol
 values that are supported by @acronym{GPGME}.  The following protocols
 are supported:
@@ -431,6 +444,7 @@ This specifies the Cryptographic Message Syntax.
 
 @node Engine Version Check
 @section Engine Version Check
+@cindex version check, of the engines
 
 @deftypefun GpgmeError gpgme_engine_check_version (@w{GpgmeProtocol @var{protocol}})
 The function @code{gpgme_engine_check_version} verifies that the
@@ -455,6 +469,7 @@ only.  It is obsoleted by @code{gpgme_engine_check_version}.
 
 @node Engine Information
 @section Engine Information
+@cindex engine, information about
 
 @deftypefun {const char *} gpgme_get_engine_info (void)
 The function @code{gpgme_get_engine_info} returns an @acronym{XML}
@@ -496,6 +511,10 @@ return on your system:
 
 @node OpenPGP
 @section OpenPGP
+@cindex OpenPGP
+@cindex GnuPG
+@cindex protocol, GnuPG
+@cindex engine, GnuPG
 
 OpenPGP is implemented by GnuPG, the @acronym{GNU} Privacy Guard.
 This is the first protocol that was supported by @acronym{GPGME}.
@@ -505,6 +524,13 @@ The OpenPGP protocol is specified by @code{GPGME_PROTOCOL_OpenPGP}.
 
 @node Cryptographic Message Syntax
 @section Cryptographic Message Syntax
+@cindex CMS
+@cindex cryptographic message syntax
+@cindex GpgSM
+@cindex protocol, CMS
+@cindex engine, GpgSM
+@cindex S/MIME
+@cindex protocol, S/MIME
 
 @acronym{CMS} is implemented by GpgSM, the S/MIME implementation for
 GnuPG.
@@ -514,6 +540,7 @@ The @acronym{CMS} protocol is specified by @code{GPGME_PROTOCOL_CMS}.
 
 @node Error Handling
 @chapter Error Handling
+@cindex error handling
 
 Many functions in @acronym{GPGME} can return an error if they fail.
 For this reason, the application should always catch the error
@@ -538,8 +565,10 @@ described in the documentation of those functions.
 
 @node Error Values
 @section Error Values
+@cindex error values, list of
 
 @deftp {Data type} {enum GpgmeError}
+@tindex GpgmeError
 The @code{GpgmeError} type specifies the set of all error values that
 are used by @acronym{GPGME}.  Possible values are:
 
@@ -644,6 +673,8 @@ engine is not installed properly.
 
 @node Error Strings
 @section Error Strings
+@cindex error values, printing of
+@cindex error strings
 
 @deftypefun {const char *} gpgme_strerror (@w{GpgmeError @var{err}})
 The function @code{gpgme_strerror} returns a pointer to a statically
@@ -655,6 +686,7 @@ message to the user.
 
 @node Exchanging Data
 @chapter Exchanging Data
+@cindex data, exchanging
 
 A lot of data has to be exchanged between the user and the crypto
 engine, like plaintext messages, ciphertext, signatures and
@@ -678,6 +710,7 @@ data, which is used by @acronym{GPGME} to exchange data with the user.
 
 @node Creating Data Buffers
 @section Creating Data Buffers
+@cindex data buffer, creation
 
 @deftypefun GpgmeError gpgme_data_new (@w{GpgmeData *@var{dh}})
 The function @code{gpgme_data_new} creates a new @code{GpgmeData}
@@ -768,6 +801,7 @@ not enough memory is available.
 
 @node Destroying Data Buffers
 @section Destroying Data Buffers
+@cindex data buffer, destruction
 
 @deftypefun void gpgme_data_release (@w{GpgmeData @var{dh}})
 The function @code{gpgme_data_release} destroys the data object with
@@ -791,6 +825,7 @@ be returned to the user, the function will return @code{NULL}.
 
 @node Manipulating Data Buffers
 @section Manipulating Data Buffers
+@cindex data buffere, manipulation
 
 @deftypefun GpgmeError gpgme_data_read (@w{GpgmeData @var{dh}}, @w{char *@var{buffer}}, @w{size_t @var{length}}, @w{size_t *@var{nread}})
 The function @code{gpgme_data_read} reads up to @var{length} bytes
@@ -836,6 +871,7 @@ available.
 @end deftypefun
 
 @deftp {Data type} {enum GpgmeDataType}
+@tindex GpgmeDataType
 The @code{GpgmeDataType} type specifies the type of a @code{GpgmeData} object.
 The following data types are available:
 
@@ -867,6 +903,7 @@ object with the handle @var{dh}.  If @var{dh} is not a valid pointer,
 
 @node Contexts
 @chapter Contexts
+@cindex context
 
 All cryptograhic operations in @acronym{GPGME} are performed within a
 context, which contains the internal state of the operation as well as
@@ -893,6 +930,7 @@ cryptographic operations.
 
 @node Creating Contexts
 @section Creating Contexts
+@cindex context, creation
 
 @deftypefun GpgmeError gpgme_new (@w{GpgmeCtx *@var{ctx}})
 The function @code{gpgme_data_new} creates a new @code{GpgmeCtx}
@@ -905,9 +943,9 @@ available.
 @end deftypefun
 
 
-
 @node Destroying Contexts
 @section Destroying Contexts
+@cindex context, destruction
 
 @deftypefun void gpgme_release (@w{GpgmeCtx @var{ctx}})
 The function @code{gpgme_release} destroys the context with the handle
@@ -917,6 +955,7 @@ The function @code{gpgme_release} destroys the context with the handle
 
 @node Context Attributes
 @section Context Attributes
+@cindex context, attributes
 
 @menu
 * Protocol Selection::            Selecting the protocol used by a context.
@@ -930,6 +969,8 @@ The function @code{gpgme_release} destroys the context with the handle
 
 @node Protocol Selection
 @subsection Protocol Selection
+@cindex context, selecting protocol
+@cindex protocol, selecting
 
 @deftypefun GpgmeError gpgme_set_protocol (@w{GpgmeCtx @var{ctx}}, @w{GpgmeProtocol @var{proto}})
 The function @code{gpgme_set_protocol} sets the protocol used within
@@ -949,6 +990,9 @@ not a valid protocol.
 
 @node @acronym{ASCII} Armor
 @subsection @acronym{ASCII} Armor
+@cindex context, armor mode
+@cindex @acronym{ASCII} armor
+@cindex armor mode
 
 @deftypefun void gpgme_set_armor (@w{GpgmeCtx @var{ctx}}, @w{int @var{yes}})
 The function @code{gpgme_set_armor} specifies if the output should be
@@ -968,6 +1012,9 @@ not a valid pointer.
 
 @node Text Mode
 @subsection Text Mode
+@cindex context, text mode
+@cindex text mode
+@cindex canonical text mode
 
 @deftypefun void gpgme_set_textmode (@w{GpgmeCtx @var{ctx}}, @w{int @var{yes}})
 The function @code{gpgme_set_textmode} specifies if canonical text mode
@@ -990,6 +1037,8 @@ valid pointer.
 
 @node Key Listing Mode
 @subsection Key Listing Mode
+@cindex key listing mode
+@cindex key listing, mode of
 
 @deftypefun void gpgme_set_keylist_mode (@w{GpgmeCtx @var{ctx}}, @w{int @var{mode}})
 The function @code{gpgme_set_keylist_mode} changes the default
@@ -1007,8 +1056,11 @@ Fast listing without information about the key validity.
 
 @node Passphrase Callback
 @subsection Passphrase Callback
+@cindex callback, passphrase
+@cindex passphrase callback
 
 @deftp {Data type} {const char *(*GpgmePassphraseCb)(void *@var{hook}, const char *@var{desc}, void **@var{r_hd})}
+@tindex GpgmePassphraseCb
 The @code{GpgmePasshraseCb} type is the type of functions usable as
 passphrase callback function.
 
@@ -1044,8 +1096,11 @@ calling @code{gpgme_set_passphrase_cb} with @var{passfunc} being
 
 @node Progress Meter Callback
 @subsection Progress Meter Callback
+@cindex callback, progress meter
+@cindex progress meter callback
 
 @deftp {Data type} {const char *(*GpgmeProgressCb)(void *@var{hook}, const char *@var{what}, int @var{type}, int @var{current}, int @var{total})}
+@tindex GpgmeProgressCb
 The @code{GpgmeProgressCb} type is the type of functions usable as
 progress callback function.
 
@@ -1074,6 +1129,7 @@ calling @code{gpgme_set_progress_cb} with @var{progfunc} being
 
 @node Key Management
 @section Key Management
+@cindex key management
 
 Some of the cryptographic operations require that recipients or
 signers are specified.  This is always done by specifying the
@@ -1093,13 +1149,18 @@ A key can contain several user IDs and sub keys.
 * Manipulating Keys::             Operations on keys.
 * Generating Keys::               Creating new key pairs.
 * Exporting Keys::                Retrieving key data from the key ring.
-* Importing Keys::                Adding keys to the keyring.
-* Deleting Keys::                 Removing keys from the keyring.
+* Importing Keys::                Adding keys to the key ring.
+* Deleting Keys::                 Removing keys from the key ring.
 @end menu
 
 
 @node Listing Keys
 @subsection Listing Keys
+@cindex listing keys
+@cindex key listing
+@cindex key listing, start
+@cindex key ring, list
+@cindex key ring, search
 
 @deftypefun GpgmeError gpgme_op_keylist_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{pattern}}, @w{int @var{secret_only}})
 The function @code{gpgme_op_keylist_start} initiates a key listing
@@ -1154,6 +1215,9 @@ operation there was not enough memory available.
 
 @node Information About Keys
 @subsection Information About Keys
+@cindex key, information about
+@cindex key, attributes
+@cindex attributes, of a key
 
 @deftypefun {char *} gpgme_key_get_as_xml (@w{GpgmeKey @var{key}})
 The function @code{gpgme_key_get_as_xml} returns a string in
@@ -1344,6 +1408,7 @@ or @var{reserved} not @code{NULL}.
 
 @node Manipulating Keys
 @subsection Manipulating Keys
+@cindex key, manipulation
 
 @deftypefun void gpgme_key_ref (@w{GpgmeKey @var{key}})
 The function @code{gpgme_key_ref} acquires an additional reference for
@@ -1363,10 +1428,12 @@ The function @code{gpgme_key_release} is an alias for
 
 @node Generating Keys
 @subsection Generating Keys
+@cindex key, creation
+@cindex key ring, add
 
 @deftypefun GpgmeError gpgme_op_genkey (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{pubkey}}, @w{GpgmeData @var{seckey}})
 The function @code{gpgme_op_genkey} generates a new key pair in the
-context @var{ctx} and puts it into the standard keyring if both
+context @var{ctx} and puts it into the standard key ring if both
 @var{pubkey} and @var{seckey} are @code{NULL}.  In this case the
 function returns immediately after starting the operation, and does
 not wait for it to complete.  @var{pubkey} and @var{seckey} are
@@ -1377,7 +1444,7 @@ implemented yet).
 
 The argument @var{parms} specifies parameters for the key in an XML
 string.  The details about the format of @var{parms} are specific to
-teh crypto engine used by @var{ctx}.  Here is an example for GnuPG as
+the crypto engine used by @var{ctx}.  Here is an example for GnuPG as
 the crypto engine:
 
 @example
@@ -1404,14 +1471,27 @@ container is passed verbatim to GnuPG.  Control statements are not
 allowed.
 
 The function returns @code{GPGME_No_Error} if the operation could be
-started, @code{GPGME_Invalid_Value} if @var{parms} is not a valid XML
-string, and @code{GPGME_Not_Supported} if @var{pubkey} or @var{seckey}
-is not @code{NULL}.
+started successfully, @code{GPGME_Invalid_Value} if @var{parms} is not
+a valid XML string, and @code{GPGME_Not_Supported} if @var{pubkey} or
+@var{seckey} is not @code{NULL}.
+@end deftypefun
+
+@deftypefun GpgmeError gpgme_op_genkey_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{pubkey}}, @w{GpgmeData @var{seckey}})
+The function @code{gpgme_op_genkey_start} initiates a
+@code{gpgme_op_genkey} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns @code{GPGME_No_Error} if the operation could be
+started successfully, @code{GPGME_Invalid_Value} if @var{parms} is not
+a valid XML string, and @code{GPGME_Not_Supported} if @var{pubkey} or
+@var{seckey} is not @code{NULL}.
 @end deftypefun
 
 
 @node Exporting Keys
 @subsection Exporting Keys
+@cindex key, export
+@cindex key ring, export from
 
 @deftypefun GpgmeError gpgme_op_export (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{recipients}}, @w{GpgmeData @var{keydata}})
 The function @code{gpgme_op_export} extracts the public keys of the
@@ -1426,9 +1506,22 @@ passes through any errors that are reported by the crypto engine
 support routines.
 @end deftypefun
 
+@deftypefun GpgmeError gpgme_op_export_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{recipients}}, @w{GpgmeData @var{keydata}})
+The function @code{gpgme_op_export_start} initiates a
+@code{gpgme_op_export} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns @code{GPGME_No_Error} if the operation could be
+started successfully, and @code{GPGME_Invalid_Value} if
+@var{recipients} is @code{NULL} or @var{keydata} is not a valid empty
+data buffer.
+@end deftypefun
+
 
 @node Importing Keys
 @subsection Importing Keys
+@cindex key, import
+@cindex key ring, import to
 
 @deftypefun GpgmeError gpgme_op_import (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{keydata}})
 The function @code{gpgme_op_import} adds the keys in the data buffer
@@ -1442,9 +1535,22 @@ or @var{keydata} is not a valid pointer, and @code{GPGME_No_Data} if
 @var{keydata} is an empty data buffer.
 @end deftypefun
 
+@deftypefun GpgmeError gpgme_op_import_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{keydata}})
+The function @code{gpgme_op_import_start} initiates a
+@code{gpgme_op_import} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns @code{GPGME_No_Error} if the import could be
+started successfully, @code{GPGME_Invalid_Value} if @var{keydata} if
+@var{ctx} or @var{keydata} is not a valid pointer, and
+@code{GPGME_No_Data} if @var{keydata} is an empty data buffer.
+@end deftypefun
+
 
 @node Deleting Keys
 @subsection Deleting Keys
+@cindex key, delete
+@cindex key ring, delete from
 
 @deftypefun GpgmeError gpgme_op_delete (@w{GpgmeCtx @var{ctx}}, @w{const GpgmeKey @var{key}}, @w{int @var{allow_secret}})
 The function @code{gpgme_op_delete} deletes the key @var{key} from the
@@ -1457,9 +1563,20 @@ successfully, and @code{GPGME_Invalid_Value} if @var{ctx} or @var{key}
 is not a valid pointer.
 @end deftypefun
 
+@deftypefun GpgmeError gpgme_op_delete_start (@w{GpgmeCtx @var{ctx}}, @w{const GpgmeKey @var{key}}, @w{int @var{allow_secret}})
+The function @code{gpgme_op_delete_start} initiates a
+@code{gpgme_op_delete} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns @code{GPGME_No_Error} if the operation was
+started successfully, and @code{GPGME_Invalid_Value} if @var{ctx} or
+@var{key} is not a valid pointer.
+@end deftypefun
+
 
 @node Trust Item Management
 @section Trust Item Management
+@cindex trust item
 
 @strong{Caution:} The trust items interface is experimental.
 
@@ -1476,6 +1593,7 @@ The @code{GpgmeTrustItem} type is a handle for a trust item.
 
 @node Listing Trust Items
 @subsection Listing Trust Items
+@cindex trust item list
 
 @deftypefun GpgmeError gpgme_op_trustlist_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{pattern}}, @w{int @var{max_level}})
 The function @code{gpgme_op_trustlist_start} initiates a trust item
@@ -1529,6 +1647,9 @@ operation there was not enough memory available.
 
 @node Information About Trust Items
 @subsection Information About Trust Items
+@cindex trust item, information about
+@cindex trust item, attributes
+@cindex attributes, of a trust item
 
 Trust items have attributes which can be queried using the interfaces
 below.  The attribute identifiers are shared with those for key
@@ -1565,6 +1686,7 @@ or @var{reserved} not @code{NULL}.
 
 @node Manipulating Trust Items
 @subsection Manipulating Trust Items
+@cindex trust item, manipulation
 
 @deftypefun void gpgme_trust_item_release (@w{GpgmeTrustItem @var{item}})
 The function @code{gpgme_trust_item_release} destroys a
@@ -1573,6 +1695,7 @@ The function @code{gpgme_trust_item_release} destroys a
 
 @node Crypto Operations
 @section Crypto Operations
+@cindex cryptographic operation
 
 @menu
 * Decrypt::                       Decrypting a ciphertext.
@@ -1580,12 +1703,14 @@ The function @code{gpgme_trust_item_release} destroys a
 * Decrypt and Verify::            Decrypting a signed ciphertext.
 * Sign::                          Creating a signature.
 * Encrypt::                       Encrypting a plaintext.
-* More Information::              How to obtain more info about the operation.
+* Detailed Results::              How to obtain more info about the operation.
 @end menu
 
 
 @node Decrypt
 @subsection Decrypt
+@cindex decryption
+@cindex cryptographic operation, decryption
 
 @deftypefun GpgmeError gpgme_op_decrypt (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{cipher}}, @w{GpgmeData @var{plain}})
 The function @code{gpgme_op_decrypt} decrypts the ciphertext in the
@@ -1602,22 +1727,27 @@ secret key could not be retrieved, and passes through any errors that
 are reported by the crypto engine support routines.
 @end deftypefun
 
-@c @deftypefun GpgmeError gpgme_op_decrypt_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{cipher}}, @w{GpgmeData @var{plain}})
-@c The function @code{gpgme_op_decrypt_start} initiates a
-@c @code{gpgme_op_decrypt} operation.  It can be completed by calling
-@c @code{gpgme_wait} on the context.
+@deftypefun GpgmeError gpgme_op_decrypt_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{cipher}}, @w{GpgmeData @var{plain}})
+The function @code{gpgme_op_decrypt_start} initiates a
+@code{gpgme_op_decrypt} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
-@c The function returns @code{GPGME_No_Error} if the operation could be
-@c started, @code{GPGME_Invalid_Value} if @var{cipher} or @var{plain} is
-@c not a valid pointer, and passes through any errors that are reported
-@c by the crypto engine support routines.
-@c @end deftypefun
+The function returns @code{GPGME_No_Error} if the operation could be
+started successfully, and @code{GPGME_Invalid_Value} if @var{cipher}
+or @var{plain} is not a valid pointer.
+@end deftypefun
 
 
 @node Verify
 @subsection Verify
+@cindex verification
+@cindex signature, verification
+@cindex cryptographic operation, verification
+@cindex cryptographic operation, signature check
+@cindex signature, status
 
 @deftp {Data type} {enum GpgmeSigStat}
+@tindex GpgmeSigStat
 The @code{GpgmeSigStat} type holds the result of a signature check, or
 the combined result of all signatures.  The following results are
 possible:
@@ -1671,7 +1801,17 @@ data to verify, and passes through any errors that are reported by the
 crypto engine support routines.
 @end deftypefun
 
-@c GpgmeError gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData plain);
+@deftypefun GpgmeError gpgme_op_verify_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{sig}}, @w{GpgmeData @var{plain}})
+The function @code{gpgme_op_verify_start} initiates a
+@code{gpgme_op_verify} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns @code{GPGME_No_Error} if the operation could be
+started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
+@var{sig}, @var{plain} or @var{r_stat} is not a valid pointer, and
+@code{GPGME_No_Data} if @var{sig} or @var{plain} does not contain any
+data to verify.
+@end deftypefun
 
 @deftypefun {const char *} gpgme_get_sig_status (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeSigStat *@var{r_stat}}, @w{time_t *@var{r_created}})
 The function @code{gpgme_get_sig_status} receives information about a
@@ -1727,6 +1867,10 @@ The function returns a string if the notation data is available or
 
 @node Decrypt and Verify
 @subsection Decrypt and Verify
+@cindex decryption and verification
+@cindex verification and decryption
+@cindex signature check
+@cindex cryptographic operation, decryption and verification
 
 @deftypefun GpgmeError gpgme_op_decrypt_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{cipher}}, @w{GpgmeData @var{plain}}, @w{GpgmeSigStat *@var{r_stat}})
 The function @code{gpgme_op_decrypt_verify} decrypts the ciphertext in
@@ -1748,11 +1892,25 @@ secret key could not be retrieved, and passes through any errors that
 are reported by the crypto engine support routines.
 @end deftypefun
 
-@c GpgmeError gpgme_op_decrypt_verify (GpgmeCtx c, GpgmeData in, GpgmeData out, GpgmeSigStat *r_status);
+@deftypefun GpgmeError gpgme_op_decrypt_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{cipher}}, @w{GpgmeData @var{plain}})
+The function @code{gpgme_op_decrypt_verify_start} initiates a
+@code{gpgme_op_decrypt_verify} operation.  It can be completed by
+calling @code{gpgme_wait} on the context.  @xref{Waiting For
+Completion}.
+
+The function returns @code{GPGME_No_Error} if the operation could be
+started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
+@var{cipher}, @var{plain} or @var{r_stat} is not a valid pointer, and
+@code{GPGME_No_Data} if @var{cipher} does not contain any data to
+decrypt.
+@end deftypefun
 
 
 @node Sign
 @subsection Sign
+@cindex signature, creation
+@cindex sign
+@cindex cryptographic operation, signing
 
 A signature can contain signatures by one or more keys.  The set of
 keys used to create a signatures is contained in a context, and is
@@ -1767,6 +1925,8 @@ set is changed).
 
 @node Selecting Signers
 @subsubsection Selecting Signers
+@cindex signature, selecting signers
+@cindex signers, selecting
 
 @deftypefun void gpgme_signers_clear (@w{GpgmeCtx @var{ctx}})
 The function @code{gpgme_signers_clear} releases a reference for each
@@ -1775,7 +1935,6 @@ context @var{ctx}.
 
 Every context starts with an empty list.
 @end deftypefun
-
 
 @deftypefun GpgmeError gpgme_signers_add (@w{GpgmeCtx @var{ctx}}, @w{const GpgmeKey @var{key}})
 The function @code{gpgme_signers_add} adds the key @var{key} to the
@@ -1797,6 +1956,7 @@ If @var{seq} is out of range, @code{NULL} is returned.
 @subsubsection Creating a Signature
 
 @deftp {Data type} {enum GpgmeSigMode}
+@tindex GpgmeSigMode
 The @code{GpgmeSigMode} type is used to specify the desired type of a
 signature.  The following modes are available:
 
@@ -1822,7 +1982,7 @@ the data object @var{plain} and returns it in the data object
 @var{ctx} and the requested signature mode @var{mode}.
 
 More information about the signatures is available with
-@code{gpgme_get_op_info}.  @xref{More Information}.
+@code{gpgme_get_op_info}.  @xref{Detailed Results}.
 
 The function returns @code{GPGME_No_Error} if the signature could be
 created successfully, @code{GPGME_Invalid_Value} if @var{ctx},
@@ -1833,9 +1993,21 @@ through any errors that are reported by the crypto engine support
 routines.
 @end deftypefun
 
+@deftypefun GpgmeError gpgme_op_sign (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{sig}}, @w{GpgmeSigMode @var{mode}})
+The function @code{gpgme_op_sign_start} initiates a
+@code{gpgme_op_sign} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns @code{GPGME_No_Error} if the operation could be
+started successfully, and @code{GPGME_Invalid_Value} if @var{ctx},
+@var{plain} or @var{sig} is not a valid pointer.
+@end deftypefun
+
 
 @node Encrypt
 @subsection Encrypt
+@cindex encryption
+@cindex cryptographic operation, encryption
 
 One plaintext can be encrypted for several recipients at the same
 time.  The list of recipients is created independently of any context,
@@ -1849,6 +2021,8 @@ and then passed to the encryption operation.
 
 @node Selecting Recipients
 @subsubsection Selecting Recipients
+@cindex encryption, selecting recipients
+@cindex recipients
 
 @deftp {Data type} GpgmeRecipients
 The @code{GpgmeRecipients} type is a handle for a set of recipients
@@ -1937,7 +2111,7 @@ ciphertext created is determined by the @acronym{ASCII} armor and text
 mode attributes set for the context @var{ctx}.
 
 More information about the encrypted text is available with
-@code{gpgme_get_op_info}.  @xref{More Information}.
+@code{gpgme_get_op_info}.  @xref{Detailed Results}.
 
 The function returns @code{GPGME_No_Error} if the ciphertext could be
 created successfully, @code{GPGME_Invalid_Value} if @var{ctx},
@@ -1948,11 +2122,24 @@ secret key could not be retrieved, and passes through any errors that
 are reported by the crypto engine support routines.
 @end deftypefun
 
+@deftypefun GpgmeError gpgme_op_encrypt_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{rset}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{cipher}})
+The function @code{gpgme_op_encrypt_start} initiates a
+@code{gpgme_op_encrypt} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
-@node More Information
-@subsection More Information
+The function returns @code{GPGME_No_Error} if the operation could be
+started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
+@var{rset}, @var{plain} or @var{cipher} is not a valid pointer, and
+@code{GPGME_No_Recipient} if @var{rset} does not contain any valid
+recipients.
+@end deftypefun
 
-@deftypefun char *gpgme_get_op_info (@w{GpgmeCtx @var{ctx}}, @w{int @var{reserved}})
+
+@node Detailed Results
+@subsection Detailed Results
+@cindex cryptographic operation, detailed results
+
+@deftypefun {char *} gpgme_get_op_info (@w{GpgmeCtx @var{ctx}}, @w{int @var{reserved}})
 The function @code{gpgme_get_op_info} retrieves more informaton about
 the last crypto operation.
 
@@ -1988,6 +2175,8 @@ available.
 
 @node Run Control
 @section Run Control
+@cindex run control
+@cindex cryptographic operation, running
 
 Some basic support for running operations asynchronously is available
 in @acronym{GPGME}.  You can use it to set up a context completely up
@@ -2003,6 +2192,8 @@ later point.
 
 @node Waiting For Completion
 @subsection Waiting For Completion
+@cindex cryptographic operation, wait for
+@cindex wait for completion
 
 @deftypefun GpgmeCtx gpgme_wait (@w{GpgmeCtx @var{ctx}}, @w{int @var{hang}})
 The function @code{gpgme_wait} does continue the pending operation
@@ -2020,6 +2211,8 @@ The function returns @var{ctx}.
 
 @node Cancelling an Operation
 @subsection Cancelling an Operation
+@cindex cancellation
+@cindex cryptographic operation, cancel
 
 @deftypefun void gpgme_cancel (@w{GpgmeCtx @var{ctx}})
 The function @code{gpgme_cancel} tries to cancel the pending
@@ -2032,8 +2225,11 @@ asking for a passphrase again in the passphrase callback.
 
 @node Hooking Up Into Idle Time
 @subsection Hooking Up Into Idle Time
+@cindex idle time
+@cindex idle function
 
-@deftp {Data type} {void (*GpgmeIdleFnc) (void)}
+@deftp {Data type} {void (*GpgmeIdleFunc) (void)}
+@tindex GpgmeIdleFunc
 The @code{GpgmeIdleFunc} type is the type of functions usable as
 an idle function that can be registered with @code{gpgme_register_idle}.
 @end deftp
