@@ -83,7 +83,7 @@ struct gpg_object_s
     char *buffer;
     size_t readpos;
     int eof;
-    GpgmeStatusHandler fnc;
+    EngineStatusHandler fnc;
     void *fnc_value;
     void *tag;
   } status;
@@ -96,7 +96,7 @@ struct gpg_object_s
     char *buffer;
     size_t readpos;
     int eof;
-    GpgmeColonLineHandler fnc;  /* this indicate use of this structrue */
+    EngineColonLineHandler fnc;  /* this indicate use of this structrue */
     void *fnc_value;
     void *tag;
   } colon;
@@ -113,7 +113,7 @@ struct gpg_object_s
     GpgmeData cb_data;   /* hack to get init the above idx later */
     GpgmeStatusCode code;  /* last code */
     char *keyword;       /* what has been requested (malloced) */
-    GpgmeCommandHandler fnc; 
+    EngineCommandHandler fnc; 
     void *fnc_value;
     /* The kludges never end.  This is used to couple command handlers
        with output data in edit key mode.  */
@@ -408,7 +408,7 @@ gpg_set_verbosity (void *engine, int verbosity)
 /* Note, that the status_handler is allowed to modifiy the args
    value.  */
 static void
-gpg_set_status_handler (void *engine, GpgmeStatusHandler fnc, void *fnc_value)
+gpg_set_status_handler (void *engine, EngineStatusHandler fnc, void *fnc_value)
 {
   GpgObject gpg = engine;
 
@@ -418,7 +418,7 @@ gpg_set_status_handler (void *engine, GpgmeStatusHandler fnc, void *fnc_value)
 
 /* Kludge to process --with-colon output.  */
 static GpgmeError
-gpg_set_colon_line_handler (void *engine, GpgmeColonLineHandler fnc,
+gpg_set_colon_line_handler (void *engine, EngineColonLineHandler fnc,
 			    void *fnc_value)
 {
   GpgObject gpg = engine;
@@ -514,7 +514,7 @@ command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
    match such a second call to a first call, the returned value from
    the first call is passed as keyword.  */
 static GpgmeError
-gpg_set_command_handler (void *engine, GpgmeCommandHandler fnc,
+gpg_set_command_handler (void *engine, EngineCommandHandler fnc,
 			 void *fnc_value, GpgmeData linked_data)
 {
   GpgObject gpg = engine;

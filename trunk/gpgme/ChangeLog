@@ -1,5 +1,46 @@
 2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* types.h: File removed.
+	* Makefile.am (libgpgme_la_SOURCES): Remove types.h.
+	* io.h (struct spawn_fd_item_s): Do not include "types.h".
+	* key.h: Likewise.
+	* context.h: Likewise.
+	* cengine-gpgsm.h: Likewise.
+	* engine.h: Include "gpgme.h" instead "types.h".  Add prototypes
+	for EngineStatusHandler, EngineColonLineHandler and
+	EngineCommandHandler.
+	(_gpgme_engine_set_status_handler): Change parameter type from
+	GpgmeStatusHandler to EngineStatusHandler.
+	(_gpgme_engine_set_command_handler): Change parameter type from
+	GpgmeCommandHandler to EngineCommandHandler.
+	(_gpgme_engine_set_colon_line_handler): Change parameter type from
+	GpgmeColonLineHandler to EngineColonLineHandler.
+	* engine-backend.h: Include "engine.h" instead "types.h".
+	(struct engine_ops): Change Gpgme*Handler parameters in members
+	set_command_handler, set_colon_line_handler and set_status_handler
+	to Engine*Handler.
+	* engine.c (_gpgme_engine_set_status_handler): Change parameter
+	type from GpgmeStatusHandler to EngineStatusHandler.
+	(_gpgme_engine_set_command_handler): Change parameter type from
+	GpgmeCommandHandler to EngineCommandHandler.
+	(_gpgme_engine_set_colon_line_handler): Change parameter type from
+	GpgmeColonLineHandler to EngineColonLineHandler.
+	* rungpg.c (struct gpg_object_s): Change type of member status.fnc
+	from GpgmeStatusHandler to EngineStatusHandler.  Change type of
+	member colon.fnc from GpgmeColonLineHandler to
+	EngineColonLineHandler.  Change type of member cmd.fnc from
+	GpgmeCommandHandler to EngineCommandHandler.
+	* engine-gpgsm.c (struct gpgsm_object_s): Likewise.
+	* rungpg.c (gpg_set_status_handler): Change parameter type from
+	GpgmeStatusHandler to EngineStatusHandler.
+	* engine-gpgsm.c (gpgsm_set_status_handler): Likewise.
+	(assuan_simple_command): Likewise.
+	* rungpg.c (gpg_set_colon_line_handler): Change parameter type
+	from GpgmeColonLineHandler to EngineColonLineHandler.
+	* engine-gpgsm.c (gpgsm_set_colon_line_handler): Likewise.
+	* rungpg.c (gpg_set_command_handler): Change parameter type from
+	GpgmeCommandHandler to EngineCommandHandler.
+
 	* engine-gpgsm.c (status_handler): Do not close status fd at end
 	of function.
 
