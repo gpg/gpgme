@@ -199,7 +199,8 @@ _gpgme_wait_on_condition (GpgmeCtx ctx, int hang, volatile int *cond)
   while (hang && !ctx->cancel);
   if (ctx->cancel)
     {
-      ctx->cancel = 0;  /* fixme: Fix all functions to return a cancel error.  */
+      ctx->cancel = 0;
+      ctx->error = mk_error (Canceled);
       ctx->pending = 0;
     }
   return ctx;

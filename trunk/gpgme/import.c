@@ -135,17 +135,9 @@ append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
 static void
 import_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
-  if (ctx->out_of_core)
+  if (ctx->error)
     return;
-  if (!ctx->result.import)
-    {
-      ctx->result.import = xtrycalloc (1, sizeof *ctx->result.import);
-      if (!ctx->result.import)
-        {
-          ctx->out_of_core = 1;
-          return;
-        }
-    }
+  test_and_allocate_result (ctx, import);
 
   switch (code)
     {
@@ -156,6 +148,7 @@ import_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
           _gpgme_set_op_info (ctx, ctx->result.import->xmlinfo);
           ctx->result.import->xmlinfo = NULL;
         }
+      /* XXX Calculate error value.  */
       break;
 
     case STATUS_IMPORTED:
@@ -225,6 +218,9 @@ gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
 {
   GpgmeError err = gpgme_op_import_start (ctx, keydata);
   if (!err)
-    gpgme_wait (ctx, 1);
+    {
+      gpgme_wait (ctx, 1);
+      err = ctx->error;
+    }
   return err;
 }

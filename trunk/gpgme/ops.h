@@ -25,6 +25,23 @@
 #include "types.h"
 #include "rungpg.h"
 
+/* Support macros.  */
+
+#define test_and_allocate_result(ctx,field) \
+  do \
+    { \
+      if (!ctx->result.field) \
+        { \
+          ctx->result.field = xtrycalloc (1, sizeof *ctx->result.field); \
+          if (!ctx->result.field) \
+            { \
+              ctx->error = mk_error (Out_Of_Core); \
+              return; \
+            } \
+        } \
+    } \
+  while (0)
+
 /*-- gpgme.c --*/
 void _gpgme_release_result ( GpgmeCtx c );
 void _gpgme_set_op_info (GpgmeCtx c, GpgmeData info);
@@ -93,7 +110,6 @@ void _gpgme_release_passphrase_result (PassphraseResult result);
 void _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgStatusCode code,
 				       char *args);
 GpgmeError _gpgme_passphrase_start (GpgmeCtx ctx);
-GpgmeError _gpgme_passphrase_result (GpgmeCtx ctx);
 
 /*-- progress.c --*/
 void _gpgme_progress_status_handler (GpgmeCtx ctx, GpgStatusCode code,

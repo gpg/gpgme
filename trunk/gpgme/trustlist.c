@@ -54,7 +54,7 @@ trust_item_new (void)
 static void
 trustlist_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
-  if (ctx->out_of_core)
+  if (ctx->error)
     return;
 
   switch (code)
@@ -89,7 +89,7 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
   GpgmeTrustItem item = NULL;
   struct trust_queue_item_s *q, *q2;
 
-  if (ctx->out_of_core)
+  if (ctx->error)
     return;
   if (!line)
     return; /* EOF */
@@ -107,7 +107,7 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
 	  q = xtrymalloc (sizeof *q);
 	  if (!q)
 	    {
-	      ctx->out_of_core = 1;
+	      ctx->error = mk_error (Out_Of_Core);
 	      return;
             }
 	  q->next = NULL;
@@ -115,7 +115,7 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
 	  if (!q->item)
 	    {
 	      xfree (q);
-	      ctx->out_of_core = 1;
+	      ctx->error = mk_error (Out_Of_Core);
 	      return;
             }
 	  /* fixme: lock queue, keep a tail pointer */
@@ -149,7 +149,7 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
 	case 9: /* user ID */
 	  item->name = xtrystrdup (p);
 	  if (!item->name)
-	    ctx->out_of_core = 1;
+	    ctx->error = mk_error (Out_Of_Core);
 	  break;
         }
     }
@@ -170,14 +170,13 @@ gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
 
   ctx->pending = 1;
 
-  _gpgme_release_result (ctx);
-  ctx->out_of_core = 0;
-
   if (ctx->engine)
     {
       _gpgme_engine_release (ctx->engine); 
       ctx->engine = NULL;
     }
+
+  _gpgme_release_result (ctx);
 
   err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
 			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
@@ -207,32 +206,32 @@ gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
 
 
 GpgmeError
-gpgme_op_trustlist_next (GpgmeCtx c, GpgmeTrustItem *r_item)
+gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
 {
   struct trust_queue_item_s *q;
 
   if (!r_item)
     return mk_error (Invalid_Value);
   *r_item = NULL;
-  if (!c)
+  if (!ctx)
     return mk_error (Invalid_Value);
-  if (!c->pending)
+  if (!ctx->pending)
     return mk_error (No_Request);
-  if (c->out_of_core)
-    return mk_error (Out_Of_Core);
+  if (ctx->error)
+    return ctx->error;
 
-  if (!c->trust_queue)
+  if (!ctx->trust_queue)
     {
-      _gpgme_wait_on_condition (c, 1, &c->key_cond);
-      if (c->out_of_core)
-	return mk_error (Out_Of_Core);
-      if (!c->key_cond)
+      _gpgme_wait_on_condition (ctx, 1, &ctx->key_cond);
+      if (ctx->error)
+	return ctx->error;
+      if (!ctx->key_cond)
 	return mk_error (EOF);
-      c->key_cond = 0; 
-      assert (c->trust_queue);
+      ctx->key_cond = 0; 
+      assert (ctx->trust_queue);
     }
-  q = c->trust_queue;
-  c->trust_queue = q->next;
+  q = ctx->trust_queue;
+  ctx->trust_queue = q->next;
 
   *r_item = q->item;
   xfree (q);
@@ -254,8 +253,8 @@ gpgme_op_trustlist_end (GpgmeCtx ctx)
     return mk_error (Invalid_Value);
   if (!ctx->pending)
     return mk_error (No_Request);
-  if (ctx->out_of_core)
-    return mk_error (Out_Of_Core);
+  if (ctx->error)
+    return ctx->error;
 
   ctx->pending = 0;
   return 0;
@@ -332,4 +331,3 @@ gpgme_trust_item_get_int_attr (GpgmeTrustItem item, GpgmeAttr what,
     }
   return val;
 }
-

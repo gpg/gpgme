@@ -30,6 +30,7 @@
 #include "ops.h"
 #include "key.h"
 
+
 struct verify_result_s
 {
   struct verify_result_s *next;
@@ -55,47 +56,53 @@ _gpgme_release_verify_result (VerifyResult result)
     }
 }
 
+
 /* FIXME: Check that we are adding this to the correct signature.  */
 static void
-add_notation ( GpgmeCtx ctx, GpgStatusCode code, const char *data )
+add_notation (GpgmeCtx ctx, GpgStatusCode code, const char *data)
 {
-    GpgmeData dh = ctx->result.verify->notation;
+  GpgmeData dh = ctx->result.verify->notation;
 
-    if ( !dh ) {
-        if ( gpgme_data_new ( &dh ) ) {
-            ctx->out_of_core = 1;
-            return;
+  if (!dh)
+    {
+      if (gpgme_data_new (&dh))
+	{
+	  ctx->error = mk_error (Out_Of_Core);
+	  return;
         }
-        ctx->result.verify->notation = dh;
-        _gpgme_data_append_string (dh, "  <notation>\n");
+      ctx->result.verify->notation = dh;
+      _gpgme_data_append_string (dh, "  <notation>\n");
     }
 
-    if ( code == STATUS_NOTATION_DATA ) {
-        if ( !ctx->result.verify->notation_in_data )
-            _gpgme_data_append_string (dh, "  <data>");
-        _gpgme_data_append_percentstring_for_xml (dh, data);
-        ctx->result.verify->notation_in_data = 1;
-        return;
+  if (code == STATUS_NOTATION_DATA)
+    {
+      if (!ctx->result.verify->notation_in_data)
+	_gpgme_data_append_string (dh, "  <data>");
+      _gpgme_data_append_percentstring_for_xml (dh, data);
+      ctx->result.verify->notation_in_data = 1;
+      return;
     }
 
-    if ( ctx->result.verify->notation_in_data ) {
-        _gpgme_data_append_string (dh, "</data>\n");
-        ctx->result.verify->notation_in_data = 0;
+  if (ctx->result.verify->notation_in_data)
+    {
+      _gpgme_data_append_string (dh, "</data>\n");
+      ctx->result.verify->notation_in_data = 0;
     }
 
-    if ( code == STATUS_NOTATION_NAME ) {
-        _gpgme_data_append_string (dh, "  <name>");
-        _gpgme_data_append_percentstring_for_xml (dh, data);
-        _gpgme_data_append_string (dh, "</name>\n");
+  if (code == STATUS_NOTATION_NAME)
+    {
+      _gpgme_data_append_string (dh, "  <name>");
+      _gpgme_data_append_percentstring_for_xml (dh, data);
+      _gpgme_data_append_string (dh, "</name>\n");
     }
-    else if ( code == STATUS_POLICY_URL ) {
-        _gpgme_data_append_string (dh, "  <policy>");
-        _gpgme_data_append_percentstring_for_xml (dh, data);
-        _gpgme_data_append_string (dh, "</policy>\n");
+  else if (code == STATUS_POLICY_URL)
+    {
+      _gpgme_data_append_string (dh, "  <policy>");
+      _gpgme_data_append_percentstring_for_xml (dh, data);
+      _gpgme_data_append_string (dh, "</policy>\n");
     }
-    else {
-        assert (0);
-    }
+  else
+    assert (0);
 }
 
 
@@ -106,115 +113,126 @@ add_notation ( GpgmeCtx ctx, GpgStatusCode code, const char *data )
 static void
 finish_sig (GpgmeCtx ctx, int stop)
 {
-    if (stop)
-        return; /* nothing to do */
+  if (stop)
+    return; /* nothing to do */
 
-    if (ctx->result.verify->collecting) {
-        VerifyResult res2;
+  if (ctx->result.verify->collecting)
+    {
+      VerifyResult res2;
 
-        ctx->result.verify->collecting = 0;
-        /* create a new result structure */
-        res2 = xtrycalloc ( 1, sizeof *res2 );
-        if ( !res2 ) {
-            ctx->out_of_core = 1;
-            return;
+      ctx->result.verify->collecting = 0;
+      /* Create a new result structure.  */
+      res2 = xtrycalloc (1, sizeof *res2);
+      if (!res2)
+	{
+	  ctx->error = mk_error (Out_Of_Core);
+	  return;
         }
 
-        res2->next = ctx->result.verify;
-        ctx->result.verify = res2;
+      res2->next = ctx->result.verify;
+      ctx->result.verify = res2;
     }
     
-    ctx->result.verify->collecting = 1;
+  ctx->result.verify->collecting = 1;
 }
+
 
 void
 _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
-    char *p;
-    int i;
+  char *p;
+  int i;
 
-    if ( ctx->out_of_core )
-        return;
-    if (!ctx->result.verify)
-      {
-        ctx->result.verify = xtrycalloc (1, sizeof *ctx->result.verify);
-        if (!ctx->result.verify)
-	  {
-            ctx->out_of_core = 1;
-            return;
-	  }
-      }
+  if (ctx->error)
+    return;
+  test_and_allocate_result (ctx, verify);
 
-    if (code == STATUS_GOODSIG
-        || code == STATUS_BADSIG || code == STATUS_ERRSIG) {
-        finish_sig (ctx,0);
-        if ( ctx->out_of_core )
-            return;
+  if (code == STATUS_GOODSIG || code == STATUS_BADSIG || code == STATUS_ERRSIG)
+    {
+      finish_sig (ctx,0);
+      if (ctx->error)
+	return;
     }
 
-    switch (code) {
-      case STATUS_NODATA:
-        ctx->result.verify->status = GPGME_SIG_STAT_NOSIG;
-        break;
+  switch (code)
+    {
+    case STATUS_NODATA:
+      ctx->result.verify->status = GPGME_SIG_STAT_NOSIG;
+      break;
 
-      case STATUS_GOODSIG:
-        /* We only look at VALIDSIG */
-        break;
+    case STATUS_GOODSIG:
+      /* We only look at VALIDSIG */
+      break;
 
-      case STATUS_VALIDSIG:
-        ctx->result.verify->status = GPGME_SIG_STAT_GOOD;
-        p = ctx->result.verify->fpr;
-        for (i=0; i < DIM(ctx->result.verify->fpr)
-                 && args[i] && args[i] != ' ' ; i++ )
-            *p++ = args[i];
-        *p = 0;
-        /* skip the formatted date */
-        while ( args[i] && args[i] == ' ')
-            i++;
-        while ( args[i] && args[i] != ' ')
-            i++;
-        /* and get the timestamp */
-        ctx->result.verify->timestamp = strtoul (args+i, NULL, 10);
-        break;
+    case STATUS_VALIDSIG:
+      ctx->result.verify->status = GPGME_SIG_STAT_GOOD;
+      p = ctx->result.verify->fpr;
+      for (i = 0; i < DIM(ctx->result.verify->fpr)
+	     && args[i] && args[i] != ' ' ; i++)
+	*p++ = args[i];
+      *p = 0;
+      /* Skip the formatted date.  */
+      while (args[i] && args[i] == ' ')
+	i++;
+      while (args[i] && args[i] != ' ')
+	i++;
+      /* And get the timestamp.  */
+      ctx->result.verify->timestamp = strtoul (args+i, NULL, 10);
+      break;
 
-      case STATUS_BADSIG:
-        ctx->result.verify->status = GPGME_SIG_STAT_BAD;
-        /* store the keyID in the fpr field */
-        p = ctx->result.verify->fpr;
-        for (i=0; i < DIM(ctx->result.verify->fpr)
-                 && args[i] && args[i] != ' ' ; i++ )
-            *p++ = args[i];
-        *p = 0;
-        break;
+    case STATUS_BADSIG:
+      ctx->result.verify->status = GPGME_SIG_STAT_BAD;
+      /* Store the keyID in the fpr field.  */
+      p = ctx->result.verify->fpr;
+      for (i = 0; i < DIM(ctx->result.verify->fpr)
+	     && args[i] && args[i] != ' ' ; i++)
+	*p++ = args[i];
+      *p = 0;
+      break;
 
-      case STATUS_ERRSIG:
-        ctx->result.verify->status = GPGME_SIG_STAT_ERROR;
-        /* FIXME: distinguish between a regular error and a missing key.
-         * this is encoded in the args. */
-        /* store the keyID in the fpr field */
-        p = ctx->result.verify->fpr;
-        for (i=0; i < DIM(ctx->result.verify->fpr)
-                 && args[i] && args[i] != ' ' ; i++ )
-            *p++ = args[i];
-        *p = 0;
-        break;
+    case STATUS_ERRSIG:
+      ctx->result.verify->status = GPGME_SIG_STAT_ERROR;
+      /* FIXME: Distinguish between a regular error and a missing key.
+	 This is encoded in the args.  */
+      /* Store the keyID in the fpr field.  */
+      p = ctx->result.verify->fpr;
+      for (i = 0; i < DIM(ctx->result.verify->fpr)
+	     && args[i] && args[i] != ' ' ; i++)
+	*p++ = args[i];
+      *p = 0;
+      break;
 
-      case STATUS_NOTATION_NAME:
-      case STATUS_NOTATION_DATA:
-      case STATUS_POLICY_URL:
-        add_notation ( ctx, code, args );
-        break;
+    case STATUS_NOTATION_NAME:
+    case STATUS_NOTATION_DATA:
+    case STATUS_POLICY_URL:
+      add_notation (ctx, code, args);
+      break;
 
-      case STATUS_END_STREAM:
-        break;
+    case STATUS_END_STREAM:
+      break;
 
-      case STATUS_EOF:
-        finish_sig(ctx,1);
-        break;
+    case STATUS_EOF:
+      finish_sig (ctx,1);
 
-      default:
-        /* ignore all other codes */
-        break;
+      /* FIXME: Put all notation data into one XML fragment.  */
+      if (ctx->result.verify->notation)
+	{
+	  GpgmeData dh = ctx->result.verify->notation;
+
+	  if (ctx->result.verify->notation_in_data)
+	    {
+	      _gpgme_data_append_string (dh, "</data>\n");
+	      ctx->result.verify->notation_in_data = 0;
+	    }
+	  _gpgme_data_append_string (dh, "</notation>\n");
+	  ctx->notation = dh;
+	  ctx->result.verify->notation = NULL;
+	}
+      break;
+ 
+    default:
+      /* Ignore all other codes.  */
+      break;
     }
 }
 
@@ -224,11 +242,10 @@ gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData text)
   int err = 0;
   int pipemode = 0;	 /* !!text; use pipemode for detached sigs.  */
 
-  fail_on_pending_request(ctx);
+  fail_on_pending_request (ctx);
   ctx->pending = 1;
 
   _gpgme_release_result (ctx);
-  ctx->out_of_core = 0;
     
   if (!pipemode)
     {
@@ -321,42 +338,27 @@ _gpgme_intersect_stati (VerifyResult result)
  *               the signature itself did go wrong.
  **/
 GpgmeError
-gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
-                  GpgmeSigStat *r_stat )
+gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData text,
+		 GpgmeSigStat *r_stat)
 {
-    int rc;
+  GpgmeError err;
 
-    if ( !r_stat )
-        return mk_error (Invalid_Value);
+  if (!r_stat)
+    return mk_error (Invalid_Value);
 
-    gpgme_data_release (c->notation);
-    c->notation = NULL;
+  gpgme_data_release (ctx->notation);
+  ctx->notation = NULL;
     
-    *r_stat = GPGME_SIG_STAT_NONE;
-    rc = gpgme_op_verify_start ( c, sig, text );
-    if ( !rc ) {
-        gpgme_wait (c, 1);
-        if (!c->result.verify)
-            rc = mk_error (General_Error);
-        else if (c->out_of_core)
-            rc = mk_error (Out_Of_Core);
-        else {
-            /* FIXME: Put all notation data into one XML fragment.  */
-            if ( c->result.verify->notation ) {
-                GpgmeData dh = c->result.verify->notation;
-                
-                if ( c->result.verify->notation_in_data ) {
-                    _gpgme_data_append_string (dh, "</data>\n");
-                    c->result.verify->notation_in_data = 0;
-                }
-                _gpgme_data_append_string (dh, "</notation>\n");
-                c->notation = dh;
-                c->result.verify->notation = NULL;
-            }
-            *r_stat = _gpgme_intersect_stati (c->result.verify);
-        }
+  *r_stat = GPGME_SIG_STAT_NONE;
+  err = gpgme_op_verify_start (ctx, sig, text);
+  if (!err)
+    {
+      gpgme_wait (ctx, 1);
+      err = ctx->error;
+      if (!err)
+	*r_stat = _gpgme_intersect_stati (ctx->result.verify);
     }
-    return rc;
+    return err;
 }
 
 

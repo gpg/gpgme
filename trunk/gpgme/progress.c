@@ -44,7 +44,7 @@ _gpgme_progress_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
   args_cpy = xtrystrdup (args);
   if (!args_cpy)
     {
-      ctx->out_of_core = 1;
+      ctx->error = mk_error (Out_Of_Core);
       return;
     }
 

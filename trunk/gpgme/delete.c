@@ -57,22 +57,27 @@ _gpgme_release_delete_result (DeleteResult result)
 static void
 delete_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
-  if (ctx->out_of_core)
+  if (ctx->error)
     return;
-
-  if (!ctx->result.delete)
-    {
-      ctx->result.delete = xtrycalloc (1, sizeof *ctx->result.delete);
-      if (!ctx->result.delete)
-        {
-          ctx->out_of_core = 1;
-          return;
-        }
-    }
+  test_and_allocate_result (ctx, delete);
 
   switch (code)
     {
     case STATUS_EOF:
+      switch (ctx->result.delete->problem)
+	{
+	case DELETE_No_Problem:
+	  break;
+	case DELETE_No_Such_Key:
+	  ctx->error = mk_error(Invalid_Key);
+	  break;
+	case DELETE_Must_Delete_Secret_Key:
+	  ctx->error = mk_error(Conflict);
+	  break;
+	default:
+	  ctx->error = mk_error(General_Error);
+	  break;
+	}
       break;
 
     case STATUS_DELETE_PROBLEM:
@@ -105,6 +110,8 @@ gpgme_op_delete_start (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
       _gpgme_engine_release (ctx->engine); 
       ctx->engine = NULL;
     }
+
+  _gpgme_release_result (ctx);
     
   err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
 			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
@@ -147,23 +154,7 @@ gpgme_op_delete (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
   if (!err)
     {
       gpgme_wait (ctx, 1);
-      if (ctx->result.delete)
-	{
-	  switch (ctx->result.delete->problem)
-	    {
-	    case DELETE_No_Problem:
-	      break;
-	    case DELETE_No_Such_Key:
-	      err = mk_error(Invalid_Key);
-	      break;
-	    case DELETE_Must_Delete_Secret_Key:
-	      err = mk_error(Conflict);
-	      break;
-	    default:
-	      err = mk_error(General_Error);
-	      break;
-	    }
-	}
+      err = ctx->error;
     }
   return err;
 }

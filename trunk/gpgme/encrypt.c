@@ -100,17 +100,9 @@ append_xml_encinfo (GpgmeData *rdh, char *args)
 static void
 encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
-  if (ctx->out_of_core)
+  if (ctx->error)
     return;
-  if (!ctx->result.encrypt)
-    {
-      ctx->result.encrypt = xtrycalloc (1, sizeof *ctx->result.encrypt);
-      if (!ctx->result.encrypt)
-	{
-	  ctx->out_of_core = 1;
-	  return;
-	}
-    }
+  test_and_allocate_result (ctx, encrypt);
 
   switch (code)
     {
@@ -121,6 +113,8 @@ encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 	  _gpgme_set_op_info (ctx, ctx->result.encrypt->xmlinfo);
 	  ctx->result.encrypt->xmlinfo = NULL;
         }
+      if (ctx->result.encrypt->no_recipients) 
+	ctx->error = mk_error (No_Recipients);
       break;
 
     case STATUS_INV_RECP:
@@ -147,7 +141,6 @@ gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
   ctx->pending = 1;
 
   _gpgme_release_result (ctx);
-  ctx->out_of_core = 0;
 
   /* Do some checks.  */
   if (!gpgme_recipients_count (recp))
@@ -220,28 +213,13 @@ gpgme_op_encrypt (GpgmeCtx ctx, GpgmeRecipients recp,
   if (!err)
     {
       gpgme_wait (ctx, 1);
-      if (!ctx->result.encrypt)
-	err = mk_error (General_Error);
-      else if (ctx->out_of_core)
-	err = mk_error (Out_Of_Core);
-      else
-	{
-	  if (ctx->result.encrypt->no_recipients) 
-	    err = mk_error (No_Recipients);
-        }
       /* Old gpg versions don't return status info for invalid
 	 recipients, so we simply check whether we got any output at
 	 all, and if not we assume that we don't have valid
 	 recipients.  */
-      if (!err && gpgme_data_get_type (cipher) == GPGME_DATA_TYPE_NONE)
-	err = mk_error (No_Recipients);
+      if (!ctx->error && gpgme_data_get_type (cipher) == GPGME_DATA_TYPE_NONE)
+	ctx->error = mk_error (No_Recipients);
+      err = ctx->error;
     }
   return err;
 }
-
-
-
-
-
-
-

@@ -29,6 +29,7 @@
 #include "context.h"
 #include "ops.h"
 
+
 struct passphrase_result_s
 {
   int no_passphrase;
@@ -37,6 +38,7 @@ struct passphrase_result_s
   char *passphrase_info;
   int bad_passphrase;
 };
+
 
 void
 _gpgme_release_passphrase_result (PassphraseResult result)
@@ -48,28 +50,20 @@ _gpgme_release_passphrase_result (PassphraseResult result)
   xfree (result);
 }
 
+
 void
 _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
-  if (ctx->out_of_core)
+  if (ctx->error)
     return;
-
-  if (!ctx->result.passphrase)
-    {
-      ctx->result.passphrase = xtrycalloc (1, sizeof *ctx->result.passphrase);
-      if (!ctx->result.passphrase)
-	{
-	  ctx->out_of_core = 1;
-	  return;
-	}
-    }
+  test_and_allocate_result (ctx, passphrase);
 
   switch (code)
     {
     case STATUS_USERID_HINT:
       xfree (ctx->result.passphrase->userid_hint);
-      if (!(ctx->result.passphrase->userid_hint = xtrystrdup (args)) )
-	ctx->out_of_core = 1;
+      if (!(ctx->result.passphrase->userid_hint = xtrystrdup (args)))
+	ctx->error = mk_error (Out_Of_Core);
       break;
 
     case STATUS_BAD_PASSPHRASE:
@@ -85,7 +79,7 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
       xfree (ctx->result.passphrase->passphrase_info);
       ctx->result.passphrase->passphrase_info = xtrystrdup (args);
       if (!ctx->result.passphrase->passphrase_info)
-	ctx->out_of_core = 1;
+	ctx->error = mk_error (Out_Of_Core);
       break;
 
     case STATUS_MISSING_PASSPHRASE:
@@ -93,11 +87,17 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
       ctx->result.passphrase->no_passphrase = 1;
       break;
 
+    case STATUS_EOF:
+      if (ctx->result.passphrase->no_passphrase)
+	ctx->error = mk_error (No_Passphrase);
+      break;
+
     default:
       /* Ignore all other codes.  */
       break;
     }
 }
+
 
 static const char *
 command_handler (void *opaque, GpgStatusCode code, const char *key)
@@ -109,7 +109,7 @@ command_handler (void *opaque, GpgStatusCode code, const char *key)
       ctx->result.passphrase = xtrycalloc (1, sizeof *ctx->result.passphrase);
       if (!ctx->result.passphrase)
 	{
-	  ctx->out_of_core = 1;
+	  ctx->error = mk_error (Out_Of_Core);
 	  return NULL;
 	}
     }
@@ -146,7 +146,7 @@ command_handler (void *opaque, GpgStatusCode code, const char *key)
 			+ strlen (passphrase_info) + 3);
       if (!buf)
 	{
-	  ctx->out_of_core = 1;
+	  ctx->error = mk_error (Out_Of_Core);
 	  return NULL;
         }
       sprintf (buf, "%s\n%s\n%s",
@@ -162,6 +162,7 @@ command_handler (void *opaque, GpgStatusCode code, const char *key)
     return NULL;
 }
 
+
 GpgmeError
 _gpgme_passphrase_start (GpgmeCtx ctx)
 {
@@ -169,19 +170,5 @@ _gpgme_passphrase_start (GpgmeCtx ctx)
 
   if (ctx->passphrase_cb)
     err = _gpgme_engine_set_command_handler (ctx->engine, command_handler, ctx);
-  return err;
-}
-
-GpgmeError
-_gpgme_passphrase_result (GpgmeCtx ctx)
-{
-  GpgmeError err = 0;
-
-  if (!ctx->result.passphrase)
-    err = mk_error (General_Error);
-  else if (ctx->out_of_core)
-    err = mk_error (Out_Of_Core);
-  else if (ctx->result.passphrase->no_passphrase)
-    err = mk_error (No_Passphrase);
   return err;
 }
