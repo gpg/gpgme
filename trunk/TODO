@@ -21,6 +21,10 @@ Hey Emacs, this is -*- outline -*- mode!
 *** gpgme_get_sig_string_attr
 *** GPGME_SIG_STAT_*
 *** gpgme_get_sig_status
+*** gpgme_trust_item_release
+*** gpgme_trust_item_get_string_attr
+*** gpgme_trust_item_get_ulong_attr
+*** GpgmeAttr
 
 * Thread support:
 ** Build thread modules for static linking (which just suck in the
