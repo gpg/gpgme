@@ -1106,7 +1106,6 @@ gpgsm_export_ext (void *engine, const char *pattern[], unsigned int reserved,
 	      patlet++;
 	    }
 	  pat++;
-	  /* This will allocate one byte more than necessary.  */
 	  length++;
 	}
     }
@@ -1149,6 +1148,8 @@ gpgsm_export_ext (void *engine, const char *pattern[], unsigned int reserved,
 	      patlet++;
 	    }
 	  pattern++;
+          if (*pattern)
+            *linep++ = ' ';
 	}
     }
   *linep = '\0';
