@@ -21,6 +21,8 @@
 #include <config.h>
 #endif
 #include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 #include "gpgme.h"
 #include "context.h"
@@ -104,4 +106,80 @@ _gpgme_op_reset (GpgmeCtx ctx, int type)
     }
   _gpgme_engine_set_io_cbs (ctx->engine, &io_cbs);
   return err;
+}
+
+
+GpgmeError
+_gpgme_parse_inv_userid (char *args, GpgmeInvalidUserID *userid)
+{
+  GpgmeInvalidUserID inv_userid;
+  char *tail;
+  long int reason;
+
+  inv_userid = malloc (sizeof (*inv_userid));
+  if (!inv_userid)
+    return GPGME_Out_Of_Core;
+  inv_userid->next = NULL;
+  errno = 0;
+  reason = strtol (args, &tail, 0);
+  if (errno || args == tail || *tail != ' ')
+    {
+      /* The crypto backend does not behave.  */
+      free (inv_userid);
+      return GPGME_General_Error;
+    }
+
+  switch (reason)
+    {
+    default:
+    case 0:
+      inv_userid->reason = GPGME_Unknown_Reason;
+
+    case 1:
+      inv_userid->reason = GPGME_Not_Found;
+
+    case 2:
+      inv_userid->reason = GPGME_Ambiguous_Specification;
+
+    case 3:
+      inv_userid->reason = GPGME_Wrong_Key_Usage;
+
+    case 4:
+      inv_userid->reason = GPGME_Key_Revoked;
+
+    case 5:
+      inv_userid->reason = GPGME_Key_Expired;
+
+    case 6:
+      inv_userid->reason = GPGME_No_CRL_Known;
+
+    case 7:
+      inv_userid->reason = GPGME_CRL_Too_Old;
+
+    case 8:
+      inv_userid->reason = GPGME_Policy_Mismatch;
+
+    case 9:
+      inv_userid->reason = GPGME_No_Secret_Key;
+
+    case 10:
+      inv_userid->reason = GPGME_Key_Not_Trusted;
+    }
+
+  while (*tail == ' ')
+    tail++;
+  if (*tail)
+    {
+      inv_userid->id = strdup (tail);
+      if (!inv_userid->id)
+	{
+	  free (inv_userid);
+	  return GPGME_Out_Of_Core;
+	}
+    }
+  else
+    inv_userid->id = NULL;
+
+  *userid = inv_userid;
+  return 0;
 }

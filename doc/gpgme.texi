@@ -73,6 +73,7 @@ This is Edition @value{EDITION}, last updated @value{UPDATED}, of
 * Introduction::                  How to use this manual.
 * Preparation::                   What you should do before using the library.
 * Protocols and Engines::         Supported crypto protocols.
+* Algorithms::                    Supported algorithms.
 * Error Handling::                Error numbers and their meanings.
 * Exchanging Data::               Passing data to and from @acronym{GPGME}.
 * Contexts::                      Handling @acronym{GPGME} contexts.
@@ -113,6 +114,11 @@ Protocols and Engines
 * Engine Information::            Obtaining more information about the engines.
 * OpenPGP::                       Support for the OpenPGP protocol.
 * Cryptographic Message Syntax::  Support for the CMS.
+
+Algorithms
+
+* Public Key Algorithms::         A list of all public key algorithms.
+* Hash Algorithms::               A list of all hash algorithms.
 
 Error Handling
 
@@ -726,6 +732,110 @@ The OpenPGP protocol is specified by @code{GPGME_PROTOCOL_OpenPGP}.
 GnuPG.
 
 The @acronym{CMS} protocol is specified by @code{GPGME_PROTOCOL_CMS}.
+
+
+@node Algorithms
+@chapter Algorithms
+@cindex algorithms
+
+The crypto backends support a variety of algorithms used in public key
+cryptography.  The following sections list the identifiers used to
+denote such an algorithm.
+
+@menu
+* Public Key Algorithms::         A list of all public key algorithms.
+* Hash Algorithms::               A list of all hash algorithms.
+@end menu
+
+
+@node Public Key Algorithms
+@section Public Key Algorithms
+@cindex algorithms, public key
+@cindex public key algorithms
+
+Public key algorithms are used for encryption, decryption, signing and
+verification of signatures.
+
+@deftp {Data type} {enum GpgmePubKeyAlgo}
+@tindex GpgmePubKeyAlgo
+The @code{GpgmePubKeyAlgo} type specifies the set of all public key
+algorithms that are supported by @acronym{GPGME}.  Possible values
+are:
+
+@table @code
+@item GPGME_PK_RSA
+This value indicates the RSA (Rivest, Shamir, Adleman) algorithm.
+
+@item GPGME_PK_RSA_E
+Deprecated.  This value indicates the RSA (Rivest, Shamir, Adleman)
+algorithm for encryption and decryption only.
+
+@item GPGME_PK_RSA_S
+Deprecated.  This value indicates the RSA (Rivest, Shamir, Adleman)
+algorithm for signing and verification only.
+
+@item GPGME_PK_DSA
+This value indicates DSA, the Digital Signature Algorithm.
+
+@item GPGME_PK_ELG
+This value indicates ElGamal.
+
+@item GPGME_PK_ELG_E
+This value also indicates ElGamal and is used specifically in GnuPG.
+@end table
+@end deftp
+
+@deftypefun {const char *} gpgme_pubkey_algo_name (@w{GpgmePubKeyAlgo @var{algo}})
+The function @code{gpgme_pubkey_algo_name} returns a pointer to a
+statically allocated string containing a description of the public key
+algorithm @var{algo}.  This string can be used to output the name of
+the public key algorithm to the user.
+
+If @var{algo} is not a valid public key algorithm, @code{NULL} is
+returned.
+@end deftypefun
+
+
+@node Hash Algorithms
+@section Hash Algorithms
+@cindex algorithms, hash
+@cindex algorithms, message digest
+@cindex hash algorithms
+@cindex message digest algorithms
+
+Hash (message digest) algorithms are used to compress a long message
+to make it suitable for public key cryptography.
+
+@deftp {Data type} {enum GpgmeHashAlgo}
+@tindex GpgmeHashAlgo
+The @code{GpgmeHashAlgo} type specifies the set of all hash algorithms
+that are supported by @acronym{GPGME}.  Possible values are:
+
+@table @code
+@item GPGME_MD_MD5
+@item GPGME_MD_SHA1
+@item GPGME_MD_RMD160
+@item GPGME_MD_MD2
+@item GPGME_MD_TIGER
+@item GPGME_MD_HAVAL
+@item GPGME_MD_SHA256
+@item GPGME_MD_SHA384
+@item GPGME_MD_SHA512
+@item GPGME_MD_MD4
+@item GPGME_MD_CRC32
+@item GPGME_MD_CRC32_RFC1510
+@item GPGME_MD_CRC24_RFC2440
+@end table
+@end deftp
+
+@deftypefun {const char *} gpgme_hash_algo_name (@w{GpgmeHashAlgo @var{algo}})
+The function @code{gpgme_hash_algo_name} returns a pointer to a
+statically allocated string containing a description of the hash
+algorithm @var{algo}.  This string can be used to output the name of
+the hash algorithm to the user.
+
+If @var{algo} is not a valid hash algorithm, @code{NULL} is returned.
+@end deftypefun
 
 
 @node Error Handling
@@ -2308,6 +2418,9 @@ The function @code{gpgme_op_import} adds the keys in the data buffer
 The format of @var{keydata} can be @var{ASCII} armored, for example,
 but the details are specific to the crypto engine.
 
+After the operation completed successfully, the result can be
+retrieved with @code{gpgme_op_import_result}.
+
 The function returns @code{GPGME_No_Error} if the import was completed
 successfully, @code{GPGME_Invalid_Value} if @var{keydata} if @var{ctx}
 or @var{keydata} is not a valid pointer, and @code{GPGME_No_Data} if
@@ -2333,7 +2446,8 @@ import.  The structure contains the following members:
 
 @table @code
 @item GpgmeImportStatus next
-This is a pointer to the next status object in the list.
+This is a pointer to the next status structure in the linked list, or
+@code{NULL} if this is the last element.
 
 @item char *fpr
 This is the fingerprint of the key that was considered.
@@ -2592,9 +2706,33 @@ The function @code{gpgme_trust_item_release} destroys a
 @code{GpgmeTrustItem} object and releases all associated resources.
 @end deftypefun
 
+
 @node Crypto Operations
 @section Crypto Operations
 @cindex cryptographic operation
+
+Sometimes, the result of a crypto operation returns a list of invalid
+user IDs encountered in processing the request.  The following
+structure is used to hold information about such an user ID.
+
+@deftp {Data type} {GpgmeInvalidUserID}
+This is a pointer to a structure used to store a part of the result of
+a crypto operation which takes user IDs as one input parameter.  The
+structure contains the following members:
+
+@table @code
+@item GpgmeInvalidUserID next
+This is a pointer to the next invalid user ID structure in the linked
+list, or @code{NULL} if this is the last element.
+
+@item char *id
+The invalid user ID encountered.
+
+@item GpgmeError reason
+An error code describing the reason why the user ID was found invalid.
+@end table
+@end deftp
+
 
 @menu
 * Decrypt::                       Decrypting a ciphertext.
@@ -2994,8 +3132,8 @@ the data object @var{plain} and returns it in the data object
 @acronym{ASCII} armor and text mode attributes set for the context
 @var{ctx} and the requested signature mode @var{mode}.
 
-More information about the signatures is available with
-@code{gpgme_get_op_info}.  @xref{Detailed Results}.
+After the operation completed successfully, the result can be
+retrieved with @code{gpgme_op_sign_result}.
 
 If an S/MIME signed message is created using the CMS crypto engine,
 the number of certificates to include in the message can be specified
@@ -3018,6 +3156,63 @@ The function @code{gpgme_op_sign_start} initiates a
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, and @code{GPGME_Invalid_Value} if @var{ctx},
 @var{plain} or @var{sig} is not a valid pointer.
+@end deftypefun
+
+@deftp {Data type} {GpgmeNewSignature}
+This is a pointer to a structure used to store a part of the result of
+a @code{gpgme_op_sign} operation.  The structure contains the
+following members:
+
+@table @code
+@item GpgmeNewSignature next
+This is a pointer to the next new signature structure in the linked
+list, or @code{NULL} if this is the last element.
+
+@item GpgmeSigMode type
+The type of this signature.
+
+@item GpgmePubKeyAlgo
+The public key algorithm used to create this signature.
+
+@item GpgmeHashAlgo
+The hash algorithm used to create this signature.
+
+@item unsigned long class
+The signature class of this signature.
+
+@item long int created
+The creation timestamp of this signature.
+
+@item char *fpr
+The fingerprint of the key which was used to create this signature.
+@end table
+@end deftp
+
+@deftp {Data type} {GpgmeSignResult}
+This is a pointer to a structure used to store the result of a
+@code{gpgme_op_sign} operation.  After successfully generating a
+signature, you can retrieve the pointer to the result with
+@code{gpgme_op_sign_result}.  The structure contains the following
+members:
+
+@table @code
+@item GpgmeInvalidUserID invalid_signers
+A linked list with information about all invalid user IDs for which a
+signature could not be created.
+
+@item GpgmeNewSignature signatures
+A linked list with information about all signatures created.
+@end table
+@end deftp
+
+@deftypefun GpgmeSignResult gpgme_op_sign_result (@w{GpgmeCtx @var{ctx}})
+The function @code{gpgme_op_sign_result} returns a
+@code{GpgmeSignResult} pointer to a structure holding the result of a
+@code{gpgme_op_sign} operation.  The pointer is only valid if the last
+operation on the context was a @code{gpgme_op_sign} or
+@code{gpgme_op_sign_start} operation, and if this operation finished
+successfully.  The returned pointer is only valid until the next
+operation is started on the context.
 @end deftypefun
 
 

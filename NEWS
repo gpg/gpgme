@@ -78,6 +78,10 @@ Noteworthy changes in version 0.4.1 (unreleased)
    GpgmeImportResult and GpgmeImportStatus objects.  Thus, the
    gpgme_op_import_ext variant is deprecated.
 
+ * The new gpgme_op_sign_result function provides detailed information
+   about the result of a signing operation in GpgmeSignResult,
+   GpgmeInvalidUserID and GpgmeNewSignature objects.
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
@@ -108,6 +112,14 @@ gpgme_op_import_ext		DEPRECATED: Use gpgme_op_import_result.
 gpgme_op_import_result		NEW
 GpgmeImportStatus		NEW
 GpgmeImportResult		NEW
+GpgmePubKeyAlgo			NEW
+GpgmeHashAlgo			NEW
+GpgmeInvalidUserID		NEW
+GpgmeNewSignature		NEW
+GpgmeSignResult			NEW
+gpgme_op_sign_result		NEW
+gpgme_pubkey_algo_name		NEW
+gpgme_hash_algo_name		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)

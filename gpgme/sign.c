@@ -1,4 +1,4 @@
-/* sign.c -  signing functions
+/* sign.c - Signing function.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003 g10 Code GmbH
 
@@ -21,157 +21,203 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <errno.h>
 
-#include "util.h"
+#include "gpgme.h"
 #include "context.h"
 #include "ops.h"
 
-#define SKIP_TOKEN_OR_RETURN(a) do { \
-    while (*(a) && *(a) != ' ') (a)++; \
-    while (*(a) == ' ') (a)++; \
-    if (!*(a)) \
-        return; /* oops */ \
-} while (0)
-
-struct sign_result
+
+typedef struct
 {
-  int okay;
-  GpgmeData xmlinfo;
-};
-typedef struct sign_result *SignResult;
+  struct _gpgme_op_sign_result result;
+
+  /* A pointer to the next pointer of the last invalid signer in
+     the list.  This makes appending new invalid signers painless
+     while preserving the order.  */
+  GpgmeInvalidUserID *last_signer_p;
+
+  /* Likewise for signature information.  */
+  GpgmeNewSignature *last_sig_p;
+} *op_data_t;
 
 
 static void
-release_sign_result (void *hook)
+release_op_data (void *hook)
 {
-  SignResult result = (SignResult) hook;
+  op_data_t opd = (op_data_t) hook;
+  GpgmeInvalidUserID invalid_signer = opd->result.invalid_signers;
+  GpgmeNewSignature sig = opd->result.signatures;
 
-  gpgme_data_release (result->xmlinfo);
+  while (invalid_signer)
+    {
+      GpgmeInvalidUserID next = invalid_signer->next;
+      free (invalid_signer->id);
+      free (invalid_signer);
+      invalid_signer = next;
+    }
+
+  while (sig)
+    {
+      GpgmeNewSignature next = sig->next;
+      free (sig->fpr);
+      free (sig);
+      sig = next;
+    }
 }
 
-/* Parse the args and save the information 
-   <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
-   in an XML structure.  With args of NULL the xml structure is
-   closed.  */
-static void
-append_xml_siginfo (GpgmeData *rdh, char *args)
+
+GpgmeSignResult
+gpgme_op_sign_result (GpgmeCtx ctx)
 {
-  GpgmeData dh;
-  char helpbuf[100];
-  int i;
-  char *s;
-  unsigned long ul;
-
-  if (!*rdh)
-    {
-      if (gpgme_data_new (rdh))
-	{
-	  return; /* fixme: We are ignoring out-of-core */
-        }
-      dh = *rdh;
-      _gpgme_data_append_string (dh, "<GnupgOperationInfo>\n");
-    }
-  else
-    {
-      dh = *rdh;
-      _gpgme_data_append_string (dh, "  </signature>\n");
-    }
-
-  if (!args)
-    {
-      /* Just close the XML containter.  */
-      _gpgme_data_append_string (dh, "</GnupgOperationInfo>\n");
-      return;
-    }
-
-  _gpgme_data_append_string (dh, "  <signature>\n");
-    
-  _gpgme_data_append_string (dh,
-			     *args == 'D' ? "    <detached/>\n" :
-			     *args == 'C' ? "    <cleartext/>\n" :
-			     *args == 'S' ? "    <standard/>\n" : "");
-  SKIP_TOKEN_OR_RETURN (args);
-
-  sprintf (helpbuf, "    <algo>%d</algo>\n", atoi (args));
-  _gpgme_data_append_string (dh, helpbuf);
-  SKIP_TOKEN_OR_RETURN (args);
-
-  i = atoi (args);
-  sprintf (helpbuf, "    <hashalgo>%d</hashalgo>\n", atoi (args));
-  _gpgme_data_append_string (dh, helpbuf);
-  switch (i)
-    {
-    case  1: s = "pgp-md5"; break;
-    case  2: s = "pgp-sha1"; break;
-    case  3: s = "pgp-ripemd160"; break;
-    case  5: s = "pgp-md2"; break;
-    case  6: s = "pgp-tiger192"; break;
-    case  7: s = "pgp-haval-5-160"; break;
-    case  8: s = "pgp-sha256"; break;
-    case  9: s = "pgp-sha384"; break;
-    case 10: s = "pgp-sha512"; break;
-    default: s = "pgp-unknown"; break;
-    }
-  sprintf (helpbuf, "    <micalg>%s</micalg>\n", s);
-  _gpgme_data_append_string (dh,helpbuf);
-  SKIP_TOKEN_OR_RETURN (args);
-    
-  sprintf (helpbuf, "    <sigclass>%.2s</sigclass>\n", args);
-  _gpgme_data_append_string (dh, helpbuf);
-  SKIP_TOKEN_OR_RETURN (args);
-
-  ul = strtoul (args, NULL, 10);
-  sprintf (helpbuf, "    <created>%lu</created>\n", ul);
-  _gpgme_data_append_string (dh, helpbuf);
-  SKIP_TOKEN_OR_RETURN (args);
-
-  /* Count the length of the finperprint.  */
-  for (i = 0; args[i] && args[i] != ' '; i++)
-    ;
-  _gpgme_data_append_string (dh, "    <fpr>");
-  _gpgme_data_append (dh, args, i);
-  _gpgme_data_append_string (dh, "</fpr>\n");
-}
-
-GpgmeError
-_gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
-{
-  SignResult result;
+  op_data_t opd;
   GpgmeError err;
 
-  err = _gpgme_passphrase_status_handler (ctx, code, args);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &opd, -1, NULL);
+  if (err || !opd)
+    return NULL;
+
+  return &opd->result;
+}
+
+
+static GpgmeError
+parse_sig_created (char *args, GpgmeNewSignature *sigp)
+{
+  GpgmeNewSignature sig;
+  char *tail;
+
+  sig = malloc (sizeof (*sig));
+  if (!sig)
+    return GPGME_Out_Of_Core;
+
+  sig->next = NULL;
+  switch (*args)
+    {
+    case 'S':
+      sig->type = GPGME_SIG_MODE_NORMAL;
+      break;
+
+    case 'D':
+      sig->type = GPGME_SIG_MODE_DETACH;
+      break;
+
+    case 'C':
+      sig->type = GPGME_SIG_MODE_CLEAR;
+      break;
+
+    default:
+      /* The backend engine is not behaving.  */
+      free (sig);
+      return GPGME_General_Error;
+    }
+
+  args++;
+  if (*args != ' ')
+    {
+      free (sig);
+      return GPGME_General_Error;
+    }
+
+  errno = 0;
+  sig->pubkey_algo = strtol (args, &tail, 0);
+  if (errno || args == tail || *tail != ' ')
+    {
+      /* The crypto backend does not behave.  */
+      free (sig);
+      return GPGME_General_Error;
+    }
+  args = tail;
+
+  sig->hash_algo = strtol (args, &tail, 0);
+  if (errno || args == tail || *tail != ' ')
+    {
+      /* The crypto backend does not behave.  */
+      free (sig);
+      return GPGME_General_Error;
+    }
+  args = tail;
+
+  sig->class = strtol (args, &tail, 0);
+  if (errno || args == tail || *tail != ' ')
+    {
+      /* The crypto backend does not behave.  */
+      free (sig);
+      return GPGME_General_Error;
+    }
+  args = tail;
+
+  sig->created = strtol (args, &tail, 0);
+  if (errno || args == tail || *tail != ' ')
+    {
+      /* The crypto backend does not behave.  */
+      free (sig);
+      return GPGME_General_Error;
+    }
+  args = tail;
+  while (*args == ' ')
+    args++;
+
+  if (!*args)
+    {
+      /* The crypto backend does not behave.  */
+      free (sig);
+      return GPGME_General_Error;
+    }
+
+  tail = strchr (args, ' ');
+  if (tail)
+    *tail = '\0';
+
+  sig->fpr = strdup (args);
+  if (!sig->fpr)
+    {
+      free (sig);
+      return GPGME_Out_Of_Core;
+    }
+  *sigp = sig;
+  return 0;
+}
+
+
+GpgmeError
+_gpgme_sign_status_handler (void *priv, GpgmeStatusCode code, char *args)
+{
+  GpgmeCtx ctx = (GpgmeCtx) priv;
+  GpgmeError err;
+  op_data_t opd;
+
+  err = _gpgme_passphrase_status_handler (priv, code, args);
+  if (err)
+    return err;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &opd, -1, NULL);
   if (err)
     return err;
 
   switch (code)
     {
-    case GPGME_STATUS_EOF:
-      err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &result,
-				   -1, NULL);
-      if (!err)
-	{
-	  if (result && result->okay)
-	    {
-	      append_xml_siginfo (&result->xmlinfo, NULL);
-	      _gpgme_set_op_info (ctx, result->xmlinfo);
-	      result->xmlinfo = NULL;
-	    }
-	  else if (!result || !result->okay)
-	    /* FIXME: choose a better error code?  */
-	    err = GPGME_No_Data;
-	}
+    case GPGME_STATUS_SIG_CREATED:
+      err = parse_sig_created (args, opd->last_sig_p);
+      if (err)
+	return err;
+
+      opd->last_sig_p = &(*opd->last_sig_p)->next;
       break;
 
-    case GPGME_STATUS_SIG_CREATED: 
-      /* FIXME: We have no error return for multiple signatures.  */
-      err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &result,
-				   sizeof (*result), release_sign_result);
-      append_xml_siginfo (&result->xmlinfo, args);
-      result->okay = 1;
+    case GPGME_STATUS_INV_RECP:
+      err = _gpgme_parse_inv_userid (args, opd->last_signer_p);
+      if (err)
+	return err;
+
+      opd->last_signer_p = &(*opd->last_signer_p)->next;
+      break;
+
+    case GPGME_STATUS_EOF:
+      if (opd->result.invalid_signers)
+	return GPGME_Invalid_UserID;
       break;
 
     default:
@@ -180,14 +226,34 @@ _gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
   return err;
 }
 
+
+GpgmeError
+_gpgme_op_sign_init_result (GpgmeCtx ctx)
+{
+  GpgmeError err;
+  op_data_t opd;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &opd,
+			       sizeof (*opd), release_op_data);
+  if (err)
+    return err;
+  opd->last_signer_p = &opd->result.invalid_signers;
+  opd->last_sig_p = &opd->result.signatures;
+  return 0;
+}
+
+
 static GpgmeError
-_gpgme_op_sign_start (GpgmeCtx ctx, int synchronous,
-		      GpgmeData plain, GpgmeData sig,
-		      GpgmeSigMode mode)
+sign_start (GpgmeCtx ctx, int synchronous, GpgmeData plain, GpgmeData sig,
+	    GpgmeSigMode mode)
 {
   GpgmeError err;
 
   err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  err = _gpgme_op_sign_init_result (ctx);
   if (err)
     return err;
 
@@ -217,38 +283,21 @@ _gpgme_op_sign_start (GpgmeCtx ctx, int synchronous,
 				ctx /* FIXME */);
 }
 
+
+/* Sign the plaintext PLAIN and store the signature in SIG.  */
 GpgmeError
-gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData in, GpgmeData out,
+gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData plain, GpgmeData sig,
 		     GpgmeSigMode mode)
 {
-  return _gpgme_op_sign_start (ctx, 0, in, out, mode);
+  return sign_start (ctx, 0, plain, sig, mode);
 }
 
-/**
- * gpgme_op_sign:
- * @ctx: The context
- * @in: Data to be signed
- * @out: Detached signature
- * @mode: Signature creation mode
- * 
- * Create a detached signature for @in and write it to @out.
- * The data will be signed using either the default key or the ones
- * defined through @ctx.
- * The defined modes for signature create are:
- * <literal>
- * GPGME_SIG_MODE_NORMAL (or 0) 
- * GPGME_SIG_MODE_DETACH
- * GPGME_SIG_MODE_CLEAR
- * </literal>
- * Note that the settings done by gpgme_set_armor() and gpgme_set_textmode()
- * are ignore for @mode GPGME_SIG_MODE_CLEAR.
- * 
- * Return value: 0 on success or an error code.
- **/
+
+/* Sign the plaintext PLAIN and store the signature in SIG.  */
 GpgmeError
-gpgme_op_sign (GpgmeCtx ctx, GpgmeData in, GpgmeData out, GpgmeSigMode mode)
+gpgme_op_sign (GpgmeCtx ctx, GpgmeData plain, GpgmeData sig, GpgmeSigMode mode)
 {
-  GpgmeError err = _gpgme_op_sign_start (ctx, 1, in, out, mode);
+  GpgmeError err = sign_start (ctx, 1, plain, sig, mode);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

@@ -1,5 +1,36 @@
 2003-04-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (GpgmePubKeyAlgo, GpgmeHashAlgo, GpgmeInvalidUserID,
+	GpgmeNewSignature, GpgmeSignResult): New data types.
+	(gpgme_op_sign_result, gpgme_pubkey_algo_name,
+	gpgme_hash_algo_name): New prototypes.
+	* gpgme.c (gpgme_pubkey_algo_name): New function.
+	(gpgme_hash_algo_name): Likewise.
+	* ops.h (_gpgme_parse_inv_userid, _gpgme_op_sign_init_result): New
+	prototype.
+	(_gpgme_op_sign_status_handler): Fix prototype.
+	* op-support.c: Include <errno.h> and <string.h>.
+	(_gpgme_parse_inv_userid): New function.
+	* sign.c: Include <errno.h> and "gpgme.h", but not <stdio.h>,
+	<assert.h> and "util.h".
+	(SKIP_TOKEN_OR_RETURN): Remove macro.
+	(struct sign_result): Change to op_data_t type and rework it.
+	(release_sign_result): Rename to ...
+	(release_op_data): ... this and rewrite it.
+	(append_xml_info): Remove function.
+	(gpgme_op_sign_result): New function.
+	(parse_sig_created): New function.
+	(_gpgme_sign_status_handler): Change first argument to void *.
+	Rewrite the function to use the new result structure and functions.
+	(_gpgme_op_sign_init_result): New function.
+	(_gpgme_op_sign_start): Rename to ...
+	(sign_start): ... this.  Call _gpgme_op_sign_init_result.
+	(gpgme_op_sign_start): Use sign_start instead _gpgme_op_sign_start.
+	(gpgme_op_sign): Likewise.
+
+	* encrypt-sign.c (_gpgme_op_encrypt_sign_start): Call
+	_gpgme_op_sign_init_result.
+	
 	* delete.c: Include <errno.h> and "gpgme.h", but not "util.h" or
 	"key.h".
 	(enum delete_problem): Move into function delete_status_handler.

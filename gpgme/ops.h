@@ -57,12 +57,22 @@ GpgmeError _gpgme_data_outbound_handler (void *opaque, int fd);
 GpgmeError _gpgme_key_new ( GpgmeKey *r_key );
 GpgmeError _gpgme_key_new_secret ( GpgmeKey *r_key );
 
-/*-- op-support.c --*/
+
+/* From op-support.c.  */
+
+/* Find or create the op data object of type TYPE.  */
 GpgmeError _gpgme_op_data_lookup (GpgmeCtx ctx, ctx_op_data_type type,
 				  void **hook, int size,
 				  void (*cleanup) (void *));
+
+/* Prepare a new operation on CTX.  */
 GpgmeError _gpgme_op_reset (GpgmeCtx ctx, int synchronous);
 
+/* Parse the invalid user ID status line in ARGS and return the result
+   in USERID.  */
+GpgmeError _gpgme_parse_inv_userid (char *args, GpgmeInvalidUserID *userid);
+
+
 /*-- verify.c --*/
 GpgmeError _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 					 char *args);
@@ -74,10 +84,18 @@ GpgmeError _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
 				 GpgmeData ciph, GpgmeData plain,
 				 void *status_handler);
 
-/*-- sign.c --*/
-GpgmeError _gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
+
+/* From sign.c.  */
+
+/* Create an initial op data object for signing.  Needs to be called
+   once before calling _gpgme_sign_status_handler.  */
+GpgmeError _gpgme_op_sign_init_result (GpgmeCtx ctx);
+
+/* Process a status line for signing operations.  */
+GpgmeError _gpgme_sign_status_handler (void *priv, GpgmeStatusCode code,
 				       char *args);
 
+
 /*-- encrypt.c --*/
 GpgmeError _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 					  char *args);
