@@ -430,6 +430,7 @@ keylist_colon_handler (void *priv, char *line)
       err = _gpgme_key_new (&key);
       if (err)
 	return err;
+      key->keylist_mode = ctx->keylist_mode;
       err = _gpgme_key_add_subkey (key, &subkey);
       if (err)
 	{

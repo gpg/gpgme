@@ -305,6 +305,17 @@ typedef enum
 gpgme_protocol_t;
 
 
+/* The available keylist mode flags.  */
+typedef enum
+  {
+    GPGME_KEYLIST_MODE_LOCAL  = 1,
+    GPGME_KEYLIST_MODE_EXTERN = 2,
+    GPGME_KEYLIST_MODE_SIGS   = 4,
+    GPGME_KEYLIST_MODE_VALIDATE = 256
+  }
+gpgme_keylist_mode_t;
+
+
 /* The possible stati for the edit operation.  */
 typedef enum
   {
@@ -639,6 +650,12 @@ struct _gpgme_key
 
   /* Internal to GPGME, do not use.  */
   gpgme_user_id_t _last_uid;
+
+  /* The keylist mode that was active when listing the key.  */
+  /* Implementation note: We are using unsigned int here, and not
+     gpgme_keylist_mode_t, as the latter is currently an enum of
+     unknown size.  */
+  unsigned int keylist_mode;
 };
 typedef struct _gpgme_key *gpgme_key_t;
 
@@ -696,16 +713,6 @@ void gpgme_set_include_certs (gpgme_ctx_t ctx, int nr_of_certs);
 
 /* Return the number of certs to include in an S/MIME message.  */
 int gpgme_get_include_certs (gpgme_ctx_t ctx);
-
-/* The available keylist mode flags.  */
-typedef enum
-  {
-    GPGME_KEYLIST_MODE_LOCAL  = 1,
-    GPGME_KEYLIST_MODE_EXTERN = 2,
-    GPGME_KEYLIST_MODE_SIGS   = 4,
-    GPGME_KEYLIST_MODE_VALIDATE = 256
-  }
-gpgme_keylist_mode_t;
 
 /* Set keylist mode in CTX to MODE.  */
 gpgme_error_t gpgme_set_keylist_mode (gpgme_ctx_t ctx,

@@ -8,6 +8,10 @@ Hey Emacs, this is -*- outline -*- mode!
 * ABI's to break:
 ** I/O and User Data could be made extensible.  But this can be done
    without breaking the ABI hopefully.
+** gpgme_keylist_mode_t should not be an enum.  Maybe some other values
+   should also not be an enum.  All enums that should be enums need to
+   have a maximum value to ensure a certain minimum width for
+   extensibility.
 ** Compatibility interfaces that can be removed in future versions:
 *** ath compatibility modules.
 *** gpgme_data_new_from_filepart
