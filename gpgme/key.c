@@ -48,8 +48,8 @@ pkalgo_to_string ( int algo )
 
 
 
-GpgmeError
-_gpgme_key_new( GpgmeKey *r_key )
+static GpgmeError
+key_new ( GpgmeKey *r_key, int secret )
 {
     GpgmeKey key;
 
@@ -59,7 +59,21 @@ _gpgme_key_new( GpgmeKey *r_key )
         return mk_error (Out_Of_Core);
     key->ref_count = 1;
     *r_key = key;
+    if (secret)
+        key->secret = 1;
     return 0;
+}
+
+GpgmeError
+_gpgme_key_new ( GpgmeKey *r_key )
+{
+    return key_new ( r_key, 0 );
+}
+
+GpgmeError
+_gpgme_key_new_secret ( GpgmeKey *r_key )
+{
+    return key_new ( r_key, 1 );
 }
 
 void
@@ -70,8 +84,8 @@ gpgme_key_ref ( GpgmeKey key )
 }
 
 
-struct subkey_s *
-_gpgme_key_add_subkey (GpgmeKey key)
+static struct subkey_s *
+add_subkey (GpgmeKey key, int secret)
 {
     struct subkey_s *k, *kk;
 
@@ -86,9 +100,22 @@ _gpgme_key_add_subkey (GpgmeKey key)
             kk = kk->next;
         kk->next = k;
     }
+    if (secret)
+        k->secret = 1;
     return k;
 }
 
+struct subkey_s *
+_gpgme_key_add_subkey (GpgmeKey key)
+{
+    return add_subkey (key, 0);
+}
+
+struct subkey_s *
+_gpgme_key_add_secret_subkey (GpgmeKey key)
+{
+    return add_subkey (key, 1);
+}
 
 void
 gpgme_key_release ( GpgmeKey key )
@@ -350,6 +377,8 @@ gpgme_key_get_as_xml ( GpgmeKey key )
     
     _gpgme_data_append_string ( d, "<GnupgKeyblock>\n"
                                    "  <mainkey>\n" );
+    if ( key->secret )
+        _gpgme_data_append_string ( d, "    <secret/>\n");
     add_tag_and_string (d, "keyid", key->keys.keyid );   
     if (key->keys.fingerprint)
         add_tag_and_string (d, "fpr", key->keys.fingerprint );
@@ -374,6 +403,8 @@ gpgme_key_get_as_xml ( GpgmeKey key )
     
     for (k=key->keys.next; k; k = k->next ) {
         _gpgme_data_append_string (d, "  <subkey>\n");
+        if ( k->secret )
+            _gpgme_data_append_string ( d, "    <secret/>\n");
         add_tag_and_string (d, "keyid", k->keyid );   
         if (k->fingerprint)
             add_tag_and_string (d, "fpr", k->fingerprint );
@@ -456,6 +487,10 @@ gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
       case GPGME_ATTR_LEVEL:  /* not used here */
       case GPGME_ATTR_TYPE:
         break;
+      case GPGME_ATTR_IS_SECRET:
+        if (key->secret)
+            val = "1";
+        break;
     }
     return val;
 }
@@ -490,6 +525,9 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
             ;
         if (u)
             val = u->validity;
+        break;
+      case GPGME_ATTR_IS_SECRET:
+        val = !!key->secret;
         break;
       default:
         break;

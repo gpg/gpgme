@@ -50,7 +50,6 @@ gpgme_new (GpgmeCtx *r_ctx)
     if (!c)
         return mk_error (Out_Of_Core);
     c->verbosity = 1;
-    c->use_armor = 1; /* fixme: reset this to 0 */
     *r_ctx = c;
 
     return 0;

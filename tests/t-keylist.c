@@ -68,6 +68,7 @@ doit ( GpgmeCtx ctx, const char *pattern )
             s = gpgme_key_get_string_attr (key, GPGME_ATTR_COMMENT, NULL, i );
             printf ("<!-- comment.%d=%s -->\n", i, s );
         }
+
         printf ("<!-- End key object (%p) -->\n", key );
         gpgme_key_release (key);
     }

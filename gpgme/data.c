@@ -311,7 +311,7 @@ _gpgme_data_release_and_return_string ( GpgmeData dh )
     char *val = NULL;
 
     if (dh) {
-        if ( _gpgme_data_append ( dh, "", 0 ) ) /* append EOS */
+        if ( _gpgme_data_append ( dh, "", 1 ) ) /* append EOS */
             xfree (dh->private_buffer );
         else {
             val = dh->private_buffer;
@@ -331,10 +331,11 @@ _gpgme_data_release_and_return_string ( GpgmeData dh )
  * @dh: the data object
  * @r_len: returns the length of the memory
  * 
- * Release the data object @dh and return its content and the length of
- * that content.  The caller has to free this data.  @dh maybe NULL in
- * which case NULL is returned.  I there is not enough memory for allocating
- * the return value, NULL is returned and the object is released.
+ * Release the data object @dh and return its content and the length
+ * of that content.  The caller has to free this data.  @dh maybe NULL
+ * in which case NULL is returned.  If there is not enough memory for
+ * allocating the return value, NULL is returned and the object is
+ * released.
  * 
  * Return value: a pointer to an allocated buffer of length @r_len.
  **/

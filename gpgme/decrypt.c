@@ -102,7 +102,7 @@ decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
         break;
 
       case STATUS_MISSING_PASSPHRASE:
-        fprintf (stderr, "Missing passphrase - stop\n");;
+        DEBUG0 ("missing passphrase - stop\n");;
         ctx->result.decrypt->no_passphrase = 1;
         break;
 
@@ -174,7 +174,7 @@ command_handler ( void *opaque, GpgStatusCode code, const char *key )
                               buf, &c->result.decrypt->last_pw_handle );
         xfree (buf);
         return s;
-   }
+    }
     
     return NULL;
 }

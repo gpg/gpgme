@@ -61,7 +61,8 @@ GpgmeError    _gpgme_data_unread (GpgmeData dh,
 
 
 /*-- key.c --*/
-GpgmeError _gpgme_key_new( GpgmeKey *r_key );
+GpgmeError _gpgme_key_new ( GpgmeKey *r_key );
+GpgmeError _gpgme_key_new_secret ( GpgmeKey *r_key );
 
 
 /*-- verify.c --*/

@@ -13,7 +13,7 @@ libgpgme_la_LDFLAGS = -version-info \
 libgpgme_la_INCLUDES = -I$(top_srcdir)/lib 
 
 libgpgme_la_SOURCES = \
-	gpgme.h types.h util.h util.c \
+	gpgme.h types.h util.h util.c debug.c \
 	context.h ops.h \
 	data.c recipient.c signers.c \
         wait.c wait.h \
@@ -29,6 +29,7 @@ libgpgme_la_SOURCES = \
 	genkey.c \
 	delete.c \
         rungpg.c rungpg.h status-table.h \
+	sema.h posix-sema.c w32-sema.c \
 	syshdr.h io.h posix-io.c w32-io.c \
 	gpgme.c version.c errors.c
 

@@ -59,8 +59,7 @@ genkey_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
         return;
     }
 
-    fprintf (stderr, "genkey_status: code=%d args=`%s'\n",
-             code, args );
+    DEBUG2 ("genkey_status: code=%d args=`%s'\n", code, args );
     /* FIXME: Need to do more */
 }
 

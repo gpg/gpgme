@@ -33,16 +33,8 @@
 #include <fcntl.h>
 #include "syshdr.h"
 
+#include "util.h"
 #include "io.h"
-
-#define DEBUG_SELECT_ENABLED 0
-
-#if DEBUG_SELECT_ENABLED
-# define DEBUG_SELECT(a) fprintf a
-#else
-# define DEBUG_SELECT(a) do { } while(0)
-#endif
-
 
 int
 _gpgme_io_read ( int fd, void *buffer, size_t count )
@@ -137,8 +129,7 @@ _gpgme_io_spawn ( const char *path, char **argv,
             if (fd_child_list[i].dup_to != -1 ) {
                 if ( dup2 (fd_child_list[i].fd,
                            fd_child_list[i].dup_to ) == -1 ) {
-                    fprintf (stderr, "dup2 failed in child: %s\n",
-                             strerror (errno));
+                    DEBUG1 ("dup2 failed in child: %s\n", strerror (errno));
                     _exit (8);
                 }
                 if ( fd_child_list[i].dup_to == 0 )
@@ -152,26 +143,21 @@ _gpgme_io_spawn ( const char *path, char **argv,
         if( !duped_stdin || !duped_stderr ) {
             int fd = open ( "/dev/null", O_RDWR );
             if ( fd == -1 ) {
-                fprintf (stderr,"can't open `/dev/null': %s\n",
-                         strerror (errno) );
+                DEBUG1 ("can't open `/dev/null': %s\n", strerror (errno) );
                 _exit (8);
             }
             /* Make sure that the process has a connected stdin */
             if ( !duped_stdin ) {
                 if ( dup2 ( fd, 0 ) == -1 ) {
-                    fprintf (stderr,"dup2(/dev/null, 0) failed: %s\n",
+                    DEBUG1("dup2(/dev/null, 0) failed: %s\n",
                              strerror (errno) );
                     _exit (8);
                 }
             }
-            /* We normally don't want all the normal output */
             if ( !duped_stderr ) {
-                if (!getenv ("GPGME_DEBUG") ) {
-                    if ( dup2 ( fd, 2 ) == -1 ) {
-                        fprintf (stderr,"dup2(dev/null, 2) failed: %s\n",
-                                 strerror (errno) );
-                        _exit (8);
-                    }
+                if ( dup2 ( fd, 2 ) == -1 ) {
+                    DEBUG1 ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
+                    _exit (8);
                 }
             }
             close (fd);
@@ -180,7 +166,7 @@ _gpgme_io_spawn ( const char *path, char **argv,
         execv ( path, argv );
         /* Hmm: in that case we could write a special status code to the
          * status-pipe */
-        fprintf (stderr,"exec of `%s' failed\n", path );
+        DEBUG1 ("exec of `%s' failed\n", path );
         _exit (8);
     } /* end child */
     
@@ -230,12 +216,13 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
     static fd_set writefds;
     int any, i, max_fd, n, count;
     struct timeval timeout = { 0, 50 }; /* Use a 50ms timeout */
+    void *dbg_help;
     
     FD_ZERO ( &readfds );
     FD_ZERO ( &writefds );
     max_fd = 0;
 
-    DEBUG_SELECT ((stderr, "gpgme:select on [ "));
+    DEBUG_BEGIN (dbg_help, "gpgme:select on [ ");
     any = 0;
     for ( i=0; i < nfds; i++ ) {
         if ( fds[i].fd == -1 ) 
@@ -245,7 +232,7 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
             FD_SET ( fds[i].fd, &readfds );
             if ( fds[i].fd > max_fd )
                 max_fd = fds[i].fd;
-            DEBUG_SELECT ((stderr, "r%d ", fds[i].fd ));
+            DEBUG_ADD1 (dbg_help, "r%d ", fds[i].fd );
             any = 1;
         }
         else if ( fds[i].for_write ) {
@@ -253,12 +240,12 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
             FD_SET ( fds[i].fd, &writefds );
             if ( fds[i].fd > max_fd )
                 max_fd = fds[i].fd;
-            DEBUG_SELECT ((stderr, "w%d ", fds[i].fd ));
+            DEBUG_ADD1 (dbg_help, "w%d ", fds[i].fd );
             any = 1;
         }
         fds[i].signaled = 0;
     }
-    DEBUG_SELECT ((stderr, "]\n" ));
+    DEBUG_END (dbg_help, "]" );
     if ( !any )
         return 0;
 
@@ -266,20 +253,20 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
         count = select ( max_fd+1, &readfds, &writefds, NULL, &timeout );
     } while ( count < 0 && errno == EINTR);
     if ( count < 0 ) {
-        fprintf (stderr, "_gpgme_io_select failed: %s\n", strerror (errno) );
+        DEBUG1 ("_gpgme_io_select failed: %s\n", strerror (errno) );
         return -1; /* error */
     }
 
-#if DEBUG_SELECT_ENABLED
-    fprintf (stderr, "gpgme:select OK [ " );
-    for (i=0; i <= max_fd; i++ ) {
-        if (FD_ISSET (i, &readfds) )
-            fprintf (stderr, "r%d ", i );
-        if (FD_ISSET (i, &writefds) )
-            fprintf (stderr, "w%d ", i );
+    DEBUG_BEGIN (dbg_help, "select OK [ " );
+    if (DEBUG_ENABLED(dbg_help)) {
+        for (i=0; i <= max_fd; i++ ) {
+            if (FD_ISSET (i, &readfds) )
+                DEBUG_ADD1 (dbg_help, "r%d ", i );
+            if (FD_ISSET (i, &writefds) )
+                DEBUG_ADD1 (dbg_help, "w%d ", i );
+        }
+        DEBUG_END (dbg_help, "]" );
     }
-    fprintf (stderr, "]\n" );
-#endif
     
     /* n is used to optimize it a little bit */
     for ( n=count, i=0; i < nfds && n ; i++ ) {

@@ -27,6 +27,7 @@
 #include "gpgme.h"
 #include "context.h"
 #include "rungpg.h"
+#include "sema.h"
 #include "util.h"
 
 
@@ -34,6 +35,18 @@ static int lineno;
 static char *tmp_engine_version;
 
 static const char *get_engine_info (void);
+
+
+static void
+do_subsystem_inits (void)
+{
+    static int done = 0;
+
+    if (done)
+        return;
+    _gpgme_sema_subsystem_init ();
+}
+
 
 
 static const char*
@@ -108,13 +121,17 @@ compare_versions ( const char *my_version, const char *req_version )
  * Check that the the version of the library is at minimum the requested one
  * and return the version string; return NULL if the condition is not
  * met.  If a NULL is passed to this function, no check is done and
- * the version string is simply returned.
+ * the version string is simply returned.  It is a pretty good idea to
+ * run this function as soon as poossible, becuase it also intializes 
+ * some subsystems.  In a multithreaded environment if should be called
+ * before the first thread is created.
  * 
  * Return value: The version string or NULL
  **/
 const char *
 gpgme_check_version ( const char *req_version )
 {
+    do_subsystem_inits ();
     return compare_versions ( VERSION, req_version );
 }
 
@@ -134,6 +151,7 @@ gpgme_check_version ( const char *req_version )
 const char *
 gpgme_get_engine_info ()
 {
+    do_subsystem_inits ();
     return get_engine_info ();
 }
 
