@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include <gpgme.h>
 
@@ -47,18 +48,12 @@ print_data (gpgme_data_t dh)
     fail_if_err (GPGME_File_Error);
 }
 
-static gpgme_error_t
-passphrase_cb (void *opaque, const char *desc,
-	       void **r_hd, const char **result)
-{
-  if (!desc)
-    /* Cleanup by looking at *r_hd.  */
-    return 0;
 
-  *result = "abc";
-  fprintf (stderr, "%% requesting passphrase for `%s': ", desc);
-  fprintf (stderr, "sending `%s'\n", *result);
-  
+static gpgme_error_t
+passphrase_cb (void *opaque, const char *uid_hint, const char *passphrase_info,
+	       int last_was_bad, int fd)
+{
+  write (fd, "abc\n", 4);
   return 0;
 }
 

@@ -24,6 +24,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include <gpgme.h>
 
@@ -58,24 +59,18 @@ flush_data (gpgme_data_t dh)
 
 
 static gpgme_error_t
-passphrase_cb (void *opaque, const char *desc,
-	       void **r_hd, const char **result)
+passphrase_cb (void *opaque, const char *uid_hint, const char *passphrase_info,
+	       int last_was_bad, int fd)
 {
-  if (!desc)
-    /* Cleanup by looking at *r_hd.  */
-    return 0;
-
-  *result = "abc";
-  fprintf (stderr, "%% requesting passphrase for `%s': ", desc);
-  fprintf (stderr, "sending `%s'\n", *result);
-  
+  write (fd, "abc\n", 4);
   return 0;
 }
 
 
 gpgme_error_t
-edit_fnc (void *opaque, gpgme_status_code_t status, const char *args, const char **result)
+edit_fnc (void *opaque, gpgme_status_code_t status, const char *args, int fd)
 {
+  char *result = NULL;
   gpgme_data_t out = (gpgme_data_t) opaque;
 
   fputs ("[-- Response --]\n", stdout);
@@ -83,36 +78,34 @@ edit_fnc (void *opaque, gpgme_status_code_t status, const char *args, const char
 
   fprintf (stdout, "[-- Code: %i, %s --]\n", status, args);
  
+  if (!strcmp (args, "keyedit.prompt"))
+    {
+      static int step = 0;
+
+      switch (step)
+	{
+	case 0:
+	  result = "fpr";
+	  break;
+	case 1:
+	  result = "expire";
+	  break;
+	default:
+	  result = "quit";
+	  break;
+	}
+      step++;
+    }
+  else if (!strcmp (args, "keyedit.save.okay"))
+    result = "Y";
+  else if (!strcmp (args, "keygen.valid"))
+    result = "0";
+
   if (result)
     {
-      if (!strcmp (args, "keyedit.prompt"))
-	{
-	  static int step = 0;
-
-	  switch (step)
-	    {
-	    case 0:
-	      *result = "fpr";
-	      break;
-	    case 1:
-	      *result = "expire";
-	      break;
-	    default:
-	      *result = "quit";
-	      break;
-	    }
-	  step++;
-	}
-      else if (!strcmp (args, "keyedit.save.okay"))
-	{
-	  *result = "Y";
-	}
-      else if (!strcmp (args, "keygen.valid"))
-	{
-	  *result = "0";
-	}
+      write (fd, result, strlen (result));
+      write (fd, "\n", 1);
     }
-
   return 0;
 }
 

@@ -109,8 +109,8 @@ struct gpg_object_s
   {
     int used;
     int fd;
+    void *cb_data;
     int idx;		/* Index in fd_data_map */
-    gpgme_data_t cb_data;   /* hack to get init the above idx later */
     gpgme_status_code_t code;  /* last code */
     char *keyword;       /* what has been requested (malloced) */
     EngineCommandHandler fnc; 
@@ -301,16 +301,19 @@ gpg_release (void *engine)
     {
       struct arg_and_data_s *next = gpg->arglist->next;
 
-      free (gpg->arglist);
+      if (gpg->arglist)
+	free (gpg->arglist);
       gpg->arglist = next;
     }
 
-  free (gpg->status.buffer);
-  free (gpg->colon.buffer);
+  if (gpg->status.buffer)
+    free (gpg->status.buffer);
+  if (gpg->colon.buffer)
+    free (gpg->colon.buffer);
   if (gpg->argv)
     free_argv (gpg->argv);
-  gpgme_data_release (gpg->cmd.cb_data);
-  free (gpg->cmd.keyword);
+  if (gpg->cmd.keyword)
+    free (gpg->cmd.keyword);
 
   if (gpg->status.fd[0] != -1)
     _gpgme_io_close (gpg->status.fd[0]);
@@ -320,7 +323,8 @@ gpg_release (void *engine)
     _gpgme_io_close (gpg->colon.fd[0]);
   if (gpg->colon.fd[1] != -1)
     _gpgme_io_close (gpg->colon.fd[1]);
-  free_fd_data_map (gpg->fd_data_map);
+  if (gpg->fd_data_map)
+    free_fd_data_map (gpg->fd_data_map);
   if (gpg->cmd.fd != -1)
     _gpgme_io_close (gpg->cmd.fd);
   free (gpg);
@@ -436,60 +440,20 @@ gpg_set_colon_line_handler (void *engine, EngineColonLineHandler fnc,
 }
 
 
-/* Here we handle --command-fd.  This works closely together with the
-   status handler.  */
 static gpgme_error_t
-command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
+command_handler (void *opaque, int fd)
 {
   gpgme_error_t err;
-  GpgObject gpg = opaque;
-  const char *value;
-  int value_len;
+  GpgObject gpg = (GpgObject) opaque;
 
-  DEBUG0 ("command_cb: enter\n");
   assert (gpg->cmd.used);
-  if (!buffer || !length || !nread)
-    return 0; /* These values are reserved for extensions.  */
-  *nread = 0;
-  if (!gpg->cmd.code)
-    {
-      DEBUG0 ("command_cb: no code\n");
-      return -1;
-    }
-    
-  if (!gpg->cmd.fnc)
-    {
-      DEBUG0 ("command_cb: no user cb\n");
-      return -1;
-    }
+  assert (gpg->cmd.code);
+  assert (gpg->cmd.fnc);
 
-  /* FIXME catch error */
-  err = gpg->cmd.fnc (gpg->cmd.fnc_value, 
-		      gpg->cmd.code, gpg->cmd.keyword, &value);
+  err = gpg->cmd.fnc (gpg->cmd.fnc_value, gpg->cmd.code, gpg->cmd.keyword, fd);
   if (err)
     return err;
 
-  if (!value)
-    {
-      DEBUG0 ("command_cb: no data from user cb\n");
-      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value, &value);
-      return -1;
-    }
-
-  value_len = strlen (value);
-  if (value_len + 1 > length)
-    {
-      DEBUG0 ("command_cb: too much data from user cb\n");
-      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value, &value);
-      return -1;
-    }
-
-  memcpy (buffer, value, value_len);
-  if (!value_len || (value_len && value[value_len-1] != '\n')) 
-    buffer[value_len++] = '\n';
-  *nread = value_len;
-    
-  gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value, &value);
   gpg->cmd.code = 0;
   /* And sleep again until read_status will wake us up again.  */
   /* XXX We must check if there are any more fds active after removing
@@ -502,6 +466,7 @@ command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
 }
 
 
+
 /* The Fnc will be called to get a value for one of the commands with
    a key KEY.  If the Code pssed to FNC is 0, the function may release
    resources associated with the returned value from another call.  To
@@ -512,17 +477,14 @@ gpg_set_command_handler (void *engine, EngineCommandHandler fnc,
 			 void *fnc_value, gpgme_data_t linked_data)
 {
   GpgObject gpg = engine;
-  gpgme_data_t tmp;
-  gpgme_error_t err;
 
-  err = gpgme_data_new_with_read_cb (&tmp, command_cb, gpg);
-  if (err)
-    return err;
-        
   add_arg (gpg, "--command-fd");
-  add_data (gpg, tmp, -2, 0);
-  gpg->cmd.cb_data = tmp;
+  /* This is a hack.  We don't have a real data object.  The only
+     thing that matters is that we use something unique, so we use the
+     address of the cmd structure in the gpg object.  */
+  add_data (gpg, (void *) &gpg->cmd, -2, 0);
   gpg->cmd.fnc = fnc;
+  gpg->cmd.cb_data = (void *) &gpg->cmd;
   gpg->cmd.fnc_value = fnc_value;
   gpg->cmd.linked_data = linked_data;
   gpg->cmd.used = 1;
@@ -579,7 +541,7 @@ build_argv (GpgObject gpg)
   if (use_agent)
     argc++;
   if (!gpg->cmd.used)
-    argc++;
+    argc++;	/* --batch */
   argc += 2; /* --comment */
 
   argv = calloc (argc + 1, sizeof *argv);
@@ -843,7 +805,8 @@ read_status (GpgObject gpg)
 			      || r->code == GPGME_STATUS_GET_HIDDEN))
 			{
 			  gpg->cmd.code = r->code;
-			  free (gpg->cmd.keyword);
+			  if (gpg->cmd.keyword)
+			    free (gpg->cmd.keyword);
 			  gpg->cmd.keyword = strdup (rest);
 			  if (!gpg->cmd.keyword)
 			    return GPGME_Out_Of_Core;
@@ -877,8 +840,7 @@ read_status (GpgObject gpg)
 			    }
 
 			  add_io_cb (gpg, gpg->cmd.fd, 0,
-				     _gpgme_data_outbound_handler,
-				     gpg->fd_data_map[gpg->cmd.idx].data,
+				     command_handler, gpg,
 				     &gpg->fd_data_map[gpg->cmd.idx].tag);
 			  gpg->fd_data_map[gpg->cmd.idx].fd = gpg->cmd.fd;
 			  gpg->cmd.fd = -1;

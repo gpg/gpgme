@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <gpgme.h>
 
@@ -55,13 +56,10 @@ print_data (gpgme_data_t dh)
 
 
 static gpgme_error_t
-passphrase_cb (void *opaque, const char *desc, void **hd, const char **result)
+passphrase_cb (void *opaque, const char *uid_hint, const char *passphrase_info,
+	       int last_was_bad, int fd)
 {
-  /* Cleanup by looking at *hd.  */
-  if (!desc)
-    return 0;
-
-  *result = "abc";
+  write (fd, "abc\n", 4);
   return 0;
 }
 

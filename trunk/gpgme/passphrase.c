@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "gpgme.h"
 #include "context.h"
@@ -33,8 +34,7 @@
 typedef struct
 {
   int no_passphrase;
-  void *last_pw_handle;
-  char *userid_hint;
+  char *uid_hint;
   char *passphrase_info;
   int bad_passphrase;
 } *op_data_t;
@@ -45,8 +45,10 @@ release_op_data (void *hook)
 {
   op_data_t opd = (op_data_t) hook;
 
-  free (opd->passphrase_info);
-  free (opd->userid_hint);
+  if (opd->passphrase_info)
+    free (opd->passphrase_info);
+  if (opd->uid_hint)
+    free (opd->uid_hint);
 }
 
 
@@ -69,9 +71,9 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
   switch (code)
     {
     case GPGME_STATUS_USERID_HINT:
-      if (opd->userid_hint)
-	free (opd->userid_hint);
-      if (!(opd->userid_hint = strdup (args)))
+      if (opd->uid_hint)
+	free (opd->uid_hint);
+      if (!(opd->uid_hint = strdup (args)))
 	return GPGME_Out_Of_Core;
       break;
 
@@ -112,64 +114,45 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 
 
 gpgme_error_t
-_gpgme_passphrase_command_handler (void *priv, gpgme_status_code_t code,
-				   const char *key, const char **result)
+_gpgme_passphrase_command_handler_internal (void *priv,
+					    gpgme_status_code_t code,
+					    const char *key, int fd,
+					    int *processed)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
   op_data_t opd;
 
-  if (!ctx->passphrase_cb)
-    return 0;
+  assert (ctx->passphrase_cb);
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_PASSPHRASE, (void **) &opd,
 			       sizeof (*opd), release_op_data);
   if (err)
     return err;
 
-  if (!code)
-    {
-      /* We have been called for cleanup.  */
-      if (ctx->passphrase_cb)
-	/* FIXME: Take the key in account.  */
-	err = ctx->passphrase_cb (ctx->passphrase_cb_value, NULL,
-				  &opd->last_pw_handle, NULL);
-      *result = NULL;
-      return err;
-    }
-
-  if (!key || !ctx->passphrase_cb)
-    {
-      *result = NULL;
-      return 0;
-    }
-    
   if (code == GPGME_STATUS_GET_HIDDEN && !strcmp (key, "passphrase.enter"))
     {
-      const char *userid_hint = opd->userid_hint;
-      const char *passphrase_info = opd->passphrase_info;
-      int bad_passphrase = opd->bad_passphrase;
-      char *buf;
+      if (processed)
+	processed = 1;
 
+      err = ctx->passphrase_cb (ctx->passphrase_cb_value,
+				opd->uid_hint, opd->passphrase_info,
+				opd->bad_passphrase, fd);
+
+      /* Reset bad passphrase flag, in case it is correct now.  */
       opd->bad_passphrase = 0;
-      if (!userid_hint)
-	userid_hint = "[User ID hint missing]";
-      if (!passphrase_info)
-	passphrase_info = "[passphrase info missing]";
-      buf = malloc (20 + strlen (userid_hint)
-		    + strlen (passphrase_info) + 3);
-      if (!buf)
-	return GPGME_Out_Of_Core;
-      sprintf (buf, "%s\n%s\n%s",
-	       bad_passphrase ? "TRY_AGAIN":"ENTER",
-	       userid_hint, passphrase_info);
 
-      err = ctx->passphrase_cb (ctx->passphrase_cb_value, buf,
-				&opd->last_pw_handle, result);
-      free (buf);
       return err;
     }
 
-  *result = NULL;
   return 0;
+}
+
+
+gpgme_error_t
+_gpgme_passphrase_command_handler (void *priv, gpgme_status_code_t code,
+				   const char *key, int fd)
+{
+  return _gpgme_passphrase_command_handler_internal (priv, code, key, fd,
+						     NULL);
 }

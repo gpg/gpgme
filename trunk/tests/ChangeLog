@@ -1,3 +1,10 @@
+2003-05-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* (t-decrypt-verify.c, t-decrypt.c, t-edit.c, t-encrypt-sign.c,
+	t-encrypt-sym.c, t-sign.c, t-signers.c): Include <unistd.h>.
+	(passphrase_cb): Rewritten.
+	* t-edit.c (edit_fnc): Rewritten.
+
 2003-05-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-keylist-sig.c (main): Remove timestamp check.

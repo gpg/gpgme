@@ -614,9 +614,10 @@ typedef struct _gpgme_key *gpgme_key_t;
 /* Types for callback functions.  */
 
 /* Request a passphrase from the user.  */
-typedef gpgme_error_t (*gpgme_passphrase_cb_t) (void *hook, const char *desc,
-						void **r_hd,
-						const char **result);
+typedef gpgme_error_t (*gpgme_passphrase_cb_t) (void *hook,
+						const char *uid_hint,
+						const char *passphrase_info,
+						int prev_was_bad, int fd);
 
 /* Inform the user about progress made.  */
 typedef void (*gpgme_progress_cb_t) (void *opaque, const char *what,
@@ -625,8 +626,7 @@ typedef void (*gpgme_progress_cb_t) (void *opaque, const char *what,
 /* Interact with the user about an edit operation.  */
 typedef gpgme_error_t (*gpgme_edit_cb_t) (void *opaque,
 					  gpgme_status_code_t status,
-					  const char *args,
-					  const char **reply);
+					  const char *args, int fd);
 
 
 /* Context management functions.  */
