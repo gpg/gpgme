@@ -1,10 +1,21 @@
 2001-12-13  Werner Koch  <wk@gnupg.org>
 
+	* engine-gpgsm.c (_gpgme_gpgsm_set_colon_line_handler): New.
+	(gpgsm_status_handler): Pass datalines to a colon handler
+	* engine.c (_gpgme_engine_set_colon_line_handler): Set the colon
+	handler for gpgsm.
+
 	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist): Allow NULL for
 	pattern.
 	(gpgsm_assuan_simple_command): Removed underscore from
 	assuan_write_line.
-	(_gpgme_gpgsm_start): Ditto. 
+	(_gpgme_gpgsm_start): Ditto.
+	(gpgsm_assuan_simple_command): Replaced interal Assuan read
+	function by the new assuan_read_line.  Removed the use of the
+	internal header.
+	(gpgsm_status_handler): Ditto. Use the new assuan_pending_line.
+	(_gpgme_gpgsm_start): Use the documented way to get an fd from
+	assuan.
 
 	* keylist.c (keylist_colon_handler): Handle "crt" records
 	* key.h (gpgme_key_s): Add an x509 flag.

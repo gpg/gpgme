@@ -36,13 +36,6 @@
 #include <assert.h>
 #include <fcntl.h> /* FIXME */
 
-/* FIXME */
-#include "../assuan/assuan-defs.h"
-#undef xtrymalloc
-#undef xtrycalloc
-#undef xtryrealloc
-#undef xfree
-
 #include "rungpg.h"
 #include "status-table.h"
 
@@ -57,6 +50,11 @@
 #include "engine-gpgsm.h"
 
 #include "assuan.h"
+
+#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
+                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
+#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+
 
 struct gpgsm_object_s
 {
@@ -80,14 +78,19 @@ struct gpgsm_object_s
     GpgStatusHandler fnc;
     void *fnc_value;
   } status;
+
+  struct
+  {
+    GpgColonLineHandler fnc;
+    void *fnc_value;
+  } colon;
   
 };
 
 const char *
 _gpgme_gpgsm_get_version (void)
 {
-#warning  version check is disabled
-  static const char *gpgsm_version = "0.0.1";
+  static const char *gpgsm_version;
 
   /* FIXME: Locking.  */
   if (!gpgsm_version)
@@ -192,25 +195,27 @@ _gpgme_gpgsm_release (GpgsmObject gpgsm)
 }
 
 static AssuanError
-gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *line)
+gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd)
 {
   AssuanError err;
+  char *line;
+  size_t linelen;
 
-  err = assuan_write_line (ctx, line);
+  err = assuan_write_line (ctx, cmd);
   if (err)
     return err;
 
   do
     {
-      err = _assuan_read_line (ctx);
+      err = assuan_read_line (ctx, &line, &linelen);
       if (err)
 	return err;
     }
-  while (*ctx->inbound.line == '#' || !ctx->inbound.linelen);
+  while (*line == '#' || !linelen);
   
-  if (ctx->inbound.linelen >= 2
-      && ctx->inbound.line[0] == 'O' && ctx->inbound.line[1] == 'K'
-      && (ctx->inbound.line[2] == '\0' || ctx->inbound.line[2] == ' '))
+  if (linelen >= 2
+      && line[0] == 'O' && line[1] == 'K'
+      && (line[2] == '\0' || line[2] == ' '))
     return 0;
   else
     return ASSUAN_General_Error;
@@ -477,21 +482,17 @@ gpgsm_status_handler (void *opaque, int pid, int fd)
 {
   int err;
   GpgsmObject gpgsm = opaque;
-  ASSUAN_CONTEXT actx = gpgsm->assuan_ctx;
   char *line;
-  int linelen;
+  size_t linelen;
 
   do
     {
-      assert (fd == gpgsm->assuan_ctx->inbound.fd);
+      err = assuan_read_line (gpgsm->assuan_ctx, &line, &linelen);
 
-      err = _assuan_read_line (gpgsm->assuan_ctx);
-      line = actx->inbound.line;
-      linelen = strlen (line);
-
-      if ((linelen >= 2
-	   && line[0] == 'O' && line[1] == 'K'
-	   && (line[2] == '\0' || line[2] == ' '))
+      if (err
+          || (linelen >= 2
+              && line[0] == 'O' && line[1] == 'K'
+              && (line[2] == '\0' || line[2] == ' '))
 	  || (linelen >= 3
 	      && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
 	      && (line[3] == '\0' || line[3] == ' ')))
@@ -501,9 +502,41 @@ gpgsm_status_handler (void *opaque, int pid, int fd)
 	    gpgsm->status.fnc (gpgsm->status.fnc_value, STATUS_EOF, "");
 	  return 1;
 	}
-      /* FIXME: Parse the status and call the handler.  */
-      
+
       if (linelen > 2
+	  && line[0] == 'D' && line[1] == ' '
+          && gpgsm->colon.fnc )
+        {
+          unsigned char *s, *d;
+
+          line += 2;
+          linelen -= 2;
+          /* Hmmm, we are using the colon handler even for plain
+             inline data - strange name for that fucntion but for
+             historic reasons we keep it */
+          for (s=d=line; linelen; linelen--)
+            {
+              if (*s == '%' && linelen > 2)
+                { /* handle escaping */
+                  s++;
+                  *d++ = xtoi_2 (s);
+                  s += 2;
+                  linelen -= 2;
+                }
+              else
+                *d++ = *s++;
+            }
+          *d = 0; /* add a hidden string terminator */
+
+          /* fixme: should we handle the return code? */
+          /* fixme: Hmmm: we can't use this for binary data because we
+             assume this is a string.  For the current usage of colon
+             output it is correct */
+          /* FIXME: we need extra bufferring to pass colon lines line
+             by line */
+          gpgsm->colon.fnc (gpgsm->colon.fnc_value, line);
+        }
+      else if (linelen > 2
 	  && line[0] == 'S' && line[1] == ' ')
 	{
 	  struct status_table_s t, *r;
@@ -528,7 +561,7 @@ gpgsm_status_handler (void *opaque, int pid, int fd)
 	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", t.name, rest);
 	}
     }
-  while (gpgsm->assuan_ctx->inbound.attic.linelen);
+  while (assuan_pending_line (gpgsm->assuan_ctx));
   
   return 0;
 }
@@ -543,19 +576,39 @@ _gpgme_gpgsm_set_status_handler (GpgsmObject gpgsm,
   gpgsm->status.fnc_value = fnc_value;
 }
 
+void
+_gpgme_gpgsm_set_colon_line_handler (GpgsmObject gpgsm,
+                                     GpgColonLineHandler fnc, void *fnc_value) 
+{
+  assert (gpgsm);
+
+  gpgsm->colon.fnc = fnc;
+  gpgsm->colon.fnc_value = fnc_value;
+}
+
 GpgmeError
 _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque)
 {
   GpgmeError err = 0;
   pid_t pid;
+  int fdlist[5];
+  int nfds;
 
   if (!gpgsm)
     return mk_error (Invalid_Value);
 
   pid = assuan_get_pid (gpgsm->assuan_ctx);
 
+  /* We need to know the fd used by assuan for reads.  We do this by
+     using the assumption that the first returned fd from
+     assuan_get_active_fds() is always this one. */
+  nfds = assuan_get_active_fds (gpgsm->assuan_ctx, 0 /* read fds */,
+                                fdlist, DIM (fdlist));
+  if (nfds < 1)
+    return mk_error (General_Error);
   err = _gpgme_register_pipe_handler (opaque, gpgsm_status_handler, gpgsm, pid,
-				      gpgsm->assuan_ctx->inbound.fd, 1);
+                                      fdlist[0], 1);
+
 
   if (gpgsm->input_fd != -1)
     {

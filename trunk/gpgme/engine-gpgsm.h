@@ -33,6 +33,8 @@ void _gpgme_gpgsm_release (GpgsmObject gpg);
 
 void _gpgme_gpgsm_set_status_handler (GpgsmObject gpgsm,
 				      GpgStatusHandler fnc, void *fnc_value);
+void _gpgme_gpgsm_set_colon_line_handler (GpgsmObject gpgsm,
+                                   GpgColonLineHandler fnc, void *fnc_value) ;
 GpgmeError _gpgme_gpgsm_op_decrypt (GpgsmObject gpgsm, GpgmeData ciph,
 				    GpgmeData plain);
 GpgmeError _gpgme_gpgsm_op_delete (GpgsmObject gpgsm, GpgmeKey key,
@@ -57,3 +59,7 @@ GpgmeError _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig,
 GpgmeError _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque);
 
 #endif /* ENGINE_GPGSM_H */
+
+
+
+
