@@ -46,6 +46,8 @@
 
 /* Path to the GpgSM binary.  */
 #undef GPGSM_PATH
+/* Min. needed GpgSM version. */
+#undef NEED_GPGSM_VERSION
 
 /* Stuff needed by jnlib.  */
 #undef HAVE_BYTE_TYPEDEF
