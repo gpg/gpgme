@@ -1,3 +1,12 @@
+2001-12-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/cert_dfn_pca01.der: New file.
+	* gpgsm/cert_dfn_pca15.der: Likewise.
+	* gpgsm/cert_g10code_test1.der: Likewise.
+	* gpgsm/t-import.c: Likewise.
+	* gpgsm/Makefile.am (EXTRADIST): Add new files.
+	(TESTS): Add t-import.
+
 2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/: New directory.
