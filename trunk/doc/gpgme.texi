@@ -1803,7 +1803,7 @@ The function @code{gpgme_key_release} is an alias for
 @cindex key, creation
 @cindex key ring, add
 
-@deftypefun GpgmeError gpgme_op_genkey (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{pubkey}}, @w{GpgmeData @var{seckey}})
+@deftypefun GpgmeError gpgme_op_genkey (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{pubkey}}, @w{GpgmeData @var{seckey}}, @w{char **@var{fpr}})
 The function @code{gpgme_op_genkey} generates a new key pair in the
 context @var{ctx} and puts it into the standard key ring if both
 @var{pubkey} and @var{seckey} are @code{NULL}.  In this case the
@@ -1855,6 +1855,13 @@ Strings should be given in UTF-8 encoding.  The only format supported
 for now is ``internal''.  The content of the @code{GnupgKeyParms}
 container is passed verbatim to GnuPG.  Control statements are not
 allowed.
+
+If @var{fpr} is not a null pointer, the function succeeds, and the
+crypto engine supports it, *@var{fpr} will contain a string with the
+fingerprint of the key, allocated with @code{malloc}.  If both a
+primary and a sub key was generated, the fingerprint of the primary
+key will be returned.  If the crypto engine does not provide the
+fingerprint, *@var{fpr} will be a null pointer.
 
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{parms} is not

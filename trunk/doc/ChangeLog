@@ -1,3 +1,8 @@
+2002-11-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Generating Keys): Document new argument to
+	gpgme_op_genkey.
+
 2002-11-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Verify): Fix prototype of gpgme_get_sig_key.

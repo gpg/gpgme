@@ -1,23 +1,22 @@
-/* gpgme.h -  GnuPG Made Easy
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+/* gpgme.h - Public interface to GnuPG Made Easy.
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002 g10 Code GmbH
+
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #ifndef GPGME_H
 #define GPGME_H
@@ -115,10 +114,10 @@ GpgmeDataType;
 /* The possible encoding mode of GpgmeData objects.  */
 typedef enum
   {
-    GPGME_DATA_ENCODING_NONE   = 0, /* i.e. not specified */
+    GPGME_DATA_ENCODING_NONE   = 0,	/* I.e. not specified.  */
     GPGME_DATA_ENCODING_BINARY = 1,
-    GPGME_DATA_ENCODING_BASE64 = 2, 
-    GPGME_DATA_ENCODING_ARMOR  = 3 /* Either PEM or OpenPGP Armor */
+    GPGME_DATA_ENCODING_BASE64 = 2,
+    GPGME_DATA_ENCODING_ARMOR  = 3	/* Either PEM or OpenPGP Armor.  */
   }
 GpgmeDataEncoding;
 
@@ -137,20 +136,20 @@ typedef enum
   }
 GpgmeSigStat;
 
-/* Flags used with the GPGME_ATTR_SIG_SUMMARY. */
+/* Flags used with the GPGME_ATTR_SIG_SUMMARY.  */
 enum 
   {
-    GPGME_SIGSUM_VALID       = 0x0001,  /* The signature is fully valid */
-    GPGME_SIGSUM_GREEN       = 0x0002,  /* The signature is good. */
-    GPGME_SIGSUM_RED         = 0x0004,  /* The signature is bad. */
-    GPGME_SIGSUM_KEY_REVOKED = 0x0010,  /* One key has been revoked. */
-    GPGME_SIGSUM_KEY_EXPIRED = 0x0020,  /* One key has expired. */
-    GPGME_SIGSUM_SIG_EXPIRED = 0x0040,  /* The signature has expired. */
-    GPGME_SIGSUM_KEY_MISSING = 0x0080,  /* Can't verify: key missing. */
-    GPGME_SIGSUM_CRL_MISSING = 0x0100,  /* CRL not available. */
-    GPGME_SIGSUM_CRL_TOO_OLD = 0x0200,  /* Available CRL is too old. */
-    GPGME_SIGSUM_BAD_POLICY  = 0x0400,  /* A policy was not met. */
-    GPGME_SIGSUM_SYS_ERROR   = 0x0800   /* A system error occured. */
+    GPGME_SIGSUM_VALID       = 0x0001,  /* The signature is fully valid.  */
+    GPGME_SIGSUM_GREEN       = 0x0002,  /* The signature is good.  */
+    GPGME_SIGSUM_RED         = 0x0004,  /* The signature is bad.  */
+    GPGME_SIGSUM_KEY_REVOKED = 0x0010,  /* One key has been revoked.  */
+    GPGME_SIGSUM_KEY_EXPIRED = 0x0020,  /* One key has expired.  */
+    GPGME_SIGSUM_SIG_EXPIRED = 0x0040,  /* The signature has expired.  */
+    GPGME_SIGSUM_KEY_MISSING = 0x0080,  /* Can't verify: key missing.  */
+    GPGME_SIGSUM_CRL_MISSING = 0x0100,  /* CRL not available.  */
+    GPGME_SIGSUM_CRL_TOO_OLD = 0x0200,  /* Available CRL is too old.  */
+    GPGME_SIGSUM_BAD_POLICY  = 0x0400,  /* A policy was not met.  */
+    GPGME_SIGSUM_SYS_ERROR   = 0x0800   /* A system error occured.  */
   };
 
 
@@ -716,11 +715,14 @@ GpgmeError gpgme_op_export (GpgmeCtx ctx, GpgmeRecipients recp,
 
 /* Generate a new keypair and add it to the keyring.  PUBKEY and
    SECKEY should be null for now.  PARMS specifies what keys should be
-   generated.  */
+   generated.  On success, if *FPR is non-null, it contains a
+   malloc()'ed string with the fingerprint of the generated key on
+   success.  */
 GpgmeError gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
 				  GpgmeData pubkey, GpgmeData seckey);
 GpgmeError gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
-			    GpgmeData pubkey, GpgmeData seckey);
+			    GpgmeData pubkey, GpgmeData seckey,
+			    char **fpr);
 
 /* Delete KEY from the keyring.  If ALLOW_SECRET is non-zero, secret
    keys are also deleted.  */
