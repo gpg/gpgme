@@ -28,17 +28,17 @@
 #define ENABLE_GPGSM 1
 #endif
 
-#ifdef ENABLE_GPGSM
-
 #include <sys/types.h>
 #include <assert.h>
 
+#ifdef ENABLE_GPGSM
 /* FIXME */
 #include "../assuan/assuan-defs.h"
 #undef xtrymalloc
 #undef xtrycalloc
 #undef xtryrealloc
 #undef xfree
+#endif /*ENABLE_GPGSM*/
 
 #include "gpgme.h"
 #include "util.h"
@@ -46,6 +46,8 @@
 #include "ops.h"
 #include "wait.h"
 #include "io.h"
+
+#ifdef ENABLE_GPGSM
 
 #include "engine-gpgsm.h"
 
