@@ -972,7 +972,7 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
       val = key->issuer_serial;
       break;
     case GPGME_ATTR_ISSUER:
-      val = key->issuer_name;
+      val = idx? NULL : key->issuer_name;
       break;
     case GPGME_ATTR_CHAINID:
       val = key->chain_id;
