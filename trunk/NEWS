@@ -12,11 +12,15 @@
  * The CryptPlug modules have been renamed to gpgme-openpgp and
    gpgme-smime, and they are installed in pkglibdir by `make install'.
 
+ * An idle function can be registered.
+
  * Interface changes relative to the 0.3.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_data_new_from_filepart	CHANGED: Type of LENGTH is size_t.
 GpgmePassphraseCb               CHANGED: Type of R_HD is void **.
 gpgme_op_trustlist_next		NEW
+GpgmeIdleFunc                   NEW
+gpgme_register_idle             NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.0 (2001-12-19)
