@@ -151,6 +151,23 @@ set_subkey_capability ( struct subkey_s *k, const char *s)
     }
 }
 
+static void
+set_ownertrust (GpgmeKey key, const char *s)
+{
+  /* Look at letters and stop at the first digit.  */
+  for (; *s && !my_isdigit (*s); s++)
+    {
+      switch (*s)
+	{
+	case 'n': key->otrust = GPGME_VALIDITY_NEVER; break;
+	case 'm': key->otrust = GPGME_VALIDITY_MARGINAL; break;
+	case 'f': key->otrust = GPGME_VALIDITY_FULL; break;
+	case 'u': key->otrust = GPGME_VALIDITY_ULTIMATE; break;
+        default : key->otrust = GPGME_VALIDITY_UNKNOWN; break;
+        }
+    }
+}
+
 
 /* Note: We are allowed to modify LINE.  */
 static void
@@ -312,6 +329,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
                 }
 	      break;
 	    case 9: /* ownertrust */
+              set_ownertrust (key, p);
 	      break;
 	    case 10: /* not used for gpg due to --fixed-list-mode option 
 			but gpgsm stores the issuer name */

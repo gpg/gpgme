@@ -887,8 +887,15 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
     case GPGME_ATTR_EXPIRE:  
       /* Use another get function.  */
       break;
-    case GPGME_ATTR_OTRUST:
-      val = "[fixme]";
+    case GPGME_ATTR_OTRUST:  
+      switch (key->otrust)
+        {
+        case GPGME_VALIDITY_NEVER:     val = "n"; break;
+        case GPGME_VALIDITY_MARGINAL:  val = "m"; break;
+        case GPGME_VALIDITY_FULL:      val = "f"; break;
+        case GPGME_VALIDITY_ULTIMATE:  val = "u"; break;
+        default:   val = "?"; break;
+        }
       break;
     case GPGME_ATTR_USERID:  
       for (u = key->uids; u && idx; u = u->next, idx--)
@@ -1040,6 +1047,9 @@ gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
 	;
       if (u)
 	val = u->validity;
+      break;
+    case GPGME_ATTR_OTRUST:
+      val = key->otrust;
       break;
     case GPGME_ATTR_IS_SECRET:
       val = !!key->secret;

@@ -62,6 +62,7 @@ struct gpgme_key_s {
   char *issuer_serial; /* malloced string used only with X.509 */
   char *issuer_name;   /* ditto */
   char *chain_id;      /* ditto */
+  GpgmeValidity otrust; /* only used with OpenPGP */
   struct subkey_s   keys; 
   struct user_id_s *uids;
 };
