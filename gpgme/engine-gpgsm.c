@@ -542,9 +542,12 @@ _gpgme_gpgsm_release (GpgsmObject gpgsm)
   xfree (gpgsm);
 }
 
+/* Forward declaration.  */
+static GpgStatusCode parse_status (const char *name);
 
 static GpgmeError
-gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd)
+gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd, GpgStatusHandler status_fnc,
+			     void *status_fnc_value)
 {
   AssuanError err;
   char *line;
@@ -559,22 +562,43 @@ gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd)
       err = assuan_read_line (ctx, &line, &linelen);
       if (err)
 	return map_assuan_error (err);
+
+      if (*line == '#' || !linelen)
+	continue;
+
+      if (linelen >= 2
+	  && line[0] == 'O' && line[1] == 'K'
+	  && (line[2] == '\0' || line[2] == ' '))
+	return 0;
+      else if (linelen >= 4
+	  && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
+	  && line[3] == ' ')
+	err = map_assuan_error (atoi (&line[4]));
+      else if (linelen >= 2
+	       && line[0] == 'S' && line[1] == ' ')
+	{
+	  char *rest;
+	  GpgStatusCode r;
+
+	  rest = strchr (line + 2, ' ');
+	  if (!rest)
+	    rest = line + linelen; /* set to an empty string */
+	  else
+	    *(rest++) = 0;
+
+	  r = parse_status (line + 2);
+
+	  if (r >= 0 && status_fnc)
+	    status_fnc (status_fnc_value, r, rest);
+	  else
+	    err = mk_error (General_Error);
+	}
+      else
+	err = mk_error (General_Error);
     }
-  while (*line == '#' || !linelen);
-  
-  if (linelen >= 2
-      && line[0] == 'O' && line[1] == 'K'
-      && (line[2] == '\0' || line[2] == ' '))
-    return 0;
+  while (!err);
 
-  if (linelen >= 4
-      && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
-      && line[3] == ' ')
-    err = map_assuan_error (atoi (&line[4]));
-
-  if (!err)
-    err = mk_error (General_Error);
-  return 0;
+  return err;
 }
 
 
@@ -589,7 +613,7 @@ gpgsm_set_fd (ASSUAN_CONTEXT ctx, const char *which, int fd, const char *opt)
   else
     snprintf (line, COMMANDLINELEN, "%s FD=%i", which, fd);
 
-  return gpgsm_assuan_simple_command (ctx, line);
+  return gpgsm_assuan_simple_command (ctx, line, NULL, NULL);
 }
 
 
@@ -679,16 +703,10 @@ gpgsm_set_recipients (GpgsmObject gpgsm, GpgmeRecipients recp)
 	}
       strcpy (&line[10], r->name);
       
-      err = gpgsm_assuan_simple_command (ctx, line);
+      err = gpgsm_assuan_simple_command (ctx, line, gpgsm->status.fnc,
+					 gpgsm->status.fnc_value);
       if (!err)
 	valid_recipients = 1;
-      else if (err == GPGME_Invalid_Key && gpgsm->status.fnc)
-	{
-	  /* FIXME: Include other reasons.  */
-	  line[8] = '0';	/* FIXME: Report detailed reason.  */
-	  gpgsm->status.fnc (gpgsm->status.fnc_value, STATUS_INV_RECP, &line[8]);
-	  line[8] = 'T';
-	}
       else if (err != GPGME_Invalid_Key)
 	{
 	  xfree (line);
@@ -811,7 +829,7 @@ _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
 
   if (asprintf (&line, "OPTION list-mode=%d", (keylist_mode & 3)) < 0)
     return mk_error (Out_Of_Core);
-  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line);
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
   free (line);
   if (err)
     return err;
@@ -855,7 +873,7 @@ _gpgme_gpgsm_op_keylist_ext (GpgsmObject gpgsm, const char *pattern[],
 
   if (asprintf (&line, "OPTION list-mode=%d", (keylist_mode & 3)) < 0)
     return mk_error (Out_Of_Core);
-  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line);
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
   free (line);
   if (err)
     return err;
@@ -958,7 +976,7 @@ _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
 
   if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
     return mk_error (Out_Of_Core);
-  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd);
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd, NULL, NULL);
   free (assuan_cmd);
   if (err)
     return err;
@@ -1034,6 +1052,17 @@ status_cmp (const void *ap, const void *bp)
   const struct status_table_s *b = bp;
 
   return strcmp (a->name, b->name);
+}
+
+
+static GpgStatusCode
+parse_status (const char *name)
+{
+  struct status_table_s t, *r;
+  t.name = name;
+  r = bsearch (&t, status_table, DIM(status_table) - 1,
+	       sizeof t, status_cmp);
+  return r ? r->code : -1;
 }
 
 
@@ -1155,26 +1184,24 @@ gpgsm_status_handler (void *opaque, int fd)
       else if (linelen > 2
 	  && line[0] == 'S' && line[1] == ' ')
 	{
-	  struct status_table_s t, *r;
 	  char *rest;
-	  
+	  GpgStatusCode r;
+
 	  rest = strchr (line + 2, ' ');
 	  if (!rest)
 	    rest = line + linelen; /* set to an empty string */
 	  else
-	    *rest++ = 0;
+	    *(rest++) = 0;
 
-	  t.name = line + 2;
-	  r = bsearch (&t, status_table, DIM(status_table) - 1,
-		       sizeof t, status_cmp);
+	  r = parse_status (line + 2);
 
-	  if (r)
+	  if (r >= 0)
 	    {
 	      if (gpgsm->status.fnc)
-		gpgsm->status.fnc (gpgsm->status.fnc_value, r->code, rest);
+		gpgsm->status.fnc (gpgsm->status.fnc_value, r, rest);
 	    }
 	  else
-	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", t.name, rest);
+	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", line + 2, rest);
 	}
     }
   while (assuan_pending_line (gpgsm->assuan_ctx));
