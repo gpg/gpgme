@@ -3,7 +3,7 @@
 	* autogen.sh (libtool_vers): Bump to 1.4.
 
 	* configure.ac (LIBGPGME_LT_CURRENT): Increment.
-	(LIBGPGME_LT_AGE): Likewise.
+	(LIBGPGME_LT_AGE): Reset.
 	Improve comment.
 	Fix wrong comment character.
 
