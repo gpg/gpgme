@@ -31,8 +31,7 @@
 static void
 export_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 {
-    fprintf (stderr, "export_status: code=%d args=`%s'\n",
-             code, args );
+    DEBUG2 ("export_status: code=%d args=`%s'\n", code, args );
     /* FIXME: Need to do more */
 }
 

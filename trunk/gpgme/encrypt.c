@@ -31,8 +31,7 @@
 static void
 encrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 {
-    fprintf (stderr, "encrypt_status: code=%d args=`%s'\n",
-             code, args );
+    DEBUG2 ("encrypt_status: code=%d args=`%s'\n", code, args );
 
 }
 

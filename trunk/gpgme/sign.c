@@ -33,12 +33,17 @@ struct  sign_result_s {
     int no_passphrase;
     int okay;
     void *last_pw_handle;
+    char *userid_hint;
+    char *passphrase_info;
+    int bad_passphrase;
 };
 
 
 void
 _gpgme_release_sign_result ( SignResult res )
 {
+    xfree (res->userid_hint);
+    xfree (res->passphrase_info);
     xfree (res);
 }
 
@@ -64,23 +69,41 @@ sign_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
       case STATUS_EOF:
         break;
 
+      case STATUS_USERID_HINT:
+        xfree (ctx->result.sign->userid_hint);
+        if (!(ctx->result.sign->userid_hint = xtrystrdup (args)) )
+            ctx->out_of_core = 1;
+        break;
+
+      case STATUS_BAD_PASSPHRASE:
+        ctx->result.sign->bad_passphrase++;
+        break;
+
+      case STATUS_GOOD_PASSPHRASE:
+        ctx->result.sign->bad_passphrase = 0;
+        break;
+
       case STATUS_NEED_PASSPHRASE:
       case STATUS_NEED_PASSPHRASE_SYM:
-        fprintf (stderr, "Ooops: Need a passphrase -  use the agent\n");
+        xfree (ctx->result.sign->passphrase_info);
+        if (!(ctx->result.sign->passphrase_info = xtrystrdup (args)) )
+            ctx->out_of_core = 1;
         break;
 
       case STATUS_MISSING_PASSPHRASE:
-        fprintf (stderr, "Missing passphrase - stop\n");;
+        DEBUG0 ("missing passphrase - stop\n");
         ctx->result.sign->no_passphrase = 1;
         break;
 
-      case STATUS_SIG_CREATED:
-        /* fixme: we have no error return for multible signatures */
+      case STATUS_SIG_CREATED: 
+        /* fixme: we have no error return for multiple signatures */
         ctx->result.sign->okay =1;
+        /* parse the line and save the information 
+         * <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
+         */
         break;
 
       default:
-        fprintf (stderr, "sign_status: code=%d not handled\n", code );
         break;
     }
 }
@@ -115,10 +138,32 @@ command_handler ( void *opaque, GpgStatusCode code, const char *key )
         return NULL;
     
     if ( code == STATUS_GET_HIDDEN && !strcmp (key, "passphrase.enter") ) {
-        return c->passphrase_cb (c->passphrase_cb_value,
-                                 "Please enter your Friedrich Willem!",
-                                 &c->result.sign->last_pw_handle );
-   }
+        const char *userid_hint = c->result.sign->userid_hint;
+        const char *passphrase_info = c->result.sign->passphrase_info;
+        int bad_passphrase = c->result.sign->bad_passphrase;
+        char *buf;
+        const char *s;
+
+        c->result.sign->bad_passphrase = 0;
+        if (!userid_hint)
+            userid_hint = "[User ID hint missing]";
+        if (!passphrase_info)
+            passphrase_info = "[passphrase info missing]";
+        buf = xtrymalloc ( 20 + strlen (userid_hint)
+                           + strlen (passphrase_info) + 3);
+        if (!buf) {
+            c->out_of_core = 1;
+            return NULL;
+        }
+        sprintf (buf, "%s\n%s\n%s",
+                 bad_passphrase? "TRY_AGAIN":"ENTER",
+                 userid_hint, passphrase_info );
+
+        s = c->passphrase_cb (c->passphrase_cb_value,
+                              buf, &c->result.sign->last_pw_handle );
+        xfree (buf);
+        return s;
+    }
     
     return NULL;
 }

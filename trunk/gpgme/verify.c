@@ -129,7 +129,6 @@ verify_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
       default:
         /* ignore all other codes */
-        fprintf (stderr, "verify_status: code=%d not handled\n", code );
         break;
     }
 }

@@ -22,7 +22,7 @@
 #define GPGME_H
 
 #ifdef _MSC_VER
-  typedef long off_t 
+  typedef long off_t;
 #else
 # include <sys/types.h>
 #endif
@@ -126,7 +126,8 @@ typedef enum {
     GPGME_ATTR_COMMENT = 11,
     GPGME_ATTR_VALIDITY= 12,
     GPGME_ATTR_LEVEL   = 13,
-    GPGME_ATTR_TYPE    = 14
+    GPGME_ATTR_TYPE    = 14,
+    GPGME_ATTR_IS_SECRET= 15
 } GpgmeAttr;
 
 typedef enum {

@@ -1,3 +1,18 @@
+2001-01-30  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c: Does now use reader threads, so that we can use
+	WaitForMultipleObjects. 
+	* sema.h, posix-sema.c, w32-sema.c: Support for Critcial sections.
+	Does currently only work for W32.
+
+	* debug.c, util.h : New. Changed all fprintfs to use this new
+	set of debugging functions.
+
+2001-01-23  Werner Koch  <wk@gnupg.org>
+
+	* data.c (_gpgme_data_release_and_return_string): Fixed string
+	termination.
+
 2001-01-22  Werner Koch  <wk@gnupg.org>
 
 	* delete.c: New.

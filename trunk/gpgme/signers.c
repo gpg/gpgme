@@ -87,7 +87,7 @@ gpgme_signers_enum (const GpgmeCtx c, int seq )
     int i;
 
     return_null_if_fail (c);
-    return_null_if_fail (seq<0);
+    return_null_if_fail (seq>=0);
 
     if (!c->signers)
         c->signers_size = 0;

@@ -49,7 +49,6 @@ keylist_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
       default:
         /* ignore all other codes */
-        fprintf (stderr, "keylist_status: code=%d not handled\n", code );
         break;
     }
 }
@@ -153,7 +152,7 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 rectype = RT_UID;
                 key = ctx->tmp_key;
             }
-            else if ( !strcmp ( p, "sub" ) && key ) {
+            else if ( !strcmp (p, "sub") && key ) {
                 /* start a new subkey */
                 rectype = RT_SUB;
                 if ( !(sk = _gpgme_key_add_subkey (key)) ) {
@@ -161,10 +160,18 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                     return;
                 }
             }
-            else if ( !strcmp ( p, "pub" ) ) {
+            else if ( !strcmp (p, "ssb") && key ) {
+                /* start a new secret subkey */
+                rectype = RT_SSB;
+                if ( !(sk = _gpgme_key_add_secret_subkey (key)) ) {
+                    ctx->out_of_core=1;
+                    return;
+                }
+            }
+            else if ( !strcmp (p, "pub") ) {
                 /* start a new keyblock */
                 if ( _gpgme_key_new ( &key ) ) {
-                    ctx->out_of_core=1; /* the only kind of error we can get */
+                    ctx->out_of_core=1; /* the only kind of error we can get*/
                     return;
                 }
                 rectype = RT_PUB;
@@ -173,17 +180,25 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 assert ( !ctx->tmp_key );
                 ctx->tmp_key = key;
             }
+            else if ( !strcmp (p, "sec") ) {
+                /* start a new keyblock */
+                if ( _gpgme_key_new_secret ( &key ) ) {
+                    ctx->out_of_core=1; /*the only kind of error we can get*/
+                    return;
+                }
+                rectype = RT_SEC;
+                if ( ctx->tmp_key )
+                    finish_key ( ctx );
+                assert ( !ctx->tmp_key );
+                ctx->tmp_key = key;
+            }
             else if ( !strcmp ( p, "fpr" ) && key ) 
                 rectype = RT_FPR;
-            else if ( !strcmp ( p, "ssb" ) )
-                rectype = RT_SSB;
-            else if ( !strcmp ( p, "sec" ) )
-                rectype = RT_SEC;
             else 
                 rectype = RT_NONE;
             
         }
-        else if ( rectype == RT_PUB ) {
+        else if ( rectype == RT_PUB || rectype == RT_SEC ) {
             switch (field) {
               case 2: /* trust info */
                 trust_info = p;  /*save for later */
@@ -226,7 +241,7 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 break;
             }
         }
-        else if ( rectype == RT_SUB && sk ) {
+        else if ( (rectype == RT_SUB || rectype== RT_SSB) && sk ) {
             switch (field) {
               case 2: /* trust info */
                 set_subkey_trust_info ( sk, p);
@@ -344,6 +359,7 @@ gpgme_op_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
     _gpgme_release_result (c);
     c->out_of_core = 0;
 
+#warning This context still keeps a gpg Zombie in some cases.
     if ( c->gpg ) {
         _gpgme_gpg_release ( c->gpg ); 
         c->gpg = NULL;

@@ -62,7 +62,7 @@ if test "$1" = "--build-w32"; then
 
     ./configure --host=${host} --target=${target}  ${disable_foo_tests} \
                 --bindir=${crossbindir} --libdir=${crosslibdir} \
-                --includedir=${crossincdir}  $*
+                --includedir=${crossincdir}  --enable-maintainer-mode $*
     exit $?
 fi
 

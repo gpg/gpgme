@@ -27,6 +27,7 @@
 
 struct subkey_s {
     struct subkey_s *next;
+    unsigned int secret:1;
     struct {
         unsigned int revoked:1 ;
         unsigned int expired:1 ;
@@ -46,11 +47,13 @@ struct gpgme_key_s {
         unsigned int disabled:1 ;
     } gloflags; 
     unsigned int ref_count;
+    unsigned int secret:1;
     struct subkey_s   keys; 
     struct user_id_s *uids;
 };
 
 struct subkey_s *_gpgme_key_add_subkey (GpgmeKey key);
+struct subkey_s *_gpgme_key_add_secret_subkey (GpgmeKey key);
 GpgmeError _gpgme_key_append_name ( GpgmeKey key, const char *s );
 
 

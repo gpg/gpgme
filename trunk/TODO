@@ -1,0 +1,10 @@
+* Implement posix-sema.c
+
+* Add gpgme_mime_xxx to make handling of MIME/PGP easier
+
+* Allow to use GTK's main loop instead of the select stuff in
+  wait.c
+
+* Remove all that funny exit code handling - we donn't need it.
+
+

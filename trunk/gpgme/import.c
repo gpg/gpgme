@@ -31,8 +31,7 @@
 static void
 import_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 {
-    fprintf (stderr, "import_status: code=%d args=`%s'\n",
-             code, args );
+    DEBUG2 ("import_status: code=%d args=`%s'\n", code, args );
     /* FIXME: We have to check here whether the import actually worked 
      * and maybe it is a good idea to save some statistics and provide
      * a progress callback */
