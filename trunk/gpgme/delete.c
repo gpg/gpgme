@@ -21,28 +21,33 @@
 #include <config.h>
 #endif
 #include <stdlib.h>
+#include <errno.h>
 
-#include "util.h"
+#include "gpgme.h"
 #include "context.h"
 #include "ops.h"
-#include "key.h"
 
-
-enum delete_problem
-  {
-    DELETE_No_Problem = 0,
-    DELETE_No_Such_Key = 1,
-    DELETE_Must_Delete_Secret_Key = 2,
-    DELETE_Ambiguous_Specification = 3
-  };
-
-
+
 static GpgmeError
-delete_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
+delete_status_handler (void *priv, GpgmeStatusCode code, char *args)
 {
   if (code == GPGME_STATUS_DELETE_PROBLEM)
     {
-      enum delete_problem problem = atoi (args);
+      enum delete_problem
+	{
+	  DELETE_No_Problem = 0,
+	  DELETE_No_Such_Key = 1,
+	  DELETE_Must_Delete_Secret_Key = 2,
+	  DELETE_Ambiguous_Specification = 3
+	};
+      long problem;
+      char *tail;
+
+      errno = 0;
+      problem = strtol (args, &tail, 0);
+      if (errno || (*tail && *tail != ' '))
+	return GPGME_General_Error;
+
       switch (problem)
 	{
 	case DELETE_No_Problem:
@@ -55,7 +60,8 @@ delete_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 	  return GPGME_Conflict;
 
 	case DELETE_Ambiguous_Specification:
-	  /* XXX Need better error value.  Fall through.  */
+	  return GPGME_Ambiguous_Specification;
+
 	default:
 	  return GPGME_General_Error;
 	}
@@ -65,51 +71,36 @@ delete_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 
 
 static GpgmeError
-_gpgme_op_delete_start (GpgmeCtx ctx, int synchronous,
-			const GpgmeKey key, int allow_secret)
+delete_start (GpgmeCtx ctx, int synchronous, const GpgmeKey key,
+	      int allow_secret)
 {
-  GpgmeError err = 0;
+  GpgmeError err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
-    goto leave;
+    return err;
 
   _gpgme_engine_set_status_handler (ctx->engine, delete_status_handler, ctx);
 
-  err = _gpgme_engine_op_delete (ctx->engine, key, allow_secret);
-
- leave:
-  if (err)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
-  return err;
+  return _gpgme_engine_op_delete (ctx->engine, key, allow_secret);
 }
 
 
+/* Delete KEY from the keyring.  If ALLOW_SECRET is non-zero, secret
+   keys are also deleted.  */
 GpgmeError
 gpgme_op_delete_start (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
 {
-  return _gpgme_op_delete_start (ctx, 0, key, allow_secret);
+  return delete_start (ctx, 0, key, allow_secret);
 }
 
 
-/**
- * gpgme_op_delete:
- * @c: Context 
- * @key: A Key Object
- * @allow_secret: Allow secret key delete
- * 
- * Delete the give @key from the key database.  To delete a secret
- * along with the public key, @allow_secret must be true.
- * 
- * Return value: 0 on success or an error code.
- **/
+/* Delete KEY from the keyring.  If ALLOW_SECRET is non-zero, secret
+   keys are also deleted.  */
 GpgmeError
 gpgme_op_delete (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
 {
-  GpgmeError err = _gpgme_op_delete_start (ctx, 1, key, allow_secret);
+  GpgmeError err = delete_start (ctx, 1, key, allow_secret);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

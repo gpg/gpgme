@@ -107,7 +107,7 @@ GpgmeGenKeyResult		NEW
 gpgme_op_import_ext		DEPRECATED: Use gpgme_op_import_result.
 gpgme_op_import_result		NEW
 GpgmeImportStatus		NEW
-GPgmeImportResult		NEW
+GpgmeImportResult		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)

@@ -1,3 +1,16 @@
+2003-04-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Deleting Keys): Document
+	GPGME_Ambiguous_Specification.
+	(Error Values): Remove GPGME_Invalid_Type and GPGME_Invalid_Mode.
+	Add GPGME_Unknown_Reason, GPGME_Not_Found,
+	GPGME_Ambiguous_Specification, GPGME_Wrong_Key_Usage,
+	GPGME_Key_Revoked, GPGME_Key_Expired, GPGME_No_CRL_Known,
+	GPGME_CRL_Too_Old, GPGME_Policy_Mismatch, GPGME_No_Secret_Key,
+	GPGME_Key_Not_Trusted, GPGME_Issuer_Missing, GPGME_Chain_Too_Long,
+	GPGME_Unsupported_Algorithm, GPGME_Sig_Expired,
+	GPGME_Bad_Signature, GPGME_No_Public_Key.
+
 2003-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Importing Keys): Change GPGME_IMPORT_PRIVATE to
