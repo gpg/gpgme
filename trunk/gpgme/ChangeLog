@@ -1,5 +1,28 @@
 2003-05-28  Marcus Brinkmann  <marcus@g10code.de>
 
+	* context.h (struct gpgme_context): Change EngineObject to
+	engine_object_t.
+	(enum ctx_op_data_type): Rename to ctx_op_data_id_t.
+	(ctx_op_data_t): New type.
+	(struct gpgme_context): Use it.
+	* ops.h (_gpgme_op_data_lookup): Use new type name.
+	* op-support.c (_gpgme_op_data_lookup): Likewise.
+	* engine.c: Rename EngineObject to engine_t in the file.  Also
+	EngineStatusHandler to engine_status_handler_t,
+	EngineCommandHandler to engine_command_handler_t and
+	EngineColonLineHandler to engine_colon_line_handler.	
+	* rungpg.c (start): Likewise.
+	* engine-gpgsm.c: Likewise.
+	* engine-backend.h (struct engine_ops): Likewise
+	* engine.h (struct engine_object_s): Rename to struct engine.
+	(EngineObject): Rename to engine_t.  Also everywhere else in the
+	file.
+	(EngineStatusHandler): Rename to engine_status_handler_t.
+	(EngineColonLineHandler): Rename to engine_colon_line_handler_t.
+	(EngineCommandHandler): Rename to engine_command_handler_t.
+
+	* engine-gpgsm.c (gpgsm_export): Fix bug in last change.
+
 	* Makefile.am (libgpgme_la_SOURCES): Remove recipient.c, add
 	user-id.c.
 	* gpgme.h (gpgme_recipients_t): Removed.

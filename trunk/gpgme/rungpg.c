@@ -83,7 +83,7 @@ struct gpg_object_s
     char *buffer;
     size_t readpos;
     int eof;
-    EngineStatusHandler fnc;
+    engine_status_handler_t fnc;
     void *fnc_value;
     void *tag;
   } status;
@@ -96,7 +96,7 @@ struct gpg_object_s
     char *buffer;
     size_t readpos;
     int eof;
-    EngineColonLineHandler fnc;  /* this indicate use of this structrue */
+    engine_colon_line_handler_t fnc;  /* this indicate use of this structrue */
     void *fnc_value;
     void *tag;
   } colon;
@@ -113,7 +113,7 @@ struct gpg_object_s
     int idx;		/* Index in fd_data_map */
     gpgme_status_code_t code;  /* last code */
     char *keyword;       /* what has been requested (malloced) */
-    EngineCommandHandler fnc; 
+    engine_command_handler_t fnc; 
     void *fnc_value;
     /* The kludges never end.  This is used to couple command handlers
        with output data in edit key mode.  */
@@ -402,7 +402,8 @@ gpg_new (void **engine)
 /* Note, that the status_handler is allowed to modifiy the args
    value.  */
 static void
-gpg_set_status_handler (void *engine, EngineStatusHandler fnc, void *fnc_value)
+gpg_set_status_handler (void *engine, engine_status_handler_t fnc,
+			void *fnc_value)
 {
   GpgObject gpg = engine;
 
@@ -412,7 +413,7 @@ gpg_set_status_handler (void *engine, EngineStatusHandler fnc, void *fnc_value)
 
 /* Kludge to process --with-colon output.  */
 static gpgme_error_t
-gpg_set_colon_line_handler (void *engine, EngineColonLineHandler fnc,
+gpg_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
 			    void *fnc_value)
 {
   GpgObject gpg = engine;
@@ -473,7 +474,7 @@ command_handler (void *opaque, int fd)
    match such a second call to a first call, the returned value from
    the first call is passed as keyword.  */
 static gpgme_error_t
-gpg_set_command_handler (void *engine, EngineCommandHandler fnc,
+gpg_set_command_handler (void *engine, engine_command_handler_t fnc,
 			 void *fnc_value, gpgme_data_t linked_data)
 {
   GpgObject gpg = engine;
