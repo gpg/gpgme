@@ -1,3 +1,8 @@
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist_ext): Aehmm, added
+	missing variable definition.  Oohh - Marcus was faster.
+
 2002-05-22  Marcus Brinkmann  <marcus@gnu.org>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist_ext): Fix last change.
