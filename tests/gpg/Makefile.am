@@ -23,7 +23,7 @@ GPG = @GPG@
 
 TESTS_ENVIRONMENT = GNUPGHOME=. GPG_AGENT_INFO=
 
-# The keylist test must come after the import test.
+# The keylist tests must come after the import and the edit test.
 TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers	\
 	t-decrypt t-verify t-decrypt-verify \
 	t-export t-import t-trustlist t-eventloop t-edit \
