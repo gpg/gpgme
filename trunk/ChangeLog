@@ -1,5 +1,11 @@
 2004-09-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* configure.ac: Print diagnostics about found thread libraries at
+	the end.  Check for the versions of GPG and GPGSM and print the
+	found versions at the end.
+	(HAVE_GPGSM): Do not require GPGSM to exist and be readable.
+	(AC_CONFIG_MACRO_DIR): Invoke with argument m4.
+
 	* acinclude.m4: Add copyright notice.
 	(jm_GLIBC21, AM_PATH_GPG_ERROR, _AC_PTH_ERROR, _AC_PTH_VERBOSE,
 	AC_CHECK_PTH): Removed.
