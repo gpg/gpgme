@@ -1,3 +1,25 @@
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/: New directory.
+	* Makefile.am, t-verify.c, t-encrypt.c, t-signers.c, t-trustlist.c,
+	t-sign.c, t-keylist.c, t-import.c, t-genkey.c, t-export.c,
+	t-decrypt-verify.c, t-decrypt.c, t-version.c, t-data.c, mkdemodirs.
+	cipher-1.asc, cipher-2.asc, geheim.txt, pubdemo.asc, pubkey-1.asc,
+	secdemo.asc, seckey-1.asc): Move to sub directory gpg/.
+
+	* gpg/Makefile.am (INCLUDES): Include gpgme/, not include/ and
+	intl/.
+	(LDD): Correct relative path to gpgme library.
+	(TESTS): Remove t-version and t-data.
+	* gpg/t-verify.c, gpg/t-encrypt.c, gpg/t-signers.c, gpg/t-trustlist.c,
+	gpg/t-sign.c, gpg/t-keylist.c, gpg/t-import.c, gpg/t-genkey.c,
+	gpg/t-export.c, gpg/t-decrypt-verify.c, gpg/t-decrypt.c,
+	t-version.c, t-data.c): Include gpgme.h, not "../gpgme/gpgme.h".
+
+	* Makefile.am: New file.
+	* gpgsm/: New directory.
+	* gpgsm/Makefile.am: New file.
+
 2001-11-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (TESTS): Add t-decrypt-verify.

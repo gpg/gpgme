@@ -24,7 +24,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../gpgme/gpgme.h"
+#include <gpgme.h>
 
 static const char test_text1[] = "Just GNU it!\n";
 static const char test_text1f[]= "Just GNU it?\n";

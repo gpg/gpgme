@@ -1,4 +1,4 @@
-/* t-sign.c  - regression test
+/* t-encrypt.c  - regression test
  *	Copyright (C) 2000 Werner Koch (dd9jn)
  *      Copyright (C) 2001 g10 Code GmbH
  *
@@ -23,27 +23,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
-#include "../gpgme/gpgme.h"
+#include <gpgme.h>
 
-#define fail_if_err(a) do { if(a) {                                       \
-                               fprintf (stderr, "%s:%d: GpgmeError %s\n", \
-                                __FILE__, __LINE__, gpgme_strerror(a));   \
-                                exit (1); }                               \
+struct passphrase_cb_info_s {
+    GpgmeCtx c;
+    int did_it;
+};
+
+
+#define fail_if_err(a) do { if(a) { int my_errno = errno; \
+            fprintf (stderr, "%s:%d: GpgmeError %s\n", \
+                 __FILE__, __LINE__, gpgme_strerror(a));   \
+            if ((a) == GPGME_File_Error)                       \
+                   fprintf (stderr, "\terrno=`%s'\n", strerror (my_errno)); \
+                   exit (1); }                               \
                              } while(0)
-
-static void
-print_op_info (GpgmeCtx c)
-{
-    char *s = gpgme_get_op_info (c, 0);
-
-    if (!s)
-        puts ("<!-- no operation info available -->");
-    else {
-        puts (s);
-        free (s);
-    }
-}
 
 static void
 print_data ( GpgmeData dh )
@@ -60,6 +56,7 @@ print_data ( GpgmeData dh )
     if (err != GPGME_EOF) 
         fail_if_err (err);
 }
+
 
 static const char *
 passphrase_cb ( void *opaque, const char *desc, void *r_hd )
@@ -81,74 +78,62 @@ passphrase_cb ( void *opaque, const char *desc, void *r_hd )
 }
 
 
+static char *
+mk_fname ( const char *fname )
+{
+    const char *srcdir = getenv ("srcdir");
+    char *buf;
+
+    if (!srcdir)
+        srcdir = ".";
+    buf = malloc (strlen(srcdir) + strlen(fname) + 2 );
+    if (!buf ) 
+        exit (8);
+    strcpy (buf, srcdir);
+    strcat (buf, "/");
+    strcat (buf, fname );
+    return buf;
+}
+
 int 
 main (int argc, char **argv )
 {
     GpgmeCtx ctx;
     GpgmeError err;
-    GpgmeData in, out;
+    GpgmeData in, out, pwdata = NULL;
+    struct passphrase_cb_info_s info;
+    const char *cipher_1_asc = mk_fname ("cipher-1.asc");
 
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
     if ( !getenv("GPG_AGENT_INFO") ) {
-        gpgme_set_passphrase_cb ( ctx, passphrase_cb, NULL );
+        memset ( &info, 0, sizeof info );
+        info.c = ctx;
+        gpgme_set_passphrase_cb ( ctx, passphrase_cb, &info );
     } 
 
-    gpgme_set_textmode (ctx, 1);
-    gpgme_set_armor (ctx, 1);
-
-    err = gpgme_data_new_from_mem ( &in, "Hallo Leute\n", 12, 0 );
+    err = gpgme_data_new_from_file ( &in, cipher_1_asc, 1 );
     fail_if_err (err);
 
-    /* first a normal signature */
     err = gpgme_data_new ( &out );
     fail_if_err (err);
-    err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_NORMAL );
+
+    err = gpgme_op_decrypt (ctx, in, out );
     fail_if_err (err);
+
     fflush (NULL);
-    fputs ("Begin Result:\n", stdout );
-    print_op_info (ctx);
-    print_data (out);
-    fputs ("End Result.\n", stdout );
-    gpgme_data_release (out);
-    gpgme_data_rewind (in);
-    
-    /* now a detached signature */
-    err = gpgme_data_new ( &out );
-    fail_if_err (err);
-    err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_DETACH );
-    fail_if_err (err);
-    fflush (NULL);
-    print_op_info (ctx);
     fputs ("Begin Result:\n", stdout );
     print_data (out);
     fputs ("End Result.\n", stdout );
-    gpgme_data_release (out);
-    gpgme_data_rewind (in);
-    
-
-    /* And finally a cleartext signature */
-    err = gpgme_data_new ( &out );
-    fail_if_err (err);
-    err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_CLEAR );
-    fail_if_err (err);
-    fflush (NULL);
-    print_op_info (ctx);
-    fputs ("Begin Result:\n", stdout );
-    print_data (out);
-    fputs ("End Result.\n", stdout );
-    gpgme_data_release (out);
-    gpgme_data_rewind (in);
-    
-    /* ready */
+   
     gpgme_data_release (in);
+    gpgme_data_release (out);
+    gpgme_data_release (pwdata);
     gpgme_release (ctx);
   } while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
    
     return 0;
 }
-
-
 
 

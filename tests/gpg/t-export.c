@@ -1,4 +1,4 @@
-/* t-trustlist.c  - regression test
+/* t-export.c  - regression test
  *	Copyright (C) 2000 Werner Koch (dd9jn)
  *      Copyright (C) 2001 g10 Code GmbH
  *
@@ -24,7 +24,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../gpgme/gpgme.h"
+#include <gpgme.h>
 
 #define fail_if_err(a) do { if(a) {                                       \
                                fprintf (stderr, "%s:%d: GpgmeError %s\n", \
@@ -33,28 +33,21 @@
                              } while(0)
 
 static void
-doit ( GpgmeCtx ctx, const char *pattern )
+print_data ( GpgmeData dh )
 {
+    char buf[100];
+    size_t nread;
     GpgmeError err;
-    GpgmeTrustItem item;
 
-    err = gpgme_op_trustlist_start (ctx, pattern, 0 );
+    err = gpgme_data_rewind ( dh );
     fail_if_err (err);
-    
-    while ( !(err = gpgme_op_trustlist_next ( ctx, &item )) ) {
-        printf ("l=%d k=%s t=%d o=%s v=%s u=%s\n",
-        gpgme_trust_item_get_int_attr    (item, GPGME_ATTR_LEVEL, NULL, 0 ),
-        gpgme_trust_item_get_string_attr (item, GPGME_ATTR_KEYID, NULL, 0 ),
-        gpgme_trust_item_get_int_attr    (item, GPGME_ATTR_TYPE, NULL, 0 ),
-        gpgme_trust_item_get_string_attr (item, GPGME_ATTR_OTRUST, NULL, 0 ),
-        gpgme_trust_item_get_string_attr (item, GPGME_ATTR_VALIDITY, NULL, 0 ),
-        gpgme_trust_item_get_string_attr (item, GPGME_ATTR_USERID, NULL, 0 )
-                );
-        gpgme_trust_item_release (item);
+    while ( !(err = gpgme_data_read ( dh, buf, 100, &nread )) ) {
+        fwrite ( buf, nread, 1, stdout );
     }
-    if ( err != GPGME_EOF )
+    if (err != GPGME_EOF) 
         fail_if_err (err);
 }
+
 
 
 int 
@@ -62,29 +55,38 @@ main (int argc, char **argv )
 {
     GpgmeCtx ctx;
     GpgmeError err;
-    int loop = 0;
-    const char *pattern;
-    
-    if( argc ) {
-        argc--; argv++;
-    }
-    
-    if (argc && !strcmp( *argv, "--loop" ) ) {
-        loop = 1;
-        argc--; argv++;
-    }
-    pattern = argc? *argv : "alice";
+    GpgmeData  out;
+    GpgmeRecipients rset;
 
+  do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
-    do {
-        fprintf (stderr, "** pattern=`%s'\n", pattern );
-        doit ( ctx, pattern );
-    } while ( loop );
-    gpgme_release (ctx);
 
+    err = gpgme_data_new ( &out );
+    fail_if_err (err);
+
+    err = gpgme_recipients_new (&rset);
+    fail_if_err (err);
+    err = gpgme_recipients_add_name (rset, "Bob");
+    fail_if_err (err);
+    err = gpgme_recipients_add_name (rset, "Alpha");
+    fail_if_err (err);
+
+    gpgme_set_armor (ctx, 1 );
+    err = gpgme_op_export (ctx, rset, out );
+    fail_if_err (err);
+
+    fflush (NULL);
+    fputs ("Begin Result:\n", stdout );
+    print_data (out);
+    fputs ("End Result.\n", stdout );
+   
+    gpgme_recipients_release (rset);
+    gpgme_data_release (out);
+    gpgme_release (ctx);
+  } while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
+   
     return 0;
 }
-
 
 

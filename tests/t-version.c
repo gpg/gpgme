@@ -22,7 +22,7 @@
 #include <config.h>
 #endif
 
-#include "../gpgme/gpgme.h"
+#include <gpgme.h>
 
 static const char version[] = VERSION;
 

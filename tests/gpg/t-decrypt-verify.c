@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <mcheck.h>
 
-#include "../gpgme/gpgme.h"
+#include <gpgme.h>
 
 struct passphrase_cb_info_s
 {

@@ -19,28 +19,40 @@
 
 ## Process this file with automake to produce Makefile.in
 
+
 TESTS_ENVIRONMENT = GNUPGHOME=.
 
-TESTS = t-version t-data
+TESTS = t-encrypt t-sign t-signers t-decrypt t-verify	\
+	t-decrypt-verify t-keylist t-export t-import t-trustlist
 
-EXTRA_DIST = t-data-1.txt t-data-2.txt
+
+EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc
+	geheim.txt pubkey-1.asc seckey-1.asc
 
 INCLUDES = -I$(top_srcdir)/gpgme
 
-LDADD = ../gpgme/libgpgme.la
+LDADD = ../../gpgme/libgpgme.la
 
-noinst_PROGRAMS = $(TESTS)
+# We don't run t-genkey in the test suite, because it taes too long
+noinst_PROGRAMS = $(TESTS) t-genkey
 
-if RUN_GPG_TESTS
-gpgtests = gpg
-else
-gpgtests = 
-endif
+distclean-local:
+	$(srcdir)/mkdemodirs --clean
 
-if RUN_GPGSM_TESTS
-gpgsmtests = gpgsm
-else
-gpgsmtests = 
-endif
+all-local: ./pubring.gpg ./secring.gpg
 
-SUBDIRS = ${gpgtests} ${gpgsmtests}
+./pubring.gpg: $(srcdir)/pubdemo.asc
+	-gpg --homedir . --import $(srcdir)/pubdemo.asc
+
+./secring.gpg: ./Alpha/Secret.gpg 
+	-gpg --homedir . --allow-secret-key-import --import Alpha/Secret.gpg Zulu/Secret.gpg
+
+./Alpha/Secret.gpg: secdemo.asc 
+	srcdir=$(srcdir) $(srcdir)/mkdemodirs 
+
+
+
+
+
+
+

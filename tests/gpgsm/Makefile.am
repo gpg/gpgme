@@ -19,28 +19,15 @@
 
 ## Process this file with automake to produce Makefile.in
 
+
 TESTS_ENVIRONMENT = GNUPGHOME=.
 
-TESTS = t-version t-data
+TESTS = 
 
-EXTRA_DIST = t-data-1.txt t-data-2.txt
+#EXTRA_DIST =
 
 INCLUDES = -I$(top_srcdir)/gpgme
 
-LDADD = ../gpgme/libgpgme.la
+LDADD = ../../gpgme/libgpgme.la
 
 noinst_PROGRAMS = $(TESTS)
-
-if RUN_GPG_TESTS
-gpgtests = gpg
-else
-gpgtests = 
-endif
-
-if RUN_GPGSM_TESTS
-gpgsmtests = gpgsm
-else
-gpgsmtests = 
-endif
-
-SUBDIRS = ${gpgtests} ${gpgsmtests}

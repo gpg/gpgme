@@ -25,7 +25,7 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "../gpgme/gpgme.h"
+#include <gpgme.h>
 
 
 #define fail_if_err(a) do { if(a) { int my_errno = errno; \
