@@ -1,3 +1,9 @@
+2004-04-19  Werner Koch  <wk@gnupg.org>
+
+	* assuan-socket-connect.c: Include sys/types.h
+	* assuan-socket-server.c: Ditto
+	* assuan-domain-connect.c: Ditto.
+
 2004-02-18  Werner Koch  <wk@gnupg.org>
 
 	* assuan-handler.c (assuan_get_data_fp): Fail with ENOSYS if we
