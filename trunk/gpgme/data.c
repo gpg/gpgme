@@ -31,7 +31,7 @@
 
 
 /**
- * gpgme_new_data:
+ * gpgme_data_new:
  * @r_dh:   Returns a new data object.
  * @buffer: If not NULL, used to initialize the data object.
  * @size: Size of the buffer
@@ -46,7 +46,7 @@
  * Return value: 
  **/
 GpgmeError
-gpgme_new_data ( GpgmeData *r_dh, const char *buffer, size_t size, int copy )
+gpgme_data_new ( GpgmeData *r_dh, const char *buffer, size_t size, int copy )
 {
     GpgmeData dh;
 
@@ -78,14 +78,14 @@ gpgme_new_data ( GpgmeData *r_dh, const char *buffer, size_t size, int copy )
 }
 
 /**
- * gpgme_release_data:
+ * gpgme_data_release:
  * @dh: Data object 
  * 
  * Release the data object @dh.  @dh may be NULL in which case nothing
  * happens.
  **/
 void
-gpgme_release_data ( GpgmeData dh )
+gpgme_data_release ( GpgmeData dh )
 {
     if (dh) {
         xfree (dh->private_buffer); 
@@ -95,7 +95,7 @@ gpgme_release_data ( GpgmeData dh )
 
 
 GpgmeDataType
-gpgme_query_data_type ( GpgmeData dh )
+gpgme_data_get_type ( GpgmeData dh )
 {
     if ( !dh || !dh->data )
         return GPGME_DATA_TYPE_NONE;
@@ -104,7 +104,7 @@ gpgme_query_data_type ( GpgmeData dh )
 }
 
 void 
-_gpgme_set_data_mode ( GpgmeData dh, GpgmeDataMode mode )
+_gpgme_data_set_mode ( GpgmeData dh, GpgmeDataMode mode )
 {
     assert (dh);
     dh->mode = mode;
@@ -112,14 +112,14 @@ _gpgme_set_data_mode ( GpgmeData dh, GpgmeDataMode mode )
 
 
 GpgmeDataMode
-_gpgme_query_data_mode ( GpgmeData dh )
+_gpgme_data_get_mode ( GpgmeData dh )
 {
     assert (dh);
     return dh->mode;
 }
 
 GpgmeError
-gpgme_rewind_data ( GpgmeData dh )
+gpgme_data_rewind ( GpgmeData dh )
 {
     if ( !dh )
         return mk_error (Invalid_Value);
@@ -130,7 +130,7 @@ gpgme_rewind_data ( GpgmeData dh )
 }
 
 GpgmeError
-gpgme_read_data ( GpgmeData dh, char *buffer, size_t length, size_t *nread )
+gpgme_data_read ( GpgmeData dh, char *buffer, size_t length, size_t *nread )
 {
     size_t nbytes;
 
@@ -151,7 +151,7 @@ gpgme_read_data ( GpgmeData dh, char *buffer, size_t length, size_t *nread )
 
 
 GpgmeError
-_gpgme_append_data ( GpgmeData dh, const char *buffer, size_t length )
+_gpgme_data_append ( GpgmeData dh, const char *buffer, size_t length )
 {
     assert (dh);
 

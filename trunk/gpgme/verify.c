@@ -90,7 +90,7 @@ verify_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
 
 GpgmeError
-gpgme_start_verify ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
+gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
 {
     int rc = 0;
     int i;
@@ -106,10 +106,10 @@ gpgme_start_verify ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
      * run gpg in the new --pipemode (I started with this but it is
      * not yet finished) */
     if ( c->gpg ) {
-        _gpgme_gpg_release_object ( c->gpg ); 
+        _gpgme_gpg_release ( c->gpg ); 
         c->gpg = NULL;
     }
-    rc = _gpgme_gpg_new_object ( &c->gpg );
+    rc = _gpgme_gpg_new ( &c->gpg );
     if (rc)
         goto leave;
 
@@ -122,17 +122,17 @@ gpgme_start_verify ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
     
 
     /* Check the supplied data */
-    if ( gpgme_query_data_type (sig) == GPGME_DATA_TYPE_NONE ) {
+    if ( gpgme_data_get_type (sig) == GPGME_DATA_TYPE_NONE ) {
         rc = mk_error (No_Data);
         goto leave;
     }
-    if ( text && gpgme_query_data_type (text) == GPGME_DATA_TYPE_NONE ) {
+    if ( text && gpgme_data_get_type (text) == GPGME_DATA_TYPE_NONE ) {
         rc = mk_error (No_Data);
         goto leave;
     }
-    _gpgme_set_data_mode (sig, GPGME_DATA_MODE_OUT );
+    _gpgme_data_set_mode (sig, GPGME_DATA_MODE_OUT );
     if (text) /* detached signature */
-        _gpgme_set_data_mode (text, GPGME_DATA_MODE_OUT );
+        _gpgme_data_set_mode (text, GPGME_DATA_MODE_OUT );
     /* Tell the gpg object about the data */
     _gpgme_gpg_add_arg ( c->gpg, "--" );
     _gpgme_gpg_add_data ( c->gpg, sig, -1 );
@@ -145,7 +145,7 @@ gpgme_start_verify ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
  leave:
     if (rc) {
         c->pending = 0; 
-        _gpgme_gpg_release_object ( c->gpg ); c->gpg = NULL;
+        _gpgme_gpg_release ( c->gpg ); c->gpg = NULL;
     }
     return rc;
 }
@@ -153,9 +153,9 @@ gpgme_start_verify ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
 
 
 GpgmeError
-gpgme_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text )
+gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text )
 {
-    int rc = gpgme_start_verify ( c, sig, text );
+    int rc = gpgme_op_verify_start ( c, sig, text );
     if ( !rc ) {
         gpgme_wait (c, 1);
         if ( c->result_type != RESULT_TYPE_VERIFY )

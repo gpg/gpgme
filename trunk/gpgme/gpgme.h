@@ -33,8 +33,8 @@ typedef struct gpgme_context_s *GpgmeCtx;
 struct gpgme_data_s;
 typedef struct gpgme_data_s *GpgmeData;
 
-struct gpgme_recipient_set_s;
-typedef struct gpgme_recipient_set_s *GpgmeRecipientSet;
+struct gpgme_recipients_s;
+typedef struct gpgme_recipients_s *GpgmeRecipients;
 
 struct gpgme_key_s;
 typedef struct gpgme_key_s *GpgmeKey;
@@ -70,47 +70,45 @@ typedef enum {
 
 
 /* Context management */
-GpgmeError gpgme_new_context (GpgmeCtx *r_ctx);
-void       gpgme_release_context ( GpgmeCtx c );
+GpgmeError gpgme_new (GpgmeCtx *r_ctx);
+void       gpgme_release ( GpgmeCtx c );
 GpgmeCtx   gpgme_wait ( GpgmeCtx c, int hang );
 
 /* Functions to handle recipients */
-GpgmeError   gpgme_new_recipient_set (GpgmeRecipientSet *r_rset);
-void         gpgme_release_recipient_set ( GpgmeRecipientSet rset);
-GpgmeError   gpgme_add_recipient (GpgmeRecipientSet rset, const char *name);
-unsigned int gpgme_count_recipients ( const GpgmeRecipientSet rset );
+GpgmeError   gpgme_recipients_new (GpgmeRecipients *r_rset);
+void         gpgme_recipients_release ( GpgmeRecipients rset);
+GpgmeError   gpgme_recipients_add_name (GpgmeRecipients rset,
+                                        const char *name);
+unsigned int gpgme_recipients_count ( const GpgmeRecipients rset );
 
 /* Functions to handle data sources */
-GpgmeError gpgme_new_data ( GpgmeData *r_dh,
-                                const char *buffer, size_t size, int copy );
-void gpgme_release_data ( GpgmeData dh );
-GpgmeDataType gpgme_query_data_type ( GpgmeData dh );
-GpgmeError gpgme_rewind_data ( GpgmeData dh );
-GpgmeError gpgme_read_data ( GpgmeData dh,
-                             char *buffer, size_t length, size_t *nread );
+GpgmeError    gpgme_data_new ( GpgmeData *r_dh,
+                               const char *buffer, size_t size, int copy );
+void          gpgme_data_release ( GpgmeData dh );
+GpgmeDataType gpgme_data_get_type ( GpgmeData dh );
+GpgmeError    gpgme_data_rewind ( GpgmeData dh );
+GpgmeError    gpgme_data_read ( GpgmeData dh,
+                                char *buffer, size_t length, size_t *nread );
 
 
 
 /* Basic GnuPG functions */
-GpgmeError gpgme_start_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
-                                 GpgmeData in, GpgmeData out );
-GpgmeError gpgme_start_verify ( GpgmeCtx c,  GpgmeData sig, GpgmeData text );
+GpgmeError gpgme_op_encrypt_start ( GpgmeCtx c, GpgmeRecipients recp,
+                                    GpgmeData in, GpgmeData out );
+GpgmeError gpgme_op_verify_start ( GpgmeCtx c,
+                                   GpgmeData sig, GpgmeData text );
 
 
 /* Key management functions */
-GpgmeError gpgme_keylist_start ( GpgmeCtx c,
-                                 const char *pattern, int secret_only );
-GpgmeError gpgme_keylist_next ( GpgmeCtx c, GpgmeKey *r_key );
-
-
-
-
+GpgmeError gpgme_op_keylist_start ( GpgmeCtx c,
+                                    const char *pattern, int secret_only );
+GpgmeError gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key );
 
 
 /* Convenience functions for syncronous usage */
-GpgmeError gpgme_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
-                           GpgmeData in, GpgmeData out );
-GpgmeError gpgme_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text );
+GpgmeError gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
+                              GpgmeData in, GpgmeData out );
+GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text );
 
 
 /* miscellaneous functions */

@@ -37,10 +37,10 @@ doit ( GpgmeCtx ctx, const char *pattern )
     GpgmeError err;
     GpgmeKey key;
 
-    err = gpgme_keylist_start (ctx, pattern, 0 );
+    err = gpgme_op_keylist_start (ctx, pattern, 0 );
     fail_if_err (err);
     
-    while ( !(err = gpgme_keylist_next ( ctx, &key )) ) {
+    while ( !(err = gpgme_op_keylist_next ( ctx, &key )) ) {
         printf ("Got key object (%p)\n", key );
     }
     if ( err != GPGME_EOF )
@@ -66,12 +66,12 @@ main (int argc, char **argv )
     }
     pattern = argc? *argv : NULL;
 
-    err = gpgme_new_context (&ctx);
+    err = gpgme_new (&ctx);
     fail_if_err (err);
     do {
         doit ( ctx, pattern );
     } while ( loop );
-    gpgme_release_context (ctx);
+    gpgme_release (ctx);
     
     return 0;
 }

@@ -51,32 +51,32 @@ main (int argc, char **argv )
     GpgmeError err;
     GpgmeData sig, text;
 
-    err = gpgme_new_context (&ctx);
+    err = gpgme_new (&ctx);
     fail_if_err (err);
 
   do {
-    err = gpgme_new_data ( &text, test_text1, strlen (test_text1), 0 );
+    err = gpgme_data_new ( &text, test_text1, strlen (test_text1), 0 );
     fail_if_err (err);
-    err = gpgme_new_data ( &sig, test_sig1, strlen (test_sig1), 0 );
+    err = gpgme_data_new ( &sig, test_sig1, strlen (test_sig1), 0 );
     fail_if_err (err);
 
     puts ("checking a valid message:\n");
-    err = gpgme_verify (ctx, sig, text );
+    err = gpgme_op_verify (ctx, sig, text );
     fail_if_err (err);
 
     puts ("checking a manipulated message:\n");
-    gpgme_release_data (text);
-    err = gpgme_new_data ( &text, test_text1f, strlen (test_text1f), 0 );
+    gpgme_data_release (text);
+    err = gpgme_data_new ( &text, test_text1f, strlen (test_text1f), 0 );
     fail_if_err (err);
-    gpgme_rewind_data ( sig );
-    err = gpgme_verify (ctx, sig, text );
+    gpgme_data_rewind ( sig );
+    err = gpgme_op_verify (ctx, sig, text );
     fail_if_err (err);
 
-    gpgme_release_data (sig);
-    gpgme_release_data (text);
+    gpgme_data_release (sig);
+    gpgme_data_release (text);
  
 } while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
-      gpgme_release_context (ctx);
+      gpgme_release (ctx);
     
     return 0;
 }

@@ -39,8 +39,8 @@ encrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
 
 GpgmeError
-gpgme_start_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
-                    GpgmeData plain, GpgmeData ciph )
+gpgme_op_encrypt_start ( GpgmeCtx c, GpgmeRecipients recp,
+                         GpgmeData plain, GpgmeData ciph )
 {
     int rc = 0;
     int i;
@@ -50,14 +50,14 @@ gpgme_start_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
 
     /* do some checks */
     assert ( !c->gpg );
-    if ( !gpgme_count_recipients ( recp ) ) {
+    if ( !gpgme_recipients_count ( recp ) ) {
         /* Fixme: In this case we should do symmentric encryption */
         rc = mk_error (No_Recipients);
         goto leave;
     }
         
     /* create a process object */
-    rc = _gpgme_gpg_new_object ( &c->gpg );
+    rc = _gpgme_gpg_new ( &c->gpg );
     if (rc)
         goto leave;
 
@@ -73,16 +73,16 @@ gpgme_start_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
     _gpgme_append_gpg_args_from_recipients ( recp, c->gpg );
 
     /* Check the supplied data */
-    if ( gpgme_query_data_type (plain) == GPGME_DATA_TYPE_NONE ) {
+    if ( gpgme_data_get_type (plain) == GPGME_DATA_TYPE_NONE ) {
         rc = mk_error (No_Data);
         goto leave;
     }
-    _gpgme_set_data_mode (plain, GPGME_DATA_MODE_OUT );
-    if ( !ciph || gpgme_query_data_type (ciph) != GPGME_DATA_TYPE_NONE ) {
+    _gpgme_data_set_mode (plain, GPGME_DATA_MODE_OUT );
+    if ( !ciph || gpgme_data_get_type (ciph) != GPGME_DATA_TYPE_NONE ) {
         rc = mk_error (Invalid_Value);
         goto leave;
     }
-    _gpgme_set_data_mode (ciph, GPGME_DATA_MODE_IN );
+    _gpgme_data_set_mode (ciph, GPGME_DATA_MODE_IN );
     /* Tell the gpg object about the data */
     _gpgme_gpg_add_arg ( c->gpg, "--output" );
     _gpgme_gpg_add_arg ( c->gpg, "-" );
@@ -96,14 +96,14 @@ gpgme_start_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
  leave:
     if (rc) {
         c->pending = 0; 
-        _gpgme_gpg_release_object ( c->gpg ); c->gpg = NULL;
+        _gpgme_gpg_release ( c->gpg ); c->gpg = NULL;
     }
     return rc;
 }
 
 
 /**
- * gpgme_encrypt:
+ * gpgme_op_encrypt:
  * @c: The context
  * @recp: A set of recipients 
  * @in: plaintext input
@@ -116,10 +116,10 @@ gpgme_start_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
  * Return value:  0 on success or an errorcode. 
  **/
 GpgmeError
-gpgme_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
-                GpgmeData in, GpgmeData out )
+gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
+                   GpgmeData in, GpgmeData out )
 {
-    int rc = gpgme_start_encrypt ( c, recp, in, out );
+    int rc = gpgme_op_encrypt_start ( c, recp, in, out );
     if ( !rc ) {
         gpgme_wait (c, 1);
         c->pending = 0;

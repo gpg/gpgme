@@ -287,7 +287,7 @@ finish_key ( GpgmeCtx ctx )
 
 
 GpgmeError
-gpgme_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
+gpgme_op_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
 {
     GpgmeError rc = 0;
     int i;
@@ -299,14 +299,14 @@ gpgme_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
     c->out_of_core = 0;
 
     if ( c->gpg ) {
-        _gpgme_gpg_release_object ( c->gpg ); 
+        _gpgme_gpg_release ( c->gpg ); 
         c->gpg = NULL;
     }
     _gpgme_key_release (c->tmp_key);
     c->tmp_key = NULL;
     /* Fixme: release key_queue */
     
-    rc = _gpgme_gpg_new_object ( &c->gpg );
+    rc = _gpgme_gpg_new ( &c->gpg );
     if (rc)
         goto leave;
 
@@ -336,14 +336,14 @@ gpgme_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
  leave:
     if (rc) {
         c->pending = 0; 
-        _gpgme_gpg_release_object ( c->gpg ); c->gpg = NULL;
+        _gpgme_gpg_release ( c->gpg ); c->gpg = NULL;
     }
     return rc;
 }
 
 
 GpgmeError
-gpgme_keylist_next ( GpgmeCtx c, GpgmeKey *r_key )
+gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key )
 {
     struct key_queue_item_s *q;
 

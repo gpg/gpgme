@@ -23,13 +23,8 @@
 
 #include <time.h>
 #include "types.h"
+#include "context.h"
 
-struct user_id_s {
-    struct user_id_s *next;
-    int validity; /* 0 = undefined, 1 = not, 2 = marginal,
-                     3 = full, 4 = ultimate */
-    char name[1];
-};
 
 struct gpgme_key_s {
     struct {

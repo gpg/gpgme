@@ -27,7 +27,7 @@
 #include "ops.h"
 
 /**
- * gpgme_new_context:
+ * gpgme_new:
  * @r_ctx: Returns the new context
  * 
  * Create a new context to be used with most of the other GPGME
@@ -36,7 +36,7 @@
  * Return value: An error code 
  **/
 GpgmeError
-gpgme_new_context (GpgmeCtx *r_ctx)
+gpgme_new (GpgmeCtx *r_ctx)
 {
     GpgmeCtx c;
 
@@ -50,16 +50,16 @@ gpgme_new_context (GpgmeCtx *r_ctx)
 }
 
 /**
- * gpgme_release_contect:
+ * gpgme_release:
  * @c: Context to be released. 
  * 
  * Release all resources associated with the given context.
  **/
 void
-gpgme_release_context ( GpgmeCtx c )
+gpgme_release ( GpgmeCtx c )
 {
     
-    _gpgme_gpg_release_object ( c->gpg ); 
+    _gpgme_gpg_release ( c->gpg ); 
     _gpgme_release_result ( c );
     _gpgme_key_release ( c->tmp_key );
     /* fixme: release the key_queue */
@@ -81,15 +81,6 @@ _gpgme_release_result ( GpgmeCtx c )
     c->result.verify = NULL;
     c->result_type = RESULT_TYPE_NONE;
 }
-
-
-
-
-
-
-
-
-
 
 
 
