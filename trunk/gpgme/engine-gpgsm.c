@@ -236,7 +236,7 @@ _gpgme_gpgsm_release (GpgsmObject gpgsm)
   if (gpgsm->message_fd != -1)
     _gpgme_io_close (gpgsm->message_fd);
 
-  assuan_pipe_disconnect (gpgsm->assuan_ctx);
+  assuan_disconnect (gpgsm->assuan_ctx);
 
   xfree (gpgsm->colon.attic.line);
   xfree (gpgsm->command);
