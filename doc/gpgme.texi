@@ -2177,7 +2177,7 @@ This is true if the key signature is expired.
 @item unsigned int invalid : 1
 This is true if the key signature is invalid.
 
-@item unsigned int disabled : 1
+@item unsigned int exportable : 1
 This is true if the key signature is exportable.
 
 @item gpgme_pubkey_algo_t pubkey_algo

@@ -1,3 +1,7 @@
+2004-01-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Key Management): Fix exportable field.
+
 2003-12-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Key Management): Rename member class in
