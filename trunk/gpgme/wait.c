@@ -34,6 +34,14 @@
 #include "ops.h"
 #include "wait.h"
 
+#define DEBUG_SELECT_ENABLED 1
+
+#if DEBUG_SELECT_ENABLED
+# define DEBUG_SELECT(a) fprintf a
+#else
+# define DEBUG_SELECT(a) do { } while(0)
+#endif
+
 /* Fixme: implement the following stuff to make the code MT safe.
  * To avoid the need to link against a specific threads lib, such
  * an implementation should require the caller to register a function
@@ -243,23 +251,28 @@ the_big_select ( void )
     FD_ZERO ( &readfds );
     FD_ZERO ( &writefds );
     max_fd = 0;
+
+    
+    DEBUG_SELECT ((stderr, "gpgme:select on [ "));
     lock_queue ();
     for ( q = wait_queue; q; q = q->next ) {
         if ( q->used && q->active ) {
             if (q->inbound) {
                 assert ( !FD_ISSET ( q->fd, &readfds ) );
                 FD_SET ( q->fd, &readfds );
+                DEBUG_SELECT ((stderr, "r%d ", q->fd ));
             }
             else {
                 assert ( !FD_ISSET ( q->fd, &writefds ) );
                 FD_SET ( q->fd, &writefds );
+                DEBUG_SELECT ((stderr, "w%d ", q->fd ));
             }
             if ( q->fd > max_fd )
                 max_fd = q->fd;
           }
     }
     unlock_queue ();
-
+    DEBUG_SELECT ((stderr, "]\n" ));
 
     n = select ( max_fd+1, &readfds, &writefds, NULL, &timeout );
     if ( n <= 0 ) {
@@ -270,15 +283,40 @@ the_big_select ( void )
         return 0;
     }
 
+#if DEBUG_SELECT_ENABLED
+    { 
+        int i;
+
+        fprintf (stderr, "gpgme:select OK [ " );
+        for (i=0; i <= max_fd; i++ ) {
+            if (FD_ISSET (i, &readfds) )
+                fprintf (stderr, "r%d ", i );
+            if (FD_ISSET (i, &writefds) )
+                fprintf (stderr, "w%d ", i );
+        }
+        fprintf (stderr, "]\n" );
+    }
+#endif
+
     /* something has to be done.  Go over the queue and call
      * the handlers */
  restart:
     while ( n ) {
         lock_queue ();
         for ( q = wait_queue; q; q = q->next ) {
-            if ( q->used && q->active 
-                 && FD_ISSET (q->fd, q->inbound? &readfds : &writefds ) ) {
-                FD_CLR (q->fd, q->inbound? &readfds : &writefds );
+            if ( q->used && q->active && q->inbound 
+                 && FD_ISSET (q->fd, &readfds ) ) {
+                FD_CLR (q->fd, &readfds );
+                assert (n);
+                n--;
+                unlock_queue ();
+                if ( q->handler (q->handler_value, q->pid, q->fd ) )
+                    q->active = 0;
+                goto restart;
+            }
+            if ( q->used && q->active && !q->inbound
+                 && FD_ISSET (q->fd, &writefds ) ) {
+                FD_CLR (q->fd, &writefds );
                 assert (n);
                 n--;
                 unlock_queue ();

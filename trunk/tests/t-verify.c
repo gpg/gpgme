@@ -116,7 +116,7 @@ main (int argc, char **argv )
     err = gpgme_op_verify (ctx, sig, text, &status );
     print_sig_stat ( status );
     fail_if_err (err);
-    if ( (nota=gpgme_op_get_notation (ctx)) )
+    if ( (nota=gpgme_get_notation (ctx)) )
         printf ("---Begin Notation---\n%s---End Notation---\n", nota );
 
     puts ("checking a manipulated message:\n");
@@ -128,7 +128,7 @@ main (int argc, char **argv )
     err = gpgme_op_verify (ctx, sig, text, &status );
     print_sig_stat ( status );
     fail_if_err (err);
-    if ( (nota=gpgme_op_get_notation (ctx)) )
+    if ( (nota=gpgme_get_notation (ctx)) )
         printf ("---Begin Notation---\n%s---End Notation---\n", nota );
 
     gpgme_data_release (sig);

@@ -96,7 +96,7 @@ _gpgme_release_result ( GpgmeCtx c )
 
 
 char *
-gpgme_op_get_notation ( GpgmeCtx c )
+gpgme_get_notation ( GpgmeCtx c )
 {
     if ( !c->notation )
         return NULL;
@@ -105,7 +105,7 @@ gpgme_op_get_notation ( GpgmeCtx c )
 
 
 void
-gpgme_op_set_armor ( GpgmeCtx c, int yes )
+gpgme_set_armor ( GpgmeCtx c, int yes )
 {
     if ( !c )
         return; /* oops */
@@ -113,19 +113,23 @@ gpgme_op_set_armor ( GpgmeCtx c, int yes )
 }
 
 void
-gpgme_op_set_textmode ( GpgmeCtx c, int yes )
+gpgme_set_textmode ( GpgmeCtx c, int yes )
 {
     if ( !c )
         return; /* oops */
     c->use_textmode = yes;
 }
 
-
-
-
-
-
-
+#if 0
+void
+gpgme_set_passphrase_cb ( GpgmeCtx c, GpgmePassphraseCb fnc, void *fncval )
+{
+    if ( c ) {
+        c->passphrase_cb = fnc;
+        c->passphrase_cb_value = fncval;
+    }
+}
+#endif
 
 
 

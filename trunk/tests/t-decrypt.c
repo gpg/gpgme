@@ -50,6 +50,17 @@ print_data ( GpgmeData dh )
         fail_if_err (err);
 }
 
+#if 0
+static GpgmeData
+passphrase_cb ( void *opaque, const char *description )
+{
+    GpgmeData dh;
+
+    assert (NULL);
+    gpgme_data_new_from_mem ( &dh, "abc", 3, 0 );
+    return dh;
+}
+#endif
 
 static char *
 mk_fname ( const char *fname )
@@ -79,6 +90,11 @@ main (int argc, char **argv )
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
+#if 0
+    if ( !getenv("GPG_AGENT_INFO") {
+        gpgme_set_passphrase_cb ( ctx, passphrase_cb, NULL );
+    } 
+#endif
 
     err = gpgme_data_new_from_file ( &in, cipher_1_asc, 1 );
     fail_if_err (err);

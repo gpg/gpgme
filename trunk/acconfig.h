@@ -21,9 +21,13 @@
 #define GPGME_CONFIG_H
 
 /* need this, because some autoconf tests rely on this (e.g. stpcpy)
- * and it should be used for new programs
- */
+ * and it should be used for new programs  */
 #define _GNU_SOURCE  1
+/* To allow the use of gpgme in multithreaded programs we have to use 
+ * special features from the library.  
+ * IMPORTANT: gpgme is not yet fully reentrant and you should use it
+ * only from one thread. */
+#define _REENTRANT 1 
 
 @TOP@
 
