@@ -465,6 +465,24 @@ gpgme_data_get_type (GpgmeData dh)
   return dh->type;
 }
 
+/* Get the current encoding meta information. */
+GpgmeDataEncoding
+gpgme_data_get_encoding (GpgmeData dh)
+{
+  return dh? dh->encoding : GPGME_DATA_ENCODING_NONE;
+}
+
+/* Set the encoding meta information for DB to ENC */
+GpgmeError
+gpgme_data_set_encoding (GpgmeData dh, GpgmeDataEncoding enc)
+{
+  if (!dh)
+    return GPGME_Invalid_Value;
+  if (enc < 0 || enc > GPGME_DATA_ENCODING_ARMOR)
+    return GPGME_Invalid_Value;
+  dh->encoding = enc;
+  return 0;
+}
 
 void 
 _gpgme_data_set_mode (GpgmeData dh, GpgmeDataMode mode)

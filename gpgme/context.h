@@ -107,6 +107,7 @@ struct gpgme_data_s {
     const char *data;
     GpgmeDataType type;
     GpgmeDataMode mode;
+    GpgmeDataEncoding encoding;
 
     int (*read_cb)( void *, char *, size_t, size_t *);
     void *read_cb_value;

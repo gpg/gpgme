@@ -503,6 +503,21 @@ gpgsm_set_fd (ASSUAN_CONTEXT ctx, const char *which, int fd, const char *opt)
 }
 
 
+static const char *
+map_input_enc (GpgmeData d)
+{
+  switch (gpgme_data_get_encoding (d))
+    {
+    case GPGME_DATA_ENCODING_NONE: break;
+    case GPGME_DATA_ENCODING_BINARY: return "--binary";
+    case GPGME_DATA_ENCODING_BASE64: return "--base64";
+    case GPGME_DATA_ENCODING_ARMOR: return "--armor";
+    }
+
+  return NULL;
+}
+
+
 GpgmeError
 _gpgme_gpgsm_op_decrypt (GpgsmObject gpgsm, GpgmeData ciph, GpgmeData plain)
 {
@@ -516,7 +531,8 @@ _gpgme_gpgsm_op_decrypt (GpgsmObject gpgsm, GpgmeData ciph, GpgmeData plain)
     return mk_error (Out_Of_Core);
 
   gpgsm->input_data = ciph;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 0);
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 
+                      map_input_enc (gpgsm->input_data));
   if (err)
     return mk_error (General_Error);	/* FIXME */
   gpgsm->output_data = plain;
@@ -607,7 +623,8 @@ _gpgme_gpgsm_op_encrypt (GpgsmObject gpgsm, GpgmeRecipients recp,
     return mk_error (Out_Of_Core);
 
   gpgsm->input_data = plain;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 0);
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
+                      map_input_enc (gpgsm->input_data));
   if (err)
     return err;
   gpgsm->output_data = ciph;
@@ -648,7 +665,8 @@ _gpgme_gpgsm_op_genkey (GpgsmObject gpgsm, GpgmeData help_data, int use_armor,
     return mk_error (Out_Of_Core);
 
   gpgsm->input_data = help_data;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 0);
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
+                      map_input_enc (gpgsm->input_data));
   if (err)
     return err;
   gpgsm->output_data = pubkey;
@@ -675,7 +693,8 @@ _gpgme_gpgsm_op_import (GpgsmObject gpgsm, GpgmeData keydata)
     return mk_error (Out_Of_Core);
 
   gpgsm->input_data = keydata;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 0);
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
+                      map_input_enc (gpgsm->input_data));
   if (err)
     return err;
   _gpgme_io_close (gpgsm->output_fd);
@@ -834,7 +853,8 @@ _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
     return err;
 
   gpgsm->input_data = in;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 0);
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
+                      map_input_enc (gpgsm->input_data));
   if (err)
     return err;
   gpgsm->output_data = out;
@@ -869,7 +889,8 @@ _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
     return mk_error (Out_Of_Core);
 
   gpgsm->input_data = sig;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 0);
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
+                      map_input_enc (gpgsm->input_data));
   if (err)
     return err;
   if (_gpgme_data_get_mode (text) == GPGME_DATA_MODE_IN)

@@ -6,6 +6,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_get_passphrase_cb		NEW
 gpgme_get_progress_cb		NEW
+GpgmeDataEncoding               NEW
+gpgme_data_set_encoding         NEW
+gpgme_data_get_encoding         NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.5 (2002-04-01)
