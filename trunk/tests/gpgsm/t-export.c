@@ -39,7 +39,10 @@ main (int argc, char *argv[])
   gpgme_ctx_t ctx;
   gpgme_error_t err;
   gpgme_data_t out;
-  const char *pattern[] = { "DFN Top Level Certification Authority", NULL };
+  const char *pattern1[] = { "DFN Top Level Certification Authority", NULL };
+  const char *pattern2[] = { "3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E",
+                             "DFN Server Certification Authority", 
+                             NULL };
 
   init_gpgme (GPGME_PROTOCOL_CMS);
 
@@ -47,11 +50,12 @@ main (int argc, char *argv[])
   fail_if_err (err);
   gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
 
+  gpgme_set_armor (ctx, 1);
+
+  /* Check exporting of one certificate. */
   err = gpgme_data_new (&out);
   fail_if_err (err);
-
-  gpgme_set_armor (ctx, 1);
-  err = gpgme_op_export_ext (ctx, pattern, 0, out);
+  err = gpgme_op_export_ext (ctx, pattern1, 0, out);
   fail_if_err (err);
 
   fflush (NULL);
@@ -60,6 +64,21 @@ main (int argc, char *argv[])
   fputs ("End Result.\n", stdout);
 
   gpgme_data_release (out);
+
+  /* Check exporting of 2 certificates. */
+  err = gpgme_data_new (&out);
+  fail_if_err (err);
+  err = gpgme_op_export_ext (ctx, pattern2, 0, out);
+  fail_if_err (err);
+
+  fflush (NULL);
+  fputs ("Begin Result:\n", stdout);
+  print_data (out);
+  fputs ("End Result.\n", stdout);
+
+  gpgme_data_release (out);
+
+
   gpgme_release (ctx);
 
   return 0;

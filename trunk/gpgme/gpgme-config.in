@@ -61,9 +61,15 @@ while test $# -gt 0; do
     esac
 
     case $1 in
+        --prefix=*)
+            # For compatibility reasons with old M4 macros, we ignore
+            # setting of prefix.
+            ;;
         --prefix)
 	    output="$output $prefix"
 	    ;;
+        --exec-prefix=*)
+            ;;
         --exec-prefix)
 	    output="$output $exec_prefix"
 	    ;;
