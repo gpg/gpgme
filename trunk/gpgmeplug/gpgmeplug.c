@@ -239,7 +239,7 @@ xmalloc (size_t n)
 static char *
 xstrdup (const char *string)
 {
-  char *p = xmalloc (strlen (string));
+  char *p = xmalloc (strlen (string)+1);
   strcpy (p, string);
   return p;
 }
