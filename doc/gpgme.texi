@@ -2351,7 +2351,7 @@ The @code{gpgme_key_t} type is a pointer to a key object.  It has the
 following members:
 
 @table @code
-@item unsigned int keylist_mode
+@item gpgme_keylist_mode_t keylist_mode
 The keylist mode that was active when the key was retrieved.
 
 @item unsigned int revoked : 1
