@@ -26,6 +26,11 @@
 #include "context.h"
 #include "ops.h"
 
+#define my_isdigit(a)  ( (a) >='0' && (a) <= '9' )
+#define my_isxdigit(a) ( my_isdigit((a))               \
+                         || ((a) >= 'A' && (a) <= 'F') \
+                         || ((a) >= 'f' && (a) <= 'f') )
+
 /**
  * gpgme_new:
  * @r_ctx: Returns the new context
@@ -62,6 +67,7 @@ gpgme_release ( GpgmeCtx c )
     _gpgme_gpg_release ( c->gpg ); 
     _gpgme_release_result ( c );
     _gpgme_key_release ( c->tmp_key );
+    gpgme_data_release ( c->notation );
     /* fixme: release the key_queue */
     xfree ( c );
 }
@@ -83,6 +89,13 @@ _gpgme_release_result ( GpgmeCtx c )
 }
 
 
+char *
+gpgme_op_get_notation ( GpgmeCtx c )
+{
+    if ( !c->notation )
+        return NULL;
+    return _gpgme_data_get_as_string ( c->notation );
+}
 
 
 

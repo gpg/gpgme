@@ -68,11 +68,24 @@ typedef enum {
     GPGME_DATA_TYPE_FILE = 3
 } GpgmeDataType;
 
+typedef enum {
+    GPGME_SIG_STAT_NONE = 0,
+    GPGME_SIG_STAT_GOOD = 1,
+    GPGME_SIG_STAT_BAD  = 2,
+    GPGME_SIG_STAT_NOKEY = 3,
+    GPGME_SIG_STAT_NOSIG = 4,
+    GPGME_SIG_STAT_ERROR = 5
+} GpgmeSigStat;
+
+
 
 /* Context management */
 GpgmeError gpgme_new (GpgmeCtx *r_ctx);
 void       gpgme_release ( GpgmeCtx c );
 GpgmeCtx   gpgme_wait ( GpgmeCtx c, int hang );
+
+char *gpgme_op_get_notation ( GpgmeCtx c );
+
 
 /* Functions to handle recipients */
 GpgmeError   gpgme_recipients_new (GpgmeRecipients *r_rset);
@@ -90,6 +103,8 @@ GpgmeError    gpgme_data_rewind ( GpgmeData dh );
 GpgmeError    gpgme_data_read ( GpgmeData dh,
                                 char *buffer, size_t length, size_t *nread );
 
+/* Key functions */
+char *gpgme_key_get_as_xml ( GpgmeKey key );
 
 
 /* Basic GnuPG functions */
@@ -105,10 +120,11 @@ GpgmeError gpgme_op_keylist_start ( GpgmeCtx c,
 GpgmeError gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key );
 
 
-/* Convenience functions for syncronous usage */
+/* Convenience functions for normal usage */
 GpgmeError gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
                               GpgmeData in, GpgmeData out );
-GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text );
+GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
+                             GpgmeSigStat *r_status );
 
 
 /* miscellaneous functions */
