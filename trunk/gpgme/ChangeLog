@@ -1,3 +1,39 @@
+2001-11-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* passphrase.c: New file.
+	* Makefile.am (libgpgme_la_SOURCES): Add passphrase.c.
+	* ops.h (_gpgme_passphrase_result): Add prototypes from
+	passphrase.c.
+	* types.h: Likewise.
+	* context.h: Add member passphrase to result.
+	* gpgme.c (_gpgme_release_result): Release passphrase member.
+
+	* decrypt.c: Some formatting and variable name changes (like
+	CTX instead C).
+	(struct decrypt_result_s): Remove members now found in
+	passphrase result.
+	(_gpgme_release_decrypt_result): Don't release removed members.
+	(decrypt_status_handler): Call _gpgme_passphrase_status_handler,
+	and don't handle the cases catched there.
+	(command_handler): Removed.
+	(gpgme_op_decrypt_start): Don't set command handler, but invoke
+	_gpgme_passphrase_start which does it.
+	(gpgme_op_decrypt): Invoke _gpgme_passphrase_result and drop the
+	cases covered by it.
+
+	* sign.c Some formatting and variable name changes (like
+	CTX instead C).
+	(struct sign_result_s): Remove members now found in
+	passphrase result.
+	(_gpgme_release_sign_result): Don't release removed members.
+	(sign_status_handler): Call _gpgme_passphrase_status_handler,
+	and don't handle the cases catched there.
+	(command_handler): Removed.
+	(gpgme_op_sign_start): Don't set command handler, but invoke
+	_gpgme_passphrase_start which does it.
+	(gpgme_op_sign): Invoke _gpgme_passphrase_result and drop the
+	cases covered by it.
+
 2001-11-15  Marcus Brinkmann  <marcus@g10code.de>
 
 	* decrypt.c (command_handler): Fix last change.

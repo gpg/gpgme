@@ -23,6 +23,7 @@
 #define OPS_H
 
 #include "types.h"
+#include "rungpg.h"
 
 /*-- gpgme.c --*/
 void _gpgme_release_result ( GpgmeCtx c );
@@ -79,10 +80,11 @@ void _gpgme_release_sign_result ( SignResult res );
 /*-- encrypt.c --*/
 void _gpgme_release_encrypt_result ( EncryptResult res );
 
+/*-- passphrase.c --*/
+void _gpgme_release_passphrase_result (PassphraseResult result);
+void _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+				       char *args);
+GpgmeError _gpgme_passphrase_start (GpgmeCtx ctx);
+GpgmeError _gpgme_passphrase_result (GpgmeCtx ctx);
 
 #endif /* OPS_H */
-
-
-
-
-

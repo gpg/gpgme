@@ -88,6 +88,7 @@ _gpgme_release_result (GpgmeCtx c)
   _gpgme_release_decrypt_result (c->result.decrypt);
   _gpgme_release_sign_result (c->result.sign);
   _gpgme_release_encrypt_result (c->result.encrypt);
+  _gpgme_release_passphrase_result (c->result.passphrase);
   memset (&c->result, 0, sizeof (c->result));
   _gpgme_set_op_info (c, NULL);
 }

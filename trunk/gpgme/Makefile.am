@@ -41,6 +41,7 @@ libgpgme_la_SOURCES = \
 	decrypt.c \
 	verify.c \
 	sign.c \
+	passphrase.c \
         key.c key.h \
 	keylist.c \
 	trustlist.c \
