@@ -8,13 +8,13 @@
 	(struct proc_s): New member REPORTED.
 	* gpgme.h: Fix prototype.
 	* verify.c (gpgme_op_verify): Fix use of gpgme_wait.
-	* sign.c (gpgme_op_sign): 
-	* import.c (gpgme_op_import): 
-	* genkey.c (gpgme_op_genkey): 
-	* export.c (gpgme_op_export): 
-	* encrypt.c (gpgme_op_encrypt): 
-	* delete.c (gpgme_op_delete): 
-	* decrypt-verify.c (gpgme_op_decrypt_verify): 
+	* sign.c (gpgme_op_sign): Likewise.
+	* import.c (gpgme_op_import): Likewise.
+	* genkey.c (gpgme_op_genkey): Likewise.
+	* export.c (gpgme_op_export): Likewise.
+	* encrypt.c (gpgme_op_encrypt): Likewise.
+	* delete.c (gpgme_op_delete): Likewise.
+	* decrypt-verify.c (gpgme_op_decrypt_verify): Likewise.
 
 2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
 
