@@ -1674,7 +1674,10 @@ _gpgme_gpg_op_keylist (GpgObject gpg, const char *pattern, int secret_only,
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "--with-fingerprint");
   if (!err)
-    err = _gpgme_gpg_add_arg (gpg, secret_only ? "--list-secret-keys"
+    err = _gpgme_gpg_add_arg (gpg, 
+                              (keylist_mode & GPGME_KEYLIST_MODE_SIGS)?
+                              "--check-sigs" :
+                              secret_only ? "--list-secret-keys"
 			      : "--list-keys");
   
   /* Tell the gpg object about the data */

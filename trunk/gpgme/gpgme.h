@@ -302,14 +302,14 @@ typedef enum  {
     GPGME_STATUS_EXPSIG             ,
     GPGME_STATUS_EXPKEYSIG          ,
     GPGME_STATUS_TRUNCATED          ,
-    GPGME_STATUS_ERROR              ,
+    GPGME_STATUS_ERROR              
 } GpgmeStatusCode;
 
 
 /* The available keylist mode flags.  */
-#define GPGME_KEYLIST_MODE_LOCAL 1
+#define GPGME_KEYLIST_MODE_LOCAL  1
 #define GPGME_KEYLIST_MODE_EXTERN 2
-
+#define GPGME_KEYLIST_MODE_SIGS   4
 
 /* Types for callback functions.  */
 

@@ -1,3 +1,23 @@
+2002-08-14  Werner Koch  <wk@gnupg.org>
+
+	* key.h (struct certsig_s): New.  Use it in gpgme_key_s.
+	* key.c (gpgme_key_release): Release it. We need to add more code
+	of course.
+	(_gpgme_key_append_name): Use memset to intialize the struct.
+	* gpgme.h (GPGME_KEYLIST_MODE_SIGS): New.
+	* rungpg.c (_gpgme_gpg_op_keylist): Include sigs in listing depending
+	non the list mode.
+	
+	* key.c (gpgme_key_get_string_attr): Use GPGME_ATTR_TYPE to return
+	information about the key type (PGP or X.509).
+	(gpgme_key_get_ulong_attr): Likewise.
+
+	* keylist.c (keylist_colon_handler): Include 1 in the check for
+	valid algorithms so that RSA is usable.  Store the issuer name and
+	serial number also for "crs" records.  Parse the expire date for
+	subkeys.
+	(set_userid_flags): Put them onto the last appended key.
+
 2002-07-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.c (_gpgme_gpg_op_edit): Use --with-colons.

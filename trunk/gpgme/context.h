@@ -130,11 +130,17 @@ struct gpgme_data_s {
     char *private_buffer;
 };
 
+/* Forward declaration of a structure to store certification
+   signatures. */
+struct certsig_s;
+
+/* Structure to store user IDs. */
 struct user_id_s {
     struct user_id_s *next;
     unsigned int revoked:1;
     unsigned int invalid:1;
     GpgmeValidity validity; 
+    struct certsig_s *certsigs;
     const char *name_part;    /* all 3 point into strings behind name */
     const char *email_part;   /* or to read-only strings */
     const char *comment_part;
