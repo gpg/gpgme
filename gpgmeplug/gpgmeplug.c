@@ -2402,19 +2402,25 @@ nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
     gpgme_key_release (key);
     /*return &(it->info);*/
     *result =  &(it->info);
-  } else *result = NULL;
+  } else {
+    *result = NULL;
+  }
   return retval;
 }
 
-void 
+int
 endListCertificates( struct CertIterator* it )
 {
   /*fprintf( stderr,  "endListCertificates()\n" );*/
+  char *s = gpgme_get_op_info (it->ctx, 0);
+  int truncated = s && strstr (s, "<truncated/>");
+  if( s ) free( s );
   assert(it);
   freeInfo( &(it->info) );
   gpgme_op_keylist_end(it->ctx);
   gpgme_release (it->ctx);
   free( it );
+  return truncated;
 }
 
 int
