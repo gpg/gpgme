@@ -58,7 +58,6 @@ AC_SUBST(VERSION)
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
 
-
 dnl Don't default to build static libs.
 dnl AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
