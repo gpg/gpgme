@@ -22,8 +22,8 @@
 
 TESTS_ENVIRONMENT = GNUPGHOME=. 
 
-TESTS = t-encrypt t-sign t-decrypt t-verify t-keylist t-export t-import \
-	t-trustlist
+TESTS = t-version t-data t-encrypt t-sign t-decrypt t-verify t-keylist	\
+	t-export t-import t-trustlist
 
 
 EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc geheim.txt \
