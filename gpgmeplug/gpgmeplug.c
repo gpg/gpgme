@@ -1118,17 +1118,27 @@ bool signMessage( const char*  cleartext,
   /* select the signer's key if provided */
   if (certificate != 0) {
       err = gpgme_op_keylist_start(ctx, certificate, 0);
-      if (err == GPGME_No_Error) {
-	  /* we only support one signer for now */
-	  err = gpgme_op_keylist_next(ctx, &rKey);
-	  if (err == GPGME_No_Error) {
-	      /* clear existing signers */
-	      gpgme_signers_clear(ctx);
-	      /* set the signing key */
-	      gpgme_signers_add(ctx, rKey);
-	  }
-	  gpgme_op_keylist_end(ctx);
+      while (err == GPGME_No_Error) {
+          err = gpgme_op_keylist_next(ctx, &rKey);
+          if (err == GPGME_No_Error) {
+              unsigned long u;
+              u = gpgme_key_get_ulong_attr(rKey, GPGME_ATTR_CAN_SIGN, 0, 0);
+              if( u ) {
+
+//                const char* s;
+//                s = gpgme_key_get_string_attr(rKey, GPGME_ATTR_FPR, 0, 0);
+//                fprintf( stderr, "gpgmeplug signMessage signing with key: %s\n", s );
+
+                  /* clear existing signers */
+                  gpgme_signers_clear(ctx);
+                  /* set the signing key */
+                  gpgme_signers_add(ctx, rKey);
+                  /* we only support one signer for now */
+                  break;
+              }
+          }
       }
+      gpgme_op_keylist_end(ctx);
   }
 
   /* PENDING(g10) Implement this
@@ -2584,8 +2594,7 @@ bool checkMessageSignature( char** cleartext,
         sigmeta->extended_info[sig_idx].userid_num = attr_ulong;
 
         /* extract the length */
-        attr_ulong = gpgme_key_get_ulong_attr(key, GPGME_ATTR_LEN, 0, 0);
-        sigmeta->extended_info[sig_idx].keylen = attr_ulong;
+          sigmeta->extended_info[sig_idx].keylen = attr_ulong;
 
         /* extract the creation time of the key */
         attr_ulong = gpgme_key_get_ulong_attr(key, GPGME_ATTR_CREATED, 0, 0);
