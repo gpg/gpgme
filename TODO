@@ -84,6 +84,7 @@ Hey Emacs, this is -*- outline -*- mode!
 *** Import does not take notice of NODATA status report.
 *** When GPGSM does issue IMPORT_OK status reports, make sure to check for them
     in tests/gpgs m/t-import.c.
+** Verify can include info about version/algo/class.
 ** Genkey should return something more useful than General_Error.
 ** Decrypt:
    On Fri, Jun 27, 2003 at 06:28:23PM +0200, Heiko Abraham wrote:
