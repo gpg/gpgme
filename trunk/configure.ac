@@ -21,7 +21,7 @@
 # (Process this file with autoconf to produce a configure script.)
 
 # Version number: Remember to change it immediately *after* a release.
-AC_INIT(gpgme, 0.4.2, [bug-gpgme@gnupg.org])
+AC_INIT(gpgme, 0.4.3, [bug-gpgme@gnupg.org])
 # LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
 #   (Interfaces added/removed/changed:	CURRENT++, REVISION=0)

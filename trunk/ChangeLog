@@ -1,3 +1,7 @@
+2003-07-31  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_INIT): Bump version to 0.4.3.
+
 2003-07-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac (LIBGPGME_LT_REVISION): Bump up to 1.
