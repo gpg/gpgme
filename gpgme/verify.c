@@ -152,8 +152,12 @@ verify_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
     }
 
     switch (code) {
+      case STATUS_NODATA:
+        ctx->result.verify->status = GPGME_SIG_STAT_NOSIG;
+        break;
+
       case STATUS_GOODSIG:
-        /* We just look at VALIDSIG */
+        /* We only look at VALIDSIG */
         break;
 
       case STATUS_VALIDSIG:
