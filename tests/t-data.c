@@ -106,12 +106,10 @@ read_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 void
 read_once_test (round_t round, GpgmeData data)
 {
-  GpgmeError err;
   char buffer[1024];
   size_t read;
 
-  err = gpgme_data_read (data, buffer, sizeof (buffer), &read);
-  fail_if_err (err);
+  read = gpgme_data_read (data, buffer, sizeof (buffer));
 
   if (read != strlen (text) || strncmp (buffer, text, strlen (text)))
     {
@@ -120,8 +118,8 @@ read_once_test (round_t round, GpgmeData data)
       exit (1);
     }
 
-  err = gpgme_data_read (data, buffer, sizeof (buffer), &read);
-  if (err != GPGME_EOF)
+  read = gpgme_data_read (data, buffer, sizeof (buffer));
+  if (read)
     {
       fprintf (stderr, "%s:%d: (%i) gpgme_data_read did not signal EOF\n",
 	       __FILE__, __LINE__, round);
@@ -138,8 +136,8 @@ read_test (round_t round, GpgmeData data)
 
   if (round == TEST_INOUT_NONE)
     {
-      err = gpgme_data_read (data, buffer, sizeof (buffer), &read);
-      if (!err)
+      read = gpgme_data_read (data, buffer, sizeof (buffer));
+      if (read > 0)
 	{
 	  fprintf (stderr, "%s:%d: (%i) gpgme_data_read succeded unexpectedly\n",
 		   __FILE__, __LINE__, round);
@@ -159,12 +157,12 @@ write_test (round_t round, GpgmeData data)
 {
   GpgmeError err;
   char buffer[1024];
-  size_t read;
+  size_t amt;
 
-  err = gpgme_data_write (data, text, strlen (text));
-  fail_if_err (err);
+  amt = gpgme_data_write (data, text, strlen (text));
+  if (amt != strlen (text))
+    fail_if_err (GPGME_File_Error);
 
-  read_once_test (round, data);
   err = gpgme_data_rewind (data);
   fail_if_err (err);
 
@@ -172,18 +170,17 @@ write_test (round_t round, GpgmeData data)
     read_once_test (round, data);
   else
     {
-      err = gpgme_data_read (data, buffer, sizeof (buffer), &read);
-      fail_if_err (err);
+      amt = gpgme_data_read (data, buffer, sizeof (buffer));
 
-      if (read != strlen (text2) || strncmp (buffer, text2, strlen (text2)))
+      if (amt != strlen (text2) || strncmp (buffer, text2, strlen (text2)))
 	{
 	  fprintf (stderr, "%s:%d: (%i) gpgme_data_read returned wrong data\n",
 		   __FILE__, __LINE__, round);
 	  exit (1);
 	}
 
-      err = gpgme_data_read (data, buffer, sizeof (buffer), &read);
-      if (err != GPGME_EOF)
+      amt = gpgme_data_read (data, buffer, sizeof (buffer));
+      if (amt)
 	{
 	  fprintf (stderr, "%s:%d: (%i) gpgme_data_read did not signal EOF\n",
 		   __FILE__, __LINE__, round);
@@ -193,7 +190,7 @@ write_test (round_t round, GpgmeData data)
 }
 
 int 
-main (int argc, char **argv )
+main (int argc, char **argv)
 {
   round_t round = TEST_INITIALIZER;
   const char *text_filename = make_filename ("t-data-1.txt");
@@ -212,12 +209,6 @@ main (int argc, char **argv )
 	    {
 	      fprintf (stderr, "%s:%d: gpgme_data_new on NULL pointer succeeded "
 		       "unexpectedly\n", __FILE__, __LINE__);
-	      exit (1);
-	    }
-	  if (gpgme_data_get_type (NULL) != GPGME_DATA_TYPE_NONE)
-	    {
-	      fprintf (stderr, "%s:%d: gpgme_data_get_type on NULL incorrect\n",
-		       __FILE__, __LINE__);
 	      exit (1);
 	    }
 	  continue;
@@ -245,7 +236,7 @@ main (int argc, char **argv )
 	case TEST_INOUT_MEM_FROM_FILE_NO_COPY:
 	  err = gpgme_data_new_from_file (&data, text_filename, 0);
 	  /* This is not implemented yet.  */
-	  if (err == GPGME_Not_Implemented)
+	  if (err == GPGME_Not_Implemented || err == GPGME_Invalid_Value)
 	    continue;
 	  break;
 	case TEST_INOUT_MEM_FROM_FILE_PART_BY_NAME:
@@ -287,34 +278,6 @@ main (int argc, char **argv )
 	}
       fail_if_err (err);
 
-      switch (round)
-	{
-	case TEST_INOUT_NONE:
-	  if (gpgme_data_get_type (data) != GPGME_DATA_TYPE_NONE)
-	    err = GPGME_Invalid_Type;
-	  break;
-	case TEST_INOUT_MEM_NO_COPY:
-	case TEST_INOUT_MEM_COPY:
-	case TEST_INOUT_MEM_FROM_FILE_COPY:
-	case TEST_INOUT_MEM_FROM_FILE_NO_COPY:
-	case TEST_INOUT_MEM_FROM_FILE_PART_BY_NAME:
-	case TEST_INOUT_MEM_FROM_FILE_PART_BY_FP:
-	  if (gpgme_data_get_type (data) != GPGME_DATA_TYPE_MEM)
-	    err = GPGME_Invalid_Type;
-	  break;
-	case TEST_OUT_CB:
-	  if (gpgme_data_get_type (data) != GPGME_DATA_TYPE_CB)
-	    err = GPGME_Invalid_Type;
-	  break;
-	case TEST_INITIALIZER:
-	case TEST_INVALID_ARGUMENT:
-	case TEST_INOUT_MEM_FROM_INEXISTANT_FILE:
-	case TEST_INOUT_MEM_FROM_INEXISTANT_FILE_PART:
-	case TEST_END:
-	  /* Shouldn't happen.  */
-	  fprintf (stderr, "%s:%d: impossible condition\n", __FILE__, __LINE__);
-	  exit (1);
-	}
       read_test (round, data);
       if (round != TEST_OUT_CB)
 	write_test (round, data);

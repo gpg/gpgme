@@ -186,33 +186,33 @@ main (int argc, char **argv )
     fail_if_err (err);
 
     puts ("checking a valid message:\n");
-    err = gpgme_op_verify (ctx, sig, text, &status );
-    print_sig_stat ( ctx, status );
-    print_sig_stat ( ctx, status );
-    print_sig_stat ( ctx, status );
-    print_sig_stat ( ctx, status );
+    err = gpgme_op_verify (ctx, sig, text, NULL, &status);
+    print_sig_stat (ctx, status);
+    print_sig_stat (ctx, status);
+    print_sig_stat (ctx, status);
+    print_sig_stat (ctx, status);
     fail_if_err (err);
 
     if ( (nota=gpgme_get_notation (ctx)) )
-        printf ("---Begin Notation---\n%s---End Notation---\n", nota );
+        printf ("---Begin Notation---\n%s---End Notation---\n", nota);
 
     puts ("checking a manipulated message:\n");
     gpgme_data_release (text);
     err = gpgme_data_new_from_mem ( &text,
-                                    test_text1f, strlen (test_text1f), 0 );
+                                    test_text1f, strlen (test_text1f), 0);
     fail_if_err (err);
     gpgme_data_rewind ( sig );
-    err = gpgme_op_verify (ctx, sig, text, &status );
+    err = gpgme_op_verify (ctx, sig, text, NULL, &status);
 
-    print_sig_stat ( ctx, status );
+    print_sig_stat (ctx, status);
     fail_if_err (err);
-    if ( (nota=gpgme_get_notation (ctx)) )
-        printf ("---Begin Notation---\n%s---End Notation---\n", nota );
+    if ((nota=gpgme_get_notation (ctx)))
+        printf ("---Begin Notation---\n%s---End Notation---\n", nota);
 
     gpgme_data_release (sig);
     gpgme_data_release (text);
- 
-} while ( argc > 1 && !strcmp( argv[1], "--loop" ) && ++n < 20 );
+    
+  } while ( argc > 1 && !strcmp( argv[1], "--loop" ) && ++n < 20 );
       gpgme_release (ctx);
     
     return 0;

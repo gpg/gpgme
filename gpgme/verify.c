@@ -359,7 +359,7 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 
 static GpgmeError
 _gpgme_op_verify_start (GpgmeCtx ctx, int synchronous,
-			GpgmeData sig, GpgmeData text)
+			GpgmeData sig, GpgmeData signed_text, GpgmeData plaintext)
 {
   int err = 0;
   int pipemode = 0;	 /* !!text; use pipemode for detached sigs.  */
@@ -382,25 +382,17 @@ _gpgme_op_verify_start (GpgmeCtx ctx, int synchronous,
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
   /* Check the supplied data.  */
-  if (gpgme_data_get_type (sig) == GPGME_DATA_TYPE_NONE)
+  if (!sig)
     {
       err = mk_error (No_Data);
       goto leave;
     }
-  if (!text)
+  if (!signed_text && !plaintext)
     {
       err = mk_error (Invalid_Value);
       goto leave;
     }
-  _gpgme_data_set_mode (sig, GPGME_DATA_MODE_OUT);
-  if (gpgme_data_get_type (text) == GPGME_DATA_TYPE_NONE)
-    /* Normal or cleartext signature.  */
-    _gpgme_data_set_mode (text, GPGME_DATA_MODE_IN);
-  else
-    /* Detached signature.  */
-    _gpgme_data_set_mode (text, GPGME_DATA_MODE_OUT);
-
-  err = _gpgme_engine_op_verify (ctx->engine, sig, text);
+  err = _gpgme_engine_op_verify (ctx->engine, sig, signed_text, plaintext);
   if (!err)	/* And kick off the process.  */
     err = _gpgme_engine_start (ctx->engine, ctx);
 
@@ -415,9 +407,10 @@ _gpgme_op_verify_start (GpgmeCtx ctx, int synchronous,
 }
 
 GpgmeError
-gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData text)
+gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
+		       GpgmeData plaintext)
 {
-  return _gpgme_op_verify_start (ctx, 0, sig, text);
+  return _gpgme_op_verify_start (ctx, 0, sig, signed_text, plaintext);
 }
 
 /* 
@@ -469,8 +462,8 @@ _gpgme_intersect_stati (VerifyResult result)
  *               the signature itself did go wrong.
  **/
 GpgmeError
-gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData text,
-		 GpgmeSigStat *r_stat)
+gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
+		 GpgmeData plaintext, GpgmeSigStat *r_stat)
 {
   GpgmeError err;
 
@@ -481,7 +474,7 @@ gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData text,
   ctx->notation = NULL;
     
   *r_stat = GPGME_SIG_STAT_NONE;
-  err = _gpgme_op_verify_start (ctx, 1, sig, text);
+  err = _gpgme_op_verify_start (ctx, 1, sig, signed_text, plaintext);
   if (!err)
     {
       err = _gpgme_wait_one (ctx);

@@ -1,4 +1,4 @@
-/* context.h 
+/* context.h
  *	Copyright (C) 2000 Werner Koch (dd9jn)
  *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
@@ -40,12 +40,12 @@ struct trust_queue_item_s
 };
 
 
-/* Currently we need it at several places, so we put the definition 
- * into this header file */
+/* Currently we need it at several places, so we put the definition
+   into this header file.  */
 struct gpgme_context_s
 {
   int initialized;
-  /* A gpg request is still pending.  */
+  /* An engine request is still pending.  */
   int pending;
 
   int use_cms;
@@ -112,44 +112,29 @@ struct gpgme_context_s
   GpgmeData help_data_1;
 };
 
-
-struct gpgme_data_s {
-    size_t len;
-    const char *data;
-    GpgmeDataType type;
-    GpgmeDataMode mode;
-    GpgmeDataEncoding encoding;
-
-    int (*read_cb)( void *, char *, size_t, size_t *);
-    void *read_cb_value;
-    int read_cb_eof;
-
-    size_t readpos;
-    size_t writepos;
-    size_t private_len;
-    char *private_buffer;
-};
-
 /* Forward declaration of a structure to store certification
-   signatures. */
+   signatures.  */
 struct certsig_s;
 
-/* Structure to store user IDs. */
-struct user_id_s {
-    struct user_id_s *next;
-    unsigned int revoked:1;
-    unsigned int invalid:1;
-    GpgmeValidity validity; 
-    struct certsig_s *certsigs;
-    const char *name_part;    /* all 3 point into strings behind name */
-    const char *email_part;   /* or to read-only strings */
-    const char *comment_part;
-    char name[1];
+/* Structure to store user IDs.  */
+struct user_id_s
+{
+  struct user_id_s *next;
+  unsigned int revoked : 1;
+  unsigned int invalid : 1;
+  GpgmeValidity validity; 
+  struct certsig_s *certsigs;
+  const char *name_part;	/* All 3 point into strings behind name  */
+  const char *email_part;	/* or to read-only strings.  */
+  const char *comment_part;
+  char name[1];
 };
 
-struct gpgme_recipients_s {
-    struct user_id_s *list;
-    int checked;   /* wether the recipients are all valid */
+
+struct gpgme_recipients_s
+{
+  struct user_id_s *list;
+  int checked;	/* Wether the recipients are all valid.  */
 };
 
 
@@ -166,4 +151,4 @@ struct gpgme_recipients_s {
                 gpgme_wait ((c), 1);                          \
              } while (0)
 
-#endif /* CONTEXT_H */
+#endif	/* CONTEXT_H */

@@ -1146,7 +1146,8 @@ _gpgme_gpgsm_op_trustlist (GpgsmObject gpgsm, const char *pattern)
 
 
 GpgmeError
-_gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
+_gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData signed_text,
+			GpgmeData plaintext)
 {
   GpgmeError err;
 
@@ -1162,10 +1163,10 @@ _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
                       map_input_enc (gpgsm->input_cb.data));
   if (err)
     return err;
-  if (_gpgme_data_get_mode (text) == GPGME_DATA_MODE_IN)
+  if (plaintext)
     {
       /* Normal or cleartext signature.  */
-      gpgsm->output_cb.data = text;
+      gpgsm->output_cb.data = plaintext;
       err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
 			  0);
       _gpgme_io_close (gpgsm->message_cb.fd);
@@ -1173,7 +1174,7 @@ _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
   else
     {
       /* Detached signature.  */
-      gpgsm->message_cb.data = text;
+      gpgsm->message_cb.data = signed_text;
       err = gpgsm_set_fd (gpgsm->assuan_ctx, "MESSAGE",
 			  gpgsm->message_fd_server, 0);
       _gpgme_io_close (gpgsm->output_cb.fd);

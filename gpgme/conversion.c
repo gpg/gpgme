@@ -24,7 +24,10 @@
 #endif
 
 #include <string.h>
+#include <errno.h>
 #include <ctype.h>
+#include <sys/types.h>
+
 #include "gpgme.h"
 #include "util.h"
 
@@ -137,4 +140,118 @@ _gpgme_decode_c_string (const char *src, char **destp)
   *(dest++) = 0;
 
   return 0;
+}
+
+
+GpgmeError
+_gpgme_data_append (GpgmeData dh, const char *buffer, size_t length)
+{
+  if (!dh || !buffer)
+    return mk_error (Invalid_Value);
+
+  do
+    {
+      ssize_t amt = gpgme_data_write (dh, buffer, length);
+      if (amt == 0 || (amt < 0 && errno != EINTR))
+	return mk_error (File_Error);
+      buffer += amt;
+      length -= amt;
+    }
+  while (length > 0);
+
+  return 0;
+}
+
+
+GpgmeError
+_gpgme_data_append_string (GpgmeData dh, const char *str)
+{
+  if (!str)
+    return 0;
+
+  return _gpgme_data_append (dh, str, strlen (str));
+}
+
+
+GpgmeError
+_gpgme_data_append_for_xml (GpgmeData dh, const char *buffer, size_t len)
+{
+  const char *text, *str;
+  size_t count;
+  int err = 0;
+
+  if (!dh || !buffer)
+    return mk_error (Invalid_Value);
+
+  do
+    {
+      text = NULL;
+      str = buffer;
+      for (count = len; count && !text; str++, count--)
+        {
+          if (*str == '<')
+            text = "&lt;";
+          else if (*str == '>')
+            text = "&gt;";  /* Not sure whether this is really needed.  */
+          else if (*str == '&')
+            text = "&amp;";
+          else if (!*str)
+            text = "&#00;";
+        }
+      if (text)
+        {
+          str--;
+          count++;
+        }
+      if (str != buffer)
+        err = _gpgme_data_append (dh, buffer, str - buffer);
+      if (!err && text)
+        {
+          err = _gpgme_data_append_string (dh, text);
+          str++;
+          count--;
+        }
+      buffer = str;
+      len = count;
+    }
+  while (!err && len);
+  return err;
+}
+
+
+/* Append a string to DATA and convert it so that the result will be
+   valid XML.  */
+GpgmeError
+_gpgme_data_append_string_for_xml (GpgmeData dh, const char *str)
+{
+  return _gpgme_data_append_for_xml (dh, str, strlen (str));
+}
+
+
+/* Append a string with percent style (%XX) escape characters as
+   XML.  */
+GpgmeError
+_gpgme_data_append_percentstring_for_xml (GpgmeData dh, const char *str)
+{
+  const byte *src;
+  byte *buf, *dst;
+  int val;
+  GpgmeError err;
+
+  buf = xtrymalloc (strlen (str));
+  dst = buf;
+  for (src = str; *src; src++)
+    {
+      if (*src == '%' && (val = _gpgme_hextobyte (src + 1)) != -1)
+        {
+          *dst++ = val;
+          src += 2;
+        }
+      else
+        *dst++ = *src;
+    }
+
+  err = _gpgme_data_append_for_xml (dh, buf, dst - buf);
+  xfree (buf);
+  return err;
 }

@@ -185,18 +185,16 @@ _gpgme_op_sign_start (GpgmeCtx ctx, int synchronous,
     goto leave;
 
   /* Check the supplied data.  */
-  if (gpgme_data_get_type (in) == GPGME_DATA_TYPE_NONE)
+  if (!in)
     {
       err = mk_error (No_Data);
       goto leave;
     }
-  _gpgme_data_set_mode (in, GPGME_DATA_MODE_OUT);
-  if (!out || gpgme_data_get_type (out) != GPGME_DATA_TYPE_NONE)
+  if (!out)
     {
       err = mk_error (Invalid_Value);
       goto leave;
     }
-  _gpgme_data_set_mode (out, GPGME_DATA_MODE_IN);
 
   err = _gpgme_passphrase_start (ctx);
   if (err)

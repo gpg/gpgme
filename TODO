@@ -26,6 +26,8 @@ Hey Emacs, this is -*- outline -*- mode!
 ** validity/trust
 
 * Engines
+** Optimize the case where a data object has an underlying fd we can pass
+   directly to the engine.
 ** Move code common to all engines up from gpg to engine.
 ** engine operations can return General Error on unknown protocol
    (it's an internal error, as select_protocol checks already).
@@ -37,7 +39,7 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Operations
 ** Passphrase callback should not copy password. !!!
-** Export status handler need much more work.
+** Export status handler need much more work. !!!
 ** Import should return a useful error when one happened.
 ** Genkey should return something more useful than General_Error.
 ** Factor out common code in _op_*_start functions.

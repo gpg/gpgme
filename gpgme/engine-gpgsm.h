@@ -61,7 +61,7 @@ GpgmeError _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in,
 				 GpgmeCtx ctx /* FIXME */);
 GpgmeError _gpgme_gpgsm_op_trustlist (GpgsmObject gpgsm, const char *pattern);
 GpgmeError _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig,
-				   GpgmeData text);
+				   GpgmeData signed_text, GpgmeData plaintext);
 GpgmeError _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque);
 void _gpgme_gpgsm_set_io_cbs (GpgsmObject gpgsm, struct GpgmeIOCbs *io_cbs);
 void _gpgme_gpgsm_io_event (GpgsmObject gpgsm, GpgmeEventIO type, void *type_data);

@@ -61,18 +61,16 @@ _gpgme_op_encrypt_sign_start (GpgmeCtx ctx, int synchronous,
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
   /* Check the supplied data */
-  if (gpgme_data_get_type (plain) == GPGME_DATA_TYPE_NONE)
+  if (!plain)
     {
       err = mk_error (No_Data);
       goto leave;
     }
-  _gpgme_data_set_mode (plain, GPGME_DATA_MODE_OUT);
-  if (!cipher || gpgme_data_get_type (cipher) != GPGME_DATA_TYPE_NONE)
+  if (!cipher)
     {
       err = mk_error (Invalid_Value);
       goto leave;
     }
-  _gpgme_data_set_mode (cipher, GPGME_DATA_MODE_IN);
 
   err = _gpgme_engine_op_encrypt_sign (ctx->engine, recp, plain, cipher,
 				       ctx->use_armor, ctx /* FIXME */);
@@ -116,17 +114,7 @@ gpgme_op_encrypt_sign (GpgmeCtx ctx, GpgmeRecipients recp,
 		       GpgmeData plain, GpgmeData cipher)
 {
   GpgmeError err = _gpgme_op_encrypt_sign_start (ctx, 1, recp, plain, cipher);
-
   if (!err)
-    {
-      err = _gpgme_wait_one (ctx);
-      /* Old gpg versions don't return status info for invalid
-         recipients, so we simply check whether we got any output at
-         all, and if not we assume that we don't have valid
-         recipients.  */
-      if (!ctx->error && gpgme_data_get_type (cipher) == GPGME_DATA_TYPE_NONE)
-        ctx->error = mk_error (No_Recipients);
-      err = ctx->error;
-    }
+    err = _gpgme_wait_one (ctx);
   return err;
 }

@@ -1,6 +1,28 @@
 Noteworthy changes in version 0.4.0 (unreleased)
 ------------------------------------------------
 
+ * New data object interface, which is more flexible and transparent.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GpgmeDataReadCb			NEW
+GpgmeDataWriteCb		NEW
+GpgmeDataSeekCb			NEW
+GpgmeDataReleaseCb		NEW
+GpgmeDataCbs			NEW
+gpgme_data_read			CHANGED: Match read() closely.
+gpgme_data_write		CHANGED: Match write() closely.
+gpgme_data_seek			NEW
+gpgme_data_from_fd		NEW
+gpgme_data_from_stream		NEW
+gpgme_data_from_cbs		NEW
+gpgme_data_rewind		DEPRECATED: Replaced by gpgme_data_seek().
+gpgme_data_new_from_read_cb	DEPRECATED: Replaced by gpgme_data_from_cbs().
+gpgme_data_get_type		REMOVED: No replacement.
+gpgme_op_verify			CHANGED: Take different data objects for
+				signed text and plain text.
+gpgme_op_verify_start		CHANGED: See gpgme_op_verify.
+gpgme_check_engine		REMOVED: Deprecated since 0.3.0.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.11 (2002-09-20)
 -------------------------------------------------

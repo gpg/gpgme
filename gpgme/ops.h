@@ -57,10 +57,8 @@ GpgmeError _gpgme_wait_on_condition (GpgmeCtx ctx, volatile int *cond);
 int _gpgme_recipients_all_valid ( const GpgmeRecipients rset );
 
 
-/*-- data.c --*/
+/*-- data.c and conversion.c --*/
 char *        _gpgme_data_release_and_return_string ( GpgmeData dh );
-GpgmeDataMode _gpgme_data_get_mode ( GpgmeData dh );
-void          _gpgme_data_set_mode ( GpgmeData dh, GpgmeDataMode mode );
 char *        _gpgme_data_get_as_string ( GpgmeData dh );
 GpgmeError    _gpgme_data_append ( GpgmeData dh,
                                    const char *buffer, size_t length );

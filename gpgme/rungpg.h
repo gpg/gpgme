@@ -37,7 +37,7 @@ void       _gpgme_gpg_release ( GpgObject gpg );
 void       _gpgme_gpg_housecleaning (void);
 void       _gpgme_gpg_enable_pipemode ( GpgObject gpg );
 GpgmeError _gpgme_gpg_add_arg ( GpgObject gpg, const char *arg );
-GpgmeError _gpgme_gpg_add_data ( GpgObject gpg, GpgmeData data, int dup_to );
+GpgmeError _gpgme_gpg_add_data (GpgObject gpg, GpgmeData data, int dup_to, int inbound);
 GpgmeError _gpgme_gpg_add_pm_data ( GpgObject gpg, GpgmeData data, int what );
 void       _gpgme_gpg_set_status_handler (GpgObject gpg,
 					  GpgStatusHandler fnc,
@@ -79,7 +79,9 @@ GpgmeError _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
 			       GpgmeSigMode mode, int use_armor,
 			       int use_textmode, GpgmeCtx ctx /* FIXME */);
 GpgmeError _gpgme_gpg_op_trustlist (GpgObject gpg, const char *pattern);
-GpgmeError _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData text);
+GpgmeError _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig,
+				 GpgmeData signed_text,
+				 GpgmeData plaintext);
 GpgmeError _gpgme_gpg_spawn (GpgObject gpg, void *opaque);
 void _gpgme_gpg_set_io_cbs (GpgObject gpg, struct GpgmeIOCbs *io_cbs);
 void _gpgme_gpg_io_event (GpgObject gpg, GpgmeEventIO type, void *type_data);
