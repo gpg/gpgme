@@ -50,6 +50,7 @@ PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
 
 AC_CONFIG_SRCDIR(gpgme/gpgme.h)
+AC_CONFIG_MACRO_DIR(m4)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AM_MAINTAINER_MODE
@@ -238,8 +239,48 @@ else
   AC_DEFINE_UNQUOTED(GPG_PATH, "$GPG", [Path to the GnuPG binary.])
   AC_SUBST(GPG)
 fi
-AM_CONDITIONAL(RUN_GPG_TESTS,
-  [test "$cross_compiling" != "yes" && test -n "$GPG" && test -r "$GPG"])
+dnl Check for GnuPG version requirement.
+GPG_VERSION=unknown
+ok=no
+if test "$cross_compiling" != "yes" -a -n "$GPG" -a -r "$GPG"; then
+  AC_MSG_CHECKING(for GnuPG >= $NEED_GPG_VERSION)
+  req_major=`echo $NEED_GPG_VERSION | \
+             sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+  req_minor=`echo $NEED_GPG_VERSION | \
+	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+  req_micro=`echo $NEED_GPG_VERSION | \
+	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+  gpg_version=`$GPG --version | grep ^gpg`
+  major=`echo $gpg_version | \
+	 sed 's/^gpg (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+  minor=`echo $gpg_version | \
+	 sed 's/^gpg (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+  micro=`echo $gpg_version | \
+	 sed 's/^gpg (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
+  GPG_VERSION=`echo $gpg_version | sed 's/^gpg (GnuPG) //'`
+
+  if test "$major" -gt "$req_major"; then
+    ok=yes
+  else
+    if test "$major" -eq "$req_major"; then
+      if test "$minor" -gt "$req_minor"; then
+        ok=yes
+      else
+        if test "$minor" -eq "$req_minor"; then
+          if test "$micro" -ge "$req_micro"; then
+            ok=yes
+	  fi
+        fi
+      fi
+    fi
+  fi
+  if test "$ok" = "yes"; then
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_WARN([GnuPG must be at least version $NEED_GPG_VERSION])
+  fi
+fi
+AM_CONDITIONAL(RUN_GPG_TESTS, [test "$ok" = "yes" ])
 AC_SUBST(GPG_PATH)
 
 NO_OVERRIDE=no
@@ -274,9 +315,49 @@ else
   AC_DEFINE_UNQUOTED(GPGSM_PATH, "$GPGSM", [Path to the GPGSM binary.])
   AC_SUBST(GPGSM)
 fi
-AM_CONDITIONAL(HAVE_GPGSM, [test -n "$GPGSM" && test -r "$GPGSM"])
-AM_CONDITIONAL(RUN_GPGSM_TESTS,
-  [test "$cross_compiling" != "yes" && test -n "$GPGSM" && test -r "$GPGSM"])
+AM_CONDITIONAL(HAVE_GPGSM, [test -n "$GPGSM"])
+dnl Check for GPGSM version requirement.
+GPGSM_VERSION=unknown
+ok=no
+if test "$cross_compiling" != "yes" -a -n "$GPGSM" -a -r "$GPGSM"; then
+  AC_MSG_CHECKING(for GPGSM >= $NEED_GPGSM_VERSION)
+  req_major=`echo $NEED_GPGSM_VERSION | \
+             sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+  req_minor=`echo $NEED_GPGSM_VERSION | \
+	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+  req_micro=`echo $NEED_GPGSM_VERSION | \
+	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+  gpgsm_version=`$GPGSM --version | grep ^gpgsm`
+  major=`echo $gpgsm_version | \
+	 sed 's/^gpgsm (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+  minor=`echo $gpgsm_version | \
+	 sed 's/^gpgsm (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+  micro=`echo $gpgsm_version | \
+	 sed 's/^gpgsm (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
+  GPGSM_VERSION=`echo $gpgsm_version | sed 's/^gpg (GnuPG) //'`
+
+  if test "$major" -gt "$req_major"; then
+    ok=yes
+  else
+    if test "$major" -eq "$req_major"; then
+      if test "$minor" -gt "$req_minor"; then
+        ok=yes
+      else
+        if test "$minor" -eq "$req_minor"; then
+          if test "$micro" -ge "$req_micro"; then
+            ok=yes
+	  fi
+        fi
+      fi
+    fi
+  fi
+  if test "$ok" = "yes"; then
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_WARN([GPGSM must be at least version $NEED_GPGSM_VERSION])
+  fi
+fi
+AM_CONDITIONAL(RUN_GPGSM_TESTS, [test "$ok" = "yes" ])
 
 # FIXME: Only build if supported.
 AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
@@ -339,9 +420,12 @@ AC_OUTPUT
 echo "
 	GPGME v${VERSION} has been configured as follows:
 
-        GnuPG version: min. $NEED_GPG_VERSION
 	GnuPG path:    $GPG
+        GnuPG version: $GPG_VERSION, min. $NEED_GPG_VERSION
 
-        GpgSM version: min. $NEED_GPGSM_VERSION
 	GpgSM path:    $GPGSM
+        GpgSM version: $GPGSM_VERSION, min. $NEED_GPGSM_VERSION
+
+	GPGME Pthread: $have_pthread
+	GPGME Pth:     $have_pth
 "
