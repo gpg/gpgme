@@ -46,7 +46,7 @@ static int fd_table_size;
 static struct io_select_fd_s *fd_table;
 DEFINE_STATIC_LOCK (fd_table_lock);
 
-static void (*idle_function) (void);
+static GpgmeIdleFunc idle_function;
 
 
 struct proc_s {
@@ -401,11 +401,18 @@ _gpgme_thaw_fd (int fd)
  * 
  * Register a function with GPGME called by GPGME whenever it feels
  * that is is idle.  NULL may be used to remove this function.
+ *
+ * Return value: The idle function pointer that was passed to the
+ * function at the last time it was invoked, or NULL if the function
+ * is invoked the first time.
  **/
-void
-gpgme_register_idle (void (*fnc)(void))
+GpgmeIdleFunc
+gpgme_register_idle (GpgmeIdleFunc idle)
 {
-  idle_function = fnc;
+  GpgmeIdleFunc old_idle = idle_function;
+
+  idle_function = idle;
+  return old_idle;
 }
 
 

@@ -1,3 +1,10 @@
+2002-01-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h: Add new type GpgmeIdleFunc.  Change type of
+	gpgme_register_idle to return and accept this type.
+	* wait.c (gpgme_register_idle): Fix type.
+	Save and return old value of idle_function.
+
 2002-01-29  Werner Koch  <wk@gnupg.org>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist): Implement secret only mode.

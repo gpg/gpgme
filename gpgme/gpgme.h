@@ -311,7 +311,9 @@ const char *gpgme_check_version (const char *req_version);
 GpgmeError  gpgme_check_engine (void);
 const char *gpgme_get_engine_info (void);
 const char *gpgme_strerror (GpgmeError err);
-void        gpgme_register_idle (void (*fnc)(void));
+
+typedef void (*GpgmeIdleFunc)(void);
+GpgmeIdleFunc gpgme_register_idle (GpgmeIdleFunc idle);
 
 /* Engine support functions.  */
 GpgmeError gpgme_engine_check_version (GpgmeProtocol proto);
@@ -320,10 +322,3 @@ GpgmeError gpgme_engine_check_version (GpgmeProtocol proto);
 }
 #endif
 #endif /* GPGME_H */
-
-
-
-
-
-
-
