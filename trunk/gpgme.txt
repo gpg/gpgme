@@ -11,12 +11,11 @@ Texts. A copy of the license is included in the file COPYING.
 
 %%short-description: GnuPG Made Easy 
 
-%%full-description:  GPGME is a library designed to make access to
-GnuPG easier for applications.  It provides a
-High-Level Crypto API for encryption, decryption, signing, signature
-verification and key management.  Currently it uses GnuPG as
-its backend but the API isn't restricted to this engine; in fact it is
-planned to add other backends to it.
+%%full-description: GPGME is a library designed to make access to
+GnuPG easier for applications.  It provides a High-Level Crypto API
+for encryption, decryption, signing, signature verification and key
+management.  Currently it uses GnuPG and GpgSM as its backends to
+support OpenPGP and the Cryptographic Message Syntax.
 
 %%category: security, libraries
 
@@ -26,7 +25,7 @@ planned to add other backends to it.
 
 %%maintainer: g10 Code GmbH <gpgme@g10code.com>
 
-%%updated: 2001-06-01
+%%updated: 2001-12-19
 
 %%keywords: encryption, public key, digital signature, GnuPG
 
@@ -62,7 +61,7 @@ planned to add other backends to it.
 
 %%supported-languages: C, C++
 
-%%use-requirements: GnuPG 1.0.5
+%%use-requirements: GnuPG 1.0.6, GpgSM 0.0.0
 
 %%build-prerequisites:
 
@@ -70,7 +69,7 @@ planned to add other backends to it.
 
 %%source-prerequisites:
 
-%%version: 0.2.1 alpha released on 2001-04-02
+%%version: 0.3.0 released on 2001-12-19
 
 %%announce-list: announce@gnupg.org  announce-request@gnupg.org
 
