@@ -1479,51 +1479,6 @@ static char* nextAddress( const char** address )
   return parseAddress(result);
 }
 
-/*
-  Find all certificate for a given addressee and return them in a
-  '\1' separated list.
-  NOTE: The certificate parameter must point to an allready allocated
-  block of memory which is large enough to hold the complete list.
-*/
-bool findCertificates( const char* addressee, char** certificates )
-{
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeKey rKey;
-  const char *s;
-  const char *s2;
-  int nFound = 0;
-
-  strcpy( *certificates, "" );
-
-  gpgme_new (&ctx);
-  gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
-
-  err = gpgme_op_keylist_start(ctx, addressee, 0);
-  while( GPGME_No_Error == err ) {
-    err = gpgme_op_keylist_next(ctx, &rKey);
-    if( GPGME_No_Error == err ) {
-      s = gpgme_key_get_string_attr (rKey, GPGME_ATTR_USERID, NULL, 0);
-      if( s ) {
-        s2 = gpgme_key_get_string_attr (rKey, GPGME_ATTR_FPR, NULL, 0);
-        if( s2 ) {
-          if( nFound )
-            strcat(*certificates,"\1" );
-          strcat( *certificates, s );
-          strcat( *certificates, "    (" );
-          strcat( *certificates, s2 );
-          strcat( *certificates, ")" );
-          ++nFound;
-        }
-      }
-    }
-  }
-  gpgme_op_keylist_end( ctx );
-  gpgme_release (ctx);
-
-  return ( 0 < nFound );
-}
-
 bool encryptMessage( const char*  cleartext,
                      const char** ciphertext,
                      const size_t* cipherLen,
@@ -1906,6 +1861,24 @@ static void safe_free( void** x )
   free( *x );
   *x = 0;
 }
+char *
+trim_trailing_spaces( char *string )
+{
+    char *p, *mark;
+
+    for( mark = NULL, p = string; *p; p++ ) {
+	if( isspace( *p ) ) {
+	    if( !mark )
+		mark = p;
+	}
+	else
+	    mark = NULL;
+    }
+    if( mark )
+	*mark = '\0' ;
+
+    return string ;
+}
 /*#define safe_free( x ) free( x )*/
 
 /* Parse a DN and return an array-ized one.  This is not a validating
@@ -1927,8 +1900,13 @@ parse_dn_part (struct DnPair *array, const unsigned char *string)
   if (!n)
     return NULL; /* empty key */
   array->key = p = safe_malloc (n+1);
-  memcpy (p, string, n); /* fixme: trim trailing spaces */
+  
+  
+  memcpy (p, string, n);
   p[n] = 0;
+  trim_trailing_spaces (p);
+  if ( !strcmp (p, "1.2.840.113549.1.9.1") )
+    strcpy (p, "EMail");
   string = s + 1;
 
   if (*string == '#')
@@ -1941,6 +1919,8 @@ parse_dn_part (struct DnPair *array, const unsigned char *string)
         return NULL; /* empty or odd number of digits */
       n /= 2;
       array->value = p = safe_malloc (n+1);
+      
+      
       for (s1=string; n; s1 += 2, n--)
         *p++ = xtoi_2 (s1);
       *p = 0;
@@ -1974,6 +1954,8 @@ parse_dn_part (struct DnPair *array, const unsigned char *string)
         }
 
       array->value = p = safe_malloc (n+1);
+      
+      
       for (s=string; n; s++, n--)
         {
           if (*s == '\\')
@@ -2007,8 +1989,10 @@ parse_dn (const unsigned char *string)
   int i;
 
   arraysize = 7; /* C,ST,L,O,OU,CN,email */
-  array = safe_malloc ((arraysize+1) * sizeof *array);
   arrayidx = 0;
+  array = safe_malloc ((arraysize+1) * sizeof *array);
+  
+  
   while (*string)
     {
       while (*string == ' ')
@@ -2076,11 +2060,6 @@ static int add_dn_part( char* result, struct DnPair* dn, const char* part )
 
 static char* reorder_dn( struct DnPair *dn )
 {
-  /*
-  const char* stdpart[] = {
-    "CN", "OU", "O", "STREET", "L", "ST", "C", NULL 
-  };
-  */
   // note: The must parts are: CN, L, OU, O, C
   const char* stdpart[] = {
     "CN", "S", "SN", "GN", "T", "UID",
@@ -2305,4 +2284,66 @@ void endListCertificates( struct CertIterator* it )
   gpgme_op_keylist_end(it->ctx);
   gpgme_release (it->ctx);
   free( it );
+}
+
+    
+
+    // // // // // // // // // // // // // // // // // // // // // // // // //
+   //                                                                      //
+  //         Continuation of CryptPlug code                               //
+ //                                                                      //
+// // // // // // // // // // // // // // // // // // // // // // // // //
+
+
+/*
+  Find all certificate for a given addressee and return them in a
+  '\1' separated list.
+  NOTE: The certificate parameter must point to an allready allocated
+  block of memory which is large enough to hold the complete list.
+*/
+bool findCertificates( const char* addressee, char** certificates )
+{
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeKey rKey;
+  const char *s;
+  const char *s2;
+  char* dn;
+  struct DnPair* a;
+  int nFound = 0;
+
+  strcpy( *certificates, "" );
+
+  gpgme_new (&ctx);
+  gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
+
+  err = gpgme_op_keylist_start(ctx, addressee, 0);
+  while( GPGME_No_Error == err ) {
+    err = gpgme_op_keylist_next(ctx, &rKey);
+    if( GPGME_No_Error == err ) {
+      s = gpgme_key_get_string_attr (rKey, GPGME_ATTR_USERID, NULL, 0);
+      if( s ) {
+        s2 = gpgme_key_get_string_attr (rKey, GPGME_ATTR_FPR, NULL, 0);
+        if( s2 ) {
+          if( nFound )
+            strcat(*certificates,"\1" );
+          dn = xstrdup( s );
+fprintf( stderr, "\n\n\nDN before reordering: \"%s\"\n", dn );
+          a = parse_dn( dn ); 
+          dn = reorder_dn( a );
+fprintf( stderr, "\nDN after reordering: \"%s\"\n", dn );
+          strcat( *certificates, s );
+          strcat( *certificates, "    (" );
+          strcat( *certificates, s2 );
+          strcat( *certificates, ")" );
+          safe_free( (void **)&dn );
+          ++nFound;
+        }
+      }
+    }
+  }
+  gpgme_op_keylist_end( ctx );
+  gpgme_release (ctx);
+
+  return ( 0 < nFound );
 }
