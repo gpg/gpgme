@@ -40,6 +40,7 @@ Options:
 	[--prefix]
 	[--exec-prefix]
 	[--version]
+        [--api-version]
 	[--libs]
 	[--cflags]
 EOF
@@ -75,6 +76,10 @@ while test $# -gt 0; do
 	    ;;
         --version)
             echo "@VERSION@"
+	    exit 0
+	    ;;
+        --api-version)
+	    echo "@GPGME_CONFIG_API_VERSION@"
 	    exit 0
 	    ;;
         --cflags)
