@@ -67,7 +67,6 @@ typedef enum
     TEST_INOUT_MEM_FROM_FILE_PART_BY_NAME,
     TEST_INOUT_MEM_FROM_INEXISTANT_FILE_PART,
     TEST_INOUT_MEM_FROM_FILE_PART_BY_FP,
-    TEST_OUT_CB,
     TEST_END
   } round_t;
 
@@ -262,9 +261,6 @@ main (int argc, char **argv)
 						strlen (text), strlen (text));
 	  }
 	  break;
-	case TEST_OUT_CB:
-	  err = gpgme_data_new_with_read_cb (&data, read_cb, &round);
-	  break;
 	case TEST_END:
 	  return 0;
 	case TEST_INITIALIZER:
@@ -275,8 +271,7 @@ main (int argc, char **argv)
       fail_if_err (err);
 
       read_test (round, data);
-      if (round != TEST_OUT_CB)
-	write_test (round, data);
+      write_test (round, data);
       gpgme_data_release (data);
     }
   return 0;

@@ -1,5 +1,9 @@
 2003-05-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* t-data.c: Remove TEST_OUT_CB.
+	(main): Likewise.
+	* gpg/t-trustlist.c (main): Access ITEM directly.
+
 	* (t-decrypt-verify.c, t-decrypt.c, t-edit.c, t-encrypt-sign.c,
 	t-encrypt-sym.c, t-sign.c, t-signers.c): Include <unistd.h>.
 	(passphrase_cb): Rewritten.

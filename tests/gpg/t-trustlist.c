@@ -54,13 +54,9 @@ main (int argc, char *argv[])
   while (!(err = gpgme_op_trustlist_next (ctx, &item)))
     {
       printf ("l=%d k=%s t=%d o=%s v=%s u=%s\n",
-	      gpgme_trust_item_get_int_attr (item, GPGME_ATTR_LEVEL, NULL, 0),
-	      gpgme_trust_item_get_string_attr (item, GPGME_ATTR_KEYID, NULL, 0),
-	      gpgme_trust_item_get_int_attr (item, GPGME_ATTR_TYPE, NULL, 0),
-	      gpgme_trust_item_get_string_attr (item, GPGME_ATTR_OTRUST, NULL, 0),
-	      gpgme_trust_item_get_string_attr (item, GPGME_ATTR_VALIDITY, NULL, 0),
-	      gpgme_trust_item_get_string_attr (item, GPGME_ATTR_USERID, NULL, 0));
-      gpgme_trust_item_release (item);
+	      item->level, item->keyid, item->type, item->owner_trust,
+	      item->validity, item->name);
+      gpgme_trust_item_unref (item);
     }
   if (err != GPGME_EOF)
     fail_if_err (err);
