@@ -1,3 +1,10 @@
+2002-06-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_release): Close status_cb.fd.
+	(_gpgme_gpgsm_new): Duplicate status file descriptor, so we can
+	use our own close notification mechanism without interfering with
+	assuan.
+
 2002-06-11  Werner Koch  <wk@gnupg.org>
 
 	* gpgme.h: Add GPGME_ATTR_SIG_SUMMARY and the GPGME_SIGSUM_
