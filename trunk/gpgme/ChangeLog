@@ -1,3 +1,19 @@
+2002-12-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data.h (gpgme_data_release_cb): Change return type to void.
+	(gpgme_data_read_cb): Change return type to ssize_t.
+	* data.c (gpgme_data_read): Likewise.
+	* data-stream.c (stream_read): Likewise.
+	* data-fd.c (fd_read): Likewise.
+	* data-mem.c (mem_read): Likewise.
+	(mem_release): Change return type to void.
+	* data-user.c (user_read): Change return type to ssize_t.
+	(user_release): Change return type to void.
+	* data-compat.c (old_user_read): Change return type to ssize_t.	
+	* gpgme.h (GpgmeDataReadCb): Likewise.
+	(gpgme_data_read): Likewise.
+	(GpgmeDataSeekCb): Change return type to off_t.
+
 2002-12-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h: Add prototype for gpgme_get_key.

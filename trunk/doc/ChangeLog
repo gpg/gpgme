@@ -1,3 +1,12 @@
+2002-12-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Memory Based Data Buffers): New subsection.
+	(File Based Data Buffers): Likewise.
+	(Callback Based Data Buffers): Likewise.
+	(Manipulating Data Buffers): Update interfaces.  Add
+	gpgme_data_seek.
+	* gpgme.texi (Engine Version Check): Remove gpgme_chec_engine.
+	
 2002-11-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Verify): Document the new interface.

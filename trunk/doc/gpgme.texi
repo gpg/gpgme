@@ -125,6 +125,12 @@ Exchanging Data
 * Destroying Data Buffers::       Releasing data buffers.
 * Manipulating Data Buffers::     Operations on data buffers.
 
+Creating Data Buffers
+
+* Memory Based Data Buffers::     Creating memory based data buffers.
+* File Based Data Buffers::       Creating file based data buffers.
+* Callback Based Data Buffers::   Creating callback based data buffers.
+
 Contexts
 
 * Creating Contexts::             Creating new @acronym{GPGME} contexts.
@@ -597,17 +603,6 @@ This function returns @code{GPGME_No_Error} if the engine is available
 and @code{GPGME_Invalid_Engine} if it is not.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_check_engine (void)
-The function @code{gpgme_check_engine} is equivalent to
-
-@example
-gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
-@end example
-
-This function is deprecated and provided for backwards compatibility
-only.  It is obsoleted by @code{gpgme_engine_check_version}.
-@end deftypefun
-
 
 @node Engine Information
 @section Engine Information
@@ -793,7 +788,7 @@ attempted to use it as an output buffer).
 
 @item GPGME_File_Error
 This value means that a file I/O operation failed.  The value of
-@code{errno} contains the system error value.
+@var{errno} contains the system error value.
 
 @item GPGME_Decryption_Failed
 This value indicates that a decryption operation was unsuccessful.
@@ -871,10 +866,31 @@ data, which is used by @acronym{GPGME} to exchange data with the user.
 @section Creating Data Buffers
 @cindex data buffer, creation
 
+Data objects can be based on memory, files, or callback functions
+provided by the user.  Not all operations are supported by all
+objects.
+
+
+@menu
+* Memory Based Data Buffers::     Creating memory based data buffers.
+* File Based Data Buffers::       Creating file based data buffers.
+* Callback Based Data Buffers::   Creating callback based data buffers.
+@end menu
+
+
+@node Memory Based Data Buffers
+@subsection Memory Based Data Buffers
+
+Memory based data objects store all data in allocated memory.  This is
+convenient, but only practical for an amount of data that is a
+fraction of the available physical memory.  The data has to be copied
+from its source and to its destination, which can often be avoided by
+using one of the other data object 
+
 @deftypefun GpgmeError gpgme_data_new (@w{GpgmeData *@var{dh}})
 The function @code{gpgme_data_new} creates a new @code{GpgmeData}
 object and returns a handle for it in @var{dh}.  The data object is
-initially empty.
+memory based and initially empty.
 
 The function returns @code{GPGME_No_Error} if the data object was
 successfully created, @code{GPGME_Invalid_Value} if @var{dh} is not a
@@ -933,6 +949,138 @@ exactly one of @var{filename} and @var{fp} is not a valid pointer,
 @code{GPGME_Out_Of_Core} if not enough memory is available.
 @end deftypefun
 
+
+@node File Based Data Buffers
+@subsection File Based Data Buffers
+
+File based data objects operate directly on file descriptors or
+streams.  Only a small amount of data is stored in core at any time,
+so the size of the data objects is not limited by @acronym{GPGME}.
+
+@deftypefun GpgmeError gpgme_data_new_from_fd (@w{GpgmeData *@var{dh}}, @w{int @var{fd}})
+The function @code{gpgme_data_new_from_fd} creates a new
+@code{GpgmeData} object and uses the file descriptor @var{fd} to read
+from (if used as an input data object) and write to (if used as an
+output data object).
+
+When using the data object as an input buffer, the function might read
+a bit more from the file descriptor than is actually needed by the
+crypto engine in the desired operation because of internal buffering.
+
+The function returns @code{GPGME_No_Error} if the data object was
+successfully created, and @code{GPGME_Out_Of_Core} if not enough
+memory is available.
+@end deftypefun
+
+@deftypefun GpgmeError gpgme_data_new_from_stream (@w{GpgmeData *@var{dh}}, @w{FILE *@var{stream}})
+The function @code{gpgme_data_new_from_stream} creates a new
+@code{GpgmeData} object and uses the I/O stream @var{stream} to read
+from (if used as an input data object) and write to (if used as an
+output data object).
+
+When using the data object as an input buffer, the function might read
+a bit more from the stream than is actually needed by the crypto
+engine in the desired operation because of internal buffering.
+
+The function returns @code{GPGME_No_Error} if the data object was
+successfully created, and @code{GPGME_Out_Of_Core} if not enough
+memory is available.
+@end deftypefun
+
+
+@node Callback Based Data Buffers
+@subsection Callback Based Data Buffers
+
+If neither memory nor file based data objects are a good fit for your
+application, you can implement the functions a data object provides
+yourself and create a data object from these callback functions.
+
+@deftp {Data type} {ssize_t (*GpgmeDataReadCb) (@w{void *@var{handle}}, @w{void @var{*buffer}}, @w{size_t @var{size}})}
+@tindex GpgmeDataReadCb
+The @code{GpgmeDataReadCb} type is the type of functions which
+@acronym{GPGME} calls if it wants to read data from a user-implemented
+data object.  The function should read up to @var{size} bytes from the
+current read position into the space starting at @var{buffer}.  The
+@var{handle} is provided by the user at data object creation time.
+
+The function should return the number of bytes read, 0 on EOF, and -1
+on error.  If an error occurs, @var{errno} should be set to describe
+the type of the error.
+@end deftp
+
+@deftp {Data type} {ssize_t (*GpgmeDataWriteCb) (@w{void *@var{handle}}, @w{const void @var{*buffer}}, @w{size_t @var{size}})}
+@tindex GpgmeDataWriteCb
+The @code{GpgmeDataWriteCb} type is the type of functions which
+@acronym{GPGME} calls if it wants to write data to a user-implemented
+data object.  The function should write up to @var{size} bytes to the
+current write position from the space starting at @var{buffer}.  The
+@var{handle} is provided by the user at data object creation time.
+
+The function should return the number of bytes written, and -1 on
+error.  If an error occurs, @var{errno} should be set to describe the
+type of the error.
+@end deftp
+
+@deftp {Data type} {off_t (*GpgmeDataSeekCb) (@w{void *@var{handle}}, @w{off_t @var{offset}}, @w{int @var{whence}})}
+@tindex GpgmeDataSeekCb
+The @code{GpgmeDataSeekCb} type is the type of functions which
+@acronym{GPGME} calls if it wants to change the current read/write
+position in a user-implemented data object, just like the @code{lseek}
+function.
+
+The function should return the new read/write position, and -1 on
+error.  If an error occurs, @var{errno} should be set to describe the
+type of the error.
+@end deftp
+
+@deftp {Data type} {void (*GpgmeDataReleaseCb) (@w{void *@var{handle}})
+@tindex GpgmeDataReleaseCb
+The @code{GpgmeDataReleaseCb} type is the type of functions which
+@acronym{GPGME} calls if it wants to destroy a user-implemented data
+object.  The @var{handle} is provided by the user at data object
+creation time.
+@end deftp
+
+@deftp {Data type} {struct GpgmeDataCbs}
+This structure is used to store the data callback interface functions
+described above.  It has the following members:
+
+@table @code
+@item GpgmeDataReadCb read
+This is the function called by @acronym{GPGME} to read data from the
+data object.  It is only required for input data object.
+
+@item GpgmeDataReadCb write
+This is the function called by @acronym{GPGME} to write data to the
+data object.  It is only required for output data object.
+
+@item GpgmeDataSeekCb seek
+This is the function called by @acronym{GPGME} to change the current
+read/write pointer in the data object (if available).  It is optional.
+
+@item GpgmeDataReleaseCb release
+This is the function called by @acronym{GPGME} to release a data
+object.  It is optional.
+@end table
+@end deftp
+
+@deftypefun GpgmeError gpgme_data_new_from_cbs (@w{GpgmeData *@var{dh}}, @w{struct GpgmeDataCbs *@var{cbs}}, @w{void *@var{handle}})
+The function @code{gpgme_data_new_from_cbs} creates a new
+@code{GpgmeData} object and uses the user-provided callback functions
+to operate on the data object.
+
+The handle @var{handle} is passed as first argument to the callback
+functions.  This can be used to identify this data object.
+
+The function returns @code{GPGME_No_Error} if the data object was
+successfully created, and @code{GPGME_Out_Of_Core} if not enough
+memory is available.
+@end deftypefun
+
+The following interface is deprecated and only provided for backward
+compatibility.  Don't use it.  It will be removed in a future version
+of @acronym{GPGME}.
+
 @deftypefun GpgmeError gpgme_data_new_with_read_cb (@w{GpgmeData *@var{dh}}, @w{int (*@var{readfunc})} (@w{void *@var{hook}}, @w{char *@var{buffer}}, @w{size_t @var{count}}, @w{size_t *@var{nread}}), @w{void *@var{hook_value}})
 The function @code{gpgme_data_new_with_read_cb} creates a new
 @code{GpgmeData} object and uses the callback function @var{readfunc}
@@ -985,80 +1133,75 @@ be returned to the user, the function will return @code{NULL}.
 @section Manipulating Data Buffers
 @cindex data buffere, manipulation
 
-@deftypefun GpgmeError gpgme_data_read (@w{GpgmeData @var{dh}}, @w{void *@var{buffer}}, @w{size_t @var{length}}, @w{size_t *@var{nread}})
+@deftypefun ssize_t gpgme_data_read (@w{GpgmeData @var{dh}}, @w{void *@var{buffer}}, @w{size_t @var{length}})
 The function @code{gpgme_data_read} reads up to @var{length} bytes
 from the data object with the handle @var{dh} into the space starting
-at @var{buffer}.  The actual amount read is returned in @var{nread}.
+at @var{buffer}.
 
-If @var{buffer} is @code{NULL}, the function returns the amount of
-bytes available in @var{nread} without changing the read pointer.
-This is not supported by all types of data objects.  If this function
-is not supported, @code{GPGME_Invalid_Type} is returned.
+If no error occurs, the actual amount read is returned.  If the end of
+the data object is reached, the function returns @code{GPGME_EOF} and
+sets @var{nread} to zero.
 
-If the end of the data object is reached, the function returns
-@code{GPGME_EOF} and sets @var{nread} to zero.
-
-In all other cases, the function returns @code{GPGME_No_Error} if the
-operation was successfully performed and @code{GPGME_Invalid_Value} if
-@var{dh} is not a valid pointer.
+In all other cases, the function returns -1 and sets @var{errno}.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_data_rewind (@w{GpgmeData @var{dh}})
-The function @code{gpgme_data_rewind} resets the read pointer of the
-data object with the handle @var{dh}, so that a subsequent
-@code{gpgme_data_read} operation starts at the beginning of the data.
-
-The function returns @code{GPGME_No_Error} if the operation was
-successfully performed, @code{GPGME_Not_Implemented} if the operation
-is not supported (for example, by a read callback function supplied by
-the user) and @code{GPGME_Invalid_Value} if @var{dh} is not a valid
-pointer.
-@end deftypefun
-
-@deftypefun GpgmeError gpgme_data_write (@w{GpgmeData @var{dh}}, @w{const void *@var{buffer}}, @w{size_t @var{length}})
-The function @code{gpgme_data_write} writes @var{length} bytes
+@deftypefun ssize_t gpgme_data_write (@w{GpgmeData @var{dh}}, @w{const void *@var{buffer}}, @w{size_t @var{size}})
+The function @code{gpgme_data_write} writes up to @var{size} bytes
 starting from @var{buffer} into the data object with the handle
 @var{dh} at the current write position.
 
-The function returns @code{GPGME_No_Error} if the operation was
-successfully performed, @code{GPGME_Invalid_Value} if @var{dh} or
-@var{buffer} is not a valid pointer, @code{GPGME_Invalid_Type} or
-@code{GPGME_Invalid_Mode} if the data object type does not support
-writing, and @code{GPGME_Out_Of_Core} if not enough memory is
-available.
+The function returns the number of bytes actually written, or -1 if an
+error occurs.  If an error occurs, @var{errno} is set.
 @end deftypefun
 
-@c
-@c  GpgmeDataType
-@c
-@deftp {Data type} {enum GpgmeDataType}
-@tindex GpgmeDataType
-The @code{GpgmeDataType} type specifies the type of a @code{GpgmeData} object.
-The following data types are available:
+/* Set the current position from where the next read or write starts
+   in the data object with the handle DH to OFFSET, relativ to
+   WHENCE.  */
+off_t gpgme_data_seek (GpgmeData dh, off_t offset, int whence);
+
+@deftypefun off_t gpgme_data_seek (@w{GpgmeData @var{dh}}, @w{off_t *@var{offset}}, @w{int @var{whence}})
+The function @code{gpgme_data_seek} changes the current read/write
+position.
+
+The @var{whence} argument specifies how the @var{offset} should be
+interpreted.  It must be one of the following symbolic constants:
 
 @table @code
-@item GPGME_DATA_TYPE_NONE
-This specifies that the type is not yet determined.
+@item SEEK_SET
+Specifies that @var{whence} is a count of characters from the
+beginning of the data object.
 
-@item GPGME_DATA_TYPE_MEM
-This specifies that the data is stored in memory.
+@item SEEK_CUR
+Specifies that @var{whence} is a count of characters from the current
+file position.  This count may be positive or negative.
 
-@item GPGME_DATA_TYPE_FD
-This type is not implemented.
-
-@item GPGME_DATA_TYPE_FILE
-This type is not implemented.
-
-@item GPGME_DATA_TYPE_CB
-This type specifies that the data is provided by a callback function
-implemented by the user.
+@item SEEK_END
+Specifies that @var{whence} is a count of characters from the end of
+the data object.  A negative count specifies a position within the
+current extent of the data object; a positive count specifies a
+position past the current end.  If you set the position past the
+current end, and actually write data, you will extend the data object
+with zeros up to that position.
 @end table
-@end deftp
 
-@deftypefun GpgmeDataType gpgme_data_get_type (@w{GpgmeData @var{dh}})
-The function @code{gpgme_data_get_type} returns the type of the data
-object with the handle @var{dh}.  If @var{dh} is not a valid pointer,
-@code{GPGME_DATA_TYPE_NONE} is returned.
+If successful, the function returns the resulting file position,
+measured in bytes from the beginning of the data object.  You can use
+this feature together with @code{SEEK_CUR} to read the current
+read/write position.
+
+If the function fails, -1 is returned and @var{errno} is set.
+@end deftypefun
+
+The following function is deprecated and should not be used.  It will
+be removed in a future version of @acronym{GPGME}.
+
+@deftypefun GpgmeError gpgme_data_rewind (@w{GpgmeData @var{dh}})
+The function @code{gpgme_data_rewind} is equivalent to:
+
+@example
+  return (gpgme_data_seek (dh, 0, SEEK_SET) == -1)
+    ? mk_error (File_Error) : 0;
+@end example
 @end deftypefun
 
 @c
