@@ -14,6 +14,10 @@
 	malloc. Removed superfluous string termination.
 	(parseAddress): Use xmalloc instead of an unchecked malloc.
 	(nextAddress): Ditto.
+	(xstrdup): Oops, obviously I calculated the length wrong when
+	coded this.  Tsss, wrote xstrdup some hundreds times but missed it
+	this time.  Thanks to Steffen Hansen for noticing it.
+
 	* gpgmeplug.c:  Moved a few helper functions more to the top.
 	Fixed comment syntax.  Merged a copyright notice somewhere in the
 	middle of the file with the one at the top.
