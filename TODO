@@ -9,10 +9,11 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Build thread modules for static linking (which just suck in the
    desired symbols the hard way). !!
 
-* Allow to use GTK's main loop instead of the select stuff in
+* Allow to use other event loops instead of the select stuff in
   wait.c. !!!
+** This includes keylist and trustlist functions.
 
-* cleanup the namespace - we use log_* assuan_* ascii_* mutex_*
+* cleanup the namespace - we use log_* assuan_* ascii_*.
   But those are only used internally.  Some linker tricks should make
   it possible to hide them from the user (didn't work last time, try
   again). !!
@@ -31,7 +32,6 @@ Hey Emacs, this is -*- outline -*- mode!
 *** For pipemode, make sure to release the pipemode callback data object.
 
 * Operations
-** gpgme_wait needs to be made thread safe. !!!
 ** Passphrase callback should not copy password. !!!
 ** Export status handler need much more work.
 ** Import should return a useful error when one happened.
