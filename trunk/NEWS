@@ -28,6 +28,14 @@ Noteworthy changes in version 0.4.1 (unreleased)
  * gpgme_wait can return NULL even if hang is true, if an error
    occurs.  In that case *status contains the error code.
 
+ * gpgme_get_engine_info was radically changed.  Instead an XML
+   string, an info structure of the new type GpgmeEngineInfo is
+   returned.  This makes it easier and more robust to evaluate the
+   information in an application.
+
+ * The new function gpgme_get_protocol_name can be used to convert a
+   GpgmeProtocol value into a string.
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
@@ -38,6 +46,9 @@ gpgme_op_decrypt_verify		CHANGED: Drop R_STAT argument.
 gpgme_wait			CHANGED: Can return NULL even if hang is true.
 GpgmeIdleFunc                   REMOVED
 gpgme_register_idle             REMOVED
+GpgmeEngineInfo			NEW
+gpgme_get_engine_info		CHANGED: Return info structure instead XML.
+gpgme_get_protocol_name		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)
