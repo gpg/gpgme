@@ -167,31 +167,6 @@ typedef struct {
 
 Config config;
 
-
-
-
-/*
-  temporary code!!
-
-  will be removed!!
-
-  asking for passphrase will be handeked via gpg-agent!!
-*/
-static char tmpPassphrase[1024];
-struct passphrase_cb_info_s {
-    GpgmeCtx c;
-    int did_it;
-};
-static const char *
-passphrase_cb (void *opaque, const char *desc, void **r_hd)
-{
-    return tmpPassphrase;
-}
-
-
-
-
-
 #define NEAR_EXPIRY 14
 
 bool initialize()
@@ -787,21 +762,6 @@ bool signMessage( const char*  cleartext,
   char*  rSig  = 0;
   bool   bOk   = false;
 
-
-
-/*
-  temporary code!!
-
-  will be removed!!
-
-  asking for passphrase will be handeked via gpg-agent!!
-*/
-  struct passphrase_cb_info_s info;
-
-
-
-
-
   init_StructuringInfo( structuring );
 
   if( !ciphertext )
@@ -809,28 +769,6 @@ bool signMessage( const char*  cleartext,
 
   err = gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
-
-
-
-
-
-
-/*
-  temporary code!!
-
-  will be removed!!
-
-  asking for passphrase will be handeked via gpg-agent!!
-*/
-  if (!getenv("GPG_AGENT_INFO")) {
-      info.c = ctx;
-      gpgme_set_passphrase_cb (ctx, passphrase_cb, &info);
-  }
-  strcpy( tmpPassphrase, certificate );
-
-
-
-
 
   gpgme_set_armor (ctx, 1);
   gpgme_set_textmode (ctx, 1);
@@ -1199,46 +1137,11 @@ bool decryptMessage( const char* ciphertext,
   char*  rCiph = 0;
   bool bOk = false;
 
-
-
-/*
-  temporary code!!
-
-  will be removed!!
-
-  asking for passphrase will be handeked via gpg-agent!!
-*/
-  struct passphrase_cb_info_s info;
-
-
-
-
-
   if( !ciphertext )
     return false;
 
   err = gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
-
-
-
-
-
-/*
-  temporary code!!
-
-  will be removed!!
-
-  asking for passphrase will be handeked via gpg-agent!!
-*/
-  if (!getenv("GPG_AGENT_INFO")) {
-      info.c = ctx;
-      gpgme_set_passphrase_cb (ctx, passphrase_cb, &info);
-  }
-  strcpy( tmpPassphrase, certificate );
-
-
-
 
   gpgme_data_new_from_mem( &gCiphertext, ciphertext,
                            1+strlen( ciphertext ), 1 );
