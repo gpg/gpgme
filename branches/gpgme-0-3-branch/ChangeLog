@@ -1,3 +1,10 @@
+2002-12-04  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.14.
+	
+	* configure.ac (LIBGPGME_LT_REVISION): Bumped to 9/3/5 .
+	* README: Explained that this is the current stable version.
+
 2002-11-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* NEWS: Add note about moving "gpgmeplug" to the "cryptplug"

@@ -1,7 +1,10 @@
-Noteworthy changes in version 0.3.14 (unreleased)
+Noteworthy changes in version 0.3.14 (2002-12-04)
 -------------------------------------------------
 
  * GPGME-Plug is now in its own package "cryptplug".
+
+ * Workaround for a setlocale problem.  Fixed a segv related to not
+   correctly as closed marked file descriptors.
 
 Noteworthy changes in version 0.3.13 (2002-11-20)
 -------------------------------------------------
