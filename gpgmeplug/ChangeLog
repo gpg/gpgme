@@ -2,7 +2,11 @@
 
 	* gpgmeplug.c (signMessage): Implemented warning when signature
 	certificates are about to expire 
-	* cryptplug.h: dito
+	(isEmailInCertificate): Added support for checking whether the
+	signer's email address is contained in his certificate.
+
+	* cryptplug.h: Implemented warning when signature
+	certificates are about to expire
 
 2002-02-27  Marcus Brinkmann  <marcus@g10code.de>
 

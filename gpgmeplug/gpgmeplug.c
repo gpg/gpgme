@@ -343,6 +343,22 @@ bool warnNoCertificate()
   return config.warnNoCertificate;
 }
 
+
+bool isEmailInCertificate( const char* email, const char* certificate )
+{
+    /* PENDING(g10) this function should return true if the email
+       address passed as the first parameter is contained in the
+       certificate passed as the second parameter, and false
+       otherwise. This is used to alert the user if his own email
+       address is not contained in the certificate he uses for
+       signing.
+       Note that the parameter email can be anything that is allowed
+       in a From: line.
+    */
+    return false; // dummy
+}
+
+
 void setNumPINRequests( PinRequests reqMode )
 {
   config.numPINRequests = reqMode;
