@@ -36,9 +36,6 @@
 static void
 encrypt_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  char *encrypt_info = 0;
-  size_t encrypt_info_len;
-
   _gpgme_encrypt_status_handler (ctx, code, args);
   _gpgme_sign_status_handler (ctx, code, args);
 }
