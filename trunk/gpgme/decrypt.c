@@ -140,8 +140,6 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 	  }
 	else if (!strncmp (args, k_alg, sizeof (k_alg) - 1))
 	  {
-	    gpgme_error_t err;
-
 	    args += sizeof (k_alg) - 1;
 	    while (*args == ' ')
 	      args++;
