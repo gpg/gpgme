@@ -1,5 +1,10 @@
 2003-01-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* data-mem.c: Include <string.h>.
+	* engine.c: Likewise.
+
+2003-01-06  Marcus Brinkmann  <marcus@g10code.de>
+
 	* Makefile.am (libgpgme_la_DEPENDENCIES): Correct bug in last change.
 
 2002-12-24  Marcus Brinkmann  <marcus@g10code.de>
