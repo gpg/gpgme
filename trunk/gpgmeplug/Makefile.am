@@ -23,18 +23,14 @@
 #
 ## Process this file with automake to produce Makefile.in
 
-
 INCLUDES = -I$(top_srcdir)/gpgme
 
-libgpgmeplug_la_LIBADD = ../gpgme/libgpgme.la
-libgpgsmplug_la_LIBADD = ../gpgme/libgpgme.la
+pkglib_LTLIBRARIES = gpgme-openpgp.la gpgme-smime.la
 
-BUILT_SOURCES =
+gpgme_openpgp_la_SOURCES = cryptplug.h gpgmeplug.c
+gpgme_openpgp_la_LIBADD = ../gpgme/libgpgme.la
+gpgme_openpgp_la_LDFLAGS = -module -avoid-version
 
-noinst_LTLIBRARIES = libgpgmeplug.la libgpgsmplug.la
-
-libgpgmeplug_la_LDFLAGS = -shared -Wl,-soname,libgpgmeplug.so
-libgpgsmplug_la_LDFLAGS = -shared -Wl,-soname,libgpgsmplug.so
-
-libgpgmeplug_la_SOURCES = cryptplug.h gpgmeplug.c
-libgpgsmplug_la_SOURCES = cryptplug.h gpgsmplug.c
+gpgme_smime_la_SOURCES = cryptplug.h gpgme-smime.c
+gpgme_smime_la_LIBADD = ../gpgme/libgpgme.la
+gpgme_smime_la_LDFLAGS = -module -avoid-version
