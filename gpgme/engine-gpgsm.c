@@ -52,7 +52,7 @@ typedef struct
 } iocb_data_t;
 
 
-struct gpgsm_object_s
+struct engine_gpgsm
 {
   ASSUAN_CONTEXT assuan_ctx;
 
@@ -90,7 +90,7 @@ struct gpgsm_object_s
   struct gpgme_io_cbs io_cbs;
 };
 
-typedef struct gpgsm_object_s *GpgsmObject;
+typedef struct engine_gpgsm *engine_gpgsm_t;
 
 
 static const char *
@@ -118,7 +118,7 @@ gpgsm_get_req_version (void)
 static void
 close_notify_handler (int fd, void *opaque)
 {
-  GpgsmObject gpgsm = opaque;
+  engine_gpgsm_t gpgsm = opaque;
 
   assert (fd != -1);
   if (gpgsm->status_cb.fd == fd)
@@ -252,7 +252,7 @@ map_assuan_error (AssuanError err)
 static void
 gpgsm_release (void *engine)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
 
   if (!gpgsm)
     return;
@@ -277,7 +277,7 @@ static gpgme_error_t
 gpgsm_new (void **engine)
 {
   gpgme_error_t err = 0;
-  GpgsmObject gpgsm;
+  engine_gpgsm_t gpgsm;
   char *argv[3];
   int fds[2];
   int child_fds[4];
@@ -659,7 +659,7 @@ status_handler (void *opaque, int fd)
 {
   AssuanError assuan_err;
   gpgme_error_t err = 0;
-  GpgsmObject gpgsm = opaque;
+  engine_gpgsm_t gpgsm = opaque;
   char *line;
   size_t linelen;
 
@@ -804,7 +804,7 @@ status_handler (void *opaque, int fd)
 
 
 static gpgme_error_t
-add_io_cb (GpgsmObject gpgsm, iocb_data_t *iocbd, gpgme_io_cb_t handler)
+add_io_cb (engine_gpgsm_t gpgsm, iocb_data_t *iocbd, gpgme_io_cb_t handler)
 {
   gpgme_error_t err;
 
@@ -821,7 +821,7 @@ add_io_cb (GpgsmObject gpgsm, iocb_data_t *iocbd, gpgme_io_cb_t handler)
 
 
 static gpgme_error_t
-start (GpgsmObject gpgsm, const char *command)
+start (engine_gpgsm_t gpgsm, const char *command)
 {
   gpgme_error_t err;
 
@@ -846,7 +846,7 @@ start (GpgsmObject gpgsm, const char *command)
 static gpgme_error_t
 gpgsm_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
 
   if (!gpgsm)
@@ -871,7 +871,7 @@ gpgsm_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
 static gpgme_error_t
 gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
   char *fpr = key->subkeys ? key->subkeys->fpr : NULL;
   char *linep = fpr;
@@ -936,7 +936,7 @@ gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
 
 
 static gpgme_error_t
-set_recipients (GpgsmObject gpgsm, gpgme_user_id_t uid)
+set_recipients (engine_gpgsm_t gpgsm, gpgme_user_id_t uid)
 {
   gpgme_error_t err;
   ASSUAN_CONTEXT ctx = gpgsm->assuan_ctx;
@@ -985,7 +985,7 @@ static gpgme_error_t
 gpgsm_encrypt (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
 	       gpgme_data_t ciph, int use_armor)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
 
   if (!gpgsm)
@@ -1018,7 +1018,7 @@ static gpgme_error_t
 gpgsm_export (void *engine, gpgme_user_id_t uid, gpgme_data_t keydata,
 	      int use_armor)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err = 0;
   char *cmd = NULL;
   int cmdi;
@@ -1074,7 +1074,7 @@ static gpgme_error_t
 gpgsm_genkey (void *engine, gpgme_data_t help_data, int use_armor,
 	      gpgme_data_t pubkey, gpgme_data_t seckey)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
 
   if (!gpgsm || !pubkey || seckey)
@@ -1100,7 +1100,7 @@ gpgsm_genkey (void *engine, gpgme_data_t help_data, int use_armor,
 static gpgme_error_t
 gpgsm_import (void *engine, gpgme_data_t keydata)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
 
   if (!gpgsm)
@@ -1123,7 +1123,7 @@ static gpgme_error_t
 gpgsm_keylist (void *engine, const char *pattern, int secret_only,
 	       int keylist_mode)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
   char *line;
   gpgme_error_t err;
 
@@ -1166,7 +1166,7 @@ static gpgme_error_t
 gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
 		   int reserved, int keylist_mode)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
   char *line;
   gpgme_error_t err;
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
@@ -1268,7 +1268,7 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 	    gpgme_sig_mode_t mode, int use_armor, int use_textmode,
 	    int include_certs, gpgme_ctx_t ctx /* FIXME */)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
   char *assuan_cmd;
   int i;
@@ -1338,7 +1338,7 @@ static gpgme_error_t
 gpgsm_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 	      gpgme_data_t plaintext)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
 
   if (!gpgsm)
@@ -1377,7 +1377,7 @@ static void
 gpgsm_set_status_handler (void *engine, engine_status_handler_t fnc,
 			  void *fnc_value) 
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
 
   gpgsm->status.fnc = fnc;
   gpgsm->status.fnc_value = fnc_value;
@@ -1388,7 +1388,7 @@ static gpgme_error_t
 gpgsm_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
 			      void *fnc_value) 
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
 
   gpgsm->colon.fnc = fnc;
   gpgsm->colon.fnc_value = fnc_value;
@@ -1400,7 +1400,7 @@ gpgsm_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
 static void
 gpgsm_set_io_cbs (void *engine, gpgme_io_cbs_t io_cbs)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
   gpgsm->io_cbs = *io_cbs;
 }
 
@@ -1408,7 +1408,7 @@ gpgsm_set_io_cbs (void *engine, gpgme_io_cbs_t io_cbs)
 static void
 gpgsm_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 {
-  GpgsmObject gpgsm = engine;
+  engine_gpgsm_t gpgsm = engine;
 
   if (gpgsm->io_cbs.event)
     (*gpgsm->io_cbs.event) (gpgsm->io_cbs.event_priv, type, type_data);
