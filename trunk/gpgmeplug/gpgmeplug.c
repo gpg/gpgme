@@ -1530,23 +1530,39 @@ bool decryptAndCheckMessage( const char* ciphertext,
 
 const char* requestCertificateDialog(){ return 0; }
 
-bool requestDecentralCertificate( const char* certparms, char** generatedKey )
+bool requestDecentralCertificate( const char* certparms, 
+                                  char** generatedKey, int* length )
 {
+    GpgmeError err;
     GpgmeCtx ctx;
-    GpgmeError err = gpgme_new (&ctx);
+    GpgmeData pub, result;
+    int len;
+
+    err = gpgme_data_new (&pub);
     if( err != GPGME_No_Error )
         return false;
 
-    gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
-
-    gpgme_set_armor (ctx, __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY ? 0 : 1);
-
-    if( gpgme_op_genkey( ctx, certparms, NULL, NULL ) == GPGME_No_Error )
-        return true;
-    else
+    err = gpgme_new (&ctx);
+    if( err != GPGME_No_Error ) {
+        gpgme_data_release( pub );
         return false;
+    }
 
-    gpgme_release( ctx );
+    gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
+    /* We want binary, so comment this: gpgme_set_armor (ctx, 1); */
+    err = gpgme_op_genkey (ctx, certparms, pub, NULL );
+    if( err != GPGME_No_Error ) {
+        gpgme_data_release( pub );
+        gpgme_release( ctx );
+        return false;
+    }
+
+    gpgme_release (ctx);
+    *generatedKey = gpgme_data_release_and_get_mem (pub, &len);
+    *length = len;
+
+    /* The buffer generatedKey contains the LEN bytes you want */
+    // Caller is responsible for freeing
 }
 
 bool requestCentralCertificateAndPSE( const char* name,
