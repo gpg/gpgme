@@ -57,6 +57,7 @@ gpgme_op_encrypt_start ( GpgmeCtx c, GpgmeRecipients recp,
     }
         
     /* create a process object */
+    _gpgme_gpg_release (c->gpg); c->gpg = NULL;
     rc = _gpgme_gpg_new ( &c->gpg );
     if (rc)
         goto leave;
@@ -126,6 +127,9 @@ gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
     }
     return rc;
 }
+
+
+
 
 
 

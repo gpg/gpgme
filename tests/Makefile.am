@@ -2,9 +2,10 @@
 
 TESTS_ENVIRONMENT = GNUPGHOME=. 
 
-TESTS = t-encrypt t-sign t-decrypt t-verify t-keylist
+TESTS = t-encrypt t-sign t-decrypt t-verify t-keylist t-export t-import
 
-EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc geheim.txt
+EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc geheim.txt \
+	     pubkey-1.asc seckey-1.asc
 
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
@@ -26,11 +27,6 @@ all-local: ./pubring.gpg ./secring.gpg
 
 ./Alpha/Secret.gpg: secdemo.asc 
 	srcdir=$(srcdir) $(srcdir)/mkdemodirs 
-
-
-
-
-
 
 
 

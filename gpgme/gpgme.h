@@ -121,6 +121,10 @@ void         gpgme_recipients_release ( GpgmeRecipients rset);
 GpgmeError   gpgme_recipients_add_name (GpgmeRecipients rset,
                                         const char *name);
 unsigned int gpgme_recipients_count ( const GpgmeRecipients rset );
+GpgmeError gpgme_recipients_enum_open (const GpgmeRecipients rset,void **ctx);
+const char *gpgme_recipients_enum_read (const GpgmeRecipients rset,void **ctx);
+GpgmeError gpgme_recipients_enum_close (const GpgmeRecipients rset,void **ctx);
+
 
 /* Functions to handle data sources */
 GpgmeError    gpgme_data_new ( GpgmeData *r_dh );
@@ -156,6 +160,11 @@ GpgmeError gpgme_op_sign_start ( GpgmeCtx c,
                                  GpgmeSigMode mode );
 GpgmeError gpgme_op_verify_start ( GpgmeCtx c,
                                    GpgmeData sig, GpgmeData text );
+GpgmeError gpgme_op_import_start ( GpgmeCtx c, GpgmeData keydata );
+GpgmeError gpgme_op_export_start ( GpgmeCtx c, GpgmeRecipients recp,
+                                   GpgmeData keydata );
+
+
 
 
 /* Key management functions */
@@ -173,6 +182,9 @@ GpgmeError gpgme_op_sign ( GpgmeCtx c, GpgmeData in, GpgmeData out,
                            GpgmeSigMode mode);
 GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
                              GpgmeSigStat *r_status );
+GpgmeError gpgme_op_import ( GpgmeCtx c, GpgmeData keydata );
+GpgmeError gpgme_op_export ( GpgmeCtx c, GpgmeRecipients recp,
+                             GpgmeData keydata );
 
 
 /* miscellaneous functions */

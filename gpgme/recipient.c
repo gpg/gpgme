@@ -77,6 +77,46 @@ gpgme_recipients_count ( const GpgmeRecipients rset )
 }
 
 
+
+GpgmeError
+gpgme_recipients_enum_open ( const GpgmeRecipients rset, void **ctx )
+{
+    if (!rset || !ctx)
+        return mk_error (Invalid_Value);
+
+    *ctx = rset->list;
+    return 0;
+}
+
+const char *
+gpgme_recipients_enum_read ( const GpgmeRecipients rset, void **ctx )
+{
+    struct user_id_s *r;
+
+    if (!rset || !ctx)
+        return NULL; /* oops */
+    
+    r = *ctx;
+    if ( r ) {
+        const char *s = r->name;
+        r = r->next;
+        *ctx = r;
+        return s;
+    }
+
+    return NULL;
+}
+
+GpgmeError
+gpgme_recipients_enum_close ( const GpgmeRecipients rset, void **ctx )
+{
+    if (!rset || !ctx)
+        return mk_error (Invalid_Value);
+    *ctx = NULL;
+    return 0;
+}
+
+
 void
 _gpgme_append_gpg_args_from_recipients (
     const GpgmeRecipients rset,
@@ -90,5 +130,8 @@ _gpgme_append_gpg_args_from_recipients (
         _gpgme_gpg_add_arg ( gpg, r->name );
     }    
 }
+
+
+
 
 

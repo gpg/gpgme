@@ -65,7 +65,8 @@ gpgme_new (GpgmeCtx *r_ctx)
 void
 gpgme_release ( GpgmeCtx c )
 {
-    
+    if (!c)
+        return;
     _gpgme_gpg_release ( c->gpg ); 
     _gpgme_release_result ( c );
     _gpgme_key_release ( c->tmp_key );
