@@ -1337,7 +1337,7 @@ This is the type of a trust item.
 @item GPGME_ATTR_IS_SECRET
 This specifies if the key is a secret key.  It is representable as a
 string or a number.  If the key is a secret key, the representation is
-``1'' or @code{1}, otherwise it is NULL or @code{0}.
+``1'' or @code{1}, otherwise it is @code{NULL} or @code{0}.
 
 @item GPGME_ATTR_KEY_REVOKED
 This specifies if a sub key is revoked.  It is representable as a
@@ -2233,7 +2233,7 @@ later point.
 @cindex cryptographic operation, wait for
 @cindex wait for completion
 
-@deftypefun GpgmeCtx gpgme_wait (@w{GpgmeCtx @var{ctx}}, @w{int @var{hang}})
+@deftypefun GpgmeCtx gpgme_wait (@w{GpgmeCtx @var{ctx}}, @w{GpgmeError *@var{status}}, @w{int @var{hang}})
 The function @code{gpgme_wait} does continue the pending operation
 within the context @var{ctx}.  In particular, it ensures the data
 exchange between @acronym{GPGME} and the crypto backend and watches
@@ -2243,7 +2243,14 @@ If @var{hang} is true, the function does not return until the
 operation is completed or cancelled.  Otherwise the function will not
 block for a long time.
 
-The function returns @var{ctx}.
+The error status of the finished operation is returned in
+@var{status}.
+
+The @var{ctx} argument can be @code{NULL}.  In that case,
+@code{gpgme_wait} waits for any context to complete its operation.
+
+The function returns the @var{ctx} of the context which has finished
+the operation.
 @end deftypefun
 
 

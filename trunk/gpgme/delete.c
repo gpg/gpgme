@@ -152,9 +152,6 @@ gpgme_op_delete (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
 {
   GpgmeError err = gpgme_op_delete_start (ctx, key, allow_secret);
   if (!err)
-    {
-      gpgme_wait (ctx, 1);
-      err = ctx->error;
-    }
+    gpgme_wait (ctx, &err, 1);
   return err;
 }

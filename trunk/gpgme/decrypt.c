@@ -160,9 +160,6 @@ gpgme_op_decrypt (GpgmeCtx ctx, GpgmeData in, GpgmeData out)
 {
   GpgmeError err = gpgme_op_decrypt_start (ctx, in, out);
   if (!err)
-    {
-      gpgme_wait (ctx, 1);
-      err = ctx->error;
-    }
+    gpgme_wait (ctx, &err, 1);
   return err;
 }

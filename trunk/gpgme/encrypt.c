@@ -212,7 +212,7 @@ gpgme_op_encrypt (GpgmeCtx ctx, GpgmeRecipients recp,
   int err = gpgme_op_encrypt_start (ctx, recp, plain, cipher);
   if (!err)
     {
-      gpgme_wait (ctx, 1);
+      gpgme_wait (ctx, &err, 1);
       /* Old gpg versions don't return status info for invalid
 	 recipients, so we simply check whether we got any output at
 	 all, and if not we assume that we don't have valid

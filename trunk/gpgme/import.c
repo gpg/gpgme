@@ -218,9 +218,6 @@ gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
 {
   GpgmeError err = gpgme_op_import_start (ctx, keydata);
   if (!err)
-    {
-      gpgme_wait (ctx, 1);
-      err = ctx->error;
-    }
+    gpgme_wait (ctx, &err, 1);
   return err;
 }

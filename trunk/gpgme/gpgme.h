@@ -275,7 +275,7 @@ void       gpgme_cancel (GpgmeCtx ctx);
 
 /* Process the pending operation and, if HANG is non-zero, wait for
    the pending operation to finish.  */
-GpgmeCtx gpgme_wait (GpgmeCtx ctx, int hang);
+GpgmeCtx gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang);
 
 
 /* Functions to handle recipients.  */
