@@ -1,5 +1,8 @@
 2003-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Importing Keys): Change GPGME_IMPORT_PRIVATE to
+	GPGME_IMPORT_SECRET.
+
 	* gpgme.texi (Importing Keys): Remove note about gpgme_get_op_info.
 	(Detailed Results): Remove note about import.
 

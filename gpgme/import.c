@@ -160,6 +160,7 @@ parse_import_res (char *args, GpgmeImportResult result)
   PARSE_NEXT (result->no_user_id);
   PARSE_NEXT (result->imported);
   PARSE_NEXT (result->imported_rsa);
+  PARSE_NEXT (result->unchanged);
   PARSE_NEXT (result->new_user_ids);
   PARSE_NEXT (result->new_sub_keys);
   PARSE_NEXT (result->new_signatures);

@@ -1,5 +1,7 @@
 2003-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/t-import.c: Rewritten.
+
 	* gpgsm/t-genkey.c: Rewritten.
 	* gpgsm/Makefile.am (noinst_PROGRAMS): Add t-genkey.
 	* gpg/t-genkey.c: Include <stdlib.h>.

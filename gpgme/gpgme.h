@@ -790,8 +790,8 @@ enum
     /* The key contained new sub keys.  */
     GPGME_IMPORT_SUBKEY	= 8,
 
-    /* The key contained a private key.  */
-    GPGME_IMPORT_PRIVATE = 16
+    /* The key contained a secret key.  */
+    GPGME_IMPORT_SECRET = 16
   };
 
 struct _gpgme_import_status
