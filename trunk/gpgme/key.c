@@ -45,16 +45,43 @@ _gpgme_key_new( GpgmeKey *r_key )
     return 0;
 }
 
+
+struct subkey_s *
+_gpgme_key_add_subkey (GpgmeKey key)
+{
+    struct subkey_s *k, *kk;
+
+    k = xtrycalloc (1, sizeof *k);
+    if (!k)
+        return NULL;
+
+    if( !(kk=key->keys.next) )
+        key->keys.next = k;
+    else {
+        while ( kk->next )
+            kk = kk->next;
+        kk->next = k;
+    }
+    return k;
+}
+
+
 void
 _gpgme_key_release ( GpgmeKey key )
 {
     struct user_id_s *u, *u2;
+    struct subkey_s *k, *k2;
 
     if (!key)
         return;
 
-    xfree (key->fingerprint);
-    for ( u = key->uids; u; u = u2 ) {
+    xfree (key->keys.fingerprint);
+    for (k = key->keys.next; k; k = k2 ) {
+        k2 = k->next;
+        xfree (k->fingerprint);
+        xfree (k);
+    }
+    for (u = key->uids; u; u = u2 ) {
         u2 = u->next;
         xfree (u);
     }
@@ -250,6 +277,7 @@ gpgme_key_get_as_xml ( GpgmeKey key )
 {
     GpgmeData d;
     struct user_id_s *u;
+    struct subkey_s *k;
 
     if ( !key )
         return NULL;
@@ -259,29 +287,39 @@ gpgme_key_get_as_xml ( GpgmeKey key )
     
     _gpgme_data_append_string ( d, "<GnupgKeyblock>\n"
                                    "  <mainkey>\n" );
-    add_tag_and_string (d, "keyid", key->keyid );   
-    if (key)
-        add_tag_and_string (d, "fpr", key->fingerprint );
-    add_tag_and_uint (d, "algo", key->key_algo );
-    add_tag_and_uint (d, "len", key->key_len );
-    add_tag_and_time (d, "created", key->timestamp );
+    add_tag_and_string (d, "keyid", key->keys.keyid );   
+    if (key->keys.fingerprint)
+        add_tag_and_string (d, "fpr", key->keys.fingerprint );
+    add_tag_and_uint (d, "algo", key->keys.key_algo );
+    add_tag_and_uint (d, "len", key->keys.key_len );
+    add_tag_and_time (d, "created", key->keys.timestamp );
     /*add_tag_and_time (d, "expires", key->expires );*/
     _gpgme_data_append_string (d, "  </mainkey>\n");
 
-    /* No the user IDs */
+    /* Now the user IDs */
     for ( u = key->uids; u; u = u->next ) {
         _gpgme_data_append_string (d, "  <userid>\n");
         add_tag_and_string ( d, "raw", u->name );
         add_user_id ( d, u->name );
         _gpgme_data_append_string (d, "  </userid>\n");
     }
-    _gpgme_data_append_string (d, "  <subkey>\n");
-    _gpgme_data_append_string (d, "  </subkey>\n");
     
+    for (k=key->keys.next; k; k = k->next ) {
+        _gpgme_data_append_string (d, "  <subkey>\n");
+        add_tag_and_string (d, "keyid", k->keyid );   
+        if (k->fingerprint)
+            add_tag_and_string (d, "fpr", k->fingerprint );
+        add_tag_and_uint (d, "algo", k->key_algo );
+        add_tag_and_uint (d, "len", k->key_len );
+        add_tag_and_time (d, "created", k->timestamp );
+        _gpgme_data_append_string (d, "  </subkey>\n");
+    }
     _gpgme_data_append_string ( d, "</GnupgKeyblock>\n" );
 
     return _gpgme_data_release_and_return_string (d);
 }
+
+
 
 
 

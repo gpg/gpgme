@@ -234,7 +234,7 @@ do_select ( void )
     if ( n <= 0 ) 
         return 0; /* error or timeout */
 
-    for (i=0; i < fd_table_size /*&& n*/; i++ ) {
+    for (i=0; i < fd_table_size && n; i++ ) {
         if ( fd_table[i].fd != -1 && fd_table[i].signaled 
              && !fd_table[i].frozen ) {
             q = fd_table[i].opaque;
@@ -328,7 +328,7 @@ _gpgme_freeze_fd ( int fd )
     for (i=0; i < fd_table_size; i++ ) {
         if ( fd_table[i].fd == fd ) {
             fd_table[i].frozen = 1;
-            fprintf (stderr, "** FD %d frozen\n", fd );
+            /*fprintf (stderr, "** FD %d frozen\n", fd );*/
             break;
         }
     }
@@ -344,7 +344,7 @@ _gpgme_thaw_fd ( int fd )
     for (i=0; i < fd_table_size; i++ ) {
         if ( fd_table[i].fd == fd ) {
             fd_table[i].frozen = 0;
-            fprintf (stderr, "** FD %d thawed\n", fd );
+            /*fprintf (stderr, "** FD %d thawed\n", fd );*/
             break;
         }
     }

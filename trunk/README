@@ -12,6 +12,7 @@ ftp.gnupg.org/pub/gcrypt/alpha/gnupg/gnupg-1.1.2.tar.gz) and install
 the agent from the agent subdirectory or use the new 
 gpgme_set_passphrase_cb() 
 
+
 Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
 to do serious work. 
 

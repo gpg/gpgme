@@ -559,8 +559,8 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
                          (int)GetLastError ());
             }
             else if ( navail ) {
-                fprintf (stderr, "** fd %d has %d bytes to read\n",
-                         fds[i].fd, navail );
+                /*fprintf (stderr, "** fd %d has %d bytes to read\n",
+                  fds[i].fd, navail );*/
                 fds[i].signaled = 1;
                 count++;
             }
