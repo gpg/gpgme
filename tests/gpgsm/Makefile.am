@@ -22,9 +22,9 @@
 
 TESTS_ENVIRONMENT = GNUPGHOME=.
 
-TESTS = 
+TESTS = t-import
 
-#EXTRA_DIST =
+EXTRA_DIST = cert_dfn_pca01.der cert_dfn_pca15.der cert_g10code_test1.der
 
 INCLUDES = -I$(top_srcdir)/gpgme
 
