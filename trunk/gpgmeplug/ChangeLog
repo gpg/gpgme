@@ -1,3 +1,14 @@
+2002-06-28  Bernhard Reiter <bernhard@intevation.de>
+
+	* gpgmeplug.c: new macro days_to_seconds().
+	this also fixes the dividing factor.
+	(signatureCertificateDaysLeftToExpiry) 
+        (preceiverCertificateDaysLeftToExpiry): using the new macro
+
+	(caCertificateDaysLeftToExpiry)  
+	(rootCertificateDaysLeftToExpiry): using new macro in deactivated code.
+
+
 2002-06-27  Steffen Hansen  <steffen@hrhansen.dk>
 
 	* gpgmeplug.c: Fixed pattern related bug.
