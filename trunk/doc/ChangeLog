@@ -1,5 +1,7 @@
 2003-07-31  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Key Management): Add can_authenticate flag.
+
 	* gpgme.texi (Listing Keys): Document GPG_ERR_AMBIGUOUS_NAME for
 	gpgme_get_key.
 
