@@ -3680,6 +3680,12 @@ status codes are of interest:
   verify the signature has expired.  For the combined result this status
   means that all signatures are valid and all keys are expired.
 
+  @item GPG_ERR_CERT_REVOKED
+  This status indicates that the signature is valid but the key used
+  to verify the signature has been revoked.  For the combined result
+  this status means that all signatures are valid and all keys are
+  revoked.
+
   @item GPG_ERR_BAD_SIGNATURE
   This status indicates that the signature is invalid.  For the combined
   result this status means that all signatures are invalid.
