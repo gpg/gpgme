@@ -3357,6 +3357,30 @@ started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 recipients.
 @end deftypefun
 
+@deftp {Data type} {GpgmeEncryptResult}
+This is a pointer to a structure used to store the result of a
+@code{gpgme_op_encrypt} operation.  After successfully encrypting
+data, you can retrieve the pointer to the result with
+@code{gpgme_op_encrypt_result}.  The structure contains the following
+members:
+
+@table @code
+@item GpgmeInvalidUserID invalid_recipients
+A linked list with information about all invalid user IDs for which
+the data could not be encrypted.
+@end table
+@end deftp
+
+@deftypefun GpgmeEncryptResult gpgme_op_encrypt_result (@w{GpgmeCtx @var{ctx}})
+The function @code{gpgme_op_encrypt_result} returns a
+@code{GpgmeEncryptResult} pointer to a structure holding the result of
+a @code{gpgme_op_encrypt} operation.  The pointer is only valid if the
+last operation on the context was a @code{gpgme_op_encrypt} or
+@code{gpgme_op_encrypt_start} operation, and if this operation
+finished successfully.  The returned pointer is only valid until the
+next operation is started on the context.
+@end deftypefun
+
 
 @deftypefun GpgmeError gpgme_op_encrypt_sign (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{rset}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{cipher}})
 The function @code{gpgme_op_encrypt_sign} does a combined encrypt and

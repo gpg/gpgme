@@ -96,10 +96,17 @@ GpgmeError _gpgme_sign_status_handler (void *priv, GpgmeStatusCode code,
 				       char *args);
 
 
-/*-- encrypt.c --*/
-GpgmeError _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
+/* From encrypt.c.  */
+
+/* Create an initial op data object for encrypt.  Needs to be called
+   once before calling _gpgme_encrypt_status_handler.  */
+GpgmeError _gpgme_op_encrypt_init_result (GpgmeCtx ctx);
+
+/* Process a status line for encryption operations.  */
+GpgmeError _gpgme_encrypt_status_handler (void *priv, GpgmeStatusCode code,
 					  char *args);
 
+
 /*-- passphrase.c --*/
 GpgmeError _gpgme_passphrase_status_handler (void *priv, GpgmeStatusCode code,
 					     char *args);
