@@ -1,3 +1,8 @@
+2002-06-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/Makefile.am (TESTS): Add t-export.
+	gpgsm/t-export.c: New file.
+
 2002-06-20  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm/t-sign.c (main): Also test a normal signature.
