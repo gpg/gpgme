@@ -396,7 +396,7 @@ _gpgme_map_gnupg_error (char *err)
   /* Future version of GnuPG might return the error code directly, so
      we first test for a a numerical value and use that verbatim.
      Note that this numerical value might be followed by an
-     udnerschore and the textual representation of the error code. */
+     underschore and the textual representation of the error code. */
   if (*err >= '0' && *err <= '9')
     return strtoul (err, NULL, 10);
 
