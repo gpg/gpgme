@@ -69,7 +69,7 @@ gpgme_recipients_add_name_with_validity (gpgme_recipients_t rset,
 
   if (!name || !rset)
     return GPGME_Invalid_Value;
-  uid = malloc (sizeof (*uid) + strlen (name));
+  uid = malloc (sizeof (*uid) + strlen (name) + 1);
   if (!uid)
     return GPGME_Out_Of_Core;
   uid->validity = validity;
