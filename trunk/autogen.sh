@@ -4,7 +4,7 @@
 
 PGM=GPGME
 lib_config_files=""
-autoconf_vers=2.52
+autoconf_vers=2.53
 automake_vers=1.5
 aclocal_vers=1.5
 libtool_vers=1.4
