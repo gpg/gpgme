@@ -38,9 +38,10 @@ libgpgme_la_LDFLAGS = $(libgpgme_version_script_cmd) -version-info \
       @LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 
 if BUILD_ASSUAN
-AM_CPPFLAGS = -I$(top_srcdir)/assuan
+assuan_cppflags = -I$(top_srcdir)/assuan
 assuan_libobjs = ../assuan/libassuan.la
 else
+assuan_cppflags =
 assuan_libobjs =
 endif
 
@@ -83,10 +84,10 @@ libgpgme_la_SOURCES =							\
 	${gpgsm_components} sema.h io.h ${system_components}		\
 	debug.c debug.h gpgme.c version.c error.c
 
+AM_CPPFLAGS = ${assuan_cppflags} @GPG_ERROR_CFLAGS@
 libgpgme_la_DEPENDENCIES = ${assuan_libobjs} @LTLIBOBJS@ \
 	$(srcdir)/libgpgme.vers
-
-libgpgme_la_LIBADD = ${assuan_libobjs} @LTLIBOBJS@
+libgpgme_la_LIBADD = ${assuan_libobjs} @LTLIBOBJS@ @GPG_ERROR_LIBS@
 
 status-table.h : gpgme.h
 	$(srcdir)/mkstatus < $(srcdir)/gpgme.h > status-table.h
