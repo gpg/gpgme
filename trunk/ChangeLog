@@ -1,3 +1,8 @@
+2002-12-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (LIBGPGME_LT_CURRENT): Increase by one.
+	(LIBGPGME_LT_AGE, LIBGPGME_LT_REVISION): Set to 0.
+
 2002-11-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* NEWS: Add note about moving "gpgmeplug" to the "cryptplug"
