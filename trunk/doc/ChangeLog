@@ -1,5 +1,12 @@
 2003-06-22  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi: Add 2003 to copyright notice.
+
+	* gpgme.texi (Header): Fix name space documentation on
+	libgpg-error.
+
+2003-06-22  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.texi (Multi Threading): Remove reference to
 	gpgme_recipients_t.
 
