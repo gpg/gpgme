@@ -29,53 +29,50 @@
 #include "context.h"
 #include "ops.h"
 
-
-struct decrypt_result_s {
-    int no_passphrase;
-    int okay;
-    int failed;
-    void *last_pw_handle;
-    char *userid_hint;
-    char *passphrase_info;
-    int bad_passphrase;
+struct decrypt_result_s
+{
+  int no_passphrase;
+  int okay;
+  int failed;
+  void *last_pw_handle;
+  char *userid_hint;
+  char *passphrase_info;
+  int bad_passphrase;
 };
 
-
 void
-_gpgme_release_decrypt_result ( DecryptResult res )
+_gpgme_release_decrypt_result (DecryptResult result)
 {
-    if (!res )
-        return;
-    xfree (res->passphrase_info);
-    xfree (res->userid_hint);
-    xfree (res);
+  if (!result)
+    return;
+  xfree (result->passphrase_info);
+  xfree (result->userid_hint);
+  xfree (result);
 }
 
-
 static GpgmeError
-create_result_struct ( GpgmeCtx ctx )
+create_result_struct (GpgmeCtx ctx)
 {
-    assert ( !ctx->result.decrypt );
-    ctx->result.decrypt = xtrycalloc ( 1, sizeof *ctx->result.decrypt );
-    if ( !ctx->result.decrypt ) {
-        return mk_error (Out_Of_Core);
-    }
-    ctx->result_type = RESULT_TYPE_DECRYPT;
-    return 0;    
+  assert (!ctx->result.decrypt);
+  ctx->result.decrypt = xtrycalloc (1, sizeof *ctx->result.decrypt);
+  if (!ctx->result.decrypt)
+    return mk_error (Out_Of_Core);
+  return 0;    
 }
 
 static void
-decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
+decrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
     if ( ctx->out_of_core )
         return;
-    if ( ctx->result_type == RESULT_TYPE_NONE ) {
-        if ( create_result_struct ( ctx ) ) {
+    if (! ctx->result.decrypt)
+      {
+        if (create_result_struct (ctx))
+	  {
             ctx->out_of_core = 1;
             return;
-        }
-    }
-    assert ( ctx->result_type == RESULT_TYPE_DECRYPT );
+	  }
+      }
 
     switch (code) {
       case STATUS_EOF:
@@ -124,16 +121,18 @@ decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
 
 static const char *
-command_handler ( void *opaque, GpgStatusCode code, const char *key )
+command_handler (void *opaque, GpgStatusCode code, const char *key)
 {
     GpgmeCtx c = opaque;
 
-    if ( c->result_type == RESULT_TYPE_NONE ) {
-        if ( create_result_struct ( c ) ) {
+    if (! c->result.decrypt)
+      {
+        if (create_result_struct (c))
+	  {
             c->out_of_core = 1;
-            return NULL;
-        }
-    }
+            return;
+	  }
+      }
 
     if ( !code ) {
         /* We have been called for cleanup */
@@ -258,35 +257,26 @@ gpgme_op_decrypt_start ( GpgmeCtx c,
  * Return value:  0 on success or an errorcode. 
  **/
 GpgmeError
-gpgme_op_decrypt ( GpgmeCtx c,
-                   GpgmeData in, GpgmeData out )
+gpgme_op_decrypt (GpgmeCtx c, GpgmeData in, GpgmeData out)
 {
-    GpgmeError err = gpgme_op_decrypt_start ( c, in, out );
-    if ( !err ) {
-        gpgme_wait (c, 1);
-        if ( c->result_type != RESULT_TYPE_DECRYPT )
-            err = mk_error (General_Error);
-        else if ( c->out_of_core )
-            err = mk_error (Out_Of_Core);
-        else {
-            assert ( c->result.decrypt );
-            if ( c->result.decrypt->no_passphrase ) 
-                err = mk_error (No_Passphrase);
-            else if ( c->result.decrypt->failed ) 
-                err = mk_error (Decryption_Failed);
-            else if (!c->result.decrypt->okay)
-                err = mk_error (No_Data);
+  GpgmeError err = gpgme_op_decrypt_start (c, in, out);
+  if (!err)
+    {
+      gpgme_wait (c, 1);
+      if (!c->result.decrypt)
+	err = mk_error (General_Error);
+      else if (c->out_of_core)
+	err = mk_error (Out_Of_Core);
+      else
+	{
+	  if (c->result.decrypt->no_passphrase)
+	    err = mk_error (No_Passphrase);
+	  else if (c->result.decrypt->failed)
+	    err = mk_error (Decryption_Failed);
+	  else if (!c->result.decrypt->okay)
+	    err = mk_error (No_Data);
         }
-        c->pending = 0;
+      c->pending = 0;
     }
-    return err;
+  return err;
 }
-
-
-
-
-
-
-
-
-

@@ -30,29 +30,32 @@
 #include "ops.h"
 #include "key.h"
 
-struct verify_result_s {
-    struct verify_result_s *next;
-    GpgmeSigStat status;
-    GpgmeData notation; /* we store an XML fragment here */
-    int collecting;       /* private to finish_sig() */
-    int notation_in_data; /* private to add_notation() */
-    char fpr[41];    /* fingerprint of a good signature or keyid of a bad one*/
-    ulong timestamp; /* signature creation time */
+struct verify_result_s
+{
+  struct verify_result_s *next;
+  GpgmeSigStat status;
+  GpgmeData notation;	/* We store an XML fragment here.  */
+  int collecting;	/* Private to finish_sig().  */
+  int notation_in_data;	/* Private to add_notation().  */
+  char fpr[41];		/* Fingerprint of a good signature or keyid of
+			   a bad one.  */
+  ulong timestamp;	/* Signature creation time.  */
 };
 
 
 void
-_gpgme_release_verify_result ( VerifyResult res )
+_gpgme_release_verify_result (VerifyResult result)
 {
-    while (res) {
-        VerifyResult r2 = res->next;
-        gpgme_data_release ( res->notation );
-        xfree (res);
-        res = r2;
+  while (result)
+    {
+      VerifyResult next_result = result->next;
+      gpgme_data_release (result->notation);
+      xfree (result);
+      result = next_result;
     }
 }
 
-/* fixme: check that we are adding this to the correct signature */
+/* FIXME: Check that we are adding this to the correct signature.  */
 static void
 add_notation ( GpgmeCtx ctx, GpgStatusCode code, const char *data )
 {
@@ -133,16 +136,15 @@ verify_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
     if ( ctx->out_of_core )
         return;
-    if ( ctx->result_type == RESULT_TYPE_NONE ) {
-        assert ( !ctx->result.verify );
-        ctx->result.verify = xtrycalloc ( 1, sizeof *ctx->result.verify );
-        if ( !ctx->result.verify ) {
+    if (!ctx->result.verify)
+      {
+        ctx->result.verify = xtrycalloc (1, sizeof *ctx->result.verify);
+        if (!ctx->result.verify)
+	  {
             ctx->out_of_core = 1;
             return;
-        }
-        ctx->result_type = RESULT_TYPE_VERIFY;
-    }
-    assert ( ctx->result_type == RESULT_TYPE_VERIFY );
+	  }
+      }
 
     if (code == STATUS_GOODSIG
         || code == STATUS_BADSIG || code == STATUS_ERRSIG) {
@@ -293,15 +295,16 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
  * Figure out a common status value for all signatures 
  */
 static GpgmeSigStat
-intersect_stati ( VerifyResult res )
+intersect_stati (VerifyResult result)
 {
-    GpgmeSigStat status = res->status;
+  GpgmeSigStat status = result->status;
 
-    for (res=res->next; res; res = res->next) {
-        if (status != res->status ) 
-            return GPGME_SIG_STAT_DIFF;
+  for (result = result->next; result; result = result->next)
+    {
+      if (status != result->status) 
+	return GPGME_SIG_STAT_DIFF;
     }
-    return status;
+  return status;
 }
 
 /**
@@ -344,13 +347,12 @@ gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
     rc = gpgme_op_verify_start ( c, sig, text );
     if ( !rc ) {
         gpgme_wait (c, 1);
-        if ( c->result_type != RESULT_TYPE_VERIFY )
+        if (!c->result.verify)
             rc = mk_error (General_Error);
-        else if ( c->out_of_core )
+        else if (c->out_of_core)
             rc = mk_error (Out_Of_Core);
         else {
-            assert ( c->result.verify );
-            /* fixme: Put all notation data into one XML fragment */
+            /* FIXME: Put all notation data into one XML fragment.  */
             if ( c->result.verify->notation ) {
                 GpgmeData dh = c->result.verify->notation;
                 
@@ -384,23 +386,24 @@ gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
  **/
 const char *
 gpgme_get_sig_status (GpgmeCtx c, int idx,
-                      GpgmeSigStat *r_stat, time_t *r_created )
+                      GpgmeSigStat *r_stat, time_t *r_created)
 {
-    VerifyResult res;
+  VerifyResult result;
 
-    if (!c || c->pending || c->result_type != RESULT_TYPE_VERIFY )
-        return NULL; /* No results yet or verification error */
+  if (!c || c->pending || !c->result.verify)
+    return NULL;	/* No results yet or verification error.  */
 
-    for (res = c->result.verify; res && idx>0 ; res = res->next, idx--)
-        ;
-    if (!res)
-        return NULL; /* No more signatures */
+  for (result = c->result.verify;
+       result && idx > 0; result = result->next, idx--)
+    ;
+  if (!result)
+    return NULL;	/* No more signatures.  */
 
-    if (r_stat)
-        *r_stat = res->status;
-    if (r_created)
-        *r_created = res->timestamp;
-    return res->fpr;
+  if (r_stat)
+    *r_stat = result->status;
+  if (r_created)
+    *r_created = result->timestamp;
+  return result->fpr;
 }
 
 
@@ -418,40 +421,38 @@ gpgme_get_sig_status (GpgmeCtx c, int idx,
 GpgmeError
 gpgme_get_sig_key (GpgmeCtx c, int idx, GpgmeKey *r_key)
 {
-    VerifyResult res;
-    GpgmeError err = 0;
+  VerifyResult result;
+  GpgmeError err = 0;
 
-    if (!c || !r_key)
-        return mk_error (Invalid_Value);
-    if (c->pending || c->result_type != RESULT_TYPE_VERIFY )
-        return mk_error (Busy);
-
-    for (res = c->result.verify; res && idx>0 ; res = res->next, idx--)
-        ;
-    if (!res)
-        return mk_error (EOF);
-
-    if (strlen(res->fpr) < 16) /* we have at least an key ID */
-        return mk_error (Invalid_Key);
-
-    *r_key = _gpgme_key_cache_get (res->fpr);
-    if (!*r_key) {
-        GpgmeCtx listctx;
-
-        /* Fixme: This can be optimized by keeping
-         *        an internal context used for such key listings */
-        if ( (err=gpgme_new (&listctx)) )
-            return err;
-        gpgme_set_keylist_mode( listctx, c->keylist_mode );
-        if ( !(err=gpgme_op_keylist_start (listctx, res->fpr, 0 )) )
-            err=gpgme_op_keylist_next ( listctx, r_key );
-        gpgme_release (listctx);
+  if (!c || !r_key)
+    return mk_error (Invalid_Value);
+  if (c->pending || !c->result.verify)
+    return mk_error (Busy);
+  
+  for (result = c->result.verify;
+       result && idx > 0; result = result->next, idx--)
+    ;
+  if (!result)
+    return mk_error (EOF);
+  
+  if (strlen(result->fpr) < 16)	/* We have at least a key ID.  */
+    return mk_error (Invalid_Key);
+  
+  *r_key = _gpgme_key_cache_get (result->fpr);
+  if (!*r_key)
+    {
+      GpgmeCtx listctx;
+      
+      /* Fixme: This can be optimized by keeping an internal context
+	 used for such key listings.  */
+      err = gpgme_new (&listctx);
+      if (err)
+	return err;
+      gpgme_set_keylist_mode (listctx, c->keylist_mode);
+      err = gpgme_op_keylist_start (listctx, result->fpr, 0);
+      if (!err)
+	err = gpgme_op_keylist_next (listctx, r_key);
+      gpgme_release (listctx);
     }
-    return err;
+  return err;
 }
-
-
-
-
-
-

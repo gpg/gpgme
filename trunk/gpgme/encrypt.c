@@ -36,21 +36,20 @@
         return; /* oops */ \
 } while (0)
 
-
-
-struct encrypt_result_s {
-    int no_recipients;
-    GpgmeData xmlinfo;
+struct encrypt_result_s
+{
+  int no_recipients;
+  GpgmeData xmlinfo;
 };
 
-
 void
-_gpgme_release_encrypt_result (EncryptResult res)
+_gpgme_release_encrypt_result (EncryptResult result)
 {
-    gpgme_data_release (res->xmlinfo);
-    xfree (res);
+  if (!result)
+    return;
+  gpgme_data_release (result->xmlinfo);
+  xfree (result);
 }
-
 
 /* 
  * Parse the args and save the information 
@@ -99,20 +98,19 @@ append_xml_encinfo (GpgmeData *rdh, char *args)
 
 
 static void
-encrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
+encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
-    if ( ctx->out_of_core )
-        return;
-    if ( ctx->result_type == RESULT_TYPE_NONE ) {
-        assert ( !ctx->result.encrypt );
-        ctx->result.encrypt = xtrycalloc ( 1, sizeof *ctx->result.encrypt );
-        if ( !ctx->result.encrypt ) {
+    if (ctx->out_of_core)
+      return;
+    if (!ctx->result.encrypt)
+      {
+        ctx->result.encrypt = xtrycalloc (1, sizeof *ctx->result.encrypt);
+        if (!ctx->result.encrypt)
+	  {
             ctx->out_of_core = 1;
             return;
-        }
-        ctx->result_type = RESULT_TYPE_ENCRYPT;
-    }
-    assert ( ctx->result_type == RESULT_TYPE_ENCRYPT );
+	  }
+      }
 
     switch (code) {
       case STATUS_EOF:
@@ -230,12 +228,11 @@ gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
     int err = gpgme_op_encrypt_start ( c, recp, in, out );
     if ( !err ) {
         gpgme_wait (c, 1);
-        if ( c->result_type != RESULT_TYPE_ENCRYPT )
+        if (!c->result.encrypt)
             err = mk_error (General_Error);
-        else if ( c->out_of_core )
+        else if (c->out_of_core)
             err = mk_error (Out_Of_Core);
         else {
-            assert ( c->result.encrypt );
             if (c->result.encrypt->no_recipients) 
                 err = mk_error (No_Recipients);
         }

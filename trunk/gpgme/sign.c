@@ -36,29 +36,27 @@
         return; /* oops */ \
 } while (0)
 
-
-
-
-struct  sign_result_s {
-    int no_passphrase;
-    int okay;
-    void *last_pw_handle;
-    char *userid_hint;
-    char *passphrase_info;
-    int bad_passphrase;
-    GpgmeData xmlinfo;
+struct sign_result_s
+{
+  int no_passphrase;
+  int okay;
+  void *last_pw_handle;
+  char *userid_hint;
+  char *passphrase_info;
+  int bad_passphrase;
+  GpgmeData xmlinfo;
 };
 
-
 void
-_gpgme_release_sign_result ( SignResult res )
+_gpgme_release_sign_result (SignResult result)
 {
-    gpgme_data_release (res->xmlinfo);
-    xfree (res->userid_hint);
-    xfree (res->passphrase_info);
-    xfree (res);
+  if (!result)
+    return;
+  gpgme_data_release (result->xmlinfo);
+  xfree (result->userid_hint);
+  xfree (result->passphrase_info);
+  xfree (result);
 }
-
 
 /* parse the args and save the information 
  * <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
@@ -141,20 +139,19 @@ append_xml_siginfo (GpgmeData *rdh, char *args)
 
 
 static void
-sign_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
+sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
-    if ( ctx->out_of_core )
+    if (ctx->out_of_core)
         return;
-    if ( ctx->result_type == RESULT_TYPE_NONE ) {
-        assert ( !ctx->result.sign );
-        ctx->result.sign = xtrycalloc ( 1, sizeof *ctx->result.sign );
-        if ( !ctx->result.sign ) {
+    if (!ctx->result.sign)
+      {
+        ctx->result.sign = xtrycalloc (1, sizeof *ctx->result.sign);
+        if (!ctx->result.sign)
+	  {
             ctx->out_of_core = 1;
             return;
-        }
-        ctx->result_type = RESULT_TYPE_SIGN;
-    }
-    assert ( ctx->result_type == RESULT_TYPE_SIGN );
+	  }
+      }
 
     switch (code) {
       case STATUS_EOF:
@@ -207,15 +204,15 @@ command_handler ( void *opaque, GpgStatusCode code, const char *key )
 {
     GpgmeCtx c = opaque;
 
-    if ( c->result_type == RESULT_TYPE_NONE ) {
-        assert ( !c->result.sign );
-        c->result.sign = xtrycalloc ( 1, sizeof *c->result.sign );
-        if ( !c->result.sign ) {
+    if (!c->result.sign)
+      {
+        c->result.sign = xtrycalloc (1, sizeof *c->result.sign);
+        if (!c->result.sign)
+	  {
             c->out_of_core = 1;
             return NULL;
-        }
-        c->result_type = RESULT_TYPE_SIGN;
-    }
+	  }
+      }
 
     if ( !code ) {
         /* We have been called for cleanup */
@@ -373,22 +370,20 @@ gpgme_op_sign_start ( GpgmeCtx c, GpgmeData in, GpgmeData out,
  * Return value: 0 on success or an error code.
  **/
 GpgmeError
-gpgme_op_sign ( GpgmeCtx c, GpgmeData in, GpgmeData out, GpgmeSigMode mode )
+gpgme_op_sign (GpgmeCtx c, GpgmeData in, GpgmeData out, GpgmeSigMode mode)
 {
     GpgmeError err = gpgme_op_sign_start ( c, in, out, mode );
     if ( !err ) {
         gpgme_wait (c, 1);
-        if ( c->result_type != RESULT_TYPE_SIGN )
+        if (!c->result.sign)
             err = mk_error (General_Error);
-        else if ( c->out_of_core )
+        else if (c->out_of_core)
             err = mk_error (Out_Of_Core);
         else {
-            assert ( c->result.sign );
-            if ( c->result.sign->no_passphrase ) 
+            if (c->result.sign->no_passphrase)
                 err = mk_error (No_Passphrase);
             else if (!c->result.sign->okay)
                 err = mk_error (No_Data); /* Hmmm: choose a better error? */
-            
         }
         c->pending = 0;
     }
