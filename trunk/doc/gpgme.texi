@@ -1538,7 +1538,8 @@ The function @code{gpgme_get_protocol} retrieves the protocol currently
 use with the context @var{ctx}.
 @end deftypefun
 
-@node @acronym{ASCII} Armor
+@c FIXME: Unfortunately, using @acronym here breaks texi2dvi.
+@node ASCII Armor
 @subsection @acronym{ASCII} Armor
 @cindex context, armor mode
 @cindex @acronym{ASCII} armor
@@ -2681,7 +2682,7 @@ data buffer.
 @deftypefun gpgme_error_t gpgme_op_import (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_import} adds the keys in the data buffer
 @var{keydata} to the key ring of the crypto engine used by @var{ctx}.
-The format of @var{keydata} can be @var{ASCII} armored, for example,
+The format of @var{keydata} can be @acronym{ASCII} armored, for example,
 but the details are specific to the crypto engine.
 
 After the operation completed successfully, the result can be
