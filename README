@@ -18,7 +18,7 @@ For support of the CMS (Cryptographic Message Syntax) protocol, you
 need the latest CVS version of GpgSM, module name `newpg', at
 `:pserver:anoncvs@cvs.gnupg.org:/cvs/aegypten'.
 
-You need at least GpgSM 0.3.0.
+You need at least GpgSM 0.3.1.
 
 If configure can't find the `gpgsm' binary in your path, you can
 specify the location with the --with-gpgsm=/path/to/gpgsm argument to
