@@ -99,6 +99,17 @@ gpgme_op_delete_start ( GpgmeCtx c, const GpgmeKey key, int allow_secret )
 }
 
 
+/**
+ * gpgme_op_delete:
+ * @c: Context 
+ * @key: A Key Object
+ * @allow_secret: Allow secret key delete
+ * 
+ * Delete the give @key from the key database.  To delete a secret
+ * along with the public key, @allow_secret must be true.
+ * 
+ * Return value: 0 on success or an error code.
+ **/
 GpgmeError
 gpgme_op_delete ( GpgmeCtx c, const GpgmeKey key, int allow_secret )
 {

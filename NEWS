@@ -1,7 +1,16 @@
+Noteworthy changes in version 0.2.3 (2001-09-17)
+------------------------------------------------
 
  * New function gpgme_get_op_info which can be used to get the micalg
    parameter needed for MOSS.
 
+ * New functions gpgme_get_armor and gpgme_get_textmode.
+
+ * The usual bug fixes and some minor functionality improvements.
+
+ * Added a simple encryption component for MS-Windows; however the
+   build procedure might have some problems.
+o
 Noteworthy changes in version 0.2.2 (2001-06-12)
 ------------------------------------------------
  

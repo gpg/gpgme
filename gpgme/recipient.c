@@ -28,6 +28,14 @@
 #include "context.h"
 #include "rungpg.h"
 
+/**
+ * gpgme_recipients_new:
+ * @r_rset: Returns the new object.
+ * 
+ * Create a new uninitialized Reciepient set Object.
+ * 
+ * Return value: 0 on success or an error code.
+ **/
 GpgmeError
 gpgme_recipients_new (GpgmeRecipients *r_rset)
 {
@@ -40,6 +48,12 @@ gpgme_recipients_new (GpgmeRecipients *r_rset)
     return 0;
 }
 
+/**
+ * gpgme_recipients_release:
+ * @rset: Recipient Set object
+ * 
+ * Free the given object.
+ **/
 void
 gpgme_recipients_release ( GpgmeRecipients rset )
 {
@@ -55,6 +69,15 @@ gpgme_recipients_release ( GpgmeRecipients rset )
 }
 
 
+/**
+ * gpgme_recipients_add_name:
+ * @rset: Recipient Set object 
+ * @name: user name or keyID
+ * 
+ * Add a name to the recipient Set.
+ * 
+ * Return value: 0 on success or an error code
+ **/
 GpgmeError
 gpgme_recipients_add_name (GpgmeRecipients rset, const char *name )
 {
@@ -63,6 +86,22 @@ gpgme_recipients_add_name (GpgmeRecipients rset, const char *name )
         );
 }
 
+/**
+ * gpgme_recipients_add_name_with_validity:
+ * @rset: Recipient Set object
+ * @name: user name or keyID
+ * @val: Validity value 
+ * 
+ * Same as gpgme_recipients_add_name() but with explictly given key
+ * validity.  Use one of the constants 
+ * %GPGME_VALIDITY_UNKNOWN, %GPGME_VALIDITY_UNDEFINED,
+ * %GPGME_VALIDITY_NEVER, %GPGME_VALIDITY_MARGINAL,
+ * %GPGME_VALIDITY_FULL, %GPGME_VALIDITY_ULTIMATE5
+ * for the validity.  %GPGME_VALIDITY_UNKNOWN is implicitly used by
+ * gpgme_recipients_add_name().
+ *
+ * Return value: o on success or an error value.
+ **/
 GpgmeError
 gpgme_recipients_add_name_with_validity (GpgmeRecipients rset,
                                          const char *name,
@@ -87,6 +126,12 @@ gpgme_recipients_add_name_with_validity (GpgmeRecipients rset,
 
 
 
+/**
+ * gpgme_recipients_count:
+ * @rset: Recipient Set object
+ * 
+ * Return value: The number of recipients in the set.
+ **/
 unsigned int 
 gpgme_recipients_count ( const GpgmeRecipients rset )
 {
@@ -102,6 +147,18 @@ gpgme_recipients_count ( const GpgmeRecipients rset )
 
 
 
+/**
+ * gpgme_recipients_enum_open:
+ * @rset: Recipient Set object
+ * @ctx: Enumerator
+ * 
+ * Start an enumeration on the Recipient Set object.  The caller must pass 
+ * the address of a void pointer which is used as the enumerator object.
+ * 
+ * Return value: 0 on success or an error code.
+ *
+ * See also: gpgme_recipients_enum_read(), gpgme_recipients_enum_close().
+ **/
 GpgmeError
 gpgme_recipients_enum_open ( const GpgmeRecipients rset, void **ctx )
 {
@@ -112,6 +169,19 @@ gpgme_recipients_enum_open ( const GpgmeRecipients rset, void **ctx )
     return 0;
 }
 
+/**
+ * gpgme_recipients_enum_read:
+ * @rset: Recipient Set object
+ * @ctx: Enumerator 
+ * 
+ * Return the name of the next user name from the given recipient
+ * set. This name is valid as along as the @rset is valid and until
+ * the next call to this function.
+ * 
+ * Return value: name or NULL for no more names.
+ *
+ * See also: gpgme_recipients_enum_read(), gpgme_recipients_enum_close().
+ **/
 const char *
 gpgme_recipients_enum_read ( const GpgmeRecipients rset, void **ctx )
 {
@@ -131,6 +201,17 @@ gpgme_recipients_enum_read ( const GpgmeRecipients rset, void **ctx )
     return NULL;
 }
 
+/**
+ * gpgme_recipients_enum_close:
+ * @rset: Recipient Set object
+ * @ctx: Enumerator
+ * 
+ * Release the enumerator @rset for this object.
+ * 
+ * Return value: 0 on success or %GPGME_Invalid_Value;
+ *
+ * See also: gpgme_recipients_enum_read(), gpgme_recipients_enum_close().
+ **/
 GpgmeError
 gpgme_recipients_enum_close ( const GpgmeRecipients rset, void **ctx )
 {

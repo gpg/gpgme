@@ -1,3 +1,7 @@
+2001-09-12  Werner Koch  <wk@gnupg.org>
+
+	* data.c (gpgme_data_rewind): Allow rewind for callbacks.
+
 2001-09-07  Werner Koch  <wk@gnupg.org>
 
 	* rungpg.h: Add NO_RECP.

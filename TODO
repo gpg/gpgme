@@ -10,5 +10,3 @@
 * Should --delete silently delete secret keys or is there a need for
   another flag or a callback?
 
-* There is no status response if we have no usable recipients - must
-  add one to gpg so that gpgme_encrypt does return with an error.

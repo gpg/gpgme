@@ -268,6 +268,14 @@ _gpgme_key_new_secret ( GpgmeKey *r_key )
     return key_new ( r_key, 1 );
 }
 
+
+/**
+ * gpgme_key_ref:
+ * @key: Key object
+ * 
+ * To safe memory the Key objects implement reference counting.
+ * Use this function to bump the reference counter.
+ **/
 void
 gpgme_key_ref ( GpgmeKey key )
 {
@@ -309,6 +317,17 @@ _gpgme_key_add_secret_subkey (GpgmeKey key)
     return add_subkey (key, 1);
 }
 
+
+
+/**
+ * gpgme_key_release:
+ * @key: Key Object or NULL
+ * 
+ * Release the key object. Note, that this function may not do an
+ * actual release if there are other shallow copies of the objects.
+ * You have to call this function for every newly created key object
+ * as well as for every gpgme_key_ref() done on the key object.
+ **/
 void
 gpgme_key_release ( GpgmeKey key )
 {
@@ -335,6 +354,12 @@ gpgme_key_release ( GpgmeKey key )
     xfree (key);
 }
 
+/**
+ * gpgme_key_unref:
+ * @key: Key Object
+ * 
+ * This is an alias for gpgme_key_release().
+ **/
 void
 gpgme_key_unref (GpgmeKey key)
 {
@@ -575,6 +600,16 @@ one_uid_as_xml (GpgmeData d, struct user_id_s *u)
 }
 
 
+/**
+ * gpgme_key_get_as_xml:
+ * @key: Key object
+ * 
+ * Return the key object as an XML string.  The classer has to free
+ * that string.
+ * 
+ * Return value:  An XML string or NULL in case of a memory problem or
+ *                a NULL passed as @key
+ **/
 char *
 gpgme_key_get_as_xml ( GpgmeKey key )
 {
@@ -665,6 +700,23 @@ capabilities_to_string (struct subkey_s *k)
                    | (!!k->flags.can_certify     ) ];
 }
 
+
+
+/**
+ * gpgme_key_get_string_attr:
+ * @key: Key Object
+ * @what: Attribute specifier
+ * @reserved: Must be 0
+ * @idx: Index counter
+ * 
+ * Return a attribute as specified by @what and @idx.  Note that not
+ * all attributes can be returned as a string, in which case NULL is
+ * returned.  @idx is used to iterate through attributes which do have
+ * more than one instance (e.g. user IDs or sub keys).
+ * 
+ * Return value: NULL or an const string which is only valid as long
+ * as the key object itself is valid.
+ **/
 const char *
 gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
                             const void *reserved, int idx )
@@ -767,6 +819,22 @@ gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
 }
 
 
+/**
+ * gpgme_key_get_ulong_attr:
+ * @key: 
+ * @what: 
+ * @reserved: 
+ * @idx: 
+ * 
+ * Return a attribute as specified by @what and @idx.  Note that not
+ * all attributes can be returned as an integer, in which case 0 is
+ * returned.  @idx is used to iterate through attributes which do have
+ * more than one instance (e.g. user IDs or sub keys).
+ *
+ * See gpgme.h for a list of attributes.
+ * 
+ * Return value: 0 or the requested value.
+ **/
 unsigned long
 gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
                            const void *reserved, int idx )
