@@ -97,7 +97,13 @@ int_vasprintf (result, format, args)
 	      total_width += 307;
 	      break;
 	    case 's':
-	      total_width += strlen (va_arg (ap, char *));
+              {
+                char *tmp = va_arg (ap, char *);
+                if (tmp)
+                  total_width += strlen (tmp);
+                else /* in case the vsprintf does prints a text */
+                  total_width += 25; /* e.g. "(null pointer reference)" */
+              }
 	      break;
 	    case 'p':
 	    case 'n':
