@@ -28,89 +28,80 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include "gpgme.h"
 #include "util.h"
 #include "context.h"
 #include "ops.h"
-#include "key.h"
 #include "debug.h"
 
 
-struct keylist_result
+struct key_queue_item_s
 {
-  int truncated;
-  GpgmeData xmlinfo;
+  struct key_queue_item_s *next;
+  GpgmeKey key;
 };
-typedef struct keylist_result *KeylistResult;
+
+typedef struct
+{
+  struct _gpgme_op_keylist_result result;
+
+  GpgmeKey tmp_key;
+  GpgmeUserID tmp_uid;
+  /* Something new is available.  */
+  int key_cond;
+  struct key_queue_item_s *key_queue;
+} *op_data_t;
+
 
 static void
-release_keylist_result (void *hook)
+release_op_data (void *hook)
 {
-  KeylistResult result = (KeylistResult) hook;
+  op_data_t opd = (op_data_t) hook;
+  struct key_queue_item_s *key = opd->key_queue;
 
-  if (result->xmlinfo)
-    gpgme_data_release (result->xmlinfo);
+  if (opd->tmp_key)
+    gpgme_key_unref (opd->tmp_key);
+  if (opd->tmp_uid)
+    free (opd->tmp_uid);
+  while (key)
+    {
+      struct key_queue_item_s *next = key->next;
+
+      gpgme_key_unref (key->key);
+      key = next;
+    }
 }
 
 
-/* Append some XML info.  args is currently ignore but we might want
-   to add more information in the future (like source of the
-   keylisting.  With args of NULL the XML structure is closed.  */
-static void
-append_xml_keylistinfo (GpgmeData *rdh, char *args)
+GpgmeKeyListResult
+gpgme_op_keylist_result (GpgmeCtx ctx)
 {
-  GpgmeData dh;
-
-  if (!*rdh)
-    {
-      if (gpgme_data_new (rdh))
-	return; /* FIXME: We are ignoring out-of-core.  */
-      dh = *rdh;
-      _gpgme_data_append_string (dh, "<GnupgOperationInfo>\n");
-    }
-  else
-    {
-      dh = *rdh;
-      _gpgme_data_append_string (dh, "  </keylisting>\n");
-    }
-
-  if (!args)
-    {
-      /* Just close the XML containter.  */
-      _gpgme_data_append_string (dh, "</GnupgOperationInfo>\n");
-      return;
-    }
-
-  _gpgme_data_append_string (dh, "  <keylisting>\n    <truncated/>\n");
-    
-}
-
-
-static GpgmeError
-keylist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
-{
+  op_data_t opd;
   GpgmeError err;
-  KeylistResult result;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &result,
-			       sizeof (*result), release_keylist_result);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
+  if (err || !opd)
+    return NULL;
+
+  return &opd->result;
+}
+
+
+static GpgmeError
+keylist_status_handler (void *priv, GpgmeStatusCode code, char *args)
+{
+  GpgmeCtx ctx = (GpgmeCtx) priv;
+  GpgmeError err;
+  op_data_t opd;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
   if (err)
     return err;
 
   switch (code)
     {
     case GPGME_STATUS_TRUNCATED:
-      result->truncated = 1;
-      break;
-
-    case GPGME_STATUS_EOF:
-      if (result->truncated)
-        append_xml_keylistinfo (&result->xmlinfo, "1");
-      if (result->xmlinfo)
-	{
-	  append_xml_keylistinfo (&result->xmlinfo, NULL);
-	  _gpgme_set_op_info (ctx, result->xmlinfo);
-	  result->xmlinfo = NULL;
-        }
+      opd->result.truncated = 1;
       break;
 
     default:
@@ -139,21 +130,21 @@ set_mainkey_trust_info (GpgmeKey key, const char *src)
       switch (*src)
 	{
 	case 'e':
-	  key->keys.flags.expired = 1;
+	  key->subkeys->expired = 1;
 	  break;
 
 	case 'r':
-	  key->keys.flags.revoked = 1;
+	  key->subkeys->revoked = 1;
 	  break;
 
 	case 'd':
           /* Note that gpg 1.3 won't print that anymore but only uses
              the capabilities field. */
-	  key->keys.flags.disabled = 1;
+	  key->subkeys->disabled = 1;
 	  break;
 
 	case 'i':
-	  key->keys.flags.invalid = 1;
+	  key->subkeys->invalid = 1;
 	  break;
         }
       src++;
@@ -164,7 +155,7 @@ set_mainkey_trust_info (GpgmeKey key, const char *src)
 static void
 set_userid_flags (GpgmeKey key, const char *src)
 {
-  struct user_id_s *uid = key->last_uid;
+  GpgmeUserID uid = key->_last_uid;
 
   assert (uid);
   /* Look at letters and stop at the first digit.  */
@@ -202,7 +193,7 @@ set_userid_flags (GpgmeKey key, const char *src)
 
 
 static void
-set_subkey_trust_info (struct subkey_s *subkey, const char *src)
+set_subkey_trust_info (GpgmeSubkey subkey, const char *src)
 {
   /* Look at letters and stop at the first digit.  */
   while (*src && !isdigit (*src))
@@ -210,19 +201,19 @@ set_subkey_trust_info (struct subkey_s *subkey, const char *src)
       switch (*src)
 	{
 	case 'e':
-	  subkey->flags.expired = 1;
+	  subkey->expired = 1;
 	  break;
 
 	case 'r':
-	  subkey->flags.revoked = 1;
+	  subkey->revoked = 1;
 	  break;
 
 	case 'd':
-	  subkey->flags.disabled = 1;
+	  subkey->disabled = 1;
 	  break;
 
 	case 'i':
-	  subkey->flags.invalid = 1;
+	  subkey->invalid = 1;
 	  break;
         }
       src++;
@@ -238,15 +229,15 @@ set_mainkey_capability (GpgmeKey key, const char *src)
       switch (*src)
 	{
 	case 'e':
-	  key->keys.flags.can_encrypt = 1;
+	  key->subkeys->can_encrypt = 1;
 	  break;
 
 	case 's':
-	  key->keys.flags.can_sign = 1;
+	  key->subkeys->can_sign = 1;
 	  break;
 
 	case 'c':
-	  key->keys.flags.can_certify = 1;
+	  key->subkeys->can_certify = 1;
 	  break;
 
         case 'd':
@@ -256,19 +247,19 @@ set_mainkey_capability (GpgmeKey key, const char *src)
              and D, so that a future gpg version will be able to
              disable certain subkeys. Currently it is expected that
              gpg sets this for the primary key. */
-       	  key->keys.flags.disabled = 1;
+       	  key->subkeys->disabled = 1;
           break;
 
 	case 'E':
-	  key->gloflags.can_encrypt = 1;
+	  key->can_encrypt = 1;
 	  break;
 
 	case 'S':
-	  key->gloflags.can_sign = 1;
+	  key->can_sign = 1;
 	  break;
 
 	case 'C':
-	  key->gloflags.can_certify = 1;
+	  key->can_certify = 1;
 	  break;
         }
       src++;
@@ -277,22 +268,22 @@ set_mainkey_capability (GpgmeKey key, const char *src)
 
 
 static void
-set_subkey_capability (struct subkey_s *subkey, const char *src)
+set_subkey_capability (GpgmeSubkey subkey, const char *src)
 {
   while (*src)
     {
       switch (*src)
 	{
 	case 'e':
-	  subkey->flags.can_encrypt = 1;
+	  subkey->can_encrypt = 1;
 	  break;
 
 	case 's':
-	  subkey->flags.can_sign = 1;
+	  subkey->can_sign = 1;
 	  break;
 
 	case 'c':
-	  subkey->flags.can_certify = 1;
+	  subkey->can_certify = 1;
 	  break;
         }
       src++;
@@ -308,23 +299,23 @@ set_ownertrust (GpgmeKey key, const char *src)
       switch (*src)
 	{
 	case 'n':
-	  key->otrust = GPGME_VALIDITY_NEVER;
+	  key->owner_trust = GPGME_VALIDITY_NEVER;
 	  break;
 
 	case 'm':
-	  key->otrust = GPGME_VALIDITY_MARGINAL;
+	  key->owner_trust = GPGME_VALIDITY_MARGINAL;
 	  break;
 
 	case 'f':
-	  key->otrust = GPGME_VALIDITY_FULL;
+	  key->owner_trust = GPGME_VALIDITY_FULL;
 	  break;
 
 	case 'u':
-	  key->otrust = GPGME_VALIDITY_ULTIMATE;
+	  key->owner_trust = GPGME_VALIDITY_ULTIMATE;
 	  break;
 
         default:
-	  key->otrust = GPGME_VALIDITY_UNKNOWN;
+	  key->owner_trust = GPGME_VALIDITY_UNKNOWN;
 	  break;
         }
       src++;
@@ -332,14 +323,14 @@ set_ownertrust (GpgmeKey key, const char *src)
 }
 
 
-/* We have read an entire key into ctx->tmp_key and should now finish
-   it.  It is assumed that this releases ctx->tmp_key.  */
+/* We have read an entire key into tmp_key and should now finish it.
+   It is assumed that this releases tmp_key.  */
 static void
-finish_key (GpgmeCtx ctx)
+finish_key (GpgmeCtx ctx, op_data_t opd)
 {
-  GpgmeKey key = ctx->tmp_key;
+  GpgmeKey key = opd->tmp_key;
 
-  ctx->tmp_key = NULL;
+  opd->tmp_key = NULL;
 
   if (key)
     _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_NEXT_KEY, key);
@@ -348,28 +339,37 @@ finish_key (GpgmeCtx ctx)
 
 /* Note: We are allowed to modify LINE.  */
 static GpgmeError
-keylist_colon_handler (GpgmeCtx ctx, char *line)
+keylist_colon_handler (void *priv, char *line)
 {
+  GpgmeCtx ctx = (GpgmeCtx) priv;
   enum
     {
-      RT_NONE, RT_SIG, RT_UID, RT_SUB, RT_PUB, RT_FPR, RT_SSB, RT_SEC,
-      RT_CRT, RT_CRS, RT_REV
+      RT_NONE, RT_SIG, RT_UID, RT_SUB, RT_PUB, RT_FPR,
+      RT_SSB, RT_SEC, RT_CRT, RT_CRS, RT_REV
     }
   rectype = RT_NONE;
 #define NR_FIELDS 13
   char *field[NR_FIELDS];
   int fields = 0;
-  GpgmeKey key = ctx->tmp_key;
-  struct subkey_s *subkey = NULL;
-  struct certsig_s *certsig = NULL;
+  op_data_t opd;
+  GpgmeError err;
+  GpgmeKey key;
+  GpgmeSubkey subkey = NULL;
+  GpgmeKeySig keysig = NULL;
 
   DEBUG3 ("keylist_colon_handler ctx = %p, key = %p, line = %s\n",
 	  ctx, key, line ? line : "(null)");
 
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
+  if (err)
+    return err;
+
+  key = opd->tmp_key;
+
   if (!line)
     {
       /* End Of File.  */
-      finish_key (ctx);
+      finish_key (ctx, opd);
       return 0;
     }
 
@@ -385,67 +385,22 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
     rectype = RT_SIG;
   else if (!strcmp (field[0], "rev"))
     rectype = RT_REV;
+  else if (!strcmp (field[0], "pub"))
+    rectype = RT_PUB;
+  else if (!strcmp (field[0], "sec"))
+    rectype = RT_SEC;
+  else if (!strcmp (field[0], "crt"))
+    rectype = RT_CRT;
+  else if (!strcmp (field[0], "crs"))
+    rectype = RT_CRS;
+  else if (!strcmp (field[0], "fpr") && key) 
+    rectype = RT_FPR;
   else if (!strcmp (field[0], "uid") && key)
     rectype = RT_UID;
   else if (!strcmp (field[0], "sub") && key)
-    {
-      /* Start a new subkey.  */
-      rectype = RT_SUB; 
-      if (!(subkey = _gpgme_key_add_subkey (key)))
-	return GPGME_Out_Of_Core;
-    }
+    rectype = RT_SUB; 
   else if (!strcmp (field[0], "ssb") && key)
-    {
-      /* Start a new secret subkey.  */
-      rectype = RT_SSB;
-      if (!(subkey = _gpgme_key_add_secret_subkey (key)))
-	return GPGME_Out_Of_Core;
-    }
-  else if (!strcmp (field[0], "pub"))
-    {
-      /* Start a new keyblock.  */
-      if (_gpgme_key_new (&key))
-	/* The only kind of error we can get.  */
-	return GPGME_Out_Of_Core;
-      rectype = RT_PUB;
-      finish_key (ctx);
-      assert (!ctx->tmp_key);
-      ctx->tmp_key = key;
-    }
-  else if (!strcmp (field[0], "sec"))
-    {
-      /* Start a new keyblock,  */
-      if (_gpgme_key_new_secret (&key))
-	return GPGME_Out_Of_Core;
-      rectype = RT_SEC;
-      finish_key (ctx);
-      assert (!ctx->tmp_key);
-      ctx->tmp_key = key;
-    }
-  else if (!strcmp (field[0], "crt"))
-    {
-      /* Start a new certificate.  */
-      if (_gpgme_key_new (&key))
-	return GPGME_Out_Of_Core;
-      key->x509 = 1;
-      rectype = RT_CRT;
-      finish_key (ctx);
-      assert (!ctx->tmp_key);
-      ctx->tmp_key = key;
-    }
-  else if (!strcmp (field[0], "crs"))
-    {
-      /* Start a new certificate.  */
-      if (_gpgme_key_new_secret (&key))
-	return GPGME_Out_Of_Core;
-      key->x509 = 1;
-      rectype = RT_CRS;
-      finish_key (ctx);
-      assert (!ctx->tmp_key);
-      ctx->tmp_key = key;
-    }
-  else if (!strcmp (field[0], "fpr") && key) 
-    rectype = RT_FPR;
+    rectype = RT_SSB;
   else 
     rectype = RT_NONE;
 
@@ -453,29 +408,32 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
      this, clear the user ID pointer when encountering anything but a
      signature.  */
   if (rectype != RT_SIG && rectype != RT_REV)
-    ctx->tmp_uid = NULL;
+    opd->tmp_uid = NULL;
 
   switch (rectype)
     {
-    case RT_CRT:
-    case RT_CRS:
-      /* Field 8 has the X.509 serial number.  */
-      if (fields >= 8)
-	{
-	  key->issuer_serial = strdup (field[7]);
-	  if (!key->issuer_serial)
-	    return GPGME_Out_Of_Core;
-	}
-
-      /* Field 10 is not used for gpg due to --fixed-list-mode option
-	 but GPGSM stores the issuer name.  */
-      if (fields >= 10 && _gpgme_decode_c_string (field[9],
-						  &key->issuer_name, 0))
-	return GPGME_Out_Of_Core;
-      /* Fall through!  */
-
     case RT_PUB:
     case RT_SEC:
+    case RT_CRT:
+    case RT_CRS:
+      /* Start a new keyblock.  */
+      err = _gpgme_key_new (&key);
+      if (err)
+	return err;
+      err = _gpgme_key_add_subkey (key, &subkey);
+      if (err)
+	{
+	  gpgme_key_unref (key);
+	  return err;
+	}
+
+      if (rectype == RT_SEC || rectype == RT_CRS)
+	key->secret = 1;
+      if (rectype == RT_CRT || rectype == RT_CRS)
+	key->protocol = GPGME_PROTOCOL_CMS;
+      finish_key (ctx, opd);
+      opd->tmp_key = key;
+
       /* Field 2 has the trust info.  */
       if (fields >= 2)
 	set_mainkey_trust_info (key, field[1]);
@@ -486,7 +444,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	  int i = atoi (field[2]);
 	  /* Ignore invalid values.  */
 	  if (i > 1)
-	    key->keys.key_len = i; 
+	    subkey->length = i; 
 	}
 
       /* Field 4 has the public key algorithm.  */
@@ -494,24 +452,38 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	{
 	  int i = atoi (field[3]);
 	  if (i >= 1 && i < 128)
-	    key->keys.key_algo = i;
+	    subkey->pubkey_algo = i;
 	}
 
       /* Field 5 has the long keyid.  */
-      if (fields >= 5 && strlen (field[4]) == DIM(key->keys.keyid) - 1)
-	strcpy (key->keys.keyid, field[4]);
+      if (fields >= 5 && strlen (field[4]) == DIM(subkey->_keyid) - 1)
+	strcpy (subkey->_keyid, field[4]);
 
       /* Field 6 has the timestamp (seconds).  */
       if (fields >= 6)
-	key->keys.timestamp = parse_timestamp (field[5]);
+	subkey->timestamp = parse_timestamp (field[5]);
 
       /* Field 7 has the expiration time (seconds).  */
       if (fields >= 7)
-	key->keys.expires_at = parse_timestamp (field[6]);
+	subkey->expires = parse_timestamp (field[6]);
 
+      /* Field 8 has the X.509 serial number.  */
+      if (fields >= 8 && (rectype == RT_CRT || rectype == RT_CRS))
+	{
+	  key->issuer_serial = strdup (field[7]);
+	  if (!key->issuer_serial)
+	    return GPGME_Out_Of_Core;
+	}
+	  
       /* Field 9 has the ownertrust.  */
       if (fields >= 9)
 	set_ownertrust (key, field[8]);
+
+      /* Field 10 is not used for gpg due to --fixed-list-mode option
+	 but GPGSM stores the issuer name.  */
+      if (fields >= 10 && (rectype == RT_CRT || rectype == RT_CRS))
+	if (_gpgme_decode_c_string (field[9], &key->issuer_name, 0))
+	  return GPGME_Out_Of_Core;
 
       /* Field 11 has the signature class.  */
 
@@ -522,6 +494,14 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 
     case RT_SUB:
     case RT_SSB:
+      /* Start a new subkey.  */
+      err = _gpgme_key_add_subkey (key, &subkey);
+      if (err)
+	return err;
+
+      if (rectype == RT_SSB)
+	subkey->secret = 1;
+
       /* Field 2 has the trust info.  */
       if (fields >= 2)
 	set_subkey_trust_info (subkey, field[1]);
@@ -532,7 +512,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	  int i = atoi (field[2]);
 	  /* Ignore invalid values.  */
 	  if (i > 1)
-	    subkey->key_len = i;
+	    subkey->length = i;
 	}
 
       /* Field 4 has the public key algorithm.  */
@@ -540,12 +520,12 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	{
 	  int i = atoi (field[3]);
 	  if (i >= 1 && i < 128)
-	    subkey->key_algo = i;
+	    subkey->pubkey_algo = i;
 	}
 
       /* Field 5 has the long keyid.  */
-      if (fields >= 5 && strlen (field[4]) == DIM(subkey->keyid) - 1)
-	strcpy (subkey->keyid, field[4]);
+      if (fields >= 5 && strlen (field[4]) == DIM(subkey->_keyid) - 1)
+	strcpy (subkey->_keyid, field[4]);
 
       /* Field 6 has the timestamp (seconds).  */
       if (fields >= 6)
@@ -553,7 +533,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 
       /* Field 7 has the expiration time (seconds).  */
       if (fields >= 7)
-	subkey->expires_at = parse_timestamp (field[6]);
+	subkey->expires = parse_timestamp (field[6]);
 
       /* Field 8 is reserved (LID).  */
       /* Field 9 has the ownertrust.  */
@@ -576,17 +556,17 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	    {
 	      if (field[1])
 		set_userid_flags (key, field[1]);
-	      ctx->tmp_uid = key->last_uid;
+	      opd->tmp_uid = key->_last_uid;
 	    }
 	}
       break;
 
     case RT_FPR:
       /* Field 10 has the fingerprint (take only the first one).  */
-      if (fields >= 10 && !key->keys.fingerprint && field[9] && *field[9])
+      if (fields >= 10 && !key->subkeys->fpr && field[9] && *field[9])
 	{
-	  key->keys.fingerprint = strdup (field[9]);
-	  if (!key->keys.fingerprint)
+	  key->subkeys->fpr = strdup (field[9]);
+	  if (!key->subkeys->fpr)
 	    return GPGME_Out_Of_Core;
 	}
 
@@ -601,13 +581,13 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 
     case RT_SIG:
     case RT_REV:
-      if (!ctx->tmp_uid)
+      if (!opd->tmp_uid)
 	return 0;
 
       /* Start a new (revoked) signature.  */
-      assert (ctx->tmp_uid == key->last_uid);
-      certsig = _gpgme_key_add_certsig (key, (fields >= 10) ? field[9] : NULL);
-      if (!certsig)
+      assert (opd->tmp_uid == key->_last_uid);
+      keysig = _gpgme_key_add_sig (key, (fields >= 10) ? field[9] : NULL);
+      if (!keysig)
 	return GPGME_Out_Of_Core;
 
       /* Field 2 has the calculated trust ('!', '-', '?', '%').  */
@@ -615,23 +595,23 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	switch (field[1][0])
 	  {
 	  case '!':
-	    certsig->sig_stat = GPGME_SIG_STAT_GOOD;
+	    keysig->status = GPGME_No_Error;
 	    break;
 
 	  case '-':
-	    certsig->sig_stat = GPGME_SIG_STAT_BAD;
+	    keysig->status = GPGME_Bad_Signature;
 	    break;
 
 	  case '?':
-	    certsig->sig_stat = GPGME_SIG_STAT_NOKEY;
+	    keysig->status = GPGME_No_Public_Key;
 	    break;
 
 	  case '%':
-	    certsig->sig_stat = GPGME_SIG_STAT_ERROR;
+	    keysig->status = GPGME_General_Error;
 	    break;
 
 	  default:
-	    certsig->sig_stat = GPGME_SIG_STAT_NONE;
+	    keysig->status = GPGME_No_Error;
 	    break;
 	  }
 
@@ -640,20 +620,20 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	{
 	  int i = atoi (field[3]);
 	  if (i >= 1 && i < 128)
-	    certsig->algo = i;
+	    keysig->pubkey_algo = i;
 	}
       
       /* Field 5 has the long keyid.  */
-      if (fields >= 5 && strlen (field[4]) == DIM(certsig->keyid) - 1)
-	strcpy (certsig->keyid, field[4]);
+      if (fields >= 5 && strlen (field[4]) == DIM(keysig->_keyid) - 1)
+	strcpy (keysig->_keyid, field[4]);
       
       /* Field 6 has the timestamp (seconds).  */
       if (fields >= 6)
-	certsig->timestamp = parse_timestamp (field[5]);
+	keysig->timestamp = parse_timestamp (field[5]);
 
       /* Field 7 has the expiration time (seconds).  */
       if (fields >= 7)
-	certsig->expires_at = parse_timestamp (field[6]);
+	keysig->expires = parse_timestamp (field[6]);
 
       /* Field 11 has the signature class (eg, 0x30 means revoked).  */
       if (fields >= 11)
@@ -662,12 +642,12 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	    int class = _gpgme_hextobyte (field[10]);
 	    if (class >= 0)
 	      {
-		certsig->sig_class = class;
+		keysig->class = class;
 		if (class == 0x30)
-		  certsig->flags.revoked = 1;
+		  keysig->revoked = 1;
 	      }
 	    if (field[10][2] == 'x')
-	      certsig->flags.exportable = 1;
+	      keysig->exportable = 1;
 	  }
       break;
 
@@ -682,162 +662,134 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 void
 _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data)
 {
+  GpgmeError err;
   GpgmeCtx ctx = (GpgmeCtx) data;
   GpgmeKey key = (GpgmeKey) type_data;
+  op_data_t opd;
   struct key_queue_item_s *q, *q2;
 
   assert (type == GPGME_EVENT_NEXT_KEY);
 
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
+  if (err)
+    return;
+
   q = malloc (sizeof *q);
   if (!q)
     {
-      gpgme_key_release (key);
+      gpgme_key_unref (key);
       /* FIXME       return GPGME_Out_Of_Core; */
       return;
     }
   q->key = key;
   q->next = NULL;
-  /* FIXME: Lock queue.  Use a tail pointer?  */
-  if (!(q2 = ctx->key_queue))
-    ctx->key_queue = q;
+  /* FIXME: Use a tail pointer?  */
+  if (!(q2 = opd->key_queue))
+    opd->key_queue = q;
   else
     {
       for (; q2->next; q2 = q2->next)
 	;
       q2->next = q;
     }
-  ctx->key_cond = 1;
-  /* FIXME: Unlock queue.  */
+  opd->key_cond = 1;
 }
 
 
-/**
- * gpgme_op_keylist_start:
- * @c: context 
- * @pattern: a GnuPG user ID or NULL for all
- * @secret_only: List only keys where the secret part is available
- * 
- * Note that this function also cancels a pending key listing
- * operaton. To actually retrieve the key, use
- * gpgme_op_keylist_next().
- * 
- * Return value:  0 on success or an errorcode. 
- **/
+/* Start a keylist operation within CTX, searching for keys which
+   match PATTERN.  If SECRET_ONLY is true, only secret keys are
+   returned.  */
 GpgmeError
 gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
 {
-  GpgmeError err = 0;
+  GpgmeError err;
+  op_data_t opd;
 
   err = _gpgme_op_reset (ctx, 2);
   if (err)
-    goto leave;
+    return err;
 
-  gpgme_key_release (ctx->tmp_key);
-  ctx->tmp_key = NULL;
-  /* Fixme: Release key_queue.  */
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd,
+			       sizeof (*opd), release_op_data);
+  if (err)
+    return err;
 
   _gpgme_engine_set_status_handler (ctx->engine, keylist_status_handler, ctx);
+
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
 					      keylist_colon_handler, ctx);
   if (err)
-    goto leave;
+    return err;
 
-  err = _gpgme_engine_op_keylist (ctx->engine, pattern, secret_only,
-				  ctx->keylist_mode);
-
- leave:
-  if (err)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
-  return err;
+  return _gpgme_engine_op_keylist (ctx->engine, pattern, secret_only,
+				   ctx->keylist_mode);
 }
 
 
-/**
- * gpgme_op_keylist_ext_start:
- * @c: context 
- * @pattern: a NULL terminated array of search patterns
- * @secret_only: List only keys where the secret part is available
- * @reserved: Should be 0.
- * 
- * Note that this function also cancels a pending key listing
- * operaton. To actually retrieve the key, use
- * gpgme_op_keylist_next().
- * 
- * Return value:  0 on success or an errorcode. 
- **/
+/* Start a keylist operation within CTX, searching for keys which
+   match PATTERN.  If SECRET_ONLY is true, only secret keys are
+   returned.  */
 GpgmeError
 gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
 			    int secret_only, int reserved)
 {
-  GpgmeError err = 0;
+  GpgmeError err;
+  op_data_t opd;
 
   err = _gpgme_op_reset (ctx, 2);
   if (err)
-    goto leave;
+    return err;
 
-  gpgme_key_release (ctx->tmp_key);
-  ctx->tmp_key = NULL;
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd,
+			       sizeof (*opd), release_op_data);
+  if (err)
+    return err;
 
   _gpgme_engine_set_status_handler (ctx->engine, keylist_status_handler, ctx);
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
 					      keylist_colon_handler, ctx);
   if (err)
-    goto leave;
+    return err;
 
-  err = _gpgme_engine_op_keylist_ext (ctx->engine, pattern, secret_only,
-				      reserved, ctx->keylist_mode);
-
- leave:
-  if (err)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
-  return err;
+  return _gpgme_engine_op_keylist_ext (ctx->engine, pattern, secret_only,
+				       reserved, ctx->keylist_mode);
 }
 
 
-/**
- * gpgme_op_keylist_next:
- * @c: Context
- * @r_key: Returned key object
- * 
- * Return the next key from the key listing started with
- * gpgme_op_keylist_start().  The caller must free the key using
- * gpgme_key_release().  If the last key has already been returned the
- * last time the function was called, %GPGME_EOF is returned and the
- * operation is finished.
- * 
- * Return value: 0 on success, %GPGME_EOF or another error code.
- **/
+/* Return the next key from the keylist in R_KEY.  */
 GpgmeError
 gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
 {
+  GpgmeError err;
   struct key_queue_item_s *queue_item;
+  op_data_t opd;
 
-  if (!r_key)
+  if (!ctx || !r_key)
     return GPGME_Invalid_Value;
   *r_key = NULL;
   if (!ctx)
     return GPGME_Invalid_Value;
 
-  if (!ctx->key_queue)
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
+  if (err)
+    return err;
+
+  if (!opd->key_queue)
     {
-      GpgmeError err = _gpgme_wait_on_condition (ctx, &ctx->key_cond);
+      err = _gpgme_wait_on_condition (ctx, &opd->key_cond);
       if (err)
 	return err;
-      if (!ctx->key_cond)
+
+      if (!opd->key_cond)
 	return GPGME_EOF;
-      ctx->key_cond = 0; 
-      assert (ctx->key_queue);
+
+      opd->key_cond = 0; 
+      assert (opd->key_queue);
     }
-  queue_item = ctx->key_queue;
-  ctx->key_queue = queue_item->next;
-  if (!ctx->key_queue)
-    ctx->key_cond = 0;
+  queue_item = opd->key_queue;
+  opd->key_queue = queue_item->next;
+  if (!opd->key_queue)
+    opd->key_cond = 0;
   
   *r_key = queue_item->key;
   free (queue_item);
@@ -845,13 +797,7 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
 }
 
 
-/**
- * gpgme_op_keylist_end:
- * @c: Context
- * 
- * Ends the keylist operation and allows to use the context for some
- * other operation next.
- **/
+/* Terminate a pending keylist operation within CTX.  */
 GpgmeError
 gpgme_op_keylist_end (GpgmeCtx ctx)
 {

@@ -1647,6 +1647,10 @@ source should be should be searched for keys in the keylisting
 operation.  The type of external source is dependant on the crypto
 engine used.  For example, it can be a remote keyserver or LDAP
 certificate server.
+
+@item GPGME_KEYLIST_MODE_SIGS
+The @code{GPGME_KEYLIST_MODE_SIGS} symbol specifies that the key
+signatures should be included in the listed keys.
 @end table
 
 At least one of @code{GPGME_KEYLIST_MODE_LOCAL} and
@@ -1785,11 +1789,230 @@ signers are specified.  This is always done by specifying the
 respective keys that should be used for the operation.  The following
 section describes how such keys can be selected and manipulated.
 
-@deftp {Data type} GpgmeKey
-The @code{GpgmeKey} type is a handle for a public or secret key, and
-is used to select the key for operations involving it.
+@deftp {Data type} GpgmeSubkey
+The @code{GpgmeSubKey} type is a pointer to a subkey structure.  Sub
+keys are one component of a @code{GpgmeKey} object.  In fact, subkeys
+are those parts that contains the real information about the
+individual cryptographic keys that belong to the same key object.  One
+@code{GpgmeKey} can contain several subkeys.  The first subkey in the
+linked list is also called the primary key.
 
-A key can contain several user IDs and sub keys.
+The subkey structure has the following members:
+
+@table @code
+@item GpgmeSubkey next
+This is a pointer to the next subkey structure in the linked list, or
+@code{NULL} if this is the last element.
+
+@item unsigned int revoked : 1
+This is true if the subkey is revoked.
+
+@item unsigned int expired : 1
+This is true if the subkey is expired.
+
+@item unsigned int disabled : 1
+This is true if the subkey is disabled.
+
+@item unsigned int invalid : 1
+This is true if the subkey is invalid.
+
+@item unsigned int can_encrypt : 1
+This is true if the subkey can be used for encryption.
+
+@item unsigned int can_sign : 1
+This is true if the subkey can be used for signing.
+
+@item unsigned int can_certify : 1
+This is true if the subkey can be used for certification.
+
+@item unsigned int secret : 1
+This is true if the subkey is a secret key.
+
+@item GpgmePubKeyAlgo pubkey_algo
+This is the public key algorithm supported by this subkey.
+
+@item unsigned int length
+This is the length of the subkey (in bits).
+
+@item char *keyid
+This is the key ID of the subkey in hexadecimal digits.
+
+@item char *fpr
+This is the fingerprint of the subkey in hexadecimal digits, if
+available.  This is usually only available for the primary key.
+
+@item long int timestamp
+This is the creation timestamp of the subkey.  This is -1 if the
+timestamp is invalid, and 0 if it is not available.
+
+@item long int expires
+This is the expiration timestamp of the subkey, or 0 if the subkey
+does not expire.
+@end table
+@end deftp
+
+@deftp {Data type} GpgmeKeySig
+The @code{GpgmeKeySig} type is a pointer to a key signature structure.
+Key signatures are one component of a @code{GpgmeKey} object, and
+validate user IDs on the key.
+
+The signatures on a key are only available if the key was retrieved
+via a listing operation with the @code{GPGME_KEYLIST_MODE_SIGS} mode
+enabled, because it is expensive to retrieve all signatures of a key.
+
+The key signature structure has the following members:
+
+@table @code
+@item GpgmeKeySig next
+This is a pointer to the next key signature structure in the linked
+list, or @code{NULL} if this is the last element.
+
+@item unsigned int revoked : 1
+This is true if the key signature is a revocation signature.
+
+@item unsigned int expired : 1
+This is true if the key signature is expired.
+
+@item unsigned int invalid : 1
+This is true if the key signature is invalid.
+
+@item unsigned int disabled : 1
+This is true if the key signature is exportable.
+
+@item GpgmePubKeyAlgo pubkey_algo
+This is the public key algorithm used to create the signature.
+
+@item char *keyid
+This is the key ID of the key (in hexadecimal digits) used to create
+the signature.
+
+@item long int timestamp
+This is the creation timestamp of the key signature.  This is -1 if
+the timestamp is invalid, and 0 if it is not available.
+
+@item long int expires
+This is the expiration timestamp of the key signature, or 0 if the key
+signature does not expire.
+
+@item GpgmeError status
+This is the status of the signature and has the same meaning as the
+member of the same name in a @code{GpgmeSignature} object.
+
+@item unsigned int class
+This specifies the signature class of the key signature.  The meaning
+is specific to the crypto engine.
+
+@item char *uid
+This is the main user ID of the key used to create the signature.
+
+@item char *name
+This is the name component of @code{uid}, if available.
+
+@item char *comment
+This is the comment component of @code{uid}, if available.
+
+@item char *email
+This is the email component of @code{uid}, if available.
+@end table
+@end deftp
+
+@deftp {Data type} GpgmeUserID
+A user ID is a component of a @code{GpgmeKey} object.  One key can
+have many user IDs.  The first one in the list is the main (or
+primary) user ID.
+
+The user ID structure has the following members.
+
+@table @code
+@item GpgmeUserID next
+This is a pointer to the next user ID structure in the linked list, or
+@code{NULL} if this is the last element.
+
+@item unsigned int revoked : 1
+This is true if the user ID is revoked.
+
+@item unsigned int invalid : 1
+This is true if the user ID is invalid.
+
+@item GpgmeValidity validity
+This specifies the validity of the user ID.
+
+@item char *uid
+This is the user ID string.
+
+@item char *name
+This is the name component of @code{uid}, if available.
+
+@item char *comment
+This is the comment component of @code{uid}, if available.
+
+@item char *email
+This is the email component of @code{uid}, if available.
+
+@item GpgmeKeySig signatures
+This is a linked list with the signatures on this user ID.
+@end table
+@end deftp
+
+@deftp {Data type} GpgmeKey
+The @code{GpgmeKey} type is a pointer to a key object.  It has the
+following members:
+
+@table @code
+@item unsigned int revoked : 1
+This is true if the key is revoked.
+
+@item unsigned int expired : 1
+This is true if the key is expired.
+
+@item unsigned int disabled : 1
+This is true if the key is disabled.
+
+@item unsigned int invalid : 1
+This is true if the key is invalid.
+
+@item unsigned int can_encrypt : 1
+This is true if the key (ie one of its subkeys) can be used for
+encryption.
+
+@item unsigned int can_sign : 1
+This is true if the key (ie one of its subkeys) can be used for
+signing.
+
+@item unsigned int can_certify : 1
+This is true if the key (ie one of its subkeys) can be used for
+certification.
+
+@item unsigned int secret : 1
+This is true if the key is a secret key.
+
+@item GpgmeProtocol protocol
+This is the protocol supported by this key.
+
+@item char *issuer_serial
+If @code{protocol} is @code{GPGME_PROTOCOL_CMS}, then this is the
+issuer serial.
+
+@item char *issuer_name
+If @code{protocol} is @code{GPGME_PROTOCOL_CMS}, then this is the
+issuer name.
+
+@item char *chain_id
+If @code{protocol} is @code{GPGME_PROTOCOL_CMS}, then this is the
+chain ID, which can be used to built the certificate chain.
+ 
+@item GpgmeValidity owner_trust
+If @code{protocol} is @code{GPGME_PROTOCOL_OpenPGP}, then this is the
+owner trust.
+
+@item GpgmeSubkey subkeys
+This is a linked list with the subkeys of the key.  The first subkey
+in the list is the primary key and usually available.
+
+@item GpgmeUserID uids
+This is a linked list with the user IDs of the key.  The first user ID
+in the list is the main (or primary) user ID.
+@end table
 @end deftp
 
 @menu
@@ -1880,6 +2103,10 @@ there is not enough memory for the operation.
 The function @code{gpgme_op_keylist_next} ends a pending key list
 operation in the context @var{ctx}.
 
+After the operation completed successfully, the result of the key
+listing operation can be retrieved with
+@code{gpgme_op_keylist_result}.
+
 The function returns @code{GPGME_Invalid_Value} if @var{ctx} is not a
 valid pointer, and @code{GPGME_Out_Of_Core} if at some time during the
 operation there was not enough memory available.
@@ -1914,6 +2141,29 @@ if (err)
   @}
 @end example
 
+@deftp {Data type} {GpgmeKeyListResult}
+This is a pointer to a structure used to store the result of a
+@code{gpgme_op_keylist_*} operation.  After successfully ending a key
+listing operation, you can retrieve the pointer to the result with
+@code{gpgme_op_keylist_result}.  The structure contains the following
+member:
+
+@table @code
+@item unsigned int truncated : 1
+This is true if the crypto backend had to truncate the result, and
+less than the desired keys could be listed.
+@end table
+@end deftp
+
+@deftypefun GpgmeKeyListResult gpgme_op_keylist_result (@w{GpgmeCtx @var{ctx}})
+The function @code{gpgme_op_keylist_result} returns a
+@code{GpgmeKeyListResult} pointer to a structure holding the result of
+a @code{gpgme_op_keylist_*} operation.  The pointer is only valid if
+the last operation on the context was a key listing operation, and if
+this operation finished successfully.  The returned pointer is only
+valid until the next operation is started on the context.
+@end deftypefun
+
 In a simple program, for which a blocking operation is acceptable, the
 following function can be used to retrieve a single key.
 
@@ -1939,14 +2189,44 @@ available.
 @cindex key, attributes
 @cindex attributes, of a key
 
-@deftypefun {char *} gpgme_key_get_as_xml (@w{GpgmeKey @var{key}})
-The function @code{gpgme_key_get_as_xml} returns a string in
-@acronym{XML} format describing the key @var{key}.  The user has to
-release the string with @code{free}.
+Please see the beginning of this section for more information about
+@code{GpgmeKey} objects.
 
-The function returns @code{NULL} if @var{key} is not a valid pointer,
-or there is not enough memory available.
-@end deftypefun
+@deftp {Data type} GpgmeValidity
+The @code{GpgmeValidity} type is used to specify the validity of a user ID
+in a key.  The following validities are defined:
+
+@table @code
+@item GPGME_VALIDITY_UNKNOWN
+The user ID is of unknown validity.  The string representation of this
+validity is ``?''.
+
+@item GPGME_VALIDITY_UNDEFINED
+The validity of the user ID is undefined.  The string representation of this
+validity is ``q''.
+
+@item GPGME_VALIDITY_NEVER
+The user ID is never valid.  The string representation of this
+validity is ``n''.
+
+@item GPGME_VALIDITY_MARGINAL
+The user ID is marginally valid.  The string representation of this
+validity is ``m''.
+
+@item GPGME_VALIDITY_FULL
+The user ID is fully valid.  The string representation of this
+validity is ``f''.
+
+@item GPGME_VALIDITY_ULTIMATE
+The user ID is ultimately valid.  The string representation of this
+validity is ``u''.
+@end table
+@end deftp
+
+
+The following interfaces are deprecated and only provided for backward
+compatibility.  Don't use them.  They will be removed in a future
+version of @acronym{GPGME}.
 
 @deftp {Data type} GpgmeAttr
 The @code{GpgmeAttr} type is used to specify a key or trust item
@@ -2080,37 +2360,6 @@ is representable as a string.
 @end table
 @end deftp
 
-@deftp {Data type} GpgmeValidity
-The @code{GpgmeValidity} type is used to specify the validity of a user ID
-in a key.  The following validities are defined:
-
-@table @code
-@item GPGME_VALIDITY_UNKNOWN
-The user ID is of unknown validity.  The string representation of this
-validity is ``?''.
-
-@item GPGME_VALIDITY_UNDEFINED
-The validity of the user ID is undefined.  The string representation of this
-validity is ``q''.
-
-@item GPGME_VALIDITY_NEVER
-The user ID is never valid.  The string representation of this
-validity is ``n''.
-
-@item GPGME_VALIDITY_MARGINAL
-The user ID is marginally valid.  The string representation of this
-validity is ``m''.
-
-@item GPGME_VALIDITY_FULL
-The user ID is fully valid.  The string representation of this
-validity is ``f''.
-
-@item GPGME_VALIDITY_ULTIMATE
-The user ID is ultimately valid.  The string representation of this
-validity is ``u''.
-@end table
-@end deftp
-
 @deftypefun {const char *} gpgme_key_get_string_attr (@w{GpgmeKey @var{key}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
 The function @code{gpgme_key_get_string_attr} returns the value of the
 string-representable attribute @var{what} of key @var{key}.  If the
@@ -2144,6 +2393,10 @@ or @var{reserved} not @code{NULL}.
 @subsection Key Signatures
 @cindex key, signatures
 @cindex signatures, on a key
+
+The following interfaces are deprecated and only provided for backward
+compatibility.  Don't use them.  They will be removed in a future
+version of @acronym{GPGME}.
 
 The signatures on a key are only available if the key was retrieved
 via a listing operation with the @code{GPGME_KEYLIST_MODE_SIGS} mode
@@ -2253,12 +2506,18 @@ the key @var{key}.
 @end deftypefun
 
 @deftypefun void gpgme_key_unref (@w{GpgmeKey @var{key}})
-@deftypefunx void gpgme_key_release (@w{GpgmeKey @var{key}})
 The function @code{gpgme_key_unref} releases a reference for the key
 @var{key}.  If this was the last reference, the key will be destroyed
 and all resources associated to it will be released.
+@end deftypefun
 
-The function @code{gpgme_key_release} is an alias for
+
+The following interface is deprecated and only provided for backward
+compatibility.  Don't use it.  It will be removed in a future version
+of @acronym{GPGME}.
+
+@deftypefun void gpgme_key_release (@w{GpgmeKey @var{key}})
+The function @code{gpgme_key_release} is equivalent to
 @code{gpgme_key_unref}.
 @end deftypefun
 
@@ -2610,10 +2869,10 @@ value of 2 refers to a user ID.
 @item int level
 This is the trust level.
 
-@item char *otrust
+@item char *owner_trust
 The owner trust if @code{type} is 1.
 
-@item char *val
+@item char *validity
 The calculated validity.
 
 @item char *name

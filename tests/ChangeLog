@@ -1,3 +1,12 @@
+2003-04-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-keylist.c: Rewritten.
+	* gpgsm/t-keylist.c (main): Rewritten.
+	* gpg/t-edit.c (main): Do not use gpgme_key_get_as_xml.  Use
+	gpgme_key_unref instead gpgme_key_release.
+	* gpg/t-signers.c (main): Use gpgme_key_unref instead
+	gpgme_key_release.
+
 2003-04-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-trustlist.c: Rewritten.

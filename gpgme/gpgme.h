@@ -63,10 +63,8 @@ typedef struct gpgme_data_s *GpgmeData;
 struct gpgme_recipients_s;
 typedef struct gpgme_recipients_s *GpgmeRecipients;
 
-/* A key from the keyring.  */
-struct gpgme_key_s;
-typedef struct gpgme_key_s *GpgmeKey;
-
+
+/* Public data types provided by GPGME.  */
 
 /* The error numbers used by GPGME.  */
 typedef enum
@@ -343,6 +341,7 @@ typedef enum
   }
 GpgmeStatusCode;
 
+
 /* The engine information structure.  */
 struct _gpgme_engine_info
 {
@@ -362,7 +361,221 @@ struct _gpgme_engine_info
 };
 typedef struct _gpgme_engine_info *GpgmeEngineInfo;
 
+
+/* A subkey from a key.  */
+struct _gpgme_subkey
+{
+  struct _gpgme_subkey *next;
 
+  /* True if subkey is revoked.  */
+  unsigned int revoked : 1;
+
+  /* True if subkey is expired.  */
+  unsigned int expired : 1;
+
+  /* True if subkey is disabled.  */
+  unsigned int disabled : 1;
+
+  /* True if subkey is invalid.  */
+  unsigned int invalid : 1;
+
+  /* True if subkey can be used for encryption.  */
+  unsigned int can_encrypt : 1;
+
+  /* True if subkey can be used for signing.  */
+  unsigned int can_sign : 1;
+
+  /* True if subkey can be used for certification.  */
+  unsigned int can_certify : 1;
+
+  /* True if subkey is secret.  */
+  unsigned int secret : 1;
+
+  /* Internal to GPGME, do not use.  */
+  unsigned int _unused : 24;
+  
+  /* Public key algorithm supported by this subkey.  */
+  GpgmePubKeyAlgo pubkey_algo;
+
+  /* Length of the subkey.  */
+  unsigned int length;
+
+  /* The key ID of the subkey.  */
+  char *keyid;
+
+  /* Internal to GPGME, do not use.  */
+  char _keyid[16 + 1];
+
+  /* The fingerprint of the subkey in hex digit form.  */
+  char *fpr;
+
+  /* The creation timestamp, -1 if invalid, 0 if not available.  */
+  long int timestamp;
+
+  /* The expiration timestamp, 0 if the subkey does not expire.  */
+  long int expires;
+};
+typedef struct _gpgme_subkey *GpgmeSubkey;
+
+/* A signature on a user ID.  */
+struct _gpgme_key_sig
+{
+  struct _gpgme_key_sig *next;
+
+  /* True if the signature is revoked.  */
+  unsigned int revoked : 1;
+
+  /* True if the signature is expired.  */
+  unsigned int expired : 1;
+
+  /* True if the signature is invalid.  */
+  unsigned int invalid : 1;
+
+  /* True if the signature should be exported.  */
+  unsigned int exportable : 1;
+
+  /* Internal to GPGME, do not use.  */
+  unsigned int _unused : 28;
+
+  /* The public key algorithm used to create the signature.  */
+  GpgmePubKeyAlgo pubkey_algo;
+
+  /* The key ID of key used to create the signature.  */
+  char *keyid;
+
+  /* Internal to GPGME, do not use.  */
+  char _keyid[16 + 1];
+
+  /* The creation timestamp, -1 if invalid, 0 if not available.  */
+  long int timestamp;
+
+  /* The expiration timestamp, 0 if the subkey does not expire.  */
+  long int expires;
+
+  /* Same as in GpgmeSignature.  */
+  GpgmeError status;
+
+  /* Crypto backend specific signature class.  */
+  unsigned int class;
+
+  /* The user ID string.  */
+  char *uid;
+
+  /* The name part of the user ID.  */
+  char *name;
+
+  /* The email part of the user ID.  */
+  char *email;
+
+  /* The comment part of the user ID.  */
+  char *comment;
+};
+typedef struct _gpgme_key_sig *GpgmeKeySig;
+
+/* An user ID from a key.  */
+struct _gpgme_user_id
+{
+  struct _gpgme_user_id *next;
+
+  /* True if the user ID is revoked.  */
+  unsigned int revoked : 1;
+
+  /* True if the user ID is invalid.  */
+  unsigned int invalid : 1;
+
+  /* Internal to GPGME, do not use.  */
+  unsigned int _unused : 30;
+
+  /* The validity of the user ID.  */
+  GpgmeValidity validity; 
+
+  /* The user ID string.  */
+  char *uid;
+
+  /* The name part of the user ID.  */
+  char *name;
+
+  /* The email part of the user ID.  */
+  char *email;
+
+  /* The comment part of the user ID.  */
+  char *comment;
+
+  /* The signatures of the user ID.  */
+  GpgmeKeySig signatures;
+
+  /* Internal to GPGME, do not use.  */
+  GpgmeKeySig _last_keysig;
+};
+typedef struct _gpgme_user_id *GpgmeUserID;
+
+/* A key from the keyring.  */
+struct _gpgme_key
+{
+  /* Internal to GPGME, do not use.  */
+  unsigned int _refs;
+
+  /* True if key is revoked.  */
+  unsigned int revoked : 1;
+
+  /* True if key is expired.  */
+  unsigned int expired : 1;
+
+  /* True if key is disabled.  */
+  unsigned int disabled : 1;
+
+  /* True if key is invalid.  */
+  unsigned int invalid : 1;
+
+  /* True if key can be used for encryption.  */
+  unsigned int can_encrypt : 1;
+
+  /* True if key can be used for signing.  */
+  unsigned int can_sign : 1;
+
+  /* True if key can be used for certification.  */
+  unsigned int can_certify : 1;
+
+  /* True if key is secret.  */
+  unsigned int secret : 1;
+
+  /* Internal to GPGME, do not use.  */
+  unsigned int _unused : 24;
+
+  /* This is the protocol supported by this key.  */
+  GpgmeProtocol protocol;
+
+  /* If protocol is GPGME_PROTOCOL_CMS, this string contains the
+     issuer serial.  */
+  char *issuer_serial;
+
+  /* If protocol is GPGME_PROTOCOL_CMS, this string contains the
+     issuer name.  */
+  char *issuer_name;
+
+  /* If protocol is GPGME_PROTOCOL_CMS, this string contains the chain
+     ID.  */
+  char *chain_id;
+
+  /* If protocol is GPGME_PROTOCOL_OpenPGP, this field contains the
+     owner trust.  */
+  GpgmeValidity owner_trust;
+
+  /* The subkeys of the key.  */
+  GpgmeSubkey subkeys;
+
+  /* The user IDs of the key.  */
+  GpgmeUserID uids;
+
+  /* Internal to GPGME, do not use.  */
+  GpgmeSubkey _last_subkey;
+
+  /* Internal to GPGME, do not use.  */
+  GpgmeUserID _last_uid;
+};
+typedef struct _gpgme_key *GpgmeKey;
+
+
 /* Types for callback functions.  */
 
 /* Request a passphrase from the user.  */
@@ -692,10 +905,6 @@ void gpgme_key_ref (GpgmeKey key);
    destroyed.  */
 void gpgme_key_unref (GpgmeKey key);
 void gpgme_key_release (GpgmeKey key);
-
-/* Get the data from key KEY in a XML string, which has to be released
-   with free by the user.  */
-char *gpgme_key_get_as_xml (GpgmeKey key);
 
 /* Return the value of the attribute WHAT of KEY, which has to be
    representable by a string.  IDX specifies the sub key or
@@ -1045,7 +1254,19 @@ GpgmeError gpgme_op_edit (GpgmeCtx ctx, GpgmeKey key,
 			  GpgmeEditCb fnc, void *fnc_value,
 			  GpgmeData out);
 
+
 /* Key management functions */
+struct _gpgme_op_keylist_result
+{
+  unsigned int truncated : 1;
+
+  /* Internal to GPGME, do not use.  */
+  unsigned int _unused : 31;
+};
+typedef struct _gpgme_op_keylist_result *GpgmeKeyListResult;
+
+/* Retrieve a pointer to the result of the key listing operation.  */
+GpgmeKeyListResult gpgme_op_keylist_result (GpgmeCtx ctx);
 
 /* Start a keylist operation within CTX, searching for keys which
    match PATTERN.  If SECRET_ONLY is true, only secret keys are
@@ -1082,16 +1303,16 @@ struct _gpgme_trust_item
   int level;
 
   /* The owner trust if TYPE is 1.  */
-  char *otrust;
+  char *owner_trust;
 
   /* Internal to GPGME, do not use.  */
-  char _otrust[2];
+  char _owner_trust[2];
 
   /* The calculated validity.  */
-  char *val;
+  char *validity;
  
   /* Internal to GPGME, do not use.  */
-  char _val[2];
+  char _validity[2];
 
   /* The user name if TYPE is 2.  */
   char *name;

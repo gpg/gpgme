@@ -48,10 +48,10 @@ _gpgme_trust_item_new (GpgmeTrustItem *r_item)
   item->_refs = 1;
   item->keyid = item->_keyid;
   item->_keyid[16] = '\0';
-  item->otrust = item->_otrust;
-  item->_otrust[1] = '\0';
-  item->val = item->_val;
-  item->_val[1] = '\0';
+  item->owner_trust = item->_owner_trust;
+  item->_owner_trust[1] = '\0';
+  item->validity = item->_validity;
+  item->_validity[1] = '\0';
   *r_item = item;
   return 0;
 }
@@ -119,11 +119,11 @@ const char *gpgme_trust_item_get_string_attr (GpgmeTrustItem item,
       break;
 
     case GPGME_ATTR_OTRUST:  
-      val = item->otrust;
+      val = item->owner_trust;
       break;
 
     case GPGME_ATTR_VALIDITY:
-      val = item->val;
+      val = item->validity;
       break;
 
     case GPGME_ATTR_USERID:  

@@ -21,220 +21,143 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
-#include "util.h"
 #include "context.h"
 
-/**
- * gpgme_recipients_new:
- * @r_rset: Returns the new object.
- * 
- * Create a new uninitialized Reciepient set Object.
- * 
- * Return value: 0 on success or an error code.
- **/
+
+/* Create a new uninitialized recipient object and return it in R_RSET.  */
 GpgmeError
 gpgme_recipients_new (GpgmeRecipients *r_rset)
 {
-    GpgmeRecipients rset;
-
-    rset = calloc ( 1, sizeof *rset  );
-    if (!rset)
-        return GPGME_Out_Of_Core;
-    *r_rset = rset;
-    return 0;
+  GpgmeRecipients rset;
+    
+  rset = calloc (1, sizeof *rset);
+  if (!rset)
+    return GPGME_Out_Of_Core;
+  *r_rset = rset;
+  return 0;
 }
 
-/**
- * gpgme_recipients_release:
- * @rset: Recipient Set object
- * 
- * Free the given object.
- **/
+
+/* Release the recipient object RSET.  */
 void
-gpgme_recipients_release ( GpgmeRecipients rset )
+gpgme_recipients_release (GpgmeRecipients rset)
 {
-    if (rset) {
-        struct user_id_s *u, *u2;
+  GpgmeUserID uid = rset->list;
 
-        for (u = rset->list; u; u = u2) {
-            u2 = u->next;
-            free(u);
-        }
+  while (uid)
+    {
+      GpgmeUserID next_uid = uid->next;
+
+      free (uid);
+      uid = next_uid;
     }
-    free ( rset );
+  free (rset);
 }
 
 
-/**
- * gpgme_recipients_add_name:
- * @rset: Recipient Set object 
- * @name: user name or keyID
- * 
- * Add a name to the recipient Set.
- * 
- * Return value: 0 on success or an error code
- **/
-GpgmeError
-gpgme_recipients_add_name (GpgmeRecipients rset, const char *name )
-{
-    return gpgme_recipients_add_name_with_validity (
-        rset, name, GPGME_VALIDITY_UNKNOWN
-        );
-}
-
-/**
- * gpgme_recipients_add_name_with_validity:
- * @rset: Recipient Set object
- * @name: user name or keyID
- * @val: Validity value 
- * 
- * Same as gpgme_recipients_add_name() but with explictly given key
- * validity.  Use one of the constants 
- * %GPGME_VALIDITY_UNKNOWN, %GPGME_VALIDITY_UNDEFINED,
- * %GPGME_VALIDITY_NEVER, %GPGME_VALIDITY_MARGINAL,
- * %GPGME_VALIDITY_FULL, %GPGME_VALIDITY_ULTIMATE
- * for the validity.  %GPGME_VALIDITY_UNKNOWN is implicitly used by
- * gpgme_recipients_add_name().
- *
- * Return value: o on success or an error value.
- **/
+/* Add the name NAME to the recipient set RSET with the given key
+   validity VALIDITY.  */
 GpgmeError
 gpgme_recipients_add_name_with_validity (GpgmeRecipients rset,
-                                         const char *name,
-                                         GpgmeValidity val )
+					 const char *name,
+                                         GpgmeValidity validity)
 {
-    struct user_id_s *r;
+  GpgmeUserID uid;
 
-    if (!name || !rset )
-        return GPGME_Invalid_Value;
-    r = malloc ( sizeof *r + strlen (name) );
-    if (!r)
-        return GPGME_Out_Of_Core;
-    r->validity = val;
-    r->name_part = "";
-    r->email_part = "";
-    r->comment_part = "";
-    strcpy (r->name, name );
-    r->next = rset->list;
-    rset->list = r;
-    return 0;
+  if (!name || !rset)
+    return GPGME_Invalid_Value;
+  uid = malloc (sizeof (*uid) + strlen (name));
+  if (!uid)
+    return GPGME_Out_Of_Core;
+  uid->validity = validity;
+  uid->name = "";
+  uid->email = "";
+  uid->comment = "";
+  uid->uid = ((char *) uid) + sizeof (*uid);
+  strcpy (uid->uid, name);
+  uid->next = rset->list;
+  rset->list = uid;
+  return 0;
 }
 
 
+/* Add the name NAME to the recipient set RSET.  Same as
+   gpgme_recipients_add_name_with_validity with validitiy
+   GPGME_VALIDITY_UNKNOWN.  */
+GpgmeError
+gpgme_recipients_add_name (GpgmeRecipients rset, const char *name)
+{
+  return gpgme_recipients_add_name_with_validity (rset, name,
+						  GPGME_VALIDITY_UNKNOWN);
+}
 
-/**
- * gpgme_recipients_count:
- * @rset: Recipient Set object
- * 
- * Return value: The number of recipients in the set.
- **/
+
+/* Return the number of recipients in the set.  */
 unsigned int 
-gpgme_recipients_count ( const GpgmeRecipients rset )
+gpgme_recipients_count (const GpgmeRecipients rset)
 {
-    struct user_id_s *r;
-    unsigned int count = 0;
+  GpgmeUserID uid = rset->list;
+  unsigned int count = 0;
     
-    if ( rset ) {
-        for (r=rset->list ; r; r = r->next )
-            count++;
+  while (uid)
+    {
+      count++;
+      uid = uid->next;
     }
-    return count;
+
+  return count;
 }
 
 
-
-/**
- * gpgme_recipients_enum_open:
- * @rset: Recipient Set object
- * @ctx: Enumerator
- * 
- * Start an enumeration on the Recipient Set object.  The caller must pass 
- * the address of a void pointer which is used as the enumerator object.
- * 
- * Return value: 0 on success or an error code.
- *
- * See also: gpgme_recipients_enum_read(), gpgme_recipients_enum_close().
- **/
+/* Start an enumeration on the recipient set RSET.  The caller must
+   pass the address of a void pointer which is used as the iterator
+   object.  */
 GpgmeError
-gpgme_recipients_enum_open ( const GpgmeRecipients rset, void **ctx )
+gpgme_recipients_enum_open (const GpgmeRecipients rset, void **iter)
 {
-    if (!rset || !ctx)
-        return GPGME_Invalid_Value;
-
-    *ctx = rset->list;
-    return 0;
+  *iter = rset->list;
+  return 0;
 }
 
-/**
- * gpgme_recipients_enum_read:
- * @rset: Recipient Set object
- * @ctx: Enumerator 
- * 
- * Return the name of the next user name from the given recipient
- * set. This name is valid as along as the @rset is valid and until
- * the next call to this function.
- * 
- * Return value: name or NULL for no more names.
- *
- * See also: gpgme_recipients_enum_read(), gpgme_recipients_enum_close().
- **/
+/* Return the name of the next recipient in the set RSET.  */
 const char *
-gpgme_recipients_enum_read ( const GpgmeRecipients rset, void **ctx )
+gpgme_recipients_enum_read (const GpgmeRecipients rset, void **iter)
 {
-    struct user_id_s *r;
+  GpgmeUserID uid;
 
-    if (!rset || !ctx)
-        return NULL; /* oops */
-    
-    r = *ctx;
-    if ( r ) {
-        const char *s = r->name;
-        r = r->next;
-        *ctx = r;
-        return s;
-    }
-
+  uid = *iter;
+  if (!uid)
     return NULL;
+
+  *iter = uid->next;
+  return uid->name;
 }
 
-/**
- * gpgme_recipients_enum_close:
- * @rset: Recipient Set object
- * @ctx: Enumerator
- * 
- * Release the enumerator @rset for this object.
- * 
- * Return value: 0 on success or %GPGME_Invalid_Value;
- *
- * See also: gpgme_recipients_enum_read(), gpgme_recipients_enum_close().
- **/
+/* Release the iterator for this object.  */
 GpgmeError
-gpgme_recipients_enum_close ( const GpgmeRecipients rset, void **ctx )
+gpgme_recipients_enum_close (const GpgmeRecipients rset, void **iter)
 {
-    if (!rset || !ctx)
-        return GPGME_Invalid_Value;
-    *ctx = NULL;
-    return 0;
+  /* Not really needed, but might catch the occasional mistake.  */
+  *iter = NULL;
+
+  return 0;
 }
+
 
 int
-_gpgme_recipients_all_valid ( const GpgmeRecipients rset )
+_gpgme_recipients_all_valid (const GpgmeRecipients rset)
 {
-    struct user_id_s *r;
+  GpgmeUserID uid = rset->list;
 
-    assert (rset);
-    for (r=rset->list ; r; r = r->next ) {
-        if (r->validity != GPGME_VALIDITY_FULL
-            && r->validity != GPGME_VALIDITY_ULTIMATE )
-            return 0; /*no*/
+  while (uid)
+    {
+      if (uid->validity != GPGME_VALIDITY_FULL
+	  && uid->validity != GPGME_VALIDITY_ULTIMATE )
+	return 0;
+      uid = uid->next;
     }
-    return 1; /*yes*/
+  return 1;
 }
-
-
-

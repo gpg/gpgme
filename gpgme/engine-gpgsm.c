@@ -35,7 +35,6 @@
 #include "ops.h"
 #include "wait.h"
 #include "io.h"
-#include "key.h"
 #include "sema.h"
 
 #include "assuan.h"
@@ -873,7 +872,7 @@ gpgsm_delete (void *engine, GpgmeKey key, int allow_secret)
 {
   GpgsmObject gpgsm = engine;
   GpgmeError err;
-  char *fpr = (char *) gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, NULL, 0);
+  char *fpr = key->subkeys ? key->subkeys->fpr : NULL;
   char *linep = fpr;
   char *line;
   int length = 8;	/* "DELKEYS " */
@@ -942,17 +941,17 @@ set_recipients (GpgsmObject gpgsm, GpgmeRecipients recp)
   ASSUAN_CONTEXT ctx = gpgsm->assuan_ctx;
   char *line;
   int linelen;
-  struct user_id_s *r;
-  int valid_recipients = 0;
+  GpgmeUserID uid;
+  int invalid_recipients = 0;
 
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
   line = malloc (10 + 40 + 1);
   if (!line)
     return GPGME_Out_Of_Core;
   strcpy (line, "RECIPIENT ");
-  for (r = recp->list; r; r = r->next)
+  for (uid = recp->list; uid; uid = uid->next)
     {
-      int newlen = 11 + strlen (r->name);
+      int newlen = 11 + strlen (uid->uid);
       if (linelen < newlen)
 	{
 	  char *newline = realloc (line, newlen);
@@ -964,22 +963,20 @@ set_recipients (GpgsmObject gpgsm, GpgmeRecipients recp)
 	  line = newline;
 	  linelen = newlen;
 	}
-      strcpy (&line[10], r->name);
+      strcpy (&line[10], uid->uid);
       
       err = gpgsm_assuan_simple_command (ctx, line, gpgsm->status.fnc,
 					 gpgsm->status.fnc_value);
-      if (!err)
-	valid_recipients = 1;
-      else if (err != GPGME_Invalid_Key)
+      if (err == GPGME_Invalid_Key)
+	invalid_recipients = 1;
+      else if (err)
 	{
 	  free (line);
 	  return err;
 	}
     }
   free (line);
-  if (!valid_recipients && gpgsm->status.fnc)
-    gpgsm->status.fnc (gpgsm->status.fnc_value, GPGME_STATUS_NO_RECP, "");
-  return 0;
+  return invalid_recipients ? GPGME_Invalid_UserID : 0;
 }
 
 
@@ -1302,8 +1299,7 @@ gpgsm_sign (void *engine, GpgmeData in, GpgmeData out, GpgmeSigMode mode,
 
   for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
     {
-      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR,
-						 NULL, 0);
+      const char *s = key->subkeys ? key->subkeys->fpr : NULL;
       if (s && strlen (s) < 80)
 	{
           char buf[100];

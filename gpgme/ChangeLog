@@ -1,3 +1,42 @@
+2003-04-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (struct _gpgme_key): New structure.
+	(GpgmeKey): Define using _gpgme_key.
+	(struct _gpgme_subkey): New structure.
+	(GpgmeSubKey): New type.
+	(struct _gpgme_key_sig): New structure.
+	(GpgmeKeySig): New type.
+	(struct _gpgme_user_id): New structure.
+	(GpgmeUserID): New type.
+	(struct _gpgme_op_keylist_result): New structure.
+	(GpgmeKeyListResult): New type.
+	(gpgme_op_keylist_result): New function.
+	(gpgme_key_get_as_xml): Remove prototype.
+	* context.h (struct gpgme_context_s): Remove members tmp_key,
+	tmp_uid, key_cond and key_queue.
+	(struct key_queue_item_s): Remove structure.
+	(struct user_id_s): Remove structure.
+	(struct gpgme_recipients_s): Replace with simple
+	GpgmeUserID list.
+	* gpgme.c (gpgme_release): Do not release CTX->tmp_key.
+	* ops.h (_gpgme_key_add_subkey, _gpgme_key_append_name,
+	_gpgme_key_add_sig, _gpgme_trust_item_new): New prototypes.
+	* rungpg.c (command_cb): Return GpgmeError instead int.
+	New variable ERR.  Use it to hold return value of cmd handler.
+	(gpg_delete): Access fingerprint of key directly.
+	(append_args_from_signers): Likewise.
+	(gpg_edit): Likewise.
+	(append_args_from_recipients): Use GpgmeUserID for recipient list.
+	* engine-gpgsm.c: Do not include "key.h".
+	(gpgsm_delete): Access fingerprint of key directly.
+	(gpgsm_sign): Likewise.
+	(set_recipients): Use GpgmeUserID for recipients.  Invert invalid
+	user ID flag.
+	* key.h: File removed.
+	* key.c: Completely reworked to use exposed GpgmeKey data types.
+	* keylist.c: Likewise.
+	* recipient.c: Completely reworked to use GpgmeUserID.
+
 2003-04-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (gpgme_get_key): Remove force_update argument.

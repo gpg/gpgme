@@ -21,177 +21,59 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <ctype.h>
 
 #include "util.h"
 #include "ops.h"
-#include "key.h"
 #include "sema.h"
 
-
+
 /* Protects all reference counters in keys.  All other accesses to a
    key are either read only or happen before the key is entered into
    the cache.  */
 DEFINE_STATIC_LOCK (key_ref_lock);
 
-
-static const char *
-pkalgo_to_string (int algo)
-{
-  switch (algo)
-    {
-    case 1: 
-    case 2:
-    case 3:
-      return "RSA";
 
-    case 16:
-    case 20:
-      return "ElG";
-
-    case 17:
-      return "DSA";
-
-    default:
-      return "Unknown";
-    }
-}
-
-
-static const char *
-otrust_to_string (int otrust)
-{
-  switch (otrust)
-    {
-    case GPGME_VALIDITY_NEVER:
-      return "n";
-
-    case GPGME_VALIDITY_MARGINAL:
-      return "m";
-
-    case GPGME_VALIDITY_FULL:
-      return "f";
-
-    case GPGME_VALIDITY_ULTIMATE:
-      return "u";
-
-    default:
-      return "?";
-    }
-}
-
-
-static const char *
-validity_to_string (int validity)
-{
-  switch (validity)
-    {
-    case GPGME_VALIDITY_UNDEFINED:
-      return "q";
-
-    case GPGME_VALIDITY_NEVER:
-      return "n";
-
-    case GPGME_VALIDITY_MARGINAL:
-      return "m";
-
-    case GPGME_VALIDITY_FULL:
-      return "f";
-
-    case GPGME_VALIDITY_ULTIMATE:
-      return "u";
-
-    case GPGME_VALIDITY_UNKNOWN:
-    default:
-      return "?";
-    }
-}
-
-
-static GpgmeError
-key_new (GpgmeKey *r_key, int secret)
+/* Create a new key.  */
+GpgmeError
+_gpgme_key_new (GpgmeKey *r_key)
 {
   GpgmeKey key;
 
-  *r_key = NULL;
   key = calloc (1, sizeof *key);
   if (!key)
     return GPGME_Out_Of_Core;
-  key->ref_count = 1;
+  key->_refs = 1;
+
   *r_key = key;
-  if (secret)
-    key->secret = 1;
   return 0;
 }
 
 
 GpgmeError
-_gpgme_key_new (GpgmeKey *r_key)
+_gpgme_key_add_subkey (GpgmeKey key, GpgmeSubkey *r_subkey)
 {
-  return key_new (r_key, 0);
+  GpgmeSubkey subkey;
+
+  subkey = calloc (1, sizeof *subkey);
+  if (!subkey)
+    return GPGME_Out_Of_Core;
+  subkey->keyid = subkey->_keyid;
+  subkey->_keyid[16] = '\0';
+
+  if (!key->subkeys)
+    key->subkeys = subkey;
+  if (key->_last_subkey)
+    key->_last_subkey->next = subkey;
+  key->_last_subkey = subkey;
+
+  *r_subkey = subkey;
+  return 0;
 }
 
 
-GpgmeError
-_gpgme_key_new_secret (GpgmeKey *r_key)
-{
-  return key_new (r_key, 1);
-}
-
-
-/* Acquire a reference to KEY.  */
-void
-gpgme_key_ref (GpgmeKey key)
-{
-  if (!key)
-    return;
-  LOCK (key_ref_lock);
-  key->ref_count++;
-  UNLOCK (key_ref_lock);
-}
-
-
-static struct subkey_s *
-add_subkey (GpgmeKey key, int secret)
-{
-  struct subkey_s *k, *kk;
-
-  k = calloc (1, sizeof *k);
-  if (!k)
-    return NULL;
-
-  if (!(kk = key->keys.next))
-    key->keys.next = k;
-  else
-    {
-      while (kk->next)
-	kk = kk->next;
-      kk->next = k;
-    }
-  if (secret)
-    k->secret = 1;
-  return k;
-}
-
-
-struct subkey_s *
-_gpgme_key_add_subkey (GpgmeKey key)
-{
-  return add_subkey (key, 0);
-}
-
-
-struct subkey_s *
-_gpgme_key_add_secret_subkey (GpgmeKey key)
-{
-  return add_subkey (key, 1);
-}
-
-
 static char *
 set_user_id_part (char *tail, const char *buf, size_t len)
 {
@@ -205,8 +87,8 @@ set_user_id_part (char *tail, const char *buf, size_t len)
 
 
 static void
-parse_user_id (const char *src, const char **name, const char **email,
-		    const char **comment, char *tail)
+parse_user_id (char *src, char **name, char **email,
+	       char **comment, char *tail)
 {
   const char *start = NULL;
   int in_name = 0;
@@ -299,8 +181,8 @@ parse_user_id (const char *src, const char **name, const char **email,
 
 
 static void
-parse_x509_user_id (const char *src, const char **name, const char **email,
-		    const char **comment, char *tail)
+parse_x509_user_id (char *src, char **name, char **email,
+		    char **comment, char *tail)
 {
   if (*src == '<' && src[strlen (src) - 1] == '>')
     *email = src;
@@ -315,120 +197,13 @@ parse_x509_user_id (const char *src, const char **name, const char **email,
     *comment = tail;
 }
 
-
-struct certsig_s *
-_gpgme_key_add_certsig (GpgmeKey key, char *src)
-{
-  int src_len = src ? strlen (src) : 0;
-  struct user_id_s *uid;
-  struct certsig_s *certsig;
 
-  assert (key);	/* XXX */
-
-  uid = key->last_uid;
-  assert (uid);	/* XXX */
-
-  /* We can malloc a buffer of the same length, because the converted
-     string will never be larger. Actually we allocate it twice the
-     size, so that we are able to store the parsed stuff there too.  */
-  certsig = calloc (1, sizeof (*certsig) + 2 * src_len + 3);
-  if (!certsig)
-    return NULL;
-
-  if (src)
-    {
-      char *dst = certsig->name;
-      _gpgme_decode_c_string (src, &dst, src_len + 1);
-      dst += src_len + 1;
-      if (key->x509)
-	parse_x509_user_id (src, &certsig->name_part, &certsig->email_part,
-			    &certsig->comment_part, dst);
-      else
-	parse_user_id (src, &certsig->name_part, &certsig->email_part,
-		       &certsig->comment_part, dst);
-    }
-
-  if (!uid->certsigs)
-    uid->certsigs = certsig;
-  if (uid->last_certsig)
-    uid->last_certsig->next = certsig;
-  uid->last_certsig = certsig;
-
-  return certsig;
-}
-
-
-/**
- * gpgme_key_release:
- * @key: Key Object or NULL
- * 
- * Release the key object. Note, that this function may not do an
- * actual release if there are other shallow copies of the objects.
- * You have to call this function for every newly created key object
- * as well as for every gpgme_key_ref() done on the key object.
- **/
-void
-gpgme_key_release (GpgmeKey key)
-{
-  struct certsig_s *c, *c2;
-  struct user_id_s *u, *u2;
-  struct subkey_s *k, *k2;
-
-  if (!key)
-    return;
-
-  LOCK (key_ref_lock);
-  assert (key->ref_count);
-  if (--key->ref_count)
-    {
-      UNLOCK (key_ref_lock);
-      return;
-    }
-  UNLOCK (key_ref_lock);
-
-  free (key->keys.fingerprint);
-  for (k = key->keys.next; k; k = k2)
-    {
-      k2 = k->next;
-      free (k->fingerprint);
-      free (k);
-    }
-  for (u = key->uids; u; u = u2)
-    {
-      u2 = u->next;
-      for (c = u->certsigs; c; c = c2)
-        {
-          c2 = c->next;
-          free (c);
-        }
-      free (u);
-    }
-  free (key->issuer_serial);
-  free (key->issuer_name);
-  free (key->chain_id);
-  free (key);
-}
-
-
-/**
- * gpgme_key_unref:
- * @key: Key Object
- * 
- * This is an alias for gpgme_key_release().
- **/
-void
-gpgme_key_unref (GpgmeKey key)
-{
-  gpgme_key_release (key);
-}
-
-
 /* Take a name from the --with-colon listing, remove certain escape
    sequences sequences and put it into the list of UIDs.  */
 GpgmeError
-_gpgme_key_append_name (GpgmeKey key, const char *src)
+_gpgme_key_append_name (GpgmeKey key, char *src)
 {
-  struct user_id_s *uid;
+  GpgmeUserID uid;
   char *dst;
   int src_len = strlen (src);
 
@@ -441,212 +216,201 @@ _gpgme_key_append_name (GpgmeKey key, const char *src)
     return GPGME_Out_Of_Core;
   memset (uid, 0, sizeof *uid);
 
-  dst = uid->name;
+  uid->uid = ((char *) uid) + sizeof (*uid);
+  dst = uid->uid;
   _gpgme_decode_c_string (src, &dst, src_len + 1);
 
   dst += src_len + 1;
-  if (key->x509)
-    parse_x509_user_id (src, &uid->name_part, &uid->email_part,
-			&uid->comment_part, dst);
+  if (key->protocol == GPGME_PROTOCOL_CMS)
+    parse_x509_user_id (src, &uid->name, &uid->email,
+			&uid->comment, dst);
   else
-    parse_user_id (src, &uid->name_part, &uid->email_part,
-		   &uid->comment_part, dst);
+    parse_user_id (src, &uid->name, &uid->email,
+		   &uid->comment, dst);
 
   if (!key->uids)
     key->uids = uid;
-  if (key->last_uid)
-    key->last_uid->next = uid;
-  key->last_uid = uid;
+  if (key->_last_uid)
+    key->_last_uid->next = uid;
+  key->_last_uid = uid;
 
   return 0;
 }
 
 
-static void
-add_otag (GpgmeData d, const char *tag)
+GpgmeKeySig
+_gpgme_key_add_sig (GpgmeKey key, char *src)
 {
-  _gpgme_data_append_string (d, "    <");
-  _gpgme_data_append_string (d, tag);
-  _gpgme_data_append_string (d, ">");
-}
+  int src_len = src ? strlen (src) : 0;
+  GpgmeUserID uid;
+  GpgmeKeySig sig;
 
+  assert (key);	/* XXX */
 
-static void
-add_ctag (GpgmeData d, const char *tag)
-{
-  _gpgme_data_append_string (d, "</");
-  _gpgme_data_append_string (d, tag);
-  _gpgme_data_append_string (d, ">\n");
-}
+  uid = key->_last_uid;
+  assert (uid);	/* XXX */
 
-
-static void
-add_tag_and_string (GpgmeData d, const char *tag, const char *string)
-{
-  add_otag (d, tag);
-  _gpgme_data_append_string_for_xml (d, string);
-  add_ctag (d, tag); 
-}
-
-
-static void
-add_tag_and_uint (GpgmeData d, const char *tag, unsigned int val)
-{
-  char buf[30];
-  sprintf (buf, "%u", val);
-  add_tag_and_string (d, tag, buf);
-}
-
-
-static void
-add_tag_and_time (GpgmeData d, const char *tag, time_t val)
-{
-  char buf[30];
-
-  if (!val || val == (time_t) - 1)
-    return;
-  sprintf (buf, "%lu", (unsigned long) val);
-  add_tag_and_string (d, tag, buf);
-}
-
-
-static void
-one_certsig_as_xml (GpgmeData data, struct certsig_s *certsig)
-{
-  _gpgme_data_append_string (data, "    <signature>\n");
-  if (certsig->flags.invalid)
-    _gpgme_data_append_string (data, "      <invalid/>\n");
-  if (certsig->flags.revoked)
-    _gpgme_data_append_string (data, "      <revoked/>\n");
-  if (certsig->flags.expired)
-    _gpgme_data_append_string (data, "      <expired/>\n");
-  add_tag_and_string (data, "keyid", certsig->keyid);
-  add_tag_and_uint (data, "algo", certsig->algo);
-  add_tag_and_time (data, "created", certsig->timestamp);
-  add_tag_and_time (data, "expire", certsig->expires_at);
-  if (*certsig->name)
-    add_tag_and_string (data, "raw", certsig->name);
-  if (*certsig->name_part)
-    add_tag_and_string (data, "name", certsig->name_part);
-  if (*certsig->email_part)
-    add_tag_and_string (data, "email", certsig->email_part);
-  if (*certsig->comment_part)
-    add_tag_and_string (data, "comment", certsig->comment_part);
-  _gpgme_data_append_string (data, "    </signature>\n");
-}
-
-
-static void
-one_uid_as_xml (GpgmeData data, struct user_id_s *uid)
-{
-  struct certsig_s *certsig;
-
-  _gpgme_data_append_string (data, "  <userid>\n");
-  if (uid->invalid)
-    _gpgme_data_append_string (data, "    <invalid/>\n");
-  if (uid->revoked)
-    _gpgme_data_append_string (data, "    <revoked/>\n");
-  add_tag_and_string (data, "raw", uid->name);
-  if (*uid->name_part)
-    add_tag_and_string (data, "name", uid->name_part);
-  if (*uid->email_part)
-    add_tag_and_string (data, "email", uid->email_part);
-  if (*uid->comment_part)
-    add_tag_and_string (data, "comment", uid->comment_part);
-
-  /* Now the signatures.  */
-  for (certsig = uid->certsigs; certsig; certsig = certsig->next)
-    one_certsig_as_xml (data, certsig);
-  _gpgme_data_append_string (data, "  </userid>\n");
-}
-
-
-/**
- * gpgme_key_get_as_xml:
- * @key: Key object
- * 
- * Return the key object as an XML string.  The classer has to free
- * that string.
- * 
- * Return value:  An XML string or NULL in case of a memory problem or
- *                a NULL passed as @key
- **/
-char *
-gpgme_key_get_as_xml (GpgmeKey key)
-{
-  GpgmeData d;
-  struct user_id_s *u;
-  struct subkey_s *k;
-  
-  if (!key)
+  /* We can malloc a buffer of the same length, because the converted
+     string will never be larger. Actually we allocate it twice the
+     size, so that we are able to store the parsed stuff there too.  */
+  sig = calloc (1, sizeof (*sig) + 2 * src_len + 3);
+  if (!sig)
     return NULL;
-  
-  if (gpgme_data_new (&d))
-    return NULL;
-  
-  _gpgme_data_append_string (d, "<GnupgKeyblock>\n"
-			     "  <mainkey>\n");
-  if (key->keys.secret)
-    _gpgme_data_append_string (d, "    <secret/>\n");
-  if (key->keys.flags.invalid)
-    _gpgme_data_append_string (d, "    <invalid/>\n");
-  if (key->keys.flags.revoked)
-    _gpgme_data_append_string (d, "    <revoked/>\n");
-  if (key->keys.flags.expired)
-    _gpgme_data_append_string (d, "    <expired/>\n");
-  if (key->keys.flags.disabled)
-    _gpgme_data_append_string (d, "    <disabled/>\n");
-  add_tag_and_string (d, "keyid", key->keys.keyid);
-  if (key->keys.fingerprint)
-    add_tag_and_string (d, "fpr", key->keys.fingerprint);
-  add_tag_and_uint (d, "algo", key->keys.key_algo);
-  add_tag_and_uint (d, "len", key->keys.key_len);
-  add_tag_and_time (d, "created", key->keys.timestamp);
-  add_tag_and_time (d, "expire", key->keys.expires_at);
-  add_tag_and_string (d, "otrust", otrust_to_string (key->otrust));
-  if (key->issuer_serial)
-    add_tag_and_string (d, "serial", key->issuer_serial);
-  if (key->issuer_name)
-    add_tag_and_string (d, "issuer", key->issuer_name);
-  if (key->chain_id)
-    add_tag_and_string (d, "chainid", key->chain_id);
-  _gpgme_data_append_string (d, "  </mainkey>\n");
+  sig->keyid = sig->_keyid;
+  sig->_keyid[16] = '\0';
 
-  /* Now the user IDs.  */
-  for (u = key->uids; u; u = u->next)
-    one_uid_as_xml (d,u);
-  
-  /* And now the subkeys.  */
-  for (k = key->keys.next; k; k = k->next)
+  if (src)
     {
-      _gpgme_data_append_string (d, "  <subkey>\n");
-      if (k->secret)
-        _gpgme_data_append_string (d, "    <secret/>\n");
-      if (k->flags.invalid)
-        _gpgme_data_append_string (d, "    <invalid/>\n");
-      if (k->flags.revoked)
-        _gpgme_data_append_string (d, "    <revoked/>\n");
-      if (k->flags.expired)
-        _gpgme_data_append_string (d, "    <expired/>\n");
-      if (k->flags.disabled)
-        _gpgme_data_append_string (d, "    <disabled/>\n");
-      add_tag_and_string (d, "keyid", k->keyid);
-      if (k->fingerprint)
-        add_tag_and_string (d, "fpr", k->fingerprint);
-      add_tag_and_uint (d, "algo", k->key_algo);
-      add_tag_and_uint (d, "len", k->key_len);
-      add_tag_and_time (d, "created", k->timestamp);
-      add_tag_and_time (d, "expire", k->expires_at);
-      _gpgme_data_append_string (d, "  </subkey>\n");
+      char *dst = sig->uid;
+      _gpgme_decode_c_string (src, &dst, src_len + 1);
+      dst += src_len + 1;
+      if (key->protocol == GPGME_PROTOCOL_CMS)
+	parse_x509_user_id (src, &sig->name, &sig->email,
+			    &sig->comment, dst);
+      else
+	parse_user_id (src, &sig->name, &sig->email,
+		       &sig->comment, dst);
     }
-  _gpgme_data_append_string (d, "</GnupgKeyblock>\n");
+
+  if (!uid->signatures)
+    uid->signatures = sig;
+  if (uid->_last_keysig)
+    uid->_last_keysig->next = sig;
+  uid->_last_keysig = sig;
+
+  return sig;
+}
+
+
+/* Acquire a reference to KEY.  */
+void
+gpgme_key_ref (GpgmeKey key)
+{
+  LOCK (key_ref_lock);
+  key->_refs++;
+  UNLOCK (key_ref_lock);
+}
+
+
+/* gpgme_key_unref releases the key object. Note, that this function
+   may not do an actual release if there are other shallow copies of
+   the objects.  You have to call this function for every newly
+   created key object as well as for every gpgme_key_ref() done on the
+   key object.  */
+void
+gpgme_key_unref (GpgmeKey key)
+{
+  GpgmeUserID uid;
+  GpgmeSubkey subkey;
+
+  LOCK (key_ref_lock);
+  assert (key->_refs > 0);
+  if (--key->_refs)
+    {
+      UNLOCK (key_ref_lock);
+      return;
+    }
+  UNLOCK (key_ref_lock);
+
+  subkey = key->subkeys;
+  while (subkey)
+    {
+      GpgmeSubkey next = subkey->next;
+      if (subkey->fpr)
+	free (subkey->fpr);
+      free (subkey);
+      subkey = next;
+    }
+
+  uid = key->uids;
+  while (uid)
+    {
+      GpgmeUserID next_uid = uid->next;
+      GpgmeKeySig keysig = uid->signatures;
+
+      while (keysig)
+	{
+	  GpgmeKeySig next = keysig->next;
+          free (keysig);
+	  keysig = next;
+        }
+      free (uid);
+      uid = next_uid;
+    }
   
-  return _gpgme_data_release_and_return_string (d);
+  if (key->issuer_serial)
+    free (key->issuer_serial);
+  if (key->issuer_name)
+    free (key->issuer_name);
+
+  if (key->chain_id)
+    free (key->chain_id);
+
+  free (key);
+}
+
+
+/* Compatibility interfaces.  */
+
+void
+gpgme_key_release (GpgmeKey key)
+{
+  gpgme_key_unref (key);
 }
 
 
 static const char *
-capabilities_to_string (struct subkey_s *k)
+otrust_to_string (int otrust)
+{
+  switch (otrust)
+    {
+    case GPGME_VALIDITY_NEVER:
+      return "n";
+
+    case GPGME_VALIDITY_MARGINAL:
+      return "m";
+
+    case GPGME_VALIDITY_FULL:
+      return "f";
+
+    case GPGME_VALIDITY_ULTIMATE:
+      return "u";
+
+    default:
+      return "?";
+    }
+}
+
+
+static const char *
+validity_to_string (int validity)
+{
+  switch (validity)
+    {
+    case GPGME_VALIDITY_UNDEFINED:
+      return "q";
+
+    case GPGME_VALIDITY_NEVER:
+      return "n";
+
+    case GPGME_VALIDITY_MARGINAL:
+      return "m";
+
+    case GPGME_VALIDITY_FULL:
+      return "f";
+
+    case GPGME_VALIDITY_ULTIMATE:
+      return "u";
+
+    case GPGME_VALIDITY_UNKNOWN:
+    default:
+      return "?";
+    }
+}
+
+
+static const char *
+capabilities_to_string (GpgmeSubkey subkey)
 {
   static const char *const strings[8] =
     {
@@ -659,40 +423,27 @@ capabilities_to_string (struct subkey_s *k)
       "es",
       "esc"
     };
-  return strings[(!!k->flags.can_encrypt << 2)
-		 | (!!k->flags.can_sign << 1)
-		 | (!!k->flags.can_certify)];
+  return strings[(!!subkey->can_encrypt << 2)
+		 | (!!subkey->can_sign << 1)
+		 | (!!subkey->can_certify)];
 }
 
 
-/**
- * gpgme_key_get_string_attr:
- * @key: Key Object
- * @what: Attribute specifier
- * @reserved: Must be 0
- * @idx: Index counter
- * 
- * Return a attribute as specified by @what and @idx.  Note that not
- * all attributes can be returned as a string, in which case NULL is
- * returned.  @idx is used to iterate through attributes which do have
- * more than one instance (e.g. user IDs or sub keys).
- * 
- * Return value: NULL or an const string which is only valid as long
- * as the key object itself is valid.
- **/
+/* Return the value of the attribute WHAT of ITEM, which has to be
+   representable by a string.  */
 const char *
 gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
 			   const void *reserved, int idx)
 {
-  struct subkey_s *subkey;
-  struct user_id_s *uid;
+  GpgmeSubkey subkey;
+  GpgmeUserID uid;
   int i;
 
   if (!key || reserved || idx < 0)
     return NULL;
 
   /* Select IDXth subkey.  */
-  subkey = &key->keys;
+  subkey = key->subkeys;
   for (i = 0; i < idx; i++)
     {
       subkey = subkey->next;
@@ -715,28 +466,28 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
       return subkey ? subkey->keyid : NULL;
 
     case GPGME_ATTR_FPR:
-      return subkey ? subkey->fingerprint : NULL;
+      return subkey ? subkey->fpr : NULL;
 
     case GPGME_ATTR_ALGO:    
-      return subkey ? pkalgo_to_string (subkey->key_algo) : NULL;
+      return subkey ? gpgme_pubkey_algo_name (subkey->pubkey_algo) : NULL;
 
     case GPGME_ATTR_TYPE:
-      return key->x509 ? "X.509" : "PGP";
+      return key->protocol == GPGME_PROTOCOL_CMS ? "X.509" : "PGP";
 
     case GPGME_ATTR_OTRUST:
-      return otrust_to_string (key->otrust);
+      return otrust_to_string (key->owner_trust);
 
     case GPGME_ATTR_USERID:  
-      return uid ? uid->name : NULL;
+      return uid ? uid->uid : NULL;
 
     case GPGME_ATTR_NAME:   
-      return uid ? uid->name_part : NULL;
+      return uid ? uid->name : NULL;
 
     case GPGME_ATTR_EMAIL:
-      return uid ? uid->email_part : NULL;
+      return uid ? uid->email : NULL;
 
     case GPGME_ATTR_COMMENT:
-      return uid ? uid->comment_part : NULL;
+      return uid ? uid->comment : NULL;
 
     case GPGME_ATTR_VALIDITY:
       return uid ? validity_to_string (uid->validity) : NULL;
@@ -751,7 +502,7 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
       return idx ? NULL : key->issuer_name;
 
     case GPGME_ATTR_CHAINID:
-      return  key->chain_id;
+      return key->chain_id;
 
     default:
       return NULL;
@@ -759,35 +510,19 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
 }
 
 
-/**
- * gpgme_key_get_ulong_attr:
- * @key: 
- * @what: 
- * @reserved: 
- * @idx: 
- * 
- * Return a attribute as specified by @what and @idx.  Note that not
- * all attributes can be returned as an integer, in which case 0 is
- * returned.  @idx is used to iterate through attributes which do have
- * more than one instance (e.g. user IDs or sub keys).
- *
- * See gpgme.h for a list of attributes.
- * 
- * Return value: 0 or the requested value.
- **/
 unsigned long
 gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
 			  const void *reserved, int idx)
 {
-  struct subkey_s *subkey;
-  struct user_id_s *uid;
+  GpgmeSubkey subkey;
+  GpgmeUserID uid;
   int i;
 
   if (!key || reserved || idx < 0)
     return 0;
 
   /* Select IDXth subkey.  */
-  subkey = &key->keys;
+  subkey = key->subkeys;
   for (i = 0; i < idx; i++)
     {
       subkey = subkey->next;
@@ -807,42 +542,42 @@ gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
   switch (what)
     {
     case GPGME_ATTR_ALGO:
-      return subkey ? (unsigned long) subkey->key_algo : 0;
+      return subkey ? (unsigned long) subkey->pubkey_algo : 0;
 
     case GPGME_ATTR_LEN:
-      return subkey ? (unsigned long) subkey->key_len : 0;
+      return subkey ? (unsigned long) subkey->length : 0;
 
     case GPGME_ATTR_TYPE:
-      return key->x509 ? 1 : 0;
+      return key->protocol == GPGME_PROTOCOL_CMS ? 1 : 0;
 
-    case GPGME_ATTR_CREATED: 
+    case GPGME_ATTR_CREATED:
       return (subkey && subkey->timestamp >= 0)
 	? (unsigned long) subkey->timestamp : 0;
 
     case GPGME_ATTR_EXPIRE: 
-      return (subkey && subkey->expires_at >= 0)
-	? (unsigned long) subkey->expires_at : 0;
+      return (subkey && subkey->expires >= 0)
+	? (unsigned long) subkey->expires : 0;
 
     case GPGME_ATTR_VALIDITY:
       return uid ? uid->validity : 0;
 
     case GPGME_ATTR_OTRUST:
-      return key->otrust;
+      return key->owner_trust;
 
     case GPGME_ATTR_IS_SECRET:
       return !!key->secret;
 
     case GPGME_ATTR_KEY_REVOKED:
-      return subkey ? subkey->flags.revoked : 0;
+      return subkey ? subkey->revoked : 0;
 
     case GPGME_ATTR_KEY_INVALID:
-      return subkey ? subkey->flags.invalid : 0;
+      return subkey ? subkey->invalid : 0;
 
     case GPGME_ATTR_KEY_EXPIRED:
-      return subkey ? subkey->flags.expired : 0;
+      return subkey ? subkey->expired : 0;
 
     case GPGME_ATTR_KEY_DISABLED:
-      return subkey ? subkey->flags.disabled : 0;
+      return subkey ? subkey->disabled : 0;
 
     case GPGME_ATTR_UID_REVOKED:
       return uid ? uid->revoked : 0;
@@ -851,13 +586,13 @@ gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
       return uid ? uid->invalid : 0;
 
     case GPGME_ATTR_CAN_ENCRYPT:
-      return key->gloflags.can_encrypt;
+      return key->can_encrypt;
 
     case GPGME_ATTR_CAN_SIGN:
-      return key->gloflags.can_sign;
+      return key->can_sign;
 
     case GPGME_ATTR_CAN_CERTIFY:
-      return key->gloflags.can_certify;
+      return key->can_certify;
 
     default:
       return 0;
@@ -865,11 +600,11 @@ gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
 }
 
 
-static struct certsig_s *
-get_certsig (GpgmeKey key, int uid_idx, int idx)
+static GpgmeKeySig
+get_keysig (GpgmeKey key, int uid_idx, int idx)
 {
-  struct user_id_s *uid;
-  struct certsig_s *certsig;
+  GpgmeUserID uid;
+  GpgmeKeySig sig;
 
   if (!key || uid_idx < 0 || idx < 0)
     return NULL;
@@ -883,13 +618,13 @@ get_certsig (GpgmeKey key, int uid_idx, int idx)
   if (!uid)
     return NULL;
 
-  certsig = uid->certsigs;
-  while (certsig && idx > 0)
+  sig = uid->signatures;
+  while (sig && idx > 0)
     {
-      certsig = certsig->next;
+      sig = sig->next;
       idx--;
     }
-  return certsig;
+  return sig;
 }
 
 
@@ -897,7 +632,7 @@ const char *
 gpgme_key_sig_get_string_attr (GpgmeKey key, int uid_idx, GpgmeAttr what,
 			       const void *reserved, int idx)
 {
-  struct certsig_s *certsig = get_certsig (key, uid_idx, idx);
+  GpgmeKeySig certsig = get_keysig (key, uid_idx, idx);
 
   if (!certsig || reserved)
     return NULL;
@@ -908,19 +643,19 @@ gpgme_key_sig_get_string_attr (GpgmeKey key, int uid_idx, GpgmeAttr what,
       return certsig->keyid;
 
     case GPGME_ATTR_ALGO:    
-      return pkalgo_to_string (certsig->algo);
+      return gpgme_pubkey_algo_name (certsig->pubkey_algo);
 
-    case GPGME_ATTR_USERID:  
-      return certsig->name;
+    case GPGME_ATTR_USERID:
+      return certsig->uid;
 
     case GPGME_ATTR_NAME:   
-      return certsig->name_part;
+      return certsig->name;
 
     case GPGME_ATTR_EMAIL:
-      return certsig->email_part;
+      return certsig->email;
 
     case GPGME_ATTR_COMMENT:
-      return certsig->comment_part;
+      return certsig->comment;
    
     default:
       return NULL;
@@ -932,7 +667,7 @@ unsigned long
 gpgme_key_sig_get_ulong_attr (GpgmeKey key, int uid_idx, GpgmeAttr what,
 			      const void *reserved, int idx)
 {
-  struct certsig_s *certsig = get_certsig (key, uid_idx, idx);
+  GpgmeKeySig certsig = get_keysig (key, uid_idx, idx);
 
   if (!certsig || reserved)
     return 0;
@@ -940,28 +675,28 @@ gpgme_key_sig_get_ulong_attr (GpgmeKey key, int uid_idx, GpgmeAttr what,
   switch (what)
     {
     case GPGME_ATTR_ALGO:    
-      return (unsigned long) certsig->algo;
+      return (unsigned long) certsig->pubkey_algo;
 
     case GPGME_ATTR_CREATED: 
       return certsig->timestamp < 0 ? 0L : (unsigned long) certsig->timestamp;
 
     case GPGME_ATTR_EXPIRE: 
-      return certsig->expires_at < 0 ? 0L : (unsigned long) certsig->expires_at;
+      return certsig->expires < 0 ? 0L : (unsigned long) certsig->expires;
 
     case GPGME_ATTR_KEY_REVOKED:
-      return certsig->flags.revoked;
+      return certsig->revoked;
 
     case GPGME_ATTR_KEY_INVALID:
-      return certsig->flags.invalid;
+      return certsig->invalid;
 
     case GPGME_ATTR_KEY_EXPIRED:
-      return certsig->flags.expired;
+      return certsig->expired;
 
     case GPGME_ATTR_SIG_CLASS:
-      return certsig->sig_class;
+      return certsig->class;
 
     case GPGME_ATTR_SIG_STATUS:
-      return certsig->sig_stat;
+      return certsig->status;
 
     default:
       return 0;
