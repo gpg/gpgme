@@ -1,3 +1,9 @@
+2004-12-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* util.h [HAVE_CONFIG_H && HAVE_TTYNAME_R] (ttyname_r): Define
+	prototype.
+	* ttyname_r.c: New file.
+
 2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
 
 	* putc_unlocked.c, funopen.c: I just claim copyright on these
