@@ -1,5 +1,13 @@
 2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am: Change license to LGPL.
+	(gpgme_TEXINFOS): Replace gpl.texi with lesser.texi.
+
+	* gpgme.texi: Change license to LGPL (also for documentation of
+	GPGME's license).
+	* lesser.texi: New file.
+	* gpl.texi: File removed.
+
 	* gpgme.texi (Creating Contexts): Fix cut&paste error.  Reported
 	by Noel Torres <envite@rolamasao.org>.
 
