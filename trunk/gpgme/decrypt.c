@@ -33,7 +33,7 @@ struct decrypt_result_s {
     int no_passphrase;
     int okay;
     int failed;
-
+    void *last_pw_handle;
 };
 
 
@@ -76,8 +76,6 @@ decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
       case STATUS_NEED_PASSPHRASE:
       case STATUS_NEED_PASSPHRASE_SYM:
         fprintf (stderr, "need a passphrase ...\n" );
-        _gpgme_set_prompt (ctx, 1, "Hey! We need your passphrase!");
-        /* next thing gpg has to do is to read it from the passphrase-fd */
         break;
 
       case STATUS_MISSING_PASSPHRASE:
@@ -101,9 +99,44 @@ decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
     }
 }
 
+static const char *
+command_handler ( void *opaque, GpgStatusCode code, const char *key )
+{
+    GpgmeCtx c = opaque;
+
+    if ( c->result_type == RESULT_TYPE_NONE ) {
+        if ( create_result_struct ( c ) ) {
+            c->out_of_core = 1;
+            return NULL;
+        }
+    }
+
+    if ( !code ) {
+        /* We have been called for cleanup */
+        if ( c->passphrase_cb ) { 
+            /* Fixme: take the key in account */
+            c->passphrase_cb (c->passphrase_cb_value, 0, 
+                              &c->result.decrypt->last_pw_handle );
+        }
+        
+        return NULL;
+    }
+
+    if ( !key || !c->passphrase_cb )
+        return NULL;
+    
+    if ( code == STATUS_GET_HIDDEN && !strcmp (key, "passphrase.enter") ) {
+        return c->passphrase_cb (c->passphrase_cb_value,
+                                 "Hey, Mr. Hoover wants your passphrase!",
+                                 &c->result.decrypt->last_pw_handle );
+   }
+    
+    return NULL;
+}
+
 
 GpgmeError
-gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData passphrase,
+gpgme_op_decrypt_start ( GpgmeCtx c, 
                          GpgmeData ciph, GpgmeData plain   )
 {
     int rc = 0;
@@ -124,16 +157,16 @@ gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData passphrase,
         goto leave;
 
     _gpgme_gpg_set_status_handler ( c->gpg, decrypt_status_handler, c );
+    if (c->passphrase_cb) {
+        rc = _gpgme_gpg_set_command_handler ( c->gpg, command_handler, c );
+        if (rc)
+            goto leave;
+    }
 
     /* build the commandline */
     _gpgme_gpg_add_arg ( c->gpg, "--decrypt" );
     for ( i=0; i < c->verbosity; i++ )
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
-    if (passphrase) {
-        _gpgme_gpg_add_arg (c->gpg, "--passphrase-fd" );
-        _gpgme_gpg_add_data (c->gpg, passphrase, -2 );
-    }
-
 
     /* Check the supplied data */
     if ( !ciph || gpgme_data_get_type (ciph) == GPGME_DATA_TYPE_NONE ) {
@@ -169,7 +202,6 @@ gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData passphrase,
 /**
  * gpgme_op_decrypt:
  * @c: The context
- * @passphrase: A data object with the passphrase or NULL.
  * @in: ciphertext input
  * @out: plaintext output
  * 
@@ -180,10 +212,10 @@ gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData passphrase,
  * Return value:  0 on success or an errorcode. 
  **/
 GpgmeError
-gpgme_op_decrypt ( GpgmeCtx c, GpgmeData passphrase,
+gpgme_op_decrypt ( GpgmeCtx c,
                    GpgmeData in, GpgmeData out )
 {
-    GpgmeError err = gpgme_op_decrypt_start ( c, passphrase, in, out );
+    GpgmeError err = gpgme_op_decrypt_start ( c, in, out );
     if ( !err ) {
         gpgme_wait (c, 1);
         if ( c->result_type != RESULT_TYPE_DECRYPT )

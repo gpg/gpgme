@@ -38,6 +38,10 @@ struct {
 } opt;
 
 
+/*-- ignupg.c --*/
+IClassFactory *gnupg_factory_new ( CLSID *r_clsid );
+void gnupg_factory_release ( IClassFactory *factory );
+
 
 
 #endif /* COMPLUS_MAIN_H */

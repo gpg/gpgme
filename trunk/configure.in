@@ -13,7 +13,7 @@ AM_MAINTAINER_MODE
 #    AGE, set REVISION to 0.
 # 3. Interfaces removed (BAD, breaks upward compatibility): Increment
 #    CURRENT, set AGE and REVISION to 0.
-AM_INIT_AUTOMAKE(gpgme,0.1.1)
+AM_INIT_AUTOMAKE(gpgme,0.1.2)
 LIBGPGME_LT_CURRENT=0
 LIBGPGME_LT_AGE=0
 LIBGPGME_LT_REVISION=3
@@ -23,6 +23,8 @@ AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
 AC_SUBST(LIBGPGME_LT_REVISION)
 
+
+AM_MAINTAINER_MODE
 
 dnl
 dnl Checks for programs
@@ -47,7 +49,7 @@ case "${target}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         AC_DEFINE(HAVE_DOSISH_SYSTEM)
         GPG='c:\\gnupg\\gpg.exe'
-        component_system='COM+'
+        #component_system='COM+'
         ;;
     *)
        ;;

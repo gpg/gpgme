@@ -34,7 +34,7 @@ extern "C" {
  * let autoconf (using the AM_PATH_GPGME macro) check that this
  * header matches the installed library.
  * Warning: Do not edit the next line.  configure will do that for you! */
-#define GPGME_VERSION "0.1.1"
+#define GPGME_VERSION "0.1.2"
 
 
 
@@ -92,6 +92,15 @@ typedef enum {
     GPGME_SIG_STAT_ERROR = 5
 } GpgmeSigStat;
 
+typedef enum {
+    GPGME_SIG_MODE_NORMAL = 0,
+    GPGME_SIG_MODE_DETACH = 1,
+    GPGME_SIG_MODE_CLEAR = 2
+} GpgmeSigMode;
+
+
+typedef const char *(*GpgmePassphraseCb)(void*, const char *desc, void *r_hd);
+
 
 /* Context management */
 GpgmeError gpgme_new (GpgmeCtx *r_ctx);
@@ -101,6 +110,8 @@ GpgmeCtx   gpgme_wait ( GpgmeCtx c, int hang );
 char *gpgme_get_notation ( GpgmeCtx c );
 void gpgme_set_armor ( GpgmeCtx c, int yes );
 void gpgme_set_textmode ( GpgmeCtx c, int yes );
+void gpgme_set_passphrase_cb ( GpgmeCtx c,
+                               GpgmePassphraseCb cb, void *cb_value );
 
 
 
@@ -138,9 +149,11 @@ char *gpgme_key_get_as_xml ( GpgmeKey key );
 GpgmeError gpgme_op_encrypt_start ( GpgmeCtx c,
                                     GpgmeRecipients recp,
                                     GpgmeData in, GpgmeData out );
-GpgmeError gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData passphrase,
+GpgmeError gpgme_op_decrypt_start ( GpgmeCtx c, 
                                     GpgmeData ciph, GpgmeData plain );
-GpgmeError gpgme_op_sign_start ( GpgmeCtx c, GpgmeData in, GpgmeData out );
+GpgmeError gpgme_op_sign_start ( GpgmeCtx c,
+                                 GpgmeData in, GpgmeData out,
+                                 GpgmeSigMode mode );
 GpgmeError gpgme_op_verify_start ( GpgmeCtx c,
                                    GpgmeData sig, GpgmeData text );
 
@@ -154,9 +167,10 @@ GpgmeError gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key );
 /* Convenience functions for normal usage */
 GpgmeError gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
                               GpgmeData in, GpgmeData out );
-GpgmeError gpgme_op_decrypt ( GpgmeCtx c, GpgmeData passphrase,
+GpgmeError gpgme_op_decrypt ( GpgmeCtx c, 
                               GpgmeData in, GpgmeData out );
-GpgmeError gpgme_op_sign ( GpgmeCtx c, GpgmeData in, GpgmeData out );
+GpgmeError gpgme_op_sign ( GpgmeCtx c, GpgmeData in, GpgmeData out,
+                           GpgmeSigMode mode);
 GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
                              GpgmeSigStat *r_status );
 

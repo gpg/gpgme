@@ -28,6 +28,8 @@
 #include <time.h>
 #include <windows.h>
 
+#include "obj_base.h"
+
 #include "argparse.h"
 
 #include "main.h"
@@ -70,6 +72,9 @@ static ARGPARSE_OPTS opts[] = {
     { oUnregServer, "UnregServer" , 0, "@" },
     { oEmbedding, "Embedding" , 0, "@" },
 {0} };
+
+
+
 
 static const char *
 my_strusage( int level )
@@ -258,30 +263,23 @@ enter_complus ()
 {
     HANDLE running;
     int reg;
-    void *factory;
+    IClassFactory *factory;
+    CLSID clsid;
 
-    /* CoInitializeEx (NULL, COINIT_MULTITHREADED); */
+    CoInitializeEx (NULL, COINIT_MULTITHREADED); 
     running = CreateEvent (NULL, FALSE, FALSE, NULL );
 
-  #if 0
-    factory = create_class_factory ();
-    CoRegisterClassObject (CLSID_gpgme, factory, 
+    factory = gnupg_factory_new ( &clsid ); 
+    CoRegisterClassObject (&clsid, (IUnknown*)factory, 
                            CLSCTX_LOCAL_SERVER,
-                           REGCLS_SUSPENDED|REGCLASS_MULTIPLEUSE, &reg );
+                           REGCLS_SUSPENDED|REGCLS_MULTIPLEUSE, &reg );
     CoResumeClassObjects ();
-  #endif
 
     WaitForSingleObject ( running, INFINITE );
     CloseHandle (running);
-  #if 0
     CoRevokeClassObject ( reg );
-    factory->release ();
-    CoUnitialize (); 
-  #endif
+    gnupg_factory_release (factory);
+    CoUninitialize (); 
 }
-
-
-
-
 
 

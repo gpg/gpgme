@@ -28,10 +28,10 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <windows.h>
+#include "syshdr.h"
 
 #include "util.h"
 #include "io.h"
@@ -209,6 +209,7 @@ _gpgme_io_spawn ( const char *path, char **argv,
     int duped_stdin = 0;
     int duped_stderr = 0;
     HANDLE hnul = INVALID_HANDLE_VALUE;
+    int debug_me = !!getenv ("GPGME_DEBUG");
 
     memset (&sec_attr, 0, sizeof sec_attr );
     sec_attr.nLength = sizeof sec_attr;
@@ -220,7 +221,8 @@ _gpgme_io_spawn ( const char *path, char **argv,
 
     memset (&si, 0, sizeof si);
     si.cb = sizeof (si);
-    si.dwFlags = STARTF_USESTDHANDLES;
+    si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+    si.wShowWindow = debug_me? SW_SHOW : SW_HIDE;
     si.hStdInput = GetStdHandle (STD_INPUT_HANDLE);
     si.hStdOutput = GetStdHandle (STD_OUTPUT_HANDLE);
     si.hStdError = GetStdHandle (STD_ERROR_HANDLE);
@@ -268,7 +270,7 @@ _gpgme_io_spawn ( const char *path, char **argv,
         }
         /* We normally don't want all the normal output */
         if ( !duped_stderr ) {
-            if (!getenv ("GPGME_DEBUG") ) {
+            if (!debug_me) {
                 si.hStdError = hnul;
                 DEBUG_SELECT ((stderr,"** using %d for stderr\n", (int)hnul ));
             }
@@ -340,7 +342,7 @@ _gpgme_io_waitpid ( int pid, int hang, int *r_status, int *r_signal )
 
     *r_status = 0;
     *r_signal = 0;
-    code = WaitForSingleObject ( proc, hang? INFINITE : NULL );
+    code = WaitForSingleObject ( proc, hang? INFINITE : 0 );
     switch (code) {
       case WAIT_FAILED:
         fprintf (stderr, "** WFSO pid=%d failed: %d\n",
@@ -565,8 +567,9 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
         }
     }
     if ( !once_more && !count ) {
+        /* once more but after relinquishing our timeslot */
         once_more = 1;
-        Sleep (300);
+        Sleep (0);
         goto restart;
     }
 

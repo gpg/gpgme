@@ -28,10 +28,10 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <sys/wait.h>
 #include <signal.h>
 #include <fcntl.h>
+#include "syshdr.h"
 
 #include "io.h"
 
@@ -100,8 +100,24 @@ _gpgme_io_spawn ( const char *path, char **argv,
                   struct spawn_fd_item_s *fd_child_list,
                   struct spawn_fd_item_s *fd_parent_list )
 {
+    static volatile int fixed_signals;
     pid_t pid;
     int i;
+
+    if ( !fixed_signals ) { 
+        struct sigaction act;
+        
+        sigaction( SIGPIPE, NULL, &act );
+        if( act.sa_handler == SIG_DFL ) {
+            act.sa_handler = SIG_IGN;
+            sigemptyset( &act.sa_mask );
+            act.sa_flags = 0;
+            sigaction( SIGPIPE, &act, NULL);
+        }
+        fixed_signals = 1;
+        /* fixme: This is not really MT safe */
+    }
+
     
     pid = fork ();
     if (pid == -1) 
@@ -134,7 +150,7 @@ _gpgme_io_spawn ( const char *path, char **argv,
         }
 
         if( !duped_stdin || !duped_stderr ) {
-            int fd = open ( "/dev/null", O_RDONLY );
+            int fd = open ( "/dev/null", O_RDWR );
             if ( fd == -1 ) {
                 fprintf (stderr,"can't open `/dev/null': %s\n",
                          strerror (errno) );

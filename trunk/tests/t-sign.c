@@ -47,6 +47,24 @@ print_data ( GpgmeData dh )
         fail_if_err (err);
 }
 
+static const char *
+passphrase_cb ( void *opaque, const char *desc, void *r_hd )
+{
+    const char *pass;
+
+    if ( !desc ) {
+        /* cleanup by looking at *r_hd */
+
+        
+        return NULL;
+    }
+
+    pass = "abc";
+    fprintf (stderr, "%% requesting passphrase for `%s': ", desc );
+    fprintf (stderr, "sending `%s'\n", pass );
+
+    return pass;
+}
 
 
 int 
@@ -59,25 +77,55 @@ main (int argc, char **argv )
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
+    if ( !getenv("GPG_AGENT_INFO") ) {
+        gpgme_set_passphrase_cb ( ctx, passphrase_cb, NULL );
+    } 
+
+    gpgme_set_textmode (ctx, 1);
+    gpgme_set_armor (ctx, 1);
 
     err = gpgme_data_new_from_mem ( &in, "Hallo Leute\n", 12, 0 );
     fail_if_err (err);
 
+    /* first a normal signature */
     err = gpgme_data_new ( &out );
     fail_if_err (err);
-
-    gpgme_set_textmode (ctx, 1);
-    gpgme_set_armor (ctx, 1);
-    err = gpgme_op_sign (ctx, in, out );
+    err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_NORMAL );
     fail_if_err (err);
-
     fflush (NULL);
     fputs ("Begin Result:\n", stdout );
     print_data (out);
     fputs ("End Result.\n", stdout );
-   
-    gpgme_data_release (in);
     gpgme_data_release (out);
+    gpgme_data_rewind (in);
+    
+    /* now a detached signature */
+    err = gpgme_data_new ( &out );
+    fail_if_err (err);
+    err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_DETACH );
+    fail_if_err (err);
+    fflush (NULL);
+    fputs ("Begin Result:\n", stdout );
+    print_data (out);
+    fputs ("End Result.\n", stdout );
+    gpgme_data_release (out);
+    gpgme_data_rewind (in);
+    
+
+    /* And finally a cleartext signature */
+    err = gpgme_data_new ( &out );
+    fail_if_err (err);
+    err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_CLEAR );
+    fail_if_err (err);
+    fflush (NULL);
+    fputs ("Begin Result:\n", stdout );
+    print_data (out);
+    fputs ("End Result.\n", stdout );
+    gpgme_data_release (out);
+    gpgme_data_rewind (in);
+    
+    /* ready */
+    gpgme_data_release (in);
     gpgme_release (ctx);
   } while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
    
