@@ -700,9 +700,9 @@ bool signMessage( const char*  cleartext,
   GpgmeCtx ctx;
   GpgmeError err;
   GpgmeData data,  sig;
-  size_t    rDLen, rSLen;
-  char*  rData = 0;
-  char*  rSig  = 0;
+  size_t    rSLen;
+  char* rSig = 0;
+  bool  bOk  = false;
 
 
 
@@ -756,7 +756,7 @@ bool signMessage( const char*  cleartext,
   gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
 
   rSig  = gpgme_data_release_and_get_mem( sig,  &rSLen );
-  gpgme_release( data );
+  gpgme_data_release( data );
 
   *ciphertext = malloc( rSLen + 1 );
   if( *ciphertext ) {
@@ -767,6 +767,7 @@ bool signMessage( const char*  cleartext,
     ((char*)(*ciphertext))[rSLen] = 0;
   }
 
+  free( rSig );
   gpgme_release (ctx);
 
   return bOk;
@@ -783,8 +784,48 @@ bool encryptMessage( const char* cleartext,
                      const char** ciphertext,
                      const char* addressee )
 {
-  return true;
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeData gCiphertext, gPlaintext;
+  GpgmeRecipients rset;
+  size_t rCLen;
+  char*  rCiph = 0;
+  bool   bOk   = false;
+
+  gpgme_new (&ctx);
+  gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
+
+  gpgme_set_armor (ctx, 1);
+  gpgme_set_textmode (ctx, 1);
+
+  gpgme_data_new_from_mem (&gPlaintext, cleartext,
+                            1+strlen( cleartext ), 1 );
+  err = gpgme_data_new ( &gCiphertext );
+
+  gpgme_recipients_new (&rset);
+  gpgme_recipients_add_name (rset, addressee);
+
+  gpgme_op_encrypt (ctx, rset, gPlaintext, gCiphertext );
+  gpgme_data_release (gPlaintext);
+  gpgme_recipients_release (rset);
+
+  rCiph = gpgme_data_release_and_get_mem( gCiphertext,  &rCLen );
+
+  *ciphertext = malloc( rCLen + 1 );
+  if( *ciphertext ) {
+    if( rCLen ) {
+      bOk = true;
+      strncpy((char*)*ciphertext, rCiph, rCLen );
+    }
+    ((char*)(*ciphertext))[rCLen] = 0;
+  }
+
+  free( rCiph );
+  gpgme_release (ctx);
+
+  return bOk;
 }
+
 
 bool encryptAndSignMessage( const char* cleartext,
           const char** ciphertext, const char* certificate,
