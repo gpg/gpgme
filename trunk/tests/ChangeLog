@@ -2,6 +2,9 @@
 
 	* gpg/t-sign.c (check_result): Change output format for signature
 	class to unsigned int.
+	* gpg/t-signers.c (check_result): Likewise.
+	* gpg/t-encrypt-sign.c (check_result): Likewise.
+	* gpgsm/t-sign.c (check_result): Likewise.
 
 2003-07-31  Marcus Brinkmann  <marcus@g10code.de>
 
