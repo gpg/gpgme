@@ -185,6 +185,15 @@ Run Control
 * Waiting For Completion::        Waiting until an operation is completed.
 * Cancelling an Operation::       Interrupting a running operation.
 * Hooking Up Into Idle Time::     Doing something when nothing has to be done.
+* Using External Event Loops::    Advanced control over what happens when.
+
+Using External Event Loops
+
+* I/O Callback Interface::        How I/O callbacks are registered.
+* Registering I/O Callbacks::     How to use I/O callbacks for a context.
+* I/O Callback Example::          An example how to use I/O callbacks.
+* I/O Callback Example GTK+::     How to integrate @acronym{GPGME} in GTK+.
+* I/O Callback Example GDK::      How to integrate @acronym{GPGME} in GDK.
 
 @end detailmenu
 @end menu
@@ -2690,15 +2699,21 @@ available.
 @cindex run control
 @cindex cryptographic operation, running
 
-Some basic support for running operations asynchronously is available
-in @acronym{GPGME}.  You can use it to set up a context completely up
-to initiating the desired operation, but delay performing it to a
-later point.
+@acronym{GPGME} supports running operations synchronously and
+asynchronously.  You can use asynchronous operation to set up a
+context up to initiating the desired operation, but delay performing
+it to a later point.
+
+Furthermore, you can use an external event loop to control exactly
+when @acronym{GPGME} runs.  This ensures that @acronym{GPGME} only
+runs when necessary and also prevents it from blocking for a long
+time.
 
 @menu
 * Waiting For Completion::        Waiting until an operation is completed.
 * Cancelling an Operation::       Interrupting a running operation.
 * Hooking Up Into Idle Time::     Doing something when nothing has to be done.
+* Using External Event Loops::    Advanced control over what happens when.
 @end menu
 
 
@@ -2708,20 +2723,34 @@ later point.
 @cindex wait for completion
 
 @deftypefun GpgmeCtx gpgme_wait (@w{GpgmeCtx @var{ctx}}, @w{GpgmeError *@var{status}}, @w{int @var{hang}})
-The function @code{gpgme_wait} does continue the pending operation
-within the context @var{ctx}.  In particular, it ensures the data
-exchange between @acronym{GPGME} and the crypto backend and watches
-over the run time status of the backend process.
+The function @code{gpgme_wait} continues the pending operation within
+the context @var{ctx}.  In particular, it ensures the data exchange
+between @acronym{GPGME} and the crypto backend and watches over the
+run time status of the backend process.
 
 If @var{hang} is true, the function does not return until the
 operation is completed or cancelled.  Otherwise the function will not
 block for a long time.
 
-The error status of the finished operation is returned in
-@var{status}.
+The error status of the finished operation is returned in @var{status}
+if @code{gpgme_wait} does not return @code{NULL}.
 
 The @var{ctx} argument can be @code{NULL}.  In that case,
 @code{gpgme_wait} waits for any context to complete its operation.
+
+@code{gpgme_wait} can be used only in conjunction with any context
+that has a pending operation initiated with one of the
+@code{gpgme_op_*_start} functions except @code{gpgme_op_keylist_start}
+and @code{gpgme_op_trustlist_start} (for which you should use the
+corresponding @code{gpgme_op_*_next} functions).  If @var{ctx} is
+@code{NULL}, all of such contexts are waited upon and possibly
+returned.  Synchronous operations running in parallel, as well as key
+and trust item list operations, do not affect @code{gpgme_wait}.
+
+In a multi-threaded environment, only one thread should ever call
+@code{gpgme_wait} at any time, irregardless if @var{ctx} is specified
+or not.  This means that all calls to this function should be fully
+synchronized by locking primitives.
 
 The function returns the @var{ctx} of the context which has finished
 the operation.
@@ -2735,10 +2764,12 @@ the operation.
 
 @deftypefun void gpgme_cancel (@w{GpgmeCtx @var{ctx}})
 The function @code{gpgme_cancel} tries to cancel the pending
-operation.  The function @code{gpgme_wait} might notice the
-cancellation flag and return.  It is currently not guaranteed to work
-under all circumstances.  It's current primary purpose is to prevent
-asking for a passphrase again in the passphrase callback.
+operation.  A running synchronous operation in the context or the
+function @code{gpgme_wait} with this context as its @var{ctx} argument
+might notice the cancellation flag and return.  It is currently not
+guaranteed to work under all circumstances.  Its current primary
+purpose is to prevent asking for a passphrase again in the passphrase
+callback.
 @end deftypefun
 
 
@@ -2764,6 +2795,532 @@ idle and time can better be spent elsewhere.  Setting @var{idle} to
 The function returns the old idle function, or @code{NULL} if none was
 registered yet.
 @end deftypefun
+
+
+@node Using External Event Loops
+@subsection Using External Event Loops
+@cindex event loop, external
+
+@acronym{GPGME} hides the complexity of the communication between the
+library and the crypto engine.  The price of this convenience is that
+the calling thread can block arbitrary long waiting for the data
+returned by the crypto engine.  In single-threaded programs, in
+particular if they are interactive, this is an unwanted side-effect.
+OTOH, if @code{gpgme_wait} is used without the @var{hang} option being
+enabled, it might be called unnecessarily often, wasting CPU time that
+could be used otherwise.
+
+The I/O callback interface described in this section lets the user
+take control over what happens when.  @acronym{GPGME} will provide the
+user with the file descriptors that should be monitored, and the
+callback functions that should be invoked when a file descriptor is
+ready for reading or writing.  It is then the user's responsibility to
+decide when to check the file descriptors and when to invoke the
+callback functions.  Usually this is done in an event loop, that also
+checks for events in other parts of the program.  If the callback
+functions are only called when the file descriptors are ready,
+@acronym{GPGME} will never block.  This gives the user mroe control
+over the program flow, and allows to perform other tasks when
+@acronym{GPGME} would block otherwise.
+
+By using this advanced mechanism, @acronym{GPGME} can be integrated
+smoothly into GUI toolkits like GTK+ even for single-threaded
+programs.
+
+@menu
+* I/O Callback Interface::        How I/O callbacks are registered.
+* Registering I/O Callbacks::     How to use I/O callbacks for a context.
+* I/O Callback Example::          An example how to use I/O callbacks.
+* I/O Callback Example GTK+::     How to use @acronym{GPGME} with GTK+.
+* I/O Callback Example GDK::      How to use @acronym{GPGME} with GDK.
+@end menu
+
+
+@node I/O Callback Interface
+@subsubsection I/O Callback Interface
+
+@deftp {Data type} {void (*GpgmeIOCb) (@w{void *@var{data}}, @w{int @var{fd}})}
+@tindex GpgmeIOCb
+The @code{GpgmeIOCb} type is the type of functions which
+@acronym{GPGME} wants to register as I/O callback handlers using the
+@code{GpgmeRegisterIOCb} functions provided by the user.
+
+@var{data} and @var{fd} are provided by @acronym{GPGME} when the I/O
+callback handler is registered, and should be passed through to the
+handler when it is invoked by the user because it noticed activity on
+the file descriptor @var{fd}.
+@end deftp
+
+@deftp {Data type} {GpgmeError (*GpgmeRegisterIOCb) (@w{void *@var{data}}, @w{int @var{fd}}, @w{int @var{dir}}, @w{GpgmeIOCb @var{fnc}}, @w{void *@var{fnc_data}}, @w{void **@var{tag}})}
+@tindex GpgmeRegisterIOCb
+The @code{GpgmeRegisterIOCb} type is the type of functions which can
+be called by @acronym{GPGME} to register an I/O callback funtion
+@var{fnc} for the file descriptor @var{fd} with the user.
+@var{fnc_data} should be passed as the first argument to @var{fnc}
+when the handler is invoked (the second argument should be @var{fd}).
+If @var{dir} is 0, @var{fnc} should be called by the user when
+@var{fd} is ready for writing.  If @var{dir} is 1, @var{fnc} should be
+called when @var{fd} is ready for reading.
+
+@var{data} was provided by the user when registering the
+@code{GpgmeRegisterIOCb} function with @acronym{GPGME} and will always
+be passed as the first argument when registering a callback function.
+For example, the user can use this to determine the event loop to
+which the file descriptor should be added.
+
+@acronym{GPGME} will call this function when a crypto operation is
+initiated in a context for which the user has registered I/O callback
+handler functions with @code{gpgme_set_io_cbs}.  It can also call this
+function when it is in an I/O callback handler for a file descriptor
+associated to this context.
+
+The user should return a unique handle in @var{tag} identifying this
+I/O callback registration, which will be passed to the
+@code{GpgmeRegisterIOCb} function without interpretation when the file
+descriptor should not be monitored anymore.
+@end deftp
+
+@deftp {Data type} {void (*GpgmeRemoveIOCb) (@w{void *@var{tag}})}
+The @code{GpgmeRemoveIOCb} type is the type of functions which can be
+called by @acronym{GPGME} to remove an I/O callback handler that was
+registered before.  @var{tag} is the handle that was returned by the
+@code{GpgmeRegisterIOCb} for this I/O callback.
+
+@acronym{GPGME} can call this function when a crypto operation is in
+an I/O callback.  It will also call this function when the context is
+destroyed while an operation is pending.
+@end deftp
+
+@deftp {Data type} {enum GpgmeEventIO}
+@tindex GpgmeEventIO
+The @code{GpgmeEventIO} type specifies the type of an event that is
+reported to the user by @acronym{GPGME} as a consequence of an I/O
+operation.  The following events are defined:
+
+@table @code
+@item GPGME_EVENT_DONE
+The operation is finished, the last I/O callback for this operation
+was removed.  The accompanying @var{type_data} points to a
+@code{GpgmeError} variable that contains the status of the operation
+that finished.  This event is signalled after the last I/O callback
+has been removed.
+
+@item GPGME_EVENT_NEXT_KEY
+In a @code{gpgme_op_keylist_start} operation, the next key was
+received from the crypto engine.  The accompanying @var{type_data} is
+a @code{GpgmeKey} variable that contains the key with one reference
+for the user.
+
+@item GPGME_EVENT_NEXT_TRUSTITEM
+In a @code{gpgme_op_trustlist_start} operation, the next trust item
+was received from the crypto engine.  The accompanying @var{type_data}
+is a @code{GpgmeTrustItem} variable that contains the trust item with
+one reference for the user.
+@end table
+@end deftp
+
+@deftp {Data type} {void (*GpgmeEventIOCb) (@w{void *@var{data}}, @w{GpgmeEventIO @var{type}}, @w{void *@var{type_data}})}
+The @code{GpgmeEventIOCb} type is the type of functions which can be
+called by @acronym{GPGME} to signal an event for an operation running
+in a context which has I/O callback functions registered by the user.
+
+@var{data} was provided by the user when registering the
+@code{GpgmeEventIOCb} function with @acronym{GPGME} and will always be
+passed as the first argument when registering a callback function.
+For example, the user can use this to determine the context in which
+this event has occured.
+
+@var{type} will specify the type of event that has occured.
+@var{type_data} specifies the event further, as described in the above
+list of possible @code{GpgmeEventIO} types.
+
+@acronym{GPGME} can call this function in an I/O callback handler.
+@end deftp
+
+
+@node Registering I/O Callbacks
+@subsubsection Registering I/O Callbacks
+
+@deftp {Data type} {struct GpgmeIOCbs}
+@tindex GpgmeEventIO
+This structure is used to store the I/O callback interface functions
+described in the previous section.  It has the following members:
+
+@table @code
+@item GpgmeRegisterIOCb add
+This is the function called by @acronym{GPGME} to register an I/O
+callback handler.  It must be specified.
+
+@item void *add_data
+This is passed as the first argument to the @code{add} function when
+it is called by @acronym{GPGME}.  For example, it can be used to
+determine the event loop to which the file descriptor should be added.
+
+@item GpgmeRemoveIOCb remove
+This is the function called by @acronym{GPGME} to remove an I/O
+callback handler.  It must be specified.
+
+@item GpgmeEventIOCb event
+This is the function called by @acronym{GPGME} to signal an event for
+an operation.  It is optional, but if you don't specify it, you can
+not retrieve the return value of the operation.
+
+@item void *event_data
+This is passed as the first argument to the @code{event} function when
+it is called by @acronym{GPGME}.  For example, it can be used to
+determine the context in which the event has occured.
+@end table
+@end deftp
+
+@deftypefun void gpgme_set_io_cbs (@w{GpgmeCtx @var{ctx}}, @w{struct GpgmeIOCbs *@var{io_cbs}})
+The function @code{gpgme_set_io_cbs} enables the I/O callback
+interface for the context @var{ctx}.  The I/O callback functions are
+specified by @var{io_cbs}.
+
+If @var{io_cbs}->@code{add} is @code{NULL}, the I/O callback interface
+is disabled for the context, and normal operation is restored.
+@end deftypefun
+
+@deftypefun void gpgme_get_io_cbs (@w{GpgmeCtx @var{ctx}}, @w{struct GpgmeIOCbs *@var{io_cbs}})
+The function @code{gpgme_get_io_cbs} returns the I/O callback
+functions set with @code{gpgme_set_io_cbs} in @var{io_cbs}.
+@end deftypefun
+
+
+@node I/O Callback Example
+@subsubsection I/O Callback Example
+
+To actually use an external event loop, you have to implement the I/O
+callback functions that are used by @acronym{GPGME} to register and
+unregister file descriptors.  Furthermore, you have to actually
+monitor these file descriptors for activity and call the appropriate
+I/O callbacks.
+
+The following example illustrates how to do that.  The example uses
+locking to show in which way the the callbacks and the event loop can
+run concurrently.  For the event loop, we use a fixed array.  For a
+real-world implementation, you should use a dynamically sized
+structure because the number of file descriptors needed for a crypto
+operation in @acronym{GPGME} is not predictable.
+
+@example
+#include <pthread.h>
+#include <sys/types.h>
+#include <gpgme.h>
+
+/* The following structure holds the result of a crypto operation.  */
+struct op_result
+@{
+  int done;
+  GpgmeError err;
+@};
+
+/* The following structure holds the data associated with one I/O
+callback.  */
+struct one_fd
+@{
+  int fd;
+  int dir;
+  GpgmeIOCb fnc;
+  void *fnc_data;
+@};
+
+struct event_loop
+@{
+  pthread_mutex_t lock;
+#define MAX_FDS 32
+  /* Unused slots are marked with FD being -1.  */
+  struct one_fd fds[MAX_FDS];
+@};
+@end example
+
+The following functions implement the I/O callback interface.
+
+@example
+GpgmeError
+add_io_cb (void *data, int fd, int dir, GpgmeIOCb fnc, void *fnc_data,
+	   void **r_tag)
+@{
+  struct event_loop *loop = data;
+  struct one_fd *fds = loop->fds;
+  int i;
+
+  pthread_mutex_lock (&loop->lock);
+  for (i = 0; i < MAX_FDS; i++)
+    @{
+      if (fds[i].fd == -1)
+	@{
+	  fds[i].fd = fd;
+	  fds[i].dir = dir;
+	  fds[i].fnc = fnc;
+	  fds[i].fnc_data = fnc_data;
+	  break;
+	@}
+    @}
+  pthread_mutex_unlock (&loop->lock);
+  if (i == MAX_FDS)
+    return GPGME_General_Error;
+  *r_tag = &fds[i];
+  return 0;
+@}
+
+void
+remove_io_cb (void *tag)
+@{
+  struct one_fd *fd = tag;
+
+  pthread_mutex_lock (&loop->lock);
+  fd->fd = -1;
+  pthread_mutex_unlock (&loop->lock);
+@}
+
+void
+event_io_cb (void *data, GpgmeEventIO type, void *type_data)
+@{
+  struct op_result *result = data;
+  GpgmeError *err = data;
+
+  /* We don't support list operations here.  */
+  if (type == GPGME_EVENT_DONE)
+    @{
+      result->done = 1;
+      result->err = *data;
+    @}
+@}
+@end example
+
+The final missing piece is the event loop, which will be presented
+next.  We only support waiting for the success of a single operation.
+
+@example
+int
+do_select (struct event_loop *loop)
+@{
+  fd_set rfds;
+  fd_set wfds;
+  int i, n;
+  int any = 0;
+
+  pthread_mutex_lock (&loop->lock);
+  FD_ZERO (&rfds);
+  FD_ZERO (&wfds);
+  for (i = 0; i < FDLIST_MAX; i++)
+    if (fdlist[i].fd != -1)
+      FD_SET (fdlist[i].fd, fdlist[i].dir ? &rfds : &wfds);
+  pthread_mutex_unlock (&loop->unlock);
+
+  do
+    @{
+      n = select (FD_SETSIZE, &rfds, &wfds, NULL, 0);
+    @}
+  while (n < 0 && errno == EINTR);
+
+  if (n < 0)
+    return n;	/* Error or timeout.  */
+
+  pthread_mutex_lock (&loop->lock);
+  for (i = 0; i < FDLIST_MAX && n; i++)
+    @{
+      if (fdlist[i].fd != -1)
+	@{
+	  if (FD_ISSET (fdlist[i].fd, fdlist[i].dir ? &rfds : &wfds))
+	    @{
+	      assert (n);
+	      n--;
+	      any = 1;
+              /* The I/O callback handler can register/remove callbacks,
+                 so we have to unlock the file descriptor list.  */
+              pthread_mutex_unlock (&loop->lock);
+	      (*fdlist[i].fnc) (fdlist[i].fnc_data, fdlist[i].fd);
+              pthread_mutex_lock (&loop->lock);
+	    @}
+	@}
+    @}
+  pthread_mutex_unlock (&loop->lock);
+  return any;
+@}
+
+void
+wait_for_op (struct event_loop *loop, struct op_result *result)
+@{
+  int ret;
+
+  do
+    @{
+      ret = do_select (loop);
+    @}
+  while (ret >= 0 && !result->done);
+  return ret;
+@}
+@end example
+
+The main function shows how to put it all together.
+
+@example
+int
+main (int argc, char *argv[])
+@{
+  struct event_loop loop;
+  struct op_result result;
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeData sig, text;
+  GpgmeSigStat status;
+  int i;
+  struct GpgmeIOCbs io_cbs =
+  @{
+    add_io_cb,
+    &loop,
+    remove_io_cb,
+    event_io_cb,
+    &result
+  @};
+
+  /* Initialize the loop structure.  */
+  loop.lock = PTHREAD_MUTEX_INITIALIZER;
+  for (i = 0; i < MAX_FDS; i++)
+    loop->fds[i].fd = -1;
+
+  /* Initialize the result structure.  */
+  result.done = 0;
+
+  err = gpgme_data_new_from_file (&sig, "signature", 1);
+  if (!err)
+    err = gpgme_data_new_from_file (&text, "text", 1);
+  if (!err)
+    err = gpgme_new (&ctx);
+  if (!err)
+    @{
+       gpgme_set_io_cbs (ctx, &io_cbs);
+       err = gpgme_op_verify_start (ctx, sig, text, &status);
+    @}
+  if (err)
+    @{
+      fprintf (stderr, "gpgme error: %s\n", gpgme_strerror (err));
+      exit (1);
+    @}
+
+  wait_for_op (&loop, &result);
+  if (!result.done)
+    @{
+      fprintf (stderr, "select error\n");
+      exit (1);
+    @}
+  if (!result.err)
+    @{
+      fprintf (stderr, "verification failed: %s\n", gpgme_strerror (result.err));
+      exit (1);
+    @}
+  /* Evaluate STATUS.  */
+  @dots{}
+  return 0;
+@}
+@end example
+
+
+@node I/O Callback Example GTK+
+@subsubsection I/O Callback Example GTK+
+@cindex GTK+, using @acronym{GPGME} with
+
+The I/O callback interface can be used to integrate @acronym{GPGME}
+with the GTK+ event loop.  The following code snippets shows how this
+can be done using the appropriate register and remove I/O callback
+functions.  In this example, the private data of the register I/O
+callback function is unused.  The event notifications is missing
+because it does not require any GTK+ specific setup.
+
+@example
+#include <gtk/gtk.h>
+
+struct my_gpgme_io_cb
+@{
+  GpgmeIOCb fnc;
+  void *fnc_data;
+  guint input_handler_id
+@};
+
+void
+my_gpgme_io_cb (gpointer data, gint source, GdkInputCondition condition)
+@{
+  struct my_gpgme_io_cb *iocb = data;
+  (*(iocb->fnc)) (iocb->data, source);
+@}
+
+void
+my_gpgme_remove_io_cb (void *data)
+@{
+  struct my_gpgme_io_cb *iocb = data;
+  gtk_input_remove (data->input_handler_id);
+@}
+
+void
+my_gpgme_register_io_callback (void *data, int fd, int dir, GpgmeIOCb fnc,
+                               void *fnc_data, void **tag)
+@{
+  struct my_gpgme_io_cb *iocb = g_malloc (sizeof (struct my_gpgme_io_cb));
+  iocb->fnc = fnc;
+  iocb->data = fnc_data;
+  iocb->input_handler_id = gtk_input_add_full (fd, dir
+                                                   ? GDK_INPUT_READ
+                                                   : GDK_INPUT_WRITE,
+                                               my_gpgme_io_callback,
+                                               0, iocb, NULL);
+  *tag = iocb;
+  return 0;
+@}
+@end example
+
+
+@node I/O Callback Example GDK
+@subsubsection I/O Callback Example GDK
+@cindex GDK, using @acronym{GPGME} with
+
+The I/O callback interface can also be used to integrate
+@acronym{GPGME} with the GDK event loop.  The following code snippets
+shows how this can be done using the appropriate register and remove
+I/O callback functions.  In this example, the private data of the
+register I/O callback function is unused.  The event notifications is
+missing because it does not require any GDK specific setup.
+
+It is very similar to the GTK+ example in the previous section.
+
+@example
+#include <gdk/gdk.h>
+
+struct my_gpgme_io_cb
+@{
+  GpgmeIOCb fnc;
+  void *fnc_data;
+  gint tag;
+@};
+
+void
+my_gpgme_io_cb (gpointer data, gint source, GdkInputCondition condition)
+@{
+  struct my_gpgme_io_cb *iocb = data;
+  (*(iocb->fnc)) (iocb->data, source);
+@}
+
+void
+my_gpgme_remove_io_cb (void *data)
+@{
+  struct my_gpgme_io_cb *iocb = data;
+  gdk_input_remove (data->tag);
+@}
+
+void
+my_gpgme_register_io_callback (void *data, int fd, int dir, GpgmeIOCb fnc,
+                               void *fnc_data, void **tag)
+@{
+  struct my_gpgme_io_cb *iocb = g_malloc (sizeof (struct my_gpgme_io_cb));
+  iocb->fnc = fnc;
+  iocb->data = fnc_data;
+  iocb->tag = gtk_input_add_full (fd, dir ? GDK_INPUT_READ : GDK_INPUT_WRITE,
+                                  my_gpgme_io_callback, iocb, NULL);
+  *tag = iocb;
+  return 0;
+@}
+@end example
 
 
 @include gpl.texi
