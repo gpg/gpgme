@@ -31,7 +31,13 @@ if test "$1" = "--build-w32"; then
         fi
     fi
 
-    crossbindir=`mingw32 --install-dir`/bin
+    crossinstalldir=`mingw32 --install-dir`
+    crossbindir=`mingw32 --get-bindir 2>/dev/null` \
+               || crossbindir="$crossinstalldir/bin"
+    crosslibdir=`mingw32 --get-libdir 2>/dev/null` \
+               || crosslibdir="$crossinstalldir/i386--mingw32/lib"
+    crossincdir=`mingw32 --get-includedir 2>/dev/null` \
+               || crossincdir="$crossinstalldir/i386--mingw32/include"
     CC=`mingw32 --get-path gcc`
     CPP=`mingw32 --get-path cpp`
     AR=`mingw32 --get-path ar`
@@ -54,8 +60,9 @@ if test "$1" = "--build-w32"; then
     fi
     [ $DIE = yes ] && exit 1
 
-    ./configure --host=${host} --target=${target} \
-                ${disable_foo_tests} $*
+    ./configure --host=${host} --target=${target}  ${disable_foo_tests} \
+                --bindir=${crossbindir} --libdir=${crosslibdir} \
+                --includedir=${crossincdir}  $*
     exit $?
 fi
 
