@@ -45,7 +45,7 @@ GpgmeError _gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph,
 GpgmeError _gpgme_engine_op_delete (EngineObject engine, GpgmeKey key,
 				    int allow_secret);
 GpgmeError _gpgme_engine_op_edit (EngineObject engine, GpgmeKey key,
-				  GpgmeData out);
+				  GpgmeData out, GpgmeCtx ctx /* FIXME */);
 GpgmeError _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
 				     GpgmeData plain, GpgmeData ciph,
 				     int use_armor);

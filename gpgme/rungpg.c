@@ -1440,7 +1440,8 @@ _gpgme_gpg_op_delete (GpgObject gpg, GpgmeKey key, int allow_secret)
 
 
 GpgmeError
-_gpgme_gpg_op_edit (GpgObject gpg, GpgmeKey key, GpgmeData out)
+_gpgme_gpg_op_edit (GpgObject gpg, GpgmeKey key, GpgmeData out,
+		    GpgmeCtx ctx /* FIXME */)
 {
   GpgmeError err;
 
