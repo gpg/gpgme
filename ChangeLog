@@ -1,5 +1,10 @@
 2004-09-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	Released 1.0.0.
+
+	* configure.ac (LIBGPGME_LT_REVISION): Bump up to 1.
+	(AC_INIT): Set version to 1.0.0.
+
 	* Makefile.am (EXTRA_DIST): Remove README-alpha.
 	* README-alpha: Remove file.
 
