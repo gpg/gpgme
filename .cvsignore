@@ -7,6 +7,8 @@ config.h.in
 config.log
 config.status
 configure
+gpgme-0.1.0
+libtool
 stamp-h
 stamp-h.in
 stamp-h1

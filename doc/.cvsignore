@@ -1,1 +1,6 @@
 Makefile.in Makefile
+ref.aux
+ref.dvi
+ref.log
+ref.sgml
+ref.tex
