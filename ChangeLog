@@ -1,3 +1,10 @@
+2002-02-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_INIT): Bump version to 0.3.3.
+	* jnlib/Makefile.am: Rever to older version that includes xmalloc
+	but not dotlock and some other files.  Reported by Stéphane
+	Corthésy.
+	
 2002-02-10  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Released 0.3.2.

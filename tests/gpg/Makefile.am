@@ -26,6 +26,7 @@ TESTS_ENVIRONMENT = GNUPGHOME=.
 TESTS = t-encrypt t-sign t-signers t-decrypt t-verify	\
 	t-decrypt-verify t-keylist t-export t-import t-trustlist
 
+CLEANFILES = secring.gpg pubring.gpg trustdb.gpg random_seed
 
 EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 	geheim.txt pubkey-1.asc seckey-1.asc
@@ -37,7 +38,7 @@ LDADD = ../../gpgme/libgpgme.la
 # We don't run t-genkey in the test suite, because it taes too long
 noinst_PROGRAMS = $(TESTS) t-genkey
 
-distclean-local:
+clean-local:
 	$(srcdir)/mkdemodirs --clean
 
 all-local: ./pubring.gpg ./secring.gpg
