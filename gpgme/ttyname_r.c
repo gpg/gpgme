@@ -29,7 +29,8 @@
 
 #warning ttyname is not thread-safe, and ttyname_r is missing
 
-int ttyname_r(int fd, char *buf, size_t buflen)
+int
+ttyname_r (int fd, char *buf, size_t buflen)
 {
   char *tty;
 
