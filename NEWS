@@ -696,6 +696,11 @@ gpgme_get_key			NEW
 GPGME_ATTR_SIG_CLASS		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Noteworthy changes in version 0.3.16 (2003-11-19)
+-------------------------------------------------
+
+ * Compatibility fixes for GnuPG 1.9.x
+
 Noteworthy changes in version 0.3.15 (2003-02-18)
 -------------------------------------------------
 
