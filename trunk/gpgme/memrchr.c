@@ -1,5 +1,5 @@
 /* memrchr.c - Replacement for memrchr.
- * Copyright (C) 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,10 +27,13 @@
 void *
 memrchr (const void *block, int c, size_t size)
 {
-  void *p;
+  const unsigned char *p = block;
 
-  for (p = block + size; p != block; p --)
-    if (*p == c)
-      return p;
-  return 0;
+  if (size)
+    {
+      for (p += size - 1; size; p--, size--)
+        if (*p == c)
+          return (void *)p;
+    }
+  return NULL;
 }
