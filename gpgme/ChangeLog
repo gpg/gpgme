@@ -1,3 +1,8 @@
+2001-12-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* keylist.c (gpgme_op_keylist_next): Set pending to 0 if EOF
+	occurs.
+
 2001-11-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_op_sign): Fix stupid typo.
