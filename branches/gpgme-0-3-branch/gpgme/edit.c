@@ -112,10 +112,11 @@ _gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
 
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
-  _gpgme_engine_op_edit (ctx->engine, key, out, ctx);
+  err = _gpgme_engine_op_edit (ctx->engine, key, out, ctx);
 
   /* And kick off the process.  */
-  err = _gpgme_engine_start (ctx->engine, ctx);
+  if (!err)
+    err = _gpgme_engine_start (ctx->engine, ctx);
   
  leave:
   if (err)

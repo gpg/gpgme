@@ -1,3 +1,14 @@
+2003-02-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_op_sign): Call
+	gpgsm_assuan_simple_command with status handlers.
+	* edit.c (_gpgme_op_edit_start): Check return value of
+	_gpgme_engine_op_edit.
+	* import.c (_gpgme_op_import_start): Likewise for
+	_gpgme_engine_op_import.
+	* sign.c (_gpgme_op_sign_start): Likewise for
+	_gpgme_engine_op_sign.
+
 2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* edit.c (_gpgme_edit_status_handler): Call the progress status
