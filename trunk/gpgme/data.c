@@ -439,6 +439,11 @@ gpgme_data_rewind ( GpgmeData dh )
  * are copied and the actual number of bytes are returned in @nread.
  * If there are no more bytes available %GPGME_EOF is returned and @nread
  * is set to 0.
+ *
+ * With a @buffer of NULL, the function does only return the number of
+ * bytes available and does not move the read pointer.  This does only
+ * work for certain data types, all other will respnd with an
+ * %GPGME_Invalid_Type.
  * 
  * Return value: An errorcode or 0 on success, EOF is indcated by the
  * error code GPGME_EOF.
@@ -456,13 +461,22 @@ gpgme_data_read ( GpgmeData dh, char *buffer, size_t length, size_t *nread )
             *nread = 0;
             return mk_error(EOF);
         }
-        if (nbytes > length)
-            nbytes = length;
-        memcpy ( buffer, dh->data + dh->readpos, nbytes );
-        *nread = nbytes;
-        dh->readpos += nbytes;
+        if (!buffer) {
+            *nread = nbytes;
+        }
+        else {
+            if (nbytes > length)
+                nbytes = length;
+            memcpy ( buffer, dh->data + dh->readpos, nbytes );
+            *nread = nbytes;
+            dh->readpos += nbytes;
+        }
     }
     else if (dh->type == GPGME_DATA_TYPE_CB) {
+        if (!buffer) {
+            *nread = 0;
+            return mk_error (Invalid_Type);
+        }
         nbytes = dh->len - dh->readpos;
         if ( nbytes ) {
             /* we have unread data - return this */

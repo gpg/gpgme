@@ -606,6 +606,7 @@ build_argv ( GpgObject gpg )
         argc++;
     if (!gpg->cmd.used)
         argc++;
+    argc += 2; /* --comment */
 
     argv = xtrycalloc ( argc+1, sizeof *argv );
     if (!argv)
@@ -651,6 +652,20 @@ build_argv ( GpgObject gpg )
         }
         argc++;
     }
+    argv[argc] = xtrystrdup ( "--comment" );
+    if (!argv[argc]) {
+        xfree (fd_data_map);
+        free_argv (argv);
+        return mk_error (Out_Of_Core);
+    }
+    argc++;
+    argv[argc] = xtrystrdup ( "" );
+    if (!argv[argc]) {
+        xfree (fd_data_map);
+        free_argv (argv);
+        return mk_error (Out_Of_Core);
+    }
+    argc++;
     for ( a=gpg->arglist; a; a = a->next ) {
         if ( a->data ) {
             switch ( _gpgme_data_get_mode (a->data) ) {

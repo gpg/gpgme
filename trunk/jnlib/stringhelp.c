@@ -264,6 +264,79 @@ compare_filenames( const char *a, const char *b )
 }
 
 
+/****************************************************
+ ******** locale insensitive ctype functions ********
+ ****************************************************/
+/* FIXME: replace them by a table lookup and macros */
+int
+ascii_isupper (int c)
+{
+    return c >= 'A' && c <= 'Z';
+}
+
+int
+ascii_islower (int c)
+{
+    return c >= 'a' && c <= 'z';
+}
+
+int 
+ascii_toupper (int c)
+{
+    if (c >= 'a' && c <= 'z')
+        c &= ~0x20;
+    return c;
+}
+
+int 
+ascii_tolower (int c)
+{
+    if (c >= 'A' && c <= 'Z')
+        c |= 0x20;
+    return c;
+}
+
+
+int
+ascii_strcasecmp( const char *a, const char *b )
+{
+    if (a == b)
+        return 0;
+
+    for (; *a && *b; a++, b++) {
+	if (*a != *b && ascii_toupper(*a) != ascii_toupper(*b))
+	    break;
+    }
+    return *a == *b? 0 : (ascii_toupper (*a) - ascii_toupper (*b));
+}
+
+int
+ascii_memcasecmp( const char *a, const char *b, size_t n )
+{
+    if (a == b)
+        return 0;
+    for ( ; n; n--, a++, b++ ) {
+	if( *a != *b  && ascii_toupper (*a) != ascii_toupper (*b) )
+            return *a == *b? 0 : (ascii_toupper (*a) - ascii_toupper (*b));
+    }
+    return 0;
+}
+
+int
+ascii_strcmp( const char *a, const char *b )
+{
+    if (a == b)
+        return 0;
+
+    for (; *a && *b; a++, b++) {
+	if (*a != *b )
+	    break;
+    }
+    return *a == *b? 0 : (*(signed char *)a - *(signed char *)b);
+}
+
+
+
 /*********************************************
  ********** missing string functions *********
  *********************************************/

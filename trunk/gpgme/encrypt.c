@@ -70,7 +70,7 @@ gpgme_op_encrypt_start ( GpgmeCtx c, GpgmeRecipients recp,
     for ( i=0; i < c->verbosity; i++ )
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
     /* If we know that all recipients are valid (full or ultimate trust)
-     * we can pass suppress further checks */
+     * we can suppress further checks */
     if ( _gpgme_recipients_all_valid (recp) )
         _gpgme_gpg_add_arg ( c->gpg, "--always-trust" );
     
@@ -127,6 +127,12 @@ gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
     if ( !rc ) {
         gpgme_wait (c, 1);
         c->pending = 0;
+        /* FIXME: gpg does not return status info for invalid
+         * recipients, so we simply check whether we got any output at
+         * all and if not assume that we don't have valid recipients
+         * */
+        if (gpgme_data_get_type (out) == GPGME_DATA_TYPE_NONE)
+            rc = mk_error (No_Recipients);
     }
     return rc;
 }

@@ -49,6 +49,7 @@ typedef enum  {
     STATUS_SHM_GET_HIDDEN     ,
     STATUS_NEED_PASSPHRASE    ,
     STATUS_USERID_HINT        ,
+    STATUS_UNEXPECTED         ,
     STATUS_VALIDSIG           ,
     STATUS_SIG_ID	      ,
     STATUS_ENC_TO	      ,

@@ -44,7 +44,7 @@ extern "C" {
  * let autoconf (using the AM_PATH_GPGME macro) check that this
  * header matches the installed library.
  * Warning: Do not edit the next line.  configure will do that for you! */
-#define GPGME_VERSION "0.2.2"
+#define GPGME_VERSION "0.2.2a"
 
 
 
@@ -168,7 +168,9 @@ GpgmeCtx   gpgme_wait (GpgmeCtx c, int hang);
 
 char *gpgme_get_notation (GpgmeCtx c);
 void gpgme_set_armor (GpgmeCtx c, int yes);
+int  gpgme_get_armor (GpgmeCtx c);
 void gpgme_set_textmode (GpgmeCtx c, int yes);
+int  gpgme_get_textmode (GpgmeCtx c);
 void gpgme_set_keylist_mode ( GpgmeCtx c, int mode );
 void gpgme_set_passphrase_cb (GpgmeCtx c,
                               GpgmePassphraseCb cb, void *cb_value);

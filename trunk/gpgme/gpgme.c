@@ -152,6 +152,23 @@ gpgme_set_armor ( GpgmeCtx c, int yes )
     c->use_armor = yes;
 }
 
+
+/**
+ * gpgme_get_armor:
+ * @c: the context
+ * 
+ * Return the state of the armor flag which can be changed using
+ * gpgme_set_armor().
+ * 
+ * Return value: Boolean whether armor mode is to be used.
+ **/
+int 
+gpgme_get_armor (GpgmeCtx c)
+{
+    return c && c->use_armor;
+}
+
+
 /**
  * gpgme_set_textmode:
  * @c: the context 
@@ -167,6 +184,23 @@ gpgme_set_textmode ( GpgmeCtx c, int yes )
         return; /* oops */
     c->use_textmode = yes;
 }
+
+/**
+ * gpgme_get_textmode:
+ * @c: the context
+ * 
+ * Return the state of the textmode flag which can be changed using
+ * gpgme_set_textmode().
+ * 
+ * Return value: Boolean whether textmode is to be used.
+ **/
+int 
+gpgme_get_textmode (GpgmeCtx c)
+{
+    return c && c->use_textmode;
+}
+
+
 
 /**
  * gpgme_set_keylist_mode:

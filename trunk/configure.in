@@ -32,6 +32,7 @@ AM_MAINTAINER_MODE
 # 3. Interfaces removed (BAD, breaks upward compatibility): Increment
 #    CURRENT, set AGE and REVISION to 0.
 AM_INIT_AUTOMAKE(gpgme,0.2.2a)
+# --> New functions introduced <----
 LIBGPGME_LT_CURRENT=3
 LIBGPGME_LT_AGE=3
 LIBGPGME_LT_REVISION=1
@@ -178,7 +179,6 @@ echo "
 
         GPG version: min. $NEED_GPG_VERSION
 	GPG path:    $GPG
-	Component:   $component_system
 "
 
 

@@ -124,7 +124,7 @@ compare_versions ( const char *my_version, const char *req_version )
  * and return the version string; return NULL if the condition is not
  * met.  If a NULL is passed to this function, no check is done and
  * the version string is simply returned.  It is a pretty good idea to
- * run this function as soon as poossible, becuase it also intializes 
+ * run this function as soon as possible, because it also intializes 
  * some subsystems.  In a multithreaded environment if should be called
  * before the first thread is created.
  * 
