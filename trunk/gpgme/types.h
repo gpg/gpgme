@@ -23,7 +23,12 @@
 
 #include "gpgme.h"  /* external objects and prototypes */
 
+#ifndef HAVE_BYTE_TYPEDEF
 typedef unsigned char byte;
+#endif
+#ifndef HAVE_ULONG_TYPEDEF
+typedef unsigned long ulong;
+#endif
 
 
 typedef enum {
