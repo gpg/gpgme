@@ -4143,3 +4143,38 @@ else
 fi
 AC_MSG_RESULT([$SED])
 ])
+
+dnl GNUPG_CHECK_VA_COPY()
+dnl   Do some check on how to implement va_copy.
+dnl   May define MUST_COPY_VA_BY_VAL.
+dnl   Actual test code taken from glib-1.1.
+AC_DEFUN(GNUPG_CHECK_VA_COPY,
+[ AC_MSG_CHECKING(whether va_lists must be copied by value)
+  AC_CACHE_VAL(gnupg_cv_must_copy_va_byval,[
+    gnupg_cv_must_copy_va_byval=no
+    AC_TRY_RUN([
+       #include <stdarg.h>
+       void f (int i, ...)
+       {
+          va_list args1, args2;
+          va_start (args1, i);
+          args2 = args1;
+          if (va_arg (args2, int) != 42 || va_arg (args1, int) != 42)
+            exit (1);
+          va_end (args1);
+          va_end (args2);
+       }
+      
+       int main()
+       {
+          f (0, 42);
+            return 0;
+       }
+    ],gnupg_cv_must_copy_va_byval=yes)
+  ])
+  if test "$gnupg_cv_must_copy_va_byval" = yes; then
+     AC_DEFINE(MUST_COPY_VA_BYVAL,1,[used to implement the va_copy macro])
+  fi
+  AC_MSG_RESULT($gnupg_cv_must_copy_va_byval)
+])
+
