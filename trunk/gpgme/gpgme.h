@@ -257,6 +257,8 @@ GpgmeError gpgme_op_encrypt_start ( GpgmeCtx c,
                                     GpgmeData in, GpgmeData out );
 GpgmeError gpgme_op_decrypt_start ( GpgmeCtx c, 
                                     GpgmeData ciph, GpgmeData plain );
+GpgmeError gpgme_op_decrypt_verify_start (GpgmeCtx c, 
+					  GpgmeData ciph, GpgmeData plain);
 GpgmeError gpgme_op_sign_start ( GpgmeCtx c,
                                  GpgmeData in, GpgmeData out,
                                  GpgmeSigMode mode );
@@ -288,6 +290,9 @@ GpgmeError gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
                               GpgmeData in, GpgmeData out );
 GpgmeError gpgme_op_decrypt ( GpgmeCtx c, 
                               GpgmeData in, GpgmeData out );
+GpgmeError gpgme_op_decrypt_verify (GpgmeCtx c, 
+				    GpgmeData in, GpgmeData out,
+				    GpgmeSigStat *r_status);
 GpgmeError gpgme_op_sign ( GpgmeCtx c, GpgmeData in, GpgmeData out,
                            GpgmeSigMode mode);
 GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,

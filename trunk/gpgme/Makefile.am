@@ -39,6 +39,7 @@ libgpgme_la_SOURCES = \
         wait.c wait.h \
 	encrypt.c \
 	decrypt.c \
+	decrypt-verify.c \
 	verify.c \
 	sign.c \
 	passphrase.c \

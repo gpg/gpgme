@@ -1,5 +1,32 @@
 2001-11-16  Marcus Brinkmann  <marcus@g10code.de>
 
+	* decrypt-verify.c: New file.
+	* Makefile.am (libgpgme_la_SOURCES): Add decrypt-verify.c.
+	* types.h: Add decrypt-verify types.
+	* ops.h: Likewise.
+	* context.h: Add result type for decrypt-verify.
+	* gpgme.h: Add decrypt-verify prototypes.
+
+	* decrypt.c (decrypt_status_handler): Renamed to ...
+	(_gpgme_decrypt_status_handler): ... this.  Make non-static.
+	(_gpgme_decrypt_start): New function, derived from
+	gpgme_op_decrypt_start.
+	(gpgme_op_decrypt_start): Reimplement in terms of
+	_gpgme_decrypt_start.
+	(_gpgme_decrypt_result): New function to retrieve error value.
+	(gpgme_op_decrypt): Use _gpgme_decrypt_result.
+	* ops.h: Add prototypes for new functions.
+
+	* verify.c (verify_status_handler): Renamed to ...
+	(_gpgme_verify_status_handler): ... this.  Make non-static.
+	(gpgme_op_verify_start): Use new function name.
+	(intersect_stati): Renamed to ...
+	(_gpgme_intersect_stati): ... this.  Make non-static.
+	(gpgme_op_verify): Use new name.
+	* ops.h: Add prototypes for new functions.
+
+2001-11-16  Marcus Brinkmann  <marcus@g10code.de>
+
 	* passphrase.c: New file.
 	* Makefile.am (libgpgme_la_SOURCES): Add passphrase.c.
 	* ops.h (_gpgme_passphrase_result): Add prototypes from
