@@ -508,7 +508,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_NEWSIG:
       if (sig)
         calc_sig_summary (sig);
-      break;
+      return prepare_new_sig (opd);
 
     case GPGME_STATUS_GOODSIG:
     case GPGME_STATUS_EXPSIG:
