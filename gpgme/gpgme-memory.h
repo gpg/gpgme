@@ -1,4 +1,4 @@
-/* gpgme.h -  GnuPG Made Easy
+/* gpgme-memory.h 
  *	Copyright (C) 2000 Werner Koch (dd9jn)
  *
  * This file is part of GPGME.
@@ -18,26 +18,18 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GPGME_H
-#define GPGME_H
-#ifdef __cplusplus
-extern "C" { 
-#if 0 /* just to make Emacs auto-indent happy */
-}
-#endif
-#endif
+#ifndef GPGME_MEMORY_H
+#define GPGME_MEMORY_H
 
-struct gpgme_context_s;
-typedef struct gpgme_context_s *GPGME;
+void *xmalloc ( size_t n );
+void *xtrymalloc (size_t n );
+void *xcalloc ( size_t n, size_t m );
+void *xtrycalloc (size_t n, size_t m );
+void *xrealloc (void *p, size_t n);
+void *xtryrealloc (void *p, size_t n);
+void xfree ( void *a );
 
-
-
-
-#ifdef __cplusplus
-}
-#endif
-#endif /* GPGME_H */
-
+#endif /* GPGME_MEMORY_H */
 
 
 
