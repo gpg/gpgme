@@ -24,6 +24,7 @@
 #include <stdio.h> /* For FILE *.  */
 #ifdef _MSC_VER
   typedef long off_t;
+  typedef long ssize_t;
 #else
 # include <sys/types.h>
 #endif
