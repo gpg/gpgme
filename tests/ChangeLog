@@ -1,3 +1,12 @@
+2004-08-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-keylist.c (struct): Add new fields VALIDITY and
+	KEY_LENGTH.  
+	(main): Use them.
+	* gpgsm/t-import.c (check_result): New argument total_stat.
+	(main): Pass this argument.  Reduce number of total considered
+	keys to 1 for the second test.
+
 2004-04-05  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm/Makefile.am: Changed the faked system time to 20011213T12000.
