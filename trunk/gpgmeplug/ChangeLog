@@ -1,3 +1,9 @@
+2002-01-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme-openpgp.c: New file.
+	* Makefile.am (gpgme_openpgp_la_SOURCES): Replace gpgmeplug.c with
+	gpgme-openpgp.c.
+
 2002-01-15  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgmeplug.c: Renamed to ...
