@@ -566,7 +566,7 @@ build_argv (engine_gpg_t gpg)
     argc++;
   if (!gpg->cmd.used)
     argc++;	/* --batch */
-  argc += 1; /* --no-comment */
+  argc += 1;	/* --no-sk-comment */
 
   argv = calloc (argc + 1, sizeof *argv);
   if (!argv)
@@ -625,7 +625,7 @@ build_argv (engine_gpg_t gpg)
         }
       argc++;
     }
-  argv[argc] = strdup ("--no-comment");
+  argv[argc] = strdup ("--no-sk-comment");
   if (!argv[argc])
     {
       int saved_errno = errno;
