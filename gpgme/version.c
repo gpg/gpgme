@@ -1,6 +1,6 @@
 /* version.c -  version check
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -134,64 +134,56 @@ gpgme_check_version (const char *req_version)
   return _gpgme_compare_versions (VERSION, req_version);
 }
 
-/**
- * gpgme_get_engine_info:
- *  
- * Return information about the underlying crypto engines.  This is an
- * XML string with various information.  A string is always returned
- * even if the crypto engines is not installed; in this case a XML
- * string with some error information is returned.
- * 
- * Return value: A XML string with information about the crypto
- * engines.
- **/
-const char *
-gpgme_get_engine_info ()
+
+/* Get the information about the configured and installed engines.  A
+   pointer to the first engine in the statically allocated linked list
+   is returned in *INFO.  If an error occurs, it is returned.  */
+GpgmeError
+gpgme_get_engine_info (GpgmeEngineInfo *info)
 {
-  static const char *engine_info;
+  static GpgmeEngineInfo engine_info;
   DEFINE_STATIC_LOCK (engine_info_lock);
 
   LOCK (engine_info_lock);
   if (!engine_info)
     {
-      const char *openpgp_info = _gpgme_engine_get_info (GPGME_PROTOCOL_OpenPGP);
-      const char *cms_info = _gpgme_engine_get_info (GPGME_PROTOCOL_CMS);
-      char *info;
+      GpgmeEngineInfo *lastp = &engine_info;
+      GpgmeProtocol proto_list[] = { GPGME_PROTOCOL_OpenPGP,
+				     GPGME_PROTOCOL_CMS };
+      int proto;
 
-      if (!openpgp_info && !cms_info)
-	info = "<EngineInfo>\n</EngineInfo>\n";
-      else if (!openpgp_info || !cms_info)
+      for (proto = 0; proto < DIM (proto_list); proto++)
 	{
-	  const char *fmt = "<EngineInfo>\n"
-	    "%s"
-	    "</EngineInfo>\n";
+	  const char *path = _gpgme_engine_get_path (proto_list[proto]);
 
-	  info = malloc (strlen (fmt)
-			     + strlen (openpgp_info
-				      ? openpgp_info : cms_info) + 1);
-	  if (info)
-	    sprintf (info, fmt, openpgp_info ? openpgp_info : cms_info);
+	  if (!path)
+	    continue;
+
+	  *lastp = malloc (sizeof (*engine_info));
+	  if (!*lastp)
+	    {
+	      while (engine_info)
+		{
+		  GpgmeEngineInfo next_info = engine_info->next;
+		  free (engine_info);
+		  engine_info = next_info;
+		}
+	      UNLOCK (engine_info_lock);
+	      return GPGME_Out_Of_Core;
+	    }
+
+	  (*lastp)->protocol = proto_list[proto];
+	  (*lastp)->path = path;
+	  (*lastp)->version = _gpgme_engine_get_version (proto_list[proto]);
+	  (*lastp)->req_version
+	    = _gpgme_engine_get_req_version (proto_list[proto]);
+	  lastp = &(*lastp)->next;
 	}
-      else
-	{
-	  const char *fmt = "<EngineInfo>\n"
-	    "%s%s"
-	    "</EngineInfo>\n";
-	  info = malloc (strlen (fmt) + strlen (openpgp_info)
-			     + strlen (cms_info) + 1);
-	  if (info)
-	    sprintf (info, fmt, openpgp_info, cms_info);
-	}
-      if (!info)
-	info = "<EngineInfo>\n"
-	  "  <error>Out of core</error>\n"
-	  "</EngineInfo>\n";
-      engine_info = info;
     }
   UNLOCK (engine_info_lock);
-  return engine_info;
+  *info = engine_info;
+  return 0;
 }
-
 
 
 #define LINELENGTH 80

@@ -1,3 +1,7 @@
+2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Engine Information): Rewritten.
+
 2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (I/O Callback Interface): Document new even

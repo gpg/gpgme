@@ -209,8 +209,6 @@ gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol protocol)
     case GPGME_PROTOCOL_CMS:
       ctx->use_cms = 1;
       break;
-    case GPGME_PROTOCOL_AUTO:
-      return GPGME_Not_Implemented;
     default:
       return GPGME_Invalid_Value;
     }
@@ -228,6 +226,22 @@ gpgme_get_protocol (GpgmeCtx ctx)
   return GPGME_PROTOCOL_OpenPGP;
 }
 
+
+const char *
+gpgme_get_protocol_name (GpgmeProtocol protocol)
+{
+  switch (protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return "OpenPGP";
+
+    case GPGME_PROTOCOL_CMS:
+      return "CMS";
+
+    default:
+      return NULL;
+    }
+}
 
 /**
  * gpgme_set_armor:

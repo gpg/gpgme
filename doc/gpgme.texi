@@ -609,41 +609,87 @@ and @code{GPGME_Invalid_Engine} if it is not.
 @section Engine Information
 @cindex engine, information about
 
-@deftypefun {const char *} gpgme_get_engine_info (void)
-The function @code{gpgme_get_engine_info} returns an @acronym{XML}
-string containing information about the available protocols and the
-engine which implement them.  The following information is returned
-for each engine:
+@deftp {Data type} {GpgmeEngineInfo}
+@tindex GpgmeProtocol
+The @code{GpgmeEngineInfo} type specifies a pointer to a structure
+describing a crypto backend engine.  The structure contains the
+following elements:
 
-@table @samp
-@item <protocol>
-The name of the protocol.
-@item <version>
-The version of the engine.
-@item <path>
-The path to the engine binary.
+@table @code
+@item GpgmeEngineInfo next
+This is a pointer to the next engine info structure in the linked
+list, or @code{NULL} if this is the last element.
+
+@item GpgmeProtocol protocol
+This is the protocol for which the crypo engine is used.  You can
+convert this to a string with @code{gpgme_get_protocol_name} for
+printing.
+
+@item const char *path
+This is a string holding the path to the executable of the crypto
+engine.  Currently, it is never @code{NULL}, but using @code{NULL} is
+reserved for future use, so always check before you use it.
+
+@item const char *version
+This is a string containing the version number of the crypto engine.
+It might be @code{NULL} if the version number can not be determined,
+for example because the executable doesn't exist or is invalid.
+
+@item const char *req_version
+This is a string containing the minimum required version number of the
+crypto engine for @acronym{GPGME} to work correctly.  This is the
+version number that @code{gpgme_engine_check_version} verifies
+against.  Currently, it is never @code{NULL}, but using @code{NULL} is
+reserved for future use, so always check before you use it.
 @end table
+@end deftp
 
-A string is always returned.  If an error occurs, the string will
-contain an @samp{<error>} tag with a description of the failure.
+@deftypefun GpgmeError gpgme_get_engine_info (GpgmeEngineInfo *info)
+The function @code{gpgme_get_engine_info} returns a linked list of
+engine info structures in @var{info}.  Each info structure describes
+one configured crypto backend engine.
+
+The memory for the info structures is allocated the first time this
+function is invoked, and must not be freed by the caller.
+
+This function returns @code{GPGME_No_Error} if successful, and
+@code{GPGME_Out_Of_Core} if not enough memory is available for the
+operation.
 @end deftypefun
 
-Here is the example output of what @code{gpgme_get_engine_info} might
-return on your system:
+Here is the example how you can provide more diagnostics if you
+receive an error message which indicates that the crypto engine is
+invalid.
 
 @example
-<EngineInfo>
- <engine>
-  <protocol>OpenPGP</protocol>
-  <version>1.0.6</version>
-  <path>/usr/bin/gpg</path>
- </engine>
- <engine>
-  <protocol>CMS</protocol>
-  <version>0.0.0</version>
-  <path>/usr/bin/gpgsm</path>
- </engine>
-</EngineInfo>
+GpgmeCtx ctx;
+GpgmeError err;
+
+[...]
+
+if (err == GPGME_Invalid_Engine)
+  @{
+    GpgmeEngineInfo info;
+    err = gpgme_get_engine_info (&info);
+    if (!err)
+      @{
+        while (info && info->protocol != gpgme_get_protocol (ctx))
+          info = info->next;
+        if (!info)
+          fprintf (stderr, "GPGME compiled without support for protocol %s",
+                   gpgme_get_protocol_name (info->protocol));
+        else if (info->path && !info->version)
+          fprintf (stderr, "Engine %s not installed properly",
+                   info->path);
+        else if (info->path && info->version && info->req_version)
+          fprintf (stderr, "Engine %s version %s installed, "
+                   "but at least version %s required", info->path,
+                   info->version, info->req_version);
+        else
+          fprintf (stderr, "Unknown problem with engine for protocol %s",
+                   gpgme_get_protocol_name (info->protocol));
+      @}
+  @}
 @end example
 
 

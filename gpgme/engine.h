@@ -29,6 +29,9 @@ const char *_gpgme_engine_get_path (GpgmeProtocol proto);
 /* Get the version number of the engine for PROTOCOL.  */
 const char *_gpgme_engine_get_version (GpgmeProtocol proto);
 
+/* Get the version number of the engine for PROTOCOL.  */
+const char *_gpgme_engine_req_version (GpgmeProtocol proto);
+
 /* Verify the version requirement for the engine for PROTOCOL.  */
 const char *_gpgme_engine_get_info (GpgmeProtocol proto);
 

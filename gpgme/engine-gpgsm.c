@@ -113,11 +113,10 @@ gpgsm_get_version (void)
 }
 
 
-static GpgmeError
-gpgsm_check_version (void)
+static const char *
+gpgsm_get_req_version (void)
 {
-  return _gpgme_compare_versions (gpgsm_get_version (), NEED_GPGSM_VERSION)
-    ? 0 : GPGME_Invalid_Engine;
+  return NEED_GPGSM_VERSION;
 }
 
 
@@ -1437,7 +1436,7 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     /* Static functions.  */
     _gpgme_get_gpgsm_path,
     gpgsm_get_version,
-    gpgsm_check_version,
+    gpgsm_get_req_version,
     gpgsm_new,
 
     /* Member functions.  */

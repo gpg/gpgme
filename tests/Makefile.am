@@ -21,7 +21,7 @@
 
 TESTS_ENVIRONMENT = GNUPGHOME=.
 
-TESTS = t-version t-data
+TESTS = t-version t-data t-engine-info
 
 EXTRA_DIST = t-data-1.txt t-data-2.txt
 

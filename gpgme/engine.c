@@ -27,6 +27,7 @@
 #include "gpgme.h"
 #include "util.h"
 #include "sema.h"
+#include "ops.h"
 
 #include "engine.h"
 #include "engine-backend.h"
@@ -54,7 +55,7 @@ static struct engine_ops *engine_ops[] =
 const char *
 _gpgme_engine_get_path (GpgmeProtocol proto)
 {
-  if (proto > sizeof (engine_ops) / sizeof (engine_ops[0]))
+  if (proto > DIM (engine_ops))
     return NULL;
 
   if (engine_ops[proto] && engine_ops[proto]->get_path)
@@ -68,7 +69,7 @@ _gpgme_engine_get_path (GpgmeProtocol proto)
 const char *
 _gpgme_engine_get_version (GpgmeProtocol proto)
 {
-  if (proto > sizeof (engine_ops) / sizeof (engine_ops[0]))
+  if (proto > DIM (engine_ops))
     return NULL;
 
   if (engine_ops[proto] && engine_ops[proto]->get_version)
@@ -78,20 +79,27 @@ _gpgme_engine_get_version (GpgmeProtocol proto)
 }
 
 
+/* Get the required version number of the engine for PROTOCOL.  */
+const char *
+_gpgme_engine_get_req_version (GpgmeProtocol proto)
+{
+  if (proto > DIM (engine_ops))
+    return NULL;
+
+  if (engine_ops[proto] && engine_ops[proto]->get_req_version)
+    return (*engine_ops[proto]->get_req_version) ();
+  else
+    return NULL;
+}
+
+
 /* Verify the version requirement for the engine for PROTOCOL.  */
 GpgmeError
 gpgme_engine_check_version (GpgmeProtocol proto)
 {
-  if (proto > sizeof (engine_ops) / sizeof (engine_ops[0]))
-    return GPGME_Invalid_Value;
-
-  if (!engine_ops[proto])
-    return GPGME_Invalid_Engine;
-
-  if (engine_ops[proto]->check_version)
-    return (*engine_ops[proto]->check_version) ();
-  else
-    return 0;
+  return _gpgme_compare_versions (_gpgme_engine_get_version (proto),
+				  _gpgme_engine_get_req_version (proto))
+    ? 0 : GPGME_Invalid_Engine;
 }
 
 
@@ -142,7 +150,7 @@ _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine)
   const char *path;
   const char *version;
 
-  if (proto > sizeof (engine_ops) / sizeof (engine_ops[0]))
+  if (proto > DIM (engine_ops))
     return GPGME_Invalid_Value;
 
   if (!engine_ops[proto])

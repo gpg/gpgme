@@ -1,3 +1,27 @@
+2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (enum GpgmeProtocol): Remove GPGME_PROTOCOL_AUTO.
+	* gpgme.c (gpgme_set_protocol): Don't handle GPGME_PROTOCOL_AUTO.
+	(gpgme_get_protocol_name): New function.
+
+	* engine-backend.h (struct engine_ops): New member
+	get_req_version, remove member check_version.
+	* engine.h (_gpgme_Engine_get_version): New prototype.
+	* rungpg.c (gpg_get_req_version): New function.
+	(gpg_check_version): Function removed.
+	(_gpgme_engine_ops_gpg): Add gpg_get_req_version, remove
+	gpg_check_version.
+	* engine-gpgsm.c (gpgsm_get_req_version): New function.
+	(gpgsm_check_version): Function removed.
+	(_gpgme_engine_ops_gpgsm): Add gpgsm_get_req_version, remove
+	gpgsm_check_version.
+	* engine.c: Include ops.h.
+	 (_gpgme_engine_get_req_version): New function.
+	(gpgme_engine_check_version): Rewritten.
+	* version.c (gpgme_get_engine_info): Rewritten.
+	* gpgme.h (gpgme_engine_info): New structure.
+	(GpgmeEngineInfo): New type.
+	
 2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* types.h: Remove byte and ulong types.

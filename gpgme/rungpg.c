@@ -248,11 +248,10 @@ gpg_get_version (void)
 }
 
 
-static GpgmeError
-gpg_check_version (void)
+static const char *
+gpg_get_req_version (void)
 {
-  return _gpgme_compare_versions (gpg_get_version (), NEED_GPG_VERSION)
-    ? 0 : GPGME_Invalid_Engine;
+  return NEED_GPG_VERSION;
 }
 
 
@@ -1646,7 +1645,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     /* Static functions.  */
     _gpgme_get_gpg_path,
     gpg_get_version,
-    gpg_check_version,
+    gpg_get_req_version,
     gpg_new,
 
     /* Member functions.  */
