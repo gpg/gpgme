@@ -22,8 +22,8 @@ echo_cflags=no
 echo_prefix=no
 echo_exec_prefix=no
 
-gpg_error_cflags=@GPG_ERROR_CFLAGS@
-gpg_error_libs=@GPG_ERROR_LIBS@
+gpg_error_cflags="@GPG_ERROR_CFLAGS@"
+gpg_error_libs="@GPG_ERROR_LIBS@"
 
 
 usage()
