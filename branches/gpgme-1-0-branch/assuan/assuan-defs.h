@@ -39,9 +39,9 @@ struct cmdtbl_s
 struct assuan_io
 {
   /* Routine to read from input_fd.  */
-  ssize_t (*read) (ASSUAN_CONTEXT, void *, size_t);
+  ssize_t (*readfnc) (ASSUAN_CONTEXT, void *, size_t);
   /* Routine to write to output_fd.  */
-  ssize_t (*write) (ASSUAN_CONTEXT, const void *, size_t);
+  ssize_t (*writefnc) (ASSUAN_CONTEXT, const void *, size_t);
   /* Send a file descriptor.  */
   AssuanError (*sendfd) (ASSUAN_CONTEXT, int);
   /* Receive a file descriptor.  */
