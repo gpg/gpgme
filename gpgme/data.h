@@ -99,7 +99,7 @@ struct gpgme_data
       /* Allocated size of BUFFER.  */
       size_t size;
       size_t length;
-      size_t offset;
+      off_t offset;
     } mem;
 
     /* For gpgme_data_new_from_read_cb.  */

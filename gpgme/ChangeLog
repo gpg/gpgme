@@ -1,3 +1,13 @@
+2004-09-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data-stream.c (stream_seek): Call ftello and return the current
+	offset.
+	* data.h (struct gpgme_data): Change type of data.mem.offset to
+	off_t.
+	* data.c (gpgme_data_seek): Check dh->cbs->seek callback, not read
+	callback.  If SEEK_CUR, adjust the offset by the pending buffer
+	size.  Clear pending buffer on success.
+
 2004-09-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.m4: Add copyright notice.
