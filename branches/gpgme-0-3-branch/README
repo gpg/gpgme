@@ -19,12 +19,6 @@ If configure can't find the `gpgsm' binary in your path, you can
 specify the location with the --with-gpgsm=/path/to/gpgsm argument to
 configure.
 
-To enable the CryptPlug GPGME PlugIn for both protocols, use the
-`--enable-gpgmeplug' option to the configure script.  `gpgmeplug' is
-experimental and you should not assume that it will stay with gpgme.
-The plug-ins are installed by `make install' in `pkglibdir', normally
-`PREFIX/lib/gpgme'.
-
 Before building the CVS version following the generic install
 instructions in `INSTALL', you need to set up the build scripts with
 `./autogen.sh'.  To build the W32 version, use `./autogen.sh

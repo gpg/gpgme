@@ -1,5 +1,5 @@
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001 g10 Code GmbH
+# Copyright (C) 2001, 2002 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -45,13 +45,7 @@ else
 tests = 
 endif
 
-if BUILD_GPGMEPLUG
-gpgmeplug = gpgmeplug
-else
-gpgmeplug = 
-endif
-
-SUBDIRS = ${assuan} gpgme ${tests} doc ${bonobo} ${complus} ${gpgmeplug}
+SUBDIRS = ${assuan} gpgme ${tests} doc ${bonobo} ${complus}
 
 # Fix the version of the spec file and create a file named VERSION 
 # to be used for patch's Prereq: feature.
