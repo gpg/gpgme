@@ -1,5 +1,12 @@
 2003-02-04  Marcus Brinkmann  <marcus@g10code.de>
 
+	* trustlist.c (trustlist_colon_handler): Release ITEM if name
+	could not be allocated.
+	(gpgme_trust_item_release): Only release name if it is allocated.
+	Reported by Marc Mutz <Marc.Mutz@uni-bielefeld.de>.
+
+2003-02-04  Marcus Brinkmann  <marcus@g10code.de>
+
 	* rungpg.c (read_status): If he status handler returns an error,
 	return it.
 	(status_handler): If read_status fails, just return the error.
