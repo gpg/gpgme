@@ -4,3 +4,5 @@
 
 * Allow to use GTK's main loop instead of the select stuff in
   wait.c
+
+* add locking to the key cache?

@@ -89,10 +89,10 @@ set_userid_flags ( GpgmeKey key, const char *s )
           case 'r': key->uids->revoked  = 1; break;
           case 'i': key->uids->invalid  = 1; break;
 
-          case 'n': key->uids->validity = 1; break;
-          case 'm': key->uids->validity = 2; break;
-          case 'f': key->uids->validity = 3; break;
-          case 'u': key->uids->validity = 4; break;
+          case 'n': key->uids->validity = GPGME_VALIDITY_NEVER; break;
+          case 'm': key->uids->validity = GPGME_VALIDITY_MARGINAL; break;
+          case 'f': key->uids->validity = GPGME_VALIDITY_FULL; break;
+          case 'u': key->uids->validity = GPGME_VALIDITY_ULTIMATE; break;
         }
     }
 }
