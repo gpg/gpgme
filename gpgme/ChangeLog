@@ -1,3 +1,8 @@
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_new): New variable CHILD_FDS.
+	Fill it with the servers fds, and pass it to assuan_pipe_connect.
+
 2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* keylist.c (gpgme_op_keylist_end): New function.
