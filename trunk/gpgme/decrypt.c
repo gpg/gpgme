@@ -192,9 +192,6 @@ _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
 
   err = _gpgme_engine_op_decrypt (ctx->engine, ciph, plain);
 
-  if (!err)	/* And kick off the process.  */
-    err = _gpgme_engine_start (ctx->engine, ctx);
-
  leave:
   if (err)
     {

@@ -1220,6 +1220,8 @@ gpgme_get_key (GpgmeCtx ctx, const char *fpr, GpgmeKey *r_key,
 	}
     }
 
+  /* We need our own context because we have to avoid the user's I/O
+     callback handlers.  */
   /* Fixme: This can be optimized by keeping an internal context
      used for such key listings.  */
   err = gpgme_new (&listctx);

@@ -81,7 +81,6 @@ GpgmeError _gpgme_engine_op_trustlist (EngineObject engine,
 				       const char *pattern);
 GpgmeError _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
 				    GpgmeData signed_text, GpgmeData plaintext);
-GpgmeError _gpgme_engine_start (EngineObject engine, void *opaque);
 
 void _gpgme_engine_set_io_cbs (EngineObject engine,
 			       struct GpgmeIOCbs *io_cbs);

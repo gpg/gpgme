@@ -426,19 +426,6 @@ _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
 }
 
 
-GpgmeError
-_gpgme_engine_start (EngineObject engine, void *opaque)
-{
-  if (!engine)
-    return mk_error (Invalid_Value);
-
-  if (!engine->ops->start)
-    return mk_error (Not_Implemented);
-
-  return (*engine->ops->start) (engine->engine, opaque);
-}
-
-
 void
 _gpgme_engine_set_io_cbs (EngineObject engine,
 			  struct GpgmeIOCbs *io_cbs)

@@ -1079,9 +1079,8 @@ colon_line_handler (void *opaque, int fd)
 
 
 static GpgmeError
-gpg_start (void *engine, void *opaque)
+start (GpgObject gpg)
 {
-  GpgObject gpg = engine;
   GpgmeError rc;
   int i, n;
   int status;
@@ -1223,6 +1222,8 @@ gpg_decrypt (void *engine, GpgmeData ciph, GpgmeData plain)
   if (!err)
     err = add_data (gpg, ciph, 0, 0);
 
+  if (!err)
+    start (gpg);
   return err;
 }
 
@@ -1245,6 +1246,8 @@ gpg_delete (void *engine, GpgmeKey key, int allow_secret)
 	err = add_arg (gpg, s);
     }
 
+  if (!err)
+    start (gpg);
   return err;
 }
 
@@ -1297,6 +1300,8 @@ gpg_edit (void *engine, GpgmeKey key, GpgmeData out, GpgmeCtx ctx /* FIXME */)
       else
 	err = add_arg (gpg, s);
     }
+  if (!err)
+    err = start (gpg);
 
   return err;
 }
@@ -1357,8 +1362,12 @@ gpg_encrypt (void *engine, GpgmeRecipients recp, GpgmeData plain,
   if (!err)
     err = add_data (gpg, plain, 0, 0);
 
+  if (!err)
+    err = start (gpg);
+
   return err;
 }
+
 
 static GpgmeError
 gpg_encrypt_sign (void *engine, GpgmeRecipients recp, GpgmeData plain,
@@ -1396,8 +1405,12 @@ gpg_encrypt_sign (void *engine, GpgmeRecipients recp, GpgmeData plain,
   if (!err)
     err = add_data (gpg, plain, 0, 0);
 
+  if (!err)
+    err = start (gpg);
+
   return err;
 }
+
 
 static GpgmeError
 gpg_export (void *engine, GpgmeRecipients recp, GpgmeData keydata,
@@ -1426,6 +1439,9 @@ gpg_export (void *engine, GpgmeRecipients recp, GpgmeData keydata,
 	err = gpgme_recipients_enum_close (recp, &ec);
     }
 
+  if (!err)
+    err = start (gpg);
+
   return err;
 }
 
@@ -1453,6 +1469,9 @@ gpg_genkey (void *engine, GpgmeData help_data, int use_armor,
   if (!err)
     err = add_data (gpg, help_data, 0, 0);
 
+  if (!err)
+    err = start (gpg);
+
   return err;
 }
 
@@ -1466,6 +1485,9 @@ gpg_import (void *engine, GpgmeData keydata)
   err = add_arg (gpg, "--import");
   if (!err)
     err = add_data (gpg, keydata, 0, 0);
+
+  if (!err)
+    err = start (gpg);
 
   return err;
 }
@@ -1495,6 +1517,9 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
     err = add_arg (gpg, "--");
   if (!err && pattern && *pattern)
     err = add_arg (gpg, pattern);
+
+  if (!err)
+    err = start (gpg);
 
   return err;
 }
@@ -1531,6 +1556,9 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
 	err = add_arg (gpg, *(pattern++));
     }
 
+  if (!err)
+    err = start (gpg);
+
   return err;
 }
 
@@ -1565,6 +1593,9 @@ gpg_sign (void *engine, GpgmeData in, GpgmeData out, GpgmeSigMode mode,
   if (!err)
     err = add_data (gpg, out, 1, 1);
 
+  if (!err)
+    start (gpg);
+
   return err;
 }
 
@@ -1583,6 +1614,9 @@ gpg_trustlist (void *engine, const char *pattern)
     err = add_arg (gpg, "--");
   if (!err)
     err = add_arg (gpg, pattern);
+
+  if (!err)
+    err = start (gpg);
 
   return err;
 }
@@ -1624,6 +1658,10 @@ gpg_verify (void *engine, GpgmeData sig, GpgmeData signed_text,
 	    err = add_data (gpg, signed_text, 0, 0);
 	}
     }
+
+  if (!err)
+    err = start (gpg);
+
   return err;
 }
 
@@ -1664,7 +1702,6 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_sign,
     gpg_trustlist,
     gpg_verify,
-    gpg_start,
     gpg_set_io_cbs,
     gpg_io_event
   };

@@ -384,8 +384,6 @@ _gpgme_op_verify_start (GpgmeCtx ctx, int synchronous,
       goto leave;
     }
   err = _gpgme_engine_op_verify (ctx->engine, sig, signed_text, plaintext);
-  if (!err)	/* And kick off the process.  */
-    err = _gpgme_engine_start (ctx->engine, ctx);
 
  leave:
   if (err)

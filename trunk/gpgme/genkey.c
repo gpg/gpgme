@@ -130,9 +130,6 @@ _gpgme_op_genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
   err = _gpgme_engine_op_genkey (ctx->engine, ctx->help_data_1, ctx->use_armor,
 				 pubkey, seckey);
 
-  if (!err)
-    err = _gpgme_engine_start (ctx->engine, ctx);
-
  leave:
   if (err)
     {

@@ -772,9 +772,6 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
   err = _gpgme_engine_op_keylist (ctx->engine, pattern, secret_only,
 				  ctx->keylist_mode);
 
-  if (!err)	/* And kick off the process.  */
-    err = _gpgme_engine_start (ctx->engine, ctx);
-
  leave:
   if (err)
     {
@@ -825,10 +822,6 @@ gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
 
   err = _gpgme_engine_op_keylist_ext (ctx->engine, pattern, secret_only,
 				      reserved, ctx->keylist_mode);
-
-  /* And kick off the process.  */
-  if (!err)
-    err = _gpgme_engine_start (ctx->engine, ctx);
 
  leave:
   if (err)

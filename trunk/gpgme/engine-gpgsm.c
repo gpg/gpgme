@@ -75,8 +75,6 @@ struct gpgsm_object_s
   iocb_data_t message_cb;
   int message_fd_server;
 
-  char *command;
-
   struct
   {
     GpgmeStatusHandler fnc;
@@ -294,7 +292,6 @@ gpgsm_release (void *engine)
   assuan_disconnect (gpgsm->assuan_ctx);
 
   free (gpgsm->colon.attic.line);
-  free (gpgsm->command);
   free (gpgsm);
 }
 
@@ -659,560 +656,6 @@ map_input_enc (GpgmeData d)
 }
 
 
-static GpgmeError
-gpgsm_decrypt (void *engine, GpgmeData ciph, GpgmeData plain)
-{
-  GpgsmObject gpgsm = engine;
-  GpgmeError err;
-
-  if (!gpgsm)
-    return mk_error (Invalid_Value);
-
-  gpgsm->command = strdup ("DECRYPT");
-  if (!gpgsm->command)
-    return mk_error (Out_Of_Core);
-
-  gpgsm->input_cb.data = ciph;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 
-                      map_input_enc (gpgsm->input_cb.data));
-  if (err)
-    return mk_error (General_Error);	/* FIXME */
-  gpgsm->output_cb.data = plain;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server, 0);
-  if (err)
-    return mk_error (General_Error);	/* FIXME */
-  _gpgme_io_close (gpgsm->message_cb.fd);
-
-  return 0;
-}
-
-
-static GpgmeError
-gpgsm_delete (void *engine, GpgmeKey key, int allow_secret)
-{
-  GpgsmObject gpgsm = engine;
-  char *fpr = (char *) gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, NULL, 0);
-  char *linep = fpr;
-  char *line;
-  int length = 8;	/* "DELKEYS " */
-
-  if (!fpr)
-    return mk_error (Invalid_Key);
-
-  while (*linep)
-    {
-      length++;
-      if (*linep == '%' || *linep == ' ' || *linep == '+')
-	length += 2;
-      linep++;
-    }
-  length++;
-
-  line = malloc (length);
-  if (!line)
-    return mk_error (Out_Of_Core);
-
-  strcpy (line, "DELKEYS ");
-  linep = &line[8];
-
-  while (*fpr)
-    {
-      switch (*fpr)
-	{
-	case '%':
-	  *(linep++) = '%';
-	  *(linep++) = '2';
-	  *(linep++) = '5';
-	  break;
-	case ' ':
-	  *(linep++) = '%';
-	  *(linep++) = '2';
-	  *(linep++) = '0';
-	  break;
-	case '+':
-	  *(linep++) = '%';
-	  *(linep++) = '2';
-	  *(linep++) = 'B';
-	  break;
-	default:
-	  *(linep++) = *fpr;
-	  break;
-	}
-      fpr++;
-    }
-  *linep = '\0';
-
-  gpgsm->command = line;
-  _gpgme_io_close (gpgsm->output_cb.fd);
-  _gpgme_io_close (gpgsm->input_cb.fd);
-  _gpgme_io_close (gpgsm->message_cb.fd);
-
-  return 0;
-}
-
-
-static GpgmeError
-set_recipients (GpgsmObject gpgsm, GpgmeRecipients recp)
-{
-  GpgmeError err;
-  ASSUAN_CONTEXT ctx = gpgsm->assuan_ctx;
-  char *line;
-  int linelen;
-  struct user_id_s *r;
-  int valid_recipients = 0;
-
-  linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
-  line = malloc (10 + 40 + 1);
-  if (!line)
-    return mk_error (Out_Of_Core);
-  strcpy (line, "RECIPIENT ");
-  for (r = recp->list; r; r = r->next)
-    {
-      int newlen = 11 + strlen (r->name);
-      if (linelen < newlen)
-	{
-	  char *newline = realloc (line, newlen);
-	  if (! newline)
-	    {
-	      free (line);
-	      return mk_error (Out_Of_Core);
-	    }
-	  line = newline;
-	  linelen = newlen;
-	}
-      strcpy (&line[10], r->name);
-      
-      err = gpgsm_assuan_simple_command (ctx, line, gpgsm->status.fnc,
-					 gpgsm->status.fnc_value);
-      if (!err)
-	valid_recipients = 1;
-      else if (err != GPGME_Invalid_Key)
-	{
-	  free (line);
-	  return err;
-	}
-    }
-  free (line);
-  if (!valid_recipients && gpgsm->status.fnc)
-    gpgsm->status.fnc (gpgsm->status.fnc_value, GPGME_STATUS_NO_RECP, "");
-  return 0;
-}
-
-
-static GpgmeError
-gpgsm_encrypt (void *engine, GpgmeRecipients recp, GpgmeData plain,
-	       GpgmeData ciph, int use_armor)
-{
-  GpgsmObject gpgsm = engine;
-  GpgmeError err;
-
-  if (!gpgsm)
-    return mk_error (Invalid_Value);
-  if (!recp)
-    return mk_error (Not_Implemented);
-
-  gpgsm->command = strdup ("ENCRYPT");
-  if (!gpgsm->command)
-    return mk_error (Out_Of_Core);
-
-  gpgsm->input_cb.data = plain;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
-                      map_input_enc (gpgsm->input_cb.data));
-  if (err)
-    return err;
-  gpgsm->output_cb.data = ciph;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
-		      use_armor ? "--armor" : 0);
-  if (err)
-    return err;
-  _gpgme_io_close (gpgsm->message_cb.fd);
-
-  err = set_recipients (gpgsm, recp);
-  if (err)
-    return err;
-
-  return 0;
-}
-
-
-static GpgmeError
-gpgsm_export (void *engine, GpgmeRecipients recp, GpgmeData keydata,
-	      int use_armor)
-{
-  GpgsmObject gpgsm = engine;
-  GpgmeError err = 0;
-  char *cmd = NULL;
-  int cmdi;
-  int cmdlen = 32;
-
-  if (!gpgsm)
-    return mk_error (Invalid_Value);
-
-  cmd = malloc (cmdlen);
-  if (!cmd)
-    return mk_error (Out_Of_Core);
-  strcpy (cmd, "EXPORT");
-  cmdi = 6;
-
-  if (recp)
-    {
-      void *ec;
-      const char *s;
-
-      err = gpgme_recipients_enum_open (recp, &ec);
-      while (!err && (s = gpgme_recipients_enum_read (recp, &ec)))
-	{
-	  int slen = strlen (s);
-	  /* New string is old string + ' ' + s + '\0'.  */
-	  if (cmdlen < cmdi + 1 + slen + 1)
-	    {
-	      char *newcmd = realloc (cmd, cmdlen * 2);
-	      if (!newcmd)
-		{
-		  free (cmd);
-		  return mk_error (Out_Of_Core);
-		}
-	      cmd = newcmd;
-	      cmdlen *= 2;
-	    }
-	  cmd[cmdi++] = ' ';
-	  strcpy (cmd + cmdi, s);
-	  cmdi += slen;
-	}
-      if (!err)
-	err = gpgme_recipients_enum_close (recp, &ec);
-      if (err)
-	return err;
-    }
-
-  gpgsm->command = cmd;
-
-  gpgsm->output_cb.data = keydata;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
-		      use_armor ? "--armor" : 0);
-  if (err)
-    return err;
-  _gpgme_io_close (gpgsm->input_cb.fd);
-  _gpgme_io_close (gpgsm->message_cb.fd);
-
-  return 0;
-}
-
-
-static GpgmeError
-gpgsm_genkey (void *engine, GpgmeData help_data, int use_armor,
-	      GpgmeData pubkey, GpgmeData seckey)
-{
-  GpgsmObject gpgsm = engine;
-  GpgmeError err;
-
-  if (!gpgsm || !pubkey || seckey)
-    return mk_error (Invalid_Value);
-
-  gpgsm->command = strdup ("GENKEY");
-  if (!gpgsm->command)
-    return mk_error (Out_Of_Core);
-
-  gpgsm->input_cb.data = help_data;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
-                      map_input_enc (gpgsm->input_cb.data));
-  if (err)
-    return err;
-  gpgsm->output_cb.data = pubkey;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
-		      use_armor ? "--armor" : 0);
-  if (err)
-    return err;
-  _gpgme_io_close (gpgsm->message_cb.fd);
-
-  return 0;
-}
-
-
-static GpgmeError
-gpgsm_import (void *engine, GpgmeData keydata)
-{
-  GpgsmObject gpgsm = engine;
-  GpgmeError err;
-
-  if (!gpgsm)
-    return mk_error (Invalid_Value);
-
-  gpgsm->command = strdup ("IMPORT");
-  if (!gpgsm->command)
-    return mk_error (Out_Of_Core);
-
-  gpgsm->input_cb.data = keydata;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
-                      map_input_enc (gpgsm->input_cb.data));
-  if (err)
-    return err;
-  _gpgme_io_close (gpgsm->output_cb.fd);
-  _gpgme_io_close (gpgsm->message_cb.fd);
-
-  return 0;
-}
-
-
-static GpgmeError
-gpgsm_keylist (void *engine, const char *pattern, int secret_only,
-	       int keylist_mode)
-{
-  GpgsmObject gpgsm = engine;
-  char *line;
-  GpgmeError err;
-
-  if (!pattern)
-    pattern = "";
-
-  if (asprintf (&line, "OPTION list-mode=%d", (keylist_mode & 3)) < 0)
-    return mk_error (Out_Of_Core);
-  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
-  free (line);
-  if (err)
-    return err;
-
-  /* Length is "LISTSECRETKEYS " + p + '\0'.  */
-  line = malloc (15 + strlen (pattern) + 1);
-  if (!line)
-    return mk_error (Out_Of_Core);
-  if (secret_only)
-    {
-      strcpy (line, "LISTSECRETKEYS ");
-      strcpy (&line[15], pattern);
-    }
-  else
-    {
-      strcpy (line, "LISTKEYS ");
-      strcpy (&line[9], pattern);
-    }
-
-  _gpgme_io_close (gpgsm->input_cb.fd);
-  _gpgme_io_close (gpgsm->output_cb.fd);
-  _gpgme_io_close (gpgsm->message_cb.fd);
-
-  gpgsm->command = line;
-  return 0;
-}
-
-
-static GpgmeError
-gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
-		   int reserved, int keylist_mode)
-{
-  GpgsmObject gpgsm = engine;
-  char *line;
-  GpgmeError err;
-  /* Length is "LISTSECRETKEYS " + p + '\0'.  */
-  int length = 15 + 1;
-  char *linep;
-  
-  if (reserved)
-    return mk_error (Invalid_Value);
-
-  if (asprintf (&line, "OPTION list-mode=%d", (keylist_mode & 3)) < 0)
-    return mk_error (Out_Of_Core);
-  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
-  free (line);
-  if (err)
-    return err;
-
-  if (pattern && *pattern)
-    {
-      const char **pat = pattern;
-
-      while (*pat)
-	{
-	  const char *patlet = *pat;
-
-	  while (*patlet)
-	    {
-	      length++;
-	      if (*patlet == '%' || *patlet == ' ' || *patlet == '+')
-		length += 2;
-	      patlet++;
-	    }
-	  pat++;
-	  /* This will allocate one byte more than necessary.  */
-	  length++;
-	}
-    }
-  line = malloc (length);
-  if (!line)
-    return mk_error (Out_Of_Core);
-  if (secret_only)
-    {
-      strcpy (line, "LISTSECRETKEYS ");
-      linep = &line[15];
-    }
-  else
-    {
-      strcpy (line, "LISTKEYS ");
-      linep = &line[9];
-    }
-
-  if (pattern && *pattern)
-    {
-      while (*pattern)
-	{
-	  const char *patlet = *pattern;
-
-	  while (*patlet)
-	    {
-	      switch (*patlet)
-		{
-		case '%':
-		  *(linep++) = '%';
-		  *(linep++) = '2';
-		  *(linep++) = '5';
-		  break;
-		case ' ':
-		  *(linep++) = '%';
-		  *(linep++) = '2';
-		  *(linep++) = '0';
-		  break;
-		case '+':
-		  *(linep++) = '%';
-		  *(linep++) = '2';
-		  *(linep++) = 'B';
-		  break;
-		default:
-		  *(linep++) = *patlet;
-		  break;
-		}
-	      patlet++;
-	    }
-	  pattern++;
-	}
-    }
-  *linep = '\0';
-
-  _gpgme_io_close (gpgsm->input_cb.fd);
-  _gpgme_io_close (gpgsm->output_cb.fd);
-  _gpgme_io_close (gpgsm->message_cb.fd);
-
-  gpgsm->command = line;
-  return 0;
-}
-
-
-static GpgmeError
-gpgsm_sign (void *engine, GpgmeData in, GpgmeData out, GpgmeSigMode mode,
-	    int use_armor, int use_textmode, int include_certs,
-	    GpgmeCtx ctx /* FIXME */)
-{
-  GpgsmObject gpgsm = engine;
-  GpgmeError err;
-  char *assuan_cmd;
-  int i;
-  GpgmeKey key;
-
-  if (!gpgsm)
-    return mk_error (Invalid_Value);
-
-  gpgsm->command = strdup (mode == GPGME_SIG_MODE_DETACH
-			       ? "SIGN --detached" : "SIGN");
-  if (!gpgsm->command)
-    return mk_error (Out_Of_Core);
-
-  if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
-    return mk_error (Out_Of_Core);
-  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd, NULL,NULL);
-  free (assuan_cmd);
-  if (err)
-    return err;
-
-  /* We must do a reset becuase we need to reset the list of signers.  Note
-     that RESET does not reset OPTION commands. */
-  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, "RESET", NULL, NULL);
-  if (err)
-    return err;
-
-  for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
-    {
-      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR,
-						 NULL, 0);
-      if (s && strlen (s) < 80)
-	{
-          char buf[100];
-
-          strcpy (stpcpy (buf, "SIGNER "), s);
-          err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, buf,
-                                             NULL, NULL);
-	}
-      else
-        err = GPGME_Invalid_Key;
-      gpgme_key_unref (key);
-      if (err) 
-        return err;
-    }
-
-  gpgsm->input_cb.data = in;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
-                      map_input_enc (gpgsm->input_cb.data));
-  if (err)
-    return err;
-  gpgsm->output_cb.data = out;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
-		      use_armor ? "--armor" : 0);
-  if (err)
-    return err;
-  _gpgme_io_close (gpgsm->message_cb.fd);
-
-  return 0;
-}
-
-
-static GpgmeError
-gpgsm_trustlist (void *engine, const char *pattern)
-{
-  /* FIXME */
-  return mk_error (Not_Implemented);
-}
-
-
-static GpgmeError
-gpgsm_verify (void *engine, GpgmeData sig, GpgmeData signed_text,
-	      GpgmeData plaintext)
-{
-  GpgsmObject gpgsm = engine;
-  GpgmeError err;
-
-  if (!gpgsm)
-    return mk_error (Invalid_Value);
-
-  gpgsm->command = strdup ("VERIFY");
-  if (!gpgsm->command)
-    return mk_error (Out_Of_Core);
-
-  gpgsm->input_cb.data = sig;
-  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
-                      map_input_enc (gpgsm->input_cb.data));
-  if (err)
-    return err;
-  if (plaintext)
-    {
-      /* Normal or cleartext signature.  */
-      gpgsm->output_cb.data = plaintext;
-      err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
-			  0);
-      _gpgme_io_close (gpgsm->message_cb.fd);
-    }
-  else
-    {
-      /* Detached signature.  */
-      gpgsm->message_cb.data = signed_text;
-      err = gpgsm_set_fd (gpgsm->assuan_ctx, "MESSAGE",
-			  gpgsm->message_fd_server, 0);
-      _gpgme_io_close (gpgsm->output_cb.fd);
-    }
-  if (err)
-    return err;
-
-  return 0;
-}
-
-
 static int
 status_cmp (const void *ap, const void *bp)
 {
@@ -1387,6 +830,584 @@ status_handler (void *opaque, int fd)
 }
 
 
+static GpgmeError
+add_io_cb (GpgsmObject gpgsm, iocb_data_t *iocbd, GpgmeIOCb handler)
+{
+  GpgmeError err;
+
+  err = (*gpgsm->io_cbs.add) (gpgsm->io_cbs.add_priv,
+			      iocbd->fd, iocbd->dir,
+			      handler, iocbd->data, &iocbd->tag);
+  if (err)
+    return err;
+  if (!iocbd->dir)
+    /* FIXME Kludge around poll() problem.  */
+    err = _gpgme_io_set_nonblocking (iocbd->fd);
+  return err;
+}
+
+
+static GpgmeError
+start (GpgsmObject gpgsm, const char *command)
+{
+  GpgmeError err = 0;
+
+  err = add_io_cb (gpgsm, &gpgsm->status_cb, status_handler);
+  if (gpgsm->input_cb.fd != -1)
+    err = add_io_cb (gpgsm, &gpgsm->input_cb, _gpgme_data_outbound_handler);
+  if (!err && gpgsm->output_cb.fd != -1)
+    err = add_io_cb (gpgsm, &gpgsm->output_cb, _gpgme_data_inbound_handler);
+  if (!err && gpgsm->message_cb.fd != -1)
+    err = add_io_cb (gpgsm, &gpgsm->message_cb, _gpgme_data_outbound_handler);
+
+  if (!err)
+    err = assuan_write_line (gpgsm->assuan_ctx, command);
+
+  return err;
+}
+
+
+static GpgmeError
+gpgsm_decrypt (void *engine, GpgmeData ciph, GpgmeData plain)
+{
+  GpgsmObject gpgsm = engine;
+  GpgmeError err;
+
+  if (!gpgsm)
+    return mk_error (Invalid_Value);
+
+  gpgsm->input_cb.data = ciph;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 
+                      map_input_enc (gpgsm->input_cb.data));
+  if (err)
+    return mk_error (General_Error);	/* FIXME */
+  gpgsm->output_cb.data = plain;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server, 0);
+  if (err)
+    return mk_error (General_Error);	/* FIXME */
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  err = start (engine, "DECRYPT");
+  return err;
+}
+
+
+static GpgmeError
+gpgsm_delete (void *engine, GpgmeKey key, int allow_secret)
+{
+  GpgsmObject gpgsm = engine;
+  GpgmeError err;
+  char *fpr = (char *) gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, NULL, 0);
+  char *linep = fpr;
+  char *line;
+  int length = 8;	/* "DELKEYS " */
+
+  if (!fpr)
+    return mk_error (Invalid_Key);
+
+  while (*linep)
+    {
+      length++;
+      if (*linep == '%' || *linep == ' ' || *linep == '+')
+	length += 2;
+      linep++;
+    }
+  length++;
+
+  line = malloc (length);
+  if (!line)
+    return mk_error (Out_Of_Core);
+
+  strcpy (line, "DELKEYS ");
+  linep = &line[8];
+
+  while (*fpr)
+    {
+      switch (*fpr)
+	{
+	case '%':
+	  *(linep++) = '%';
+	  *(linep++) = '2';
+	  *(linep++) = '5';
+	  break;
+	case ' ':
+	  *(linep++) = '%';
+	  *(linep++) = '2';
+	  *(linep++) = '0';
+	  break;
+	case '+':
+	  *(linep++) = '%';
+	  *(linep++) = '2';
+	  *(linep++) = 'B';
+	  break;
+	default:
+	  *(linep++) = *fpr;
+	  break;
+	}
+      fpr++;
+    }
+  *linep = '\0';
+
+  _gpgme_io_close (gpgsm->output_cb.fd);
+  _gpgme_io_close (gpgsm->input_cb.fd);
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  err = start (gpgsm, line);
+  free (line);
+
+  return err;
+}
+
+
+static GpgmeError
+set_recipients (GpgsmObject gpgsm, GpgmeRecipients recp)
+{
+  GpgmeError err;
+  ASSUAN_CONTEXT ctx = gpgsm->assuan_ctx;
+  char *line;
+  int linelen;
+  struct user_id_s *r;
+  int valid_recipients = 0;
+
+  linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
+  line = malloc (10 + 40 + 1);
+  if (!line)
+    return mk_error (Out_Of_Core);
+  strcpy (line, "RECIPIENT ");
+  for (r = recp->list; r; r = r->next)
+    {
+      int newlen = 11 + strlen (r->name);
+      if (linelen < newlen)
+	{
+	  char *newline = realloc (line, newlen);
+	  if (! newline)
+	    {
+	      free (line);
+	      return mk_error (Out_Of_Core);
+	    }
+	  line = newline;
+	  linelen = newlen;
+	}
+      strcpy (&line[10], r->name);
+      
+      err = gpgsm_assuan_simple_command (ctx, line, gpgsm->status.fnc,
+					 gpgsm->status.fnc_value);
+      if (!err)
+	valid_recipients = 1;
+      else if (err != GPGME_Invalid_Key)
+	{
+	  free (line);
+	  return err;
+	}
+    }
+  free (line);
+  if (!valid_recipients && gpgsm->status.fnc)
+    gpgsm->status.fnc (gpgsm->status.fnc_value, GPGME_STATUS_NO_RECP, "");
+  return 0;
+}
+
+
+static GpgmeError
+gpgsm_encrypt (void *engine, GpgmeRecipients recp, GpgmeData plain,
+	       GpgmeData ciph, int use_armor)
+{
+  GpgsmObject gpgsm = engine;
+  GpgmeError err;
+
+  if (!gpgsm)
+    return mk_error (Invalid_Value);
+  if (!recp)
+    return mk_error (Not_Implemented);
+
+  gpgsm->input_cb.data = plain;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
+                      map_input_enc (gpgsm->input_cb.data));
+  if (err)
+    return err;
+  gpgsm->output_cb.data = ciph;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
+		      use_armor ? "--armor" : 0);
+  if (err)
+    return err;
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  err = set_recipients (gpgsm, recp);
+
+  if (!err)
+    err = start (gpgsm, "ENCRYPT");
+
+  return err;
+}
+
+
+static GpgmeError
+gpgsm_export (void *engine, GpgmeRecipients recp, GpgmeData keydata,
+	      int use_armor)
+{
+  GpgsmObject gpgsm = engine;
+  GpgmeError err = 0;
+  char *cmd = NULL;
+  int cmdi;
+  int cmdlen = 32;
+
+  if (!gpgsm)
+    return mk_error (Invalid_Value);
+
+  cmd = malloc (cmdlen);
+  if (!cmd)
+    return mk_error (Out_Of_Core);
+  strcpy (cmd, "EXPORT");
+  cmdi = 6;
+
+  if (recp)
+    {
+      void *ec;
+      const char *s;
+
+      err = gpgme_recipients_enum_open (recp, &ec);
+      while (!err && (s = gpgme_recipients_enum_read (recp, &ec)))
+	{
+	  int slen = strlen (s);
+	  /* New string is old string + ' ' + s + '\0'.  */
+	  if (cmdlen < cmdi + 1 + slen + 1)
+	    {
+	      char *newcmd = realloc (cmd, cmdlen * 2);
+	      if (!newcmd)
+		{
+		  free (cmd);
+		  return mk_error (Out_Of_Core);
+		}
+	      cmd = newcmd;
+	      cmdlen *= 2;
+	    }
+	  cmd[cmdi++] = ' ';
+	  strcpy (cmd + cmdi, s);
+	  cmdi += slen;
+	}
+      if (!err)
+	err = gpgme_recipients_enum_close (recp, &ec);
+      if (err)
+	return err;
+    }
+
+  gpgsm->output_cb.data = keydata;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
+		      use_armor ? "--armor" : 0);
+  if (err)
+    return err;
+  _gpgme_io_close (gpgsm->input_cb.fd);
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  err = start (gpgsm, cmd);
+  free (cmd);
+  return err;
+}
+
+
+static GpgmeError
+gpgsm_genkey (void *engine, GpgmeData help_data, int use_armor,
+	      GpgmeData pubkey, GpgmeData seckey)
+{
+  GpgsmObject gpgsm = engine;
+  GpgmeError err;
+
+  if (!gpgsm || !pubkey || seckey)
+    return mk_error (Invalid_Value);
+
+  gpgsm->input_cb.data = help_data;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
+                      map_input_enc (gpgsm->input_cb.data));
+  if (err)
+    return err;
+  gpgsm->output_cb.data = pubkey;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
+		      use_armor ? "--armor" : 0);
+  if (err)
+    return err;
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  err = start (gpgsm, "GENKEY");
+  return err;
+}
+
+
+static GpgmeError
+gpgsm_import (void *engine, GpgmeData keydata)
+{
+  GpgsmObject gpgsm = engine;
+  GpgmeError err;
+
+  if (!gpgsm)
+    return mk_error (Invalid_Value);
+
+  gpgsm->input_cb.data = keydata;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
+                      map_input_enc (gpgsm->input_cb.data));
+  if (err)
+    return err;
+  _gpgme_io_close (gpgsm->output_cb.fd);
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  err = start (gpgsm, "IMPORT");
+  return err;
+}
+
+
+static GpgmeError
+gpgsm_keylist (void *engine, const char *pattern, int secret_only,
+	       int keylist_mode)
+{
+  GpgsmObject gpgsm = engine;
+  char *line;
+  GpgmeError err;
+
+  if (!pattern)
+    pattern = "";
+
+  if (asprintf (&line, "OPTION list-mode=%d", (keylist_mode & 3)) < 0)
+    return mk_error (Out_Of_Core);
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
+  free (line);
+  if (err)
+    return err;
+
+  /* Length is "LISTSECRETKEYS " + p + '\0'.  */
+  line = malloc (15 + strlen (pattern) + 1);
+  if (!line)
+    return mk_error (Out_Of_Core);
+  if (secret_only)
+    {
+      strcpy (line, "LISTSECRETKEYS ");
+      strcpy (&line[15], pattern);
+    }
+  else
+    {
+      strcpy (line, "LISTKEYS ");
+      strcpy (&line[9], pattern);
+    }
+
+  _gpgme_io_close (gpgsm->input_cb.fd);
+  _gpgme_io_close (gpgsm->output_cb.fd);
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  err = start (gpgsm, line);
+  free (line);
+  return err;
+}
+
+
+static GpgmeError
+gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
+		   int reserved, int keylist_mode)
+{
+  GpgsmObject gpgsm = engine;
+  char *line;
+  GpgmeError err;
+  /* Length is "LISTSECRETKEYS " + p + '\0'.  */
+  int length = 15 + 1;
+  char *linep;
+  
+  if (reserved)
+    return mk_error (Invalid_Value);
+
+  if (asprintf (&line, "OPTION list-mode=%d", (keylist_mode & 3)) < 0)
+    return mk_error (Out_Of_Core);
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
+  free (line);
+  if (err)
+    return err;
+
+  if (pattern && *pattern)
+    {
+      const char **pat = pattern;
+
+      while (*pat)
+	{
+	  const char *patlet = *pat;
+
+	  while (*patlet)
+	    {
+	      length++;
+	      if (*patlet == '%' || *patlet == ' ' || *patlet == '+')
+		length += 2;
+	      patlet++;
+	    }
+	  pat++;
+	  /* This will allocate one byte more than necessary.  */
+	  length++;
+	}
+    }
+  line = malloc (length);
+  if (!line)
+    return mk_error (Out_Of_Core);
+  if (secret_only)
+    {
+      strcpy (line, "LISTSECRETKEYS ");
+      linep = &line[15];
+    }
+  else
+    {
+      strcpy (line, "LISTKEYS ");
+      linep = &line[9];
+    }
+
+  if (pattern && *pattern)
+    {
+      while (*pattern)
+	{
+	  const char *patlet = *pattern;
+
+	  while (*patlet)
+	    {
+	      switch (*patlet)
+		{
+		case '%':
+		  *(linep++) = '%';
+		  *(linep++) = '2';
+		  *(linep++) = '5';
+		  break;
+		case ' ':
+		  *(linep++) = '%';
+		  *(linep++) = '2';
+		  *(linep++) = '0';
+		  break;
+		case '+':
+		  *(linep++) = '%';
+		  *(linep++) = '2';
+		  *(linep++) = 'B';
+		  break;
+		default:
+		  *(linep++) = *patlet;
+		  break;
+		}
+	      patlet++;
+	    }
+	  pattern++;
+	}
+    }
+  *linep = '\0';
+
+  _gpgme_io_close (gpgsm->input_cb.fd);
+  _gpgme_io_close (gpgsm->output_cb.fd);
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  err = start (gpgsm, line);
+  free (line);
+  return err;
+}
+
+
+static GpgmeError
+gpgsm_sign (void *engine, GpgmeData in, GpgmeData out, GpgmeSigMode mode,
+	    int use_armor, int use_textmode, int include_certs,
+	    GpgmeCtx ctx /* FIXME */)
+{
+  GpgsmObject gpgsm = engine;
+  GpgmeError err;
+  char *assuan_cmd;
+  int i;
+  GpgmeKey key;
+
+  if (!gpgsm)
+    return mk_error (Invalid_Value);
+
+  if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
+    return mk_error (Out_Of_Core);
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd, NULL,NULL);
+  free (assuan_cmd);
+  if (err)
+    return err;
+
+  /* We must do a reset becuase we need to reset the list of signers.  Note
+     that RESET does not reset OPTION commands. */
+  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, "RESET", NULL, NULL);
+  if (err)
+    return err;
+
+  for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
+    {
+      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR,
+						 NULL, 0);
+      if (s && strlen (s) < 80)
+	{
+          char buf[100];
+
+          strcpy (stpcpy (buf, "SIGNER "), s);
+          err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, buf,
+                                             NULL, NULL);
+	}
+      else
+        err = GPGME_Invalid_Key;
+      gpgme_key_unref (key);
+      if (err) 
+        return err;
+    }
+
+  gpgsm->input_cb.data = in;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
+                      map_input_enc (gpgsm->input_cb.data));
+  if (err)
+    return err;
+  gpgsm->output_cb.data = out;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
+		      use_armor ? "--armor" : 0);
+  if (err)
+    return err;
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  err = start (gpgsm, mode == GPGME_SIG_MODE_DETACH
+	       ? "SIGN --detached" : "SIGN");
+  return err;
+}
+
+
+static GpgmeError
+gpgsm_trustlist (void *engine, const char *pattern)
+{
+  /* FIXME */
+  return mk_error (Not_Implemented);
+}
+
+
+static GpgmeError
+gpgsm_verify (void *engine, GpgmeData sig, GpgmeData signed_text,
+	      GpgmeData plaintext)
+{
+  GpgsmObject gpgsm = engine;
+  GpgmeError err;
+
+  if (!gpgsm)
+    return mk_error (Invalid_Value);
+
+  gpgsm->input_cb.data = sig;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
+                      map_input_enc (gpgsm->input_cb.data));
+  if (err)
+    return err;
+  if (plaintext)
+    {
+      /* Normal or cleartext signature.  */
+      gpgsm->output_cb.data = plaintext;
+      err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
+			  0);
+      _gpgme_io_close (gpgsm->message_cb.fd);
+    }
+  else
+    {
+      /* Detached signature.  */
+      gpgsm->message_cb.data = signed_text;
+      err = gpgsm_set_fd (gpgsm->assuan_ctx, "MESSAGE",
+			  gpgsm->message_fd_server, 0);
+      _gpgme_io_close (gpgsm->output_cb.fd);
+    }
+
+  if (!err)
+    err = start (gpgsm, "VERIFY");
+
+  return err;
+}
+
+
 static void
 gpgsm_set_status_handler (void *engine, GpgmeStatusHandler fnc,
 			  void *fnc_value) 
@@ -1408,50 +1429,6 @@ gpgsm_set_colon_line_handler (void *engine, GpgmeColonLineHandler fnc,
   gpgsm->colon.fnc_value = fnc_value;
   gpgsm->colon.any = 0;
   return 0;
-}
-
-
-static GpgmeError
-add_io_cb (GpgsmObject gpgsm, iocb_data_t *iocbd, GpgmeIOCb handler)
-{
-  GpgmeError err;
-
-  err = (*gpgsm->io_cbs.add) (gpgsm->io_cbs.add_priv,
-			      iocbd->fd, iocbd->dir,
-			      handler, iocbd->data, &iocbd->tag);
-  if (err)
-    return err;
-  if (!iocbd->dir)
-    /* FIXME Kludge around poll() problem.  */
-    err = _gpgme_io_set_nonblocking (iocbd->fd);
-  return err;
-}
-
-
-static GpgmeError
-gpgsm_start (void *engine, void *opaque)
-{
-  GpgsmObject gpgsm = engine;
-  GpgmeError err = 0;
-  pid_t pid;
-
-  if (!gpgsm)
-    return mk_error (Invalid_Value);
-
-  pid = assuan_get_pid (gpgsm->assuan_ctx);
-
-  err = add_io_cb (gpgsm, &gpgsm->status_cb, status_handler);
-  if (gpgsm->input_cb.fd != -1)
-    err = add_io_cb (gpgsm, &gpgsm->input_cb, _gpgme_data_outbound_handler);
-  if (!err && gpgsm->output_cb.fd != -1)
-    err = add_io_cb (gpgsm, &gpgsm->output_cb, _gpgme_data_inbound_handler);
-  if (!err && gpgsm->message_cb.fd != -1)
-    err = add_io_cb (gpgsm, &gpgsm->message_cb, _gpgme_data_outbound_handler);
-
-  if (!err)
-    err = assuan_write_line (gpgsm->assuan_ctx, gpgsm->command);
-
-  return err;
 }
 
 
@@ -1500,7 +1477,6 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_sign,
     gpgsm_trustlist,
     gpgsm_verify,
-    gpgsm_start,
     gpgsm_set_io_cbs,
     gpgsm_io_event
   };

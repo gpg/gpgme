@@ -1,25 +1,26 @@
 /* trustlist.c -  key listing
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002 g10 Code GmbH
 
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+
+#if HAVE_CONFIG_H
 #include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,19 +69,17 @@ trustlist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 }
 
 
-/* 
- * This handler is used to parse the output of --list-trust-path:
- * Format:
- *   level:keyid:type:recno:ot:val:mc:cc:name:
- * With TYPE = U for a user ID
- *	       K for a key
- * The RECNO is either the one of the dir record or the one of the uid record.
- * OT is the the usual trust letter and only availabel on K lines.
- * VAL is the calcualted validity
- * MC is the marginal trust counter and only available on U lines
- * CC is the same for the complete count
- * NAME ist the username and only printed on U lines
- */
+/* This handler is used to parse the output of --list-trust-path:
+   Format:
+   level:keyid:type:recno:ot:val:mc:cc:name:
+   With TYPE = U for a user ID
+               K for a key
+   The RECNO is either the one of the dir record or the one of the uid
+   record.  OT is the the usual trust letter and only availabel on K
+   lines.  VAL is the calcualted validity MC is the marginal trust
+   counter and only available on U lines CC is the same for the
+   complete count NAME ist the username and only printed on U
+   lines.  */
 static void
 trustlist_colon_handler (GpgmeCtx ctx, char *line)
 {
@@ -192,9 +191,6 @@ gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
     goto leave;
 
   err =_gpgme_engine_op_trustlist (ctx->engine, pattern);
-
-  if (!err)	/* And kick off the process.  */
-    err = _gpgme_engine_start (ctx->engine, ctx);
 
  leave:
   if (err)
