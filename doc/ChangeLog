@@ -1,3 +1,8 @@
+2004-03-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Library Version Check): Fix the instruction when to
+	set the locale.
+
 2004-03-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (I/O Callback Example Qt): New section by Marc Mutz.
