@@ -314,38 +314,6 @@ gpgme_get_include_certs (GpgmeCtx ctx)
 
 
 /**
- * gpgme_set_signature_algorithm
- * @ctx: the context
- * @algorithm: the algorithm to be used for signing a S/MIME
- * message. The default is 1 (SHA1); this is currently the only
- * supported algorithm.
- **/
-void
-gpgme_set_signature_algorithm( GpgmeCtx ctx, int algorithm )
-{
-    /* PENDING(g10) Implement this */
-}
-
-
-/**
- * gpgme_get_signature_algorithm:
- * @ctx: the context
- *
- * Get the signature algorithm used for signing S/MIME messages
- *
- * Return value: the signature algorithm where 1 means SHA1
- **/
-int
-gpgme_get_signature_algorithm (GpgmeCtx ctx)
-{
-    /* PENDING(g10) Implement this */
-}
-
-
-
-
-
-/**
  * gpgme_set_keylist_mode:
  * @ctx: the context
  * @mode: listing mode
