@@ -1,3 +1,9 @@
+2002-08-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (_gpgme_set_op_info): Append data on subsequent calls.
+	* encrypt-sign.c (encrypt_sign_status_handler): Remove op_info
+	handling.
+
 2002-08-19  Werner Koch  <wk@gnupg.org>
 
 	* decrypt.c (is_token,skip_token): Duplicated from verify.c
