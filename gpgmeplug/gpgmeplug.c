@@ -456,67 +456,6 @@ bool warnNoCertificate()
 
 bool isEmailInCertificate( const char* email, const char* fingerprint )
 {
-/*
-  GpgmeError err;
-  GpgmeCtx  ctx;
-  GpgmeData keydata;
-  GpgmeRecipients recips;
-  char* buf;
-  const char* tmp1;
-  char* tmp2;
-  bool bOk = false;
-
-  err = gpgme_new( &ctx );
-  if( err != GPGME_No_Error ) {
-    return false;
-  }
-  gpgme_set_protocol( ctx, GPGME_PROTOCOL_CMS );
-  gpgme_set_keylist_mode( ctx, GPGME_KEYLIST_MODE_LOCAL );
-
-  err = gpgme_data_new( &keydata );
-  if( err ) {
-    fprintf( stderr,  "gpgme_data_new returned %d\n", err );
-    gpgme_release( ctx );
-    return false;
-  }
-
-  err = gpgme_recipients_new( &recips );
-  if( err ) {
-    fprintf( stderr,  "gpgme_recipients_new returned %d\n", err );
-    gpgme_data_release( keydata );
-    gpgme_release( ctx );
-    return false;
-  }
-  
-  buf = malloc( sizeof(char)*( strlen( fingerprint ) + 1 ) );
-  if( !buf ) {
-    gpgme_recipients_release( recips );
-    gpgme_data_release( keydata );    
-    gpgme_release( ctx );
-    fprintf( stderr,  "GPGME OUT OF CORE: malloc returned error!\n" );
-    return false;
-  }
-  tmp1 = fingerprint;
-  tmp2 = buf;
-  while( *tmp1 ) {
-    if( *tmp1 != ':' ) *tmp2++ = *tmp1;
-    tmp1++;
-  }
-  *tmp2 = 0;
-  // fprintf( stderr,  "calling gpgme_recipients_add_name( %s )\n", buf );  
-  err = gpgme_recipients_add_name( recips, buf ); 
-  if( err ) {
-    fprintf( stderr,  "gpgme_recipients_add_name returned %d\n", err );
-    free (buf);
-    gpgme_recipients_release( recips );
-    gpgme_data_release( keydata );    
-    gpgme_release( ctx );
-    return err;
-  }
-*/
-  
-
-    
   GpgmeCtx ctx;
   GpgmeError err;
   GpgmeKey rKey;
@@ -524,7 +463,10 @@ bool isEmailInCertificate( const char* email, const char* fingerprint )
   const char* attr_string;
   int emailCount = 0;
   bool bOk = false;
+  int fprLen = strlen( fingerprint );
 
+  fprintf( stderr, "gpgmeplug isEmailInCertificate looking for fingerprint %s\n", fingerprint );
+  
   gpgme_new( &ctx );
   gpgme_set_protocol( ctx, GPGMEPLUG_PROTOCOL );
 
@@ -538,12 +480,22 @@ bool isEmailInCertificate( const char* email, const char* fingerprint )
            (attr_string = gpgme_key_get_string_attr(
                             rKey, GPGME_ATTR_EMAIL, 0, UID_idx ) );
           ++UID_idx ){
-        if (*attr_string) {
+        if (attr_string && *attr_string) {
           ++emailCount;
           fprintf( stderr, "gpgmeplug isEmailInCertificate found email: %s\n", attr_string );
           if( 0 == strcasecmp(attr_string, email) ){
             bOk = true;
             break;
+          }else{
+            attr_string = gpgme_key_get_string_attr(
+                            rKey, GPGME_ATTR_USERID, 0, UID_idx );
+            if (attr_string && *attr_string == '<'){
+              ++attr_string;
+              if( 0 == strncasecmp(attr_string, email, fprLen) ){
+                bOk = true;
+                break;
+              }
+            }
           }
         }
       }
