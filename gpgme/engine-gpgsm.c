@@ -30,6 +30,8 @@
 
 #ifdef ENABLE_GPGSM
 
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <assert.h>
 
@@ -39,6 +41,9 @@
 #undef xtrycalloc
 #undef xtryrealloc
 #undef xfree
+
+#include "rungpg.h"
+#include "status-table.h"
 
 #include "gpgme.h"
 #include "util.h"
@@ -424,13 +429,22 @@ _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
 }
 
 static int
+status_cmp (const void *ap, const void *bp)
+{
+  const struct status_table_s *a = ap;
+  const struct status_table_s *b = bp;
+
+  return strcmp (a->name, b->name);
+}
+
+static int
 gpgsm_status_handler (void *opaque, int pid, int fd)
 {
   int err;
   GpgsmObject gpgsm = opaque;
   ASSUAN_CONTEXT actx = gpgsm->assuan_ctx;
 
- assert (fd == gpgsm->assuan_ctx->inbound.fd);
+  assert (fd == gpgsm->assuan_ctx->inbound.fd);
 
   err = _assuan_read_line (gpgsm->assuan_ctx);
 
@@ -452,7 +466,27 @@ gpgsm_status_handler (void *opaque, int pid, int fd)
     }
   /* FIXME: Parse the status and call the handler.  */
 
-  fprintf (stderr, "[UNCAUGHT STATUS]%s", actx->inbound.line);
+  if (actx->inbound.linelen > 2
+      && actx->inbound.line[0] == 'S' && actx->inbound.line[1] == ' ')
+    {
+      struct status_table_s t, *r;
+      char *rest;
+
+      rest = strchr (actx->inbound.line + 2, ' ');
+      if (!rest)
+	rest = actx->inbound.line + actx->inbound.linelen; /* set to an empty string */
+      else
+	*rest++ = 0;
+
+      t.name = actx->inbound.line + 2;
+      r = bsearch (&t, status_table, DIM(status_table) - 1,
+		   sizeof t, status_cmp);
+
+      if (gpgsm->status.fnc)
+	gpgsm->status.fnc (gpgsm->status.fnc_value, r->code, rest);
+    }
+  else
+    fprintf (stderr, "[UNCAUGHT STATUS]%s", actx->inbound.line);
   return 0;
 }
 
