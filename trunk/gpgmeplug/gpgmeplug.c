@@ -2088,7 +2088,8 @@ static char* reorder_dn( struct DnPair *dn )
     "L",  "PC", "SP", "ST",
     "OU",
     "O",
-    "C"
+    "C",
+    NULL
   };
   int any=0, any2=0, len=0, i;
   char* result;

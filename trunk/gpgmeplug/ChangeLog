@@ -1,3 +1,7 @@
+2002-06-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c (reorder_dn): Added missing stdpart list terminator.
+
 2002-05-30  Steffen Hansen  <steffen@hrhansen.dk>
 
 	* cryptplug.h, gpgmeplug.c: Added certificate info listing functions. 
@@ -7,7 +11,7 @@
 2002-03-23  Werner Koch  <wk@gnupg.org>
 
 	* gpgmeplug.c: Converted it to real C; i.e. use standard comments -
-	we are doing ISO C 90.  Transalted a few German remarks and
+	we are doing ISO C 90.  Translated a few German remarks and
 	commented on some things.
 
 2002-03-08  Steffen Hansen  <steffen@hrhansen.dk>
