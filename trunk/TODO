@@ -21,6 +21,8 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Move code common to all engines up from gpg to engine.
 ** engine operations can return General Error on unknown protocol
    (it's an internal error, as select_protocol checks already).
+** When server mode is implemented properly, more care has to be taken to
+    release all resources on error (for example to free assuan_cmd).
 
 * Operations
 ** Export status handler need much more work.

@@ -29,6 +29,7 @@
 #include "context.h"
 #include "ops.h"
 
+
 /**
  * gpgme_new:
  * @r_ctx: Returns the new context
@@ -51,10 +52,12 @@ gpgme_new (GpgmeCtx *r_ctx)
     return mk_error (Out_Of_Core);
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
   ctx->verbosity = 1;
+  ctx->include_certs = 1;
   *r_ctx = ctx;
 
   return 0;
 }
+
 
 /**
  * gpgme_release:
@@ -272,6 +275,41 @@ int
 gpgme_get_textmode (GpgmeCtx ctx)
 {
   return ctx && ctx->use_textmode;
+}
+
+
+/**
+ * gpgme_set_include_certs:
+ * @ctx: the context
+ * 
+ * Set the number of certifications to include in an S/MIME message.
+ * The default is 1 (only the cert of the sender).  -1 means all certs,
+ * and -2 means all certs except the root cert.
+ *
+ * Return value: Boolean whether textmode is to be used.
+ **/
+void
+gpgme_set_include_certs (GpgmeCtx ctx, int nr_of_certs)
+{
+  if (nr_of_certs < -2)
+    ctx->include_certs = -2;
+  else
+    ctx->include_certs = nr_of_certs;
+}
+
+
+/**
+ * gpgme_get_include_certs:
+ * @ctx: the context
+ * 
+ * Get the number of certifications to include in an S/MIME message.
+ *
+ * Return value: Boolean whether textmode is to be used.
+ **/
+int
+gpgme_get_include_certs (GpgmeCtx ctx)
+{
+  return ctx->include_certs;
 }
 
 

@@ -38,55 +38,67 @@ struct trust_queue_item_s {
 
 /* Currently we need it at several places, so we put the definition 
  * into this header file */
-struct gpgme_context_s {
-    int initialized;
-    int pending;   /* a gpg request is still pending */
+struct gpgme_context_s
+{
+  int initialized;
+  /* A gpg request is still pending.  */
+  int pending;
 
-    int use_cms;
+  int use_cms;
 
-    /* At some points we need to remember an error which we can't report
-       immediately.  */
-    GpgmeError error;   
-    /* Cancel operation requested.  */
-    int cancel;
+  /* At some points we need to remember an error which we can't report
+     immediately.  */
+  GpgmeError error;
+  /* Cancel operation requested.  */
+  int cancel;
 
-    EngineObject engine; /* The running engine process.  */
+  /* The running engine process.  */
+  EngineObject engine;
 
-    int verbosity;  /* level of verbosity to use */
-    int use_armor;  
-    int use_textmode;
-    int keylist_mode;
+  /* Level of verbosity to use.  */
+  int verbosity;
+  int use_armor;  
+  int use_textmode;
+  int keylist_mode;
+  int include_certs;
 
-    int signers_len;   /* The number of keys in signers.  */
-    int signers_size;  /* size of the following array */
-    GpgmeKey *signers;
+  /* The number of keys in signers.  */
+  int signers_len;
+  /* Size of the following array.  */
+  int signers_size;
+  GpgmeKey *signers;
 
-    struct {
-        VerifyResult verify;
-        DecryptResult decrypt;
-        SignResult sign;
-        EncryptResult encrypt;
-        PassphraseResult passphrase;
-        ImportResult import;
-        DeleteResult delete;
-        GenKeyResult genkey;
-    } result;
+  struct
+  {
+    VerifyResult verify;
+    DecryptResult decrypt;
+    SignResult sign;
+    EncryptResult encrypt;
+    PassphraseResult passphrase;
+    ImportResult import;
+    DeleteResult delete;
+    GenKeyResult genkey;
+  } result;
 
-    GpgmeData notation;    /* last signature notation */
-    GpgmeData op_info;     /* last operation info */
+  /* Last signature notation.  */
+  GpgmeData notation;
+  /* Last operation info.  */
+  GpgmeData op_info;
 
-    GpgmeKey tmp_key;       /* used by keylist.c */
-    volatile int key_cond;  /* something new is available */
-    struct key_queue_item_s *key_queue;
-    struct trust_queue_item_s *trust_queue;
+  /* Used by keylist.c.  */
+  GpgmeKey tmp_key;
+  /* Something new is available.  */
+  volatile int key_cond;
+  struct key_queue_item_s *key_queue;
+  struct trust_queue_item_s *trust_queue;
 
-    GpgmePassphraseCb passphrase_cb;
-    void *passphrase_cb_value;
+  GpgmePassphraseCb passphrase_cb;
+  void *passphrase_cb_value;
 
-    GpgmeProgressCb progress_cb;
-    void *progress_cb_value;
+  GpgmeProgressCb progress_cb;
+  void *progress_cb_value;
 
-    GpgmeData help_data_1;
+  GpgmeData help_data_1;
 };
 
 

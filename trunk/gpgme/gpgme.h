@@ -228,6 +228,12 @@ void gpgme_set_textmode (GpgmeCtx ctx, int yes);
 /* Return non-zero if text mode is set in CTX.  */
 int gpgme_get_textmode (GpgmeCtx ctx);
 
+/* Include up to NR_OF_CERTS certificates in an S/MIME message.  */
+void gpgme_set_include_certs (GpgmeCtx ctx, int nr_of_certs);
+
+/* Return the number of certs to include in an S/MIME message.  */
+int gpgme_get_include_certs (GpgmeCtx ctx);
+
 /* Set keylist mode in CTX to MODE.  */
 GpgmeError gpgme_set_keylist_mode (GpgmeCtx ctx, int mode);
 
