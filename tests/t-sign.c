@@ -66,8 +66,8 @@ main (int argc, char **argv )
     err = gpgme_data_new ( &out );
     fail_if_err (err);
 
-    gpgme_op_set_textmode (ctx, 1);
-    gpgme_op_set_armor (ctx, 1);
+    gpgme_set_textmode (ctx, 1);
+    gpgme_set_armor (ctx, 1);
     err = gpgme_op_sign (ctx, in, out );
     fail_if_err (err);
 

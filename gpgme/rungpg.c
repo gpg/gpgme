@@ -201,6 +201,20 @@ kill_gpg ( GpgObject gpg )
 }
 
 
+    
+static int
+set_nonblocking ( int fd )
+{
+    int flags;
+
+    flags = fcntl (fd, F_GETFL, 0);
+    if (flags == -1)
+        return -1;
+    flags |= O_NONBLOCK;
+    return fcntl (fd, F_SETFL, flags);
+}
+
+
 GpgmeError
 _gpgme_gpg_add_arg ( GpgObject gpg, const char *arg )
 {
@@ -313,7 +327,6 @@ build_argv ( GpgObject gpg )
     char **argv;
     int need_special = 0;
     int use_agent = !!getenv ("GPG_AGENT_INFO");
-
        
     if ( gpg->argv ) {
         free_argv ( gpg->argv );
@@ -583,6 +596,13 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
     for (i=0; gpg->fd_data_map[i].data; i++ ) {
         close (gpg->fd_data_map[i].peer_fd);
         gpg->fd_data_map[i].peer_fd = -1;
+        
+        /* Due to problems with select and write we set outbound pipes
+         * to non-blocking */
+        if (!gpg->fd_data_map[i].inbound) {
+            set_nonblocking (gpg->fd_data_map[i].fd);
+        }
+
         if ( _gpgme_register_pipe_handler (
                  opaque, 
                  gpg->fd_data_map[i].inbound?
@@ -650,15 +670,29 @@ write_mem_data ( GpgmeData dh, int fd )
 
     nbytes = dh->len - dh->readpos;
     if ( !nbytes ) {
+        fprintf (stderr, "write_mem_data(%d): closing\n", fd );
         close (fd);
         return 1;
     }
     
+    /* FIXME: Arggg, the pipe blocks on large write request, although
+     * select told us that it is okay to write - need to figure out
+     * why this happens?  Stevens says nothing about this problem (or
+     * is it my Linux kernel 2.4.0test1)
+     * To avoid that we have set the pipe to nonblocking.
+     */
+
+
     do {
+        fprintf (stderr, "write_mem_data(%d): about to write %d bytes len=%d rpos=%d\n",
+                 fd, (int)nbytes, (int)dh->len, dh->readpos );
         nwritten = write ( fd, dh->data+dh->readpos, nbytes );
+        fprintf (stderr, "write_mem_data(%d): wrote %d bytes\n", fd, nwritten );
     } while ( nwritten == -1 && errno == EINTR );
+    if (nwritten == -1 && errno == EAGAIN )
+        return 0;
     if ( nwritten < 1 ) {
-        fprintf (stderr, "write_mem_data: write failed on fd %d (n=%d): %s\n",
+        fprintf (stderr, "write_mem_data(%d): write failed (n=%d): %s\n",
                  fd, nwritten, strerror (errno) );
         close (fd);
         return 1;

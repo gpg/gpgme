@@ -55,6 +55,9 @@ struct gpgme_context_s {
     int verbosity;  /* level of verbosity to use */
     int use_armor;  
     int use_textmode;
+
+    /*   GpgmePassphraseCb passphrase_cb;*/
+    /* void *            passphrase_cb_value;*/
     
     ResultType result_type;
     union {

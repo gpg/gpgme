@@ -34,7 +34,7 @@ extern "C" {
  * let autoconf (using the AM_PATH_GPGME macro) check that this
  * header matches the installed library.
  * Warning: Do not edit the next line.  configure will do that for you! */
-#define GPGME_VERSION "0.0.1"
+#define GPGME_VERSION "0.1.0"
 
 
 
@@ -91,6 +91,7 @@ typedef enum {
     GPGME_SIG_STAT_ERROR = 5
 } GpgmeSigStat;
 
+/*typedef GpgmeData (*GpgmePassphraseCb)( void *opaque, const char *desc );*/
 
 
 /* Context management */
@@ -98,9 +99,11 @@ GpgmeError gpgme_new (GpgmeCtx *r_ctx);
 void       gpgme_release ( GpgmeCtx c );
 GpgmeCtx   gpgme_wait ( GpgmeCtx c, int hang );
 
-char *gpgme_op_get_notation ( GpgmeCtx c );
-void gpgme_op_set_armor ( GpgmeCtx c, int yes );
-void gpgme_op_set_textmode ( GpgmeCtx c, int yes );
+char *gpgme_get_notation ( GpgmeCtx c );
+void gpgme_set_armor ( GpgmeCtx c, int yes );
+void gpgme_set_textmode ( GpgmeCtx c, int yes );
+/*void gpgme_set_passphrase_cb ( GpgmeCtx c,
+  GpgmePassphraseCb fnc, void *fncval );*/
 
 
 /* Functions to handle recipients */
