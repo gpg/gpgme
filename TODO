@@ -9,11 +9,6 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Build thread modules for static linking (which just suck in the
    desired symbols the hard way). !!
 
-* cleanup the namespace - we use log_* assuan_* ascii_*.
-  But those are only used internally.  Some linker tricks should make
-  it possible to hide them from the user (didn't work last time, try
-  again). !!
-
 * New features:
 ** notification system
    We need a simple notification system, probably a a simple callback
