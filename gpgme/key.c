@@ -483,81 +483,100 @@ parse_x509_user_id ( struct user_id_s *uid, char *tail )
  * sequences and put it into the list of UIDs
  */
 GpgmeError
-_gpgme_key_append_name ( GpgmeKey key, const char *s )
+_gpgme_key_append_name (GpgmeKey key, const char *s)
 {
-    struct user_id_s *uid;
-    char *d;
+  struct user_id_s *uid;
+  char *d;
 
-    assert (key);
-    /* we can malloc a buffer of the same length, because the
-     * converted string will never be larger. Actually we allocate it
-     * twice the size, so that we are able to store the parsed stuff
-     * there too */
-    uid = xtrymalloc ( sizeof *uid + 2*strlen (s)+3 );
-    if ( !uid )
-        return mk_error (Out_Of_Core);
-    uid->revoked = 0;
-    uid->invalid = 0;
-    uid->validity = 0;
-    uid->name_part = NULL;
-    uid->email_part = NULL;
-    uid->comment_part = NULL;
-    d = uid->name;
+  assert (key);
+  /* We can malloc a buffer of the same length, because the converted
+     string will never be larger. Actually we allocate it twice the
+     size, so that we are able to store the parsed stuff there too.  */
+  uid = xtrymalloc ( sizeof *uid + 2*strlen (s)+3);
+  if (!uid)
+    return mk_error (Out_Of_Core);
+  uid->revoked = 0;
+  uid->invalid = 0;
+  uid->validity = 0;
+  uid->name_part = NULL;
+  uid->email_part = NULL;
+  uid->comment_part = NULL;
+  uid->next = NULL;
+  d = uid->name;
 
-    while ( *s ) {
-        if ( *s != '\\' )
-            *d++ = *s++;
-        else if ( s[1] == '\\' ) {
-            s++;
-            *d++ = *s++; 
+  while (*s)
+    {
+      if (*s != '\\')
+	*d++ = *s++;
+      else if (s[1] == '\\')
+	{
+	  s++;
+	  *d++ = *s++; 
         }
-        else if ( s[1] == 'n' ) {
-            s += 2;
-            *d++ = '\n'; 
+      else if (s[1] == 'n')
+	{
+	  s += 2;
+	  *d++ = '\n'; 
         }
-        else if ( s[1] == 'r' ) {
-            s += 2;
-            *d++ = '\r'; 
+      else if (s[1] == 'r')
+	{
+	  s += 2;
+	  *d++ = '\r'; 
         }
-        else if ( s[1] == 'v' ) {
-            s += 2;
-            *d++ = '\v'; 
+      else if (s[1] == 'v')
+	{
+	  s += 2;
+	  *d++ = '\v'; 
         }
-        else if ( s[1] == 'b' ) {
-            s += 2;
-            *d++ = '\b'; 
+      else if (s[1] == 'b')
+	{
+	  s += 2;
+	  *d++ = '\b'; 
         }
-        else if ( s[1] == '0' ) {
-            /* Hmmm: no way to express this */
-            s += 2;
-            *d++ = '\\';
-            *d++ = '\0'; 
+      else if (s[1] == '0')
+	{
+	  /* Hmmm: no way to express this */
+	  s += 2;
+	  *d++ = '\\';
+	  *d++ = '\0'; 
         }
-        else if ( s[1] == 'x' && my_isdigit (s[2]) && my_isdigit (s[3]) ) {
-            unsigned int val = (s[2]-'0')*16 + (s[3]-'0');
-            if ( !val ) {
-                *d++ = '\\';
-                *d++ = '\0'; 
+      else if (s[1] == 'x' && my_isdigit (s[2]) && my_isdigit (s[3]))
+	{
+	  unsigned int val = (s[2]-'0')*16 + (s[3]-'0');
+	  if (!val)
+	    {
+	      *d++ = '\\';
+	      *d++ = '\0'; 
             }
-            else 
-                *(byte*)d++ = val;
-            s += 3;
+	  else 
+	    *(byte*)d++ = val;
+	  s += 3;
         }
-        else { /* should not happen */
-            s++;
-            *d++ = '\\'; 
-            *d++ = *s++;
+      else
+	{
+	  /* should not happen */
+	  s++;
+	  *d++ = '\\'; 
+	  *d++ = *s++;
         } 
     }
-    *d++ = 0;
-    if (key->x509)
-      parse_x509_user_id (uid, d);
-    else
-      parse_user_id (uid, d);
+  *d++ = 0;
+  if (key->x509)
+    parse_x509_user_id (uid, d);
+  else
+    parse_user_id (uid, d);
 
-    uid->next = key->uids;
+  if (key->uids)
+    {
+      struct user_id_s *u = key->uids;
+      while (u->next)
+	u = u->next;
+      u->next = uid;
+    }
+  else
     key->uids = uid;
-    return 0;
+
+  return 0;
 }
 
 
@@ -667,16 +686,9 @@ gpgme_key_get_as_xml ( GpgmeKey key )
     /*add_tag_and_time (d, "expires", key->expires );*/
     _gpgme_data_append_string (d, "  </mainkey>\n");
 
-    /* Now the user IDs.  We are listing the last one first because this is
-     * the primary one. */
-    for (u = key->uids; u && u->next; u = u->next )
-        ;
-    if (u) {
-        one_uid_as_xml (d,u);
-        for ( u = key->uids; u && u->next; u = u->next ) {
-            one_uid_as_xml (d,u);
-        }
-    }
+    /* Now the user IDs.  */
+    for (u = key->uids; u; u = u->next)
+      one_uid_as_xml (d,u);
 
     /* and now the subkeys */
     for (k=key->keys.next; k; k = k->next ) {
