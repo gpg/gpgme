@@ -53,14 +53,14 @@ static void
 append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
 {
 #define MAX_IMPORTED_FIELDS 14
-  static char *imported_fields[MAX_IMPORTED_FIELDS]
+  static const char *const imported_fields[MAX_IMPORTED_FIELDS]
     = { "keyid", "username", 0 };
-  static char *import_res_fields[MAX_IMPORTED_FIELDS]
+  static const char *const import_res_fields[MAX_IMPORTED_FIELDS]
     = { "count", "no_user_id", "imported", "imported_rsa",
 	"unchanged", "n_uids", "n_subk", "n_sigs", "s_sigsn_revoc",
 	"sec_read", "sec_imported", "sec_dups", "skipped_new", 0 };
-  char *field[MAX_IMPORTED_FIELDS];
-  char **field_name = 0;
+  const char *field[MAX_IMPORTED_FIELDS];
+  const char *const *field_name = 0;
   GpgmeData dh;
   int i;
 

@@ -104,6 +104,7 @@ Preparation
 * Header::                        What header file you need to include.
 * Building the Source::           Compiler options to be used.
 * Library Version Check::         Getting and verifying the library version.
+* Multi Threading::               How GPGME can be used in an MT environment.
 
 Protocols and Engines
 
@@ -278,11 +279,9 @@ including listing keys, querying their attributes, generating,
 importing, exporting and deleting keys, and acquiring information
 about the trust path.
 
-@cindex thread-safeness
-@cindex multi-threading
-@strong{Caution:} The @acronym{GPGME} library is not thread-safe.  It
-will be to some extent in the future, but currently great care has to
-be taken if @acronym{GPGME} is used in a multi-threaded environment.
+With some precautions, @acronym{GPGME} can be used in a multi-threaded
+environment, although it is not completely thread safe and thus needs
+the support of the application.
 
 
 @node Preparation
@@ -298,6 +297,7 @@ of the library are verified.
 * Header::                        What header file you need to include.
 * Building the Source::           Compiler options to be used.
 * Library Version Check::         Getting and verifying the library version.
+* Multi Threading::               How GPGME can be used in an MT environment.
 @end menu
 
 
@@ -400,6 +400,81 @@ older releases, but contains additional interfaces which your program
 uses, this function provides a run-time check if the necessary
 features are provided by the installed version of the library.
 @end deftypefun
+
+
+@node Multi Threading
+@section Multi Threading
+@cindex thread-safeness
+@cindex multi-threading
+
+The @acronym{GPGME} library is not entirely thread-safe, but it can
+still be used in a multi-threaded environment if some care is taken.
+If the following requirements are met, there should be no race
+conditions to worry about:
+
+@itemize @bullet
+@item
+The function @code{gpgme_check_version} must be called before any
+other function in the library, because it initializes the locking
+subsystem in @acronym{GPGME}.  To achieve this in all generality, it
+is necessary to synchronize the call to this function with all other
+calls to functions in the library, using the synchronization
+mechanisms available in your thread library.  Otherwise, specific
+compiler or CPU memory cache optimizations could lead to the situation
+where a thread is started and uses @acronym{GPGME} before the effects
+of the initialization are visible for this thread.  It doesn't even
+suffice to call @code{gpgme_check_version} before creating this other
+thread@footnote{In SMP systems the new thread could be started on
+another CPU before the effects of the initialization are seen by that
+CPU's memory cache.  Not doing proper synchronization here leads to
+the same problems the double-checked locking idiom has.  You might
+find that if you don't do proper synchronization, it still works in
+most configurations.  Don't let this fool you.  Someday it might lead
+to subtle bugs when someone tries it on a DEC Alpha or an SMP
+machine.}.
+
+For example, if you are using POSIX threads, each thread that wants to
+call functions in @acronym{GPGME} could call the following function
+before any function in the library:
+
+@example
+#include <pthread.h>
+
+void
+initialize_gpgme (void)
+{
+  static int gpgme_init;
+  static pthread_mutext_t gpgme_init_lock = PTHREAD_MUTEX_INITIALIZER;
+
+  pthread_mutex_lock (&gpgme_init_lock);
+  if (!gpgme_init)
+    {
+      gpgme_check_version ();
+      gpgme_init = 1;
+    }
+  pthread_mutex_unlock (&gpgme_init_lock);
+}
+@end example
+
+@item
+Any @code{GpgmeData}, @code{GpgmeCtx} and @code{GpgmeRecipients}
+object must only be accessed by one thread at a time.  If multiple
+threads want to deal with the same object, the caller has to make sure
+that operations on this object are fully synchronized.
+
+@item
+Only one thread is allowed to call @code{gpgme_wait} at a time.  If
+multiple threads call this function, the caller must make sure that
+all invocations are fully synchronized.
+
+@item
+Unfortunately, the last rule implies that all calls to one of the
+following functions have to be fully synchronized together with
+@code{gpgme_wait}, as they call @code{gpgme_wait} internally: All
+functions @code{gpgme_op_FOO} that have a corresponding
+@code{gpgme_op_FOO_start} function, @code{gpgme_op_keylist_next},
+@code{gpgme_op_trustlist_next}.
+@end itemize
 
 
 @node Protocols and Engines

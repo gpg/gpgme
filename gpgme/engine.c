@@ -36,6 +36,7 @@
 #include "rungpg.h"
 #include "engine-gpgsm.h"
 
+
 struct engine_object_s
   {
     GpgmeProtocol protocol;
@@ -50,6 +51,7 @@ struct engine_object_s
       } engine;
 };
 
+
 struct reap_s
 {
   struct reap_s *next;
@@ -60,6 +62,7 @@ struct reap_s
 
 static struct reap_s *reap_list;
 DEFINE_STATIC_LOCK (reap_list_lock);
+
 
 /* Get the path of the engine for PROTOCOL.  */
 const char *
@@ -76,6 +79,7 @@ _gpgme_engine_get_path (GpgmeProtocol proto)
     }
 }
 
+
 /* Get the version number of the engine for PROTOCOL.  */
 const char *
 _gpgme_engine_get_version (GpgmeProtocol proto)
@@ -91,6 +95,7 @@ _gpgme_engine_get_version (GpgmeProtocol proto)
     }
 }
 
+
 GpgmeError
 gpgme_engine_check_version (GpgmeProtocol proto)
 {
@@ -105,6 +110,7 @@ gpgme_engine_check_version (GpgmeProtocol proto)
     }
 }
 
+
 const char *
 _gpgme_engine_get_info (GpgmeProtocol proto)
 {
@@ -115,35 +121,34 @@ _gpgme_engine_get_info (GpgmeProtocol proto)
     " </engine>\n";
   static const char *const strproto[3] = { "OpenPGP", "CMS", NULL };
   static const char *engine_info[3];  /* FIXME: MAX_PROTO + 1*/
-  const char *path;
-  const char *version;
-  char *info;
+  DEFINE_STATIC_LOCK (engine_info_lock);
 
   if (proto > 2 /* FIXME MAX_PROTO */ || !strproto[proto])
     return NULL;
 
-  /* FIXME: Make sure that only one instance does run.  */
-  if (engine_info[proto])
-    return engine_info[proto];
+  LOCK (engine_info_lock);
+  if (!engine_info[proto])
+    {
+      const char *path = _gpgme_engine_get_path (proto);
+      const char *version = _gpgme_engine_get_version (proto);
 
-  path = _gpgme_engine_get_path (proto);
-  version = _gpgme_engine_get_version (proto);
-
-  if (!path || !version)
-    return NULL;
-
-  info = xtrymalloc (strlen(fmt) + strlen(strproto[proto]) + strlen(path)
-                     + strlen (version) + 1);
-  if (!info)
-    info = " <engine>\n"
-      "  <error>Out of core</error>\n"
-      " </engine>";
-  else
-    sprintf (info, fmt, strproto[proto], version, path);
-  engine_info[proto] = info;
-
+      if (path && version)
+	{
+	  char *info = xtrymalloc (strlen (fmt) + strlen (strproto[proto])
+				   + strlen (path) + strlen (version) + 1);
+	  if (!info)
+	    info = " <engine>\n"
+	      "  <error>Out of core</error>\n"
+	      " </engine>";
+	  else
+	    sprintf (info, fmt, strproto[proto], version, path);
+	  engine_info[proto] = info;
+	}
+    }
+  UNLOCK (engine_info_lock);
   return engine_info[proto];
 }
+
 
 GpgmeError
 _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine)
@@ -192,6 +197,7 @@ _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine)
   
   return err;
 }
+
 
 void
 _gpgme_engine_release (EngineObject engine)
@@ -561,6 +567,7 @@ _gpgme_engine_start (EngineObject engine, void *opaque)
   return 0;
 }
 
+
 void
 _gpgme_engine_add_child_to_reap_list (void *buf, int buflen, pid_t pid)
 {
@@ -572,10 +579,10 @@ _gpgme_engine_add_child_to_reap_list (void *buf, int buflen, pid_t pid)
   memset (child, 0, sizeof *child);
   child->pid = pid;
   child->entered = time (NULL);
-  LOCK(reap_list_lock);
+  LOCK (reap_list_lock);
   child->next = reap_list;
   reap_list = child;
-  UNLOCK(reap_list_lock);
+  UNLOCK (reap_list_lock);
 }
 
 static void

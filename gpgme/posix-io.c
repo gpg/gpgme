@@ -36,6 +36,7 @@
 
 #include "util.h"
 #include "io.h"
+#include "sema.h"
 
 static struct
 {
@@ -149,10 +150,12 @@ _gpgme_io_spawn (const char *path, char **argv,
 		 struct spawn_fd_item_s *fd_child_list,
 		 struct spawn_fd_item_s *fd_parent_list)
 {
-  static volatile int fixed_signals;
+  static int fixed_signals;
+  DEFINE_STATIC_LOCK (fixed_signals_lock);
   pid_t pid;
   int i;
 
+  LOCK (fixed_signals_lock);
   if (!fixed_signals)
     { 
       struct sigaction act;
@@ -166,8 +169,8 @@ _gpgme_io_spawn (const char *path, char **argv,
 	  sigaction (SIGPIPE, &act, NULL);
         }
       fixed_signals = 1;
-      /* XXX: This is not really MT safe.  */
     }
+  UNLOCK (fixed_signals_lock);
 
   pid = fork ();
   if (pid == -1) 
@@ -285,8 +288,8 @@ _gpgme_io_kill (int pid, int hard)
 int
 _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds)
 {
-  static fd_set readfds;
-  static fd_set writefds;
+  fd_set readfds;
+  fd_set writefds;
   int any, i, max_fd, n, count;
   struct timeval timeout = { 1, 0 }; /* Use a 1s timeout.  */
   void *dbg_help = NULL;
@@ -314,7 +317,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds)
         }
       else if (fds[i].for_write)
 	{
-	  assert (!FD_ISSET ( fds[i].fd, &writefds));
+	  assert (!FD_ISSET (fds[i].fd, &writefds));
 	  FD_SET (fds[i].fd, &writefds);
 	  if (fds[i].fd > max_fd)
 	    max_fd = fds[i].fd;
