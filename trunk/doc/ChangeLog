@@ -1,3 +1,10 @@
+2004-06-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Decrypt and Verify): Document the NO_DATA error
+	code.
+	(Verify): Document the relationship between gpgme_op_verify_result
+	and the decrypt and verify operations.
+
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.text (Verify): Document GPG_ERR_CERT_REVOKED status.
