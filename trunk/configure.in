@@ -31,7 +31,7 @@ AM_MAINTAINER_MODE
 #    AGE, set REVISION to 0.
 # 3. Interfaces removed (BAD, breaks upward compatibility): Increment
 #    CURRENT, set AGE and REVISION to 0.
-AM_INIT_AUTOMAKE(gpgme,0.2.3)
+AM_INIT_AUTOMAKE(gpgme,0.2.3a)
 # 
 LIBGPGME_LT_CURRENT=4
 LIBGPGME_LT_AGE=4

@@ -94,6 +94,34 @@ doit ( GpgmeCtx ctx, const char *pattern )
 }
 
 
+/* 
+ * Check that there are no problems when we are using two context for
+ * listing keys. 
+ */
+static void
+check_two_contexts (void)
+{
+    GpgmeError err;
+    GpgmeCtx ctx1, ctx2;
+    GpgmeKey key;
+	
+    err = gpgme_new(&ctx1); fail_if_err (err);
+    err = gpgme_op_keylist_start(ctx1, "", 1); fail_if_err (err);
+    err = gpgme_new(&ctx2); fail_if_err (err);
+    err = gpgme_op_keylist_start(ctx2, "", 1); fail_if_err (err);
+
+    while ( (err=gpgme_op_keylist_next(ctx2, &key)) != GPGME_EOF) {
+        gpgme_key_release (key);
+    }
+    if (err != GPGME_EOF)
+        fail_if_err (err);
+    while ( (err=gpgme_op_keylist_next(ctx1, &key)) != GPGME_EOF) {
+        gpgme_key_release (key);
+    }
+    if (err != GPGME_EOF)
+        fail_if_err (err);
+}
+
 int 
 main (int argc, char **argv )
 {
@@ -112,6 +140,9 @@ main (int argc, char **argv )
     }
     pattern = argc? *argv : NULL;
 
+    err = gpgme_check_engine();
+    fail_if_err (err);
+
     err = gpgme_new (&ctx);
     fail_if_err (err);
     gpgme_set_keylist_mode (ctx, 1); /* no validity calculation */
@@ -120,6 +151,8 @@ main (int argc, char **argv )
         doit ( ctx, pattern );
     } while ( loop );
     gpgme_release (ctx);
+
+    check_two_contexts ();
 
     return 0;
 }
