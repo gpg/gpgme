@@ -102,6 +102,7 @@ struct gpgsm_object_s
       int linesize;
       int linelen;
     } attic;
+    int any; /* any data line seen */
   } colon; 
 
   struct GpgmeIOCbs io_cbs;
@@ -326,6 +327,7 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
   gpgsm->colon.attic.line = 0;
   gpgsm->colon.attic.linesize = 0;
   gpgsm->colon.attic.linelen = 0;
+  gpgsm->colon.any = 0;
 
   gpgsm->io_cbs.add = NULL;
   gpgsm->io_cbs.add_priv = NULL;
@@ -1244,6 +1246,16 @@ gpgsm_status_handler (void *opaque, int fd)
 
 	  if (gpgsm->status.fnc)
 	    gpgsm->status.fnc (gpgsm->status.fnc_value, GPGME_STATUS_EOF, "");
+	  if (gpgsm->colon.fnc && gpgsm->colon.any )
+            {
+              /* We must tell a colon fucntion about the EOF. We do
+                 this only when we have seen any data lines.  Note
+                 that this inlined use of colon data lines will
+                 eventually be changed into using a regular data
+                 channel. */
+              gpgsm->colon.any = 0;
+              gpgsm->colon.fnc (gpgsm->colon.fnc_value, NULL);
+            }
 
 	  /* XXX: Try our best to terminate the connection.  */
 	  if (err)
@@ -1306,6 +1318,7 @@ gpgsm_status_handler (void *opaque, int fd)
 		  /* Terminate the pending line, pass it to the colon
 		     handler and reset it.  */
 
+                  gpgsm->colon.any = 1;
 		  if (*alinelen > 1 && *(dst - 1) == '\r')
 		    dst--;
 		  *dst = '\0';
@@ -1365,6 +1378,7 @@ _gpgme_gpgsm_set_colon_line_handler (GpgsmObject gpgsm,
 
   gpgsm->colon.fnc = fnc;
   gpgsm->colon.fnc_value = fnc_value;
+  gpgsm->colon.any = 0;
 }
 
 

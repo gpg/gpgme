@@ -1,3 +1,12 @@
+2002-09-30  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (keylist_colon_handler): Take care when printing a
+	NULL with the DEBUG.
+
+	* engine-gpgsm.c (struct gpgsm_object_s): New member ANY.
+	(gpgsm_status_handler): Run the colon function to indicate.
+	(_gpgme_gpgsm_set_colon_line_handler): Better reset ANY here.
+
 2002-09-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* conversion.c (_gpgme_hextobyte): Prevent superfluous

@@ -255,7 +255,8 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
   const char *trust_info = NULL;
   struct subkey_s *sk = NULL;
 
-  DEBUG3 ("keylist_colon_handler ctx=%p, key=%p, line=%s\n", ctx, key, line);
+  DEBUG3 ("keylist_colon_handler ctx=%p, key=%p, line=%s\n", ctx, key,
+          line? line: "(null)");
   if (ctx->error)
     return;
   if (!line)
