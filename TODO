@@ -1,11 +1,6 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * ABI's to break:
-** All result returns will be done as structs, not as XML. !!!
-** Make sure that all results can be gotten in asynchronous mode (ie, avoid
-   returning information in the blocking version as function arguments).
-** Drop the support for finding out if an operation is pending.  After all, one
-   or two more ways for a user to shoot themselves in the foot don't matter.
 ** Compatibility interfaces that can be removed in future versions:
 *** gpgme_data_new_from_filepart
 *** gpgme_data_new_from_file
@@ -43,10 +38,13 @@ Hey Emacs, this is -*- outline -*- mode!
    This might be integrated with import. we still need to work out how
    to learn a card when gpg and gpgsm have support for smartcards.
 ** set_locale for thread safe and env independent locale selection.
+** How to terminate a pending operation?  Something like gpgme_op_reset,
+   but where are you allowed to call it (think callback handlers).
+   Then gpgme_op_*list_end can go.
+** Might need a stat() for data objects and use it for length param to gpg.
 
 * Documentation
-** Add note about GPGME clearing out pointer return values.
-** validity/trust
+** Document validity and trust issues.
 
 * Engines
 ** Do not create/destroy engines, but create engine and then reset it.
@@ -61,7 +59,7 @@ Hey Emacs, this is -*- outline -*- mode!
 ** engine operations can return General Error on unknown protocol
    (it's an internal error, as select_protocol checks already).
 ** When server mode is implemented properly, more care has to be taken to
-    release all resources on error (for example to free assuan_cmd).
+   release all resources on error (for example to free assuan_cmd).
 
 * Operations
 ** Passphrase callback should not copy password. !!!
@@ -74,10 +72,8 @@ Hey Emacs, this is -*- outline -*- mode!
     in tests/gpgs m/t-import.c.
 ** Genkey should return something more useful than General_Error.
 ** Factor out common code in _op_*_start functions.
-** Add ATTR to return the number of subkeys or uids.
 ** Optimize the file descriptor list, so the number of open fds is
-   always known easily.  This could replace the pending bit, too, with
-   the exception of keylisting operations maybe.
+   always known easily.
 
 * Error Values
 ** Map ASSUAN/GpgSM ERR error values in a better way than is done now. !!
@@ -90,8 +86,7 @@ Hey Emacs, this is -*- outline -*- mode!
    clever idea. !
 ** t-data
 *** Test gpgme_data_release_and_get_mem.
-*** Test gpgme_data_rewind for invalid types.
-*** Test gpgme_data_read's readable feature.
+*** Test gpgme_data_seek for invalid types.
 
 * Debug
 ** Handle malloc and vasprintf errors.  But decide first if they should be
