@@ -33,11 +33,11 @@
 /**
  * gpgme_new:
  * @r_ctx: Returns the new context
- * 
+ *
  * Create a new context to be used with most of the other GPGME
  * functions.  Use gpgme_release_context() to release all resources
  *
- * Return value: An error code 
+ * Return value: An error code
  **/
 GpgmeError
 gpgme_new (GpgmeCtx *r_ctx)
@@ -61,8 +61,8 @@ gpgme_new (GpgmeCtx *r_ctx)
 
 /**
  * gpgme_release:
- * @c: Context to be released. 
- * 
+ * @c: Context to be released.
+ *
  * Release all resources associated with the given context.
  **/
 void
@@ -70,7 +70,7 @@ gpgme_release (GpgmeCtx ctx)
 {
   if (!ctx)
     return;
-  _gpgme_engine_release (ctx->engine); 
+  _gpgme_engine_release (ctx->engine);
   _gpgme_release_result (ctx);
   gpgme_key_release (ctx->tmp_key);
   gpgme_data_release (ctx->help_data_1);
@@ -102,7 +102,7 @@ _gpgme_release_result (GpgmeCtx ctx)
 /**
  * gpgme_cancel:
  * @c: the context
- * 
+ *
  * Cancel the current operation.  It is not guaranteed that it will work for
  * all kinds of operations.  It is especially useful in a passphrase callback
  * to stop the system from asking another time for the passphrase.
@@ -117,13 +117,13 @@ gpgme_cancel (GpgmeCtx ctx)
 
 /**
  * gpgme_get_notation:
- * @c: the context 
- * 
+ * @c: the context
+ *
  * If there is notation data available from the last signature check,
  * this function may be used to return this notation data as a string.
  * The string is an XML represantaton of that data embedded in a
  * %&lt;notation&gt; container.
- * 
+ *
  * Return value: An XML string or NULL if no notation data is available.
  **/
 char *
@@ -137,9 +137,9 @@ gpgme_get_notation (GpgmeCtx ctx)
 
 /**
  * gpgme_get_op_info:
- * @c: the context 
- * @reserved: 
- * 
+ * @c: the context
+ * @reserved:
+ *
  * Return information about the last information.  The caller has to
  * free the string.  NULL is returned if there is not previous
  * operation available or the operation has not yet finished.
@@ -160,28 +160,28 @@ gpgme_get_notation (GpgmeCtx ctx)
  * </GnupgOperationInfo>
  * ]]>
  * </literal>
- * Return value: NULL for no info available or an XML string 
+ * Return value: NULL for no info available or an XML string
  **/
 char *
 gpgme_get_op_info (GpgmeCtx ctx, int reserved)
 {
   if (!ctx || reserved)
     return NULL;  /* Invalid value.  */
- 
+
   return _gpgme_data_get_as_string (ctx->op_info);
 }
 
 
 /*
  * Store the data object with the operation info in the
- * context. Caller should not use that object anymore.  
+ * context. Caller should not use that object anymore.
  */
 void
 _gpgme_set_op_info (GpgmeCtx ctx, GpgmeData info)
 {
   assert (ctx);
 
-  gpgme_data_release (ctx->op_info); 
+  gpgme_data_release (ctx->op_info);
   ctx->op_info = NULL;
 
   if (info)
@@ -194,7 +194,7 @@ gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol protocol)
 {
   if (!ctx)
     return mk_error (Invalid_Value);
-  
+
   switch (protocol)
     {
     case GPGME_PROTOCOL_OpenPGP:
@@ -208,17 +208,17 @@ gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol protocol)
     default:
       return mk_error (Invalid_Value);
     }
-  
+
   return 0;
 }
 
 
 /**
  * gpgme_set_armor:
- * @ctx: the context 
+ * @ctx: the context
  * @yes: boolean value to set or clear that flag
- * 
- * Enable or disable the use of an ascii armor for all output.  
+ *
+ * Enable or disable the use of an ascii armor for all output.
  **/
 void
 gpgme_set_armor (GpgmeCtx ctx, int yes)
@@ -232,13 +232,13 @@ gpgme_set_armor (GpgmeCtx ctx, int yes)
 /**
  * gpgme_get_armor:
  * @ctx: the context
- * 
+ *
  * Return the state of the armor flag which can be changed using
  * gpgme_set_armor().
- * 
+ *
  * Return value: Boolean whether armor mode is to be used.
  **/
-int 
+int
 gpgme_get_armor (GpgmeCtx ctx)
 {
   return ctx && ctx->use_armor;
@@ -249,9 +249,9 @@ gpgme_get_armor (GpgmeCtx ctx)
  * gpgme_set_textmode:
  * @ctx: the context
  * @yes: boolean flag whether textmode should be enabled
- * 
+ *
  * Enable or disable the use of the special textmode.  Textmode is for example
- * used for the RFC2015 signatures; note that the updated RFC 3156 mandates 
+ * used for the RFC2015 signatures; note that the updated RFC 3156 mandates
  * that the MUA does some preparations so that textmode is not needed anymore.
  **/
 void
@@ -265,13 +265,13 @@ gpgme_set_textmode (GpgmeCtx ctx, int yes)
 /**
  * gpgme_get_textmode:
  * @ctx: the context
- * 
+ *
  * Return the state of the textmode flag which can be changed using
  * gpgme_set_textmode().
- * 
+ *
  * Return value: Boolean whether textmode is to be used.
  **/
-int 
+int
 gpgme_get_textmode (GpgmeCtx ctx)
 {
   return ctx && ctx->use_textmode;
@@ -281,7 +281,7 @@ gpgme_get_textmode (GpgmeCtx ctx)
 /**
  * gpgme_set_include_certs:
  * @ctx: the context
- * 
+ *
  * Set the number of certifications to include in an S/MIME message.
  * The default is 1 (only the cert of the sender).  -1 means all certs,
  * and -2 means all certs except the root cert.
@@ -301,7 +301,7 @@ gpgme_set_include_certs (GpgmeCtx ctx, int nr_of_certs)
 /**
  * gpgme_get_include_certs:
  * @ctx: the context
- * 
+ *
  * Get the number of certifications to include in an S/MIME message.
  *
  * Return value: Boolean whether textmode is to be used.
@@ -314,10 +314,42 @@ gpgme_get_include_certs (GpgmeCtx ctx)
 
 
 /**
+ * gpgme_set_signature_algorithm
+ * @ctx: the context
+ * @algorithm: the algorithm to be used for signing a S/MIME
+ * message. The default is 1 (SHA1); this is currently the only
+ * supported algorithm.
+ **/
+void
+gpgme_set_signature_algorithm( GpgmeCtx ctx, int algorithm )
+{
+    /* PENDING(g10) Implement this */
+}
+
+
+/**
+ * gpgme_get_signature_algorithm:
+ * @ctx: the context
+ *
+ * Get the signature algorithm used for signing S/MIME messages
+ *
+ * Return value: the signature algorithm where 1 means SHA1
+ **/
+int
+gpgme_get_signature_algorithm (GpgmeCtx ctx)
+{
+    /* PENDING(g10) Implement this */
+}
+
+
+
+
+
+/**
  * gpgme_set_keylist_mode:
  * @ctx: the context
  * @mode: listing mode
- * 
+ *
  * This function changes the default behaviour of the keylisting
  * functions.  mode is a bitwise-OR of the GPGME_KEYLIST_* flags.
  * The default mode is GPGME_KEYLIST_MODE_LOCAL.
@@ -343,7 +375,7 @@ gpgme_set_keylist_mode (GpgmeCtx ctx, int mode)
 /**
  * gpgme_get_keylist_mode:
  * @ctx: the context
- * 
+ *
  * This function ch the default behaviour of the keylisting functions.
  * Defines values for @mode are: %0 = normal, %1 = fast listing without
  * information about key validity.
@@ -362,10 +394,10 @@ gpgme_get_keylist_mode (GpgmeCtx ctx)
 
 /**
  * gpgme_set_passphrase_cb:
- * @ctx: the context 
+ * @ctx: the context
  * @cb: A callback function
  * @cb_value: The value passed to the callback function
- * 
+ *
  * This function sets a callback function to be used to pass a passphrase
  * to gpg. The preferred way to handle this is by using the gpg-agent, but
  * because that beast is not ready for real use, you can use this passphrase
@@ -399,10 +431,10 @@ gpgme_set_passphrase_cb (GpgmeCtx ctx, GpgmePassphraseCb cb, void *cb_value)
 
 /**
  * gpgme_set_progress_cb:
- * @ctx: the context 
+ * @ctx: the context
  * @cb: A callback function
  * @cb_value: The value passed to the callback function
- * 
+ *
  * This function sets a callback function to be used as a progress indicator.
  *
  * The callback function is defined as:
