@@ -1,5 +1,9 @@
 2003-06-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (AM_CPPFLAGS): Add @GPG_ERROR_CFLAGS@.
+	* gpgme-config.in (gpg_error_libs, gpg_error_cflags): New variables.
+	Print them.
+
 	* op-support.c (_gpgme_parse_inv_userid): Rename to
 	_gpgme_parse_inv_recp and change to new datatype.
 	* ops.h (_gpgme_parse_inv_key): Fix prototype.

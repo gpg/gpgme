@@ -1,5 +1,7 @@
 2003-06-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* configure.ac: Use AM_PATH_GPG_ERROR.
+
 	* configure.ac: Check for libgpg-error.  Define
 	GPG_ERR_SOURCE_DEFAULT.
 

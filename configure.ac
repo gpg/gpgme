@@ -168,7 +168,7 @@ fi
 #       However some code in assuan/ links against it.
 AC_REPLACE_FUNCS(fopencookie)
 
-AC_CHECK_LIB(gpg-error, strerror)
+AM_PATH_GPG_ERROR(0.1)
 AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
           [The default error source for GPGME.])
 dnl

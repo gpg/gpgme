@@ -22,6 +22,9 @@ echo_cflags=no
 echo_prefix=no
 echo_exec_prefix=no
 
+gpg_error_cflags=@GPG_ERROR_CFLAGS@
+gpg_error_libs=@GPG_ERROR_LIBS@
+
 
 usage()
 {
@@ -98,7 +101,7 @@ if test "$echo_cflags" = "yes"; then
 	fi
       done
     fi
-    echo $includes $cflags
+    echo $gpg_error_cflags $includes $cflags
 fi
 
 if test "$echo_libs" = "yes"; then
@@ -110,6 +113,6 @@ if test "$echo_libs" = "yes"; then
 	fi
       done
     fi
-    echo $libdirs $libs
+    echo $gpg_error_libs $libdirs $libs
 fi
 
