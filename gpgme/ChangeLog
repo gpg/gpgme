@@ -1,5 +1,9 @@
 2002-10-09  Marcus Brinkmann  <marcus@g10code.de>
 
+	* data.h, data-user.c, data-stream.c, data-mem.c, data-fd.c,
+	data-compat.c: New file.  Really check them in this time, completes
+	2002-10-08 change.
+
 	* rungpg.h (GpgStatusHandler): Rename type to GpgmeStatusHandler
 	and move to ...
 	* types.h (GpgmeStatusHandler): ... here.
