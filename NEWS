@@ -21,6 +21,7 @@ gpgme_op_verify                 CHANGED: Returns more status codes.
 GPGME_ATTR_SIG_STATUS           NEW
 gpgme_get_sig_string_attr       NEW
 gpgme_get_sig_ulong_attr        NEW
+gpgme_get_protocol              NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.5 (2002-04-01)
