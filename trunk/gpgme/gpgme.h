@@ -473,7 +473,7 @@ struct _gpgme_key_sig
 {
   struct _gpgme_key_sig *next;
 
-  /* True if the signature is revoked.  */
+  /* True if the signature is a revokation signature.  */
   unsigned int revoked : 1;
 
   /* True if the signature is expired.  */
