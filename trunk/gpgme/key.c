@@ -259,6 +259,8 @@ _gpgme_key_append_name ( GpgmeKey key, const char *s )
     uid = xtrymalloc ( sizeof *uid + 2*strlen (s)+3 );
     if ( !uid )
         return mk_error (Out_Of_Core);
+    uid->revoked = 0;
+    uid->invalid = 0;
     uid->validity = 0;
     uid->name_part = NULL;
     uid->email_part = NULL;
@@ -362,6 +364,25 @@ add_tag_and_time ( GpgmeData d, const char *tag, time_t val )
     add_tag_and_string ( d, tag, buf );
 }
 
+static void
+one_uid_as_xml (GpgmeData d, struct user_id_s *u)
+{
+    _gpgme_data_append_string (d, "  <userid>\n");
+    if ( u->invalid )
+        _gpgme_data_append_string ( d, "    <invalid/>\n");
+    if ( u->revoked )
+        _gpgme_data_append_string ( d, "    <revoked/>\n");
+    add_tag_and_string ( d, "raw", u->name );
+    if ( *u->name_part )
+        add_tag_and_string ( d, "name", u->name_part );
+    if ( *u->email_part )
+        add_tag_and_string ( d, "email", u->email_part );
+    if ( *u->comment_part )
+        add_tag_and_string ( d, "comment", u->comment_part );
+    _gpgme_data_append_string (d, "  </userid>\n");
+}
+
+
 char *
 gpgme_key_get_as_xml ( GpgmeKey key )
 {
@@ -377,8 +398,16 @@ gpgme_key_get_as_xml ( GpgmeKey key )
     
     _gpgme_data_append_string ( d, "<GnupgKeyblock>\n"
                                    "  <mainkey>\n" );
-    if ( key->secret )
+    if ( key->keys.secret )
         _gpgme_data_append_string ( d, "    <secret/>\n");
+    if ( key->keys.flags.invalid )
+        _gpgme_data_append_string ( d, "    <invalid/>\n");
+    if ( key->keys.flags.revoked )
+        _gpgme_data_append_string ( d, "    <revoked/>\n");
+    if ( key->keys.flags.expired )
+        _gpgme_data_append_string ( d, "    <expired/>\n");
+    if ( key->keys.flags.disabled )
+        _gpgme_data_append_string ( d, "    <disabled/>\n");
     add_tag_and_string (d, "keyid", key->keys.keyid );   
     if (key->keys.fingerprint)
         add_tag_and_string (d, "fpr", key->keys.fingerprint );
@@ -388,23 +417,30 @@ gpgme_key_get_as_xml ( GpgmeKey key )
     /*add_tag_and_time (d, "expires", key->expires );*/
     _gpgme_data_append_string (d, "  </mainkey>\n");
 
-    /* Now the user IDs */
-    for ( u = key->uids; u; u = u->next ) {
-        _gpgme_data_append_string (d, "  <userid>\n");
-        add_tag_and_string ( d, "raw", u->name );
-        if ( *u->name_part )
-            add_tag_and_string ( d, "name", u->name_part );
-        if ( *u->email_part )
-            add_tag_and_string ( d, "email", u->email_part );
-        if ( *u->comment_part )
-            add_tag_and_string ( d, "comment", u->comment_part );
-        _gpgme_data_append_string (d, "  </userid>\n");
+    /* Now the user IDs.  We are listing the last one firs becuase this is
+     * the primary one. */
+    for (u = key->uids; u && u->next; u = u->next )
+        ;
+    if (u) {
+        one_uid_as_xml (d,u);
+        for ( u = key->uids; u && u->next; u = u->next ) {
+            one_uid_as_xml (d,u);
+        }
     }
-    
+
+    /* and now the subkeys */
     for (k=key->keys.next; k; k = k->next ) {
         _gpgme_data_append_string (d, "  <subkey>\n");
         if ( k->secret )
             _gpgme_data_append_string ( d, "    <secret/>\n");
+        if ( k->flags.invalid )
+            _gpgme_data_append_string ( d, "    <invalid/>\n");
+        if ( k->flags.revoked )
+            _gpgme_data_append_string ( d, "    <revoked/>\n");
+        if ( k->flags.expired )
+            _gpgme_data_append_string ( d, "    <expired/>\n");
+        if ( k->flags.disabled )
+            _gpgme_data_append_string ( d, "    <disabled/>\n");
         add_tag_and_string (d, "keyid", k->keyid );   
         if (k->fingerprint)
             add_tag_and_string (d, "fpr", k->fingerprint );
@@ -424,6 +460,7 @@ gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
                             const void *reserved, int idx )
 {
     const char *val = NULL;
+    struct subkey_s *k;
     struct user_id_s *u;
 
     if (!key)
@@ -435,13 +472,22 @@ gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
 
     switch (what) {
       case GPGME_ATTR_KEYID:
-        val = key->keys.keyid;
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = k->keyid;
         break;
       case GPGME_ATTR_FPR:
-        val = key->keys.fingerprint;
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = k->fingerprint;
         break;
       case GPGME_ATTR_ALGO:    
-        val = pkalgo_to_string (key->keys.key_algo);
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = pkalgo_to_string (k->key_algo);
         break;
       case GPGME_ATTR_LEN:     
       case GPGME_ATTR_CREATED: 
@@ -486,6 +532,10 @@ gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
         break;
       case GPGME_ATTR_LEVEL:  /* not used here */
       case GPGME_ATTR_TYPE:
+      case GPGME_ATTR_KEY_REVOKED:
+      case GPGME_ATTR_KEY_INVALID:
+      case GPGME_ATTR_UID_REVOKED:
+      case GPGME_ATTR_UID_INVALID:
         break;
       case GPGME_ATTR_IS_SECRET:
         if (key->secret)
@@ -501,6 +551,7 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
                            const void *reserved, int idx )
 {
     unsigned long val = 0;
+    struct subkey_s *k;
     struct user_id_s *u;
 
     if (!key)
@@ -512,13 +563,22 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
 
     switch (what) {
       case GPGME_ATTR_ALGO:    
-        val = (unsigned long)key->keys.key_algo;
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = (unsigned long)k->key_algo;
         break;
       case GPGME_ATTR_LEN:     
-        val = (unsigned long)key->keys.key_len;
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = (unsigned long)k->key_len;
         break;
       case GPGME_ATTR_CREATED: 
-        val = key->keys.timestamp < 0? 0L:(unsigned long)key->keys.timestamp;
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = k->timestamp < 0? 0L:(unsigned long)k->timestamp;
         break;
       case GPGME_ATTR_VALIDITY:
         for (u=key->uids; u && idx; u=u->next, idx-- )
@@ -528,6 +588,30 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
         break;
       case GPGME_ATTR_IS_SECRET:
         val = !!key->secret;
+        break;
+      case GPGME_ATTR_KEY_REVOKED:
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = k->flags.revoked;
+        break;
+      case GPGME_ATTR_KEY_INVALID:
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = k->flags.invalid;
+        break;
+      case GPGME_ATTR_UID_REVOKED:
+        for (u=key->uids; u && idx; u=u->next, idx-- )
+            ;
+        if (u)
+            val = u->revoked;
+        break;
+      case GPGME_ATTR_UID_INVALID:
+        for (u=key->uids; u && idx; u=u->next, idx-- )
+            ;
+        if (u)
+            val = u->invalid;
         break;
       default:
         break;

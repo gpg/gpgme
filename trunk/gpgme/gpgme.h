@@ -43,7 +43,7 @@ extern "C" {
  * let autoconf (using the AM_PATH_GPGME macro) check that this
  * header matches the installed library.
  * Warning: Do not edit the next line.  configure will do that for you! */
-#define GPGME_VERSION "0.1.4b"
+#define GPGME_VERSION "0.2.0a"
 
 
 
@@ -129,7 +129,11 @@ typedef enum {
     GPGME_ATTR_VALIDITY= 12,
     GPGME_ATTR_LEVEL   = 13,
     GPGME_ATTR_TYPE    = 14,
-    GPGME_ATTR_IS_SECRET= 15
+    GPGME_ATTR_IS_SECRET= 15,
+    GPGME_ATTR_KEY_REVOKED = 16,
+    GPGME_ATTR_KEY_INVALID = 17,
+    GPGME_ATTR_UID_REVOKED = 18,
+    GPGME_ATTR_UID_INVALID = 19
 } GpgmeAttr;
 
 typedef enum {

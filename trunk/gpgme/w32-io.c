@@ -269,9 +269,11 @@ create_reader (HANDLE fd)
 static void
 destroy_reader (struct reader_context_s *c)
 {
+    LOCK (c->mutex)
     c->stop_me = 1;
     if (c->have_space_ev) 
         SetEvent (c->have_space_ev);
+    UNLOCK (c->mutex)
 
     DEBUG1 ("waiting for thread %p termination ...", c->thread_hd );
     WaitForSingleObject (c->stopped, INFINITE);
@@ -520,9 +522,11 @@ create_writer (HANDLE fd)
 static void
 destroy_writer (struct writer_context_s *c)
 {
+    LOCK (c->mutex)
     c->stop_me = 1;
     if (c->have_data) 
         SetEvent (c->have_data);
+    UNLOCK (c->mutex)
 
     DEBUG1 ("waiting for thread %p termination ...", c->thread_hd );
     WaitForSingleObject (c->stopped, INFINITE);

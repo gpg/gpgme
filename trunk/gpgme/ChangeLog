@@ -1,3 +1,19 @@
+2001-03-13  Werner Koch  <wk@gnupg.org>
+
+	* context.h: Add invalid and revoke flags to user_id structure.
+	* keylist.c (gpgme_op_keylist_start): Use --fixed-list-mode.
+	(keylist_colon_handler): Adjust for that.
+ 	(set_userid_flags): New. 
+	(set_mainkey_trust_info): Handle new key invalid flag
+	(set_subkey_trust_info): Ditto.
+	* gpgme.h: Add new attributes for key and user ID flags.
+	* key.c (_gpgme_key_append_name): Init these flags
+	(gpgme_key_get_as_xml): Print them.
+	(one_uid_as_xml): New helper for above.
+	(gpgme_key_get_string_attr, gpgme_key_get_ulong_attr):
+	Return the new attributes.  Enhanced, so that subkey information
+	can be returned now.
+
 2001-02-28  Werner Koch  <wk@gnupg.org>
 
 	* w32-io.c (destroy_reader): Set sop_me flag.
