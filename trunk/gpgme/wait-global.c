@@ -79,9 +79,10 @@ struct ctx_list_item
 static struct ctx_list_item *ctx_active_list;
 
 /* The done list contains all contexts that have previously been
-active but now are not active any longer, either because they finished
-successfully or an I/O callback returned an error.  The status field
-in the list item contains the error value (or 0 if successful).  */
+   active but now are not active any longer, either because they
+   finished successfully or an I/O callback returned an error.  The
+   status field in the list item contains the error value (or 0 if
+   successful).  */
 static struct ctx_list_item *ctx_done_list;
 
 
