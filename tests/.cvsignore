@@ -26,6 +26,7 @@ Whisky
 XRay
 Yankee
 Zulu
+dbgmd-0*
 foo
 just-gnu-it
 just-gnu-it.asc
@@ -40,6 +41,7 @@ secring.gpg
 t-datano
 t-versionno
 trustdb.gpg
+trusttree.c
 wichtig
 wichtig.asc
 with-notation
@@ -48,4 +50,3 @@ x.c
 xx1
 xx1.gpg
 xx2
-dbgmd-0*
