@@ -104,7 +104,7 @@ Preparation
 
 * Header::                        What header file you need to include.
 * Building the Source::           Compiler options to be used.
-* Largefile Support::             How to use @acronym{GPGME} with LFS.
+* Largefile Support (LFS)::       How to use @acronym{GPGME} with LFS.
 * Using Automake::                Compiler options to be used the easy way.
 * Using Libtool::                 Avoiding compiler options entirely.
 * Library Version Check::         Getting and verifying the library version.
@@ -321,6 +321,7 @@ of the library are verified.
 @menu
 * Header::                        What header file you need to include.
 * Building the Source::           Compiler options to be used.
+* Largefile Support (LFS)::       How to use @acronym{GPGME} with LFS.
 * Using Automake::                Compiler options to be used the easy way.
 * Using Libtool::                 Avoiding compiler options entirely.
 * Library Version Check::         Getting and verifying the library version.
@@ -408,18 +409,18 @@ Supported thread packages are @option{--thread=pth} and
 @option{--thread=pthread}.
 
 
-@node Largefile Support
+@node Largefile Support (LFS)
 @section Largefile Support (LFS)
-@cindex largfile support
+@cindex largefile support
 @cindex LFS
 
-@acronym{GPGME} is compiled with largfile support by default, if it is
-available on the system.  This means that GPGME supports files larger
-than two gigabyte in size, if the underlying operating system can.  On
-some systems, largefile support is already the default.  On such
-systems, nothing special is required.  However, some systems provide
-only support for files up to two gigabyte in size by default.  Support
-for larger file sizes has to be specifically enabled.
+@acronym{GPGME} is compiled with largefile support by default, if it
+is available on the system.  This means that GPGME supports files
+larger than two gigabyte in size, if the underlying operating system
+can.  On some systems, largefile support is already the default.  On
+such systems, nothing special is required.  However, some systems
+provide only support for files up to two gigabyte in size by default.
+Support for larger file sizes has to be specifically enabled.
 
 To make a difficult situation even more complex, such systems provide
 two different types of largefile support.  You can either get all
@@ -457,10 +458,10 @@ support by default and just use that.  The compatibility modes (small
 file sizes or dual mode) can be considered an historic artefact, only
 useful to allow for a transitional period.
 
-@acronym{GPGME} is compiled using the largfile support by default.
-This means that your application must do the same, at least as far as
-it is relevant for using the @file{gpgme.h} header file.  All types in
-this header files refer to their largefile counterparts, if they are
+@acronym{GPGME} is compiled using largefile support by default.  This
+means that your application must do the same, at least as far as it is
+relevant for using the @file{gpgme.h} header file.  All types in this
+header files refer to their largefile counterparts, if they are
 different from any default types on the system.
 
 You can enable largefile support, if it is different from the default
