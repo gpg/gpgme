@@ -112,6 +112,16 @@ typedef enum
   }
 GpgmeDataType;
 
+/* The possible encoding mode of GpgmeData objects.  */
+typedef enum
+  {
+    GPGME_DATA_ENCODING_NONE   = 0, /* i.e. not specified */
+    GPGME_DATA_ENCODING_BINARY = 1,
+    GPGME_DATA_ENCODING_BASE64 = 2, 
+    GPGME_DATA_ENCODING_ARMOR  = 3 /* Either PEM or OpenPGP Armor */
+  }
+GpgmeDataEncoding;
+
 /* The possible signature stati.  */
 typedef enum
   {
@@ -373,6 +383,12 @@ char *gpgme_data_release_and_get_mem (GpgmeData dh, size_t *r_len);
 
 /* Return the type of the data buffer DH.  */
 GpgmeDataType gpgme_data_get_type (GpgmeData dh);
+
+/* Return the encoding attribute of the data buffer DH */
+GpgmeDataEncoding gpgme_data_get_encoding (GpgmeData dh);
+
+/* Set the encoding attribute of data buffer DH to ENC */
+GpgmeError gpgme_data_set_encoding (GpgmeData dh, GpgmeDataEncoding enc);
 
 /* Reset the read pointer in DH.  */
 GpgmeError gpgme_data_rewind (GpgmeData dh);

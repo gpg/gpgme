@@ -1,3 +1,10 @@
+2002-04-27  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.h (GpgmeData_Encoding): New.
+	* data.c (gpgme_data_get_encoding,gpgme_data_set_encoding): New.
+	* engine-gpgsm.c (map_input_enc): New. Use it in all local
+	functions where the INPUT command gets send.
+
 2002-04-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_op_verify): Close the output

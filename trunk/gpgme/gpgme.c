@@ -140,7 +140,7 @@ gpgme_get_notation (GpgmeCtx ctx)
  * @c: the context
  * @reserved:
  *
- * Return information about the last information.  The caller has to
+ * Return information about the last operation.  The caller has to
  * free the string.  NULL is returned if there is not previous
  * operation available or the operation has not yet finished.
  *
