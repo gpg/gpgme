@@ -254,6 +254,48 @@ typedef enum {
 } CertificateSource;
 
 
+/*! \ingroup groupSignAct
+    \brief Flags used to compose the SigStatusFlags value.
+
+    This status flags are used to compose the SigStatusFlags value
+    returned in \c SignatureMetaDataExtendedInfo after trying to
+    verify a signed message part's signature status.
+
+    The normal flags may <b>not</b> be used together with the
+    special SigStat_NUMERICAL_CODE flag. When finding the special
+    SigStat_NUMERICAL_CODE flag in a SigStatusFlags value you
+    can obtain the respective error code number by substracting
+    the SigStatusFlags value by SigStat_NUMERICAL_CODE: this is
+    used to transport special status information NOT matching
+    any of the normal predefined status codes.
+
+    \note to PlugIn developers: Implementations of the CryptPlug API
+    should try to express their signature states by bit-wise OR'ing
+    the normal SigStatusFlags values. Using the SigStat_NUMERICAL_CODE
+    flag should only be used as for exceptional situations where no
+    other flag(s) could be used. By using the normal status flags your
+    PlugIn's users will be told an understandable description of the
+    status - when using (SigStat_NUMERICAL_CODE + internalCode) they
+    will only be shown the respective code number and have to look
+    into your PlugIn's manual to learn about it's meaning...
+*/
+enum {
+    SigStat_VALID       = 0x0001,   /* The signature is fully valid */
+    SigStat_GREEN       = 0x0002,   /* The signature is good. */
+    SigStat_RED         = 0x0004,   /* The signature is bad. */
+    SigStat_KEY_REVOKED = 0x0010,   /* One key has been revoked. */
+    SigStat_KEY_EXPIRED = 0x0020,   /* One key has expired. */
+    SigStat_SIG_EXPIRED = 0x0040,   /* The signature has expired. */
+    SigStat_KEY_MISSING = 0x0080,   /* Can't verify: key missing. */
+    SigStat_CRL_MISSING = 0x0100,   /* CRL not available. */
+    SigStat_CRL_TOO_OLD = 0x0200,   /* Available CRL is too old. */
+    SigStat_BAD_POLICY  = 0x0400,   /* A policy was not met. */
+    SigStat_SYS_ERROR   = 0x0800,   /* A system error occured. */
+
+    SigStat_NUMERICAL_CODE = 0x8000 /* An other error occured. */
+};
+typedef unsigned long SigStatusFlags;
+
 
 
 
@@ -1456,6 +1498,7 @@ bool signMessage( const char*  cleartext,
 struct SignatureMetaDataExtendedInfo
 {
     struct tm* creation_time;
+    SigStatusFlags sigStatusFlags;
     char* status_text;
     char* keyid;
     char* fingerprint;
