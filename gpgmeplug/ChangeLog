@@ -1,3 +1,8 @@
+2002-11-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c (requestDecentralCertificate): Add new argument to
+	gpgme_op_genkey invocation.
+
 2002-10-12  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgmeplug.c (checkMessageSignature): Update call to

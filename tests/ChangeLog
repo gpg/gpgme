@@ -1,3 +1,8 @@
+2002-11-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-genkey.c (main): Add missing argument to gpgme_op_genkey
+	invocation.
+
 2002-10-09  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-decrypt.c (print_data): Update to new gpgme_data_read

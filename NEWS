@@ -22,6 +22,7 @@ gpgme_op_verify			CHANGED: Take different data objects for
 				signed text and plain text.
 gpgme_op_verify_start		CHANGED: See gpgme_op_verify.
 gpgme_check_engine		REMOVED: Deprecated since 0.3.0.
+gpgme_op_genkey			CHANGED: New parameter FPR.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.11 (2002-09-20)

@@ -70,7 +70,7 @@ main (int argc, char **argv )
     if (!parms)
         exit (8);
     sprintf (parms, format, ++count );
-    err = gpgme_op_genkey (ctx, parms, NULL, NULL );
+    err = gpgme_op_genkey (ctx, parms, NULL, NULL, NULL);
     fail_if_err (err);
     free (parms);
 

@@ -1,25 +1,26 @@
-/* genkey.c -  key generation
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+/* genkey.c - Key generation.
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002 g10 Code GmbH
 
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+
+#if HAVE_CONFIG_H
 #include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,6 +35,7 @@ struct genkey_result_s
 {
   int created_primary : 1;
   int created_sub : 1;
+  char *fpr;
 };
 
 
@@ -42,8 +44,11 @@ _gpgme_release_genkey_result (GenKeyResult result)
 {
   if (!result)
     return;
+  if (result->fpr)
+    free (result->fpr);
   free (result);
 }
+
 
 static void
 genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
@@ -63,6 +68,14 @@ genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 	    ctx->result.genkey->created_primary = 1;
 	  if (*args == 'B' || *args == 'S')
 	    ctx->result.genkey->created_sub = 1;
+	  if (args[1] == ' ')
+	    {
+	      if (ctx->result.genkey->fpr)
+		free (ctx->result.genkey->fpr);
+	      ctx->result.genkey->fpr = strdup (&args[2]);
+	      if (!ctx->result.genkey->fpr)
+		ctx->error = mk_error (Out_Of_Core);
+	    }
 	}
       break;
 
@@ -77,6 +90,7 @@ genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       break;
     }
 }
+
 
 static GpgmeError
 _gpgme_op_genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
@@ -183,7 +197,8 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
  * @parms: XML string with the key parameters
  * @pubkey: Returns the public key
  * @seckey: Returns the secret key
- * 
+ * @fpr: Returns the fingerprint of the key.
+ *
  * Generate a new key and store the key in the default keyrings if both
  * @pubkey and @seckey are NULL.  If @pubkey and @seckey are given, the newly
  * created key will be returned in these data objects.
@@ -193,10 +208,22 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
  **/
 GpgmeError
 gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
-                 GpgmeData pubkey, GpgmeData seckey)
+                 GpgmeData pubkey, GpgmeData seckey,
+		 char **fpr)
 {
   GpgmeError err = _gpgme_op_genkey_start (ctx, 1, parms, pubkey, seckey);
   if (!err)
     err = _gpgme_wait_one (ctx);
+  if (!err && fpr)
+    {
+      if (ctx->result.genkey->fpr)
+	{
+	  *fpr = strdup (ctx->result.genkey->fpr);
+	  if (!*fpr)
+	    return mk_error (Out_Of_Core);
+	}
+      else
+	*fpr = NULL;
+    }
   return err;
 }

@@ -1802,7 +1802,7 @@ bool requestDecentralCertificate( const char* certparms,
     gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
     /* Don't ASCII-armor, the MUA will use base64 encoding */
     /*    gpgme_set_armor (ctx, 1); */
-    err = gpgme_op_genkey (ctx, certparms, pub, NULL );
+    err = gpgme_op_genkey (ctx, certparms, pub, NULL, NULL);
     fprintf( stderr,  "3: gpgme returned %d\n", err );
     if( err != GPGME_No_Error ) {
         gpgme_data_release( pub );
