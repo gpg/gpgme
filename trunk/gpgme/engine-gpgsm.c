@@ -133,6 +133,7 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
   GpgsmObject gpgsm;
   char *argv[] = { "gpgsm", "--server", NULL };
   int fds[2];
+  int child_fds[4];
 
   *r_gpgsm = NULL;
   gpgsm = xtrycalloc (1, sizeof *gpgsm);
@@ -179,8 +180,12 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
   gpgsm->message_fd = fds[1];
   gpgsm->message_fd_server = fds[0];
 
+  child_fds[0] = gpgsm->input_fd_server;
+  child_fds[1] = gpgsm->output_fd_server;
+  child_fds[2] = gpgsm->message_fd_server;
+  child_fds[3] = -1;
   err = assuan_pipe_connect (&gpgsm->assuan_ctx,
-			     _gpgme_get_gpgsm_path (), argv);
+			     _gpgme_get_gpgsm_path (), argv, child_fds);
 
   if (!err &&
       (_gpgme_io_set_close_notify (gpgsm->input_fd,
