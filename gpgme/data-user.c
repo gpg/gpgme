@@ -51,7 +51,6 @@ static void
 user_release (GpgmeData dh)
 {
   (*dh->data.user.cbs->release) (dh->data.user.handle);
-  return 0;
 }
 
 
