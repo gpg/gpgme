@@ -261,13 +261,66 @@ pkalgo_to_string (int algo)
     case 2:
     case 3:
       return "RSA";
+
     case 16:
     case 20:
       return "ElG";
+
     case 17:
       return "DSA";
+
     default:
       return "Unknown";
+    }
+}
+
+
+static const char *
+otrust_to_string (int otrust)
+{
+  switch (otrust)
+    {
+    case GPGME_VALIDITY_NEVER:
+      return "n";
+
+    case GPGME_VALIDITY_MARGINAL:
+      return "m";
+
+    case GPGME_VALIDITY_FULL:
+      return "f";
+
+    case GPGME_VALIDITY_ULTIMATE:
+      return "u";
+
+    default:
+      return "?";
+    }
+}
+
+
+static const char *
+validity_to_string (int otrust)
+{
+  switch (validity)
+    {
+    case GPGME_VALIDITY_UNDEFINED:
+      return "q";
+
+    case GPGME_VALIDITY_NEVER:
+      return "n";
+
+    case GPGME_VALIDITY_MARGINAL:
+      return "m";
+
+    case GPGME_VALIDITY_FULL:
+      return "f";
+
+    case GPGME_VALIDITY_ULTIMATE:
+      return "u";
+
+    case GPGME_VALIDITY_UNKNOWN:
+    default:
+      return "?";
     }
 }
 
@@ -768,9 +821,7 @@ gpgme_key_get_as_xml (GpgmeKey key)
   add_tag_and_uint (d, "len", key->keys.key_len);
   add_tag_and_time (d, "created", key->keys.timestamp);
   add_tag_and_time (d, "expire", key->keys.expires_at);
-  add_tag_and_string (d, "otrust",
-		      gpgme_key_get_string_attr (key, GPGME_ATTR_OTRUST,
-						 NULL, 0));
+  add_tag_and_string (d, "otrust", otrust_to_string (key->otrust));
   if (key->issuer_serial)
     add_tag_and_string (d, "serial", key->issuer_serial);
   if (key->issuer_name)
@@ -851,142 +902,78 @@ const char *
 gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
 			   const void *reserved, int idx)
 {
-  const char *val = NULL;
-  struct subkey_s *k;
-  struct user_id_s *u;
+  struct subkey_s *subkey;
+  struct user_id_s *uid;
+  int i;
 
-  if (!key)
+  if (!key || reserved || idx < 0)
     return NULL;
-  if (reserved)
-    return NULL;
-  if (idx < 0)
-    return NULL;
+
+  /* Select IDXth subkey.  */
+  subkey = &key->keys;
+  for (i = 0; i < idx; i++)
+    {
+      subkey = subkey->next;
+      if (!subkey)
+	break;
+    }
+
+  /* Select the IDXth user ID.  */
+  uid = key->uids;
+  for (i = 0; i < idx; i++)
+    {
+      uid = uid->next;
+      if (!uid)
+	break;
+    }
 
   switch (what)
     {
     case GPGME_ATTR_KEYID:
-      for (k = &key->keys; k && idx; k = k->next, idx--)
-	;
-      if (k) 
-	val = k->keyid;
-      break;
+      return subkey ? subkey->keyid : NULL;
+
     case GPGME_ATTR_FPR:
-      for (k = &key->keys; k && idx; k = k->next, idx--)
-	;
-      if (k) 
-	val = k->fingerprint;
-      break;
+      return subkey ? subkey->fingerprint : NULL;
+
     case GPGME_ATTR_ALGO:    
-      for (k = &key->keys; k && idx; k=k->next, idx--)
-	;
-      if (k) 
-	val = pkalgo_to_string (k->key_algo);
-      break;
+      return subkey ? pkalgo_to_string (subkey->key_algo) : NULL;
+
     case GPGME_ATTR_TYPE:
-      val = key->x509? "X.509":"PGP";
-      break;
-    case GPGME_ATTR_LEN:     
-    case GPGME_ATTR_CREATED: 
-    case GPGME_ATTR_EXPIRE:  
-      /* Use another get function.  */
-      break;
-    case GPGME_ATTR_OTRUST:  
-      switch (key->otrust)
-        {
-        case GPGME_VALIDITY_NEVER:     val = "n"; break;
-        case GPGME_VALIDITY_MARGINAL:  val = "m"; break;
-        case GPGME_VALIDITY_FULL:      val = "f"; break;
-        case GPGME_VALIDITY_ULTIMATE:  val = "u"; break;
-        default:   val = "?"; break;
-        }
-      break;
+      return key->x509 ? "X.509" : "PGP";
+
+    case GPGME_ATTR_OTRUST:
+      return otrust_to_string (key->otrust);
+
     case GPGME_ATTR_USERID:  
-      for (u = key->uids; u && idx; u = u->next, idx--)
-	;
-      val = u ? u->name : NULL;
-      break;
+      return uid ? uid->name : NULL;
+
     case GPGME_ATTR_NAME:   
-      for (u = key->uids; u && idx; u = u->next, idx--)
-	;
-      val = u ? u->name_part : NULL;
-      break;
+      return uid ? uid->name_part : NULL;
+
     case GPGME_ATTR_EMAIL:
-      for (u = key->uids; u && idx; u = u->next, idx--)
-	;
-      val = u ? u->email_part : NULL;
-      break;
+      return uid ? uid->email_part : NULL;
+
     case GPGME_ATTR_COMMENT:
-      for (u = key->uids; u && idx; u = u->next, idx--)
-	;
-      val = u ? u->comment_part : NULL;
-      break;
+      return uid ? uid->comment : NULL;
+
     case GPGME_ATTR_VALIDITY:
-      for (u = key->uids; u && idx; u = u->next, idx--)
-	;
-      if (u)
-	{
-	  switch (u->validity)
-	    {
-	    case GPGME_VALIDITY_UNKNOWN:
-	      val = "?";
-	      break;
-	    case GPGME_VALIDITY_UNDEFINED:
-	      val = "q";
-	      break;
-	    case GPGME_VALIDITY_NEVER:
-	      val = "n";
-	      break;
-	    case GPGME_VALIDITY_MARGINAL:
-	      val = "m";
-	      break;
-	    case GPGME_VALIDITY_FULL:
-	      val = "f";
-	      break;
-	    case GPGME_VALIDITY_ULTIMATE:
-	      val = "u";
-	      break;
-            }
-        }
-      break;
-    case GPGME_ATTR_LEVEL:
-    case GPGME_ATTR_KEY_REVOKED:
-    case GPGME_ATTR_KEY_INVALID:
-    case GPGME_ATTR_KEY_EXPIRED:
-    case GPGME_ATTR_KEY_DISABLED:
-    case GPGME_ATTR_UID_REVOKED:
-    case GPGME_ATTR_UID_INVALID:
-    case GPGME_ATTR_CAN_ENCRYPT:
-    case GPGME_ATTR_CAN_SIGN:
-    case GPGME_ATTR_CAN_CERTIFY:
-      /* Not used here.  */
-      break;
-    case GPGME_ATTR_IS_SECRET:
-      if (key->secret)
-	val = "1";
-      break;
+      return uid ? validity_to_string (uid->otrust) : NULL;
+
     case GPGME_ATTR_KEY_CAPS:    
-      for (k = &key->keys; k && idx; k = k->next, idx--)
-	;
-      if (k) 
-	val = capabilities_to_string (k);
-      break;
+      return subkey ? capabilities_to_string (k) : NULL;
+
     case GPGME_ATTR_SERIAL:
-      val = key->issuer_serial;
-      break;
+      return key->issuer_serial;
+
     case GPGME_ATTR_ISSUER:
-      val = idx? NULL : key->issuer_name;
-      break;
+      return idx ? NULL : key->issuer_name;
+
     case GPGME_ATTR_CHAINID:
-      val = key->chain_id;
-      break;
-    case GPGME_ATTR_SIG_STATUS:
-    case GPGME_ATTR_SIG_SUMMARY:
-    case GPGME_ATTR_ERRTOK:
-    case GPGME_ATTR_SIG_CLASS:
-      /* Not of any use here.  */
-      break;
+      return  key->chain_id;
+
+    default:
+      return NULL;
     }
-  return val;
 }
 
 
@@ -1010,107 +997,89 @@ unsigned long
 gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
 			  const void *reserved, int idx)
 {
-  unsigned long val = 0;
-  struct subkey_s *k;
-  struct user_id_s *u;
+  struct subkey_s *subkey;
+  struct user_id_s *uid;
+  int i;
 
-  if (!key)
+  if (!key || reserved || idx < 0)
     return 0;
-  if (reserved)
-    return 0;
-  if (idx < 0)
-    return 0;
+
+  /* Select IDXth subkey.  */
+  subkey = &key->keys;
+  for (i = 0; i < idx; i++)
+    {
+      subkey = subkey->next;
+      if (!subkey)
+	break;
+    }
+
+  /* Select the IDXth user ID.  */
+  uid = key->uids;
+  for (i = 0; i < idx; i++)
+    {
+      uid = uid->next;
+      if (!uid)
+	break;
+    }
 
   switch (what)
     {
-    case GPGME_ATTR_ALGO:    
-      for (k = &key->keys; k && idx; k=k->next, idx--)
-	;
-      if (k) 
-	val = (unsigned long) k->key_algo;
-      break;
-    case GPGME_ATTR_LEN:     
-      for (k = &key->keys; k && idx; k = k->next, idx--)
-	;
-      if (k) 
-	val = (unsigned long) k->key_len;
-      break;
+    case GPGME_ATTR_ALGO:
+      return subkey ? (unsigned long) subkey->key_algo : 0;
+
+    case GPGME_ATTR_LEN:
+      return subkey ? (unsigned long) subkey->key_len : 0;
+
     case GPGME_ATTR_TYPE:
-      val = key->x509? 1:0;
-      break;
+      return key->x509 ? 1 : 0;
+
     case GPGME_ATTR_CREATED: 
-      for (k = &key->keys; k && idx; k = k->next, idx--)
-	;
-      if (k) 
-	val = k->timestamp < 0 ? 0L : (unsigned long) k->timestamp;
-      break;
+      return (subkey && subkey->timestamp >= 0)
+	? (unsigned long) subkey->timestamp : 0;
+
     case GPGME_ATTR_EXPIRE: 
-      for (k = &key->keys; k && idx; k = k->next, idx--)
-	;
-      if (k) 
-	val = k->expires_at < 0 ? 0L : (unsigned long) k->expires_at;
-      break;
+      return (subkey && subkey->expires_at >= 0)
+	? (unsigned long) subkey->expires_at : 0;
+
     case GPGME_ATTR_VALIDITY:
-      for (u = key->uids; u && idx; u = u->next, idx--)
-	;
-      if (u)
-	val = u->validity;
-      break;
+      return uid ? uid->validity : 0;
+
     case GPGME_ATTR_OTRUST:
-      val = key->otrust;
-      break;
+      return key->otrust;
+
     case GPGME_ATTR_IS_SECRET:
-      val = !!key->secret;
-      break;
+      return !!key->secret;
+
     case GPGME_ATTR_KEY_REVOKED:
-      for (k = &key->keys; k && idx; k = k->next, idx--)
-	;
-      if (k) 
-	val = k->flags.revoked;
-      break;
+      return subkey ? subkey->flags.revoked : 0;
+
     case GPGME_ATTR_KEY_INVALID:
-      for (k = &key->keys; k && idx; k = k->next, idx--)
-	;
-      if (k) 
-	val = k->flags.invalid;
-      break;
+      return subkey ? subkey->flags.invalid : 0;
+
     case GPGME_ATTR_KEY_EXPIRED:
-      for (k = &key->keys; k && idx; k = k->next, idx--)
-	;
-      if (k) 
-	val = k->flags.expired;
-      break;
+      return subkey ? subkey->flags.expired : 0;
+
     case GPGME_ATTR_KEY_DISABLED:
-      for (k = &key->keys; k && idx; k = k->next, idx--)
-	;
-      if (k) 
-	val = k->flags.disabled;
-      break;
+      return subkey ? subkey->flags.disabled : 0;
+
     case GPGME_ATTR_UID_REVOKED:
-      for (u = key->uids; u && idx; u = u->next, idx--)
-	;
-      if (u)
-	val = u->revoked;
-      break;
+      return uid ? uid->revoked : 0;
+
     case GPGME_ATTR_UID_INVALID:
-      for (u = key->uids; u && idx; u = u->next, idx--)
-	;
-      if (u)
-	val = u->invalid;
-      break;
+      return uid ? uid->invalid : 0;
+
     case GPGME_ATTR_CAN_ENCRYPT:
-      val = key->gloflags.can_encrypt;
-      break;
+      return key->gloflags.can_encrypt;
+
     case GPGME_ATTR_CAN_SIGN:
-      val = key->gloflags.can_sign;
-      break;
+      return key->gloflags.can_sign;
+
     case GPGME_ATTR_CAN_CERTIFY:
-      val = key->gloflags.can_certify;
-      break;
+      return key->gloflags.can_certify;
+
     default:
-      break;
+      return 0;
     }
-  return val;
 }
 
 
