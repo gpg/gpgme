@@ -21,7 +21,5 @@
 
 EXTRA_DIST = gdoc
 
-
-
-
-
+info_TEXINFOS = gpgme.texi
+gpgme_TEXINFOS = gpl.texi fdl.texi
