@@ -32,9 +32,6 @@ typedef char bool;
 #endif
 
 #include <stdlib.h>
-//#include <string.h>
-//#include <ctype.h>
-
 
 /*! \file cryptplug.h
     \brief Common API header for CRYPTPLUG.
@@ -160,6 +157,9 @@ typedef char bool;
     plugin <b>you should ignore this</b> section!
 */
 
+/*! \defgroup certList Certificate Info listing functions
+ */
+
 
 typedef enum {
   Feature_undef             = 0,
@@ -179,10 +179,11 @@ typedef enum {
   Feature_StoreMessagesEncrypted = 13,
   Feature_CheckCertificatePath = 14,
   Feature_CertificateDirectoryService = 15,
-  Feature_CRLDirectoryService = 16
+  Feature_CRLDirectoryService = 16,
+  Feature_CertificateInfo     = 17
 } Feature;
 
-// dummy values
+/* dummy values */
 typedef enum {
   PinRequest_undef            = 0,
 
@@ -193,7 +194,7 @@ typedef enum {
   PinRequest_AfterMinutes     = 5
 } PinRequests;
 
-// dummy values:
+/* dummy values: */
 typedef enum {
   SendCert_undef              = 0,
 
@@ -203,7 +204,7 @@ typedef enum {
   SendCert_SendChainWithRoot  = 4
 } SendCertificates;
 
-// dummy values:
+/* dummy values: */
 typedef enum {
   SignAlg_undef               = 0,
 
@@ -1212,7 +1213,7 @@ struct StructuringInfo {
                                   FALSE) */
   bool  makeMimeObject;      /*!< specifies whether we should create a MIME
                                   object or a flat text message body */
-  // the following are used for MIME messages only
+  /* the following are used for MIME messages only */
   bool  makeMultiMime;       /*!< specifies whether we should create a
                                   'Multipart' MIME object or a single part
                                   object, if FALSE only \c contentTypeMain,
@@ -1279,7 +1280,7 @@ struct StructuringInfo {
                                   \c makeMimeObject or \c makeMultiMime
                                   is FALSE or if \c contentTypeCode does
                                   not return a non-zero-length string) */
-  // the following are used for flat non-MIME messages only
+  /* the following are used for flat non-MIME messages only */
   char* flatTextPrefix;      /*!< text to preceed the main text (or the
                                   code bloc containing the encrypted main
                                   text, resp.)<br>
@@ -1323,7 +1324,7 @@ struct StructuringInfo {
     \see free_StructuringInfo, StructuringInfo
     \see signMessage, encryptMessage, encryptAndSignMessage
 */
-  void init_StructuringInfo( struct StructuringInfo* s )
+  static void init_StructuringInfo( struct StructuringInfo* s )
   {
     if( ! s ) return;
 
@@ -1364,7 +1365,7 @@ struct StructuringInfo {
 
     \see StructuringInfo
 */
-  void free_StructuringInfo( struct StructuringInfo* s )
+  static void free_StructuringInfo( struct StructuringInfo* s )
   {
     if( ! s ) return;
     if( s->contentTypeMain )    free( s->contentTypeMain );
@@ -1690,6 +1691,41 @@ const char* displayCRL( void );
    with the new CRL from the CA.
 */
 void updateCRL( void );
+
+struct CertIterator;
+
+struct DnPair {
+    char *key;
+    char *value;
+};
+
+struct CertificateInfo {
+  char** userid;
+  char** issuer;
+  struct DnPair *dnarray;
+};
+
+/*! \function struct CertIterator*  startListCertificates( void );
+    \function struct CertificateInfo*  nextCertificate( struct CertIterator* );
+    \function void endListCertificates( struct CertIterator* );
+
+    \ingroup certList
+  Example:
+\verbatim
+  struct CertificateInfo* info;
+  struct CertIterator* it = startListCertificates();
+  while( info = nextCertificate( it ) ) {
+    do something with info.
+    dont free() it, the struct will be reused
+    by the next call to nextCertificate()
+  }
+  endListCertificates( it );
+\endverbatim
+*/
+struct CertIterator*  startListCertificates( void );
+struct CertificateInfo*  nextCertificate( struct CertIterator* );
+void endListCertificates( struct CertIterator* );
+
 
 #ifdef __cplusplus
 }
