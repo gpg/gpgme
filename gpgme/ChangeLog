@@ -1,3 +1,11 @@
+2002-06-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* wait.c (do_select): Return -1 on error, and 0 if nothing to run.
+	(_gpgme_wait_one): Only set HANG to zero if do_select returned an
+	error, or there are no more file descriptors to wait on.
+	(_gpgme_wait_on_condition): Ignore return value from do_select for
+	now.
+
 2002-06-13  Werner Koch  <wk@gnupg.org>
 
 	* verify.c (gpgme_op_verify): Make sure that we never access an

@@ -143,8 +143,8 @@ run_idle ()
 
 
 /* Wait on all file descriptors listed in FDT and process them using
-   the registered callbacks.  Returns 0 if nothing to run and 1 if it
-   did run something.  */
+   the registered callbacks.  Returns -1 on error (with errno set), 0
+   if nothing to run and 1 if it did run something.  */
 static int
 do_select (fd_table_t fdt)
 {
@@ -157,7 +157,7 @@ do_select (fd_table_t fdt)
   if (n <= 0) 
     {
       UNLOCK (fdt->lock);
-      return 0;	/* Error or timeout.  */
+      return n;	/* Error or timeout.  */
     }
 
   for (i = 0; i < fdt->size && n; i++)
@@ -236,22 +236,44 @@ gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 GpgmeError
 _gpgme_wait_one (GpgmeCtx ctx)
 {
+  GpgmeError err = 0;
   int hang = 1;
   DEBUG1 ("waiting... ctx=%p", ctx);
   do
     {
-      if (! do_select (&ctx->fdt))
-	hang = 0;
+      if (do_select (&ctx->fdt) < 0)
+	{
+	  err = mk_error (File_Error);
+	  hang = 0;
+	}
+      else
+	{
+	  int any = 0;
+	  int i;
+
+	  LOCK (ctx->fdt.lock);
+	  for (i = 0; i < ctx->fdt.size; i++)
+	    {
+	      if (ctx->fdt.fds[i].fd != -1)
+		{
+		  any = 1;
+		  break;
+		}
+	    }
+	  if (!any)
+	    hang = 0;
+	  UNLOCK (ctx->fdt.lock);
+	}
     }
   while (hang && !ctx->cancel);
-  if (ctx->cancel)
+  if (!err && ctx->cancel)
     {
       /* FIXME: Paranoia?  */
       ctx->cancel = 0;
       ctx->pending = 0;
       ctx->error = mk_error (Canceled);
     }
-  return ctx->error;
+  return err ? err : ctx->error;
 }
 
 
@@ -261,9 +283,9 @@ _gpgme_wait_on_condition (GpgmeCtx ctx, int hang, volatile int *cond)
   DEBUG3 ("waiting... ctx=%p hang=%d cond=%p", ctx, hang, cond);
   do
     {
-      if (! do_select (&fdt_global))
-	hang = 0;
-
+      /* XXX We are ignoring all errors from select here.  */
+      do_select (&fdt_global);
+      
       if (cond && *cond)
 	hang = 0;
       else
