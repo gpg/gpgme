@@ -72,7 +72,7 @@ main (int argc, char **argv )
     GpgmeData in, out;
     GpgmeRecipients rset;
 
-    err = gpgme_check_engine ();
+    err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);
     fail_if_err (err);
     puts ( gpgme_get_engine_info() );
 

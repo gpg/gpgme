@@ -1,3 +1,9 @@
+2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-keylist.c (main): Use gpgme_engine_check_version instead
+	gpgme_check_engine.
+	* gpgsm/t-encrypt.c (main): Likewise.
+
 2002-03-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-encrypt-sym.c: New file.
