@@ -248,6 +248,7 @@ xstrdup (const char *string)
 
 bool initialize()
 {
+  int engineCheckVersion = gpgme_engine_check_version (GPGMEPLUG_PROTOCOL);
   config.bugURL                               = malloc( strlen( BUG_URL ) + 1 );
   strcpy( (char* )config.bugURL,                BUG_URL );
   config.signatureKeyCertificate              = malloc( 1 );
@@ -291,7 +292,9 @@ bool initialize()
   config.certificateInChainExpiryNearWarningInterval  = NEAR_EXPIRY;
   config.receiverEmailAddressNotInCertificateWarning  = true;
   config.libVersion = gpgme_check_version (NULL);
-  return (gpgme_engine_check_version (GPGMEPLUG_PROTOCOL) == GPGME_No_Error);
+  if( engineCheckVersion != GPGME_No_Error )
+    fprintf( stderr, "gpgmeplug initialize() returned %i\n", engineCheckVersion );
+  return (engineCheckVersion == GPGME_No_Error);
 };
 
 
@@ -451,20 +454,113 @@ bool warnNoCertificate()
 }
 
 
-bool isEmailInCertificate( const char* email, const char* certificate )
+bool isEmailInCertificate( const char* email, const char* fingerprint )
 {
-    /* PENDING(g10) this function should return true if the email
-       address passed as the first parameter is contained in the
-       certificate passed as the second parameter, and false
-       otherwise. This is used to alert the user if his own email
-       address is not contained in the certificate he uses for
-       signing.
-       Note that the parameter email can be anything that is allowed
-       in a From: line.
-       Another note: OK, OK, we'll handle that in the MUA. You can
-       assume that you only get the email address.
-    */
-  return false; /* dummy*/
+/*
+  GpgmeError err;
+  GpgmeCtx  ctx;
+  GpgmeData keydata;
+  GpgmeRecipients recips;
+  char* buf;
+  const char* tmp1;
+  char* tmp2;
+  bool bOk = false;
+
+  err = gpgme_new( &ctx );
+  if( err != GPGME_No_Error ) {
+    return false;
+  }
+  gpgme_set_protocol( ctx, GPGME_PROTOCOL_CMS );
+  gpgme_set_keylist_mode( ctx, GPGME_KEYLIST_MODE_LOCAL );
+
+  err = gpgme_data_new( &keydata );
+  if( err ) {
+    fprintf( stderr,  "gpgme_data_new returned %d\n", err );
+    gpgme_release( ctx );
+    return false;
+  }
+
+  err = gpgme_recipients_new( &recips );
+  if( err ) {
+    fprintf( stderr,  "gpgme_recipients_new returned %d\n", err );
+    gpgme_data_release( keydata );
+    gpgme_release( ctx );
+    return false;
+  }
+  
+  buf = malloc( sizeof(char)*( strlen( fingerprint ) + 1 ) );
+  if( !buf ) {
+    gpgme_recipients_release( recips );
+    gpgme_data_release( keydata );    
+    gpgme_release( ctx );
+    fprintf( stderr,  "GPGME OUT OF CORE: malloc returned error!\n" );
+    return false;
+  }
+  tmp1 = fingerprint;
+  tmp2 = buf;
+  while( *tmp1 ) {
+    if( *tmp1 != ':' ) *tmp2++ = *tmp1;
+    tmp1++;
+  }
+  *tmp2 = 0;
+  // fprintf( stderr,  "calling gpgme_recipients_add_name( %s )\n", buf );  
+  err = gpgme_recipients_add_name( recips, buf ); 
+  if( err ) {
+    fprintf( stderr,  "gpgme_recipients_add_name returned %d\n", err );
+    free (buf);
+    gpgme_recipients_release( recips );
+    gpgme_data_release( keydata );    
+    gpgme_release( ctx );
+    return err;
+  }
+*/
+  
+
+    
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeKey rKey;
+  int UID_idx;
+  const char* attr_string;
+  int emailCount = 0;
+  bool bOk = false;
+
+  gpgme_new( &ctx );
+  gpgme_set_protocol( ctx, GPGMEPLUG_PROTOCOL );
+
+  err = gpgme_op_keylist_start( ctx, fingerprint, 0 );
+  if ( GPGME_No_Error == err ) {
+    err = gpgme_op_keylist_next( ctx, &rKey );
+    gpgme_op_keylist_end( ctx );
+    if ( GPGME_No_Error == err ) {
+      /* extract email(s) */
+      for( UID_idx = 0; 
+           (attr_string = gpgme_key_get_string_attr(
+                            rKey, GPGME_ATTR_EMAIL, 0, UID_idx ) );
+          ++UID_idx ){
+        if (*attr_string) {
+          ++emailCount;
+          fprintf( stderr, "gpgmeplug isEmailInCertificate found email: %s\n", attr_string );
+          if( 0 == strcasecmp(attr_string, email) ){
+            bOk = true;
+            break;
+          }
+        }
+      }
+      if( !emailCount )
+        fprintf( stderr, "gpgmeplug isEmailInCertificate found NO EMAIL\n" );
+      else if( !bOk )
+        fprintf( stderr, "gpgmeplug isEmailInCertificate found NO MATCHING email\n" );
+      gpgme_key_release( rKey );
+    }else{
+      fprintf( stderr, "gpgmeplug isEmailInCertificate found NO CERTIFICATE for fingerprint %s\n", fingerprint );
+    }
+  }else{
+    fprintf( stderr, "gpgmeplug isEmailInCertificate could NOT open KEYLIST for fingerprint %s\n", fingerprint );
+  }
+  gpgme_release( ctx );
+  
+  return bOk;
 }
 
 
