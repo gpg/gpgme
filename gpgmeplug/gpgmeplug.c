@@ -1208,7 +1208,7 @@ bool findCertificates( const char* addressee, char** certificates )
         s2 = gpgme_key_get_string_attr (rKey, GPGME_ATTR_FPR, NULL, 0);
         if( s2 ) {
           strcat( *certificates, s );
-          strcat( *certificates, "(" );
+          strcat( *certificates, "    (" );
           strcat( *certificates, s2 );
           strcat( *certificates, ")\1" );
         }
