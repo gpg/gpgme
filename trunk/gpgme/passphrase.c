@@ -133,7 +133,7 @@ _gpgme_passphrase_command_handler_internal (void *priv,
   if (code == GPGME_STATUS_GET_HIDDEN && !strcmp (key, "passphrase.enter"))
     {
       if (processed)
-	processed = 1;
+	*processed = 1;
 
       err = ctx->passphrase_cb (ctx->passphrase_cb_value,
 				opd->uid_hint, opd->passphrase_info,
