@@ -1712,10 +1712,6 @@ bool decryptMessage( const char* ciphertext,
   return bOk;
 }
 
-bool decryptAndCheckMessage( const char* ciphertext,
-          const char** cleartext, const char* certificate,
-          struct SignatureMetaData* sigmeta ){ return true; }
-
 
 const char* requestCertificateDialog(){ return 0; }
 
@@ -2530,74 +2526,21 @@ sig_status_to_string( GpgmeSigStat status )
 }
 
 
-bool checkMessageSignature( char** cleartext,
-                            const char* signaturetext,
-                            bool signatureIsBinary,
-                            int signatureLen,
-                            struct SignatureMetaData* sigmeta )
+void obtain_signature_information( GpgmeCtx * ctx,
+                                   GpgmeSigStat status,
+                                   struct SignatureMetaData* sigmeta )
 {
-  GpgmeCtx ctx;
-  GpgmeSigStat status;
-  unsigned long sumGPGME;
-  SigStatusFlags sumPlug;
-  GpgmeData datapart, sigpart;
-  char* rClear = 0;
-  size_t clearLen;
   GpgmeError err;
   GpgmeKey key;
+  const char* statusStr;
+  const char* fpr;
+  unsigned long sumGPGME;
+  SigStatusFlags sumPlug;
   time_t created;
   struct DnPair* a;
   int sig_idx=0;
   int UID_idx=0;
-  const char* statusStr;
-  const char* fpr;
-  bool isOpaqueSigned;
   
-  if( !cleartext ) {
-    if( sigmeta )
-      storeNewCharPtr( &sigmeta->status,
-                        __GPGMEPLUG_ERROR_CLEARTEXT_IS_ZERO );
-
-    return false;
-  }
-
-  isOpaqueSigned = !*cleartext;
-
-  gpgme_new( &ctx );
-  gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
-  gpgme_set_armor (ctx,    signatureIsBinary ? 0 : 1);
-  /*  gpgme_set_textmode (ctx, signatureIsBinary ? 0 : 1); */
-
-  if( isOpaqueSigned )
-    gpgme_data_new( &datapart );
-  else
-    gpgme_data_new_from_mem( &datapart, *cleartext,
-                             strlen( *cleartext ), 1 );
-
-  gpgme_data_new_from_mem( &sigpart,
-                           signaturetext,
-                           signatureIsBinary
-                           ? signatureLen
-                           : strlen( signaturetext ),
-                           1 );
-
-  gpgme_op_verify( ctx, sigpart, datapart, &status );
-
-  if( isOpaqueSigned ) {
-    rClear = gpgme_data_release_and_get_mem( datapart, &clearLen );
-    *cleartext = malloc( clearLen + 1 );
-    if( *cleartext ) {
-      if( clearLen )
-        strncpy(*cleartext, rClear, clearLen );
-      (*cleartext)[clearLen] = '\0';
-    }
-    free( rClear );
-  }
-  else
-    gpgme_data_release( datapart );
-
-  gpgme_data_release( sigpart );
-
   /* Provide information in the sigmeta struct */
   /* the status string */
   statusStr = sig_status_to_string( status );
@@ -2609,7 +2552,7 @@ bool checkMessageSignature( char** cleartext,
     ; /* nothing to do, is already 0 */
 
   /* Extended information for any number of signatures. */
-  fpr = gpgme_get_sig_status( ctx, sig_idx, &status, &created );
+  fpr = gpgme_get_sig_status( *ctx, sig_idx, &status, &created );
   sigmeta->extended_info = 0;
   while( fpr != NULL ) {
     struct tm* ctime_val;
@@ -2635,7 +2578,7 @@ bool checkMessageSignature( char** cleartext,
       }
 
       /* the extended signature verification status */
-      sumGPGME = gpgme_get_sig_ulong_attr( ctx,
+      sumGPGME = gpgme_get_sig_ulong_attr( *ctx,
                                            sig_idx,
                                            GPGME_ATTR_SIG_SUMMARY,
                                            0 );
@@ -2659,7 +2602,7 @@ bool checkMessageSignature( char** cleartext,
 
       sigmeta->extended_info[sig_idx].validity = GPGME_VALIDITY_UNKNOWN;
 
-      err = gpgme_get_sig_key (ctx, sig_idx, &key);
+      err = gpgme_get_sig_key (*ctx, sig_idx, &key);
 
       if ( err == GPGME_No_Error) {
         const char* attr_string;
@@ -2765,13 +2708,152 @@ bool checkMessageSignature( char** cleartext,
       break; /* if allocation fails once, it isn't likely to
                 succeed the next time either */
 
-    fpr = gpgme_get_sig_status (ctx, ++sig_idx, &status, &created);
+    fpr = gpgme_get_sig_status (*ctx, ++sig_idx, &status, &created);
   }
   sigmeta->extended_info_count = sig_idx;
-  sigmeta->nota_xml = gpgme_get_notation( ctx );
+  sigmeta->nota_xml = gpgme_get_notation( *ctx );
   sigmeta->status_code = status;
+}
 
+
+bool checkMessageSignature( char** cleartext,
+                            const char* signaturetext,
+                            bool signatureIsBinary,
+                            int signatureLen,
+                            struct SignatureMetaData* sigmeta )
+{
+  GpgmeCtx ctx;
+  GpgmeSigStat status;
+  GpgmeData datapart, sigpart;
+  char* rClear = 0;
+  size_t clearLen;
+  bool isOpaqueSigned;
+  
+  if( !cleartext ) {
+    if( sigmeta )
+      storeNewCharPtr( &sigmeta->status,
+                        __GPGMEPLUG_ERROR_CLEARTEXT_IS_ZERO );
+
+    return false;
+  }
+
+  isOpaqueSigned = !*cleartext;
+
+  gpgme_new( &ctx );
+  gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
+  gpgme_set_armor (ctx,    signatureIsBinary ? 0 : 1);
+  /*  gpgme_set_textmode (ctx, signatureIsBinary ? 0 : 1); */
+
+  if( isOpaqueSigned )
+    gpgme_data_new( &datapart );
+  else
+    gpgme_data_new_from_mem( &datapart, *cleartext,
+                             strlen( *cleartext ), 1 );
+
+  gpgme_data_new_from_mem( &sigpart,
+                           signaturetext,
+                           signatureIsBinary
+                           ? signatureLen
+                           : strlen( signaturetext ),
+                           1 );
+
+  gpgme_op_verify( ctx, sigpart, datapart, &status );
+
+  if( isOpaqueSigned ) {
+    rClear = gpgme_data_release_and_get_mem( datapart, &clearLen );
+    *cleartext = malloc( clearLen + 1 );
+    if( *cleartext ) {
+      if( clearLen )
+        strncpy(*cleartext, rClear, clearLen );
+      (*cleartext)[clearLen] = '\0';
+    }
+    free( rClear );
+  }
+  else
+    gpgme_data_release( datapart );
+
+  gpgme_data_release( sigpart );
+
+  obtain_signature_information( &ctx, status, sigmeta );
+  
   gpgme_release( ctx );
   return ( status == GPGME_SIG_STAT_GOOD );
 }
 
+
+bool decryptAndCheckMessage( const char*  ciphertext,
+                             bool         cipherIsBinary,
+                             int          cipherLen,
+                             const char** cleartext,
+                             const char*  certificate,
+                             bool*        signatureFound,
+                             struct SignatureMetaData* sigmeta,
+                             int*   errId,
+                             char** errTxt )
+{
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeSigStat sigstatus;
+  GpgmeData gCiphertext, gPlaintext;
+  size_t rCLen = 0;
+  char*  rCiph = 0;
+  bool bOk = false;
+
+  if( !ciphertext )
+    return false;
+
+  err = gpgme_new (&ctx);
+  gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
+  
+  gpgme_set_armor (ctx, cipherIsBinary ? 0 : 1);
+  /*  gpgme_set_textmode (ctx, cipherIsBinary ? 0 : 1); */
+
+  /*
+  gpgme_data_new_from_mem( &gCiphertext, ciphertext,
+                           1+strlen( ciphertext ), 1 ); */
+  gpgme_data_new_from_mem( &gCiphertext,
+                           ciphertext,
+                           cipherIsBinary
+                           ? cipherLen
+                           : strlen( ciphertext ),
+                           1 );
+
+  gpgme_data_new( &gPlaintext );
+
+  err = gpgme_op_decrypt_verify( ctx, gCiphertext, gPlaintext, &sigstatus );
+  gpgme_data_release( gCiphertext );
+  if( err ) {
+    fprintf( stderr, "\ngpgme_op_decrypt_verify() returned this error code:  %i\n\n", err );
+    if( errId )
+      *errId = err;
+    if( errTxt ) {
+      const char* _errTxt = gpgme_strerror( err );
+      *errTxt = malloc( strlen( _errTxt ) + 1 );
+      if( *errTxt )
+        strcpy(*errTxt, _errTxt );
+    }
+    gpgme_data_release( gPlaintext );
+    gpgme_release( ctx );
+    return bOk;
+  }
+
+  rCiph = gpgme_data_release_and_get_mem( gPlaintext,  &rCLen );
+
+  *cleartext = malloc( rCLen + 1 );
+  if( *cleartext ) {
+      if( rCLen ) {
+          bOk = true;
+          strncpy((char*)*cleartext, rCiph, rCLen );
+      }
+      ((char*)(*cleartext))[rCLen] = 0;
+  }
+  free( rCiph );
+
+  if( signatureFound )
+    *signatureFound = sigstatus != GPGME_SIG_STAT_NONE;
+  if( sigmeta && sigstatus != GPGME_SIG_STAT_NONE )
+    obtain_signature_information( &ctx, sigstatus, sigmeta );
+  
+  gpgme_release( ctx );
+  return bOk;
+}
