@@ -219,12 +219,11 @@ _gpgme_get_program_version (const char *const path)
   int linelen = 0;
   char *mark = NULL;
   int rp[2];
-  pid_t pid;
   int nread;
   char *argv[] = {(char *) path, "--version", 0};
   struct spawn_fd_item_s pfd[] = { {0, -1}, {-1, -1} };
   struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */}, {-1, -1} };
-  int status, signal;
+  int status;
 
   if (!path)
     return NULL;
@@ -235,8 +234,8 @@ _gpgme_get_program_version (const char *const path)
   pfd[0].fd = rp[1];
   cfd[0].fd = rp[1];
 
-  pid = _gpgme_io_spawn (path, argv, cfd, pfd);
-  if (pid < 0)
+  status = _gpgme_io_spawn (path, argv, cfd, pfd);
+  if (status < 0)
     {
       _gpgme_io_close (rp[0]);
       _gpgme_io_close (rp[1]);
@@ -261,7 +260,6 @@ _gpgme_get_program_version (const char *const path)
   while (nread > 0 && linelen < LINELENGTH - 1);
 
   _gpgme_io_close (rp[0]);
-  _gpgme_io_waitpid (pid, 1, &status, &signal);
 
   if (mark)
     {

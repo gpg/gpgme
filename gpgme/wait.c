@@ -52,8 +52,6 @@ struct wait_item_s
   int dir;
 };
 
-static void run_idle (void);
-
 
 void
 _gpgme_fd_table_init (fd_table_t fdt)
@@ -131,14 +129,6 @@ gpgme_register_idle (GpgmeIdleFunc idle)
 
   idle_function = idle;
   return old_idle;
-}
-
-static void
-run_idle ()
-{
-  _gpgme_engine_housecleaning ();
-  if (idle_function)
-    idle_function ();
 }
 
 
@@ -254,8 +244,8 @@ gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 	}
       UNLOCK (ctx_done_list_lock);
 
-      if (hang)
-	run_idle ();
+      if (hang && idle_function)
+	idle_function ();
     }
   while (hang && (!ctx || !ctx->cancel));
 

@@ -100,8 +100,6 @@ struct gpg_object_s
   char **argv;  
   struct fd_data_map_s *fd_data_map;
 
-  int pid; /* we can't use pid_t because we don't use it in Windoze */
-
   /* stuff needed for pipemode */
   struct
   {
@@ -264,8 +262,6 @@ _gpgme_gpg_new (GpgObject *r_gpg)
   gpg->cmd.linked_data = NULL;
   gpg->cmd.linked_idx = -1;
 
-  gpg->pid = -1;
-
   /* Allocate the read buffer for the status pipe.  */
   gpg->status.bufsize = 1024;
   gpg->status.readpos = 0;
@@ -345,10 +341,7 @@ _gpgme_gpg_release (GpgObject gpg)
   free_fd_data_map (gpg->fd_data_map);
   if (gpg->cmd.fd != -1)
     _gpgme_io_close (gpg->cmd.fd);
-  if (gpg->pid != -1)
-    _gpgme_engine_add_child_to_reap_list (gpg, sizeof *gpg, gpg->pid);
-  else
-    xfree (gpg);
+  xfree (gpg);
 }
 
 void
@@ -841,7 +834,7 @@ _gpgme_gpg_spawn (GpgObject gpg, void *opaque)
 {
   GpgmeError rc;
   int i, n;
-  int pid;
+  int status;
   struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
 
   if (!gpg)
@@ -916,13 +909,12 @@ _gpgme_gpg_spawn (GpgObject gpg, void *opaque)
   fd_parent_list[n].fd = -1;
   fd_parent_list[n].dup_to = -1;
 
-  pid = _gpgme_io_spawn (_gpgme_get_gpg_path (),
-			 gpg->argv, fd_child_list, fd_parent_list);
+  status = _gpgme_io_spawn (_gpgme_get_gpg_path (),
+			    gpg->argv, fd_child_list, fd_parent_list);
   xfree (fd_child_list);
-  if (pid == -1)
+  if (status == -1)
     return mk_error (Exec_Error);
 
-  gpg->pid = pid;
   if (gpg->pm.used)
     gpg->pm.active = 1;
 

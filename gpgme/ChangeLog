@@ -1,3 +1,24 @@
+2002-08-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* posix-io.c (_gpgme_io_spawn): Use a double-fork approach.
+	Return 0 on success, -1 on error.
+	* version.c (_gpgme_get_program_version): Don't wait for the child.
+	* engine.c (_gpgme_engine_housecleaning): Function removed.
+	(do_reaping): Likewise.
+	(_gpgme_engine_add_child_to_reap_list): Likewise.
+	(struct reap_s): Removed.
+	(reap_list): Likewise.
+	(reap_list_lock): Likewise.
+	* engine.h (_gpgme_engine_io_event): Remove prototypes for
+	_gpgme_engine_housecleaning and
+	_gpgme_engine_add_child_to_reap_list.
+	* rungpg.c (_gpgme_gpg_release): Don't add child to reap list.
+	(struct gpg_object_s): Remove PID member.
+	(_gpgme_gpg_new): Don't initialize GPG->pid.
+	(_gpgme_gpg_spawn): Don't set GPG->pid.
+	* wait.c (run_idle): Removed.
+	(gpgme_wait): Run idle_function directly.
+
 2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* encrypt-sign.c (encrypt_sign_status_handler): Remove dead
