@@ -739,7 +739,7 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
       return uid ? uid->comment_part : NULL;
 
     case GPGME_ATTR_VALIDITY:
-      return validity_to_string (key->otrust);
+      return uid ? validity_to_string (uid->validity) : NULL;
 
     case GPGME_ATTR_KEY_CAPS:    
       return subkey ? capabilities_to_string (subkey) : NULL;
