@@ -376,10 +376,12 @@ finish_key ( GpgmeCtx ctx )
 /**
  * gpgme_op_keylist_start:
  * @c: context 
- * @pattern: a GnuPg user ID or NULL for all
+ * @pattern: a GnuPG user ID or NULL for all
  * @secret_only: List only keys where the secret part is available
  * 
- * Note that this function also cancels a pending key listing operaton..
+ * Note that this function also cancels a pending key listing
+ * operaton. To actually retrieve the key, use
+ * gpgme_op_keylist_next().
  * 
  * Return value:  0 on success or an errorcode. 
  **/
@@ -443,6 +445,17 @@ gpgme_op_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
 }
 
 
+/**
+ * gpgme_op_keylist_next:
+ * @c: Context
+ * @r_key: Returned key object
+ * 
+ * Return the next key from the key listing started with
+ * gpgme_op_keylist_start().  The caller must free the key using 
+ * gpgme_key_release().
+ * 
+ * Return value: 0 on success, %GPGME_EOF or anoter error code.
+ **/
 GpgmeError
 gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key )
 {

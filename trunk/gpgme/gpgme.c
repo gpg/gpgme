@@ -127,9 +127,10 @@ gpgme_cancel (GpgmeCtx c)
  * gpgme_get_notation:
  * @c: the context 
  * 
- * If there is notation data available from the last signature check, this
- * function may be used to return this notation data as a string.  The string
- * is an XML represantaton of that data embedded in a %<notation> container.
+ * If there is notation data available from the last signature check,
+ * this function may be used to return this notation data as a string.
+ * The string is an XML represantaton of that data embedded in a
+ * %&lt;notation&gt; container.
  * 
  * Return value: An XML string or NULL if no notation data is available.
  **/
@@ -152,18 +153,21 @@ gpgme_get_notation ( GpgmeCtx c )
  * operation available or the operation has not yet finished.
  *
  * Here is a sample information we return:
-<GnupgOperationInfo>
-  <signature>
-    <detached/> <!-- or cleartext or standard -->
-    <algo>17</algo>
-    <hashalgo>2</hashalgo>
-    <micalg>pgp-sha1</micalg>
-    <sigclass>01</sigclass>
-    <created>9222222</created>
-    <fpr>121212121212121212</fpr>
-  </signature>
-</GnupgOperationInfo>
- * 
+ * <literal>
+ * <![CDATA[
+ * <GnupgOperationInfo>
+ *   <signature>
+ *     <detached/> <!-- or cleartext or standard -->
+ *     <algo>17</algo>
+ *     <hashalgo>2</hashalgo>
+ *     <micalg>pgp-sha1</micalg>
+ *     <sigclass>01</sigclass>
+ *     <created>9222222</created>
+ *     <fpr>121212121212121212</fpr>
+ *   </signature>
+ * </GnupgOperationInfo>
+ * ]]>
+ * </literal>
  * Return value: NULL for no info available or an XML string 
  **/
 char *

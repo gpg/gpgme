@@ -1,4 +1,4 @@
-# Copyright (C) 2000 Werner Koch (dd9jn)
+# doc - Automake template
 # Copyright (C) 2001 g10 Code GmbH
 # 
 # This file is part of GPGME.
@@ -19,20 +19,9 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = README-alpha autogen.sh
-
-if BUILD_BONOBO
-bonobo = bonobo
-else
-bonobo = 
-endif
-if BUILD_COMPLUS
-complus = complus
-else
-complus = 
-endif
+EXTRA_DIST = gdoc
 
 
-SUBDIRS = jnlib gpgme tests doc ${bonobo} ${complus}
+
 
 

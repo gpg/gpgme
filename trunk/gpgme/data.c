@@ -77,7 +77,7 @@ gpgme_data_new ( GpgmeData *r_dh )
  * caller has to make sure that this buffer is valid until gpgme_release_data()
  * is called.
  * 
- * Return value: 
+ * Return value: An error value or 0 for success.
  **/
 GpgmeError
 gpgme_data_new_from_mem ( GpgmeData *r_dh,
@@ -114,6 +114,31 @@ gpgme_data_new_from_mem ( GpgmeData *r_dh,
 }
 
 
+/**
+ * gpgme_data_new_with_read_cb:
+ * @r_dh: returns the new data object
+ * @read_cb: callback function
+ * @read_cb_value: value passed to the callback function
+ * 
+ * Create a new data object which is a wrapper around the callback function.
+ * The callback function is defined as:
+ * <literal>
+ * typedef int (*read_cb) (void *cb_value,
+ *                         char *buffer,
+ *                         size_t count,
+ *                         size_t *nread);
+ * </literal>
+ *
+ * The callback should return a maximium of @count bytes in @buffer
+ * and the number actually read in @nread.  It may return 0 in @nread
+ * if there are no bytes currently available.  To indicate EOF the
+ * function should return with an error code of %-1 and set @nread to
+ * 0.  The callback may support passing %NULL for @buffer and @nread
+ * and %0 for count as an indication to reset its internal read
+ * pointer.
+ *
+ * Return value: An error value or 0 for success.
+ **/
 GpgmeError
 gpgme_data_new_with_read_cb ( GpgmeData *r_dh,
                               int (*read_cb)(void*,char *,size_t,size_t*),
@@ -218,6 +243,22 @@ gpgme_data_new_from_file ( GpgmeData *r_dh, const char *fname, int copy )
 }
 
 
+/**
+ * gpgme_data_new_from_filepart:
+ * @r_dh: returns the new data object
+ * @fname: filename
+ * @fp: filepointer
+ * @offset: Start reading at this offset
+ * @length: Read this many bytes 
+ * 
+ * Create a new data object and initialize it with @length bytes
+ * starting at @offset of @file or @fp.  Either a filename or an open
+ * filepointer may be given.
+ *
+
+ * Return value: An error code or 0 on success. If the error code is
+ * %GPGME_File_Error, the OS error code is held in %errno.
+ **/
 GpgmeError
 gpgme_data_new_from_filepart ( GpgmeData *r_dh, const char *fname, FILE *fp,
                                off_t offset, off_t length )
@@ -306,6 +347,14 @@ gpgme_data_release ( GpgmeData dh )
     }
 }
 
+/*
+ * Release the data object @dh.  @dh may be NULL in which case nothing
+ * happens.
+ * 
+ * Return value: An allocated memory object with the content of the
+ * data object.  The function makes sure that the returned string can
+ * safely be accessed using the string fucntions.
+ **/
 char *
 _gpgme_data_release_and_return_string ( GpgmeData dh )
 {
@@ -419,8 +468,8 @@ gpgme_data_rewind ( GpgmeData dh )
     else if (dh->type == GPGME_DATA_TYPE_CB) {
         dh->len = dh->readpos = 0;
         dh->read_cb_eof = 0;
-        /* FIXME: do a special call to the read function to trigger a rewind
-           there */
+        if ( dh->read_cb (dh->read_cb_value, NULL, 0, NULL) )
+            return mk_error (Not_Implemented);
     }
     else
         return mk_error (General_Error);
@@ -442,7 +491,7 @@ gpgme_data_rewind ( GpgmeData dh )
  *
  * With a @buffer of NULL, the function does only return the number of
  * bytes available and does not move the read pointer.  This does only
- * work for certain data types, all other will respnd with an
+ * work for certain data types, all other will respond with an
  * %GPGME_Invalid_Type.
  * 
  * Return value: An errorcode or 0 on success, EOF is indcated by the

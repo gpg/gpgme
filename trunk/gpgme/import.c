@@ -82,6 +82,15 @@ gpgme_op_import_start ( GpgmeCtx c, GpgmeData keydata )
 }
 
 
+/**
+ * gpgme_op_import:
+ * @c: Context 
+ * @keydata: Data object
+ * 
+ * Import all key material from @keydata into the key database.
+ * 
+ * Return value: o on success or an error code.
+ **/
 GpgmeError
 gpgme_op_import ( GpgmeCtx c, GpgmeData keydata )
 {

@@ -157,9 +157,10 @@ _gpgme_wait_on_condition ( GpgmeCtx c, int hang, volatile int *cond )
 {
     DEBUG3 ("waiting... ctx=%p hang=%d cond=%p", c, hang, cond );
     do {
-        int did_work = do_select();
         int any = 0;
         struct proc_s *proc;
+
+        do_select();
 
         if ( cond && *cond )
             hang = 0;

@@ -65,24 +65,45 @@ genkey_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 }
 
 
-
-/* 
- * Here is how the parms should be formatted:
-<GnupgKeyParms format="internal">
-Key-Type: DSA
-Key-Length: 1024
-Subkey-Type: ELG-E
-Subkey-Length: 1024
-Name-Real: Joe Tester
-Name-Comment: with stupid passphrase
-Name-Email: joe@foo.bar
-Expire-Date: 0
-Passphrase: abc
-</GnupgKeyParms>
- * Strings should be given in UTF-8 encoding.  The format we support for now
- * "internal".  The content of the <GnupgKeyParms> container is passed 
- * verbatim to GnuPG.  Control statements (e.g. %pubring) are not allowed.
- */
+/**
+ * gpgme_op_genkey:
+ * @c: the context
+ * @parms: XML string with the key parameters
+ * @pubkey: Returns the public key
+ * @seckey: Returns the secret key
+ * 
+ * Generate a new key and store the key in the default keyrings if
+ * both @pubkey and @seckey are NULL.  If @pubkey and @seckey are
+ * given, the newly created key will be returned in these data
+ * objects.  This function just starts the gheneration and does not
+ * wait for completion.
+ *
+ * Here is an example on how @parms should be formatted; for deatils
+ * see the file doc/DETAILS from the GnuPG distribution.
+ *
+ * <literal>
+ * <![CDATA[
+ * <GnupgKeyParms format="internal">
+ * Key-Type: DSA
+ * Key-Length: 1024
+ * Subkey-Type: ELG-E
+ * Subkey-Length: 1024
+ * Name-Real: Joe Tester
+ * Name-Comment: with stupid passphrase
+ * Name-Email: joe@foo.bar
+ * Expire-Date: 0
+ * Passphrase: abc
+ * </GnupgKeyParms>
+ * ]]>
+ * </literal> 
+ *
+ * Strings should be given in UTF-8 encoding.  The format we support
+ * for now is only "internal".  The content of the
+ * &lt;GnupgKeyParms&gt; container is passed verbatim to GnuPG.
+ * Control statements are not allowed.
+ * 
+ * Return value: 0 for success or an error code
+ **/
 
 GpgmeError
 gpgme_op_genkey_start ( GpgmeCtx c, const char *parms,
