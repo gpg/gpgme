@@ -686,6 +686,19 @@ The function @code{gpgme_strerror} returns a pointer to a statically
 allocated string containing a description of the error with the error
 value @var{err}.  This string can be used to output a diagnostic
 message to the user.
+
+The following example illustrates the use of @code{gpgme_strerror}:
+
+@example
+GpgmeCtx ctx;
+GpgmeError err = gpgme_new (&ctx);
+if (err)
+  @{
+    fprintf (stderr, "%s: creating GpgME context failed: %s\n",
+             argv[0], gpgme_strerror (err));
+    exit (1);
+  @}
+@end example
 @end deftypefun
 
 
@@ -778,7 +791,6 @@ exactly one of @var{filename} and @var{fp} is not a valid pointer,
 @code{GPGME_File_Error} if an I/O operation fails, and
 @code{GPGME_Out_Of_Core} if not enough memory is available.
 @end deftypefun
-
 
 @deftypefun GpgmeError gpgme_data_new_with_read_cb (@w{GpgmeData *@var{dh}}, @w{int (*@var{readfunc})} (@w{void *@var{hook}}, @w{char *@var{buffer}}, @w{size_t @var{count}}, @w{size_t *@var{nread}}), @w{void *@var{hook_value}})
 The function @code{gpgme_data_new_with_read_cb} creates a new
@@ -1313,6 +1325,35 @@ valid pointer, @code{GPGME_No_Request} if there is no pending
 operation, @code{GPGME_Out_Of_Core} if at some time during the
 operation there was not enough memory available.
 @end deftypefun
+
+The following example illustrates how all keys containing a certain
+string (@code{g10code}) can be listed with their key ID and the name
+and e-mail address of the main user ID:
+
+@example
+GpgmeCtx ctx;
+GpgmeError err = gpgme_new (&ctx);
+
+if (!err)
+  @{
+    err = gpgme_op_keylist_start (ctx, "g10code", 0);
+    while (!err && (err = gpgme_op_keylist_next (ctx, &key)) != GPGME_EOF)
+      @{
+        printf ("%s: %s <%s>\n",
+                gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID, 0, 0),
+	        gpgme_key_get_string_attr (key, GPGME_ATTR_NAME, 0, 0),
+	        gpgme_key_get_string_attr (key, GPGME_ATTR_EMAIL, 0, 0));
+        gpgme_key_release (key);
+      @}
+    gpgme_release (ctx);
+  @}
+if (err)
+  @{
+    fprintf (stderr, "%s: can not list keys: %s\n",
+             argv[0], gpgme_strerror (err));
+    exit (1);
+  @}
+@end example
 
 
 @node Information About Keys
@@ -2431,5 +2472,3 @@ registered yet.
 @summarycontents
 @contents
 @bye
-
-@c  LocalWords:  GPGME gpgme
