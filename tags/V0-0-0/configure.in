@@ -1,0 +1,89 @@
+# configure.in  for GPGME
+# 
+dnl (Process this file with autoconf to produce a configure script.)
+AC_REVISION($Revision$)dnl
+
+AC_INIT(gpgme/gpgme.h)
+AM_CONFIG_HEADER(config.h)
+AM_MAINTAINER_MODE
+#############################################
+# Version numbers (Remember to change them just before a release)
+# 1. No interfaces changed, only implementations (good): Increment REVISION.
+# 2. Interfaces added, none removed (good): Increment CURRENT, increment
+#    AGE, set REVISION to 0.
+# 3. Interfaces removed (BAD, breaks upward compatibility): Increment
+#    CURRENT, set AGE and REVISION to 0.
+AM_INIT_AUTOMAKE(gpgme,0.0.0)
+LIBGPGME_LT_CURRENT=0
+LIBGPGME_LT_AGE=0
+LIBGPGME_LT_REVISION=0
+##############################################
+
+AC_SUBST(LIBGPGME_LT_CURRENT)
+AC_SUBST(LIBGPGME_LT_AGE)
+AC_SUBST(LIBGPGME_LT_REVISION)
+
+dnl
+dnl Checks for programs
+dnl
+AC_ARG_PROGRAM
+
+dnl Don't default to build static libs
+AM_DISABLE_STATIC
+AM_PROG_LIBTOOL
+
+if test "$GCC" = yes; then
+    CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+fi
+
+
+dnl
+dnl Checks for libraries
+dnl
+
+dnl
+dnl Checks for header files
+dnl
+
+
+dnl
+dnl Checks for typedefs and structures
+dnl
+
+dnl
+dnl Checks for compiler features
+dnl
+
+dnl
+dnl Checks for library functions
+dnl
+
+
+dnl
+dnl Checks for system services
+dnl
+
+
+
+dnl
+dnl Create config files 
+dnl
+
+AC_OUTPUT_COMMANDS([
+chmod +x gpgme/gpgme-config
+])
+
+AC_OUTPUT([
+Makefile
+gpgme/Makefile
+gpgme/gpgme-config
+tests/Makefile
+])
+
+
+
+
+
+
+
+
