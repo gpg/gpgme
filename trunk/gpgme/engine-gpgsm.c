@@ -381,7 +381,17 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
       err = mk_error (General_Error);  /* FIXME */
       goto leave;
     }
-  gpgsm->status_cb.fd = fdlist[0];
+  /* We duplicate the file descriptor, so we can close it without
+     disturbing assuan.  Alternatively, we could special case
+     status_fd and register/unregister it manually as needed, but this
+     increases code duplication and is more complicated as we can not
+     use the close notifications etc.  */
+  gpgsm->status_cb.fd = dup (fdlist[0]);
+  if (gpgsm->status_cb.fd < 0)
+    {
+      err = mk_error (General_Error);	/* FIXME */
+      goto leave;
+    }
   gpgsm->status_cb.dir = 1;
   gpgsm->status_cb.data = gpgsm;
 
@@ -516,6 +526,8 @@ _gpgme_gpgsm_release (GpgsmObject gpgsm)
   if (!gpgsm)
     return;
 
+  if (gpgsm->status_cb.fd != -1)
+    _gpgme_io_close (gpgsm->status_cb.fd);
   if (gpgsm->input_cb.fd != -1)
     _gpgme_io_close (gpgsm->input_cb.fd);
   if (gpgsm->output_cb.fd != -1)

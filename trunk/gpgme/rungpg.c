@@ -1074,6 +1074,9 @@ read_status ( GpgObject gpg )
                         if ( r->code == STATUS_END_STREAM ) {
 			  if (gpg->cmd.used)
 			    {
+			      /* XXX We must check if there are any
+				 more fds active after removing this
+				 one.  */
 			      (*gpg->io_cbs.remove)
 				(gpg->fd_data_map[gpg->cmd.idx].tag);
 			      gpg->cmd.fd = gpg->fd_data_map[gpg->cmd.idx].fd;
@@ -1335,6 +1338,8 @@ command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
   gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
   gpg->cmd.code = 0;
   /* And sleep again until read_status will wake us up again.  */
+  /* XXX We must check if there are any more fds active after removing
+     this one.  */
   (*gpg->io_cbs.remove) (gpg->fd_data_map[gpg->cmd.idx].tag);
   gpg->cmd.fd = gpg->fd_data_map[gpg->cmd.idx].fd;
   gpg->fd_data_map[gpg->cmd.idx].fd = -1;
