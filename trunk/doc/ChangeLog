@@ -1,5 +1,8 @@
 2003-04-28  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Verify): Rewritten to take into account new and
+	deprecated functions and data types.
+
 	* gpgme.texi (Decrypt): Descript gpgme_op_decrypt_result and
 	GpgmeDecryptResult.
 

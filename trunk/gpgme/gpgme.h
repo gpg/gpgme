@@ -188,23 +188,6 @@ typedef enum
   }
 GpgmeSigStat;
 
-/* Flags used with the GPGME_ATTR_SIG_SUMMARY.  */
-enum 
-  {
-    GPGME_SIGSUM_VALID       = 0x0001,  /* The signature is fully valid.  */
-    GPGME_SIGSUM_GREEN       = 0x0002,  /* The signature is good.  */
-    GPGME_SIGSUM_RED         = 0x0004,  /* The signature is bad.  */
-    GPGME_SIGSUM_KEY_REVOKED = 0x0010,  /* One key has been revoked.  */
-    GPGME_SIGSUM_KEY_EXPIRED = 0x0020,  /* One key has expired.  */
-    GPGME_SIGSUM_SIG_EXPIRED = 0x0040,  /* The signature has expired.  */
-    GPGME_SIGSUM_KEY_MISSING = 0x0080,  /* Can't verify: key missing.  */
-    GPGME_SIGSUM_CRL_MISSING = 0x0100,  /* CRL not available.  */
-    GPGME_SIGSUM_CRL_TOO_OLD = 0x0200,  /* Available CRL is too old.  */
-    GPGME_SIGSUM_BAD_POLICY  = 0x0400,  /* A policy was not met.  */
-    GPGME_SIGSUM_SYS_ERROR   = 0x0800   /* A system error occured.  */
-  };
-
-
 /* The available signature modes.  */
 typedef enum
   {
@@ -405,9 +388,6 @@ GpgmeError gpgme_new (GpgmeCtx *ctx);
 
 /* Release the context CTX.  */
 void gpgme_release (GpgmeCtx ctx);
-
-/* Retrieve more info about performed signature check.  */
-char *gpgme_get_notation (GpgmeCtx ctx);
 
 /* Set the protocol to be used by CTX to PROTO.  */
 GpgmeError gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol proto);
@@ -831,7 +811,7 @@ struct _gpgme_new_signature
   GpgmePubKeyAlgo pubkey_algo;
   GpgmeHashAlgo hash_algo;
   unsigned long class;
-  long int created;
+  long int timestamp;
   char *fpr;
 };
 typedef struct _gpgme_new_signature *GpgmeNewSignature;
@@ -856,6 +836,75 @@ GpgmeError gpgme_op_sign (GpgmeCtx ctx,
 			  GpgmeSigMode mode);
 
 
+/* Verify.  */
+struct _gpgme_sig_notation
+{
+  struct _gpgme_sig_notation *next;
+
+  /* If NAME is a null pointer, then VALUE contains a policy URL
+     rather than a notation.  */
+  char *name;
+  char *value;
+};
+typedef struct _gpgme_sig_notation *GpgmeSigNotation;
+
+/* Flags used for the SUMMARY field in a GpgmeSignature.  */
+enum 
+  {
+    GPGME_SIGSUM_VALID       = 0x0001,  /* The signature is fully valid.  */
+    GPGME_SIGSUM_GREEN       = 0x0002,  /* The signature is good.  */
+    GPGME_SIGSUM_RED         = 0x0004,  /* The signature is bad.  */
+    GPGME_SIGSUM_KEY_REVOKED = 0x0010,  /* One key has been revoked.  */
+    GPGME_SIGSUM_KEY_EXPIRED = 0x0020,  /* One key has expired.  */
+    GPGME_SIGSUM_SIG_EXPIRED = 0x0040,  /* The signature has expired.  */
+    GPGME_SIGSUM_KEY_MISSING = 0x0080,  /* Can't verify: key missing.  */
+    GPGME_SIGSUM_CRL_MISSING = 0x0100,  /* CRL not available.  */
+    GPGME_SIGSUM_CRL_TOO_OLD = 0x0200,  /* Available CRL is too old.  */
+    GPGME_SIGSUM_BAD_POLICY  = 0x0400,  /* A policy was not met.  */
+    GPGME_SIGSUM_SYS_ERROR   = 0x0800   /* A system error occured.  */
+  };
+
+struct _gpgme_signature
+{
+  struct _gpgme_signature *next;
+
+  /* A summary of the signature status.  */
+  unsigned int summary;
+
+  /* The fingerprint or key ID of the signature.  */
+  char *fpr;
+
+  /* The status of the signature.  */
+  GpgmeError status;
+
+  /* Notation data and policy URLs.  */
+  GpgmeSigNotation notations;
+
+  /* Signature creation time.  */
+  unsigned long timestamp;
+
+  /* Signature exipration time or 0.  */
+  unsigned long exp_timestamp;
+
+  int wrong_key_usage : 1;
+
+  /* Internal to GPGME, do not use.  */
+  int _unused : 31;
+
+  GpgmeValidity validity;
+  GpgmeError validity_reason;
+};
+typedef struct _gpgme_signature *GpgmeSignature;
+
+struct _gpgme_op_verify_result
+{
+  GpgmeSignature signatures;
+};
+typedef struct _gpgme_op_verify_result *GpgmeVerifyResult;
+
+/* Retrieve a pointer to the result of the verify operation.  */
+GpgmeVerifyResult gpgme_op_verify_result (GpgmeCtx ctx);
+
 /* Verify within CTX that SIG is a valid signature for TEXT.  */
 GpgmeError gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig,
 				  GpgmeData signed_text, GpgmeData plaintext);
@@ -863,6 +912,7 @@ GpgmeError gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig,
 			    GpgmeData signed_text, GpgmeData plaintext);
 
 
+/* Import.  */
 enum
   {
     /* The key was new.  */

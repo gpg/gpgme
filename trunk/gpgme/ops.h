@@ -1,4 +1,4 @@
-/* ops.h - internal operations stuff 
+/* ops.h - Internal operation support.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003 g10 Code GmbH
  
@@ -73,8 +73,9 @@ GpgmeError _gpgme_op_reset (GpgmeCtx ctx, int synchronous);
 GpgmeError _gpgme_parse_inv_userid (char *args, GpgmeInvalidUserID *userid);
 
 
-/*-- verify.c --*/
-GpgmeError _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
+/* From verify.c.  */
+GpgmeError _gpgme_op_verify_init_result (GpgmeCtx ctx);
+GpgmeError _gpgme_verify_status_handler (void *priv, GpgmeStatusCode code,
 					 char *args);
 
 
