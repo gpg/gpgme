@@ -719,6 +719,10 @@ void gpgme_set_progress_cb (gpgme_ctx_t c, gpgme_progress_cb_t cb,
 void gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *cb,
 			    void **hook_value);
 
+/* This function sets the locale for the context CTX, or the default
+   locale if CTX is a null pointer.  */
+gpgme_error_t gpgme_set_locale (gpgme_ctx_t ctx, int category,
+				const char *value);
 
 /* Return a statically allocated string with the name of the public
    key algorithm ALGO, or NULL if that name is not known.  */
