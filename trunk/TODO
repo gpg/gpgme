@@ -14,6 +14,10 @@
 
 * Return GPGME_Canceled when appropriate
 
+* Factor out common code in _op_*_start functions.
+
+* Move code common to all engines up from gpg to engine.
+
 * Tests
 ** t-data
 *** Test gpgme_data_release_and_get_mem.
