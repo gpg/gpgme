@@ -1,3 +1,7 @@
+2004-02-10  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Fixed funopen test change.
+
 2004-02-06  Moritz Schulte  <mo@g10code.com>
 
 	* configure.ac: Fix funopen replacement mechanism.
