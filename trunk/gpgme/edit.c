@@ -94,12 +94,11 @@ _gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
   ctx->result.edit->fnc_value = fnc_value;
 
   /* Check the supplied data.  */
-  if (!out || gpgme_data_get_type (out) != GPGME_DATA_TYPE_NONE)
+  if (!out)
     {
       err = mk_error (Invalid_Value);
       goto leave;
     }
-  _gpgme_data_set_mode (out, GPGME_DATA_MODE_IN);
 
   err = _gpgme_engine_set_command_handler (ctx->engine, command_handler,
 					   ctx, out);

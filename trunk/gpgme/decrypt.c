@@ -170,19 +170,16 @@ _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
     goto leave;
 
   /* Check the supplied data.  */
-  if (!ciph || gpgme_data_get_type (ciph) == GPGME_DATA_TYPE_NONE)
+  if (!ciph)
     {
       err = mk_error (No_Data);
       goto leave;
     }
-  _gpgme_data_set_mode (ciph, GPGME_DATA_MODE_OUT);
-
-  if (gpgme_data_get_type (plain) != GPGME_DATA_TYPE_NONE)
+  if (!plain)
     {
       err = mk_error (Invalid_Value);
       goto leave;
     }
-  _gpgme_data_set_mode (plain, GPGME_DATA_MODE_IN);
 
   err = _gpgme_passphrase_start (ctx);
   if (err)

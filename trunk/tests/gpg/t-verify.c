@@ -188,25 +188,25 @@ main (int argc, char **argv )
     fail_if_err (err);
 
     puts ("checking a valid message:\n");
-    err = gpgme_op_verify (ctx, sig, text, &status );
+    err = gpgme_op_verify (ctx, sig, text, NULL, &status);
     fail_if_err (err);
-    print_sig_stat ( ctx, status );
+    print_sig_stat (ctx, status);
     if (status != GPGME_SIG_STAT_GOOD)
       {
 	fprintf (stderr, "%s:%d: Wrong sig stat\n", __FILE__, __LINE__);
 	exit (1);
       }
 
-    if ( (nota=gpgme_get_notation (ctx)) )
+    if ((nota = gpgme_get_notation (ctx)))
         printf ("---Begin Notation---\n%s---End Notation---\n", nota );
 
     puts ("checking a manipulated message:\n");
     gpgme_data_release (text);
-    err = gpgme_data_new_from_mem ( &text,
-                                    test_text1f, strlen (test_text1f), 0 );
+    err = gpgme_data_new_from_mem (&text,
+				   test_text1f, strlen (test_text1f), 0);
     fail_if_err (err);
-    gpgme_data_rewind ( sig );
-    err = gpgme_op_verify (ctx, sig, text, &status );
+    gpgme_data_rewind (sig);
+    err = gpgme_op_verify (ctx, sig, text, NULL, &status);
     fail_if_err (err);
 
     print_sig_stat (ctx, status);
@@ -215,17 +215,17 @@ main (int argc, char **argv )
 	fprintf (stderr, "%s:%d: Wrong sig stat\n", __FILE__, __LINE__);
 	exit (1);
       }
-    if ( (nota=gpgme_get_notation (ctx)) )
+    if ((nota = gpgme_get_notation (ctx)))
         printf ("---Begin Notation---\n%s---End Notation---\n", nota );
 
     puts ("checking a normal signature:");
     gpgme_data_release (sig);
     gpgme_data_release (text);
-    err = gpgme_data_new_from_mem (&sig,  test_sig2, strlen (test_sig2), 0);
+    err = gpgme_data_new_from_mem (&sig, test_sig2, strlen (test_sig2), 0);
     fail_if_err (err);
     err = gpgme_data_new (&text);
     fail_if_err (err);
-    err = gpgme_op_verify (ctx, sig, text, &status);
+    err = gpgme_op_verify (ctx, sig, NULL, text, &status);
     fail_if_err (err);
 
     nota = gpgme_data_release_and_get_mem (text, &len);

@@ -1,3 +1,27 @@
+2002-10-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-decrypt.c (print_data): Update to new gpgme_data_read
+	interface, and use gpgme_engine_check_version instead
+	gpgme_check_version.
+	* gpg/t-decrypt-verify.c (print_data): Likewise.
+	* gpg/t-edit.c (main): Likewise.
+	* gpg/t-encrypt.c (print_data): Likewise.
+	* gpg/t-encrypt-sign.c (print_data): Likewise.
+	* gpg/t-encrypt-sym.c (print_data): Likewise.
+	* gpg/t-eventloop.c (print_data): Likewise.
+	* gpg/t-export.c (print_data): Likewise.
+	* gpg/t-sign.c (print_data): Likewise.
+	* gpg/t-signers.c (print_data): Likewise.
+	* gpgsm/t-decrypt.c (print_data): Likewise.
+	* gpgsm/t-encrypt.c (print_data): Likewise.
+	* gpgsm/t-export.c (print_data): Likewise.
+	* gpgsm/t-sign.c (print_data): Likewise.
+	* gpg/t-verify.c (main): Likewise for gpgme_op_verify.
+	* gpgsm/t-verify.c (main): Likewise for gpgme_op_verify.
+	* t-data.c (read_once_test): Likewise.
+	(write_test): Update for new behaviour of data objects.
+	(main): Remove type test.
+
 2002-09-30  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm/t-keylist.c (doit): Add arg SECRET.

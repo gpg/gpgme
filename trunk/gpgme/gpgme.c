@@ -168,7 +168,7 @@ gpgme_get_notation (GpgmeCtx ctx)
 char *
 gpgme_get_op_info (GpgmeCtx ctx, int reserved)
 {
-  if (!ctx || reserved)
+  if (!ctx || reserved || !ctx->op_info)
     return NULL;  /* Invalid value.  */
 
   return _gpgme_data_get_as_string (ctx->op_info);

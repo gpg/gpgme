@@ -42,19 +42,33 @@ struct passphrase_cb_info_s {
                              } while(0)
 
 static void
-print_data ( GpgmeData dh )
+print_op_info (GpgmeCtx ctx)
 {
-    char buf[100];
-    size_t nread;
-    GpgmeError err;
+  char *str = gpgme_get_op_info (ctx, 0);
 
-    err = gpgme_data_rewind ( dh );
-    fail_if_err (err);
-    while ( !(err = gpgme_data_read ( dh, buf, 100, &nread )) ) {
-        fwrite ( buf, nread, 1, stdout );
+  if (!str)
+    puts ("<!-- no operation info available -->");
+  else
+    {
+      puts (str);
+      free (str);
     }
-    if (err != GPGME_EOF) 
-        fail_if_err (err);
+}
+
+
+static void
+print_data (GpgmeData dh)
+{
+  char buf[100];
+  int ret;
+  
+  ret = gpgme_data_seek (dh, 0, SEEK_SET);
+  if (ret)
+    fail_if_err (GPGME_File_Error);
+  while ((ret = gpgme_data_read (dh, buf, 100)) > 0)
+    fwrite (buf, ret, 1, stdout);
+  if (ret < 0)
+    fail_if_err (GPGME_File_Error);
 }
 
 

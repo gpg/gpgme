@@ -51,12 +51,11 @@ _gpgme_op_export_start (GpgmeCtx ctx, int synchronous,
   if (err)
     goto leave;
 
-  if (!keydata || gpgme_data_get_type (keydata) != GPGME_DATA_TYPE_NONE)
+  if (!keydata)
     {
       err = mk_error (Invalid_Value);
       goto leave;
     }
-  _gpgme_data_set_mode (keydata, GPGME_DATA_MODE_IN);
 
   _gpgme_engine_set_status_handler (ctx->engine, export_status_handler, ctx);
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
@@ -99,12 +98,7 @@ gpgme_op_export (GpgmeCtx ctx, GpgmeRecipients recipients, GpgmeData keydata)
 {
   GpgmeError err = _gpgme_op_export_start (ctx, 1, recipients, keydata);
   if (!err)
-    {
-      err = _gpgme_wait_one (ctx);
-      /* XXX We don't get status information.  */
-      if (!ctx->error && gpgme_data_get_type (keydata) == GPGME_DATA_TYPE_NONE)
-	ctx->error = mk_error (No_Recipients);
-      err = ctx->error;
-    }
+    err = _gpgme_wait_one (ctx);
+  /* XXX We don't get enough status information.  */
   return err;
 }

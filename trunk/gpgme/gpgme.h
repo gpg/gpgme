@@ -507,8 +507,53 @@ GpgmeError gpgme_recipients_enum_close (const GpgmeRecipients rset,
 
 /* Functions to handle data objects.  */
 
+/* Read up to SIZE bytes into buffer BUFFER from the data object with
+   the handle HANDLE.  Return the number of characters read, 0 on EOF
+   and -1 on error.  If an error occurs, errno is set.  */
+typedef int (*GpgmeDataReadCb) (void *handle, void *buffer, size_t size);
+
+/* Write up to SIZE bytes from buffer BUFFER to the data object with
+   the handle HANDLE.  Return the number of characters written, or -1
+   on error.  If an error occurs, errno is set.  */
+typedef ssize_t (*GpgmeDataWriteCb) (void *handle, const void *buffer,
+				     size_t size);
+
+/* Set the current position from where the next read or write starts
+   in the data object with the handle HANDLE to OFFSET, relativ to
+   WHENCE.  */
+typedef int (*GpgmeDataSeekCb) (void *handle, off_t offset, int whence);
+
+/* Close the data object with the handle DL.  */
+typedef void (*GpgmeDataReleaseCb) (void *handle);
+
+struct GpgmeDataCbs
+{
+  GpgmeDataReadCb read;
+  GpgmeDataWriteCb write;
+  GpgmeDataSeekCb seek;
+  GpgmeDataReleaseCb release;
+};
+
+/* Read up to SIZE bytes into buffer BUFFER from the data object with
+   the handle DH.  Return the number of characters read, 0 on EOF and
+   -1 on error.  If an error occurs, errno is set.  */
+int gpgme_data_read (GpgmeData dh, void *buffer, size_t size);
+
+/* Write up to SIZE bytes from buffer BUFFER to the data object with
+   the handle DH.  Return the number of characters written, or -1 on
+   error.  If an error occurs, errno is set.  */
+ssize_t gpgme_data_write (GpgmeData dh, const void *buffer, size_t size);
+
+/* Set the current position from where the next read or write starts
+   in the data object with the handle DH to OFFSET, relativ to
+   WHENCE.  */
+off_t gpgme_data_seek (GpgmeData dh, off_t offset, int whence);
+
 /* Create a new data buffer and return it in R_DH.  */
 GpgmeError gpgme_data_new (GpgmeData *r_dh);
+
+/* Destroy the data buffer DH.  */
+void gpgme_data_release (GpgmeData dh);
 
 /* Create a new data buffer filled with SIZE bytes starting from
    BUFFER.  If COPY is zero, copying is delayed until necessary, and
@@ -517,14 +562,37 @@ GpgmeError gpgme_data_new_from_mem (GpgmeData *r_dh,
 				    const char *buffer, size_t size,
 				    int copy);
 
+/* Destroy the data buffer DH and return a pointer to its content.
+   The memory has be to released with free by the user.  It's size is
+   returned in R_LEN.  */
+char *gpgme_data_release_and_get_mem (GpgmeData dh, size_t *r_len);
+
+GpgmeError gpgme_data_new_from_cbs (GpgmeData *dh,
+				    struct GpgmeDataCbs *cbs,
+				    void *handle);
+
+GpgmeError gpgme_data_new_from_fd (GpgmeData *dh, int fd);
+
+GpgmeError gpgme_data_new_from_stream (GpgmeData *dh, FILE *stream);
+
+/* Return the encoding attribute of the data buffer DH */
+GpgmeDataEncoding gpgme_data_get_encoding (GpgmeData dh);
+
+/* Set the encoding attribute of data buffer DH to ENC */
+GpgmeError gpgme_data_set_encoding (GpgmeData dh, GpgmeDataEncoding enc);
+
+
+
 /* Create a new data buffer which retrieves the data from the callback
-   function READ_CB.  */
+   function READ_CB.  Deprecated, please use gpgme_data_new_from_cbs
+   instead.  */
 GpgmeError gpgme_data_new_with_read_cb (GpgmeData *r_dh,
 					int (*read_cb) (void*,char *,size_t,size_t*),
 					void *read_cb_value);
 
 /* Create a new data buffer filled with the content of file FNAME.
-   COPY must be non-zero (delayed reads are not supported yet).  */
+   COPY must be non-zero.  For delayed read, please use
+   gpgme_data_new_from_fd or gpgme_data_new_from stream instead.  */
 GpgmeError gpgme_data_new_from_file (GpgmeData *r_dh,
 				     const char *fname,
 				     int copy);
@@ -536,34 +604,9 @@ GpgmeError gpgme_data_new_from_filepart (GpgmeData *r_dh,
 					 const char *fname, FILE *fp,
 					 off_t offset, size_t length);
 
-/* Destroy the data buffer DH.  */
-void gpgme_data_release (GpgmeData dh);
-
-/* Destroy the data buffer DH and return a pointer to its content.
-   The memory has be to released with free by the user.  It's size is
-   returned in R_LEN.  */
-char *gpgme_data_release_and_get_mem (GpgmeData dh, size_t *r_len);
-
-/* Return the type of the data buffer DH.  */
-GpgmeDataType gpgme_data_get_type (GpgmeData dh);
-
-/* Return the encoding attribute of the data buffer DH */
-GpgmeDataEncoding gpgme_data_get_encoding (GpgmeData dh);
-
-/* Set the encoding attribute of data buffer DH to ENC */
-GpgmeError gpgme_data_set_encoding (GpgmeData dh, GpgmeDataEncoding enc);
-
-/* Reset the read pointer in DH.  */
+/* Reset the read pointer in DH.  Deprecated, please use
+   gpgme_data_seek instead.  */
 GpgmeError gpgme_data_rewind (GpgmeData dh);
-
-/* Read LENGTH bytes from the data object DH and store them in the
-   memory starting at BUFFER.  The number of bytes actually read is
-   returned in NREAD.  */
-GpgmeError gpgme_data_read (GpgmeData dh, void *buffer,
-			    size_t length, size_t *nread);
-
-/* Write LENGTH bytes starting from BUFFER into the data object DH.  */
-GpgmeError gpgme_data_write (GpgmeData dh, const void *buffer, size_t length);
 
 
 /* Key and trust functions.  */
@@ -654,10 +697,10 @@ GpgmeError gpgme_op_sign (GpgmeCtx ctx,
 			  GpgmeSigMode mode);
 
 /* Verify within CTX that SIG is a valid signature for TEXT.  */
-GpgmeError gpgme_op_verify_start (GpgmeCtx ctx,
-				  GpgmeData sig, GpgmeData text);
-GpgmeError gpgme_op_verify (GpgmeCtx ctx,
-			    GpgmeData sig, GpgmeData text,
+GpgmeError gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig,
+				  GpgmeData signed_text, GpgmeData plaintext);
+GpgmeError gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig,
+			    GpgmeData signed_text, GpgmeData plaintext,
 			    GpgmeSigStat *r_status);
 
 /* Import the key in KEYDATA into the keyring.  */
@@ -728,9 +771,6 @@ GpgmeError gpgme_op_trustlist_end (GpgmeCtx ctx);
 
 /* Check that the library fulfills the version requirement.  */
 const char *gpgme_check_version (const char *req_version);
-
-/* Check that the backend engine is available.  DEPRECATED.  */
-GpgmeError  gpgme_check_engine (void);
 
 /* Retrieve information about the backend engines.  */
 const char *gpgme_get_engine_info (void);

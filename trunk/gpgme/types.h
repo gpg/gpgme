@@ -32,14 +32,6 @@ typedef unsigned long ulong;
 #endif
 
 
-typedef enum {
-    GPGME_DATA_MODE_NONE  = 0,
-    GPGME_DATA_MODE_IN    = 1,
-    GPGME_DATA_MODE_OUT   = 2,
-    GPGME_DATA_MODE_INOUT = 3
-} GpgmeDataMode;
-
-
 /*
  * Declaration of internal objects
  */

@@ -1,3 +1,88 @@
+2002-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	New data object component:
+
+	* gpgme.h (GpgmeDataReadCb, GpgmeDataWriteCb, GpgmeDataSeekCb,
+	GpgmeDataReleaseCb): New types.
+	(struct GpgmeDataCbs): New structure.
+	(gpgme_data_read): Changed prototype to match that of read() closely.
+	(gpgme_data_write): Similar for write().
+	(gpgme_data_seek, gpgme_data_new_from_cbs, gpgme_data_new_from_fd,
+	gpgme_data_new_from_stream): New prototypes.
+	(gpgme_data_get_type, gpgme_check_engine): Prototype removed.
+
+	* Makefile.am (libgpgme_la_SOURCES): Add data.h, data-fd.c,
+	data-stream.c, data-mem.c, data-user.c and data-compat.c.
+	* data.c: Reimplemented from scratch.
+	* (data-compat.c, data-fd.c, data.h, data-mem.c, data-stream.c,
+	data-user.c): New file.
+	* context.h (struct gpgme_data_s): Removed.
+	* conversion.c: Include <errno.h> and <sys/types.h>.
+	(_gpgme_data_append): New function.
+	* data.c (_gpgme_data_append_string): Move to ...
+	* conversion.c (_gpgme_data_append_string): ... here.
+	* data.c (_gpgme_data_append_for_xml): Move to ...
+	* conversion.c (_gpgme_data_append_for_xml): ... here.
+	* data.c (_gpgme_data_append_string_for_xml): Move to ...
+	* conversion.c (_gpgme_data_append_string_for_xml): ... here.
+	* data.c (_gpgme_data_append_percentstring_for_xml): Move to ...
+	* conversion.c (_gpgme_data_append_percentstring_for_xml): ... here.
+
+	* ops.h (_gpgme_data_get_mode, _gpgme_data_set_mode): Prototype
+	removed.
+	* types.h (GpgmeDataMode): Type removed.
+
+	* decrypt.c (_gpgme_decrypt_start): Don't check data type or mode.
+	* edit.c (_gpgme_op_edit_start): Likewise.
+	* encrypt.c (_gpgme_op_encrypt_start): Likewise.
+	* encrypt-sign.c (_gpgme_op_encrypt_sign_start): Likewise.
+	* encrypt-sign.c (_gpgme_op_encrypt_sign_start): Likewise.
+	* export.c (_gpgme_op_export_start): Likewise.
+	* genkey.c (_gpgme_op_genkey_start): Likewise.
+	* import.c (_gpgme_op_import_start): Likewise.
+	* sign.c (_gpgme_op_sign_start): Likewise.
+	* verify.c (_gpgme_op_verify_start): Likewise.
+	
+	* encrypt.c (gpgme_op_encrypt): Remove hack that returns invalid
+	no recipient if no data was returned.
+	* encrypt-sign.c (gpgme_op_encrypt_sign): Remove hack that returns
+	no recipient if no data was returned.
+	* encrypt-sign.c (gpgme_op_encrypt_sign): Remove hack that returns
+	no recipient if no data was returned.
+
+	* engine.c (_gpgme_engine_op_verify): Add new argument to
+	differentiate detached from normal signatures.
+	* engine.h (_gpgme_engine_op_verify): Likewise for prototype.
+	* engine-gpgsm.c (_gpgme_gpgsm_op_verify): Likewise.  Don't check
+	mode of data argument.
+	* engine-gpgsm.h (_gpgme_gpgsm_op_verify): Likewise for prototype.
+	* gpgme.h (gpgme_op_verify_start): Likewise for prototype.
+	(gpgme_op_verify): Likewise for prototype.
+	* rungpg.c (_gpgme_gpg_op_verify): Likewise.
+	* rungpg.h (_gpgme_gpg_op_verify): Likewise for prototype.
+	* verify.c (_gpgme_op_verify_start): Likewise.
+	(gpgme_op_verify_start): Likewise.
+	(gpgme_op_verify): Likewise.
+
+	* rungpg.c (struct arg_and_data_s): New member INBOUND to hold
+	direction of data object.
+	(_gpgme_gpg_add_data): Add new argument INBOUND.  Use it to
+	determine direction of data object.
+	(_gpgme_gpg_add_pm_data, _gpgme_gpg_set_command_handler,
+	_gpgme_gpg_op_decrypt, _gpgme_gpg_op_edit, _gpgme_gpg_op_encrypt,
+	_gpgme_gpg_op_encrypt_sign, _gpgme_gpg_op_export,
+	_gpgme_gpg_op_genkey, _gpgme_gpg_op_import, _gpgme_gpg_op_sign,
+	_gpgme_gpg_op_verify): Add new argument to _gpgme_gpg_add_data
+	invocation.
+	(build_argv): Use new member INBOUND to determine direction of
+	file descriptor.  Don't check the data type.
+	* rungpg.h (_gpgme_gpg_add_data): Add new argument to prototype.
+	
+	* gpgme.c (gpgme_get_op_info): Don't call
+	_gpgme_data_get_as_string if CTX->op_info is NULL.
+
+	* version.c (gpgme_check_engine): Function removed.
+
 2002-09-30  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (keylist_colon_handler): Take care when printing a

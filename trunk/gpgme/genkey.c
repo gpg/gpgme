@@ -92,27 +92,6 @@ _gpgme_op_genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
   gpgme_data_release (ctx->help_data_1);
   ctx->help_data_1 = NULL;
 
-  if (!pubkey && !seckey)
-    ; /* okay: Add key to the keyrings */
-  else if (pubkey && gpgme_data_get_type (pubkey) != GPGME_DATA_TYPE_NONE)
-    {
-      err = mk_error (Invalid_Value);
-      goto leave;
-    }
-  else if (seckey && gpgme_data_get_type (seckey) != GPGME_DATA_TYPE_NONE)
-    {
-      err = mk_error (Invalid_Value);
-      goto leave;
-    }
-    
-  if (pubkey)
-    /* FIXME: Need some more things here.  */
-    _gpgme_data_set_mode (pubkey, GPGME_DATA_MODE_IN);
-
-  if (seckey)
-    /* FIXME: Need some more things here.  */
-    _gpgme_data_set_mode (seckey, GPGME_DATA_MODE_IN);
-
   if ((parms = strstr (parms, "<GnupgKeyParms ")) 
       && (s = strchr (parms, '>'))
       && (sx = strstr (parms, "format=\"internal\""))
@@ -130,8 +109,6 @@ _gpgme_op_genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
 
   if (err)
     goto leave;
-    
-  _gpgme_data_set_mode (ctx->help_data_1, GPGME_DATA_MODE_OUT);
 
   _gpgme_engine_set_status_handler (ctx->engine, genkey_status_handler, ctx);
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);

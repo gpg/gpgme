@@ -193,22 +193,6 @@ gpgme_get_engine_info ()
 }
 
 
-/**
- * gpgme_check_engine:
- * 
- * Check whether the installed crypto engine for the OpenPGP protocol
- * matches the requirement of GPGME.  This function is deprecated,
- * instead use gpgme_engine_get_info() with the specific protocol you
- * need.
- *
- * Return value: 0 or an error code.
- **/
-GpgmeError
-gpgme_check_engine ()
-{
-  return gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
-}
-
 
 #define LINELENGTH 80
 

@@ -186,12 +186,11 @@ _gpgme_op_import_start (GpgmeCtx ctx, int synchronous, GpgmeData keydata)
     goto leave;
 
   /* Check the supplied data */
-  if (gpgme_data_get_type (keydata) == GPGME_DATA_TYPE_NONE)
+  if (!keydata)
     {
       err = mk_error (No_Data);
       goto leave;
     }
-  _gpgme_data_set_mode (keydata, GPGME_DATA_MODE_OUT);
 
   _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);

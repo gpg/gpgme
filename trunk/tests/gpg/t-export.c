@@ -32,23 +32,21 @@
                                 exit (1); }                               \
                              } while(0)
 
+
 static void
-print_data ( GpgmeData dh )
+print_data (GpgmeData dh)
 {
-    char buf[100];
-    size_t nread;
-    GpgmeError err;
-
-    err = gpgme_data_rewind ( dh );
-    fail_if_err (err);
-    while ( !(err = gpgme_data_read ( dh, buf, 100, &nread )) ) {
-        fwrite ( buf, nread, 1, stdout );
-    }
-    if (err != GPGME_EOF) 
-        fail_if_err (err);
+  char buf[100];
+  int ret;
+  
+  ret = gpgme_data_seek (dh, 0, SEEK_SET);
+  if (ret)
+    fail_if_err (GPGME_File_Error);
+  while ((ret = gpgme_data_read (dh, buf, 100)) > 0)
+    fwrite (buf, ret, 1, stdout);
+  if (ret < 0)
+    fail_if_err (GPGME_File_Error);
 }
-
-
 
 int 
 main (int argc, char **argv )

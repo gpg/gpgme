@@ -542,7 +542,8 @@ _gpgme_engine_op_trustlist (EngineObject engine, const char *pattern)
 }
 
 GpgmeError
-_gpgme_engine_op_verify (EngineObject engine, GpgmeData sig, GpgmeData text)
+_gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
+			 GpgmeData signed_text, GpgmeData plaintext)
 {
   if (!engine)
     return mk_error (Invalid_Value);
@@ -550,9 +551,11 @@ _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig, GpgmeData text)
   switch (engine->protocol)
     {
     case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_verify (engine->engine.gpg, sig, text);
+      return _gpgme_gpg_op_verify (engine->engine.gpg, sig,
+				   signed_text, plaintext);
     case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_verify (engine->engine.gpgsm, sig, text);
+      return _gpgme_gpgsm_op_verify (engine->engine.gpgsm, sig,
+				     signed_text, plaintext);
     default:
       break;
     }

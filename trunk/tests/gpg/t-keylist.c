@@ -149,7 +149,7 @@ main (int argc, char **argv)
     }
   pattern = argc? *argv : NULL;
 
-  err = gpgme_check_engine();
+  err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
   fail_if_err (err);
 
   err = gpgme_new (&ctx);

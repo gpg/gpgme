@@ -44,14 +44,16 @@
 #include "status-table.h"
 
 
-/* This type is used to build a list of gpg arguments and
- * data sources/sinks */
-struct arg_and_data_s {
-    struct arg_and_data_s *next;
-    GpgmeData data;  /* If this is not NULL .. */
-    int dup_to;
-    int print_fd;    /* print the fd number and not the special form of it */
-    char arg[1];     /* .. this is used */
+/* This type is used to build a list of gpg arguments and data
+   sources/sinks.  */
+struct arg_and_data_s
+{
+  struct arg_and_data_s *next;
+  GpgmeData data;  /* If this is not NULL, use arg below.  */
+  int inbound;     /* True if this is used for reading from gpg.  */
+  int dup_to;
+  int print_fd;    /* Print the fd number and not the special form of it.  */
+  char arg[1];     /* Used if data above is not used.  */
 };
 
 struct fd_data_map_s
@@ -378,33 +380,37 @@ _gpgme_gpg_add_arg ( GpgObject gpg, const char *arg )
 }
 
 GpgmeError
-_gpgme_gpg_add_data ( GpgObject gpg, GpgmeData data, int dup_to )
+_gpgme_gpg_add_data (GpgObject gpg, GpgmeData data, int dup_to, int inbound)
 {
-    struct arg_and_data_s *a;
+  struct arg_and_data_s *a;
 
-    assert (gpg);
-    assert (data);
-    if (gpg->pm.active)
-        return 0;
-
-    a = xtrymalloc ( sizeof *a - 1 );
-    if ( !a ) {
-        gpg->arg_error = 1;
-        return mk_error(Out_Of_Core);
-    }
-    a->next = NULL;
-    a->data = data;
-    if ( dup_to == -2 ) {
-        a->print_fd = 1;
-        a->dup_to = -1;
-    }
-    else {
-        a->print_fd = 0;
-        a->dup_to = dup_to;
-    }
-    *gpg->argtail = a;
-    gpg->argtail = &a->next;
+  assert (gpg);
+  assert (data);
+  if (gpg->pm.active)
     return 0;
+
+  a = xtrymalloc (sizeof *a - 1);
+  if (!a)
+    {
+      gpg->arg_error = 1;
+      return mk_error(Out_Of_Core);
+    }
+  a->next = NULL;
+  a->data = data;
+  a->inbound = inbound;
+  if (dup_to == -2)
+    {
+      a->print_fd = 1;
+      a->dup_to = -1;
+    }
+  else
+    {
+      a->print_fd = 0;
+      a->dup_to = dup_to;
+    }
+  *gpg->argtail = a;
+  gpg->argtail = &a->next;
+  return 0;
 }
 
 GpgmeError
@@ -435,7 +441,7 @@ _gpgme_gpg_add_pm_data ( GpgObject gpg, GpgmeData data, int what )
             
             rc = gpgme_data_new_with_read_cb ( &tmp, pipemode_cb, gpg );
             if (!rc )
-                rc = _gpgme_gpg_add_data (gpg, tmp, 0);
+                rc = _gpgme_gpg_add_data (gpg, tmp, 0, 0);
         }
         if ( !rc ) {
             /* here we can reset the handler stuff */
@@ -532,8 +538,8 @@ _gpgme_gpg_set_command_handler (GpgObject gpg,
   if (err)
     return err;
         
-  _gpgme_gpg_add_arg ( gpg, "--command-fd" );
-  _gpgme_gpg_add_data (gpg, tmp, -2);
+  _gpgme_gpg_add_arg (gpg, "--command-fd");
+  _gpgme_gpg_add_data (gpg, tmp, -2, 0);
   gpg->cmd.cb_data = tmp;
   gpg->cmd.fnc = fnc;
   gpg->cmd.fnc_value = fnc_value;
@@ -696,41 +702,9 @@ build_argv (GpgObject gpg)
     {
       if (a->data)
 	{
-	  switch (_gpgme_data_get_mode (a->data))
-	    {
-	    case GPGME_DATA_MODE_NONE:
-	    case GPGME_DATA_MODE_INOUT:
-	      xfree (fd_data_map);
-	      free_argv (argv);
-	      return mk_error (Invalid_Mode);
-	    case GPGME_DATA_MODE_IN:
-	      /* Create a pipe to read from gpg.  */
-	      fd_data_map[datac].inbound = 1;
-	      break;
-	    case GPGME_DATA_MODE_OUT:
-	      /* Create a pipe to pass it down to gpg.  */
-	      fd_data_map[datac].inbound = 0;
-	      break;
-            }
+	  /* Create a pipe to pass it down to gpg.  */
+	  fd_data_map[datac].inbound = a->inbound;
 
-	  switch (gpgme_data_get_type (a->data))
-	    {
-	    case GPGME_DATA_TYPE_NONE:
-	      if (fd_data_map[datac].inbound)
-		break;  /* Allowed.  */
-	      xfree (fd_data_map);
-	      free_argv (argv);
-	      return mk_error (Invalid_Type);
-	    case GPGME_DATA_TYPE_MEM:
-	    case GPGME_DATA_TYPE_CB:
-	      break;
-	    case GPGME_DATA_TYPE_FD:
-	    case GPGME_DATA_TYPE_FILE:
-	      xfree (fd_data_map);
-	      free_argv (argv);
-	      return mk_error (Not_Implemented);
-            }
-  
 	  /* Create a pipe.  */
 	  {   
 	    int fds[2];
@@ -1256,29 +1230,30 @@ read_colon_line ( GpgObject gpg )
 }
 
 static GpgmeError
-pipemode_copy (char *buffer, size_t length, size_t *nread, GpgmeData data )
+pipemode_copy (char *buffer, size_t length, size_t *nread, GpgmeData data)
 {
-    GpgmeError err;
-    size_t nbytes;
-    char tmp[1000], *s, *d;
+  size_t nbytes;
+  char tmp[1000], *src, *dst;
 
-    /* we can optimize this whole thing but for now we just
-     * return after each escape character */
-    if (length > 990)
-        length = 990;
+  /* We can optimize this whole thing but for now we just return after
+      each escape character.  */
+  if (length > 990)
+    length = 990;
 
-    err = gpgme_data_read ( data, tmp, length, &nbytes );
-    if (err)
-        return err;
-    for (s=tmp, d=buffer; nbytes; s++, nbytes--) {
-        *d++ = *s;
-        if (*s == '@' ) {
-            *d++ = '@';
-            break;
-        }
+  nbytes = gpgme_data_read (data, tmp, length);
+  if (nbytes < 0)
+    return mk_error (File_Error);
+  for (src = tmp, dst = buffer; nbytes; src++, nbytes--)
+    {
+      *dst++ = *src;
+      if (*src == '@')
+	{
+	  *dst++ = '@';
+	  break;
+	}
     }
-    *nread = d - buffer;
-    return 0;
+  *nread = dst - buffer;
+  return 0;
 }
 
 
@@ -1409,9 +1384,9 @@ _gpgme_gpg_op_decrypt (GpgObject gpg, GpgmeData ciph, GpgmeData plain)
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "-");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, plain, 1);
+    err = _gpgme_gpg_add_data (gpg, plain, 1, 1);
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, ciph, 0);
+    err = _gpgme_gpg_add_data (gpg, ciph, 0, 0);
 
   return err;
 }
@@ -1477,7 +1452,7 @@ _gpgme_gpg_op_edit (GpgObject gpg, GpgmeKey key, GpgmeData out,
   if (!err)
   err = _gpgme_gpg_add_arg (gpg, "--edit-key");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, out, 1);
+    err = _gpgme_gpg_add_data (gpg, out, 1, 1);
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "--");
   if (!err)
@@ -1542,11 +1517,11 @@ _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "-");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, ciph, 1);
+    err = _gpgme_gpg_add_data (gpg, ciph, 1, 1);
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "--");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, plain, 0);
+    err = _gpgme_gpg_add_data (gpg, plain, 0, 0);
 
   return err;
 }
@@ -1581,11 +1556,11 @@ _gpgme_gpg_op_encrypt_sign (GpgObject gpg, GpgmeRecipients recp,
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "-");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, ciph, 1);
+    err = _gpgme_gpg_add_data (gpg, ciph, 1, 1);
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "--");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, plain, 0);
+    err = _gpgme_gpg_add_data (gpg, plain, 0, 0);
 
   return err;
 }
@@ -1600,7 +1575,7 @@ _gpgme_gpg_op_export (GpgObject gpg, GpgmeRecipients recp,
   if (!err && use_armor)
     err = _gpgme_gpg_add_arg (gpg, "--armor");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, keydata, 1);
+    err = _gpgme_gpg_add_data (gpg, keydata, 1, 1);
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "--");
 
@@ -1639,7 +1614,7 @@ _gpgme_gpg_op_genkey (GpgObject gpg, GpgmeData help_data, int use_armor,
   if (!err && use_armor)
     err = _gpgme_gpg_add_arg (gpg, "--armor");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, help_data, 0);
+    err = _gpgme_gpg_add_data (gpg, help_data, 0, 0);
 
   return err;
 }
@@ -1651,7 +1626,7 @@ _gpgme_gpg_op_import (GpgObject gpg, GpgmeData keydata)
 
   err = _gpgme_gpg_add_arg (gpg, "--import");
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, keydata, 0);
+    err = _gpgme_gpg_add_data (gpg, keydata, 0, 0);
 
   return err;
 }
@@ -1741,9 +1716,9 @@ _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
 
   /* Tell the gpg object about the data.  */
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, in, 0);
+    err = _gpgme_gpg_add_data (gpg, in, 0, 0);
   if (!err)
-    err = _gpgme_gpg_add_data (gpg, out, 1);
+    err = _gpgme_gpg_add_data (gpg, out, 1, 1);
 
   return err;
 }
@@ -1767,11 +1742,11 @@ _gpgme_gpg_op_trustlist (GpgObject gpg, const char *pattern)
 }
 
 GpgmeError
-_gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData text)
+_gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData signed_text, GpgmeData plaintext)
 {
   GpgmeError err = 0;
 
-  if (_gpgme_data_get_mode (text) == GPGME_DATA_MODE_IN)
+  if (plaintext)
     {
       /* Normal or cleartext signature.  */
 
@@ -1781,9 +1756,9 @@ _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData text)
       if (!err)
 	err = _gpgme_gpg_add_arg (gpg, "--");
       if (!err)
-	err = _gpgme_gpg_add_data (gpg, sig, 0);
+	err = _gpgme_gpg_add_data (gpg, sig, 0, 0);
       if (!err)
-	err = _gpgme_gpg_add_data (gpg, text, 1);
+	err = _gpgme_gpg_add_data (gpg, plaintext, 1, 1);
     }
   else
     {
@@ -1795,7 +1770,7 @@ _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData text)
 	  if (!err)
 	    err = _gpgme_gpg_add_pm_data (gpg, sig, 0);
 	  if (!err)
-	    err = _gpgme_gpg_add_pm_data (gpg, text, 1);
+	    err = _gpgme_gpg_add_pm_data (gpg, signed_text, 1);
 	}
       else
 	{
@@ -1803,13 +1778,13 @@ _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData text)
 	  if (!err)
 	    err = _gpgme_gpg_add_arg (gpg, "--");
 	  if (!err)
-	    err = _gpgme_gpg_add_data (gpg, sig, -1);
-	  if (text)
+	    err = _gpgme_gpg_add_data (gpg, sig, -1, 0);
+	  if (signed_text)
 	    {
 	      if (!err)
 		err = _gpgme_gpg_add_arg (gpg, "-");
 	      if (!err)
-		err = _gpgme_gpg_add_data (gpg, text, 0);
+		err = _gpgme_gpg_add_data (gpg, signed_text, 0, 0);
 	    }
 	}
     }
