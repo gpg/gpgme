@@ -1,3 +1,7 @@
+2003-07-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine.c (gpgme_get_engine_info): Initialize NULL.
+
 2003-07-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme-config.in (gpg_error_libs): Quote GPG_ERROR_CFLAGS and
