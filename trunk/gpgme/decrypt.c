@@ -130,7 +130,7 @@ command_handler (void *opaque, GpgStatusCode code, const char *key)
         if (create_result_struct (c))
 	  {
             c->out_of_core = 1;
-            return;
+            return NULL;
 	  }
       }
 
