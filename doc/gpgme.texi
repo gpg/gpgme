@@ -1939,7 +1939,7 @@ the corresponding value will not be returned.
 @cindex callback, progress meter
 @cindex progress meter callback
 
-@deftp {Data type} {const char *(*gpgme_progress_cb_t)(void *@var{hook}, const char *@var{what}, int @var{type}, int @var{current}, int @var{total})}
+@deftp {Data type} {void (*gpgme_progress_cb_t)(void *@var{hook}, const char *@var{what}, int @var{type}, int @var{current}, int @var{total})}
 @tindex gpgme_progress_cb_t
 The @code{gpgme_progress_cb_t} type is the type of functions usable as
 progress callback function.
