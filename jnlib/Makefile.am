@@ -22,11 +22,11 @@ EXTRA_DIST = README
 
 INCLUDES = -I$(top_srcdir)/intl
 
-noinst_LIBRARIES = libjnlib.a
+noinst_LTLIBRARIES = libjnlib.la
 
 
 #libjnlib_a_LDFLAGS =
-libjnlib_a_SOURCES = libjnlib-config.h	       \
+libjnlib_la_SOURCES = libjnlib-config.h	       \
 		     xmalloc.c xmalloc.h       \
 		     stringhelp.c stringhelp.h \
 		     argparse.c argparse.h     \

@@ -274,7 +274,7 @@ _gpgme_key_new_secret ( GpgmeKey *r_key )
  * gpgme_key_ref:
  * @key: Key object
  * 
- * To safe memory the Key objects implement reference counting.
+ * To safe memory the Key objects implements reference counting.
  * Use this function to bump the reference counter.
  **/
 void

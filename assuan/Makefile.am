@@ -24,11 +24,11 @@ INCLUDES = -I.. -I$(top_srcdir)/include
 BUILT_SOURCES = assuan-errors.c
 MOSTLYCLEANFILES = assuan-errors.c
 
-noinst_LIBRARIES = libassuan.a
+noinst_LTLIBRARIES = libassuan.la
 
 
 #libassuan_a_LDFLAGS =
-libassuan_a_SOURCES = \
+libassuan_la_SOURCES = \
 	assuan.h \
 	assuan-defs.h \
 	assuan-util.c \
