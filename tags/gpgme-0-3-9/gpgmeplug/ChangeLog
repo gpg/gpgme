@@ -1,0 +1,178 @@
+2002-07-31  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* Renamed importCertificate() to importCertificateWithFPR() and implemented importCertificateFromMem()
+
+2002-07-03  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c (nextCertificate): Actually free the entire array
+	and don't loop over tmp_dn and double free the first item.
+	Spotted by Bernhard Herzog.
+
+2002-07-01  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c (findCertificates): Reintroduced a free which must
+	have been removed after my last fix.  This avoids a memory leak
+	when a fingerprint was not found.  Removed the double loop
+	increment in the code to release the arrays.
+	(make_fingerprint): Removed superfluous check on retrun value of
+	xmalloc.
+	(safe_free): Removed.  Changed all callers to use a regular free
+	and at appropriate palces set the free pointer to NULL.  That
+	safe_free stuff seems to have been copied verbatim from some
+	Mutt example code I posted.
+	(storeNewCharPtr): Use xmalloc instead of an unchecked
+	malloc. Removed superfluous string termination.
+	(parseAddress): Use xmalloc instead of an unchecked malloc.
+	(nextAddress): Ditto.
+	(xstrdup): Oops, obviously I calculated the length wrong when
+	coded this.  Tsss, wrote xstrdup some hundreds times but missed it
+	this time.  Thanks to Steffen Hansen for noticing it.
+
+	* gpgmeplug.c:  Moved a few helper functions more to the top.
+	Fixed comment syntax.  Merged a copyright notice somewhere in the
+	middle of the file with the one at the top.
+
+2002-06-28  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c (xmalloc): New.
+	(safe_malloc): Removed this macro and replaced it at all places
+	without return values checks by xmalloc.
+	(xstrdup): New. Replaces funny named macro with different
+	semantics.  Changed all callers to the new semantic.
+	(findCertificates): Don't free duplicate free the FPR array
+	values.  Removed the unneeded initialization.  Replaces the
+	gcc-ish use dynamic allocation of automatic variables by repalce
+	maxCerts with a macro MAXCERTS.  Made some comments Real C (tm).
+	(startListCertificates): Removed uneeded cast from xmalloc.
+
+2002-06-28  Bernhard Reiter <bernhard@intevation.de>
+
+	* gpgmeplug.c: new macro days_to_seconds().
+	this also fixes the dividing factor.
+	(signatureCertificateDaysLeftToExpiry) 
+        (preceiverCertificateDaysLeftToExpiry): using the new macro
+
+	(caCertificateDaysLeftToExpiry)  
+	(rootCertificateDaysLeftToExpiry): using new macro in deactivated code.
+
+
+2002-06-27  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* gpgmeplug.c: Fixed pattern related bug.
+
+	* cryptplug.h, gpgmeplug.c: Handle truncated data from dirmngr.
+
+2002-06-25  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* cryptplug.h, gpgmeplug.c: New function importCertificate() for importing a 
+	certificate from the temp. db to the real one given a fingerprint.
+
+2002-06-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c (reorder_dn): Added missing stdpart list terminator.
+
+2002-05-30  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* cryptplug.h, gpgmeplug.c: Added certificate info listing functions. 
+	Not yet complete. 
+	Converted more C99 style comments to "classic" style.
+
+2002-03-23  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c: Converted it to real C; i.e. use standard comments -
+	we are doing ISO C 90.  Translated a few German remarks and
+	commented on some things.
+
+2002-03-08  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* A little better address-parsing. Not real rfc822 yet, but at
+	least it fetches the address between '<' and '>' now if they are
+	present.
+
+2002-03-07  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* gpgmeplug.c (encryptMessage): Made the function accept multiple 
+	reciepients via addressee -- it is now parsed af a comma-separated 
+	list.
+
+2002-03-06  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c (signMessage): Fixed offbyone.  Don't include the
+	EOS character into the signature.
+	(checkMessageSignature): Ditto.
+
+2002-02-28  Kalle Dalheimer  <kalle@klaralvdalens-datakonsult.se>
+
+	* gpgmeplug.c (signMessage): Implemented warning when signature
+	certificates are about to expire 
+	(isEmailInCertificate): Added support for checking whether the
+	signer's email address is contained in his certificate.
+
+	* cryptplug.h: Implemented warning when signature
+	certificates are about to expire
+
+2002-02-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c (signMessage): Fix code syntax.
+
+2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (EXTRA_gpgme_openpgp_la_SOURCES): New variable.
+	(EXTRA_gpgme_smime_la_SOURCES): Likewise.
+
+	* gpgmeplug.c (passphrase_cb): Fix type of third argument.
+
+2002-01-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme-openpgp.c: New file.
+	* Makefile.am (gpgme_openpgp_la_SOURCES): Replace gpgmeplug.c with
+	gpgme-openpgp.c.
+
+2002-01-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c: Renamed to ...
+	* gpgme-openpgp.c: ... this.  New file.
+	* gpgsmplug.c: Renamed to ...
+	* gpgme-smime.c: ... this.  new file.
+	* Makefile.am: Rewritten to use libtool's module functionality.
+
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (lib_LTLIBRARIES): Rename to ...
+	(noinst_LTLIBRARIES): ... this target.
+
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgmeplug_la_SOURCES): Remove gpgme.h.
+	(libgpgsmplug_la_SOURCES): Likewise.
+
+2001-11-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c (checkMessageSignature): Add call to gpgme_set_protocol.
+
+2001-11-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgsmplug_la_SOURCES): Fix source file.
+
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgsmplug_la_LIBADD): New variable.
+	(libgpgsmplug_la_LDFLAGS): Likewise.
+	(libgpgsmplug_la_SOURCES): Likewise.
+	(lib_LTLIBRARIES): Add libgpgsmplug.la.
+	(INCLUDES): Include the local gpgme.h.
+
+	* gpgmeplug.c (signMessage): Set protocol.
+	(GPGMEPLUG_PROTOCOL) [!GPGMEPLUG_PROTOCOL]: Set
+	GPGMEPLUG_PROTOCOL.
+	* gpgsmplug.c: New file.
+
+2001-11-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c: Include config.h only if [HAVE_CONFIG_H].  Do not
+	include util.h.
+	(deinitialize): Use free, not _gpgme_free.
+	(setDirectoryServers): Use calloc, not xtrycalloc.  Use free, not
+	_gpgme_free.  Use malloc instead xtrymalloc.
+	(appendDirectoryServer): Use realloc, not xtryrealloc.
+

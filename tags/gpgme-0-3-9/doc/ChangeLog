@@ -1,0 +1,254 @@
+2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Header): Document name space.
+
+2002-08-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Importing Keys): Document gpgme_op_import_ext.
+
+	* gpgme.texi (Importing Keys): Undocument EOF.
+
+2002-08-14  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.texi (Information About Keys): Changed GPGME_ATTR_TYPE.
+
+2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Deleting Keys): Say that secret keys might not be
+	deleted.
+
+2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Information About Keys): Document (badly) the new
+	key attributes.
+
+	* gpgme.texi (Manipulating Data Buffers): Mention that backend
+	tries to detect encoding automatically.
+
+2002-07-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Run Control): Update this section.
+	(Waiting For Completion): Likewise for this subsection.
+	(Cancelling an Operation): Likewise for this subsection.
+	(Using External Event Loops): New subsection with several
+	subsubsections.
+
+2002-06-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Multi Threading): Remove item about the need to
+	synchronize anything against gpgme_wait (except gpgme_wait
+	itself).
+
+2002-06-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Information About Keys): Fix documentation for IDX.
+	(Information About Trust Items): Likewise.
+
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.texi (Importing Keys): Document the return value -1 of
+	gpgme_op_import.
+
+2002-06-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.texi (Verify): Explain the new whatidx variable.
+
+2002-06-10  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.texi (Verify): Document attribute GPGME_ATTR_ERRTOK.
+
+2002-06-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Multi Threading): Document new autodetection.
+
+2002-06-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (DISTCLEANFILES): New variable.
+
+2002-05-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi: Some typographical correctons throughout.
+
+2002-05-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Using Automake): New section.
+
+2002-05-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Multi Threading): Escape { and }.
+
+2002-05-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Overview): Replace note about thread-safeness.
+	(Multi Threading): New section.
+
+2002-05-03  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.texi (Manipulating Data Buffers): Changed some data types
+	to void*.
+	(Protocol Selection): Added gpgme_get_protocol.
+	(Verify): Updated to include the new attribute fucntions and
+	status codes.
+
+2002-04-27  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.texi (Manipulating Data Buffers): New type GpgmeDataEncoding.
+
+2002-04-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Passphrase Callback): Document that either return
+	argument can be NULL.
+	(Progress Meter Callback): Likewise.
+
+2002-04-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Passphrase Callback): Fix small typo.  Document the
+	new function gpgme_get_passphrase_cb.
+	(Progress Meter Callback): Document the new function
+	gpgme_get_progress_cb.
+
+2002-04-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Creating a Signature): Fix function name.  Reported
+	by Wichert Ackerman <wichert@debian.org>.
+
+2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (direntry): End index entry with a full stop.
+	Patch submitted by Jose Carlos Garcia Sogo <jsogo@debian.org>.
+	
+2002-03-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Detailed Results): Fix syntax error in last change.
+
+2002-03-08  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.texi (Detailed Results): Import does also return info.
+
+2002-03-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Encrypting a Plaintext): Document symmetric
+	encryption.
+
+2002-03-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Error Strings): Add example.
+	* gpgme.texi (Listing Keys): Likewise.
+
+2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Information About Keys): Document GPGME_ATTR_EXPIRE.
+
+2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Verify): Document verification of normal and
+	cleartext signatures.
+
+2002-02-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Listing Keys): Document gpgme_op_keylist_ext_start.
+
+2002-02-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Encrypting a Plaintext): Document
+	GPGME_Invalid_Recipients.
+	(Error Values): Likewise.
+
+2002-02-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Encrypting a Plaintext): Document
+	gpgme_op_encrypt_sign and gpgme_op_encrypt_sign_start.
+
+2002-02-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Creating a Signature): Add a note about
+	certificates to include.
+	(Included Certificates): New section.
+
+2002-02-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Detailed Results): Remove literal tags.
+	(Generating Keys): Update documentation.
+
+	* gpgme.texi (Generating Keys): Fix syntax error.
+
+2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Waiting For Completion): Adjust doc to changes in
+	the code.
+
+2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Key Listing Mode): Update documentation.
+
+2002-01-31  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Generating Keys): Document error at creation
+	failure.
+
+2002-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Deleting Keys): Document new error values.
+
+2002-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Importing Keys): Add reference to gpgme_get_op_info.
+
+2002-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi: Some spell checking.
+
+2002-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi: Add all the gpgme_op_*_start functions.
+	Fill the concept index with many, many entries.
+
+2002-01-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Run Control): New section.
+	(Verify): Docuent gpgme_get_notation.
+	(More Information): New section describing gpgme_get_op_info.
+
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Passphrase callback): Change GpgmePassphraseCb's
+	R_HD type from void* to void**.
+
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Creating data buffers): Change
+	gpgme_data_new_from_filepart's LENGTH type from off_t to size_t.
+
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Generating keys): New subsection.
+	(Exporting keys): Likewise.
+	(Importing keys): Likewise.
+	(Deleting keys): Likewise.
+
+2002-01-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi: g10Code -> g10 Code
+
+	* gpgme.texi (Top): Complete detailmenu.
+	
+	* gpgme.texi: Convert embarassing cruft to the real thing.
+
+2002-01-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* ChangeLog: New file.
+	* gpgme.texi: Likewise.
+	* gpl.texi: Likewise.
+	* fdl.texi: Likewise.
+	* Makefile.am (info_TEXINFOS): New variable.
+	(gpgme_TEXINFOS): Likewise.
+
+ Copyright 2002 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
