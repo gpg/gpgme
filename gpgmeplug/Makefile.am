@@ -26,15 +26,20 @@
 
 INCLUDES = -I.. -I../gpgme -I$(top_srcdir)/include
 
-LDADD = ../gpgme/libgpgme.la
+#LDADD = ../gpgme/libgpgme.la
+libgpgmeplug_la_LIBADD = ../gpgme/libgpgme.la
 
 BUILT_SOURCES =
 
-noinst_LIBRARIES = libgpgmeplug.a
+#noinst_LIBRARIES = libgpgmeplug.a
+#noinst_LTLIBRARIES = libgpgmeplug.la
+
+lib_LTLIBRARIES = libgpgmeplug.la
 
 
-#libgpgmeplug_a_LDFLAGS =
-libgpgmeplug_a_SOURCES = gpgme.h \
+libgpgmeplug_la_LDFLAGS = -shared -Wl,-soname,libgpgmeplug.so
+
+libgpgmeplug_la_SOURCES = gpgme.h \
 	cryptplug.h \
 	gpgmeplug.c
 
