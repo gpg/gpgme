@@ -58,7 +58,7 @@ fi
 %{_infodir}/gpgme.info*
 
 %changelog
-* Mon Jul 01 2002 Wojciech Polak <ghostface@lodz.pdi.net>
+* Mon Jul 01 2002 Wojciech Polak <polak@lodz.pdi.net>
 - initial specfile release for GPGME.
 
 # EOF
