@@ -1,3 +1,8 @@
+ * There is a Texinfo manual documenting the API.
+
+ * New interface gpgme_op_trustlist_end() to match
+   gpgme_op_keylist_end.
+
 Noteworthy changes in version 0.3.0 (2001-12-19)
 ------------------------------------------------
  
