@@ -155,7 +155,7 @@ ath_accept (int s, struct sockaddr *addr, socklen_t *length_ptr)
 
 
 int
-ath_connect (int s, struct sockaddr *addr, socklen_t length)
+ath_connect (int s, const struct sockaddr *addr, socklen_t length)
 {
   return pth_connect (s, addr, length);
 }
