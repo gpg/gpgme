@@ -671,11 +671,13 @@ bool signMessage( const char*  cleartext,
                   const char*  certificate )
 {
   GpgmeCtx ctx;
-  GpgmeData data, sig;
+  GpgmeData data,  sig;
+  size_t    rDLen, rSLen;
+  char*  rData = 0;
+  char*  rSig  = 0;
 
-  char buf[1024];
-  size_t nread;
-
+  if( !ciphertext )
+    return false;
 
   gpgme_new (&ctx);
   gpgme_set_armor (ctx, 1);
@@ -686,28 +688,26 @@ bool signMessage( const char*  cleartext,
   gpgme_data_new ( &sig );
   gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
 
-  fputs ( "Content-Type: multipart/signed;\r\n"
-          "              protocol=\"application/pgp-signature\";\r\n"
-          "              boundary=\"42=.42=.42=.42\"\r\n"
-          "\r\n--42=.42=.42=.42\r\n",
-          stdout );
+  rData = gpgme_data_release_and_get_mem( data, &rDLen );
+  rSig  = gpgme_data_release_and_get_mem( sig,  &rSLen );
 
-  gpgme_data_rewind (data);
-  while ( !gpgme_data_read (data, buf, sizeof buf, &nread ) ) {
-        fwrite (buf, nread, 1, stdout );
+  *ciphertext = malloc( rDLen + rSLen + 1000 );
+  if( *ciphertext ) {
+    strcpy( (char*)*ciphertext,
+            "Content-Type: multipart/signed;\r\n"
+            "              protocol=\"application/pgp-signature\";\r\n"
+            "              boundary=\"42=.42=.42=.42\"\r\n"
+            "\r\n--42=.42=.42=.42\r\n" );
+    strncat((char*)*ciphertext, rData, rDLen );
+    strcat( (char*)*ciphertext,
+            "\r\n--42=.42=.42=.42\r\n"
+            "Content-Type: application/pgp-signature\r\n\r\n" );
+    strncat((char*)*ciphertext, rSig, rSLen );
+    strcat( (char*)*ciphertext,
+            "\r\n--42=.42=.42=.42--\r\n" );
   }
-  fputs ( "\r\n--42=.42=.42=.42\r\n"
-          "Content-Type: application/pgp-signature\r\n\r\n", stdout);
-
-  gpgme_data_rewind (sig);
-  while ( !gpgme_data_read (sig, buf, sizeof buf, &nread ) ) {
-        fwrite (buf, nread, 1, stdout );
-  }
-  fputs ( "\r\n--42=.42=.42=.42--\r\n", stdout );
 
   gpgme_release (ctx);
-  gpgme_data_release(data);
-  gpgme_data_release(sig);
 
   return true;
 }
