@@ -42,6 +42,13 @@ void  _gpgme_free ( void *a );
 #define DIMof(type,member)   DIM(((type *)0)->member)
 
 
+
+#ifndef HAVE_STPCPY
+char *stpcpy (char *a, const char *b);
+#endif
+
+
+
 #endif /* UTIL_H */
 
 

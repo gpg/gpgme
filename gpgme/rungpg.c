@@ -37,6 +37,7 @@
 #include "wait.h"
 #include "rungpg.h"
 #include "context.h"  /*temp hack until we have GpmeData methods to do I/O */
+#include "io.h"
 
 #include "status-table.h"
 
@@ -137,7 +138,7 @@ _gpgme_gpg_new ( GpgObject *r_gpg )
     }
     /* In any case we need a status pipe - create it right here  and
      * don't handle it with our generic GpgmeData mechanism */
-    if (pipe (gpg->status.fd) == -1) {
+    if (_gpgme_io_pipe (gpg->status.fd) == -1) {
         rc = mk_error (Pipe_Error);
         goto leave;
     }
@@ -202,19 +203,6 @@ kill_gpg ( GpgObject gpg )
 
 
     
-static int
-set_nonblocking ( int fd )
-{
-    int flags;
-
-    flags = fcntl (fd, F_GETFL, 0);
-    if (flags == -1)
-        return -1;
-    flags |= O_NONBLOCK;
-    return fcntl (fd, F_SETFL, flags);
-}
-
-
 GpgmeError
 _gpgme_gpg_add_arg ( GpgObject gpg, const char *arg )
 {
@@ -281,7 +269,7 @@ _gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
     if (!gpg->colon.buffer) {
         return mk_error (Out_Of_Core);
     }
-    if (pipe (gpg->colon.fd) == -1) {
+    if (_gpgme_io_pipe (gpg->colon.fd) == -1) {
         xfree (gpg->colon.buffer); gpg->colon.buffer = NULL;
         return mk_error (Pipe_Error);
     }
@@ -428,7 +416,7 @@ build_argv ( GpgObject gpg )
             {   
                 int fds[2];
                 
-                if (pipe (fds) == -1) {
+                if (_gpgme_io_pipe (fds) == -1) {
                     xfree (fd_data_map);
                     free_argv (argv);
                     return mk_error (Pipe_Error);
@@ -477,8 +465,9 @@ GpgmeError
 _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
 {
     int rc;
-    int i;
+    int i, n;
     pid_t pid;
+    struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
 
     if ( !gpg )
         return mk_error (Invalid_Value);
@@ -492,88 +481,75 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
     if ( rc )
         return rc;
 
+    n = 4; /* status fd, 2*colon_fd and end of list */
+    for (i=0; gpg->fd_data_map[i].data; i++ ) 
+        n += 2;
+    fd_child_list = xtrycalloc ( n+n, sizeof *fd_child_list );
+    if (!fd_child_list)
+        return mk_error (Out_Of_Core);
+    fd_parent_list = fd_child_list + n;
+
+    /* build the fd list for the child */
+    n=0;
+    fd_child_list[n].fd = gpg->status.fd[0];
+    fd_child_list[n].dup_to = -1;
+    n++;
+    if ( gpg->colon.fnc ) {
+        fd_child_list[n].fd = gpg->colon.fd[0];
+        fd_child_list[n].dup_to = -1;
+        n++;
+        fd_child_list[n].fd = gpg->colon.fd[1]; 
+        fd_child_list[n].dup_to = 1; /* dup to stdout */
+        n++;
+    }
+    for (i=0; gpg->fd_data_map[i].data; i++ ) {
+        fd_child_list[n].fd = gpg->fd_data_map[i].fd;
+        fd_child_list[n].dup_to = -1;
+        n++;
+        if (gpg->fd_data_map[i].dup_to != -1) {
+            fd_child_list[n].fd = gpg->fd_data_map[i].peer_fd;
+            fd_child_list[n].dup_to = gpg->fd_data_map[i].dup_to;
+            n++;
+        }
+    }
+    fd_child_list[n].fd = -1;
+    fd_child_list[n].dup_to = -1;
+
+    /* build the fd list for the parent */
+    n=0;
+    if ( gpg->status.fd[1] != -1 ) {
+        fd_parent_list[n].fd = gpg->status.fd[1];
+        fd_parent_list[n].dup_to = -1;
+        n++;
+        gpg->status.fd[1] = -1;
+    }
+    if ( gpg->colon.fd[1] != -1 ) {
+        fd_parent_list[n].fd = gpg->colon.fd[1];
+        fd_parent_list[n].dup_to = -1;
+        n++;
+        gpg->colon.fd[1] = -1;
+    }
+    for (i=0; gpg->fd_data_map[i].data; i++ ) {
+        fd_parent_list[n].fd = gpg->fd_data_map[i].peer_fd;
+        fd_parent_list[n].dup_to = -1;
+        n++;
+        gpg->fd_data_map[i].peer_fd = -1;
+    }        
+    fd_parent_list[n].fd = -1;
+    fd_parent_list[n].dup_to = -1;
+
+
     fflush (stderr);
-    pid = fork ();
+    pid = _gpgme_io_spawn (GPG_PATH, gpg->argv, fd_child_list, fd_parent_list);
+    xfree (fd_child_list);
     if (pid == -1) {
         return mk_error (Exec_Error);
     }
-        
-    if ( !pid ) { /* child */
-        int duped_stdin = 0;
-        int duped_stderr = 0;
 
-        close (gpg->status.fd[0]);
-
-        if (gpg->colon.fnc) {
-            /* dup it to stdout */
-            if ( dup2 ( gpg->colon.fd[1], 1 ) == -1 ) {
-                fprintf (stderr,"dup2(colon, 1) failed: %s\n",
-                         strerror (errno) );
-                _exit (8);
-            }
-            close (gpg->colon.fd[0]);
-            close (gpg->colon.fd[1]);
-        }
-            
-        for (i=0; gpg->fd_data_map[i].data; i++ ) {
-            close (gpg->fd_data_map[i].fd);
-            gpg->fd_data_map[i].fd = -1;
-            if ( gpg->fd_data_map[i].dup_to != -1 ) {
-                if ( dup2 (gpg->fd_data_map[i].peer_fd,
-                           gpg->fd_data_map[i].dup_to ) == -1 ) {
-                    fprintf (stderr, "dup2 failed in child: %s\n",
-                             strerror (errno));
-                    _exit (8);
-                }
-                if ( gpg->fd_data_map[i].dup_to == 0 )
-                    duped_stdin=1;
-                if ( gpg->fd_data_map[i].dup_to == 2 )
-                    duped_stderr=1;
-                close ( gpg->fd_data_map[i].peer_fd );
-            }
-        }
-
-        if( !duped_stdin || !duped_stderr ) {
-            int fd = open ( "/dev/null", O_RDONLY );
-            if ( fd == -1 ) {
-                fprintf (stderr,"can't open `/dev/null': %s\n",
-                         strerror (errno) );
-                _exit (8);
-            }
-            /* Make sure that gpg has a connected stdin */
-            if ( !duped_stdin ) {
-                if ( dup2 ( fd, 0 ) == -1 ) {
-                    fprintf (stderr,"dup2(/dev/null, 0) failed: %s\n",
-                             strerror (errno) );
-                    _exit (8);
-                }
-            }
-            /* We normally don't want all the normal output */
-            if ( !duped_stderr ) {
-                if (!getenv ("GPGME_DEBUG") ) {
-                    if ( dup2 ( fd, 2 ) == -1 ) {
-                        fprintf (stderr,"dup2(dev/null, 2) failed: %s\n",
-                                 strerror (errno) );
-                        _exit (8);
-                    }
-                }
-            }
-            close (fd);
-        }
-
-        execv ( GPG_PATH, gpg->argv );
-        fprintf (stderr,"exec of gpg failed\n");
-        _exit (8);
-    }
-    /* parent */
     gpg->pid = pid;
 
     /*_gpgme_register_term_handler ( closure, closure_value, pid );*/
 
-    if ( gpg->status.fd[1] != -1 ) {
-        close (gpg->status.fd[1]);
-        gpg->status.fd[1] = -1;
-    }
     if ( _gpgme_register_pipe_handler ( opaque, gpg_status_handler,
                                         gpg, pid, gpg->status.fd[0], 1 ) ) {
         /* FIXME: kill the child */
@@ -581,9 +557,7 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
 
     }
 
-    if ( gpg->colon.fd[1] != -1 ) {
-        close (gpg->colon.fd[1]);
-        gpg->colon.fd[1] = -1;
+    if ( gpg->colon.fnc ) {
         assert ( gpg->colon.fd[0] != -1 );
         if ( _gpgme_register_pipe_handler ( opaque, gpg_colon_line_handler,
                                             gpg, pid, gpg->colon.fd[0], 1 ) ) {
@@ -594,13 +568,10 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
     }
 
     for (i=0; gpg->fd_data_map[i].data; i++ ) {
-        close (gpg->fd_data_map[i].peer_fd);
-        gpg->fd_data_map[i].peer_fd = -1;
-        
         /* Due to problems with select and write we set outbound pipes
          * to non-blocking */
         if (!gpg->fd_data_map[i].inbound) {
-            set_nonblocking (gpg->fd_data_map[i].fd);
+            _gpgme_io_set_nonblocking (gpg->fd_data_map[i].fd);
         }
 
         if ( _gpgme_register_pipe_handler (
@@ -633,9 +604,7 @@ gpg_inbound_handler ( void *opaque, pid_t pid, int fd )
 
     assert ( _gpgme_data_get_mode (dh) == GPGME_DATA_MODE_IN );
 
-    do {
-        nread = read (fd, buf, 200 );
-    } while ( nread == -1 && errno == EINTR);
+    nread = _gpgme_io_read (fd, buf, 200 );
     fprintf(stderr, "inbound on fd %d: nread=%d\n", fd, nread );
     if ( nread < 0 ) {
         fprintf (stderr, "read_mem_data: read failed on fd %d (n=%d): %s\n",
@@ -683,12 +652,10 @@ write_mem_data ( GpgmeData dh, int fd )
      */
 
 
-    do {
-        fprintf (stderr, "write_mem_data(%d): about to write %d bytes len=%d rpos=%d\n",
+    fprintf (stderr, "write_mem_data(%d): about to write %d bytes len=%d rpos=%d\n",
                  fd, (int)nbytes, (int)dh->len, dh->readpos );
-        nwritten = write ( fd, dh->data+dh->readpos, nbytes );
-        fprintf (stderr, "write_mem_data(%d): wrote %d bytes\n", fd, nwritten );
-    } while ( nwritten == -1 && errno == EINTR );
+    nwritten = _gpgme_io_write ( fd, dh->data+dh->readpos, nbytes );
+    fprintf (stderr, "write_mem_data(%d): wrote %d bytes\n", fd, nwritten );
     if (nwritten == -1 && errno == EAGAIN )
         return 0;
     if ( nwritten < 1 ) {
@@ -779,10 +746,8 @@ read_status ( GpgObject gpg )
     }
     
 
-    do { 
-        nread = read ( gpg->status.fd[0], buffer+readpos, bufsize-readpos );
-    } while (nread == -1 && errno == EINTR);
-
+    nread = _gpgme_io_read ( gpg->status.fd[0],
+                             buffer+readpos, bufsize-readpos );
     if (nread == -1)
         return mk_error(Read_Error);
 
@@ -887,10 +852,8 @@ read_colon_line ( GpgObject gpg )
     }
     
 
-    do { 
-        nread = read ( gpg->colon.fd[0], buffer+readpos, bufsize-readpos );
-    } while (nread == -1 && errno == EINTR);
-
+    nread = _gpgme_io_read ( gpg->colon.fd[0],
+                             buffer+readpos, bufsize-readpos );
     if (nread == -1)
         return mk_error(Read_Error);
 

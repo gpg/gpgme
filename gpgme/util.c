@@ -61,3 +61,19 @@ _gpgme_free ( void *a )
 
 
 
+/*********************************************
+ ********** missing string functions *********
+ *********************************************/
+
+#ifndef HAVE_STPCPY
+char *
+stpcpy (char *a, const char *b)
+{
+    while( *b )
+	*a++ = *b++;
+    *a = 0;
+    
+    return a;
+}
+#endif
+

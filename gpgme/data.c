@@ -38,6 +38,14 @@
                          || ((a) >= 'f' && (a) <= 'f') )
 
 
+/**
+ * gpgme_data_new:
+ * @r_dh: returns the new data object 
+ * 
+ * Create a new data object without any content. 
+ * 
+ * Return value: An error value or 0 on success
+ **/
 GpgmeError
 gpgme_data_new ( GpgmeData *r_dh )
 {
@@ -104,6 +112,19 @@ gpgme_data_new_from_mem ( GpgmeData *r_dh,
     return 0;
 }
 
+/**
+ * gpgme_data_new_from_file:
+ * @r_dh: returns the new data object
+ * @fname: filename
+ * @copy: Flag, whether the file should be copied.
+ * 
+ * Create a new data object and initialize it with the content of 
+ * the file @file.  If @copy is %True the file is immediately read in
+ * adn closed.  @copy of %False is not yet supportted.
+ * 
+ * Return value: An error code or 0 on success. If the error code is
+ * %GPGME_File_Error, the OS error code is held in %errno.
+ **/
 GpgmeError
 gpgme_data_new_from_file ( GpgmeData *r_dh, const char *fname, int copy )
 {
@@ -210,6 +231,18 @@ _gpgme_data_release_and_return_string ( GpgmeData dh )
     return val;
 }
 
+/**
+ * gpgme_data_release_and_get_mem:
+ * @dh: the data object
+ * @r_len: returns the length of the memory
+ * 
+ * Release the data object @dh and return its content and the length of
+ * that content.  The caller has to free this data.  @dh maybe NULL in
+ * which case NULL is returned.  I there is not enough memory for allocating
+ * the return value, NULL is returned and the object is released.
+ * 
+ * Return value: a pointer to an allocated buffer of length @r_len.
+ **/
 char *
 gpgme_data_release_and_get_mem ( GpgmeData dh, size_t *r_len )
 {
@@ -233,6 +266,15 @@ gpgme_data_release_and_get_mem ( GpgmeData dh, size_t *r_len )
 }
 
 
+/**
+ * gpgme_data_get_type:
+ * @dh: the data object
+ * 
+ * Get the type of the data object.
+ * Data types are prefixed with %GPGME_DATA_TYPE_
+ * 
+ * Return value: the data type
+ **/
 GpgmeDataType
 gpgme_data_get_type ( GpgmeData dh )
 {
@@ -257,6 +299,16 @@ _gpgme_data_get_mode ( GpgmeData dh )
     return dh->mode;
 }
 
+/**
+ * gpgme_data_rewind:
+ * @dh: the data object 
+ * 
+ * Prepare the data object in a way, that a gpgme_data_read() does start
+ * at the beginning of the data.  This has to be done for all types
+ * of data objects.
+ * 
+ * Return value: An error code or 0 on success
+ **/
 GpgmeError
 gpgme_data_rewind ( GpgmeData dh )
 {
@@ -268,6 +320,22 @@ gpgme_data_rewind ( GpgmeData dh )
     return 0;
 }
 
+/**
+ * gpgme_data_read:
+ * @dh: the data object
+ * @buffer: A buffer 
+ * @length: The length of that bufer
+ * @nread: Returns the number of bytes actually read.
+ * 
+ * Copy data from the current read position (which may be set by
+ * gpgme_data_rewind()) to the supplied @buffer, max. @length bytes
+ * are copied and the actual number of bytes are returned in @nread.
+ * If there are no more bytes available %GPGME_EOF is returned and @nread
+ * is set to 0.
+ * 
+ * Return value: An errocodee or 0 on success, EOF is indcated by the
+ * error code GPGME_EOF.
+ **/
 GpgmeError
 gpgme_data_read ( GpgmeData dh, char *buffer, size_t length, size_t *nread )
 {

@@ -24,6 +24,7 @@ libgpgme_la_SOURCES = \
         key.c key.h \
 	keylist.c \
         rungpg.c rungpg.h status-table.h \
+	io.h posix-io.c w32-io.c \
 	gpgme.c version.c errors.c
 
 
@@ -32,6 +33,9 @@ errors.c : gpgme.h
 
 status-table.h : rungpg.h
 	$(srcdir)/mkstatus < $(srcdir)/rungpg.h > status-table.h
+
+
+
 
 
 
