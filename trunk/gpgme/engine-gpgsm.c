@@ -401,7 +401,7 @@ _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
     return mk_error (Invalid_Value);
 
   gpgsm->command = xtrystrdup (mode == GPGME_SIG_MODE_DETACH
-			       ? "VERIFY --detach" : "VERIFY");
+			       ? "SIGN --detach" : "SIGN");
   if (!gpgsm->command)
     return mk_error (Out_Of_Core);
 
