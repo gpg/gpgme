@@ -394,17 +394,6 @@ gpg_new (void **engine)
 }
 
 
-static GpgmeError
-gpg_set_verbosity (void *engine, int verbosity)
-{
-  GpgObject gpg = engine;
-
-  GpgmeError err = 0;
-  while (!err && verbosity-- > 0)
-    err = add_arg (gpg, "--verbose");
-  return err;
-}
-
 /* Note, that the status_handler is allowed to modifiy the args
    value.  */
 static void
@@ -1660,7 +1649,6 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_set_status_handler,
     gpg_set_command_handler,
     gpg_set_colon_line_handler,
-    gpg_set_verbosity,
     gpg_decrypt,
     gpg_delete,
     gpg_edit,

@@ -45,7 +45,6 @@ GpgmeError _gpgme_engine_set_command_handler (EngineObject engine,
 GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject engine,
 						 EngineColonLineHandler fnc,
 						 void *fnc_value);
-void _gpgme_engine_set_verbosity (EngineObject engine, int verbosity);
 GpgmeError _gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph,
 				     GpgmeData plain);
 GpgmeError _gpgme_engine_op_delete (EngineObject engine, GpgmeKey key,

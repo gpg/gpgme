@@ -44,7 +44,6 @@ struct engine_ops
   GpgmeError (*set_colon_line_handler) (void *engine,
 					EngineColonLineHandler fnc,
 					void *fnc_value);
-  GpgmeError (*set_verbosity) (void *engine, int verbosity);
   GpgmeError (*decrypt) (void *engine, GpgmeData ciph, GpgmeData plain);
   GpgmeError (*delete) (void *engine, GpgmeKey key, int allow_secret);
   GpgmeError (*edit) (void *engine, GpgmeKey key, GpgmeData out,

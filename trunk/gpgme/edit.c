@@ -121,8 +121,6 @@ _gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
 
   _gpgme_engine_set_status_handler (ctx->engine, edit_status_handler, ctx);
 
-  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
-
   err = _gpgme_engine_op_edit (ctx->engine, key, out, ctx);
 
  leave:

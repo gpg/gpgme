@@ -197,7 +197,6 @@ _gpgme_op_import_start (GpgmeCtx ctx, int synchronous, GpgmeData keydata)
     }
 
   _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
-  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
   err = _gpgme_engine_op_import (ctx->engine, keydata);
 

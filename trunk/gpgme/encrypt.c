@@ -188,7 +188,6 @@ _gpgme_op_encrypt_start (GpgmeCtx ctx, int synchronous,
 				    ? _gpgme_encrypt_sym_status_handler
 				    : _gpgme_encrypt_status_handler,
 				    ctx);
-  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
   /* Check the supplied data */
   if (!plain)

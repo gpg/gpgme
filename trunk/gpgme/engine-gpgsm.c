@@ -1439,7 +1439,6 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_set_status_handler,
     NULL,		/* set_command_handler */
     gpgsm_set_colon_line_handler,
-    NULL,		/* set_verbosity */
     gpgsm_decrypt,
     gpgsm_delete,
     NULL,		/* edit */

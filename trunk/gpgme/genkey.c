@@ -127,7 +127,6 @@ _gpgme_op_genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
     goto leave;
 
   _gpgme_engine_set_status_handler (ctx->engine, genkey_status_handler, ctx);
-  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
   err = _gpgme_engine_op_genkey (ctx->engine, ctx->help_data_1, ctx->use_armor,
 				 pubkey, seckey);
