@@ -32,7 +32,7 @@ writen (ASSUAN_CONTEXT ctx, const char *buffer, size_t length)
 {
   while (length)
     {
-      ssize_t nwritten = ctx->io->write (ctx, buffer, length);
+      ssize_t nwritten = ctx->io->writefnc (ctx, buffer, length);
       
       if (nwritten < 0)
         {
@@ -58,7 +58,7 @@ readline (ASSUAN_CONTEXT ctx, char *buf, size_t buflen,
   *r_nread = 0;
   while (nleft > 0)
     {
-      ssize_t n = ctx->io->read (ctx, buf, nleft);
+      ssize_t n = ctx->io->readfnc (ctx, buf, nleft);
 
       if (n < 0)
         {
