@@ -3,7 +3,7 @@
 #define GPGMEPLUG_SIGN_INCLUDE_CLEARTEXT true
 #define GPGMEPLUG_SIGN_MAKE_MIME_OBJECT  true
 #define GPGMEPLUG_SIGN_MAKE_MULTI_MIME   true
-#define GPGMEPLUG_SIGN_CTYPE_MAIN        "multipart/signed; protocol=application/pkcs7-signature; micalg=pgp-sha1"
+#define GPGMEPLUG_SIGN_CTYPE_MAIN        "multipart/signed; protocol=application/pkcs7-signature; micalg=sha1"
 #define GPGMEPLUG_SIGN_CDISP_MAIN        ""
 #define GPGMEPLUG_SIGN_CTENC_MAIN        ""
 #define GPGMEPLUG_SIGN_CTYPE_VERSION     ""
