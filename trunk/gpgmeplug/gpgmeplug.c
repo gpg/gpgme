@@ -1510,9 +1510,24 @@ bool decryptAndCheckMessage( const char* ciphertext,
 
 const char* requestCertificateDialog(){ return 0; }
 
-bool requestDecentralCertificate( const char* name, const char*
-          email, const char* organization, const char* department,
-          const char* ca_address ){ return true; }
+bool requestDecentralCertificate( const char* certparms, char** generatedKey )
+{
+    GpgmeCtx ctx;
+    GpgmeError err = gpgme_new (&ctx);
+    if( err != GPGME_No_Error )
+        return false;
+
+    gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
+
+    gpgme_set_armor (ctx, __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY ? 0 : 1);
+
+    if( gpgme_op_genkey( ctx, certparms, NULL, NULL ) == GPGME_No_Error )
+        return true;
+    else
+        return false;
+
+    gpgme_release( ctx );
+}
 
 bool requestCentralCertificateAndPSE( const char* name,
           const char* email, const char* organization, const char* department,
