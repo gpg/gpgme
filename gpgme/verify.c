@@ -189,7 +189,12 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
 	  /* The return code is the 6th argument, if it is 9, the
 	     problem is a missing key.  */
 	  while (end && i < 4)
-	    end = strchr (end, ' ');
+	    {
+	      end = strchr (end, ' ');
+	      if (end)
+		end++;
+	      i++;
+	    }
 	  if (end && end[0] && (!end[1] || !end[1] == ' '))
 	    {
 	      switch (end[0])
