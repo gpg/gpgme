@@ -632,6 +632,17 @@ bool receiverCertificateExpiryNearWarning()
   return config.receiverCertificateExpiryNearWarning;
 }
 
+
+int receiverCertificateDaysLeftToExpiry( const char* certificate )
+{
+    /* PENDING(g10)
+       Please return the number of days that are left until the
+       certificate specified in the parameter certificate expires.
+    */
+    return 10; // dummy that triggers a warning in the MUA
+}
+
+
 void setReceiverCertificateExpiryNearWarningInterval( int interval )
 {
   config.receiverCertificateExpiryNearWarningInterval = interval;
@@ -651,6 +662,18 @@ bool certificateInChainExpiryNearWarning()
 {
   return config.certificateInChainExpiryNearWarning;
 }
+
+
+int certificateInChainDaysLeftToExpiry( const char* certificate )
+{
+    /* PENDING(g10)
+       Please return the number of days that are left until the
+       the first certificate in the chain of the specified certificate
+       expires.
+    */
+    return 10; // dummy that triggers a warning in the MUA
+}
+
 
 void setCertificateInChainExpiryNearWarningInterval( int interval )
 {
@@ -1168,6 +1191,19 @@ bool encryptMessage( const char* cleartext,
       free(tok);
     }
   }
+
+  // PENDING(g10) Implement this
+  // Possible values: RSA = 1, SHA1 = 2, TripleDES = 3
+  //gpgme_set_encryption_algorithm( ctx, config.encryptionAlgorithm );
+
+
+  // PENDING(g10) Implement this
+  // gpgme_set_encryption_check_certificate_path(
+  // config.checkCertificatePath )
+
+  // PENDING(g10) Implement this
+  // gpgme_set_encryption_check_certificate_path_to_root(
+  // config.checkEncryptionCertificatePathToRoot )
 
 
   err = gpgme_op_encrypt (ctx, rset, gPlaintext, gCiphertext );
