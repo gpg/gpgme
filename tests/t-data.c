@@ -71,13 +71,14 @@ typedef enum
   } round_t;
 
 const char *text = "Just GNU it!\n";
+const char *text2 = "Just GNU it!\nJust GNU it!\n";
 
 int
 read_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 {
   static int off = 0;
-  round_t round = *((round_t *) cb_value);
   int amount = strlen (text) - off;
+  /*  round_t round = *((round_t *) cb_value);  */
 
   if (!buffer && !count && !nread)
     {
@@ -150,6 +151,44 @@ read_test (round_t round, GpgmeData data)
   err = gpgme_data_rewind (data);
   fail_if_err (err);
   read_once_test (round, data);
+}
+
+void
+write_test (round_t round, GpgmeData data)
+{
+  GpgmeError err;
+  char buffer[1024];
+  int read;
+
+  err = gpgme_data_write (data, text, strlen (text));
+  fail_if_err (err);
+
+  read_once_test (round, data);
+  err = gpgme_data_rewind (data);
+  fail_if_err (err);
+
+  if (round == TEST_INOUT_NONE)
+    read_once_test (round, data);
+  else
+    {
+      err = gpgme_data_read (data, buffer, sizeof (buffer), &read);
+      fail_if_err (err);
+
+      if (read != strlen (text2) || strncmp (buffer, text2, strlen (text2)))
+	{
+	  fprintf (stderr, "%s:%d: (%i) gpgme_data_read returned wrong data\n",
+		   __FILE__, __LINE__, round);
+	  exit (1);
+	}
+
+      err = gpgme_data_read (data, buffer, sizeof (buffer), &read);
+      if (err != GPGME_EOF)
+	{
+	  fprintf (stderr, "%s:%d: (%i) gpgme_data_read did not signal EOF\n",
+		   __FILE__, __LINE__, round);
+	  exit (1);
+	}
+    }
 }
 
 int 
@@ -276,7 +315,8 @@ main (int argc, char **argv )
 	  exit (1);
 	}
       read_test (round, data);
-
+      if (round != TEST_OUT_CB)
+	write_test (round, data);
       gpgme_data_release (data);
     }
   return 0;
