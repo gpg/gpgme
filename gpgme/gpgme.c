@@ -113,6 +113,8 @@ _gpgme_release_result ( GpgmeCtx c )
 void
 gpgme_cancel (GpgmeCtx c)
 {
+    return_if_fail (c);
+
     c->cancel = 1;
 }
 

@@ -638,7 +638,7 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
             count++;
         }
     }
-    code = WaitForMultipleObjects ( nwait, waitbuf, 0, any_write? 0:1000);
+    code = WaitForMultipleObjects ( nwait, waitbuf, 0, any_write? 200:1000);
     if ( code >= WAIT_OBJECT_0 && code < WAIT_OBJECT_0 + nwait ) {
         /* This WFMO is a really silly function:  It does return either
          * the index of the signaled object or if 2 objects have been

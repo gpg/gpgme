@@ -213,7 +213,8 @@ _gpgme_wait_on_condition ( GpgmeCtx c, int hang, volatile int *cond )
         }
         if (hang)
             run_idle ();
-    } while (hang);
+    } while (hang && !c->cancel );
+    c->cancel = 0; /* fixme: fix all functions, to return a cancel error */
     return c;
 }
 
