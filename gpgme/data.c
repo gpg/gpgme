@@ -410,7 +410,8 @@ gpgme_data_rewind ( GpgmeData dh )
     if ( !dh )
         return mk_error (Invalid_Value);
 
-    if (dh->type == GPGME_DATA_TYPE_MEM ) {
+    if ( dh->type == GPGME_DATA_TYPE_NONE 
+         || dh->type == GPGME_DATA_TYPE_MEM ) {
         dh->readpos = 0;
     }
     else if (dh->type == GPGME_DATA_TYPE_CB) {

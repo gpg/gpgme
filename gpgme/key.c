@@ -31,6 +31,23 @@
 #define my_isdigit(a) ( (a) >='0' && (a) <= '9' )
 
 
+static const char *
+pkalgo_to_string ( int algo )
+{
+    switch (algo) {
+      case 1: 
+      case 2:
+      case 3: return "RSA";
+      case 16:
+      case 20: return "ElG";
+      case 17: return "DSA";
+      default: return "Unknown";
+    }
+}
+
+
+
+
 GpgmeError
 _gpgme_key_new( GpgmeKey *r_key )
 {
@@ -88,6 +105,97 @@ _gpgme_key_release ( GpgmeKey key )
     xfree (key);
 }
 
+static char *
+set_user_id_part ( char *tail, const char *buf, size_t len )
+{
+    while ( len && (buf[len-1] == ' ' || buf[len-1] == '\t') ) 
+        len--;
+    for ( ; len; len--)
+        *tail++ = *buf++;
+    *tail++ = 0;
+    return tail;
+}
+
+
+static void
+parse_user_id ( struct user_id_s *uid, char *tail )
+{
+    const char *s, *start=NULL;
+    int in_name = 0;
+    int in_email = 0;
+    int in_comment = 0;
+
+    for (s=uid->name; *s; s++ ) {
+        if ( in_email ) {
+            if ( *s == '<' )
+                in_email++; /* not legal but anyway */
+            else if (*s== '>') {
+                if ( !--in_email ) {
+                    if (!uid->email_part) {
+                        uid->email_part = tail;
+                        tail = set_user_id_part ( tail, start, s-start );
+                    }
+                }
+            }
+        }
+        else if ( in_comment ) {
+            if ( *s == '(' )
+                in_comment++;
+            else if (*s== ')') {
+                if ( !--in_comment ) {
+                    if (!uid->comment_part) {
+                        uid->comment_part = tail;
+                        tail = set_user_id_part ( tail, start, s-start );
+                    }
+                }
+            }
+        }
+        else if ( *s == '<' ) {
+            if ( in_name ) {
+                if ( !uid->name_part ) {
+                    uid->name_part = tail;
+                    tail = set_user_id_part (tail, start, s-start );
+                }
+                in_name = 0;
+            }
+            in_email = 1;
+            start = s+1;
+        }
+        else if ( *s == '(' ) {
+            if ( in_name ) {
+                if ( !uid->name_part ) {
+                    uid->name_part = tail;
+                    tail = set_user_id_part (tail, start, s-start );
+                }
+                in_name = 0;
+            }
+            in_comment = 1;
+            start = s+1;
+        }
+        else if ( !in_name && *s != ' ' && *s != '\t' ) {
+            in_name = 1;
+            start = s;
+        }    
+    }
+
+    if ( in_name ) {
+        if ( !uid->name_part ) {
+            uid->name_part = tail;
+            tail = set_user_id_part (tail, start, s-start );
+        }
+    }
+
+    /* let unused parts point to an EOS */ 
+    tail--;
+    if (!uid->name_part)
+        uid->name_part = tail;
+    if (!uid->email_part)
+        uid->email_part = tail;
+    if (!uid->comment_part)
+        uid->comment_part = tail;
+
+}
+
 /* 
  * Take a name from the --with-colon listing, remove certain escape sequences
  * sequences and put it into the list of UIDs
@@ -99,12 +207,17 @@ _gpgme_key_append_name ( GpgmeKey key, const char *s )
     char *d;
 
     assert (key);
-    /* we can malloc a buffer of the same length, because the converted
-     * string will never be larger */
-    uid = xtrymalloc ( sizeof *uid + strlen (s) );
+    /* we can malloc a buffer of the same length, because the
+     * converted string will never be larger. Actually we allocate it
+     * twice the size, so that we are able to store the parsed stuff
+     * there too */
+    uid = xtrymalloc ( sizeof *uid + 2*strlen (s)+3 );
     if ( !uid )
         return mk_error (Out_Of_Core);
     uid->validity = 0;
+    uid->name_part = NULL;
+    uid->email_part = NULL;
+    uid->comment_part = NULL;
     d = uid->name;
 
     while ( *s ) {
@@ -152,6 +265,8 @@ _gpgme_key_append_name ( GpgmeKey key, const char *s )
             *d++ = *s++;
         } 
     }
+    *d++ = 0;
+    parse_user_id ( uid, d );
 
     uid->next = key->uids;
     key->uids = uid;
@@ -181,76 +296,6 @@ add_tag_and_string ( GpgmeData d, const char *tag, const char *string )
     add_otag (d, tag);
     _gpgme_data_append_string_for_xml ( d, string );
     add_ctag (d, tag); 
-}
-
-static void
-add_user_id_name ( GpgmeData d, const char *buf, size_t len )
-{
-    while ( len && (buf[len-1] == ' ' || buf[len-1] == '\t') ) 
-        len--;
-    if (len) {
-        add_otag (d, "name" );
-        _gpgme_data_append_for_xml ( d, buf, len );
-        add_ctag (d, "name");
-    }
-}
-
-
-static void
-add_user_id ( GpgmeData d, const char *string )
-{
-    const char *s, *start=NULL;
-    int in_name = 0;
-    int in_email = 0;
-    int in_comment = 0;
-
-    for (s=string; *s; s++ ) {
-        if ( in_email ) {
-            if ( *s == '<' )
-                in_email++; /* not legal but anyway */
-            else if (*s== '>') {
-                if ( !--in_email ) {
-                    _gpgme_data_append_for_xml ( d, start, s-start );
-                    add_ctag (d, "email");
-                }
-            }
-        }
-        else if ( in_comment ) {
-            if ( *s == '(' )
-                in_comment++;
-            else if (*s== ')') {
-                if ( !--in_comment ) {
-                    _gpgme_data_append_for_xml ( d, start, s-start );
-                    add_ctag (d, "comment");
-                }
-            }
-        }
-        else if ( *s == '<' ) {
-            if ( in_name ) {
-                add_user_id_name (d, start, s-start );
-                in_name = 0;
-            }
-            in_email = 1;
-            add_otag ( d, "email" );
-            start = s+1;
-        }
-        else if ( *s == '(' ) {
-            if ( in_name ) {
-                add_user_id_name (d, start, s-start );
-                in_name = 0;
-            }
-            in_comment = 1;
-            add_otag ( d, "comment" );
-            start = s+1;
-        }
-        else if ( !in_name && *s != ' ' && *s != '\t' ) {
-            in_name = 1;
-            start = s;
-        }    
-    }
-
-    if ( in_name ) 
-        add_user_id_name (d, start, s-start );
 }
 
 static void
@@ -300,7 +345,12 @@ gpgme_key_get_as_xml ( GpgmeKey key )
     for ( u = key->uids; u; u = u->next ) {
         _gpgme_data_append_string (d, "  <userid>\n");
         add_tag_and_string ( d, "raw", u->name );
-        add_user_id ( d, u->name );
+        if ( *u->name_part )
+            add_tag_and_string ( d, "name", u->name_part );
+        if ( *u->email_part )
+            add_tag_and_string ( d, "email", u->email_part );
+        if ( *u->comment_part )
+            add_tag_and_string ( d, "comment", u->comment_part );
         _gpgme_data_append_string (d, "  </userid>\n");
     }
     
@@ -320,6 +370,95 @@ gpgme_key_get_as_xml ( GpgmeKey key )
 }
 
 
+const char *
+gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
+                            const void *reserved, int idx )
+{
+    const char *val = NULL;
+    struct user_id_s *u;
 
+    if (!key)
+        return NULL;
+    if (reserved)
+        return NULL;
+    if (idx < 0)
+        return NULL;
+
+    switch (what) {
+      case GPGME_ATTR_KEYID:
+        val = key->keys.keyid;
+        break;
+      case GPGME_ATTR_FPR:
+        val = key->keys.fingerprint;
+        break;
+      case GPGME_ATTR_ALGO:    
+        val = pkalgo_to_string (key->keys.key_algo);
+        break;
+      case GPGME_ATTR_LEN:     
+      case GPGME_ATTR_CREATED: 
+      case GPGME_ATTR_EXPIRE:  
+        break; /* use another get function */
+      case GPGME_ATTR_OTRUST:  
+        val = "[fixme]";
+        break;
+      case GPGME_ATTR_USERID:  
+        for (u=key->uids; u && idx; u=u->next, idx-- )
+            ;
+        val = u? u->name : NULL;
+        break;
+      case GPGME_ATTR_NAME:   
+        for (u=key->uids; u && idx; u=u->next, idx-- )
+            ;
+        val = u? u->name_part : NULL;
+        break;
+      case GPGME_ATTR_EMAIL:
+        for (u=key->uids; u && idx; u=u->next, idx-- )
+            ;
+        val = u? u->email_part : NULL;
+        break;
+      case GPGME_ATTR_COMMENT:
+        for (u=key->uids; u && idx; u=u->next, idx-- )
+            ;
+        val = u? u->comment_part : NULL;
+        break;
+      case GPGME_ATTR_VALIDITY:
+        val = "[foxme]";
+        break;
+      case GPGME_ATTR_LEVEL:  /* not used here */
+      case GPGME_ATTR_TYPE:
+        break;
+    }
+    return val;
+}
+
+
+unsigned long
+gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
+                           const void *reserved, int idx )
+{
+    unsigned long val = 0;
+
+    if (!key)
+        return 0;
+    if (reserved)
+        return 0;
+    if (idx < 0)
+        return 0;
+
+    switch (what) {
+      case GPGME_ATTR_ALGO:    
+        val = (unsigned long)key->keys.key_algo;
+        break;
+      case GPGME_ATTR_LEN:     
+        val = (unsigned long)key->keys.key_len;
+        break;
+      case GPGME_ATTR_CREATED: 
+        val = key->keys.timestamp < 0? 0L:(unsigned long)key->keys.timestamp;
+        break;
+      default:
+        break;
+    }
+    return val;
+}
 
 

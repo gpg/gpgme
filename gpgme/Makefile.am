@@ -23,6 +23,7 @@ libgpgme_la_SOURCES = \
 	sign.c \
         key.c key.h \
 	keylist.c \
+	trustlist.c \
 	import.c \
         export.c \
 	genkey.c \

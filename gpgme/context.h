@@ -37,6 +37,10 @@ struct key_queue_item_s {
     struct key_queue_item_s *next;
     GpgmeKey key;
 };
+struct trust_queue_item_s {
+    struct trust_queue_item_s *next;
+    GpgmeTrustItem item;
+};
 
 
 /* Currently we need it at several places, so we put the definition 
@@ -57,6 +61,7 @@ struct gpgme_context_s {
     int verbosity;  /* level of verbosity to use */
     int use_armor;  
     int use_textmode;
+    int keylist_mode;
 
     ResultType result_type;
     union {
@@ -70,6 +75,7 @@ struct gpgme_context_s {
     GpgmeKey tmp_key;       /* used by keylist.c */
     volatile int key_cond;  /* something new is available */
     struct key_queue_item_s *key_queue;
+    struct trust_queue_item_s *trust_queue;
 
     GpgmePassphraseCb passphrase_cb;
     void *passphrase_cb_value;
@@ -101,6 +107,9 @@ struct user_id_s {
     struct user_id_s *next;
     int validity; /* 0 = undefined, 1 = not, 2 = marginal,
                      3 = full, 4 = ultimate */
+    const char *name_part;    /* all 3 point into strings behind name */
+    const char *email_part;   /* or to read-only strings */
+    const char *comment_part;
     char name[1];
 };
 

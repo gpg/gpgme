@@ -57,6 +57,9 @@ gpgme_recipients_add_name (GpgmeRecipients rset, const char *name )
     r = xtrymalloc ( sizeof *r + strlen (name) );
     if (!r)
         return mk_error (Out_Of_Core);
+    r->name_part = "";
+    r->email_part = "";
+    r->comment_part = "";
     strcpy (r->name, name );
     r->next = rset->list;
     rset->list = r;

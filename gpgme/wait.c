@@ -62,7 +62,10 @@ struct wait_item_s {
 static int fd_table_size;
 static struct io_select_fd_s *fd_table;
 
+static void (*idle_function) (void);
+
 static int do_select ( void );
+static void run_idle (void);
 
 
 static struct wait_item_s *
@@ -208,6 +211,8 @@ _gpgme_wait_on_condition ( GpgmeCtx c, int hang, volatile int *cond )
                 }
             }
         }
+        if (hang)
+            run_idle ();
     } while (hang);
     return c;
 }
@@ -352,17 +357,23 @@ _gpgme_thaw_fd ( int fd )
 }
 
 
+/**
+ * gpgme_register_idle:
+ * @fnc: Callers idle function
+ * 
+ * Register a function with GPGME called by GPGME whenever it feels
+ * that is is idle.  NULL may be used to remove this function.
+ **/
+void
+gpgme_register_idle ( void (*fnc)(void) )
+{
+    idle_function = fnc;
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+static void
+run_idle ()
+{
+    if (idle_function)
+        idle_function ();
+}
