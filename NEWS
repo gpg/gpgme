@@ -1,6 +1,8 @@
 Noteworthy changes in version 0.4.7
 ------------------------------------------------
 
+ * Correctly initialize the fields expired, revoked, invalid, and
+   disabled in the gpgme_key_t structures.
 
  * Interface changes relative to the 0.4.5 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
