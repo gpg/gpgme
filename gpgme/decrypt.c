@@ -23,6 +23,7 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -86,10 +87,12 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
   switch (code)
     {
     case GPGME_STATUS_EOF:
+      /* FIXME: These error values should probably be attributed to
+	 the underlying crypto engine (as error source).  */
       if (opd->failed)
-	return GPGME_Decryption_Failed;
+	return gpg_error (GPG_ERR_DECRYPT_FAILED);
       else if (!opd->okay)
-	return GPGME_No_Data;
+	return gpg_error (GPG_ERR_NO_DATA);
       break;
 
     case GPGME_STATUS_DECRYPTION_OKAY:
@@ -126,7 +129,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 		  {
 		    opd->result.unsupported_algorithm = strdup (args);
 		    if (!opd->result.unsupported_algorithm)
-		      return GPGME_Out_Of_Core;
+		      return gpg_error_from_errno (errno);
 		  }
 	      }
 	  }
@@ -175,9 +178,9 @@ decrypt_start (gpgme_ctx_t ctx, int synchronous,
     return err;
 
   if (!cipher)
-    return GPGME_No_Data;
+    return gpg_error (GPG_ERR_NO_DATA);
   if (!plain)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (err)
     return err;

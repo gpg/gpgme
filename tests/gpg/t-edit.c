@@ -1,23 +1,22 @@
-/* t-edit.c  - regression test
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002, 2003 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+/* t-edit.c - Regression test.
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002, 2003 g10 Code GmbH
+
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,23 +24,13 @@
 #include <assert.h>
 #include <errno.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include <gpgme.h>
 
-struct passphrase_cb_info_s {
-    gpgme_ctx_t c;
-    int did_it;
-};
+#include "t-support.h"
 
-
-#define fail_if_err(a) do { if(a) { int my_errno = errno; \
-            fprintf (stderr, "%s:%d: gpgme_error_t %s\n", \
-                 __FILE__, __LINE__, gpgme_strerror(a));   \
-            if ((a) == GPGME_File_Error)                       \
-                   fprintf (stderr, "\terrno=`%s'\n", strerror (my_errno)); \
-                   exit (1); }                               \
-                             } while(0)
-
+
 static void
 flush_data (gpgme_data_t dh)
 {
@@ -50,20 +39,11 @@ flush_data (gpgme_data_t dh)
   
   ret = gpgme_data_seek (dh, 0, SEEK_SET);
   if (ret)
-    fail_if_err (GPGME_File_Error);
+    fail_if_err (gpg_error_from_errno (errno));
   while ((ret = gpgme_data_read (dh, buf, 100)) > 0)
     fwrite (buf, ret, 1, stdout);
   if (ret < 0)
-    fail_if_err (GPGME_File_Error);
-}
-
-
-static gpgme_error_t
-passphrase_cb (void *opaque, const char *uid_hint, const char *passphrase_info,
-	       int last_was_bad, int fd)
-{
-  write (fd, "abc\n", 4);
-  return 0;
+    fail_if_err (gpg_error_from_errno (errno));
 }
 
 
@@ -130,43 +110,34 @@ main (int argc, char **argv)
   gpgme_error_t err;
   gpgme_data_t out = NULL;
   gpgme_key_t key = NULL;
-  struct passphrase_cb_info_s info;
   const char *pattern = "Alpha";
-  char *p;
+  char *agent_info;
 
-  do
-    {
-      err = gpgme_new (&ctx);
-      fail_if_err (err);
-      err = gpgme_data_new (&out);
-      fail_if_err (err);
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+  err = gpgme_data_new (&out);
+  fail_if_err (err);
 
-      p = getenv("GPG_AGENT_INFO");
-      if (!(p && strchr (p, ':')))
-	{
-	  memset (&info, 0, sizeof info);
-	  info.c = ctx;
-	  gpgme_set_passphrase_cb (ctx, passphrase_cb, &info);
-	} 
+  agent_info = getenv("GPG_AGENT_INFO");
+  if (!(agent_info && strchr (agent_info, ':')))
+    gpgme_set_passphrase_cb (ctx, passphrase_cb, 0);
 
-      err = gpgme_op_keylist_start (ctx, pattern, 0);
-      fail_if_err (err);
-      err = gpgme_op_keylist_next (ctx, &key);
-      fail_if_err (err);
-      err = gpgme_op_keylist_end (ctx);
-      fail_if_err (err);
+  err = gpgme_op_keylist_start (ctx, pattern, 0);
+  fail_if_err (err);
+  err = gpgme_op_keylist_next (ctx, &key);
+  fail_if_err (err);
+  err = gpgme_op_keylist_end (ctx);
+  fail_if_err (err);
 
-      err = gpgme_op_edit (ctx, key, edit_fnc, out, out);
-      fail_if_err (err);
+  err = gpgme_op_edit (ctx, key, edit_fnc, out, out);
+  fail_if_err (err);
 
-      fputs ("[-- Last response --]\n", stdout);
-      flush_data (out);
+  fputs ("[-- Last response --]\n", stdout);
+  flush_data (out);
 
-      gpgme_data_release (out);
-      gpgme_key_unref (key);
-      gpgme_release (ctx);
-    }
-  while (argc > 1 && !strcmp( argv[1], "--loop"));
+  gpgme_data_release (out);
+  gpgme_key_unref (key);
+  gpgme_release (ctx);
 
   return 0;
 }

@@ -24,20 +24,11 @@
 
 #include <gpgme.h>
 
-#define fail_if_err(err)					\
-  do								\
-    {								\
-      if (err)							\
-        {							\
-          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
-                   __FILE__, __LINE__, gpgme_strerror (err));   \
-          exit (1);						\
-        }							\
-    }								\
-  while (0)
+#include "t-support.h"
 
+
 /* True if progress function printed something on the screen.  */
-int progress_called;
+static int progress_called;
 
 static void
 progress (void *self, const char *what, int type, int current, int total)

@@ -19,9 +19,9 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = gpgme-config.in gpgme.m4 mkerrors mkstatus libgpgme.vers
-BUILT_SOURCES = errors.c status-table.h
-MOSTLYCLEANFILES = errors.c status-table.h
+EXTRA_DIST = gpgme-config.in gpgme.m4 mkstatus libgpgme.vers
+BUILT_SOURCES = status-table.h
+MOSTLYCLEANFILES = status-table.h
 bin_SCRIPTS = gpgme-config
 m4datadir = $(datadir)/aclocal
 m4data_DATA = gpgme.m4
@@ -81,16 +81,12 @@ libgpgme_la_SOURCES =							\
 	import.c export.c genkey.c delete.c edit.c			\
 	engine.h engine-backend.h engine.c rungpg.c status-table.h	\
 	${gpgsm_components} sema.h io.h ${system_components}		\
-	debug.c debug.h gpgme.c version.c errors.c
+	debug.c debug.h gpgme.c version.c error.c
 
 libgpgme_la_DEPENDENCIES = ${assuan_libobjs} @LTLIBOBJS@ \
 	$(srcdir)/libgpgme.vers
 
 libgpgme_la_LIBADD = ${assuan_libobjs} @LTLIBOBJS@
 
-errors.c : gpgme.h
-	$(srcdir)/mkerrors < $(srcdir)/gpgme.h > errors.c
-
 status-table.h : gpgme.h
 	$(srcdir)/mkstatus < $(srcdir)/gpgme.h > status-table.h
-

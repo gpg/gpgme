@@ -41,7 +41,7 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
   gpgme_error_t err;
 
   if (!keydata)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -82,7 +82,7 @@ export_ext_start (gpgme_ctx_t ctx, int synchronous, const char *pattern[],
   gpgme_error_t err;
 
   if (!keydata)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)

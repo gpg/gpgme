@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "util.h"
 #include "context.h"
@@ -40,7 +41,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
   ctx->include_certs = 1;
   ctx->protocol = GPGME_PROTOCOL_OpenPGP;
@@ -85,7 +86,7 @@ gpgme_error_t
 gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
 {
   if (protocol != GPGME_PROTOCOL_OpenPGP && protocol != GPGME_PROTOCOL_CMS)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   ctx->protocol = protocol;
   return 0;
@@ -180,7 +181,7 @@ gpgme_set_keylist_mode (gpgme_ctx_t ctx, gpgme_keylist_mode_t mode)
   if (!((mode & GPGME_KEYLIST_MODE_LOCAL)
 	|| (mode & GPGME_KEYLIST_MODE_EXTERN)
 	|| (mode & GPGME_KEYLIST_MODE_SIGS)))
-     return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   ctx->keylist_mode = mode;
   return 0;

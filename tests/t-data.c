@@ -157,7 +157,7 @@ write_test (round_t round, gpgme_data_t data)
 
   amt = gpgme_data_write (data, text, strlen (text));
   if (amt != strlen (text))
-    fail_if_err (GPGME_File_Error);
+    fail_if_err (gpg_error_from_errno (errno));
 
   gpgme_data_seek (data, 0, SEEK_SET);
 
@@ -191,7 +191,7 @@ main (int argc, char **argv)
   const char *text_filename = make_filename ("t-data-1.txt");
   const char *longer_text_filename = make_filename ("t-data-2.txt");
   const char *missing_filename = "this-file-surely-does-not-exist";
-  gpgme_error_t err = GPGME_No_Error;
+  gpgme_error_t err = 0;
   gpgme_data_t data;
 
   while (++round)
@@ -231,7 +231,8 @@ main (int argc, char **argv)
 	case TEST_INOUT_MEM_FROM_FILE_NO_COPY:
 	  err = gpgme_data_new_from_file (&data, text_filename, 0);
 	  /* This is not implemented yet.  */
-	  if (err == GPGME_Not_Implemented || err == GPGME_Invalid_Value)
+	  if (gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED
+	      || gpg_err_code (err) == GPG_ERR_INV_VALUE)
 	    continue;
 	  break;
 	case TEST_INOUT_MEM_FROM_FILE_PART_BY_NAME:

@@ -105,7 +105,7 @@ edit_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
     return err;
 
   if (!fnc || !out)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, &hook, sizeof (*opd), NULL);
   opd = hook;

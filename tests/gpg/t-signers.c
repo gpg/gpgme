@@ -25,45 +25,9 @@
 
 #include <gpgme.h>
 
-#define fail_if_err(err)					\
-  do								\
-    {								\
-      if (err)							\
-        {							\
-          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
-                   __FILE__, __LINE__, gpgme_strerror (err));   \
-          exit (1);						\
-        }							\
-    }								\
-  while (0)
+#include "t-support.h"
 
-
-static void
-print_data (gpgme_data_t dh)
-{
-#define BUF_SIZE 512
-  char buf[BUF_SIZE + 1];
-  int ret;
-  
-  ret = gpgme_data_seek (dh, 0, SEEK_SET);
-  if (ret)
-    fail_if_err (GPGME_File_Error);
-  while ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) > 0)
-    fwrite (buf, ret, 1, stdout);
-  if (ret < 0)
-    fail_if_err (GPGME_File_Error);
-}
-
-
-static gpgme_error_t
-passphrase_cb (void *opaque, const char *uid_hint, const char *passphrase_info,
-	       int last_was_bad, int fd)
-{
-  write (fd, "abc\n", 4);
-  return 0;
-}
-
-
+
 static void
 check_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
 {

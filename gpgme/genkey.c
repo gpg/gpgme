@@ -23,6 +23,7 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "gpgme.h"
 #include "context.h"
@@ -99,7 +100,7 @@ genkey_status_handler (void *priv, gpgme_status_code_t code, char *args)
 		free (opd->result.fpr);
 	      opd->result.fpr = strdup (&args[2]);
 	      if (!opd->result.fpr)
-		return GPGME_Out_Of_Core;
+		return gpg_error_from_errno (errno);
 	    }
 	}
       break;
@@ -107,7 +108,7 @@ genkey_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_EOF:
       /* FIXME: Should return some more useful error value.  */
       if (!opd->result.primary && !opd->result.sub)
-	return GPGME_General_Error;
+	return gpg_error (GPG_ERR_GENERAL);
       break;
 
     default:
@@ -127,16 +128,16 @@ get_key_parameter (const char *parms, gpgme_data_t *key_parameter)
   /* Extract the key parameter from the XML structure.  */
   parms = strstr (parms, "<GnupgKeyParms ");
   if (!parms)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   content = strchr (parms, '>');
   if (!content)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   content++;
 
   attrib = strstr (parms, "format=\"internal\"");
   if (!attrib || attrib >= content)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   endtag = strstr (content, "</GnupgKeyParms>");
   /* FIXME: Check that there are no control statements inside.  */

@@ -24,6 +24,7 @@
 #include <errno.h>
 
 #include <gpgme.h>
+#include "t-support.h"
 
 
 static const char test_text1[] = "Hallo Leute!\n";
@@ -38,30 +39,6 @@ static const char test_cip1[] =
 "2zCABgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECA8gPQY2NtJToIAECAeoY3MIcz9h\n"
 "BAiiytWtOSmqnwAA\n"
 "-----END CMS OBJECT-----\n";
-
-#define fail_if_err(a) do { if(a) { int my_errno = errno; \
-            fprintf (stderr, "%s:%d: gpgme_error_t %s\n", \
-                 __FILE__, __LINE__, gpgme_strerror(a));   \
-            if ((a) == GPGME_File_Error)                       \
-                   fprintf (stderr, "\terrno=`%s'\n", strerror (my_errno)); \
-                   exit (1); }                               \
-                             } while(0)
-
-static void
-print_data (gpgme_data_t dh)
-{
-#define BUF_SIZE 512
-  char buf[BUF_SIZE + 1];
-  int ret;
-  
-  ret = gpgme_data_seek (dh, 0, SEEK_SET);
-  if (ret)
-    fail_if_err (GPGME_File_Error);
-  while ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) > 0)
-    fwrite (buf, ret, 1, stdout);
-  if (ret < 0)
-    fail_if_err (GPGME_File_Error);
-}
 
 
 int 

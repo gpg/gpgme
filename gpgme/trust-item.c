@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "util.h"
 #include "ops.h"
@@ -44,7 +45,7 @@ _gpgme_trust_item_new (gpgme_trust_item_t *r_item)
 
   item = calloc (1, sizeof *item);
   if (!item)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   item->_refs = 1;
   item->keyid = item->_keyid;
   item->_keyid[16] = '\0';

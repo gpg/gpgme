@@ -1,3 +1,23 @@
+2003-06-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	Everywhere: Use libgpg-error error codes.
+
+	* Makefile.am (EXTRA_DIST): Remove mkerrors.
+	(BUILT_SOURCES): Remove errors.c.
+	(MOSTLYCLEANFILES): Likewise.
+	(libgpgme_la_SOURCES): Likewise.  Add error.c.
+	(errors.c): Remove target.
+	* mkerrors: File removed.
+	* error.c: New file.
+
+	* gpgme.h (gpgme_error_t): Change to type gpg_error_t.
+	(gpgme_err_code_t, gpgme_err_source_t): New types.
+	(gpgme_err_code, gpgme_err_source, gpgme_error, gpgme_err_make):
+	New static inline functions.
+	(gpgme_strsource, gpgme_err_code_from_errno,
+	gpgme_err_code_to_errno, gpgme_err_make_from_errno,
+	gpgme_error_from_errno): New prototypes.
+
 2003-05-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (gpgme_op_export_start): Change second arg to const char *.

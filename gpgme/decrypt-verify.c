@@ -55,9 +55,9 @@ decrypt_verify_start (gpgme_ctx_t ctx, int synchronous,
     return err;
 
   if (!cipher)
-    return GPGME_No_Data;
+    return gpg_error (GPG_ERR_NO_DATA);
   if (!plain)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (ctx->passphrase_cb)
     {

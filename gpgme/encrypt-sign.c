@@ -48,9 +48,9 @@ encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
     return err;
 
   if (!plain)
-    return GPGME_No_Data;
+    return gpg_error (GPG_ERR_NO_DATA);
   if (!cipher || !recp)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_encrypt_init_result (ctx);
   if (err)

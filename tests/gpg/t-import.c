@@ -25,38 +25,9 @@
 
 #include <gpgme.h>
 
+#include "t-support.h"
+
 
-#define fail_if_err(err)					\
-  do								\
-    {								\
-      if (err)							\
-        {							\
-          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
-                   __FILE__, __LINE__, gpgme_strerror (err));   \
-          exit (1);						\
-        }							\
-    }								\
-  while (0)
-
-
-static char *
-mk_fname (const char *fname)
-{
-  const char *srcdir = getenv ("srcdir");
-  char *buf;
-
-  if (!srcdir)
-    srcdir = ".";
-  buf = malloc (strlen(srcdir) + strlen(fname) + 2);
-  if (!buf) 
-    exit (8);
-  strcpy (buf, srcdir);
-  strcat (buf, "/");
-  strcat (buf, fname);
-  return buf;
-}
-
-
 void
 check_result (gpgme_import_result_t result, char *fpr, int secret)
 {
@@ -223,14 +194,14 @@ check_result (gpgme_import_result_t result, char *fpr, int secret)
 
 
 int 
-main (int argc, char **argv)
+main (int argc, char *argv[])
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;
   gpgme_data_t in;
   gpgme_import_result_t result;
-  const char *pubkey_1_asc = mk_fname ("pubkey-1.asc");
-  const char *seckey_1_asc = mk_fname ("seckey-1.asc");
+  const char *pubkey_1_asc = make_filename ("pubkey-1.asc");
+  const char *seckey_1_asc = make_filename ("seckey-1.asc");
 
   err = gpgme_new (&ctx);
   fail_if_err (err);

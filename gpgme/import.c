@@ -82,7 +82,7 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
 
   import = malloc (sizeof (*import));
   if (!import)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   import->next = NULL;
 
   errno = 0;
@@ -91,7 +91,7 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
     {
       /* The crypto backend does not behave.  */
       free (import);
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_INV_ENGINE);
     }
   args = tail;
 
@@ -102,26 +102,26 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
 	case 0:
 	case 4:
 	default:
-	  import->result = GPGME_Unknown_Reason;
+	  import->result = gpg_error (GPG_ERR_GENERAL);
 	  break;
 
 	case 1:
-	  import->result = GPGME_Invalid_Key;
+	  import->result = gpg_error (GPG_ERR_BAD_CERT);
 	  break;
 
 	case 2:
-	  import->result = GPGME_Issuer_Missing;
+	  import->result = gpg_error (GPG_ERR_MISSING_CERT);
 	  break;
 
 	case 3:
-	  import->result = GPGME_Chain_Too_Long;
+	  import->result = gpg_error (GPG_ERR_BAD_CERT_CHAIN);
 	  break;
 	}
       import->status = 0;
     }
   else
     {
-      import->result = GPGME_No_Error;
+      import->result = gpg_error (GPG_ERR_NO_ERROR);
       import->status = nr;
     }
 
@@ -134,8 +134,9 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
   import->fpr = strdup (args);
   if (!import->fpr)
     {
+      int saved_errno = errno;
       free (import);
-      return GPGME_Out_Of_Core;
+      return gpg_error_from_errno (saved_errno);
     }
 
   *import_status = import;
@@ -155,7 +156,7 @@ parse_import_res (char *args, gpgme_import_result_t result)
   (x) = strtol (args, &tail, 0);			\
   if (errno || args == tail || *tail != ' ')		\
     /* The crypto backend does not behave.  */		\
-    return GPGME_General_Error;				\
+    return gpg_error (GPG_ERR_INV_ENGINE);		\
   args = tail;
 
   PARSE_NEXT (result->considered);
@@ -232,7 +233,7 @@ _gpgme_op_import_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t keydata)
   opd->lastp = &opd->result.imports;
 
   if (!keydata)
-    return GPGME_No_Data;
+    return gpg_error (GPG_ERR_NO_DATA);
 
   _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
 

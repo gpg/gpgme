@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -106,10 +107,12 @@ trustlist_colon_handler (void *priv, char *line)
 	  break;
 	case 9: /* user ID */
 	  item->name = strdup (p);
-	  if (!item->name) {
-	    gpgme_trust_item_unref (item);
-	    return GPGME_Out_Of_Core;
-	  }
+	  if (!item->name)
+	    {
+	      int saved_errno = errno;
+	      gpgme_trust_item_unref (item);
+	      return gpg_error_from_errno (saved_errno);
+	    }
 	  break;
         }
     }
@@ -170,7 +173,7 @@ gpgme_op_trustlist_start (gpgme_ctx_t ctx, const char *pattern, int max_level)
   op_data_t opd;
 
   if (!pattern || !*pattern)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_reset (ctx, 2);
   if (err)
@@ -202,10 +205,10 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
   struct trust_queue_item_s *q;
 
   if (!r_item)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   *r_item = NULL;
   if (!ctx)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, &hook, -1, NULL);
   opd = hook;
@@ -218,7 +221,7 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
       if (err)
 	return err;
       if (!opd->trust_cond)
-	return GPGME_EOF;
+	return gpg_error (GPG_ERR_EOF);
       opd->trust_cond = 0; 
       assert (opd->trust_queue);
     }
@@ -236,7 +239,7 @@ gpgme_error_t
 gpgme_op_trustlist_end (gpgme_ctx_t ctx)
 {
   if (!ctx)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   return 0;
 }

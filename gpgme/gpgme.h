@@ -38,6 +38,8 @@ extern "C" {
 #endif
 #endif
 
+#include <gpg-error.h>
+
 
 /* Check for compiler features.  */
 #if __GNUC__
@@ -76,74 +78,75 @@ struct gpgme_data;
 typedef struct gpgme_data *gpgme_data_t;
 
 
-/* Public data types provided by GPGME.  */
+/* Wrappers for the libgpg-error library.  */
 
-/* The error numbers used by GPGME.  */
-typedef enum
-  {
-    GPGME_EOF                     = -1,
-    GPGME_No_Error                = 0x0000,
-    GPGME_General_Error           = 0x0001,
-    GPGME_Out_Of_Core             = 0x0002,
-    GPGME_Invalid_Value           = 0x0003,
-    GPGME_Exec_Error              = 0x0004,
-    GPGME_Too_Many_Procs          = 0x0005,
-    GPGME_Pipe_Error              = 0x0006,
-    GPGME_No_Data                 = 0x0007,
-    GPGME_Conflict                = 0x0008,
-    GPGME_Not_Implemented         = 0x0009,
-    GPGME_Read_Error              = 0x000a,
-    GPGME_Write_Error             = 0x000b,
-    GPGME_File_Error              = 0x000c, /* errno is set in this case.  */
-    GPGME_Decryption_Failed       = 0x000d,
-    GPGME_Bad_Passphrase          = 0x000e,
-    GPGME_Canceled                = 0x000f,
-    GPGME_Invalid_Key             = 0x0010,
-    GPGME_Invalid_Engine          = 0x0011,
-    GPGME_No_UserID               = 0x0012,
-    GPGME_Invalid_UserID          = 0x0013,
+typedef gpg_error_t gpgme_error_t;
+typedef gpg_err_code_t gpgme_err_code_t;
+typedef gpg_err_source_t gpgme_err_source_t;
 
-    /* Reasons for invalid user id.  */
-    GPGME_Unknown_Reason          = 0x0100,
-    GPGME_Not_Found               = 0x0101,
-    GPGME_Ambiguous_Specification = 0x0102,
-    GPGME_Wrong_Key_Usage         = 0x0103,
-    GPGME_Key_Revoked             = 0x0104,
-    GPGME_Key_Expired             = 0x0105,
-    GPGME_No_CRL_Known            = 0x0106,
-    GPGME_CRL_Too_Old             = 0x0107,
-    GPGME_Policy_Mismatch         = 0x0108,
-    GPGME_No_Secret_Key           = 0x0109,
-    GPGME_Key_Not_Trusted         = 0x010a,
-    
-    /* Import problems.  */
-    GPGME_Issuer_Missing          = 0x0200,
-    GPGME_Chain_Too_Long          = 0x0201,
 
-    /* Verification problems.  */
-    GPGME_Unsupported_Algorithm   = 0x0300,
-    GPGME_Sig_Expired             = 0x0301,
-    GPGME_Bad_Signature           = 0x0302,
-    GPGME_No_Public_Key           = 0x0303,
+static __inline__ gpgme_error_t
+gpgme_err_make (gpgme_err_source_t source, gpgme_err_code_t code)
+{
+  return gpg_err_make (source, code);
+}
 
-    /* Deprecated, see below.  */
-    GPGME_x_Busy         = -2,
-    GPGME_x_No_Request   = -3,
-    GPGME_x_Invalid_Type = -4,
-    GPGME_x_Invalid_Mode = -5
-  }
-gpgme_error_t;
 
-typedef gpgme_error_t _gpgme_deprecated_error_t _GPGME_DEPRECATED;
+/* The user can define GPG_ERR_SOURCE_DEFAULT before including this
+   file to specify a default source for gpg_error.  */
+#ifndef GPGME_ERR_SOURCE_DEFAULT
+#define GPGME_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_USER_1
+#endif
 
-#define GPGME_Busy	    ((_gpgme_deprecated_error_t) GPGME_x_Busy)
-#define GPGME_No_Request    ((_gpgme_deprecated_error_t) GPGME_x_No_Request)
-#define GPGME_Invalid_Type  ((_gpgme_deprecated_error_t) GPGME_x_Invalid_Type)
-#define GPGME_Invalid_Mode  ((_gpgme_deprecated_error_t) GPGME_x_Invalid_Mode)
-#define GPGME_No_Recipients ((_gpgme_deprecated_error_t) GPGME_No_UserID)
-#define GPGME_Invalid_Recipients \
-  ((_gpgme_deprecated_error_t) GPGME_Invalid_UserID)
-#define GPGME_No_Passphrase ((_gpgme_deprecated_error_t) GPGME_Bad_Passphrase)
+static __inline__ gpgme_error_t
+gpgme_error (gpgme_err_code_t code)
+{
+  return gpgme_err_make (GPGME_ERR_SOURCE_DEFAULT, code);
+}
+
+
+static __inline__ gpgme_err_code_t
+gpgme_err_code (gpgme_error_t err)
+{
+  return gpg_err_code (err);
+}
+
+
+static __inline__ gpgme_err_source_t
+gpgme_err_source (gpgme_error_t err)
+{
+  return gpg_err_source (err);
+}
+
+
+/* Return a pointer to a string containing a description of the error
+   code in the error value ERR.  */
+const char *gpgme_strerror (gpgme_error_t err);
+
+
+/* Return a pointer to a string containing a description of the error
+   source in the error value ERR.  */
+const char *gpgme_strsource (gpgme_error_t err);
+
+
+/* Retrieve the error code for the system error ERR.  This returns
+   GPG_ERR_UNKNOWN_ERRNO if the system error is not mapped (report
+   this).  */
+gpgme_err_code_t gpgme_err_code_from_errno (int err);
+
+
+/* Retrieve the system error for the error code CODE.  This returns 0
+   if CODE is not a system error code.  */
+int gpgme_err_code_to_errno (gpgme_err_code_t code);
+
+  
+/* Return an error value with the error source SOURCE and the system
+   error ERR.  */
+gpgme_error_t gpgme_err_make_from_errno (gpg_err_source_t source, int err);
+
+
+/* Return an error value with the system error ERR.  */
+gpgme_err_code_t gpg_error_from_errno (int err);
 
 
 /* The possible encoding mode of gpgme_data_t objects.  */
@@ -1424,9 +1427,6 @@ const char *gpgme_check_version (const char *req_version);
 
 /* Retrieve information about the backend engines.  */
 gpgme_error_t gpgme_get_engine_info (gpgme_engine_info_t *engine_info);
-
-/* Return a string describing ERR.  */
-const char *gpgme_strerror (gpgme_error_t err);
 
 
 /* Engine support functions.  */

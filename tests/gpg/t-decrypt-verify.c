@@ -26,68 +26,9 @@
 
 #include <gpgme.h>
 
+#include "t-support.h"
+
 
-#define fail_if_err(err)					\
-  do								\
-    {								\
-      if (err)							\
-        {							\
-          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
-                   __FILE__, __LINE__, gpgme_strerror (err));   \
-          exit (1);						\
-        }							\
-    }								\
-  while (0)
-
-
-static void
-print_data (gpgme_data_t dh)
-{
-#define BUF_SIZE 512
-  char buf[BUF_SIZE + 1];
-  int ret;
-  
-  ret = gpgme_data_seek (dh, 0, SEEK_SET);
-  if (ret)
-    fail_if_err (GPGME_File_Error);
-  while ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) > 0)
-    fwrite (buf, ret, 1, stdout);
-  if (ret < 0)
-    fail_if_err (GPGME_File_Error);
-}
-
-
-static gpgme_error_t
-passphrase_cb (void *opaque, const char *uid_hint, const char *passphrase_info,
-	       int last_was_bad, int fd)
-{
-  write (fd, "abc\n", 4);
-  return 0;
-}
-
-
-static char *
-make_filename (const char *fname)
-{
-  const char *srcdir = getenv ("srcdir");
-  char *buf;
-
-  if (!srcdir)
-    srcdir = ".";
-  buf = malloc (strlen(srcdir) + strlen(fname) + 2);
-  if (!buf)
-    {
-      fprintf (stderr, "%s:%d: could not allocate string: %s\n",
-	       __FILE__, __LINE__, strerror (errno));
-      exit (1);
-    }
-  strcpy (buf, srcdir);
-  strcat (buf, "/");
-  strcat (buf, fname);
-  return buf;
-}
-
-
 static void
 check_verify_result (gpgme_verify_result_t result, int summary, char *fpr,
 		     gpgme_error_t status)
@@ -113,7 +54,7 @@ check_verify_result (gpgme_verify_result_t result, int summary, char *fpr,
 	       __FILE__, __LINE__, sig->fpr);
       exit (1);
     }
-  if (sig->status != status)
+  if (gpg_err_code (sig->status) != status)
     {
       fprintf (stderr, "%s:%i: Unexpected signature status: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->status));
@@ -137,7 +78,7 @@ check_verify_result (gpgme_verify_result_t result, int summary, char *fpr,
 	       __FILE__, __LINE__, sig->validity);
       exit (1);
     }
-  if (sig->validity_reason != GPGME_No_Error)
+  if (gpg_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
     {
       fprintf (stderr, "%s:%i: Unexpected validity reason: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->validity_reason));
@@ -182,7 +123,7 @@ main (int argc, char *argv[])
   verify_result = gpgme_op_verify_result (ctx);
   check_verify_result (verify_result, 0,
 		       "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-		       GPGME_No_Error);
+		       GPG_ERR_NO_ERROR);
 
   gpgme_data_release (in);
   gpgme_data_release (out);
