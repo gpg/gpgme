@@ -1,5 +1,9 @@
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c: Revert last change.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
 	* engine-gpgsm.c (gpgsm_status_handler): Freeze the output file
 	handler when ending this operation, otherwise the wait function
 	will sit on it.
