@@ -41,10 +41,5 @@ lib_LTLIBRARIES = libgpgmeplug.la libgpgsmplug.la
 libgpgmeplug_la_LDFLAGS = -shared -Wl,-soname,libgpgmeplug.so
 libgpgsmplug_la_LDFLAGS = -shared -Wl,-soname,libgpgsmplug.so
 
-libgpgmeplug_la_SOURCES = gpgme.h \
-	cryptplug.h \
-	gpgmeplug.c
-
-libgpgsmplug_la_SOURCES = gpgme.h \
-	cryptplug.h \
-	gpgsmplug.c
+libgpgmeplug_la_SOURCES = cryptplug.h gpgmeplug.c
+libgpgsmplug_la_SOURCES = cryptplug.h gpgsmplug.c

@@ -1,3 +1,8 @@
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgmeplug_la_SOURCES): Remove gpgme.h.
+	(libgpgsmplug_la_SOURCES): Likewise.
+
 2001-11-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgmeplug.c (checkMessageSignature): Add call to gpgme_set_protocol.
