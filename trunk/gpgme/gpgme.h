@@ -58,6 +58,9 @@ typedef struct gpgme_recipients_s *GpgmeRecipients;
 struct gpgme_key_s;
 typedef struct gpgme_key_s *GpgmeKey;
 
+struct gpgme_trust_item_s;
+typedef struct gpgme_trust_item_s *GpgmeTrustItem;
+
 
 typedef enum {
     GPGME_EOF = -1,
@@ -107,6 +110,23 @@ typedef enum {
     GPGME_SIG_MODE_CLEAR = 2
 } GpgmeSigMode;
 
+typedef enum {
+    GPGME_ATTR_KEYID   = 1,
+    GPGME_ATTR_FPR     = 2,
+    GPGME_ATTR_ALGO    = 3,
+    GPGME_ATTR_LEN     = 4,
+    GPGME_ATTR_CREATED = 5,
+    GPGME_ATTR_EXPIRE  = 6,
+    GPGME_ATTR_OTRUST  = 7,
+    GPGME_ATTR_USERID  = 8,
+    GPGME_ATTR_NAME    = 9,
+    GPGME_ATTR_EMAIL   = 10,
+    GPGME_ATTR_COMMENT = 11,
+    GPGME_ATTR_VALIDITY= 12,
+    GPGME_ATTR_LEVEL   = 13,
+    GPGME_ATTR_TYPE    = 14
+} GpgmeAttr;
+
 
 typedef const char *(*GpgmePassphraseCb)(void*,
                                          const char *desc, void *r_hd);
@@ -124,6 +144,7 @@ GpgmeCtx   gpgme_wait (GpgmeCtx c, int hang);
 char *gpgme_get_notation (GpgmeCtx c);
 void gpgme_set_armor (GpgmeCtx c, int yes);
 void gpgme_set_textmode (GpgmeCtx c, int yes);
+void gpgme_set_keylist_mode ( GpgmeCtx c, int mode );
 void gpgme_set_passphrase_cb (GpgmeCtx c,
                               GpgmePassphraseCb cb, void *cb_value);
 void gpgme_set_progress_cb (GpgmeCtx c, GpgmeProgressCb cb, void *cb_value);
@@ -166,8 +187,21 @@ GpgmeError    gpgme_data_write ( GpgmeData dh,
                                  const char *buffer, size_t length );
 
 
-/* Key functions */
+/* Key and trust functions */
 char *gpgme_key_get_as_xml ( GpgmeKey key );
+const char  *gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
+                                         const void *reserved, int idx );
+unsigned long gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
+                                         const void *reserved, int idx );
+
+void gpgme_trust_item_release ( GpgmeTrustItem item );
+const char *gpgme_trust_item_get_string_attr ( GpgmeTrustItem item,
+                                               GpgmeAttr what,
+                                               const void *reserved, int idx );
+int gpgme_trust_item_get_int_attr ( GpgmeTrustItem item, GpgmeAttr what,
+                                    const void *reserved, int idx );
+
+
 
 
 /* Basic GnuPG functions */
@@ -194,6 +228,10 @@ GpgmeError gpgme_op_genkey_start ( GpgmeCtx c, const char *parms,
 GpgmeError gpgme_op_keylist_start ( GpgmeCtx c,
                                     const char *pattern, int secret_only );
 GpgmeError gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key );
+GpgmeError gpgme_op_trustlist_start ( GpgmeCtx c,
+                                      const char *pattern, int max_level );
+GpgmeError gpgme_op_trustlist_next ( GpgmeCtx c, GpgmeTrustItem *r_item );
+
 
 
 /* Convenience functions for normal usage */
@@ -215,7 +253,7 @@ GpgmeError gpgme_op_genkey ( GpgmeCtx c, const char *parms,
 /* miscellaneous functions */
 const char *gpgme_check_version ( const char *req_version );
 const char *gpgme_strerror (GpgmeError err);
-const char *gpgme_get_prompt ( GpgmeCtx c, int which );
+void gpgme_register_idle ( void (*fnc)(void) );
 
 
 #ifdef __cplusplus

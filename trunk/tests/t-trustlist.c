@@ -1,4 +1,4 @@
-/* t-keylist.c  - regression test
+/* t-trustlist.c  - regression test
  *	Copyright (C) 2000 Werner Koch (dd9jn)
  *
  * This file is part of GPGME.
@@ -35,40 +35,21 @@ static void
 doit ( GpgmeCtx ctx, const char *pattern )
 {
     GpgmeError err;
-    GpgmeKey key;
+    GpgmeTrustItem item;
 
-    err = gpgme_op_keylist_start (ctx, pattern, 0 );
+    err = gpgme_op_trustlist_start (ctx, pattern, 0 );
     fail_if_err (err);
     
-    while ( !(err = gpgme_op_keylist_next ( ctx, &key )) ) {
-        char *p;
-        const char *s;
-        int i;
-
-        printf ("<!-- Begin key object (%p) -->\n", key );
-        p = gpgme_key_get_as_xml ( key );
-        if ( p ) {
-            fputs ( p, stdout );
-            free (p);
-        }
-        else
-            fputs("<!-- Ooops: gpgme_key_get_as_xml failed -->\n", stdout );
-
-        s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID, NULL, 0 );
-        printf ("<!-- keyid=%s -->\n", s );
-        s = gpgme_key_get_string_attr (key, GPGME_ATTR_ALGO, NULL, 0 );
-        printf ("<!-- algo=%s -->\n", s );
-        for (i=0; ; i++ ) {
-            s = gpgme_key_get_string_attr (key, GPGME_ATTR_NAME, NULL, i );
-            if (!s)
-                break;
-            printf ("<!-- name.%d=%s -->\n", i, s );
-            s = gpgme_key_get_string_attr (key, GPGME_ATTR_EMAIL, NULL, i );
-            printf ("<!-- email.%d=%s -->\n", i, s );
-            s = gpgme_key_get_string_attr (key, GPGME_ATTR_COMMENT, NULL, i );
-            printf ("<!-- comment.%d=%s -->\n", i, s );
-        }
-        printf ("<!-- End key object (%p) -->\n", key );
+    while ( !(err = gpgme_op_trustlist_next ( ctx, &item )) ) {
+        printf ("l=%d k=%s t=%d o=%s v=%s u=%s\n",
+        gpgme_trust_item_get_int_attr    (item, GPGME_ATTR_LEVEL, NULL, 0 ),
+        gpgme_trust_item_get_string_attr (item, GPGME_ATTR_KEYID, NULL, 0 ),
+        gpgme_trust_item_get_int_attr    (item, GPGME_ATTR_TYPE, NULL, 0 ),
+        gpgme_trust_item_get_string_attr (item, GPGME_ATTR_OTRUST, NULL, 0 ),
+        gpgme_trust_item_get_string_attr (item, GPGME_ATTR_VALIDITY, NULL, 0 ),
+        gpgme_trust_item_get_string_attr (item, GPGME_ATTR_USERID, NULL, 0 )
+                );
+        gpgme_trust_item_release (item);
     }
     if ( err != GPGME_EOF )
         fail_if_err (err);

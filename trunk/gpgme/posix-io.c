@@ -229,7 +229,7 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
     static fd_set readfds;
     static fd_set writefds;
     int any, i, max_fd, n, count;
-    struct timeval timeout = { 1, 0 }; /* Use a one second timeout */
+    struct timeval timeout = { 0, 50 }; /* Use a 50ms timeout */
     
     FD_ZERO ( &readfds );
     FD_ZERO ( &writefds );

@@ -368,7 +368,8 @@ gpgme_op_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
     _gpgme_gpg_add_arg ( c->gpg, "--with-colons" );
     _gpgme_gpg_add_arg ( c->gpg, "--with-fingerprint" );
-    /*_gpgme_gpg_add_arg ( c->gpg, "--fast-list-mode" );*/
+    if (c->keylist_mode == 1)
+        _gpgme_gpg_add_arg ( c->gpg, "--no-expensive-trust-checks" );
     _gpgme_gpg_add_arg ( c->gpg, secret_only?
                          "--list-secret-keys":"--list-keys" );
     

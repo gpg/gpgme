@@ -165,6 +165,24 @@ gpgme_set_textmode ( GpgmeCtx c, int yes )
 }
 
 /**
+ * gpgme_set_keylist_mode:
+ * @c: the context
+ * @mode: listing mode
+ * 
+ * This function changes the default behaviour of the keylisting functions.
+ * Defines values for @mode are: %0 = normal, %1 = fast listing without
+ * information about key validity.
+ **/
+void
+gpgme_set_keylist_mode ( GpgmeCtx c, int mode )
+{
+    if (c)
+        return;
+    c->keylist_mode = mode;
+}
+
+
+/**
  * gpgme_set_passphrase_cb:
  * @c: the context 
  * @cb: A callback function
