@@ -1535,22 +1535,26 @@ bool requestDecentralCertificate( const char* certparms,
 {
     GpgmeError err;
     GpgmeCtx ctx;
-    GpgmeData pub, result;
+    GpgmeData pub;
     int len;
 
     err = gpgme_data_new (&pub);
+    fprintf( stderr,  "1: gpgme returned %d\n", err );
     if( err != GPGME_No_Error )
         return false;
 
     err = gpgme_new (&ctx);
+    fprintf( stderr,  "2: gpgme returned %d\n", err );
     if( err != GPGME_No_Error ) {
         gpgme_data_release( pub );
         return false;
     }
 
     gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
-    /* We want binary, so comment this: gpgme_set_armor (ctx, 1); */
+    // Don't ASCII-armor, the MUA will use base64 encoding
+    //    gpgme_set_armor (ctx, 1);
     err = gpgme_op_genkey (ctx, certparms, pub, NULL );
+    fprintf( stderr,  "3: gpgme returned %d\n", err );
     if( err != GPGME_No_Error ) {
         gpgme_data_release( pub );
         gpgme_release( ctx );
@@ -1563,6 +1567,7 @@ bool requestDecentralCertificate( const char* certparms,
 
     /* The buffer generatedKey contains the LEN bytes you want */
     // Caller is responsible for freeing
+    return true;
 }
 
 bool requestCentralCertificateAndPSE( const char* name,
