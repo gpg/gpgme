@@ -98,6 +98,30 @@ typedef struct {
 Config config;
 
 
+
+
+/*
+  temporary code!!
+
+  will be removed!!
+
+  asking for passphrase will be handeked via gpg-agent!!
+*/
+static char tmpPassphrase[1024];
+struct passphrase_cb_info_s {
+    GpgmeCtx c;
+    int did_it;
+};
+static const char *
+passphrase_cb (void *opaque, const char *desc, void *r_hd)
+{
+    return tmpPassphrase;
+}
+
+
+
+
+
 #define NEAR_EXPIRY 14
 
 bool initialize()
@@ -590,12 +614,12 @@ void appendDirectoryServer( const char* servername,
   if( newServers ) {
     config.directoryServers = newServers;
     newServers[ config.numDirectoryServers ].servername =
-      malloc( strlen( servername ) );
+      malloc( 1+strlen( servername ) );
     if( newServers[ config.numDirectoryServers ].servername ) {
       strcpy( (char *)newServers[ config.numDirectoryServers ].servername,
         servername );
       newServers[ config.numDirectoryServers ].description =
-        malloc( strlen(  description ) );
+        malloc( 1+strlen(  description ) );
       if( newServers[ config.numDirectoryServers ].description ) {
         strcpy( (char *)newServers[ config.numDirectoryServers ].description,
           description );
@@ -619,10 +643,10 @@ void setDirectoryServers( struct DirectoryServer server[], unsigned int size )
     }
     free( config.directoryServers );
     for( i=0; i < size; ++i ) {
-      newServers[ i ].servername = malloc( strlen( server[i].servername ) );
+      newServers[ i ].servername = malloc( 1+strlen( server[i].servername ) );
       if( newServers[ i ].servername ) {
         strcpy( (char *)newServers[ i ].servername, server[i].servername );
-        newServers[ i ].description = malloc( strlen( server[i].description ) );
+        newServers[ i ].description = malloc( 1+strlen( server[i].description ) );
         if( newServers[ i ].description ) {
           strcpy( (char *)newServers[ i ].description, server[i].description );
           newServers[ i ].port = server[i].port;
@@ -676,10 +700,48 @@ bool signMessage( const char*  cleartext,
   char*  rData = 0;
   char*  rSig  = 0;
 
+
+
+/*
+  temporary code!!
+
+  will be removed!!
+
+  asking for passphrase will be handeked via gpg-agent!!
+*/
+  struct passphrase_cb_info_s info;
+
+
+
+
+
   if( !ciphertext )
     return false;
 
   gpgme_new (&ctx);
+
+
+
+
+
+
+/*
+  temporary code!!
+
+  will be removed!!
+
+  asking for passphrase will be handeked via gpg-agent!!
+*/
+  if (!getenv("GPG_AGENT_INFO")) {
+      info.c = ctx;
+      gpgme_set_passphrase_cb (ctx, passphrase_cb, &info);
+  }
+  strcpy( tmpPassphrase, certificate );
+
+
+
+
+
   gpgme_set_armor (ctx, 1);
   gpgme_set_textmode (ctx, 1);
 
