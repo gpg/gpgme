@@ -1,3 +1,8 @@
+2001-11-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_new): Set CLOEXEC flag for parent
+	ends of the pipe.
+
 2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c: Include stdlib.h and string.h.  Also include,
