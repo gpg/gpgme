@@ -1,5 +1,10 @@
 2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/t-decrypt-verify.c: Don't include `mcheck.h'.  Reported by
+	Stéphane Corthésy.
+
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpg/Makefile.am (EXTRA_DIST): Add missing line continuation.
 
 2001-12-19  Marcus Brinkmann  <marcus@g10code.de>

@@ -24,7 +24,6 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
-#include <mcheck.h>
 
 #include <gpgme.h>
 
