@@ -2696,7 +2696,7 @@ started successfully, @code{GPGME_Invalid_Value} if @var{keydata} if
 
 @deftp {Data type} {GpgmeImportStatus}
 This is a pointer to a structure used to store a part of the result of
-a @code{gpgme_op_genkey} operation.  For each considered key one
+a @code{gpgme_op_import} operation.  For each considered key one
 status is added that contains information about the result of the
 import.  The structure contains the following members:
 
@@ -2738,7 +2738,7 @@ The key contained a secret key.
 
 @deftp {Data type} {GpgmeImportResult}
 This is a pointer to a structure used to store the result of a
-@code{gpgme_op_genkey} operation.  After a successful import
+@code{gpgme_op_import} operation.  After a successful import
 operation, you can retrieve the pointer to the result with
 @code{gpgme_op_import_result}.  The structure contains the following
 members:
