@@ -241,10 +241,10 @@ dnl (this is easier than to have a *.in file just for one substitution)
 GNUPG_FIX_HDR_VERSION(gpgme/gpgme.h, GPGME_VERSION)
 
 dnl Substitution used for gpgme-config 
-GPGME_LIBS="-L${libdir} -lgpgme"
-GPGME_CFLAGS=""
-AC_SUBST(GPGME_LIBS)
-AC_SUBST(GPGME_CFLAGS)
+GPGME_CONFIG_LIBS="-lgpgme"
+GPGME_CONFIG_CFLAGS=""
+AC_SUBST(GPGME_CONFIG_LIBS)
+AC_SUBST(GPGME_CONFIG_CFLAGS)
 
 dnl
 dnl Create config files 
