@@ -350,5 +350,3 @@ gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 
   return ctx;
 }
-
-
