@@ -35,7 +35,7 @@
    (it's an internal error, as select_protocol checks already).
 
 * Operations
-** Import, export status handler.
+** Import, export, genkey, delete status handler need much more work.
 
 * Error Values
 ** Map ASSUAN error values.
