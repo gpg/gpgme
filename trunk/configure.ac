@@ -1,6 +1,6 @@
-# configure.in  for GPGME
+# configure.in for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -28,7 +28,7 @@ AC_INIT(gpgme, 0.4.1, [bug-gpgme@gnupg.org])
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed:		AGE=0)
 #
-LIBGPGME_LT_CURRENT=10
+LIBGPGME_LT_CURRENT=11
 LIBGPGME_LT_AGE=0
 LIBGPGME_LT_REVISION=0
 NEED_GPG_VERSION=1.2.2
