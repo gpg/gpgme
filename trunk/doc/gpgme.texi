@@ -2217,25 +2217,34 @@ fingerprint of the key which signed the plaintext, or @code{NULL} if
 no verification could be performed.
 @end deftypefun
 
-@deftypefun {const char *} gpgme_get_sig_string_attr (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeAttr @var{what}}, @w{int @var{reserved}})
+@deftypefun {const char *} gpgme_get_sig_string_attr (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeAttr @var{what}}, @w{int @var{whatidx}})
 This function is similar to @code{gpgme_get_sig_status} but may be used
 to retrieve more detailed information.  @var{ctx} should be the context
 used for the last signature verification, @var{idx} is used to enumerate
-over all signatures starting with @code{0} and @var{reserved} should be
-@code{0} for now.
+over all signatures starting with @code{0} and @var{whatidx} should be
+@code{0} for unless otherwise stated.
 
-The attributes @var{what} currently supports are
-@code{GPGME_ATTR_FPR} to return the fingerprint of the key used to
-create the signature and @code{GPGME_ERRTOK} to return a token
-with a more detailed error description.
+The following values may be used for @var{what}:
+@table @code
+@item GPGME_ATTR_FPR
+Return the fingerprint of the key used to create the signature.
+
+@item GPGME_ATTR_ERRTOK
+Return a token with a more detailed error description.  A @var{whatidx}
+of @code{0} returns an error token associated with validity calculation,
+a value of @code{1} return an error token related to the certifixate
+checking.
+
+@end table
 @end deftypefun
 
-@deftypefun {const char *} gpgme_get_sig_ulong_attr (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeAttr @var{waht}}, @w{int @var{reserved}})
-This fucntion is similar to @code{gpgme_get_sig_string_attr} but used
+@deftypefun {const char *} gpgme_get_sig_ulong_attr (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeAttr @var{waht}}, @w{int @var{whatidx}})
+This function is similar to @code{gpgme_get_sig_string_attr} but used
 for attributes which can be represented by an @code{unsigned long} data
 type.  @var{ctx} should be the context used for the last signature
 verification, @var{idx} is used to enumerate over all signatures
-starting with @code{0} and @var{reserved} should be @code{0} for now.
+starting with @code{0} and @var{whatidx} should be @code{0} for unless
+otherwise stated.
 
 The following values may be used for @var{what}:
 @table @code

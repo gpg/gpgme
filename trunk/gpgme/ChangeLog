@@ -1,3 +1,13 @@
+2002-06-20  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (calc_sig_summary): Set bad policy for wrong key usage.
+	(skip_token): New.
+	(_gpgme_verify_status_handler): Watch out for wrong key usage.
+	(gpgme_get_sig_string_attr): Hack to return info on the key
+	usage.  Does now make use of the former RESERVED argument which
+	has been renamed to WHATIDX.
+	(gpgme_get_sig_ulong_attr): Renamed RESERVED to WHATIDX.
+
 2002-06-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* wait.c (do_select): Return -1 on error, and 0 if nothing to run.

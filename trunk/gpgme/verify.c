@@ -44,6 +44,7 @@ struct verify_result_s
   ulong timestamp;	/* Signature creation time.  */
   ulong exptimestamp;   /* signature exipration time or 0 */
   GpgmeValidity validity;
+  int wrong_key_usage;  
   char trust_errtok[31]; /* error token send with the trust status */
 };
 
@@ -81,6 +82,23 @@ is_token (const char *string, const char *token, size_t *next)
     }
   return 1;
 }
+
+static int
+skip_token (const char *string, size_t *next)
+{
+  size_t n = 0;
+
+  for (;*string && *string != ' '; string++, n++)
+    ;
+  for (;*string == ' '; string++, n++)
+    ;
+  if (!*string)
+    return 0;
+  if (next)
+    *next = n;
+  return 1;
+}
+
 
 static size_t
 copy_token (const char *string, char *buffer, size_t length)
@@ -305,6 +323,12 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
           else
             ctx->result.verify->status = GPGME_SIG_STAT_ERROR;
 
+        }
+      else if (skip_token (args, &n) && n)
+        {
+          args += n;
+          if (is_token (args, "Wrong_Key_Usage", NULL))
+            ctx->result.verify->wrong_key_usage = 1;
         }
       break;
 
@@ -548,6 +572,9 @@ calc_sig_summary (VerifyResult result)
   else if (*result->trust_errtok)
     sum |= GPGME_SIGSUM_SYS_ERROR;
 
+  if (result->wrong_key_usage)
+    sum |= GPGME_SIGSUM_BAD_POLICY;
+
   /* Set the valid flag when the signature is unquestionable
      valid. */
   if ((sum & GPGME_SIGSUM_GREEN) && !(sum & ~GPGME_SIGSUM_GREEN))
@@ -558,15 +585,13 @@ calc_sig_summary (VerifyResult result)
 
 
 const char *
-gpgme_get_sig_string_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
+gpgme_get_sig_string_attr (GpgmeCtx c, int idx, GpgmeAttr what, int whatidx)
 {
   VerifyResult result;
 
   if (!c || c->pending || !c->result.verify)
     return NULL;	/* No results yet or verification error.  */
-  if (reserved)
-    return NULL; /* We might want to use it to enumerate attributes of
-                    one signature */
+
   for (result = c->result.verify;
        result && idx > 0; result = result->next, idx--)
     ;
@@ -578,7 +603,10 @@ gpgme_get_sig_string_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
     case GPGME_ATTR_FPR:
       return result->fpr;
     case GPGME_ATTR_ERRTOK:
-      return result->trust_errtok;
+      if (whatidx == 1)
+        return result->wrong_key_usage? "Wrong_Key_Usage":"";
+      else
+        return result->trust_errtok;
     default:
       break;
     }
@@ -592,8 +620,7 @@ gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
 
   if (!c || c->pending || !c->result.verify)
     return 0;	/* No results yet or verification error.  */
-  if (reserved)
-    return 0; 
+
   for (result = c->result.verify;
        result && idx > 0; result = result->next, idx--)
     ;
