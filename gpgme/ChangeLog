@@ -1,3 +1,11 @@
+2002-11-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.c (_gpgme_gpg_spawn): Do not set parent fds to -1.
+	* posix-io.c (_gpgme_io_spawn): Call _gpgme_io_close instead close
+	for parent fds.
+	* w32-io.c (_gpgme_io_spawn): Call _gpgme_io_close instead
+	CloseHandle for parent fds.
+	
 2002-11-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h [_MSC_VER]: Define ssize_t as long.
