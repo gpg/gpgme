@@ -1,3 +1,7 @@
+2002-04-26  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Create libtool libraries
+
 2002-04-04  Werner Koch  <wk@gnupg.org>
 
 	* assuan-buffer.c (my_log_prefix): New.  Use it for all i/o debug
