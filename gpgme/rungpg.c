@@ -190,7 +190,7 @@ add_arg (GpgObject gpg, const char *arg)
   if (!a)
     {
       gpg->arg_error = 1;
-      return mk_error(Out_Of_Core);
+      return GPGME_Out_Of_Core;
     }
   a->next = NULL;
   a->data = NULL;
@@ -213,7 +213,7 @@ add_data (GpgObject gpg, GpgmeData data, int dup_to, int inbound)
   if (!a)
     {
       gpg->arg_error = 1;
-      return mk_error(Out_Of_Core);
+      return GPGME_Out_Of_Core;
     }
   a->next = NULL;
   a->data = data;
@@ -252,7 +252,7 @@ static GpgmeError
 gpg_check_version (void)
 {
   return _gpgme_compare_versions (gpg_get_version (), NEED_GPG_VERSION)
-    ? 0 : mk_error (Invalid_Engine);
+    ? 0 : GPGME_Invalid_Engine;
 }
 
 
@@ -334,7 +334,7 @@ gpg_new (void **engine)
   gpg = calloc (1, sizeof *gpg);
   if (!gpg)
     {
-      rc = mk_error (Out_Of_Core);
+      rc = GPGME_Out_Of_Core;
       goto leave;
     }
   gpg->argtail = &gpg->arglist;
@@ -354,14 +354,14 @@ gpg_new (void **engine)
   gpg->status.buffer = malloc (gpg->status.bufsize);
   if (!gpg->status.buffer)
     {
-      rc = mk_error (Out_Of_Core);
+      rc = GPGME_Out_Of_Core;
       goto leave;
     }
   /* In any case we need a status pipe - create it right here and
      don't handle it with our generic GpgmeData mechanism.  */
   if (_gpgme_io_pipe (gpg->status.fd, 1) == -1)
     {
-      rc = mk_error (Pipe_Error);
+      rc = GPGME_Pipe_Error;
       goto leave;
     }
   if (_gpgme_io_set_close_notify (gpg->status.fd[0],
@@ -369,7 +369,7 @@ gpg_new (void **engine)
       || _gpgme_io_set_close_notify (gpg->status.fd[1],
 				     close_notify_handler, gpg))
     {
-      rc = mk_error (General_Error);
+      rc = GPGME_General_Error;
       goto leave;
     }
   gpg->status.eof = 0;
@@ -425,18 +425,18 @@ gpg_set_colon_line_handler (void *engine, GpgmeColonLineHandler fnc,
   gpg->colon.readpos = 0;
   gpg->colon.buffer = malloc (gpg->colon.bufsize);
   if (!gpg->colon.buffer)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
 
   if (_gpgme_io_pipe (gpg->colon.fd, 1) == -1) 
     {
       free (gpg->colon.buffer);
       gpg->colon.buffer = NULL;
-      return mk_error (Pipe_Error);
+      return GPGME_Pipe_Error;
     }
   if (_gpgme_io_set_close_notify (gpg->colon.fd[0], close_notify_handler, gpg)
       || _gpgme_io_set_close_notify (gpg->colon.fd[1],
 				     close_notify_handler, gpg))
-    return mk_error (General_Error);
+    return GPGME_General_Error;
   gpg->colon.eof = 0;
   gpg->colon.fnc = fnc;
   gpg->colon.fnc_value = fnc_value;
@@ -588,12 +588,12 @@ build_argv (GpgObject gpg)
 
   argv = calloc (argc + 1, sizeof *argv);
   if (!argv)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
   fd_data_map = calloc (datac + 1, sizeof *fd_data_map);
   if (!fd_data_map)
     {
       free_argv (argv);
-      return mk_error (Out_Of_Core);
+      return GPGME_Out_Of_Core;
     }
 
   argc = datac = 0;
@@ -602,7 +602,7 @@ build_argv (GpgObject gpg)
     {
       free (fd_data_map);
       free_argv (argv);
-      return mk_error (Out_Of_Core);
+      return GPGME_Out_Of_Core;
     }
   argc++;
   if (need_special)
@@ -612,7 +612,7 @@ build_argv (GpgObject gpg)
 	{
 	  free (fd_data_map);
 	  free_argv (argv);
-	  return mk_error (Out_Of_Core);
+	  return GPGME_Out_Of_Core;
         }
       argc++;
     }
@@ -623,7 +623,7 @@ build_argv (GpgObject gpg)
 	{
 	  free (fd_data_map);
 	  free_argv (argv);
-	  return mk_error (Out_Of_Core);
+	  return GPGME_Out_Of_Core;
         }
       argc++;
     }
@@ -634,7 +634,7 @@ build_argv (GpgObject gpg)
 	{
 	  free (fd_data_map);
 	  free_argv (argv);
-	  return mk_error (Out_Of_Core);
+	  return GPGME_Out_Of_Core;
         }
       argc++;
     }
@@ -643,7 +643,7 @@ build_argv (GpgObject gpg)
     {
       free (fd_data_map);
       free_argv (argv);
-      return mk_error (Out_Of_Core);
+      return GPGME_Out_Of_Core;
     }
   argc++;
   argv[argc] = strdup ("");
@@ -651,7 +651,7 @@ build_argv (GpgObject gpg)
     {
       free (fd_data_map);
       free_argv (argv);
-      return mk_error (Out_Of_Core);
+      return GPGME_Out_Of_Core;
     }
   argc++;
   for (a = gpg->arglist; a; a = a->next)
@@ -670,7 +670,7 @@ build_argv (GpgObject gpg)
 	      {
 		free (fd_data_map);
 		free_argv (argv);
-		return mk_error (Pipe_Error);
+		return GPGME_Pipe_Error;
 	      }
 	    if (_gpgme_io_set_close_notify (fds[0],
 					    close_notify_handler, gpg)
@@ -678,7 +678,7 @@ build_argv (GpgObject gpg)
 					       close_notify_handler,
 					       gpg))
 	      {
-		return mk_error (General_Error);
+		return GPGME_General_Error;
 	      }
 	    /* If the data_type is FD, we have to do a dup2 here.  */
 	    if (fd_data_map[datac].inbound)
@@ -717,7 +717,7 @@ build_argv (GpgObject gpg)
 		{
 		  free (fd_data_map);
 		  free_argv (argv);
-		  return mk_error (Out_Of_Core);
+		  return GPGME_Out_Of_Core;
                 }
 	      sprintf (argv[argc], 
 		       a->print_fd ? "%d" : "-&%d",
@@ -733,7 +733,7 @@ build_argv (GpgObject gpg)
 	    {
 	      free (fd_data_map);
 	      free_argv (argv);
-	      return mk_error (Out_Of_Core);
+	      return GPGME_Out_Of_Core;
             }
             argc++;
         }
@@ -794,13 +794,13 @@ read_status (GpgObject gpg)
       bufsize += 1024;
       buffer = realloc (buffer, bufsize);
       if (!buffer)
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
     }
 
   nread = _gpgme_io_read (gpg->status.fd[0],
 			  buffer + readpos, bufsize-readpos);
   if (nread == -1)
-    return mk_error(Read_Error);
+    return GPGME_Read_Error;
 
   if (!nread)
     {
@@ -845,7 +845,7 @@ read_status (GpgObject gpg)
 			  free (gpg->cmd.keyword);
 			  gpg->cmd.keyword = strdup (rest);
 			  if (!gpg->cmd.keyword)
-			    return mk_error (Out_Of_Core);
+			    return GPGME_Out_Of_Core;
 			  /* This should be the last thing we have
 			     received and the next thing will be that
 			     the command handler does its action.  */
@@ -964,12 +964,12 @@ read_colon_line (GpgObject gpg)
       bufsize += 1024;
       buffer = realloc (buffer, bufsize);
       if (!buffer) 
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
     }
 
   nread = _gpgme_io_read (gpg->colon.fd[0], buffer+readpos, bufsize-readpos);
   if (nread == -1)
-    return mk_error (Read_Error);
+    return GPGME_Read_Error;
 
   if (!nread)
     {
@@ -1051,15 +1051,15 @@ start (GpgObject gpg)
   struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
 
   if (!gpg)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (! _gpgme_get_gpg_path ())
-    return mk_error (Invalid_Engine);
+    return GPGME_Invalid_Engine;
 
   /* Kludge, so that we don't need to check the return code of all the
      add_arg ().  We bail out here instead.  */
   if (gpg->arg_error)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
 
   rc = build_argv (gpg);
   if (rc)
@@ -1070,7 +1070,7 @@ start (GpgObject gpg)
     n++;
   fd_child_list = calloc (n + n, sizeof *fd_child_list);
   if (!fd_child_list)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
   fd_parent_list = fd_child_list + n;
 
   /* build the fd list for the child */
@@ -1120,7 +1120,7 @@ start (GpgObject gpg)
 			    gpg->argv, fd_child_list, fd_parent_list);
   free (fd_child_list);
   if (status == -1)
-    return mk_error (Exec_Error);
+    return GPGME_Exec_Error;
 
   /*_gpgme_register_term_handler ( closure, closure_value, pid );*/
 
@@ -1207,7 +1207,7 @@ gpg_delete (void *engine, GpgmeKey key, int allow_secret)
     {
       const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, NULL, 0);
       if (!s)
-	err = mk_error (Invalid_Key);
+	err = GPGME_Invalid_Key;
       else
 	err = add_arg (gpg, s);
     }
@@ -1262,7 +1262,7 @@ gpg_edit (void *engine, GpgmeKey key, GpgmeData out, GpgmeCtx ctx /* FIXME */)
     {
       const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, NULL, 0);
       if (!s)
-	err = mk_error (Invalid_Key);
+	err = GPGME_Invalid_Key;
       else
 	err = add_arg (gpg, s);
     }
@@ -1420,14 +1420,14 @@ gpg_genkey (void *engine, GpgmeData help_data, int use_armor,
   GpgmeError err;
 
   if (!gpg)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   /* We need a special mechanism to get the fd of a pipe here, so that
      we can use this for the %pubring and %secring parameters.  We
      don't have this yet, so we implement only the adding to the
      standard keyrings.  */
   if (pubkey || seckey)
-    return err = mk_error (Not_Implemented);
+    return err = GPGME_Not_Implemented;
 
   err = add_arg (gpg, "--gen-key");
   if (!err && use_armor)
@@ -1499,7 +1499,7 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
   GpgmeError err;
 
   if (reserved)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   err = add_arg (gpg, "--with-colons");
   if (!err)

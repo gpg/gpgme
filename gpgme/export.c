@@ -49,7 +49,7 @@ _gpgme_op_export_start (GpgmeCtx ctx, int synchronous,
 
   if (!keydata)
     {
-      err = mk_error (Invalid_Value);
+      err = GPGME_Invalid_Value;
       goto leave;
     }
 

@@ -100,7 +100,7 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
 	case 1: /* level */
 	  item = trust_item_new ();
 	  if (!item)
-	    return mk_error (Out_Of_Core);
+	    return GPGME_Out_Of_Core;
 	  item->level = atoi (p);
 	  break;
 	case 2: /* long keyid */
@@ -121,7 +121,7 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
 	case 9: /* user ID */
 	  item->name = strdup (p);
 	  if (!item->name)
-	    return mk_error (Out_Of_Core);
+	    return GPGME_Out_Of_Core;
 	  break;
         }
     }
@@ -146,7 +146,7 @@ _gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data)
     {
       gpgme_trust_item_release (item);
       /* FIXME */
-      /* ctx->error = mk_error (Out_Of_Core); */
+      /* ctx->error = GPGME_Out_Of_Core; */
       return;
     }
   q->item = item;
@@ -172,7 +172,7 @@ gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
   GpgmeError err = 0;
 
   if (!pattern || !*pattern)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   err = _gpgme_op_reset (ctx, 2);
   if (err)
@@ -204,12 +204,12 @@ gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
   struct trust_queue_item_s *q;
 
   if (!r_item)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
   *r_item = NULL;
   if (!ctx)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
   if (!ctx->pending)
-    return mk_error (No_Request);
+    return GPGME_No_Request;
 
   if (!ctx->trust_queue)
     {
@@ -231,7 +231,7 @@ gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
       if (!ctx->key_cond)
 	{
 	  ctx->pending = 0;
-	  return mk_error (EOF);
+	  return GPGME_EOF;
 	}
       ctx->key_cond = 0; 
       assert (ctx->trust_queue);
@@ -256,9 +256,9 @@ GpgmeError
 gpgme_op_trustlist_end (GpgmeCtx ctx)
 {
   if (!ctx)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
   if (!ctx->pending)
-    return mk_error (No_Request);
+    return GPGME_No_Request;
 
   ctx->pending = 0;
   return 0;

@@ -155,7 +155,7 @@ _gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 	  ctx->result.sign->xmlinfo = NULL;
         }
       if (!ctx->result.sign->okay)
-	return mk_error (No_Data); /* Hmmm: choose a better error? */
+	return GPGME_No_Data; /* Hmmm: choose a better error? */
       break;
 
     case GPGME_STATUS_SIG_CREATED: 
@@ -180,7 +180,7 @@ _gpgme_op_sign_start (GpgmeCtx ctx, int synchronous,
   if (mode != GPGME_SIG_MODE_NORMAL
       && mode != GPGME_SIG_MODE_DETACH
       && mode != GPGME_SIG_MODE_CLEAR)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -189,12 +189,12 @@ _gpgme_op_sign_start (GpgmeCtx ctx, int synchronous,
   /* Check the supplied data.  */
   if (!in)
     {
-      err = mk_error (No_Data);
+      err = GPGME_No_Data;
       goto leave;
     }
   if (!out)
     {
-      err = mk_error (Invalid_Value);
+      err = GPGME_Invalid_Value;
       goto leave;
     }
 

@@ -65,15 +65,15 @@ delete_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 	case DELETE_No_Problem:
 	  break;
 	case DELETE_No_Such_Key:
-	  return mk_error(Invalid_Key);
+	  return GPGME_Invalid_Key;
 	  break;
 	case DELETE_Must_Delete_Secret_Key:
-	  return mk_error(Conflict);
+	  return GPGME_Conflict;
 	  break;
 	case DELETE_Ambiguous_Specification:
 	  /* XXX Need better error value.  Fall through.  */
 	default:
-	  return mk_error(General_Error);
+	  return GPGME_General_Error;
 	  break;
 	}
       break;

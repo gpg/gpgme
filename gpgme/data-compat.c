@@ -40,12 +40,12 @@ gpgme_data_new_from_filepart (GpgmeData *dh, const char *fname, FILE *stream,
   char *buf = NULL;
 
   if (stream && fname)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (fname)
     stream = fopen (fname, "rb");
   if (!stream)
-    return mk_error (File_Error);
+    return GPGME_File_Error;
 
   if (fseek (stream, offset, SEEK_SET))
     goto ferr;
@@ -85,7 +85,7 @@ gpgme_data_new_from_filepart (GpgmeData *dh, const char *fname, FILE *stream,
     if (fname)
       fclose (stream);
     errno = saved_errno;
-    return mk_error (File_Error);
+    return GPGME_File_Error;
   }
 }
 
@@ -98,10 +98,10 @@ gpgme_data_new_from_file (GpgmeData *dh, const char *fname, int copy)
   struct stat statbuf;
 
   if (!fname || !copy)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (stat (fname, &statbuf) < 0)
-    return mk_error (File_Error);
+    return GPGME_File_Error;
 
   return gpgme_data_new_from_filepart (dh, fname, NULL, 0, statbuf.st_size);
 }
@@ -112,18 +112,18 @@ gpgme_error_to_errno (GpgmeError err)
 {
   switch (err)
     {
-    case mk_error (EOF):
+    case GPGME_EOF:
       return 0;
-    case mk_error (Out_Of_Core):
+    case GPGME_Out_Of_Core:
       errno = ENOMEM;
       return -1;
-    case mk_error (Invalid_Value):
+    case GPGME_Invalid_Value:
       errno = EINVAL;
       return -1;
-    case mk_error (Busy):
+    case GPGME_Busy:
       errno = EBUSY;
       return -1;
-    case mk_error (Not_Implemented):
+    case GPGME_Not_Implemented:
       errno = EOPNOTSUPP;
       return -1;
     default:
@@ -188,5 +188,5 @@ GpgmeError
 gpgme_data_rewind (GpgmeData dh)
 {
   return (gpgme_data_seek (dh, 0, SEEK_SET) == -1)
-    ? mk_error (File_Error) : 0;
+    ? GPGME_File_Error : 0;
 }

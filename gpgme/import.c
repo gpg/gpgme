@@ -186,7 +186,7 @@ _gpgme_op_import_start (GpgmeCtx ctx, int synchronous, GpgmeData keydata)
   /* Check the supplied data */
   if (!keydata)
     {
-      err = mk_error (No_Data);
+      err = GPGME_No_Data;
       goto leave;
     }
 

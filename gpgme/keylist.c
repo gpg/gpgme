@@ -384,21 +384,21 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
       /* Start a new subkey.  */
       rectype = RT_SUB; 
       if (!(subkey = _gpgme_key_add_subkey (key)))
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
     }
   else if (!strcmp (field[0], "ssb") && key)
     {
       /* Start a new secret subkey.  */
       rectype = RT_SSB;
       if (!(subkey = _gpgme_key_add_secret_subkey (key)))
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
     }
   else if (!strcmp (field[0], "pub"))
     {
       /* Start a new keyblock.  */
       if (_gpgme_key_new (&key))
 	/* The only kind of error we can get.  */
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
       rectype = RT_PUB;
       finish_key (ctx);
       assert (!ctx->tmp_key);
@@ -408,7 +408,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
     {
       /* Start a new keyblock,  */
       if (_gpgme_key_new_secret (&key))
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
       rectype = RT_SEC;
       finish_key (ctx);
       assert (!ctx->tmp_key);
@@ -418,7 +418,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
     {
       /* Start a new certificate.  */
       if (_gpgme_key_new (&key))
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
       key->x509 = 1;
       rectype = RT_CRT;
       finish_key (ctx);
@@ -429,7 +429,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
     {
       /* Start a new certificate.  */
       if (_gpgme_key_new_secret (&key))
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
       key->x509 = 1;
       rectype = RT_CRS;
       finish_key (ctx);
@@ -456,14 +456,14 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	{
 	  key->issuer_serial = strdup (field[7]);
 	  if (!key->issuer_serial)
-	    return mk_error (Out_Of_Core);
+	    return GPGME_Out_Of_Core;
 	}
 
       /* Field 10 is not used for gpg due to --fixed-list-mode option
 	 but GPGSM stores the issuer name.  */
       if (fields >= 10 && _gpgme_decode_c_string (field[9],
 						  &key->issuer_name, 0))
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
       /* Fall through!  */
 
     case RT_PUB:
@@ -563,7 +563,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
       if (fields >= 10)
 	{
 	  if (_gpgme_key_append_name (key, field[9]))
-	    return mk_error (Out_Of_Core);
+	    return GPGME_Out_Of_Core;
 	  else
 	    {
 	      if (field[1])
@@ -579,7 +579,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	{
 	  key->keys.fingerprint = strdup (field[9]);
 	  if (!key->keys.fingerprint)
-	    return mk_error (Out_Of_Core);
+	    return GPGME_Out_Of_Core;
 	}
 
       /* Field 13 has the gpgsm chain ID (take only the first one).  */
@@ -587,7 +587,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	{
 	  key->chain_id = strdup (field[12]);
 	  if (!key->chain_id)
-	    return mk_error (Out_Of_Core);
+	    return GPGME_Out_Of_Core;
 	}
       break;
 
@@ -600,7 +600,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
       assert (ctx->tmp_uid == key->last_uid);
       certsig = _gpgme_key_add_certsig (key, (fields >= 10) ? field[9] : NULL);
       if (!certsig)
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
 
       /* Field 2 has the calculated trust ('!', '-', '?', '%').  */
       if (fields >= 2)
@@ -686,7 +686,7 @@ _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data)
   if (!q)
     {
       gpgme_key_release (key);
-      /* FIXME       return mk_error (Out_Of_Core); */
+      /* FIXME       return GPGME_Out_Of_Core; */
       return;
     }
   q->key = key;
@@ -825,12 +825,12 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
   struct key_queue_item_s *queue_item;
 
   if (!r_key)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
   *r_key = NULL;
   if (!ctx)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
   if (!ctx->pending)
-    return mk_error (No_Request);
+    return GPGME_No_Request;
 
   if (!ctx->key_queue)
     {
@@ -852,7 +852,7 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
       if (!ctx->key_cond)
 	{
 	  ctx->pending = 0;
-	  return mk_error (EOF);
+	  return GPGME_EOF;
 	}
       ctx->key_cond = 0; 
       assert (ctx->key_queue);
@@ -879,9 +879,9 @@ GpgmeError
 gpgme_op_keylist_end (GpgmeCtx ctx)
 {
   if (!ctx)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
   if (!ctx->pending)
-    return mk_error (No_Request);
+    return GPGME_No_Request;
 
   ctx->pending = 0;
   return 0;

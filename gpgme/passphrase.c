@@ -62,7 +62,7 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args
     case GPGME_STATUS_USERID_HINT:
       free (ctx->result.passphrase->userid_hint);
       if (!(ctx->result.passphrase->userid_hint = strdup (args)))
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
       break;
 
     case GPGME_STATUS_BAD_PASSPHRASE:
@@ -80,7 +80,7 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args
       free (ctx->result.passphrase->passphrase_info);
       ctx->result.passphrase->passphrase_info = strdup (args);
       if (!ctx->result.passphrase->passphrase_info)
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
       break;
 
     case GPGME_STATUS_MISSING_PASSPHRASE:
@@ -91,7 +91,7 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args
     case GPGME_STATUS_EOF:
       if (ctx->result.passphrase->no_passphrase
 	  || ctx->result.passphrase->bad_passphrase)
-	return mk_error (No_Passphrase);
+	return GPGME_No_Passphrase;
       break;
 
     default:
@@ -112,7 +112,7 @@ _gpgme_passphrase_command_handler (void *opaque, GpgmeStatusCode code,
     {
       ctx->result.passphrase = calloc (1, sizeof *ctx->result.passphrase);
       if (!ctx->result.passphrase)
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
     }
 
   if (!code)
@@ -149,7 +149,7 @@ _gpgme_passphrase_command_handler (void *opaque, GpgmeStatusCode code,
       buf = malloc (20 + strlen (userid_hint)
 			+ strlen (passphrase_info) + 3);
       if (!buf)
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
       sprintf (buf, "%s\n%s\n%s",
 	       bad_passphrase ? "TRY_AGAIN":"ENTER",
 	       userid_hint, passphrase_info);

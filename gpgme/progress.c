@@ -42,7 +42,7 @@ _gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 
   args_cpy = strdup (args);
   if (!args_cpy)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
 
   p = strchr (args_cpy, ' ');
   if (p)

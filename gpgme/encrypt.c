@@ -112,9 +112,9 @@ _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 	  ctx->result.encrypt->xmlinfo = NULL;
 	}
       if (ctx->result.encrypt->no_valid_recipients) 
-	return mk_error (No_Recipients);
+	return GPGME_No_Recipients;
       else if (ctx->result.encrypt->invalid_recipients) 
-	return mk_error (Invalid_Recipients);
+	return GPGME_Invalid_Recipients;
       break;
 
     case GPGME_STATUS_INV_RECP:
@@ -153,7 +153,7 @@ _gpgme_op_encrypt_start (GpgmeCtx ctx, int synchronous,
     symmetric = 1;
   else if (!gpgme_recipients_count (recp))
     {
-      err = mk_error (No_Recipients);
+      err = GPGME_No_Recipients;
       goto leave;
     }
 
@@ -178,12 +178,12 @@ _gpgme_op_encrypt_start (GpgmeCtx ctx, int synchronous,
   /* Check the supplied data */
   if (!plain)
     {
-      err = mk_error (No_Data);
+      err = GPGME_No_Data;
       goto leave;
     }
   if (!ciph)
     {
-      err = mk_error (Invalid_Value);
+      err = GPGME_Invalid_Value;
       goto leave;
     }
 

@@ -64,12 +64,12 @@ _gpgme_op_encrypt_sign_start (GpgmeCtx ctx, int synchronous,
   /* Check the supplied data */
   if (!plain)
     {
-      err = mk_error (No_Data);
+      err = GPGME_No_Data;
       goto leave;
     }
   if (!cipher)
     {
-      err = mk_error (Invalid_Value);
+      err = GPGME_Invalid_Value;
       goto leave;
     }
 

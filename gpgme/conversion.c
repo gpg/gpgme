@@ -76,7 +76,7 @@ _gpgme_decode_c_string (const char *src, char **destp, int len)
 	 string will never be larger.  */
       dest = malloc (strlen (src) + 1);
       if (!dest)
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
 
       *destp = dest;
     }
@@ -158,13 +158,13 @@ GpgmeError
 _gpgme_data_append (GpgmeData dh, const char *buffer, size_t length)
 {
   if (!dh || !buffer)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   do
     {
       ssize_t amt = gpgme_data_write (dh, buffer, length);
       if (amt == 0 || (amt < 0 && errno != EINTR))
-	return mk_error (File_Error);
+	return GPGME_File_Error;
       buffer += amt;
       length -= amt;
     }
@@ -192,7 +192,7 @@ _gpgme_data_append_for_xml (GpgmeData dh, const char *buffer, size_t len)
   int err = 0;
 
   if (!dh || !buffer)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   do
     {

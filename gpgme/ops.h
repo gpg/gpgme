@@ -32,7 +32,7 @@
         {								\
           ctx->result.field = calloc (1, sizeof *ctx->result.field);	\
           if (!ctx->result.field)					\
-            return mk_error (Out_Of_Core);				\
+            return GPGME_Out_Of_Core;					\
         }								\
     }									\
   while (0)

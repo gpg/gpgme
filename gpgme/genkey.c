@@ -72,7 +72,7 @@ genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 		free (ctx->result.genkey->fpr);
 	      ctx->result.genkey->fpr = strdup (&args[2]);
 	      if (!ctx->result.genkey->fpr)
-		return mk_error (Out_Of_Core);
+		return GPGME_Out_Of_Core;
 	    }
 	}
       break;
@@ -81,7 +81,7 @@ genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       /* FIXME: Should return some more useful error value.  */
       if (!ctx->result.genkey->created_primary
 	  && !ctx->result.genkey->created_sub)
-	return mk_error (General_Error);
+	return GPGME_General_Error;
       break;
 
     default:
@@ -118,7 +118,7 @@ _gpgme_op_genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
       err = gpgme_data_new_from_mem (&ctx->help_data_1, s, s2-s, 1);
     }
   else 
-    err = mk_error (Invalid_Value);
+    err = GPGME_Invalid_Value;
 
   if (err)
     goto leave;
@@ -216,7 +216,7 @@ gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
 	{
 	  *fpr = strdup (ctx->result.genkey->fpr);
 	  if (!*fpr)
-	    return mk_error (Out_Of_Core);
+	    return GPGME_Out_Of_Core;
 	}
       else
 	*fpr = NULL;
