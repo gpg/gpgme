@@ -115,7 +115,7 @@ _gpgme_io_close (int fd)
     return -1;
   /* First call the notify handler.  */
   DEBUG1 ("closing fd %d", fd);
-  if (fd >= 0 && fd < DIM (notify_table))
+  if (fd >= 0 && fd < (int) DIM (notify_table))
     {
       if (notify_table[fd].handler)
 	{
@@ -134,7 +134,7 @@ _gpgme_io_set_close_notify (int fd, void (*handler)(int, void*), void *value)
 {
   assert (fd != -1);
 
-  if (fd < 0 || fd >= DIM (notify_table))
+  if (fd < 0 || fd >= (int) DIM (notify_table))
     return -1;
   DEBUG1 ("set notification for fd %d", fd);
   notify_table[fd].handler = handler;
@@ -315,7 +315,8 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 {
   fd_set readfds;
   fd_set writefds;
-  int any, i, max_fd, n, count;
+  unsigned int i;
+  int any, max_fd, n, count;
   struct timeval timeout = { 1, 0 }; /* Use a 1s timeout.  */
   void *dbg_help = NULL;
 

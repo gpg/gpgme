@@ -35,7 +35,7 @@
 void
 gpgme_signers_clear (gpgme_ctx_t ctx)
 {
-  int i;
+  unsigned int i;
 
   if (!ctx || !ctx->signers)
     return;
@@ -81,12 +81,14 @@ gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 gpgme_key_t
 gpgme_signers_enum (const gpgme_ctx_t ctx, int seq)
 {
+  unsigned int seqno;
+
   if (!ctx || seq < 0)
     return NULL;
 
-  if (seq >= ctx->signers_len)
+  seqno = (unsigned int) seq;
+  if (seqno >= ctx->signers_len)
     return NULL;
-
-  gpgme_key_ref (ctx->signers[seq]);
-  return ctx->signers[seq];
+  gpgme_key_ref (ctx->signers[seqno]);
+  return ctx->signers[seqno];
 }
