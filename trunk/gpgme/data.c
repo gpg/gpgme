@@ -1,6 +1,6 @@
 /* data.c
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -34,11 +34,9 @@
 #include "ops.h"
 #include "io.h"
 
+/* When expanding an internal buffer, always extend it by ALLOC_CHUNK
+   bytes at a time.  */
 #define ALLOC_CHUNK 1024
-#define my_isdigit(a)  ( (a) >='0' && (a) <= '9' )
-#define my_isxdigit(a) ( my_isdigit((a))               \
-                         || ((a) >= 'A' && (a) <= 'F') \
-                         || ((a) >= 'f' && (a) <= 'f') )
 
 
 /**
@@ -50,19 +48,22 @@
  * Return value: An error value or 0 on success
  **/
 GpgmeError
-gpgme_data_new ( GpgmeData *r_dh )
+gpgme_data_new (GpgmeData *r_dh)
 {
-    GpgmeData dh;
+  GpgmeData dh;
 
-    if (!r_dh)
-        return mk_error (Invalid_Value);
-    *r_dh = NULL;
-    dh = xtrycalloc ( 1, sizeof *dh );
-    if (!dh)
-        return mk_error (Out_Of_Core);
-    dh->mode = GPGME_DATA_MODE_INOUT; 
-    *r_dh = dh;
-    return 0;
+  if (!r_dh)
+    return mk_error (Invalid_Value);
+  *r_dh = NULL;
+
+  dh = xtrycalloc (1, sizeof *dh);
+  if (!dh)
+    return mk_error (Out_Of_Core);
+
+  dh->mode = GPGME_DATA_MODE_INOUT; 
+
+  *r_dh = dh;
+  return 0;
 }
 
 
@@ -73,46 +74,51 @@ gpgme_data_new ( GpgmeData *r_dh )
  * @size: Size of the buffer
  * @copy: Flag wether a copy of the buffer should be used.
  * 
- * Create a new data object and initialize with data
- * from the memory.  A @copy with value %TRUE creates a copy of the
- * memory, a value of %FALSE uses the original memory of @buffer and the
- * caller has to make sure that this buffer is valid until gpgme_release_data()
- * is called.
+ * Create a new data object and initialize with data from the memory.
+ * A @copy with value %TRUE creates a copy of the memory, a value of
+ * %FALSE uses the original memory of @buffer and the caller has to
+ * make sure that this buffer is valid until gpgme_data_release() is
+ * called.
  * 
  * Return value: An error value or 0 for success.
  **/
 GpgmeError
-gpgme_data_new_from_mem ( GpgmeData *r_dh,
-                          const char *buffer, size_t size, int copy )
+gpgme_data_new_from_mem (GpgmeData *r_dh, const char *buffer, size_t size,
+			 int copy)
 {
-    GpgmeData dh;
-    GpgmeError err;
+  GpgmeData dh;
+  GpgmeError err;
 
-    if (!r_dh || !buffer)
-        return mk_error (Invalid_Value);
-    *r_dh = NULL;
-    err = gpgme_data_new ( &dh );
-    if (err)
-        return err;
-    dh->len = size;
-    if (copy) {
-        dh->private_buffer = xtrymalloc ( size );
-        if ( !dh->private_buffer ) {
-            gpgme_data_release (dh);
-            return mk_error (Out_Of_Core);
-        }
-        dh->private_len = size;
-        memcpy (dh->private_buffer, buffer, size );
-        dh->data = dh->private_buffer;
-        dh->writepos = size;
+  if (!r_dh)
+    return mk_error (Invalid_Value);
+  *r_dh = NULL;
+  if (!buffer)
+    return mk_error (Invalid_Value);
+
+  err = gpgme_data_new (&dh);
+  if (err)
+    return err;
+
+  dh->type = GPGME_DATA_TYPE_MEM;
+  dh->len = size;
+  if (!copy)
+    dh->data = buffer;
+  else
+    {
+      dh->private_buffer = xtrymalloc (size);
+      if (!dh->private_buffer)
+	{
+	  gpgme_data_release (dh);
+	  return mk_error (Out_Of_Core);
+	}
+      dh->private_len = size;
+      memcpy (dh->private_buffer, buffer, size);
+      dh->data = dh->private_buffer;
+      dh->writepos = size;
     }
-    else {
-        dh->data = buffer;
-    }
-    dh->type = GPGME_DATA_TYPE_MEM;
-    
-    *r_dh = dh;
-    return 0;
+
+  *r_dh = dh;
+  return 0;
 }
 
 
@@ -142,27 +148,33 @@ gpgme_data_new_from_mem ( GpgmeData *r_dh,
  * Return value: An error value or 0 for success.
  **/
 GpgmeError
-gpgme_data_new_with_read_cb ( GpgmeData *r_dh,
-                              int (*read_cb)(void*,char *,size_t,size_t*),
-                              void *read_cb_value )
+gpgme_data_new_with_read_cb (GpgmeData *r_dh,
+			     int (*read_cb) (void *,char *, size_t ,size_t *),
+			     void *read_cb_value)
 {
-    GpgmeData dh;
-    GpgmeError err;
+  GpgmeData dh;
+  GpgmeError err;
 
-    if (!r_dh || !read_cb)
-        return mk_error (Invalid_Value);
-    *r_dh = NULL;
-    err = gpgme_data_new ( &dh );
-    if (err)
-        return err;
-    dh->type = GPGME_DATA_TYPE_CB;
-    dh->mode = GPGME_DATA_MODE_OUT;
-    dh->read_cb = read_cb;
-    dh->read_cb_value = read_cb_value;
+  if (!r_dh)
+    return mk_error (Invalid_Value);
+  *r_dh = NULL;
+
+  if (!read_cb)
+    return mk_error (Invalid_Value);
+
+  err = gpgme_data_new (&dh);
+  if (err)
+    return err;
+
+  dh->type = GPGME_DATA_TYPE_CB;
+  dh->mode = GPGME_DATA_MODE_OUT;
+  dh->read_cb = read_cb;
+  dh->read_cb_value = read_cb_value;
     
-    *r_dh = dh;
-    return 0;
+  *r_dh = dh;
+  return 0;
 }
+
 
 /**
  * gpgme_data_new_from_file:
@@ -178,70 +190,78 @@ gpgme_data_new_with_read_cb ( GpgmeData *r_dh,
  * %GPGME_File_Error, the OS error code is held in %errno.
  **/
 GpgmeError
-gpgme_data_new_from_file ( GpgmeData *r_dh, const char *fname, int copy )
+gpgme_data_new_from_file (GpgmeData *r_dh, const char *fname, int copy)
 {
-    GpgmeData dh;
-    GpgmeError err;
-    struct stat st;
-    FILE *fp;
+  GpgmeData dh;
+  GpgmeError err;
+  struct stat st;
+  FILE *fp;
 
-    if (!r_dh)
-        return mk_error (Invalid_Value);
-    *r_dh = NULL;
-    /* We only support copy for now - in future we might want to honor the 
-     * copy flag and just store a file pointer */
-    if (!copy)
-        return mk_error (Not_Implemented);
-    if (!fname)
-        return mk_error (Invalid_Value);
+  if (!r_dh)
+    return mk_error (Invalid_Value);
+  *r_dh = NULL;
+  if (!fname)
+    return mk_error (Invalid_Value);
 
-    err = gpgme_data_new ( &dh );
-    if (err)
-        return err;
+  /* We only support copy for now.  In future we might want to honor
+     the copy flag and just store a file pointer.  */
+  if (!copy)
+    return mk_error (Not_Implemented);
 
-    fp = fopen (fname, "rb");
-    if (!fp) {
-        int save_errno = errno;
-        gpgme_data_release (dh);
-        errno = save_errno;
-        return mk_error (File_Error);
+  err = gpgme_data_new (&dh);
+  if (err)
+    return err;
+
+  fp = fopen (fname, "rb");
+  if (!fp)
+    {
+      int save_errno = errno;
+      gpgme_data_release (dh);
+      errno = save_errno;
+      return mk_error (File_Error);
     }
 
-    if( fstat(fileno(fp), &st) ) {
-        int save_errno = errno;
-        fclose (fp);
-        gpgme_data_release (dh);
-        errno = save_errno;
-        return mk_error (File_Error);
+  if (fstat(fileno(fp), &st))
+    {
+      int save_errno = errno;
+      fclose (fp);
+      gpgme_data_release (dh);
+      errno = save_errno;
+      return mk_error (File_Error);
     }
 
-    /* We should check the length of the file and don't allow for to
-     * large files */
-    dh->private_buffer = xtrymalloc ( st.st_size );
-    if ( !dh->private_buffer ) {
-        fclose (fp);
-        gpgme_data_release (dh);
-        return mk_error (Out_Of_Core);
+  /* We should check the length of the file and don't allow for too
+     large files.  */
+  dh->private_buffer = xtrymalloc (st.st_size);
+  if (!dh->private_buffer)
+    {
+      fclose (fp);
+      gpgme_data_release (dh);
+      return mk_error (Out_Of_Core);
     }
-    dh->private_len = st.st_size;
+  dh->private_len = st.st_size;
 
-    if ( fread ( dh->private_buffer, dh->private_len, 1, fp ) != 1 ) {
-        int save_errno = errno;
-        fclose (fp);
-        gpgme_data_release (dh);
-        errno = save_errno;
-        return mk_error (File_Error);
+  while (fread (dh->private_buffer, dh->private_len, 1, fp) < 1
+	 && ferror (fp) && errno == EINTR);
+
+  if (ferror (fp))
+    {
+      int save_errno = errno;
+      fclose (fp);
+      gpgme_data_release (dh);
+      errno = save_errno;
+      return mk_error (File_Error);
     }
 
-    fclose (fp);
+  fclose (fp);
 
-    dh->len = dh->private_len;
-    dh->data = dh->private_buffer;
-    dh->writepos = dh->len;
-    dh->type = GPGME_DATA_TYPE_MEM;
+  dh->type = GPGME_DATA_TYPE_MEM;
+  dh->len = dh->private_len;
+  dh->data = dh->private_buffer;
+  dh->writepos = dh->len;
     
-    *r_dh = dh;
-    return 0;
+  *r_dh = dh;
+  return 0;
 }
 
 
@@ -257,79 +277,85 @@ gpgme_data_new_from_file ( GpgmeData *r_dh, const char *fname, int copy )
  * starting at @offset of @file or @fp.  Either a filename or an open
  * filepointer may be given.
  *
-
+ *
  * Return value: An error code or 0 on success. If the error code is
  * %GPGME_File_Error, the OS error code is held in %errno.
  **/
 GpgmeError
-gpgme_data_new_from_filepart ( GpgmeData *r_dh, const char *fname, FILE *fp,
-                               off_t offset, off_t length )
+gpgme_data_new_from_filepart (GpgmeData *r_dh, const char *fname, FILE *fp,
+			      off_t offset, off_t length)
 {
-    GpgmeData dh;
-    GpgmeError err;
+  GpgmeData dh;
+  GpgmeError err;
+  int save_errno = 0;
 
-    if (!r_dh)
-        return mk_error (Invalid_Value);
-    *r_dh = NULL;
-    if ( fname && fp ) /* these are mutual exclusive */
-        return mk_error (Invalid_Value);
-    if (!fname && !fp)
-        return mk_error (Invalid_Value);
-    if (!length)
-        return mk_error (Invalid_Value);
+  if (!r_dh)
+    return mk_error (Invalid_Value);
+  *r_dh = NULL;
 
-    err = gpgme_data_new ( &dh );
-    if (err)
-        return err;
+  if ((fname && fp) || (!fname && !fp))
+    return mk_error (Invalid_Value);
 
-    if (!fp) {
-        fp = fopen (fname, "rb");
-        if (!fp) {
-            int save_errno = errno;
-            gpgme_data_release (dh);
-            errno = save_errno;
-            return mk_error (File_Error);
-        }
+  err = gpgme_data_new (&dh);
+  if (err)
+    return err;
+
+  if (!length)
+    goto out;
+
+  if (fname)
+    {
+      fp = fopen (fname, "rb");
+      if (!fp)
+	{
+	  err = mk_error (File_Error);
+	  goto out;
+	}
     }
 
-    if ( fseek ( fp, (long)offset, SEEK_SET) ) {
-        int save_errno = errno;
-        if (fname)
-            fclose (fp);
-        gpgme_data_release (dh);
-        errno = save_errno;
-        return mk_error (File_Error);
+  if (fseek (fp, (long) offset, SEEK_SET))
+    {
+      err = mk_error (File_Error);
+      goto out;
     }
 
-
-    dh->private_buffer = xtrymalloc ( length );
-    if ( !dh->private_buffer ) {
-        if (fname)
-            fclose (fp);
-        gpgme_data_release (dh);
-        return mk_error (Out_Of_Core);
+  dh->private_buffer = xtrymalloc (length);
+  if (!dh->private_buffer)
+    {
+      err = mk_error (Out_Of_Core);
+      goto out;
     }
-    dh->private_len = length;
+  dh->private_len = length;
+  
+  while (fread (dh->private_buffer, dh->private_len, 1, fp) < 1
+	 && ferror (fp) && errno == EINTR);
 
-    if ( fread ( dh->private_buffer, dh->private_len, 1, fp ) != 1 ) {
-        int save_errno = errno;
-        if (fname)
-            fclose (fp);
-        gpgme_data_release (dh);
-        errno = save_errno;
-        return mk_error (File_Error);
+  if (ferror (fp))
+    {
+      err = mk_error (File_Error);
+      goto out;
     }
+      
+  dh->type = GPGME_DATA_TYPE_MEM;
+  dh->len = dh->private_len;
+  dh->data = dh->private_buffer;
+  dh->writepos = dh->len;
 
-    if (fname)
-        fclose (fp);
+ out:
+  if (err)
+    save_errno = errno;
 
-    dh->len = dh->private_len;
-    dh->data = dh->private_buffer;
-    dh->writepos = dh->len;
-    dh->type = GPGME_DATA_TYPE_MEM;
-    
+  if (fname && fp)
+    fclose (fp);
+
+  if (err)
+    {
+      gpgme_data_release (dh);
+      errno = save_errno;
+    }
+  else
     *r_dh = dh;
-    return 0;
+  return err;
 }
 
 
@@ -341,13 +367,15 @@ gpgme_data_new_from_filepart ( GpgmeData *r_dh, const char *fname, FILE *fp,
  * happens.
  **/
 void
-gpgme_data_release ( GpgmeData dh )
+gpgme_data_release (GpgmeData dh)
 {
-    if (dh) {
-        xfree (dh->private_buffer); 
-        xfree (dh);
+  if (dh)
+    {
+      xfree (dh->private_buffer); 
+      xfree (dh);
     }
 }
+
 
 /*
  * Release the data object @dh.  @dh may be NULL in which case nothing
@@ -358,25 +386,29 @@ gpgme_data_release ( GpgmeData dh )
  * safely be accessed using the string fucntions.
  **/
 char *
-_gpgme_data_release_and_return_string ( GpgmeData dh )
+_gpgme_data_release_and_return_string (GpgmeData dh)
 {
-    char *val = NULL;
+  char *val = NULL;
 
-    if (dh) {
-        if ( _gpgme_data_append ( dh, "", 1 ) ) /* append EOS */
-            xfree (dh->private_buffer );
-        else {
-            val = dh->private_buffer;
-            if ( !val && dh->data ) {
-                val = xtrymalloc ( dh->len );
-                if ( val )
-                    memcpy ( val, dh->data, dh->len );
+  if (dh)
+    {
+      if (_gpgme_data_append (dh, "", 1)) /* append EOS */
+	xfree (dh->private_buffer );
+      else
+	{
+	  val = dh->private_buffer;
+	  if (!val && dh->data)
+	    {
+	      val = xtrymalloc (dh->len);
+	      if (val)
+		memcpy (val, dh->data, dh->len);
             }
         }
-        xfree (dh);
+      xfree (dh);
     }
-    return val;
+  return val;
 }
+
 
 /**
  * gpgme_data_release_and_get_mem:
@@ -392,25 +424,27 @@ _gpgme_data_release_and_return_string ( GpgmeData dh )
  * Return value: a pointer to an allocated buffer of length @r_len.
  **/
 char *
-gpgme_data_release_and_get_mem ( GpgmeData dh, size_t *r_len )
+gpgme_data_release_and_get_mem (GpgmeData dh, size_t *r_len)
 {
-    char *val = NULL;
+  char *val = NULL;
 
-    if (r_len)
-        *r_len = 0;
-    if (dh) {
-        size_t len = dh->len;
-        val = dh->private_buffer;
-        if ( !val && dh->data ) {
-            val = xtrymalloc ( len );
-            if ( val )
-                memcpy ( val, dh->data, len );
+  if (r_len)
+    *r_len = 0;
+  if (dh)
+    {
+      size_t len = dh->len;
+      val = dh->private_buffer;
+      if (!val && dh->data)
+	{
+	  val = xtrymalloc (len);
+	  if (val)
+	    memcpy (val, dh->data, len);
         }
-        xfree (dh);
-        if (val && r_len )
-            *r_len = len;
+      xfree (dh);
+      if (val && r_len)
+	*r_len = len;
     }
-    return val;
+  return val;
 }
 
 
@@ -424,28 +458,30 @@ gpgme_data_release_and_get_mem ( GpgmeData dh, size_t *r_len )
  * Return value: the data type
  **/
 GpgmeDataType
-gpgme_data_get_type ( GpgmeData dh )
+gpgme_data_get_type (GpgmeData dh)
 {
-    if ( !dh || (!dh->data && !dh->read_cb))
-        return GPGME_DATA_TYPE_NONE;
-            
-    return dh->type;
+  if (!dh || (!dh->data && !dh->read_cb))
+    return GPGME_DATA_TYPE_NONE;
+
+  return dh->type;
 }
 
+
 void 
-_gpgme_data_set_mode ( GpgmeData dh, GpgmeDataMode mode )
+_gpgme_data_set_mode (GpgmeData dh, GpgmeDataMode mode)
 {
-    assert (dh);
-    dh->mode = mode;
+  assert (dh);
+  dh->mode = mode;
 }
 
 
 GpgmeDataMode
-_gpgme_data_get_mode ( GpgmeData dh )
+_gpgme_data_get_mode (GpgmeData dh)
 {
-    assert (dh);
-    return dh->mode;
+  assert (dh);
+  return dh->mode;
 }
+
 
 /**
  * gpgme_data_rewind:
@@ -458,24 +494,28 @@ _gpgme_data_get_mode ( GpgmeData dh )
  * Return value: An error code or 0 on success
  **/
 GpgmeError
-gpgme_data_rewind ( GpgmeData dh )
+gpgme_data_rewind (GpgmeData dh)
 {
-    if ( !dh )
-        return mk_error (Invalid_Value);
+  if (!dh)
+    return mk_error (Invalid_Value);
 
-    if ( dh->type == GPGME_DATA_TYPE_NONE 
-         || dh->type == GPGME_DATA_TYPE_MEM ) {
-        dh->readpos = 0;
+  switch (dh->type)
+    {
+    case GPGME_DATA_TYPE_NONE:
+    case GPGME_DATA_TYPE_MEM:
+      dh->readpos = 0;
+      return 0;
+
+    case GPGME_DATA_TYPE_CB:
+      dh->len = dh->readpos = 0;
+      dh->read_cb_eof = 0;
+      if (dh->read_cb (dh->read_cb_value, NULL, 0, NULL))
+	return mk_error (Not_Implemented);
+      return 0;
+
+    default:
+      return mk_error (General_Error);
     }
-    else if (dh->type == GPGME_DATA_TYPE_CB) {
-        dh->len = dh->readpos = 0;
-        dh->read_cb_eof = 0;
-        if ( dh->read_cb (dh->read_cb_value, NULL, 0, NULL) )
-            return mk_error (Not_Implemented);
-    }
-    else
-        return mk_error (General_Error);
-    return 0;
 }
 
 /**
@@ -500,76 +540,90 @@ gpgme_data_rewind ( GpgmeData dh )
  * error code GPGME_EOF.
  **/
 GpgmeError
-gpgme_data_read ( GpgmeData dh, char *buffer, size_t length, size_t *nread )
+gpgme_data_read (GpgmeData dh, char *buffer, size_t length, size_t *nread)
 {
-    size_t nbytes;
+  size_t nbytes;
 
-    if ( !dh )
-        return mk_error (Invalid_Value);
-    if (dh->type == GPGME_DATA_TYPE_MEM ) {
-        nbytes = dh->len - dh->readpos;
-        if ( !nbytes ) {
-            *nread = 0;
-            return mk_error(EOF);
+  if (!dh)
+    return mk_error (Invalid_Value);
+  
+  switch (dh->type)
+    {
+    case GPGME_DATA_TYPE_MEM:
+      nbytes = dh->len - dh->readpos;
+      if (!nbytes)
+	{
+	  *nread = 0;
+	  return mk_error(EOF);
         }
-        if (!buffer) {
-            *nread = nbytes;
+
+      if (!buffer)
+	*nread = nbytes;
+      else
+	{
+	  if (nbytes > length)
+	    nbytes = length;
+	  memcpy (buffer, dh->data + dh->readpos, nbytes);
+	  *nread = nbytes;
+	  dh->readpos += nbytes;
         }
-        else {
-            if (nbytes > length)
-                nbytes = length;
-            memcpy ( buffer, dh->data + dh->readpos, nbytes );
-            *nread = nbytes;
-            dh->readpos += nbytes;
+      return 0;
+    
+    case GPGME_DATA_TYPE_CB:
+      if (!buffer)
+	{
+	  *nread = 0;
+	  return mk_error (Invalid_Type);
         }
-    }
-    else if (dh->type == GPGME_DATA_TYPE_CB) {
-        if (!buffer) {
-            *nread = 0;
-            return mk_error (Invalid_Type);
+      nbytes = dh->len - dh->readpos;
+      if (nbytes)
+	{
+	  /* We have unread data - return this.  */
+	  if (nbytes > length)
+	    nbytes = length;
+	  memcpy (buffer, dh->data + dh->readpos, nbytes);
+	  *nread = nbytes;
+	  dh->readpos += nbytes;
         }
-        nbytes = dh->len - dh->readpos;
-        if ( nbytes ) {
-            /* we have unread data - return this */
-            if (nbytes > length)
-                nbytes = length;
-            memcpy ( buffer, dh->data + dh->readpos, nbytes );
-            *nread = nbytes;
-            dh->readpos += nbytes;
-        }
-        else { /* get the data from the callback */
-            if (!dh->read_cb || dh->read_cb_eof) { 
-                *nread = 0;
-                return mk_error (EOF);
+      else
+	{
+	  /* Get the data from the callback.  */
+	  if (!dh->read_cb || dh->read_cb_eof)
+	    { 
+	      *nread = 0;
+	      return mk_error (EOF);
             }
-            if (dh->read_cb (dh->read_cb_value, buffer, length, nread )) {
-                *nread = 0;
-                dh->read_cb_eof = 1;
-                return mk_error (EOF);
-            }
+	  if (dh->read_cb (dh->read_cb_value, buffer, length, nread))
+	    {
+	      *nread = 0;
+	      dh->read_cb_eof = 1;
+	      return mk_error (EOF);
+	    }
         }
+      return 0;
+      
+    default:
+      return mk_error (General_Error);
     }
-    else
-        return mk_error (General_Error);
-    return 0;
 } 
 
-GpgmeError
-_gpgme_data_unread (GpgmeData dh, const char *buffer, size_t length )
-{
-   if ( !dh )
-        return mk_error (Invalid_Value);
 
-   if (dh->type == GPGME_DATA_TYPE_MEM ) {
-       /* check that we don't unread more than we have yet read */
-       if ( dh->readpos < length )
-           return mk_error (Invalid_Value);
-       /* No need to use the buffer for this data type */
+GpgmeError
+_gpgme_data_unread (GpgmeData dh, const char *buffer, size_t length)
+{
+   if (!dh)
+     return mk_error (Invalid_Value);
+
+   if (dh->type == GPGME_DATA_TYPE_MEM)
+     {
+       /* Check that we don't unread more than we have yet read.  */
+       if (dh->readpos < length)
+	 return mk_error (Invalid_Value);
+       /* No need to use the buffer for this data type.  */
        dh->readpos -= length;
-   }
-   else {
-       return mk_error (General_Error);
-   }
+     }
+   else
+     return mk_error (General_Error);
 
    return 0;
 }
@@ -579,18 +633,20 @@ _gpgme_data_unread (GpgmeData dh, const char *buffer, size_t length )
  * This function does make sense when we know that it contains no nil chars.
  */
 char *
-_gpgme_data_get_as_string ( GpgmeData dh )
+_gpgme_data_get_as_string (GpgmeData dh)
 {
-    char *val = NULL;
+  char *val = NULL;
 
-    if (dh) {
-        val = xtrymalloc ( dh->len+1 );
-        if ( val ) {
-            memcpy ( val, dh->data, dh->len );
-            val[dh->len] = 0;
+  if (dh)
+    {
+      val = xtrymalloc (dh->len+1);
+      if (val)
+	{
+	  memcpy (val, dh->data, dh->len);
+	  val[dh->len] = 0;
         }
     }
-    return val;
+  return val;
 }
 
 
@@ -606,119 +662,132 @@ _gpgme_data_get_as_string ( GpgmeData dh )
  * Return value: 0 on success or an error code
  **/
 GpgmeError
-gpgme_data_write ( GpgmeData dh, const char *buffer, size_t length )
+gpgme_data_write (GpgmeData dh, const char *buffer, size_t length)
 {
-    if (!dh || !buffer)
-        return mk_error (Invalid_Value);
+  if (!dh || !buffer)
+    return mk_error (Invalid_Value);
       
-    return _gpgme_data_append (dh, buffer, length );
+  return _gpgme_data_append (dh, buffer, length );
 }
 
 
 GpgmeError
-_gpgme_data_append ( GpgmeData dh, const char *buffer, size_t length )
+_gpgme_data_append (GpgmeData dh, const char *buffer, size_t length)
 {
-    assert (dh);
+  assert (dh);
 
-    if ( dh->type == GPGME_DATA_TYPE_NONE ) {
-        /* convert it to a mem data type */
-        assert (!dh->private_buffer);
-        dh->type = GPGME_DATA_TYPE_MEM;
-        dh->private_len = length < ALLOC_CHUNK? ALLOC_CHUNK : length;
-        dh->private_buffer = xtrymalloc ( dh->private_len );
-        if (!dh->private_buffer) {
-            dh->private_len = 0;
-            return mk_error (Out_Of_Core);
+  if (dh->type == GPGME_DATA_TYPE_NONE)
+    {
+      /* Convert it to a mem data type.  */
+      assert (!dh->private_buffer);
+      dh->type = GPGME_DATA_TYPE_MEM;
+      dh->private_len = length < ALLOC_CHUNK? ALLOC_CHUNK : length;
+      dh->private_buffer = xtrymalloc (dh->private_len);
+      if (!dh->private_buffer)
+	{
+	  dh->private_len = 0;
+	  return mk_error (Out_Of_Core);
         }
-        dh->writepos = 0;
-        dh->data = dh->private_buffer;
+      dh->writepos = 0;
+      dh->data = dh->private_buffer;
     }
-    else if ( dh->type != GPGME_DATA_TYPE_MEM ) 
-        return mk_error (Invalid_Type);
+  else if (dh->type != GPGME_DATA_TYPE_MEM)
+    return mk_error (Invalid_Type);
     
-    if ( dh->mode != GPGME_DATA_MODE_INOUT 
-         && dh->mode != GPGME_DATA_MODE_IN  )
-        return mk_error (Invalid_Mode);
+  if (dh->mode != GPGME_DATA_MODE_INOUT 
+      && dh->mode != GPGME_DATA_MODE_IN)
+    return mk_error (Invalid_Mode);
 
-    if ( !dh->private_buffer ) {
-        /* we have to copy it now */
-        assert (dh->data);
-        dh->private_len = dh->len+length;
-        if (dh->private_len < ALLOC_CHUNK)
-            dh->private_len = ALLOC_CHUNK;
-        dh->private_buffer = xtrymalloc ( dh->private_len );
-        if (!dh->private_buffer) {
-            dh->private_len = 0;
-            return mk_error (Out_Of_Core);
+  if (!dh->private_buffer)
+    {
+      /* We have to copy it now.  */
+      assert (dh->data);
+      dh->private_len = dh->len+length;
+      if (dh->private_len < ALLOC_CHUNK)
+	dh->private_len = ALLOC_CHUNK;
+      dh->private_buffer = xtrymalloc (dh->private_len);
+      if (!dh->private_buffer)
+	{
+	  dh->private_len = 0;
+	  return mk_error (Out_Of_Core);
         }
-        memcpy ( dh->private_buffer, dh->data, dh->len );
-        dh->writepos = dh->len;
-        dh->data = dh->private_buffer;
+      memcpy (dh->private_buffer, dh->data, dh->len);
+      dh->writepos = dh->len;
+      dh->data = dh->private_buffer;
     }
 
-    /* allocate more memory if needed */
-    if ( dh->writepos + length > dh->private_len ) {
-        char *p;
-        size_t newlen = dh->private_len
-                        + (length < ALLOC_CHUNK? ALLOC_CHUNK : length);
-        p = xtryrealloc ( dh->private_buffer, newlen );
-        if ( !p ) 
-            return mk_error (Out_Of_Core);
-        dh->private_buffer = p;
-        dh->private_len = newlen;
-        dh->data = dh->private_buffer;
-        assert ( !(dh->writepos + length > dh->private_len) );      
+    /* Allocate more memory if needed.  */
+  if (dh->writepos + length > dh->private_len)
+    {
+      char *p;
+      size_t newlen = dh->private_len
+	+ (length < ALLOC_CHUNK? ALLOC_CHUNK : length);
+      p = xtryrealloc (dh->private_buffer, newlen);
+      if (!p) 
+	return mk_error (Out_Of_Core);
+      dh->private_buffer = p;
+      dh->private_len = newlen;
+      dh->data = dh->private_buffer;
+      assert (!(dh->writepos + length > dh->private_len));
     }
 
-    memcpy ( dh->private_buffer + dh->writepos, buffer, length );
-    dh->writepos += length;
-    dh->len += length;
+  memcpy (dh->private_buffer + dh->writepos, buffer, length);
+  dh->writepos += length;
+  dh->len += length;
 
-    return 0;
-}
-
-GpgmeError
-_gpgme_data_append_string ( GpgmeData dh, const char *s )
-{
-    return _gpgme_data_append ( dh, s, s? strlen(s):0 );
+  return 0;
 }
 
 
 GpgmeError
-_gpgme_data_append_for_xml ( GpgmeData dh,
-                             const char *buffer, size_t len )
+_gpgme_data_append_string (GpgmeData dh, const char *s)
 {
-    const char *text, *s;
-    size_t n;
-    int rc = 0; 
+  return _gpgme_data_append (dh, s, s ? strlen(s) : 0);
+}
+
+
+GpgmeError
+_gpgme_data_append_for_xml (GpgmeData dh,
+			    const char *buffer, size_t len)
+{
+  const char *text, *s;
+  size_t n;
+  int rc = 0; 
        
-    if ( !dh || !buffer )
-        return mk_error (Invalid_Value);
+  if (!dh || !buffer)
+    return mk_error (Invalid_Value);
 
-    do {
-        for (text=NULL, s=buffer, n=len; n && !text; s++, n-- ) {
-            if ( *s == '<' ) 
-                text = "&lt;";
-            else if ( *s == '>' ) 
-                text = "&gt;";  /* not sure whether this is really needed */
-            else if ( *s == '&' ) 
-                text = "&amp;";
-            else if ( !*s )
-                text = "&#00;";
+  do
+    {
+      for (text=NULL, s = buffer, n = len; n && !text; s++, n--)
+	{
+	  if (*s == '<') 
+	    text = "&lt;";
+	  else if (*s == '>')
+	    text = "&gt;";  /* Not sure whether this is really needed.  */
+	  else if (*s == '&')
+	    text = "&amp;";
+	  else if (!*s)
+	    text = "&#00;";
         }
-        if (text) {
-            s--; n++;
+      if (text)
+	{
+	  s--;
+	  n++;
         }
-        if (s != buffer) 
-            rc = _gpgme_data_append ( dh, buffer, s-buffer );
-        if ( !rc && text) {
-            rc = _gpgme_data_append_string ( dh, text );
-            s++; n--;
+      if (s != buffer) 
+	rc = _gpgme_data_append (dh, buffer, s-buffer);
+      if (!rc && text)
+	{
+	  rc = _gpgme_data_append_string (dh, text);
+	  s++;
+	  n--;
         }
-        buffer = s;
-        len = n;
-    } while ( !rc && len );
-    return rc;
+      buffer = s;
+      len = n;
+    }
+  while (!rc && len);
+  return rc;
 }
 
 
@@ -727,61 +796,63 @@ _gpgme_data_append_for_xml ( GpgmeData dh,
  * valid XML. 
  */
 GpgmeError
-_gpgme_data_append_string_for_xml ( GpgmeData dh, const char *string )
+_gpgme_data_append_string_for_xml (GpgmeData dh, const char *string)
 {
-    return _gpgme_data_append_for_xml ( dh, string, strlen (string) );
+  return _gpgme_data_append_for_xml (dh, string, strlen (string));
 }
 
 
 static int
-hextobyte( const byte *s )
+hextobyte(const byte *s)
 {
-    int c;
+  int c;
 
-    if( *s >= '0' && *s <= '9' )
-	c = 16 * (*s - '0');
-    else if( *s >= 'A' && *s <= 'F' )
-	c = 16 * (10 + *s - 'A');
-    else if( *s >= 'a' && *s <= 'f' )
-	c = 16 * (10 + *s - 'a');
-    else
-	return -1;
-    s++;
-    if( *s >= '0' && *s <= '9' )
-	c += *s - '0';
-    else if( *s >= 'A' && *s <= 'F' )
-	c += 10 + *s - 'A';
-    else if( *s >= 'a' && *s <= 'f' )
-	c += 10 + *s - 'a';
-    else
-	return -1;
-    return c;
+  if (*s >= '0' && *s <= '9')
+    c = 16 * (*s - '0');
+  else if (*s >= 'A' && *s <= 'F')
+    c = 16 * (10 + *s - 'A');
+  else if (*s >= 'a' && *s <= 'f')
+    c = 16 * (10 + *s - 'a');
+  else
+    return -1;
+  s++;
+  if (*s >= '0' && *s <= '9')
+    c += *s - '0';
+  else if (*s >= 'A' && *s <= 'F')
+    c += 10 + *s - 'A';
+  else if (*s >= 'a' && *s <= 'f')
+    c += 10 + *s - 'a';
+  else
+    return -1;
+  return c;
 }
 
 /* 
- * Append a string with percent style (%XX) escape characters as XML
+ * Append a string with percent style (%XX) escape characters as XML.
  */
 GpgmeError
-_gpgme_data_append_percentstring_for_xml ( GpgmeData dh, const char *string )
+_gpgme_data_append_percentstring_for_xml (GpgmeData dh, const char *string)
 {
-    const byte *s;
-    byte *buf, *d;
-    int val;
-    GpgmeError err;
+  const byte *s;
+  byte *buf, *d;
+  int val;
+  GpgmeError err;
 
-    d = buf = xtrymalloc ( strlen (string) );
-    for (s=string; *s; s++ ) {
-        if ( *s == '%' && (val=hextobyte (s+1)) != -1 ) {
-            *d++ = val;
-            s += 2;
+  d = buf = xtrymalloc (strlen (string));
+  for (s = string; *s; s++)
+    {
+      if (*s == '%' && (val = hextobyte (s+1)) != -1)
+	{
+	  *d++ = val;
+	  s += 2;
         }
-        else
-            *d++ = *s;
+      else
+	*d++ = *s;
     }
 
-    err = _gpgme_data_append_for_xml ( dh, buf, d - buf );
-    xfree (buf);
-    return err;
+  err = _gpgme_data_append_for_xml (dh, buf, d - buf);
+  xfree (buf);
+  return err;
 }
 
 /* Functions to support the wait interface.  */
