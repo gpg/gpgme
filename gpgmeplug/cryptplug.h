@@ -1702,11 +1702,11 @@ bool encryptAndSignMessage( const char* cleartext,
           \c true, otherwise
           \c false.
 */
-bool decryptMessage( const char* ciphertext,
-                     bool        cipherIsBinary,
-                     int         cipherLen,
+bool decryptMessage( const char*  ciphertext,
+                     bool         cipherIsBinary,
+                     int          cipherLen,
                      const char** cleartext,
-                     const char* certificate,
+                     const char*  certificate,
                      int* errId,
                      char** errTxt );
 
@@ -1721,10 +1721,15 @@ bool decryptMessage( const char* ciphertext,
    object pointed to will contain meta information about
    the signature after the function call.
 */
-bool decryptAndCheckMessage( const char* ciphertext,
+bool decryptAndCheckMessage( const char*  ciphertext,
+                             bool         cipherIsBinary,
+                             int          cipherLen,
                              const char** cleartext,
-                             const char* certificate,
-                             struct SignatureMetaData* sigmeta );
+                             const char*  certificate,
+                             bool*        signatureFound,
+                             struct SignatureMetaData* sigmeta,
+                             int*   errId,
+                             char** errTxt );
 
 
 /*! \ingroup groupCertAct
