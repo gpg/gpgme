@@ -123,7 +123,9 @@ struct gpg_object_s
   struct GpgmeIOCbs io_cbs;
 };
 
+typedef struct gpg_object_s *GpgObject;
 
+
 static void
 gpg_io_event (void *engine, GpgmeEventIO type, void *type_data)
 {

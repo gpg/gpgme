@@ -97,7 +97,9 @@ struct gpgsm_object_s
   struct GpgmeIOCbs io_cbs;
 };
 
+typedef struct gpgsm_object_s *GpgsmObject;
 
+
 static const char *
 gpgsm_get_version (void)
 {

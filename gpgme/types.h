@@ -32,18 +32,6 @@ typedef GpgmeError (*GpgmeCommandHandler) (void*, GpgmeStatusCode code,
 					   const char *keyword, const char **result);
 
 
-/*-- engine.c --*/
-struct engine_object_s;
-typedef struct engine_object_s *EngineObject;
-
-/*-- engine-gpgsm.c --*/
-struct gpgsm_object_s;
-typedef struct gpgsm_object_s *GpgsmObject;
-
-/*-- rungpg.c --*/
-struct gpg_object_s;
-typedef struct gpg_object_s *GpgObject;
-
 /*-- verify.c --*/
 struct verify_result_s;
 typedef struct verify_result_s *VerifyResult;

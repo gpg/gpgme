@@ -1,5 +1,12 @@
 2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* types.h (EngineObject): Move typedef to ...
+	* engine.h: ... here.
+	* types.h (GpgObject): Move typedef to ...
+	* rungpg.c: ... here.
+	* types.h (GpgsmObject): Move typedef to ...
+	* engine-gpgsm.c: ... here.
+
 	* util.h (return_if_fail, return_null_if_fail,
 	return_val_if_fail): Remove macro.
 	* gpgme.c (gpgme_cancel): Don't use return_if_fail.
