@@ -116,31 +116,63 @@ keylist_status_handler (void *priv, gpgme_status_code_t code, char *args)
 }
 
 
-
 static void
-set_mainkey_trust_info (gpgme_key_t key, const char *src)
+set_subkey_trust_info (gpgme_subkey_t subkey, const char *src)
 {
-  /* Look at letters and stop at the first digit.  */
   while (*src && !isdigit (*src))
     {
       switch (*src)
 	{
 	case 'e':
-	  key->subkeys->expired = 1;
+	  subkey->expired = 1;
 	  break;
 
 	case 'r':
-	  key->subkeys->revoked = 1;
+	  subkey->revoked = 1;
 	  break;
 
 	case 'd':
           /* Note that gpg 1.3 won't print that anymore but only uses
              the capabilities field. */
-	  key->subkeys->disabled = 1;
+	  subkey->disabled = 1;
 	  break;
 
 	case 'i':
-	  key->subkeys->invalid = 1;
+	  subkey->invalid = 1;
+	  break;
+        }
+      src++;
+    }
+}
+
+
+static void
+set_mainkey_trust_info (gpgme_key_t key, const char *src)
+{
+  /* First set the trust info of the main key (the first subkey).  */
+  set_subkey_trust_info (key->subkeys, src);
+
+  /* Now set the summarized trust info.  */
+  while (*src && !isdigit (*src))
+    {
+      switch (*src)
+	{
+	case 'e':
+	  key->expired = 1;
+	  break;
+
+	case 'r':
+	  key->revoked = 1;
+	  break;
+
+	case 'd':
+          /* Note that gpg 1.3 won't print that anymore but only uses
+             the capabilities field. */
+	  key->disabled = 1;
+	  break;
+
+	case 'i':
+	  key->invalid = 1;
 	  break;
         }
       src++;
@@ -189,89 +221,6 @@ set_userid_flags (gpgme_key_t key, const char *src)
 
 
 static void
-set_subkey_trust_info (gpgme_subkey_t subkey, const char *src)
-{
-  /* Look at letters and stop at the first digit.  */
-  while (*src && !isdigit (*src))
-    {
-      switch (*src)
-	{
-	case 'e':
-	  subkey->expired = 1;
-	  break;
-
-	case 'r':
-	  subkey->revoked = 1;
-	  break;
-
-	case 'd':
-	  subkey->disabled = 1;
-	  break;
-
-	case 'i':
-	  subkey->invalid = 1;
-	  break;
-        }
-      src++;
-    }
-}
-
-
-static void
-set_mainkey_capability (gpgme_key_t key, const char *src)
-{
-  while (*src)
-    {
-      switch (*src)
-	{
-	case 'e':
-	  key->subkeys->can_encrypt = 1;
-	  break;
-
-	case 's':
-	  key->subkeys->can_sign = 1;
-	  break;
-
-	case 'c':
-	  key->subkeys->can_certify = 1;
-	  break;
-
-	case 'a':
-	  key->subkeys->can_authenticate = 1;
-	  break;
-
-        case 'd':
-        case 'D':
-          /* Note, that this flag is also set using the key validity
-             field for backward compatibility with gpg 1.2.  We use d
-             and D, so that a future gpg version will be able to
-             disable certain subkeys. Currently it is expected that
-             gpg sets this for the primary key. */
-       	  key->subkeys->disabled = 1;
-          break;
-
-	case 'E':
-	  key->can_encrypt = 1;
-	  break;
-
-	case 'S':
-	  key->can_sign = 1;
-	  break;
-
-	case 'C':
-	  key->can_certify = 1;
-	  break;
-
-	case 'A':
-	  key->can_authenticate = 1;
-	  break;
-        }
-      src++;
-    }
-}
-
-
-static void
 set_subkey_capability (gpgme_subkey_t subkey, const char *src)
 {
   while (*src)
@@ -293,10 +242,60 @@ set_subkey_capability (gpgme_subkey_t subkey, const char *src)
 	case 'a':
 	  subkey->can_authenticate = 1;
 	  break;
+
+	case 'd':
+	  subkey->disabled = 1;
+	  break;
         }
       src++;
     }
 }
+
+
+static void
+set_mainkey_capability (gpgme_key_t key, const char *src)
+{
+  /* First set the capabilities of the main key (the first subkey).  */
+  set_subkey_capability (key->subkeys, src);
+
+  while (*src)
+    {
+      switch (*src)
+	{
+	case 'd':
+        case 'D':
+          /* Note, that this flag is also set using the key validity
+             field for backward compatibility with gpg 1.2.  We use d
+             and D, so that a future gpg version will be able to
+             disable certain subkeys. Currently it is expected that
+             gpg sets this for the primary key. */
+       	  key->disabled = 1;
+          break;
+
+	case 'e':
+	case 'E':
+	  key->can_encrypt = 1;
+	  break;
+
+	case 's':
+	case 'S':
+	  key->can_sign = 1;
+	  break;
+
+	case 'c':
+	case 'C':
+	  key->can_certify = 1;
+	  break;
+
+	case 'a':
+	case 'A':
+	  key->can_authenticate = 1;
+	  break;
+        }
+      src++;
+    }
+}
+
 
 static void
 set_ownertrust (gpgme_key_t key, const char *src)
