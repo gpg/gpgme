@@ -287,6 +287,10 @@ _gpgme_io_write ( int fd, const void *buffer, size_t count )
     DWORD nwritten;
     HANDLE h = fd_to_handle (fd);
 
+#warning writing blocks for large counts, so we limit it here.
+    if (count > 500)
+        count = 500;
+
     DEBUG2 ("fd %d: about to write %d bytes\n", fd, (int)count );
     if ( !WriteFile ( h, buffer, count, &nwritten, NULL) ) {
         DEBUG1 ("WriteFile failed: ec=%d\n", (int)GetLastError ());
