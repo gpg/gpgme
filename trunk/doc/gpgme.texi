@@ -2315,8 +2315,8 @@ The key contained new signatures.
 @item GPGME_IMPORT_SUBKEY
 The key contained new sub keys.
 
-@item GPGME_IMPORT_PRIVATE
-The key contained a private key.
+@item GPGME_IMPORT_SECRET
+The key contained a secret key.
 @end table
 @end table
 @end deftp
