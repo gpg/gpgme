@@ -83,7 +83,10 @@ check_result (gpgme_import_result_t result, char *fpr, int secret)
     {
       fprintf (stderr, "Unexpected number of new signatures %i\n",
 	       result->new_signatures);
-      exit (1);
+      if (result->new_signatures == 2)
+        fprintf (stderr, "### ignored due to gpg 1.3.4 problems\n");
+      else
+        exit (1);
     }
   if (result->new_revocations != 0)
     {

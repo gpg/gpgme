@@ -1,4 +1,4 @@
-Noteworthy changes in version 0.4.4 (unreleased)
+Noteworthy changes in version 0.4.4 (2004-01-12)
 ------------------------------------------------
 
  * The member "class" in gpgme_key_sig_t and gpgme_new_signature_t has
