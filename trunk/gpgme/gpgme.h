@@ -44,7 +44,7 @@ extern "C" {
  * let autoconf (using the AM_PATH_GPGME macro) check that this
  * header matches the installed library.
  * Warning: Do not edit the next line.  configure will do that for you! */
-#define GPGME_VERSION "0.2.3"
+#define GPGME_VERSION "0.2.3a"
 
 
 
@@ -152,6 +152,12 @@ typedef enum {
     GPGME_VALIDITY_ULTIMATE = 5
 } GpgmeValidity;
 
+
+typedef enum {
+  GPGME_PROTOCOL_OpenPGP = 0, /* default */
+  GPGME_PROTOCOL_CMS = 1,
+  GPGME_PROTOCOL_AUTO = 2
+} GpgmeProtocol;
 
 typedef const char *(*GpgmePassphraseCb)(void*,
                                          const char *desc, void *r_hd);

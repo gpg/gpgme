@@ -9,7 +9,7 @@ NAMES='Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel India
 
 if [ "$1" = "--clean" ]; then
     (for i in $NAMES; do
-	[ -d $i ] && rm -r $i
+	[ -d $i ] && rm -r $i || true
     done) || true
     exit 0
 fi

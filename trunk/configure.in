@@ -24,15 +24,12 @@ AC_REVISION($Revision$)dnl
 AC_INIT(gpgme/gpgme.h)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
-#############################################
 # Version numbers (Remember to change them just before a release)
-# 1. No interfaces changed, only implementations (good): Increment REVISION.
-# 2. Interfaces added, none removed (good): Increment CURRENT, increment
-#    AGE, set REVISION to 0.
-# 3. Interfaces removed (BAD, breaks upward compatibility): Increment
-#    CURRENT, set AGE and REVISION to 0.
+#   (Interfaces removed:    CURRENT++, AGE=0, REVISION=0)
+#   (Interfaces added:      CURRENT++, AGE++, REVISION=0)
+#   (No interfaces changed:                   REVISION++)
 AM_INIT_AUTOMAKE(gpgme,0.2.3a)
-# 
+# XXXX new functions
 LIBGPGME_LT_CURRENT=4
 LIBGPGME_LT_AGE=4
 LIBGPGME_LT_REVISION=0

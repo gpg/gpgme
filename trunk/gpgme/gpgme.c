@@ -195,6 +195,28 @@ _gpgme_set_op_info (GpgmeCtx c, GpgmeData info)
         c->op_info = info;
 }
 
+GpgmeError
+gpgme_set_protocol (GpgmeCtx c, GpgmeProtocol prot)
+{
+  if (!c)
+    return mk_error (Invalid_Value);
+  
+  switch (prot)
+    {
+    case GPGME_PROTOCOL_OPENPGP:
+      c->use_cms = 0;
+      break;
+    case GPGME_PROTOCOL_CMS:
+      c->use_cms = 1;
+      break;
+    case GPGME_PROTOCOL_AUTO:
+      return mk_error (Not_Implemented);
+    default:
+      return mk_error (Invalid_Value);
+    }
+  
+  return 0;
+}
 
 /**
  * gpgme_set_armor:
@@ -234,7 +256,8 @@ gpgme_get_armor (GpgmeCtx c)
  * @yes: boolean flag whether textmode should be enabled
  * 
  * Enable or disable the use of the special textmode.  Textmode is for example
- * used for MIME (RFC2015) signatures
+ * used for the RFC2015 signatures; note that the updated RFC 3156 mandates 
+ * that the MUA does some preparations so that textmode is not anymore needed.
  **/
 void
 gpgme_set_textmode ( GpgmeCtx c, int yes )
@@ -309,12 +332,15 @@ gpgme_set_keylist_mode ( GpgmeCtx c, int mode )
 void
 gpgme_set_passphrase_cb ( GpgmeCtx c, GpgmePassphraseCb cb, void *cb_value )
 {
-    c->passphrase_cb = cb;
-    c->passphrase_cb_value = cb_value;
+  if (c)
+    {
+      c->passphrase_cb = cb;
+      c->passphrase_cb_value = cb_value;
+    }
 }
 
 /**
- * gpgme_set_pprogress_cb:
+ * gpgme_set_progress_cb:
  * @c: the context 
  * @cb: A callback function
  * @cb_value: The value passed to the callback function
@@ -333,8 +359,11 @@ gpgme_set_passphrase_cb ( GpgmeCtx c, GpgmePassphraseCb cb, void *cb_value )
 void
 gpgme_set_progress_cb ( GpgmeCtx c, GpgmeProgressCb cb, void *cb_value )
 {
-    c->progress_cb = cb;
-    c->progress_cb_value = cb_value;
+  if (c)
+    {
+      c->progress_cb = cb;
+      c->progress_cb_value = cb_value;
+    }
 }
 
 

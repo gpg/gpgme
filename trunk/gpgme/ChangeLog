@@ -1,3 +1,13 @@
+2001-10-15  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.h (GpgmeProtocol): New.
+	* gpgme.c (gpgme_set_protocol): New.
+
+2001-09-26  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.c (gpgme_set_passphrase_cb): Ignore a NULL context.
+	(gpgme_set_progress_cb): Ditto. Suggested by Mark Mutz.
+
 2001-09-17  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (finish_key): Shortcut for no tmp_key.  Changed all
