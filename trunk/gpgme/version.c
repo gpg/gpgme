@@ -1,6 +1,6 @@
 /* version.c - Version check routines.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -27,7 +27,7 @@
 #include <ctype.h>
 
 #include "gpgme.h"
-#include "io.h"
+#include "priv-io.h"
 
 /* For _gpgme_sema_subsystem_init ().  */
 #include "sema.h"

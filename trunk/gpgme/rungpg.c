@@ -1,6 +1,6 @@
 /* rungpg.c - Gpg Engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -33,7 +33,7 @@
 #include "ops.h"
 #include "wait.h"
 #include "context.h"  /*temp hack until we have GpmeData methods to do I/O */
-#include "io.h"
+#include "priv-io.h"
 #include "sema.h"
 #include "debug.h"
 

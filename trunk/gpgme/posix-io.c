@@ -1,6 +1,6 @@
 /* posix-io.c - Posix I/O functions
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2004, 2005 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -35,7 +35,7 @@
 #include <sys/wait.h>
 
 #include "util.h"
-#include "io.h"
+#include "priv-io.h"
 #include "sema.h"
 #include "ath.h"
 #include "debug.h"
