@@ -32,6 +32,7 @@
 
 struct import_result_s
 {
+  int any_imported;
   GpgmeData xmlinfo;
 };
 
@@ -55,6 +56,8 @@ append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
 #define MAX_IMPORTED_FIELDS 14
   static const char *const imported_fields[MAX_IMPORTED_FIELDS]
     = { "keyid", "username", 0 };
+  static const char *const imported_fields_x509[MAX_IMPORTED_FIELDS]
+    = { "fpr", 0 };
   static const char *const import_res_fields[MAX_IMPORTED_FIELDS]
     = { "count", "no_user_id", "imported", "imported_rsa",
 	"unchanged", "n_uids", "n_subk", "n_sigs", "s_sigsn_revoc",
@@ -88,6 +91,11 @@ append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
 	      *args++ = '\0';
 	    }
 	}
+      
+      /* gpgsm does not print a useful user ID and uses a fingerprint
+         instead of the key ID. */
+      if (code == STATUS_IMPORTED && field[0] && strlen (field[0]) > 16)
+        field_name = imported_fields_x509;
     }
 
   /* Initialize the data buffer if necessary.  */
@@ -116,7 +124,7 @@ append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
       for (i = 0; field_name[i]; i++)
 	{
 	  _gpgme_data_append_string (dh, "    <");
-	  _gpgme_data_append_string (dh, field_name[i]);
+          _gpgme_data_append_string (dh, field_name[i]);
 	  _gpgme_data_append_string (dh, ">");
 	  _gpgme_data_append_string (dh, field[i]);
 	  _gpgme_data_append_string (dh, "</");
@@ -152,6 +160,7 @@ import_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
       break;
 
     case STATUS_IMPORTED:
+      ctx->result.import->any_imported = 1;
     case STATUS_IMPORT_RES:
       append_xml_impinfo (&ctx->result.import->xmlinfo, code, args);
       break;
@@ -211,7 +220,7 @@ gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
  * 
  * Import all key material from @keydata into the key database.
  * 
- * Return value: o on success or an error code.
+ * Return value: 0 on success or an error code.
  **/
 GpgmeError
 gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
@@ -219,5 +228,8 @@ gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
   GpgmeError err = _gpgme_op_import_start (ctx, 1, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
+  if (!err && (!ctx->result.import || !ctx->result.import->any_imported))
+    err = -1; /* Nothing at all imported. */
   return err;
 }
+

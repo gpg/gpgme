@@ -220,8 +220,10 @@ map_assuan_error (AssuanError err)
     case ASSUAN_Unsupported_Algorithm:
       return mk_error (Not_Implemented);  /* XXX Argh.  */
       
-      /* These are errors internal to GPGME.  */
     case ASSUAN_No_Data_Available:
+      return mk_error (EOF);
+      
+      /* These are errors internal to GPGME.  */
     case ASSUAN_No_Input:
     case ASSUAN_No_Output:
     case ASSUAN_Invalid_Command:

@@ -1,3 +1,8 @@
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm/t-import.c (print_op_info): New.
+	(main): Print operation info.
+
 2002-06-25  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm/Makefile.am (DISTCLEANFILES): new.

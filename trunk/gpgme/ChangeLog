@@ -1,3 +1,13 @@
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	* engine-gpgsm.c (map_assuan_error): Map No_Data_Available to EOF.
+
+	* import.c (append_xml_impinfo): Kludge to print fingerprint
+	instead of keyid for use with gpgsm.
+	(import_status_handler): Set a flag to know whether any import
+	occured.
+	(gpgme_op_import): Reurn -1 if no certificate ewas imported.
+
 2002-06-25  Werner Koch  <wk@gnupg.org>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_set_io_cbs) [ENABLE_GPGSM]: Fixed
