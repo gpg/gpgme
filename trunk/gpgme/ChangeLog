@@ -8,7 +8,6 @@
 	(gpgme_op_edit_start, gpgme_op_edit): Likewise.
 	(gpgme_op_card_edit_start, gpgme_op_card_edit): New functions.
 
-
 2003-09-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (gpg_strerror_r): Change prototype to match
