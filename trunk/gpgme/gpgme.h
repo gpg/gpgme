@@ -339,12 +339,13 @@ char *gpgme_get_op_info (GpgmeCtx ctx, int reserved);
 typedef void (*GpgmeIOCb) (void *data, int fd);
 
 /* The type of a function that can register FNC as the I/O callback
-   function for the file descriptor FD with direction dir (0: inbound,
-   1: outbound).  FNC_DATA should be passed as DATA to FNC.  The
+   function for the file descriptor FD with direction dir (0: for writing,
+   1: for reading).  FNC_DATA should be passed as DATA to FNC.  The
    function should return a TAG suitable for the corresponding
-   GpgmeRemoveIOCb.  */
-typedef void *(*GpgmeRegisterIOCb) (void *data, int fd, int dir,
-				    GpgmeIOCb fnc, void *fnc_data);
+   GpgmeRemoveIOCb, and an error value.  */
+typedef GpgmeError (*GpgmeRegisterIOCb) (void *data, int fd, int dir,
+					 GpgmeIOCb fnc, void *fnc_data,
+					 void **tag);
 
 /* The type of a function that can remove a previously registered I/O
    callback function given TAG as returned by the register
@@ -370,13 +371,13 @@ struct GpgmeIOCbs
 };
 
 /* Set the I/O callback functions in CTX to IO_CBS.  */
-void gpgme_set_op_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs);
+void gpgme_set_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs);
 
 /* Get the current I/O callback functions.  */
-void gpgme_get_op_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs);
+void gpgme_get_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs);
 
 /* Cancel a pending operation in CTX.  */
-void       gpgme_cancel (GpgmeCtx ctx);
+void gpgme_cancel (GpgmeCtx ctx);
 
 /* Process the pending operation and, if HANG is non-zero, wait for
    the pending operation to finish.  */

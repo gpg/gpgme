@@ -47,6 +47,7 @@ void _gpgme_release_result ( GpgmeCtx c );
 void _gpgme_set_op_info (GpgmeCtx c, GpgmeData info);
 
 void _gpgme_op_event_cb (void *data, GpgmeEventIO type, void *type_data);
+void _gpgme_op_event_cb_user (void *data, GpgmeEventIO type, void *type_data);
 
 /*-- wait.c --*/
 GpgmeError _gpgme_wait_one (GpgmeCtx ctx);
@@ -131,6 +132,10 @@ void _gpgme_release_genkey_result (GenKeyResult res);
 
 /*-- keylist.c --*/
 void _gpgme_release_keylist_result (KeylistResult res);
+void _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data);
+
+/*-- trustlist.c --*/
+void _gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data);
 
 /*-- version.c --*/
 const char *_gpgme_compare_versions (const char *my_version,

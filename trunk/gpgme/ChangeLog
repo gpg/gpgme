@@ -1,3 +1,41 @@
+2002-07-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (gpgme_set_io_cbs): Deal with CTX being NULL.
+
+	* gpgme.c (_gpgme_op_event_cb_user): New function.
+	* op-support.c (_gpgme_op_reset): Support a new mode of operation
+	for private or user event loop.  Use new user event callback
+	wrapper.
+	* trustlist.c (gpgme_op_trustlist_start): Use this new mode.
+	* keylist.c (gpgme_op_keylist_start): Likewise.
+
+	* rungpg.c (_gpgme_gpg_io_event): New function.
+	* rungpg.h (_gpgme_gpg_io_event): New prototype.
+	* engine-gpgsm.c (_gpgme_gpg_io_event): New function.
+	* engine-gpgsm.h (_gpgme_gpgsm_io_event): New prototype.
+	* engine.c (_gpgme_engine_io_event): New function.
+	* engine.h (_gpgme_engine_io_event): New prototype.
+	* keylist.c (finish_key): Call _gpgme_engine_io_event, and move
+	the real work for the default IO callback routines to ...
+	(_gpgme_op_keylist_event_cb): ... here.  New function.
+	* trustlist.c (trustlist_colon_handler): Signal
+	GPGME_EVENT_NEXT_TRUSTITEM.  Move queue manipulation to ...
+	(_gpgme_op_trustlist_event_cb): ... here.  New function.
+	* gpgme.c (_gpgme_op_event_cb): Call _gpgme_op_keylist_event_cb
+	and _gpgme_op_trustlist_event_cb when appropriate.
+	* ops.h (_gpgme_op_keylist_event_cb): New prototype.
+	(_gpgme_op_trustlist_event_cb): Likewise.
+	* op-support.c (_gpgme_op_reset): Add comment why we don't use the
+	user provided event handler directly.
+	* gpgme.h (GpgmeRegisterIOCb): Return GpgmeError value, and TAG in
+	a pointer argument.
+	* wait.c (_gpgme_add_io_cb): Likewise.
+	* wait.h (_gpgme_add_io_cb): Likewise for prototype.
+	* rungpg.c (_gpgme_gpg_add_io_cb): Call IO_CBS->add with new
+	argument.  Fix up error handling.
+	* engine-gpgsm.c (_gpgme_gpgsm_add_io_cb): Call IO_CBS->add with
+	new argument, fix up error handling.
+
 2002-06-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* keylist.c (gpgme_op_keylist_ext_start): Always use our own FD
