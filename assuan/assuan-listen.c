@@ -54,7 +54,7 @@ assuan_set_hello_line (ASSUAN_CONTEXT ctx, const char *line)
  * assuan_accept:
  * @ctx: context
  * 
- * Cancel any existing connectiion and wait for a connection from a
+ * Cancel any existing connection and wait for a connection from a
  * client.  The initial handshake is performed which may include an
  * initial authentication or encryption negotiation.
  * 

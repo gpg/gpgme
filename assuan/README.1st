@@ -1,1 +1,3 @@
-Please don't modify it here but in the copy which comes with GnuPG.
+This is a modified copy of the libassuan library.  Don't modify it,
+but instead modify the original Assuan library and merge the changes
+back into this copy.

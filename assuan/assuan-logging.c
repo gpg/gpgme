@@ -1,5 +1,5 @@
-/* assuan-io.c - Wraps the read and write functions.
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+/* assuan-logging.c - Default logging function.
+ *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -19,23 +19,24 @@
  */
 
 #include "assuan-defs.h"
-#include <sys/types.h>
-#include <unistd.h>
+#include <stdio.h>
 
-extern ssize_t pth_read (int fd, void *buffer, size_t size);
-extern ssize_t pth_write (int fd, const void *buffer, size_t size);
+static FILE *_assuan_log;
 
-#pragma weak pth_read
-#pragma weak pth_write
-
-ssize_t
-_assuan_simple_read (ASSUAN_CONTEXT ctx, void *buffer, size_t size)
+void
+assuan_set_assuan_log_stream (FILE *fp)
 {
-  return (pth_read ? pth_read : read) (ctx->inbound.fd, buffer, size);
+  _assuan_log = fp;
 }
 
-ssize_t
-_assuan_simple_write (ASSUAN_CONTEXT ctx, const void *buffer, size_t size)
+FILE *
+assuan_get_assuan_log_stream (void)
 {
-  return (pth_write ? pth_write : write) (ctx->outbound.fd, buffer, size);
+  return _assuan_log ? _assuan_log : stderr;
+}
+
+const char *
+assuan_get_assuan_log_prefix (void)
+{
+  return "";
 }

@@ -1,4 +1,4 @@
-/* assuan-io.c - Wraps the read and write functions.
+/* assuan-socket-server.c - Assuan socket based server
  *	Copyright (C) 2002 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
@@ -18,24 +18,29 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
  */
 
-#include "assuan-defs.h"
-#include <sys/types.h>
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <unistd.h>
 
-extern ssize_t pth_read (int fd, void *buffer, size_t size);
-extern ssize_t pth_write (int fd, const void *buffer, size_t size);
+#include "assuan-defs.h"
 
-#pragma weak pth_read
-#pragma weak pth_write
-
-ssize_t
-_assuan_simple_read (ASSUAN_CONTEXT ctx, void *buffer, size_t size)
+/* Initialize a server.  */
+AssuanError
+assuan_init_domain_server (ASSUAN_CONTEXT *r_ctx,
+			   int rendezvousfd,
+			   pid_t peer)
 {
-  return (pth_read ? pth_read : read) (ctx->inbound.fd, buffer, size);
-}
+  AssuanError err;
 
-ssize_t
-_assuan_simple_write (ASSUAN_CONTEXT ctx, const void *buffer, size_t size)
-{
-  return (pth_write ? pth_write : write) (ctx->outbound.fd, buffer, size);
+  err = _assuan_domain_init (r_ctx, rendezvousfd, peer);
+  if (err)
+    return err;
+
+  (*r_ctx)->is_server = 1;
+  /* A domain server can only be used once.  */
+  (*r_ctx)->pipe_mode = 1;
+
+  return 0;
 }

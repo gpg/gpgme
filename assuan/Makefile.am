@@ -1,5 +1,5 @@
 # Assuan Makefile
-# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 #
 # This file is part of Assuan.
 #
@@ -43,8 +43,10 @@ libassuan_la_SOURCES = \
 	assuan-socket-server.c \
 	assuan-pipe-connect.c \
 	assuan-socket-connect.c  \
-	assuan-io.c
-
+	assuan-io.c \
+	assuan-domain-connect.c \
+	assuan-domain-server.c \
+	assuan-logging.c
 
 assuan-errors.c : assuan.h
 	$(srcdir)/mkerrors < $(srcdir)/assuan.h > assuan-errors.c

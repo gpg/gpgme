@@ -1,5 +1,5 @@
 /* assuan-buffer.c - read and send data
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -27,28 +27,12 @@
 #include <assert.h>
 #include "assuan-defs.h"
 
-#ifdef HAVE_JNLIB_LOGGING
-#include "../jnlib/logging.h"
-#endif
-
-
-static const char *
-my_log_prefix (void)
-{
-#ifdef HAVE_JNLIB_LOGGING
-  return log_get_prefix (NULL);
-#else
-  return "";
-#endif
-}
-
-
 static int
-writen ( int fd, const char *buffer, size_t length )
+writen (ASSUAN_CONTEXT ctx, const char *buffer, size_t length)
 {
   while (length)
     {
-      ssize_t nwritten = _assuan_write (fd, buffer, length);
+      ssize_t nwritten = ctx->io->write (ctx, buffer, length);
       
       if (nwritten < 0)
         {
@@ -62,9 +46,10 @@ writen ( int fd, const char *buffer, size_t length )
   return 0;  /* okay */
 }
 
-/* read an entire line */
+/* Read an entire line.  */
 static int
-readline (int fd, char *buf, size_t buflen, int *r_nread, int *eof)
+readline (ASSUAN_CONTEXT ctx, char *buf, size_t buflen,
+	  int *r_nread, int *eof)
 {
   size_t nleft = buflen;
   char *p;
@@ -73,7 +58,7 @@ readline (int fd, char *buf, size_t buflen, int *r_nread, int *eof)
   *r_nread = 0;
   while (nleft > 0)
     {
-      ssize_t n = _assuan_read (fd, buf, nleft);
+      ssize_t n = ctx->io->read (ctx, buf, nleft);
 
       if (n < 0)
         {
@@ -90,10 +75,9 @@ readline (int fd, char *buf, size_t buflen, int *r_nread, int *eof)
       nleft -= n;
       buf += n;
       *r_nread += n;
-      
-      for (; n && *p != '\n'; n--, p++)
-        ;
-      if (n)
+
+      p = memrchr (p, '\n', n);
+      if (p)
         break; /* at least one full line available - that's enough for now */
     }
 
@@ -105,8 +89,9 @@ int
 _assuan_read_line (ASSUAN_CONTEXT ctx)
 {
   char *line = ctx->inbound.line;
-  int n, nread, atticlen;
+  int nread, atticlen;
   int rc;
+  char *endp = 0;
 
   if (ctx->inbound.eof)
     return -1;
@@ -116,86 +101,92 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
     {
       memcpy (line, ctx->inbound.attic.line, atticlen);
       ctx->inbound.attic.linelen = 0;
-      for (n=0; n < atticlen && line[n] != '\n'; n++)
-        ;
-      if (n < atticlen)
+
+      endp = memchr (line, '\n', atticlen);
+      if (endp)
+	/* Found another line in the attic.  */
 	{
-	  rc = 0; /* found another line in the attic */
+	  rc = 0;
 	  nread = atticlen;
 	  atticlen = 0;
 	}
       else
-        { /* read the rest */
+	/* There is pending data but not a full line.  */
+        {
           assert (atticlen < LINELENGTH);
-          rc = readline (ctx->inbound.fd, line + atticlen,
+          rc = readline (ctx, line + atticlen,
 			 LINELENGTH - atticlen, &nread, &ctx->inbound.eof);
         }
     }
   else
-    rc = readline (ctx->inbound.fd, line, LINELENGTH,
+    /* No pending data.  */
+    rc = readline (ctx, line, LINELENGTH,
                    &nread, &ctx->inbound.eof);
   if (rc)
     {
       if (ctx->log_fp)
-        fprintf (ctx->log_fp, "%s[%p] <- [Error: %s]\n",
-                 my_log_prefix (), ctx, strerror (errno)); 
+	fprintf (ctx->log_fp, "%s[%p] <- [Error: %s]\n",
+		 assuan_get_assuan_log_prefix (), ctx, strerror (errno));
       return ASSUAN_Read_Error;
     }
   if (!nread)
     {
       assert (ctx->inbound.eof);
       if (ctx->log_fp)
-        fprintf (ctx->log_fp, "%s[%p] <- [EOF]\n", my_log_prefix (),ctx); 
-      return -1; 
+	fprintf (ctx->log_fp, "%s[%p] <- [EOF]\n",
+		 assuan_get_assuan_log_prefix (), ctx);
+      return -1;
     }
 
   ctx->inbound.attic.pending = 0;
   nread += atticlen;
-  for (n=0; n < nread; n++)
+
+  if (! endp)
+    endp = memchr (line, '\n', nread);
+
+  if (endp)
     {
-      if (line[n] == '\n')
-        {
-          if (n+1 < nread)
-            {
-              char *s, *d;
-              int i;
+      int n = endp - line + 1;
+      if (n < nread)
+	/* LINE contains more than one line.  We copy it to the attic
+	   now as handlers are allowed to modify the passed
+	   buffer.  */
+	{
+	  int len = nread - n;
+	  memcpy (ctx->inbound.attic.line, endp + 1, len);
+	  ctx->inbound.attic.pending = memrchr (endp + 1, '\n', len) ? 1 : 0;
+	  ctx->inbound.attic.linelen = len;
+	}
 
-              n++;
-              /* we have to copy the rest because the handlers are
-                 allowed to modify the passed buffer */
-              for (d=ctx->inbound.attic.line, s=line+n, i=nread-n; i; i--)
-                {
-                  if (*s=='\n')
-                    ctx->inbound.attic.pending = 1;
-                  *d++ = *s++;
-                }
-              ctx->inbound.attic.linelen = nread-n;
-              n--;
-            }
-          if (n && line[n-1] == '\r')
-            n--;
-          line[n] = 0;
-          ctx->inbound.linelen = n;
-          if (ctx->log_fp)
-            {
-              fprintf (ctx->log_fp, "%s[%p] <- ", my_log_prefix (), ctx); 
-              if (ctx->confidential)
-                fputs ("[Confidential data not shown]", ctx->log_fp);
-              else
-                _assuan_log_print_buffer (ctx->log_fp, 
-                                          ctx->inbound.line,
-                                          ctx->inbound.linelen);
-              putc ('\n', ctx->log_fp);
-            }
-          return 0;
-        }
+      if (endp != line && endp[-1] == '\r')
+	endp --;
+      *endp = 0;
+
+      ctx->inbound.linelen = endp - line;
+      if (ctx->log_fp)
+	{
+	  fprintf (ctx->log_fp, "%s[%p] <- ",
+		   assuan_get_assuan_log_prefix (), ctx);
+	  if (ctx->confidential)
+	    fputs ("[Confidential data not shown]", ctx->log_fp);
+	  else
+	    _assuan_log_print_buffer (ctx->log_fp,
+				      ctx->inbound.line,
+				      ctx->inbound.linelen);
+	  putc ('\n', ctx->log_fp);
+	}
+      return 0;
     }
-
-  if (ctx->log_fp)
-    fprintf (ctx->log_fp, "%s[%p] <- [Invalid line]\n", my_log_prefix (), ctx);
-  *line = 0;
-  ctx->inbound.linelen = 0;
-  return ctx->inbound.eof? ASSUAN_Line_Not_Terminated : ASSUAN_Line_Too_Long;
+  else
+    {
+      if (ctx->log_fp)
+	fprintf (ctx->log_fp, "%s[%p] <- [Invalid line]\n",
+		 assuan_get_assuan_log_prefix (), ctx);
+      *line = 0;
+      ctx->inbound.linelen = 0;
+      return ctx->inbound.eof ? ASSUAN_Line_Not_Terminated
+	: ASSUAN_Line_Too_Long;
+    }
 }
 
 
@@ -233,7 +224,7 @@ assuan_pending_line (ASSUAN_CONTEXT ctx)
 
 
 AssuanError 
-assuan_write_line (ASSUAN_CONTEXT ctx, const char *line )
+assuan_write_line (ASSUAN_CONTEXT ctx, const char *line)
 {
   int rc;
   size_t len;
@@ -250,22 +241,23 @@ assuan_write_line (ASSUAN_CONTEXT ctx, const char *line )
   /* fixme: we should do some kind of line buffering.  */
   if (ctx->log_fp)
     {
-      fprintf (ctx->log_fp, "%s[%p] -> ", my_log_prefix (), ctx); 
+      fprintf (ctx->log_fp, "%s[%p] -> ",
+	       assuan_get_assuan_log_prefix (), ctx);
       if (s)
-        fputs ("[supplied line contained a LF]", ctx->log_fp);
+	fputs ("[supplied line contained a LF]", ctx->log_fp);
       if (ctx->confidential)
-        fputs ("[Confidential data not shown]", ctx->log_fp);
+	fputs ("[Confidential data not shown]", ctx->log_fp);
       else
-        _assuan_log_print_buffer (ctx->log_fp, line, len);
+	_assuan_log_print_buffer (ctx->log_fp, line, len);
       putc ('\n', ctx->log_fp);
     }
 
-  rc = writen (ctx->outbound.fd, line, len);
+  rc = writen (ctx, line, len);
   if (rc)
     rc = ASSUAN_Write_Error;
   if (!rc)
     {
-      rc = writen (ctx->outbound.fd, "\n", 1);
+      rc = writen (ctx, "\n", 1);
       if (rc)
         rc = ASSUAN_Write_Error;
     }
@@ -322,7 +314,9 @@ _assuan_cookie_write_data (void *cookie, const char *buffer, size_t size)
         {
           if (ctx->log_fp)
             {
-              fprintf (ctx->log_fp, "%s[%p] -> ", my_log_prefix (), ctx); 
+	      fprintf (ctx->log_fp, "%s[%p] -> ",
+		       assuan_get_assuan_log_prefix (), ctx);
+
               if (ctx->confidential)
                 fputs ("[Confidential data not shown]", ctx->log_fp);
               else 
@@ -333,7 +327,7 @@ _assuan_cookie_write_data (void *cookie, const char *buffer, size_t size)
             }
           *line++ = '\n';
           linelen++;
-          if (writen (ctx->outbound.fd, ctx->outbound.data.line, linelen))
+          if (writen (ctx, ctx->outbound.data.line, linelen))
             {
               ctx->outbound.data.error = ASSUAN_Write_Error;
               return 0;
@@ -366,19 +360,19 @@ _assuan_cookie_write_flush (void *cookie)
   if (linelen)
     {
       if (ctx->log_fp)
-        {
-          fprintf (ctx->log_fp, "%s[%p] -> ", my_log_prefix (), ctx); 
-          if (ctx->confidential)
-            fputs ("[Confidential data not shown]", ctx->log_fp);
-          else
-            _assuan_log_print_buffer (ctx->log_fp, 
-                                      ctx->outbound.data.line,
-                                      linelen);
-          putc ('\n', ctx->log_fp);
-            }
+	{
+	  fprintf (ctx->log_fp, "%s[%p] -> ",
+		   assuan_get_assuan_log_prefix (), ctx);
+	  if (ctx->confidential)
+	    fputs ("[Confidential data not shown]", ctx->log_fp);
+	  else
+	    _assuan_log_print_buffer (ctx->log_fp,
+				      ctx->outbound.data.line, linelen);
+	  putc ('\n', ctx->log_fp);
+	}
       *line++ = '\n';
       linelen++;
-      if (writen (ctx->outbound.fd, ctx->outbound.data.line, linelen))
+      if (writen (ctx, ctx->outbound.data.line, linelen))
         {
           ctx->outbound.data.error = ASSUAN_Write_Error;
           return 0;
@@ -431,4 +425,24 @@ assuan_send_data (ASSUAN_CONTEXT ctx, const void *buffer, size_t length)
     }
 
   return 0;
+}
+
+AssuanError
+assuan_sendfd (ASSUAN_CONTEXT ctx, int fd)
+{
+  if (! ctx->io->sendfd)
+    return set_error (ctx, Not_Implemented,
+		      "server does not support sending and receiving "
+		      "of file descriptors");
+  return ctx->io->sendfd (ctx, fd);
+}
+
+AssuanError
+assuan_receivefd (ASSUAN_CONTEXT ctx, int *fd)
+{
+  if (! ctx->io->receivefd)
+    return set_error (ctx, Not_Implemented,
+		      "server does not support sending and receiving "
+		      "of file descriptors");
+  return ctx->io->receivefd (ctx, fd);
 }

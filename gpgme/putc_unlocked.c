@@ -1,4 +1,4 @@
-/* fopencookie.c - Dummy glibc replacement
+/* putc_unlocked.c - Replacement for putc_unlocked.
  * Copyright (C) 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -21,17 +21,11 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 #include <stdio.h>
-#include <errno.h>
 
-#include "util.h"
-
-FILE * 
-fopencookie (void *cookie, const char *opentype,
-             cookie_io_functions_t funclist)
+int
+putc_unlocked (int c, FILE *stream)
 {
-  errno = ENOSYS;
-  return NULL;
+  return putc (c, stream);
 }
-
-

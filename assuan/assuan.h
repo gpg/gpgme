@@ -1,5 +1,5 @@
 /* assuan.c - Definitions for the Assuan protocol
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -23,21 +23,20 @@
 
 #include <stdio.h>
 #include <sys/types.h>
-#include <unistd.h> /* for ssize_t */
+#include <unistd.h>
 
 #ifdef __cplusplus
-extern "C" { 
-#if 0
- }
-#endif
+extern "C"
+{
 #endif
 
-typedef enum {
+typedef enum
+{
   ASSUAN_No_Error = 0,
   ASSUAN_General_Error = 1,
   ASSUAN_Out_Of_Core = 2,
   ASSUAN_Invalid_Value = 3,
-  ASSUAN_Timeout = 4,  
+  ASSUAN_Timeout = 4,
   ASSUAN_Read_Error = 5,
   ASSUAN_Write_Error = 6,
   ASSUAN_Problem_Starting_Server = 7,
@@ -105,7 +104,8 @@ typedef enum {
 } AssuanError;
 
 /* This is a list of pre-registered ASSUAN commands */
-typedef enum {
+typedef enum
+{
   ASSUAN_CMD_NOP = 0,
   ASSUAN_CMD_CANCEL,    /* cancel the current request */
   ASSUAN_CMD_BYE,
@@ -127,7 +127,7 @@ typedef struct assuan_context_s *ASSUAN_CONTEXT;
 
 /*-- assuan-handler.c --*/
 int assuan_register_command (ASSUAN_CONTEXT ctx,
-                             int cmd_id, const char *cmd_string,
+                             const char *cmd_string,
                              int (*handler)(ASSUAN_CONTEXT, char *));
 int assuan_register_bye_notify (ASSUAN_CONTEXT ctx,
                                 void (*fnc)(ASSUAN_CONTEXT));
@@ -155,6 +155,12 @@ AssuanError assuan_set_okay_line (ASSUAN_CONTEXT ctx, const char *line);
 void assuan_write_status (ASSUAN_CONTEXT ctx,
                           const char *keyword, const char *text);
 
+/* Negotiate a file descriptor.  If LINE contains "FD=N", returns N
+   assuming a local file descriptor.  If LINE contains "FD" reads a
+   file descriptor via CTX and stores it in *RDF (the CTX must be
+   capable of passing file descriptors).  */
+AssuanError assuan_command_parse_fd (ASSUAN_CONTEXT ctx, char *line,
+				     int *rfd);
 
 /*-- assuan-listen.c --*/
 AssuanError assuan_set_hello_line (ASSUAN_CONTEXT ctx, const char *line);
@@ -180,6 +186,26 @@ AssuanError assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name,
 /*-- assuan-socket-connect.c --*/
 AssuanError assuan_socket_connect (ASSUAN_CONTEXT *ctx, const char *name,
                                    pid_t server_pid);
+
+/*-- assuan-domain-connect.c --*/
+
+/* Connect to a Unix domain socket server.  RENDEZVOUSFD is
+   bidirectional file descriptor (normally returned via socketpair)
+   which the client can use to rendezvous with the server.  SERVER s
+   the server's pid.  */
+AssuanError assuan_domain_connect (ASSUAN_CONTEXT *r_ctx,
+				   int rendezvousfd,
+				   pid_t server);
+
+/*-- assuan-domain-server.c --*/
+
+/* RENDEZVOUSFD is a bidirectional file descriptor (normally returned
+   via socketpair) that the domain server can use to rendezvous with
+   the client.  CLIENT is the client's pid.  */
+AssuanError assuan_init_domain_server (ASSUAN_CONTEXT *r_ctx,
+				       int rendezvousfd,
+				       pid_t client);
+
 
 /*-- assuan-connect.c --*/
 void assuan_disconnect (ASSUAN_CONTEXT ctx);
@@ -209,6 +235,12 @@ AssuanError assuan_write_line (ASSUAN_CONTEXT ctx, const char *line );
 AssuanError assuan_send_data (ASSUAN_CONTEXT ctx,
                               const void *buffer, size_t length);
 
+/* The file descriptor must be pending before assuan_receivefd is
+   call.  This means that assuan_sendfd should be called *before* the
+   trigger is sent (normally via assuan_send_data ("I sent you a
+   descriptor")).  */
+AssuanError assuan_sendfd (ASSUAN_CONTEXT ctx, int fd);
+AssuanError assuan_receivefd (ASSUAN_CONTEXT ctx, int *fd);
 
 /*-- assuan-util.c --*/
 void assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
@@ -225,8 +257,21 @@ void assuan_end_confidential (ASSUAN_CONTEXT ctx);
 /*-- assuan-errors.c (built) --*/
 const char *assuan_strerror (AssuanError err);
 
+/*-- assuan-logging.c --*/
+
+/* Set the stream to which assuan should log.  By default, this is
+   stderr.  */
+extern void assuan_set_assuan_log_stream (FILE *fp);
+
+/* Return the stream which is currently being using for logging.  */
+extern FILE *assuan_get_assuan_log_stream (void);
+
+/* User defined call back.  Return a prefix to be used at the start of
+   a line emitted by assuan on the log stream.  The default
+   implementation returns the empty string, i.e. ""  */
+extern const char *assuan_get_assuan_log_prefix (void);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /*ASSUAN_H*/
+#endif /* ASSUAN_H */
