@@ -1,3 +1,16 @@
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgsmplug_la_LIBADD): New variable.
+	(libgpgsmplug_la_LDFLAGS): Likewise.
+	(libgpgsmplug_la_SOURCES): Likewise.
+	(lib_LTLIBRARIES): Add libgpgsmplug.la.
+	(INCLUDES): Include the local gpgme.h.
+
+	* gpgmeplug.c (signMessage): Set protocol.
+	(GPGMEPLUG_PROTOCOL) [!GPGMEPLUG_PROTOCOL]: Set
+	GPGMEPLUG_PROTOCOL.
+	* gpgsmplug.c: New file.
+
 2001-11-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgmeplug.c: Include config.h only if [HAVE_CONFIG_H].  Do not

@@ -52,6 +52,9 @@
 #include <errno.h>
 
 #include "gpgme.h"
+#ifndef GPGMEPLUG_PROTOCOL
+#define GPGMEPLUG_PROTOCOL GPGME_PROTOCOL_OpenPGP
+#endif
 
 #include "cryptplug.h"
 
@@ -719,6 +722,7 @@ bool signMessage( const char*  cleartext,
     return false;
 
   gpgme_new (&ctx);
+  gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
 
 
 
