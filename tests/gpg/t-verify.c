@@ -59,7 +59,14 @@ static const char test_sig1[] =
 "-----END PGP SIGNATURE-----\n"
 #endif
 ;
-
+static const char test_sig2[] =
+"-----BEGIN PGP MESSAGE-----\n"
+"\n"
+"owGbwMvMwCSoW1RzPCOz3IRxjXQSR0lqcYleSUWJTZOvjVdpcYmCu1+oQmaJIleH\n"
+"GwuDIBMDGysTSIqBi1MApi+nlGGuwDeHao53HBr+FoVGP3xX+kvuu9fCMJvl6IOf\n"
+"y1kvP4y+8D5a11ang0udywsA\n"
+"=Crq6\n"
+"-----END PGP MESSAGE-----\n";
 
 
 #define fail_if_err(a) do { if(a) {                                       \
@@ -133,6 +140,7 @@ main (int argc, char **argv )
     GpgmeSigStat status;
     char *nota;
     int n = 0;
+    int i, j;
 
     err = gpgme_new (&ctx);
     fail_if_err (err);
@@ -151,11 +159,13 @@ main (int argc, char **argv )
 
     puts ("checking a valid message:\n");
     err = gpgme_op_verify (ctx, sig, text, &status );
-    print_sig_stat ( ctx, status );
-    print_sig_stat ( ctx, status );
-    print_sig_stat ( ctx, status );
-    print_sig_stat ( ctx, status );
     fail_if_err (err);
+    print_sig_stat ( ctx, status );
+    if (status != GPGME_SIG_STAT_GOOD)
+      {
+	fprintf (stderr, "%s:%d: Wrong sig stat\n", __FILE__, __LINE__);
+	exit (1);
+      }
 
     if ( (nota=gpgme_get_notation (ctx)) )
         printf ("---Begin Notation---\n%s---End Notation---\n", nota );
@@ -167,20 +177,50 @@ main (int argc, char **argv )
     fail_if_err (err);
     gpgme_data_rewind ( sig );
     err = gpgme_op_verify (ctx, sig, text, &status );
-
-    print_sig_stat ( ctx, status );
     fail_if_err (err);
+
+    print_sig_stat (ctx, status);
+    if (status != GPGME_SIG_STAT_BAD)
+      {
+	fprintf (stderr, "%s:%d: Wrong sig stat\n", __FILE__, __LINE__);
+	exit (1);
+      }
     if ( (nota=gpgme_get_notation (ctx)) )
         printf ("---Begin Notation---\n%s---End Notation---\n", nota );
 
+    puts ("checking a normal signature:");
     gpgme_data_release (sig);
     gpgme_data_release (text);
+    err = gpgme_data_new_from_mem (&sig,  test_sig2, strlen (test_sig2), 0);
+    fail_if_err (err);
+    err = gpgme_data_new (&text);
+    fail_if_err (err);
+    err = gpgme_op_verify (ctx, sig, text, &status);
+    fail_if_err (err);
+
+    nota = gpgme_data_release_and_get_mem (text, &i);
+    for (j = 0; j < i; j++)
+      putchar (nota[j]);
+    if (strncmp (nota, test_text1, strlen (test_text1)))
+      {
+	fprintf (stderr, "%s:%d: Wrong plaintext\n", __FILE__, __LINE__);
+	exit (1);
+      }
+   
+    print_sig_stat (ctx, status);
+    if (status != GPGME_SIG_STAT_GOOD)
+      {
+	fprintf (stderr, "%s:%d: Wrong sig stat\n", __FILE__, __LINE__);
+	exit (1);
+      }
+
+    if ((nota = gpgme_get_notation (ctx)))
+      printf ("---Begin Notation---\n%s---End Notation---\n", nota);
+
+    gpgme_data_release (sig);
  
 } while ( argc > 1 && !strcmp( argv[1], "--loop" ) && ++n < 20 );
       gpgme_release (ctx);
     
     return 0;
 }
-
-
-

@@ -1907,9 +1907,14 @@ have a different status.  You can get each key's status with
 @end deftp
 
 @deftypefun GpgmeError gpgme_op_verify (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{sig}}, @w{GpgmeData @var{plain}}, @w{GpgmeSigStat *@var{r_stat}})
-The function @code{gpgme_op_verify} verifies that the detached
-signature in the data object @var{sig} is a valid signature for the
-plaintext in the data object @var{plain}.
+The function @code{gpgme_op_verify} verifies that the signature in the
+data object @var{sig} is a valid signature.  If @var{plain} is
+initialized with plaintext data, it is assumed that @var{sig} is a
+detached signature, and its validity for the plaintext given in
+@var{plain} is verified.  If @var{plain} is an uninitialized data
+object, it is assumed that @var{sig} is a normal (or cleartext)
+signature, and the plaintext is available in @var{plain} after
+successful verification.
 
 The combined status of all signatures is returned in @var{r_stat}.
 The results of the individual signature verifications can be retrieved
@@ -1918,9 +1923,9 @@ with @code{gpgme_get_sig_status} and @code{gpgme_get_sig_key}.
 The function returns @code{GPGME_No_Error} if the operation could be
 completed successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{sig}, @var{plain} or @var{r_stat} is not a valid pointer,
-@code{GPGME_No_Data} if @var{sig} or @var{plain} does not contain any
-data to verify, and passes through any errors that are reported by the
-crypto engine support routines.
+@code{GPGME_No_Data} if @var{sig} does not contain any data to verify,
+and passes through any errors that are reported by the crypto engine
+support routines.
 @end deftypefun
 
 @deftypefun GpgmeError gpgme_op_verify_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{sig}}, @w{GpgmeData @var{plain}})

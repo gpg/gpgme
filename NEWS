@@ -6,6 +6,10 @@
    the ciphertext is not usable for all requested recipients.
    Information about invalid recipients is available with gpgme_get_op_info.
 
+ * gpgme_op_verify now allows to pass an uninitialized data object as
+   its plaintext argument to check for normal and cleartext
+   signatures.  The plaintext is then returned in the data object.
+
  * New interfaces gpgme_set_include_certs and gpgme_get_include_certs
    to set and get the number of certifications to include in S/MIME
    signed messages.
@@ -18,6 +22,7 @@
  * Interface changes relative to the 0.3.3 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_op_encrypt		CHANGED: Can fail with GPGME_Invalid_Recipients
+gpgme_op_verify			EXTENDED: Accepts uninitialized text argument
 gpgme_set_include_certs		NEW
 gpgme_get_include_certs		NEW
 gpgme_op_encrypt_sign		NEW
