@@ -54,11 +54,15 @@ Noteworthy changes in version 0.4.5 (unreleased)
    needed.  Still, it is there if necessary.  If in doubt, contact us
    and we will give our advise for your specific situation.
 
+ * A new key listing mode for validation of the key has been added.
+   See the manual.
+
  * Interface changes relative to the 0.4.4 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_data_seek_cb_t		CHANGED: off_t is now a largefile type.
 gpgme_data_seek			CHANGED: off_t is now a largefile type.
 gpgme_data_new_from_filepart	CHANGED: off_t is now a largefile type.
+GPGME_KEYLIST_MODE_VALIDATE     NEW.
 
 
 Noteworthy changes in version 0.4.4 (2004-01-12)
