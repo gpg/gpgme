@@ -663,6 +663,7 @@ GpgmeError gpgme_op_verify (GpgmeCtx ctx,
 /* Import the key in KEYDATA into the keyring.  */
 GpgmeError gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata);
 GpgmeError gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata);
+GpgmeError gpgme_op_import_ext (GpgmeCtx ctx, GpgmeData keydata, int *nr);
 
 /* Export the keys listed in RECP into KEYDATA.  */
 GpgmeError gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp,

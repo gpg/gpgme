@@ -1,3 +1,13 @@
+2002-08-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h: Add prototype for gpgme_op_import_ext.
+	* import.c (struct import_result_s): New member `nr_considered'.
+	Rename `any_imported' to `nr_imported'.
+	(import_status_handler): Increment nr_imported.  Set nr_considered
+	if appropriate.
+	(gpgme_op_import_ext): New function.
+	(gpgme_op_import): Implement in terms of gpgme_op_import_ext.
+
 2002-08-20  Werner Koch  <wk@gnupg.org>
 
 	* vasprintf.c (int_vasprintf): Hack to handle NULL passed for %s.

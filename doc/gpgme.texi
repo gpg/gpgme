@@ -1932,6 +1932,13 @@ started successfully, @code{GPGME_Invalid_Value} if @var{keydata} if
 @code{GPGME_No_Data} if @var{keydata} is an empty data buffer.
 @end deftypefun
 
+@deftypefun GpgmeError gpgme_op_import_ext (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{keydata}}, @w{int *@var{nr}})
+The function @code{gpgme_op_import_ext} is like
+@code{gpgme_op_import}, but also returns the number of processed keys
+in @var{nr}.  This is the same as the @code{count} information in the
+detailed results available with @code{gpgme_get_op_info}.
+@end deftypefun
+
 
 @node Deleting Keys
 @subsection Deleting Keys
