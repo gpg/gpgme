@@ -549,6 +549,11 @@ gpgsm_status_handler (void *opaque, int pid, int fd)
 	  /* FIXME Save error somewhere.  */
 	  if (gpgsm->status.fnc)
 	    gpgsm->status.fnc (gpgsm->status.fnc_value, STATUS_EOF, "");
+
+	  /* XXX: If an error occured, try our best to terminate the
+	     connection.  */
+	  if (line[0] == 'E')
+	    assuan_write_line (gpgsm->assuan_ctx, "BYE");
 	  return 1;
 	}
 
