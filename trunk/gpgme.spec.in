@@ -29,6 +29,7 @@ make
 rm -fr $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT
 make install prefix=$RPM_BUILD_ROOT/usr infodir=$RPM_BUILD_ROOT%{_infodir}
+rm -f $RPM_BUILD_ROOT%{_infodir}/dir
 
 %clean
 rm -fr $RPM_BUILD_ROOT
@@ -58,6 +59,8 @@ fi
 %{_infodir}/gpgme.info*
 
 %changelog
+* Sat Aug 30 2003 Robert Schiele <rschiele@uni-mannheim.de>
+- %{_infodir}/dir is not packaged, remove to prevent checking failure
 * Mon Jul 01 2002 Wojciech Polak <polak@lodz.pdi.net>
 - initial specfile release for GPGME.
 
