@@ -32,22 +32,6 @@
 #define ROUNDS 20
 
 
-void
-initialize_gpgme (void)
-{
-  static int gpgme_init;
-  static pthread_mutex_t gpgme_init_lock = PTHREAD_MUTEX_INITIALIZER;
-
-  pthread_mutex_lock (&gpgme_init_lock);
-  if (!gpgme_init)
-    {
-      init_gpgme (GPGME_PROTOCOL_OpenPGP);
-      gpgme_init = 1;
-    }
-  pthread_mutex_unlock (&gpgme_init_lock);
-}
-
-
 void *
 thread_one (void *name)
 {
@@ -155,6 +139,8 @@ main (int argc, char *argv[])
 {
   pthread_t tone;
   pthread_t ttwo;
+
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
   pthread_create (&tone, NULL, thread_one, "A");
   pthread_create (&ttwo, NULL, thread_two, "A");

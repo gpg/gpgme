@@ -551,51 +551,17 @@ For example, if you use GNU Pth, the right name is
 @item
 The function @code{gpgme_check_version} must be called before any
 other function in the library, because it initializes the thread
-support subsystem in @acronym{GPGME}.  To achieve this in all
-generality, it is necessary to synchronize the call to this function
-with all other calls to functions in the library, using the
-synchronization mechanisms available in your thread library.
-Otherwise, specific compiler or CPU memory cache optimizations could
-lead to the situation where a thread is started and uses
-@acronym{GPGME} before the effects of the initialization are visible
-for this thread.  It doesn't even suffice to call
-@code{gpgme_check_version} before creating this other
-thread@footnote{In SMP systems the new thread could be started on
-another CPU before the effects of the initialization are seen by that
-CPU's memory cache.  Not doing proper synchronization here leads to
-the same problems the double-checked locking idiom has.  You might
-find that if you don't do proper synchronization, it still works in
-most configurations.  Don't let this fool you.  Someday it might lead
-to subtle bugs when someone tries it on a DEC Alpha or an SMP
-machine.}.
-
-For example, if you are using POSIX threads, each thread that wants to
-call functions in @acronym{GPGME} could call the following function
-before any function in the library:
-
-@example
-#include <stdlib.h>
-#include <locale.h>
-#include <pthread.h>
-#include <gpgme.h>
-
-void
-initialize_gpgme (void)
-@{
-  static int gpgme_init;
-  static pthread_mutext_t gpgme_init_lock = PTHREAD_MUTEX_INITIALIZER;
-
-  pthread_mutex_lock (&gpgme_init_lock);
-  if (!gpgme_init)
-    @{
-      gpgme_check_version (NULL);
-      gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
-      gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
-      gpgme_init = 1;
-    @}
-  pthread_mutex_unlock (&gpgme_init_lock);
-@}
-@end example
+support subsystem in @acronym{GPGME}.  To achieve this in
+multi-threaded programs, you must synchronize the memory with respect
+to other threads that also want to use @acronym{GPGME}.  For this, it
+is sufficient to call @code{gpgme_check_version} before creating the
+other threads using @acronym{GPGME}@footnote{At least this is true for
+POSIX threads, as @code{pthread_create} is a function that
+synchronizes memory with respects to other threads.  There are many
+functions which have this property, a complete list can be found in
+POSIX, IEEE Std 1003.1-2003, Base Definitions, Issue 6, in the
+definition of the term ``Memory Synchronization''.  For other thread
+packages other, more relaxed or more strict rules may apply.}.
 
 @item
 Any @code{gpgme_data_t} and @code{gpgme_ctx_t} object must only be
