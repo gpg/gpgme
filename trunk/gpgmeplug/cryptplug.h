@@ -297,6 +297,8 @@ enum {
 typedef unsigned long SigStatusFlags;
 
 
+#define CRYPTPLUG_CERT_DOES_NEVER_EXPIRE 365000
+
 
 
 
@@ -621,12 +623,18 @@ void setSignatureCertificateExpiryNearWarning( bool );
 */
 bool signatureCertificateExpiryNearWarning( void );
 
-    /*! \ingroup groupConfigSign
-      \brief Returns the number of days that are left until the
-      specified certificate expires. 
-      \param certificate the certificate to check
-    */
-    int signatureCertificateDaysLeftToExpiry( const char* certificate );
+/*! \ingroup groupConfigSign
+   \brief Returns the number of days that are left until the
+   specified certificate expires.
+   
+   Negative values show how many days ago the certificate DID expire,
+   a zero value means the certificate expires today,
+   special value CRYPTPLUG_CERT_DOES_NEVER_EXPIRE means there is
+   no expire date stored in this certificate.
+   
+   \param certificate the certificate to check
+*/
+int signatureCertificateDaysLeftToExpiry( const char* certificate );
 
 /*! \ingroup groupConfigSign
    \brief Specifies the number of days which a signature certificate must
@@ -654,12 +662,18 @@ void setCACertificateExpiryNearWarning( bool );
 */
 bool caCertificateExpiryNearWarning( void );
 
-    /*! \ingroup groupConfigSign
-      \brief Returns the number of days that are left until the
-      CA certificate of the specified certificate expires. 
-      \param certificate the certificate to check
-    */
-    int caCertificateDaysLeftToExpiry( const char* certificate );
+/*! \ingroup groupConfigSign
+  \brief Returns the number of days that are left until the
+  CA certificate of the specified certificate expires. 
+   
+   Negative values show how many days ago the certificate DID expire,
+   a zero value means the certificate expires today,
+   special value CRYPTPLUG_CERT_DOES_NEVER_EXPIRE means there is
+   no expire date stored in this certificate.
+   
+  \param certificate the certificate to check
+*/
+int caCertificateDaysLeftToExpiry( const char* certificate );
 
 /*! \ingroup groupConfigSign
    \brief Specifies the number of days which a CA certificate must
@@ -687,12 +701,18 @@ void setRootCertificateExpiryNearWarning( bool );
 */
 bool rootCertificateExpiryNearWarning( void );
 
-    /*! \ingroup groupConfigSign
-      \brief Returns the number of days that are left until the
-      root certificate of the specified certificate expires. 
-      \param certificate the certificate to check
-    */
-    int rootCertificateDaysLeftToExpiry( const char* certificate );
+/*! \ingroup groupConfigSign
+   \brief Returns the number of days that are left until the
+   root certificate of the specified certificate expires. 
+   
+   Negative values show how many days ago the certificate DID expire,
+   a zero value means the certificate expires today,
+   special value CRYPTPLUG_CERT_DOES_NEVER_EXPIRE means there is
+   no expire date stored in this certificate.
+   
+   \param certificate the certificate to check
+*/
+int rootCertificateDaysLeftToExpiry( const char* certificate );
 
 /*! \ingroup groupConfigSign
    \brief Specifies the number of days which a root certificate must
@@ -863,6 +883,11 @@ bool receiverCertificateExpiryNearWarning( void );
 /*! \ingroup groupConfigCrypt
   \brief Returns the number of days until the specified receiver
   certificate expires.
+   
+   Negative values show how many days ago the certificate DID expire,
+   a zero value means the certificate expires today,
+   special value CRYPTPLUG_CERT_DOES_NEVER_EXPIRE means there is
+   no expire date stored in this certificate.
 */
 int receiverCertificateDaysLeftToExpiry( const char* certificate );
 
@@ -911,6 +936,11 @@ int certificateInChainExpiryNearWarningInterval( void );
 /*! \ingroup groupConfigCrypt
   \brief Returns the number of days until the first certificate in
   the chain of the receiver certificate expires.
+   
+   Negative values show how many days ago the certificate DID expire,
+   a zero value means the certificate expires today,
+   special value CRYPTPLUG_CERT_DOES_NEVER_EXPIRE means there is
+   no expire date stored in this certificate.
 */
 int certificateInChainDaysLeftToExpiry( const char* certificate );
 
