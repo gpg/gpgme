@@ -496,8 +496,6 @@ bool signatureCertificateExpiryNearWarning( void )
 
 int signatureCertificateDaysLeftToExpiry( const char* certificate )
 {
-  // pending (khz): make this work!
-  /*
   GpgmeCtx ctx;
   GpgmeError err;
   GpgmeKey rKey;
@@ -521,10 +519,12 @@ int signatureCertificateDaysLeftToExpiry( const char* certificate )
     }
   }
   gpgme_release( ctx );
+    
+  /* 
+  fprintf( stderr, "gpgmeplug signatureCertificateDaysLeftToExpiry returned %d\n", daysLeft );
+  */
 
   return daysLeft;
-  */
-  return 10;
 }
 
 
@@ -555,6 +555,40 @@ int caCertificateDaysLeftToExpiry( const char* certificate )
        CA certificate for the certificate specified in the parameter
        certificate expires.
     */
+  /*
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeKey rKey;
+  time_t daysLeft = 0;
+
+  gpgme_new( &ctx );
+  gpgme_set_protocol( ctx, GPGMEPLUG_PROTOCOL );
+
+  err = gpgme_op_keylist_start( ctx, certificate, 0 );
+  if ( GPGME_No_Error == err ) {
+    err = gpgme_op_keylist_next( ctx, &rKey );
+    gpgme_op_keylist_end( ctx );
+    if ( GPGME_No_Error == err ) {
+      time_t expire_time = gpgme_key_get_ulong_attr(
+                             rKey,
+                             
+??????????????????????? GPGME_ATTR_EXPIRE,  ???????????????????????
+                             
+                             NULL, 0 );
+      time_t cur_time = time (NULL);
+      daysLeft = expire_time - cur_time;
+      // convert seconds into days
+      daysLeft /= 43200;
+      gpgme_key_release( rKey );
+    }
+  }
+  gpgme_release( ctx );
+    
+   
+  // fprintf( stderr, "gpgmeplug caCertificateDaysLeftToExpiry returned %d\n", daysLeft );
+  return daysLeft;
+  */
+  
   return 10; /* dummy that triggers a warning in the MUA */
 }
 
@@ -585,6 +619,40 @@ int rootCertificateDaysLeftToExpiry( const char* certificate )
        root certificate for the certificate specified in the parameter
        certificate expires.
     */
+  /*
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeKey rKey;
+  time_t daysLeft = 0;
+
+  gpgme_new( &ctx );
+  gpgme_set_protocol( ctx, GPGMEPLUG_PROTOCOL );
+
+  err = gpgme_op_keylist_start( ctx, certificate, 0 );
+  if ( GPGME_No_Error == err ) {
+    err = gpgme_op_keylist_next( ctx, &rKey );
+    gpgme_op_keylist_end( ctx );
+    if ( GPGME_No_Error == err ) {
+      time_t expire_time = gpgme_key_get_ulong_attr(
+                             rKey,
+                             
+??????????????????????? GPGME_ATTR_EXPIRE,  ???????????????????????
+                             
+                             NULL, 0 );
+      time_t cur_time = time (NULL);
+      daysLeft = expire_time - cur_time;
+      // convert seconds into days
+      daysLeft /= 43200;
+      gpgme_key_release( rKey );
+    }
+  }
+  gpgme_release( ctx );
+    
+   
+  // fprintf( stderr, "gpgmeplug rootCertificateDaysLeftToExpiry returned %d\n", daysLeft );
+  return daysLeft;
+  */
+  
   return 10; /* dummy that triggers a warning in the MUA */
 }
 
