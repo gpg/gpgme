@@ -281,10 +281,11 @@ if test "$GPGSM" != "no"; then
   AC_CHECK_FUNCS(funopen)
   if test $ac_cv_func_funopen != yes; then
     # No funopen but we can implement that in terms of fopencookie.
-    AC_CHECK_FUNCS(fopencookie, AC_LIBOBJ(funopen),
-                   AC_MSG_ERROR([[
-No implementation of fopencookie or funopen available.
-]]))
+    if test $ac_cv_func_fopencookie = yes; then
+        AC_LIBOBJ([funopen])
+    else
+        AC_MSG_ERROR([No implementation of fopencookie or funopen available])
+    fi
   fi
 
   AC_REPLACE_FUNCS(isascii)

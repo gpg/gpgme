@@ -1,3 +1,7 @@
+2004-02-06  Moritz Schulte  <mo@g10code.com>
+
+	* configure.ac: Fix funopen replacement mechanism.
+
 2004-01-31  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Add invocation of AC_SYS_LARGEFILE, AC_TYPE_OFF_T
