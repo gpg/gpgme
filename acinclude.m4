@@ -1,5 +1,6 @@
 dnl Macros to configure gpgme
 
+
 dnl GNUPG_FIX_HDR_VERSION(FILE, NAME)
 dnl (wk 2000-11-17)
 AC_DEFUN(GNUPG_FIX_HDR_VERSION,
@@ -19,5 +20,8 @@ AC_DEFUN(GNUPG_FIX_HDR_VERSION,
         AC_MSG_WARN([fixed the $2 macro in $1])
     fi
   ])
+
+
+
 
 

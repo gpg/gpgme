@@ -28,9 +28,9 @@
 
 GpgmeError _gpgme_register_pipe_handler( 
     void *opaque, 
-    int (*handler)(void*,pid_t,int),
+    int (*handler)(void*,int,int),
     void *handler_value,
-    pid_t pid, int fd, int inbound );
+    int pid, int fd, int inbound );
 
 
 

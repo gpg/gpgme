@@ -27,7 +27,6 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <sys/wait.h>
 
 #include "util.h"
 #include "context.h"
@@ -51,9 +50,9 @@
 
 struct wait_item_s {
     volatile int active;
-    int (*handler)(void*,pid_t,int);
+    int (*handler)(void*,int,int);
     void *handler_value;
-    pid_t pid;
+    int pid;
     int inbound;       /* this is an inbound data handler fd */
     int exited;
     int exit_status;  
@@ -99,7 +98,7 @@ propagate_term_results ( const struct wait_item_s *first_q )
 }
 
 static int
-count_active_fds ( pid_t pid )
+count_active_fds ( int pid )
 {
     struct wait_item_s *q;
     int i, count = 0;
@@ -115,7 +114,7 @@ count_active_fds ( pid_t pid )
 
 /* remove the given process from the queue */
 static void
-remove_process ( pid_t pid )
+remove_process ( int pid )
 {
     struct wait_item_s *q;
     int i;
@@ -124,7 +123,7 @@ remove_process ( pid_t pid )
         if (fd_table[i].fd != -1 && (q=fd_table[i].opaque) && q->pid == pid ) {
             xfree (q);
             fd_table[i].opaque = NULL;
-            close (fd_table[i].fd);
+            _gpgme_io_close (fd_table[i].fd);
             fd_table[i].fd = -1;
         }
     }
@@ -237,9 +236,9 @@ do_select ( void )
  */
 GpgmeError
 _gpgme_register_pipe_handler( void *opaque, 
-                              int (*handler)(void*,pid_t,int),
+                              int (*handler)(void*,int,int),
                               void *handler_value,
-                              pid_t pid, int fd, int inbound )
+                              int pid, int fd, int inbound )
 {
     GpgmeCtx ctx = opaque;
     struct wait_item_s *q;
