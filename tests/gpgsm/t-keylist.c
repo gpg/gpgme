@@ -33,12 +33,12 @@
                              } while(0)
 
 static void
-doit ( GpgmeCtx ctx, const char *pattern )
+doit ( GpgmeCtx ctx, const char *pattern, int secret )
 {
     GpgmeError err;
     GpgmeKey key;
 
-    err = gpgme_op_keylist_start (ctx, pattern, 0 );
+    err = gpgme_op_keylist_start (ctx, pattern, secret );
     fail_if_err (err);
     
     while ( !(err = gpgme_op_keylist_next ( ctx, &key )) ) {
@@ -147,6 +147,7 @@ main (int argc, char **argv )
     GpgmeCtx ctx;
     GpgmeError err;
     int loop = 0;
+    int secret = 0;
     const char *pattern;
 
     if( argc ) {
@@ -155,6 +156,10 @@ main (int argc, char **argv )
     
     if (argc && !strcmp( *argv, "--loop" ) ) {
         loop = 1;
+        argc--; argv++;
+    }
+    if (argc && !strcmp( *argv, "--secret" ) ) {
+        secret = 1;
         argc--; argv++;
     }
     pattern = argc? *argv : NULL;
@@ -169,7 +174,7 @@ main (int argc, char **argv )
     gpgme_set_keylist_mode (ctx, 1); /* no validity calculation */
     do {
         fprintf (stderr, "** pattern=`%s'\n", pattern );
-        doit ( ctx, pattern );
+        doit ( ctx, pattern, secret );
     } while ( loop );
     gpgme_release (ctx);
 
