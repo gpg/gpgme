@@ -87,7 +87,7 @@ set_synchronize (HANDLE h)
      * way to do it is by duplicating the handle.  Tsss.. */
     if (!DuplicateHandle( GetCurrentProcess(), h,
                           GetCurrentProcess(), &tmp,
-                          SYNCHRONIZE, FALSE, 0 ) ) {
+                          EVENT_MODIFY_STATE|SYNCHRONIZE, FALSE, 0 ) ) {
         DEBUG1 ("** Set SYNCRONIZE failed: ec=%d\n", (int)GetLastError());
     }
     else {
@@ -112,7 +112,8 @@ reader (void *arg)
         /* leave a one byte gap so that we can see wheter it is empty or full*/
         if ((c->writepos + 1) % READBUF_SIZE == c->readpos) { 
             /* wait for space */
-            ResetEvent (c->have_space_ev);
+            if (!ResetEvent (c->have_space_ev) )
+                DEBUG1 ("ResetEvent failed: ec=%d", (int)GetLastError ());
             UNLOCK (c->mutex);
             DEBUG1 ("reader thread %p: waiting for space ...", c->thread_hd );
             WaitForSingleObject (c->have_space_ev, INFINITE);
@@ -149,11 +150,13 @@ reader (void *arg)
       
         LOCK (c->mutex);
         c->writepos = (c->writepos + nread) % READBUF_SIZE;
-        SetEvent (c->have_data_ev);
+        if ( !SetEvent (c->have_data_ev) )
+            DEBUG1 ("SetEvent failed: ec=%d", (int)GetLastError ());
         UNLOCK (c->mutex);
     }
     /* indicate that we have an error or eof */
-    SetEvent (c->have_data_ev);
+    if ( !SetEvent (c->have_data_ev) )
+        DEBUG1 ("SetEvent failed: ec=%d", (int)GetLastError ());
     DEBUG1 ("reader thread %p ended", c->thread_hd );
 
     return 0;
@@ -288,9 +291,11 @@ _gpgme_io_read ( int fd, void *buffer, size_t count )
     memcpy (buffer, c->buffer+c->readpos, nread);
     c->readpos = (c->readpos + nread) % READBUF_SIZE;
     if (c->readpos == c->writepos && !c->eof) {
-        ResetEvent (c->have_data_ev);
+        if ( !ResetEvent (c->have_data_ev) )
+            DEBUG1 ("ResetEvent failed: ec=%d", (int)GetLastError ());
     }
-    SetEvent (c->have_space_ev);
+    if (!SetEvent (c->have_space_ev))
+        DEBUG1 ("SetEvent failed: ec=%d", (int)GetLastError ());
     UNLOCK (c->mutex);
 
     DEBUG2 ("fd %d: got %d bytes\n", fd, nread );

@@ -1016,10 +1016,11 @@ read_status ( GpgObject gpg )
                             gpg->status.fnc ( gpg->status.fnc_value, 
                                               r->code, rest);
                         }
-                    }
-                    if ( r->code == STATUS_END_STREAM ) {
-                        if ( gpg->cmd.used )
-                            _gpgme_freeze_fd ( gpg->cmd.fd );
+                    
+                        if ( r->code == STATUS_END_STREAM ) {
+                            if ( gpg->cmd.used )
+                                _gpgme_freeze_fd ( gpg->cmd.fd );
+                        }
                     }
                 }
                 /* To reuse the buffer for the next line we have to
