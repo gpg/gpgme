@@ -1,12 +1,11 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * Before release:
-** Return ENC_TO output in verify result.
-** stat call for data objects (see ABI's to break).
+** Nothing.
 
 * ABI's to break:
-** I/O and User Data could be made extensible.
-** In gpgme_signature_t, split key ID and subkey.
+** I/O and User Data could be made extensible.  But this can be done
+   without breaking the ABI hopefully.
 ** Compatibility interfaces that can be removed in future versions:
 *** gpgme_data_new_from_filepart
 *** gpgme_data_new_from_file
@@ -84,7 +83,10 @@ Hey Emacs, this is -*- outline -*- mode!
 *** Import does not take notice of NODATA status report.
 *** When GPGSM does issue IMPORT_OK status reports, make sure to check for them
     in tests/gpgs m/t-import.c.
-** Verify can include info about version/algo/class.
+** Verify can include info about version/algo/class, but currently
+   this is only available for gpg, not gpgsm.
+** Return ENC_TO output in verify result.  Again, this is not available
+   for gpgsm.
 ** Genkey should return something more useful than General_Error.
 ** Decrypt:
    On Fri, Jun 27, 2003 at 06:28:23PM +0200, Heiko Abraham wrote:
@@ -100,7 +102,7 @@ Hey Emacs, this is -*- outline -*- mode!
    ID and a user ID hint is available from gpg (of course key IDs are not
    necessarily unique!).  I will put it on the TODO list.
 ** If possible, use --file-setsize to set the file size for proper progress
-   callback handling.
+   callback handling.  Write data interface for file size.
 ** Optimize the file descriptor list, so the number of open fds is
    always known easily.
 ** Encryption: It should be verified that the behaviour for partially untrusted
