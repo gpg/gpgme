@@ -1,3 +1,17 @@
+2005-03-09  Werner Koch  <wk@g10code.com>
+
+	* w32-util.c (_gpgme_get_gpg_path, _gpgme_get_gpgsm_path): Do not
+	cast away type checks.
+
+	* io.h [W32]: Do not include stdio.h.  If it is needed do it at
+	the right place.
+
+	* data.h [W32]: Removed kludge for EOPNOTSUP.
+	* data.c, data-compat.c [W32]: Explicitly test for it here.
+
+	Replaced use of _WIN32 by HAVE_W32_SYSTEM except for public header
+	files.
+
 2005-03-07  Timo Schulz  <twoaday@g10code.de>
  
         * gpgme.h: [_WIN32] Removed ssize_t typedef.

@@ -1,6 +1,6 @@
 # configure.ac for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -43,8 +43,7 @@ GPGME_CONFIG_API_VERSION=1
 NEED_GPG_VERSION=1.2.2
 NEED_GPGSM_VERSION=1.9.6
 ##############################################
-AC_PREREQ(2.52)
-AC_REVISION($Revision$)
+
 
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
@@ -57,11 +56,8 @@ AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
 
-AH_VERBATIM([_GNU_SOURCE],
-[/* Enable GNU extensions on systems that have them.  */
-#ifndef _GNU_SOURCE
-# define _GNU_SOURCE
-#endif])
+# Enable GNU extensions on systems that have them.
+AC_GNU_SOURCE
 
 AH_VERBATIM([_REENTRANT],
 [/* To allow the use of GPGME in multithreaded programs we have to use
@@ -71,6 +67,16 @@ AH_VERBATIM([_REENTRANT],
 #ifndef _REENTRANT
 # define _REENTRANT 1
 #endif])
+
+AH_BOTTOM([
+/* Some environments miss the definition for EOPNOTSUPP.  We provide
+   the error code here and test where neded whether it should be
+   defined.  Can't do the test here due to the order of includes.  */
+#ifdef HAVE_W32_SYSTEM
+#define VALUE_FOR_EOPNOTSUPP 95
+#endif /*!HAVE_W32_SYSTEM*/
+
+])
 
 
 AC_PROG_CC
@@ -109,17 +115,13 @@ AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
 GPG_DEFAULT=no
 GPGSM_DEFAULT=no
 component_system=None
+have_dosish_system=no
+have_w32_system=no
 case "${host}" in
-    *-*-mingw32* | i?86-emx-os2 | i?86-*-os2*emx | i?86-*-msdosdjgpp* )
+    *-mingw32*)
         # special stuff for Windoze NT
-        # OS/2 with the EMX environment
-        # DOS with the DJGPP environment
-        AC_DEFINE(HAVE_DRIVE_LETTERS, ,
-		  [Defined if we run on some of the PCDOS like systems (DOS,
-		   Windoze, OS/2) with special properties like no file modes.])
-        AC_DEFINE(HAVE_DOSISH_SYSTEM, ,
-		  [Defined if the filesystem uses driver letters.])
 	have_dosish_system=yes
+        have_w32_system=yes
         GPG_DEFAULT='c:\\gnupg\\gpg.exe'
 	# XXX Assuan is not supported in this configuration.
 	#GPGSM_DEFAULT='c:\\gnupg\\gpgsm.exe'
@@ -141,7 +143,21 @@ case "${host}" in
 #	GPGSM_DEFAULT='/usr/bin/gpgsm'
 	;;
 esac
-AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = "yes")
+
+if test "$have_dosish_system" = yes; then
+   AC_DEFINE(HAVE_DOSISH_SYSTEM,1,
+             [Defined if we run on some of the PCDOS like systems 
+              (DOS, Windoze. OS/2) with special properties like
+              no file modes])
+fi
+AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
+
+if test "$have_w32_system" = yes; then
+   AC_DEFINE(HAVE_W32_SYSTEM,1, [Defined if we run on a W32 API based system])
+fi
+AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
+
+
 AM_CONDITIONAL(HAVE_PTH, test "$have_pth" = "yes")
 AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 

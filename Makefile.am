@@ -23,7 +23,7 @@
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = dist-bzip2
 
-EXTRA_DIST = gpgme.spec.in
+EXTRA_DIST = gpgme.spec.in autogen.sh 
 
 if BUILD_ASSUAN
 assuan = assuan

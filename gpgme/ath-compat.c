@@ -22,17 +22,18 @@
 #include <config.h>
 #endif
 
-#include <unistd.h>
 #include <stdio.h>
+#include <unistd.h>
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #else
 # include <sys/time.h>
 #endif
 #include <sys/types.h>
-#ifndef _WIN32
+#ifndef HAVE_W32_SYSTEM
 #include <sys/wait.h>
-#endif
+#endif /*!HAVE_W32_SYSTEM*/
+
 
 #include "ath.h"
 
