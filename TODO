@@ -42,9 +42,6 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Genkey should return something more useful than General_Error.
 ** Factor out common code in _op_*_start functions.
 ** Add ATTR to return the number of subkeys or uids.
-** "When returning a GpgmeKey GPGME_ATTR_COMMENT attribute, characters  
-   like ":" are not un-escaped, they are returned as \x3a" Bug
-   reported by Stephane Corthesy.
 
 * Error Values
 ** Map ASSUAN/GpgSM ERR error values in a better way than is done now. !!
