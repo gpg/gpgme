@@ -77,29 +77,32 @@ edit_fnc (void *opaque, gpgme_status_code_t status, const char *args, int fd)
   flush_data (out); 
 
   fprintf (stdout, "[-- Code: %i, %s --]\n", status, args);
- 
-  if (!strcmp (args, "keyedit.prompt"))
-    {
-      static int step = 0;
 
-      switch (step)
+  if (fd >= 0)
+    {
+      if (!strcmp (args, "keyedit.prompt"))
 	{
-	case 0:
-	  result = "fpr";
-	  break;
-	case 1:
-	  result = "expire";
-	  break;
-	default:
-	  result = "quit";
-	  break;
+	  static int step = 0;
+	  
+	  switch (step)
+	    {
+	    case 0:
+	      result = "fpr";
+	      break;
+	    case 1:
+	      result = "expire";
+	      break;
+	    default:
+	      result = "quit";
+	      break;
+	    }
+	  step++;
 	}
-      step++;
+      else if (!strcmp (args, "keyedit.save.okay"))
+	result = "Y";
+      else if (!strcmp (args, "keygen.valid"))
+	result = "0";
     }
-  else if (!strcmp (args, "keyedit.save.okay"))
-    result = "Y";
-  else if (!strcmp (args, "keygen.valid"))
-    result = "0";
 
   if (result)
     {
