@@ -701,9 +701,9 @@ bool signMessage( const char*  cleartext,
   GpgmeCtx ctx;
   GpgmeError err;
   GpgmeData data,  sig;
-  size_t    rSLen;
-  char* rSig = 0;
-  bool  bOk  = false;
+  size_t rSLen = 0;
+  char*  rSig  = 0;
+  bool   bOk   = false;
 
 
 
@@ -754,21 +754,27 @@ bool signMessage( const char*  cleartext,
   gpgme_data_new_from_mem (&data, cleartext,
                             1+strlen( cleartext ), 1 );
   gpgme_data_new ( &sig );
-  gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
+  err = gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
 
-  rSig  = gpgme_data_release_and_get_mem( sig,  &rSLen );
-  gpgme_data_release( data );
-
-  *ciphertext = malloc( rSLen + 1 );
-  if( *ciphertext ) {
-    if( rSLen ) {
-      bOk = true;
-      strncpy((char*)*ciphertext, rSig, rSLen );
+  if (!err) {
+    rSig  = gpgme_data_release_and_get_mem( sig,  &rSLen );
+    *ciphertext = malloc( rSLen + 1 );
+    if( *ciphertext ) {
+      if( rSLen ) {
+        bOk = true;
+        strncpy((char*)*ciphertext, rSig, rSLen );
+      }
+      ((char*)(*ciphertext))[rSLen] = '\0';
     }
-    ((char*)(*ciphertext))[rSLen] = '\0';
+    free( rSig );
   }
-
-  free( rSig );
+  else {
+    gpgme_data_release( sig );
+    *ciphertext = 0;
+    // hier fehlt eine Fehlerbehandlung, falls das
+    // Signieren schiefging
+  }
+  gpgme_data_release( data );
   gpgme_release (ctx);
 
   return bOk;
@@ -838,12 +844,10 @@ bool checkMessageSignature( const char* ciphertext,
     /* Provide information in the sigmeta struct */
     /* the status string */
     statusStr = sig_status_to_string( status );
+    // PENDING(kalle) Handle out of memory
     sigmeta->status = malloc( strlen( statusStr ) + 1 );
-    if( sigmeta->status ) {
-        strcpy( sigmeta->status, statusStr );
-        sigmeta->status[strlen( statusStr )] = '\0';
-    } else
-        ; // nothing to do, is already 0
+    strcpy( sigmeta->status, statusStr );
+    sigmeta->status[strlen( statusStr )] = '\0';
 
     // Extended information for any number of signatures.
     fpr = gpgme_get_sig_status( ctx, sig_idx, &status, &created );
@@ -852,36 +856,28 @@ bool checkMessageSignature( const char* ciphertext,
         struct tm* ctime_val;
         const char* sig_status;
 
-        void* realloc_return = realloc( sigmeta->extended_info,
-                                        sizeof( struct SignatureMetaDataExtendedInfo ) * ( sig_idx + 1 ) );
-        if( realloc_return ) {
-            sigmeta->extended_info = realloc_return;
-            // the creation time
-            sigmeta->extended_info[sig_idx].creation_time = malloc( sizeof( struct tm ) );
-            if( sigmeta->extended_info[sig_idx].creation_time ) {
-                ctime_val = localtime( &created );
-                memcpy( sigmeta->extended_info[sig_idx].creation_time,
-                        ctime_val, sizeof( struct tm ) );
-            }
+        // PENDING(kalle) Handle out of memory
+        sigmeta->extended_info = realloc( sigmeta->extended_info,
+                                          sizeof( struct SignatureMetaDataExtendedInfo ) * ( sig_idx + 1 ) );
+        // the creation time
+        // PENDING(kalle) Handle out of memory
+        sigmeta->extended_info[sig_idx].creation_time = malloc( sizeof( struct tm ) );
+        ctime_val = localtime( &created );
+        memcpy( sigmeta->extended_info[sig_idx].creation_time,
+                ctime_val, sizeof( struct tm ) );
 
-            err = gpgme_get_sig_key (ctx, sig_idx, &key);
-            sig_status = sig_status_to_string( status );
-            sigmeta->extended_info[sig_idx].status_text = malloc( strlen( sig_status ) + 1 );
-            if( sigmeta->extended_info[sig_idx].status_text ) {
-                strcpy( sigmeta->extended_info[sig_idx].status_text,
-                    sig_status );
-                sigmeta->extended_info[sig_idx].status_text[strlen( sig_status )] = '\0';
-            }
+        err = gpgme_get_sig_key (ctx, sig_idx, &key);
+        sig_status = sig_status_to_string( status );
+        // PENDING(kalle) Handle out of memory
+        sigmeta->extended_info[sig_idx].status_text = malloc( strlen( sig_status ) + 1 );
+        strcpy( sigmeta->extended_info[sig_idx].status_text,
+                sig_status );
+        sigmeta->extended_info[sig_idx].status_text[strlen( sig_status )] = '\0';
+        // PENDING(kalle) Handle out of memory
+        sigmeta->extended_info[sig_idx].fingerprint = malloc( strlen( fpr ) + 1 );
+        strcpy( sigmeta->extended_info[sig_idx].fingerprint, fpr );
+        sigmeta->extended_info[sig_idx].fingerprint[strlen( fpr )] = '\0';
 
-            sigmeta->extended_info[sig_idx].fingerprint = malloc( strlen( fpr ) + 1 );
-            if( sigmeta->extended_info[sig_idx].fingerprint ) {
-                strcpy( sigmeta->extended_info[sig_idx].fingerprint, fpr );
-                sigmeta->extended_info[sig_idx].fingerprint[strlen( fpr )] = '\0';
-            }
-        } else
-            break; // if allocation fails once, it isn't likely to
-                   // succeed the next time either
-        
         fpr = gpgme_get_sig_status (ctx, ++sig_idx, &status, &created);
     }
     sigmeta->extended_info_count = sig_idx;
@@ -904,7 +900,7 @@ bool encryptMessage( const char* cleartext,
   GpgmeError err;
   GpgmeData gCiphertext, gPlaintext;
   GpgmeRecipients rset;
-  size_t rCLen;
+  size_t rCLen = 0;
   char*  rCiph = 0;
   bool   bOk   = false;
 
@@ -921,22 +917,30 @@ bool encryptMessage( const char* cleartext,
   gpgme_recipients_new (&rset);
   gpgme_recipients_add_name (rset, addressee);
 
-  gpgme_op_encrypt (ctx, rset, gPlaintext, gCiphertext );
-  gpgme_data_release (gPlaintext);
+  err = gpgme_op_encrypt (ctx, rset, gPlaintext, gCiphertext );
   gpgme_recipients_release (rset);
+  gpgme_data_release (gPlaintext);
 
-  rCiph = gpgme_data_release_and_get_mem( gCiphertext,  &rCLen );
-
-  *ciphertext = malloc( rCLen + 1 );
-  if( *ciphertext ) {
-    if( rCLen ) {
-      bOk = true;
-      strncpy((char*)*ciphertext, rCiph, rCLen );
+  if( !err ) {
+    rCiph = gpgme_data_release_and_get_mem( gCiphertext,  &rCLen );
+    *ciphertext = malloc( rCLen + 1 );
+    if( *ciphertext ) {
+      if( rCLen ) {
+        bOk = true;
+        strncpy((char*)*ciphertext, rCiph, rCLen );
+      }
+      ((char*)(*ciphertext))[rCLen] = 0;
     }
-    ((char*)(*ciphertext))[rCLen] = 0;
+    free( rCiph );
+  }
+  else {
+    gpgme_data_release ( gCiphertext );
+    *ciphertext = 0;
+    // hier fehlt eine Fehlerbehandlung: fuer einen Recipient nur ein
+    // untrusted key (oder gar keiner) gefunden wurde, verweigert gpg
+    // das signieren.
   }
 
-  free( rCiph );
   gpgme_release (ctx);
 
   return bOk;
