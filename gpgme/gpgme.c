@@ -1,6 +1,6 @@
 /* gpgme.c -  GnuPG Made Easy
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -29,11 +29,6 @@
 #include "context.h"
 #include "ops.h"
 
-#define my_isdigit(a)  ( (a) >='0' && (a) <= '9' )
-#define my_isxdigit(a) ( my_isdigit((a))               \
-                         || ((a) >= 'A' && (a) <= 'F') \
-                         || ((a) >= 'f' && (a) <= 'f') )
-
 /**
  * gpgme_new:
  * @r_ctx: Returns the new context
@@ -46,15 +41,18 @@
 GpgmeError
 gpgme_new (GpgmeCtx *r_ctx)
 {
-    GpgmeCtx c;
+  GpgmeCtx ctx;
 
-    c = xtrycalloc ( 1, sizeof *c );
-    if (!c)
-        return mk_error (Out_Of_Core);
-    c->verbosity = 1;
-    *r_ctx = c;
+  if (!r_ctx)
+    return mk_error (Invalid_Value);
+  *r_ctx = 0;
+  ctx = xtrycalloc (1, sizeof *ctx);
+  if (!ctx)
+    return mk_error (Out_Of_Core);
+  ctx->verbosity = 1;
+  *r_ctx = ctx;
 
-    return 0;
+  return 0;
 }
 
 /**
@@ -64,32 +62,32 @@ gpgme_new (GpgmeCtx *r_ctx)
  * Release all resources associated with the given context.
  **/
 void
-gpgme_release (GpgmeCtx c)
+gpgme_release (GpgmeCtx ctx)
 {
-  if (!c)
+  if (!ctx)
     return;
-  _gpgme_engine_release (c->engine); 
-  _gpgme_release_result (c);
-  gpgme_key_release (c->tmp_key);
-  gpgme_data_release (c->help_data_1);
-  gpgme_data_release (c->notation);
-  gpgme_signers_clear (c);
-  if (c->signers)
-    xfree (c->signers);
+  _gpgme_engine_release (ctx->engine); 
+  _gpgme_release_result (ctx);
+  gpgme_key_release (ctx->tmp_key);
+  gpgme_data_release (ctx->help_data_1);
+  gpgme_data_release (ctx->notation);
+  gpgme_signers_clear (ctx);
+  if (ctx->signers)
+    xfree (ctx->signers);
   /* FIXME: Release the key_queue.  */
-  xfree (c);
+  xfree (ctx);
 }
 
 void
-_gpgme_release_result (GpgmeCtx c)
+_gpgme_release_result (GpgmeCtx ctx)
 {
-  _gpgme_release_verify_result (c->result.verify);
-  _gpgme_release_decrypt_result (c->result.decrypt);
-  _gpgme_release_sign_result (c->result.sign);
-  _gpgme_release_encrypt_result (c->result.encrypt);
-  _gpgme_release_passphrase_result (c->result.passphrase);
-  memset (&c->result, 0, sizeof (c->result));
-  _gpgme_set_op_info (c, NULL);
+  _gpgme_release_verify_result (ctx->result.verify);
+  _gpgme_release_decrypt_result (ctx->result.decrypt);
+  _gpgme_release_sign_result (ctx->result.sign);
+  _gpgme_release_encrypt_result (ctx->result.encrypt);
+  _gpgme_release_passphrase_result (ctx->result.passphrase);
+  memset (&ctx->result, 0, sizeof (ctx->result));
+  _gpgme_set_op_info (ctx, NULL);
 }
 
 
@@ -101,13 +99,12 @@ _gpgme_release_result (GpgmeCtx c)
  * all kinds of operations.  It is especially useful in a passphrase callback
  * to stop the system from asking another time for the passphrase.
  **/
-
 void
-gpgme_cancel (GpgmeCtx c)
+gpgme_cancel (GpgmeCtx ctx)
 {
-    return_if_fail (c);
+  return_if_fail (ctx);
 
-    c->cancel = 1;
+  ctx->cancel = 1;
 }
 
 /**
@@ -122,11 +119,11 @@ gpgme_cancel (GpgmeCtx c)
  * Return value: An XML string or NULL if no notation data is available.
  **/
 char *
-gpgme_get_notation ( GpgmeCtx c )
+gpgme_get_notation (GpgmeCtx ctx)
 {
-    if ( !c->notation )
-        return NULL;
-    return _gpgme_data_get_as_string ( c->notation );
+  if (!ctx->notation)
+    return NULL;
+  return _gpgme_data_get_as_string (ctx->notation);
 }
 
 
@@ -158,43 +155,45 @@ gpgme_get_notation ( GpgmeCtx c )
  * Return value: NULL for no info available or an XML string 
  **/
 char *
-gpgme_get_op_info ( GpgmeCtx c, int reserved )
+gpgme_get_op_info (GpgmeCtx ctx, int reserved)
 {
-    if (!c || reserved)
-        return NULL; /*invalid value */
+  if (!ctx || reserved)
+    return NULL;  /* Invalid value.  */
  
-    return _gpgme_data_get_as_string (c->op_info);
+  return _gpgme_data_get_as_string (ctx->op_info);
 }
+
 
 /*
  * Store the data object with the operation info in the
  * context. Caller should not use that object anymore.  
  */
 void
-_gpgme_set_op_info (GpgmeCtx c, GpgmeData info)
+_gpgme_set_op_info (GpgmeCtx ctx, GpgmeData info)
 {
-    assert (c);
+  assert (ctx);
 
-    gpgme_data_release (c->op_info); 
-    c->op_info = NULL;
+  gpgme_data_release (ctx->op_info); 
+  ctx->op_info = NULL;
 
-    if (info)
-        c->op_info = info;
+  if (info)
+    ctx->op_info = info;
 }
 
+
 GpgmeError
-gpgme_set_protocol (GpgmeCtx c, GpgmeProtocol prot)
+gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol protocol)
 {
-  if (!c)
+  if (!ctx)
     return mk_error (Invalid_Value);
   
-  switch (prot)
+  switch (protocol)
     {
     case GPGME_PROTOCOL_OpenPGP:
-      c->use_cms = 0;
+      ctx->use_cms = 0;
       break;
     case GPGME_PROTOCOL_CMS:
-      c->use_cms = 1;
+      ctx->use_cms = 1;
       break;
     case GPGME_PROTOCOL_AUTO:
       return mk_error (Not_Implemented);
@@ -205,25 +204,26 @@ gpgme_set_protocol (GpgmeCtx c, GpgmeProtocol prot)
   return 0;
 }
 
+
 /**
  * gpgme_set_armor:
- * @c: the contect 
+ * @ctx: the context 
  * @yes: boolean value to set or clear that flag
  * 
  * Enable or disable the use of an ascii armor for all output.  
  **/
 void
-gpgme_set_armor ( GpgmeCtx c, int yes )
+gpgme_set_armor (GpgmeCtx ctx, int yes)
 {
-    if ( !c )
-        return; /* oops */
-    c->use_armor = yes;
+  if (!ctx)
+    return;
+  ctx->use_armor = yes;
 }
 
 
 /**
  * gpgme_get_armor:
- * @c: the context
+ * @ctx: the context
  * 
  * Return the state of the armor flag which can be changed using
  * gpgme_set_armor().
@@ -231,32 +231,32 @@ gpgme_set_armor ( GpgmeCtx c, int yes )
  * Return value: Boolean whether armor mode is to be used.
  **/
 int 
-gpgme_get_armor (GpgmeCtx c)
+gpgme_get_armor (GpgmeCtx ctx)
 {
-    return c && c->use_armor;
+  return ctx && ctx->use_armor;
 }
 
 
 /**
  * gpgme_set_textmode:
- * @c: the context 
+ * @ctx: the context
  * @yes: boolean flag whether textmode should be enabled
  * 
  * Enable or disable the use of the special textmode.  Textmode is for example
  * used for the RFC2015 signatures; note that the updated RFC 3156 mandates 
- * that the MUA does some preparations so that textmode is not anymore needed.
+ * that the MUA does some preparations so that textmode is not needed anymore.
  **/
 void
-gpgme_set_textmode ( GpgmeCtx c, int yes )
+gpgme_set_textmode (GpgmeCtx ctx, int yes)
 {
-    if ( !c )
-        return; /* oops */
-    c->use_textmode = yes;
+  if (!ctx)
+    return;
+  ctx->use_textmode = yes;
 }
 
 /**
  * gpgme_get_textmode:
- * @c: the context
+ * @ctx: the context
  * 
  * Return the state of the textmode flag which can be changed using
  * gpgme_set_textmode().
@@ -264,16 +264,15 @@ gpgme_set_textmode ( GpgmeCtx c, int yes )
  * Return value: Boolean whether textmode is to be used.
  **/
 int 
-gpgme_get_textmode (GpgmeCtx c)
+gpgme_get_textmode (GpgmeCtx ctx)
 {
-    return c && c->use_textmode;
+  return ctx && ctx->use_textmode;
 }
-
 
 
 /**
  * gpgme_set_keylist_mode:
- * @c: the context
+ * @ctx: the context
  * @mode: listing mode
  * 
  * This function changes the default behaviour of the keylisting functions.
@@ -281,17 +280,17 @@ gpgme_get_textmode (GpgmeCtx c)
  * information about key validity.
  **/
 void
-gpgme_set_keylist_mode ( GpgmeCtx c, int mode )
+gpgme_set_keylist_mode (GpgmeCtx ctx, int mode)
 {
-    if (!c)
-        return;
-    c->keylist_mode = mode;
+  if (!ctx)
+    return;
+  ctx->keylist_mode = mode;
 }
 
 
 /**
  * gpgme_set_passphrase_cb:
- * @c: the context 
+ * @ctx: the context 
  * @cb: A callback function
  * @cb_value: The value passed to the callback function
  * 
@@ -308,7 +307,7 @@ gpgme_set_keylist_mode ( GpgmeCtx c, int mode )
  * </literal>
  * and called whenever gpgme needs a passphrase. DESC will have a nice
  * text, to be used to prompt for the passphrase and R_HD is just a parameter
- * to be used by the callback it self.  Becuase the callback returns a const
+ * to be used by the callback it self.  Because the callback returns a const
  * string, the callback might want to know when it can release resources
  * assocated with that returned string; gpgme helps here by calling this
  * passphrase callback with an DESC of %NULL as soon as it does not need
@@ -317,18 +316,18 @@ gpgme_set_keylist_mode ( GpgmeCtx c, int mode )
  *
  **/
 void
-gpgme_set_passphrase_cb ( GpgmeCtx c, GpgmePassphraseCb cb, void *cb_value )
+gpgme_set_passphrase_cb (GpgmeCtx ctx, GpgmePassphraseCb cb, void *cb_value)
 {
-  if (c)
+  if (ctx)
     {
-      c->passphrase_cb = cb;
-      c->passphrase_cb_value = cb_value;
+      ctx->passphrase_cb = cb;
+      ctx->passphrase_cb_value = cb_value;
     }
 }
 
 /**
  * gpgme_set_progress_cb:
- * @c: the context 
+ * @ctx: the context 
  * @cb: A callback function
  * @cb_value: The value passed to the callback function
  * 
@@ -336,7 +335,7 @@ gpgme_set_passphrase_cb ( GpgmeCtx c, GpgmePassphraseCb cb, void *cb_value )
  *
  * The callback function is defined as:
  * <literal>
- * typedef void (*GpgmeProgressCb) (void*cb_value,
+ * typedef void (*GpgmeProgressCb) (void *cb_value,
  *                                  const char *what, int type,
  *                                  int curretn, int total);
  * </literal>
@@ -344,20 +343,11 @@ gpgme_set_passphrase_cb ( GpgmeCtx c, GpgmePassphraseCb cb, void *cb_value )
  * status in the file doc/DETAILS of the GnuPG distribution.
  **/
 void
-gpgme_set_progress_cb ( GpgmeCtx c, GpgmeProgressCb cb, void *cb_value )
+gpgme_set_progress_cb (GpgmeCtx ctx, GpgmeProgressCb cb, void *cb_value)
 {
-  if (c)
+  if (ctx)
     {
-      c->progress_cb = cb;
-      c->progress_cb_value = cb_value;
+      ctx->progress_cb = cb;
+      ctx->progress_cb_value = cb_value;
     }
 }
-
-
-
-
-
-
-
-
-

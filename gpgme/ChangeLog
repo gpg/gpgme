@@ -1,3 +1,21 @@
+2002-01-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c: Various source clean ups, like renaming C to CTX where
+	appropriate.
+	(gpgme_new): Clear R_CTX before starting the work.
+	(my_isdigit): Removed.
+	(my_isxdigit): Likewise.
+
+	* data.c: Various source clean ups.
+	(gpgme_data_new_from_mem): Check BUFFER after clearing R_DH.
+	(gpgme_data_new_with_read_cb): Similar for READ_CB.
+	(gpgme_data_new_from_file): Loop over fread while EINTR.
+	(gpgme_data_new_from_filepart): Rediddled a bit.  Allow LENGTH to
+	be zero.  Loop over fread while EINTR.
+
+	(my_isdigit): Removed.
+	(my_isxdigit): Likewise.
+
 2001-12-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_new): Replace General_Error with
