@@ -1,5 +1,7 @@
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.text (Verify): Document GPG_ERR_CERT_REVOKED status.
+
 	* gpgme.texi (Decrypt): Add note about new field wrong_key_usage
 	of gpgme_decrypt_result_t.
 
