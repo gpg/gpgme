@@ -1,3 +1,8 @@
+2001-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (INCLUDES): Remove spurious duplicate to silence
+	automake.
+
 2001-10-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* t-version.c: New file.
