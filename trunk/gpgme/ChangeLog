@@ -1,3 +1,9 @@
+2003-09-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (gpgme_hash_algo_name): Change name of RMD160 to
+	RIPEMD160, name of TIGER to TIGER192, name of CRC32-RFC1510 to
+	CRC32RFC1510, and name of CRC24-RFC2440 to CRC24RFC2440.
+
 2003-09-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h: Add prototype for gpgme_set_locale.

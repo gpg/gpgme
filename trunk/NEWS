@@ -56,6 +56,11 @@ Noteworthy changes in version 0.4.3 (unreleased)
    GPGME can not do this for you, as setlocale is not thread safe, and
    there is no alternative.
 
+ * In the output of gpgme_hash_algo_name, change RMD160 to RIPEMD160,
+   TIGER to TIGER192, CRC32-RFC1510 to CRC32RFC1510, and CRC24-RFC2440
+   to CRC24RFC2440.  For now, these strings can be used as the MIC
+   parameter for PGP/MIME (if appropriately modified).
+
  * Interface changes relative to the 0.4.2 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_strerror_t		NEW
@@ -64,6 +69,7 @@ gpgme_key_t			EXTENDED: New field can_authenticate.
 gpgme_subkey_t			EXTENDED: New field can_authenticate.
 gpgme_new_signature_t		CHANGED: New type for class field.
 gpgme_set_locale		NEW
+gpgme_hash_algo_name		CHANGED: Slight adjustment of algo names.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

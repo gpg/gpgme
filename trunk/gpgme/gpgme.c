@@ -415,13 +415,13 @@ gpgme_hash_algo_name (gpgme_hash_algo_t algo)
       return "SHA1";
 
     case GPGME_MD_RMD160:
-      return "RMD160";
+      return "RIPEMD160";
 
     case GPGME_MD_MD2:
       return "MD2";
 
     case GPGME_MD_TIGER:
-      return "TIGER";
+      return "TIGER192";
 
     case GPGME_MD_HAVAL:
       return "HAVAL";
@@ -442,10 +442,10 @@ gpgme_hash_algo_name (gpgme_hash_algo_t algo)
       return "CRC32";
 
     case GPGME_MD_CRC32_RFC1510:
-      return "CRC32-RFC1510";
+      return "CRC32RFC1510";
 
     case GPGME_MD_CRC24_RFC2440:
-      return "CRC24-RFC2440";
+      return "CRC24RFC2440";
 
     default:
       return NULL;
