@@ -182,50 +182,39 @@ _gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 
 static GpgmeError
 _gpgme_op_sign_start (GpgmeCtx ctx, int synchronous,
-		      GpgmeData in, GpgmeData out,
+		      GpgmeData plain, GpgmeData sig,
 		      GpgmeSigMode mode)
 {
-  GpgmeError err = 0;
-
-  if (mode != GPGME_SIG_MODE_NORMAL
-      && mode != GPGME_SIG_MODE_DETACH
-      && mode != GPGME_SIG_MODE_CLEAR)
-    return GPGME_Invalid_Value;
+  GpgmeError err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
-    goto leave;
+    return err;
 
-  /* Check the supplied data.  */
-  if (!in)
-    {
-      err = GPGME_No_Data;
-      goto leave;
-    }
-  if (!out)
-    {
-      err = GPGME_Invalid_Value;
-      goto leave;
-    }
+  if (mode != GPGME_SIG_MODE_NORMAL && mode != GPGME_SIG_MODE_DETACH
+      && mode != GPGME_SIG_MODE_CLEAR)
+    return GPGME_Invalid_Value;
 
-  err = _gpgme_passphrase_start (ctx);
-  if (err)
-    goto leave;
+  if (!plain)
+    return GPGME_No_Data;
+  if (!sig)
+    return GPGME_Invalid_Value;
+
+  if (ctx->passphrase_cb)
+    {
+      err = _gpgme_engine_set_command_handler (ctx->engine,
+					       _gpgme_passphrase_command_handler,
+					       ctx, NULL);
+      if (err)
+	return err;
+    }
 
   _gpgme_engine_set_status_handler (ctx->engine, _gpgme_sign_status_handler,
 				    ctx);
 
-  err = _gpgme_engine_op_sign (ctx->engine, in, out, mode, ctx->use_armor,
-			       ctx->use_textmode, ctx->include_certs,
-			       ctx /* FIXME */);
-
- leave:
-  if (err)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
-  return err;
+  return _gpgme_engine_op_sign (ctx->engine, plain, sig, mode, ctx->use_armor,
+				ctx->use_textmode, ctx->include_certs,
+				ctx /* FIXME */);
 }
 
 GpgmeError

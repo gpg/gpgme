@@ -158,29 +158,33 @@ _gpgme_encrypt_sym_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 
 static GpgmeError
 _gpgme_op_encrypt_start (GpgmeCtx ctx, int synchronous,
-			 GpgmeRecipients recp, GpgmeData plain, GpgmeData ciph)
+			 GpgmeRecipients recp, GpgmeData plain, GpgmeData cipher)
 {
-  GpgmeError err = 0;
+  GpgmeError err;
   int symmetric = 0;
-
-  /* Do some checks.  */
-  if (!recp)
-    symmetric = 1;
-  else if (!gpgme_recipients_count (recp))
-    {
-      err = GPGME_No_UserID;
-      goto leave;
-    }
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
-    goto leave;
+    return err;
 
-  if (symmetric)
+  if (!recp)
+    symmetric = 1;
+  else if (gpgme_recipients_count (recp) == 0)
+    return GPGME_No_UserID;
+
+  if (!plain)
+    return GPGME_No_Data;
+  if (!cipher)
+    return GPGME_Invalid_Value;
+
+  if (symmetric && ctx->passphrase_cb)
     {
-      err = _gpgme_passphrase_start (ctx);
+      /* Symmetric encryption requires a passphrase.  */
+      err = _gpgme_engine_set_command_handler (ctx->engine,
+					       _gpgme_passphrase_command_handler,
+					       ctx, NULL);
       if (err)
-	goto leave;
+	return err;
     }
 
   _gpgme_engine_set_status_handler (ctx->engine,
@@ -189,28 +193,8 @@ _gpgme_op_encrypt_start (GpgmeCtx ctx, int synchronous,
 				    : _gpgme_encrypt_status_handler,
 				    ctx);
 
-  /* Check the supplied data */
-  if (!plain)
-    {
-      err = GPGME_No_Data;
-      goto leave;
-    }
-  if (!ciph)
-    {
-      err = GPGME_Invalid_Value;
-      goto leave;
-    }
-
-  err = _gpgme_engine_op_encrypt (ctx->engine, recp, plain, ciph,
-				  ctx->use_armor);
-
- leave:
-  if (err)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
-  return err;
+  return _gpgme_engine_op_encrypt (ctx->engine, recp, plain, cipher,
+				   ctx->use_armor);
 }
 
 

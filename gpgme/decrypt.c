@@ -163,41 +163,34 @@ _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 
 GpgmeError
 _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
-		      GpgmeData ciph, GpgmeData plain, void *status_handler)
+		      GpgmeData cipher, GpgmeData plain, void *status_handler)
 {
-  GpgmeError err = 0;
+  GpgmeError err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
-    goto leave;
+    return err;
 
-  /* Check the supplied data.  */
-  if (!ciph)
-    {
-      err = GPGME_No_Data;
-      goto leave;
-    }
+  if (!cipher)
+    return GPGME_No_Data;
   if (!plain)
-    {
-      err = GPGME_Invalid_Value;
-      goto leave;
-    }
+    return GPGME_Invalid_Value;
 
-  err = _gpgme_passphrase_start (ctx);
   if (err)
-    goto leave;
+    return err;
+
+  if (ctx->passphrase_cb)
+    {
+      err = _gpgme_engine_set_command_handler (ctx->engine,
+					       _gpgme_passphrase_command_handler,
+					       ctx, NULL);
+      if (err)
+	return err;
+    }
 
   _gpgme_engine_set_status_handler (ctx->engine, status_handler, ctx);
 
-  err = _gpgme_engine_op_decrypt (ctx->engine, ciph, plain);
-
- leave:
-  if (err)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
-  return err;
+  return _gpgme_engine_op_decrypt (ctx->engine, cipher, plain);
 }
 
 

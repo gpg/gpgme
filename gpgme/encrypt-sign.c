@@ -33,12 +33,10 @@
 
 
 static GpgmeError
-encrypt_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
+encrypt_sign_status_handler (void *priv, GpgmeStatusCode code, char *args)
 {
-  GpgmeError err = _gpgme_encrypt_status_handler (ctx, code, args);
-  if (err)
-    return err;
-  return _gpgme_sign_status_handler (ctx, code, args);
+  return _gpgme_encrypt_status_handler (priv, code, args)
+    || _gpgme_sign_status_handler (priv, code, args);
 }
 
 
@@ -47,41 +45,31 @@ _gpgme_op_encrypt_sign_start (GpgmeCtx ctx, int synchronous,
 			      GpgmeRecipients recp,
 			      GpgmeData plain, GpgmeData cipher)
 {
-  GpgmeError err = 0;
+  GpgmeError err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
-    goto leave;
+    return err;
 
-  err = _gpgme_passphrase_start (ctx);
-  if (err)
-    goto leave;
+  if (!plain)
+    return GPGME_No_Data;
+  if (!cipher)
+    return GPGME_Invalid_Value;
+
+  if (ctx->passphrase_cb)
+    {
+      err = _gpgme_engine_set_command_handler (ctx->engine,
+					       _gpgme_passphrase_command_handler,
+					       ctx, NULL);
+      if (err)
+	return err;
+    }
 
   _gpgme_engine_set_status_handler (ctx->engine,
 				    encrypt_sign_status_handler, ctx);
 
-  /* Check the supplied data */
-  if (!plain)
-    {
-      err = GPGME_No_Data;
-      goto leave;
-    }
-  if (!cipher)
-    {
-      err = GPGME_Invalid_Value;
-      goto leave;
-    }
-
-  err = _gpgme_engine_op_encrypt_sign (ctx->engine, recp, plain, cipher,
-				       ctx->use_armor, ctx /* FIXME */);
-
- leave:
-  if (err)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
-  return err;
+  return _gpgme_engine_op_encrypt_sign (ctx->engine, recp, plain, cipher,
+					ctx->use_armor, ctx /* FIXME */);
 }
 
 GpgmeError

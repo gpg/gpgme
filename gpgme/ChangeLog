@@ -1,5 +1,20 @@
 2003-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* ops.h (_gpgme_passphrase_start): Remove prototype.
+	* passphrase.c: Do not include <assert.h>, "util.h" or
+	"debug.h", but "gpgme.h".
+	(struct passphrase_result): Change to typedef for op_data_t.
+	(release_passphrase_result): Rename to release_op_data.
+	(_gpgme_passphrase_status_handler): Change first argument to void *.
+	Use new op_data_t type.
+	(_gpgme_passphrase_command_handler): Use new op_data_t type.
+	(_gpgme_passphrase_start): Remove function.
+	* decrypt.c (_gpgme_decrypt_start): Rewrite error handling.  Do
+	not call _gpgme_passphrase_start, but install command handler.
+	* encrypt.c (_gpgme_op_encrypt_start): Likewise.
+	* encrypt-sign.c (_gpgme_op_encrypt_sign_start): Likewise.
+	* sign.c (_gpgme_op_sign_start): Likewise.
+
 	* context.h (struct gpgme_context_s): Remove member initialized,
 	use_cms and help_data_1.  Add member protocol.  Make use_armor and
 	use_textmode bit flags.  Make keylist_mode, include_certs,

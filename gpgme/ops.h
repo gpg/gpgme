@@ -83,12 +83,11 @@ GpgmeError _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 					  char *args);
 
 /*-- passphrase.c --*/
-GpgmeError _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
+GpgmeError _gpgme_passphrase_status_handler (void *priv, GpgmeStatusCode code,
 					     char *args);
 GpgmeError _gpgme_passphrase_command_handler (void *opaque,
 					      GpgmeStatusCode code,
 					      const char *key, const char **result);
-GpgmeError _gpgme_passphrase_start (GpgmeCtx ctx);
 
 /*-- progress.c --*/
 GpgmeError _gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,

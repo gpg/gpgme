@@ -1,4 +1,4 @@
-/* passphrase.c -  passphrase functions
+/* passphrase.c - Passphrase callback.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003 g10 Code GmbH
  
@@ -24,79 +24,81 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
-#include "util.h"
+#include "gpgme.h"
 #include "context.h"
 #include "ops.h"
-#include "debug.h"
 
 
-struct passphrase_result
+typedef struct
 {
   int no_passphrase;
   void *last_pw_handle;
   char *userid_hint;
   char *passphrase_info;
   int bad_passphrase;
-};
-typedef struct passphrase_result *PassphraseResult;
+} *op_data_t;
+
 
 static void
-release_passphrase_result (void *hook)
+release_op_data (void *hook)
 {
-  PassphraseResult result = (PassphraseResult) hook;
+  op_data_t opd = (op_data_t) hook;
 
-  free (result->passphrase_info);
-  free (result->userid_hint);
+  free (opd->passphrase_info);
+  free (opd->userid_hint);
 }
 
 
 GpgmeError
-_gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
+_gpgme_passphrase_status_handler (void *priv, GpgmeStatusCode code, char *args)
 {
+  GpgmeCtx ctx = (GpgmeCtx) priv;
   GpgmeError err;
-  PassphraseResult result;
+  op_data_t opd;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_PASSPHRASE, (void **) &result,
-			       sizeof (*result), release_passphrase_result);
+  if (!ctx->passphrase_cb)
+    return 0;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_PASSPHRASE, (void **) &opd,
+			       sizeof (*opd), release_op_data);
   if (err)
     return err;
 
   switch (code)
     {
     case GPGME_STATUS_USERID_HINT:
-      free (result->userid_hint);
-      if (!(result->userid_hint = strdup (args)))
+      if (opd->userid_hint)
+	free (opd->userid_hint);
+      if (!(opd->userid_hint = strdup (args)))
 	return GPGME_Out_Of_Core;
       break;
 
     case GPGME_STATUS_BAD_PASSPHRASE:
-      result->bad_passphrase++;
-      result->no_passphrase = 0;
+      opd->bad_passphrase++;
+      opd->no_passphrase = 0;
       break;
 
     case GPGME_STATUS_GOOD_PASSPHRASE:
-      result->bad_passphrase = 0;
-      result->no_passphrase = 0;
+      opd->bad_passphrase = 0;
+      opd->no_passphrase = 0;
       break;
 
     case GPGME_STATUS_NEED_PASSPHRASE:
     case GPGME_STATUS_NEED_PASSPHRASE_SYM:
-      free (result->passphrase_info);
-      result->passphrase_info = strdup (args);
-      if (!result->passphrase_info)
+      if (opd->passphrase_info)
+	free (opd->passphrase_info);
+      opd->passphrase_info = strdup (args);
+      if (!opd->passphrase_info)
 	return GPGME_Out_Of_Core;
       break;
 
     case GPGME_STATUS_MISSING_PASSPHRASE:
-      DEBUG0 ("missing passphrase - stop\n");;
-      result->no_passphrase = 1;
+      opd->no_passphrase = 1;
       break;
 
     case GPGME_STATUS_EOF:
-      if (result->no_passphrase
-	  || result->bad_passphrase)
+      if (opd->no_passphrase || opd->bad_passphrase)
 	return GPGME_Bad_Passphrase;
       break;
 
@@ -109,15 +111,18 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args
 
 
 GpgmeError
-_gpgme_passphrase_command_handler (void *opaque, GpgmeStatusCode code,
-				   const char *key, const char **result_r)
+_gpgme_passphrase_command_handler (void *priv, GpgmeStatusCode code,
+				   const char *key, const char **result)
 {
-  GpgmeCtx ctx = opaque;
+  GpgmeCtx ctx = (GpgmeCtx) priv;
   GpgmeError err;
-  PassphraseResult result;
+  op_data_t opd;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_PASSPHRASE, (void **) &result,
-			       sizeof (*result), release_passphrase_result);
+  if (!ctx->passphrase_cb)
+    return 0;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_PASSPHRASE, (void **) &opd,
+			       sizeof (*opd), release_op_data);
   if (err)
     return err;
 
@@ -125,58 +130,45 @@ _gpgme_passphrase_command_handler (void *opaque, GpgmeStatusCode code,
     {
       /* We have been called for cleanup.  */
       if (ctx->passphrase_cb)
-	/* Fixme: Take the key in account.  */
-	err = ctx->passphrase_cb (ctx->passphrase_cb_value, NULL, 
-				  &result->last_pw_handle, NULL);
-      *result_r = NULL;
+	/* FIXME: Take the key in account.  */
+	err = ctx->passphrase_cb (ctx->passphrase_cb_value, NULL,
+				  &opd->last_pw_handle, NULL);
+      *result = NULL;
       return err;
     }
 
   if (!key || !ctx->passphrase_cb)
     {
-      *result_r = NULL;
+      *result = NULL;
       return 0;
     }
     
   if (code == GPGME_STATUS_GET_HIDDEN && !strcmp (key, "passphrase.enter"))
     {
-      const char *userid_hint = result->userid_hint;
-      const char *passphrase_info = result->passphrase_info;
-      int bad_passphrase = result->bad_passphrase;
+      const char *userid_hint = opd->userid_hint;
+      const char *passphrase_info = opd->passphrase_info;
+      int bad_passphrase = opd->bad_passphrase;
       char *buf;
 
-      result->bad_passphrase = 0;
+      opd->bad_passphrase = 0;
       if (!userid_hint)
 	userid_hint = "[User ID hint missing]";
       if (!passphrase_info)
 	passphrase_info = "[passphrase info missing]";
       buf = malloc (20 + strlen (userid_hint)
-			+ strlen (passphrase_info) + 3);
+		    + strlen (passphrase_info) + 3);
       if (!buf)
 	return GPGME_Out_Of_Core;
       sprintf (buf, "%s\n%s\n%s",
 	       bad_passphrase ? "TRY_AGAIN":"ENTER",
 	       userid_hint, passphrase_info);
 
-      err  = ctx->passphrase_cb (ctx->passphrase_cb_value, buf,
-				 &result->last_pw_handle, result_r);
+      err = ctx->passphrase_cb (ctx->passphrase_cb_value, buf,
+				&opd->last_pw_handle, result);
       free (buf);
       return err;
     }
 
-  *result_r = NULL;
+  *result = NULL;
   return 0;
-}
-
-
-GpgmeError
-_gpgme_passphrase_start (GpgmeCtx ctx)
-{
-  GpgmeError err = 0;
-
-  if (ctx->passphrase_cb)
-    err = _gpgme_engine_set_command_handler (ctx->engine,
-					     _gpgme_passphrase_command_handler,
-					     ctx, NULL);
-  return err;
 }
