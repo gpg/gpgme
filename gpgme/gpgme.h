@@ -502,6 +502,8 @@ GpgmeError gpgme_op_delete (GpgmeCtx ctx, const GpgmeKey key,
    returned.  */
 GpgmeError gpgme_op_keylist_start (GpgmeCtx ctx,
 				   const char *pattern, int secret_only);
+GpgmeError gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
+		                       int secret_only, int reserved);
 
 /* Return the next key from the keylist in R_KEY.  */
 GpgmeError gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key);
