@@ -71,7 +71,7 @@ static const char test_sig2[] =
 
 
 static void
-check_result (gpgme_verify_result_t result, int summary, char *fpr,
+check_result (gpgme_verify_result_t result, unsigned int summary, char *fpr,
 	      gpgme_error_t status, int notation)
 {
   gpgme_signature_t sig;

@@ -26,8 +26,6 @@
 
 #include <gpgme.h>
 
-static const char version[] = VERSION;
-
 int 
 main (int argc, char **argv)
 {

@@ -30,8 +30,8 @@
 
 
 static void
-check_verify_result (gpgme_verify_result_t result, int summary, char *fpr,
-		     gpgme_error_t status)
+check_verify_result (gpgme_verify_result_t result, unsigned int summary,
+		     char *fpr, gpgme_error_t status)
 {
   gpgme_signature_t sig;
 
