@@ -1,5 +1,6 @@
 /* gpgme.h -  GnuPG Made Easy
  *	Copyright (C) 2000 Werner Koch (dd9jn)
+ *      Copyright (C) 2001 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -43,7 +44,7 @@ extern "C" {
  * let autoconf (using the AM_PATH_GPGME macro) check that this
  * header matches the installed library.
  * Warning: Do not edit the next line.  configure will do that for you! */
-#define GPGME_VERSION "0.2.0a"
+#define GPGME_VERSION "0.2.1"
 
 
 

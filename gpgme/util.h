@@ -1,5 +1,6 @@
 /* util.h 
  *	Copyright (C) 2000 Werner Koch (dd9jn)
+ *      Copyright (C) 2001 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -47,6 +48,7 @@ void  _gpgme_free ( void *a );
 
 
 void _gpgme_debug (int level, const char *format, ...);
+int  _gpgme_debug_level (void);
 void _gpgme_debug_begin ( void **helper, int level, const char *text);
 int  _gpgme_debug_enabled ( void **helper );
 void _gpgme_debug_add (void **helper, const char *format, ...);

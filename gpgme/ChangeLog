@@ -1,3 +1,11 @@
+2001-03-30  Werner Koch  <wk@gnupg.org>
+
+	* debug.c (debug_init): Allow to specify a debug file.
+	(_gpgme_debug_level): New.
+
+	* posix-io.c (_gpgme_io_read, _gpgme_io_write): Print output.
+	(_gpgme_io_select): Debug only with level > 2.
+
 2001-03-15  Werner Koch  <wk@gnupg.org>
 
 	* rungpg.c: Included time.h.
@@ -33,7 +41,7 @@
 
 2001-02-28  Werner Koch  <wk@gnupg.org>
 
-	* w32-io.c (destroy_reader): Set sop_me flag.
+	* w32-io.c (destroy_reader): Set stop_me flag.
 	(writer,create_writer,destroy_writer,find_writer,kill_writer): New.
 	(_gpgme_io_write): Use a writer thread to avaoid blocking.
 	(_gpgme_io_close): Cleanup a writer thread
@@ -163,3 +171,15 @@
 2001-01-05  Werner Koch  <wk@gnupg.org>
 
 	* data.c (gpgme_data_rewind): Allow to rewind data_type_none.
+
+
+ Copyright 2001 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+	

@@ -2,6 +2,7 @@
 # mkerrors - Extract error strings from gpgme.h
 #            and create C source for gpgme_strerror
 #	Copyright (C) 2000 Werner Koch (dd9jn)
+#       Copyright (C) 2001 g10 Code GmbH
 #
 # This file is part of GPGME.
 #

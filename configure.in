@@ -1,6 +1,24 @@
 # configure.in  for GPGME
+# Copyright (C) 2000 Werner Koch (dd9jn)
+# Copyright (C) 2001 g10 Code GmbH
 # 
-dnl (Process this file with autoconf to produce a configure script.)
+# This file is part of GPGME.
+# 
+# GPGME is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# GPGME is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ 
+# (Process this file with autoconf to produce a configure script.)
 AC_REVISION($Revision$)dnl
 
 AC_INIT(gpgme/gpgme.h)
@@ -13,11 +31,11 @@ AM_MAINTAINER_MODE
 #    AGE, set REVISION to 0.
 # 3. Interfaces removed (BAD, breaks upward compatibility): Increment
 #    CURRENT, set AGE and REVISION to 0.
-AM_INIT_AUTOMAKE(gpgme,0.2.0a)
+AM_INIT_AUTOMAKE(gpgme,0.2.1)
 LIBGPGME_LT_CURRENT=3
 LIBGPGME_LT_AGE=3
 LIBGPGME_LT_REVISION=0
-NEED_GPG_VERSION=1.0.4e
+NEED_GPG_VERSION=1.0.4f
 ##############################################
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
@@ -32,7 +50,7 @@ dnl
 AC_ARG_PROGRAM
 
 dnl Don't default to build static libs
-AM_DISABLE_STATIC
+dnl AM_DISABLE_STATIC
 AM_PROG_LIBTOOL
 
 if test "$GCC" = yes; then

@@ -1,5 +1,6 @@
 /* posix-io.c - Posix I/O functions
  *	Copyright (C) 2000 Werner Koch (dd9jn)
+ *      Copyright (C) 2001 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -52,6 +53,9 @@ _gpgme_io_read ( int fd, void *buffer, size_t count )
         nread = read (fd, buffer, count);
     } while (nread == -1 && errno == EINTR );
     DEBUG2 ("fd %d: got %d bytes\n", fd, nread );
+    if ( nread > 0 ) {
+        _gpgme_debug (2, "fd %d: got `%.*s'\n", fd, nread, buffer );
+    }
     return nread;
 }
 
@@ -62,6 +66,7 @@ _gpgme_io_write ( int fd, const void *buffer, size_t count )
     int nwritten;
 
     DEBUG2 ("fd %d: about to write %d bytes\n", fd, (int)count );
+    _gpgme_debug (2, "fd %d: write `%.*s'\n", fd, (int)count, buffer );
     do {
         nwritten = write (fd, buffer, count);
     } while (nwritten == -1 && errno == EINTR );
@@ -256,13 +261,14 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
     static fd_set writefds;
     int any, i, max_fd, n, count;
     struct timeval timeout = { 1, 0 }; /* Use a 1s timeout */
-    void *dbg_help;
+    void *dbg_help = NULL;
     
     FD_ZERO ( &readfds );
     FD_ZERO ( &writefds );
     max_fd = 0;
 
-    DEBUG_BEGIN (dbg_help, "gpgme:select on [ ");
+    if ( _gpgme_debug_level () > 2 )
+        DEBUG_BEGIN (dbg_help, "gpgme:select on [ ");
     any = 0;
     for ( i=0; i < nfds; i++ ) {
         if ( fds[i].fd == -1 ) 
@@ -288,7 +294,7 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
         }
         fds[i].signaled = 0;
     }
-    DEBUG_END (dbg_help, "]" );
+    DEBUG_END (dbg_help, "]" ); 
     if ( !any )
         return 0;
 
@@ -300,7 +306,8 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
         return -1; /* error */
     }
 
-    DEBUG_BEGIN (dbg_help, "select OK [ " );
+    if ( _gpgme_debug_level () > 2 )
+        DEBUG_BEGIN (dbg_help, "select OK [ " );
     if (DEBUG_ENABLED(dbg_help)) {
         for (i=0; i <= max_fd; i++ ) {
             if (FD_ISSET (i, &readfds) )
