@@ -35,9 +35,9 @@ noinst_PROGRAMS = $(TESTS)
 
 key_id := 567064FE6D14A17B2D811ABB407728BC558AA455
 
-all-local: ./pubcerts.kbx ./gpg-agent.conf ./private-keys-v1.d/$(key_id)
+all-local: ./pubring.kbx ./gpg-agent.conf ./private-keys-v1.d/$(key_id)
 
-./pubcerts.kbx: $(srcdir)/cert_g10code_test1.der
+./pubring.kbx: $(srcdir)/cert_g10code_test1.der
 	$(GPGSM) --homedir . --import $(srcdir)/cert_g10code_test1.der
 
 ./gpg-agent.conf:
