@@ -754,10 +754,11 @@ _gpgme_gpgsm_op_keylist_ext (GpgsmObject gpgsm, const char *pattern[],
 			     int secret_only, int reserved, int keylist_mode)
 {
   char *line;
+  GpgmeError err;
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
   int length = 15 + 1;
   char *linep;
-
+  
   if (reserved)
     return mk_error (Invalid_Value);
 
