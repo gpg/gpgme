@@ -1726,13 +1726,15 @@ xmalloc (size_t n)
   return p;
 }
 
-/* Please: Don't call an allocation function xfoo when it may return NULL. */
-/* Wrong: #define xstrdup( x ) (x)?strdup(x):0 */
-/* Right: */
 static char *
 xstrdup (const char *string)
 {
-  char *p = xmalloc (strlen (string));
+  char *p;
+  if( !string ) {
+      fputs ("\nfatal: xstrdup(NULL)\n", stderr);
+      exit (4);    
+  }
+  p = xmalloc (strlen (string)+1);
   strcpy (p, string);
   return p;
 }
@@ -2013,7 +2015,7 @@ startListCertificates( const char* pattern, int remote )
     GpgmeError err;
     struct CertIterator* it;
     const char* patterns[] = { pattern, NULL };
-    fprintf( stderr,  "startListCertificates( \"%s\", %d )", pattern, remote );
+    fprintf( stderr,  "startListCertificates( \"%s\", %d )\n", pattern, remote );
 
     it = xmalloc( sizeof( struct CertIterator ) );
 
@@ -2029,6 +2031,7 @@ startListCertificates( const char* pattern, int remote )
     else gpgme_set_keylist_mode ( it->ctx, GPGME_KEYLIST_MODE_LOCAL );
     err =  gpgme_op_keylist_ext_start ( it->ctx, patterns, 0, 0);
     if( err != GPGME_No_Error ) {
+      fprintf( stderr,  "gpgme_op_keylist_ext_start returned %d", err );
       endListCertificates( it );
       return NULL;
     }
@@ -2095,6 +2098,7 @@ nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
   GpgmeKey   key;
   int retval = GPGME_No_Error;
   assert( it );
+  fprintf( stderr,  "nextCertificates( %p, %p )\n", it, result );
   err = gpgme_op_keylist_next ( it->ctx, &key);
   if( err != GPGME_EOF ) {   
     int idx;
@@ -2182,9 +2186,9 @@ nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
 int
 endListCertificates( struct CertIterator* it )
 {
-  /*fprintf( stderr,  "endListCertificates()\n" );*/
   char *s = gpgme_get_op_info (it->ctx, 0);
   int truncated = s && strstr (s, "<truncated/>");
+  fprintf( stderr,  "endListCertificates( %p )\n", it );
   if( s ) free( s );
   assert(it);
   freeInfo( &(it->info) );
