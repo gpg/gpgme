@@ -1820,8 +1820,8 @@ cryptographic operations.
 @cindex context, creation
 
 @deftypefun gpgme_error_t gpgme_new (@w{gpgme_ctx_t *@var{ctx}})
-The function @code{gpgme_data_new} creates a new @code{gpgme_ctx_t}
-object and returns a handle for it in @var{ctx}.
+The function @code{gpgme_new} creates a new @code{gpgme_ctx_t} object
+and returns a handle for it in @var{ctx}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 context was successfully created, @code{GPG_ERR_INV_VALUE} if
