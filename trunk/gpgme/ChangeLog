@@ -1,6 +1,14 @@
+2001-02-01  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c (set_synchronize): Add EVENT_MODIFY_STATE.  Add Debug
+	code to all Set/ResetEvent().
+
+	* rungpg.c (read_status): Check for end of stream only if we have
+	an r.  By Timo.
+
 2001-01-31  Werner Koch  <wk@gnupg.org>
 
-	* wait.c (_gpgme_wait_on_condition): Remove all exit code processing.
+	* wait.c (_gpgme_wait_on_condition): Removed all exit code processing.
 	(propagate_term_results,clear_active_fds): Removed.
 	(count_active_fds): Renamed to .. 
 	(count_active_and_thawed_fds): .. this and count only thawed fds. 
