@@ -1,0 +1,72 @@
+Hey Emacs, this is -*- outline -*- mode!
+
+* ABI's to break:
+** string representation of non-secret keys and ATTR_IS_SECRET is NULL,
+   which can not be differentiated from the case that it is not
+   representable.
+
+* Allow to use GTK's main loop instead of the select stuff in
+  wait.c
+
+* add locking to the key cache?
+
+* cleanup the namespace - we use log_* assuna_* ascii_* mutext_*
+
+* Documentation
+** Add note about GPGME clearing out pointer return values.
+** validity/trust
+** Document gpgme.m4
+
+* Engines
+** Move code common to all engines up from gpg to engine.
+** engine operations can return General Error on unknown protocol
+   (it's an internal error, as select_protocol checks already).
+** When server mode is implemented properly, more care has to be taken to
+    release all resources on error (for example to free assuan_cmd).
+** GnuPG
+*** For pipemode, make sure to release the pipemode callback data object.
+
+* Operations
+** Export status handler need much more work.
+** Import should return a useful error when one happened.
+** Genkey should return something more useful than General_Error.
+** Factor out common code in _op_*_start functions.
+** Add ATTR to return the number of subkeys or uids.
+** "When returning a GpgmeKey GPGME_ATTR_COMMENT attribute, characters  
+   like ":" are not un-escaped, they are returned as \x3a" Bug
+   reported by Stephane Corthesy.
+
+
+* Error Values
+** Map ASSUAN/GpgSM ERR error values in a better way than is done now.
+** Verify (and document) if Read_Error, Write_Error, Pipe_Error set errno.
+
+* Tests
+** Write a fake gpg-agent so that we can supply known passphrases to
+   gpgsm and setup the configuration files to use the agent.  Without
+   this we are testing a currently running gpg-agent which is not a
+   clever idea.
+** t-data
+*** Test gpgme_data_release_and_get_mem.
+*** Test gpgme_data_rewind for invalid types.
+*** Test gpgme_data_read's readable feature.
+
+* Build suite
+** Make sure everything is cleaned correctly (esp. test area).
+
+* Architecture support
+** (nothing currently)
+
+Bugs reported by Stephane Corthesy:
+> BTW, here's another bug: it it not possible to retrieve fingerprints  
+> for subkeys
+
+> In GpgmeRecipients, would it be possible to provide a function which  
+> would return the validity assigned to a name contained in the  
+> GpgmeRecipients instance?
+
+> passphrase callback. If I use the same GpgmeContext as the one which  
+> is currently asking for a passphrase, my app crashes: the r_hd in
+> the  
+> callback has become invalid; if I use a brand new one, the callback  
+> is called recursively, when I ask to enumerate keys.
