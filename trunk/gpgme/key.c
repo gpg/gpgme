@@ -31,8 +31,7 @@
 
 
 /* Protects all reference counters in keys.  All other accesses to a
-   key are either read only or happen before the key is entered into
-   the cache.  */
+   key are read only.  */
 DEFINE_STATIC_LOCK (key_ref_lock);
 
 
@@ -293,7 +292,7 @@ gpgme_key_ref (gpgme_key_t key)
 }
 
 
-/* gpgme_key_unref releases the key object. Note, that this function
+/* gpgme_key_unref releases the key object.  Note, that this function
    may not do an actual release if there are other shallow copies of
    the objects.  You have to call this function for every newly
    created key object as well as for every gpgme_key_ref() done on the
