@@ -1,5 +1,8 @@
 2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Protocols and Engines): Document
+	gpgme_get_protocol_name.
+
 	* gpgme.texi (Engine Information): Rewritten.
 
 2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
