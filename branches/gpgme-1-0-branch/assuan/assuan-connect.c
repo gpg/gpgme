@@ -39,7 +39,11 @@ assuan_disconnect (ASSUAN_CONTEXT ctx)
 {
   if (ctx)
     {
+#if 0
+      /* This may not work if the pipe is full and the other end is
+	 blocked.  */
       assuan_write_line (ctx, "BYE");
+#endif
       ctx->finish_handler (ctx);
       ctx->deinit_handler (ctx);
       ctx->deinit_handler = NULL;
