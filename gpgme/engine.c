@@ -147,6 +147,7 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 	  (*lastp)->file_name = file_name;
 	  (*lastp)->version = engine_get_version (proto_list[proto]);
 	  (*lastp)->req_version = engine_get_req_version (proto_list[proto]);
+	  (*lastp)->next = NULL;
 	  lastp = &(*lastp)->next;
 	}
     }
