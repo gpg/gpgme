@@ -29,6 +29,7 @@
 #include "gpgme.h"
 #include "util.h"
 #include "sema.h"
+#include "io.h"
 
 #include "engine.h"
 #include "rungpg.h"
@@ -101,6 +102,46 @@ gpgme_engine_check_version (GpgmeProtocol proto)
     default:
       return mk_error (Invalid_Value);
     }
+}
+
+const char *
+_gpgme_engine_get_info (GpgmeProtocol proto)
+{
+  static const char fmt[] = " <engine>\n"
+    "  <protocol>%s</protocol>\n"
+    "  <version>%s</version>\n"
+    "  <path>%s</path>\n"
+    " </engine>\n";
+  static const char *const strproto[3] = { "OpenPGP", "CMS", NULL };
+  static const char *engine_info[3];  /* FIXME: MAX_PROTO + 1*/
+  const char *path;
+  const char *version;
+  char *info;
+
+  if (proto > 2 /* FIXME MAX_PROTO */ || !strproto[proto])
+    return NULL;
+
+  /* FIXME: Make sure that only one instance does run.  */
+  if (engine_info[proto])
+    return engine_info[proto];
+
+  path = _gpgme_engine_get_path (proto);
+  version = _gpgme_engine_get_version (proto);
+
+  if (!path || !version)
+    return NULL;
+
+  info = xtrymalloc (strlen(fmt) + strlen(strproto[proto]) + strlen(path)
+                     + strlen (version) + 1);
+  if (!info)
+    info = " <engine>\n"
+      "  <error>Out of core</error>\n"
+      " </engine>";
+  else
+    sprintf (info, fmt, strproto[proto], version, path);
+  engine_info[proto] = info;
+
+  return engine_info[proto];
 }
 
 GpgmeError

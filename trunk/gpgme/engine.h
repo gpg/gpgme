@@ -27,6 +27,8 @@
 
 const char *_gpgme_engine_get_path (GpgmeProtocol proto);
 const char *_gpgme_engine_get_version (GpgmeProtocol proto);
+GpgmeError gpgme_engine_check_version (GpgmeProtocol proto);
+const char * _gpgme_engine_get_info (GpgmeProtocol proto);
 GpgmeError _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine);
 void _gpgme_engine_release (EngineObject engine);
 void _gpgme_engine_set_status_handler (EngineObject engine,
