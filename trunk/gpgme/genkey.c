@@ -145,7 +145,7 @@ get_key_parameter (const char *parms, gpgme_data_t *key_parameter)
     content++;
 
   return gpgme_data_new_from_mem (key_parameter, content,
-				  endtag - content, 0);
+				  endtag - content, 1);
 }
 
 
