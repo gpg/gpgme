@@ -1549,8 +1549,11 @@ bool encryptAndSignMessage( const char* cleartext,
           \c true, otherwise
           \c false.
 */
-bool decryptMessage( const char* ciphertext, const
-          char** cleartext, const char* certificate );
+bool decryptMessage( const char* ciphertext,
+                     bool        cipherIsBinary,
+                     int         cipherLen,
+                     const char** cleartext,
+                     const char* certificate );
 
 /*! \ingroup groupCryptAct
    \brief Combines the functionality of
