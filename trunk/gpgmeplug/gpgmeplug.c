@@ -81,6 +81,7 @@
 #define GPGMEPLUG_SIGN_FLAT_POSTFIX      ""
 #define __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY false
 #endif
+#define __GPGMEPLUG_ERROR_CLEARTEXT_IS_ZERO "Error: Cannot run checkMessageSignature() with cleartext == 0"
 /* definitions for encoding */
 #ifndef GPGMEPLUG_ENC_MAKE_MIME_OBJECT
 #define GPGMEPLUG_ENC_INCLUDE_CLEARTEXT  false
@@ -1028,7 +1029,7 @@ sig_status_to_string( GpgmeSigStat status )
 }
 
 
-bool checkMessageSignature( const char* ciphertext,
+bool checkMessageSignature( char** cleartext,
                             const char* signaturetext,
                             bool signatureIsBinary,
                             int signatureLen,
@@ -1037,20 +1038,39 @@ bool checkMessageSignature( const char* ciphertext,
   GpgmeCtx ctx;
   GpgmeSigStat status;
   GpgmeData datapart, sigpart;
+  char* rClear = 0;
+  size_t clearLen;
   GpgmeError err;
   GpgmeKey key;
   time_t created;
   int sig_idx = 0;
   const char* statusStr;
   const char* fpr;
+  bool isOpaqueSigned;
+
+  if( !cleartext ) {
+    if( sigmeta ) {
+      sigmeta->status = malloc( strlen( __GPGMEPLUG_ERROR_CLEARTEXT_IS_ZERO ) + 1 );
+      if( sigmeta->status ) {
+        strcpy( sigmeta->status, __GPGMEPLUG_ERROR_CLEARTEXT_IS_ZERO );
+        sigmeta->status[ strlen( __GPGMEPLUG_ERROR_CLEARTEXT_IS_ZERO ) ] = '\0';
+      }
+    }
+    return false;
+  }
+
+  isOpaqueSigned = !*cleartext;
 
   gpgme_new( &ctx );
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
   gpgme_set_armor (ctx,    signatureIsBinary ? 0 : 1);
   /*  gpgme_set_textmode (ctx, signatureIsBinary ? 0 : 1); */
 
-  gpgme_data_new_from_mem( &datapart, ciphertext,
-                          strlen( ciphertext ), 1 );
+  if( isOpaqueSigned )
+    gpgme_data_new( &datapart );
+  else
+    gpgme_data_new_from_mem( &datapart, *cleartext,
+                             strlen( *cleartext ), 1 );
 
   gpgme_data_new_from_mem( &sigpart,
                            signaturetext,
@@ -1060,7 +1080,20 @@ bool checkMessageSignature( const char* ciphertext,
                            1 );
 
   gpgme_op_verify( ctx, sigpart, datapart, &status );
-  gpgme_data_release( datapart );
+
+  if( isOpaqueSigned ) {
+    rClear = gpgme_data_release_and_get_mem( datapart, &clearLen );
+    *cleartext = malloc( clearLen + 1 );
+    if( *cleartext ) {
+      if( clearLen )
+        strncpy(*cleartext, rClear, clearLen );
+      (*cleartext)[clearLen] = '\0';
+    }
+    free( rClear );
+  }
+  else
+    gpgme_data_release( datapart );
+
   gpgme_data_release( sigpart );
 
   /* Provide information in the sigmeta struct */

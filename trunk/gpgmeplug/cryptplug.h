@@ -1449,9 +1449,18 @@ struct SignatureMetaData {
 
 /*! \ingroup groupSignAct
    \brief Checks whether the signature of a message is
-          valid. \c ciphertext specifies the signed message
-          as it was received by the MUA, \c signaturetext is the
-          signature itself.
+          valid.
+
+   \c cleartext must never be 0 but be a valid pointer.
+
+   If \c *cleartext > 0 then **cleartext specifies the message text
+   that was signed and \c signaturetext is the signature itself.
+
+   If \c *cleartext == 0 is an empty string then \c signaturetext is
+   supposed to contain an opaque signed message part. After checking the
+   data and verifying the signature the cleartext of the message will be
+   returned in \c cleartext.  The user must free the respective memory
+   ocupied by *cleartext.
 
    Depending on the configuration, MUAs might not need to use this.
    If \c sigmeta is non-null, the
@@ -1459,7 +1468,7 @@ struct SignatureMetaData {
           contain meta information about the signature after the
           function call.
 */
-bool checkMessageSignature( const char* ciphertext,
+bool checkMessageSignature( char** cleartext,
                             const char* signaturetext,
                             bool signatureIsBinary,
                             int signatureLen,
