@@ -1,5 +1,7 @@
 2002-01-16  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi: g10Code -> g10 Code
+
 	* gpgme.texi (Top): Complete detailmenu.
 	
 	* gpgme.texi: Convert embarassing cruft to the real thing.
