@@ -9,6 +9,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+
 AC_DEFUN([_AM_PATH_GPGME_CONFIG],
 [ AC_ARG_WITH(gpgme-prefix,
             AC_HELP_STRING([--with-gpgme-prefix=PFX],
@@ -34,7 +35,15 @@ dnl Test for libgpgme and define GPGME_CFLAGS and GPGME_LIBS.
 dnl
 AC_DEFUN([AM_PATH_GPGME],
 [ AC_REQUIRE([_AM_PATH_GPGME_CONFIG])dnl
-  min_gpgme_version=ifelse([$1], ,0.4.2,$1)
+  tmp=ifelse([$1], ,1:0.4.2,$1)
+  if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
+     req_gpgme_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
+     min_gpgme_version=`echo "$tmp" | sed 's/\(.*\):\(.*\)/\2/'`
+  else
+     req_gpgme_api=0
+     min_gpgme_version="$tmp"
+  fi
+
   AC_MSG_CHECKING(for GPGME - version >= $min_gpgme_version)
   ok=no
   if test "$GPGME_CONFIG" != "no" ; then
@@ -61,6 +70,18 @@ AC_DEFUN([AM_PATH_GPGME],
     fi
   fi
   if test $ok = yes; then
+     # If we have a recent GPGME, we should also check that the
+     # API is compatible.
+     if test "$req_gpgme_api" -gt 0 ; then
+        tmp=`$GPGME_CONFIG --api-version 2>/dev/null || echo 0`
+        if test "$tmp" -gt 0 ; then
+           if test "$req_gpgme_api" -ne "$tmp" ; then
+             ok=no
+           fi
+        fi
+     fi
+  fi
+  if test $ok = yes; then
     GPGME_CFLAGS=`$GPGME_CONFIG --cflags`
     GPGME_LIBS=`$GPGME_CONFIG --libs`
     AC_MSG_RESULT(yes)
@@ -81,7 +102,15 @@ dnl Test for libgpgme and define GPGME_PTH_CFLAGS and GPGME_PTH_LIBS.
 dnl
 AC_DEFUN([AM_PATH_GPGME_PTH],
 [ AC_REQUIRE([_AM_PATH_GPGME_CONFIG])dnl
-  min_gpgme_version=ifelse([$1], ,0.4.2,$1)
+  tmp=ifelse([$1], ,1:0.4.2,$1)
+  if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
+     req_gpgme_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
+     min_gpgme_version=`echo "$tmp" | sed 's/\(.*\):\(.*\)/\2/'`
+  else
+     req_gpgme_api=0
+     min_gpgme_version="$tmp"
+  fi
+
   AC_MSG_CHECKING(for GPGME Pth - version >= $min_gpgme_version)
   ok=no
   if test "$GPGME_CONFIG" != "no" ; then
@@ -110,6 +139,18 @@ AC_DEFUN([AM_PATH_GPGME_PTH],
     fi
   fi
   if test $ok = yes; then
+     # If we have a recent GPGME, we should also check that the
+     # API is compatible.
+     if test "$req_gpgme_api" -gt 0 ; then
+        tmp=`$GPGME_CONFIG --api-version 2>/dev/null || echo 0`
+        if test "$tmp" -gt 0 ; then
+           if test "$req_gpgme_api" -ne "$tmp" ; then
+             ok=no
+           fi
+        fi
+     fi
+  fi
+  if test $ok = yes; then
     GPGME_PTH_CFLAGS=`$GPGME_CONFIG --thread=pth --cflags`
     GPGME_PTH_LIBS=`$GPGME_CONFIG --thread=pth --libs`
     AC_MSG_RESULT(yes)
@@ -131,7 +172,15 @@ dnl  and GPGME_PTHREAD_LIBS.
 dnl
 AC_DEFUN([AM_PATH_GPGME_PTHREAD],
 [ AC_REQUIRE([_AM_PATH_GPGME_CONFIG])dnl
-  min_gpgme_version=ifelse([$1], ,0.4.2,$1)
+  tmp=ifelse([$1], ,1:0.4.2,$1)
+  if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
+     req_gpgme_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
+     min_gpgme_version=`echo "$tmp" | sed 's/\(.*\):\(.*\)/\2/'`
+  else
+     req_gpgme_api=0
+     min_gpgme_version="$tmp"
+  fi
+
   AC_MSG_CHECKING(for GPGME pthread - version >= $min_gpgme_version)
   ok=no
   if test "$GPGME_CONFIG" != "no" ; then
@@ -158,6 +207,18 @@ AC_DEFUN([AM_PATH_GPGME_PTHREAD],
         fi
       fi
     fi
+  fi
+  if test $ok = yes; then
+     # If we have a recent GPGME, we should also check that the
+     # API is compatible.
+     if test "$req_gpgme_api" -gt 0 ; then
+        tmp=`$GPGME_CONFIG --api-version 2>/dev/null || echo 0`
+        if test "$tmp" -gt 0 ; then
+           if test "$req_gpgme_api" -ne "$tmp" ; then
+             ok=no
+           fi
+        fi
+     fi
   fi
   if test $ok = yes; then
     GPGME_PTHREAD_CFLAGS=`$GPGME_CONFIG --thread=pthread --cflags`
