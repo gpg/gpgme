@@ -1,6 +1,16 @@
 Noteworthy changes in version 0.4.3 (unreleased)
 ------------------------------------------------
 
+ * libgpgme should not be used for threaded programs anymore.  This
+   never worked reliably in all cases, because you had to
+   be careful about the linking order and libtool wouldn't do that for
+   you automatically.  Instead, now you have to link against
+   libgpgme-pthread for applications using pthread and libgpgme-pth for
+   applications using GNU Pth.
+
+   The old code for automagically detecting the thread library is
+   still part of libgpgme, but it is DEPRECATED.
+
  * gpgme_get_key fails with GPG_ERR_AMBIGUOUS_NAME if the key ID
    provided was not unique, instead returning the first matching key.
 

@@ -1,12 +1,14 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * Before release:
-** Nothing.
+** Write --thread option for gpgme-config.
+** Document new thread support.
 
 * ABI's to break:
 ** I/O and User Data could be made extensible.  But this can be done
    without breaking the ABI hopefully.
 ** Compatibility interfaces that can be removed in future versions:
+*** ath compatibility modules.
 *** gpgme_data_new_from_filepart
 *** gpgme_data_new_from_file
 *** gpgme_data_new_with_read_cb
@@ -24,6 +26,7 @@ Hey Emacs, this is -*- outline -*- mode!
 *** All Gpgme* typedefs.
 
 * Thread support:
+** When GNU Pth supports sendmsg/recvmsg, wrap them properly.
 ** Build thread modules for static linking (which just suck in the
    desired symbols the hard way). !!
 ** Ordering the libs is important, but libtool gets it wrong.  Argh.
@@ -76,6 +79,7 @@ Hey Emacs, this is -*- outline -*- mode!
 * Operations
 ** If an operation failed, make sure that the result functions don't return
    corrupt partial information. !!!
+   NOTE: The EOF status handler is not called in this case !!!
 ** If no passphrase cb is installed, status handler is not run even if
    password is required by crypto engine. !!
 ** Export status handler need much more work. !!!

@@ -22,6 +22,21 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#ifdef _ASSUAN_IN_GPGME
+ssize_t
+_assuan_simple_read (ASSUAN_CONTEXT ctx, void *buffer, size_t size)
+{
+  return read (ctx->inbound.fd, buffer, size);
+}
+
+ssize_t
+_assuan_simple_write (ASSUAN_CONTEXT ctx, const void *buffer, size_t size)
+{
+  return write (ctx->outbound.fd, buffer, size);
+}
+
+#else
+
 extern ssize_t pth_read (int fd, void *buffer, size_t size);
 extern ssize_t pth_write (int fd, const void *buffer, size_t size);
 
@@ -39,3 +54,5 @@ _assuan_simple_write (ASSUAN_CONTEXT ctx, const void *buffer, size_t size)
 {
   return (pth_write ? pth_write : write) (ctx->outbound.fd, buffer, size);
 }
+
+#endif

@@ -157,7 +157,7 @@ if test "$ac_cv_func_vasprintf" != yes; then
   GNUPG_CHECK_VA_COPY
 fi
 
-AM_PATH_GPG_ERROR(0.1,, AC_MSG_ERROR([libgpg-error was not found]))
+AM_PATH_GPG_ERROR(0.3,, AC_MSG_ERROR([libgpg-error was not found]))
 AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
           [The default error source for GPGME.])
 
@@ -243,24 +243,23 @@ fi
 
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
 
-dnl Make the version number in gpgme/gpgme.h the same as the one here.
-dnl (this is easier than to have a *.in file just for one substitution)
+# Make the version number in gpgme/gpgme.h the same as the one here.
+# (this is easier than to have a *.in file just for one substitution)
 GNUPG_FIX_HDR_VERSION(gpgme/gpgme.h, GPGME_VERSION)
 
-dnl Substitution used for gpgme-config 
+# Substitution used for gpgme-config 
 GPGME_CONFIG_LIBS="-lgpgme"
 GPGME_CONFIG_CFLAGS=""
 AC_SUBST(GPGME_CONFIG_LIBS)
 AC_SUBST(GPGME_CONFIG_CFLAGS)
 
-dnl Frob'da Variables
+# Frob'da Variables
 LTLIBOBJS=`echo "$LIB@&t@OBJS" |
            sed 's,\.[[^.]]* ,.lo ,g;s,\.[[^.]]*$,.lo,'`
 AC_SUBST(LTLIBOBJS)
 
-dnl
-dnl Create config files 
-dnl
+#
+# Create config files 
 
 AC_CONFIG_FILES(Makefile assuan/Makefile gpgme/Makefile
 		tests/Makefile tests/gpg/Makefile tests/gpgsm/Makefile

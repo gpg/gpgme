@@ -1,3 +1,19 @@
+2003-08-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	The ath files (ath.h, ath.c, ath-pth.c, ath-pthread.c,
+	ath-compat.c, ath-pth-compat.c and ath-pthread-compat.c) have been
+	updated to have better thread support, and the Makefile.am was
+	changed to reflect that.
+
+	* util.h [!HAVE_FOPENCOOKIE]: Remove fopencookie declaration.
+	* engine-gpgsm.c (gpgsm_assuan_simple_command): Set ERR to return
+	value of status_fnc.
+	* rungpg.c (start): Return SAVED_ERRNO, not errno.
+
+2003-08-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.c (start): Use saved_errno instead errno.
+
 2003-08-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* funopen.c, putc_unlocked.c, isascii.c, memrchr.c: New files.

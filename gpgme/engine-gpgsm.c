@@ -601,7 +601,7 @@ gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd,
 	  r = parse_status (line + 2);
 
 	  if (r >= 0 && status_fnc)
-	    status_fnc (status_fnc_value, r, rest);
+	    err = status_fnc (status_fnc_value, r, rest);
 	  else
 	    err = gpg_error (GPG_ERR_GENERAL);
 	}
@@ -685,7 +685,7 @@ status_handler (void *opaque, int fd)
       if (assuan_err)
 	{
 	  /* Try our best to terminate the connection friendly.  */
-	  assuan_write_line (gpgsm->assuan_ctx, "BYE");
+	  /*	  assuan_write_line (gpgsm->assuan_ctx, "BYE"); */
 	  err = map_assuan_error (assuan_err);
 	}
       else if (linelen >= 3
