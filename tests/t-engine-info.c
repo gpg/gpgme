@@ -43,7 +43,7 @@
 
 void
 check_engine_info (GpgmeEngineInfo info, GpgmeProtocol protocol,
-		   const char *path, const char *req_version)
+		   const char *file_name, const char *req_version)
 {
   if (info->protocol != protocol)
     {
@@ -51,10 +51,10 @@ check_engine_info (GpgmeEngineInfo info, GpgmeProtocol protocol,
 	       info->protocol, protocol);
       exit (1);
     }
-  if (strcmp (info->path, path))
+  if (strcmp (info->file_name, file_name))
     {
-      fprintf (stderr, "Unexpected path to executable %s (expected %s instead)",
-	       info->path, path);
+      fprintf (stderr, "Unexpected file name to executable %s (expected %s instead)",
+	       info->file_name, file_name);
       exit (1);
     }
   if (strcmp (info->req_version, req_version))

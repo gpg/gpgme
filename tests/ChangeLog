@@ -1,5 +1,7 @@
 2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* t-engine-info.c: Use file_name instead path throughout.
+
 	* Makefile.am (TESTS): Add t-engine-info.
 	* t-engine-info.c: New file.
 	* gpg/t-encrypt.c (main): Don't print engine info.

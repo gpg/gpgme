@@ -50,24 +50,24 @@ static struct engine_ops *engine_ops[] =
 #endif
   };
 
-
-/* Get the path of the engine for PROTOCOL.  */
-const char *
-_gpgme_engine_get_path (GpgmeProtocol proto)
+
+/* Get the file name of the engine for PROTOCOL.  */
+static const char *
+engine_get_file_name (GpgmeProtocol proto)
 {
   if (proto > DIM (engine_ops))
     return NULL;
 
-  if (engine_ops[proto] && engine_ops[proto]->get_path)
-    return (*engine_ops[proto]->get_path) ();
+  if (engine_ops[proto] && engine_ops[proto]->get_file_name)
+    return (*engine_ops[proto]->get_file_name) ();
   else
     return NULL;
 }
 
 
 /* Get the version number of the engine for PROTOCOL.  */
-const char *
-_gpgme_engine_get_version (GpgmeProtocol proto)
+static const char *
+engine_get_version (GpgmeProtocol proto)
 {
   if (proto > DIM (engine_ops))
     return NULL;
@@ -80,8 +80,8 @@ _gpgme_engine_get_version (GpgmeProtocol proto)
 
 
 /* Get the required version number of the engine for PROTOCOL.  */
-const char *
-_gpgme_engine_get_req_version (GpgmeProtocol proto)
+static const char *
+engine_get_req_version (GpgmeProtocol proto)
 {
   if (proto > DIM (engine_ops))
     return NULL;
@@ -97,57 +97,68 @@ _gpgme_engine_get_req_version (GpgmeProtocol proto)
 GpgmeError
 gpgme_engine_check_version (GpgmeProtocol proto)
 {
-  return _gpgme_compare_versions (_gpgme_engine_get_version (proto),
-				  _gpgme_engine_get_req_version (proto))
+  return _gpgme_compare_versions (engine_get_version (proto),
+				  engine_get_req_version (proto))
     ? 0 : GPGME_Invalid_Engine;
 }
 
 
-const char *
-_gpgme_engine_get_info (GpgmeProtocol proto)
+/* Get the information about the configured and installed engines.  A
+   pointer to the first engine in the statically allocated linked list
+   is returned in *INFO.  If an error occurs, it is returned.  */
+GpgmeError
+gpgme_get_engine_info (GpgmeEngineInfo *info)
 {
-  static const char fmt[] = " <engine>\n"
-    "  <protocol>%s</protocol>\n"
-    "  <version>%s</version>\n"
-    "  <path>%s</path>\n"
-    " </engine>\n";
-  static const char *const strproto[3] = { "OpenPGP", "CMS", NULL };
-  static const char *engine_info[3];  /* FIXME: MAX_PROTO + 1*/
+  static GpgmeEngineInfo engine_info;
   DEFINE_STATIC_LOCK (engine_info_lock);
 
-  if (proto > 2 /* FIXME MAX_PROTO */ || !strproto[proto])
-    return NULL;
-
   LOCK (engine_info_lock);
-  if (!engine_info[proto])
+  if (!engine_info)
     {
-      const char *path = _gpgme_engine_get_path (proto);
-      const char *version = _gpgme_engine_get_version (proto);
+      GpgmeEngineInfo *lastp = &engine_info;
+      GpgmeProtocol proto_list[] = { GPGME_PROTOCOL_OpenPGP,
+				     GPGME_PROTOCOL_CMS };
+      int proto;
 
-      if (path && version)
+      for (proto = 0; proto < DIM (proto_list); proto++)
 	{
-	  char *info = malloc (strlen (fmt) + strlen (strproto[proto])
-				   + strlen (path) + strlen (version) + 1);
-	  if (!info)
-	    info = " <engine>\n"
-	      "  <error>Out of core</error>\n"
-	      " </engine>";
-	  else
-	    sprintf (info, fmt, strproto[proto], version, path);
-	  engine_info[proto] = info;
+	  const char *file_name = engine_get_file_name (proto_list[proto]);
+
+	  if (!file_name)
+	    continue;
+
+	  *lastp = malloc (sizeof (*engine_info));
+	  if (!*lastp)
+	    {
+	      while (engine_info)
+		{
+		  GpgmeEngineInfo next_info = engine_info->next;
+		  free (engine_info);
+		  engine_info = next_info;
+		}
+	      UNLOCK (engine_info_lock);
+	      return GPGME_Out_Of_Core;
+	    }
+
+	  (*lastp)->protocol = proto_list[proto];
+	  (*lastp)->file_name = file_name;
+	  (*lastp)->version = engine_get_version (proto_list[proto]);
+	  (*lastp)->req_version = engine_get_req_version (proto_list[proto]);
+	  lastp = &(*lastp)->next;
 	}
     }
   UNLOCK (engine_info_lock);
-  return engine_info[proto];
+  *info = engine_info;
+  return 0;
 }
 
-
+
 GpgmeError
 _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine)
 {
   EngineObject engine;
 
-  const char *path;
+  const char *file_name;
   const char *version;
 
   if (proto > DIM (engine_ops))
@@ -156,9 +167,9 @@ _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine)
   if (!engine_ops[proto])
     return GPGME_Invalid_Engine;
 
-  path = _gpgme_engine_get_path (proto);
-  version = _gpgme_engine_get_version (proto);
-  if (!path || !version)
+  file_name = engine_get_file_name (proto);
+  version = engine_get_version (proto);
+  if (!file_name || !version)
     return GPGME_Invalid_Engine;
 
   engine = calloc (1, sizeof *engine);

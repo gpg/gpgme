@@ -632,8 +632,8 @@ This is the protocol for which the crypo engine is used.  You can
 convert this to a string with @code{gpgme_get_protocol_name} for
 printing.
 
-@item const char *path
-This is a string holding the path to the executable of the crypto
+@item const char *file_name
+This is a string holding the file name of the executable of the crypto
 engine.  Currently, it is never @code{NULL}, but using @code{NULL} is
 reserved for future use, so always check before you use it.
 

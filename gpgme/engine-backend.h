@@ -32,7 +32,7 @@
 struct engine_ops
 {
   /* Static functions.  */
-  const char *(*get_path) (void);
+  const char *(*get_file_name) (void);
   const char *(*get_version) (void);
   const char *(*get_req_version) (void);
   GpgmeError (*new) (void **r_engine);

@@ -319,8 +319,8 @@ struct _gpgme_engine_info
   /* The protocol ID.  */
   GpgmeProtocol protocol;
 
-  /* The path to the engine binary.  */
-  const char *path;
+  /* The file name of the engine binary.  */
+  const char *file_name;
 
   /* The version string of the installed engine.  */
   const char *version;
