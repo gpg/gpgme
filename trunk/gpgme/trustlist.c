@@ -141,7 +141,7 @@ trustlist_colon_handler ( GpgmeCtx ctx, char *line )
             item->val[0] = *p;
             item->val[1] = 0;
             break;
-          case 10: /* user ID */
+          case 9: /* user ID */
             item->name = xtrystrdup (p);
             if (!item->name)
                 ctx->out_of_core = 1;

@@ -50,6 +50,16 @@ gpgme_recipients_release ( GpgmeRecipients rset )
 GpgmeError
 gpgme_recipients_add_name (GpgmeRecipients rset, const char *name )
 {
+    return gpgme_recipients_add_name_with_validity (
+        rset, name, GPGME_VALIDITY_UNKNOWN
+        );
+}
+
+GpgmeError
+gpgme_recipients_add_name_with_validity (GpgmeRecipients rset,
+                                         const char *name,
+                                         GpgmeValidity val )
+{
     struct user_id_s *r;
 
     if (!name || !rset )
@@ -57,6 +67,7 @@ gpgme_recipients_add_name (GpgmeRecipients rset, const char *name )
     r = xtrymalloc ( sizeof *r + strlen (name) );
     if (!r)
         return mk_error (Out_Of_Core);
+    r->validity = val;
     r->name_part = "";
     r->email_part = "";
     r->comment_part = "";
@@ -65,6 +76,8 @@ gpgme_recipients_add_name (GpgmeRecipients rset, const char *name )
     rset->list = r;
     return 0;
 }
+
+
 
 unsigned int 
 gpgme_recipients_count ( const GpgmeRecipients rset )
@@ -134,7 +147,19 @@ _gpgme_append_gpg_args_from_recipients (
     }    
 }
 
+int
+_gpgme_recipients_all_valid ( const GpgmeRecipients rset )
+{
+    struct user_id_s *r;
 
+    assert (rset);
+    for (r=rset->list ; r; r = r->next ) {
+        if (r->validity != GPGME_VALIDITY_FULL
+            && r->validity != GPGME_VALIDITY_ULTIMATE )
+            return 0; /*no*/
+    }
+    return 1; /*yes*/
+}
 
 
 

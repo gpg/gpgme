@@ -105,8 +105,7 @@ struct gpgme_data_s {
 
 struct user_id_s {
     struct user_id_s *next;
-    int validity; /* 0 = undefined, 1 = not, 2 = marginal,
-                     3 = full, 4 = ultimate */
+    GpgmeValidity validity; 
     const char *name_part;    /* all 3 point into strings behind name */
     const char *email_part;   /* or to read-only strings */
     const char *comment_part;

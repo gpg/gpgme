@@ -42,7 +42,7 @@ extern "C" {
  * let autoconf (using the AM_PATH_GPGME macro) check that this
  * header matches the installed library.
  * Warning: Do not edit the next line.  configure will do that for you! */
-#define GPGME_VERSION "0.1.3a"
+#define GPGME_VERSION "0.1.4"
 
 
 
@@ -127,6 +127,15 @@ typedef enum {
     GPGME_ATTR_TYPE    = 14
 } GpgmeAttr;
 
+typedef enum {
+    GPGME_VALIDITY_UNKNOWN = 0,
+    GPGME_VALIDITY_UNDEFINED = 1,
+    GPGME_VALIDITY_NEVER = 2,
+    GPGME_VALIDITY_MARGINAL = 3,
+    GPGME_VALIDITY_FULL = 4,
+    GPGME_VALIDITY_ULTIMATE = 5
+} GpgmeValidity;
+
 
 typedef const char *(*GpgmePassphraseCb)(void*,
                                          const char *desc, void *r_hd);
@@ -156,6 +165,9 @@ GpgmeError   gpgme_recipients_new (GpgmeRecipients *r_rset);
 void         gpgme_recipients_release ( GpgmeRecipients rset);
 GpgmeError   gpgme_recipients_add_name (GpgmeRecipients rset,
                                         const char *name);
+GpgmeError   gpgme_recipients_add_name_with_validity (GpgmeRecipients rset,
+                                                      const char *name,
+                                                      GpgmeValidity val );
 unsigned int gpgme_recipients_count ( const GpgmeRecipients rset );
 GpgmeError gpgme_recipients_enum_open (const GpgmeRecipients rset,void **ctx);
 const char *gpgme_recipients_enum_read (const GpgmeRecipients rset,void **ctx);
@@ -188,6 +200,7 @@ GpgmeError    gpgme_data_write ( GpgmeData dh,
 
 
 /* Key and trust functions */
+void gpgme_key_release ( GpgmeKey key );
 char *gpgme_key_get_as_xml ( GpgmeKey key );
 const char  *gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
                                          const void *reserved, int idx );

@@ -84,7 +84,7 @@ _gpgme_key_add_subkey (GpgmeKey key)
 
 
 void
-_gpgme_key_release ( GpgmeKey key )
+gpgme_key_release ( GpgmeKey key )
 {
     struct user_id_s *u, *u2;
     struct subkey_s *k, *k2;
@@ -422,7 +422,18 @@ gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
         val = u? u->comment_part : NULL;
         break;
       case GPGME_ATTR_VALIDITY:
-        val = "[foxme]";
+        for (u=key->uids; u && idx; u=u->next, idx-- )
+            ;
+        if (u) {
+            switch (u->validity) {
+              case GPGME_VALIDITY_UNKNOWN:   val = "?"; break;
+              case GPGME_VALIDITY_UNDEFINED: val = "q"; break;
+              case GPGME_VALIDITY_NEVER:     val = "n"; break;
+              case GPGME_VALIDITY_MARGINAL:  val = "m"; break;
+              case GPGME_VALIDITY_FULL:      val = "f"; break;
+              case GPGME_VALIDITY_ULTIMATE:  val = "u"; break;
+            }
+        }
         break;
       case GPGME_ATTR_LEVEL:  /* not used here */
       case GPGME_ATTR_TYPE:
@@ -437,6 +448,7 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
                            const void *reserved, int idx )
 {
     unsigned long val = 0;
+    struct user_id_s *u;
 
     if (!key)
         return 0;
@@ -454,6 +466,12 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
         break;
       case GPGME_ATTR_CREATED: 
         val = key->keys.timestamp < 0? 0L:(unsigned long)key->keys.timestamp;
+        break;
+      case GPGME_ATTR_VALIDITY:
+        for (u=key->uids; u && idx; u=u->next, idx-- )
+            ;
+        if (u)
+            val = u->validity;
         break;
       default:
         break;
