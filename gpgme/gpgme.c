@@ -176,7 +176,7 @@ gpgme_set_textmode ( GpgmeCtx c, int yes )
 void
 gpgme_set_keylist_mode ( GpgmeCtx c, int mode )
 {
-    if (c)
+    if (!c)
         return;
     c->keylist_mode = mode;
 }

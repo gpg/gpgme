@@ -3,27 +3,27 @@
 # It is only needed for the CVS version.
 
 PGM=GPGME
-DIE=no
+lib_config_files=""
+autoconf_vers=2.13
+automake_vers=1.4
+aclocal_vers=1.4
+libtool_vers=1.3
 
-#
-# Use --build-w32 to prepare the cross compiling build for Windoze
-#
+DIE=no
 if test "$1" = "--build-w32"; then
     shift
     target=i386--mingw32
-    host=`./config.guess`
-        
-    CC="${target}-gcc"
-    CPP="${target}-gcc -E"
-    RANLIB="${target}-ranlib"
-        
-    cc_version=`$CC --version`
-    if ! echo "$cc_version" | egrep '[0-9]+wk[0-9]+' ; then
-        echo "gcc version $cc_version is not supported" >&2
-        echo "see doc/README.W32 for instructions" >&2
+    if [ ! -f ./config.guess ]; then
+        echo "./config.guess not found" >&2
         exit 1
     fi
+    host=`./config.guess`
         
+    if ! mingw32 --version >/dev/null; then
+        echo "We need at least version 0.3 of MingW32/CPD" >&2
+        exit 1
+    fi
+
     if [ -f config.h ]; then
         if grep HAVE_DOSISH_SYSTEM config.h | grep undef >/dev/null; then
             echo "Pease run a 'make distclean' first" >&2
@@ -31,16 +31,35 @@ if test "$1" = "--build-w32"; then
         fi
     fi
 
-    export CC CPP RANLIB
-    ./configure --host=${host} --target=${target} $*
+    crossbindir=`mingw32 --install-dir`/bin
+    CC=`mingw32 --get-path gcc`
+    CPP=`mingw32 --get-path cpp`
+    AR=`mingw32 --get-path ar`
+    RANLIB=`mingw32 --get-path ranlib`
+    export CC CPP AR RANLIB 
+
+    disable_foo_tests=""
+    if [ -n "$lib_config_files" ]; then
+        for i in $lib_config_files; do
+            j=`echo $i | tr '[a-z-]' '[A-Z_]'`
+            eval "$j=${crossbindir}/$i"
+            export $j
+            disable_foo_tests="$disable_foo_tests --disable-`echo $i| \
+                           sed 's,-config$,,'`-test"
+            if [ ! -f "${crossbindir}/$i" ]; then                   
+                echo "$i not installed for MingW32" >&2
+                DIE=yes
+            fi
+        done
+    fi
+    [ $DIE = yes ] && exit 1
+
+    ./configure --host=${host} --target=${target} \
+                ${disable_foo_tests} $*
     exit $?
 fi
 
 
-autoconf_vers=2.13
-automake_vers=1.4
-aclocal_vers=1.4
-libtool_vers=1.3
 
 if (autoconf --version) < /dev/null > /dev/null 2>&1 ; then
     if (autoconf --version | awk 'NR==1 { if( $3 >= '$autoconf_vers') \

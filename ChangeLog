@@ -1,0 +1,4 @@
+2001-01-18  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Added option --build-w32.
+
