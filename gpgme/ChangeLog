@@ -1,3 +1,11 @@
+2002-12-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* libgpgme.vers: New file.
+	* Makefile.am (EXTRA_DIST): Add libgpgme.vers.
+	(libgpgme_version_script_cmd): New variable.
+	(libgpgme_la_LDFLAGS): Add libgpgme_version_script_cmd here.
+	(libgpgme_la_DEPENDENCIES): New variable.
+
 2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* key.c (gpgme_key_get_string_attr): Don't accept GPGME_ATTR_IS_SECRET.

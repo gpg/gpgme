@@ -81,10 +81,24 @@ dnl Don't default to build static libs.
 dnl AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
+AC_CANONICAL_HOST
+# For now we hardcode the use of version scripts.  It would be better
+# to write a test for this or even implement this within libtool.
+have_ld_version_script=no
+case "${host}" in
+    *-*-linux*)
+	have_ld_version_script=yes
+        ;;
+    *-*-gnu*)
+	have_ld_version_script=yes
+        ;;
+esac
+AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
+
 GPG_DEFAULT=no
 GPGSM_DEFAULT=no
 component_system=None
-case "${target}" in
+case "${host}" in
     *-*-mingw32* | i?86-emx-os2 | i?86-*-os2*emx | i?86-*-msdosdjgpp* )
         # special stuff for Windoze NT
         # OS/2 with the EMX environment

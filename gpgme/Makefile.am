@@ -19,7 +19,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = gpgme-config.in gpgme.m4 mkerrors mkstatus
+EXTRA_DIST = gpgme-config.in gpgme.m4 mkerrors mkstatus libgpgme.vers
 BUILT_SOURCES = errors.c status-table.h
 MOSTLYCLEANFILES = errors.c status-table.h
 bin_SCRIPTS = gpgme-config
@@ -28,8 +28,15 @@ m4data_DATA = gpgme.m4
 include_HEADERS = gpgme.h
 lib_LTLIBRARIES = libgpgme.la
 
-libgpgme_la_LDFLAGS = -version-info \
+if HAVE_LD_VERSION_SCRIPT
+libgpgme_version_script_cmd = -Wl,--version-script=$(srcdir)/libgpgme.vers
+else
+libgpgme_version_script_cmd =
+endif
+
+libgpgme_la_LDFLAGS = $(libgpgme_version_script_cmd) -version-info \
       @LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
+
 if BUILD_ASSUAN
 AM_CPPFLAGS = -I$(top_srcdir)/assuan
 assuan_libobjs = ../assuan/libassuan.la
@@ -73,6 +80,10 @@ libgpgme_la_SOURCES =							\
 	engine.h engine-backend.h engine.c rungpg.c status-table.h	\
 	${gpgsm_components} sema.h io.h ${system_components}		\
 	debug.c debug.h gpgme.c version.c errors.c
+
+libgpgme_la_DEPENDENCIES = ${assuan_libobjs} @LTLIBOBJS@ \
+	$(srcdir)/libgcrypt.vers
+
 libgpgme_la_LIBADD = ${assuan_libobjs} @LTLIBOBJS@
 
 errors.c : gpgme.h

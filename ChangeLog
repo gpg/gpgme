@@ -1,3 +1,8 @@
+2002-12-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: New conditional HAVE_LD_VERSION_SCRIPT.
+	Call AC_CANONICAL_HOST, use host instead target.
+
 2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Bump up to 0.4.1.
