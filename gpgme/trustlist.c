@@ -87,7 +87,6 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
   char *p, *pend;
   int field = 0;
   GpgmeTrustItem item = NULL;
-  struct trust_queue_item_s *q, *q2;
 
   if (ctx->error)
     return;
@@ -104,31 +103,12 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
       switch (field)
 	{
 	case 1: /* level */
-	  q = xtrymalloc (sizeof *q);
-	  if (!q)
+	  item = trust_item_new ();
+	  if (!item)
 	    {
 	      ctx->error = mk_error (Out_Of_Core);
 	      return;
             }
-	  q->next = NULL;
-	  q->item = item = trust_item_new ();
-	  if (!q->item)
-	    {
-	      xfree (q);
-	      ctx->error = mk_error (Out_Of_Core);
-	      return;
-            }
-	  /* fixme: lock queue, keep a tail pointer */
-	  q2 = ctx->trust_queue;
-	  if (!q2)
-	    ctx->trust_queue = q;
-	  else
-	    {
-	      while (q2->next)
-		q2 = q2->next;
-	      q2->next = q;
-            }
-	  /* fixme: unlock queue */
 	  item->level = atoi (p);
 	  break;
 	case 2: /* long keyid */
@@ -154,8 +134,41 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
         }
     }
 
-  if (field)
-    ctx->key_cond = 1;
+  if (item)
+    _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_NEXT_TRUSTITEM, item);
+}
+
+
+void
+_gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data)
+{
+  GpgmeCtx ctx = (GpgmeCtx) data;
+  GpgmeTrustItem item = (GpgmeTrustItem) type_data;
+  struct trust_queue_item_s *q, *q2;
+
+  assert (type == GPGME_EVENT_NEXT_KEY);
+
+  q = xtrymalloc (sizeof *q);
+  if (!q)
+    {
+      gpgme_trust_item_release (item);
+      ctx->error = mk_error (Out_Of_Core);
+      return;
+    }
+  q->item = item;
+  q->next = NULL;
+  /* FIXME: lock queue, keep a tail pointer */
+  q2 = ctx->trust_queue;
+  if (!q2)
+    ctx->trust_queue = q;
+  else
+    {
+      while (q2->next)
+	q2 = q2->next;
+      q2->next = q;
+    }
+  /* FIXME: unlock queue */
+  ctx->key_cond = 1;
 }
 
 
@@ -167,9 +180,7 @@ gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
   if (!pattern || !*pattern)
     return mk_error (Invalid_Value);
 
-  /* Trustlist operations are always "synchronous" in the sense that
-     we don't add ourself to the global FD table.  */
-  err = _gpgme_op_reset (ctx, 1);
+  err = _gpgme_op_reset (ctx, 2);
   if (err)
     goto leave;
 

@@ -212,8 +212,8 @@ close_notify_handler (int fd, void *opaque)
 	    break;
 	  }
     }
-  if (!not_done && gpg->io_cbs.event)
-    (*gpg->io_cbs.event) (gpg->io_cbs.event_priv, GPGME_EVENT_DONE, NULL);
+  if (!not_done)
+    _gpgme_gpg_io_event (gpg, GPGME_EVENT_DONE, NULL);
 }
 
 const char *
@@ -807,12 +807,12 @@ static GpgmeError
 _gpgme_gpg_add_io_cb (GpgObject gpg, int fd, int dir,
 		      GpgmeIOCb handler, void *data, void **tag)
 {
-  GpgmeError err = 0;
+  GpgmeError err;
 
-  *tag = (*gpg->io_cbs.add) (gpg->io_cbs.add_priv, fd, dir, handler, data);
-  if (!tag)
-    err = mk_error (General_Error);
-  if (!err && !dir)
+  err = (*gpg->io_cbs.add) (gpg->io_cbs.add_priv, fd, dir, handler, data, tag);
+  if (err)
+    return err;
+  if (!dir)
     /* FIXME Kludge around poll() problem.  */
     err = _gpgme_io_set_nonblocking (fd);
   return err;
@@ -1748,4 +1748,12 @@ void
 _gpgme_gpg_set_io_cbs (GpgObject gpg, struct GpgmeIOCbs *io_cbs)
 {
   gpg->io_cbs = *io_cbs;
+}
+
+
+void
+_gpgme_gpg_io_event (GpgObject gpg, GpgmeEventIO type, void *type_data)
+{
+  if (gpg->io_cbs.event)
+    (*gpg->io_cbs.event) (gpg->io_cbs.event_priv, type, type_data);
 }

@@ -24,8 +24,12 @@
 #include "context.h"
 #include "ops.h"
 
+/* type is: 0: asynchronous operation (use global or user event loop).
+            1: synchronous operation (always use private event loop).
+            2: asynchronous private operation (use private or user
+            event loop).  */
 GpgmeError
-_gpgme_op_reset (GpgmeCtx ctx, int synchronous)
+_gpgme_op_reset (GpgmeCtx ctx, int type)
 {
   GpgmeError err = 0;
   struct GpgmeIOCbs io_cbs;
@@ -43,8 +47,9 @@ _gpgme_op_reset (GpgmeCtx ctx, int synchronous)
   if (err)
     return err;
 
-  if (synchronous)
+  if (type == 1 || (type == 2 && !ctx->io_cbs.add))
     {
+      /* Use private event loop.  */
       io_cbs.add = _gpgme_add_io_cb;
       io_cbs.add_priv = &ctx->fdt;
       io_cbs.remove = _gpgme_remove_io_cb;
@@ -53,6 +58,7 @@ _gpgme_op_reset (GpgmeCtx ctx, int synchronous)
     }
   else if (! ctx->io_cbs.add)
     {
+      /* Use global event loop.  */
       io_cbs.add = _gpgme_add_io_cb;
       io_cbs.add_priv = NULL;
       io_cbs.remove = _gpgme_remove_io_cb;
@@ -61,8 +67,12 @@ _gpgme_op_reset (GpgmeCtx ctx, int synchronous)
     }
   else
     {
+      /* Use user event loop.  */
       io_cbs = ctx->io_cbs;
-      io_cbs.event = _gpgme_op_event_cb;
+      /* We have to make sure that we notice the termination of the
+	 operation ourself, so we stack another event handler on top
+	 of the user-provided one.  */
+      io_cbs.event = _gpgme_op_event_cb_user;
       io_cbs.event_priv = ctx;
     }
   _gpgme_engine_set_io_cbs (ctx->engine, &io_cbs);

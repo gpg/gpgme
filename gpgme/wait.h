@@ -36,8 +36,8 @@ typedef struct fd_table *fd_table_t;
 void _gpgme_fd_table_init (fd_table_t fdt);
 void _gpgme_fd_table_deinit (fd_table_t fdt);
 
-void *_gpgme_add_io_cb (void *data, int fd, int dir,
-			GpgmeIOCb fnc, void *fnc_data);
+GpgmeError _gpgme_add_io_cb (void *data, int fd, int dir,
+			     GpgmeIOCb fnc, void *fnc_data, void **r_tag);
 void _gpgme_remove_io_cb (void *tag);
 void _gpgme_wait_event_cb (void *data, GpgmeEventIO type, void *type_data);
 

@@ -332,9 +332,9 @@ struct tag
   int idx;
 };
 
-void *
+GpgmeError
 _gpgme_add_io_cb (void *data, int fd, int dir,
-		  GpgmeIOCb fnc, void *fnc_data)
+		  GpgmeIOCb fnc, void *fnc_data, void **r_tag)
 {
   GpgmeError err;
   fd_table_t fdt = (fd_table_t) (data ? data : &fdt_global);
@@ -344,9 +344,10 @@ _gpgme_add_io_cb (void *data, int fd, int dir,
   assert (fdt);
   assert (fnc);
 
+  *r_tag = NULL;
   tag = xtrymalloc (sizeof *tag);
   if (!tag)
-    return NULL;
+    return mk_error (Out_Of_Core);
   tag->fdt = fdt;
 
   /* Allocate a structure to hold info about the handler.  */
@@ -354,7 +355,7 @@ _gpgme_add_io_cb (void *data, int fd, int dir,
   if (!item)
     {
       xfree (tag);
-      return NULL;
+      return mk_error (Out_Of_Core);
     }
   item->dir = dir;
   item->handler = fnc;
@@ -365,11 +366,11 @@ _gpgme_add_io_cb (void *data, int fd, int dir,
     {
       xfree (tag);
       xfree (item);
-      errno = ENOMEM;
-      return 0;
+      return mk_error (Out_Of_Core);
     }
-  
-  return tag;
+
+  *r_tag = tag;
+  return 0;
 }
 
 void

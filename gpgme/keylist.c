@@ -514,35 +514,45 @@ static void
 finish_key (GpgmeCtx ctx)
 {
   GpgmeKey key = ctx->tmp_key;
-  struct key_queue_item_s *q, *q2;
+
+  ctx->tmp_key = NULL;
 
   if (key)
+    _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_NEXT_KEY, key);
+}
+
+
+void
+_gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data)
+{
+  GpgmeCtx ctx = (GpgmeCtx) data;
+  GpgmeKey key = (GpgmeKey) type_data;
+  struct key_queue_item_s *q, *q2;
+
+  assert (type == GPGME_EVENT_NEXT_KEY);
+
+  _gpgme_key_cache_add (key);
+
+  q = xtrymalloc (sizeof *q);
+  if (!q)
     {
-      ctx->tmp_key = NULL;
-        
-      _gpgme_key_cache_add (key);
-        
-      q = xtrymalloc (sizeof *q);
-      if (!q)
-	{
-	  gpgme_key_release (key);
-	  ctx->error = mk_error (Out_Of_Core);
-	  return;
-        }
-      q->key = key;
-      q->next = NULL;
-      /* FIXME: Lock queue.  Use a tail pointer?  */
-      if (!(q2 = ctx->key_queue))
-	ctx->key_queue = q;
-      else
-	{
-	  for (; q2->next; q2 = q2->next)
-	    ;
-	  q2->next = q;
-        }
-      ctx->key_cond = 1;
-      /* FIXME: Unlock queue.  */
+      gpgme_key_release (key);
+      ctx->error = mk_error (Out_Of_Core);
+      return;
     }
+  q->key = key;
+  q->next = NULL;
+  /* FIXME: Lock queue.  Use a tail pointer?  */
+  if (!(q2 = ctx->key_queue))
+    ctx->key_queue = q;
+  else
+    {
+      for (; q2->next; q2 = q2->next)
+	;
+      q2->next = q;
+    }
+  ctx->key_cond = 1;
+  /* FIXME: Unlock queue.  */
 }
 
 
@@ -563,9 +573,7 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
 {
   GpgmeError err = 0;
 
-  /* Keylist operations are always "synchronous" in the sense that we
-     don't add ourself to the global FD table.  */
-  err = _gpgme_op_reset (ctx, 1);
+  err = _gpgme_op_reset (ctx, 2);
   if (err)
     goto leave;
 

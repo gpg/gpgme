@@ -507,7 +507,10 @@ gpgme_get_progress_cb (GpgmeCtx ctx, GpgmeProgressCb *r_cb, void **r_cb_value)
 void
 gpgme_set_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs)
 {
-  if (ctx && io_cbs)
+  if (!ctx)
+    return;
+
+  if (io_cbs)
     ctx->io_cbs = *io_cbs;
   else
     {
@@ -544,9 +547,36 @@ _gpgme_op_event_cb (void *data, GpgmeEventIO type, void *type_data)
 {
   GpgmeCtx ctx = data;
 
-  if (type == GPGME_EVENT_DONE)
-    ctx->pending = 0;
+  switch (type)
+    {
+    case GPGME_EVENT_DONE:
+      ctx->pending = 0;
+      break;
 
-  if (ctx->io_cbs.add && ctx->io_cbs.event)
-    (*ctx->io_cbs.event) (ctx->io_cbs.event_priv, type, type_data);
+    case GPGME_EVENT_NEXT_KEY:
+      _gpgme_op_keylist_event_cb (data, type, type_data);
+      break;
+
+    case GPGME_EVENT_NEXT_TRUSTITEM:
+      _gpgme_op_trustlist_event_cb (data, type, type_data);
+      break;
+    }
+}
+
+void
+_gpgme_op_event_cb_user (void *data, GpgmeEventIO type, void *type_data)
+{
+  GpgmeCtx ctx = data;
+
+  if (type == GPGME_EVENT_DONE)
+    {
+      ctx->pending = 0;
+      if (ctx->io_cbs.event)
+	(*ctx->io_cbs.event) (ctx->io_cbs.event_priv, type, &ctx->error);
+    }
+  else
+    {
+      if (ctx->io_cbs.event)
+	(*ctx->io_cbs.event) (ctx->io_cbs.event_priv, type, type_data);
+    }
 }

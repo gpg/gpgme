@@ -1290,14 +1290,14 @@ static GpgmeError
 _gpgme_gpgsm_add_io_cb (GpgsmObject gpgsm, iocb_data_t *iocbd,
 			GpgmeIOCb handler)
 {
-  GpgmeError err = 0;
+  GpgmeError err;
 
-  iocbd->tag = (*gpgsm->io_cbs.add) (gpgsm->io_cbs.add_priv,
-				     iocbd->fd, iocbd->dir,
-				     handler, iocbd->data);
-  if (!iocbd->tag)
-    err = mk_error (General_Error);
-  if (!err && !iocbd->dir)
+  err = (*gpgsm->io_cbs.add) (gpgsm->io_cbs.add_priv,
+			      iocbd->fd, iocbd->dir,
+			      handler, iocbd->data, &iocbd->tag);
+  if (err)
+    return err;
+  if (!iocbd->dir)
     /* FIXME Kludge around poll() problem.  */
     err = _gpgme_io_set_nonblocking (iocbd->fd);
   return err;
@@ -1338,6 +1338,12 @@ _gpgme_gpgsm_set_io_cbs (GpgsmObject gpgsm, struct GpgmeIOCbs *io_cbs)
   gpgsm->io_cbs = *io_cbs;
 }
 
+void
+_gpgme_gpgsm_io_event (GpgsmObject gpgsm, GpgmeEventIO type, void *type_data)
+{
+  if (gpgsm->io_cbs.event)
+    (*gpgsm->io_cbs.event) (gpgsm->io_cbs.event_priv, type, type_data);
+}
 
 #else	/* ENABLE_GPGSM */
 
@@ -1483,6 +1489,11 @@ _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque)
 
 void
 _gpgme_gpgsm_set_io_cbs (GpgsmObject gpgsm, struct GpgmeIOCbs *io_cbs)
+{
+}
+
+void
+_gpgme_gpgsm_io_event (GpgsmObject gpgsm, GpgmeEventIO type, void *type_data)
 {
 }
 
