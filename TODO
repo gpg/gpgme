@@ -68,7 +68,10 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Allow to return time stamps in ISO format
   This allows us to handle years later than 2037 properly.  With the
   time_t interface they are all mapped to 2037-12-31
-   
+
+* Support
+** gpgme.m4 should check --api-version of gpgme-config.
+ 
 * Documentation
 ** Document validity and trust issues.
 
