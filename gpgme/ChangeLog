@@ -1,5 +1,11 @@
 2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine.c: Include `string.h'.  Reported by Stéphane Corthésy.
+
+	* version.c (get_engine_info): Remove prototype.
+
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
 	* engine-gpgsm.c (_gpgme_gpgsm_new): New variable CHILD_FDS.
 	Fill it with the servers fds, and pass it to assuan_pipe_connect.
 
