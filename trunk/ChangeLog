@@ -4,7 +4,11 @@
 	
 	* configure.ac: Bumbed LT_Revision; now at C12/A1/R1. 
 	(NEED_GPGSM_VERSION): Set to 1.9.3.
-
+	(min_automake_version): Added.
+	* README.CVS: New.
+	* Makefile.am (EXTRA_DIST): Added README.CVS.
+	* autogen.sh: Updated.
+	
 2003-11-19  Werner Koch  <wk@gnupg.org>
 
 	* acinclude.m4: Add AM_PATH_GPG_ERROR.

@@ -20,6 +20,9 @@
  
 # (Process this file with autoconf to produce a configure script.)
 
+AC_PREREQ(2.57)
+min_automake_version="1.7.6"
+
 # Version number: Remember to change it immediately *after* a release.
 AC_INIT(gpgme, 0.4.4, [bug-gpgme@gnupg.org])
 # LT Version numbers, remember to change them just *before* a release.
