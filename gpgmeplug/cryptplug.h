@@ -1435,7 +1435,19 @@ struct SignatureMetaDataExtendedInfo
 {
     struct tm* creation_time;
     char* status_text;
+    char* keyid;
     char* fingerprint;
+    char* algo;
+    char* userid;
+    char* name;
+    char* email;
+    char* comment;
+    unsigned long algo_num;
+    unsigned long validity;
+    unsigned long userid_num;
+    unsigned long keylen;
+    unsigned long key_created;
+    unsigned long key_expires;
 };
 
 /*! \ingroup groupSignAct
