@@ -1,5 +1,8 @@
 2003-09-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h: Define macro _GPGME_INLINE depending on the compiler
+	characteristics and use that instead __inline__.
+
 	* context.h (struct gpgme_context): New members lc_ctype and
 	lc_messages.
 	* gpgme.c: Include <locale.h>.

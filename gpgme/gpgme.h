@@ -21,6 +21,14 @@
 #ifndef GPGME_H
 #define GPGME_H
 
+#ifdef __GNUC__
+#define _GPGME_INLINE __inline__
+#elif __STDC_VERSION__ >= 199901L
+#define _GPGME_INLINE inline
+#else
+#define _GPGME_INLINE
+#endif
+
 /* Include stdio.h for the FILE type definition.  */
 #include <stdio.h>
 
@@ -85,7 +93,7 @@ typedef gpg_err_code_t gpgme_err_code_t;
 typedef gpg_err_source_t gpgme_err_source_t;
 
 
-static __inline__ gpgme_error_t
+static _GPGME_INLINE gpgme_error_t
 gpgme_err_make (gpgme_err_source_t source, gpgme_err_code_t code)
 {
   return gpg_err_make (source, code);
@@ -98,21 +106,21 @@ gpgme_err_make (gpgme_err_source_t source, gpgme_err_code_t code)
 #define GPGME_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_USER_1
 #endif
 
-static __inline__ gpgme_error_t
+static _GPGME_INLINE gpgme_error_t
 gpgme_error (gpgme_err_code_t code)
 {
   return gpgme_err_make (GPGME_ERR_SOURCE_DEFAULT, code);
 }
 
 
-static __inline__ gpgme_err_code_t
+static _GPGME_INLINE gpgme_err_code_t
 gpgme_err_code (gpgme_error_t err)
 {
   return gpg_err_code (err);
 }
 
 
-static __inline__ gpgme_err_source_t
+static _GPGME_INLINE gpgme_err_source_t
 gpgme_err_source (gpgme_error_t err)
 {
   return gpg_err_source (err);
