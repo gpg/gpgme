@@ -921,9 +921,9 @@ struct SignatureMetaData {
 
 /*! \ingroup groupSignAct
    \brief Checks whether the signature of a message is
-          valid. \c ciphertext specifies the message
-          as it was received by the MUA, \c cleartext
-          is the message with the signature(s) removed.
+          valid. \c ciphertext specifies the signed message
+          as it was received by the MUA, \c signaturetext is the
+          signature itself.
 
    Depending on the configuration, MUAs might not need to use this.
    If \c sigmeta is non-null, the
@@ -932,7 +932,7 @@ struct SignatureMetaData {
           function call.
 */
 bool checkMessageSignature( const char* ciphertext,
-                            const char** cleartext,
+                            const char* signaturetext,
                             struct SignatureMetaData* sigmeta );
 
 /*! \ingroup groupSignAct
