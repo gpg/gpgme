@@ -4,9 +4,12 @@ Noteworthy changes in version 0.4.7
  * Correctly initialize the fields expired, revoked, invalid, and
    disabled in the gpgme_key_t structures.
 
+ * A bug fix: The flag wrong_key_usage of gpgme_signature_t was
+   accidently of type int instead unsigned int.
+
  * Interface changes relative to the 0.4.5 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(none so far)
+gpgme_signature_t		CHANGED: wrong_key_usage is unsigned int now.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.6 (2004-04-06)
