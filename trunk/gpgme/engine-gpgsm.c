@@ -476,24 +476,14 @@ gpgsm_status_handler (void *opaque, int pid, int fd)
   ASSUAN_CONTEXT actx = gpgsm->assuan_ctx;
   char *line;
   int linelen;
-  char *next_line;
 
-  assert (fd == gpgsm->assuan_ctx->inbound.fd);
-
-  err = _assuan_read_line (gpgsm->assuan_ctx);
-
-  /* Assuan can currently return more than one line at once.  */
-  line = actx->inbound.line;
-
-  while (line)
+  do
     {
-      next_line = strchr (line, '\n');
-      if (next_line)
-	*next_line++ = 0;
-      linelen = strlen (line);
+      assert (fd == gpgsm->assuan_ctx->inbound.fd);
 
-      if (line[0] == '#' || !linelen)
-	return 0;  /* FIXME */
+      err = _assuan_read_line (gpgsm->assuan_ctx);
+      line = actx->inbound.line;
+      linelen = strlen (line);
 
       if ((linelen >= 2
 	   && line[0] == 'O' && line[1] == 'K'
@@ -533,9 +523,9 @@ gpgsm_status_handler (void *opaque, int pid, int fd)
 	  else
 	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", t.name, rest);
 	}
-      line = next_line;
     }
-
+  while (gpgsm->assuan_ctx->inbound.attic.linelen);
+  
   return 0;
 }
 
