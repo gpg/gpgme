@@ -31,85 +31,105 @@
 #include "context.h"
 #include "ops.h"
 #include "wait.h"
+#include "sema.h"
 #include "io.h"
 
-/* Fixme: implement the following stuff to make the code MT safe.
- * To avoid the need to link against a specific threads lib, such
- * an implementation should require the caller to register a function
- * which does this task.
- * enter_crit() and leave_crit() are used to embrace an area of code
- * which should be executed only by one thread at a time.
- * lock_xxxx() and unlock_xxxx()  protect access to an data object.
- *  */
-#define enter_crit()    do { } while (0)
-#define leave_crit()    do { } while (0)
-#define lock_table()    do { } while (0)
-#define unlock_table()  do { } while (0)
+struct wait_item_s;
+struct proc_s;
 
-
-struct wait_item_s {
-    volatile int active;
-    int (*handler)(void*,int,int);
-    void *handler_value;
-    int pid;
-    int inbound;       /* this is an inbound data handler fd */
-    GpgmeCtx ctx;
-};
+static struct proc_s *proc_queue;
+DEFINE_STATIC_LOCK (proc_queue_lock);
 
 static int fd_table_size;
 static struct io_select_fd_s *fd_table;
+DEFINE_STATIC_LOCK (fd_table_lock);
 
 static void (*idle_function) (void);
+
+
+struct proc_s {
+    struct proc_s *next;
+    int pid;
+    GpgmeCtx ctx;
+    struct wait_item_s *handler_list;
+    int ready;
+};
+
+struct wait_item_s {
+    struct wait_item_s *next;
+    int (*handler)(void*,int,int);
+    void *handler_value;
+    int inbound;       /* this is an inbound data handler fd */
+    struct proc_s *proc; /* backlink */
+    int ready;
+    int frozen; /* copy of the frozen flag from the fd_table */
+};
+
+
 
 static int do_select ( void );
 static void run_idle (void);
 
 
-static struct wait_item_s *
-queue_item_from_context ( GpgmeCtx ctx )
-{
-    struct wait_item_s *q;
-    int i;
-
-    for (i=0; i < fd_table_size; i++ ) {
-        if ( fd_table[i].fd != -1 && (q=fd_table[i].opaque) && q->ctx == ctx )
-            return q;
-    }
-    return NULL;
-}
-
-
+/* only to be called with a locked proc_queue */
 static int
-count_active_and_thawed_fds ( int pid )
+count_running_fds ( struct proc_s *proc )
 {
     struct wait_item_s *q;
-    int i, count = 0;
-    
-    for (i=0; i < fd_table_size; i++ ) {
-        if ( fd_table[i].fd != -1 && (q=fd_table[i].opaque)
-             && q->active && !fd_table[i].frozen && q->pid == pid  ) 
+    int count = 0;
+
+    for (q=proc->handler_list; q; q=q->next) {
+        if ( !q->frozen && !q->ready )
             count++;
     }
     return count;
 }
 
-/* remove the given process from the queue */
-/* FIXME: We should do this on demand from rungpg.c */
+/* only to be called with a locked proc_queue */
 static void
-remove_process ( int pid )
+set_process_ready ( struct proc_s *proc )
 {
-    struct wait_item_s *q;
+    struct wait_item_s *q, *q2;
     int i;
 
-    for (i=0; i < fd_table_size; i++ ) {
-        if (fd_table[i].fd != -1 && (q=fd_table[i].opaque) && q->pid == pid ) {
-            xfree (q);
-            fd_table[i].opaque = NULL;
-            fd_table[i].fd = -1;
+    assert (proc);
+    DEBUG2 ("set_process_ready(%p) pid=%d", proc, proc->pid );
+    LOCK (fd_table_lock);
+    for (q = proc->handler_list; q; q=q2) {
+        q2 = q->next;
+        for (i=0; i < fd_table_size; i++ ) {
+            if (fd_table[i].fd != -1 && q == fd_table[i].opaque ) {
+                fd_table[i].opaque = NULL;
+                fd_table[i].fd = -1;
+            }
         }
+        xfree (q);
     }
+    UNLOCK (fd_table_lock);
+    proc->handler_list = NULL;
+    proc->ready = 1;
 }
 
+void
+_gpgme_remove_proc_from_wait_queue ( int pid )
+{
+    struct proc_s *proc, *last;
+
+    DEBUG1 ("removing process %d", pid );
+    LOCK (proc_queue_lock);
+    for (last=NULL, proc=proc_queue; proc; last = proc, proc = proc->next ) {
+        if (proc->pid == pid ) {
+            set_process_ready (proc);
+            if (!last) 
+                proc_queue = proc->next;
+            else 
+                last->next = proc->next;
+            xfree (proc);
+            break;
+        }
+    }
+    UNLOCK (proc_queue_lock);
+}
 
 
 /**
@@ -134,28 +154,31 @@ gpgme_wait ( GpgmeCtx c, int hang )
 GpgmeCtx 
 _gpgme_wait_on_condition ( GpgmeCtx c, int hang, volatile int *cond )
 {
-    struct wait_item_s *q;
-
+    DEBUG3 ("waiting... ctx=%p hang=%d cond=%p", c, hang, cond );
     do {
         int did_work = do_select();
+        int any = 0;
+        struct proc_s *proc;
 
         if ( cond && *cond )
             hang = 0;
-
-        if ( !did_work ) {
-            /* We did no read/write - see whether the process is still
-             * alive */
-            assert (c); /* !c is not yet implemented */
-            q = queue_item_from_context ( c );
-            if (q) {
-                if ( !count_active_and_thawed_fds (q->pid) ) {
-                    remove_process (q->pid);
-                    hang = 0;
+        else {
+            LOCK (proc_queue_lock);
+            for (proc=proc_queue; proc; proc = proc->next ) {
+                if ( !proc->ready && !count_running_fds (proc) ) {
+                    set_process_ready (proc);
                 }
+                if (c && proc->ready && proc->ctx == c)
+                    hang = 0;
+                if ( !proc->ready )
+                    any = 1;
             }
-            else
+            UNLOCK (proc_queue_lock);
+            if (!any)
                 hang = 0;
         }
+        /* fixme: we should check here for hanging processes */
+
         if (hang)
             run_idle ();
     } while (hang && !c->cancel );
@@ -177,7 +200,6 @@ _gpgme_wait_on_condition ( GpgmeCtx c, int hang, volatile int *cond )
 static int
 do_select ( void )
 {
-    struct wait_item_s *q;
     int i, n;
     int any=0;
     
@@ -188,18 +210,27 @@ do_select ( void )
     for (i=0; i < fd_table_size && n; i++ ) {
         if ( fd_table[i].fd != -1 && fd_table[i].signaled 
              && !fd_table[i].frozen ) {
-            q = fd_table[i].opaque;
+            struct wait_item_s *q;
+
             assert (n);
             n--;
-            if ( q->active )
-                any = 1;
-            if ( q->active && q->handler (q->handler_value,
-                                          q->pid, fd_table[i].fd ) ) {
-                DEBUG1 ("setting fd %d inactive", fd_table[i].fd );
-                q->active = 0;
+            
+            q = fd_table[i].opaque;
+            assert ( q );
+            assert ( q->proc );
+            assert ( !q->ready );
+            any = 1;
+            if ( q->handler (q->handler_value,
+                             q->proc->pid, fd_table[i].fd ) ) {
+                DEBUG2 ("setting fd %d (q=%p) ready", fd_table[i].fd, q );
+                q->ready = 1;
+                /* free the table entry*/
+                LOCK (fd_table_lock);
                 fd_table[i].for_read = 0;
                 fd_table[i].for_write = 0;
                 fd_table[i].fd = -1;
+                fd_table[i].opaque = NULL;
+                UNLOCK (fd_table_lock);
             }
         }
     }
@@ -220,22 +251,42 @@ _gpgme_register_pipe_handler ( void *opaque,
 {
     GpgmeCtx ctx = opaque;
     struct wait_item_s *q;
+    struct proc_s *proc;
     int i;
 
     assert (opaque);
     assert (handler);
-    
+
+    /* Allocate a structure to hold info about the handler */
     q = xtrycalloc ( 1, sizeof *q );
     if ( !q )
         return mk_error (Out_Of_Core);
     q->inbound = inbound;
     q->handler = handler;
     q->handler_value = handler_value;
-    q->pid = pid;
-    q->ctx = ctx;
-    q->active = 1;
 
-    lock_table ();
+    /* Put this into the process queue */
+    LOCK (proc_queue_lock);
+    for (proc=proc_queue; proc && proc->pid != pid; proc = proc->next)
+        ;
+    if (!proc) { /* a new process */
+        proc = xtrycalloc ( 1, sizeof *proc );
+        if (!proc) {
+            UNLOCK (proc_queue_lock);
+            return mk_error (Out_Of_Core);
+        }
+        proc->pid = pid;
+        proc->ctx = ctx;
+        proc->next = proc_queue;
+        proc_queue = proc;
+    }
+    assert (proc->ctx == ctx);
+    q->proc = proc;
+    q->next = proc->handler_list;
+    proc->handler_list = q;
+    UNLOCK (proc_queue_lock);
+    
+    LOCK (fd_table_lock);
  again:  
     for (i=0; i < fd_table_size; i++ ) {
         if ( fd_table[i].fd == -1 ) {
@@ -245,7 +296,7 @@ _gpgme_register_pipe_handler ( void *opaque,
             fd_table[i].signaled = 0;
             fd_table[i].frozen = 0;
             fd_table[i].opaque = q;
-            unlock_table ();
+            UNLOCK (fd_table_lock);
             return 0;
         }
     }
@@ -264,8 +315,9 @@ _gpgme_register_pipe_handler ( void *opaque,
         }
     }
 
-    unlock_table ();
+    UNLOCK (fd_table_lock);
     xfree (q);
+    /* FIXME: remove the proc table entry */
     return mk_error (Too_Many_Procs);
 }
 
@@ -275,15 +327,19 @@ _gpgme_freeze_fd ( int fd )
 {
     int i;
 
-    lock_table ();
+    LOCK (fd_table_lock);
     for (i=0; i < fd_table_size; i++ ) {
         if ( fd_table[i].fd == fd ) {
+            struct wait_item_s *q;
+
             fd_table[i].frozen = 1;
-            DEBUG1 ("fd %d frozen", fd );
+            if ( (q=fd_table[i].opaque) )
+                q->frozen = 1;
+            DEBUG2 ("fd %d frozen (q=%p)", fd, q );
             break;
         }
     }
-    unlock_table ();
+    UNLOCK (fd_table_lock);
 }
 
 void
@@ -291,15 +347,19 @@ _gpgme_thaw_fd ( int fd )
 {
     int i;
 
-    lock_table ();
+    LOCK (fd_table_lock);
     for (i=0; i < fd_table_size; i++ ) {
         if ( fd_table[i].fd == fd ) {
+            struct wait_item_s *q;
+
             fd_table[i].frozen = 0;
-            DEBUG1 ("fd %d thawed", fd );
+            if ( (q=fd_table[i].opaque) )
+                q->frozen = 0;
+            DEBUG2 ("fd %d thawed (q=%p)", fd, q );
             break;
         }
     }
-    unlock_table ();
+    UNLOCK (fd_table_lock);
 }
 
 

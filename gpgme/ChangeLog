@@ -1,4 +1,20 @@
+2001-02-20  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c (destroy_reader,kill_reader): New. 
+	(create_reader, reader): Add a new event to stop the thread.
+	(_gpgme_io_close): Kill the reader thread.
+
+	* posix-io.c (_gpgme_io_select): Handle frozen fds here. 
+	* 32-io.c (_gpgme_io_select): Ditto. Removed a bunch of unused code.
+
+	* wait.c: Reworked the whole thing.
+	* rungpg.c (_gpgme_gpg_new): Init pid to -1.
+	(_gpgme_gpg_release): Remove the process from the wait queue.
+
 2001-02-19  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c (_gpgme_io_set_close_notify): New.
+	(_gpgme_io_close): Do the notification.
 
 	* posix-io.c (_gpgme_io_select): Use a 1 sec timeout and not 200
 	microseconds.

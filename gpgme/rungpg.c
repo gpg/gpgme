@@ -197,6 +197,8 @@ _gpgme_gpg_new ( GpgObject *r_gpg )
     gpg->colon.fd[1] = -1;
     gpg->cmd.fd = -1;
 
+    gpg->pid = -1;
+
     /* allocate the read buffer for the status pipe */
     gpg->status.bufsize = 1024;
     gpg->status.readpos = 0;
@@ -250,6 +252,8 @@ _gpgme_gpg_release ( GpgObject gpg )
         free_argv (gpg->argv);
     xfree (gpg->cmd.keyword);
 
+    if (gpg->pid != -1) 
+        _gpgme_remove_proc_from_wait_queue ( gpg->pid );
     if (gpg->status.fd[0] != -1 )
         _gpgme_io_close (gpg->status.fd[0]);
     if (gpg->status.fd[1] != -1 )

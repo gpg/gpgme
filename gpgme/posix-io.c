@@ -267,7 +267,10 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
     for ( i=0; i < nfds; i++ ) {
         if ( fds[i].fd == -1 ) 
             continue;
-        if ( fds[i].for_read ) {
+        if ( fds[i].frozen ) {
+            DEBUG_ADD1 (dbg_help, "f%d ", fds[i].fd );
+        }
+        else if ( fds[i].for_read ) {
             assert ( !FD_ISSET ( fds[i].fd, &readfds ) );
             FD_SET ( fds[i].fd, &readfds );
             if ( fds[i].fd > max_fd )
