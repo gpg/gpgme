@@ -218,7 +218,6 @@ typedef enum
   {
     GPGME_PROTOCOL_OpenPGP = 0,  /* The default mode.  */
     GPGME_PROTOCOL_CMS     = 1,
-    GPGME_PROTOCOL_AUTO    = 2
   }
 GpgmeProtocol;
 
@@ -312,6 +311,26 @@ typedef enum  {
 #define GPGME_KEYLIST_MODE_EXTERN 2
 #define GPGME_KEYLIST_MODE_SIGS   4
 
+/* The engine information structure.  */
+struct _gpgme_engine_info
+{
+  struct _gpgme_engine_info *next;
+
+  /* The protocol ID.  */
+  GpgmeProtocol protocol;
+
+  /* The path to the engine binary.  */
+  const char *path;
+
+  /* The version string of the installed engine.  */
+  const char *version;
+
+  /* The minimum version required for GPGME.  */
+  const char *req_version;
+};
+typedef struct _gpgme_engine_info *GpgmeEngineInfo;
+
+
 /* Types for callback functions.  */
 
 /* Request a passphrase from the user.  */
@@ -342,6 +361,9 @@ GpgmeError gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol proto);
 
 /* Get the protocol used with CTX */
 GpgmeProtocol gpgme_get_protocol (GpgmeCtx ctx);
+
+/* Get the string describing protocol PROTO, or NULL if invalid.  */
+const char *gpgme_get_protocol_name (GpgmeProtocol proto);
 
 /* If YES is non-zero, enable armor mode in CTX, disable it otherwise.  */
 void gpgme_set_armor (GpgmeCtx ctx, int yes);
@@ -798,7 +820,7 @@ GpgmeError gpgme_op_trustlist_end (GpgmeCtx ctx);
 const char *gpgme_check_version (const char *req_version);
 
 /* Retrieve information about the backend engines.  */
-const char *gpgme_get_engine_info (void);
+GpgmeError gpgme_get_engine_info (GpgmeEngineInfo *engine_info);
 
 /* Return a string describing ERR.  */
 const char *gpgme_strerror (GpgmeError err);
