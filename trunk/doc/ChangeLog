@@ -1,5 +1,9 @@
 2003-04-24  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Generating Keys): Document changed gpgme_op_genkey
+	and new gpgme_op_genkey_result function.  Document
+	GpgmeGenKeyResult data type.
+
 	* gpgme.texi (Error Values): Rename GPGME_No_Passphrase to
 	GPGME_Bad_Passphrase.
 	* gpgme.texi (Decrypt): Likewise.

@@ -2115,7 +2115,7 @@ The function @code{gpgme_key_release} is an alias for
 @cindex key, creation
 @cindex key ring, add
 
-@deftypefun GpgmeError gpgme_op_genkey (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{pubkey}}, @w{GpgmeData @var{seckey}}, @w{char **@var{fpr}})
+@deftypefun GpgmeError gpgme_op_genkey (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{pubkey}}, @w{GpgmeData @var{seckey}})
 The function @code{gpgme_op_genkey} generates a new key pair in the
 context @var{ctx} and puts it into the standard key ring if both
 @var{pubkey} and @var{seckey} are @code{NULL}.  In this case the
@@ -2130,8 +2130,8 @@ the data object will contain the secret key.
 Note that not all crypto engines support this interface equally.
 GnuPG does not support @var{pubkey} and @var{subkey}, they should be
 both @code{NULL}, and the key pair will be added to the standard key
-ring.  GpgSM does only support @var{pubkey}, the secret key will be
-stored by @command{gpg-agent}.  GpgSM expects @var{pubkey} being not
+ring.  GpgSM only supports @var{pubkey}, the secret key will be stored
+by @command{gpg-agent}.  GpgSM expects @var{pubkey} being not
 @code{NULL}.
 
 The argument @var{parms} specifies parameters for the key in an XML
@@ -2168,12 +2168,8 @@ for now is ``internal''.  The content of the @code{GnupgKeyParms}
 container is passed verbatim to GnuPG.  Control statements are not
 allowed.
 
-If @var{fpr} is not a null pointer, the function succeeds, and the
-crypto engine supports it, *@var{fpr} will contain a string with the
-fingerprint of the key, allocated with @code{malloc}.  If both a
-primary and a sub key was generated, the fingerprint of the primary
-key will be returned.  If the crypto engine does not provide the
-fingerprint, *@var{fpr} will be a null pointer.
+After the operation completed successfully, the result can be
+retrieved with @code{gpgme_op_genkey_result}.
 
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{parms} is not
@@ -2193,6 +2189,39 @@ a valid XML string, and @code{GPGME_Not_Supported} if @var{pubkey} or
 @var{seckey} is not @code{NULL}.
 @end deftypefun
 
+@deftp {Data type} {GpgmeGenKeyResult}
+This is a pointer to a structure used to store the result of a
+@code{gpgme_op_genkey} operation.  After successfully generating a
+key, you can retrieve the pointer to the result with
+@code{gpgme_op_genkey_result}.  The structure contains the following
+members:
+
+@table @code
+@item unsigned int primary : 1
+This is a flag that is set to 1 if a primary key was created and to 0
+if not.
+
+@item unsigned int sub : 1
+This is a flag that is set to 1 if a subkey was created and to 0
+if not.
+
+@item char *fpr
+This is the fingerprint of the key that was created.  If both a
+primary and a sub key were generated, the fingerprint of the primary
+key will be returned.  If the crypto engine does not provide the
+fingerprint, @code{fpr} will be a null pointer.
+@end table
+@end deftp
+
+@deftypefun GpgmeGenKeyResult gpgme_op_genkey_result (@w{GpgmeCtx @var{ctx}})
+The function @code{gpgme_op_genkey_result} returns a
+@code{GpgmeGenKeyResult} pointer to a structure holding the result of
+a @code{gpgme_op_genkey} operation.  The pointer is only valid if the
+last operation on the context was a @code{gpgme_op_genkey} or
+@code{gpgme_op_genkey_start} operation, and if this operation finished
+successfully.  The returned pointer is only valid until the next
+operation is started on the context.
+@end deftypefun
 
 @node Exporting Keys
 @subsection Exporting Keys
