@@ -57,6 +57,20 @@ make_filename (const char *fname)
   return buf;
 }
 
+static void
+print_op_info (GpgmeCtx c)
+{
+    char *s = gpgme_get_op_info (c, 0);
+
+    if (!s)
+        puts ("<!-- no operation info available -->");
+    else {
+        puts (s);
+        free (s);
+    }
+}
+
+
 int 
 main (int argc, char **argv)
 {
@@ -76,6 +90,7 @@ main (int argc, char **argv)
       fail_if_err (err);
 
       err = gpgme_op_import (ctx, in);
+      print_op_info (ctx);
       fail_if_err (err);
 
       gpgme_data_release (in);
@@ -84,6 +99,7 @@ main (int argc, char **argv)
       fail_if_err (err);
     
       err = gpgme_op_import (ctx, in);
+      print_op_info (ctx);
       fail_if_err (err);
 
       gpgme_data_release (in);

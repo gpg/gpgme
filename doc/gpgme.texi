@@ -1900,8 +1900,9 @@ More information about the import is available with
 
 The function returns @code{GPGME_No_Error} if the import was completed
 successfully, @code{GPGME_Invalid_Value} if @var{keydata} if @var{ctx}
-or @var{keydata} is not a valid pointer, and @code{GPGME_No_Data} if
-@var{keydata} is an empty data buffer.
+or @var{keydata} is not a valid pointer, @code{GPGME_No_Data} if
+@var{keydata} is an empty data buffer, and @code{GPGME_EOF} if the
+operation was completed successfully but no data was actually imported.
 @end deftypefun
 
 @deftypefun GpgmeError gpgme_op_import_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{keydata}})
