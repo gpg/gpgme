@@ -3989,7 +3989,7 @@ The function @code{gpgme_get_sig_key} is equivalent to:
   if (!sig || idx)
     return gpg_error (GPG_ERR_EOF);
 
-  return gpgme_get_key (ctx, sig->fpr, r_key, 0, 0);
+  return gpgme_get_key (ctx, sig->fpr, r_key, 0);
 @end example
 @end deftypefun
 

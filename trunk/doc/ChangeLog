@@ -1,3 +1,8 @@
+2004-07-29  Moritz Schulte  <moritz@g10code.com>
+
+	* gpgme.texi (Verify): Fix gpgme_get_key example (ancient
+	force_update argument was still there).
+
 2004-06-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Listing Keys): Elaborate on the length restrictions
