@@ -1,3 +1,11 @@
+2002-01-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c: Renamed to ...
+	* gpgme-openpgp.c: ... this.  New file.
+	* gpgsmplug.c: Renamed to ...
+	* gpgme-smime.c: ... this.  new file.
+	* Makefile.am: Rewritten to use libtool's module functionality.
+
 2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (lib_LTLIBRARIES): Rename to ...
