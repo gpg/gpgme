@@ -1,7 +1,0 @@
-Makefile Makefile.in .deps .libs
-Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel India Juliet Kilo
-Lima Mike November Oscar Papa Quebec Romeo Sierra Tango Uniform Victor
-Whisky XRay Yankee Zulu
-pubring.gpg secring.gpg random_seed trustdb.gpg
-t-decrypt t-decrypt-verify t-encrypt t-export t-genkey t-import
-t-keylist t-sign t-signers t-trustlist t-verify
