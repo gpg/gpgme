@@ -1731,10 +1731,10 @@ validity is ``u''.
 @deftypefun {const char *} gpgme_key_get_string_attr (@w{GpgmeKey @var{key}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
 The function @code{gpgme_key_get_string_attr} returns the value of the
 string-representable attribute @var{what} of key @var{key}.  If the
-attribute occurs more than once in the key, the index is specified by
-@var{idx}.  This applies to attributes of sub keys and user IDs.  The
-argument @var{reserved} is reserved for later use and should be
-@code{NULL}.
+attribute is an attribute of a sub key or an user ID, @var{idx}
+specifies the sub key or user ID of which the attribute value is
+returned.  The argument @var{reserved} is reserved for later use and
+should be @code{NULL}.
 
 The string returned is only valid as long as the key is valid.
 
@@ -1746,10 +1746,10 @@ or @var{reserved} not @code{NULL}.
 @deftypefun {unsigned long} gpgme_key_get_ulong_attr (@w{GpgmeKey @var{key}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
 The function @code{gpgme_key_get_ulong_attr} returns the value of the
 number-representable attribute @var{what} of key @var{key}.  If the
-attribute occurs more than once in the key, the index is specified by
-@var{idx}.  This applies to attributes of sub keys and user IDs.  The
-argument @var{reserved} is reserved for later use and should be
-@code{NULL}.
+attribute is an attribute of a sub key or an user ID, @var{idx}
+specifies the sub key or user ID of which the attribute value is
+returned.  The argument @var{reserved} is reserved for later use and
+should be @code{NULL}.
 
 The function returns @code{0} if the attribute can't be returned as a
 number, @var{key} is not a valid pointer, @var{idx} out of range,
@@ -2030,10 +2030,8 @@ attributes.  @xref{Information About Keys}.
 @deftypefun {const char *} gpgme_trust_item_get_string_attr (@w{GpgmeTrustItem @var{item}}, @w{GpgmeAttr @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
 The function @code{gpgme_trust_item_get_string_attr} returns the value
 of the string-representable attribute @var{what} of trust item
-@var{item}.  If the attribute occurs more than once in the trust
-items, the index is specified by @var{idx}.  However, currently no
-such attributes exists, so @var{idx} should be @code{0}.  The argument
-@var{reserved} is reserved for later use and should be @code{NULL}.
+@var{item}.  The arguments @var{idx} and @var{reserved} are reserved
+for later use and should be @code{0} and @code{NULL} respectively.
 
 The string returned is only valid as long as the key is valid.
 
@@ -2223,7 +2221,7 @@ This function is similar to @code{gpgme_get_sig_status} but may be used
 to retrieve more detailed information.  @var{ctx} should be the context
 used for the last signature verification, @var{idx} is used to enumerate
 over all signatures starting with @code{0} and @var{whatidx} should be
-@code{0} for unless otherwise stated.
+@code{0} unless otherwise stated.
 
 The following values may be used for @var{what}:
 @table @code
@@ -2244,7 +2242,7 @@ This function is similar to @code{gpgme_get_sig_string_attr} but used
 for attributes which can be represented by an @code{unsigned long} data
 type.  @var{ctx} should be the context used for the last signature
 verification, @var{idx} is used to enumerate over all signatures
-starting with @code{0} and @var{whatidx} should be @code{0} for unless
+starting with @code{0} and @var{whatidx} should be @code{0} unless
 otherwise stated.
 
 The following values may be used for @var{what}:
