@@ -25,40 +25,7 @@
 
 #include <gpgme.h>
 
-
-#define fail_if_err(err)					\
-  do								\
-    {								\
-      if (err)							\
-        {							\
-          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
-                   __FILE__, __LINE__, gpgme_strerror (err));   \
-          exit (1);						\
-        }							\
-    }								\
-  while (0)
-
-
-static char *
-make_filename (const char *fname)
-{
-  const char *srcdir = getenv ("srcdir");
-  char *buf;
-
-  if (!srcdir)
-    srcdir = ".";
-  buf = malloc (strlen(srcdir) + strlen(fname) + 2);
-  if (!buf)
-    {
-      fprintf (stderr, "%s:%d: could not allocate string: %s\n",
-	       __FILE__, __LINE__, strerror (errno));
-      exit (1);
-    }
-  strcpy (buf, srcdir);
-  strcat (buf, "/");
-  strcat (buf, fname);
-  return buf;
-}
+#include "t-support.h"
 
 
 void
