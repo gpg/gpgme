@@ -116,8 +116,8 @@ void
 _gpgme_key_cache_add (GpgmeKey key)
 {
     struct subkey_s *k;
-#warning debug code
-    if (!key || getenv("gpgme_no_cache") )
+
+    if (!key)
         return;
 
     /* FIXME: add locking */
@@ -609,7 +609,7 @@ gpgme_key_get_as_xml ( GpgmeKey key )
     /*add_tag_and_time (d, "expires", key->expires );*/
     _gpgme_data_append_string (d, "  </mainkey>\n");
 
-    /* Now the user IDs.  We are listing the last one firs becuase this is
+    /* Now the user IDs.  We are listing the last one first because this is
      * the primary one. */
     for (u = key->uids; u && u->next; u = u->next )
         ;

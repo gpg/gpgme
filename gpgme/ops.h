@@ -26,6 +26,7 @@
 
 /*-- gpgme.c --*/
 void _gpgme_release_result ( GpgmeCtx c );
+void _gpgme_set_op_info (GpgmeCtx c, GpgmeData info);
 
 /*-- wait.c --*/
 GpgmeCtx _gpgme_wait_on_condition ( GpgmeCtx c,

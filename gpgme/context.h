@@ -75,6 +75,7 @@ struct gpgme_context_s {
     } result;
 
     GpgmeData notation;    /* last signature notation */
+    GpgmeData op_info;     /* last operation info */
 
     GpgmeKey tmp_key;       /* used by keylist.c */
     volatile int key_cond;  /* something new is available */

@@ -183,8 +183,7 @@ GpgmeKey   gpgme_signers_enum (const GpgmeCtx c, int seq);
 const char *gpgme_get_sig_status (GpgmeCtx c, int idx,
                                   GpgmeSigStat *r_stat, time_t *r_created );
 GpgmeError gpgme_get_sig_key (GpgmeCtx c, int idx, GpgmeKey *r_key);
-
-
+char *gpgme_get_op_info (GpgmeCtx c, int reserved);
 
 
 /* Functions to handle recipients */

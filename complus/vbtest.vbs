@@ -13,7 +13,7 @@ gpg.textmode = true
 gpg.plaintext = "This is the secret message."  'or: InputBox('Enter message:")
 
 ' Set the Recipient.  You may also use a keyID or an fingerprint
-gpg.addrecipient "alice"
+gpg.AddRecipient "alice"
 
 ' And encrypt the stuff
 gpg.encrypt

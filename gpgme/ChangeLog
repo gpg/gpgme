@@ -1,10 +1,18 @@
+2001-08-28  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.c, gpgme.h (gpgme_get_op_info): New.
+	(_gpgme_set_op_info): New. 
+	(_gpgme_release_result): Reset the op_info here.
+	* sign.c (append_xml_siginfo): New.
+	(sign_status_handler): Store the sig create information.
+
 2001-07-31  Werner Koch  <wk@gnupg.org>
 
 	* encrypt.c (gpgme_op_encrypt): Hack to detect no valid recipients.
 
 2001-07-30  Werner Koch  <wk@gnupg.org>
 
-	* gpgme.c (gpgme_get_armor,gpgme_get_texmode): New.
+	* gpgme.c (gpgme_get_armor,gpgme_get_textmode): New.
 
 	* rungpg.c (build_argv): Disable armor comments
 	* w32-io.c (build_commandline): Need to add quotes here

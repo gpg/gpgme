@@ -63,7 +63,7 @@ Using Gpgcom
 Gpgcom currently support only encryption but will be extended to the
 full range of operations GnuPG provides. The 2 examples should goive
 yopu a hint on how to use it.  We suggest that you always set armor to
-true, so that the returned text is a string.  IF you don't use armor,
+true, so that the returned text is a string.  If you don't use armor,
 the "ciphertext" property will return an array with the binary
 message.
 
