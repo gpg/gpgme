@@ -1,6 +1,11 @@
+2004-01-16  Werner Koch  <wk@gnupg.org>
+
+	* conversion.c (_gpgme_map_gnupg_error): Handle numerical codes as
+	used by GnuPG 1.9.x
+
 2004-01-13  Marcus Brinkmann  <marcus@g10code.de>
 
-	* gpgme.h (struct _gpgme_key_sig): Fix comment on REVOKED>
+	* gpgme.h (struct _gpgme_key_sig): Fix comment on REVOKED.
 
 2004-01-12  Werner Koch  <wk@gnupg.org>
 

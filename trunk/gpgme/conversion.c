@@ -393,6 +393,16 @@ _gpgme_map_gnupg_error (char *err)
 {
   unsigned int i;
 
+  /* Future version of GnuPG might return the error code directly, so
+     we first test for a a numerical value and use that verbatim.
+     Note that this numerical value might be followed by an
+     udnerschore and the textual representation of the error code. */
+  if (*err >= '0' && *err <= '9')
+    return strtoul (err, NULL, 10);
+
+  /* Well, this is a token, use the mapping table to get the error.
+     The drawback is that we won't receive an error source and have to
+     use GPG as source. */
   for (i = 0; i < DIM (gnupg_errors); i++)
     if (!strcmp (gnupg_errors[i].name, err))
       return gpg_err_make (GPG_ERR_SOURCE_GPG, gnupg_errors[i].err);
