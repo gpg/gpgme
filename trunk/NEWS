@@ -1,4 +1,4 @@
-Noteworthy changes in version CVS-HEAD
+Noteworthy changes in version 0.3.8 (2002-06-25)
 ------------------------------------------------
 
  * It is possible to use an outside event loop for the I/O to the
@@ -29,7 +29,7 @@ Noteworthy changes in version 0.3.7 (2002-06-04)
 Noteworthy changes in version 0.3.6 (2002-05-03)
 ------------------------------------------------
 
- * All error outout of the gpgsm backend is send to the bit bucket.
+ * All error output of the gpgsm backend is send to the bit bucket.
 
  * The signature verification functions are extended.  Instead of
    always returning GPGME_SIG_STATUS_GOOD, the functions new codes for
