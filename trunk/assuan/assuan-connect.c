@@ -137,26 +137,10 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[])
 
   if ((*ctx)->pid == 0)
     {
-      int i, n;
       char errbuf[512];
-#ifdef HAVE_JNLIB_LOGGING
-      int log_fd = log_get_fd (); 
-#endif
-      /* close all files which will not be duped but keep stderr
-         and log_stream for now */
-      n = sysconf (_SC_OPEN_MAX);
-      if (n < 0)
-        n = MAX_OPEN_FDS;
-      for (i=0; i < n; i++)
-        {
-          if (i != fileno (stderr) 
-#ifdef HAVE_JNLIB_LOGGING
-              && i != log_fd
-#endif
-              && i != rp[1] && i != wp[0])
-            close(i);
-        }
-      errno = 0;
+
+      close (rp[0]);
+      close (wp[1]);
 
       /* Dup handles and to stdin/stdout and exec */
       if (rp[1] != STDOUT_FILENO)
