@@ -23,6 +23,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <sys/types.h>
 #include <sys/select.h>
 
 #include <gpgme.h>
