@@ -1,3 +1,71 @@
+2003-05-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (gpgme_op_export_start): Change second arg to const char *.
+	(gpgme_op_export): Likewise.
+	(gpgme_op_export_ext_start): New prototype.
+	(gpgme_op_export_ext): Likewise.
+	* engine.h: Likewise for _gpgme_engine_op_export and
+	_gpgme_engine_op_export_ext.
+	* engine-backend.h (struct engine_ops): Change second argument of
+	prototype of export to const char *, and add reserverd int as
+	third argument.  Add prototype for export_ext.
+	* engine.c (_gpgme_engine_op_export_ext): New function.
+	(_gpgme_engine_op_export): Change second argument of prototype of
+	export to const char *, and add reserverd int as third argument.
+	* rungpg.c (gpg_export): Change second argument of prototype of
+	export to const char *, and add reserverd int as third argument.
+	(gpg_export_ext): New function.
+	(gpg_keylist_ext): Break loop at error.
+	(_gpgme_engine_ops_gpg): Add gpg_export_ext.
+	* engine-gpgsm.c (gpgsm_export): Change second argument of
+	prototype of export to const char *, and add reserverd int as
+	third argument.
+	(gpgsm_export_ext): New function.
+	(_gpgme_engine_ops_gpgsm): Add gpgsm_export_ext.
+	* export.c (export_start): Change second argument of prototype of
+	export to const char *, and add reserverd int as third argument.
+	(gpgme_op_export_start): Likewise.
+	(export_ext_start): New function.
+	(gpgme_op_export_ext_start): Likewise.
+	(gpgme_op_export_ext): Likewise.
+
+	* gpgme.h (gpgme_keylist_mode_t): New type for anonymous enum.
+	(gpgme_sigsum_t): New type for anonymous enum.
+
+	* encrypt-sign.c (encrypt_sign_start): Check for errors earlier,
+	and return an error if RECP is not set.
+
+	* Makefile.am (libgpgme_la_SOURCES): Remove user-id.c.
+	* user-id.c: Remove file.
+	* ops.h: Remove prototype for _gpgme_user_ids_all_valid.
+	* gpgme.h (gpgme_encrypt_flags_t): New type.
+	(gpgme_op_encrypt_start): Change second parameter to type
+	gpgme_key_t[], and add third parameter.
+	(gpgme_op_encrypt): Likewise.
+	(gpgme_op_encrypt_sign_start): Likewise.
+	(gpgme_op_encrypt_sign): Likewise.
+	* encrypt.c (encrypt_start): Likewise.
+	(gpgme_op_encrypt_start): Likewise.
+	(gpgme_op_encrypt): Likewise.  Pass flags to engine.
+	* encrypt-sign.c (encrypt_sign_start): Likewise.
+	(gpgme_op_encrypt_sign_start): Likewise.
+	(gpgme_op_encrypt_sign): Likewise.
+	* engine-backend.h (struct engine_ops): Likewise for prototypes of
+	encrypt and encrypt_sign.
+	* engine.h: Likewise for prototypes of _gpgme_engine_op_encrypt
+	and _gpgme_engine_op_encrypt_sign.
+	* engine.c (_gpgme_engine_op_encrypt): Likewise.
+	(_gpgme_engine_op_encrypt_sign): Likewise.
+	* rungpg.c (gpg_encrypt): Likewise.
+	(gpg_encrypt_sign): Likewise.
+	* rungpg.c (gpg_encrypt): Check flags for always trust option.
+	* engine-gpgsm.c (gpgsm_encrypt): Likewise.
+	(set_recipients): Rewritten to use keys instead user IDs.
+	* rungpg.c (append_args_from_recipients): Rewritten to use keys
+	instead user IDs.
+	* encrypt.c (_gpgme_encrypt_status_handler): Change errors
+	returned to GPGME_Invalid_Key and GPGME_General_Error.
+
 2003-05-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c: Rename GpgsmObject to engine_gpgsm_t.

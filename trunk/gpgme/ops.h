@@ -34,10 +34,6 @@ gpgme_error_t _gpgme_wait_one (gpgme_ctx_t ctx);
 gpgme_error_t _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond);
 
 
-/* From user-id.c.  */
-int _gpgme_user_ids_all_valid (gpgme_user_id_t uid);
-
-
 /* From data.c.  */
 gpgme_error_t _gpgme_data_inbound_handler (void *opaque, int fd);
 gpgme_error_t _gpgme_data_outbound_handler (void *opaque, int fd);

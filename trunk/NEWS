@@ -95,36 +95,21 @@ Noteworthy changes in version 0.4.1 (unreleased)
    The user is expected to write the response to the file descriptor,
    followed by a newline.
 
- * The recipients interface has been removed and replaced by a more
-   generic and light gpgme_user_ids_* interface, which only provides
-   two functions: gpgme_user_ids_append adds a new user ID at the end
-   of the linked list, and gpgme_user_ids_release releases all user
-   IDs in the linked list.  The resulting user ID object is free for
-   the user to change (note however that gpgme_user_ids_release only
-   releases resources allocated by GPGME).
+ * The recipients interface has been removed.  Instead, you use
+   NULL-terminated lists of keys for specifying the recipients of an
+   encryption operation.  Use the new encryption flag
+   GPGME_ENCRYPT_ALWAYS_TRUST if you want to override the validity of
+   the keys (but note that in general this is not a good idea).
 
-   This change propagates to the prototypes of gpgme_op_encrypt,
+   This change has been made to the prototypes of gpgme_op_encrypt,
    gpgme_op_encrypt_start, gpgme_op_encrypt_sign and
-   gpgme_op_encrypt_sign_start.  Also the prototypes of
-   gpgme_op_export_start and gpgme_op_export finally make sense.
+   gpgme_op_encrypt_sign_start.
 
-   Here is an example how to use the new interface:
-
-   gpgme_user_id_t rset = NULL;
-   gpgme_user_id_t *rset_lastp = &rset;
-
-   err = gpgme_user_ids_append (rset_lastp, "Alpha");
-   fail_if_err (err);
-   (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
-
-   rset_lastp = &(*rset_lastp)->next;
-   err = gpgme_user_ids_append (rset_lastp, "Bob");
-   fail_if_err (err);
-   (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
-
-   [...]
-
-   gpgme_user_ids_release (rset);
+   The export interface has been changed to use pattern strings like
+   the keylist interface.  Thus, new functions gpgme_op_export_ext and
+   gpgme_op_export_ext_start have been added as well.  Now the
+   prototypes of gpgme_op_export_start and gpgme_op_export finally
+   make sense.
 
  * gpgme_op_verify and gpgme_op_decrypt_verify don't return a status
    summary anymore.  Use gpgme_get_sig_status to retrieve the individual
@@ -308,23 +293,27 @@ gpgme_op_decrypt_verify		CHANGED: Drop R_STAT argument.
 gpgme_wait			CHANGED: Can return NULL even if hang is true.
 GpgmeIdleFunc                   REMOVED
 gpgme_register_idle             REMOVED
-GpgmeRecipients			REMOVED: Use gpgme_user_id_t.
-gpgme_recipients_new		REMOVED: Initialize gpgme_user_id_t with NULL.
-gpgme_recipients_release	REMOVED: Use gpgme_user_ids_release.
-gpgme_recipients_add_name	REMOVED: Use gpgme_user_ids_append
-gpgme_recipients_add_name_with_validity	REMOVED: Set validity directly.
-gpgme_recipients_count		REMOVED: You can count them yourself.
-gpgme_recipients_enum_open	REMOVED: gpgme_user_id_t is a linked list.
-gpgme_recipients_enum_read	REMOVED: See gpgme_recipients_enum_open.
-gpgme_recipients_enum_close	REMOVED: See gpgme_recipients_enum_read.
-gpgme_user_ids_append		NEW
-gpgme_user_ids_release		NEW
-gpgme_op_encrypt		CHANGED: Recipients passed as gpgme_user_id_t.
-gpgme_op_encrypt_start		CHANGED: Recipients passed as gpgme_user_id_t.
-gpgme_op_encrypt_sign		CHANGED: Recipients passed as gpgme_user_id_t.
-gpgme_op_encrypt_sign_start	CHANGED: Recipients passed as gpgme_user_id_t.
-gpgme_op_export_start		CHANGED: User IDs passed as gpgme_user_id_t.
-gpgme_op_export			CHANGED: User IDs passed as gpgme_user_id_t.
+GpgmeRecipients			REMOVED
+gpgme_recipients_new		REMOVED
+gpgme_recipients_release	REMOVED
+gpgme_recipients_add_name	REMOVED
+gpgme_recipients_add_name_with_validity	REMOVED
+gpgme_recipients_count		REMOVED
+gpgme_recipients_enum_open	REMOVED
+gpgme_recipients_enum_read	REMOVED
+gpgme_recipients_enum_close	REMOVED
+gpgme_encrypt_flags_t		NEW
+GPGME_ENCRYPT_ALWAYS_TRUST	NEW
+gpgme_op_encrypt		CHANGED: Recipients passed as gpgme_key_t[].
+gpgme_op_encrypt_start		CHANGED: Recipients passed as gpgme_key_t[].
+gpgme_op_encrypt_sign		CHANGED: Recipients passed as gpgme_key_t[].
+gpgme_op_encrypt_sign_start	CHANGED: Recipients passed as gpgme_key_t[].
+gpgme_op_export_start		CHANGED: User IDs passed as patterns.
+gpgme_op_export			CHANGED: User IDs passed as patterns.
+gpgme_op_export_ext_start	NEW
+gpgme_op_export_ext		NEW
+gpgme_keylist_mode_t		NEW
+gpgme_sigsum_t			NEW
 gpgme_engine_info_t		NEW
 gpgme_get_engine_info		CHANGED: Return info structure instead XML.
 gpgme_get_protocol_name		NEW

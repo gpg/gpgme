@@ -669,18 +669,20 @@ void gpgme_set_include_certs (gpgme_ctx_t ctx, int nr_of_certs);
 int gpgme_get_include_certs (gpgme_ctx_t ctx);
 
 /* The available keylist mode flags.  */
-enum
+typedef enum
   {
     GPGME_KEYLIST_MODE_LOCAL  = 1,
     GPGME_KEYLIST_MODE_EXTERN = 2,
     GPGME_KEYLIST_MODE_SIGS   = 4
-  };
+  }
+gpgme_keylist_mode_t;
 
 /* Set keylist mode in CTX to MODE.  */
-gpgme_error_t gpgme_set_keylist_mode (gpgme_ctx_t ctx, int mode);
+gpgme_error_t gpgme_set_keylist_mode (gpgme_ctx_t ctx,
+				      gpgme_keylist_mode_t mode);
 
 /* Get keylist mode in CTX.  */
-int gpgme_get_keylist_mode (gpgme_ctx_t ctx);
+gpgme_keylist_mode_t gpgme_get_keylist_mode (gpgme_ctx_t ctx);
 
 /* Set the passphrase callback function in CTX to CB.  HOOK_VALUE is
    passed as first argument to the passphrase callback function.  */
@@ -767,10 +769,14 @@ typedef gpgme_error_t (*gpgme_register_io_cb_t) (void *data, int fd, int dir,
    function.  */
 typedef void (*gpgme_remove_io_cb_t) (void *tag);
 
-typedef enum { GPGME_EVENT_START,
-	       GPGME_EVENT_DONE,
-	       GPGME_EVENT_NEXT_KEY,
-	       GPGME_EVENT_NEXT_TRUSTITEM } gpgme_event_io_t;
+typedef enum
+  {
+    GPGME_EVENT_START,
+    GPGME_EVENT_DONE,
+    GPGME_EVENT_NEXT_KEY,
+    GPGME_EVENT_NEXT_TRUSTITEM
+  }
+gpgme_event_io_t;
 
 /* The type of a function that is called when a context finished an
    operation.  */
@@ -979,21 +985,32 @@ typedef struct _gpgme_op_encrypt_result *gpgme_encrypt_result_t;
 /* Retrieve a pointer to the result of the encrypt operation.  */
 gpgme_encrypt_result_t gpgme_op_encrypt_result (gpgme_ctx_t ctx);
 
+/* The valid encryption flags.  */
+typedef enum
+  {
+    GPGME_ENCRYPT_ALWAYS_TRUST = 1
+  }
+gpgme_encrypt_flags_t;
+
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  */
-gpgme_error_t gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_user_id_t recp,
+gpgme_error_t gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
+				      gpgme_encrypt_flags_t flags,
 				      gpgme_data_t plain, gpgme_data_t cipher);
-gpgme_error_t gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_user_id_t recp,
+gpgme_error_t gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_key_t recp[],
+				gpgme_encrypt_flags_t flags,
 				gpgme_data_t plain, gpgme_data_t cipher);
 
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  Also sign the ciphertext
    with the signers in CTX.  */
 gpgme_error_t gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx,
-					   gpgme_user_id_t recp,
+					   gpgme_key_t recp[],
+					   gpgme_encrypt_flags_t flags,
 					   gpgme_data_t plain,
 					   gpgme_data_t cipher);
-gpgme_error_t gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_user_id_t recp,
+gpgme_error_t gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_key_t recp[],
+				     gpgme_encrypt_flags_t flags,
 				     gpgme_data_t plain, gpgme_data_t cipher);
 
 
@@ -1069,7 +1086,7 @@ struct _gpgme_sig_notation
 typedef struct _gpgme_sig_notation *gpgme_sig_notation_t;
 
 /* Flags used for the SUMMARY field in a gpgme_signature_t.  */
-enum
+typedef enum
   {
     GPGME_SIGSUM_VALID       = 0x0001,  /* The signature is fully valid.  */
     GPGME_SIGSUM_GREEN       = 0x0002,  /* The signature is good.  */
@@ -1082,14 +1099,15 @@ enum
     GPGME_SIGSUM_CRL_TOO_OLD = 0x0200,  /* Available CRL is too old.  */
     GPGME_SIGSUM_BAD_POLICY  = 0x0400,  /* A policy was not met.  */
     GPGME_SIGSUM_SYS_ERROR   = 0x0800   /* A system error occured.  */
-  };
+  }
+gpgme_sigsum_t;
 
 struct _gpgme_signature
 {
   struct _gpgme_signature *next;
 
   /* A summary of the signature status.  */
-  unsigned int summary;
+  gpgme_sigsum_t summary;
 
   /* The fingerprint or key ID of the signature.  */
   char *fpr;
@@ -1231,11 +1249,20 @@ gpgme_error_t gpgme_op_import_ext (gpgme_ctx_t ctx, gpgme_data_t keydata,
 				   int *nr) _GPGME_DEPRECATED;
 
 
-/* Export the keys listed in UIDS into KEYDATA.  */
-gpgme_error_t gpgme_op_export_start (gpgme_ctx_t ctx, gpgme_user_id_t uids,
+/* Export the keys found by PATTERN into KEYDATA.  */
+gpgme_error_t gpgme_op_export_start (gpgme_ctx_t ctx, const char *pattern,
+				     unsigned int reserved,
 				     gpgme_data_t keydata);
-gpgme_error_t gpgme_op_export (gpgme_ctx_t ctx, gpgme_user_id_t uids,
-			       gpgme_data_t keydata);
+gpgme_error_t gpgme_op_export (gpgme_ctx_t ctx, const char *pattern,
+			       unsigned int reserved, gpgme_data_t keydata);
+
+gpgme_error_t gpgme_op_export_ext_start (gpgme_ctx_t ctx,
+					 const char *pattern[],
+					 unsigned int reserved,
+					 gpgme_data_t keydata);
+gpgme_error_t gpgme_op_export_ext (gpgme_ctx_t ctx, const char *pattern[],
+				   unsigned int reserved,
+				   gpgme_data_t keydata);
 
 
 /* Key generation.  */
@@ -1285,7 +1312,7 @@ gpgme_error_t gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 			     gpgme_data_t out);
 
 
-/* Key management functions */
+/* Key management functions.  */
 struct _gpgme_op_keylist_result
 {
   unsigned int truncated : 1;

@@ -189,7 +189,6 @@ Sign
 
 Encrypt
 
-* Selecting Recipients::          How to choose the recipients.
 * Encrypting a Plaintext::        How to encrypt a plaintext.
 
 Run Control
@@ -1630,7 +1629,7 @@ certificates to include into an S/MIME signed message.
 @cindex key listing mode
 @cindex key listing, mode of
 
-@deftypefun void gpgme_set_keylist_mode (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{mode}})
+@deftypefun void gpgme_set_keylist_mode (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_keylist_mode_t @var{mode}})
 The function @code{gpgme_set_keylist_mode} changes the default
 behaviour of the key listing functions.  The value in @var{mode} is a
 bitwise-or combination of one or multiple of the following bit values:
@@ -1668,7 +1667,7 @@ pointer or @var{mode} is not a valid mode.
 @end deftypefun
 
 
-@deftypefun int gpgme_get_keylist_mode (@w{gpgme_ctx_t @var{ctx}})
+@deftypefun gpgme_keylist_mode_t gpgme_get_keylist_mode (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_get_keylist_mode} returns the current key
 listing mode of the context @var{ctx}.  This value can then be
 modified and used in a subsequent @code{gpgme_set_keylist_mode}
@@ -2649,28 +2648,61 @@ operation is started on the context.
 @cindex key, export
 @cindex key ring, export from
 
-@deftypefun gpgme_error_t gpgme_op_export (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{uids}}, @w{gpgme_data_t @var{keydata}})
-The function @code{gpgme_op_export} extracts the public keys of the
-user IDs in @var{uids} and returns them in the data buffer
-@var{keydata}.  The type of the public keys returned is determined by
-the @acronym{ASCII} armor attribute set for the context @var{ctx}.
+@deftypefun gpgme_error_t gpgme_op_export (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}}, @w{unsigned int @var{reserved}}, @w{gpgme_data_t @var{keydata}})
+The function @code{gpgme_op_export} extracts public keys and returns
+them in the data buffer @var{keydata}.  The output format of the key
+data returned is determined by the @acronym{ASCII} armor attribute set
+for the context @var{ctx}.
+
+If @var{pattern} is @code{NULL}, all available keys are returned.
+Otherwise, @var{pattern} contains an engine specific expression that
+is used to limit the list to all keys matching the pattern.
+
+@var{reserved} is reserved for future use and must be @code{0}.
 
 The function returns @code{GPGME_No_Error} if the operation completed
-successfully, @code{GPGME_Invalid_Value} if @var{uids} is
-@code{NULL} or @var{keydata} is not a valid empty data buffer, and
-passes through any errors that are reported by the crypto engine
-support routines.
+successfully, @code{GPGME_Invalid_Value} if @var{keydata} is not a
+valid empty data buffer, and passes through any errors that are
+reported by the crypto engine support routines.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_export_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{uids}}, @w{gpgme_data_t @var{keydata}})
+@deftypefun gpgme_error_t gpgme_op_export_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}}, @w{unsigned int @var{reserved}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_export_start} initiates a
 @code{gpgme_op_export} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
 The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, and @code{GPGME_Invalid_Value} if
-@var{uids} is @code{NULL} or @var{keydata} is not a valid empty
-data buffer.
+started successfully, and @code{GPGME_Invalid_Value} if @var{keydata}
+is not a valid empty data buffer.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_export_ext (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}[]}, @w{unsigned int @var{reserved}}, @w{gpgme_data_t @var{keydata}})
+The function @code{gpgme_op_export} extracts public keys and returns
+them in the data buffer @var{keydata}.  The output format of the key
+data returned is determined by the @acronym{ASCII} armor attribute set
+for the context @var{ctx}.
+
+If @var{pattern} or @var{*pattern} is @code{NULL}, all available keys
+are returned.  Otherwise, @var{pattern} is a @code{NULL} terminated
+array of strings that are used to limit the list to all keys matching
+at least one of the patterns verbatim.
+
+@var{reserved} is reserved for future use and must be @code{0}.
+
+The function returns @code{GPGME_No_Error} if the operation completed
+successfully, @code{GPGME_Invalid_Value} if @var{keydata} is not a
+valid empty data buffer, and passes through any errors that are
+reported by the crypto engine support routines.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_export_ext_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}[]}, @w{unsigned int @var{reserved}}, @w{gpgme_data_t @var{keydata}})
+The function @code{gpgme_op_export_ext_start} initiates a
+@code{gpgme_op_export_ext} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns @code{GPGME_No_Error} if the operation could be
+started successfully, and @code{GPGME_Invalid_Value} if @var{keydata}
+is not a valid empty data buffer.
 @end deftypefun
 
 
@@ -3178,7 +3210,7 @@ following members:
 This is a pointer to the next new signature structure in the linked
 list, or @code{NULL} if this is the last element.
 
-@item unsigned int summary;
+@item gpgme_sigsum_t summary;
 This is a bit vector giving a summary of the signature status.  It
 provides an easy interface to a defined semantic of the signature
 status.  Checking just one bit is sufficient to see whether a
@@ -3746,79 +3778,41 @@ time.  The list of recipients is created independently of any context,
 and then passed to the encryption operation.
 
 @menu
-* Selecting Recipients::          How to choose the recipients.
 * Encrypting a Plaintext::        How to encrypt a plaintext.
 @end menu
-
-
-@node Selecting Recipients
-@subsubsection Selecting Recipients
-@cindex encryption, selecting recipients
-@cindex recipients
-
-@deftypefun gpgme_error_t gpgme_user_ids_append (@w{gpgme_user_id_t *@var{rset_p}}, @w{const char *@var{name}})
-The function @code{gpgme_user_ids_append} creates a new
-@code{gpgme_user_id_t} object, initializes its @code{uid} member with
-a copy of the string pointed to by @var{name}, initializes its
-@code{name}, @code{email}, @code{comment} members to the empty string,
-its @code{validity} member to @code{GPGME_VALIDITY_UNKNOWN} and leaves
-all other fields to 0.
-
-It then appends the user ID at the end of the linked list of user IDs
-that starts at *@var{rset_p}, or it returns it in *@var{rset_p} if
-that is @code{NULL}.  You can then update for example the validity
-information in the user ID directly.
-
-We recommend that you keep a pointer to the last element in your
-linked list.  This is faster and allows you to easily update the
-fields of the last user ID.  Here is an example how to create a linked
-list of user IDs in @var{rset} with full validity from a
-@code{NULL}-terminated array of names:
-
-@example
-  const char *names[] = @{ "Alpha", "Bob", NULL @};
-  gpgme_error_t err;
-  gpgme_user_id_t rset = NULL;
-  gpgme_user_id_t *rset_lastp = &rset;
-
-  do
-    @{
-      err = gpgme_user_ids_append (rset_lastp, *(names++));
-      if (!err)
-        @{
-          (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
-          rset_lastp = &(*rset_lastp)->next;
-        @}
-    @}
-  while (!err && *names);
-@end example
-
-The function returns @code{GPGME_No_Error} if the recipient set could
-be created successfully, and @code{GPGME_Out_Of_Core} if not enough
-memory was available.
-@end deftypefun
-
-@deftypefun void gpgme_user_ids_release (@w{gpgme_user_id_t @var{uids}})
-The function @code{gpgme_user_ids_release} destroys the linked list of
-user IDs @var{uids} and releases all associated resources allocated by
-@acronym{GPGME}..
-@end deftypefun
 
 
 @node Encrypting a Plaintext
 @subsubsection Encrypting a Plaintext
 
-@deftypefun gpgme_error_t gpgme_op_encrypt (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{recp}[]}, @w{gpgme_encrypt_flags_t @var{flags}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt} encrypts the plaintext in the data
-object @var{plain} for the recipients @var{rset} and stores the
+object @var{plain} for the recipients @var{recp} and stores the
 ciphertext in the data object @var{cipher}.  The type of the
 ciphertext created is determined by the @acronym{ASCII} armor and text
 mode attributes set for the context @var{ctx}.
 
-If @code{GPGME_Invalid_UserID} is returned, some recipients in
-@var{rset} are invalid, but not all.  In this case the plaintext is
-encrypted for all valid recipients and returned in @var{cipher}.  More
-information about the invalid recipients is available with
+@var{key} must be a @code{NULL}-terminated array of keys.  The user
+must keep references for all keys during the whole duration of the
+call (but see @code{gpgme_op_encrypt_start} for the requirements with
+the asynchronous variant).
+
+The value in @var{flags} is a bitwise-or combination of one or
+multiple of the following bit values:
+
+@table @code
+@item GPGME_ENCRYPT_ALWAYS_TRUST
+The @code{GPGME_ENCRYPT_ALWAYS_TRUST} symbol specifies that all the
+recipients in @var{recp} should be trusted, even if the keys do not
+have a high enough validity in the keyring.  This flag should be used
+with care; in general it is not a good idea to use any untrusted keys.
+@end table
+
+If @code{GPGME_Invalid_Key} is returned, some recipients in @var{recp}
+are invalid, but not all.  In this case the plaintext might be
+encrypted for all valid recipients and returned in @var{cipher} (if
+this happens depends on the crypto engine).  More information about
+the invalid recipients is available with
 @code{gpgme_op_encrypt_result}.
 
 If @var{recp} is @code{NULL}, symmetric rather than public key
@@ -3830,18 +3824,21 @@ crypto backend.
 
 The function returns @code{GPGME_No_Error} if the ciphertext could be
 created successfully, @code{GPGME_Invalid_Value} if @var{ctx},
-@var{rset}, @var{plain} or @var{cipher} is not a valid pointer,
-@code{GPGME_No_UserID} if @var{rset} does not contain any valid
-recipients, @code{GPGME_Invalid_UserID} if @var{rset} contains some
-invalid recipients, @code{GPGME_Bad_Passphrase} if the passphrase for
-the secret key could not be retrieved, and passes through any errors
-that are reported by the crypto engine support routines.
+@var{recp}, @var{plain} or @var{cipher} is not a valid pointer,
+@code{GPGME_Invalid_Key} if @var{recp} contains some invalid
+recipients, @code{GPGME_Bad_Passphrase} if the passphrase for the
+secret key could not be retrieved, and passes through any errors that
+are reported by the crypto engine support routines.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_encrypt_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{recp}[]}, @w{gpgme_encrypt_flags_t @var{flags}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt_start} initiates a
 @code{gpgme_op_encrypt} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+References to the keys only need to be held for the duration of this
+call.  The user can release its references to the keys after this
+function returns, even if the operation is not yet finished.
 
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
@@ -3875,7 +3872,7 @@ next operation is started on the context.
 @end deftypefun
 
 
-@deftypefun gpgme_error_t gpgme_op_encrypt_sign (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt_sign (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{recp}[]}, @w{gpgme_encrypt_flags_t @var{flags}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt_sign} does a combined encrypt and
 sign operation.  It is used like @code{gpgme_op_encrypt}, but the
 ciphertext also contains signatures for the signers listed in
@@ -3885,17 +3882,15 @@ The combined encrypt and sign operation is currently only available
 for the OpenPGP crypto engine.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_encrypt_sign_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt_sign_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{recp}}, @w{gpgme_encrypt_flags_t @var{flags}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt_sign_start} initiates a
 @code{gpgme_op_encrypt_sign} operation.  It can be completed by
 calling @code{gpgme_wait} on the context.  @xref{Waiting For
 Completion}.
 
 The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
-@var{rset}, @var{plain} or @var{cipher} is not a valid pointer, and
-@code{GPGME_No_UserID} if @var{rset} does not contain any valid
-recipients.
+started successfully, and @code{GPGME_Invalid_Value} if @var{ctx},
+@var{rset}, @var{plain} or @var{cipher} is not a valid pointer.
 @end deftypefun
 
 

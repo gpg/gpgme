@@ -35,12 +35,12 @@ export_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 
 static gpgme_error_t
-export_start (gpgme_ctx_t ctx, int synchronous,
-	      gpgme_user_id_t uids, gpgme_data_t keydata)
+export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
+	      unsigned int reserved, gpgme_data_t keydata)
 {
   gpgme_error_t err;
 
-  if (!keydata || !uids)
+  if (!keydata)
     return GPGME_Invalid_Value;
 
   err = _gpgme_op_reset (ctx, synchronous);
@@ -49,24 +49,67 @@ export_start (gpgme_ctx_t ctx, int synchronous,
 
   _gpgme_engine_set_status_handler (ctx->engine, export_status_handler, ctx);
 
-  return _gpgme_engine_op_export (ctx->engine, uids, keydata, ctx->use_armor);
+  return _gpgme_engine_op_export (ctx->engine, pattern, reserved, keydata,
+				  ctx->use_armor);
 }
 
 
 /* Export the keys listed in RECP into KEYDATA.  */
 gpgme_error_t
-gpgme_op_export_start (gpgme_ctx_t ctx, gpgme_user_id_t uids,
-		       gpgme_data_t keydata)
+gpgme_op_export_start (gpgme_ctx_t ctx, const char *pattern,
+		       unsigned int reserved, gpgme_data_t keydata)
 {
-  return export_start (ctx, 0, uids, keydata);
+  return export_start (ctx, 0, pattern, reserved, keydata);
 }
 
 
 /* Export the keys listed in RECP into KEYDATA.  */
 gpgme_error_t
-gpgme_op_export (gpgme_ctx_t ctx, gpgme_user_id_t uids, gpgme_data_t keydata)
+gpgme_op_export (gpgme_ctx_t ctx, const char *pattern, unsigned int reserved,
+		 gpgme_data_t keydata)
 {
-  gpgme_error_t err = export_start (ctx, 1, uids, keydata);
+  gpgme_error_t err = export_start (ctx, 1, pattern, reserved, keydata);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  return err;
+}
+
+
+static gpgme_error_t
+export_ext_start (gpgme_ctx_t ctx, int synchronous, const char *pattern[],
+		  unsigned int reserved, gpgme_data_t keydata)
+{
+  gpgme_error_t err;
+
+  if (!keydata)
+    return GPGME_Invalid_Value;
+
+  err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  _gpgme_engine_set_status_handler (ctx->engine, export_status_handler, ctx);
+
+  return _gpgme_engine_op_export_ext (ctx->engine, pattern, reserved, keydata,
+				      ctx->use_armor);
+}
+
+
+/* Export the keys listed in RECP into KEYDATA.  */
+gpgme_error_t
+gpgme_op_export_ext_start (gpgme_ctx_t ctx, const char *pattern[],
+			   unsigned int reserved, gpgme_data_t keydata)
+{
+  return export_ext_start (ctx, 0, pattern, reserved, keydata);
+}
+
+
+/* Export the keys listed in RECP into KEYDATA.  */
+gpgme_error_t
+gpgme_op_export_ext (gpgme_ctx_t ctx, const char *pattern[],
+		     unsigned int reserved, gpgme_data_t keydata)
+{
+  gpgme_error_t err = export_ext_start (ctx, 1, pattern, reserved, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

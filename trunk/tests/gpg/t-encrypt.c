@@ -60,9 +60,10 @@ main (int argc, char **argv)
   gpgme_ctx_t ctx;
   gpgme_error_t err;
   gpgme_data_t in, out;
-  gpgme_user_id_t rset = NULL;
-  gpgme_user_id_t *rset_lastp = &rset;
+  gpgme_key_t key[3] = { NULL, NULL, NULL };
   gpgme_encrypt_result_t result;
+
+  gpgme_check_version (0);
 
   err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
   fail_if_err (err);
@@ -76,17 +77,15 @@ main (int argc, char **argv)
 
   err = gpgme_data_new (&out);
   fail_if_err (err);
-    
-  err = gpgme_user_ids_append (rset_lastp, "Alpha");
-  fail_if_err (err);
-  (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
 
-  rset_lastp = &(*rset_lastp)->next;
-  err = gpgme_user_ids_append (rset_lastp, "Bob");
+  err = gpgme_get_key (ctx, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+		       &key[0], 0);
   fail_if_err (err);
-  (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
+  err = gpgme_get_key (ctx, "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2",
+		       &key[1], 0);
+  fail_if_err (err);
 
-  err = gpgme_op_encrypt (ctx, rset, in, out);
+  err = gpgme_op_encrypt (ctx, key, GPGME_ENCRYPT_ALWAYS_TRUST, in, out);
   fail_if_err (err);
   result = gpgme_op_encrypt_result (ctx);
   if (result->invalid_recipients)
@@ -97,11 +96,10 @@ main (int argc, char **argv)
     }
   print_data (out);
 
-  gpgme_user_ids_release (rset);
+  gpgme_key_unref (key[0]);
+  gpgme_key_unref (key[1]);
   gpgme_data_release (in);
   gpgme_data_release (out);
   gpgme_release (ctx);
   return 0;
 }
-
-

@@ -60,8 +60,7 @@ main (int argc, char **argv)
   gpgme_ctx_t ctx;
   gpgme_error_t err;
   gpgme_data_t  out;
-  gpgme_user_id_t uids = NULL;
-  gpgme_user_id_t *uids_lastp = &uids;
+  const char *pattern[] = { "Alpha", "Bob", NULL };
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
@@ -69,15 +68,8 @@ main (int argc, char **argv)
   err = gpgme_data_new (&out);
   fail_if_err (err);
 
-  err = gpgme_user_ids_append (uids_lastp, "Alpha");
-  fail_if_err (err);
-  uids_lastp = &(*uids_lastp)->next;
-
-  err = gpgme_user_ids_append (uids_lastp, "Bob");
-  fail_if_err (err);
-
   gpgme_set_armor (ctx, 1);
-  err = gpgme_op_export (ctx, uids, out);
+  err = gpgme_op_export_ext (ctx, pattern, 0, out);
   fail_if_err (err);
 
   fflush (NULL);
@@ -85,11 +77,8 @@ main (int argc, char **argv)
   print_data (out);
   fputs ("End Result.\n", stdout);
    
-  gpgme_user_ids_release (uids);
   gpgme_data_release (out);
   gpgme_release (ctx);
    
   return 0;
 }
-
-

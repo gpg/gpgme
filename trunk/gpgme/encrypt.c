@@ -91,7 +91,7 @@ _gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
     {
     case GPGME_STATUS_EOF:
       if (opd->result.invalid_recipients)
-	return GPGME_Invalid_UserID;
+	return GPGME_Invalid_Key;
       break;
 
     case GPGME_STATUS_INV_RECP:
@@ -104,7 +104,7 @@ _gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
 
     case GPGME_STATUS_NO_RECP:
       /* Should not happen, because we require at least one recipient.  */
-      return GPGME_No_UserID;
+      return GPGME_General_Error;
 
     default:
       break;
@@ -148,7 +148,8 @@ _gpgme_op_encrypt_init_result (gpgme_ctx_t ctx)
 
 
 static gpgme_error_t
-encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_user_id_t recp,
+encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
+	       gpgme_encrypt_flags_t flags,
 	       gpgme_data_t plain, gpgme_data_t cipher)
 {
   gpgme_error_t err;
@@ -169,6 +170,8 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_user_id_t recp,
     return GPGME_No_Data;
   if (!cipher)
     return GPGME_Invalid_Value;
+  if (recp && ! *recp)
+    return GPGME_Invalid_Value;
 
   if (symmetric && ctx->passphrase_cb)
     {
@@ -185,26 +188,28 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_user_id_t recp,
 				    : encrypt_status_handler,
 				    ctx);
 
-  return _gpgme_engine_op_encrypt (ctx->engine, recp, plain, cipher,
+  return _gpgme_engine_op_encrypt (ctx->engine, recp, flags, plain, cipher,
 				   ctx->use_armor);
 }
 
 
 gpgme_error_t
-gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_user_id_t recp,
+gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
+			gpgme_encrypt_flags_t flags,
 			gpgme_data_t plain, gpgme_data_t cipher)
 {
-  return encrypt_start (ctx, 0, recp, plain, cipher);
+  return encrypt_start (ctx, 0, recp, flags, plain, cipher);
 }
 
 
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  */
 gpgme_error_t
-gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_user_id_t recp,
+gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_key_t recp[],
+		  gpgme_encrypt_flags_t flags,
 		  gpgme_data_t plain, gpgme_data_t cipher)
 {
-  gpgme_error_t err = encrypt_start (ctx, 1, recp, plain, cipher);
+  gpgme_error_t err = encrypt_start (ctx, 1, recp, flags, plain, cipher);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

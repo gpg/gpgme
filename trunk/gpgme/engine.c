@@ -291,7 +291,8 @@ _gpgme_engine_op_edit (engine_t engine, gpgme_key_t key, gpgme_data_t out,
 
 
 gpgme_error_t
-_gpgme_engine_op_encrypt (engine_t engine, gpgme_user_id_t recp,
+_gpgme_engine_op_encrypt (engine_t engine, gpgme_key_t recp[],
+			  gpgme_encrypt_flags_t flags,
 			  gpgme_data_t plain, gpgme_data_t ciph, int use_armor)
 {
   if (!engine)
@@ -300,13 +301,14 @@ _gpgme_engine_op_encrypt (engine_t engine, gpgme_user_id_t recp,
   if (!engine->ops->encrypt)
     return GPGME_Not_Implemented;
 
-  return (*engine->ops->encrypt) (engine->engine, recp, plain, ciph,
+  return (*engine->ops->encrypt) (engine->engine, recp, flags, plain, ciph,
 				  use_armor);
 }
 
 
 gpgme_error_t
-_gpgme_engine_op_encrypt_sign (engine_t engine, gpgme_user_id_t recp,
+_gpgme_engine_op_encrypt_sign (engine_t engine, gpgme_key_t recp[],
+			       gpgme_encrypt_flags_t flags,
 			       gpgme_data_t plain, gpgme_data_t ciph,
 			       int use_armor, gpgme_ctx_t ctx /* FIXME */)
 {
@@ -316,14 +318,15 @@ _gpgme_engine_op_encrypt_sign (engine_t engine, gpgme_user_id_t recp,
   if (!engine->ops->encrypt_sign)
     return GPGME_Not_Implemented;
 
-  return (*engine->ops->encrypt_sign) (engine->engine, recp, plain, ciph,
-				       use_armor, ctx);
+  return (*engine->ops->encrypt_sign) (engine->engine, recp, flags,
+				       plain, ciph, use_armor, ctx);
 }
 
 
 gpgme_error_t
-_gpgme_engine_op_export (engine_t engine, gpgme_user_id_t uids,
-			 gpgme_data_t keydata, int use_armor)
+_gpgme_engine_op_export (engine_t engine, const char *pattern,
+			 unsigned int reserved, gpgme_data_t keydata,
+			 int use_armor)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -331,7 +334,24 @@ _gpgme_engine_op_export (engine_t engine, gpgme_user_id_t uids,
   if (!engine->ops->export)
     return GPGME_Not_Implemented;
 
-  return (*engine->ops->export) (engine->engine, uids, keydata, use_armor);
+  return (*engine->ops->export) (engine->engine, pattern, reserved,
+				 keydata, use_armor);
+}
+
+
+gpgme_error_t
+_gpgme_engine_op_export_ext (engine_t engine, const char *pattern[],
+			     unsigned int reserved, gpgme_data_t keydata,
+			     int use_armor)
+{
+  if (!engine)
+    return GPGME_Invalid_Value;
+
+  if (!engine->ops->export_ext)
+    return GPGME_Not_Implemented;
+
+  return (*engine->ops->export_ext) (engine->engine, pattern, reserved,
+				     keydata, use_armor);
 }
 
 
@@ -366,7 +386,7 @@ _gpgme_engine_op_import (engine_t engine, gpgme_data_t keydata)
 
 gpgme_error_t
 _gpgme_engine_op_keylist (engine_t engine, const char *pattern,
-			  int secret_only, int keylist_mode)
+			  int secret_only, gpgme_keylist_mode_t mode)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -374,14 +394,14 @@ _gpgme_engine_op_keylist (engine_t engine, const char *pattern,
   if (!engine->ops->keylist)
     return GPGME_Not_Implemented;
 
-  return (*engine->ops->keylist) (engine->engine, pattern, secret_only,
-				  keylist_mode);
+  return (*engine->ops->keylist) (engine->engine, pattern, secret_only, mode);
 }
 
 
 gpgme_error_t
 _gpgme_engine_op_keylist_ext (engine_t engine, const char *pattern[],
-			      int secret_only, int reserved, int keylist_mode)
+			      int secret_only, int reserved,
+			      gpgme_keylist_mode_t mode)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -390,7 +410,7 @@ _gpgme_engine_op_keylist_ext (engine_t engine, const char *pattern[],
     return GPGME_Not_Implemented;
 
   return (*engine->ops->keylist_ext) (engine->engine, pattern, secret_only,
-				      reserved, keylist_mode);
+				      reserved, mode);
 }
 
 
