@@ -57,8 +57,9 @@ check_result (gpgme_verify_result_t result, int summary, char *fpr,
     }
   if (sig->summary != summary)
     {
-      fprintf (stderr, "%s:%i: Unexpected signature summary: 0x%x\n",
-	       __FILE__, __LINE__, sig->summary);
+      fprintf (stderr, "%s:%i: Unexpected signature summary: "
+               "want=0x%x have=0x%x\n",
+	       __FILE__, __LINE__, summary, sig->summary);
       exit (1);
     }
   if (strcmp (sig->fpr, fpr))
@@ -119,6 +120,7 @@ main (int argc, char **argv)
   fail_if_err (err);
   err = gpgme_data_new_from_mem (&sig, test_sig1, strlen (test_sig1), 0);
   fail_if_err (err);
+
   err = gpgme_op_verify (ctx, sig, text, NULL);
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);

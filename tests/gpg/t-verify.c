@@ -85,8 +85,9 @@ check_result (gpgme_verify_result_t result, unsigned int summary, char *fpr,
     }
   if (sig->summary != summary)
     {
-      fprintf (stderr, "%s:%i: Unexpected signature summary: 0x%x\n",
-	       __FILE__, __LINE__, sig->summary);
+      fprintf (stderr, "%s:%i: Unexpected signature summary: "
+               "want=0x%x have=0x%x\n",
+	       __FILE__, __LINE__, summary, sig->summary);
       exit (1);
     }
   if (strcmp (sig->fpr, fpr))
@@ -103,24 +104,56 @@ check_result (gpgme_verify_result_t result, unsigned int summary, char *fpr,
     }
   if (notation)
     {
-      if (!sig->notations
-	  || strcmp (sig->notations->name, "bar")
-	  || strcmp (sig->notations->value, "\xc3\xb6\xc3\xa4\xc3\xbc\xc3\x9f"
-		     " das waren Umlaute und jetzt ein prozent%-Zeichen")
-	  || !sig->notations->next
-	  || strcmp (sig->notations->next->name, "foobar.1")
-	  || strcmp (sig->notations->next->value,
-		     "this is a notation data with 2 lines")
-	  || !sig->notations->next->next
-	  || sig->notations->next->next->name != NULL
-	  || strcmp (sig->notations->next->next->value,
-		     "http://www.gu.org/policy/")
-	  || sig->notations->next->next->next)
-	{
-	  fprintf (stderr, "%s:%i: Unexpected notation data\n",
-		   __FILE__, __LINE__);
-	  exit (1);
-	}
+      static struct {
+        const char *name;
+        const char *value;
+        int seen;
+      } expected_notations[] = {
+        { "bar",
+	  "\xc3\xb6\xc3\xa4\xc3\xbc\xc3\x9f"
+          " das waren Umlaute und jetzt ein prozent%-Zeichen" },
+        { "foobar.1",
+	  "this is a notation data with 2 lines" },
+        { NULL, 
+	  "http://www.gu.org/policy/" }
+      };
+      int i;
+      gpgme_sig_notation_t r;
+
+      for (i=0; i < DIM(expected_notations); i++ )
+        expected_notations[i].seen = 0;
+
+      for (r = sig->notations; r; r = r->next)
+        {
+          int any = 0;
+          for (i=0; i < DIM(expected_notations); i++)
+            {
+              if ( ((r->name && expected_notations[i].name
+                     && !strcmp (r->name, expected_notations[i].name))
+                    || (!r->name && !expected_notations[i].name))
+                   && r->value
+                   && !strcmp (r->value, expected_notations[i].value))
+                {
+                  expected_notations[i].seen++;
+                  any++;
+                }
+            }
+          if (!any)
+            {
+              fprintf (stderr, "%s:%i: Unexpected notation data\n",
+                       __FILE__, __LINE__);
+              exit (1);
+            }
+        }
+      for (i=0; i < DIM(expected_notations); i++ )
+        {
+          if (expected_notations[i].seen != 1)
+            {
+              fprintf (stderr, "%s:%i: Missing or duplicate notation data\n",
+                       __FILE__, __LINE__);
+              exit (1);
+            }
+        }
     }
   if (sig->wrong_key_usage)
     {
