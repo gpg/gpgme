@@ -1,7 +1,3 @@
-2003-11-13  Werner Koch  <wk@gnupg.org>
-
-	* vasprintf.c (int_vasprintf): ARGS should not be a pointer.
-
 2003-10-31  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (parse_timestamp): Detect ISO 8601 timestamps and try
