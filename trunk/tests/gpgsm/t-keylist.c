@@ -105,10 +105,16 @@ check_two_contexts (void)
     GpgmeCtx ctx1, ctx2;
     GpgmeKey key;
 	
-    err = gpgme_new(&ctx1); fail_if_err (err);
-    err = gpgme_op_keylist_start(ctx1, "", 1); fail_if_err (err);
+    err = gpgme_new(&ctx1);
+    fail_if_err (err);
+    gpgme_set_protocol (ctx1, GPGME_PROTOCOL_CMS);
+
+    err = gpgme_op_keylist_start(ctx1, "", 1);
+    fail_if_err (err);
     err = gpgme_new(&ctx2); fail_if_err (err);
-    err = gpgme_op_keylist_start(ctx2, "", 1); fail_if_err (err);
+    gpgme_set_protocol (ctx2, GPGME_PROTOCOL_CMS);
+    err = gpgme_op_keylist_start(ctx2, "", 1);
+    fail_if_err (err);
 
     while ( (err=gpgme_op_keylist_next(ctx2, &key)) != GPGME_EOF) {
         gpgme_key_release (key);
