@@ -1,5 +1,12 @@
 2001-12-05  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (gpgsm_set_fd): Accept one more argument OPT.
+	(_gpgme_gpgsm_op_encrypt): Pass armor argument to gpgsm_set_fd for
+	output descriptor.
+	(_gpgme_gpgsm_op_sign): Likewise.
+
+2001-12-05  Marcus Brinkmann  <marcus@g10code.de>
+
 	* keylist.c (gpgme_op_keylist_next): Set pending to 0 if EOF
 	occurs.
 
