@@ -1733,15 +1733,15 @@ struct CertificateInfo {
   struct DnPair *dnarray; /* parsed values from userid[0] */
 };
 
-/*! \function struct CertIterator*  startListCertificates( void );
+/*! \function struct CertIterator*  startListCertificates( const char* pattern );
     \function struct CertificateInfo*  nextCertificate( struct CertIterator* );
     \function void endListCertificates( struct CertIterator* );
 
     \ingroup certList
-  Example:
+  Example that runs through certs matching "Steffen":
 \verbatim
   struct CertificateInfo* info;
-  struct CertIterator* it = startListCertificates();
+  struct CertIterator* it = startListCertificates("Steffen");
   while( info = nextCertificate( it ) ) {
     do something with info.
     dont free() it, the struct will be reused
@@ -1750,7 +1750,7 @@ struct CertificateInfo {
   endListCertificates( it );
 \endverbatim
 */
-struct CertIterator*  startListCertificates( void );
+struct CertIterator*  startListCertificates( const char* pattern );
 struct CertificateInfo*  nextCertificate( struct CertIterator* );
 void endListCertificates( struct CertIterator* );
 

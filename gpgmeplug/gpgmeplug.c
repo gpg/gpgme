@@ -1762,6 +1762,9 @@ void updateCRL(){}
  *     Boston, MA  02111, USA.
  */
 
+/* Max number of parts in a DN */
+#define MAX_GPGME_IDX 20
+
 /* some macros to replace ctype ones and avoid locale problems */
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 #define digitp(p)   (*(p) >= '0' && *(p) <= '9')
@@ -1777,6 +1780,7 @@ void updateCRL(){}
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 
 #define safe_malloc( x ) malloc( x )
+#define xstrdup( x ) (x)?strdup(x):0
 
 static void safe_free( void** x ) 
 {
@@ -1933,14 +1937,67 @@ parse_dn (const unsigned char *string)
   return NULL;
 }
 
+static int add_dn_part( char* result, struct DnPair* dn, const char* part )
+{
+  int any = 0;
 
+  for(; dn->key; ++dn ) {
+    if( !strcmp( dn->key, part ) ) {
+      if( any ) strcat( result, "+" );
+      strcat( result, dn->value );
+      any = 1;
+    }
+  }
+  return any;
+}
+
+static char* reorder_dn( struct DnPair *dn )
+{
+  const char* stdpart[] = {
+    "CN", "OU", "O", "STREET", "L", "ST", "C", NULL 
+  };
+  int any=0, any2=0, len=0, i;
+  char* result;
+  for( i = 0; dn[i].key; ++i ) {
+    len += strlen( dn[i].key );
+    len += strlen( dn[i].value );
+    len += 4; /* ',' and '=', and possibly "(" and ")" */
+  }
+  result = (char*)safe_malloc( (len+1)*sizeof(char) );
+  *result = 0;
+
+  /* add standard parts */
+  for( i = 0; stdpart[i]; ++i ) {
+    if( any ) {
+      strcat( result, "," );
+    }
+    any = add_dn_part( result, dn, stdpart[i] );
+  }
+
+  /* add remaining parts in no particular order */
+  for(; dn->key; ++dn ) {
+    for( i = 0; stdpart[i]; ++i ) {
+      if( !strcmp( dn->key, stdpart[i] ) ) {
+	break;
+      }
+    }
+    if( !stdpart[i] ) {
+      if( any ) strcat( result, "," );
+      if( !any2 ) strcat( result, "(");
+      any = add_dn_part( result, dn, dn->key );
+      any2 = 1;
+    }
+  }
+  if( any2 ) strcat( result, ")");
+  return result;
+}
 
 struct CertIterator {
   GpgmeCtx ctx;  
   struct CertificateInfo info;
 };
 
-struct CertIterator* startListCertificates( void )
+struct CertIterator* startListCertificates( const char* pattern )
 {
     GpgmeError err;
     struct CertIterator* it;
@@ -1956,7 +2013,7 @@ struct CertIterator* startListCertificates( void )
     }
 
     gpgme_set_protocol (it->ctx, GPGME_PROTOCOL_CMS);
-    err =  gpgme_op_keylist_start ( it->ctx, NULL, 0);
+    err =  gpgme_op_keylist_start ( it->ctx, pattern, 0);
     if( err != GPGME_No_Error ) {
       endListCertificates( it );
       return NULL;
@@ -1964,8 +2021,6 @@ struct CertIterator* startListCertificates( void )
     memset( &(it->info), 0, sizeof( struct CertificateInfo ) );
     return it;
 }
-
-#define MAX_GPGME_IDX 20
 
 static void freeStringArray( char** c )
 {
@@ -1997,7 +2052,21 @@ static void freeInfo( struct CertificateInfo* info )
   memset( info, 0, sizeof( *info ) );
 }
 
-#define xstrdup( x ) (x)?strdup(x):0
+static char* make_fingerprint( const char* fpr )
+{
+  int len = strlen(fpr);
+  int i = 0;
+  char* result = safe_malloc( (len + len/2 + 1)*sizeof(char) );
+  if( !result ) return NULL;
+  for(; *fpr; ++fpr, ++i ) {
+    if( i%3 == 2) {
+      result[i] = ':'; ++i;
+    }
+    result[i] = *fpr;
+  }
+  result[i] = 0;
+  return result;
+}
 
 struct CertificateInfo* nextCertificate( struct CertIterator* it )
 {
@@ -2023,8 +2092,13 @@ struct CertificateInfo* nextCertificate( struct CertIterator* it )
     it->info.dnarray = 0;
     for( idx = 0; names[idx] != 0; ++idx ) {
       struct DnPair* a = parse_dn( names[idx] ); 
-      it->info.userid[idx] = names[idx];
-      it->info.dnarray = a;
+      if( idx == 0 ) {
+	it->info.userid[idx] = reorder_dn( a );
+	safe_free( &(names[idx]) );
+      } else {
+	it->info.userid[idx] = names[idx];
+	it->info.dnarray = a;
+      }
     }
     it->info.userid[idx] = 0;
 
@@ -2032,7 +2106,7 @@ struct CertificateInfo* nextCertificate( struct CertIterator* it )
     it->info.serial = xstrdup(s);
 
     s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, 0, 0); 
-    it->info.fingerprint = xstrdup(s);
+    it->info.fingerprint = make_fingerprint( s );
 
     s = gpgme_key_get_string_attr (key, GPGME_ATTR_ISSUER, 0, 0); 
     it->info.issuer = xstrdup(s);
