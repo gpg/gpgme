@@ -299,7 +299,7 @@ otrust_to_string (int otrust)
 
 
 static const char *
-validity_to_string (int otrust)
+validity_to_string (int validity)
 {
   switch (validity)
     {
@@ -954,13 +954,13 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
       return uid ? uid->email_part : NULL;
 
     case GPGME_ATTR_COMMENT:
-      return uid ? uid->comment : NULL;
+      return uid ? uid->comment_part : NULL;
 
     case GPGME_ATTR_VALIDITY:
-      return uid ? validity_to_string (uid->otrust) : NULL;
+      return otrust_to_string (key->otrust);
 
     case GPGME_ATTR_KEY_CAPS:    
-      return subkey ? capabilities_to_string (k) : NULL;
+      return subkey ? capabilities_to_string (subkey) : NULL;
 
     case GPGME_ATTR_SERIAL:
       return key->issuer_serial;
