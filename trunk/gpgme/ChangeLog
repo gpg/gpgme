@@ -1,3 +1,7 @@
+2002-05-22  Marcus Brinkmann  <marcus@gnu.org>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist_ext): Fix last change.
+
 2002-05-21  Werner Koch  <wk@gnupg.org>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist)
