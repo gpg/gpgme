@@ -936,22 +936,32 @@ gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
 
 
 static gpgme_error_t
-set_recipients (engine_gpgsm_t gpgsm, gpgme_user_id_t uid)
+set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
 {
-  gpgme_error_t err;
+  gpgme_error_t err = 0;
   ASSUAN_CONTEXT ctx = gpgsm->assuan_ctx;
   char *line;
   int linelen;
   int invalid_recipients = 0;
+  int i = 0;
 
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
   line = malloc (10 + 40 + 1);
   if (!line)
     return GPGME_Out_Of_Core;
   strcpy (line, "RECIPIENT ");
-  while (uid)
+  while (!err && recp[i])
     {
-      int newlen = 11 + strlen (uid->uid);
+      char *fpr;
+
+      if (!recp[i]->subkeys || !recp[i]->subkeys->fpr)
+	{
+	  invalid_recipients++;
+	  continue;
+	}
+      fpr = recp[i]->subkeys->fpr;
+
+      int newlen = 11 + strlen (fpr);
       if (linelen < newlen)
 	{
 	  char *newline = realloc (line, newlen);
@@ -963,27 +973,27 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_user_id_t uid)
 	  line = newline;
 	  linelen = newlen;
 	}
-      strcpy (&line[10], uid->uid);
-      
+      strcpy (&line[10], fpr);
+
       err = gpgsm_assuan_simple_command (ctx, line, gpgsm->status.fnc,
 					 gpgsm->status.fnc_value);
       if (err == GPGME_Invalid_Key)
-	invalid_recipients = 1;
+	invalid_recipients++;
       else if (err)
 	{
 	  free (line);
 	  return err;
 	}
-      uid = uid->next;
+      i++;
     }
   free (line);
-  return invalid_recipients ? GPGME_Invalid_UserID : 0;
+  return invalid_recipients ? GPGME_Invalid_Key : 0;
 }
 
 
 static gpgme_error_t
-gpgsm_encrypt (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
-	       gpgme_data_t ciph, int use_armor)
+gpgsm_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
+	       gpgme_data_t plain, gpgme_data_t ciph, int use_armor)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
@@ -1015,46 +1025,24 @@ gpgsm_encrypt (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
 
 
 static gpgme_error_t
-gpgsm_export (void *engine, gpgme_user_id_t uid, gpgme_data_t keydata,
-	      int use_armor)
+gpgsm_export (void *engine, const char *pattern, unsigned int reserved,
+	      gpgme_data_t keydata, int use_armor)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err = 0;
-  char *cmd = NULL;
-  int cmdi;
-  int cmdlen = 32;
+  char *cmd;
 
-  if (!gpgsm)
+  if (!gpgsm || reserved)
     return GPGME_Invalid_Value;
 
-  cmd = malloc (cmdlen);
+  if (!pattern)
+    pattern = "";
+
+  cmd = malloc (7 + strlen (pattern) + 1);
   if (!cmd)
     return GPGME_Out_Of_Core;
-  strcpy (cmd, "EXPORT");
-  cmdi = 6;
-
-  while (!err && uid)
-    {
-      int uidlen = strlen (uid->uid);
-      /* New string is old string + ' ' + s + '\0'.  */
-      if (cmdlen < cmdi + 1 + uidlen + 1)
-	{
-	  char *newcmd = realloc (cmd, cmdlen * 2);
-	  if (!newcmd)
-	    {
-	      free (cmd);
-	      return GPGME_Out_Of_Core;
-	    }
-	  cmd = newcmd;
-	  cmdlen *= 2;
-	}
-      cmd[cmdi++] = ' ';
-      strcpy (cmd + cmdi, uid->uid);
-      cmdi += uidlen;
-      uid = uid->next;
-    }
-  if (err)
-    return err;
+  strcpy (cmd, "EXPORT ");
+  strcpy (&cmd[7], pattern);
 
   gpgsm->output_cb.data = keydata;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
@@ -1066,6 +1054,97 @@ gpgsm_export (void *engine, gpgme_user_id_t uid, gpgme_data_t keydata,
 
   err = start (gpgsm, cmd);
   free (cmd);
+  return err;
+}
+
+
+static gpgme_error_t
+gpgsm_export_ext (void *engine, const char *pattern[], unsigned int reserved,
+		  gpgme_data_t keydata, int use_armor)
+{
+  engine_gpgsm_t gpgsm = engine;
+  gpgme_error_t err = 0;
+  char *line;
+  /* Length is "EXPORT " + p + '\0'.  */
+  int length = 7 + 1;
+  char *linep;
+
+  if (!gpgsm || reserved)
+    return GPGME_Invalid_Value;
+
+  if (pattern && *pattern)
+    {
+      const char **pat = pattern;
+
+      while (*pat)
+	{
+	  const char *patlet = *pat;
+
+	  while (*patlet)
+	    {
+	      length++;
+	      if (*patlet == '%' || *patlet == ' ' || *patlet == '+')
+		length += 2;
+	      patlet++;
+	    }
+	  pat++;
+	  /* This will allocate one byte more than necessary.  */
+	  length++;
+	}
+    }
+  line = malloc (length);
+  if (!line)
+    return GPGME_Out_Of_Core;
+
+  strcpy (line, "EXPORT ");
+  linep = &line[7];
+
+  if (pattern && *pattern)
+    {
+      while (*pattern)
+	{
+	  const char *patlet = *pattern;
+
+	  while (*patlet)
+	    {
+	      switch (*patlet)
+		{
+		case '%':
+		  *(linep++) = '%';
+		  *(linep++) = '2';
+		  *(linep++) = '5';
+		  break;
+		case ' ':
+		  *(linep++) = '%';
+		  *(linep++) = '2';
+		  *(linep++) = '0';
+		  break;
+		case '+':
+		  *(linep++) = '%';
+		  *(linep++) = '2';
+		  *(linep++) = 'B';
+		  break;
+		default:
+		  *(linep++) = *patlet;
+		  break;
+		}
+	      patlet++;
+	    }
+	  pattern++;
+	}
+    }
+  *linep = '\0';
+
+  gpgsm->output_cb.data = keydata;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
+		      use_armor ? "--armor" : 0);
+  if (err)
+    return err;
+  _gpgme_io_close (gpgsm->input_cb.fd);
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  err = start (gpgsm, line);
+  free (line);
   return err;
 }
 
@@ -1121,16 +1200,22 @@ gpgsm_import (void *engine, gpgme_data_t keydata)
 
 static gpgme_error_t
 gpgsm_keylist (void *engine, const char *pattern, int secret_only,
-	       int keylist_mode)
+	       gpgme_keylist_mode_t mode)
 {
   engine_gpgsm_t gpgsm = engine;
   char *line;
   gpgme_error_t err;
+  int list_mode = 0;
+
+  if (mode & GPGME_KEYLIST_MODE_LOCAL)
+    list_mode |= 1;
+  if (mode & GPGME_KEYLIST_MODE_EXTERN)
+    list_mode |= 2;
 
   if (!pattern)
     pattern = "";
 
-  if (asprintf (&line, "OPTION list-mode=%d", (keylist_mode & 3)) < 0)
+  if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
     return GPGME_Out_Of_Core;
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
   free (line);
@@ -1164,7 +1249,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
 
 static gpgme_error_t
 gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
-		   int reserved, int keylist_mode)
+		   int reserved, gpgme_keylist_mode_t mode)
 {
   engine_gpgsm_t gpgsm = engine;
   char *line;
@@ -1172,11 +1257,17 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
   int length = 15 + 1;
   char *linep;
-  
+  int list_mode = 0;
+
   if (reserved)
     return GPGME_Invalid_Value;
 
-  if (asprintf (&line, "OPTION list-mode=%d", (keylist_mode & 3)) < 0)
+  if (mode & GPGME_KEYLIST_MODE_LOCAL)
+    list_mode |= 1;
+  if (mode & GPGME_KEYLIST_MODE_EXTERN)
+    list_mode |= 2;
+
+  if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
     return GPGME_Out_Of_Core;
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
   free (line);
@@ -1432,8 +1523,9 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_delete,
     NULL,		/* edit */
     gpgsm_encrypt,
-    NULL,
+    NULL,		/* encrypt_sign */
     gpgsm_export,
+    gpgsm_export_ext,
     gpgsm_genkey,
     gpgsm_import,
     gpgsm_keylist,

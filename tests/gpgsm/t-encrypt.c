@@ -60,7 +60,7 @@ main (int argc, char **argv)
   gpgme_ctx_t ctx;
   gpgme_error_t err;
   gpgme_data_t in, out;
-  gpgme_user_id_t rset = NULL;
+  gpgme_key_t key[] = { NULL, NULL };
   gpgme_encrypt_result_t result;
 
   err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);
@@ -77,11 +77,11 @@ main (int argc, char **argv)
   err = gpgme_data_new (&out);
   fail_if_err (err);
     
-  err = gpgme_user_ids_append (&rset, "test cert 1");
+  err = gpgme_get_key (ctx, "3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E",
+		       &key[0], 0);
   fail_if_err (err);
-  rset->validity = GPGME_VALIDITY_FULL;
 
-  err = gpgme_op_encrypt (ctx, rset, in, out);
+  err = gpgme_op_encrypt (ctx, key, 0, in, out);
   fail_if_err (err);
   result = gpgme_op_encrypt_result (ctx);
   if (result->invalid_recipients)
@@ -92,7 +92,7 @@ main (int argc, char **argv)
     }
   print_data (out);
 
-  gpgme_user_ids_release (rset);
+  gpgme_key_unref (key[0]);
   gpgme_data_release (in);
   gpgme_data_release (out);
   gpgme_release (ctx);

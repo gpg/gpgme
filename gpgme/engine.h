@@ -58,18 +58,25 @@ gpgme_error_t _gpgme_engine_op_edit (engine_t engine, gpgme_key_t key,
 				     gpgme_data_t out,
 				     gpgme_ctx_t ctx /* FIXME */);
 gpgme_error_t _gpgme_engine_op_encrypt (engine_t engine,
-					gpgme_user_id_t recp,
+					gpgme_key_t recp[],
+					gpgme_encrypt_flags_t flags,
 					gpgme_data_t plain, gpgme_data_t ciph,
 					int use_armor);
 gpgme_error_t _gpgme_engine_op_encrypt_sign (engine_t engine,
-					     gpgme_user_id_t recp,
+					     gpgme_key_t recp[],
+					     gpgme_encrypt_flags_t flags,
 					     gpgme_data_t plain,
 					     gpgme_data_t ciph,
 					     int use_armor,
 					     gpgme_ctx_t ctx /* FIXME */);
-gpgme_error_t _gpgme_engine_op_export (engine_t engine,
-				       gpgme_user_id_t uids,
+gpgme_error_t _gpgme_engine_op_export (engine_t engine, const char *pattern,
+				       unsigned int reserved,
 				       gpgme_data_t keydata, int use_armor);
+gpgme_error_t _gpgme_engine_op_export_ext (engine_t engine,
+					   const char *pattern[],
+					   unsigned int reserved,
+					   gpgme_data_t keydata,
+					   int use_armor);
 gpgme_error_t _gpgme_engine_op_genkey (engine_t engine,
 				       gpgme_data_t help_data,
 				       int use_armor, gpgme_data_t pubkey,
@@ -79,12 +86,12 @@ gpgme_error_t _gpgme_engine_op_import (engine_t engine,
 gpgme_error_t _gpgme_engine_op_keylist (engine_t engine,
 					const char *pattern,
 					int secret_only,
-					int keylist_mode);
+					gpgme_keylist_mode_t mode);
 gpgme_error_t _gpgme_engine_op_keylist_ext (engine_t engine,
 					    const char *pattern[],
 					    int secret_only,
 					    int reserved,
-					    int keylist_mode);
+					    gpgme_keylist_mode_t mode);
 gpgme_error_t _gpgme_engine_op_sign (engine_t engine, gpgme_data_t in,
 				     gpgme_data_t out, gpgme_sig_mode_t mode,
 				     int use_armor, int use_textmode,

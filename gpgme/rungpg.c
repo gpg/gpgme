@@ -1236,26 +1236,30 @@ gpg_edit (void *engine, gpgme_key_t key, gpgme_data_t out,
 
 
 static gpgme_error_t
-append_args_from_recipients (engine_gpg_t gpg, gpgme_user_id_t uid)
+append_args_from_recipients (engine_gpg_t gpg, gpgme_key_t recp[])
 {
   gpgme_error_t err = 0;
+  int i = 0;
 
-  while (uid)
+  while (recp[i])
     {
-      err = add_arg (gpg, "-r");
+      if (!recp[i]->subkeys || !recp[i]->subkeys->fpr)
+	err = GPGME_Invalid_Key;
       if (!err)
-	err = add_arg (gpg, uid->uid);
+	err = add_arg (gpg, "-r");
+      if (!err)
+	err = add_arg (gpg, recp[i]->subkeys->fpr);
       if (err)
 	break;
-      uid = uid->next;
+      i++;
     }    
   return err;
 }
 
 
 static gpgme_error_t
-gpg_encrypt (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
-	     gpgme_data_t ciph, int use_armor)
+gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
+	     gpgme_data_t plain, gpgme_data_t ciph, int use_armor)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -1270,7 +1274,7 @@ gpg_encrypt (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
     {
       /* If we know that all recipients are valid (full or ultimate trust)
 	 we can suppress further checks.  */
-      if (!err && !symmetric && _gpgme_user_ids_all_valid (recp))
+      if (!err && !symmetric && (flags & GPGME_ENCRYPT_ALWAYS_TRUST))
 	err = add_arg (gpg, "--always-trust");
 
       if (!err)
@@ -1297,7 +1301,8 @@ gpg_encrypt (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
 
 
 static gpgme_error_t
-gpg_encrypt_sign (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
+gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
+		  gpgme_encrypt_flags_t flags, gpgme_data_t plain,
 		  gpgme_data_t ciph, int use_armor,
 		  gpgme_ctx_t ctx /* FIXME */)
 {
@@ -1311,8 +1316,8 @@ gpg_encrypt_sign (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
     err = add_arg (gpg, "--armor");
 
   /* If we know that all recipients are valid (full or ultimate trust)
-   * we can suppress further checks */
-  if (!err && _gpgme_user_ids_all_valid (recp))
+     we can suppress further checks.  */
+  if (!err && (flags & GPGME_ENCRYPT_ALWAYS_TRUST))
     err = add_arg (gpg, "--always-trust");
 
   if (!err)
@@ -1341,11 +1346,14 @@ gpg_encrypt_sign (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
 
 
 static gpgme_error_t
-gpg_export (void *engine, gpgme_user_id_t uids, gpgme_data_t keydata,
-	    int use_armor)
+gpg_export (void *engine, const char *pattern, unsigned int reserved,
+	    gpgme_data_t keydata, int use_armor)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
+
+  if (reserved)
+    return GPGME_Invalid_Value;
 
   err = add_arg (gpg, "--export");
   if (!err && use_armor)
@@ -1355,10 +1363,38 @@ gpg_export (void *engine, gpgme_user_id_t uids, gpgme_data_t keydata,
   if (!err)
     err = add_arg (gpg, "--");
 
-  while (!err && uids)
+  if (!err && pattern && *pattern)
+    err = add_arg (gpg, pattern);
+
+  if (!err)
+    err = start (gpg);
+
+  return err;
+}
+
+
+static gpgme_error_t
+gpg_export_ext (void *engine, const char *pattern[], unsigned int reserved,
+		gpgme_data_t keydata, int use_armor)
+{
+  engine_gpg_t gpg = engine;
+  gpgme_error_t err;
+
+  if (reserved)
+    return GPGME_Invalid_Value;
+
+  err = add_arg (gpg, "--export");
+  if (!err && use_armor)
+    err = add_arg (gpg, "--armor");
+  if (!err)
+    err = add_data (gpg, keydata, 1, 1);
+  if (!err)
+    err = add_arg (gpg, "--");
+
+  if (pattern)
     {
-      err = add_arg (gpg, uids->uid);
-      uids = uids->next;
+      while (!err && *pattern && **pattern)
+	err = add_arg (gpg, *(pattern++));
     }
 
   if (!err)
@@ -1417,7 +1453,7 @@ gpg_import (void *engine, gpgme_data_t keydata)
 
 static gpgme_error_t
 gpg_keylist (void *engine, const char *pattern, int secret_only,
-	     int keylist_mode)
+	     gpgme_keylist_mode_t mode)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -1431,7 +1467,7 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
     err = add_arg (gpg, "--with-fingerprint");
   if (!err)
     err = add_arg (gpg, secret_only ? "--list-secret-keys"
-		   : ((keylist_mode & GPGME_KEYLIST_MODE_SIGS)
+		   : ((mode & GPGME_KEYLIST_MODE_SIGS)
 		      ? "--check-sigs" : "--list-keys"));
   
   /* Tell the gpg object about the data.  */
@@ -1449,7 +1485,7 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
 
 static gpgme_error_t
 gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
-		 int reserved, int keylist_mode)
+		 int reserved, gpgme_keylist_mode_t mode)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -1466,15 +1502,14 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
     err = add_arg (gpg, "--with-fingerprint");
   if (!err)
     err = add_arg (gpg, secret_only ? "--list-secret-keys"
-		   : ((keylist_mode & GPGME_KEYLIST_MODE_SIGS)
+		   : ((mode & GPGME_KEYLIST_MODE_SIGS)
 		      ? "--check-sigs" : "--list-keys"));
-
-  /* Tell the gpg object about the data.  */
   if (!err)
     err = add_arg (gpg, "--");
-  if (!err && pattern && *pattern)
+
+  if (pattern)
     {
-      while (*pattern && **pattern)
+      while (!err && *pattern && **pattern)
 	err = add_arg (gpg, *(pattern++));
     }
 
@@ -1616,6 +1651,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_encrypt,
     gpg_encrypt_sign,
     gpg_export,
+    gpg_export_ext,
     gpg_genkey,
     gpg_import,
     gpg_keylist,

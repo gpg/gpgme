@@ -37,7 +37,8 @@ encrypt_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 
 static gpgme_error_t
-encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_user_id_t recp,
+encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
+		    gpgme_encrypt_flags_t flags,
 		    gpgme_data_t plain, gpgme_data_t cipher)
 {
   gpgme_error_t err;
@@ -45,6 +46,11 @@ encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_user_id_t recp,
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     return err;
+
+  if (!plain)
+    return GPGME_No_Data;
+  if (!cipher || !recp)
+    return GPGME_Invalid_Value;
 
   err = _gpgme_op_encrypt_init_result (ctx);
   if (err)
@@ -54,16 +60,10 @@ encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_user_id_t recp,
   if (err)
     return err;
 
-  if (!plain)
-    return GPGME_No_Data;
-  if (!cipher)
-    return GPGME_Invalid_Value;
-
   if (ctx->passphrase_cb)
     {
-      err = _gpgme_engine_set_command_handler (ctx->engine,
-					       _gpgme_passphrase_command_handler,
-					       ctx, NULL);
+      err = _gpgme_engine_set_command_handler
+	(ctx->engine, _gpgme_passphrase_command_handler, ctx, NULL);
       if (err)
 	return err;
     }
@@ -71,8 +71,9 @@ encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_user_id_t recp,
   _gpgme_engine_set_status_handler (ctx->engine,
 				    encrypt_sign_status_handler, ctx);
   
-  return _gpgme_engine_op_encrypt_sign (ctx->engine, recp, plain, cipher,
-					ctx->use_armor, ctx /* FIXME */);
+  return _gpgme_engine_op_encrypt_sign (ctx->engine, recp, flags, plain,
+					cipher, ctx->use_armor,
+					ctx /* FIXME */);
 }
 
 
@@ -80,10 +81,11 @@ encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_user_id_t recp,
    store the resulting ciphertext in CIPHER.  Also sign the ciphertext
    with the signers in CTX.  */
 gpgme_error_t
-gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_user_id_t recp,
-			      gpgme_data_t plain, gpgme_data_t cipher)
+gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
+			     gpgme_encrypt_flags_t flags,
+			     gpgme_data_t plain, gpgme_data_t cipher)
 {
-  return encrypt_sign_start (ctx, 0, recp, plain, cipher);
+  return encrypt_sign_start (ctx, 0, recp, flags, plain, cipher);
 }
 
 
@@ -91,10 +93,11 @@ gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_user_id_t recp,
    store the resulting ciphertext in CIPHER.  Also sign the ciphertext
    with the signers in CTX.  */
 gpgme_error_t
-gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_user_id_t recp,
+gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_key_t recp[],
+		       gpgme_encrypt_flags_t flags,
 		       gpgme_data_t plain, gpgme_data_t cipher)
 {
-  gpgme_error_t err = encrypt_sign_start (ctx, 1, recp, plain, cipher);
+  gpgme_error_t err = encrypt_sign_start (ctx, 1, recp, flags, plain, cipher);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

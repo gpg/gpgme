@@ -38,9 +38,6 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 {
   gpgme_ctx_t ctx;
 
-  if (!r_ctx)
-    return GPGME_Invalid_Value;
-  *r_ctx = 0;
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
     return GPGME_Out_Of_Core;
@@ -53,17 +50,10 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 }
 
 
-/**
- * gpgme_release:
- * @c: Context to be released.
- *
- * Release all resources associated with the given context.
- **/
+/* Release all resources associated with the given context.  */
 void
 gpgme_release (gpgme_ctx_t ctx)
 {
-  if (!ctx)
-    return;
   _gpgme_engine_release (ctx->engine);
   _gpgme_fd_table_deinit (&ctx->fdt);
   _gpgme_release_result (ctx);
@@ -72,6 +62,7 @@ gpgme_release (gpgme_ctx_t ctx)
     free (ctx->signers);
   free (ctx);
 }
+
 
 void
 _gpgme_release_result (gpgme_ctx_t ctx)
@@ -124,81 +115,43 @@ gpgme_get_protocol_name (gpgme_protocol_t protocol)
     }
 }
 
-/**
- * gpgme_set_armor:
- * @ctx: the context
- * @yes: boolean value to set or clear that flag
- *
- * Enable or disable the use of an ascii armor for all output.
- **/
+/* Enable or disable the use of an ascii armor for all output.  */
 void
 gpgme_set_armor (gpgme_ctx_t ctx, int yes)
 {
-  if (!ctx)
-    return;
   ctx->use_armor = yes;
 }
 
 
-/**
- * gpgme_get_armor:
- * @ctx: the context
- *
- * Return the state of the armor flag which can be changed using
- * gpgme_set_armor().
- *
- * Return value: Boolean whether armor mode is to be used.
- **/
+/* Return the state of the armor flag.  */
 int
 gpgme_get_armor (gpgme_ctx_t ctx)
 {
-  return ctx && ctx->use_armor;
+  return ctx->use_armor;
 }
 
 
-/**
- * gpgme_set_textmode:
- * @ctx: the context
- * @yes: boolean flag whether textmode should be enabled
- *
- * Enable or disable the use of the special textmode.  Textmode is for example
- * used for the RFC2015 signatures; note that the updated RFC 3156 mandates
- * that the MUA does some preparations so that textmode is not needed anymore.
- **/
+/* Enable or disable the use of the special textmode.  Textmode is for
+  example used for the RFC2015 signatures; note that the updated RFC
+  3156 mandates that the MUA does some preparations so that textmode
+  is not needed anymore.  */
 void
 gpgme_set_textmode (gpgme_ctx_t ctx, int yes)
 {
-  if (!ctx)
-    return;
   ctx->use_textmode = yes;
 }
 
-/**
- * gpgme_get_textmode:
- * @ctx: the context
- *
- * Return the state of the textmode flag which can be changed using
- * gpgme_set_textmode().
- *
- * Return value: Boolean whether textmode is to be used.
- **/
+/* Return the state of the textmode flag.  */
 int
 gpgme_get_textmode (gpgme_ctx_t ctx)
 {
-  return ctx && ctx->use_textmode;
+  return ctx->use_textmode;
 }
 
 
-/**
- * gpgme_set_include_certs:
- * @ctx: the context
- *
- * Set the number of certifications to include in an S/MIME message.
- * The default is 1 (only the cert of the sender).  -1 means all certs,
- * and -2 means all certs except the root cert.
- *
- * Return value: Boolean whether textmode is to be used.
- **/
+/* Set the number of certifications to include in an S/MIME message.
+   The default is 1 (only the cert of the sender).  -1 means all
+   certs, and -2 means all certs except the root cert.  */
 void
 gpgme_set_include_certs (gpgme_ctx_t ctx, int nr_of_certs)
 {
@@ -209,14 +162,8 @@ gpgme_set_include_certs (gpgme_ctx_t ctx, int nr_of_certs)
 }
 
 
-/**
- * gpgme_get_include_certs:
- * @ctx: the context
- *
- * Get the number of certifications to include in an S/MIME message.
- *
- * Return value: Boolean whether textmode is to be used.
- **/
+/* Get the number of certifications to include in an S/MIME
+   message.  */
 int
 gpgme_get_include_certs (gpgme_ctx_t ctx)
 {
@@ -224,24 +171,12 @@ gpgme_get_include_certs (gpgme_ctx_t ctx)
 }
 
 
-/**
- * gpgme_set_keylist_mode:
- * @ctx: the context
- * @mode: listing mode
- *
- * This function changes the default behaviour of the keylisting
- * functions.  mode is a bitwise-OR of the GPGME_KEYLIST_* flags.
- * The default mode is GPGME_KEYLIST_MODE_LOCAL.
- *
- * Return value: GPGME_Invalid_Value if ctx is not a context or mode
- * not a valid mode.
- **/
+/* This function changes the default behaviour of the keylisting
+   functions.  MODE is a bitwise-OR of the GPGME_KEYLIST_* flags.  The
+   default mode is GPGME_KEYLIST_MODE_LOCAL.  */
 gpgme_error_t
-gpgme_set_keylist_mode (gpgme_ctx_t ctx, int mode)
+gpgme_set_keylist_mode (gpgme_ctx_t ctx, gpgme_keylist_mode_t mode)
 {
-  if (!ctx)
-    return GPGME_Invalid_Value;
-
   if (!((mode & GPGME_KEYLIST_MODE_LOCAL)
 	|| (mode & GPGME_KEYLIST_MODE_EXTERN)
 	|| (mode & GPGME_KEYLIST_MODE_SIGS)))
@@ -251,168 +186,66 @@ gpgme_set_keylist_mode (gpgme_ctx_t ctx, int mode)
   return 0;
 }
 
-
-/**
- * gpgme_get_keylist_mode:
- * @ctx: the context
- *
- * This function ch the default behaviour of the keylisting functions.
- * Defines values for @mode are: %0 = normal, %1 = fast listing without
- * information about key validity.
- *
- * Return value: 0 if ctx is not a valid context, or the current mode.
- * Note that 0 is never a valid mode.
- **/
-int
+/* This function returns the default behaviour of the keylisting
+   functions.  */
+gpgme_keylist_mode_t
 gpgme_get_keylist_mode (gpgme_ctx_t ctx)
 {
-  if (!ctx)
-    return 0;
   return ctx->keylist_mode;
 }
 
 
-/**
- * gpgme_set_passphrase_cb:
- * @ctx: the context
- * @cb: A callback function
- * @cb_value: The value passed to the callback function
- *
- * This function sets a callback function to be used to pass a passphrase
- * to gpg. The preferred way to handle this is by using the gpg-agent, but
- * because that beast is not ready for real use, you can use this passphrase
- * thing.
- *
- * The callback function is defined as:
- * <literal>
- * typedef const char *(*gpgme_passphrase_cb_t)(void*cb_value,
- *                                          const char *desc,
- *                                          void **r_hd);
- * </literal>
- * and called whenever gpgme needs a passphrase. DESC will have a nice
- * text, to be used to prompt for the passphrase and R_HD is just a parameter
- * to be used by the callback it self.  Because the callback returns a const
- * string, the callback might want to know when it can release resources
- * assocated with that returned string; gpgme helps here by calling this
- * passphrase callback with an DESC of %NULL as soon as it does not need
- * the returned string anymore.  The callback function might then choose
- * to release resources depending on R_HD.
- *
- **/
+/* This function sets a callback function to be used to pass a
+   passphrase to gpg.  */
 void
 gpgme_set_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t cb,
 			 void *cb_value)
 {
-  if (ctx)
-    {
-      ctx->passphrase_cb = cb;
-      ctx->passphrase_cb_value = cb_value;
-    }
+  ctx->passphrase_cb = cb;
+  ctx->passphrase_cb_value = cb_value;
 }
 
 
-/**
- * gpgme_get_passphrase_cb:
- * @ctx: the context
- * @r_cb: The current callback function
- * @r_cb_value: The current value passed to the callback function
- *
- * This function returns the callback function to be used to pass a passphrase
- * to the crypto engine.
- **/
+/* This function returns the callback function to be used to pass a
+   passphrase to the crypto engine.  */
 void
 gpgme_get_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t *r_cb,
 			 void **r_cb_value)
 {
-  if (ctx)
-    {
-      if (r_cb)
-	*r_cb = ctx->passphrase_cb;
-      if (r_cb_value)
-	*r_cb_value = ctx->passphrase_cb_value;
-    }
-  else
-    {
-      if (r_cb)
-	*r_cb = NULL;
-      if (r_cb_value)
-	*r_cb_value = NULL;
-    }
+  if (r_cb)
+    *r_cb = ctx->passphrase_cb;
+  if (r_cb_value)
+    *r_cb_value = ctx->passphrase_cb_value;
 }
 
 
-/**
- * gpgme_set_progress_cb:
- * @ctx: the context
- * @cb: A callback function
- * @cb_value: The value passed to the callback function
- *
- * This function sets a callback function to be used as a progress indicator.
- *
- * The callback function is defined as:
- * <literal>
- * typedef void (*gpgme_progress_cb_t) (void *cb_value,
- *                                  const char *what, int type,
- *                                  int curretn, int total);
- * </literal>
- * For details on the progress events, see the entry for the PROGRESS
- * status in the file doc/DETAILS of the GnuPG distribution.
- **/
+/* This function sets a callback function to be used as a progress
+   indicator.  */
 void
 gpgme_set_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t cb, void *cb_value)
 {
-  if (ctx)
-    {
-      ctx->progress_cb = cb;
-      ctx->progress_cb_value = cb_value;
-    }
+  ctx->progress_cb = cb;
+  ctx->progress_cb_value = cb_value;
 }
 
 
-/**
- * gpgme_get_progress_cb:
- * @ctx: the context
- * @r_cb: The current callback function
- * @r_cb_value: The current value passed to the callback function
- *
- * This function returns the callback function to be used as a
- * progress indicator.
- **/
+/* This function returns the callback function to be used as a
+   progress indicator.  */
 void
 gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *r_cb,
 		       void **r_cb_value)
 {
-  if (ctx)
-    {
-      if (r_cb)
-	*r_cb = ctx->progress_cb;
-      if (r_cb_value)
-	*r_cb_value = ctx->progress_cb_value;
-    }
-  else
-    {
-      if (r_cb)
-	*r_cb = NULL;
-      if (r_cb_value)
-	*r_cb_value = NULL;
-    }
+  if (r_cb)
+    *r_cb = ctx->progress_cb;
+  if (r_cb_value)
+    *r_cb_value = ctx->progress_cb_value;
 }
 
 
-/**
- * gpgme_set_io_cbs:
- * @ctx: the context
- * @register_io_cb: A callback function
- * @register_hook_value: The value passed to the callback function
- * @remove_io_cb: Another callback function
- *
- **/
+/* Set the I/O callback functions for CTX to IO_CBS.  */
 void
 gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 {
-  if (!ctx)
-    return;
-
   if (io_cbs)
     ctx->io_cbs = *io_cbs;
   else
@@ -426,22 +259,11 @@ gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 }
 
 
-/**
- * gpgme_get_io_cbs:
- * @ctx: the context
- * @r_register_cb: The current register callback function
- * @r_register_cb_value: The current value passed to the
- * register callback function
- * @r_remove_cb: The current remove callback function
- *
- * This function returns the callback function to be used to pass a passphrase
- * to the crypto engine.
- **/
+/* This function returns the callback function for I/O.  */
 void
 gpgme_get_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 {
-  if (ctx && io_cbs)
-    *io_cbs = ctx->io_cbs;
+  *io_cbs = ctx->io_cbs;
 }
 
 

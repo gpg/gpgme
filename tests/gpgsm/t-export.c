@@ -59,9 +59,8 @@ main (int argc, char *argv[])
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;
-  gpgme_data_t  out;
-  gpgme_user_id_t rset = NULL;
-
+  gpgme_data_t out;
+  const char *pattern[] = { "DFN Top Level Certification Authority", NULL };
   err = gpgme_new (&ctx);
   fail_if_err (err);
   gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
@@ -69,11 +68,8 @@ main (int argc, char *argv[])
   err = gpgme_data_new (&out);
   fail_if_err (err);
 
-  err = gpgme_user_ids_append (&rset, "DFN Top Level Certification Authority");
-  fail_if_err (err);
-
   gpgme_set_armor (ctx, 1);
-  err = gpgme_op_export (ctx, rset, out);
+  err = gpgme_op_export_ext (ctx, pattern, 0, out);
   fail_if_err (err);
 
   fflush (NULL);
@@ -81,7 +77,6 @@ main (int argc, char *argv[])
   print_data (out);
   fputs ("End Result.\n", stdout);
 
-  gpgme_user_ids_release (rset);
   gpgme_data_release (out);
   gpgme_release (ctx);
 

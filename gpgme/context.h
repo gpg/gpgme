@@ -75,7 +75,7 @@ struct gpgme_context
   unsigned int use_textmode : 1;
 
   /* Flags for keylist mode.  */
-  unsigned int keylist_mode;
+  gpgme_keylist_mode_t keylist_mode;
 
   /* Number of certs to be included.  */
   unsigned int include_certs;

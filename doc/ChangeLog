@@ -1,3 +1,12 @@
+2003-05-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Exporting Keys): Change and document prototypes.
+	Add new gpgme_op_export_ext and gpgme_op_export_ext_start
+	variants.
+	(Selecting Recipients): Section removed.
+	(Encrypting a Plaintext): Change prototypes and document the
+	changes.
+
 2003-05-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Exporting Keys): Change argument type from
