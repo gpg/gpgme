@@ -71,6 +71,25 @@ main (int argc, char **argv )
     GpgmeError err;
     GpgmeData in, out;
     GpgmeRecipients rset;
+    int loop = 0;
+
+    /* simple option parser; ignoring unknown options */
+    if (argc)
+      {
+        argc--;
+        argv++;
+      }
+    while (argc && **argv == '-' )
+      {
+        if (!strcmp (*argv, "--loop"))
+          loop++;
+
+        argc--;
+        argv++;
+        if (!strcmp (argv[-1], "--"))
+          break;
+      }
+    
 
     err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);
     fail_if_err (err);
@@ -90,7 +109,11 @@ main (int argc, char **argv )
 
     err = gpgme_recipients_new (&rset);
     fail_if_err (err);
-    err = gpgme_recipients_add_name_with_validity (rset,
+    if (argc)
+      err = gpgme_recipients_add_name_with_validity (rset, *argv,
+                                                   GPGME_VALIDITY_FULL);
+    else
+      err = gpgme_recipients_add_name_with_validity (rset,
      "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE",
                                                    GPGME_VALIDITY_FULL);
     fail_if_err (err);
@@ -108,7 +131,7 @@ main (int argc, char **argv )
     gpgme_data_release (in);
     gpgme_data_release (out);
     gpgme_release (ctx);
-  } while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
+  } while (loop);
    
     return 0;
 }
