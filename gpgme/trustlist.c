@@ -120,8 +120,10 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
 	  break;
 	case 9: /* user ID */
 	  item->name = strdup (p);
-	  if (!item->name)
+	  if (!item->name) {
+	    gpgme_trust_item_release (item);
 	    return GPGME_Out_Of_Core;
+	  }
 	  break;
         }
     }
@@ -270,7 +272,8 @@ gpgme_trust_item_release (GpgmeTrustItem item)
 {
   if (!item)
     return;
-  free (item->name);
+  if (item->name)
+    free (item->name);
   free (item);
 }
 
