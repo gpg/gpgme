@@ -1,3 +1,9 @@
+2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/Makefile.am (./gpgsm.conf): Add a faked system time to
+	avoid certification's expiry.
+	* gpgsm/t-encrypt.c (main): Use the short certification name.
+
 2002-11-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-genkey.c (main): Add missing argument to gpgme_op_genkey
