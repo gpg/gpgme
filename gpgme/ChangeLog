@@ -1,3 +1,9 @@
+2004-10-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* verify.c (parse_trust): If no reason is provided, set
+	SIG->validity_reason to 0.
+	(calc_sig_summary): Set GPGME_SIGSUM_CRL_TOO_OLD if appropriate.
+
 2004-10-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (map_assuan_error): Return 0 if ERR is 0.
