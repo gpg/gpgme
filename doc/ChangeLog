@@ -1,5 +1,7 @@
 2003-07-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (EXTRA_DIST): Remove variable.
+
 	* gpgme.texi (Encrypting a Plaintext): Bad passphrase is only
 	possible with symmetric encryption, change the wording to reflect
 	that.
