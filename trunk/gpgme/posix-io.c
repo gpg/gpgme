@@ -41,9 +41,11 @@ _gpgme_io_read ( int fd, void *buffer, size_t count )
 {
     int nread;
 
+    DEBUG2 ("fd %d: about to read %d bytes\n", fd, (int)count );
     do {
         nread = read (fd, buffer, count);
     } while (nread == -1 && errno == EINTR );
+    DEBUG2 ("fd %d: got %d bytes\n", fd, nread );
     return nread;
 }
 
@@ -53,9 +55,11 @@ _gpgme_io_write ( int fd, const void *buffer, size_t count )
 {
     int nwritten;
 
+    DEBUG2 ("fd %d: about to write %d bytes\n", fd, (int)count );
     do {
         nwritten = write (fd, buffer, count);
     } while (nwritten == -1 && errno == EINTR );
+    DEBUG2 ("fd %d:          wrote %d bytes\n", fd, (int)nwritten );
     return nwritten;
 }
 
@@ -215,7 +219,7 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
     static fd_set readfds;
     static fd_set writefds;
     int any, i, max_fd, n, count;
-    struct timeval timeout = { 0, 50 }; /* Use a 50ms timeout */
+    struct timeval timeout = { 0, 200 }; /* Use a 200ms timeout */
     void *dbg_help;
     
     FD_ZERO ( &readfds );

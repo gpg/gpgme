@@ -979,7 +979,7 @@ read_status ( GpgObject gpg )
             if ( *p == '\n' ) {
                 /* (we require that the last line is terminated by a LF) */
                 *p = 0;
-                /*fprintf (stderr, "read_status: `%s'\n", buffer);*/
+                /* fprintf (stderr, "read_status: `%s'\n", buffer); */
                 if (!strncmp (buffer, "[GNUPG:] ", 9 )
                     && buffer[9] >= 'A' && buffer[9] <= 'Z' ) {
                     struct status_table_s t, *r;
