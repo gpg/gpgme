@@ -1,0 +1,105 @@
+2002-05-30  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* cryptplug.h, gpgmeplug.c: Added certificate info listing functions. 
+	Not yet complete. 
+	Converted more C99 style comments to "classic" style.
+
+2002-03-23  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c: Converted it to real C; i.e. use standard comments -
+	we are doing ISO C 90.  Transalted a few German remarks and
+	commented on some things.
+
+2002-03-08  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* A little better address-parsing. Not real rfc822 yet, but at
+	least it fetches the address between '<' and '>' now if they are
+	present.
+
+2002-03-07  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* gpgmeplug.c (encryptMessage): Made the function accept multiple 
+	reciepients via addressee -- it is now parsed af a comma-separated 
+	list.
+
+2002-03-06  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c (signMessage): Fixed offbyone.  Don't include the
+	EOS character into the signature.
+	(checkMessageSignature): Ditto.
+
+2002-02-28  Kalle Dalheimer  <kalle@klaralvdalens-datakonsult.se>
+
+	* gpgmeplug.c (signMessage): Implemented warning when signature
+	certificates are about to expire 
+	(isEmailInCertificate): Added support for checking whether the
+	signer's email address is contained in his certificate.
+
+	* cryptplug.h: Implemented warning when signature
+	certificates are about to expire
+
+2002-02-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c (signMessage): Fix code syntax.
+
+2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (EXTRA_gpgme_openpgp_la_SOURCES): New variable.
+	(EXTRA_gpgme_smime_la_SOURCES): Likewise.
+
+	* gpgmeplug.c (passphrase_cb): Fix type of third argument.
+
+2002-01-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme-openpgp.c: New file.
+	* Makefile.am (gpgme_openpgp_la_SOURCES): Replace gpgmeplug.c with
+	gpgme-openpgp.c.
+
+2002-01-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c: Renamed to ...
+	* gpgme-openpgp.c: ... this.  New file.
+	* gpgsmplug.c: Renamed to ...
+	* gpgme-smime.c: ... this.  new file.
+	* Makefile.am: Rewritten to use libtool's module functionality.
+
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (lib_LTLIBRARIES): Rename to ...
+	(noinst_LTLIBRARIES): ... this target.
+
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgmeplug_la_SOURCES): Remove gpgme.h.
+	(libgpgsmplug_la_SOURCES): Likewise.
+
+2001-11-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c (checkMessageSignature): Add call to gpgme_set_protocol.
+
+2001-11-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgsmplug_la_SOURCES): Fix source file.
+
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgsmplug_la_LIBADD): New variable.
+	(libgpgsmplug_la_LDFLAGS): Likewise.
+	(libgpgsmplug_la_SOURCES): Likewise.
+	(lib_LTLIBRARIES): Add libgpgsmplug.la.
+	(INCLUDES): Include the local gpgme.h.
+
+	* gpgmeplug.c (signMessage): Set protocol.
+	(GPGMEPLUG_PROTOCOL) [!GPGMEPLUG_PROTOCOL]: Set
+	GPGMEPLUG_PROTOCOL.
+	* gpgsmplug.c: New file.
+
+2001-11-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c: Include config.h only if [HAVE_CONFIG_H].  Do not
+	include util.h.
+	(deinitialize): Use free, not _gpgme_free.
+	(setDirectoryServers): Use calloc, not xtrycalloc.  Use free, not
+	_gpgme_free.  Use malloc instead xtrymalloc.
+	(appendDirectoryServer): Use realloc, not xtryrealloc.
+
