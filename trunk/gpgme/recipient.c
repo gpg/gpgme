@@ -97,7 +97,7 @@ gpgme_recipients_add_name (GpgmeRecipients rset, const char *name )
  * validity.  Use one of the constants 
  * %GPGME_VALIDITY_UNKNOWN, %GPGME_VALIDITY_UNDEFINED,
  * %GPGME_VALIDITY_NEVER, %GPGME_VALIDITY_MARGINAL,
- * %GPGME_VALIDITY_FULL, %GPGME_VALIDITY_ULTIMATE5
+ * %GPGME_VALIDITY_FULL, %GPGME_VALIDITY_ULTIMATE
  * for the validity.  %GPGME_VALIDITY_UNKNOWN is implicitly used by
  * gpgme_recipients_add_name().
  *
