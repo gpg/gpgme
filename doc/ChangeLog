@@ -1,5 +1,10 @@
 2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Waiting For Completion): Adjust doc to changes in
+	the code.
+
+2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.texi (Key Listing Mode): Update documentation.
 
 2002-01-31  Marcus Brinkmann  <marcus@g10code.de>

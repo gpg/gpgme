@@ -9,6 +9,10 @@
    current setting, a fucntion gpgme_get_keylist_mode was added to
    retrieve the current mode.
 
+ * gpgme_wait accepts a new argument STATUS to return the error status
+   of the operation on the context.  Its definition is closer to
+   waitpid() now than before.
+
  * The LENGTH argument to gpgme_data_new_from_filepart changed its
    type from off_t to the unsigned size_t.
 
@@ -27,6 +31,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_data_new_from_filepart	CHANGED: Type of LENGTH is size_t.
 GpgmePassphraseCb               CHANGED: Type of R_HD is void **.
+gpgme_wait                      CHANGED: New argument STATUS.
 gpgme_set_keylist_mode          CHANGED: Type of return value is GpgmeError.
                                 The function has a new meaning!
 gpgme_get_keylist_mode          NEW

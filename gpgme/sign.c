@@ -255,9 +255,6 @@ gpgme_op_sign (GpgmeCtx ctx, GpgmeData in, GpgmeData out, GpgmeSigMode mode)
 {
   GpgmeError err = gpgme_op_sign_start (ctx, in, out, mode);
   if (!err)
-    {
-      gpgme_wait (ctx, 1);
-      err = ctx->error;
-    }
+    gpgme_wait (ctx, &err, 1);
   return err;
 }

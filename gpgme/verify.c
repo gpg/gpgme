@@ -353,8 +353,7 @@ gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData text,
   err = gpgme_op_verify_start (ctx, sig, text);
   if (!err)
     {
-      gpgme_wait (ctx, 1);
-      err = ctx->error;
+      gpgme_wait (ctx, &err, 1);
       if (!err)
 	*r_stat = _gpgme_intersect_stati (ctx->result.verify);
     }

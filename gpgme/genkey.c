@@ -224,9 +224,6 @@ gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
 {
   GpgmeError err = gpgme_op_genkey_start (ctx, parms, pubkey, seckey);
   if (!err)
-    {
-      gpgme_wait (ctx, 1);
-      err = ctx->error;
-    }
+    gpgme_wait (ctx, &err, 1);
   return err;
 }

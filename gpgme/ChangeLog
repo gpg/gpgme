@@ -1,5 +1,23 @@
 2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* wait.c (gpgme_wait): Add new argument STATUS, in which the
+	status of the returned context is returned.
+	(_gpgme_wait_on_condition): Rework the function a bit, to make it
+	aware of cancelled processes, and to allow to use gpgme_wait with
+	CTX being NULL (as documented in the source).
+	(struct proc_s): New member REPORTED.
+	* gpgme.h: Fix prototype.
+	* verify.c (gpgme_op_verify): Fix use of gpgme_wait.
+	* sign.c (gpgme_op_sign): 
+	* import.c (gpgme_op_import): 
+	* genkey.c (gpgme_op_genkey): 
+	* export.c (gpgme_op_export): 
+	* encrypt.c (gpgme_op_encrypt): 
+	* delete.c (gpgme_op_delete): 
+	* decrypt-verify.c (gpgme_op_decrypt_verify): 
+
+2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.c (gpgme_set_keylist_mode): Possibly return an error
 	value.
 	(gpgme_get_keylist_mode): New function.

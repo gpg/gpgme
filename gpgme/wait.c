@@ -49,12 +49,17 @@ DEFINE_STATIC_LOCK (fd_table_lock);
 static GpgmeIdleFunc idle_function;
 
 
-struct proc_s {
-    struct proc_s *next;
-    int pid;
-    GpgmeCtx ctx;
-    struct wait_item_s *handler_list;
-    int done;
+struct proc_s
+{
+  struct proc_s *next;
+  int pid;
+  GpgmeCtx ctx;
+  struct wait_item_s *handler_list;
+  /* Non-zero if the process has been completed.  */
+  int done;
+  /* Non-zero if the status for this process has been returned
+     already.  */
+  int reported;
 };
 
 struct wait_item_s {
@@ -154,9 +159,12 @@ _gpgme_remove_proc_from_wait_queue (int pid)
  *  and no (or the given) request has finished.
  **/
 GpgmeCtx 
-gpgme_wait (GpgmeCtx ctx, int hang)
+gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 {
-  return _gpgme_wait_on_condition (ctx, hang, NULL);
+  GpgmeCtx retctx = _gpgme_wait_on_condition (ctx, hang, NULL);
+  if (status)
+    *status = retctx->error;
+  return retctx;
 }
 
 GpgmeCtx 
@@ -177,15 +185,29 @@ _gpgme_wait_on_condition (GpgmeCtx ctx, int hang, volatile int *cond)
 	  LOCK (proc_queue_lock);
 	  for (proc = proc_queue; proc; proc = proc->next)
 	    {
+	      /* A process is done if it has completed voluntarily, or
+		 if the context it lived in was canceled.  */
 	      if (!proc->done && !count_running_fds (proc))
 		set_process_done (proc);
-	      if (ctx && proc->done && proc->ctx == ctx)
+	      else if (!proc->done && proc->ctx->cancel)
 		{
+		  set_process_done (proc);
+		  proc->ctx->cancel = 0;
+		  proc->ctx->error = mk_error (Canceled);
+		}
+	      /* A process that is done is eligible for election if it
+		 is in the requested context or if it was not yet
+		 reported.  */
+	      if (proc->done && (proc->ctx == ctx || (!ctx && !proc->reported)))
+		{
+		  if (!ctx)
+		    ctx = proc->ctx;
 		  hang = 0;
 		  ctx->pending = 0;
+		  proc->reported = 1;
 		}
-                if (!proc->done)
-		  any = 1;
+	      if (!proc->done)
+		any = 1;
             }
 	  UNLOCK (proc_queue_lock);
 	  if (!any)
@@ -196,12 +218,13 @@ _gpgme_wait_on_condition (GpgmeCtx ctx, int hang, volatile int *cond)
       if (hang)
 	run_idle ();
     }
-  while (hang && !ctx->cancel);
-  if (ctx->cancel)
+  while (hang && (!ctx || !ctx->cancel));
+  if (ctx && ctx->cancel)
     {
+      /* FIXME: Paranoia?  */
       ctx->cancel = 0;
-      ctx->error = mk_error (Canceled);
       ctx->pending = 0;
+      ctx->error = mk_error (Canceled);
     }
   return ctx;
 }
