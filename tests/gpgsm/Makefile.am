@@ -47,7 +47,7 @@ all-local: ./pubring.kbx ./gpg-agent.conf ./gpgsm.conf ./private-keys-v1.d/$(key
 	echo disable-crl-checks > ./gpgsm.conf
 
 ./private-keys-v1.d/$(key_id).key: $(srcdir)/$(key_id)
-	mkdir ./private-keys-v1.d
+	test -d ./private-keys-v1.d || mkdir ./private-keys-v1.d
 	cp $(srcdir)/$(key_id) private-keys-v1.d/$(key_id).key
 
 ./trustlist.txt:

@@ -1,3 +1,8 @@
+2002-02-13  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm/Makefile.am (private-keys-v1.d): Don't
+	fail when the directory already exists.
+
 2002-02-12  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/Makefile.am (CLEANFILES): New target.
