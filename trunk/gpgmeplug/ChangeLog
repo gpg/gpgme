@@ -1,3 +1,10 @@
+2002-07-01  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c (findCertificates): Reintroduced a free which must
+	have been removed after my last fix.  This avoids a memory leak
+	when a fingerprint was not found.  Removed the double loop
+	increment in the code to release the arrays.
+
 2002-06-28  Werner Koch  <wk@gnupg.org>
 
 	* gpgmeplug.c (xmalloc): New.
