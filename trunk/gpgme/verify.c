@@ -108,25 +108,28 @@ calc_sig_summary (GpgmeSignature sig)
     sum |= GPGME_SIGSUM_RED;
   
   /* FIXME: handle the case when key and message are expired. */
-  if (sig->status == GPGME_Sig_Expired)
-    sum |= GPGME_SIGSUM_SIG_EXPIRED;
-  else if (sig->status == GPGME_Key_Expired)
-    sum |= GPGME_SIGSUM_KEY_EXPIRED;
-  else if (sig->status == GPGME_No_Public_Key)
-    sum |= GPGME_SIGSUM_KEY_MISSING;
-  else if (sig->status)
-    sum |= GPGME_SIGSUM_SYS_ERROR;
-  
-  if (sig->validity_reason == GPGME_Key_Revoked)
-    sum |= GPGME_SIGSUM_KEY_REVOKED;
-  else if (sig->validity_reason == GPGME_No_CRL_Known)
-    sum |= GPGME_SIGSUM_CRL_MISSING;
-  else if (sig->validity_reason == GPGME_CRL_Too_Old)
-    sum |= GPGME_SIGSUM_CRL_TOO_OLD;
-  else if (sig->validity_reason == GPGME_Policy_Mismatch)
-    sum |= GPGME_SIGSUM_BAD_POLICY;
-  else if (sig->validity_reason)
-    sum |= GPGME_SIGSUM_SYS_ERROR;
+  switch (sig->status)
+    {
+    case GPGME_Sig_Expired:
+      sum |= GPGME_SIGSUM_SIG_EXPIRED;
+      break;
+
+    case GPGME_Key_Expired:
+      sum |= GPGME_SIGSUM_KEY_EXPIRED;
+      break;
+
+    case GPGME_No_Public_Key:
+      sum |= GPGME_SIGSUM_KEY_MISSING;
+      break;
+
+    case GPGME_Bad_Signature:
+    case GPGME_No_Error:
+      break;
+
+    default:
+      sum |= GPGME_SIGSUM_SYS_ERROR;
+      break;
+    }
   
   if (sig->wrong_key_usage)
     sum |= GPGME_SIGSUM_BAD_POLICY;

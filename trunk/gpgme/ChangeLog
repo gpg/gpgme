@@ -1,3 +1,8 @@
+2003-04-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* verify.c (calc_sig_summary): Do not set GPGME_SIGSUM_SYS_ERROR
+	for bad signatures.
+
 2003-04-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* context.h: Remove OPDATA_VERIFY_COLLECTING.
