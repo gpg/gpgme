@@ -1,3 +1,7 @@
+2002-06-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgme_la_SOURCES): Remove mutex.h.
+
 2002-06-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* key.c: Include <ctype.h>.

@@ -79,7 +79,6 @@ libgpgme_la_SOURCES = \
 	engine.c engine.h \
 	sema.h io.h \
 	${system_components} \
-	mutex.h \
 	debug.c debug.h \
 	gpgme.c version.c errors.c
 
