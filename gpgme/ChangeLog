@@ -4,7 +4,7 @@
 	callers to use this function without a check for tmp_key.
 	
 	* keylist.c (gpgme_op_keylist_next): Reset the key_cond after
-	emptying the queue.  Bug reported by Rick van Rein.
+	emptying the queue.  Bug reported by Stéphane Corthésy.
 
 2001-09-12  Werner Koch  <wk@gnupg.org>
 
