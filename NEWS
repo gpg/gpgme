@@ -1,3 +1,10 @@
+Noteworthy changes in version 1.0.2 (unreleased)
+------------------------------------------------
+
+ * Changed the license of the library to the GNU Lesser General Public
+   License (LGPL), version 2.1 or later.
+
+
 Noteworthy changes in version 1.0.1 (2004-10-22)
 ------------------------------------------------
 
@@ -682,6 +689,11 @@ gpgme_key_sig_get_ulong_attr	NEW
 gpgme_get_key			NEW
 GPGME_ATTR_SIG_CLASS		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.3.16 (2003-11-19)
+-------------------------------------------------
+
+ * Compatibility fixes for GnuPG 1.9.x
 
 Noteworthy changes in version 0.3.15 (2003-02-18)
 -------------------------------------------------
