@@ -44,8 +44,6 @@
 void
 _gpgme_wait_private_event_cb (void *data, GpgmeEventIO type, void *type_data)
 {
-  GpgmeCtx ctx = data;
-
   switch (type)
     {
     case GPGME_EVENT_START:
