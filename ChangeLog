@@ -1,3 +1,14 @@
+2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acconfig.h: File removed.
+	* configure.ac (NEED_GPG_VERSION): Add description.
+	(NEED_GPGSM_VERSION): Likewise.
+	(HAVE_DOSISH_SYSTEM): Likewise.
+	(HAVE_DRIVE_LETTERS): Likewise.
+	(GPG_PATH): Likewise.
+	(GPGSM_PATH): Likewise.
+	* acinclude.m4 (GNUPG_CHECK_TYPEDEF): Likewise.
+
 2002-04-01  Werner Koch  <wk@gnupg.org>
 
 	Released 0.3.5.
