@@ -35,7 +35,7 @@ INCLUDES = -I$(top_srcdir)/gpgme
 
 LDADD = ../../gpgme/libgpgme.la
 
-# We don't run t-genkey in the test suite, because it taes too long
+# We don't run t-genkey in the test suite, because it takes too long
 noinst_PROGRAMS = $(TESTS) t-genkey
 
 clean-local:
