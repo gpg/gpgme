@@ -48,6 +48,7 @@ void  _gpgme_free ( void *a );
 typedef struct IGpgmeImpl IGpgmeImpl;
 typedef struct IClassFactoryImpl IClassFactoryImpl;
 
+static HANDLE my_exit_event;
 
 struct IGpgmeImpl {
     /* IUnknown required stuff */
@@ -153,6 +154,11 @@ m_IGpgme_Release (IGpgme *iface)
     if (This->std_disp.tinfo)
         ITypeInfo_Release (This->std_disp.tinfo);
     HeapFree(GetProcessHeap(),0,iface);
+    {
+        ULONG count = CoReleaseServerProcess ();
+        if (!count && my_exit_event)
+            SetEvent (my_exit_event);
+    }
     return 0;
 }
 
@@ -214,7 +220,6 @@ m_IGpgme_SetArmor (IGpgme *iface, BOOL yes)
 {
     ICOM_THIS (IGpgmeImpl,iface);
 
-    fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p)\n", This );
     gpgme_set_armor (This->mainctx, yes);
     return 0;
 }
@@ -234,7 +239,6 @@ m_IGpgme_SetTextmode (IGpgme *iface, BOOL yes)
 {
     ICOM_THIS (IGpgmeImpl,iface);
 
-    fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p)\n", This );
     gpgme_set_textmode (This->mainctx, yes);
     return 0;
 }
@@ -242,7 +246,10 @@ m_IGpgme_SetTextmode (IGpgme *iface, BOOL yes)
 static HRESULT WINAPI
 m_IGpgme_GetTextmode (IGpgme *iface, BOOL *retval)
 {
-    return E_NOTIMPL;
+    ICOM_THIS (IGpgmeImpl,iface);
+
+    *retval = gpgme_get_textmode (This->mainctx);
+    return 0;
 }
 
 
@@ -273,10 +280,12 @@ set_data_from_variant (GpgmeData *data, VARIANT val, int *given_as_bstr)
             return E_FAIL;
         }
 
+        #if 0
         fprintf (stderr,"Got a BSTR (utf8):");
         for (i=0; i < len; i++)
             fprintf (stderr, " %0X", buf[i] );
         putc ('\n', stderr);
+        #endif
         gpgme_data_release (*data); *data = NULL; 
         err = gpgme_data_new_from_mem (data, buf, len, 0 /*no need to copy*/ );
         if (!err && given_as_bstr)
@@ -285,16 +294,16 @@ set_data_from_variant (GpgmeData *data, VARIANT val, int *given_as_bstr)
     else if ( val.vt == (VT_ARRAY|VT_UI1)) {
         array = val.u.parray;
 
-        fprintf (stderr,"Got an ARRAY of bytes:");
+        /*fprintf (stderr,"Got an ARRAY of bytes:");*/
         hr = SafeArrayAccessData (array, (void**)&buf);
         if (hr) {
             fprintf (stderr,"*** SafeArrayAccessData failed: hr=%lx\n", hr);
             return hr;
         }
         len = array->rgsabound[0].cElements;
-        for (i=0; i < len; i++)
-            fprintf (stderr, " %0X", buf[i] );
-        putc ('\n', stderr);
+        /*for (i=0; i < len; i++)
+          fprintf (stderr, " %0X", buf[i] );
+          putc ('\n', stderr);*/
         
         gpgme_data_release (*data); *data = NULL; 
         err = gpgme_data_new_from_mem (data, buf, len, 1 );
@@ -306,7 +315,7 @@ set_data_from_variant (GpgmeData *data, VARIANT val, int *given_as_bstr)
         VARIANT *vp;
         array = val.u.parray;
 
-        fprintf (stderr,"Got an ARRAY of VARIANTS:");
+        /*fprintf (stderr,"Got an ARRAY of VARIANTS:");*/
         hr = SafeArrayAccessData (array, (void**)&vp);
         if (hr) {
             fprintf (stderr,"*** SafeArrayAccessData failed: hr=%lx\n", hr);
@@ -339,9 +348,9 @@ set_data_from_variant (GpgmeData *data, VARIANT val, int *given_as_bstr)
             }
         }
 
-        for (i=0; i < len; i++)
-            fprintf (stderr, " %0X", buf[i] );
-        putc ('\n', stderr);
+        /*for (i=0; i < len; i++)
+          fprintf (stderr, " %0X", buf[i] );
+          putc ('\n', stderr);*/
         
         gpgme_data_release (*data); *data = NULL;
         err = gpgme_data_new_from_mem (data, buf, len, 0);
@@ -380,14 +389,13 @@ set_data_to_variant (GpgmeData data, VARIANT *retval, int use_bstr)
         return map_gpgme_error (err);
     }
     len = nread;  /*(eof returns a length of 0)*/
-    fprintf (stderr,"*** %d bytes are availabe\n", (int)len);
+    /*fprintf (stderr,"*** %d bytes are availabe\n", (int)len);*/
 
     /* convert it to the target data type */
     if (use_bstr) {
         BSTR bs;
         unsigned char *helpbuf;
 
-        fprintf (stderr,"   using BSTR\n");
         /* It is easier to allocate some helper storage */
         helpbuf = _gpgme_malloc (len);
         if (!helpbuf) 
@@ -502,7 +510,6 @@ m_IGpgme_SetPlaintext (IGpgme *iface, VARIANT val)
 {
     ICOM_THIS (IGpgmeImpl,iface);
 
-    fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p)\n", This );
     return set_data_from_variant (&This->plaintext, val,
                                   &This->plaintext_given_as_bstr); 
 }
@@ -513,7 +520,7 @@ m_IGpgme_GetPlaintext (IGpgme *iface, VARIANT *retval)
 {
     ICOM_THIS (IGpgmeImpl,iface);
 
-    fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p)\n", This );
+    /*fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p)\n", This );*/
     return set_data_to_variant (This->plaintext, retval,
                                 This->plaintext_given_as_bstr);
 }
@@ -523,7 +530,6 @@ m_IGpgme_SetCiphertext (IGpgme *iface, VARIANT val)
 {
     ICOM_THIS (IGpgmeImpl,iface);
 
-    fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p)\n", This );
     return set_data_from_variant (&This->ciphertext, val, NULL); 
 }
 
@@ -532,7 +538,6 @@ m_IGpgme_GetCiphertext (IGpgme *iface, VARIANT *retval)
 {
     ICOM_THIS (IGpgmeImpl,iface);
 
-    fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p)\n", This );
     return set_data_to_variant (This->ciphertext, retval,
                                 This->ciphertext_is_armored);
 }
@@ -542,7 +547,6 @@ m_IGpgme_ClearRecipients (IGpgme *iface)
 {
     ICOM_THIS (IGpgmeImpl,iface);
 
-    fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p)\n", This );
     gpgme_recipients_release (This->rset); This->rset = NULL;
     return 0;
 }
@@ -556,7 +560,8 @@ m_IGpgme_AddRecipient (IGpgme *iface, BSTR name, signed short int trust)
     char *p;
     ICOM_THIS (IGpgmeImpl,iface);
     
-    fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p, %d)\n", This, (int)trust);
+    /*fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p, %d)\n",
+      This, (int)trust);*/
     if (!This->rset) {
         err = gpgme_recipients_new (&This->rset);
         if (err)
@@ -574,7 +579,6 @@ m_IGpgme_AddRecipient (IGpgme *iface, BSTR name, signed short int trust)
         HeapFree (GetProcessHeap(), 0, p);
         return E_FAIL;
     }
-    fprintf (stderr,"*** adding name `%s'\n", p);
     err = gpgme_recipients_add_name (This->rset, p);
     HeapFree (GetProcessHeap(), 0, p);
     return map_gpgme_error (err);
@@ -583,20 +587,12 @@ m_IGpgme_AddRecipient (IGpgme *iface, BSTR name, signed short int trust)
 static HRESULT WINAPI
 m_IGpgme_ResetSignKeys (IGpgme *iface)
 {
-    ICOM_THIS (IGpgmeImpl,iface);
-
-    fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p)\n", This );
-
     return E_NOTIMPL;
 }
 
 static HRESULT WINAPI
 m_IGpgme_AddSignKey (IGpgme *iface, BSTR name)
 {
-    ICOM_THIS (IGpgmeImpl,iface);
-
-    fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p)\n", This );
-
     return E_NOTIMPL;
 }
 
@@ -606,7 +602,6 @@ m_IGpgme_Encrypt (IGpgme *iface)
     GpgmeError err;
     ICOM_THIS (IGpgmeImpl,iface);
 
-    fprintf (stderr,"*** " __PRETTY_FUNCTION__ "(%p)\n", This );
     gpgme_data_release (This->ciphertext);
     err = gpgme_data_new (&This->ciphertext);
     if (err)
@@ -659,49 +654,6 @@ m_IGpgme_SignEncrypt (IGpgme *iface, short int signmode)
 
 #if 0
 static HRESULT WINAPI
-m_IGpgme_SetKeylistMode( GpgmeCtx c, BOOL mode )
-{
-    return 0;
-}
-
-
-static HRESULT WINAPI
-m_IGpgme_SetPassphraseCB (GpgmeCtx c,
-                          GpgmePassphraseCb cb, void *cb_value)
-{
-    return 0;
-}
-
-
-static HRESULT WINAPI
-m_IGpgme_SetProgressCB (GpgmeCtx c, GpgmeProgressCb cb, void *cb_value)
-{
-    return E_NOTIMPL;
-}
-
-
-static HRESULT WINAPI
-m_IGpgme_SignersClear (GpgmeCtx c)
-{
-    return 0;
-}
-
-
-static HRESULT WINAPI
-m_IGpgme_SignersAdd (GpgmeCtx c, const GpgmeKey key)
-{
-    return 0;
-}
-
-
-static HRESULT WINAPI
-m_IGpgme_SignersEnum (const GpgmeCtx c, int seq)
-{
-    return 0;
-}
-
-
-static HRESULT WINAPI
 m_IGpgme_GetSigStatus(GpgmeCtx c, int idx,
                                   GpgmeSigStat *r_stat, time_t *r_created );
 {
@@ -753,17 +705,7 @@ static ICOM_VTABLE(IGpgme) igpgme_vtbl =
     m_IGpgme_AddSignKey,
     m_IGpgme_Encrypt, 
     m_IGpgme_Sign, 
-    m_IGpgme_SignEncrypt, 
-/*    m_IGpgme_SetKeylistMode,      
- *    m_IGpgme_SetPassphraseCB,    
- *    m_IGpgme_SetProgressCB,      
- *    m_IGpgme_SignersClear,       
- *    m_IGpgme_SignersAdd,         
- *    m_IGpgme_SignersEnum,        
- *    m_IGpgme_GetSigStatus,        
- *    m_IGpgme_GetSigKey,      
- *    m_IGpgme_GetNotation
- */
+    m_IGpgme_SignEncrypt
 };
 
 
@@ -861,6 +803,7 @@ m_GpgmeFactory_CreateInstance (IClassFactory *iface, IUnknown *outer,
             }
         }
 
+        CoAddRefServerProcess ();
         *r_obj = obj;
         fprintf (stderr," -> created %p\n", obj );
 	return 0;
@@ -873,7 +816,14 @@ m_GpgmeFactory_CreateInstance (IClassFactory *iface, IUnknown *outer,
 static HRESULT WINAPI
 m_GpgmeFactory_LockServer (IClassFactory *iface, BOOL dolock )
 {
-    /*ICOM_THIS(IClassFactoryImpl,iface);*/
+    if (dolock) {
+        CoAddRefServerProcess ();
+    }
+    else {
+        ULONG count = CoReleaseServerProcess ();
+        if (!count && my_exit_event)
+            SetEvent (my_exit_event);
+    }
     return 0;
 }
 
@@ -886,6 +836,12 @@ static ICOM_VTABLE(IClassFactory) igpgme_factory_vtbl = {
     m_GpgmeFactory_LockServer
 };
 static IClassFactoryImpl igpgme_CF = {&igpgme_factory_vtbl, 1 };
+
+void
+igpgme_register_exit_event (HANDLE ev)
+{
+    my_exit_event = ev;
+}
 
 
 IClassFactory *
