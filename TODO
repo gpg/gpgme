@@ -1,6 +1,12 @@
 Hey Emacs, this is -*- outline -*- mode!
 
+* Before release:
+** Return ENC_TO output in verify result.
+** stat call for data objects (see ABI's to break).
+
 * ABI's to break:
+** I/O and User Data could be made extensible.
+** In gpgme_signature_t, split key ID and subkey.
 ** Compatibility interfaces that can be removed in future versions:
 *** gpgme_data_new_from_filepart
 *** gpgme_data_new_from_file
@@ -69,6 +75,8 @@ Hey Emacs, this is -*- outline -*- mode!
    release all resources on error (for example to free assuan_cmd).
 
 * Operations
+** If an operation failed, make sure that the result functions don't return
+   corrupt partial information. !!!
 ** If no passphrase cb is installed, status handler is not run even if
    password is required by crypto engine. !!
 ** Export status handler need much more work. !!!
