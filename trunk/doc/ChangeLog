@@ -1,5 +1,10 @@
 2003-04-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Creating a Signature): Add info about
+	GpgmeNewSignature, GpgmeSignResult and gpgme_op_sign_result.
+	(Crypto Operations): Add GpgmeInvalidUserID.
+	(Algorithms): New chapter.
+
 	* gpgme.texi (Deleting Keys): Document
 	GPGME_Ambiguous_Specification.
 	(Error Values): Remove GPGME_Invalid_Type and GPGME_Invalid_Mode.

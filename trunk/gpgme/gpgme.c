@@ -521,3 +521,82 @@ gpgme_get_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs)
   if (ctx && io_cbs)
     *io_cbs = ctx->io_cbs;
 }
+
+
+const char *
+gpgme_pubkey_algo_name (GpgmePubKeyAlgo algo)
+{
+  switch (algo)
+    {
+    case GPGME_PK_RSA:
+      return "RSA";
+
+    case GPGME_PK_RSA_E:
+      return "RSA-E";
+
+    case GPGME_PK_RSA_S:
+      return "RSA-S";
+
+    case GPGME_PK_ELG_E:
+      return "ELG-E";
+
+    case GPGME_PK_DSA:
+      return "DSA";
+
+    case GPGME_PK_ELG:
+      return "ELG";
+
+    default:
+      return NULL;
+    }
+}
+
+
+const char *
+gpgme_hash_algo_name (GpgmeHashAlgo algo)
+{
+  switch (algo)
+    {
+    case GPGME_MD_MD5:
+      return "MD5";
+
+    case GPGME_MD_SHA1:
+      return "SHA1";
+
+    case GPGME_MD_RMD160:
+      return "RMD160";
+
+    case GPGME_MD_MD2:
+      return "MD2";
+
+    case GPGME_MD_TIGER:
+      return "TIGER";
+
+    case GPGME_MD_HAVAL:
+      return "HAVAL";
+
+    case GPGME_MD_SHA256:
+      return "SHA256";
+
+    case GPGME_MD_SHA384:
+      return "SHA384";
+
+    case GPGME_MD_SHA512:
+      return "SHA512";
+
+    case GPGME_MD_MD4:
+      return "MD4";
+
+    case GPGME_MD_CRC32:
+      return "CRC32";
+
+    case GPGME_MD_CRC32_RFC1510:
+      return "CRC32-RFC1510";
+
+    case GPGME_MD_CRC24_RFC2440:
+      return "CRC24-RFC2440";
+
+    default:
+      return NULL;
+    }
+}

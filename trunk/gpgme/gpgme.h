@@ -138,6 +138,41 @@ typedef enum
   }
 GpgmeDataEncoding;
 
+
+/* Public key algorithms from libgcrypt.  */
+typedef enum
+  {
+    GPGME_PK_RSA   = 1,
+    GPGME_PK_RSA_E = 2,
+    GPGME_PK_RSA_S = 3,
+    GPGME_PK_ELG_E = 16,
+    GPGME_PK_DSA   = 17,
+    GPGME_PK_ELG   = 20
+  }
+GpgmePubKeyAlgo;
+
+
+/* Hash algorithms from libgcrypt.  */
+typedef enum
+  {
+    GPGME_MD_NONE          = 0,  
+    GPGME_MD_MD5           = 1,
+    GPGME_MD_SHA1          = 2,
+    GPGME_MD_RMD160        = 3,
+    GPGME_MD_MD2           = 5,
+    GPGME_MD_TIGER         = 6,   /* TIGER/192. */
+    GPGME_MD_HAVAL         = 7,   /* HAVAL, 5 pass, 160 bit. */
+    GPGME_MD_SHA256        = 8,
+    GPGME_MD_SHA384        = 9,
+    GPGME_MD_SHA512        = 10,
+    GPGME_MD_MD4           = 301,
+    GPGME_MD_CRC32	   = 302,
+    GPGME_MD_CRC32_RFC1510 = 303,
+    GPGME_MD_CRC24_RFC2440 = 304
+  }
+GpgmeHashAlgo;
+
+
 /* The possible signature stati.  */
 typedef enum
   {
@@ -426,6 +461,16 @@ void gpgme_set_progress_cb (GpgmeCtx c, GpgmeProgressCb cb, void *hook_value);
 void gpgme_get_progress_cb (GpgmeCtx ctx, GpgmeProgressCb *cb,
 			    void **hook_value);
 
+
+/* Return a statically allocated string with the name of the public
+   key algorithm ALGO, or NULL if that name is not known.  */
+const char *gpgme_pubkey_algo_name (GpgmePubKeyAlgo algo);
+
+/* Return a statically allocated string with the name of the hash
+   algorithm ALGO, or NULL if that name is not known.  */
+const char *gpgme_hash_algo_name (GpgmeHashAlgo algo);
+
+
 /* Delete all signers from CTX.  */
 void gpgme_signers_clear (GpgmeCtx ctx);
 
@@ -710,10 +755,18 @@ const char *gpgme_trust_item_get_string_attr (GpgmeTrustItem item,
    attribute appears more than once in the key.  */
 int gpgme_trust_item_get_int_attr (GpgmeTrustItem item, GpgmeAttr what,
 				   const void *reserved, int idx);
+
+/* Crypto Operations.  */
 
+struct _gpgme_invalid_user_id
+{
+  struct _gpgme_invalid_user_id *next;
+  char *id;
+  GpgmeError reason;
+};
+typedef struct _gpgme_invalid_user_id *GpgmeInvalidUserID;
 
-/* Crypto operation function.  */
-
+
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  */
 GpgmeError gpgme_op_encrypt_start (GpgmeCtx ctx,
@@ -747,8 +800,32 @@ GpgmeError gpgme_op_decrypt_verify_start (GpgmeCtx ctx,
 GpgmeError gpgme_op_decrypt_verify (GpgmeCtx ctx,
 				    GpgmeData cipher, GpgmeData plain);
 
-/* Sign the plaintext PLAIN and store the signature in SIG.  Only
-   detached signatures are supported for now.  */
+
+/* Signing.  */
+struct _gpgme_new_signature
+{
+  struct _gpgme_new_signature *next;
+  GpgmeSigMode type;
+  GpgmePubKeyAlgo pubkey_algo;
+  GpgmeHashAlgo hash_algo;
+  unsigned long class;
+  long int created;
+  char *fpr;
+};
+typedef struct _gpgme_new_signature *GpgmeNewSignature;
+
+struct _gpgme_op_sign_result
+{
+  /* The list of invalid signers.  */
+  GpgmeInvalidUserID invalid_signers;
+  GpgmeNewSignature signatures;
+};
+typedef struct _gpgme_op_sign_result *GpgmeSignResult;
+
+/* Retrieve a pointer to the result of the signing operation.  */
+GpgmeSignResult gpgme_op_sign_result (GpgmeCtx ctx);
+
+/* Sign the plaintext PLAIN and store the signature in SIG.  */
 GpgmeError gpgme_op_sign_start (GpgmeCtx ctx,
 				GpgmeData plain, GpgmeData sig,
 				GpgmeSigMode mode);
@@ -756,6 +833,7 @@ GpgmeError gpgme_op_sign (GpgmeCtx ctx,
 			  GpgmeData plain, GpgmeData sig,
 			  GpgmeSigMode mode);
 
+
 /* Verify within CTX that SIG is a valid signature for TEXT.  */
 GpgmeError gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig,
 				  GpgmeData signed_text, GpgmeData plaintext);
