@@ -31,15 +31,8 @@
 #include "ops.h"
 #include "wait.h"
 
-/**
- * gpgme_new:
- * @r_ctx: Returns the new context
- *
- * Create a new context to be used with most of the other GPGME
- * functions.  Use gpgme_release_context() to release all resources
- *
- * Return value: An error code
- **/
+/* Create a new context as an environment for GPGME crypto
+   operations.  */
 GpgmeError
 gpgme_new (GpgmeCtx *r_ctx)
 {
@@ -53,6 +46,7 @@ gpgme_new (GpgmeCtx *r_ctx)
     return GPGME_Out_Of_Core;
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
   ctx->include_certs = 1;
+  ctx->protocol = GPGME_PROTOCOL_OpenPGP;
   _gpgme_fd_table_init (&ctx->fdt);
   *r_ctx = ctx;
   return 0;
@@ -74,7 +68,6 @@ gpgme_release (GpgmeCtx ctx)
   _gpgme_fd_table_deinit (&ctx->fdt);
   _gpgme_release_result (ctx);
   gpgme_key_release (ctx->tmp_key);
-  gpgme_data_release (ctx->help_data_1);
   gpgme_data_release (ctx->notation);
   gpgme_signers_clear (ctx);
   if (ctx->signers)
@@ -181,32 +174,18 @@ _gpgme_set_op_info (GpgmeCtx ctx, GpgmeData info)
 GpgmeError
 gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol protocol)
 {
-  if (!ctx)
+  if (protocol != GPGME_PROTOCOL_OpenPGP && protocol != GPGME_PROTOCOL_CMS)
     return GPGME_Invalid_Value;
 
-  switch (protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      ctx->use_cms = 0;
-      break;
-    case GPGME_PROTOCOL_CMS:
-      ctx->use_cms = 1;
-      break;
-    default:
-      return GPGME_Invalid_Value;
-    }
-
+  ctx->protocol = protocol;
   return 0;
 }
+
 
 GpgmeProtocol
 gpgme_get_protocol (GpgmeCtx ctx)
 {
-  if (!ctx)
-    return 0; /* well, this is OpenPGP */
-  if (ctx->use_cms)
-    return GPGME_PROTOCOL_CMS;
-  return GPGME_PROTOCOL_OpenPGP;
+  return ctx->protocol;
 }
 
 
