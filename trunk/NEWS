@@ -1,4 +1,4 @@
-Noteworthy changes in version 0.4.7
+Noteworthy changes in version 0.4.7 (2004-04-29)
 ------------------------------------------------
 
  * Correctly initialize the fields expired, revoked, invalid, and
