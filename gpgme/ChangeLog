@@ -1,5 +1,10 @@
 2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.c (_gpgme_gpg_op_keylist): Remove handling of keylist
+	mode (for now).
+
+2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
+
 	* wait.c (gpgme_wait): Add new argument STATUS, in which the
 	status of the returned context is returned.
 	(_gpgme_wait_on_condition): Rework the function a bit, to make it

@@ -1374,8 +1374,6 @@ _gpgme_gpg_op_keylist (GpgObject gpg, const char *pattern, int secret_only,
     err = _gpgme_gpg_add_arg (gpg, "--fixed-list-mode");
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "--with-fingerprint");
-  if (!err && keylist_mode == 1)
-    err = _gpgme_gpg_add_arg (gpg, "--no-expensive-trust-checks");
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, secret_only ? "--list-secret-keys"
 			      : "--list-keys");
