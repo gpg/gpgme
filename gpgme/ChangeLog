@@ -1,3 +1,8 @@
+2001-06-15  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (set_userid_flags): Fixed the assigned values. Kudos
+	to Timo for pointing this out.
+
 2001-06-01  Werner Koch  <wk@gnupg.org>
 
 	* debug.c (_gpgme_debug_begin): Fixed a /tmp race.  Noted by
