@@ -143,6 +143,11 @@ bool initialize()
 
 void deinitialize()
 {
+  unsigned int i;
+  for( i = 0; i < config.numDirectoryServers; ++i ) {
+    _gpgme_free( (char *)config.directoryServers[i].servername );
+    _gpgme_free( (char *)config.directoryServers[i].description );
+  }
   _gpgme_free( config.directoryServers );
 }
 
@@ -574,28 +579,56 @@ int encryptionCRLNearExpiryInterval()
 
 const char* directoryServiceConfigurationDialog(){ return 0; }
 
-void appendDirectoryServer( const char* servername, int port,
+void appendDirectoryServer( const char* servername,
+                            int         port,
                             const char* description )
 {
-  struct DirectoryServer *servers = NULL;
-  servers = xtryrealloc( config.directoryServers,
-                         (1+config.numDirectoryServers) * sizeof *servers );
-  if( servers ) {
-    config.directoryServers = servers;
-    servers[ config.numDirectoryServers ].servername  = servername;
-    servers[ config.numDirectoryServers ].port        = port;
-    servers[ config.numDirectoryServers ].description = description;
-    config.numDirectoryServers += 1;
+  struct DirectoryServer *newServers = NULL;
+  newServers = xtryrealloc( config.directoryServers,
+                         (1+config.numDirectoryServers) * sizeof *newServers );
+  if( newServers ) {
+    config.directoryServers = newServers;
+    newServers[ config.numDirectoryServers ].servername =
+      xtrymalloc( strlen( servername ) );
+    if( newServers[ config.numDirectoryServers ].servername ) {
+      strcpy( (char *)newServers[ config.numDirectoryServers ].servername,
+        servername );
+      newServers[ config.numDirectoryServers ].description =
+        xtrymalloc( strlen(  description ) );
+      if( newServers[ config.numDirectoryServers ].description ) {
+        strcpy( (char *)newServers[ config.numDirectoryServers ].description,
+          description );
+        newServers[ config.numDirectoryServers ].port = port;
+        config.numDirectoryServers += 1;
+      }
+    }
   }
 }
 
 void setDirectoryServers( struct DirectoryServer server[], unsigned int size )
 {
-  struct DirectoryServer *servers = NULL;
-  servers = xtrycalloc ( size, sizeof *servers );
-  if( servers ) {
+  unsigned int i;
+  int oldSize = config.numDirectoryServers;
+  struct DirectoryServer *newServers = NULL;
+  newServers = xtrycalloc ( size, sizeof *newServers );
+  if( newServers ) {
+    for( i=0; i < oldSize; ++i ) {
+      _gpgme_free( (char *)config.directoryServers[i].servername );
+      _gpgme_free( (char *)config.directoryServers[i].description );
+    }
     _gpgme_free( config.directoryServers );
-    config.directoryServers = servers;
+    for( i=0; i < size; ++i ) {
+      newServers[ i ].servername = xtrymalloc( strlen( server[i].servername ) );
+      if( newServers[ i ].servername ) {
+        strcpy( (char *)newServers[ i ].servername, server[i].servername );
+        newServers[ i ].description = xtrymalloc( strlen( server[i].description ) );
+        if( newServers[ i ].description ) {
+          strcpy( (char *)newServers[ i ].description, server[i].description );
+          newServers[ i ].port = server[i].port;
+        }
+      }
+    }
+    config.directoryServers = newServers;
     config.numDirectoryServers = size;
   }
 }
