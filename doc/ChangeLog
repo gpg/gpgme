@@ -1,3 +1,8 @@
+2003-08-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Verify): Get error code from SIG->status in the code
+	for gpgme_get_sig_status.
+
 2003-07-31  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Key Management): Add can_authenticate flag.
