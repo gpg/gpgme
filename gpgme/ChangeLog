@@ -1,5 +1,7 @@
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme-config.in (Options): Support --api-version.
+
 	* libgpgme.vers: List all gpgme symbols under version GPGME_1.0.
 
 	* decrypt.c (_gpgme_decrypt_status_handler): Fix last change.

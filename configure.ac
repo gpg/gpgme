@@ -36,6 +36,10 @@ LIBGPGME_LT_CURRENT=13
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
 LIBGPGME_LT_AGE=2
 LIBGPGME_LT_REVISION=2
+
+# If the API is changed in an incompatible way: increment the next counter.
+GPGME_CONFIG_API_VERSION=1
+
 NEED_GPG_VERSION=1.2.2
 NEED_GPGSM_VERSION=1.9.6
 ##############################################
@@ -309,6 +313,7 @@ GNUPG_FIX_HDR_VERSION(gpgme/gpgme.h, GPGME_VERSION)
 # Substitution used for gpgme-config 
 GPGME_CONFIG_LIBS="-lgpgme"
 GPGME_CONFIG_CFLAGS=""
+AC_SUBST(GPGME_CONFIG_API_VERSION)
 AC_SUBST(GPGME_CONFIG_LIBS)
 AC_SUBST(GPGME_CONFIG_CFLAGS)
 
