@@ -1,5 +1,25 @@
 2003-04-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (gpgme_get_op_info): Remove prototype.
+	* ops.h (_gpgme_set_op_info,
+	_gpgme_data_release_and_return_string, _gpgme_data_get_as_string,
+	_gpgme_data_append, _gpgme_data_append_string,
+	_gpgme_data_append_string_for_xml, _gpgme_data_append_for_xml,
+	_gpgme_data_append_percentstring_for_xml): Likewise.
+	(_gpgme_progress_status_handler): Change first arg to void *.
+	* progress.c (_gpgme_progress_status_handler): Likewise.
+	* conversion.c: Do not include <string.h>, <errno.h>, <ctype.h>,
+	and <sys/types.h>, but <string.h>.
+	(_gpgme_data_append): Remove function.
+	(_gpgme_data_append_string): Likewise.
+	(_gpgme_data_append_for_xml): Likewise.
+	(_gpgme_data_append_string_for_xml): Likewise.
+	(_gpgme_data_append_percentstring_for_xml): Likewise.
+	* data-mem.c (_gpgme_data_get_as_string): Likewise.
+	(_gpgme_data_release_and_return_string): Likewise.
+	* gpgme.c (gpgme_get_op_info): Likewise.
+	(_gpgme_set_op_info): Likewise.
+
 	* gpgme.h (struct _gpgme_key): New structure.
 	(GpgmeKey): Define using _gpgme_key.
 	(struct _gpgme_subkey): New structure.

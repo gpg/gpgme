@@ -120,6 +120,10 @@ Noteworthy changes in version 0.4.1 (unreleased)
    information about the result of a key listing operation in
    a GpgmeKeyListResult object.
 
+ * Now that each function comes with its own result retrieval
+   interface, the generic gpgme_get_op_info interface is not useful
+   anymore and dropped.
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
@@ -188,6 +192,7 @@ gpgme_key_sig_get_ulong_attr	DEPRECATED
 gpgme_key_get_as_xml		REMOVED
 GpgmeKeyListResult		NEW
 gpgme_op_keylist_result		NEW
+gpgme_get_op_info		REMOVED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)

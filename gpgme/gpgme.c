@@ -87,64 +87,6 @@ _gpgme_release_result (GpgmeCtx ctx)
       data = next_data;
     }
   ctx->op_data = NULL;
-  _gpgme_set_op_info (ctx, NULL);
-}
-
-
-/**
- * gpgme_get_op_info:
- * @c: the context
- * @reserved:
- *
- * Return information about the last operation.  The caller has to
- * free the string.  NULL is returned if there is not previous
- * operation available or the operation has not yet finished.
- *
- * Here is a sample information we return:
- * <literal>
- * <![CDATA[
- * <GnupgOperationInfo>
- *   <signature>
- *     <detached/> <!-- or cleartext or standard -->
- *     <algo>17</algo>
- *     <hashalgo>2</hashalgo>
- *     <micalg>pgp-sha1</micalg>
- *     <sigclass>01</sigclass>
- *     <created>9222222</created>
- *     <fpr>121212121212121212</fpr>
- *   </signature>
- * </GnupgOperationInfo>
- * ]]>
- * </literal>
- * Return value: NULL for no info available or an XML string
- **/
-char *
-gpgme_get_op_info (GpgmeCtx ctx, int reserved)
-{
-  if (!ctx || reserved || !ctx->op_info)
-    return NULL;  /* Invalid value.  */
-
-  return _gpgme_data_get_as_string (ctx->op_info);
-}
-
-
-/* Store the data object INFO with the operation info in the context
-   CTX.  INFO is consumed.  Subsequent calls append the data.  */
-void
-_gpgme_set_op_info (GpgmeCtx ctx, GpgmeData info)
-{
-  assert (ctx);
-
-  if (!ctx->op_info)
-    ctx->op_info = info;
-  else
-    {
-      char *info_mem = 0;
-      size_t info_len;
-
-      info_mem = gpgme_data_release_and_get_mem (info, &info_len);
-      _gpgme_data_append (ctx->op_info, info_mem, info_len);
-    }
 }
 
 

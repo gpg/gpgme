@@ -29,8 +29,9 @@
 
 
 GpgmeError
-_gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
+_gpgme_progress_status_handler (void *priv, GpgmeStatusCode code, char *args)
 {
+  GpgmeCtx ctx = (GpgmeCtx) priv;
   char *p;
   char *args_cpy;
   int type = 0;

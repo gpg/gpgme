@@ -181,7 +181,6 @@ Crypto Operations
 * Decrypt and Verify::            Decrypting a signed ciphertext.
 * Sign::                          Creating a signature.
 * Encrypt::                       Encrypting a plaintext.
-* Detailed Results::              How to obtain more info about the operation.
 
 Sign
 
@@ -3040,7 +3039,6 @@ An error code describing the reason why the user ID was found invalid.
 * Decrypt and Verify::            Decrypting a signed ciphertext.
 * Sign::                          Creating a signature.
 * Encrypt::                       Encrypting a plaintext.
-* Detailed Results::              How to obtain more info about the operation.
 @end menu
 
 
@@ -3837,7 +3835,7 @@ If @code{GPGME_Invalid_UserID} is returned, some recipients in
 @var{rset} are invalid, but not all.  In this case the plaintext is
 encrypted for all valid recipients and returned in @var{cipher}.  More
 information about the invalid recipients is available with
-@code{gpgme_get_op_info}.  @xref{Detailed Results}.
+@code{gpgme_op_encrypt_result}.
 
 If @var{recp} is @code{NULL}, symmetric rather than public key
 encryption is performed.  Symmetrically encrypted cipher text can be
@@ -3914,40 +3912,6 @@ started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{rset}, @var{plain} or @var{cipher} is not a valid pointer, and
 @code{GPGME_No_UserID} if @var{rset} does not contain any valid
 recipients.
-@end deftypefun
-
-
-@node Detailed Results
-@subsection Detailed Results
-@cindex cryptographic operation, detailed results
-
-@deftypefun {char *} gpgme_get_op_info (@w{GpgmeCtx @var{ctx}}, @w{int @var{reserved}})
-The function @code{gpgme_get_op_info} retrieves more information about
-the last crypto operation.
-
-The function returns a string in the XML format.  The user has to
-release the string with @code{free}.
-
-Here is a sample of the information that might be returned:
-@example
-<GnupgOperationInfo>
-  <signature>
-    <detached/> <!-- or cleartext or standard -->
-    <algo>17</algo>
-    <hashalgo>2</hashalgo>
-    <micalg>pgp-sha1</micalg>
-    <sigclass>01</sigclass>
-    <created>9222222</created>
-    <fpr>121212121212121212</fpr>
-  </signature>
-</GnupgOperationInfo>
-@end example
-
-Currently, the only operations that return additional information are
-encrypt, sign.  @xref{Encrypt}, @xref{Sign}.
-
-The function returns a string or @code{NULL} if no such data is
-available.
 @end deftypefun
 
 

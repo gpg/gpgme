@@ -1,5 +1,8 @@
 2003-04-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/t-eventloop.c (main): Do not call print_op_info.
+	(print_op_info): Function removed.
+
 	* gpg/t-keylist.c: Rewritten.
 	* gpgsm/t-keylist.c (main): Rewritten.
 	* gpg/t-edit.c (main): Do not use gpgme_key_get_as_xml.  Use
