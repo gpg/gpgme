@@ -2300,7 +2300,7 @@ bool findCertificates( const char* addressee,
                        bool secretOnly )
 {
 #define MAXCERTS 1024;
-  /* use const char declarations since all of them are needed twice *.
+  /* use const char declarations since all of them are needed twice */
   const char* delimiter = "\1";
   const char* openBracket = "    (";
   const char* closeBracket = ")";
@@ -2363,7 +2363,6 @@ bool findCertificates( const char* addressee,
             break;
           }
         }
-        free( dn );
       }
     }
   }
