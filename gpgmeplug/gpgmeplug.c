@@ -1453,14 +1453,65 @@ bool encryptMessage( const char*  cleartext,
 
   err = gpgme_op_encrypt (ctx, rset, gPlaintext, gCiphertext );
   if( err ) {
-    fprintf( stderr, "\ngpgme_op_encrypt() returned this error code:  %i\n\n", err );
+    fprintf( stderr, "\ngpgme_op_encrypt() returned this error code:  %i\n", err );
     if( errId )
       *errId = err;
     if( errTxt ) {
       const char* _errTxt = gpgme_strerror( err );
-      *errTxt = malloc( strlen( _errTxt ) + 1 );
-      if( *errTxt )
+      *errTxt = malloc( strlen( _errTxt ) + 100 ); // leave room for reason string
+      if( *errTxt ) {
+        char* opInfo;
         strcpy(*errTxt, _errTxt );
+        opInfo = gpgme_get_op_info(ctx, 0);
+        if( NULL != opInfo && *opInfo ){
+          const int opLen = strlen( opInfo );
+          const int reasonLen = 8;
+          char reason[ 1+reasonLen ];
+          char* pos1;
+          strcpy( reason, "<reason>" );
+          pos1 = strstr( opInfo, reason );
+          if( NULL != pos1 && 
+              opLen > reasonLen + (pos1 - opInfo) ){
+            char* pos2;
+            pos1 += reasonLen;
+            pos2 = strchr( pos1, '<' );
+            if( NULL != pos2 &&
+                pos1 < pos2 ){
+              long int reasonId;
+              strcat( *errTxt, " - " );
+              *pos2 = '\0';
+              fprintf( stderr, "                        and this reason code:  %s\n\n", pos1 );
+              reasonId = strtol( pos1, NULL, 10 );
+              switch( reasonId ) {
+                case  0: strcat( *errTxt, "No specific reason given" );
+                         break;
+                case  1: strcat( *errTxt, "Not Found" );
+                         break;
+                case  2: strcat( *errTxt, "Ambigious specification" );
+                         break;
+                case  3: strcat( *errTxt, "Key can't be used for operation" );
+                         break;
+                case  4: strcat( *errTxt, "Key has been revoked" );
+                         break;
+                case  5: strcat( *errTxt, "Key has expired" );
+                         break;
+                case  6: strcat( *errTxt, "No CRL known for certificate" );
+                         break;
+                case  7: strcat( *errTxt, "No current CRL available" );
+                         break;
+                case  8: strcat( *errTxt, "Contraints not matched" );
+                         break;
+                default: {
+                           strcat( *errTxt, "Extended error Id: #" );
+                           strcat( *errTxt, pos1 );
+                         }  
+              }
+              *pos2 = '<';
+            }
+          }
+          free( opInfo );
+        }
+      }
     }
   }
 
