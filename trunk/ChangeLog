@@ -1,3 +1,7 @@
+2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (GPGSM_VERSION): Fix filter to get it.
+
 2004-10-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	Released 1.0.1.
