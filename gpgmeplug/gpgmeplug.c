@@ -1989,6 +1989,9 @@ parse_dn (const unsigned char *string)
   size_t arrayidx, arraysize;
   int i;
 
+  if( !string )
+    return NULL;
+
   arraysize = 7; /* C,ST,L,O,OU,CN,email */
   arrayidx = 0;
   array = safe_malloc ((arraysize+1) * sizeof *array);
@@ -2046,15 +2049,17 @@ add_dn_part( char* result, struct DnPair* dn, const char* part )
 {
   int any = 0;
 
-  for(; dn->key; ++dn ) {
-    if( !strcmp( dn->key, part ) ) {
-      if( any ) strcat( result, "+" );
-      /* email hack */
-      if( !strcmp( part, "1.2.840.113549.1.9.1" ) ) strcat( result, "EMail" );
-      else strcat( result, part );
-      strcat( result, "=" );
-      strcat( result, dn->value );
-      any = 1;
+  if( dn ) {
+    for(; dn->key; ++dn ) {
+      if( !strcmp( dn->key, part ) ) {
+        if( any ) strcat( result, "+" );
+        /* email hack */
+        if( !strcmp( part, "1.2.840.113549.1.9.1" ) ) strcat( result, "EMail" );
+        else strcat( result, part );
+        strcat( result, "=" );
+        strcat( result, dn->value );
+        any = 1;
+      }
     }
   }
   return any;
@@ -2075,10 +2080,12 @@ reorder_dn( struct DnPair *dn )
   };
   int any=0, any2=0, len=0, i;
   char* result;
-  for( i = 0; dn[i].key; ++i ) {
-    len += strlen( dn[i].key );
-    len += strlen( dn[i].value );
-    len += 4; /* ',' and '=', and possibly "(" and ")" */
+  if( dn ) {
+    for( i = 0; dn[i].key; ++i ) {
+      len += strlen( dn[i].key );
+      len += strlen( dn[i].value );
+      len += 4; /* ',' and '=', and possibly "(" and ")" */
+    }
   }
   result = (char*)safe_malloc( (len+1)*sizeof(char) );
   *result = 0;
@@ -2092,17 +2099,19 @@ reorder_dn( struct DnPair *dn )
   }
 
   /* add remaining parts in no particular order */
-  for(; dn->key; ++dn ) {
-    for( i = 0; stdpart[i]; ++i ) {
-      if( !strcmp( dn->key, stdpart[i] ) ) {
-	break;
+  if( dn ) {
+    for(; dn->key; ++dn ) {
+      for( i = 0; stdpart[i]; ++i ) {
+        if( !strcmp( dn->key, stdpart[i] ) ) {
+          break;
+        }
       }
-    }
-    if( !stdpart[i] ) {
-      if( any ) strcat( result, "," );
-      if( !any2 ) strcat( result, "(");
-      any = add_dn_part( result, dn, dn->key );
-      any2 = 1;
+      if( !stdpart[i] ) {
+        if( any ) strcat( result, "," );
+        if( !any2 ) strcat( result, "(");
+        any = add_dn_part( result, dn, dn->key );
+        any2 = 1;
+      }
     }
   }
   if( any2 ) strcat( result, ")");
@@ -2396,9 +2405,15 @@ importCertificate( const char* fingerprint )
 */
 bool findCertificates( const char* addressee,
                        char** certificates,
-                       /*int* newSize,*/
+                       int* newSize,
                        bool secretOnly )
 {
+  static int maxCerts = 1024;
+  // use const char declarations since all of them are needed twice
+  const char* delimiter = "\1";
+  const char* openBracket = "    (";
+  const char* closeBracket = ")";
+
   GpgmeCtx ctx;
   GpgmeError err;
   GpgmeKey rKey;
@@ -2407,68 +2422,88 @@ bool findCertificates( const char* addressee,
   char* dn;
   struct DnPair* a;
   int nFound = 0;
-/*
-  if( ! newSize ){
-    fprintf( stderr, "findCertificates called without valid newSize pointer\n" );
+  int iFound = 0;
+  int siz = 0;
+  char* DNs[maxCerts];
+  char* FPRs[maxCerts];
+  
+  if( ! certificates ){
+    fprintf( stderr, "gpgme: findCertificates called with invalid *certificates pointer\n" );
     return false;
   }
-*/
-  strcpy( *certificates, "" );
 
+  if( ! newSize ){
+    fprintf( stderr, "gpgme: findCertificates called with invalid newSize pointer\n" );
+    return false;
+  }
+
+  *certificates = 0;
+  *newSize = 0;
+  
+  // calculate length of buffer needed for certs plus fingerprints
+  memset( DNs,  0, sizeof( DNs  ) );
+  memset( FPRs, 0, sizeof( FPRs ) );
   gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
-/*
-  (*newSize) = 0;
   err = gpgme_op_keylist_start(ctx, addressee, secretOnly ? 1 : 0);
   while( GPGME_No_Error == err ) {
     err = gpgme_op_keylist_next(ctx, &rKey);
     if( GPGME_No_Error == err ) {
       s = gpgme_key_get_string_attr (rKey, GPGME_ATTR_USERID, NULL, 0);
       if( s ) {
+        dn = xstrdup( s );
         s2 = gpgme_key_get_string_attr (rKey, GPGME_ATTR_FPR, NULL, 0);
         if( s2 ) {
           if( nFound )
-            ++(*newSize);
-          (*newSize) += strlen( s );
-          a = parse_dn( dn ); 
+            siz += strlen( delimiter );
+          a = parse_dn( dn );
+          free( dn );
           dn = reorder_dn( a );
-          (*newSize) += strlen( dn );
-          safe_free( (void **)&dn );
+          siz += strlen( dn );
+          siz += strlen( openBracket );
+          siz += strlen( s2 );
+          siz += strlen( closeBracket );
+          DNs[ nFound ] = xstrdup( dn );
+          FPRs[nFound ] = xstrdup( s2 );
           ++nFound;
+          if( nFound >= maxCerts ) {
+            fprintf( stderr,
+                     "gpgme: findCertificates found too many certificates (%d)\n",
+                     maxCerts );
+            break;
+          }
         }
-      }
-    }
-  }
-*/
-  gpgme_op_keylist_end( ctx );
-  nFound = 0;
-  err = gpgme_op_keylist_start(ctx, addressee, secretOnly ? 1 : 0);
-  while( GPGME_No_Error == err ) {
-    err = gpgme_op_keylist_next(ctx, &rKey);
-    if( GPGME_No_Error == err ) {
-      s = gpgme_key_get_string_attr (rKey, GPGME_ATTR_USERID, NULL, 0);
-      if( s ) {
-        s2 = gpgme_key_get_string_attr (rKey, GPGME_ATTR_FPR, NULL, 0);
-        if( s2 ) {
-          if( nFound )
-            strcat(*certificates,"\1" );
-          dn = xstrdup( s );
-/*fprintf( stderr, "\n\n\nDN before reordering: \"%s\"\n", dn );*/
-          a = parse_dn( dn ); 
-          dn = reorder_dn( a );
-/*fprintf( stderr, "\nDN after reordering: \"%s\"\n", dn );*/
-          strcat( *certificates, dn );
-          strcat( *certificates, "    (" );
-          strcat( *certificates, s2 );
-          strcat( *certificates, ")" );
-          safe_free( (void **)&dn );
-          ++nFound;
-        }
+        free( dn );
       }
     }
   }
   gpgme_op_keylist_end( ctx );
   gpgme_release (ctx);
-
+  
+  
+  if( 0 < siz ) {
+    // add one for trailing ZERO char
+    ++siz;
+    *newSize = siz;
+    // allocate the buffer
+    *certificates = malloc(   sizeof(char) * siz );
+    memset( *certificates, 0, sizeof(char) * siz );
+    // fill the buffer
+    for( iFound=0; iFound < nFound; ++iFound ) {
+      if( !iFound )
+        strcpy(*certificates, DNs[iFound] );
+      else {
+        strcat(*certificates, delimiter );
+        strcat(*certificates, DNs[iFound] );
+      }
+      strcat(  *certificates, openBracket );
+      strcat(  *certificates, FPRs[iFound] );
+      strcat(  *certificates, closeBracket );
+      ++iFound;
+      free( DNs[ iFound ] );
+      free( FPRs[iFound ] );
+    }
+  }
+    
   return ( 0 < nFound );
 }
