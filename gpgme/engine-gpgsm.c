@@ -467,50 +467,68 @@ gpgsm_status_handler (void *opaque, int pid, int fd)
   int err;
   GpgsmObject gpgsm = opaque;
   ASSUAN_CONTEXT actx = gpgsm->assuan_ctx;
+  char *line;
+  int linelen;
+  char *next_line;
 
   assert (fd == gpgsm->assuan_ctx->inbound.fd);
 
   err = _assuan_read_line (gpgsm->assuan_ctx);
 
-  if (actx->inbound.line[0] == '#' || !actx->inbound.linelen)
-    return 0;  /* FIXME */
+  /* Assuan can currently return more than one line at once.  */
+  line = actx->inbound.line;
 
-  if ((actx->inbound.linelen >= 2
-       && actx->inbound.line[0] == 'O' && actx->inbound.line[1] == 'K'
-       && (actx->inbound.line[2] == '\0' || actx->inbound.line[2] == ' '))
-      || (actx->inbound.linelen >= 3
-	  && actx->inbound.line[0] == 'E' && actx->inbound.line[1] == 'R'
-	  && actx->inbound.line[2] == 'R'
-	  && (actx->inbound.line[3] == '\0' || actx->inbound.line[3] == ' ')))
+  while (line)
     {
-      /* FIXME Save error somewhere.  */
-      if (gpgsm->status.fnc)
-	gpgsm->status.fnc (gpgsm->status.fnc_value, STATUS_EOF, "");
-      return 1;
+      next_line = strchr (line, '\n');
+      if (next_line)
+	*next_line++ = 0;
+      linelen = strlen (line);
+
+      if (line[0] == '#' || !linelen)
+	return 0;  /* FIXME */
+
+      if ((linelen >= 2
+	   && line[0] == 'O' && line[1] == 'K'
+	   && (line[2] == '\0' || line[2] == ' '))
+	  || (linelen >= 3
+	      && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
+	      && (line[3] == '\0' || line[3] == ' ')))
+	{
+	  /* FIXME Save error somewhere.  */
+	  if (gpgsm->status.fnc)
+	    gpgsm->status.fnc (gpgsm->status.fnc_value, STATUS_EOF, "");
+	  return 1;
+	}
+      /* FIXME: Parse the status and call the handler.  */
+      
+      if (linelen > 2
+	  && line[0] == 'S' && line[1] == ' ')
+	{
+	  struct status_table_s t, *r;
+	  char *rest;
+	  
+	  rest = strchr (line + 2, ' ');
+	  if (!rest)
+	    rest = line + linelen; /* set to an empty string */
+	  else
+	    *rest++ = 0;
+
+	  t.name = line + 2;
+	  r = bsearch (&t, status_table, DIM(status_table) - 1,
+		       sizeof t, status_cmp);
+
+	  if (r)
+	    {
+	      if (gpgsm->status.fnc)
+		gpgsm->status.fnc (gpgsm->status.fnc_value, r->code, rest);
+	    }
+	  else
+	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", t.name, rest);
+	}
+      line = next_line;
     }
-  /* FIXME: Parse the status and call the handler.  */
 
-  if (actx->inbound.linelen > 2
-      && actx->inbound.line[0] == 'S' && actx->inbound.line[1] == ' ')
-    {
-      struct status_table_s t, *r;
-      char *rest;
-
-      rest = strchr (actx->inbound.line + 2, ' ');
-      if (!rest)
-	rest = actx->inbound.line + actx->inbound.linelen; /* set to an empty string */
-      else
-	*rest++ = 0;
-
-      t.name = actx->inbound.line + 2;
-      r = bsearch (&t, status_table, DIM(status_table) - 1,
-		   sizeof t, status_cmp);
-
-      if (gpgsm->status.fnc)
-	gpgsm->status.fnc (gpgsm->status.fnc_value, r->code, rest);
-    }
-  else
-    fprintf (stderr, "[UNCAUGHT STATUS]%s", actx->inbound.line);
   return 0;
 }
 
