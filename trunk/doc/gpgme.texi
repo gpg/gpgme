@@ -1917,15 +1917,13 @@ if (err)
 In a simple program, for which a blocking operation is acceptable, the
 following function can be used to retrieve a single key.
 
-@deftypefun GpgmeError gpgme_get_key (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{fpr}}, @w{GpgmeKey *@var{r_key}}, @w{int @var{secret}}, @w{int @var{force_update}})
+@deftypefun GpgmeError gpgme_get_key (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{fpr}}, @w{GpgmeKey *@var{r_key}}, @w{int @var{secret}})
 The function @code{gpgme_get_key} gets the key with the fingerprint
-(or key ID) @var{fpr} from the key cache or from the crypto backend
-and return it in @var{r_key}.  If @var{force_update} is true, force a
-refresh of the key from the crypto backend and replace the key in the
-cache, if any.  If @var{secret} is true, get the secret key.
-
-If the @code{GPGME_KEYLIST_MODE_SIGS} mode is active, the key will be
-retrieved with the key signatures (and updated if necessary).
+(or key ID) @var{fpr} from the crypto backend and return it in
+@var{r_key}.  If @var{force_update} is true, force a refresh of the
+key from the crypto backend and replace the key in the cache, if any.
+If @var{secret} is true, get the secret key.  The currently active
+keylist mode is used to retrieve the key.
 
 The function returns @code{GPGME_Invalid_Value} if @var{ctx} or
 @var{r_key} is not a valid pointer, @code{GPGME_Invalid_Key} if

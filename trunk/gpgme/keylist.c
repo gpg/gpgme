@@ -688,8 +688,6 @@ _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data)
 
   assert (type == GPGME_EVENT_NEXT_KEY);
 
-  _gpgme_key_cache_add (key);
-
   q = malloc (sizeof *q);
   if (!q)
     {
@@ -861,4 +859,34 @@ gpgme_op_keylist_end (GpgmeCtx ctx)
     return GPGME_Invalid_Value;
 
   return 0;
+}
+
+
+/* Get the key with the fingerprint FPR from the crypto backend.  If
+   SECRET is true, get the secret key.  */
+GpgmeError
+gpgme_get_key (GpgmeCtx ctx, const char *fpr, GpgmeKey *r_key,
+	       int secret)
+{
+  GpgmeCtx listctx;
+  GpgmeError err;
+
+  if (!ctx || !r_key)
+    return GPGME_Invalid_Value;
+  
+  if (strlen (fpr) < 16)	/* We have at least a key ID.  */
+    return GPGME_Invalid_Key;
+
+  /* FIXME: We use our own context because we have to avoid the user's
+     I/O callback handlers.  */
+  err = gpgme_new (&listctx);
+  if (err)
+    return err;
+  gpgme_set_protocol (listctx, gpgme_get_protocol (ctx));
+  gpgme_set_keylist_mode (listctx, ctx->keylist_mode);
+  err = gpgme_op_keylist_start (listctx, fpr, secret);
+  if (!err)
+    err = gpgme_op_keylist_next (listctx, r_key);
+  gpgme_release (listctx);
+  return err;
 }

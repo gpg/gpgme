@@ -103,6 +103,9 @@ Noteworthy changes in version 0.4.1 (unreleased)
    available through gpgme_trust_item_ref and gpgme_trust_item_unref
    (the gpgme_trust_item_release alias for the latter is deprecated).
 
+ * Keys are not cached internally anymore, so the force_update argument
+   to gpgme_get_key has been removed.
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
@@ -159,6 +162,7 @@ gpgme_trust_item_unref		NEW
 gpgme_trust_item_release	DEPRECATED: Use gpgme_trust_item_unref.
 gpgme_trust_item_get_string_attr DEPRECATED
 gpgme_trust_item_get_ulong_attr	DEPRECATED
+gpgme_get_key			CHANGED: Removed force_update argument.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)
