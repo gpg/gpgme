@@ -1,5 +1,8 @@
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Decrypt): Add note about new field wrong_key_usage
+	of gpgme_decrypt_result_t.
+
 	* gpgme.texi (Key Management): Add note about new field
 	keylist_mode of gpgme_key_t.
 

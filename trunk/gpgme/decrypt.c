@@ -1,6 +1,6 @@
 /* decrypt.c - Decrypt function.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -105,14 +105,16 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 
     case GPGME_STATUS_ERROR:
       /* Note that this is an informational status code which should
-         not lead to an erro retunr unless it is something not related
-         to the backend. */
+         not lead to an error return unless it is something not
+         related to the backend.  */
       {
 	const char d_alg[] = "decrypt.algorithm";
 	const char u_alg[] = "Unsupported_Algorithm";
+	const char k_alg[] = "decrypt.keyusage";
+
 	if (!strncmp (args, d_alg, sizeof (d_alg) - 1))
 	  {
-	    args += sizeof (d_alg);
+	    args += sizeof (d_alg) - 1;
 	    while (*args == ' ')
 	      args++;
 
@@ -120,7 +122,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 	      {
 		char *end;
 
-		args += sizeof (u_alg);
+		args += sizeof (u_alg) - 1;
 		while (*args == ' ')
 		  args++;
 
@@ -135,6 +137,18 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 		      return gpg_error_from_errno (errno);
 		  }
 	      }
+	  }
+	else if (!strncmp (args, k_alg, sizeof (k_alg) - 1))
+	  {
+	    gpgme_error_t err;
+
+	    args += sizeof (k_alg) - 1;
+	    while (*args == ' ')
+	      args++;
+
+	    err = _gpgme_map_gnupg_error (args);
+	    if (gpg_err_code (err) == GPG_ERR_WRONG_KEY_USAGE)
+	      opd->result.wrong_key_usage = 1;
 	  }
       }
       break;

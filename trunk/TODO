@@ -96,6 +96,8 @@ Hey Emacs, this is -*- outline -*- mode!
    password is required by crypto engine. !!
 ** Verify must not fail on NODATA premature if auto-key-retrieval failed.
    It should not fail silently if it knows there is an error. !!!
+** decrypt-verify sets wrong_key_usage even if not "verify.keyusage" is
+   encountered, but "decrypt.keyusage".  Is this correct?  !!
 ** All operations: Better error reporting. !!
 ** Export status handler need much more work. !!!
 ** Import should return a useful error when one happened.
