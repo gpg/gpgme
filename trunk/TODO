@@ -1,5 +1,4 @@
 * ABI's to break:
-** GpgmePassphraseCb should have void **R_HD, not void *R_HD.
 ** The resulting error of an operation can not be retrieved
    seperately; the op_foobar operations can't be implemented
    by the user, they are not merely convenience, but necessity, while
