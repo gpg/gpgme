@@ -1033,11 +1033,18 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
                         DEBUG0 ("Too many objects for WFMO!" );
                         return -1;
                     }
-                    waitidx[nwait]   = i;
-                    waitbuf[nwait++] = c->is_empty;
+                    LOCK (c->mutex);
+                    if ( !c->nbytes ) {
+                        waitidx[nwait]   = i;
+                        waitbuf[nwait++] = c->is_empty;
+                        DEBUG_ADD1 (dbg_help, "w%d ", fds[i].fd );
+                        any = 1;
+                    }
+                    else {
+                        DEBUG_ADD1 (dbg_help, "w%d(ignored) ", fds[i].fd );
+                    }
+                    UNLOCK (c->mutex);
                 }
-                DEBUG_ADD1 (dbg_help, "w%d ", fds[i].fd );
-                any = 1;
             }
         }
     }

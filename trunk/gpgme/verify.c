@@ -219,7 +219,7 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
 {
     int rc = 0;
     int i;
-    int pipemode = 0 /*!!text*/; /* use pipemode for detached sigs */
+    int pipemode = !!text; /* use pipemode for detached sigs */
 
     fail_on_pending_request( c );
     c->pending = 1;
@@ -434,6 +434,7 @@ gpgme_get_sig_key (GpgmeCtx c, int idx, GpgmeKey *r_key)
      *        an internal context used for such key listings */
     if ( (err=gpgme_new (&listctx)) )
         return err;
+    gpgme_set_keylist_mode( listctx, c->keylist_mode );
     if ( !(err=gpgme_op_keylist_start (listctx, res->fpr, 0 )) )
         err=gpgme_op_keylist_next ( listctx, r_key );
     gpgme_release (listctx);
