@@ -1,3 +1,11 @@
+2003-01-19  Miguel Coca  <mcoca@gnu.org>
+
+	* w32-io.c (_gpgme_io_select): Add missing argument in calls to
+	DEBUG_BEGIN.
+	* w32-util.c: Include "sema.h".
+	(find_program_in_registry): Change DEBUG1 to DEBUG2, fixes compilation
+	error.
+
 2003-01-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.c (_gpgme_engine_ops_gpg): Remove gpg_start.
