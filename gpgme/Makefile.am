@@ -82,6 +82,7 @@ libgpgme_la_SOURCES = \
 	${system_components} \
 	debug.c debug.h \
 	gpgme.c version.c errors.c
+libgpgme_la_LDADD = @LIBOBJS@
 
 errors.c : gpgme.h
 	$(srcdir)/mkerrors < $(srcdir)/gpgme.h > errors.c

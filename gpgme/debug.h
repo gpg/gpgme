@@ -51,7 +51,7 @@ void _gpgme_debug_end (void **helper);
 #define DEBUG_END(hlp, fmt, arg...) \
   _gpgme_debug_add (&(hlp), fmt , ##arg); \
   _gpgme_debug_end (&(hlp))
-#elsif 0
+#elif 0
 /* Only works in C99.  */
 #define DEBUG0(fmt) \
   _gpgme_debug (1, "%s:%s: " fmt, __FILE__, XSTRINGIFY (__LINE__))

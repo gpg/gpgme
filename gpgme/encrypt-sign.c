@@ -19,7 +19,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,7 +37,7 @@ static void
 encrypt_sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
   char *encrypt_info = 0;
-  int encrypt_info_len;
+  size_t encrypt_info_len;
 
   _gpgme_encrypt_status_handler (ctx, code, args);
 
