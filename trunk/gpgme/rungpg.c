@@ -54,113 +54,166 @@ struct arg_and_data_s {
     char arg[1];     /* .. this is used */
 };
 
-struct fd_data_map_s {
-    GpgmeData data;
-    int inbound;  /* true if this is used for reading from gpg */
-    int dup_to;
-    int fd;       /* the fd to use */
-    int peer_fd;  /* the outher side of the pipe */
+struct fd_data_map_s
+{
+  GpgmeData data;
+  int inbound;  /* true if this is used for reading from gpg */
+  int dup_to;
+  int fd;       /* the fd to use */
+  int peer_fd;  /* the outher side of the pipe */
+  void *tag;
 };
 
 
-struct gpg_object_s {
-    struct arg_and_data_s *arglist;
-    struct arg_and_data_s **argtail;
-    int arg_error;  
+struct gpg_object_s
+{
+  struct arg_and_data_s *arglist;
+  struct arg_and_data_s **argtail;
+  int arg_error;  
 
-    struct {
-        int fd[2];  
-        size_t bufsize;
-        char *buffer;
-        size_t readpos;
-        int eof;
-        GpgStatusHandler fnc;
-        void *fnc_value;
-    } status;
+  struct
+  {
+    int fd[2];  
+    size_t bufsize;
+    char *buffer;
+    size_t readpos;
+    int eof;
+    GpgStatusHandler fnc;
+    void *fnc_value;
+    void *tag;
+  } status;
 
-    /* This is a kludge - see the comment at gpg_colon_line_handler */
-    struct {
-        int fd[2];  
-        size_t bufsize;
-        char *buffer;
-        size_t readpos;
-        int eof;
-        GpgColonLineHandler fnc;  /* this indicate use of this structrue */
-        void *fnc_value;
-        int simple;
-    } colon;
+  /* This is a kludge - see the comment at gpg_colon_line_handler */
+  struct
+  {
+    int fd[2];  
+    size_t bufsize;
+    char *buffer;
+    size_t readpos;
+    int eof;
+    GpgColonLineHandler fnc;  /* this indicate use of this structrue */
+    void *fnc_value;
+    void *tag;
+    int simple;
+  } colon;
 
-    char **argv;  
-    struct fd_data_map_s *fd_data_map;
+  char **argv;  
+  struct fd_data_map_s *fd_data_map;
 
-    int pid; /* we can't use pid_t because we don't use it in Windoze */
+  int pid; /* we can't use pid_t because we don't use it in Windoze */
 
-    int running;
-    
-    /* stuff needed for pipemode */
-    struct {
-        int used;
-        int active;
-        GpgmeData sig;
-        GpgmeData text;
-        int stream_started;
-    } pm;
+  /* stuff needed for pipemode */
+  struct
+  {
+    int used;
+    int active;
+    GpgmeData sig;
+    GpgmeData text;
+    int stream_started;
+  } pm;
 
-    /* stuff needed for interactive (command) mode */
-    struct {
-        int used;
-        int fd;
-        GpgmeData cb_data;   /* hack to get init the above fd later */
-        GpgStatusCode code;  /* last code */
-        char *keyword;       /* what has been requested (malloced) */
-        GpgCommandHandler fnc; 
-        void *fnc_value;
-    } cmd;
+  /* stuff needed for interactive (command) mode */
+  struct
+  {
+    int used;
+    int fd;
+    int idx;		/* Index in fd_data_map */
+    GpgmeData cb_data;   /* hack to get init the above idx later */
+    GpgStatusCode code;  /* last code */
+    char *keyword;       /* what has been requested (malloced) */
+    GpgCommandHandler fnc; 
+    void *fnc_value;
+  } cmd;
+
+  struct GpgmeIOCbs io_cbs;
 };
 
-static void free_argv ( char **argv );
-static void free_fd_data_map ( struct fd_data_map_s *fd_data_map );
+static void free_argv (char **argv);
+static void free_fd_data_map (struct fd_data_map_s *fd_data_map);
 
-static int gpg_status_handler ( void *opaque, int pid, int fd );
-static GpgmeError read_status ( GpgObject gpg );
+static void gpg_status_handler (void *opaque, int fd);
+static GpgmeError read_status (GpgObject gpg);
 
-static int gpg_colon_line_handler ( void *opaque, int pid, int fd );
-static GpgmeError read_colon_line ( GpgObject gpg );
+static void gpg_colon_line_handler (void *opaque, int fd);
+static GpgmeError read_colon_line (GpgObject gpg);
 
-static int pipemode_cb ( void *opaque,
-                         char *buffer, size_t length, size_t *nread );
-static int command_cb ( void *opaque,
-                        char *buffer, size_t length, size_t *nread );
-
+static int pipemode_cb (void *opaque, char *buffer, size_t length,
+			size_t *nread);
+static int command_cb (void *opaque, char *buffer, size_t length,
+		       size_t *nread);
 
 static void
-close_notify_handler ( int fd, void *opaque )
+close_notify_handler (int fd, void *opaque)
 {
-    GpgObject gpg = opaque;
+  GpgObject gpg = opaque;
+  int possibly_done = 0;
+  int not_done = 0;
+  assert (fd != -1);
 
-    assert (fd != -1);
-    if (gpg->status.fd[0] == fd )
-        gpg->status.fd[0] = -1;
-    else if (gpg->status.fd[1] == fd )
-        gpg->status.fd[1] = -1;
-    else if (gpg->colon.fd[0] == fd )
-        gpg->colon.fd[0] = -1;
-    else if (gpg->colon.fd[1] == fd )
-        gpg->colon.fd[1] = -1;
-    else if (gpg->fd_data_map) {
-        int i;
+  if (gpg->status.fd[0] == fd)
+    {
+      if (gpg->status.tag)
+	{
+	  (*gpg->io_cbs.remove) (gpg->status.tag);
+	  possibly_done = 1;
+	}
+      gpg->status.fd[0] = -1;
+    }
+  else if (gpg->status.fd[1] == fd)
+    gpg->status.fd[1] = -1;
+  else if (gpg->colon.fd[0] == fd)
+    {
+      if (gpg->colon.tag)
+	{
+	  (*gpg->io_cbs.remove) (gpg->colon.tag);
+	  possibly_done = 1;
+	}
+      gpg->colon.fd[0] = -1;
+    }
+  else if (gpg->colon.fd[1] == fd)
+    gpg->colon.fd[1] = -1;
+  else if (gpg->fd_data_map)
+    {
+      int i;
 
-        for (i=0; gpg->fd_data_map[i].data; i++ ) {
-            if ( gpg->fd_data_map[i].fd == fd ) {
-                gpg->fd_data_map[i].fd = -1;
-                break;
+      for (i = 0; gpg->fd_data_map[i].data; i++)
+	{
+	  if (gpg->fd_data_map[i].fd == fd)
+	    {
+	      if (gpg->fd_data_map[i].tag)
+		{
+		  (*gpg->io_cbs.remove) (gpg->fd_data_map[i].tag);
+		  possibly_done = 1;
+		}
+	      gpg->fd_data_map[i].fd = -1;
+	      break;
             }
-            if ( gpg->fd_data_map[i].peer_fd == fd ) {
-                gpg->fd_data_map[i].peer_fd = -1;
-                break;
+	  if (gpg->fd_data_map[i].peer_fd == fd)
+	    {
+	      gpg->fd_data_map[i].peer_fd = -1;
+	      break;
             }
         }
     }
+  if (!possibly_done)
+    not_done = 1;
+  else if (gpg->status.fd[0] != -1)
+    not_done = 1;
+  else if (gpg->colon.fd[0] != -1)
+    not_done = 1;
+  else if (gpg->fd_data_map)
+    {
+      int i;
+
+      for (i = 0; gpg->fd_data_map[i].data; i++)
+	if (gpg->fd_data_map[i].fd != -1)
+	  {
+	    not_done = 1;
+	    break;
+	  }
+    }
+  if (!not_done && gpg->io_cbs.event)
+    (*gpg->io_cbs.event) (gpg->io_cbs.event_priv, GPGME_EVENT_DONE, NULL);
 }
 
 const char *
@@ -185,65 +238,70 @@ _gpgme_gpg_check_version (void)
 }
 
 GpgmeError
-_gpgme_gpg_new ( GpgObject *r_gpg )
+_gpgme_gpg_new (GpgObject *r_gpg)
 {
-    GpgObject gpg;
-    int rc = 0;
+  GpgObject gpg;
+  int rc = 0;
 
-    gpg = xtrycalloc ( 1, sizeof *gpg );
-    if ( !gpg ) {
-        rc = mk_error (Out_Of_Core);
-        goto leave;
-    }
-    gpg->argtail = &gpg->arglist;
-
-    gpg->status.fd[0] = -1;
-    gpg->status.fd[1] = -1;
-    gpg->colon.fd[0] = -1;
-    gpg->colon.fd[1] = -1;
-    gpg->cmd.fd = -1;
-
-    gpg->pid = -1;
-
-    /* allocate the read buffer for the status pipe */
-    gpg->status.bufsize = 1024;
-    gpg->status.readpos = 0;
-    gpg->status.buffer = xtrymalloc (gpg->status.bufsize);
-    if (!gpg->status.buffer) {
-        rc = mk_error (Out_Of_Core);
-        goto leave;
-    }
-    /* In any case we need a status pipe - create it right here  and
-     * don't handle it with our generic GpgmeData mechanism */
-    if (_gpgme_io_pipe (gpg->status.fd, 1) == -1) {
-        rc = mk_error (Pipe_Error);
-        goto leave;
-    }
-    if ( _gpgme_io_set_close_notify (gpg->status.fd[0],
-                                     close_notify_handler, gpg)
-         || _gpgme_io_set_close_notify (gpg->status.fd[1],
-                                        close_notify_handler, gpg) ) {
-        rc = mk_error (General_Error);
-        goto leave;
-    }
-    gpg->status.eof = 0;
-    _gpgme_gpg_add_arg ( gpg, "--status-fd" );
+  gpg = xtrycalloc (1, sizeof *gpg);
+  if (!gpg)
     {
-        char buf[25];
-        sprintf ( buf, "%d", gpg->status.fd[1]);
-        _gpgme_gpg_add_arg ( gpg, buf );
+      rc = mk_error (Out_Of_Core);
+      goto leave;
     }
-    _gpgme_gpg_add_arg ( gpg, "--no-tty" );
+  gpg->argtail = &gpg->arglist;
 
+  gpg->status.fd[0] = -1;
+  gpg->status.fd[1] = -1;
+  gpg->colon.fd[0] = -1;
+  gpg->colon.fd[1] = -1;
+  gpg->cmd.fd = -1;
+  gpg->cmd.idx = -1;
+
+  gpg->pid = -1;
+
+  /* Allocate the read buffer for the status pipe.  */
+  gpg->status.bufsize = 1024;
+  gpg->status.readpos = 0;
+  gpg->status.buffer = xtrymalloc (gpg->status.bufsize);
+  if (!gpg->status.buffer)
+    {
+      rc = mk_error (Out_Of_Core);
+      goto leave;
+    }
+  /* In any case we need a status pipe - create it right here and
+     don't handle it with our generic GpgmeData mechanism.  */
+  if (_gpgme_io_pipe (gpg->status.fd, 1) == -1)
+    {
+      rc = mk_error (Pipe_Error);
+      goto leave;
+    }
+  if (_gpgme_io_set_close_notify (gpg->status.fd[0],
+				  close_notify_handler, gpg)
+      || _gpgme_io_set_close_notify (gpg->status.fd[1],
+				     close_notify_handler, gpg))
+    {
+      rc = mk_error (General_Error);
+      goto leave;
+    }
+  gpg->status.eof = 0;
+  _gpgme_gpg_add_arg (gpg, "--status-fd");
+  {
+    char buf[25];
+    sprintf (buf, "%d", gpg->status.fd[1]);
+    _gpgme_gpg_add_arg (gpg, buf);
+  }
+  _gpgme_gpg_add_arg (gpg, "--no-tty");
 
  leave:
-    if (rc) {
-        _gpgme_gpg_release (gpg);
-        *r_gpg = NULL;
+  if (rc)
+    {
+      _gpgme_gpg_release (gpg);
+      *r_gpg = NULL;
     }
-    else
-        *r_gpg = gpg;
-    return rc;
+  else
+    *r_gpg = gpg;
+  return rc;
 }
 
 
@@ -268,8 +326,6 @@ _gpgme_gpg_release (GpgObject gpg)
   gpgme_data_release (gpg->cmd.cb_data);
   xfree (gpg->cmd.keyword);
 
-  if (gpg->pid != -1) 
-    _gpgme_remove_proc_from_wait_queue (gpg->pid);
   if (gpg->status.fd[0] != -1)
     _gpgme_io_close (gpg->status.fd[0]);
   if (gpg->status.fd[1] != -1)
@@ -279,7 +335,9 @@ _gpgme_gpg_release (GpgObject gpg)
   if (gpg->colon.fd[1] != -1)
     _gpgme_io_close (gpg->colon.fd[1]);
   free_fd_data_map (gpg->fd_data_map);
-  if (gpg->running)
+  if (gpg->cmd.fd != -1)
+    _gpgme_io_close (gpg->cmd.fd);
+  if (gpg->pid != -1)
     _gpgme_engine_add_child_to_reap_list (gpg, sizeof *gpg, gpg->pid);
   else
     xfree (gpg);
@@ -512,341 +570,387 @@ free_fd_data_map ( struct fd_data_map_s *fd_data_map )
 
 
 static GpgmeError
-build_argv ( GpgObject gpg )
+build_argv (GpgObject gpg)
 {
-    struct arg_and_data_s *a;
-    struct fd_data_map_s *fd_data_map;
-    size_t datac=0, argc=0;  
-    char **argv;
-    int need_special = 0;
-    int use_agent = !!getenv ("GPG_AGENT_INFO");
+  struct arg_and_data_s *a;
+  struct fd_data_map_s *fd_data_map;
+  size_t datac=0, argc=0;  
+  char **argv;
+  int need_special = 0;
+  int use_agent = !!getenv ("GPG_AGENT_INFO");
        
-    if ( gpg->argv ) {
-        free_argv ( gpg->argv );
-        gpg->argv = NULL;
+  if (gpg->argv)
+    {
+      free_argv (gpg->argv);
+      gpg->argv = NULL;
     }
-    if (gpg->fd_data_map) {
-        free_fd_data_map (gpg->fd_data_map);
-        gpg->fd_data_map = NULL;
-    }
-
-    argc++; /* for argv[0] */
-    for ( a=gpg->arglist; a; a = a->next ) {
-        argc++;
-        if (a->data) {
-            /*fprintf (stderr, "build_argv: data\n" );*/
-            datac++;
-            if ( a->dup_to == -1 && !a->print_fd )
-                need_special = 1;
-        }
-        else {
-            /*   fprintf (stderr, "build_argv: arg=`%s'\n", a->arg );*/
-        }
-    }
-    if ( need_special )
-        argc++;
-    if (use_agent)
-        argc++;
-    if (!gpg->cmd.used)
-        argc++;
-    argc += 2; /* --comment */
-
-    argv = xtrycalloc ( argc+1, sizeof *argv );
-    if (!argv)
-        return mk_error (Out_Of_Core);
-    fd_data_map = xtrycalloc ( datac+1, sizeof *fd_data_map );
-    if (!fd_data_map) {
-        free_argv (argv);
-        return mk_error (Out_Of_Core);
+  if (gpg->fd_data_map)
+    {
+      free_fd_data_map (gpg->fd_data_map);
+      gpg->fd_data_map = NULL;
     }
 
-    argc = datac = 0;
-    argv[argc] = xtrystrdup ( "gpg" ); /* argv[0] */
-    if (!argv[argc]) {
-        xfree (fd_data_map);
-        free_argv (argv);
-        return mk_error (Out_Of_Core);
-    }
-    argc++;
-    if ( need_special ) {
-        argv[argc] = xtrystrdup ( "--enable-special-filenames" );
-        if (!argv[argc]) {
-            xfree (fd_data_map);
-            free_argv (argv);
-            return mk_error (Out_Of_Core);
+  argc++;	/* For argv[0].  */
+  for (a = gpg->arglist; a; a = a->next)
+    {
+      argc++;
+      if (a->data)
+	{
+	  /*fprintf (stderr, "build_argv: data\n" );*/
+	  datac++;
+	  if (a->dup_to == -1 && !a->print_fd)
+	    need_special = 1;
         }
-        argc++;
-    }
-    if ( use_agent ) {
-        argv[argc] = xtrystrdup ( "--use-agent" );
-        if (!argv[argc]) {
-            xfree (fd_data_map);
-            free_argv (argv);
-            return mk_error (Out_Of_Core);
+      else
+	{
+	  /*   fprintf (stderr, "build_argv: arg=`%s'\n", a->arg );*/
         }
-        argc++;
     }
-    if ( !gpg->cmd.used ) {
-        argv[argc] = xtrystrdup ( "--batch" );
-        if (!argv[argc]) {
-            xfree (fd_data_map);
-            free_argv (argv);
-            return mk_error (Out_Of_Core);
+  if (need_special)
+    argc++;
+  if (use_agent)
+    argc++;
+  if (!gpg->cmd.used)
+    argc++;
+  argc += 2; /* --comment */
+
+  argv = xtrycalloc (argc + 1, sizeof *argv);
+  if (!argv)
+    return mk_error (Out_Of_Core);
+  fd_data_map = xtrycalloc (datac + 1, sizeof *fd_data_map);
+  if (!fd_data_map)
+    {
+      free_argv (argv);
+      return mk_error (Out_Of_Core);
+    }
+
+  argc = datac = 0;
+  argv[argc] = xtrystrdup ("gpg"); /* argv[0] */
+  if (!argv[argc])
+    {
+      xfree (fd_data_map);
+      free_argv (argv);
+      return mk_error (Out_Of_Core);
+    }
+  argc++;
+  if (need_special)
+    {
+      argv[argc] = xtrystrdup ("--enable-special-filenames");
+      if (!argv[argc])
+	{
+	  xfree (fd_data_map);
+	  free_argv (argv);
+	  return mk_error (Out_Of_Core);
         }
-        argc++;
+      argc++;
     }
-    argv[argc] = xtrystrdup ( "--comment" );
-    if (!argv[argc]) {
-        xfree (fd_data_map);
-        free_argv (argv);
-        return mk_error (Out_Of_Core);
+  if (use_agent)
+    {
+      argv[argc] = xtrystrdup ("--use-agent");
+      if (!argv[argc])
+	{
+	  xfree (fd_data_map);
+	  free_argv (argv);
+	  return mk_error (Out_Of_Core);
+        }
+      argc++;
     }
-    argc++;
-    argv[argc] = xtrystrdup ( "" );
-    if (!argv[argc]) {
-        xfree (fd_data_map);
-        free_argv (argv);
-        return mk_error (Out_Of_Core);
+  if (!gpg->cmd.used)
+    {
+      argv[argc] = xtrystrdup ("--batch");
+      if (!argv[argc])
+	{
+	  xfree (fd_data_map);
+	  free_argv (argv);
+	  return mk_error (Out_Of_Core);
+        }
+      argc++;
     }
-    argc++;
-    for ( a=gpg->arglist; a; a = a->next ) {
-        if ( a->data ) {
-            switch ( _gpgme_data_get_mode (a->data) ) {
-              case GPGME_DATA_MODE_NONE:
-              case GPGME_DATA_MODE_INOUT:
-                xfree (fd_data_map);
-                free_argv (argv);
-                return mk_error (Invalid_Mode);
-              case GPGME_DATA_MODE_IN:
-                /* create a pipe to read from gpg */
-                fd_data_map[datac].inbound = 1;
-                break;
-              case GPGME_DATA_MODE_OUT:
-                /* create a pipe to pass it down to gpg */
-                fd_data_map[datac].inbound = 0;
-                break;
+  argv[argc] = xtrystrdup ("--comment");
+  if (!argv[argc])
+    {
+      xfree (fd_data_map);
+      free_argv (argv);
+      return mk_error (Out_Of_Core);
+    }
+  argc++;
+  argv[argc] = xtrystrdup ("");
+  if (!argv[argc])
+    {
+      xfree (fd_data_map);
+      free_argv (argv);
+      return mk_error (Out_Of_Core);
+    }
+  argc++;
+  for (a = gpg->arglist; a; a = a->next)
+    {
+      if (a->data)
+	{
+	  switch (_gpgme_data_get_mode (a->data))
+	    {
+	    case GPGME_DATA_MODE_NONE:
+	    case GPGME_DATA_MODE_INOUT:
+	      xfree (fd_data_map);
+	      free_argv (argv);
+	      return mk_error (Invalid_Mode);
+	    case GPGME_DATA_MODE_IN:
+	      /* Create a pipe to read from gpg.  */
+	      fd_data_map[datac].inbound = 1;
+	      break;
+	    case GPGME_DATA_MODE_OUT:
+	      /* Create a pipe to pass it down to gpg.  */
+	      fd_data_map[datac].inbound = 0;
+	      break;
             }
 
-            switch ( gpgme_data_get_type (a->data) ) {
-              case GPGME_DATA_TYPE_NONE:
-                if ( fd_data_map[datac].inbound )
-                    break;  /* allowed */
-                xfree (fd_data_map);
-                free_argv (argv);
-                return mk_error (Invalid_Type);
-              case GPGME_DATA_TYPE_MEM:
-              case GPGME_DATA_TYPE_CB:
-                break;
-              case GPGME_DATA_TYPE_FD:
-              case GPGME_DATA_TYPE_FILE:
-                xfree (fd_data_map);
-                free_argv (argv);
-                return mk_error (Not_Implemented);
+	  switch (gpgme_data_get_type (a->data))
+	    {
+	    case GPGME_DATA_TYPE_NONE:
+	      if (fd_data_map[datac].inbound)
+		break;  /* Allowed.  */
+	      xfree (fd_data_map);
+	      free_argv (argv);
+	      return mk_error (Invalid_Type);
+	    case GPGME_DATA_TYPE_MEM:
+	    case GPGME_DATA_TYPE_CB:
+	      break;
+	    case GPGME_DATA_TYPE_FD:
+	    case GPGME_DATA_TYPE_FILE:
+	      xfree (fd_data_map);
+	      free_argv (argv);
+	      return mk_error (Not_Implemented);
             }
   
-            /* create a pipe */
-            {   
-                int fds[2];
-                
-                if (_gpgme_io_pipe (fds, fd_data_map[datac].inbound?1:0 )
-                    == -1) {
-                    xfree (fd_data_map);
-                    free_argv (argv);
-                    return mk_error (Pipe_Error);
-                }
-                if ( _gpgme_io_set_close_notify (fds[0],
-                                                 close_notify_handler, gpg)
-                     || _gpgme_io_set_close_notify (fds[1],
-                                                    close_notify_handler,
-                                                    gpg)) {
-                    return mk_error (General_Error);
-                }
-                /* if the data_type is FD, we have to do a dup2 here */
-                if (fd_data_map[datac].inbound) {
-                    fd_data_map[datac].fd       = fds[0];
-                    fd_data_map[datac].peer_fd  = fds[1];
-                }
-                else {
-                    fd_data_map[datac].fd       = fds[1];
-                    fd_data_map[datac].peer_fd  = fds[0];
-                }
-            }
+	  /* Create a pipe.  */
+	  {   
+	    int fds[2];
+	    
+	    if (_gpgme_io_pipe (fds, fd_data_map[datac].inbound ? 1 : 0)
+		== -1)
+	      {
+		xfree (fd_data_map);
+		free_argv (argv);
+		return mk_error (Pipe_Error);
+	      }
+	    if (_gpgme_io_set_close_notify (fds[0],
+					    close_notify_handler, gpg)
+		|| _gpgme_io_set_close_notify (fds[1],
+					       close_notify_handler,
+					       gpg))
+	      {
+		return mk_error (General_Error);
+	      }
+	    /* If the data_type is FD, we have to do a dup2 here.  */
+	    if (fd_data_map[datac].inbound)
+	      {
+		fd_data_map[datac].fd       = fds[0];
+		fd_data_map[datac].peer_fd  = fds[1];
+	      }
+	    else
+	      {
+		fd_data_map[datac].fd       = fds[1];
+		fd_data_map[datac].peer_fd  = fds[0];
+	      }
+	  }
 
-            /* Hack to get hands on the fd later */
-            if ( gpg->cmd.used && gpg->cmd.cb_data == a->data ) {
-                assert (gpg->cmd.fd == -1);
-                gpg->cmd.fd = fd_data_map[datac].fd;
-            }
+	  /* Hack to get hands on the fd later.  */
+	  if (gpg->cmd.used && gpg->cmd.cb_data == a->data)
+	    {
+	      assert (gpg->cmd.idx == -1);
+	      gpg->cmd.idx = datac;
+	    }
 
-            fd_data_map[datac].data = a->data;
-            fd_data_map[datac].dup_to = a->dup_to;
-            if ( a->dup_to == -1 ) {
-                argv[argc] = xtrymalloc ( 25 );
-                if (!argv[argc]) {
-                    xfree (fd_data_map);
-                    free_argv (argv);
-                    return mk_error (Out_Of_Core);
+	  fd_data_map[datac].data = a->data;
+	  fd_data_map[datac].dup_to = a->dup_to;
+	  if (a->dup_to == -1)
+	    {
+	      argv[argc] = xtrymalloc (25);
+	      if (!argv[argc])
+		{
+		  xfree (fd_data_map);
+		  free_argv (argv);
+		  return mk_error (Out_Of_Core);
                 }
-                sprintf ( argv[argc], 
-                          a->print_fd? "%d" : "-&%d",
-                          fd_data_map[datac].peer_fd );
-                argc++;
+	      sprintf (argv[argc], 
+		       a->print_fd ? "%d" : "-&%d",
+		       fd_data_map[datac].peer_fd);
+	      argc++;
             }
-            datac++;
+	  datac++;
         }
-        else {
-            argv[argc] = xtrystrdup ( a->arg );
-            if (!argv[argc]) {
-                xfree (fd_data_map);
-                free_argv (argv);
-                return mk_error (Out_Of_Core);
+      else
+	{
+	  argv[argc] = xtrystrdup (a->arg);
+	  if (!argv[argc])
+	    {
+	      xfree (fd_data_map);
+	      free_argv (argv);
+	      return mk_error (Out_Of_Core);
             }
             argc++;
         }
     }
 
-    gpg->argv = argv;
-    gpg->fd_data_map = fd_data_map;
-    return 0;
+  gpg->argv = argv;
+  gpg->fd_data_map = fd_data_map;
+  return 0;
+}
+
+static GpgmeError
+_gpgme_gpg_add_io_cb (GpgObject gpg, int fd, int dir,
+		      GpgmeIOCb handler, void *data, void **tag)
+{
+  GpgmeError err = 0;
+
+  *tag = (*gpg->io_cbs.add) (gpg->io_cbs.add_priv, fd, dir, handler, data);
+  if (!tag)
+    err = mk_error (General_Error);
+  if (!err && !dir)
+    /* FIXME Kludge around poll() problem.  */
+    err = _gpgme_io_set_nonblocking (fd);
+  return err;
 }
 
 GpgmeError
-_gpgme_gpg_spawn( GpgObject gpg, void *opaque )
+_gpgme_gpg_spawn (GpgObject gpg, void *opaque)
 {
-    int rc;
-    int i, n;
-    int pid;
-    struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
+  GpgmeError rc;
+  int i, n;
+  int pid;
+  struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
 
-    if (!gpg)
-      return mk_error (Invalid_Value);
+  if (!gpg)
+    return mk_error (Invalid_Value);
 
-    if (! _gpgme_get_gpg_path ())
-      return mk_error (Invalid_Engine);
+  if (! _gpgme_get_gpg_path ())
+    return mk_error (Invalid_Engine);
 
-    /* Kludge, so that we don't need to check the return code of
-     * all the gpgme_gpg_add_arg().  we bail out here instead */
-    if ( gpg->arg_error )
-        return mk_error (Out_Of_Core);
+  /* Kludge, so that we don't need to check the return code of all the
+     gpgme_gpg_add_arg().  we bail out here instead */
+  if (gpg->arg_error)
+    return mk_error (Out_Of_Core);
 
-    if (gpg->pm.active)
-        return 0;
-
-    rc = build_argv ( gpg );
-    if ( rc )
-        return rc;
-
-    n = 3; /* status_fd, colon_fd and end of list */
-    for (i=0; gpg->fd_data_map[i].data; i++ ) 
-        n++;
-    fd_child_list = xtrycalloc ( n+n, sizeof *fd_child_list );
-    if (!fd_child_list)
-        return mk_error (Out_Of_Core);
-    fd_parent_list = fd_child_list + n;
-
-    /* build the fd list for the child */
-    n=0;
-    if ( gpg->colon.fnc ) {
-        fd_child_list[n].fd = gpg->colon.fd[1]; 
-        fd_child_list[n].dup_to = 1; /* dup to stdout */
-        n++;
-    }
-    for (i=0; gpg->fd_data_map[i].data; i++ ) {
-        if (gpg->fd_data_map[i].dup_to != -1) {
-            fd_child_list[n].fd = gpg->fd_data_map[i].peer_fd;
-            fd_child_list[n].dup_to = gpg->fd_data_map[i].dup_to;
-            n++;
-        }
-    }
-    fd_child_list[n].fd = -1;
-    fd_child_list[n].dup_to = -1;
-
-    /* build the fd list for the parent */
-    n=0;
-    if ( gpg->status.fd[1] != -1 ) {
-        fd_parent_list[n].fd = gpg->status.fd[1];
-        fd_parent_list[n].dup_to = -1;
-        n++;
-        gpg->status.fd[1] = -1;
-    }
-    if ( gpg->colon.fd[1] != -1 ) {
-        fd_parent_list[n].fd = gpg->colon.fd[1];
-        fd_parent_list[n].dup_to = -1;
-        n++;
-        gpg->colon.fd[1] = -1;
-    }
-    for (i=0; gpg->fd_data_map[i].data; i++ ) {
-        fd_parent_list[n].fd = gpg->fd_data_map[i].peer_fd;
-        fd_parent_list[n].dup_to = -1;
-        n++;
-        gpg->fd_data_map[i].peer_fd = -1;
-    }        
-    fd_parent_list[n].fd = -1;
-    fd_parent_list[n].dup_to = -1;
-
-
-    pid = _gpgme_io_spawn (_gpgme_get_gpg_path (),
-                           gpg->argv, fd_child_list, fd_parent_list);
-    xfree (fd_child_list);
-    if (pid == -1) {
-        return mk_error (Exec_Error);
-    }
-
-    gpg->pid = pid;
-    if (gpg->pm.used)
-        gpg->pm.active = 1;
-
-    /*_gpgme_register_term_handler ( closure, closure_value, pid );*/
-
-    if ( _gpgme_register_pipe_handler ( opaque, gpg_status_handler,
-                                        gpg, pid, gpg->status.fd[0], 1 ) ) {
-        /* FIXME: kill the child */
-        return mk_error (General_Error);
-
-    }
-
-    if ( gpg->colon.fnc ) {
-        assert ( gpg->colon.fd[0] != -1 );
-        if ( _gpgme_register_pipe_handler ( opaque, gpg_colon_line_handler,
-                                            gpg, pid, gpg->colon.fd[0], 1 ) ) {
-            /* FIXME: kill the child */
-            return mk_error (General_Error);
-            
-        }
-    }
-
-    for (i=0; gpg->fd_data_map[i].data; i++ ) {
-        /* Due to problems with select and write we set outbound pipes
-         * to non-blocking */
-        if (!gpg->fd_data_map[i].inbound) {
-            _gpgme_io_set_nonblocking (gpg->fd_data_map[i].fd);
-        }
-
-        if ( _gpgme_register_pipe_handler (
-                 opaque, 
-                 gpg->fd_data_map[i].inbound?
-		 _gpgme_data_inbound_handler:_gpgme_data_outbound_handler,
-                 gpg->fd_data_map[i].data,
-                 pid, gpg->fd_data_map[i].fd,
-                 gpg->fd_data_map[i].inbound )
-           ) {
-            /* FIXME: kill the child */
-            return mk_error (General_Error);
-        }
-    }
-
-    if ( gpg->cmd.used )
-        _gpgme_freeze_fd ( gpg->cmd.fd );
-
-    /* fixme: check what data we can release here */
-    
-    gpg->running = 1;
+  if (gpg->pm.active)
     return 0;
+
+  rc = build_argv (gpg);
+  if (rc)
+    return rc;
+
+  n = 3; /* status_fd, colon_fd and end of list */
+  for (i = 0; gpg->fd_data_map[i].data; i++) 
+    n++;
+  fd_child_list = xtrycalloc (n + n, sizeof *fd_child_list);
+  if (!fd_child_list)
+    return mk_error (Out_Of_Core);
+  fd_parent_list = fd_child_list + n;
+
+  /* build the fd list for the child */
+  n = 0;
+  if (gpg->colon.fnc)
+    {
+      fd_child_list[n].fd = gpg->colon.fd[1]; 
+      fd_child_list[n].dup_to = 1; /* dup to stdout */
+      n++;
+    }
+  for (i = 0; gpg->fd_data_map[i].data; i++)
+    {
+      if (gpg->fd_data_map[i].dup_to != -1)
+	{
+	  fd_child_list[n].fd = gpg->fd_data_map[i].peer_fd;
+	  fd_child_list[n].dup_to = gpg->fd_data_map[i].dup_to;
+	  n++;
+        }
+    }
+  fd_child_list[n].fd = -1;
+  fd_child_list[n].dup_to = -1;
+
+  /* Build the fd list for the parent.  */
+  n = 0;
+  if (gpg->status.fd[1] != -1)
+    {
+      fd_parent_list[n].fd = gpg->status.fd[1];
+      fd_parent_list[n].dup_to = -1;
+      n++;
+      gpg->status.fd[1] = -1;
+    }
+  if (gpg->colon.fd[1] != -1)
+    {
+      fd_parent_list[n].fd = gpg->colon.fd[1];
+      fd_parent_list[n].dup_to = -1;
+      n++;
+      gpg->colon.fd[1] = -1;
+    }
+  for (i = 0; gpg->fd_data_map[i].data; i++)
+    {
+      fd_parent_list[n].fd = gpg->fd_data_map[i].peer_fd;
+      fd_parent_list[n].dup_to = -1;
+      n++;
+      gpg->fd_data_map[i].peer_fd = -1;
+    }        
+  fd_parent_list[n].fd = -1;
+  fd_parent_list[n].dup_to = -1;
+
+  pid = _gpgme_io_spawn (_gpgme_get_gpg_path (),
+			 gpg->argv, fd_child_list, fd_parent_list);
+  xfree (fd_child_list);
+  if (pid == -1)
+    return mk_error (Exec_Error);
+
+  gpg->pid = pid;
+  if (gpg->pm.used)
+    gpg->pm.active = 1;
+
+  /*_gpgme_register_term_handler ( closure, closure_value, pid );*/
+
+  rc = _gpgme_gpg_add_io_cb (gpg, gpg->status.fd[0], 1,
+			     gpg_status_handler, gpg, &gpg->status.tag);
+  if (rc)
+    /* FIXME: kill the child */
+    return rc;
+
+  if (gpg->colon.fnc)
+    {
+      assert (gpg->colon.fd[0] != -1);
+      rc = _gpgme_gpg_add_io_cb (gpg, gpg->colon.fd[0], 1,
+				 gpg_colon_line_handler, gpg,
+				 &gpg->colon.tag);
+      if (rc)
+	/* FIXME: kill the child */
+	return rc;
+    }
+
+  for (i = 0; gpg->fd_data_map[i].data; i++)
+    {
+      if (gpg->cmd.used && i == gpg->cmd.idx)
+	{
+	  /* Park the cmd fd.  */
+	  gpg->cmd.fd = gpg->fd_data_map[i].fd;
+	  gpg->fd_data_map[i].fd = -1;
+	}
+      else
+	{
+	  rc = _gpgme_gpg_add_io_cb (gpg, gpg->fd_data_map[i].fd,
+				     gpg->fd_data_map[i].inbound,
+				     gpg->fd_data_map[i].inbound
+				     ? _gpgme_data_inbound_handler
+				     : _gpgme_data_outbound_handler,
+				     gpg->fd_data_map[i].data,
+				     &gpg->fd_data_map[i].tag);
+	  
+	  if (rc)
+	    /* FIXME: kill the child */
+	    return rc;
+	}
+    }
+  
+  /* fixme: check what data we can release here */
+  return 0;
 }
 
 
-static int
-gpg_status_handler (void *opaque, int pid, int fd)
+static void
+gpg_status_handler (void *opaque, int fd)
 {
   GpgObject gpg = opaque;
   int err;
@@ -860,9 +964,11 @@ gpg_status_handler (void *opaque, int pid, int fd)
       GpgmeCtx ctx = (GpgmeCtx) gpg->status.fnc_value;
       ctx->error = err;
       DEBUG1 ("gpg_handler: read_status problem %d\n - stop", err);
-      return 1;
+      _gpgme_io_close (fd);
+      return;
     }
-  return gpg->status.eof;
+  if (gpg->status.eof)
+    _gpgme_io_close (fd);
 }
 
 
@@ -951,7 +1057,14 @@ read_status ( GpgObject gpg )
                              * handler does its action */
                             if ( nread > 1 )
                                 DEBUG0 ("ERROR, unexpected data in read_status");
-                            _gpgme_thaw_fd (gpg->cmd.fd);
+
+			    _gpgme_gpg_add_io_cb
+			      (gpg, gpg->cmd.fd,
+			       0, _gpgme_data_outbound_handler,
+			       gpg->fd_data_map[gpg->cmd.idx].data,
+			       &gpg->fd_data_map[gpg->cmd.idx].tag);
+			    gpg->fd_data_map[gpg->cmd.idx].fd = gpg->cmd.fd;
+			    gpg->cmd.fd = -1;
                         }
                         else if ( gpg->status.fnc ) {
                             gpg->status.fnc ( gpg->status.fnc_value, 
@@ -959,8 +1072,13 @@ read_status ( GpgObject gpg )
                         }
                     
                         if ( r->code == STATUS_END_STREAM ) {
-                            if ( gpg->cmd.used )
-                                _gpgme_freeze_fd ( gpg->cmd.fd );
+			  if (gpg->cmd.used)
+			    {
+			      (*gpg->io_cbs.remove)
+				(gpg->fd_data_map[gpg->cmd.idx].tag);
+			      gpg->cmd.fd = gpg->fd_data_map[gpg->cmd.idx].fd;
+			      gpg->fd_data_map[gpg->cmd.idx].fd = -1;
+			    }
                         }
                     }
                 }
@@ -995,21 +1113,23 @@ read_status ( GpgObject gpg )
  * a wrapper for a callback.  Same goes for the status thing.
  * For now we use this thing here becuase it is easier to implement.
  */
-static int
-gpg_colon_line_handler ( void *opaque, int pid, int fd )
+static void
+gpg_colon_line_handler (void *opaque, int fd)
 {
-    GpgObject gpg = opaque;
-    GpgmeError rc = 0;
+  GpgObject gpg = opaque;
+  GpgmeError rc = 0;
 
-    assert ( fd == gpg->colon.fd[0] );
-    rc = read_colon_line ( gpg );
-    if ( rc ) {
-        DEBUG1 ("gpg_colon_line_handler: "
-                 "read problem %d\n - stop", rc);
-        return 1;
+  assert (fd == gpg->colon.fd[0]);
+  rc = read_colon_line (gpg);
+  if (rc)
+    {
+      DEBUG1 ("gpg_colon_line_handler: "
+	      "read problem %d\n - stop", rc);
+      _gpgme_io_close (fd);
+      return;
     }
-
-    return gpg->colon.eof;
+  if (gpg->colon.eof)
+    _gpgme_io_close (fd);
 }
 
 static GpgmeError
@@ -1167,52 +1287,59 @@ pipemode_cb ( void *opaque, char *buffer, size_t length, size_t *nread )
  */
 
 static int
-command_cb ( void *opaque, char *buffer, size_t length, size_t *nread )
+command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
 {
-    GpgObject gpg = opaque;
-    const char *value;
-    int value_len;
+  GpgObject gpg = opaque;
+  const char *value;
+  int value_len;
 
-    DEBUG0 ("command_cb: enter\n");
-    assert (gpg->cmd.used);
-    if ( !buffer || !length || !nread )
-        return 0; /* those values are reserved for extensions */
-    *nread =0;
-    if ( !gpg->cmd.code ) {
-        DEBUG0 ("command_cb: no code\n");
-        return -1;
+  DEBUG0 ("command_cb: enter\n");
+  assert (gpg->cmd.used);
+  if (!buffer || !length || !nread)
+    return 0; /* These values are reserved for extensions.  */
+  *nread = 0;
+  if (!gpg->cmd.code)
+    {
+      DEBUG0 ("command_cb: no code\n");
+      return -1;
     }
     
-    if ( !gpg->cmd.fnc ) {
-        DEBUG0 ("command_cb: no user cb\n");
-        return -1;
+  if (!gpg->cmd.fnc)
+    {
+      DEBUG0 ("command_cb: no user cb\n");
+      return -1;
     }
 
-    value = gpg->cmd.fnc ( gpg->cmd.fnc_value, 
-                           gpg->cmd.code, gpg->cmd.keyword );
-    if ( !value ) {
-        DEBUG0 ("command_cb: no data from user cb\n");
-        gpg->cmd.fnc ( gpg->cmd.fnc_value, 0, value);
-        return -1;
+  value = gpg->cmd.fnc (gpg->cmd.fnc_value, 
+			gpg->cmd.code, gpg->cmd.keyword);
+  if (!value)
+    {
+      DEBUG0 ("command_cb: no data from user cb\n");
+      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
+      return -1;
     }
 
-    value_len = strlen (value);
-    if ( value_len+1 > length ) {
-        DEBUG0 ("command_cb: too much data from user cb\n");
-        gpg->cmd.fnc ( gpg->cmd.fnc_value, 0, value);
-        return -1;
+  value_len = strlen (value);
+  if (value_len + 1 > length)
+    {
+      DEBUG0 ("command_cb: too much data from user cb\n");
+      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
+      return -1;
     }
 
-    memcpy ( buffer, value, value_len );
-    if ( !value_len || (value_len && value[value_len-1] != '\n') ) 
-        buffer[value_len++] = '\n';
-    *nread = value_len;
+  memcpy (buffer, value, value_len);
+  if (!value_len || (value_len && value[value_len-1] != '\n')) 
+    buffer[value_len++] = '\n';
+  *nread = value_len;
     
-    gpg->cmd.fnc ( gpg->cmd.fnc_value, 0, value);
-    gpg->cmd.code = 0;
-    /* and sleep again until read_status will wake us up again */
-    _gpgme_freeze_fd ( gpg->cmd.fd );
-    return 0;
+  gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
+  gpg->cmd.code = 0;
+  /* And sleep again until read_status will wake us up again.  */
+  (*gpg->io_cbs.remove) (gpg->fd_data_map[gpg->cmd.idx].tag);
+  gpg->cmd.fd = gpg->fd_data_map[gpg->cmd.idx].fd;
+  gpg->fd_data_map[gpg->cmd.idx].fd = -1;
+
+  return 0;
 }
 
 GpgmeError
@@ -1602,4 +1729,11 @@ _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData text)
 	}
     }
   return err;
+}
+
+
+void
+_gpgme_gpg_set_io_cbs (GpgObject gpg, struct GpgmeIOCbs *io_cbs)
+{
+  gpg->io_cbs = *io_cbs;
 }

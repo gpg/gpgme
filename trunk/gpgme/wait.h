@@ -23,12 +23,24 @@
 #define WAIT_H
 
 #include "gpgme.h"
+#include "sema.h"
 
-void _gpgme_remove_proc_from_wait_queue (int pid);
+struct fd_table
+{
+  DECLARE_LOCK (lock);
+  struct io_select_fd_s *fds;
+  size_t size;
+};
+typedef struct fd_table *fd_table_t;
 
-GpgmeError _gpgme_register_pipe_handler (void *opaque,
-					 int (*handler) (void*, int, int),
-					 void *handler_value,
-					 int pid, int fd, int inbound);
+void _gpgme_fd_table_init (fd_table_t fdt);
+void _gpgme_fd_table_deinit (fd_table_t fdt);
+
+void *_gpgme_add_io_cb (void *data, int fd, int dir,
+			GpgmeIOCb fnc, void *fnc_data);
+void _gpgme_remove_io_cb (void *tag);
+void _gpgme_wait_event_cb (void *data, GpgmeEventIO type, void *type_data);
+
+GpgmeError _gpgme_wait_one (GpgmeCtx ctx);
 
 #endif	/* WAIT_H */

@@ -162,18 +162,12 @@ import_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 }
 
 
-GpgmeError
-gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
+static GpgmeError
+_gpgme_op_import_start (GpgmeCtx ctx, int synchronous, GpgmeData keydata)
 {
   int err = 0;
 
-  fail_on_pending_request (ctx);
-  ctx->pending = 1;
-
-  _gpgme_engine_release (ctx->engine);
-  ctx->engine = NULL;
-  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     goto leave;
 
@@ -204,6 +198,12 @@ gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
 }
 
 
+GpgmeError
+gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
+{
+  return _gpgme_op_import_start (ctx, 0, keydata);
+}
+
 /**
  * gpgme_op_import:
  * @c: Context 
@@ -216,8 +216,8 @@ gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
 GpgmeError
 gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
 {
-  GpgmeError err = gpgme_op_import_start (ctx, keydata);
+  GpgmeError err = _gpgme_op_import_start (ctx, 1, keydata);
   if (!err)
-    gpgme_wait (ctx, &err, 1);
+    err = _gpgme_wait_one (ctx);
   return err;
 }

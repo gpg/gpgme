@@ -63,5 +63,6 @@ GpgmeError _gpgme_gpgsm_op_trustlist (GpgsmObject gpgsm, const char *pattern);
 GpgmeError _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig,
 				   GpgmeData text);
 GpgmeError _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque);
+void _gpgme_gpgsm_set_io_cbs (GpgsmObject gpgsm, struct GpgmeIOCbs *io_cbs);
 
 #endif /* ENGINE_GPGSM_H */

@@ -50,30 +50,14 @@ encrypt_sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 }
 
 
-GpgmeError
-gpgme_op_encrypt_sign_start (GpgmeCtx ctx, GpgmeRecipients recp,
-			     GpgmeData plain, GpgmeData cipher)
+static GpgmeError
+_gpgme_op_encrypt_sign_start (GpgmeCtx ctx, int synchronous,
+			      GpgmeRecipients recp,
+			      GpgmeData plain, GpgmeData cipher)
 {
-  int err = 0;
+  GpgmeError err = 0;
 
-  fail_on_pending_request (ctx);
-  ctx->pending = 1;
-
-  _gpgme_release_result (ctx);
-
-  /* Do some checks.  */
-  if (!gpgme_recipients_count (recp))
-    {
-      /* FIXME: In this case we should do symmetric encryption.  */
-      err = mk_error (No_Recipients);
-      goto leave;
-    }
-
-  /* Create an engine object.  */
-  _gpgme_engine_release (ctx->engine);
-  ctx->engine = NULL;
-  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     goto leave;
 
@@ -115,6 +99,13 @@ gpgme_op_encrypt_sign_start (GpgmeCtx ctx, GpgmeRecipients recp,
   return err;
 }
 
+GpgmeError
+gpgme_op_encrypt_sign_start (GpgmeCtx ctx, GpgmeRecipients recp,
+			      GpgmeData plain, GpgmeData cipher)
+{
+  return _gpgme_op_encrypt_sign_start (ctx, 0, recp, plain, cipher);
+}
+
 
 /**
  * gpgme_op_encrypt_sign:
@@ -133,11 +124,11 @@ GpgmeError
 gpgme_op_encrypt_sign (GpgmeCtx ctx, GpgmeRecipients recp,
 		       GpgmeData plain, GpgmeData cipher)
 {
-  GpgmeError err = gpgme_op_encrypt_sign_start (ctx, recp, plain, cipher);
+  GpgmeError err = _gpgme_op_encrypt_sign_start (ctx, 1, recp, plain, cipher);
 
   if (!err)
     {
-      gpgme_wait (ctx, &err, 1);
+      err = _gpgme_wait_one (ctx);
       /* Old gpg versions don't return status info for invalid
          recipients, so we simply check whether we got any output at
          all, and if not we assume that we don't have valid

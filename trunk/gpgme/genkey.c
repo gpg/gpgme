@@ -78,65 +78,19 @@ genkey_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
     }
 }
 
-
-/**
- * gpgme_op_genkey:
- * @c: the context
- * @parms: XML string with the key parameters
- * @pubkey: Returns the public key
- * @seckey: Returns the secret key
- * 
- * Generate a new key and store the key in the default keyrings if
- * both @pubkey and @seckey are NULL.  If @pubkey and @seckey are
- * given, the newly created key will be returned in these data
- * objects.  This function just starts the gheneration and does not
- * wait for completion.
- *
- * Here is an example on how @parms should be formatted; for deatils
- * see the file doc/DETAILS from the GnuPG distribution.
- *
- * <literal>
- * <![CDATA[
- * <GnupgKeyParms format="internal">
- * Key-Type: DSA
- * Key-Length: 1024
- * Subkey-Type: ELG-E
- * Subkey-Length: 1024
- * Name-Real: Joe Tester
- * Name-Comment: with stupid passphrase
- * Name-Email: joe@foo.bar
- * Expire-Date: 0
- * Passphrase: abc
- * </GnupgKeyParms>
- * ]]>
- * </literal> 
- *
- * Strings should be given in UTF-8 encoding.  The format we support
- * for now is only "internal".  The content of the
- * &lt;GnupgKeyParms&gt; container is passed verbatim to GnuPG.
- * Control statements are not allowed.
- * 
- * Return value: 0 for success or an error code
- **/
-GpgmeError
-gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
-		       GpgmeData pubkey, GpgmeData seckey)
+static GpgmeError
+_gpgme_op_genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
+			GpgmeData pubkey, GpgmeData seckey)
 {
   int err = 0;
   const char *s, *s2, *sx;
 
-  fail_on_pending_request (ctx);
-  ctx->pending = 1;
+  err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    goto leave;
 
   gpgme_data_release (ctx->help_data_1);
   ctx->help_data_1 = NULL;
-
-  _gpgme_engine_release (ctx->engine);
-  ctx->engine = NULL;
-  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
-  if (err)
-    goto leave;
 
   if (!pubkey && !seckey)
     ; /* okay: Add key to the keyrings */
@@ -206,6 +160,53 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
  * @pubkey: Returns the public key
  * @seckey: Returns the secret key
  * 
+ * Generate a new key and store the key in the default keyrings if
+ * both @pubkey and @seckey are NULL.  If @pubkey and @seckey are
+ * given, the newly created key will be returned in these data
+ * objects.  This function just starts the gheneration and does not
+ * wait for completion.
+ *
+ * Here is an example on how @parms should be formatted; for deatils
+ * see the file doc/DETAILS from the GnuPG distribution.
+ *
+ * <literal>
+ * <![CDATA[
+ * <GnupgKeyParms format="internal">
+ * Key-Type: DSA
+ * Key-Length: 1024
+ * Subkey-Type: ELG-E
+ * Subkey-Length: 1024
+ * Name-Real: Joe Tester
+ * Name-Comment: with stupid passphrase
+ * Name-Email: joe@foo.bar
+ * Expire-Date: 0
+ * Passphrase: abc
+ * </GnupgKeyParms>
+ * ]]>
+ * </literal> 
+ *
+ * Strings should be given in UTF-8 encoding.  The format we support
+ * for now is only "internal".  The content of the
+ * &lt;GnupgKeyParms&gt; container is passed verbatim to GnuPG.
+ * Control statements are not allowed.
+ * 
+ * Return value: 0 for success or an error code
+ **/
+GpgmeError
+gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
+		       GpgmeData pubkey, GpgmeData seckey)
+{
+  return _gpgme_op_genkey_start (ctx, 0, parms, pubkey, seckey);
+}
+
+
+/**
+ * gpgme_op_genkey:
+ * @c: the context
+ * @parms: XML string with the key parameters
+ * @pubkey: Returns the public key
+ * @seckey: Returns the secret key
+ * 
  * Generate a new key and store the key in the default keyrings if both
  * @pubkey and @seckey are NULL.  If @pubkey and @seckey are given, the newly
  * created key will be returned in these data objects.
@@ -217,8 +218,8 @@ GpgmeError
 gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
                  GpgmeData pubkey, GpgmeData seckey)
 {
-  GpgmeError err = gpgme_op_genkey_start (ctx, parms, pubkey, seckey);
+  GpgmeError err = _gpgme_op_genkey_start (ctx, 1, parms, pubkey, seckey);
   if (!err)
-    gpgme_wait (ctx, &err, 1);
+    err = _gpgme_wait_one (ctx);
   return err;
 }

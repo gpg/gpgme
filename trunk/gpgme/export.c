@@ -41,21 +41,13 @@ export_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 }
 
 
-GpgmeError
-gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData keydata)
+static GpgmeError
+_gpgme_op_export_start (GpgmeCtx ctx, int synchronous,
+			GpgmeRecipients recp, GpgmeData keydata)
 {
   GpgmeError err = 0;
 
-  fail_on_pending_request (ctx);
-  ctx->pending = 1;
-
-  _gpgme_engine_release (ctx->engine);
-  ctx->engine = NULL;
-
-  _gpgme_release_result (ctx);
-
-  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     goto leave;
 
@@ -83,6 +75,11 @@ gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData keydata)
   return err;
 }
 
+GpgmeError
+gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData keydata)
+{
+  return _gpgme_op_export_start (ctx, 0, recp, keydata);
+}
 
 /**
  * gpgme_op_export:
@@ -100,8 +97,8 @@ gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData keydata)
 GpgmeError
 gpgme_op_export (GpgmeCtx ctx, GpgmeRecipients recipients, GpgmeData keydata)
 {
-  GpgmeError err = gpgme_op_export_start (ctx, recipients, keydata);
+  GpgmeError err = _gpgme_op_export_start (ctx, 1, recipients, keydata);
   if (!err)
-    gpgme_wait (ctx, &err, 1);
+    err = _gpgme_wait_one (ctx);
   return err;
 }

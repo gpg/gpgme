@@ -41,7 +41,7 @@ decrypt_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 GpgmeError
 gpgme_op_decrypt_verify_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain)
 {
-  return _gpgme_decrypt_start (ctx, ciph, plain,
+  return _gpgme_decrypt_start (ctx, 0, ciph, plain,
 			       decrypt_verify_status_handler);
 }
 
@@ -69,10 +69,11 @@ gpgme_op_decrypt_verify (GpgmeCtx ctx,
   ctx->notation = NULL;
     
   *r_stat = GPGME_SIG_STAT_NONE;
-  err = gpgme_op_decrypt_verify_start (ctx, in, out);
+  err = _gpgme_decrypt_start (ctx, 1, in, out,
+			      decrypt_verify_status_handler);
   if (!err)
     {
-      gpgme_wait (ctx, &err, 1);
+      err = _gpgme_wait_one (ctx);
       if (!err)
 	*r_stat = _gpgme_intersect_stati (ctx->result.verify);
     }

@@ -43,7 +43,7 @@ extern "C" {
    AM_PATH_GPGME macro) check that this header matches the installed
    library.  Warning: Do not edit the next line.  configure will do
    that for you!  */
-#define GPGME_VERSION "0.3.7-cvs"
+#define GPGME_VERSION "0.3.8-cvs"
 
 
 /* The opaque data types used by GPGME.  */
@@ -315,6 +315,46 @@ char *gpgme_get_op_info (GpgmeCtx ctx, int reserved);
 
 
 /* Run control.  */
+
+/* The type of an I/O callback function.  */
+typedef void (*GpgmeIOCb) (void *data, int fd);
+
+/* The type of a function that can register FNC as the I/O callback
+   function for the file descriptor FD with direction dir (0: inbound,
+   1: outbound).  FNC_DATA should be passed as DATA to FNC.  The
+   function should return a TAG suitable for the corresponding
+   GpgmeRemoveIOCb.  */
+typedef void *(*GpgmeRegisterIOCb) (void *data, int fd, int dir,
+				    GpgmeIOCb fnc, void *fnc_data);
+
+/* The type of a function that can remove a previously registered I/O
+   callback function given TAG as returned by the register
+   function.  */
+typedef void (*GpgmeRemoveIOCb) (void *tag);
+
+typedef enum { GPGME_EVENT_DONE,
+	       GPGME_EVENT_NEXT_KEY,
+	       GPGME_EVENT_NEXT_TRUSTITEM } GpgmeEventIO;
+
+/* The type of a function that is called when a context finished an
+   operation.  */
+typedef void (*GpgmeEventIOCb) (void *data, GpgmeEventIO type,
+				void *type_data);
+
+struct GpgmeIOCbs
+{
+  GpgmeRegisterIOCb add;
+  void *add_priv;
+  GpgmeRemoveIOCb remove;
+  GpgmeEventIOCb event;
+  void *event_priv;
+};
+
+/* Set the I/O callback functions in CTX to IO_CBS.  */
+void gpgme_set_op_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs);
+
+/* Get the current I/O callback functions.  */
+void gpgme_get_op_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs);
 
 /* Cancel a pending operation in CTX.  */
 void       gpgme_cancel (GpgmeCtx ctx);

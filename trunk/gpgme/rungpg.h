@@ -159,5 +159,6 @@ GpgmeError _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
 GpgmeError _gpgme_gpg_op_trustlist (GpgObject gpg, const char *pattern);
 GpgmeError _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData text);
 GpgmeError _gpgme_gpg_spawn (GpgObject gpg, void *opaque);
+void _gpgme_gpg_set_io_cbs (GpgObject gpg, struct GpgmeIOCbs *io_cbs);
 
 #endif /* RUNGPG_H */
