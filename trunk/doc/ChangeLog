@@ -1,3 +1,8 @@
+2003-07-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Progress Meter Callback): Change return type of
+	gpgme_progress_cb_t to void.
+
 2003-06-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi: Add 2003 to copyright notice.
