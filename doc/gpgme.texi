@@ -2217,16 +2217,17 @@ fingerprint of the key which signed the plaintext, or @code{NULL} if
 no verification could be performed.
 @end deftypefun
 
-@deftypefun {const char *} gpgme_get_sig_string_attr (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeAttr @var{waht}}, @w{int @var{reserved}})
+@deftypefun {const char *} gpgme_get_sig_string_attr (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeAttr @var{what}}, @w{int @var{reserved}})
 This function is similar to @code{gpgme_get_sig_status} but may be used
 to retrieve more detailed information.  @var{ctx} should be the context
 used for the last signature verification, @var{idx} is used to enumerate
 over all signatures starting with @code{0} and @var{reserved} should be
 @code{0} for now.
 
-The only attribute @var{what} currently supported is
+The attributes @var{what} currently supports are
 @code{GPGME_ATTR_FPR} to return the fingerprint of the key used to
-create the signature.
+create the signature and @code{GPGME_ERRTOK} to return a token
+with a more detailed error description.
 @end deftypefun
 
 @deftypefun {const char *} gpgme_get_sig_ulong_attr (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeAttr @var{waht}}, @w{int @var{reserved}})

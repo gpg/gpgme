@@ -79,8 +79,3 @@ GpgmeError _gpgme_key_append_name ( GpgmeKey key, const char *s );
 
 
 #endif /* KEY_H */
-
-
-
-
-

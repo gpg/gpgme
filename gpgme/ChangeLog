@@ -1,3 +1,21 @@
+2002-06-11  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.h: Add GPGME_ATTR_SIG_SUMMARY and the GPGME_SIGSUM_
+	constants.
+	* verify.c (calc_sig_summary): New.
+	(gpgme_get_sig_ulong_attr): And use it here.
+
+2002-06-10  Werner Koch  <wk@gnupg.org>
+
+	* rungpg.h: Add new status codes TRUNCATED and ERROR.
+	* verify.c (is_token, copy_token): New.
+	(_gpgme_verify_status_handler): Use copy_token, handle the new
+	ERROR status and store the errorcode used withgpgsm and trust
+	status codes.
+	* gpgme.h: New attribute ERRTOK.
+	* key.c (gpgme_key_get_string_attr): Add dummy case for it.
+	(gpgme_get_sig_string_attr): Use it here to return the last error.
+
 2002-06-10  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_start): Move the code that sets the

@@ -990,6 +990,7 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
       val = key->chain_id;
       break;
     case GPGME_ATTR_SIG_STATUS:
+    case GPGME_ATTR_ERRTOK:
       /* Not of any use here.  */
       break;
     }

@@ -1,3 +1,7 @@
+2002-06-10  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm/t-verify.c (print_sig_stat): Print the error token.
+
 2002-06-04  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm/t-encrypt.c (main): Add a simple option parser and allow
