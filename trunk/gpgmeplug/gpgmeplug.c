@@ -896,6 +896,7 @@ bool signMessage( const char*  cleartext,
 {
   GpgmeCtx ctx;
   GpgmeError err;
+  GpgmeKey rKey;
   GpgmeData data,  sig;
   char* rSig  = 0;
   bool  bOk   = false;
@@ -933,6 +934,22 @@ bool signMessage( const char*  cleartext,
   }
   gpgme_set_include_certs (ctx, sendCerts);
 
+  /* select the signer's key if provided */
+  if (certificate != 0) {
+      err = gpgme_op_keylist_start(ctx, certificate, 0);
+      if (err == GPGME_No_Error) {
+	  /* we only support one signer for now */
+	  err = gpgme_op_keylist_next(ctx, &rKey);
+	  if (err == GPGME_No_Error) {
+	      /* clear existing signers */
+	      gpgme_signers_clear(ctx);
+	      /* set the signing key */
+	      gpgme_signers_add(ctx, rKey);
+	  }
+	  gpgme_op_keylist_end(ctx);
+      }
+  }
+
   /* PENDING(g10) Implement this
 
      gpgme_set_signature_algorithm( ctx, config.signatureAlgorithm )
@@ -944,7 +961,7 @@ bool signMessage( const char*  cleartext,
   gpgme_data_new ( &sig );
   err = gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
 
-  if (!err) {
+  if ( err == GPGME_No_Error ) {
     if( __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY ) {
       *ciphertext = gpgme_data_release_and_get_mem( sig, (size_t*)cipherLen );
       bOk = true;
@@ -964,8 +981,15 @@ bool signMessage( const char*  cleartext,
   }
   else {
     gpgme_data_release( sig );
+/*
+*ciphertext = malloc( 70 );
+strcpy((char*)*ciphertext, "xyz\nsig-dummy\nzyx" );
+(*ciphertext)[17] = '\0';
+err = 0;
+{
+*/
     *ciphertext = 0;
-    fprintf( stderr, "\ngpgme_op_sign() returned this error code:  %i\n\n", err );
+    fprintf( stderr, "\n\n    gpgme_op_sign() returned this error code:  %i\n\n", err );
     if( errId )
       *errId = err;
     if( errTxt ) {
@@ -974,6 +998,9 @@ bool signMessage( const char*  cleartext,
       if( *errTxt )
         strcpy(*errTxt, _errTxt );
     }
+/*
+}
+*/
   }
   gpgme_data_release( data );
   gpgme_release (ctx);
@@ -1074,13 +1101,10 @@ bool checkMessageSignature( char** cleartext,
   bool isOpaqueSigned;
 
   if( !cleartext ) {
-    if( sigmeta ) {
-      sigmeta->status = malloc( strlen( __GPGMEPLUG_ERROR_CLEARTEXT_IS_ZERO ) + 1 );
-      if( sigmeta->status ) {
-        strcpy( sigmeta->status, __GPGMEPLUG_ERROR_CLEARTEXT_IS_ZERO );
-        sigmeta->status[ strlen( __GPGMEPLUG_ERROR_CLEARTEXT_IS_ZERO ) ] = '\0';
-      }
-    }
+    if( sigmeta )
+      storeNewCharPtr( &sigmeta->status,
+                        __GPGMEPLUG_ERROR_CLEARTEXT_IS_ZERO );
+
     return false;
   }
 
@@ -1142,6 +1166,10 @@ bool checkMessageSignature( char** cleartext,
                                     sizeof( struct SignatureMetaDataExtendedInfo ) * ( sig_idx + 1 ) );
     if( realloc_return ) {
       sigmeta->extended_info = realloc_return;
+
+      /* clear the data area */
+      memset( &sigmeta->extended_info[sig_idx], 0, sizeof (struct SignatureMetaDataExtendedInfo) );
+
       /* the creation time */
       sigmeta->extended_info[sig_idx].creation_time = malloc( sizeof( struct tm ) );
       if( sigmeta->extended_info[sig_idx].creation_time ) {
@@ -1150,20 +1178,82 @@ bool checkMessageSignature( char** cleartext,
                 ctime_val, sizeof( struct tm ) );
       }
 
-      err = gpgme_get_sig_key (ctx, sig_idx, &key);
-      sig_status = sig_status_to_string( status );
-      sigmeta->extended_info[sig_idx].status_text = malloc( strlen( sig_status ) + 1 );
-      if( sigmeta->extended_info[sig_idx].status_text ) {
-        strcpy( sigmeta->extended_info[sig_idx].status_text,
-                sig_status );
-        sigmeta->extended_info[sig_idx].status_text[strlen( sig_status )] = '\0';
-      }
+      sigmeta->extended_info[sig_idx].validity = GPGME_VALIDITY_UNKNOWN;
 
-      sigmeta->extended_info[sig_idx].fingerprint = malloc( strlen( fpr ) + 1 );
-      if( sigmeta->extended_info[sig_idx].fingerprint ) {
-        strcpy( sigmeta->extended_info[sig_idx].fingerprint, fpr );
-        sigmeta->extended_info[sig_idx].fingerprint[strlen( fpr )] = '\0';
-      }
+      err = gpgme_get_sig_key (ctx, sig_idx, &key);
+      if (err == GPGME_No_Error) {
+	  const char* attr_string;
+	  unsigned long attr_ulong;
+
+	  /* extract key identidy */
+	  attr_string = gpgme_key_get_string_attr(key, GPGME_ATTR_KEYID, 0, 0);
+	  if (attr_string != 0)
+	      storeNewCharPtr( &sigmeta->extended_info[sig_idx].keyid, attr_string );
+
+	  /* extract finger print */
+	  attr_string = gpgme_key_get_string_attr(key, GPGME_ATTR_FPR, 0, 0);
+	  if (attr_string != 0)
+	      storeNewCharPtr( &sigmeta->extended_info[sig_idx].fingerprint,
+                           attr_string );
+
+          /* algorithms useable with this key */
+          attr_string = gpgme_key_get_string_attr(key, GPGME_ATTR_ALGO, 0, 0);
+          if (attr_string != 0)
+              storeNewCharPtr( &sigmeta->extended_info[sig_idx].algo,
+                               attr_string );
+          attr_ulong = gpgme_key_get_ulong_attr(key, GPGME_ATTR_ALGO, 0, 0);
+          sigmeta->extended_info[sig_idx].algo_num = attr_ulong;
+
+          /* extract key validity */
+	  attr_ulong = gpgme_key_get_ulong_attr(key, GPGME_ATTR_VALIDITY, 0, 0);
+	  sigmeta->extended_info[sig_idx].validity = attr_ulong;
+	  
+	  /* extract user id, according to the documentation it's representable
+	   * as a number, but it seems that it also has a string representation 
+	   */
+	  attr_string = gpgme_key_get_string_attr(key, GPGME_ATTR_USERID, 0, 0);
+	  if (attr_string != 0)
+	      storeNewCharPtr( &sigmeta->extended_info[sig_idx].userid,
+                           attr_string );
+	  attr_ulong = gpgme_key_get_ulong_attr(key, GPGME_ATTR_USERID, 0, 0);
+	  sigmeta->extended_info[sig_idx].userid_num = attr_ulong;
+
+	  /* extract the length */
+	  attr_ulong = gpgme_key_get_ulong_attr(key, GPGME_ATTR_LEN, 0, 0);
+	  sigmeta->extended_info[sig_idx].keylen = attr_ulong;
+
+	  /* extract the creation time of the key */
+	  attr_ulong = gpgme_key_get_ulong_attr(key, GPGME_ATTR_CREATED, 0, 0);
+	  sigmeta->extended_info[sig_idx].key_created = attr_ulong;
+
+	  /* extract the expiration time of the key */
+	  attr_ulong = gpgme_key_get_ulong_attr(key, GPGME_ATTR_EXPIRE, 0, 0);
+	  sigmeta->extended_info[sig_idx].key_expires = attr_ulong;
+	  
+	  /* extract user name */
+	  attr_string = gpgme_key_get_string_attr(key, GPGME_ATTR_NAME, 0, 0);
+	  if (attr_string != 0)
+	      storeNewCharPtr( &sigmeta->extended_info[sig_idx].name,
+                           attr_string );
+
+	  /* extract email */
+	  attr_string = gpgme_key_get_string_attr(key, GPGME_ATTR_EMAIL, 0, 0);
+	  if (attr_string != 0)
+	      storeNewCharPtr( &sigmeta->extended_info[sig_idx].email,
+                           attr_string );
+
+	  /* extract the comment */
+	  attr_string = gpgme_key_get_string_attr(key, GPGME_ATTR_COMMENT, 0, 0);
+	  if (attr_string != 0)
+	      storeNewCharPtr( &sigmeta->extended_info[sig_idx].comment,
+                           attr_string );
+
+      }	  
+
+      sig_status = sig_status_to_string( status );
+      storeNewCharPtr( &sigmeta->extended_info[sig_idx].status_text,
+                       sig_status );
+
     } else
       break; /* if allocation fails once, it isn't likely to
                 succeed the next time either */
@@ -1403,7 +1493,7 @@ bool encryptMessage( const char*  cleartext,
   gpgme_recipients_release (rset);
   gpgme_data_release (gPlaintext);
 
-  if( !err ) {
+  if( err == GPGME_No_Error ) {
     if( __GPGMEPLUG_ENCRYPTED_CODE_IS_BINARY ) {
       *ciphertext = gpgme_data_release_and_get_mem( gCiphertext, (size_t*)cipherLen );
       bOk = true;
