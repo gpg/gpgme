@@ -962,8 +962,66 @@ bool encryptAndSignMessage( const char* cleartext,
           const char** ciphertext, const char* certificate,
           struct SignatureMetaData* sigmeta ){ return true; }
 
-bool decryptMessage( const char* ciphertext, const
-          char** cleartext, const char* certificate ){ return true; }
+bool decryptMessage( const char* ciphertext,
+                     const char** cleartext,
+                     const char* certificate )
+{
+    GpgmeCtx ctx;
+    GpgmeData gCiphertext, gPlaintext;
+    size_t rCLen;
+    char*  rCiph = 0;
+    bool bOk = false;
+
+
+
+/*
+  temporary code!!
+
+  will be removed!!
+
+  asking for passphrase will be handeked via gpg-agent!!
+*/
+  struct passphrase_cb_info_s info;
+
+
+/*
+  temporary code!!
+
+  will be removed!!
+
+  asking for passphrase will be handeked via gpg-agent!!
+*/
+  if (!getenv("GPG_AGENT_INFO")) {
+      info.c = ctx;
+      gpgme_set_passphrase_cb (ctx, passphrase_cb, &info);
+  }
+  strcpy( tmpPassphrase, certificate );
+
+
+
+    gpgme_new( &ctx );
+    gpgme_data_new_from_mem( &gCiphertext, ciphertext,
+                             1+strlen( ciphertext ), 1 );
+    gpgme_data_new( &gPlaintext );
+
+    gpgme_op_decrypt( ctx, gCiphertext, gPlaintext );
+    gpgme_data_release( gCiphertext );
+
+    rCiph = gpgme_data_release_and_get_mem( gPlaintext,  &rCLen );
+
+    *cleartext = malloc( rCLen + 1 );
+    if( *cleartext ) {
+        if( rCLen ) {
+            bOk = true;
+            strncpy((char*)*cleartext, rCiph, rCLen );
+        }
+        ((char*)(*cleartext))[rCLen] = 0;
+    }
+
+    free( rCiph );
+    gpgme_release( ctx );
+    return bOk;
+}
 
 bool decryptAndCheckMessage( const char* ciphertext,
           const char** cleartext, const char* certificate,
