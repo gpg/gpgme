@@ -1,5 +1,12 @@
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (gpgme_status_code_t): Add GPGME_STATUS_REVKEYSIG.
+	* verify.c (_gpgme_verify_status_handler): Add handling of
+	GPGME_STATUS_REVKEYSIG.
+	(parse_trust): Likewise.
+
+2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.h (struct _gpgme_decrypt_result): New fields
 	wrong_key_usage and _unused.
 	* decrypt.c (_gpgme_decrypt_status_handler): Don't skip over
