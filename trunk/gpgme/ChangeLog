@@ -1,3 +1,8 @@
+2002-05-21  Werner Koch  <wk@gnupg.org>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist)
+	(_gpgme_gpgsm_op_keylist_ext):  Pass the keylist mode to gpgsm.
+
 2002-05-10  Werner Koch  <wk@gnupg.org>
 
 	* key.h (gpgme_key_s): Add OTRUST.
