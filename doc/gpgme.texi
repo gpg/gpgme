@@ -514,18 +514,13 @@ Support for other thread libraries is very easy to add.  Please
 contact us if you have the need.
 
 @item
-If you link your program dynamically to @acronym{GPGME} and your
-supported thread library, @acronym{GPGME} will automatically detect
-the presence of this library and activate its use.  You must link to
-the thread library before linking to @acronym{GPGME}.  If you link to
-both pthread and GNU Pth, @acronym{GPGME} will use the pthread
-support.  This feature requires weak symbol support.
+If you want to use @acronym{GPGME} with threads, you must link to the
+right version of the library.  The name of the right library is
+@code{libgpgme-} followed by the name of the thread package you use.
+For example, if you use GNU Pth, the right name is
+@code{libgpgme-pth}.  Use the Automake macros or
+@command{gpgme-config} program for simplicity.
 
-@item
-If you link your program statically to @acronym{GPGME}, or your system
-does not support weak symbols, there is currently no easy way to make
-sure that @acronym{GPGME} detects the presence of the thread library.
-This will be solved in a future version.
 
 @item
 The function @code{gpgme_check_version} must be called before any
@@ -582,6 +577,10 @@ Only one thread at any time is allowed to call @code{gpgme_wait}.  If
 multiple threads call this function, the caller must make sure that
 all invocations are fully synchronized.  It is safe to start
 asynchronous operations while a thread is running in gpgme_wait.
+
+@item
+The function @code{gpgme_strerror} is not thread safe.  You have to
+use @code{gpgme_strerror_r} instead.
 @end itemize
 
 
