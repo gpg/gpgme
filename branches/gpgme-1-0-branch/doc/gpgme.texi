@@ -278,7 +278,7 @@ engines into your application directly.
 @table @asis
 @item it's free software
 Anybody can use, modify, and redistribute it under the terms of the GNU
-General Public License (@pxref{Copying}).
+Lesser General Public License (@pxref{Library Copying}).
 
 @item it's flexible
 @acronym{GPGME} provides transparent support for several cryptographic
