@@ -33,9 +33,9 @@ LDADD = ../../gpgme/libgpgme.la
 
 noinst_PROGRAMS = $(TESTS)
 
-key_id := 567064FE6D14A17B2D811ABB407728BC558AA455
+key_id := 32100C27173EF6E9C4E9A25D3D69F86D37A4F939
 
-all-local: ./pubring.kbx ./gpg-agent.conf ./private-keys-v1.d/$(key_id)
+all-local: ./pubring.kbx ./gpg-agent.conf ./gpgsm.conf ./private-keys-v1.d/$(key_id).key ./trustlist.txt
 
 ./pubring.kbx: $(srcdir)/cert_g10code_test1.der
 	$(GPGSM) --homedir . --import $(srcdir)/cert_g10code_test1.der
@@ -43,6 +43,12 @@ all-local: ./pubring.kbx ./gpg-agent.conf ./private-keys-v1.d/$(key_id)
 ./gpg-agent.conf:
 	echo batch > ./gpg-agent.conf
 
-./private-keys-v1.d/$(key_id): $(srcdir)/$(key_id)
+./gpgsm.conf:
+	echo disable-crl-checks > ./gpgsm.conf
+
+./private-keys-v1.d/$(key_id).key: $(srcdir)/$(key_id)
 	mkdir ./private-keys-v1.d
 	cp $(srcdir)/$(key_id) private-keys-v1.d
+
+./trustlist.txt:
+	echo $(key_id) > ./trustlist.txt
