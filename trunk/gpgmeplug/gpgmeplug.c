@@ -751,7 +751,7 @@ bool signMessage( const char*  cleartext,
   gpgme_set_textmode (ctx, 1);
 
   gpgme_data_new_from_mem (&data, cleartext,
-                            strlen( cleartext ), 1 );
+                            1+strlen( cleartext ), 1 );
   gpgme_data_new ( &sig );
   gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
 
