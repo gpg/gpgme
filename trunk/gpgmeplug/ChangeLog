@@ -1,5 +1,10 @@
 2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (lib_LTLIBRARIES): Rename to ...
+	(noinst_LTLIBRARIES): ... this target.
+
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
 	* Makefile.am (libgpgmeplug_la_SOURCES): Remove gpgme.h.
 	(libgpgsmplug_la_SOURCES): Likewise.
 
