@@ -222,10 +222,10 @@ _gpgme_key_append_name (GpgmeKey key, char *src)
 
   dst += src_len + 1;
   if (key->protocol == GPGME_PROTOCOL_CMS)
-    parse_x509_user_id (src, &uid->name, &uid->email,
+    parse_x509_user_id (uid->uid, &uid->name, &uid->email,
 			&uid->comment, dst);
   else
-    parse_user_id (src, &uid->name, &uid->email,
+    parse_user_id (uid->uid, &uid->name, &uid->email,
 		   &uid->comment, dst);
 
   if (!key->uids)
@@ -266,10 +266,10 @@ _gpgme_key_add_sig (GpgmeKey key, char *src)
       _gpgme_decode_c_string (src, &dst, src_len + 1);
       dst += src_len + 1;
       if (key->protocol == GPGME_PROTOCOL_CMS)
-	parse_x509_user_id (src, &sig->name, &sig->email,
+	parse_x509_user_id (sig->uid, &sig->name, &sig->email,
 			    &sig->comment, dst);
       else
-	parse_user_id (src, &sig->name, &sig->email,
+	parse_user_id (sig->uid, &sig->name, &sig->email,
 		       &sig->comment, dst);
     }
 
