@@ -1701,8 +1701,8 @@ struct DnPair {
 
 struct CertificateInfo {
   char** userid;
-  char** issuer;
-  struct DnPair *dnarray;
+  char* issuer;
+  struct DnPair *dnarray; /* parsed values from userid[0] */
 };
 
 /*! \function struct CertIterator*  startListCertificates( void );
