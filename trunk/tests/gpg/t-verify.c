@@ -151,6 +151,8 @@ main (int argc, char *argv[])
   gpgme_data_t sig, text;
   gpgme_verify_result_t result;
 
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
   err = gpgme_new (&ctx);
   fail_if_err (err);
 

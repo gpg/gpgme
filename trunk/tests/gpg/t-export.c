@@ -36,6 +36,8 @@ main (int argc, char **argv)
   gpgme_data_t  out;
   const char *pattern[] = { "Alpha", "Bob", NULL };
 
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
   err = gpgme_new (&ctx);
   fail_if_err (err);
 

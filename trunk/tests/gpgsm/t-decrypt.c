@@ -49,6 +49,8 @@ main (int argc, char *argv[])
   gpgme_data_t in, out;
   gpgme_decrypt_result_t result;
 
+  init_gpgme (GPGME_PROTOCOL_CMS);
+
   err = gpgme_new (&ctx);
   fail_if_err (err);
   gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
@@ -75,5 +77,3 @@ main (int argc, char *argv[])
   gpgme_release (ctx);
   return 0;
 }
-
-

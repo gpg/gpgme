@@ -84,6 +84,8 @@ main (int argc, char **argv)
   gpgme_sign_result_t result;
   char *agent_info;
 
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
   err = gpgme_new (&ctx);
   fail_if_err (err);
 
@@ -133,7 +135,3 @@ main (int argc, char **argv)
   gpgme_release (ctx);
   return 0;
 }
-
-
-
-

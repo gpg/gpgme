@@ -82,8 +82,7 @@ main (int argc, char **argv)
   gpgme_keylist_result_t result;
   int i = 0;
 
-  err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);
-  fail_if_err (err);
+  init_gpgme (GPGME_PROTOCOL_CMS);
 
   err = gpgme_new (&ctx);
   fail_if_err (err);

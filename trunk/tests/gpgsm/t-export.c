@@ -34,6 +34,9 @@ main (int argc, char *argv[])
   gpgme_error_t err;
   gpgme_data_t out;
   const char *pattern[] = { "DFN Top Level Certification Authority", NULL };
+
+  init_gpgme (GPGME_PROTOCOL_CMS);
+
   err = gpgme_new (&ctx);
   fail_if_err (err);
   gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);

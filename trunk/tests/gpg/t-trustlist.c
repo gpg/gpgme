@@ -34,6 +34,8 @@ main (int argc, char *argv[])
   gpgme_error_t err;
   gpgme_trust_item_t item;
 
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
   err = gpgme_new (&ctx);
   fail_if_err (err);
 

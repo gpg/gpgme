@@ -168,6 +168,8 @@ main (int argc, char *argv[])
   gpgme_key_t key[3] = { NULL, NULL, NULL };
   int i;
 
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
   for (i = 0; i < FDLIST_MAX; i++)
     fdlist[i].fd = -1;
 

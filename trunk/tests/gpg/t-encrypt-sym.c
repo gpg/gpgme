@@ -40,8 +40,7 @@ main (int argc, char *argv[])
   char *p;
   size_t len;
 
-  err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
-  fail_if_err (err);
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
@@ -90,5 +89,3 @@ main (int argc, char *argv[])
 
   return 0;
 }
-
-

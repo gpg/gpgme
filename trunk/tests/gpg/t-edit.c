@@ -113,6 +113,8 @@ main (int argc, char **argv)
   const char *pattern = "Alpha";
   char *agent_info;
 
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
   err = gpgme_new (&ctx);
   fail_if_err (err);
   err = gpgme_data_new (&out);
@@ -141,5 +143,3 @@ main (int argc, char **argv)
 
   return 0;
 }
-
-

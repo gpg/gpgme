@@ -64,8 +64,7 @@ main (int argc, char *argv[])
   gpgme_genkey_result_t result;
   gpgme_data_t certreq;
 
-  err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);
-  fail_if_err (err);
+  init_gpgme (GPGME_PROTOCOL_CMS);
 
   err = gpgme_data_new (&certreq);
   fail_if_err (err);

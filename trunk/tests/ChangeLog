@@ -1,3 +1,33 @@
+2003-09-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-import.c (main): Likewise.
+	* gpg/t-keylist-sig.c (main): Likewise.
+	* gpg/t-keylist.c (main): Likewise.
+	* gpg/t-sign.c (main): Likewise.
+	* gpg/t-signers.c (main): Likewise.
+	* gpg/t-trustlist.c (main): Likewise.
+	* gpgsm/t-support.h: Include <stdlib.h> and <locale.h>.
+	(init_gpgme): New function.
+	* gpg/t-support.h: Likewise.
+	* gpgsm/t-verify.c (main): Call init_gpgme.
+	* gpgsm/t-decrypt.c (main): Likewise.
+	* gpgsm/t-encrypt.c (main): Likewise.
+	* gpgsm/t-export.c (main): Likewise.
+	* gpgsm/t-genkey.c (main): Likewise.
+	* gpgsm/t-import.c (main): Likewise.
+	* gpgsm/t-keylist.c (main): Likewise.
+	* gpgsm/t-sign.c (main): Likewise.
+	* gpg/t-verify.c (main): Call init_gpgme.
+	* gpg/t-decrypt-verify.c (main): Likewise.
+	* gpg/t-decrypt.c (main): Likewise.
+	* gpg/t-edit.c (main): Likewise.
+	* gpg/t-encrypt-sign.c (main): Likewise.
+	* gpg/t-encrypt-sym.c (main): Likewise.
+	* gpg/t-encrypt.c (main): Likewise.
+	* gpg/t-eventloop.c (main): Likewise.
+	* gpg/t-export.c (main): Likewise.
+	* gpg/t-genkey.c (main): Likewise.
+
 2003-08-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-sign.c (check_result): Change output format for signature
