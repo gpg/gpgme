@@ -24,6 +24,9 @@
 *** Test gpgme_data_rewind for invalid types.
 *** Test gpgme_data_read's readable feature.
 
+* Build suite
+** Make sure everything is cleaned correctly (esp. test area).
+
 Bugs reported by Stephane Corthesy:
 > - When returning a GpgmeKey GPGME_ATTR_COMMENT attribute, characters  
 > like ":" are not un-escaped, they are returned as \x3a
