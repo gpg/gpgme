@@ -46,7 +46,6 @@
 #include <config.h>
 #endif
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
@@ -55,6 +54,66 @@
 #include "gpgme.h"
 #ifndef GPGMEPLUG_PROTOCOL
 #define GPGMEPLUG_PROTOCOL GPGME_PROTOCOL_OpenPGP
+#endif
+
+#ifndef GPGMEPLUG_SIGN_MAKE_MIME_OBJECT
+#define GPGMEPLUG_SIGN_INCLUDE_CLEARTEXT true
+#define GPGMEPLUG_SIGN_MAKE_MIME_OBJECT  true
+#define GPGMEPLUG_SIGN_MAKE_MULTI_MIME   true
+#define GPGMEPLUG_SIGN_CTYPE_MAIN        "multipart/signed; protocol=application/pgp-signature; micalg=pgp-sha1"
+#define GPGMEPLUG_SIGN_CDISP_MAIN        ""
+#define GPGMEPLUG_SIGN_CTENC_MAIN        ""
+#define GPGMEPLUG_SIGN_CTYPE_VERSION     ""
+#define GPGMEPLUG_SIGN_CDISP_VERSION     ""
+#define GPGMEPLUG_SIGN_CTENC_VERSION     ""
+#define GPGMEPLUG_SIGN_BTEXT_VERSION     ""
+#define GPGMEPLUG_SIGN_CTYPE_CODE        "application/pgp-signature"
+#define GPGMEPLUG_SIGN_CDISP_CODE        ""
+#define GPGMEPLUG_SIGN_CTENC_CODE        ""
+#define GPGMEPLUG_SIGN_FLAT_PREFIX       ""
+#define GPGMEPLUG_SIGN_FLAT_SEPARATOR    ""
+#define GPGMEPLUG_SIGN_FLAT_POSTFIX      ""
+#endif
+#ifndef GPGMEPLUG_ENC_MAKE_MIME_OBJECT
+#define GPGMEPLUG_ENC_INCLUDE_CLEARTEXT  false
+#define GPGMEPLUG_ENC_MAKE_MIME_OBJECT   true
+#define GPGMEPLUG_ENC_MAKE_MULTI_MIME    true
+#define GPGMEPLUG_ENC_CTYPE_MAIN         "multipart/encrypted; protocol=application/pgp-encrypted"
+#define GPGMEPLUG_ENC_CDISP_MAIN         ""
+#define GPGMEPLUG_ENC_CTENC_MAIN         ""
+#define GPGMEPLUG_ENC_CTYPE_VERSION      "application/pgp-encrypted"
+#define GPGMEPLUG_ENC_CDISP_VERSION      "attachment"
+#define GPGMEPLUG_ENC_CTENC_VERSION      ""
+#define GPGMEPLUG_ENC_BTEXT_VERSION      "Version: 1"
+#define GPGMEPLUG_ENC_CTYPE_CODE         "application/octet-stream"
+#define GPGMEPLUG_ENC_CDISP_CODE         "inline; filename=\"msg.asc\""
+#define GPGMEPLUG_ENC_CTENC_CODE         ""
+#define GPGMEPLUG_ENC_FLAT_PREFIX        ""
+#define GPGMEPLUG_ENC_FLAT_SEPARATOR     ""
+#define GPGMEPLUG_ENC_FLAT_POSTFIX       ""
+#endif
+// Note: The following specification will result in
+//       function encryptAndSignMessage() producing
+//       _empty_ mails.
+//       This must be changed as soon as our plugin
+//       is supporting the encryptAndSignMessage() function.
+#ifndef GPGMEPLUG_ENCSIGN_MAKE_MIME_OBJECT
+#define GPGMEPLUG_ENCSIGN_INCLUDE_CLEARTEXT false
+#define GPGMEPLUG_ENCSIGN_MAKE_MIME_OBJECT  false
+#define GPGMEPLUG_ENCSIGN_MAKE_MULTI_MIME   false
+#define GPGMEPLUG_ENCSIGN_CTYPE_MAIN        ""
+#define GPGMEPLUG_ENCSIGN_CDISP_MAIN        ""
+#define GPGMEPLUG_ENCSIGN_CTENC_MAIN        ""
+#define GPGMEPLUG_ENCSIGN_CTYPE_VERSION     ""
+#define GPGMEPLUG_ENCSIGN_CDISP_VERSION     ""
+#define GPGMEPLUG_ENCSIGN_CTENC_VERSION     ""
+#define GPGMEPLUG_ENCSIGN_BTEXT_VERSION     ""
+#define GPGMEPLUG_ENCSIGN_CTYPE_CODE        ""
+#define GPGMEPLUG_ENCSIGN_CDISP_CODE        ""
+#define GPGMEPLUG_ENCSIGN_CTENC_CODE        ""
+#define GPGMEPLUG_ENCSIGN_FLAT_PREFIX       ""
+#define GPGMEPLUG_ENCSIGN_FLAT_SEPARATOR    ""
+#define GPGMEPLUG_ENCSIGN_FLAT_POSTFIX      ""
 #endif
 
 #include "cryptplug.h"
@@ -694,9 +753,22 @@ bool certificateValidity( const char* certificate,
                           int* level ){ return true; }
 
 
+void storeNewCharPtr( char** dest, const char* src )
+{
+  int sLen;
+  if( *dest && src ) {
+    sLen = strlen( src );
+    *dest = malloc( sLen + 1 );
+    strncpy( *dest, src, sLen );
+    *dest[sLen] = '\0';
+  }
+}
+
+
 bool signMessage( const char*  cleartext,
                   const char** ciphertext,
-                  const char*  certificate )
+                  const char*  certificate,
+                  struct StructuringInfo* structuring )
 {
   GpgmeCtx ctx;
   GpgmeError err;
@@ -719,6 +791,8 @@ bool signMessage( const char*  cleartext,
 
 
 
+
+  init_StructuringInfo( structuring );
 
   if( !ciphertext )
     return false;
@@ -777,6 +851,42 @@ bool signMessage( const char*  cleartext,
   gpgme_data_release( data );
   gpgme_release (ctx);
 
+  if( bOk && structuring ) {
+    structuring->includeCleartext = GPGMEPLUG_SIGN_INCLUDE_CLEARTEXT;
+    structuring->makeMimeObject   = GPGMEPLUG_SIGN_MAKE_MIME_OBJECT;
+    if( structuring->makeMimeObject ) {
+      structuring->makeMultiMime  = GPGMEPLUG_SIGN_MAKE_MULTI_MIME;
+      storeNewCharPtr( &structuring->contentTypeMain,
+                       GPGMEPLUG_SIGN_CTYPE_MAIN );
+      storeNewCharPtr( &structuring->contentDispMain,
+                       GPGMEPLUG_SIGN_CDISP_MAIN );
+      storeNewCharPtr( &structuring->contentTEncMain,
+                       GPGMEPLUG_SIGN_CTENC_MAIN );
+      if( structuring->makeMultiMime ) {
+        storeNewCharPtr( &structuring->contentTypeVersion,
+                         GPGMEPLUG_SIGN_CTYPE_VERSION );
+        storeNewCharPtr( &structuring->contentDispVersion,
+                         GPGMEPLUG_SIGN_CDISP_VERSION );
+        storeNewCharPtr( &structuring->contentTEncVersion,
+                         GPGMEPLUG_SIGN_CTENC_VERSION );
+        storeNewCharPtr( &structuring->bodyTextVersion,
+                         GPGMEPLUG_SIGN_BTEXT_VERSION );
+        storeNewCharPtr( &structuring->contentTypeCode,
+                         GPGMEPLUG_SIGN_CTYPE_CODE );
+        storeNewCharPtr( &structuring->contentDispCode,
+                         GPGMEPLUG_SIGN_CDISP_CODE );
+        storeNewCharPtr( &structuring->contentTEncCode,
+                         GPGMEPLUG_SIGN_CTENC_CODE );
+      }
+    } else {
+      storeNewCharPtr( &structuring->flatTextPrefix,
+                       GPGMEPLUG_SIGN_FLAT_PREFIX );
+      storeNewCharPtr( &structuring->flatTextSeparator,
+                       GPGMEPLUG_SIGN_FLAT_SEPARATOR );
+      storeNewCharPtr( &structuring->flatTextPostfix,
+                       GPGMEPLUG_SIGN_FLAT_POSTFIX );
+    }
+  }
   return bOk;
 }
 
@@ -784,36 +894,36 @@ bool signMessage( const char*  cleartext,
 static const char*
 sig_status_to_string( GpgmeSigStat status )
 {
-    const char *result;
+  const char *result;
 
-    switch (status) {
-      case GPGME_SIG_STAT_NONE:
-        result = "Oops: Signature not verified";
-        break;
-      case GPGME_SIG_STAT_NOSIG:
-        result = "No signature found";
-        break;
-      case GPGME_SIG_STAT_GOOD:
-        result = "Good signature";
-        break;
-      case GPGME_SIG_STAT_BAD:
-        result = "BAD signature";
-        break;
-      case GPGME_SIG_STAT_NOKEY:
-        result = "No public key to verify the signature";
-        break;
-      case GPGME_SIG_STAT_ERROR:
-        result = "Error verifying the signature";
-        break;
-      case GPGME_SIG_STAT_DIFF:
-        result = "Different results for signatures";
-        break;
-      default:
-        result = "Error: Unknown status";
-        break;
-    }
+  switch (status) {
+    case GPGME_SIG_STAT_NONE:
+      result = "Oops: Signature not verified";
+      break;
+    case GPGME_SIG_STAT_NOSIG:
+      result = "No signature found";
+      break;
+    case GPGME_SIG_STAT_GOOD:
+      result = "Good signature";
+      break;
+    case GPGME_SIG_STAT_BAD:
+      result = "BAD signature";
+      break;
+    case GPGME_SIG_STAT_NOKEY:
+      result = "No public key to verify the signature";
+      break;
+    case GPGME_SIG_STAT_ERROR:
+      result = "Error verifying the signature";
+      break;
+    case GPGME_SIG_STAT_DIFF:
+      result = "Different results for signatures";
+      break;
+    default:
+      result = "Error: Unknown status";
+      break;
+  }
 
-    return result;
+  return result;
 }
 
 
@@ -821,82 +931,82 @@ bool checkMessageSignature( const char* ciphertext,
                             const char* signaturetext,
                             struct SignatureMetaData* sigmeta )
 {
-    GpgmeCtx ctx;
-    GpgmeSigStat status;
-    GpgmeData datapart, sigpart;
-    GpgmeError err;
-    GpgmeKey key;
-    time_t created;
-    int sig_idx = 0;
-    const char* statusStr;
-    const char* fpr;
+  GpgmeCtx ctx;
+  GpgmeSigStat status;
+  GpgmeData datapart, sigpart;
+  GpgmeError err;
+  GpgmeKey key;
+  time_t created;
+  int sig_idx = 0;
+  const char* statusStr;
+  const char* fpr;
 
-    gpgme_new( &ctx );
-    gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
-    gpgme_data_new_from_mem( &datapart, ciphertext,
-                             1+strlen( ciphertext ), 1 );
-    gpgme_data_new_from_mem( &sigpart, signaturetext,
-                             1+strlen( signaturetext ), 1 );
+  gpgme_new( &ctx );
+  gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
+  gpgme_data_new_from_mem( &datapart, ciphertext,
+                          1+strlen( ciphertext ), 1 );
+  gpgme_data_new_from_mem( &sigpart, signaturetext,
+                          1+strlen( signaturetext ), 1 );
 
-    gpgme_op_verify( ctx, sigpart, datapart, &status );
-    gpgme_data_release( datapart );
-    gpgme_data_release( sigpart );
+  gpgme_op_verify( ctx, sigpart, datapart, &status );
+  gpgme_data_release( datapart );
+  gpgme_data_release( sigpart );
 
-    /* Provide information in the sigmeta struct */
-    /* the status string */
-    statusStr = sig_status_to_string( status );
-    sigmeta->status = malloc( strlen( statusStr ) + 1 );
-    if( sigmeta->status ) {
-        strcpy( sigmeta->status, statusStr );
-        sigmeta->status[strlen( statusStr )] = '\0';
+  /* Provide information in the sigmeta struct */
+  /* the status string */
+  statusStr = sig_status_to_string( status );
+  sigmeta->status = malloc( strlen( statusStr ) + 1 );
+  if( sigmeta->status ) {
+    strcpy( sigmeta->status, statusStr );
+    sigmeta->status[strlen( statusStr )] = '\0';
+  } else
+    ; // nothing to do, is already 0
+
+  // Extended information for any number of signatures.
+  fpr = gpgme_get_sig_status( ctx, sig_idx, &status, &created );
+  sigmeta->extended_info = 0;
+  while( fpr != NULL ) {
+    struct tm* ctime_val;
+    const char* sig_status;
+
+    void* realloc_return = realloc( sigmeta->extended_info,
+                                    sizeof( struct SignatureMetaDataExtendedInfo ) * ( sig_idx + 1 ) );
+    if( realloc_return ) {
+      sigmeta->extended_info = realloc_return;
+      // the creation time
+      sigmeta->extended_info[sig_idx].creation_time = malloc( sizeof( struct tm ) );
+      if( sigmeta->extended_info[sig_idx].creation_time ) {
+        ctime_val = localtime( &created );
+        memcpy( sigmeta->extended_info[sig_idx].creation_time,
+                ctime_val, sizeof( struct tm ) );
+      }
+
+      err = gpgme_get_sig_key (ctx, sig_idx, &key);
+      sig_status = sig_status_to_string( status );
+      sigmeta->extended_info[sig_idx].status_text = malloc( strlen( sig_status ) + 1 );
+      if( sigmeta->extended_info[sig_idx].status_text ) {
+        strcpy( sigmeta->extended_info[sig_idx].status_text,
+                sig_status );
+        sigmeta->extended_info[sig_idx].status_text[strlen( sig_status )] = '\0';
+      }
+
+      sigmeta->extended_info[sig_idx].fingerprint = malloc( strlen( fpr ) + 1 );
+      if( sigmeta->extended_info[sig_idx].fingerprint ) {
+        strcpy( sigmeta->extended_info[sig_idx].fingerprint, fpr );
+        sigmeta->extended_info[sig_idx].fingerprint[strlen( fpr )] = '\0';
+      }
     } else
-        ; // nothing to do, is already 0
+      break; // if allocation fails once, it isn't likely to
+              // succeed the next time either
 
-    // Extended information for any number of signatures.
-    fpr = gpgme_get_sig_status( ctx, sig_idx, &status, &created );
-    sigmeta->extended_info = 0;
-    while( fpr != NULL ) {
-        struct tm* ctime_val;
-        const char* sig_status;
+    fpr = gpgme_get_sig_status (ctx, ++sig_idx, &status, &created);
+  }
+  sigmeta->extended_info_count = sig_idx;
+  sigmeta->nota_xml = gpgme_get_notation( ctx );
+  sigmeta->status_code = status;
 
-        void* realloc_return = realloc( sigmeta->extended_info,
-                                        sizeof( struct SignatureMetaDataExtendedInfo ) * ( sig_idx + 1 ) );
-        if( realloc_return ) {
-            sigmeta->extended_info = realloc_return;
-            // the creation time
-            sigmeta->extended_info[sig_idx].creation_time = malloc( sizeof( struct tm ) );
-            if( sigmeta->extended_info[sig_idx].creation_time ) {
-                ctime_val = localtime( &created );
-                memcpy( sigmeta->extended_info[sig_idx].creation_time,
-                        ctime_val, sizeof( struct tm ) );
-            }
-
-            err = gpgme_get_sig_key (ctx, sig_idx, &key);
-            sig_status = sig_status_to_string( status );
-            sigmeta->extended_info[sig_idx].status_text = malloc( strlen( sig_status ) + 1 );
-            if( sigmeta->extended_info[sig_idx].status_text ) {
-                strcpy( sigmeta->extended_info[sig_idx].status_text,
-                    sig_status );
-                sigmeta->extended_info[sig_idx].status_text[strlen( sig_status )] = '\0';
-            }
-
-            sigmeta->extended_info[sig_idx].fingerprint = malloc( strlen( fpr ) + 1 );
-            if( sigmeta->extended_info[sig_idx].fingerprint ) {
-                strcpy( sigmeta->extended_info[sig_idx].fingerprint, fpr );
-                sigmeta->extended_info[sig_idx].fingerprint[strlen( fpr )] = '\0';
-            }
-        } else
-            break; // if allocation fails once, it isn't likely to
-                   // succeed the next time either
-
-        fpr = gpgme_get_sig_status (ctx, ++sig_idx, &status, &created);
-    }
-    sigmeta->extended_info_count = sig_idx;
-    sigmeta->nota_xml = gpgme_get_notation( ctx );
-    sigmeta->status_code = status;
-
-    gpgme_release( ctx );
-    return ( status == GPGME_SIG_STAT_GOOD );
+  gpgme_release( ctx );
+  return ( status == GPGME_SIG_STAT_GOOD );
 }
 
 bool storeCertificatesFromMessage(
@@ -905,7 +1015,8 @@ bool storeCertificatesFromMessage(
 
 bool encryptMessage( const char* cleartext,
                      const char** ciphertext,
-                     const char* addressee )
+                     const char* addressee,
+                     struct StructuringInfo* structuring )
 {
   GpgmeCtx ctx;
   GpgmeError err;
@@ -914,6 +1025,8 @@ bool encryptMessage( const char* cleartext,
   size_t rCLen = 0;
   char*  rCiph = 0;
   bool   bOk   = false;
+
+  init_StructuringInfo( structuring );
 
   gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
@@ -930,7 +1043,7 @@ bool encryptMessage( const char* cleartext,
 
   if( GPGMEPLUG_PROTOCOL == GPGME_PROTOCOL_CMS )
   {
-    gpgme_recipients_add_name_with_validity (rset, 
+    gpgme_recipients_add_name_with_validity (rset,
       "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE",
       GPGME_VALIDITY_FULL );
     fputs( "\nGPGSMPLUG encryptMessage() using test key of Aegypten Project\n", stderr );
@@ -973,13 +1086,97 @@ bool encryptMessage( const char* cleartext,
 
   fflush( stderr );
 
+  if( bOk && structuring ) {
+    structuring->includeCleartext = GPGMEPLUG_ENC_INCLUDE_CLEARTEXT;
+    structuring->makeMimeObject   = GPGMEPLUG_ENC_MAKE_MIME_OBJECT;
+    if( structuring->makeMimeObject ) {
+      structuring->makeMultiMime  = GPGMEPLUG_ENC_MAKE_MULTI_MIME;
+      storeNewCharPtr( &structuring->contentTypeMain,
+                       GPGMEPLUG_ENC_CTYPE_MAIN );
+      storeNewCharPtr( &structuring->contentDispMain,
+                       GPGMEPLUG_ENC_CDISP_MAIN );
+      storeNewCharPtr( &structuring->contentTEncMain,
+                       GPGMEPLUG_ENC_CTENC_MAIN );
+      if( structuring->makeMultiMime ) {
+        storeNewCharPtr( &structuring->contentTypeVersion,
+                         GPGMEPLUG_ENC_CTYPE_VERSION );
+        storeNewCharPtr( &structuring->contentDispVersion,
+                         GPGMEPLUG_ENC_CDISP_VERSION );
+        storeNewCharPtr( &structuring->contentTEncVersion,
+                         GPGMEPLUG_ENC_CTENC_VERSION );
+        storeNewCharPtr( &structuring->bodyTextVersion,
+                         GPGMEPLUG_ENC_BTEXT_VERSION );
+        storeNewCharPtr( &structuring->contentTypeCode,
+                         GPGMEPLUG_ENC_CTYPE_CODE );
+        storeNewCharPtr( &structuring->contentDispCode,
+                         GPGMEPLUG_ENC_CDISP_CODE );
+        storeNewCharPtr( &structuring->contentTEncCode,
+                         GPGMEPLUG_ENC_CTENC_CODE );
+      }
+    } else {
+      storeNewCharPtr( &structuring->flatTextPrefix,
+                       GPGMEPLUG_ENC_FLAT_PREFIX );
+      storeNewCharPtr( &structuring->flatTextSeparator,
+                       GPGMEPLUG_ENC_FLAT_SEPARATOR );
+      storeNewCharPtr( &structuring->flatTextPostfix,
+                       GPGMEPLUG_ENC_FLAT_POSTFIX );
+    }
+  }
   return bOk;
 }
 
 
 bool encryptAndSignMessage( const char* cleartext,
-          const char** ciphertext, const char* certificate,
-          struct SignatureMetaData* sigmeta ){ return true; }
+                            const char** ciphertext,
+                            const char* certificate,
+                            struct StructuringInfo* structuring )
+{
+  bool bOk;
+
+  init_StructuringInfo( structuring );
+
+  bOk = false;
+
+  // implementation of this function is still missing
+
+  if( bOk && structuring ) {
+    structuring->includeCleartext = GPGMEPLUG_ENCSIGN_INCLUDE_CLEARTEXT;
+    structuring->makeMimeObject   = GPGMEPLUG_ENCSIGN_MAKE_MIME_OBJECT;
+    if( structuring->makeMimeObject ) {
+      structuring->makeMultiMime  = GPGMEPLUG_ENCSIGN_MAKE_MULTI_MIME;
+      storeNewCharPtr( &structuring->contentTypeMain,
+                       GPGMEPLUG_ENCSIGN_CTYPE_MAIN );
+      storeNewCharPtr( &structuring->contentDispMain,
+                       GPGMEPLUG_ENCSIGN_CDISP_MAIN );
+      storeNewCharPtr( &structuring->contentTEncMain,
+                       GPGMEPLUG_ENCSIGN_CTENC_MAIN );
+      if( structuring->makeMultiMime ) {
+        storeNewCharPtr( &structuring->contentTypeVersion,
+                         GPGMEPLUG_ENCSIGN_CTYPE_VERSION );
+        storeNewCharPtr( &structuring->contentDispVersion,
+                         GPGMEPLUG_ENCSIGN_CDISP_VERSION );
+        storeNewCharPtr( &structuring->contentTEncVersion,
+                         GPGMEPLUG_ENCSIGN_CTENC_VERSION );
+        storeNewCharPtr( &structuring->bodyTextVersion,
+                         GPGMEPLUG_ENCSIGN_BTEXT_VERSION );
+        storeNewCharPtr( &structuring->contentTypeCode,
+                         GPGMEPLUG_ENCSIGN_CTYPE_CODE );
+        storeNewCharPtr( &structuring->contentDispCode,
+                         GPGMEPLUG_ENCSIGN_CDISP_CODE );
+        storeNewCharPtr( &structuring->contentTEncCode,
+                         GPGMEPLUG_ENCSIGN_CTENC_CODE );
+      }
+    } else {
+      storeNewCharPtr( &structuring->flatTextPrefix,
+                       GPGMEPLUG_ENCSIGN_FLAT_PREFIX );
+      storeNewCharPtr( &structuring->flatTextSeparator,
+                       GPGMEPLUG_ENCSIGN_FLAT_SEPARATOR );
+      storeNewCharPtr( &structuring->flatTextPostfix,
+                       GPGMEPLUG_ENCSIGN_FLAT_POSTFIX );
+    }
+  }
+  return bOk;
+}
 
 bool decryptMessage( const char* ciphertext,
                      const char** cleartext,
