@@ -1,6 +1,11 @@
-Noteworthy changes in version 0.3.12 (unreleased)
+Noteworthy changes in version 0.3.12 (2002-10-15)
 -------------------------------------------------
 
+ * Fixed some bux with key listsings.  
+
+ * The development has been branched to clean up some API issues.
+   This 0.3 series will be kept for compatibility reasons; so do don't
+   expect new features.
 
 Noteworthy changes in version 0.3.11 (2002-09-20)
 -------------------------------------------------

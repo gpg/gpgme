@@ -68,9 +68,6 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Make sure everything is cleaned correctly (esp. test area).
 
 Bugs reported by Stephane Corthesy:
-> BTW, here's another bug: it it not possible to retrieve fingerprints  
-> for subkeys
---> This seems to work now (wk 2002-08-20)
 
 > In GpgmeRecipients, would it be possible to provide a function which  
 > would return the validity assigned to a name contained in the  
