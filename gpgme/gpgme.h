@@ -218,9 +218,9 @@ GpgmeError    gpgme_data_new_with_read_cb ( GpgmeData *r_dh,
 GpgmeError    gpgme_data_new_from_file ( GpgmeData *r_dh,
                                          const char *fname,
                                          int copy );
-GpgmeError    gpgme_data_new_from_filepart ( GpgmeData *r_dh,
-                                             const char *fname, FILE *fp,
-                                             off_t offset, off_t length );
+GpgmeError gpgme_data_new_from_filepart (GpgmeData *r_dh,
+					 const char *fname, FILE *fp,
+					 off_t offset, size_t length);
 void          gpgme_data_release ( GpgmeData dh );
 char *        gpgme_data_release_and_get_mem ( GpgmeData dh, size_t *r_len );
 GpgmeDataType gpgme_data_get_type ( GpgmeData dh );

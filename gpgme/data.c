@@ -283,7 +283,7 @@ gpgme_data_new_from_file (GpgmeData *r_dh, const char *fname, int copy)
  **/
 GpgmeError
 gpgme_data_new_from_filepart (GpgmeData *r_dh, const char *fname, FILE *fp,
-			      off_t offset, off_t length)
+			      off_t offset, size_t length)
 {
   GpgmeData dh;
   GpgmeError err;
