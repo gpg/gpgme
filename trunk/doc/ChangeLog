@@ -1,5 +1,8 @@
 2004-09-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Passphrase Callback): Document
+	GPG_ERR_NOT_IMPLEMENTED.
+
 	* gpgme.texi: Update copyright year for tex version.
 
 2004-07-29  Moritz Schulte  <moritz@g10code.com>
