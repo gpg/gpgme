@@ -773,8 +773,30 @@ bool signMessage( const char*  cleartext,
   return bOk;
 }
 
-bool checkMessageSignature( const char* ciphertext, const char**
-        cleartext, struct SignatureMetaData* sigmeta ){ return true; }
+
+bool checkMessageSignature( const char* ciphertext, 
+                            const char* signaturetext,
+                            struct SignatureMetaData* sigmeta )
+{ 
+    GpgmeCtx ctx;
+    GpgmeSigStat status;
+    GpgmeData datapart, sigpart;
+
+    gpgme_new( &ctx );
+    gpgme_data_new_from_mem( &datapart, ciphertext,
+                             1+strlen( ciphertext ), 1 );
+    gpgme_data_new_from_mem( &sigpart, signaturetext,
+                             1+strlen( signaturetext ), 1 );
+
+    gpgme_op_verify( ctx, sigpart, datapart, &status );
+    gpgme_data_release( datapart );
+    gpgme_data_release( sigpart );
+    gpgme_release( ctx );
+
+    // PENDING(khz) Differentiate better between various failures
+    // PENDING(khz) Fill sigmeta
+    return ( status == GPGME_SIG_STAT_GOOD );
+}
 
 bool storeCertificatesFromMessage(
         const char* ciphertext ){ return true; }
