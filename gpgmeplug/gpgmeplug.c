@@ -928,20 +928,24 @@ bool encryptMessage( const char* cleartext,
   gpgme_recipients_new (&rset);
 
 
-if( GPGMEPLUG_PROTOCOL == GPGME_PROTOCOL_CMS )
-{
-  gpgme_recipients_add_name (rset, "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE");
-fputs( "GPGSMPLUG encryptMessage() using test key of Aegypten Project\n", stderr );
-}
-else
-{
-  gpgme_recipients_add_name (rset, addressee);
-fprintf( stderr, "GPGMEPLUG encryptMessage() using addressee %s\n", addressee );
-}
-fflush( stderr );
+  if( GPGMEPLUG_PROTOCOL == GPGME_PROTOCOL_CMS )
+  {
+    gpgme_recipients_add_name_with_validity (rset, 
+      "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE",
+      GPGME_VALIDITY_FULL );
+    fputs( "\nGPGSMPLUG encryptMessage() using test key of Aegypten Project\n", stderr );
+  }
+  else
+  {
+    gpgme_recipients_add_name (rset, addressee);
+    fprintf( stderr, "\nGPGMEPLUG encryptMessage() using addressee %s\n", addressee );
+  }
 
 
   err = gpgme_op_encrypt (ctx, rset, gPlaintext, gCiphertext );
+  if( err )
+    fprintf( stderr, "gpgme_op_encrypt() returned this error code:  %i\n\n", err );
+
   gpgme_recipients_release (rset);
   gpgme_data_release (gPlaintext);
 
@@ -966,6 +970,8 @@ fflush( stderr );
   }
 
   gpgme_release (ctx);
+
+  fflush( stderr );
 
   return bOk;
 }
