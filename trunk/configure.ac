@@ -27,11 +27,11 @@
 #   (Interfaces removed:		AGE=0)
 # XXXX new functions
 AC_INIT(gpgme, 0.3.0a-cvs, [gnupg-devel@gnupg.org])
-LIBGPGME_LT_CURRENT=5
+LIBGPGME_LT_CURRENT=6
 LIBGPGME_LT_AGE=0
 LIBGPGME_LT_REVISION=0
 NEED_GPG_VERSION=1.0.6
-NEED_GPGSM_VERSION=0.0.0
+NEED_GPGSM_VERSION=0.3.0
 ##############################################
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
