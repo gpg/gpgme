@@ -57,6 +57,7 @@ dnl
 dnl
 dnl Checks for library functions
 dnl
+AC_CHECK_FUNCS(stpcpy)
 
 
 dnl

@@ -95,6 +95,16 @@ _gpgme_release_result ( GpgmeCtx c )
 }
 
 
+/**
+ * gpgme_get_notation:
+ * @c: the context 
+ * 
+ * If there is notation data available from the last signature check, this
+ * function may be used to return this notation data as a string.  The string
+ * is an XML represantaton of that data embedded in a %<notation> container.
+ * 
+ * Return value: An XML string or NULL if no notation data is available.
+ **/
 char *
 gpgme_get_notation ( GpgmeCtx c )
 {
@@ -104,6 +114,13 @@ gpgme_get_notation ( GpgmeCtx c )
 }
 
 
+/**
+ * gpgme_set_armor:
+ * @c: the contect 
+ * @yes: boolean value to set or clear that flag
+ * 
+ * Enable or disable the use of an ascii armor for all output.  
+ **/
 void
 gpgme_set_armor ( GpgmeCtx c, int yes )
 {
@@ -112,6 +129,14 @@ gpgme_set_armor ( GpgmeCtx c, int yes )
     c->use_armor = yes;
 }
 
+/**
+ * gpgme_set_textmode:
+ * @c: the context 
+ * @yes: boolean flag whether textmode should be enabled
+ * 
+ * Enable or disable the use of the special textmode.  Textmode is for example
+ * used for MIME (RFC2015) signatures
+ **/
 void
 gpgme_set_textmode ( GpgmeCtx c, int yes )
 {
@@ -130,6 +155,8 @@ gpgme_set_passphrase_cb ( GpgmeCtx c, GpgmePassphraseCb fnc, void *fncval )
     }
 }
 #endif
+
+
 
 
 

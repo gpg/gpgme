@@ -195,6 +195,28 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
 }
 
 
+/**
+ * gpgme_op_verify:
+ * @c: the context
+ * @sig: the signature data
+ * @text: the signed text
+ * @r_stat: returns the status of the signature
+ * 
+ * Perform a signature check on the signature given in @sig. Currently it is
+ * assumed that this is a detached signature for the material given in @text.
+ * The result of this operation is returned in @r_stat which can take these
+ * values:
+ *  GPGME_SIG_STAT_NONE:  No status - should not happen
+ *  GPGME_SIG_STAT_GOOD:  The signature is valid 
+ *  GPGME_SIG_STAT_BAD:   The signature is not valid
+ *  GPGME_SIG_STAT_NOKEY: The signature could not be checked due to a
+ *                        missing key
+ *  GPGME_SIG_STAT_NOSIG: This is not a signature
+ *  GPGME_SIG_STAT_ERROR: Due to some other error the check could not be done.
+ *
+ * Return value: 0 on success or an errorcode if something not related to
+ *               the signature itself did go wrong.
+ **/
 GpgmeError
 gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
                   GpgmeSigStat *r_stat )
