@@ -71,7 +71,7 @@ This is Edition @value{EDITION}, last updated @value{UPDATED}, of
 
 @menu
 * Introduction::                  How to use this manual.
-* Preperation::                   What you should do before using the library.
+* Preparation::                   What you should do before using the library.
 * Protocols and Engines::         Supported crypto protocols.
 * Error Handling::                Error numbers and their meanings.
 * Exchanging Data::               Passing data to and from @acronym{GPGME}.
@@ -99,7 +99,7 @@ Introduction
 * Features::                      Reasons to install and use @acronym{GPGME}.
 * Overview::                      Basic architecture of the @acronym{GPGME} library.
 
-Preperation
+Preparation
 
 * Header::                        What header file you need to include.
 * Building the Source::           Compiler options to be used.
@@ -197,7 +197,7 @@ encryption, decryption, signing, signature verification and key
 management.
 
 @acronym{GPGME} uses GnuPG and GpgSM as its backends to support
-OpenPGP and the Cryptograhic Message Syntax (CMS).
+OpenPGP and the Cryptographic Message Syntax (CMS).
 
 @menu
 * Getting Started::               Purpose of the manual, and how to use it.
@@ -284,8 +284,8 @@ will be to some extent in the future, but currently great care has to
 be taken if @acronym{GPGME} is used in a multi-threaded environment.
 
 
-@node Preperation
-@chapter Preperation
+@node Preparation
+@chapter Preparation
 
 To use @acronym{GPGME}, you have to perform some changes to your
 sources and the build system.  The necessary changes are small and
@@ -582,10 +582,10 @@ This value indicates success.  The value of this error is @code{0}.
 @item GPGME_General_Error
 This value means that something went wrong, but either there is not
 enough information about the problem to return a more useful error
-value, or there is no seperate error value for this type of problem.
+value, or there is no separate error value for this type of problem.
 
 @item GPGME_Out_Of_Core
-This value means that an out-of-memory condition occured.
+This value means that an out-of-memory condition occurred.
 
 @item GPGME_Invalid_Value
 This value means that some user provided data was out of range.  This
@@ -596,7 +596,7 @@ value is returned.
 @item GPGME_Busy
 This value is returned if you try to start a new operation in a
 context that is already busy with some earlier operation which was not
-canceled or finished yet.
+cancelled or finished yet.
 
 @item GPGME_No_Request
 This value is in some sense the opposite of @code{GPGME_Busy}.  There
@@ -604,7 +604,7 @@ is no pending operation, but it is required for the function to
 succeed.
 
 @item GPGME_Exec_Error
-This value means that an error occured when trying to spawn a child
+This value means that an error occurred when trying to spawn a child
 process.
 
 @item GPGME_Too_Many_Procs
@@ -621,7 +621,7 @@ This value means that a @code{GpgmeData} object which was expected to
 have content was found empty.
 
 @item GPGME_Conflict
-This value means that a conflict of some sort occured.
+This value means that a conflict of some sort occurred.
 
 @item GPGME_Not_Implemented
 This value indicates that the specific function (or operation) is not
@@ -905,7 +905,7 @@ object with the handle @var{dh}.  If @var{dh} is not a valid pointer,
 @chapter Contexts
 @cindex context
 
-All cryptograhic operations in @acronym{GPGME} are performed within a
+All cryptographic operations in @acronym{GPGME} are performed within a
 context, which contains the internal state of the operation as well as
 configuration parameters.  By using several contexts you can run
 several cryptographic operations in parallel, with different
@@ -1061,7 +1061,7 @@ Fast listing without information about the key validity.
 
 @deftp {Data type} {const char *(*GpgmePassphraseCb)(void *@var{hook}, const char *@var{desc}, void **@var{r_hd})}
 @tindex GpgmePassphraseCb
-The @code{GpgmePasshraseCb} type is the type of functions usable as
+The @code{GpgmePassphraseCb} type is the type of functions usable as
 passphrase callback function.
 
 The string @var{desc} contains a test usable to be displayed to the
@@ -1599,7 +1599,7 @@ The @code{GpgmeTrustItem} type is a handle for a trust item.
 The function @code{gpgme_op_trustlist_start} initiates a trust item
 listing operation inside the context @var{ctx}.  It sets everything up
 so that subsequent invocations of @code{gpgme_op_trustlist_next} return
-the trsut items in the list.
+the trust items in the list.
 
 The string @var{pattern} contains an engine specific expression that
 is used to limit the list to all trust items matching the pattern.  It
@@ -1847,7 +1847,7 @@ The function returns @code{GPGME_No_Error} if the key could be
 returned, @code{GPGME_Invalid_Value} if @var{r_key} is not a valid
 pointer, @code{GPGME_Invalid_Key} if the fingerprint is not valid,
 @code{GPGME_EOF} if @var{idx} is too large, or some other error value
-if a problem occured requesting the key.
+if a problem occurred requesting the key.
 @end deftypefun
 
 @deftypefun {char *} gpgme_get_notation (@w{GpgmeCtx @var{ctx}})
@@ -1856,7 +1856,7 @@ notation data from the last signature check in the context @var{ctx}.
 
 If there is notation data available from the last signature check,
 this function may be used to return this notation data as a string.
-The string is an XML represantaton of that data embedded in a
+The string is an XML representation of that data embedded in a
 <notation> container.  The user has to release the string with
 @code{free}.
 
@@ -2140,7 +2140,7 @@ recipients.
 @cindex cryptographic operation, detailed results
 
 @deftypefun {char *} gpgme_get_op_info (@w{GpgmeCtx @var{ctx}}, @w{int @var{reserved}})
-The function @code{gpgme_get_op_info} retrieves more informaton about
+The function @code{gpgme_get_op_info} retrieves more information about
 the last crypto operation.
 
 The function returns a string in the XML format.  The user has to
@@ -2268,3 +2268,5 @@ registered yet.
 @summarycontents
 @contents
 @bye
+
+@c  LocalWords:  GPGME gpgme
