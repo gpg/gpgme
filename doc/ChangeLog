@@ -1,3 +1,7 @@
+2004-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Largefile Support): New section.
+
 2004-01-13  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Key Management): Fix exportable field.
@@ -560,7 +564,7 @@
 	* Makefile.am (info_TEXINFOS): New variable.
 	(gpgme_TEXINFOS): Likewise.
 
- Copyright 2002 g10 Code GmbH
+ Copyright 2002, 2003, 2004 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

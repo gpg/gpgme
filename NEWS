@@ -1,3 +1,66 @@
+Noteworthy changes in version 0.4.5 (unreleased)
+------------------------------------------------
+
+ * GPGME is now compiled with LFS (large file support) by default.
+   This means that _all_ programs using GPGME must be compiled with
+   LFS support enabled by default.  You can do this easily with
+   autoconf, by using the AC_SYS_LARGEFILE macro.  Or you can do this
+   without autoconf by defining the preprocessor symbol
+   _FILE_OFFSET_BITS to 64 (by passing the -D_FILE_OFFSET_BITS=64 to
+   the C compiler command line, or by defining this preprocessor
+   symbol before including any system header files).  For more
+   details, read the section on LFS in the manual.
+
+   Up to now, it was undocumented that GPGME was not using LFS.
+   But the public interfaces use off_t, and file descriptors are
+   exchanged between the application and GPGME.  This was an oversight,
+   and bound to cause troubles in the future.
+
+   Writing GPGME as a dual mode library that seamlessly supports LFS
+   while keeping backwards compatibility is possible, but does not
+   solve the problem: Many applications already expect GPGME to have
+   LFS (they are compiled with off_t being a 64bit value).  This is true
+   in particular for the popular Gtk+ and Qt programs.
+
+   So, although this is an ABI (but not an API) break, we will not
+   change the library version to reflect that.  Because the interfaces
+   affected are probably not used yet in any GPGME 0.4 based
+   application, we don't expect any real failures from this change.
+   In fact, applications already using LFS will have some subtle bugs
+   fixed.
+
+   However, if you encounter an application using GPGME 0.4.x that
+   does _not_ use LFS by default (off_t is a 32bit value), _and_
+   uses at least one of the functions gpgme_data_seek,
+   gpgme_data_new_from_filepart, or a gpgme_data_seek_cb_t with
+   gpgme_data_new_from_cbs, then indeed this library will be ABI
+   incompatible with the program.  As said above, we don't believe
+   such a program exists.  If we are in error, then you have two
+   options: As a quick hack, you can configure GPGME with the
+   --disable-largefile option.  This will revert the change, and GPGME
+   will not use LFS.  However, GPGME will be incompatible with
+   programs that expect GPGME to use LFS.  All applications are
+   required to use LFS when using GPGME, so this is only good as a
+   temporary local work-around.
+
+   The other option is to change the versioning of the library and
+   recompile all applications.  We have reserved a special version of
+   the library for that, so you can do that without expecting a
+   version clash in the future.  Furthermore, everyone who does this
+   will agree on the version to use (this is important for
+   distribution makers).  Read the comment in configure.ac (before
+   LIBGPGME_LT_AGE) if you want to do this.  Please don't do this
+   blindly: As stated above, we think it is unlikely this measure is
+   needed.  Still, it is there if necessary.  If in doubt, contact us
+   and we will give our advise for your specific situation.
+
+ * Interface changes relative to the 0.4.4 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_data_seek_cb_t		CHANGED: off_t is now a largefile type.
+gpgme_data_seek			CHANGED: off_t is now a largefile type.
+gpgme_data_new_from_filepart	CHANGED: off_t is now a largefile type.
+
+
 Noteworthy changes in version 0.4.4 (2004-01-12)
 ------------------------------------------------
 
@@ -868,7 +931,7 @@ Noteworthy changes in version 0.2.1 (2001-04-02)
  * Made the W32 support more robust.
 
 
- Copyright 2001, 2002, 2003 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

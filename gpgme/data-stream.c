@@ -1,5 +1,5 @@
 /* data-stream.c - A stream based data object.
-   Copyright (C) 2002 g10 Code GmbH
+   Copyright (C) 2002, 2004 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -50,7 +50,12 @@ stream_write (gpgme_data_t dh, const void *buffer, size_t size)
 static off_t
 stream_seek (gpgme_data_t dh, off_t offset, int whence)
 {
+#ifdef HAVE_FSEEKO
+  return fseeko (dh->data.stream, offset, whence);
+#else
+  /* FIXME: Check for overflow, or at least bail at compilation.  */
   return fseek (dh->data.stream, offset, whence);
+#endif
 }
 
 

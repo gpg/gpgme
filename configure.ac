@@ -1,6 +1,6 @@
 # configure.in for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2003 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -29,11 +29,13 @@ AC_INIT(gpgme, 0.4.4, [bug-gpgme@gnupg.org])
 #   (Code changed:			REVISION++)
 #   (Interfaces added/removed/changed:	CURRENT++, REVISION=0)
 #   (Interfaces added:			AGE++)
-#   (Interfaces removed:		AGE=0)
+#   (Interfaces removed/changed:	AGE=0)
 #
-LIBGPGME_LT_CURRENT=12
-LIBGPGME_LT_AGE=1
-LIBGPGME_LT_REVISION=1
+LIBGPGME_LT_CURRENT=13
+# Subtract 2 from this value if you want to make the LFS transition an
+# ABI break.  [Note to self: Remove this comment with the next regular break.]
+LIBGPGME_LT_AGE=2
+LIBGPGME_LT_REVISION=0
 NEED_GPG_VERSION=1.2.2
 NEED_GPGSM_VERSION=1.9.3
 ##############################################
@@ -144,7 +146,8 @@ AC_CHECK_HEADERS(sys/select.h)
 
 # Type checks.
 AC_CHECK_SIZEOF(unsigned int)
-
+AC_SYS_LARGEFILE
+AC_TYPE_OFF_T
 
 # Checks for compiler features.
 if test "$GCC" = yes; then
@@ -153,6 +156,8 @@ fi
 
 
 # Checks for library functions.
+AC_FUNC_FSEEKO
+
 AC_REPLACE_FUNCS(stpcpy)
 
 AC_REPLACE_FUNCS(vasprintf)

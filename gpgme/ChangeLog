@@ -1,3 +1,9 @@
+2004-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data-compat.c (gpgme_data_new_from_filepart): Call fseeko if
+	available.
+	* data-stream.c (stream_seek): Likewise.
+
 2004-01-16  Werner Koch  <wk@gnupg.org>
 
 	* conversion.c (_gpgme_map_gnupg_error): Handle numerical codes as
@@ -4313,7 +4319,7 @@
 	* data.c (gpgme_data_rewind): Allow to rewind data_type_none.
 
 
- Copyright 2001, 2002 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
