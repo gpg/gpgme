@@ -40,7 +40,7 @@ dnl ##  AC_CHECK_PTH(1.2.0,yes,yes,yes,CFLAGS="$CFLAGS -DHAVE_PTH")
 dnl ##
 dnl
 dnl #   auxilliary macros
-AC_DEFUN(_AC_PTH_ERROR, [dnl
+AC_DEFUN([_AC_PTH_ERROR], [dnl
 AC_MSG_RESULT([*FAILED*])
 dnl define(_ac_pth_line,dnl
 dnl "+------------------------------------------------------------------------+")
@@ -52,13 +52,13 @@ dnl echo " _ac_pth_line" 1>&2
 dnl undefine(_ac_pth_line)
 exit 1
 ])
-AC_DEFUN(_AC_PTH_VERBOSE, [dnl
+AC_DEFUN([_AC_PTH_VERBOSE], [dnl
 if test ".$verbose" = .yes; then
     AC_MSG_RESULT([  $1])
 fi
 ])
 dnl #   the user macro
-AC_DEFUN(AC_CHECK_PTH, [dnl
+AC_DEFUN([AC_CHECK_PTH], [dnl
 dnl
 dnl #   prerequisites
 AC_REQUIRE([AC_PROG_CC])dnl

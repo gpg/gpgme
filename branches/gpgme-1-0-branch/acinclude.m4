@@ -24,7 +24,7 @@ dnl   for one substitution.
 dnl   We must use a temp file in the current directory because make
 dnl   distcheck installs all sourcefiles RO.
 dnl   (wk 2001-12-18)
-AC_DEFUN(GNUPG_FIX_HDR_VERSION,
+AC_DEFUN([GNUPG_FIX_HDR_VERSION],
   [ sed "s/^#define $2 \".*/#define $2 \"$VERSION\"/" $srcdir/$1 > fixhdr.tmp
     if cmp -s $srcdir/$1 fixhdr.tmp 2>/dev/null; then
         rm -f fixhdr.tmp
@@ -47,7 +47,7 @@ dnl GNUPG_CHECK_VA_COPY()
 dnl   Do some check on how to implement va_copy.
 dnl   May define MUST_COPY_VA_BY_VAL.
 dnl   Actual test code taken from glib-1.1.
-AC_DEFUN(GNUPG_CHECK_VA_COPY,
+AC_DEFUN([GNUPG_CHECK_VA_COPY],
 [ AC_MSG_CHECKING(whether va_lists must be copied by value)
   AC_CACHE_VAL(gnupg_cv_must_copy_va_byval,[
     gnupg_cv_must_copy_va_byval=no
