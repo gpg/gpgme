@@ -148,7 +148,7 @@ _gpgme_op_encrypt_init_result (gpgme_ctx_t ctx)
 
 
 static gpgme_error_t
-encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_recipients_t recp,
+encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_user_id_t recp,
 	       gpgme_data_t plain, gpgme_data_t cipher)
 {
   gpgme_error_t err;
@@ -164,8 +164,6 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_recipients_t recp,
 
   if (!recp)
     symmetric = 1;
-  else if (gpgme_recipients_count (recp) == 0)
-    return GPGME_No_UserID;
 
   if (!plain)
     return GPGME_No_Data;
@@ -193,7 +191,7 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_recipients_t recp,
 
 
 gpgme_error_t
-gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_user_id_t recp,
 			gpgme_data_t plain, gpgme_data_t cipher)
 {
   return encrypt_start (ctx, 0, recp, plain, cipher);
@@ -203,7 +201,7 @@ gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_recipients_t recp,
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  */
 gpgme_error_t
-gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_user_id_t recp,
 		  gpgme_data_t plain, gpgme_data_t cipher)
 {
   gpgme_error_t err = encrypt_start (ctx, 1, recp, plain, cipher);

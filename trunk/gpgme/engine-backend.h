@@ -49,13 +49,13 @@ struct engine_ops
   gpgme_error_t (*delete) (void *engine, gpgme_key_t key, int allow_secret);
   gpgme_error_t (*edit) (void *engine, gpgme_key_t key, gpgme_data_t out,
 			 gpgme_ctx_t ctx /* FIXME */);
-  gpgme_error_t (*encrypt) (void *engine, gpgme_recipients_t recp,
+  gpgme_error_t (*encrypt) (void *engine, gpgme_user_id_t recp,
 			    gpgme_data_t plain, gpgme_data_t ciph,
 			    int use_armor);
-  gpgme_error_t (*encrypt_sign) (void *engine, gpgme_recipients_t recp,
+  gpgme_error_t (*encrypt_sign) (void *engine, gpgme_user_id_t recp,
 				 gpgme_data_t plain, gpgme_data_t ciph,
 				 int use_armor, gpgme_ctx_t ctx /* FIXME */);
-  gpgme_error_t (*export) (void *engine, gpgme_recipients_t recp,
+  gpgme_error_t (*export) (void *engine, gpgme_user_id_t uids,
 			   gpgme_data_t keydata, int use_armor);
   gpgme_error_t (*genkey) (void *engine, gpgme_data_t help_data, int use_armor,
 			   gpgme_data_t pubkey, gpgme_data_t seckey);

@@ -27,11 +27,18 @@
 
 #include <gpgme.h>
 
-#define fail_if_err(a) do { if(a) {                                       \
-                               fprintf (stderr, "%s:%d: gpgme_error_t %s\n", \
-                                __FILE__, __LINE__, gpgme_strerror(a));   \
-                                exit (1); }                               \
-                             } while(0)
+#define fail_if_err(err)					\
+  do								\
+    {								\
+      if (err)							\
+        {							\
+          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
+                   __FILE__, __LINE__, gpgme_strerror (err));   \
+          exit (1);						\
+        }							\
+    }								\
+  while (0)
+
 
 static void
 print_data (gpgme_data_t dh)
@@ -114,6 +121,7 @@ io_event (void *data, gpgme_event_io_t type, void *type_data)
     }
 }
 
+
 int
 do_select (void)
 {
@@ -166,6 +174,7 @@ my_wait (void)
   return 0;
 }
 
+
 struct gpgme_io_cbs io_cbs =
   {
     add_io_cb,
@@ -175,13 +184,15 @@ struct gpgme_io_cbs io_cbs =
     &op_result
   };
 
+
 int 
 main (int argc, char *argv[])
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;
   gpgme_data_t in, out;
-  gpgme_recipients_t rset;
+  gpgme_user_id_t rset = NULL;
+  gpgme_user_id_t *rset_lastp = &rset;
   int i;
 
   for (i = 0; i < FDLIST_MAX; i++)
@@ -190,49 +201,43 @@ main (int argc, char *argv[])
   err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
   fail_if_err (err);
 
-  do
-    {
-      err = gpgme_new (&ctx);
-      fail_if_err (err);
-      gpgme_set_armor (ctx, 1);
-      gpgme_set_io_cbs (ctx, &io_cbs);
-      op_result.done = 0;
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+  gpgme_set_armor (ctx, 1);
+  gpgme_set_io_cbs (ctx, &io_cbs);
+  op_result.done = 0;
 
-      err = gpgme_data_new_from_mem (&in, "Hallo Leute\n", 12, 0);
-      fail_if_err (err);
+  err = gpgme_data_new_from_mem (&in, "Hallo Leute\n", 12, 0);
+  fail_if_err (err);
 
-      err = gpgme_data_new (&out);
-      fail_if_err (err);
+  err = gpgme_data_new (&out);
+  fail_if_err (err);
 
-      err = gpgme_recipients_new (&rset);
-      fail_if_err (err);
-      err = gpgme_recipients_add_name_with_validity (rset, "Bob",
-						     GPGME_VALIDITY_FULL);
-      fail_if_err (err);
-      err = gpgme_recipients_add_name_with_validity (rset, "Alpha",
-						     GPGME_VALIDITY_FULL);
-      fail_if_err (err);
+  err = gpgme_user_ids_append (rset_lastp, "Alpha");
+  fail_if_err (err);
+  (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
 
-      err = gpgme_op_encrypt_start (ctx, rset, in, out);
-      fail_if_err (err);
+  rset_lastp = &(*rset_lastp)->next;
+  err = gpgme_user_ids_append (rset_lastp, "Bob");
+  fail_if_err (err);
+  (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
 
-      my_wait ();
-      fail_if_err (op_result.err);
-      fail_if_err (err);
+  err = gpgme_op_encrypt_start (ctx, rset, in, out);
+  fail_if_err (err);
 
-      fflush (NULL);
-      fputs ("Begin Result:\n", stdout);
-      print_data (out);
-      fputs ("End Result.\n", stdout);
+  my_wait ();
+  fail_if_err (op_result.err);
+  fail_if_err (err);
+
+  fflush (NULL);
+  fputs ("Begin Result:\n", stdout);
+  print_data (out);
+  fputs ("End Result.\n", stdout);
    
-      gpgme_recipients_release (rset);
-      gpgme_data_release (in);
-      gpgme_data_release (out);
-      gpgme_release (ctx);
-    }
-  while (argc > 1 && !strcmp (argv[1], "--loop"));
+  gpgme_user_ids_release (rset);
+  gpgme_data_release (in);
+  gpgme_data_release (out);
+  gpgme_release (ctx);
 
   return 0;
 }
-
-

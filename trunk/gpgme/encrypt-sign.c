@@ -37,7 +37,7 @@ encrypt_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 
 static gpgme_error_t
-encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_recipients_t recp,
+encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_user_id_t recp,
 		    gpgme_data_t plain, gpgme_data_t cipher)
 {
   gpgme_error_t err;
@@ -80,7 +80,7 @@ encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_recipients_t recp,
    store the resulting ciphertext in CIPHER.  Also sign the ciphertext
    with the signers in CTX.  */
 gpgme_error_t
-gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_user_id_t recp,
 			      gpgme_data_t plain, gpgme_data_t cipher)
 {
   return encrypt_sign_start (ctx, 0, recp, plain, cipher);
@@ -91,7 +91,7 @@ gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_recipients_t recp,
    store the resulting ciphertext in CIPHER.  Also sign the ciphertext
    with the signers in CTX.  */
 gpgme_error_t
-gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_user_id_t recp,
 		       gpgme_data_t plain, gpgme_data_t cipher)
 {
   gpgme_error_t err = encrypt_sign_start (ctx, 1, recp, plain, cipher);

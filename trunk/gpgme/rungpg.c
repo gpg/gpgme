@@ -1235,26 +1235,25 @@ gpg_edit (void *engine, gpgme_key_t key, gpgme_data_t out,
 
 
 static gpgme_error_t
-append_args_from_recipients (GpgObject gpg, const gpgme_recipients_t rset)
+append_args_from_recipients (GpgObject gpg, gpgme_user_id_t uid)
 {
   gpgme_error_t err = 0;
-  gpgme_user_id_t uid;
 
-  assert (rset);
-  for (uid = rset->list; uid; uid = uid->next)
+  while (uid)
     {
       err = add_arg (gpg, "-r");
       if (!err)
 	err = add_arg (gpg, uid->uid);
       if (err)
 	break;
+      uid = uid->next;
     }    
   return err;
 }
 
 
 static gpgme_error_t
-gpg_encrypt (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
+gpg_encrypt (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
 	     gpgme_data_t ciph, int use_armor)
 {
   GpgObject gpg = engine;
@@ -1270,7 +1269,7 @@ gpg_encrypt (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
     {
       /* If we know that all recipients are valid (full or ultimate trust)
 	 we can suppress further checks.  */
-      if (!err && !symmetric && _gpgme_recipients_all_valid (recp))
+      if (!err && !symmetric && _gpgme_user_ids_all_valid (recp))
 	err = add_arg (gpg, "--always-trust");
 
       if (!err)
@@ -1297,7 +1296,7 @@ gpg_encrypt (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
 
 
 static gpgme_error_t
-gpg_encrypt_sign (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
+gpg_encrypt_sign (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
 		  gpgme_data_t ciph, int use_armor,
 		  gpgme_ctx_t ctx /* FIXME */)
 {
@@ -1312,7 +1311,7 @@ gpg_encrypt_sign (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
 
   /* If we know that all recipients are valid (full or ultimate trust)
    * we can suppress further checks */
-  if (!err && _gpgme_recipients_all_valid (recp))
+  if (!err && _gpgme_user_ids_all_valid (recp))
     err = add_arg (gpg, "--always-trust");
 
   if (!err)
@@ -1341,7 +1340,7 @@ gpg_encrypt_sign (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
 
 
 static gpgme_error_t
-gpg_export (void *engine, gpgme_recipients_t recp, gpgme_data_t keydata,
+gpg_export (void *engine, gpgme_user_id_t uids, gpgme_data_t keydata,
 	    int use_armor)
 {
   GpgObject gpg = engine;
@@ -1355,16 +1354,10 @@ gpg_export (void *engine, gpgme_recipients_t recp, gpgme_data_t keydata,
   if (!err)
     err = add_arg (gpg, "--");
 
-  if (!err)
+  while (!err && uids)
     {
-      void *ec;
-      const char *s;
-
-      err = gpgme_recipients_enum_open (recp, &ec);
-      while (!err && (s = gpgme_recipients_enum_read (recp, &ec)))
-	err = add_arg (gpg, s);
-      if (!err)
-	err = gpgme_recipients_enum_close (recp, &ec);
+      err = add_arg (gpg, uids->uid);
+      uids = uids->next;
     }
 
   if (!err)

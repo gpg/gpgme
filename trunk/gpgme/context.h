@@ -37,6 +37,7 @@ typedef enum
     OPDATA_VERIFY, OPDATA_TRUSTLIST
   } ctx_op_data_type;
 
+
 struct ctx_op_data
 {
   /* The next element in the linked list, or NULL if this is the last
@@ -100,14 +101,6 @@ struct gpgme_context
      operation.  */
   struct fd_table fdt;
   struct gpgme_io_cbs io_cbs;
-};
-
-
-/* A recipient is defined by a user ID, but we define it as an opaque
-   type for the user.  */
-struct gpgme_recipients
-{
-  gpgme_user_id_t list;
 };
 
 #endif	/* CONTEXT_H */

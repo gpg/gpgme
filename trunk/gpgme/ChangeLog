@@ -1,3 +1,49 @@
+2003-05-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgme_la_SOURCES): Remove recipient.c, add
+	user-id.c.
+	* gpgme.h (gpgme_recipients_t): Removed.
+	(gpgme_recipients_new, gpgme_recipients_release,
+	gpgme_recipients_add_name,
+	gpgme_recipients_add_name_with_validity, gpgme_recipients_count,
+	gpgme_recipients_enum_open, gpgme_recipients_enum_read,
+	gpgme_recipients_enum_close): Removed.
+	(gpgme_op_encrypt, gpgme_op_encrypt_start, gpgme_op_encrypt_sign,
+	gpgme_op_encrypt_sign_start, gpgme_op_export_start,
+	gpgme_op_export): Change second argument to gpgme_user_id_t.
+	(gpgme_user_ids_release): New prototype.
+	(gpgme_user_ids_append): Likewise.
+	* ops.h (_gpgme_recipients_all_valid): Remove.
+	(_gpgme_user_ids_all_valid): Add.
+	* context.h (struct gpgme_recipients): Removed.
+	* user-id.c: New file.
+	* recipient.c: Removed file.
+	* rungpg.c (append_args_from_recipients): Change last arg to
+	gpgme_user_id_t.  Reimplement.
+	(gpg_encrypt): Change second arg to gpgme_user_id_t.
+	(gpg_encrypt_sign): Likewise.
+	(gpg_export): Likewise.  Rewrite user ID list code.
+	* engine.c (_gpgme_engine_op_encrypt): Change second arg to
+	gpgme_user_id_t.
+	(_gpgme_engine_op_encrypt_sign): Likewise.
+	(_gpgme_engine_op_export): Likewise.
+	* engine.h (_gpgme_engine_op_encrypt, _gpgme_engine_op_encrypt_sign,
+	_gpgme_engine_op_export): Likewise.
+	* engine-gpgsm.c (set_recipients): Likewise.  Rewrite loop code.
+	(gpgsm_encrypt): Likewise.
+	(gpgsm_export): Likewise.
+	* engine-backend.h (struct engine_ops): Likewise for members
+	ENCRYPT, ENCRYPT_SIGN and EXPORT.
+	* export.c (export_start, gpgme_op_export_start, gpgme_op_export):
+	Likewise.
+	* encrypt.c (encrypt_start): Likewise.  Don't check for count of
+	recipients.
+	(gpgme_op_encrypt_start): Likewise.
+	(gpgme_op_encrypt): Likewise.
+	* encrypt-sign.c (encrypt_sign_start): Likewise.
+	(gpgme_op_encrypt_sign): Likewise.
+	(gpgme_op_encrypt_sign_start): Likewise.
+
 2003-05-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (struct _gpgme_op_import_result): Add skipped_new_keys.

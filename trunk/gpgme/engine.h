@@ -57,17 +57,17 @@ gpgme_error_t _gpgme_engine_op_edit (EngineObject engine, gpgme_key_t key,
 				     gpgme_data_t out,
 				     gpgme_ctx_t ctx /* FIXME */);
 gpgme_error_t _gpgme_engine_op_encrypt (EngineObject engine,
-					gpgme_recipients_t recp,
+					gpgme_user_id_t recp,
 					gpgme_data_t plain, gpgme_data_t ciph,
 					int use_armor);
 gpgme_error_t _gpgme_engine_op_encrypt_sign (EngineObject engine,
-					     gpgme_recipients_t recp,
+					     gpgme_user_id_t recp,
 					     gpgme_data_t plain,
 					     gpgme_data_t ciph,
 					     int use_armor,
 					     gpgme_ctx_t ctx /* FIXME */);
 gpgme_error_t _gpgme_engine_op_export (EngineObject engine,
-				       gpgme_recipients_t recp,
+				       gpgme_user_id_t uids,
 				       gpgme_data_t keydata, int use_armor);
 gpgme_error_t _gpgme_engine_op_genkey (EngineObject engine,
 				       gpgme_data_t help_data,

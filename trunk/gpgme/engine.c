@@ -289,7 +289,7 @@ _gpgme_engine_op_edit (EngineObject engine, gpgme_key_t key, gpgme_data_t out,
 
 
 gpgme_error_t
-_gpgme_engine_op_encrypt (EngineObject engine, gpgme_recipients_t recp,
+_gpgme_engine_op_encrypt (EngineObject engine, gpgme_user_id_t recp,
 			  gpgme_data_t plain, gpgme_data_t ciph, int use_armor)
 {
   if (!engine)
@@ -304,7 +304,7 @@ _gpgme_engine_op_encrypt (EngineObject engine, gpgme_recipients_t recp,
 
 
 gpgme_error_t
-_gpgme_engine_op_encrypt_sign (EngineObject engine, gpgme_recipients_t recp,
+_gpgme_engine_op_encrypt_sign (EngineObject engine, gpgme_user_id_t recp,
 			       gpgme_data_t plain, gpgme_data_t ciph,
 			       int use_armor, gpgme_ctx_t ctx /* FIXME */)
 {
@@ -320,7 +320,7 @@ _gpgme_engine_op_encrypt_sign (EngineObject engine, gpgme_recipients_t recp,
 
 
 gpgme_error_t
-_gpgme_engine_op_export (EngineObject engine, gpgme_recipients_t recp,
+_gpgme_engine_op_export (EngineObject engine, gpgme_user_id_t uids,
 			 gpgme_data_t keydata, int use_armor)
 {
   if (!engine)
@@ -329,8 +329,7 @@ _gpgme_engine_op_export (EngineObject engine, gpgme_recipients_t recp,
   if (!engine->ops->export)
     return GPGME_Not_Implemented;
 
-  return (*engine->ops->export) (engine->engine, recp, keydata,
-				 use_armor);
+  return (*engine->ops->export) (engine->engine, uids, keydata, use_armor);
 }
 
 

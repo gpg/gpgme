@@ -936,13 +936,12 @@ gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
 
 
 static gpgme_error_t
-set_recipients (GpgsmObject gpgsm, gpgme_recipients_t recp)
+set_recipients (GpgsmObject gpgsm, gpgme_user_id_t uid)
 {
   gpgme_error_t err;
   ASSUAN_CONTEXT ctx = gpgsm->assuan_ctx;
   char *line;
   int linelen;
-  gpgme_user_id_t uid;
   int invalid_recipients = 0;
 
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
@@ -950,7 +949,7 @@ set_recipients (GpgsmObject gpgsm, gpgme_recipients_t recp)
   if (!line)
     return GPGME_Out_Of_Core;
   strcpy (line, "RECIPIENT ");
-  for (uid = recp->list; uid; uid = uid->next)
+  while (uid)
     {
       int newlen = 11 + strlen (uid->uid);
       if (linelen < newlen)
@@ -975,6 +974,7 @@ set_recipients (GpgsmObject gpgsm, gpgme_recipients_t recp)
 	  free (line);
 	  return err;
 	}
+      uid = uid->next;
     }
   free (line);
   return invalid_recipients ? GPGME_Invalid_UserID : 0;
@@ -982,7 +982,7 @@ set_recipients (GpgsmObject gpgsm, gpgme_recipients_t recp)
 
 
 static gpgme_error_t
-gpgsm_encrypt (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
+gpgsm_encrypt (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
 	       gpgme_data_t ciph, int use_armor)
 {
   GpgsmObject gpgsm = engine;
@@ -1015,7 +1015,7 @@ gpgsm_encrypt (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
 
 
 static gpgme_error_t
-gpgsm_export (void *engine, gpgme_recipients_t recp, gpgme_data_t keydata,
+gpgsm_export (void *engine, gpgme_user_id_t uid, gpgme_data_t keydata,
 	      int use_armor)
 {
   GpgsmObject gpgsm = engine;
@@ -1033,36 +1033,27 @@ gpgsm_export (void *engine, gpgme_recipients_t recp, gpgme_data_t keydata,
   strcpy (cmd, "EXPORT");
   cmdi = 6;
 
-  if (recp)
+  while (!err && uid)
     {
-      void *ec;
-      const char *s;
-
-      err = gpgme_recipients_enum_open (recp, &ec);
-      while (!err && (s = gpgme_recipients_enum_read (recp, &ec)))
+      int uidlen = strlen (uid->uid);
+      /* New string is old string + ' ' + s + '\0'.  */
+      if (cmdlen < cmdi + 1 + uidlen + 1)
 	{
-	  int slen = strlen (s);
-	  /* New string is old string + ' ' + s + '\0'.  */
-	  if (cmdlen < cmdi + 1 + slen + 1)
+	  char *newcmd = realloc (cmd, cmdlen * 2);
+	  if (!newcmd)
 	    {
-	      char *newcmd = realloc (cmd, cmdlen * 2);
-	      if (!newcmd)
-		{
-		  free (cmd);
-		  return GPGME_Out_Of_Core;
-		}
-	      cmd = newcmd;
-	      cmdlen *= 2;
+	      free (cmd);
+	      return GPGME_Out_Of_Core;
 	    }
-	  cmd[cmdi++] = ' ';
-	  strcpy (cmd + cmdi, s);
-	  cmdi += slen;
+	  cmd = newcmd;
+	  cmdlen *= 2;
 	}
-      if (!err)
-	err = gpgme_recipients_enum_close (recp, &ec);
-      if (err)
-	return err;
+      cmd[cmdi++] = ' ';
+      strcpy (cmd + cmdi, uid->uid);
+      cmdi += uidlen;
     }
+  if (err)
+    return err;
 
   gpgsm->output_cb.data = keydata;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
