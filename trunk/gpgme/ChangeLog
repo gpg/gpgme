@@ -1,5 +1,15 @@
 2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.c (_gpgme_gpg_op_verify): If TEXT is of mode
+	GPGME_DATA_MODE_IN, construct a command line that stores the
+	plaintext in TEXT.
+	* verify.c (gpgme_op_verify_start): Accept TEXT being
+	uninitialized, and in this case interpret SIG as a normal or
+	cleartext signature and TEXT as a return data object.
+	* engine-gpgsm.c (_gpgme_gpgsm_op_verify): Likewise.
+
+2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
+
 	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist_ext) [!ENABLE_GPGSM]:
 	Add stub function.
 

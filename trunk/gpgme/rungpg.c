@@ -1553,29 +1553,44 @@ _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData text)
 {
   GpgmeError err = 0;
 
-  if (gpg->pm.used)
+  if (_gpgme_data_get_mode (text) == GPGME_DATA_MODE_IN)
     {
-      err = _gpgme_gpg_add_arg (gpg, gpg->pm.used ? "--pipemode" : "--verify");
+      /* Normal or cleartext signature.  */
+
+      err = _gpgme_gpg_add_arg (gpg, "--output");
       if (!err)
-	err = _gpgme_gpg_add_arg (gpg, "--");
+	err = _gpgme_gpg_add_arg (gpg, "-");
       if (!err)
-	err = _gpgme_gpg_add_pm_data (gpg, sig, 0);
+	err = _gpgme_gpg_add_data (gpg, sig, 0);
       if (!err)
-	err = _gpgme_gpg_add_pm_data (gpg, text, 1);
+	err = _gpgme_gpg_add_data (gpg, text, 1);
     }
   else
     {
-      err = _gpgme_gpg_add_arg (gpg, "--verify");
-      if (!err)
-	err = _gpgme_gpg_add_arg (gpg, "--");
-      if (!err)
-	err = _gpgme_gpg_add_data (gpg, sig, -1);
-      if (text)
+      if (gpg->pm.used)
 	{
+	  err = _gpgme_gpg_add_arg (gpg, gpg->pm.used ? "--pipemode" : "--verify");
 	  if (!err)
-	    err = _gpgme_gpg_add_arg (gpg, "-");
+	    err = _gpgme_gpg_add_arg (gpg, "--");
 	  if (!err)
-	    err = _gpgme_gpg_add_data (gpg, text, 0);
+	    err = _gpgme_gpg_add_pm_data (gpg, sig, 0);
+	  if (!err)
+	    err = _gpgme_gpg_add_pm_data (gpg, text, 1);
+	}
+      else
+	{
+	  err = _gpgme_gpg_add_arg (gpg, "--verify");
+	  if (!err)
+	    err = _gpgme_gpg_add_arg (gpg, "--");
+	  if (!err)
+	    err = _gpgme_gpg_add_data (gpg, sig, -1);
+	  if (text)
+	    {
+	      if (!err)
+		err = _gpgme_gpg_add_arg (gpg, "-");
+	      if (!err)
+		err = _gpgme_gpg_add_data (gpg, text, 0);
+	    }
 	}
     }
   return err;

@@ -284,13 +284,17 @@ gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData text)
       err = mk_error (No_Data);
       goto leave;
     }
-  if (text && gpgme_data_get_type (text) == GPGME_DATA_TYPE_NONE)
+  if (!text)
     {
-      err = mk_error (No_Data);
+      err = mk_error (Invalid_Value);
       goto leave;
     }
   _gpgme_data_set_mode (sig, GPGME_DATA_MODE_OUT);
-  if (text)	    /* Detached signature.  */
+  if (gpgme_data_get_type (text) == GPGME_DATA_TYPE_NONE)
+    /* Normal or cleartext signature.  */
+    _gpgme_data_set_mode (text, GPGME_DATA_MODE_IN);
+  else
+    /* Detached signature.  */
     _gpgme_data_set_mode (text, GPGME_DATA_MODE_OUT);
 
   err = _gpgme_engine_op_verify (ctx->engine, sig, text);
@@ -330,8 +334,14 @@ _gpgme_intersect_stati (VerifyResult result)
  * @text: the signed text
  * @r_stat: returns the status of the signature
  * 
- * Perform a signature check on the signature given in @sig. Currently it is
- * assumed that this is a detached signature for the material given in @text.
+ * Perform a signature check on the signature given in @sig.  If @text
+ * is a new and uninitialized data object, it is assumed that @sig
+ * contains a normal or cleartext signature, and the plaintext is
+ * returned in @text upon successful verification.
+ *
+ * If @text is initialized, it is assumed that @sig is a detached
+ * signature for the material given in @text.
+ *
  * The result of this operation is returned in @r_stat which can take these
  * values:
  *  GPGME_SIG_STAT_NONE:  No status - should not happen
