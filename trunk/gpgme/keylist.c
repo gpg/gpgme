@@ -304,13 +304,23 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	      key->keys.expires_at = parse_timestamp (p);
 	      break;
 	    case 8: /* X.509 serial number */
-	      /* fixme: store it */
+              if (rectype == RT_CRT)
+                {
+                  key->issuer_serial = xtrystrdup (p);
+		  if (!key->issuer_serial)
+		    ctx->error = mk_error (Out_Of_Core);
+                }
 	      break;
 	    case 9: /* ownertrust */
 	      break;
 	    case 10: /* not used for gpg due to --fixed-list-mode option 
 			but gpgsm stores the issuer name */
-	      /* fixme: store issuer name */
+              if (rectype == RT_CRT)
+                {
+                  key->issuer_name = xtrystrdup (p);
+		  if (!key->issuer_name)
+		    ctx->error = mk_error (Out_Of_Core);
+                }
 	      break;
 	    case 11: /* signature class  */
 	      break;
@@ -392,6 +402,14 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 		{
 		  key->keys.fingerprint = xtrystrdup (p);
 		  if (!key->keys.fingerprint)
+		    ctx->error = mk_error (Out_Of_Core);
+                }
+	      break;
+	    case 13: /* gpgsm chain ID (take only the first one)*/
+	      if (!key->chain_id && *p)
+		{
+		  key->chain_id = xtrystrdup (p);
+		  if (!key->chain_id)
 		    ctx->error = mk_error (Out_Of_Core);
                 }
 	      pend = NULL; /* that is all we want */

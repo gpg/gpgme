@@ -352,6 +352,9 @@ gpgme_key_release ( GpgmeKey key )
         u2 = u->next;
         xfree (u);
     }
+    xfree (key->issuer_serial);
+    xfree (key->issuer_name);
+    xfree (key->chain_id);
     xfree (key);
 }
 
@@ -655,66 +658,73 @@ one_uid_as_xml (GpgmeData d, struct user_id_s *u)
 char *
 gpgme_key_get_as_xml ( GpgmeKey key )
 {
-    GpgmeData d;
-    struct user_id_s *u;
-    struct subkey_s *k;
-
-    if ( !key )
-        return NULL;
-    
-    if ( gpgme_data_new ( &d ) )
-        return NULL;
-    
-    _gpgme_data_append_string ( d, "<GnupgKeyblock>\n"
-                                   "  <mainkey>\n" );
-    if ( key->keys.secret )
+  GpgmeData d;
+  struct user_id_s *u;
+  struct subkey_s *k;
+  
+  if ( !key )
+    return NULL;
+  
+  if ( gpgme_data_new ( &d ) )
+    return NULL;
+  
+  _gpgme_data_append_string ( d, "<GnupgKeyblock>\n"
+                              "  <mainkey>\n" );
+  if ( key->keys.secret )
+    _gpgme_data_append_string ( d, "    <secret/>\n");
+  if ( key->keys.flags.invalid )
+    _gpgme_data_append_string ( d, "    <invalid/>\n");
+  if ( key->keys.flags.revoked )
+    _gpgme_data_append_string ( d, "    <revoked/>\n");
+  if ( key->keys.flags.expired )
+    _gpgme_data_append_string ( d, "    <expired/>\n");
+  if ( key->keys.flags.disabled )
+    _gpgme_data_append_string ( d, "    <disabled/>\n");
+  add_tag_and_string (d, "keyid", key->keys.keyid );   
+  if (key->keys.fingerprint)
+    add_tag_and_string (d, "fpr", key->keys.fingerprint );
+  add_tag_and_uint (d, "algo", key->keys.key_algo );
+  add_tag_and_uint (d, "len", key->keys.key_len );
+  add_tag_and_time (d, "created", key->keys.timestamp );
+  add_tag_and_time (d, "expire", key->keys.expires_at );
+  if (key->issuer_serial)
+    add_tag_and_string (d, "serial", key->issuer_serial);
+  if (key->issuer_name)
+    add_tag_and_string (d, "issuer", key->issuer_name);
+  if (key->chain_id)
+    add_tag_and_string (d, "chainid", key->chain_id);
+  _gpgme_data_append_string (d, "  </mainkey>\n");
+  
+  /* Now the user IDs.  */
+  for (u = key->uids; u; u = u->next)
+    one_uid_as_xml (d,u);
+  
+  /* and now the subkeys */
+  for (k=key->keys.next; k; k = k->next )
+    {
+      _gpgme_data_append_string (d, "  <subkey>\n");
+      if ( k->secret )
         _gpgme_data_append_string ( d, "    <secret/>\n");
-    if ( key->keys.flags.invalid )
+      if ( k->flags.invalid )
         _gpgme_data_append_string ( d, "    <invalid/>\n");
-    if ( key->keys.flags.revoked )
+      if ( k->flags.revoked )
         _gpgme_data_append_string ( d, "    <revoked/>\n");
-    if ( key->keys.flags.expired )
+      if ( k->flags.expired )
         _gpgme_data_append_string ( d, "    <expired/>\n");
-    if ( key->keys.flags.disabled )
+      if ( k->flags.disabled )
         _gpgme_data_append_string ( d, "    <disabled/>\n");
-    add_tag_and_string (d, "keyid", key->keys.keyid );   
-    if (key->keys.fingerprint)
-        add_tag_and_string (d, "fpr", key->keys.fingerprint );
-    add_tag_and_uint (d, "algo", key->keys.key_algo );
-    add_tag_and_uint (d, "len", key->keys.key_len );
-    add_tag_and_time (d, "created", key->keys.timestamp );
-    add_tag_and_time (d, "expire", key->keys.expires_at );
-    _gpgme_data_append_string (d, "  </mainkey>\n");
-
-    /* Now the user IDs.  */
-    for (u = key->uids; u; u = u->next)
-      one_uid_as_xml (d,u);
-
-    /* and now the subkeys */
-    for (k=key->keys.next; k; k = k->next ) {
-        _gpgme_data_append_string (d, "  <subkey>\n");
-        if ( k->secret )
-            _gpgme_data_append_string ( d, "    <secret/>\n");
-        if ( k->flags.invalid )
-            _gpgme_data_append_string ( d, "    <invalid/>\n");
-        if ( k->flags.revoked )
-            _gpgme_data_append_string ( d, "    <revoked/>\n");
-        if ( k->flags.expired )
-            _gpgme_data_append_string ( d, "    <expired/>\n");
-        if ( k->flags.disabled )
-            _gpgme_data_append_string ( d, "    <disabled/>\n");
-        add_tag_and_string (d, "keyid", k->keyid );   
-        if (k->fingerprint)
-            add_tag_and_string (d, "fpr", k->fingerprint );
-        add_tag_and_uint (d, "algo", k->key_algo );
-        add_tag_and_uint (d, "len", k->key_len );
-        add_tag_and_time (d, "created", k->timestamp );
-        add_tag_and_time (d, "expire", k->expires_at );
-        _gpgme_data_append_string (d, "  </subkey>\n");
+      add_tag_and_string (d, "keyid", k->keyid );   
+      if (k->fingerprint)
+        add_tag_and_string (d, "fpr", k->fingerprint );
+      add_tag_and_uint (d, "algo", k->key_algo );
+      add_tag_and_uint (d, "len", k->key_len );
+      add_tag_and_time (d, "created", k->timestamp );
+      add_tag_and_time (d, "expire", k->expires_at );
+      _gpgme_data_append_string (d, "  </subkey>\n");
     }
-    _gpgme_data_append_string ( d, "</GnupgKeyblock>\n" );
-
-    return _gpgme_data_release_and_return_string (d);
+  _gpgme_data_append_string ( d, "</GnupgKeyblock>\n" );
+  
+  return _gpgme_data_release_and_return_string (d);
 }
 
 
@@ -850,6 +860,15 @@ gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
         if (k) 
             val = capabilities_to_string (k);
         break;
+      case GPGME_ATTR_SERIAL:
+        val = key->issuer_serial;
+        break;
+      case GPGME_ATTR_ISSUER:
+        val = key->issuer_name;
+        break;
+      case GPGME_ATTR_CHAINID:
+        val = key->chain_id;
+        break;
     }
     return val;
 }
@@ -970,5 +989,3 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
     }
     return val;
 }
-
-

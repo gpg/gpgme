@@ -1,3 +1,11 @@
+2002-03-28  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.h (GpgmeAttr): Add values for issuer and chaining.
+	* key.h (gpgme_key_s): Add issuer and chaining elements for X509.
+	* keylist.c (keylist_colon_handler): Store them.
+	* key.c	(gpgme_key_release): Free them.
+	(gpgme_key_get_as_xml,gpgme_key_get_string_attr): Print them.
+
 2002-03-26  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (libgpgme_la_SOURCES): Add mutex.h

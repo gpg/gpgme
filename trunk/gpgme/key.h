@@ -59,6 +59,9 @@ struct gpgme_key_s {
   unsigned int ref_count;
   unsigned int secret:1;
   unsigned int x509:1;
+  char *issuer_serial; /* malloced string used only with X.509 */
+  char *issuer_name;   /* ditto */
+  char *chain_id;      /* ditto */
   struct subkey_s   keys; 
   struct user_id_s *uids;
 };
