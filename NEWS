@@ -2,6 +2,8 @@
    case, symmetric encryption is performed.  Note that this requires a
    passphrase from the user.
 
+ * More information is returned for X.509 certificates.
+
  * Interface changes relative to the 0.3.4 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_op_encrypt		EXTENDED: Symmetric encryption possible
