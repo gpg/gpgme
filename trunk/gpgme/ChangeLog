@@ -1,3 +1,13 @@
+2003-02-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (GpgmePassphraseCb): Change type to return GpgmeError,
+	and add argument for returning the result string.
+	(gpgme_cancel): Remove prototype.
+	* gpgme.c (gpgme_cancel): Remove function.
+	* context.h (struct gpgme_context_s): Remove member cancel.
+	* passphrase.c (_gpgme_passphrase_command_handler): Call the
+	passphrase callback in the new way.
+
 2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* edit.c (_gpgme_edit_status_handler): Call the progress status

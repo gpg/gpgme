@@ -306,8 +306,6 @@ gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 	      assert (ictx);
 
 	      err = item->handler (item->handler_value, fdt.fds[i].fd);
-	      if (!err && ictx->cancel)
-		err = GPGME_Canceled;
 	      if (err)
 		{
 		  /* An error occured.  Close all fds in this context,

@@ -1,3 +1,13 @@
+2003-02-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-decrypt.c (passphrase_cb): Fix to new prototype.
+	* gpg/t-decrypt-verify.c (passphrase_cb): Likewise.
+	* gpg/t-edit.c (passphrase_cb): Likewise.
+	* gpg/t-encrypt-sign.c (passphrase_cb): Likewise.
+	* gpg/t-encrypt-sym.c (passphrase_cb): Likewise.
+	* gpg/t-sign.c (passphrase_cb): Likewise.
+	* gpg/t-signers.c (passphrase_cb): Likewise.
+
 2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* t-engine-info.c: Use file_name instead path throughout.

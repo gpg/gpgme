@@ -43,7 +43,7 @@ edit_status_handler (GpgmeCtx ctx, GpgmeStatusCode status, char *args)
   if (err)
     return err;
 
-  GpgmeError err = _gpgme_progress_status_handler (ctx, status, args);
+  err = _gpgme_progress_status_handler (ctx, status, args);
   if (err)
     return err;
 

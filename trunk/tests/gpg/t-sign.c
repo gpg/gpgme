@@ -1,6 +1,6 @@
 /* t-sign.c  - regression test
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2003 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -63,23 +63,19 @@ print_data (GpgmeData dh)
 }
 
 
-static const char *
-passphrase_cb ( void *opaque, const char *desc, void **r_hd )
+static GpgmeError
+passphrase_cb (void *opaque, const char *desc,
+	       void **r_hd, const char **result)
 {
-    const char *pass;
+  if (!desc)
+    /* Cleanup by looking at *r_hd.  */
+    return 0;
 
-    if ( !desc ) {
-        /* cleanup by looking at *r_hd */
-
-        
-        return NULL;
-    }
-
-    pass = "abc";
-    fprintf (stderr, "%% requesting passphrase for `%s': ", desc );
-    fprintf (stderr, "sending `%s'\n", pass );
-
-    return pass;
+  *result = "abc";
+  fprintf (stderr, "%% requesting passphrase for `%s': ", desc);
+  fprintf (stderr, "sending `%s'\n", *result);
+  
+  return 0;
 }
 
 

@@ -1,6 +1,6 @@
 /* t-signers.c  - Regression tests for the Gpgme multiple signers interface.
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2003 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -62,24 +62,21 @@ print_data (GpgmeData dh)
     fail_if_err (GPGME_File_Error);
 }
 
-
-static const char *
-passphrase_cb (void *opaque, const char *desc, void **r_hd)
+static GpgmeError
+passphrase_cb (void *opaque, const char *desc,
+	       void **r_hd, const char **result)
 {
-  const char *pass;
-  
   if (!desc)
-    {
-      /* cleanup by looking at *r_hd */
-      return NULL;
-    }
+    /* Cleanup by looking at *r_hd.  */
+    return 0;
 
-  pass = "abc";
+  *result = "abc";
   fprintf (stderr, "%% requesting passphrase for `%s': ", desc);
-  fprintf (stderr, "sending `%s'\n", pass);
-
-  return pass;
+  fprintf (stderr, "sending `%s'\n", *result);
+  
+  return 0;
 }
+
 
 int 
 main (int argc, char *argv[])
