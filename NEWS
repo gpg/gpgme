@@ -22,7 +22,7 @@ Noteworthy changes in version 0.4.1 (unreleased)
  structs rather than by XML structs or in other ways.
 
  Objects which used to be opaque (for example a key) are now pointers
- accessible structs, so no accessor functions are necessary.
+ to accessible structs, so no accessor functions are necessary.
 
  Backward compatibility is provided where it was possible without too
  much effort and did not collide with the overall sanitization effort.
@@ -46,7 +46,6 @@ Noteworthy changes in version 0.4.1 (unreleased)
    Old name:		New name:
    GpgmeCtx		gpgme_ctx_t
    GpgmeData		gpgme_data_t
-   GpgmeRecipients	gpgme_recipients_t
    GpgmeError		gpgme_error_t
    GpgmeDataEncoding	gpgme_data_encoding_t
    GpgmeSigStat		gpgme_sig_stat_t
@@ -95,6 +94,37 @@ Noteworthy changes in version 0.4.1 (unreleased)
  * gpgme_edit_cb_t has been changed to take a file descriptor argument.
    The user is expected to write the response to the file descriptor,
    followed by a newline.
+
+ * The recipients interface has been removed and replaced by a more
+   generic and light gpgme_user_ids_* interface, which only provides
+   two functions: gpgme_user_ids_append adds a new user ID at the end
+   of the linked list, and gpgme_user_ids_release releases all user
+   IDs in the linked list.  The resulting user ID object is free for
+   the user to change (note however that gpgme_user_ids_release only
+   releases resources allocated by GPGME).
+
+   This change propagates to the prototypes of gpgme_op_encrypt,
+   gpgme_op_encrypt_start, gpgme_op_encrypt_sign and
+   gpgme_op_encrypt_sign_start.  Also the prototypes of
+   gpgme_op_export_start and gpgme_op_export finally make sense.
+
+   Here is an example how to use the new interface:
+
+   gpgme_user_id_t rset = NULL;
+   gpgme_user_id_t *rset_lastp = &rset;
+
+   err = gpgme_user_ids_append (rset_lastp, "Alpha");
+   fail_if_err (err);
+   (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
+
+   rset_lastp = &(*rset_lastp)->next;
+   err = gpgme_user_ids_append (rset_lastp, "Bob");
+   fail_if_err (err);
+   (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
+
+   [...]
+
+   gpgme_user_ids_release (rset);
 
  * gpgme_op_verify and gpgme_op_decrypt_verify don't return a status
    summary anymore.  Use gpgme_get_sig_status to retrieve the individual
@@ -219,7 +249,6 @@ Noteworthy changes in version 0.4.1 (unreleased)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeCtx			DEPRECATED: Use gpgme_ctx_t.
 GpgmeData			DEPRECATED: Use gpgme_data_t.
-GpgmeRecipients			DEPRECATED: Use gpgme_recipients_t.
 GpgmeError			DEPRECATED: Use gpgme_error_t.
 GpgmeDataEncoding		DEPRECATED: Use gpgme_data_encoding_t.
 GpgmeSigStat			DEPRECATED: Use gpgme_sig_stat_t.
@@ -279,6 +308,23 @@ gpgme_op_decrypt_verify		CHANGED: Drop R_STAT argument.
 gpgme_wait			CHANGED: Can return NULL even if hang is true.
 GpgmeIdleFunc                   REMOVED
 gpgme_register_idle             REMOVED
+GpgmeRecipients			REMOVED: Use gpgme_user_id_t.
+gpgme_recipients_new		REMOVED: Initialize gpgme_user_id_t with NULL.
+gpgme_recipients_release	REMOVED: Use gpgme_user_ids_release.
+gpgme_recipients_add_name	REMOVED: Use gpgme_user_ids_append
+gpgme_recipients_add_name_with_validity	REMOVED: Set validity directly.
+gpgme_recipients_count		REMOVED: You can count them yourself.
+gpgme_recipients_enum_open	REMOVED: gpgme_user_id_t is a linked list.
+gpgme_recipients_enum_read	REMOVED: See gpgme_recipients_enum_open.
+gpgme_recipients_enum_close	REMOVED: See gpgme_recipients_enum_read.
+gpgme_user_ids_append		NEW
+gpgme_user_ids_release		NEW
+gpgme_op_encrypt		CHANGED: Recipients passed as gpgme_user_id_t.
+gpgme_op_encrypt_start		CHANGED: Recipients passed as gpgme_user_id_t.
+gpgme_op_encrypt_sign		CHANGED: Recipients passed as gpgme_user_id_t.
+gpgme_op_encrypt_sign_start	CHANGED: Recipients passed as gpgme_user_id_t.
+gpgme_op_export_start		CHANGED: User IDs passed as gpgme_user_id_t.
+gpgme_op_export			CHANGED: User IDs passed as gpgme_user_id_t.
 gpgme_engine_info_t		NEW
 gpgme_get_engine_info		CHANGED: Return info structure instead XML.
 gpgme_get_protocol_name		NEW

@@ -33,8 +33,9 @@ void _gpgme_release_result (gpgme_ctx_t ctx);
 gpgme_error_t _gpgme_wait_one (gpgme_ctx_t ctx);
 gpgme_error_t _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond);
 
-/* From recipient.c.  */
-int _gpgme_recipients_all_valid ( const gpgme_recipients_t rset );
+
+/* From user-id.c.  */
+int _gpgme_user_ids_all_valid (gpgme_user_id_t uid);
 
 
 /* From data.c.  */
@@ -143,6 +144,5 @@ void _gpgme_op_trustlist_event_cb (void *data, gpgme_event_io_t type,
 const char *_gpgme_compare_versions (const char *my_version,
 				     const char *req_version);
 char *_gpgme_get_program_version (const char *const path);
-
 
 #endif /* OPS_H */

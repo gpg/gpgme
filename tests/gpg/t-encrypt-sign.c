@@ -117,7 +117,8 @@ main (int argc, char **argv)
   gpgme_ctx_t ctx;
   gpgme_error_t err;
   gpgme_data_t in, out;
-  gpgme_recipients_t rset;
+  gpgme_user_id_t rset = NULL;
+  gpgme_user_id_t *rset_lastp = &rset;
   gpgme_encrypt_result_t result;
   gpgme_sign_result_t sign_result;
   char *agent_info;
@@ -139,15 +140,15 @@ main (int argc, char **argv)
 
   err = gpgme_data_new (&out);
   fail_if_err (err);
-    
-  err = gpgme_recipients_new (&rset);
+
+  err = gpgme_user_ids_append (rset_lastp, "Alpha");
   fail_if_err (err);
-  err = gpgme_recipients_add_name_with_validity (rset, "Bob",
-						 GPGME_VALIDITY_FULL);
+  (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
+
+  rset_lastp = &(*rset_lastp)->next;
+  err = gpgme_user_ids_append (rset_lastp, "Bob");
   fail_if_err (err);
-  err = gpgme_recipients_add_name_with_validity (rset, "Alpha",
-						 GPGME_VALIDITY_FULL);
-  fail_if_err (err);
+  (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
 
   err = gpgme_op_encrypt_sign (ctx, rset, in, out);
   fail_if_err (err);
@@ -162,11 +163,9 @@ main (int argc, char **argv)
   check_result (sign_result, GPGME_SIG_MODE_NORMAL);
   print_data (out);
 
-  gpgme_recipients_release (rset);
+  gpgme_user_ids_release (rset);
   gpgme_data_release (in);
   gpgme_data_release (out);
   gpgme_release (ctx);
   return 0;
 }
-
-

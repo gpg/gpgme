@@ -29,10 +29,7 @@
 #include "util.h"
 #include "context.h"
 
-/* The signers are directly stored in the context.  So this is quite
-   different to a recipient set.  */
-
-
+
 /* Delete all signers from CTX.  */
 void
 gpgme_signers_clear (gpgme_ctx_t ctx)

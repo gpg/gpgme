@@ -2649,27 +2649,27 @@ operation is started on the context.
 @cindex key, export
 @cindex key ring, export from
 
-@deftypefun gpgme_error_t gpgme_op_export (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{recipients}}, @w{gpgme_data_t @var{keydata}})
+@deftypefun gpgme_error_t gpgme_op_export (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{uids}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_export} extracts the public keys of the
-user IDs in @var{recipients} and returns them in the data buffer
+user IDs in @var{uids} and returns them in the data buffer
 @var{keydata}.  The type of the public keys returned is determined by
 the @acronym{ASCII} armor attribute set for the context @var{ctx}.
 
 The function returns @code{GPGME_No_Error} if the operation completed
-successfully, @code{GPGME_Invalid_Value} if @var{recipients} is
+successfully, @code{GPGME_Invalid_Value} if @var{uids} is
 @code{NULL} or @var{keydata} is not a valid empty data buffer, and
 passes through any errors that are reported by the crypto engine
 support routines.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_export_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{recipients}}, @w{gpgme_data_t @var{keydata}})
+@deftypefun gpgme_error_t gpgme_op_export_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{uids}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_export_start} initiates a
 @code{gpgme_op_export} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, and @code{GPGME_Invalid_Value} if
-@var{recipients} is @code{NULL} or @var{keydata} is not a valid empty
+@var{uids} is @code{NULL} or @var{keydata} is not a valid empty
 data buffer.
 @end deftypefun
 
@@ -3756,86 +3756,59 @@ and then passed to the encryption operation.
 @cindex encryption, selecting recipients
 @cindex recipients
 
-@deftp {Data type} gpgme_recipients_t
-The @code{gpgme_recipients_t} type is a handle for a set of recipients
-that can be used in an encryption process.
-@end deftp
+@deftypefun gpgme_error_t gpgme_user_ids_append (@w{gpgme_user_id_t *@var{rset_p}}, @w{const char *@var{name}})
+The function @code{gpgme_user_ids_append} creates a new
+@code{gpgme_user_id_t} object, initializes its @code{uid} member with
+a copy of the string pointed to by @var{name}, initializes its
+@code{name}, @code{email}, @code{comment} members to the empty string,
+its @code{validity} member to @code{GPGME_VALIDITY_UNKNOWN} and leaves
+all other fields to 0.
 
-@deftypefun gpgme_error_t gpgme_recipients_new (@w{gpgme_recipients_t *@var{r_rset}})
-The function @code{gpgme_recipients_new} creates a new, empty set of
-recipients and returns a handle for it in @var{r_rset}.
+It then appends the user ID at the end of the linked list of user IDs
+that starts at *@var{rset_p}, or it returns it in *@var{rset_p} if
+that is @code{NULL}.  You can then update for example the validity
+information in the user ID directly.
+
+We recommend that you keep a pointer to the last element in your
+linked list.  This is faster and allows you to easily update the
+fields of the last user ID.  Here is an example how to create a linked
+list of user IDs in @var{rset} with full validity from a
+@code{NULL}-terminated array of names:
+
+@example
+  const char *names[] = @{ "Alpha", "Bob", NULL @};
+  gpgme_error_t err;
+  gpgme_user_id_t rset = NULL;
+  gpgme_user_id_t *rset_lastp = &rset;
+
+  do
+    @{
+      err = gpgme_user_ids_append (rset_lastp, *(names++));
+      if (!err)
+        @{
+          (*rset_lastp)->validity = GPGME_VALIDITY_FULL;
+          rset_lastp = &(*rset_lastp)->next;
+        @}
+    @}
+  while (!err && *names);
+@end example
 
 The function returns @code{GPGME_No_Error} if the recipient set could
 be created successfully, and @code{GPGME_Out_Of_Core} if not enough
 memory was available.
 @end deftypefun
 
-@deftypefun void gpgme_recipients_release (@w{gpgme_recipients_t @var{rset}})
-The function @code{gpgme_recipients_release} destroys the set of
-recipients @var{rset} and releases all associated resources.
-@end deftypefun
-
-@deftypefun gpgme_error_t gpgme_recipients_add_name (@w{gpgme_recipients_t @var{rset}}, @w{const char *@var{name}})
-The function @code{gpgme_recipients_add_name} adds the recipient
-@var{name} to the set of recipients @var{rset}.  This is equivalent to
-@code{gpgme_recipients_add_name_with_validity} with a validity of
-@code{GPGME_VALIDITY_UNKNOWN}.
-
-The function returns @code{GPGME_No_Error} if the recipient was added
-successfully, @code{GPGME_Invalid_Value} if @var{rset} or @var{name}
-is not a valid pointer, and @code{GPGME_Out_Of_Core} if not enough
-memory is available.
-@end deftypefun
-
-@deftypefun gpgme_error_t gpgme_recipients_add_name_with_validity (@w{gpgme_recipients_t @var{rset}}, @w{const char *@var{name}}, @w{gpgme_validity_t @var{val}})
-The function @code{gpgme_recipients_add_name_with_validity} adds the
-recipient @var{name} with the validity @var{val} to the set of
-recipients @var{rset}.  If the validity is not known, the function
-@code{gpgme_recipients_add_name} can be used.
-@xref{Information About Keys}, for the possible values for @var{val}.
-
-The function returns @code{GPGME_No_Error} if the recipient was added
-successfully, @code{GPGME_Invalid_Value} if @var{rset} or @var{name}
-is not a valid pointer, and @code{GPGME_Out_Of_Core} if not enough
-memory is available.
-@end deftypefun
-
-@deftypefun {unsigned int} gpgme_recipients_count (@w{const @var{gpgme_recipients_t rset}})
-The function @code{gpgme_recipients_count} returns the number of
-recipients in the set @var{rset}.
-@end deftypefun
-
-@deftypefun gpgme_error_t gpgme_recipients_enum_open (@w{const gpgme_recipients_t @var{rset}}, @w{void **@var{iter}})
-The function @code{gpgme_recipients_enum_open} creates a new iterator
-@var{iter} that can be used to walk through the set of recipients in
-@var{rset}, using @code{gpgme_recipients_enum_read}.
-
-If the iterator is not needed anymore, it can be closed with
-@code{gpgme_recipients_enum_close}.
-
-The function returns @code{GPGME_No_Error} if the enumerator was
-successfully created and @code{GPGME_Invalid_Value} if @var{rset} or
-@var{iter} is not a valid pointer.
-@end deftypefun
-
-@deftypefun {const char *} gpgme_recipients_enum_read (@w{const gpgme_recipients_t @var{rset}}, @w{void **@var{iter}})
-The function @code{gpgme_recipients_enum_read} returns a string
-containing the name of the next recipient in the set @var{rset} for
-the iterator @var{iter}.  The string is valid as long as @var{rset} is
-valid or the function is called the next time with the same recipient
-set and iterator, whatever is earlier.
-@end deftypefun
-
-@deftypefun gpgme_error_t gpgme_recipients_enum_close (@w{const gpgme_recipients_t @var{rset}}, @w{void **@var{iter}})
-The function @code{gpgme_recipients_enum_close} releases the iterator
-@var{iter} for the recipient set @var{rset}.
+@deftypefun void gpgme_user_ids_release (@w{gpgme_user_id_t @var{uids}})
+The function @code{gpgme_user_ids_release} destroys the linked list of
+user IDs @var{uids} and releases all associated resources allocated by
+@acronym{GPGME}..
 @end deftypefun
 
 
 @node Encrypting a Plaintext
 @subsubsection Encrypting a Plaintext
 
-@deftypefun gpgme_error_t gpgme_op_encrypt (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt} encrypts the plaintext in the data
 object @var{plain} for the recipients @var{rset} and stores the
 ciphertext in the data object @var{cipher}.  The type of the
@@ -3865,7 +3838,7 @@ the secret key could not be retrieved, and passes through any errors
 that are reported by the crypto engine support routines.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_encrypt_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt_start} initiates a
 @code{gpgme_op_encrypt} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -3902,7 +3875,7 @@ next operation is started on the context.
 @end deftypefun
 
 
-@deftypefun gpgme_error_t gpgme_op_encrypt_sign (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt_sign (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt_sign} does a combined encrypt and
 sign operation.  It is used like @code{gpgme_op_encrypt}, but the
 ciphertext also contains signatures for the signers listed in
@@ -3912,7 +3885,7 @@ The combined encrypt and sign operation is currently only available
 for the OpenPGP crypto engine.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_encrypt_sign_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_recipients_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt_sign_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_user_id_t @var{rset}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt_sign_start} initiates a
 @code{gpgme_op_encrypt_sign} operation.  It can be completed by
 calling @code{gpgme_wait} on the context.  @xref{Waiting For

@@ -75,10 +75,6 @@ typedef struct gpgme_context *gpgme_ctx_t;
 struct gpgme_data;
 typedef struct gpgme_data *gpgme_data_t;
 
-/* A list of recipients to be used in an encryption operation.  */
-struct gpgme_recipients;
-typedef struct gpgme_recipients *gpgme_recipients_t;
-
 
 /* Public data types provided by GPGME.  */
 
@@ -542,6 +538,14 @@ struct _gpgme_user_id
 };
 typedef struct _gpgme_user_id *gpgme_user_id_t;
 
+/* Release the user IDs in the list UID.  */
+void gpgme_user_ids_release (gpgme_user_id_t uid);
+
+/* Add the name NAME to the user ID list *UIDS_P (with unknown
+   validity).  */
+gpgme_error_t gpgme_user_ids_append (gpgme_user_id_t *uids_p,
+				     const char *name);
+
 
 /* A key from the keyring.  */
 struct _gpgme_key
@@ -794,40 +798,6 @@ void gpgme_get_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs);
 gpgme_ctx_t gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang);
 
 
-/* Functions to handle recipients.  */
-
-/* Create a new recipients set and return it in R_RSET.  */
-gpgme_error_t gpgme_recipients_new (gpgme_recipients_t *r_rset);
-
-/* Release the recipients set RSET.  */
-void gpgme_recipients_release (gpgme_recipients_t rset);
-
-/* Add NAME to the recipients set RSET.  */
-gpgme_error_t gpgme_recipients_add_name (gpgme_recipients_t rset, const char *name);
-
-/* Add NAME with validity AL to the recipients set RSET.  */
-gpgme_error_t gpgme_recipients_add_name_with_validity (gpgme_recipients_t rset,
-						       const char *name,
-						       gpgme_validity_t val);
-
-/* Return the number of recipients in RSET.  */
-unsigned int gpgme_recipients_count (const gpgme_recipients_t rset);
-
-/* Create a new enumeration handle for the recipients set RSET and
-   return it in ITER.  */
-gpgme_error_t gpgme_recipients_enum_open (const gpgme_recipients_t rset,
-					  void **iter);
-
-/* Return the next recipient from the recipient set RSET in the
-   enumerator ITER.  */
-const char *gpgme_recipients_enum_read (const gpgme_recipients_t rset,
-					void **iter);
-
-/* Destroy the enumerator ITER for the recipient set RSET.  */
-gpgme_error_t gpgme_recipients_enum_close (const gpgme_recipients_t rset,
-					   void **iter);
-
-
 /* Functions to handle data objects.  */
 
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
@@ -1011,19 +981,19 @@ gpgme_encrypt_result_t gpgme_op_encrypt_result (gpgme_ctx_t ctx);
 
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  */
-gpgme_error_t gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+gpgme_error_t gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_user_id_t recp,
 				      gpgme_data_t plain, gpgme_data_t cipher);
-gpgme_error_t gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+gpgme_error_t gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_user_id_t recp,
 				gpgme_data_t plain, gpgme_data_t cipher);
 
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  Also sign the ciphertext
    with the signers in CTX.  */
 gpgme_error_t gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx,
-					   gpgme_recipients_t recp,
+					   gpgme_user_id_t recp,
 					   gpgme_data_t plain,
 					   gpgme_data_t cipher);
-gpgme_error_t gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+gpgme_error_t gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_user_id_t recp,
 				     gpgme_data_t plain, gpgme_data_t cipher);
 
 
@@ -1261,10 +1231,10 @@ gpgme_error_t gpgme_op_import_ext (gpgme_ctx_t ctx, gpgme_data_t keydata,
 				   int *nr) _GPGME_DEPRECATED;
 
 
-/* Export the keys listed in RECP into KEYDATA.  */
-gpgme_error_t gpgme_op_export_start (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+/* Export the keys listed in UIDS into KEYDATA.  */
+gpgme_error_t gpgme_op_export_start (gpgme_ctx_t ctx, gpgme_user_id_t uids,
 				     gpgme_data_t keydata);
-gpgme_error_t gpgme_op_export (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+gpgme_error_t gpgme_op_export (gpgme_ctx_t ctx, gpgme_user_id_t uids,
 			       gpgme_data_t keydata);
 
 
@@ -1442,7 +1412,6 @@ gpgme_error_t gpgme_engine_check_version (gpgme_protocol_t proto);
 /* Deprecated types.  */
 typedef gpgme_ctx_t GpgmeCtx _GPGME_DEPRECATED;
 typedef gpgme_data_t GpgmeData _GPGME_DEPRECATED;
-typedef gpgme_recipients_t GpgmeRecipients _GPGME_DEPRECATED;
 typedef gpgme_error_t GpgmeError _GPGME_DEPRECATED;
 typedef gpgme_data_encoding_t GpgmeDataEncoding _GPGME_DEPRECATED;
 typedef gpgme_pubkey_algo_t GpgmePubKeyAlgo _GPGME_DEPRECATED;

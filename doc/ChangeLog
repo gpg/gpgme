@@ -1,3 +1,10 @@
+2003-05-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Exporting Keys): Change argument type from
+	gpgme_recipient_t to gpgme_user_id_t.
+	(Encrypting a Plaintext): Likewise.
+	(Selecting Recipients): Rewritten.
+
 2003-05-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Protocol Selection): Do not use @acronym in @node

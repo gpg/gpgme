@@ -1,7 +1,7 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * ABI's to break:
-** Change gpgme_recipient_t stuff to gpgme_user_id_t (encrypt, export, ...).
+** Use libgpg-error.
 ** Compatibility interfaces that can be removed in future versions:
 *** gpgme_data_new_from_filepart
 *** gpgme_data_new_from_file
@@ -108,14 +108,3 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Build suite
 ** Make sure everything is cleaned correctly (esp. test area).
-
-Bugs reported by Stephane Corthesy:
-> In GpgmeRecipients, would it be possible to provide a function which  
-> would return the validity assigned to a name contained in the  
-> GpgmeRecipients instance?
-
-> passphrase callback. If I use the same GpgmeContext as the one which  
-> is currently asking for a passphrase, my app crashes: the r_hd in
-> the  
-> callback has become invalid; if I use a brand new one, the callback  
-> is called recursively, when I ask to enumerate keys.
