@@ -33,64 +33,67 @@
                              } while(0)
 
 static void
-doit ( GpgmeCtx ctx, const char *pattern )
+doit (GpgmeCtx ctx, const char *pattern)
 {
-    GpgmeError err;
-    GpgmeKey key;
+  GpgmeError err;
+  GpgmeKey key;
 
-    err = gpgme_op_keylist_start (ctx, pattern, 0 );
-    fail_if_err (err);
+  err = gpgme_op_keylist_start (ctx, pattern, 0);
+  fail_if_err (err);
     
-    while ( !(err = gpgme_op_keylist_next ( ctx, &key )) ) {
-        char *p;
-        const char *s;
-        int i;
+  while (!(err = gpgme_op_keylist_next (ctx, &key)))
+    {
+      char *p;
+      const char *s;
+      int i;
 
-        printf ("<!-- Begin key object (%p) -->\n", key );
-        p = gpgme_key_get_as_xml ( key );
-        if ( p ) {
-            fputs ( p, stdout );
-            free (p);
+      printf ("<!-- Begin key object (%p) -->\n", key);
+      p = gpgme_key_get_as_xml (key);
+      if (p)
+	{
+	  fputs (p, stdout);
+	  free (p);
         }
-        else
-            fputs("<!-- Ooops: gpgme_key_get_as_xml failed -->\n", stdout );
+      else
+	fputs("<!-- Ooops: gpgme_key_get_as_xml failed -->\n", stdout);
 
-        
-        for (i=0; ; i++ ) {
-            s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID, NULL, i );
-            if (!s)
-                break;
-            printf ("<!-- keyid.%d=%s -->\n", i, s );
-            s = gpgme_key_get_string_attr (key, GPGME_ATTR_ALGO, NULL, i );
-            printf ("<!-- algo.%d=%s -->\n", i, s );
-            s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEY_CAPS, NULL, i );
-            printf ("<!-- caps.%d=%s -->\n", i, s );
+      for (i = 0; ; i++)
+	{
+	  s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID, NULL, i);
+	  if (!s)
+	    break;
+	  printf ("<!-- keyid.%d=%s -->\n", i, s);
+	  s = gpgme_key_get_string_attr (key, GPGME_ATTR_ALGO, NULL, i);
+	  printf ("<!-- algo.%d=%s -->\n", i, s);
+	  s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEY_CAPS, NULL, i);
+	  printf ("<!-- caps.%d=%s -->\n", i, s);
         }
-        for (i=0; ; i++ ) {
-            s = gpgme_key_get_string_attr (key, GPGME_ATTR_NAME, NULL, i );
-            if (!s)
-                break;
-            printf ("<!-- name.%d=%s -->\n", i, s );
-            s = gpgme_key_get_string_attr (key, GPGME_ATTR_EMAIL, NULL, i );
-            printf ("<!-- email.%d=%s -->\n", i, s );
-            s = gpgme_key_get_string_attr (key, GPGME_ATTR_COMMENT, NULL, i );
-            printf ("<!-- comment.%d=%s -->\n", i, s );
+      for (i = 0; ; i++)
+	{
+	  s = gpgme_key_get_string_attr (key, GPGME_ATTR_NAME, NULL, i);
+	  if (!s)
+	    break;
+	  printf ("<!-- name.%d=%s -->\n", i, s);
+	  s = gpgme_key_get_string_attr (key, GPGME_ATTR_EMAIL, NULL, i);
+	  printf ("<!-- email.%d=%s -->\n", i, s);
+	  s = gpgme_key_get_string_attr (key, GPGME_ATTR_COMMENT, NULL, i);
+	  printf ("<!-- comment.%d=%s -->\n", i, s);
         }
-        
-        fputs ("<!-- usable for:", stdout );
-        if ( gpgme_key_get_ulong_attr (key, GPGME_ATTR_CAN_ENCRYPT, NULL, 0 ))
-            fputs (" encryption", stdout);
-        if ( gpgme_key_get_ulong_attr (key, GPGME_ATTR_CAN_SIGN, NULL, 0 ))
-            fputs (" signing", stdout);
-        if ( gpgme_key_get_ulong_attr (key, GPGME_ATTR_CAN_CERTIFY, NULL, 0 ))
-            fputs (" certification", stdout);
-        fputs (" -->\n", stdout );
-
-        printf ("<!-- End key object (%p) -->\n", key );
-        gpgme_key_release (key);
+      
+      fputs ("<!-- usable for:", stdout);
+      if ( gpgme_key_get_ulong_attr (key, GPGME_ATTR_CAN_ENCRYPT, NULL, 0))
+	fputs (" encryption", stdout);
+      if ( gpgme_key_get_ulong_attr (key, GPGME_ATTR_CAN_SIGN, NULL, 0))
+	fputs (" signing", stdout);
+      if ( gpgme_key_get_ulong_attr (key, GPGME_ATTR_CAN_CERTIFY, NULL, 0))
+	fputs (" certification", stdout);
+      fputs (" -->\n", stdout );
+      
+      printf ("<!-- End key object (%p) -->\n", key);
+      gpgme_key_release (key);
     }
-    if ( err != GPGME_EOF )
-        fail_if_err (err);
+  if (err != GPGME_EOF)
+    fail_if_err (err);
 }
 
 
@@ -101,58 +104,67 @@ doit ( GpgmeCtx ctx, const char *pattern )
 static void
 check_two_contexts (void)
 {
-    GpgmeError err;
-    GpgmeCtx ctx1, ctx2;
-    GpgmeKey key;
+  GpgmeError err;
+  GpgmeCtx ctx1, ctx2;
+  GpgmeKey key;
 	
-    err = gpgme_new(&ctx1); fail_if_err (err);
-    err = gpgme_op_keylist_start(ctx1, "", 1); fail_if_err (err);
-    err = gpgme_new(&ctx2); fail_if_err (err);
-    err = gpgme_op_keylist_start(ctx2, "", 1); fail_if_err (err);
+  err = gpgme_new(&ctx1); fail_if_err (err);
+  err = gpgme_op_keylist_start(ctx1, "", 1);
+  fail_if_err (err);
+  err = gpgme_new(&ctx2); fail_if_err (err);
+  err = gpgme_op_keylist_start(ctx2, "", 1);
+  fail_if_err (err);
+  
+  while ((err = gpgme_op_keylist_next (ctx2, &key)) != GPGME_EOF)
+    gpgme_key_release (key);
 
-    while ( (err=gpgme_op_keylist_next(ctx2, &key)) != GPGME_EOF) {
-        gpgme_key_release (key);
-    }
-    if (err != GPGME_EOF)
-        fail_if_err (err);
-    while ( (err=gpgme_op_keylist_next(ctx1, &key)) != GPGME_EOF) {
-        gpgme_key_release (key);
-    }
-    if (err != GPGME_EOF)
-        fail_if_err (err);
+  if (err != GPGME_EOF)
+    fail_if_err (err);
+  while ((err=gpgme_op_keylist_next(ctx1, &key)) != GPGME_EOF)
+    gpgme_key_release (key);
+
+  if (err != GPGME_EOF)
+    fail_if_err (err);
 }
 
+
 int 
-main (int argc, char **argv )
+main (int argc, char **argv)
 {
-    GpgmeCtx ctx;
-    GpgmeError err;
-    int loop = 0;
-    const char *pattern;
+  GpgmeCtx ctx;
+  GpgmeError err;
+  int loop = 0;
+  const char *pattern;
     
-    if( argc ) {
-        argc--; argv++;
+  if (argc)
+    {
+      argc--;
+      argv++;
     }
     
-    if (argc && !strcmp( *argv, "--loop" ) ) {
-        loop = 1;
-        argc--; argv++;
+  if (argc && !strcmp( *argv, "--loop"))
+    {
+      loop = 1;
+      argc--; argv++;
     }
-    pattern = argc? *argv : NULL;
+  pattern = argc? *argv : NULL;
 
-    err = gpgme_check_engine();
-    fail_if_err (err);
+  err = gpgme_check_engine();
+  fail_if_err (err);
 
-    err = gpgme_new (&ctx);
-    fail_if_err (err);
-    gpgme_set_keylist_mode (ctx, 1); /* no validity calculation */
-    do {
-        fprintf (stderr, "** pattern=`%s'\n", pattern );
-        doit ( ctx, pattern );
-    } while ( loop );
-    gpgme_release (ctx);
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+  /* No validity calculation.  */
+  gpgme_set_keylist_mode (ctx, 1);
+  do
+    {
+      fprintf (stderr, "** pattern=`%s'\n", pattern ? pattern : "(null)");
+      doit (ctx, pattern);
+    }
+  while (loop);
+  gpgme_release (ctx);
 
-    check_two_contexts ();
+  check_two_contexts ();
 
-    return 0;
+  return 0;
 }
