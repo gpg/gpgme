@@ -80,8 +80,11 @@ do_finish (ASSUAN_CONTEXT ctx)
     }
   if (ctx->pid != -1)
     {
+#if 0
+      /* This is already done by the double fork.  */
       waitpid (ctx->pid, NULL, 0);  /* FIXME Check return value.  */
       ctx->pid = -1;
+#endif
     }
   return 0;
 }
@@ -155,6 +158,8 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
   (*ctx)->deinit_handler = do_deinit;
   (*ctx)->finish_handler = do_finish;
 
+  /* FIXME: Use _gpgme_io_spawn.  The PID stored here is actually
+     soon useless.  */
   (*ctx)->pid = fork ();
   if ((*ctx)->pid < 0)
     {
@@ -168,81 +173,97 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
 
   if ((*ctx)->pid == 0)
     {
-      int i, n;
-      char errbuf[512];
-      int *fdp;
+      /* Intermediate child to prevent zombie processes.  */
+      pid_t pid;
 
-      /* Dup handles to stdin/stdout. */
-      if (rp[1] != STDOUT_FILENO)
+      if ((pid = fork ()) == 0)
 	{
-	  if (dup2 (rp[1], STDOUT_FILENO) == -1)
-	    {
-	      LOG ("dup2 failed in child: %s\n", strerror (errno));
-	      _exit (4);
-	    }
-	}
-      if (wp[0] != STDIN_FILENO)
-	{
-	  if (dup2 (wp[0], STDIN_FILENO) == -1)
-	    {
-	      LOG ("dup2 failed in child: %s\n", strerror (errno));
-	      _exit (4);
-	    }
-	}
+	  /* Child.  */
 
-      /* Dup stderr to /dev/null unless it is in the list of FDs to be
-         passed to the child. */
-      fdp = fd_child_list;
-      if (fdp)
-        {
-          for (; *fdp != -1 && *fdp != STDERR_FILENO; fdp++)
-            ;
-        }
-      if (!fdp || *fdp == -1)
-        {
-	  int fd = open ("/dev/null", O_WRONLY);
-	  if (fd == -1)
-	    {
-	      LOG ("can't open `/dev/null': %s\n", strerror (errno));
-	      _exit (4);
-	    }
-	  if (dup2 (fd, STDERR_FILENO) == -1)
-	    {
-	      LOG ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
-	      _exit (4);
-	    }
-	}
+	  int i, n;
+	  char errbuf[512];
+	  int *fdp;
 
-
-      /* Close all files which will not be duped and are not in the
-         fd_child_list. */
-      n = sysconf (_SC_OPEN_MAX);
-      if (n < 0)
-        n = MAX_OPEN_FDS;
-      for (i=0; i < n; i++)
-        {
-          if ( i == STDIN_FILENO || i == STDOUT_FILENO || i == STDERR_FILENO)
-            continue;
+	  /* Dup handles to stdin/stdout. */
+	  if (rp[1] != STDOUT_FILENO)
+	    {
+	      if (dup2 (rp[1], STDOUT_FILENO) == -1)
+		{
+		  LOG ("dup2 failed in child: %s\n", strerror (errno));
+		  _exit (4);
+		}
+	    }
+	  if (wp[0] != STDIN_FILENO)
+	    {
+	      if (dup2 (wp[0], STDIN_FILENO) == -1)
+		{
+		  LOG ("dup2 failed in child: %s\n", strerror (errno));
+		  _exit (4);
+		}
+	    }
+	  
+	  /* Dup stderr to /dev/null unless it is in the list of FDs to be
+	     passed to the child. */
 	  fdp = fd_child_list;
 	  if (fdp)
 	    {
-	      while (*fdp != -1 && *fdp != i)
-		fdp++;
+	      for (; *fdp != -1 && *fdp != STDERR_FILENO; fdp++)
+		;
+	    }
+	  if (!fdp || *fdp == -1)
+	    {
+	      int fd = open ("/dev/null", O_WRONLY);
+	      if (fd == -1)
+		{
+		  LOG ("can't open `/dev/null': %s\n", strerror (errno));
+		  _exit (4);
+		}
+	      if (dup2 (fd, STDERR_FILENO) == -1)
+		{
+		  LOG ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
+		  _exit (4);
+		}
 	    }
 
-          if (!(fdp && *fdp != -1))
-            close(i);
-        }
-      errno = 0;
 
-      execv (name, argv); 
-      /* oops - use the pipe to tell the parent about it */
-      snprintf (errbuf, sizeof(errbuf)-1, "ERR %d can't exec `%s': %.50s\n",
-                ASSUAN_Problem_Starting_Server, name, strerror (errno));
-      errbuf[sizeof(errbuf)-1] = 0;
-      writen (1, errbuf, strlen (errbuf));
-      _exit (4);
+	  /* Close all files which will not be duped and are not in the
+	     fd_child_list. */
+	  n = sysconf (_SC_OPEN_MAX);
+	  if (n < 0)
+	    n = MAX_OPEN_FDS;
+	  for (i=0; i < n; i++)
+	    {
+	      if ( i == STDIN_FILENO || i == STDOUT_FILENO || i == STDERR_FILENO)
+		continue;
+	      fdp = fd_child_list;
+	      if (fdp)
+		{
+		  while (*fdp != -1 && *fdp != i)
+		    fdp++;
+		}
+	      
+	      if (!(fdp && *fdp != -1))
+		close(i);
+	    }
+
+	  errno = 0;
+
+	  execv (name, argv); 
+	  /* oops - use the pipe to tell the parent about it */
+	  snprintf (errbuf, sizeof(errbuf)-1, "ERR %d can't exec `%s': %.50s\n",
+		    ASSUAN_Problem_Starting_Server, name, strerror (errno));
+	  errbuf[sizeof(errbuf)-1] = 0;
+	  writen (1, errbuf, strlen (errbuf));
+	  _exit (4);
+	} /* End child.  */
+      if (pid == -1)
+	_exit (1);
+      else
+	_exit (0);
     }
+
+  waitpid ((*ctx)->pid, NULL, 0);
+  (*ctx)->pid = -1;
 
   close (rp[1]);
   close (wp[0]);
