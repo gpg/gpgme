@@ -44,14 +44,32 @@ AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AM_MAINTAINER_MODE
 
+AH_VERBATIM([_GNU_SOURCE],
+[/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE
+#endif])
+
+AH_VERBATIM([_REENTRANT],
+[/* To allow the use of GPGME in multithreaded programs we have to use
+  special features from the library.
+  IMPORTANT: gpgme is not yet fully reentrant and you should use it
+  only from one thread.  */
+#ifndef _REENTRANT
+# define _REENTRANT 1
+#endif])
+
+
 AC_PROG_CC
 
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
 AC_SUBST(LIBGPGME_LT_REVISION)
-AC_DEFINE_UNQUOTED(NEED_GPG_VERSION, "$NEED_GPG_VERSION")
-AC_DEFINE_UNQUOTED(NEED_GPGSM_VERSION, "$NEED_GPGSM_VERSION")
+AC_DEFINE_UNQUOTED(NEED_GPG_VERSION, "$NEED_GPG_VERSION",
+				     [Min. needed GnuPG version.])
+AC_DEFINE_UNQUOTED(NEED_GPGSM_VERSION, "$NEED_GPGSM_VERSION",
+				       [Min. needed GPGSM version.])
 
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
@@ -70,8 +88,11 @@ case "${target}" in
         # special stuff for Windoze NT
         # OS/2 with the EMX environment
         # DOS with the DJGPP environment
-        AC_DEFINE(HAVE_DRIVE_LETTERS)
-        AC_DEFINE(HAVE_DOSISH_SYSTEM)
+        AC_DEFINE(HAVE_DRIVE_LETTERS, ,
+		  [Defined if we run on some of the PCDOS like systems (DOS,
+		   Windoze, OS/2) with special properties like no file modes.])
+        AC_DEFINE(HAVE_DOSISH_SYSTEM, ,
+		  [Defined if the filesystem uses driver letters.])
 	have_dosish_system=yes
         GPG_DEFAULT='c:\\gnupg\\gpg.exe'
         GPGSM_DEFAULT='c:\\gnupg\\gpgsm.exe'
@@ -162,7 +183,7 @@ if test "$GPG" = no; then
     fi
   fi
 else
-  AC_DEFINE_UNQUOTED(GPG_PATH, "$GPG")
+  AC_DEFINE_UNQUOTED(GPG_PATH, "$GPG", [Path to the GnuPG binary.])
   AC_SUBST(GPG)
 fi
 AM_CONDITIONAL(RUN_GPG_TESTS,
@@ -192,7 +213,7 @@ if test "$GPGSM" = no; then
     fi
   fi
 else
-  AC_DEFINE_UNQUOTED(GPGSM_PATH, "$GPGSM")
+  AC_DEFINE_UNQUOTED(GPGSM_PATH, "$GPGSM", [Path to the GPGSM binary.])
   AC_SUBST(GPGSM)
 fi
 AM_CONDITIONAL(RUN_GPGSM_TESTS,

@@ -1,6 +1,5 @@
 dnl Macros to configure gpgme
 
-
 dnl GNUPG_FIX_HDR_VERSION(FILE, NAME)
 dnl Make the version number in gcrypt/gcrypt.h the same as the one here.
 dnl (this is easier than to have a .in file just for one substitution)
@@ -27,8 +26,6 @@ AC_DEFUN(GNUPG_FIX_HDR_VERSION,
   ])
 
 
-
-
 dnl GNUPG_CHECK_TYPEDEF(TYPE, HAVE_NAME)
 dnl Check whether a typedef exists and create a #define $2 if it exists
 dnl
@@ -42,16 +39,7 @@ AC_DEFUN(GNUPG_CHECK_TYPEDEF,
     ], gnupg_cv_typedef_$1=yes, gnupg_cv_typedef_$1=no )])
     AC_MSG_RESULT($gnupg_cv_typedef_$1)
     if test "$gnupg_cv_typedef_$1" = yes; then
-        AC_DEFINE($2)
+        AC_DEFINE($2, ,
+	 [Define to 1 if $1 is defined in the <sys/types.h> header file.])
     fi
   ])
-
-
-
-
-
-
-
-
-
-
