@@ -78,27 +78,32 @@ typedef enum
     GPGME_General_Error           = 0x0001,
     GPGME_Out_Of_Core             = 0x0002,
     GPGME_Invalid_Value           = 0x0003,
-    GPGME_No_Request              = 0x0004,
-    GPGME_Exec_Error              = 0x0005,
-    GPGME_Too_Many_Procs          = 0x0006,
-    GPGME_Pipe_Error              = 0x0007,
-    GPGME_No_Data                 = 0x0008,
-    GPGME_Conflict                = 0x0009,
-    GPGME_Not_Implemented         = 0x000a,
-    GPGME_Read_Error              = 0x000b,
-    GPGME_Write_Error             = 0x000c,
-    GPGME_Invalid_Type            = 0x000d,
-    GPGME_Invalid_Mode            = 0x000e,
-    GPGME_File_Error              = 0x000f, /* errno is set in this case.  */
-    GPGME_Decryption_Failed       = 0x0010,
-    GPGME_Bad_Passphrase          = 0x0011,
-    GPGME_Canceled                = 0x0012,
-    GPGME_Invalid_Key             = 0x0013,
-    GPGME_Invalid_Engine          = 0x0014,
-    GPGME_No_UserID               = 0x0015,
-    GPGME_Invalid_UserID          = 0x0016,
+    GPGME_Exec_Error              = 0x0004,
+    GPGME_Too_Many_Procs          = 0x0005,
+    GPGME_Pipe_Error              = 0x0006,
+    GPGME_No_Data                 = 0x0007,
+    GPGME_Conflict                = 0x0008,
+    GPGME_Not_Implemented         = 0x0009,
+    GPGME_Read_Error              = 0x000a,
+    GPGME_Write_Error             = 0x000b,
+    GPGME_Invalid_Type            = 0x000c,
+    GPGME_Invalid_Mode            = 0x000d,
+    GPGME_File_Error              = 0x000e, /* errno is set in this case.  */
+    GPGME_Decryption_Failed       = 0x000f,
+    GPGME_Bad_Passphrase          = 0x0010,
+    GPGME_Canceled                = 0x0011,
+    GPGME_Invalid_Key             = 0x0012,
+    GPGME_Invalid_Engine          = 0x0013,
+    GPGME_No_UserID               = 0x0014,
+    GPGME_Invalid_UserID          = 0x0015,
+    GPGME_Busy                    = -2,
+    GPGME_No_Request              = -3,
   }
 GpgmeError;
+
+#define GPGME_No_Recipients	GPGME_No_UserID
+#define GPGME_Invalid_Recipient	GPGME_Invalid_UserID
+#define GPGME_No_Passphrase	GPGME_Bad_Passphrase
 
 /* The possible types of GpgmeData objects.  */
 typedef enum

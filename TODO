@@ -6,6 +6,14 @@ Hey Emacs, this is -*- outline -*- mode!
    returning information in the blocking version as function arguments).
 ** Drop the support for finding out if an operation is pending.  After all, one
    or two more ways for a user to shoot themselves in the foot don't matter.
+** Compatibility interfaces that can be removed in future versions:
+*** gpgme_data_new_from_filepart
+*** gpgme_data_new_from_file
+*** gpgme_data_new_with_read_cb
+*** gpgme_data_rewind
+*** GPGME_Busy, GPGME_No_Request
+*** GPGME_No_Passphrase
+*** GPGME_Invalid_Recipient, GPGME_No_Recipients
 
 * Thread support:
 ** Build thread modules for static linking (which just suck in the

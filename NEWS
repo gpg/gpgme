@@ -41,6 +41,9 @@ Noteworthy changes in version 0.4.1 (unreleased)
    function has been removed, just return GPGME_Canceled in the
    passphrase callback directly.
 
+ * The status of a context operation is not checked anymore, so the
+   errors GPGME_Busy and GPGME_No_Request can not occur anymore.
+
  * For clarity and better reusability, the error codes
    GPGME_No_Recipients, GPGME_Invalid_Recipient and
    GPGME_No_Passphrase have been renamed to GPGME_No_UserID,
@@ -85,9 +88,14 @@ gpgme_get_engine_info		CHANGED: Return info structure instead XML.
 gpgme_get_protocol_name		NEW
 GpgmePassphraseCb		CHANGED: Return error value, new argument.
 gpgme_cancel			REMOVED: Return error in callback directly.
-GPGME_No_Recipients		CHANGED: Now GPGME_No_UserID.
-GPGME_Invalid_Recipient		CHANGED: Now GPGME_Invalid_UserID.
-GPGME_No_Passphrase		CHANGED: Now GPGME_Bad_Passphrase.
+GPGME_Busy			DEPRECATED: Not in use.
+GPGME_No_Request		DEPRECATED: Not in use.
+GPGME_No_Recipients		DEPRECATED: Use GPGME_No_UserID.
+GPGME_No_UserID			NEW
+GPGME_Invalid_Recipient		DEPRECATED: Use GPGME_Invalid_UserID.
+GPGME_Invalid_UserID		NEW
+GPGME_No_Passphrase		DEPRECATED: Use GPGME_Bad_Passphrase.
+GPGME_Bad_Passphrase		NEW
 gpgme_op_genkey			CHANGED: FPR argument dropped.
 gpgme_op_genkey_result		NEW
 GpgmeGenKeyResult		NEW
