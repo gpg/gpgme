@@ -34,6 +34,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <assert.h>
+#include <unistd.h>
+#include <locale.h>
 #include <fcntl.h> /* FIXME */
 
 #include "rungpg.h"
@@ -130,125 +132,6 @@ close_notify_handler (int fd, void *opaque)
 }
 
 
-GpgmeError
-_gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
-{
-  GpgmeError err = 0;
-  GpgsmObject gpgsm;
-  char *argv[] = { "gpgsm", "--server", NULL };
-  int fds[2];
-  int child_fds[4];
-
-  *r_gpgsm = NULL;
-  gpgsm = xtrycalloc (1, sizeof *gpgsm);
-  if (!gpgsm)
-    {
-      err = mk_error (Out_Of_Core);
-      return err;
-    }
-
-  gpgsm->input_fd = -1;
-  gpgsm->input_fd_server = -1;
-  gpgsm->output_fd = -1;
-  gpgsm->output_fd_server = -1;
-  gpgsm->message_fd = -1;
-  gpgsm->message_fd_server = -1;
-
-  gpgsm->status.fnc = 0;
-  gpgsm->colon.fnc = 0;
-  gpgsm->colon.attic.line = 0;
-  gpgsm->colon.attic.linesize = 0;
-  gpgsm->colon.attic.linelen = 0;
-
-  if (_gpgme_io_pipe (fds, 0) < 0)
-    {
-      err = mk_error (Pipe_Error);
-      goto leave;
-    }
-  gpgsm->input_fd = fds[1];
-  gpgsm->input_fd_server = fds[0];
-
-  if (_gpgme_io_pipe (fds, 1) < 0)
-    {
-      err = mk_error (Pipe_Error);
-      goto leave;
-    }
-  gpgsm->output_fd = fds[0];
-  gpgsm->output_fd_server = fds[1];
-
-  if (_gpgme_io_pipe (fds, 0) < 0)
-    {
-      err = mk_error (Pipe_Error);
-      goto leave;
-    }
-  gpgsm->message_fd = fds[1];
-  gpgsm->message_fd_server = fds[0];
-
-  child_fds[0] = gpgsm->input_fd_server;
-  child_fds[1] = gpgsm->output_fd_server;
-  child_fds[2] = gpgsm->message_fd_server;
-  child_fds[3] = -1;
-  err = assuan_pipe_connect (&gpgsm->assuan_ctx,
-			     _gpgme_get_gpgsm_path (), argv, child_fds);
-
-  if (!err &&
-      (_gpgme_io_set_close_notify (gpgsm->input_fd,
-				   close_notify_handler, gpgsm)
-       || _gpgme_io_set_close_notify (gpgsm->output_fd,
-				      close_notify_handler, gpgsm)
-       || _gpgme_io_set_close_notify (gpgsm->message_fd,
-				      close_notify_handler, gpgsm)))
-    {
-      err = mk_error (General_Error);
-      goto leave;
-    }
-      
- leave:
-  /* Close the server ends of the pipes.  Our ends are closed in
-     _gpgme_gpgsm_release.  */
-  if (gpgsm->input_fd_server != -1)
-    _gpgme_io_close (gpgsm->input_fd_server);
-  if (gpgsm->output_fd_server != -1)
-    _gpgme_io_close (gpgsm->output_fd_server);
-  if (gpgsm->message_fd_server != -1)
-    _gpgme_io_close (gpgsm->message_fd_server);
-
-  if (err)
-    _gpgme_gpgsm_release (gpgsm);
-  else
-    *r_gpgsm = gpgsm;
-
-  return err;
-}
-
-
-void
-_gpgme_gpgsm_release (GpgsmObject gpgsm)
-{
-  pid_t pid;
-
-  if (!gpgsm)
-    return;
-
-  pid = assuan_get_pid (gpgsm->assuan_ctx);
-  if (pid != -1)
-    _gpgme_remove_proc_from_wait_queue (pid);
-
-  if (gpgsm->input_fd != -1)
-    _gpgme_io_close (gpgsm->input_fd);
-  if (gpgsm->output_fd != -1)
-    _gpgme_io_close (gpgsm->output_fd);
-  if (gpgsm->message_fd != -1)
-    _gpgme_io_close (gpgsm->message_fd);
-
-  assuan_disconnect (gpgsm->assuan_ctx);
-
-  xfree (gpgsm->colon.attic.line);
-  xfree (gpgsm->command);
-  xfree (gpgsm);
-}
-
-
 static GpgmeError
 map_assuan_error (AssuanError err)
 {
@@ -331,20 +214,242 @@ map_assuan_error (AssuanError err)
     case ASSUAN_No_PKCS15_App:	/* XXX: Oh well.  */
     case ASSUAN_Card_Not_Present:	/* XXX: Oh well.  */
     case ASSUAN_Invalid_Id:	/* XXX: Oh well.  */
-      return mk_error(Invalid_Key);
+      return mk_error (Invalid_Key);
 
     case ASSUAN_Bad_Signature:
-      return mk_error(Invalid_Key);  /* XXX: This is wrong.  */
+      return mk_error (Invalid_Key);  /* XXX: This is wrong.  */
 
     case ASSUAN_Cert_Revoked:
     case ASSUAN_No_CRL_For_Cert:
     case ASSUAN_CRL_Too_Old:
     case ASSUAN_Not_Trusted:
-      return mk_error(Invalid_Key);  /* XXX Some more details would be good.  */
+      return mk_error (Invalid_Key);  /* XXX Some more details would be good.  */
 
     default:
       return mk_error (General_Error);
     }
+}
+
+
+GpgmeError
+_gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
+{
+  GpgmeError err = 0;
+  GpgsmObject gpgsm;
+  char *argv[3];
+  int fds[2];
+  int child_fds[4];
+  char *dft_display = NULL;
+  char *dft_ttyname = NULL;
+  char *dft_ttytype = NULL;
+  char *old_lc = NULL;
+  char *dft_lc = NULL;
+  char *optstr;
+
+  *r_gpgsm = NULL;
+  gpgsm = xtrycalloc (1, sizeof *gpgsm);
+  if (!gpgsm)
+    {
+      err = mk_error (Out_Of_Core);
+      return err;
+    }
+
+  gpgsm->input_fd = -1;
+  gpgsm->input_fd_server = -1;
+  gpgsm->output_fd = -1;
+  gpgsm->output_fd_server = -1;
+  gpgsm->message_fd = -1;
+  gpgsm->message_fd_server = -1;
+
+  gpgsm->status.fnc = 0;
+  gpgsm->colon.fnc = 0;
+  gpgsm->colon.attic.line = 0;
+  gpgsm->colon.attic.linesize = 0;
+  gpgsm->colon.attic.linelen = 0;
+
+  if (_gpgme_io_pipe (fds, 0) < 0)
+    {
+      err = mk_error (Pipe_Error);
+      goto leave;
+    }
+  gpgsm->input_fd = fds[1];
+  gpgsm->input_fd_server = fds[0];
+
+  if (_gpgme_io_pipe (fds, 1) < 0)
+    {
+      err = mk_error (Pipe_Error);
+      goto leave;
+    }
+  gpgsm->output_fd = fds[0];
+  gpgsm->output_fd_server = fds[1];
+
+  if (_gpgme_io_pipe (fds, 0) < 0)
+    {
+      err = mk_error (Pipe_Error);
+      goto leave;
+    }
+  gpgsm->message_fd = fds[1];
+  gpgsm->message_fd_server = fds[0];
+
+  child_fds[0] = gpgsm->input_fd_server;
+  child_fds[1] = gpgsm->output_fd_server;
+  child_fds[2] = gpgsm->message_fd_server;
+  child_fds[3] = -1;
+
+  argv[0] = "gpgsm";
+  argv[1] = "--server";
+  argv[2] = NULL;
+
+  err = assuan_pipe_connect (&gpgsm->assuan_ctx,
+			     _gpgme_get_gpgsm_path (), argv, child_fds);
+
+  dft_display = getenv ("DISPLAY");
+  if (dft_display)
+    {
+      if (asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
+        {
+	  err = mk_error (Out_Of_Core);
+	  goto leave;
+	}
+      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			     NULL);
+      free (optstr);
+      if (err)
+	{
+	  err = map_assuan_error (err);
+	  goto leave;
+	}
+    }
+  dft_ttyname = ttyname (1);
+  if (dft_ttyname)
+    {
+      if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
+        {
+	  err = mk_error (Out_Of_Core);
+	  goto leave;
+	}
+      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			     NULL);
+      free (optstr);
+      if (err)
+	{
+	  err = map_assuan_error (err);
+	  goto leave;
+	}
+
+      dft_ttytype = getenv ("TERM");
+      if (dft_ttytype)
+	{
+	  if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
+	    {
+	      err = mk_error (Out_Of_Core);
+	      goto leave;
+	    }
+	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+				 NULL);
+	  free (optstr);
+	  if (err)
+	    {
+	      err = map_assuan_error (err);
+	      goto leave;
+	    }
+	}
+      old_lc = setlocale (LC_CTYPE, NULL);
+      dft_lc = setlocale (LC_CTYPE, "");
+      if (dft_lc)
+	{
+	  if (asprintf (&optstr, "OPTION lc-ctype=%s", dft_lc) < 0)
+	    err = mk_error (Out_Of_Core);
+	  else
+	    {
+	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+				     NULL);
+	      free (optstr);
+	      if (err)
+		err = map_assuan_error (err);
+	    }
+	}
+      if (old_lc)
+	setlocale (LC_CTYPE, old_lc);
+      if (err)
+	goto leave;
+
+      old_lc = setlocale (LC_MESSAGES, NULL);
+      dft_lc = setlocale (LC_MESSAGES, "");
+      if (dft_lc)
+	{
+	  if (asprintf (&optstr, "OPTION lc-messages=%s", dft_lc) < 0)
+	    err = mk_error (Out_Of_Core);
+	  else
+	    {
+	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+				     NULL);
+	      free (optstr);
+	      if (err)
+		err = map_assuan_error (err);
+	    }
+	}
+      if (old_lc)
+	setlocale (LC_MESSAGES, old_lc);
+      if (err)
+	goto leave;
+    }
+
+  if (!err &&
+      (_gpgme_io_set_close_notify (gpgsm->input_fd,
+				   close_notify_handler, gpgsm)
+       || _gpgme_io_set_close_notify (gpgsm->output_fd,
+				      close_notify_handler, gpgsm)
+       || _gpgme_io_set_close_notify (gpgsm->message_fd,
+				      close_notify_handler, gpgsm)))
+    {
+      err = mk_error (General_Error);
+      goto leave;
+    }
+      
+ leave:
+  /* Close the server ends of the pipes.  Our ends are closed in
+     _gpgme_gpgsm_release.  */
+  if (gpgsm->input_fd_server != -1)
+    _gpgme_io_close (gpgsm->input_fd_server);
+  if (gpgsm->output_fd_server != -1)
+    _gpgme_io_close (gpgsm->output_fd_server);
+  if (gpgsm->message_fd_server != -1)
+    _gpgme_io_close (gpgsm->message_fd_server);
+
+  if (err)
+    _gpgme_gpgsm_release (gpgsm);
+  else
+    *r_gpgsm = gpgsm;
+
+  return err;
+}
+
+
+void
+_gpgme_gpgsm_release (GpgsmObject gpgsm)
+{
+  pid_t pid;
+
+  if (!gpgsm)
+    return;
+
+  pid = assuan_get_pid (gpgsm->assuan_ctx);
+  if (pid != -1)
+    _gpgme_remove_proc_from_wait_queue (pid);
+
+  if (gpgsm->input_fd != -1)
+    _gpgme_io_close (gpgsm->input_fd);
+  if (gpgsm->output_fd != -1)
+    _gpgme_io_close (gpgsm->output_fd);
+  if (gpgsm->message_fd != -1)
+    _gpgme_io_close (gpgsm->message_fd);
+
+  assuan_disconnect (gpgsm->assuan_ctx);
+
+  xfree (gpgsm->colon.attic.line);
+  xfree (gpgsm->command);
+  xfree (gpgsm);
 }
 
 
@@ -456,7 +561,7 @@ gpgsm_set_recipients (GpgsmObject gpgsm, GpgmeRecipients recp)
 	  if (! newline)
 	    {
 	      xfree (line);
-	      return mk_error(Out_Of_Core);
+	      return mk_error (Out_Of_Core);
 	    }
 	  line = newline;
 	  linelen = newlen;
