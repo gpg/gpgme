@@ -110,11 +110,10 @@ main (int argc, char **argv )
     fail_if_err (err);
     if (argc)
       err = gpgme_recipients_add_name_with_validity (rset, *argv,
-                                                   GPGME_VALIDITY_FULL);
+						     GPGME_VALIDITY_FULL);
     else
-      err = gpgme_recipients_add_name_with_validity (rset,
-     "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE",
-                                                   GPGME_VALIDITY_FULL);
+      err = gpgme_recipients_add_name_with_validity (rset, "test cert 1",
+						     GPGME_VALIDITY_FULL);
     fail_if_err (err);
 
     err = gpgme_op_encrypt (ctx, rset, in, out );
