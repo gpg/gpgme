@@ -1,0 +1,484 @@
+2003-08-13  Werner Koch  <wk@gnupg.org>
+
+	* assuan-inquire.c (assuan_inquire): Increase length of cmdbuf to
+	the Assuan limit.
+
+2003-06-24  Werner Koch  <wk@gnupg.org>
+
+	* mkerrors: Kludge to print libgpg-error values in an easier
+	readable way.
+
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* libassuan.m4: New. Based on libgrypt.m4.
+	* Makefile.am (m4data_DATA): New.
+
+	* assuan.h (AssuanCommand): Removed.
+
+	* assuan-handler.c: Remove the cmd_id element,
+	(assuan_register_command): Likewise.  Note that semantics changed.
+	(_assuan_register_std_commands): Adjusted.
+
+2003-02-22  Neal H. Walfield  <neal@g10code.de>
+
+	* Makefile.am (bin_SCRIPTS): Renamed from bin_PROGRAMS.
+
+2003-02-18  Neal H. Walfield  <neal@g10code.de>
+
+	* Makefile.am (libassuan_a_LIBADD): New variable.
+	* funopen.c: Move from ../common.
+	* isascii.c: Likewise.
+	* memrchr.c: Likewise.
+	* putc_unlocked.c: Likewise.
+	
+2003-02-18  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan-handler.c (_IO_cookie_io_functions_t): Remove.
+	(cookie_io_functions_t): Remove.
+	(fopencookie): Remove prototype.
+	(assuan_get_data_fp): Use funopen, not fopencookie.
+
+2003-02-18  Neal H. Walfield  <neal@g10code.de>
+
+	* libassuan-config.in: New file.
+	* Makefile.am (bin_PROGRAMS): New variable.
+
+2003-02-17  Neal H. Walfield  <neal@g10code.de>
+
+	* .cvsignore: New file.
+
+2003-02-17  Neal H. Walfield  <neal@g10code.de>
+
+	* Makefile.am (lib_LIBRARIES): Use this instead of . . .
+	(noinst_LIBRARIES): . . . this.
+	(include_HEADERS): New variable.
+	(libassuan_a_SOURCES): Remove assuan.h, add assuan-logging.c.
+
+	* assuan.h (assuan_set_assuan_log_stream): New prototype.
+	(assuan_get_assuan_log_stream): Likewise.
+	(assuan_get_assuan_log_prefix): Likewise.
+	* assuan-logging.c: New file.
+
+	* assuan-buffer.c [HAVE_JNLIB_LOGGIN]: Do not include
+	"../jnlib/logging.h".
+	(my_log_prefix): Remove function.
+	(_assuan_read_line): Use assuan_get_assuan_log_prefix in lieu of
+	my_log_prefix.
+	(assuan_write_line): Likewise.
+	(_assuan_cookie_write_data): Likewise.
+	(_assuan_cookie_write_flush): Likewise.
+	* assuan-domain-connect.c (LOGERROR, LOGERROR1, LOGERROR2,
+	LOGERRORX):  Remove.
+	(LOG): New macro.
+	(domain_reader): Use it.
+	(domain_writer): Likewise.
+	(domain_sendfd): Likewise.
+	(domain_receivefd): Likewise.
+	(_assuan_domain_init): Likewise.
+	(assuan_domain_connect): Likewise.
+	* assuan-pipe-connect.c [HAVE_JNLIB_LOGGIN]: Do not include
+	"../jnlib/logging.h".
+	(LOGERROR, LOGERROR1, LOGERROR2, LOGERRORX):  Remove.
+	(LOG): New macro.
+	(assuan_pipe_connect): Use it.
+	* assuan-socket-connect.c [HAVE_JNLIB_LOGGIN]: Do not include
+	"../jnlib/logging.h".
+	(LOGERROR, LOGERROR1, LOGERROR2, LOGERRORX):  Remove.
+	(LOG): New macro.
+	(assuan_socket_connect): Use it.
+	(socket_reader): Remove dead code.
+	(socket_writer): Likewise.
+	* assuan-util.c [HAVE_JNLIB_LOGGIN]: Do not include
+	"../jnlib/logging.h".
+	(_assuan_log_sanitized_string): Use assuan_get_assuan_log_stream,
+	not jnlib.
+
+2002-11-24  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan.h (assuan_command_parse_fd): New prototype.
+	* assuan-handler.c (assuan_command_parse_fd): Rename from
+	parse_cmd_input_output.  Export.
+	(std_handler_input): Update to use assuan_command_parse_fd.
+	(std_handler_output): Likewise.
+
+2002-11-24  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan.h (assuan_sendfd): New prototype.
+	(assuan_receivefd): New prototype.
+	* assuan-buffer.c (assuan_sendfd): New function.
+	(assuan_receivefd): New function.
+	* assuan-handler.c (parse_cmd_input_output): Recognize incoming
+	file descriptors and act appropriately.
+	* assuan-defs.h (struct assuan_io): Add fields sendfd and
+	receivefd.
+	(struct assuan_context_s): Add fields pendingfds and
+	pendingfdscount.
+	* assuan-pipe-server.c (_assuan_new_context): Update IO to reflect
+	new features.
+	* assuan-domain-connect.c (do_deinit): Cleanup any unreceived file
+	descriptors.
+	(domain_reader): Receive file descriptors.
+	(domain_sendfd): New function.
+	(domain_receivefd): New function.
+	(_assuan_domain_init): Update initialization code to reflect new
+	features.
+
+2002-11-24  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan-domain-connect.c (do_finish): Remove.
+	(_assuan_domain_init): Use default handlers where possible.
+	Add an assert and update comments.
+	* assuan-domain-server.c (accept_connection): Remove.
+	(assuan_init_domain_server): Use default handlers where possible.
+	Put the server in pipe mode: it can only be used by a single
+	client.
+
+2002-11-24  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan.h: Add prototype for assuan_domain_connect and
+	assuan_init_domain_server.
+	* assuan-defs.h: Include <unistd.h>.
+	Add prototype for _assuan_domain_init.
+	* assuan-domain-connect.c: New file.
+	* assuan-domain-server.c: New file.
+	* Makefile.am (libassuan_a_SOURCES): Add assuan-domain-connect.c
+	and assuan-domain-server.c
+
+2002-11-23  Neal H. Walfield  <neal@g10code.de>
+
+	* Makefile.am (libassuan_a_SOURCES): Add assuan-io.c.
+	* assuan-io.c: Restore.
+	(_assuan_simple_read): Rename from _assuan_read.
+	(_assuan_simple_write): Rename from _assuan_write.
+	* assuan-defs.h (_assuan_simple_read): New prototype.
+	(_assuan_simple_write): Likewise.
+	* assuan-pipe-server.c (pipe_reader): Remove.
+	(pipe_writer): Remove.
+	(_assuan_new_context): Initialize IO is with _assuan_simple_read
+	and _assuan_simple_write.
+	* assuan-socket-connect.c (socket_reader): Remove.
+	(socket_writer): Remove.
+	(assuan_socket_connect): Initialize IO is with _assuan_simple_read
+	and _assuan_simple_write.
+	* assuan-socket-server.c (io): New local variable.
+	(assuan_init_socket_server): Initialize CTX->io.
+	(assuan_init_connected_socket_server): Likewise.
+
+2002-11-23  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan-buffer.c (readline): Use memrchr.
+	(_assuan_read_line): Rewritten to use the string functions.
+
+2002-11-20  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan-socket-connect.c (assuan_socket_connect): Pass PF_LOCAL
+	to socket(), not AF_UNIX: it expects a PF_* macro and the former
+	is more portable.
+	(assuan_socket_connect): Use AF_LOCAL, not AF_UNIX which is more
+	POSIXy.
+
+2002-11-20  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan-defs.h (struct assuan_io): New structure.
+	(struct assuan_context_s): New field, io.
+	(_assuan_read): Depreciated.
+	(_assuan_write): Likewise.
+	* assuan-pipe-server.c: Include <unistd.h>.
+	(pipe_reader): New function.
+	(pipe_writer): Likewise.
+	(_assuan_new_context.IO): New local static.  Set to pipe_reader
+	and pipe_writer.  Use it to initialize new context.
+	* assuan-socket-connect.c (socket_reader): New function.
+	(socket_writer): New function.
+	(assuan_socket_connect.IO): New local static.  Set to socket_reader
+	and socket_writer.  Use it to initialize new context.
+	* assuan-buffer.c (writen): Take an ASSUAN_CONTEXT rather than a
+	file descriptor.  Do not use _assuan_write but the write method
+	in the supplied context.
+	(readline): Likewise for _assuan_read.
+	(assuan_write_line): When calling writen, pass CTX; not the file
+	descriptor directly.
+	(_assuan_cookie_write_data): Likewise.
+	(_assuan_cookie_write_flush): Likewise.
+	(_assuan_read_line): Likewise for readline.
+	* Makefile.am (libassuan_a_SOURCES): Remove assuan-io.c.
+	* assuan-io.c: Removed.
+
+2002-11-10  Werner Koch  <wk@gnupg.org>
+
+	* assuan-pipe-connect.c (assuan_pipe_connect): Changed the order
+	of the dups to handle cases where we have already used fd 2 for
+	other things.
+
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan-util.c: Include <ctype.h>.
+	(_assuan_log_print_buffer): Elide the magic numbers preferring the
+	standard isfoo functions.  Use putc_unlocked where possible.
+	(_assuan_log_sanitized_string): Rewrite to use putc_unlocked and
+	the isfoo functions.
+
+2002-09-05  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan-defs.h (_assuan_read_wrapper): Depreciated.
+	* assuan-util.c (_assuan_read_wrapper): Removed.
+	* assuan-defs.h (_assuan_write_wrapper): Depreciated.
+	* assuan-util.c (_assuan_write_wrapper): Removed.
+	* assuan.h (assuan_set_io_fun): Depreciated.
+	* assuan-util.c (assuan_set_io_fun): Removed.
+
+	* assuan-defs.h (_assuan_read): New function.
+	(_assuan_write): Likewise.
+	* assuan-io.c: New file.
+
+	* assuan-buffer.c (writen): Use _assuan_write rather than doing
+	the work here.
+	(readline): Likewise for _assuan_read.
+
+	* Makefile.am (libassuan_a_SOURCES): Add assuan-io.c.
+
+2002-08-16  Werner Koch  <wk@gnupg.org>
+
+	* assuan.h: Renamed Bad_Certificate_Path to Bad_Certificate_Chain.
+
+2002-07-30  Werner Koch  <wk@gnupg.org>
+
+	Changed the license from GPL to LGPL.
+
+2002-07-23  Werner Koch  <wk@gnupg.org>
+
+	* assuan-handler.c (_IO_cookie_io_functions_t): Define it here if
+	it does not exists.
+
+2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* assuan-pipe-connect.c (assuan_pipe_connect): No special handling
+	for the log_fd and stderr.  Connect stderr to /dev/null if it
+	should not be retained.
+
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	* assuan-buffer.c (assuan_write_line): Make sure we never
+	accidently print an extra LF.
+
+2002-05-23  Werner Koch  <wk@gnupg.org>
+
+	* assuan-util.c (assuan_set_io_func): New.
+	* assuan-buffer.c (writen, readline): Use the new functions
+	instead of pth.
+	* assuan-socket-server.c (accept_connection): Don't use the
+	pth_accept - using the assuan included accept code would be a bad
+	idea within Pth so we don't need a replacement function.
+
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* assuan-socket-server.c (assuan_init_connected_socket_server): New.
+	(accept_connection): Factored most code out to..
+	(accept_connection_bottom): .. new function.
+
+2002-04-04  Werner Koch  <wk@gnupg.org>
+
+	* assuan-buffer.c (my_log_prefix): New.  Use it for all i/o debug
+	output.
+
+2002-03-06  Werner Koch  <wk@gnupg.org>
+
+	* assuan-client.c (_assuan_read_from_server): Detect END.
+	(assuan_transact): Pass it to the data callback.
+
+2002-02-27  Werner Koch  <wk@gnupg.org>
+
+	* assuan-client.c (assuan_transact): Add 2 more arguments to
+	support status lines. Passing NULL yields the old behaviour.
+
+	* assuan-handler.c (process_request): Flush data lines send
+	without using the data fp.
+
+2002-02-14  Werner Koch  <wk@gnupg.org>
+
+	* assuan-inquire.c (assuan_inquire): Check for a cancel command
+	and return ASSUAN_Canceled.  Allow for non-data inquiry.
+
+	* assuan.h: Add a few token specific error codes.
+
+2002-02-13  Werner Koch  <wk@gnupg.org>
+
+	* assuan-defs.h (assuan_context_s): New var CLIENT_PID.
+	* assuan-pipe-server.c (_assuan_new_context): set default value.
+	* assuan-socket-server.c (accept_connection): get the actual pid.
+
+2002-02-12  Werner Koch  <wk@gnupg.org>
+
+	* assuan-buffer.c (writen,readline) [USE_GNU_PT]: Use pth_read/write.
+	* assuan-socket-server.c (accept_connection) [USE_GNU_PTH]: Ditto.
+
+2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (MOSTLYCLEANFILES): New variable.
+
+2002-01-23  Werner Koch  <wk@gnupg.org>
+
+	* assuan-socket-connect.c (LOGERRORX): and removed typo.
+
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-socket-connect.c (LOGERRORX): Reverse arguments to fputs.
+
+2002-01-21  Werner Koch  <wk@gnupg.org>
+
+	* assuan-connect.c: Move all except assuan_get_pid to...
+	* assuan-pipe-connect.c: this.
+	(assuan_pipe_disconnect): Removed.
+	(do_finish, do_deinit): New 
+	(assuan_pipe_connect): and set them into the context.
+	* assuan-socket-connect.c: New.
+	
+	* assuan-util.c (_assuan_log_sanitized_string): New.
+
+	* assuan-pipe-server.c (assuan_init_pipe_server): Factored most
+	code out to ...
+	(_assuan_new_context): new func.
+	(_assuan_release_context): New
+	* assuan-connect.c (assuan_pipe_connect): Use the new functions.
+
+2002-01-20  Werner Koch  <wk@gnupg.org>
+
+	* assuan.h: Added Invalid Option error code.
+
+	* assuan-handler.c (std_handler_option): New.
+	(std_cmd_tbl): Add OPTION as standard command.
+	(assuan_register_option_handler): New.
+	(dispatch_command): Use case insensitive matching as a fallback.
+	(my_strcasecmp): New.
+
+2002-01-19  Werner Koch  <wk@gnupg.org>
+
+	* assuan-buffer.c (_assuan_read_line): Add output logging.
+	(assuan_write_line): Ditto.
+	(_assuan_cookie_write_data): Ditto.
+	(_assuan_cookie_write_flush): Ditto.
+	* assuan-util.c (_assuan_log_print_buffer): New.
+	(assuan_set_log_stream): New.
+	(assuan_begin_confidential): New.
+	(assuan_end_confidential): New.
+
+	* assuan-defs.h: Add a few handler variables.
+	* assuan-pipe-server.c (assuan_deinit_pipe_server): Removed.
+	(deinit_pipe_server): New.
+	(assuan_deinit_server): New.  Changed all callers to use this.
+	* assuan-listen.c (assuan_accept): Use the accept handler.
+	* assuan-handler.c (process_request): Use the close Handler.
+	* assuan-socket-server.c: New.
+
+2002-01-14  Werner Koch  <wk@gnupg.org>
+
+	* assuan-client.c (_assuan_read_from_server): Skip spaces after
+	the keyword.
+
+2002-01-03  Werner Koch  <wk@gnupg.org>
+
+	* assuan-handler.c (assuan_set_okay_line): New.
+	(process_request): And use it here.
+
+2002-01-02  Werner Koch  <wk@gnupg.org>
+
+	* assuan-inquire.c (init_membuf,put_membuf,get_membuf): Apply a
+	hidden 0 behind the buffer so that the buffer can be used as a
+	string in certain contexts.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-connect.c (assuan_pipe_connect): New argument
+	FD_CHILD_LIST.  Don't close those fds.
+	* assuan.h: Likewise for prototype.
+
+2001-12-14  Werner Koch  <wk@gnupg.org>
+
+	* assuan-listen.c (assuan_close_input_fd): New.
+	(assuan_close_output_fd): New.
+	* assuan-handler.c (std_handler_reset): Always close them after a
+	reset command.
+	(std_handler_bye): Likewise.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-buffer.c (_assuan_read_line): New variable ATTICLEN, use
+	it to save the length of the attic line.
+	Rediddle the code a bit to make it more clear what happens.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-defs.h (LINELENGTH): Define as ASSUAN_LINELENGTH.
+	assuan.h: Define ASSUAN_LINELENGTH.
+
+2001-12-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-buffer.c (assuan_read_line): Fix order of execution to
+	get correct return values.
+
+2001-12-13  Werner Koch  <wk@gnupg.org>
+
+	* assuan-handler.c (assuan_get_active_fds): Fixed silly bug,
+	pretty obvious that nobody ever tested this function.
+
+2001-12-12  Werner Koch  <wk@gnupg.org>
+
+	* assuan-connect.c (assuan_pipe_connect): Implemented the inital
+	handshake.
+	* assuan-client.c (read_from_server): Renamed to  
+	(_assuan_read_from_server): this and made external.
+
+	* assuan-listen.c (assuan_set_hello_line): New.
+	(assuan_accept): Use a custom hello line is available.
+
+	* assuan-buffer.c (assuan_read_line): New.
+	(assuan_pending_line): New.
+	(_assuan_write_line): Renamed to ..
+	(assuan_write_line): this, made public and changed all callers.
+
+2001-12-04  Werner Koch  <wk@gnupg.org>
+
+	* assuan-connect.c (assuan_pipe_connect): Add more error reporting.
+	* assuan-client.c: New.
+
+	* assuan-inquire.c: New.
+	* assuan-handler.c (process_request): Check for nested invocations.
+
+2001-11-27  Werner Koch  <wk@gnupg.org>
+
+	* assuan-handler.c (assuan_register_input_notify): New.
+	(assuan_register_output_notify): New.
+
+2001-11-26  Werner Koch  <wk@gnupg.org>
+
+	* assuan.h: Added more status codes.
+
+2001-11-25  Werner Koch  <wk@gnupg.org>
+
+	* assuan-handler.c (assuan_register_bye_notify)
+	(assuan_register_reset_notify)
+	(assuan_register_cancel_notify): New and call them from the
+	standard handlers.
+	(assuan_process): Moved bulk of function to ..
+	(process_request): .. new.
+	(assuan_process_next): One shot version of above.
+	(assuan_get_active_fds): New.
+
+2001-11-24  Werner Koch  <wk@gnupg.org>
+
+	* assuan-connect.c (assuan_get_pid): New.
+
+	* assuan-buffer.c (_assuan_read_line): Deal with reads of more
+	than a line.
+	* assuan-defs.h: Add space in the context for this.
+
+	
+ Copyright 2001, 2002 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
