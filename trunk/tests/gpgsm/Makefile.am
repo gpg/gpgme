@@ -23,7 +23,7 @@ GPGSM = @GPGSM@
 
 TESTS_ENVIRONMENT = GNUPGHOME=.
 
-TESTS = t-import t-keylist t-encrypt t-verify
+TESTS = t-import t-keylist t-encrypt t-verify t-decrypt
 
 EXTRA_DIST = cert_dfn_pca01.der cert_dfn_pca15.der cert_g10code_test1.der
 
@@ -33,7 +33,16 @@ LDADD = ../../gpgme/libgpgme.la
 
 noinst_PROGRAMS = $(TESTS)
 
-all-local: ./pubcerts.kbx
+key_id := 567064FE6D14A17B2D811ABB407728BC558AA455
+
+all-local: ./pubcerts.kbx ./gpg-agent.conf ./private-keys-v1.d/$(key_id)
 
 ./pubcerts.kbx: $(srcdir)/cert_g10code_test1.der
 	$(GPGSM) --homedir . --import $(srcdir)/cert_g10code_test1.der
+
+./gpg-agent.conf:
+	echo batch > ./gpg-agent.conf
+
+./private-keys-v1.d/$(key_id): $(srcdir)/$(key_id)
+	mkdir ./private-keys-v1.d
+	cp $(srcdir)/$(key_id) private-keys-v1.d
