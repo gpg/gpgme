@@ -1439,6 +1439,32 @@ _gpgme_gpg_op_delete (GpgObject gpg, GpgmeKey key, int allow_secret)
 }
 
 
+static GpgmeError
+_gpgme_append_gpg_args_from_signers (GpgObject gpg,
+				     GpgmeCtx ctx /* FIXME */)
+{
+  GpgmeError err = 0;
+  int i;
+  GpgmeKey key;
+
+  for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
+    {
+      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID,
+						 NULL, 0);
+      if (s)
+	{
+	  if (!err)
+	    err = _gpgme_gpg_add_arg (gpg, "-u");
+	  if (!err)
+	    err = _gpgme_gpg_add_arg (gpg, s);
+	}
+      gpgme_key_unref (key);
+      if (err) break;
+    }
+  return err;
+}
+
+
 GpgmeError
 _gpgme_gpg_op_edit (GpgObject gpg, GpgmeKey key, GpgmeData out,
 		    GpgmeCtx ctx /* FIXME */)
@@ -1483,32 +1509,6 @@ _gpgme_append_gpg_args_from_recipients (GpgObject gpg,
       if (err)
 	break;
     }    
-  return err;
-}
-
-
-static GpgmeError
-_gpgme_append_gpg_args_from_signers (GpgObject gpg,
-				     GpgmeCtx ctx /* FIXME */)
-{
-  GpgmeError err = 0;
-  int i;
-  GpgmeKey key;
-
-  for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
-    {
-      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID,
-						 NULL, 0);
-      if (s)
-	{
-	  if (!err)
-	    err = _gpgme_gpg_add_arg (gpg, "-u");
-	  if (!err)
-	    err = _gpgme_gpg_add_arg (gpg, s);
-	}
-      gpgme_key_unref (key);
-      if (err) break;
-    }
   return err;
 }
 
