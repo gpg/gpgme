@@ -1,9 +1,7 @@
 * ABI's to break:
 ** GpgmePassphraseCb should have void **R_HD, not void *R_HD.
-** trustlist has the same start/end problem as keylist had.
-   In fact, all the _start functions have this problem!
-   In addition, the resulting error of the operation can not be
-   retrieved seperately; the op_foobar operations can't be implemented
+** The resulting error of an operation can not be retrieved
+   seperately; the op_foobar operations can't be implemented
    by the user, they are not merely convenience, but necessity, while
    the op_foobar_start functions for these are unusable (or render the
    context unusable, your choice).

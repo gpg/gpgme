@@ -1,3 +1,10 @@
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-signers.c (passphrase_cb): Change type of r_hd to void**.
+	* gpg/t-sign.c (passphrase_cb): Likewise.
+	* gpg/t-decrypt-verify.c (passphrase_cb): Likewise.
+	* gpg/t-decrypt.c (passphrase_cb): Likewise.
+
 2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-decrypt-verify.c: Don't include `mcheck.h'.  Reported by

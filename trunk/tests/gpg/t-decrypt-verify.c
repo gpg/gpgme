@@ -58,7 +58,7 @@ print_data (GpgmeData dh)
 }
 
 static const char *
-passphrase_cb (void *opaque, const char *desc, void *r_hd)
+passphrase_cb (void *opaque, const char *desc, void **r_hd)
 {
   const char *pass;
 

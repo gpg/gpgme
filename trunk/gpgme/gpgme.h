@@ -160,7 +160,7 @@ typedef enum {
 } GpgmeProtocol;
 
 typedef const char *(*GpgmePassphraseCb)(void*,
-                                         const char *desc, void *r_hd);
+                                         const char *desc, void **r_hd);
 typedef void (*GpgmeProgressCb)(void *opaque,
                                 const char *what, 
                                 int type, int current, int total );
