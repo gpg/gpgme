@@ -1,3 +1,8 @@
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Make the check for funopen fail with just a
+	warning.
+
 2004-02-11  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh (check_version): Removed bashism and simplified.

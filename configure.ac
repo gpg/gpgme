@@ -277,22 +277,27 @@ AM_CONDITIONAL(RUN_GPGSM_TESTS,
 # FIXME: Only build if supported.
 AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
 
-if test "$GPGSM" != "no"; then
-  AC_CHECK_FUNCS(funopen)
-  if test $ac_cv_func_funopen != yes; then
+
+# The assuan code uses funopen but it will also build without it.  So
+# test for it.  Frankly, this is not required in gpgme, but thats the
+# way we handle it in libassuan.
+AC_CHECK_FUNCS(funopen)
+if test $ac_cv_func_funopen != yes; then
     # No funopen but we can implement that in terms of fopencookie.
     AC_CHECK_FUNCS(fopencookie)
     if test $ac_cv_func_fopencookie = yes; then
         AC_LIBOBJ([funopen])
     else
-        AC_MSG_ERROR([No implementation of fopencookie or funopen available])
+        AC_MSG_WARN([
+***
+*** No implementation of fopencookie or funopen available
+***])
     fi
-  fi
-
-  AC_REPLACE_FUNCS(isascii)
-  AC_REPLACE_FUNCS(putc_unlocked)
-  AC_REPLACE_FUNCS(memrchr)
 fi
+
+AC_REPLACE_FUNCS(isascii)
+AC_REPLACE_FUNCS(putc_unlocked)
+AC_REPLACE_FUNCS(memrchr)
 
 
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
