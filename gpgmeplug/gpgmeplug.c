@@ -6,6 +6,7 @@
               the common CRYPTPLUG specification.
 
   Copyright (C) 2001 by Klarälvdalens Datakonsult AB
+  Copyright (C) 2002 g10 Code GmbH
 
   GPGMEPLUG is free software; you can redistribute it and/or modify
   it under the terms of GNU General Public License as published by
@@ -62,7 +63,7 @@
 #endif
 
 /* definitions for signing */
-// 1. opaque signatures (only used for S/MIME)
+/* 1. opaque signatures (only used for S/MIME). */
 #ifndef GPGMEPLUG_OPA_SIGN_MAKE_MIME_OBJECT
 #define GPGMEPLUG_OPA_SIGN_INCLUDE_CLEARTEXT false
 #define GPGMEPLUG_OPA_SIGN_MAKE_MIME_OBJECT  false
@@ -81,7 +82,7 @@
 #define GPGMEPLUG_OPA_SIGN_FLAT_SEPARATOR    ""
 #define GPGMEPLUG_OPA_SIGN_FLAT_POSTFIX      ""
 #endif
-// 2. detached signatures (used for S/MIME and for OpenPGP)
+/* 2. detached signatures (used for S/MIME and for OpenPGP) */
 #ifndef GPGMEPLUG_DET_SIGN_MAKE_MIME_OBJECT
 #define GPGMEPLUG_DET_SIGN_INCLUDE_CLEARTEXT true
 #define GPGMEPLUG_DET_SIGN_MAKE_MIME_OBJECT  true
@@ -100,7 +101,7 @@
 #define GPGMEPLUG_DET_SIGN_FLAT_SEPARATOR    ""
 #define GPGMEPLUG_DET_SIGN_FLAT_POSTFIX      ""
 #endif
-// 3. common definitions for opaque and detached signing
+/* 3. common definitions for opaque and detached signing */
 #ifndef __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY
 #define __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY false
 #endif
@@ -195,13 +196,55 @@ typedef struct {
   bool                    certificateInChainExpiryNearWarning;
   int                     certificateInChainExpiryNearWarningInterval;
   bool                    receiverEmailAddressNotInCertificateWarning;
-  const char* libVersion; // a statically allocated string with the GPGME Version used
+  const char* libVersion; /* a statically allocated string with the GPGME Version used */
 } Config;
 
 
 Config config;
 
 #define NEAR_EXPIRY 14
+
+/* Max number of parts in a DN */
+#define MAX_GPGME_IDX 20
+
+/* some macros to replace ctype ones and avoid locale problems */
+#define spacep(p)   (*(p) == ' ' || *(p) == '\t')
+#define digitp(p)   (*(p) >= '0' && *(p) <= '9')
+#define hexdigitp(a) (digitp (a)                     \
+                      || (*(a) >= 'A' && *(a) <= 'F')  \
+                      || (*(a) >= 'a' && *(a) <= 'f'))
+/* the atoi macros assume that the buffer has only valid digits */
+#define atoi_1(p)   (*(p) - '0' )
+#define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
+#define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
+#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
+                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
+#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+
+static void *
+xmalloc (size_t n)
+{
+  char *p = malloc (n);
+  if (!p)
+    { 
+      fputs ("\nfatal: out of core\n", stderr);
+      exit (4);
+    }
+  return p;
+}
+
+/* Please: Don't call an allocation function xfoo when it may return NULL. */
+/* Wrong: #define xstrdup( x ) (x)?strdup(x):0 */
+/* Right: */
+static char *
+xstrdup (const char *string)
+{
+  char *p = xmalloc (strlen (string));
+  strcpy (p, string);
+  return p;
+}
+
+
 
 bool initialize()
 {
@@ -1018,9 +1061,8 @@ bool certificateValidity( const char* certificate,
 void storeNewCharPtr( char** dest, const char* src )
 {
   int sLen = strlen( src );
-  *dest = malloc( sLen + 1 );
+  *dest = xmalloc( sLen + 1 );
   strcpy( *dest, src );
-  (*dest)[sLen] = '\0';
 }
 
 
@@ -1099,8 +1141,8 @@ bool signMessage( const char*  cleartext,
                             strlen( cleartext ), 1 );
   gpgme_data_new ( &sig );
 
-  // NOTE: Currently we support Opaque signed messages only for S/MIME,
-  //       but not for OpenPGP mode!
+  /* NOTE: Currently we support Opaque signed messages only for S/MIME,
+     but not for OpenPGP mode! */
   if( GPGMEPLUG_PROTOCOL == GPGME_PROTOCOL_CMS )
     bIsOpaque = (SignatureCompoundMode_Opaque == signatureCompoundMode());
   else
@@ -1252,7 +1294,7 @@ static char* parseAddress( char* address )
   if( i ) {
     j = index( i+1, '>' );
     if( j == NULL ) j = address+strlen(address);
-    result = malloc( j-i );
+    result = xmalloc( j-i );
     strncpy( result, i+1, j-i-1 );
     result[j-i-1] = '\0';
     free( address );
@@ -1267,7 +1309,7 @@ static char* parseAddress( char* address )
     while( isspace( *l ) ) ++l;
     while( isspace( *k ) ) --k;
     if( l != result || k != result+(j-i-1) ) {
-      char* result2 = malloc( k-l+2 );
+      char* result2 = xmalloc( k-l+2 );
       strncpy( result2, l, k-l+1 );
       result2[k-l+1] = '\0';
       free(result);
@@ -1318,7 +1360,7 @@ static char* nextAddress( const char** address )
     len = *address - start;
     if( len > 0 ) {
       if( **address != 0 ) --len;
-      result = malloc( len*sizeof(char)+1 );
+      result = xmalloc( len*sizeof(char)+1 );
       strncpy( result, start, len );
       result[len] = '\0';
     }
@@ -1614,6 +1656,9 @@ bool decryptAndCheckMessage( const char* ciphertext,
 
 const char* requestCertificateDialog(){ return 0; }
 
+
+/* The buffer generatedKey contains the LEN bytes you want.
+   Caller is responsible for freeing. */
 bool requestDecentralCertificate( const char* certparms, 
                                   char** generatedKey, int* length )
 {
@@ -1649,8 +1694,6 @@ bool requestDecentralCertificate( const char* certparms,
     *generatedKey = gpgme_data_release_and_get_mem (pub, &len);
     *length = len;
 
-    /* The buffer generatedKey contains the LEN bytes you want */
-    // Caller is responsible for freeing
     return true;
 }
 
@@ -1676,77 +1719,6 @@ const char* displayCRL(){ return 0; }
 
 void updateCRL(){}
 
-/*
- * Copyright (C) 2002 g10 Code GmbH
- * 
- *     This program is free software; you can redistribute it
- *     and/or modify it under the terms of the GNU General Public
- *     License as published by the Free Software Foundation; either
- *     version 2 of the License, or (at your option) any later
- *     version.
- * 
- *     This program is distributed in the hope that it will be
- *     useful, but WITHOUT ANY WARRANTY; without even the implied
- *     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *     PURPOSE.  See the GNU General Public License for more
- *     details.
- * 
- *     You should have received a copy of the GNU General Public
- *     License along with this program; if not, write to the Free
- *     Software Foundation, Inc., 59 Temple Place - Suite 330,
- *     Boston, MA  02111, USA.
- */
-
-/* Max number of parts in a DN */
-#define MAX_GPGME_IDX 20
-
-/* some macros to replace ctype ones and avoid locale problems */
-#define spacep(p)   (*(p) == ' ' || *(p) == '\t')
-#define digitp(p)   (*(p) >= '0' && *(p) <= '9')
-#define hexdigitp(a) (digitp (a)                     \
-                      || (*(a) >= 'A' && *(a) <= 'F')  \
-                      || (*(a) >= 'a' && *(a) <= 'f'))
-/* the atoi macros assume that the buffer has only valid digits */
-#define atoi_1(p)   (*(p) - '0' )
-#define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
-#define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
-#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
-                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
-#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
-
-static void *
-xmalloc (size_t n)
-{
-  char *p = malloc (n);
-  if (!p)
-    { 
-      fputs ("\nfatal: out of core\n", stderr);
-      exit (4);
-    }
-  return p;
-}
-
-static char *
-xstrdup (const char *string)
-{
-  char *p;
-  if( !string ) {
-      fputs ("\nfatal: xstrdup(NULL)\n", stderr);
-      exit (4);    
-  }
-  p = xmalloc (strlen (string)+1);
-  strcpy (p, string);
-  return p;
-}
-    
-
-
-static void 
-safe_free( void** x ) 
-{
-  free( *x );
-  *x = 0;
-}
 
 char *
 trim_trailing_spaces( char *string )
@@ -1766,7 +1738,6 @@ trim_trailing_spaces( char *string )
 
     return string ;
 }
-/*#define safe_free( x ) free( x )*/
 
 /* Parse a DN and return an array-ized one.  This is not a validating
    parser and it does not support any old-stylish syntax; gpgme is
@@ -1900,7 +1871,7 @@ parse_dn (const unsigned char *string)
               a2[i].key = array[i].key;
               a2[i].value = array[i].value;
             }
-          safe_free ((void **)&array);
+          free (array);
           array = a2;
         }
       array[arrayidx].key = NULL;
@@ -1923,10 +1894,10 @@ parse_dn (const unsigned char *string)
  failure:
   for (i=0; i < arrayidx; i++)
     {
-      safe_free ((void**)&array[i].key);
-      safe_free ((void**)&array[i].value);
+      free (array[i].key);
+      free (array[i].value);
     }
-  safe_free ((void**)&array);
+  free (array);
   return NULL;
 }
 
@@ -1954,7 +1925,7 @@ add_dn_part( char* result, struct DnPair* dn, const char* part )
 static char* 
 reorder_dn( struct DnPair *dn )
 {
-  // note: The must parts are: CN, L, OU, O, C
+  /* note: The must parts are: CN, L, OU, O, C */
   const char* stdpart[] = {
     "CN", "S", "SN", "GN", "T", "UID",
           "MAIL", "EMAIL", "MOBILE", "TEL", "FAX", "STREET",
@@ -2044,12 +2015,13 @@ static void
 freeStringArray( char** c )
 {
     char** _c = c;
+
     while( c && *c ) {
       /*fprintf( stderr, "freeing \"%s\"\n", *c );*/
-      safe_free( (void**)&(*c) );
+      free( *c );
       ++c;
     }
-    safe_free( (void**)&_c );
+    free( _c );
 }
 
 /* free all malloc'ed data in a struct CertificateInfo */
@@ -2058,29 +2030,29 @@ freeInfo( struct CertificateInfo* info )
 {
   struct DnPair* a = info->dnarray;
   assert( info );
-  if( info->userid ) freeStringArray( info->userid );
-  if( info->serial ) safe_free( (void**)&(info->serial) );
-  if( info->fingerprint ) safe_free( (void**)&(info->fingerprint) );
-  if( info->issuer ) safe_free( (void**)&(info->issuer) );
-  if( info->chainid ) safe_free( (void**)&(info->chainid) );
-  if( info->caps ) safe_free( (void**)&(info->caps) );
+  freeStringArray( info->userid );
+  free( info->serial);
+  free( info->fingerprint );
+  free( info->issuer );
+  free( info->chainid );
+  free( info->caps );
   while( a && a->key && a->value ) {
-    safe_free ((void**)&(a->key));
-    safe_free ((void**)&(a->value));
+    free (a->key);
+    free (a->value);
     ++a;
   }
-  if( info->dnarray ) safe_free ((void**)&(info->dnarray));
+  free (info->dnarray);
   memset( info, 0, sizeof( *info ) );
 }
 
 /* Format the fingerprint nicely. The caller should
-   free the returned value with safe_free() */
+   free the returned value using free() */
 static char* make_fingerprint( const char* fpr )
 {
   int len = strlen(fpr);
   int i = 0;
   char* result = xmalloc( (len + len/2 + 1)*sizeof(char) );
-  if( !result ) return NULL;
+
   for(; *fpr; ++fpr, ++i ) {
     if( i%3 == 2) {
       result[i] = ':'; ++i;
@@ -2123,7 +2095,8 @@ nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
       if( idx == 0 ) {
 	it->info.userid[idx] = reorder_dn( a );
 	it->info.dnarray = a;
-	safe_free( (void **)&(names[idx]) );
+	free (names[idx]);
+        names[idx] = NULL;
       } else {
 	it->info.userid[idx] = names[idx];
       }
@@ -2142,11 +2115,12 @@ nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
       /*it->info.issuer = xstrdup(s);*/
       it->info.issuer = reorder_dn( issuer_dn );
       while( tmp_dn->key ) {
-	safe_free( (void**)&issuer_dn->key );
-	safe_free( (void**)&issuer_dn->value );
+	free( issuer_dn->key );
+	free( issuer_dn->value );
 	++tmp_dn;
       }
-      safe_free( (void**)&issuer_dn );
+      free( issuer_dn );
+      issuer_dn = tmp_dn = NULL;
     } else {
       it->info.issuer = NULL;
     }
@@ -2250,7 +2224,7 @@ importCertificate( const char* fingerprint )
   err = gpgme_recipients_add_name( recips, buf ); 
   if( err ) {
     fprintf( stderr,  "gpgme_recipients_add_name returned %d\n", err );
-    safe_free( (void**)&buf );
+    free (buf);
     gpgme_recipients_release( recips );
     gpgme_data_release( keydata );    
     gpgme_release( ctx );
@@ -2260,13 +2234,14 @@ importCertificate( const char* fingerprint )
   err = gpgme_op_export( ctx, recips, keydata );
   if( err ) {
     fprintf( stderr,  "gpgme_op_export returned %d\n", err );
-    safe_free( (void**)&buf );
+    free (buf);
     gpgme_recipients_release( recips );
     gpgme_data_release( keydata );    
     gpgme_release( ctx );
     return err;
   }
-  safe_free( (void**)&buf );
+  free (buf);
+  buf = NULL;
 
   err = gpgme_op_import( ctx, keydata );
   if( err ) {    
@@ -2357,7 +2332,7 @@ bool findCertificates( const char* addressee,
           siz += strlen( s2 );
           siz += strlen( closeBracket );
           DNs[ nFound ] = dn;
-          dn = NULL; // prevent it from being free'ed below
+          dn = NULL; /* prevent it from being free'ed below. */
           FPRs[nFound ] = xstrdup( s2 );
           ++nFound;
           if( nFound >= MAXCERTS ) {
@@ -2548,7 +2523,7 @@ bool checkMessageSignature( char** cleartext,
                                            GPGME_ATTR_SIG_SUMMARY,
                                            0 );
       fprintf( stderr, "gpgmeplug checkMessageSignature status flags: %lX\n", sumGPGME );
-      // translate GPGME status flags to common CryptPlug status flags
+      /* translate GPGME status flags to common CryptPlug status flags */
       sumPlug = 0;
       if( sumGPGME & GPGME_SIGSUM_VALID       ) sumPlug |= SigStat_VALID      ;
       if( sumGPGME & GPGME_SIGSUM_GREEN       ) sumPlug |= SigStat_GREEN      ;
