@@ -95,6 +95,9 @@ _gpgme_release_result ( GpgmeCtx c )
       case RESULT_TYPE_SIGN:
         _gpgme_release_sign_result ( c->result.sign );
         break;
+      case RESULT_TYPE_ENCRYPT:
+        _gpgme_release_encrypt_result ( c->result.encrypt );
+        break;
     }
 
     c->result.verify = NULL;

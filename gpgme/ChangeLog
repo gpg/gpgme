@@ -1,4 +1,15 @@
+2001-09-03  Werner Koch  <wk@gnupg.org>
+
+	* rungpg.h: Added STATUS_INV_RECP.
+	* gpgme.c (_gpgme_release_result): Add support for new
+	EncryptResult object.
+	* encrypt.c (append_xml_encinfo): New.
+	(encrypt_status_handler): Add some status parsing.
+	(_gpgme_release_encrypt_result): New.
+
 2001-08-29  Werner Koch  <wk@gnupg.org>
+
+	* recipient.c (gpgme_recipients_release): Free the list.  By Timo.
 
 	* keylist.c (keylist_colon_handler): Do a finish key if we receive
 	an EOF here.  This is probably the reason for a lot of bugs

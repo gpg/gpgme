@@ -33,6 +33,20 @@
                              } while(0)
 
 static void
+print_op_info (GpgmeCtx c)
+{
+    char *s = gpgme_get_op_info (c, 0);
+
+    if (!s)
+        puts ("<!-- no operation info available -->");
+    else {
+        puts (s);
+        free (s);
+    }
+}
+
+
+static void
 print_data ( GpgmeData dh )
 {
     char buf[100];
@@ -84,6 +98,7 @@ main (int argc, char **argv )
 
 
     err = gpgme_op_encrypt (ctx, rset, in, out );
+    print_op_info (ctx);
     fail_if_err (err);
 
     fflush (NULL);

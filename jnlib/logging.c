@@ -224,10 +224,10 @@ log_debug( const char *fmt, ... )
 void
 log_printf( const char *fmt, ... )
 {
-    va_list arg_ptr ;
+    va_list arg_ptr = 0;
 
     if( !fmt ) {
-	do_logv( MY_LOG_BEGIN, NULL, NULL );
+	do_logv( MY_LOG_BEGIN, NULL, arg_ptr );
     }
     else {
 	va_start( arg_ptr, fmt ) ;
