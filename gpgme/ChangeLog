@@ -1,3 +1,8 @@
+2002-07-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* delete.c (delete_problem): New case ambigious specification.
+	(delete_status_handler): Handle new case (poorly).
+
 2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_op_delete): Implement this.
