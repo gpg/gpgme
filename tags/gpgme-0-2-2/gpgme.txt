@@ -1,0 +1,91 @@
+%%comments:
+Copyright (C) 2001 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts. A copy of the license is included in the file COPYING.
+
+%%name: GPGME
+
+%%short-description: GnuPG Made Easy 
+
+%%full-description:  GPGME is a library designed to make access to
+GnuPG easier for applications.  It provides a
+High-Level Crypto API for encryption, decryption, signing, signature
+verification and key management.  Currently it uses GnuPG as
+its backend but the API isn't restricted to this engine; in fact it is
+planned to add other backends to it.
+
+%%category: security, libraries
+
+%%license: GPL
+%%license verified by: 
+%%license verified on: 
+
+%%maintainer: g10 Code GmbH <gpgme@g10code.com>
+
+%%updated: 2001-06-01
+
+%%keywords: encryption, public key, digital signature, GnuPG
+
+%%interface:
+
+%%programs: 
+
+%%GNU: no
+
+%%web-page: http://www.gnupg.org/gpgme.html
+
+%%support: paid extension/consulting from http://www.g10code.com
+
+%%doc: English programmer reference in Texinfo, Postscript, HTML included
+
+%%developers: Werner Koch <wk@gnupg.org>.
+
+%%contributors: 
+
+%%sponsors: 
+
+%%source: ftp://ftp.gnupg.org/gcrypt/alpha/gpgme/
+
+%%debian:
+
+%%redhat:
+
+%%repository:  See http://www.gnupg.org/cvs-access.html
+
+%%related: 
+
+%%source-language: C
+
+%%supported-languages: C, C++
+
+%%use-requirements: GnuPG 1.0.5
+
+%%build-prerequisites:
+
+%%weak-prerequisites: 
+
+%%source-prerequisites:
+
+%%version: 0.2.1 alpha released on 2001-04-02
+
+%%announce-list: announce@gnupg.org  announce-request@gnupg.org
+
+%%announce-news:
+
+%%help-list: 
+
+%%help-news:
+
+%%dev-list: gnupg-devel@gnupg.org  gnupg-devel-request@gnupg.org
+
+%%dev-news:
+
+%%bug-list: 
+
+%%bug-database: 
+
+%%entry written by: Werner Koch <wk@gnupg.org>
