@@ -1,3 +1,19 @@
+2002-05-03  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (_gpgme_verify_status_handler): Handle TRUST_* status
+	lines so that a claim can be made without looking up the key.
+	(gpgme_get_sig_string_attr): New. 
+	(gpgme_get_sig_ulong_attr): New.
+
+	* gpgme.h (GpgmeAttr): Added GPGME_ATTR_SIG_STATUS.
+
+	* rungpg.h: Add new status codes from gpg 1.0.7 and formatted the
+	list to align with the status.h file from gnupg.
+
+	* gpgme.h (GpgmeSigStat): Add _GOOD_EXP and _GOOD_EXPKEY.
+	* verify.c (_gpgme_verify_status_handler, finish_sig): Handle
+	these new status codes.  Store the expiration time 
+
 2002-04-27  Werner Koch  <wk@gnupg.org>
 
 	* gpgme.h (GpgmeData_Encoding): New.

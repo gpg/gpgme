@@ -1,3 +1,9 @@
+ * The signature verfication functions are extended.  Instead of
+   always returning GPGME_SIG_STATUS_GOOD, the functions return more
+   specific codes for expired signatures.  2 new functions may be used
+   to retrieve more specific information like the signature expiartion
+   time and a validut information of the key without looking up the key.
+
  * The current passphrase callback and progress meter callback can be
    retrieved with the new functions gpgme_get_passphrase_cb and
    gpgme_get_progress_cb respectively.
@@ -9,6 +15,12 @@ gpgme_get_progress_cb		NEW
 GpgmeDataEncoding               NEW
 gpgme_data_set_encoding         NEW
 gpgme_data_get_encoding         NEW
+GPGME_SIG_STAT_GOOD_EXP         NEW
+GPGME_SIG_STAT_GOOD_EXPKEY      NEW
+gpgme_op_verify                 CHANGED: Returns more status codes.
+GPGME_ATTR_SIG_STATUS           NEW
+gpgme_get_sig_string_attr       NEW
+gpgme_get_sig_ulong_attr        NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.5 (2002-04-01)

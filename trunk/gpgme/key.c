@@ -1,6 +1,6 @@
 /* key.c - Key and keyList objects
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -868,6 +868,9 @@ gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
         break;
       case GPGME_ATTR_CHAINID:
         val = key->chain_id;
+        break;
+      case GPGME_ATTR_SIG_STATUS:
+        /* not of any use here */
         break;
     }
     return val;

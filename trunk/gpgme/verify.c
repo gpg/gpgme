@@ -35,12 +35,15 @@ struct verify_result_s
 {
   struct verify_result_s *next;
   GpgmeSigStat status;
+  GpgmeSigStat expstatus; /* only used by finish_sig */
   GpgmeData notation;	/* We store an XML fragment here.  */
   int collecting;	/* Private to finish_sig().  */
   int notation_in_data;	/* Private to add_notation().  */
   char fpr[41];		/* Fingerprint of a good signature or keyid of
 			   a bad one.  */
   ulong timestamp;	/* Signature creation time.  */
+  ulong exptimestamp;   /* signature exipration time or 0 */
+  GpgmeValidity validity;
 };
 
 
@@ -113,6 +116,9 @@ add_notation (GpgmeCtx ctx, GpgStatusCode code, const char *data)
 static void
 finish_sig (GpgmeCtx ctx, int stop)
 {
+  if (ctx->result.verify->status == GPGME_SIG_STAT_GOOD)
+    ctx->result.verify->status = ctx->result.verify->expstatus;
+
   if (stop)
     return; /* nothing to do */
 
@@ -147,7 +153,11 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
     return;
   test_and_allocate_result (ctx, verify);
 
-  if (code == STATUS_GOODSIG || code == STATUS_BADSIG || code == STATUS_ERRSIG)
+  if (code == STATUS_GOODSIG
+      || code == STATUS_EXPSIG
+      || code == STATUS_EXPKEYSIG
+      || code == STATUS_BADSIG
+      || code == STATUS_ERRSIG)
     {
       finish_sig (ctx,0);
       if (ctx->error)
@@ -161,7 +171,15 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
       break;
 
     case STATUS_GOODSIG:
-      /* We only look at VALIDSIG */
+      ctx->result.verify->expstatus = GPGME_SIG_STAT_GOOD;
+      break;
+    
+    case STATUS_EXPSIG:
+      ctx->result.verify->expstatus = GPGME_SIG_STAT_GOOD_EXP;
+      break;
+
+    case STATUS_EXPKEYSIG:
+      ctx->result.verify->expstatus = GPGME_SIG_STAT_GOOD_EXPKEY;
       break;
 
     case STATUS_VALIDSIG:
@@ -177,7 +195,9 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
       while (args[i] && args[i] != ' ')
 	i++;
       /* And get the timestamp.  */
-      ctx->result.verify->timestamp = strtoul (args+i, NULL, 10);
+      ctx->result.verify->timestamp = strtoul (args+i, &p, 10);
+      if (args[i])
+        ctx->result.verify->exptimestamp = strtoul (p, NULL, 10);
       break;
 
     case STATUS_BADSIG:
@@ -216,6 +236,22 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
     case STATUS_NOTATION_DATA:
     case STATUS_POLICY_URL:
       add_notation (ctx, code, args);
+      break;
+
+    case STATUS_TRUST_UNDEFINED:
+      ctx->result.verify->validity = GPGME_VALIDITY_UNKNOWN;
+      break;
+    case STATUS_TRUST_NEVER:
+      ctx->result.verify->validity = GPGME_VALIDITY_NEVER;
+      break;
+    case STATUS_TRUST_MARGINAL:
+      if (ctx->result.verify->status == GPGME_SIG_STAT_GOOD)
+        ctx->result.verify->validity = GPGME_VALIDITY_MARGINAL;
+      break;
+    case STATUS_TRUST_FULLY:
+    case STATUS_TRUST_ULTIMATE:
+      if (ctx->result.verify->status == GPGME_SIG_STAT_GOOD)
+        ctx->result.verify->validity = GPGME_VALIDITY_FULL;
       break;
 
     case STATUS_END_STREAM:
@@ -353,6 +389,8 @@ _gpgme_intersect_stati (VerifyResult result)
  *  GPGME_SIG_STAT_ERROR: Due to some other error the check could not be done.
  *  GPGME_SIG_STAT_DIFF:  There is more than 1 signature and they have not
  *                        the same status.
+ *  GPGME_SIG_STAT_GOOD_EXP:  The signature is good but has expired.
+ *  GPGME_SIG_STAT_GOOD_KEYEXP:  The signature is good but the key has expired.
  *
  * Return value: 0 on success or an errorcode if something not related to
  *               the signature itself did go wrong.
@@ -415,6 +453,64 @@ gpgme_get_sig_status (GpgmeCtx c, int idx,
   return result->fpr;
 }
 
+const char *
+gpgme_get_sig_string_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
+{
+  VerifyResult result;
+
+  if (!c || c->pending || !c->result.verify)
+    return NULL;	/* No results yet or verification error.  */
+  if (reserved)
+    return NULL; /* We might want to use it to enumerate attributes of
+                    one signature */
+  for (result = c->result.verify;
+       result && idx > 0; result = result->next, idx--)
+    ;
+  if (!result)
+    return NULL;	/* No more signatures.  */
+
+  switch (what)
+    {
+    case GPGME_ATTR_FPR:
+      return result->fpr;
+    default:
+      break;
+    }
+  return NULL;
+}
+
+unsigned long
+gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
+{
+  VerifyResult result;
+
+  if (!c || c->pending || !c->result.verify)
+    return 0;	/* No results yet or verification error.  */
+  if (reserved)
+    return 0; 
+  for (result = c->result.verify;
+       result && idx > 0; result = result->next, idx--)
+    ;
+  if (!result)
+    return 0;	/* No more signatures.  */
+
+  switch (what)
+    {
+    case GPGME_ATTR_CREATED:
+      return result->timestamp;
+    case GPGME_ATTR_EXPIRE:
+      return result->exptimestamp;
+    case GPGME_ATTR_VALIDITY:
+      return (unsigned long)result->validity;
+    case GPGME_ATTR_SIG_STATUS:
+      return (unsigned long)result->status;
+    default:
+      break;
+    }
+  return 0;
+}
+
+
 
 /**
  * gpgme_get_sig_key:
@@ -465,3 +561,4 @@ gpgme_get_sig_key (GpgmeCtx c, int idx, GpgmeKey *r_key)
     }
   return err;
 }
+
