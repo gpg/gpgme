@@ -3894,8 +3894,9 @@ signature could be created successfully, @code{GPG_ERR_INV_VALUE} if
 @var{ctx}, @var{plain} or @var{sig} is not a valid pointer,
 @code{GPG_ERR_NO_DATA} if the signature could not be created,
 @code{GPG_ERR_BAD_PASSPHRASE} if the passphrase for the secret key
-could not be retrieved, and passes through any errors that are
-reported by the crypto engine support routines.
+could not be retrieved, @code{GPG_ERR_UNUSABLE_SECKEY} if there are
+invalid signers, and passes through any errors that are reported by the
+crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_sign_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{sig}}, @w{gpgme_sig_mode_t @var{mode}})
