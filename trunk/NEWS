@@ -1,5 +1,9 @@
-Noteworthy changes in version 0.4.0 (unreleased)
+Noteworthy changes in version 0.4.0 (2002-12-23)
 ------------------------------------------------
+
+ * Key generation returns the fingerprint of the generated key.
+
+ * New convenience function gpgme_get_key.
 
  * Supports signatures of user IDs in keys via the new
    GPGME_KEYLIST_MODE_SIGS keylist mode and the
@@ -9,6 +13,7 @@ Noteworthy changes in version 0.4.0 (unreleased)
 
  * New data object interface, which is more flexible and transparent.
 
+ * Interface changes relative to the 0.3.9 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeDataReadCb			NEW
 GpgmeDataWriteCb		NEW
