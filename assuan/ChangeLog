@@ -1,3 +1,7 @@
+2004-06-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-handler.c: Include <errno.h>.
+
 2004-06-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan-buffer.c (assuan_write_line): If the line is longer than
