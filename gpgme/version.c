@@ -33,49 +33,49 @@
 #include "key.h" /* for key_cache_init */
 #include "io.h"
 
-static const char *get_engine_info (void);
 
 static void
 do_subsystem_inits (void)
 {
-    static int done = 0;
+  static int done = 0;
 
-    if (done)
-        return;
-    _gpgme_sema_subsystem_init ();
-    _gpgme_key_cache_init ();
+  if (done)
+    return;
+  _gpgme_sema_subsystem_init ();
+  _gpgme_key_cache_init ();
 }
 
 static const char*
-parse_version_number ( const char *s, int *number )
+parse_version_number (const char *s, int *number)
 {
-    int val = 0;
+  int val = 0;
 
-    if ( *s == '0' && isdigit(s[1]) )
-	return NULL; /* leading zeros are not allowed */
-    for ( ; isdigit(*s); s++ ) {
-	val *= 10;
-	val += *s - '0';
+  if (*s == '0' && isdigit(s[1]))
+    return NULL;  /* Leading zeros are not allowed.  */
+  for (; isdigit(*s); s++)
+    {
+      val *= 10;
+      val += *s - '0';
     }
-    *number = val;
-    return val < 0? NULL : s;
+  *number = val;
+  return val < 0 ? NULL : s;
 }
 
 static const char *
-parse_version_string( const char *s, int *major, int *minor, int *micro )
+parse_version_string (const char *s, int *major, int *minor, int *micro)
 {
-    s = parse_version_number ( s, major );
-    if ( !s || *s != '.' )
-	return NULL;
-    s++;
-    s = parse_version_number ( s, minor );
-    if ( !s || *s != '.' )
-	return NULL;
-    s++;
-    s = parse_version_number ( s, micro );
-    if ( !s )
-	return NULL;
-    return s; /* patchlevel */
+  s = parse_version_number (s, major);
+  if (!s || *s != '.')
+    return NULL;
+  s++;
+  s = parse_version_number (s, minor);
+  if (!s || *s != '.')
+    return NULL;
+  s++;
+  s = parse_version_number (s, micro);
+  if (!s)
+    return NULL;
+  return s;  /* Patchlevel.  */
 }
 
 const char *

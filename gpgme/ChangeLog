@@ -1,3 +1,99 @@
+2002-02-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	This patch has gotten a bit large... mmh.  The main thing that
+	happens here is that error values are now not determined in the
+	operation function after gpgme_wait completed, but in the status
+	handler when EOF is received.  It should always be the case that
+	either an error is flagged or EOF is received, so that after a
+	gpgme_wait you should never have the situation that no error is
+	flagged and EOF is not received.  One problem is that the engine
+	status handlers don't have access to the context, a horrible
+	kludge works around this for now.  All errors that happen during a
+	pending operation should be catched and reported in ctx->error,
+	including out-of-core and cancellation.  This rounds up neatly a
+	couple of loose ends, and makes it possible to pass up any errors
+	in the communication with the backend as well.  As a bonus, there
+	will be a function to access gpgme->wait, so that the operations
+	can truly be implemented with their _start function.
+
+	* engine-gpgsm.c (gpgsm_status_handler): Horrible kludge to report
+	error back to the context.
+	* rungpg.c (gpg_status_handler): Same horrible kludge applied here.
+
+	* engine-gpgsm.c (gpgsm_assuan_simple_command): Add error checking.
+
+	* wait.c (_gpgme_wait_on_condition): If canceled, set CTX->error
+	to a value indication that.
+
+	* verify.c (add_notation): Set error, not out_of_core.
+	(finish_sig): Likewise.
+	(gpgme_op_verify_start): Don't clear out_of_core.
+	(_gpgme_verify_status_handler): At EOF, clean up the notation data.
+	(gpgme_op_verify): And don't do it here.
+
+	* trustlist.c (trustlist_status_handler): Check error, not out_of_core.
+	(gpgme_op_trustlist_start): Don't clear out_of_core.
+	(gpgme_op_trustlist_next): Check error, not out_of_core.
+	(gpgme_op_trustlist_end): Likewise.
+
+	* ops.h (test_and_allocate_result): New macro.
+	(_gpgme_passphrase_result): Remove prototype.
+	* delete.c (gpgme_op_delete): Return error from context.
+	(delete_status_handler): Use macro test_and_allocate_result.
+	Perform error checking at EOF.
+	(gpgme_op_delete_start): Release result.
+	* passphrase.c (_gpgme_passphrase_status_handler): Use macro
+	test_and_allocate_result, and perform error checking here.
+	(_gpgme_passphrase_result): Function removed.
+	* sign.c (gpgme_op_sign_start): Do not set out_of_core to zero.
+	(gpgme_op_sign): Just return the error value from the context.
+	(sign_status_handler): Only progress if no error is set yet.  If
+	we process an EOF, set the resulting error value (if any).
+	* decrypt.c (_gpgme_decrypt_result): Function removed.
+	(create_result_struct): Function removed.
+	(_gpgme_decrypt_status_handler): Use macro test_and_allocate_result,
+	caclulate error on EOF, do not progress with errors.
+	(_gpgme_decrypt_start): Do not set out_of_core to zero.
+	(gpgme_op_decrypt): Just return the error value from the context.
+	* encrypt.c (encrypt_status_handler): Perform the error checking
+	here.
+	(gpgme_op_encrypt_start): Do not clear out_of_core.
+	* export.c (export_status_handler): Return if error is set in context.
+	(gpgme_op_export_start): Release result.
+	(gpgme_op_export): Return error from context.
+	* decrypt-verify.c (gpgme_op_decrypt_verify): Return the error in
+	the context.
+	* genkey.c (genkey_status_handler): Use macro
+	test_and_allocate_result.  Perform error checking at EOF.
+	(gpgme_op_genkey): Just return the error from context.
+	* import.c (gpgme_op_import): Return the error from context.
+	(import_status_handler): Use macro test_and_allocate_result.
+	* keylist.c (gpgme_op_keylist_start): Do not clear out_of_core.
+	(gpgme_op_keylist_next): Return error of context.
+	(keylist_colon_handler): Set error instead out_of_code.
+	(finish_key): Likewise.
+
+	* context.h: Remove member out_of_core, add member error.
+	* gpgme.c (_gpgme_release_result): Clear error flag.
+
+	* engine.h (_gpgme_engine_get_error): New prototype.
+	* engine.c (_gpgme_engine_get_error): New function.
+	* engine-gpgsm.c (_gpgme_gpgsm_get_error): New function.
+
+	* engine-gpgsm.c (map_assuan_error): New function.
+	(gpgsm_assuan_simple_command): Change return type to GpgmeError,
+	use the new function to map error values.
+	(gpgsm_set_fd): Change return type tp GpgmeError.
+	(_gpgme_gpgsm_op_decrypt): Change type of ERR to GpgmeError.
+	(gpgsm_set_recipients): Likewise.  Change type of return value
+	equivalently.  Adjust error values.
+	(_gpgme_gpgsm_op_import): Likewise.
+	(_gpgme_gpgsm_op_sign): Likewise.
+	(struct gpgsm_object_s): New member error.
+	(gpgsm_status_handler): Set error if error occurs.  Determine
+	error number from ERR line received.  If assuan_read_line fails,
+	terminate the connection.
+
 2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (MOSTLYCLEANFILES): New variable.

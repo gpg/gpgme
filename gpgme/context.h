@@ -44,12 +44,11 @@ struct gpgme_context_s {
 
     int use_cms;
 
-    /* at some points we need to allocate memory but we are not
-     * able to handle a malloc problem at that point, so we set this
-     * flag to indicate this condition */
-    int out_of_core;   
-    int cancel;    /* cancel operation request */
-
+    /* At some points we need to remember an error which we can't report
+       immediately.  */
+    GpgmeError error;   
+    /* Cancel operation requested.  */
+    int cancel;
 
     EngineObject engine; /* The running engine process.  */
 

@@ -29,12 +29,17 @@
 #include "context.h"
 #include "ops.h"
 
+
 static void
 export_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
+  if (ctx->error)
+    return;
+
   DEBUG2 ("export_status: code=%d args=`%s'\n", code, args);
   /* FIXME: Need to do more */
 }
+
 
 GpgmeError
 gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData keydata)
@@ -46,6 +51,8 @@ gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData keydata)
 
   _gpgme_engine_release (ctx->engine);
   ctx->engine = NULL;
+
+  _gpgme_release_result (ctx);
 
   err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
 			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
@@ -76,6 +83,7 @@ gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData keydata)
   return err;
 }
 
+
 /**
  * gpgme_op_export:
  * @c: the context
@@ -94,6 +102,9 @@ gpgme_op_export (GpgmeCtx ctx, GpgmeRecipients recipients, GpgmeData keydata)
 {
   GpgmeError err = gpgme_op_export_start (ctx, recipients, keydata);
   if (!err)
-    gpgme_wait (ctx, 1);
+    {
+      gpgme_wait (ctx, 1);
+      err = ctx->error;
+    }
   return err;
 }

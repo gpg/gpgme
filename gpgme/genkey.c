@@ -50,18 +50,9 @@ genkey_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
   _gpgme_progress_status_handler (ctx, code, args);
 
-  if (ctx->out_of_core)
+  if (ctx->error)
     return;
-
-  if (!ctx->result.genkey)
-    {
-      ctx->result.genkey = xtrycalloc (1, sizeof *ctx->result.genkey);
-      if (!ctx->result.genkey)
-        {
-          ctx->out_of_core = 1;
-          return;
-        }
-    }
+  test_and_allocate_result (ctx, genkey);
 
   switch (code)
     {
@@ -73,6 +64,13 @@ genkey_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 	  if (*args == 'B' || *args == 'S')
 	    ctx->result.genkey->created_sub = 1;
 	}
+      break;
+
+    case STATUS_EOF:
+      /* FIXME: Should return some more useful error value.  */
+      if (!ctx->result.genkey->created_primary
+	  && !ctx->result.genkey->created_sub)
+	ctx->error = mk_error (General_Error);
       break;
 
     default:
@@ -228,13 +226,7 @@ gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
   if (!err)
     {
       gpgme_wait (ctx, 1);
-
-      /* FIXME: Should return some more useful error value.  */
-      if (!ctx->result.genkey)
-	err = mk_error (General_Error);
-      else if (!ctx->result.genkey->created_primary
-	       && !ctx->result.genkey->created_sub)
-	err = mk_error (General_Error);
+      err = ctx->error;
     }
   return err;
 }

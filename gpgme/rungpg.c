@@ -845,19 +845,23 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
 
 
 static int
-gpg_status_handler ( void *opaque, int pid, int fd )
+gpg_status_handler (void *opaque, int pid, int fd)
 {
-    GpgObject gpg = opaque;
-    int rc = 0;
+  GpgObject gpg = opaque;
+  int err;
 
-    assert ( fd == gpg->status.fd[0] );
-    rc = read_status ( gpg );
-    if ( rc ) {
-        DEBUG1 ("gpg_handler: read_status problem %d\n - stop", rc);
-        return 1;
+  assert (fd == gpg->status.fd[0]);
+  err = read_status (gpg);
+  if (err)
+    {
+      /* XXX Horrible kludge.  We really must not make use of
+	 fnc_value.  */
+      GpgmeCtx ctx = (GpgmeCtx) gpg->status.fnc_value;
+      ctx->error = err;
+      DEBUG1 ("gpg_handler: read_status problem %d\n - stop", err);
+      return 1;
     }
-
-    return gpg->status.eof;
+  return gpg->status.eof;
 }
 
 

@@ -91,6 +91,7 @@ _gpgme_release_result (GpgmeCtx ctx)
   _gpgme_release_genkey_result (ctx->result.genkey);
   memset (&ctx->result, 0, sizeof (ctx->result));
   _gpgme_set_op_info (ctx, NULL);
+  ctx->error = 0;
 }
 
 

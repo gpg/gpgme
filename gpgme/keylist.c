@@ -37,275 +37,310 @@ static void finish_key ( GpgmeCtx ctx );
 
 
 static void
-keylist_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
+keylist_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
-    if ( ctx->out_of_core )
-        return;
+  if (ctx->error)
+    return;
 
-    switch (code) {
-      case STATUS_EOF:
-        finish_key (ctx);
-        break;
+  switch (code)
+    {
+    case STATUS_EOF:
+      finish_key (ctx);
+      break;
 
-      default:
-        /* ignore all other codes */
-        break;
+    default:
+      /* Ignore all other codes.  */
+      break;
     }
 }
 
 
 static time_t
-parse_timestamp ( char *p )
+parse_timestamp (char *p)
 {
-    if (!*p )
-        return 0;
+  if (!*p)
+    return 0;
 
-    return (time_t)strtoul (p, NULL, 10);
+  return (time_t)strtoul (p, NULL, 10);
 }
 
 
 static void
-set_mainkey_trust_info ( GpgmeKey key, const char *s )
+set_mainkey_trust_info (GpgmeKey key, const char *s)
 {
-    /* look at letters and stop at the first digit */
-    for (; *s && !my_isdigit (*s); s++ ) {
-        switch (*s) {
-          case 'e': key->keys.flags.expired = 1; break;
-          case 'r': key->keys.flags.revoked = 1; break;
-          case 'd': key->keys.flags.disabled = 1; break;
-          case 'i': key->keys.flags.invalid = 1; break;
+  /* Look at letters and stop at the first digit.  */
+  for (; *s && !my_isdigit (*s); s++)
+    {
+      switch (*s)
+	{
+	case 'e': key->keys.flags.expired = 1; break;
+	case 'r': key->keys.flags.revoked = 1; break;
+	case 'd': key->keys.flags.disabled = 1; break;
+	case 'i': key->keys.flags.invalid = 1; break;
         }
     }
 }
 
 
 static void
-set_userid_flags ( GpgmeKey key, const char *s )
+set_userid_flags (GpgmeKey key, const char *s)
 {
-    /* look at letters and stop at the first digit */
-    for (; *s && !my_isdigit (*s); s++ ) {
-        switch (*s) {
-          case 'r': key->uids->revoked  = 1; break;
-          case 'i': key->uids->invalid  = 1; break;
+  /* Look at letters and stop at the first digit.  */
+  for (; *s && !my_isdigit (*s); s++)
+    {
+      switch (*s)
+	{
+	case 'r': key->uids->revoked  = 1; break;
+	case 'i': key->uids->invalid  = 1; break;
 
-          case 'n': key->uids->validity = GPGME_VALIDITY_NEVER; break;
-          case 'm': key->uids->validity = GPGME_VALIDITY_MARGINAL; break;
-          case 'f': key->uids->validity = GPGME_VALIDITY_FULL; break;
-          case 'u': key->uids->validity = GPGME_VALIDITY_ULTIMATE; break;
-        }
-    }
-}
-
-static void
-set_subkey_trust_info ( struct subkey_s *k, const char *s )
-{
-    /* look at letters and stop at the first digit */
-    for (; *s && !my_isdigit (*s); s++ ) {
-        switch (*s) {
-          case 'e': k->flags.expired = 1; break;
-          case 'r': k->flags.revoked = 1; break;
-          case 'd': k->flags.disabled = 1; break;
-          case 'i': k->flags.invalid = 1; break;
-        }
-    }
-}
-
-static void
-set_mainkey_capability ( GpgmeKey key, const char *s )
-{
-    for (; *s ; s++ ) {
-        switch (*s) {
-          case 'e': key->keys.flags.can_encrypt = 1; break;
-          case 's': key->keys.flags.can_sign = 1; break;
-          case 'c': key->keys.flags.can_certify = 1; break;
-          case 'E': key->gloflags.can_encrypt = 1; break;
-          case 'S': key->gloflags.can_sign = 1; break;
-          case 'C': key->gloflags.can_certify = 1; break;
-        }
-    }
-}
-
-static void
-set_subkey_capability ( struct subkey_s *k, const char *s )
-{
-    for (; *s; s++ ) {
-        switch (*s) {
-          case 'e': k->flags.can_encrypt = 1; break;
-          case 's': k->flags.can_sign = 1; break;
-          case 'c': k->flags.can_certify = 1; break;
+	case 'n': key->uids->validity = GPGME_VALIDITY_NEVER; break;
+	case 'm': key->uids->validity = GPGME_VALIDITY_MARGINAL; break;
+	case 'f': key->uids->validity = GPGME_VALIDITY_FULL; break;
+	case 'u': key->uids->validity = GPGME_VALIDITY_ULTIMATE; break;
         }
     }
 }
 
 
-
-/* Note: we are allowed to modify line */
 static void
-keylist_colon_handler ( GpgmeCtx ctx, char *line )
+set_subkey_trust_info (struct subkey_s *k, const char *s)
 {
-    char *p, *pend;
-    int field = 0;
-    enum {
+  /* Look at letters and stop at the first digit.  */
+  for (; *s && !my_isdigit (*s); s++)
+    {
+      switch (*s)
+	{
+	case 'e': k->flags.expired = 1; break;
+	case 'r': k->flags.revoked = 1; break;
+	case 'd': k->flags.disabled = 1; break;
+	case 'i': k->flags.invalid = 1; break;
+        }
+    }
+}
+
+
+static void
+set_mainkey_capability (GpgmeKey key, const char *s)
+{
+  for (; *s ; s++)
+    {
+      switch (*s)
+	{
+	case 'e': key->keys.flags.can_encrypt = 1; break;
+	case 's': key->keys.flags.can_sign = 1; break;
+	case 'c': key->keys.flags.can_certify = 1; break;
+	case 'E': key->gloflags.can_encrypt = 1; break;
+	case 'S': key->gloflags.can_sign = 1; break;
+	case 'C': key->gloflags.can_certify = 1; break;
+        }
+    }
+}
+
+
+static void
+set_subkey_capability ( struct subkey_s *k, const char *s)
+{
+  for (; *s; s++)
+    {
+      switch (*s)
+	{
+	case 'e': k->flags.can_encrypt = 1; break;
+	case 's': k->flags.can_sign = 1; break;
+	case 'c': k->flags.can_certify = 1; break;
+        }
+    }
+}
+
+
+/* Note: We are allowed to modify LINE.  */
+static void
+keylist_colon_handler (GpgmeCtx ctx, char *line)
+{
+  char *p, *pend;
+  int field = 0;
+  enum
+    {
       RT_NONE, RT_SIG, RT_UID, RT_SUB, RT_PUB, RT_FPR, RT_SSB, RT_SEC,
       RT_CRT, RT_CRS
-    } rectype = RT_NONE;
-    GpgmeKey key = ctx->tmp_key;
-    int i;
-    const char *trust_info = NULL;
-    struct subkey_s *sk = NULL;
-
-    if ( ctx->out_of_core )
-        return;
-    if (!line) { /* EOF */
-        finish_key (ctx);
-        return; 
     }
+  rectype = RT_NONE;
+  GpgmeKey key = ctx->tmp_key;
+  int i;
+  const char *trust_info = NULL;
+  struct subkey_s *sk = NULL;
 
-    for (p = line; p; p = pend) {
-        field++;
-        pend = strchr (p, ':');
-        if (pend) 
-            *pend++ = 0;
+  if (ctx->error)
+    return;
+  if (!line)
+    {
+      /* EOF */
+      finish_key (ctx);
+      return; 
+    }
+  
+  for (p = line; p; p = pend)
+    {
+      field++;
+      pend = strchr (p, ':');
+      if (pend) 
+	*pend++ = 0;
 
-        if ( field == 1 ) {
-            if ( !strcmp ( p, "sig" ) )
-                rectype = RT_SIG;
-            else if ( !strcmp ( p, "uid" ) && key ) {
-                rectype = RT_UID;
-                key = ctx->tmp_key;
+      if (field == 1)
+	{
+	  if (!strcmp (p, "sig"))
+	    rectype = RT_SIG;
+	  else if (!strcmp (p, "uid") && key)
+	    {
+	      rectype = RT_UID;
+	      key = ctx->tmp_key;
             }
-            else if ( !strcmp (p, "sub") && key ) {
-                /* start a new subkey */
-                rectype = RT_SUB;
-                if ( !(sk = _gpgme_key_add_subkey (key)) ) {
-                    ctx->out_of_core=1;
-                    return;
+	  else if (!strcmp (p, "sub") && key)
+	    {
+	      /* Start a new subkey.  */
+	      rectype = RT_SUB; 
+	      if (!(sk = _gpgme_key_add_subkey (key)))
+		{
+		  ctx->error = mk_error (Out_Of_Core);
+		  return;
                 }
             }
-            else if ( !strcmp (p, "ssb") && key ) {
-                /* start a new secret subkey */
-                rectype = RT_SSB;
-                if ( !(sk = _gpgme_key_add_secret_subkey (key)) ) {
-                    ctx->out_of_core=1;
-                    return;
+	  else if (!strcmp (p, "ssb") && key)
+	    {
+	      /* Start a new secret subkey.  */
+	      rectype = RT_SSB;
+	      if (!(sk = _gpgme_key_add_secret_subkey (key)))
+		{
+		  ctx->error = mk_error (Out_Of_Core);
+		  return;
                 }
             }
-            else if ( !strcmp (p, "pub") ) {
-                /* start a new keyblock */
-                if ( _gpgme_key_new ( &key ) ) {
-                    ctx->out_of_core=1; /* the only kind of error we can get*/
-                    return;
+	  else if (!strcmp (p, "pub"))
+	    {
+	      /* Start a new keyblock.  */
+	      if (_gpgme_key_new (&key))
+		{
+		  ctx->error = mk_error (Out_Of_Core);  /* the only kind of error we can get*/
+		  return;
                 }
                 rectype = RT_PUB;
-                finish_key ( ctx );
-                assert ( !ctx->tmp_key );
+                finish_key (ctx);
+                assert (!ctx->tmp_key);
                 ctx->tmp_key = key;
             }
-            else if ( !strcmp (p, "sec") ) {
-                /* start a new keyblock */
-                if ( _gpgme_key_new_secret ( &key ) ) {
-                    ctx->out_of_core=1; /*the only kind of error we can get*/
+            else if (!strcmp (p, "sec"))
+	      {
+                /* Start a new keyblock,  */
+                if (_gpgme_key_new_secret (&key))
+		  {
+                    ctx->error = mk_error (Out_Of_Core);  /* The only kind of error we can get*/
                     return;
                 }
                 rectype = RT_SEC;
-                finish_key ( ctx );
-                assert ( !ctx->tmp_key );
+                finish_key (ctx);
+                assert (!ctx->tmp_key);
                 ctx->tmp_key = key;
             }
-            else if ( !strcmp (p, "crt") ) {
-                /* start a new certificate */
-                if ( _gpgme_key_new ( &key ) ) {
-                    ctx->out_of_core=1; /* the only kind of error we can get*/
+            else if (!strcmp (p, "crt"))
+	      {
+                /* Start a new certificate. */
+                if (_gpgme_key_new (&key))
+		  {
+                    ctx->error = mk_error (Out_Of_Core);  /* The only kind of error we can get*/
                     return;
                 }
                 key->x509 = 1;
                 rectype = RT_CRT;
-                finish_key ( ctx );
-                assert ( !ctx->tmp_key );
+                finish_key (ctx);
+                assert (!ctx->tmp_key);
                 ctx->tmp_key = key;
             }
-            else if ( !strcmp (p, "crs") ) {
-                /* start a new certificate */
-                if ( _gpgme_key_new_secret ( &key ) ) {
-                    ctx->out_of_core=1; /* the only kind of error we can get*/
-                    return;
+	  else if (!strcmp (p, "crs"))
+	    {
+	      /* Start a new certificate.  */
+	      if (_gpgme_key_new_secret (&key))
+		{
+		  ctx->error = mk_error (Out_Of_Core);  /* The only kind of error we can get*/
+		  return;
                 }
-                key->x509 = 1;
-                rectype = RT_CRS;
-                finish_key ( ctx );
-                assert ( !ctx->tmp_key );
-                ctx->tmp_key = key;
+	      key->x509 = 1;
+	      rectype = RT_CRS;
+	      finish_key (ctx);
+	      assert (!ctx->tmp_key);
+	      ctx->tmp_key = key;
             }
-            else if ( !strcmp ( p, "fpr" ) && key ) 
-                rectype = RT_FPR;
-            else 
-                rectype = RT_NONE;
+	  else if (!strcmp (p, "fpr") && key) 
+	    rectype = RT_FPR;
+	  else 
+	    rectype = RT_NONE;
             
         }
-        else if ( rectype == RT_PUB || rectype == RT_SEC
-                  || rectype == RT_CRT || rectype == RT_CRS)
-          {
-            switch (field) {
-              case 2: /* trust info */
-                trust_info = p; 
-                set_mainkey_trust_info (key, trust_info);
+      else if (rectype == RT_PUB || rectype == RT_SEC
+	       || rectype == RT_CRT || rectype == RT_CRS)
+	{
+	  switch (field)
+	    {
+	    case 2: /* trust info */
+	      trust_info = p; 
+	      set_mainkey_trust_info (key, trust_info);
+	      break;
+	    case 3: /* key length */
+	      i = atoi (p); 
+	      if (i > 1) /* ignore invalid values */
+		key->keys.key_len = i; 
                 break;
-              case 3: /* key length */
-                i = atoi (p); 
-                if ( i > 1 ) /* ignore invalid values */
-                    key->keys.key_len = i; 
-                break;
-              case 4: /* pubkey algo */
-                i = atoi (p);
-                if ( i > 1 && i < 128 )
-                    key->keys.key_algo = i;
-                break;
+	    case 4: /* pubkey algo */
+	      i = atoi (p);
+	      if (i > 1 && i < 128)
+		key->keys.key_algo = i;
+	      break;
               case 5: /* long keyid */
-                if ( strlen (p) == DIM(key->keys.keyid)-1 )
-                    strcpy (key->keys.keyid, p);
+                if (strlen (p) == DIM(key->keys.keyid) - 1)
+		  strcpy (key->keys.keyid, p);
                 break;
-              case 6: /* timestamp (seconds) */
-                key->keys.timestamp = parse_timestamp (p);
-                break;
-              case 7: /* valid for n days */
-                break;
-              case 8: /* X.509 serial number */
-                /* fixme: store it */
-                break;
-              case 9: /* ownertrust */
-                break;
-              case 10: /* not used for gpg due to --fixed-list-mode option 
-                          but gpgsm stores the issuer name */
-                /* fixme: store issuer name */
-                break;
-              case 11: /* signature class  */
-                break;
-              case 12: /* capabilities */
-                set_mainkey_capability (key, p );
-                break;
-              case 13:
-                pend = NULL;  /* we can stop here */
-                break;
+	    case 6: /* timestamp (seconds) */
+	      key->keys.timestamp = parse_timestamp (p);
+	      break;
+	    case 7: /* valid for n days */
+	      break;
+	    case 8: /* X.509 serial number */
+	      /* fixme: store it */
+	      break;
+	    case 9: /* ownertrust */
+	      break;
+	    case 10: /* not used for gpg due to --fixed-list-mode option 
+			but gpgsm stores the issuer name */
+	      /* fixme: store issuer name */
+	      break;
+	    case 11: /* signature class  */
+	      break;
+	    case 12: /* capabilities */
+	      set_mainkey_capability (key, p);
+	      break;
+	    case 13:
+	      pend = NULL;  /* we can stop here */
+	      break;
             }
           }
-        else if ( (rectype == RT_SUB || rectype== RT_SSB) && sk ) {
-            switch (field) {
+        else if ((rectype == RT_SUB || rectype== RT_SSB) && sk)
+	  {
+            switch (field)
+	      {
               case 2: /* trust info */
-                set_subkey_trust_info ( sk, p);
+                set_subkey_trust_info (sk, p);
                 break;
               case 3: /* key length */
                 i = atoi (p); 
-                if ( i > 1 ) /* ignore invalid values */
-                    sk->key_len = i; 
+                if (i > 1) /* ignore invalid values */
+		  sk->key_len = i; 
                 break;
               case 4: /* pubkey algo */
                 i = atoi (p);
-                if ( i > 1 && i < 128 )
-                    sk->key_algo = i;
+                if (i > 1 && i < 128)
+		  sk->key_algo = i;
                 break;
               case 5: /* long keyid */
-                if ( strlen (p) == DIM(sk->keyid)-1 )
-                    strcpy (sk->keyid, p);
+                if (strlen (p) == DIM(sk->keyid) - 1)
+		  strcpy (sk->keyid, p);
                 break;
               case 6: /* timestamp (seconds) */
                 sk->timestamp = parse_timestamp (p);
@@ -321,43 +356,48 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
               case 11:  /* signature class  */
                 break;
               case 12: /* capability */
-                set_subkey_capability ( sk, p );
+                set_subkey_capability (sk, p);
                 break;
               case 13:
                 pend = NULL;  /* we can stop here */
                 break;
             }
         }
-        else if ( rectype == RT_UID ) {
-            switch (field) {
-              case 2: /* trust info */
-                trust_info = p;  /*save for later */
-                break;
-              case 10: /* user ID */
-                if ( _gpgme_key_append_name ( key, p) )
-                    ctx->out_of_core = 1;
-                else {
-                    if (trust_info)
-                        set_userid_flags (key, trust_info);
-                }
-                pend = NULL;  /* we can stop here */
-                break;
+      else if (rectype == RT_UID)
+	{
+	  switch (field)
+	    {
+	    case 2: /* trust info */
+	      trust_info = p;  /*save for later */
+	      break;
+	    case 10: /* user ID */
+	      if (_gpgme_key_append_name (key, p))
+		ctx->error = mk_error (Out_Of_Core);  /* The only kind of error we can get*/
+	      else
+		{
+		  if (trust_info)
+		  set_userid_flags (key, trust_info);
+		}
+	      pend = NULL;  /* we can stop here */
+	      break;
             }
         }
-        else if ( rectype == RT_FPR ) {
-            switch (field) {
-              case 10: /* fingerprint (take only the first one)*/
-                if ( !key->keys.fingerprint && *p ) {
-                    key->keys.fingerprint = xtrystrdup (p);
-                    if ( !key->keys.fingerprint )
-                        ctx->out_of_core = 1;
+      else if (rectype == RT_FPR)
+	{
+	  switch (field)
+	    {
+	    case 10: /* fingerprint (take only the first one)*/
+	      if (!key->keys.fingerprint && *p)
+		{
+		  key->keys.fingerprint = xtrystrdup (p);
+		  if (!key->keys.fingerprint)
+		    ctx->error = mk_error (Out_Of_Core);
                 }
-                pend = NULL; /* that is all we want */
-                break;
+	      pend = NULL; /* that is all we want */
+	      break;
             }
         }
     }
-    
 }
 
 
@@ -366,36 +406,40 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
  * it.  It is assumed that this releases ctx->tmp_key.
  */
 static void
-finish_key ( GpgmeCtx ctx )
+finish_key (GpgmeCtx ctx)
 {
-    GpgmeKey key = ctx->tmp_key;
-    struct key_queue_item_s *q, *q2;
+  GpgmeKey key = ctx->tmp_key;
+  struct key_queue_item_s *q, *q2;
 
-    if (key) {
-        ctx->tmp_key = NULL;
+  if (key)
+    {
+      ctx->tmp_key = NULL;
         
-        _gpgme_key_cache_add (key);
+      _gpgme_key_cache_add (key);
         
-        q = xtrymalloc ( sizeof *q );
-        if ( !q ) {
-            gpgme_key_release (key);
-            ctx->out_of_core = 1;
-            return;
+      q = xtrymalloc (sizeof *q);
+      if (!q)
+	{
+	  gpgme_key_release (key);
+	  ctx->error = mk_error (Out_Of_Core);
+	  return;
         }
-        q->key = key;
-        q->next = NULL;
-        /* fixme: lock queue. Use a tail pointer? */
-        if ( !(q2 = ctx->key_queue) )
-            ctx->key_queue = q;
-        else {
-            for ( ; q2->next; q2 = q2->next )
-                ;
-            q2->next = q;
+      q->key = key;
+      q->next = NULL;
+      /* FIXME: Lock queue.  Use a tail pointer?  */
+      if (!(q2 = ctx->key_queue))
+	ctx->key_queue = q;
+      else
+	{
+	  for (; q2->next; q2 = q2->next)
+	    ;
+	  q2->next = q;
         }
-        ctx->key_cond = 1;
-        /* fixme: unlock queue */
+      ctx->key_cond = 1;
+      /* FIXME: Unlock queue.  */
     }
 }
+
 
 /**
  * gpgme_op_keylist_start:
@@ -419,7 +463,6 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
   ctx->pending = 1;
 
   _gpgme_release_result (ctx);
-  ctx->out_of_core = 0;
 
   if (ctx->engine)
     {
@@ -457,6 +500,7 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
   return err;
 }
 
+
 /**
  * gpgme_op_keylist_next:
  * @c: Context
@@ -482,14 +526,14 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
     return mk_error (Invalid_Value);
   if (!ctx->pending)
     return mk_error (No_Request);
-  if (ctx->out_of_core)
-    return mk_error (Out_Of_Core);
+  if (ctx->error)
+    return ctx->error;
 
   if (!ctx->key_queue)
     {
       _gpgme_wait_on_condition (ctx, 1, &ctx->key_cond);
-      if (ctx->out_of_core)
-	return mk_error (Out_Of_Core);
+      if (ctx->error)
+	return ctx->error;
       if (!ctx->key_cond)
 	{
 	  ctx->pending = 0;
@@ -508,6 +552,7 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
   return 0;
 }
 
+
 /**
  * gpgme_op_keylist_end:
  * @c: Context
@@ -522,8 +567,8 @@ gpgme_op_keylist_end (GpgmeCtx ctx)
     return mk_error (Invalid_Value);
   if (!ctx->pending)
     return mk_error (No_Request);
-  if (ctx->out_of_core)
-    return mk_error (Out_Of_Core);
+  if (ctx->error)
+    return ctx->error;
 
   ctx->pending = 0;
   return 0;

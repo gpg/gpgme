@@ -140,17 +140,9 @@ sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
   _gpgme_passphrase_status_handler (ctx, code, args);
 
-  if (ctx->out_of_core)
+  if (ctx->error)
     return;
-  if (!ctx->result.sign)
-    {
-      ctx->result.sign = xtrycalloc (1, sizeof *ctx->result.sign);
-      if (!ctx->result.sign)
-	{
-	  ctx->out_of_core = 1;
-	  return;
-	}
-    }
+  test_and_allocate_result (ctx, sign);
 
   switch (code)
     {
@@ -161,12 +153,14 @@ sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 	  _gpgme_set_op_info (ctx, ctx->result.sign->xmlinfo);
 	  ctx->result.sign->xmlinfo = NULL;
         }
+      if (!ctx->error && !ctx->result.sign->okay)
+	ctx->error = mk_error (No_Data); /* Hmmm: choose a better error? */
       break;
 
     case STATUS_SIG_CREATED: 
       /* FIXME: We have no error return for multiple signatures.  */
       append_xml_siginfo (&ctx->result.sign->xmlinfo, args);
-      ctx->result.sign->okay =1;
+      ctx->result.sign->okay = 1;
       break;
 
     default:
@@ -184,7 +178,6 @@ gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData in, GpgmeData out,
   ctx->pending = 1;
 
   _gpgme_release_result (ctx);
-  ctx->out_of_core = 0;
 
   if (mode != GPGME_SIG_MODE_NORMAL
       && mode != GPGME_SIG_MODE_DETACH
@@ -264,19 +257,7 @@ gpgme_op_sign (GpgmeCtx ctx, GpgmeData in, GpgmeData out, GpgmeSigMode mode)
   if (!err)
     {
       gpgme_wait (ctx, 1);
-      if (!ctx->result.sign)
-	err = mk_error (General_Error);
-      else if (ctx->out_of_core)
-	err = mk_error (Out_Of_Core);
-      else
-	{
-	  err = _gpgme_passphrase_result (ctx);
-          if (! err)
-            {
-	      if (!ctx->result.sign->okay)
-                err = mk_error (No_Data); /* Hmmm: choose a better error? */
-	    }
-	}
+      err = ctx->error;
     }
   return err;
 }

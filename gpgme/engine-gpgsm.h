@@ -59,7 +59,3 @@ GpgmeError _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig,
 GpgmeError _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque);
 
 #endif /* ENGINE_GPGSM_H */
-
-
-
-

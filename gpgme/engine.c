@@ -213,6 +213,7 @@ _gpgme_engine_release (EngineObject engine)
   xfree (engine);
 }
 
+
 void
 _gpgme_engine_set_verbosity (EngineObject engine, int verbosity)
 {

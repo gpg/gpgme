@@ -29,6 +29,7 @@
 #include "context.h"
 #include "ops.h"
 
+
 static void
 decrypt_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
@@ -36,12 +37,14 @@ decrypt_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
   _gpgme_verify_status_handler (ctx, code, args);
 }
 
+
 GpgmeError
 gpgme_op_decrypt_verify_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain)
 {
   return _gpgme_decrypt_start (ctx, ciph, plain,
 			       decrypt_verify_status_handler);
 }
+
 
 /**
  * gpgme_op_decrypt_verify:
@@ -60,20 +63,19 @@ gpgme_op_decrypt_verify (GpgmeCtx ctx,
 			 GpgmeData in, GpgmeData out,
 			 GpgmeSigStat *r_stat)
 {
-  GpgmeError err = gpgme_op_decrypt_verify_start (ctx, in, out);
+  GpgmeError err;
+
+  gpgme_data_release (ctx->notation);
+  ctx->notation = NULL;
+    
+  *r_stat = GPGME_SIG_STAT_NONE;
+  err = gpgme_op_decrypt_verify_start (ctx, in, out);
   if (!err)
     {
       gpgme_wait (ctx, 1);
-      if (!ctx->result.decrypt || !ctx->result.verify)
-	err = mk_error (General_Error);
-      else if (ctx->out_of_core)
-	err = mk_error (Out_Of_Core);
-      else
-	{
-	  err = _gpgme_decrypt_result (ctx);
-          if (! err)
-	    *r_stat = _gpgme_intersect_stati (ctx->result.verify);
-	}
+      err = ctx->error;
+      if (!err)
+	*r_stat = _gpgme_intersect_stati (ctx->result.verify);
     }
   return err;
 }
