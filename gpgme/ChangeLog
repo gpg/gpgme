@@ -1,5 +1,10 @@
 2003-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* data.c: Do not include <assert.h>, but "gpgme.h".
+	(_gpgme_data_inbound_handler): Expand _gpgme_data_append, because
+	it will go.  Do not assert DH.
+	(_gpgme_data_outbound_handler): Do not assert DH.
+	
 	* export.c: Do not include <stdlib.h>, "debug.h" and "util.h", but
 	"gpgme.h".
 	(export_status_handler): Change type of first argument to void *.
