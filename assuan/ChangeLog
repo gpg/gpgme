@@ -1,3 +1,7 @@
+2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* README.1st: Add copyright notice.
+
 2004-06-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan-domain-connect.c [HAVE_SYS_UIO_H]: Include <sys/uio.h>.
@@ -499,7 +503,7 @@
 	* assuan-defs.h: Add space in the context for this.
 
 	
- Copyright 2001, 2002 Free Software Foundation, Inc.
+ Copyright 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

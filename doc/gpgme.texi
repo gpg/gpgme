@@ -24,18 +24,18 @@ This is Edition @value{EDITION}, last updated @value{UPDATED}, of
 Copyright @copyright{} 2002, 2003, 2004 g10 Code GmbH.
 
 The GPGME reference manual is free software; you can redistribute it
-and/or modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of the
-License, or (at your option) any later version.
+and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either version
+2.1 of the License, or (at your option) any later version.
 
 The GPGME reference manual is distributed in the hope that it will be
 useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+Lesser General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this manual; if not, write to the Free Software Foundation,
-Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+You should have received a copy of the GNU Lesser General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 @end ifinfo
 
@@ -56,19 +56,20 @@ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 @vskip 0pt plus 1filll
 Copyright @copyright{} 2002, 2003, 2004 g10 Code GmbH.
 
+
 The GPGME reference manual is free software; you can redistribute it
-and/or modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of the
-License, or (at your option) any later version.
+and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either version
+2.1 of the License, or (at your option) any later version.
 
 The GPGME reference manual is distributed in the hope that it will be
 useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+Lesser General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this manual; if not, write to the Free Software Foundation,
-Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+You should have received a copy of the GNU Lesser General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 @end titlepage
 @page
 
@@ -91,8 +92,8 @@ This is Edition @value{EDITION}, last updated @value{UPDATED}, of
 
 Appendices
 
-* Copying::                       The GNU General Public License says how you
-                                  can copy and share `GnuPG Made Easy'.
+* Library Copying::               The GNU Lesser General Public License says
+                                  how you can copy and share `GnuPG Made Easy'.
 
 Indices
 
@@ -5050,7 +5051,7 @@ case the state of @var{ctx} is not modified).
 @end deftypefun
 
 
-@include gpl.texi
+@include lesser.texi
 
 
 @node Concept Index

@@ -1,5 +1,14 @@
 2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
 
+	* README: Refer to COPYING.LESSER and "each file" instead of
+	COPYING.
+	* COPYING.LESSER: New file.
+	* gpgme.spec.in (%doc): Add COPYING.LESSER.
+	* acinclude.m4, configure.ac, Makefile.am: Change license to LGPL
+	2.1 or later.
+	* TODO: Add copyright notice.
+	* README.CVS: Likewise.
+
 	* configure.ac (GPGSM_VERSION): Fix filter to get it.
 
 2004-10-22  Marcus Brinkmann  <marcus@g10code.de>

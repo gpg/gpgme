@@ -28,7 +28,8 @@ Cryptographic Message Syntax (CMS).
 GPGME runs best on GNU/Linux or *BSD systems.  Other Unices may
 require small portability fixes, send us your patches.
 
-See the file COPYING for copyright and warranty information.
+See the file COPYING.LESSER and each file for copyright and warranty
+information.
 
 
 Installation

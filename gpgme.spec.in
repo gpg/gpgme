@@ -49,7 +49,7 @@ fi
 
 %files
 %defattr(-,root,root)
-%doc COPYING AUTHORS README INSTALL NEWS ChangeLog TODO THANKS
+%doc COPYING COPYING.LESSER AUTHORS README INSTALL NEWS ChangeLog TODO THANKS
 %attr(0755,root,root) %{_bindir}/gpgme-config
 %attr(0755,root,root) %{_libdir}/*gpgme.so*
 %attr(0755,root,root) %{_libdir}/*gpgme.la
