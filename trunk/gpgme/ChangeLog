@@ -1,3 +1,14 @@
+2002-02-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h: Add new error code GPGME_Invalid_Recipient.
+	* encrypt.c (struct encrypt_result_s): New member invalid_recipients,
+	rename no_recipients to no_valid_recipients.
+	(_gpgme_encrypt_status_handler): Include error for invalid
+	recipients.
+	* engine-gpgsm.c (gpgsm_set_recipients): Change type of first
+	argument to GpgsmObject.  Use that to report back the status about
+	the recipients.
+
 2002-02-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* verify.c (_gpgme_verify_status_handler): Fix the last change.

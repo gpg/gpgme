@@ -38,7 +38,8 @@
 
 struct encrypt_result_s
 {
-  int no_recipients;
+  int no_valid_recipients;
+  int invalid_recipients;
   GpgmeData xmlinfo;
 };
 
@@ -113,16 +114,19 @@ _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 	  _gpgme_set_op_info (ctx, ctx->result.encrypt->xmlinfo);
 	  ctx->result.encrypt->xmlinfo = NULL;
         }
-      if (ctx->result.encrypt->no_recipients) 
+      if (ctx->result.encrypt->no_valid_recipients) 
 	ctx->error = mk_error (No_Recipients);
+      else if (ctx->result.encrypt->invalid_recipients) 
+	ctx->error = mk_error (Invalid_Recipients);
       break;
 
     case STATUS_INV_RECP:
+      ctx->result.encrypt->invalid_recipients++;
       append_xml_encinfo (&ctx->result.encrypt->xmlinfo, args);
       break;
 
     case STATUS_NO_RECP:
-      ctx->result.encrypt->no_recipients = 1; /* i.e. no usable ones */
+      ctx->result.encrypt->no_valid_recipients = 1;
       break;
 
     default:

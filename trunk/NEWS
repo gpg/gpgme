@@ -6,8 +6,16 @@
  * New interfaces gpgme_op_encrypt_sign and gpgme_op_encrypt_sign_start
    to encrypt and sign a message in a combined operation.
 
+ * gpgme_op_encrypt does now fail with GPGME_Invalid_Recipients if
+   some recipients have been invalid, whereas earlier versions
+   succeeded in this case.  The plaintext is still encrypted for all valid
+   recipients, so the application might take this error as a hint that
+   the ciphertext is not usable for all requested recipients.
+   Information about invalid recipients is available with gpgme_get_op_info.
+
  * Interface changes relative to the 0.3.3 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_op_encrypt		CHANGED: Can fail with GPGME_Invalid_Recipients
 gpgme_set_include_certs		NEW
 gpgme_get_include_certs		NEW
 gpgme_op_encrypt_sign		NEW

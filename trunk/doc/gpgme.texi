@@ -615,7 +615,11 @@ This value means that there are too many active backend processes.
 This value means that the creation of a pipe failed.
 
 @item GPGME_No_Recipients 
-This value means that no recipients for a message have been set.
+This value means that no valid recipients for a message have been set.
+
+@item GPGME_Invalid_Recipients 
+This value means that some, but not all, recipients for a message have
+been invalid.
 
 @item GPGME_No_Data
 This value means that a @code{GpgmeData} object which was expected to
@@ -2207,16 +2211,20 @@ ciphertext in the data object @var{cipher}.  The type of the
 ciphertext created is determined by the @acronym{ASCII} armor and text
 mode attributes set for the context @var{ctx}.
 
-More information about the encrypted text is available with
+If @code{GPGME_Invalid_Recipients} is returned, some recipients in
+@var{rset} are invalid, but not all.  In this case the plaintext is
+encrypted for all valid recipients and returned in @var{cipher}.  More
+information about the invalid recipients is available with
 @code{gpgme_get_op_info}.  @xref{Detailed Results}.
 
 The function returns @code{GPGME_No_Error} if the ciphertext could be
 created successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{rset}, @var{plain} or @var{cipher} is not a valid pointer,
-@code{GPGME_No_Recipient} if @var{rset} does not contain any
-valid recipients, @code{GPGME_No_Passphrase} if the passphrase for the
-secret key could not be retrieved, and passes through any errors that
-are reported by the crypto engine support routines.
+@code{GPGME_No_Recipients} if @var{rset} does not contain any valid
+recipients, @code{GPGME_Invalid_Recipients} if @var{rset} contains
+some invalid recipients, @code{GPGME_No_Passphrase} if the passphrase
+for the secret key could not be retrieved, and passes through any
+errors that are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun GpgmeError gpgme_op_encrypt_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{rset}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{cipher}})
@@ -2227,7 +2235,7 @@ The function @code{gpgme_op_encrypt_start} initiates a
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{rset}, @var{plain} or @var{cipher} is not a valid pointer, and
-@code{GPGME_No_Recipient} if @var{rset} does not contain any valid
+@code{GPGME_No_Recipients} if @var{rset} does not contain any valid
 recipients.
 @end deftypefun
 
@@ -2251,7 +2259,7 @@ Completion}.
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{rset}, @var{plain} or @var{cipher} is not a valid pointer, and
-@code{GPGME_No_Recipient} if @var{rset} does not contain any valid
+@code{GPGME_No_Recipients} if @var{rset} does not contain any valid
 recipients.
 @end deftypefun
 

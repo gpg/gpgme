@@ -423,12 +423,14 @@ _gpgme_gpgsm_op_delete (GpgsmObject gpgsm, GpgmeKey key, int allow_secret)
 
 
 static GpgmeError
-gpgsm_set_recipients (ASSUAN_CONTEXT ctx, GpgmeRecipients recp)
+gpgsm_set_recipients (GpgsmObject gpgsm, GpgmeRecipients recp)
 {
   GpgmeError err;
+  ASSUAN_CONTEXT ctx = gpgsm->assuan_ctx;
   char *line;
   int linelen;
   struct user_id_s *r;
+  int valid_recipients = 0;
 
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
   line = xtrymalloc (10 + 40 + 1);
@@ -452,13 +454,24 @@ gpgsm_set_recipients (ASSUAN_CONTEXT ctx, GpgmeRecipients recp)
       strcpy (&line[10], r->name);
       
       err = gpgsm_assuan_simple_command (ctx, line);
-      if (err)
+      if (!err)
+	valid_recipients = 1;
+      else if (err == GPGME_Invalid_Key && gpgsm->status.fnc)
+	{
+	  /* FIXME: Include other reasons.  */
+	  line[8] = '0';	/* FIXME: Report detailed reason.  */
+	  gpgsm->status.fnc (gpgsm->status.fnc_value, STATUS_INV_RECP, &line[8]);
+	  line[8] = 'T';
+	}
+      else if (err != GPGME_Invalid_Key)
 	{
 	  xfree (line);
 	  return err;
 	}
     }
   xfree (line);
+  if (!valid_recipients && gpgsm->status.fnc)
+    gpgsm->status.fnc (gpgsm->status.fnc_value, STATUS_NO_RECP, "");
   return 0;
 }
 
@@ -487,7 +500,7 @@ _gpgme_gpgsm_op_encrypt (GpgsmObject gpgsm, GpgmeRecipients recp,
     return err;
   _gpgme_io_close (gpgsm->message_fd);
 
-  err = gpgsm_set_recipients (gpgsm->assuan_ctx, recp);
+  err = gpgsm_set_recipients (gpgsm, recp);
   if (err)
     return err;
 
