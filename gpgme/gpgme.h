@@ -92,8 +92,8 @@ gpgme_err_make (gpgme_err_source_t source, gpgme_err_code_t code)
 }
 
 
-/* The user can define GPG_ERR_SOURCE_DEFAULT before including this
-   file to specify a default source for gpg_error.  */
+/* The user can define GPGME_ERR_SOURCE_DEFAULT before including this
+   file to specify a default source for gpgme_error.  */
 #ifndef GPGME_ERR_SOURCE_DEFAULT
 #define GPGME_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_USER_1
 #endif

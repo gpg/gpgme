@@ -11,6 +11,13 @@ Noteworthy changes in version 0.4.3 (unreleased)
    The old code for automagically detecting the thread library is
    still part of libgpgme, but it is DEPRECATED.
 
+ * There are new automake macros AM_PATH_GPGME_PTH and
+   AM_PATH_GPGME_PTHREAD, which support checking for thread-enabled
+   versions of GPGME.  They define GPGME_PTH_CFLAGS, GPGME_PTH_LIBS,
+   GPGME_PTHREAD_CFLAGS and GPGME_PTHREAD_LIBS respectively.  These
+   variables of course also include the configuration for the thread
+   package itself.  Alternatively, use libtool.
+
  * gpgme_get_key fails with GPG_ERR_AMBIGUOUS_NAME if the key ID
    provided was not unique, instead returning the first matching key.
 
