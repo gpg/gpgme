@@ -1,6 +1,6 @@
 /* ops.h - internal operations stuff 
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -95,15 +95,23 @@ void _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgStatusCode code,
 GpgmeError _gpgme_passphrase_start (GpgmeCtx ctx);
 GpgmeError _gpgme_passphrase_result (GpgmeCtx ctx);
 
+/*-- progress.c --*/
+void _gpgme_progress_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+				     char *args);
+
 /*-- import.c --*/
 void _gpgme_release_import_result (ImportResult res);
 
 /*-- delete.c --*/
 void _gpgme_release_delete_result (DeleteResult res);
 
+/*-- genkey.c --*/
+void _gpgme_release_genkey_result (GenKeyResult res);
+
 /*-- version.c --*/
 const char *_gpgme_compare_versions (const char *my_version,
 				     const char *req_version);
 char *_gpgme_get_program_version (const char *const path);
+
 
 #endif /* OPS_H */

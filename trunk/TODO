@@ -35,7 +35,9 @@
    (it's an internal error, as select_protocol checks already).
 
 * Operations
-** Import, export, genkey, delete status handler need much more work.
+** Export status handler need much more work.
+** Import should return a useful error when one happened.
+** Genkey should return something more useful than General_Error.
 
 * Error Values
 ** Map ASSUAN error values.

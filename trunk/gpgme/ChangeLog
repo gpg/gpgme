@@ -1,3 +1,21 @@
+2002-01-31  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.h: Add STATUS_KEY_CREATED.
+
+	* progress.c: New file.
+	* Makefile.am (libgpgme_la_SOURCES): Add progress.c.
+
+	* genkey.c (genkey_status_handler): Use
+	_gpgme_progress_status_handler.  Add check for status.
+	(struct genkey_result_s): New structure.
+	(_gpgme_release_genkey_result): New function.
+	(gpgme_op_genkey): Check for error.
+	* gpgme.c (_gpgme_release_result): Call
+	_gpgme_release_genkey_result.
+	* ops.h (_gpgme_release_genkey_result): Add prototype.
+	* types.h (GenKeyResult): New type.
+	* context.h (gpgme_context_s): Add GenKeyResult to member result.
+
 2002-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (_gpgme_release_result): Call

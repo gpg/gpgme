@@ -1,6 +1,6 @@
 /* context.h 
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -70,6 +70,7 @@ struct gpgme_context_s {
         PassphraseResult passphrase;
         ImportResult import;
         DeleteResult delete;
+        GenKeyResult genkey;
     } result;
 
     GpgmeData notation;    /* last signature notation */
@@ -136,9 +137,4 @@ struct gpgme_recipients_s {
                 gpgme_wait ((c), 1);                          \
              } while (0)
 
-
-
 #endif /* CONTEXT_H */
-
-
-

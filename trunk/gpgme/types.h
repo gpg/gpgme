@@ -1,6 +1,6 @@
 /* types.h -  Some type definitions
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -83,6 +83,10 @@ typedef struct import_result_s *ImportResult;
 /*-- delete.c --*/
 struct delete_result_s;
 typedef struct delete_result_s *DeleteResult;
+
+/*-- genkey.c --*/
+struct genkey_result_s;
+typedef struct genkey_result_s *GenKeyResult;
 
 
 #endif /* TYPES_H */

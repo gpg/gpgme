@@ -1472,8 +1472,9 @@ allowed.
 
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{parms} is not
-a valid XML string, and @code{GPGME_Not_Supported} if @var{pubkey} or
-@var{seckey} is not @code{NULL}.
+a valid XML string, @code{GPGME_Not_Supported} if @var{pubkey} or
+@var{seckey} is not @code{NULL}, and @code{GPGME_General_Error} if no
+key was created by the backend.
 @end deftypefun
 
 @deftypefun GpgmeError gpgme_op_genkey_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{pubkey}}, @w{GpgmeData @var{seckey}})

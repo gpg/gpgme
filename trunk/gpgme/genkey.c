@@ -1,6 +1,6 @@
 /* genkey.c -  key generation
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -29,39 +29,55 @@
 #include "context.h"
 #include "ops.h"
 
-static void
-genkey_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
+
+struct genkey_result_s
 {
-    if ( code == STATUS_PROGRESS && *args ) {
-        if (ctx->progress_cb) {
-            char *p;
-            int type=0, current=0, total=0;
-            
-            if ( (p = strchr (args, ' ')) ) {
-                *p++ = 0;
-                if (*p) {
-                    type = *(byte*)p;
-                    if ( (p = strchr (p+1, ' ')) ) {
-                        *p++ = 0;
-                        if (*p) {
-                            current = atoi (p);
-                            if ( (p = strchr (p+1, ' ')) ) {
-                                *p++ = 0;
-                                total = atoi (p);
-                            }
-                        }
-                    }
-                }
-            }           
-            if ( type != 'X' )
-                ctx->progress_cb ( ctx->progress_cb_value, args, type,
-                                   current, total );
+  int created_primary : 1;
+  int created_sub : 1;
+};
+
+
+void
+_gpgme_release_genkey_result (GenKeyResult result)
+{
+  if (!result)
+    return;
+  xfree (result);
+}
+
+static void
+genkey_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+{
+  _gpgme_progress_status_handler (ctx, code, args);
+
+  if (ctx->out_of_core)
+    return;
+
+  if (!ctx->result.genkey)
+    {
+      ctx->result.genkey = xtrycalloc (1, sizeof *ctx->result.genkey);
+      if (!ctx->result.genkey)
+        {
+          ctx->out_of_core = 1;
+          return;
         }
-        return;
     }
 
-    DEBUG2 ("genkey_status: code=%d args=`%s'\n", code, args );
-    /* FIXME: Need to do more */
+  switch (code)
+    {
+    case STATUS_KEY_CREATED:
+      if (args && *args)
+	{
+	  if (*args == 'B' || *args == 'P')
+	    ctx->result.genkey->created_primary = 1;
+	  if (*args == 'B' || *args == 'S')
+	    ctx->result.genkey->created_sub = 1;
+	}
+      break;
+
+    default:
+      break;
+    }
 }
 
 
@@ -189,6 +205,7 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
   return err;
 }
 
+
 /**
  * gpgme_op_genkey:
  * @c: the context
@@ -209,11 +226,15 @@ gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
 {
   GpgmeError err = gpgme_op_genkey_start (ctx, parms, pubkey, seckey);
   if (!err)
-    gpgme_wait (ctx, 1);
+    {
+      gpgme_wait (ctx, 1);
+
+      /* FIXME: Should return some more useful error value.  */
+      if (!ctx->result.genkey)
+	err = mk_error (General_Error);
+      else if (!ctx->result.genkey->created_primary
+	       && !ctx->result.genkey->created_sub)
+	err = mk_error (General_Error);
+    }
   return err;
 }
-
-
-
-
-

@@ -34,7 +34,7 @@
  * @r_ctx: Returns the new context
  * 
  * Create a new context to be used with most of the other GPGME
- * functions.  Use gpgme_release_contect() to release all resources
+ * functions.  Use gpgme_release_context() to release all resources
  *
  * Return value: An error code 
  **/
@@ -88,6 +88,7 @@ _gpgme_release_result (GpgmeCtx ctx)
   _gpgme_release_passphrase_result (ctx->result.passphrase);
   _gpgme_release_import_result (ctx->result.import);
   _gpgme_release_delete_result (ctx->result.delete);
+  _gpgme_release_genkey_result (ctx->result.genkey);
   memset (&ctx->result, 0, sizeof (ctx->result));
   _gpgme_set_op_info (ctx, NULL);
 }
