@@ -58,7 +58,7 @@ _gpgme_decode_c_string (const char *src, char **destp)
 
   /* We can malloc a buffer of the same length, because the converted
      string will never be larger.  */
-  dest = xtrymalloc (strlen (src));
+  dest = xtrymalloc (strlen (src) + 1);
   if (!dest)
     return mk_error (Out_Of_Core);
 
