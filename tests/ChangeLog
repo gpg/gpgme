@@ -1,3 +1,8 @@
+2002-12-04  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm/Makefile.am (./gpgsm.conf): Use a faked system time
+	becuase one test certificate expired yesterday.
+
 2002-09-30  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm/t-keylist.c (doit): Add arg SECRET.

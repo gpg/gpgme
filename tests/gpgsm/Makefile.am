@@ -46,6 +46,7 @@ all-local: ./pubring.kbx ./gpgsm.conf ./private-keys-v1.d/$(key_id).key ./trustl
 
 ./gpgsm.conf:
 	echo disable-crl-checks > ./gpgsm.conf
+	echo faked-system-time 1038835799 >> ./gpgsm.conf 
 
 ./private-keys-v1.d/$(key_id).key: $(srcdir)/$(key_id)
 	test -d ./private-keys-v1.d || mkdir ./private-keys-v1.d
