@@ -62,6 +62,9 @@ typedef struct ctx_op_data *ctx_op_data_t;
    be performed (sequentially).  */
 struct gpgme_context
 {
+  /* The engine info for this context.  */
+  gpgme_engine_info_t engine_info;
+
   /* The protocol used by this context.  */
   gpgme_protocol_t protocol;
 

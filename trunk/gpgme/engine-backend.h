@@ -30,10 +30,21 @@
 struct engine_ops
 {
   /* Static functions.  */
-  const char *(*get_file_name) (void);
-  const char *(*get_version) (void);
+
+  /* Return the default file name for the binary of this engine.  */
+  char *(*get_file_name) (void);
+
+  /* Returns a malloced string containing the version of the engine
+     with the given binary file name (or the default if FILE_NAME is
+     NULL.  */
+  char *(*get_version) (const char *file_name);
+
+  /* Returns a statically allocated string containing the required
+     version.  */
   const char *(*get_req_version) (void);
+
   gpgme_error_t (*new) (void **r_engine,
+			const char *file_name, const char *home_dir,
 			const char *lc_ctype, const char *lc_messages);
 
   /* Member functions.  */

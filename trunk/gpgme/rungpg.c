@@ -66,6 +66,8 @@ struct fd_data_map_s
 
 struct engine_gpg
 {
+  char *file_name;
+
   struct arg_and_data_s *arglist;
   struct arg_and_data_s **argtail;
 
@@ -224,17 +226,11 @@ add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
 }
 
 
-static const char *
-gpg_get_version (void)
+static char *
+gpg_get_version (const char *file_name)
 {
-  static const char *gpg_version;
-  DEFINE_STATIC_LOCK (gpg_version_lock);
-
-  LOCK (gpg_version_lock);
-  if (!gpg_version)
-    gpg_version = _gpgme_get_program_version (_gpgme_get_gpg_path ());
-  UNLOCK (gpg_version_lock);
-  return gpg_version;
+  return _gpgme_get_program_version (file_name ? file_name
+				     : _gpgme_get_gpg_path ());
 }
 
 
@@ -313,6 +309,9 @@ gpg_release (void *engine)
 
   gpg_cancel (engine);
 
+  if (gpg->file_name)
+    free (gpg->file_name);
+
   while (gpg->arglist)
     {
       struct arg_and_data_s *next = gpg->arglist->next;
@@ -336,7 +335,8 @@ gpg_release (void *engine)
 
 
 static gpgme_error_t
-gpg_new (void **engine, const char *lc_ctype, const char *lc_messages)
+gpg_new (void **engine, const char *file_name, const char *home_dir,
+	 const char *lc_ctype, const char *lc_messages)
 {
   engine_gpg_t gpg;
   gpgme_error_t rc = 0;
@@ -344,6 +344,16 @@ gpg_new (void **engine, const char *lc_ctype, const char *lc_messages)
   gpg = calloc (1, sizeof *gpg);
   if (!gpg)
     return gpg_error_from_errno (errno);
+
+  if (file_name)
+    {
+      gpg->file_name = strdup (file_name);
+      if (!gpg->file_name)
+	{
+	  rc = gpg_error_from_errno (errno);
+	  goto leave;
+	}
+    }
 
   gpg->argtail = &gpg->arglist;
   gpg->status.fd[0] = -1;
@@ -380,6 +390,16 @@ gpg_new (void **engine, const char *lc_ctype, const char *lc_messages)
       goto leave;
     }
   gpg->status.eof = 0;
+
+  if (home_dir)
+    {
+      rc = add_arg (gpg, "--homedir");
+      if (!rc)
+	rc = add_arg (gpg, home_dir);
+      if (rc)
+	goto leave;
+    }
+
   rc = add_arg (gpg, "--status-fd");
   if (rc)
     goto leave;
@@ -1043,7 +1063,7 @@ start (engine_gpg_t gpg)
   if (!gpg)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (! _gpgme_get_gpg_path ())
+  if (!gpg->file_name && !_gpgme_get_gpg_path ())
     return gpg_error (GPG_ERR_INV_ENGINE);
 
   rc = build_argv (gpg);
@@ -1101,7 +1121,8 @@ start (engine_gpg_t gpg)
   fd_parent_list[n].fd = -1;
   fd_parent_list[n].dup_to = -1;
 
-  status = _gpgme_io_spawn (_gpgme_get_gpg_path (),
+  status = _gpgme_io_spawn (gpg->file_name ? gpg->file_name :
+			    _gpgme_get_gpg_path (),
 			    gpg->argv, fd_child_list, fd_parent_list);
   saved_errno = errno;
   free (fd_child_list);

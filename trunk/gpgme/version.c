@@ -103,7 +103,9 @@ parse_version_string (const char *str, int *major, int *minor, int *micro)
 }
 
 
-const char *
+/* Return true if MY_VERSION is at least REQ_VERSION, and false
+   otherwise.  */
+int
 _gpgme_compare_versions (const char *my_version,
 			 const char *rq_version)
 {
@@ -112,17 +114,17 @@ _gpgme_compare_versions (const char *my_version,
   const char *my_plvl, *rq_plvl;
 
   if (!rq_version)
-    return my_version;
+    return 1;
   if (!my_version)
-    return NULL;
+    return 0;
 
   my_plvl = parse_version_string (my_version, &my_major, &my_minor, &my_micro);
   if (!my_plvl)
-    return NULL;
+    return 0;
 
   rq_plvl = parse_version_string (rq_version, &rq_major, &rq_minor, &rq_micro);
   if (!rq_plvl)
-    return NULL;
+    return 0;
 
   if (my_major > rq_major
       || (my_major == rq_major && my_minor > rq_minor)
@@ -130,9 +132,9 @@ _gpgme_compare_versions (const char *my_version,
 	  && my_micro > rq_micro)
       || (my_major == rq_major && my_minor == rq_minor
 	  && my_micro == rq_micro && strcmp (my_plvl, rq_plvl) >= 0))
-    return my_version;
+    return 1;
 
-  return NULL;
+  return 0;
 }
 
 
@@ -149,7 +151,7 @@ const char *
 gpgme_check_version (const char *req_version)
 {
   do_subsystem_inits ();
-  return _gpgme_compare_versions (VERSION, req_version);
+  return _gpgme_compare_versions (VERSION, req_version) ? VERSION : NULL;
 }
 
 

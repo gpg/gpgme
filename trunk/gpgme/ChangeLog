@@ -1,3 +1,57 @@
+2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* libgpgme.vers (GPGME_1.1): New version.
+	* engine-backend.h (struct engine_ops): Add argument FILE_NAME to
+	member get_version().  Add arguments FILE_NAME and HOME_DIR to
+	member new().  Change return type of get_file_name and get_version
+	to char *.
+	* engine-gpgsm.c (gpgsm_get_version): Change return type to char
+	pointer.  Do not cache result.
+	(gpgsm_new): Add file_name and home_dir argument, and use them
+	instead of the defaults, if set.
+	* rungpg.c (struct engine_gpg): New member file_name.
+	(gpg_get_version): Change return type to char pointer, and do not
+	cache result.
+	(gpg_release): Free gpg->file_name.
+	(gpg_new): Take new arguments file_name and home_dir.  Set the
+	--homedir argument if HOME_DIR is not NULL.  Set gpg->file_name.
+	(start): Use gpg->file_name instead _gpgme_get_gpg_path, if set.
+	* engine.h (_gpgme_engine_info_copy, _gpgme_engine_info_release):
+	New prototypes.
+	(_gpgme_engine_new): Change first argument to gpgme_engine_info_t
+	info.
+	* engine.c: Include <assert.h>.
+	(gpgme_get_engine_info): Set *INFO within the lock.  Move
+	ENGINE_INFO and ENGINE_INFO_LOCK to ....
+	(engine_info, engine_info_lock): ... here.  New static variables.
+	(engine_get_version): Add file_name argument to
+	get_version invocation.  Change return type to char pointer.
+	(gpgme_engine_check_version): Rewritten to free() the return value
+	of engine_get_version after using it.
+	(_gpgme_engine_info_release): New function.
+	(gpgme_get_engine_info): Rewritten.
+	(_gpgme_engine_info_copy): New function.
+	(_gpgme_set_engine_info): New function.
+	(gpgme_set_engine_info): New function.
+	(_gpgme_engine_new): Change first argument to gpgme_engine_info_t
+	info, and use that.
+	* gpgme.h (struct _gpgme_engine_info): Change type of file_name
+	and version to char * (remove the const).  New member home_dir.
+	(gpgme_set_engine_info, gpgme_ctx_get_engine_info,
+	gpgme_ctx_set_engine_info): New prototypes.
+	* context.h (struct gpgme_context): New member engine_info.
+	* gpgme.c (gpgme_new): Allocate CTX->engine_info.
+	(gpgme_release): Deallocate CTX->engine_info.
+	(gpgme_ctx_get_engine_info, gpgme_ctx_set_engine_info): New
+	functions.
+	* op-support.c (_gpgme_op_reset): Look for correct engine info and
+	pass it to _gpgme_engine_new.
+	* version.c (gpgme_check_version): Adjust to
+	_gpgme_compare_versions returning an int.
+	(_gpgme_compare_versions): Return an int value, not a const char
+	pointer.
+	* ops.h (_gpgme_compare_versions): Same for prototype.
+
 2004-10-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* verify.c (parse_trust): If no reason is provided, set

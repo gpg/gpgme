@@ -1,3 +1,16 @@
+Noteworthy changes in version 1.1.0 (unreleased)
+------------------------------------------------
+
+ * You can now configure the backend engine file name and home
+   directory to be used, as default and per context.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_set_engine_info		NEW
+gpgme_ctx_get_engine_info	NEW
+gpgme_ctx_set_engine_info	NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 Noteworthy changes in version 1.0.1 (2004-10-22)
 ------------------------------------------------
 
