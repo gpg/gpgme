@@ -35,13 +35,10 @@ noinst_PROGRAMS = $(TESTS)
 
 key_id := 32100C27173EF6E9C4E9A25D3D69F86D37A4F939
 
-all-local: ./pubring.kbx ./gpg-agent.conf ./gpgsm.conf ./private-keys-v1.d/$(key_id).key ./trustlist.txt
+all-local: ./pubring.kbx ./gpgsm.conf ./private-keys-v1.d/$(key_id).key ./trustlist.txt
 
 ./pubring.kbx: $(srcdir)/cert_g10code_test1.der
 	$(GPGSM) --homedir . --import $(srcdir)/cert_g10code_test1.der
-
-./gpg-agent.conf:
-	echo batch > ./gpg-agent.conf
 
 ./gpgsm.conf:
 	echo disable-crl-checks > ./gpgsm.conf
@@ -52,3 +49,6 @@ all-local: ./pubring.kbx ./gpg-agent.conf ./gpgsm.conf ./private-keys-v1.d/$(key
 
 ./trustlist.txt:
 	echo $(key_id) > ./trustlist.txt
+	echo >> ./trustlist.txt
+	echo "# CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE" >> ./trustlist.txt
+	echo "3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E S" >> ./trustlist.txt
