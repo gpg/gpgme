@@ -30,9 +30,10 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: %s: %s\n",			\
+          fprintf (stderr, "%s:%d: %s: %s (%d.%d)\n",        	\
                    __FILE__, __LINE__, gpg_strsource (err),	\
-		   gpg_strerror (err));				\
+		   gpg_strerror (err),                          \
+                   gpg_err_source (err), gpg_err_code (err));	\
           exit (1);						\
         }							\
     }								\
