@@ -13,7 +13,10 @@ libgpgme_la_INCLUDES = -I$(top_srcdir)/lib
 
 libgpgme_la_SOURCES = \
 	gpgme.h \
+	gpgme-types.h gpgme-memory.h \
 	gpgme.c 
+
+
 
 
 

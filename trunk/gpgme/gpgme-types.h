@@ -1,4 +1,4 @@
-/* gpgme.h -  GnuPG Made Easy
+/* gpgme-types.h -  GnuPG Made Easy
  *	Copyright (C) 2000 Werner Koch (dd9jn)
  *
  * This file is part of GPGME.
@@ -18,25 +18,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GPGME_H
-#define GPGME_H
-#ifdef __cplusplus
-extern "C" { 
-#if 0 /* just to make Emacs auto-indent happy */
-}
-#endif
-#endif
+#ifndef GPGME_TYPES_H
+#define GPGME_TYPES_H
 
-struct gpgme_context_s;
-typedef struct gpgme_context_s *GPGME;
+#include "gpgme.h"
+
+struct gpgme_context_s {
+    int initialized;
+};
 
 
 
 
-#ifdef __cplusplus
-}
-#endif
-#endif /* GPGME_H */
+#endif /* GPGME_TYPES_H */
 
 
 
