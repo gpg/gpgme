@@ -1,3 +1,8 @@
+2002-07-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-edit.c: New file.
+	* gpg/Makefile (TESTS): Add t-edit.
+
 2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-encrypt-sym.c (main): Change type of I to size_t and
