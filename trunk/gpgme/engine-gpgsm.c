@@ -494,7 +494,7 @@ _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 0);
   if (err)
     return mk_error (General_Error);	/* FIXME */
-  gpgsm->message_data = sig;
+  gpgsm->message_data = text;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "MESSAGE", gpgsm->message_fd_server,
 		      0);
   if (err)

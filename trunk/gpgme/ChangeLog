@@ -1,5 +1,10 @@
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (_gpgme_gpgsm_op_verify): Put TEXT into
+	message_data, not SIG.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
 	* engine-gpgsm.c: Revert last change.
 
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
