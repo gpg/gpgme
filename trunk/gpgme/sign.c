@@ -143,8 +143,9 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
     }
   args = tail;
 
-  sig->class = strtol (args, &tail, 0);
-  sig->_obsolete_class = sig->class;
+  sig->sig_class = strtol (args, &tail, 0);
+  sig->class = sig->sig_class;
+  sig->_obsolete_class = sig->sig_class;
   if (errno || args == tail || *tail != ' ')
     {
       /* The crypto backend does not behave.  */

@@ -44,10 +44,6 @@ extern "C" {
 #if 0 /* just to make Emacs auto-indent happy */
 }
 #endif
-/* Keyword renaming for the sake of C doubleplus. */
-#define _GPGME_D_CLASS clazz
-#else
-#define _GPGME_D_CLASS class
 #endif /* __cplusplus */
 
 #include <gpg-error.h>
@@ -510,8 +506,12 @@ struct _gpgme_key_sig
   /* Same as in gpgme_signature_t.  */
   gpgme_error_t status;
 
-  /* Crypto backend specific signature class.  */
-  unsigned int _GPGME_D_CLASS;
+#ifdef __cplusplus
+  unsigned int _obsolete_class _GPGME_DEPRECATED;
+#else
+  /* Must be set to SIG_CLASS below.  */
+  unsigned int class _GPGME_DEPRECATED;
+#endif
 
   /* The user ID string.  */
   char *uid;
@@ -524,6 +524,9 @@ struct _gpgme_key_sig
 
   /* The comment part of the user ID.  */
   char *comment;
+
+  /* Crypto backend specific signature class.  */
+  unsigned int sig_class;
 };
 typedef struct _gpgme_key_sig *gpgme_key_sig_t;
 
@@ -1090,8 +1093,15 @@ struct _gpgme_new_signature
   /* The fingerprint of the signature.  */
   char *fpr;
 
+#ifdef __cplusplus
+  unsigned int _obsolete_class_2;
+#else
+  /* Must be set to SIG_CLASS below.  */
+  unsigned int class _GPGME_DEPRECATED;
+#endif
+
   /* Crypto backend specific signature class.  */
-  unsigned int _GPGME_D_CLASS;
+  unsigned int sig_class;
 };
 typedef struct _gpgme_new_signature *gpgme_new_signature_t;
 
