@@ -1529,6 +1529,9 @@ The function @code{gpgme_op_import} adds the keys in the data buffer
 The format of @var{keydata} can be @var{ASCII} armored, for example,
 but the details are specific to the crypto engine.
 
+More information about the import is available with
+@code{gpgme_get_op_info}.  @xref{Detailed Results}.
+
 The function returns @code{GPGME_No_Error} if the import was completed
 successfully, @code{GPGME_Invalid_Value} if @var{keydata} if @var{ctx}
 or @var{keydata} is not a valid pointer, and @code{GPGME_No_Data} if

@@ -1,6 +1,6 @@
 /* import.c -  encrypt functions
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -29,14 +29,145 @@
 #include "context.h"
 #include "ops.h"
 
-static void
-import_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
+
+struct import_result_s
 {
-    DEBUG2 ("import_status: code=%d args=`%s'\n", code, args );
-    /* FIXME: We have to check here whether the import actually worked 
-     * and maybe it is a good idea to save some statistics and provide
-     * a progress callback */
+  GpgmeData xmlinfo;
+};
+
+
+void
+_gpgme_release_import_result (ImportResult result)
+{
+  if (!result)
+    return;
+  gpgme_data_release (result->xmlinfo);
+  xfree (result);
 }
+
+
+/* Parse the args and append the information to the XML structure in
+   the data buffer.  With args of NULL the xml structure is
+   closed.  */
+static void
+append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
+{
+#define MAX_IMPORTED_FIELDS 13
+  static char *imported_fields[MAX_IMPORTED_FIELDS]
+    = { "keyid", "username", 0 };
+  static char *import_res_fields[MAX_IMPORTED_FIELDS]
+    = { "count", "no_user_id", "imported", "imported_rsa",
+	"unchanged", "n_uids", "n_subk", "n_sigs", "s_sigsn_revoc",
+	"sec_read", "sec_imported", "sec_dups", "skipped_new", 0 };
+  char *field[MAX_IMPORTED_FIELDS];
+  char **field_name = 0;
+  GpgmeData dh;
+  int i;
+
+  /* Verify that we can use the args.  */
+  if (code != STATUS_EOF)
+    {
+      if (!args)
+	return;
+
+      if (code == STATUS_IMPORTED)
+	field_name = imported_fields;
+      else if (code == STATUS_IMPORT_RES)
+	field_name = import_res_fields;
+      else
+	return;
+
+      for (i = 0; field_name[i]; i++)
+	{
+	  field[i] = args;
+	  if (field_name[i + 1])
+	    {
+	      args = strchr (args, ' ');
+	      if (!args)
+		return;  /* Invalid line.  */
+	      *args++ = '\0';
+	    }
+	}
+    }
+
+  /* Initialize the data buffer if necessary.  */
+  if (!*rdh)
+    {
+      if (gpgme_data_new (rdh))
+        return; /* FIXME: We are ignoring out-of-core.  */
+      dh = *rdh;
+      _gpgme_data_append_string (dh, "<GnupgOperationInfo>\n");
+    }
+  else
+    dh = *rdh;
+    
+  if (code == STATUS_EOF)
+    {
+      /* Just close the XML containter.  */
+      _gpgme_data_append_string (dh, "</GnupgOperationInfo>\n");
+    }
+  else
+    {
+      if (code == STATUS_IMPORTED)
+	_gpgme_data_append_string (dh, "  <import>\n");
+      else if (code == STATUS_IMPORT_RES)
+	_gpgme_data_append_string (dh, "  <importResult>\n");
+
+      for (i = 0; field_name[i]; i++)
+	{
+	  _gpgme_data_append_string (dh, "    <");
+	  _gpgme_data_append_string (dh, field_name[i]);
+	  _gpgme_data_append_string (dh, ">");
+	  _gpgme_data_append_string (dh, field[i]);
+	  _gpgme_data_append_string (dh, "</");
+	  _gpgme_data_append_string (dh, field_name[i]);
+	  _gpgme_data_append_string (dh, ">\n");
+	}
+
+      if (code == STATUS_IMPORTED)
+	_gpgme_data_append_string (dh, "  </import>\n");
+      else if (code == STATUS_IMPORT_RES)
+	_gpgme_data_append_string (dh, "  </importResult>\n");
+    }
+}
+
+
+static void
+import_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+{
+  if (ctx->out_of_core)
+    return;
+  if (!ctx->result.import)
+    {
+      ctx->result.import = xtrycalloc (1, sizeof *ctx->result.import);
+      if (!ctx->result.import)
+        {
+          ctx->out_of_core = 1;
+          return;
+        }
+    }
+
+  switch (code)
+    {
+    case STATUS_EOF:
+      if (ctx->result.import->xmlinfo)
+        {
+          append_xml_impinfo (&ctx->result.import->xmlinfo, code, NULL);
+          _gpgme_set_op_info (ctx, ctx->result.import->xmlinfo);
+          ctx->result.import->xmlinfo = NULL;
+        }
+      break;
+
+    case STATUS_IMPORTED:
+    case STATUS_IMPORT_RES:
+      append_xml_impinfo (&ctx->result.import->xmlinfo, code, args);
+      break;
+
+    default:
+      break;
+    }
+}
+
 
 GpgmeError
 gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
@@ -79,6 +210,7 @@ gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
   return err;
 }
 
+
 /**
  * gpgme_op_import:
  * @c: Context 
@@ -96,7 +228,3 @@ gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
     gpgme_wait (ctx, 1);
   return err;
 }
-
-
-
-
