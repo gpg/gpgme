@@ -488,16 +488,11 @@ parse_error (gpgme_signature_t sig, char *args)
   else
     return gpg_error (GPG_ERR_INV_ENGINE);
 
-  /* It is often useful to compare only the last part of the where token. */
-  where_last = strrchr (where, '.');
-  if (!where_last)
-    where_last = where;
-
   err = _gpgme_map_gnupg_error (which);
 
-  if (!strcmp (where_last, ".findkey"))
+  if (!strcmp (where, "verify.findkey"))
     sig->status = err;
-  else if (!strcmp (where_last, ".keyusage")
+  else if (!strcmp (where, "verify.keyusage")
 	   && gpg_err_code (err) == GPG_ERR_WRONG_KEY_USAGE)
     sig->wrong_key_usage = 1;
 
