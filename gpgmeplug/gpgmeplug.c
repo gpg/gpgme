@@ -1091,11 +1091,44 @@ bool storeCertificatesFromMessage(
         const char* ciphertext ){ return true; }
 
 
-/* returns the next address in a comma-separated list
-   or NULL if the list is empty. The function honors double quotes 
-   and '(' ')' comments.
-   A non-NULL return value should be deleted with free().
-*/
+/* returns address if address doesn't contain a <xxx> part 
+ * else it returns a new string xxx and frees address 
+ */
+static char* parseAddress( char* address )
+{
+  char* result = address;
+  char* i;
+  char* j;
+  if( !result ) return result;
+  i = index( address, '<' );
+  if( i ) {
+    j = index( i+1, '>' );
+    if( j == NULL ) j = address+strlen(address);
+    result = malloc( j-i );
+    strncpy( result, i+1, j-i-1 );
+    result[j-i-1] = '\0';
+    free( address );
+  } else {
+    i = address;
+    j = i+strlen(address);
+  }
+  {
+    /* remove surrounding whitespace */
+    char* k = result+(j-i-1);
+    char* l = result;
+    while( isspace( *l ) ) ++l;
+    while( isspace( *k ) ) --k;
+    if( l != result || k != result+(j-i-1) ) {
+      char* result2 = malloc( k-l+2 );
+      strncpy( result2, l, k-l+1 );
+      result2[k-l+1] = '\0';
+      free(result);
+      result = result2;
+    }
+  }
+  return result;
+}
+
 static char* nextAddress( const char** address )
 {
   const char *start = *address;
@@ -1105,7 +1138,7 @@ static char* nextAddress( const char** address )
   int found = 0;
   if( *address == NULL ) return NULL;
   while( **address ) {
-
+    
     switch( **address ) {
     case '\\': /* escaped character */
       ++(*address);
@@ -1134,7 +1167,6 @@ static char* nextAddress( const char** address )
   }
   if( found || **address == 0 ) {
     size_t len;
-    while( isspace( *start ) ) ++start;
     len = *address - start;
     if( len > 0 ) {
       if( **address != 0 ) --len;
@@ -1143,7 +1175,7 @@ static char* nextAddress( const char** address )
       result[len] = '\0';
     }  
   }
-  return result;
+  return parseAddress(result);
 }
 
 bool encryptMessage( const char* cleartext,
