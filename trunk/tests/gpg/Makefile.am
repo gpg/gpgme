@@ -19,6 +19,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
+GPG = @GPG@
 
 TESTS_ENVIRONMENT = GNUPGHOME=.
 
@@ -42,17 +43,10 @@ distclean-local:
 all-local: ./pubring.gpg ./secring.gpg
 
 ./pubring.gpg: $(srcdir)/pubdemo.asc
-	-gpg --homedir . --import $(srcdir)/pubdemo.asc
+	$(GPG) --homedir . --import $(srcdir)/pubdemo.asc
 
 ./secring.gpg: ./Alpha/Secret.gpg 
-	-gpg --homedir . --allow-secret-key-import --import Alpha/Secret.gpg Zulu/Secret.gpg
+	$(GPG) --homedir . --allow-secret-key-import --import Alpha/Secret.gpg Zulu/Secret.gpg
 
 ./Alpha/Secret.gpg: secdemo.asc 
 	srcdir=$(srcdir) $(srcdir)/mkdemodirs 
-
-
-
-
-
-
-

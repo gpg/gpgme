@@ -1,5 +1,18 @@
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/Makefile.am (GPG): Set to @GPG_PATH@.
+	(./pubring.gpg): Use $(GPG) instead gpg.
+	(./secring.gpg): Likewise.
+
+	* gpgsm/t-import.c (main): Remove third test case.
+	* gpgsm/Makefile.am (GPGSM): Set to @GPGSM@.
+	(all-local): New target.
+	(./pubcerts.kbx): Likewise.
+	* gpgsm/t-encrypt.c: New file.
+	* gpgsm/Makefile.am (TESTS): Add t-encrypt.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgsm/t-keylist.c: New file.
 	* gpgsm/Makefile.am (TESTS): Add t-keylist.
 

@@ -536,8 +536,8 @@ gpgsm_status_handler (void *opaque, int pid, int fd)
 	  /* FIXME Save error somewhere.  */
 	  if (gpgsm->status.fnc)
 	    gpgsm->status.fnc (gpgsm->status.fnc_value, STATUS_EOF, "");
-	  if (gpgsm->output_fd)
-	    _gpgme_freeze_fd (gpgsm->output_fd);
+	  /*	  if (gpgsm->output_fd)
+		  _gpgme_freeze_fd (gpgsm->output_fd); */
 	  return 1;
 	}
 
