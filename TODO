@@ -80,7 +80,20 @@ Hey Emacs, this is -*- outline -*- mode!
 *** When GPGSM does issue IMPORT_OK status reports, make sure to check for them
     in tests/gpgs m/t-import.c.
 ** Genkey should return something more useful than General_Error.
-** Factor out common code in _op_*_start functions.
+** Decrypt:
+   On Fri, Jun 27, 2003 at 06:28:23PM +0200, Heiko Abraham wrote:
+   > I have a cipher text and I use 'gpgme_op_decrypt_verify(..)'
+   > for decrypt and get the plaintext. But also I wish a list
+   > of all reciepient, that can also decrypt this file.
+   >
+   > If I store the file and check it with 'gpg --list-packets ${filename}'
+   > then I will become also a recipient-list.
+   > It this also possible with gpgme?
+
+   Currently not, but it is easy to add this to GPGME 0.4.1.  At least the key
+   ID and a user ID hint is available from gpg (of course key IDs are not
+   necessarily unique!).  I will put it on the TODO list.
+
 ** Optimize the file descriptor list, so the number of open fds is
    always known easily.
 ** Encryption: It should be verified that the behaviour for partially untrusted
