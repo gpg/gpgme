@@ -282,26 +282,18 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
     }
 }
 
-GpgmeError
-gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData text)
+static GpgmeError
+_gpgme_op_verify_start (GpgmeCtx ctx, int synchronous,
+			GpgmeData sig, GpgmeData text)
 {
   int err = 0;
   int pipemode = 0;	 /* !!text; use pipemode for detached sigs.  */
 
-  fail_on_pending_request (ctx);
-  ctx->pending = 1;
-
-  _gpgme_release_result (ctx);
-    
   if (!pipemode)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
+    ;	/* XXX I am not sure what should happen/not happen in
+	   pipemode.  */
 
-  if (!ctx->engine)
-    err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			     : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     goto leave;
 
@@ -345,6 +337,12 @@ gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData text)
       ctx->engine = NULL;
     }
   return err;
+}
+
+GpgmeError
+gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData text)
+{
+  return _gpgme_op_verify_start (ctx, 0, sig, text);
 }
 
 /* 
@@ -408,10 +406,10 @@ gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData text,
   ctx->notation = NULL;
     
   *r_stat = GPGME_SIG_STAT_NONE;
-  err = gpgme_op_verify_start (ctx, sig, text);
+  err = _gpgme_op_verify_start (ctx, 1, sig, text);
   if (!err)
     {
-      gpgme_wait (ctx, &err, 1);
+      err = _gpgme_wait_one (ctx);
       if (!err)
 	*r_stat = _gpgme_intersect_stati (ctx->result.verify);
     }

@@ -25,14 +25,18 @@
 #include "gpgme.h"
 #include "types.h"
 #include "engine.h"
+#include "wait.h"
 
-struct key_queue_item_s {
-    struct key_queue_item_s *next;
-    GpgmeKey key;
+struct key_queue_item_s
+{
+  struct key_queue_item_s *next;
+  GpgmeKey key;
 };
-struct trust_queue_item_s {
-    struct trust_queue_item_s *next;
-    GpgmeTrustItem item;
+
+struct trust_queue_item_s
+{
+  struct trust_queue_item_s *next;
+  GpgmeTrustItem item;
 };
 
 
@@ -98,6 +102,11 @@ struct gpgme_context_s
   GpgmeProgressCb progress_cb;
   void *progress_cb_value;
 
+  /* A list of file descriptors in active use by the current
+     (synchronous) operation.  */
+  struct fd_table fdt;
+  struct GpgmeIOCbs io_cbs;
+  
   GpgmeData help_data_1;
 };
 

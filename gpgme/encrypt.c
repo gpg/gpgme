@@ -28,6 +28,7 @@
 #include "util.h"
 #include "context.h"
 #include "ops.h"
+#include "wait.h"
 
 #define SKIP_TOKEN_OR_RETURN(a) do { \
     while (*(a) && *(a) != ' ') (a)++; \
@@ -142,17 +143,12 @@ _gpgme_encrypt_sym_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 }
 
 
-GpgmeError
-gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
-			GpgmeData ciph)
+static GpgmeError
+_gpgme_op_encrypt_start (GpgmeCtx ctx, int synchronous,
+			 GpgmeRecipients recp, GpgmeData plain, GpgmeData ciph)
 {
-  int err = 0;
+  GpgmeError err = 0;
   int symmetric = 0;
-
-  fail_on_pending_request (ctx);
-  ctx->pending = 1;
-
-  _gpgme_release_result (ctx);
 
   /* Do some checks.  */
   if (!recp)
@@ -163,11 +159,7 @@ gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
       goto leave;
     }
 
-  /* Create an engine object.  */
-  _gpgme_engine_release (ctx->engine);
-  ctx->engine = NULL;
-  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     goto leave;
 
@@ -216,6 +208,14 @@ gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
 }
 
 
+GpgmeError
+gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
+			GpgmeData ciph)
+{
+  return _gpgme_op_encrypt_start (ctx, 0, recp, plain, ciph);
+}
+
+
 /**
  * gpgme_op_encrypt:
  * @c: The context
@@ -233,10 +233,10 @@ GpgmeError
 gpgme_op_encrypt (GpgmeCtx ctx, GpgmeRecipients recp,
 		  GpgmeData plain, GpgmeData cipher)
 {
-  int err = gpgme_op_encrypt_start (ctx, recp, plain, cipher);
+  int err = _gpgme_op_encrypt_start (ctx, 1, recp, plain, cipher);
   if (!err)
     {
-      gpgme_wait (ctx, &err, 1);
+      err = _gpgme_wait_one (ctx);
       /* Old gpg versions don't return status info for invalid
 	 recipients, so we simply check whether we got any output at
 	 all, and if not we assume that we don't have valid

@@ -35,389 +35,84 @@
 #include "io.h"
 #include "engine.h"
 
-struct wait_item_s;
-struct proc_s;
+struct fd_table fdt_global;
 
-static struct proc_s *proc_queue;
-DEFINE_STATIC_LOCK (proc_queue_lock);
-
-static int fd_table_size;
-static struct io_select_fd_s *fd_table;
-DEFINE_STATIC_LOCK (fd_table_lock);
+static GpgmeCtx *ctx_done_list;
+static int ctx_done_list_size;
+static int ctx_done_list_length;
+DEFINE_STATIC_LOCK (ctx_done_list_lock);
 
 static GpgmeIdleFunc idle_function;
 
-
-struct proc_s
+struct wait_item_s
 {
-  struct proc_s *next;
-  int pid;
-  GpgmeCtx ctx;
-  struct wait_item_s *handler_list;
-  /* Non-zero if the process has been completed.  */
-  int done;
-  /* Non-zero if the status for this process has been returned
-     already.  */
-  int reported;
+  struct wait_item_s *next;
+  GpgmeIOCb handler;
+  void *handler_value;
+  int dir;
 };
 
-struct wait_item_s {
-    struct wait_item_s *next;
-    int (*handler)(void*,int,int);
-    void *handler_value;
-    int inbound;       /* this is an inbound data handler fd */
-    struct proc_s *proc; /* backlink */
-    int done;
-    int frozen; /* copy of the frozen flag from the fd_table */
-};
-
-
-
-static int do_select ( void );
 static void run_idle (void);
 
-
-/* only to be called with a locked proc_queue */
-static int
-count_running_fds (struct proc_s *proc)
+
+void
+_gpgme_fd_table_init (fd_table_t fdt)
 {
-  struct wait_item_s *q;
-  int count = 0;
-
-  for (q = proc->handler_list; q; q=q->next)
-    {
-      if (!q->frozen && !q->done)
-	count++;
-    }
-  return count;
-}
-
-/* only to be called with a locked proc_queue */
-static void
-set_process_done (struct proc_s *proc)
-{
-  struct wait_item_s *q, *q2;
-  int i;
-
-  assert (proc);
-  DEBUG2 ("set_process_done(%p) pid=%d", proc, proc->pid);
-  LOCK (fd_table_lock);
-  for (q = proc->handler_list; q; q=q2)
-    {
-      q2 = q->next;
-      for (i = 0; i < fd_table_size; i++)
-	{
-	  if (fd_table[i].fd != -1 && q == fd_table[i].opaque)
-	    {
-	      fd_table[i].opaque = NULL;
-	      fd_table[i].fd = -1;
-            }
-        }
-      xfree (q);
-    }
-  UNLOCK (fd_table_lock);
-  proc->handler_list = NULL;
-  proc->done = 1;
+  INIT_LOCK (fdt->lock);
+  fdt->fds = NULL;
+  fdt->size = 0;
 }
 
 void
-_gpgme_remove_proc_from_wait_queue (int pid)
+_gpgme_fd_table_deinit (fd_table_t fdt)
 {
-    struct proc_s *proc, *last;
-
-    DEBUG1 ("removing process %d", pid);
-    LOCK (proc_queue_lock);
-    for (last = NULL, proc = proc_queue; proc; last = proc, proc = proc->next)
-      {
-        if (proc->pid == pid)
-	  {
-            set_process_done (proc);
-            if (!last) 
-	      proc_queue = proc->next;
-            else 
-	      last->next = proc->next;
-            xfree (proc);
-            break;
-	  }
-      }
-    UNLOCK (proc_queue_lock);
+  DESTROY_LOCK (fdt->lock);
+  if (fdt->fds)
+    xfree (fdt->fds);
 }
 
-
-/**
- * gpgme_wait:
- * @c: 
- * @hang: 
- * 
- * Wait for a finished request, if @c is given the function does only
- * wait on a finished request for that context, otherwise it will return
- * on any request.  When @hang is true the function will wait, otherwise
- * it will return immediately when there is no pending finished request.
- * 
- * Return value: Context of the finished request or NULL if @hang is false
- *  and no (or the given) request has finished.
- **/
-GpgmeCtx 
-gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
-{
-  GpgmeCtx retctx = _gpgme_wait_on_condition (ctx, hang, NULL);
-  if (status)
-    *status = retctx->error;
-  return retctx;
-}
-
-GpgmeCtx 
-_gpgme_wait_on_condition (GpgmeCtx ctx, int hang, volatile int *cond)
-{
-  DEBUG3 ("waiting... ctx=%p hang=%d cond=%p", ctx, hang, cond);
-  do
-    {
-      int any = 0;
-      struct proc_s *proc;
-
-      do_select ();
-
-      if (cond && *cond)
-	hang = 0;
-      else
-	{
-	  LOCK (proc_queue_lock);
-	  for (proc = proc_queue; proc; proc = proc->next)
-	    {
-	      /* A process is done if it has completed voluntarily, or
-		 if the context it lived in was canceled.  */
-	      if (!proc->done && !count_running_fds (proc))
-		set_process_done (proc);
-	      else if (!proc->done && proc->ctx->cancel)
-		{
-		  set_process_done (proc);
-		  proc->ctx->cancel = 0;
-		  proc->ctx->error = mk_error (Canceled);
-		}
-	      /* A process that is done is eligible for election if it
-		 is in the requested context or if it was not yet
-		 reported.  */
-	      if (proc->done && (proc->ctx == ctx || (!ctx && !proc->reported)))
-		{
-		  if (!ctx)
-		    ctx = proc->ctx;
-		  hang = 0;
-		  ctx->pending = 0;
-		  proc->reported = 1;
-		}
-	      if (!proc->done)
-		any = 1;
-            }
-	  UNLOCK (proc_queue_lock);
-	  if (!any)
-	    hang = 0;
-        }
-      /* fixme: We should check here for hanging processes.  */
-
-      if (hang)
-	run_idle ();
-    }
-  while (hang && (!ctx || !ctx->cancel));
-  if (ctx && ctx->cancel)
-    {
-      /* FIXME: Paranoia?  */
-      ctx->cancel = 0;
-      ctx->pending = 0;
-      ctx->error = mk_error (Canceled);
-    }
-  return ctx;
-}
-
-
-/*
- * We use this function to do the select stuff for all running
- * gpgs.  A future version might provide a facility to delegate
- * those selects to the GDK select stuff.
- * This function must be called only by one thread!!
- * Returns: 0 = nothing to run
- *          1 = did run something 
- */
-
-static int
-do_select (void)
-{
-  int i, n;
-  int any = 0;
-    
-  n = _gpgme_io_select (fd_table, fd_table_size);
-  if (n <= 0) 
-    return 0; /* error or timeout */
-
-  for (i = 0; i < fd_table_size && n; i++)
-    {
-      if (fd_table[i].fd != -1 && fd_table[i].signaled 
-	  && !fd_table[i].frozen)
-	{
-	  struct wait_item_s *q;
-
-	  assert (n);
-	  n--;
-            
-	  q = fd_table[i].opaque;
-	  assert (q);
-	  assert (q->proc);
-	  assert (!q->done);
-	  any = 1;
-	  if (q->handler (q->handler_value,
-			  q->proc->pid, fd_table[i].fd))
-	    {
-	      DEBUG2 ("setting fd %d (q=%p) done", fd_table[i].fd, q);
-	      q->done = 1;
-	      /* Free the table entry.  */
-	      LOCK (fd_table_lock);
-	      fd_table[i].for_read = 0;
-	      fd_table[i].for_write = 0;
-	      fd_table[i].fd = -1;
-	      fd_table[i].opaque = NULL;
-	      UNLOCK (fd_table_lock);
-            }
-        }
-    }
-    
-  return any;
-}
-
-
-/* 
- * called by rungpg.c to register something for select()
- */
+/* XXX We should keep a marker and roll over for speed.  */
 GpgmeError
-_gpgme_register_pipe_handler (void *opaque, 
-                              int (*handler)(void*,int,int),
-                              void *handler_value,
-                              int pid, int fd, int inbound)
+_gpgme_fd_table_put (fd_table_t fdt, int fd, int dir, void *opaque, int *idx)
 {
-  GpgmeCtx ctx = opaque;
-  struct wait_item_s *q;
-  struct proc_s *proc;
-  int i;
+  int i, j;
+  struct io_select_fd_s *new_fds;
 
-  assert (opaque);
-  assert (handler);
-
-  /* Allocate a structure to hold info about the handler.  */
-  q = xtrycalloc (1, sizeof *q);
-  if (!q)
-    return mk_error (Out_Of_Core);
-  q->inbound = inbound;
-  q->handler = handler;
-  q->handler_value = handler_value;
-
-  /* Put this into the process queue.  */
-  LOCK (proc_queue_lock);
-  for (proc = proc_queue; proc && proc->pid != pid; proc = proc->next)
-    ;
-  if (!proc)
+  LOCK (fdt->lock);
+  for (i = 0; i < fdt->size; i++)
     {
-      /* A new process.  */
-      proc = xtrycalloc (1, sizeof *proc);
-      if (!proc)
+      if (fdt->fds[i].fd == -1)
+	break;
+    }
+  if (i == fdt->size)
+    {
+#define FDT_ALLOCSIZE 10
+      new_fds = xtryrealloc (fdt->fds, (fdt->size + FDT_ALLOCSIZE)
+			     * sizeof (*new_fds));
+      if (!new_fds)
 	{
-	  UNLOCK (proc_queue_lock);
+	  UNLOCK (fdt->lock);
 	  return mk_error (Out_Of_Core);
-        }
-      proc->pid = pid;
-      proc->ctx = ctx;
-      proc->next = proc_queue;
-      proc_queue = proc;
+	}
+      
+      fdt->fds = new_fds;
+      fdt->size += FDT_ALLOCSIZE;
+      for (j = 0; j < FDT_ALLOCSIZE; j++)
+	fdt->fds[i + j].fd = -1;
     }
-  assert (proc->ctx == ctx);
-  q->proc = proc;
-  q->next = proc->handler_list;
-  proc->handler_list = q;
-  UNLOCK (proc_queue_lock);
-    
-  LOCK (fd_table_lock);
- again:  
-  for (i=0; i < fd_table_size; i++)
-    {
-      if (fd_table[i].fd == -1)
-	{
-	  fd_table[i].fd = fd;
-	  fd_table[i].for_read = inbound;    
-	  fd_table[i].for_write = !inbound;    
-	  fd_table[i].signaled = 0;
-	  fd_table[i].frozen = 0;
-	  fd_table[i].opaque = q;
-	  UNLOCK (fd_table_lock);
-	  return 0;
-        }
-    }
-  if ( fd_table_size < 50 ) {
-    /* FIXME: We have to wait until there are no other readers of the 
-     * table, i.e that the io_select is not active in another thread */
-    struct io_select_fd_s *tmp;
-    
-    tmp = xtryrealloc (fd_table, (fd_table_size + 10) * sizeof *tmp);
-    if (tmp)
-      {
-	for (i = 0; i < 10; i++)
-	  tmp[fd_table_size+i].fd = -1;
-	fd_table_size += i;
-	fd_table = tmp;
-	goto again;
-      }
-  }
 
-  UNLOCK (fd_table_lock);
-  xfree (q);
-  /* FIXME: Remove the proc table entry.  */
-  return mk_error (Too_Many_Procs);
+  fdt->fds[i].fd = fd;
+  fdt->fds[i].for_read = (dir == 1);
+  fdt->fds[i].for_write = (dir == 0);
+  fdt->fds[i].frozen = 0;
+  fdt->fds[i].signaled = 0;
+  fdt->fds[i].opaque = opaque;
+  UNLOCK (fdt->lock);
+  *idx = i;
+  return 0;
 }
 
-
-void
-_gpgme_freeze_fd (int fd)
-{
-  int i;
-
-  LOCK (fd_table_lock);
-  for (i = 0; i < fd_table_size; i++)
-    {
-      if (fd_table[i].fd == fd)
-	{
-	  struct wait_item_s *q;
-
-	  fd_table[i].frozen = 1;
-	  q = fd_table[i].opaque;
-	  if (q)
-	    q->frozen = 1;
-	  DEBUG2 ("fd %d frozen (q=%p)", fd, q);
-	  break;
-        }
-    }
-  UNLOCK (fd_table_lock);
-}
-
-void
-_gpgme_thaw_fd (int fd)
-{
-  int i;
-
-  LOCK (fd_table_lock);
-  for (i = 0; i < fd_table_size; i++)
-    {
-      if (fd_table[i].fd == fd)
-	{
-	  struct wait_item_s *q;
-
-	  fd_table[i].frozen = 0;
-	  q = fd_table[i].opaque;
-	  if (q)
-	    q->frozen = 0;
-	  DEBUG2 ("fd %d thawed (q=%p)", fd, q);
-	  break;
-        }
-    }
-  UNLOCK (fd_table_lock);
-}
-
-
+
 /**
  * gpgme_register_idle:
  * @fnc: Callers idle function
@@ -438,7 +133,6 @@ gpgme_register_idle (GpgmeIdleFunc idle)
   return old_idle;
 }
 
-
 static void
 run_idle ()
 {
@@ -446,3 +140,233 @@ run_idle ()
   if (idle_function)
     idle_function ();
 }
+
+
+/* Wait on all file descriptors listed in FDT and process them using
+   the registered callbacks.  Returns 0 if nothing to run and 1 if it
+   did run something.  */
+static int
+do_select (fd_table_t fdt)
+{
+  int i, n;
+  int any = 0;
+
+  LOCK (fdt->lock);
+  n = _gpgme_io_select (fdt->fds, fdt->size);
+
+  if (n <= 0) 
+    {
+      UNLOCK (fdt->lock);
+      return 0;	/* Error or timeout.  */
+    }
+
+  for (i = 0; i < fdt->size && n; i++)
+    {
+      if (fdt->fds[i].fd != -1 && fdt->fds[i].signaled)
+	{
+	  struct wait_item_s *item;
+
+	  assert (n);
+	  n--;
+            
+	  item = (struct wait_item_s *) fdt->fds[i].opaque;
+	  assert (item);
+	  any = 1;
+
+	  fdt->fds[i].signaled = 0;
+	  UNLOCK (fdt->lock);
+	  item->handler (item->handler_value, fdt->fds[i].fd);
+	  LOCK (fdt->lock);
+        }
+    }
+  UNLOCK (fdt->lock);
+    
+  return any;
+}
+
+
+
+void
+_gpgme_wait_event_cb (void *data, GpgmeEventIO type, void *type_data)
+{
+  if (type != GPGME_EVENT_DONE)
+    return;
+
+  if (ctx_done_list_size == ctx_done_list_length)
+    {
+#define CTX_DONE_LIST_SIZE_INITIAL 8
+      int new_size = ctx_done_list_size ? 2 * ctx_done_list_size
+	: CTX_DONE_LIST_SIZE_INITIAL;
+      GpgmeCtx *new_list = xtryrealloc (ctx_done_list,
+					new_size * sizeof (GpgmeCtx *));
+      assert (new_list);
+#if 0
+      if (!new_list)
+	return mk_error (Out_Of_Core);
+#endif
+      ctx_done_list = new_list;
+      ctx_done_list_size = new_size;
+    }
+  ctx_done_list[ctx_done_list_length++] = (GpgmeCtx) data;
+}
+
+
+/**
+ * gpgme_wait:
+ * @c: 
+ * @hang: 
+ * 
+ * Wait for a finished request, if @c is given the function does only
+ * wait on a finished request for that context, otherwise it will return
+ * on any request.  When @hang is true the function will wait, otherwise
+ * it will return immediately when there is no pending finished request.
+ * 
+ * Return value: Context of the finished request or NULL if @hang is false
+ *  and no (or not the given) request has finished.
+ **/
+GpgmeCtx 
+gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
+{
+  ctx = _gpgme_wait_on_condition (ctx, hang, NULL);
+  if (ctx && status)
+    *status = ctx->error;
+  return ctx;
+}
+
+GpgmeError
+_gpgme_wait_one (GpgmeCtx ctx)
+{
+  int hang = 1;
+  DEBUG1 ("waiting... ctx=%p", ctx);
+  do
+    {
+      if (! do_select (&ctx->fdt))
+	hang = 0;
+    }
+  while (hang && !ctx->cancel);
+  if (ctx->cancel)
+    {
+      /* FIXME: Paranoia?  */
+      ctx->cancel = 0;
+      ctx->pending = 0;
+      ctx->error = mk_error (Canceled);
+    }
+  return ctx->error;
+}
+
+
+GpgmeCtx 
+_gpgme_wait_on_condition (GpgmeCtx ctx, int hang, volatile int *cond)
+{
+  DEBUG3 ("waiting... ctx=%p hang=%d cond=%p", ctx, hang, cond);
+  do
+    {
+      if (! do_select (&fdt_global))
+	hang = 0;
+
+      if (cond && *cond)
+	hang = 0;
+      else
+	{
+	  int i;
+
+	  LOCK (ctx_done_list_lock);
+	  /* A process that is done is eligible for election if it is
+	     the requested context or if it was not yet reported.  */
+	  for (i = 0; i < ctx_done_list_length; i++)
+	    if (!ctx || ctx == ctx_done_list[i])
+	      break;
+	  if (i < ctx_done_list_length)
+	    {
+	      if (!ctx)
+		ctx = ctx_done_list[i];
+	      hang = 0;
+	      ctx->pending = 0;
+	      if (--ctx_done_list_length)
+		memcpy (&ctx_done_list[i],
+			&ctx_done_list[i + 1],
+			(ctx_done_list_length - i) * sizeof (GpgmeCtx *));
+	    }
+	  UNLOCK (ctx_done_list_lock);
+        }
+      if (hang)
+	run_idle ();
+    }
+  while (hang && (!ctx || !ctx->cancel));
+  if (ctx && ctx->cancel)
+    {
+      /* FIXME: Paranoia?  */
+      ctx->cancel = 0;
+      ctx->pending = 0;
+      ctx->error = mk_error (Canceled);
+    }
+  return ctx;
+}
+
+
+struct tag
+{
+  fd_table_t fdt;
+  int idx;
+};
+
+void *
+_gpgme_add_io_cb (void *data, int fd, int dir,
+		  GpgmeIOCb fnc, void *fnc_data)
+{
+  GpgmeError err;
+  fd_table_t fdt = (fd_table_t) (data ? data : &fdt_global);
+  struct wait_item_s *item;
+  struct tag *tag;
+
+  assert (fdt);
+  assert (fnc);
+
+  tag = xtrymalloc (sizeof *tag);
+  if (!tag)
+    return NULL;
+  tag->fdt = fdt;
+
+  /* Allocate a structure to hold info about the handler.  */
+  item = xtrycalloc (1, sizeof *item);
+  if (!item)
+    {
+      xfree (tag);
+      return NULL;
+    }
+  item->dir = dir;
+  item->handler = fnc;
+  item->handler_value = fnc_data;
+
+  err = _gpgme_fd_table_put (fdt, fd, dir, item, &tag->idx);
+  if (err)
+    {
+      xfree (tag);
+      xfree (item);
+      errno = ENOMEM;
+      return 0;
+    }
+  
+  return tag;
+}
+
+void
+_gpgme_remove_io_cb (void *data)
+{
+  struct tag *tag = data;
+  fd_table_t fdt = tag->fdt;
+  int idx = tag->idx;
+
+  LOCK (fdt->lock);
+  DEBUG2 ("setting fd %d (item=%p) done", fdt->fds[idx].fd,
+	  fdt->fds[idx].opaque);
+  xfree (fdt->fds[idx].opaque);
+  xfree (tag);
+
+  /* Free the table entry.  */
+  fdt->fds[idx].fd = -1;
+  fdt->fds[idx].for_read = 0;
+  fdt->fds[idx].for_write = 0;
+  fdt->fds[idx].opaque = NULL;
+}
+

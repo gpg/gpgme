@@ -164,26 +164,13 @@ gpgme_op_trustlist_start (GpgmeCtx ctx, const char *pattern, int max_level)
 {
   GpgmeError err = 0;
 
-  fail_on_pending_request (ctx);
   if (!pattern || !*pattern)
     return mk_error (Invalid_Value);
 
-  ctx->pending = 1;
-
-  if (ctx->engine)
-    {
-      _gpgme_engine_release (ctx->engine); 
-      ctx->engine = NULL;
-    }
-
-  _gpgme_release_result (ctx);
-
-  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  err = _gpgme_op_reset (ctx, 0);
   if (err)
     goto leave;
 
-  _gpgme_engine_set_status_handler (ctx->engine, trustlist_status_handler, ctx);
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
 					      trustlist_colon_handler, ctx);
   if (err)

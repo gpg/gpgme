@@ -1,3 +1,183 @@
+2002-06-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_start): Move the code that sets the
+	close notification for the status fd to ...
+	(_gpgme_gpgsm_new): ... here.
+	* wait.h: Include "sema.h".  Remove prototypes of
+	_gpgme_remove_proc_from_wait_queue and
+	_gpgme_register_pipe_handler.  Add prototypes of
+	_gpgme_fd_table_init, _gpgme_fd_table_deinit, _gpgme_fd_table_put,
+	_gpgme_add_io_cb, _gpgme_remove_io_cb, _gpgme_wait_event_cb and
+	_gpgme_wait_one..
+	* wait.c: Remove global variables PROC_QUEUE, PROC_QUEUE_LOCK,
+	FD_TABLE_SIZE, FD_TABLE, FD_TABLE_LOCK.  New global variables
+	FDT_GLOBAL, CTX_DONE_LIST, CTX_DONE_LIST_SIZE,
+	CTX_DONE_LIST_LENGTH and CTX_DONE_LIST_LOCK.  Remove struct
+	proc_s.  Replace struct wait_item_s.
+	(_gpgme_fd_table_init): New function.
+	(_gpgme_fd_table_deinit): Likewise.
+	(_gpgme_fd_table_put): Likewise.
+	(set_process_done): Remove function.
+	(do_select): Take argument FDT.  Use that to decide which fds to
+	select on.
+	(_gpgme_remove_proc_from_wait_queue): Remove function.
+	(_gpgme_wait_event_cb): New function.
+	(_gpgme_wait_one): Likewise.
+	(_gpgme_register_pipe_hanldler): Remove function.
+	(_gpgme_add_io_cb): New function.
+	(_gpgme_remove_io_cb): Likewise.
+	(_gpgme_freeze_fd): Remove function.
+	(_gpgme_thaw_fd): Remove function.
+	* rungpg.c (struct fd_data_map_s): Add new member TAG.
+	(struct gpg_object_s): Likewise for STATUS and COLON.  Add member
+	IDX to CMD.  Add new member IO_CBS.
+	(close_notify_handler): New variables POSSIBLY_DONE and NOT_DONE.
+	For each I/O callback, check if it should be unregistered.  If all
+	callbacks have been unregistered, trigger GPGME_EVENT_DONE.
+	Remove member RUNNING.
+	(_gpgme_gpg_new): Initialize new members.
+	(_gpgme_gpg_release): Check PID not RUNNING.  Don't call
+	_gpgme_remove_proc_from_wait_queue.  Close GPG->CMD.FD if set.
+	(build_argv): Store away the index instead the file descriptor for
+	CMD.
+	(_gpgme_gpg_add_io_cb): New function.
+	(_gpgme_gpg_spawn): Use _gpgme_gpg_add_io_cb to register IO
+	callbacks.
+	(gpg_status_handler): Change return type to void, remove PID
+	argument, close filedescriptor if EOF or error occurs.
+	(read_status): Use _gpgme_gpg_add_io_cb instead _gpgme_thaw_fd.
+	Use IO_CBS->remove instead _gpgme_freeze_fd.
+	(gpg_colon_line_handler): Change return type to void, remove PID
+	argument, close filedescriptor if EOF or error occurs.
+	(command_cb): Use IO_CBS->remove instead _gpgme_freeze_fd.
+	(_gpgme_gpg_set_io_cbs): New function.
+	* rungpg.h (_gpgme_gpg_set_io_cbs): Prototype for
+	_gpgme_gpg_set_io_cbs.
+	* gpgme.h (GpgmeIOCb): New type.
+	(GpgmeRegisterIOCb): Likewise.
+	(GpgmeRemoveIOCb): Likewise.
+	(GpgmeEventIO): Likewise.
+	(GpgmeEventIOCb): Likewise.
+	(struct GpgmeIOCbs): New structure to hold I/O callbacks.
+	(gpgme_set_op_io_cbs): New prototype.
+	(gpgme_get_op_io_cbs): Likewise.
+	* ops.h: New prototype for _gpgme_op_event_cb.  Remove prototypes
+	for _gpgme_freeze_fd and _gpgme_thaw_fd.  Remove PID argument from
+	_gpgme_data_inbound_handler and _gpgme_data_outbound_handler
+	prototype.  Add prototype for _gpgme_op_reset.
+	Add synchronous argument to _gpgme_decrypt_start prototype.
+	* io.h: Beautification.
+	* gpgme.c: Include "wait.h".
+	(gpgme_new): Initialize FDT.
+	(gpgme_set_io_cbs): New function.
+	(gpgme_get_io_cbs): Likewise.
+	(_gpgme_op_event_cb): Likewise.
+	* data.c (_gpgme_data_inbound_handler): Change return type to
+	void.  Drop PID argument.  Close FD on error and EOF.
+	(write_mem_data): Don't close FD here ...
+	(write_cb_data): ... or here ...
+	(_gpgme_data_outbound_handler): ... but here.  Change return type
+	to void.  Drop PID argument.
+	* context.h: Include "wait.h".
+	(struct gpgme_context_s): New members FDT and IO_CBS.
+	* op-support.c: New file.
+	* Makefile.am (libgpgme_la_SOURCES): Add op-support.c.
+	* ops.h: Add prototype for _gpgme_op_reset().
+	* decrypt.c (_gpgme_decrypt_start): New argument SYNCHRONOUS.  Use
+	_gpgme_op_reset.
+	(gpgme_op_decrypt_start): Add synchronous argument.
+	(gpgme_op_decrypt): Likewise.  Use _gpgme_wait_one instead
+	gpgme_wait.
+	* delete.c (gpgme_op_delete_start): Rename to ...
+	(_gpgme_op_delete_start): ... this.  New argument SYNCHRONOUS.
+	Use _gpgme_op_reset.  Make function static.
+	(gpgme_op_delete_start): Just a wrapper around
+	_gpgme_op_delete_start now.
+	(gpgme_op_delete): Add synchronous argument.  Use _gpgme_wait_one
+	instead gpgme_wait.
+	* encrypt.c: Include "wait.h".
+	(ggpgme_op_encrypt_start): Rename to ...
+	(_gpgme_op_encrypt_start): ... this.  New argument SYNCHRONOUS.
+	Use _gpgme_op_reset.  Make function static.
+	(gpgme_op_encrypt_start): Just a wrapper around
+	_gpgme_op_encrypt_start now.
+	(gpgme_op_encrypt): Add synchronous argument.  Use _gpgme_wait_one
+	instead gpgme_wait.
+	* encrypt_sign.c (gpgme_op_encrypt_sign_start): Rename to ...
+	(_gpgme_op_encrypt_sign_start): ... this.  New argument
+	SYNCHRONOUS.  Use _gpgme_op_reset.  Make function static.
+	(gpgme_op_encrypt_sign_start): Just a wrapper around
+	_gpgme_op_encrypt_sign_start now.
+	(gpgme_op_encrypt_sign): Add synchronous argument.  Use
+	_gpgme_wait_one instead gpgme_wait.
+	* export.c (gpgme_op_export_start): Rename to ...
+	(_gpgme_op_export_start): ... this.  New argument SYNCHRONOUS.
+	Use _gpgme_op_reset.  Make function static.
+	(gpgme_op_export_start): Just a wrapper around
+	_gpgme_op_export_start now.
+	(gpgme_op_export): Add synchronous argument.  Use _gpgme_wait_one
+	instead gpgme_wait.
+	* genkey.c (gpgme_op_genkey_start): Rename to ...
+	(_gpgme_op_genkey_start): ... this.  New argument SYNCHRONOUS.
+	Use _gpgme_op_reset.  Make function static.
+	(gpgme_op_genkey_start): Just a wrapper around
+	_gpgme_op_genkey_start now.
+	(gpgme_op_genkey): Add synchronous argument.  Use _gpgme_wait_one
+	instead gpgme_wait.
+	* import.c (gpgme_op_import_start): Rename to ...
+	(_gpgme_op_import_start): ... this.  New argument SYNCHRONOUS.
+	Use _gpgme_op_reset.  Make function static.
+	(gpgme_op_import_start): Just a wrapper around
+	_gpgme_op_import_start now.
+	(gpgme_op_import): Add synchronous argument.  Use _gpgme_wait_one
+	instead gpgme_wait.
+	* keylist.c (gpgme_op_keylist_start): Use _gpgme_op_reset.
+	(gpgme_op_keylist_ext_start): Likewise.
+	* sign.c (gpgme_op_sign_start): Rename to ...
+	(_gpgme_op_sign_start): ... this.  New argument SYNCHRONOUS.  Use
+	_gpgme_op_reset.  Make function static.
+	(gpgme_op_sign_start): Just a wrapper around _gpgme_op_sign_start
+	now.
+	(gpgme_op_sign): Add synchronous argument.  Use _gpgme_wait_one
+	instead gpgme_wait.
+	* trustlist.c (gpgme_op_trustlist_start): Use _gpgme_op_reset.
+	* verify.c (gpgme_op_verify_start): Rename to ...
+	(_gpgme_op_verify_start): ... this.  New argument SYNCHRONOUS.
+	Use _gpgme_op_reset.  Make function static.
+	(gpgme_op_verify_start): Just a wrapper around
+	_gpgme_op_verify_start now.
+	(gpgme_op_verify): Add synchronous argument.  Use _gpgme_wait_one
+	instead gpgme_wait.
+	* engine-gpgsm.c (iocb_data_t): New type.
+	(struct gpgsm_object_s): New member status_cb.  Replace input_fd
+	and input_data with input_cb.  Replace output_fd and output_data
+	with output_cb.  Replace message_fd and message_data with
+	message_cb.  New member io_cbs.
+	(_gpgme_gpgsm_new): Initialize all new members (and drop the old
+	ones).
+	(close_notify_handler): New variable POSSIBLY_DONE.  For each I/O
+	callback, check if it should be unregistered.  If all callbacks
+	have been unregistered, trigger GPGME_EVENT_DONE.
+	(_gpgme_gpgsm_release): Remove variable PID.  Use new variable
+	names to close the file descriptors.
+	(_gpgme_gpgsm_op_decrypt): Use new variable names,
+	(_gpgme_gpgsm_op_encrypt): Likewise.
+	(_gpgme_gpgsm_op_genkey): Likewise.
+	(_gpgme_gpgsm_op_import): Likewise.
+	(_gpgme_gpgsm_op_keylist): Likewise.
+	(_gpgme_gpgsm_op_keylist_ext): Likewise.
+	(_gpgme_gpgsm_op_sign): Likewise.
+	(_gpgme_gpgsm_op_verify): Likewise.
+	(gpgsm_status_handler): Drop argument PID.  Change return type to
+	void.  Close status pipe before returning because of EOF or error.
+	(_gpgme_gpgsm_add_io_cb): New function.
+	(_gpgme_gpgsm_start): Use _gpgme_gpgsm_add_io_cb to register
+	callback function.
+	(_gpgme_gpgsm_set_io_cbs): New function.
+	* engine-gpgsm.h: New prototype for _gpgme_gpgsm_set_io_cbs.
+	* engine.c (_gpgme_engine_set_io_cbs): New function.
+	* engine.h: New prototype for _gpgme_engine_set_io_cbs.
+
 2002-06-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (libgpgme_la_SOURCES): Remove mutex.h.

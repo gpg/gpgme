@@ -46,12 +46,11 @@
 void _gpgme_release_result ( GpgmeCtx c );
 void _gpgme_set_op_info (GpgmeCtx c, GpgmeData info);
 
+void _gpgme_op_event_cb (void *data, GpgmeEventIO type, void *type_data);
+
 /*-- wait.c --*/
 GpgmeCtx _gpgme_wait_on_condition ( GpgmeCtx c,
                                     int hang, volatile int *cond );
-void _gpgme_freeze_fd ( int fd );
-void _gpgme_thaw_fd ( int fd );
-
 
 /*-- recipient.c --*/
 int _gpgme_recipients_all_valid ( const GpgmeRecipients rset );
@@ -76,14 +75,15 @@ GpgmeError    _gpgme_data_append_percentstring_for_xml ( GpgmeData dh,
 GpgmeError    _gpgme_data_unread (GpgmeData dh,
                                   const char *buffer, size_t length );
 
-int _gpgme_data_inbound_handler (void *opaque, int pid, int fd);
-int _gpgme_data_outbound_handler (void *opaque, int pid, int fd);
-
+void _gpgme_data_inbound_handler (void *opaque, int fd);
+void _gpgme_data_outbound_handler (void *opaque, int fd);
 
 /*-- key.c --*/
 GpgmeError _gpgme_key_new ( GpgmeKey *r_key );
 GpgmeError _gpgme_key_new_secret ( GpgmeKey *r_key );
 
+/*-- op-support.c --*/
+GpgmeError _gpgme_op_reset (GpgmeCtx ctx, int synchronous);
 
 /*-- verify.c --*/
 void _gpgme_release_verify_result (VerifyResult result);
@@ -95,7 +95,8 @@ void _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code,
 void _gpgme_release_decrypt_result (DecryptResult result);
 void _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code,
 				    char *args);
-GpgmeError _gpgme_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain,
+GpgmeError _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
+				 GpgmeData ciph, GpgmeData plain,
 				 void *status_handler);
 GpgmeError _gpgme_decrypt_result (GpgmeCtx ctx);
 

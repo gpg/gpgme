@@ -168,27 +168,19 @@ _gpgme_sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
     }
 }
 
-GpgmeError
-gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData in, GpgmeData out,
-		     GpgmeSigMode mode)
+static GpgmeError
+_gpgme_op_sign_start (GpgmeCtx ctx, int synchronous,
+		      GpgmeData in, GpgmeData out,
+		      GpgmeSigMode mode)
 {
   GpgmeError err = 0;
-
-  fail_on_pending_request (ctx);
-  ctx->pending = 1;
-
-  _gpgme_release_result (ctx);
 
   if (mode != GPGME_SIG_MODE_NORMAL
       && mode != GPGME_SIG_MODE_DETACH
       && mode != GPGME_SIG_MODE_CLEAR)
     return mk_error (Invalid_Value);
-        
-  /* Create a process object.  */
-  _gpgme_engine_release (ctx->engine);
-  ctx->engine = NULL;
-  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+
+  err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     goto leave;
 
@@ -231,6 +223,13 @@ gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData in, GpgmeData out,
   return err;
 }
 
+GpgmeError
+gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData in, GpgmeData out,
+		     GpgmeSigMode mode)
+{
+  return _gpgme_op_sign_start (ctx, 0, in, out, mode);
+}
+
 /**
  * gpgme_op_sign:
  * @ctx: The context
@@ -255,8 +254,8 @@ gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData in, GpgmeData out,
 GpgmeError
 gpgme_op_sign (GpgmeCtx ctx, GpgmeData in, GpgmeData out, GpgmeSigMode mode)
 {
-  GpgmeError err = gpgme_op_sign_start (ctx, in, out, mode);
+  GpgmeError err = _gpgme_op_sign_start (ctx, 1, in, out, mode);
   if (!err)
-    gpgme_wait (ctx, &err, 1);
+    err = _gpgme_wait_one (ctx);
   return err;
 }

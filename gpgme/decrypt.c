@@ -80,20 +80,12 @@ _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
 
 GpgmeError
-_gpgme_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain,
-		      void *status_handler)
+_gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
+		      GpgmeData ciph, GpgmeData plain, void *status_handler)
 {
   GpgmeError err = 0;
 
-  fail_on_pending_request (ctx);
-  ctx->pending = 1;
-
-  _gpgme_release_result (ctx);
-
-  /* Create a process object.  */
-  _gpgme_engine_release (ctx->engine);
-  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     goto leave;
 
@@ -138,7 +130,7 @@ _gpgme_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain,
 GpgmeError
 gpgme_op_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain)
 {
-  return _gpgme_decrypt_start (ctx, ciph, plain,
+  return _gpgme_decrypt_start (ctx, 0, ciph, plain,
 			       _gpgme_decrypt_status_handler);
 }
 
@@ -158,8 +150,9 @@ gpgme_op_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain)
 GpgmeError
 gpgme_op_decrypt (GpgmeCtx ctx, GpgmeData in, GpgmeData out)
 {
-  GpgmeError err = gpgme_op_decrypt_start (ctx, in, out);
+  GpgmeError err = _gpgme_decrypt_start (ctx, 1, in, out,
+					 _gpgme_decrypt_status_handler);
   if (!err)
-    gpgme_wait (ctx, &err, 1);
+    err = _gpgme_wait_one (ctx);
   return err;
 }

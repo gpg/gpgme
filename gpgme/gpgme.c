@@ -28,7 +28,7 @@
 #include "util.h"
 #include "context.h"
 #include "ops.h"
-
+#include "wait.h"
 
 /**
  * gpgme_new:
@@ -53,8 +53,8 @@ gpgme_new (GpgmeCtx *r_ctx)
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
   ctx->verbosity = 1;
   ctx->include_certs = 1;
+  _gpgme_fd_table_init (&ctx->fdt);
   *r_ctx = ctx;
-
   return 0;
 }
 
@@ -71,6 +71,7 @@ gpgme_release (GpgmeCtx ctx)
   if (!ctx)
     return;
   _gpgme_engine_release (ctx->engine);
+  _gpgme_fd_table_deinit (&ctx->fdt);
   _gpgme_release_result (ctx);
   gpgme_key_release (ctx->tmp_key);
   gpgme_data_release (ctx->help_data_1);
@@ -471,7 +472,8 @@ gpgme_set_progress_cb (GpgmeCtx ctx, GpgmeProgressCb cb, void *cb_value)
  * @r_cb: The current callback function
  * @r_cb_value: The current value passed to the callback function
  *
- * This function returns the callback function to be used as a progress indicator.
+ * This function returns the callback function to be used as a
+ * progress indicator.
  **/
 void
 gpgme_get_progress_cb (GpgmeCtx ctx, GpgmeProgressCb *r_cb, void **r_cb_value)
@@ -490,4 +492,60 @@ gpgme_get_progress_cb (GpgmeCtx ctx, GpgmeProgressCb *r_cb, void **r_cb_value)
       if (r_cb_value)
 	*r_cb_value = NULL;
     }
+}
+
+
+/**
+ * gpgme_set_io_cbs:
+ * @ctx: the context
+ * @register_io_cb: A callback function
+ * @register_hook_value: The value passed to the callback function
+ * @remove_io_cb: Another callback function
+ *
+ **/
+void
+gpgme_set_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs)
+{
+  if (ctx && io_cbs)
+    ctx->io_cbs = *io_cbs;
+  else
+    {
+      ctx->io_cbs.add = NULL;
+      ctx->io_cbs.add_priv = NULL;
+      ctx->io_cbs.remove = NULL;
+      ctx->io_cbs.event = NULL;
+      ctx->io_cbs.event_priv = NULL;
+    }
+}
+
+
+/**
+ * gpgme_get_io_cbs:
+ * @ctx: the context
+ * @r_register_cb: The current register callback function
+ * @r_register_cb_value: The current value passed to the
+ * register callback function
+ * @r_remove_cb: The current remove callback function
+ *
+ * This function returns the callback function to be used to pass a passphrase
+ * to the crypto engine.
+ **/
+void
+gpgme_get_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs)
+{
+  if (ctx && io_cbs)
+    *io_cbs = ctx->io_cbs;
+}
+
+
+void
+_gpgme_op_event_cb (void *data, GpgmeEventIO type, void *type_data)
+{
+  GpgmeCtx ctx = data;
+
+  if (type == GPGME_EVENT_DONE)
+    ctx->pending = 0;
+
+  if (ctx->io_cbs.add && ctx->io_cbs.event)
+    (*ctx->io_cbs.event) (ctx->io_cbs.event_priv, type, type_data);
 }

@@ -567,6 +567,26 @@ _gpgme_engine_start (EngineObject engine, void *opaque)
   return 0;
 }
 
+void
+_gpgme_engine_set_io_cbs (EngineObject engine,
+			  struct GpgmeIOCbs *io_cbs)
+{
+  if (!engine)
+    return;
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      _gpgme_gpg_set_io_cbs (engine->engine.gpg, io_cbs);
+      break;
+    case GPGME_PROTOCOL_CMS:
+      _gpgme_gpgsm_set_io_cbs (engine->engine.gpgsm, io_cbs);
+      break;
+    default:
+      break;
+    }
+}
+
 
 void
 _gpgme_engine_add_child_to_reap_list (void *buf, int buflen, pid_t pid)

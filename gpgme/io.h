@@ -1,6 +1,6 @@
-/* io.h - I/O functions 
+/* io.h - Interface to the I/O functions.
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -24,48 +24,44 @@
 
 #include "types.h"
 
-struct spawn_fd_item_s {
-    int fd;
-    int dup_to;
+/* A single file descriptor passed to spawn.  For child fds, dup_to
+   specifies the fd it should become in the child.  */
+struct spawn_fd_item_s
+{
+  int fd;
+  int dup_to;
 };
 
-
-struct io_select_fd_s {
-    int fd;
-    int is_closed;
-    int for_read;
-    int for_write;
-    int signaled;
-    int frozen;
-    void *opaque;
+struct io_select_fd_s
+{
+  int fd;
+  int for_read;
+  int for_write;
+  int signaled;
+  int frozen;
+  void *opaque;
 };
 
+/* These function are either defined in posix-io.c or w32-io.c.  */
+int _gpgme_io_read (int fd, void *buffer, size_t count);
+int _gpgme_io_write (int fd, const void *buffer, size_t count);
+int _gpgme_io_pipe (int filedes[2], int inherit_idx);
+int _gpgme_io_close (int fd);
+int _gpgme_io_set_close_notify (int fd, void (*handler) (int, void *),
+				void *value);
+int _gpgme_io_set_nonblocking (int fd);
 
-/* These function are either defined in posix-io.c or w32-io.c */
-
-int _gpgme_io_read ( int fd, void *buffer, size_t count );
-int _gpgme_io_write ( int fd, const void *buffer, size_t count );
-int _gpgme_io_pipe ( int filedes[2], int inherit_idx );
-int _gpgme_io_close ( int fd );
-int _gpgme_io_set_close_notify (int fd,
-                                void (*handler)(int, void*), void *value);
-int _gpgme_io_set_nonblocking ( int fd );
-int _gpgme_io_spawn ( const char *path, char **argv,
-                      struct spawn_fd_item_s *fd_child_list,
-                      struct spawn_fd_item_s *fd_parent_list );
-int _gpgme_io_waitpid ( int pid, int hang, int *r_status, int *r_signal );
-int _gpgme_io_kill ( int pid, int hard );
-int _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds);
-
-
-
-
-
-
+/* Spawn the executable PATH with ARGV as arguments, after forking
+   close all fds in FD_PARENT_LIST in the parent and close or dup all
+   fds in FD_CHILD_LIST in the child.  */
+int _gpgme_io_spawn (const char *path, char **argv,
+		     struct spawn_fd_item_s *fd_child_list,
+		     struct spawn_fd_item_s *fd_parent_list);
+int _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal);
+int _gpgme_io_kill (int pid, int hard);
+int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds);
 
 #endif /* IO_H */
-
-
 
 
 

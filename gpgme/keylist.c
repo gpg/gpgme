@@ -236,47 +236,51 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	      /* Start a new keyblock.  */
 	      if (_gpgme_key_new (&key))
 		{
-		  ctx->error = mk_error (Out_Of_Core);  /* the only kind of error we can get*/
+		  /* The only kind of error we can get.  */
+		  ctx->error = mk_error (Out_Of_Core);
 		  return;
                 }
-                rectype = RT_PUB;
-                finish_key (ctx);
-                assert (!ctx->tmp_key);
-                ctx->tmp_key = key;
+	      rectype = RT_PUB;
+	      finish_key (ctx);
+	      assert (!ctx->tmp_key);
+	      ctx->tmp_key = key;
             }
-            else if (!strcmp (p, "sec"))
-	      {
-                /* Start a new keyblock,  */
-                if (_gpgme_key_new_secret (&key))
-		  {
-                    ctx->error = mk_error (Out_Of_Core);  /* The only kind of error we can get*/
-                    return;
-                }
-                rectype = RT_SEC;
-                finish_key (ctx);
-                assert (!ctx->tmp_key);
-                ctx->tmp_key = key;
+	  else if (!strcmp (p, "sec"))
+	    {
+	      /* Start a new keyblock,  */
+	      if (_gpgme_key_new_secret (&key))
+		{
+		  /* The only kind of error we can get.  */
+		  ctx->error = mk_error (Out_Of_Core);
+		  return;
+		}
+	      rectype = RT_SEC;
+	      finish_key (ctx);
+	      assert (!ctx->tmp_key);
+	      ctx->tmp_key = key;
             }
-            else if (!strcmp (p, "crt"))
-	      {
-                /* Start a new certificate. */
-                if (_gpgme_key_new (&key))
-		  {
-                    ctx->error = mk_error (Out_Of_Core);  /* The only kind of error we can get*/
-                    return;
-                }
-                key->x509 = 1;
-                rectype = RT_CRT;
-                finish_key (ctx);
-                assert (!ctx->tmp_key);
-                ctx->tmp_key = key;
+	  else if (!strcmp (p, "crt"))
+	    {
+	      /* Start a new certificate. */
+	      if (_gpgme_key_new (&key))
+		{
+		  /* The only kind of error we can get.  */
+		  ctx->error = mk_error (Out_Of_Core);
+		  return;
+		}
+	      key->x509 = 1;
+	      rectype = RT_CRT;
+	      finish_key (ctx);
+	      assert (!ctx->tmp_key);
+	      ctx->tmp_key = key;
             }
 	  else if (!strcmp (p, "crs"))
 	    {
 	      /* Start a new certificate.  */
 	      if (_gpgme_key_new_secret (&key))
 		{
-		  ctx->error = mk_error (Out_Of_Core);  /* The only kind of error we can get*/
+		  /* The only kind of error we can get.  */
+		  ctx->error = mk_error (Out_Of_Core);
 		  return;
                 }
 	      key->x509 = 1;
@@ -289,7 +293,6 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	    rectype = RT_FPR;
 	  else 
 	    rectype = RT_NONE;
-            
         }
       else if (rectype == RT_PUB || rectype == RT_SEC
 	       || rectype == RT_CRT || rectype == RT_CRS)
@@ -401,7 +404,8 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	      break;
 	    case 10: /* user ID */
 	      if (_gpgme_key_append_name (key, p))
-		ctx->error = mk_error (Out_Of_Core);  /* The only kind of error we can get*/
+		/* The only kind of error we can get*/
+		ctx->error = mk_error (Out_Of_Core);
 	      else
 		{
 		  if (trust_info)
@@ -495,25 +499,13 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
 {
   GpgmeError err = 0;
 
-  if (!ctx)
-    return mk_error (Invalid_Value);
-  ctx->pending = 1;
+  err = _gpgme_op_reset (ctx, 0);
+  if (err)
+    goto leave;
 
-  _gpgme_release_result (ctx);
-
-  if (ctx->engine)
-    {
-      _gpgme_engine_release (ctx->engine); 
-      ctx->engine = NULL;
-    }
   gpgme_key_release (ctx->tmp_key);
   ctx->tmp_key = NULL;
   /* Fixme: Release key_queue.  */
-    
-  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
-  if (err)
-    goto leave;
 
   _gpgme_engine_set_status_handler (ctx->engine, keylist_status_handler, ctx);
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
@@ -526,7 +518,8 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
      just ignore those lines - This should speed up things */
   _gpgme_engine_set_verbosity (ctx->engine, 0);
 
-  err = _gpgme_engine_op_keylist (ctx->engine, pattern, secret_only, ctx->keylist_mode);
+  err = _gpgme_engine_op_keylist (ctx->engine, pattern, secret_only,
+				  ctx->keylist_mode);
 
   if (!err)	/* And kick off the process.  */
     err = _gpgme_engine_start (ctx->engine, ctx);
@@ -561,25 +554,11 @@ gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
 {
   GpgmeError err = 0;
 
-  if (!ctx)
-    return mk_error (Invalid_Value);
-  ctx->pending = 1;
-
-  _gpgme_release_result (ctx);
-
-  if (ctx->engine)
-    {
-      _gpgme_engine_release (ctx->engine); 
-      ctx->engine = NULL;
-    }
-  gpgme_key_release (ctx->tmp_key);
-  ctx->tmp_key = NULL;
-  /* Fixme: Release key_queue.  */
-    
-  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  err = _gpgme_op_reset (ctx, 0);
   if (err)
     goto leave;
+
+  gpgme_key_release (ctx->tmp_key);
 
   _gpgme_engine_set_status_handler (ctx->engine, keylist_status_handler, ctx);
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,

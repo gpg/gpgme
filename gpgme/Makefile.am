@@ -58,7 +58,8 @@ libgpgme_la_SOURCES = \
 	util.h util.c \
 	context.h ops.h \
 	data.c recipient.c signers.c \
-        wait.c wait.h \
+	wait.c wait.h \
+	op-support.c \
 	encrypt.c \
 	encrypt-sign.c \
 	decrypt.c \
