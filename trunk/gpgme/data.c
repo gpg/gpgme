@@ -557,7 +557,7 @@ gpgme_data_rewind (GpgmeData dh)
  * error code GPGME_EOF.
  **/
 GpgmeError
-gpgme_data_read (GpgmeData dh, char *buffer, size_t length, size_t *nread)
+gpgme_data_read (GpgmeData dh, void *buffer, size_t length, size_t *nread)
 {
   size_t nbytes;
 
@@ -679,12 +679,12 @@ _gpgme_data_get_as_string (GpgmeData dh)
  * Return value: 0 on success or an error code
  **/
 GpgmeError
-gpgme_data_write (GpgmeData dh, const char *buffer, size_t length)
+gpgme_data_write (GpgmeData dh, const void *buffer, size_t length)
 {
   if (!dh || !buffer)
     return mk_error (Invalid_Value);
       
-  return _gpgme_data_append (dh, buffer, length );
+  return _gpgme_data_append (dh, (const char *)buffer, length );
 }
 
 

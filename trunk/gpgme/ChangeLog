@@ -1,5 +1,14 @@
 2002-05-03  Werner Koch  <wk@gnupg.org>
 
+	* engine-gpgsm.c (_gpgme_gpgsm_new): Redirect any gpgsm error
+	output to /dev/null.
+
+	* verify.c (gpgme_get_sig_key): Set the protocol of the listctx.
+	* gpgme.c (gpgme_get_protocol): New.
+
+	* data.c (gpgme_data_write): Changed type of BUFFER to void*.
+	(gpgme_data_read): Ditto.
+
 	* verify.c (_gpgme_verify_status_handler): Handle TRUST_* status
 	lines so that a claim can be made without looking up the key.
 	(gpgme_get_sig_string_attr): New. 

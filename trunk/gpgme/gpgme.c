@@ -212,6 +212,16 @@ gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol protocol)
   return 0;
 }
 
+GpgmeProtocol
+gpgme_get_protocol (GpgmeCtx ctx)
+{
+  if (!ctx)
+    return 0; /* well, this is OpenPGP */
+  if (ctx->use_cms)
+    return GPGME_PROTOCOL_CMS;
+  return GPGME_PROTOCOL_OpenPGP;
+}
+
 
 /**
  * gpgme_set_armor:

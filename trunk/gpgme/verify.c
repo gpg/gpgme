@@ -553,6 +553,7 @@ gpgme_get_sig_key (GpgmeCtx c, int idx, GpgmeKey *r_key)
       err = gpgme_new (&listctx);
       if (err)
 	return err;
+      gpgme_set_protocol (listctx, gpgme_get_protocol (c));
       gpgme_set_keylist_mode (listctx, c->keylist_mode);
       err = gpgme_op_keylist_start (listctx, result->fpr, 0);
       if (!err)
