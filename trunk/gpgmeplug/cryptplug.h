@@ -913,12 +913,22 @@ bool signMessage( const char* cleartext,
 
 
 /*! \ingroup groupSignAct
-    Dummy!!  To be replaced by real structure information...
+ */
+struct SignatureMetaDataExtendedInfo
+{
+    struct tm* creation_time;
+    char* status_text;
+    char* fingerprint;
+};
+
+/*! \ingroup groupSignAct
 */
 struct SignatureMetaData {
-  char* status;
-  char* extStatus;
-  char* nota_xml;
+    char* status;
+    struct SignatureMetaDataExtendedInfo* extended_info;
+    int extended_info_count;
+    char* nota_xml;
+    int status_code;
 };
 
 /*! \ingroup groupSignAct

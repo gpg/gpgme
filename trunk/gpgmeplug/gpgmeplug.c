@@ -50,6 +50,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <time.h>
 
 #include "gpgme.h"
 #ifndef GPGMEPLUG_PROTOCOL
@@ -774,6 +775,42 @@ bool signMessage( const char*  cleartext,
 }
 
 
+static const char*
+sig_status_to_string( GpgmeSigStat status )
+{
+    const char *result;
+
+    switch (status) {
+      case GPGME_SIG_STAT_NONE:
+        result = "Oops: Signature not verified";
+        break;
+      case GPGME_SIG_STAT_NOSIG:
+        result = "No signature found";
+        break;
+      case GPGME_SIG_STAT_GOOD:
+        result = "Good signature";
+        break;
+      case GPGME_SIG_STAT_BAD:
+        result = "BAD signature";
+        break;
+      case GPGME_SIG_STAT_NOKEY:
+        result = "No public key to verify the signature";
+        break;
+      case GPGME_SIG_STAT_ERROR:
+        result = "Error verifying the signature";
+        break;
+      case GPGME_SIG_STAT_DIFF:
+        result = "Different results for signatures";
+        break;
+      default:
+	result = "Error: Unknown status";
+	break;
+    }
+
+    return result;
+}
+
+
 bool checkMessageSignature( const char* ciphertext, 
                             const char* signaturetext,
                             struct SignatureMetaData* sigmeta )
@@ -781,6 +818,12 @@ bool checkMessageSignature( const char* ciphertext,
     GpgmeCtx ctx;
     GpgmeSigStat status;
     GpgmeData datapart, sigpart;
+    GpgmeError err;
+    GpgmeKey key;
+    time_t created;
+    int sig_idx = 0;
+    const char* statusStr;
+    const char* fpr;
 
     gpgme_new( &ctx );
     gpgme_data_new_from_mem( &datapart, ciphertext,
@@ -793,8 +836,49 @@ bool checkMessageSignature( const char* ciphertext,
     gpgme_data_release( sigpart );
     gpgme_release( ctx );
 
-    // PENDING(khz) Differentiate better between various failures
-    // PENDING(khz) Fill sigmeta
+#ifdef THIS_IS_UNTESTED_USE_AT_YOUR_OWN_RISK
+    /* Provide information in the sigmeta struct */
+    /* the status string */
+    statusStr = sig_status_to_string( status );
+    // PENDING(kalle) Handle out of memory
+    sigmeta->status = malloc( strlen( statusStr ) + 1 );
+    strcpy( sigmeta->status, statusStr );
+    sigmeta->status[strlen( statusStr )] = '\0';
+
+    // Extended information for any number of signatures.
+    fpr = gpgme_get_sig_status( ctx, sig_idx, &status, &created );
+    sigmeta->extended_info = 0;
+    while( fpr != NULL ) {
+        struct tm* ctime_val;
+        const char* sig_status;
+
+        // PENDING(kalle) Handle out of memory
+        sigmeta->extended_info = realloc( sigmeta->extended_info,
+                                          sizeof( struct SignatureMetaDataExtendedInfo ) * ( sig_idx + 1 ) );
+        // the creation time
+        // PENDING(kalle) Handle out of memory
+        sigmeta->extended_info[sig_idx].creation_time = malloc( sizeof( struct tm ) );
+        ctime_val = localtime( &created );
+        memcpy( sigmeta->extended_info[sig_idx].creation_time,
+                ctime_val, sizeof( struct tm ) );
+        err = gpgme_get_sig_key (ctx, sig_idx, &key);
+        sig_status = sig_status_to_string( status );
+        // PENDING(kalle) Handle out of memory
+        sigmeta->extended_info[sig_idx].status_text = malloc( strlen( sig_status ) + 1 );
+        strcpy( sigmeta->extended_info[sig_idx].status_text,
+                sig_status );
+        sigmeta->extended_info[sig_idx].status_text[strlen( sig_status )] = '\0';
+        // PENDING(kalle) Handle out of memory
+        sigmeta->extended_info[sig_idx].fingerprint = malloc( strlen( fpr ) + 1 );
+        strcpy( sigmeta->extended_info[sig_idx].fingerprint, fpr );
+        sigmeta->extended_info[sig_idx].fingerprint[strlen( fpr )] = '\0';
+
+        fpr = gpgme_get_sig_status (ctx, ++sig_idx, &status, &created);
+    }
+    sigmeta->extended_info_count = sig_idx;
+    sigmeta->nota_xml = gpgme_get_notation( ctx );
+    sigmeta->status_code = status;
+#endif
     return ( status == GPGME_SIG_STAT_GOOD );
 }
 
