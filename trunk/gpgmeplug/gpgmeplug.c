@@ -2761,7 +2761,8 @@ bool checkMessageSignature( char** cleartext,
                            : strlen( signaturetext ),
                            1 );
 
-  gpgme_op_verify( ctx, sigpart, datapart, &status );
+  gpgme_op_verify( ctx, sigpart, isOpaqueSigned ? NULL : datapart,
+		   isOpaqueSigned ? datapart : NULL, &status );
 
   if( isOpaqueSigned ) {
     rClear = gpgme_data_release_and_get_mem( datapart, &clearLen );
