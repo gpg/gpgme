@@ -523,17 +523,9 @@ threads want to deal with the same object, the caller has to make sure
 that operations on this object are fully synchronized.
 
 @item
-Only one thread is allowed to call @code{gpgme_wait} at a time.  If
+Only one thread at any time is allowed to call @code{gpgme_wait}.  If
 multiple threads call this function, the caller must make sure that
 all invocations are fully synchronized.
-
-@item
-Unfortunately, the last rule implies that all calls to one of the
-following functions have to be fully synchronized together with
-@code{gpgme_wait}, as they call @code{gpgme_wait} internally: All
-functions @code{gpgme_op_FOO} that have a corresponding
-@code{gpgme_op_FOO_start} function, @code{gpgme_op_keylist_next},
-@code{gpgme_op_trustlist_next}.
 @end itemize
 
 

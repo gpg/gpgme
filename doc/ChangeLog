@@ -1,3 +1,9 @@
+2002-06-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Multi Threading): Remove item about the need to
+	synchronize anything against gpgme_wait (except gpgme_wait
+	itself).
+
 2002-06-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Information About Keys): Fix documentation for IDX.
