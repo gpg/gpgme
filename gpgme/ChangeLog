@@ -1,5 +1,7 @@
 2003-05-04  Marcus Brinkmann  <marcus@g10code.de>
 
+	* key.c (_gpgme_key_add_sig): Initialize SIG->uid.
+
 	* gpgme.h (GpgmeError): Add deprecated values for
 	GPGME_Invalid_Type and GPGME_Invalid_Mode.
 

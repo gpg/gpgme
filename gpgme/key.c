@@ -258,6 +258,7 @@ _gpgme_key_add_sig (GpgmeKey key, char *src)
     return NULL;
   sig->keyid = sig->_keyid;
   sig->_keyid[16] = '\0';
+  sig->uid = ((char *) sig) + sizeof (*sig);
 
   if (src)
     {
