@@ -1,3 +1,8 @@
+For a list of the authors of the source code of GPGME, please see the
+file AUTHORS.  The following people supported GPGME development in
+various ways (for example by finding bugs or giving advice), and we
+want to thank them for their help.  If we forgot you, please let us
+know.
 
 Adriaan de Groot        adridg@cs.kun.nl
 Albrecht Dreß		albrecht.dress@arcor.de
@@ -9,6 +14,7 @@ Johannes Poehlmann      jhp@caldera.de
 Jose C. García Sogo     jose@jaimedelamo.eu.org
 Mark Mutz               mutz@kde.org
 Miguel Coca		mcoca@gnu.org
+Noel Torres		envite@rolamasao.org
 Stéphane Corthésy       stephane@sente.ch
 Timo Schulz             twoaday@freakmail.de
 Tommy Reynolds          reynolds@redhat.com
