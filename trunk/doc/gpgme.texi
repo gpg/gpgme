@@ -1562,8 +1562,10 @@ key ring of the crypto engine used by @var{ctx}.  If
 otherwise secret keys are deleted as well.
 
 The function returns @code{GPGME_No_Error} if the key was deleted
-successfully, and @code{GPGME_Invalid_Value} if @var{ctx} or @var{key}
-is not a valid pointer.
+successfully, @code{GPGME_Invalid_Value} if @var{ctx} or @var{key} is
+not a valid pointer, @code{GPGME_Invalid_Key} if @var{key} could not
+be found in the keyring, and @code{GPGME_Conflict} if the secret key
+for @var{key} is available, but @var{allow_secret} is zero.
 @end deftypefun
 
 @deftypefun GpgmeError gpgme_op_delete_start (@w{GpgmeCtx @var{ctx}}, @w{const GpgmeKey @var{key}}, @w{int @var{allow_secret}})
