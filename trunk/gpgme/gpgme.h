@@ -1045,12 +1045,28 @@ gpgme_error_t gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher,
 struct _gpgme_new_signature
 {
   struct _gpgme_new_signature *next;
+
+  /* The type of the signature.  */
   gpgme_sig_mode_t type;
+
+  /* The public key algorithm used to create the signature.  */
   gpgme_pubkey_algo_t pubkey_algo;
+
+  /* The hash algorithm used to create the signature.  */
   gpgme_hash_algo_t hash_algo;
-  unsigned long class;
+
+  /* Internal to GPGME, do not use.  Must be set to the same value as
+     CLASS below.  */
+  unsigned long _obsolete_class;
+
+  /* Signature creation time.  */
   long int timestamp;
+
+  /* The fingerprint of the signature.  */
   char *fpr;
+
+  /* Crypto backend specific signature class.  */
+  unsigned int class;
 };
 typedef struct _gpgme_new_signature *gpgme_new_signature_t;
 

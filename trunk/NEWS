@@ -10,11 +10,16 @@ Noteworthy changes in version 0.4.3 (unreleased)
  * gpgme_signature_t's status field is now correctly set to an error
    with error code GPG_ERR_NO_PUBKEY if public key is not found.
 
+ * gpgme_new_signature_t's class field is now an unsigned int, rather
+   than an unsigned long (the old class field is preserved for
+   backwards compatibility).
+
  * Interface changes relative to the 0.4.3 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_get_key			CHANGED: Fails correctly if key ID not unique.
 gpgme_key_t			EXTENDED: New field can_authenticate.
 gpgme_subkey_t			EXTENDED: New field can_authenticate.
+gpgme_new_signature_t		CHANGED: New type for class field.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
