@@ -10,7 +10,7 @@
 #define GPGMEPLUG_SIGN_CDISP_VERSION     ""
 #define GPGMEPLUG_SIGN_CTENC_VERSION     ""
 #define GPGMEPLUG_SIGN_BTEXT_VERSION     ""
-#define GPGMEPLUG_SIGN_CTYPE_CODE        "application/pgp-signature; name=\"smime.p7s\""
+#define GPGMEPLUG_SIGN_CTYPE_CODE        "application/pkcs7-signature; name=\"smime.p7s\""
 #define GPGMEPLUG_SIGN_CDISP_CODE        "attachment; filename=\"smime.p7s\""
 #define GPGMEPLUG_SIGN_CTENC_CODE        "base64"
 #define GPGMEPLUG_SIGN_FLAT_PREFIX       ""
