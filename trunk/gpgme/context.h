@@ -67,6 +67,7 @@ struct gpgme_context_s {
     int use_textmode;
     int keylist_mode;
 
+    int signers_len;   /* The number of keys in signers.  */
     int signers_size;  /* size of the following array */
     GpgmeKey *signers;
 
