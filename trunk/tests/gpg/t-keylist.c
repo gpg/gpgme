@@ -52,9 +52,9 @@ struct
 keys[] =
   {
     { "A0FF4590BB6122EDEF6E3C542D727CC768697734", "6AE6D7EE46A871F8",
-      { { "Alpha Test", "demo key", "alpha@example.net" },
-	{ "Alice", "demo key", NULL },
-	{ "Alfa Test", "demo key", "alfa@example.net" } } },
+      { { "Alfa Test", "demo key", "alfa@example.net" },
+        { "Alpha Test", "demo key", "alpha@example.net" },
+	{ "Alice", "demo key", NULL } } },
     { "61EE841A2A27EB983B3B3C26413F4AF31AFDAB6C", "E71E72ACBC43DA60",
       { { "Charlie Test", "demo key", "charlie@example.net" } } },
     { "3531152DE293E26A07F504BC318C1FAEFAEF6D1B", "B5C79E1A7272144D",

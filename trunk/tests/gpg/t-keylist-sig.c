@@ -62,15 +62,15 @@ struct
 keys[] =
   {
     { "A0FF4590BB6122EDEF6E3C542D727CC768697734", "6AE6D7EE46A871F8",
-      { { "Alpha Test", "demo key", "alpha@example.net",
+      { { "Alfa Test", "demo key", "alfa@example.net",
           { GPGME_PK_DSA, "2D727CC768697734",
-	    "Alpha Test", "demo key", "alpha@example.net", 19, 1 } },
+	    "Alfa Test", "demo key", "alfa@example.net", 19, 1 } },
+	{ "Alpha Test", "demo key", "alpha@example.net",
+          { GPGME_PK_DSA, "2D727CC768697734",
+	    "Alfa Test", "demo key", "alfa@example.net", 19, 1 } },
 	{ "Alice", "demo key", NULL,
           { GPGME_PK_DSA, "2D727CC768697734",
-	    "Alpha Test", "demo key", "alpha@example.net", 19, 1 } },
-	{ "Alfa Test", "demo key", "alfa@example.net",
-          { GPGME_PK_DSA, "2D727CC768697734",
-	    "Alpha Test", "demo key", "alpha@example.net", 19, 1 } } } },
+	    "Alfa Test", "demo key", "alfa@example.net", 19, 1 } } } },
     { NULL }
   };
 
