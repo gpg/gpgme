@@ -22,6 +22,8 @@
 #include <config.h>
 #endif
 
+#include <string.h>
+
 #include <gpgme.h>
 
 static const char version[] = VERSION;
