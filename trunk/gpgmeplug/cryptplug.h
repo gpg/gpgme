@@ -23,6 +23,8 @@
 #ifndef CRYPTPLUG_H
 #define CRYPTPLUG_H
 
+#include <stdlib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #else
@@ -30,8 +32,6 @@ typedef char bool;
 #define true 1
 #define false 0
 #endif
-
-#include <stdlib.h>
 
 /*! \file cryptplug.h
     \brief Common API header for CRYPTPLUG.
@@ -1324,7 +1324,7 @@ struct StructuringInfo {
     \see free_StructuringInfo, StructuringInfo
     \see signMessage, encryptMessage, encryptAndSignMessage
 */
-  static void init_StructuringInfo( struct StructuringInfo* s )
+  inline void init_StructuringInfo( struct StructuringInfo* s )
   {
     if( ! s ) return;
 
@@ -1365,7 +1365,7 @@ struct StructuringInfo {
 
     \see StructuringInfo
 */
-  static void free_StructuringInfo( struct StructuringInfo* s )
+  inline void free_StructuringInfo( struct StructuringInfo* s )
   {
     if( ! s ) return;
     if( s->contentTypeMain )    free( s->contentTypeMain );
