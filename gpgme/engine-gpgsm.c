@@ -28,17 +28,17 @@
 #define ENABLE_GPGSM 1
 #endif
 
+#ifdef ENABLE_GPGSM
+
 #include <sys/types.h>
 #include <assert.h>
 
-#ifdef ENABLE_GPGSM
 /* FIXME */
 #include "../assuan/assuan-defs.h"
 #undef xtrymalloc
 #undef xtrycalloc
 #undef xtryrealloc
 #undef xfree
-#endif /*ENABLE_GPGSM*/
 
 #include "gpgme.h"
 #include "util.h"
@@ -46,8 +46,6 @@
 #include "ops.h"
 #include "wait.h"
 #include "io.h"
-
-#ifdef ENABLE_GPGSM
 
 #include "engine-gpgsm.h"
 
@@ -312,6 +310,11 @@ _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque)
 
 #else	/* ENABLE_GPGSM */
 
+#include <stddef.h>
+#include "util.h"
+
+#include "engine-gpgsm.h"
+
 const char *
 _gpgme_gpgsm_get_version (void)
 {
@@ -332,6 +335,13 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
 
 void
 _gpgme_gpgsm_release (GpgsmObject gpgsm)
+{
+  return;
+}
+
+void
+_gpgme_gpgsm_set_status_handler (GpgsmObject gpgsm,
+				 GpgStatusHandler fnc, void *fnc_value) 
 {
   return;
 }

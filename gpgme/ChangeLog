@@ -1,3 +1,9 @@
+2001-11-22  Marcus Brinkmann  <marcus@gnu.org>
+
+	* engine-gpgsm.c: Shuffle around header inclusion a bit, to still
+	keep them seperate.
+	(_gpgme_set_status_handler) [!ENABLE_GPGSM]: New function.
+
 2001-11-22  Werner Koch  <wk@gnupg.org>
 
 	* engine-gpgsm.c: Include more headers so that NULL and mk_error
