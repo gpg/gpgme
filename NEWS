@@ -11,6 +11,15 @@ Noteworthy changes in version 0.9.0 (unreleased)
  * Verifying a signature of a revoked key gives the correct result now
    (GPG_ERR_CERT_REVOKED error code).
 
+ * Clarified that the error code GPG_ERR_NO_DATA from the decrypt &
+   verify operations still allows you to look at the signature
+   verification result.
+
+ * Clarified that patterns in keylisting operations have an upper
+   limit, and thus are not suited to list many keys at once by their
+   fingerprint.  Also improve the error message if the pattern is too
+   long for the CMS protocol to handle.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_key_t			EXTENDED: New field keylist_mode.
 gpgme_decrypt_result_t		EXTENDED: New field wrong_key_usage.
