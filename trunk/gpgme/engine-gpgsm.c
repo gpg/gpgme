@@ -40,6 +40,7 @@
 
 #include "assuan.h"
 #include "status-table.h"
+#include "debug.h"
 
 #include "engine-backend.h"
 
@@ -692,6 +693,8 @@ status_handler (void *opaque, int fd)
 	  /* Try our best to terminate the connection friendly.  */
 	  /*	  assuan_write_line (gpgsm->assuan_ctx, "BYE"); */
 	  err = map_assuan_error (assuan_err);
+          DEBUG3 ("fd %d: error from assuan (%d) getting status line : %s \n",
+                  fd, assuan_err, gpg_strerror (err));
 	}
       else if (linelen >= 3
 	       && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
@@ -701,6 +704,8 @@ status_handler (void *opaque, int fd)
 	    err = map_assuan_error (atoi (&line[4]));
 	  else
 	    err = gpg_error (GPG_ERR_GENERAL);
+          DEBUG2 ("fd %d: ERR line - mapped to: %s\n",
+                  fd, err? gpg_strerror (err):"ok");
 	}
       else if (linelen >= 2
 	       && line[0] == 'O' && line[1] == 'K'
@@ -721,6 +726,8 @@ status_handler (void *opaque, int fd)
               err = gpgsm->colon.fnc (gpgsm->colon.fnc_value, NULL);
             }
 	  _gpgme_io_close (gpgsm->status_cb.fd);
+          DEBUG2 ("fd %d: OK line - final status: %s\n",
+                  fd, err? gpg_strerror (err):"ok");
 	  return err;
 	}
       else if (linelen > 2
@@ -794,6 +801,8 @@ status_handler (void *opaque, int fd)
 		    dst++;
 		}
 	    }
+          DEBUG2 ("fd %d: D line; final status: %s\n",
+                  fd, err? gpg_strerror (err):"ok");
         }
       else if (linelen > 2
 	       && line[0] == 'S' && line[1] == ' ')
@@ -816,6 +825,8 @@ status_handler (void *opaque, int fd)
 	    }
 	  else
 	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", line + 2, rest);
+          DEBUG3 ("fd %d: S line (%s) - final status: %s\n",
+                  fd, line+2, err? gpg_strerror (err):"ok");
 	}
     }
   while (!err && assuan_pending_line (gpgsm->assuan_ctx));
@@ -1424,8 +1435,8 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   if (err)
     return err;
 
-  /* We must do a reset becuase we need to reset the list of signers.  Note
-     that RESET does not reset OPTION commands. */
+  /* We must send a reset because we need to reset the list of
+     signers.  Note that RESET does not reset OPTION commands. */
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, "RESET", NULL, NULL);
   if (err)
     return err;

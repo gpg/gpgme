@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -36,6 +37,7 @@ typedef struct
   struct _gpgme_op_verify_result result;
 
   gpgme_signature_t current_sig;
+  int did_prepare_new_sig;
 } *op_data_t;
 
 
@@ -146,6 +148,23 @@ calc_sig_summary (gpgme_signature_t sig)
   
 
 static gpgme_error_t
+prepare_new_sig (op_data_t opd)
+{
+  gpgme_signature_t sig;
+  
+  sig = calloc (1, sizeof (*sig));
+  if (!sig)
+    return gpg_error_from_errno (errno);
+  if (!opd->result.signatures)
+    opd->result.signatures = sig;
+  if (opd->current_sig)
+    opd->current_sig->next = sig;
+  opd->current_sig = sig;
+  opd->did_prepare_new_sig = 1;
+  return 0;
+}
+
+static gpgme_error_t
 parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
 {
   gpgme_signature_t sig;
@@ -157,14 +176,19 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
       end++;
     }
 
-  sig = calloc (1, sizeof (*sig));
-  if (!sig)
-    return gpg_error_from_errno (errno);
-  if (!opd->result.signatures)
-    opd->result.signatures = sig;
-  if (opd->current_sig)
-    opd->current_sig->next = sig;
-  opd->current_sig = sig;
+  if (!opd->did_prepare_new_sig)
+    {
+      gpg_error_t err;
+
+      err = prepare_new_sig (opd);
+      if (err)
+        return err;
+    }
+  assert (opd->did_prepare_new_sig);
+  opd->did_prepare_new_sig = 0;
+
+  assert (opd->current_sig);
+  sig = opd->current_sig;
 
   /* FIXME: We should set the source of the state.  */
   switch (code)
@@ -481,12 +505,17 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
   switch (code)
     {
+    case GPGME_STATUS_NEWSIG:
+      if (sig)
+        calc_sig_summary (sig);
+      break;
+
     case GPGME_STATUS_GOODSIG:
     case GPGME_STATUS_EXPSIG:
     case GPGME_STATUS_EXPKEYSIG:
     case GPGME_STATUS_BADSIG:
     case GPGME_STATUS_ERRSIG:
-      if (sig)
+      if (sig && !opd->did_prepare_new_sig)
 	calc_sig_summary (sig);
       return parse_new_sig (opd, code, args);
 
@@ -524,7 +553,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
       return sig ? parse_error (sig, args) : gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_EOF:
-      if (sig)
+      if (sig && !opd->did_prepare_new_sig)
 	calc_sig_summary (sig);
       break;
 
