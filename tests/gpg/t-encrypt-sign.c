@@ -1,4 +1,4 @@
-/* t-encrypt-sign.c  - regression test
+/* t-encrypt.c - Regression test.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003 g10 Code GmbH
 
@@ -18,44 +18,36 @@
    along with GPGME; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
 #include <gpgme.h>
 
-#define fail_if_err(a) do { if(a) {                                       \
-                               fprintf (stderr, "%s:%d: GpgmeError %s\n", \
-                                __FILE__, __LINE__, gpgme_strerror(a));   \
-                                exit (1); }                               \
-                             } while(0)
-
-static void
-print_op_info (GpgmeCtx ctx)
-{
-  char *str = gpgme_get_op_info (ctx, 0);
-
-  if (!str)
-    puts ("<!-- no operation info available -->");
-  else
-    {
-      puts (str);
-      free (str);
-    }
-}
+#define fail_if_err(err)					\
+  do								\
+    {								\
+      if (err)							\
+        {							\
+          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+                   __FILE__, __LINE__, gpgme_strerror (err));   \
+          exit (1);						\
+        }							\
+    }								\
+  while (0)
 
 
 static void
 print_data (GpgmeData dh)
 {
-  char buf[100];
+#define BUF_SIZE 512
+  char buf[BUF_SIZE + 1];
   int ret;
   
   ret = gpgme_data_seek (dh, 0, SEEK_SET);
   if (ret)
     fail_if_err (GPGME_File_Error);
-  while ((ret = gpgme_data_read (dh, buf, 100)) > 0)
+  while ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) > 0)
     fwrite (buf, ret, 1, stdout);
   if (ret < 0)
     fail_if_err (GPGME_File_Error);
@@ -63,74 +55,120 @@ print_data (GpgmeData dh)
 
 
 static GpgmeError
-passphrase_cb (void *opaque, const char *desc,
-	       void **r_hd, const char **result)
+passphrase_cb (void *opaque, const char *desc, void **hd, const char **result)
 {
+  /* Cleanup by looking at *hd.  */
   if (!desc)
-    /* Cleanup by looking at *r_hd.  */
     return 0;
 
   *result = "abc";
-  fprintf (stderr, "%% requesting passphrase for `%s': ", desc);
-  fprintf (stderr, "sending `%s'\n", *result);
-  
   return 0;
 }
 
 
-int 
-main (int argc, char **argv )
+static void
+check_result (GpgmeSignResult result, GpgmeSigMode type)
 {
-    GpgmeCtx ctx;
-    GpgmeError err;
-    GpgmeData in, out;
-    GpgmeRecipients rset;
-    char *p;
+  if (result->invalid_signers)
+    {
+      fprintf (stderr, "Invalid signer found: %s\n",
+	       result->invalid_signers->id);
+      exit (1);
+    }
+  if (!result->signatures || result->signatures->next)
+    {
+      fprintf (stderr, "Unexpected number of signatures created\n");
+      exit (1);
+    }
+  if (result->signatures->type != type)
+    {
+      fprintf (stderr, "Wrong type of signature created\n");
+      exit (1);
+    }
+  if (result->signatures->pubkey_algo != GPGME_PK_DSA)
+    {
+      fprintf (stderr, "Wrong pubkey algorithm reported: %i\n",
+	       result->signatures->pubkey_algo);
+      exit (1);
+    }
+  if (result->signatures->hash_algo != GPGME_MD_SHA1)
+    {
+      fprintf (stderr, "Wrong hash algorithm reported: %i\n",
+	       result->signatures->hash_algo);
+      exit (1);
+    }
+  if (result->signatures->class != 0)
+    {
+      fprintf (stderr, "Wrong signature class reported: %lu\n",
+	       result->signatures->class);
+      exit (1);
+    }
+  if (strcmp ("A0FF4590BB6122EDEF6E3C542D727CC768697734",
+	      result->signatures->fpr))
+    {
+      fprintf (stderr, "Wrong fingerprint reported: %s\n",
+	       result->signatures->fpr);
+      exit (1);
+    }
+}
 
-    err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
-    fail_if_err (err);
 
-  do {
-    err = gpgme_new (&ctx);
-    fail_if_err (err);
-    gpgme_set_armor (ctx, 1);
+int 
+main (int argc, char **argv)
+{
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeData in, out;
+  GpgmeRecipients rset;
+  GpgmeEncryptResult result;
+  GpgmeSignResult sign_result;
+  char *agent_info;
 
-    p = getenv("GPG_AGENT_INFO");
-    if (!(p && strchr (p, ':')))
-      gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
+  err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
+  fail_if_err (err);
+    
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+  gpgme_set_textmode (ctx, 1);
+  gpgme_set_armor (ctx, 1);
 
-    err = gpgme_data_new_from_mem ( &in, "Hallo Leute\n", 12, 0 );
-    fail_if_err (err);
+  agent_info = getenv("GPG_AGENT_INFO");
+  if (!(agent_info && strchr (agent_info, ':')))
+    gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
 
-    err = gpgme_data_new ( &out );
-    fail_if_err (err);
+  err = gpgme_data_new_from_mem (&in, "Hallo Leute\n", 12, 0);
+  fail_if_err (err);
 
-    err = gpgme_recipients_new (&rset);
-    fail_if_err (err);
-    err = gpgme_recipients_add_name_with_validity (rset, "Bob",
-                                                   GPGME_VALIDITY_FULL);
-    fail_if_err (err);
-    err = gpgme_recipients_add_name_with_validity (rset, "Alpha",
-                                                   GPGME_VALIDITY_FULL);
-    fail_if_err (err);
+  err = gpgme_data_new (&out);
+  fail_if_err (err);
+    
+  err = gpgme_recipients_new (&rset);
+  fail_if_err (err);
+  err = gpgme_recipients_add_name_with_validity (rset, "Bob",
+						 GPGME_VALIDITY_FULL);
+  fail_if_err (err);
+  err = gpgme_recipients_add_name_with_validity (rset, "Alpha",
+						 GPGME_VALIDITY_FULL);
+  fail_if_err (err);
 
+  err = gpgme_op_encrypt_sign (ctx, rset, in, out);
+  fail_if_err (err);
+  result = gpgme_op_encrypt_result (ctx);
+  if (result->invalid_recipients)
+    {
+      fprintf (stderr, "Invalid recipient encountered: %s\n",
+	       result->invalid_recipients->id);
+      exit (1);
+    }
+  sign_result = gpgme_op_sign_result (ctx);
+  check_result (sign_result, GPGME_SIG_MODE_NORMAL);
+  print_data (out);
 
-    err = gpgme_op_encrypt_sign (ctx, rset, in, out);
-    print_op_info (ctx);
-    fail_if_err (err);
-
-    fflush (NULL);
-    fputs ("Begin Result:\n", stdout );
-    print_data (out);
-    fputs ("End Result.\n", stdout );
-   
-    gpgme_recipients_release (rset);
-    gpgme_data_release (in);
-    gpgme_data_release (out);
-    gpgme_release (ctx);
-  } while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
-   
-    return 0;
+  gpgme_recipients_release (rset);
+  gpgme_data_release (in);
+  gpgme_data_release (out);
+  gpgme_release (ctx);
+  return 0;
 }
 
 

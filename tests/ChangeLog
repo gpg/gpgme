@@ -1,5 +1,7 @@
 2003-04-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/t-encrypt-sign.c (check_result): Rewritten.
+
 	* gpg/t-sign.c: Rewritten.
 	* gpgsm/t-sign.c: Rewritten.
 	* gpg/t-encrypt.c: Check for invalid recipients.
