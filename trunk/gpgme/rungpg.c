@@ -167,11 +167,12 @@ const char *
 _gpgme_gpg_get_version (void)
 {
   static const char *gpg_version;
+  DEFINE_STATIC_LOCK (gpg_version_lock);
 
-  /* FIXME: Locking.  */
+  LOCK (gpg_version_lock);
   if (!gpg_version)
     gpg_version = _gpgme_get_program_version (_gpgme_get_gpg_path ());
-
+  UNLOCK (gpg_version_lock);
   return gpg_version;
 }
 

@@ -37,6 +37,8 @@
 
 #include "util.h"
 
+DEFINE_STATIC_LOCK (get_path_lock);
+
 /* Return a string from the Win32 Registry or NULL in case of error.
   Caller must release the return value.  A NULL for root is an alias
   for HKEY_CURRENT_USER.  */
@@ -112,27 +114,31 @@ find_program_in_registry (const char *name)
 const char *
 _gpgme_get_gpg_path (void)
 {
-  static char *gpg_program = NULL;
-    
+  static char *gpg_program;
+
+  LOCK (get_path_lock);
   if (!gpg_program)
     gpg_program = find_program_in_registry ("gpgProgram");
 #ifdef GPG_PATH
   if (!gpg_program)
     gpg_program = GPG_PATH;
 #endif
+  UNLOCK (get_path_lock);
   return gpg_program;
 }
 
 const char *
 _gpgme_get_gpgsm_path (void)
 {
-  static char *gpgsm_program = NULL;
-    
+  static char *gpgsm_program;
+
+  LOCK (get_path_lock);
   if (!gpgsm_program)
     gpgsm_program = find_program_in_registry ("gpgsmProgram");
 #ifdef GPGSM_PATH
   if (!gpgsm_program)
     gpgsm_program = GPGSM_PATH;
 #endif
+  UNLOCK (get_path_lock);
   return gpgsm_program;
 }

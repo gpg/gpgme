@@ -48,6 +48,7 @@
 #include "wait.h"
 #include "io.h"
 #include "key.h"
+#include "sema.h"
 
 #include "engine-gpgsm.h"
 
@@ -99,10 +100,12 @@ const char *
 _gpgme_gpgsm_get_version (void)
 {
   static const char *gpgsm_version;
+  DEFINE_STATIC_LOCK (gpgsm_version_lock);
 
-  /* FIXME: Locking.  */
+  LOCK (gpgsm_version_lock);
   if (!gpgsm_version)
     gpgsm_version = _gpgme_get_program_version (_gpgme_get_gpgsm_path ());
+  UNLOCK (gpgsm_version_lock);
 
   return gpgsm_version;
 }

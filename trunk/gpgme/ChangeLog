@@ -1,5 +1,37 @@
 2002-05-08  Marcus Brinkmann  <marcus@g10code.de>
 
+	* w32-util.c: New static variable GET_PATH_LOCK.
+	(_gpgme_get_gpg_path): Remove superfluous NULL initializer.
+	Take lock while determining path.
+	(_gpgme_get_gpgsm_path): Likewise.
+	* version.c (do_subsystem_inits): Set DONE to 1 after
+	initialization.
+	(gpgme_get_engine_info): New variable ENGINE_INFO_LOCK.  Take lock
+	while determining engine info.
+	* rungpg.c (_gpgme_gpg_get_version): New variable
+	GPG_VERSION_LOCK.  Take the lock while determining the program
+	version.
+	* posix-io.c: Include "sema.h".
+	(_gpgme_io_spawn): New variable FIXED_SIGNALS_LOCK.  Take the lock
+	while fixing the signals.
+	(_gpgme_io_select): Make READFDS and WRITEFDS non-static.
+	* key.c: Include "sema.h".  New globals KEY_CACHE_LOCK and
+	KEY_REF_LOCK.
+	(capabilities_to_string): Make STRINGS very const.
+	(_gpgme_key_cache_add): Lock the key cache.
+	(_gpgme_key_cache_get): Likewise.
+	(gpgme_key_ref, gpgme_key_release): Lock the key_ref_lock.
+	* import.c (append_xml_impinfo): Make IMPORTED_FIELDS and
+	IMPORT_RES_FIELDS very const.  Make FIELD and FIELD_NAME a litle
+	const.
+	* engine.c (_gpgme_engine_get_info): New variable
+	ENGINE_INFO_LOCK.  Take lock while determining engine info.
+	* engine-gpgsm.c: Include "sema.h".
+	(_gpgme_gpgsm_get_version): New variable GPGSM_VERSION_LOCK.  Take
+	lock while getting program version.
+
+2002-05-08  Marcus Brinkmann  <marcus@g10code.de>
+
 	* debug.h: New file.
 	* Makefile.am (libgpgme_la_SOURCES): Add debug.h.
 	* util.h: Removed all prototypes and declarations related to

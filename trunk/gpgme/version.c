@@ -43,6 +43,7 @@ do_subsystem_inits (void)
     return;
   _gpgme_sema_subsystem_init ();
   _gpgme_key_cache_init ();
+  done = 1;
 }
 
 static const char*
@@ -148,44 +149,49 @@ const char *
 gpgme_get_engine_info ()
 {
   static const char *engine_info;
-  const char *openpgp_info = _gpgme_engine_get_info (GPGME_PROTOCOL_OpenPGP);
-  const char *cms_info = _gpgme_engine_get_info (GPGME_PROTOCOL_CMS);
-  char *info;
+  DEFINE_STATIC_LOCK (engine_info_lock);
 
-  /* FIXME: Make sure that only one instance does run.  */
-  if (engine_info)
-    return engine_info;
-
-  if (!openpgp_info && !cms_info)
-    info = "<EngineInfo>\n</EngineInfo>\n";
-  else if (!openpgp_info || !cms_info)
+  LOCK (engine_info_lock);
+  if (!engine_info)
     {
-      const char *fmt = "<EngineInfo>\n"
-        "%s"
-        "</EngineInfo>\n";
+      const char *openpgp_info = _gpgme_engine_get_info (GPGME_PROTOCOL_OpenPGP);
+      const char *cms_info = _gpgme_engine_get_info (GPGME_PROTOCOL_CMS);
+      char *info;
 
-      info = xtrymalloc (strlen(fmt) + strlen(openpgp_info
-                                              ? openpgp_info : cms_info) + 1);
-      if (info)
-        sprintf (info, fmt, openpgp_info ? openpgp_info : cms_info);
+      if (!openpgp_info && !cms_info)
+	info = "<EngineInfo>\n</EngineInfo>\n";
+      else if (!openpgp_info || !cms_info)
+	{
+	  const char *fmt = "<EngineInfo>\n"
+	    "%s"
+	    "</EngineInfo>\n";
+
+	  info = xtrymalloc (strlen (fmt)
+			     + strlen (openpgp_info
+				      ? openpgp_info : cms_info) + 1);
+	  if (info)
+	    sprintf (info, fmt, openpgp_info ? openpgp_info : cms_info);
+	}
+      else
+	{
+	  const char *fmt = "<EngineInfo>\n"
+	    "%s%s"
+	    "</EngineInfo>\n";
+	  info = xtrymalloc (strlen (fmt) + strlen (openpgp_info)
+			     + strlen (cms_info) + 1);
+	  if (info)
+	    sprintf (info, fmt, openpgp_info, cms_info);
+	}
+      if (!info)
+	info = "<EngineInfo>\n"
+	  "  <error>Out of core</error>\n"
+	  "</EngineInfo>\n";
+      engine_info = info;
     }
-  else
-    {
-      const char *fmt = "<EngineInfo>\n"
-        "%s%s"
-        "</EngineInfo>\n";
-      info = xtrymalloc (strlen(fmt) + strlen(openpgp_info)
-                         + strlen (cms_info) + 1);
-      if (info)
-        sprintf (info, fmt, openpgp_info, cms_info);
-    }
-  if (!info)
-    info = "<EngineInfo>\n"
-      "  <error>Out of core</error>\n"
-      "</EngineInfo>\n";
-  engine_info = info;
+  UNLOCK (engine_info_lock);
   return engine_info;
 }
+
 
 /**
  * gpgme_check_engine:
