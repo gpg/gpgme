@@ -1695,6 +1695,18 @@ for signatures, and @code{0} otherwise.
 This specifies if a sub key can be used for certifications.  It is
 representable as a number, and is @code{1} if the sub key can be used
 for certifications, and @code{0} otherwise.
+
+@item GPGME_ATTR_SERIAL
+The X.509 issuer serial attribute of the key.  It is representable as
+a string.
+
+@item GPGME_ATTR_ISSUE
+The X.509 issuer name attribute of the key.  It is representable as a
+string.
+
+@item GPGME_ATTR_CHAINID
+The X.509 chain ID can be used to build the certification chain.  It
+is representable as a string.
 @end table
 @end deftp
 
@@ -2232,7 +2244,7 @@ Return the fingerprint of the key used to create the signature.
 @item GPGME_ATTR_ERRTOK
 Return a token with a more detailed error description.  A @var{whatidx}
 of @code{0} returns an error token associated with validity calculation,
-a value of @code{1} return an error token related to the certifixate
+a value of @code{1} return an error token related to the certificate
 checking.
 
 @end table
