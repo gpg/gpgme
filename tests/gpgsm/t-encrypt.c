@@ -59,7 +59,7 @@ main (int argc, char **argv)
   if (result->invalid_recipients)
     {
       fprintf (stderr, "Invalid recipient encountered: %s\n",
-	       result->invalid_recipients->id);
+	       result->invalid_recipients->fpr);
       exit (1);
     }
   print_data (out);

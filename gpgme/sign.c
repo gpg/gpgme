@@ -37,7 +37,7 @@ typedef struct
   /* A pointer to the next pointer of the last invalid signer in
      the list.  This makes appending new invalid signers painless
      while preserving the order.  */
-  gpgme_invalid_user_id_t *last_signer_p;
+  gpgme_invalid_key_t *last_signer_p;
 
   /* Likewise for signature information.  */
   gpgme_new_signature_t *last_sig_p;
@@ -48,13 +48,14 @@ static void
 release_op_data (void *hook)
 {
   op_data_t opd = (op_data_t) hook;
-  gpgme_invalid_user_id_t invalid_signer = opd->result.invalid_signers;
+  gpgme_invalid_key_t invalid_signer = opd->result.invalid_signers;
   gpgme_new_signature_t sig = opd->result.signatures;
 
   while (invalid_signer)
     {
-      gpgme_invalid_user_id_t next = invalid_signer->next;
-      free (invalid_signer->id);
+      gpgme_invalid_key_t next = invalid_signer->next;
+      if (invalid_signer->fpr)
+	free (invalid_signer->fpr);
       free (invalid_signer);
       invalid_signer = next;
     }
@@ -213,7 +214,7 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
       break;
 
     case GPGME_STATUS_INV_RECP:
-      err = _gpgme_parse_inv_userid (args, opd->last_signer_p);
+      err = _gpgme_parse_inv_recp (args, opd->last_signer_p);
       if (err)
 	return err;
 
@@ -222,7 +223,7 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
     case GPGME_STATUS_EOF:
       if (opd->result.invalid_signers)
-	return gpg_error (GPG_ERR_INV_USER_ID);
+	return gpg_error (GPG_ERR_UNUSABLE_SECKEY);
       break;
 
     default:

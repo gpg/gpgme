@@ -3252,24 +3252,24 @@ The function @code{gpgme_trust_item_release} is an alias for
 @cindex cryptographic operation
 
 Sometimes, the result of a crypto operation returns a list of invalid
-user IDs encountered in processing the request.  The following
-structure is used to hold information about such an user ID.
+keys encountered in processing the request.  The following structure
+is used to hold information about such a key.
 
-@deftp {Data type} {gpgme_invalid_user_id_t}
+@deftp {Data type} {gpgme_invalid_key_t}
 This is a pointer to a structure used to store a part of the result of
 a crypto operation which takes user IDs as one input parameter.  The
 structure contains the following members:
 
 @table @code
-@item gpgme_invalid_user_id_t next
-This is a pointer to the next invalid user ID structure in the linked
+@item gpgme_invalid_key_t next
+This is a pointer to the next invalid key structure in the linked
 list, or @code{NULL} if this is the last element.
 
-@item char *id
-The invalid user ID encountered.
+@item char *fpr
+The fingerprint or key ID of the invalid key encountered.
 
 @item gpgme_error_t reason
-An error code describing the reason why the user ID was found invalid.
+An error code describing the reason why the key was found invalid.
 @end table
 @end deftp
 
@@ -3946,8 +3946,8 @@ signature, you can retrieve the pointer to the result with
 members:
 
 @table @code
-@item gpgme_invalid_user_id_t invalid_signers
-A linked list with information about all invalid user IDs for which a
+@item gpgme_invalid_key_t invalid_signers
+A linked list with information about all invalid keys for which a
 signature could not be created.
 
 @item gpgme_new_signature_t signatures
@@ -4053,8 +4053,8 @@ data, you can retrieve the pointer to the result with
 members:
 
 @table @code
-@item gpgme_invalid_user_id_t invalid_recipients
-A linked list with information about all invalid user IDs for which
+@item gpgme_invalid_key_t invalid_recipients
+A linked list with information about all invalid keys for which
 the data could not be encrypted.
 @end table
 @end deftp

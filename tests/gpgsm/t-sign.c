@@ -32,7 +32,7 @@ check_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
   if (result->invalid_signers)
     {
       fprintf (stderr, "Invalid signer found: %s\n",
-	       result->invalid_signers->id);
+	       result->invalid_signers->fpr);
       exit (1);
     }
   if (!result->signatures || result->signatures->next)
