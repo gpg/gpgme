@@ -15,6 +15,7 @@ Hey Emacs, this is -*- outline -*- mode!
 * Documentation
 ** Add note about GPGME clearing out pointer return values.
 ** validity/trust
+** Document gpgme.m4
 
 * Engines
 ** Move code common to all engines up from gpg to engine.
