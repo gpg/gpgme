@@ -18,6 +18,10 @@ Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
 to do serious work. 
 
 
+gpgmeplug/ is experimental and you should not assume that it will stay
+with gpgme.
+
+
  
 
 
