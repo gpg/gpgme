@@ -222,7 +222,7 @@ _gpgme_io_spawn ( const char *path, char **argv,
     memset (&si, 0, sizeof si);
     si.cb = sizeof (si);
     si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-    si.wShowWindow = debug_me? SW_SHOW : SW_HIDE;
+    si.wShowWindow = debug_me? SW_SHOW : SW_MINIMIZE;
     si.hStdInput = GetStdHandle (STD_INPUT_HANDLE);
     si.hStdOutput = GetStdHandle (STD_OUTPUT_HANDLE);
     si.hStdError = GetStdHandle (STD_ERROR_HANDLE);

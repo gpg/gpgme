@@ -23,6 +23,8 @@ libgpgme_la_SOURCES = \
 	sign.c \
         key.c key.h \
 	keylist.c \
+	import.c \
+        export.c \
         rungpg.c rungpg.h status-table.h \
 	syshdr.h io.h posix-io.c w32-io.c \
 	gpgme.c version.c errors.c
