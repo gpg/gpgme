@@ -125,13 +125,11 @@ _gpgme_passphrase_command_handler (void *opaque, GpgmeStatusCode code,
     {
       /* We have been called for cleanup.  */
       if (ctx->passphrase_cb)
-	{ 
-	  /* Fixme: Take the key in account.  */
-	  ctx->passphrase_cb (ctx->passphrase_cb_value, NULL, 
-			      &result->last_pw_handle);
-        }
+	/* Fixme: Take the key in account.  */
+	err = ctx->passphrase_cb (ctx->passphrase_cb_value, NULL, 
+				  &result->last_pw_handle, NULL);
       *result_r = NULL;
-      return 0;
+      return err;
     }
 
   if (!key || !ctx->passphrase_cb)
@@ -160,10 +158,10 @@ _gpgme_passphrase_command_handler (void *opaque, GpgmeStatusCode code,
 	       bad_passphrase ? "TRY_AGAIN":"ENTER",
 	       userid_hint, passphrase_info);
 
-      *result_r = ctx->passphrase_cb (ctx->passphrase_cb_value, buf,
-				      &result->last_pw_handle);
+      err  = ctx->passphrase_cb (ctx->passphrase_cb_value, buf,
+				 &result->last_pw_handle, result_r);
       free (buf);
-      return 0;
+      return err;
     }
 
   *result_r = NULL;

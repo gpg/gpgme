@@ -36,6 +36,11 @@ Noteworthy changes in version 0.4.1 (unreleased)
  * The new function gpgme_get_protocol_name can be used to convert a
    GpgmeProtocol value into a string.
 
+ * The GpgmePassphraseCb type now returns a GpgmeError value, and
+   returns the password string in a new parameter.  The gpgme_cancel
+   function has been removed, just return GPGME_Canceled in the
+   passphrase callback directly.
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
@@ -49,6 +54,8 @@ gpgme_register_idle             REMOVED
 GpgmeEngineInfo			NEW
 gpgme_get_engine_info		CHANGED: Return info structure instead XML.
 gpgme_get_protocol_name		NEW
+GpgmePassphraseCb		CHANGED: Return error value, new argument.
+gpgme_cancel			REMOVED: Return error in callback directly.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)

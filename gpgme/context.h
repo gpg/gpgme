@@ -80,9 +80,6 @@ struct gpgme_context_s
 
   int use_cms;
 
-  /* Cancel operation requested.  */
-  int cancel;
-
   /* The running engine process.  */
   EngineObject engine;
 

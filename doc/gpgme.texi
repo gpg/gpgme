@@ -1537,20 +1537,25 @@ current mode otherwise.  Note that 0 is not a valid mode value.
 @cindex callback, passphrase
 @cindex passphrase callback
 
-@deftp {Data type} {const char *(*GpgmePassphraseCb)(void *@var{hook}, const char *@var{desc}, void **@var{r_hd})}
+@deftp {Data type} {GpgmeError (*GpgmePassphraseCb)(void *@var{hook}, const char *@var{desc}, void **@var{r_hd}, const char **@var{result})}
 @tindex GpgmePassphraseCb
 The @code{GpgmePassphraseCb} type is the type of functions usable as
 passphrase callback function.
 
 The string @var{desc} contains a text usable to be displayed to the
 user of the application.  The function should return a passphrase for
-the context when invoked with @var{desc} not being @code{NULL}.
+the context when invoked with @var{desc} not being @code{NULL} in
+*@var{result}.
 
 The user may store information about the resources associated with the
 returned passphrase in @var{*r_hd}.  When the passphrase is no longer
 needed by @acronym{GPGME}, the passphrase callback function will be
 called with @var{desc} being @var{NULL}, and @var{r_hd} being the same
 as at the first invocation.
+
+If an error occurs, return the corresponding @code{GpgmeError} value.
+You can use @code{GPGME_Canceled} to abort the operation.  Otherwise,
+return @code{0}.
 @end deftp
 
 @deftypefun void gpgme_set_passphrase_cb (@w{GpgmeCtx @var{ctx}}, @w{GpgmePassphraseCb @var{passfunc}}, @w{void *@var{hook_value}})
@@ -3110,22 +3115,6 @@ the operation.  If @var{hang} is false, and the timeout expires,
 @code{NULL} is returned and @code{*status} will be set to 0.  If an
 error occurs, @code{NULL} is returned and the error is returned in
 @code{*status}.
-@end deftypefun
-
-
-@node Cancelling an Operation
-@subsection Cancelling an Operation
-@cindex cancellation
-@cindex cryptographic operation, cancel
-
-@deftypefun void gpgme_cancel (@w{GpgmeCtx @var{ctx}})
-The function @code{gpgme_cancel} tries to cancel the pending
-operation.  A running synchronous operation in the context or the
-function @code{gpgme_wait} with this context as its @var{ctx} argument
-might notice the cancellation flag and return.  It is currently not
-guaranteed to work under all circumstances.  Its current primary
-purpose is to prevent asking for a passphrase again in the passphrase
-callback.
 @end deftypefun
 
 

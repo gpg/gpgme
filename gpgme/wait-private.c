@@ -110,8 +110,6 @@ _gpgme_wait_on_condition (GpgmeCtx ctx, volatile int *cond)
 	      item = (struct wait_item_s *) ctx->fdt.fds[i].opaque;
 
 	      err = item->handler (item->handler_value, ctx->fdt.fds[i].fd);
-	      if (!err && ctx->cancel)
-		err = GPGME_Canceled;
 	      if (err)
 		{
 		  /* An error occured.  Close all fds in this context,

@@ -102,20 +102,6 @@ _gpgme_release_result (GpgmeCtx ctx)
 }
 
 
-/* Cancel the current operation.  It is not guaranteed that it will
-   work for all kinds of operations.  It is especially useful in a
-   passphrase callback to stop the system from asking another time for
-   the passphrase.  */
-void
-gpgme_cancel (GpgmeCtx ctx)
-{
-  if (!ctx)
-    return;
-
-  ctx->cancel = 1;
-}
-
-
 /**
  * gpgme_get_notation:
  * @c: the context

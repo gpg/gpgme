@@ -334,8 +334,8 @@ typedef struct _gpgme_engine_info *GpgmeEngineInfo;
 /* Types for callback functions.  */
 
 /* Request a passphrase from the user.  */
-typedef const char *(*GpgmePassphraseCb) (void *hook, const char *desc,
-					  void **r_hd);
+typedef GpgmeError (*GpgmePassphraseCb) (void *hook, const char *desc,
+					 void **r_hd, const char **result);
 
 /* Inform the user about progress made.  */
 typedef void (*GpgmeProgressCb) (void *opaque, const char *what,
@@ -486,9 +486,6 @@ void gpgme_set_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs);
 
 /* Get the current I/O callback functions.  */
 void gpgme_get_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs);
-
-/* Cancel a pending operation in CTX.  */
-void gpgme_cancel (GpgmeCtx ctx);
 
 /* Process the pending operation and, if HANG is non-zero, wait for
    the pending operation to finish.  */
