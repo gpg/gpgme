@@ -1,5 +1,9 @@
 2001-01-30  Werner Koch  <wk@gnupg.org>
 
+	* w32-io.c (_gpgme_io_spawn): Use the supplied path arg.
+
+	* version.c (get_engine_info): Return better error information.
+
 	* posix-util.c, w32-util.c: New.
 	(_gpgme_get_gpg_path): New, suggested by Jan-Oliver.
 	* rungpg.c (_gpgme_gpg_spawn): Use new function to get GPG's path.
