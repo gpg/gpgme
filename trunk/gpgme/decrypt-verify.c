@@ -36,7 +36,16 @@ decrypt_verify_status_handler (void *priv, gpgme_status_code_t code,
   if (!err)
     err = _gpgme_decrypt_status_handler (priv, code, args);
   if (!err)
-    err = _gpgme_verify_status_handler (priv, code, args);
+    {
+      err = _gpgme_verify_status_handler (priv, code, args);
+      /* The verify status handler might not be in the state to verify
+         a signature, either because there is no signature or we are
+         currently processing the encrytion layer, and thus it will
+         likely return "invalid engine" - we have to ignore it
+         therefore. */
+      if (gpg_err_code (err) == GPG_ERR_INV_ENGINE)
+        err = 0;
+    }
   return err;
 }
 
