@@ -1,4 +1,0 @@
-@set UPDATED 3 September 2002
-@set UPDATED-MONTH September 2002
-@set EDITION 0.3.12
-@set VERSION 0.3.12
