@@ -1,3 +1,19 @@
+2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/mkdemodirs: Add copyright notice.
+
+	* gpgsm/Makefile.am, gpgsm/t-support.h, gpgsm/t-decrypt.c,
+	gpgsm/t-encrypt.c, gpgsm/t-export.c, gpgsm/t-genkey.c,
+	gpgsm/t-import.c, gpgsm/t-keylist.c, gpgsm/t-sign.c,
+	gpgsm/t-verify.c, gpg/Makefile.am, gpg/t-decrypt.c,
+	gpg/t-decrypt-verify.c, gpg/t-edit.c, gpg/t-encrypt.c,
+	gpg/t-encrypt-sign.c, gpg/t-encrypt-sym.c, gpg/t-eventloop.c,
+	gpg/t-export.c, gpg/t-genkey.c, gpg/t-import.c, gpg/t-keylist.c,
+	gpg/t-keylist-sig.c, gpg/t-sign.c, gpg/t-signers.c,
+	gpg/t-support.h, gpg/t-thread1.c, gpg/t-trustlist.c,
+	gpg/t-verify.c, Makefile.am, t-data.c, t-engine-info.c,
+	t-version.c: Change license to LGPL.
+
 2004-08-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm/t-keylist.c (struct): Add new fields VALIDITY and
@@ -630,7 +646,7 @@
 	* tests/t-verify.c (print_sig_stat): Print info about the keys.
 
 
- Copyright 2001 g10 Code GmbH
+ Copyright 2001, 2004 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -639,11 +655,3 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- 
-
-
-
-
-
-
-	
