@@ -84,7 +84,6 @@ GpgmeError _gpgme_op_reset (GpgmeCtx ctx, int synchronous);
 
 /*-- verify.c --*/
 void _gpgme_release_verify_result (VerifyResult result);
-GpgmeSigStat _gpgme_intersect_stati (VerifyResult result);
 void _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 				   char *args);
 

@@ -707,8 +707,7 @@ GpgmeError gpgme_op_decrypt (GpgmeCtx ctx,
 GpgmeError gpgme_op_decrypt_verify_start (GpgmeCtx ctx,
 					  GpgmeData cipher, GpgmeData plain);
 GpgmeError gpgme_op_decrypt_verify (GpgmeCtx ctx,
-				    GpgmeData cipher, GpgmeData plain,
-				    GpgmeSigStat *r_status);
+				    GpgmeData cipher, GpgmeData plain);
 
 /* Sign the plaintext PLAIN and store the signature in SIG.  Only
    detached signatures are supported for now.  */
@@ -723,8 +722,7 @@ GpgmeError gpgme_op_sign (GpgmeCtx ctx,
 GpgmeError gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig,
 				  GpgmeData signed_text, GpgmeData plaintext);
 GpgmeError gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig,
-			    GpgmeData signed_text, GpgmeData plaintext,
-			    GpgmeSigStat *r_status);
+			    GpgmeData signed_text, GpgmeData plaintext);
 
 /* Import the key in KEYDATA into the keyring.  */
 GpgmeError gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata);
