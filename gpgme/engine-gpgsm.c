@@ -969,6 +969,7 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
   while (!err && recp[i])
     {
       char *fpr;
+      int newlen;
 
       if (!recp[i]->subkeys || !recp[i]->subkeys->fpr)
 	{
@@ -977,7 +978,7 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
 	}
       fpr = recp[i]->subkeys->fpr;
 
-      int newlen = 11 + strlen (fpr);
+      newlen = 11 + strlen (fpr);
       if (linelen < newlen)
 	{
 	  char *newline = realloc (line, newlen);
