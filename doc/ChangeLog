@@ -1,5 +1,8 @@
 2003-05-04  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Listing Keys): Document what happens if key is not
+	found.
+
 	* gpgme.texi (Importing Keys): Fix cut and paste error.
 
 2003-04-30  Marcus Brinkmann  <marcus@g10code.de>
