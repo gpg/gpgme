@@ -490,40 +490,40 @@ gpgsm_new (void **engine, const char *lc_ctype, const char *lc_messages)
 		  goto leave;
 		}
 	    }
-
-	  if (lc_ctype)
-	    {
-	      if (asprintf (&optstr, "OPTION lc-ctype=%s", lc_ctype) < 0)
-		err = gpg_error_from_errno (errno);
-	      else
-		{
-		  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
-					 NULL, NULL, NULL, NULL);
-		  free (optstr);
-		  if (err)
-		    err = map_assuan_error (err);
-		}
-	    }
-	  if (err)
-	    goto leave;
-
-	  if (lc_messages)
-	    {
-	      if (asprintf (&optstr, "OPTION lc-messages=%s", lc_messages) < 0)
-		err = gpg_error_from_errno (errno);
-	      else
-		{
-		  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
-					 NULL, NULL, NULL, NULL);
-		  free (optstr);
-		  if (err)
-		    err = map_assuan_error (err);
-		}
-	    }
-	  if (err)
-	    goto leave;
 	}
     }
+
+  if (lc_ctype)
+    {
+      if (asprintf (&optstr, "OPTION lc-ctype=%s", lc_ctype) < 0)
+	err = gpg_error_from_errno (errno);
+      else
+	{
+	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
+				 NULL, NULL, NULL, NULL);
+	  free (optstr);
+	  if (err)
+	    err = map_assuan_error (err);
+	}
+    }
+  if (err)
+    goto leave;
+  
+  if (lc_messages)
+    {
+      if (asprintf (&optstr, "OPTION lc-messages=%s", lc_messages) < 0)
+	err = gpg_error_from_errno (errno);
+      else
+	{
+	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
+				 NULL, NULL, NULL, NULL);
+	  free (optstr);
+	  if (err)
+	    err = map_assuan_error (err);
+	}
+    }
+  if (err)
+    goto leave;
 
   if (!err
       && (_gpgme_io_set_close_notify (gpgsm->status_cb.fd,
