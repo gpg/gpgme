@@ -395,8 +395,28 @@ _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
 		      GpgmeSigMode mode, int use_armor,
 		      int use_textmode, GpgmeCtx ctx /* FIXME */)
 {
-  /* FIXME */
-  return mk_error (Not_Implemented);
+  AssuanError err;
+
+  if (!gpgsm)
+    return mk_error (Invalid_Value);
+
+  gpgsm->command = xtrystrdup (mode == GPGME_SIG_MODE_DETACH
+			       ? "VERIFY --detach" : "VERIFY");
+  if (!gpgsm->command)
+    return mk_error (Out_Of_Core);
+
+  gpgsm->input_data = in;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server);
+  if (err)
+    return mk_error (General_Error);	/* FIXME */
+  gpgsm->output_data = out;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server);
+  if (err)
+    return mk_error (General_Error);	/* FIXME */
+  _gpgme_io_close (gpgsm->message_fd);
+  gpgsm->message_fd = -1;
+
+  return 0;
 }
 
 GpgmeError

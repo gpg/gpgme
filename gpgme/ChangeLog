@@ -1,5 +1,10 @@
 2001-11-23  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (_gpgme_gpgsm_op_sign): Implement it according to
+	the current protocol definition.
+
+2001-11-23  Marcus Brinkmann  <marcus@g10code.de>
+
 	* engine-gpgsm.c (_gpgme_gpgsm_new): Set CLOEXEC flag for parent
 	ends of the pipe.
 
