@@ -1,5 +1,7 @@
 2004-09-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* configure.ac: Improve diagnostics with version check.
+
 	* configure.ac: Print diagnostics about found thread libraries at
 	the end.  Check for the versions of GPG and GPGSM and print the
 	found versions at the end.
