@@ -3,7 +3,7 @@
 
              !!!! THIS IS WORK IN PROGRESS !!!
 
-If you want to hack on it, start with one of the `tests/t-foo'
+If you want to hack on it, start with one of the `tests/gpg/t-foo'
 programs.
 
 For support of the OpenPGP protocol (default), you need the latest CVS
