@@ -1,4 +1,8 @@
-Noteworthy changes in version 0.9.0 (unreleased)
+Noteworthy changes in version 0.9.1 (unreleased)
+------------------------------------------------
+
+
+Noteworthy changes in version 0.9.0 (2004-06-08)
 ------------------------------------------------
 
  * The type gpgme_key_t has now a new field keylist_mode that contains
