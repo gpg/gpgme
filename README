@@ -1,7 +1,11 @@
                   GPGME - GnuPG Made Easy
                 ---------------------------
+                       Version 0.3
 
-             !!!! THIS IS WORK IN PROGRESS !!!
+This is the stable branch of GPGME.  We don't intend to make any
+changes to the API anymore but OTOH we won't add any new features.
+The development version is available in the CVS; after we have
+released that onem we will slowly fade out support for this 0.3 branch.
 
 If you want to hack on it, start with one of the `tests/gpg/t-foo'
 programs.
