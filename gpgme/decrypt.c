@@ -188,7 +188,6 @@ _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
     goto leave;
 
   _gpgme_engine_set_status_handler (ctx->engine, status_handler, ctx);
-  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
   err = _gpgme_engine_op_decrypt (ctx->engine, ciph, plain);
 

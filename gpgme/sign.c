@@ -214,7 +214,6 @@ _gpgme_op_sign_start (GpgmeCtx ctx, int synchronous,
 
   _gpgme_engine_set_status_handler (ctx->engine, _gpgme_sign_status_handler,
 				    ctx);
-  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
   err = _gpgme_engine_op_sign (ctx->engine, in, out, mode, ctx->use_armor,
 			       ctx->use_textmode, ctx->include_certs,

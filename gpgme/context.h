@@ -81,8 +81,6 @@ struct gpgme_context_s
   /* The running engine process.  */
   EngineObject engine;
 
-  /* Level of verbosity to use.  */
-  int verbosity;
   int use_armor;  
   int use_textmode;
   int keylist_mode;

@@ -382,7 +382,6 @@ _gpgme_op_verify_start (GpgmeCtx ctx, int synchronous,
 
   _gpgme_engine_set_status_handler (ctx->engine, _gpgme_verify_status_handler,
 				    ctx);
-  _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
   /* Check the supplied data.  */
   if (!sig)

@@ -207,17 +207,6 @@ _gpgme_engine_release (EngineObject engine)
 
 
 void
-_gpgme_engine_set_verbosity (EngineObject engine, int verbosity)
-{
-  if (!engine)
-    return;
-
-  if (engine->ops->set_verbosity)
-    (*engine->ops->set_verbosity) (engine->engine, verbosity);
-}
-
-
-void
 _gpgme_engine_set_status_handler (EngineObject engine,
 				  EngineStatusHandler fnc, void *fnc_value)
 {

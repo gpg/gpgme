@@ -52,7 +52,6 @@ gpgme_new (GpgmeCtx *r_ctx)
   if (!ctx)
     return GPGME_Out_Of_Core;
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
-  ctx->verbosity = 1;
   ctx->include_certs = 1;
   _gpgme_fd_table_init (&ctx->fdt);
   *r_ctx = ctx;

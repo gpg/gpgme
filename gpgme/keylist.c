@@ -744,11 +744,6 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
   if (err)
     goto leave;
 
-  /* We don't want to use the verbose mode as this will also print the
-     key signatures which is in most cases not needed and furthermore
-     we just ignore those lines - This should speed up things.  */
-  _gpgme_engine_set_verbosity (ctx->engine, 0);
-
   err = _gpgme_engine_op_keylist (ctx->engine, pattern, secret_only,
 				  ctx->keylist_mode);
 
@@ -793,11 +788,6 @@ gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
 					      keylist_colon_handler, ctx);
   if (err)
     goto leave;
-
-  /* We don't want to use the verbose mode as this will also print the
-     key signatures which is in most cases not needed and furthermore
-     we just ignore those lines - This should speed up things.  */
-  _gpgme_engine_set_verbosity (ctx->engine, 0);
 
   err = _gpgme_engine_op_keylist_ext (ctx->engine, pattern, secret_only,
 				      reserved, ctx->keylist_mode);
