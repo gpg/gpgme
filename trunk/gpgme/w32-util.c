@@ -36,6 +36,7 @@
 #include <io.h>
 
 #include "util.h"
+#include "sema.h"
 
 DEFINE_STATIC_LOCK (get_path_lock);
 
@@ -100,7 +101,7 @@ find_program_in_registry (const char *name)
     {
       int i;
 
-      DEBUG1 ("found %s in registry: `%s'", name, program);
+      DEBUG2 ("found %s in registry: `%s'", name, program);
       for (i = 0; program[i]; i++)
 	{
 	  if (program[i] == '/')

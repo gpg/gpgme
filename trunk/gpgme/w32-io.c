@@ -992,7 +992,7 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds, int nonblock )
     void *dbg_help;
 
  restart:
-    DEBUG_BEGIN (dbg_help, "select on [ ");
+    DEBUG_BEGIN (dbg_help, 3, "select on [ ");
     any = 0;
     nwait = 0;
     count = 0;
@@ -1103,7 +1103,7 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds, int nonblock )
     }
 
     if ( count ) {
-        DEBUG_BEGIN (dbg_help, " signaled [ ");
+        DEBUG_BEGIN (dbg_help, 3, " signaled [ ");
         for ( i=0; i < nfds; i++ ) {
             if ( fds[i].fd == -1 ) 
                 continue;
