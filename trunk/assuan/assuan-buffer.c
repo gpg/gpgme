@@ -1,21 +1,21 @@
 /* assuan-buffer.c - read and send data
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
- * This file is part of GnuPG.
+ * This file is part of Assuan.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Assuan is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- * GnuPG is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Assuan is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
  */
 
 #include <config.h>
@@ -25,9 +25,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
-#ifdef USE_GNU_PTH
-# include <pth.h>
-#endif
 #include "assuan-defs.h"
 
 #ifdef HAVE_JNLIB_LOGGING
@@ -51,11 +48,7 @@ writen ( int fd, const char *buffer, size_t length )
 {
   while (length)
     {
-#ifdef USE_GNU_PTH
-      int nwritten = pth_write (fd, buffer, length);
-#else
-      int nwritten = write (fd, buffer, length);
-#endif
+      ssize_t nwritten = _assuan_write (fd, buffer, length);
       
       if (nwritten < 0)
         {
@@ -80,11 +73,8 @@ readline (int fd, char *buf, size_t buflen, int *r_nread, int *eof)
   *r_nread = 0;
   while (nleft > 0)
     {
-#ifdef USE_GNU_PTH
-      int n = pth_read (fd, buf, nleft);
-#else
-      int n = read (fd, buf, nleft);
-#endif
+      ssize_t n = _assuan_read (fd, buf, nleft);
+
       if (n < 0)
         {
           if (errno == EINTR)
@@ -210,13 +200,12 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
 
 
 /* Read the next line from the client or server and return a pointer
-   to a buffer with holding that line.  linelen returns the length of
-   the line.  This buffer is valid until another read operation is
-   done on this buffer.  The caller is allowed to modify this buffer.
-   He should only use the buffer if the function returns without an
-   error.
+   in *LINE to a buffer holding the line.  LINELEN is the length of
+   *LINE.  The buffer is valid until the next read operation on it.
+   The caller may modify the buffer.  The buffer is invalid (i.e. must
+   not be used) if an error is returned.
 
-   Returns: 0 on success or an assuan error code
+   Returns 0 on success or an assuan error code.
    See also: assuan_pending_line().
 */
 AssuanError
@@ -234,8 +223,8 @@ assuan_read_line (ASSUAN_CONTEXT ctx, char **line, size_t *linelen)
 }
 
 
-/* Return true when a full line is pending for a read, without the need
-   for actual IO */
+/* Return true if a full line is buffered (i.e. an entire line may be
+   read without any I/O).  */
 int
 assuan_pending_line (ASSUAN_CONTEXT ctx)
 {
@@ -247,23 +236,31 @@ AssuanError
 assuan_write_line (ASSUAN_CONTEXT ctx, const char *line )
 {
   int rc;
-  
+  size_t len;
+  const char *s;
+
   if (!ctx)
     return ASSUAN_Invalid_Value;
 
-  /* fixme: we should do some kind of line buffering */
+  /* Make sure that we never take a LF from the user - this might
+     violate the protocol. */
+  s = strchr (line, '\n');
+  len = s? (s-line) : strlen (line);
+
+  /* fixme: we should do some kind of line buffering.  */
   if (ctx->log_fp)
     {
       fprintf (ctx->log_fp, "%s[%p] -> ", my_log_prefix (), ctx); 
+      if (s)
+        fputs ("[supplied line contained a LF]", ctx->log_fp);
       if (ctx->confidential)
         fputs ("[Confidential data not shown]", ctx->log_fp);
       else
-        _assuan_log_print_buffer (ctx->log_fp, 
-                                  line, strlen (line));
+        _assuan_log_print_buffer (ctx->log_fp, line, len);
       putc ('\n', ctx->log_fp);
     }
 
-  rc = writen (ctx->outbound.fd, line, strlen(line));
+  rc = writen (ctx->outbound.fd, line, len);
   if (rc)
     rc = ASSUAN_Write_Error;
   if (!rc)
@@ -435,7 +432,3 @@ assuan_send_data (ASSUAN_CONTEXT ctx, const void *buffer, size_t length)
 
   return 0;
 }
-
-
-
-

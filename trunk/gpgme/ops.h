@@ -28,9 +28,6 @@
 void _gpgme_release_result (GpgmeCtx ctx);
 void _gpgme_set_op_info (GpgmeCtx c, GpgmeData info);
 
-void _gpgme_op_event_cb (void *data, GpgmeEventIO type, void *type_data);
-void _gpgme_op_event_cb_user (void *data, GpgmeEventIO type, void *type_data);
-
 /*-- wait.c --*/
 GpgmeError _gpgme_wait_one (GpgmeCtx ctx);
 GpgmeError _gpgme_wait_on_condition (GpgmeCtx ctx, volatile int *cond);
@@ -52,9 +49,6 @@ GpgmeError    _gpgme_data_append_for_xml ( GpgmeData dh,
                                            size_t len );
 GpgmeError    _gpgme_data_append_percentstring_for_xml ( GpgmeData dh,
                                                          const char *string );
-
-GpgmeError    _gpgme_data_unread (GpgmeData dh,
-                                  const char *buffer, size_t length );
 
 GpgmeError _gpgme_data_inbound_handler (void *opaque, int fd);
 GpgmeError _gpgme_data_outbound_handler (void *opaque, int fd);

@@ -1,5 +1,5 @@
-/* assuan-connect.c - Establish a connection (client) 
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+/* assuan-buffer.c - Wraps the read and write functions.
+ *	Copyright (C) 2002 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -18,37 +18,43 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <signal.h>
-#include <unistd.h>
-#include <errno.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+#include <unistd.h>
 
-#include "assuan-defs.h"
+extern ssize_t pth_read (int fd, void *buffer, size_t size);
+extern ssize_t pth_write (int fd, const void *buffer, size_t size);
 
-/* Disconnect and release the context CTX. */
-void
-assuan_disconnect (ASSUAN_CONTEXT ctx)
+#pragma weak pth_read
+#pragma weak pth_write
+
+ssize_t
+_assuan_read (int fd, void *buffer, size_t size)
 {
-  if (ctx)
+  static ssize_t (*reader) (int, void *, size_t);
+
+  if (! reader)
     {
-      assuan_write_line (ctx, "BYE");
-      ctx->finish_handler (ctx);
-      ctx->deinit_handler (ctx);
-      ctx->deinit_handler = NULL;
-      _assuan_release_context (ctx);
+      if (pth_read)
+	reader = pth_read;
+      else
+	reader = read;
     }
+
+  return reader (fd, buffer, size);
 }
 
-pid_t
-assuan_get_pid (ASSUAN_CONTEXT ctx)
+ssize_t
+_assuan_write (int fd, const void *buffer, size_t size)
 {
-  return ctx ? ctx->pid : -1;
+  static ssize_t (*writer) (int, const void *, size_t);
+
+  if (! writer)
+    {
+      if (pth_write)
+	writer = pth_write;
+      else
+	writer = write;
+    }
+
+  return writer (fd, buffer, size);
 }
