@@ -317,11 +317,11 @@ const char *gpgme_get_sig_status (GpgmeCtx ctx, int idx,
 /* Retrieve certain attributes of a signature.  IDX is the index
    number of the signature after a successful verify operation.  WHAT
    is an attribute where GPGME_ATTR_EXPIRE is probably the most useful
-   one.  RESERVED must be passed as 0. */
+   one.  WHATIDX is to be passed as 0 for most attributes . */
 unsigned long gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx,
-                                        GpgmeAttr what, int reserved);
+                                        GpgmeAttr what, int whatidx);
 const char *gpgme_get_sig_string_attr (GpgmeCtx c, int idx,
-                                      GpgmeAttr what, int reserved);
+                                      GpgmeAttr what, int whatidx);
 
 
 /* Get the key used to create signature IDX in CTX and return it in
