@@ -1,0 +1,11 @@
+#!/bin/sh
+
+target=i386--mingw32
+host=`./config.guess`
+
+CC="${target}-gcc"
+CPP="${target}-gcc -E"
+RANLIB="${target}-ranlib"
+
+export CC CPP RANLIB
+./configure --host=${host} --target=${target} $*
