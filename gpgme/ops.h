@@ -25,11 +25,12 @@
 
 /*-- gpgme.c --*/
 void _gpgme_release_result ( GpgmeCtx c );
-void _gpgme_set_prompt ( GpgmeCtx c, int which, const char *text );
 
 /*-- wait.c --*/
 GpgmeCtx _gpgme_wait_on_condition ( GpgmeCtx c,
                                     int hang, volatile int *cond );
+void _gpgme_freeze_fd ( int fd );
+void _gpgme_thaw_fd ( int fd );
 
 
 /*-- recipient.c --*/

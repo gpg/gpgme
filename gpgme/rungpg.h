@@ -81,22 +81,32 @@ typedef enum  {
     STATUS_SESSION_KEY        ,
     STATUS_NOTATION_NAME      ,
     STATUS_NOTATION_DATA      ,
-    STATUS_POLICY_URL
+    STATUS_POLICY_URL         ,
+    STATUS_BEGIN_STREAM       ,
+    STATUS_END_STREAM
 } GpgStatusCode;
 
 typedef void (*GpgStatusHandler)( GpgmeCtx, GpgStatusCode code, char *args ); 
 typedef void (*GpgColonLineHandler)( GpgmeCtx, char *line ); 
+typedef const char *(*GpgCommandHandler)(void*, GpgStatusCode code,
+                                         const char *keyword);
+
 
 GpgmeError _gpgme_gpg_new ( GpgObject *r_gpg );
 void       _gpgme_gpg_release ( GpgObject gpg );
+void       _gpgme_gpg_enable_pipemode ( GpgObject gpg );
 GpgmeError _gpgme_gpg_add_arg ( GpgObject gpg, const char *arg );
 GpgmeError _gpgme_gpg_add_data ( GpgObject gpg, GpgmeData data, int dup_to );
+GpgmeError _gpgme_gpg_add_pm_data ( GpgObject gpg, GpgmeData data, int what );
 void       _gpgme_gpg_set_status_handler ( GpgObject gpg,
                                            GpgStatusHandler fnc,
                                            void *fnc_value );
 GpgmeError _gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
                                                GpgColonLineHandler fnc,
                                                void *fnc_value );
+GpgmeError _gpgme_gpg_set_command_handler ( GpgObject gpg,
+                                            GpgCommandHandler fnc,
+                                            void *fnc_value );
 
 GpgmeError _gpgme_gpg_spawn ( GpgObject gpg, void *opaque );
 

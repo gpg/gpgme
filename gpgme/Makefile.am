@@ -24,7 +24,7 @@ libgpgme_la_SOURCES = \
         key.c key.h \
 	keylist.c \
         rungpg.c rungpg.h status-table.h \
-	io.h posix-io.c w32-io.c \
+	syshdr.h io.h posix-io.c w32-io.c \
 	gpgme.c version.c errors.c
 
 

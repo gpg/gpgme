@@ -57,28 +57,23 @@ print_data ( GpgmeData dh )
 }
 
 
-static int
-passphrase_cb ( void *opaque, char *buffer, size_t length, size_t *nread )
+static const char *
+passphrase_cb ( void *opaque, const char *desc, void *r_hd )
 {
-    struct passphrase_cb_info_s *info = opaque;
-    const char *desc;
+    const char *pass;
 
-    assert (info);
-    assert (info->c);
-    if ( !buffer || !length || !nread )
-        return 0; /* those values are reserved for extensions */
-    if ( info->did_it )
-        return -1; /* eof */
+    if ( !desc ) {
+        /* cleanup by looking at *r_hd */
 
-    desc = gpgme_get_prompt (info->c, 1);
-    if (desc)
-        fprintf (stderr, "Request passphrase for '%s'\n", desc );
-    if ( length < 3 )
-        return -1; /* FIXME - sending an EOF here is wrong */
-    memcpy (buffer, "abc", 3 );
-    *nread = 3;
-    info->did_it = 1;
-    return 0;
+        
+        return NULL;
+    }
+
+    pass = "abc";
+    fprintf (stderr, "%% requesting passphrase for `%s': ", desc );
+    fprintf (stderr, "sending `%s'\n", pass );
+
+    return pass;
 }
 
 
@@ -111,10 +106,10 @@ main (int argc, char **argv )
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
-    if ( 0 && !getenv("GPG_AGENT_INFO") ) {
+    if ( !getenv("GPG_AGENT_INFO") ) {
         memset ( &info, 0, sizeof info );
         info.c = ctx;
-        gpgme_data_new_with_read_cb ( &pwdata, passphrase_cb, &info );
+        gpgme_set_passphrase_cb ( ctx, passphrase_cb, &info );
     } 
 
     err = gpgme_data_new_from_file ( &in, cipher_1_asc, 1 );
@@ -123,7 +118,7 @@ main (int argc, char **argv )
     err = gpgme_data_new ( &out );
     fail_if_err (err);
 
-    err = gpgme_op_decrypt (ctx, pwdata, in, out );
+    err = gpgme_op_decrypt (ctx, in, out );
     fail_if_err (err);
 
     fflush (NULL);

@@ -26,9 +26,9 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
+#include "unistd.h"
 
 #include "gpgme.h"
 #include "util.h"
@@ -94,6 +94,26 @@ struct gpg_object_s {
     int running;
     int exit_status;
     int exit_signal;
+    
+    /* stuff needed for pipemode */
+    struct {
+        int used;
+        int active;
+        GpgmeData sig;
+        GpgmeData text;
+        int stream_started;
+    } pm;
+
+    /* stuff needed for interactive (command) mode */
+    struct {
+        int used;
+        int fd;
+        GpgmeData cb_data;   /* hack to get init the above fd later */
+        GpgStatusCode code;  /* last code */
+        char *keyword;       /* what has been requested (malloced) */
+        GpgCommandHandler fnc; 
+        void *fnc_value;
+    } cmd;
 };
 
 static void kill_gpg ( GpgObject gpg );
@@ -108,6 +128,11 @@ static GpgmeError read_status ( GpgObject gpg );
 
 static int gpg_colon_line_handler ( void *opaque, int pid, int fd );
 static GpgmeError read_colon_line ( GpgObject gpg );
+
+static int pipemode_cb ( void *opaque,
+                         char *buffer, size_t length, size_t *nread );
+static int command_cb ( void *opaque,
+                        char *buffer, size_t length, size_t *nread );
 
 
 
@@ -128,6 +153,7 @@ _gpgme_gpg_new ( GpgObject *r_gpg )
     gpg->status.fd[1] = -1;
     gpg->colon.fd[0] = -1;
     gpg->colon.fd[1] = -1;
+    gpg->cmd.fd = -1;
 
     /* allocate the read buffer for the status pipe */
     gpg->status.bufsize = 1024;
@@ -150,7 +176,6 @@ _gpgme_gpg_new ( GpgObject *r_gpg )
         sprintf ( buf, "%d", gpg->status.fd[1]);
         _gpgme_gpg_add_arg ( gpg, buf );
     }
-    _gpgme_gpg_add_arg ( gpg, "--batch" );
     _gpgme_gpg_add_arg ( gpg, "--no-tty" );
 
 
@@ -164,6 +189,7 @@ _gpgme_gpg_new ( GpgObject *r_gpg )
     return rc;
 }
 
+
 void
 _gpgme_gpg_release ( GpgObject gpg )
 {
@@ -173,6 +199,8 @@ _gpgme_gpg_release ( GpgObject gpg )
     xfree (gpg->colon.buffer);
     if ( gpg->argv )
         free_argv (gpg->argv);
+    xfree (gpg->cmd.keyword);
+
   #if 0
     /* fixme: We need a way to communicate back closed fds, so that we
      * don't do it a second time.  One way to do it is by using a global
@@ -209,7 +237,13 @@ kill_gpg ( GpgObject gpg )
   #endif
 }
 
-
+void
+_gpgme_gpg_enable_pipemode ( GpgObject gpg )
+{
+    gpg->pm.used = 1;
+    assert ( !gpg->pm.sig );
+    assert ( !gpg->pm.text );
+}
     
 GpgmeError
 _gpgme_gpg_add_arg ( GpgObject gpg, const char *arg )
@@ -218,6 +252,10 @@ _gpgme_gpg_add_arg ( GpgObject gpg, const char *arg )
 
     assert (gpg);
     assert (arg);
+
+    if (gpg->pm.active)
+        return 0;
+
     a = xtrymalloc ( sizeof *a + strlen (arg) );
     if ( !a ) {
         gpg->arg_error = 1;
@@ -239,6 +277,9 @@ _gpgme_gpg_add_data ( GpgObject gpg, GpgmeData data, int dup_to )
 
     assert (gpg);
     assert (data);
+    if (gpg->pm.active)
+        return 0;
+
     a = xtrymalloc ( sizeof *a - 1 );
     if ( !a ) {
         gpg->arg_error = 1;
@@ -259,6 +300,45 @@ _gpgme_gpg_add_data ( GpgObject gpg, GpgmeData data, int dup_to )
     return 0;
 }
 
+GpgmeError
+_gpgme_gpg_add_pm_data ( GpgObject gpg, GpgmeData data, int what )
+{
+    GpgmeError rc=0;
+
+    assert ( gpg->pm.used );
+    
+    if ( !what ) {
+        /* the signature */
+        assert ( !gpg->pm.sig );
+        gpg->pm.sig = data;
+    }
+    else if (what == 1) {
+        /* the signed data */
+        assert ( !gpg->pm.text );
+        gpg->pm.text = data;
+    }
+    else {
+        assert (0);
+    }
+
+    if ( gpg->pm.sig && gpg->pm.text ) {
+        if ( !gpg->pm.active ) {
+            /* create the callback handler and connect it to stdin */
+            GpgmeData tmp;
+            
+            rc = gpgme_data_new_with_read_cb ( &tmp, pipemode_cb, gpg );
+            if (!rc )
+                rc = _gpgme_gpg_add_data (gpg, tmp, 0);
+        }
+        if ( !rc ) {
+            /* here we can reset the handler stuff */
+            gpg->pm.stream_started = 0;
+        }
+    }
+
+    return rc;
+}
+
 /*
  * Note, that the status_handler is allowed to modifiy the args value
  */
@@ -267,6 +347,9 @@ _gpgme_gpg_set_status_handler ( GpgObject gpg,
                                 GpgStatusHandler fnc, void *fnc_value ) 
 {
     assert (gpg);
+    if (gpg->pm.active)
+        return;
+
     gpg->status.fnc = fnc;
     gpg->status.fnc_value = fnc_value;
 }
@@ -277,6 +360,8 @@ _gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
                                     GpgColonLineHandler fnc, void *fnc_value ) 
 {
     assert (gpg);
+    if (gpg->pm.active)
+        return 0;
 
     gpg->colon.bufsize = 1024;
     gpg->colon.readpos = 0;
@@ -291,6 +376,39 @@ _gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
     gpg->colon.eof = 0;
     gpg->colon.fnc = fnc;
     gpg->colon.fnc_value = fnc_value;
+    return 0;
+}
+
+
+/* 
+ * The Fnc will be called to get a value for one of the commands with
+ * a key KEY.  If the Code pssed to FNC is 0, the function may release
+ * resources associated with the returned value from another call.  To
+ * match such a second call to a first call, the returned value from
+ * the first call is passed as keyword.
+ */
+
+GpgmeError
+_gpgme_gpg_set_command_handler ( GpgObject gpg,
+                                 GpgCommandHandler fnc, void *fnc_value ) 
+{
+    GpgmeData tmp;
+    GpgmeError err;
+
+    assert (gpg);
+    if (gpg->pm.active)
+        return 0;
+
+    err = gpgme_data_new_with_read_cb ( &tmp, command_cb, gpg );
+    if (err)
+        return err;
+        
+    _gpgme_gpg_add_arg ( gpg, "--command-fd" );
+    _gpgme_gpg_add_data (gpg, tmp, -2);
+    gpg->cmd.cb_data = tmp;
+    gpg->cmd.fnc = fnc;
+    gpg->cmd.fnc_value = fnc_value;
+    gpg->cmd.used = 1;
     return 0;
 }
 
@@ -362,6 +480,8 @@ build_argv ( GpgObject gpg )
         argc++;
     if (use_agent)
         argc++;
+    if (!gpg->cmd.used)
+        argc++;
 
     argv = xtrycalloc ( argc+1, sizeof *argv );
     if (!argv)
@@ -391,6 +511,15 @@ build_argv ( GpgObject gpg )
     }
     if ( use_agent ) {
         argv[argc] = xtrystrdup ( "--use-agent" );
+        if (!argv[argc]) {
+            xfree (fd_data_map);
+            free_argv (argv);
+            return mk_error (Out_Of_Core);
+        }
+        argc++;
+    }
+    if ( !gpg->cmd.used ) {
+        argv[argc] = xtrystrdup ( "--batch" );
         if (!argv[argc]) {
             xfree (fd_data_map);
             free_argv (argv);
@@ -453,6 +582,13 @@ build_argv ( GpgObject gpg )
                     fd_data_map[datac].peer_fd  = fds[0];
                 }
             }
+
+            /* Hack to get hands on the fd later */
+            if ( gpg->cmd.used && gpg->cmd.cb_data == a->data ) {
+                assert (gpg->cmd.fd == -1);
+                gpg->cmd.fd = fd_data_map[datac].fd;
+            }
+
             fd_data_map[datac].data = a->data;
             fd_data_map[datac].dup_to = a->dup_to;
             if ( a->dup_to == -1 ) {
@@ -500,6 +636,9 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
      * all the gpgme_gpg_add_arg().  we bail out here instead */
     if ( gpg->arg_error )
         return mk_error (Out_Of_Core);
+
+    if (gpg->pm.active)
+        return 0;
 
     rc = build_argv ( gpg );
     if ( rc )
@@ -570,6 +709,8 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
     }
 
     gpg->pid = pid;
+    if (gpg->pm.used)
+        gpg->pm.active = 1;
 
     /*_gpgme_register_term_handler ( closure, closure_value, pid );*/
 
@@ -610,8 +751,11 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
         }
     }
 
-    /* fixme: check what data we can release here */
+    if ( gpg->cmd.used )
+        _gpgme_freeze_fd ( gpg->cmd.fd );
 
+    /* fixme: check what data we can release here */
+    
     gpg->running = 1;
     return 0;
 }
@@ -699,7 +843,7 @@ write_cb_data ( GpgmeData dh, int fd )
         return 1;
     }
     
-    nwritten = _gpgme_io_write ( fd, dh->data+dh->readpos, nbytes );
+    nwritten = _gpgme_io_write ( fd, buffer, nbytes );
     if (nwritten == -1 && errno == EAGAIN )
         return 0;
     if ( nwritten < 1 ) {
@@ -710,6 +854,7 @@ write_cb_data ( GpgmeData dh, int fd )
     }
 
     if ( nwritten < nbytes ) {
+        /* ugly, ugly: It does currently only for for MEM type data */
         if ( _gpgme_data_unread (dh, buffer + nwritten, nbytes - nwritten ) )
             fprintf (stderr, "wite_cb_data: unread of %d bytes failed\n",
                      nbytes - nwritten );
@@ -819,8 +964,7 @@ read_status ( GpgObject gpg )
                 *p = 0;
                 fprintf (stderr, "read_status: `%s'\n", buffer);
                 if (!strncmp (buffer, "[GNUPG:] ", 9 )
-                    && buffer[9] >= 'A' && buffer[9] <= 'Z'
-                    && gpg->status.fnc ) {
+                    && buffer[9] >= 'A' && buffer[9] <= 'Z' ) {
                     struct status_table_s t, *r;
                     char *rest;
 
@@ -835,8 +979,30 @@ read_status ( GpgObject gpg )
                     r = bsearch ( &t, status_table, DIM(status_table)-1,
                                   sizeof t, status_cmp );
                     if ( r ) {
-                        gpg->status.fnc ( gpg->status.fnc_value, 
-                                          r->code, rest);
+                        if ( gpg->cmd.used
+                             && ( r->code == STATUS_GET_BOOL
+                                  || r->code == STATUS_GET_LINE
+                                  || r->code == STATUS_GET_HIDDEN )) {
+                            gpg->cmd.code = r->code;
+                            xfree (gpg->cmd.keyword);
+                            gpg->cmd.keyword = xtrystrdup (rest);
+                            if ( !gpg->cmd.keyword )
+                                return mk_error (Out_Of_Core);
+                            /* this should be the last thing we have received
+                             * and the next thing will be that the command
+                             * handler does it action */
+                            if ( nread > 1 )
+                                fprintf (stderr, "** ERROR, unxpected data in"
+                                         " read_status\n" );
+                            _gpgme_thaw_fd (gpg->cmd.fd);
+                        }
+                        else if ( gpg->status.fnc ) {
+                            gpg->status.fnc ( gpg->status.fnc_value, 
+                                              r->code, rest);
+                        }
+                    }
+                    if ( r->code == STATUS_END_STREAM ) {
+                        /* _gpgme_freeze_fd ( ? );*/
                     }
                 }
                 /* To reuse the buffer for the next line we have to
@@ -956,4 +1122,141 @@ read_colon_line ( GpgObject gpg )
     gpg->colon.readpos = readpos;
     return 0;
 }
+
+static GpgmeError
+pipemode_copy (char *buffer, size_t length, size_t *nread, GpgmeData data )
+{
+    GpgmeError err;
+    int nbytes;
+    char tmp[1000], *s, *d;
+
+    /* we can optimize this whole thing but for now we just
+     * return after each escape character */
+    if (length > 990)
+        length = 990;
+
+    err = gpgme_data_read ( data, tmp, length, &nbytes );
+    if (err)
+        return err;
+    for (s=tmp, d=buffer; nbytes; s++, nbytes--) {
+        *d++ = *s;
+        if (*s == '@' ) {
+            *d++ = '@';
+            break;
+        }
+    }
+    *nread = d - buffer;
+    return 0;
+}
+
+
+static int
+pipemode_cb ( void *opaque, char *buffer, size_t length, size_t *nread )
+{
+    GpgObject gpg = opaque;
+    GpgmeError err;
+
+    if ( !buffer || !length || !nread )
+        return 0; /* those values are reserved for extensions */
+    *nread =0;
+    if ( !gpg->pm.stream_started ) {
+        assert (length > 4 );
+        strcpy (buffer, "@<@B" );
+        *nread = 4;
+        gpg->pm.stream_started = 1;
+    }
+    else if ( gpg->pm.sig ) {
+        err = pipemode_copy ( buffer, length, nread, gpg->pm.sig );
+        if ( err == GPGME_EOF ) {
+            gpg->pm.sig = NULL;
+            assert (length > 4 );
+            strcpy (buffer, "@t" );
+            *nread = 2;
+        }
+        else if (err) {
+            fprintf (stderr, "** pipemode_cb: copy sig failed: %s\n",
+                     gpgme_strerror (err) );
+            return -1;
+        }
+    }
+    else if ( gpg->pm.text ) {
+        err = pipemode_copy ( buffer, length, nread, gpg->pm.text );
+        if ( err == GPGME_EOF ) {
+            gpg->pm.text = NULL;
+            assert (length > 4 );
+            strcpy (buffer, "@.@>" );
+            *nread = 4;
+        }
+        else if (err) {
+            fprintf (stderr, "** pipemode_cb: copy data failed: %s\n",
+                     gpgme_strerror (err) );
+            return -1;
+        }
+    }
+    else {
+        return 0; /* eof */
+    }
+
+    return 0;
+}
+
+
+/* 
+ * Here we handle --command-fd.  This works closely together with
+ * the status handler.  
+ */
+
+static int
+command_cb ( void *opaque, char *buffer, size_t length, size_t *nread )
+{
+    GpgObject gpg = opaque;
+    const char *value;
+    int value_len;
+
+    fprintf (stderr, "** command_cb: enter\n");
+    assert (gpg->cmd.used);
+    if ( !buffer || !length || !nread )
+        return 0; /* those values are reserved for extensions */
+    *nread =0;
+    if ( !gpg->cmd.code ) {
+        fprintf (stderr, "** command_cb: no code\n");
+        return -1;
+    }
+    
+    if ( !gpg->cmd.fnc ) {
+        fprintf (stderr, "** command_cb: no user cb\n");
+        return -1;
+    }
+
+    value = gpg->cmd.fnc ( gpg->cmd.fnc_value, 
+                           gpg->cmd.code, gpg->cmd.keyword );
+    if ( !value ) {
+        fprintf (stderr, "** command_cb: no data from user cb\n");
+        gpg->cmd.fnc ( gpg->cmd.fnc_value, 0, value);
+        return -1;
+    }
+
+    value_len = strlen (value);
+    if ( value_len+1 > length ) {
+        fprintf (stderr, "** command_cb: too much data from user cb\n");
+        gpg->cmd.fnc ( gpg->cmd.fnc_value, 0, value);
+        return -1;
+    }
+
+    memcpy ( buffer, value, value_len );
+    if ( !value_len || (value_len && value[value_len-1] != '\n') ) 
+        buffer[value_len++] = '\n';
+    *nread = value_len;
+    
+    fprintf (stderr, "** command_cb: leave (wrote `%.*s')\n",
+             (int)*nread-1, buffer);
+    gpg->cmd.fnc ( gpg->cmd.fnc_value, 0, value);
+    gpg->cmd.code = 0;
+    /* and sleep again until read_status will wake us up again */
+    _gpgme_freeze_fd ( gpg->cmd.fd );
+    return 0;
+}
+
+
+
 

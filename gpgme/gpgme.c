@@ -52,6 +52,7 @@ gpgme_new (GpgmeCtx *r_ctx)
     c->verbosity = 1;
     c->use_armor = 1; /* fixme: reset this to 0 */
     *r_ctx = c;
+
     return 0;
 }
 
@@ -70,7 +71,6 @@ gpgme_release ( GpgmeCtx c )
     _gpgme_key_release ( c->tmp_key );
     gpgme_data_release ( c->notation );
     /* fixme: release the key_queue */
-    xfree (c->prompt_1);
     xfree (c);
 }
 
@@ -147,34 +147,39 @@ gpgme_set_textmode ( GpgmeCtx c, int yes )
     c->use_textmode = yes;
 }
 
-/* 
- * The only which currently allowed is 1
- */
+/**
+ * gpgme_set_passphrase_cb:
+ * @c: the context 
+ * @cb: A callback function
+ * @cb_value: The value passed to the callback function
+ * 
+ * This function sets a callback function to be used to pass a passphrase
+ * to gpg. The preferred way to handle this is by using the gpg-agent, but
+ * because that beast is not ready for real use, you can use this passphrase
+ * thing.
+ *
+ * The callback function is defined as:
+ * <literal>
+ * typedef const char *(*GpgmePassphraseCb)(void*cb_value,
+ *                                          const char *desc,
+ *                                          void *r_hd);
+ * </literal>
+ * and called whenever gpgme needs a passphrase. DESC will have a nice
+ * text, to be used to prompt for the passphrase and R_HD is just a parameter
+ * to be used by the callback it self.  Becuase the callback returns a const
+ * string, the callback might want to know when it can releae resources
+ * assocated with that returned string; gpgme helps here by calling this
+ * passphrase callback with an DESC of %NULL as soon as it does not need
+ * the returned string anymore.  The callback function might then choose
+ * to release resources depending on R_HD.
+ *
+ **/
 void
-_gpgme_set_prompt ( GpgmeCtx c, int which, const char *text )
+gpgme_set_passphrase_cb ( GpgmeCtx c, GpgmePassphraseCb cb, void *cb_value )
 {
-    assert ( which == 1 );
-
-    xfree (c->prompt_1); c->prompt_1 = NULL;
-    if (text) {
-        c->prompt_1 = xtrystrdup (text);
-        if ( !c->prompt_1 )
-            c->out_of_core = 1;
-    }
+    c->passphrase_cb = cb;
+    c->passphrase_cb_value = cb_value;
 }
-
-const char *
-gpgme_get_prompt ( GpgmeCtx c, int which )
-{
-    if ( which != 1 )
-        return NULL;
-    return c->prompt_1;
-}
-
-
-
-
-
 
 
 

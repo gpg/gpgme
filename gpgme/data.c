@@ -25,8 +25,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
-
+#include "syshdr.h"
 
 #include "util.h"
 #include "context.h"

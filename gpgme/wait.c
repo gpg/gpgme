@@ -24,9 +24,8 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
-#include <sys/time.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include "syshdr.h"
 
 #include "util.h"
 #include "context.h"
@@ -236,7 +235,8 @@ do_select ( void )
         return 0; /* error or timeout */
 
     for (i=0; i < fd_table_size /*&& n*/; i++ ) {
-        if ( fd_table[i].fd != -1 && fd_table[i].signaled ) {
+        if ( fd_table[i].fd != -1 && fd_table[i].signaled 
+             && !fd_table[i].frozen ) {
             q = fd_table[i].opaque;
             assert (n);
             n--;
@@ -261,7 +261,7 @@ do_select ( void )
  * called by rungpg.c to register something for select()
  */
 GpgmeError
-_gpgme_register_pipe_handler( void *opaque, 
+_gpgme_register_pipe_handler ( void *opaque, 
                               int (*handler)(void*,int,int),
                               void *handler_value,
                               int pid, int fd, int inbound )
@@ -292,6 +292,7 @@ _gpgme_register_pipe_handler( void *opaque,
             fd_table[i].for_read = inbound;    
             fd_table[i].for_write = !inbound;    
             fd_table[i].signaled = 0;
+            fd_table[i].frozen = 0;
             fd_table[i].opaque = q;
             unlock_table ();
             return 0;
@@ -317,6 +318,38 @@ _gpgme_register_pipe_handler( void *opaque,
     return mk_error (Too_Many_Procs);
 }
 
+
+void
+_gpgme_freeze_fd ( int fd )
+{
+    int i;
+
+    lock_table ();
+    for (i=0; i < fd_table_size; i++ ) {
+        if ( fd_table[i].fd == fd ) {
+            fd_table[i].frozen = 1;
+            fprintf (stderr, "** FD %d frozen\n", fd );
+            break;
+        }
+    }
+    unlock_table ();
+}
+
+void
+_gpgme_thaw_fd ( int fd )
+{
+    int i;
+
+    lock_table ();
+    for (i=0; i < fd_table_size; i++ ) {
+        if ( fd_table[i].fd == fd ) {
+            fd_table[i].frozen = 0;
+            fprintf (stderr, "** FD %d thawed\n", fd );
+            break;
+        }
+    }
+    unlock_table ();
+}
 
 
 

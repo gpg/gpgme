@@ -32,6 +32,7 @@
 struct  sign_result_s {
     int no_passphrase;
     int okay;
+    void *last_pw_handle;
 };
 
 
@@ -84,10 +85,48 @@ sign_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
     }
 }
 
+static const char *
+command_handler ( void *opaque, GpgStatusCode code, const char *key )
+{
+    GpgmeCtx c = opaque;
+
+    if ( c->result_type == RESULT_TYPE_NONE ) {
+        assert ( !c->result.sign );
+        c->result.sign = xtrycalloc ( 1, sizeof *c->result.sign );
+        if ( !c->result.sign ) {
+            c->out_of_core = 1;
+            return NULL;
+        }
+        c->result_type = RESULT_TYPE_SIGN;
+    }
+
+    if ( !code ) {
+        /* We have been called for cleanup */
+        if ( c->passphrase_cb ) { 
+            /* Fixme: take the key in account */
+            c->passphrase_cb (c->passphrase_cb_value, 0, 
+                              &c->result.sign->last_pw_handle );
+        }
+        
+        return NULL;
+    }
+
+    if ( !key || !c->passphrase_cb )
+        return NULL;
+    
+    if ( code == STATUS_GET_HIDDEN && !strcmp (key, "passphrase.enter") ) {
+        return c->passphrase_cb (c->passphrase_cb_value,
+                                 "Please enter your Friedrich Willem!",
+                                 &c->result.sign->last_pw_handle );
+   }
+    
+    return NULL;
+}
 
 
 GpgmeError
-gpgme_op_sign_start ( GpgmeCtx c, GpgmeData in, GpgmeData out )
+gpgme_op_sign_start ( GpgmeCtx c, GpgmeData in, GpgmeData out,
+                      GpgmeSigMode mode )
 {
     int rc = 0;
     int i;
@@ -98,23 +137,39 @@ gpgme_op_sign_start ( GpgmeCtx c, GpgmeData in, GpgmeData out )
     _gpgme_release_result (c);
     c->out_of_core = 0;
 
-    /* do some checks */
-    assert ( !c->gpg );
+
+    if ( mode != GPGME_SIG_MODE_NORMAL
+         && mode != GPGME_SIG_MODE_DETACH
+         && mode != GPGME_SIG_MODE_CLEAR )
+        return mk_error (Invalid_Value);
         
     /* create a process object */
+    _gpgme_gpg_release (c->gpg);
+    c->gpg = NULL;
     rc = _gpgme_gpg_new ( &c->gpg );
     if (rc)
         goto leave;
 
     _gpgme_gpg_set_status_handler ( c->gpg, sign_status_handler, c );
+    if (c->passphrase_cb) {
+        rc = _gpgme_gpg_set_command_handler ( c->gpg, command_handler, c );
+        if (rc)
+            goto leave;
+    }
 
     /* build the commandline */
-    _gpgme_gpg_add_arg ( c->gpg, "--sign" );
-    _gpgme_gpg_add_arg ( c->gpg, "--detach" );
-    if ( c->use_armor )
-        _gpgme_gpg_add_arg ( c->gpg, "--armor" );
-    if ( c->use_textmode )
-        _gpgme_gpg_add_arg ( c->gpg, "--textmode" );
+    if ( mode == GPGME_SIG_MODE_CLEAR ) {
+        _gpgme_gpg_add_arg ( c->gpg, "--clearsign" );
+    }
+    else {
+        _gpgme_gpg_add_arg ( c->gpg, "--sign" );
+        if ( mode == GPGME_SIG_MODE_DETACH )
+            _gpgme_gpg_add_arg ( c->gpg, "--detach" );
+        if ( c->use_armor )
+            _gpgme_gpg_add_arg ( c->gpg, "--armor" );
+        if ( c->use_textmode )
+            _gpgme_gpg_add_arg ( c->gpg, "--textmode" );
+    }
     for ( i=0; i < c->verbosity; i++ )
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
     
@@ -151,17 +206,26 @@ gpgme_op_sign_start ( GpgmeCtx c, GpgmeData in, GpgmeData out )
  * @c: The context
  * @in: Data to be signed
  * @out: Detached signature
+ * @mode: Signature creation mode
  * 
  * Create a detached signature for @in and write it to @out.
  * The data will be signed using either the default key or the ones
  * defined through @c.
+ * The defined modes for signature create are:
+ * <literal>
+ * GPGME_SIG_MODE_NORMAL (or 0) 
+ * GPGME_SIG_MODE_DETACH
+ * GPGME_SIG_MODE_CLEAR
+ * </literal>
+ * Note that the settings done by gpgme_set_armor() and gpgme_set_textmode()
+ * are ignore for @mode GPGME_SIG_MODE_CLEAR.
  * 
  * Return value: 0 on success or an error code.
  **/
 GpgmeError
-gpgme_op_sign ( GpgmeCtx c, GpgmeData in, GpgmeData out )
+gpgme_op_sign ( GpgmeCtx c, GpgmeData in, GpgmeData out, GpgmeSigMode mode )
 {
-    GpgmeError err = gpgme_op_sign_start ( c, in, out );
+    GpgmeError err = gpgme_op_sign_start ( c, in, out, mode );
     if ( !err ) {
         gpgme_wait (c, 1);
         if ( c->result_type != RESULT_TYPE_SIGN )

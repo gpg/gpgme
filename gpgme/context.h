@@ -69,7 +69,8 @@ struct gpgme_context_s {
     volatile int key_cond;  /* something new is available */
     struct key_queue_item_s *key_queue;
 
-    char *prompt_1;
+    GpgmePassphraseCb passphrase_cb;
+    void *passphrase_cb_value;
 };
 
 

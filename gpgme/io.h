@@ -35,6 +35,7 @@ struct io_select_fd_s {
     int for_read;
     int for_write;
     int signaled;
+    int frozen;
     void *opaque;
 };
 

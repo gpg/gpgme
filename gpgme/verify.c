@@ -124,6 +124,9 @@ verify_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
         add_notation ( ctx, code, args );
         break;
 
+      case STATUS_END_STREAM:
+        break;
+
       default:
         /* ignore all other codes */
         fprintf (stderr, "verify_status: code=%d not handled\n", code );
@@ -138,29 +141,30 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
 {
     int rc = 0;
     int i;
+    int pipemode = 0 /*!!text*/; /* use pipemode for detached sigs */
 
     fail_on_pending_request( c );
     c->pending = 1;
 
     _gpgme_release_result (c);
     c->out_of_core = 0;
-
-    /* create a process object.
-     * To optimize this, we should reuse an existing one and
-     * run gpg in the new --pipemode (I started with this but it is
-     * not yet finished) */
-    if ( c->gpg ) {
-        _gpgme_gpg_release ( c->gpg ); 
+    
+    if ( !pipemode ) {
+        _gpgme_gpg_release ( c->gpg );
         c->gpg = NULL;
     }
-    rc = _gpgme_gpg_new ( &c->gpg );
+
+    if ( !c->gpg ) 
+        rc = _gpgme_gpg_new ( &c->gpg );
     if (rc)
         goto leave;
 
+    if (pipemode)
+        _gpgme_gpg_enable_pipemode ( c->gpg ); 
     _gpgme_gpg_set_status_handler ( c->gpg, verify_status_handler, c );
 
     /* build the commandline */
-    _gpgme_gpg_add_arg ( c->gpg, "--verify" );
+    _gpgme_gpg_add_arg ( c->gpg, pipemode?"--pipemode" : "--verify" );
     for ( i=0; i < c->verbosity; i++ )
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
 
@@ -178,10 +182,16 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
         _gpgme_data_set_mode (text, GPGME_DATA_MODE_OUT );
     /* Tell the gpg object about the data */
     _gpgme_gpg_add_arg ( c->gpg, "--" );
-    _gpgme_gpg_add_data ( c->gpg, sig, -1 );
-    if (text) {
-        _gpgme_gpg_add_arg ( c->gpg, "-" );
-        _gpgme_gpg_add_data ( c->gpg, text, 0 );
+    if (pipemode) {
+        _gpgme_gpg_add_pm_data ( c->gpg, sig, 0 );
+        _gpgme_gpg_add_pm_data ( c->gpg, text, 1 );
+    }
+    else {
+        _gpgme_gpg_add_data ( c->gpg, sig, -1 );
+        if (text) {
+            _gpgme_gpg_add_arg ( c->gpg, "-" );
+            _gpgme_gpg_add_data ( c->gpg, text, 0 );
+        }
     }
 
     /* and kick off the process */
@@ -214,6 +224,7 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
  *                        missing key
  *  GPGME_SIG_STAT_NOSIG: This is not a signature
  *  GPGME_SIG_STAT_ERROR: Due to some other error the check could not be done.
+ *  FIXME: What do we return if only some o the signatures ae valid?
  *
  * Return value: 0 on success or an errorcode if something not related to
  *               the signature itself did go wrong.

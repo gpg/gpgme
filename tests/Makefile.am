@@ -22,7 +22,7 @@ all-local: ./pubring.gpg ./secring.gpg
 	-gpg --homedir . --import $(srcdir)/pubdemo.asc
 
 ./secring.gpg: ./Alpha/Secret.gpg 
-	-gpg --homedir . --import Alpha/Secret.gpg Zulu/Secret.gpg
+	-gpg --homedir . --allow-secret-key-import --import Alpha/Secret.gpg Zulu/Secret.gpg
 
 ./Alpha/Secret.gpg: secdemo.asc 
 	srcdir=$(srcdir) $(srcdir)/mkdemodirs 
