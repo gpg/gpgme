@@ -1,3 +1,9 @@
+2004-09-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acinclude.m4: Add copyright notice.
+	(jm_GLIBC21, AM_PATH_GPG_ERROR, _AC_PTH_ERROR, _AC_PTH_VERBOSE,
+	AC_CHECK_PTH): Removed.
+
 2004-06-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Check for <sys/uio.h>.
