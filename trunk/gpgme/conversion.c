@@ -23,6 +23,7 @@
 #include <config.h>
 #endif
 
+#include <string.h>
 #include <ctype.h>
 #include "gpgme.h"
 #include "util.h"
@@ -34,7 +35,8 @@ _gpgme_hextobyte (const byte *str)
   int val = 0;
   int i;
 
-  for (i = 0; i < 2; i++)
+#define NROFHEXDIGITS 2
+  for (i = 0; i < NROFHEXDIGITS; i++)
     {
       if (*str >= '0' && *str <= '9')
 	val += *str - '0';
@@ -44,7 +46,8 @@ _gpgme_hextobyte (const byte *str)
 	val += 10 + *str - 'a';
       else
 	return -1;
-      val *= 16;
+      if (i < NROFHEXDIGITS - 1)
+	val *= 16;
       str++;
     }
   return val;

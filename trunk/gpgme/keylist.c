@@ -633,9 +633,7 @@ gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
 {
   GpgmeError err = 0;
 
-  /* Keylist operations are always "synchronous" in the sense that we
-     don't add ourself to the global FD table.  */
-  err = _gpgme_op_reset (ctx, 1);
+  err = _gpgme_op_reset (ctx, 2);
   if (err)
     goto leave;
 
