@@ -1,3 +1,10 @@
+2001-08-29  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (keylist_colon_handler): Do a finish key if we receive
+	an EOF here.  This is probably the reason for a lot of bugs
+	related to keylisting.  It is so obvious.  Kudos to Enno Cramer
+	for pointing that out. 
+
 2001-08-28  Werner Koch  <wk@gnupg.org>
 
 	* gpgme.c, gpgme.h (gpgme_get_op_info): New.
