@@ -20,7 +20,7 @@ This is Edition @value{EDITION}, last updated @value{UPDATED}, of
 @cite{The `GnuPG Made Easy' Reference Manual}, for Version
 @value{VERSION}.
 
-Copyright @copyright{} 2002, 2003 g10 Code GmbH.
+Copyright @copyright{} 2002, 2003, 2004 g10 Code GmbH.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -104,6 +104,7 @@ Preparation
 
 * Header::                        What header file you need to include.
 * Building the Source::           Compiler options to be used.
+* Largefile Support::             How to use @acronym{GPGME} with LFS.
 * Using Automake::                Compiler options to be used the easy way.
 * Using Libtool::                 Avoiding compiler options entirely.
 * Library Version Check::         Getting and verifying the library version.
@@ -405,6 +406,82 @@ If you want to link to one of the thread-safe versions of
 any other option to select the thread package you want to link with.
 Supported thread packages are @option{--thread=pth} and
 @option{--thread=pthread}.
+
+
+@node Largefile Support
+@section Largefile Support (LFS)
+@cindex largfile support
+@cindex LFS
+
+@acronym{GPGME} is compiled with largfile support by default, if it is
+available on the system.  This means that GPGME supports files larger
+than two gigabyte in size, if the underlying operating system can.  On
+some systems, largefile support is already the default.  On such
+systems, nothing special is required.  However, some systems provide
+only support for files up to two gigabyte in size by default.  Support
+for larger file sizes has to be specifically enabled.
+
+To make a difficult situation even more complex, such systems provide
+two different types of largefile support.  You can either get all
+relevant functions replaced with alternatives that are largefile
+capable, or you can get new functions and data types for largefile
+support added.  Those new functions have the same name as their
+smallfile counterparts, but with a suffix of 64.
+
+An example: The data type @code{off_t} is 32 bit wide on GNU/Linux PC
+systems.  To address offsets in large files, you can either enable
+largefile support add-on.  Then a new data type @code{off64_t} is
+provided, which is 64 bit wide.  Or you can replace the existing
+@code{off_t} data type with its 64 bit wide counterpart.  All
+occurences of @code{off_t} are then automagically replaced.
+
+As if matters were not complex enough, there are also two different
+types of file descriptors in such systems.  This is important because
+if file descriptors are exchanged between programs that use a
+different maximum file size, certain errors must be produced on some
+file descriptors to prevent subtle overflow bugs from occuring.
+
+As you can see, supporting two different maximum file sizes at the
+same time is not at all an easy task.  However, the maximum file size
+does matter for @acronym{GPGME}, because some data types it uses in
+its interfaces are affected by that.  For example, the @code{off_t}
+data type is used in the @code{gpgme_data_seek} function, to match its
+@acronym{POSIX} counterpart.  This affects the call-frame of the
+function, and thus the ABI of the library.  Furthermore, file
+descriptors can be exchanged between GPGME and the application.
+
+For you as the user of the library, this means that your program must
+be compiled in the same file size mode as the library.  Luckily, there
+is absolutely no valid reason for new programs to not enable largefile
+support by default and just use that.  The compatibility modes (small
+file sizes or dual mode) can be considered an historic artefact, only
+useful to allow for a transitional period.
+
+@acronym{GPGME} is compiled using the largfile support by default.
+This means that your application must do the same, at least as far as
+it is relevant for using the @file{gpgme.h} header file.  All types in
+this header files refer to their largefile counterparts, if they are
+different from any default types on the system.
+
+You can enable largefile support, if it is different from the default
+on the system the application is compiled on, by using the Autoconf
+macro @code{AC_SYS_LARGEFILE}.  If you do this, then you don't need to
+worry about anything else: It will just work.  In this case you might
+also want to use @code{AC_FUNC_FSEEKO} to take advantage of some new
+interfaces, and @code{AC_TYPE_OFF_T} (just in case).
+
+If you do not use Autoconf, you can define the preprocessor symbol
+@code{_FILE_OFFSET_BITS} to 64 @emph{before} including any header
+files, for example by specifying the option
+@code{-D_FILE_OFFSET_BITS=64} on the compiler command line.  You will
+also want to define the preprocessor symbol @code{LARGEFILE_SOURCE} to
+1 in this case, to take advantage of some new interfaces.
+
+If you do not want to do either of the above, you probably know enough
+about the issue to invent your own solution.  Just keep in mind that
+the @acronym{GPGME} header file expects that largefile support is
+enabled, if it is available.  In particular, we do not support dual
+mode (@code{_LARGEFILE64_SOURCE}).
 
 
 @node Using Automake

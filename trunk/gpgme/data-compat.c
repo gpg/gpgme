@@ -1,5 +1,5 @@
 /* data-compat.c - Compatibility interfaces for data objects.
-   Copyright (C) 2002, 2003 g10 Code GmbH
+   Copyright (C) 2002, 2003, 2004 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -39,6 +39,7 @@ gpgme_data_new_from_filepart (gpgme_data_t *dh, const char *fname,
 {
   gpgme_error_t err;
   char *buf = NULL;
+  int res;
 
   if (stream && fname)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -48,7 +49,14 @@ gpgme_data_new_from_filepart (gpgme_data_t *dh, const char *fname,
   if (!stream)
     return gpg_error_from_errno (errno);
 
-  if (fseek (stream, offset, SEEK_SET))
+#ifdef HAVE_FSEEKO
+  res = fseeko (stream, offset, SEEK_SET);
+#else
+  /* FIXME: Check for overflow, or at least bail at compilation.  */
+  res = fseek (stream, offset, SEEK_SET);
+#endif
+
+  if (res)
     {
       int saved_errno = errno;
       if (fname)
