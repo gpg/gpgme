@@ -1188,6 +1188,9 @@ is used when a passphrase needs to be provided by the user in
 @var{*passfunc}, and the first argument for this function in
 @var{*hook_value}.  If no passphrase callback is set, or @var{ctx} is
 not a valid pointer, @code{NULL} is returned in both variables.
+
+@var{passfunc} or @var{hook_value} can be @code{NULL}.  In this case,
+the corresponding value will not be returned.
 @end deftypefun
 
 
@@ -1229,6 +1232,9 @@ used to inform the user about the progress made in @var{*progfunc},
 and the first argument for this function in @var{*hook_value}.  If no
 progress callback is set, or @var{ctx} is not a valid pointer,
 @code{NULL} is returned in both variables.
+
+@var{progfunc} or @var{hook_value} can be @code{NULL}.  In this case,
+the corresponding value will not be returned.
 @end deftypefun
 
 

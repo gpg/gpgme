@@ -1,3 +1,9 @@
+2002-04-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (gpgme_get_progress_cb): Allow either return parameter
+	to be NULL.
+	(gpgme_get_passphrase_cb): Likewise.
+
 2002-04-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (gpgme_get_passphrase_cb): New function.
