@@ -206,6 +206,12 @@ _gpgme_io_waitpid ( int pid, int hang, int *r_status, int *r_signal )
     return 0;
 }
 
+int
+_gpgme_io_kill ( int pid, int hard )
+{
+    return kill ( pid, hard? SIGKILL : SIGTERM );
+}
+
 
 /*
  * Select on the list of fds.

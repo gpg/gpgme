@@ -347,13 +347,24 @@ finish_key ( GpgmeCtx ctx )
 
 
 
+/**
+ * gpgme_op_keylist_start:
+ * @c: context 
+ * @pattern: a GnuPg user ID or NULL for all
+ * @secret_only: List only keys where the secret part is available
+ * 
+ * Note that this function also cancels a pending key listing operaton..
+ * 
+ * Return value:  0 on success or an errorcode. 
+ **/
 GpgmeError
 gpgme_op_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
 {
     GpgmeError rc = 0;
     int i;
 
-    fail_on_pending_request( c );
+    if ( !c )
+        return mk_error (Invalid_Value);
     c->pending = 1;
 
     _gpgme_release_result (c);

@@ -323,6 +323,7 @@ gpgme_register_idle ( void (*fnc)(void) )
 static void
 run_idle ()
 {
+    _gpgme_gpg_housecleaning ();
     if (idle_function)
         idle_function ();
 }

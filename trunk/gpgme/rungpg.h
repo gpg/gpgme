@@ -95,6 +95,7 @@ typedef const char *(*GpgCommandHandler)(void*, GpgStatusCode code,
 
 GpgmeError _gpgme_gpg_new ( GpgObject *r_gpg );
 void       _gpgme_gpg_release ( GpgObject gpg );
+void       _gpgme_gpg_housecleaning (void);
 void       _gpgme_gpg_enable_pipemode ( GpgObject gpg );
 GpgmeError _gpgme_gpg_add_arg ( GpgObject gpg, const char *arg );
 GpgmeError _gpgme_gpg_add_data ( GpgObject gpg, GpgmeData data, int dup_to );

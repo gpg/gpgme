@@ -64,6 +64,7 @@ main (int argc, char **argv )
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
+    gpgme_set_armor (ctx, 1);
 
     err = gpgme_data_new_from_mem ( &in, "Hallo Leute\n", 12, 0 );
     fail_if_err (err);

@@ -598,6 +598,17 @@ _gpgme_io_waitpid ( int pid, int hang, int *r_status, int *r_signal )
     return ret;
 }
 
+int
+_gpgme_io_kill ( int pid, int hard )
+{
+    HANDLE proc = fd_to_handle (pid);
+
+    #warning I am not sure how to kill a process
+    /* fixme: figure out how this can be done */
+    return 0;
+}
+
+
 
 /*
  * Select on the list of fds.

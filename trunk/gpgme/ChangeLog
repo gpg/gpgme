@@ -1,5 +1,12 @@
 2001-02-13  Werner Koch  <wk@gnupg.org>
 
+	* rungpg.c (do_reaping,_gpgme_gpg_housecleaning): New.
+	(_gpgme_gpg_release): Reap children.
+	* io.h, posix-io.c (_gpgme_io_kill): New.
+	* w32-io.c (_gpgme_io_kill): New (dummy).
+
+	* keylist.c (gpgme_op_keylist_start): Cancel a pending request.
+
 	* posix-io.c (_gpgme_io_read): Add some debug output. 
 	(_gpgme_io_write): Ditto.
 	(_gpgme_io_select): Increased the timeout.
