@@ -359,7 +359,6 @@ gpgme_op_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
     _gpgme_release_result (c);
     c->out_of_core = 0;
 
-#warning This context still keeps a gpg Zombie in some cases.
     if ( c->gpg ) {
         _gpgme_gpg_release ( c->gpg ); 
         c->gpg = NULL;

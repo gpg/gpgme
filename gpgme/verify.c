@@ -29,21 +29,28 @@
 #include "ops.h"
 
 struct verify_result_s {
+    struct verify_result_s *next;
     GpgmeSigStat status;
     GpgmeData notation; /* we store an XML fragment here */
-
+    int collecting;       /* private to finish_sig() */
     int notation_in_data; /* private to add_notation() */
+    char fpr[41];    /* fingerprint of a good signature or keyid of a bad one*/
+    ulong timestamp; /* signature creation time */
 };
 
 
 void
 _gpgme_release_verify_result ( VerifyResult res )
 {
-    gpgme_data_release ( res->notation );
-    xfree (res);
+    while (res) {
+        VerifyResult r2 = res->next;
+        gpgme_data_release ( res->notation );
+        xfree (res);
+        res = r2;
+    }
 }
 
-
+/* fixme: check that we are adding this to the correct signature */
 static void
 add_notation ( GpgmeCtx ctx, GpgStatusCode code, const char *data )
 {
@@ -86,9 +93,42 @@ add_notation ( GpgmeCtx ctx, GpgStatusCode code, const char *data )
     }
 }
 
+
+/* 
+ * finish a pending signature info collection and prepare for a new
+ * signature info collection
+ */
+static void
+finish_sig (GpgmeCtx ctx, int stop)
+{
+    if (stop)
+        return; /* nothing to do */
+
+    if (ctx->result.verify->collecting) {
+        VerifyResult res2;
+
+        ctx->result.verify->collecting = 0;
+        /* create a new result structure */
+        res2 = xtrycalloc ( 1, sizeof *res2 );
+        if ( !res2 ) {
+            ctx->out_of_core = 1;
+            return;
+        }
+
+        res2->next = ctx->result.verify;
+        ctx->result.verify = res2;
+    }
+    
+    ctx->result.verify->collecting = 1;
+}
+
+
 static void
 verify_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 {
+    char *p;
+    int i;
+
     if ( ctx->out_of_core )
         return;
     if ( ctx->result_type == RESULT_TYPE_NONE ) {
@@ -102,20 +142,54 @@ verify_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
     }
     assert ( ctx->result_type == RESULT_TYPE_VERIFY );
 
-    /* FIXME: For now we handle only one signature */
-    /* FIXME: Collect useful information
-       and return them as XML */
+    if (code == STATUS_GOODSIG
+        || code == STATUS_BADSIG || code == STATUS_ERRSIG) {
+        finish_sig (ctx,0);
+        if ( ctx->out_of_core )
+            return;
+    }
+
     switch (code) {
       case STATUS_GOODSIG:
-        ctx->result.verify->status = GPGME_SIG_STAT_GOOD;
+        /* We just look at VALIDSIG */
         break;
+
+      case STATUS_VALIDSIG:
+        ctx->result.verify->status = GPGME_SIG_STAT_GOOD;
+        p = ctx->result.verify->fpr;
+        for (i=0; i < DIM(ctx->result.verify->fpr)
+                 && args[i] && args[i] != ' ' ; i++ )
+            *p++ = args[i];
+        *p = 0;
+        /* skip the formatted date */
+        while ( args[i] && args[i] == ' ')
+            i++;
+        while ( args[i] && args[i] != ' ')
+            i++;
+        /* and get the timestamp */
+        ctx->result.verify->timestamp = strtoul (args+i, NULL, 10);
+        break;
+
       case STATUS_BADSIG:
         ctx->result.verify->status = GPGME_SIG_STAT_BAD;
+        /* store the keyID in the fpr field */
+        p = ctx->result.verify->fpr;
+        for (i=0; i < DIM(ctx->result.verify->fpr)
+                 && args[i] && args[i] != ' ' ; i++ )
+            *p++ = args[i];
+        *p = 0;
         break;
+
       case STATUS_ERRSIG:
         ctx->result.verify->status = GPGME_SIG_STAT_ERROR;
         /* FIXME: distinguish between a regular error and a missing key.
          * this is encoded in the args. */
+        /* store the keyID in the fpr field */
+        p = ctx->result.verify->fpr;
+        for (i=0; i < DIM(ctx->result.verify->fpr)
+                 && args[i] && args[i] != ' ' ; i++ )
+            *p++ = args[i];
+        *p = 0;
         break;
 
       case STATUS_NOTATION_NAME:
@@ -125,6 +199,10 @@ verify_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
         break;
 
       case STATUS_END_STREAM:
+        break;
+
+      case STATUS_EOF:
+        finish_sig(ctx,1);
         break;
 
       default:
@@ -205,6 +283,21 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
 }
 
 
+/* 
+ * Figure out a common status value for all signatures 
+ */
+static GpgmeSigStat
+intersect_stati ( VerifyResult res )
+{
+    GpgmeSigStat status = res->status;
+
+    for (res=res->next; res; res = res->next) {
+        if (status != res->status ) 
+            return GPGME_SIG_STAT_DIFF;
+    }
+    return status;
+}
+
 /**
  * gpgme_op_verify:
  * @c: the context
@@ -223,7 +316,8 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
  *                        missing key
  *  GPGME_SIG_STAT_NOSIG: This is not a signature
  *  GPGME_SIG_STAT_ERROR: Due to some other error the check could not be done.
- *  FIXME: What do we return if only some o the signatures ae valid?
+ *  GPGME_SIG_STAT_DIFF:  There is more than 1 signature and they have not
+ *                        the same status.
  *
  * Return value: 0 on success or an errorcode if something not related to
  *               the signature itself did go wrong.
@@ -250,6 +344,7 @@ gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
             rc = mk_error (Out_Of_Core);
         else {
             assert ( c->result.verify );
+            /* fixme: Put all notation data into one XML fragment */
             if ( c->result.verify->notation ) {
                 GpgmeData dh = c->result.verify->notation;
                 
@@ -261,13 +356,89 @@ gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
                 c->notation = dh;
                 c->result.verify->notation = NULL;
             }
-            *r_stat = c->result.verify->status;
+            *r_stat = intersect_stati (c->result.verify);
         }
         c->pending = 0;
     }
     return rc;
 }
 
+
+/**
+ * gpgme_get_sig_status:
+ * @c: Context
+ * @idx: Index of the signature starting at 0
+ * @r_stat: Returns the status
+ * @r_created: Returns the creation timestamp
+ * 
+ * Return information about an already verified signatures. 
+ * 
+ * Return value: The fingerprint or NULL in case of an problem or
+ *               when there are no more signatures.
+ **/
+const char *
+gpgme_get_sig_status (GpgmeCtx c, int idx,
+                      GpgmeSigStat *r_stat, time_t *r_created )
+{
+    VerifyResult res;
+
+    if (!c || c->pending || c->result_type != RESULT_TYPE_VERIFY )
+        return NULL; /* No results yet or verification error */
+
+    for (res = c->result.verify; res && idx>0 ; res = res->next, idx--)
+        ;
+    if (!res)
+        return NULL; /* No more signatures */
+
+    if (r_stat)
+        *r_stat = res->status;
+    if (r_created)
+        *r_created = res->timestamp;
+    return res->fpr;
+}
+
+
+/**
+ * gpgme_get_sig_key:
+ * @c: context
+ * @idx: Index of the signature starting at 0
+ * @r_key: Returns the key object
+ * 
+ * Return a key object which was used to check the signature. 
+ * 
+ * Return value: An Errorcode or 0 for success. GPG<ME_EOF is returned to
+ *               indicate that there are no more signatures. 
+ **/
+GpgmeError
+gpgme_get_sig_key (GpgmeCtx c, int idx, GpgmeKey *r_key)
+{
+    VerifyResult res;
+    GpgmeCtx listctx;
+    GpgmeError err;
+
+    if (!c || !r_key)
+        return mk_error (Invalid_Value);
+    if (c->pending || c->result_type != RESULT_TYPE_VERIFY )
+        return mk_error (Busy);
+
+    for (res = c->result.verify; res && idx>0 ; res = res->next, idx--)
+        ;
+    if (!res)
+        return mk_error (EOF);
+
+    if (strlen(res->fpr) < 16) /* we have at least an key ID */
+        return mk_error (Invalid_Key);
+
+    /* Fixme: This can me optimized keeping
+     *        an internal context used for such key listings */
+    if ( (err=gpgme_new (&listctx)) )
+        return err;
+    if ( !(err=gpgme_op_keylist_start (listctx, res->fpr, 0 )) )
+        err=gpgme_op_keylist_next ( listctx, r_key );
+    gpgme_release (listctx);
+
+    return err;
+}
 
 
 

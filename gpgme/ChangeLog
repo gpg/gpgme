@@ -1,3 +1,14 @@
+2001-02-12  Werner Koch  <wk@gnupg.org>
+
+	Enhanced the signature verification, so that it can how handle
+	more than one signature and is able to return more information on 
+	the signatures.
+	* verify.c (gpgme_get_sig_key): New.
+	(gpgme_get_sig_status): New.
+
+	* gpgme.h: Add stdio.h. 
+	(GpgmeSigStat): New status DIFF.
+
 2001-02-01  Werner Koch  <wk@gnupg.org>
 
 	* w32-io.c (set_synchronize): Add EVENT_MODIFY_STATE.  Add Debug

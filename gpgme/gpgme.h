@@ -21,6 +21,7 @@
 #ifndef GPGME_H
 #define GPGME_H
 
+#include <stdio.h> /* for FILE * */
 #ifdef _MSC_VER
   typedef long off_t;
 #else
@@ -103,7 +104,8 @@ typedef enum {
     GPGME_SIG_STAT_BAD  = 2,
     GPGME_SIG_STAT_NOKEY = 3,
     GPGME_SIG_STAT_NOSIG = 4,
-    GPGME_SIG_STAT_ERROR = 5
+    GPGME_SIG_STAT_ERROR = 5,
+    GPGME_SIG_STAT_DIFF  = 6
 } GpgmeSigStat;
 
 typedef enum {
@@ -164,6 +166,12 @@ void gpgme_set_progress_cb (GpgmeCtx c, GpgmeProgressCb cb, void *cb_value);
 void       gpgme_signers_clear (GpgmeCtx c);
 GpgmeError gpgme_signers_add (GpgmeCtx c, const GpgmeKey key);
 GpgmeKey   gpgme_signers_enum (const GpgmeCtx c, int seq);
+
+const char *gpgme_get_sig_status (GpgmeCtx c, int idx,
+                                  GpgmeSigStat *r_stat, time_t *r_created );
+GpgmeError gpgme_get_sig_key (GpgmeCtx c, int idx, GpgmeKey *r_key);
+
+
 
 
 /* Functions to handle recipients */

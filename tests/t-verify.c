@@ -67,28 +67,59 @@ static const char test_sig1[] =
                                 exit (1); }                               \
                              } while(0)
 
-static void
-print_sig_stat ( GpgmeSigStat status )
+
+static const char *
+status_string (GpgmeSigStat status)
 {
+    const char *s = "?";
+
     switch ( status ) {
       case GPGME_SIG_STAT_NONE:
-        fputs ("Verification Status: None\n", stdout);
+        s = "None";
         break;
       case GPGME_SIG_STAT_NOSIG:
-        fputs ("Verification Status: No Signature\n", stdout);
+        s = "No Signature";
         break;
       case GPGME_SIG_STAT_GOOD:
-        fputs ("Verification Status: Good\n", stdout);
+        s = "Good";
         break;
       case GPGME_SIG_STAT_BAD:
-        fputs ("Verification Status: Bad\n", stdout);
+        s = "Bad";
         break;
       case GPGME_SIG_STAT_NOKEY:
-        fputs ("Verification Status: No Key\n", stdout);
+        s = "No Key";
         break;
       case GPGME_SIG_STAT_ERROR:
-        fputs ("Verification Status: Error\n", stdout);
+        s = "Error";
         break;
+      case GPGME_SIG_STAT_DIFF:
+        s = "More than one signature";
+        break;
+    }
+    return s;
+}
+
+
+static void
+print_sig_stat ( GpgmeCtx ctx, GpgmeSigStat status )
+{
+    const char *s;
+    time_t created;
+    int idx;
+    GpgmeKey key;
+
+    printf ("Verification Status: %s\n", status_string (status));
+    
+    for(idx=0; (s=gpgme_get_sig_status (ctx, idx, &status, &created)); idx++ ) {
+        printf ("sig %d: created: %lu status: %s\n", idx, (ulong)created,
+                status_string(status) );
+        printf ("sig %d: fpr/keyid=`%s'\n", idx, s );
+        if ( !gpgme_get_sig_key (ctx, idx, &key) ) {
+            char *p = gpgme_key_get_as_xml ( key );
+            printf ("sig %d: key object:\n%s\n", idx, p );
+            free (p);
+            gpgme_key_release (key);
+        }
     }
 }
 
@@ -118,7 +149,7 @@ main (int argc, char **argv )
 
     puts ("checking a valid message:\n");
     err = gpgme_op_verify (ctx, sig, text, &status );
-    print_sig_stat ( status );
+    print_sig_stat ( ctx, status );
     fail_if_err (err);
 
     if ( (nota=gpgme_get_notation (ctx)) )
@@ -131,7 +162,7 @@ main (int argc, char **argv )
     fail_if_err (err);
     gpgme_data_rewind ( sig );
     err = gpgme_op_verify (ctx, sig, text, &status );
-    print_sig_stat ( status );
+    print_sig_stat ( ctx, status );
     fail_if_err (err);
     if ( (nota=gpgme_get_notation (ctx)) )
         printf ("---Begin Notation---\n%s---End Notation---\n", nota );
