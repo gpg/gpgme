@@ -1832,7 +1832,7 @@ struct CertificateInfo {
     dont free() it, the struct will be reused
     by the next call to nextCertificate()
   }
-  endListCertificates( it );
+  int truncated = endListCertificates( it );
 \endverbatim
 */
 struct CertIterator*
@@ -1841,7 +1841,7 @@ startListCertificates( const char* pattern, int remote );
 int
 nextCertificate( struct CertIterator*, struct CertificateInfo** result );
 
-void
+int
 endListCertificates( struct CertIterator* );
 
 /*!
