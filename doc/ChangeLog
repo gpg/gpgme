@@ -1,8 +1,8 @@
 2002-02-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Creating a Signature): Add a note about
-	certifications to include.
-	(Included Certifications): New section.
+	certificates to include.
+	(Included Certificates): New section.
 
 2002-02-09  Marcus Brinkmann  <marcus@g10code.de>
 
