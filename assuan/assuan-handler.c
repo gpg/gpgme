@@ -54,6 +54,8 @@ std_handler_bye (ASSUAN_CONTEXT ctx, char *line)
 {
   if (ctx->bye_notify_fnc)
     ctx->bye_notify_fnc (ctx);
+  assuan_close_input_fd (ctx);
+  assuan_close_output_fd (ctx);
   return -1; /* pretty simple :-) */
 }
   
@@ -68,6 +70,8 @@ std_handler_reset (ASSUAN_CONTEXT ctx, char *line)
 {
   if (ctx->reset_notify_fnc)
     ctx->reset_notify_fnc (ctx);
+  assuan_close_input_fd (ctx);
+  assuan_close_output_fd (ctx);
   return 0;
 }
   
@@ -458,7 +462,8 @@ assuan_process_next (ASSUAN_CONTEXT ctx)
  * 
  * Return all active filedescriptors for the given context.  This
  * function can be used to select on the fds and call
- * assuan_process_next() if there is an active one.
+ * assuan_process_next() if there is an active one.  The first fd in
+ * the array is the one used for the command connection.
  *
  * Note, that write FDs are not yet supported.
  * 
