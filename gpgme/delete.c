@@ -30,19 +30,58 @@
 #include "ops.h"
 #include "key.h"
 
-static void
-delete_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
+
+enum delete_problem
+  {
+    DELETE_No_Problem = 0,
+    DELETE_No_Such_Key = 1,
+    DELETE_Must_Delete_Secret_Key = 2
+  };
+
+
+struct delete_result_s
 {
-    if ( ctx->out_of_core )
-        return;
+  enum delete_problem problem;
+};
 
-    switch (code) {
-      case STATUS_EOF:
-        break;
 
-      default:
-        /* ignore all other codes */
-        break;
+void
+_gpgme_release_delete_result (DeleteResult result)
+{
+  if (!result)
+    return;
+  xfree (result);
+}
+
+
+static void
+delete_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+{
+  if (ctx->out_of_core)
+    return;
+
+  if (!ctx->result.delete)
+    {
+      ctx->result.delete = xtrycalloc (1, sizeof *ctx->result.delete);
+      if (!ctx->result.delete)
+        {
+          ctx->out_of_core = 1;
+          return;
+        }
+    }
+
+  switch (code)
+    {
+    case STATUS_EOF:
+      break;
+
+    case STATUS_DELETE_PROBLEM:
+      ctx->result.delete->problem = atoi (args);
+      break;
+
+    default:
+      /* Ignore all other codes.  */
+      break;
     }
 }
 
@@ -108,7 +147,23 @@ gpgme_op_delete (GpgmeCtx ctx, const GpgmeKey key, int allow_secret)
   if (!err)
     {
       gpgme_wait (ctx, 1);
-      /* FIXME: check for success */
+      if (ctx->result.delete)
+	{
+	  switch (ctx->result.delete->problem)
+	    {
+	    case DELETE_No_Problem:
+	      break;
+	    case DELETE_No_Such_Key:
+	      err = mk_error(Invalid_Key);
+	      break;
+	    case DELETE_Must_Delete_Secret_Key:
+	      err = mk_error(Conflict);
+	      break;
+	    default:
+	      err = mk_error(General_Error);
+	      break;
+	    }
+	}
     }
   return err;
 }

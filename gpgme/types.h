@@ -80,10 +80,9 @@ typedef struct passphrase_result_s *PassphraseResult;
 struct import_result_s;
 typedef struct import_result_s *ImportResult;
 
+/*-- delete.c --*/
+struct delete_result_s;
+typedef struct delete_result_s *DeleteResult;
+
 
 #endif /* TYPES_H */
-
-
-
-
-

@@ -98,6 +98,9 @@ GpgmeError _gpgme_passphrase_result (GpgmeCtx ctx);
 /*-- import.c --*/
 void _gpgme_release_import_result (ImportResult res);
 
+/*-- delete.c --*/
+void _gpgme_release_delete_result (DeleteResult res);
+
 /*-- version.c --*/
 const char *_gpgme_compare_versions (const char *my_version,
 				     const char *req_version);

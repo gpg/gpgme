@@ -1,12 +1,28 @@
 2002-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.c (_gpgme_release_result): Call
+	_gpgme_release_delete_result.
+	* ops.h (_gpgme_release_delete_result): Add prototype.
+	* types.h (DeleteResult): New type.
+	* context.h (gpgme_context_s): Add DeleteResult to member result.
+
+	* delete.c (enum delete_problem): New type.
+	(struct delete_result_s): New structure.
+	(_gpgme_release_delete_result): New function.
+	(delete_status_handler): Implement more status codes.
+	(gpgme_op_delete): Return error on failure.
+
+	* import.c (MAX_IMPORTED_FIELDS): Bump up to 14.
+
+2002-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
 	* import.c (struct import_result_s): New structure.
 	(_gpgme_release_import_result): New function.
 	(append_xml_impinfo): Likewise.
 	(import_status_handler): Implement.
 	* gpgme.c (_gpgme_release_result): Add call to
 	_gpgme_release_import_result.
-	* ops.h (_gpgme_release_impoer_result): Add prototype.
+	* ops.h (_gpgme_release_import_result): Add prototype.
 	* types.h (ImportResult): New type.
 	* context.h (gpgme_context_s): Add ImportResult to member result.
 
