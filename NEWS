@@ -1,7 +1,10 @@
+ * There is a Texinfo manual documenting the API.
+
  * The LENGTH argument to gpgme_data_new_from_filepart changed its
    type from off_t to the unsigned size_t.
 
- * There is a Texinfo manual documenting the API.
+ * The R_HD argument to the GpgmePassphraseCb type changed its type
+   from void* to void**.
 
  * New interface gpgme_op_trustlist_end() to match
    gpgme_op_keylist_end.
@@ -9,6 +12,7 @@
  * Interface changes relative to the 0.3.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_data_new_from_filepart	CHANGED: Type of LENGTH is size_t.
+GpgmePassphraseCb               CHANGED: Type of R_HD is void **.
 gpgme_op_trustlist_next		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

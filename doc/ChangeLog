@@ -1,5 +1,10 @@
 2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Passphrase callback): Change GpgmePassphraseCb's
+	R_HD type from void* to void**.
+
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.texi (Creating data buffers): Change
 	gpgme_data_new_from_filepart's LENGTH type from off_t to size_t.
 

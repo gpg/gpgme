@@ -1007,7 +1007,7 @@ Fast listing without information about the key validity.
 @node Passphrase callback
 @subsection Passphrase callback
 
-@deftp {Data type} {const char *(*GpgmePassphraseCb)(void *@var{hook}, const char *@var{desc}, void *@var{r_hd})}
+@deftp {Data type} {const char *(*GpgmePassphraseCb)(void *@var{hook}, const char *@var{desc}, void **@var{r_hd})}
 The @code{GpgmePasshraseCb} type is the type of functions usable as
 passphrase callback function.
 

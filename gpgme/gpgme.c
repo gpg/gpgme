@@ -303,7 +303,7 @@ gpgme_set_keylist_mode (GpgmeCtx ctx, int mode)
  * <literal>
  * typedef const char *(*GpgmePassphraseCb)(void*cb_value,
  *                                          const char *desc,
- *                                          void *r_hd);
+ *                                          void **r_hd);
  * </literal>
  * and called whenever gpgme needs a passphrase. DESC will have a nice
  * text, to be used to prompt for the passphrase and R_HD is just a parameter
