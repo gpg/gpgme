@@ -1,3 +1,8 @@
+2002-05-30  Werner Koch  <wk@gnupg.org>
+
+	* key.c (gpgme_key_get_string_attr): Return NULL when asking for
+	an issuer with IDX > 0.  We don't support altIssuerNames for now.
+
 2002-05-22  Werner Koch  <wk@gnupg.org>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist_ext): Aehmm, added
