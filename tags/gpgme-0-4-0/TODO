@@ -1,0 +1,89 @@
+Hey Emacs, this is -*- outline -*- mode!
+
+* ABI's to break:
+** string representation of non-secret keys and ATTR_IS_SECRET is NULL,
+   which can not be differentiated from the case that it is not
+   representable.
+
+* Thread support:
+** Build thread modules for static linking (which just suck in the
+   desired symbols the hard way). !!
+
+* New features:
+** notification system
+   We need a simple notification system, probably a a simple callback
+   with a string and some optional arguments.  This is for example
+   required to notify an application of a changed smartcard,  The
+   application can then do whatever is required.  There are other
+   usages too.  This notfication system should be independent of any
+   contextes of course.
+** --learn-code support
+   This might be integrated with import. we still need to work out how
+   to learn a card when gpg and gpgsm have support for smartcards.
+
+* Documentation
+** Add note about GPGME clearing out pointer return values.
+** validity/trust
+
+* Engines
+** Optimize the case where a data object has an underlying fd we can pass
+   directly to the engine.
+** Move code common to all engines up from gpg to engine.
+** engine operations can return General Error on unknown protocol
+   (it's an internal error, as select_protocol checks already).
+** When server mode is implemented properly, more care has to be taken to
+    release all resources on error (for example to free assuan_cmd).
+** GnuPG
+*** For pipemode, make sure to release the pipemode callback data object.
+    Note, pipemode will eventually be replaced by an Assuan interface to gpg.
+
+* Operations
+** Passphrase callback should not copy password. !!!
+** Export status handler need much more work. !!!
+** Import should return a useful error when one happened.
+** Genkey should return something more useful than General_Error.
+** Factor out common code in _op_*_start functions.
+** Add ATTR to return the number of subkeys or uids.
+** "When returning a GpgmeKey GPGME_ATTR_COMMENT attribute, characters  
+   like ":" are not un-escaped, they are returned as \x3a" Bug
+   reported by Stephane Corthesy.
+
+* Error Values
+** Map ASSUAN/GpgSM ERR error values in a better way than is done now. !!
+** Verify (and document) if Read_Error, Write_Error, Pipe_Error set errno.
+
+* Tests
+** Write a fake gpg-agent so that we can supply known passphrases to
+   gpgsm and setup the configuration files to use the agent.  Without
+   this we are testing a currently running gpg-agent which is not a
+   clever idea. !
+** t-data
+*** Test gpgme_data_release_and_get_mem.
+*** Test gpgme_data_rewind for invalid types.
+*** Test gpgme_data_read's readable feature.
+
+* Debug
+** Handle malloc and vasprintf errors.  But decide first if they should be
+   ignored (and logged with 255?!), or really be assertions. !
+
+* Build suite
+** Make sure everything is cleaned correctly (esp. test area).
+
+Bugs reported by Stephane Corthesy:
+> BTW, here's another bug: it it not possible to retrieve fingerprints  
+> for subkeys
+--> This seems to work now (wk 2002-08-20)
+
+> In GpgmeRecipients, would it be possible to provide a function which  
+> would return the validity assigned to a name contained in the  
+> GpgmeRecipients instance?
+
+> passphrase callback. If I use the same GpgmeContext as the one which  
+> is currently asking for a passphrase, my app crashes: the r_hd in
+> the  
+> callback has become invalid; if I use a brand new one, the callback  
+> is called recursively, when I ask to enumerate keys.
+
+
+
+
