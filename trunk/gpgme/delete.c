@@ -35,7 +35,8 @@ enum delete_problem
   {
     DELETE_No_Problem = 0,
     DELETE_No_Such_Key = 1,
-    DELETE_Must_Delete_Secret_Key = 2
+    DELETE_Must_Delete_Secret_Key = 2,
+    DELETE_Ambiguous_Specification = 3
   };
 
 
@@ -74,6 +75,8 @@ delete_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 	case DELETE_Must_Delete_Secret_Key:
 	  ctx->error = mk_error(Conflict);
 	  break;
+	case DELETE_Ambiguous_Specification:
+	  /* XXX Need better error value.  Fall through.  */
 	default:
 	  ctx->error = mk_error(General_Error);
 	  break;
