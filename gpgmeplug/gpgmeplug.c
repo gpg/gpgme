@@ -2076,8 +2076,19 @@ static int add_dn_part( char* result, struct DnPair* dn, const char* part )
 
 static char* reorder_dn( struct DnPair *dn )
 {
+  /*
   const char* stdpart[] = {
     "CN", "OU", "O", "STREET", "L", "ST", "C", NULL 
+  };
+  */
+  // note: The must parts are: CN, L, OU, O, C
+  const char* stdpart[] = {
+    "CN", "S", "SN", "GN", "T", "UID",
+          "MAIL", "EMAIL", "MOBILE", "TEL", "FAX", "STREET",
+    "L",  "PC", "SP", "ST",
+    "OU",
+    "O",
+    "C"
   };
   int any=0, any2=0, len=0, i;
   char* result;
