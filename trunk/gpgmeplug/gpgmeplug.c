@@ -457,16 +457,22 @@ bool warnNoCertificate()
 bool isEmailInCertificate( const char* email, const char* fingerprint )
 {
   bool bOk = false;
-  if( fingerprint ){
+  if( searchEmail && fingerprint ){
     GpgmeCtx ctx;
     GpgmeError err;
     GpgmeKey rKey;
     int UID_idx;
     const char* attr_string;
-    int fprLen = strlen( fingerprint );
+    const char* email = searchEmail;
+    int emailLen = strlen( email );
     int emailCount = 0;
 
-    fprintf( stderr, "gpgmeplug isEmailInCertificate looking for fingerprint %s\n", fingerprint );
+    if (email && *email == '<'){
+      ++email;
+      emailLen -= 2;
+    }
+    
+    fprintf( stderr, "gpgmeplug isEmailInCertificate looking address %s\nin certificate with fingerprint %s\n", email, fingerprint );
 
     gpgme_new( &ctx );
     gpgme_set_protocol( ctx, GPGMEPLUG_PROTOCOL );
@@ -478,24 +484,21 @@ bool isEmailInCertificate( const char* email, const char* fingerprint )
       if ( GPGME_No_Error == err ) {
         /* extract email(s) */
         for( UID_idx = 0; 
-            (attr_string = gpgme_key_get_string_attr(
-                              rKey, GPGME_ATTR_EMAIL, 0, UID_idx ) );
-            ++UID_idx ){
-          if (attr_string && *attr_string) {
-            ++emailCount;
-            fprintf( stderr, "gpgmeplug isEmailInCertificate found email: %s\n", attr_string );
-            if( 0 == strcasecmp(attr_string, email) ){
-              bOk = true;
-              break;
-            }else{
-              attr_string = gpgme_key_get_string_attr(
-                              rKey, GPGME_ATTR_USERID, 0, UID_idx );
-              if (attr_string && *attr_string == '<'){
-                ++attr_string;
-                if( 0 == strncasecmp(attr_string, email, fprLen) ){
-                  bOk = true;
-                  break;
-                }
+             (attr_string = gpgme_key_get_string_attr(
+                              rKey, GPGME_ATTR_EMAIL, 0, UID_idx));
+             ++UID_idx ){
+          if( !attr_string || !*attr_string )
+            attr_string = gpgme_key_get_string_attr(
+                            rKey, GPGME_ATTR_USERID, 0, UID_idx );
+          if( attr_string ){
+            if( *attr_string == '<' )
+              ++attr_string;
+            if( *attr_string ){
+              ++emailCount;
+              fprintf( stderr, "gpgmeplug isEmailInCertificate found email: %s\n", attr_string );
+              if( 0 == strncasecmp(attr_string, email, emailLen) ){
+                bOk = true;
+                break;
               }
             }
           }
@@ -513,7 +516,10 @@ bool isEmailInCertificate( const char* email, const char* fingerprint )
     }
     gpgme_release( ctx );
   }else{
-    fprintf( stderr, "gpgmeplug isEmailInCertificate called with parameter FINGERPRINT being EMPTY\n" );
+    if( searchEmail )
+      fprintf( stderr, "gpgmeplug isEmailInCertificate called with parameter FINGERPRINT being EMPTY\n" );
+    else
+      fprintf( stderr, "gpgmeplug isEmailInCertificate called with parameter EMAIL being EMPTY\n" );
   }
   return bOk;
 }
