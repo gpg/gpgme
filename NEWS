@@ -1,10 +1,13 @@
-Noteworthy changes in version 0.3.9 (unreleased)
+Noteworthy changes in version 0.3.9 (2002-08-21)
 ------------------------------------------------
 
  * A spec file for creating RPMs has been added.
 
  * An experimental interface to GnuPG's --edit-key functionality is
-   introduced.
+   introduced, see gpgme_op_edit.
+
+ * The new gpgme_import_ext function provides a convenient access to
+   the number of processed keys.
 
  * Interface changes relative to the 0.3.8 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -12,6 +15,7 @@ GpgmeStatusCode			NEW
 GpgmeEditCb			NEW
 gpgme_op_edit_start		NEW
 gpgme_op_edit			NEW
+gpgme_op_import_ext		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.8 (2002-06-25)
