@@ -451,16 +451,39 @@ conditions to worry about:
 
 @itemize @bullet
 @item
+@acronym{GPGME} supports the thread libraries pthread and GNU Pth.
+The support for this has to be enabled at compile time.
+@acronym{GPGME} will automatically detect the location in which the
+thread libraries are installed and activate the support for them.
+
+Support for other thread libraries is very easy to add.  Please
+contact us if you have the need.
+
+@item
+If you link your program dynamically to @acronym{GPGME} and your
+supported thread library, @acronym{GPGME} will automatically detect
+the presence of this library and activate its use.  If you link to
+both pthread and GNU Pth, @acronym{GPGME} will use the pthread
+support.  This feature requires weak symbol support.
+
+@item
+If you link your program statically to @acronym{GPGME}, there is
+currently no easy way to make sure that @acronym{GPGME} detects the
+presence of the thread library.  This will be solved in a future
+version.
+
+@item
 The function @code{gpgme_check_version} must be called before any
-other function in the library, because it initializes the locking
-subsystem in @acronym{GPGME}.  To achieve this in all generality, it
-is necessary to synchronize the call to this function with all other
-calls to functions in the library, using the synchronization
-mechanisms available in your thread library.  Otherwise, specific
-compiler or CPU memory cache optimizations could lead to the situation
-where a thread is started and uses @acronym{GPGME} before the effects
-of the initialization are visible for this thread.  It doesn't even
-suffice to call @code{gpgme_check_version} before creating this other
+other function in the library, because it initializes the thread
+support subsystem in @acronym{GPGME}.  To achieve this in all
+generality, it is necessary to synchronize the call to this function
+with all other calls to functions in the library, using the
+synchronization mechanisms available in your thread library.
+Otherwise, specific compiler or CPU memory cache optimizations could
+lead to the situation where a thread is started and uses
+@acronym{GPGME} before the effects of the initialization are visible
+for this thread.  It doesn't even suffice to call
+@code{gpgme_check_version} before creating this other
 thread@footnote{In SMP systems the new thread could be started on
 another CPU before the effects of the initialization are seen by that
 CPU's memory cache.  Not doing proper synchronization here leads to
