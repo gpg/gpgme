@@ -33,7 +33,6 @@ GpgmeError _gpgme_gpg_check_version (void);
 
 GpgmeError _gpgme_gpg_new (GpgObject *r_gpg);
 void _gpgme_gpg_release (GpgObject gpg);
-void _gpgme_gpg_enable_pipemode (GpgObject gpg);
 GpgmeError _gpgme_gpg_set_verbosity (GpgObject gpg, int verbosity);
 void _gpgme_gpg_set_status_handler (GpgObject gpg, GpgStatusHandler fnc,
 				    void *fnc_value);

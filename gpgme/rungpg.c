@@ -101,16 +101,6 @@ struct gpg_object_s
   char **argv;  
   struct fd_data_map_s *fd_data_map;
 
-  /* stuff needed for pipemode */
-  struct
-  {
-    int used;
-    int active;
-    GpgmeData sig;
-    GpgmeData text;
-    int stream_started;
-  } pm;
-
   /* stuff needed for interactive (command) mode */
   struct
   {
@@ -140,8 +130,6 @@ static GpgmeError read_status (GpgObject gpg);
 static void gpg_colon_line_handler (void *opaque, int fd);
 static GpgmeError read_colon_line (GpgObject gpg);
 
-static int pipemode_cb (void *opaque, char *buffer, size_t length,
-			size_t *nread);
 static int command_cb (void *opaque, char *buffer, size_t length,
 		       size_t *nread);
 
@@ -227,9 +215,6 @@ add_arg (GpgObject gpg, const char *arg)
   assert (gpg);
   assert (arg);
 
-  if (gpg->pm.active)
-    return 0;
-
   a = malloc (sizeof *a + strlen (arg));
   if (!a)
     {
@@ -252,8 +237,6 @@ add_data (GpgObject gpg, GpgmeData data, int dup_to, int inbound)
 
   assert (gpg);
   assert (data);
-  if (gpg->pm.active)
-    return 0;
 
   a = malloc (sizeof *a - 1);
   if (!a)
@@ -277,49 +260,6 @@ add_data (GpgObject gpg, GpgmeData data, int dup_to, int inbound)
   *gpg->argtail = a;
   gpg->argtail = &a->next;
   return 0;
-}
-
-static GpgmeError
-add_pm_data (GpgObject gpg, GpgmeData data, int what)
-{
-  GpgmeError rc = 0;
-
-  assert (gpg->pm.used);
-    
-  if (!what)
-    {
-      /* the signature */
-      assert (!gpg->pm.sig);
-      gpg->pm.sig = data;
-    }
-  else if (what == 1)
-    {
-      /* the signed data */
-      assert (!gpg->pm.text);
-      gpg->pm.text = data;
-    }
-  else
-    assert (0);
-
-  if (gpg->pm.sig && gpg->pm.text)
-    {
-      if (!gpg->pm.active)
-	{
-	  /* Create the callback handler and connect it to stdin.  */
-	  GpgmeData tmp;
-
-	  rc = gpgme_data_new_with_read_cb (&tmp, pipemode_cb, gpg);
-	  if (!rc)
-	    rc = add_data (gpg, tmp, 0, 0);
-        }
-      if (!rc)
-	{
-	  /* Here we can reset the handler stuff.  */
-	  gpg->pm.stream_started = 0;
-        }
-    }
-
-  return rc;
 }
 
 
@@ -449,13 +389,6 @@ _gpgme_gpg_release (GpgObject gpg)
   free (gpg);
 }
 
-void
-_gpgme_gpg_enable_pipemode (GpgObject gpg)
-{
-  gpg->pm.used = 1;
-  assert (!gpg->pm.sig);
-  assert (!gpg->pm.text);
-}
 
 GpgmeError
 _gpgme_gpg_set_verbosity (GpgObject gpg, int verbosity)
@@ -473,8 +406,6 @@ _gpgme_gpg_set_status_handler (GpgObject gpg,
 			       GpgStatusHandler fnc, void *fnc_value)
 {
   assert (gpg);
-  if (gpg->pm.active)
-    return;
 
   gpg->status.fnc = fnc;
   gpg->status.fnc_value = fnc_value;
@@ -486,8 +417,6 @@ _gpgme_gpg_set_colon_line_handler (GpgObject gpg,
 				   GpgColonLineHandler fnc, void *fnc_value)
 {
   assert (gpg);
-  if (gpg->pm.active)
-    return 0;
 
   gpg->colon.bufsize = 1024;
   gpg->colon.readpos = 0;
@@ -526,8 +455,6 @@ _gpgme_gpg_set_command_handler (GpgObject gpg,
   GpgmeError err;
 
   assert (gpg);
-  if (gpg->pm.active)
-    return 0;
 
   err = gpgme_data_new_with_read_cb (&tmp, command_cb, gpg);
   if (err)
@@ -819,9 +746,6 @@ _gpgme_gpg_spawn (GpgObject gpg, void *opaque)
   if (gpg->arg_error)
     return mk_error (Out_Of_Core);
 
-  if (gpg->pm.active)
-    return 0;
-
   rc = build_argv (gpg);
   if (rc)
     return rc;
@@ -885,9 +809,6 @@ _gpgme_gpg_spawn (GpgObject gpg, void *opaque)
   free (fd_child_list);
   if (status == -1)
     return mk_error (Exec_Error);
-
-  if (gpg->pm.used)
-    gpg->pm.active = 1;
 
   /*_gpgme_register_term_handler ( closure, closure_value, pid );*/
 
@@ -1223,85 +1144,6 @@ read_colon_line ( GpgObject gpg )
     gpg->colon.readpos = readpos;
     return 0;
 }
-
-static GpgmeError
-pipemode_copy (char *buffer, size_t length, size_t *nread, GpgmeData data)
-{
-  size_t nbytes;
-  char tmp[1000], *src, *dst;
-
-  /* We can optimize this whole thing but for now we just return after
-      each escape character.  */
-  if (length > 990)
-    length = 990;
-
-  nbytes = gpgme_data_read (data, tmp, length);
-  if (nbytes < 0)
-    return mk_error (File_Error);
-  for (src = tmp, dst = buffer; nbytes; src++, nbytes--)
-    {
-      *dst++ = *src;
-      if (*src == '@')
-	{
-	  *dst++ = '@';
-	  break;
-	}
-    }
-  *nread = dst - buffer;
-  return 0;
-}
-
-
-static int
-pipemode_cb ( void *opaque, char *buffer, size_t length, size_t *nread )
-{
-    GpgObject gpg = opaque;
-    GpgmeError err;
-
-    if ( !buffer || !length || !nread )
-        return 0; /* those values are reserved for extensions */
-    *nread =0;
-    if ( !gpg->pm.stream_started ) {
-        assert (length > 4 );
-        strcpy (buffer, "@<@B" );
-        *nread = 4;
-        gpg->pm.stream_started = 1;
-    }
-    else if ( gpg->pm.sig ) {
-        err = pipemode_copy ( buffer, length, nread, gpg->pm.sig );
-        if ( err == GPGME_EOF ) {
-            gpg->pm.sig = NULL;
-            assert (length > 4 );
-            strcpy (buffer, "@t" );
-            *nread = 2;
-        }
-        else if (err) {
-            DEBUG1 ("pipemode_cb: copy sig failed: %s\n",
-                     gpgme_strerror (err) );
-            return -1;
-        }
-    }
-    else if ( gpg->pm.text ) {
-        err = pipemode_copy ( buffer, length, nread, gpg->pm.text );
-        if ( err == GPGME_EOF ) {
-            gpg->pm.text = NULL;
-            assert (length > 4 );
-            strcpy (buffer, "@.@>" );
-            *nread = 4;
-        }
-        else if (err) {
-            DEBUG1 ("pipemode_cb: copy data failed: %s\n",
-                     gpgme_strerror (err) );
-            return -1;
-        }
-    }
-    else {
-        return 0; /* eof */
-    }
-
-    return 0;
-}
-
 
 /* 
  * Here we handle --command-fd.  This works closely together with
@@ -1755,30 +1597,17 @@ _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData signed_text,
     }
   else
     {
-      if (gpg->pm.used)
+      err = add_arg (gpg, "--verify");
+      if (!err)
+	err = add_arg (gpg, "--");
+      if (!err)
+	err = add_data (gpg, sig, -1, 0);
+      if (signed_text)
 	{
-	  err = add_arg (gpg, gpg->pm.used ? "--pipemode" : "--verify");
 	  if (!err)
-	    err = add_arg (gpg, "--");
+	    err = add_arg (gpg, "-");
 	  if (!err)
-	    err = add_pm_data (gpg, sig, 0);
-	  if (!err)
-	    err = add_pm_data (gpg, signed_text, 1);
-	}
-      else
-	{
-	  err = add_arg (gpg, "--verify");
-	  if (!err)
-	    err = add_arg (gpg, "--");
-	  if (!err)
-	    err = add_data (gpg, sig, -1, 0);
-	  if (signed_text)
-	    {
-	      if (!err)
-		err = add_arg (gpg, "-");
-	      if (!err)
-		err = add_data (gpg, signed_text, 0, 0);
-	    }
+	    err = add_data (gpg, signed_text, 0, 0);
 	}
     }
   return err;
