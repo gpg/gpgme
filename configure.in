@@ -17,11 +17,13 @@ AM_INIT_AUTOMAKE(gpgme,0.1.4a)
 LIBGPGME_LT_CURRENT=2
 LIBGPGME_LT_AGE=2
 LIBGPGME_LT_REVISION=0
+NEED_GPG_VERSION=1.0.4d
 ##############################################
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
 AC_SUBST(LIBGPGME_LT_REVISION)
+AC_DEFINE_UNQUOTED(NEED_GPG_VERSION, "$NEED_GPG_VERSION")
 
 
 dnl
@@ -156,8 +158,9 @@ complus/Makefile
 echo "
 	GPGME v${VERSION} has been configured as follows:
 
-	GPG path:   $GPG
-	Component:  $component_system
+        GPG version: min. $NEED_GPG_VERSION
+	GPG path:    $GPG
+	Component:   $component_system
 "
 
 

@@ -41,6 +41,8 @@
 
 /* path to the gpg binary */
 #undef GPG_PATH
+/* min. needed GPG version */
+#undef NEED_GPG_VERSION
 
 /* stuff needed by lnlib/ */
 #undef HAVE_BYTE_TYPEDEF

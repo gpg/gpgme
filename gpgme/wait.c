@@ -189,7 +189,7 @@ _gpgme_wait_on_condition ( GpgmeCtx c, int hang, volatile int *cond )
             
             if (q->exited) {
                 /* this is the second time we reached this and we got no
-                 * more data from the pipe (which may happen to to buffering).
+                 * more data from the pipe (which may happen due to buffering).
                  * Set all FDs inactive.
                  */
                 clear_active_fds (q->pid);
@@ -377,3 +377,4 @@ run_idle ()
     if (idle_function)
         idle_function ();
 }
+

@@ -57,9 +57,16 @@ _gpgme_key_new( GpgmeKey *r_key )
     key = xtrycalloc ( 1, sizeof *key );
     if (!key)
         return mk_error (Out_Of_Core);
-
+    key->ref_count = 1;
     *r_key = key;
     return 0;
+}
+
+void
+gpgme_key_ref ( GpgmeKey key )
+{
+    return_if_fail (key);
+    key->ref_count++;
 }
 
 
@@ -92,6 +99,10 @@ gpgme_key_release ( GpgmeKey key )
     if (!key)
         return;
 
+    assert (key->ref_count);
+    if ( --key->ref_count )
+        return;
+
     xfree (key->keys.fingerprint);
     for (k = key->keys.next; k; k = k2 ) {
         k2 = k->next;
@@ -104,6 +115,13 @@ gpgme_key_release ( GpgmeKey key )
     }
     xfree (key);
 }
+
+void
+gpgme_key_unref (GpgmeKey key)
+{
+    gpgme_key_release (key);
+}
+
 
 static char *
 set_user_id_part ( char *tail, const char *buf, size_t len )

@@ -45,6 +45,7 @@ struct gpgme_key_s {
         unsigned int expired:1 ;
         unsigned int disabled:1 ;
     } gloflags; 
+    unsigned int ref_count;
     struct subkey_s   keys; 
     struct user_id_s *uids;
 };

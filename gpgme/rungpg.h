@@ -105,6 +105,9 @@ void       _gpgme_gpg_set_status_handler ( GpgObject gpg,
 GpgmeError _gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
                                                GpgColonLineHandler fnc,
                                                void *fnc_value );
+GpgmeError _gpgme_gpg_set_simple_line_handler ( GpgObject gpg,
+                                                GpgColonLineHandler fnc,
+                                                void *fnc_value );
 GpgmeError _gpgme_gpg_set_command_handler ( GpgObject gpg,
                                             GpgCommandHandler fnc,
                                             void *fnc_value );

@@ -57,6 +57,10 @@ main (int argc, char **argv )
     GpgmeData in, out;
     GpgmeRecipients rset;
 
+    err = gpgme_check_engine ();
+    fail_if_err (err);
+    puts ( gpgme_get_engine_info() );
+
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);

@@ -42,6 +42,8 @@ gpgme_strerror (GpgmeError err)
   case GPGME_Decryption_Failed: s="Decryption Failed"; break;
   case GPGME_No_Passphrase: s="No Passphrase"; break;
   case GPGME_Canceled: s="Canceled"; break;
+  case GPGME_Invalid_Key: s="Invalid Key"; break;
+  case GPGME_Invalid_Engine: s="Invalid Engine"; break;
     default:  sprintf (buf, "ec=%d", err ); s=buf; break;
 }
 

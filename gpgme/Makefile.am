@@ -15,7 +15,7 @@ libgpgme_la_INCLUDES = -I$(top_srcdir)/lib
 libgpgme_la_SOURCES = \
 	gpgme.h types.h util.h util.c \
 	context.h ops.h \
-	data.c recipient.c \
+	data.c recipient.c signers.c \
         wait.c wait.h \
 	encrypt.c \
 	decrypt.c \
@@ -27,6 +27,7 @@ libgpgme_la_SOURCES = \
 	import.c \
         export.c \
 	genkey.c \
+	delete.c \
         rungpg.c rungpg.h status-table.h \
 	syshdr.h io.h posix-io.c w32-io.c \
 	gpgme.c version.c errors.c
