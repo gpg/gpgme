@@ -1,6 +1,39 @@
 Noteworthy changes in version 0.4.1 (unreleased)
 ------------------------------------------------
 
+ This is the release that 0.4.0 should have been.  There are many
+ interface changes, please see below for the details.  The changes are
+ sometimes the result of new functionality, but more often express a
+ paradigm shift.  Others are an overdue cleanup to get GPGME in line
+ with the GNU coding standards and to make the interface more
+ self-consistent.  Here is an overview on the changes:
+
+ All types have been renamed to conform to the GNU coding standards,
+ most of the time by keeping the whole name in lowercase and insert
+ underscores between words.
+
+ All operations consistently only accept input parameters in their
+ invocation function, and return only an error code directly.  Further
+ information about the result of the operation has to be retrieved
+ afterwards by calling one of the result functions.  This unifies the
+ synchronous and the asynchronous interface.
+
+ The results of all operations are now provided by pointers to C
+ structs rather than by XML structs or in other ways.
+
+ Objects which used to be opaque (for example a key) are now pointers
+ accessible structs, so no accessor functions are necessary.
+
+ Backward compatibility is provided where it was possible without too
+ much effort and did not collide with the overall sanitization effort.
+ However, it is recommended to update to the new interfaces soon, so
+ the compatibility interfaces can be phased out quickly.
+ Recommendations how to replace deprecated or removed functionality can
+ be found within the description of each change.
+
+ What follows are all changes to the interface and behaviour of GPGME
+ in detail.
+
  * If gpgme.h is included in sources compiled by GCC 3.1 or later,
    deprecated attributes will warn about use of obsolete functions and
    typedefs.  The use of obsolete error values will appear as the use
@@ -46,13 +79,18 @@ Noteworthy changes in version 0.4.1 (unreleased)
    signatures, the progress callback is invoked for both the detached
    signature and the plaintext message, though.
 
- * gpgme_passphrase_cb_t has been changed to not return a complete
+ * gpgme_passphrase_cb_t has been changed to not provide a complete
    description, but the UID hint, passphrase info and a flag
    indicating if this is a repeated attempt individually, so the user
-   can compose his own description from this information.  Furthermore
-   it does not expect the user to return a string, but write the
-   passphrase followed by a newline character directly to a file
-   descriptor.
+   can compose his own description from this information.
+
+   The passphrase is not returned as a C string, but must be written
+   to a file descriptor directly.  This allows for secure passphrase
+   entries.
+
+   The return type has been changed to gpgme_error_t value.  This
+   allowed to remove the gpgme_cancel function; just return
+   GPGME_Canceled in the passphrase callback directly.
 
  * gpgme_edit_cb_t has been changed to take a file descriptor argument.
    The user is expected to write the response to the file descriptor,
@@ -91,11 +129,6 @@ Noteworthy changes in version 0.4.1 (unreleased)
 
  * The new function gpgme_get_protocol_name can be used to convert a
    gpgme_protocol_t value into a string.
-
- * The gpgme_passphrase_cb_t type now returns a gpgme_error_t value,
-   and returns the password string in a new parameter.  The
-   gpgme_cancel function has been removed, just return GPGME_Canceled
-   in the passphrase callback directly.
 
  * The status of a context operation is not checked anymore, so the
    errors GPGME_Busy and GPGME_No_Request can not occur anymore.
@@ -249,7 +282,6 @@ gpgme_register_idle             REMOVED
 gpgme_engine_info_t		NEW
 gpgme_get_engine_info		CHANGED: Return info structure instead XML.
 gpgme_get_protocol_name		NEW
-GpgmePassphraseCb		CHANGED: Return error value, new argument.
 gpgme_cancel			REMOVED: Return error in callback directly.
 GPGME_Busy			DEPRECATED: Not in use.
 GPGME_No_Request		DEPRECATED: Not in use.
