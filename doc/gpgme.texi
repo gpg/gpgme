@@ -1940,7 +1940,7 @@ started successfully, @code{GPGME_Invalid_Value} if @var{keydata} if
 The function @code{gpgme_op_delete} deletes the key @var{key} from the
 key ring of the crypto engine used by @var{ctx}.  If
 @var{allow_secret} is @code{0}, only public keys are deleted,
-otherwise secret keys are deleted as well.
+otherwise secret keys are deleted as well, if that is supported.
 
 The function returns @code{GPGME_No_Error} if the key was deleted
 successfully, @code{GPGME_Invalid_Value} if @var{ctx} or @var{key} is
