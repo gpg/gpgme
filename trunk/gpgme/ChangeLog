@@ -1,5 +1,15 @@
 2003-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* edit.c: Do not include <assert.h>, "util.h", but "gpgme.h".
+	(edit_resut): Change to typedef for op_data_t.
+	(edit_status_handler): Change first argument to void *.
+	Rework error handling.
+	(command_handler): Rework error handling.
+	(_gpgme_op_edit_start): Rename to ...
+	(edit_start): ... this.  Rework error handling.
+	(gpgme_op_edit_start): Rewrite using edit_start.
+	(gpgme_op_edit): Likewise.
+
 	* ops.h (_gpgme_passphrase_start): Remove prototype.
 	* passphrase.c: Do not include <assert.h>, "util.h" or
 	"debug.h", but "gpgme.h".
