@@ -1,3 +1,8 @@
+2004-04-21  Werner Koch  <wk@gnupg.org>
+
+	* key.c (gpgme_key_unref): Allow passing NULL like free does.
+	The rule of least surprise.
+
 2004-04-15  Werner Koch  <wk@gnupg.org>
 
 	* verify.c (prepare_new_sig, _gpgme_verify_status_handler): Remove
