@@ -24,9 +24,6 @@
 *** Test gpgme_data_rewind for invalid types.
 *** Test gpgme_data_read's readable feature.
 
-* Changes breaking the ABI
-** GpgmeKey's main userID is not index == 0.
-
 Bugs reported by Stephane Corthesy:
 > - When returning a GpgmeKey GPGME_ATTR_COMMENT attribute, characters  
 > like ":" are not un-escaped, they are returned as \x3a
@@ -48,8 +45,3 @@ Bugs reported by Stephane Corthesy:
 > the  
 > callback has become invalid; if I use a brand new one, the callback  
 > is called recursively, when I ask to enumerate keys.
-
-
-
-
-

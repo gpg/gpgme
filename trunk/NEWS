@@ -1,4 +1,7 @@
 
+ * GpgmeKey lists the user ids in the order as they are returned by
+   GnuPG, first the primary key with index 0, then the sub-user ids.
+
  * New operation gpgme_op_decrypt_verify() to decrypt and verify
    signatures simultaneously.
 

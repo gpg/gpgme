@@ -1,3 +1,9 @@
+2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* key.c (_gpgme_key_append_name): Append, not prepend, the uid.
+	Initialize the next field of the uid structure.
+	(gpgme_key_get_as_xml): Do not list last uid first.
+
 2001-12-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_set_colon_line_handler): New
