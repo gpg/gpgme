@@ -5,4 +5,7 @@
 * Allow to use GTK's main loop instead of the select stuff in
   wait.c
 
+* a op_keylist_start should cancel a pending keylisy operation on the
+  same context
+
 * need to close a lot of handles in w32-io.c
