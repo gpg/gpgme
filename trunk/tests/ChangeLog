@@ -1,5 +1,9 @@
 2001-10-22  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (TEST_ENVIRONMENT): Revert last change.
+
+2001-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
 	* Makefile.am (TEST_ENVIRONMENT): Set environment to $(srcdir),
 	not current directory.
 
