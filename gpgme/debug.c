@@ -180,7 +180,7 @@ _gpgme_debug_add (void **line, const char *format, ...)
   char *toadd;
   char *result;
 
-  if (!line)
+  if (!*line)
     return;
 
   va_start (arg_ptr, format);
@@ -198,7 +198,7 @@ _gpgme_debug_add (void **line, const char *format, ...)
 void
 _gpgme_debug_end (void **line)
 {
-  if (!line)
+  if (!*line)
     return;
 
   /* The smallest possible level is 1, so force logging here by
