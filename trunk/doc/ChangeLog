@@ -1,5 +1,9 @@
 2002-02-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Listing Keys): Document gpgme_op_keylist_ext_start.
+
+2002-02-27  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.texi (Encrypting a Plaintext): Document
 	GPGME_Invalid_Recipients.
 	(Error Values): Likewise.

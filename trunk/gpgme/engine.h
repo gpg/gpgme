@@ -60,6 +60,11 @@ GpgmeError _gpgme_engine_op_import (EngineObject engine, GpgmeData keydata);
 GpgmeError _gpgme_engine_op_keylist (EngineObject engine, const char *pattern,
 				     int secret_only,
 				     int keylist_mode);
+GpgmeError _gpgme_engine_op_keylist_ext (EngineObject engine,
+					 const char *pattern[],
+					 int secret_only,
+					 int reserved,
+					 int keylist_mode);
 GpgmeError _gpgme_engine_op_sign (EngineObject engine, GpgmeData in,
 				  GpgmeData out, GpgmeSigMode mode,
 				  int use_armor, int use_textmode,

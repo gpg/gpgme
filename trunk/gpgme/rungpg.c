@@ -1441,6 +1441,7 @@ _gpgme_gpg_op_import (GpgObject gpg, GpgmeData keydata)
   return err;
 }
 
+
 GpgmeError
 _gpgme_gpg_op_keylist (GpgObject gpg, const char *pattern, int secret_only,
 		       int keylist_mode)
@@ -1464,6 +1465,38 @@ _gpgme_gpg_op_keylist (GpgObject gpg, const char *pattern, int secret_only,
 
   return err;
 }
+
+
+GpgmeError
+_gpgme_gpg_op_keylist_ext (GpgObject gpg, const char *pattern[],
+			   int secret_only, int reserved, int keylist_mode)
+{
+  GpgmeError err;
+
+  if (reserved)
+    return mk_error (Invalid_Value);
+
+  err = _gpgme_gpg_add_arg (gpg, "--with-colons");
+  if (!err)
+    err = _gpgme_gpg_add_arg (gpg, "--fixed-list-mode");
+  if (!err)
+    err = _gpgme_gpg_add_arg (gpg, "--with-fingerprint");
+  if (!err)
+    err = _gpgme_gpg_add_arg (gpg, secret_only ? "--list-secret-keys"
+			      : "--list-keys");
+  
+  /* Tell the gpg object about the data */
+  if (!err)
+    err = _gpgme_gpg_add_arg (gpg, "--");
+  if (!err && pattern && *pattern)
+    {
+      while (*pattern)
+	err = _gpgme_gpg_add_arg (gpg, *(pattern++));
+    }
+
+  return err;
+}
+
 
 GpgmeError
 _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,

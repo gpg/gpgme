@@ -1261,6 +1261,31 @@ valid pointer, and passes through any errors that are reported by the
 crypto engine support routines.
 @end deftypefun
 
+@deftypefun GpgmeError gpgme_op_keylist_ext_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{pattern}[]}, @w{int @var{secret_only}}, @w{int @var{reserved}})
+The function @code{gpgme_op_keylist_ext_start} initiates an extended
+key listing operation inside the context @var{ctx}.  It sets
+everything up so that subsequent invocations of
+@code{gpgme_op_keylist_next} return the keys in the list.
+
+If @var{pattern} or @var{*pattern} is @code{NULL}, all available keys
+are returned.  Otherwise, @var{pattern} is a @code{NULL} terminated
+array of strings that are used to limit the list to all keys matching
+at least one of the patterns verbatim.
+
+If @var{secret_only} is not @code{0}, the list is restricted to secret
+keys only.
+
+The value of @var{reserved} must be @code{0}.
+
+The context will be busy until either all keys are received (and
+@code{gpgme_op_keylist_next} returns @code{GPGME_EOF}), or
+@code{gpgme_op_keylist_end} is called to finish the operation.
+
+The function returns @code{GPGME_Invalid_Value} if @var{ctx} is not a
+valid pointer, and passes through any errors that are reported by the
+crypto engine support routines.
+@end deftypefun
+
 @deftypefun GpgmeError gpgme_op_keylist_next (@w{GpgmeCtx @var{ctx}}, @w{GpgmeKey *@var{r_key}})
 The function @code{gpgme_op_keylist_next} returns the next key in the
 list created by a previous @code{gpgme_op_keylist_start} operation in

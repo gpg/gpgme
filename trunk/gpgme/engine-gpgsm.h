@@ -50,6 +50,10 @@ GpgmeError _gpgme_gpgsm_op_genkey (GpgsmObject gpgsm, GpgmeData help_data,
 GpgmeError _gpgme_gpgsm_op_import (GpgsmObject gpgsm, GpgmeData keydata);
 GpgmeError _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
 				    int secret_only, int keylist_mode);
+GpgmeError _gpgme_gpgsm_op_keylist_ext (GpgsmObject gpgsm,
+					const char *pattern[],
+					int secret_only, int reserved,
+					int keylist_mode);
 GpgmeError _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in,
 				 GpgmeData out,
 				 GpgmeSigMode mode, int use_armor,

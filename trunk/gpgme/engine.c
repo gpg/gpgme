@@ -438,9 +438,10 @@ _gpgme_engine_op_import (EngineObject engine, GpgmeData keydata)
   return 0;
 }
 
+
 GpgmeError
-_gpgme_engine_op_keylist (EngineObject engine, const char *pattern, int secret_only,
-			  int keylist_mode)
+_gpgme_engine_op_keylist (EngineObject engine, const char *pattern,
+			  int secret_only, int keylist_mode)
 {
   if (!engine)
     return mk_error (Invalid_Value);
@@ -458,6 +459,29 @@ _gpgme_engine_op_keylist (EngineObject engine, const char *pattern, int secret_o
     }
   return 0;
 }
+
+
+GpgmeError
+_gpgme_engine_op_keylist_ext (EngineObject engine, const char *pattern[],
+			      int secret_only, int reserved, int keylist_mode)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_keylist_ext (engine->engine.gpg, pattern,
+					secret_only, reserved, keylist_mode);
+    case GPGME_PROTOCOL_CMS:
+      return _gpgme_gpgsm_op_keylist_ext (engine->engine.gpgsm, pattern,
+					  secret_only, reserved, keylist_mode);
+    default:
+      break;
+    }
+  return 0;
+}
+
 
 GpgmeError
 _gpgme_engine_op_sign (EngineObject engine, GpgmeData in, GpgmeData out,
