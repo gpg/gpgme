@@ -145,6 +145,38 @@ static int command_cb ( void *opaque,
                         char *buffer, size_t length, size_t *nread );
 
 
+static void
+close_notify_handler ( int fd, void *opaque )
+{
+    GpgObject gpg = opaque;
+
+    assert (fd != -1);
+    if (gpg->status.fd[0] == fd )
+        gpg->status.fd[0] = -1;
+    else if (gpg->status.fd[1] == fd )
+        gpg->status.fd[1] = -1;
+    else if (gpg->colon.fd[0] == fd )
+        gpg->colon.fd[0] = -1;
+    else if (gpg->colon.fd[1] == fd )
+        gpg->colon.fd[1] = -1;
+    else if (gpg->fd_data_map) {
+        int i;
+
+        for (i=0; gpg->fd_data_map[i].data; i++ ) {
+            if ( gpg->fd_data_map[i].fd == fd ) {
+                gpg->fd_data_map[i].fd = -1;
+                break;
+            }
+            if ( gpg->fd_data_map[i].peer_fd == fd ) {
+                gpg->fd_data_map[i].peer_fd = -1;
+                break;
+            }
+        }
+    }
+}
+
+
+
 
 GpgmeError
 _gpgme_gpg_new ( GpgObject *r_gpg )
@@ -179,6 +211,13 @@ _gpgme_gpg_new ( GpgObject *r_gpg )
         rc = mk_error (Pipe_Error);
         goto leave;
     }
+    if ( _gpgme_io_set_close_notify (gpg->status.fd[0],
+                                     close_notify_handler, gpg)
+         || _gpgme_io_set_close_notify (gpg->status.fd[1],
+                                        close_notify_handler, gpg) ) {
+        rc = mk_error (General_Error);
+        goto leave;
+    }
     gpg->status.eof = 0;
     _gpgme_gpg_add_arg ( gpg, "--status-fd" );
     {
@@ -211,11 +250,6 @@ _gpgme_gpg_release ( GpgObject gpg )
         free_argv (gpg->argv);
     xfree (gpg->cmd.keyword);
 
-  #if 0
-    /* fixme: We need a way to communicate back closed fds, so that we
-     * don't do it a second time.  One way to do it is by using a global
-     * table of open fds associated with gpg objects - but this requires
-     * additional locking. */
     if (gpg->status.fd[0] != -1 )
         _gpgme_io_close (gpg->status.fd[0]);
     if (gpg->status.fd[1] != -1 )
@@ -224,7 +258,6 @@ _gpgme_gpg_release ( GpgObject gpg )
         _gpgme_io_close (gpg->colon.fd[0]);
     if (gpg->colon.fd[1] != -1 )
         _gpgme_io_close (gpg->colon.fd[1]);
-  #endif
     free_fd_data_map (gpg->fd_data_map);
     if (gpg->running) {
         int pid = gpg->pid;
@@ -245,6 +278,7 @@ _gpgme_gpg_release ( GpgObject gpg )
     else
         xfree (gpg);
 }
+
 
 static void
 do_reaping (void)
@@ -438,6 +472,12 @@ _gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
         xfree (gpg->colon.buffer); gpg->colon.buffer = NULL;
         return mk_error (Pipe_Error);
     }
+    if ( _gpgme_io_set_close_notify (gpg->colon.fd[0],
+                                     close_notify_handler, gpg)
+         ||  _gpgme_io_set_close_notify (gpg->colon.fd[1],
+                                         close_notify_handler, gpg) ) {
+        return mk_error (General_Error);
+    }
     gpg->colon.eof = 0;
     gpg->colon.fnc = fnc;
     gpg->colon.fnc_value = fnc_value;
@@ -512,12 +552,10 @@ free_fd_data_map ( struct fd_data_map_s *fd_data_map )
         return;
 
     for (i=0; fd_data_map[i].data; i++ ) {
-#if 0 /* fixme -> see gpg_release */
         if ( fd_data_map[i].fd != -1 )
             _gpgme_io_close (fd_data_map[i].fd);
         if ( fd_data_map[i].peer_fd != -1 )
             _gpgme_io_close (fd_data_map[i].peer_fd);
-#endif
         /* don't release data because this is only a reference */
     }
     xfree (fd_data_map);
@@ -651,6 +689,13 @@ build_argv ( GpgObject gpg )
                     xfree (fd_data_map);
                     free_argv (argv);
                     return mk_error (Pipe_Error);
+                }
+                if ( _gpgme_io_set_close_notify (fds[0],
+                                                 close_notify_handler, gpg)
+                     || _gpgme_io_set_close_notify (fds[1],
+                                                    close_notify_handler,
+                                                    gpg)) {
+                    return mk_error (General_Error);
                 }
                 /* if the data_type is FD, we have to do a dup2 here */
                 if (fd_data_map[datac].inbound) {

@@ -150,6 +150,9 @@ main (int argc, char **argv )
     puts ("checking a valid message:\n");
     err = gpgme_op_verify (ctx, sig, text, &status );
     print_sig_stat ( ctx, status );
+    print_sig_stat ( ctx, status );
+    print_sig_stat ( ctx, status );
+    print_sig_stat ( ctx, status );
     fail_if_err (err);
 
     if ( (nota=gpgme_get_notation (ctx)) )

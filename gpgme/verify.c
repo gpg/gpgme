@@ -406,7 +406,7 @@ gpgme_get_sig_status (GpgmeCtx c, int idx,
  * 
  * Return a key object which was used to check the signature. 
  * 
- * Return value: An Errorcode or 0 for success. GPG<ME_EOF is returned to
+ * Return value: An Errorcode or 0 for success. GPGME_EOF is returned to
  *               indicate that there are no more signatures. 
  **/
 GpgmeError

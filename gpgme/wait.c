@@ -94,6 +94,7 @@ count_active_and_thawed_fds ( int pid )
 }
 
 /* remove the given process from the queue */
+/* FIXME: We should do this on demand from rungpg.c */
 static void
 remove_process ( int pid )
 {
@@ -104,11 +105,6 @@ remove_process ( int pid )
         if (fd_table[i].fd != -1 && (q=fd_table[i].opaque) && q->pid == pid ) {
             xfree (q);
             fd_table[i].opaque = NULL;
-            
-            if ( !fd_table[i].is_closed ) {
-                _gpgme_io_close (fd_table[i].fd);
-                fd_table[i].is_closed = 1;
-            }
             fd_table[i].fd = -1;
         }
     }
@@ -151,12 +147,14 @@ _gpgme_wait_on_condition ( GpgmeCtx c, int hang, volatile int *cond )
              * alive */
             assert (c); /* !c is not yet implemented */
             q = queue_item_from_context ( c );
-            assert (q);
-            
-            if ( !count_active_and_thawed_fds (q->pid) ) {
-                remove_process (q->pid);
-                hang = 0;
+            if (q) {
+                if ( !count_active_and_thawed_fds (q->pid) ) {
+                    remove_process (q->pid);
+                    hang = 0;
+                }
             }
+            else
+                hang = 0;
         }
         if (hang)
             run_idle ();
@@ -201,7 +199,7 @@ do_select ( void )
                 q->active = 0;
                 fd_table[i].for_read = 0;
                 fd_table[i].for_write = 0;
-                fd_table[i].is_closed = 1;
+                fd_table[i].fd = -1;
             }
         }
     }
@@ -242,7 +240,6 @@ _gpgme_register_pipe_handler ( void *opaque,
     for (i=0; i < fd_table_size; i++ ) {
         if ( fd_table[i].fd == -1 ) {
             fd_table[i].fd = fd;
-            fd_table[i].is_closed = 0;
             fd_table[i].for_read = inbound;    
             fd_table[i].for_write = !inbound;    
             fd_table[i].signaled = 0;
