@@ -2201,7 +2201,7 @@ The function @code{gpgme_recipients_enum_close} releases the iterator
 @subsubsection Encrypting a Plaintext
 
 @deftypefun GpgmeError gpgme_op_encrypt (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{rset}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{cipher}})
-The function @code{gpgme_op_crypt} encrypts the plaintext in the data
+The function @code{gpgme_op_encrypt} encrypts the plaintext in the data
 object @var{plain} for the recipients @var{rset} and stores the
 ciphertext in the data object @var{cipher}.  The type of the
 ciphertext created is determined by the @acronym{ASCII} armor and text
@@ -2223,6 +2223,30 @@ are reported by the crypto engine support routines.
 The function @code{gpgme_op_encrypt_start} initiates a
 @code{gpgme_op_encrypt} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns @code{GPGME_No_Error} if the operation could be
+started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
+@var{rset}, @var{plain} or @var{cipher} is not a valid pointer, and
+@code{GPGME_No_Recipient} if @var{rset} does not contain any valid
+recipients.
+@end deftypefun
+
+
+@deftypefun GpgmeError gpgme_op_encrypt_sign (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{rset}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{cipher}})
+The function @code{gpgme_op_encrypt_sign} does a combined encrypt and
+sign operation.  It is used like @code{gpgme_op_encrypt}, but the
+ciphertext also contains signatures for the signers listed in
+@var{ctx}.
+
+The combined encrypt and sign operation is currently only available
+for the OpenPGP crypto engine.
+@end deftypefun
+
+@deftypefun GpgmeError gpgme_op_encrypt_sign_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{rset}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{cipher}})
+The function @code{gpgme_op_encrypt_sign_start} initiates a
+@code{gpgme_op_encrypt_sign} operation.  It can be completed by
+calling @code{gpgme_wait} on the context.  @xref{Waiting For
+Completion}.
 
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{ctx},

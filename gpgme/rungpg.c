@@ -1256,6 +1256,7 @@ _gpgme_gpg_op_delete (GpgObject gpg, GpgmeKey key, int allow_secret)
   return err;
 }
 
+
 static GpgmeError
 _gpgme_append_gpg_args_from_recipients (GpgObject gpg,
 					const GpgmeRecipients rset)
@@ -1275,6 +1276,33 @@ _gpgme_append_gpg_args_from_recipients (GpgObject gpg,
   return err;
 }
 
+
+static GpgmeError
+_gpgme_append_gpg_args_from_signers (GpgObject gpg,
+				     GpgmeCtx ctx /* FIXME */)
+{
+  GpgmeError err = 0;
+  int i;
+  GpgmeKey key;
+
+  for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
+    {
+      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID,
+						 NULL, 0);
+      if (s)
+	{
+	  if (!err)
+	    err = _gpgme_gpg_add_arg (gpg, "-u");
+	  if (!err)
+	    err = _gpgme_gpg_add_arg (gpg, s);
+	}
+      gpgme_key_unref (key);
+      if (err) break;
+    }
+  return err;
+}
+
+
 GpgmeError
 _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
 		       GpgmeData plain, GpgmeData ciph, int use_armor)
@@ -1292,6 +1320,45 @@ _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
 
   if (!err)
     err = _gpgme_append_gpg_args_from_recipients (gpg, recp);
+
+  /* Tell the gpg object about the data.  */
+  if (!err)
+    err = _gpgme_gpg_add_arg (gpg, "--output");
+  if (!err)
+    err = _gpgme_gpg_add_arg (gpg, "-");
+  if (!err)
+    err = _gpgme_gpg_add_data (gpg, ciph, 1);
+  if (!err)
+    err = _gpgme_gpg_add_arg (gpg, "--");
+  if (!err)
+    err = _gpgme_gpg_add_data (gpg, plain, 0);
+
+  return err;
+}
+
+GpgmeError
+_gpgme_gpg_op_encrypt_sign (GpgObject gpg, GpgmeRecipients recp,
+			    GpgmeData plain, GpgmeData ciph, int use_armor,
+			    GpgmeCtx ctx /* FIXME */)
+{
+  GpgmeError err;
+
+  err = _gpgme_gpg_add_arg (gpg, "--encrypt");
+  if (!err)
+    err = _gpgme_gpg_add_arg (gpg, "--sign");
+  if (!err && use_armor)
+    err = _gpgme_gpg_add_arg (gpg, "--armor");
+
+  /* If we know that all recipients are valid (full or ultimate trust)
+   * we can suppress further checks */
+  if (!err && _gpgme_recipients_all_valid (recp))
+    err = _gpgme_gpg_add_arg (gpg, "--always-trust");
+
+  if (!err)
+    err = _gpgme_append_gpg_args_from_recipients (gpg, recp);
+
+  if (!err)
+    err = _gpgme_append_gpg_args_from_signers (gpg, ctx);
 
   /* Tell the gpg object about the data.  */
   if (!err)
@@ -1404,8 +1471,6 @@ _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
 		    int use_textmode, GpgmeCtx ctx /* FIXME */)
 {
   GpgmeError err;
-  GpgmeKey key;
-  int i;
 
   if (mode == GPGME_SIG_MODE_CLEAR)
     err = _gpgme_gpg_add_arg (gpg, "--clearsign");
@@ -1419,20 +1484,9 @@ _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
       if (!err && use_textmode)
 	_gpgme_gpg_add_arg (gpg, "--textmode");
     }
-  for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
-    {
-      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID,
-						 NULL, 0);
-      if (s)
-	{
-	  if (!err)
-	    err = _gpgme_gpg_add_arg (gpg, "-u");
-	  if (!err)
-	    err = _gpgme_gpg_add_arg (gpg, s);
-	}
-      gpgme_key_unref (key);
-      if (err) break;
-    }
+
+  if (!err)
+    err = _gpgme_append_gpg_args_from_signers (gpg, ctx);
 
   /* Tell the gpg object about the data.  */
   if (!err)

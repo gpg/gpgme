@@ -1,5 +1,25 @@
 2002-02-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine.c (_gpgme_engine_op_encrypt_sign): New function.
+	* engine.h (_gpgme_engine_op_encrypt_sign): New prototype.
+	* rungpg.c (_gpgme_append_gpg_args_from_signers): New function.
+	(_gpgme_gpg_op_sign): Use that new function.
+	(_gpgme_gpg_op_encrypt_sign): New function.
+	* rungpg.h (_gpgme_gpg_op_encrypt_sign): New prototype. 
+	* gpgme.h (gpgme_op_encrypt_sign_start): New prototype.
+	(gpgme_op_encrypt_sign): Likewise.
+	* Makefile.am (libgpgme_la_SOURCES): Add encrypt-sign.c.
+	* ops.h (_gpgme_encrypt_status_handler): Add prototype.
+	(_gpgme_sign_status_handler): Add prototype.
+	* sign.c (sign_status_handler): Rename to ...
+	(_gpgme_sign_status_handler): ... this and make non-static.
+	* encrypt.c (encrypt_status_handler): Rename to ...
+	(_gpgme_encrypt_status_handler): ... this and make non-static.
+	* encrypt.c (gpgme_op_encrypt_start): Use new status handler name.
+	* sign.c (gpgme_op_sign_start): Likewise.
+	
+2002-02-25  Marcus Brinkmann  <marcus@g10code.de>
+
 	* verify.c (_gpgme_verify_status_handler): Parse the args line to
 	see if the problem is due to a missing key, and report that back
 	to the user.

@@ -135,8 +135,8 @@ append_xml_siginfo (GpgmeData *rdh, char *args)
   _gpgme_data_append_string (dh, "</fpr>\n");
 }
 
-static void
-sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+void
+_gpgme_sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
   _gpgme_passphrase_status_handler (ctx, code, args);
 
@@ -210,7 +210,8 @@ gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData in, GpgmeData out,
   if (err)
     goto leave;
 
-  _gpgme_engine_set_status_handler (ctx->engine, sign_status_handler, ctx);
+  _gpgme_engine_set_status_handler (ctx->engine, _gpgme_sign_status_handler,
+				    ctx);
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
   _gpgme_engine_op_sign (ctx->engine, in, out, mode, ctx->use_armor,
