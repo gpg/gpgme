@@ -1,10 +1,2 @@
 .libs
 Makefile.in Makefile .deps
-gpgcom
-gpgcom-20010731.zip
-gpgcom-20010731.zip.sig
-gpgcom.reg
-guidgen
-regtlb
-tgpgcom
-unused-ids

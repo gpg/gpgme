@@ -1,12 +1,12 @@
 Makefile Makefile.in .deps .libs
 gpg-agent.conf
 private-keys-v1.d
-pubcerts.kbx
+pubring.gpg
 pubring.kbx
-t-decryptno
-t-encryptno
-t-importno
-t-keylistno
-t-signno
-t-verifyno
-dbgmd-0*
+secring.gpg
+t-decrypt
+t-encrypt
+t-import
+t-keylist
+t-sign
+t-verify
