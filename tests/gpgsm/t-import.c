@@ -18,6 +18,12 @@
    along with GPGME; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
+/* We need to include config.h so that we know whether we are building
+   with large file system (LFS) support. */
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -110,11 +116,20 @@ check_result (gpgme_import_result_t result, char *fpr, int total)
 	       result->not_imported);
       exit (1);
     }
-  if (result->imports)
+  
+  {
+    int n;
+    gpgme_import_status_t r;
+
+    for (n=0, r=result->imports; r; r=r->next)
+      n++;
+      
+    if (n != total)
     {
       fprintf (stderr, "Unexpected number of status reports\n");
       exit (1);
     }
+  }
 }
 
 

@@ -18,6 +18,12 @@
    along with GPGME; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
+/* We need to include config.h so that we know whether we are building
+   with large file system (LFS) support. */
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -59,10 +65,10 @@ check_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
 	       result->signatures->hash_algo);
       exit (1);
     }
-  if (result->signatures->class != 1)
+  if (result->signatures->sig_class != 1)
     {
       fprintf (stderr, "Wrong signature class reported: %u\n",
-	       result->signatures->class);
+	       result->signatures->sig_class);
       exit (1);
     }
   if (strcmp ("A0FF4590BB6122EDEF6E3C542D727CC768697734",

@@ -18,6 +18,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+/* We need to include config.h so that we know whether we are building
+   with large file system (LFS) support. */
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>

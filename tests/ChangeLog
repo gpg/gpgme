@@ -1,3 +1,19 @@
+2004-02-17  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm/t-import.c (check_result): gpgsm does now return info in
+	the result->imports; adjust for that.
+
+	* gpgsm/Makefile.am (TESTS_ENVIRONMENT): Reset the GPG_AGENT_INFO.
+
+        Include config.h at the top of each C source.  This is required
+	due to LFS support.
+	
+	* gpg/t-keylist-sig.c (main): s/class/sig_class/.
+	* gpg/t-signers.c (check_result): Ditto.
+	* gpg/t-sign.c (check_result): Ditto.
+	* gpg/t-encrypt-sign.c (check_result): Ditto. 
+	* gpgsm/t-sign.c (check_result): Ditto.
+
 2004-01-12  Werner Koch  <wk@gnupg.org>
 
 	* gpg/t-keylist-sig.c (main): Temporary disabled one test due top

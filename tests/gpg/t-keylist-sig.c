@@ -18,6 +18,12 @@
    along with GPGME; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
+/* We need to include config.h so that we know whether we are building
+   with large file system (LFS) support. */
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -43,7 +49,7 @@ struct
       char *name;
       char *comment;
       char *email;
-      unsigned int class;
+      unsigned int sig_class;
       int exportable;
     } sig;
   } uid[3];  
@@ -405,10 +411,10 @@ main (int argc, char **argv)
 		   key->uids->signatures->email);
 	  exit (1);
 	}
-      if (keys[i].uid[0].sig.class != key->uids->signatures->class)
+      if (keys[i].uid[0].sig.sig_class != key->uids->signatures->sig_class)
 	{
 	  fprintf (stderr, "Unexpected class in first user ID sig: %i\n",
-		   key->uids->signatures->class);
+		   key->uids->signatures->sig_class);
 	  exit (1);
 	}
       if (keys[i].uid[0].sig.exportable != key->uids->signatures->exportable)
@@ -497,10 +503,10 @@ main (int argc, char **argv)
 		   key->uids->next->signatures->email);
 	  exit (1);
 	}
-      if (keys[i].uid[1].sig.class != key->uids->next->signatures->class)
+      if (keys[i].uid[1].sig.sig_class != key->uids->next->signatures->sig_class)
 	{
 	  fprintf (stderr, "Unexpected class in second user ID sig: %i\n",
-		   key->uids->next->signatures->class);
+		   key->uids->next->signatures->sig_class);
 	  exit (1);
 	}
       if (keys[i].uid[1].sig.exportable != key->uids->next->signatures->exportable)
@@ -586,10 +592,10 @@ main (int argc, char **argv)
 		   key->uids->next->next->signatures->email);
 	  exit (1);
 	}
-      if (keys[i].uid[2].sig.class != key->uids->next->next->signatures->class)
+      if (keys[i].uid[2].sig.sig_class != key->uids->next->next->signatures->sig_class)
 	{
 	  fprintf (stderr, "Unexpected class in third user ID sig: %i\n",
-		   key->uids->next->next->signatures->class);
+		   key->uids->next->next->signatures->sig_class);
 	  exit (1);
 	}
       if (keys[i].uid[2].sig.exportable != key->uids->next->next->signatures->exportable)
