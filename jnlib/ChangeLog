@@ -1,3 +1,33 @@
+2002-04-04  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (log_get_prefix): New.
+
+2002-03-15  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (optfile_parse): Fixed missing argument handling.
+
+2002-02-25  Werner Koch  <wk@gnupg.org>
+
+	* stringhelp.c (ascii_memcasemem): New.
+
+2002-02-14  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (INCLUDES): Add cflags for libgcrypt.
+
+2002-02-07  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (log_set_fd): New.
+
+	* stringhelp.c (print_sanitized_buffer): New.
+	(print_sanitized_string): New.
+
+2002-01-24  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (strusage): Set default copyright notice year to 2002.
+
+	Fixed the copyright notice of this file, as it has always been
+	part of GnuPG and therefore belongs to the FSF.
+
 2001-11-01  Marcus Brinkmann  <marcus@g10code.de>
 
 	* logging.c (log_printf): Do not initialize ARG_PTR with 0, we
@@ -72,8 +102,12 @@ Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
   (do_logv): Add kludge to insert LFs.
 
 
- Copyright 2000 Werner Koch (dd9jn)
- Copyright 2001 g10 Code GmbH
+     ***********************************************************
+     * Please note that Jnlib is maintained as part of GnuPG.  *
+     * You may find it source-copied in other packages.        *
+     ***********************************************************	
+	
+ Copyright 2000, 2001, 2002 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

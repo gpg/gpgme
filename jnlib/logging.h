@@ -27,7 +27,9 @@
 
 int  log_get_errorcount (int clear);
 void log_set_file( const char *name );
+void log_set_fd (int fd);
 void log_set_prefix (const char *text, unsigned int flags);
+const char *log_get_prefix (unsigned int *flags);
 int  log_get_fd(void);
 FILE *log_get_stream (void);
 

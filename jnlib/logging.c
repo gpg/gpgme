@@ -89,10 +89,35 @@ log_set_file( const char *name )
     }
     setvbuf( fp, NULL, _IOLBF, 0 );
 
-    if( logstream && logstream != stderr )
-	fclose( logstream );
+    if (logstream && logstream != stderr && logstream != stdout)
+      fclose( logstream );
     logstream = fp;
     missing_lf = 0;
+}
+
+void
+log_set_fd (int fd)
+{
+  FILE *fp;
+  
+  if (fd == 1)
+    fp = stdout;
+  else if (fd == 2)
+    fp = stderr;
+  else
+    fp = fdopen (fd, "a");
+  if (!fp)
+    {
+      fprintf (stderr, "failed to fdopen log fd %d: %s\n",
+               fd, strerror(errno));
+      return;
+    }
+  setvbuf (fp, NULL, _IOLBF, 0);
+  
+  if (logstream && logstream != stderr && logstream != stdout)
+    fclose( logstream);
+  logstream = fp;
+  missing_lf = 0;
 }
 
 
@@ -108,6 +133,23 @@ log_set_prefix (const char *text, unsigned int flags)
   with_prefix = (flags & 1);
   with_time = (flags & 2);
   with_pid  = (flags & 4);
+}
+
+
+const char *
+log_get_prefix (unsigned int *flags)
+{
+  if (flags)
+    {
+      *flags = 0;
+      if (with_prefix)
+        *flags |= 1;
+      if (with_time)
+        *flags |= 2;
+      if (with_pid)
+        *flags |=4;
+    }
+  return prefix_buffer;
 }
 
 int
