@@ -1,4 +1,4 @@
-Noteworthy changes in version 0.4.2 (unreleased)
+Noteworthy changes in version 0.4.2 (2003-07-30)
 ------------------------------------------------
 
  * Allow gpg-error to be in non-standard place when linking the test suite.
