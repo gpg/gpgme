@@ -1,8 +1,19 @@
 Noteworthy changes in version CVS-HEAD
 ------------------------------------------------
 
+ * It is possible to use an outside event loop for the I/O to the
+   crypto engine by setting the I/O callbacks with gpgme_set_io_cbs.
+
  * Interface changes relative to the 0.3.6 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GpgmeIOCb			NEW
+GpgmeRegisterIOCb		NEW
+GpgmeRemoveIOCb			NEW
+GpgmeEventIO			NEW
+GpgmeEventIOCb			NEW
+struct GpgmeIOCbs		NEW
+gpgme_set_io_cbs		NEW
+gpgme_get_io_cbs		NEW
 GPGME_ATTR_ERRTOK           NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
