@@ -1,3 +1,6 @@
+Noteworthy changes in version 0.3.1 (2002-02-09)
+------------------------------------------------
+
  * There is a Texinfo manual documenting the API.
 
  * The gpgme_set_keylist_mode function returns an error, and changed
@@ -26,6 +29,8 @@
    gpgme-smime, and they are installed in pkglibdir by `make install'.
 
  * An idle function can be registered with gpgme_register_idle().
+
+ * The GpgSM backend supports key generation with gpgme_op_genkey().
 
  * Interface changes relative to the 0.3.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
