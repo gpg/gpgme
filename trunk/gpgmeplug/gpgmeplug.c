@@ -765,7 +765,7 @@ bool signMessage( const char*  cleartext,
       bOk = true;
       strncpy((char*)*ciphertext, rSig, rSLen );
     }
-    ((char*)(*ciphertext))[rSLen] = 0;
+    ((char*)(*ciphertext))[rSLen] = '\0';
   }
 
   free( rSig );
@@ -803,18 +803,18 @@ sig_status_to_string( GpgmeSigStat status )
         result = "Different results for signatures";
         break;
       default:
-	result = "Error: Unknown status";
-	break;
+        result = "Error: Unknown status";
+        break;
     }
 
     return result;
 }
 
 
-bool checkMessageSignature( const char* ciphertext, 
+bool checkMessageSignature( const char* ciphertext,
                             const char* signaturetext,
                             struct SignatureMetaData* sigmeta )
-{ 
+{
     GpgmeCtx ctx;
     GpgmeSigStat status;
     GpgmeData datapart, sigpart;
@@ -834,9 +834,7 @@ bool checkMessageSignature( const char* ciphertext,
     gpgme_op_verify( ctx, sigpart, datapart, &status );
     gpgme_data_release( datapart );
     gpgme_data_release( sigpart );
-    gpgme_release( ctx );
 
-#ifdef THIS_IS_UNTESTED_USE_AT_YOUR_OWN_RISK
     /* Provide information in the sigmeta struct */
     /* the status string */
     statusStr = sig_status_to_string( status );
@@ -861,6 +859,7 @@ bool checkMessageSignature( const char* ciphertext,
         ctime_val = localtime( &created );
         memcpy( sigmeta->extended_info[sig_idx].creation_time,
                 ctime_val, sizeof( struct tm ) );
+
         err = gpgme_get_sig_key (ctx, sig_idx, &key);
         sig_status = sig_status_to_string( status );
         // PENDING(kalle) Handle out of memory
@@ -878,7 +877,8 @@ bool checkMessageSignature( const char* ciphertext,
     sigmeta->extended_info_count = sig_idx;
     sigmeta->nota_xml = gpgme_get_notation( ctx );
     sigmeta->status_code = status;
-#endif
+
+    gpgme_release( ctx );
     return ( status == GPGME_SIG_STAT_GOOD );
 }
 
