@@ -44,6 +44,7 @@ AC_CONFIG_SRCDIR(gpgme/gpgme.h)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AM_MAINTAINER_MODE
+AC_CANONICAL_HOST
 
 AH_VERBATIM([_GNU_SOURCE],
 [/* Enable GNU extensions on systems that have them.  */
@@ -81,7 +82,6 @@ AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
-AC_CANONICAL_HOST
 # For now we hardcode the use of version scripts.  It would be better
 # to write a test for this or even implement this within libtool.
 have_ld_version_script=no
