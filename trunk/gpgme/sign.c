@@ -138,6 +138,8 @@ append_xml_siginfo (GpgmeData *rdh, char *args)
 static void
 sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
+  _gpgme_passphrase_status_handler (ctx, code, args);
+
   if (ctx->out_of_core)
     return;
   if (!ctx->result.sign)
