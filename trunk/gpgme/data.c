@@ -210,6 +210,28 @@ _gpgme_data_release_and_return_string ( GpgmeData dh )
     return val;
 }
 
+char *
+gpgme_data_release_and_get_mem ( GpgmeData dh, size_t *r_len )
+{
+    char *val = NULL;
+
+    if (r_len)
+        *r_len = 0;
+    if (dh) {
+        size_t len = dh->len;
+        val = dh->private_buffer;
+        if ( !val && dh->data ) {
+            val = xtrymalloc ( len );
+            if ( val )
+                memcpy ( val, dh->data, len );
+        }
+        xfree (dh);
+        if (val && r_len )
+            *r_len = len;
+    }
+    return val;
+}
+
 
 GpgmeDataType
 gpgme_data_get_type ( GpgmeData dh )

@@ -548,7 +548,7 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
             close (fd);
         }
 
-        execv ("/usr/local/bin/gpg", gpg->argv );
+        execv ( GPG_PATH, gpg->argv );
         fprintf (stderr,"exec of gpg failed\n");
         _exit (8);
     }

@@ -40,6 +40,8 @@
 /* Some systems have mkdir that takes a single argument. */
 #undef MKDIR_TAKES_ONE_ARG
 
+/* path to the gpg binary */
+#undef GPG_PATH
 
 @BOTTOM@
 
