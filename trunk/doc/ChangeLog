@@ -1,3 +1,8 @@
+2002-11-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Verify): Fix prototype of gpgme_get_sig_key.
+	Reported by Miguel Coca <e970095@zipi.fi.upm.es>.
+
 2002-08-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Selecting Signers): Fix reference count.
