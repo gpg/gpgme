@@ -177,7 +177,7 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
   char *bufp = buffer;
   ssize_t buflen;
 
-  buflen = read (fd, buffer, BUFFER_SIZE);
+  buflen = _gpgme_io_read (fd, buffer, BUFFER_SIZE);
   if (buflen < 0)
     return gpg_error_from_errno (errno);
   if (buflen == 0)
