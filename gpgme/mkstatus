@@ -20,6 +20,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
+# resetting collate is important, so that the bsearch works properly
+LC_ALL=C
+LC_COLLATE=C
+export LC_ALL LC_COLLATE
+
 cat <<EOF
 /* Generated automatically by mkstatus */
 /* Do not edit! */

@@ -37,6 +37,15 @@ char *make_dirname(const char *filepath);
 char *make_filename( const char *first_part, ... );
 int compare_filenames( const char *a, const char *b );
 
+const char *ascii_memistr( const char *buf, size_t buflen, const char *sub );
+int ascii_isupper (int c);
+int ascii_islower (int c);
+int ascii_toupper (int c);
+int ascii_tolower (int c);
+int ascii_strcasecmp( const char *a, const char *b );
+int ascii_memcasecmp( const char *a, const char *b, size_t n );
+
+
 #ifndef HAVE_MEMICMP
 int memicmp( const char *a, const char *b, size_t n );
 #endif

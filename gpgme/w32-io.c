@@ -770,15 +770,19 @@ build_commandline ( char **argv )
     /* FIXME: we have to quote some things because under Windows the 
      * program parses the commandline and does some unquoting */
     for (i=0; argv[i]; i++)
-        n += strlen (argv[i]) + 1;
+        n += strlen (argv[i]) + 2 + 1; /* 2 extra bytes for possible quoting */
     buf = p = xtrymalloc (n);
     if ( !buf )
         return NULL;
     *buf = 0;
     if ( argv[0] )
         p = stpcpy (p, argv[0]);
-    for (i = 1; argv[i]; i++)
-        p = stpcpy (stpcpy (p, " "), argv[i]);
+    for (i = 1; argv[i]; i++) {
+        if (!*argv[i])
+            p = stpcpy (p, " \"\"");
+        else
+            p = stpcpy (stpcpy (p, " "), argv[i]);
+    }
 
     return buf;
 }

@@ -1,3 +1,8 @@
+2001-07-19  Werner Koch  <wk@gnupg.org>
+
+	* stringhelp.c (ascii_memistr,ascii_isupper,ascii_islower,
+	ascii_toupper,ascii_tolower, ascii_strcasecmp, ascii_memcasecmp): New.
+
 2000-07-26 10:02:51  Werner Koch  (wk@habibti.openit.de)
 
   * stringhelp.c.: Add stdarg.h

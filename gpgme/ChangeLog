@@ -1,3 +1,30 @@
+2001-07-31  Werner Koch  <wk@gnupg.org>
+
+	* encrypt.c (gpgme_op_encrypt): Hack to detect no valid recipients.
+
+2001-07-30  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.c (gpgme_get_armor,gpgme_get_texmode): New.
+
+	* rungpg.c (build_argv): Disable armor comments
+	* w32-io.c (build_commandline): Need to add quotes here
+
+2001-07-24  Werner Koch  <wk@gnupg.org>
+
+	* data.c (gpgme_data_read): Add a a way to return the available bytes.
+
+2001-07-23  Werner Koch  <wk@gnupg.org>
+
+	* util.c: Removed stpcpy() because we use the version from jnlib.
+
+2001-07-19  Werner Koch  <wk@gnupg.org>
+
+	* mkstatus: Define the collating sequence for sort.
+
+2001-06-26  Werner Koch  <wk@gnupg.org>
+
+	* rungpg.h: Add STATUS_UNEXPECTED as suggested by Timo.
+
 2001-06-15  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (set_userid_flags): Fixed the assigned values. Kudos
