@@ -1,6 +1,10 @@
-Makefile.in Makefile .deps .libs
+
 *.lo *.la
+Makefile.in Makefile .deps .libs
 errors.c
 gpgme-config
+old
 status-table.h
-
+x.html
+x.log
+x.tex
