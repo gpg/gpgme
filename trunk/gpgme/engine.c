@@ -305,7 +305,7 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
   else
     {
       new_file_name = engine_get_file_name (proto);
-      assert (file_name);
+      assert (new_file_name);
       new_file_name = strdup (new_file_name);
     }
   if (!new_file_name)
