@@ -3,6 +3,9 @@
 	* gpgme.texi (Information About Keys): Document (badly) the new
 	key attributes.
 
+	* gpgme.texi (Manipulating Data Buffers): Mention that backend
+	tries to detect encoding automatically.
+
 2002-07-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Run Control): Update this section.

@@ -1068,7 +1068,8 @@ a hint on the type of data.  The following data types are available:
 @table @code
 @item GPGME_DATA_ENCODING_NONE
 This specifies that the encoding is not known.  This is the default
-for a new data object.
+for a new data object.  The backend will try its best to detect the
+encoding automatically.
 
 @item GPGME_DATA_ENCODING_BINARY
 This specifies that the data is encoding in binary form; i.e. there is
