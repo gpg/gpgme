@@ -74,22 +74,29 @@ struct trust_queue_item_s
    into this header file.  */
 struct gpgme_context_s
 {
-  int initialized;
-
-  int use_cms;
+  /* The protocol used by this context.  */
+  GpgmeProtocol protocol;
 
   /* The running engine process.  */
   EngineObject engine;
 
-  int use_armor;  
-  int use_textmode;
-  int keylist_mode;
-  int include_certs;
+  /* True if armor mode should be used.  */
+  unsigned int use_armor : 1;
+
+  /* True if text mode should be used.  */
+  unsigned int use_textmode : 1;
+
+  /* Flags for keylist mode.  */
+  unsigned int keylist_mode;
+
+  /* Number of certs to be included.  */
+  unsigned int include_certs;
 
   /* The number of keys in signers.  */
-  int signers_len;
+  unsigned int signers_len;
+
   /* Size of the following array.  */
-  int signers_size;
+  unsigned int signers_size;
   GpgmeKey *signers;
 
   /* The operation data hooked into the context.  */
@@ -108,9 +115,11 @@ struct gpgme_context_s
   struct key_queue_item_s *key_queue;
   struct trust_queue_item_s *trust_queue;
 
+  /* The user provided passphrase callback and its hook value.  */
   GpgmePassphraseCb passphrase_cb;
   void *passphrase_cb_value;
 
+  /* The user provided progress callback and its hook value.  */
   GpgmeProgressCb progress_cb;
   void *progress_cb_value;
 
@@ -118,8 +127,6 @@ struct gpgme_context_s
      operation.  */
   struct fd_table fdt;
   struct GpgmeIOCbs io_cbs;
-  
-  GpgmeData help_data_1;
 };
 
 /* Forward declaration of a structure to store certification

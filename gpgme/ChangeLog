@@ -1,5 +1,15 @@
 2003-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* context.h (struct gpgme_context_s): Remove member initialized,
+	use_cms and help_data_1.  Add member protocol.  Make use_armor and
+	use_textmode bit flags.  Make keylist_mode, include_certs,
+	signers_len and signers_size unsigned.
+	* gpgme.c (gpgme_new): Initialize CTX->protocol.
+	(gpgme_set_protocol): Do not check CTX.  Use CTX->protocol.
+	(gpgme_get_protocol): Likewise.
+	(gpgme_release): Do not release CTX->help_data_1.
+	* op-support.c (_gpgme_op_reset): Use CTX->protocol.
+
 	* wait-private.c (_gpgme_wait_private_event_cb): Remove variable CTX.
 
 	* data.c: Do not include <assert.h>, but "gpgme.h".

@@ -71,8 +71,7 @@ _gpgme_op_reset (GpgmeCtx ctx, int type)
   /* Create an engine object.  */
   _gpgme_engine_release (ctx->engine);
   ctx->engine = NULL;
-  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
-			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  err = _gpgme_engine_new (ctx->protocol, &ctx->engine);
   if (err)
     return err;
 
