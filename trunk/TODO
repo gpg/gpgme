@@ -7,7 +7,6 @@
 ** string representation of non-secret keys and ATTR_IS_SECRET is NULL,
    which can not be differentiated from the case that it is not
    representable.
-** Agree on gpgme_key_unref or gpgme_key_release and drop the other?
 ** keylisting mode can go
 ** api to specify where to search, lokal and/or remote.
 
@@ -17,9 +16,6 @@
   wait.c
 
 * add locking to the key cache?
-
-* Should --delete silently delete secret keys or is there a need for
-  another flag or a callback?
 
 * GpgmeKey misses GPGME_ATTR_EXPIRE attribute
 
@@ -40,6 +36,8 @@
 
 * Operations
 ** Import, export status handler.
+** Should --delete silently delete secret keys or is there a need for
+   another flag or a callback?
 
 * Error Values
 ** Map ASSUAN error values.
