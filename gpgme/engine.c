@@ -376,7 +376,8 @@ _gpgme_engine_op_export (EngineObject engine, GpgmeRecipients recp,
 }
 
 GpgmeError
-_gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data, int use_armor)
+_gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data,
+			 int use_armor, GpgmeData pubkey, GpgmeData seckey)
 {
   if (!engine)
     return mk_error (Invalid_Value);
@@ -384,9 +385,11 @@ _gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data, int use_armor
   switch (engine->protocol)
     {
     case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_genkey (engine->engine.gpg, help_data, use_armor);
+      return _gpgme_gpg_op_genkey (engine->engine.gpg, help_data, use_armor,
+				   pubkey, seckey);
     case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_genkey (engine->engine.gpgsm, help_data, use_armor);
+      return _gpgme_gpgsm_op_genkey (engine->engine.gpgsm, help_data, use_armor,
+				     pubkey, seckey);
     default:
       break;
     }

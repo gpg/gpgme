@@ -138,16 +138,6 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
   if (err)
     goto leave;
 
-  /* We need a special mechanism to get the fd of a pipe here, so
-   * that we can use this for the %pubring and %secring parameters.
-   * We don't have this yet, so we implement only the adding to the
-   * standard keyrings */
-  if (pubkey || seckey)
-    {
-      err = mk_error (Not_Implemented);
-      goto leave;
-    }
-
   if (!pubkey && !seckey)
     ; /* okay: Add key to the keyrings */
   else if (!pubkey || gpgme_data_get_type (pubkey) != GPGME_DATA_TYPE_NONE)
@@ -162,11 +152,12 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
     }
     
   if (pubkey)
-    {
-      _gpgme_data_set_mode (pubkey, GPGME_DATA_MODE_IN);
-      _gpgme_data_set_mode (seckey, GPGME_DATA_MODE_IN);
-      /* FIXME: Need some more things here.  */
-    }
+    /* FIXME: Need some more things here.  */
+    _gpgme_data_set_mode (pubkey, GPGME_DATA_MODE_IN);
+
+  if (seckey)
+    /* FIXME: Need some more things here.  */
+    _gpgme_data_set_mode (seckey, GPGME_DATA_MODE_IN);
 
   if ((parms = strstr (parms, "<GnupgKeyParms ")) 
       && (s = strchr (parms, '>'))
@@ -188,7 +179,8 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
   _gpgme_engine_set_status_handler (ctx->engine, genkey_status_handler, ctx);
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
-  err = _gpgme_engine_op_genkey (ctx->engine, ctx->help_data_1, ctx->use_armor);
+  err = _gpgme_engine_op_genkey (ctx->engine, ctx->help_data_1, ctx->use_armor,
+				 pubkey, seckey);
 
   if (!err)
     err = _gpgme_engine_start (ctx->engine, ctx);

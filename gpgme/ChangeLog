@@ -1,3 +1,19 @@
+2002-02-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* genkey.c (gpgme_op_genkey_start): Allow PUBKEY and SECKEY to be
+	set, and pass them down to the crypto engine.
+	* engine-gpgsm.h (_gpgme_gpgsm_start): New arguments PUBKEY and SECKEY.
+	* engine.h: Likewise.
+	* rungpg.h (_gpgme_gpg_spawn): Likewise.
+	* engine.c (_gpgme_engine_op_genkey): Likewise.  Use those
+	arguments.
+	* rungpg.c (_gpgme_gpg_op_genkey): Likewise.  Complain if those
+	arguments are set.
+	* engine-gpgsm.c (_gpgme_gpgsm_op_genkey): Likewise.  Implement
+	function.
+
+	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist): Beautify comment.
+
 2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.c (_gpgme_gpg_op_keylist): Remove handling of keylist

@@ -1338,9 +1338,20 @@ _gpgme_gpg_op_export (GpgObject gpg, GpgmeRecipients recp,
 }
 
 GpgmeError
-_gpgme_gpg_op_genkey (GpgObject gpg, GpgmeData help_data, int use_armor)
+_gpgme_gpg_op_genkey (GpgObject gpg, GpgmeData help_data, int use_armor,
+		      GpgmeData pubkey, GpgmeData seckey)
 {
   GpgmeError err;
+
+  if (!gpg)
+    return mk_error (Invalid_Value);
+
+  /* We need a special mechanism to get the fd of a pipe here, so
+   * that we can use this for the %pubring and %secring parameters.
+   * We don't have this yet, so we implement only the adding to the
+   * standard keyrings */
+  if (pubkey || seckey)
+    return err = mk_error (Not_Implemented);
 
   err = _gpgme_gpg_add_arg (gpg, "--gen-key");
   if (!err && use_armor)
