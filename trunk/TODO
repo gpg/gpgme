@@ -18,6 +18,11 @@
 
 * Move code common to all engines up from gpg to engine.
 
+* Error Values
+** Map ASSUAN error values.
+** Map GpgSM ERR messages.
+** Verify (and document) if Read_Error, Write_Error, Pipe_Error set errno.
+
 * Tests
 ** t-data
 *** Test gpgme_data_release_and_get_mem.
