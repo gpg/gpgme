@@ -139,7 +139,7 @@ _gpgme_remove_proc_from_wait_queue ( int pid )
  * @hang: 
  * 
  * Wait for a finished request, if @c is given the function does only
- * wait on a finsihed request for that context, otherwise it will return
+ * wait on a finished request for that context, otherwise it will return
  * on any request.  When @hang is true the function will wait, otherwise
  * it will return immediately when there is no pending finished request.
  * 

@@ -1,3 +1,11 @@
+2001-09-17  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (finish_key): Shortcut for no tmp_key.  Changed all
+	callers to use this function without a check for tmp_key.
+	
+	* keylist.c (gpgme_op_keylist_next): Reset the key_cond after
+	emptying the queue.  Bug reported by Rick van Rein.
+
 2001-09-12  Werner Koch  <wk@gnupg.org>
 
 	* data.c (gpgme_data_rewind): Allow rewind for callbacks.

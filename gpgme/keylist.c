@@ -44,8 +44,7 @@ keylist_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
     switch (code) {
       case STATUS_EOF:
-        if (ctx->tmp_key)
-            finish_key (ctx);
+        finish_key (ctx);
         break;
 
       default:
@@ -157,8 +156,7 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
     if ( ctx->out_of_core )
         return;
     if (!line) { /* EOF */
-        if (ctx->tmp_key)
-            finish_key (ctx);
+        finish_key (ctx);
         return; 
     }
 
@@ -198,8 +196,7 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                     return;
                 }
                 rectype = RT_PUB;
-                if ( ctx->tmp_key )
-                    finish_key ( ctx );
+                finish_key ( ctx );
                 assert ( !ctx->tmp_key );
                 ctx->tmp_key = key;
             }
@@ -210,8 +207,7 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                     return;
                 }
                 rectype = RT_SEC;
-                if ( ctx->tmp_key )
-                    finish_key ( ctx );
+                finish_key ( ctx );
                 assert ( !ctx->tmp_key );
                 ctx->tmp_key = key;
             }
@@ -345,29 +341,30 @@ finish_key ( GpgmeCtx ctx )
     GpgmeKey key = ctx->tmp_key;
     struct key_queue_item_s *q, *q2;
 
-    assert (key);
-    ctx->tmp_key = NULL;
-
-    _gpgme_key_cache_add (key);
-
-    q = xtrymalloc ( sizeof *q );
-    if ( !q ) {
-        gpgme_key_release (key);
-        ctx->out_of_core = 1;
-        return;
+    if (key) {
+        ctx->tmp_key = NULL;
+        
+        _gpgme_key_cache_add (key);
+        
+        q = xtrymalloc ( sizeof *q );
+        if ( !q ) {
+            gpgme_key_release (key);
+            ctx->out_of_core = 1;
+            return;
+        }
+        q->key = key;
+        q->next = NULL;
+        /* fixme: lock queue. Use a tail pointer? */
+        if ( !(q2 = ctx->key_queue) )
+            ctx->key_queue = q;
+        else {
+            for ( ; q2->next; q2 = q2->next )
+                ;
+            q2->next = q;
+        }
+        ctx->key_cond = 1;
+        /* fixme: unlock queue */
     }
-    q->key = key;
-    q->next = NULL;
-    /* fixme: lock queue. Use a tail pointer? */
-    if ( !(q2 = ctx->key_queue) )
-        ctx->key_queue = q;
-    else {
-        for ( ; q2->next; q2 = q2->next )
-            ;
-        q2->next = q;
-    }
-    ctx->key_cond = 1;
-    /* fixme: unlock queue */
 }
 
 
@@ -482,6 +479,8 @@ gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key )
     }
     q = c->key_queue;
     c->key_queue = q->next;
+    if (!c->key_queue)
+        c->key_cond = 0;
 
     *r_key = q->key;
     xfree (q);

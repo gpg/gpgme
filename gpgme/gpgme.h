@@ -88,7 +88,7 @@ typedef enum {
     GPGME_No_Passphrase = 19,
     GPGME_Canceled = 20,
     GPGME_Invalid_Key = 21,
-    GPGME_Invalid_Engine = 22,
+    GPGME_Invalid_Engine = 22
 } GpgmeError;
 
 typedef enum {
