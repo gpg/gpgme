@@ -135,12 +135,6 @@ AM_CONDITIONAL(HAVE_PTH, test "$have_pth" = "yes")
 AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 
 dnl
-dnl Checks for libraries.
-dnl
-
-dnl FIXME: check whether Bonobo is installed
-
-dnl
 dnl Checks for header files.
 dnl
 AC_CHECK_HEADERS(sys/select.h)
@@ -246,7 +240,6 @@ dnl FIXME: Only build if supported.
 AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
 
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
-AM_CONDITIONAL(BUILD_BONOBO,  test "$component_system" = "Bonobo")
 
 dnl Make the version number in gpgme/gpgme.h the same as the one here.
 dnl (this is easier than to have a *.in file just for one substitution)
@@ -269,8 +262,7 @@ dnl
 
 AC_CONFIG_FILES(Makefile assuan/Makefile gpgme/Makefile
 		tests/Makefile tests/gpg/Makefile tests/gpgsm/Makefile
-		doc/Makefile
-		bonobo/Makefile complus/Makefile)
+		doc/Makefile complus/Makefile)
 AC_CONFIG_FILES(gpgme/gpgme-config, chmod +x gpgme/gpgme-config)
 AC_OUTPUT
 

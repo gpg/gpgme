@@ -1,5 +1,12 @@
 2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* bonobo/gpgme.c, bonobo/main.c, bonobo/main.h, bonobo/Makefile,
+	bonobo/Makefile.am, bonobo/Makefile.in: Dead files removed.
+	* configure.ac: Remove automake conditional BUILD_BONOBO
+	(AC_CONFIG_FILES): Remove bonobo/Makefile.
+	* Makefile.am (bonobo): Remove variable.
+	(SUBDIRS): Remove ${bonobo}.
+	
 	* configure.ac: Remove all uses of GNUPG_CHECK_TYPEDEF, for byte,
 	ushort, ulong, u16 and u32.
 	* acinclude.m4 (GNUPG_CHECK_TYPEDEF): Remove macro.
