@@ -77,7 +77,7 @@ int
 read_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 {
   static int off = 0;
-  int amount = strlen (text) - off;
+  unsigned int amount = strlen (text) - off;
   /*  round_t round = *((round_t *) cb_value);  */
 
   if (!buffer && !count && !nread)

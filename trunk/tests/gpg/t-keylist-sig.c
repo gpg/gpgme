@@ -43,7 +43,7 @@ struct
       char *name;
       char *comment;
       char *email;
-      int class;
+      unsigned int class;
       int exportable;
     } sig;
   } uid[3];  
