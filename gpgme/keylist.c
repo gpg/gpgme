@@ -156,8 +156,11 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
 
     if ( ctx->out_of_core )
         return;
-    if (!line)
-        return; /* EOF */
+    if (!line) { /* EOF */
+        if (ctx->tmp_key)
+            finish_key (ctx);
+        return; 
+    }
 
     for (p = line; p; p = pend) {
         field++;
