@@ -1750,7 +1750,7 @@ struct CertificateInfo {
   endListCertificates( it );
 \endverbatim
 */
-struct CertIterator*  startListCertificates( const char* pattern );
+struct CertIterator*  startListCertificates( const char* pattern, int remote );
 struct CertificateInfo*  nextCertificate( struct CertIterator* );
 void endListCertificates( struct CertIterator* );
 
