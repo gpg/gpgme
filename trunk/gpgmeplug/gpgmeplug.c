@@ -1277,9 +1277,9 @@ bool encryptMessage( const char*  cleartext,
   /*
   if( GPGMEPLUG_PROTOCOL == GPGME_PROTOCOL_CMS )
   {
-    gpgme_recipients_add_name_with_validity (rset,
-      "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE",
-      GPGME_VALIDITY_FULL );
+    gpgme_recipients_add_name (rset,
+      "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE" );
+
     fputs( "\nGPGSMPLUG encryptMessage() using test key of Aegypten Project\n", stderr );
   }
   else
@@ -1288,10 +1288,7 @@ bool encryptMessage( const char*  cleartext,
     const char* p = certificate;
     char* tok;
     while( (tok = nextAddress( &p ) ) != 0 ) {
-      if( GPGMEPLUG_PROTOCOL == GPGME_PROTOCOL_CMS )
-        gpgme_recipients_add_name_with_validity (rset, tok, GPGME_VALIDITY_FULL );
-      else
-        gpgme_recipients_add_name (rset, tok);
+      gpgme_recipients_add_name (rset, tok );
       fprintf( stderr, "\nGPGMEPLUG encryptMessage() using addressee %s\n", tok );
       free(tok);
     }
