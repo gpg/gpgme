@@ -2477,7 +2477,8 @@ following function can be used to retrieve a single key.
 The function @code{gpgme_get_key} gets the key with the fingerprint
 (or key ID) @var{fpr} from the crypto backend and return it in
 @var{r_key}.  If @var{secret} is true, get the secret key.  The
-currently active keylist mode is used to retrieve the key.
+currently active keylist mode is used to retrieve the key.  The key
+will have one reference for the user.
 
 If the key is not found in the keyring, @code{gpgme_get_key} returns
 the error code @code{GPG_ERR_NO_ERROR} and *@var{r_key} will be set to
