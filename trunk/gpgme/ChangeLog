@@ -1,5 +1,10 @@
 2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
 
+	* passphrase.c (_gpgme_passphrase_status_handler): Also set the
+	error No_Passphrase if only a bad passphrase was provided.
+
+2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
+
 	* rungpg.c (_gpgme_gpg_op_verify): If TEXT is of mode
 	GPGME_DATA_MODE_IN, construct a command line that stores the
 	plaintext in TEXT.

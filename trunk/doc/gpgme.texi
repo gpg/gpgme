@@ -1358,7 +1358,8 @@ This is the timestamp at creation time of a sub key.  It is
 representable as a number.
 
 @item GPGME_ATTR_EXPIRE
-XXX FIXME
+This is the expiration time of a sub key.  It is representable as a
+number.
 
 @item GPGME_ATTR_OTRUST
 XXX FIXME  (also for trust items)

@@ -10,8 +10,6 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * add locking to the key cache?
 
-* GpgmeKey misses GPGME_ATTR_EXPIRE attribute
-
 * Documentation
 ** Add note about GPGME clearing out pointer return values.
 ** validity/trust
@@ -38,10 +36,6 @@ Hey Emacs, this is -*- outline -*- mode!
 * Error Values
 ** Map ASSUAN/GpgSM ERR error values in a better way than is done now.
 ** Verify (and document) if Read_Error, Write_Error, Pipe_Error set errno.
-** "There is an inconsistent behaviour: if we pass three times an  
-   invalid (but non empty) passphrase, return code is GPGME_No_Data,
-   but if we pass three times an empty (and invalid) passphrase, we
-   get GPGME_No_Passphrase." Bug reported by Stephane Corthesy.
 
 * Tests
 ** Write a fake gpg-agent so that we can supply known passphrases to

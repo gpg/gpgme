@@ -19,10 +19,13 @@
 
  * New interface gpgme_op_keylist_ext_start to search for multiple patterns.
 
+ * gpgme_key_get_ulong_attr supports the GPGME_ATTR_EXPIRE attribute.
+
  * Interface changes relative to the 0.3.3 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_op_encrypt		CHANGED: Can fail with GPGME_Invalid_Recipients
 gpgme_op_verify			EXTENDED: Accepts uninitialized text argument
+gpgme_key_get_ulong_attr	EXTENDED: Supports GPGME_ATTR_EXPIRE
 gpgme_set_include_certs		NEW
 gpgme_get_include_certs		NEW
 gpgme_op_encrypt_sign		NEW
