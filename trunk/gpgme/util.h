@@ -134,6 +134,7 @@ int asprintf (char **result, const char *format, ...);
 #endif
 
 #if !HAVE_FOPENCOOKIE
+#include <fcntl.h> /* make sure that ssize_t and off_t are defined */
 typedef struct
 {
   ssize_t (*read)(void*,char*,size_t);
