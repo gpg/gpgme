@@ -1,14 +1,17 @@
 2002-09-02  Marcus Brinkmann  <marcus@g10code.de>
 
-	* posix-io.c (_gpgme_io_select): Don't use a non-constant struct initializer.
+	* posix-io.c (_gpgme_io_select): Don't use a non-constant struct
+	initializer.
 	* version.c (_gpgme_get_program_version): Likewise.
 	Reported by Dr. Stefan Dalibor <Dr.Stefan.Dalibor@bfa.de>.
 
 2002-09-02  Marcus Brinkmann  <marcus@g10code.de>
 
-	* conversion.c (_gpgme_decode_c_string): Set DESTP before modifying DEST.
+	* conversion.c (_gpgme_decode_c_string): Set DESTP before
+	modifying DEST.
 
-	* conversion.c (_gpgme_decode_c_string): Fix off by one error in last change.
+	* conversion.c (_gpgme_decode_c_string): Fix off by one error in
+	last change.
 	* rungpg.c (_gpgme_append_gpg_args_from_signers): Move before
 	_gpgme_op_edit so its prototype is known early on.
 
