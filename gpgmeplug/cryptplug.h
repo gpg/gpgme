@@ -1454,6 +1454,14 @@ bool storeCertificatesFromMessage( const char* ciphertext );
 
 
 /*! \ingroup groupCryptAct
+   \brief Find all certificate for a given addressee.
+
+   NOTE: The \c certificate parameter must point to an allready allocated
+   block of memory which is large enough to hold the complete list.
+*/
+bool findCertificates( const char* addressee, char** certificates );
+
+/*! \ingroup groupCryptAct
    \brief Encrypts an email message in
           \c cleartext according to the \c addressee and
           the current settings (algorithm, etc.) and

@@ -1091,8 +1091,8 @@ bool storeCertificatesFromMessage(
         const char* ciphertext ){ return true; }
 
 
-/* returns address if address doesn't contain a <xxx> part 
- * else it returns a new string xxx and frees address 
+/* returns address if address doesn't contain a <xxx> part
+ * else it returns a new string xxx and frees address
  */
 static char* parseAddress( char* address )
 {
@@ -1138,15 +1138,15 @@ static char* nextAddress( const char** address )
   int found = 0;
   if( *address == NULL ) return NULL;
   while( **address ) {
-    
+
     switch( **address ) {
     case '\\': /* escaped character */
       ++(*address);
       break;
     case '"':
       if( comment == 0 ) {
-	if( quote > 0 ) --quote;
-	else ++quote;
+        if( quote > 0 ) --quote;
+        else ++quote;
       }
       break;
     case '(': /* comment start */
@@ -1154,11 +1154,11 @@ static char* nextAddress( const char** address )
       break;
     case ')': /* comment end */
       if( quote == 0 ) --comment;
-      break;      
+      break;
     case '\0':
-    case ',': /* delimiter */
+    case '\1': /* delimiter */
       if( quote == 0 && comment == 0 ) {
-	found = 1;
+        found = 1;
       }
       break;
     }
@@ -1173,14 +1173,53 @@ static char* nextAddress( const char** address )
       result = malloc( len*sizeof(char)+1 );
       strncpy( result, start, len );
       result[len] = '\0';
-    }  
+    }
   }
   return parseAddress(result);
 }
 
-bool encryptMessage( const char* cleartext,
+/*
+  Find all certificate for a given addressee and return them in a
+  '\1' separated list.
+  NOTE: The certificate parameter must point to an allready allocated
+  block of memory which is large enough to hold the complete list.
+*/
+bool findCertificates( const char* addressee, char** certificates )
+{
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeKey rKey;
+  const char *s;
+  const char *s2;
+  bool bOk = false;
+
+  gpgme_new (&ctx);
+  gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
+
+  err = gpgme_op_keylist_start(ctx, addressee, 0);
+  while( GPGME_No_Error == err ) {
+    err = gpgme_op_keylist_next(ctx, &rKey);
+    if( GPGME_No_Error == err ) {
+      bOk = true;
+      s = gpgme_key_get_string_attr (rKey, GPGME_ATTR_USERID, NULL, 0);
+      if( s ) {
+        s2 = gpgme_key_get_string_attr (rKey, GPGME_ATTR_FPR, NULL, 0);
+        if( s2 ) {
+          strcat( *certificates, s );
+          strcat( *certificates, "(" );
+          strcat( *certificates, s2 );
+          strcat( *certificates, ")\1" );
+        }
+      }
+    }
+  }
+  gpgme_op_keylist_end( ctx );
+  return bOk;
+}
+
+bool encryptMessage( const char*  cleartext,
                      const char** ciphertext,
-                     const char* addressee,
+                     const char*  certificate,
                      struct StructuringInfo* structuring )
 {
   GpgmeCtx ctx;
@@ -1205,7 +1244,7 @@ bool encryptMessage( const char* cleartext,
 
   gpgme_recipients_new (&rset);
 
-
+  /*
   if( GPGMEPLUG_PROTOCOL == GPGME_PROTOCOL_CMS )
   {
     gpgme_recipients_add_name_with_validity (rset,
@@ -1214,11 +1253,15 @@ bool encryptMessage( const char* cleartext,
     fputs( "\nGPGSMPLUG encryptMessage() using test key of Aegypten Project\n", stderr );
   }
   else
+  */
   {
-    const char* p = addressee;
+    const char* p = certificate;
     char* tok;
-    while( (tok = nextAddress( &p ) ) != 0 ) { 
-      gpgme_recipients_add_name (rset, tok);
+    while( (tok = nextAddress( &p ) ) != 0 ) {
+      if( GPGMEPLUG_PROTOCOL == GPGME_PROTOCOL_CMS )
+        gpgme_recipients_add_name_with_validity (rset, tok, GPGME_VALIDITY_FULL );
+      else
+        gpgme_recipients_add_name (rset, tok);
       fprintf( stderr, "\nGPGMEPLUG encryptMessage() using addressee %s\n", tok );
       free(tok);
     }
