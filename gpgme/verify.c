@@ -472,7 +472,6 @@ parse_error (gpgme_signature_t sig, char *args)
   gpgme_error_t err;
   char *where = strchr (args, ' ');
   char *which;
-  char *where_last;
 
   if (where)
     {
