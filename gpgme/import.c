@@ -127,7 +127,7 @@ append_xml_impinfo (GpgmeData *rdh, GpgmeStatusCode code, char *args)
 	  _gpgme_data_append_string (dh, "    <");
           _gpgme_data_append_string (dh, field_name[i]);
 	  _gpgme_data_append_string (dh, ">");
-	  _gpgme_data_append_string (dh, field[i]);
+	  _gpgme_data_append_string_for_xml (dh, field[i]);
 	  _gpgme_data_append_string (dh, "</");
 	  _gpgme_data_append_string (dh, field_name[i]);
 	  _gpgme_data_append_string (dh, ">\n");

@@ -1,3 +1,10 @@
+2002-11-05  Marcus Brinkmann  <marcus@gnu.org>
+
+	* import.c (append_xml_impinfo): Use
+	_gpgme_data_append_string_for_xml rather than
+	_gpgme_data_append_string for the field content.
+	Submitted by Miguel Coca <e970095@zipi.fi.upm.es>.
+	
 2002-09-30  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (keylist_colon_handler): Take care when printing a
