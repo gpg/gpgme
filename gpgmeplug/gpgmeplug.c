@@ -1204,8 +1204,8 @@ bool findCertificates( const char* addressee, char** certificates )
   GpgmeKey rKey;
   const char *s;
   const char *s2;
-  bool bOk = false;
-  
+  int nFound = 0;
+
   strcpy( *certificates, "" );
 
   gpgme_new (&ctx);
@@ -1215,21 +1215,25 @@ bool findCertificates( const char* addressee, char** certificates )
   while( GPGME_No_Error == err ) {
     err = gpgme_op_keylist_next(ctx, &rKey);
     if( GPGME_No_Error == err ) {
-      bOk = true;
       s = gpgme_key_get_string_attr (rKey, GPGME_ATTR_USERID, NULL, 0);
       if( s ) {
         s2 = gpgme_key_get_string_attr (rKey, GPGME_ATTR_FPR, NULL, 0);
         if( s2 ) {
+          if( nFound )
+            strcat(*certificates,"\1" );
           strcat( *certificates, s );
           strcat( *certificates, "    (" );
           strcat( *certificates, s2 );
-          strcat( *certificates, ")\1" );
+          strcat( *certificates, ")" );
+          ++nFound;
         }
       }
     }
   }
   gpgme_op_keylist_end( ctx );
-  return bOk;
+  gpgme_release (ctx);
+
+  return ( 0 < nFound );
 }
 
 bool encryptMessage( const char*  cleartext,
@@ -1419,7 +1423,10 @@ bool encryptAndSignMessage( const char* cleartext,
   return bOk;
 }
 
+
 bool decryptMessage( const char* ciphertext,
+                     bool        cipherIsBinary,
+                     int         cipherLen,
                      const char** cleartext,
                      const char* certificate )
 {
@@ -1435,9 +1442,21 @@ bool decryptMessage( const char* ciphertext,
 
   err = gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
+  
+  gpgme_set_armor (ctx, cipherIsBinary ? 0 : 1);
+//  gpgme_set_textmode (ctx, cipherIsBinary ? 0 : 1);
 
+  /*
   gpgme_data_new_from_mem( &gCiphertext, ciphertext,
                            1+strlen( ciphertext ), 1 );
+  */
+  gpgme_data_new_from_mem( &gCiphertext,
+                           ciphertext,
+                           cipherIsBinary
+                           ? cipherLen
+                           : strlen( ciphertext ),
+                           1 );
+
   gpgme_data_new( &gPlaintext );
 
   gpgme_op_decrypt( ctx, gCiphertext, gPlaintext );
