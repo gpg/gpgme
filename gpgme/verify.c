@@ -461,7 +461,7 @@ gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig, GpgmeData text,
   if (!err)
     {
       err = _gpgme_wait_one (ctx);
-      if (!err)
+      if (!err && ctx->result.verify)
 	*r_stat = _gpgme_intersect_stati (ctx->result.verify);
     }
     return err;

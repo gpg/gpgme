@@ -1,3 +1,8 @@
+2002-06-13  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (gpgme_op_verify): Make sure that we never access an
+	unitialized result structure.
+
 2002-06-12  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (struct keylist_result_s): New.
