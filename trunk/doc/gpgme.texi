@@ -2069,7 +2069,7 @@ passphrase.  It is better if the engine retrieves the passphrase from
 a trusted agent (a daemon process), rather than having each user to
 implement their own passphrase query.  Some engines do not even
 support an external passphrase callback at all, in this case the error
-code @code{GPG_ERR_NOT_SUPPORTED) is returned.
+code @code{GPG_ERR_NOT_SUPPORTED} is returned.
 
 The user can disable the use of a passphrase callback function by
 calling @code{gpgme_set_passphrase_cb} with @var{passfunc} being
