@@ -70,6 +70,7 @@ gpgme_release ( GpgmeCtx c )
     _gpgme_gpg_release ( c->gpg ); 
     _gpgme_release_result ( c );
     _gpgme_key_release ( c->tmp_key );
+    gpgme_data_release ( c->help_data_1 );
     gpgme_data_release ( c->notation );
     /* fixme: release the key_queue */
     xfree (c);

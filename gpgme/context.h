@@ -71,6 +71,8 @@ struct gpgme_context_s {
 
     GpgmePassphraseCb passphrase_cb;
     void *passphrase_cb_value;
+
+    GpgmeData help_data_1;
 };
 
 

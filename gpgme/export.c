@@ -96,6 +96,20 @@ gpgme_op_export_start ( GpgmeCtx c, GpgmeRecipients recp,
 
 
 
+/**
+ * gpgme_op_export:
+ * @c: the context
+ * @recp: a list of recipients or NULL
+ * @keydata: Returns the keys
+ * 
+ * This function can be used to extract public keys from the GnuPG key
+ * database either in armored (by using gpgme_set_armor()) or in plain
+ * binary form.  The function expects a list of user IDs in @recp for
+ * whom the public keys are to be exportedkinit
+ *
+ * 
+ * Return value: 0 for success or an error code
+ **/
 GpgmeError
 gpgme_op_export ( GpgmeCtx c, GpgmeRecipients recp, GpgmeData keydata )
 {

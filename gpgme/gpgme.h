@@ -163,6 +163,8 @@ GpgmeError gpgme_op_verify_start ( GpgmeCtx c,
 GpgmeError gpgme_op_import_start ( GpgmeCtx c, GpgmeData keydata );
 GpgmeError gpgme_op_export_start ( GpgmeCtx c, GpgmeRecipients recp,
                                    GpgmeData keydata );
+GpgmeError gpgme_op_genkey_start ( GpgmeCtx c, const char *parms,
+                                   GpgmeData pubkey, GpgmeData seckey );
 
 
 
@@ -185,6 +187,8 @@ GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
 GpgmeError gpgme_op_import ( GpgmeCtx c, GpgmeData keydata );
 GpgmeError gpgme_op_export ( GpgmeCtx c, GpgmeRecipients recp,
                              GpgmeData keydata );
+GpgmeError gpgme_op_genkey ( GpgmeCtx c, const char *parms,
+                             GpgmeData pubkey, GpgmeData seckey );
 
 
 /* miscellaneous functions */

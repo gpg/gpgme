@@ -438,7 +438,7 @@ free_fd_data_map ( struct fd_data_map_s *fd_data_map )
         if ( fd_data_map[i].peer_fd != -1 )
             _gpgme_io_close (fd_data_map[i].peer_fd);
 #endif
-        /* don't realease data because this is only a reference */
+        /* don't release data because this is only a reference */
     }
     xfree (fd_data_map);
 }
@@ -962,7 +962,7 @@ read_status ( GpgObject gpg )
             if ( *p == '\n' ) {
                 /* (we require that the last line is terminated by a LF) */
                 *p = 0;
-                fprintf (stderr, "read_status: `%s'\n", buffer);
+                /*fprintf (stderr, "read_status: `%s'\n", buffer);*/
                 if (!strncmp (buffer, "[GNUPG:] ", 9 )
                     && buffer[9] >= 'A' && buffer[9] <= 'Z' ) {
                     struct status_table_s t, *r;
