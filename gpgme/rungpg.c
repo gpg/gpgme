@@ -1446,6 +1446,8 @@ _gpgme_gpg_op_edit (GpgObject gpg, GpgmeKey key, GpgmeData out)
 
   err = _gpgme_gpg_add_arg (gpg, "--with-colons");
   if (!err)
+    err = _gpgme_append_gpg_args_from_signers (gpg, ctx);
+  if (!err)
   err = _gpgme_gpg_add_arg (gpg, "--edit-key");
   if (!err)
     err = _gpgme_gpg_add_data (gpg, out, 1);
