@@ -1,3 +1,8 @@
+2004-06-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* libgpgme.vers: Remove C-style comment, which is not supported by
+	older binutils.
+
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme-config.in (Options): Support --api-version.

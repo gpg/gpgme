@@ -125,7 +125,6 @@ GPGME_1.0 {
     gpgme_op_verify_start;
     gpgme_wait;
 
-    /* Deprecated.  */
     gpgme_data_new_with_read_cb;
     gpgme_data_rewind;
     gpgme_get_sig_status;
