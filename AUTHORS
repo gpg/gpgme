@@ -1,5 +1,5 @@
 Package: gpgme
-Maintainer: Markus Brinkmann <marcus@g10code.com>
+Maintainer: Marcus Brinkmann <marcus@g10code.com>
 Bug reports: bug-gpgme@gnupg.org
 Security related bug reports: security@gnupg.org
 
