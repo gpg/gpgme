@@ -1,3 +1,8 @@
+2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data-mem.c (mem_release): Fix gcc warning.
+	* data-user.c (user_release): Likewise.
+
 2002-12-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	* data.h (gpgme_data_release_cb): Change return type to void.

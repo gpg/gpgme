@@ -145,7 +145,6 @@ mem_release (GpgmeData dh)
 {
   if (dh->data.mem.buffer)
     free (dh->data.mem.buffer);
-  return 0;
 }
 
 
