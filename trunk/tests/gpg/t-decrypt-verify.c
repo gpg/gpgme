@@ -1,4 +1,4 @@
-/* t-decrypt-verify.c  - regression test
+/* t-decrypt-verify.c - Regression test.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003 g10 Code GmbH
 
@@ -18,40 +18,38 @@
    along with GPGME; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include <assert.h>
 #include <errno.h>
 
 #include <gpgme.h>
 
-struct passphrase_cb_info_s
-{
-  GpgmeCtx c;
-  int did_it;
-};
-
-
-#define fail_if_err(a) do { if(a) { int my_errno = errno;	\
-            fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
-                 __FILE__, __LINE__, gpgme_strerror(a));	\
-            if ((a) == GPGME_File_Error)			\
-                   fprintf (stderr, "\terrno=`%s'\n", strerror (my_errno)); \
-                   exit (1); }					\
-                             } while(0)
+
+#define fail_if_err(err)					\
+  do								\
+    {								\
+      if (err)							\
+        {							\
+          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+                   __FILE__, __LINE__, gpgme_strerror (err));   \
+          exit (1);						\
+        }							\
+    }								\
+  while (0)
 
 
 static void
 print_data (GpgmeData dh)
 {
-  char buf[100];
+#define BUF_SIZE 512
+  char buf[BUF_SIZE + 1];
   int ret;
   
   ret = gpgme_data_seek (dh, 0, SEEK_SET);
   if (ret)
     fail_if_err (GPGME_File_Error);
-  while ((ret = gpgme_data_read (dh, buf, 100)) > 0)
+  while ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) > 0)
     fwrite (buf, ret, 1, stdout);
   if (ret < 0)
     fail_if_err (GPGME_File_Error);
@@ -59,23 +57,19 @@ print_data (GpgmeData dh)
 
 
 static GpgmeError
-passphrase_cb (void *opaque, const char *desc,
-	       void **r_hd, const char **result)
+passphrase_cb (void *opaque, const char *desc, void **hd, const char **result)
 {
+  /* Cleanup by looking at *hd.  */
   if (!desc)
-    /* Cleanup by looking at *r_hd.  */
     return 0;
 
   *result = "abc";
-  fprintf (stderr, "%% requesting passphrase for `%s': ", desc);
-  fprintf (stderr, "sending `%s'\n", *result);
-  
   return 0;
 }
 
 
 static char *
-mk_fname (const char *fname)
+make_filename (const char *fname)
 {
   const char *srcdir = getenv ("srcdir");
   char *buf;
@@ -84,69 +78,117 @@ mk_fname (const char *fname)
     srcdir = ".";
   buf = malloc (strlen(srcdir) + strlen(fname) + 2);
   if (!buf)
-    exit (8);
+    {
+      fprintf (stderr, "%s:%d: could not allocate string: %s\n",
+	       __FILE__, __LINE__, strerror (errno));
+      exit (1);
+    }
   strcpy (buf, srcdir);
   strcat (buf, "/");
   strcat (buf, fname);
   return buf;
 }
 
+
+static void
+check_verify_result (GpgmeVerifyResult result, int summary, char *fpr,
+		     GpgmeError status)
+{
+  GpgmeSignature sig;
+
+  sig = result->signatures;
+  if (!sig || sig->next)
+    {
+      fprintf (stderr, "%s:%i: Unexpected number of signatures\n",
+	       __FILE__, __LINE__);
+      exit (1);
+    }
+  if (sig->summary != summary)
+    {
+      fprintf (stderr, "%s:%i: Unexpected signature summary: 0x%x\n",
+	       __FILE__, __LINE__, sig->summary);
+      exit (1);
+    }
+  if (strcmp (sig->fpr, fpr))
+    {
+      fprintf (stderr, "%s:%i: Unexpected fingerprint: %s\n",
+	       __FILE__, __LINE__, sig->fpr);
+      exit (1);
+    }
+  if (sig->status != status)
+    {
+      fprintf (stderr, "%s:%i: Unexpected signature status: %s\n",
+	       __FILE__, __LINE__, gpgme_strerror (sig->status));
+      exit (1);
+    }
+  if (sig->notations)
+    {
+      fprintf (stderr, "%s:%i: Unexpected notation data\n",
+	       __FILE__, __LINE__);
+      exit (1);
+    }
+  if (sig->wrong_key_usage)
+    {
+      fprintf (stderr, "%s:%i: Unexpectedly wrong key usage\n",
+	       __FILE__, __LINE__);
+      exit (1);
+    }
+  if (sig->validity != GPGME_VALIDITY_UNKNOWN)
+    {
+      fprintf (stderr, "%s:%i: Unexpected validity: %i\n",
+	       __FILE__, __LINE__, sig->validity);
+      exit (1);
+    }
+  if (sig->validity_reason != GPGME_No_Error)
+    {
+      fprintf (stderr, "%s:%i: Unexpected validity reason: %s\n",
+	       __FILE__, __LINE__, gpgme_strerror (sig->validity_reason));
+      exit (1);
+    }
+}
+
+
 int 
-main (int argc, char **argv)
+main (int argc, char *argv[])
 {
   GpgmeCtx ctx;
   GpgmeError err;
-  GpgmeData in, out, pwdata = NULL;
-  struct passphrase_cb_info_s info;
-  const char *cipher_2_asc = mk_fname ("cipher-2.asc");
-  GpgmeSigStat status;
-  char *p;
+  GpgmeData in, out;
+  GpgmeDecryptResult decrypt_result;
+  GpgmeVerifyResult verify_result;
+  const char *cipher_2_asc = make_filename ("cipher-2.asc");
+  char *agent_info;
 
-  do
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+
+  agent_info = getenv("GPG_AGENT_INFO");
+  if (!(agent_info && strchr (agent_info, ':')))
+    gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
+
+  err = gpgme_data_new_from_file (&in, cipher_2_asc, 1);
+  fail_if_err (err);
+  err = gpgme_data_new (&out);
+  fail_if_err (err);
+
+  err = gpgme_op_decrypt_verify (ctx, in, out);
+  fail_if_err (err);
+  decrypt_result = gpgme_op_decrypt_result (ctx);
+  if (decrypt_result->unsupported_algorithm)
     {
-      err = gpgme_new (&ctx);
-      fail_if_err (err);
+      fprintf (stderr, "%s:%i: unsupported algorithm: %s\n",
+	       __FILE__, __LINE__, decrypt_result->unsupported_algorithm);
+      exit (1);
+    }    
+  print_data (out);
+  verify_result = gpgme_op_verify_result (ctx);
+  check_verify_result (verify_result, 0,
+		       "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+		       GPGME_No_Error);
 
-      p = getenv("GPG_AGENT_INFO");
-      if (!(p && strchr (p, ':')))
-	{
-	  memset (&info, 0, sizeof info);
-	  info.c = ctx;
-	  gpgme_set_passphrase_cb (ctx, passphrase_cb, &info);
-	} 
-
-      err = gpgme_data_new_from_file (&in, cipher_2_asc, 1);
-      fail_if_err (err);
-
-      err = gpgme_data_new (&out);
-      fail_if_err (err);
-
-      err = gpgme_op_decrypt_verify (ctx, in, out);
-      fail_if_err (err);
-    
-      fflush (NULL);
-      fputs ("Begin Result:\n", stdout);
-      print_data (out);
-      fputs ("End Result.\n", stdout);
-
-      if (!gpgme_get_sig_status (ctx, 0, &status, NULL))
-	{
-	  fprintf (stderr, "Signature check failed unexpectedly.\n");
-	  exit (1);
-	}
-      if (status != GPGME_SIG_STAT_GOOD)
-	{
-	  fprintf (stderr, "Signature check failed unexpectedly.\n");
-	  exit (1);
-	}
-
-      gpgme_data_release (in);
-      gpgme_data_release (out);
-      gpgme_data_release (pwdata);
-      gpgme_release (ctx);
-    }
-  while (argc > 1 && !strcmp (argv[1], "--loop"));
-
+  gpgme_data_release (in);
+  gpgme_data_release (out);
+  gpgme_release (ctx);
   return 0;
 }
 
