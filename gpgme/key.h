@@ -25,8 +25,8 @@
 #include "types.h"
 #include "context.h"
 
-
-struct gpgme_key_s {
+struct subkey_s {
+    struct subkey_s *next;
     struct {
         unsigned int revoked:1 ;
         unsigned int expired:1 ;
@@ -37,11 +37,19 @@ struct gpgme_key_s {
     char keyid[16+1]; 
     char *fingerprint; /* malloced hex digits */
     time_t timestamp; /* -1 for invalid, 0 for not available */
-    struct user_id_s *uids;
-    
 };
 
+struct gpgme_key_s {
+    struct {
+        unsigned int revoked:1 ;
+        unsigned int expired:1 ;
+        unsigned int disabled:1 ;
+    } gloflags; 
+    struct subkey_s   keys; 
+    struct user_id_s *uids;
+};
 
+struct subkey_s *_gpgme_key_add_subkey (GpgmeKey key);
 GpgmeError _gpgme_key_append_name ( GpgmeKey key, const char *s );
 
 

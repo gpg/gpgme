@@ -31,8 +31,33 @@
 static void
 genkey_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 {
-    if ( code == STATUS_PROGRESS )
+    if ( code == STATUS_PROGRESS && *args ) {
+        if (ctx->progress_cb) {
+            char *p;
+            int type=0, current=0, total=0;
+            
+            if ( (p = strchr (args, ' ')) ) {
+                *p++ = 0;
+                if (*p) {
+                    type = *(byte*)p;
+                    if ( (p = strchr (p+1, ' ')) ) {
+                        *p++ = 0;
+                        if (*p) {
+                            current = atoi (p);
+                            if ( (p = strchr (p+1, ' ')) ) {
+                                *p++ = 0;
+                                total = atoi (p);
+                            }
+                        }
+                    }
+                }
+            }           
+            if ( type != 'X' )
+                ctx->progress_cb ( ctx->progress_cb_value, args, type,
+                                   current, total );
+        }
         return;
+    }
 
     fprintf (stderr, "genkey_status: code=%d args=`%s'\n",
              code, args );

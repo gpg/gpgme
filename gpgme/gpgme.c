@@ -183,7 +183,28 @@ gpgme_set_passphrase_cb ( GpgmeCtx c, GpgmePassphraseCb cb, void *cb_value )
     c->passphrase_cb_value = cb_value;
 }
 
-
-
+/**
+ * gpgme_set_pprogress_cb:
+ * @c: the context 
+ * @cb: A callback function
+ * @cb_value: The value passed to the callback function
+ * 
+ * This function sets a callback function to be used as a progress indicator.
+ *
+ * The callback function is defined as:
+ * <literal>
+ * typedef void (*GpgmeProgressCb) (void*cb_value,
+ *                                  const char *what, int type,
+ *                                  int curretn, int total);
+ * </literal>
+ * For details on the progress events, see the entry for the PROGRESS
+ * status in the file doc/DETAILS of the GnuPG distribution.
+ **/
+void
+gpgme_set_progress_cb ( GpgmeCtx c, GpgmeProgressCb cb, void *cb_value )
+{
+    c->progress_cb = cb;
+    c->progress_cb_value = cb_value;
+}
 
 

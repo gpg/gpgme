@@ -32,6 +32,13 @@
                              } while(0)
 
 
+static void
+progress ( void *self, const char *what, int type, int current, int total)
+{
+    fprintf (stderr, "progress `%s' %d %d %d\n", what, type, current, total);
+}
+
+
 int 
 main (int argc, char **argv )
 {
@@ -44,6 +51,8 @@ main (int argc, char **argv )
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
+
+    gpgme_set_progress_cb (ctx, progress, NULL);
 
     format = "<GnupgKeyParms format=\"internal\">\n"
              "Key-Type: DSA\n"

@@ -91,18 +91,31 @@ parse_timestamp ( char *p )
 
 
 static void
-set_trust_info ( GpgmeKey key, const char *s )
+set_mainkey_trust_info ( GpgmeKey key, const char *s )
 {
     /* look at letters and stop at the first digit */
     for (; *s && !my_isdigit (*s); s++ ) {
         switch (*s) {
-          case 'e': key->flags.expired = 1; break;
-          case 'r': key->flags.revoked = 1; break;
-          case 'd': key->flags.disabled = 1; break;
+          case 'e': key->keys.flags.expired = 1; break;
+          case 'r': key->keys.flags.revoked = 1; break;
+          case 'd': key->keys.flags.disabled = 1; break;
           case 'n': key->uids->validity = 1; break;
           case 'm': key->uids->validity = 2; break;
           case 'f': key->uids->validity = 3; break;
           case 'u': key->uids->validity = 4; break;
+        }
+    }
+}
+
+static void
+set_subkey_trust_info ( struct subkey_s *k, const char *s )
+{
+    /* look at letters and stop at the first digit */
+    for (; *s && !my_isdigit (*s); s++ ) {
+        switch (*s) {
+          case 'e': k->flags.expired = 1; break;
+          case 'r': k->flags.revoked = 1; break;
+          case 'd': k->flags.disabled = 1; break;
         }
     }
 }
@@ -120,14 +133,12 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
     GpgmeKey key = ctx->tmp_key;
     int i;
     const char *trust_info = NULL;
-    
+    struct subkey_s *sk = NULL;
 
     if ( ctx->out_of_core )
         return;
     if (!line)
         return; /* EOF */
-
-    /*fprintf (stderr, "line=`%s'\n", line );*/
 
     for (p = line; p; p = pend) {
         field++;
@@ -142,8 +153,14 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 rectype = RT_UID;
                 key = ctx->tmp_key;
             }
-            else if ( !strcmp ( p, "sub" ) )
+            else if ( !strcmp ( p, "sub" ) && key ) {
+                /* start a new subkey */
                 rectype = RT_SUB;
+                if ( !(sk = _gpgme_key_add_subkey (key)) ) {
+                    ctx->out_of_core=1;
+                    return;
+                }
+            }
             else if ( !strcmp ( p, "pub" ) ) {
                 /* start a new keyblock */
                 if ( _gpgme_key_new ( &key ) ) {
@@ -166,28 +183,27 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 rectype = RT_NONE;
             
         }
-        else if ( rectype == RT_PUB /*|| rectype == RT_SUB*/ ) {
+        else if ( rectype == RT_PUB ) {
             switch (field) {
               case 2: /* trust info */
-                if ( rectype == RT_PUB ) 
-                    trust_info = p;  /*save for later */
+                trust_info = p;  /*save for later */
                 break;
               case 3: /* key length */
                 i = atoi (p); 
                 if ( i > 1 ) /* ignore invalid values */
-                    key->key_len = i; 
+                    key->keys.key_len = i; 
                 break;
               case 4: /* pubkey algo */
                 i = atoi (p);
                 if ( i > 1 && i < 128 )
-                    key->key_algo = i;
+                    key->keys.key_algo = i;
                 break;
               case 5: /* long keyid */
-                if ( strlen (p) == DIM(key->keyid)-1 )
-                    strcpy (key->keyid, p);
+                if ( strlen (p) == DIM(key->keys.keyid)-1 )
+                    strcpy (key->keys.keyid, p);
                 break;
               case 6: /* timestamp (1998-02-28) */
-                key->timestamp = parse_timestamp (p);
+                key->keys.timestamp = parse_timestamp (p);
                 break;
               case 7: /* valid for n days */
                 break;
@@ -196,14 +212,49 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
               case 9: /* ownertrust */
                 break;
               case 10: /* This is the first name listed */
-                if ( rectype == RT_PUB ) {
-                    if ( _gpgme_key_append_name ( key, p) )
-                        ctx->out_of_core = 1;
-                    else {
-                        if (trust_info)
-                            set_trust_info (key, trust_info);
-                    }
+                if ( _gpgme_key_append_name ( key, p) )
+                    ctx->out_of_core = 1;
+                else {
+                    if (trust_info)
+                        set_mainkey_trust_info (key, trust_info);
                 }
+                break;
+              case 11:  /* signature class  */
+                break;
+              case 12:
+                pend = NULL;  /* we can stop here */
+                break;
+            }
+        }
+        else if ( rectype == RT_SUB && sk ) {
+            switch (field) {
+              case 2: /* trust info */
+                set_subkey_trust_info ( sk, p);
+                break;
+              case 3: /* key length */
+                i = atoi (p); 
+                if ( i > 1 ) /* ignore invalid values */
+                    sk->key_len = i; 
+                break;
+              case 4: /* pubkey algo */
+                i = atoi (p);
+                if ( i > 1 && i < 128 )
+                    sk->key_algo = i;
+                break;
+              case 5: /* long keyid */
+                if ( strlen (p) == DIM(sk->keyid)-1 )
+                    strcpy (sk->keyid, p);
+                break;
+              case 6: /* timestamp (1998-02-28) */
+                sk->timestamp = parse_timestamp (p);
+                break;
+              case 7: /* valid for n days */
+                break;
+              case 8: /* reserved (LID) */
+                break;
+              case 9: /* ownertrust */
+                break;
+              case 10:/* user ID n/a for a subkey */
                 break;
               case 11:  /* signature class  */
                 break;
@@ -222,7 +273,7 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                     ctx->out_of_core = 1;
                 else {
                     if (trust_info)
-                        set_trust_info (key, trust_info);
+                        set_mainkey_trust_info (key, trust_info);
                 }
                 pend = NULL;  /* we can stop here */
                 break;
@@ -231,9 +282,9 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
         else if ( rectype == RT_FPR ) {
             switch (field) {
               case 10: /* fingerprint (take only the first one)*/
-                if ( !key->fingerprint && *p ) {
-                    key->fingerprint = xtrystrdup (p);
-                    if ( !key->fingerprint )
+                if ( !key->keys.fingerprint && *p ) {
+                    key->keys.fingerprint = xtrystrdup (p);
+                    if ( !key->keys.fingerprint )
                         ctx->out_of_core = 1;
                 }
                 pend = NULL; /* that is all we want */
@@ -266,7 +317,7 @@ finish_key ( GpgmeCtx ctx )
     }
     q->key = key;
     q->next = NULL;
-    /* fixme: lock queue */
+    /* fixme: lock queue. Use a tail pointer? */
     if ( !(q2 = ctx->key_queue) )
         ctx->key_queue = q;
     else {
@@ -369,15 +420,6 @@ gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key )
     xfree (q);
     return 0;
 }
-
-
-
-
-
-
-
-
-
 
 
 
