@@ -1,3 +1,9 @@
+2002-07-03  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c (nextCertificate): Actually free the entire array
+	and don't loop over tmp_dn and double free the first item.
+	Spotted by Bernhard Herzog.
+
 2002-07-01  Werner Koch  <wk@gnupg.org>
 
 	* gpgmeplug.c (findCertificates): Reintroduced a free which must
