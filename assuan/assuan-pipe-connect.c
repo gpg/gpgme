@@ -102,7 +102,9 @@ AssuanError
 assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
 		     int *fd_child_list)
 {
+#ifndef _ASSUAN_IN_GPGME
   static int fixed_signals = 0;
+#endif
   AssuanError err;
   int rp[2];
   int wp[2];
@@ -110,6 +112,7 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
   if (!ctx || !name || !argv || !argv[0])
     return ASSUAN_Invalid_Value;
 
+#ifndef _ASSUAN_IN_GPGME
   if (!fixed_signals)
     { 
       struct sigaction act;
@@ -125,6 +128,7 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
       fixed_signals = 1;
       /* FIXME: This is not MT safe */
     }
+#endif
 
   if (pipe (rp) < 0)
     return ASSUAN_General_Error;

@@ -107,6 +107,7 @@ Preparation
 * Using Automake::                Compiler options to be used the easy way.
 * Using Libtool::                 Avoiding compiler options entirely.
 * Library Version Check::         Getting and verifying the library version.
+* Signal Handling::               How @acronym{GPGME} affects signal handling.
 * Multi Threading::               How @acronym{GPGME} can be used in an MT environment.
 
 Protocols and Engines
@@ -322,6 +323,7 @@ of the library are verified.
 * Using Automake::                Compiler options to be used the easy way.
 * Using Libtool::                 Avoiding compiler options entirely.
 * Library Version Check::         Getting and verifying the library version.
+* Signal Handling::               How @acronym{GPGME} affects signal handling.
 * Multi Threading::               How @acronym{GPGME} can be used in an MT environment.
 @end menu
 
@@ -516,6 +518,34 @@ init_program (void)
 Note that you are highly recommended to initialize the locale settings
 like this.  @acronym{GPGME} can not do this for you because it would
 not be thread safe.
+
+
+@node Signal Handling
+@section Signal Handling
+@cindex signals
+@cindex signal handling
+
+The @acronym{GPGME} library communicates with child processes (the
+crypto engines).  If a child process dies unexpectedly, for example
+due to a bug, or system problem, a @code{SIGPIPE} signal will be
+delivered to the application.  The default action is to abort the
+program.  To protect against this, @code{gpgme_check_version} sets the
+@code{SIGPIPE} signal action to @code{SIG_IGN}, which means that the
+signal will be ignored.
+
+@acronym{GPGME} will only do that if the signal action for
+@code{SIGPIPE} is @code{SIG_DEF} at the time
+@code{gpgme_check_version} is called.  If it is something different,
+@code{GPGME} will take no action.
+
+This means that if your application does not install any signal
+handler for @code{SIGPIPE}, you don't need to take any precautions.
+If you do install a signal handler for @code{SIGPIPE}, you must be
+prepared to handle any @code{SIGPIPE} events that occur due to
+@acronym{GPGME} writing to a defunct pipe.  Furthermore, if your
+application is multi-threaded, and you install a signal action for
+@code{SIGPIPE}, you must make sure you do this either before
+@code{gpgme_check_version} is called or afterwards.
 
 
 @node Multi Threading

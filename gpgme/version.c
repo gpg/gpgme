@@ -46,6 +46,8 @@ do_subsystem_inits (void)
     return;
 
   _gpgme_sema_subsystem_init ();
+  _gpgme_io_subsystem_init ();
+
   done = 1;
 }
 

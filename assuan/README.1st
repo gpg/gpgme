@@ -20,3 +20,6 @@ updating this directory, are:
 
 * assuan-io.c
 ** Don't try to support GNU Pth here.
+
+* assuan-pipe-connect.c
+** Do not install SIGPIPE signal handler here.
