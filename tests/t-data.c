@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -107,7 +108,7 @@ read_once_test (round_t round, GpgmeData data)
 {
   GpgmeError err;
   char buffer[1024];
-  int read;
+  size_t read;
 
   err = gpgme_data_read (data, buffer, sizeof (buffer), &read);
   fail_if_err (err);
@@ -133,7 +134,7 @@ read_test (round_t round, GpgmeData data)
 {
   GpgmeError err;
   char buffer[1024];
-  int read;
+  size_t read;
 
   if (round == TEST_INOUT_NONE)
     {
@@ -158,7 +159,7 @@ write_test (round_t round, GpgmeData data)
 {
   GpgmeError err;
   char buffer[1024];
-  int read;
+  size_t read;
 
   err = gpgme_data_write (data, text, strlen (text));
   fail_if_err (err);

@@ -1275,7 +1275,7 @@ static GpgmeError
 pipemode_copy (char *buffer, size_t length, size_t *nread, GpgmeData data )
 {
     GpgmeError err;
-    int nbytes;
+    size_t nbytes;
     char tmp[1000], *s, *d;
 
     /* we can optimize this whole thing but for now we just
