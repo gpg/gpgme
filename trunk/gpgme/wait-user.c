@@ -52,7 +52,7 @@ _gpgme_user_io_cb_handler (void *data, int fd)
   err = (*item->handler) (item->handler_value, fd);
   if (err)
     {
-      int idx;
+      unsigned int idx;
 
       for (idx = 0; idx < ctx->fdt.size; idx++)
 	if (ctx->fdt.fds[idx].fd != -1)
@@ -61,7 +61,7 @@ _gpgme_user_io_cb_handler (void *data, int fd)
     }
   else
     {
-      int i;
+      unsigned int i;
 
       for (i = 0; i < ctx->fdt.size; i++)
 	if (ctx->fdt.fds[i].fd != -1)

@@ -202,7 +202,7 @@ _gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type,
 	  {
 	    /* An error occured.  Close all fds in this context, and
 	       send the error in a done event.  */
-	    int idx;
+	    unsigned int idx;
 	    
 	    for (idx = 0; idx <= ctx->fdt.size; idx++)
 	      if (ctx->fdt.fds[idx].fd != -1)
@@ -255,7 +255,7 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 {
   do
     {
-      int i = 0;
+      unsigned int i = 0;
       struct ctx_list_item *li;
       struct fd_table fdt;
       int nr;
@@ -314,7 +314,7 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 		{
 		  /* An error occured.  Close all fds in this context,
 		     and signal it.  */
-		  int idx;
+		  unsigned int idx;
 	    
 		  for (idx = 0; idx < ictx->fdt.size; idx++)
 		    if (ictx->fdt.fds[idx].fd != -1)

@@ -119,7 +119,7 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
       gpgme_engine_info_t *lastp = &engine_info;
       gpgme_protocol_t proto_list[] = { GPGME_PROTOCOL_OpenPGP,
 					GPGME_PROTOCOL_CMS };
-      int proto;
+      unsigned int proto;
 
       for (proto = 0; proto < DIM (proto_list); proto++)
 	{

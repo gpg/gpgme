@@ -79,13 +79,13 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond)
   do
     {
       int nr = _gpgme_io_select (ctx->fdt.fds, ctx->fdt.size, 0);
-      int i;
+      unsigned int i;
 
       if (nr < 0)
 	{
 	  /* An error occured.  Close all fds in this context, and
 	     signal it.  */
-	  int idx;
+	  unsigned int idx;
 
 	  err = gpg_error_from_errno (errno);
 	  for (idx = 0; idx < ctx->fdt.size; idx++)
@@ -113,7 +113,7 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond)
 		{
 		  /* An error occured.  Close all fds in this context,
 		     and signal it.  */
-		  int idx;
+		  unsigned int idx;
 		  
 		  for (idx = 0; idx < ctx->fdt.size; idx++)
 		    if (ctx->fdt.fds[idx].fd != -1)

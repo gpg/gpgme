@@ -56,7 +56,7 @@ _gpgme_fd_table_deinit (fd_table_t fdt)
 static gpgme_error_t
 fd_table_put (fd_table_t fdt, int fd, int dir, void *opaque, int *idx)
 {
-  int i, j;
+  unsigned int i, j;
   struct io_select_fd_s *new_fds;
 
   for (i = 0; i < fdt->size; i++)

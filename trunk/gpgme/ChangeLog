@@ -1,3 +1,29 @@
+2003-07-31  Marcus Brinkmann  <marcus@g10code.de>
+
+	* util.h (_gpgme_decode_c_string): Change type of LEN argument to
+	size_t.
+	(_gpgme_decode_percent_string): Likewise.
+	* conversion.c (_gpgme_decode_c_string): Likewise.
+	(_gpgme_decode_percent_string): Likewise.
+	(_gpgme_map_gnupg_error): Change type of I to unsigned int.
+	* signers.c (gpgme_signers_clear): Likewise.
+	(gpgme_signers_enum): New unsigned variable SEQNO, set to SEQ.
+	Use SEQNO instead SEQ.
+	* wait.c (fd_table_put): Change type of I and J to unsigned int.
+	* wait-global.c (_gpgme_wait_global_event_cb): Change type of IDX
+	to unsigned int.
+	(gpgme_wait): Change type of I and IDX to unsigned int.
+	* wait-private.c (_gpgme_wait_on_condition): Change type of IDX
+	and I to unsigned int.
+	* posix-io.c (_gpgme_io_close): Cast return value of macro DIM to
+	int to suppress gcc warning.
+	(_gpgme_io_set_close_notify): Likewise.
+	(_gpgme_io_select): Change type of I to unsigned int.
+	* engine.c (gpgme_get_engine_info): Change type of PROTO to
+	unsigned int.
+	* wait-user.c (_gpgme_user_io_cb_handler): Change type of IDX and
+	I to unsigned int.
+
 2003-07-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* decrypt-verify.c (decrypt_verify_status_handler): Expand silly

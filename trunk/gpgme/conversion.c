@@ -65,7 +65,7 @@ _gpgme_hextobyte (const unsigned char *str)
    is desired or not, the caller is expected to make sure that *DESTP
    is large enough if LEN is not zero.  */
 gpgme_error_t
-_gpgme_decode_c_string (const char *src, char **destp, int len)
+_gpgme_decode_c_string (const char *src, char **destp, size_t len)
 {
   char *dest;
 
@@ -168,7 +168,7 @@ _gpgme_decode_c_string (const char *src, char **destp, int len)
    is desired or not, the caller is expected to make sure that *DESTP
    is large enough if LEN is not zero.  */
 gpgme_error_t
-_gpgme_decode_percent_string (const char *src, char **destp, int len)
+_gpgme_decode_percent_string (const char *src, char **destp, size_t len)
 {
   char *dest;
 
@@ -323,7 +323,7 @@ static struct
 gpgme_error_t
 _gpgme_map_gnupg_error (char *err)
 {
-  int i;
+  unsigned int i;
 
   for (i = 0; i < DIM (gnupg_errors); i++)
     if (!strcmp (gnupg_errors[i].name, err))
