@@ -56,6 +56,10 @@ Noteworthy changes in version 0.4.3 (unreleased)
    GPGME can not do this for you, as setlocale is not thread safe, and
    there is no alternative.
 
+ * The signal action for SIGPIPE is now set to SIG_IGN by
+   gpgme_check_version, instead the first time a crypto engine is
+   started (which is not well defined).
+
  * In the output of gpgme_hash_algo_name, change RMD160 to RIPEMD160,
    TIGER to TIGER192, CRC32-RFC1510 to CRC32RFC1510, and CRC24-RFC2440
    to CRC24RFC2440.  For now, these strings can be used as the MIC
