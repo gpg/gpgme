@@ -79,7 +79,7 @@ Documentation License''.
 @top Main Menu
 This is Edition @value{EDITION}, last updated @value{UPDATED}, of
 @cite{The `GnuPG Made Easy' Reference Manual}, for Version
-@value{VERSION} of the GNU Mach microkernel.
+@value{VERSION} of the @acronym{GPGME} library.
 @end ifnottex
 
 @menu
