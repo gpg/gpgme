@@ -459,6 +459,25 @@ parse_user_id ( struct user_id_s *uid, char *tail )
 
 }
 
+static void
+parse_x509_user_id ( struct user_id_s *uid, char *tail )
+{
+  const char *s;
+
+  s=uid->name; 
+  if (*s == '<' && s[strlen(s)-1] == '>')
+    uid->email_part = s;
+  
+  /* let unused parts point to an EOS */ 
+  tail--;
+  if (!uid->name_part)
+    uid->name_part = tail;
+  if (!uid->email_part)
+    uid->email_part = tail;
+  if (!uid->comment_part)
+    uid->comment_part = tail;
+}
+
 /* 
  * Take a name from the --with-colon listing, remove certain escape sequences
  * sequences and put it into the list of UIDs
@@ -531,7 +550,10 @@ _gpgme_key_append_name ( GpgmeKey key, const char *s )
         } 
     }
     *d++ = 0;
-    parse_user_id ( uid, d );
+    if (key->x509)
+      parse_x509_user_id (uid, d);
+    else
+      parse_user_id (uid, d);
 
     uid->next = key->uids;
     key->uids = uid;

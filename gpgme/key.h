@@ -57,6 +57,7 @@ struct gpgme_key_s {
     } gloflags; 
     unsigned int ref_count;
     unsigned int secret:1;
+    unsigned int x509:1;
     struct subkey_s   keys; 
     struct user_id_s *uids;
 };
