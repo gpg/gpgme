@@ -354,6 +354,8 @@ bool isEmailInCertificate( const char* email, const char* certificate )
        signing.
        Note that the parameter email can be anything that is allowed
        in a From: line.
+       Another note: OK, OK, we'll handle that in the MUA. You can
+       assume that you only get the email address.
     */
     return false; // dummy
 }
@@ -362,6 +364,12 @@ bool isEmailInCertificate( const char* email, const char* certificate )
 void setNumPINRequests( PinRequests reqMode )
 {
   config.numPINRequests = reqMode;
+
+  /* PENDING(g10) Put this value into gpg and make it ask for the pin
+     according to this. Note that there is also
+     setNumPINRequestsInterval() which is only used if reqMode ==
+     PinRequest_AfterMinutes.
+  */
 }
 
 PinRequests numPINRequests()
@@ -371,21 +379,21 @@ PinRequests numPINRequests()
 
 
 
-
-
 void setNumPINRequestsInterval( int interval )
 {
   config.numPINRequestsInterval = interval;
+
+  /* PENDING(g10) Put this value into gpg and make it ask for the pin
+     according to this. Note that this should only be used if
+     config.numPINRequests (set with setNumPINRequests()) has the
+     value PinRequest_AfterMinutes.
+  */
 }
 
 int numPINRequestsInterval()
 {
   return config.numPINRequestsInterval;
 }
-
-
-
-
 
 
 
