@@ -252,6 +252,11 @@ GPGME_CONFIG_CFLAGS=""
 AC_SUBST(GPGME_CONFIG_LIBS)
 AC_SUBST(GPGME_CONFIG_CFLAGS)
 
+dnl Frob'da Variables
+LTLIBOBJS=`echo "$LIB@&t@OBJS" |
+           sed 's,\.[[^.]]* ,.lo ,g;s,\.[[^.]]*$,.lo,'`
+AC_SUBST(LTLIBOBJS)
+
 dnl
 dnl Create config files 
 dnl
