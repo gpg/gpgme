@@ -23,7 +23,11 @@
 #endif
 
 #include <unistd.h>
-#include <sys/select.h>
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#else
+# include <sys/time.h>
+#endif
 #include <sys/types.h>
 #include <sys/wait.h>
 
