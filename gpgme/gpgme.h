@@ -1063,6 +1063,12 @@ gpgme_error_t gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_key_t recp[],
 struct _gpgme_op_decrypt_result
 {
   char *unsupported_algorithm;
+
+  /* Key should not have been used for encryption.  */
+  unsigned int wrong_key_usage : 1;
+
+  /* Internal to GPGME, do not use.  */
+  int _unused : 31;
 };
 typedef struct _gpgme_op_decrypt_result *gpgme_decrypt_result_t;
 
@@ -1192,6 +1198,7 @@ struct _gpgme_signature
   /* Signature exipration time or 0.  */
   unsigned long exp_timestamp;
 
+  /* Key should not have been used for signing.  */
   unsigned int wrong_key_usage : 1;
 
   /* Internal to GPGME, do not use.  */

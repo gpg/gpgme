@@ -1,5 +1,12 @@
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (struct _gpgme_decrypt_result): New fields
+	wrong_key_usage and _unused.
+	* decrypt.c (_gpgme_decrypt_status_handler): Don't skip over
+	character after a matched string, as in a protocol error this
+	could skip over the trailing binary zero.
+	Handle decrypt.keyusage error notifications.
+
 	* gpgme.h (struct _gpgme_key): New member keylist_mode.
 	* keylist.c (keylist_colon_handler): Set the keylist_mode of KEY.
 

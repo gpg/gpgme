@@ -3523,6 +3523,9 @@ members:
 @item char *unsupported_algorithm
 If an unsupported algorithm was encountered, this string describes the
 algorithm that is not supported.
+
+@item unsigned int wrong_key_usage : 1
+This is true if the key was not used according to its policy.
 @end table
 @end deftp
 
@@ -3608,7 +3611,7 @@ following members:
 This is a pointer to the next new signature structure in the linked
 list, or @code{NULL} if this is the last element.
 
-@item gpgme_sigsum_t summary;
+@item gpgme_sigsum_t summary
 This is a bit vector giving a summary of the signature status.  It
 provides an easy interface to a defined semantic of the signature
 status.  Checking just one bit is sufficient to see whether a
@@ -3701,7 +3704,7 @@ The creation timestamp of this signature.
 The expiration timestamp of this signature, or 0 if the signature does
 not expire.
 
-@item unsigned int wrong_key_usage : 1;
+@item unsigned int wrong_key_usage : 1
 This is true if the key was not used according to its policy.
 
 @item gpgme_validity_t validity
