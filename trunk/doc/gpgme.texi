@@ -125,6 +125,7 @@ Protocols and Engines
 
 * Engine Version Check::          Verifying the engine version.
 * Engine Information::            Obtaining more information about the engines.
+* Engine Configuration::          Changing the engine configuration.
 * OpenPGP::                       Support for the OpenPGP protocol.
 * Cryptographic Message Syntax::  Support for the CMS.
 
@@ -165,6 +166,7 @@ Contexts
 Context Attributes
 
 * Protocol Selection::            Selecting the protocol used by a context.
+* Crypto Engine::                 Configuring the crypto engine.
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
 * Included Certificates::         Including a number of certificates.
@@ -745,6 +747,7 @@ allocated string describing the protocol @var{protocol}, or
 @menu
 * Engine Version Check::          Verifying the engine version.
 * Engine Information::            Obtaining more information about the engines.
+* Engine Configuration::          Changing the engine configuration.
 * OpenPGP::                       Support for the OpenPGP protocol.
 * Cryptographic Message Syntax::  Support for the CMS.
 @end menu
@@ -789,6 +792,11 @@ This is a string holding the file name of the executable of the crypto
 engine.  Currently, it is never @code{NULL}, but using @code{NULL} is
 reserved for future use, so always check before you use it.
 
+@item const char *home_dir
+This is a string holding the directory name of the crypto engine's
+configuration directory.  If it is @code{NULL}, then the default
+directory is used.
+
 @item const char *version
 This is a string containing the version number of the crypto engine.
 It might be @code{NULL} if the version number can not be determined,
@@ -803,10 +811,10 @@ reserved for future use, so always check before you use it.
 @end table
 @end deftp
 
-@deftypefun gpgme_error_t gpgme_get_engine_info (gpgme_engine_info_t *info)
+@deftypefun gpgme_error_t gpgme_get_engine_info (@w{gpgme_engine_info_t *@var{info}})
 The function @code{gpgme_get_engine_info} returns a linked list of
 engine info structures in @var{info}.  Each info structure describes
-one configured backend.
+the defaults of one configured backend.
 
 The memory for the info structures is allocated the first time this
 function is invoked, and must not be freed by the caller.
@@ -848,6 +856,37 @@ if (gpgme_err_code (err) == GPG_ERR_INV_ENGINE)
       @}
   @}
 @end example
+
+
+@node Engine Configuration
+@section Engine Configuration
+@cindex engine, configuration of
+@cindex configuration of crypto backend
+
+You can change the configuration of a backend engine, and thus change
+the executable program and configuration directory to be used.  You
+can make these changes the default or set them for some contexts
+individually.
+
+@deftypefun gpgme_error_t gpgme_set_engine_info (@w{gpgme_protocol_t @var{proto}}, @w{const char *@var{file_name}}, @w{const char *@var{home_dir}})
+The function @code{gpgme_set_engine_info} changes the default
+configuration of the crypto engine implementing the protocol
+@var{proto}.
+
+@var{file_name} is the file name of the executable program
+implementing this protocol, and @var{home_dir} is the directory name
+of the configuration directory for this crypto engine.  If
+@var{home_dir} is @code{NULL}, the engine's default will be used.
+
+The new defaults are not applied to already created GPGME contexts.
+
+This function returns the error code @code{GPG_ERR_NO_ERROR} if
+successful, or an eror code on failure.
+@end deftypefun
+
+The functions @code{gpgme_ctx_get_engine_info} and
+@code{gpgme_ctx_set_engine_info} can be used to change the engine
+configuration per context.  @xref{Crypto Engine}.
 
 
 @node OpenPGP
@@ -1847,6 +1886,7 @@ The function @code{gpgme_release} destroys the context with the handle
 
 @menu
 * Protocol Selection::            Selecting the protocol used by a context.
+* Crypto Engine::                 Configuring the crypto engine.
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
 * Included Certificates::       Including a number of certificates.
@@ -1881,6 +1921,50 @@ protocol could be set successfully, and @code{GPG_ERR_INV_VALUE} if
 The function @code{gpgme_get_protocol} retrieves the protocol currently
 use with the context @var{ctx}.
 @end deftypefun
+
+
+@node Crypto Engine
+@subsection Crypto Engine
+@cindex context, configuring engine
+@cindex engine, configuration per context
+
+The following functions can be used to set and retrieve the
+configuration of the crypto engines of a specific context.  The
+default can also be retrieved without any particular context.
+@xref{Engine Information}.  The default can also be changed globally.
+@xref{Engine Configuration}.
+
+@deftypefun gpgme_engine_info_t gpgme_ctx_get_engine_info (@w{gpgme_ctx_t @var{ctx}})
+The function @code{gpgme_ctx_get_engine_info} returns a linked list of
+engine info structures.  Each info structure describes the
+configuration of one configured backend, as used by the context
+@var{ctx}.
+
+The result is valid until the next invocation of
+@code{gpgme_ctx_set_engine_info} for this particular context.
+
+This function can not fail.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_ctx_set_engine_info (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_protocol_t @var{proto}}, @w{const char *@var{file_name}}, @w{const char *@var{home_dir}})
+The function @code{gpgme_ctx_set_engine_info} changes the
+configuration of the crypto engine implementing the protocol
+@var{proto} for the context @var{ctx}.
+
+@var{file_name} is the file name of the executable program
+implementing this protocol, and @var{home_dir} is the directory name
+of the configuration directory for this crypto engine.  If
+@var{home_dir} is @code{NULL}, the engine's default will be used.
+
+Currently this function must be used before starting the first crypto
+operation.  It is unspecified if and when the changes will take effect
+if the function is called after starting the first operation on the
+context @var{ctx}.
+
+This function returns the error code @code{GPG_ERR_NO_ERROR} if
+successful, or an eror code on failure.
+@end deftypefun
+
 
 @c FIXME: Unfortunately, using @acronym here breaks texi2dvi.
 @node ASCII Armor
