@@ -1,5 +1,31 @@
 2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine.c (_gpgme_engine_op_decrypt): Implement CMS case.
+	(_gpgme_engine_op_delete): Likewise.
+	(_gpgme_engine_op_encrypt): Likewise.
+	(_gpgme_engine_op_export): Likewise.
+	(_gpgme_engine_op_genkey): Likewise.
+	(_gpgme_engine_op_keylist): Likewise.
+	(_gpgme_engine_op_sign): Likewise.
+	(_gpgme_engine_op_trustlist): Likewise.
+
+	* engine-gpgsm.c (_gpgme_gpgsm_op_encrypt): New function.
+	(gpgsm_assuan_simple_command): Likewise.
+	(gpgsm_set_recipients): Likewise.
+	(gpgsm_set_fd): Reimplement using gpgsm_assuan_simple_command.
+	(_gpgme_gpgsm_op_delete): New function.
+	(_gpgme_gpgsm_op_export): Likewise.
+	(_gpgme_gpgsm_op_genkey): Likewise.
+	(_gpgme_gpgsm_op_sign): Likewise.
+	(_gpgme_gpgsm_op_keylist): Likewise.
+	(_gpgme_gpgsm_op_trustlist): Likewise.
+	(_gpgme_gpgsm_release): Release command.
+	(_gpgme_gpgsm_op_decrypt): Allocate command.
+	(_gpgme_gpgsm_op_import): Likewise.
+	(gpgsm_status_handler): Also treat `ERR' strings as EOF.
+
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.h (gpgme_set_protocol): New prototype.
 
 2001-11-22  Marcus Brinkmann  <marcus@g10code.de>

@@ -34,23 +34,26 @@ void _gpgme_gpgsm_release (GpgsmObject gpg);
 void _gpgme_gpgsm_set_status_handler (GpgsmObject gpgsm,
 				      GpgStatusHandler fnc, void *fnc_value);
 GpgmeError _gpgme_gpgsm_op_decrypt (GpgsmObject gpgsm, GpgmeData ciph,
-				  GpgmeData plain);
-GpgmeError _gpgme_gpgsm_op_delete (GpgsmObject gpgsm, GpgmeKey key, int allow_secret);
+				    GpgmeData plain);
+GpgmeError _gpgme_gpgsm_op_delete (GpgsmObject gpgsm, GpgmeKey key,
+				   int allow_secret);
 GpgmeError _gpgme_gpgsm_op_encrypt (GpgsmObject gpgsm, GpgmeRecipients recp,
-				  GpgmeData plain, GpgmeData ciph,
-				  int use_armor);
+				    GpgmeData plain, GpgmeData ciph,
+				    int use_armor);
 GpgmeError _gpgme_gpgsm_op_export (GpgsmObject gpgsm, GpgmeRecipients recp,
-				 GpgmeData keydata, int use_armor);
+				   GpgmeData keydata, int use_armor);
 GpgmeError _gpgme_gpgsm_op_genkey (GpgsmObject gpgsm, GpgmeData help_data,
-				 int use_armor);
+				   int use_armor);
 GpgmeError _gpgme_gpgsm_op_import (GpgsmObject gpgsm, GpgmeData keydata);
 GpgmeError _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
-				  int secret_only, int keylist_mode);
-GpgmeError _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
-			       GpgmeSigMode mode, int use_armor,
-			       int use_textmode, GpgmeCtx ctx /* FIXME */);
+				    int secret_only, int keylist_mode);
+GpgmeError _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in,
+				 GpgmeData out,
+				 GpgmeSigMode mode, int use_armor,
+				 int use_textmode, GpgmeCtx ctx /* FIXME */);
 GpgmeError _gpgme_gpgsm_op_trustlist (GpgsmObject gpgsm, const char *pattern);
-GpgmeError _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text);
+GpgmeError _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig,
+				   GpgmeData text);
 GpgmeError _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque);
 
 #endif /* ENGINE_GPGSM_H */
