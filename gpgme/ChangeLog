@@ -1,5 +1,7 @@
 2003-10-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* debug.c (debug_init): Drop const qualifier from E.
+
 	* ath.h (struct ath_ops): Make ADDR argument of CONNECT prototype
 	const.
 	(ath_connect): Make ADDR argument const.
