@@ -22,6 +22,7 @@
 #endif
 
 #include <errno.h>
+#include <sys/time.h>
 #include <sys/stat.h>
 #include <stdlib.h>
 
