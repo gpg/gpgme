@@ -1,3 +1,14 @@
+2001-11-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.in: Renamed to ...
+	* configure.ac: ... this.  Update to autoconf 2.52.  Lots of small
+	changes in the transition.  Support --with-gpg=PATH and
+	--with-gpgsm=PATH options.  Check if test suites can be run.
+	* acconfig.h: Add GPGSM_PATH.
+	* Makefile.am: New variable `tests', set to `tests' if
+	RUN_GPG_TESTS.
+	(SUBDIRS): Replace string `tests' with variable `tests'.
+
 2001-10-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* autogen.sh: Invoke automake with `-a' (add missing files).

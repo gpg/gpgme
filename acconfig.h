@@ -39,12 +39,15 @@
 /* Some systems have a mkdir that takes a single argument. */
 #undef MKDIR_TAKES_ONE_ARG
 
-/* path to the gpg binary */
+/* Path to the GnuPG binary.  */
 #undef GPG_PATH
-/* min. needed GPG version */
+/* Min. needed GnuPG version. */
 #undef NEED_GPG_VERSION
 
-/* stuff needed by lnlib/ */
+/* Path to the GpgSM binary.  */
+#undef GPGSM_PATH
+
+/* Stuff needed by jnlib.  */
 #undef HAVE_BYTE_TYPEDEF
 #undef HAVE_USHORT_TYPEDEF
 #undef HAVE_ULONG_TYPEDEF

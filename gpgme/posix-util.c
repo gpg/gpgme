@@ -30,21 +30,24 @@
 
 #include "util.h"
 
-
 const char *
 _gpgme_get_gpg_path (void)
 {
-    /* #warning Forced to take GPG development version
-     *  return "/home/wk/work/gnupg-stable/g10/gpg";
-     */
-
-    return GPG_PATH;
+#ifdef GPG_PATH
+  return GPG_PATH;
+#else
+  return NULL;
+#endif
 }
 
+const char *
+_gpgme_get_gpgsm_path (void)
+{
+#ifdef GPGSM_PATH
+  return GPGSM_PATH;
+#else
+  return NULL;
+#endif
+}
 
 #endif /*!HAVE_DOSISH_SYSTEM*/
-
-
-
-
-

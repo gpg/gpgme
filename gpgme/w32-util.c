@@ -41,7 +41,7 @@
 /****************
  * Return a string from the Win32 Registry or NULL in case of
  * error.  Caller must release the return value.   A NULL for root
- * is an alias fro HKEY_CURRENT_USER
+ * is an alias for HKEY_CURRENT_USER.
  */
 static char *
 read_w32_registry_string ( const char *root,
@@ -88,38 +88,53 @@ read_w32_registry_string ( const char *root,
     return result;
 }
 
+static const char *
+find_program_in_registry (const char *name)
+{
+  char *program = NULL;
+    
+  program = read_w32_registry_string (NULL, "Software\\GNU\\GnuPG", name);
+  if (program)
+    {
+      int i;
+
+      DEBUG1 ("found %s in registry: `%s'", name, program );
+      for (i = 0; program[i]; i++)
+	{
+	  if (program[i] == '/')
+	    program[i] = '\\';
+	}
+    }
+  return program;
+}
 
 const char *
 _gpgme_get_gpg_path (void)
 {
-    static char *gpg_program = NULL;
+  static char *gpg_program = NULL;
     
-    if (!gpg_program) {
-        gpg_program = read_w32_registry_string ( NULL,
-                                  "Software\\GNU\\GnuPG", "gpgProgram" );
-        if (gpg_program) {
-            int i;
-            
-            DEBUG1 ("found gpgProgram in registry: `%s'", gpg_program );
-            for (i=0; gpg_program[i]; i++) {
-                if (gpg_program[i] == '/')
-                    gpg_program[i] = '\\';
-            }
-        }
-        else {
-            gpg_program = GPG_PATH;
-        }
-    }
+  if (!gpg_program)
+    gpg_program = find_program_in_registry ("gpgProgram");
+#ifdef GPG_PATH
+  if (!gpg_program)
+    gpg_program = GPG_PATH;
+#endif
+  return gpg_program;
+}
+
+const char *
+_gpgme_get_gpgsm_path (void)
+{
+  static char *gpgsm_program = NULL;
     
-    return gpg_program;
+  if (!gpgsm_program)
+    gpgsm_program = find_program_in_registry ("gpgsmProgram");
+#ifdef GPGSM_PATH
+  if (!gpgsm_program)
+    gpgsm_program = GPGSM_PATH;
+#endif
+  return gpgsm_program;
 }
 
 
-
-
 #endif /*HAVE_DOSISH_SYSTEM*/
-
-
-
-
-
