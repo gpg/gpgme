@@ -1,3 +1,7 @@
+2002-06-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (DISTCLEANFILES): New variable.
+
 2002-05-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi: Some typographical correctons throughout.
