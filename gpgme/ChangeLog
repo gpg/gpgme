@@ -1,3 +1,40 @@
+2002-10-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.h (_gpgme_gpg_add_arg, _gpgme_gpg_add_data,
+	_gpgme_gpg_add_pm_data, _gpgme_gpg_housecleaning,
+	_gpgme_gpg_set_simple_line_handler): Prototype removed.
+	(_gpgme_gpg_set_verbosity): New prototype.
+	* rungpg.c (_gpgme_gpg_add_data): Make static and rename to ...
+	(add_data): ... this.
+	(_gpgme_gpg_add_pm_data): Call add_data, not _gpgme_gpg_add_data.
+	(_gpgme_gpg_set_command_handler): Likewise.
+	(_gpgme_gpg_op_decrypt, _gpgme_gpg_op_edit, _gpgme_gpg_op_encrypt,
+	_gpgme_gpg_op_encrypt_sign, _gpgme_gpg_op_export,
+	_gpgme_gpg_op_genkey, _gpgme_gpg_op_import, _gpgme_gpg_op_sign,
+	_gpgme_gpg_op_verify): Likewise.
+	(_gpgme_gpg_add_pm_data): Rename to ...
+	(add_pm_data): ... this.
+	(_gpgme_gpg_op_verify): Call add_pm_data, not
+	_gpgme_gpg_add_pm_data.
+	(_gpgme_gpg_add_arg): Make static and rename to ...
+	(add_arg): ... this.
+	(_gpgme_gpg_set_command_handler, _gpgme_gpg_new,
+	_gpgme_gpg_op_decrypt, _gpgme_gpg_op_delete,
+	_gpgme_append_gpg_args_from_signers, _gpgme_gpg_op_edit,
+	_gpgme_append_gpg_args_from_recipients, _gpgme_gpg_op_encrypt,
+	_gpgme_gpg_op_encrypt_sign, _gpgme_gpg_op_export,
+	_gpgme_gpg_op_genkey, _gpgme_gpg_op_import, _gpgme_gpg_op_keylist,
+	_gpgme_gpg_op_keylist_ext, _gpgme_gpg_op_trustlist,
+	_gpgme_gpg_op_sign, _gpgme_gpg_op_verify): Use add_arg, not
+	_gpgme_gpg_add_arg.
+	(_gpgme_gpg_set_verbosity): New function.
+	(struct gpg_object_s): Remove member simple from colon.
+	(_gpgme_gpg_set_colon_line_handler): Don't initialize simple.
+	(_gpgme_gpg_set_simple_line_handler): Removed function.
+	(read_colon_line): Don't check the GPG->colon.simple.
+	* engine.c (_gpgme_engine_set_verbosity): Call
+	_gpgme_gpg_set_verbosity instead _gpgme_gpg_add_arg.
+
 2002-10-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* util.h (_gpgme_malloc, _gpgme_realloc, _gpgme_calloc,
