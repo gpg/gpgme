@@ -1,5 +1,9 @@
 2002-09-02  Marcus Brinkmann  <marcus@g10code.de>
 
+	* configure.ac: Create and substitute LTLIBOBJS.
+
+2002-09-02  Marcus Brinkmann  <marcus@g10code.de>
+
 	Released 0.3.10.
 
 	* NEWS: Update for 0.3.9 release.
