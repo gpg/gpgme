@@ -1,3 +1,9 @@
+2003-02-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* wait-user.c (_gpgme_wait_user_remove_io_cb): Move check for no
+	I/O handlers left to ...
+	(_gpgme_user_io_cb_handler): ... here.
+
 2003-02-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* trustlist.c (trustlist_colon_handler): Release ITEM if name
