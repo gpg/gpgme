@@ -1,0 +1,155 @@
+Hey Emacs, this is -*- outline -*- mode!
+
+* Before release:
+** Some gpg tests fail with gpg 1.3.4-cvs (gpg/t-keylist-sig)
+   The test is currently disabled there and in gpg/t-import.
+** Add notation data to key signatures.
+
+* ABI's to break:
+** I/O and User Data could be made extensible.  But this can be done
+   without breaking the ABI hopefully.
+** Compatibility interfaces that can be removed in future versions:
+*** ath compatibility modules.
+*** gpgme_data_new_from_filepart
+*** gpgme_data_new_from_file
+*** gpgme_data_new_with_read_cb
+*** gpgme_data_rewind
+*** gpgme_op_import_ext
+*** gpgme_get_sig_key
+*** gpgme_get_sig_ulong_attr
+*** gpgme_get_sig_string_attr
+*** GPGME_SIG_STAT_*
+*** gpgme_get_sig_status
+*** gpgme_trust_item_release
+*** gpgme_trust_item_get_string_attr
+*** gpgme_trust_item_get_ulong_attr
+*** gpgme_attr_t
+*** All Gpgme* typedefs.
+
+* Thread support:
+** When GNU Pth supports sendmsg/recvmsg, wrap them properly.
+** Without timegm (3) support our ISO time parser is not thread safe.
+   There is a configure time warning, though.
+
+* New features:
+** notification system
+   We need a simple notification system, probably a simple callback
+   with a string and some optional arguments.  This is for example
+   required to notify an application of a changed smartcard, The
+   application can then do whatever is required.  There are other
+   usages too.  This notfication system should be independent of any
+   contextes of course.
+** --learn-code support
+   This might be integrated with import. we still need to work out how
+   to learn a card when gpg and gpgsm have support for smartcards.
+** How to terminate a pending operation?  Something like gpgme_op_reset,
+   but where are you allowed to call it (think callback handlers).
+   Then gpgme_op_*list_end can go.  Update: The only place where this
+   can go is returning errors from callback handlers, and a function
+   to be called for example from the user event loop code.  The user
+   must observe the threading rules!  A blocking thread can not be
+   cancelled.
+** Might need a stat() for data objects and use it for length param to gpg.
+** Allow to export secret keys.
+** Implement support for photo ids.
+** New features requested by our dear users, but rejected or left for
+   later consideration:
+*** Selecting the key ring, setting the version or comment in output.
+    Rejected because the naive implementation is engine specific, the
+    configuration is part of the engine's configuration or readily
+    worked around in a different way
+*** Selecting the symmetric cipher.
+*** Exchanging keys with key servers.
+** Allow selection of subkeys
+** Allow to return time stamps in ISO format
+  This allows us to handle years later than 2037 properly.  With the
+  time_t interface they are all mapped to 2037-12-31
+   
+* Documentation
+** Document validity and trust issues.
+
+* Engines
+** Do not create/destroy engines, but create engine and then reset it.
+   Internally the reset operation still spawns a new engine process,
+   but this can be replaced with a reset later.  Also, be very sure to
+   release everything properly at a reset and at an error.  Think hard
+   about where to guarantee what (ie, what happens if start fails, are
+   the fds unregistered immediately - i think so?)
+** Optimize the case where a data object has an underlying fd we can pass
+   directly to the engine.  This will be automatic with socket I/O and
+   descriptor passing.
+** Move code common to all engines up from gpg to engine.
+** engine operations can return General Error on unknown protocol
+   (it's an internal error, as select_protocol checks already).
+** When server mode is implemented properly, more care has to be taken to
+   release all resources on error (for example to free assuan_cmd).
+
+* Operations
+** If an operation failed, make sure that the result functions don't return
+   corrupt partial information. !!!
+   NOTE: The EOF status handler is not called in this case !!!
+** If no passphrase cb is installed, status handler is not run even if
+   password is required by crypto engine. !!
+** Verify must not fail on NODATA premature if auto-key-retrieval failed.
+   It should not fail silently if it knows there is an error. !!!
+** All operations: Better error reporting. !!
+** Export status handler need much more work. !!!
+** Import should return a useful error when one happened.
+*** Import does not take notice of NODATA status report.
+*** When GPGSM does issue IMPORT_OK status reports, make sure to check for
+    them in tests/gpgs m/t-import.c.
+** Verify can include info about version/algo/class, but currently
+   this is only available for gpg, not gpgsm.
+** Return ENC_TO output in verify result.  Again, this is not available
+   for gpgsm.
+** Genkey should return something more useful than General_Error.
+** Decrypt:
+   On Fri, Jun 27, 2003 at 06:28:23PM +0200, Heiko Abraham wrote:
+   > I have a cipher text and I use 'gpgme_op_decrypt_verify(..)'
+   > for decrypt and get the plaintext. But also I wish a list
+   > of all reciepient, that can also decrypt this file.
+   >
+   > If I store the file and check it with 'gpg --list-packets ${filename}'
+   > then I will become also a recipient-list.
+   > It this also possible with gpgme?
+
+   Currently not, but it is easy to add this to GPGME 0.4.1.  At least the key
+   ID and a user ID hint is available from gpg (of course key IDs are not
+   necessarily unique!).  I will put it on the TODO list.
+** If possible, use --file-setsize to set the file size for proper progress
+   callback handling.  Write data interface for file size.
+** Optimize the file descriptor list, so the number of open fds is
+   always known easily.
+** Encryption: It should be verified that the behaviour for partially untrusted
+   recipients is correct.
+** When GPG issues INV_something for invalid signers, catch them.
+
+* Error Values
+** Map ASSUAN/GpgSM ERR error values in a better way than is done now. !!
+** Some error values should identify the source more correctly (mostly error
+   values derived from status messages).
+
+* Tests
+** Write a fake gpg-agent so that we can supply known passphrases to
+   gpgsm and setup the configuration files to use the agent.  Without
+   this we are testing a currently running gpg-agent which is not a
+   clever idea. !
+** t-data
+*** Test gpgme_data_release_and_get_mem.
+*** Test gpgme_data_seek for invalid types.
+** t-keylist
+   Write a test for ext_keylist.
+
+
+* Debug
+** Handle malloc and vasprintf errors.  But decide first if they should be
+   ignored (and logged with 255?!), or really be assertions. !
+
+* Build suite
+** Make sure everything is cleaned correctly (esp. test area).
+** Configure test for gpg and gpgsm version (as a warning).
+
+
+* Error checking 
+** engine-gpgsm, with-validation
+  Add error checking some time after releasing a new gpgsm.
