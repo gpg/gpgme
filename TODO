@@ -10,7 +10,10 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * add locking to the key cache?
 
-* cleanup the namespace - we use log_* assuna_* ascii_* mutext_*
+* cleanup the namespace - we use log_* assuan_* ascii_* mutex_*
+  But those are only used internally.  Some linker tricks should make
+  it possible to hide them from the user (didn't work last time, try
+  again).
 
 * Documentation
 ** Add note about GPGME clearing out pointer return values.
@@ -36,7 +39,6 @@ Hey Emacs, this is -*- outline -*- mode!
    like ":" are not un-escaped, they are returned as \x3a" Bug
    reported by Stephane Corthesy.
 
-
 * Error Values
 ** Map ASSUAN/GpgSM ERR error values in a better way than is done now.
 ** Verify (and document) if Read_Error, Write_Error, Pipe_Error set errno.
@@ -50,6 +52,10 @@ Hey Emacs, this is -*- outline -*- mode!
 *** Test gpgme_data_release_and_get_mem.
 *** Test gpgme_data_rewind for invalid types.
 *** Test gpgme_data_read's readable feature.
+
+* Debug
+** Handle malloc and vasprintf errors.  But decide first if they should be
+   ignored (and logged with 255?!), or really be assertions.
 
 * Build suite
 ** Make sure everything is cleaned correctly (esp. test area).
