@@ -27,6 +27,9 @@
 #include "context.h"
 
 
+#define ALLOC_CHUNK 1024
+
+
 /**
  * gpgme_new_data:
  * @r_dh:   Returns a new data object.
@@ -59,8 +62,10 @@ gpgme_new_data ( GpgmeData *r_dh, const char *buffer, size_t size, int copy )
                 xfree (dh);
                 return mk_error (Out_Of_Core);
             }
+            dh->private_len = size;
             memcpy (dh->private_buffer, buffer, size );
             dh->data = dh->private_buffer;
+            dh->writepos = size;
         }
         else {
             dh->data = buffer;
@@ -113,24 +118,95 @@ _gpgme_query_data_mode ( GpgmeData dh )
     return dh->mode;
 }
 
+GpgmeError
+gpgme_rewind_data ( GpgmeData dh )
+{
+    if ( !dh )
+        return mk_error (Invalid_Value);
+    /* Fixme: We should check whether rewinding does make sense for the
+     * data type */
+    dh->readpos = 0;
+    return 0;
+}
+
+GpgmeError
+gpgme_read_data ( GpgmeData dh, char *buffer, size_t length, size_t *nread )
+{
+    size_t nbytes;
+
+    if ( !dh )
+        return mk_error (Invalid_Value);
+    nbytes = dh->len - dh->readpos;
+    if ( !nbytes ) {
+        *nread = 0;
+        return mk_error(EOF);
+    }
+    if (nbytes > length)
+        nbytes = length;
+    memcpy ( buffer, dh->data + dh->readpos, nbytes );
+    *nread = nbytes;
+    dh->readpos += nbytes;
+    return 0;
+} 
 
 
 GpgmeError
-_gpgme_append_data ( GpgmeData dh, const char *buf, size_t length )
+_gpgme_append_data ( GpgmeData dh, const char *buffer, size_t length )
 {
     assert (dh);
 
     if ( dh->type == GPGME_DATA_TYPE_NONE ) {
         /* convert it to a mem data type */
+        assert (!dh->private_buffer);
+        dh->type = GPGME_DATA_TYPE_MEM;
+        dh->private_len = length < ALLOC_CHUNK? ALLOC_CHUNK : length;
+        dh->private_buffer = xtrymalloc ( dh->private_len );
+        if (!dh->private_buffer) {
+            dh->private_len = 0;
+            return mk_error (Out_Of_Core);
+        }
+        dh->writepos = 0;
+        dh->data = dh->private_buffer;
     }
-    else if ( dh->type != GPGME_DATA_TYPE_MEM ) {
+    else if ( dh->type != GPGME_DATA_TYPE_MEM ) 
         return mk_error (Invalid_Type);
-    }
-
+    
     if ( dh->mode != GPGME_DATA_MODE_INOUT 
          && dh->mode != GPGME_DATA_MODE_IN  )
         return mk_error (Invalid_Mode);
 
+    if ( !dh->private_buffer ) {
+        /* we have to copy it now */
+        assert (dh->data);
+        dh->private_len = dh->len+length;
+        if (dh->private_len < ALLOC_CHUNK)
+            dh->private_len = ALLOC_CHUNK;
+        dh->private_buffer = xtrymalloc ( dh->private_len );
+        if (!dh->private_buffer) {
+            dh->private_len = 0;
+            return mk_error (Out_Of_Core);
+        }
+        dh->writepos = 0;
+        dh->data = dh->private_buffer;
+    }
+
+    /* allocate more memory if needed */
+    if ( dh->writepos + length > dh->private_len ) {
+        char *p;
+        size_t newlen = dh->private_len
+                        + (dh->len < ALLOC_CHUNK? ALLOC_CHUNK : length);
+        p = xtryrealloc ( dh->private_buffer, newlen );
+        if ( !p ) 
+            return mk_error (Out_Of_Core);
+        dh->private_buffer = p;
+        dh->private_len = newlen;
+        dh->data = dh->private_buffer;
+        assert ( !(dh->writepos + length > dh->private_len) );      
+    }
+
+    memcpy ( dh->private_buffer + dh->writepos, buffer, length );
+    dh->writepos += length;
+    dh->len += length;
 
     return 0;
 }

@@ -38,6 +38,7 @@ typedef struct gpgme_recipient_set_s *GpgmeRecipientSet;
 
 
 typedef enum {
+    GPGME_EOF = -1,
     GPGME_No_Error = 0,
     GPGME_General_Error = 1,
     GPGME_Out_Of_Core = 2,
@@ -81,12 +82,16 @@ GpgmeError gpgme_new_data ( GpgmeData *r_dh,
                                 const char *buffer, size_t size, int copy );
 void gpgme_release_data ( GpgmeData dh );
 GpgmeDataType gpgme_query_data_type ( GpgmeData dh );
+GpgmeError gpgme_rewind_data ( GpgmeData dh );
+GpgmeError gpgme_read_data ( GpgmeData dh,
+                             char *buffer, size_t length, size_t *nread );
+
 
 
 /* Basic GnuPG functions */
-GpgmeError gpgme_req_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
-                               GpgmeData in, GpgmeData out );
-GpgmeError gpgme_wait_encrypt ( GpgmeCtx c, GpgmeData *r_out );
+GpgmeError gpgme_start_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
+                                 GpgmeData in, GpgmeData out );
+GpgmeError gpgme_start_verify ( GpgmeCtx c,  GpgmeData sig, GpgmeData text );
 
 
 /* Key management functions */
@@ -99,6 +104,7 @@ GpgmeError gpgme_wait_encrypt ( GpgmeCtx c, GpgmeData *r_out );
 /* Convenience functions for syncronous usage */
 GpgmeError gpgme_encrypt ( GpgmeCtx c, GpgmeRecipientSet recp,
                            GpgmeData in, GpgmeData out );
+GpgmeError gpgme_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text );
 
 
 /* miscellaneous functions */

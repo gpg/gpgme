@@ -18,6 +18,7 @@ libgpgme_la_SOURCES = \
 	data.c recipient.c \
         wait.c wait.h \
 	encrypt.c \
+	verify.c \
         rungpg.c rungpg.h status-table.h \
 	gpgme.c errors.c
 

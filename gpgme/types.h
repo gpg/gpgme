@@ -43,6 +43,11 @@ struct gpg_object_s;
 typedef struct gpg_object_s *GpgObject;
 
 
+/*-- verify.c --*/
+struct verify_result_s;
+typedef struct verify_result_s *VerifyResult;
+
+
 
 #endif /* TYPES_H */
 

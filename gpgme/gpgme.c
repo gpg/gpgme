@@ -24,7 +24,7 @@
 
 #include "util.h"
 #include "context.h"
-
+#include "ops.h"
 
 /**
  * gpgme_new_context:
@@ -58,14 +58,26 @@ gpgme_new_context (GpgmeCtx *r_ctx)
 void
 gpgme_release_context ( GpgmeCtx c )
 {
+    
+    _gpgme_gpg_release_object ( c->gpg ); 
+    _gpgme_release_result ( c );
     xfree ( c );
 }
 
 
-
-
-
-
+void
+_gpgme_release_result ( GpgmeCtx c )
+{
+    switch (c->result_type) {
+      case RESULT_TYPE_NONE:
+        break;
+      case RESULT_TYPE_VERIFY:
+        _gpgme_release_verify_result ( c->result.verify );
+        break;
+    }
+    c->result.verify = NULL;
+    c->result_type = RESULT_TYPE_NONE;
+}
 
 
 
