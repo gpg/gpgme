@@ -37,7 +37,7 @@
 #include "util.h"
 #include "sema.h"
 #include "io.h"
-
+#include "debug.h"
 
 /* We assume that a HANDLE can be represented by an int which should
    be true for all i386 systems (HANDLE is defined as void *) and
@@ -1064,7 +1064,7 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds, int nonblock )
          */
         any = 0;
         for (i=code - WAIT_OBJECT_0; i < nwait; i++ ) {
-            if (WaitForSingleObject ( waitbuf[i], NULL ) == WAIT_OBJECT_0) {
+            if (WaitForSingleObject (waitbuf[i], 0) == WAIT_OBJECT_0) {
                 assert (waitidx[i] >=0 && waitidx[i] < nfds);
                 fds[waitidx[i]].signaled = 1;
                 any = 1;
@@ -1116,3 +1116,11 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds, int nonblock )
     
     return count;
 }
+
+void
+_gpgme_io_subsystem_init (void)
+{
+  
+}
+
+

@@ -38,9 +38,6 @@
   typedef long ssize_t;
 #else
 # include <sys/types.h>
-#ifdef _WIN32
-typedef long ssize_t;
-#endif
 #endif
 
 #ifdef __cplusplus

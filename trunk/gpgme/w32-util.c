@@ -37,6 +37,7 @@
 
 #include "util.h"
 #include "sema.h"
+#include "debug.h"
 
 DEFINE_STATIC_LOCK (get_path_lock);
 
@@ -119,7 +120,7 @@ _gpgme_get_gpg_path (void)
 
   LOCK (get_path_lock);
   if (!gpg_program)
-    gpg_program = find_program_in_registry ("gpgProgram");
+    gpg_program = (char*)find_program_in_registry ("gpgProgram");
 #ifdef GPG_PATH
   if (!gpg_program)
     gpg_program = GPG_PATH;
@@ -135,7 +136,7 @@ _gpgme_get_gpgsm_path (void)
 
   LOCK (get_path_lock);
   if (!gpgsm_program)
-    gpgsm_program = find_program_in_registry ("gpgsmProgram");
+    gpgsm_program = (char*)find_program_in_registry ("gpgsmProgram");
 #ifdef GPGSM_PATH
   if (!gpgsm_program)
     gpgsm_program = GPGSM_PATH;
