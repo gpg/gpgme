@@ -32,7 +32,7 @@
     { \
       if (!ctx->result.field) \
         { \
-          ctx->result.field = xtrycalloc (1, sizeof *ctx->result.field); \
+          ctx->result.field = calloc (1, sizeof *ctx->result.field); \
           if (!ctx->result.field) \
             { \
               ctx->error = mk_error (Out_Of_Core); \

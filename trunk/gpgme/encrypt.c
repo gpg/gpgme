@@ -50,7 +50,7 @@ _gpgme_release_encrypt_result (EncryptResult result)
   if (!result)
     return;
   gpgme_data_release (result->xmlinfo);
-  xfree (result);
+  free (result);
 }
 
 /* 

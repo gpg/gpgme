@@ -56,7 +56,7 @@ _gpgme_release_verify_result (VerifyResult result)
     {
       VerifyResult next_result = result->next;
       gpgme_data_release (result->notation);
-      xfree (result);
+      free (result);
       result = next_result;
     }
 }
@@ -185,7 +185,7 @@ finish_sig (GpgmeCtx ctx, int stop)
 
       ctx->result.verify->collecting = 0;
       /* Create a new result structure.  */
-      res2 = xtrycalloc (1, sizeof *res2);
+      res2 = calloc (1, sizeof *res2);
       if (!res2)
 	{
 	  ctx->error = mk_error (Out_Of_Core);

@@ -44,7 +44,7 @@ _gpgme_release_import_result (ImportResult result)
   if (!result)
     return;
   gpgme_data_release (result->xmlinfo);
-  xfree (result);
+  free (result);
 }
 
 

@@ -40,7 +40,7 @@ _gpgme_release_edit_result (EditResult result)
 {
   if (!result)
     return;
-  xfree (result);
+  free (result);
 }
 
 void
@@ -84,7 +84,7 @@ _gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
     goto leave;
 
   assert (!ctx->result.edit);
-  ctx->result.edit = xtrymalloc (sizeof *ctx->result.edit);
+  ctx->result.edit = malloc (sizeof *ctx->result.edit);
   if (!ctx->result.edit)
     {
       err = mk_error (Out_Of_Core);

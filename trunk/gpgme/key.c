@@ -89,7 +89,7 @@ _gpgme_key_cache_init (void)
   if (!key_cache_initialized)
     {
       key_cache_size = 503;
-      key_cache = xtrycalloc (key_cache_size, sizeof *key_cache);
+      key_cache = calloc (key_cache_size, sizeof *key_cache);
       if (!key_cache)
 	{
 	  key_cache_size = 0;
@@ -195,7 +195,7 @@ _gpgme_key_cache_add (GpgmeKey key)
         }
       else
 	{
-	  item = xtrymalloc (sizeof *item);
+	  item = malloc (sizeof *item);
 	  if (!item)
 	    {
 	      UNLOCK (key_cache_lock);
@@ -278,7 +278,7 @@ key_new (GpgmeKey *r_key, int secret)
   GpgmeKey key;
 
   *r_key = NULL;
-  key = xtrycalloc (1, sizeof *key);
+  key = calloc (1, sizeof *key);
   if (!key)
     return mk_error (Out_Of_Core);
   key->ref_count = 1;
@@ -323,7 +323,7 @@ add_subkey (GpgmeKey key, int secret)
 {
   struct subkey_s *k, *kk;
 
-  k = xtrycalloc (1, sizeof *k);
+  k = calloc (1, sizeof *k);
   if (!k)
     return NULL;
 
@@ -383,12 +383,12 @@ gpgme_key_release (GpgmeKey key)
     }
   UNLOCK (key_ref_lock);
 
-  xfree (key->keys.fingerprint);
+  free (key->keys.fingerprint);
   for (k = key->keys.next; k; k = k2)
     {
       k2 = k->next;
-      xfree (k->fingerprint);
-      xfree (k);
+      free (k->fingerprint);
+      free (k);
     }
   for (u = key->uids; u; u = u2)
     {
@@ -396,14 +396,14 @@ gpgme_key_release (GpgmeKey key)
       for (c = u->certsigs; c; c = c2)
         {
           c2 = c->next;
-          xfree (c);
+          free (c);
         }
-      xfree (u);
+      free (u);
     }
-  xfree (key->issuer_serial);
-  xfree (key->issuer_name);
-  xfree (key->chain_id);
-  xfree (key);
+  free (key->issuer_serial);
+  free (key->issuer_name);
+  free (key->chain_id);
+  free (key);
 }
 
 /**
@@ -561,7 +561,7 @@ _gpgme_key_append_name (GpgmeKey key, const char *s)
   /* We can malloc a buffer of the same length, because the converted
      string will never be larger. Actually we allocate it twice the
      size, so that we are able to store the parsed stuff there too.  */
-  uid = xtrymalloc (sizeof *uid + 2*strlen (s)+3);
+  uid = malloc (sizeof *uid + 2*strlen (s)+3);
   if (!uid)
     return mk_error (Out_Of_Core);
   memset (uid, 0, sizeof *uid);

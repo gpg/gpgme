@@ -302,7 +302,7 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
   int nfds;
 
   *r_gpgsm = NULL;
-  gpgsm = xtrycalloc (1, sizeof *gpgsm);
+  gpgsm = calloc (1, sizeof *gpgsm);
   if (!gpgsm)
     {
       err = mk_error (Out_Of_Core);
@@ -541,9 +541,9 @@ _gpgme_gpgsm_release (GpgsmObject gpgsm)
 
   assuan_disconnect (gpgsm->assuan_ctx);
 
-  xfree (gpgsm->colon.attic.line);
-  xfree (gpgsm->command);
-  xfree (gpgsm);
+  free (gpgsm->colon.attic.line);
+  free (gpgsm->command);
+  free (gpgsm);
 }
 
 /* Forward declaration.  */
@@ -649,7 +649,7 @@ _gpgme_gpgsm_op_decrypt (GpgsmObject gpgsm, GpgmeData ciph, GpgmeData plain)
   if (!gpgsm)
     return mk_error (Invalid_Value);
 
-  gpgsm->command = xtrystrdup ("DECRYPT");
+  gpgsm->command = strdup ("DECRYPT");
   if (!gpgsm->command)
     return mk_error (Out_Of_Core);
 
@@ -688,7 +688,7 @@ _gpgme_gpgsm_op_delete (GpgsmObject gpgsm, GpgmeKey key, int allow_secret)
     }
   length++;
 
-  line = xtrymalloc (length);
+  line = malloc (length);
   if (!line)
     return mk_error (Out_Of_Core);
 
@@ -742,7 +742,7 @@ gpgsm_set_recipients (GpgsmObject gpgsm, GpgmeRecipients recp)
   int valid_recipients = 0;
 
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
-  line = xtrymalloc (10 + 40 + 1);
+  line = malloc (10 + 40 + 1);
   if (!line)
     return mk_error (Out_Of_Core);
   strcpy (line, "RECIPIENT ");
@@ -751,10 +751,10 @@ gpgsm_set_recipients (GpgsmObject gpgsm, GpgmeRecipients recp)
       int newlen = 11 + strlen (r->name);
       if (linelen < newlen)
 	{
-	  char *newline = xtryrealloc (line, newlen);
+	  char *newline = realloc (line, newlen);
 	  if (! newline)
 	    {
-	      xfree (line);
+	      free (line);
 	      return mk_error (Out_Of_Core);
 	    }
 	  line = newline;
@@ -768,11 +768,11 @@ gpgsm_set_recipients (GpgsmObject gpgsm, GpgmeRecipients recp)
 	valid_recipients = 1;
       else if (err != GPGME_Invalid_Key)
 	{
-	  xfree (line);
+	  free (line);
 	  return err;
 	}
     }
-  xfree (line);
+  free (line);
   if (!valid_recipients && gpgsm->status.fnc)
     gpgsm->status.fnc (gpgsm->status.fnc_value, GPGME_STATUS_NO_RECP, "");
   return 0;
@@ -790,7 +790,7 @@ _gpgme_gpgsm_op_encrypt (GpgsmObject gpgsm, GpgmeRecipients recp,
   if (!recp)
     return mk_error (Not_Implemented);
 
-  gpgsm->command = xtrystrdup ("ENCRYPT");
+  gpgsm->command = strdup ("ENCRYPT");
   if (!gpgsm->command)
     return mk_error (Out_Of_Core);
 
@@ -844,10 +844,10 @@ _gpgme_gpgsm_op_export (GpgsmObject gpgsm, GpgmeRecipients recp,
 	  /* New string is old string + ' ' + s + '\0'.  */
 	  if (cmdlen < cmdi + 1 + slen + 1)
 	    {
-	      char *newcmd = xtryrealloc (cmd, cmdlen * 2);
+	      char *newcmd = realloc (cmd, cmdlen * 2);
 	      if (!newcmd)
 		{
-		  xfree (cmd);
+		  free (cmd);
 		  return mk_error (Out_Of_Core);
 		}
 	      cmd = newcmd;
@@ -886,7 +886,7 @@ _gpgme_gpgsm_op_genkey (GpgsmObject gpgsm, GpgmeData help_data, int use_armor,
   if (!gpgsm || !pubkey || seckey)
     return mk_error (Invalid_Value);
 
-  gpgsm->command = xtrystrdup ("GENKEY");
+  gpgsm->command = strdup ("GENKEY");
   if (!gpgsm->command)
     return mk_error (Out_Of_Core);
 
@@ -914,7 +914,7 @@ _gpgme_gpgsm_op_import (GpgsmObject gpgsm, GpgmeData keydata)
   if (!gpgsm)
     return mk_error (Invalid_Value);
 
-  gpgsm->command = xtrystrdup ("IMPORT");
+  gpgsm->command = strdup ("IMPORT");
   if (!gpgsm->command)
     return mk_error (Out_Of_Core);
 
@@ -948,7 +948,7 @@ _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
     return err;
 
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
-  line = xtrymalloc (15 + strlen (pattern) + 1);
+  line = malloc (15 + strlen (pattern) + 1);
   if (!line)
     return mk_error (Out_Of_Core);
   if (secret_only)
@@ -1011,7 +1011,7 @@ _gpgme_gpgsm_op_keylist_ext (GpgsmObject gpgsm, const char *pattern[],
 	  length++;
 	}
     }
-  line = xtrymalloc (length);
+  line = malloc (length);
   if (!line)
     return mk_error (Out_Of_Core);
   if (secret_only)
@@ -1084,7 +1084,7 @@ _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
   if (!gpgsm)
     return mk_error (Invalid_Value);
 
-  gpgsm->command = xtrystrdup (mode == GPGME_SIG_MODE_DETACH
+  gpgsm->command = strdup (mode == GPGME_SIG_MODE_DETACH
 			       ? "SIGN --detached" : "SIGN");
   if (!gpgsm->command)
     return mk_error (Out_Of_Core);
@@ -1154,7 +1154,7 @@ _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData signed_text,
   if (!gpgsm)
     return mk_error (Invalid_Value);
 
-  gpgsm->command = xtrystrdup ("VERIFY");
+  gpgsm->command = strdup ("VERIFY");
   if (!gpgsm->command)
     return mk_error (Out_Of_Core);
 
@@ -1285,7 +1285,7 @@ gpgsm_status_handler (void *opaque, int fd)
 	  if (gpgsm->colon.attic.linesize
 	      < *alinelen + linelen + 1)
 	    {
-	      unsigned char *newline = xtryrealloc (*aline,
+	      unsigned char *newline = realloc (*aline,
 						    *alinelen + linelen + 1);
 	      if (!newline)
 		{

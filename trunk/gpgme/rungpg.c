@@ -247,7 +247,7 @@ _gpgme_gpg_new (GpgObject *r_gpg)
   GpgObject gpg;
   int rc = 0;
 
-  gpg = xtrycalloc (1, sizeof *gpg);
+  gpg = calloc (1, sizeof *gpg);
   if (!gpg)
     {
       rc = mk_error (Out_Of_Core);
@@ -267,7 +267,7 @@ _gpgme_gpg_new (GpgObject *r_gpg)
   /* Allocate the read buffer for the status pipe.  */
   gpg->status.bufsize = 1024;
   gpg->status.readpos = 0;
-  gpg->status.buffer = xtrymalloc (gpg->status.bufsize);
+  gpg->status.buffer = malloc (gpg->status.bufsize);
   if (!gpg->status.buffer)
     {
       rc = mk_error (Out_Of_Core);
@@ -321,16 +321,16 @@ _gpgme_gpg_release (GpgObject gpg)
     {
       struct arg_and_data_s *next = gpg->arglist->next;
 
-      xfree (gpg->arglist);
+      free (gpg->arglist);
       gpg->arglist = next;
     }
 
-  xfree (gpg->status.buffer);
-  xfree (gpg->colon.buffer);
+  free (gpg->status.buffer);
+  free (gpg->colon.buffer);
   if (gpg->argv)
     free_argv (gpg->argv);
   gpgme_data_release (gpg->cmd.cb_data);
-  xfree (gpg->cmd.keyword);
+  free (gpg->cmd.keyword);
 
   if (gpg->status.fd[0] != -1)
     _gpgme_io_close (gpg->status.fd[0]);
@@ -343,7 +343,7 @@ _gpgme_gpg_release (GpgObject gpg)
   free_fd_data_map (gpg->fd_data_map);
   if (gpg->cmd.fd != -1)
     _gpgme_io_close (gpg->cmd.fd);
-  xfree (gpg);
+  free (gpg);
 }
 
 void
@@ -365,7 +365,7 @@ _gpgme_gpg_add_arg ( GpgObject gpg, const char *arg )
     if (gpg->pm.active)
         return 0;
 
-    a = xtrymalloc ( sizeof *a + strlen (arg) );
+    a = malloc ( sizeof *a + strlen (arg) );
     if ( !a ) {
         gpg->arg_error = 1;
         return mk_error(Out_Of_Core);
@@ -389,7 +389,7 @@ _gpgme_gpg_add_data (GpgObject gpg, GpgmeData data, int dup_to, int inbound)
   if (gpg->pm.active)
     return 0;
 
-  a = xtrymalloc (sizeof *a - 1);
+  a = malloc (sizeof *a - 1);
   if (!a)
     {
       gpg->arg_error = 1;
@@ -478,12 +478,12 @@ _gpgme_gpg_set_colon_line_handler ( GpgObject gpg,
 
     gpg->colon.bufsize = 1024;
     gpg->colon.readpos = 0;
-    gpg->colon.buffer = xtrymalloc (gpg->colon.bufsize);
+    gpg->colon.buffer = malloc (gpg->colon.bufsize);
     if (!gpg->colon.buffer) {
         return mk_error (Out_Of_Core);
     }
     if (_gpgme_io_pipe (gpg->colon.fd, 1) == -1) {
-        xfree (gpg->colon.buffer); gpg->colon.buffer = NULL;
+        free (gpg->colon.buffer); gpg->colon.buffer = NULL;
         return mk_error (Pipe_Error);
     }
     if ( _gpgme_io_set_close_notify (gpg->colon.fd[0],
@@ -555,8 +555,8 @@ free_argv ( char **argv )
     int i;
 
     for (i=0; argv[i]; i++ )
-        xfree (argv[i]);
-    xfree (argv);
+        free (argv[i]);
+    free (argv);
 }
 
 static void
@@ -574,7 +574,7 @@ free_fd_data_map ( struct fd_data_map_s *fd_data_map )
             _gpgme_io_close (fd_data_map[i].peer_fd);
         /* don't release data because this is only a reference */
     }
-    xfree (fd_data_map);
+    free (fd_data_map);
 }
 
 
@@ -630,10 +630,10 @@ build_argv (GpgObject gpg)
     argc++;
   argc += 2; /* --comment */
 
-  argv = xtrycalloc (argc + 1, sizeof *argv);
+  argv = calloc (argc + 1, sizeof *argv);
   if (!argv)
     return mk_error (Out_Of_Core);
-  fd_data_map = xtrycalloc (datac + 1, sizeof *fd_data_map);
+  fd_data_map = calloc (datac + 1, sizeof *fd_data_map);
   if (!fd_data_map)
     {
       free_argv (argv);
@@ -641,20 +641,20 @@ build_argv (GpgObject gpg)
     }
 
   argc = datac = 0;
-  argv[argc] = xtrystrdup ("gpg"); /* argv[0] */
+  argv[argc] = strdup ("gpg"); /* argv[0] */
   if (!argv[argc])
     {
-      xfree (fd_data_map);
+      free (fd_data_map);
       free_argv (argv);
       return mk_error (Out_Of_Core);
     }
   argc++;
   if (need_special)
     {
-      argv[argc] = xtrystrdup ("--enable-special-filenames");
+      argv[argc] = strdup ("--enable-special-filenames");
       if (!argv[argc])
 	{
-	  xfree (fd_data_map);
+	  free (fd_data_map);
 	  free_argv (argv);
 	  return mk_error (Out_Of_Core);
         }
@@ -662,10 +662,10 @@ build_argv (GpgObject gpg)
     }
   if (use_agent)
     {
-      argv[argc] = xtrystrdup ("--use-agent");
+      argv[argc] = strdup ("--use-agent");
       if (!argv[argc])
 	{
-	  xfree (fd_data_map);
+	  free (fd_data_map);
 	  free_argv (argv);
 	  return mk_error (Out_Of_Core);
         }
@@ -673,27 +673,27 @@ build_argv (GpgObject gpg)
     }
   if (!gpg->cmd.used)
     {
-      argv[argc] = xtrystrdup ("--batch");
+      argv[argc] = strdup ("--batch");
       if (!argv[argc])
 	{
-	  xfree (fd_data_map);
+	  free (fd_data_map);
 	  free_argv (argv);
 	  return mk_error (Out_Of_Core);
         }
       argc++;
     }
-  argv[argc] = xtrystrdup ("--comment");
+  argv[argc] = strdup ("--comment");
   if (!argv[argc])
     {
-      xfree (fd_data_map);
+      free (fd_data_map);
       free_argv (argv);
       return mk_error (Out_Of_Core);
     }
   argc++;
-  argv[argc] = xtrystrdup ("");
+  argv[argc] = strdup ("");
   if (!argv[argc])
     {
-      xfree (fd_data_map);
+      free (fd_data_map);
       free_argv (argv);
       return mk_error (Out_Of_Core);
     }
@@ -712,7 +712,7 @@ build_argv (GpgObject gpg)
 	    if (_gpgme_io_pipe (fds, fd_data_map[datac].inbound ? 1 : 0)
 		== -1)
 	      {
-		xfree (fd_data_map);
+		free (fd_data_map);
 		free_argv (argv);
 		return mk_error (Pipe_Error);
 	      }
@@ -756,10 +756,10 @@ build_argv (GpgObject gpg)
 	  fd_data_map[datac].dup_to = a->dup_to;
 	  if (a->dup_to == -1)
 	    {
-	      argv[argc] = xtrymalloc (25);
+	      argv[argc] = malloc (25);
 	      if (!argv[argc])
 		{
-		  xfree (fd_data_map);
+		  free (fd_data_map);
 		  free_argv (argv);
 		  return mk_error (Out_Of_Core);
                 }
@@ -772,10 +772,10 @@ build_argv (GpgObject gpg)
         }
       else
 	{
-	  argv[argc] = xtrystrdup (a->arg);
+	  argv[argc] = strdup (a->arg);
 	  if (!argv[argc])
 	    {
-	      xfree (fd_data_map);
+	      free (fd_data_map);
 	      free_argv (argv);
 	      return mk_error (Out_Of_Core);
             }
@@ -832,7 +832,7 @@ _gpgme_gpg_spawn (GpgObject gpg, void *opaque)
   n = 3; /* status_fd, colon_fd and end of list */
   for (i = 0; gpg->fd_data_map[i].data; i++) 
     n++;
-  fd_child_list = xtrycalloc (n + n, sizeof *fd_child_list);
+  fd_child_list = calloc (n + n, sizeof *fd_child_list);
   if (!fd_child_list)
     return mk_error (Out_Of_Core);
   fd_parent_list = fd_child_list + n;
@@ -885,7 +885,7 @@ _gpgme_gpg_spawn (GpgObject gpg, void *opaque)
 
   status = _gpgme_io_spawn (_gpgme_get_gpg_path (),
 			    gpg->argv, fd_child_list, fd_parent_list);
-  xfree (fd_child_list);
+  free (fd_child_list);
   if (status == -1)
     return mk_error (Exec_Error);
 
@@ -996,7 +996,7 @@ read_status (GpgObject gpg)
     { 
       /* Need more room for the read.  */
       bufsize += 1024;
-      buffer = xtryrealloc (buffer, bufsize);
+      buffer = realloc (buffer, bufsize);
       if (!buffer)
 	return mk_error (Out_Of_Core);
     }
@@ -1046,8 +1046,8 @@ read_status (GpgObject gpg)
 			      || r->code == GPGME_STATUS_GET_HIDDEN))
 			{
 			  gpg->cmd.code = r->code;
-			  xfree (gpg->cmd.keyword);
-			  gpg->cmd.keyword = xtrystrdup (rest);
+			  free (gpg->cmd.keyword);
+			  gpg->cmd.keyword = strdup (rest);
 			  if (!gpg->cmd.keyword)
 			    return mk_error (Out_Of_Core);
 			  /* This should be the last thing we have
@@ -1171,7 +1171,7 @@ read_colon_line ( GpgObject gpg )
     if (bufsize - readpos < 256) { 
         /* need more room for the read */
         bufsize += 1024;
-        buffer = xtryrealloc (buffer, bufsize);
+        buffer = realloc (buffer, bufsize);
         if ( !buffer ) 
             return mk_error (Out_Of_Core);
     }

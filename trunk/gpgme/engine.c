@@ -122,7 +122,7 @@ _gpgme_engine_get_info (GpgmeProtocol proto)
 
       if (path && version)
 	{
-	  char *info = xtrymalloc (strlen (fmt) + strlen (strproto[proto])
+	  char *info = malloc (strlen (fmt) + strlen (strproto[proto])
 				   + strlen (path) + strlen (version) + 1);
 	  if (!info)
 	    info = " <engine>\n"
@@ -144,7 +144,7 @@ _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine)
   EngineObject engine;
   GpgmeError err = 0;
 
-  engine = xtrycalloc (1, sizeof *engine);
+  engine = calloc (1, sizeof *engine);
   if (!engine)
     {
       err = mk_error (Out_Of_Core);
@@ -204,7 +204,7 @@ _gpgme_engine_release (EngineObject engine)
     default:
       break;
     }
-  xfree (engine);
+  free (engine);
 }
 
 

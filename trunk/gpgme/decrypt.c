@@ -42,7 +42,7 @@ _gpgme_release_decrypt_result (DecryptResult result)
 {
   if (!result)
     return;
-  xfree (result);
+  free (result);
 }
 
 /* Check whether STRING starts with TOKEN and return true in this

@@ -64,7 +64,7 @@ _gpgme_decode_c_string (const char *src, char **destp)
 
   /* We can malloc a buffer of the same length, because the converted
      string will never be larger.  */
-  dest = xtrymalloc (strlen (src) + 1);
+  dest = malloc (strlen (src) + 1);
   if (!dest)
     return mk_error (Out_Of_Core);
 
@@ -238,7 +238,7 @@ _gpgme_data_append_percentstring_for_xml (GpgmeData dh, const char *str)
   int val;
   GpgmeError err;
 
-  buf = xtrymalloc (strlen (str));
+  buf = malloc (strlen (str));
   dst = buf;
   for (src = str; *src; src++)
     {
@@ -252,6 +252,6 @@ _gpgme_data_append_percentstring_for_xml (GpgmeData dh, const char *str)
     }
 
   err = _gpgme_data_append_for_xml (dh, buf, dst - buf);
-  xfree (buf);
+  free (buf);
   return err;
 }

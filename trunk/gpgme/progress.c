@@ -41,7 +41,7 @@ _gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
   if (code != GPGME_STATUS_PROGRESS || !*args || !ctx->progress_cb)
     return;
 
-  args_cpy = xtrystrdup (args);
+  args_cpy = strdup (args);
   if (!args_cpy)
     {
       ctx->error = mk_error (Out_Of_Core);
@@ -76,5 +76,5 @@ _gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
   if (type != 'X')
     ctx->progress_cb (ctx->progress_cb_value, args_cpy, type, current, total);
 
-  xfree (args_cpy);
+  free (args_cpy);
 }

@@ -42,7 +42,7 @@ gpgme_recipients_new (GpgmeRecipients *r_rset)
 {
     GpgmeRecipients rset;
 
-    rset = xtrycalloc ( 1, sizeof *rset  );
+    rset = calloc ( 1, sizeof *rset  );
     if (!rset)
         return mk_error (Out_Of_Core);
     *r_rset = rset;
@@ -63,10 +63,10 @@ gpgme_recipients_release ( GpgmeRecipients rset )
 
         for (u = rset->list; u; u = u2) {
             u2 = u->next;
-            xfree(u);
+            free(u);
         }
     }
-    xfree ( rset );
+    free ( rset );
 }
 
 
@@ -112,7 +112,7 @@ gpgme_recipients_add_name_with_validity (GpgmeRecipients rset,
 
     if (!name || !rset )
         return mk_error (Invalid_Value);
-    r = xtrymalloc ( sizeof *r + strlen (name) );
+    r = malloc ( sizeof *r + strlen (name) );
     if (!r)
         return mk_error (Out_Of_Core);
     r->validity = val;

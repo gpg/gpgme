@@ -1,5 +1,71 @@
 2002-10-08  Marcus Brinkmann  <marcus@g10code.de>
 
+	* util.h (_gpgme_malloc, _gpgme_realloc, _gpgme_calloc,
+	_gpgme_strdup, _gpgme_free): Remove prototypes.
+	(xtrymalloc, xtrycalloc, xtryrealloc, xtrystrdup, xfree): Remove
+	macros.
+	* util.c: File removed.
+	* Makefile.am (libgpgme_la_SOURCES): Remove util.h.
+	* conversion.c (_gpgme_decode_c_string): Use malloc instead of
+	xtrymalloc, realloc instead of xtryrealloc, calloc instead of
+	xtrycalloc, free instead of xfree.
+	(_gpgme_data_append_percentstring_for_xml): Likewise.
+	* data.c (_gpgme_data_new, _gpgme_data_release): Likewise.
+	* data-compat.c (gpgme_data_new_from_filepart): Likewise.
+	* data-mem.c (mem_write, mem_release, gpgme_data_new_from_mem,
+	_gpgme_data_get_as_string): Likewise.
+	* debug.c (debug_init): Likewise.
+	* decrypt.c (_gpgme_release_decrypt_result): Likewise.
+	* delete.c (_gpgme_release_delete_result): Likewise.
+	* edit.c (_gpgme_release_edit_result, _gpgme_op_edit_start):
+	Likewise.
+	* encrypt.c (_gpgme_release_encrypt_result): Likewise.
+	* engine.c (_gpgme_engine_get_info, _gpgme_engine_new,
+	_gpgme_engine_release): Likewise.
+	* engine-gpgsm.c (_gpgme_gpgsm_new, _gpgme_gpgsm_release,
+	_gpgme_gpgsm_op_decrypt, _gpgme_gpgsm_op_delete,
+	gpgsm_set_recipients, _gpgme_gpgsm_op_encrypt,
+	_gpgme_gpgsm_op_export, _gpgme_gpgsm_op_genkey,
+	_gpgme_gpgsm_op_import, _gpgme_gpgsm_op_keylist,
+	_gpgme_gpgsm_op_keylist_ext, _gpgme_gpgsm_op_sign,
+	_gpgme_gpgsm_op_verify, gpgsm_status_handler): Likewise.
+	* genkey.c (_gpgme_release_genkey_result): Likewise.
+	* gpgme.c (gpgme_new, gpgme_release): Likewise.
+	* import.c (_gpgme_release_import_result): Likewise.
+	* key.c (_gpgme_key_cache_init, _gpgme_key_cache_add, key_new,
+	add_subkey, gpgme_key_release, _gpgme_key_append_name): Likewise.
+	* keylist.c (_gpgme_release_keylist_result, keylist_colon_handler,
+	_gpgme_op_keylist_event_cb, gpgme_op_keylist_next): Likewise.
+	* ops.h (test_and_allocate_result): Likewise.
+	* passphrase.c (_gpgme_release_passphrase_result,
+	_gpgme_passphrase_status_handler,
+	_gpgme_passphrase_command_handler): Likewise.
+	* progress.c (_gpgme_progress_status_handler): Likewise.
+	* recipient.c (gpgme_recipients_new, gpgme_recipients_release,
+	gpgme_recipients_add_name_with_validity): Likewise.
+	* rungpg.c (_gpgme_gpg_new, _gpgme_gpg_release,
+	_gpgme_gpg_add_arg, _gpgme_gpg_add_data,
+	_gpgme_gpg_set_colon_line_handler, free_argv, free_fd_data_map,
+	build_argv, _gpgme_gpg_spawn, read_status, read_colon_line):
+	Likewise.
+	* sign.c (_gpgme_release_sign_result): Likewise.
+	* signers.c (_gpgme_signers_add): Likewise.
+	* trustlist.c (trust_item_new, trustlist_colon_handler,
+	_gpgme_op_trustlist_event_cb, gpgme_op_trustlist_next,
+	gpgme_trustitem_release): Likewise.
+	* verify.c (_gpgme_release_verify_result, finish_sig): Likewise.
+	* version.c (gpgme_get_engine_info, _gpgme_get_program_version):
+	Likewise.
+	* w32-io.c (create_reader, create_writer, destroy_reader,
+	destroy_writer, build_commandline, _gpgme_io_spawn): Likewise.
+	* w32-sema.c (critsect_init, _gpgme_sema_cs_destroy): Likewise.
+	* w32-util.c (read_w32_registry_string): Likewise.
+	* wait.c (_gpgme_fd_table_deinit, _gpgme_fd_table_put,
+	_gpgme_wait_event_cb, _gpgme_add_io_cb, _gpgme_remove_io_cb)
+	* data-compat.c: Include <stdlib.h>.
+
+2002-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
 	New data object component:
 
 	* gpgme.h (GpgmeDataReadCb, GpgmeDataWriteCb, GpgmeDataSeekCb,

@@ -166,7 +166,7 @@ gpgme_get_engine_info ()
 	    "%s"
 	    "</EngineInfo>\n";
 
-	  info = xtrymalloc (strlen (fmt)
+	  info = malloc (strlen (fmt)
 			     + strlen (openpgp_info
 				      ? openpgp_info : cms_info) + 1);
 	  if (info)
@@ -177,7 +177,7 @@ gpgme_get_engine_info ()
 	  const char *fmt = "<EngineInfo>\n"
 	    "%s%s"
 	    "</EngineInfo>\n";
-	  info = xtrymalloc (strlen (fmt) + strlen (openpgp_info)
+	  info = malloc (strlen (fmt) + strlen (openpgp_info)
 			     + strlen (cms_info) + 1);
 	  if (info)
 	    sprintf (info, fmt, openpgp_info, cms_info);
@@ -251,7 +251,7 @@ _gpgme_get_program_version (const char *const path)
       mark = strrchr (line, ' ');
       if (!mark)
 	return NULL;
-      return xtrystrdup (mark + 1);
+      return strdup (mark + 1);
     }
 
   return NULL;

@@ -45,9 +45,9 @@ _gpgme_release_passphrase_result (PassphraseResult result)
 {
   if (!result)
     return;
-  xfree (result->passphrase_info);
-  xfree (result->userid_hint);
-  xfree (result);
+  free (result->passphrase_info);
+  free (result->userid_hint);
+  free (result);
 }
 
 
@@ -61,8 +61,8 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args
   switch (code)
     {
     case GPGME_STATUS_USERID_HINT:
-      xfree (ctx->result.passphrase->userid_hint);
-      if (!(ctx->result.passphrase->userid_hint = xtrystrdup (args)))
+      free (ctx->result.passphrase->userid_hint);
+      if (!(ctx->result.passphrase->userid_hint = strdup (args)))
 	ctx->error = mk_error (Out_Of_Core);
       break;
 
@@ -78,8 +78,8 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args
 
     case GPGME_STATUS_NEED_PASSPHRASE:
     case GPGME_STATUS_NEED_PASSPHRASE_SYM:
-      xfree (ctx->result.passphrase->passphrase_info);
-      ctx->result.passphrase->passphrase_info = xtrystrdup (args);
+      free (ctx->result.passphrase->passphrase_info);
+      ctx->result.passphrase->passphrase_info = strdup (args);
       if (!ctx->result.passphrase->passphrase_info)
 	ctx->error = mk_error (Out_Of_Core);
       break;
@@ -109,7 +109,7 @@ _gpgme_passphrase_command_handler (void *opaque, GpgmeStatusCode code, const cha
 
   if (!ctx->result.passphrase)
     {
-      ctx->result.passphrase = xtrycalloc (1, sizeof *ctx->result.passphrase);
+      ctx->result.passphrase = calloc (1, sizeof *ctx->result.passphrase);
       if (!ctx->result.passphrase)
 	{
 	  ctx->error = mk_error (Out_Of_Core);
@@ -145,7 +145,7 @@ _gpgme_passphrase_command_handler (void *opaque, GpgmeStatusCode code, const cha
 	userid_hint = "[User ID hint missing]";
       if (!passphrase_info)
 	passphrase_info = "[passphrase info missing]";
-      buf = xtrymalloc (20 + strlen (userid_hint)
+      buf = malloc (20 + strlen (userid_hint)
 			+ strlen (passphrase_info) + 3);
       if (!buf)
 	{
@@ -158,7 +158,7 @@ _gpgme_passphrase_command_handler (void *opaque, GpgmeStatusCode code, const cha
 
       s = ctx->passphrase_cb (ctx->passphrase_cb_value,
 			      buf, &ctx->result.passphrase->last_pw_handle);
-      xfree (buf);
+      free (buf);
       return s;
     }
 
