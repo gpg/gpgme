@@ -23,6 +23,9 @@
 
 #include "types.h"
  
+struct engine_object_s;
+typedef struct engine_object_s *EngineObject;
+
 GpgmeError _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine);
 void _gpgme_engine_release (EngineObject engine);
 void _gpgme_engine_set_status_handler (EngineObject engine,
