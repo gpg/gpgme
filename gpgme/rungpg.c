@@ -74,7 +74,6 @@ struct engine_gpg
 {
   struct arg_and_data_s *arglist;
   struct arg_and_data_s **argtail;
-  int arg_error;
 
   struct
   {
@@ -191,10 +190,7 @@ add_arg (engine_gpg_t gpg, const char *arg)
 
   a = malloc (sizeof *a + strlen (arg));
   if (!a)
-    {
-      gpg->arg_error = 1;
-      return gpg_error_from_errno (errno);
-    }
+    return gpg_error_from_errno (errno);
   a->next = NULL;
   a->data = NULL;
   a->dup_to = -1;
@@ -214,10 +210,7 @@ add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
 
   a = malloc (sizeof *a - 1);
   if (!a)
-    {
-      gpg->arg_error = 1;
-      return gpg_error_from_errno (errno);
-    }
+    return gpg_error_from_errno (errno);
   a->next = NULL;
   a->data = data;
   a->inbound = inbound;
@@ -376,16 +369,25 @@ gpg_new (void **engine)
       goto leave;
     }
   gpg->status.eof = 0;
-  add_arg (gpg, "--status-fd");
+  rc = add_arg (gpg, "--status-fd");
+  if (rc)
+    goto leave;
+
   {
     char buf[25];
     sprintf (buf, "%d", gpg->status.fd[1]);
-    add_arg (gpg, buf);
+    rc = add_arg (gpg, buf);
+    if (rc)
+      goto leave;
   }
-  add_arg (gpg, "--no-tty");
-  add_arg (gpg, "--charset");
-  add_arg (gpg, "utf8");
-  add_arg (gpg, "--enable-progress-filter");
+
+  rc = add_arg (gpg, "--no-tty");
+  if (!rc)
+    rc = add_arg (gpg, "--charset");
+  if (!rc)
+    rc = add_arg (gpg, "utf8");
+  if (!rc)
+    rc = add_arg (gpg, "--enable-progress-filter");
 
  leave:
   if (rc)
@@ -476,12 +478,19 @@ gpg_set_command_handler (void *engine, engine_command_handler_t fnc,
 			 void *fnc_value, gpgme_data_t linked_data)
 {
   engine_gpg_t gpg = engine;
+  gpgme_error_t rc;
 
-  add_arg (gpg, "--command-fd");
+  rc = add_arg (gpg, "--command-fd");
+  if (rc)
+    return err;
+
   /* This is a hack.  We don't have a real data object.  The only
      thing that matters is that we use something unique, so we use the
      address of the cmd structure in the gpg object.  */
-  add_data (gpg, (void *) &gpg->cmd, -2, 0);
+  rc = add_data (gpg, (void *) &gpg->cmd, -2, 0);
+  if (rc)
+    return err;
+
   gpg->cmd.fnc = fnc;
   gpg->cmd.cb_data = (void *) &gpg->cmd;
   gpg->cmd.fnc_value = fnc_value;
@@ -1028,11 +1037,6 @@ start (engine_gpg_t gpg)
   if (! _gpgme_get_gpg_path ())
     return gpg_error (GPG_ERR_INV_ENGINE);
 
-  /* Kludge, so that we don't need to check the return code of all the
-     add_arg ().  We bail out here instead.  */
-  if (gpg->arg_error)
-    return gpg_error (GPG_ERR_ENOMEM);
-
   rc = build_argv (gpg);
   if (rc)
     return rc;
@@ -1548,7 +1552,7 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
       if (!err && use_armor)
 	err = add_arg (gpg, "--armor");
       if (!err && use_textmode)
-	add_arg (gpg, "--textmode");
+	err = add_arg (gpg, "--textmode");
     }
 
   if (!err)

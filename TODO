@@ -2,8 +2,6 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Before release:
 ** Change gpgme_invalid_user_id_t to gpgme_invalid_key_t.
-** Remove arg_error from rungpg.c
-** Make sure that notation value allocation has no leak at error
 ** Make sure POSIX I/O functions set errno properly
 ** gpgme-config must include info about libgpg-error.
 

@@ -315,7 +315,11 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	    }
 	  err = _gpgme_decode_percent_string (args, &notation->name, len);
 	  if (err)
-	    return err;
+	    {
+	      free (notation->name);
+	      free (notation);
+	      return err;
+	    }
 
 	  notation->value = NULL;
 	}
@@ -333,7 +337,11 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	    }
 	  err = _gpgme_decode_percent_string (args, &notation->value, len);
 	  if (err)
-	    return err;
+	    {
+	      free (notation->value);
+	      free (notation);
+	      return err;
+	    }
 	}
       *lastp = notation;
     }
