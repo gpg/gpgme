@@ -3957,12 +3957,14 @@ A linked list with information about all signatures created.
 
 @deftypefun gpgme_sign_result_t gpgme_op_sign_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_sign_result} returns a
-@code{gpgme_sign_result_t} pointer to a structure holding the result of a
-@code{gpgme_op_sign} operation.  The pointer is only valid if the last
-operation on the context was a @code{gpgme_op_sign} or
-@code{gpgme_op_sign_start} operation, and if this operation finished
-successfully.  The returned pointer is only valid until the next
-operation is started on the context.
+@code{gpgme_sign_result_t} pointer to a structure holding the result
+of a @code{gpgme_op_sign} operation.  The pointer is only valid if the
+last operation on the context was a @code{gpgme_op_sign},
+@code{gpgme_op_sign_start}, @code{gpgme_op_encrypt_sign} or
+@code{gpgme_op_encrypt_sign_start} operation.  If that operation
+failed, the function might return a @code{NULL} pointer, The returned
+pointer is only valid until the next operation is started on the
+context.
 @end deftypefun
 
 
@@ -4061,12 +4063,14 @@ the data could not be encrypted.
 
 @deftypefun gpgme_encrypt_result_t gpgme_op_encrypt_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_encrypt_result} returns a
-@code{gpgme_encrypt_result_t} pointer to a structure holding the result of
-a @code{gpgme_op_encrypt} operation.  The pointer is only valid if the
-last operation on the context was a @code{gpgme_op_encrypt} or
-@code{gpgme_op_encrypt_start} operation, and if this operation
-finished successfully.  The returned pointer is only valid until the
-next operation is started on the context.
+@code{gpgme_encrypt_result_t} pointer to a structure holding the
+result of a @code{gpgme_op_encrypt} operation.  The pointer is only
+valid if the last operation on the context was a
+@code{gpgme_op_encrypt}, @code{gpgme_op_encrypt_start},
+@code{gpgme_op_sign} or @code{gpgme_op_sign_start} operation.  If this
+operation failed, this might be a @code{NULL} pointer.  The returned
+pointer is only valid until the next operation is started on the
+context.
 @end deftypefun
 
 
