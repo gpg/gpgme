@@ -541,14 +541,6 @@ struct _gpgme_user_id
 };
 typedef struct _gpgme_user_id *gpgme_user_id_t;
 
-/* Release the user IDs in the list UID.  */
-void gpgme_user_ids_release (gpgme_user_id_t uid);
-
-/* Add the name NAME to the user ID list *UIDS_P (with unknown
-   validity).  */
-gpgme_error_t gpgme_user_ids_append (gpgme_user_id_t *uids_p,
-				     const char *name);
-
 
 /* A key from the keyring.  */
 struct _gpgme_key

@@ -547,10 +547,10 @@ initialize_gpgme (void)
 @end example
 
 @item
-Any @code{gpgme_data_t}, @code{gpgme_ctx_t} and @code{gpgme_recipients_t}
-object must only be accessed by one thread at a time.  If multiple
-threads want to deal with the same object, the caller has to make sure
-that operations on that object are fully synchronized.
+Any @code{gpgme_data_t} and @code{gpgme_ctx_t} object must only be
+accessed by one thread at a time.  If multiple threads want to deal
+with the same object, the caller has to make sure that operations on
+that object are fully synchronized.
 
 @item
 Only one thread at any time is allowed to call @code{gpgme_wait}.  If
