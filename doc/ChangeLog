@@ -3,6 +3,8 @@
 	* gpgme.texi (Detailed Results): Remove literal tags.
 	(Generating Keys): Update documentation.
 
+	* gpgme.texi (Generating Keys): Fix syntax error.
+
 2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Waiting For Completion): Adjust doc to changes in
