@@ -78,26 +78,42 @@ GpgmeError
 edit_fnc (void *opaque, GpgmeStatusCode status, const char *args, const char **result)
 {
   GpgmeData out = (GpgmeData) opaque;
-  static int step = 0;
 
   fputs ("[-- Response --]\n", stdout);
   flush_data (out); 
 
   fprintf (stdout, "[-- Code: %i, %s --]\n", status, args);
  
- if (result)
-   {
-     switch (step)
-       {
-       case 0:
-	 *result = "fpr";
-	 break;
-       case 1:
-	 *result = "quit";
-	 break;
-       }
-     step++;
-   }
+  if (result)
+    {
+      if (!strcmp (args, "keyedit.prompt"))
+	{
+	  static int step = 0;
+
+	  switch (step)
+	    {
+	    case 0:
+	      *result = "fpr";
+	      break;
+	    case 1:
+	      *result = "expire";
+	      break;
+	    default:
+	      *result = "quit";
+	      break;
+	    }
+	  step++;
+	}
+      else if (!strcmp (args, "keyedit.save.okay"))
+	{
+	  *result = "Y";
+	}
+      else if (!strcmp (args, "keygen.valid"))
+	{
+	  *result = "0";
+	}
+    }
+
   return 0;
 }
 
@@ -110,7 +126,7 @@ main (int argc, char **argv)
   GpgmeData out = NULL;
   GpgmeKey key = NULL;
   struct passphrase_cb_info_s info;
-  const char *pattern = "Whisky";
+  const char *pattern = "Alpha";
   char *p;
 
   do
