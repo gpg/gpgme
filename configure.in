@@ -77,5 +77,13 @@ AC_OUTPUT([
 Makefile
 gpgme/Makefile
 gpgme/gpgme-config
+tests/Makefile
 ])
+
+
+
+
+
+
+
 

@@ -1,6 +1,7 @@
 # Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = gpgme-config.in  gpgme.m4
+EXTRA_DIST = gpgme-config.in gpgme.m4 mkerrors mkstatus
+BUILT_SOURCES = errors.c status-table.h
 bin_SCRIPTS = gpgme-config
 m4datadir = $(datadir)/aclocal
 m4data_DATA = gpgme.m4
@@ -12,10 +13,20 @@ libgpgme_la_LDFLAGS = -version-info \
 libgpgme_la_INCLUDES = -I$(top_srcdir)/lib 
 
 libgpgme_la_SOURCES = \
-	gpgme.h \
-	gpgme-types.h gpgme-memory.h \
-	gpgme.c 
+	gpgme.h types.h util.h util.c \
+	context.h ops.h \
+	data.c recipient.c \
+        wait.c wait.h \
+	encrypt.c \
+        rungpg.c rungpg.h status-table.h \
+	gpgme.c errors.c
 
+
+errors.c : gpgme.h
+	$(srcdir)/mkerrors < $(srcdir)/gpgme.h > errors.c
+
+status-table.h : rungpg.h
+	$(srcdir)/mkstatus < $(srcdir)/rungpg.h > status-table.h
 
 
 
