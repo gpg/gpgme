@@ -838,10 +838,12 @@ bool checkMessageSignature( const char* ciphertext,
     /* Provide information in the sigmeta struct */
     /* the status string */
     statusStr = sig_status_to_string( status );
-    // PENDING(kalle) Handle out of memory
     sigmeta->status = malloc( strlen( statusStr ) + 1 );
-    strcpy( sigmeta->status, statusStr );
-    sigmeta->status[strlen( statusStr )] = '\0';
+    if( sigmeta->status ) {
+        strcpy( sigmeta->status, statusStr );
+        sigmeta->status[strlen( statusStr )] = '\0';
+    } else
+        ; // nothing to do, is already 0
 
     // Extended information for any number of signatures.
     fpr = gpgme_get_sig_status( ctx, sig_idx, &status, &created );
@@ -850,28 +852,36 @@ bool checkMessageSignature( const char* ciphertext,
         struct tm* ctime_val;
         const char* sig_status;
 
-        // PENDING(kalle) Handle out of memory
-        sigmeta->extended_info = realloc( sigmeta->extended_info,
-                                          sizeof( struct SignatureMetaDataExtendedInfo ) * ( sig_idx + 1 ) );
-        // the creation time
-        // PENDING(kalle) Handle out of memory
-        sigmeta->extended_info[sig_idx].creation_time = malloc( sizeof( struct tm ) );
-        ctime_val = localtime( &created );
-        memcpy( sigmeta->extended_info[sig_idx].creation_time,
-                ctime_val, sizeof( struct tm ) );
+        void* realloc_return = realloc( sigmeta->extended_info,
+                                        sizeof( struct SignatureMetaDataExtendedInfo ) * ( sig_idx + 1 ) );
+        if( realloc_return ) {
+            sigmeta->extended_info = realloc_return;
+            // the creation time
+            sigmeta->extended_info[sig_idx].creation_time = malloc( sizeof( struct tm ) );
+            if( sigmeta->extended_info[sig_idx].creation_time ) {
+                ctime_val = localtime( &created );
+                memcpy( sigmeta->extended_info[sig_idx].creation_time,
+                        ctime_val, sizeof( struct tm ) );
+            }
 
-        err = gpgme_get_sig_key (ctx, sig_idx, &key);
-        sig_status = sig_status_to_string( status );
-        // PENDING(kalle) Handle out of memory
-        sigmeta->extended_info[sig_idx].status_text = malloc( strlen( sig_status ) + 1 );
-        strcpy( sigmeta->extended_info[sig_idx].status_text,
-                sig_status );
-        sigmeta->extended_info[sig_idx].status_text[strlen( sig_status )] = '\0';
-        // PENDING(kalle) Handle out of memory
-        sigmeta->extended_info[sig_idx].fingerprint = malloc( strlen( fpr ) + 1 );
-        strcpy( sigmeta->extended_info[sig_idx].fingerprint, fpr );
-        sigmeta->extended_info[sig_idx].fingerprint[strlen( fpr )] = '\0';
+            err = gpgme_get_sig_key (ctx, sig_idx, &key);
+            sig_status = sig_status_to_string( status );
+            sigmeta->extended_info[sig_idx].status_text = malloc( strlen( sig_status ) + 1 );
+            if( sigmeta->extended_info[sig_idx].status_text ) {
+                strcpy( sigmeta->extended_info[sig_idx].status_text,
+                    sig_status );
+                sigmeta->extended_info[sig_idx].status_text[strlen( sig_status )] = '\0';
+            }
 
+            sigmeta->extended_info[sig_idx].fingerprint = malloc( strlen( fpr ) + 1 );
+            if( sigmeta->extended_info[sig_idx].fingerprint ) {
+                strcpy( sigmeta->extended_info[sig_idx].fingerprint, fpr );
+                sigmeta->extended_info[sig_idx].fingerprint[strlen( fpr )] = '\0';
+            }
+        } else
+            break; // if allocation fails once, it isn't likely to
+                   // succeed the next time either
+        
         fpr = gpgme_get_sig_status (ctx, ++sig_idx, &status, &created);
     }
     sigmeta->extended_info_count = sig_idx;
