@@ -32,6 +32,7 @@ struct subkey_s {
         unsigned int revoked:1 ;
         unsigned int expired:1 ;
         unsigned int disabled:1 ;
+        unsigned int invalid:1 ;
     } flags;
     unsigned int key_algo;
     unsigned int key_len;
@@ -45,6 +46,7 @@ struct gpgme_key_s {
         unsigned int revoked:1 ;
         unsigned int expired:1 ;
         unsigned int disabled:1 ;
+        unsigned int invalid:1 ;
     } gloflags; 
     unsigned int ref_count;
     unsigned int secret:1;

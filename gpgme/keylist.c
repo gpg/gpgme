@@ -98,6 +98,21 @@ set_mainkey_trust_info ( GpgmeKey key, const char *s )
           case 'e': key->keys.flags.expired = 1; break;
           case 'r': key->keys.flags.revoked = 1; break;
           case 'd': key->keys.flags.disabled = 1; break;
+          case 'i': key->keys.flags.invalid = 1; break;
+        }
+    }
+}
+
+
+static void
+set_userid_flags ( GpgmeKey key, const char *s )
+{
+    /* look at letters and stop at the first digit */
+    for (; *s && !my_isdigit (*s); s++ ) {
+        switch (*s) {
+          case 'r': key->uids->revoked  = 1; break;
+          case 'i': key->uids->invalid  = 1; break;
+
           case 'n': key->uids->validity = 1; break;
           case 'm': key->uids->validity = 2; break;
           case 'f': key->uids->validity = 3; break;
@@ -115,6 +130,7 @@ set_subkey_trust_info ( struct subkey_s *k, const char *s )
           case 'e': k->flags.expired = 1; break;
           case 'r': k->flags.revoked = 1; break;
           case 'd': k->flags.disabled = 1; break;
+          case 'i': k->flags.invalid = 1; break;
         }
     }
 }
@@ -201,7 +217,8 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
         else if ( rectype == RT_PUB || rectype == RT_SEC ) {
             switch (field) {
               case 2: /* trust info */
-                trust_info = p;  /*save for later */
+                trust_info = p; 
+                set_mainkey_trust_info (key, trust_info);
                 break;
               case 3: /* key length */
                 i = atoi (p); 
@@ -226,13 +243,7 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 break;
               case 9: /* ownertrust */
                 break;
-              case 10: /* This is the first name listed */
-                if ( _gpgme_key_append_name ( key, p) )
-                    ctx->out_of_core = 1;
-                else {
-                    if (trust_info)
-                        set_mainkey_trust_info (key, trust_info);
-                }
+              case 10: /* not used due to --fixed-list-mode option */
                 break;
               case 11:  /* signature class  */
                 break;
@@ -283,12 +294,12 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
               case 2: /* trust info */
                 trust_info = p;  /*save for later */
                 break;
-              case 10: /* the 2nd, 3rd,... user ID */
+              case 10: /* user ID */
                 if ( _gpgme_key_append_name ( key, p) )
                     ctx->out_of_core = 1;
                 else {
                     if (trust_info)
-                        set_mainkey_trust_info (key, trust_info);
+                        set_userid_flags (key, trust_info);
                 }
                 pend = NULL;  /* we can stop here */
                 break;
@@ -393,6 +404,7 @@ gpgme_op_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
     for ( i=0; i < c->verbosity; i++ )
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
     _gpgme_gpg_add_arg ( c->gpg, "--with-colons" );
+    _gpgme_gpg_add_arg ( c->gpg, "--fixed-list-mode" );
     _gpgme_gpg_add_arg ( c->gpg, "--with-fingerprint" );
     if (c->keylist_mode == 1)
         _gpgme_gpg_add_arg ( c->gpg, "--no-expensive-trust-checks" );
