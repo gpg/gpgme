@@ -1,3 +1,10 @@
+2001-11-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* t-data.c: Include stddef.h.
+	(read_once_test): Change type of READ to size_t.
+	(read_test): Likewise.
+	(write_test): Likewise.
+
 2001-10-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* t-signers.c: New file.
