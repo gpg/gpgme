@@ -1,5 +1,9 @@
 2001-11-15  Marcus Brinkmann  <marcus@g10code.de>
 
+	* decrypt.c (command_handler): Fix last change.
+
+2001-11-15  Marcus Brinkmann  <marcus@g10code.de>
+
 	* verify.c (_gpgme_release_verify_result): Rename RES to RESULT.
 	Rename R2 to NEXT_RESULT.
 	(intersect_stati): Rename RES to RESULT.
