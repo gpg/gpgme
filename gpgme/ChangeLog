@@ -1,3 +1,14 @@
+2003-10-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-backend.h (struct engine_ops): Add argument TYPE.
+	* engine.c (_gpgme_engine_op_edit): Likewise.
+	* engine.h: Likewise.
+	* rungpg.c (gpg_edit): Likewise.  Use it.
+	* edit.c (edit_start): Likewise.  Pass it on.
+	(gpgme_op_edit_start, gpgme_op_edit): Likewise.
+	(gpgme_op_card_edit_start, gpgme_op_card_edit): New functions.
+
+
 2003-09-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (gpg_strerror_r): Change prototype to match

@@ -49,8 +49,8 @@ struct engine_ops
   gpgme_error_t (*decrypt) (void *engine, gpgme_data_t ciph,
 			    gpgme_data_t plain);
   gpgme_error_t (*delete) (void *engine, gpgme_key_t key, int allow_secret);
-  gpgme_error_t (*edit) (void *engine, gpgme_key_t key, gpgme_data_t out,
-			 gpgme_ctx_t ctx /* FIXME */);
+  gpgme_error_t (*edit) (void *engine, int type, gpgme_key_t key,
+			 gpgme_data_t out, gpgme_ctx_t ctx /* FIXME */);
   gpgme_error_t (*encrypt) (void *engine, gpgme_key_t recp[],
 			    gpgme_encrypt_flags_t flags,
 			    gpgme_data_t plain, gpgme_data_t ciph,

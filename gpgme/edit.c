@@ -93,7 +93,7 @@ command_handler (void *priv, gpgme_status_code_t status, const char *args,
 
 
 static gpgme_error_t
-edit_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
+edit_start (gpgme_ctx_t ctx, int synchronous, int type, gpgme_key_t key,
 	    gpgme_edit_cb_t fnc, void *fnc_value, gpgme_data_t out)
 {
   gpgme_error_t err;
@@ -122,7 +122,7 @@ edit_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
 
   _gpgme_engine_set_status_handler (ctx->engine, edit_status_handler, ctx);
 
-  return _gpgme_engine_op_edit (ctx->engine, key, out, ctx);
+  return _gpgme_engine_op_edit (ctx->engine, type, key, out, ctx);
 }
 
 
@@ -130,7 +130,7 @@ gpgme_error_t
 gpgme_op_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 		     gpgme_edit_cb_t fnc, void *fnc_value, gpgme_data_t out)
 {
-  return edit_start (ctx, 0, key, fnc, fnc_value, out);
+  return edit_start (ctx, 0, 0, key, fnc, fnc_value, out);
 }
 
 
@@ -140,7 +140,29 @@ gpgme_error_t
 gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 	       gpgme_edit_cb_t fnc, void *fnc_value, gpgme_data_t out)
 {
-  gpgme_error_t err = edit_start (ctx, 1, key, fnc, fnc_value, out);
+  gpgme_error_t err = edit_start (ctx, 1, 0, key, fnc, fnc_value, out);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  return err;
+}
+
+
+gpgme_error_t
+gpgme_op_card_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
+			  gpgme_edit_cb_t fnc, void *fnc_value,
+			  gpgme_data_t out)
+{
+  return edit_start (ctx, 0, 1, key, fnc, fnc_value, out);
+}
+
+
+/* Edit the card for the key KEY.  Send status and command requests to
+   FNC and output of edit commands to OUT.  */
+gpgme_error_t
+gpgme_op_card_edit (gpgme_ctx_t ctx, gpgme_key_t key,
+		    gpgme_edit_cb_t fnc, void *fnc_value, gpgme_data_t out)
+{
+  gpgme_error_t err = edit_start (ctx, 1, 1, key, fnc, fnc_value, out);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

@@ -56,8 +56,8 @@ gpgme_error_t _gpgme_engine_op_decrypt (engine_t engine,
 					gpgme_data_t plain);
 gpgme_error_t _gpgme_engine_op_delete (engine_t engine, gpgme_key_t key,
 				       int allow_secret);
-gpgme_error_t _gpgme_engine_op_edit (engine_t engine, gpgme_key_t key,
-				     gpgme_data_t out,
+gpgme_error_t _gpgme_engine_op_edit (engine_t engine, int type,
+				     gpgme_key_t key, gpgme_data_t out,
 				     gpgme_ctx_t ctx /* FIXME */);
 gpgme_error_t _gpgme_engine_op_encrypt (engine_t engine,
 					gpgme_key_t recp[],
