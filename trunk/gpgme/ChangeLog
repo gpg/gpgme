@@ -1,5 +1,26 @@
 2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-backend.h (struct engine_ops): Rename get_path to
+	get_file_name.
+	* gpgme.h (struct _gpgme_engine_info): Rename member path to
+	file_name.
+	* version.c: Do not include <stdio.h>, <stdlib.h>, context.h and
+	util.h.  Other clean ups.
+	(parse_version_number): Protect more seriously against
+	overflow.
+	(gpgme_get_engine_info): Move to ...
+	* engine.c (gpgme_get_engine_info): ... here.
+	(_gpgme_engine_get_info): Function removed.
+	(_gpgme_engine_get_path): Make static and rename to ...
+	(engine_get_file_name): .. this.
+	(_gpgme_engine_get_version): Make static and rename to ...
+	(engine_get_version): ... this.
+	(_gpgme_engine_get_req_version): Make static and rename to ...
+	(engine_get_req_version): ... this.
+	* engine.h (_gpgme_engine_get_path, _gpgme_engine_get_version,
+	_gpgme_engine_req_version, _gpgme_engine_get_info.): Remove
+	prototypes.
+
 	* gpgme.h (enum GpgmeProtocol): Remove GPGME_PROTOCOL_AUTO.
 	* gpgme.c (gpgme_set_protocol): Don't handle GPGME_PROTOCOL_AUTO.
 	(gpgme_get_protocol_name): New function.

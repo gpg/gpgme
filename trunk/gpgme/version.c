@@ -21,19 +21,25 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <ctype.h>
 
 #include "gpgme.h"
-#include "context.h"
-#include "sema.h"
-#include "util.h"
-#include "key.h" /* for key_cache_init */
 #include "io.h"
 
+/* For _gpgme_sema_subsystem_init ().  */
+#include "sema.h"
 
+/* For _gpgme_key_cache_init ().  */
+#include "key.h"
+
+
+/* Bootstrap the subsystems needed for concurrent operation.  This
+   must be done once at startup.  We can not guarantee this using a
+   lock, though, because the semaphore subsystem needs to be
+   initialized itself before it can be used.  So we expect that the
+   user performs the necessary syncrhonization.  */
 static void
 do_subsystem_inits (void)
 {
@@ -41,92 +47,106 @@ do_subsystem_inits (void)
 
   if (done)
     return;
+
   _gpgme_sema_subsystem_init ();
   _gpgme_key_cache_init ();
   done = 1;
 }
 
-static const char*
-parse_version_number (const char *s, int *number)
+
+/* Read the next number in the version string STR and return it in
+   *NUMBER.  Return a pointer to the tail of STR after parsing, or
+   *NULL if the version string was invalid.  */
+static const char *
+parse_version_number (const char *str, int *number)
 {
+#define MAXVAL ((INT_MAX - 10) / 10)
   int val = 0;
 
-  if (*s == '0' && isdigit(s[1]))
-    return NULL;  /* Leading zeros are not allowed.  */
-  for (; isdigit(*s); s++)
+  /* Leading zeros are not allowed.  */
+  if (*str == '0' && isdigit(str[1]))
+    return NULL;
+
+  while (isdigit (*str) && val <= MAXVAL)
     {
       val *= 10;
-      val += *s - '0';
+      val += *(str++) - '0';
     }
   *number = val;
-  return val < 0 ? NULL : s;
+  return val > MAXVAL ? NULL : str;
 }
 
+
+/* Parse the version string STR in the format MAJOR.MINOR.MICRO (for
+   example, 9.3.2) and return the components in MAJOR, MINOR and MICRO
+   as integers.  The function returns the tail of the string that
+   follows the version number.  This might be te empty string if there
+   is nothing following the version number, or a patchlevel.  The
+   function returns NULL if the version string is not valid.  */
 static const char *
-parse_version_string (const char *s, int *major, int *minor, int *micro)
+parse_version_string (const char *str, int *major, int *minor, int *micro)
 {
-  s = parse_version_number (s, major);
-  if (!s || *s != '.')
+  str = parse_version_number (str, major);
+  if (!str || *str != '.')
     return NULL;
-  s++;
-  s = parse_version_number (s, minor);
-  if (!s || *s != '.')
+  str++;
+
+  str = parse_version_number (str, minor);
+  if (!str || *str != '.')
     return NULL;
-  s++;
-  s = parse_version_number (s, micro);
-  if (!s)
+  str++;
+
+  str = parse_version_number (str, micro);
+  if (!str)
     return NULL;
-  return s;  /* Patchlevel.  */
+
+  /* A patchlevel might follow.  */
+  return str;
 }
+
 
 const char *
 _gpgme_compare_versions (const char *my_version,
-			 const char *req_version)
+			 const char *rq_version)
 {
   int my_major, my_minor, my_micro;
   int rq_major, rq_minor, rq_micro;
   const char *my_plvl, *rq_plvl;
 
-  if (!req_version)
+  if (!rq_version)
     return my_version;
   if (!my_version)
     return NULL;
 
   my_plvl = parse_version_string (my_version, &my_major, &my_minor, &my_micro);
   if (!my_plvl)
-    return NULL;	/* Very strange: our own version is bogus.  */
-  rq_plvl = parse_version_string(req_version,
-				 &rq_major, &rq_minor, &rq_micro);
+    return NULL;
+
+  rq_plvl = parse_version_string (rq_version, &rq_major, &rq_minor, &rq_micro);
   if (!rq_plvl)
-    return NULL;	/* Requested version string is invalid.  */
+    return NULL;
 
   if (my_major > rq_major
-	|| (my_major == rq_major && my_minor > rq_minor)
+      || (my_major == rq_major && my_minor > rq_minor)
       || (my_major == rq_major && my_minor == rq_minor 
 	  && my_micro > rq_micro)
       || (my_major == rq_major && my_minor == rq_minor
-	  && my_micro == rq_micro
-	  && strcmp( my_plvl, rq_plvl ) >= 0))
-    {
-      return my_version;
-    }
+	  && my_micro == rq_micro && strcmp (my_plvl, rq_plvl) >= 0))
+    return my_version;
+
   return NULL;
 }
 
-/**
- * gpgme_check_version:
- * @req_version: A string with a version
- * 
- * Check that the the version of the library is at minimum the requested one
- * and return the version string; return NULL if the condition is not
- * met.  If a NULL is passed to this function, no check is done and
- * the version string is simply returned.  It is a pretty good idea to
- * run this function as soon as possible, because it also intializes 
- * some subsystems.  In a multithreaded environment if should be called
- * before the first thread is created.
- * 
- * Return value: The version string or NULL
- **/
+
+/* Check that the the version of the library is at minimum the
+   requested one and return the version string; return NULL if the
+   condition is not met.  If a NULL is passed to this function, no
+   check is done and the version string is simply returned.
+
+   This function must be run once at startup, as it also initializes
+   some subsystems.  Its invocation must be synchronized against
+   calling any of the other functions in a multi-threaded
+   environments.  */
 const char *
 gpgme_check_version (const char *req_version)
 {
@@ -134,76 +154,27 @@ gpgme_check_version (const char *req_version)
   return _gpgme_compare_versions (VERSION, req_version);
 }
 
-
-/* Get the information about the configured and installed engines.  A
-   pointer to the first engine in the statically allocated linked list
-   is returned in *INFO.  If an error occurs, it is returned.  */
-GpgmeError
-gpgme_get_engine_info (GpgmeEngineInfo *info)
-{
-  static GpgmeEngineInfo engine_info;
-  DEFINE_STATIC_LOCK (engine_info_lock);
-
-  LOCK (engine_info_lock);
-  if (!engine_info)
-    {
-      GpgmeEngineInfo *lastp = &engine_info;
-      GpgmeProtocol proto_list[] = { GPGME_PROTOCOL_OpenPGP,
-				     GPGME_PROTOCOL_CMS };
-      int proto;
-
-      for (proto = 0; proto < DIM (proto_list); proto++)
-	{
-	  const char *path = _gpgme_engine_get_path (proto_list[proto]);
-
-	  if (!path)
-	    continue;
-
-	  *lastp = malloc (sizeof (*engine_info));
-	  if (!*lastp)
-	    {
-	      while (engine_info)
-		{
-		  GpgmeEngineInfo next_info = engine_info->next;
-		  free (engine_info);
-		  engine_info = next_info;
-		}
-	      UNLOCK (engine_info_lock);
-	      return GPGME_Out_Of_Core;
-	    }
-
-	  (*lastp)->protocol = proto_list[proto];
-	  (*lastp)->path = path;
-	  (*lastp)->version = _gpgme_engine_get_version (proto_list[proto]);
-	  (*lastp)->req_version
-	    = _gpgme_engine_get_req_version (proto_list[proto]);
-	  lastp = &(*lastp)->next;
-	}
-    }
-  UNLOCK (engine_info_lock);
-  *info = engine_info;
-  return 0;
-}
-
 
 #define LINELENGTH 80
 
+/* Retrieve the version number from the --version output of the
+   program FILE_NAME.  */
 char *
-_gpgme_get_program_version (const char *const path)
+_gpgme_get_program_version (const char *const file_name)
 {
   char line[LINELENGTH] = "";
   int linelen = 0;
   char *mark = NULL;
   int rp[2];
   int nread;
-  char *argv[] = {NULL /* path */, "--version", 0};
+  char *argv[] = {NULL /* file_name */, "--version", 0};
   struct spawn_fd_item_s pfd[] = { {0, -1}, {-1, -1} };
   struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */}, {-1, -1} };
   int status;
 
-  if (!path)
+  if (!file_name)
     return NULL;
-  argv[0] = (char *) path;
+  argv[0] = (char *) file_name;
 
   if (_gpgme_io_pipe (rp, 1) < 0)
     return NULL;
@@ -211,7 +182,7 @@ _gpgme_get_program_version (const char *const path)
   pfd[0].fd = rp[1];
   cfd[0].fd = rp[1];
 
-  status = _gpgme_io_spawn (path, argv, cfd, pfd);
+  status = _gpgme_io_spawn (file_name, argv, cfd, pfd);
   if (status < 0)
     {
       _gpgme_io_close (rp[0]);

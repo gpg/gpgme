@@ -23,18 +23,6 @@
 
 #include "types.h"
  
-/* Get the path of the engine for PROTOCOL.  */
-const char *_gpgme_engine_get_path (GpgmeProtocol proto);
-
-/* Get the version number of the engine for PROTOCOL.  */
-const char *_gpgme_engine_get_version (GpgmeProtocol proto);
-
-/* Get the version number of the engine for PROTOCOL.  */
-const char *_gpgme_engine_req_version (GpgmeProtocol proto);
-
-/* Verify the version requirement for the engine for PROTOCOL.  */
-const char *_gpgme_engine_get_info (GpgmeProtocol proto);
-
 GpgmeError _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine);
 void _gpgme_engine_release (EngineObject engine);
 void _gpgme_engine_set_status_handler (EngineObject engine,
