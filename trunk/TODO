@@ -37,6 +37,12 @@ Hey Emacs, this is -*- outline -*- mode!
 ** validity/trust
 
 * Engines
+** Do not create/destroy engines, but create engine and then reset it.
+   Internally the reset operation still spawns a new engine process,
+   but this can be replaced with a reset later.  Also, be very sure to
+   release everything properly at a reset and at an error.
+   Think hard about where to guarantee what (ie, what happens if start fails,
+   are the fds unregistered immediately - i think so?)
 ** Optimize the case where a data object has an underlying fd we can pass
    directly to the engine.
 ** Move code common to all engines up from gpg to engine.
@@ -49,12 +55,15 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Passphrase callback should not copy password. !!!
 ** Export status handler need much more work. !!!
 ** Import should return a useful error when one happened.
+*** Import does not take notice of NODATA status report.
+*** When GPGSM does issue IMPORT_OK status reports, make sure to check for them
+    in tests/gpgs   m/t-import.c.
 ** Genkey should return something more useful than General_Error.
 ** Factor out common code in _op_*_start functions.
 ** Add ATTR to return the number of subkeys or uids.
 ** Optimize the file descriptor list, so the number of open fds is
-   always known easily.  This could replace the pending bit, too,
-   with the exception of keylisting operations maybe.
+   always known easily.  This could replace the pending bit, too, with
+   the exception of keylisting operations maybe.
 
 * Error Values
 ** Map ASSUAN/GpgSM ERR error values in a better way than is done now. !!
