@@ -24,7 +24,7 @@ AC_PREREQ(2.57)
 min_automake_version="1.7.6"
 
 # Version number: Remember to change it immediately *after* a release.
-AC_INIT(gpgme, 0.4.5-cvs, [bug-gpgme@gnupg.org])
+AC_INIT(gpgme, 0.4.5, [bug-gpgme@gnupg.org])
 # LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
 #   (Interfaces added/removed/changed:	CURRENT++, REVISION=0)
