@@ -1,3 +1,10 @@
+2002-06-25  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.8.
+	
+	* configure.ac: Bumbed LT version to 9/3/0.
+	(NEED_GPGSM_VERSION): Need 0.3.8 due to fixed export command.
+
 2002-06-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	Released 0.3.7.
