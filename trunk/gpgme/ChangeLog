@@ -1,3 +1,10 @@
+2002-06-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* key.c: Include <ctype.h>.
+	(_gpgme_key_append_name): Skip one more char when
+	processing escaped char.  Submitted by Marc Mutz <mutz@kde.org>.
+	Handle hexadecimal encodings.  Also reported by Marc.  Thanks!
+
 2002-06-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* ath.h: Enable the _gpgme_ prefix.  Fix all those prefix macros.
