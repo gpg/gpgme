@@ -832,6 +832,7 @@ bool checkMessageSignature( const char* ciphertext,
     const char* fpr;
 
     gpgme_new( &ctx );
+    gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
     gpgme_data_new_from_mem( &datapart, ciphertext,
                              1+strlen( ciphertext ), 1 );
     gpgme_data_new_from_mem( &sigpart, signaturetext,
