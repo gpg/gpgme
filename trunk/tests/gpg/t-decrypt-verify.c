@@ -101,12 +101,15 @@ main (int argc, char **argv)
   struct passphrase_cb_info_s info;
   const char *cipher_2_asc = mk_fname ("cipher-2.asc");
   GpgmeSigStat stat;
+  char *p;
 
   do
     {
       err = gpgme_new (&ctx);
       fail_if_err (err);
-      if (!getenv("GPG_AGENT_INFO"))
+
+      p = getenv("GPG_AGENT_INFO");
+      if (!(p && strchr (p, ':')))
 	{
 	  memset (&info, 0, sizeof info);
 	  info.c = ctx;

@@ -21,7 +21,7 @@
 
 GPG = @GPG@
 
-TESTS_ENVIRONMENT = GNUPGHOME=.
+TESTS_ENVIRONMENT = GNUPGHOME=. GPG_AGENT_INFO=
 
 TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers	\
 	t-decrypt t-verify t-decrypt-verify t-keylist t-export	\

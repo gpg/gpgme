@@ -78,7 +78,6 @@ main (int argc, char **argv )
     err = gpgme_data_new_from_mem ( &in, "Hallo Leute!\n", 13, 0 );
     fail_if_err (err);
 
-#if 0
     /* first a normal signature */
     err = gpgme_data_new ( &out );
     fail_if_err (err);
@@ -91,7 +90,6 @@ main (int argc, char **argv )
     fputs ("End Result.\n", stdout );
     gpgme_data_release (out);
     gpgme_data_rewind (in);
-#endif
     
     /* now a detached signature */
     err = gpgme_data_new ( &out );
@@ -106,21 +104,6 @@ main (int argc, char **argv )
     gpgme_data_release (out);
     gpgme_data_rewind (in);
     
-
-#if 0
-    /* And finally a cleartext signature */
-    err = gpgme_data_new ( &out );
-    fail_if_err (err);
-    err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_CLEAR );
-    fail_if_err (err);
-    fflush (NULL);
-    print_op_info (ctx);
-    fputs ("Begin Result:\n", stdout );
-    print_data (out);
-    fputs ("End Result.\n", stdout );
-    gpgme_data_release (out);
-    gpgme_data_rewind (in);
-#endif
     
     /* ready */
     gpgme_data_release (in);

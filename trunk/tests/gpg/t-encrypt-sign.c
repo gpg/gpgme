@@ -90,6 +90,7 @@ main (int argc, char **argv )
     GpgmeError err;
     GpgmeData in, out;
     GpgmeRecipients rset;
+    char *p;
 
     err = gpgme_check_engine ();
     fail_if_err (err);
@@ -99,7 +100,9 @@ main (int argc, char **argv )
     err = gpgme_new (&ctx);
     fail_if_err (err);
     gpgme_set_armor (ctx, 1);
-    if (!getenv("GPG_AGENT_INFO"))
+
+    p = getenv("GPG_AGENT_INFO");
+    if (!(p && strchr (p, ':')))
       gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
 
     err = gpgme_data_new_from_mem ( &in, "Hallo Leute\n", 12, 0 );
