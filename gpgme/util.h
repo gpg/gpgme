@@ -24,34 +24,9 @@
 #include "types.h"
 #include "debug.h"
 
+
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))
 #define DIMof(type,member)   DIM(((type *)0)->member)
-
-
-#ifndef HAVE_STPCPY
-char *stpcpy (char *a, const char *b);
-#endif
-
-#define return_if_fail(expr) do {                        \
-    if (!(expr)) {                                       \
-        fprintf (stderr, "%s:%d: assertion `%s' failed", \
-                 __FILE__, __LINE__, #expr );            \
-        return;	                                         \
-    } } while (0)
-#define return_null_if_fail(expr) do {                   \
-    if (!(expr)) {                                       \
-        fprintf (stderr, "%s:%d: assertion `%s' failed", \
-                 __FILE__, __LINE__, #expr );            \
-        return NULL;	                                 \
-    } } while (0)
-#define return_val_if_fail(expr,val) do {                \
-    if (!(expr)) {                                       \
-        fprintf (stderr, "%s:%d: assertion `%s' failed", \
-                 __FILE__, __LINE__, #expr );            \
-        return (val);	                                 \
-    } } while (0)
-
-
 
 /*-- {posix,w32}-util.c --*/
 const char *_gpgme_get_gpg_path (void);
@@ -59,6 +34,10 @@ const char *_gpgme_get_gpgsm_path (void);
 
 /*-- replacement functions in <funcname>.c --*/
 #ifdef HAVE_CONFIG_H
+#ifndef HAVE_STPCPY
+char *stpcpy (char *a, const char *b);
+#endif
+
 #if !HAVE_VASPRINTF
 #include <stdarg.h>
 int vasprintf (char **result, const char *format, va_list args);

@@ -1,4 +1,4 @@
-/* signers.c - maintain signer sets
+/* signers.c - Maintain signer sets.
    Copyright (C) 2001 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003 g10 Code GmbH
  
@@ -33,24 +33,15 @@
    different to a recipient set.  */
 
 
-/**
- * gpgme_signers_clear:
- * @c: context to clear from signers
- *
- * Remove the list of signers from the context and release the
- * references to the signers keys.
- *
- * Return value: The version string or NULL
- **/
+/* Delete all signers from CTX.  */
 void
 gpgme_signers_clear (GpgmeCtx ctx)
 {
   int i;
 
-  return_if_fail (ctx);
-
-  if (!ctx->signers)
+  if (!ctx || !ctx->signers)
     return;
+
   for (i = 0; i < ctx->signers_len; i++)
     {
       assert (ctx->signers[i]);
@@ -60,16 +51,7 @@ gpgme_signers_clear (GpgmeCtx ctx)
   ctx->signers_len = 0;
 }
 
-/**
- * gpgme_signers_add:
- * @c: context to add signer to
- * @key: key to add
- *
- * Add the key as a signer to the context.  Acquires a reference to
- * the key.
- *
- * Return value: NULL on success, or an error code.
- **/
+/* Add KEY to list of signers in CTX.  */
 GpgmeError
 gpgme_signers_add (GpgmeCtx ctx, const GpgmeKey key)
 {
@@ -96,21 +78,13 @@ gpgme_signers_add (GpgmeCtx ctx, const GpgmeKey key)
   return 0;
 }
 
-/**
- * gpgme_signers_enum:
- * @c: context to retrieve signer from
- * @seq: index of key to retrieve
- *
- * Acquire a reference to the signers key with the specified index
- * number in the context and return it to the caller.
- *
- * Return value: A GpgmeKey or NULL on failure.
- **/
+
+/* Return the SEQth signer's key in CTX with one reference.  */
 GpgmeKey
 gpgme_signers_enum (const GpgmeCtx ctx, int seq)
 {
-  return_null_if_fail (ctx);
-  return_null_if_fail (seq >= 0);
+  if (!ctx || seq < 0)
+    return NULL;
 
   if (seq >= ctx->signers_len)
     return NULL;

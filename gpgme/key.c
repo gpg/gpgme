@@ -356,17 +356,12 @@ _gpgme_key_new_secret (GpgmeKey *r_key)
 }
 
 
-/**
- * gpgme_key_ref:
- * @key: Key object
- * 
- * To safe memory the Key objects implements reference counting.
- * Use this function to bump the reference counter.
- **/
+/* Acquire a reference to KEY.  */
 void
 gpgme_key_ref (GpgmeKey key)
 {
-  return_if_fail (key);
+  if (!key)
+    return;
   LOCK (key_ref_lock);
   key->ref_count++;
   UNLOCK (key_ref_lock);
