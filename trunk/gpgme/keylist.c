@@ -404,14 +404,12 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	    case 9: /* ownertrust */
               set_ownertrust (key, p);
 	      break;
-	    case 10: /* not used for gpg due to --fixed-list-mode option 
-			but gpgsm stores the issuer name */
+	    case 10:
+	      /* Not used for gpg due to --fixed-list-mode option but
+		 GPGSM stores the issuer name.  */
               if (rectype == RT_CRT || rectype == RT_CRS)
-                {
-                  key->issuer_name = xtrystrdup (p);
-		  if (!key->issuer_name)
-		    ctx->error = mk_error (Out_Of_Core);
-                }
+		if (_gpgme_decode_c_string (p, &key->issuer_name))
+		  ctx->error = mk_error (Out_Of_Core);
 	      break;
 	    case 11: /* signature class  */
 	      break;

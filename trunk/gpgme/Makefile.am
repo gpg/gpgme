@@ -55,36 +55,17 @@ else
 system_components = ${ath_components} posix-util.c posix-sema.c posix-io.c
 endif
 
-libgpgme_la_SOURCES = \
-	gpgme.h types.h \
-	util.h util.c \
-	context.h ops.h \
-	data.c recipient.c signers.c \
-	wait.c wait.h \
-	op-support.c \
-	encrypt.c \
-	encrypt-sign.c \
-	decrypt.c \
-	decrypt-verify.c \
-	verify.c \
-	sign.c \
-	passphrase.c \
-	progress.c \
-        key.c key.h \
-	keylist.c \
-	trustlist.c \
-	import.c \
-        export.c \
-	genkey.c \
-	delete.c \
-	edit.c \
-        rungpg.c rungpg.h status-table.h \
-	engine-gpgsm.c engine-gpgsm.h \
-	engine.c engine.h \
-	sema.h io.h \
-	${system_components} \
-	debug.c debug.h \
-	gpgme.c version.c errors.c
+libgpgme_la_SOURCES =							\
+	gpgme.h types.h util.h util.c conversion.c context.h ops.h	\
+	data.c recipient.c signers.c wait.c wait.h op-support.c		\
+	encrypt.c encrypt-sign.c decrypt.c decrypt-verify.c verify.c	\
+	sign.c passphrase.c progress.c					\
+	key.h key.c keylist.c trustlist.c				\
+	import.c export.c genkey.c delete.c edit.c			\
+	engine.h engine.c rungpg.h rungpg.c status-table.h		\
+	engine-gpgsm.c engine-gpgsm.h					\
+	sema.h io.h ${system_components}				\
+	debug.c debug.h gpgme.c version.c errors.c
 libgpgme_la_LIBADD = ${assuan_libobjs} @LIBOBJS@
 
 errors.c : gpgme.h

@@ -58,31 +58,6 @@ static struct key_cache_item_s *key_cache_unused_items;
 DEFINE_STATIC_LOCK (key_ref_lock);
 
 static int
-hextobyte (const byte *s)
-{
-  int c;
-
-  if (*s >= '0' && *s <= '9')
-    c = 16 * (*s - '0');
-  else if (*s >= 'A' && *s <= 'F')
-    c = 16 * (10 + *s - 'A');
-  else if (*s >= 'a' && *s <= 'f')
-    c = 16 * (10 + *s - 'a');
-  else
-    return -1;
-  s++;
-  if (*s >= '0' && *s <= '9')
-    c += *s - '0';
-  else if (*s >= 'A' && *s <= 'F')
-    c += 10 + *s - 'A';
-  else if (*s >= 'a' && *s <= 'f')
-    c += 10 + *s - 'a';
-  else
-    return -1;
-  return c;
-}
-
-static int
 hash_key (const char *fpr, unsigned int *rhash)
 {
   unsigned int hash;
@@ -90,16 +65,16 @@ hash_key (const char *fpr, unsigned int *rhash)
 
   if (!fpr)
     return -1;
-  if ((c = hextobyte (fpr)) == -1)
+  if ((c = _gpgme_hextobyte (fpr)) == -1)
     return -1;
   hash = c;
-  if ((c = hextobyte (fpr+2)) == -1)
+  if ((c = _gpgme_hextobyte (fpr+2)) == -1)
     return -1;
   hash |= c << 8;
-  if ((c = hextobyte (fpr+4)) == -1)
+  if ((c = _gpgme_hextobyte (fpr+4)) == -1)
     return -1;
   hash |= c << 16;
-  if ((c = hextobyte (fpr+6)) == -1)
+  if ((c = _gpgme_hextobyte (fpr+6)) == -1)
     return -1;
   hash |= c << 24;
 
@@ -630,7 +605,7 @@ _gpgme_key_append_name (GpgmeKey key, const char *s)
         }
       else if (s[1] == 'x' && isxdigit (s[2]) && isxdigit (s[3]))
 	{
-	  int val = hextobyte (&s[2]);
+	  int val = _gpgme_hextobyte (&s[2]);
 	  if (val == -1)
 	    {
 	      /* Should not happen.  */
