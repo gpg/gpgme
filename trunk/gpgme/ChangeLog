@@ -1,3 +1,20 @@
+2001-03-15  Werner Koch  <wk@gnupg.org>
+
+	* rungpg.c: Included time.h.
+
+	* key.h: New keyflags for capabilities.
+	* keylist.c (set_mainkey_capability, set_subkey_capability): New.
+	(keylist_colon_handler): Parse them.
+	* gpgme.h: New attribute values for capabilties.
+	* key.c (gpgme_key_get_string_attr): Return them.
+	(capabilities_to_string): New.
+	(gpgme_key_get_ulong_attr): Return the global caps.
+
+2001-03-14  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c (destroy_reader,destroy_writer): Fixed syntax error. 
+	Thanks to Jan Oliver Wagner.
+
 2001-03-13  Werner Koch  <wk@gnupg.org>
 
 	* context.h: Add invalid and revoke flags to user_id structure.

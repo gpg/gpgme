@@ -54,10 +54,17 @@ doit ( GpgmeCtx ctx, const char *pattern )
         else
             fputs("<!-- Ooops: gpgme_key_get_as_xml failed -->\n", stdout );
 
-        s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID, NULL, 0 );
-        printf ("<!-- keyid=%s -->\n", s );
-        s = gpgme_key_get_string_attr (key, GPGME_ATTR_ALGO, NULL, 0 );
-        printf ("<!-- algo=%s -->\n", s );
+        
+        for (i=0; ; i++ ) {
+            s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID, NULL, i );
+            if (!s)
+                break;
+            printf ("<!-- keyid.%d=%s -->\n", i, s );
+            s = gpgme_key_get_string_attr (key, GPGME_ATTR_ALGO, NULL, i );
+            printf ("<!-- algo.%d=%s -->\n", i, s );
+            s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEY_CAPS, NULL, i );
+            printf ("<!-- caps.%d=%s -->\n", i, s );
+        }
         for (i=0; ; i++ ) {
             s = gpgme_key_get_string_attr (key, GPGME_ATTR_NAME, NULL, i );
             if (!s)
@@ -68,6 +75,15 @@ doit ( GpgmeCtx ctx, const char *pattern )
             s = gpgme_key_get_string_attr (key, GPGME_ATTR_COMMENT, NULL, i );
             printf ("<!-- comment.%d=%s -->\n", i, s );
         }
+        
+        fputs ("<!-- usable for:", stdout );
+        if ( gpgme_key_get_ulong_attr (key, GPGME_ATTR_CAN_ENCRYPT, NULL, 0 ))
+            fputs (" encryption", stdout);
+        if ( gpgme_key_get_ulong_attr (key, GPGME_ATTR_CAN_SIGN, NULL, 0 ))
+            fputs (" signing", stdout);
+        if ( gpgme_key_get_ulong_attr (key, GPGME_ATTR_CAN_CERTIFY, NULL, 0 ))
+            fputs (" certification", stdout);
+        fputs (" -->\n", stdout );
 
         printf ("<!-- End key object (%p) -->\n", key );
         gpgme_key_release (key);
@@ -97,6 +113,7 @@ main (int argc, char **argv )
 
     err = gpgme_new (&ctx);
     fail_if_err (err);
+    gpgme_set_keylist_mode (ctx, 1); /* no validity calculation */
     do {
         fprintf (stderr, "** pattern=`%s'\n", pattern );
         doit ( ctx, pattern );
