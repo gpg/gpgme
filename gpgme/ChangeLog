@@ -1,5 +1,51 @@
 2003-04-28  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (struct _gpgme_sig_notation): New structure.
+	(GpgmeSigNotation): New type.
+	(struct _gpgme_signature): New structure.
+	(GpgmeSignature): New type.
+	(struct _gpgme_op_verify_result): New structure.
+	(GpgmeVerifyResult): New type.
+	(gpgme_op_verify_result): New prototype.
+	(gpgme_get_notation): Remove prototype.
+	* ops.h (_gpgme_op_verify_init_result): New prototype.
+	(_gpgme_verify_status_handler): Change first argument to void *.
+	* util.h (_gpgme_decode_percent_string, _gpgme_map_gnupg_error):
+	New prototypes.
+	* conversion.c (_gpgme_decode_percent_string): New function.
+	(gnupg_errors): New static global.
+	(_gpgme_map_gnupg_error): New function.
+	* gpgme.c (gpgme_release): Don't release CTX->notation.
+	(gpgme_get_notation): Remove function.
+	* decrypt-verify.c (_gpgme_op_decrypt_verify_start): Call
+	_gpgme_op_verify_init_result.
+	* verify.c: Do not include <stdio.h>, <assert.h> and "key.h", but
+	do include "gpgme.h".
+	(struct verify_result): Replace with ...
+	(op_data_t): ... this type.
+	(release_verify_result): Remove function.
+	(release_op_data): New function.
+	(is_token): Remove function.
+	(skip_token): Remove function.
+	(copy_token): Remove function.
+	(gpgme_op_verify_result): New function.
+	(calc_sig_summary): Rewritten.
+	(finish_sig): Remove function.
+	(parse_new_sig): New function.
+	(parse_valid_sig): New function.
+	(parse_notation): New function.
+	(parse_trust): New function.
+	(parse_error): New function.
+	(_gpgme_verify_status_handler): Rewritten.  Change first argument
+	to void *.
+	(_gpgme_op_verify_start): Rework error handling.  Call
+	_gpgme_op_verify_init_result.
+	(gpgme_op_verify): Do not release or clear CTX->notation.
+	(gpgme_get_sig_status): Rewritten.
+	(gpgme_get_sig_string_attr): Likewise.
+	(gpgme_get_sig_ulong_attr): Likewise.
+	(gpgme_get_sig_key): Likewise.
+
 	* gpgme.h (struct _gpgme_op_decrypt_result): New structure.
 	(GpgmeDecryptResult): New type.
 	(gpgme_op_decrypt_result): New prototype.

@@ -68,7 +68,6 @@ gpgme_release (GpgmeCtx ctx)
   _gpgme_fd_table_deinit (&ctx->fdt);
   _gpgme_release_result (ctx);
   gpgme_key_release (ctx->tmp_key);
-  gpgme_data_release (ctx->notation);
   gpgme_signers_clear (ctx);
   if (ctx->signers)
     free (ctx->signers);
@@ -91,26 +90,6 @@ _gpgme_release_result (GpgmeCtx ctx)
     }
   ctx->op_data = NULL;
   _gpgme_set_op_info (ctx, NULL);
-}
-
-
-/**
- * gpgme_get_notation:
- * @c: the context
- *
- * If there is notation data available from the last signature check,
- * this function may be used to return this notation data as a string.
- * The string is an XML represantaton of that data embedded in a
- * %&lt;notation&gt; container.
- *
- * Return value: An XML string or NULL if no notation data is available.
- **/
-char *
-gpgme_get_notation (GpgmeCtx ctx)
-{
-  if (!ctx->notation)
-    return NULL;
-  return _gpgme_data_get_as_string (ctx->notation);
 }
 
 

@@ -112,6 +112,7 @@ status_string (GpgmeSigStat status)
     return s;
 }
 
+
 static const char *
 validity_string (GpgmeValidity val)
 {
@@ -132,138 +133,181 @@ validity_string (GpgmeValidity val)
 
 
 static void
-print_sig_stat ( GpgmeCtx ctx, GpgmeSigStat status )
+print_sig_stat (GpgmeCtx ctx, GpgmeSigStat status)
 {
-    const char *s;
-    time_t created;
-    int idx;
-    GpgmeKey key;
+  const char *s;
+  time_t created;
+  int idx;
+  GpgmeKey key;
 
-    printf ("Verification Status: %s\n", status_string (status));
+  printf ("Verification Status: %s\n", status_string (status));
     
-    for(idx=0; (s=gpgme_get_sig_status (ctx, idx, &status, &created)); idx++ ) {
-        printf ("sig %d: created: %lu expires: %lu status: %s\n",
-                idx, (unsigned long)created, 
-                gpgme_get_sig_ulong_attr (ctx, idx, GPGME_ATTR_EXPIRE, 0),
-                status_string(status) );
-        printf ("sig %d: fpr/keyid: `%s' validity: %s\n",
-                idx, s,
-                validity_string (gpgme_get_sig_ulong_attr
-                                 (ctx, idx, GPGME_ATTR_VALIDITY, 0)) );
-        if ( !gpgme_get_sig_key (ctx, idx, &key) ) {
-            char *p = gpgme_key_get_as_xml ( key );
-            printf ("sig %d: key object:\n%s\n", idx, p );
-            free (p);
-            gpgme_key_release (key);
+  for (idx = 0; (s = gpgme_get_sig_status (ctx, idx, &status, &created)); idx++)
+    {
+      printf ("sig %d: created: %lu expires: %lu status: %s\n",
+	      idx, (unsigned long) created, 
+	      gpgme_get_sig_ulong_attr (ctx, idx, GPGME_ATTR_EXPIRE, 0),
+	      status_string (status));
+      printf ("sig %d: fpr/keyid: `%s' validity: %s\n",
+	      idx, s,
+	      validity_string (gpgme_get_sig_ulong_attr
+			       (ctx, idx, GPGME_ATTR_VALIDITY, 0)));
+      if (!gpgme_get_sig_key (ctx, idx, &key))
+	{
+	  char *p = gpgme_key_get_as_xml (key);
+	  printf ("sig %d: key object:\n%s\n", idx, p);
+	  free (p);
+	  gpgme_key_release (key);
         }
     }
 }
 
 int 
-main (int argc, char **argv )
+main (int argc, char *argv[])
 {
-    GpgmeCtx ctx;
-    GpgmeError err;
-    GpgmeData sig, text;
-    GpgmeSigStat status;
-    char *nota;
-    int n = 0;
-    size_t len;
-    int j;
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeData sig, text;
+  GpgmeSigStat status;
+  GpgmeVerifyResult result;
+  GpgmeSigNotation notation;
+  char *nota;
+  int n = 0;
+  size_t len;
+  int j;
 
-    err = gpgme_new (&ctx);
-    fail_if_err (err);
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
 
-  do {
-    err = gpgme_data_new_from_mem ( &text,
-                                    test_text1, strlen (test_text1), 0 );
-    fail_if_err (err);
-  #if 1
-    err = gpgme_data_new_from_mem ( &sig,
-                                    test_sig1, strlen (test_sig1), 0 );
-  #else
-    err = gpgme_data_new_from_file ( &sig, "xx1", 1 );
-  #endif
-    fail_if_err (err);
+  do
+    {
+      err = gpgme_data_new_from_mem (&text,
+				     test_text1, strlen (test_text1), 0);
+      fail_if_err (err);
+#if 1
+      err = gpgme_data_new_from_mem (&sig,
+				     test_sig1, strlen (test_sig1), 0);
+#else
+      err = gpgme_data_new_from_file (&sig, "xx1", 1);
+#endif
+      fail_if_err (err);
 
-    puts ("checking a valid message:\n");
-    err = gpgme_op_verify (ctx, sig, text, NULL);
-    fail_if_err (err);
-    if (!gpgme_get_sig_status (ctx, 0, &status, NULL))
-      {
-	fprintf (stderr, "%s:%d: No signature\n", __FILE__, __LINE__);
-	exit (1);
-      }
-    print_sig_stat (ctx, status);
-    if (status != GPGME_SIG_STAT_GOOD)
-      {
-	fprintf (stderr, "%s:%d: Wrong sig stat\n", __FILE__, __LINE__);
-	exit (1);
-      }
+      puts ("checking a valid message:\n");
+      err = gpgme_op_verify (ctx, sig, text, NULL);
+      fail_if_err (err);
+      if (!gpgme_get_sig_status (ctx, 0, &status, NULL))
+	{
+	  fprintf (stderr, "%s:%d: No signature\n", __FILE__, __LINE__);
+	  exit (1);
+	}
+      print_sig_stat (ctx, status);
+      if (status != GPGME_SIG_STAT_GOOD)
+	{
+	  fprintf (stderr, "%s:%d: Wrong sig stat\n", __FILE__, __LINE__);
+	  exit (1);
+	}
 
-    if ((nota = gpgme_get_notation (ctx)))
-        printf ("---Begin Notation---\n%s---End Notation---\n", nota );
-
-    puts ("checking a manipulated message:\n");
-    gpgme_data_release (text);
-    err = gpgme_data_new_from_mem (&text,
-				   test_text1f, strlen (test_text1f), 0);
-    fail_if_err (err);
-    gpgme_data_rewind (sig);
-    err = gpgme_op_verify (ctx, sig, text, NULL);
-    fail_if_err (err);
-    if (!gpgme_get_sig_status (ctx, 0, &status, NULL))
-      {
-	fprintf (stderr, "%s:%d: No signature\n", __FILE__, __LINE__);
-	exit (1);
-      }
-    print_sig_stat (ctx, status);
-    if (status != GPGME_SIG_STAT_BAD)
-      {
-	fprintf (stderr, "%s:%d: Wrong sig stat\n", __FILE__, __LINE__);
-	exit (1);
-      }
-    if ((nota = gpgme_get_notation (ctx)))
-        printf ("---Begin Notation---\n%s---End Notation---\n", nota );
-
-    puts ("checking a normal signature:");
-    gpgme_data_release (sig);
-    gpgme_data_release (text);
-    err = gpgme_data_new_from_mem (&sig, test_sig2, strlen (test_sig2), 0);
-    fail_if_err (err);
-    err = gpgme_data_new (&text);
-    fail_if_err (err);
-    err = gpgme_op_verify (ctx, sig, NULL, text);
-    fail_if_err (err);
-    if (!gpgme_get_sig_status (ctx, 0, &status, NULL))
-      {
-	fprintf (stderr, "%s:%d: No signature\n", __FILE__, __LINE__);
-	exit (1);
-      }
-
-    nota = gpgme_data_release_and_get_mem (text, &len);
-    for (j = 0; j < len; j++)
+      result = gpgme_op_verify_result (ctx);
+      notation = result->signatures->notations;
+      if (notation)
+	{
+	  printf ("---Begin Notation---\n");
+	  while (notation)
+	    {
+	      if (notation->name)
+		printf ("%s: %s\n", notation->name, notation->value);
+	      else
+		printf ("Policy URL: %s\n", notation->value);
+	      notation = notation->next;
+	    }
+	  printf ("---End Notation---\n");
+	}
+      
+      puts ("checking a manipulated message:\n");
+      gpgme_data_release (text);
+      err = gpgme_data_new_from_mem (&text,
+				     test_text1f, strlen (test_text1f), 0);
+      fail_if_err (err);
+      gpgme_data_rewind (sig);
+      err = gpgme_op_verify (ctx, sig, text, NULL);
+      fail_if_err (err);
+      if (!gpgme_get_sig_status (ctx, 0, &status, NULL))
+	{
+	  fprintf (stderr, "%s:%d: No signature\n", __FILE__, __LINE__);
+	  exit (1);
+	}
+      print_sig_stat (ctx, status);
+      if (status != GPGME_SIG_STAT_BAD)
+	{
+	  fprintf (stderr, "%s:%d: Wrong sig stat\n", __FILE__, __LINE__);
+	  exit (1);
+	}
+      result = gpgme_op_verify_result (ctx);
+      notation = result->signatures->notations;
+      if (notation)
+	{
+	  printf ("---Begin Notation---\n");
+	  while (notation)
+	    {
+	      if (notation->name)
+		printf ("%s: %s\n", notation->name, notation->value);
+	      else
+		printf ("Policy URL: %s\n", notation->value);
+	      notation = notation->next;
+	    }
+	  printf ("---End Notation---\n");
+	}
+      
+      puts ("checking a normal signature:");
+      gpgme_data_release (sig);
+      gpgme_data_release (text);
+      err = gpgme_data_new_from_mem (&sig, test_sig2, strlen (test_sig2), 0);
+      fail_if_err (err);
+      err = gpgme_data_new (&text);
+      fail_if_err (err);
+      err = gpgme_op_verify (ctx, sig, NULL, text);
+      fail_if_err (err);
+      if (!gpgme_get_sig_status (ctx, 0, &status, NULL))
+	{
+	  fprintf (stderr, "%s:%d: No signature\n", __FILE__, __LINE__);
+	  exit (1);
+	}
+      
+      nota = gpgme_data_release_and_get_mem (text, &len);
+      for (j = 0; j < len; j++)
       putchar (nota[j]);
-    if (strncmp (nota, test_text1, strlen (test_text1)))
-      {
-	fprintf (stderr, "%s:%d: Wrong plaintext\n", __FILE__, __LINE__);
-	exit (1);
-      }
-   
-    print_sig_stat (ctx, status);
-    if (status != GPGME_SIG_STAT_GOOD)
-      {
-	fprintf (stderr, "%s:%d: Wrong sig stat\n", __FILE__, __LINE__);
-	exit (1);
-      }
+      if (strncmp (nota, test_text1, strlen (test_text1)))
+	{
+	  fprintf (stderr, "%s:%d: Wrong plaintext\n", __FILE__, __LINE__);
+	  exit (1);
+	}
+      
+      print_sig_stat (ctx, status);
+      if (status != GPGME_SIG_STAT_GOOD)
+	{
+	  fprintf (stderr, "%s:%d: Wrong sig stat\n", __FILE__, __LINE__);
+	  exit (1);
+	}
+      result = gpgme_op_verify_result (ctx);
+      notation = result->signatures->notations;
+      if (notation)
+	{
+	  printf ("---Begin Notation---\n");
+	  while (notation)
+	    {
+	      if (notation->name)
+		printf ("%s: %s\n", notation->name, notation->value);
+	      else
+		printf ("Policy URL: %s\n", notation->value);
+	      notation = notation->next;
+	    }
+	  printf ("---End Notation---\n");
+	}
+      
+      gpgme_data_release (sig);      
+    }
+  while (argc > 1 && !strcmp (argv[1], "--loop") && ++n < 20);
 
-    if ((nota = gpgme_get_notation (ctx)))
-      printf ("---Begin Notation---\n%s---End Notation---\n", nota);
-
-    gpgme_data_release (sig);
- 
-} while ( argc > 1 && !strcmp( argv[1], "--loop" ) && ++n < 20 );
-      gpgme_release (ctx);
-    
-    return 0;
+  gpgme_release (ctx);
+  return 0;
 }

@@ -149,7 +149,7 @@ parse_sig_created (char *args, GpgmeNewSignature *sigp)
     }
   args = tail;
 
-  sig->created = strtol (args, &tail, 0);
+  sig->timestamp = strtol (args, &tail, 0);
   if (errno || args == tail || *tail != ' ')
     {
       /* The crypto backend does not behave.  */

@@ -86,13 +86,16 @@ Noteworthy changes in version 0.4.1 (unreleased)
    information about the result of an encryption operation in
    a GpgmeEncryptResult object.
 
- * The new gpgme_op_encrypt_result function provides detailed
-   information about the result of an encryption operation in
-   a GpgmeEncryptResult object.
-
  * The new gpgme_op_decrypt_result function provides detailed
    information about the result of an encryption operation in
    a GpgmeDecryptResult object.
+
+ * The new gpgme_op_verify_result function provides detailed
+   information about the result of an verify operation in
+   a GpgmeVerifyResult object.  Because of this, the GPGME_SIG_STAT_*
+   values, gpgme_get_sig_status, gpgme_get_sig_ulong_attr,
+   gpgme_get_sig_string_attr and gpgme_get_sig_key are now deprecated,
+   and gpgme_get_notation is removed.
 
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -136,6 +139,14 @@ GpgmeEncryptResult		NEW
 gpgme_op_encrypt_result		NEW
 GpgmeDecryptResult		NEW
 gpgme_op_decrypt_result		NEW
+GpgmeVerifyResult		NEW
+gpgme_op_verify_result		NEW
+gpgme_get_notation		REMOVED: Access verify result directly instead.
+gpgme_get_sig_key		DEPRECATED: Use gpgme_get_key with fingerprint.
+gpgme_get_sig_ulong_attr	DEPRECATED: Use verify result directly.
+gpgme_get_sig_string_attr	DEPRECATED: Use verify result directly.
+GPGME_SIG_STAT_*		DEPRECATED: Use error value in sig status.
+gpgme_get_sig_status		DEPRECATED: Use verify result directly.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)

@@ -14,6 +14,13 @@ Hey Emacs, this is -*- outline -*- mode!
 *** GPGME_Busy, GPGME_No_Request
 *** GPGME_No_Passphrase
 *** GPGME_Invalid_Recipient, GPGME_No_Recipients
+*** GPGME_No_Passphrase
+*** gpgme_op_import_ext
+*** gpgme_get_sig_key
+*** gpgme_get_sig_ulong_attr
+*** gpgme_get_sig_string_attr
+*** GPGME_SIG_STAT_*
+*** gpgme_get_sig_status
 
 * Thread support:
 ** Build thread modules for static linking (which just suck in the

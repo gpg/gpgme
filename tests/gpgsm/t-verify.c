@@ -169,6 +169,8 @@ main (int argc, char **argv )
     GpgmeError err;
     GpgmeData sig, text;
     GpgmeSigStat status;
+    GpgmeVerifyResult result;
+    GpgmeSigNotation notation;
     char *nota;
     int n = 0;
 
@@ -194,8 +196,21 @@ main (int argc, char **argv )
       }
     print_sig_stat (ctx, status);
 
-    if ( (nota=gpgme_get_notation (ctx)) )
-        printf ("---Begin Notation---\n%s---End Notation---\n", nota);
+    result = gpgme_op_verify_result (ctx);
+    notation = result->signatures->notations;
+    if (notation)
+      {
+	printf ("---Begin Notation---\n");
+	while (notation)
+	  {
+	    if (notation->name)
+	      printf ("%s: %s\n", notation->name, notation->value);
+	    else
+	      printf ("Policy URL: %s\n", notation->value);
+	    notation = notation->next;
+	  }
+	printf ("---End Notation---\n");
+      }      
 
     puts ("checking a manipulated message:\n");
     gpgme_data_release (text);
@@ -212,8 +227,21 @@ main (int argc, char **argv )
       }
     print_sig_stat (ctx, status);
 
-    if ((nota=gpgme_get_notation (ctx)))
-        printf ("---Begin Notation---\n%s---End Notation---\n", nota);
+    result = gpgme_op_verify_result (ctx);
+    notation = result->signatures->notations;
+    if (notation)
+      {
+	printf ("---Begin Notation---\n");
+	while (notation)
+	  {
+	    if (notation->name)
+	      printf ("%s: %s\n", notation->name, notation->value);
+	    else
+	      printf ("Policy URL: %s\n", notation->value);
+	    notation = notation->next;
+	  }
+	printf ("---End Notation---\n");
+      }
 
     gpgme_data_release (sig);
     gpgme_data_release (text);
