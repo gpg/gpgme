@@ -769,6 +769,14 @@ void setReceiverCertificateExpiryNearWarning( bool );
   certificate of the receiver expires in the near future.
 */
 bool receiverCertificateExpiryNearWarning( void );
+
+
+/*! \ingroup groupConfigCrypt
+  \brief Returns the number of days until the specified receiver
+  certificate expires.
+*/
+int receiverCertificateDaysLeftToExpiry( const char* certificate );
+
     
 
 /*! \ingroup groupConfigCrypt
@@ -809,6 +817,13 @@ void setCertificateInChainExpiryNearWarningInterval( int );
   must be valid before it is considered to expire in the near future.
 */
 int certificateInChainExpiryNearWarningInterval( void );
+
+
+/*! \ingroup groupConfigCrypt
+  \brief Returns the number of days until the first certificate in
+  the chain of the receiver certificate expires.
+*/
+int certificateInChainDaysLeftToExpiry( const char* certificate );
 
     
 /*! \ingroup groupConfigCrypt
