@@ -1820,7 +1820,7 @@ struct CertificateInfo {
   Example that runs through certs matching "Steffen":
 \verbatim
   struct CertificateInfo* info;
-  struct CertIterator* it = startListCertificates("Steffen");
+  struct CertIterator* it = startListCertificates("Steffen", 0 );
   while( nextCertificate( it, &info ) == GPGME_No_Error && info ) {
     do something with info.
     dont free() it, the struct will be reused
@@ -1829,10 +1829,23 @@ struct CertificateInfo {
   endListCertificates( it );
 \endverbatim
 */
-struct CertIterator*  startListCertificates( const char* pattern, int remote );
-int  nextCertificate( struct CertIterator*, struct CertificateInfo** result );
-void endListCertificates( struct CertIterator* );
+struct CertIterator*
+startListCertificates( const char* pattern, int remote );
 
+int
+nextCertificate( struct CertIterator*, struct CertificateInfo** result );
+
+void
+endListCertificates( struct CertIterator* );
+
+/*!
+  Import a certificate that was a result from a search-operation using the startListCertificates(), nextCertificate() funtions.
+
+  The fingerprint must be passed to identify the key.
+ */
+
+int
+importCertificate( const char* fingerprint );
 
 #ifdef __cplusplus
 }
