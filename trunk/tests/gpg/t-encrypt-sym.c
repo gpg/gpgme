@@ -77,7 +77,7 @@ main (int argc, char **argv)
   const char *text = "Hallo Leute\n";
   char *text2;
   char *p;
-  int i;
+  size_t len;
 
   err = gpgme_check_engine ();
   fail_if_err (err);
@@ -120,8 +120,8 @@ main (int argc, char **argv)
       print_data (plain);
       fputs ("End Result.\n", stdout);
 
-      text2 = gpgme_data_release_and_get_mem (plain, &i);
-      if (strncmp (text, text2, i))
+      text2 = gpgme_data_release_and_get_mem (plain, &len);
+      if (strncmp (text, text2, len))
 	{
 	  fprintf (stderr, "%s:%d: Wrong plaintext\n", __FILE__, __LINE__);
 	  exit (1);
