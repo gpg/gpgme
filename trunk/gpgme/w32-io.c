@@ -36,7 +36,7 @@
 #include "util.h"
 #include "io.h"
 
-#define DEBUG_SELECT_ENABLED 1
+#define DEBUG_SELECT_ENABLED 0
 
 #if DEBUG_SELECT_ENABLED
 # define DEBUG_SELECT(a) fprintf a
@@ -47,7 +47,7 @@
 
 
 /* 
- * We assume that a HANDLE can be represented by an int which should be true
+ * We assume that a HANDLE can be represented by an int which should be true   
  * for all i386 systems (HANDLE is defined as void *) and these are the only
  * systems for which Windows is available.
  * Further we assume that -1 denotes an invalid handle.
@@ -65,10 +65,12 @@ _gpgme_io_read ( int fd, void *buffer, size_t count )
     int nread = 0;
     HANDLE h = fd_to_handle (fd);
 
+    DEBUG_SELECT ((stderr,"** fd %d: about to read %d bytes\n", fd, (int)count ));
     if ( !ReadFile ( h, buffer, count, &nread, NULL) ) {
         fprintf (stderr, "** ReadFile failed: ec=%d\n", (int)GetLastError ());
         return -1;
     }
+    DEBUG_SELECT ((stderr,"** fd %d:           got %d bytes\n", fd, nread ));
 
     return nread;
 }
@@ -80,23 +82,62 @@ _gpgme_io_write ( int fd, const void *buffer, size_t count )
     int nwritten;
     HANDLE h = fd_to_handle (fd);
 
+    DEBUG_SELECT ((stderr,"** fd %d: about to write %d bytes\n", fd, (int)count ));
     if ( !WriteFile ( h, buffer, count, &nwritten, NULL) ) {
         fprintf (stderr, "** WriteFile failed: ec=%d\n", (int)GetLastError ());
         return -1;
     }
+    DEBUG_SELECT ((stderr,"** fd %d:          wrote %d bytes\n", fd, nwritten ));
 
     return nwritten;
 }
 
 int
-_gpgme_io_pipe ( int filedes[2] )
+_gpgme_io_pipe ( int filedes[2], int inherit_idx )
 {
     HANDLE r, w;
+    SECURITY_ATTRIBUTES sec_attr;
+
+    memset (&sec_attr, 0, sizeof sec_attr );
+    sec_attr.nLength = sizeof sec_attr;
+    sec_attr.bInheritHandle = FALSE;
     
-    if (!CreatePipe ( &r, &w, NULL, 0))
+    if (!CreatePipe ( &r, &w, &sec_attr, 0))
         return -1;
+    /* make one end inheritable */
+    if ( inherit_idx == 0 ) {
+        HANDLE h;
+        if (!DuplicateHandle( GetCurrentProcess(), r,
+                              GetCurrentProcess(), &h, 0,
+                              TRUE, DUPLICATE_SAME_ACCESS ) ) {
+            fprintf (stderr, "** DuplicateHandle failed: ec=%d\n",
+                     (int)GetLastError());
+            CloseHandle (r);
+            CloseHandle (w);
+            return -1;
+        }
+        CloseHandle (r);
+        r = h;
+    }
+    else if ( inherit_idx == 1 ) {
+        HANDLE h;
+        if (!DuplicateHandle( GetCurrentProcess(), w,
+                              GetCurrentProcess(), &h, 0,
+                              TRUE, DUPLICATE_SAME_ACCESS ) ) {
+            fprintf (stderr, "** DuplicateHandle failed: ec=%d\n",
+                     (int)GetLastError());
+            CloseHandle (r);
+            CloseHandle (w);
+            return -1;
+        }
+        CloseHandle (w);
+        w = h;
+    }
+
     filedes[0] = handle_to_fd (r);
     filedes[1] = handle_to_fd (w);
+    DEBUG_SELECT ((stderr,"** create pipe %p %p %d %d inherit=%d\n", r, w,
+                   filedes[0], filedes[1], inherit_idx ));
     return 0;
 }
 
@@ -105,7 +146,15 @@ _gpgme_io_close ( int fd )
 {
     if ( fd == -1 )
         return -1;
-    return CloseHandle (fd_to_handle(fd)) ? 0 : -1;
+
+    DEBUG_SELECT ((stderr,"** closing handle for fd %d\n", fd));
+    if ( !CloseHandle (fd_to_handle (fd)) ) { 
+        fprintf (stderr, "** CloseHandle for fd %d failed: ec=%d\n",
+                 fd, (int)GetLastError ());
+        return -1;
+    }
+
+    return 0;
 }
 
 
@@ -126,12 +175,13 @@ build_commandline ( char **argv )
      * program parses the commandline and does some unquoting */
     for (i=0; argv[i]; i++)
         n += strlen (argv[i]) + 1;
-    n += 5;                     /* "gpg " */
     buf = p = xtrymalloc (n);
     if ( !buf )
         return NULL;
-    p = stpcpy (p, "gpg");
-    for (i = 0; argv[i]; i++)
+    *buf = 0;
+    if ( argv[0] )
+        p = stpcpy (p, argv[0]);
+    for (i = 1; argv[i]; i++)
         p = stpcpy (stpcpy (p, " "), argv[i]);
 
     return buf;
@@ -150,46 +200,84 @@ _gpgme_io_spawn ( const char *path, char **argv,
         0,         /* returns pid */
         0         /* returns tid */
     };
-    STARTUPINFO si = {
-        0, NULL, NULL, NULL,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        NULL, NULL, NULL, NULL
-    };
+    STARTUPINFO si;
     char *envblock = NULL;
     int cr_flags = CREATE_DEFAULT_ERROR_MODE
                  | GetPriorityClass (GetCurrentProcess ());
-    int i, rc;
+    int i;
     char *arg_string;
-    HANDLE save_stdout;
-    HANDLE outputfd[2], statusfd[2], inputfd[2];
+    int duped_stdin = 0;
+    int duped_stderr = 0;
+    HANDLE hnul = INVALID_HANDLE_VALUE;
 
-    sec_attr.nLength = sizeof (sec_attr);
+    memset (&sec_attr, 0, sizeof sec_attr );
+    sec_attr.nLength = sizeof sec_attr;
     sec_attr.bInheritHandle = FALSE;
-    sec_attr.lpSecurityDescriptor = NULL;
-
 
     arg_string = build_commandline ( argv );
     if (!arg_string )
         return -1; 
 
+    memset (&si, 0, sizeof si);
     si.cb = sizeof (si);
     si.dwFlags = STARTF_USESTDHANDLES;
     si.hStdInput = GetStdHandle (STD_INPUT_HANDLE);
     si.hStdOutput = GetStdHandle (STD_OUTPUT_HANDLE);
     si.hStdError = GetStdHandle (STD_ERROR_HANDLE);
-    if (!SetHandleInformation (si.hStdOutput,
-                               HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT)) {
-        fprintf (stderr, "** SHI 1 failed: ec=%d\n", (int) GetLastError ());
-    }
-    if (!SetHandleInformation (si.hStdError,
-                               HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT)) {
-        fprintf (stderr, "** SHI 2 failed: ec=%d\n", (int) GetLastError ());
-    }
-    
 
-    fputs ("** CreateProcess ...\n", stderr);
-    fprintf (stderr, "** args=`%s'\n", arg_string);
-    fflush (stderr);
+    for (i=0; fd_child_list[i].fd != -1; i++ ) {
+        if (fd_child_list[i].dup_to == 0 ) {
+            si.hStdInput = fd_to_handle (fd_child_list[i].fd);
+            DEBUG_SELECT ((stderr,"** using %d for stdin\n", fd_child_list[i].fd ));
+            duped_stdin=1;
+        }
+        else if (fd_child_list[i].dup_to == 1 ) {
+            si.hStdOutput = fd_to_handle (fd_child_list[i].fd);
+            DEBUG_SELECT ((stderr,"** using %d for stdout\n", fd_child_list[i].fd ));
+        }
+        else if (fd_child_list[i].dup_to == 2 ) {
+            si.hStdError = fd_to_handle (fd_child_list[i].fd);
+            DEBUG_SELECT ((stderr,"** using %d for stderr\n", fd_child_list[i].fd ));
+            duped_stderr = 1;
+        }
+    }
+
+    if( !duped_stdin || !duped_stderr ) {
+        SECURITY_ATTRIBUTES sa;
+
+        memset (&sa, 0, sizeof sa );
+        sa.nLength = sizeof sa;
+        sa.bInheritHandle = TRUE;
+        hnul = CreateFile ( "/dev/nul",
+                            GENERIC_READ|GENERIC_WRITE,
+                            FILE_SHARE_READ|FILE_SHARE_WRITE,
+                            &sa,
+                            OPEN_EXISTING,
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL );
+        if ( hnul == INVALID_HANDLE_VALUE ) {
+            fprintf (stderr,"can't open `/dev/nul': ec=%d\n",
+                     (int)GetLastError () );
+            xfree (arg_string);
+            return -1;
+        }
+        /* Make sure that the process has a connected stdin */
+        if ( !duped_stdin ) {
+            si.hStdInput = hnul;
+            DEBUG_SELECT ((stderr,"** using %d for stdin\n", (int)hnul ));
+        }
+        /* We normally don't want all the normal output */
+        if ( !duped_stderr ) {
+            if (!getenv ("GPGME_DEBUG") ) {
+                si.hStdError = hnul;
+                DEBUG_SELECT ((stderr,"** using %d for stderr\n", (int)hnul ));
+            }
+        }
+    }
+
+    DEBUG_SELECT ((stderr,"** CreateProcess ...\n"));
+    DEBUG_SELECT ((stderr,"** args=`%s'\n", arg_string));
+    cr_flags |= CREATE_SUSPENDED; 
     if ( !CreateProcessA (GPG_PATH,
                           arg_string,
                           &sec_attr,     /* process security attributes */
@@ -203,25 +291,45 @@ _gpgme_io_spawn ( const char *path, char **argv,
         ) ) {
         fprintf (stderr, "** CreateProcess failed: ec=%d\n",
                  (int) GetLastError ());
-        fflush (stderr);
         xfree (arg_string);
         return -1;
     }
 
-    /* .dup_to is not used in the parent list */
-    for (i=0; fd_parent_list[i].fd != -1; i++ ) {
-        CloseHandle ( fd_to_handle (fd_parent_list[i].fd) );
+    /* close the /dev/nul handle if used */
+    if (hnul != INVALID_HANDLE_VALUE ) {
+        if ( !CloseHandle ( hnul ) )
+            fprintf (stderr, "** CloseHandle(hnul) failed: ec=%d\n", 
+                     (int)GetLastError());
     }
 
-    fprintf (stderr, "** CreateProcess ready\n");
-    fprintf (stderr, "**   hProcess=%p  hThread=%p\n",
-             pi.hProcess, pi.hThread);
-    fprintf (stderr, "**   dwProcessID=%d dwThreadId=%d\n",
-             (int) pi.dwProcessId, (int) pi.dwThreadId);
-    fflush (stderr);
+    /* Close the other ends of the pipes */
+    for (i=0; fd_parent_list[i].fd != -1; i++ ) {
+        DEBUG_SELECT ((stderr,"** Closing fd %d\n", fd_parent_list[i].fd ));
+        if ( !CloseHandle ( fd_to_handle (fd_parent_list[i].fd) ) )
+            fprintf (stderr, "** CloseHandle failed: ec=%d\n",                 
+                     (int)GetLastError());
+    }
+
+    DEBUG_SELECT ((stderr,"** CreateProcess ready\n"
+                   "**   hProcess=%p  hThread=%p\n"
+                   "**   dwProcessID=%d dwThreadId=%d\n",
+                   pi.hProcess, pi.hThread, 
+                   (int) pi.dwProcessId, (int) pi.dwThreadId));
+
+    if ( ResumeThread ( pi.hThread ) < 0 ) {
+        fprintf (stderr, "** ResumeThread failed: ec=%d\n",
+                 (int)GetLastError ());
+    }
+
+    if ( !CloseHandle (pi.hThread) ) { 
+        fprintf (stderr, "** CloseHandle of thread failed: ec=%d\n",
+                 (int)GetLastError ());
+    }
 
     return handle_to_pid (pi.hProcess);
 }
+
+
 
 
 int
@@ -246,15 +354,15 @@ _gpgme_io_waitpid ( int pid, int hang, int *r_status, int *r_signal )
             *r_status = 4; 
         }
         else {
-            fprintf (stderr, "** GECP pid=%d exit code=%d\n",
-                        (int)pid,  exc);
+            DEBUG_SELECT ((stderr,"** GECP pid=%d exit code=%d\n",
+                           (int)pid,  exc));
             *r_status = exc;
         }
         ret = 1;
         break;
 
       case WAIT_TIMEOUT:
-        fprintf (stderr, "** WFSO pid=%d timed out\n", (int)pid);
+        DEBUG_SELECT ((stderr,"** WFSO pid=%d timed out\n", (int)pid));
         break;
 
       default:
@@ -274,24 +382,28 @@ _gpgme_io_waitpid ( int pid, int hang, int *r_status, int *r_signal )
 int
 _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
 {
+#if 0 /* We can't use WFMO becaus a pipe handle is not a suitable object */
     HANDLE waitbuf[MAXIMUM_WAIT_OBJECTS];
     int code, nwait;
-    int i, any, ret;
+    int i, any, any_write;
+    int count;
 
+ restart:
     DEBUG_SELECT ((stderr, "gpgme:select on [ "));
-    any = 0;
+    any = any_write = 0;
     nwait = 0;
     for ( i=0; i < nfds; i++ ) {
         if ( fds[i].fd == -1 ) 
             continue;
         if ( fds[i].for_read || fds[i].for_write ) {
             if ( nwait >= DIM (waitbuf) ) {
-                DEBUG_SELECT ((stderr, "oops ]\n" ));
+                DEBUG_SELECT ((stderr,stderr, "oops ]\n" ));
                 fprintf (stderr, "** Too many objects for WFMO!\n" );
                 return -1;
             }
             else {
-                waitbuf[nwait++] = fd_to_handle (fds[i].fd);
+                if ( fds[i].for_read ) 
+                    waitbuf[nwait++] = fd_to_handle (fds[i].fd);
                 DEBUG_SELECT ((stderr, "%c%d ",
                                fds[i].for_read? 'r':'w',fds[i].fd ));
                 any = 1;
@@ -300,14 +412,73 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
         fds[i].signaled = 0;
     }
     DEBUG_SELECT ((stderr, "]\n" ));
-    if (!any)
+    if (!any) 
         return 0;
 
-    ret = 0;
-    code = WaitForMultipleObjects ( nwait, waitbuf, 0, 1000 );
+    count = 0;
+    for ( i=0; i < nfds; i++ ) {
+        if ( fds[i].fd == -1 ) 
+            continue;
+        if ( fds[i].for_write ) {
+            fds[i].signaled = 1;
+            any_write =1;
+            count++;
+        }
+    }
+    code = WaitForMultipleObjects ( nwait, waitbuf, 0, any_write? 0:1000);
     if (code == WAIT_FAILED ) {
-        fprintf (stderr, "** WFMO failed: %d\n",  (int)GetLastError () );
-        ret = -1;
+        int le = (int)GetLastError ();
+        if ( le == ERROR_INVALID_HANDLE  || le == ERROR_INVALID_EVENT_COUNT ) {
+            any = 0;
+            for ( i=0; i < nfds; i++ ) {
+                if ( fds[i].fd == -1 ) 
+                    continue;
+                if ( fds[i].for_read /*|| fds[i].for_write*/ ) {
+                    int navail;
+                    if (PeekNamedPipe (fd_to_handle (fds[i].fd), 
+                                       NULL, 0, NULL,
+ 				       &navail, NULL) && navail ) {
+                        fds[i].signaled = 1;
+                        any = 1;
+                        count++;
+                    }
+                }
+            }
+            if (any)
+                return count;
+            /* find that handle and remove it from the list*/
+            for (i=0; i < nwait; i++ ) {
+                code = WaitForSingleObject ( waitbuf[i], NULL );
+                if (!code) {
+                    int k, j = handle_to_fd (waitbuf[i]);
+
+                    fprintf (stderr, "** handle meanwhile signaled %d\n", j);
+                    for (k=0 ; k < nfds; k++ ) {
+                        if ( fds[k].fd == j ) {
+                            fds[k].signaled = 1;
+                            count++;
+                            return count; 
+                        }
+                    }
+                    fprintf (stderr, "** oops, or not???\n");
+                }
+                if ( GetLastError () == ERROR_INVALID_HANDLE) {
+                    int k, j = handle_to_fd (waitbuf[i]);
+                    
+                    fprintf (stderr, "** WFMO invalid handle %d removed\n", j);
+                    for (k=0 ; k < nfds; i++ ) {
+                        if ( fds[k].fd == j ) {
+                            fds[k].for_read = fds[k].for_write = 0;
+                            goto restart;
+                        }
+                    }
+                    fprintf (stderr, "** oops, or not???\n");
+                }
+            }
+        }
+
+        fprintf (stderr, "** WFMO failed: %d\n", le );
+        count = -1;
     }
     else if ( code == WAIT_TIMEOUT ) {
         fprintf (stderr, "** WFMO timed out\n" );
@@ -326,22 +497,94 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
             if (WaitForSingleObject ( waitbuf[i], NULL ) == WAIT_OBJECT_0) {
                 fds[i].signaled = 1;
                 any = 1;
+                count++;
             }
         }
-        if (any)
-            ret = 1;
-        else {
+        if (!any) {
             fprintf (stderr,
                      "** Oops: No signaled objects found after WFMO\n");
-            ret = -1;
+            count = -1;
         }
     }
     else {
         fprintf (stderr, "** WFMO returned %d\n", code );
-        ret = -1;
+        count = -1;
     }
 
-    return ret;
+    return count;
+#else  /* This is the code we use */
+    int i, any, count;
+    int once_more = 0;
+
+    DEBUG_SELECT ((stderr, "gpgme:fakedselect on [ "));
+    any = 0;
+    for ( i=0; i < nfds; i++ ) {
+        if ( fds[i].fd == -1 ) 
+            continue;
+        if ( fds[i].for_read || fds[i].for_write ) {
+            DEBUG_SELECT ((stderr, "%c%d ",
+                           fds[i].for_read? 'r':'w',fds[i].fd ));
+            any = 1;
+        }
+        fds[i].signaled = 0;
+    }
+    DEBUG_SELECT ((stderr, "]\n" ));
+    if (!any) 
+        return 0;
+
+ restart:
+    count = 0;
+    /* no way to see whether a handle is ready fro writing, signal all */
+    for ( i=0; i < nfds; i++ ) {
+        if ( fds[i].fd == -1 ) 
+            continue;
+        if ( fds[i].for_write ) {
+            fds[i].signaled = 1;
+            count++;
+        }
+    }
+
+    /* now peek on all read handles */
+    for ( i=0; i < nfds; i++ ) {
+        if ( fds[i].fd == -1 ) 
+            continue;
+        if ( fds[i].for_read ) {
+            int navail;
+
+            if ( !PeekNamedPipe (fd_to_handle (fds[i].fd),
+                                 NULL, 0, NULL, &navail, NULL) ) {
+                fprintf (stderr, "** select: PeekFile failed: ec=%d\n",
+                         (int)GetLastError ());
+            }
+            else if ( navail ) {
+                fprintf (stderr, "** fd %d has %d bytes to read\n",
+                         fds[i].fd, navail );
+                fds[i].signaled = 1;
+                count++;
+            }
+        }
+    }
+    if ( !once_more && !count ) {
+        once_more = 1;
+        Sleep (300);
+        goto restart;
+    }
+
+    if ( count ) {
+        DEBUG_SELECT ((stderr, "gpgme:      signaled [ "));
+        for ( i=0; i < nfds; i++ ) {
+            if ( fds[i].fd == -1 ) 
+                continue;
+            if ( (fds[i].for_read || fds[i].for_write) && fds[i].signaled ) {
+                DEBUG_SELECT ((stderr, "%c%d ",
+                               fds[i].for_read? 'r':'w',fds[i].fd ));
+            }
+        }
+        DEBUG_SELECT ((stderr, "]\n" ));
+    }
+    
+    return count;
+#endif
 }
 
 #endif /*HAVE_DOSISH_SYSTEM*/

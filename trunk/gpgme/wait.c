@@ -111,6 +111,19 @@ count_active_fds ( int pid )
     return count;
 }
 
+static void
+clear_active_fds ( int pid )
+{
+    struct wait_item_s *q;
+    int i;
+    
+    for (i=0; i < fd_table_size; i++ ) {
+        if ( fd_table[i].fd != -1 && (q=fd_table[i].opaque)
+             && q->active && q->pid == pid  ) 
+            q->active = 0;
+    }
+}
+
 
 /* remove the given process from the queue */
 static void
@@ -123,7 +136,11 @@ remove_process ( int pid )
         if (fd_table[i].fd != -1 && (q=fd_table[i].opaque) && q->pid == pid ) {
             xfree (q);
             fd_table[i].opaque = NULL;
-            _gpgme_io_close (fd_table[i].fd);
+            
+            if ( !fd_table[i].is_closed ) {
+                _gpgme_io_close (fd_table[i].fd);
+                fd_table[i].is_closed = 1;
+            }
             fd_table[i].fd = -1;
         }
     }
@@ -168,8 +185,13 @@ _gpgme_wait_on_condition ( GpgmeCtx c, int hang, volatile int *cond )
             q = queue_item_from_context ( c );
             assert (q);
             
-            if (q->exited)
-                ;
+            if (q->exited) {
+                /* this is the second time we reached this and we got no
+                 * more data from the pipe (which may happen to to buffering).
+                 * Set all FDs inactive.
+                 */
+                clear_active_fds (q->pid);
+            }
             else if ( _gpgme_io_waitpid (q->pid, 0,
                                           &q->exit_status, &q->exit_signal)){
                 q->exited = 1;     
@@ -207,26 +229,30 @@ do_select ( void )
 {
     struct wait_item_s *q;
     int i, n;
+    int any=0;
     
     n = _gpgme_io_select ( fd_table, fd_table_size );
     if ( n <= 0 ) 
         return 0; /* error or timeout */
 
-    for (i=0; i < fd_table_size && n; i++ ) {
+    for (i=0; i < fd_table_size /*&& n*/; i++ ) {
         if ( fd_table[i].fd != -1 && fd_table[i].signaled ) {
             q = fd_table[i].opaque;
             assert (n);
             n--;
+            if ( q->active )
+                any = 1;
             if ( q->active && q->handler (q->handler_value,
                                           q->pid, fd_table[i].fd ) ) {
                 q->active = 0;
                 fd_table[i].for_read = 0;
                 fd_table[i].for_write = 0;
+                fd_table[i].is_closed = 1;
             }
         }
     }
     
-    return 1;
+    return any;
 }
 
 
@@ -262,6 +288,7 @@ _gpgme_register_pipe_handler( void *opaque,
     for (i=0; i < fd_table_size; i++ ) {
         if ( fd_table[i].fd == -1 ) {
             fd_table[i].fd = fd;
+            fd_table[i].is_closed = 0;
             fd_table[i].for_read = inbound;    
             fd_table[i].for_write = !inbound;    
             fd_table[i].signaled = 0;

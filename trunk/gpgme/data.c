@@ -113,6 +113,30 @@ gpgme_data_new_from_mem ( GpgmeData *r_dh,
     return 0;
 }
 
+
+GpgmeError
+gpgme_data_new_with_read_cb ( GpgmeData *r_dh,
+                              int (*read_cb)(void*,char *,size_t,size_t*),
+                              void *read_cb_value )
+{
+    GpgmeData dh;
+    GpgmeError err;
+
+    if (!r_dh || !read_cb)
+        return mk_error (Invalid_Value);
+    *r_dh = NULL;
+    err = gpgme_data_new ( &dh );
+    if (err)
+        return err;
+    dh->type = GPGME_DATA_TYPE_CB;
+    dh->mode = GPGME_DATA_MODE_OUT;
+    dh->read_cb = read_cb;
+    dh->read_cb_value = read_cb_value;
+    
+    *r_dh = dh;
+    return 0;
+}
+
 /**
  * gpgme_data_new_from_file:
  * @r_dh: returns the new data object
@@ -279,7 +303,7 @@ gpgme_data_release_and_get_mem ( GpgmeData dh, size_t *r_len )
 GpgmeDataType
 gpgme_data_get_type ( GpgmeData dh )
 {
-    if ( !dh || !dh->data )
+    if ( !dh || (!dh->data && !dh->read_cb))
         return GPGME_DATA_TYPE_NONE;
             
     return dh->type;
@@ -315,9 +339,18 @@ gpgme_data_rewind ( GpgmeData dh )
 {
     if ( !dh )
         return mk_error (Invalid_Value);
-    /* Fixme: We should check whether rewinding does make sense for the
-     * data type */
-    dh->readpos = 0;
+
+    if (dh->type == GPGME_DATA_TYPE_MEM ) {
+        dh->readpos = 0;
+    }
+    else if (dh->type == GPGME_DATA_TYPE_CB) {
+        dh->len = dh->readpos = 0;
+        dh->read_cb_eof = 0;
+        /* FIXME: do a special call to the read function to trigger a rewind
+           there */
+    }
+    else
+        return mk_error (General_Error);
     return 0;
 }
 
@@ -334,7 +367,7 @@ gpgme_data_rewind ( GpgmeData dh )
  * If there are no more bytes available %GPGME_EOF is returned and @nread
  * is set to 0.
  * 
- * Return value: An errocodee or 0 on success, EOF is indcated by the
+ * Return value: An errorcode or 0 on success, EOF is indcated by the
  * error code GPGME_EOF.
  **/
 GpgmeError
@@ -344,18 +377,65 @@ gpgme_data_read ( GpgmeData dh, char *buffer, size_t length, size_t *nread )
 
     if ( !dh )
         return mk_error (Invalid_Value);
-    nbytes = dh->len - dh->readpos;
-    if ( !nbytes ) {
-        *nread = 0;
-        return mk_error(EOF);
+    if (dh->type == GPGME_DATA_TYPE_MEM ) {
+        nbytes = dh->len - dh->readpos;
+        if ( !nbytes ) {
+            *nread = 0;
+            return mk_error(EOF);
+        }
+        if (nbytes > length)
+            nbytes = length;
+        memcpy ( buffer, dh->data + dh->readpos, nbytes );
+        *nread = nbytes;
+        dh->readpos += nbytes;
     }
-    if (nbytes > length)
-        nbytes = length;
-    memcpy ( buffer, dh->data + dh->readpos, nbytes );
-    *nread = nbytes;
-    dh->readpos += nbytes;
+    else if (dh->type == GPGME_DATA_TYPE_CB) {
+        nbytes = dh->len - dh->readpos;
+        if ( nbytes ) {
+            /* we have unread data - return this */
+            if (nbytes > length)
+                nbytes = length;
+            memcpy ( buffer, dh->data + dh->readpos, nbytes );
+            *nread = nbytes;
+            dh->readpos += nbytes;
+        }
+        else { /* get the data from the callback */
+            if (!dh->read_cb || dh->read_cb_eof) { 
+                *nread = 0;
+                return mk_error (EOF);
+            }
+            if (dh->read_cb (dh->read_cb_value, buffer, length, nread )) {
+                *nread = 0;
+                dh->read_cb_eof = 1;
+                return mk_error (EOF);
+            }
+        }
+    }
+    else
+        return mk_error (General_Error);
     return 0;
 } 
+
+GpgmeError
+_gpgme_data_unread (GpgmeData dh, const char *buffer, size_t length )
+{
+   if ( !dh )
+        return mk_error (Invalid_Value);
+
+   if (dh->type == GPGME_DATA_TYPE_MEM ) {
+       /* check that we don't unread more than we have yet read */
+       if ( dh->readpos < length )
+           return mk_error (Invalid_Value);
+       /* No need to use the buffer for this data type */
+       dh->readpos -= length;
+   }
+   else {
+       return mk_error (General_Error);
+   }
+
+   return 0;
+}
+
 
 /* 
  * This function does make sense when we know that it contains no nil chars.

@@ -34,7 +34,7 @@ extern "C" {
  * let autoconf (using the AM_PATH_GPGME macro) check that this
  * header matches the installed library.
  * Warning: Do not edit the next line.  configure will do that for you! */
-#define GPGME_VERSION "0.1.0"
+#define GPGME_VERSION "0.1.1"
 
 
 
@@ -79,7 +79,8 @@ typedef enum {
     GPGME_DATA_TYPE_NONE = 0,
     GPGME_DATA_TYPE_MEM  = 1,
     GPGME_DATA_TYPE_FD   = 2,
-    GPGME_DATA_TYPE_FILE = 3
+    GPGME_DATA_TYPE_FILE = 3,
+    GPGME_DATA_TYPE_CB   = 4
 } GpgmeDataType;
 
 typedef enum {
@@ -91,8 +92,6 @@ typedef enum {
     GPGME_SIG_STAT_ERROR = 5
 } GpgmeSigStat;
 
-/*typedef GpgmeData (*GpgmePassphraseCb)( void *opaque, const char *desc );*/
-
 
 /* Context management */
 GpgmeError gpgme_new (GpgmeCtx *r_ctx);
@@ -102,8 +101,7 @@ GpgmeCtx   gpgme_wait ( GpgmeCtx c, int hang );
 char *gpgme_get_notation ( GpgmeCtx c );
 void gpgme_set_armor ( GpgmeCtx c, int yes );
 void gpgme_set_textmode ( GpgmeCtx c, int yes );
-/*void gpgme_set_passphrase_cb ( GpgmeCtx c,
-  GpgmePassphraseCb fnc, void *fncval );*/
+
 
 
 /* Functions to handle recipients */
@@ -118,6 +116,10 @@ GpgmeError    gpgme_data_new ( GpgmeData *r_dh );
 GpgmeError    gpgme_data_new_from_mem ( GpgmeData *r_dh,
                                         const char *buffer, size_t size,
                                         int copy );
+GpgmeError    gpgme_data_new_with_read_cb ( GpgmeData *r_dh,
+                              int (*read_cb)(void*,char *,size_t,size_t*),
+                              void *read_cb_value );
+
 GpgmeError    gpgme_data_new_from_file ( GpgmeData *r_dh,
                                          const char *fname,
                                          int copy );
@@ -136,7 +138,7 @@ char *gpgme_key_get_as_xml ( GpgmeKey key );
 GpgmeError gpgme_op_encrypt_start ( GpgmeCtx c,
                                     GpgmeRecipients recp,
                                     GpgmeData in, GpgmeData out );
-GpgmeError gpgme_op_decrypt_start ( GpgmeCtx c,
+GpgmeError gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData passphrase,
                                     GpgmeData ciph, GpgmeData plain );
 GpgmeError gpgme_op_sign_start ( GpgmeCtx c, GpgmeData in, GpgmeData out );
 GpgmeError gpgme_op_verify_start ( GpgmeCtx c,
@@ -152,7 +154,8 @@ GpgmeError gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key );
 /* Convenience functions for normal usage */
 GpgmeError gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
                               GpgmeData in, GpgmeData out );
-GpgmeError gpgme_op_decrypt ( GpgmeCtx c, GpgmeData in, GpgmeData out );
+GpgmeError gpgme_op_decrypt ( GpgmeCtx c, GpgmeData passphrase,
+                              GpgmeData in, GpgmeData out );
 GpgmeError gpgme_op_sign ( GpgmeCtx c, GpgmeData in, GpgmeData out );
 GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
                              GpgmeSigStat *r_status );
@@ -161,6 +164,7 @@ GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
 /* miscellaneous functions */
 const char *gpgme_check_version ( const char *req_version );
 const char *gpgme_strerror (GpgmeError err);
+const char *gpgme_get_prompt ( GpgmeCtx c, int which );
 
 
 #ifdef __cplusplus

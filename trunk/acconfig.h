@@ -42,6 +42,15 @@
 /* path to the gpg binary */
 #undef GPG_PATH
 
+/* stuff needed by lnlib/ */
+#undef HAVE_BYTE_TYPEDEF
+#undef HAVE_USHORT_TYPEDEF
+#undef HAVE_ULONG_TYPEDEF
+#undef HAVE_U16_TYPEDEF
+#undef HAVE_U32_TYPEDEF
+
+
+
 @BOTTOM@
 
 /* not yet needed #include "gpgme-defs.h"*/

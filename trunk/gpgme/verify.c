@@ -163,7 +163,6 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
     _gpgme_gpg_add_arg ( c->gpg, "--verify" );
     for ( i=0; i < c->verbosity; i++ )
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
-    
 
     /* Check the supplied data */
     if ( gpgme_data_get_type (sig) == GPGME_DATA_TYPE_NONE ) {
@@ -180,8 +179,10 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
     /* Tell the gpg object about the data */
     _gpgme_gpg_add_arg ( c->gpg, "--" );
     _gpgme_gpg_add_data ( c->gpg, sig, -1 );
-    if (text)
+    if (text) {
+        _gpgme_gpg_add_arg ( c->gpg, "-" );
         _gpgme_gpg_add_data ( c->gpg, text, 0 );
+    }
 
     /* and kick off the process */
     rc = _gpgme_gpg_spawn ( c->gpg, c );

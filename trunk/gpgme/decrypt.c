@@ -33,6 +33,7 @@ struct decrypt_result_s {
     int no_passphrase;
     int okay;
     int failed;
+
 };
 
 
@@ -43,6 +44,17 @@ _gpgme_release_decrypt_result ( DecryptResult res )
 }
 
 
+static GpgmeError
+create_result_struct ( GpgmeCtx ctx )
+{
+    assert ( !ctx->result.decrypt );
+    ctx->result.decrypt = xtrycalloc ( 1, sizeof *ctx->result.decrypt );
+    if ( !ctx->result.decrypt ) {
+        return mk_error (Out_Of_Core);
+    }
+    ctx->result_type = RESULT_TYPE_DECRYPT;
+    return 0;    
+}
 
 static void
 decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
@@ -50,13 +62,10 @@ decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
     if ( ctx->out_of_core )
         return;
     if ( ctx->result_type == RESULT_TYPE_NONE ) {
-        assert ( !ctx->result.decrypt );
-        ctx->result.decrypt = xtrycalloc ( 1, sizeof *ctx->result.decrypt );
-        if ( !ctx->result.decrypt ) {
+        if ( create_result_struct ( ctx ) ) {
             ctx->out_of_core = 1;
             return;
         }
-        ctx->result_type = RESULT_TYPE_DECRYPT;
     }
     assert ( ctx->result_type == RESULT_TYPE_DECRYPT );
 
@@ -66,7 +75,9 @@ decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
       case STATUS_NEED_PASSPHRASE:
       case STATUS_NEED_PASSPHRASE_SYM:
-        fprintf (stderr, "Ooops: Need a passphrase -  use the agent\n");
+        fprintf (stderr, "need a passphrase ...\n" );
+        _gpgme_set_prompt (ctx, 1, "Hey! We need your passphrase!");
+        /* next thing gpg has to do is to read it from the passphrase-fd */
         break;
 
       case STATUS_MISSING_PASSPHRASE:
@@ -91,9 +102,9 @@ decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 }
 
 
-
 GpgmeError
-gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData ciph, GpgmeData plain )
+gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData passphrase,
+                         GpgmeData ciph, GpgmeData plain   )
 {
     int rc = 0;
     int i;
@@ -118,14 +129,19 @@ gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData ciph, GpgmeData plain )
     _gpgme_gpg_add_arg ( c->gpg, "--decrypt" );
     for ( i=0; i < c->verbosity; i++ )
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
-    
+    if (passphrase) {
+        _gpgme_gpg_add_arg (c->gpg, "--passphrase-fd" );
+        _gpgme_gpg_add_data (c->gpg, passphrase, -2 );
+    }
+
+
     /* Check the supplied data */
     if ( !ciph || gpgme_data_get_type (ciph) == GPGME_DATA_TYPE_NONE ) {
         rc = mk_error (No_Data);
         goto leave;
     }
-
     _gpgme_data_set_mode (ciph, GPGME_DATA_MODE_OUT );
+
     if ( gpgme_data_get_type (plain) != GPGME_DATA_TYPE_NONE ) {
         rc = mk_error (Invalid_Value);
         goto leave;
@@ -153,6 +169,7 @@ gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData ciph, GpgmeData plain )
 /**
  * gpgme_op_decrypt:
  * @c: The context
+ * @passphrase: A data object with the passphrase or NULL.
  * @in: ciphertext input
  * @out: plaintext output
  * 
@@ -163,9 +180,10 @@ gpgme_op_decrypt_start ( GpgmeCtx c, GpgmeData ciph, GpgmeData plain )
  * Return value:  0 on success or an errorcode. 
  **/
 GpgmeError
-gpgme_op_decrypt ( GpgmeCtx c, GpgmeData in, GpgmeData out )
+gpgme_op_decrypt ( GpgmeCtx c, GpgmeData passphrase,
+                   GpgmeData in, GpgmeData out )
 {
-    GpgmeError err = gpgme_op_decrypt_start ( c, in, out );
+    GpgmeError err = gpgme_op_decrypt_start ( c, passphrase, in, out );
     if ( !err ) {
         gpgme_wait (c, 1);
         if ( c->result_type != RESULT_TYPE_DECRYPT )

@@ -31,6 +31,7 @@ struct spawn_fd_item_s {
 
 struct io_select_fd_s {
     int fd;
+    int is_closed;
     int for_read;
     int for_write;
     int signaled;
@@ -42,7 +43,7 @@ struct io_select_fd_s {
 
 int _gpgme_io_read ( int fd, void *buffer, size_t count );
 int _gpgme_io_write ( int fd, const void *buffer, size_t count );
-int _gpgme_io_pipe ( int filedes[2] );
+int _gpgme_io_pipe ( int filedes[2], int inherit_idx );
 int _gpgme_io_close ( int fd );
 int _gpgme_io_set_nonblocking ( int fd );
 int _gpgme_io_spawn ( const char *path, char **argv,

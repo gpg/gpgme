@@ -25,6 +25,7 @@
 
 /*-- gpgme.c --*/
 void _gpgme_release_result ( GpgmeCtx c );
+void _gpgme_set_prompt ( GpgmeCtx c, int which, const char *text );
 
 /*-- wait.c --*/
 GpgmeCtx _gpgme_wait_on_condition ( GpgmeCtx c,
@@ -52,6 +53,9 @@ GpgmeError    _gpgme_data_append_for_xml ( GpgmeData dh,
                                            size_t len );
 GpgmeError    _gpgme_data_append_percentstring_for_xml ( GpgmeData dh,
                                                          const char *string );
+
+GpgmeError    _gpgme_data_unread (GpgmeData dh,
+                                  const char *buffer, size_t length );
 
 
 /*-- key.c --*/

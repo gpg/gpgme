@@ -26,6 +26,12 @@
 
 #include "../gpgme/gpgme.h"
 
+struct passphrase_cb_info_s {
+    GpgmeCtx c;
+    int did_it;
+};
+
+
 #define fail_if_err(a) do { if(a) { int my_errno = errno; \
             fprintf (stderr, "%s:%d: GpgmeError %s\n", \
                  __FILE__, __LINE__, gpgme_strerror(a));   \
@@ -50,17 +56,31 @@ print_data ( GpgmeData dh )
         fail_if_err (err);
 }
 
-#if 0
-static GpgmeData
-passphrase_cb ( void *opaque, const char *description )
-{
-    GpgmeData dh;
 
-    assert (NULL);
-    gpgme_data_new_from_mem ( &dh, "abc", 3, 0 );
-    return dh;
+static int
+passphrase_cb ( void *opaque, char *buffer, size_t length, size_t *nread )
+{
+    struct passphrase_cb_info_s *info = opaque;
+    const char *desc;
+
+    assert (info);
+    assert (info->c);
+    if ( !buffer || !length || !nread )
+        return 0; /* those values are reserved for extensions */
+    if ( info->did_it )
+        return -1; /* eof */
+
+    desc = gpgme_get_prompt (info->c, 1);
+    if (desc)
+        fprintf (stderr, "Request passphrase for '%s'\n", desc );
+    if ( length < 3 )
+        return -1; /* FIXME - sending an EOF here is wrong */
+    memcpy (buffer, "abc", 3 );
+    *nread = 3;
+    info->did_it = 1;
+    return 0;
 }
-#endif
+
 
 static char *
 mk_fname ( const char *fname )
@@ -84,17 +104,18 @@ main (int argc, char **argv )
 {
     GpgmeCtx ctx;
     GpgmeError err;
-    GpgmeData in, out;
+    GpgmeData in, out, pwdata = NULL;
+    struct passphrase_cb_info_s info;
     const char *cipher_1_asc = mk_fname ("cipher-1.asc");
 
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
-#if 0
-    if ( !getenv("GPG_AGENT_INFO") {
-        gpgme_set_passphrase_cb ( ctx, passphrase_cb, NULL );
+    if ( 0 && !getenv("GPG_AGENT_INFO") ) {
+        memset ( &info, 0, sizeof info );
+        info.c = ctx;
+        gpgme_data_new_with_read_cb ( &pwdata, passphrase_cb, &info );
     } 
-#endif
 
     err = gpgme_data_new_from_file ( &in, cipher_1_asc, 1 );
     fail_if_err (err);
@@ -102,7 +123,7 @@ main (int argc, char **argv )
     err = gpgme_data_new ( &out );
     fail_if_err (err);
 
-    err = gpgme_op_decrypt (ctx, in, out );
+    err = gpgme_op_decrypt (ctx, pwdata, in, out );
     fail_if_err (err);
 
     fflush (NULL);
@@ -112,6 +133,7 @@ main (int argc, char **argv )
    
     gpgme_data_release (in);
     gpgme_data_release (out);
+    gpgme_data_release (pwdata);
     gpgme_release (ctx);
   } while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
    
