@@ -2671,7 +2671,7 @@ bool checkMessageSignature( char** cleartext,
              ++UID_idx ){
           if (*attr_string) {
             fprintf( stderr, "gpgmeplug checkMessageSignature found email: %s\n", attr_string );
-            if( sigmeta->extended_info[sig_idx].emailCount )
+            if( !sigmeta->extended_info[sig_idx].emailCount )
                 alloc_return = 
                     malloc( sizeof( char*) );
             else
