@@ -26,18 +26,19 @@ AC_REVISION($Revision$)
 
 AC_CONFIG_SRCDIR(gpgme/gpgme.h)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(gpgme, 0.2.3a)
+AM_INIT_AUTOMAKE(gpgme, 0.3.0)
 AM_MAINTAINER_MODE
 
 AC_PROG_CC
 
 # Version numbers (Remember to change them just before a release.)
-#   (Interfaces removed:    CURRENT++, AGE=0, REVISION=0)
-#   (Interfaces added:      CURRENT++, AGE++, REVISION=0)
-#   (No interfaces changed:                   REVISION++)
+#   (Code changed:			REVISION++)
+#   (Interfaces added/removed/changed:	CURRENT++, REVISION=0)
+#   (Interfaces added:			AGE++)
+#   (Interfaces removed:		AGE=0)
 # XXXX new functions
-LIBGPGME_LT_CURRENT=4
-LIBGPGME_LT_AGE=4
+LIBGPGME_LT_CURRENT=5
+LIBGPGME_LT_AGE=0
 LIBGPGME_LT_REVISION=0
 NEED_GPG_VERSION=1.0.6
 NEED_GPGSM_VERSION=0.0.0
@@ -180,7 +181,7 @@ dnl
 dnl Create config files 
 dnl
 
-/* FIXME: Only build if supported.  */
+dnl FIXME: Only build if supported.
 AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
 
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
