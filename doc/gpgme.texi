@@ -3698,7 +3698,7 @@ The creation timestamp of this signature.
 The expiration timestamp of this signature, or 0 if the signature does
 not expire.
 
-@item int wrong_key_usage : 1;
+@item unsigned int wrong_key_usage : 1;
 This is true if the key was not used according to its policy.
 
 @item gpgme_validity_t validity
