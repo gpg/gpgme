@@ -408,6 +408,17 @@ bool signatureCertificateExpiryNearWarning( void )
   return config.signatureCertificateExpiryNearWarning;
 }
 
+
+int signatureCertificateDaysLeftToExpiry( const char* certificate )
+{
+    /* PENDING(g10)
+       Please return the number of days that are left until the
+       certificate specified in the parameter certificate expires.
+    */
+    return 10; // dummy that triggers a warning in the MUA
+}
+
+
 void setSignatureCertificateExpiryNearInterval( int interval )
 {
   config.signatureCertificateExpiryNearInterval = interval;
@@ -426,6 +437,16 @@ void setCACertificateExpiryNearWarning( bool flag )
 bool caCertificateExpiryNearWarning( void )
 {
   return config.cACertificateExpiryNearWarning;
+}
+
+int caCertificateDaysLeftToExpiry( const char* certificate )
+{
+    /* PENDING(g10)
+       Please return the number of days that are left until the
+       CA certificate for the certificate specified in the parameter
+       certificate expires.
+    */
+    return 10; // dummy that triggers a warning in the MUA
 }
 
 void setCACertificateExpiryNearInterval( int interval )
@@ -447,6 +468,17 @@ bool rootCertificateExpiryNearWarning( void )
 {
   return config.rootCertificateExpiryNearWarning;
 }
+
+int rootCertificateDaysLeftToExpiry( const char* certificate )
+{
+    /* PENDING(g10)
+       Please return the number of days that are left until the
+       root certificate for the certificate specified in the parameter
+       certificate expires.
+    */
+    return 10; // dummy that triggers a warning in the MUA
+}
+
 
 void setRootCertificateExpiryNearInterval( int interval )
 {

@@ -525,6 +525,13 @@ void setSignatureCertificateExpiryNearWarning( bool );
 */
 bool signatureCertificateExpiryNearWarning( void );
 
+    /*! \ingroup groupConfigSign
+      \brief Returns the number of days that are left until the
+      specified certificate expires. 
+      \param certificate the certificate to check
+    */
+    int signatureCertificateDaysLeftToExpiry( const char* certificate );
+
 /*! \ingroup groupConfigSign
    \brief Specifies the number of days which a signature certificate must
    be valid before it is considered to expire in the near
@@ -551,6 +558,13 @@ void setCACertificateExpiryNearWarning( bool );
 */
 bool caCertificateExpiryNearWarning( void );
 
+    /*! \ingroup groupConfigSign
+      \brief Returns the number of days that are left until the
+      CA certificate of the specified certificate expires. 
+      \param certificate the certificate to check
+    */
+    int caCertificateDaysLeftToExpiry( const char* certificate );
+
 /*! \ingroup groupConfigSign
    \brief Specifies the number of days which a CA certificate must
    be valid before it is considered to expire in the near
@@ -576,6 +590,13 @@ void setRootCertificateExpiryNearWarning( bool );
    the root certificate expires in the near future.
 */
 bool rootCertificateExpiryNearWarning( void );
+
+    /*! \ingroup groupConfigSign
+      \brief Returns the number of days that are left until the
+      root certificate of the specified certificate expires. 
+      \param certificate the certificate to check
+    */
+    int rootCertificateDaysLeftToExpiry( const char* certificate );
 
 /*! \ingroup groupConfigSign
    \brief Specifies the number of days which a root certificate must
