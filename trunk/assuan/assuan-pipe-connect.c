@@ -30,6 +30,8 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "assuan-defs.h"
 
@@ -102,8 +104,9 @@ do_deinit (ASSUAN_CONTEXT ctx)
    vector in ARGV.  FD_CHILD_LIST is a -1 terminated list of file
    descriptors not to close in the child.  */
 AssuanError
-assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
-		     int *fd_child_list)
+assuan_pipe_connect2 (ASSUAN_CONTEXT *ctx, const char *name,
+                      char *const argv[], int *fd_child_list,
+                      unsigned int connect_flags)
 {
   static int fixed_signals = 0;
   AssuanError err;
@@ -217,6 +220,23 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
           close (wp[0]);
         }
 
+      if ((connect_flags & 1))
+        { /* dup stderr to /dev/null so that the application output
+             won't get clobbered with output from the backend */
+          int fdzero = open ("/dev/null", O_WRONLY);
+          if (fdzero == -1)
+            {
+              LOGERROR1 ("can't open `/dev/null': %s\n", strerror (errno));
+              _exit (4);
+            }
+          if (dup2 (fdzero, 2) == -1)
+            {
+              LOGERROR1 ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
+              _exit (4);
+            }
+          close (fdzero);
+        }
+
       execv (name, argv); 
       /* oops - use the pipe to tell the parent about it */
       snprintf (errbuf, sizeof(errbuf)-1, "ERR %d can't exec `%s': %.50s\n",
@@ -253,6 +273,15 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
 
   return err;
 }
+
+AssuanError
+assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
+		     int *fd_child_list)
+{
+  return assuan_pipe_connect2 (ctx, name, argv, fd_child_list, 0);
+}
+
+
 
 
 

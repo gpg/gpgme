@@ -175,6 +175,10 @@ int assuan_init_socket_server (ASSUAN_CONTEXT *r_ctx, int listen_fd);
 /*-- assuan-pipe-connect.c --*/
 AssuanError assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name,
                                  char *const argv[], int *fd_child_list);
+AssuanError assuan_pipe_connect2 (ASSUAN_CONTEXT *ctx, const char *name,
+                                  char *const argv[], int *fd_child_list,
+                                  unsigned int connect_flags);
+
 /*-- assuan-socket-connect.c --*/
 AssuanError assuan_socket_connect (ASSUAN_CONTEXT *ctx, const char *name,
                                    pid_t server_pid);
