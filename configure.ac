@@ -169,7 +169,21 @@ fi
 have_getenv_r=no
 AC_CHECK_FUNCS(getenv_r, have_getenv_r=yes)
 if test $have_getenv_r = no && test $have_thread_safe_getenv = no; then
-  AC_MSG_WARN([getenv() is not thread-safe and getenv_r() does not exist])
+  AC_MSG_WARN([
+***
+*** getenv() is not thread-safe and getenv_r() does not exist
+***])
+fi
+
+# For converting time strings to seconds since Epoch, we need the timegm
+# function.
+AC_CHECK_FUNCS(timegm)
+if test "$ac_cv_func_timegm" != yes; then
+  AC_MSG_WARN([
+***
+*** timegm() not available - a non-thread-safe kludge will be used
+*** and the TZ variable might be changed at runtime.
+***])
 fi
 
 # Checking for libgpg-error.
@@ -197,9 +211,15 @@ fi
 if test "$GPG" = no; then
   if test "$NO_OVERRIDE" = "yes"; then
     if test "$cross_compiling" != "yes"; then
-      AC_MSG_WARN([Could not find GnuPG, install GnuPG or use --with-gpg=PATH to enable it])
+      AC_MSG_WARN([
+***
+*** Could not find GnuPG, install GnuPG or use --with-gpg=PATH to enable it
+***])
     else
-      AC_MSG_ERROR([Can not determine path to GnuPG when cross-compiling, use --with-gpg=PATH])
+      AC_MSG_ERROR([
+***
+*** Can not determine path to GnuPG when cross-compiling, use --with-gpg=PATH
+***])
     fi
   fi
 else
@@ -227,9 +247,15 @@ fi
 if test "$GPGSM" = no; then
   if test "$NO_OVERRIDE" = "yes"; then
     if test "$cross_compiling" != "yes"; then
-      AC_MSG_WARN([Could not find GpgSM, install GpgSM or use --with-gpgsm=PATH to enable it])
+      AC_MSG_WARN([
+***
+*** Could not find GpgSM, install GpgSM or use --with-gpgsm=PATH to enable it
+***])
     else
-      AC_MSG_ERROR([Can not determine path to GpgSM when cross-compiling, use --with-gpgsm=PATH])
+      AC_MSG_ERROR([
+***
+*** Can not determine path to GpgSM when cross-compiling, use --with-gpgsm=PATH
+***])
     fi
   fi
 else

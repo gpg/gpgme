@@ -1,7 +1,7 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * Before release:
-** currently nothing
+** Some gpg tests fail with gpg 1.3.4-cvs (gpg/t-keylist-sig)
 
 * ABI's to break:
 ** I/O and User Data could be made extensible.  But this can be done
@@ -27,6 +27,7 @@ Hey Emacs, this is -*- outline -*- mode!
 * Thread support:
 ** When GNU Pth supports sendmsg/recvmsg, wrap them properly.
 ** Without timegm (3) support our ISO time parser is not thread safe.
+   There is a configure time warning, though.
 
 * New features:
 ** notification system

@@ -1,3 +1,9 @@
+2003-11-19  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4: Add AM_PATH_GPG_ERROR.
+	* configure.ac: Check for timegm.  Made warning messages more
+	prominent.
+
 2003-10-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	Released 0.4.3.
