@@ -1,5 +1,9 @@
 2003-05-18  Marcus Brinkmann  <marcus@g10code.de>
 
+	* keylist.c (finish_key): Clear OPD->tmp_uid.
+
+2003-05-18  Marcus Brinkmann  <marcus@g10code.de>
+
 	* verify.c (_gpgme_verify_status_handler): Return GPGME_No_Data
 	for NODATA status without signatures.
 
