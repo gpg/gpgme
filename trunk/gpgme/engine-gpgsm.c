@@ -1479,7 +1479,8 @@ _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque)
   return mk_error (Invalid_Engine);
 }
 
-void _gpgme_gpgsm_set_io_cbs (GpgsmObject gpgsm, GpgmeIOCbs io_cbs)
+void
+_gpgme_gpgsm_set_io_cbs (GpgsmObject gpgsm, struct GpgmeIOCbs *io_cbs)
 {
 }
 
