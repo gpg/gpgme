@@ -66,6 +66,8 @@ mem_write (gpgme_data_t dh, const void *buffer, size_t size)
       new_buffer = malloc (new_size);
       if (!new_buffer)
 	return -1;
+      memcpy (new_buffer, dh->data.mem.orig_buffer, dh->data.mem.length);
+
       dh->data.mem.buffer = new_buffer;      
       dh->data.mem.size = new_size;
     }
