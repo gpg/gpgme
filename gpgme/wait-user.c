@@ -59,6 +59,16 @@ _gpgme_user_io_cb_handler (void *data, int fd)
 	  _gpgme_io_close (ctx->fdt.fds[idx].fd);
       _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &err);
     }
+  else
+    {
+      int i;
+
+      for (i = 0; i < ctx->fdt.size; i++)
+	if (ctx->fdt.fds[i].fd != -1)
+	  break;
+      if (i == ctx->fdt.size)
+	_gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &err);
+    }
   return 0;
 }
 
@@ -95,22 +105,12 @@ _gpgme_wait_user_remove_io_cb (void *data)
 {
   struct tag *tag = (struct tag *) data;
   GpgmeCtx ctx;
-  int i;
 
   assert (tag);
   ctx = tag->ctx;
 
   (*ctx->io_cbs.remove) (tag->user_tag);
   _gpgme_remove_io_cb (data);
-
-  for (i = 0; i < ctx->fdt.size; i++)
-    if (ctx->fdt.fds[i].fd != -1)
-      break;
-  if (i == ctx->fdt.size)
-    {
-      GpgmeError err = 0;
-      _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &err);
-    }
 }
 
 
