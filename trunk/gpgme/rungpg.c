@@ -276,6 +276,30 @@ free_fd_data_map (struct fd_data_map_s *fd_data_map)
 }
 
 
+static gpgme_error_t
+gpg_cancel (void *engine)
+{
+  engine_gpg_t gpg = engine;
+
+  if (!gpg)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (gpg->status.fd[0] != -1)
+    _gpgme_io_close (gpg->status.fd[0]);
+  if (gpg->status.fd[1] != -1)
+    _gpgme_io_close (gpg->status.fd[1]);
+  if (gpg->colon.fd[0] != -1)
+    _gpgme_io_close (gpg->colon.fd[0]);
+  if (gpg->colon.fd[1] != -1)
+    _gpgme_io_close (gpg->colon.fd[1]);
+  if (gpg->fd_data_map)
+    free_fd_data_map (gpg->fd_data_map);
+  if (gpg->cmd.fd != -1)
+    _gpgme_io_close (gpg->cmd.fd);
+
+  return 0;
+}
+
 static void
 gpg_release (void *engine)
 {
@@ -283,6 +307,8 @@ gpg_release (void *engine)
 
   if (!gpg)
     return;
+
+  gpg_cancel (engine);
 
   while (gpg->arglist)
     {
@@ -302,18 +328,6 @@ gpg_release (void *engine)
   if (gpg->cmd.keyword)
     free (gpg->cmd.keyword);
 
-  if (gpg->status.fd[0] != -1)
-    _gpgme_io_close (gpg->status.fd[0]);
-  if (gpg->status.fd[1] != -1)
-    _gpgme_io_close (gpg->status.fd[1]);
-  if (gpg->colon.fd[0] != -1)
-    _gpgme_io_close (gpg->colon.fd[0]);
-  if (gpg->colon.fd[1] != -1)
-    _gpgme_io_close (gpg->colon.fd[1]);
-  if (gpg->fd_data_map)
-    free_fd_data_map (gpg->fd_data_map);
-  if (gpg->cmd.fd != -1)
-    _gpgme_io_close (gpg->cmd.fd);
   free (gpg);
 }
 
@@ -1665,5 +1679,5 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_verify,
     gpg_set_io_cbs,
     gpg_io_event,
-    NULL
+    gpg_cancel
   };
