@@ -1,3 +1,22 @@
 This is a modified copy of the libassuan library.  Don't modify it,
 but instead modify the original Assuan library and merge the changes
 back into this copy.
+
+The changes to the original libassuan, that have to preserved when
+updating this directory, are:
+
+* Makefile.am
+** Build the library with libtool as a convenience library, which can
+   be linked into the shared library GPGME.
+** Do not install the library or the header file.
+** Define -D_ASSUAN_IN_GPGME_BUILD_ASSUAN to wrap some POSIX functions
+   with ATH replacements.
+
+* assuan.h
+** Define _ASSUAN_IN_GPGME to enable GPGME specific code.
+** Put all exported Assuan functions in the _gpgme namespace.
+** Also wrap all system functions that are wrapped by GNU Pth to
+   _gpgme wrappers.
+
+* assuan-io.c
+** Don't try to support GNU Pth here.

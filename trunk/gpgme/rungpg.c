@@ -1097,7 +1097,7 @@ start (engine_gpg_t gpg)
   saved_errno = errno;
   free (fd_child_list);
   if (status == -1)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_errno (saved_errno);
 
   /*_gpgme_register_term_handler ( closure, closure_value, pid );*/
 

@@ -3,6 +3,7 @@
 	* configure.ac: If building Assuan, check for funopen and
 	fopencookie, and make isascii, putc_unlocked and memrchr
 	replacement functions.
+	(AM_PATH_GPG_ERROR): Require 0.3.
 
 2003-07-31  Marcus Brinkmann  <marcus@g10code.de>
 

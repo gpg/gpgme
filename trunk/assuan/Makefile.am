@@ -26,6 +26,7 @@ MOSTLYCLEANFILES = assuan-errors.c
 
 noinst_LTLIBRARIES = libassuan.la
 
+AM_CPPFLAGS = -D_ASSUAN_IN_GPGME_BUILD_ASSUAN
 
 #libassuan_la_LDFLAGS =
 libassuan_la_SOURCES = \
