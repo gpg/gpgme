@@ -1,0 +1,12 @@
+Makefile Makefile.in .deps .libs
+gpg-agent.conf
+private-keys-v1.d
+pubring.gpg
+pubring.kbx
+secring.gpg
+t-decrypt
+t-encrypt
+t-import
+t-keylist
+t-sign
+t-verify
