@@ -91,7 +91,7 @@ gpgme_data_new_from_mem ( GpgmeData *r_dh,
     err = gpgme_data_new ( &dh );
     if (err)
         return err;
-    dh->len  = size;
+    dh->len = size;
     if (copy) {
         dh->private_buffer = xtrymalloc ( size );
         if ( !dh->private_buffer ) {
