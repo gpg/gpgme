@@ -1,5 +1,12 @@
 2001-12-13  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (_gpgme_gpgsm_op_encrypt): Do not add `armor'
+	option to `ENCRYPT'.
+	* engine-gpgsm.c (gpgsm_set_recipients): Free LINE when returning
+	successfully.
+
+2001-12-13  Marcus Brinkmann  <marcus@g10code.de>
+
 	* engine-gpgsm.c (close_notify_handler): New function.
 	(_gpgme_gpgsm_new): Manage the file descriptors a
 	bit differently.  Do not set close-on-exec flags.
