@@ -27,12 +27,6 @@ else
 assuan =
 endif
 
-if BUILD_BONOBO
-bonobo = bonobo
-else
-bonobo = 
-endif
-
 if BUILD_COMPLUS
 complus = complus
 else
@@ -45,7 +39,7 @@ else
 tests = 
 endif
 
-SUBDIRS = ${assuan} gpgme ${tests} doc ${bonobo} ${complus}
+SUBDIRS = ${assuan} gpgme ${tests} doc ${complus}
 
 # Fix the version of the spec file and create a file named VERSION 
 # to be used for patch's Prereq: feature.
