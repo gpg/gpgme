@@ -2370,7 +2370,8 @@ Here is a sample of the information that might be returned:
 @end example
 
 Currently, the only operations that return additional information are
-encrypt, sign and import.  @xref{Encrypt}, @xref{Sign}, @xref(Importing Keys}.
+encrypt, sign and import.  @xref{Encrypt}, @xref{Sign},
+@xref{Importing Keys}.
 
 The function returns a string or @code{NULL} if no such data is
 available.
