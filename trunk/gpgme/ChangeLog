@@ -1,3 +1,8 @@
+2002-02-13  Werner Koch  <wk@gnupg.org>
+
+	* vasprintf.c, fopencookie.c: Add replacement functions.
+	* util.h: Add prototypes for them.
+
 2002-02-09  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (gpgsm_assuan_simple_command): Return 0 if we
