@@ -21,7 +21,9 @@
 #ifndef GPGME_H
 #define GPGME_H
 
-#include <stdio.h> /* For FILE *.  */
+/* Include stdio.h for the FILE type definition.  */
+#include <stdio.h>
+
 #ifdef _MSC_VER
   typedef long off_t;
   typedef long ssize_t;
@@ -36,7 +38,7 @@ extern "C" {
 #endif
 #endif
 
-
+
 /* The version of this header should match the one of the library.  Do
    not use this symbol in your application, use gpgme_check_version
    instead.  The purpose of this macro is to let autoconf (using the
@@ -45,15 +47,15 @@ extern "C" {
    that for you!  */
 #define GPGME_VERSION "0.4.1"
 
-
+
 /* The opaque data types used by GPGME.  */
 
-/* The context holds some global state and configration options as
+/* The context holds some global state and configration options, as
    well as the results of a crypto operation.  */
 struct gpgme_context_s;
 typedef struct gpgme_context_s *GpgmeCtx;
 
-/* The data object used by GPGME to exchange arbitrary data.  */
+/* The data object is used by GPGME to exchange arbitrary data.  */
 struct gpgme_data_s;
 typedef struct gpgme_data_s *GpgmeData;
 
@@ -128,10 +130,11 @@ GpgmeError;
 #define GPGME_Invalid_Recipient	GPGME_Invalid_UserID
 #define GPGME_No_Passphrase	GPGME_Bad_Passphrase
 
+
 /* The possible encoding mode of GpgmeData objects.  */
 typedef enum
   {
-    GPGME_DATA_ENCODING_NONE   = 0,	/* I.e. not specified.  */
+    GPGME_DATA_ENCODING_NONE   = 0,	/* Not specified.  */
     GPGME_DATA_ENCODING_BINARY = 1,
     GPGME_DATA_ENCODING_BASE64 = 2,
     GPGME_DATA_ENCODING_ARMOR  = 3	/* Either PEM or OpenPGP Armor.  */
@@ -197,6 +200,7 @@ typedef enum
   }
 GpgmeSigMode;
 
+
 /* The available key and signature attributes.  */
 typedef enum
   {
@@ -246,6 +250,7 @@ typedef enum
     GPGME_VALIDITY_ULTIMATE  = 5
   }
 GpgmeValidity;
+
 
 /* The available protocols.  */
 typedef enum
@@ -342,11 +347,6 @@ typedef enum
   }
 GpgmeStatusCode;
 
-/* The available keylist mode flags.  */
-#define GPGME_KEYLIST_MODE_LOCAL  1
-#define GPGME_KEYLIST_MODE_EXTERN 2
-#define GPGME_KEYLIST_MODE_SIGS   4
-
 /* The engine information structure.  */
 struct _gpgme_engine_info
 {
@@ -381,6 +381,7 @@ typedef void (*GpgmeProgressCb) (void *opaque, const char *what,
 typedef GpgmeError (*GpgmeEditCb) (void *opaque, GpgmeStatusCode status,
 				   const char *args, const char **reply);
 
+
 /* Context management functions.  */
 
 /* Create a new context and return it in CTX.  */
@@ -415,6 +416,14 @@ void gpgme_set_include_certs (GpgmeCtx ctx, int nr_of_certs);
 
 /* Return the number of certs to include in an S/MIME message.  */
 int gpgme_get_include_certs (GpgmeCtx ctx);
+
+/* The available keylist mode flags.  */
+enum
+  {
+    GPGME_KEYLIST_MODE_LOCAL  = 1,
+    GPGME_KEYLIST_MODE_EXTERN = 2,
+    GPGME_KEYLIST_MODE_SIGS   = 4
+  };
 
 /* Set keylist mode in CTX to MODE.  */
 GpgmeError gpgme_set_keylist_mode (GpgmeCtx ctx, int mode);
@@ -534,7 +543,7 @@ void gpgme_get_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs);
    the pending operation to finish.  */
 GpgmeCtx gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang);
 
-
+
 /* Functions to handle recipients.  */
 
 /* Create a new recipients set and return it in R_RSET.  */
@@ -568,7 +577,7 @@ const char *gpgme_recipients_enum_read (const GpgmeRecipients rset,
 GpgmeError gpgme_recipients_enum_close (const GpgmeRecipients rset,
 					void **iter);
 
-
+
 /* Functions to handle data objects.  */
 
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
@@ -672,7 +681,7 @@ GpgmeError gpgme_data_new_from_filepart (GpgmeData *r_dh,
    gpgme_data_seek instead.  */
 GpgmeError gpgme_data_rewind (GpgmeData dh);
 
-
+
 /* Key and trust functions.  */
 
 /* Get the key with the fingerprint FPR from the key cache or from the
@@ -1097,7 +1106,7 @@ GpgmeError gpgme_get_engine_info (GpgmeEngineInfo *engine_info);
 /* Return a string describing ERR.  */
 const char *gpgme_strerror (GpgmeError err);
 
-
+
 /* Engine support functions.  */
 
 /* Verify that the engine implementing PROTO is installed and

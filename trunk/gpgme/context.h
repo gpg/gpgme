@@ -1,4 +1,4 @@
-/* context.h
+/* context.h - Definitions for a GPGME context.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003 g10 Code GmbH
 
@@ -34,7 +34,7 @@ typedef enum
   {
     OPDATA_DECRYPT, OPDATA_SIGN, OPDATA_ENCRYPT, OPDATA_PASSPHRASE,
     OPDATA_IMPORT, OPDATA_GENKEY, OPDATA_KEYLIST, OPDATA_EDIT,
-    OPDATA_VERIFY_COLLECTING, OPDATA_VERIFY
+    OPDATA_VERIFY, OPDATA_TRUSTLIST
   } ctx_op_data_type;
 
 struct ctx_op_data
@@ -102,8 +102,6 @@ struct gpgme_context_s
   /* The operation data hooked into the context.  */
   struct ctx_op_data *op_data;
 
-  /* Last signature notation.  */
-  GpgmeData notation;
   /* Last operation info.  */
   GpgmeData op_info;
 
