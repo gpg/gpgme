@@ -1,3 +1,8 @@
+2003-05-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (GpgmeError): Add deprecated values for
+	GPGME_Invalid_Type and GPGME_Invalid_Mode.
+
 2003-04-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (gpgme_get_op_info): Remove prototype.

@@ -116,7 +116,9 @@ typedef enum
 
     /* Deprecated.  */
     GPGME_Busy                    = -2,
-    GPGME_No_Request              = -3
+    GPGME_No_Request              = -3,
+    GPGME_Invalid_Type            = -4,
+    GPGME_Invalid_Mode            = -5
   }
 GpgmeError;
 
