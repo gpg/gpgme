@@ -1,4 +1,4 @@
-/* engine.c 
+/* engine.c - GPGME engine support.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002 g10 Code GmbH
  
@@ -21,49 +21,45 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <time.h>
-#include <sys/types.h>
-#include <string.h>
-#include <assert.h>
+#include <stdlib.h>
 
 #include "gpgme.h"
 #include "util.h"
 #include "sema.h"
-#include "io.h"
 
 #include "engine.h"
-#include "rungpg.h"
-#include "engine-gpgsm.h"
+#include "engine-backend.h"
 
 
 struct engine_object_s
-  {
-    GpgmeProtocol protocol;
-
-    const char *path;
-    const char *version;
-
-    union
-      {
-        GpgObject gpg;
-        GpgsmObject gpgsm;
-      } engine;
+{
+  struct engine_ops *ops;
+  void *engine;
 };
+
+
+static struct engine_ops *engine_ops[] =
+  {
+    &_gpgme_engine_ops_gpg,		/* OpenPGP.  */
+#ifdef ENABLE_GPGSM
+    &_gpgme_engine_ops_gpgsm		/* CMS.  */
+#else
+    NULL
+#endif
+  };
 
 
 /* Get the path of the engine for PROTOCOL.  */
 const char *
 _gpgme_engine_get_path (GpgmeProtocol proto)
 {
-  switch (proto)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_get_gpg_path ();
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_get_gpgsm_path ();
-    default:
-      return NULL;
-    }
+  if (proto > sizeof (engine_ops) / sizeof (engine_ops[0]))
+    return NULL;
+
+  if (engine_ops[proto] && engine_ops[proto]->get_path)
+    return (*engine_ops[proto]->get_path) ();
+  else
+    return NULL;
 }
 
 
@@ -71,30 +67,30 @@ _gpgme_engine_get_path (GpgmeProtocol proto)
 const char *
 _gpgme_engine_get_version (GpgmeProtocol proto)
 {
-  switch (proto)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_get_version ();
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_get_version ();
-    default:
-      return NULL;
-    }
+  if (proto > sizeof (engine_ops) / sizeof (engine_ops[0]))
+    return NULL;
+
+  if (engine_ops[proto] && engine_ops[proto]->get_version)
+    return (*engine_ops[proto]->get_version) ();
+  else
+    return NULL;
 }
 
 
+/* Verify the version requirement for the engine for PROTOCOL.  */
 GpgmeError
 gpgme_engine_check_version (GpgmeProtocol proto)
 {
-  switch (proto)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_check_version ();
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_check_version ();
-    default:
-      return mk_error (Invalid_Value);
-    }
+  if (proto > sizeof (engine_ops) / sizeof (engine_ops[0]))
+    return mk_error (Invalid_Value);
+
+  if (!engine_ops[proto])
+    return mk_error (Invalid_Engine);
+
+  if (engine_ops[proto]->check_version)
+    return (*engine_ops[proto]->check_version) ();
+  else
+    return 0;
 }
 
 
@@ -141,48 +137,40 @@ GpgmeError
 _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine)
 {
   EngineObject engine;
-  GpgmeError err = 0;
+
+  const char *path;
+  const char *version;
+
+  if (proto > sizeof (engine_ops) / sizeof (engine_ops[0]))
+    return mk_error (Invalid_Value);
+
+  if (!engine_ops[proto])
+    return mk_error (Invalid_Engine);
+
+  path = _gpgme_engine_get_path (proto);
+  version = _gpgme_engine_get_version (proto);
+  if (!path || !version)
+    return mk_error (Invalid_Engine);
 
   engine = calloc (1, sizeof *engine);
   if (!engine)
-    {
-      err = mk_error (Out_Of_Core);
-      goto leave;
-    }
+    return mk_error (Out_Of_Core);
 
-  engine->protocol = proto;
-  switch (proto)
+  engine->ops = engine_ops[proto];
+  if (engine_ops[proto]->new)
     {
-    case GPGME_PROTOCOL_OpenPGP:
-      err =_gpgme_gpg_new (&engine->engine.gpg);
-      break;
-    case GPGME_PROTOCOL_CMS:
-      err = _gpgme_gpgsm_new (&engine->engine.gpgsm);
+      GpgmeError err = (*engine_ops[proto]->new) (&engine->engine);
       if (err)
-	goto leave;
-      break;
-    default:
-      err = mk_error (Invalid_Value);
+	{
+	  free (engine);
+	  return err;
+	}
     }
-  if (err)
-    goto leave;
-
-  engine->path = _gpgme_engine_get_path (proto);
-  engine->version = _gpgme_engine_get_version (proto);
-
-  if (!engine->path || !engine->version)
-    {
-      err = mk_error (Invalid_Engine);
-      goto leave;
-    }
-
- leave:
-  if (err)
-    _gpgme_engine_release (engine);
   else
-    *r_engine = engine;
-  
-  return err;
+    engine->engine = NULL;
+
+  *r_engine = engine;
+  return 0;
 }
 
 
@@ -192,17 +180,8 @@ _gpgme_engine_release (EngineObject engine)
   if (!engine)
     return;
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      _gpgme_gpg_release (engine->engine.gpg);
-      break;
-    case GPGME_PROTOCOL_CMS:
-      _gpgme_gpgsm_release (engine->engine.gpgsm);
-      break;
-    default:
-      break;
-    }
+  if (engine->ops->release)
+    (*engine->ops->release) (engine->engine);
   free (engine);
 }
 
@@ -213,18 +192,10 @@ _gpgme_engine_set_verbosity (EngineObject engine, int verbosity)
   if (!engine)
     return;
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      _gpgme_gpg_set_verbosity (engine->engine.gpg, verbosity);
-      break;
-    case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
-    default:
-      break;
-    }
+  if (engine->ops->set_verbosity)
+    (*engine->ops->set_verbosity) (engine->engine, verbosity);
 }
+
 
 void
 _gpgme_engine_set_status_handler (EngineObject engine,
@@ -233,18 +204,10 @@ _gpgme_engine_set_status_handler (EngineObject engine,
   if (!engine)
     return;
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      _gpgme_gpg_set_status_handler (engine->engine.gpg, fnc, fnc_value);
-      break;
-    case GPGME_PROTOCOL_CMS:
-      _gpgme_gpgsm_set_status_handler (engine->engine.gpgsm, fnc, fnc_value);
-      break;
-    default:
-      break;
-    }
+  if (engine->ops->set_status_handler)
+    (*engine->ops->set_status_handler) (engine->engine, fnc, fnc_value);
 }
+
 
 GpgmeError
 _gpgme_engine_set_command_handler (EngineObject engine,
@@ -254,18 +217,11 @@ _gpgme_engine_set_command_handler (EngineObject engine,
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_set_command_handler (engine->engine.gpg,
-					     fnc, fnc_value, linked_data);
-    case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->set_command_handler)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->set_command_handler) (engine->engine,
+					      fnc, fnc_value, linked_data);
 }
 
 GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject engine,
@@ -275,20 +231,11 @@ GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject engine,
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_set_colon_line_handler (engine->engine.gpg, 
-                                                fnc, fnc_value);
-    case GPGME_PROTOCOL_CMS:
-      _gpgme_gpgsm_set_colon_line_handler (engine->engine.gpgsm,
-                                           fnc, fnc_value);
-      break;
+  if (!engine->ops->set_colon_line_handler)
+    return mk_error (Not_Implemented);
 
-    default:
-      break;
-    }
-  return 0;
+  return (*engine->ops->set_colon_line_handler) (engine->engine,
+						 fnc, fnc_value);
 }
 
 GpgmeError
@@ -297,16 +244,10 @@ _gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph, GpgmeData plain)
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_decrypt (engine->engine.gpg, ciph, plain);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_decrypt (engine->engine.gpgsm, ciph, plain);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->decrypt)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->decrypt) (engine->engine, ciph, plain);
 }
 
 GpgmeError
@@ -315,16 +256,10 @@ _gpgme_engine_op_delete (EngineObject engine, GpgmeKey key, int allow_secret)
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_delete (engine->engine.gpg, key, allow_secret);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_delete (engine->engine.gpgsm, key, allow_secret);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->delete)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->delete) (engine->engine, key, allow_secret);
 }
 
 
@@ -335,18 +270,12 @@ _gpgme_engine_op_edit (EngineObject engine, GpgmeKey key, GpgmeData out,
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_edit (engine->engine.gpg, key, out, ctx);
-    case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      return mk_error (Not_Implemented);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->edit)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->edit) (engine->engine, key, out, ctx);
 }
+
 
 GpgmeError
 _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
@@ -355,18 +284,11 @@ _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_encrypt (engine->engine.gpg, recp, plain, ciph,
-				    use_armor);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_encrypt (engine->engine.gpgsm, recp, plain, ciph,
-				      use_armor);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->encrypt)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->encrypt) (engine->engine, recp, plain, ciph,
+				  use_armor);
 }
 
 
@@ -378,17 +300,11 @@ _gpgme_engine_op_encrypt_sign (EngineObject engine, GpgmeRecipients recp,
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_encrypt_sign (engine->engine.gpg, recp, plain, ciph,
-					 use_armor, ctx);
-    case GPGME_PROTOCOL_CMS:
-      return mk_error (Not_Implemented);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->encrypt_sign)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->encrypt_sign) (engine->engine, recp, plain, ciph,
+				       use_armor, ctx);
 }
 
 
@@ -399,19 +315,13 @@ _gpgme_engine_op_export (EngineObject engine, GpgmeRecipients recp,
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_export (engine->engine.gpg, recp, keydata,
-				   use_armor);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_export (engine->engine.gpgsm, recp, keydata,
-				     use_armor);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->export)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->export) (engine->engine, recp, keydata,
+				 use_armor);
 }
+
 
 GpgmeError
 _gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data,
@@ -420,19 +330,13 @@ _gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data,
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_genkey (engine->engine.gpg, help_data, use_armor,
-				   pubkey, seckey);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_genkey (engine->engine.gpgsm, help_data, use_armor,
-				     pubkey, seckey);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->genkey)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->genkey) (engine->engine, help_data, use_armor,
+				 pubkey, seckey);
 }
+
 
 GpgmeError
 _gpgme_engine_op_import (EngineObject engine, GpgmeData keydata)
@@ -440,16 +344,10 @@ _gpgme_engine_op_import (EngineObject engine, GpgmeData keydata)
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_import (engine->engine.gpg, keydata);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_import (engine->engine.gpgsm, keydata);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->import)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->import) (engine->engine, keydata);
 }
 
 
@@ -460,18 +358,11 @@ _gpgme_engine_op_keylist (EngineObject engine, const char *pattern,
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_keylist (engine->engine.gpg, pattern, secret_only,
-				    keylist_mode);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_keylist (engine->engine.gpgsm, pattern, secret_only,
-				      keylist_mode);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->keylist)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->keylist) (engine->engine, pattern, secret_only,
+				  keylist_mode);
 }
 
 
@@ -482,18 +373,11 @@ _gpgme_engine_op_keylist_ext (EngineObject engine, const char *pattern[],
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_keylist_ext (engine->engine.gpg, pattern,
-					secret_only, reserved, keylist_mode);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_keylist_ext (engine->engine.gpgsm, pattern,
-					  secret_only, reserved, keylist_mode);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->keylist_ext)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->keylist_ext) (engine->engine, pattern, secret_only,
+				      reserved, keylist_mode);
 }
 
 
@@ -506,20 +390,13 @@ _gpgme_engine_op_sign (EngineObject engine, GpgmeData in, GpgmeData out,
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_sign (engine->engine.gpg, in, out, mode, use_armor,
-				 use_textmode, ctx);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_sign (engine->engine.gpgsm, in, out, mode,
-				   use_armor, use_textmode, include_certs, ctx);
-      break;
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->sign)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->sign) (engine->engine, in, out, mode, use_armor,
+			       use_textmode, include_certs, ctx);
 }
+
 
 GpgmeError
 _gpgme_engine_op_trustlist (EngineObject engine, const char *pattern)
@@ -527,17 +404,12 @@ _gpgme_engine_op_trustlist (EngineObject engine, const char *pattern)
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_trustlist (engine->engine.gpg, pattern);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_trustlist (engine->engine.gpgsm, pattern);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->trustlist)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->trustlist) (engine->engine, pattern);
 }
+
 
 GpgmeError
 _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
@@ -546,19 +418,12 @@ _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_op_verify (engine->engine.gpg, sig,
-				   signed_text, plaintext);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_op_verify (engine->engine.gpgsm, sig,
-				     signed_text, plaintext);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->verify)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->verify) (engine->engine, sig, signed_text, plaintext);
 }
+
 
 GpgmeError
 _gpgme_engine_start (EngineObject engine, void *opaque)
@@ -566,17 +431,12 @@ _gpgme_engine_start (EngineObject engine, void *opaque)
   if (!engine)
     return mk_error (Invalid_Value);
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_spawn (engine->engine.gpg, opaque);
-    case GPGME_PROTOCOL_CMS:
-      return _gpgme_gpgsm_start (engine->engine.gpgsm, opaque);
-    default:
-      break;
-    }
-  return 0;
+  if (!engine->ops->start)
+    return mk_error (Not_Implemented);
+
+  return (*engine->ops->start) (engine->engine, opaque);
 }
+
 
 void
 _gpgme_engine_set_io_cbs (EngineObject engine,
@@ -585,17 +445,7 @@ _gpgme_engine_set_io_cbs (EngineObject engine,
   if (!engine)
     return;
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      _gpgme_gpg_set_io_cbs (engine->engine.gpg, io_cbs);
-      break;
-    case GPGME_PROTOCOL_CMS:
-      _gpgme_gpgsm_set_io_cbs (engine->engine.gpgsm, io_cbs);
-      break;
-    default:
-      break;
-    }
+  (*engine->ops->set_io_cbs) (engine->engine, io_cbs);
 }
 
 void
@@ -605,15 +455,5 @@ _gpgme_engine_io_event (EngineObject engine,
   if (!engine)
     return;
 
-  switch (engine->protocol)
-    {
-    case GPGME_PROTOCOL_OpenPGP:
-      _gpgme_gpg_io_event (engine->engine.gpg, type, type_data);
-      break;
-    case GPGME_PROTOCOL_CMS:
-      _gpgme_gpgsm_io_event (engine->engine.gpgsm, type, type_data);
-      break;
-    default:
-      break;
-    }
+  (*engine->ops->io_event) (engine->engine, type, type_data);
 }

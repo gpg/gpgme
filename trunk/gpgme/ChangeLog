@@ -1,5 +1,140 @@
 2002-10-10  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.h, engine-gpgsm.h: File removed.
+	* engine-backend.h: New file.
+	* Makefile.am (gpgsm_components): New variable, set depending on
+	automake conditional HAVE_GPGSM.
+	(libgpgme_la_SOURCES): Add engine-backend.h, remove rungpg.h and
+	engine-gpgsm.h.  Replace engine-gpgsm.c with ${gpgsm_components}.
+	(status-table.h): Depend on gpgme.h, not rungpg.h.
+	* conversion.c: Include <stdlib.h>.
+	* engine-gpgsm.c: Do not set ENABLE_GPGSM here.  Include
+	"engine-backend.h" instead "engine-gpgsm.h".  Reorder some
+	functions and remove all function prototypes.
+	(_gpgme_gpgsm_get_version): Make static and rename to ...
+	(gpgsm_get_version): ... this.
+	(_gpgme_gpgsm_check_version): Make static and rename to ...
+	(gpgsm_check_version): ... this.
+	(_gpgme_gpgsm_new): Make static.  Change argument type from
+	GpgsmObject * to void **.  Call gpgsm_release instead
+	_gpgme_gpgsm_release.
+	(_gpgme_gpgsm_op_decrypt): Make static and rename to ...
+	(gpgsm_check_decrypt): ... this.
+	(_gpgme_gpgsm_op_delete): Make static and rename to ...
+	(gpgsm_check_delete): ... this.
+	(_gpgme_gpgsm_set_recipients): Make static and rename to ...
+	(gpgsm_check_set_recipients): ... this.
+	(_gpgme_gpgsm_op_encrypt): Make static and rename to ...
+	(gpgsm_encrypt): ... this.
+	(_gpgme_gpgsm_op_export): Make static and rename to ...
+	(gpgsm_export): ... this.
+	(_gpgme_gpgsm_op_genkey): Make static and rename to ...
+	(gpgsm_genkey): ... this.
+	(_gpgme_gpgsm_op_import): Make static and rename to ...
+	(gpgsm_import): ... this.
+	(_gpgme_gpgsm_op_keylist): Make static and rename to ...
+	(gpgsm_keylist): ... this.
+	(_gpgme_gpgsm_op_keylist_ext): Make static and rename to ...
+	(gpgsm_keylist_ext): ... this.
+	(_gpgme_gpgsm_op_sign): Make static and rename to ...
+	(gpgsm_sign): ... this.
+	(_gpgme_gpgsm_op_trustlist): Make static and rename to ...
+	(gpgsm_trustlist): ... this.
+	(_gpgme_gpgsm_op_verify): Make static and rename to ...
+	(gpgsm_verify): ... this.
+	(gpgsm_status_handler): Rename to ...
+	(status_handler): ... this.
+	(_gpgme_gpgsm_set_status_handler): Make static and rename to ...
+	(gpgsm_set_status_handler): ... this.
+	(_gpgme_gpgsm_set_colon_line_handler): Make static and rename to ...
+	(gpgsm_set_colon_line_handler): ... this.
+	(_gpgme_gpgsm_add_io_cb): Rename to ...
+	(add_io_cb): ... this.
+	(_gpgme_gpgsm_start): Make static and rename to ...
+	(gpgsm_start): ... this.
+	(_gpgme_gpgsm_set_io_cb): Make static and rename to ...
+	(gpgsm_set_io_cb): ... this.
+	(_gpgme_gpgsm_io_event): Make static and rename to ...
+	(gpgsm_io_event): ... this.
+	(struct _gpgme_engine_ops_gpgsm): New variable.
+	[!ENABLE_GPGSM]: Removed.
+	* engine.c: Do not include <time.h>, <sys/types.h>, <string.h>,
+	<assert.h>, "io.h", "rungpg.h" and "engine-gpgsm.h".  Include
+	<stdlib.h> and "engine-backend.h".
+	(struct engine_object_s): Rewritten.
+	(engine_ops): New variable.
+	* engine.c (_gpgme_engine_get_path, _gpgme_engine_get_version,
+	_gpgme_engine_check_version, _gpgme_engine_new,
+	_gpgme_engine_release, _gpgme_engine_set_verbosity,
+	_gpgme_engine_set_status_handler,
+	_gpgme_engine_set_command_handler,
+	_gpgme_engine_set_colon_line_handler, _gpgme_engine_op_decrypt,
+	_gpgme_engine_op_delete, _gpgme_engine_op_edit,
+	_gpgme_engine_op_encrypt, _gpgme_engine_op_encrypt_sign,
+	_gpgme_engine_op_export, _gpgme_engine_op_genkey,
+	_gpgme_engine_op_import, _gpgme_engine_op_keylist,
+	_gpgme_engine_op_keylist_ext, _gpgme_engine_op_sign,
+	_gpgme_engine_op_trustlist, _gpgme_engine_op_verify,
+	_gpgme_engine_start, _gpgme_engine_set_io_cbs,
+	_gpgme_engine_io_event): Reimplement.
+	* engine.h: Fix a few comments and a variable name in a prototype.
+	* ops.h: Do not include "rungpg.h".
+	* passphrase.c: Include config.h only if [HAVE_CONFIG_H].  Do not
+	include "rungpg.h".
+	* recipient.c: Likewise.
+	* signers.c: Likewise.
+	* version.c: Likewise.
+	* rungpg.c: Likewise.  Include "engine-backend.h".  Reorder
+	functions and remove prototypes.
+	(_gpgme_gpg_get_version): Make static and rename to ...
+	(gpg_get_version): ... this.
+	(_gpgme_gpg_check_version): Make static and rename to ...
+	(gpg_check_version): ... this.
+	(_gpgme_gpg_new): Make static.  Change argument type from
+	GpgObject * to void **.  Call gpg_release instead
+	_gpgme_gpg_release.
+	(_gpgme_gpg_op_decrypt): Make static and rename to ...
+	(gpg_check_decrypt): ... this.
+	(_gpgme_gpg_op_delete): Make static and rename to ...
+	(gpg_check_delete): ... this.
+	(_gpgme_gpg_set_recipients): Make static and rename to ...
+	(gpg_check_set_recipients): ... this.
+	(_gpgme_gpg_op_encrypt): Make static and rename to ...
+	(gpg_encrypt): ... this.
+	(_gpgme_gpg_op_export): Make static and rename to ...
+	(gpg_export): ... this.
+	(_gpgme_gpg_op_genkey): Make static and rename to ...
+	(gpg_genkey): ... this.
+	(_gpgme_gpg_op_import): Make static and rename to ...
+	(gpg_import): ... this.
+	(_gpgme_gpg_op_keylist): Make static and rename to ...
+	(gpg_keylist): ... this.
+	(_gpgme_gpg_op_keylist_ext): Make static and rename to ...
+	(gpg_keylist_ext): ... this.
+	(_gpgme_gpg_op_sign): Make static and rename to ...
+	(gpg_sign): ... this.
+	(_gpgme_gpg_op_trustlist): Make static and rename to ...
+	(gpg_trustlist): ... this.
+	(_gpgme_gpg_op_verify): Make static and rename to ...
+	(gpg_verify): ... this.
+	(gpg_status_handler): Rename to ...
+	(status_handler): ... this.
+	(_gpgme_gpg_set_status_handler): Make static and rename to ...
+	(gpg_set_status_handler): ... this.
+	(_gpgme_gpg_set_colon_line_handler): Make static and rename to ...
+	(gpg_set_colon_line_handler): ... this.
+	(gpgme_gpg_add_io_cb): Rename to ...
+	(add_io_cb): ... this.
+	(_gpgme_gpg_start): Make static and rename to ...
+	(gpg_start): ... this.
+	(_gpgme_gpg_set_io_cb): Make static and rename to ...
+	(gpg_set_io_cb): ... this.
+	(_gpgme_gpg_io_event): Make static and rename to ...
+	(gpg_io_event): ... this.
+	(struct _gpgme_engine_ops_gpg): New variable.
+
+2002-10-10  Marcus Brinkmann  <marcus@g10code.de>
+
 	* engine-gpgsm.c (_gpgme_gpgsm_op_verify) [!ENABLE_GPGSM]: Add
 	missing argument.
 
