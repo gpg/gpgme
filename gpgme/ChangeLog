@@ -1,5 +1,13 @@
 2003-10-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* ath.h (struct ath_ops): Make ADDR argument of CONNECT prototype
+	const.
+	(ath_connect): Make ADDR argument const.
+	* ath-pthread.c (ath_connect): Likewise.
+	* ath-pth.c (ath_connect): Likewise.
+	* ath-compat.c (ath_connect): Likewise.
+	* ath.c (ath_connect): Likewise.
+
 	* ath.h [HAVE_SYS_SELECT_H]: Include <sys/select.h> for fd_set.
 	[!HAVE_SYS_SELECT_H]: Include <sys/time.h>.
 
