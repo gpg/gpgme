@@ -107,59 +107,91 @@ _gpgme_gpgsm_check_version (void)
     ? 0 : mk_error (Invalid_Engine);
 }
 
+static void
+close_notify_handler (int fd, void *opaque)
+{
+  GpgsmObject gpgsm = opaque;
+
+  assert (fd != -1);
+  if (gpgsm->input_fd == fd)
+    gpgsm->input_fd = -1;
+  else if (gpgsm->output_fd == fd)
+    gpgsm->output_fd = -1;
+  else if (gpgsm->message_fd == fd)
+    gpgsm->message_fd = -1;
+}
+
 GpgmeError
 _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
 {
   GpgmeError err = 0;
   GpgsmObject gpgsm;
   char *argv[] = { "gpgsm", "--server", NULL };
-  int ip[2] = { -1, -1 };
-  int op[2] = { -1, -1 };
-  int mp[2] = { -1, -1 };
+  int fds[2];
 
   *r_gpgsm = NULL;
   gpgsm = xtrycalloc (1, sizeof *gpgsm);
   if (!gpgsm)
     {
       err = mk_error (Out_Of_Core);
-      goto leave;
+      return err;
     }
 
-  if (_gpgme_io_pipe (ip, 0) < 0)
+  gpgsm->input_fd = -1;
+  gpgsm->input_fd_server = -1;
+  gpgsm->output_fd = -1;
+  gpgsm->output_fd_server = -1;
+  gpgsm->message_fd = -1;
+  gpgsm->message_fd_server = -1;
+
+  if (_gpgme_io_pipe (fds, 0) < 0)
     {
       err = mk_error (General_Error);
       goto leave;
     }
-  gpgsm->input_fd = ip[1];
-  fcntl (ip[1], F_SETFD, FD_CLOEXEC); /* FIXME */
-  gpgsm->input_fd_server = ip[0];
-  if (_gpgme_io_pipe (op, 1) < 0)
+  gpgsm->input_fd = fds[1];
+  gpgsm->input_fd_server = fds[0];
+
+  if (_gpgme_io_pipe (fds, 1) < 0)
     {
       err = mk_error (General_Error);
       goto leave;
     }
-  gpgsm->output_fd = op[0];
-  fcntl (op[0], F_SETFD, FD_CLOEXEC); /* FIXME */
-  gpgsm->output_fd_server = op[1];
-  if (_gpgme_io_pipe (mp, 0) < 0)
+  gpgsm->output_fd = fds[0];
+  gpgsm->output_fd_server = fds[1];
+
+  if (_gpgme_io_pipe (fds, 0) < 0)
     {
       err = mk_error (General_Error);
       goto leave;
     }
-  gpgsm->message_fd = mp[1];
-  fcntl (mp[1], F_SETFD, FD_CLOEXEC); /* FIXME */
-  gpgsm->message_fd_server = mp[0];
+  gpgsm->message_fd = fds[1];
+  gpgsm->message_fd_server = fds[0];
 
   err = assuan_pipe_connect (&gpgsm->assuan_ctx,
 			     _gpgme_get_gpgsm_path (), argv);
 
+  if (!err &&
+      (_gpgme_io_set_close_notify (gpgsm->input_fd,
+				   close_notify_handler, gpgsm)
+       || _gpgme_io_set_close_notify (gpgsm->output_fd,
+				      close_notify_handler, gpgsm)
+       || _gpgme_io_set_close_notify (gpgsm->message_fd,
+				      close_notify_handler, gpgsm)))
+    {
+      err = mk_error (General_Error);
+      goto leave;
+    }
+      
  leave:
-  if (ip[0] != -1)
-    _gpgme_io_close (ip[0]);
-  if (op[1] != -1)
-    _gpgme_io_close (op[1]);
-  if (mp[0] != -1)
-    _gpgme_io_close (mp[0]);
+  /* Close the server ends of the pipes.  Our ends are closed in
+     _gpgme_gpgsm_release.  */
+  if (gpgsm->input_fd_server != -1)
+    _gpgme_io_close (gpgsm->input_fd_server);
+  if (gpgsm->output_fd_server != -1)
+    _gpgme_io_close (gpgsm->output_fd_server);
+  if (gpgsm->message_fd_server != -1)
+    _gpgme_io_close (gpgsm->message_fd_server);
 
   if (err)
     _gpgme_gpgsm_release (gpgsm);
@@ -256,7 +288,6 @@ _gpgme_gpgsm_op_decrypt (GpgsmObject gpgsm, GpgmeData ciph, GpgmeData plain)
   if (err)
     return mk_error (General_Error);	/* FIXME */
   _gpgme_io_close (gpgsm->message_fd);
-  gpgsm->message_fd = -1;
 
   return 0;
 }
@@ -330,7 +361,6 @@ _gpgme_gpgsm_op_encrypt (GpgsmObject gpgsm, GpgmeRecipients recp,
   if (err)
     return mk_error (General_Error);	/* FIXME */
   _gpgme_io_close (gpgsm->message_fd);
-  gpgsm->message_fd = -1;
 
   err = gpgsm_set_recipients (gpgsm->assuan_ctx, recp);
   if (err)
@@ -371,9 +401,7 @@ _gpgme_gpgsm_op_import (GpgsmObject gpgsm, GpgmeData keydata)
   if (err)
     return mk_error (General_Error);	/* FIXME */
   _gpgme_io_close (gpgsm->output_fd);
-  gpgsm->output_fd = -1;
   _gpgme_io_close (gpgsm->message_fd);
-  gpgsm->message_fd = -1;
 
   return 0;
 }
@@ -394,11 +422,8 @@ _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
   strcpy (&line[9], pattern);
 
   _gpgme_io_close (gpgsm->input_fd);
-  gpgsm->input_fd = -1;
   _gpgme_io_close (gpgsm->output_fd);
-  gpgsm->output_fd = -1;
   _gpgme_io_close (gpgsm->message_fd);
-  gpgsm->message_fd = -1;
 
   gpgsm->command = line;
   return 0;
@@ -429,7 +454,6 @@ _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
   if (err)
     return mk_error (General_Error);	/* FIXME */
   _gpgme_io_close (gpgsm->message_fd);
-  gpgsm->message_fd = -1;
 
   return 0;
 }
@@ -463,7 +487,6 @@ _gpgme_gpgsm_op_verify (GpgsmObject gpgsm, GpgmeData sig, GpgmeData text)
   if (err)
     return mk_error (General_Error);	/* FIXME */
   _gpgme_io_close (gpgsm->output_fd);
-  gpgsm->output_fd = -1;
 
   return 0;
 }

@@ -75,10 +75,21 @@ _gpgme_io_write ( int fd, const void *buffer, size_t count )
 }
 
 int
-_gpgme_io_pipe ( int filedes[2], int inherit_idx )
+_gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
-    /* we don't need inherit_idx in this implementation */
-    return pipe ( filedes );
+  int err;
+
+  err = pipe (filedes);
+  if (err < 0)
+    return err;
+  /* FIXME: Should get the old flags first.  */
+  err = fcntl (filedes[1 - inherit_idx], F_SETFD, FD_CLOEXEC);
+  if (err < 0)
+    {
+      close (filedes[0]);
+      close (filedes[1]);
+    }
+  return err;
 }
 
 int

@@ -1,3 +1,19 @@
+2001-12-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c (close_notify_handler): New function.
+	(_gpgme_gpgsm_new): Manage the file descriptors a
+	bit differently.  Do not set close-on-exec flags.
+	(_gpgme_gpgsm_op_decrypt): Do not set message_fd
+	to -1, this is done by the close handler.
+	(_gpgme_gpgsm_op_encrypt): Likewise.
+	(_gpgme_gpgsm_op_import): Likewise (also for output_fd).
+	(_gpgme_gpgsm_op_keylist): Likewise (also for input_fd and output_fd).
+	(_gpgme_gpgsm_op_sign): Likewise.
+	(_gpgme_gpgsm_op_verify): Likewise, but for output_fd.
+
+	* posix-io.c (_gpgme_io_pipe): Set the close-on-exec flag for the
+	non-inherited file descriptor index of the pipe.
+
 2001-12-13  Werner Koch  <wk@gnupg.org>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_set_colon_line_handler): New.
