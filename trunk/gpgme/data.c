@@ -32,6 +32,7 @@
 #include "util.h"
 #include "context.h"
 #include "ops.h"
+#include "io.h"
 
 #define ALLOC_CHUNK 1024
 #define my_isdigit(a)  ( (a) >='0' && (a) <= '9' )
@@ -757,9 +758,6 @@ hextobyte( const byte *s )
     return c;
 }
 
-
-
-
 /* 
  * Append a string with percent style (%XX) escape characters as XML
  */
@@ -784,4 +782,139 @@ _gpgme_data_append_percentstring_for_xml ( GpgmeData dh, const char *string )
     err = _gpgme_data_append_for_xml ( dh, buf, d - buf );
     xfree (buf);
     return err;
+}
+
+/* Functions to support the wait interface.  */
+
+int
+_gpgme_data_inbound_handler (void *opaque, int pid, int fd)
+{
+  GpgmeData dh = opaque;
+  GpgmeError err;
+  int nread;
+  char buf[200];
+
+  assert (_gpgme_data_get_mode (dh) == GPGME_DATA_MODE_IN);
+
+  nread = _gpgme_io_read (fd, buf, 200);
+  if (nread < 0)
+    {
+      DEBUG3 ("read_mem_data: read failed on fd %d (n=%d): %s",
+	      fd, nread, strerror (errno) );
+      return 1;
+    }
+  else if (!nread)
+    return 1; /* eof */
+
+  /* We could improve this with a GpgmeData function which takes
+   * the read function or provides a memory area for writing to it.
+   */
+    
+  err = _gpgme_data_append (dh, buf, nread);
+  if (err)
+    {
+      DEBUG1 ("_gpgme_append_data failed: %s\n",
+	      gpgme_strerror(err));
+      /* Fixme: we should close the pipe or read it to /dev/null in
+       * this case. Returnin EOF is not sufficient */
+      return 1;
+    }
+
+  return 0;
+}
+
+static int
+write_mem_data (GpgmeData dh, int fd)
+{
+  size_t nbytes;
+  int nwritten; 
+
+  nbytes = dh->len - dh->readpos;
+  if (!nbytes)
+    {
+      _gpgme_io_close (fd);
+      return 1;
+    }
+    
+  /* FIXME: Arggg, the pipe blocks on large write request, although
+   * select told us that it is okay to write - need to figure out
+   * why this happens?  Stevens says nothing about this problem (or
+   * is it my Linux kernel 2.4.0test1)
+   * To avoid that we have set the pipe to nonblocking.
+   */
+
+  nwritten = _gpgme_io_write (fd, dh->data+dh->readpos, nbytes);
+  if (nwritten == -1 && errno == EAGAIN)
+    return 0;
+  if (nwritten < 1)
+    {
+      DEBUG3 ("write_mem_data(%d): write failed (n=%d): %s",
+	      fd, nwritten, strerror (errno));
+      _gpgme_io_close (fd);
+      return 1;
+    }
+
+  dh->readpos += nwritten;
+  return 0;
+}
+
+static int
+write_cb_data (GpgmeData dh, int fd)
+{
+  size_t nbytes;
+  int  err, nwritten; 
+  char buffer[512];
+
+  err = gpgme_data_read (dh, buffer, DIM(buffer), &nbytes);
+  if (err == GPGME_EOF)
+    {
+      _gpgme_io_close (fd);
+      return 1;
+    }
+    
+  nwritten = _gpgme_io_write (fd, buffer, nbytes);
+  if (nwritten == -1 && errno == EAGAIN )
+    return 0;
+  if (nwritten < 1)
+    {
+      DEBUG3 ("write_cb_data(%d): write failed (n=%d): %s",
+	      fd, nwritten, strerror (errno));
+      _gpgme_io_close (fd);
+      return 1;
+    }
+
+  if (nwritten < nbytes)
+    {
+      /* ugly, ugly: It does currently only for for MEM type data */
+      if (_gpgme_data_unread (dh, buffer + nwritten, nbytes - nwritten))
+	DEBUG1 ("wite_cb_data: unread of %d bytes failed\n",
+		nbytes - nwritten);
+      _gpgme_io_close (fd);
+      return 1;
+    }
+  
+  return 0;
+}
+
+int
+_gpgme_data_outbound_handler (void *opaque, int pid, int fd)
+{
+  GpgmeData dh = opaque;
+
+  assert (_gpgme_data_get_mode (dh) == GPGME_DATA_MODE_OUT);
+  switch (gpgme_data_get_type (dh))
+    {
+    case GPGME_DATA_TYPE_MEM:
+      if (write_mem_data (dh, fd))
+	return 1; /* ready */
+      break;
+    case GPGME_DATA_TYPE_CB:
+      if (write_cb_data (dh, fd))
+	return 1; /* ready */
+      break;
+    default:
+      assert (0);
+    }
+  
+  return 0;
 }

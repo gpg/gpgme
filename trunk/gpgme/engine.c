@@ -189,7 +189,7 @@ _gpgme_engine_set_status_handler (EngineObject engine,
       _gpgme_gpg_set_status_handler (engine->engine.gpg, fnc, fnc_value);
       break;
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
+      _gpgme_gpgsm_set_status_handler (engine->engine.gpgsm, fnc, fnc_value);
       break;
     default:
       break;
@@ -428,8 +428,7 @@ _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig, GpgmeData text)
     case GPGME_PROTOCOL_OpenPGP:
       return _gpgme_gpg_op_verify (engine->engine.gpg, sig, text);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
+      return _gpgme_gpgsm_op_verify (engine->engine.gpgsm, sig, text);
     default:
       break;
     }
@@ -446,8 +445,7 @@ GpgmeError _gpgme_engine_start (EngineObject engine, void *opaque)
     case GPGME_PROTOCOL_OpenPGP:
       return _gpgme_gpg_spawn (engine->engine.gpg, opaque);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
+      return _gpgme_gpgsm_start (engine->engine.gpgsm, opaque);
     default:
       break;
     }

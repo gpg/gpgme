@@ -59,6 +59,9 @@ GpgmeError    _gpgme_data_append_percentstring_for_xml ( GpgmeData dh,
 GpgmeError    _gpgme_data_unread (GpgmeData dh,
                                   const char *buffer, size_t length );
 
+int _gpgme_data_inbound_handler (void *opaque, int pid, int fd);
+int _gpgme_data_outbound_handler (void *opaque, int pid, int fd);
+
 
 /*-- key.c --*/
 GpgmeError _gpgme_key_new ( GpgmeKey *r_key );
