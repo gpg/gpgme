@@ -52,3 +52,11 @@ gpgmeplug =
 endif
 
 SUBDIRS = ${assuan} jnlib gpgme ${tests} doc ${bonobo} ${complus} ${gpgmeplug}
+
+# Fix the version of the spec file and create a file named VERSION 
+# to be used for patch's Prereq: feature.
+dist-hook:
+	@set -e; \
+	sed -e 's/@pkg_version@/$(VERSION)/g' \
+	    $(top_srcdir)/gpgme.spec.in  > $(distdir)/gpgme.spec
+	echo "$(VERSION)" > $(distdir)/VERSION

@@ -20,13 +20,14 @@
  
 # (Process this file with autoconf to produce a configure script.)
 
-# Version numbers (Remember to change them just before a release.)
+# Version number: Remember to change it immediately *after* a release.
+AC_INIT(gpgme, 0.3.9, [bug-gpgme@gnupg.org])
+# LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
 #   (Interfaces added/removed/changed:	CURRENT++, REVISION=0)
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed:		AGE=0)
 #
-AC_INIT(gpgme, 0.3.8a, [gnupg-devel@gnupg.org])
 LIBGPGME_LT_CURRENT=9
 LIBGPGME_LT_AGE=3
 LIBGPGME_LT_REVISION=0

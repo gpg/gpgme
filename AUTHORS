@@ -1,5 +1,7 @@
-Program: gpgme
-Maintainer: wk@g10gnupg.org
+Package: gpgme
+Maintainer: Markus Brinkmann <marcus@g10code.com>
+Bug reports: bug-gpgme@gnupg.org
+Security related bug reports: security@gnupg.org
 
 
 FSF <gnu@gnu.org>
@@ -11,8 +13,11 @@ g10 Code GmbH <code@g10code.com>
 Werner Koch <wk@gnupg.org>
  - Design and most stuff.
 
+Wojciech Polak <polak@lodz.pdi.net>
+ - gpgme.spec
 
- Copyright 2001 g10 Code GmbH
+
+ Copyright 2001, 2002 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
