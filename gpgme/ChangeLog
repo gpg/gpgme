@@ -1,5 +1,9 @@
 2003-04-28  Marcus Brinkmann  <marcus@g10code.de>
 
+	* context.h: Remove OPDATA_VERIFY_COLLECTING.
+	(struct gpgme_context_s): Remove member notation.
+	* gpgme.h: Make enum for GPGME_KEYLIST_MODE_* values.
+
 	* gpgme.h (struct _gpgme_sig_notation): New structure.
 	(GpgmeSigNotation): New type.
 	(struct _gpgme_signature): New structure.
