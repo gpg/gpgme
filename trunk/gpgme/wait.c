@@ -35,7 +35,7 @@
 #include "io.h"
 #include "engine.h"
 
-struct fd_table fdt_global;
+static struct fd_table fdt_global;
 
 static GpgmeCtx *ctx_done_list;
 static int ctx_done_list_size;

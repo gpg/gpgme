@@ -1,3 +1,8 @@
+2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* wait.c (fdt_global): Make static.  Reported by Stéphane
+	Corthésy.
+
 2002-07-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (gpgme_set_io_cbs): Deal with CTX being NULL.
