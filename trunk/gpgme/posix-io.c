@@ -257,7 +257,7 @@ _gpgme_io_spawn (const char *path, char **argv,
 
   /* .dup_to is not used in the parent list.  */
   for (i = 0; fd_parent_list[i].fd != -1; i++)
-    close (fd_parent_list[i].fd);
+    _gpgme_io_close (fd_parent_list[i].fd);
 
   return 0;
 }

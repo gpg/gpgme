@@ -1137,21 +1137,18 @@ gpg_start (void *engine, void *opaque)
       fd_parent_list[n].fd = gpg->status.fd[1];
       fd_parent_list[n].dup_to = -1;
       n++;
-      gpg->status.fd[1] = -1;
     }
   if (gpg->colon.fd[1] != -1)
     {
       fd_parent_list[n].fd = gpg->colon.fd[1];
       fd_parent_list[n].dup_to = -1;
       n++;
-      gpg->colon.fd[1] = -1;
     }
   for (i = 0; gpg->fd_data_map[i].data; i++)
     {
       fd_parent_list[n].fd = gpg->fd_data_map[i].peer_fd;
       fd_parent_list[n].dup_to = -1;
       n++;
-      gpg->fd_data_map[i].peer_fd = -1;
     }        
   fd_parent_list[n].fd = -1;
   fd_parent_list[n].dup_to = -1;
