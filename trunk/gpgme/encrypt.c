@@ -99,26 +99,38 @@ append_xml_encinfo (GpgmeData *rdh, char *args)
 }
 
 
+static void
+status_handler_finish (GpgmeCtx ctx)
+{
+  if (ctx->result.encrypt->xmlinfo)
+    {
+      append_xml_encinfo (&ctx->result.encrypt->xmlinfo, NULL);
+      _gpgme_set_op_info (ctx, ctx->result.encrypt->xmlinfo);
+      ctx->result.encrypt->xmlinfo = NULL;
+    }
+  if (ctx->error)
+    ; /* already set by kludge in engine-gpgsm */
+  else if (ctx->result.encrypt->no_valid_recipients) 
+    ctx->error = mk_error (No_Recipients);
+  else if (ctx->result.encrypt->invalid_recipients) 
+    ctx->error = mk_error (Invalid_Recipients);
+}
+
 void
 _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   if (ctx->error)
-    return;
+    {
+      if (ctx->result.encrypt) /* check that we have allocated it. */
+        status_handler_finish (ctx);
+      return;
+    }
   test_and_allocate_result (ctx, encrypt);
 
   switch (code)
     {
-    case GPGME_STATUS_EOF:
-      if (ctx->result.encrypt->xmlinfo)
-	{
-	  append_xml_encinfo (&ctx->result.encrypt->xmlinfo, NULL);
-	  _gpgme_set_op_info (ctx, ctx->result.encrypt->xmlinfo);
-	  ctx->result.encrypt->xmlinfo = NULL;
-        }
-      if (ctx->result.encrypt->no_valid_recipients) 
-	ctx->error = mk_error (No_Recipients);
-      else if (ctx->result.encrypt->invalid_recipients) 
-	ctx->error = mk_error (Invalid_Recipients);
+    case STATUS_EOF:
+      status_handler_finish (ctx);
       break;
 
     case GPGME_STATUS_INV_RECP:
