@@ -1,6 +1,6 @@
 /* export.c -  encrypt functions
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -30,10 +30,10 @@
 #include "ops.h"
 
 static void
-export_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
+export_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
-    DEBUG2 ("export_status: code=%d args=`%s'\n", code, args );
-    /* FIXME: Need to do more */
+  DEBUG2 ("export_status: code=%d args=`%s'\n", code, args);
+  /* FIXME: Need to do more */
 }
 
 GpgmeError
@@ -85,21 +85,18 @@ gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData keydata)
  * This function can be used to extract public keys from the GnuPG key
  * database either in armored (by using gpgme_set_armor()) or in plain
  * binary form.  The function expects a list of user IDs in @recp for
- * whom the public keys are to be exportedkinit
- *
+ * whom the public keys are to be exported.
  * 
  * Return value: 0 for success or an error code
  **/
 GpgmeError
-gpgme_op_export ( GpgmeCtx c, GpgmeRecipients recp, GpgmeData keydata )
+gpgme_op_export (GpgmeCtx ctx, GpgmeRecipients recipients, GpgmeData keydata)
 {
-    int rc = gpgme_op_export_start ( c, recp, keydata );
-    if ( !rc ) {
-        gpgme_wait (c, 1);
-        c->pending = 0;
+  GpgmeError err = gpgme_op_export_start (ctx, recipients, keydata);
+  if (!err)
+    {
+      gpgme_wait (ctx, 1);
+      ctx->pending = 0;
     }
-    return rc;
+  return err;
 }
-
-
-
