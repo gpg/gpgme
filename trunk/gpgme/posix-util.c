@@ -1,6 +1,6 @@
 /* posix-util.c - Utility functions for Posix
  *	Copyright (C) 2001 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -19,10 +19,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-
+#ifdef HAVE_CONFIG_H
 #include <config.h>
-#ifndef HAVE_DOSISH_SYSTEM
-
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,5 +48,3 @@ _gpgme_get_gpgsm_path (void)
   return NULL;
 #endif
 }
-
-#endif /*!HAVE_DOSISH_SYSTEM*/

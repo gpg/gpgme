@@ -1,6 +1,6 @@
 /* posix-sema.c 
  *	Copyright (C) 2001 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -19,53 +19,101 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-
+#ifdef HAVE_CONFIG_H
 #include <config.h>
-#ifndef HAVE_DOSISH_SYSTEM
-
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <signal.h>
 #include <fcntl.h>
-#include "syshdr.h"
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/types.h>
 
 #include "util.h"
 #include "sema.h"
+#include "mutex.h"
 
+static void
+sema_fatal (const char *text)
+{
+  fprintf (stderr, "sema.c: %s\n", text);
+  abort ();
+}
+
+
+static void
+critsect_init (struct critsect_s *s)
+{
+  static mutex_t init_lock;
+  static int initialized;
+  mutex_t *mp;
+    
+  if (!initialized)
+    {
+      /* The very first time we call this function, we assume that
+         only one thread is running, so that we can bootstrap the
+         semaphore code.  */
+      mutex_init (init_lock);
+      initialized = 1;
+    }
+  if (!s)
+    return;	/* We just want to initialize ourself.  */
+  
+  /* First test whether it is really not initialized.  */
+  mutex_lock (init_lock);
+  if (s->private)
+    {
+      mutex_unlock (init_lock);
+      return;
+    }
+  /* Now initialize it.  */
+  mp = xtrymalloc (sizeof *mp);
+  if (!mp)
+    {
+      mutex_unlock (init_lock);
+      sema_fatal ("out of core while creating critical section lock");
+    }
+  mutex_init (*mp);
+  s->private = mp;
+  mutex_unlock (init_lock);
+}
 
 
 void
 _gpgme_sema_subsystem_init ()
 {
-    /* FIXME: Posix semaphore support has not yet been implemented */
+  /* FIXME: we should check that there is only one thread running */
+  critsect_init (NULL);
 }
 
 
 void
-_gpgme_sema_cs_enter ( struct critsect_s *s )
+_gpgme_sema_cs_enter (struct critsect_s *s)
 {
+  if (!s->private)
+    critsect_init (s);
+  mutex_lock (*((mutex_t *) s->private));
 }
 
 void
 _gpgme_sema_cs_leave (struct critsect_s *s)
 {
+  if (!s->private)
+    critsect_init (s);
+  mutex_unlock (*((mutex_t *) s->private));
 }
 
 void
-_gpgme_sema_cs_destroy ( struct critsect_s *s )
+_gpgme_sema_cs_destroy (struct critsect_s *s)
 {
+  if (s && s->private)
+    {
+      mutex_destroy (*((mutex_t *) s->private));
+      xfree (s->private);
+      s->private = NULL;
+    }
 }
-
-
-
-#endif /*!HAVE_DOSISH_SYSTEM*/
-
-
-
-
-

@@ -1,6 +1,6 @@
-/* wait.h -  definitions for wait.c
+/* wait.h - Definitions for the wait queue interface.
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -24,17 +24,11 @@
 
 #include "gpgme.h"
 
-void _gpgme_remove_proc_from_wait_queue ( int pid );
+void _gpgme_remove_proc_from_wait_queue (int pid);
 
-GpgmeError _gpgme_register_pipe_handler ( 
-    void *opaque, 
-    int (*handler)(void*,int,int),
-    void *handler_value,
-    int pid, int fd, int inbound );
+GpgmeError _gpgme_register_pipe_handler (void *opaque,
+					 int (*handler) (void*, int, int),
+					 void *handler_value,
+					 int pid, int fd, int inbound);
 
-#endif /* WAIT_H */
-
-
-
-
-
+#endif	/* WAIT_H */

@@ -26,7 +26,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <sys/types.h>
-#include "syshdr.h"
 
 #include "util.h"
 #include "context.h"

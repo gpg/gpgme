@@ -51,7 +51,7 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Make sure everything is cleaned correctly (esp. test area).
 
 * Architecture support
-** Implement posix-sema.c
+** (nothing currently)
 
 Bugs reported by Stephane Corthesy:
 > BTW, here's another bug: it it not possible to retrieve fingerprints  

@@ -35,9 +35,15 @@ AM_CPPFLAGS = -I$(top_srcdir)/assuan
 libgpgme_la_LIBADD = ../assuan/libassuan.a ../jnlib/libjnlib.a
 endif
 
+if HAVE_DOSISH_SYSTEM
+system_components = w32-util.c w32-sema.c w32-io.c
+else
+system_components = posix-util.c posix-sema.c posix-io.c
+endif
+
 libgpgme_la_SOURCES = \
 	gpgme.h types.h \
-	util.h util.c posix-util.c w32-util.c \
+	util.h util.c \
 	context.h ops.h \
 	data.c recipient.c signers.c \
         wait.c wait.h \
@@ -59,8 +65,8 @@ libgpgme_la_SOURCES = \
         rungpg.c rungpg.h status-table.h \
 	engine-gpgsm.c engine-gpgsm.h \
 	engine.c engine.h \
-	sema.h posix-sema.c w32-sema.c \
-	syshdr.h io.h posix-io.c w32-io.c \
+	sema.h io.h \
+	${system_components} \
 	gpgme.c debug.c version.c errors.c
 
 errors.c : gpgme.h
