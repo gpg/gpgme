@@ -96,11 +96,6 @@ struct gpgme_key_s
 };
 
 
-void _gpgme_key_cache_init (void);
-void _gpgme_key_cache_add (GpgmeKey key);
-GpgmeKey _gpgme_key_cache_get (const char *fpr);
-
-
 struct certsig_s *_gpgme_key_add_certsig (GpgmeKey key, char *src);
 struct subkey_s *_gpgme_key_add_subkey (GpgmeKey key);
 struct subkey_s *_gpgme_key_add_secret_subkey (GpgmeKey key);

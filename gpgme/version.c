@@ -31,9 +31,6 @@
 /* For _gpgme_sema_subsystem_init ().  */
 #include "sema.h"
 
-/* For _gpgme_key_cache_init ().  */
-#include "key.h"
-
 
 /* Bootstrap the subsystems needed for concurrent operation.  This
    must be done once at startup.  We can not guarantee this using a
@@ -49,7 +46,6 @@ do_subsystem_inits (void)
     return;
 
   _gpgme_sema_subsystem_init ();
-  _gpgme_key_cache_init ();
   done = 1;
 }
 
