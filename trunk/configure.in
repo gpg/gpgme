@@ -23,6 +23,7 @@ AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
 AC_SUBST(LIBGPGME_LT_REVISION)
 
+
 dnl
 dnl Checks for programs
 dnl
@@ -35,6 +36,22 @@ AM_PROG_LIBTOOL
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
 fi
+
+GPG=
+case "${target}" in
+    *-*-mingw32* | i?86-emx-os2 | i?86-*-os2*emx | i?86-*-msdosdjgpp* )
+        # special stuff for Windoze NT
+        # OS/2 with the EMX environment
+        # DOS with the DJGPP environment
+        AC_DEFINE(HAVE_DRIVE_LETTERS)
+        AC_DEFINE(HAVE_DOSISH_SYSTEM)
+        GPG='c:\\gnupg\\gpg.exe'
+        ;;
+    *)
+       ;;
+esac
+
+
 
 
 dnl
@@ -64,14 +81,16 @@ dnl
 dnl Checks for system services
 dnl
 
-AC_PATH_PROG(GPG, gpg)
-if test -z "$GPG"; then
-    AC_MSG_ERROR([[
+if test -z "GPG"; then
+  AC_PATH_PROG(GPG, gpg)
+  if test -z "$GPG"; then
+       AC_MSG_ERROR([[
 ***
 *** GnuPG not found. Please install GnuPG first. 
 *** See   http://www.gnupg.org/download.html
 ***
-]])
+  ]])
+  fi
 fi
 AC_DEFINE_UNQUOTED(GPG_PATH, "$GPG")
 

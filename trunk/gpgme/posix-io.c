@@ -73,6 +73,13 @@ _gpgme_io_pipe ( int filedes[2] )
     return pipe ( filedes );
 }
 
+int
+_gpgme_io_close ( int fd )
+{
+    if ( fd == -1 )
+        return -1;
+    return close (fd);
+}
 
 int
 _gpgme_io_set_nonblocking ( int fd )
@@ -87,7 +94,7 @@ _gpgme_io_set_nonblocking ( int fd )
 }
 
 
-pid_t
+int
 _gpgme_io_spawn ( const char *path, char **argv,
                   struct spawn_fd_item_s *fd_child_list,
                   struct spawn_fd_item_s *fd_parent_list )
@@ -165,12 +172,12 @@ _gpgme_io_spawn ( const char *path, char **argv,
         close (fd_parent_list[i].fd);
     }
 
-    return pid;
+    return (int)pid;
 }
 
 
 int
-_gpgme_io_waitpid ( pid_t pid, int hang, int *r_status, int *r_signal )
+_gpgme_io_waitpid ( int pid, int hang, int *r_status, int *r_signal )
 {
     int status;
 

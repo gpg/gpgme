@@ -27,7 +27,6 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <sys/wait.h>
 #include <signal.h>
 #include <fcntl.h>
 
@@ -88,7 +87,7 @@ struct gpg_object_s {
     char **argv;  
     struct fd_data_map_s *fd_data_map;
 
-    pid_t pid; 
+    int pid; /* we can't use pid_t because we don't use it in Windoze */
 
     int running;
     int exit_status;
@@ -99,13 +98,13 @@ static void kill_gpg ( GpgObject gpg );
 static void free_argv ( char **argv );
 static void free_fd_data_map ( struct fd_data_map_s *fd_data_map );
 
-static int gpg_inbound_handler ( void *opaque, pid_t pid, int fd );
-static int gpg_outbound_handler ( void *opaque, pid_t pid, int fd );
+static int gpg_inbound_handler ( void *opaque, int pid, int fd );
+static int gpg_outbound_handler ( void *opaque, int pid, int fd );
 
-static int gpg_status_handler ( void *opaque, pid_t pid, int fd );
+static int gpg_status_handler ( void *opaque, int pid, int fd );
 static GpgmeError read_status ( GpgObject gpg );
 
-static int gpg_colon_line_handler ( void *opaque, pid_t pid, int fd );
+static int gpg_colon_line_handler ( void *opaque, int pid, int fd );
 static GpgmeError read_colon_line ( GpgObject gpg );
 
 
@@ -172,13 +171,13 @@ _gpgme_gpg_release ( GpgObject gpg )
     if ( gpg->argv )
         free_argv (gpg->argv);
     if (gpg->status.fd[0] != -1 )
-        close (gpg->status.fd[0]);
+        _gpgme_io_close (gpg->status.fd[0]);
     if (gpg->status.fd[1] != -1 )
-        close (gpg->status.fd[1]);
+        _gpgme_io_close (gpg->status.fd[1]);
     if (gpg->colon.fd[0] != -1 )
-        close (gpg->colon.fd[0]);
+        _gpgme_io_close (gpg->colon.fd[0]);
     if (gpg->colon.fd[1] != -1 )
-        close (gpg->colon.fd[1]);
+        _gpgme_io_close (gpg->colon.fd[1]);
     free_fd_data_map (gpg->fd_data_map);
     kill_gpg (gpg); /* fixme: should be done asyncronously */
     xfree (gpg);
@@ -297,9 +296,9 @@ free_fd_data_map ( struct fd_data_map_s *fd_data_map )
 
     for (i=0; fd_data_map[i].data; i++ ) {
         if ( fd_data_map[i].fd != -1 )
-            close (fd_data_map[i].fd);
+            _gpgme_io_close (fd_data_map[i].fd);
         if ( fd_data_map[i].peer_fd != -1 )
-            close (fd_data_map[i].peer_fd);
+            _gpgme_io_close (fd_data_map[i].peer_fd);
         /* don't realease data because this is only a reference */
     }
     xfree (fd_data_map);
@@ -466,7 +465,7 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
 {
     int rc;
     int i, n;
-    pid_t pid;
+    int pid;
     struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
 
     if ( !gpg )
@@ -595,7 +594,7 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
 
 
 static int
-gpg_inbound_handler ( void *opaque, pid_t pid, int fd )
+gpg_inbound_handler ( void *opaque, int pid, int fd )
 {
     GpgmeData dh = opaque;
     GpgmeError err;
@@ -640,7 +639,7 @@ write_mem_data ( GpgmeData dh, int fd )
     nbytes = dh->len - dh->readpos;
     if ( !nbytes ) {
         fprintf (stderr, "write_mem_data(%d): closing\n", fd );
-        close (fd);
+        _gpgme_io_close (fd);
         return 1;
     }
     
@@ -661,7 +660,7 @@ write_mem_data ( GpgmeData dh, int fd )
     if ( nwritten < 1 ) {
         fprintf (stderr, "write_mem_data(%d): write failed (n=%d): %s\n",
                  fd, nwritten, strerror (errno) );
-        close (fd);
+        _gpgme_io_close (fd);
         return 1;
     }
 
@@ -671,7 +670,7 @@ write_mem_data ( GpgmeData dh, int fd )
 
 
 static int
-gpg_outbound_handler ( void *opaque, pid_t pid, int fd )
+gpg_outbound_handler ( void *opaque, int pid, int fd )
 {
     GpgmeData dh = opaque;
 
@@ -692,7 +691,7 @@ gpg_outbound_handler ( void *opaque, pid_t pid, int fd )
 
 
 static int
-gpg_status_handler ( void *opaque, pid_t pid, int fd )
+gpg_status_handler ( void *opaque, int pid, int fd )
 {
     GpgObject gpg = opaque;
     int rc = 0;
@@ -817,7 +816,7 @@ read_status ( GpgObject gpg )
  * For now we use this thing here becuase it is easier to implement.
  */
 static int
-gpg_colon_line_handler ( void *opaque, pid_t pid, int fd )
+gpg_colon_line_handler ( void *opaque, int pid, int fd )
 {
     GpgObject gpg = opaque;
     GpgmeError rc = 0;

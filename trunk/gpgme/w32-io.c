@@ -33,7 +33,18 @@
 #include <fcntl.h>
 #include <windows.h>
 
+#include "util.h"
 #include "io.h"
+
+#define DEBUG_SELECT_ENABLED 1
+
+#if DEBUG_SELECT_ENABLED
+# define DEBUG_SELECT(a) fprintf a
+#else
+# define DEBUG_SELECT(a) do { } while(0)
+#endif
+
+
 
 /* 
  * We assume that a HANDLE can be represented by an int which should be true
@@ -45,7 +56,7 @@
 #define fd_to_handle(a)  ((HANDLE)(a))
 #define handle_to_fd(a)  ((int)(a))
 #define pid_to_handle(a) ((HANDLE)(a))
-#define handle_to_pid(a) ((pid_t)(a))
+#define handle_to_pid(a) ((int)(a))
 
 
 int
@@ -86,8 +97,17 @@ _gpgme_io_pipe ( int filedes[2] )
         return -1;
     filedes[0] = handle_to_fd (r);
     filedes[1] = handle_to_fd (w);
-    return 0
+    return 0;
 }
+
+int
+_gpgme_io_close ( int fd )
+{
+    if ( fd == -1 )
+        return -1;
+    return CloseHandle (fd_to_handle(fd)) ? 0 : -1;
+}
+
 
 int
 _gpgme_io_set_nonblocking ( int fd )
@@ -97,7 +117,7 @@ _gpgme_io_set_nonblocking ( int fd )
 
 
 static char *
-build_commandline ( char **argv );
+build_commandline ( char **argv )
 {
     int i, n = 0;
     char *buf, *p;
@@ -118,7 +138,7 @@ build_commandline ( char **argv );
 }
 
 
-pid_t
+int
 _gpgme_io_spawn ( const char *path, char **argv,
                   struct spawn_fd_item_s *fd_child_list,
                   struct spawn_fd_item_s *fd_parent_list )
@@ -138,7 +158,8 @@ _gpgme_io_spawn ( const char *path, char **argv,
     char *envblock = NULL;
     int cr_flags = CREATE_DEFAULT_ERROR_MODE
                  | GetPriorityClass (GetCurrentProcess ());
-    int rc;
+    int i, rc;
+    char *arg_string;
     HANDLE save_stdout;
     HANDLE outputfd[2], statusfd[2], inputfd[2];
 
@@ -204,9 +225,43 @@ _gpgme_io_spawn ( const char *path, char **argv,
 
 
 int
-_gpgme_io_waitpid ( pid_t pid, int hang, int *r_status, int *r_signal )
+_gpgme_io_waitpid ( int pid, int hang, int *r_status, int *r_signal )
 {
-    return 0;
+    HANDLE proc = fd_to_handle (pid);
+    int code, exc, ret = 0;
+
+    *r_status = 0;
+    *r_signal = 0;
+    code = WaitForSingleObject ( proc, hang? INFINITE : NULL );
+    switch (code) {
+      case WAIT_FAILED:
+        fprintf (stderr, "** WFSO pid=%d failed: %d\n",
+                 (int)pid, (int)GetLastError () );
+        break;
+
+      case WAIT_OBJECT_0:
+        if (!GetExitCodeProcess (proc, &exc)) {
+            fprintf (stderr, "** GECP pid=%d failed: ec=%d\n",
+                     (int)pid, (int)GetLastError () );
+            *r_status = 4; 
+        }
+        else {
+            fprintf (stderr, "** GECP pid=%d exit code=%d\n",
+                        (int)pid,  exc);
+            *r_status = exc;
+        }
+        ret = 1;
+        break;
+
+      case WAIT_TIMEOUT:
+        fprintf (stderr, "** WFSO pid=%d timed out\n", (int)pid);
+        break;
+
+      default:
+        fprintf (stderr, "** WFSO pid=%d returned %d\n", (int)pid, code );
+        break;
+    }
+    return ret;
 }
 
 
@@ -219,13 +274,75 @@ _gpgme_io_waitpid ( pid_t pid, int hang, int *r_status, int *r_signal )
 int
 _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
 {
-    return -1;
+    HANDLE waitbuf[MAXIMUM_WAIT_OBJECTS];
+    int code, nwait;
+    int i, any, ret;
+
+    DEBUG_SELECT ((stderr, "gpgme:select on [ "));
+    any = 0;
+    nwait = 0;
+    for ( i=0; i < nfds; i++ ) {
+        if ( fds[i].fd == -1 ) 
+            continue;
+        if ( fds[i].for_read || fds[i].for_write ) {
+            if ( nwait >= DIM (waitbuf) ) {
+                DEBUG_SELECT ((stderr, "oops ]\n" ));
+                fprintf (stderr, "** Too many objects for WFMO!\n" );
+                return -1;
+            }
+            else {
+                waitbuf[nwait++] = fd_to_handle (fds[i].fd);
+                DEBUG_SELECT ((stderr, "%c%d ",
+                               fds[i].for_read? 'r':'w',fds[i].fd ));
+                any = 1;
+            }
+        }
+        fds[i].signaled = 0;
+    }
+    DEBUG_SELECT ((stderr, "]\n" ));
+    if (!any)
+        return 0;
+
+    ret = 0;
+    code = WaitForMultipleObjects ( nwait, waitbuf, 0, 1000 );
+    if (code == WAIT_FAILED ) {
+        fprintf (stderr, "** WFMO failed: %d\n",  (int)GetLastError () );
+        ret = -1;
+    }
+    else if ( code == WAIT_TIMEOUT ) {
+        fprintf (stderr, "** WFMO timed out\n" );
+    }  
+    else if ( code >= WAIT_OBJECT_0 && code < WAIT_OBJECT_0 + nwait ) {
+        /* This WFMO is a really silly function:  It does return either
+         * the index of the signaled object or if 2 objects have been
+         * signalled at the same time, the index of the object with the
+         * lowest object is returned - so and how do we find out
+         * how many objects have been signaled???.
+         * The only solution I can imagine is to test each object starting
+         * with the returned index individually - how dull.
+         */
+        any = 0;
+        for (i=code - WAIT_OBJECT_0; i < nwait; i++ ) {
+            if (WaitForSingleObject ( waitbuf[i], NULL ) == WAIT_OBJECT_0) {
+                fds[i].signaled = 1;
+                any = 1;
+            }
+        }
+        if (any)
+            ret = 1;
+        else {
+            fprintf (stderr,
+                     "** Oops: No signaled objects found after WFMO\n");
+            ret = -1;
+        }
+    }
+    else {
+        fprintf (stderr, "** WFMO returned %d\n", code );
+        ret = -1;
+    }
+
+    return ret;
 }
-
-
-
-
-
 
 #endif /*HAVE_DOSISH_SYSTEM*/
 
