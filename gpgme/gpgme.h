@@ -44,7 +44,11 @@ extern "C" {
 #if 0 /* just to make Emacs auto-indent happy */
 }
 #endif
-#endif
+/* Keyword renaming for the sake of C doubleplus. */
+#define _GPGME_D_CLASS clazz
+#else
+#define _GPGME_D_CLASS class
+#endif /* __cplusplus */
 
 #include <gpg-error.h>
 
@@ -507,7 +511,7 @@ struct _gpgme_key_sig
   gpgme_error_t status;
 
   /* Crypto backend specific signature class.  */
-  unsigned int class;
+  unsigned int _GPGME_D_CLASS;
 
   /* The user ID string.  */
   char *uid;
@@ -1087,7 +1091,7 @@ struct _gpgme_new_signature
   char *fpr;
 
   /* Crypto backend specific signature class.  */
-  unsigned int class;
+  unsigned int _GPGME_D_CLASS;
 };
 typedef struct _gpgme_new_signature *gpgme_new_signature_t;
 
