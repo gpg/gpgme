@@ -1507,7 +1507,7 @@ Here is an example for GpgSM as the crypto engine:
 Key-Type: RSA
 Key-Length: 1024
 Name-DN: C=de,O=g10 code,OU=Testlab,CN=Joe 2 Tester
-Name-Email: joe@foo.bar
+Name-Email: joe@@foo.bar
 </GnupgKeyParms>
 @end example
 
