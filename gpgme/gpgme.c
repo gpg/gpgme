@@ -69,7 +69,7 @@ gpgme_release ( GpgmeCtx c )
         return;
     _gpgme_gpg_release ( c->gpg ); 
     _gpgme_release_result ( c );
-    _gpgme_key_release ( c->tmp_key );
+    gpgme_key_release ( c->tmp_key );
     gpgme_data_release ( c->help_data_1 );
     gpgme_data_release ( c->notation );
     /* fixme: release the key_queue */
@@ -202,7 +202,7 @@ gpgme_set_keylist_mode ( GpgmeCtx c, int mode )
  * and called whenever gpgme needs a passphrase. DESC will have a nice
  * text, to be used to prompt for the passphrase and R_HD is just a parameter
  * to be used by the callback it self.  Becuase the callback returns a const
- * string, the callback might want to know when it can releae resources
+ * string, the callback might want to know when it can release resources
  * assocated with that returned string; gpgme helps here by calling this
  * passphrase callback with an DESC of %NULL as soon as it does not need
  * the returned string anymore.  The callback function might then choose

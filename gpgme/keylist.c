@@ -311,7 +311,7 @@ finish_key ( GpgmeCtx ctx )
     
     q = xtrymalloc ( sizeof *q );
     if ( !q ) {
-        _gpgme_key_release (key);
+        gpgme_key_release (key);
         ctx->out_of_core = 1;
         return;
     }
@@ -348,7 +348,7 @@ gpgme_op_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
         _gpgme_gpg_release ( c->gpg ); 
         c->gpg = NULL;
     }
-    _gpgme_key_release (c->tmp_key);
+    gpgme_key_release (c->tmp_key);
     c->tmp_key = NULL;
     /* Fixme: release key_queue */
     

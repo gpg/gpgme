@@ -70,6 +70,10 @@ gpgme_op_encrypt_start ( GpgmeCtx c, GpgmeRecipients recp,
         _gpgme_gpg_add_arg ( c->gpg, "--armor" );
     for ( i=0; i < c->verbosity; i++ )
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
+    /* If we know that all recipients are valid (full or ultimate trust)
+     * we can pass suppress further checks */
+    if ( _gpgme_recipients_all_valid (recp) )
+        _gpgme_gpg_add_arg ( c->gpg, "--always-trust" );
     
     _gpgme_append_gpg_args_from_recipients ( recp, c->gpg );
 

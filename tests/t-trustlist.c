@@ -72,7 +72,7 @@ main (int argc, char **argv )
         loop = 1;
         argc--; argv++;
     }
-    pattern = argc? *argv : NULL;
+    pattern = argc? *argv : "alice";
 
     err = gpgme_new (&ctx);
     fail_if_err (err);

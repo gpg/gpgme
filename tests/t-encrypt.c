@@ -69,9 +69,11 @@ main (int argc, char **argv )
 
     err = gpgme_recipients_new (&rset);
     fail_if_err (err);
-    err = gpgme_recipients_add_name (rset, "Bob");
+    err = gpgme_recipients_add_name_with_validity (rset, "Bob",
+                                                   GPGME_VALIDITY_FULL);
     fail_if_err (err);
-    err = gpgme_recipients_add_name (rset, "Alpha");
+    err = gpgme_recipients_add_name_with_validity (rset, "Alpha",
+                                                   GPGME_VALIDITY_FULL);
     fail_if_err (err);
 
 

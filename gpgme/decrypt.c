@@ -34,12 +34,19 @@ struct decrypt_result_s {
     int okay;
     int failed;
     void *last_pw_handle;
+    char *userid_hint;
+    char *passphrase_info;
+    int bad_passphrase;
 };
 
 
 void
 _gpgme_release_decrypt_result ( DecryptResult res )
 {
+    if (!res )
+        return;
+    xfree (res->passphrase_info);
+    xfree (res->userid_hint);
     xfree (res);
 }
 
@@ -73,9 +80,25 @@ decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
       case STATUS_EOF:
         break;
 
+      case STATUS_USERID_HINT:
+        xfree (ctx->result.decrypt->userid_hint);
+        if (!(ctx->result.decrypt->userid_hint = xtrystrdup (args)) )
+            ctx->out_of_core = 1;
+        break;
+
+      case STATUS_BAD_PASSPHRASE:
+        ctx->result.decrypt->bad_passphrase++;
+        break;
+
+      case STATUS_GOOD_PASSPHRASE:
+        ctx->result.decrypt->bad_passphrase = 0;
+        break;
+
       case STATUS_NEED_PASSPHRASE:
       case STATUS_NEED_PASSPHRASE_SYM:
-        fprintf (stderr, "need a passphrase ...\n" );
+        xfree (ctx->result.decrypt->passphrase_info);
+        if (!(ctx->result.decrypt->passphrase_info = xtrystrdup (args)) )
+            ctx->out_of_core = 1;
         break;
 
       case STATUS_MISSING_PASSPHRASE:
@@ -94,10 +117,10 @@ decrypt_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 
       default:
         /* ignore all other codes */
-        fprintf (stderr, "decrypt_status: code=%d not handled\n", code );
         break;
     }
 }
+
 
 static const char *
 command_handler ( void *opaque, GpgStatusCode code, const char *key )
@@ -115,7 +138,7 @@ command_handler ( void *opaque, GpgStatusCode code, const char *key )
         /* We have been called for cleanup */
         if ( c->passphrase_cb ) { 
             /* Fixme: take the key in account */
-            c->passphrase_cb (c->passphrase_cb_value, 0, 
+            c->passphrase_cb (c->passphrase_cb_value, NULL, 
                               &c->result.decrypt->last_pw_handle );
         }
         
@@ -126,9 +149,31 @@ command_handler ( void *opaque, GpgStatusCode code, const char *key )
         return NULL;
     
     if ( code == STATUS_GET_HIDDEN && !strcmp (key, "passphrase.enter") ) {
-        return c->passphrase_cb (c->passphrase_cb_value,
-                                 "Hey, Mr. Hoover wants your passphrase!",
-                                 &c->result.decrypt->last_pw_handle );
+        const char *userid_hint = c->result.decrypt->userid_hint;
+        const char *passphrase_info = c->result.decrypt->passphrase_info;
+        int bad_passphrase = c->result.decrypt->bad_passphrase;
+        char *buf;
+        const char *s;
+
+        c->result.decrypt->bad_passphrase = 0;
+        if (!userid_hint)
+            userid_hint = "[User ID hint missing]";
+        if (!passphrase_info)
+            passphrase_info = "[passphrase info missing]";
+        buf = xtrymalloc ( 20 + strlen (userid_hint)
+                           + strlen (passphrase_info) + 3);
+        if (!buf) {
+            c->out_of_core = 1;
+            return NULL;
+        }
+        sprintf (buf, "%s\n%s\n%s",
+                 bad_passphrase? "TRY_AGAIN":"ENTER",
+                 userid_hint, passphrase_info );
+
+        s = c->passphrase_cb (c->passphrase_cb_value,
+                              buf, &c->result.decrypt->last_pw_handle );
+        xfree (buf);
+        return s;
    }
     
     return NULL;

@@ -69,6 +69,7 @@ doit ( GpgmeCtx ctx, const char *pattern )
             printf ("<!-- comment.%d=%s -->\n", i, s );
         }
         printf ("<!-- End key object (%p) -->\n", key );
+        gpgme_key_release (key);
     }
     if ( err != GPGME_EOF )
         fail_if_err (err);
