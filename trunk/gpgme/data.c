@@ -112,12 +112,22 @@ gpgme_data_seek (gpgme_data_t dh, off_t offset, int whence)
       errno = EINVAL;
       return -1;
     }
-  if (!dh->cbs->read)
+  if (!dh->cbs->seek)
     {
       errno = EOPNOTSUPP;
       return -1;
     }
-  return (*dh->cbs->seek) (dh, offset, whence);
+
+  /* For relative movement, we must take into account the actual
+     position of the read counter.  */
+  if (whence == SEEK_CUR)
+    offset -= dh->pending_len;
+
+  offset = (*dh->cbs->seek) (dh, offset, whence);
+  if (offset >= 0)
+    dh->pending_len = 0;
+
+  return offset;
 }
 
 

@@ -50,12 +50,19 @@ stream_write (gpgme_data_t dh, const void *buffer, size_t size)
 static off_t
 stream_seek (gpgme_data_t dh, off_t offset, int whence)
 {
+  int err;
+
 #ifdef HAVE_FSEEKO
-  return fseeko (dh->data.stream, offset, whence);
+  err = fseeko (dh->data.stream, offset, whence);
 #else
   /* FIXME: Check for overflow, or at least bail at compilation.  */
-  return fseek (dh->data.stream, offset, whence);
+  err = fseek (dh->data.stream, offset, whence);
 #endif
+
+  if (err)
+    return -1;
+
+  return ftello (dh->data.stream);
 }
 
 
