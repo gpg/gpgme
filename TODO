@@ -2,7 +2,6 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Before release:
 ** set_locale for thread safe and env independent locale selection.
-** Add gpgme_strerror_r() when gpg_strerror_r() exists.
 
 * ABI's to break:
 ** I/O and User Data could be made extensible.  But this can be done

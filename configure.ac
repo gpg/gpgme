@@ -173,7 +173,7 @@ if test $have_getenv_r = no && test $have_thread_safe_getenv = no; then
 fi
 
 # Checking for libgpg-error.
-AM_PATH_GPG_ERROR(0.3,, AC_MSG_ERROR([libgpg-error was not found]))
+AM_PATH_GPG_ERROR(0.5,, AC_MSG_ERROR([libgpg-error was not found]))
 AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
           [The default error source for GPGME.])
 

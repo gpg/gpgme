@@ -1,5 +1,9 @@
 2003-09-13  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Error Strings): Add gpgme_strerror_r.
+
+2003-09-13  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.texi (Multi Threading): Update documentation.
 
 2003-09-03  Marcus Brinkmann  <marcus@g10code.de>

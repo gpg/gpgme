@@ -1,5 +1,8 @@
 2003-09-13  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (gpgme_strerror_r): New prototype.
+	* error.c (gpgme_strerror_r): New function.
+
 	* get-env.c: New file.
 	* util.h (_gpgme_getenv): Add prototype.
 	* Makefile.am (libgpgme_real_la_SOURCES): Add get-env.c.
