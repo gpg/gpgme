@@ -1,9 +1,21 @@
 
- * GPGME can be compiled without GnuPG being installed (--with-gpg=PATH),
-   and even cross-compiled.
-
- * New operation gpgme_op_decrypt_verify to decrypt and verify
+ * New operation gpgme_op_decrypt_verify() to decrypt and verify
    signatures simultaneously.
+
+ * GPGME can be compiled without GnuPG being installed (`--with-gpg=PATH'),
+   cross-compiled, or even compiled without support for GnuPG
+   (`--without-gpg').
+
+ * GPGME can be compiled with support for GpgSM (GnuPG for S/MIME,
+   `--with-gpgsm=PATH').  It is enabled by default if the `gpgsm' is found
+   in the path, but it can also be compiled without support for GpgSM
+   (`--without-gpgsm').
+
+ * CryptPlug modules for GPGME are included and can be enabled at
+   configure time (`--enable-gpgmeplug').  There is one module which
+   uses the GnuPG engine (`gpgmeplug') and one module which uses the
+   GpgSM engine (`gpgsmplug').
+
 
 Noteworthy changes in version 0.2.3 (2001-09-17)
 ------------------------------------------------
@@ -17,6 +29,7 @@ Noteworthy changes in version 0.2.3 (2001-09-17)
 
  * Added a simple encryption component for MS-Windows; however the
    build procedure might have some problems.
+
 
 Noteworthy changes in version 0.2.2 (2001-06-12)
 ------------------------------------------------
