@@ -504,10 +504,30 @@ _gpgme_gpgsm_op_export (GpgsmObject gpgsm, GpgmeRecipients recp,
 
 
 GpgmeError
-_gpgme_gpgsm_op_genkey (GpgsmObject gpgsm, GpgmeData help_data, int use_armor)
+_gpgme_gpgsm_op_genkey (GpgsmObject gpgsm, GpgmeData help_data, int use_armor,
+			GpgmeData pubkey, GpgmeData seckey)
 {
-  /* FIXME */
-  return mk_error (Not_Implemented);
+  GpgmeError err;
+
+  if (!gpgsm || !pubkey || seckey)
+    return mk_error (Invalid_Value);
+
+  gpgsm->command = xtrystrdup ("GENKEY");
+  if (!gpgsm->command)
+    return mk_error (Out_Of_Core);
+
+  gpgsm->input_data = help_data;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 0);
+  if (err)
+    return err;
+  gpgsm->output_data = pubkey;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
+		      use_armor ? "--armor" : 0);
+  if (err)
+    return err;
+  _gpgme_io_close (gpgsm->message_fd);
+
+  return 0;
 }
 
 
@@ -543,7 +563,8 @@ _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
   if (!pattern)
     pattern = "";
 
-  line = xtrymalloc (15 + strlen (pattern) + 1); /* "LISTSECRETKEYS "+p+'\0'.*/
+  /* Length is "LISTSECRETKEYS " + p + '\0'.  */
+  line = xtrymalloc (15 + strlen (pattern) + 1);
   if (!line)
     return mk_error (Out_Of_Core);
   if (secret_only)
@@ -932,7 +953,8 @@ _gpgme_gpgsm_op_export (GpgsmObject gpgsm, GpgmeRecipients recp,
 
 
 GpgmeError
-_gpgme_gpgsm_op_genkey (GpgsmObject gpgsm, GpgmeData help_data, int use_armor)
+_gpgme_gpgsm_op_genkey (GpgsmObject gpgsm, GpgmeData help_data, int use_armor,
+			GpgmeData pubkey, GpgmeData seckey)
 {
   return mk_error (Invalid_Engine);
 }

@@ -1,6 +1,6 @@
 /* engine-gpgsm.h -  GPGME GpgSM engine calling functions
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -45,7 +45,8 @@ GpgmeError _gpgme_gpgsm_op_encrypt (GpgsmObject gpgsm, GpgmeRecipients recp,
 GpgmeError _gpgme_gpgsm_op_export (GpgsmObject gpgsm, GpgmeRecipients recp,
 				   GpgmeData keydata, int use_armor);
 GpgmeError _gpgme_gpgsm_op_genkey (GpgsmObject gpgsm, GpgmeData help_data,
-				   int use_armor);
+				   int use_armor, GpgmeData pubkey,
+				   GpgmeData seckey);
 GpgmeError _gpgme_gpgsm_op_import (GpgsmObject gpgsm, GpgmeData keydata);
 GpgmeError _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
 				    int secret_only, int keylist_mode);

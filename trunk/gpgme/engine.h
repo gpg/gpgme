@@ -1,6 +1,6 @@
 /* engine.h -  GPGME engine calling functions
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -49,7 +49,8 @@ GpgmeError _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
 GpgmeError _gpgme_engine_op_export (EngineObject engine, GpgmeRecipients recp,
 				    GpgmeData keydata, int use_armor);
 GpgmeError _gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data,
-				    int use_armor);
+				    int use_armor, GpgmeData pubkey,
+				    GpgmeData seckey);
 GpgmeError _gpgme_engine_op_import (EngineObject engine, GpgmeData keydata);
 GpgmeError _gpgme_engine_op_keylist (EngineObject engine, const char *pattern,
 				     int secret_only,

@@ -129,7 +129,8 @@ GpgmeError _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
 GpgmeError _gpgme_gpg_op_export (GpgObject gpg, GpgmeRecipients recp,
 				 GpgmeData keydata, int use_armor);
 GpgmeError _gpgme_gpg_op_genkey (GpgObject gpg, GpgmeData help_data,
-				 int use_armor);
+				 int use_armor, GpgmeData pubkey,
+				 GpgmeData seckey);
 GpgmeError _gpgme_gpg_op_import (GpgObject gpg, GpgmeData keydata);
 GpgmeError _gpgme_gpg_op_keylist (GpgObject gpg, const char *pattern,
 				  int secret_only, int keylist_mode);
