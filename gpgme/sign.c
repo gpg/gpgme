@@ -122,7 +122,7 @@ append_xml_siginfo (GpgmeData *rdh, char *args)
   _gpgme_data_append_string (dh, helpbuf);
   SKIP_TOKEN_OR_RETURN (args);
 
-  ul = strtoul (args, NULL, 10);
+  ul = _gpgme_parse_timestamp (args);
   sprintf (helpbuf, "    <created>%lu</created>\n", ul);
   _gpgme_data_append_string (dh, helpbuf);
   SKIP_TOKEN_OR_RETURN (args);

@@ -40,7 +40,7 @@ const char *
 assuan_strerror (AssuanError err)
 {
   const char *s;
-  static char buf[25];
+  static char buf[50];
 
   switch (err)
     {
@@ -62,7 +62,18 @@ printf "%s\"; break;\n", tolower(substr(s,8));
 '
 
 cat <<EOF
-    default:  sprintf (buf, "ec=%d", err ); s=buf; break;
+    default: 
+      {
+        unsigned int source, code;
+
+        source = ((err >> 24) & 0xff);
+        code = (err & 0x00ffffff);
+        if (source) /* Assume this is an libgpg-error. */
+          sprintf (buf, "ec=%u.%u", source, code ); 
+        else
+          sprintf (buf, "ec=%d", err ); 
+        s=buf; break;
+      }
     }
 
   return s;

@@ -100,5 +100,6 @@ FILE *fopencookie (void *cookie, const char *opentype,
 /*-- conversion.c --*/
 GpgmeError _gpgme_decode_c_string (const char *src, char **destp);
 int _gpgme_hextobyte (const byte *str);
+time_t _gpgme_parse_timestamp (const char *p);
 
 #endif /* UTIL_H */
