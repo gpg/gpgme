@@ -61,13 +61,10 @@ typedef struct {
   SendCertificates        sendCertificates;
   SignEmail               signEmail;
   bool                    saveSentSignatures;
-  bool                    certificateExpiryNearWarning;
   bool                    warnNoCertificate;
   PinRequests             numPINRequests;
   bool                    checkSignatureCertificatePathToRoot;
   bool                    signatureUseCRLs;
-  bool                    signatureCRLExpiryNearWarning;
-  int                     signatureCRLNearExpiryInterval;
   EncryptionAlgorithm     encryptionAlgorithm;
   EncryptEmail            encryptEmail;
   bool                    saveMessagesEncrypted;
@@ -79,13 +76,28 @@ typedef struct {
   unsigned int            numDirectoryServers;
   CertificateSource       certificateSource;
   CertificateSource       cRLSource;
+  bool                    warnSendUnsigned;
+  int                     numPINRequestsInterval;
+  bool                    signatureCertificateExpiryNearWarning;
+  int                     signatureCertificateExpiryNearInterval;
+  bool                    cACertificateExpiryNearWarning;
+  int                     cACertificateExpiryNearInterval;
+  bool                    rootCertificateExpiryNearWarning;
+  int                     rootCertificateExpiryNearInterval;
+  bool                    warnSendUnencrypted;
+  bool                    checkCertificatePath;
+  bool                    receiverCertificateExpiryNearWarning;
+  int                     receiverCertificateExpiryNearWarningInterval;
+  bool                    certificateInChainExpiryNearWarning;
+  int                     certificateInChainExpiryNearWarningInterval;
+  bool                    receiverEmailAddressNotInCertificateWarning;
 } Config;
 
 
 Config config;
 
 
-#define NEAR_EXPIRY 21
+#define NEAR_EXPIRY 14
 
 bool initialize()
 {
@@ -94,13 +106,10 @@ bool initialize()
   config.sendCertificates                     = SendCert_SendChainWithRoot;
   config.signEmail                            = SignEmail_SignAll;
   config.saveSentSignatures                   = true;
-  config.certificateExpiryNearWarning         = true;
   config.warnNoCertificate                    = true;
   config.numPINRequests                       = PinRequest_Always;
   config.checkSignatureCertificatePathToRoot  = true;
   config.signatureUseCRLs                     = true;
-  config.signatureCRLExpiryNearWarning        = true;
-  config.signatureCRLNearExpiryInterval       = NEAR_EXPIRY;
   config.encryptionAlgorithm                  = EncryptAlg_RSA;
   config.encryptEmail                         = EncryptEmail_Ask;
   config.saveMessagesEncrypted                = true;
@@ -112,6 +121,22 @@ bool initialize()
   config.numDirectoryServers                  = 0;
   config.certificateSource                    = CertSrc_Server;
   config.cRLSource                            = CertSrc_Server;
+  config.warnSendUnsigned                             = true;
+  config.numPINRequestsInterval                       = NEAR_EXPIRY;
+  config.signatureCertificateExpiryNearWarning        = true;
+  config.signatureCertificateExpiryNearInterval       = NEAR_EXPIRY;
+  config.cACertificateExpiryNearWarning               = true;
+  config.cACertificateExpiryNearInterval              = NEAR_EXPIRY;
+  config.rootCertificateExpiryNearWarning             = true;
+  config.rootCertificateExpiryNearInterval            = NEAR_EXPIRY;
+  config.warnSendUnencrypted                          = false;
+  config.checkCertificatePath                         = true;
+  config.receiverCertificateExpiryNearWarning         = true;
+  config.receiverCertificateExpiryNearWarningInterval = NEAR_EXPIRY;
+  config.certificateInChainExpiryNearWarning          = true;
+  config.certificateInChainExpiryNearWarningInterval  = NEAR_EXPIRY;
+  config.receiverEmailAddressNotInCertificateWarning  = true;
+
   return true;
 };
 
@@ -198,6 +223,25 @@ SignEmail signEmail()
   return config.signEmail;
 }
 
+
+
+
+
+void setWarnSendUnsigned( bool flag )
+{
+  config.warnSendUnsigned = flag;
+}
+
+bool warnSendUnsigned()
+{
+  return config.warnSendUnsigned;
+}
+
+
+
+
+
+
 void setSaveSentSignatures( bool flag )
 {
   config.saveSentSignatures = flag;
@@ -206,16 +250,6 @@ void setSaveSentSignatures( bool flag )
 bool saveSentSignatures()
 {
   return config.saveSentSignatures;
-}
-
-void setCertificateExpiryNearWarning( bool flag )
-{
-  config.certificateExpiryNearWarning = flag;
-}
-
-bool certificateExpiryNearWarning()
-{
-  return config.certificateExpiryNearWarning;
 }
 
 void setWarnNoCertificate( bool flag )
@@ -238,6 +272,26 @@ PinRequests numPINRequests()
   return config.numPINRequests;
 }
 
+
+
+
+
+void setNumPINRequestsInterval( int interval )
+{
+  config.numPINRequestsInterval = interval;
+}
+
+int numPINRequestsInterval()
+{
+  return config.numPINRequestsInterval;
+}
+
+
+
+
+
+
+
 void setCheckSignatureCertificatePathToRoot( bool flag )
 {
   config.checkSignatureCertificatePathToRoot = flag;
@@ -258,25 +312,76 @@ bool signatureUseCRLs()
   return config.signatureUseCRLs;
 }
 
-void setSignatureCRLExpiryNearWarning( bool flag )
+
+
+
+
+
+void setSignatureCertificateExpiryNearWarning( bool flag )
 {
-  config.signatureCRLExpiryNearWarning = flag;
+  config.signatureCertificateExpiryNearWarning = flag;
 }
 
-bool signatureCRLExpiryNearWarning()
+bool signatureCertificateExpiryNearWarning( void )
 {
-  return config.signatureCRLExpiryNearWarning;
+  return config.signatureCertificateExpiryNearWarning;
 }
 
-void setSignatureCRLNearExpiryInterval( int interval )
+void setSignatureCertificateExpiryNearInterval( int interval )
 {
-  config.signatureCRLNearExpiryInterval = interval;
+  config.signatureCertificateExpiryNearInterval = interval;
 }
 
-int signatureCRLNearExpiryInterval()
+int signatureCertificateExpiryNearInterval( void )
 {
-  return config.signatureCRLNearExpiryInterval;
+  return config.signatureCertificateExpiryNearInterval;
 }
+
+void setCACertificateExpiryNearWarning( bool flag )
+{
+  config.cACertificateExpiryNearWarning = flag;
+}
+
+bool caCertificateExpiryNearWarning( void )
+{
+  return config.cACertificateExpiryNearWarning;
+}
+
+void setCACertificateExpiryNearInterval( int interval )
+{
+  config.cACertificateExpiryNearInterval = interval;
+}
+
+int caCertificateExpiryNearInterval( void )
+{
+  return config.cACertificateExpiryNearInterval;
+}
+
+void setRootCertificateExpiryNearWarning( bool flag )
+{
+  config.rootCertificateExpiryNearWarning = flag;
+}
+
+bool rootCertificateExpiryNearWarning( void )
+{
+  return config.rootCertificateExpiryNearWarning;
+}
+
+void setRootCertificateExpiryNearInterval( int interval )
+{
+  config.rootCertificateExpiryNearInterval = interval;
+}
+
+int rootCertificateExpiryNearInterval( void )
+{
+  return config.rootCertificateExpiryNearInterval;
+}
+
+
+
+
+
+
 
 
 const char* encryptionConfigurationDialog(){ return 0; }
@@ -307,6 +412,29 @@ EncryptEmail encryptEmail()
   return config.encryptEmail;
 }
 
+
+
+
+
+
+void setWarnSendUnencrypted( bool flag )
+{
+  config.warnSendUnencrypted = flag;
+}
+
+bool warnSendUnencrypted()
+{
+  return config.warnSendUnencrypted;
+}
+
+
+
+
+
+
+
+
+
 void setSaveMessagesEncrypted( bool flag )
 {
   config.saveMessagesEncrypted = flag;
@@ -317,6 +445,29 @@ bool saveMessagesEncrypted()
   return config.saveMessagesEncrypted;
 }
 
+
+
+
+
+
+
+void setCheckCertificatePath( bool flag )
+{
+  config.checkCertificatePath = flag;
+}
+
+bool checkCertificatePath()
+{
+  return config.checkCertificatePath;
+}
+
+
+
+
+
+
+
+
 void setCheckEncryptionCertificatePathToRoot( bool flag )
 {
   config.checkEncryptionCertificatePathToRoot = flag;
@@ -326,6 +477,69 @@ bool checkEncryptionCertificatePathToRoot()
 {
   return config.checkEncryptionCertificatePathToRoot;
 }
+
+
+
+
+
+
+
+void setReceiverCertificateExpiryNearWarning( bool flag )
+{
+  config.receiverCertificateExpiryNearWarning = flag;
+}
+
+bool receiverCertificateExpiryNearWarning()
+{
+  return config.receiverCertificateExpiryNearWarning;
+}
+
+void setReceiverCertificateExpiryNearWarningInterval( int interval )
+{
+  config.receiverCertificateExpiryNearWarningInterval = interval;
+}
+
+int receiverCertificateExpiryNearWarningInterval()
+{
+  return config.receiverCertificateExpiryNearWarningInterval;
+}
+
+void setCertificateInChainExpiryNearWarning( bool flag )
+{
+  config.certificateInChainExpiryNearWarning = flag;
+}
+
+bool certificateInChainExpiryNearWarning()
+{
+  return config.certificateInChainExpiryNearWarning;
+}
+
+void setCertificateInChainExpiryNearWarningInterval( int interval )
+{
+  config.certificateInChainExpiryNearWarningInterval = interval;
+}
+
+int certificateInChainExpiryNearWarningInterval()
+{
+  return config.certificateInChainExpiryNearWarningInterval;
+}
+
+void setReceiverEmailAddressNotInCertificateWarning( bool flag )
+{
+  config.receiverEmailAddressNotInCertificateWarning = flag;
+}
+
+bool receiverEmailAddressNotInCertificateWarning()
+{
+  return config.receiverEmailAddressNotInCertificateWarning;
+}
+
+
+
+
+
+
+
 
 void setEncryptionUseCRLs( bool flag )
 {

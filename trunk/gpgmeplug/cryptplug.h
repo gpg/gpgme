@@ -159,8 +159,10 @@ typedef enum {
   PinRequest_undef            = 0,
 
   PinRequest_Always          = 1,
-  PinRequest_OncePerMail      = 2,
-  PinRequest_OncePerSession   = 3      // may be changed ...
+  PinRequest_WhenAddingCerts = 2,
+  PinRequest_AlwaysWhenSigning = 3,
+  PinRequest_OncePerSession   = 4,
+  PinRequest_AfterMinutes     = 5
 } PinRequests;
 
 // dummy values:
@@ -388,6 +390,21 @@ void setSignEmail( SignEmail );
 */
 SignEmail signEmail( void );
 
+    
+/*! \ingroup groupConfigSign
+  \brief Specifies whether a warning should be emitted when the user
+  tries to send an email message unsigned.
+*/
+void setWarnSendUnsigned( bool );    
+
+    
+/*! \ingroup groupConfigSign
+  \brief Returns whether a warning should be emitted when the user
+  tries to send an email message unsigned.
+*/
+bool warnSendUnsigned( void );    
+    
+    
 /*! \ingroup groupConfigSign
    \brief Specifies whether sent email messages should be stored
           with or without their signatures.
@@ -399,20 +416,6 @@ void setSaveSentSignatures( bool );
             with or without their signatures.
 */
 bool saveSentSignatures( void );
-
-/*! \ingroup groupConfigSign
-   \brief Specifies whether a warning should be emitted if any
-            of the certificates involved in the signing process
-            expires in the near future.
-*/
-void setCertificateExpiryNearWarning( bool );
-
-/*! \ingroup groupConfigSign
-   \brief Returns whether a warning should be emitted if any
-            of the certificates involved in the signing process
-            expires in the near future.
-*/
-bool certificateExpiryNearWarning( void );
 
 /*! \ingroup groupConfigSign
    \brief Specifies whether a warning should be emitted if the
@@ -441,6 +444,20 @@ void setNumPINRequests( PinRequests );
 PinRequests numPINRequests( void );
 
 /*! \ingroup groupConfigSign
+  \brief Specifies the interval in minutes the PIN must be reentered if
+  numPINRequests() is PinRequest_AfterMinutes.
+*/
+void setNumPINRequestsInterval( int );
+
+    
+/*! \ingroup groupConfigSign
+  \brief Returns the interval in minutes the PIN must be reentered if
+  numPINRequests() is PinRequest_AfterMinutes.
+*/
+int numPINRequestsInterval( void );
+
+
+/*! \ingroup groupConfigSign
    \brief Specifies whether the certificate path should be
             followed to the root certificate or whether locally stored
             certificates may be used.
@@ -467,33 +484,85 @@ void setSignatureUseCRLs( bool );
 bool signatureUseCRLs( void );
 
 /*! \ingroup groupConfigSign
-   \brief Specifies whether a warning should be emitted if any
-            of the certificates involved in the signing process
-            expires in the near future.
+   \brief Specifies whether a warning should be emitted if the
+   signature certificate expires in the near future.
 */
-void setSignatureCRLExpiryNearWarning( bool );
+void setSignatureCertificateExpiryNearWarning( bool );
 
 /*! \ingroup groupConfigSign
-   \brief Returns whether a warning should be emitted if any
-            of the certificates involved in the signing process
-            expires in the near future.
+   \brief Returns whether a warning should be emitted if
+   the signature certificate expires in the near future.
 */
-bool signatureCRLExpiryNearWarning( void );
+bool signatureCertificateExpiryNearWarning( void );
 
 /*! \ingroup groupConfigSign
-   \brief Specifies the number of days which a certificate must
+   \brief Specifies the number of days which a signature certificate must
+   be valid before it is considered to expire in the near
+   future.
+*/
+void setSignatureCertificateExpiryNearInterval( int );
+
+/*! \ingroup groupConfigSign
+   \brief Returns the number of days which a signature certificate must
             be valid before it is considered to expire in the near
             future.
 */
-void setSignatureCRLNearExpiryInterval( int );
+int signatureCertificateExpiryNearInterval( void );
 
 /*! \ingroup groupConfigSign
-   \brief Returns the number of days which a certificate must
+   \brief Specifies whether a warning should be emitted if the
+   CA certificate expires in the near future.
+*/
+void setCACertificateExpiryNearWarning( bool );
+
+/*! \ingroup groupConfigSign
+   \brief Returns whether a warning should be emitted if
+   the CA certificate expires in the near future.
+*/
+bool caCertificateExpiryNearWarning( void );
+
+/*! \ingroup groupConfigSign
+   \brief Specifies the number of days which a CA certificate must
+   be valid before it is considered to expire in the near
+   future.
+*/
+void setCACertificateExpiryNearInterval( int );
+
+/*! \ingroup groupConfigSign
+   \brief Returns the number of days which a CA certificate must
             be valid before it is considered to expire in the near
             future.
 */
-int signatureCRLNearExpiryInterval( void );
+int caCertificateExpiryNearInterval( void );
 
+/*! \ingroup groupConfigSign
+   \brief Specifies whether a warning should be emitted if the
+   root certificate expires in the near future.
+*/
+void setRootCertificateExpiryNearWarning( bool );
+
+/*! \ingroup groupConfigSign
+   \brief Returns whether a warning should be emitted if
+   the root certificate expires in the near future.
+*/
+bool rootCertificateExpiryNearWarning( void );
+
+/*! \ingroup groupConfigSign
+   \brief Specifies the number of days which a root certificate must
+   be valid before it is considered to expire in the near
+   future.
+*/
+void setRootCertificateExpiryNearInterval( int );
+
+/*! \ingroup groupConfigSign
+   \brief Returns the number of days which a signature certificate must
+            be valid before it is considered to expire in the near
+            future.
+*/
+int rootCertificateExpiryNearInterval( void );
+
+    
+    
 
 /*! \ingroup groupConfigCrypt
    \brief This function returns an XML representation of a
@@ -576,6 +645,20 @@ void setEncryptEmail( EncryptEmail );
 */
 EncryptEmail encryptEmail( void );
 
+/*! \ingroup groupConfigSign
+  \brief Specifies whether a warning should be emitted when the user
+  tries to send an email message unencrypted.
+*/
+void setWarnSendUnencrypted( bool );    
+
+    
+/*! \ingroup groupConfigSign
+  \brief Returns whether a warning should be emitted when the user
+  tries to send an email message unencrypted.
+*/
+bool warnSendUnencrypted( void );    
+    
+    
 /*! \ingroup groupConfigCrypt
    \brief Specifies whether encrypted email messages should be
             stored encrypted or decrypted.
@@ -588,6 +671,20 @@ void setSaveMessagesEncrypted( bool );
 */
 bool saveMessagesEncrypted( void );
 
+
+/*! \ingroup groupConfigCrypt
+  \brief Specifies whether the certificate path should be checked
+  during encryption.
+*/
+void setCheckCertificatePath( bool );
+
+/*! \ingroup groupConfigCrypt
+  \brief Returns whether the certificate path should be checked
+  during encryption.
+*/
+bool checkCertificatePath( void );
+
+    
 /*! \ingroup groupConfigCrypt
    \brief Specifies whether the certificate path should be
             followed to the root certificate or whether locally stored
@@ -602,6 +699,73 @@ void setCheckEncryptionCertificatePathToRoot( bool );
 */
 bool checkEncryptionCertificatePathToRoot( void );
 
+    
+/*! \ingroup groupConfigCrypt
+  \brief Specifies whether a warning should be emitted if the
+  certificate of the receiver expires in the near future.
+*/
+void setReceiverCertificateExpiryNearWarning( bool );
+
+/*! \ingroup groupConfigCrypt
+  \brief Returns whether a warning should be emitted if the
+  certificate of the receiver expires in the near future.
+*/
+bool receiverCertificateExpiryNearWarning( void );
+    
+    
+/*! \ingroup groupConfigCrypt
+  \brief Specifies the number of days which a receiver certificate
+  must be valid before it is considered to expire in the near future.
+*/
+void setReceiverCertificateExpiryNearWarningInterval( int );
+    
+/*! \ingroup groupConfigCrypt
+  \brief Returns the number of days which a receiver certificate
+  must be valid before it is considered to expire in the near future.
+*/
+int receiverCertificateExpiryNearWarningInterval( void );
+    
+/*! \ingroup groupConfigCrypt
+  \brief Specifies whether a warning should be emitted if 
+  a certificate in the chain expires in the near future.
+*/
+void setCertificateInChainExpiryNearWarning( bool );
+
+    
+/*! \ingroup groupConfigCrypt
+  \brief Returns whether a warning should be emitted if a
+  certificate in the chain expires in the near future.
+*/
+bool certificateInChainExpiryNearWarning( void );
+
+    
+    
+/*! \ingroup groupConfigCrypt
+  \brief Specifies the number of days which a certificate in the chain
+  must be valid before it is considered to expire in the near future.
+*/
+void setCertificateInChainExpiryNearWarningInterval( int );
+    
+/*! \ingroup groupConfigCrypt
+  \brief Returns the number of days which a certificate in the chain
+  must be valid before it is considered to expire in the near future.
+*/
+int certificateInChainExpiryNearWarningInterval( void );
+    
+    
+/*! \ingroup groupConfigCrypt
+  \brief Specifies whether a warning is emitted if the email address
+  of the receiver does not appear in the certificate.
+*/
+void setReceiverEmailAddressNotInCertificateWarning( bool );    
+
+/*! \ingroup groupConfigCrypt
+  \brief Returns whether a warning is emitted if the email address
+  of the receiver does not appear in the certificate.
+*/
+bool receiverEmailAddressNotInCertificateWarning( void );    
+
+    
 /*! \ingroup groupConfigCrypt
    \brief Specifies whether certificate revocation lists should
             be used.
