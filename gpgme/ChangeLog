@@ -1,5 +1,8 @@
 2003-10-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (map_assuan_error): If ERR is -1, return sensible
+	error.
+
 	* io.h (_gpgme_io_subsystem_init): New prototype.
 	* posix-io.c (_gpgme_io_subsystem_init): Add function.
 	(_gpgme_io_spawn): Do not fixup signal handler here.
