@@ -1577,8 +1577,9 @@ bool storeCertificatesFromMessage( const char* ciphertext );
 
    NOTE: The \c certificate parameter must point to an allready allocated
    block of memory which is large enough to hold the complete list.
+   If secretOnly is true, only secret keys are returned.
 */
-bool findCertificates( const char* addressee, char** certificates );
+bool findCertificates( const char* addressee, char** certificates, bool secretOnly );
 
 /*! \ingroup groupCryptAct
    \brief Encrypts an email message in

@@ -1512,7 +1512,7 @@ bool encryptMessage( const char*  cleartext,
   if( GPGMEPLUG_PROTOCOL == GPGME_PROTOCOL_CMS )
   {
     gpgme_recipients_add_name (rset,
-      "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=DÃ¼sseldorf,C=DE" );
+      "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=DÃ?sseldorf,C=DE" );
 
     fputs( "\nGPGSMPLUG encryptMessage() using test key of Aegypten Project\n", stderr );
   }
@@ -2300,8 +2300,9 @@ void endListCertificates( struct CertIterator* it )
   '\1' separated list.
   NOTE: The certificate parameter must point to an allready allocated
   block of memory which is large enough to hold the complete list.
+  If secretOnly is true, only secret keys are returned.
 */
-bool findCertificates( const char* addressee, char** certificates )
+bool findCertificates( const char* addressee, char** certificates, bool secretOnly )
 {
   GpgmeCtx ctx;
   GpgmeError err;
@@ -2317,7 +2318,7 @@ bool findCertificates( const char* addressee, char** certificates )
   gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
 
-  err = gpgme_op_keylist_start(ctx, addressee, 0);
+  err = gpgme_op_keylist_start(ctx, addressee, secretOnly ? 1 : 0);
   while( GPGME_No_Error == err ) {
     err = gpgme_op_keylist_next(ctx, &rKey);
     if( GPGME_No_Error == err ) {
