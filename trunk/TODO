@@ -1,7 +1,7 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * Before release:
-** set_locale for thread safe and env independent locale selection.
+** currently nothing
 
 * ABI's to break:
 ** I/O and User Data could be made extensible.  But this can be done
@@ -68,7 +68,8 @@ Hey Emacs, this is -*- outline -*- mode!
    about where to guarantee what (ie, what happens if start fails, are
    the fds unregistered immediately - i think so?)
 ** Optimize the case where a data object has an underlying fd we can pass
-   directly to the engine.
+   directly to the engine.  This will be automatic with socket I/O and
+   descriptor passing.
 ** Move code common to all engines up from gpg to engine.
 ** engine operations can return General Error on unknown protocol
    (it's an internal error, as select_protocol checks already).
