@@ -6,6 +6,9 @@
 If you want to hack on it, start with one of the `tests/gpg/t-foo'
 programs.
 
+To build GPGME, you need to install libgpg-error.  You need at least
+libgpg-error 0.1.
+
 For support of the OpenPGP protocol (default), you need the latest CVS
 version of GnuPG 1.2, see `http://www.gnupg.org/cvs-access.html'.
 
