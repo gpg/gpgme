@@ -1694,18 +1694,11 @@ static void safe_free( void** x )
 }
 /*#define safe_free( x ) free( x )*/
 
-
-struct dn_array_s {
-  char *key;
-  char *value;
-};
-
-
 /* Parse a DN and return an array-ized one.  This is not a validating
    parser and it does not support any old-stylish syntax; gpgme is
    expected to return only rfc2253 compatible strings. */
 static const unsigned char *
-parse_dn_part (struct dn_array_s *array, const unsigned char *string)
+parse_dn_part (struct DnPair *array, const unsigned char *string)
 {
   const unsigned char *s, *s1;
   size_t n;
@@ -1792,10 +1785,10 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
 /* Parse a DN and return an array-ized one.  This is not a validating
    parser and it does not support any old-stylish syntax; gpgme is
    expected to return only rfc2253 compatible strings. */
-static struct dn_array_s *
+static struct DnPair *
 parse_dn (const unsigned char *string)
 {
-  struct dn_array_s *array;
+  struct DnPair *array;
   size_t arrayidx, arraysize;
   int i;
 
@@ -1810,7 +1803,7 @@ parse_dn (const unsigned char *string)
         break; /* ready */
       if (arrayidx >= arraysize)
         { /* mutt lacks a real safe_realoc - so we need to copy */
-          struct dn_array_s *a2;
+          struct DnPair *a2;
 
           arraysize += 5;
           a2 = safe_malloc ((arraysize+1) * sizeof *array);
@@ -1901,7 +1894,7 @@ static void freeInfo( struct CertificateInfo* info )
   /*fprintf( stderr, "freeing info->userid\n" );*/
   if( info->userid ) freeStringArray( info->userid );
   /*fprintf( stderr, "freeing info->issuer\n" );*/
-  if( info->issuer ) freeStringArray( info->issuer );
+  if( info->issuer ) safe_free( (void**)&(info->issuer) );
   /*fprintf( stderr, "freed\n" );*/
   while( a && a->key && a->value ) {
     /*fprintf( stderr, "freeing %s\n", a->key );*/
@@ -1944,17 +1937,8 @@ struct CertificateInfo* nextCertificate( struct CertIterator* it )
     it->info.userid[idx] = 0;
 
     memset( names, 0, sizeof( names ) );
-    for( idx = 0; (s = gpgme_key_get_string_attr (key, GPGME_ATTR_ISSUER, 0, idx)) && idx < MAX_GPGME_IDX; 
-	 ++idx ) {
-      /*fprintf(stderr, "Got issuer \"%s\"\n", s );*/
-      names[idx] = xstrdup( s );
-    }
-    it->info.issuer = safe_malloc( sizeof( char* ) * (idx+1) );
-    memset( it->info.issuer, 0, sizeof( char* ) * (idx+1) );
-    for( idx = 0; names[idx] != 0; ++idx ) {
-      it->info.issuer[idx] = names[idx];
-    }
-    it->info.issuer[idx] = 0;
+    s = gpgme_key_get_string_attr (key, GPGME_ATTR_ISSUER, 0, 0); 
+    it->info.issuer = xstrdup(s);
 
     gpgme_key_release (key);
     return &(it->info);
