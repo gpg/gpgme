@@ -206,7 +206,7 @@ gpgme_error_t
 gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_recipients_t recp,
 		  gpgme_data_t plain, gpgme_data_t cipher)
 {
-  int err = encrypt_start (ctx, 1, recp, plain, cipher);
+  gpgme_error_t err = encrypt_start (ctx, 1, recp, plain, cipher);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

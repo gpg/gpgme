@@ -1,5 +1,11 @@
 2003-05-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* op-support.c (_gpgme_parse_inv_userid): Add missing break
+	statements.
+	* encrypt.c (gpgme_op_encrypt): Use gpgme_error_t instead of int.
+
+2003-05-27  Marcus Brinkmann  <marcus@g10code.de>
+
 	* encrypt.c (gpgme_op_encrypt_result): Use intermediate variable
 	HOOK to avoid compiler warning.  Don't ask, you don't want to know.
 	(_gpgme_encrypt_status_handler): Likewise.
