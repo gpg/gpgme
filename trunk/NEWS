@@ -1,4 +1,6 @@
-
+Noteworthy changes in version 0.3.0 (2001-12-19)
+------------------------------------------------
+ 
  * New interface gpgme_set_protocol() to set the protocol and thus the
    crypto engine to be used by the context.  Currently, the OpenPGP
    and the CMS protocols are supported.  They are specified by the new
