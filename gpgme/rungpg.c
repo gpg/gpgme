@@ -482,14 +482,14 @@ gpg_set_command_handler (void *engine, engine_command_handler_t fnc,
 
   rc = add_arg (gpg, "--command-fd");
   if (rc)
-    return err;
+    return rc;
 
   /* This is a hack.  We don't have a real data object.  The only
      thing that matters is that we use something unique, so we use the
      address of the cmd structure in the gpg object.  */
   rc = add_data (gpg, (void *) &gpg->cmd, -2, 0);
   if (rc)
-    return err;
+    return rc;
 
   gpg->cmd.fnc = fnc;
   gpg->cmd.cb_data = (void *) &gpg->cmd;
