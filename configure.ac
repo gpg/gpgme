@@ -68,17 +68,6 @@ AH_VERBATIM([_REENTRANT],
 # define _REENTRANT 1
 #endif])
 
-AH_BOTTOM([
-/* Some environments miss the definition for EOPNOTSUPP.  We provide
-   the error code here and test where neded whether it should be
-   defined.  Can't do the test here due to the order of includes.  */
-#ifdef HAVE_W32_SYSTEM
-#define VALUE_FOR_EOPNOTSUPP 95
-#endif /*!HAVE_W32_SYSTEM*/
-
-])
-
-
 AC_PROG_CC
 
 
