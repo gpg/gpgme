@@ -11,6 +11,8 @@
 	(gpgme_key_get_string_attr): Add GPGME_ATTR_SIG_SUMMARY case to
 	silence gcc warning.
 
+	* rungpg.c (_gpgme_gpg_new): Always set utf8 as charset.
+
 2002-07-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (gpgme_set_io_cbs): Deal with CTX being NULL.
