@@ -557,13 +557,15 @@ int signatureCertificateDaysLeftToExpiry( const char* certificate )
     if ( GPGME_No_Error == err ) {
       time_t expire_time = gpgme_key_get_ulong_attr(
                              rKey, GPGME_ATTR_EXPIRE, NULL, 0 );
-      time_t cur_time = time (NULL);
-      if( cur_time > expire_time ) {
-        daysLeft = days_from_seconds(cur_time - expire_time);
-        daysLeft *= -1;
+      if ( 0 != expire_time ) {
+        time_t cur_time = time (NULL);
+        if( cur_time > expire_time ) {
+          daysLeft = days_from_seconds(cur_time - expire_time);
+          daysLeft *= -1;
+        }
+        else
+          daysLeft = days_from_seconds(expire_time - cur_time);
       }
-      else
-        daysLeft = days_from_seconds(expire_time - cur_time);
       gpgme_key_release( rKey );
     }
   }
@@ -847,13 +849,15 @@ int receiverCertificateDaysLeftToExpiry( const char* certificate )
     if ( GPGME_No_Error == err ) {
       time_t expire_time = gpgme_key_get_ulong_attr(
                              rKey,GPGME_ATTR_EXPIRE, NULL, 0 );
-      time_t cur_time = time (NULL);
-      if( cur_time > expire_time ) {
-        daysLeft = days_from_seconds(cur_time - expire_time);
-        daysLeft *= -1;
+      if ( 0 != expire_time ) {
+        time_t cur_time = time (NULL);
+        if( cur_time > expire_time ) {
+          daysLeft = days_from_seconds(cur_time - expire_time);
+          daysLeft *= -1;
+        }
+        else
+          daysLeft = days_from_seconds(expire_time - cur_time);
       }
-      else
-        daysLeft = days_from_seconds(expire_time - cur_time);
       gpgme_key_release( rKey );
     }
   }
