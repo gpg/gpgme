@@ -235,12 +235,6 @@ void gpgme_set_include_certs (GpgmeCtx ctx, int nr_of_certs);
 /* Return the number of certs to include in an S/MIME message.  */
 int gpgme_get_include_certs (GpgmeCtx ctx);
 
-/* Sets the algorithm to be used for signatures. */
-void gpgme_set_signature_algorithm( GpgmeCtx ctx, int signAlgo );
-
-/* Return the algorithm to be used for signatures. */
-int gpgme_get_signature_algorithm( GpgmeCtx ctx );
-
 /* Set keylist mode in CTX to MODE.  */
 GpgmeError gpgme_set_keylist_mode (GpgmeCtx ctx, int mode);
 
