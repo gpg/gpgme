@@ -67,6 +67,7 @@ libgpgme_la_SOURCES = \
 	engine.c engine.h \
 	sema.h io.h \
 	${system_components} \
+	mutex.h \
 	gpgme.c debug.c version.c errors.c
 
 errors.c : gpgme.h
@@ -74,3 +75,4 @@ errors.c : gpgme.h
 
 status-table.h : rungpg.h
 	$(srcdir)/mkstatus < $(srcdir)/rungpg.h > status-table.h
+

@@ -1,7 +1,11 @@
+2002-03-26  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (libgpgme_la_SOURCES): Add mutex.h
+
 2002-03-21  Werner Koch  <wk@gnupg.org>
 
-	* util.h (struct) [!HAVE_FOPENCOOKIE]: Make sure off_t and ssize_t
-	are defined.
+	* util.h [!HAVE_FOPENCOOKIE]: Make sure off_t and ssize_t are
+	defined.
 
 2002-03-18  Marcus Brinkmann  <marcus@g10code.de>
 
