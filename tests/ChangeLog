@@ -1,5 +1,10 @@
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgsm/t-verify.c: New file.
+	* gpgsm/Makefile.am (TESTS): Add t-verify.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpg/Makefile.am (GPG): Set to @GPG_PATH@.
 	(./pubring.gpg): Use $(GPG) instead gpg.
 	(./secring.gpg): Likewise.
