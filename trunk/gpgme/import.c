@@ -32,7 +32,8 @@
 
 struct import_result_s
 {
-  int any_imported;
+  int nr_imported;
+  int nr_considered;
   GpgmeData xmlinfo;
 };
 
@@ -160,8 +161,12 @@ import_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       break;
 
     case GPGME_STATUS_IMPORTED:
-      ctx->result.import->any_imported = 1;
+      ctx->result.import->nr_imported++;
+      append_xml_impinfo (&ctx->result.import->xmlinfo, code, args);
+      break;
+
     case GPGME_STATUS_IMPORT_RES:
+      ctx->result.import->nr_considered = strtol (args, 0, 0);
       append_xml_impinfo (&ctx->result.import->xmlinfo, code, args);
       break;
 
@@ -217,19 +222,31 @@ gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
  * gpgme_op_import:
  * @c: Context 
  * @keydata: Data object
+ * @nr: Will contain number of considered keys.
  * 
  * Import all key material from @keydata into the key database.
  * 
  * Return value: 0 on success or an error code.
  **/
 GpgmeError
-gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
+gpgme_op_import_ext (GpgmeCtx ctx, GpgmeData keydata, int *nr)
 {
   GpgmeError err = _gpgme_op_import_start (ctx, 1, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  if (!err && (!ctx->result.import || !ctx->result.import->any_imported))
-    err = -1; /* Nothing at all imported. */
+  if (!err && nr)
+    {
+      if (ctx->result.import)
+	*nr = ctx->result.import->nr_considered;
+      else
+	*nr = 0;
+    }
   return err;
+}
+
+GpgmeError
+gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
+{
+  return gpgme_op_import_ext (ctx, keydata, 0);
 }
 
