@@ -52,7 +52,7 @@ _gpgme_release_import_result (ImportResult result)
 static void
 append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
 {
-#define MAX_IMPORTED_FIELDS 13
+#define MAX_IMPORTED_FIELDS 14
   static char *imported_fields[MAX_IMPORTED_FIELDS]
     = { "keyid", "username", 0 };
   static char *import_res_fields[MAX_IMPORTED_FIELDS]
