@@ -28,47 +28,52 @@
 #include "ops.h"
 
 
-struct edit_result_s
+struct edit_result
 {
   GpgmeEditCb fnc;
   void *fnc_value;
 };
-
-void
-_gpgme_release_edit_result (EditResult result)
-{
-  if (!result)
-    return;
-  free (result);
-}
-
+typedef struct edit_result *EditResult;
 
 static GpgmeError
 edit_status_handler (GpgmeCtx ctx, GpgmeStatusCode status, char *args)
 {
+  EditResult result;
   GpgmeError err = _gpgme_passphrase_status_handler (ctx, status, args);
   if (err)
     return err;
 
-  return (*ctx->result.edit->fnc) (ctx->result.edit->fnc_value, status,
-				   args, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &result,
+			       -1, NULL);
+  if (err)
+    return err;
+  assert (result);
+
+  return (*result->fnc) (result->fnc_value, status, args, NULL);
 }
 
 
 static GpgmeError
 command_handler (void *opaque, GpgmeStatusCode status, const char *args,
-		 const char **result)
+		 const char **result_r)
 {
+  EditResult result;
   GpgmeError err;
   GpgmeCtx ctx = opaque;
 
-  err = _gpgme_passphrase_command_handler (ctx, status, args, result);
+  *result_r = NULL;
+  err = _gpgme_passphrase_command_handler (ctx, status, args, result_r);
   if (err)
     return err;
 
-  if (!result)
-    err = (*ctx->result.edit->fnc) (ctx->result.edit->fnc_value, status,
-				    args, result);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &result,
+			       -1, NULL);
+  if (err)
+    return err;
+  assert (result);
+
+  if (!*result_r)
+    err = (*result->fnc) (result->fnc_value, status, args, result_r);
 
   return err;
 }
@@ -80,6 +85,7 @@ _gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
 		      GpgmeEditCb fnc, void *fnc_value,
 		      GpgmeData out)
 {
+  EditResult result;
   GpgmeError err = 0;
 
   if (!fnc)
@@ -89,15 +95,13 @@ _gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
   if (err)
     goto leave;
 
-  assert (!ctx->result.edit);
-  ctx->result.edit = malloc (sizeof *ctx->result.edit);
-  if (!ctx->result.edit)
-    {
-      err = GPGME_Out_Of_Core;
-      goto leave;
-    }
-  ctx->result.edit->fnc = fnc;
-  ctx->result.edit->fnc_value = fnc_value;
+  err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &result,
+			       sizeof (*result), NULL);
+  if (err)
+    goto leave;
+
+  result->fnc = fnc;
+  result->fnc_value = fnc_value;
 
   /* Check the supplied data.  */
   if (!out)

@@ -28,22 +28,22 @@
 #include "context.h"
 #include "ops.h"
 
-
-struct import_result_s
+
+struct import_result
 {
   int nr_imported;
   int nr_considered;
   GpgmeData xmlinfo;
 };
+typedef struct import_result *ImportResult;
 
-
-void
-_gpgme_release_import_result (ImportResult result)
+static void
+release_import_result (void *hook)
 {
-  if (!result)
-    return;
-  gpgme_data_release (result->xmlinfo);
-  free (result);
+  ImportResult result = (ImportResult) hook;
+
+  if (result->xmlinfo)
+    gpgme_data_release (result->xmlinfo);
 }
 
 
@@ -143,28 +143,34 @@ append_xml_impinfo (GpgmeData *rdh, GpgmeStatusCode code, char *args)
 static GpgmeError
 import_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  test_and_allocate_result (ctx, import);
+  GpgmeError err;
+  ImportResult result;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &result,
+			       sizeof (*result), release_import_result);
+  if (err)
+    return err;
 
   switch (code)
     {
     case GPGME_STATUS_EOF:
-      if (ctx->result.import->xmlinfo)
+      if (result->xmlinfo)
         {
-          append_xml_impinfo (&ctx->result.import->xmlinfo, code, NULL);
-          _gpgme_set_op_info (ctx, ctx->result.import->xmlinfo);
-          ctx->result.import->xmlinfo = NULL;
+          append_xml_impinfo (&result->xmlinfo, code, NULL);
+          _gpgme_set_op_info (ctx, result->xmlinfo);
+          result->xmlinfo = NULL;
         }
       /* XXX Calculate error value.  */
       break;
 
     case GPGME_STATUS_IMPORTED:
-      ctx->result.import->nr_imported++;
-      append_xml_impinfo (&ctx->result.import->xmlinfo, code, args);
+      result->nr_imported++;
+      append_xml_impinfo (&result->xmlinfo, code, args);
       break;
 
     case GPGME_STATUS_IMPORT_RES:
-      ctx->result.import->nr_considered = strtol (args, 0, 0);
-      append_xml_impinfo (&ctx->result.import->xmlinfo, code, args);
+      result->nr_considered = strtol (args, 0, 0);
+      append_xml_impinfo (&result->xmlinfo, code, args);
       break;
 
     default:
@@ -230,8 +236,12 @@ gpgme_op_import_ext (GpgmeCtx ctx, GpgmeData keydata, int *nr)
     err = _gpgme_wait_one (ctx);
   if (!err && nr)
     {
-      if (ctx->result.import)
-	*nr = ctx->result.import->nr_considered;
+      ImportResult result;
+
+      err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &result,
+				   -1, NULL);
+      if (result)
+	*nr = result->nr_considered;
       else
 	*nr = 0;
     }
@@ -243,4 +253,3 @@ gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
 {
   return gpgme_op_import_ext (ctx, keydata, 0);
 }
-

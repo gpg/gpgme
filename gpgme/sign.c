@@ -37,19 +37,20 @@
         return; /* oops */ \
 } while (0)
 
-struct sign_result_s
+struct sign_result
 {
   int okay;
   GpgmeData xmlinfo;
 };
+typedef struct sign_result *SignResult;
 
-void
-_gpgme_release_sign_result (SignResult result)
+
+static void
+release_sign_result (void *hook)
 {
-  if (!result)
-    return;
+  SignResult result = (SignResult) hook;
+
   gpgme_data_release (result->xmlinfo);
-  free (result);
 }
 
 /* Parse the args and save the information 
@@ -139,35 +140,44 @@ append_xml_siginfo (GpgmeData *rdh, char *args)
 GpgmeError
 _gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  GpgmeError err = _gpgme_passphrase_status_handler (ctx, code, args);
+  SignResult result;
+  GpgmeError err;
+
+  err = _gpgme_passphrase_status_handler (ctx, code, args);
   if (err)
     return err;
-
-  test_and_allocate_result (ctx, sign);
 
   switch (code)
     {
     case GPGME_STATUS_EOF:
-      if (ctx->result.sign->okay)
+      err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &result,
+				   -1, NULL);
+      if (!err)
 	{
-	  append_xml_siginfo (&ctx->result.sign->xmlinfo, NULL);
-	  _gpgme_set_op_info (ctx, ctx->result.sign->xmlinfo);
-	  ctx->result.sign->xmlinfo = NULL;
-        }
-      if (!ctx->result.sign->okay)
-	return GPGME_No_Data; /* Hmmm: choose a better error? */
+	  if (result && result->okay)
+	    {
+	      append_xml_siginfo (&result->xmlinfo, NULL);
+	      _gpgme_set_op_info (ctx, result->xmlinfo);
+	      result->xmlinfo = NULL;
+	    }
+	  else if (!result || !result->okay)
+	    /* FIXME: choose a better error code?  */
+	    err = GPGME_No_Data;
+	}
       break;
 
     case GPGME_STATUS_SIG_CREATED: 
       /* FIXME: We have no error return for multiple signatures.  */
-      append_xml_siginfo (&ctx->result.sign->xmlinfo, args);
-      ctx->result.sign->okay = 1;
+      err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &result,
+				   sizeof (*result), release_sign_result);
+      append_xml_siginfo (&result->xmlinfo, args);
+      result->okay = 1;
       break;
 
     default:
       break;
     }
-  return 0;
+  return err;
 }
 
 static GpgmeError

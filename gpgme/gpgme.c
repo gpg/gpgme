@@ -87,17 +87,17 @@ gpgme_release (GpgmeCtx ctx)
 void
 _gpgme_release_result (GpgmeCtx ctx)
 {
-  _gpgme_release_verify_result (ctx->result.verify);
-  _gpgme_release_decrypt_result (ctx->result.decrypt);
-  _gpgme_release_sign_result (ctx->result.sign);
-  _gpgme_release_encrypt_result (ctx->result.encrypt);
-  _gpgme_release_passphrase_result (ctx->result.passphrase);
-  _gpgme_release_import_result (ctx->result.import);
-  _gpgme_release_delete_result (ctx->result.delete);
-  _gpgme_release_genkey_result (ctx->result.genkey);
-  _gpgme_release_keylist_result (ctx->result.keylist);
-  _gpgme_release_edit_result (ctx->result.edit);
-  memset (&ctx->result, 0, sizeof (ctx->result));
+  struct ctx_op_data *data = ctx->op_data;
+
+  while (data)
+    {
+      struct ctx_op_data *next_data = data->next;
+      if (data->cleanup)
+	(*data->cleanup) (data->hook);
+      free (data);
+      data = next_data;
+    }
+  ctx->op_data = NULL;
   _gpgme_set_op_info (ctx, NULL);
 }
 

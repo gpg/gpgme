@@ -37,6 +37,7 @@
 #include "io.h"
 #include "sema.h"
 #include "ath.h"
+#include "debug.h"
 
 static struct
 {

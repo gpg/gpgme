@@ -21,17 +21,18 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "types.h"
-#include "debug.h"
+#include "gpgme.h"
 
-
+
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))
 #define DIMof(type,member)   DIM(((type *)0)->member)
 
+
 /*-- {posix,w32}-util.c --*/
 const char *_gpgme_get_gpg_path (void);
 const char *_gpgme_get_gpgsm_path (void);
 
+
 /*-- replacement functions in <funcname>.c --*/
 #ifdef HAVE_CONFIG_H
 #ifndef HAVE_STPCPY
@@ -59,7 +60,7 @@ FILE *fopencookie (void *cookie, const char *opentype,
 #endif /*!HAVE_FOPENCOOKIE*/
 #endif /*HAVE_CONFIG_H*/
 
-
+
 /*-- conversion.c --*/
 /* Convert two hexadecimal digits from STR to the value they
    represent.  Returns -1 if one of the characters is not a

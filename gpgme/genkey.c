@@ -29,33 +29,36 @@
 #include "ops.h"
 
 
-struct genkey_result_s
+struct genkey_result
 {
   int created_primary : 1;
   int created_sub : 1;
   char *fpr;
 };
+typedef struct genkey_result *GenKeyResult;
 
-
-void
-_gpgme_release_genkey_result (GenKeyResult result)
+static void
+release_genkey_result (void *hook)
 {
-  if (!result)
-    return;
+  GenKeyResult result = (GenKeyResult) hook;
+  
   if (result->fpr)
     free (result->fpr);
-  free (result);
 }
 
 
 static GpgmeError
 genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
+  GenKeyResult result;
   GpgmeError err = _gpgme_progress_status_handler (ctx, code, args);
   if (err)
     return err;
 
-  test_and_allocate_result (ctx, genkey);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, (void **) &result,
+			       sizeof (*result), release_genkey_result);
+  if (err)
+    return err;
 
   switch (code)
     {
@@ -63,15 +66,15 @@ genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       if (args && *args)
 	{
 	  if (*args == 'B' || *args == 'P')
-	    ctx->result.genkey->created_primary = 1;
+	    result->created_primary = 1;
 	  if (*args == 'B' || *args == 'S')
-	    ctx->result.genkey->created_sub = 1;
+	    result->created_sub = 1;
 	  if (args[1] == ' ')
 	    {
-	      if (ctx->result.genkey->fpr)
-		free (ctx->result.genkey->fpr);
-	      ctx->result.genkey->fpr = strdup (&args[2]);
-	      if (!ctx->result.genkey->fpr)
+	      if (result->fpr)
+		free (result->fpr);
+	      result->fpr = strdup (&args[2]);
+	      if (!result->fpr)
 		return GPGME_Out_Of_Core;
 	    }
 	}
@@ -79,8 +82,8 @@ genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 
     case GPGME_STATUS_EOF:
       /* FIXME: Should return some more useful error value.  */
-      if (!ctx->result.genkey->created_primary
-	  && !ctx->result.genkey->created_sub)
+      if (!result->created_primary
+	  && !result->created_sub)
 	return GPGME_General_Error;
       break;
 
@@ -212,9 +215,16 @@ gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
     err = _gpgme_wait_one (ctx);
   if (!err && fpr)
     {
-      if (ctx->result.genkey->fpr)
+      GenKeyResult result;
+
+      err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, (void **) &result,
+				   -1, NULL);
+      if (err)
+	return err;
+
+      if (result && result->fpr)
 	{
-	  *fpr = strdup (ctx->result.genkey->fpr);
+	  *fpr = strdup (result->fpr);
 	  if (!*fpr)
 	    return GPGME_Out_Of_Core;
 	}

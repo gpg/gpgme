@@ -37,53 +37,28 @@ enum delete_problem
   };
 
 
-struct delete_result_s
-{
-  enum delete_problem problem;
-};
-
-
-void
-_gpgme_release_delete_result (DeleteResult result)
-{
-  if (!result)
-    return;
-  free (result);
-}
-
-
 static GpgmeError
 delete_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  test_and_allocate_result (ctx, delete);
-
-  switch (code)
+  if (code == GPGME_STATUS_DELETE_PROBLEM)
     {
-    case GPGME_STATUS_EOF:
-      switch (ctx->result.delete->problem)
+      enum delete_problem problem = atoi (args);
+      switch (problem)
 	{
 	case DELETE_No_Problem:
 	  break;
+
 	case DELETE_No_Such_Key:
 	  return GPGME_Invalid_Key;
-	  break;
+
 	case DELETE_Must_Delete_Secret_Key:
 	  return GPGME_Conflict;
-	  break;
+
 	case DELETE_Ambiguous_Specification:
 	  /* XXX Need better error value.  Fall through.  */
 	default:
 	  return GPGME_General_Error;
-	  break;
 	}
-      break;
-
-    case GPGME_STATUS_DELETE_PROBLEM:
-      ctx->result.delete->problem = atoi (args);
-      break;
-
-    default:
-      break;
     }
   return 0;
 }

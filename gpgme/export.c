@@ -26,7 +26,7 @@
 #include "util.h"
 #include "context.h"
 #include "ops.h"
-
+#include "debug.h"
 
 static GpgmeError
 export_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
