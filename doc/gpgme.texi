@@ -2023,6 +2023,9 @@ This is true if the subkey can be used to create data signatures.
 @item unsigned int can_certify : 1
 This is true if the subkey can be used to create key certificates.
 
+@item unsigned int can_authenticate : 1
+This is true if the subkey can be used for authentication.
+
 @item unsigned int secret : 1
 This is true if the subkey is a secret key.
 
@@ -2180,6 +2183,10 @@ data signatures.
 @item unsigned int can_certify : 1
 This is true if the key (ie one of its subkeys) can be used to create
 key certificates.
+
+@item unsigned int can_authenticate : 1
+This is true if the key (ie one of its subkeys) can be used for
+authentication.
 
 @item unsigned int secret : 1
 This is true if the key is a secret key.

@@ -4,9 +4,14 @@ Noteworthy changes in version 0.4.3 (unreleased)
  * gpgme_get_key fails with GPG_ERR_AMBIGUOUS_NAME if the key ID
    provided was not unique, instead returning the first matching key.
 
+ * gpgme_key_t and gpgme_subkey_t have a new field, can_authenticate,
+   that indicates if the key can be used for authentication.
+
  * Interface changes relative to the 0.4.3 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_get_key			CHANGED: Fails correctly if key ID not unique.
+gpgme_key_t			EXTENDED: New field can_authenticate.
+gpgme_subkey_t			EXTENDED: New field can_authenticate.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

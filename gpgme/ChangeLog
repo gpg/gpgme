@@ -1,5 +1,11 @@
 2003-07-31  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (struct _gpgme_subkey): Add flag CAN_AUTHENTICATE.
+	Lower _UNUSED to 23 bits.
+	(struct _gpgme_key): Likewise.
+	* keylist.c (set_mainkey_capability): Support 'a' and 'A'.
+	(set_subkey_capability): Support 'a'.
+
 	* keylist.c (gpgme_get_key): Check if there is more than one key
 	listed, and return GPG_ERR_AMBIGUOUS_NAME in that case.
 

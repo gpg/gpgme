@@ -245,6 +245,10 @@ set_mainkey_capability (gpgme_key_t key, const char *src)
 	  key->subkeys->can_certify = 1;
 	  break;
 
+	case 'a':
+	  key->subkeys->can_authenticate = 1;
+	  break;
+
         case 'd':
         case 'D':
           /* Note, that this flag is also set using the key validity
@@ -265,6 +269,10 @@ set_mainkey_capability (gpgme_key_t key, const char *src)
 
 	case 'C':
 	  key->can_certify = 1;
+	  break;
+
+	case 'A':
+	  key->can_authenticate = 1;
 	  break;
         }
       src++;
@@ -289,6 +297,10 @@ set_subkey_capability (gpgme_subkey_t subkey, const char *src)
 
 	case 'c':
 	  subkey->can_certify = 1;
+	  break;
+
+	case 'a':
+	  subkey->can_authenticate = 1;
 	  break;
         }
       src++;

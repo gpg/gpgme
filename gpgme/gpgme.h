@@ -421,8 +421,11 @@ struct _gpgme_subkey
   /* True if subkey is secret.  */
   unsigned int secret : 1;
 
+  /* True if subkey can be used for authentication.  */
+  unsigned int can_authenticate : 1;
+
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 24;
+  unsigned int _unused : 23;
   
   /* Public key algorithm supported by this subkey.  */
   gpgme_pubkey_algo_t pubkey_algo;
@@ -572,8 +575,11 @@ struct _gpgme_key
   /* True if key is secret.  */
   unsigned int secret : 1;
 
+  /* True if key can be used for authentication.  */
+  unsigned int can_authenticate : 1;
+
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 24;
+  unsigned int _unused : 23;
 
   /* This is the protocol supported by this key.  */
   gpgme_protocol_t protocol;
