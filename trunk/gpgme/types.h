@@ -51,6 +51,10 @@ typedef struct verify_result_s *VerifyResult;
 struct decrypt_result_s;
 typedef struct decrypt_result_s *DecryptResult;
 
+/*-- sign.c --*/
+struct sign_result_s;
+typedef struct sign_result_s *SignResult;
+
 /*-- key.c --*/
 
 

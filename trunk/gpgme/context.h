@@ -29,6 +29,7 @@ typedef enum {
     RESULT_TYPE_NONE = 0,
     RESULT_TYPE_VERIFY,
     RESULT_TYPE_DECRYPT,
+    RESULT_TYPE_SIGN,
 } ResultType;
 
 
@@ -52,14 +53,14 @@ struct gpgme_context_s {
     GpgObject gpg; /* the running gpg process */
 
     int verbosity;  /* level of verbosity to use */
-    int use_armor;  /* use armoring */
-
+    int use_armor;  
+    int use_textmode;
     
-
     ResultType result_type;
     union {
         VerifyResult verify;
         DecryptResult decrypt;
+        SignResult sign;
     } result;
 
     GpgmeData notation;    /* last signature notation */

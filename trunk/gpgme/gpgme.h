@@ -61,6 +61,7 @@ typedef enum {
     GPGME_Invalid_Mode = 16,
     GPGME_File_Error = 17,  /* errno is set in this case */
     GPGME_Decryption_Failed = 18,
+    GPGME_No_Passphrase = 19,
 } GpgmeError;
 
 typedef enum {
@@ -87,6 +88,8 @@ void       gpgme_release ( GpgmeCtx c );
 GpgmeCtx   gpgme_wait ( GpgmeCtx c, int hang );
 
 char *gpgme_op_get_notation ( GpgmeCtx c );
+void gpgme_op_set_armor ( GpgmeCtx c, int yes );
+void gpgme_op_set_textmode ( GpgmeCtx c, int yes );
 
 
 /* Functions to handle recipients */
@@ -120,6 +123,7 @@ GpgmeError gpgme_op_encrypt_start ( GpgmeCtx c,
                                     GpgmeData in, GpgmeData out );
 GpgmeError gpgme_op_decrypt_start ( GpgmeCtx c,
                                     GpgmeData ciph, GpgmeData plain );
+GpgmeError gpgme_op_sign_start ( GpgmeCtx c, GpgmeData in, GpgmeData out );
 GpgmeError gpgme_op_verify_start ( GpgmeCtx c,
                                    GpgmeData sig, GpgmeData text );
 
@@ -134,6 +138,7 @@ GpgmeError gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key );
 GpgmeError gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
                               GpgmeData in, GpgmeData out );
 GpgmeError gpgme_op_decrypt ( GpgmeCtx c, GpgmeData in, GpgmeData out );
+GpgmeError gpgme_op_sign ( GpgmeCtx c, GpgmeData in, GpgmeData out );
 GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
                              GpgmeSigStat *r_status );
 

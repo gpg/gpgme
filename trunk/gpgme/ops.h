@@ -65,6 +65,9 @@ void _gpgme_release_verify_result ( VerifyResult res );
 /*-- decrypt.c --*/
 void _gpgme_release_decrypt_result ( DecryptResult res );
 
+/*-- sign.c --*/
+void _gpgme_release_sign_result ( SignResult res );
+
 
 #endif /* OPS_H */
 
