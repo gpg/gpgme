@@ -86,16 +86,14 @@ typedef enum
     GPGME_Not_Implemented         = 0x0009,
     GPGME_Read_Error              = 0x000a,
     GPGME_Write_Error             = 0x000b,
-    GPGME_Invalid_Type            = 0x000c,
-    GPGME_Invalid_Mode            = 0x000d,
-    GPGME_File_Error              = 0x000e, /* errno is set in this case.  */
-    GPGME_Decryption_Failed       = 0x000f,
-    GPGME_Bad_Passphrase          = 0x0010,
-    GPGME_Canceled                = 0x0011,
-    GPGME_Invalid_Key             = 0x0012,
-    GPGME_Invalid_Engine          = 0x0013,
-    GPGME_No_UserID               = 0x0014,
-    GPGME_Invalid_UserID          = 0x0015,
+    GPGME_File_Error              = 0x000c, /* errno is set in this case.  */
+    GPGME_Decryption_Failed       = 0x000d,
+    GPGME_Bad_Passphrase          = 0x000e,
+    GPGME_Canceled                = 0x000f,
+    GPGME_Invalid_Key             = 0x0010,
+    GPGME_Invalid_Engine          = 0x0011,
+    GPGME_No_UserID               = 0x0012,
+    GPGME_Invalid_UserID          = 0x0013,
 
     /* Reasons for invalid user id.  */
     GPGME_Unknown_Reason          = 0x0100,
@@ -129,17 +127,6 @@ GpgmeError;
 #define GPGME_No_Recipients	GPGME_No_UserID
 #define GPGME_Invalid_Recipient	GPGME_Invalid_UserID
 #define GPGME_No_Passphrase	GPGME_Bad_Passphrase
-
-/* The possible types of GpgmeData objects.  */
-typedef enum
-  {
-    GPGME_DATA_TYPE_NONE = 0,
-    GPGME_DATA_TYPE_MEM  = 1,
-    GPGME_DATA_TYPE_FD   = 2,
-    GPGME_DATA_TYPE_FILE = 3,
-    GPGME_DATA_TYPE_CB   = 4
-  }
-GpgmeDataType;
 
 /* The possible encoding mode of GpgmeData objects.  */
 typedef enum

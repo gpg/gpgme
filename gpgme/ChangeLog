@@ -1,3 +1,18 @@
+2003-04-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* delete.c: Include <errno.h> and "gpgme.h", but not "util.h" or
+	"key.h".
+	(enum delete_problem): Move into function delete_status_handler.
+	(delete_status_handler): Change first argument to void *.  Parse
+	delete problem with strtol instead atoi.  Return better error
+	values.
+	(_gpgme_op_delete_start): Rename to ...
+	(delete_start): ... this.  Rework error handling.
+	(gpgme_op_delete_start): Use delete_start instead
+	_gpgme_op_delete_start.
+	(gpgme_op_delete): Likewise.
+	* gpgme.h (GpgmeDataType): Removed.
+
 2003-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h: Change GPGME_IMPORT_PRIVATE to GPGME_IMPORT_SECRET.
@@ -11,7 +26,7 @@
 	GPGME_CRL_Too_Old, GPGME_Policy_Mismatch, GPGME_No_Secret_Key,
 	GPGME_Key_Not_Trusted, GPGME_Issuer_Missing, GPGME_Chain_Too_Long,
 	GPGME_Unsupported_Algorithm, GPGME_Sig_Expired,
-	GPGME_Bad_Signature, GPGME_No_Public_Key): New error codes.
+	GPGME_Bad_Signature, GPGME_No_Public_Key added as new error codes.
 	(struct _gpgme_import_status): New structure.
 	(GpgmeImportStatus): New type.
 	(struct _gpgme_op_import_result): New structure.

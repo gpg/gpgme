@@ -819,16 +819,6 @@ This value means that an I/O read operation failed.
 @item GPGME_Write_Error
 This value means that an I/O write operation failed.
 
-@item GPGME_Invalid_Type
-This value means that a user provided object was of a wrong or
-incompatible type.  Usually this refers to the type of a
-@code{GpgmeData} object.
-
-@item GPGME_Invalid_Mode
-This value means that a @code{GpgmeData} object has an incorrect mode
-of operation (for example, doesn't support output although it is
-attempted to use it as an output buffer).
-
 @item GPGME_File_Error
 This value means that a file I/O operation failed.  The value of
 @var{errno} contains the system error value.
@@ -851,6 +841,61 @@ This value means that the engine that implements the desired protocol
 is currently not available.  This can either be because the sources
 were configured to exclude support for this engine, or because the
 engine is not installed properly.
+
+@item GPGME_Unknown_Reason
+This value indicates that a user ID was invalid but the exact reason
+is not specified.
+
+@item GPGME_Not_Found
+This value indicates that a user ID was not found.
+
+@item GPGME_Ambiguous_Specification
+This value indicates that a user ID did not specify a unique key.
+
+@item GPGME_Wrong_Key_Usage
+This value indicates that a key is not used appropriately.
+
+@item GPGME_Key_Revoked
+This value indicates that a key was revoced.
+
+@item GPGME_Key_Expired
+This value indicates that a key was expired.
+
+@item GPGME_No_CRL_Known
+This value indicates that no certificate revocation list is known for
+the certificate.
+
+@item GPGME_Policy_Mismatch
+This value indicates that a policy issue occured.
+
+@item GPGME_No_Secret_Key
+This value indicates that no secret key for the user ID is available.
+
+@item GPGME_Key_Not_Trusted
+This value indicates that the key with the user ID is not trusted.
+
+@item GPGME_Issuer_Missing
+This value indicates that a key could not be imported because there is
+no issuer
+
+@item GPGME_Chain_Too_Long
+This value indicates that a key could not be imported because its
+certificate chain is too long.
+
+@item GPGME_Unsupported_Algorithm
+This value means a verification failed because the cryptographic
+algorithm is not supported by the crypto backend.
+
+@item GPGME_Sig_Expired
+This value means a verification failed because the signature expired.
+
+@item GPGME_Bad_Signature
+This value means a verification failed because the signature is bad.
+
+@item GPGME_No_Public_Key
+This value means a verification failed because the public key is not
+available.
+
 @end table
 @end deftp
 
@@ -2416,8 +2461,9 @@ otherwise secret keys are deleted as well, if that is supported.
 The function returns @code{GPGME_No_Error} if the key was deleted
 successfully, @code{GPGME_Invalid_Value} if @var{ctx} or @var{key} is
 not a valid pointer, @code{GPGME_Invalid_Key} if @var{key} could not
-be found in the keyring, and @code{GPGME_Conflict} if the secret key
-for @var{key} is available, but @var{allow_secret} is zero.
+be found in the keyring, @code{GPGME_Ambiguous_Specification} if the
+key was not specified unambiguously, and @code{GPGME_Conflict} if the
+secret key for @var{key} is available, but @var{allow_secret} is zero.
 @end deftypefun
 
 @deftypefun GpgmeError gpgme_op_delete_start (@w{GpgmeCtx @var{ctx}}, @w{const GpgmeKey @var{key}}, @w{int @var{allow_secret}})
