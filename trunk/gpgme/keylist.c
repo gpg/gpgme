@@ -94,14 +94,13 @@ keylist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
     return;
   test_and_allocate_result (ctx, keylist);
 
-  switch (code)
+   switch (code)
     {
     case GPGME_STATUS_TRUNCATED:
       ctx->result.keylist->truncated = 1;
       break;
 
     case GPGME_STATUS_EOF:
-      finish_key (ctx);
       if (ctx->result.keylist->truncated)
         append_xml_keylistinfo (&ctx->result.keylist->xmlinfo, "1");
       if (ctx->result.keylist->xmlinfo)
@@ -256,6 +255,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
   const char *trust_info = NULL;
   struct subkey_s *sk = NULL;
 
+  DEBUG3 ("keylist_colon_handler ctx=%p, key=%p, line=%s\n", ctx, key, line);
   if (ctx->error)
     return;
   if (!line)
@@ -640,6 +640,7 @@ gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
     goto leave;
 
   gpgme_key_release (ctx->tmp_key);
+  ctx->tmp_key = NULL;
 
   _gpgme_engine_set_status_handler (ctx->engine, keylist_status_handler, ctx);
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
