@@ -10,6 +10,8 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * add locking to the key cache?
 
+* cleanup the namespace - we use log_* assuna_* ascii_* mutext_*
+
 * Documentation
 ** Add note about GPGME clearing out pointer return values.
 ** validity/trust

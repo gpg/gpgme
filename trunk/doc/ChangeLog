@@ -1,3 +1,11 @@
+2002-05-03  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.texi (Manipulating Data Buffers): Changed some data types
+	to void*.
+	(Protocol Selection): Added gpgme_get_protocol.
+	(Verify): Updated to include the new attribute fucntions and
+	status codes.
+
 2002-04-27  Werner Koch  <wk@gnupg.org>
 
 	* gpgme.texi (Manipulating Data Buffers): New type GpgmeDataEncoding.
