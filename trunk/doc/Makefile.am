@@ -19,8 +19,6 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = gdoc
-
 DISTCLEANFILES = gpgme.tmp
 
 info_TEXINFOS = gpgme.texi
