@@ -67,6 +67,7 @@ struct gpgme_context_s {
         DecryptResult decrypt;
         SignResult sign;
         EncryptResult encrypt;
+        PassphraseResult passphrase;
     } result;
 
     GpgmeData notation;    /* last signature notation */

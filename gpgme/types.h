@@ -65,6 +65,10 @@ typedef struct sign_result_s *SignResult;
 struct encrypt_result_s;
 typedef struct encrypt_result_s *EncryptResult;
 
+/*-- passphrase.c --*/
+struct passphrase_result_s;
+typedef struct passphrase_result_s *PassphraseResult;
+
 /*-- key.c --*/
 
 
