@@ -73,6 +73,11 @@ Noteworthy changes in version 0.4.1 (unreleased)
          printf ("%s\n", result->fpr);
      }
 
+ * The new gpgme_op_import_result function provides detailed
+   information about the result of an import operation in
+   GpgmeImportResult and GpgmeImportStatus objects.  Thus, the
+   gpgme_op_import_ext variant is deprecated.
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
@@ -99,6 +104,10 @@ GPGME_Bad_Passphrase		NEW
 gpgme_op_genkey			CHANGED: FPR argument dropped.
 gpgme_op_genkey_result		NEW
 GpgmeGenKeyResult		NEW
+gpgme_op_import_ext		DEPRECATED: Use gpgme_op_import_result.
+gpgme_op_import_result		NEW
+GpgmeImportStatus		NEW
+GPgmeImportResult		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)

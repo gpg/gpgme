@@ -1,4 +1,4 @@
-/* import.c - Import functions.
+/* import.c - Import a key.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003 g10 Code GmbH
 
@@ -22,155 +22,183 @@
 #include <config.h>
 #endif
 #include <stdlib.h>
+#include <errno.h>
 #include <string.h>
 
-#include "util.h"
+#include "gpgme.h"
 #include "context.h"
 #include "ops.h"
 
 
-struct import_result
+typedef struct
 {
-  int nr_imported;
-  int nr_considered;
-  GpgmeData xmlinfo;
-};
-typedef struct import_result *ImportResult;
+  struct _gpgme_op_import_result result;
+
+  /* A pointer to the next pointer of the last import status in the
+     list.  This makes appending new imports painless while preserving
+     the order.  */
+  GpgmeImportStatus *lastp;
+} *op_data_t;
+
 
 static void
-release_import_result (void *hook)
+release_op_data (void *hook)
 {
-  ImportResult result = (ImportResult) hook;
+  op_data_t opd = (op_data_t) hook;
+  GpgmeImportStatus import = opd->result.imports;
 
-  if (result->xmlinfo)
-    gpgme_data_release (result->xmlinfo);
+  while (import)
+    {
+      GpgmeImportStatus next = import->next;
+      free (import->fpr);
+      free (import);
+      import = next;
+    }
 }
 
 
-/* Parse the args and append the information to the XML structure in
-   the data buffer.  With args of NULL the xml structure is
-   closed.  */
-static void
-append_xml_impinfo (GpgmeData *rdh, GpgmeStatusCode code, char *args)
+GpgmeImportResult
+gpgme_op_import_result (GpgmeCtx ctx)
 {
-#define MAX_IMPORTED_FIELDS 14
-  static const char *const imported_fields[MAX_IMPORTED_FIELDS]
-    = { "keyid", "username", 0 };
-  static const char *const imported_fields_x509[MAX_IMPORTED_FIELDS]
-    = { "fpr", 0 };
-  static const char *const import_res_fields[MAX_IMPORTED_FIELDS]
-    = { "count", "no_user_id", "imported", "imported_rsa",
-	"unchanged", "n_uids", "n_subk", "n_sigs", "s_sigsn_revoc",
-	"sec_read", "sec_imported", "sec_dups", "skipped_new", 0 };
-  const char *field[MAX_IMPORTED_FIELDS];
-  const char *const *field_name = 0;
-  GpgmeData dh;
-  int i;
+  op_data_t opd;
+  GpgmeError err;
 
-  /* Verify that we can use the args.  */
-  if (code != GPGME_STATUS_EOF)
+  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &opd, -1, NULL);
+  if (err || !opd)
+    return NULL;
+
+  return &opd->result;
+}
+
+
+static GpgmeError
+parse_import (char *args, GpgmeImportStatus *import_status, int problem)
+{
+  GpgmeImportStatus import;
+  char *tail;
+  long int nr;
+
+  import = malloc (sizeof (*import));
+  if (!import)
+    return GPGME_Out_Of_Core;
+  import->next = NULL;
+
+  errno = 0;
+  nr = strtol (args, &tail, 0);
+  if (errno || args == tail || *tail != ' ')
     {
-      if (!args)
-	return;
+      /* The crypto backend does not behave.  */
+      free (import);
+      return GPGME_General_Error;
+    }
+  args = tail;
 
-      if (code == GPGME_STATUS_IMPORTED)
-	field_name = imported_fields;
-      else if (code == GPGME_STATUS_IMPORT_RES)
-	field_name = import_res_fields;
-      else
-	return;
-
-      for (i = 0; field_name[i]; i++)
+  if (problem)
+    {
+      switch (nr)
 	{
-	  field[i] = args;
-	  if (field_name[i + 1])
-	    {
-	      args = strchr (args, ' ');
-	      if (!args)
-		return;  /* Invalid line.  */
-	      *args++ = '\0';
-	    }
-	}
-      
-      /* gpgsm does not print a useful user ID and uses a fingerprint
-         instead of the key ID. */
-      if (code == GPGME_STATUS_IMPORTED && field[0] && strlen (field[0]) > 16)
-        field_name = imported_fields_x509;
-    }
+	case 0:
+	case 4:
+	default:
+	  import->result = GPGME_Unknown_Reason;
+	  break;
 
-  /* Initialize the data buffer if necessary.  */
-  if (!*rdh)
-    {
-      if (gpgme_data_new (rdh))
-        return; /* FIXME: We are ignoring out-of-core.  */
-      dh = *rdh;
-      _gpgme_data_append_string (dh, "<GnupgOperationInfo>\n");
-    }
-  else
-    dh = *rdh;
-    
-  if (code == GPGME_STATUS_EOF)
-    {
-      /* Just close the XML containter.  */
-      _gpgme_data_append_string (dh, "</GnupgOperationInfo>\n");
+	case 1:
+	  import->result = GPGME_Invalid_Key;
+	  break;
+
+	case 2:
+	  import->result = GPGME_Issuer_Missing;
+	  break;
+
+	case 3:
+	  import->result = GPGME_Chain_Too_Long;
+	  break;
+	}
+      import->status = 0;
     }
   else
     {
-      if (code == GPGME_STATUS_IMPORTED)
-	_gpgme_data_append_string (dh, "  <import>\n");
-      else if (code == GPGME_STATUS_IMPORT_RES)
-	_gpgme_data_append_string (dh, "  <importResult>\n");
-
-      for (i = 0; field_name[i]; i++)
-	{
-	  _gpgme_data_append_string (dh, "    <");
-          _gpgme_data_append_string (dh, field_name[i]);
-	  _gpgme_data_append_string (dh, ">");
-	  _gpgme_data_append_string_for_xml (dh, field[i]);
-	  _gpgme_data_append_string (dh, "</");
-	  _gpgme_data_append_string (dh, field_name[i]);
-	  _gpgme_data_append_string (dh, ">\n");
-	}
-
-      if (code == GPGME_STATUS_IMPORTED)
-	_gpgme_data_append_string (dh, "  </import>\n");
-      else if (code == GPGME_STATUS_IMPORT_RES)
-	_gpgme_data_append_string (dh, "  </importResult>\n");
+      import->result = GPGME_No_Error;
+      import->status = nr;
     }
+
+  while (*args == ' ')
+    args++;
+  tail = strchr (args, ' ');
+  if (tail)
+    *tail = '\0';
+
+  import->fpr = strdup (args);
+  if (!import->fpr)
+    {
+      free (import);
+      return GPGME_Out_Of_Core;
+    }
+
+  *import_status = import;
+  return 0;
+}
+
+
+
+GpgmeError
+parse_import_res (char *args, GpgmeImportResult result)
+{
+  char *tail;
+
+  errno = 0;
+
+#define PARSE_NEXT(x)					\
+  (x) = strtol (args, &tail, 0);			\
+  if (errno || args == tail || *tail != ' ')		\
+    /* The crypto backend does not behave.  */		\
+    return GPGME_General_Error;				\
+  args = tail;
+
+  PARSE_NEXT (result->considered);
+  PARSE_NEXT (result->no_user_id);
+  PARSE_NEXT (result->imported);
+  PARSE_NEXT (result->imported_rsa);
+  PARSE_NEXT (result->new_user_ids);
+  PARSE_NEXT (result->new_sub_keys);
+  PARSE_NEXT (result->new_signatures);
+  PARSE_NEXT (result->new_revocations);
+  PARSE_NEXT (result->secret_read);
+  PARSE_NEXT (result->secret_imported);
+  PARSE_NEXT (result->secret_unchanged);
+  PARSE_NEXT (result->not_imported);
+
+  return 0;
 }
 
 
 static GpgmeError
-import_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
+import_status_handler (void *priv, GpgmeStatusCode code, char *args)
 {
+  GpgmeCtx ctx = (GpgmeCtx) priv;
   GpgmeError err;
-  ImportResult result;
+  op_data_t opd;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &result,
-			       sizeof (*result), release_import_result);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &opd,
+			       -1, NULL);
   if (err)
     return err;
 
   switch (code)
     {
-    case GPGME_STATUS_EOF:
-      if (result->xmlinfo)
-        {
-          append_xml_impinfo (&result->xmlinfo, code, NULL);
-          _gpgme_set_op_info (ctx, result->xmlinfo);
-          result->xmlinfo = NULL;
-        }
-      /* XXX Calculate error value.  */
-      break;
+    case GPGME_STATUS_IMPORT_OK:
+    case GPGME_STATUS_IMPORT_PROBLEM:
+      err = parse_import (args, opd->lastp,
+			  code == GPGME_STATUS_IMPORT_OK ? 0 : 1);
+      if (err)
+	return err;
 
-    case GPGME_STATUS_IMPORTED:
-      result->nr_imported++;
-      append_xml_impinfo (&result->xmlinfo, code, args);
+      opd->lastp = &(*opd->lastp)->next;
       break;
 
     case GPGME_STATUS_IMPORT_RES:
-      result->nr_considered = strtol (args, 0, 0);
-      append_xml_impinfo (&result->xmlinfo, code, args);
+      err = parse_import_res (args, &opd->result);
       break;
 
     default:
@@ -183,30 +211,25 @@ import_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 static GpgmeError
 _gpgme_op_import_start (GpgmeCtx ctx, int synchronous, GpgmeData keydata)
 {
-  int err = 0;
+  GpgmeError err;
+  op_data_t opd;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
-    goto leave;
+    return err;
 
-  /* Check the supplied data */
+  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &opd,
+			       sizeof (*opd), release_op_data);
+  if (err)
+    return err;
+  opd->lastp = &opd->result.imports;
+
   if (!keydata)
-    {
-      err = GPGME_No_Data;
-      goto leave;
-    }
+    return GPGME_No_Data;
 
   _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
 
-  err = _gpgme_engine_op_import (ctx->engine, keydata);
-
- leave:
-  if (err)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
-  return err;
+  return _gpgme_engine_op_import (ctx->engine, keydata);
 }
 
 
@@ -216,38 +239,26 @@ gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
   return _gpgme_op_import_start (ctx, 0, keydata);
 }
 
-/**
- * gpgme_op_import:
- * @c: Context 
- * @keydata: Data object
- * @nr: Will contain number of considered keys.
- * 
- * Import all key material from @keydata into the key database.
- * 
- * Return value: 0 on success or an error code.
- **/
+
+/* Import the key in KEYDATA into the keyring.  */
 GpgmeError
-gpgme_op_import_ext (GpgmeCtx ctx, GpgmeData keydata, int *nr)
+gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
 {
   GpgmeError err = _gpgme_op_import_start (ctx, 1, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  if (!err && nr)
-    {
-      ImportResult result;
-
-      err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &result,
-				   -1, NULL);
-      if (result)
-	*nr = result->nr_considered;
-      else
-	*nr = 0;
-    }
   return err;
 }
 
+
 GpgmeError
-gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
+gpgme_op_import_ext (GpgmeCtx ctx, GpgmeData keydata, int *nr)
 {
-  return gpgme_op_import_ext (ctx, keydata, 0);
+  GpgmeError err = gpgme_op_import (ctx, keydata);
+  if (!err && nr)
+    {
+      GpgmeImportResult result = gpgme_op_import_result (ctx);
+      *nr = result->considered;
+    }
+  return err;
 }

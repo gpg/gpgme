@@ -96,8 +96,33 @@ typedef enum
     GPGME_Invalid_Engine          = 0x0013,
     GPGME_No_UserID               = 0x0014,
     GPGME_Invalid_UserID          = 0x0015,
+
+    /* Reasons for invalid user id.  */
+    GPGME_Unknown_Reason          = 0x0100,
+    GPGME_Not_Found               = 0x0101,
+    GPGME_Ambiguous_Specification = 0x0102,
+    GPGME_Wrong_Key_Usage         = 0x0103,
+    GPGME_Key_Revoked             = 0x0104,
+    GPGME_Key_Expired             = 0x0105,
+    GPGME_No_CRL_Known            = 0x0106,
+    GPGME_CRL_Too_Old             = 0x0107,
+    GPGME_Policy_Mismatch         = 0x0108,
+    GPGME_No_Secret_Key           = 0x0109,
+    GPGME_Key_Not_Trusted         = 0x010a,
+    
+    /* Import problems.  */
+    GPGME_Issuer_Missing          = 0x0200,
+    GPGME_Chain_Too_Long          = 0x0201,
+
+    /* Verification problems.  */
+    GPGME_Unsupported_Algorithm   = 0x0300,
+    GPGME_Sig_Expired             = 0x0301,
+    GPGME_Bad_Signature           = 0x0302,
+    GPGME_No_Public_Key           = 0x0303,
+
+    /* Deprecated.  */
     GPGME_Busy                    = -2,
-    GPGME_No_Request              = -3,
+    GPGME_No_Request              = -3
   }
 GpgmeError;
 
@@ -750,11 +775,99 @@ GpgmeError gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig,
 GpgmeError gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig,
 			    GpgmeData signed_text, GpgmeData plaintext);
 
+
+enum
+  {
+    /* The key was new.  */
+    GPGME_IMPORT_NEW = 1,
+
+    /* The key contained new user IDs.  */
+    GPGME_IMPORT_UID = 2,
+
+    /* The key contained new signatures.  */
+    GPGME_IMPORT_SIG = 4,
+
+    /* The key contained new sub keys.  */
+    GPGME_IMPORT_SUBKEY	= 8,
+
+    /* The key contained a private key.  */
+    GPGME_IMPORT_PRIVATE = 16
+  };
+
+struct _gpgme_import_status
+{
+  struct _gpgme_import_status *next;
+
+  /* Fingerprint.  */
+  char *fpr;
+
+  /* If a problem occured, the reason why the key could not be
+     imported.  Otherwise GPGME_No_Error.  */
+  GpgmeError result;
+
+  /* The result of the import, the GPGME_IMPORT_* values bit-wise
+     ORed.  0 means the key was already known and no new components
+     have been added.  */
+  unsigned int status;
+};
+typedef struct _gpgme_import_status *GpgmeImportStatus;
+
+/* Import.  */
+struct _gpgme_op_import_result
+{
+  /* Number of considered keys.  */
+  int considered;
+
+  /* Keys without user ID.  */
+  int no_user_id;
+
+  /* Imported keys.  */
+  int imported;
+
+  /* Imported RSA keys.  */
+  int imported_rsa;
+
+  /* Unchanged keys.  */
+  int unchanged;
+
+  /* Number of new user ids.  */
+  int new_user_ids;
+
+  /* Number of new sub keys.  */
+  int new_sub_keys;
+
+  /* Number of new signatures.  */
+  int new_signatures;
+
+  /* Number of new revocations.  */
+  int new_revocations;
+
+  /* Number of secret keys read.  */
+  int secret_read;
+
+  /* Number of secret keys imported.  */
+  int secret_imported;
+
+  /* Number of secret keys unchanged.  */
+  int secret_unchanged;
+
+  /* Number of keys not imported.  */
+  int not_imported;
+
+  /* List of keys for which an import was attempted.  */
+  GpgmeImportStatus imports;
+};
+typedef struct _gpgme_op_import_result *GpgmeImportResult;
+
+/* Retrieve a pointer to the result of the import operation.  */
+GpgmeImportResult gpgme_op_import_result (GpgmeCtx ctx);
+
 /* Import the key in KEYDATA into the keyring.  */
 GpgmeError gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata);
 GpgmeError gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata);
 GpgmeError gpgme_op_import_ext (GpgmeCtx ctx, GpgmeData keydata, int *nr);
 
+
 /* Export the keys listed in RECP into KEYDATA.  */
 GpgmeError gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp,
 				  GpgmeData keydata);

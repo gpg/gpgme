@@ -2221,6 +2221,7 @@ successfully.  The returned pointer is only valid until the next
 operation is started on the context.
 @end deftypefun
 
+
 @node Exporting Keys
 @subsection Exporting Keys
 @cindex key, export
@@ -2282,11 +2283,125 @@ started successfully, @code{GPGME_Invalid_Value} if @var{keydata} if
 @code{GPGME_No_Data} if @var{keydata} is an empty data buffer.
 @end deftypefun
 
+@deftp {Data type} {GpgmeImportStatus}
+This is a pointer to a structure used to store a part of the result of
+a @code{gpgme_op_genkey} operation.  For each considered key one
+status is added that contains information about the result of the
+import.  The structure contains the following members:
+
+@table @code
+@item GpgmeImportStatus next
+This is a pointer to the next status object in the list.
+
+@item char *fpr
+This is the fingerprint of the key that was considered.
+
+@item GpgmeError result
+If the import was not successful, this is the error value that caused
+the import to fail.  Otherwise it is @code{GPGME_No_Error}.
+
+@item unsigned int status
+This is a bit-wise OR of the following flags that give more
+information about what part of the key was imported.  If the key was
+already known, this might be 0.
+
+@table @code
+@item GPGME_IMPORT_NEW
+The key was new.
+
+@item GPGME_IMPORT_UID
+The key contained new user IDs.
+
+@item GPGME_IMPORT_SIG
+The key contained new signatures.
+
+@item GPGME_IMPORT_SUBKEY
+The key contained new sub keys.
+
+@item GPGME_IMPORT_PRIVATE
+The key contained a private key.
+@end table
+@end table
+@end deftp
+
+@deftp {Data type} {GpgmeImportResult}
+This is a pointer to a structure used to store the result of a
+@code{gpgme_op_genkey} operation.  After a successful import
+operation, you can retrieve the pointer to the result with
+@code{gpgme_op_import_result}.  The structure contains the following
+members:
+
+@table @code
+@item int considered
+The total number of considered keys.
+
+@item int no_user_id
+The number of keys without user ID.
+
+@item int imported
+The total number of imported keys.
+
+@item imported_rsa
+The number of imported RSA keys.
+
+@item unchanged
+The number of unchanged keys.
+
+@item new_user_ids
+The number of new user IDs.
+
+@item new_sub_keys
+The number of new sub keys.
+
+@item new_signatures
+The number of new signatures.
+
+@item new_revocations
+The number of new revocations.
+
+@item secret_read
+The total number of secret keys read.
+
+@item secret_imported
+The number of imported secret keys.
+
+@item secret_unchanged
+The number of unchanged secret keys.
+
+@item not_imported
+The number of keys not imported.
+
+@item GpgmeImportStatus imports
+A list of GpgmeImportStatus objects which contain more information
+about the keys for which an import was attempted.
+@end table
+@end deftp
+
+@deftypefun GpgmeImportResult gpgme_op_import_result (@w{GpgmeCtx @var{ctx}})
+The function @code{gpgme_op_import_result} returns a
+@code{GpgmeImportResult} pointer to a structure holding the result of
+a @code{gpgme_op_import} operation.  The pointer is only valid if the
+last operation on the context was a @code{gpgme_op_import} or
+@code{gpgme_op_import_start} operation, and if this operation finished
+successfully.  The returned pointer is only valid until the next
+operation is started on the context.
+@end deftypefun
+
+The following interface is deprecated and only provided for backward
+compatibility.  Don't use it.  It will be removed in a future version
+of @acronym{GPGME}.
+
 @deftypefun GpgmeError gpgme_op_import_ext (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{keydata}}, @w{int *@var{nr}})
-The function @code{gpgme_op_import_ext} is like
-@code{gpgme_op_import}, but also returns the number of processed keys
-in @var{nr}.  This is the same as the @code{count} information in the
-detailed results available with @code{gpgme_get_op_info}.
+The function @code{gpgme_op_import_ext} is equivalent to:
+
+@example
+  GpgmeError err = gpgme_op_import (ctx, keydata);
+  if (!err)
+    @{
+      GpgmeImportResult result = gpgme_op_import_result (ctx);
+      *nr = result->considered;
+    @}
+@end example
 @end deftypefun
 
 

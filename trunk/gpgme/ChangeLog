@@ -1,5 +1,31 @@
 2003-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h: New enum for GPGME_IMPORT_NEW, GPGME_IMPORT_UID,
+	GPGME_IMPORT_SIG, GPGME_IMPORT_SUBKEY, GPGME_IMPORT_PRIVATE.
+	(GpgmeError): GPGME_Unknown_Reason, GPGME_Not_Found,
+	GPGME_Ambiguous_Specification, GPGME_Wrong_Key_Usage,
+	GPGME_Key_Revoked, GPGME_Key_Expired, GPGME_No_CRL_Known,
+	GPGME_CRL_Too_Old, GPGME_Policy_Mismatch, GPGME_No_Secret_Key,
+	GPGME_Key_Not_Trusted, GPGME_Issuer_Missing, GPGME_Chain_Too_Long,
+	GPGME_Unsupported_Algorithm, GPGME_Sig_Expired,
+	GPGME_Bad_Signature, GPGME_No_Public_Key): New error codes.
+	(struct _gpgme_import_status): New structure.
+	(GpgmeImportStatus): New type.
+	(struct _gpgme_op_import_result): New structure.
+	(GpgmeImportResult): New type.
+	(gpgme_op_import_result): New function.
+	* import.c: Include <errno.h> and "gpgme.h", but not "util.h".
+	(struct import_result): Change to type op_data_t.
+	(release_import_result): Rename to ...
+	(release_op_data): ... this.
+	(append_xml_impinfo): Function removed.
+	(gpgme_op_import_result): New function.
+	(parse_import): New function.
+	(parse_import_res): Likewise.
+	(import_status_handler): Change first argument to void *.  Rewrite
+	to use new functions.
+	(_gpgme_op_import_start): Rework error handling.
+
 	* edit.c: Do not include <assert.h>, "util.h", but "gpgme.h".
 	(edit_resut): Change to typedef for op_data_t.
 	(edit_status_handler): Change first argument to void *.
