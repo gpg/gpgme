@@ -1,5 +1,5 @@
 /* assuan.c - Definitions for the Assuna protocol
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -47,6 +47,7 @@ typedef enum {
   ASSUAN_No_Data_Callback = 12,
   ASSUAN_No_Inquire_Callback = 13,
   ASSUAN_Connect_Failed = 14,
+  ASSUAN_Accept_Failed = 15,
 
   /* error codes above 99 are meant as status codes */
   ASSUAN_Not_Implemented = 100,
@@ -69,6 +70,9 @@ typedef enum {
   ASSUAN_Invalid_Data = 117,
   ASSUAN_Unexpected_Command = 118,
   ASSUAN_Too_Much_Data = 119,
+  ASSUAN_Inquire_Unknown = 120,
+  ASSUAN_Inquire_Error = 121,
+  ASSUAN_Invalid_Option = 122,
 
   ASSUAN_Bad_Certificate = 201,
   ASSUAN_Bad_Certificate_Path = 202,
@@ -83,6 +87,7 @@ typedef enum {
   ASSUAN_Cert_Revoked = 301,
   ASSUAN_No_CRL_For_Cert = 302,
   ASSUAN_CRL_Too_Old = 303,
+  ASSUAN_Not_Trusted = 304,
 
 } AssuanError;
 
@@ -93,6 +98,7 @@ typedef enum {
   ASSUAN_CMD_BYE,
   ASSUAN_CMD_AUTH,
   ASSUAN_CMD_RESET,
+  ASSUAN_CMD_OPTION,
   ASSUAN_CMD_DATA,
   ASSUAN_CMD_END,
   ASSUAN_CMD_INPUT,
@@ -120,6 +126,11 @@ int assuan_register_input_notify (ASSUAN_CONTEXT ctx,
                                   void (*fnc)(ASSUAN_CONTEXT, const char *));
 int assuan_register_output_notify (ASSUAN_CONTEXT ctx,
                                   void (*fnc)(ASSUAN_CONTEXT, const char *));
+
+int assuan_register_option_handler (ASSUAN_CONTEXT ctx,
+                                    int (*fnc)(ASSUAN_CONTEXT,
+                                               const char*, const char*));
+
 int assuan_process (ASSUAN_CONTEXT ctx);
 int assuan_process_next (ASSUAN_CONTEXT ctx);
 int assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
@@ -127,6 +138,7 @@ int assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
 
 
 FILE *assuan_get_data_fp (ASSUAN_CONTEXT ctx);
+AssuanError assuan_set_okay_line (ASSUAN_CONTEXT ctx, const char *line);
 void assuan_write_status (ASSUAN_CONTEXT ctx,
                           const char *keyword, const char *text);
 
@@ -142,13 +154,21 @@ AssuanError assuan_close_output_fd (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-pipe-server.c --*/
 int assuan_init_pipe_server (ASSUAN_CONTEXT *r_ctx, int filedes[2]);
-void assuan_deinit_pipe_server (ASSUAN_CONTEXT ctx);
+void assuan_deinit_server (ASSUAN_CONTEXT ctx);
+
+/*-- assuan-socket-server.c --*/
+int assuan_init_socket_server (ASSUAN_CONTEXT *r_ctx, int listen_fd);
 
 
-/*-- assuan-connect.c --*/
+/*-- assuan-pipe-connect.c --*/
 AssuanError assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name,
                                  char *const argv[], int *fd_child_list);
-void assuan_pipe_disconnect (ASSUAN_CONTEXT ctx);
+/*-- assuan-socket-connect.c --*/
+AssuanError assuan_socket_connect (ASSUAN_CONTEXT *ctx, const char *name,
+                                   pid_t server_pid);
+
+/*-- assuan-connect.c --*/
+void assuan_disconnect (ASSUAN_CONTEXT ctx);
 pid_t assuan_get_pid (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-client.c --*/
@@ -178,10 +198,13 @@ AssuanError assuan_send_data (ASSUAN_CONTEXT ctx,
 void assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
                                void *(*new_realloc_func)(void *p, size_t n),
                                void (*new_free_func)(void*) );
+void assuan_set_log_stream (ASSUAN_CONTEXT ctx, FILE *fp);
 int assuan_set_error (ASSUAN_CONTEXT ctx, int err, const char *text);
 void assuan_set_pointer (ASSUAN_CONTEXT ctx, void *pointer);
 void *assuan_get_pointer (ASSUAN_CONTEXT ctx);
 
+void assuan_begin_confidential (ASSUAN_CONTEXT ctx);
+void assuan_end_confidential (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-errors.c (built) --*/
 const char *assuan_strerror (AssuanError err);
