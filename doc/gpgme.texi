@@ -1532,8 +1532,7 @@ from the data object with the handle @var{dh} into the space starting
 at @var{buffer}.
 
 If no error occurs, the actual amount read is returned.  If the end of
-the data object is reached, the function returns @code{GPG_ERR_EOF} and
-sets @var{nread} to zero.
+the data object is reached, the function returns 0.
 
 In all other cases, the function returns -1 and sets @var{errno}.
 @end deftypefun
@@ -1834,7 +1833,7 @@ is the default.
 
 @item GPGME_KEYLIST_MODE_EXTERN
 The @code{GPGME_KEYLIST_MODE_EXTERN} symbol specifies that an external
-source should be should be searched for keys in the keylisting
+source should be searched for keys in the keylisting
 operation.  The type of external source is dependant on the crypto
 engine used.  For example, it can be a remote keyserver or LDAP
 certificate server.
@@ -2326,10 +2325,7 @@ if (!err)
         err = gpgme_op_keylist_next (ctx, &key);
         if (err)
           break;
-        printf ("%s: %s <%s>\n",
-                gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID, 0, 0),
-	        gpgme_key_get_string_attr (key, GPGME_ATTR_NAME, 0, 0),
-	        gpgme_key_get_string_attr (key, GPGME_ATTR_EMAIL, 0, 0));
+        printf ("%s: %s <%s>\n", key->keyid, key->name, key->email);
         gpgme_key_release (key);
       @}
     gpgme_release (ctx);
@@ -2372,10 +2368,8 @@ following function can be used to retrieve a single key.
 @deftypefun gpgme_error_t gpgme_get_key (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{fpr}}, @w{gpgme_key_t *@var{r_key}}, @w{int @var{secret}})
 The function @code{gpgme_get_key} gets the key with the fingerprint
 (or key ID) @var{fpr} from the crypto backend and return it in
-@var{r_key}.  If @var{force_update} is true, force a refresh of the
-key from the crypto backend and replace the key in the cache, if any.
-If @var{secret} is true, get the secret key.  The currently active
-keylist mode is used to retrieve the key.
+@var{r_key}.  If @var{secret} is true, get the secret key.  The
+currently active keylist mode is used to retrieve the key.
 
 If the key is not found in the keyring, @code{gpgme_get_key} returns
 the error code @code{GPG_ERR_NO_ERROR} and *@var{r_key} will be set to
@@ -3330,12 +3324,13 @@ algorithm that is not supported.
 
 @deftypefun gpgme_decrypt_result_t gpgme_op_decrypt_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_decrypt_result} returns a
-@code{gpgme_decrypt_result_t} pointer to a structure holding the result of
-a @code{gpgme_op_decrypt} operation.  The pointer is only valid if the
-last operation on the context was a @code{gpgme_op_decrypt} or
-@code{gpgme_op_decrypt_start} operation, and if this operation
-finished successfully.  The returned pointer is only valid until the
-next operation is started on the context.
+@code{gpgme_decrypt_result_t} pointer to a structure holding the
+result of a @code{gpgme_op_decrypt} operation.  The pointer is only
+valid if the last operation on the context was a
+@code{gpgme_op_decrypt} or @code{gpgme_op_decrypt_start} operation.
+If the operation failed this might be a @code{NULL} pointer.  The
+returned pointer is only valid until the next operation is started on
+the context.
 @end deftypefun
 
 
@@ -3361,10 +3356,10 @@ with @code{gpgme_op_verify_result}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 operation could be completed successfully, @code{GPG_ERR_INV_VALUE} if
-@var{ctx}, @var{sig}, @var{plain} or @var{r_stat} is not a valid
-pointer, @code{GPG_ERR_NO_DATA} if @var{sig} does not contain any data
-to verify, and passes through any errors that are reported by the
-crypto engine support routines.
+@var{ctx}, @var{sig} or @var{plain} is not a valid pointer,
+@code{GPG_ERR_NO_DATA} if @var{sig} does not contain any data to
+verify, and passes through any errors that are reported by the crypto
+engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_verify_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{sig}}, @w{gpgme_data_t @var{signed_text}}, @w{gpgme_data_t @var{plain}})
@@ -3374,9 +3369,9 @@ The function @code{gpgme_op_verify_start} initiates a
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
-@var{ctx}, @var{sig}, @var{plain} or @var{r_stat} is not a valid
-pointer, and @code{GPG_ERR_NO_DATA} if @var{sig} or @var{plain} does
-not contain any data to verify.
+@var{ctx}, @var{sig} or @var{plain} is not a valid pointer, and
+@code{GPG_ERR_NO_DATA} if @var{sig} or @var{plain} does not contain
+any data to verify.
 @end deftypefun
 
 @deftp {Data type} {gpgme_sig_notation_t}
@@ -3425,8 +3420,8 @@ The defined bits are:
   information.  Check the other bits.
 
   @item GPGME_SIGSUM_RED
-  The signature is bad. It might be useful to checkother bits and
-  display moe information, i.e. a revoked certificate might not render a
+  The signature is bad. It might be useful to check other bits and
+  display more information, i.e. a revoked certificate might not render a
   signature invalid when the message was received prior to the cause for
   the revocation.
 
@@ -3441,7 +3436,7 @@ The defined bits are:
   The signature has expired.
 
   @item GPGME_SIGSUM_KEY_MISSING
-  Can't verifydue to a missing key o certificate.
+  Can't verify due to a missing key or certificate.
 
   @item GPGME_SIGSUM_CRL_MISSING
   The CRL (or an equivalent mechanism) is not available. 
@@ -3503,19 +3498,23 @@ The expiration timestamp of this signature, or 0 if the signature does
 not expire.
 
 @item int wrong_key_usage : 1;
+This is true if the key was not used according to its policy.
 
 @item gpgme_validity_t validity
+The validity of the signature.
 
 @item gpgme_error_t validity_reason
+If a signature is not valid, this provides a reason why.
+
 @end table
 @end deftp
 
 @deftp {Data type} {gpgme_verify_result_t}
 This is a pointer to a structure used to store the result of a
-@code{gpgme_op_verify} operation.  After successfully verifying a
-signature, you can retrieve the pointer to the result with
-@code{gpgme_op_verify_result}.  The structure contains the following
-member:
+@code{gpgme_op_verify} operation.  After verifying a signature, you
+can retrieve the pointer to the result with
+@code{gpgme_op_verify_result}.  If the operation failed this might be
+a @code{NULL} pointer.  The structure contains the following member:
 
 @table @code
 @item gpgme_signature_t signatures
@@ -3780,18 +3779,18 @@ the data object @var{cipher} and stores it into the data object
 @var{plain}.  If @var{cipher} contains signatures, they will be
 verified.
 
-After the operation completed, @code{gpgme_op_get_sig_status} and
-@code{gpgme_op_get_sig_key} can be used to retrieve more information
+After the operation completed, @code{gpgme_op_decrypt_result} and
+@code{gpgme_op_verify_result} can be used to retrieve more information
 about the signatures.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 ciphertext could be decrypted successfully, @code{GPG_ERR_INV_VALUE}
-if @var{ctx}, @var{cipher}, @var{plain} or @var{r_stat} is not a valid
-pointer, @code{GPG_ERR_NO_DATA} if @var{cipher} does not contain any
-data to decrypt, @code{GPG_ERR_DECRYPT_FAILED} if @var{cipher} is not
-a valid cipher text, @code{GPG_ERR_BAD_PASSPHRASE} if the passphrase
-for the secret key could not be retrieved, and passes through any
-errors that are reported by the crypto engine support routines.
+if @var{ctx}, @var{cipher} or @var{plain} is not a valid pointer,
+@code{GPG_ERR_NO_DATA} if @var{cipher} does not contain any data to
+decrypt, @code{GPG_ERR_DECRYPT_FAILED} if @var{cipher} is not a valid
+cipher text, @code{GPG_ERR_BAD_PASSPHRASE} if the passphrase for the
+secret key could not be retrieved, and passes through any errors that
+are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_decrypt_verify (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{cipher}}, @w{gpgme_data_t @var{plain}})

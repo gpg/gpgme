@@ -1,3 +1,16 @@
+2003-07-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Key Listing Mode): Remove word duplication.
+	(Listing Keys): Remove mentioning of force argument.
+	(Verify): Don't mention r_stat.  Fix some typos.
+	(Decrypt and Verify): Correct info how to get the result.  Don't
+	mention r_stat.
+	(Manipulating Data Buffers): Fix documentation of return value.
+	(Listing Keys): Update examples.
+	(Decrypt): Result might also be available when operation failed.
+	(Verify): Result might also be available when operation failed.
+	All spotted by Stéphane Corthésy.
+
 2003-07-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Error Sources): Fix cut and paste error.
