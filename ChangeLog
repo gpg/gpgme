@@ -1,3 +1,9 @@
+2003-09-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acinclude.m4: Remove libtool cruft, add jm_GLIBC21.
+	* configure.ac: Add check for getenv_r, and call jm_GLIBC21.
+	Define HAVE_THREAD_SAFE_GETENV if appropriate.
+
 2003-09-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Remove GPGME_CONFIG_LIBS and GPGME_CONFIG_CFLAGS.

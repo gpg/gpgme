@@ -84,8 +84,16 @@ debug_init (void)
   LOCK (debug_lock);
   if (!initialized)
     {
-      const char *e = getenv ("GPGME_DEBUG");
+      gpgme_error_t err;
+      const char *e;
       const char *s1, *s2;;
+
+      err = _gpgme_getenv ("GPGME_DEBUG", &e);
+      if (err)
+	{
+	  UNLOCK (debug_lock);
+	  return;
+	}
 
       initialized = 1;
       errfp = stderr;
@@ -123,6 +131,7 @@ debug_init (void)
 		}
 #endif
 	    }
+	  free (e);
         }
 
       if (debug_level > 0)

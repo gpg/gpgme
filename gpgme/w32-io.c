@@ -806,7 +806,8 @@ _gpgme_io_spawn ( const char *path, char **argv,
     int duped_stdin = 0;
     int duped_stderr = 0;
     HANDLE hnul = INVALID_HANDLE_VALUE;
-    int debug_me = !!getenv ("GPGME_DEBUG");
+    /* FIXME.  */
+    int debug_me = 0;
 
     memset (&sec_attr, 0, sizeof sec_attr );
     sec_attr.nLength = sizeof sec_attr;

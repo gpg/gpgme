@@ -157,9 +157,27 @@ if test "$ac_cv_func_vasprintf" != yes; then
   GNUPG_CHECK_VA_COPY
 fi
 
+# Try to find a thread-safe version of getenv().
+have_thread_safe_getenv=no
+jm_GLIBC21
+if test $GLIBC21 = yes; then
+  have_thread_safe_getenv=yes
+fi
+if test $have_thread_safe_getenv = yes; then
+  AC_DEFINE(HAVE_THREAD_SAFE_GETENV, [1], [Define if getenv() is thread-safe])
+fi
+have_getenv_r=no
+AC_CHECK_FUNCS(getenv_r, have_getenv_r=yes)
+if test $have_getenv_r = no && test $have_thread_safe_getenv = no; then
+  AC_MSG_WARN([getenv() is not thread-safe and getenv_r() does not exist])
+fi
+
+# Checking for libgpg-error.
 AM_PATH_GPG_ERROR(0.3,, AC_MSG_ERROR([libgpg-error was not found]))
 AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
           [The default error source for GPGME.])
+
+
 
 # Checks for system services
 NO_OVERRIDE=no

@@ -503,6 +503,7 @@ gpg_set_command_handler (void *engine, engine_command_handler_t fnc,
 static gpgme_error_t
 build_argv (engine_gpg_t gpg)
 {
+  gpgme_error_t err;
   struct arg_and_data_s *a;
   struct fd_data_map_s *fd_data_map;
   size_t datac=0, argc=0;  
@@ -514,9 +515,13 @@ build_argv (engine_gpg_t gpg)
   /* We don't want to use the agent with a malformed environment
      variable.  This is only a very basic test but sufficient to make
      our life in the regression tests easier. */
-  p = getenv ("GPG_AGENT_INFO");
+  err = _gpgme_getenv ("GPG_AGENT_INFO", &p);
+  if (err)
+    return err;
   use_agent = (p && strchr (p, ':'));
-       
+  if (p)
+    free (p);
+
   if (gpg->argv)
     {
       free_argv (gpg->argv);
