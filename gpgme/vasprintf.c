@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include <stdarg.h>
 
 
-#ifndef va_copy /* accroding to POSIX, va_copy is a macro */
+#ifndef va_copy /* According to POSIX, va_copy is a macro. */
 #if defined (__GNUC__) && defined (__PPC__) \
      && (defined (_CALL_SYSV) || defined (_WIN32))
 #define va_copy(d, s) (*(d) = *(s))
@@ -43,13 +43,13 @@ Boston, MA 02111-1307, USA.  */
 int global_total_width;
 #endif
 
-static int int_vasprintf (char **, const char *, va_list *);
+static int int_vasprintf (char **, const char *, va_list);
 
 static int
 int_vasprintf (result, format, args)
      char **result;
      const char *format;
-     va_list *args;
+     va_list args;
 {
   const char *p = format;
   /* Add one to make sure that it is never zero, which might cause malloc
@@ -57,7 +57,7 @@ int_vasprintf (result, format, args)
   int total_width = strlen (format) + 1;
   va_list ap;
 
-  va_copy (ap, *args);
+  va_copy (ap, args);
 
   while (*p != '\0')
     {
@@ -130,7 +130,7 @@ int_vasprintf (result, format, args)
 #endif
   *result = malloc (total_width);
   if (*result != NULL)
-    return vsprintf (*result, format, *args);
+    return vsprintf (*result, format, args);
   else
     return 0;
 }
