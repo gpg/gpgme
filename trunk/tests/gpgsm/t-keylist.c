@@ -135,7 +135,7 @@ main (int argc, char **argv )
     GpgmeError err;
     int loop = 0;
     const char *pattern;
-    
+
     if( argc ) {
         argc--; argv++;
     }
@@ -146,7 +146,7 @@ main (int argc, char **argv )
     }
     pattern = argc? *argv : NULL;
 
-    err = gpgme_check_engine();
+    err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);
     fail_if_err (err);
 
     err = gpgme_new (&ctx);
