@@ -1,3 +1,7 @@
+2004-02-13  Werner Koch  <wk@gnupg.org>
+
+	* assuan-domain-connect.c: Removed the unneeded alloca.h
+
 2003-08-13  Werner Koch  <wk@gnupg.org>
 
 	* assuan-inquire.c (assuan_inquire): Increase length of cmdbuf to
