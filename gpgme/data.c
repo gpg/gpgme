@@ -170,7 +170,7 @@ gpgme_data_new_with_read_cb ( GpgmeData *r_dh,
  * 
  * Create a new data object and initialize it with the content of 
  * the file @file.  If @copy is %True the file is immediately read in
- * adn closed.  @copy of %False is not yet supportted.
+ * and closed.  @copy of %False is not yet supportted.
  * 
  * Return value: An error code or 0 on success. If the error code is
  * %GPGME_File_Error, the OS error code is held in %errno.

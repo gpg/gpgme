@@ -1,7 +1,5 @@
 * Implement posix-sema.c
 
-* Add gpgme_mime_xxx to make handling of MIME/PGP easier
-
 * Allow to use GTK's main loop instead of the select stuff in
   wait.c
 
@@ -10,3 +8,39 @@
 * Should --delete silently delete secret keys or is there a need for
   another flag or a callback?
 
+* GpgmeKey misses GPGME_ATTR_EXPIRE attribute
+
+* Add ATTR to return the number of subkeys or uids.
+
+* Return GPGME_Canceled when appropriate
+
+* Implement decrypt+verify
+
+Bugs reported by Stephane Corthesy:
+> - When asking a GpgmeKey for one of its sub-userIDs (index > 0)  
+> GPGME_ATTR_EMAIL attribute, it returns the name + email, whereas for  
+> the main (index = 0) userID it returns only the email.
+
+> - When returning a GpgmeKey GPGME_ATTR_COMMENT attribute, characters  
+> like ":" are not un-escaped, they are returned as \x3a
+
+> - When asking a GpgmeKey its main userID (index = 0), it returns the  
+> last userID it was asked (can be a sub, or the main).
+
+> BTW, here's another bug: it it not possible to retrieve fingerprints  
+> for subkeys
+
+> In GpgmeRecipients, would it be possible to provide a function which  
+> would return the validity assigned to a name contained in the  
+> GpgmeRecipients instance?
+
+> - There is an inconsistent behaviour: if we pass three times an  
+> invalid (but non empty) passphrase, return code is GPGME_No_Data, but  
+> if we pass three times an empty (and invalid) passphrase, we get  
+> GPGME_No_Passphrase.
+
+> passphrase callback. If I use the same GpgmeContext as the one which  
+> is currently asking for a passphrase, my app crashes: the r_hd in
+> the  
+> callback has become invalid; if I use a brand new one, the callback  
+> is called recursively, when I ask to enumerate keys.

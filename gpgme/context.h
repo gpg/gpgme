@@ -51,6 +51,8 @@ struct gpgme_context_s {
     int initialized;
     int pending;   /* a gpg request is still pending */
 
+    int use_cms;
+
     /* at some points we need to allocate memory but we are not
      * able to handle a malloc problem at that point, so we set this
      * flag to indicate this condition */
