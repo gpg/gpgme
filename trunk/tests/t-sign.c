@@ -33,6 +33,19 @@
                              } while(0)
 
 static void
+print_op_info (GpgmeCtx c)
+{
+    char *s = gpgme_get_op_info (c, 0);
+
+    if (!s)
+        puts ("<!-- no operation info available -->");
+    else {
+        puts (s);
+        free (s);
+    }
+}
+
+static void
 print_data ( GpgmeData dh )
 {
     char buf[100];
@@ -95,6 +108,7 @@ main (int argc, char **argv )
     fail_if_err (err);
     fflush (NULL);
     fputs ("Begin Result:\n", stdout );
+    print_op_info (ctx);
     print_data (out);
     fputs ("End Result.\n", stdout );
     gpgme_data_release (out);
@@ -106,6 +120,7 @@ main (int argc, char **argv )
     err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_DETACH );
     fail_if_err (err);
     fflush (NULL);
+    print_op_info (ctx);
     fputs ("Begin Result:\n", stdout );
     print_data (out);
     fputs ("End Result.\n", stdout );
@@ -119,6 +134,7 @@ main (int argc, char **argv )
     err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_CLEAR );
     fail_if_err (err);
     fflush (NULL);
+    print_op_info (ctx);
     fputs ("Begin Result:\n", stdout );
     print_data (out);
     fputs ("End Result.\n", stdout );

@@ -99,6 +99,7 @@ _gpgme_release_result ( GpgmeCtx c )
 
     c->result.verify = NULL;
     c->result_type = RESULT_TYPE_NONE;
+    _gpgme_set_op_info (c, NULL);
 }
 
 
@@ -136,6 +137,57 @@ gpgme_get_notation ( GpgmeCtx c )
         return NULL;
     return _gpgme_data_get_as_string ( c->notation );
 }
+
+
+/**
+ * gpgme_get_op_info:
+ * @c: the context 
+ * @reserved: 
+ * 
+ * Return information about the last information.  The caller has to
+ * free the string.  NULL is returned if there is not previous
+ * operation available or the operation has not yet finished.
+ *
+ * Here is a sample information we return:
+<GnupgOperationInfo>
+  <signature>
+    <detached/> <!-- or cleartext or standard -->
+    <algo>17</algo>
+    <hashalgo>2</hashalgo>
+    <micalg>pgp-sha1</micalg>
+    <sigclass>01</sigclass>
+    <created>9222222</created>
+    <fpr>121212121212121212</fpr>
+  </signature>
+</GnupgOperationInfo>
+ * 
+ * Return value: NULL for no info available or an XML string 
+ **/
+char *
+gpgme_get_op_info ( GpgmeCtx c, int reserved )
+{
+    if (!c || reserved)
+        return NULL; /*invalid value */
+ 
+    return _gpgme_data_get_as_string (c->op_info);
+}
+
+/*
+ * Store the data object with the operation info in the
+ * context. Caller should not use that object anymore.  
+ */
+void
+_gpgme_set_op_info (GpgmeCtx c, GpgmeData info)
+{
+    assert (c);
+
+    gpgme_data_release (c->op_info); 
+    c->op_info = NULL;
+
+    if (info)
+        c->op_info = info;
+}
+
 
 /**
  * gpgme_set_armor:

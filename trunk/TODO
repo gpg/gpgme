@@ -12,4 +12,3 @@
 
 * There is no status response if we have no usable recipients - must
   add one to gpg so that gpgme_encrypt does return with an error.
-

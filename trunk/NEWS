@@ -1,3 +1,7 @@
+
+ * New function gpgme_get_op_info which can be used to get the micalg
+   parameter needed for MOSS.
+
 Noteworthy changes in version 0.2.2 (2001-06-12)
 ------------------------------------------------
  
