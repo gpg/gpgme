@@ -1,32 +1,31 @@
-/* t-encrypt.c  - regression test
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+/* t-encrypt.c - Regression test.
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2003 g10 Code GmbH
 
-#include <stdio.h>
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include <assert.h>
 #include <errno.h>
 
 #include <gpgme.h>
 
+
 static const char test_text1[] = "Hallo Leute!\n";
 static const char test_cip1[] =
 "-----BEGIN CMS OBJECT-----\n"
@@ -51,13 +50,14 @@ static const char test_cip1[] =
 static void
 print_data (GpgmeData dh)
 {
-  char buf[100];
+#define BUF_SIZE 512
+  char buf[BUF_SIZE + 1];
   int ret;
   
   ret = gpgme_data_seek (dh, 0, SEEK_SET);
   if (ret)
     fail_if_err (GPGME_File_Error);
-  while ((ret = gpgme_data_read (dh, buf, 100)) > 0)
+  while ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) > 0)
     fwrite (buf, ret, 1, stdout);
   if (ret < 0)
     fail_if_err (GPGME_File_Error);
@@ -65,39 +65,38 @@ print_data (GpgmeData dh)
 
 
 int 
-main (int argc, char **argv )
+main (int argc, char *argv[])
 {
-    GpgmeCtx ctx;
-    GpgmeError err;
-    GpgmeData in, out, pwdata = NULL;
+  GpgmeCtx ctx;
+  GpgmeError err;
+  GpgmeData in, out;
+  GpgmeDecryptResult result;
 
-  do {
-    err = gpgme_new (&ctx);
-    fail_if_err (err);
-    gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+  gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
 
-    err = gpgme_data_new_from_mem ( &in,
-                                    test_cip1, strlen (test_cip1), 0 );
-    fail_if_err (err);
+  err = gpgme_data_new_from_mem (&in, test_cip1, strlen (test_cip1), 0);
+  fail_if_err (err);
 
-    err = gpgme_data_new ( &out );
-    fail_if_err (err);
+  err = gpgme_data_new (&out);
+  fail_if_err (err);
 
-    err = gpgme_op_decrypt (ctx, in, out );
-    fail_if_err (err);
-
-    fflush (NULL);
-    fputs ("Begin Result:\n", stdout );
-    print_data (out);
-    fputs ("End Result.\n", stdout );
+  err = gpgme_op_decrypt (ctx, in, out);
+  fail_if_err (err);
+  result = gpgme_op_decrypt_result (ctx);
+  if (result->unsupported_algorithm)
+    {
+      fprintf (stderr, "%s:%i: unsupported algorithm: %s\n",
+	       __FILE__, __LINE__, result->unsupported_algorithm);
+      exit (1);
+    }
+  print_data (out);
    
-    gpgme_data_release (in);
-    gpgme_data_release (out);
-    gpgme_data_release (pwdata);
-    gpgme_release (ctx);
-  } while ( argc > 1 && !strcmp( argv[1], "--loop" ) );
-   
-    return 0;
+  gpgme_data_release (in);
+  gpgme_data_release (out);
+  gpgme_release (ctx);
+  return 0;
 }
 
 
