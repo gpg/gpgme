@@ -35,7 +35,7 @@ typedef enum
     OPDATA_DECRYPT, OPDATA_SIGN, OPDATA_ENCRYPT, OPDATA_PASSPHRASE,
     OPDATA_IMPORT, OPDATA_GENKEY, OPDATA_KEYLIST, OPDATA_EDIT,
     OPDATA_VERIFY, OPDATA_TRUSTLIST
-  } ctx_op_data_type;
+  } ctx_op_data_id_t;
 
 
 struct ctx_op_data
@@ -46,7 +46,7 @@ struct ctx_op_data
 
   /* The type of the hook data, which can be used by a routine to
      lookup the hook data.  */
-  ctx_op_data_type type;
+  ctx_op_data_id_t type;
 
   /* The function to release HOOK and all its associated resources.
      Can be NULL if no special dealllocation routine is necessary.  */
@@ -55,6 +55,7 @@ struct ctx_op_data
   /* The hook that points to the operation data.  */
   void *hook;
 };
+typedef struct ctx_op_data *ctx_op_data_t;
 
 
 /* The context defines an environment in which crypto operations can
@@ -65,7 +66,7 @@ struct gpgme_context
   gpgme_protocol_t protocol;
 
   /* The running engine process.  */
-  EngineObject engine;
+  engine_t engine;
 
   /* True if armor mode should be used.  */
   unsigned int use_armor : 1;
@@ -87,7 +88,7 @@ struct gpgme_context
   gpgme_key_t *signers;
 
   /* The operation data hooked into the context.  */
-  struct ctx_op_data *op_data;
+  ctx_op_data_t op_data;
 
   /* The user provided passphrase callback and its hook value.  */
   gpgme_passphrase_cb_t passphrase_cb;

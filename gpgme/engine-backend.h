@@ -37,12 +37,13 @@ struct engine_ops
 
   /* Member functions.  */
   void (*release) (void *engine);
-  void (*set_status_handler) (void *engine, EngineStatusHandler fnc,
+  void (*set_status_handler) (void *engine, engine_status_handler_t fnc,
 			      void *fnc_value);
-  gpgme_error_t (*set_command_handler) (void *engine, EngineCommandHandler fnc,
+  gpgme_error_t (*set_command_handler) (void *engine,
+					engine_command_handler_t fnc,
 					void *fnc_value, gpgme_data_t data);
   gpgme_error_t (*set_colon_line_handler) (void *engine,
-					   EngineColonLineHandler fnc,
+					   engine_colon_line_handler_t fnc,
 					   void *fnc_value);
   gpgme_error_t (*decrypt) (void *engine, gpgme_data_t ciph,
 			    gpgme_data_t plain);

@@ -70,13 +70,13 @@ struct gpgsm_object_s
 
   struct
   {
-    EngineStatusHandler fnc;
+    engine_status_handler_t fnc;
     void *fnc_value;
   } status;
 
   struct
   {
-    EngineColonLineHandler fnc;
+    engine_colon_line_handler_t fnc;
     void *fnc_value;
     struct
     {
@@ -542,7 +542,7 @@ static gpgme_status_code_t parse_status (const char *name);
 
 static gpgme_error_t
 gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd,
-			     EngineStatusHandler status_fnc,
+			     engine_status_handler_t status_fnc,
 			     void *status_fnc_value)
 {
   AssuanError err;
@@ -1051,6 +1051,7 @@ gpgsm_export (void *engine, gpgme_user_id_t uid, gpgme_data_t keydata,
       cmd[cmdi++] = ' ';
       strcpy (cmd + cmdi, uid->uid);
       cmdi += uidlen;
+      uid = uid->next;
     }
   if (err)
     return err;
@@ -1373,7 +1374,7 @@ gpgsm_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 
 
 static void
-gpgsm_set_status_handler (void *engine, EngineStatusHandler fnc,
+gpgsm_set_status_handler (void *engine, engine_status_handler_t fnc,
 			  void *fnc_value) 
 {
   GpgsmObject gpgsm = engine;
@@ -1384,7 +1385,7 @@ gpgsm_set_status_handler (void *engine, EngineStatusHandler fnc,
 
 
 static gpgme_error_t
-gpgsm_set_colon_line_handler (void *engine, EngineColonLineHandler fnc,
+gpgsm_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
 			      void *fnc_value) 
 {
   GpgsmObject gpgsm = engine;

@@ -46,7 +46,7 @@ gpgme_error_t _gpgme_data_outbound_handler (void *opaque, int fd);
 /* From op-support.c.  */
 
 /* Find or create the op data object of type TYPE.  */
-gpgme_error_t _gpgme_op_data_lookup (gpgme_ctx_t ctx, ctx_op_data_type type,
+gpgme_error_t _gpgme_op_data_lookup (gpgme_ctx_t ctx, ctx_op_data_id_t type,
 				     void **hook, int size,
 				     void (*cleanup) (void *));
 
