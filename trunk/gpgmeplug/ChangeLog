@@ -1,6 +1,8 @@
 2002-06-27  Steffen Hansen  <steffen@hrhansen.dk>
 
-	* Handle truncated data from dirmngr.
+	* gpgmeplug.c: Fixed pattern related bug.
+
+	* cryptplug.h, gpgmeplug.c: Handle truncated data from dirmngr.
 
 2002-06-25  Steffen Hansen  <steffen@hrhansen.dk>
 
