@@ -1,0 +1,46 @@
+                  GPGME - GnuPG Made Easy
+                ---------------------------
+
+             !!!! THIS IS WORK IN PROGRESS !!!
+
+If you want to hack on it, start with one of the `tests/t-foo'
+programs.
+
+For support of the OpenPGP protocol (default), you need the latest CVS
+version of GnuPG 1.0, see `http://www.gnupg.org/cvs-access.html'.
+
+You need at least GnuPG 1.0.6, but don't use a 1.1.x version.
+
+If configure can't find the `gpg' binary in your path, you can specify
+the location with the --with-gpg=/path/to/gpg argument to configure.
+
+For support of the CMS (Cryptographic Message Syntax) protocol, you
+need the latest CVS version of GpgSM, module name `newpg' at
+`:pserver:anoncvs@cvs.gnupg.org:/cvs/aegypten'.
+
+You need at least GpgSM 0.0.0.
+
+If configure can't find the `gpgsm' binary in your path, you can
+specify the location with the --with-gpgsm=/path/to/gpgsm argument to
+configure.
+
+To enable the CryptPlug GPGME PlugIn for both protocols, use the
+`--enable-gpgmeplug' option to the configure script.  `gpgmeplug' is
+experimental and you should not assume that it will stay with gpgme.
+The plug-ins are not installed by `make install'.
+
+Before building the CVS version following the generic install
+instructions in `INSTALL', you need to set up the build scripts with
+`./autogen.sh'.  To build the W32 version, use `./autogen.sh
+--build-w32'.
+
+Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
+to do serious work.
+
+
+ 
+
+
+
+
+

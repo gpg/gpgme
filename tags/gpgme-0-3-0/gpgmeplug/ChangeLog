@@ -1,0 +1,40 @@
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (lib_LTLIBRARIES): Rename to ...
+	(noinst_LTLIBRARIES): ... this target.
+
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgmeplug_la_SOURCES): Remove gpgme.h.
+	(libgpgsmplug_la_SOURCES): Likewise.
+
+2001-11-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c (checkMessageSignature): Add call to gpgme_set_protocol.
+
+2001-11-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgsmplug_la_SOURCES): Fix source file.
+
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libgpgsmplug_la_LIBADD): New variable.
+	(libgpgsmplug_la_LDFLAGS): Likewise.
+	(libgpgsmplug_la_SOURCES): Likewise.
+	(lib_LTLIBRARIES): Add libgpgsmplug.la.
+	(INCLUDES): Include the local gpgme.h.
+
+	* gpgmeplug.c (signMessage): Set protocol.
+	(GPGMEPLUG_PROTOCOL) [!GPGMEPLUG_PROTOCOL]: Set
+	GPGMEPLUG_PROTOCOL.
+	* gpgsmplug.c: New file.
+
+2001-11-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgmeplug.c: Include config.h only if [HAVE_CONFIG_H].  Do not
+	include util.h.
+	(deinitialize): Use free, not _gpgme_free.
+	(setDirectoryServers): Use calloc, not xtrycalloc.  Use free, not
+	_gpgme_free.  Use malloc instead xtrymalloc.
+	(appendDirectoryServer): Use realloc, not xtryrealloc.
+

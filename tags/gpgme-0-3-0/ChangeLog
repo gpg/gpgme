@@ -1,0 +1,106 @@
+2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh (libtool_vers): Bump to 1.4.
+
+	* configure.ac (LIBGPGME_LT_CURRENT): Increment.
+	(LIBGPGME_LT_AGE): Reset.
+	Improve comment.
+	Fix wrong comment character.
+
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_FIX_HDR_VERSION): Fixed for new automake.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (GPG): Substitute this variable.
+	(GPGSM): Likewise.
+
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_CONFIG_FILES): Add tests/gpg/Makefile and
+	tests/gpgsm/Makefile.
+
+2001-11-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (gpgmeplug): New variable, set to gpgmeplug if
+	[BUILD_GPGMEPLUG].
+	* configure.ac (AC_CONFIG_FILES): Add gpgmeplug/Makefile.
+	Support --enable-gpgmeplug.
+
+2001-11-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh: Tighten version dependencies.
+
+2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (SUBDIRS): Support building the assuan library
+	(currently if GPGSM_PATH is set)..
+	* configure.ac: Support building the assuan library.
+	* assuan: New directory, populated with the Assuan library
+	(copied from the newpg repository).
+
+2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (NEED_GPGSM_VERSION): New variable.  Treat it
+	similarly to NEED_GPG_VERSION.
+	* acconfig.h: Likewise.
+
+2001-11-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.in: Renamed to ...
+	* configure.ac: ... this.  Update to autoconf 2.52.  Lots of small
+	changes in the transition.  Support --with-gpg=PATH and
+	--with-gpgsm=PATH options.  Check if test suites can be run.
+	* acconfig.h: Add GPGSM_PATH.
+	* Makefile.am: New variable `tests', set to `tests' if
+	RUN_GPG_TESTS.
+	(SUBDIRS): Replace string `tests' with variable `tests'.
+
+2001-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh: Invoke automake with `-a' (add missing files).
+	Do not invoke configure.
+
+2001-09-17  Werner Koch  <wk@gnupg.org>
+
+	Released 0.2.3.
+	
+	* configure.in (NEED_GPG_VERSION): Set to 1.0.6. Incremented LT
+	current and age.
+
+	* Makefile.am (SUBDIRS): Add doc
+
+2001-06-12  Werner Koch  <wk@gnupg.org>
+
+	Released 0.2.2.
+
+2001-04-05  Werner Koch  <wk@gnupg.org>
+
+	* configure.in (NEED_GPG_VERSION): Set to 1.0.4g 
+
+2001-04-02  Werner Koch  <wk@gnupg.org>
+
+	Released 0.2.1.
+
+	Changed the copyright notices all over the place.
+	
+2001-02-28  Werner Koch  <wk@gnupg.org>
+
+	Released 0.2.0.
+
+2001-01-18  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Added option --build-w32.
+
+
+ Copyright 2001 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+	

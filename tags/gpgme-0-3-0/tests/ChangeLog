@@ -1,0 +1,172 @@
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/Makefile.am (EXTRA_DIST): Add missing line continuation.
+
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/Makefile.am (EXTRA_DIST): Add $(key_id).
+
+2001-12-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/Makefile: Rename `pubcerts.kbx' to `pubring.kbx'.
+
+2001-12-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-keylist.c (check_two_contexts): Set protocols.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-sign.c: New file.
+	* gpgsm/Makefile.am (TESTS): Add t-sign.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-decrypt.c: New file.
+	* gpgsm/567064FE6D14A17B2D811ABB407728BC558AA455: Likewise.
+	* gpgsm/Makefile.am (TESTS): Add t-decrypt.
+	(key_id): New variable.
+	(all-local): New target ./private-keys-v1.d/$(key_id) added.
+	(./private-keys-v1.d/$(key_id)): New target.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-verify.c: New file.
+	* gpgsm/Makefile.am (TESTS): Add t-verify.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/Makefile.am (GPG): Set to @GPG_PATH@.
+	(./pubring.gpg): Use $(GPG) instead gpg.
+	(./secring.gpg): Likewise.
+
+	* gpgsm/t-import.c (main): Remove third test case.
+	* gpgsm/Makefile.am (GPGSM): Set to @GPGSM@.
+	(all-local): New target.
+	(./pubcerts.kbx): Likewise.
+	* gpgsm/t-encrypt.c: New file.
+	* gpgsm/Makefile.am (TESTS): Add t-encrypt.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-keylist.c: New file.
+	* gpgsm/Makefile.am (TESTS): Add t-keylist.
+
+2001-12-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/cert_dfn_pca01.der: New file.
+	* gpgsm/cert_dfn_pca15.der: Likewise.
+	* gpgsm/cert_g10code_test1.der: Likewise.
+	* gpgsm/t-import.c: Likewise.
+	* gpgsm/Makefile.am (EXTRADIST): Add new files.
+	(TESTS): Add t-import.
+
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/: New directory.
+	* Makefile.am, t-verify.c, t-encrypt.c, t-signers.c, t-trustlist.c,
+	t-sign.c, t-keylist.c, t-import.c, t-genkey.c, t-export.c,
+	t-decrypt-verify.c, t-decrypt.c, t-version.c, t-data.c, mkdemodirs.
+	cipher-1.asc, cipher-2.asc, geheim.txt, pubdemo.asc, pubkey-1.asc,
+	secdemo.asc, seckey-1.asc): Move to sub directory gpg/.
+
+	* gpg/Makefile.am (INCLUDES): Include gpgme/, not include/ and
+	intl/.
+	(LDD): Correct relative path to gpgme library.
+	(TESTS): Remove t-version and t-data.
+	* gpg/t-verify.c, gpg/t-encrypt.c, gpg/t-signers.c, gpg/t-trustlist.c,
+	gpg/t-sign.c, gpg/t-keylist.c, gpg/t-import.c, gpg/t-genkey.c,
+	gpg/t-export.c, gpg/t-decrypt-verify.c, gpg/t-decrypt.c,
+	t-version.c, t-data.c): Include gpgme.h, not "../gpgme/gpgme.h".
+
+	* Makefile.am: New file.
+	* gpgsm/: New directory.
+	* gpgsm/Makefile.am: New file.
+
+2001-11-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (TESTS): Add t-decrypt-verify.
+	* t-decrypt-verify.c: New file.
+	* cipher-2.asc: Likewise.
+
+2001-11-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* t-data.c: Include stddef.h.
+	(read_once_test): Change type of READ to size_t.
+	(read_test): Likewise.
+	(write_test): Likewise.
+
+2001-10-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* t-signers.c: New file.
+	* Makefile.am (TESTS): Add t-signers.
+
+2001-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (TEST_ENVIRONMENT): Revert last change.
+
+2001-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (TEST_ENVIRONMENT): Set environment to $(srcdir),
+	not current directory.
+
+2001-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* t-data.c (write_test): New function.
+	(main): Invoke write_test for all rounds except TEST_OUT_CB.
+
+2001-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (INCLUDES): Remove spurious duplicate to silence
+	automake.
+
+2001-10-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* t-version.c: New file.
+	* t-data.c: Likewise.
+	* t-data-1.txt: Likewise.
+	* t-data-2.txt: Likewise.
+	* Makefile.am (TESTS): Add t-version, t-data.
+
+2001-09-17  Werner Koch  <wk@gnupg.org>
+
+	* t-keylist.c (check_two_contexts): New. 
+
+2001-09-03  Werner Koch  <wk@gnupg.org>
+
+	* t-encrypt.c (print_op_info): New and use it after each operation.. 
+
+2001-08-28  Werner Koch  <wk@gnupg.org>
+
+	* t-sign.c (print_op_info): New and use it after each operation.
+
+2001-03-15  Werner Koch  <wk@gnupg.org>
+
+	* t-keylist.c (doit): List subkeys too, show caps.
+
+2001-02-13  Werner Koch  <wk@gnupg.org>
+
+	* t-verify.c (print_sig_stat): Repaled ulong by unsigned long
+	because we don't use the config stuff here.
+
+2001-02-12  Werner Koch  <wk@gnupg.org>
+
+	* tests/t-verify.c (print_sig_stat): Print info about the keys.
+
+
+ Copyright 2001 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ 
+
+
+
+
+
+
+	
