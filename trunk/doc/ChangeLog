@@ -1,3 +1,7 @@
+2004-04-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Verify): Correct type of member wrong_key_usage.
+
 2004-03-29  Moritz Schulte  <moritz@duesseldorf.ccc.de>
 
 	* gpgme.texi (Verify): Fix type of gpgme_op_verify_result.
