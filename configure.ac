@@ -99,12 +99,24 @@ case "${target}" in
         #component_system='COM+'
         ;;
     *)
+	AC_CHECK_PTH(1.2.0,,,no,have_pth=yes)
+	if test "$have_pth" = yes; then
+	  AC_DEFINE(HAVE_PTH, ,[Define if we have Pth.])
+	  CFLAGS="$CFLAGS $PTH_CFLAGS"
+	fi
+	AC_CHECK_LIB(pthread,pthread_create,have_pthread=yes)
+	if test "$have_pthread" = yes; then
+	  AC_DEFINE(HAVE_PTHREAD, ,[Define if we have pthread.])
+	fi
+
 dnl	# XXX: Probably use exec-prefix here?
 dnl	GPG_DEFAULT='/usr/bin/gpg'
 dnl	GPGSM_DEFAULT='/usr/bin/gpgsm'
 	;;
 esac
 AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = "yes")
+AM_CONDITIONAL(HAVE_PTH, test "$have_pth" = "yes")
+AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 
 dnl
 dnl Checks for libraries.

@@ -1,3 +1,18 @@
+2002-06-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (ath_components): New variable.
+	(ath_components_pthread): Likewise.
+	(ath_components_pth): Likewise.
+	(system_components): Add ath_componentes.
+
+	* ath.h: New file.
+	* ath.c: Likewise.
+	* ath-pthread.c: Likewise.
+	* ath-pth.c: Likewise.
+	* posix-sema.c (_gpgme_sema_cs_enter): Rework to use the ATH
+	interface.
+	* mutex.h: Remove file.
+
 2002-05-30  Werner Koch  <wk@gnupg.org>
 
 	* key.c (gpgme_key_get_string_attr): Return NULL when asking for
