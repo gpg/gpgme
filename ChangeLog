@@ -2,6 +2,8 @@
 
 	Released 0.4.5.
 
+	* configure.ac (NEED_GPGSM_VERSION): Bump up to 1.9.6.
+
 	* Makefile.am (EXTRA_DIST): Remove autogen.sh and README.CVS.
 
 2004-02-18  Werner Koch  <wk@gnupg.org>
