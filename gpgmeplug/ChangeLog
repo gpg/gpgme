@@ -1,3 +1,9 @@
+2002-03-07  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* gpgmeplug.c (encryptMessage): Made the function accept multiple 
+	reciepients via addressee -- it is now parsed af a comma-separated 
+	list.
+
 2002-03-06  Werner Koch  <wk@gnupg.org>
 
 	* gpgmeplug.c (signMessage): Fixed offbyone.  Don't include the

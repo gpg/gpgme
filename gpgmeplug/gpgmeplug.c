@@ -50,6 +50,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <time.h>
+#include <ctype.h>
 
 #ifndef BUG_URL
 #define BUG_URL "http:://www.gnupg.org/aegypten/"
@@ -1067,6 +1068,61 @@ bool storeCertificatesFromMessage(
         const char* ciphertext ){ return true; }
 
 
+/* returns the next address in a comma-separated list
+   or NULL if the list is empty. The function honors double quotes 
+   and '(' ')' comments.
+   A non-NULL return value should be deleted with free().
+*/
+static char* nextAddress( const char** address )
+{
+  const char *start = *address;
+  char* result = NULL;
+  int quote = 0;
+  int comment = 0;
+  int found = 0;
+  if( *address == NULL ) return NULL;
+  while( **address ) {
+
+    switch( **address ) {
+    case '\\': /* escaped character */
+      ++(*address);
+      break;
+    case '"':
+      if( comment == 0 ) {
+	if( quote > 0 ) --quote;
+	else ++quote;
+      }
+      break;
+    case '(': /* comment start */
+      if( quote == 0 ) ++comment;
+      break;
+    case ')': /* comment end */
+      if( quote == 0 ) --comment;
+      break;      
+    case '\0':
+    case ',': /* delimiter */
+      if( quote == 0 && comment == 0 ) {
+	found = 1;
+      }
+      break;
+    }
+    ++(*address);
+    if( found ) break;
+  }
+  if( found || **address == 0 ) {
+    size_t len;
+    while( isspace( *start ) ) ++start;
+    len = *address - start;
+    if( len > 0 ) {
+      if( **address != 0 ) --len;
+      result = malloc( len*sizeof(char)+1 );
+      strncpy( result, start, len );
+      result[len] = '\0';
+    }  
+  }
+  return result;
+}
+
 bool encryptMessage( const char* cleartext,
                      const char** ciphertext,
                      const char* addressee,
@@ -1104,8 +1160,13 @@ bool encryptMessage( const char* cleartext,
   }
   else
   {
-    gpgme_recipients_add_name (rset, addressee);
-    fprintf( stderr, "\nGPGMEPLUG encryptMessage() using addressee %s\n", addressee );
+    const char* p = addressee;
+    char* tok;
+    while( (tok = nextAddress( &p ) ) != 0 ) { 
+      gpgme_recipients_add_name (rset, tok);
+      fprintf( stderr, "\nGPGMEPLUG encryptMessage() using addressee %s\n", tok );
+      free(tok);
+    }
   }
 
 
