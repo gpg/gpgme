@@ -1,3 +1,7 @@
+2003-04-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-signers.c (print_data): Rewritten.
+
 2003-04-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-encrypt-sign.c (check_result): Rewritten.
