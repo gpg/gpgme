@@ -30,9 +30,14 @@ static gpgme_error_t
 decrypt_verify_status_handler (void *priv, gpgme_status_code_t code,
 			       char *args)
 {
-  return _gpgme_progress_status_handler (priv, code, args)
-    || _gpgme_decrypt_status_handler (priv, code, args)
-    || _gpgme_verify_status_handler (priv, code, args);
+  gpgme_error_t err;
+
+  err = _gpgme_progress_status_handler (priv, code, args);
+  if (!err)
+    err = _gpgme_decrypt_status_handler (priv, code, args);
+  if (!err)
+    err = _gpgme_verify_status_handler (priv, code, args);
+  return err;
 }
 
 

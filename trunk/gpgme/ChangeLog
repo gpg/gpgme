@@ -1,5 +1,13 @@
 2003-07-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* decrypt-verify.c (decrypt_verify_status_handler): Expand silly
+	and wrong expression.
+	* encrypt-sign.c (encrypt_sign_status_handler): Likewise.
+	* encrypt.c (encrypt_sym_status_handler): Likewise.
+	* sign.c (sign_status_handler): Likewise.
+	* verify.c (verify_status_handler): Likewise.
+	* decrypt.c (decrypt_status_handler): Likewise.
+
 	* engine.c (gpgme_get_engine_info): Initialize NULL.
 
 2003-07-23  Marcus Brinkmann  <marcus@g10code.de>
