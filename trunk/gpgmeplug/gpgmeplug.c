@@ -795,7 +795,8 @@ bool signMessage( const char*  cleartext,
   }
   gpgme_set_include_certs (ctx, sendCerts);
   
-  gpgme_set_signature_algorithm( ctx, config.signatureAlgorithm );
+  // PENDING(g10) Implement this
+  //gpgme_set_signature_algorithm( ctx, config.signatureAlgorithm );
 
   gpgme_data_new_from_mem (&data, cleartext,
                             1+strlen( cleartext ), 1 );
