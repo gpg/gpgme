@@ -1030,7 +1030,7 @@ OpenPGP protocol.
 
 @item GPG_ERR_SOURCE_GPGSM
 The error source is GPGSM, which is the crypto engine used for the
-OpenPGP protocol.
+CMS protocol.
 
 @item GPG_ERR_SOURCE_GCRYPT
 The error source is @code{libgcrypt}, which is used by crypto engines
