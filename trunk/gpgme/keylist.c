@@ -838,7 +838,7 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   gpgme_error_t err;
   gpgme_key_t key;
 
-  if (!ctx || !r_key)
+  if (!ctx || !r_key || !fpr)
     return gpg_error (GPG_ERR_INV_VALUE);
   
   if (strlen (fpr) < 16)	/* We have at least a key ID.  */
