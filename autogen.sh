@@ -7,7 +7,7 @@ lib_config_files=""
 autoconf_vers=2.52
 automake_vers=1.5
 aclocal_vers=1.5
-libtool_vers=1.3
+libtool_vers=1.4
 
 DIE=no
 if test "$1" = "--build-w32"; then

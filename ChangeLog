@@ -1,3 +1,12 @@
+2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh (libtool_vers): Bump to 1.4.
+
+	* configure.ac (LIBGPGME_LT_CURRENT): Increment.
+	(LIBGPGME_LT_AGE): Likewise.
+	Improve comment.
+	Fix wrong comment character.
+
 2001-12-18  Werner Koch  <wk@gnupg.org>
 
 	* acinclude.m4 (GNUPG_FIX_HDR_VERSION): Fixed for new automake.
