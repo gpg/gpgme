@@ -20,6 +20,9 @@
 
 ## Process this file with automake to produce Makefile.in
 
+ACLOCAL_AMFLAGS = -I m4
+AUTOMAKE_OPTIONS = dist-bzip2
+
 EXTRA_DIST = gpgme.spec.in
 
 if BUILD_ASSUAN
