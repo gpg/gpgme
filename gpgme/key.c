@@ -220,7 +220,7 @@ _gpgme_key_append_name (gpgme_key_t key, char *src)
   dst = uid->uid;
   _gpgme_decode_c_string (src, &dst, src_len + 1);
 
-  dst += src_len + 1;
+  dst += strlen (dst) + 1;
   if (key->protocol == GPGME_PROTOCOL_CMS)
     parse_x509_user_id (uid->uid, &uid->name, &uid->email,
 			&uid->comment, dst);
@@ -253,9 +253,11 @@ _gpgme_key_add_sig (gpgme_key_t key, char *src)
   /* We can malloc a buffer of the same length, because the converted
      string will never be larger. Actually we allocate it twice the
      size, so that we are able to store the parsed stuff there too.  */
-  sig = calloc (1, sizeof (*sig) + 2 * src_len + 3);
+  sig = malloc (sizeof (*sig) + 2 * src_len + 3);
   if (!sig)
     return NULL;
+  memset (sig, 0, sizeof *sig);
+
   sig->keyid = sig->_keyid;
   sig->_keyid[16] = '\0';
   sig->uid = ((char *) sig) + sizeof (*sig);
@@ -264,7 +266,7 @@ _gpgme_key_add_sig (gpgme_key_t key, char *src)
     {
       char *dst = sig->uid;
       _gpgme_decode_c_string (src, &dst, src_len + 1);
-      dst += src_len + 1;
+      dst += strlen (dst) + 1;
       if (key->protocol == GPGME_PROTOCOL_CMS)
 	parse_x509_user_id (sig->uid, &sig->name, &sig->email,
 			    &sig->comment, dst);
