@@ -870,7 +870,7 @@ bool signMessage( const char*  cleartext,
   //gpgme_set_signature_algorithm( ctx, config.signatureAlgorithm );
 
   gpgme_data_new_from_mem (&data, cleartext,
-                            1+strlen( cleartext ), 1 );
+                            strlen( cleartext ), 1 );
   gpgme_data_new ( &sig );
   err = gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
 
@@ -993,13 +993,13 @@ bool checkMessageSignature( const char* ciphertext,
 //  gpgme_set_textmode (ctx, signatureIsBinary ? 0 : 1);
 
   gpgme_data_new_from_mem( &datapart, ciphertext,
-                          1+strlen( ciphertext ), 1 );
+                          strlen( ciphertext ), 1 );
 
   gpgme_data_new_from_mem( &sigpart,
                            signaturetext,
                            signatureIsBinary
                            ? signatureLen
-                           : (1+strlen( signaturetext )),
+                           : strlen( signaturetext ),
                            1 );
 
   gpgme_op_verify( ctx, sigpart, datapart, &status );
