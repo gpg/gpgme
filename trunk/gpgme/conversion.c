@@ -144,6 +144,7 @@ _gpgme_decode_c_string (const char *src, char **destp, int len)
 		src += 4;
 	      }
 	  }
+	  break;
 
 	default:
 	  {
