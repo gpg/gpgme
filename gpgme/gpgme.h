@@ -74,7 +74,7 @@ extern "C" {
    AM_PATH_GPGME macro) check that this header matches the installed
    library.  Warning: Do not edit the next line.  configure will do
    that for you!  */
-#define GPGME_VERSION "0.4.7"
+#define GPGME_VERSION "0.9.1-cvs"
 
 
 /* Some opaque data types used by GPGME.  */
