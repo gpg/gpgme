@@ -25,7 +25,7 @@ TESTS_ENVIRONMENT = GNUPGHOME=.
 
 TESTS = t-import t-keylist t-encrypt t-verify t-decrypt t-sign
 
-EXTRA_DIST = cert_dfn_pca01.der cert_dfn_pca15.der cert_g10code_test1.der
+EXTRA_DIST = cert_dfn_pca01.der cert_dfn_pca15.der cert_g10code_test1.der $(key_id)
 
 INCLUDES = -I$(top_srcdir)/gpgme
 
