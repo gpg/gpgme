@@ -62,6 +62,9 @@ void       _gpgme_key_release ( GpgmeKey key );
 /*-- verify.c --*/
 void _gpgme_release_verify_result ( VerifyResult res );
 
+/*-- decrypt.c --*/
+void _gpgme_release_decrypt_result ( DecryptResult res );
+
 
 #endif /* OPS_H */
 

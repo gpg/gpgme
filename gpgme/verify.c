@@ -50,7 +50,7 @@ add_notation ( GpgmeCtx ctx, GpgStatusCode code, const char *data )
     GpgmeData dh = ctx->result.verify->notation;
 
     if ( !dh ) {
-        if ( gpgme_data_new ( &dh, NULL, 0,0) ) {
+        if ( gpgme_data_new ( &dh ) ) {
             ctx->out_of_core = 1;
             return;
         }

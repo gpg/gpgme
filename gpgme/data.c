@@ -22,6 +22,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "util.h"
 #include "context.h"
@@ -34,15 +38,31 @@
                          || ((a) >= 'f' && (a) <= 'f') )
 
 
+GpgmeError
+gpgme_data_new ( GpgmeData *r_dh )
+{
+    GpgmeData dh;
+
+    if (!r_dh)
+        return mk_error (Invalid_Value);
+    *r_dh = NULL;
+    dh = xtrycalloc ( 1, sizeof *dh );
+    if (!dh)
+        return mk_error (Out_Of_Core);
+    dh->mode = GPGME_DATA_MODE_INOUT; 
+    *r_dh = dh;
+    return 0;
+}
+
 
 /**
- * gpgme_data_new:
+ * gpgme_data_new_from_mem:
  * @r_dh:   Returns a new data object.
- * @buffer: If not NULL, used to initialize the data object.
+ * @buffer: Initialize with this.
  * @size: Size of the buffer
  * @copy: Flag wether a copy of the buffer should be used.
  * 
- * Create a new data object and optionally initialize with data
+ * Create a new data object and initialize with data
  * from the memory.  A @copy with value %TRUE creates a copy of the
  * memory, a value of %FALSE uses the original memory of @buffer and the
  * caller has to make sure that this buffer is valid until gpgme_release_data()
@@ -51,36 +71,107 @@
  * Return value: 
  **/
 GpgmeError
-gpgme_data_new ( GpgmeData *r_dh, const char *buffer, size_t size, int copy )
+gpgme_data_new_from_mem ( GpgmeData *r_dh,
+                          const char *buffer, size_t size, int copy )
 {
     GpgmeData dh;
+    GpgmeError err;
 
+    if (!r_dh || !buffer)
+        return mk_error (Invalid_Value);
     *r_dh = NULL;
-    dh = xtrycalloc ( 1, sizeof *dh );
-    if (!dh)
-        return mk_error (Out_Of_Core);
-    if ( buffer ) {
-        dh->len  = size;
-        if (copy) {
-            dh->private_buffer = xtrymalloc ( size );
-            if ( !dh->private_buffer ) {
-                xfree (dh);
-                return mk_error (Out_Of_Core);
-            }
-            dh->private_len = size;
-            memcpy (dh->private_buffer, buffer, size );
-            dh->data = dh->private_buffer;
-            dh->writepos = size;
+    err = gpgme_data_new ( &dh );
+    if (err)
+        return err;
+    dh->len  = size;
+    if (copy) {
+        dh->private_buffer = xtrymalloc ( size );
+        if ( !dh->private_buffer ) {
+            gpgme_data_release (dh);
+            return mk_error (Out_Of_Core);
         }
-        else {
-            dh->data = buffer;
-        }
-        dh->type = GPGME_DATA_TYPE_MEM;
+        dh->private_len = size;
+        memcpy (dh->private_buffer, buffer, size );
+        dh->data = dh->private_buffer;
+        dh->writepos = size;
     }
-    dh->mode = GPGME_DATA_MODE_INOUT; 
+    else {
+        dh->data = buffer;
+    }
+    dh->type = GPGME_DATA_TYPE_MEM;
+    
     *r_dh = dh;
     return 0;
 }
+
+GpgmeError
+gpgme_data_new_from_file ( GpgmeData *r_dh, const char *fname, int copy )
+{
+    GpgmeData dh;
+    GpgmeError err;
+    struct stat st;
+    FILE *fp;
+
+    if (!r_dh)
+        return mk_error (Invalid_Value);
+    *r_dh = NULL;
+    /* We only support copy for now - in future we might want to honor the 
+     * copy flag and just store a file pointer */
+    if (!copy)
+        return mk_error (Not_Implemented);
+    if (!fname)
+        return mk_error (Invalid_Value);
+
+    err = gpgme_data_new ( &dh );
+    if (err)
+        return err;
+
+    fp = fopen (fname, "rb");
+    if (!fp) {
+        int save_errno = errno;
+        gpgme_data_release (dh);
+        errno = save_errno;
+        return mk_error (File_Error);
+    }
+
+    if( fstat(fileno(fp), &st) ) {
+        int save_errno = errno;
+        fclose (fp);
+        gpgme_data_release (dh);
+        errno = save_errno;
+        return mk_error (File_Error);
+    }
+
+    /* We should check the length of the file and don't allow for to
+     * large files */
+    dh->private_buffer = xtrymalloc ( st.st_size );
+    if ( !dh->private_buffer ) {
+        fclose (fp);
+        gpgme_data_release (dh);
+        return mk_error (Out_Of_Core);
+    }
+    dh->private_len = st.st_size;
+
+    if ( fread ( dh->private_buffer, dh->private_len, 1, fp ) != 1 ) {
+        int save_errno = errno;
+        fclose (fp);
+        gpgme_data_release (dh);
+        errno = save_errno;
+        return mk_error (File_Error);
+    }
+
+    fclose (fp);
+
+    dh->len = dh->private_len;
+    dh->data = dh->private_buffer;
+    dh->writepos = dh->len;
+    dh->type = GPGME_DATA_TYPE_MEM;
+    
+    *r_dh = dh;
+    return 0;
+}
+
+
 
 /**
  * gpgme_data_release:

@@ -82,6 +82,9 @@ _gpgme_release_result ( GpgmeCtx c )
       case RESULT_TYPE_VERIFY:
         _gpgme_release_verify_result ( c->result.verify );
         break;
+      case RESULT_TYPE_DECRYPT:
+        _gpgme_release_decrypt_result ( c->result.decrypt );
+        break;
     }
 
     c->result.verify = NULL;

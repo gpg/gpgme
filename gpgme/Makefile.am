@@ -18,6 +18,7 @@ libgpgme_la_SOURCES = \
 	data.c recipient.c \
         wait.c wait.h \
 	encrypt.c \
+	decrypt.c \
 	verify.c \
         key.c key.h \
 	keylist.c \

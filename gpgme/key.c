@@ -254,7 +254,7 @@ gpgme_key_get_as_xml ( GpgmeKey key )
     if ( !key )
         return NULL;
     
-    if ( gpgme_data_new ( &d, NULL, 0, 0 ) )
+    if ( gpgme_data_new ( &d ) )
         return NULL;
     
     _gpgme_data_append_string ( d, "<GnupgKeyblock>\n"
