@@ -1,4 +1,4 @@
-2002-11-05  Marcus Brinkmann  <marcus@gnu.org>
+2002-11-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* import.c (append_xml_impinfo): Use
 	_gpgme_data_append_string_for_xml rather than
