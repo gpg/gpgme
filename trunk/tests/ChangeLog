@@ -1,3 +1,8 @@
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-keylist.c: New file.
+	* gpgsm/Makefile.am (TESTS): Add t-keylist.
+
 2001-12-13  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm/cert_dfn_pca01.der: New file.

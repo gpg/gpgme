@@ -1,3 +1,10 @@
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c (struct gpgsm_object_s): New member colon.attic.
+	(_gpgme_gpgsm_new): Initialize some more members.
+	(_gpgme_gpgsm_release): Free the colon line handler's attic line.
+	(gpgsm_status_handler): Rework the inline-data processing.
+
 2001-12-13  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.c (_gpgme_gpg_spawn): Do not add the fds to the child
@@ -130,7 +137,7 @@
 	* engine-gpgsm.c (_gpgme_gpgsm_op_decrypt): New function.
 	(_gpgme_gpgsm_op_import): Likewise.
 
-2001-11-22  Marcus Brinkmann  <marcus@gnu.org>
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c: Shuffle around header inclusion a bit, to still
 	keep them seperate.
