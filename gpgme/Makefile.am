@@ -68,7 +68,8 @@ libgpgme_la_SOURCES = \
 	sema.h io.h \
 	${system_components} \
 	mutex.h \
-	gpgme.c debug.c version.c errors.c
+	debug.c debug.h \
+	gpgme.c version.c errors.c
 
 errors.c : gpgme.h
 	$(srcdir)/mkerrors < $(srcdir)/gpgme.h > errors.c

@@ -1,5 +1,5 @@
-/* debug.c
- *      Copyright (C) 2001 g10 Code GmbH
+/* debug.c - helpful output in desperate situations
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -35,206 +35,175 @@
 #include "util.h"
 #include "sema.h"
 
+
+/* Lock to serialize initialization of the debug output subsystem and
+   output of actual debug messages.  */
 DEFINE_STATIC_LOCK (debug_lock);
 
-struct debug_control_s {
-    FILE *fp;
-    char fname[100];
-};
+/* The amount of detail requested by the user, per environment
+   variable GPGME_DEBUG.  */
+static int debug_level;
 
-static int debug_level = 0;
-static FILE *errfp = NULL;
+/* The output stream for the debug messages.  */
+static FILE *errfp;
 
-/****************
- * remove leading and trailing white spaces
- */
+
+/* Remove leading and trailing white spaces.  */
 static char *
-trim_spaces( char *str )
+trim_spaces (char *str)
 {
-    char *string, *p, *mark;
+  char *string, *p, *mark;
 
-    string = str;
-    /* find first non space character */
-    for( p=string; *p && isspace( *(byte*)p ) ; p++ )
-	;
-    /* move characters */
-    for( (mark = NULL); (*string = *p); string++, p++ )
-	if( isspace( *(byte*)p ) ) {
-	    if( !mark )
-		mark = string ;
-	}
-	else
-	    mark = NULL ;
-    if( mark )
-	*mark = '\0' ;  /* remove trailing spaces */
+  string = str;
+  /* Find first non space character.  */
+  for (p = string; *p && isspace (*(byte *) p); p++)
+    ;
+  /* Move characters.  */
+  for (mark = NULL; (*string = *p); string++, p++)
+    if (isspace (*(byte *) p))
+      {
+	if (!mark)
+	  mark = string;
+      }
+    else
+      mark = NULL;
+  if (mark)
+    *mark = '\0';	/* Remove trailing spaces.  */
 
-    return str ;
+  return str;
 }
 
 
 static void
 debug_init (void)
 {
-    static volatile int initialized = 0;
-       
-    if (initialized) 
-        return;
-    LOCK (debug_lock);
-    if (!initialized) {
-        const char *e = getenv ("GPGME_DEBUG");
-        const char *s1, *s2;;
+  static int initialized;
 
-        initialized = 1;
-        debug_level = 0;
-        errfp = stderr;
-        if (e) {
-            debug_level = atoi (e);
-            s1 = strchr (e, ':');
-            if (s1 
+  LOCK (debug_lock);
+  if (!initialized)
+    {
+      const char *e = getenv ("GPGME_DEBUG");
+      const char *s1, *s2;;
+
+      initialized = 1;
+      errfp = stderr;
+      if (e)
+	{
+	  debug_level = atoi (e);
+	  s1 = strchr (e, ':');
+	  if (s1)
+	    {
 #ifndef HAVE_DOSISH_SYSTEM
-                && getuid () == geteuid ()
+	      if (getuid () == geteuid ())
+		{
 #endif
-                ) {
-                char *p;
-                FILE *fp;
+		  char *p;
+		  FILE *fp;
 
-                s1++;
-                if ( !(s2 = strchr (s1, ':')) )
-                    s2 = s1 + strlen(s1);
-                p = xtrymalloc (s2-s1+1);
-                if (p) {
-                    memcpy (p, s1, s2-s1);
-                    p[s2-s1] = 0;
-                    trim_spaces (p);
-                    fp = fopen (p,"a");
-                    if (fp) {
-                        setvbuf (fp, NULL, _IOLBF, 0);
-                        errfp = fp;
-                    }
-                    xfree (p);
-                }
-            }
+		  s1++;
+		  if (!(s2 = strchr (s1, ':')))
+		    s2 = s1 + strlen (s1);
+		  p = xtrymalloc (s2 - s1 + 1);
+		  if (p)
+		    {
+		      memcpy (p, s1, s2 - s1);
+		      p[s2-s1] = 0;
+		      trim_spaces (p);
+		      fp = fopen (p,"a");
+		      if (fp)
+			{
+			  setvbuf (fp, NULL, _IOLBF, 0);
+			  errfp = fp;
+			}
+		      xfree (p);
+		    }
+#ifndef HAVE_DOSISH_SYSTEM
+		}
+#endif
+	    }
         }
 
-        if (debug_level > 0)
-            fprintf (errfp,"gpgme_debug: level=%d\n", debug_level);
+      if (debug_level > 0)
+	fprintf (errfp, "gpgme_debug: level=%d\n", debug_level);
     }
-    UNLOCK (debug_lock);
+  UNLOCK (debug_lock);
 }
 
-int
-_gpgme_debug_level ()
-{
-    return debug_level;
-}
-
+
+/* Log the formatted string FORMAT at debug level LEVEL or higher.  */
 void
 _gpgme_debug (int level, const char *format, ...)
 {
-    va_list arg_ptr ;
+  va_list arg_ptr;
 
-    debug_init ();
-    if ( debug_level < level )
-        return;
+  debug_init ();
+  if (debug_level < level)
+    return;
     
-    va_start ( arg_ptr, format ) ;
-    LOCK (debug_lock);
-    vfprintf (errfp, format, arg_ptr) ;
-    va_end ( arg_ptr ) ;
-    if( format && *format && format[strlen(format)-1] != '\n' )
-        putc ('\n', errfp);
-    UNLOCK (debug_lock);
-    fflush (errfp);
+  va_start (arg_ptr, format);
+  LOCK (debug_lock);
+  vfprintf (errfp, format, arg_ptr);
+  va_end (arg_ptr);
+  if(format && *format && format[strlen (format) - 1] != '\n')
+    putc ('\n', errfp);
+  UNLOCK (debug_lock);
+  fflush (errfp);
 }
 
 
-
+/* Start a new debug line in *LINE, logged at level LEVEL or higher,
+   and starting with the formatted string FORMAT.  */
 void
-_gpgme_debug_begin ( void **helper, int level, const char *text)
+_gpgme_debug_begin (void **line, int level, const char *format, ...)
 {
-    struct debug_control_s *ctl;
+  va_list arg_ptr;
 
-    debug_init ();
-
-    *helper = NULL;
-    if ( debug_level < level )
-        return;
-    ctl = xtrycalloc (1, sizeof *ctl );
-    if (!ctl) {
-        _gpgme_debug (255, __FILE__ ":" STR2(__LINE__)": out of core");
-        return;
-    }
-
-    /* Oh what a pitty that we don't have a asprintf or snprintf under
-     * Windoze.  We definitely should write our own clib for W32! */
-    sprintf ( ctl->fname, "/tmp/gpgme_debug.%d.%p", getpid (), ctl );
-  #if defined (__GLIBC__) || defined (HAVE_DOSISH_SYSTEM)
-    ctl->fp = fopen (ctl->fname, "w+x");
-  #else 
+  debug_init ();
+  if (debug_level < level)
     {
-        int fd  = open (ctl->fname, O_WRONLY|O_TRUNC|O_CREAT|O_EXCL,
-                        S_IRUSR|S_IWUSR );
-        if (fd == -1)
-            ctl->fp = NULL;
-        else
-            ctl->fp = fdopen (fd, "w+");
+      /* Disable logging of this line.  */
+      *line = NULL;
+      return;
     }
-  #endif
-    if (!ctl->fp) {
-        _gpgme_debug (255,__FILE__ ":" STR2(__LINE__)": failed to create `%s'",
-                      ctl->fname );
-        xfree (ctl);
-        return;
-    }
-    *helper = ctl;
-    _gpgme_debug_add (helper, "%s", text );
-}
 
-int
-_gpgme_debug_enabled (void **helper)
-{
-    return helper && *helper;
+  va_start (arg_ptr, format);
+  vasprintf ((char **) line, format, arg_ptr);
+  va_end (arg_ptr);
 }
 
 
+/* Add the formatted string FORMAT to the debug line *LINE.  */
 void
-_gpgme_debug_add (void **helper, const char *format, ...)
+_gpgme_debug_add (void **line, const char *format, ...)
 {
-    struct debug_control_s *ctl = *helper;
-    va_list arg_ptr ;
+  va_list arg_ptr;
+  char *toadd;
+  char *result;
 
-    if ( !*helper )
-        return;
-    
-    va_start ( arg_ptr, format ) ;
-    vfprintf (ctl->fp, format, arg_ptr) ;
-    va_end ( arg_ptr ) ;
+  if (!line)
+    return;
+
+  va_start (arg_ptr, format);
+  vasprintf (&toadd, format, arg_ptr);
+  va_end (arg_ptr);
+  asprintf (&result, "%s%s", *(char **) line, toadd);
+  free (*line);
+  free (toadd);
+  *line = result;
 }
 
+
+/* Finish construction of *LINE and send it to the debug output
+   stream.  */
 void
-_gpgme_debug_end (void **helper, const char *text)
+_gpgme_debug_end (void **line)
 {
-    struct debug_control_s *ctl = *helper;
-    int c, last_c=EOF;
+  if (!line)
+    return;
 
-    if ( !*helper )
-        return;
-    
-    _gpgme_debug_add (helper, "%s", text );
-    fflush (ctl->fp); /* we need this for the buggy Windoze libc */
-    rewind (ctl->fp);
-    LOCK (debug_lock);
-    while ( (c=getc (ctl->fp)) != EOF ) {
-        putc (c, errfp);
-        last_c = c;
-    }
-    if (last_c != '\n')
-        putc ('\n', errfp);
-    UNLOCK (debug_lock);
-    
-    fclose (ctl->fp);
-    remove (ctl->fname);
-    xfree (ctl);
-    *helper = NULL;
+  /* The smallest possible level is 1, so force logging here by
+     using that.  */
+  _gpgme_debug (1, "%s", *line);
+  free (*line);
+  *line = NULL;
 }
-

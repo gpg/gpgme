@@ -23,6 +23,7 @@
 #define UTIL_H
 
 #include "types.h"
+#include "debug.h"
 
 void *_gpgme_malloc (size_t n );
 void *_gpgme_calloc (size_t n, size_t m );
@@ -41,59 +42,6 @@ void  _gpgme_free ( void *a );
 
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))
 #define DIMof(type,member)   DIM(((type *)0)->member)
-#ifndef STR
-  #define STR(v) #v
-#endif
-#define STR2(v) STR(v)
-
-
-void _gpgme_debug (int level, const char *format, ...);
-int  _gpgme_debug_level (void);
-void _gpgme_debug_begin ( void **helper, int level, const char *text);
-int  _gpgme_debug_enabled ( void **helper );
-void _gpgme_debug_add (void **helper, const char *format, ...);
-void _gpgme_debug_end (void **helper, const char *text);
-
-#define DEBUG0(x)                     _gpgme_debug (1,  __FILE__ ":" \
-     STR2 (__LINE__) ": " x )
-#define DEBUG1(x,a)                   _gpgme_debug (1,  __FILE__ ":" \
-     STR2 (__LINE__)": " x, (a) )
-#define DEBUG2(x,a,b)                 _gpgme_debug (1,  __FILE__ ":" \
-     STR2 (__LINE__) ": " x, (a), (b) )
-#define DEBUG3(x,a,b,c)               _gpgme_debug (1,  __FILE__ ":" \
-     STR2 (__LINE__) ": " x, (a), (b), (c) )
-#define DEBUG4(x,a,b,c,d)             _gpgme_debug (1,  __FILE__ ":" \
-     STR2 (__LINE__) ": " x, (a), (b), (c), (d) )
-#define DEBUG5(x,a,b,c,d,e)           _gpgme_debug (1,  __FILE__ ":" \
-     STR2 (__LINE__) ": " x, (a), (b), (c), (d), (e) )
-#define DEBUG6(x,a,b,c,d,e,f)         _gpgme_debug (1,  __FILE__ ":" \
-     STR2 (__LINE__) ": " x, (a), (b), (c), (d), (e), (f) )
-#define DEBUG7(x,a,b,c,d,e,f,g)       _gpgme_debug (1,  __FILE__ ":" \
-     STR2 (__LINE__) ": " x, (a), (b), (c), (d), (e), (f), (g) )
-#define DEBUG8(x,a,b,c,d,e,f,g,h)      _gpgme_debug (1,  __FILE__ ":" \
-     STR2 (__LINE__) ": " x, (a), (b), (c), (d), (e), (f), (g), (h) )
-#define DEBUG9(x,a,b,c,d,e,f,g,h,i)    _gpgme_debug (1,  __FILE__ ":" \
-     STR2 (__LINE__) ": " x, (a), (b), (c), (d), (e), (f), (g), (h), (i) )
-#define DEBUG10(x,a,b,c,d,e,f,g,h,i,j) _gpgme_debug (1,  __FILE__ ":" \
-     STR2 (__LINE__) ": " x, (a), (b), (c), (d), (e), (f), (g), (h), (i), (j) )
-
-#define DEBUG_BEGIN(y,x)  _gpgme_debug_begin (&(y), 1,  __FILE__ ":" \
-     STR2 (__LINE__) ": " x )
-#define DEBUG_ENABLED(y)  _gpgme_debug_enabled(&(y))
-#define DEBUG_ADD0(y,x)                 _gpgme_debug_add (&(y), (x), \
-                       )
-#define DEBUG_ADD1(y,x,a)               _gpgme_debug_add (&(y), (x), \
-                      (a) )
-#define DEBUG_ADD2(y,x,a,b)             _gpgme_debug_add (&(y), (x), \
-                      (a), (b) )
-#define DEBUG_ADD3(y,x,a,b,c)           _gpgme_debug_add (&(y), (x), \
-                      (a), (b), (c) )
-#define DEBUG_ADD4(y,x,a,b,c,d)         _gpgme_debug_add (&(y), (x), \
-                      (a), (b), (c), (d) )
-#define DEBUG_ADD5(y,x,a,b,c,d,e)       _gpgme_debug_add (&(y), (x), \
-                      (a), (b), (c), (d), (e) )
-#define DEBUG_END(y,x)  _gpgme_debug_end (&(y), (x) )
-
 
 
 #ifndef HAVE_STPCPY

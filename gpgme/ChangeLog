@@ -1,3 +1,36 @@
+2002-05-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* debug.h: New file.
+	* Makefile.am (libgpgme_la_SOURCES): Add debug.h.
+	* util.h: Removed all prototypes and declarations related to
+	debugging.  Include "debug.h".
+
+	* debug.c (debug_level): Comment variable and remove superfluous
+	zero initializer.
+	(errfp): Likewise.
+	(_gpgme_debug_enabled): Function removed.
+	(struct debug_control_s): Definition removed.
+	(_gpgme_debug_level): Function removed.
+	(_gpgme_debug_begin): Rewritten to use vasprintf.  Accept a
+	pritnf-style format specification and a variable number of
+	arguments.
+	(_gpgme_debug_add): Rewritten using vasprintf.  Expect that format
+	starts out with "%s" for simplicity.
+	(_gpgme_debug_end): Rewritten using vasprintf.  Do not accept a
+	TEXT argument anymore.
+
+	* posix-io.c (_gpgme_io_select): Use new level argument for
+	DEBUG_BEGIN instead explicit if construct.
+
+	* debug.c (debug_init): Remove superfluous zero initializer,
+	remove volatile flag of INITIALIZED.  Do not use the
+	double-checked locking algorithm, it is fundamentally flawed and
+	will empty your fridge (on a more serious note, despite the
+	volatile flag it doesn't give you the guarantee you would expect,
+	for example on a DEC Alpha or an SMP machine.  The volatile only
+	serializes accesses to the volatile variable, but not to the other
+	variables).
+
 2002-05-03  Werner Koch  <wk@gnupg.org>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_new): Redirect any gpgsm error

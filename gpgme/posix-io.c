@@ -295,15 +295,14 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds)
   FD_ZERO (&writefds);
   max_fd = 0;
 
-  if (_gpgme_debug_level () > 2)
-    DEBUG_BEGIN (dbg_help, "gpgme:select on [ ");
+  DEBUG_BEGIN (dbg_help, 3, "gpgme:select on [ ");
   any = 0;
   for (i = 0; i < nfds; i++)
     {
       if (fds[i].fd == -1) 
 	continue;
       if (fds[i].frozen)
-	DEBUG_ADD1 (dbg_help, "f%d ", fds[i].fd );
+	DEBUG_ADD1 (dbg_help, "f%d ", fds[i].fd);
       else if (fds[i].for_read)
 	{
 	  assert (!FD_ISSET (fds[i].fd, &readfds));
@@ -339,9 +338,8 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds)
       return -1; /* error */
     }
 
-  if (_gpgme_debug_level () > 2)
-    DEBUG_BEGIN (dbg_help, "select OK [ ");
-  if (DEBUG_ENABLED(dbg_help))
+  DEBUG_BEGIN (dbg_help, 3, "select OK [ ");
+  if (DEBUG_ENABLED (dbg_help))
     {
       for (i = 0; i <= max_fd; i++)
 	{
