@@ -289,7 +289,11 @@ gpgsm_cancel (void *engine)
   if (gpgsm->message_cb.fd != -1)
     _gpgme_io_close (gpgsm->message_cb.fd);
 
-  assuan_disconnect (gpgsm->assuan_ctx);
+  if (gpgsm->assuan_ctx)
+    {
+      assuan_disconnect (gpgsm->assuan_ctx);
+      gpgsm->assuan_ctx = NULL;
+    }
 
   return 0;
 }
