@@ -650,11 +650,12 @@ keylist_colon_handler (void *priv, char *line)
       if (fields >= 11)
 	if (field[10][0] && field[10][1])
 	  {
-	    int class = _gpgme_hextobyte (field[10]);
-	    if (class >= 0)
+	    int sig_class = _gpgme_hextobyte (field[10]);
+	    if (sig_class >= 0)
 	      {
-		keysig->class = class;
-		if (class == 0x30)
+		keysig->sig_class = sig_class;
+		keysig->class = keysig->sig_class;
+		if (sig_class == 0x30)
 		  keysig->revoked = 1;
 	      }
 	    if (field[10][2] == 'x')

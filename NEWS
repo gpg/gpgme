@@ -1,6 +1,17 @@
 Noteworthy changes in version 0.4.4 (unreleased)
 ------------------------------------------------
 
+ * The member "class" in gpgme_key_sig_t and gpgme_new_signature_t has
+   been renamed to "sig_class", to avoid clash with C++ compilers.  In
+   the C API, the old name "class" has been preserved for backwards
+   compatibility, but is deprecated.
+
+ * Interface changes relative to the 0.4.3 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_key_sig_t			CHANGED: class deprecated, use new sig_class.
+gpgme_new_signature_t		CHANGED: class deprecated, use new sig_class.
+
+
 Noteworthy changes in version 0.4.3 (2003-10-06)
 ------------------------------------------------
 

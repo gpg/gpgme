@@ -2199,7 +2199,7 @@ signature does not expire.
 This is the status of the signature and has the same meaning as the
 member of the same name in a @code{gpgme_signature_t} object.
 
-@item unsigned int class
+@item unsigned int sig_class
 This specifies the signature class of the key signature.  The meaning
 is specific to the crypto engine.
 
@@ -4038,7 +4038,7 @@ The public key algorithm used to create this signature.
 @item gpgme_hash_algo_t
 The hash algorithm used to create this signature.
 
-@item unsigned int class
+@item unsigned int sig_class
 The signature class of this signature.
 
 @item long int timestamp

@@ -695,7 +695,7 @@ gpgme_key_sig_get_ulong_attr (gpgme_key_t key, int uid_idx, _gpgme_attr_t what,
       return certsig->expired;
 
     case GPGME_ATTR_SIG_CLASS:
-      return certsig->class;
+      return certsig->sig_class;
 
     case GPGME_ATTR_SIG_STATUS:
       return certsig->status;

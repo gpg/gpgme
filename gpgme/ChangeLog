@@ -1,3 +1,15 @@
+2003-12-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (_GPGME_D_CLASS): Revert this change.
+	(struct _gpgme_key_sig): For C++ compilers, rename class
+	member to _obsolete_class.  Add new member sig_class.
+	(struct _gpgme_new_signature): Same here.
+	* key.c (gpgme_key_sig_get_ulong_attr): Use CERTSIG->sig_class,
+	not CERTSIG->class.
+	* keylist.c (keylist_colon_handler): Likewise for KEYSIG, but keep
+	setting KEYSIG->class, too.  Rename variable CLASS to SIG_CLASS.
+	* sign.c (parse_sig_created): Set SIG->sig_class.
+
 2003-12-22  Werner Koch  <wk@gnupg.org>
 
 	* gpgme.h (_GPGME_D_CLASS): Kludge for C++ compatibility without
