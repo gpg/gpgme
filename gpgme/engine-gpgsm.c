@@ -278,7 +278,7 @@ gpgsm_cancel (void *engine)
   engine_gpgsm_t gpgsm = engine;
 
   if (!gpgsm)
-    return;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (gpgsm->status_cb.fd != -1)
     _gpgme_io_close (gpgsm->status_cb.fd);
@@ -290,6 +290,8 @@ gpgsm_cancel (void *engine)
     _gpgme_io_close (gpgsm->message_cb.fd);
 
   assuan_disconnect (gpgsm->assuan_ctx);
+
+  return 0;
 }
 
 
