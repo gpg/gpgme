@@ -292,6 +292,8 @@ _gpgme_gpg_new (GpgObject *r_gpg)
     _gpgme_gpg_add_arg (gpg, buf);
   }
   _gpgme_gpg_add_arg (gpg, "--no-tty");
+  _gpgme_gpg_add_arg (gpg, "--charset");
+  _gpgme_gpg_add_arg (gpg, "utf8");
 
  leave:
   if (rc)
