@@ -1,6 +1,6 @@
 /* engine-gpgsm.c - GpgSM engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -1225,6 +1225,16 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
   free (line);
   if (err)
     return err;
+
+
+  /* Use the validation mode if required.  We don't check for an error
+     yet because this is a pretty fresh gpgsm features. */
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx, 
+                               (mode & GPGME_KEYLIST_MODE_VALIDATE)?
+                               "OPTION with-validation=1":
+                               "OPTION with-validation=0" ,
+                               NULL, NULL);
+
 
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
   line = malloc (15 + strlen (pattern) + 1);

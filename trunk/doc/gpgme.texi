@@ -1983,6 +1983,14 @@ certificate server.
 @item GPGME_KEYLIST_MODE_SIGS
 The @code{GPGME_KEYLIST_MODE_SIGS} symbol specifies that the key
 signatures should be included in the listed keys.
+
+@item GPGME_KEYLIST_MODE_VALIDATE
+The @code{GPGME_KEYLIST_MODE_VALIDATE} symbol specifies that the
+backend should do key or certificate validation and not just get the
+validity information from an interna cache.  This might be an
+expensive operation and is in general not usefule.  Currently only
+implemented for the S/MIME backend and ignored for other backends.
+
 @end table
 
 At least one of @code{GPGME_KEYLIST_MODE_LOCAL} and
@@ -2348,7 +2356,10 @@ This is true if the key is expired.
 This is true if the key is disabled.
 
 @item unsigned int invalid : 1
-This is true if the key is invalid.
+This is true if the key is invalid. This might have several reasons,
+for a example for the S/MIME backend, it will be set in during key
+listsing if the key could not be validated due to a missing
+certificates or unmatched policies.
 
 @item unsigned int can_encrypt : 1
 This is true if the key (ie one of its subkeys) can be used for

@@ -1,3 +1,7 @@
+2004-02-17  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.texi (Key Listing Mode): Doc KEYLIST_MODE_VALIDATE.
+
 2004-02-06  Moritz Schulte  <mo@g10code.com>
 
 	* gpgme.texi: A couple of small fixes regarding the Largfile
