@@ -9,7 +9,7 @@ Noteworthy changes in version 0.4.1 (unreleased)
  self-consistent.  Here is an overview on the changes:
 
  All types have been renamed to conform to the GNU coding standards,
- most of the time by keeping the whole name in lowercase and insert
+ most of the time by keeping the whole name in lowercase and inserting
  underscores between words.
 
  All operations consistently only accept input parameters in their
