@@ -58,35 +58,10 @@ keylist_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
 static time_t
 parse_timestamp ( char *p )
 {
-    struct tm tm;
-    int i;
-    
     if (!*p )
         return 0;
 
-    if (strlen(p) < 10 || p[4] != '-' || p[7] != '-' )
-        return (time_t)-1;
-    p[4] = 0;
-    p[7] = 0;
-    p[10] = 0; /* just in case the time part follows */
-    memset (&tm, 0, sizeof tm);
-
-    i = atoi (p);
-    if ( i < 1900 )
-        return (time_t)-1;
-    tm.tm_year = i - 1900;
-
-    i = atoi (p+5);
-    if ( i < 1 || i > 12 )
-        return (time_t)-1;
-    tm.tm_mon = i-1;
-
-    i = atoi (p+8);
-    if ( i < 1 || i > 31 )
-        return (time_t)-1;
-    tm.tm_mday = i;
-
-    return mktime (&tm);
+    return (time_t)strtoul (p, NULL, 10);
 }
 
 
@@ -263,7 +238,7 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 if ( strlen (p) == DIM(key->keys.keyid)-1 )
                     strcpy (key->keys.keyid, p);
                 break;
-              case 6: /* timestamp (1998-02-28) */
+              case 6: /* timestamp (seconds) */
                 key->keys.timestamp = parse_timestamp (p);
                 break;
               case 7: /* valid for n days */
@@ -303,7 +278,7 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 if ( strlen (p) == DIM(sk->keyid)-1 )
                     strcpy (sk->keyid, p);
                 break;
-              case 6: /* timestamp (1998-02-28) */
+              case 6: /* timestamp (seconds) */
                 sk->timestamp = parse_timestamp (p);
                 break;
               case 7: /* valid for n days */

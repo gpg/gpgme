@@ -553,6 +553,8 @@ gpgme_key_get_string_attr ( GpgmeKey key, GpgmeAttr what,
       case GPGME_ATTR_TYPE:
       case GPGME_ATTR_KEY_REVOKED:
       case GPGME_ATTR_KEY_INVALID:
+      case GPGME_ATTR_KEY_EXPIRED:
+      case GPGME_ATTR_KEY_DISABLED:
       case GPGME_ATTR_UID_REVOKED:
       case GPGME_ATTR_UID_INVALID:
       case GPGME_ATTR_CAN_ENCRYPT:
@@ -629,6 +631,18 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
         if (k) 
             val = k->flags.invalid;
         break;
+      case GPGME_ATTR_KEY_EXPIRED:
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = k->flags.expired;
+        break;
+      case GPGME_ATTR_KEY_DISABLED:
+        for (k=&key->keys; k && idx; k=k->next, idx-- )
+            ;
+        if (k) 
+            val = k->flags.disabled;
+        break;
       case GPGME_ATTR_UID_REVOKED:
         for (u=key->uids; u && idx; u=u->next, idx-- )
             ;
@@ -642,7 +656,7 @@ gpgme_key_get_ulong_attr ( GpgmeKey key, GpgmeAttr what,
             val = u->invalid;
         break;
       case GPGME_ATTR_CAN_ENCRYPT:
-        val = key->gloflags.can_encrypt;
+        val = key->gloflags.can_certify;
         break;
       case GPGME_ATTR_CAN_SIGN:
         val = key->gloflags.can_sign;

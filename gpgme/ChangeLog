@@ -1,3 +1,29 @@
+2001-04-19  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (parse_timestamp): Adjusted for the changed
+	--fixed-list-mode of gpg 1.0.4h.
+
+2001-04-05  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (gpgme_op_verify_start): Enabled pipemode for detached sigs.
+
+2001-04-04  Werner Koch  <wk@gnupg.org>
+
+	* w32-io.c (_gpgme_io_select): Don't select on the writer if there
+	are still bytes pending.  Timo found this not easy to track down
+	race condition. 
+
+2001-04-02  Werner Koch  <wk@gnupg.org>
+
+	* gpgme.h: Add GPGME_ATTR_KEY_{EXPIRED,DISABLED}.
+	* key.c (gpgme_key_get_ulong_attr): And return those attribs.
+
+	* verify.c (gpgme_get_sig_key): Set keyliosting mode depending on 
+	the mode set in the current context.  Suggested by Timo.
+
+	* key.c (gpgme_key_get_ulong_attr): Return can_certify and not
+	can_encrypt. By Timo.
+
 2001-03-30  Werner Koch  <wk@gnupg.org>
 
 	* debug.c (debug_init): Allow to specify a debug file.
