@@ -192,6 +192,7 @@ typedef struct {
   bool                    certificateInChainExpiryNearWarning;
   int                     certificateInChainExpiryNearWarningInterval;
   bool                    receiverEmailAddressNotInCertificateWarning;
+  const char* libVersion; // a statically allocated string with the GPGME Version used
 } Config;
 
 
@@ -243,8 +244,8 @@ bool initialize()
   config.certificateInChainExpiryNearWarning          = true;
   config.certificateInChainExpiryNearWarningInterval  = NEAR_EXPIRY;
   config.receiverEmailAddressNotInCertificateWarning  = true;
-
-  return true;
+  config.libVersion = gpgme_check_version (NULL);
+  return (gpgme_engine_check_version (GPGMEPLUG_PROTOCOL) == GPGME_No_Error);
 };
 
 
@@ -284,6 +285,9 @@ bool hasFeature( Feature flag )
   default:                                      return false;
   }
 }
+
+
+const char* libVersion(){ return config.libVersion; }
 
 
 const char* bugURL(){ return config.bugURL; }
