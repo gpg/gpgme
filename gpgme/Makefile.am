@@ -29,7 +29,10 @@ lib_LTLIBRARIES = libgpgme.la
 
 libgpgme_la_LDFLAGS = -version-info \
       @LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_la_INCLUDES = -I$(top_srcdir)/lib 
+if BUILD_ASSUAN
+AM_CPPFLAGS = -I$(top_srcdir)/assuan
+libgpgme_la_LIBADD = -L../assuan -lassuan
+endif
 
 libgpgme_la_SOURCES = \
 	gpgme.h types.h \

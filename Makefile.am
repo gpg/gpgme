@@ -21,6 +21,12 @@
 
 EXTRA_DIST = README-alpha autogen.sh
 
+if BUILD_ASSUAN
+assuan = assuan
+else
+assuan =
+endif
+
 if BUILD_BONOBO
 bonobo = bonobo
 else
@@ -39,4 +45,4 @@ else
 tests = 
 endif
 
-SUBDIRS = jnlib gpgme ${tests} doc ${bonobo} ${complus}
+SUBDIRS = ${assuan} jnlib gpgme ${tests} doc ${bonobo} ${complus}
