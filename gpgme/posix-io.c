@@ -49,16 +49,19 @@ int
 _gpgme_io_read (int fd, void *buffer, size_t count)
 {
   int nread;
+  int saved_errno;
 
   DEBUG2 ("fd %d: about to read %d bytes\n", fd, (int) count);
   do
     {
       nread = _gpgme_ath_read (fd, buffer, count);
     }
-  while (nread == -1 && errno == EINTR );
+  while (nread == -1 && errno == EINTR);
+  saved_errno = errno;
   DEBUG2 ("fd %d: got %d bytes\n", fd, nread);
   if (nread > 0)
     _gpgme_debug (2, "fd %d: got `%.*s'\n", fd, nread, buffer);
+  errno = saved_errno;
   return nread;
 }
 
@@ -66,6 +69,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 int
 _gpgme_io_write (int fd, const void *buffer, size_t count)
 {
+  int saved_errno;
   int nwritten;
 
   DEBUG2 ("fd %d: about to write %d bytes\n", fd, (int) count);
@@ -75,13 +79,17 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
       nwritten = _gpgme_ath_write (fd, buffer, count);
     }
   while (nwritten == -1 && errno == EINTR);
+  saved_errno = errno;
   DEBUG2 ("fd %d:          wrote %d bytes\n", fd, (int) nwritten);
+  errno = saved_errno;
   return nwritten;
 }
+
 
 int
 _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
+  int saved_errno;
   int err;
 
   err = pipe (filedes);
@@ -89,11 +97,13 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
     return err;
   /* FIXME: Should get the old flags first.  */
   err = fcntl (filedes[1 - inherit_idx], F_SETFD, FD_CLOEXEC);
+  saved_errno = errno;
   if (err < 0)
     {
       close (filedes[0]);
       close (filedes[1]);
     }
+  errno = saved_errno;
   return err;
 }
 
@@ -157,7 +167,6 @@ _gpgme_io_spawn (const char *path, char **argv,
   pid_t pid;
   int i;
   int status, signo;
-
   LOCK (fixed_signals_lock);
   if (!fixed_signals)
     { 
@@ -356,7 +365,9 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   while (count < 0 && errno == EINTR);
   if (count < 0)
     {
+      int saved_errno = errno;
       DEBUG1 ("_gpgme_io_select failed: %s\n", strerror (errno));
+      errno = saved_errno;
       return -1; /* error */
     }
 

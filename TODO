@@ -2,7 +2,6 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Before release:
 ** Change gpgme_invalid_user_id_t to gpgme_invalid_key_t.
-** Make sure POSIX I/O functions set errno properly
 ** gpgme-config must include info about libgpg-error.
 
 * ABI's to break:
