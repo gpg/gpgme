@@ -84,7 +84,4 @@ void _gpgme_engine_set_io_cbs (EngineObject engine,
 void _gpgme_engine_io_event (EngineObject engine,
 			     GpgmeEventIO type, void *type_data);
 
-void _gpgme_engine_add_child_to_reap_list (void *buf, int buflen, pid_t pid);
-void _gpgme_engine_housecleaning (void);
-
 #endif /* ENGINE_H */

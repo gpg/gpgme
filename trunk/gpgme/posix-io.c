@@ -146,6 +146,7 @@ _gpgme_io_set_nonblocking (int fd)
 }
 
 
+/* Returns 0 on success, -1 on error.  */
 int
 _gpgme_io_spawn (const char *path, char **argv,
 		 struct spawn_fd_item_s *fd_child_list,
@@ -155,6 +156,7 @@ _gpgme_io_spawn (const char *path, char **argv,
   DEFINE_STATIC_LOCK (fixed_signals_lock);
   pid_t pid;
   int i;
+  int status, signo;
 
   LOCK (fixed_signals_lock);
   if (!fixed_signals)
@@ -179,73 +181,85 @@ _gpgme_io_spawn (const char *path, char **argv,
 
   if (!pid)
     {
-      /* Child.  */
-      int duped_stdin = 0;
-      int duped_stderr = 0;
-
-      /* First close all fds which will not be duped.  */
-      for (i=0; fd_child_list[i].fd != -1; i++)
-	if (fd_child_list[i].dup_to == -1)
-	  close (fd_child_list[i].fd);
-
-      /* And now dup and close the rest.  */
-      for (i=0; fd_child_list[i].fd != -1; i++)
+      /* Intermediate child to prevent zombie processes.  */
+      if ((pid = fork ()) == 0)
 	{
-	  if (fd_child_list[i].dup_to != -1)
-	    {
-	      if (dup2 (fd_child_list[i].fd,
-			 fd_child_list[i].dup_to) == -1)
-		{
-		  DEBUG1 ("dup2 failed in child: %s\n", strerror (errno));
-		  _exit (8);
-                }
-	      if (fd_child_list[i].dup_to == 0)
-		duped_stdin=1;
-	      if (fd_child_list[i].dup_to == 2)
-		duped_stderr=1;
+	  /* Child.  */
+	  int duped_stdin = 0;
+	  int duped_stderr = 0;
+
+	  /* First close all fds which will not be duped.  */
+	  for (i=0; fd_child_list[i].fd != -1; i++)
+	    if (fd_child_list[i].dup_to == -1)
 	      close (fd_child_list[i].fd);
-            }
-        }
 
-      if (!duped_stdin || !duped_stderr)
-	{
-	  int fd = open ("/dev/null", O_RDWR);
-	  if (fd == -1)
+	  /* And now dup and close the rest.  */
+	  for (i=0; fd_child_list[i].fd != -1; i++)
 	    {
-	      DEBUG1 ("can't open `/dev/null': %s\n", strerror (errno));
-	      _exit (8);
-            }
-	  /* Make sure that the process has a connected stdin.  */
-	  if (!duped_stdin)
-	    {
-	      if (dup2 (fd, 0) == -1)
+	      if (fd_child_list[i].dup_to != -1)
 		{
-		  DEBUG1("dup2(/dev/null, 0) failed: %s\n",
-			 strerror (errno));
+		  if (dup2 (fd_child_list[i].fd,
+			    fd_child_list[i].dup_to) == -1)
+		    {
+		      DEBUG1 ("dup2 failed in child: %s\n", strerror (errno));
+		      _exit (8);
+		    }
+		  if (fd_child_list[i].dup_to == 0)
+		    duped_stdin=1;
+		  if (fd_child_list[i].dup_to == 2)
+		    duped_stderr=1;
+		  close (fd_child_list[i].fd);
+		}
+	    }
+	  
+	  if (!duped_stdin || !duped_stderr)
+	    {
+	      int fd = open ("/dev/null", O_RDWR);
+	      if (fd == -1)
+		{
+		  DEBUG1 ("can't open `/dev/null': %s\n", strerror (errno));
 		  _exit (8);
-                }
-            }
-	  if (!duped_stderr)
-	    if (dup2 (fd, 2) == -1)
-	      {
-		DEBUG1 ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
-		_exit (8);
-	      }
-	  close (fd);
-	}
+		}
+	      /* Make sure that the process has a connected stdin.  */
+	      if (!duped_stdin)
+		{
+		  if (dup2 (fd, 0) == -1)
+		    {
+		      DEBUG1("dup2(/dev/null, 0) failed: %s\n",
+			     strerror (errno));
+		      _exit (8);
+		    }
+		}
+	      if (!duped_stderr)
+		if (dup2 (fd, 2) == -1)
+		  {
+		    DEBUG1 ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
+		    _exit (8);
+		  }
+	      close (fd);
+	    }
     
-      execv ( path, argv );
-      /* Hmm: in that case we could write a special status code to the
-	 status-pipe.  */
-      DEBUG1 ("exec of `%s' failed\n", path);
-      _exit (8);
-    } /* End child.  */
+	  execv ( path, argv );
+	  /* Hmm: in that case we could write a special status code to the
+	     status-pipe.  */
+	  DEBUG1 ("exec of `%s' failed\n", path);
+	  _exit (8);
+	} /* End child.  */
+      if (pid == -1)
+	_exit (1);
+      else
+	_exit (0);
+    }
     
+  _gpgme_io_waitpid (pid, 1, &status, &signo);
+  if (status)
+    return -1;
+
   /* .dup_to is not used in the parent list.  */
-  for (i=0; fd_parent_list[i].fd != -1; i++)
+  for (i = 0; fd_parent_list[i].fd != -1; i++)
     close (fd_parent_list[i].fd);
 
-  return (int) pid;
+  return 0;
 }
 
 
