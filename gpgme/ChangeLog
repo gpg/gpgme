@@ -1,5 +1,21 @@
 2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.c (struct reap_s, reap_list, reap_list_lock): Moved to ...
+	* engine.c (struct reap_s, reap_list, reap_list_lock): ... here.
+	Include `time.h', `sys/types.h', `assert.h', and `sema.h'.
+
+	* rungpg.c (_gpgme_engine_add_child_to_reap_list): New function.
+	(do_reaping, _gpgme_gpg_housecleaning): Moved to ...
+	* engine.c (do_reaping, _gpgme_engine_housecleaning): ... here.
+	* rungpg.c (_gpgme_gpg_release): Replace code that is now in its
+	own function by call to _gpgme_engine_add_child_to_reap_list().
+
+	* wait.c: Include `engine.h'.
+	(run_idle): Call _gpgme_engine_housecleaning(), not
+	_gpgme_gpg_housecleaning().
+	
+2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
+
 	* key.c (_gpgme_key_append_name): Append, not prepend, the uid.
 	Initialize the next field of the uid structure.
 	(gpgme_key_get_as_xml): Do not list last uid first.

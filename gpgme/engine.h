@@ -63,4 +63,7 @@ GpgmeError _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
 				    GpgmeData text);
 GpgmeError _gpgme_engine_start (EngineObject engine, void *opaque);
 
+void _gpgme_engine_add_child_to_reap_list (void *buf, int buflen, pid_t pid);
+void _gpgme_engine_housecleaning (void);
+
 #endif /* ENGINE_H */
