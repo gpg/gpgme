@@ -26,67 +26,67 @@
 struct engine_object_s;
 typedef struct engine_object_s *EngineObject;
 
-typedef GpgmeError (*EngineStatusHandler) (void *priv, GpgmeStatusCode code,
+typedef gpgme_error_t (*EngineStatusHandler) (void *priv, gpgme_status_code_t code,
 					   char *args);
-typedef GpgmeError (*EngineColonLineHandler) (void *priv, char *line);
-typedef GpgmeError (*EngineCommandHandler) (void *priv, GpgmeStatusCode code,
+typedef gpgme_error_t (*EngineColonLineHandler) (void *priv, char *line);
+typedef gpgme_error_t (*EngineCommandHandler) (void *priv, gpgme_status_code_t code,
 					    const char *keyword,
 					    const char **result);
 
-GpgmeError _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine);
+gpgme_error_t _gpgme_engine_new (gpgme_protocol_t proto, EngineObject *r_engine);
 void _gpgme_engine_release (EngineObject engine);
 void _gpgme_engine_set_status_handler (EngineObject engine,
 				       EngineStatusHandler fnc,
 				       void *fnc_value);
-GpgmeError _gpgme_engine_set_command_handler (EngineObject engine,
+gpgme_error_t _gpgme_engine_set_command_handler (EngineObject engine,
 					      EngineCommandHandler fnc,
 					      void *fnc_value,
-					      GpgmeData data);
-GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject engine,
+					      gpgme_data_t data);
+gpgme_error_t _gpgme_engine_set_colon_line_handler (EngineObject engine,
 						 EngineColonLineHandler fnc,
 						 void *fnc_value);
-GpgmeError _gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph,
-				     GpgmeData plain);
-GpgmeError _gpgme_engine_op_delete (EngineObject engine, GpgmeKey key,
+gpgme_error_t _gpgme_engine_op_decrypt (EngineObject engine, gpgme_data_t ciph,
+				     gpgme_data_t plain);
+gpgme_error_t _gpgme_engine_op_delete (EngineObject engine, gpgme_key_t key,
 				    int allow_secret);
-GpgmeError _gpgme_engine_op_edit (EngineObject engine, GpgmeKey key,
-				  GpgmeData out, GpgmeCtx ctx /* FIXME */);
-GpgmeError _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
-				     GpgmeData plain, GpgmeData ciph,
+gpgme_error_t _gpgme_engine_op_edit (EngineObject engine, gpgme_key_t key,
+				  gpgme_data_t out, gpgme_ctx_t ctx /* FIXME */);
+gpgme_error_t _gpgme_engine_op_encrypt (EngineObject engine, gpgme_recipients_t recp,
+				     gpgme_data_t plain, gpgme_data_t ciph,
 				     int use_armor);
-GpgmeError _gpgme_engine_op_encrypt_sign (EngineObject engine,
-					  GpgmeRecipients recp,
-					  GpgmeData plain, GpgmeData ciph,
+gpgme_error_t _gpgme_engine_op_encrypt_sign (EngineObject engine,
+					  gpgme_recipients_t recp,
+					  gpgme_data_t plain, gpgme_data_t ciph,
 					  int use_armor,
-					  GpgmeCtx ctx /* FIXME */);
-GpgmeError _gpgme_engine_op_export (EngineObject engine, GpgmeRecipients recp,
-				    GpgmeData keydata, int use_armor);
-GpgmeError _gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data,
-				    int use_armor, GpgmeData pubkey,
-				    GpgmeData seckey);
-GpgmeError _gpgme_engine_op_import (EngineObject engine, GpgmeData keydata);
-GpgmeError _gpgme_engine_op_keylist (EngineObject engine, const char *pattern,
+					  gpgme_ctx_t ctx /* FIXME */);
+gpgme_error_t _gpgme_engine_op_export (EngineObject engine, gpgme_recipients_t recp,
+				    gpgme_data_t keydata, int use_armor);
+gpgme_error_t _gpgme_engine_op_genkey (EngineObject engine, gpgme_data_t help_data,
+				    int use_armor, gpgme_data_t pubkey,
+				    gpgme_data_t seckey);
+gpgme_error_t _gpgme_engine_op_import (EngineObject engine, gpgme_data_t keydata);
+gpgme_error_t _gpgme_engine_op_keylist (EngineObject engine, const char *pattern,
 				     int secret_only,
 				     int keylist_mode);
-GpgmeError _gpgme_engine_op_keylist_ext (EngineObject engine,
+gpgme_error_t _gpgme_engine_op_keylist_ext (EngineObject engine,
 					 const char *pattern[],
 					 int secret_only,
 					 int reserved,
 					 int keylist_mode);
-GpgmeError _gpgme_engine_op_sign (EngineObject engine, GpgmeData in,
-				  GpgmeData out, GpgmeSigMode mode,
+gpgme_error_t _gpgme_engine_op_sign (EngineObject engine, gpgme_data_t in,
+				  gpgme_data_t out, gpgme_sig_mode_t mode,
 				  int use_armor, int use_textmode,
 				  int include_certs,
-				  GpgmeCtx ctx /* FIXME */);
-GpgmeError _gpgme_engine_op_trustlist (EngineObject engine,
+				  gpgme_ctx_t ctx /* FIXME */);
+gpgme_error_t _gpgme_engine_op_trustlist (EngineObject engine,
 				       const char *pattern);
-GpgmeError _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
-				    GpgmeData signed_text,
-				    GpgmeData plaintext);
+gpgme_error_t _gpgme_engine_op_verify (EngineObject engine, gpgme_data_t sig,
+				    gpgme_data_t signed_text,
+				    gpgme_data_t plaintext);
 
 void _gpgme_engine_set_io_cbs (EngineObject engine,
-			       struct GpgmeIOCbs *io_cbs);
+			       gpgme_io_cbs_t io_cbs);
 void _gpgme_engine_io_event (EngineObject engine,
-			     GpgmeEventIO type, void *type_data);
+			     gpgme_event_io_t type, void *type_data);
 
 #endif /* ENGINE_H */

@@ -31,7 +31,7 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
                    __FILE__, __LINE__, gpgme_strerror (err));   \
           exit (1);						\
         }							\
@@ -58,7 +58,7 @@ mk_fname (const char *fname)
 
 
 void
-check_result (GpgmeImportResult result, char *fpr, int secret)
+check_result (gpgme_import_result_t result, char *fpr, int secret)
 {
   if (result->considered != 1)
     {
@@ -183,10 +183,10 @@ check_result (GpgmeImportResult result, char *fpr, int secret)
 int 
 main (int argc, char **argv)
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeData in;
-  GpgmeImportResult result;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_data_t in;
+  gpgme_import_result_t result;
   const char *pubkey_1_asc = mk_fname ("pubkey-1.asc");
   const char *seckey_1_asc = mk_fname ("seckey-1.asc");
 

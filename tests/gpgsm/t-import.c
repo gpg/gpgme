@@ -31,7 +31,7 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
                    __FILE__, __LINE__, gpgme_strerror (err));   \
           exit (1);						\
         }							\
@@ -62,7 +62,7 @@ make_filename (const char *fname)
 
 
 void
-check_result (GpgmeImportResult result, char *fpr, int total)
+check_result (gpgme_import_result_t result, char *fpr, int total)
 {
   if (result->considered != total)
     {
@@ -154,10 +154,10 @@ check_result (GpgmeImportResult result, char *fpr, int total)
 int 
 main (int argc, char **argv)
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeData in;
-  GpgmeImportResult result;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_data_t in;
+  gpgme_import_result_t result;
   const char *cert_1 = make_filename ("cert_dfn_pca01.der");
   const char *cert_2 = make_filename ("cert_dfn_pca15.der");
 

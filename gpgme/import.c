@@ -37,7 +37,7 @@ typedef struct
   /* A pointer to the next pointer of the last import status in the
      list.  This makes appending new imports painless while preserving
      the order.  */
-  GpgmeImportStatus *lastp;
+  gpgme_import_status_t *lastp;
 } *op_data_t;
 
 
@@ -45,11 +45,11 @@ static void
 release_op_data (void *hook)
 {
   op_data_t opd = (op_data_t) hook;
-  GpgmeImportStatus import = opd->result.imports;
+  gpgme_import_status_t import = opd->result.imports;
 
   while (import)
     {
-      GpgmeImportStatus next = import->next;
+      gpgme_import_status_t next = import->next;
       free (import->fpr);
       free (import);
       import = next;
@@ -57,11 +57,11 @@ release_op_data (void *hook)
 }
 
 
-GpgmeImportResult
-gpgme_op_import_result (GpgmeCtx ctx)
+gpgme_import_result_t
+gpgme_op_import_result (gpgme_ctx_t ctx)
 {
   op_data_t opd;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &opd, -1, NULL);
   if (err || !opd)
@@ -71,10 +71,10 @@ gpgme_op_import_result (GpgmeCtx ctx)
 }
 
 
-static GpgmeError
-parse_import (char *args, GpgmeImportStatus *import_status, int problem)
+static gpgme_error_t
+parse_import (char *args, gpgme_import_status_t *import_status, int problem)
 {
-  GpgmeImportStatus import;
+  gpgme_import_status_t import;
   char *tail;
   long int nr;
 
@@ -142,8 +142,8 @@ parse_import (char *args, GpgmeImportStatus *import_status, int problem)
 
 
 
-GpgmeError
-parse_import_res (char *args, GpgmeImportResult result)
+gpgme_error_t
+parse_import_res (char *args, gpgme_import_result_t result)
 {
   char *tail;
 
@@ -174,11 +174,11 @@ parse_import_res (char *args, GpgmeImportResult result)
 }
 
 
-static GpgmeError
-import_status_handler (void *priv, GpgmeStatusCode code, char *args)
+static gpgme_error_t
+import_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
-  GpgmeError err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
   op_data_t opd;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &opd,
@@ -209,10 +209,10 @@ import_status_handler (void *priv, GpgmeStatusCode code, char *args)
 }
 
 
-static GpgmeError
-_gpgme_op_import_start (GpgmeCtx ctx, int synchronous, GpgmeData keydata)
+static gpgme_error_t
+_gpgme_op_import_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t keydata)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   op_data_t opd;
 
   err = _gpgme_op_reset (ctx, synchronous);
@@ -234,31 +234,31 @@ _gpgme_op_import_start (GpgmeCtx ctx, int synchronous, GpgmeData keydata)
 }
 
 
-GpgmeError
-gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
+gpgme_error_t
+gpgme_op_import_start (gpgme_ctx_t ctx, gpgme_data_t keydata)
 {
   return _gpgme_op_import_start (ctx, 0, keydata);
 }
 
 
 /* Import the key in KEYDATA into the keyring.  */
-GpgmeError
-gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
+gpgme_error_t
+gpgme_op_import (gpgme_ctx_t ctx, gpgme_data_t keydata)
 {
-  GpgmeError err = _gpgme_op_import_start (ctx, 1, keydata);
+  gpgme_error_t err = _gpgme_op_import_start (ctx, 1, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;
 }
 
 
-GpgmeError
-gpgme_op_import_ext (GpgmeCtx ctx, GpgmeData keydata, int *nr)
+gpgme_error_t
+gpgme_op_import_ext (gpgme_ctx_t ctx, gpgme_data_t keydata, int *nr)
 {
-  GpgmeError err = gpgme_op_import (ctx, keydata);
+  gpgme_error_t err = gpgme_op_import (ctx, keydata);
   if (!err && nr)
     {
-      GpgmeImportResult result = gpgme_op_import_result (ctx);
+      gpgme_import_result_t result = gpgme_op_import_result (ctx);
       *nr = result->considered;
     }
   return err;

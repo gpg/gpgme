@@ -26,103 +26,114 @@
 
 
 /* From gpgme.c.  */
-void _gpgme_release_result (GpgmeCtx ctx);
+void _gpgme_release_result (gpgme_ctx_t ctx);
 
 
 /* From wait.c.  */
-GpgmeError _gpgme_wait_one (GpgmeCtx ctx);
-GpgmeError _gpgme_wait_on_condition (GpgmeCtx ctx, volatile int *cond);
+gpgme_error_t _gpgme_wait_one (gpgme_ctx_t ctx);
+gpgme_error_t _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond);
 
 /* From recipient.c.  */
-int _gpgme_recipients_all_valid ( const GpgmeRecipients rset );
+int _gpgme_recipients_all_valid ( const gpgme_recipients_t rset );
 
 
 /* From data.c.  */
-GpgmeError _gpgme_data_inbound_handler (void *opaque, int fd);
-GpgmeError _gpgme_data_outbound_handler (void *opaque, int fd);
+gpgme_error_t _gpgme_data_inbound_handler (void *opaque, int fd);
+gpgme_error_t _gpgme_data_outbound_handler (void *opaque, int fd);
 
 
 /* From op-support.c.  */
 
 /* Find or create the op data object of type TYPE.  */
-GpgmeError _gpgme_op_data_lookup (GpgmeCtx ctx, ctx_op_data_type type,
-				  void **hook, int size,
-				  void (*cleanup) (void *));
+gpgme_error_t _gpgme_op_data_lookup (gpgme_ctx_t ctx, ctx_op_data_type type,
+				     void **hook, int size,
+				     void (*cleanup) (void *));
 
 /* Prepare a new operation on CTX.  */
-GpgmeError _gpgme_op_reset (GpgmeCtx ctx, int synchronous);
+gpgme_error_t _gpgme_op_reset (gpgme_ctx_t ctx, int synchronous);
 
 /* Parse the invalid user ID status line in ARGS and return the result
    in USERID.  */
-GpgmeError _gpgme_parse_inv_userid (char *args, GpgmeInvalidUserID *userid);
+gpgme_error_t _gpgme_parse_inv_userid (char *args,
+				       gpgme_invalid_user_id_t *userid);
 
 
 /* From verify.c.  */
-GpgmeError _gpgme_op_verify_init_result (GpgmeCtx ctx);
-GpgmeError _gpgme_verify_status_handler (void *priv, GpgmeStatusCode code,
-					 char *args);
+gpgme_error_t _gpgme_op_verify_init_result (gpgme_ctx_t ctx);
+gpgme_error_t _gpgme_verify_status_handler (void *priv,
+					    gpgme_status_code_t code,
+					    char *args);
 
 
 /* From decrypt.c.  */
-GpgmeError _gpgme_op_decrypt_init_result (GpgmeCtx ctx);
-GpgmeError _gpgme_decrypt_status_handler (void *priv, GpgmeStatusCode code,
-					  char *args);
+gpgme_error_t _gpgme_op_decrypt_init_result (gpgme_ctx_t ctx);
+gpgme_error_t _gpgme_decrypt_status_handler (void *priv,
+					     gpgme_status_code_t code,
+					     char *args);
 
 
 /* From sign.c.  */
 
 /* Create an initial op data object for signing.  Needs to be called
    once before calling _gpgme_sign_status_handler.  */
-GpgmeError _gpgme_op_sign_init_result (GpgmeCtx ctx);
+gpgme_error_t _gpgme_op_sign_init_result (gpgme_ctx_t ctx);
 
 /* Process a status line for signing operations.  */
-GpgmeError _gpgme_sign_status_handler (void *priv, GpgmeStatusCode code,
-				       char *args);
+gpgme_error_t _gpgme_sign_status_handler (void *priv,
+					  gpgme_status_code_t code,
+					  char *args);
 
 
 /* From encrypt.c.  */
 
 /* Create an initial op data object for encrypt.  Needs to be called
    once before calling _gpgme_encrypt_status_handler.  */
-GpgmeError _gpgme_op_encrypt_init_result (GpgmeCtx ctx);
+gpgme_error_t _gpgme_op_encrypt_init_result (gpgme_ctx_t ctx);
 
 /* Process a status line for encryption operations.  */
-GpgmeError _gpgme_encrypt_status_handler (void *priv, GpgmeStatusCode code,
-					  char *args);
+gpgme_error_t _gpgme_encrypt_status_handler (void *priv,
+					     gpgme_status_code_t code,
+					     char *args);
 
 
 /* From passphrase.c.  */
-GpgmeError _gpgme_passphrase_status_handler (void *priv, GpgmeStatusCode code,
-					     char *args);
-GpgmeError _gpgme_passphrase_command_handler (void *opaque,
-					      GpgmeStatusCode code,
-					      const char *key, const char **result);
+gpgme_error_t _gpgme_passphrase_status_handler (void *priv,
+						gpgme_status_code_t code,
+						char *args);
+gpgme_error_t _gpgme_passphrase_command_handler (void *opaque,
+						 gpgme_status_code_t code,
+						 const char *key,
+						 const char **result);
 
 
 /* From progress.c.  */
-GpgmeError _gpgme_progress_status_handler (void *priv, GpgmeStatusCode code,
-					   char *args);
+gpgme_error_t _gpgme_progress_status_handler (void *priv,
+					      gpgme_status_code_t code,
+					      char *args);
 
 
 /* From key.c.  */
-GpgmeError _gpgme_key_new (GpgmeKey *r_key);
-GpgmeError _gpgme_key_add_subkey (GpgmeKey key, GpgmeSubkey *r_subkey);
-GpgmeError _gpgme_key_append_name (GpgmeKey key, char *src);
-GpgmeKeySig _gpgme_key_add_sig (GpgmeKey key, char *src);
+gpgme_error_t _gpgme_key_new (gpgme_key_t *r_key);
+gpgme_error_t _gpgme_key_add_subkey (gpgme_key_t key,
+				     gpgme_subkey_t *r_subkey);
+gpgme_error_t _gpgme_key_append_name (gpgme_key_t key, char *src);
+gpgme_key_sig_t _gpgme_key_add_sig (gpgme_key_t key, char *src);
 
 
 /* From keylist.c.  */
-void _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data);
+void _gpgme_op_keylist_event_cb (void *data, gpgme_event_io_t type,
+				 void *type_data);
 
 
 /* From trust-item.c.  */
 
 /* Create a new trust item.  */
-GpgmeError _gpgme_trust_item_new (GpgmeTrustItem *r_item);
+gpgme_error_t _gpgme_trust_item_new (gpgme_trust_item_t *r_item);
 
 
 /* From trustlist.c.  */
-void _gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data);
+void _gpgme_op_trustlist_event_cb (void *data, gpgme_event_io_t type,
+				   void *type_data);
 
 
 /*-- version.c --*/

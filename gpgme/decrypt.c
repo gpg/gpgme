@@ -49,11 +49,11 @@ release_op_data (void *hook)
 }
 
 
-GpgmeDecryptResult
-gpgme_op_decrypt_result (GpgmeCtx ctx)
+gpgme_decrypt_result_t
+gpgme_op_decrypt_result (gpgme_ctx_t ctx)
 {
   op_data_t opd;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &opd, -1, NULL);
   if (err || !opd)
@@ -63,11 +63,11 @@ gpgme_op_decrypt_result (GpgmeCtx ctx)
 }
 
 
-GpgmeError
-_gpgme_decrypt_status_handler (void *priv, GpgmeStatusCode code, char *args)
+gpgme_error_t
+_gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
-  GpgmeError err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
   op_data_t opd;
 
   err = _gpgme_passphrase_status_handler (priv, code, args);
@@ -136,8 +136,8 @@ _gpgme_decrypt_status_handler (void *priv, GpgmeStatusCode code, char *args)
 }
 
 
-GpgmeError
-_gpgme_op_decrypt_init_result (GpgmeCtx ctx)
+gpgme_error_t
+_gpgme_op_decrypt_init_result (gpgme_ctx_t ctx)
 {
   op_data_t opd;
 
@@ -146,11 +146,11 @@ _gpgme_op_decrypt_init_result (GpgmeCtx ctx)
 }
 
 
-static GpgmeError
-decrypt_start (GpgmeCtx ctx, int synchronous,
-		      GpgmeData cipher, GpgmeData plain)
+static gpgme_error_t
+decrypt_start (gpgme_ctx_t ctx, int synchronous,
+		      gpgme_data_t cipher, gpgme_data_t plain)
 {
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -184,8 +184,8 @@ decrypt_start (GpgmeCtx ctx, int synchronous,
 }
 
 
-GpgmeError
-gpgme_op_decrypt_start (GpgmeCtx ctx, GpgmeData cipher, GpgmeData plain)
+gpgme_error_t
+gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
 {
   return decrypt_start (ctx, 0, cipher, plain);
 }
@@ -193,10 +193,10 @@ gpgme_op_decrypt_start (GpgmeCtx ctx, GpgmeData cipher, GpgmeData plain)
 
 /* Decrypt ciphertext CIPHER within CTX and store the resulting
    plaintext in PLAIN.  */
-GpgmeError
-gpgme_op_decrypt (GpgmeCtx ctx, GpgmeData cipher, GpgmeData plain)
+gpgme_error_t
+gpgme_op_decrypt (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
 {
-  GpgmeError err = decrypt_start (ctx, 1, cipher, plain);
+  gpgme_error_t err = decrypt_start (ctx, 1, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

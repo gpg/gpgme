@@ -30,15 +30,15 @@
 typedef struct
 {
   /* The user callback function and its hook value.  */
-  GpgmeEditCb fnc;
+  gpgme_edit_cb_t fnc;
   void *fnc_value;
 } *op_data_t;
 
 
-static GpgmeError
-edit_status_handler (void *priv, GpgmeStatusCode status, char *args)
+static gpgme_error_t
+edit_status_handler (void *priv, gpgme_status_code_t status, char *args)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   op_data_t opd;
 
   return _gpgme_passphrase_status_handler (priv, status, args)
@@ -48,12 +48,12 @@ edit_status_handler (void *priv, GpgmeStatusCode status, char *args)
 }
 
 
-static GpgmeError
-command_handler (void *priv, GpgmeStatusCode status, const char *args,
+static gpgme_error_t
+command_handler (void *priv, gpgme_status_code_t status, const char *args,
 		 const char **result)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
-  GpgmeError err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
   op_data_t opd;
 
   *result = NULL;
@@ -76,11 +76,11 @@ command_handler (void *priv, GpgmeStatusCode status, const char *args,
 }
 
 
-static GpgmeError
-edit_start (GpgmeCtx ctx, int synchronous, GpgmeKey key,
-	    GpgmeEditCb fnc, void *fnc_value, GpgmeData out)
+static gpgme_error_t
+edit_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
+	    gpgme_edit_cb_t fnc, void *fnc_value, gpgme_data_t out)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   op_data_t opd;
 
   err = _gpgme_op_reset (ctx, synchronous);
@@ -109,9 +109,9 @@ edit_start (GpgmeCtx ctx, int synchronous, GpgmeKey key,
 }
 
 
-GpgmeError
-gpgme_op_edit_start (GpgmeCtx ctx, GpgmeKey key,
-		     GpgmeEditCb fnc, void *fnc_value, GpgmeData out)
+gpgme_error_t
+gpgme_op_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
+		     gpgme_edit_cb_t fnc, void *fnc_value, gpgme_data_t out)
 {
   return edit_start (ctx, 0, key, fnc, fnc_value, out);
 }
@@ -119,11 +119,11 @@ gpgme_op_edit_start (GpgmeCtx ctx, GpgmeKey key,
 
 /* Edit the key KEY.  Send status and command requests to FNC and
    output of edit commands to OUT.  */
-GpgmeError
-gpgme_op_edit (GpgmeCtx ctx, GpgmeKey key,
-	       GpgmeEditCb fnc, void *fnc_value, GpgmeData out)
+gpgme_error_t
+gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
+	       gpgme_edit_cb_t fnc, void *fnc_value, gpgme_data_t out)
 {
-  GpgmeError err = edit_start (ctx, 1, key, fnc, fnc_value, out);
+  gpgme_error_t err = edit_start (ctx, 1, key, fnc, fnc_value, out);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

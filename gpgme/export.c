@@ -27,18 +27,18 @@
 #include "ops.h"
 
 
-static GpgmeError
-export_status_handler (void *priv, GpgmeStatusCode code, char *args)
+static gpgme_error_t
+export_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   return 0;
 }
 
 
-static GpgmeError
-export_start (GpgmeCtx ctx, int synchronous,
-	      GpgmeRecipients recp, GpgmeData keydata)
+static gpgme_error_t
+export_start (gpgme_ctx_t ctx, int synchronous,
+	      gpgme_recipients_t recp, gpgme_data_t keydata)
 {
-  GpgmeError err;
+  gpgme_error_t err;
 
   if (!keydata || !recp)
     return GPGME_Invalid_Value;
@@ -54,18 +54,18 @@ export_start (GpgmeCtx ctx, int synchronous,
 
 
 /* Export the keys listed in RECP into KEYDATA.  */
-GpgmeError
-gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData keydata)
+gpgme_error_t
+gpgme_op_export_start (gpgme_ctx_t ctx, gpgme_recipients_t recp, gpgme_data_t keydata)
 {
   return export_start (ctx, 0, recp, keydata);
 }
 
 
 /* Export the keys listed in RECP into KEYDATA.  */
-GpgmeError
-gpgme_op_export (GpgmeCtx ctx, GpgmeRecipients recipients, GpgmeData keydata)
+gpgme_error_t
+gpgme_op_export (gpgme_ctx_t ctx, gpgme_recipients_t recipients, gpgme_data_t keydata)
 {
-  GpgmeError err = export_start (ctx, 1, recipients, keydata);
+  gpgme_error_t err = export_start (ctx, 1, recipients, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

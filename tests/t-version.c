@@ -29,7 +29,7 @@
 static const char version[] = VERSION;
 
 int 
-main (int argc, char **argv )
+main (int argc, char **argv)
 {
   const char *null_result;
   const char *current_result;

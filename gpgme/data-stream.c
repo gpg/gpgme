@@ -28,7 +28,7 @@
 
 
 static ssize_t
-stream_read (GpgmeData dh, void *buffer, size_t size)
+stream_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   size_t amt = fread (buffer, 1, size, dh->data.stream);
   if (amt > 0)
@@ -38,7 +38,7 @@ stream_read (GpgmeData dh, void *buffer, size_t size)
 
 
 static ssize_t
-stream_write (GpgmeData dh, const void *buffer, size_t size)
+stream_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   size_t amt = fwrite (buffer, 1, size, dh->data.stream);
   if (amt > 0)
@@ -48,13 +48,13 @@ stream_write (GpgmeData dh, const void *buffer, size_t size)
 
 
 static off_t
-stream_seek (GpgmeData dh, off_t offset, int whence)
+stream_seek (gpgme_data_t dh, off_t offset, int whence)
 {
   return fseek (dh->data.stream, offset, whence);
 }
 
 
-static struct gpgme_data_cbs stream_cbs =
+static struct _gpgme_data_cbs stream_cbs =
   {
     stream_read,
     stream_write,
@@ -63,10 +63,10 @@ static struct gpgme_data_cbs stream_cbs =
   };
 
 
-GpgmeError
-gpgme_data_new_from_stream (GpgmeData *dh, FILE *stream)
+gpgme_error_t
+gpgme_data_new_from_stream (gpgme_data_t *dh, FILE *stream)
 {
-  GpgmeError err = _gpgme_data_new (dh, &stream_cbs);
+  gpgme_error_t err = _gpgme_data_new (dh, &stream_cbs);
   if (err)
     return err;
 

@@ -28,13 +28,13 @@
 #include <gpgme.h>
 
 struct passphrase_cb_info_s {
-    GpgmeCtx c;
+    gpgme_ctx_t c;
     int did_it;
 };
 
 
 #define fail_if_err(a) do { if(a) { int my_errno = errno; \
-            fprintf (stderr, "%s:%d: GpgmeError %s\n", \
+            fprintf (stderr, "%s:%d: gpgme_error_t %s\n", \
                  __FILE__, __LINE__, gpgme_strerror(a));   \
             if ((a) == GPGME_File_Error)                       \
                    fprintf (stderr, "\terrno=`%s'\n", strerror (my_errno)); \
@@ -42,7 +42,7 @@ struct passphrase_cb_info_s {
                              } while(0)
 
 static void
-flush_data (GpgmeData dh)
+flush_data (gpgme_data_t dh)
 {
   char buf[100];
   int ret;
@@ -57,7 +57,7 @@ flush_data (GpgmeData dh)
 }
 
 
-static GpgmeError
+static gpgme_error_t
 passphrase_cb (void *opaque, const char *desc,
 	       void **r_hd, const char **result)
 {
@@ -73,10 +73,10 @@ passphrase_cb (void *opaque, const char *desc,
 }
 
 
-GpgmeError
-edit_fnc (void *opaque, GpgmeStatusCode status, const char *args, const char **result)
+gpgme_error_t
+edit_fnc (void *opaque, gpgme_status_code_t status, const char *args, const char **result)
 {
-  GpgmeData out = (GpgmeData) opaque;
+  gpgme_data_t out = (gpgme_data_t) opaque;
 
   fputs ("[-- Response --]\n", stdout);
   flush_data (out); 
@@ -120,10 +120,10 @@ edit_fnc (void *opaque, GpgmeStatusCode status, const char *args, const char **r
 int 
 main (int argc, char **argv)
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeData out = NULL;
-  GpgmeKey key = NULL;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_data_t out = NULL;
+  gpgme_key_t key = NULL;
   struct passphrase_cb_info_s info;
   const char *pattern = "Alpha";
   char *p;

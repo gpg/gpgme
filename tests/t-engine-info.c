@@ -33,7 +33,7 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
                    __FILE__, __LINE__, gpgme_strerror (err));   \
           exit (1);						\
         }							\
@@ -42,7 +42,7 @@
 
 
 void
-check_engine_info (GpgmeEngineInfo info, GpgmeProtocol protocol,
+check_engine_info (gpgme_engine_info_t info, gpgme_protocol_t protocol,
 		   const char *file_name, const char *req_version)
 {
   if (info->protocol != protocol)
@@ -69,8 +69,8 @@ check_engine_info (GpgmeEngineInfo info, GpgmeProtocol protocol,
 int 
 main (int argc, char **argv )
 {
-  GpgmeEngineInfo info;
-  GpgmeError err;
+  gpgme_engine_info_t info;
+  gpgme_error_t err;
 
   err = gpgme_get_engine_info (&info);
   fail_if_err (err);

@@ -72,7 +72,7 @@ int _gpgme_hextobyte (const unsigned char *str);
    the result.  Currently, LEN is only used to specify if allocation
    is desired or not, the caller is expected to make sure that *DESTP
    is large enough if LEN is not zero.  */
-GpgmeError _gpgme_decode_c_string (const char *src, char **destp, int len);
+gpgme_error_t _gpgme_decode_c_string (const char *src, char **destp, int len);
 
 /* Decode the percent escaped string SRC and store the result in the
    buffer *DESTP which is LEN bytes long.  If LEN is zero, then a
@@ -80,9 +80,9 @@ GpgmeError _gpgme_decode_c_string (const char *src, char **destp, int len);
    the result.  Currently, LEN is only used to specify if allocation
    is desired or not, the caller is expected to make sure that *DESTP
    is large enough if LEN is not zero.  */
-GpgmeError _gpgme_decode_percent_string (const char *src, char **destp,
+gpgme_error_t _gpgme_decode_percent_string (const char *src, char **destp,
 					 int len);
 
-GpgmeError _gpgme_map_gnupg_error (char *err);
+gpgme_error_t _gpgme_map_gnupg_error (char *err);
 
 #endif /* UTIL_H */

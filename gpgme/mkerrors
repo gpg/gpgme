@@ -38,7 +38,7 @@ cat <<EOF
  * Return value: String with the error description.
  **/
 const char *
-gpgme_strerror (GpgmeError err)
+gpgme_strerror (gpgme_error_t err)
 {
     const char *s;
     static char buf[25];

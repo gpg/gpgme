@@ -1,7 +1,7 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * ABI's to break:
-** Change GpgmeRecipient stuff to GpgmeUserID (encrypt, export, ...).
+** Change gpgme_recipient_t stuff to gpgme_user_id_t (encrypt, export, ...).
 ** Compatibility interfaces that can be removed in future versions:
 *** gpgme_data_new_from_filepart
 *** gpgme_data_new_from_file
@@ -19,8 +19,9 @@ Hey Emacs, this is -*- outline -*- mode!
 *** gpgme_trust_item_release
 *** gpgme_trust_item_get_string_attr
 *** gpgme_trust_item_get_ulong_attr
-*** GpgmeAttr
+*** gpgme_attr_t
 *** GPGME_Invalid_Type, GPGME_Invalid_Mode
+*** All Gpgme* typedefs.
 
 * Thread support:
 ** Build thread modules for static linking (which just suck in the

@@ -51,7 +51,7 @@
 struct arg_and_data_s
 {
   struct arg_and_data_s *next;
-  GpgmeData data;  /* If this is not NULL, use arg below.  */
+  gpgme_data_t data;  /* If this is not NULL, use arg below.  */
   int inbound;     /* True if this is used for reading from gpg.  */
   int dup_to;
   int print_fd;    /* Print the fd number and not the special form of it.  */
@@ -61,7 +61,7 @@ struct arg_and_data_s
 
 struct fd_data_map_s
 {
-  GpgmeData data;
+  gpgme_data_t data;
   int inbound;  /* true if this is used for reading from gpg */
   int dup_to;
   int fd;       /* the fd to use */
@@ -110,25 +110,25 @@ struct gpg_object_s
     int used;
     int fd;
     int idx;		/* Index in fd_data_map */
-    GpgmeData cb_data;   /* hack to get init the above idx later */
-    GpgmeStatusCode code;  /* last code */
+    gpgme_data_t cb_data;   /* hack to get init the above idx later */
+    gpgme_status_code_t code;  /* last code */
     char *keyword;       /* what has been requested (malloced) */
     EngineCommandHandler fnc; 
     void *fnc_value;
     /* The kludges never end.  This is used to couple command handlers
        with output data in edit key mode.  */
-    GpgmeData linked_data;
+    gpgme_data_t linked_data;
     int linked_idx;
   } cmd;
 
-  struct GpgmeIOCbs io_cbs;
+  struct gpgme_io_cbs io_cbs;
 };
 
 typedef struct gpg_object_s *GpgObject;
 
 
 static void
-gpg_io_event (void *engine, GpgmeEventIO type, void *type_data)
+gpg_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 {
   GpgObject gpg = engine;
 
@@ -181,7 +181,7 @@ close_notify_handler (int fd, void *opaque)
     }
 }
 
-static GpgmeError
+static gpgme_error_t
 add_arg (GpgObject gpg, const char *arg)
 {
   struct arg_and_data_s *a;
@@ -204,8 +204,8 @@ add_arg (GpgObject gpg, const char *arg)
   return 0;
 }
 
-static GpgmeError
-add_data (GpgObject gpg, GpgmeData data, int dup_to, int inbound)
+static gpgme_error_t
+add_data (GpgObject gpg, gpgme_data_t data, int dup_to, int inbound)
 {
   struct arg_and_data_s *a;
 
@@ -327,7 +327,7 @@ gpg_release (void *engine)
 }
 
 
-static GpgmeError
+static gpgme_error_t
 gpg_new (void **engine)
 {
   GpgObject gpg;
@@ -360,7 +360,7 @@ gpg_new (void **engine)
       goto leave;
     }
   /* In any case we need a status pipe - create it right here and
-     don't handle it with our generic GpgmeData mechanism.  */
+     don't handle it with our generic gpgme_data_t mechanism.  */
   if (_gpgme_io_pipe (gpg->status.fd, 1) == -1)
     {
       rc = GPGME_Pipe_Error;
@@ -406,7 +406,7 @@ gpg_set_status_handler (void *engine, EngineStatusHandler fnc, void *fnc_value)
 }
 
 /* Kludge to process --with-colon output.  */
-static GpgmeError
+static gpgme_error_t
 gpg_set_colon_line_handler (void *engine, EngineColonLineHandler fnc,
 			    void *fnc_value)
 {
@@ -437,10 +437,10 @@ gpg_set_colon_line_handler (void *engine, EngineColonLineHandler fnc,
 
 /* Here we handle --command-fd.  This works closely together with the
    status handler.  */
-static GpgmeError
+static gpgme_error_t
 command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   GpgObject gpg = opaque;
   const char *value;
   int value_len;
@@ -506,13 +506,13 @@ command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
    resources associated with the returned value from another call.  To
    match such a second call to a first call, the returned value from
    the first call is passed as keyword.  */
-static GpgmeError
+static gpgme_error_t
 gpg_set_command_handler (void *engine, EngineCommandHandler fnc,
-			 void *fnc_value, GpgmeData linked_data)
+			 void *fnc_value, gpgme_data_t linked_data)
 {
   GpgObject gpg = engine;
-  GpgmeData tmp;
-  GpgmeError err;
+  gpgme_data_t tmp;
+  gpgme_error_t err;
 
   err = gpgme_data_new_with_read_cb (&tmp, command_cb, gpg);
   if (err)
@@ -529,7 +529,7 @@ gpg_set_command_handler (void *engine, EngineCommandHandler fnc,
 }
 
 
-static GpgmeError
+static gpgme_error_t
 build_argv (GpgObject gpg)
 {
   struct arg_and_data_s *a;
@@ -740,11 +740,11 @@ build_argv (GpgObject gpg)
 }
 
 
-static GpgmeError
-add_io_cb (GpgObject gpg, int fd, int dir, GpgmeIOCb handler, void *data,
+static gpgme_error_t
+add_io_cb (GpgObject gpg, int fd, int dir, gpgme_io_cb_t handler, void *data,
 	   void **tag)
 {
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = (*gpg->io_cbs.add) (gpg->io_cbs.add_priv, fd, dir, handler, data, tag);
   if (err)
@@ -773,7 +773,7 @@ status_cmp (const void *ap, const void *bp)
    e.g. with a large user ID.  Note: We can optimize this to only cope
    with status line code we know about and skip all other stuff
    without buffering (i.e. without extending the buffer).  */
-static GpgmeError
+static gpgme_error_t
 read_status (GpgObject gpg)
 {
   char *p;
@@ -802,7 +802,7 @@ read_status (GpgObject gpg)
       gpg->status.eof = 1;
       if (gpg->status.fnc)
 	{
-	  GpgmeError err;
+	  gpgme_error_t err;
 	  err = gpg->status.fnc (gpg->status.fnc_value, GPGME_STATUS_EOF, "");
 	  if (err)
 	    return err;
@@ -884,7 +884,7 @@ read_status (GpgObject gpg)
                         }
 		      else if (gpg->status.fnc)
 			{
-			  GpgmeError err;
+			  gpgme_error_t err;
 			  err = gpg->status.fnc (gpg->status.fnc_value, 
 						 r->code, rest);
 			  if (err)
@@ -931,7 +931,7 @@ read_status (GpgObject gpg)
 }
 
 
-static GpgmeError
+static gpgme_error_t
 status_handler (void *opaque, int fd)
 {
   GpgObject gpg = opaque;
@@ -947,7 +947,7 @@ status_handler (void *opaque, int fd)
 }
 
 
-static GpgmeError
+static gpgme_error_t
 read_colon_line (GpgObject gpg)
 {
   char *p;
@@ -1022,14 +1022,14 @@ read_colon_line (GpgObject gpg)
 
 
 /* This colonline handler thing is not the clean way to do it.  It
-   might be better to enhance the GpgmeData object to act as a wrapper
+   might be better to enhance the gpgme_data_t object to act as a wrapper
    for a callback.  Same goes for the status thing.  For now we use
    this thing here because it is easier to implement.  */
-static GpgmeError
+static gpgme_error_t
 colon_line_handler (void *opaque, int fd)
 {
   GpgObject gpg = opaque;
-  GpgmeError rc = 0;
+  gpgme_error_t rc = 0;
 
   assert (fd == gpg->colon.fd[0]);
   rc = read_colon_line (gpg);
@@ -1041,10 +1041,10 @@ colon_line_handler (void *opaque, int fd)
 }
 
 
-static GpgmeError
+static gpgme_error_t
 start (GpgObject gpg)
 {
-  GpgmeError rc;
+  gpgme_error_t rc;
   int i, n;
   int status;
   struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
@@ -1169,11 +1169,11 @@ start (GpgObject gpg)
 }
 
 
-static GpgmeError
-gpg_decrypt (void *engine, GpgmeData ciph, GpgmeData plain)
+static gpgme_error_t
+gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = add_arg (gpg, "--decrypt");
 
@@ -1192,11 +1192,11 @@ gpg_decrypt (void *engine, GpgmeData ciph, GpgmeData plain)
   return err;
 }
 
-static GpgmeError
-gpg_delete (void *engine, GpgmeKey key, int allow_secret)
+static gpgme_error_t
+gpg_delete (void *engine, gpgme_key_t key, int allow_secret)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = add_arg (gpg, allow_secret ? "--delete-secret-and-public-key"
 		 : "--delete-key");
@@ -1216,12 +1216,12 @@ gpg_delete (void *engine, GpgmeKey key, int allow_secret)
 }
 
 
-static GpgmeError
-append_args_from_signers (GpgObject gpg, GpgmeCtx ctx /* FIXME */)
+static gpgme_error_t
+append_args_from_signers (GpgObject gpg, gpgme_ctx_t ctx /* FIXME */)
 {
-  GpgmeError err = 0;
+  gpgme_error_t err = 0;
   int i;
-  GpgmeKey key;
+  gpgme_key_t key;
 
   for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
     {
@@ -1240,11 +1240,11 @@ append_args_from_signers (GpgObject gpg, GpgmeCtx ctx /* FIXME */)
 }
 
 
-static GpgmeError
-gpg_edit (void *engine, GpgmeKey key, GpgmeData out, GpgmeCtx ctx /* FIXME */)
+static gpgme_error_t
+gpg_edit (void *engine, gpgme_key_t key, gpgme_data_t out, gpgme_ctx_t ctx /* FIXME */)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = add_arg (gpg, "--with-colons");
   if (!err)
@@ -1270,11 +1270,11 @@ gpg_edit (void *engine, GpgmeKey key, GpgmeData out, GpgmeCtx ctx /* FIXME */)
 }
 
 
-static GpgmeError
-append_args_from_recipients (GpgObject gpg, const GpgmeRecipients rset)
+static gpgme_error_t
+append_args_from_recipients (GpgObject gpg, const gpgme_recipients_t rset)
 {
-  GpgmeError err = 0;
-  GpgmeUserID uid;
+  gpgme_error_t err = 0;
+  gpgme_user_id_t uid;
 
   assert (rset);
   for (uid = rset->list; uid; uid = uid->next)
@@ -1289,12 +1289,12 @@ append_args_from_recipients (GpgObject gpg, const GpgmeRecipients rset)
 }
 
 
-static GpgmeError
-gpg_encrypt (void *engine, GpgmeRecipients recp, GpgmeData plain,
-	     GpgmeData ciph, int use_armor)
+static gpgme_error_t
+gpg_encrypt (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
+	     gpgme_data_t ciph, int use_armor)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
   int symmetric = !recp;
 
   err = add_arg (gpg, symmetric ? "--symmetric" : "--encrypt");
@@ -1332,12 +1332,12 @@ gpg_encrypt (void *engine, GpgmeRecipients recp, GpgmeData plain,
 }
 
 
-static GpgmeError
-gpg_encrypt_sign (void *engine, GpgmeRecipients recp, GpgmeData plain,
-		  GpgmeData ciph, int use_armor, GpgmeCtx ctx /* FIXME */)
+static gpgme_error_t
+gpg_encrypt_sign (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
+		  gpgme_data_t ciph, int use_armor, gpgme_ctx_t ctx /* FIXME */)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = add_arg (gpg, "--encrypt");
   if (!err)
@@ -1375,12 +1375,12 @@ gpg_encrypt_sign (void *engine, GpgmeRecipients recp, GpgmeData plain,
 }
 
 
-static GpgmeError
-gpg_export (void *engine, GpgmeRecipients recp, GpgmeData keydata,
+static gpgme_error_t
+gpg_export (void *engine, gpgme_recipients_t recp, gpgme_data_t keydata,
 	    int use_armor)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = add_arg (gpg, "--export");
   if (!err && use_armor)
@@ -1409,12 +1409,12 @@ gpg_export (void *engine, GpgmeRecipients recp, GpgmeData keydata,
 }
 
 
-static GpgmeError
-gpg_genkey (void *engine, GpgmeData help_data, int use_armor,
-	    GpgmeData pubkey, GpgmeData seckey)
+static gpgme_error_t
+gpg_genkey (void *engine, gpgme_data_t help_data, int use_armor,
+	    gpgme_data_t pubkey, gpgme_data_t seckey)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
 
   if (!gpg)
     return GPGME_Invalid_Value;
@@ -1439,11 +1439,11 @@ gpg_genkey (void *engine, GpgmeData help_data, int use_armor,
 }
 
 
-static GpgmeError
-gpg_import (void *engine, GpgmeData keydata)
+static gpgme_error_t
+gpg_import (void *engine, gpgme_data_t keydata)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = add_arg (gpg, "--import");
   if (!err)
@@ -1456,12 +1456,12 @@ gpg_import (void *engine, GpgmeData keydata)
 }
 
 
-static GpgmeError
+static gpgme_error_t
 gpg_keylist (void *engine, const char *pattern, int secret_only,
 	     int keylist_mode)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = add_arg (gpg, "--with-colons");
   if (!err)
@@ -1488,12 +1488,12 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
 }
 
 
-static GpgmeError
+static gpgme_error_t
 gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
 		 int reserved, int keylist_mode)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
 
   if (reserved)
     return GPGME_Invalid_Value;
@@ -1526,13 +1526,13 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
 }
 
 
-static GpgmeError
-gpg_sign (void *engine, GpgmeData in, GpgmeData out, GpgmeSigMode mode,
+static gpgme_error_t
+gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out, gpgme_sig_mode_t mode,
 	  int use_armor, int use_textmode, int include_certs,
-	  GpgmeCtx ctx /* FIXME */)
+	  gpgme_ctx_t ctx /* FIXME */)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
 
   if (mode == GPGME_SIG_MODE_CLEAR)
     err = add_arg (gpg, "--clearsign");
@@ -1562,11 +1562,11 @@ gpg_sign (void *engine, GpgmeData in, GpgmeData out, GpgmeSigMode mode,
   return err;
 }
 
-static GpgmeError
+static gpgme_error_t
 gpg_trustlist (void *engine, const char *pattern)
 {
   GpgObject gpg = engine;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = add_arg (gpg, "--with-colons");
   if (!err)
@@ -1585,12 +1585,12 @@ gpg_trustlist (void *engine, const char *pattern)
 }
 
 
-static GpgmeError
-gpg_verify (void *engine, GpgmeData sig, GpgmeData signed_text,
-	    GpgmeData plaintext)
+static gpgme_error_t
+gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
+	    gpgme_data_t plaintext)
 {
   GpgObject gpg = engine;
-  GpgmeError err = 0;
+  gpgme_error_t err = 0;
 
   if (plaintext)
     {
@@ -1630,7 +1630,7 @@ gpg_verify (void *engine, GpgmeData sig, GpgmeData signed_text,
 
 
 static void
-gpg_set_io_cbs (void *engine, struct GpgmeIOCbs *io_cbs)
+gpg_set_io_cbs (void *engine, gpgme_io_cbs_t io_cbs)
 {
   GpgObject gpg = engine;
 

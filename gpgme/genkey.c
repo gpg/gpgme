@@ -34,7 +34,7 @@ typedef struct
   struct _gpgme_op_genkey_result result;
 
   /* The key parameters passed to the crypto engine.  */
-  GpgmeData key_parameter;
+  gpgme_data_t key_parameter;
 } *op_data_t;
 
 
@@ -50,11 +50,11 @@ release_op_data (void *hook)
 }
 
 
-GpgmeGenKeyResult
-gpgme_op_genkey_result (GpgmeCtx ctx)
+gpgme_genkey_result_t
+gpgme_op_genkey_result (gpgme_ctx_t ctx)
 {
   op_data_t opd;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, (void **) &opd, -1, NULL);
   if (err || !opd)
@@ -64,11 +64,11 @@ gpgme_op_genkey_result (GpgmeCtx ctx)
 }
 
 
-static GpgmeError
-genkey_status_handler (void *priv, GpgmeStatusCode code, char *args)
+static gpgme_error_t
+genkey_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
-  GpgmeError err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
   op_data_t opd;
 
   /* Pipe the status code through the progress status handler.  */
@@ -114,8 +114,8 @@ genkey_status_handler (void *priv, GpgmeStatusCode code, char *args)
 }
 
 
-static GpgmeError
-get_key_parameter (const char *parms, GpgmeData *key_parameter)
+static gpgme_error_t
+get_key_parameter (const char *parms, gpgme_data_t *key_parameter)
 {
   const char *content;
   const char *attrib;
@@ -145,11 +145,11 @@ get_key_parameter (const char *parms, GpgmeData *key_parameter)
 }
 
 
-static GpgmeError
-genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
-	      GpgmeData pubkey, GpgmeData seckey)
+static gpgme_error_t
+genkey_start (gpgme_ctx_t ctx, int synchronous, const char *parms,
+	      gpgme_data_t pubkey, gpgme_data_t seckey)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   op_data_t opd;
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -174,9 +174,9 @@ genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
 /* Generate a new keypair and add it to the keyring.  PUBKEY and
    SECKEY should be null for now.  PARMS specifies what keys should be
    generated.  */
-GpgmeError
-gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
-		       GpgmeData pubkey, GpgmeData seckey)
+gpgme_error_t
+gpgme_op_genkey_start (gpgme_ctx_t ctx, const char *parms,
+		       gpgme_data_t pubkey, gpgme_data_t seckey)
 {
   return genkey_start (ctx, 0, parms, pubkey, seckey);
 }
@@ -185,11 +185,11 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
 /* Generate a new keypair and add it to the keyring.  PUBKEY and
    SECKEY should be null for now.  PARMS specifies what keys should be
    generated.  */
-GpgmeError
-gpgme_op_genkey (GpgmeCtx ctx, const char *parms, GpgmeData pubkey,
-		 GpgmeData seckey)
+gpgme_error_t
+gpgme_op_genkey (gpgme_ctx_t ctx, const char *parms, gpgme_data_t pubkey,
+		 gpgme_data_t seckey)
 {
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = genkey_start (ctx, 1, parms, pubkey, seckey);
   if (!err)

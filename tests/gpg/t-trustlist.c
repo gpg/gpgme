@@ -30,7 +30,7 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: GpgmeError %s\n",		\
+          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
                    __FILE__, __LINE__, gpgme_strerror (err));   \
           exit (1);						\
         }							\
@@ -41,9 +41,9 @@
 int 
 main (int argc, char *argv[])
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeTrustItem item;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_trust_item_t item;
 
   err = gpgme_new (&ctx);
   fail_if_err (err);

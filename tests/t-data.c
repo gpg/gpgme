@@ -1,4 +1,4 @@
-/* t-data - Regression tests for the GpgmeData abstraction.
+/* t-data - Regression tests for the gpgme_data_t abstraction.
  *      Copyright (C) 2001 g10 Code GmbH
  *
  * This file is part of GPGME.
@@ -26,11 +26,11 @@
 
 #include <gpgme.h>
 
-#define fail_if_err(a) do { if(a) {                                       \
-                               fprintf (stderr, "%s:%d: (%i) GpgmeError " \
-                                "%s\n", __FILE__, __LINE__, round,        \
-                                gpgme_strerror(a));                       \
-                                exit (1); }                               \
+#define fail_if_err(a) do { if(a) {                                          \
+                               fprintf (stderr, "%s:%d: (%i) gpgme_error_t " \
+                                "%s\n", __FILE__, __LINE__, round,           \
+                                gpgme_strerror(a));                          \
+                                exit (1); }                                  \
                              } while(0)
 
 static char *
@@ -104,7 +104,7 @@ read_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 }
 
 void
-read_once_test (round_t round, GpgmeData data)
+read_once_test (round_t round, gpgme_data_t data)
 {
   char buffer[1024];
   size_t read;
@@ -128,9 +128,8 @@ read_once_test (round_t round, GpgmeData data)
 }
 
 void
-read_test (round_t round, GpgmeData data)
+read_test (round_t round, gpgme_data_t data)
 {
-  GpgmeError err;
   char buffer[1024];
   size_t read;
 
@@ -147,15 +146,13 @@ read_test (round_t round, GpgmeData data)
     }
 
   read_once_test (round, data);
-  err = gpgme_data_rewind (data);
-  fail_if_err (err);
+  gpgme_data_seek (data, 0, SEEK_SET);
   read_once_test (round, data);
 }
 
 void
-write_test (round_t round, GpgmeData data)
+write_test (round_t round, gpgme_data_t data)
 {
-  GpgmeError err;
   char buffer[1024];
   size_t amt;
 
@@ -163,8 +160,7 @@ write_test (round_t round, GpgmeData data)
   if (amt != strlen (text))
     fail_if_err (GPGME_File_Error);
 
-  err = gpgme_data_rewind (data);
-  fail_if_err (err);
+  gpgme_data_seek (data, 0, SEEK_SET);
 
   if (round == TEST_INOUT_NONE)
     read_once_test (round, data);
@@ -196,8 +192,8 @@ main (int argc, char **argv)
   const char *text_filename = make_filename ("t-data-1.txt");
   const char *longer_text_filename = make_filename ("t-data-2.txt");
   const char *missing_filename = "this-file-surely-does-not-exist";
-  GpgmeError err = GPGME_No_Error;
-  GpgmeData data;
+  gpgme_error_t err = GPGME_No_Error;
+  gpgme_data_t data;
 
   while (++round)
     {

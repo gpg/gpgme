@@ -27,34 +27,34 @@
 
 
 static ssize_t
-user_read (GpgmeData dh, void *buffer, size_t size)
+user_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   return (*dh->data.user.cbs->read) (dh->data.user.handle, buffer, size);
 }
 
 
 static ssize_t
-user_write (GpgmeData dh, const void *buffer, size_t size)
+user_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   return (*dh->data.user.cbs->write) (dh->data.user.handle, buffer, size);
 }
 
 
 static off_t
-user_seek (GpgmeData dh, off_t offset, int whence)
+user_seek (gpgme_data_t dh, off_t offset, int whence)
 {
   return (*dh->data.user.cbs->seek) (dh->data.user.handle, offset, whence);
 }
 
 
 static void
-user_release (GpgmeData dh)
+user_release (gpgme_data_t dh)
 {
   (*dh->data.user.cbs->release) (dh->data.user.handle);
 }
 
 
-static struct gpgme_data_cbs user_cbs =
+static struct _gpgme_data_cbs user_cbs =
   {
     user_read,
     user_write,
@@ -63,10 +63,10 @@ static struct gpgme_data_cbs user_cbs =
   };
 
 
-GpgmeError
-gpgme_data_new_from_cbs (GpgmeData *dh, struct GpgmeDataCbs *cbs, void *handle)
+gpgme_error_t
+gpgme_data_new_from_cbs (gpgme_data_t *dh, gpgme_data_cbs_t cbs, void *handle)
 {
-  GpgmeError err = _gpgme_data_new (dh, &user_cbs);
+  gpgme_error_t err = _gpgme_data_new (dh, &user_cbs);
   if (err)
     return err;
 

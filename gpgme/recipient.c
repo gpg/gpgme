@@ -28,10 +28,10 @@
 
 
 /* Create a new uninitialized recipient object and return it in R_RSET.  */
-GpgmeError
-gpgme_recipients_new (GpgmeRecipients *r_rset)
+gpgme_error_t
+gpgme_recipients_new (gpgme_recipients_t *r_rset)
 {
-  GpgmeRecipients rset;
+  gpgme_recipients_t rset;
     
   rset = calloc (1, sizeof *rset);
   if (!rset)
@@ -43,13 +43,13 @@ gpgme_recipients_new (GpgmeRecipients *r_rset)
 
 /* Release the recipient object RSET.  */
 void
-gpgme_recipients_release (GpgmeRecipients rset)
+gpgme_recipients_release (gpgme_recipients_t rset)
 {
-  GpgmeUserID uid = rset->list;
+  gpgme_user_id_t uid = rset->list;
 
   while (uid)
     {
-      GpgmeUserID next_uid = uid->next;
+      gpgme_user_id_t next_uid = uid->next;
 
       free (uid);
       uid = next_uid;
@@ -60,12 +60,12 @@ gpgme_recipients_release (GpgmeRecipients rset)
 
 /* Add the name NAME to the recipient set RSET with the given key
    validity VALIDITY.  */
-GpgmeError
-gpgme_recipients_add_name_with_validity (GpgmeRecipients rset,
+gpgme_error_t
+gpgme_recipients_add_name_with_validity (gpgme_recipients_t rset,
 					 const char *name,
-                                         GpgmeValidity validity)
+                                         gpgme_validity_t validity)
 {
-  GpgmeUserID uid;
+  gpgme_user_id_t uid;
 
   if (!name || !rset)
     return GPGME_Invalid_Value;
@@ -87,8 +87,8 @@ gpgme_recipients_add_name_with_validity (GpgmeRecipients rset,
 /* Add the name NAME to the recipient set RSET.  Same as
    gpgme_recipients_add_name_with_validity with validitiy
    GPGME_VALIDITY_UNKNOWN.  */
-GpgmeError
-gpgme_recipients_add_name (GpgmeRecipients rset, const char *name)
+gpgme_error_t
+gpgme_recipients_add_name (gpgme_recipients_t rset, const char *name)
 {
   return gpgme_recipients_add_name_with_validity (rset, name,
 						  GPGME_VALIDITY_UNKNOWN);
@@ -97,9 +97,9 @@ gpgme_recipients_add_name (GpgmeRecipients rset, const char *name)
 
 /* Return the number of recipients in the set.  */
 unsigned int 
-gpgme_recipients_count (const GpgmeRecipients rset)
+gpgme_recipients_count (const gpgme_recipients_t rset)
 {
-  GpgmeUserID uid = rset->list;
+  gpgme_user_id_t uid = rset->list;
   unsigned int count = 0;
     
   while (uid)
@@ -115,8 +115,8 @@ gpgme_recipients_count (const GpgmeRecipients rset)
 /* Start an enumeration on the recipient set RSET.  The caller must
    pass the address of a void pointer which is used as the iterator
    object.  */
-GpgmeError
-gpgme_recipients_enum_open (const GpgmeRecipients rset, void **iter)
+gpgme_error_t
+gpgme_recipients_enum_open (const gpgme_recipients_t rset, void **iter)
 {
   *iter = rset->list;
   return 0;
@@ -124,9 +124,9 @@ gpgme_recipients_enum_open (const GpgmeRecipients rset, void **iter)
 
 /* Return the name of the next recipient in the set RSET.  */
 const char *
-gpgme_recipients_enum_read (const GpgmeRecipients rset, void **iter)
+gpgme_recipients_enum_read (const gpgme_recipients_t rset, void **iter)
 {
-  GpgmeUserID uid;
+  gpgme_user_id_t uid;
 
   uid = *iter;
   if (!uid)
@@ -137,8 +137,8 @@ gpgme_recipients_enum_read (const GpgmeRecipients rset, void **iter)
 }
 
 /* Release the iterator for this object.  */
-GpgmeError
-gpgme_recipients_enum_close (const GpgmeRecipients rset, void **iter)
+gpgme_error_t
+gpgme_recipients_enum_close (const gpgme_recipients_t rset, void **iter)
 {
   /* Not really needed, but might catch the occasional mistake.  */
   *iter = NULL;
@@ -148,9 +148,9 @@ gpgme_recipients_enum_close (const GpgmeRecipients rset, void **iter)
 
 
 int
-_gpgme_recipients_all_valid (const GpgmeRecipients rset)
+_gpgme_recipients_all_valid (const gpgme_recipients_t rset)
 {
-  GpgmeUserID uid = rset->list;
+  gpgme_user_id_t uid = rset->list;
 
   while (uid)
     {

@@ -37,10 +37,10 @@ typedef struct
   /* A pointer to the next pointer of the last invalid signer in
      the list.  This makes appending new invalid signers painless
      while preserving the order.  */
-  GpgmeInvalidUserID *last_signer_p;
+  gpgme_invalid_user_id_t *last_signer_p;
 
   /* Likewise for signature information.  */
-  GpgmeNewSignature *last_sig_p;
+  gpgme_new_signature_t *last_sig_p;
 } *op_data_t;
 
 
@@ -48,12 +48,12 @@ static void
 release_op_data (void *hook)
 {
   op_data_t opd = (op_data_t) hook;
-  GpgmeInvalidUserID invalid_signer = opd->result.invalid_signers;
-  GpgmeNewSignature sig = opd->result.signatures;
+  gpgme_invalid_user_id_t invalid_signer = opd->result.invalid_signers;
+  gpgme_new_signature_t sig = opd->result.signatures;
 
   while (invalid_signer)
     {
-      GpgmeInvalidUserID next = invalid_signer->next;
+      gpgme_invalid_user_id_t next = invalid_signer->next;
       free (invalid_signer->id);
       free (invalid_signer);
       invalid_signer = next;
@@ -61,7 +61,7 @@ release_op_data (void *hook)
 
   while (sig)
     {
-      GpgmeNewSignature next = sig->next;
+      gpgme_new_signature_t next = sig->next;
       free (sig->fpr);
       free (sig);
       sig = next;
@@ -69,11 +69,11 @@ release_op_data (void *hook)
 }
 
 
-GpgmeSignResult
-gpgme_op_sign_result (GpgmeCtx ctx)
+gpgme_sign_result_t
+gpgme_op_sign_result (gpgme_ctx_t ctx)
 {
   op_data_t opd;
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &opd, -1, NULL);
   if (err || !opd)
@@ -83,10 +83,10 @@ gpgme_op_sign_result (GpgmeCtx ctx)
 }
 
 
-static GpgmeError
-parse_sig_created (char *args, GpgmeNewSignature *sigp)
+static gpgme_error_t
+parse_sig_created (char *args, gpgme_new_signature_t *sigp)
 {
-  GpgmeNewSignature sig;
+  gpgme_new_signature_t sig;
   char *tail;
 
   sig = malloc (sizeof (*sig));
@@ -182,11 +182,11 @@ parse_sig_created (char *args, GpgmeNewSignature *sigp)
 }
 
 
-GpgmeError
-_gpgme_sign_status_handler (void *priv, GpgmeStatusCode code, char *args)
+gpgme_error_t
+_gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
-  GpgmeCtx ctx = (GpgmeCtx) priv;
-  GpgmeError err;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
   op_data_t opd;
 
   err = _gpgme_passphrase_status_handler (priv, code, args);
@@ -227,10 +227,10 @@ _gpgme_sign_status_handler (void *priv, GpgmeStatusCode code, char *args)
 }
 
 
-GpgmeError
-_gpgme_op_sign_init_result (GpgmeCtx ctx)
+gpgme_error_t
+_gpgme_op_sign_init_result (gpgme_ctx_t ctx)
 {
-  GpgmeError err;
+  gpgme_error_t err;
   op_data_t opd;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, (void **) &opd,
@@ -243,11 +243,11 @@ _gpgme_op_sign_init_result (GpgmeCtx ctx)
 }
 
 
-static GpgmeError
-sign_start (GpgmeCtx ctx, int synchronous, GpgmeData plain, GpgmeData sig,
-	    GpgmeSigMode mode)
+static gpgme_error_t
+sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain, gpgme_data_t sig,
+	    gpgme_sig_mode_t mode)
 {
-  GpgmeError err;
+  gpgme_error_t err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -285,19 +285,19 @@ sign_start (GpgmeCtx ctx, int synchronous, GpgmeData plain, GpgmeData sig,
 
 
 /* Sign the plaintext PLAIN and store the signature in SIG.  */
-GpgmeError
-gpgme_op_sign_start (GpgmeCtx ctx, GpgmeData plain, GpgmeData sig,
-		     GpgmeSigMode mode)
+gpgme_error_t
+gpgme_op_sign_start (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
+		     gpgme_sig_mode_t mode)
 {
   return sign_start (ctx, 0, plain, sig, mode);
 }
 
 
 /* Sign the plaintext PLAIN and store the signature in SIG.  */
-GpgmeError
-gpgme_op_sign (GpgmeCtx ctx, GpgmeData plain, GpgmeData sig, GpgmeSigMode mode)
+gpgme_error_t
+gpgme_op_sign (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig, gpgme_sig_mode_t mode)
 {
-  GpgmeError err = sign_start (ctx, 1, plain, sig, mode);
+  gpgme_error_t err = sign_start (ctx, 1, plain, sig, mode);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

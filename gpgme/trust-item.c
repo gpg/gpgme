@@ -37,10 +37,10 @@ DEFINE_STATIC_LOCK (trust_item_ref_lock);
 
 
 /* Create a new trust item.  */
-GpgmeError
-_gpgme_trust_item_new (GpgmeTrustItem *r_item)
+gpgme_error_t
+_gpgme_trust_item_new (gpgme_trust_item_t *r_item)
 {
-  GpgmeTrustItem item;
+  gpgme_trust_item_t item;
 
   item = calloc (1, sizeof *item);
   if (!item)
@@ -59,7 +59,7 @@ _gpgme_trust_item_new (GpgmeTrustItem *r_item)
 
 /* Acquire a reference to ITEM.  */
 void
-gpgme_trust_item_ref (GpgmeTrustItem item)
+gpgme_trust_item_ref (gpgme_trust_item_t item)
 {
   LOCK (trust_item_ref_lock);
   item->_refs++;
@@ -73,7 +73,7 @@ gpgme_trust_item_ref (GpgmeTrustItem item)
    every newly created trust item object as well as for every
    gpgme_trust_item_ref() done on the trust item object.  */
 void
-gpgme_trust_item_unref (GpgmeTrustItem item)
+gpgme_trust_item_unref (gpgme_trust_item_t item)
 {
   LOCK (trust_item_ref_lock);
   assert (item->_refs > 0);
@@ -92,15 +92,15 @@ gpgme_trust_item_unref (GpgmeTrustItem item)
 
 /* Compatibility interfaces.  */
 void
-gpgme_trust_item_release (GpgmeTrustItem item)
+gpgme_trust_item_release (gpgme_trust_item_t item)
 {
   gpgme_trust_item_unref (item);
 }
 
 /* Return the value of the attribute WHAT of ITEM, which has to be
    representable by a string.  */
-const char *gpgme_trust_item_get_string_attr (GpgmeTrustItem item,
-					      GpgmeAttr what,
+const char *gpgme_trust_item_get_string_attr (gpgme_trust_item_t item,
+					      _gpgme_attr_t what,
 					      const void *reserved, int idx)
 {
   const char *val = NULL;
@@ -140,7 +140,7 @@ const char *gpgme_trust_item_get_string_attr (GpgmeTrustItem item,
 /* Return the value of the attribute WHAT of KEY, which has to be
    representable by an integer.  IDX specifies a running index if the
    attribute appears more than once in the key.  */
-int gpgme_trust_item_get_int_attr (GpgmeTrustItem item, GpgmeAttr what,
+int gpgme_trust_item_get_int_attr (gpgme_trust_item_t item, _gpgme_attr_t what,
 				   const void *reserved, int idx)
 {
   int val = 0;

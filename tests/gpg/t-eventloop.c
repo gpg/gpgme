@@ -28,13 +28,13 @@
 #include <gpgme.h>
 
 #define fail_if_err(a) do { if(a) {                                       \
-                               fprintf (stderr, "%s:%d: GpgmeError %s\n", \
+                               fprintf (stderr, "%s:%d: gpgme_error_t %s\n", \
                                 __FILE__, __LINE__, gpgme_strerror(a));   \
                                 exit (1); }                               \
                              } while(0)
 
 static void
-print_data (GpgmeData dh)
+print_data (gpgme_data_t dh)
 {
   char buf[100];
   int ret;
@@ -54,7 +54,7 @@ print_data (GpgmeData dh)
 struct op_result
 {
   int done;
-  GpgmeError err;
+  gpgme_error_t err;
 };
 
 struct op_result op_result;
@@ -63,15 +63,15 @@ struct one_fd
 {
   int fd;
   int dir;
-  GpgmeIOCb fnc;
+  gpgme_io_cb_t fnc;
   void *fnc_data;
 };
 
 #define FDLIST_MAX 32
 struct one_fd fdlist[FDLIST_MAX];
 
-GpgmeError
-add_io_cb (void *data, int fd, int dir, GpgmeIOCb fnc, void *fnc_data,
+gpgme_error_t
+add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc, void *fnc_data,
 	   void **r_tag)
 {
   struct one_fd *fds = data;
@@ -103,14 +103,14 @@ remove_io_cb (void *tag)
 }
 
 void
-io_event (void *data, GpgmeEventIO type, void *type_data)
+io_event (void *data, gpgme_event_io_t type, void *type_data)
 {
   struct op_result *result = data;
 
   if (type == GPGME_EVENT_DONE)
     {
       result->done = 1;
-      result->err = * (GpgmeError *) type_data;
+      result->err = * (gpgme_error_t *) type_data;
     }
 }
 
@@ -166,7 +166,7 @@ my_wait (void)
   return 0;
 }
 
-struct GpgmeIOCbs io_cbs =
+struct gpgme_io_cbs io_cbs =
   {
     add_io_cb,
     fdlist,
@@ -178,10 +178,10 @@ struct GpgmeIOCbs io_cbs =
 int 
 main (int argc, char *argv[])
 {
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeData in, out;
-  GpgmeRecipients rset;
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_data_t in, out;
+  gpgme_recipients_t rset;
   int i;
 
   for (i = 0; i < FDLIST_MAX; i++)

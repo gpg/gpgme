@@ -1,15 +1,52 @@
 Noteworthy changes in version 0.4.1 (unreleased)
 ------------------------------------------------
 
+ * If gpgme.h is included in sources compiled by GCC 3.1 or later,
+   deprecated attributes will warn about use of obsolete functions and
+   typedefs.  The use of obsolete error values will appear as the use
+   of an obsolete type _gpgme_deprecated_error_t.  You can suppress
+   these warnings by passing -Wno-deprecated-declarations to the gcc
+   command.
+
+ * The following types have been renamed.  The old types are still
+   available as aliases, but they are deprecated now:
+   Old name:		New name:
+   GpgmeCtx		gpgme_ctx_t
+   GpgmeData		gpgme_data_t
+   GpgmeRecipients	gpgme_recipients_t
+   GpgmeError		gpgme_error_t
+   GpgmeDataEncoding	gpgme_data_encoding_t
+   GpgmeSigStat		gpgme_sig_stat_t
+   GpgmeSigMode		gpgme_sig_mode_t
+   GpgmeAttr		gpgme_attr_t
+   GpgmeValidity	gpgme_validity_t
+   GpgmeProtocol	gpgme_protocol_t
+   GpgmeKey		gpgme_key_t
+   GpgmePassphraseCb	gpgme_passphrase_cb_t
+   GpgmeProgressCb	gpgme_progress_cb_t
+   GpgmeIOCb		gpgme_io_cb_t
+   GpgmeRegisterIOCb	gpgme_register_io_cb_t
+   GpgmeRemoveIOCb	gpgme_remove_io_cb_t
+   GpgmeEventIO		gpgme_event_io_t
+   GpgmeEventIOCb	gpgme_event_io_cb_t
+   GpgmeIOCbs		gpgme_io_cbs
+   GpgmeDataReadCb	gpgme_data_read_cb_t
+   GpgmeDataWriteCb	gpgme_data_write_cb_t
+   GpgmeDataSeekCb	gpgme_data_seek_cb_t
+   GpgmeDataReleaseCb	gpgme_data_release_cb_t
+   GpgmeDataCbs		gpgme_data_cbs_t
+   GpgmeTrustItem	gpgme_trust_item_t
+   GpgmeStatusCode	gpgme_status_code_t
+
  * GPGME_ATTR_IS_SECRET is not anymore representable as a string.
 
  * gpgme_op_verify and gpgme_op_decrypt_verify don't return a status
    summary anymore.  Use gpgme_get_sig_status to retrieve the individual
    stati.
 
- * GpgmeIOCb changed from a void function to a function returning a
-   GpgmeError value.  However, it will always return 0, so you can
-   safely ignore the return value.
+ * gpgme_io_cb_t changed from a void function to a function returning
+   a gpgme_error_t value.  However, it will always return 0, so you
+   can safely ignore the return value.
 
  * A new I/O callback event GPGME_EVENT_START has been added.  The new
    requirement is that you must wait until this event until you are
@@ -30,17 +67,17 @@ Noteworthy changes in version 0.4.1 (unreleased)
    occurs.  In that case *status contains the error code.
 
  * gpgme_get_engine_info was radically changed.  Instead an XML
-   string, an info structure of the new type GpgmeEngineInfo is
+   string, an info structure of the new type gpgme_engine_info_t is
    returned.  This makes it easier and more robust to evaluate the
    information in an application.
 
  * The new function gpgme_get_protocol_name can be used to convert a
-   GpgmeProtocol value into a string.
+   gpgme_protocol_t value into a string.
 
- * The GpgmePassphraseCb type now returns a GpgmeError value, and
-   returns the password string in a new parameter.  The gpgme_cancel
-   function has been removed, just return GPGME_Canceled in the
-   passphrase callback directly.
+ * The gpgme_passphrase_cb_t type now returns a gpgme_error_t value,
+   and returns the password string in a new parameter.  The
+   gpgme_cancel function has been removed, just return GPGME_Canceled
+   in the passphrase callback directly.
 
  * The status of a context operation is not checked anymore, so the
    errors GPGME_Busy and GPGME_No_Request can not occur anymore.
@@ -51,7 +88,7 @@ Noteworthy changes in version 0.4.1 (unreleased)
    GPGME_Invalid_UserID and GPGME_Bad_Passphrase resp.
 
  * The FPR argument to gpgme_op_genkey was removed.  Instead, use the
-   gpgme_op_genkey_result function to retrieve a GpgmeGenKeyResult
+   gpgme_op_genkey_result function to retrieve a gpgme_genkey_result_t
    pointer to a structure which contains the fingerprint.  This also
    works with gpgme_op_genkey_start.  The structure also provides
    other information about the generated keys.
@@ -65,7 +102,7 @@ Noteworthy changes in version 0.4.1 (unreleased)
 
    you should now do:
 
-   GpgmeGenKeyResult result;
+   gpgme_genkey_result_t result;
    err = gpgme_op_genkey (ctx, NULL, NULL);
    if (!err)
      {
@@ -76,12 +113,12 @@ Noteworthy changes in version 0.4.1 (unreleased)
 
  * The new gpgme_op_import_result function provides detailed
    information about the result of an import operation in
-   GpgmeImportResult and GpgmeImportStatus objects.  Thus, the
-   gpgme_op_import_ext variant is deprecated.
+   gpgme_import_result_t and gpgme_import_status_t objects.
+   Thus, the gpgme_op_import_ext variant is deprecated.
 
  * The new gpgme_op_sign_result function provides detailed information
-   about the result of a signing operation in GpgmeSignResult,
-   GpgmeInvalidUserID and GpgmeNewSignature objects.
+   about the result of a signing operation in gpgme_sign_result_t,
+   gpgme_invalid_user_id_t and gpgme_new_signature_t objects.
 
  * The new gpgme_op_encrypt_result function provides detailed
    information about the result of an encryption operation in
@@ -129,15 +166,67 @@ Noteworthy changes in version 0.4.1 (unreleased)
 
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
-GpgmeEventIO			CHANGED: New event type (all numbers changed).
+GpgmeCtx			DEPRECATED: Use gpgme_ctx_t.
+GpgmeData			DEPRECATED: Use gpgme_data_t.
+GpgmeRecipients			DEPRECATED: Use gpgme_recipients_t.
+GpgmeError			DEPRECATED: Use gpgme_error_t.
+GpgmeDataEncoding		DEPRECATED: Use gpgme_data_encoding_t.
+GpgmeSigStat			DEPRECATED: Use gpgme_sig_stat_t.
+GpgmeSigMode			DEPRECATED: Use gpgme_sig_mode_t.
+GpgmeAttr			DEPRECATED: Use gpgme_attr_t.
+GpgmeValidity			DEPRECATED: Use gpgme_validity_t.
+GpgmeProtocol			DEPRECATED: Use gpgme_protocol_t.
+GpgmeKey			DEPRECATED: Use gpgme_key_t.
+GpgmePassphraseCb		DEPRECATED: Use gpgme_passphrase_cb_t.
+GpgmeProgressCb			DEPRECATED: Use gpgme_progress_cb_t.
+GpgmeIOCb			DEPRECATED: Use gpgme_io_cb_t.
+GpgmeRegisterIOCb		DEPRECATED: Use gpgme_register_io_cb_t.
+GpgmeRemoveIOCb			DEPRECATED: Use gpgme_remove_io_cb_t.
+GpgmeEventIO			DEPRECATED: Use gpgme_event_io_t.
+GpgmeEventIOCb			DEPRECATED: Use gpgme_event_io_cb_t.
+GpgmeIOCbs			DEPRECATED: Use gpgme_io_cbs.
+GpgmeDataReadCb			DEPRECATED: Use gpgme_data_read_cb_t.
+GpgmeDataWriteCb		DEPRECATED: Use gpgme_data_write_cb_t.
+GpgmeDataSeekCb			DEPRECATED: Use gpgme_data_seek_cb_t.
+GpgmeDataReleaseCb		DEPRECATED: Use gpgme_data_release_cb_t.
+GpgmeDataCbs			DEPRECATED: Use gpgme_data_cbs_t.
+GpgmeTrustItem			DEPRECATED: Use gpgme_trust_item_t.
+GpgmeStatusCode			DEPRECATED: Use gpgme_status_code_t.
+gpgme_ctx_t			NEW
+gpgme_data_t			NEW
+gpgme_recipients_t		NEW
+gpgme_error_t			NEW
+gpgme_data_encoding_t		NEW
+gpgme_sig_stat_t		NEW
+gpgme_sig_mode_t		NEW
+gpgme_attr_t			NEW
+gpgme_validity_t		NEW
+gpgme_protocol_t		NEW
+gpgme_key_t			NEW
+gpgme_passphrase_cb_t		NEW
+gpgme_progress_cb_t		NEW
+gpgme_io_cb_t			NEW
+gpgme_register_io_cb_t		NEW
+gpgme_remove_io_cb_t		NEW
+gpgme_event_io_t		NEW
+gpgme_event_io_cb_t		NEW
+gpgme_io_cbs			NEW
+gpgme_data_read_cb_t		NEW
+gpgme_data_write_cb_t		NEW
+gpgme_data_seek_cb_t		NEW
+gpgme_data_release_cb_t		NEW
+gpgme_data_cbs_t		NEW
+gpgme_trust_item_t		NEW
+gpgme_status_code_t		NEW
+gpgme_io_cb_t			CHANGED: Return type from void to GpgmeError.
+gpgme_event_io_t		CHANGED: New event type (all numbers changed).
 gpgme_key_get_string_attr	CHANGED: Don't handle GPGME_ATTR_IS_SECRET.
 gpgme_op_verify			CHANGED: Drop R_STAT argument.
 gpgme_op_decrypt_verify		CHANGED: Drop R_STAT argument.
 gpgme_wait			CHANGED: Can return NULL even if hang is true.
 GpgmeIdleFunc                   REMOVED
 gpgme_register_idle             REMOVED
-GpgmeEngineInfo			NEW
+gpgme_engine_info_t		NEW
 gpgme_get_engine_info		CHANGED: Return info structure instead XML.
 gpgme_get_protocol_name		NEW
 GpgmePassphraseCb		CHANGED: Return error value, new argument.
@@ -152,24 +241,24 @@ GPGME_No_Passphrase		DEPRECATED: Use GPGME_Bad_Passphrase.
 GPGME_Bad_Passphrase		NEW
 gpgme_op_genkey			CHANGED: FPR argument dropped.
 gpgme_op_genkey_result		NEW
-GpgmeGenKeyResult		NEW
+gpgme_genkey_result_t		NEW
 gpgme_op_import_ext		DEPRECATED: Use gpgme_op_import_result.
 gpgme_op_import_result		NEW
-GpgmeImportStatus		NEW
-GpgmeImportResult		NEW
-GpgmePubKeyAlgo			NEW
-GpgmeHashAlgo			NEW
-GpgmeInvalidUserID		NEW
-GpgmeNewSignature		NEW
-GpgmeSignResult			NEW
+gpgme_import_status_t		NEW
+gpgme_import_result_t		NEW
+gpgme_pubkey_algo_t		NEW
+gpgme_hash_algo_t		NEW
+gpgme_invalid_user_id_t		NEW
+gpgme_new_signature_t		NEW
+gpgme_sign_result_t		NEW
 gpgme_op_sign_result		NEW
 gpgme_pubkey_algo_name		NEW
 gpgme_hash_algo_name		NEW
-GpgmeEncryptResult		NEW
+gpgme_encrypt_result_t		NEW
 gpgme_op_encrypt_result		NEW
-GpgmeDecryptResult		NEW
+gpgme_decrypt_result_t		NEW
 gpgme_op_decrypt_result		NEW
-GpgmeVerifyResult		NEW
+gpgme_verify_result_t		NEW
 gpgme_op_verify_result		NEW
 gpgme_get_notation		REMOVED: Access verify result directly instead.
 gpgme_get_sig_key		DEPRECATED: Use gpgme_get_key with fingerprint.
@@ -177,23 +266,23 @@ gpgme_get_sig_ulong_attr	DEPRECATED: Use verify result directly.
 gpgme_get_sig_string_attr	DEPRECATED: Use verify result directly.
 GPGME_SIG_STAT_*		DEPRECATED: Use error value in sig status.
 gpgme_get_sig_status		DEPRECATED: Use verify result directly.
-GpgmeTrustItem			CHANGED: Now has user accessible data members.
+gpgme_trust_item_t		CHANGED: Now has user accessible data members.
 gpgme_trust_item_ref		NEW
 gpgme_trust_item_unref		NEW
 gpgme_trust_item_release	DEPRECATED: Use gpgme_trust_item_unref.
 gpgme_trust_item_get_string_attr DEPRECATED
 gpgme_trust_item_get_ulong_attr	DEPRECATED
 gpgme_get_key			CHANGED: Removed force_update argument.
-GpgmeSubKey			NEW
-GpgmeKeySig			NEW
-GpgmeUserID			NEW
-GpgmeKey			CHANGED: Now has user accessible data members.
+gpgme_sub_key_t			NEW
+gpgme_key_sig_t			NEW
+gpgme_user_id_t			NEW
+gpgme_key_t			CHANGED: Now has user accessible data members.
 gpgme_key_get_string_attr	DEPRECATED
 gpgme_key_get_ulong_attr	DEPRECATED
 gpgme_key_sig_get_string_attr	DEPRECATED
 gpgme_key_sig_get_ulong_attr	DEPRECATED
 gpgme_key_get_as_xml		REMOVED
-GpgmeKeyListResult		NEW
+gpgme_key_list_result_t		NEW
 gpgme_op_keylist_result		NEW
 gpgme_get_op_info		REMOVED
 GPGME_Invalid_Type		DEPRECATED

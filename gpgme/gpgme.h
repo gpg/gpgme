@@ -39,6 +39,22 @@ extern "C" {
 #endif
 
 
+/* Check for compiler features.  */
+#if __GNUC__
+#define _GPGME_GCC_VERSION (__GNUC__ * 10000 \
+                            + __GNUC_MINOR__ * 100 \
+                            + __GNUC_PATCHLEVEL__)
+
+#if _GPGME_GCC_VERSION > 30100
+#define _GPGME_DEPRECATED	__attribute__ ((__deprecated__))
+#endif
+#endif
+
+#ifndef _GPGME_DEPRECATED
+#define _GPGME_DEPRECATED
+#endif
+
+
 /* The version of this header should match the one of the library.  Do
    not use this symbol in your application, use gpgme_check_version
    instead.  The purpose of this macro is to let autoconf (using the
@@ -48,20 +64,20 @@ extern "C" {
 #define GPGME_VERSION "0.4.1"
 
 
-/* The opaque data types used by GPGME.  */
+/* Some opaque data types used by GPGME.  */
 
 /* The context holds some global state and configration options, as
    well as the results of a crypto operation.  */
-struct gpgme_context_s;
-typedef struct gpgme_context_s *GpgmeCtx;
+struct gpgme_context;
+typedef struct gpgme_context *gpgme_ctx_t;
 
 /* The data object is used by GPGME to exchange arbitrary data.  */
-struct gpgme_data_s;
-typedef struct gpgme_data_s *GpgmeData;
+struct gpgme_data;
+typedef struct gpgme_data *gpgme_data_t;
 
 /* A list of recipients to be used in an encryption operation.  */
-struct gpgme_recipients_s;
-typedef struct gpgme_recipients_s *GpgmeRecipients;
+struct gpgme_recipients;
+typedef struct gpgme_recipients *gpgme_recipients_t;
 
 
 /* Public data types provided by GPGME.  */
@@ -114,20 +130,27 @@ typedef enum
     GPGME_Bad_Signature           = 0x0302,
     GPGME_No_Public_Key           = 0x0303,
 
-    /* Deprecated.  */
-    GPGME_Busy                    = -2,
-    GPGME_No_Request              = -3,
-    GPGME_Invalid_Type            = -4,
-    GPGME_Invalid_Mode            = -5
+    /* Deprecated, see below.  */
+    GPGME_x_Busy         = -2,
+    GPGME_x_No_Request   = -3,
+    GPGME_x_Invalid_Type = -4,
+    GPGME_x_Invalid_Mode = -5
   }
-GpgmeError;
+gpgme_error_t;
 
-#define GPGME_No_Recipients	GPGME_No_UserID
-#define GPGME_Invalid_Recipient	GPGME_Invalid_UserID
-#define GPGME_No_Passphrase	GPGME_Bad_Passphrase
+typedef gpgme_error_t _gpgme_deprecated_error_t _GPGME_DEPRECATED;
 
+#define GPGME_Busy	    ((_gpgme_deprecated_error_t) GPGME_x_Busy)
+#define GPGME_No_Request    ((_gpgme_deprecated_error_t) GPGME_x_No_Request)
+#define GPGME_Invalid_Type  ((_gpgme_deprecated_error_t) GPGME_x_Invalid_Type)
+#define GPGME_Invalid_Mode  ((_gpgme_deprecated_error_t) GPGME_x_Invalid_Mode)
+#define GPGME_No_Recipients ((_gpgme_deprecated_error_t) GPGME_No_UserID)
+#define GPGME_Invalid_Recipients \
+  ((_gpgme_deprecated_error_t) GPGME_Invalid_UserID)
+#define GPGME_No_Passphrase ((_gpgme_deprecated_error_t) GPGME_Bad_Passphrase)
 
-/* The possible encoding mode of GpgmeData objects.  */
+
+/* The possible encoding mode of gpgme_data_t objects.  */
 typedef enum
   {
     GPGME_DATA_ENCODING_NONE   = 0,	/* Not specified.  */
@@ -135,9 +158,9 @@ typedef enum
     GPGME_DATA_ENCODING_BASE64 = 2,
     GPGME_DATA_ENCODING_ARMOR  = 3	/* Either PEM or OpenPGP Armor.  */
   }
-GpgmeDataEncoding;
+gpgme_data_encoding_t;
 
-
+
 /* Public key algorithms from libgcrypt.  */
 typedef enum
   {
@@ -148,7 +171,7 @@ typedef enum
     GPGME_PK_DSA   = 17,
     GPGME_PK_ELG   = 20
   }
-GpgmePubKeyAlgo;
+gpgme_pubkey_algo_t;
 
 
 /* Hash algorithms from libgcrypt.  */
@@ -169,10 +192,11 @@ typedef enum
     GPGME_MD_CRC32_RFC1510 = 303,
     GPGME_MD_CRC24_RFC2440 = 304
   }
-GpgmeHashAlgo;
+gpgme_hash_algo_t;
 
-
-/* The possible signature stati.  */
+
+/* The possible signature stati.  Deprecated, use error value in sig
+   status.  */
 typedef enum
   {
     GPGME_SIG_STAT_NONE  = 0,
@@ -185,7 +209,9 @@ typedef enum
     GPGME_SIG_STAT_GOOD_EXP = 7,
     GPGME_SIG_STAT_GOOD_EXPKEY = 8
   }
-GpgmeSigStat;
+_gpgme_sig_stat_t;
+typedef _gpgme_sig_stat_t gpgme_sig_stat_t _GPGME_DEPRECATED;
+
 
 /* The available signature modes.  */
 typedef enum
@@ -194,10 +220,11 @@ typedef enum
     GPGME_SIG_MODE_DETACH = 1,
     GPGME_SIG_MODE_CLEAR  = 2
   }
-GpgmeSigMode;
+gpgme_sig_mode_t;
 
-
-/* The available key and signature attributes.  */
+
+/* The available key and signature attributes.  Deprecated, use the
+   individual result structures instead.  */
 typedef enum
   {
     GPGME_ATTR_KEYID        = 1,
@@ -233,8 +260,10 @@ typedef enum
     GPGME_ATTR_SIG_SUMMARY  = 31,
     GPGME_ATTR_SIG_CLASS    = 32
   }
-GpgmeAttr;
+_gpgme_attr_t;
+typedef _gpgme_attr_t gpgme_attr_t _GPGME_DEPRECATED;
 
+
 /* The available validities for a trust item or key.  */
 typedef enum
   {
@@ -245,16 +274,16 @@ typedef enum
     GPGME_VALIDITY_FULL      = 4,
     GPGME_VALIDITY_ULTIMATE  = 5
   }
-GpgmeValidity;
+gpgme_validity_t;
 
-
+
 /* The available protocols.  */
 typedef enum
   {
     GPGME_PROTOCOL_OpenPGP = 0,  /* The default mode.  */
     GPGME_PROTOCOL_CMS     = 1,
   }
-GpgmeProtocol;
+gpgme_protocol_t;
 
 
 /* The possible stati for the edit operation.  */
@@ -341,7 +370,7 @@ typedef enum
     GPGME_STATUS_TRUNCATED,
     GPGME_STATUS_ERROR
   }
-GpgmeStatusCode;
+gpgme_status_code_t;
 
 
 /* The engine information structure.  */
@@ -350,7 +379,7 @@ struct _gpgme_engine_info
   struct _gpgme_engine_info *next;
 
   /* The protocol ID.  */
-  GpgmeProtocol protocol;
+  gpgme_protocol_t protocol;
 
   /* The file name of the engine binary.  */
   const char *file_name;
@@ -361,7 +390,7 @@ struct _gpgme_engine_info
   /* The minimum version required for GPGME.  */
   const char *req_version;
 };
-typedef struct _gpgme_engine_info *GpgmeEngineInfo;
+typedef struct _gpgme_engine_info *gpgme_engine_info_t;
 
 
 /* A subkey from a key.  */
@@ -397,7 +426,7 @@ struct _gpgme_subkey
   unsigned int _unused : 24;
   
   /* Public key algorithm supported by this subkey.  */
-  GpgmePubKeyAlgo pubkey_algo;
+  gpgme_pubkey_algo_t pubkey_algo;
 
   /* Length of the subkey.  */
   unsigned int length;
@@ -417,7 +446,8 @@ struct _gpgme_subkey
   /* The expiration timestamp, 0 if the subkey does not expire.  */
   long int expires;
 };
-typedef struct _gpgme_subkey *GpgmeSubkey;
+typedef struct _gpgme_subkey *gpgme_subkey_t;
+
 
 /* A signature on a user ID.  */
 struct _gpgme_key_sig
@@ -440,7 +470,7 @@ struct _gpgme_key_sig
   unsigned int _unused : 28;
 
   /* The public key algorithm used to create the signature.  */
-  GpgmePubKeyAlgo pubkey_algo;
+  gpgme_pubkey_algo_t pubkey_algo;
 
   /* The key ID of key used to create the signature.  */
   char *keyid;
@@ -454,8 +484,8 @@ struct _gpgme_key_sig
   /* The expiration timestamp, 0 if the subkey does not expire.  */
   long int expires;
 
-  /* Same as in GpgmeSignature.  */
-  GpgmeError status;
+  /* Same as in gpgme_signature_t.  */
+  gpgme_error_t status;
 
   /* Crypto backend specific signature class.  */
   unsigned int class;
@@ -472,7 +502,8 @@ struct _gpgme_key_sig
   /* The comment part of the user ID.  */
   char *comment;
 };
-typedef struct _gpgme_key_sig *GpgmeKeySig;
+typedef struct _gpgme_key_sig *gpgme_key_sig_t;
+
 
 /* An user ID from a key.  */
 struct _gpgme_user_id
@@ -489,7 +520,7 @@ struct _gpgme_user_id
   unsigned int _unused : 30;
 
   /* The validity of the user ID.  */
-  GpgmeValidity validity; 
+  gpgme_validity_t validity; 
 
   /* The user ID string.  */
   char *uid;
@@ -504,12 +535,13 @@ struct _gpgme_user_id
   char *comment;
 
   /* The signatures of the user ID.  */
-  GpgmeKeySig signatures;
+  gpgme_key_sig_t signatures;
 
   /* Internal to GPGME, do not use.  */
-  GpgmeKeySig _last_keysig;
+  gpgme_key_sig_t _last_keysig;
 };
-typedef struct _gpgme_user_id *GpgmeUserID;
+typedef struct _gpgme_user_id *gpgme_user_id_t;
+
 
 /* A key from the keyring.  */
 struct _gpgme_key
@@ -545,7 +577,7 @@ struct _gpgme_key
   unsigned int _unused : 24;
 
   /* This is the protocol supported by this key.  */
-  GpgmeProtocol protocol;
+  gpgme_protocol_t protocol;
 
   /* If protocol is GPGME_PROTOCOL_CMS, this string contains the
      issuer serial.  */
@@ -561,72 +593,76 @@ struct _gpgme_key
 
   /* If protocol is GPGME_PROTOCOL_OpenPGP, this field contains the
      owner trust.  */
-  GpgmeValidity owner_trust;
+  gpgme_validity_t owner_trust;
 
   /* The subkeys of the key.  */
-  GpgmeSubkey subkeys;
+  gpgme_subkey_t subkeys;
 
   /* The user IDs of the key.  */
-  GpgmeUserID uids;
+  gpgme_user_id_t uids;
 
   /* Internal to GPGME, do not use.  */
-  GpgmeSubkey _last_subkey;
+  gpgme_subkey_t _last_subkey;
 
   /* Internal to GPGME, do not use.  */
-  GpgmeUserID _last_uid;
+  gpgme_user_id_t _last_uid;
 };
-typedef struct _gpgme_key *GpgmeKey;
+typedef struct _gpgme_key *gpgme_key_t;
+
 
 
 /* Types for callback functions.  */
 
 /* Request a passphrase from the user.  */
-typedef GpgmeError (*GpgmePassphraseCb) (void *hook, const char *desc,
-					 void **r_hd, const char **result);
+typedef gpgme_error_t (*gpgme_passphrase_cb_t) (void *hook, const char *desc,
+						void **r_hd,
+						const char **result);
 
 /* Inform the user about progress made.  */
-typedef void (*GpgmeProgressCb) (void *opaque, const char *what,
-				 int type, int current, int total);
+typedef void (*gpgme_progress_cb_t) (void *opaque, const char *what,
+				     int type, int current, int total);
 
 /* Interact with the user about an edit operation.  */
-typedef GpgmeError (*GpgmeEditCb) (void *opaque, GpgmeStatusCode status,
-				   const char *args, const char **reply);
+typedef gpgme_error_t (*gpgme_edit_cb_t) (void *opaque,
+					  gpgme_status_code_t status,
+					  const char *args,
+					  const char **reply);
 
 
 /* Context management functions.  */
 
 /* Create a new context and return it in CTX.  */
-GpgmeError gpgme_new (GpgmeCtx *ctx);
+gpgme_error_t gpgme_new (gpgme_ctx_t *ctx);
 
 /* Release the context CTX.  */
-void gpgme_release (GpgmeCtx ctx);
+void gpgme_release (gpgme_ctx_t ctx);
 
 /* Set the protocol to be used by CTX to PROTO.  */
-GpgmeError gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol proto);
+gpgme_error_t gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t proto);
 
 /* Get the protocol used with CTX */
-GpgmeProtocol gpgme_get_protocol (GpgmeCtx ctx);
+gpgme_protocol_t gpgme_get_protocol (gpgme_ctx_t ctx);
 
 /* Get the string describing protocol PROTO, or NULL if invalid.  */
-const char *gpgme_get_protocol_name (GpgmeProtocol proto);
+const char *gpgme_get_protocol_name (gpgme_protocol_t proto);
 
 /* If YES is non-zero, enable armor mode in CTX, disable it otherwise.  */
-void gpgme_set_armor (GpgmeCtx ctx, int yes);
+void gpgme_set_armor (gpgme_ctx_t ctx, int yes);
 
 /* Return non-zero if armor mode is set in CTX.  */
-int gpgme_get_armor (GpgmeCtx ctx);
+int gpgme_get_armor (gpgme_ctx_t ctx);
 
 /* If YES is non-zero, enable text mode in CTX, disable it otherwise.  */
-void gpgme_set_textmode (GpgmeCtx ctx, int yes);
+void gpgme_set_textmode (gpgme_ctx_t ctx, int yes);
 
 /* Return non-zero if text mode is set in CTX.  */
-int gpgme_get_textmode (GpgmeCtx ctx);
+int gpgme_get_textmode (gpgme_ctx_t ctx);
 
 /* Include up to NR_OF_CERTS certificates in an S/MIME message.  */
-void gpgme_set_include_certs (GpgmeCtx ctx, int nr_of_certs);
+void gpgme_set_include_certs (gpgme_ctx_t ctx, int nr_of_certs);
 
 /* Return the number of certs to include in an S/MIME message.  */
-int gpgme_get_include_certs (GpgmeCtx ctx);
+int gpgme_get_include_certs (gpgme_ctx_t ctx);
 
 /* The available keylist mode flags.  */
 enum
@@ -637,152 +673,159 @@ enum
   };
 
 /* Set keylist mode in CTX to MODE.  */
-GpgmeError gpgme_set_keylist_mode (GpgmeCtx ctx, int mode);
+gpgme_error_t gpgme_set_keylist_mode (gpgme_ctx_t ctx, int mode);
 
 /* Get keylist mode in CTX.  */
-int gpgme_get_keylist_mode (GpgmeCtx ctx);
+int gpgme_get_keylist_mode (gpgme_ctx_t ctx);
 
 /* Set the passphrase callback function in CTX to CB.  HOOK_VALUE is
    passed as first argument to the passphrase callback function.  */
-void gpgme_set_passphrase_cb (GpgmeCtx ctx,
-                              GpgmePassphraseCb cb, void *hook_value);
+void gpgme_set_passphrase_cb (gpgme_ctx_t ctx,
+                              gpgme_passphrase_cb_t cb, void *hook_value);
 
 /* Get the current passphrase callback function in *CB and the current
    hook value in *HOOK_VALUE.  */
-void gpgme_get_passphrase_cb (GpgmeCtx ctx, GpgmePassphraseCb *cb,
+void gpgme_get_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t *cb,
 			      void **hook_value);
 
 /* Set the progress callback function in CTX to CB.  HOOK_VALUE is
    passed as first argument to the progress callback function.  */
-void gpgme_set_progress_cb (GpgmeCtx c, GpgmeProgressCb cb, void *hook_value);
+void gpgme_set_progress_cb (gpgme_ctx_t c, gpgme_progress_cb_t cb,
+			    void *hook_value);
 
 /* Get the current progress callback function in *CB and the current
    hook value in *HOOK_VALUE.  */
-void gpgme_get_progress_cb (GpgmeCtx ctx, GpgmeProgressCb *cb,
+void gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *cb,
 			    void **hook_value);
 
 
 /* Return a statically allocated string with the name of the public
    key algorithm ALGO, or NULL if that name is not known.  */
-const char *gpgme_pubkey_algo_name (GpgmePubKeyAlgo algo);
+const char *gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo);
 
 /* Return a statically allocated string with the name of the hash
    algorithm ALGO, or NULL if that name is not known.  */
-const char *gpgme_hash_algo_name (GpgmeHashAlgo algo);
+const char *gpgme_hash_algo_name (gpgme_hash_algo_t algo);
 
 
 /* Delete all signers from CTX.  */
-void gpgme_signers_clear (GpgmeCtx ctx);
+void gpgme_signers_clear (gpgme_ctx_t ctx);
 
 /* Add KEY to list of signers in CTX.  */
-GpgmeError gpgme_signers_add (GpgmeCtx ctx, const GpgmeKey key);
+gpgme_error_t gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key);
 
 /* Return the SEQth signer's key in CTX.  */
-GpgmeKey gpgme_signers_enum (const GpgmeCtx ctx, int seq);
+gpgme_key_t gpgme_signers_enum (const gpgme_ctx_t ctx, int seq);
 
 /* Retrieve the signature status of signature IDX in CTX after a
    successful verify operation in R_STAT (if non-null).  The creation
    time stamp of the signature is returned in R_CREATED (if non-null).
-   The function returns a string containing the fingerprint.  */
-const char *gpgme_get_sig_status (GpgmeCtx ctx, int idx,
-                                  GpgmeSigStat *r_stat, time_t *r_created);
+   The function returns a string containing the fingerprint.
+   Deprecated, use verify result directly.  */
+const char *gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
+                                  _gpgme_sig_stat_t *r_stat,
+				  time_t *r_created) _GPGME_DEPRECATED;
 
 /* Retrieve certain attributes of a signature.  IDX is the index
    number of the signature after a successful verify operation.  WHAT
    is an attribute where GPGME_ATTR_EXPIRE is probably the most useful
    one.  WHATIDX is to be passed as 0 for most attributes . */
-unsigned long gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx,
-                                        GpgmeAttr what, int whatidx);
-const char *gpgme_get_sig_string_attr (GpgmeCtx c, int idx,
-                                      GpgmeAttr what, int whatidx);
+unsigned long gpgme_get_sig_ulong_attr (gpgme_ctx_t c, int idx,
+                                        _gpgme_attr_t what, int whatidx)
+     _GPGME_DEPRECATED;
+const char *gpgme_get_sig_string_attr (gpgme_ctx_t c, int idx,
+				       _gpgme_attr_t what, int whatidx)
+     _GPGME_DEPRECATED;
 
 
 /* Get the key used to create signature IDX in CTX and return it in
    R_KEY.  */
-GpgmeError gpgme_get_sig_key (GpgmeCtx ctx, int idx, GpgmeKey *r_key);
+gpgme_error_t gpgme_get_sig_key (gpgme_ctx_t ctx, int idx, gpgme_key_t *r_key)
+     _GPGME_DEPRECATED;
 
 
 /* Run control.  */
 
 /* The type of an I/O callback function.  */
-typedef GpgmeError (*GpgmeIOCb) (void *data, int fd);
+typedef gpgme_error_t (*gpgme_io_cb_t) (void *data, int fd);
 
 /* The type of a function that can register FNC as the I/O callback
    function for the file descriptor FD with direction dir (0: for writing,
    1: for reading).  FNC_DATA should be passed as DATA to FNC.  The
    function should return a TAG suitable for the corresponding
-   GpgmeRemoveIOCb, and an error value.  */
-typedef GpgmeError (*GpgmeRegisterIOCb) (void *data, int fd, int dir,
-					 GpgmeIOCb fnc, void *fnc_data,
-					 void **tag);
+   gpgme_remove_io_cb_t, and an error value.  */
+typedef gpgme_error_t (*gpgme_register_io_cb_t) (void *data, int fd, int dir,
+						 gpgme_io_cb_t fnc,
+						 void *fnc_data, void **tag);
 
 /* The type of a function that can remove a previously registered I/O
    callback function given TAG as returned by the register
    function.  */
-typedef void (*GpgmeRemoveIOCb) (void *tag);
+typedef void (*gpgme_remove_io_cb_t) (void *tag);
 
 typedef enum { GPGME_EVENT_START,
 	       GPGME_EVENT_DONE,
 	       GPGME_EVENT_NEXT_KEY,
-	       GPGME_EVENT_NEXT_TRUSTITEM } GpgmeEventIO;
+	       GPGME_EVENT_NEXT_TRUSTITEM } gpgme_event_io_t;
 
 /* The type of a function that is called when a context finished an
    operation.  */
-typedef void (*GpgmeEventIOCb) (void *data, GpgmeEventIO type,
-				void *type_data);
+typedef void (*gpgme_event_io_cb_t) (void *data, gpgme_event_io_t type,
+				     void *type_data);
 
-struct GpgmeIOCbs
+struct gpgme_io_cbs
 {
-  GpgmeRegisterIOCb add;
+  gpgme_register_io_cb_t add;
   void *add_priv;
-  GpgmeRemoveIOCb remove;
-  GpgmeEventIOCb event;
+  gpgme_remove_io_cb_t remove;
+  gpgme_event_io_cb_t event;
   void *event_priv;
 };
+typedef struct gpgme_io_cbs *gpgme_io_cbs_t;
 
 /* Set the I/O callback functions in CTX to IO_CBS.  */
-void gpgme_set_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs);
+void gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs);
 
 /* Get the current I/O callback functions.  */
-void gpgme_get_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs);
+void gpgme_get_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs);
 
 /* Process the pending operation and, if HANG is non-zero, wait for
    the pending operation to finish.  */
-GpgmeCtx gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang);
+gpgme_ctx_t gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang);
 
 
 /* Functions to handle recipients.  */
 
 /* Create a new recipients set and return it in R_RSET.  */
-GpgmeError gpgme_recipients_new (GpgmeRecipients *r_rset);
+gpgme_error_t gpgme_recipients_new (gpgme_recipients_t *r_rset);
 
 /* Release the recipients set RSET.  */
-void gpgme_recipients_release (GpgmeRecipients rset);
+void gpgme_recipients_release (gpgme_recipients_t rset);
 
 /* Add NAME to the recipients set RSET.  */
-GpgmeError gpgme_recipients_add_name (GpgmeRecipients rset, const char *name);
+gpgme_error_t gpgme_recipients_add_name (gpgme_recipients_t rset, const char *name);
 
 /* Add NAME with validity AL to the recipients set RSET.  */
-GpgmeError gpgme_recipients_add_name_with_validity (GpgmeRecipients rset,
-                                                    const char *name,
-						    GpgmeValidity val);
+gpgme_error_t gpgme_recipients_add_name_with_validity (gpgme_recipients_t rset,
+						       const char *name,
+						       gpgme_validity_t val);
 
 /* Return the number of recipients in RSET.  */
-unsigned int gpgme_recipients_count (const GpgmeRecipients rset);
+unsigned int gpgme_recipients_count (const gpgme_recipients_t rset);
 
 /* Create a new enumeration handle for the recipients set RSET and
    return it in ITER.  */
-GpgmeError gpgme_recipients_enum_open (const GpgmeRecipients rset,
-				       void **iter);
+gpgme_error_t gpgme_recipients_enum_open (const gpgme_recipients_t rset,
+					  void **iter);
 
 /* Return the next recipient from the recipient set RSET in the
    enumerator ITER.  */
-const char *gpgme_recipients_enum_read (const GpgmeRecipients rset,
+const char *gpgme_recipients_enum_read (const gpgme_recipients_t rset,
 					void **iter);
 
 /* Destroy the enumerator ITER for the recipient set RSET.  */
-GpgmeError gpgme_recipients_enum_close (const GpgmeRecipients rset,
-					void **iter);
+gpgme_error_t gpgme_recipients_enum_close (const gpgme_recipients_t rset,
+					   void **iter);
 
 
 /* Functions to handle data objects.  */
@@ -790,145 +833,158 @@ GpgmeError gpgme_recipients_enum_close (const GpgmeRecipients rset,
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle HANDLE.  Return the number of characters read, 0 on EOF
    and -1 on error.  If an error occurs, errno is set.  */
-typedef ssize_t (*GpgmeDataReadCb) (void *handle, void *buffer, size_t size);
+typedef ssize_t (*gpgme_data_read_cb_t) (void *handle, void *buffer,
+					 size_t size);
 
 /* Write up to SIZE bytes from buffer BUFFER to the data object with
    the handle HANDLE.  Return the number of characters written, or -1
    on error.  If an error occurs, errno is set.  */
-typedef ssize_t (*GpgmeDataWriteCb) (void *handle, const void *buffer,
-				     size_t size);
+typedef ssize_t (*gpgme_data_write_cb_t) (void *handle, const void *buffer,
+					  size_t size);
 
 /* Set the current position from where the next read or write starts
    in the data object with the handle HANDLE to OFFSET, relativ to
    WHENCE.  */
-typedef off_t (*GpgmeDataSeekCb) (void *handle, off_t offset, int whence);
+typedef off_t (*gpgme_data_seek_cb_t) (void *handle, off_t offset, int whence);
 
 /* Close the data object with the handle DL.  */
-typedef void (*GpgmeDataReleaseCb) (void *handle);
+typedef void (*gpgme_data_release_cb_t) (void *handle);
 
-struct GpgmeDataCbs
+struct gpgme_data_cbs
 {
-  GpgmeDataReadCb read;
-  GpgmeDataWriteCb write;
-  GpgmeDataSeekCb seek;
-  GpgmeDataReleaseCb release;
+  gpgme_data_read_cb_t read;
+  gpgme_data_write_cb_t write;
+  gpgme_data_seek_cb_t seek;
+  gpgme_data_release_cb_t release;
 };
+typedef struct gpgme_data_cbs *gpgme_data_cbs_t;
 
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle DH.  Return the number of characters read, 0 on EOF and
    -1 on error.  If an error occurs, errno is set.  */
-ssize_t gpgme_data_read (GpgmeData dh, void *buffer, size_t size);
+ssize_t gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size);
 
 /* Write up to SIZE bytes from buffer BUFFER to the data object with
    the handle DH.  Return the number of characters written, or -1 on
    error.  If an error occurs, errno is set.  */
-ssize_t gpgme_data_write (GpgmeData dh, const void *buffer, size_t size);
+ssize_t gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size);
 
 /* Set the current position from where the next read or write starts
    in the data object with the handle DH to OFFSET, relativ to
    WHENCE.  */
-off_t gpgme_data_seek (GpgmeData dh, off_t offset, int whence);
+off_t gpgme_data_seek (gpgme_data_t dh, off_t offset, int whence);
 
 /* Create a new data buffer and return it in R_DH.  */
-GpgmeError gpgme_data_new (GpgmeData *r_dh);
+gpgme_error_t gpgme_data_new (gpgme_data_t *r_dh);
 
 /* Destroy the data buffer DH.  */
-void gpgme_data_release (GpgmeData dh);
+void gpgme_data_release (gpgme_data_t dh);
 
 /* Create a new data buffer filled with SIZE bytes starting from
    BUFFER.  If COPY is zero, copying is delayed until necessary, and
    the data is taken from the original location when needed.  */
-GpgmeError gpgme_data_new_from_mem (GpgmeData *r_dh,
-				    const char *buffer, size_t size,
-				    int copy);
+gpgme_error_t gpgme_data_new_from_mem (gpgme_data_t *r_dh,
+				       const char *buffer, size_t size,
+				       int copy);
 
 /* Destroy the data buffer DH and return a pointer to its content.
    The memory has be to released with free by the user.  It's size is
    returned in R_LEN.  */
-char *gpgme_data_release_and_get_mem (GpgmeData dh, size_t *r_len);
+char *gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len);
 
-GpgmeError gpgme_data_new_from_cbs (GpgmeData *dh,
-				    struct GpgmeDataCbs *cbs,
-				    void *handle);
+gpgme_error_t gpgme_data_new_from_cbs (gpgme_data_t *dh,
+				       gpgme_data_cbs_t cbs,
+				       void *handle);
 
-GpgmeError gpgme_data_new_from_fd (GpgmeData *dh, int fd);
+gpgme_error_t gpgme_data_new_from_fd (gpgme_data_t *dh, int fd);
 
-GpgmeError gpgme_data_new_from_stream (GpgmeData *dh, FILE *stream);
+gpgme_error_t gpgme_data_new_from_stream (gpgme_data_t *dh, FILE *stream);
 
 /* Return the encoding attribute of the data buffer DH */
-GpgmeDataEncoding gpgme_data_get_encoding (GpgmeData dh);
+gpgme_data_encoding_t gpgme_data_get_encoding (gpgme_data_t dh);
 
 /* Set the encoding attribute of data buffer DH to ENC */
-GpgmeError gpgme_data_set_encoding (GpgmeData dh, GpgmeDataEncoding enc);
+gpgme_error_t gpgme_data_set_encoding (gpgme_data_t dh,
+				       gpgme_data_encoding_t enc);
 
 
 
 /* Create a new data buffer which retrieves the data from the callback
    function READ_CB.  Deprecated, please use gpgme_data_new_from_cbs
    instead.  */
-GpgmeError gpgme_data_new_with_read_cb (GpgmeData *r_dh,
-					int (*read_cb) (void*,char *,size_t,size_t*),
-					void *read_cb_value);
+gpgme_error_t gpgme_data_new_with_read_cb (gpgme_data_t *r_dh,
+					   int (*read_cb) (void*,char *,
+							   size_t,size_t*),
+					   void *read_cb_value)
+     _GPGME_DEPRECATED;
 
 /* Create a new data buffer filled with the content of file FNAME.
    COPY must be non-zero.  For delayed read, please use
    gpgme_data_new_from_fd or gpgme_data_new_from stream instead.  */
-GpgmeError gpgme_data_new_from_file (GpgmeData *r_dh,
-				     const char *fname,
-				     int copy);
+gpgme_error_t gpgme_data_new_from_file (gpgme_data_t *r_dh,
+					const char *fname,
+					int copy);
 
 /* Create a new data buffer filled with LENGTH bytes starting from
    OFFSET within the file FNAME or stream FP (exactly one must be
    non-zero).  */
-GpgmeError gpgme_data_new_from_filepart (GpgmeData *r_dh,
-					 const char *fname, FILE *fp,
-					 off_t offset, size_t length);
+gpgme_error_t gpgme_data_new_from_filepart (gpgme_data_t *r_dh,
+					    const char *fname, FILE *fp,
+					    off_t offset, size_t length);
 
 /* Reset the read pointer in DH.  Deprecated, please use
    gpgme_data_seek instead.  */
-GpgmeError gpgme_data_rewind (GpgmeData dh);
+gpgme_error_t gpgme_data_rewind (gpgme_data_t dh) _GPGME_DEPRECATED;
 
 
 /* Key and trust functions.  */
 
 /* Get the key with the fingerprint FPR from the crypto backend.  If
    SECRET is true, get the secret key.  */
-GpgmeError gpgme_get_key (GpgmeCtx ctx, const char *fpr, GpgmeKey *r_key,
-			  int secret);
+gpgme_error_t gpgme_get_key (gpgme_ctx_t ctx, const char *fpr,
+			     gpgme_key_t *r_key, int secret);
 
 /* Acquire a reference to KEY.  */
-void gpgme_key_ref (GpgmeKey key);
+void gpgme_key_ref (gpgme_key_t key);
 
 /* Release a reference to KEY.  If this was the last one the key is
    destroyed.  */
-void gpgme_key_unref (GpgmeKey key);
-void gpgme_key_release (GpgmeKey key);
+void gpgme_key_unref (gpgme_key_t key);
+void gpgme_key_release (gpgme_key_t key);
 
 /* Return the value of the attribute WHAT of KEY, which has to be
-   representable by a string.  IDX specifies the sub key or
-   user ID for attributes related to sub keys or user IDs.  */
-const char *gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
-				       const void *reserved, int idx);
+   representable by a string.  IDX specifies the sub key or user ID
+   for attributes related to sub keys or user IDs.  Deprecated, use
+   key structure directly instead. */
+const char *gpgme_key_get_string_attr (gpgme_key_t key, _gpgme_attr_t what,
+				       const void *reserved, int idx)
+     _GPGME_DEPRECATED;
 
 /* Return the value of the attribute WHAT of KEY, which has to be
    representable by an unsigned integer.  IDX specifies the sub key or
-   user ID for attributes related to sub keys or user IDs.  */
-unsigned long gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
-					const void *reserved, int idx);
+   user ID for attributes related to sub keys or user IDs.
+   Deprecated, use key structure directly instead.  */
+unsigned long gpgme_key_get_ulong_attr (gpgme_key_t key, _gpgme_attr_t what,
+					const void *reserved, int idx)
+     _GPGME_DEPRECATED;
 
 /* Return the value of the attribute WHAT of a signature on user ID
    UID_IDX in KEY, which has to be representable by a string.  IDX
-   specifies the signature.  */
-const char *gpgme_key_sig_get_string_attr (GpgmeKey key, int uid_idx,
-					   GpgmeAttr what,
-					   const void *reserved, int idx);
+   specifies the signature.  Deprecated, use key structure directly
+   instead.  */
+const char *gpgme_key_sig_get_string_attr (gpgme_key_t key, int uid_idx,
+					   _gpgme_attr_t what,
+					   const void *reserved, int idx)
+     _GPGME_DEPRECATED;
 
 /* Return the value of the attribute WHAT of a signature on user ID
    UID_IDX in KEY, which has to be representable by an unsigned
-   integer string.  IDX specifies the signature.  */
-unsigned long gpgme_key_sig_get_ulong_attr (GpgmeKey key, int uid_idx,
-					    GpgmeAttr what,
-					    const void *reserved, int idx);
+   integer string.  IDX specifies the signature.  Deprecated, use key
+   structure directly instead.  */
+unsigned long gpgme_key_sig_get_ulong_attr (gpgme_key_t key, int uid_idx,
+					    _gpgme_attr_t what,
+					    const void *reserved, int idx)
+     _GPGME_DEPRECATED;
 
 
 /* Crypto Operations.  */
@@ -937,40 +993,38 @@ struct _gpgme_invalid_user_id
 {
   struct _gpgme_invalid_user_id *next;
   char *id;
-  GpgmeError reason;
+  gpgme_error_t reason;
 };
-typedef struct _gpgme_invalid_user_id *GpgmeInvalidUserID;
+typedef struct _gpgme_invalid_user_id *gpgme_invalid_user_id_t;
 
 
 /* Encryption.  */
 struct _gpgme_op_encrypt_result
 {
   /* The list of invalid recipients.  */
-  GpgmeInvalidUserID invalid_recipients;
+  gpgme_invalid_user_id_t invalid_recipients;
 };
-typedef struct _gpgme_op_encrypt_result *GpgmeEncryptResult;
+typedef struct _gpgme_op_encrypt_result *gpgme_encrypt_result_t;
 
 /* Retrieve a pointer to the result of the encrypt operation.  */
-GpgmeEncryptResult gpgme_op_encrypt_result (GpgmeCtx ctx);
+gpgme_encrypt_result_t gpgme_op_encrypt_result (gpgme_ctx_t ctx);
 
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  */
-GpgmeError gpgme_op_encrypt_start (GpgmeCtx ctx,
-				   GpgmeRecipients recp,
-				   GpgmeData plain, GpgmeData cipher);
-GpgmeError gpgme_op_encrypt (GpgmeCtx ctx,
-			     GpgmeRecipients recp,
-			     GpgmeData plain, GpgmeData cipher);
+gpgme_error_t gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+				      gpgme_data_t plain, gpgme_data_t cipher);
+gpgme_error_t gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+				gpgme_data_t plain, gpgme_data_t cipher);
 
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
    store the resulting ciphertext in CIPHER.  Also sign the ciphertext
    with the signers in CTX.  */
-GpgmeError gpgme_op_encrypt_sign_start (GpgmeCtx ctx,
-					GpgmeRecipients recp,
-					GpgmeData plain, GpgmeData cipher);
-GpgmeError gpgme_op_encrypt_sign (GpgmeCtx ctx,
-				  GpgmeRecipients recp,
-				  GpgmeData plain, GpgmeData cipher);
+gpgme_error_t gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx,
+					   gpgme_recipients_t recp,
+					   gpgme_data_t plain,
+					   gpgme_data_t cipher);
+gpgme_error_t gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+				     gpgme_data_t plain, gpgme_data_t cipher);
 
 
 /* Decryption.  */
@@ -978,57 +1032,58 @@ struct _gpgme_op_decrypt_result
 {
   char *unsupported_algorithm;
 };
-typedef struct _gpgme_op_decrypt_result *GpgmeDecryptResult;
+typedef struct _gpgme_op_decrypt_result *gpgme_decrypt_result_t;
 
 /* Retrieve a pointer to the result of the decrypt operation.  */
-GpgmeDecryptResult gpgme_op_decrypt_result (GpgmeCtx ctx);
+gpgme_decrypt_result_t gpgme_op_decrypt_result (gpgme_ctx_t ctx);
 
 /* Decrypt ciphertext CIPHER within CTX and store the resulting
    plaintext in PLAIN.  */
-GpgmeError gpgme_op_decrypt_start (GpgmeCtx ctx,
-				   GpgmeData cipher, GpgmeData plain);
-GpgmeError gpgme_op_decrypt (GpgmeCtx ctx,
-			     GpgmeData cipher, GpgmeData plain);
+gpgme_error_t gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
+				      gpgme_data_t plain);
+gpgme_error_t gpgme_op_decrypt (gpgme_ctx_t ctx,
+				gpgme_data_t cipher, gpgme_data_t plain);
 
 /* Decrypt ciphertext CIPHER and make a signature verification within
    CTX and store the resulting plaintext in PLAIN.  */
-GpgmeError gpgme_op_decrypt_verify_start (GpgmeCtx ctx,
-					  GpgmeData cipher, GpgmeData plain);
-GpgmeError gpgme_op_decrypt_verify (GpgmeCtx ctx,
-				    GpgmeData cipher, GpgmeData plain);
+gpgme_error_t gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx,
+					     gpgme_data_t cipher,
+					     gpgme_data_t plain);
+gpgme_error_t gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher,
+				       gpgme_data_t plain);
 
 
 /* Signing.  */
 struct _gpgme_new_signature
 {
   struct _gpgme_new_signature *next;
-  GpgmeSigMode type;
-  GpgmePubKeyAlgo pubkey_algo;
-  GpgmeHashAlgo hash_algo;
+  gpgme_sig_mode_t type;
+  gpgme_pubkey_algo_t pubkey_algo;
+  gpgme_hash_algo_t hash_algo;
   unsigned long class;
   long int timestamp;
   char *fpr;
 };
-typedef struct _gpgme_new_signature *GpgmeNewSignature;
+typedef struct _gpgme_new_signature *gpgme_new_signature_t;
 
 struct _gpgme_op_sign_result
 {
   /* The list of invalid signers.  */
-  GpgmeInvalidUserID invalid_signers;
-  GpgmeNewSignature signatures;
+  gpgme_invalid_user_id_t invalid_signers;
+  gpgme_new_signature_t signatures;
 };
-typedef struct _gpgme_op_sign_result *GpgmeSignResult;
+typedef struct _gpgme_op_sign_result *gpgme_sign_result_t;
 
 /* Retrieve a pointer to the result of the signing operation.  */
-GpgmeSignResult gpgme_op_sign_result (GpgmeCtx ctx);
+gpgme_sign_result_t gpgme_op_sign_result (gpgme_ctx_t ctx);
 
 /* Sign the plaintext PLAIN and store the signature in SIG.  */
-GpgmeError gpgme_op_sign_start (GpgmeCtx ctx,
-				GpgmeData plain, GpgmeData sig,
-				GpgmeSigMode mode);
-GpgmeError gpgme_op_sign (GpgmeCtx ctx,
-			  GpgmeData plain, GpgmeData sig,
-			  GpgmeSigMode mode);
+gpgme_error_t gpgme_op_sign_start (gpgme_ctx_t ctx,
+				   gpgme_data_t plain, gpgme_data_t sig,
+				   gpgme_sig_mode_t mode);
+gpgme_error_t gpgme_op_sign (gpgme_ctx_t ctx,
+			     gpgme_data_t plain, gpgme_data_t sig,
+			     gpgme_sig_mode_t mode);
 
 
 /* Verify.  */
@@ -1041,10 +1096,10 @@ struct _gpgme_sig_notation
   char *name;
   char *value;
 };
-typedef struct _gpgme_sig_notation *GpgmeSigNotation;
+typedef struct _gpgme_sig_notation *gpgme_sig_notation_t;
 
-/* Flags used for the SUMMARY field in a GpgmeSignature.  */
-enum 
+/* Flags used for the SUMMARY field in a gpgme_signature_t.  */
+enum
   {
     GPGME_SIGSUM_VALID       = 0x0001,  /* The signature is fully valid.  */
     GPGME_SIGSUM_GREEN       = 0x0002,  /* The signature is good.  */
@@ -1070,10 +1125,10 @@ struct _gpgme_signature
   char *fpr;
 
   /* The status of the signature.  */
-  GpgmeError status;
+  gpgme_error_t status;
 
   /* Notation data and policy URLs.  */
-  GpgmeSigNotation notations;
+  gpgme_sig_notation_t notations;
 
   /* Signature creation time.  */
   unsigned long timestamp;
@@ -1086,25 +1141,27 @@ struct _gpgme_signature
   /* Internal to GPGME, do not use.  */
   int _unused : 31;
 
-  GpgmeValidity validity;
-  GpgmeError validity_reason;
+  gpgme_validity_t validity;
+  gpgme_error_t validity_reason;
 };
-typedef struct _gpgme_signature *GpgmeSignature;
+typedef struct _gpgme_signature *gpgme_signature_t;
 
 struct _gpgme_op_verify_result
 {
-  GpgmeSignature signatures;
+  gpgme_signature_t signatures;
 };
-typedef struct _gpgme_op_verify_result *GpgmeVerifyResult;
+typedef struct _gpgme_op_verify_result *gpgme_verify_result_t;
 
 /* Retrieve a pointer to the result of the verify operation.  */
-GpgmeVerifyResult gpgme_op_verify_result (GpgmeCtx ctx);
+gpgme_verify_result_t gpgme_op_verify_result (gpgme_ctx_t ctx);
 
 /* Verify within CTX that SIG is a valid signature for TEXT.  */
-GpgmeError gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig,
-				  GpgmeData signed_text, GpgmeData plaintext);
-GpgmeError gpgme_op_verify (GpgmeCtx ctx, GpgmeData sig,
-			    GpgmeData signed_text, GpgmeData plaintext);
+gpgme_error_t gpgme_op_verify_start (gpgme_ctx_t ctx, gpgme_data_t sig,
+				     gpgme_data_t signed_text,
+				     gpgme_data_t plaintext);
+gpgme_error_t gpgme_op_verify (gpgme_ctx_t ctx, gpgme_data_t sig,
+			       gpgme_data_t signed_text,
+			       gpgme_data_t plaintext);
 
 
 /* Import.  */
@@ -1135,14 +1192,14 @@ struct _gpgme_import_status
 
   /* If a problem occured, the reason why the key could not be
      imported.  Otherwise GPGME_No_Error.  */
-  GpgmeError result;
+  gpgme_error_t result;
 
   /* The result of the import, the GPGME_IMPORT_* values bit-wise
      ORed.  0 means the key was already known and no new components
      have been added.  */
   unsigned int status;
 };
-typedef struct _gpgme_import_status *GpgmeImportStatus;
+typedef struct _gpgme_import_status *gpgme_import_status_t;
 
 /* Import.  */
 struct _gpgme_op_import_result
@@ -1187,24 +1244,25 @@ struct _gpgme_op_import_result
   int not_imported;
 
   /* List of keys for which an import was attempted.  */
-  GpgmeImportStatus imports;
+  gpgme_import_status_t imports;
 };
-typedef struct _gpgme_op_import_result *GpgmeImportResult;
+typedef struct _gpgme_op_import_result *gpgme_import_result_t;
 
 /* Retrieve a pointer to the result of the import operation.  */
-GpgmeImportResult gpgme_op_import_result (GpgmeCtx ctx);
+gpgme_import_result_t gpgme_op_import_result (gpgme_ctx_t ctx);
 
 /* Import the key in KEYDATA into the keyring.  */
-GpgmeError gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata);
-GpgmeError gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata);
-GpgmeError gpgme_op_import_ext (GpgmeCtx ctx, GpgmeData keydata, int *nr);
+gpgme_error_t gpgme_op_import_start (gpgme_ctx_t ctx, gpgme_data_t keydata);
+gpgme_error_t gpgme_op_import (gpgme_ctx_t ctx, gpgme_data_t keydata);
+gpgme_error_t gpgme_op_import_ext (gpgme_ctx_t ctx, gpgme_data_t keydata,
+				   int *nr) _GPGME_DEPRECATED;
 
 
 /* Export the keys listed in RECP into KEYDATA.  */
-GpgmeError gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp,
-				  GpgmeData keydata);
-GpgmeError gpgme_op_export (GpgmeCtx ctx, GpgmeRecipients recp,
-			    GpgmeData keydata);
+gpgme_error_t gpgme_op_export_start (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+				     gpgme_data_t keydata);
+gpgme_error_t gpgme_op_export (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+			       gpgme_data_t keydata);
 
 
 /* Key generation.  */
@@ -1222,35 +1280,36 @@ struct _gpgme_op_genkey_result
   /* The fingerprint of the generated key.  */
   char *fpr;
 };
-typedef struct _gpgme_op_genkey_result *GpgmeGenKeyResult;
+typedef struct _gpgme_op_genkey_result *gpgme_genkey_result_t;
 
 /* Generate a new keypair and add it to the keyring.  PUBKEY and
    SECKEY should be null for now.  PARMS specifies what keys should be
    generated.  */
-GpgmeError gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
-				  GpgmeData pubkey, GpgmeData seckey);
-GpgmeError gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
-			    GpgmeData pubkey, GpgmeData seckey);
+gpgme_error_t gpgme_op_genkey_start (gpgme_ctx_t ctx, const char *parms,
+				     gpgme_data_t pubkey, gpgme_data_t seckey);
+gpgme_error_t gpgme_op_genkey (gpgme_ctx_t ctx, const char *parms,
+			       gpgme_data_t pubkey, gpgme_data_t seckey);
 
 /* Retrieve a pointer to the result of the genkey operation.  */
-GpgmeGenKeyResult gpgme_op_genkey_result (GpgmeCtx ctx);
+gpgme_genkey_result_t gpgme_op_genkey_result (gpgme_ctx_t ctx);
 
 
 /* Delete KEY from the keyring.  If ALLOW_SECRET is non-zero, secret
    keys are also deleted.  */
-GpgmeError gpgme_op_delete_start (GpgmeCtx ctx, const GpgmeKey key,
-				  int allow_secret);
-GpgmeError gpgme_op_delete (GpgmeCtx ctx, const GpgmeKey key,
-			    int allow_secret);
+gpgme_error_t gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
+				     int allow_secret);
+gpgme_error_t gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key,
+			       int allow_secret);
 
+
 /* Edit the key KEY.  Send status and command requests to FNC and
    output of edit commands to OUT.  */
-GpgmeError gpgme_op_edit_start (GpgmeCtx ctx, GpgmeKey key,
-			  GpgmeEditCb fnc, void *fnc_value,
-			  GpgmeData out);
-GpgmeError gpgme_op_edit (GpgmeCtx ctx, GpgmeKey key,
-			  GpgmeEditCb fnc, void *fnc_value,
-			  GpgmeData out);
+gpgme_error_t gpgme_op_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
+				   gpgme_edit_cb_t fnc, void *fnc_value,
+				   gpgme_data_t out);
+gpgme_error_t gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
+			     gpgme_edit_cb_t fnc, void *fnc_value,
+			     gpgme_data_t out);
 
 
 /* Key management functions */
@@ -1261,24 +1320,25 @@ struct _gpgme_op_keylist_result
   /* Internal to GPGME, do not use.  */
   unsigned int _unused : 31;
 };
-typedef struct _gpgme_op_keylist_result *GpgmeKeyListResult;
+typedef struct _gpgme_op_keylist_result *gpgme_keylist_result_t;
 
 /* Retrieve a pointer to the result of the key listing operation.  */
-GpgmeKeyListResult gpgme_op_keylist_result (GpgmeCtx ctx);
+gpgme_keylist_result_t gpgme_op_keylist_result (gpgme_ctx_t ctx);
 
 /* Start a keylist operation within CTX, searching for keys which
    match PATTERN.  If SECRET_ONLY is true, only secret keys are
    returned.  */
-GpgmeError gpgme_op_keylist_start (GpgmeCtx ctx,
-				   const char *pattern, int secret_only);
-GpgmeError gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
-		                       int secret_only, int reserved);
+gpgme_error_t gpgme_op_keylist_start (gpgme_ctx_t ctx, const char *pattern,
+				      int secret_only);
+gpgme_error_t gpgme_op_keylist_ext_start (gpgme_ctx_t ctx,
+					  const char *pattern[],
+					  int secret_only, int reserved);
 
 /* Return the next key from the keylist in R_KEY.  */
-GpgmeError gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key);
+gpgme_error_t gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key);
 
 /* Terminate a pending keylist operation within CTX.  */
-GpgmeError gpgme_op_keylist_end (GpgmeCtx ctx);
+gpgme_error_t gpgme_op_keylist_end (gpgme_ctx_t ctx);
 
 
 /* Trust items and operations.  */
@@ -1315,40 +1375,46 @@ struct _gpgme_trust_item
   /* The user name if TYPE is 2.  */
   char *name;
 };
-typedef struct _gpgme_trust_item *GpgmeTrustItem;
+typedef struct _gpgme_trust_item *gpgme_trust_item_t;
 
 /* Start a trustlist operation within CTX, searching for trust items
    which match PATTERN.  */
-GpgmeError gpgme_op_trustlist_start (GpgmeCtx ctx,
-				     const char *pattern, int max_level);
+gpgme_error_t gpgme_op_trustlist_start (gpgme_ctx_t ctx,
+					const char *pattern, int max_level);
 
 /* Return the next trust item from the trustlist in R_ITEM.  */
-GpgmeError gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item);
+gpgme_error_t gpgme_op_trustlist_next (gpgme_ctx_t ctx,
+				       gpgme_trust_item_t *r_item);
 
 /* Terminate a pending trustlist operation within CTX.  */
-GpgmeError gpgme_op_trustlist_end (GpgmeCtx ctx);
+gpgme_error_t gpgme_op_trustlist_end (gpgme_ctx_t ctx);
 
 /* Acquire a reference to ITEM.  */
-void gpgme_trust_item_ref (GpgmeTrustItem item);
+void gpgme_trust_item_ref (gpgme_trust_item_t item);
 
 /* Release a reference to ITEM.  If this was the last one the trust
    item is destroyed.  */
-void gpgme_trust_item_unref (GpgmeTrustItem item);
+void gpgme_trust_item_unref (gpgme_trust_item_t item);
 
-/* Release the trust item ITEM.  */
-void gpgme_trust_item_release (GpgmeTrustItem item);
+/* Release the trust item ITEM.  Deprecated, use
+   gpgme_trust_item_unref.  */
+void gpgme_trust_item_release (gpgme_trust_item_t item) _GPGME_DEPRECATED;
 
 /* Return the value of the attribute WHAT of ITEM, which has to be
-   representable by a string.  */
-const char *gpgme_trust_item_get_string_attr (GpgmeTrustItem item,
-					      GpgmeAttr what,
-					      const void *reserved, int idx);
+   representable by a string.  Deprecated, use trust item structure
+   directly.  */
+const char *gpgme_trust_item_get_string_attr (gpgme_trust_item_t item,
+					      _gpgme_attr_t what,
+					      const void *reserved, int idx)
+     _GPGME_DEPRECATED;
 
 /* Return the value of the attribute WHAT of KEY, which has to be
    representable by an integer.  IDX specifies a running index if the
-   attribute appears more than once in the key.  */
-int gpgme_trust_item_get_int_attr (GpgmeTrustItem item, GpgmeAttr what,
-				   const void *reserved, int idx);
+   attribute appears more than once in the key.  Deprecated, use trust
+   item structure directly.  */
+int gpgme_trust_item_get_int_attr (gpgme_trust_item_t item, _gpgme_attr_t what,
+				   const void *reserved, int idx)
+     _GPGME_DEPRECATED;
 
 
 /* Various functions.  */
@@ -1357,18 +1423,60 @@ int gpgme_trust_item_get_int_attr (GpgmeTrustItem item, GpgmeAttr what,
 const char *gpgme_check_version (const char *req_version);
 
 /* Retrieve information about the backend engines.  */
-GpgmeError gpgme_get_engine_info (GpgmeEngineInfo *engine_info);
+gpgme_error_t gpgme_get_engine_info (gpgme_engine_info_t *engine_info);
 
 /* Return a string describing ERR.  */
-const char *gpgme_strerror (GpgmeError err);
+const char *gpgme_strerror (gpgme_error_t err);
 
 
 /* Engine support functions.  */
 
 /* Verify that the engine implementing PROTO is installed and
    available.  */
-GpgmeError gpgme_engine_check_version (GpgmeProtocol proto);
+gpgme_error_t gpgme_engine_check_version (gpgme_protocol_t proto);
 
+
+/* Deprecated types.  */
+typedef gpgme_ctx_t GpgmeCtx _GPGME_DEPRECATED;
+typedef gpgme_data_t GpgmeData _GPGME_DEPRECATED;
+typedef gpgme_recipients_t GpgmeRecipients _GPGME_DEPRECATED;
+typedef gpgme_error_t GpgmeError _GPGME_DEPRECATED;
+typedef gpgme_data_encoding_t GpgmeDataEncoding _GPGME_DEPRECATED;
+typedef gpgme_pubkey_algo_t GpgmePubKeyAlgo _GPGME_DEPRECATED;
+typedef gpgme_hash_algo_t GpgmeHashAlgo _GPGME_DEPRECATED;
+typedef gpgme_sig_stat_t GpgmeSigStat _GPGME_DEPRECATED;
+typedef gpgme_sig_mode_t GpgmeSigMode _GPGME_DEPRECATED;
+typedef gpgme_attr_t GpgmeAttr _GPGME_DEPRECATED;
+typedef gpgme_validity_t GpgmeValidity _GPGME_DEPRECATED;
+typedef gpgme_protocol_t GpgmeProtocol _GPGME_DEPRECATED;
+typedef gpgme_engine_info_t GpgmeEngineInfo _GPGME_DEPRECATED;
+typedef gpgme_subkey_t GpgmeSubkey _GPGME_DEPRECATED;
+typedef gpgme_key_sig_t GpgmeKeySig _GPGME_DEPRECATED;
+typedef gpgme_user_id_t GpgmeUserID _GPGME_DEPRECATED;
+typedef gpgme_key_t GpgmeKey _GPGME_DEPRECATED;
+typedef gpgme_passphrase_cb_t GpgmePassphraseCb _GPGME_DEPRECATED;
+typedef gpgme_progress_cb_t GpgmeProgressCb _GPGME_DEPRECATED;
+typedef gpgme_io_cb_t GpgmeIOCb _GPGME_DEPRECATED;
+typedef gpgme_register_io_cb_t GpgmeRegisterIOCb _GPGME_DEPRECATED;
+typedef gpgme_remove_io_cb_t GpgmeRemoveIOCb _GPGME_DEPRECATED;
+typedef gpgme_event_io_t GpgmeEventIO _GPGME_DEPRECATED;
+typedef gpgme_event_io_cb_t GpgmeEventIOCb _GPGME_DEPRECATED;
+#define GpgmeIOCbs gpgme_io_cbs
+typedef gpgme_data_read_cb_t GpgmeDataReadCb _GPGME_DEPRECATED;
+typedef gpgme_data_write_cb_t GpgmeDataWriteCb _GPGME_DEPRECATED;
+typedef gpgme_data_seek_cb_t GpgmeDataSeekCb _GPGME_DEPRECATED;
+typedef gpgme_data_release_cb_t GpgmeDataReleaseCb _GPGME_DEPRECATED;
+#define GpgmeDataCbs gpgme_data_cbs
+typedef gpgme_invalid_user_id_t GpgmeInvalidUserID _GPGME_DEPRECATED;
+typedef gpgme_encrypt_result_t GpgmeEncryptResult _GPGME_DEPRECATED;
+typedef gpgme_sig_notation_t GpgmeSigNotation _GPGME_DEPRECATED;
+typedef	gpgme_signature_t GpgmeSignature _GPGME_DEPRECATED;
+typedef gpgme_verify_result_t GpgmeVerifyResult _GPGME_DEPRECATED;
+typedef gpgme_import_status_t GpgmeImportStatus _GPGME_DEPRECATED;
+typedef gpgme_import_result_t GpgmeImportResult _GPGME_DEPRECATED;
+typedef gpgme_genkey_result_t GpgmeGenKeyResult _GPGME_DEPRECATED;
+typedef	gpgme_trust_item_t GpgmeTrustItem _GPGME_DEPRECATED;
+typedef gpgme_status_code_t GpgmeStatusCode _GPGME_DEPRECATED;
 
 #ifdef __cplusplus
 }
