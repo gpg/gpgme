@@ -1,3 +1,8 @@
+2003-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* edit.c (_gpgme_edit_status_handler): Call the progress status
+	handler.
+
 2002-11-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.c (_gpgme_gpg_spawn): Do not set parent fds to -1.

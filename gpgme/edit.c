@@ -47,6 +47,7 @@ void
 _gpgme_edit_status_handler (GpgmeCtx ctx, GpgmeStatusCode status, char *args)
 {
   _gpgme_passphrase_status_handler (ctx, status, args);
+  _gpgme_progress_status_handler (ctx, status, args);
 
   if (ctx->error)
     return;
