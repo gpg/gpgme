@@ -437,9 +437,10 @@ gpg_set_colon_line_handler (void *engine, EngineColonLineHandler fnc,
 
 /* Here we handle --command-fd.  This works closely together with the
    status handler.  */
-static int
+static GpgmeError
 command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
 {
+  GpgmeError err;
   GpgObject gpg = opaque;
   const char *value;
   int value_len;
@@ -462,8 +463,11 @@ command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
     }
 
   /* FIXME catch error */
-  gpg->cmd.fnc (gpg->cmd.fnc_value, 
-		gpg->cmd.code, gpg->cmd.keyword, &value);
+  err = gpg->cmd.fnc (gpg->cmd.fnc_value, 
+		      gpg->cmd.code, gpg->cmd.keyword, &value);
+  if (err)
+    return err;
+
   if (!value)
     {
       DEBUG0 ("command_cb: no data from user cb\n");
@@ -1200,11 +1204,10 @@ gpg_delete (void *engine, GpgmeKey key, int allow_secret)
     err = add_arg (gpg, "--");
   if (!err)
     {
-      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, NULL, 0);
-      if (!s)
+      if (!key->subkeys || !key->subkeys->fpr)
 	err = GPGME_Invalid_Key;
       else
-	err = add_arg (gpg, s);
+	err = add_arg (gpg, key->subkeys->fpr);
     }
 
   if (!err)
@@ -1222,8 +1225,7 @@ append_args_from_signers (GpgObject gpg, GpgmeCtx ctx /* FIXME */)
 
   for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
     {
-      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID,
-						 NULL, 0);
+      const char *s = key->subkeys ? key->subkeys->keyid : NULL;
       if (s)
 	{
 	  if (!err)
@@ -1255,7 +1257,7 @@ gpg_edit (void *engine, GpgmeKey key, GpgmeData out, GpgmeCtx ctx /* FIXME */)
     err = add_arg (gpg, "--");
   if (!err)
     {
-      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, NULL, 0);
+      const char *s = key->subkeys ? key->subkeys->fpr : NULL;
       if (!s)
 	err = GPGME_Invalid_Key;
       else
@@ -1272,14 +1274,14 @@ static GpgmeError
 append_args_from_recipients (GpgObject gpg, const GpgmeRecipients rset)
 {
   GpgmeError err = 0;
-  struct user_id_s *r;
+  GpgmeUserID uid;
 
   assert (rset);
-  for (r = rset->list; r; r = r->next)
+  for (uid = rset->list; uid; uid = uid->next)
     {
       err = add_arg (gpg, "-r");
       if (!err)
-	err = add_arg (gpg, r->name);
+	err = add_arg (gpg, uid->uid);
       if (err)
 	break;
     }    

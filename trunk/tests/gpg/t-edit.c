@@ -150,13 +150,6 @@ main (int argc, char **argv)
       err = gpgme_op_keylist_end (ctx);
       fail_if_err (err);
 
-      p = gpgme_key_get_as_xml (key);
-      if (p)
-	{
-	  fputs (p, stdout);
-	  free (p);
-	}
-
       err = gpgme_op_edit (ctx, key, edit_fnc, out, out);
       fail_if_err (err);
 
@@ -164,7 +157,7 @@ main (int argc, char **argv)
       flush_data (out);
 
       gpgme_data_release (out);
-      gpgme_key_release (key);
+      gpgme_key_unref (key);
       gpgme_release (ctx);
     }
   while (argc > 1 && !strcmp( argv[1], "--loop"));

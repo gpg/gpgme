@@ -67,11 +67,9 @@ gpgme_release (GpgmeCtx ctx)
   _gpgme_engine_release (ctx->engine);
   _gpgme_fd_table_deinit (&ctx->fdt);
   _gpgme_release_result (ctx);
-  gpgme_key_release (ctx->tmp_key);
   gpgme_signers_clear (ctx);
   if (ctx->signers)
     free (ctx->signers);
-  /* FIXME: Release the key_queue.  */
   free (ctx);
 }
 

@@ -56,15 +56,8 @@ struct ctx_op_data
 };
 
 
-struct key_queue_item_s
-{
-  struct key_queue_item_s *next;
-  GpgmeKey key;
-};
-
-
-/* Currently we need it at several places, so we put the definition
-   into this header file.  */
+/* The context defines an environment in which crypto operations can
+   be performed (sequentially).  */
 struct gpgme_context_s
 {
   /* The protocol used by this context.  */
@@ -98,13 +91,6 @@ struct gpgme_context_s
   /* Last operation info.  */
   GpgmeData op_info;
 
-  /* Used by keylist.c.  */
-  GpgmeKey tmp_key;
-  struct user_id_s *tmp_uid;
-  /* Something new is available.  */
-  volatile int key_cond;
-  struct key_queue_item_s *key_queue;
-
   /* The user provided passphrase callback and its hook value.  */
   GpgmePassphraseCb passphrase_cb;
   void *passphrase_cb_value;
@@ -119,31 +105,12 @@ struct gpgme_context_s
   struct GpgmeIOCbs io_cbs;
 };
 
-/* Forward declaration of a structure to store certification
-   signatures.  */
-struct certsig_s;
 
-/* Structure to store user IDs.  */
-struct user_id_s
-{
-  struct user_id_s *next;
-  unsigned int revoked : 1;
-  unsigned int invalid : 1;
-  GpgmeValidity validity; 
-  struct certsig_s *certsigs;
-  struct certsig_s *last_certsig;
-  const char *name_part;	/* All 3 point into strings behind name  */
-  const char *email_part;	/* or to read-only strings.  */
-  const char *comment_part;
-  char name[1];
-};
-
-
+/* A recipient is defined by a user ID, but we define it as an opaque
+   type for the user.  */
 struct gpgme_recipients_s
 {
-  struct user_id_s *list;
-  int checked;	/* Whether the recipients are all valid.  */
+  GpgmeUserID list;
 };
-
 
 #endif	/* CONTEXT_H */

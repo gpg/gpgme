@@ -197,7 +197,7 @@ main (int argc, char *argv[])
   gpgme_data_release (in);
   gpgme_release (ctx);
 
-  gpgme_key_release (key[0]);
-  gpgme_key_release (key[1]);
+  gpgme_key_unref (key[0]);
+  gpgme_key_unref (key[1]);
   return 0;
 }

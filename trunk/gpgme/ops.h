@@ -53,10 +53,6 @@ GpgmeError    _gpgme_data_append_percentstring_for_xml ( GpgmeData dh,
 GpgmeError _gpgme_data_inbound_handler (void *opaque, int fd);
 GpgmeError _gpgme_data_outbound_handler (void *opaque, int fd);
 
-/*-- key.c --*/
-GpgmeError _gpgme_key_new ( GpgmeKey *r_key );
-GpgmeError _gpgme_key_new_secret ( GpgmeKey *r_key );
-
 
 /* From op-support.c.  */
 
@@ -119,12 +115,27 @@ GpgmeError _gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 					   char *args);
 
 
-/*-- keylist.c --*/
+/* From key.c.  */
+GpgmeError _gpgme_key_new (GpgmeKey *r_key);
+GpgmeError _gpgme_key_add_subkey (GpgmeKey key, GpgmeSubkey *r_subkey);
+GpgmeError _gpgme_key_append_name (GpgmeKey key, char *src);
+GpgmeKeySig _gpgme_key_add_sig (GpgmeKey key, char *src);
+
+
+/* From keylist.c.  */
 void _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data);
 
-/*-- trustlist.c --*/
+
+/* From trust-item.c.  */
+
+/* Create a new trust item.  */
+GpgmeError _gpgme_trust_item_new (GpgmeTrustItem *r_item);
+
+
+/* From trustlist.c.  */
 void _gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data);
 
+
 /*-- version.c --*/
 const char *_gpgme_compare_versions (const char *my_version,
 				     const char *req_version);

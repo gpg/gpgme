@@ -99,10 +99,10 @@ trustlist_colon_handler (void *priv, char *line)
 	  item->type = *p == 'K'? 1 : *p == 'U'? 2 : 0;
 	  break;
 	case 5: /* owner trust */
-	  item->_otrust[0] = *p;
+	  item->_owner_trust[0] = *p;
 	  break;
 	case 6: /* validity */
-	  item->_val[0] = *p;
+	  item->_validity[0] = *p;
 	  break;
 	case 9: /* user ID */
 	  item->name = strdup (p);
