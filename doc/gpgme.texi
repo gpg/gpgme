@@ -179,6 +179,11 @@ Sign
 * Selecting signers::             How to choose the keys to sign with.
 * Creating a signature::          How to create a signature.
 
+Encrypt
+
+* Selecting recipients::          How to choose the recipients.
+* Encrypting a plaintext::        How to encrypt a plaintext.
+
 
 @end detailmenu
 @end menu
