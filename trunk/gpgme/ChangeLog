@@ -1,5 +1,7 @@
 2002-11-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* decrypt.c: Some beautyfication.
+
 	* verify.c (_gpgme_verify_status_handler): Treat
 	GPGME_STATUS_UNEXPECTED like GPGME_STATUS_NODATA.
 	Reported by Miguel Coca <e970095@zipi.fi.upm.es>.
