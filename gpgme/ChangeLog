@@ -1,3 +1,37 @@
+2001-11-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* verify.c (_gpgme_release_verify_result): Rename RES to RESULT.
+	Rename R2 to NEXT_RESULT.
+	(intersect_stati): Rename RES to RESULT.
+	(gpgme_get_sig_status): Likewise.  Do not check return_type, but
+	the member verify of result.
+	(gpgme_get_sig_key): Likewise.
+
+	* sign.c (_gpgme_release_sign_result): Rename RES to RESULT.  If
+	RESULT is zero, return.
+	(sign_status_handler, command_handler): Do not check return_type,
+	but the member sign of result.
+	(gpgme_op_sign): Likewise.  Drop assertion.
+
+	* encrypt.c (_gpgme_release_encrypt_result): Rename RES to RESULT.
+	If RESULT is zero, return.
+	(encrypt_status_handler): Do not check return_type, but the member
+	encrypt of result.
+	(gpgme_op_encrypt): Likewise.  Drop assertion.
+
+	* decrypt.c (_gpgme_release_decrypt_result): Rename RES to RESULT.
+	(create_result_struct): Do not set result_type.
+	(command_handler, decrypt_status_handler): Do not check
+	return_type, but the member decrypt of result.
+	(gpgme_op_decrypt): Likewise.  Drop assertion.
+
+	* context.h (enum ResultType): Removed.
+	(struct gpgme_context_s): Remove member result_type.
+	(struct result): Replaces union result.
+	* gpgme.c: Include string.h.
+	(_gpgme_release_result): Release all members of c->result, which
+	is now a struct.  Zero out all members of the struct afterwards.
+
 2001-11-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.c (_gpgme_gpg_release): Release GPG->cmd.cb_data.

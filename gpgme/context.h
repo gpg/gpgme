@@ -26,15 +26,6 @@
 #include "types.h"
 #include "rungpg.h"  /* for GpgObject */
 
-typedef enum {
-    RESULT_TYPE_NONE = 0,
-    RESULT_TYPE_VERIFY,
-    RESULT_TYPE_DECRYPT,
-    RESULT_TYPE_SIGN,
-    RESULT_TYPE_ENCRYPT
-} ResultType;
-
-
 struct key_queue_item_s {
     struct key_queue_item_s *next;
     GpgmeKey key;
@@ -71,8 +62,7 @@ struct gpgme_context_s {
     int signers_size;  /* size of the following array */
     GpgmeKey *signers;
 
-    ResultType result_type;
-    union {
+    struct {
         VerifyResult verify;
         DecryptResult decrypt;
         SignResult sign;

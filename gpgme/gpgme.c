@@ -22,6 +22,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "util.h"
@@ -81,28 +82,14 @@ gpgme_release ( GpgmeCtx c )
 
 
 void
-_gpgme_release_result ( GpgmeCtx c )
+_gpgme_release_result (GpgmeCtx c)
 {
-    switch (c->result_type) {
-      case RESULT_TYPE_NONE:
-        break;
-      case RESULT_TYPE_VERIFY:
-        _gpgme_release_verify_result ( c->result.verify );
-        break;
-      case RESULT_TYPE_DECRYPT:
-        _gpgme_release_decrypt_result ( c->result.decrypt );
-        break;
-      case RESULT_TYPE_SIGN:
-        _gpgme_release_sign_result ( c->result.sign );
-        break;
-      case RESULT_TYPE_ENCRYPT:
-        _gpgme_release_encrypt_result ( c->result.encrypt );
-        break;
-    }
-
-    c->result.verify = NULL;
-    c->result_type = RESULT_TYPE_NONE;
-    _gpgme_set_op_info (c, NULL);
+  _gpgme_release_verify_result (c->result.verify);
+  _gpgme_release_decrypt_result (c->result.decrypt);
+  _gpgme_release_sign_result (c->result.sign);
+  _gpgme_release_encrypt_result (c->result.encrypt);
+  memset (&c->result, 0, sizeof (c->result));
+  _gpgme_set_op_info (c, NULL);
 }
 
 
