@@ -724,7 +724,7 @@ I/O operation fails, @code{GPGME_Not_Implemented} if @var{code} is
 zero, and @code{GPGME_Out_Of_Core} if not enough memory is available.
 @end deftypefun
 
-@deftypefun GpgmeError gpgme_data_new_from_filepart (@w{GpgmeData *@var{dh}}, @w{const char *@var{filename}}, @w{FILE *@var{fp}}, @w{off_t @var{offset}}, @w{off_t @var{length}})
+@deftypefun GpgmeError gpgme_data_new_from_filepart (@w{GpgmeData *@var{dh}}, @w{const char *@var{filename}}, @w{FILE *@var{fp}}, @w{off_t @var{offset}}, @w{size_t @var{length}})
 The function @code{gpgme_data_new_from_filepart} creates a new
 @code{GpgmeData} object and fills it with a part of the file specified
 by @var{filename} or @var{fp}.

@@ -1,6 +1,4 @@
 * ABI's to break:
-** gpgme_data_new_from_filepart takes an off_t as count, but should
-   take a size_t.
 ** GpgmePassphraseCb should have void **R_HD, not void *R_HD.
 ** trustlist has the same start/end problem as keylist had.
    In fact, all the _start functions have this problem!

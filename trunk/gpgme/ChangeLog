@@ -1,5 +1,11 @@
 2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
 
+	* data.c (gpgme_data_new_from_filepart): Change type of LENGTH
+	from off_t to size_t.
+	* gpgme.h: Likewise.
+
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
 	* wait.c (_gpgme_wait_on_condition): If the process finished,
 	reset the pending flag.  Also if the operation was cancelled.
 

@@ -1,7 +1,16 @@
+ * The LENGTH argument to gpgme_data_new_from_filepart changed its
+   type from off_t to the unsigned size_t.
+
  * There is a Texinfo manual documenting the API.
 
  * New interface gpgme_op_trustlist_end() to match
    gpgme_op_keylist_end.
+
+ * Interface changes relative to the 0.3.0 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_data_new_from_filepart	CHANGED: Type of LENGTH is size_t.
+gpgme_op_trustlist_next		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.0 (2001-12-19)
 ------------------------------------------------
@@ -45,7 +54,7 @@ Noteworthy changes in version 0.3.0 (2001-12-19)
    uses the GnuPG engine (`gpgmeplug') and one module which uses the
    GpgSM engine (`gpgsmplug').
 
-* Interface changes relative to the latest 0.2.x release:
+ * Interface changes relative to the latest 0.2.x release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_key_get_as_xml		CHANGED: Sub-user ids reversed in order.
 gpgme_key_get_string_attr	CHANGED: User ids reversed in order.
