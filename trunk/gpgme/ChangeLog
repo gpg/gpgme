@@ -1,5 +1,8 @@
 2004-04-15  Werner Koch  <wk@gnupg.org>
 
+	* verify.c (prepare_new_sig, _gpgme_verify_status_handler): Remove
+	unused result.signatures items.
+
 	* keylist.c (gpgme_get_key): Return an error if FPR is NULL.
 
 2004-04-08  Werner Koch  <wk@gnupg.org>
