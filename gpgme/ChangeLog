@@ -1,5 +1,9 @@
 2003-06-22  Marcus Brinkmann  <marcus@g10code.de>
 
+	* data-mem.c (mem_write): Copy original buffer content.
+
+2003-06-22  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.h (gpgme_user_ids_release, gpgme_user_ids_append): Remove
 	prototypes.
 
