@@ -83,10 +83,10 @@ GpgmeError
 gpgme_engine_check_version (GpgmeProtocol proto)
 {
   if (proto > sizeof (engine_ops) / sizeof (engine_ops[0]))
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine_ops[proto])
-    return mk_error (Invalid_Engine);
+    return GPGME_Invalid_Engine;
 
   if (engine_ops[proto]->check_version)
     return (*engine_ops[proto]->check_version) ();
@@ -143,19 +143,19 @@ _gpgme_engine_new (GpgmeProtocol proto, EngineObject *r_engine)
   const char *version;
 
   if (proto > sizeof (engine_ops) / sizeof (engine_ops[0]))
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine_ops[proto])
-    return mk_error (Invalid_Engine);
+    return GPGME_Invalid_Engine;
 
   path = _gpgme_engine_get_path (proto);
   version = _gpgme_engine_get_version (proto);
   if (!path || !version)
-    return mk_error (Invalid_Engine);
+    return GPGME_Invalid_Engine;
 
   engine = calloc (1, sizeof *engine);
   if (!engine)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
 
   engine->ops = engine_ops[proto];
   if (engine_ops[proto]->new)
@@ -216,10 +216,10 @@ _gpgme_engine_set_command_handler (EngineObject engine,
 				   GpgmeData linked_data)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->set_command_handler)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->set_command_handler) (engine->engine,
 					      fnc, fnc_value, linked_data);
@@ -230,10 +230,10 @@ GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject engine,
 						 void *fnc_value)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->set_colon_line_handler)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->set_colon_line_handler) (engine->engine,
 						 fnc, fnc_value);
@@ -243,10 +243,10 @@ GpgmeError
 _gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph, GpgmeData plain)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->decrypt)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->decrypt) (engine->engine, ciph, plain);
 }
@@ -255,10 +255,10 @@ GpgmeError
 _gpgme_engine_op_delete (EngineObject engine, GpgmeKey key, int allow_secret)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->delete)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->delete) (engine->engine, key, allow_secret);
 }
@@ -269,10 +269,10 @@ _gpgme_engine_op_edit (EngineObject engine, GpgmeKey key, GpgmeData out,
 		       GpgmeCtx ctx /* FIXME */)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->edit)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->edit) (engine->engine, key, out, ctx);
 }
@@ -283,10 +283,10 @@ _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
 			  GpgmeData plain, GpgmeData ciph, int use_armor)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->encrypt)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->encrypt) (engine->engine, recp, plain, ciph,
 				  use_armor);
@@ -299,10 +299,10 @@ _gpgme_engine_op_encrypt_sign (EngineObject engine, GpgmeRecipients recp,
 			       GpgmeCtx ctx /* FIXME */)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->encrypt_sign)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->encrypt_sign) (engine->engine, recp, plain, ciph,
 				       use_armor, ctx);
@@ -314,10 +314,10 @@ _gpgme_engine_op_export (EngineObject engine, GpgmeRecipients recp,
 			 GpgmeData keydata, int use_armor)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->export)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->export) (engine->engine, recp, keydata,
 				 use_armor);
@@ -329,10 +329,10 @@ _gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data,
 			 int use_armor, GpgmeData pubkey, GpgmeData seckey)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->genkey)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->genkey) (engine->engine, help_data, use_armor,
 				 pubkey, seckey);
@@ -343,10 +343,10 @@ GpgmeError
 _gpgme_engine_op_import (EngineObject engine, GpgmeData keydata)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->import)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->import) (engine->engine, keydata);
 }
@@ -357,10 +357,10 @@ _gpgme_engine_op_keylist (EngineObject engine, const char *pattern,
 			  int secret_only, int keylist_mode)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->keylist)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->keylist) (engine->engine, pattern, secret_only,
 				  keylist_mode);
@@ -372,10 +372,10 @@ _gpgme_engine_op_keylist_ext (EngineObject engine, const char *pattern[],
 			      int secret_only, int reserved, int keylist_mode)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->keylist_ext)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->keylist_ext) (engine->engine, pattern, secret_only,
 				      reserved, keylist_mode);
@@ -389,10 +389,10 @@ _gpgme_engine_op_sign (EngineObject engine, GpgmeData in, GpgmeData out,
 		       GpgmeCtx ctx /* FIXME */)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->sign)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->sign) (engine->engine, in, out, mode, use_armor,
 			       use_textmode, include_certs, ctx);
@@ -403,10 +403,10 @@ GpgmeError
 _gpgme_engine_op_trustlist (EngineObject engine, const char *pattern)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->trustlist)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->trustlist) (engine->engine, pattern);
 }
@@ -417,10 +417,10 @@ _gpgme_engine_op_verify (EngineObject engine, GpgmeData sig,
 			 GpgmeData signed_text, GpgmeData plaintext)
 {
   if (!engine)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!engine->ops->verify)
-    return mk_error (Not_Implemented);
+    return GPGME_Not_Implemented;
 
   return (*engine->ops->verify) (engine->engine, sig, signed_text, plaintext);
 }

@@ -127,7 +127,7 @@ add_notation (GpgmeCtx ctx, GpgmeStatusCode code, const char *data)
   if (!dh)
     {
       if (gpgme_data_new (&dh))
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
       ctx->result.verify->notation = dh;
       _gpgme_data_append_string (dh, "  <notation>\n");
     }
@@ -184,7 +184,7 @@ finish_sig (GpgmeCtx ctx, int stop)
       /* Create a new result structure.  */
       res2 = calloc (1, sizeof *res2);
       if (!res2)
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
 
       res2->next = ctx->result.verify;
       ctx->result.verify = res2;
@@ -375,12 +375,12 @@ _gpgme_op_verify_start (GpgmeCtx ctx, int synchronous,
   /* Check the supplied data.  */
   if (!sig)
     {
-      err = mk_error (No_Data);
+      err = GPGME_No_Data;
       goto leave;
     }
   if (!signed_text && !plaintext)
     {
-      err = mk_error (Invalid_Value);
+      err = GPGME_Invalid_Value;
       goto leave;
     }
   err = _gpgme_engine_op_verify (ctx->engine, sig, signed_text, plaintext);
@@ -624,15 +624,15 @@ gpgme_get_sig_key (GpgmeCtx ctx, int idx, GpgmeKey *r_key)
   VerifyResult result;
 
   if (!ctx || !r_key)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
   if (ctx->pending || !ctx->result.verify)
-    return mk_error (Busy);
+    return GPGME_Busy;
   
   for (result = ctx->result.verify;
        result && idx > 0; result = result->next, idx--)
     ;
   if (!result)
-    return mk_error (EOF);
+    return GPGME_EOF;
 
   return gpgme_get_key (ctx, result->fpr, r_key, 0, 0);
 }

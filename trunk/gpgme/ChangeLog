@@ -1,5 +1,13 @@
 2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* util.h (mk_error): Remove macro.
+	* conversion.c, data.c, data-compat.c, decrypt.c, delete.c,
+	edit.c, encrypt.c, encrypt-sign.c, engine.c, engine-gpgsm.c,
+	export.c, genkey.c, gpgme.c, import.c, key.c, keylist.c,
+	passphrase.c, progress.c, recipient.c, rungpg.c, sign.c,
+	signers.c, trustlist.c, verify.c, wait.c, wait-global.c,
+	wait-private (literally everywhere): Expand the mk_error macro.
+
 	* context.h (wait_on_request_or_fail): Remove macro.
 
 	* context.h (gpgme_context_s): Remove member ERROR.

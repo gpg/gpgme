@@ -39,12 +39,12 @@ _gpgme_data_new (GpgmeData *r_dh, struct gpgme_data_cbs *cbs)
   GpgmeData dh;
 
   if (!r_dh)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   *r_dh = NULL;
   dh = calloc (1, sizeof (*dh));
   if (!dh)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
 
   dh->cbs = cbs;
 
@@ -149,7 +149,7 @@ GpgmeError
 gpgme_data_set_encoding (GpgmeData dh, GpgmeDataEncoding enc)
 {
   if (!dh)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
   if (enc < 0 || enc > GPGME_DATA_ENCODING_ARMOR)
     return GPGME_Invalid_Value;
   dh->encoding = enc;
@@ -170,7 +170,7 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
 
   buflen = read (fd, buffer, BUFFER_SIZE);
   if (buflen < 0)
-    return mk_error (File_Error);
+    return GPGME_File_Error;
   if (buflen == 0)
     {
       _gpgme_io_close (fd);
@@ -193,7 +193,7 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
     {
       ssize_t amt = gpgme_data_read (dh, dh->pending, BUFFER_SIZE);
       if (amt < 0)
-	return mk_error (File_Error);
+	return GPGME_File_Error;
       if (amt == 0)
 	{
 	  _gpgme_io_close (fd);
@@ -207,7 +207,7 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
     return 0;
 
   if (nwritten <= 0)
-    return mk_error (File_Error);
+    return GPGME_File_Error;
 
   if (nwritten < dh->pending_len)
     memmove (dh->pending, dh->pending + nwritten, dh->pending_len - nwritten);

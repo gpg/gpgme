@@ -69,7 +69,7 @@ fd_table_put (fd_table_t fdt, int fd, int dir, void *opaque, int *idx)
       new_fds = realloc (fdt->fds, (fdt->size + FDT_ALLOCSIZE)
 			 * sizeof (*new_fds));
       if (!new_fds)
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
       
       fdt->fds = new_fds;
       fdt->size += FDT_ALLOCSIZE;
@@ -110,7 +110,7 @@ _gpgme_add_io_cb (void *data, int fd, int dir, GpgmeIOCb fnc, void *fnc_data,
 
   tag = malloc (sizeof *tag);
   if (!tag)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
   tag->ctx = ctx;
 
   /* Allocate a structure to hold information about the handler.  */
@@ -118,7 +118,7 @@ _gpgme_add_io_cb (void *data, int fd, int dir, GpgmeIOCb fnc, void *fnc_data,
   if (!item)
     {
       free (tag);
-      return mk_error (Out_Of_Core);
+      return GPGME_Out_Of_Core;
     }
   item->ctx = ctx;
   item->dir = dir;

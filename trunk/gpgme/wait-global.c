@@ -91,7 +91,7 @@ ctx_active (GpgmeCtx ctx)
 {
   struct ctx_list_item *li = malloc (sizeof (struct ctx_list_item));
   if (!li)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
   li->ctx = ctx;
 
   LOCK (ctx_list_lock);
@@ -266,7 +266,7 @@ gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 	{
 	  UNLOCK (ctx_list_lock);
 	  if (status)
-	    *status = mk_error (Out_Of_Core);
+	    *status = GPGME_Out_Of_Core;
 	  return NULL;
 	}
       fdt.size = i;
@@ -284,7 +284,7 @@ gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 	{
 	  free (fdt.fds);
 	  if (status)
-	    *status = mk_error (File_Error);
+	    *status = GPGME_File_Error;
 	  return NULL;
 	}
 
@@ -306,7 +306,7 @@ gpgme_wait (GpgmeCtx ctx, GpgmeError *status, int hang)
 
 	      err = item->handler (item->handler_value, fdt.fds[i].fd);
 	      if (!err && ictx->cancel)
-		err = mk_error (Canceled);
+		err = GPGME_Canceled;
 	      if (err)
 		{
 		  /* An error occured.  Close all fds in this context,

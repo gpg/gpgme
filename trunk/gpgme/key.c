@@ -333,7 +333,7 @@ key_new (GpgmeKey *r_key, int secret)
   *r_key = NULL;
   key = calloc (1, sizeof *key);
   if (!key)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
   key->ref_count = 1;
   *r_key = key;
   if (secret)
@@ -656,7 +656,7 @@ _gpgme_key_append_name (GpgmeKey key, const char *src)
      size, so that we are able to store the parsed stuff there too.  */
   uid = malloc (sizeof (*uid) + 2 * src_len + 3);
   if (!uid)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
   memset (uid, 0, sizeof *uid);
 
   dst = uid->name;
@@ -1199,12 +1199,12 @@ gpgme_get_key (GpgmeCtx ctx, const char *fpr, GpgmeKey *r_key,
   GpgmeError err;
 
   if (!ctx || !r_key)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
   if (ctx->pending)
-    return mk_error (Busy);
+    return GPGME_Busy;
   
   if (strlen (fpr) < 16)	/* We have at least a key ID.  */
-    return mk_error (Invalid_Key);
+    return GPGME_Invalid_Key;
 
   if (!force_update)
     {

@@ -46,11 +46,11 @@ gpgme_new (GpgmeCtx *r_ctx)
   GpgmeCtx ctx;
 
   if (!r_ctx)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
   *r_ctx = 0;
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
-    return mk_error (Out_Of_Core);
+    return GPGME_Out_Of_Core;
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
   ctx->verbosity = 1;
   ctx->include_certs = 1;
@@ -199,7 +199,7 @@ GpgmeError
 gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol protocol)
 {
   if (!ctx)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   switch (protocol)
     {
@@ -210,9 +210,9 @@ gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol protocol)
       ctx->use_cms = 1;
       break;
     case GPGME_PROTOCOL_AUTO:
-      return mk_error (Not_Implemented);
+      return GPGME_Not_Implemented;
     default:
-      return mk_error (Invalid_Value);
+      return GPGME_Invalid_Value;
     }
 
   return 0;
@@ -345,12 +345,12 @@ GpgmeError
 gpgme_set_keylist_mode (GpgmeCtx ctx, int mode)
 {
   if (!ctx)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (!((mode & GPGME_KEYLIST_MODE_LOCAL)
 	|| (mode & GPGME_KEYLIST_MODE_EXTERN)
 	|| (mode & GPGME_KEYLIST_MODE_SIGS)))
-     return mk_error (Invalid_Value);
+     return GPGME_Invalid_Value;
 
   ctx->keylist_mode = mode;
   return 0;

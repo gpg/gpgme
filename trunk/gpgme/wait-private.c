@@ -88,7 +88,7 @@ _gpgme_wait_on_condition (GpgmeCtx ctx, volatile int *cond)
 	     signal it.  */
 	  int idx;
 
-	  err = mk_error (File_Error);
+	  err = GPGME_File_Error;
 	  for (idx = 0; idx < ctx->fdt.size; idx++)
 	    if (ctx->fdt.fds[idx].fd != -1)
 	      _gpgme_io_close (ctx->fdt.fds[idx].fd);
@@ -111,7 +111,7 @@ _gpgme_wait_on_condition (GpgmeCtx ctx, volatile int *cond)
 
 	      err = item->handler (item->handler_value, ctx->fdt.fds[i].fd);
 	      if (!err && ctx->cancel)
-		err = mk_error (Canceled);
+		err = GPGME_Canceled;
 	      if (err)
 		{
 		  /* An error occured.  Close all fds in this context,

@@ -83,7 +83,7 @@ _gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
   GpgmeError err = 0;
 
   if (!fnc)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -93,7 +93,7 @@ _gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
   ctx->result.edit = malloc (sizeof *ctx->result.edit);
   if (!ctx->result.edit)
     {
-      err = mk_error (Out_Of_Core);
+      err = GPGME_Out_Of_Core;
       goto leave;
     }
   ctx->result.edit->fnc = fnc;
@@ -102,7 +102,7 @@ _gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
   /* Check the supplied data.  */
   if (!out)
     {
-      err = mk_error (Invalid_Value);
+      err = GPGME_Invalid_Value;
       goto leave;
     }
 

@@ -100,9 +100,9 @@ _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
     {
     case GPGME_STATUS_EOF:
       if (ctx->result.decrypt->failed)
-	return mk_error (Decryption_Failed);
+	return GPGME_Decryption_Failed;
       else if (!ctx->result.decrypt->okay)
-	return mk_error (No_Data);
+	return GPGME_No_Data;
       break;
 
     case GPGME_STATUS_DECRYPTION_OKAY:
@@ -172,12 +172,12 @@ _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
   /* Check the supplied data.  */
   if (!ciph)
     {
-      err = mk_error (No_Data);
+      err = GPGME_No_Data;
       goto leave;
     }
   if (!plain)
     {
-      err = mk_error (Invalid_Value);
+      err = GPGME_Invalid_Value;
       goto leave;
     }
 

@@ -44,7 +44,7 @@ gpgme_recipients_new (GpgmeRecipients *r_rset)
 
     rset = calloc ( 1, sizeof *rset  );
     if (!rset)
-        return mk_error (Out_Of_Core);
+        return GPGME_Out_Of_Core;
     *r_rset = rset;
     return 0;
 }
@@ -111,10 +111,10 @@ gpgme_recipients_add_name_with_validity (GpgmeRecipients rset,
     struct user_id_s *r;
 
     if (!name || !rset )
-        return mk_error (Invalid_Value);
+        return GPGME_Invalid_Value;
     r = malloc ( sizeof *r + strlen (name) );
     if (!r)
-        return mk_error (Out_Of_Core);
+        return GPGME_Out_Of_Core;
     r->validity = val;
     r->name_part = "";
     r->email_part = "";
@@ -164,7 +164,7 @@ GpgmeError
 gpgme_recipients_enum_open ( const GpgmeRecipients rset, void **ctx )
 {
     if (!rset || !ctx)
-        return mk_error (Invalid_Value);
+        return GPGME_Invalid_Value;
 
     *ctx = rset->list;
     return 0;
@@ -217,7 +217,7 @@ GpgmeError
 gpgme_recipients_enum_close ( const GpgmeRecipients rset, void **ctx )
 {
     if (!rset || !ctx)
-        return mk_error (Invalid_Value);
+        return GPGME_Invalid_Value;
     *ctx = NULL;
     return 0;
 }

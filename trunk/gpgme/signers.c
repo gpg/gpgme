@@ -74,7 +74,7 @@ GpgmeError
 gpgme_signers_add (GpgmeCtx ctx, const GpgmeKey key)
 {
   if (!ctx || !key)
-    return mk_error (Invalid_Value);
+    return GPGME_Invalid_Value;
 
   if (ctx->signers_len == ctx->signers_size)
     {
@@ -84,7 +84,7 @@ gpgme_signers_add (GpgmeCtx ctx, const GpgmeKey key)
 
       newarr = realloc (ctx->signers, n * sizeof (*newarr));
       if (!newarr)
-	return mk_error (Out_Of_Core);
+	return GPGME_Out_Of_Core;
       for (j = ctx->signers_size; j < n; j++)
 	newarr[j] = NULL;
       ctx->signers = newarr;
