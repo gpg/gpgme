@@ -34,7 +34,7 @@
    represent.  Returns -1 if one of the characters is not a
    hexadecimal digit.  */
 int
-_gpgme_hextobyte (const unsigned char *str)
+_gpgme_hextobyte (const char *str)
 {
   int val = 0;
   int i;

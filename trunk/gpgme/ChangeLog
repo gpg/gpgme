@@ -1,5 +1,14 @@
 2003-10-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* ath.h [HAVE_SYS_SELECT_H]: Include <sys/select.h> for fd_set.
+	[!HAVE_SYS_SELECT_H]: Include <sys/time.h>.
+
+	* conversion.c (_gpgme_hextobyte): Drop "unsigned" from type of
+	SRC argument.
+	* util.h (_gpgme_hextobyte): Likewise for prototype.
+
+	* gpgme.h: Remove trailing comma in enum.
+
 	* rungpg.c: Do not include <time.h>, <sys/time.h>, <sys/types.h>,
 	<signal.h>, <fcntl.h>, or "unistd.h".
 
