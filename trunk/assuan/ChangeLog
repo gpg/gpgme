@@ -1,3 +1,8 @@
+2004-06-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-buffer.c (assuan_write_line): If the line is longer than
+	the maximum line length, bail out early.
+
 2004-04-19  Werner Koch  <wk@gnupg.org>
 
 	* assuan-socket-connect.c: Include sys/types.h

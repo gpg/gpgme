@@ -238,6 +238,9 @@ assuan_write_line (ASSUAN_CONTEXT ctx, const char *line)
   s = strchr (line, '\n');
   len = s? (s-line) : strlen (line);
 
+  if (len > LINELENGTH - 2)
+    return ASSUAN_Line_Too_Long;
+
   /* fixme: we should do some kind of line buffering.  */
   if (ctx->log_fp)
     {
