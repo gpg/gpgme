@@ -39,10 +39,10 @@ static struct status_table_s status_table[] =
 EOF
 
 awk '
-/GPGME_STATUS_ENTER/     { okay=1 }
-!okay              {next}
-/}/                { exit 0 }
-/GPGME_STATUS_[A-Za-z_]*/ {  sub (/,/, "", $1); printf "  { \"%s\", %s },\n", substr($1,14), $1 }
+/GPGME_STATUS_ENTER/      { okay = 1 }
+!okay                     { next }
+/}/                       { exit 0 }
+/GPGME_STATUS_[A-Za-z_]*/ { sub (/,/, "", $1); printf "  { \"%s\", %s },\n", substr($1,14), $1 }
 ' | sort  
 
 cat <<EOF
