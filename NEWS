@@ -1,4 +1,4 @@
-Noteworthy changes in version 0.4.5 (unreleased)
+Noteworthy changes in version 0.4.5 (2004-03-07)
 ------------------------------------------------
 
  * GPGME is now compiled with LFS (large file support) by default.
@@ -67,6 +67,7 @@ gpgme_data_seek			CHANGED: off_t is now a largefile type.
 gpgme_data_new_from_filepart	CHANGED: off_t is now a largefile type.
 GPGME_KEYLIST_MODE_VALIDATE     NEW
 gpgme_cancel			NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.4 (2004-01-12)
 ------------------------------------------------
@@ -80,7 +81,6 @@ Noteworthy changes in version 0.4.4 (2004-01-12)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_key_sig_t			CHANGED: class deprecated, use new sig_class.
 gpgme_new_signature_t		CHANGED: class deprecated, use new sig_class.
-
 
 Noteworthy changes in version 0.4.3 (2003-10-06)
 ------------------------------------------------
@@ -159,7 +159,6 @@ gpgme_new_signature_t		CHANGED: New type for class field.
 gpgme_set_locale		NEW
 gpgme_hash_algo_name		CHANGED: Slight adjustment of algo names.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 Noteworthy changes in version 0.4.2 (2003-07-30)
 ------------------------------------------------

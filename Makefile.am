@@ -19,7 +19,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = README-alpha autogen.sh gpgme.spec.in README.CVS
+EXTRA_DIST = README-alpha gpgme.spec.in
 
 if BUILD_ASSUAN
 assuan = assuan
