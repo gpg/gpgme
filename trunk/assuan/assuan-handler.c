@@ -44,12 +44,16 @@ std_handler_nop (ASSUAN_CONTEXT ctx, char *line)
 static int
 std_handler_cancel (ASSUAN_CONTEXT ctx, char *line)
 {
+  if (ctx->cancel_notify_fnc)
+    ctx->cancel_notify_fnc (ctx);
   return set_error (ctx, Not_Implemented, NULL); 
 }
   
 static int
 std_handler_bye (ASSUAN_CONTEXT ctx, char *line)
 {
+  if (ctx->bye_notify_fnc)
+    ctx->bye_notify_fnc (ctx);
   return -1; /* pretty simple :-) */
 }
   
@@ -62,7 +66,9 @@ std_handler_auth (ASSUAN_CONTEXT ctx, char *line)
 static int
 std_handler_reset (ASSUAN_CONTEXT ctx, char *line)
 {
-  return set_error (ctx, Not_Implemented, NULL); 
+  if (ctx->reset_notify_fnc)
+    ctx->reset_notify_fnc (ctx);
+  return 0;
 }
   
 static int
@@ -82,8 +88,9 @@ parse_cmd_input_output (ASSUAN_CONTEXT ctx, char *line, int *rfd)
   if (!digitp (*line))
     return set_error (ctx, Syntax_Error, "number required");
   *rfd = strtoul (line, &endp, 10);
-  if (*endp)
-    return set_error (ctx, Syntax_Error, "garbage found");
+  /* remove that argument so that a notify handler won't see it */
+  memset (line, ' ', endp? (endp-line):strlen(line));
+
   if (*rfd == ctx->inbound.fd)
     return set_error (ctx, Parameter_Conflict, "fd same as inbound fd");
   if (*rfd == ctx->outbound.fd)
@@ -101,6 +108,8 @@ std_handler_input (ASSUAN_CONTEXT ctx, char *line)
   if (rc)
     return rc;
   ctx->input_fd = fd;
+  if (ctx->input_notify_fnc)
+    ctx->input_notify_fnc (ctx, line);
   return 0;
 }
 
@@ -114,6 +123,8 @@ std_handler_output (ASSUAN_CONTEXT ctx, char *line)
   if (rc)
     return rc;
   ctx->output_fd = fd;
+  if (ctx->output_notify_fnc)
+    ctx->output_notify_fnc (ctx, line);
   return 0;
 }
 
@@ -128,7 +139,7 @@ static struct {
   const char *name;
   int cmd_id;
   int (*handler)(ASSUAN_CONTEXT, char *line);
-  int always; /* always initializethis command */
+  int always; /* always initialize this command */
 } std_cmd_table[] = {
   { "NOP",    ASSUAN_CMD_NOP,    std_handler_nop, 1 },
   { "CANCEL", ASSUAN_CMD_CANCEL, std_handler_cancel, 1 },
@@ -220,6 +231,54 @@ assuan_register_command (ASSUAN_CONTEXT ctx,
   return 0;
 }
 
+int
+assuan_register_bye_notify (ASSUAN_CONTEXT ctx, void (*fnc)(ASSUAN_CONTEXT))
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  ctx->bye_notify_fnc = fnc;
+  return 0;
+}
+
+int
+assuan_register_reset_notify (ASSUAN_CONTEXT ctx, void (*fnc)(ASSUAN_CONTEXT))
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  ctx->reset_notify_fnc = fnc;
+  return 0;
+}
+
+int
+assuan_register_cancel_notify (ASSUAN_CONTEXT ctx, void (*fnc)(ASSUAN_CONTEXT))
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  ctx->cancel_notify_fnc = fnc;
+  return 0;
+}
+
+int
+assuan_register_input_notify (ASSUAN_CONTEXT ctx,
+                              void (*fnc)(ASSUAN_CONTEXT, const char *))
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  ctx->input_notify_fnc = fnc;
+  return 0;
+}
+
+int
+assuan_register_output_notify (ASSUAN_CONTEXT ctx,
+                              void (*fnc)(ASSUAN_CONTEXT, const char *))
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  ctx->output_notify_fnc = fnc;
+  return 0;
+}
+
+
 /* Helper to register the standards commands */
 int
 _assuan_register_std_commands (ASSUAN_CONTEXT ctx)
@@ -289,6 +348,61 @@ dispatch_command (ASSUAN_CONTEXT ctx, char *line, int linelen)
 
 
 
+
+static int
+process_request (ASSUAN_CONTEXT ctx)
+{
+  int rc;
+
+  if (ctx->in_inquire)
+    return ASSUAN_Nested_Commands;
+
+  rc = _assuan_read_line (ctx);
+  if (rc)
+    return rc;
+  if (*ctx->inbound.line == '#' || !ctx->inbound.linelen)
+    return 0; /* comment line - ignore */
+
+  ctx->outbound.data.error = 0;
+  ctx->outbound.data.linelen = 0;
+  /* dispatch command and return reply */
+  rc = dispatch_command (ctx, ctx->inbound.line, ctx->inbound.linelen);
+  /* check from data write errors */
+  if (ctx->outbound.data.fp)
+    { /* Flush the data lines */
+      fclose (ctx->outbound.data.fp);
+      ctx->outbound.data.fp = NULL;
+      if (!rc && ctx->outbound.data.error)
+        rc = ctx->outbound.data.error;
+    }
+  /* Error handling */
+  if (!rc)
+    {
+      rc = assuan_write_line (ctx, "OK");
+    }
+  else if (rc == -1)
+    { /* No error checking because the peer may have already disconnect */ 
+      assuan_write_line (ctx, "OK closing connection");
+    }
+  else 
+    {
+      char errline[256];
+
+      if (rc < 100)
+        sprintf (errline, "ERR %d server fault (%.50s)",
+                 ASSUAN_Server_Fault, assuan_strerror (rc));
+      else
+        {
+          const char *text = ctx->err_no == rc? ctx->err_str:NULL;
+
+          sprintf (errline, "ERR %d %.50s%s%.100s",
+                   rc, assuan_strerror (rc), text? " - ":"", text?text:"");
+        }
+      rc = assuan_write_line (ctx, errline);
+    }
+
+  return rc;
+}
 
 /**
  * assuan_process:
@@ -307,55 +421,7 @@ assuan_process (ASSUAN_CONTEXT ctx)
   int rc;
 
   do {
-    /* Read the line but skip comments */
-    do
-      {
-        rc = _assuan_read_line (ctx);
-        if (rc)
-          return rc;
-      
-/*          fprintf (stderr, "DBG-assuan: got %d bytes `%s'\n", */
-/*                   ctx->inbound.linelen, ctx->inbound.line); */
-      }
-    while ( *ctx->inbound.line == '#' || !ctx->inbound.linelen);
-
-    ctx->outbound.data.error = 0;
-    ctx->outbound.data.linelen = 0;
-    /* dispatch command and return reply */
-    rc = dispatch_command (ctx, ctx->inbound.line, ctx->inbound.linelen);
-    /* check from data write errors */
-    if (ctx->outbound.data.fp)
-      { /* Flush the data lines */
-        fclose (ctx->outbound.data.fp);
-        ctx->outbound.data.fp = NULL;
-        if (!rc && ctx->outbound.data.error)
-          rc = ctx->outbound.data.error;
-      }
-    /* Error handling */
-    if (!rc)
-      {
-        rc = _assuan_write_line (ctx, "OK");
-      }
-    else if (rc == -1)
-      { /* No error checking because the peer may have already disconnect */ 
-        _assuan_write_line (ctx, "OK  Bye, bye - hope to meet you again");
-      }
-    else 
-      {
-        char errline[256];
-
-        if (rc < 100)
-          sprintf (errline, "ERR %d server fault (%.50s)",
-                   ASSUAN_Server_Fault, assuan_strerror (rc));
-        else
-          {
-            const char *text = ctx->err_no == rc? ctx->err_str:NULL;
-
-            sprintf (errline, "ERR %d %.50s%s%.100s",
-                     rc, assuan_strerror (rc), text? " - ":"", text?text:"");
-          }
-        rc = _assuan_write_line (ctx, errline);
-      }
+    rc = process_request (ctx);
   } while (!rc);
 
   if (rc == -1)
@@ -364,6 +430,65 @@ assuan_process (ASSUAN_CONTEXT ctx)
   return rc;
 }
 
+
+/**
+ * assuan_process_next:
+ * @ctx: Assuan context
+ * 
+ * Same as assuan_process() but the user has to provide the outer
+ * loop.  He should loop as long as the return code is zero and stop
+ * otherwise; -1 is regular end.
+ * 
+ * See also: assuan_get_active_fds()
+ * Return value: -1 for end of server, 0 on success or an error code
+ **/
+int 
+assuan_process_next (ASSUAN_CONTEXT ctx)
+{
+  return process_request (ctx);
+}
+
+
+/**
+ * assuan_get_active_fds:
+ * @ctx: Assuan context
+ * @what: 0 for read fds, 1 for write fds
+ * @fdarray: Caller supplied array to store the FDs
+ * @fdarraysize: size of that array
+ * 
+ * Return all active filedescriptors for the given context.  This
+ * function can be used to select on the fds and call
+ * assuan_process_next() if there is an active one.
+ *
+ * Note, that write FDs are not yet supported.
+ * 
+ * Return value: number of FDs active and put into @fdarray or -1 on
+ * error which is most likely a too small fdarray.
+ **/
+int 
+assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
+                       int *fdarray, int fdarraysize)
+{
+  int n = 0;
+
+  if (ctx || fdarraysize < 2 || what < 0 || what > 1)
+    return -1;
+
+  if (!what)
+    {
+      if (ctx->inbound.fd != -1)
+        fdarray[n++] = ctx->inbound.fd;
+    }
+  else
+    {
+      if (ctx->outbound.fd != -1)
+        fdarray[n++] = ctx->outbound.fd;
+      if (ctx->outbound.data.fp)
+        fdarray[n++] = fileno (ctx->outbound.data.fp);
+    }
+
+  return n;
+}
 
 /* Return a FP to be used for data output.  The FILE pointer is valid
    until the end of a handler.  So a close is not needed.  Assuan does
@@ -414,7 +539,7 @@ assuan_write_status (ASSUAN_CONTEXT ctx, const char *keyword, const char *text)
           strcat (buffer, " ");
           strcat (buffer, text);
         }
-      _assuan_write_line (ctx, buffer);
+      assuan_write_line (ctx, buffer);
     }
   else if ( (helpbuf = xtrymalloc (n)) )
     {
@@ -425,7 +550,7 @@ assuan_write_status (ASSUAN_CONTEXT ctx, const char *keyword, const char *text)
           strcat (helpbuf, " ");
           strcat (helpbuf, text);
         }
-      _assuan_write_line (ctx, helpbuf);
+      assuan_write_line (ctx, helpbuf);
       xfree (helpbuf);
     }
 }

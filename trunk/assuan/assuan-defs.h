@@ -35,6 +35,10 @@ struct cmdtbl_s {
 struct assuan_context_s {
   AssuanError err_no;
   const char *err_str;
+
+  int is_server;  /* set if this is context belongs to a server */
+  int in_inquire;
+  char *hello_line;
   
   void *user_pointer;  /* for assuan_[gs]et_pointer () */
 
@@ -48,6 +52,7 @@ struct assuan_context_s {
     struct {
       char line[LINELENGTH];
       int linelen ;
+      int pending; /* i.e. at least one line is available in the attic */
     } attic;
   } inbound;
 
@@ -69,6 +74,12 @@ struct assuan_context_s {
   size_t cmdtbl_used; /* used entries */
   size_t cmdtbl_size; /* allocated size of table */
 
+  void (*bye_notify_fnc)(ASSUAN_CONTEXT);
+  void (*reset_notify_fnc)(ASSUAN_CONTEXT);
+  void (*cancel_notify_fnc)(ASSUAN_CONTEXT);
+  void (*input_notify_fnc)(ASSUAN_CONTEXT, const char *);
+  void (*output_notify_fnc)(ASSUAN_CONTEXT, const char *);
+
 
   int input_fd;   /* set by INPUT command */
   int output_fd;  /* set by OUTPUT command */
@@ -82,12 +93,12 @@ struct assuan_context_s {
 int _assuan_register_std_commands (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-buffer.c --*/
-int _assuan_write_line (ASSUAN_CONTEXT ctx, const char *line);
 int _assuan_read_line (ASSUAN_CONTEXT ctx);
 int _assuan_cookie_write_data (void *cookie, const char *buffer, size_t size);
 int _assuan_cookie_write_flush (void *cookie);
 
-
+/*-- assuan-client.c --*/
+AssuanError _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off);
 
 
 /*-- assuan-util.c --*/
