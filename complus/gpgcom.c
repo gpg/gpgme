@@ -516,6 +516,7 @@ enter_complus ()
     running = CreateEvent (NULL, FALSE, FALSE, NULL );
     fprintf (stderr,"*** CoInitialize() done; event=%lx\n", (unsigned long)running );
 
+    igpgme_register_exit_event (running);
     factory = igpgme_factory_new ( &clsid ); 
     fprintf (stderr,"*** igpgme_factory_new() done; got=%p\n", factory );
     hr = CoRegisterClassObject (&clsid, (IUnknown*)factory, 
@@ -532,6 +533,7 @@ enter_complus ()
 
     WaitForSingleObject ( running, INFINITE );
     fprintf (stderr,"*** shutting down\n" );
+    igpgme_register_exit_event (NULL);
     CloseHandle (running);
     CoRevokeClassObject ( reg );
     fprintf (stderr,"*** class object revoked\n" );

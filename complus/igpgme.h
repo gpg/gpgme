@@ -45,6 +45,7 @@ DEFINE_GUID(IID_IGpgme,       0x3811fd50, 0x7f72, 0x11d5,
 
 typedef struct IGpgme IGpgme;
 
+void igpgme_register_exit_event (HANDLE ev);
 IClassFactory *igpgme_factory_new( CLSID *r_clsid );
 void igpgme_factory_release ( IClassFactory *factory );
 
