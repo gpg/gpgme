@@ -78,7 +78,10 @@ typedef enum  {
     STATUS_GOT_IT	      ,
     STATUS_PROGRESS 	      ,
     STATUS_SIG_CREATED	      ,
-    STATUS_SESSION_KEY        
+    STATUS_SESSION_KEY        ,
+    STATUS_NOTATION_NAME      ,
+    STATUS_NOTATION_DATA      ,
+    STATUS_POLICY_URL
 } GpgStatusCode;
 
 typedef void (*GpgStatusHandler)( GpgmeCtx, GpgStatusCode code, char *args ); 

@@ -28,27 +28,63 @@
 #include "context.h"
 #include "ops.h"
 
-typedef enum {
-    VERIFY_STATUS_NONE = 0,
-    VERIFY_STATUS_NOSIG,
-    VERIFY_STATUS_NOKEY,
-    VERIFY_STATUS_ERROR,
-    VERIFY_STATUS_BAD,
-    VERIFY_STATUS_GOOD
-} VerifyStatus;
-
 struct verify_result_s {
-    VerifyStatus status;
+    GpgmeSigStat status;
+    GpgmeData notation; /* we store an XML fragment here */
 
+    int notation_in_data; /* private to add_notation() */
 };
 
 
 void
 _gpgme_release_verify_result ( VerifyResult res )
 {
+    gpgme_data_release ( res->notation );
     xfree (res);
 }
 
+
+static void
+add_notation ( GpgmeCtx ctx, GpgStatusCode code, const char *data )
+{
+    GpgmeData dh = ctx->result.verify->notation;
+
+    if ( !dh ) {
+        if ( gpgme_data_new ( &dh, NULL, 0,0) ) {
+            ctx->out_of_core = 1;
+            return;
+        }
+        ctx->result.verify->notation = dh;
+        _gpgme_data_append_string (dh, "  <notation>\n");
+    }
+
+    if ( code == STATUS_NOTATION_DATA ) {
+        if ( !ctx->result.verify->notation_in_data )
+            _gpgme_data_append_string (dh, "  <data>");
+        _gpgme_data_append_percentstring_for_xml (dh, data);
+        ctx->result.verify->notation_in_data = 1;
+        return;
+    }
+
+    if ( ctx->result.verify->notation_in_data ) {
+        _gpgme_data_append_string (dh, "</data>\n");
+        ctx->result.verify->notation_in_data = 0;
+    }
+
+    if ( code == STATUS_NOTATION_NAME ) {
+        _gpgme_data_append_string (dh, "  <name>");
+        _gpgme_data_append_percentstring_for_xml (dh, data);
+        _gpgme_data_append_string (dh, "</name>\n");
+    }
+    else if ( code == STATUS_POLICY_URL ) {
+        _gpgme_data_append_string (dh, "  <policy>");
+        _gpgme_data_append_percentstring_for_xml (dh, data);
+        _gpgme_data_append_string (dh, "</policy>\n");
+    }
+    else {
+        assert (0);
+    }
+}
 
 static void
 verify_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
@@ -67,19 +103,27 @@ verify_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
     assert ( ctx->result_type == RESULT_TYPE_VERIFY );
 
     /* FIXME: For now we handle only one signature */
-    /* FIXME: Collect useful information */
+    /* FIXME: Collect useful information
+       and return them as XML */
     switch (code) {
       case STATUS_GOODSIG:
-        ctx->result.verify->status = VERIFY_STATUS_GOOD;
+        ctx->result.verify->status = GPGME_SIG_STAT_GOOD;
         break;
       case STATUS_BADSIG:
-        ctx->result.verify->status = VERIFY_STATUS_BAD;
+        ctx->result.verify->status = GPGME_SIG_STAT_BAD;
         break;
       case STATUS_ERRSIG:
-        ctx->result.verify->status = VERIFY_STATUS_ERROR;
+        ctx->result.verify->status = GPGME_SIG_STAT_ERROR;
         /* FIXME: distinguish between a regular error and a missing key.
          * this is encoded in the args. */
         break;
+
+      case STATUS_NOTATION_NAME:
+      case STATUS_NOTATION_DATA:
+      case STATUS_POLICY_URL:
+        add_notation ( ctx, code, args );
+        break;
+
       default:
         /* ignore all other codes */
         fprintf (stderr, "verify_status: code=%d not handled\n", code );
@@ -151,11 +195,20 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
 }
 
 
-
 GpgmeError
-gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text )
+gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
+                  GpgmeSigStat *r_stat )
 {
-    int rc = gpgme_op_verify_start ( c, sig, text );
+    int rc;
+
+    if ( !r_stat )
+        return mk_error (Invalid_Value);
+
+    gpgme_data_release (c->notation);
+    c->notation = NULL;
+    
+    *r_stat = GPGME_SIG_STAT_NONE;
+    rc = gpgme_op_verify_start ( c, sig, text );
     if ( !rc ) {
         gpgme_wait (c, 1);
         if ( c->result_type != RESULT_TYPE_VERIFY )
@@ -164,26 +217,18 @@ gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text )
             rc = mk_error (Out_Of_Core);
         else {
             assert ( c->result.verify );
-            switch ( c->result.verify->status ) {
-              case VERIFY_STATUS_NONE:
-                fputs ("Verification Status: None\n", stdout);
-                break;
-              case VERIFY_STATUS_NOSIG:
-                fputs ("Verification Status: No Signature\n", stdout);
-                break;
-              case VERIFY_STATUS_GOOD:
-                fputs ("Verification Status: Good\n", stdout);
-                break;
-              case VERIFY_STATUS_BAD:
-                fputs ("Verification Status: Bad\n", stdout);
-                break;
-              case VERIFY_STATUS_NOKEY:
-                fputs ("Verification Status: No Key\n", stdout);
-                break;
-              case VERIFY_STATUS_ERROR:
-                fputs ("Verification Status: Error\n", stdout);
-                break;
+            if ( c->result.verify->notation ) {
+                GpgmeData dh = c->result.verify->notation;
+                
+                if ( c->result.verify->notation_in_data ) {
+                    _gpgme_data_append_string (dh, "</data>\n");
+                    c->result.verify->notation_in_data = 0;
+                }
+                _gpgme_data_append_string (dh, "</notation>\n");
+                c->notation = dh;
+                c->result.verify->notation = NULL;
             }
+            *r_stat = c->result.verify->status;
         }
         c->pending = 0;
     }

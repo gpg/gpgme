@@ -38,10 +38,21 @@ void _gpgme_append_gpg_args_from_recipients (
 
 
 /*-- data.c --*/
+char *        _gpgme_data_release_and_return_string ( GpgmeData dh );
 GpgmeDataMode _gpgme_data_get_mode ( GpgmeData dh );
 void          _gpgme_data_set_mode ( GpgmeData dh, GpgmeDataMode mode );
+char *        _gpgme_data_get_as_string ( GpgmeData dh );
 GpgmeError    _gpgme_data_append ( GpgmeData dh,
                                    const char *buffer, size_t length );
+GpgmeError    _gpgme_data_append_string ( GpgmeData dh, const char *s );
+GpgmeError    _gpgme_data_append_string_for_xml ( GpgmeData dh,
+                                                  const char *s);
+GpgmeError    _gpgme_data_append_for_xml ( GpgmeData dh,
+                                           const char *buffer,
+                                           size_t len );
+GpgmeError    _gpgme_data_append_percentstring_for_xml ( GpgmeData dh,
+                                                         const char *string );
+
 
 /*-- key.c --*/
 GpgmeError _gpgme_key_new( GpgmeKey *r_key );

@@ -127,6 +127,8 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
     if (!line)
         return; /* EOF */
 
+    /*fprintf (stderr, "line=`%s'\n", line );*/
+
     for (p = line; p; p = pend) {
         field++;
         pend = strchr (p, ':');
@@ -251,18 +253,11 @@ static void
 finish_key ( GpgmeCtx ctx )
 {
     GpgmeKey key = ctx->tmp_key;
-    struct user_id_s *u;
     struct key_queue_item_s *q, *q2;
     
     assert (key);
     ctx->tmp_key = NULL;
     
-    fprintf (stdout, "finish_key: keyid=`%s'\n", key->keyid );
-    if ( key->fingerprint )
-        fprintf (stdout, "finish_key:  fpr=`%s'\n", key->fingerprint );
-    for (u=key->uids; u; u = u->next ) 
-        fprintf (stdout, "finish_key:  uid=`%s'\n", u->name );
-        
     q = xtrymalloc ( sizeof *q );
     if ( !q ) {
         _gpgme_key_release (key);
@@ -322,6 +317,7 @@ gpgme_op_keylist_start ( GpgmeCtx c,  const char *pattern, int secret_only )
         _gpgme_gpg_add_arg ( c->gpg, "--verbose" );
     _gpgme_gpg_add_arg ( c->gpg, "--with-colons" );
     _gpgme_gpg_add_arg ( c->gpg, "--with-fingerprint" );
+    /*_gpgme_gpg_add_arg ( c->gpg, "--fast-list-mode" );*/
     _gpgme_gpg_add_arg ( c->gpg, secret_only?
                          "--list-secret-keys":"--list-keys" );
     

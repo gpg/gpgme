@@ -25,9 +25,14 @@
 
 #include "util.h"
 #include "context.h"
-
+#include "ops.h"
 
 #define ALLOC_CHUNK 1024
+#define my_isdigit(a)  ( (a) >='0' && (a) <= '9' )
+#define my_isxdigit(a) ( my_isdigit((a))               \
+                         || ((a) >= 'A' && (a) <= 'F') \
+                         || ((a) >= 'f' && (a) <= 'f') )
+
 
 
 /**
@@ -93,6 +98,27 @@ gpgme_data_release ( GpgmeData dh )
     }
 }
 
+char *
+_gpgme_data_release_and_return_string ( GpgmeData dh )
+{
+    char *val = NULL;
+
+    if (dh) {
+        if ( _gpgme_data_append ( dh, "", 0 ) ) /* append EOS */
+            xfree (dh->private_buffer );
+        else {
+            val = dh->private_buffer;
+            if ( !val && dh->data ) {
+                val = xtrymalloc ( dh->len );
+                if ( val )
+                    memcpy ( val, dh->data, dh->len );
+            }
+        }
+        xfree (dh);
+    }
+    return val;
+}
+
 
 GpgmeDataType
 gpgme_data_get_type ( GpgmeData dh )
@@ -149,6 +175,25 @@ gpgme_data_read ( GpgmeData dh, char *buffer, size_t length, size_t *nread )
     return 0;
 } 
 
+/* 
+ * This function does make sense when we know that it contains no nil chars.
+ */
+char *
+_gpgme_data_get_as_string ( GpgmeData dh )
+{
+    char *val = NULL;
+
+    if (dh) {
+        val = xtrymalloc ( dh->len+1 );
+        if ( val ) {
+            memcpy ( val, dh->data, dh->len );
+            val[dh->len] = 0;
+        }
+    }
+    return val;
+}
+
+
 
 GpgmeError
 _gpgme_data_append ( GpgmeData dh, const char *buffer, size_t length )
@@ -186,7 +231,8 @@ _gpgme_data_append ( GpgmeData dh, const char *buffer, size_t length )
             dh->private_len = 0;
             return mk_error (Out_Of_Core);
         }
-        dh->writepos = 0;
+        memcpy ( dh->private_buffer, dh->data, dh->len );
+        dh->writepos = dh->len;
         dh->data = dh->private_buffer;
     }
 
@@ -210,6 +256,120 @@ _gpgme_data_append ( GpgmeData dh, const char *buffer, size_t length )
 
     return 0;
 }
+
+GpgmeError
+_gpgme_data_append_string ( GpgmeData dh, const char *s )
+{
+    return _gpgme_data_append ( dh, s, s? strlen(s):0 );
+}
+
+
+GpgmeError
+_gpgme_data_append_for_xml ( GpgmeData dh,
+                             const char *buffer, size_t len )
+{
+    const char *text, *s;
+    size_t n;
+    int rc = 0; 
+       
+    if ( !dh || !buffer )
+        return mk_error (Invalid_Value);
+
+    do {
+        for (text=NULL, s=buffer, n=len; n && !text; s++, n-- ) {
+            if ( *s == '<' ) 
+                text = "&lt;";
+            else if ( *s == '>' ) 
+                text = "&gt;";  /* not sure whether this is really needed */
+            else if ( *s == '&' ) 
+                text = "&amp;";
+            else if ( !*s )
+                text = "&#00;";
+        }
+        if (text) {
+            s--; n++;
+        }
+        if (s != buffer) 
+            rc = _gpgme_data_append ( dh, buffer, s-buffer );
+        if ( !rc && text) {
+            rc = _gpgme_data_append_string ( dh, text );
+            s++; n--;
+        }
+        buffer = s;
+        len = n;
+    } while ( !rc && len );
+    return rc;
+}
+
+
+/*
+ * Append a string to DATA and convert it so that the result will be 
+ * valid XML. 
+ */
+GpgmeError
+_gpgme_data_append_string_for_xml ( GpgmeData dh, const char *string )
+{
+    return _gpgme_data_append_for_xml ( dh, string, strlen (string) );
+}
+
+
+static int
+hextobyte( const byte *s )
+{
+    int c;
+
+    if( *s >= '0' && *s <= '9' )
+	c = 16 * (*s - '0');
+    else if( *s >= 'A' && *s <= 'F' )
+	c = 16 * (10 + *s - 'A');
+    else if( *s >= 'a' && *s <= 'f' )
+	c = 16 * (10 + *s - 'a');
+    else
+	return -1;
+    s++;
+    if( *s >= '0' && *s <= '9' )
+	c += *s - '0';
+    else if( *s >= 'A' && *s <= 'F' )
+	c += 10 + *s - 'A';
+    else if( *s >= 'a' && *s <= 'f' )
+	c += 10 + *s - 'a';
+    else
+	return -1;
+    return c;
+}
+
+
+
+
+/* 
+ * Append a string with percent style (%XX) escape characters as XML
+ */
+GpgmeError
+_gpgme_data_append_percentstring_for_xml ( GpgmeData dh, const char *string )
+{
+    const byte *s;
+    byte *buf, *d;
+    int val;
+    GpgmeError err;
+
+    d = buf = xtrymalloc ( strlen (string) );
+    for (s=string; *s; s++ ) {
+        if ( *s == '%' && (val=hextobyte (s+1)) != -1 ) {
+            *d++ = val;
+            s += 2;
+        }
+        else
+            *d++ = *s;
+    }
+
+    err = _gpgme_data_append_for_xml ( dh, buf, d - buf );
+    xfree (buf);
+    return err;
+}
+
+
+
+
 
 
 

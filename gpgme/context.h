@@ -60,6 +60,8 @@ struct gpgme_context_s {
         VerifyResult verify;
     } result;
 
+    GpgmeData notation;    /* last signature notation */
+
     GpgmeKey tmp_key;       /* used by keylist.c */
     volatile int key_cond;  /* something new is available */
     struct key_queue_item_s *key_queue;

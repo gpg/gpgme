@@ -41,7 +41,14 @@ doit ( GpgmeCtx ctx, const char *pattern )
     fail_if_err (err);
     
     while ( !(err = gpgme_op_keylist_next ( ctx, &key )) ) {
-        printf ("Got key object (%p)\n", key );
+        char *p;
+        printf ("<!-- Begin key object (%p) -->\n", key );
+        p = gpgme_key_get_as_xml ( key );
+        if ( p )
+            fputs ( p, stdout );
+        else
+            fputs("<!-- Ooops: gpgme_key_get_as_xml failed -->\n", stdout );
+        printf ("<!-- End key object (%p) -->\n", key );
     }
     if ( err != GPGME_EOF )
         fail_if_err (err);
