@@ -60,11 +60,12 @@
 #define GPGMEPLUG_PROTOCOL GPGME_PROTOCOL_OpenPGP
 #endif
 
+// definitions for signing
 #ifndef GPGMEPLUG_SIGN_MAKE_MIME_OBJECT
 #define GPGMEPLUG_SIGN_INCLUDE_CLEARTEXT true
 #define GPGMEPLUG_SIGN_MAKE_MIME_OBJECT  true
 #define GPGMEPLUG_SIGN_MAKE_MULTI_MIME   true
-#define GPGMEPLUG_SIGN_CTYPE_MAIN        "multipart/signed; protocol=application/pgp-signature; micalg=pgp-sha1"
+#define GPGMEPLUG_SIGN_CTYPE_MAIN        "multipart/signed;protocol=application/pgp-signature;micalg=pgp-sha1"
 #define GPGMEPLUG_SIGN_CDISP_MAIN        ""
 #define GPGMEPLUG_SIGN_CTENC_MAIN        ""
 #define GPGMEPLUG_SIGN_CTYPE_VERSION     ""
@@ -78,6 +79,7 @@
 #define GPGMEPLUG_SIGN_FLAT_SEPARATOR    ""
 #define GPGMEPLUG_SIGN_FLAT_POSTFIX      ""
 #endif
+// definitions for encoding
 #ifndef GPGMEPLUG_ENC_MAKE_MIME_OBJECT
 #define GPGMEPLUG_ENC_INCLUDE_CLEARTEXT  false
 #define GPGMEPLUG_ENC_MAKE_MIME_OBJECT   true
@@ -768,8 +770,8 @@ void storeNewCharPtr( char** dest, const char* src )
 {
   int sLen = strlen( src );
   *dest = malloc( sLen + 1 );
-  strncpy( *dest, src, sLen );
-  *dest[sLen] = '\0';
+  strcpy( *dest, src );
+  (*dest)[sLen] = '\0';
 }
 
 
