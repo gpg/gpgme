@@ -31,7 +31,6 @@ EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc geheim.txt \
 
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
-INCLUDES = 
 LDADD = ../gpgme/libgpgme.la
 
 # We don't run t-genkey in the test suite, because it taes too long
