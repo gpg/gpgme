@@ -1,5 +1,8 @@
 2004-04-05  Werner Koch  <wk@gnupg.org>
 
+	* verify.c (parse_error): Compare only the last part of the where
+	token.
+
 	* engine-gpgsm.c (gpgsm_keylist_ext): Send with-validation
 	option.  Fixed pattern construction.
 
