@@ -38,7 +38,8 @@ EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 
 INCLUDES = -I$(top_srcdir)/gpgme
 
-LDADD = ../../gpgme/libgpgme.la
+AM_CPPFLAGS = @GPG_ERROR_CFLAGS@
+LDADD = ../../gpgme/libgpgme.la @GPG_ERROR_LIBS@
 
 # We don't run t-genkey in the test suite, because it takes too long
 noinst_PROGRAMS = $(TESTS) t-genkey
