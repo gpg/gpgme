@@ -1,3 +1,13 @@
+2001-01-31  Werner Koch  <wk@gnupg.org>
+
+	* wait.c (_gpgme_wait_on_condition): Remove all exit code processing.
+	(propagate_term_results,clear_active_fds): Removed.
+	(count_active_fds): Renamed to .. 
+	(count_active_and_thawed_fds): .. this and count only thawed fds. 
+
+	* rungpg.c (gpg_colon_line_handler): Return colon.eof and not
+	status.eof ;-)
+
 2001-01-30  Werner Koch  <wk@gnupg.org>
 
 	* w32-io.c (_gpgme_io_spawn): Use the supplied path arg.

@@ -139,6 +139,7 @@ _gpgme_debug_end (void **helper, const char *text)
         return;
     
     _gpgme_debug_add (helper, "%s", text );
+    fflush (ctl->fp); /* we need this for the buggy Windoze libc */
     rewind (ctl->fp);
     LOCK (debug_lock);
     while ( (c=getc (ctl->fp)) != EOF ) {
@@ -149,6 +150,7 @@ _gpgme_debug_end (void **helper, const char *text)
         putc ('\n', stderr);
     UNLOCK (debug_lock);
     
+    fclose (ctl->fp);
     remove (ctl->fname);
     xfree (ctl);
     *helper = NULL;

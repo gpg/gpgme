@@ -1018,7 +1018,8 @@ read_status ( GpgObject gpg )
                         }
                     }
                     if ( r->code == STATUS_END_STREAM ) {
-                        /* _gpgme_freeze_fd ( ? );*/
+                        if ( gpg->cmd.used )
+                            _gpgme_freeze_fd ( gpg->cmd.fd );
                     }
                 }
                 /* To reuse the buffer for the next line we have to
@@ -1066,7 +1067,7 @@ gpg_colon_line_handler ( void *opaque, int pid, int fd )
         return 1;
     }
 
-    return gpg->status.eof;
+    return gpg->colon.eof;
 }
 
 static GpgmeError
