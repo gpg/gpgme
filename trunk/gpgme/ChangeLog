@@ -1,5 +1,7 @@
 2004-02-01  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.c (build_argv): Use --no-comment, not --comment "".
+
 	* data-compat.c (gpgme_data_new_from_filepart): Call fseeko if
 	available.
 	* data-stream.c (stream_seek): Likewise.

@@ -549,7 +549,7 @@ build_argv (engine_gpg_t gpg)
     argc++;
   if (!gpg->cmd.used)
     argc++;	/* --batch */
-  argc += 2; /* --comment */
+  argc += 1; /* --no-comment */
 
   argv = calloc (argc + 1, sizeof *argv);
   if (!argv)
@@ -608,16 +608,7 @@ build_argv (engine_gpg_t gpg)
         }
       argc++;
     }
-  argv[argc] = strdup ("--comment");
-  if (!argv[argc])
-    {
-      int saved_errno = errno;
-      free (fd_data_map);
-      free_argv (argv);
-      return gpg_error_from_errno (saved_errno);
-    }
-  argc++;
-  argv[argc] = strdup ("");
+  argv[argc] = strdup ("--no-comment");
   if (!argv[argc])
     {
       int saved_errno = errno;
