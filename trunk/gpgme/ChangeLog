@@ -1,5 +1,7 @@
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* verify.c (parse_error): Do not skip location of where token.
+
 	* gpgme.h (gpgme_status_code_t): Add GPGME_STATUS_REVKEYSIG.
 	* verify.c (_gpgme_verify_status_handler): Add handling of
 	GPGME_STATUS_REVKEYSIG.
