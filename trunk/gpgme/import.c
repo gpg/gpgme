@@ -204,7 +204,6 @@ _gpgme_op_import_start (GpgmeCtx ctx, int synchronous, GpgmeData keydata)
  leave:
   if (err)
     {
-      ctx->pending = 0;
       _gpgme_engine_release (ctx->engine);
       ctx->engine = NULL;
     }

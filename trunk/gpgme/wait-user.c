@@ -119,9 +119,6 @@ _gpgme_wait_user_event_cb (void *data, GpgmeEventIO type, void *type_data)
 {
   GpgmeCtx ctx = data;
 
-  if (type == GPGME_EVENT_DONE)
-    ctx->pending = 0;
-
   if (ctx->io_cbs.event)
     (*ctx->io_cbs.event) (ctx->io_cbs.event_priv, type, type_data);
 }

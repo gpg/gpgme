@@ -54,7 +54,6 @@ _gpgme_wait_private_event_cb (void *data, GpgmeEventIO type, void *type_data)
       break;
 
     case GPGME_EVENT_DONE:
-      ctx->pending = 0;
       break;
 
     case GPGME_EVENT_NEXT_KEY:

@@ -120,9 +120,6 @@ gpgme_error_to_errno (GpgmeError err)
     case GPGME_Invalid_Value:
       errno = EINVAL;
       return -1;
-    case GPGME_Busy:
-      errno = EBUSY;
-      return -1;
     case GPGME_Not_Implemented:
       errno = EOPNOTSUPP;
       return -1;

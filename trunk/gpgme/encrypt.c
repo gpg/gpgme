@@ -118,9 +118,9 @@ _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 	      result->xmlinfo = NULL;
 	    }
 	  if (result && result->no_valid_recipients) 
-	    return GPGME_No_Recipients;
+	    return GPGME_No_UserID;
 	  if (result && result->invalid_recipients) 
-	    return GPGME_Invalid_Recipients;
+	    return GPGME_Invalid_UserID;
 	}
       break;
 
@@ -168,7 +168,7 @@ _gpgme_op_encrypt_start (GpgmeCtx ctx, int synchronous,
     symmetric = 1;
   else if (!gpgme_recipients_count (recp))
     {
-      err = GPGME_No_Recipients;
+      err = GPGME_No_UserID;
       goto leave;
     }
 
@@ -208,7 +208,6 @@ _gpgme_op_encrypt_start (GpgmeCtx ctx, int synchronous,
  leave:
   if (err)
     {
-      ctx->pending = 0; 
       _gpgme_engine_release (ctx->engine);
       ctx->engine = NULL;
     }

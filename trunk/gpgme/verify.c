@@ -400,7 +400,6 @@ _gpgme_op_verify_start (GpgmeCtx ctx, int synchronous,
  leave:
   if (err)
     {
-      ctx->pending = 0; 
       _gpgme_engine_release (ctx->engine);
       ctx->engine = NULL;
     }
@@ -483,7 +482,7 @@ gpgme_get_sig_status (GpgmeCtx ctx, int idx,
   struct ctx_op_data *op_data;
   VerifyResult result;
 
-  if (!ctx || ctx->pending)
+  if (!ctx)
     return NULL;	/* No results yet or verification error.  */
 
   op_data = ctx->op_data;
@@ -570,7 +569,7 @@ gpgme_get_sig_string_attr (GpgmeCtx ctx, int idx, GpgmeAttr what, int whatidx)
   struct ctx_op_data *op_data;
   VerifyResult result;
 
-  if (!ctx || ctx->pending)
+  if (!ctx)
     return NULL;	/* No results yet or verification error.  */
 
   op_data = ctx->op_data;
@@ -608,7 +607,7 @@ gpgme_get_sig_ulong_attr (GpgmeCtx ctx, int idx, GpgmeAttr what, int reserved)
   struct ctx_op_data *op_data;
   VerifyResult result;
 
-  if (!ctx || ctx->pending)
+  if (!ctx)
     return 0;	/* No results yet or verification error.  */
 
   op_data = ctx->op_data;
@@ -662,9 +661,6 @@ gpgme_get_sig_key (GpgmeCtx ctx, int idx, GpgmeKey *r_key)
 
   if (!ctx || !r_key)
     return GPGME_Invalid_Value;
-
-  if (ctx->pending)
-    return GPGME_Busy;
 
   op_data = ctx->op_data;
   while (op_data)

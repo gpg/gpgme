@@ -783,16 +783,6 @@ can also refer to objects.  For example, if an empty @code{GpgmeData}
 object was expected, but one containing data was provided, this error
 value is returned.
 
-@item GPGME_Busy
-This value is returned if you try to start a new operation in a
-context that is already busy with some earlier operation which was not
-cancelled or finished yet.
-
-@item GPGME_No_Request
-This value is in some sense the opposite of @code{GPGME_Busy}.  There
-is no pending operation, but it is required for the function to
-succeed.
-
 @item GPGME_Exec_Error
 This value means that an error occurred when trying to spawn a child
 process.
@@ -803,10 +793,10 @@ This value means that there are too many active backend processes.
 @item GPGME_Pipe_Error
 This value means that the creation of a pipe failed.
 
-@item GPGME_No_Recipients 
+@item GPGME_No_UserID 
 This value means that no valid recipients for a message have been set.
 
-@item GPGME_Invalid_Recipients 
+@item GPGME_Invalid_UserID
 This value means that some, but not all, recipients for a message have
 been invalid.
 
@@ -846,9 +836,9 @@ This value means that a file I/O operation failed.  The value of
 @item GPGME_Decryption_Failed
 This value indicates that a decryption operation was unsuccessful.
 
-@item GPGME_No_Passphrase
-This value means that the user did not provide a passphrase when
-requested.
+@item GPGME_Bad_Passphrase
+This value means that the user did not provide a correct passphrase
+when requested.
 
 @item GPGME_Canceled
 This value means that the operation was canceled.
@@ -1727,9 +1717,8 @@ If the last key in the list has already been returned,
 @code{gpgme_op_keylist_next} returns @code{GPGME_EOF}.
 
 The function returns @code{GPGME_Invalid_Value} if @var{ctx} or
-@var{r_key} is not a valid pointer, @code{GPGME_No_Request} if there
-is no pending operation, @code{GPGME_Out_Of_Core} if there is not
-enough memory for the operation.
+@var{r_key} is not a valid pointer, and @code{GPGME_Out_Of_Core} if
+there is not enough memory for the operation.
 @end deftypefun
 
 @deftypefun GpgmeError gpgme_op_keylist_end (@w{GpgmeCtx @var{ctx}})
@@ -1737,8 +1726,7 @@ The function @code{gpgme_op_keylist_next} ends a pending key list
 operation in the context @var{ctx}.
 
 The function returns @code{GPGME_Invalid_Value} if @var{ctx} is not a
-valid pointer, @code{GPGME_No_Request} if there is no pending
-operation, @code{GPGME_Out_Of_Core} if at some time during the
+valid pointer, and @code{GPGME_Out_Of_Core} if at some time during the
 operation there was not enough memory available.
 @end deftypefun
 
@@ -1785,10 +1773,10 @@ If the @code{GPGME_KEYLIST_MODE_SIGS} mode is active, the key will be
 retrieved with the key signatures (and updated if necessary).
 
 The function returns @code{GPGME_Invalid_Value} if @var{ctx} or
-@var{r_key} is not a valid pointer, @code{GPGME_Busy} if there is a
-pending operation, @code{GPGME_Invalid_Key} if @var{fpr} is not a
-fingerprint or key ID, @code{GPGME_Out_Of_Core} if at some time during
-the operation there was not enough memory available.
+@var{r_key} is not a valid pointer, @code{GPGME_Invalid_Key} if
+@var{fpr} is not a fingerprint or key ID, @code{GPGME_Out_Of_Core} if
+at some time during the operation there was not enough memory
+available.
 @end deftypefun
 
 
@@ -2359,9 +2347,8 @@ If the last trust item in the list has already been returned,
 @code{gpgme_op_trustlist_next} returns @code{GPGME_EOF}.
 
 The function returns @code{GPGME_Invalid_Value} if @var{ctx} or
-@var{r_item} is not a valid pointer, @code{GPGME_No_Request} if there
-is no pending operation, @code{GPGME_Out_Of_Core} if there is not
-enough memory for the operation.
+@var{r_item} is not a valid pointer, and @code{GPGME_Out_Of_Core} if
+there is not enough memory for the operation.
 @end deftypefun
 
 @deftypefun GpgmeError gpgme_op_trustlist_end (@w{GpgmeCtx @var{ctx}})
@@ -2369,8 +2356,7 @@ The function @code{gpgme_op_trustlist_next} ends a pending key list
 operation in the context @var{ctx}.
 
 The function returns @code{GPGME_Invalid_Value} if @var{ctx} is not a
-valid pointer, @code{GPGME_No_Request} if there is no pending
-operation, @code{GPGME_Out_Of_Core} if at some time during the
+valid pointer, and @code{GPGME_Out_Of_Core} if at some time during the
 operation there was not enough memory available.
 @end deftypefun
 
@@ -2450,7 +2436,7 @@ decrypted successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{cipher} or @var{plain} is not a valid pointer,
 @code{GPGME_No_Data} if @var{cipher} does not contain any data to
 decrypt, @code{GPGME_Decryption_Failed} if @var{cipher} is not a valid
-cipher text, @code{GPGME_No_Passphrase} if the passphrase for the
+cipher text, @code{GPGME_Bad_Passphrase} if the passphrase for the
 secret key could not be retrieved, and passes through any errors that
 are reported by the crypto engine support routines.
 @end deftypefun
@@ -2729,7 +2715,7 @@ decrypted successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{cipher}, @var{plain} or @var{r_stat} is not a valid pointer,
 @code{GPGME_No_Data} if @var{cipher} does not contain any data to
 decrypt, @code{GPGME_Decryption_Failed} if @var{cipher} is not a valid
-cipher text, @code{GPGME_No_Passphrase} if the passphrase for the
+cipher text, @code{GPGME_Bad_Passphrase} if the passphrase for the
 secret key could not be retrieved, and passes through any errors that
 are reported by the crypto engine support routines.
 @end deftypefun
@@ -2833,7 +2819,7 @@ with @code{gpgme_set_include_certs}.  @xref{Included Certificates}.
 The function returns @code{GPGME_No_Error} if the signature could be
 created successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{plain} or @var{sig} is not a valid pointer, @code{GPGME_No_Data}
-if the signature could not be created, @code{GPGME_No_Passphrase} if
+if the signature could not be created, @code{GPGME_Bad_Passphrase} if
 the passphrase for the secret key could not be retrieved, and passes
 through any errors that are reported by the crypto engine support
 routines.
@@ -2956,7 +2942,7 @@ ciphertext in the data object @var{cipher}.  The type of the
 ciphertext created is determined by the @acronym{ASCII} armor and text
 mode attributes set for the context @var{ctx}.
 
-If @code{GPGME_Invalid_Recipients} is returned, some recipients in
+If @code{GPGME_Invalid_UserID} is returned, some recipients in
 @var{rset} are invalid, but not all.  In this case the plaintext is
 encrypted for all valid recipients and returned in @var{cipher}.  More
 information about the invalid recipients is available with
@@ -2972,11 +2958,11 @@ crypto backend.
 The function returns @code{GPGME_No_Error} if the ciphertext could be
 created successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{rset}, @var{plain} or @var{cipher} is not a valid pointer,
-@code{GPGME_No_Recipients} if @var{rset} does not contain any valid
-recipients, @code{GPGME_Invalid_Recipients} if @var{rset} contains
-some invalid recipients, @code{GPGME_No_Passphrase} if the passphrase
-for the secret key could not be retrieved, and passes through any
-errors that are reported by the crypto engine support routines.
+@code{GPGME_No_UserID} if @var{rset} does not contain any valid
+recipients, @code{GPGME_Invalid_UserID} if @var{rset} contains some
+invalid recipients, @code{GPGME_Bad_Passphrase} if the passphrase for
+the secret key could not be retrieved, and passes through any errors
+that are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun GpgmeError gpgme_op_encrypt_start (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{rset}}, @w{GpgmeData @var{plain}}, @w{GpgmeData @var{cipher}})
@@ -2987,7 +2973,7 @@ The function @code{gpgme_op_encrypt_start} initiates a
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{rset}, @var{plain} or @var{cipher} is not a valid pointer, and
-@code{GPGME_No_Recipients} if @var{rset} does not contain any valid
+@code{GPGME_No_UserID} if @var{rset} does not contain any valid
 recipients.
 @end deftypefun
 
@@ -3011,7 +2997,7 @@ Completion}.
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{rset}, @var{plain} or @var{cipher} is not a valid pointer, and
-@code{GPGME_No_Recipients} if @var{rset} does not contain any valid
+@code{GPGME_No_UserID} if @var{rset} does not contain any valid
 recipients.
 @end deftypefun
 

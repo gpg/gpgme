@@ -135,7 +135,6 @@ _gpgme_op_genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
  leave:
   if (err)
     {
-      ctx->pending = 0; 
       _gpgme_engine_release (ctx->engine);
       ctx->engine = NULL;
     }
