@@ -183,7 +183,7 @@ struct passphrase_cb_info_s {
     int did_it;
 };
 static const char *
-passphrase_cb (void *opaque, const char *desc, void *r_hd)
+passphrase_cb (void *opaque, const char *desc, void **r_hd)
 {
     return tmpPassphrase;
 }

@@ -29,9 +29,11 @@ INCLUDES = -I$(top_srcdir)/gpgme
 pkglib_LTLIBRARIES = gpgme-openpgp.la gpgme-smime.la
 
 gpgme_openpgp_la_SOURCES = cryptplug.h gpgme-openpgp.c
+EXTRA_gpgme_openpgp_la_SOURCES = gpgmeplug.c
 gpgme_openpgp_la_LIBADD = ../gpgme/libgpgme.la
 gpgme_openpgp_la_LDFLAGS = -module -avoid-version
 
 gpgme_smime_la_SOURCES = cryptplug.h gpgme-smime.c
+EXTRA_gpgme_smime_la_SOURCES = gpgmeplug.c
 gpgme_smime_la_LIBADD = ../gpgme/libgpgme.la
 gpgme_smime_la_LDFLAGS = -module -avoid-version
