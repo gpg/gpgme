@@ -1635,7 +1635,7 @@ _gpgme_gpg_op_keylist_ext (GpgObject gpg, const char *pattern[],
     err = _gpgme_gpg_add_arg (gpg, "--");
   if (!err && pattern && *pattern)
     {
-      while (*pattern)
+      while (*pattern && **pattern)
 	err = _gpgme_gpg_add_arg (gpg, *(pattern++));
     }
 
