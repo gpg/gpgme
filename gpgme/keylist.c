@@ -341,10 +341,12 @@ finish_key ( GpgmeCtx ctx )
 {
     GpgmeKey key = ctx->tmp_key;
     struct key_queue_item_s *q, *q2;
-    
+
     assert (key);
     ctx->tmp_key = NULL;
-    
+
+    _gpgme_key_cache_add (key);
+
     q = xtrymalloc ( sizeof *q );
     if ( !q ) {
         gpgme_key_release (key);

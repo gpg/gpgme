@@ -31,6 +31,199 @@
 #define ALLOC_CHUNK 1024
 #define my_isdigit(a) ( (a) >='0' && (a) <= '9' )
 
+#if SIZEOF_UNSIGNED_INT < 4
+#error unsigned int too short to be used as a hash value
+#endif
+
+struct key_cache_item_s {
+    struct key_cache_item_s *next;
+    GpgmeKey key;
+};
+
+static int key_cache_initialized;
+static struct key_cache_item_s **key_cache;
+static size_t key_cache_size;
+static size_t key_cache_max_chain_length;
+static struct key_cache_item_s *key_cache_unused_items;
+
+static int
+hextobyte ( const byte *s )
+{
+    int c;
+
+    if ( *s >= '0' && *s <= '9' )
+	c = 16 * (*s - '0');
+    else if ( *s >= 'A' && *s <= 'F' )
+	c = 16 * (10 + *s - 'A');
+    else if ( *s >= 'a' && *s <= 'f' )
+	c = 16 * (10 + *s - 'a');
+    else
+	return -1;
+    s++;
+    if ( *s >= '0' && *s <= '9' )
+	c += *s - '0';
+    else if ( *s >= 'A' && *s <= 'F' )
+	c += 10 + *s - 'A';
+    else if ( *s >= 'a' && *s <= 'f' )
+	c += 10 + *s - 'a';
+    else
+	return -1;
+    return c;
+}
+
+static int
+hash_key (const char *fpr, unsigned int *rhash)
+{
+    unsigned int hash;
+    int c;
+
+    if ( !fpr )                         return -1;
+    if ( (c = hextobyte(fpr)) == -1 )   return -1;
+    hash = c;
+    if ( (c = hextobyte(fpr+2)) == -1 ) return -1;
+    hash |= c << 8;
+    if ( (c = hextobyte(fpr+4)) == -1 ) return -1;
+    hash |= c << 16;
+    if ( (c = hextobyte(fpr+6)) == -1 ) return -1;
+    hash |= c << 24;
+
+    *rhash = hash;
+    return 0;
+}
+
+void
+_gpgme_key_cache_init (void)
+{
+    if (key_cache_initialized)
+        return;
+    key_cache_size = 503;
+    key_cache = xtrycalloc (key_cache_size, sizeof *key_cache);
+    if (!key_cache) {
+        key_cache_size = 0;
+        key_cache_initialized = 1;
+        return;
+    }
+    /*
+     * The upper bound for our cache size is 
+     * key_cache_max_chain_length * key_cache_size 
+     */
+    key_cache_max_chain_length = 10;
+    key_cache_initialized = 1;
+}
+
+
+void
+_gpgme_key_cache_add (GpgmeKey key)
+{
+    struct subkey_s *k;
+#warning debug code
+    if (!key || getenv("gpgme_no_cache") )
+        return;
+
+    /* FIXME: add locking */
+    if (!key_cache_initialized)
+        _gpgme_key_cache_init ();
+    if (!key_cache_size)
+        return; /* cache was not enabled */
+
+    /* put the key under each fingerprint into the cache.  We use the
+     * first 4 digits to calculate the hash */
+    for (k=&key->keys; k; k = k->next ) {
+        size_t n;
+        unsigned int hash;
+        struct key_cache_item_s *item;
+
+        if ( hash_key (k->fingerprint, &hash) )
+            continue;
+
+        hash %= key_cache_size;
+        for (item=key_cache[hash],n=0; item; item = item->next, n++) {
+            struct subkey_s *k2;
+            if (item->key == key) 
+                break; /* already in cache */
+            /* now do a deeper check */
+            for (k2=&item->key->keys; k2; k2 = k2->next ) {
+                if( k2->fingerprint
+                    && !strcmp (k->fingerprint, k2->fingerprint) ) {
+                    /* okay, replace it with the new copy */
+                    gpgme_key_unref (item->key);
+                    item->key = key;
+                    gpgme_key_ref (item->key);
+                    return;
+                }
+            }
+        }
+        if (item)
+            continue; 
+        
+        if (n > key_cache_max_chain_length ) { /* remove the last entries */
+            struct key_cache_item_s *last = NULL;
+
+            for (item=key_cache[hash];
+                 item && n < key_cache_max_chain_length;
+                 last = item, item = item->next, n++ ) {
+                ;
+            }
+            if (last) {
+                struct key_cache_item_s *next;
+
+                assert (last->next == item);
+                last->next = NULL;
+                for ( ;item; item=next) {
+                    next = item->next;
+                    gpgme_key_unref (item->key);
+                    item->key = NULL;
+                    item->next = key_cache_unused_items;
+                    key_cache_unused_items = item;
+                }
+            }
+        }
+
+        item = key_cache_unused_items;
+        if (item) {
+            key_cache_unused_items = item->next;
+            item->next = NULL;
+        }
+        else {
+            item = xtrymalloc (sizeof *item);
+            if (!item)
+                return; /* out of core */
+        }
+        
+        item->key = key;
+        gpgme_key_ref (key);
+        item->next = key_cache[hash];
+        key_cache[hash] = item;
+    }
+}
+
+
+GpgmeKey 
+_gpgme_key_cache_get (const char *fpr)
+{
+    struct key_cache_item_s *item;
+    unsigned int hash;
+
+    if (!key_cache_size)
+        return NULL; /* cache not (yet) enabled */
+
+    if (hash_key (fpr, &hash))
+        return NULL;
+
+    hash %= key_cache_size;
+    for (item=key_cache[hash]; item; item = item->next) {
+        struct subkey_s *k;
+
+        for (k=&item->key->keys; k; k = k->next ) {
+            if( k->fingerprint && !strcmp (k->fingerprint, fpr) ) {
+                gpgme_key_ref (item->key);
+                return item->key;
+            }
+        }
+    }
+    return NULL;
+}
+
 
 static const char *
 pkalgo_to_string ( int algo )
@@ -45,8 +238,6 @@ pkalgo_to_string ( int algo )
       default: return "Unknown";
     }
 }
-
-
 
 
 static GpgmeError

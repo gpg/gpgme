@@ -49,7 +49,6 @@ gpgme_op_encrypt_start ( GpgmeCtx c, GpgmeRecipients recp,
     c->pending = 1;
 
     /* do some checks */
-    assert ( !c->gpg );
     if ( !gpgme_recipients_count ( recp ) ) {
         /* Fixme: In this case we should do symmentric encryption */
         rc = mk_error (No_Recipients);

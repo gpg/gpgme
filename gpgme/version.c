@@ -30,7 +30,7 @@
 #include "rungpg.h"
 #include "sema.h"
 #include "util.h"
-
+#include "key.h" /* for key_cache_init */
 
 static int lineno;
 static char *tmp_engine_version;
@@ -46,6 +46,7 @@ do_subsystem_inits (void)
     if (done)
         return;
     _gpgme_sema_subsystem_init ();
+    _gpgme_key_cache_init ();
 }
 
 
@@ -104,7 +105,7 @@ compare_versions ( const char *my_version, const char *req_version )
 
     if ( my_major > rq_major
          || (my_major == rq_major && my_minor > rq_minor)
-         || (my_major == rq_major && my_minor == rq_minor
+         || (my_major == rq_major && my_minor == rq_minor 
              && my_micro > rq_micro)
          || (my_major == rq_major && my_minor == rq_minor
              && my_micro == rq_micro
@@ -173,7 +174,7 @@ gpgme_check_engine ()
     s = strstr (info, "<version>");
     if (s) {
         s += 9;
-        s2 = strchr (s, '>');
+        s2 = strchr (s, '<');
         if (s2) {
             char *ver = xtrymalloc (s2 - s + 1);
             if (!ver)
