@@ -279,14 +279,14 @@ map_assuan_error (AssuanError err)
     case ASSUAN_Accept_Failed:
       return mk_error (General_Error);
 
-  /* The following error codes are meant as status codes.  */
+      /* The following error codes are meant as status codes.  */
     case ASSUAN_Not_Implemented:
       return mk_error (Not_Implemented);
     case ASSUAN_Canceled:
       return mk_error (Canceled);
     case ASSUAN_Unsupported_Algorithm:
       return mk_error (Not_Implemented);  /* XXX Argh.  */
-
+      
       /* These are errors internal to GPGME.  */
     case ASSUAN_No_Data_Available:
     case ASSUAN_No_Input:
@@ -304,6 +304,11 @@ map_assuan_error (AssuanError err)
     case ASSUAN_Inquire_Unknown:
     case ASSUAN_Inquire_Error:
     case ASSUAN_Invalid_Option:
+    case ASSUAN_Invalid_Index:
+    case ASSUAN_Unexpected_Status:
+    case ASSUAN_Unexpected_Data:
+    case ASSUAN_Invalid_Status:
+    case ASSUAN_Not_Confirmed:
       return mk_error (General_Error);
 
       /* These are errors in the server.  */
@@ -321,6 +326,11 @@ map_assuan_error (AssuanError err)
     case ASSUAN_No_Public_Key:
     case ASSUAN_No_Secret_Key:
     case ASSUAN_Invalid_Name:
+    case ASSUAN_Card_Error:	/* XXX: Oh well.  */
+    case ASSUAN_Invalid_Card:	/* XXX: Oh well.  */
+    case ASSUAN_No_PKCS15_App:	/* XXX: Oh well.  */
+    case ASSUAN_Card_Not_Present:	/* XXX: Oh well.  */
+    case ASSUAN_Invalid_Id:	/* XXX: Oh well.  */
       return mk_error(Invalid_Key);
 
     case ASSUAN_Bad_Signature:
