@@ -56,7 +56,7 @@ system_components = ${ath_components} posix-util.c posix-sema.c posix-io.c
 endif
 
 libgpgme_la_SOURCES =							\
-	gpgme.h types.h util.h util.c conversion.c context.h ops.h	\
+	gpgme.h types.h util.h conversion.c context.h ops.h		\
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
 	data-compat.c							\
 	recipient.c signers.c wait.c wait.h op-support.c		\

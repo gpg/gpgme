@@ -103,7 +103,7 @@ debug_init (void)
 		  s1++;
 		  if (!(s2 = strchr (s1, ':')))
 		    s2 = s1 + strlen (s1);
-		  p = xtrymalloc (s2 - s1 + 1);
+		  p = malloc (s2 - s1 + 1);
 		  if (p)
 		    {
 		      memcpy (p, s1, s2 - s1);
@@ -115,7 +115,7 @@ debug_init (void)
 			  setvbuf (fp, NULL, _IOLBF, 0);
 			  errfp = fp;
 			}
-		      xfree (p);
+		      free (p);
 		    }
 #ifndef HAVE_DOSISH_SYSTEM
 		}

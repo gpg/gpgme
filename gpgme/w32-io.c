@@ -226,7 +226,7 @@ create_reader (HANDLE fd)
     sec_attr.nLength = sizeof sec_attr;
     sec_attr.bInheritHandle = FALSE;
 
-    c = xtrycalloc (1, sizeof *c );
+    c = calloc (1, sizeof *c );
     if (!c)
         return NULL;
 
@@ -242,7 +242,7 @@ create_reader (HANDLE fd)
             CloseHandle (c->have_space_ev);
         if (c->stopped)
             CloseHandle (c->stopped);
-        xfree (c);
+        free (c);
         return NULL;
     }
 
@@ -260,7 +260,7 @@ create_reader (HANDLE fd)
             CloseHandle (c->have_space_ev);
         if (c->stopped)
             CloseHandle (c->stopped);
-        xfree (c);
+        free (c);
         return NULL;
     }    
 
@@ -288,7 +288,7 @@ destroy_reader (struct reader_context_s *c)
         CloseHandle (c->have_space_ev);
     CloseHandle (c->thread_hd);
     DESTROY_LOCK (c->mutex);
-    xfree (c);
+    free (c);
 }
 
 
@@ -479,7 +479,7 @@ create_writer (HANDLE fd)
     sec_attr.nLength = sizeof sec_attr;
     sec_attr.bInheritHandle = FALSE;
 
-    c = xtrycalloc (1, sizeof *c );
+    c = calloc (1, sizeof *c );
     if (!c)
         return NULL;
 
@@ -495,7 +495,7 @@ create_writer (HANDLE fd)
             CloseHandle (c->is_empty);
         if (c->stopped)
             CloseHandle (c->stopped);
-        xfree (c);
+        free (c);
         return NULL;
     }
 
@@ -513,7 +513,7 @@ create_writer (HANDLE fd)
             CloseHandle (c->is_empty);
         if (c->stopped)
             CloseHandle (c->stopped);
-        xfree (c);
+        free (c);
         return NULL;
     }    
 
@@ -541,7 +541,7 @@ destroy_writer (struct writer_context_s *c)
         CloseHandle (c->is_empty);
     CloseHandle (c->thread_hd);
     DESTROY_LOCK (c->mutex);
-    xfree (c);
+    free (c);
 }
 
 
@@ -771,7 +771,7 @@ build_commandline ( char **argv )
      * program parses the commandline and does some unquoting */
     for (i=0; argv[i]; i++)
         n += strlen (argv[i]) + 2 + 1; /* 2 extra bytes for possible quoting */
-    buf = p = xtrymalloc (n);
+    buf = p = malloc (n);
     if ( !buf )
         return NULL;
     *buf = 0;
@@ -859,7 +859,7 @@ _gpgme_io_spawn ( const char *path, char **argv,
                             NULL );
         if ( hnul == INVALID_HANDLE_VALUE ) {
             DEBUG1 ("can't open `nul': ec=%d\n", (int)GetLastError ());
-            xfree (arg_string);
+            free (arg_string);
             return -1;
         }
         /* Make sure that the process has a connected stdin */
@@ -888,7 +888,7 @@ _gpgme_io_spawn ( const char *path, char **argv,
                           &pi            /* returns process information */
         ) ) {
         DEBUG1 ("CreateProcess failed: ec=%d\n", (int) GetLastError ());
-        xfree (arg_string);
+        free (arg_string);
         return -1;
     }
 

@@ -73,12 +73,12 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
   if (RegQueryValueEx (key_handle, name, 0, NULL, NULL, &nbytes))
     goto leave;
   n1 = nbytes + 1;
-  result = xtrymalloc (n1);
+  result = malloc (n1);
   if (!result)
     goto leave;
   if (RegQueryValueEx (key_handle, name, 0, NULL, result, &n1))
     {
-      xfree(result);
+      free (result);
       result = NULL;
       goto leave;
     }

@@ -42,7 +42,7 @@ _gpgme_release_genkey_result (GenKeyResult result)
 {
   if (!result)
     return;
-  xfree (result);
+  free (result);
 }
 
 static void

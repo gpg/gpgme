@@ -47,7 +47,7 @@ gpgme_new (GpgmeCtx *r_ctx)
   if (!r_ctx)
     return mk_error (Invalid_Value);
   *r_ctx = 0;
-  ctx = xtrycalloc (1, sizeof *ctx);
+  ctx = calloc (1, sizeof *ctx);
   if (!ctx)
     return mk_error (Out_Of_Core);
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
@@ -78,9 +78,9 @@ gpgme_release (GpgmeCtx ctx)
   gpgme_data_release (ctx->notation);
   gpgme_signers_clear (ctx);
   if (ctx->signers)
-    xfree (ctx->signers);
+    free (ctx->signers);
   /* FIXME: Release the key_queue.  */
-  xfree (ctx);
+  free (ctx);
 }
 
 void

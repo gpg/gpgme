@@ -41,7 +41,7 @@ _gpgme_data_new (GpgmeData *r_dh, struct gpgme_data_cbs *cbs)
     return mk_error (Invalid_Value);
 
   *r_dh = NULL;
-  dh = xtrycalloc (1, sizeof (*dh));
+  dh = calloc (1, sizeof (*dh));
   if (!dh)
     return mk_error (Out_Of_Core);
 
@@ -56,7 +56,7 @@ void
 _gpgme_data_release (GpgmeData dh)
 {
   if (dh)
-    xfree (dh);
+    free (dh);
 }
 
 

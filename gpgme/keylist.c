@@ -47,7 +47,7 @@ _gpgme_release_keylist_result (KeylistResult result)
 {
   if (!result)
     return;
-  xfree (result);
+  free (result);
 }
 
 /* Append some XML info.  args is currently ignore but we might want
@@ -397,7 +397,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	    case 8: /* X.509 serial number */
               if (rectype == RT_CRT || rectype == RT_CRS)
                 {
-                  key->issuer_serial = xtrystrdup (p);
+                  key->issuer_serial = strdup (p);
 		  if (!key->issuer_serial)
 		    ctx->error = mk_error (Out_Of_Core);
                 }
@@ -492,7 +492,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	    case 10: /* fingerprint (take only the first one)*/
 	      if (!key->keys.fingerprint && *p)
 		{
-		  key->keys.fingerprint = xtrystrdup (p);
+		  key->keys.fingerprint = strdup (p);
 		  if (!key->keys.fingerprint)
 		    ctx->error = mk_error (Out_Of_Core);
                 }
@@ -500,7 +500,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	    case 13: /* gpgsm chain ID (take only the first one)*/
 	      if (!key->chain_id && *p)
 		{
-		  key->chain_id = xtrystrdup (p);
+		  key->chain_id = strdup (p);
 		  if (!key->chain_id)
 		    ctx->error = mk_error (Out_Of_Core);
                 }
@@ -539,7 +539,7 @@ _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data)
 
   _gpgme_key_cache_add (key);
 
-  q = xtrymalloc (sizeof *q);
+  q = malloc (sizeof *q);
   if (!q)
     {
       gpgme_key_release (key);
@@ -728,7 +728,7 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
     ctx->key_cond = 0;
   
   *r_key = queue_item->key;
-  xfree (queue_item);
+  free (queue_item);
   return 0;
 }
 

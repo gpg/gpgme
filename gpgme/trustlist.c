@@ -46,7 +46,7 @@ trust_item_new (void)
 {
   GpgmeTrustItem item;
 
-  item = xtrycalloc (1, sizeof *item);
+  item = calloc (1, sizeof *item);
   return item;
 }
 
@@ -127,7 +127,7 @@ trustlist_colon_handler (GpgmeCtx ctx, char *line)
 	  item->val[1] = 0;
 	  break;
 	case 9: /* user ID */
-	  item->name = xtrystrdup (p);
+	  item->name = strdup (p);
 	  if (!item->name)
 	    ctx->error = mk_error (Out_Of_Core);
 	  break;
@@ -148,7 +148,7 @@ _gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data)
 
   assert (type == GPGME_EVENT_NEXT_KEY);
 
-  q = xtrymalloc (sizeof *q);
+  q = malloc (sizeof *q);
   if (!q)
     {
       gpgme_trust_item_release (item);
@@ -251,7 +251,7 @@ gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item)
   ctx->trust_queue = q->next;
 
   *r_item = q->item;
-  xfree (q);
+  free (q);
   return 0;
 }
 
@@ -283,8 +283,8 @@ gpgme_trust_item_release (GpgmeTrustItem item)
 {
   if (!item)
     return;
-  xfree (item->name);
-  xfree (item);
+  free (item->name);
+  free (item);
 }
 
 

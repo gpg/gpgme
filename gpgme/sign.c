@@ -48,7 +48,7 @@ _gpgme_release_sign_result (SignResult result)
   if (!result)
     return;
   gpgme_data_release (result->xmlinfo);
-  xfree (result);
+  free (result);
 }
 
 /* Parse the args and save the information 

@@ -69,7 +69,7 @@ critsect_init (struct critsect_s *s)
         return;
     }
     /* now init it */
-    mp = xtrymalloc ( sizeof *mp );
+    mp = malloc ( sizeof *mp );
     if (!mp) {
         LeaveCriticalSection (&init_lock);
         sema_fatal ("out of core while creating critical section lock");
@@ -108,7 +108,7 @@ _gpgme_sema_cs_destroy ( struct critsect_s *s )
 {
     if (s && s->private) {
         DeleteCriticalSection ((CRITICAL_SECTION*)s->private);
-        xfree (s->private);
+        free (s->private);
         s->private = NULL;
     }
 }

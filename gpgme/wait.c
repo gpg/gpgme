@@ -66,7 +66,7 @@ _gpgme_fd_table_deinit (fd_table_t fdt)
 {
   DESTROY_LOCK (fdt->lock);
   if (fdt->fds)
-    xfree (fdt->fds);
+    free (fdt->fds);
 }
 
 /* XXX We should keep a marker and roll over for speed.  */
@@ -85,8 +85,8 @@ _gpgme_fd_table_put (fd_table_t fdt, int fd, int dir, void *opaque, int *idx)
   if (i == fdt->size)
     {
 #define FDT_ALLOCSIZE 10
-      new_fds = xtryrealloc (fdt->fds, (fdt->size + FDT_ALLOCSIZE)
-			     * sizeof (*new_fds));
+      new_fds = realloc (fdt->fds, (fdt->size + FDT_ALLOCSIZE)
+			 * sizeof (*new_fds));
       if (!new_fds)
 	{
 	  UNLOCK (fdt->lock);
@@ -187,8 +187,8 @@ _gpgme_wait_event_cb (void *data, GpgmeEventIO type, void *type_data)
 #define CTX_DONE_LIST_SIZE_INITIAL 8
       int new_size = ctx_done_list_size ? 2 * ctx_done_list_size
 	: CTX_DONE_LIST_SIZE_INITIAL;
-      GpgmeCtx *new_list = xtryrealloc (ctx_done_list,
-					new_size * sizeof (GpgmeCtx *));
+      GpgmeCtx *new_list = realloc (ctx_done_list,
+				    new_size * sizeof (GpgmeCtx *));
       assert (new_list);
 #if 0
       if (!new_list)
@@ -335,16 +335,16 @@ _gpgme_add_io_cb (void *data, int fd, int dir,
   assert (fnc);
 
   *r_tag = NULL;
-  tag = xtrymalloc (sizeof *tag);
+  tag = malloc (sizeof *tag);
   if (!tag)
     return mk_error (Out_Of_Core);
   tag->fdt = fdt;
 
   /* Allocate a structure to hold info about the handler.  */
-  item = xtrycalloc (1, sizeof *item);
+  item = calloc (1, sizeof *item);
   if (!item)
     {
-      xfree (tag);
+      free (tag);
       return mk_error (Out_Of_Core);
     }
   item->dir = dir;
@@ -354,8 +354,8 @@ _gpgme_add_io_cb (void *data, int fd, int dir,
   err = _gpgme_fd_table_put (fdt, fd, dir, item, &tag->idx);
   if (err)
     {
-      xfree (tag);
-      xfree (item);
+      free (tag);
+      free (item);
       return mk_error (Out_Of_Core);
     }
 
@@ -373,8 +373,8 @@ _gpgme_remove_io_cb (void *data)
   LOCK (fdt->lock);
   DEBUG2 ("setting fd %d (item=%p) done", fdt->fds[idx].fd,
 	  fdt->fds[idx].opaque);
-  xfree (fdt->fds[idx].opaque);
-  xfree (tag);
+  free (fdt->fds[idx].opaque);
+  free (tag);
 
   /* Free the table entry.  */
   fdt->fds[idx].fd = -1;

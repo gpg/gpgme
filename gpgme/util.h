@@ -25,19 +25,6 @@
 #include "types.h"
 #include "debug.h"
 
-void *_gpgme_malloc (size_t n );
-void *_gpgme_calloc (size_t n, size_t m );
-void *_gpgme_realloc (void *p, size_t n);
-char *_gpgme_strdup (const char *p);
-void  _gpgme_free ( void *a );
-
-#define xtrymalloc(a)    _gpgme_malloc((a))
-#define xtrycalloc(a,b)  _gpgme_calloc((a),(b))
-#define xtryrealloc(a,b) _gpgme_realloc((a),(b))
-#define xtrystrdup(a)    _gpgme_strdup((a))
-#define xfree(a)         _gpgme_free((a))
-
-
 #define mk_error(a) ( GPGME_##a )
 
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))

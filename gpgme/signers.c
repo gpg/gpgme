@@ -82,7 +82,7 @@ gpgme_signers_add (GpgmeCtx ctx, const GpgmeKey key)
       int n = ctx->signers_size + 5;
       int j;
 
-      newarr = xtryrealloc (ctx->signers, n * sizeof (*newarr));
+      newarr = realloc (ctx->signers, n * sizeof (*newarr));
       if (!newarr)
 	return mk_error (Out_Of_Core);
       for (j = ctx->signers_size; j < n; j++)

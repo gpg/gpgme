@@ -51,7 +51,7 @@ _gpgme_release_delete_result (DeleteResult result)
 {
   if (!result)
     return;
-  xfree (result);
+  free (result);
 }
 
 
