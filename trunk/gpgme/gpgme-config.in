@@ -78,7 +78,9 @@ while test $# -gt 0; do
 	    exit 0
 	    ;;
         --cflags)
-            output="$output -I$includedir"
+	    if test "x$includedir" != "x/usr/include" -a "x$includedir" != "x/include"; then
+		output="$output -I$includedir"
+	    fi
 	    case "$thread_module" in
 	        pthread)
 	            output="$output $cflags_pthread"
@@ -90,7 +92,9 @@ while test $# -gt 0; do
 	    output="$output $gpg_error_cflags"
 	    ;;
 	--libs)
-            output="$output -L$libdir"
+	    if test "x$libdir" != "x/usr/lib" -a "x$libdir" != "x/lib"; then
+		output="$output -L$libdir"
+	    fi
 	    case "$thread_module" in
 		pthread)
 	            output="$output -lgpgme-pthread $libs_pthread"
