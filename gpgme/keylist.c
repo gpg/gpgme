@@ -146,7 +146,8 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
     char *p, *pend;
     int field = 0;
     enum {
-      RT_NONE, RT_SIG, RT_UID, RT_SUB, RT_PUB, RT_FPR, RT_SSB, RT_SEC, RT_CRT
+      RT_NONE, RT_SIG, RT_UID, RT_SUB, RT_PUB, RT_FPR, RT_SSB, RT_SEC,
+      RT_CRT, RT_CRS
     } rectype = RT_NONE;
     GpgmeKey key = ctx->tmp_key;
     int i;
@@ -223,13 +224,26 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 assert ( !ctx->tmp_key );
                 ctx->tmp_key = key;
             }
+            else if ( !strcmp (p, "crs") ) {
+                /* start a new certificate */
+                if ( _gpgme_key_new_secret ( &key ) ) {
+                    ctx->out_of_core=1; /* the only kind of error we can get*/
+                    return;
+                }
+                key->x509 = 1;
+                rectype = RT_CRS;
+                finish_key ( ctx );
+                assert ( !ctx->tmp_key );
+                ctx->tmp_key = key;
+            }
             else if ( !strcmp ( p, "fpr" ) && key ) 
                 rectype = RT_FPR;
             else 
                 rectype = RT_NONE;
             
         }
-        else if ( rectype == RT_PUB || rectype == RT_SEC || rectype == RT_CRT)
+        else if ( rectype == RT_PUB || rectype == RT_SEC
+                  || rectype == RT_CRT || rectype == RT_CRS)
           {
             switch (field) {
               case 2: /* trust info */

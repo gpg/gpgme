@@ -433,11 +433,19 @@ _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
   if (!pattern)
     pattern = "";
 
-  line = xtrymalloc (9 + strlen (pattern) + 1);	/* "LISTKEYS " + p + '\0'.  */
+  line = xtrymalloc (15 + strlen (pattern) + 1); /* "LISTSECRETKEYS "+p+'\0'.*/
   if (!line)
     return mk_error (Out_Of_Core);
-  strcpy (line, "LISTKEYS ");
-  strcpy (&line[9], pattern);
+  if (secret_only)
+    {
+      strcpy (line, "LISTSECRETKEYS ");
+      strcpy (&line[15], pattern);
+    }
+  else
+    {
+      strcpy (line, "LISTKEYS ");
+      strcpy (&line[9], pattern);
+    }
 
   _gpgme_io_close (gpgsm->input_fd);
   _gpgme_io_close (gpgsm->output_fd);
