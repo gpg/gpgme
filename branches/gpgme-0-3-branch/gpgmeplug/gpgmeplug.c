@@ -594,6 +594,24 @@ bool signatureCertificateExpiryNearWarning( void )
 }
 
 
+int getAttrExpireFormKey( GpgmeKey* rKey)
+{
+  int daysLeft = CRYPTPLUG_CERT_DOES_NEVER_EXPIRE;
+  time_t expire_time = gpgme_key_get_ulong_attr(
+                        *rKey, GPGME_ATTR_EXPIRE, NULL, 0 );
+  if ( 0 != expire_time ) {
+    time_t cur_time = time (NULL);
+    if( cur_time > expire_time ) {
+      daysLeft = days_from_seconds(cur_time - expire_time);
+      daysLeft *= -1;
+    }
+    else
+      daysLeft = days_from_seconds(expire_time - cur_time);
+  }
+  return daysLeft;
+}
+
+
 int signatureCertificateDaysLeftToExpiry( const char* certificate )
 {
   GpgmeCtx ctx;
@@ -609,17 +627,7 @@ int signatureCertificateDaysLeftToExpiry( const char* certificate )
     err = gpgme_op_keylist_next( ctx, &rKey );
     gpgme_op_keylist_end( ctx );
     if ( GPGME_No_Error == err ) {
-      time_t expire_time = gpgme_key_get_ulong_attr(
-                             rKey, GPGME_ATTR_EXPIRE, NULL, 0 );
-      if ( 0 != expire_time ) {
-        time_t cur_time = time (NULL);
-        if( cur_time > expire_time ) {
-          daysLeft = days_from_seconds(cur_time - expire_time);
-          daysLeft *= -1;
-        }
-        else
-          daysLeft = days_from_seconds(expire_time - cur_time);
-      }
+      daysLeft = getAttrExpireFormKey( &rKey );
       gpgme_key_release( rKey );
     }
   }
@@ -653,18 +661,14 @@ bool caCertificateExpiryNearWarning( void )
   return config.cACertificateExpiryNearWarning;
 }
 
-int caCertificateDaysLeftToExpiry( const char* certificate )
+int caFirstLastChainCertDaysLeftToExpiry( bool bStopAtFirst,
+                                          const char* certificate )
 {
-    /* PENDING(g10)
-       Please return the number of days that are left until the
-       CA certificate for the certificate specified in the parameter
-       certificate expires.
-    */
-  /*
   GpgmeCtx ctx;
   GpgmeError err;
   GpgmeKey rKey;
-  time_t daysLeft = 0;
+  const char *sChainID;
+  int daysLeft = CRYPTPLUG_CERT_DOES_NEVER_EXPIRE;
 
   gpgme_new( &ctx );
   gpgme_set_protocol( ctx, GPGMEPLUG_PROTOCOL );
@@ -674,26 +678,42 @@ int caCertificateDaysLeftToExpiry( const char* certificate )
     err = gpgme_op_keylist_next( ctx, &rKey );
     gpgme_op_keylist_end( ctx );
     if ( GPGME_No_Error == err ) {
-      time_t expire_time = gpgme_key_get_ulong_attr(
-                             rKey,
-                             
-??????????????????????? GPGME_ATTR_EXPIRE,  ???????????????????????
-                             
-                             NULL, 0 );
-      time_t cur_time = time (NULL);
-      daysLeft = days_from_seconds(expire_time - cur_time);
+      // we found the key, now lets look for the CA key
+      while((sChainID =
+              gpgme_key_get_string_attr(rKey, GPGME_ATTR_CHAINID, NULL, 0))){
+        // start new key list run
+        err = gpgme_op_keylist_start(ctx, sChainID, 0);
+        gpgme_key_release (rKey);
+        rKey = NULL;
+        if (!err)
+          err = gpgme_op_keylist_next (ctx, &rKey);
+        if (err){
+          fprintf( stderr, "Error finding issuer key: %s\n",
+                  gpgme_strerror (err) );
+          break;
+        }else{
+          // stop this key list run
+          gpgme_op_keylist_end(ctx);
+          daysLeft = getAttrExpireFormKey( &rKey );
+          if( bStopAtFirst )
+            break; // the first key was found, let us stop here
+        }
+      }
       gpgme_key_release( rKey );
     }
   }
   gpgme_release( ctx );
-    
-   
-  // fprintf( stderr, "gpgmeplug caCertificateDaysLeftToExpiry returned %d\n", daysLeft );
+
   return daysLeft;
-  */
-  
-  return 10; /* dummy that triggers a warning in the MUA */
 }
+
+int caCertificateDaysLeftToExpiry( const char* certificate )
+{
+  // retrieve the expire time of the FIRST certificate in this chain
+  // (not counting the original certificate)
+  return caFirstLastChainCertDaysLeftToExpiry( true, certificate );
+}
+
 
 void setCACertificateExpiryNearInterval( int interval )
 {
@@ -717,44 +737,8 @@ bool rootCertificateExpiryNearWarning( void )
 
 int rootCertificateDaysLeftToExpiry( const char* certificate )
 {
-    /* PENDING(g10)
-       Please return the number of days that are left until the
-       root certificate for the certificate specified in the parameter
-       certificate expires.
-    */
-  /*
-  GpgmeCtx ctx;
-  GpgmeError err;
-  GpgmeKey rKey;
-  time_t daysLeft = 0;
-
-  gpgme_new( &ctx );
-  gpgme_set_protocol( ctx, GPGMEPLUG_PROTOCOL );
-
-  err = gpgme_op_keylist_start( ctx, certificate, 0 );
-  if ( GPGME_No_Error == err ) {
-    err = gpgme_op_keylist_next( ctx, &rKey );
-    gpgme_op_keylist_end( ctx );
-    if ( GPGME_No_Error == err ) {
-      time_t expire_time = gpgme_key_get_ulong_attr(
-                             rKey,
-                             
-??????????????????????? GPGME_ATTR_EXPIRE,  ???????????????????????
-                             
-                             NULL, 0 );
-      time_t cur_time = time (NULL);
-      daysLeft = days_from_seconds(expire_time - cur_time);
-      gpgme_key_release( rKey );
-    }
-  }
-  gpgme_release( ctx );
-    
-   
-  // fprintf( stderr, "gpgmeplug rootCertificateDaysLeftToExpiry returned %d\n", daysLeft );
-  return daysLeft;
-  */
-  
-  return 10; /* dummy that triggers a warning in the MUA */
+  // retrieve the expire time of the LAST certificate in this chain
+  return caFirstLastChainCertDaysLeftToExpiry( false, certificate );
 }
 
 
