@@ -1,3 +1,16 @@
+2002-11-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* NEWS: Add note about moving "gpgmeplug" to the "cryptplug"
+	package.
+	* README: Remove instructions related to "gpgmeplug".
+	* configure.ac: Remove enable option "gpgmeplug" and automake
+	conditional BUILD_GPGMEPLUG, as well as the status info about it.
+	(GPGMEPLUG): Remove variable.
+	* Makefile.am (gpgmeplug): Remove variable.
+	(SUBDIRS): Remove ${gpgmeplug}.
+	* cryptplug.h, gpgme-openpgp.c, gpgmeplug.dox, gpgme-smime.c,
+	Makefile.am, gpgmeplug.c, ChangeLog: Files removed.
+
 2002-11-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Disable GPGSM for all dosish systems.

@@ -241,12 +241,6 @@ AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
 AM_CONDITIONAL(BUILD_BONOBO,  test "$component_system" = "Bonobo")
 
-GPGMEPLUG=no
-AC_ARG_ENABLE(gpgmeplug,
-	    AC_HELP_STRING([--enable-gpgmeplug], [build GPGME Crypt Plug-In]),
-	    GPGMEPLUG=$enableval)
-AM_CONDITIONAL(BUILD_GPGMEPLUG, test "$GPGMEPLUG" = "yes")
-
 dnl Make the version number in gpgme/gpgme.h the same as the one here.
 dnl (this is easier than to have a *.in file just for one substitution)
 GNUPG_FIX_HDR_VERSION(gpgme/gpgme.h, GPGME_VERSION)
@@ -269,7 +263,7 @@ dnl
 AC_CONFIG_FILES(Makefile assuan/Makefile gpgme/Makefile
 		tests/Makefile tests/gpg/Makefile tests/gpgsm/Makefile
 		doc/Makefile
-		bonobo/Makefile complus/Makefile gpgmeplug/Makefile)
+		bonobo/Makefile complus/Makefile)
 AC_CONFIG_FILES(gpgme/gpgme-config, chmod +x gpgme/gpgme-config)
 AC_OUTPUT
 
@@ -281,6 +275,4 @@ echo "
 
         GpgSM version: min. $NEED_GPGSM_VERSION
 	GpgSM path:    $GPGSM
-
-	GPGME CryptPlug: $GPGMEPLUG
 "
