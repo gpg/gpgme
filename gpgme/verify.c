@@ -127,9 +127,8 @@ finish_sig (GpgmeCtx ctx, int stop)
     ctx->result.verify->collecting = 1;
 }
 
-
-static void
-verify_status_handler ( GpgmeCtx ctx, GpgStatusCode code, char *args )
+void
+_gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
     char *p;
     int i;
@@ -246,7 +245,7 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
 
     if (pipemode)
         _gpgme_gpg_enable_pipemode ( c->gpg ); 
-    _gpgme_gpg_set_status_handler ( c->gpg, verify_status_handler, c );
+    _gpgme_gpg_set_status_handler (c->gpg, _gpgme_verify_status_handler, c);
 
     /* build the commandline */
     _gpgme_gpg_add_arg ( c->gpg, pipemode?"--pipemode" : "--verify" );
@@ -294,8 +293,8 @@ gpgme_op_verify_start ( GpgmeCtx c,  GpgmeData sig, GpgmeData text )
 /* 
  * Figure out a common status value for all signatures 
  */
-static GpgmeSigStat
-intersect_stati (VerifyResult result)
+GpgmeSigStat
+_gpgme_intersect_stati (VerifyResult result)
 {
   GpgmeSigStat status = result->status;
 
@@ -364,7 +363,7 @@ gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
                 c->notation = dh;
                 c->result.verify->notation = NULL;
             }
-            *r_stat = intersect_stati (c->result.verify);
+            *r_stat = _gpgme_intersect_stati (c->result.verify);
         }
         c->pending = 0;
     }

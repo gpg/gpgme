@@ -69,10 +69,18 @@ GpgmeError _gpgme_key_new_secret ( GpgmeKey *r_key );
 
 
 /*-- verify.c --*/
-void _gpgme_release_verify_result ( VerifyResult res );
+void _gpgme_release_verify_result (VerifyResult result);
+GpgmeSigStat _gpgme_intersect_stati (VerifyResult result);
+void _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+				   char *args);
 
 /*-- decrypt.c --*/
-void _gpgme_release_decrypt_result ( DecryptResult res );
+void _gpgme_release_decrypt_result (DecryptResult result);
+void _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+				    char *args);
+GpgmeError _gpgme_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain,
+				 void *status_handler);
+GpgmeError _gpgme_decrypt_result (GpgmeCtx ctx);
 
 /*-- sign.c --*/
 void _gpgme_release_sign_result ( SignResult res );

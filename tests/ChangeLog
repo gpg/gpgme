@@ -1,3 +1,9 @@
+2001-11-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (TESTS): Add t-decrypt-verify.
+	* t-decrypt-verify.c: New file.
+	* cipher-2.asc: Likewise.
+
 2001-11-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* t-data.c: Include stddef.h.

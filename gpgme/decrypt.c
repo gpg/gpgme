@@ -53,8 +53,8 @@ create_result_struct (GpgmeCtx ctx)
   return 0;    
 }
 
-static void
-decrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+void
+_gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
   _gpgme_passphrase_status_handler (ctx, code, args);
 
@@ -90,7 +90,8 @@ decrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 }
 
 GpgmeError
-gpgme_op_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain)
+_gpgme_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain,
+		      void *status_handler)
 {
   GpgmeError err = 0;
   int i;
@@ -109,7 +110,7 @@ gpgme_op_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain)
   if (err)
     goto leave;
 
-  _gpgme_gpg_set_status_handler (ctx->gpg, decrypt_status_handler, ctx);
+  _gpgme_gpg_set_status_handler (ctx->gpg, status_handler, ctx);
 
   err = _gpgme_passphrase_start (ctx);
   if (err)
@@ -154,6 +155,36 @@ gpgme_op_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain)
   return err;
 }
 
+GpgmeError
+gpgme_op_decrypt_start (GpgmeCtx ctx, GpgmeData ciph, GpgmeData plain)
+{
+  return _gpgme_decrypt_start (ctx, ciph, plain,
+			       _gpgme_decrypt_status_handler);
+}
+
+GpgmeError
+_gpgme_decrypt_result (GpgmeCtx ctx)
+{
+  GpgmeError err = 0;
+
+  if (!ctx->result.decrypt)
+    err = mk_error (General_Error);
+  else if (ctx->out_of_core)
+    err = mk_error (Out_Of_Core);
+  else
+    {
+      err = _gpgme_passphrase_result (ctx);
+      if (! err)
+	{
+	  if (ctx->result.decrypt->failed)
+	    err = mk_error (Decryption_Failed);
+	  else if (!ctx->result.decrypt->okay)
+	    err = mk_error (No_Data);
+	}
+    }
+  return err;
+}
+
 /**
  * gpgme_op_decrypt:
  * @ctx: The context
@@ -173,21 +204,7 @@ gpgme_op_decrypt (GpgmeCtx ctx, GpgmeData in, GpgmeData out)
   if (!err)
     {
       gpgme_wait (ctx, 1);
-      if (!ctx->result.decrypt)
-	err = mk_error (General_Error);
-      else if (ctx->out_of_core)
-	err = mk_error (Out_Of_Core);
-      else
-	{
-	  err = _gpgme_passphrase_result (ctx);
-	  if (! err)
-	    {
-	      if (ctx->result.decrypt->failed)
-		err = mk_error (Decryption_Failed);
-	      else if (!ctx->result.decrypt->okay)
-		err = mk_error (No_Data);
-	    }
-        }
+      err = _gpgme_decrypt_result (ctx);
       ctx->pending = 0;
     }
   return err;
