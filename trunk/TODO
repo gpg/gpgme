@@ -42,6 +42,10 @@ Hey Emacs, this is -*- outline -*- mode!
    get GPGME_No_Passphrase." Bug reported by Stephane Corthesy.
 
 * Tests
+  Write a fake gpg-agent so that we can supply known passphrases to
+  gpgsm and setup the configuration files to use the agent.  Without
+  this we are testing a currently running gpg-agent which is not a
+  clever idea.
 ** t-data
 *** Test gpgme_data_release_and_get_mem.
 *** Test gpgme_data_rewind for invalid types.
