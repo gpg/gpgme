@@ -1,5 +1,8 @@
 2003-05-26  Marcus Brinkmann  <marcus@g10code.de>
 
+	* conversion.c (_gpgme_decode_c_string): Add missing break
+	statement.
+
 	* recipient.c (gpgme_recipients_add_name_with_validity): Add one
 	to buffer to allocate.
 
