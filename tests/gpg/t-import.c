@@ -151,7 +151,7 @@ check_result (GpgmeImportResult result, char *fpr, int secret)
       fprintf (stderr, "Unexpected number of status reports\n");
       exit (1);
     }
-  if (strcmp ("ADAB7FCC1F4DE2616ECFA402AF82244F9CD9FD55", result->imports->fpr))
+  if (strcmp (fpr, result->imports->fpr))
     {
       fprintf (stderr, "Unexpected fingerprint %s\n",
 	       result->imports->fpr);
