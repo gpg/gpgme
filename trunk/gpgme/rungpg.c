@@ -119,10 +119,14 @@ struct gpg_object_s
     int fd;
     int idx;		/* Index in fd_data_map */
     GpgmeData cb_data;   /* hack to get init the above idx later */
-    GpgStatusCode code;  /* last code */
+    GpgmeStatusCode code;  /* last code */
     char *keyword;       /* what has been requested (malloced) */
     GpgCommandHandler fnc; 
     void *fnc_value;
+    /* The kludges never end.  This is used to couple command handlers
+       with output data in edit key mode.  */
+    GpgmeData linked_data;
+    int linked_idx;
   } cmd;
 
   struct GpgmeIOCbs io_cbs;
@@ -257,6 +261,8 @@ _gpgme_gpg_new (GpgObject *r_gpg)
   gpg->colon.fd[1] = -1;
   gpg->cmd.fd = -1;
   gpg->cmd.idx = -1;
+  gpg->cmd.linked_data = NULL;
+  gpg->cmd.linked_idx = -1;
 
   gpg->pid = -1;
 
@@ -518,27 +524,29 @@ _gpgme_gpg_set_simple_line_handler ( GpgObject gpg,
  */
 
 GpgmeError
-_gpgme_gpg_set_command_handler ( GpgObject gpg,
-                                 GpgCommandHandler fnc, void *fnc_value ) 
+_gpgme_gpg_set_command_handler (GpgObject gpg,
+				GpgCommandHandler fnc, void *fnc_value,
+				GpgmeData linked_data)
 {
-    GpgmeData tmp;
-    GpgmeError err;
+  GpgmeData tmp;
+  GpgmeError err;
 
-    assert (gpg);
-    if (gpg->pm.active)
-        return 0;
-
-    err = gpgme_data_new_with_read_cb ( &tmp, command_cb, gpg );
-    if (err)
-        return err;
-        
-    _gpgme_gpg_add_arg ( gpg, "--command-fd" );
-    _gpgme_gpg_add_data (gpg, tmp, -2);
-    gpg->cmd.cb_data = tmp;
-    gpg->cmd.fnc = fnc;
-    gpg->cmd.fnc_value = fnc_value;
-    gpg->cmd.used = 1;
+  assert (gpg);
+  if (gpg->pm.active)
     return 0;
+
+  err = gpgme_data_new_with_read_cb (&tmp, command_cb, gpg);
+  if (err)
+    return err;
+        
+  _gpgme_gpg_add_arg ( gpg, "--command-fd" );
+  _gpgme_gpg_add_data (gpg, tmp, -2);
+  gpg->cmd.cb_data = tmp;
+  gpg->cmd.fnc = fnc;
+  gpg->cmd.fnc_value = fnc_value;
+  gpg->cmd.linked_data = linked_data;
+  gpg->cmd.used = 1;
+  return 0;
 }
 
 
@@ -763,10 +771,18 @@ build_argv (GpgObject gpg)
 	  }
 
 	  /* Hack to get hands on the fd later.  */
-	  if (gpg->cmd.used && gpg->cmd.cb_data == a->data)
+	  if (gpg->cmd.used)
 	    {
-	      assert (gpg->cmd.idx == -1);
-	      gpg->cmd.idx = datac;
+	      if (gpg->cmd.cb_data == a->data)
+		{
+		  assert (gpg->cmd.idx == -1);
+		  gpg->cmd.idx = datac;
+		}
+	      else if (gpg->cmd.linked_data == a->data)
+		{
+		  assert (gpg->cmd.linked_idx == -1);
+		  gpg->cmd.linked_idx = datac;
+		}
 	    }
 
 	  fd_data_map[datac].data = a->data;
@@ -1001,86 +1017,118 @@ status_cmp (const void *ap, const void *bp)
  * with status line code we know about and skip all other stuff
  * without buffering (i.e. without extending the buffer).  */
 static GpgmeError
-read_status ( GpgObject gpg )
+read_status (GpgObject gpg)
 {
-    char *p;
-    int nread;
-    size_t bufsize = gpg->status.bufsize; 
-    char *buffer = gpg->status.buffer;
-    size_t readpos = gpg->status.readpos; 
+  char *p;
+  int nread;
+  size_t bufsize = gpg->status.bufsize; 
+  char *buffer = gpg->status.buffer;
+  size_t readpos = gpg->status.readpos; 
 
-    assert (buffer);
-    if (bufsize - readpos < 256) { 
-        /* need more room for the read */
-        bufsize += 1024;
-        buffer = xtryrealloc (buffer, bufsize);
-        if ( !buffer ) 
-            return mk_error (Out_Of_Core);
-    }
-    
-
-    nread = _gpgme_io_read ( gpg->status.fd[0],
-                             buffer+readpos, bufsize-readpos );
-    if (nread == -1)
-        return mk_error(Read_Error);
-
-    if (!nread) {
-        gpg->status.eof = 1;
-        if (gpg->status.fnc)
-            gpg->status.fnc ( gpg->status.fnc_value, STATUS_EOF, "" );
-        return 0;
+  assert (buffer);
+  if (bufsize - readpos < 256)
+    { 
+      /* Need more room for the read.  */
+      bufsize += 1024;
+      buffer = xtryrealloc (buffer, bufsize);
+      if (!buffer)
+	return mk_error (Out_Of_Core);
     }
 
-    while (nread > 0) {
-        for (p = buffer + readpos; nread; nread--, p++) {
-            if ( *p == '\n' ) {
-                /* (we require that the last line is terminated by a LF) */
-                *p = 0;
-                if (!strncmp (buffer, "[GNUPG:] ", 9 )
-                    && buffer[9] >= 'A' && buffer[9] <= 'Z' ) {
-                    struct status_table_s t, *r;
-                    char *rest;
+  nread = _gpgme_io_read (gpg->status.fd[0],
+			  buffer + readpos, bufsize-readpos);
+  if (nread == -1)
+    return mk_error(Read_Error);
 
-                    rest = strchr (buffer+9, ' ');
-                    if ( !rest )
-                        rest = p; /* set to an empty string */
-                    else
-                        *rest++ = 0;
-                    
-                    t.name = buffer+9;
-                    /* (the status table as one extra element) */
-                    r = bsearch ( &t, status_table, DIM(status_table)-1,
-                                  sizeof t, status_cmp );
-                    if ( r ) {
-                        if ( gpg->cmd.used
-                             && ( r->code == STATUS_GET_BOOL
-                                  || r->code == STATUS_GET_LINE
-                                  || r->code == STATUS_GET_HIDDEN )) {
-                            gpg->cmd.code = r->code;
-                            xfree (gpg->cmd.keyword);
-                            gpg->cmd.keyword = xtrystrdup (rest);
-                            if ( !gpg->cmd.keyword )
-                                return mk_error (Out_Of_Core);
-                            /* this should be the last thing we have received
-                             * and the next thing will be that the command
-                             * handler does its action */
-                            if ( nread > 1 )
-                                DEBUG0 ("ERROR, unexpected data in read_status");
+  if (!nread)
+    {
+      gpg->status.eof = 1;
+      if (gpg->status.fnc)
+	gpg->status.fnc (gpg->status.fnc_value, GPGME_STATUS_EOF, "");
+      return 0;
+    }
 
-			    _gpgme_gpg_add_io_cb
-			      (gpg, gpg->cmd.fd,
-			       0, _gpgme_data_outbound_handler,
-			       gpg->fd_data_map[gpg->cmd.idx].data,
-			       &gpg->fd_data_map[gpg->cmd.idx].tag);
-			    gpg->fd_data_map[gpg->cmd.idx].fd = gpg->cmd.fd;
-			    gpg->cmd.fd = -1;
+  while (nread > 0)
+    {
+      for (p = buffer + readpos; nread; nread--, p++)
+	{
+	  if (*p == '\n')
+	    {
+	      /* (we require that the last line is terminated by a LF) */
+	      *p = 0;
+	      if (!strncmp (buffer, "[GNUPG:] ", 9)
+		  && buffer[9] >= 'A' && buffer[9] <= 'Z')
+		{
+		  struct status_table_s t, *r;
+		  char *rest;
+
+		  rest = strchr (buffer + 9, ' ');
+		  if (!rest)
+		    rest = p; /* Set to an empty string.  */
+		  else
+		    *rest++ = 0;
+                    
+		  t.name = buffer+9;
+		  /* (the status table has one extra element) */
+		  r = bsearch (&t, status_table, DIM(status_table) - 1,
+			       sizeof t, status_cmp);
+		  if (r)
+		    {
+		      if (gpg->cmd.used
+			  && (r->code == GPGME_STATUS_GET_BOOL
+			      || r->code == GPGME_STATUS_GET_LINE
+			      || r->code == GPGME_STATUS_GET_HIDDEN))
+			{
+			  gpg->cmd.code = r->code;
+			  xfree (gpg->cmd.keyword);
+			  gpg->cmd.keyword = xtrystrdup (rest);
+			  if (!gpg->cmd.keyword)
+			    return mk_error (Out_Of_Core);
+			  /* This should be the last thing we have
+			     received and the next thing will be that
+			     the command handler does its action.  */
+			  if (nread > 1)
+			    DEBUG0 ("ERROR, unexpected data in read_status");
+
+			  /* Before we can actually add the command
+			     fd, we might have to flush the linked
+			     output data pipe.  */
+			  if (gpg->cmd.linked_idx != -1
+			      && gpg->fd_data_map[gpg->cmd.linked_idx].fd != -1)
+			    {
+			      struct io_select_fd_s fds;
+			      fds.fd = gpg->fd_data_map[gpg->cmd.linked_idx].fd;
+			      fds.for_read = 1;
+			      fds.for_write = 0;
+			      fds.frozen = 0;
+			      fds.opaque = NULL;
+			      do
+				{
+				  fds.signaled = 0;
+				  _gpgme_io_select (&fds, 1, 1);
+				  if (fds.signaled)
+				    _gpgme_data_inbound_handler
+				      (gpg->cmd.linked_data, fds.fd);
+				}
+			      while (fds.signaled);
+			    }
+
+			  _gpgme_gpg_add_io_cb
+			    (gpg, gpg->cmd.fd,
+			     0, _gpgme_data_outbound_handler,
+			     gpg->fd_data_map[gpg->cmd.idx].data,
+			     &gpg->fd_data_map[gpg->cmd.idx].tag);
+			  gpg->fd_data_map[gpg->cmd.idx].fd = gpg->cmd.fd;
+			  gpg->cmd.fd = -1;
                         }
-                        else if ( gpg->status.fnc ) {
-                            gpg->status.fnc ( gpg->status.fnc_value, 
-                                              r->code, rest);
+		      else if (gpg->status.fnc)
+			{
+			  gpg->status.fnc (gpg->status.fnc_value, 
+					   r->code, rest);
                         }
                     
-                        if ( r->code == STATUS_END_STREAM ) {
+		      if (r->code == GPGME_STATUS_END_STREAM)
+			{
 			  if (gpg->cmd.used)
 			    {
 			      /* XXX We must check if there are any
@@ -1094,28 +1142,28 @@ read_status ( GpgObject gpg )
                         }
                     }
                 }
-                /* To reuse the buffer for the next line we have to
-                 * shift the remaining data to the buffer start and
-                 * restart the loop Hmmm: We can optimize this
-                 * function by looking forward in the buffer to see
-                 * whether a second complete line is available and in
-                 * this case avoid the memmove for this line.  */
-                nread--; p++;
-                if (nread)
-                    memmove (buffer, p, nread);
-                readpos = 0;
-                break; /* the for loop */
+	      /* To reuse the buffer for the next line we have to
+		 shift the remaining data to the buffer start and
+		 restart the loop Hmmm: We can optimize this function
+		 by looking forward in the buffer to see whether a
+		 second complete line is available and in this case
+		 avoid the memmove for this line.  */
+	      nread--; p++;
+	      if (nread)
+		memmove (buffer, p, nread);
+	      readpos = 0;
+	      break; /* the for loop */
             }
-            else
-                readpos++;
+	  else
+	    readpos++;
         }
     } 
 
-    /* Update the gpg object.  */
-    gpg->status.bufsize = bufsize;
-    gpg->status.buffer = buffer;
-    gpg->status.readpos = readpos;
-    return 0;
+  /* Update the gpg object.  */
+  gpg->status.bufsize = bufsize;
+  gpg->status.buffer = buffer;
+  gpg->status.readpos = readpos;
+  return 0;
 }
 
 
@@ -1384,6 +1432,29 @@ _gpgme_gpg_op_delete (GpgObject gpg, GpgmeKey key, int allow_secret)
   err = _gpgme_gpg_add_arg (gpg, allow_secret
 			    ? "--delete-secret-and-public-key"
 			    : "--delete-key");
+  if (!err)
+    err = _gpgme_gpg_add_arg (gpg, "--");
+  if (!err)
+    {
+      const char *s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, NULL, 0);
+      if (!s)
+	err = mk_error (Invalid_Key);
+      else
+	err = _gpgme_gpg_add_arg (gpg, s);
+    }
+
+  return err;
+}
+
+
+GpgmeError
+_gpgme_gpg_op_edit (GpgObject gpg, GpgmeKey key, GpgmeData out)
+{
+  GpgmeError err;
+
+  err = _gpgme_gpg_add_arg (gpg, "--edit-key");
+  if (!err)
+    err = _gpgme_gpg_add_data (gpg, out, 1);
   if (!err)
     err = _gpgme_gpg_add_arg (gpg, "--");
   if (!err)

@@ -152,7 +152,7 @@ do_select (fd_table_t fdt)
   int any = 0;
 
   LOCK (fdt->lock);
-  n = _gpgme_io_select (fdt->fds, fdt->size);
+  n = _gpgme_io_select (fdt->fds, fdt->size, 0);
 
   if (n <= 0) 
     {

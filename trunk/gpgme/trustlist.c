@@ -52,14 +52,14 @@ trust_item_new (void)
 
 
 static void
-trustlist_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+trustlist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   if (ctx->error)
     return;
 
   switch (code)
     {
-    case STATUS_EOF:
+    case GPGME_STATUS_EOF:
       break;
 
     default:

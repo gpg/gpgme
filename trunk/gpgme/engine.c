@@ -262,7 +262,8 @@ _gpgme_engine_set_status_handler (EngineObject engine,
 
 GpgmeError
 _gpgme_engine_set_command_handler (EngineObject engine,
-				  GpgCommandHandler fnc, void *fnc_value)
+				  GpgCommandHandler fnc, void *fnc_value,
+				   GpgmeData linked_data)
 {
   if (!engine)
     return mk_error (Invalid_Value);
@@ -270,7 +271,8 @@ _gpgme_engine_set_command_handler (EngineObject engine,
   switch (engine->protocol)
     {
     case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_set_command_handler (engine->engine.gpg, fnc, fnc_value);
+      return _gpgme_gpg_set_command_handler (engine->engine.gpg,
+					     fnc, fnc_value, linked_data);
     case GPGME_PROTOCOL_CMS:
       /* FIXME */
       break;
@@ -339,6 +341,25 @@ _gpgme_engine_op_delete (EngineObject engine, GpgmeKey key, int allow_secret)
   return 0;
 }
 
+
+GpgmeError
+_gpgme_engine_op_edit (EngineObject engine, GpgmeKey key, GpgmeData out)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_edit (engine->engine.gpg, key, out);
+    case GPGME_PROTOCOL_CMS:
+      /* FIXME */
+      return mk_error (Not_Implemented);
+    default:
+      break;
+    }
+  return 0;
+}
 
 GpgmeError
 _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,

@@ -287,12 +287,12 @@ _gpgme_io_kill (int pid, int hard)
  *          >0 = number of signaled fds
  */
 int
-_gpgme_io_select (struct io_select_fd_s *fds, size_t nfds)
+_gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 {
   fd_set readfds;
   fd_set writefds;
   int any, i, max_fd, n, count;
-  struct timeval timeout = { 1, 0 }; /* Use a 1s timeout.  */
+  struct timeval timeout = { nonblock ? 0 : 1, 0 }; /* Use a 1s timeout.  */
   void *dbg_help = NULL;
 
   FD_ZERO (&readfds);

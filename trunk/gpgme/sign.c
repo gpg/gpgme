@@ -136,7 +136,7 @@ append_xml_siginfo (GpgmeData *rdh, char *args)
 }
 
 void
-_gpgme_sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+_gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   _gpgme_passphrase_status_handler (ctx, code, args);
 
@@ -146,7 +146,7 @@ _gpgme_sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
   switch (code)
     {
-    case STATUS_EOF:
+    case GPGME_STATUS_EOF:
       if (ctx->result.sign->okay)
 	{
 	  append_xml_siginfo (&ctx->result.sign->xmlinfo, NULL);
@@ -157,7 +157,7 @@ _gpgme_sign_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 	ctx->error = mk_error (No_Data); /* Hmmm: choose a better error? */
       break;
 
-    case STATUS_SIG_CREATED: 
+    case GPGME_STATUS_SIG_CREATED: 
       /* FIXME: We have no error return for multiple signatures.  */
       append_xml_siginfo (&ctx->result.sign->xmlinfo, args);
       ctx->result.sign->okay = 1;

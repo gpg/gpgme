@@ -32,7 +32,9 @@ libgpgme_la_LDFLAGS = -version-info \
       @LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 if BUILD_ASSUAN
 AM_CPPFLAGS = -I$(top_srcdir)/assuan
-libgpgme_la_LIBADD = ../assuan/libassuan.la ../jnlib/libjnlib.la
+assuan_libobjs = ../assuan/libassuan.la ../jnlib/libjnlib.la @LIBOBJS@
+else
+assuan_libobjs =
 endif
 
 if HAVE_PTHREAD
@@ -75,6 +77,7 @@ libgpgme_la_SOURCES = \
         export.c \
 	genkey.c \
 	delete.c \
+	edit.c \
         rungpg.c rungpg.h status-table.h \
 	engine-gpgsm.c engine-gpgsm.h \
 	engine.c engine.h \
@@ -82,11 +85,11 @@ libgpgme_la_SOURCES = \
 	${system_components} \
 	debug.c debug.h \
 	gpgme.c version.c errors.c
-libgpgme_la_LDADD = @LIBOBJS@
+libgpgme_la_LIBADD = ${assuan_libobjs} @LIBOBJS@
 
 errors.c : gpgme.h
 	$(srcdir)/mkerrors < $(srcdir)/gpgme.h > errors.c
 
 status-table.h : rungpg.h
-	$(srcdir)/mkstatus < $(srcdir)/rungpg.h > status-table.h
+	$(srcdir)/mkstatus < $(srcdir)/gpgme.h > status-table.h
 

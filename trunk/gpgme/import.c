@@ -51,7 +51,7 @@ _gpgme_release_import_result (ImportResult result)
    the data buffer.  With args of NULL the xml structure is
    closed.  */
 static void
-append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
+append_xml_impinfo (GpgmeData *rdh, GpgmeStatusCode code, char *args)
 {
 #define MAX_IMPORTED_FIELDS 14
   static const char *const imported_fields[MAX_IMPORTED_FIELDS]
@@ -68,14 +68,14 @@ append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
   int i;
 
   /* Verify that we can use the args.  */
-  if (code != STATUS_EOF)
+  if (code != GPGME_STATUS_EOF)
     {
       if (!args)
 	return;
 
-      if (code == STATUS_IMPORTED)
+      if (code == GPGME_STATUS_IMPORTED)
 	field_name = imported_fields;
-      else if (code == STATUS_IMPORT_RES)
+      else if (code == GPGME_STATUS_IMPORT_RES)
 	field_name = import_res_fields;
       else
 	return;
@@ -94,7 +94,7 @@ append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
       
       /* gpgsm does not print a useful user ID and uses a fingerprint
          instead of the key ID. */
-      if (code == STATUS_IMPORTED && field[0] && strlen (field[0]) > 16)
+      if (code == GPGME_STATUS_IMPORTED && field[0] && strlen (field[0]) > 16)
         field_name = imported_fields_x509;
     }
 
@@ -109,16 +109,16 @@ append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
   else
     dh = *rdh;
     
-  if (code == STATUS_EOF)
+  if (code == GPGME_STATUS_EOF)
     {
       /* Just close the XML containter.  */
       _gpgme_data_append_string (dh, "</GnupgOperationInfo>\n");
     }
   else
     {
-      if (code == STATUS_IMPORTED)
+      if (code == GPGME_STATUS_IMPORTED)
 	_gpgme_data_append_string (dh, "  <import>\n");
-      else if (code == STATUS_IMPORT_RES)
+      else if (code == GPGME_STATUS_IMPORT_RES)
 	_gpgme_data_append_string (dh, "  <importResult>\n");
 
       for (i = 0; field_name[i]; i++)
@@ -132,16 +132,16 @@ append_xml_impinfo (GpgmeData *rdh, GpgStatusCode code, char *args)
 	  _gpgme_data_append_string (dh, ">\n");
 	}
 
-      if (code == STATUS_IMPORTED)
+      if (code == GPGME_STATUS_IMPORTED)
 	_gpgme_data_append_string (dh, "  </import>\n");
-      else if (code == STATUS_IMPORT_RES)
+      else if (code == GPGME_STATUS_IMPORT_RES)
 	_gpgme_data_append_string (dh, "  </importResult>\n");
     }
 }
 
 
 static void
-import_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+import_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   if (ctx->error)
     return;
@@ -149,7 +149,7 @@ import_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
   switch (code)
     {
-    case STATUS_EOF:
+    case GPGME_STATUS_EOF:
       if (ctx->result.import->xmlinfo)
         {
           append_xml_impinfo (&ctx->result.import->xmlinfo, code, NULL);
@@ -159,9 +159,9 @@ import_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
       /* XXX Calculate error value.  */
       break;
 
-    case STATUS_IMPORTED:
+    case GPGME_STATUS_IMPORTED:
       ctx->result.import->any_imported = 1;
-    case STATUS_IMPORT_RES:
+    case GPGME_STATUS_IMPORT_RES:
       append_xml_impinfo (&ctx->result.import->xmlinfo, code, args);
       break;
 

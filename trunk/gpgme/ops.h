@@ -89,12 +89,12 @@ GpgmeError _gpgme_op_reset (GpgmeCtx ctx, int synchronous);
 /*-- verify.c --*/
 void _gpgme_release_verify_result (VerifyResult result);
 GpgmeSigStat _gpgme_intersect_stati (VerifyResult result);
-void _gpgme_verify_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+void _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 				   char *args);
 
 /*-- decrypt.c --*/
 void _gpgme_release_decrypt_result (DecryptResult result);
-void _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+void _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 				    char *args);
 GpgmeError _gpgme_decrypt_start (GpgmeCtx ctx, int synchronous,
 				 GpgmeData ciph, GpgmeData plain,
@@ -103,22 +103,25 @@ GpgmeError _gpgme_decrypt_result (GpgmeCtx ctx);
 
 /*-- sign.c --*/
 void _gpgme_release_sign_result ( SignResult res );
-void _gpgme_sign_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+void _gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 				 char *args);
 
 /*-- encrypt.c --*/
 void _gpgme_release_encrypt_result ( EncryptResult res );
-void _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+void _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 				    char *args);
 
 /*-- passphrase.c --*/
 void _gpgme_release_passphrase_result (PassphraseResult result);
-void _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+void _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 				       char *args);
+const char * _gpgme_passphrase_command_handler (void *opaque,
+						GpgmeStatusCode code,
+						const char *key);
 GpgmeError _gpgme_passphrase_start (GpgmeCtx ctx);
 
 /*-- progress.c --*/
-void _gpgme_progress_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+void _gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 				     char *args);
 
 /*-- import.c --*/
@@ -136,6 +139,9 @@ void _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data)
 
 /*-- trustlist.c --*/
 void _gpgme_op_trustlist_event_cb (void *data, GpgmeEventIO type, void *type_data);
+
+/*-- edit.c --*/
+void _gpgme_release_edit_result (EditResult res);
 
 /*-- version.c --*/
 const char *_gpgme_compare_versions (const char *my_version,

@@ -95,6 +95,7 @@ _gpgme_release_result (GpgmeCtx ctx)
   _gpgme_release_delete_result (ctx->result.delete);
   _gpgme_release_genkey_result (ctx->result.genkey);
   _gpgme_release_keylist_result (ctx->result.keylist);
+  _gpgme_release_edit_result (ctx->result.edit);
   memset (&ctx->result, 0, sizeof (ctx->result));
   _gpgme_set_op_info (ctx, NULL);
   ctx->error = 0;

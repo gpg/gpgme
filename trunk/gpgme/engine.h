@@ -34,7 +34,8 @@ void _gpgme_engine_set_status_handler (EngineObject engine,
 				       GpgStatusHandler fnc, void *fnc_value);
 GpgmeError _gpgme_engine_set_command_handler (EngineObject engine,
 					      GpgCommandHandler fnc,
-					      void *fnc_value);
+					      void *fnc_value,
+					      GpgmeData data);
 GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject gpg,
 						 GpgColonLineHandler fnc,
 						 void *fnc_value);
@@ -43,6 +44,8 @@ GpgmeError _gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph,
 				     GpgmeData plain);
 GpgmeError _gpgme_engine_op_delete (EngineObject engine, GpgmeKey key,
 				    int allow_secret);
+GpgmeError _gpgme_engine_op_edit (EngineObject engine, GpgmeKey key,
+				  GpgmeData out);
 GpgmeError _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
 				     GpgmeData plain, GpgmeData ciph,
 				     int use_armor);

@@ -92,5 +92,9 @@ typedef struct genkey_result_s *GenKeyResult;
 struct keylist_result_s;
 typedef struct keylist_result_s *KeylistResult;
 
+/*-- edit.c --*/
+struct edit_result_s;
+typedef struct edit_result_s *EditResult;
+
 
 #endif /* TYPES_H */

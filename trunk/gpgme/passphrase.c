@@ -52,7 +52,7 @@ _gpgme_release_passphrase_result (PassphraseResult result)
 
 
 void
-_gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+_gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
   if (ctx->error)
     return;
@@ -60,34 +60,34 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 
   switch (code)
     {
-    case STATUS_USERID_HINT:
+    case GPGME_STATUS_USERID_HINT:
       xfree (ctx->result.passphrase->userid_hint);
       if (!(ctx->result.passphrase->userid_hint = xtrystrdup (args)))
 	ctx->error = mk_error (Out_Of_Core);
       break;
 
-    case STATUS_BAD_PASSPHRASE:
+    case GPGME_STATUS_BAD_PASSPHRASE:
       ctx->result.passphrase->bad_passphrase++;
       break;
 
-    case STATUS_GOOD_PASSPHRASE:
+    case GPGME_STATUS_GOOD_PASSPHRASE:
       ctx->result.passphrase->bad_passphrase = 0;
       break;
 
-    case STATUS_NEED_PASSPHRASE:
-    case STATUS_NEED_PASSPHRASE_SYM:
+    case GPGME_STATUS_NEED_PASSPHRASE:
+    case GPGME_STATUS_NEED_PASSPHRASE_SYM:
       xfree (ctx->result.passphrase->passphrase_info);
       ctx->result.passphrase->passphrase_info = xtrystrdup (args);
       if (!ctx->result.passphrase->passphrase_info)
 	ctx->error = mk_error (Out_Of_Core);
       break;
 
-    case STATUS_MISSING_PASSPHRASE:
+    case GPGME_STATUS_MISSING_PASSPHRASE:
       DEBUG0 ("missing passphrase - stop\n");;
       ctx->result.passphrase->no_passphrase = 1;
       break;
 
-    case STATUS_EOF:
+    case GPGME_STATUS_EOF:
       if (ctx->result.passphrase->no_passphrase
 	  || ctx->result.passphrase->bad_passphrase)
 	ctx->error = mk_error (No_Passphrase);
@@ -100,8 +100,8 @@ _gpgme_passphrase_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 }
 
 
-static const char *
-command_handler (void *opaque, GpgStatusCode code, const char *key)
+const char *
+_gpgme_passphrase_command_handler (void *opaque, GpgmeStatusCode code, const char *key)
 {
   GpgmeCtx ctx = opaque;
 
@@ -130,7 +130,7 @@ command_handler (void *opaque, GpgStatusCode code, const char *key)
   if (!key || !ctx->passphrase_cb)
     return NULL;
     
-  if (code == STATUS_GET_HIDDEN && !strcmp (key, "passphrase.enter"))
+  if (code == GPGME_STATUS_GET_HIDDEN && !strcmp (key, "passphrase.enter"))
     {
       const char *userid_hint = ctx->result.passphrase->userid_hint;
       const char *passphrase_info = ctx->result.passphrase->passphrase_info;
@@ -170,6 +170,7 @@ _gpgme_passphrase_start (GpgmeCtx ctx)
   GpgmeError err = 0;
 
   if (ctx->passphrase_cb)
-    err = _gpgme_engine_set_command_handler (ctx->engine, command_handler, ctx);
+    err = _gpgme_engine_set_command_handler (ctx->engine, _gpgme_passphrase_command_handler,
+					     ctx, NULL);
   return err;
 }
