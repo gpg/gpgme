@@ -91,6 +91,19 @@ doit ( GpgmeCtx ctx, const char *pattern )
     }
     if ( err != GPGME_EOF )
         fail_if_err (err);
+
+    {
+      char *p;
+
+      p = gpgme_get_op_info (ctx, 0);
+      if (p)
+        {
+          fputs ("<!-- begin operation info -->\n", stdout);
+          fputs (p, stdout);
+          fputs ("<!-- end operation info -->\n", stdout);
+          free (p);
+        }
+    }
 }
 
 

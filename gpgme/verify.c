@@ -92,7 +92,7 @@ copy_token (const char *string, char *buffer, size_t length)
   for (i = 1; i < length && *s && *s != ' ' ; i++)
     *p++ = *s++;
   *p = 0;
-  /* conmtinue scanning in case the copy was truncated */
+  /* continue scanning in case the copy was truncated */
   while (*s && *s != ' ')
     s++;
   return s - string;
@@ -537,12 +537,18 @@ calc_sig_summary (VerifyResult result)
   else if (result->status == GPGME_SIG_STAT_ERROR)
     sum |= GPGME_SIGSUM_SYS_ERROR;
 
-  /* FIXME: Set GPGME_SIGSUM_KEY_REVOKED. */
-  /* FIXME: Set GPGME_SIGSUM_CRL_MISSING. */
-  /* FIXME: Set GPGME_SIGSUM_CRL_TOO_OLD. */
-  /* FIXME: Set GPGME_SIGSUM_BAD_POLICY. */
+  if ( !strcmp (result->trust_errtok, "Certificate_Revoked"))
+    sum |= GPGME_SIGSUM_KEY_REVOKED;
+  else if ( !strcmp (result->trust_errtok, "No_CRL_Known"))
+    sum |= GPGME_SIGSUM_CRL_MISSING;
+  else if ( !strcmp (result->trust_errtok, "CRL_Too_Old"))
+    sum |= GPGME_SIGSUM_CRL_TOO_OLD;
+  else if ( !strcmp (result->trust_errtok, "No_Policy_Match"))
+    sum |= GPGME_SIGSUM_BAD_POLICY;
+  else if (*result->trust_errtok)
+    sum |= GPGME_SIGSUM_SYS_ERROR;
 
-  /* That the valid flag when the signature is unquestionable
+  /* Set the valid flag when the signature is unquestionable
      valid. */
   if ((sum & GPGME_SIGSUM_GREEN) && !(sum & ~GPGME_SIGSUM_GREEN))
     sum |= GPGME_SIGSUM_VALID;

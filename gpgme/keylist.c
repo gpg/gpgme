@@ -33,7 +33,58 @@
 
 #define my_isdigit(a) ( (a) >='0' && (a) <= '9' )
 
+struct keylist_result_s
+{
+  int truncated;
+  GpgmeData xmlinfo;
+};
+
 static void finish_key ( GpgmeCtx ctx );
+
+
+void
+_gpgme_release_keylist_result (KeylistResult result)
+{
+  if (!result)
+    return;
+  xfree (result);
+}
+
+/* Append some XML info.  args is currently ignore but we might want
+   to add more information in the future (like source of the
+   keylisting.  With args of NULL the XML structure is closed.  */
+static void
+append_xml_keylistinfo (GpgmeData *rdh, char *args)
+{
+  GpgmeData dh;
+
+  if (!*rdh)
+    {
+      if (gpgme_data_new (rdh))
+	return; /* FIXME: We are ignoring out-of-core.  */
+      dh = *rdh;
+      _gpgme_data_append_string (dh, "<GnupgOperationInfo>\n");
+    }
+  else
+    {
+      dh = *rdh;
+      _gpgme_data_append_string (dh, "  </keylisting>\n");
+    }
+
+  if (!args)
+    {
+      /* Just close the XML containter.  */
+      _gpgme_data_append_string (dh, "</GnupgOperationInfo>\n");
+      return;
+    }
+
+  _gpgme_data_append_string (dh,
+                             "  <keylisting>\n"
+                             "    <truncated/>\n"
+			     );
+    
+}
+
 
 
 static void
@@ -41,11 +92,24 @@ keylist_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
   if (ctx->error)
     return;
+  test_and_allocate_result (ctx, keylist);
 
   switch (code)
     {
+    case STATUS_TRUNCATED:
+      ctx->result.keylist->truncated = 1;
+      break;
+
     case STATUS_EOF:
       finish_key (ctx);
+      if (ctx->result.keylist->truncated)
+        append_xml_keylistinfo (&ctx->result.keylist->xmlinfo, "1");
+      if (ctx->result.keylist->xmlinfo)
+	{
+	  append_xml_keylistinfo (&ctx->result.keylist->xmlinfo, NULL);
+	  _gpgme_set_op_info (ctx, ctx->result.keylist->xmlinfo);
+	  ctx->result.keylist->xmlinfo = NULL;
+        }
       break;
 
     default:

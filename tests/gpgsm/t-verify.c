@@ -106,29 +106,60 @@ validity_string (GpgmeValidity val)
 static void
 print_sig_stat ( GpgmeCtx ctx, GpgmeSigStat status )
 {
-    const char *s;
-    time_t created;
-    int idx;
-    GpgmeKey key;
-
-    printf ("Verification Status: %s\n", status_string (status));
+  const char *s;
+  time_t created;
+  int idx;
+  GpgmeKey key;
+  
+  printf ("Verification Status: %s\n", status_string (status));
     
-    for(idx=0; (s=gpgme_get_sig_status (ctx, idx, &status, &created)); idx++ ) {
-        printf ("sig %d: created: %lu expires: %lu status: %s\n",
-                idx, (unsigned long)created, 
-                gpgme_get_sig_ulong_attr (ctx, idx, GPGME_ATTR_EXPIRE, 0),
-                status_string(status) );
-        printf ("sig %d: fpr/keyid: `%s' exterr: `%s' validity: %s\n",
-                idx, s,
+  for (idx=0; (s=gpgme_get_sig_status (ctx, idx, &status, &created)); idx++ )
+    {
+      unsigned long sum;
+
+      printf ("sig %d: created: %lu expires: %lu status: %s\n",
+              idx, (unsigned long)created, 
+              gpgme_get_sig_ulong_attr (ctx, idx, GPGME_ATTR_EXPIRE, 0),
+              status_string(status) );
+      printf ("sig %d: fpr/keyid: `%s' exterr: `%s' validity: %s\n",
+              idx, s,
                 gpgme_get_sig_string_attr (ctx, idx, GPGME_ATTR_ERRTOK, 0),
-                validity_string (gpgme_get_sig_ulong_attr
-                                 (ctx, idx, GPGME_ATTR_VALIDITY, 0)) );
-        if ( !gpgme_get_sig_key (ctx, idx, &key) ) {
-            char *p = gpgme_key_get_as_xml ( key );
-            printf ("sig %d: key object:\n%s\n", idx, p );
-            free (p);
-            gpgme_key_release (key);
-        }
+              validity_string (gpgme_get_sig_ulong_attr
+                               (ctx, idx, GPGME_ATTR_VALIDITY, 0)) );
+      
+      sum = gpgme_get_sig_ulong_attr (ctx, idx, GPGME_ATTR_SIG_SUMMARY, 0);
+      fputs ("summary:", stdout);
+      if ((sum & GPGME_SIGSUM_VALID))
+        fputs (" valid", stdout);
+      if ((sum & GPGME_SIGSUM_GREEN))
+        fputs (" green", stdout);
+      if ((sum & GPGME_SIGSUM_RED))
+        fputs (" red", stdout);
+      if ((sum & GPGME_SIGSUM_KEY_REVOKED))
+        fputs (" keyRevoked", stdout);
+      if ((sum & GPGME_SIGSUM_KEY_EXPIRED))
+        fputs (" keyExpired", stdout);
+      if ((sum & GPGME_SIGSUM_SIG_EXPIRED))
+        fputs (" sigExpired", stdout);
+      if ((sum & GPGME_SIGSUM_KEY_MISSING))
+        fputs (" keyMissing", stdout);
+      if ((sum & GPGME_SIGSUM_CRL_MISSING))
+        fputs (" crlMissing", stdout);
+      if ((sum & GPGME_SIGSUM_CRL_TOO_OLD))
+        fputs (" crlTooOld", stdout);
+      if ((sum & GPGME_SIGSUM_BAD_POLICY))
+        fputs (" badPolicy", stdout);
+      if ((sum & GPGME_SIGSUM_SYS_ERROR))
+        fputs (" sysError", stdout);
+      putchar ('\n');
+
+      if ( !gpgme_get_sig_key (ctx, idx, &key) )
+        {
+          char *p = gpgme_key_get_as_xml ( key );
+          printf ("sig %d: key object:\n%s\n", idx, p );
+          free (p);
+          gpgme_key_release (key);
+      }
     }
 }
 

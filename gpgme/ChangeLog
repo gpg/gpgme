@@ -1,3 +1,13 @@
+2002-06-12  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (struct keylist_result_s): New.
+	(_gpgme_release_keylist_result): Release it here 
+	(keylist_status_handler): Handle truncated.
+	(append_xml_keylistinfo): New.
+	* gpgme.c (_gpgme_release_result): and use it here.
+	* types.h: Declare the new type here.
+	* context.h (struct gpgme_context_s): Use it here.
+
 2002-06-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_release): Close status_cb.fd.

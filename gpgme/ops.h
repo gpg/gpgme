@@ -129,6 +129,9 @@ void _gpgme_release_delete_result (DeleteResult res);
 /*-- genkey.c --*/
 void _gpgme_release_genkey_result (GenKeyResult res);
 
+/*-- keylist.c --*/
+void _gpgme_release_keylist_result (KeylistResult res);
+
 /*-- version.c --*/
 const char *_gpgme_compare_versions (const char *my_version,
 				     const char *req_version);

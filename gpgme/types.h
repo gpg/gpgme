@@ -88,5 +88,9 @@ typedef struct delete_result_s *DeleteResult;
 struct genkey_result_s;
 typedef struct genkey_result_s *GenKeyResult;
 
+/*-- keylist.c --*/
+struct keylist_result_s;
+typedef struct keylist_result_s *KeylistResult;
+
 
 #endif /* TYPES_H */
