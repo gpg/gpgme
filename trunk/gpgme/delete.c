@@ -46,7 +46,7 @@ delete_status_handler (void *priv, gpgme_status_code_t code, char *args)
       errno = 0;
       problem = strtol (args, &tail, 0);
       if (errno || (*tail && *tail != ' '))
-	return GPGME_General_Error;
+	return gpg_error (GPG_ERR_INV_ENGINE);
 
       switch (problem)
 	{
@@ -54,16 +54,16 @@ delete_status_handler (void *priv, gpgme_status_code_t code, char *args)
 	  break;
 
 	case DELETE_No_Such_Key:
-	  return GPGME_Invalid_Key;
+	  return gpg_error (GPG_ERR_NO_PUBKEY);
 
 	case DELETE_Must_Delete_Secret_Key:
-	  return GPGME_Conflict;
+	  return gpg_error (GPG_ERR_CONFLICT);
 
 	case DELETE_Ambiguous_Specification:
-	  return GPGME_Ambiguous_Specification;
+	  return gpg_error (GPG_ERR_AMBIGUOUS_NAME);
 
 	default:
-	  return GPGME_General_Error;
+	  return gpg_error (GPG_ERR_GENERAL);
 	}
     }
   return 0;

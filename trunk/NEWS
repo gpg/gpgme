@@ -18,6 +18,13 @@ Noteworthy changes in version 0.4.1 (unreleased)
  afterwards by calling one of the result functions.  This unifies the
  synchronous and the asynchronous interface.
 
+ The error values have been completely replaced by a more
+ sophisticated model that allows GPGME to transparently and accurately
+ report all errors from the other GnuPG components, irregardless of
+ process boundaries.  This is achieved by using the library
+ libgpg-errors, which is shared by all GnuPG components.  This library
+ is now required for GPGME.
+
  The results of all operations are now provided by pointers to C
  structs rather than by XML structs or in other ways.
 
@@ -26,20 +33,19 @@ Noteworthy changes in version 0.4.1 (unreleased)
 
  Backward compatibility is provided where it was possible without too
  much effort and did not collide with the overall sanitization effort.
- However, it is recommended to update to the new interfaces soon, so
- the compatibility interfaces can be phased out quickly.
- Recommendations how to replace deprecated or removed functionality can
- be found within the description of each change.
+ However, this is only for ease of transition.  NO DEPRECATED FUNCTION
+ OR DATA TYPE IS CONSIDERED A PART OF THE API OR ABI AND WILL BE
+ DROPPED IN THE FUTURE WITHOUT CHANGING THE SONAME OF THE LIBRARY.
+ Recommendations how to replace deprecated or removed functionality
+ can be found within the description of each change.
 
  What follows are all changes to the interface and behaviour of GPGME
  in detail.
 
  * If gpgme.h is included in sources compiled by GCC 3.1 or later,
    deprecated attributes will warn about use of obsolete functions and
-   typedefs.  The use of obsolete error values will appear as the use
-   of an obsolete type _gpgme_deprecated_error_t.  You can suppress
-   these warnings by passing -Wno-deprecated-declarations to the gcc
-   command.
+   type definitions.  You can suppress these warnings by passing
+   -Wno-deprecated-declarations to the gcc command.
 
  * The following types have been renamed.  The old types are still
    available as aliases, but they are deprecated now:
@@ -70,6 +76,17 @@ Noteworthy changes in version 0.4.1 (unreleased)
    GpgmeTrustItem	gpgme_trust_item_t
    GpgmeStatusCode	gpgme_status_code_t
 
+ * gpgme_error_t is now identical to gpg_error_t, the error type
+   provided by libgpg-error.  More about using libgpg-error with GPGME
+   can be found in the manual.  All error symbols have been removed!
+
+ * All functions and types in libgpg-error have been wrapped in GPGME.
+   The new types are gpgme_err_code_t and gpgme_err_source_t.  The new
+   functions are gpgme_err_code, gpgme_err_source, gpgme_error,
+   gpgme_err_make, gpgme_error_from_errno, gpgme_err_make_from_errno,
+   gpgme_err_code_from_errno, gpgme_err_code_to_errno,
+   gpgme_strsource.
+
  * GPGME_ATTR_IS_SECRET is not anymore representable as a string.
 
  * GnuPG 1.2.2 is required.  The progress callback is now also invoked
@@ -89,7 +106,7 @@ Noteworthy changes in version 0.4.1 (unreleased)
 
    The return type has been changed to gpgme_error_t value.  This
    allowed to remove the gpgme_cancel function; just return
-   GPGME_Canceled in the passphrase callback directly.
+   the error code GPG_ERR_CANCELED in the passphrase callback directly.
 
  * gpgme_edit_cb_t has been changed to take a file descriptor argument.
    The user is expected to write the response to the file descriptor,
@@ -145,13 +162,10 @@ Noteworthy changes in version 0.4.1 (unreleased)
  * The new function gpgme_get_protocol_name can be used to convert a
    gpgme_protocol_t value into a string.
 
- * The status of a context operation is not checked anymore, so the
-   errors GPGME_Busy and GPGME_No_Request can not occur anymore.
-
- * For clarity and better reusability, the error codes
-   GPGME_No_Recipients, GPGME_Invalid_Recipient and
-   GPGME_No_Passphrase have been renamed to GPGME_No_UserID,
-   GPGME_Invalid_UserID and GPGME_Bad_Passphrase resp.
+ * The status of a context operation is not checked anymore.  Starting
+   a new operation will silently cancel the previous one.  Calling a
+   function that requires you to have started an operation before without
+   doing so is undefined.
 
  * The FPR argument to gpgme_op_genkey was removed.  Instead, use the
    gpgme_op_genkey_result function to retrieve a gpgme_genkey_result_t
@@ -227,8 +241,7 @@ Noteworthy changes in version 0.4.1 (unreleased)
    interface, the generic gpgme_get_op_info interface is not useful
    anymore and dropped.
 
- * The error values GPGME_Invalid_Type and GPGME_Invalid_Mode can not
-   occur anymore and are thus deprecated.
+ * The type and mode of data objects is not available anymore.
 
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -283,6 +296,18 @@ gpgme_data_release_cb_t		NEW
 gpgme_data_cbs_t		NEW
 gpgme_trust_item_t		NEW
 gpgme_status_code_t		NEW
+GPGME_{some error code}		REMOVED! Use GPG_ERR_* from libgpg-error.
+gpgme_err_code_t		NEW
+gpgme_err_source_t		NEW
+gpgme_err_code			NEW
+gpgme_err_source		NEW
+gpgme_error			NEW
+gpgme_err_make			NEW
+gpgme_error_from_errno		NEW
+gpgme_err_make_from_errno	NEW
+gpgme_err_code_from_errno	NEW
+gpgme_err_code_to_errno		NEW
+gpgme_strsource			NEW
 gpgme_io_cb_t			CHANGED: Return type from void to GpgmeError.
 gpgme_event_io_t		CHANGED: New event type (all numbers changed).
 gpgme_passphrase_cb_t		CHANGED: Desc decomposed, write directly to FD.
@@ -318,14 +343,6 @@ gpgme_engine_info_t		NEW
 gpgme_get_engine_info		CHANGED: Return info structure instead XML.
 gpgme_get_protocol_name		NEW
 gpgme_cancel			REMOVED: Return error in callback directly.
-GPGME_Busy			DEPRECATED: Not in use.
-GPGME_No_Request		DEPRECATED: Not in use.
-GPGME_No_Recipients		DEPRECATED: Use GPGME_No_UserID.
-GPGME_No_UserID			NEW
-GPGME_Invalid_Recipient		DEPRECATED: Use GPGME_Invalid_UserID.
-GPGME_Invalid_UserID		NEW
-GPGME_No_Passphrase		DEPRECATED: Use GPGME_Bad_Passphrase.
-GPGME_Bad_Passphrase		NEW
 gpgme_op_genkey			CHANGED: FPR argument dropped.
 gpgme_op_genkey_result		NEW
 gpgme_genkey_result_t		NEW
@@ -372,8 +389,6 @@ gpgme_key_get_as_xml		REMOVED
 gpgme_key_list_result_t		NEW
 gpgme_op_keylist_result		NEW
 gpgme_get_op_info		REMOVED
-GPGME_Invalid_Type		DEPRECATED
-GPGME_Invalid_Mode		DEPRECATED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)

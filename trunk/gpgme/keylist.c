@@ -27,6 +27,7 @@
 #include <time.h>
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -479,7 +480,7 @@ keylist_colon_handler (void *priv, char *line)
 	{
 	  key->issuer_serial = strdup (field[7]);
 	  if (!key->issuer_serial)
-	    return GPGME_Out_Of_Core;
+	    return gpg_error_from_errno (errno);
 	}
 	  
       /* Field 9 has the ownertrust.  */
@@ -490,7 +491,7 @@ keylist_colon_handler (void *priv, char *line)
 	 but GPGSM stores the issuer name.  */
       if (fields >= 10 && (rectype == RT_CRT || rectype == RT_CRS))
 	if (_gpgme_decode_c_string (field[9], &key->issuer_name, 0))
-	  return GPGME_Out_Of_Core;
+	  return gpg_error (GPG_ERR_ENOMEM);	/* FIXME */
 
       /* Field 11 has the signature class.  */
 
@@ -558,7 +559,7 @@ keylist_colon_handler (void *priv, char *line)
       if (fields >= 10)
 	{
 	  if (_gpgme_key_append_name (key, field[9]))
-	    return GPGME_Out_Of_Core;
+	    return gpg_error_from_errno (GPG_ERR_ENOMEM);	/* FIXME */
 	  else
 	    {
 	      if (field[1])
@@ -574,7 +575,7 @@ keylist_colon_handler (void *priv, char *line)
 	{
 	  key->subkeys->fpr = strdup (field[9]);
 	  if (!key->subkeys->fpr)
-	    return GPGME_Out_Of_Core;
+	    return gpg_error_from_errno (errno);
 	}
 
       /* Field 13 has the gpgsm chain ID (take only the first one).  */
@@ -582,7 +583,7 @@ keylist_colon_handler (void *priv, char *line)
 	{
 	  key->chain_id = strdup (field[12]);
 	  if (!key->chain_id)
-	    return GPGME_Out_Of_Core;
+	    return gpg_error_from_errno (errno);
 	}
       break;
 
@@ -595,30 +596,30 @@ keylist_colon_handler (void *priv, char *line)
       assert (opd->tmp_uid == key->_last_uid);
       keysig = _gpgme_key_add_sig (key, (fields >= 10) ? field[9] : NULL);
       if (!keysig)
-	return GPGME_Out_Of_Core;
+	return gpg_error (GPG_ERR_ENOMEM);	/* FIXME */
 
       /* Field 2 has the calculated trust ('!', '-', '?', '%').  */
       if (fields >= 2)
 	switch (field[1][0])
 	  {
 	  case '!':
-	    keysig->status = GPGME_No_Error;
+	    keysig->status = gpg_error (GPG_ERR_NO_ERROR);
 	    break;
 
 	  case '-':
-	    keysig->status = GPGME_Bad_Signature;
+	    keysig->status = gpg_error (GPG_ERR_BAD_SIGNATURE);
 	    break;
 
 	  case '?':
-	    keysig->status = GPGME_No_Public_Key;
+	    keysig->status = gpg_error (GPG_ERR_NO_PUBKEY);
 	    break;
 
 	  case '%':
-	    keysig->status = GPGME_General_Error;
+	    keysig->status = gpg_error (GPG_ERR_GENERAL);
 	    break;
 
 	  default:
-	    keysig->status = GPGME_No_Error;
+	    keysig->status = gpg_error (GPG_ERR_NO_ERROR);
 	    break;
 	  }
 
@@ -779,10 +780,10 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
   op_data_t opd;
 
   if (!ctx || !r_key)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   *r_key = NULL;
   if (!ctx)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
   opd = hook;
@@ -796,7 +797,7 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
 	return err;
 
       if (!opd->key_cond)
-	return GPGME_EOF;
+	return gpg_error (GPG_ERR_EOF);
 
       opd->key_cond = 0; 
       assert (opd->key_queue);
@@ -817,7 +818,7 @@ gpgme_error_t
 gpgme_op_keylist_end (gpgme_ctx_t ctx)
 {
   if (!ctx)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   return 0;
 }
@@ -833,10 +834,10 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   gpgme_error_t err;
 
   if (!ctx || !r_key)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   
   if (strlen (fpr) < 16)	/* We have at least a key ID.  */
-    return GPGME_Invalid_Key;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   /* FIXME: We use our own context because we have to avoid the user's
      I/O callback handlers.  */

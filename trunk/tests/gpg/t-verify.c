@@ -24,18 +24,7 @@
 
 #include <gpgme.h>
 
-
-#define fail_if_err(err)					\
-  do								\
-    {								\
-      if (err)							\
-        {							\
-          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
-                   __FILE__, __LINE__, gpgme_strerror (err));   \
-          exit (1);						\
-        }							\
-    }								\
-  while (0)
+#include "t-support.h"
 
 
 static const char test_text1[] = "Just GNU it!\n";
@@ -106,10 +95,10 @@ check_result (gpgme_verify_result_t result, int summary, char *fpr,
 	       __FILE__, __LINE__, sig->fpr);
       exit (1);
     }
-  if (sig->status != status)
+  if (gpg_err_code (sig->status) != status)
     {
       fprintf (stderr, "%s:%i: Unexpected signature status: %s\n",
-	       __FILE__, __LINE__, gpgme_strerror (sig->status));
+	       __FILE__, __LINE__, gpg_strerror (sig->status));
       exit (1);
     }
   if (notation)
@@ -145,7 +134,7 @@ check_result (gpgme_verify_result_t result, int summary, char *fpr,
 	       __FILE__, __LINE__, sig->validity);
       exit (1);
     }
-  if (sig->validity_reason != GPGME_No_Error)
+  if (gpg_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
     {
       fprintf (stderr, "%s:%i: Unexpected validity reason: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->validity_reason));
@@ -174,7 +163,7 @@ main (int argc, char *argv[])
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);
   check_result (result, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-		GPGME_No_Error, 1);
+		GPG_ERR_NO_ERROR, 1);
 
   /* Checking a manipulated message.  */
   gpgme_data_release (text);
@@ -185,7 +174,7 @@ main (int argc, char *argv[])
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);
   check_result (result, GPGME_SIGSUM_RED, "2D727CC768697734",
-		GPGME_Bad_Signature, 0);
+		GPG_ERR_BAD_SIGNATURE, 0);
 
   /* Checking a normal signature.  */
   gpgme_data_release (sig);
@@ -198,7 +187,7 @@ main (int argc, char *argv[])
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);
   check_result (result, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-		GPGME_No_Error, 0);
+		GPG_ERR_NO_ERROR, 0);
 
   gpgme_data_release (sig);
   gpgme_data_release (text);

@@ -164,14 +164,13 @@ if test "$ac_cv_func_vasprintf" != yes; then
   GNUPG_CHECK_VA_COPY
 fi
 
-
-
 # Note: fopencokie is only a dummy stub and not used.  
 #       However some code in assuan/ links against it.
 AC_REPLACE_FUNCS(fopencookie)
 
-
-
+AC_CHECK_LIB(gpg-error, strerror)
+AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
+          [The default error source for GPGME.])
 dnl
 dnl Checks for system services
 dnl

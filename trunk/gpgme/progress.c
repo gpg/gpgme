@@ -23,6 +23,7 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "util.h"
 #include "context.h"
@@ -44,7 +45,7 @@ _gpgme_progress_status_handler (void *priv, gpgme_status_code_t code,
 
   args_cpy = strdup (args);
   if (!args_cpy)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
 
   p = strchr (args_cpy, ' ');
   if (p)

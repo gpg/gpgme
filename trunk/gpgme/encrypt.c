@@ -91,7 +91,7 @@ _gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
     {
     case GPGME_STATUS_EOF:
       if (opd->result.invalid_recipients)
-	return GPGME_Invalid_Key;
+	return gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
       break;
 
     case GPGME_STATUS_INV_RECP:
@@ -104,7 +104,7 @@ _gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
 
     case GPGME_STATUS_NO_RECP:
       /* Should not happen, because we require at least one recipient.  */
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_GENERAL);
 
     default:
       break;
@@ -167,11 +167,11 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
     symmetric = 1;
 
   if (!plain)
-    return GPGME_No_Data;
+    return gpg_error (GPG_ERR_NO_DATA);
   if (!cipher)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (recp && ! *recp)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (symmetric && ctx->passphrase_cb)
     {

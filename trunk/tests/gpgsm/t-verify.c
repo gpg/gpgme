@@ -78,7 +78,7 @@ check_result (gpgme_verify_result_t result, int summary, char *fpr,
 	       __FILE__, __LINE__, sig->fpr);
       exit (1);
     }
-  if (sig->status != status)
+  if (gpg_err_code (sig->status) != status)
     {
       fprintf (stderr, "%s:%i: Unexpected signature status: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->status));
@@ -102,7 +102,7 @@ check_result (gpgme_verify_result_t result, int summary, char *fpr,
 	       __FILE__, __LINE__, sig->validity);
       exit (1);
     }
-  if (sig->validity_reason != GPGME_No_Error)
+  if (gpg_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
     {
       fprintf (stderr, "%s:%i: Unexpected validity reason: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->validity_reason));
@@ -133,7 +133,7 @@ main (int argc, char **argv)
   result = gpgme_op_verify_result (ctx);
   check_result (result, GPGME_SIGSUM_VALID | GPGME_SIGSUM_GREEN,
 		"3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E",
-		GPGME_No_Error, GPGME_VALIDITY_FULL);
+		GPG_ERR_NO_ERROR, GPGME_VALIDITY_FULL);
 
   /* Checking a manipulated message.  */
   gpgme_data_release (text);
@@ -145,7 +145,7 @@ main (int argc, char **argv)
   result = gpgme_op_verify_result (ctx);
   check_result (result, GPGME_SIGSUM_RED,
 		"3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E",
-		GPGME_Bad_Signature, GPGME_VALIDITY_UNKNOWN);
+		GPG_ERR_BAD_SIGNATURE, GPGME_VALIDITY_UNKNOWN);
 
   gpgme_release (ctx);  
   return 0;

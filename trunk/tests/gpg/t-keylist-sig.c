@@ -24,20 +24,9 @@
 
 #include <gpgme.h>
 
+#include "t-support.h"
+
 
-#define fail_if_err(err)					\
-  do								\
-    {								\
-      if (err)							\
-        {							\
-          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
-                   __FILE__, __LINE__, gpgme_strerror (err));   \
-          exit (1);						\
-        }							\
-    }								\
-  while (0)
-
-
 struct
 {
   char *fpr;
@@ -73,6 +62,7 @@ keys[] =
 	    "Alfa Test", "demo key", "alfa@example.net", 19, 1 } } } },
     { NULL }
   };
+
 
 int 
 main (int argc, char **argv)
@@ -611,7 +601,7 @@ main (int argc, char **argv)
       gpgme_key_unref (key);
       i++;
     }
-  if (err != GPGME_EOF)
+  if (gpg_err_code (err) != GPG_ERR_EOF)
     fail_if_err (err);
   err = gpgme_op_keylist_end (ctx);
   fail_if_err (err);

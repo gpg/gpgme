@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <locale.h>
 #include <fcntl.h> /* FIXME */
+#include <errno.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -151,100 +152,119 @@ close_notify_handler (int fd, void *opaque)
 static gpgme_error_t
 map_assuan_error (AssuanError err)
 {
+  /* New code will use gpg_error_t values.  */
+  if (gpg_err_source (err))
+    return (gpgme_error_t) err;
+
+  /* Legacy code will use old values.  */
   switch (err)
     {
     case ASSUAN_No_Error:
-      return GPGME_No_Error;
+      return gpg_error (GPG_ERR_NO_ERROR);
     case ASSUAN_General_Error:
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_GENERAL);
     case ASSUAN_Out_Of_Core:
-      return GPGME_Out_Of_Core;
+      return gpg_error (GPG_ERR_ENOMEM);
     case ASSUAN_Invalid_Value:
-      return GPGME_Invalid_Value;
-    case ASSUAN_Read_Error:
-      return GPGME_Read_Error;
-    case ASSUAN_Write_Error:
-      return GPGME_Write_Error;
-
+      return gpg_error (GPG_ERR_INV_VALUE);
     case ASSUAN_Timeout:
+      return gpg_error (GPG_ERR_ETIMEDOUT);
+    case ASSUAN_Read_Error:
+      return gpg_error (GPG_ERR_GENERAL);
+    case ASSUAN_Write_Error:
+      return gpg_error (GPG_ERR_GENERAL);
+
     case ASSUAN_Problem_Starting_Server:
     case ASSUAN_Not_A_Server:
     case ASSUAN_Not_A_Client:
     case ASSUAN_Nested_Commands:
-    case ASSUAN_Invalid_Response:
     case ASSUAN_No_Data_Callback:
     case ASSUAN_No_Inquire_Callback:
     case ASSUAN_Connect_Failed:
     case ASSUAN_Accept_Failed:
-      return GPGME_General_Error;
-
-      /* The following error codes are meant as status codes.  */
-    case ASSUAN_Not_Implemented:
-      return GPGME_Not_Implemented;
-    case ASSUAN_Canceled:
-      return GPGME_Canceled;
-    case ASSUAN_Unsupported_Algorithm:
-      return GPGME_Not_Implemented;  /* XXX Argh.  */
-      
-    case ASSUAN_No_Data_Available:
-      return GPGME_EOF;
-      
-      /* These are errors internal to GPGME.  */
-    case ASSUAN_No_Input:
-    case ASSUAN_No_Output:
     case ASSUAN_Invalid_Command:
     case ASSUAN_Unknown_Command:
     case ASSUAN_Syntax_Error:
     case ASSUAN_Parameter_Error:
     case ASSUAN_Parameter_Conflict:
-    case ASSUAN_Line_Too_Long:
-    case ASSUAN_Line_Not_Terminated:
-    case ASSUAN_Invalid_Data:
-    case ASSUAN_Unexpected_Command:
+    case ASSUAN_No_Input:
+    case ASSUAN_No_Output:
+    case ASSUAN_No_Data_Available:
     case ASSUAN_Too_Much_Data:
     case ASSUAN_Inquire_Unknown:
     case ASSUAN_Inquire_Error:
     case ASSUAN_Invalid_Option:
-    case ASSUAN_Invalid_Index:
     case ASSUAN_Unexpected_Status:
     case ASSUAN_Unexpected_Data:
     case ASSUAN_Invalid_Status:
-    case ASSUAN_Not_Confirmed:
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_ASSUAN);
 
-      /* These are errors in the server.  */
-    case ASSUAN_Server_Fault:
+    case ASSUAN_Invalid_Response:
+      return gpg_error (GPG_ERR_INV_RESPONSE);
+
+    case ASSUAN_Not_Implemented:
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    case ASSUAN_Line_Too_Long:
+      return gpg_error (GPG_ERR_LINE_TOO_LONG);
+    case ASSUAN_Line_Not_Terminated:
+      return gpg_error (GPG_ERR_INCOMPLETE_LINE);
+    case ASSUAN_Canceled:
+      return gpg_error (GPG_ERR_CANCELED);
+
+    case ASSUAN_Unsupported_Algorithm:
+      return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     case ASSUAN_Server_Resource_Problem:
+      return gpg_error (GPG_ERR_RESOURCE_LIMIT);
     case ASSUAN_Server_IO_Error:
+      return gpg_error (GPG_ERR_GENERAL);
     case ASSUAN_Server_Bug:
-    case ASSUAN_No_Agent:
-    case ASSUAN_Agent_Error:
-      return GPGME_Invalid_Engine;  /* XXX:  Need something more useful.  */
-
+      return gpg_error (GPG_ERR_BUG);
+    case ASSUAN_Invalid_Data:
+      return gpg_error (GPG_ERR_INV_DATA);
+    case ASSUAN_Invalid_Index:
+      return gpg_error (GPG_ERR_INV_INDEX);
+    case ASSUAN_Not_Confirmed:
+      return gpg_error (GPG_ERR_NOT_CONFIRMED);
     case ASSUAN_Bad_Certificate:
+      return gpg_error (GPG_ERR_BAD_CERT);
     case ASSUAN_Bad_Certificate_Chain:
+      return gpg_error (GPG_ERR_BAD_CERT_CHAIN);
     case ASSUAN_Missing_Certificate:
-    case ASSUAN_No_Public_Key:
-    case ASSUAN_No_Secret_Key:
-    case ASSUAN_Invalid_Name:
-    case ASSUAN_Card_Error:	/* XXX: Oh well.  */
-    case ASSUAN_Invalid_Card:	/* XXX: Oh well.  */
-    case ASSUAN_No_PKCS15_App:	/* XXX: Oh well.  */
-    case ASSUAN_Card_Not_Present:	/* XXX: Oh well.  */
-    case ASSUAN_Invalid_Id:	/* XXX: Oh well.  */
-      return GPGME_Invalid_Key;
-
+      return gpg_error (GPG_ERR_MISSING_CERT);
     case ASSUAN_Bad_Signature:
-      return GPGME_Invalid_Key;  /* XXX: This is wrong.  */
-
+      return gpg_error (GPG_ERR_BAD_SIGNATURE);
+    case ASSUAN_No_Agent:
+      return gpg_error (GPG_ERR_NO_AGENT);
+    case ASSUAN_Agent_Error:
+      return gpg_error (GPG_ERR_AGENT);
+    case ASSUAN_No_Public_Key:
+      return gpg_error (GPG_ERR_NO_PUBKEY);
+    case ASSUAN_No_Secret_Key:
+      return gpg_error (GPG_ERR_NO_SECKEY);
+    case ASSUAN_Invalid_Name:
+      return gpg_error (GPG_ERR_INV_NAME);
+      
     case ASSUAN_Cert_Revoked:
+      return gpg_error (GPG_ERR_CERT_REVOKED);
     case ASSUAN_No_CRL_For_Cert:
+      return gpg_error (GPG_ERR_NO_CRL_KNOWN);
     case ASSUAN_CRL_Too_Old:
+      return gpg_error (GPG_ERR_CRL_TOO_OLD);
     case ASSUAN_Not_Trusted:
-      return GPGME_Invalid_Key;  /* XXX Some more details would be good.  */
+      return gpg_error (GPG_ERR_NOT_TRUSTED);
 
+    case ASSUAN_Card_Error:
+      return gpg_error (GPG_ERR_CARD);
+    case ASSUAN_Invalid_Card:
+      return gpg_error (GPG_ERR_INV_CARD);
+    case ASSUAN_No_PKCS15_App:
+      return gpg_error (GPG_ERR_NO_PKCS15_APP);
+    case ASSUAN_Card_Not_Present:
+      return gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+    case ASSUAN_Invalid_Id:
+      return gpg_error (GPG_ERR_INV_ID);
     default:
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_GENERAL);
     }
 }
 
@@ -292,10 +312,7 @@ gpgsm_new (void **engine)
 
   gpgsm = calloc (1, sizeof *gpgsm);
   if (!gpgsm)
-    {
-      err = GPGME_Out_Of_Core;
-      return err;
-    }
+    return gpg_error_from_errno (errno);
 
   gpgsm->status_cb.fd = -1;
   gpgsm->status_cb.tag = 0;
@@ -325,7 +342,7 @@ gpgsm_new (void **engine)
 
   if (_gpgme_io_pipe (fds, 0) < 0)
     {
-      err = GPGME_Pipe_Error;
+      err = gpg_error_from_errno (errno);
       goto leave;
     }
   gpgsm->input_cb.fd = fds[1];
@@ -334,7 +351,7 @@ gpgsm_new (void **engine)
 
   if (_gpgme_io_pipe (fds, 1) < 0)
     {
-      err = GPGME_Pipe_Error;
+      err = gpg_error_from_errno (errno);
       goto leave;
     }
   gpgsm->output_cb.fd = fds[0];
@@ -343,7 +360,7 @@ gpgsm_new (void **engine)
 
   if (_gpgme_io_pipe (fds, 0) < 0)
     {
-      err = GPGME_Pipe_Error;
+      err = gpg_error_from_errno (errno);
       goto leave;
     }
   gpgsm->message_cb.fd = fds[1];
@@ -369,7 +386,7 @@ gpgsm_new (void **engine)
                                 fdlist, DIM (fdlist));
   if (nfds < 1)
     {
-      err = GPGME_General_Error;  /* FIXME */
+      err = gpg_error (GPG_ERR_GENERAL);	/* FIXME */
       goto leave;
     }
   /* We duplicate the file descriptor, so we can close it without
@@ -380,7 +397,7 @@ gpgsm_new (void **engine)
   gpgsm->status_cb.fd = dup (fdlist[0]);
   if (gpgsm->status_cb.fd < 0)
     {
-      err = GPGME_General_Error;	/* FIXME */
+      err = gpg_error (GPG_ERR_GENERAL);	/* FIXME */
       goto leave;
     }
   gpgsm->status_cb.dir = 1;
@@ -391,7 +408,7 @@ gpgsm_new (void **engine)
     {
       if (asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
         {
-	  err = GPGME_Out_Of_Core;
+	  err = gpg_error_from_errno (errno);
 	  goto leave;
 	}
       err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
@@ -408,7 +425,7 @@ gpgsm_new (void **engine)
     {
       if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
         {
-	  err = GPGME_Out_Of_Core;
+	  err = gpg_error_from_errno (errno);
 	  goto leave;
 	}
       err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
@@ -425,7 +442,7 @@ gpgsm_new (void **engine)
 	{
 	  if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
 	    {
-	      err = GPGME_Out_Of_Core;
+	      err = gpg_error_from_errno (errno);
 	      goto leave;
 	    }
 	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
@@ -444,7 +461,7 @@ gpgsm_new (void **engine)
           old_lc = strdup (old_lc);
           if (!old_lc)
             {
-              err = GPGME_Out_Of_Core;
+              err = gpg_error_from_errno (errno);
               goto leave;
             }
         }
@@ -452,7 +469,7 @@ gpgsm_new (void **engine)
       if (dft_lc)
 	{
 	  if (asprintf (&optstr, "OPTION lc-ctype=%s", dft_lc) < 0)
-	    err = GPGME_Out_Of_Core;
+	    err = gpg_error_from_errno (errno);
 	  else
 	    {
 	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
@@ -470,14 +487,13 @@ gpgsm_new (void **engine)
       if (err)
 	goto leave;
 
-
       old_lc = setlocale (LC_MESSAGES, NULL);
       if (old_lc)
         {
           old_lc = strdup (old_lc);
           if (!old_lc)
             {
-              err = GPGME_Out_Of_Core;
+              err = gpg_error_from_errno (errno);
               goto leave;
             }
         }
@@ -485,7 +501,7 @@ gpgsm_new (void **engine)
       if (dft_lc)
 	{
 	  if (asprintf (&optstr, "OPTION lc-messages=%s", dft_lc) < 0)
-	    err = GPGME_Out_Of_Core;
+	    err = gpg_error_from_errno (errno);
 	  else
 	    {
 	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
@@ -514,7 +530,7 @@ gpgsm_new (void **engine)
        || _gpgme_io_set_close_notify (gpgsm->message_cb.fd,
 				      close_notify_handler, gpgsm)))
     {
-      err = GPGME_General_Error;
+      err = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
       
@@ -587,10 +603,10 @@ gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd,
 	  if (r >= 0 && status_fnc)
 	    status_fnc (status_fnc_value, r, rest);
 	  else
-	    err = GPGME_General_Error;
+	    err = gpg_error (GPG_ERR_GENERAL);
 	}
       else
-	err = GPGME_General_Error;
+	err = gpg_error (GPG_ERR_GENERAL);
     }
   while (!err);
 
@@ -679,7 +695,7 @@ status_handler (void *opaque, int fd)
 	  if (line[3] == ' ')
 	    err = map_assuan_error (atoi (&line[4]));
 	  else
-	    err = GPGME_General_Error;
+	    err = gpg_error (GPG_ERR_GENERAL);
 	}
       else if (linelen >= 2
 	       && line[0] == 'O' && line[1] == 'K'
@@ -724,7 +740,7 @@ status_handler (void *opaque, int fd)
 	      unsigned char *newline = realloc (*aline,
 						*alinelen + linelen + 1);
 	      if (!newline)
-		err = GPGME_Out_Of_Core;
+		err = gpg_error_from_errno (errno);
 	      else
 		{
 		  *aline = newline;
@@ -850,17 +866,17 @@ gpgsm_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
   gpgme_error_t err;
 
   if (!gpgsm)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   gpgsm->input_cb.data = ciph;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server, 
                       map_input_enc (gpgsm->input_cb.data));
   if (err)
-    return GPGME_General_Error;	/* FIXME */
+    return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
   gpgsm->output_cb.data = plain;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server, 0);
   if (err)
-    return GPGME_General_Error;	/* FIXME */
+    return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
   _gpgme_io_close (gpgsm->message_cb.fd);
 
   err = start (engine, "DECRYPT");
@@ -879,7 +895,7 @@ gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
   int length = 8;	/* "DELKEYS " */
 
   if (!fpr)
-    return GPGME_Invalid_Key;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   while (*linep)
     {
@@ -892,7 +908,7 @@ gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
 
   line = malloc (length);
   if (!line)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
 
   strcpy (line, "DELKEYS ");
   linep = &line[8];
@@ -948,7 +964,7 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
   line = malloc (10 + 40 + 1);
   if (!line)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   strcpy (line, "RECIPIENT ");
   while (!err && recp[i])
     {
@@ -967,8 +983,9 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
 	  char *newline = realloc (line, newlen);
 	  if (! newline)
 	    {
+	      int saved_errno = errno;
 	      free (line);
-	      return GPGME_Out_Of_Core;
+	      return gpg_error_from_errno (saved_errno);
 	    }
 	  line = newline;
 	  linelen = newlen;
@@ -977,7 +994,8 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
 
       err = gpgsm_assuan_simple_command (ctx, line, gpgsm->status.fnc,
 					 gpgsm->status.fnc_value);
-      if (err == GPGME_Invalid_Key)
+      /* FIXME: This requires more work.  */
+      if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY)
 	invalid_recipients++;
       else if (err)
 	{
@@ -987,7 +1005,8 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
       i++;
     }
   free (line);
-  return invalid_recipients ? GPGME_Invalid_Key : 0;
+  return gpg_error (invalid_recipients
+		    ? GPG_ERR_UNUSABLE_PUBKEY : GPG_ERR_NO_ERROR);
 }
 
 
@@ -999,9 +1018,9 @@ gpgsm_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
   gpgme_error_t err;
 
   if (!gpgsm)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (!recp)
-    return GPGME_Not_Implemented;
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   gpgsm->input_cb.data = plain;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
@@ -1033,14 +1052,14 @@ gpgsm_export (void *engine, const char *pattern, unsigned int reserved,
   char *cmd;
 
   if (!gpgsm || reserved)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (!pattern)
     pattern = "";
 
   cmd = malloc (7 + strlen (pattern) + 1);
   if (!cmd)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   strcpy (cmd, "EXPORT ");
   strcpy (&cmd[7], pattern);
 
@@ -1070,7 +1089,7 @@ gpgsm_export_ext (void *engine, const char *pattern[], unsigned int reserved,
   char *linep;
 
   if (!gpgsm || reserved)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (pattern && *pattern)
     {
@@ -1094,7 +1113,7 @@ gpgsm_export_ext (void *engine, const char *pattern[], unsigned int reserved,
     }
   line = malloc (length);
   if (!line)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
 
   strcpy (line, "EXPORT ");
   linep = &line[7];
@@ -1157,7 +1176,7 @@ gpgsm_genkey (void *engine, gpgme_data_t help_data, int use_armor,
   gpgme_error_t err;
 
   if (!gpgsm || !pubkey || seckey)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   gpgsm->input_cb.data = help_data;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
@@ -1183,7 +1202,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata)
   gpgme_error_t err;
 
   if (!gpgsm)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   gpgsm->input_cb.data = keydata;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
@@ -1216,7 +1235,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
     pattern = "";
 
   if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
   free (line);
   if (err)
@@ -1225,7 +1244,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
   line = malloc (15 + strlen (pattern) + 1);
   if (!line)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   if (secret_only)
     {
       strcpy (line, "LISTSECRETKEYS ");
@@ -1260,7 +1279,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
   int list_mode = 0;
 
   if (reserved)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (mode & GPGME_KEYLIST_MODE_LOCAL)
     list_mode |= 1;
@@ -1268,7 +1287,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
     list_mode |= 2;
 
   if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
   free (line);
   if (err)
@@ -1296,7 +1315,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
     }
   line = malloc (length);
   if (!line)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   if (secret_only)
     {
       strcpy (line, "LISTSECRETKEYS ");
@@ -1366,10 +1385,10 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   gpgme_key_t key;
 
   if (!gpgsm)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd, NULL,NULL);
   free (assuan_cmd);
   if (err)
@@ -1393,7 +1412,7 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
                                              NULL, NULL);
 	}
       else
-        err = GPGME_Invalid_Key;
+        err = gpg_error (GPG_ERR_INV_VALUE);
       gpgme_key_unref (key);
       if (err) 
         return err;
@@ -1418,14 +1437,6 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
 
 static gpgme_error_t
-gpgsm_trustlist (void *engine, const char *pattern)
-{
-  /* FIXME */
-  return GPGME_Not_Implemented;
-}
-
-
-static gpgme_error_t
 gpgsm_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 	      gpgme_data_t plaintext)
 {
@@ -1433,7 +1444,7 @@ gpgsm_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
   gpgme_error_t err;
 
   if (!gpgsm)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   gpgsm->input_cb.data = sig;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "INPUT", gpgsm->input_fd_server,
@@ -1531,7 +1542,7 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_keylist,
     gpgsm_keylist_ext,
     gpgsm_sign,
-    gpgsm_trustlist,
+    NULL,		/* trustlist */
     gpgsm_verify,
     gpgsm_set_io_cbs,
     gpgsm_io_event

@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "util.h"
 #include "ops.h"
@@ -43,7 +44,7 @@ _gpgme_key_new (gpgme_key_t *r_key)
 
   key = calloc (1, sizeof *key);
   if (!key)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   key->_refs = 1;
 
   *r_key = key;
@@ -58,7 +59,7 @@ _gpgme_key_add_subkey (gpgme_key_t key, gpgme_subkey_t *r_subkey)
 
   subkey = calloc (1, sizeof *subkey);
   if (!subkey)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   subkey->keyid = subkey->_keyid;
   subkey->_keyid[16] = '\0';
 
@@ -212,7 +213,7 @@ _gpgme_key_append_name (gpgme_key_t key, char *src)
      size, so that we are able to store the parsed stuff there too.  */
   uid = malloc (sizeof (*uid) + 2 * src_len + 3);
   if (!uid)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   memset (uid, 0, sizeof *uid);
 
   uid->uid = ((char *) uid) + sizeof (*uid);

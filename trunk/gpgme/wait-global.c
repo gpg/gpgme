@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <errno.h>
 
 #include "gpgme.h"
 #include "sema.h"
@@ -92,7 +93,7 @@ ctx_active (gpgme_ctx_t ctx)
 {
   struct ctx_list_item *li = malloc (sizeof (struct ctx_list_item));
   if (!li)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   li->ctx = ctx;
 
   LOCK (ctx_list_lock);
@@ -266,9 +267,10 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
       fdt.fds = malloc (i * sizeof (struct io_select_fd_s));
       if (!fdt.fds)
 	{
+	  int saved_errno = errno;
 	  UNLOCK (ctx_list_lock);
 	  if (status)
-	    *status = GPGME_Out_Of_Core;
+	    *status = gpg_error_from_errno (saved_errno);
 	  return NULL;
 	}
       fdt.size = i;
@@ -284,9 +286,10 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
       nr = _gpgme_io_select (fdt.fds, fdt.size, 0);
       if (nr < 0)
 	{
+	  int saved_errno = errno;
 	  free (fdt.fds);
 	  if (status)
-	    *status = GPGME_File_Error;
+	    *status = gpg_error_from_errno (saved_errno);
 	  return NULL;
 	}
 

@@ -1,5 +1,5 @@
 /* data-compat.c - Compatibility interfaces for data objects.
-   Copyright (C) 2002 g10 Code GmbH
+   Copyright (C) 2002, 2003 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -40,27 +40,40 @@ gpgme_data_new_from_filepart (gpgme_data_t *dh, const char *fname,
   char *buf = NULL;
 
   if (stream && fname)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (fname)
     stream = fopen (fname, "rb");
   if (!stream)
-    return GPGME_File_Error;
+    return gpg_error_from_errno (errno);
 
   if (fseek (stream, offset, SEEK_SET))
-    goto ferr;
+    {
+      int saved_errno = errno;
+      if (fname)
+	fclose (stream);
+      return gpg_error_from_errno (saved_errno);
+    }
 
   buf = malloc (length);
   if (!buf)
-    goto ferr;
+    {
+      int saved_errno = errno;
+      if (fname)
+	fclose (stream);
+      return gpg_error_from_errno (saved_errno);
+    }
 
   while (fread (buf, length, 1, stream) < 1
 	 && ferror (stream) && errno == EINTR);
   if (ferror (stream))
     {
+      int saved_errno = errno;
       if (buf)
 	free (buf);
-      goto ferr;
+      if (fname)
+	fclose (stream);
+      return gpg_error_from_errno (saved_errno);
     }
 
   if (fname)
@@ -78,15 +91,6 @@ gpgme_data_new_from_filepart (gpgme_data_t *dh, const char *fname,
   (*dh)->data.mem.size = length;
   (*dh)->data.mem.length = length;
   return 0;
-
- ferr:
-  {
-    int saved_errno = errno;
-    if (fname)
-      fclose (stream);
-    errno = saved_errno;
-    return GPGME_File_Error;
-  }
 }
 
 
@@ -98,10 +102,10 @@ gpgme_data_new_from_file (gpgme_data_t *dh, const char *fname, int copy)
   struct stat statbuf;
 
   if (!fname || !copy)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (stat (fname, &statbuf) < 0)
-    return GPGME_File_Error;
+    return gpg_error_from_errno (errno);
 
   return gpgme_data_new_from_filepart (dh, fname, NULL, 0, statbuf.st_size);
 }
@@ -110,25 +114,31 @@ gpgme_data_new_from_file (gpgme_data_t *dh, const char *fname, int copy)
 static int
 gpgme_error_to_errno (gpgme_error_t err)
 {
-  switch (err)
+  int no = gpg_err_code_to_errno (err);
+
+  if (no)
     {
-    case GPGME_EOF:
-      return 0;
-    case GPGME_Out_Of_Core:
-      errno = ENOMEM;
+      errno = no;
       return -1;
-    case GPGME_Invalid_Value:
+    }
+
+  switch (gpg_err_code (err))
+    {
+    case GPG_ERR_EOF:
+      return 0;
+    case GPG_ERR_INV_VALUE:
       errno = EINVAL;
       return -1;
-    case GPGME_Not_Implemented:
+    case GPG_ERR_NOT_SUPPORTED:
       errno = EOPNOTSUPP;
       return -1;
     default:
-      /* XXX Yeah, well.  */
+      /* FIXME: Yeah, well.  */
       errno = EINVAL;
       return -1;
     }
 }
+
 
 static ssize_t
 old_user_read (gpgme_data_t dh, void *buffer, size_t size)
@@ -185,5 +195,5 @@ gpgme_error_t
 gpgme_data_rewind (gpgme_data_t dh)
 {
   return (gpgme_data_seek (dh, 0, SEEK_SET) == -1)
-    ? GPGME_File_Error : 0;
+    ? gpg_error_from_errno (errno) : 0;
 }

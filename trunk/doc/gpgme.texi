@@ -122,7 +122,9 @@ Algorithms
 
 Error Handling
 
-* Error Values::                  A list of all error values used.
+* Error Values::                  The error value and what it means.
+* Error Codes::                   A list of important error codes.
+* Error Sources::                 A list of important error sources.
 * Error Strings::                 How to get a descriptive string from a value.
 
 Exchanging Data 
@@ -212,9 +214,9 @@ Using External Event Loops
 
 `GnuPG Made Easy' (@acronym{GPGME}) is a C language library that
 allows to add support for cryptography to a program.  It is designed
-to make access to crypto engines like GnuPG or GpgSM easier for
-applications.  @acronym{GPGME} provides a high-level crypto API for
-encryption, decryption, signing, signature verification and key
+to make access to public key crypto engines like GnuPG or GpgSM easier
+for applications.  @acronym{GPGME} provides a high-level crypto API
+for encryption, decryption, signing, signature verification and key
 management.
 
 @acronym{GPGME} uses GnuPG and GpgSM as its backends to support
@@ -343,6 +345,10 @@ Because @acronym{GPGME} links to the Assuan library, linking to
 @acronym{GPGME} will also use the @code{assuan_*} and @code{_assuan_*}
 name space indirectly.
 
+Because @acronym{GPGME} makes use of the GPG Error library, using
+@acronym{GPGME} will also use the @code{gpg_err*} and @code{GPG_ERR_*}
+name space directly.
+
 
 @node Building the Source
 @section Building the Source
@@ -367,9 +373,9 @@ example shows how it can be used at the command line:
 gcc -c foo.c `gpgme-config --cflags`
 @end example
 
-Adding the output of @samp{gpgme-config --cflags} to the compilers
-command line will ensure that the compiler can find the @acronym{GPGME} header
-file.
+Adding the output of @samp{gpgme-config --cflags} to the compiler
+command line will ensure that the compiler can find the
+@acronym{GPGME} header file.
 
 A similar problem occurs when linking the program with the library.
 Again, the compiler has to find the library files.  For this to work,
@@ -398,8 +404,8 @@ gcc -o foo foo.c `gpgme-config --cflags --libs`
 @cindex automake
 @cindex autoconf
 
-It is much easier if you use GNU Automake instead writing your own
-Makefiles.  If you do that you don't have to worry about finding and
+It is much easier if you use GNU Automake instead of writing your own
+Makefiles.  If you do that you do not have to worry about finding and
 invoking the @command{gpgme-config} script at all.  @acronym{GPGME}
 provides an extension to Automake that does all the work for you.
 
@@ -476,7 +482,8 @@ conditions to worry about:
 @acronym{GPGME} supports the thread libraries pthread and GNU Pth.
 The support for this has to be enabled at compile time.
 @acronym{GPGME} will automatically detect the location in which the
-thread libraries are installed and activate the support for them.
+thread libraries are installed and activate the support for them at
+build time.
 
 Support for other thread libraries is very easy to add.  Please
 contact us if you have the need.
@@ -490,10 +497,10 @@ both pthread and GNU Pth, @acronym{GPGME} will use the pthread
 support.  This feature requires weak symbol support.
 
 @item
-If you link your program statically to @acronym{GPGME}, there is
-currently no easy way to make sure that @acronym{GPGME} detects the
-presence of the thread library.  This will be solved in a future
-version.
+If you link your program statically to @acronym{GPGME}, or your system
+does not support weak symbols, there is currently no easy way to make
+sure that @acronym{GPGME} detects the presence of the thread library.
+This will be solved in a future version.
 
 @item
 The function @code{gpgme_check_version} must be called before any
@@ -566,7 +573,7 @@ does not implement them.  Rather it uses backends (also called
 engines) which implement the protocol.  @acronym{GPGME} uses
 inter-process communication to pass data back and forth between the
 application and the backend, but the details of the communication
-protocol and invocation of the backends is completely hidden by the
+protocol and invocation of the backend is completely hidden by the
 interface.  All complexity is handled by @acronym{GPGME}.  Where an
 exchange of information between the application and the backend is
 necessary, @acronym{GPGME} provides the necessary callback function
@@ -581,6 +588,7 @@ are supported:
 @table @code
 @item GPGME_PROTOCOL_OpenPGP
 This specifies the OpenPGP protocol.
+
 @item GPGME_PROTOCOL_CMS
 This specifies the Cryptographic Message Syntax.
 @end table
@@ -610,8 +618,8 @@ The function @code{gpgme_engine_check_version} verifies that the
 engine implementing the protocol @var{PROTOCOL} is installed in the
 expected path and meets the version requirement of @acronym{GPGME}.
 
-This function returns @code{GPGME_No_Error} if the engine is available
-and @code{GPGME_Invalid_Engine} if it is not.
+This function returns the error code @code{GPG_ERR_NO_ERROR} if the
+engine is available and @code{GPG_ERR_INV_ENGINE} if it is not.
 @end deftypefun
 
 
@@ -622,8 +630,8 @@ and @code{GPGME_Invalid_Engine} if it is not.
 @deftp {Data type} {gpgme_engine_info_t}
 @tindex gpgme_protocol_t
 The @code{gpgme_engine_info_t} type specifies a pointer to a structure
-describing a crypto backend engine.  The structure contains the
-following elements:
+describing a crypto engine.  The structure contains the following
+elements:
 
 @table @code
 @item gpgme_engine_info_t next
@@ -631,7 +639,7 @@ This is a pointer to the next engine info structure in the linked
 list, or @code{NULL} if this is the last element.
 
 @item gpgme_protocol_t protocol
-This is the protocol for which the crypo engine is used.  You can
+This is the protocol for which the crypto engine is used.  You can
 convert this to a string with @code{gpgme_get_protocol_name} for
 printing.
 
@@ -657,19 +665,17 @@ reserved for future use, so always check before you use it.
 @deftypefun gpgme_error_t gpgme_get_engine_info (gpgme_engine_info_t *info)
 The function @code{gpgme_get_engine_info} returns a linked list of
 engine info structures in @var{info}.  Each info structure describes
-one configured crypto backend engine.
+one configured backend.
 
 The memory for the info structures is allocated the first time this
 function is invoked, and must not be freed by the caller.
 
-This function returns @code{GPGME_No_Error} if successful, and
-@code{GPGME_Out_Of_Core} if not enough memory is available for the
-operation.
+This function returns the error code @code{GPG_ERR_NO_ERROR} if
+successful, and a system error if the memory could not be allocated.
 @end deftypefun
 
-Here is the example how you can provide more diagnostics if you
-receive an error message which indicates that the crypto engine is
-invalid.
+Here is an example how you can provide more diagnostics if you receive
+an error message which indicates that the crypto engine is invalid.
 
 @example
 gpgme_ctx_t ctx;
@@ -677,7 +683,7 @@ gpgme_error_t err;
 
 [...]
 
-if (err == GPGME_Invalid_Engine)
+if (gpgme_err_code (err) == GPG_ERR_INV_ENGINE)
   @{
     gpgme_engine_info_t info;
     err = gpgme_get_engine_info (&info);
@@ -851,173 +857,365 @@ operation, but the result of an operation that failed properly.  For
 example, if you try to decrypt a tempered message, the decryption will
 fail.  Another error value actually means that the end of a data
 buffer or list has been reached.  The following descriptions explain
-what each error message means in general.  Some error values have
-specific meanings if returned by a specific function.  Such cases are
+for many error codes what they mean usually.  Some error values have
+specific meanings if returned by a certain functions.  Such cases are
 described in the documentation of those functions.
 
+@acronym{GPGME} uses the @code{libgpg-error} library.  This allows to
+share the error codes with other components of the GnuPG system, and
+thus pass error values transparently from the crypto engine, or some
+helper application of the crypto engine, to the user.  This way no
+information is lost.  As a consequence, @acronym{GPGME} does not use
+its own identifiers for error codes, but uses those provided by
+@code{libgpg-error}.  They usually start with @code{GPG_ERR_}.
+
+However, @acronym{GPGME} does provide aliases for the functions
+defined in libgpg-error, which might be preferred for name space
+consistency.
+
 @menu
-* Error Values::                  A list of all error values used.
+* Error Values::                  The error value and what it means.
+* Error Sources::                 A list of important error sources.
+* Error Codes::                   A list of important error codes.
 * Error Strings::                 How to get a descriptive string from a value.
 @end menu
 
 
 @node Error Values
 @section Error Values
-@cindex error values, list of
+@cindex error values
+@cindex error codes
+@cindex error sources
 
-@deftp {Data type} {enum gpgme_error_t}
-@tindex gpgme_error_t
-The @code{gpgme_error_t} type specifies the set of all error values that
-are used by @acronym{GPGME}.  Possible values are:
+@deftp {Data type} {gpgme_err_code_t}
+The @code{gpgme_err_code_t} type is an alias for the @code{libgpg-error}
+type @code{gpg_err_code_t}.  The error code indicates the type of an
+error, or the reason why an operation failed.
+
+A list of important error codes can be found in the next section.
+@end deftp
+
+@deftp {Data type} {gpgme_err_source_t}
+The @code{gpgme_err_source_t} type is an alias for the
+@code{libgpg-error} type @code{gpg_err_source_t}.  The error source
+has not a precisely defined meaning.  Sometimes it is the place where
+the error happened, sometimes it is the place where an error was
+encoded into an error value.  Usually the error source will give an
+indication to where to look for the problem.  This is not always true,
+but it is attempted to achieve this goal.
+
+A list of important error sources can be found in the next section.
+@end deftp
+
+@deftp {Data type} {gpgme_error_t}
+The @code{gpgme_error_t} type is an alias for the @code{libgpg-error}
+type @code{gpg_error_t}.  An error value like this has always two
+components, an error code and an error source.  Both together form the
+error value.
+
+Thus, the error value can not be directly compared against an error
+code, but the accessor functions described below must be used.
+However, it is guaranteed that only 0 is used to indicate success
+(@code{GPG_ERR_NO_ERROR}), and that in this case all other parts of
+the error value are set to 0, too.
+
+Note that in @acronym{GPGME}, the error source is used purely for
+diagnostical purposes.  Only the error code should be checked to test
+for a certain outcome of a function.  The manual only documents the
+error code part of an error value.  The error source is left
+unspecified and might be anything.
+@end deftp
+
+@deftypefun {static __inline__ gpgme_err_code_t} gpgme_err_code (@w{gpgme_error_t @var{err}})
+The static inline function @code{gpgme_err_code} returns the
+@code{gpgme_err_code_t} component of the error value @var{err}.  This
+function must be used to extract the error code from an error value in
+order to compare it with the @code{GPG_ERR_*} error code macros.
+@end deftypefun
+
+@deftypefun {static __inline__ gpgme_err_source_t} gpgme_err_source (@w{gpgme_error_t @var{err}})
+The static inline function @code{gpgme_err_source} returns the
+@code{gpgme_err_source_t} component of the error value @var{err}.  This
+function must be used to extract the error source from an error value in
+order to compare it with the @code{GPG_ERR_SOURCE_*} error source macros.
+@end deftypefun
+
+@deftypefun {static __inline__ gpgme_error_t} gpgme_err_make (@w{gpgme_err_source_t @var{source}}, @w{gpgme_err_code_t @var{code}})
+The static inline function @code{gpgme_err_make} returns the error
+value consisting of the error source @var{source} and the error code
+@var{code}.
+
+This function can be used in callback functions to construct an error
+value to return it to the library.
+@end deftypefun
+
+@deftypefun {static __inline__ gpgme_error_t} gpgme_error (@w{gpgme_err_code_t @var{code}})
+The static inline function @code{gpgme_error} returns the error value
+consisting of the default error source and the error code @var{code}.
+
+For @acronym{GPGME} applications, the default error source is
+@code{GPG_ERR_SOURCE_USER_1}.  You can define
+@code{GPGME_ERR_SOURCE_DEFAULT} before including @file{gpgme.h} to
+change this default.
+
+This function can be used in callback functions to construct an error
+value to return it to the library.
+@end deftypefun
+
+The @code{libgpg-error} library provides error codes for all system
+error numbers it knows about.  If @var{err} is an unknown error
+number, the error code @code{GPG_ERR_UNKNOWN_ERRNO} is used.  The
+following functions can be used to construct error values from system
+errnor numbers.
+
+@deftypefun {gpgme_error_t} gpgme_err_make_from_errno (@w{gpgme_err_source_t @var{source}}, @w{int @var{err}})
+The function @code{gpgme_err_make_from_errno} is like
+@code{gpgme_err_make}, but it takes a system error like @code{errno}
+instead of a @code{gpgme_err_code_t} error code.
+@end deftypefun
+
+@deftypefun {gpgme_error_t} gpgme_error_from_errno (@w{int @var{err}})
+The function @code{gpgme_error_from_errno} is like @code{gpgme_error},
+but it takes a system error like @code{errno} instead of a
+@code{gpgme_err_code_t} error code.
+@end deftypefun
+
+Sometimes you might want to map system error numbers to error codes
+directly, or map an error code representing a system error back to the
+system error number.  The following functions can be used to do that.
+
+@deftypefun {gpgme_err_code_t} gpgme_err_code_from_errno (@w{int @var{err}})
+The function @code{gpgme_err_code_from_errno} returns the error code
+for the system error @var{err}.  If @var{err} is not a known system
+error, the function returns @code{GPG_ERR_UNKNOWN_ERRNO}.
+@end deftypefun
+
+@deftypefun {int} gpgme_err_code_to_errno (@w{gpgme_err_code_t @var{err}})
+The function @code{gpgme_err_code_to_errno} returns the system error
+for the error code @var{err}.  If @var{err} is not an error code
+representing a system error, or if this system error is not defined on
+this system, the function returns @code{0}.
+@end deftypefun
+
+
+@node Error Sources
+@section Error Sources
+@cindex error codes, list of
+
+The library @code{libgpg-error} defines an error source for every
+component of the GnuPG system.  The error source part of an error
+value is not well defined.  As such it is mainly useful to improve the
+diagnostic error message for the user.
+
+If the error code part of an error value is @code{0}, the whole error
+value will be @code{0}.  In this case the error source part is of
+course @code{GPG_ERR_SOURCE_UNKNOWN}.
+
+The list of error sources that might occur in applications using
+@acronym{GPGME} is:
 
 @table @code
-@item GPGME_EOF
+@item GPG_ERR_SOURCE_UNKNOWN
+The error source is not known.  The value of this error source is
+@code{0}.
+
+@item GPG_ERR_SOURCE_GPGME
+The error source is @acronym{GPGME} itself.  This is the default for
+errors that occur in the @acronym{GPGME} library.
+
+@item GPG_ERR_SOURCE_GPG
+The error source is GnuPG, which is the crypto engine used for the
+OpenPGP protocol.
+
+@item GPG_ERR_SOURCE_GPGSM
+The error source is GPGSM, which is the crypto engine used for the
+OpenPGP protocol.
+
+@item GPG_ERR_SOURCE_GCRYPT
+The error source is @code{libgcrypt}, which is used by crypto engines
+to perform cryptographic operations.
+
+@item GPG_ERR_SOURCE_GPGAGENT
+The error source is @command{gpg-agent}, which is used by crypto
+engines to perform operations with the secret key.
+
+@item GPG_ERR_SOURCE_PINENTRY
+The error source is @command{pinentry}, which is used by
+@command{gpg-agent} to query the passphrase to unlock a secret key.
+
+@item GPG_ERR_SOURCE_SCD
+The error source is the SmartCard Daemon, which is used by
+@command{gpg-agent} to delegate operations with the secret key to a
+SmartCard.
+
+@item GPG_ERR_SOURCE_KEYBOX
+The error source is @code{libkbx}, a library used by the crypto
+engines to manage local keyrings.
+
+@item GPG_ERR_SOURCE_USER_1
+@item GPG_ERR_SOURCE_USER_2
+@item GPG_ERR_SOURCE_USER_3
+@item GPG_ERR_SOURCE_USER_4
+These error sources are not used by any GnuPG component and can be
+used by other software.  For example, applications using
+@acronym{GPGME} can use them to mark error values coming from callback
+handlers.  Thus @code{GPG_ERR_SOURCE_USER_1} is the default for errors
+created with @code{gpgme_error} and @code{gpgme_error_from_errno},
+unless you define @code{GPGME_ERR_SOURCE_DEFAULT} before including
+@file{gpgme.h}.
+@end table
+
+
+@node Error Codes
+@section Error Codes
+@cindex error codes, list of
+
+The library @code{libgpg-error} defines many error values.  Most of
+them are not used by @code{GPGME} directly, but might be returned by
+@acronym{GPGME} because it received them from the crypto engine.  The
+below list only includes such error codes that have a specific meaning
+in @code{GPGME}, or which are so common that you should know about
+them.
+
+@table @code
+@item GPG_ERR_EOF
 This value indicates the end of a list, buffer or file.
 
-@item GPGME_No_Error
-This value indicates success.  The value of this error is @code{0}.
+@item GPG_ERR_NO_ERROR
+This value indicates success.  The value of this error code is
+@code{0}.  Also, it is guaranteed that an error value made from the
+error code @code{0} will be @code{0} itself (as a whole).  This means
+that the error source information is lost for this error code,
+however, as this error code indicates that no error occured, this is
+generally not a problem.
 
-@item GPGME_General_Error
+@item GPG_ERR_GENERAL
 This value means that something went wrong, but either there is not
 enough information about the problem to return a more useful error
 value, or there is no separate error value for this type of problem.
 
-@item GPGME_Out_Of_Core
+@item GPG_ERR_ENOMEM
 This value means that an out-of-memory condition occurred.
 
-@item GPGME_Invalid_Value
+@item GPG_ERR_E...
+System errors are mapped to GPG_ERR_FOO where FOO is the symbol for
+the system error.
+
+@item GPG_ERR_INV_VALUE
 This value means that some user provided data was out of range.  This
-can also refer to objects.  For example, if an empty @code{gpgme_data_t}
-object was expected, but one containing data was provided, this error
-value is returned.
+can also refer to objects.  For example, if an empty
+@code{gpgme_data_t} object was expected, but one containing data was
+provided, this error value is returned.
 
-@item GPGME_Exec_Error
-This value means that an error occurred when trying to spawn a child
-process.
+@item GPG_ERR_UNUSABLE_PUBKEY
+This value means that some recipients for a message were invalid.
 
-@item GPGME_Too_Many_Procs
-This value means that there are too many active backend processes.
+@item GPG_ERR_UNUSABLE_SECKEY
+This value means that some signers were invalid.
 
-@item GPGME_Pipe_Error
-This value means that the creation of a pipe failed.
+@item GPG_ERR_NO_DATA
+This value means that a @code{gpgme_data_t} object which was expected
+to have content was found empty.
 
-@item GPGME_No_UserID 
-This value means that no valid recipients for a message have been set.
-
-@item GPGME_Invalid_UserID
-This value means that some, but not all, recipients for a message have
-been invalid.
-
-@item GPGME_No_Data
-This value means that a @code{gpgme_data_t} object which was expected to
-have content was found empty.
-
-@item GPGME_Conflict
+@item GPG_ERR_CONFLICT
 This value means that a conflict of some sort occurred.
 
-@item GPGME_Not_Implemented
+@item GPG_ERR_NOT_IMPLEMENTED
 This value indicates that the specific function (or operation) is not
 implemented.  This error should never happen.  It can only occur if
 you use certain values or configuration options which do not work,
 but for which we think that they should work at some later time.
 
-@item GPGME_Read_Error
-This value means that an I/O read operation failed.
-
-@item GPGME_Write_Error
-This value means that an I/O write operation failed.
-
-@item GPGME_File_Error
-This value means that a file I/O operation failed.  The value of
-@var{errno} contains the system error value.
-
-@item GPGME_Decryption_Failed
+@item GPG_ERR_DECRYPT_FAILED
 This value indicates that a decryption operation was unsuccessful.
 
-@item GPGME_Bad_Passphrase
+@item GPG_ERR_BAD_PASSPHRASE
 This value means that the user did not provide a correct passphrase
 when requested.
 
-@item GPGME_Canceled
+@item GPG_ERR_CANCELED
 This value means that the operation was canceled.
 
-@item GPGME_Invalid_Key
-This value means that a key was invalid.
-
-@item GPGME_Invalid_Engine
+@item GPG_ERR_INV_ENGINE
 This value means that the engine that implements the desired protocol
 is currently not available.  This can either be because the sources
 were configured to exclude support for this engine, or because the
 engine is not installed properly.
 
-@item GPGME_Unknown_Reason
-This value indicates that a user ID was invalid but the exact reason
-is not specified.
-
-@item GPGME_Not_Found
-This value indicates that a user ID was not found.
-
-@item GPGME_Ambiguous_Specification
+@item GPG_ERR_AMBIGUOUS_NAME
 This value indicates that a user ID did not specify a unique key.
 
-@item GPGME_Wrong_Key_Usage
+@item GPG_ERR_WRONG_KEY_USAGE
 This value indicates that a key is not used appropriately.
 
-@item GPGME_Key_Revoked
-This value indicates that a key was revoced.
+@item GPG_ERR_CERT_REVOKED
+This value indicates that a key signature was revoced.
 
-@item GPGME_Key_Expired
-This value indicates that a key was expired.
+@item GPG_ERR_CERT_EXPIRED
+This value indicates that a key signature expired.
 
-@item GPGME_No_CRL_Known
+@item GPG_ERR_NO_CRL_KNOWN
 This value indicates that no certificate revocation list is known for
 the certificate.
 
-@item GPGME_Policy_Mismatch
+@item GPG_ERR_NO_POLICY_MATCH
 This value indicates that a policy issue occured.
 
-@item GPGME_No_Secret_Key
+@item GPG_ERR_NO_SECKEY
 This value indicates that no secret key for the user ID is available.
 
-@item GPGME_Key_Not_Trusted
-This value indicates that the key with the user ID is not trusted.
+@item GPG_ERR_MISSING_CERT
+This value indicates that a key could not be imported because the
+issuer certificate is missing.
 
-@item GPGME_Issuer_Missing
-This value indicates that a key could not be imported because there is
-no issuer
-
-@item GPGME_Chain_Too_Long
+@item GPG_ERR_BAD_CERT_CHAIN
 This value indicates that a key could not be imported because its
-certificate chain is too long.
+certificate chain is not good, for example it could be too long.
 
-@item GPGME_Unsupported_Algorithm
+@item GPG_ERR_UNSUPPORTED_ALGORITHM
 This value means a verification failed because the cryptographic
 algorithm is not supported by the crypto backend.
 
-@item GPGME_Sig_Expired
-This value means a verification failed because the signature expired.
-
-@item GPGME_Bad_Signature
+@item GPG_ERR_BAD_SIGNATURE
 This value means a verification failed because the signature is bad.
 
-@item GPGME_No_Public_Key
+@item GPG_ERR_NO_PUBKEY
 This value means a verification failed because the public key is not
 available.
 
+@item GPG_ERR_USER_1
+@item GPG_ERR_USER_2
+@item ...
+@item GPG_ERR_USER_16
+These error codes are not used by any GnuPG component and can be
+freely used by other software.  Applications using @acronym{GPGME}
+might use them to mark specific errors returned by callback handlers
+if no suitable error codes (including the system errors) for
+these errors exist already.
 @end table
-@end deftp
 
 
 @node Error Strings
 @section Error Strings
 @cindex error values, printing of
+@cindex error codes, printing of
+@cindex error sources, printing of
 @cindex error strings
 
 @deftypefun {const char *} gpgme_strerror (@w{gpgme_error_t @var{err}})
 The function @code{gpgme_strerror} returns a pointer to a statically
-allocated string containing a description of the error with the error
-value @var{err}.  This string can be used to output a diagnostic
-message to the user.
+allocated string containing a description of the error code contained
+in the error value @var{err}.  This string can be used to output a
+diagnostic message to the user.
+@end deftypefun
+
+
+@deftypefun {const char *} gpgme_strsource (@w{gpgme_error_t @var{err}})
+The function @code{gpgme_strerror} returns a pointer to a statically
+allocated string containing a description of the error source
+contained in the error value @var{err}.  This string can be used to
+output a diagnostic message to the user.
+@end deftypefun
 
 The following example illustrates the use of @code{gpgme_strerror}:
 
@@ -1026,12 +1224,11 @@ gpgme_ctx_t ctx;
 gpgme_error_t err = gpgme_new (&ctx);
 if (err)
   @{
-    fprintf (stderr, "%s: creating GpgME context failed: %s\n",
-             argv[0], gpgme_strerror (err));
+    fprintf (stderr, "%s: creating GpgME context failed: %s: %s\n",
+             argv[0], gpgme_strsource (err), gpgme_strerror (err));
     exit (1);
   @}
 @end example
-@end deftypefun
 
 
 @node Exchanging Data
@@ -1088,10 +1285,10 @@ The function @code{gpgme_data_new} creates a new @code{gpgme_data_t}
 object and returns a handle for it in @var{dh}.  The data object is
 memory based and initially empty.
 
-The function returns @code{GPGME_No_Error} if the data object was
-successfully created, @code{GPGME_Invalid_Value} if @var{dh} is not a
-valid pointer, and @code{GPGME_Out_Of_Core} if not enough memory is
-available.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+data object was successfully created, @code{GPG_ERR_INV_VALUE} if
+@var{dh} is not a valid pointer, and @code{GPG_ERR_ENOMEM} if not
+enough memory is available.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_data_new_from_mem (@w{gpgme_data_t *@var{dh}}, @w{const char *@var{buffer}}, @w{size_t @var{size}}, @w{int @var{copy}})
@@ -1104,10 +1301,10 @@ If @var{copy} is not zero, a private copy of the data is made.  If
 needed, and the user has to ensure that the buffer remains valid for
 the whole life span of the data object.
 
-The function returns @code{GPGME_No_Error} if the data object was
-successfully created, @code{GPGME_Invalid_Value} if @var{dh} or
-@var{buffer} is not a valid pointer, and @code{GPGME_Out_Of_Core} if
-not enough memory is available.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+data object was successfully created, @code{GPG_ERR_INV_VALUE} if
+@var{dh} or @var{buffer} is not a valid pointer, and
+@code{GPG_ERR_ENOMEM} if not enough memory is available.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_data_new_from_file (@w{gpgme_data_t *@var{dh}}, @w{const char *@var{filename}}, @w{int @var{copy}})
@@ -1121,11 +1318,11 @@ mode supported currently.  Later, a value of zero for @var{copy} might
 cause all reads to be delayed until the data is needed, but this is
 not yet implemented.
 
-The function returns @code{GPGME_No_Error} if the data object was
-successfully created, @code{GPGME_Invalid_Value} if @var{dh} or
-@var{filename} is not a valid pointer, @code{GPGME_File_Error} if an
-I/O operation fails, @code{GPGME_Not_Implemented} if @var{code} is
-zero, and @code{GPGME_Out_Of_Core} if not enough memory is available.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+data object was successfully created, @code{GPG_ERR_INV_VALUE} if
+@var{dh} or @var{filename} is not a valid pointer,
+@code{GPG_ERR_NOT_IMPLEMENTED} if @var{code} is zero, and
+@code{GPG_ERR_ENOMEM} if not enough memory is available.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_data_new_from_filepart (@w{gpgme_data_t *@var{dh}}, @w{const char *@var{filename}}, @w{FILE *@var{fp}}, @w{off_t @var{offset}}, @w{size_t @var{length}})
@@ -1138,11 +1335,10 @@ must be zero.  The argument that is not zero specifies the file from
 which @var{length} bytes are read into the data object, starting from
 @var{offset}.
 
-The function returns @code{GPGME_No_Error} if the data object was
-successfully created, @code{GPGME_Invalid_Value} if @var{dh} and
-exactly one of @var{filename} and @var{fp} is not a valid pointer,
-@code{GPGME_File_Error} if an I/O operation fails, and
-@code{GPGME_Out_Of_Core} if not enough memory is available.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+data object was successfully created, @code{GPG_ERR_INV_VALUE} if
+@var{dh} and exactly one of @var{filename} and @var{fp} is not a valid
+pointer, and @code{GPG_ERR_ENOMEM} if not enough memory is available.
 @end deftypefun
 
 
@@ -1163,9 +1359,9 @@ When using the data object as an input buffer, the function might read
 a bit more from the file descriptor than is actually needed by the
 crypto engine in the desired operation because of internal buffering.
 
-The function returns @code{GPGME_No_Error} if the data object was
-successfully created, and @code{GPGME_Out_Of_Core} if not enough
-memory is available.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+data object was successfully created, and @code{GPG_ERR_ENOMEM} if not
+enough memory is available.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_data_new_from_stream (@w{gpgme_data_t *@var{dh}}, @w{FILE *@var{stream}})
@@ -1178,9 +1374,9 @@ When using the data object as an input buffer, the function might read
 a bit more from the stream than is actually needed by the crypto
 engine in the desired operation because of internal buffering.
 
-The function returns @code{GPGME_No_Error} if the data object was
-successfully created, and @code{GPGME_Out_Of_Core} if not enough
-memory is available.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+data object was successfully created, and @code{GPG_ERR_ENOMEM} if not
+enough memory is available.
 @end deftypefun
 
 
@@ -1268,9 +1464,9 @@ to operate on the data object.
 The handle @var{handle} is passed as first argument to the callback
 functions.  This can be used to identify this data object.
 
-The function returns @code{GPGME_No_Error} if the data object was
-successfully created, and @code{GPGME_Out_Of_Core} if not enough
-memory is available.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+data object was successfully created, and @code{GPG_ERR_ENOMEM} if not
+enough memory is available.
 @end deftypefun
 
 The following interface is deprecated and only provided for backward
@@ -1294,10 +1490,10 @@ return with an error code of @code{-1} and set @var{nread} to
 read pointer if it is invoked with @var{buffer} and @var{nread} being
 @code{NULL} and @var{count} being @code{0}.
 
-The function returns @code{GPGME_No_Error} if the data object was
-successfully created, @code{GPGME_Invalid_Value} if @var{dh} or
-@var{readfunc} is not a valid pointer, and @code{GPGME_Out_Of_Core} if
-not enough memory is available.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+data object was successfully created, @code{GPG_ERR_INV_VALUE} if
+@var{dh} or @var{readfunc} is not a valid pointer, and
+@code{GPG_ERR_ENOMEM} if not enough memory is available.
 @end deftypefun
 
 
@@ -1335,7 +1531,7 @@ from the data object with the handle @var{dh} into the space starting
 at @var{buffer}.
 
 If no error occurs, the actual amount read is returned.  If the end of
-the data object is reached, the function returns @code{GPGME_EOF} and
+the data object is reached, the function returns @code{GPG_ERR_EOF} and
 sets @var{nread} to zero.
 
 In all other cases, the function returns -1 and sets @var{errno}.
@@ -1349,11 +1545,6 @@ starting from @var{buffer} into the data object with the handle
 The function returns the number of bytes actually written, or -1 if an
 error occurs.  If an error occurs, @var{errno} is set.
 @end deftypefun
-
-/* Set the current position from where the next read or write starts
-   in the data object with the handle DH to OFFSET, relativ to
-   WHENCE.  */
-off_t gpgme_data_seek (gpgme_data_t dh, off_t offset, int whence);
 
 @deftypefun off_t gpgme_data_seek (@w{gpgme_data_t @var{dh}}, @w{off_t *@var{offset}}, @w{int @var{whence}})
 The function @code{gpgme_data_seek} changes the current read/write
@@ -1396,7 +1587,7 @@ The function @code{gpgme_data_rewind} is equivalent to:
 
 @example
   return (gpgme_data_seek (dh, 0, SEEK_SET) == -1)
-    ? mk_error (File_Error) : 0;
+    ? gpgme_error_from_errno (errno) : 0;
 @end example
 @end deftypefun
 
@@ -1480,10 +1671,10 @@ cryptographic operations.
 The function @code{gpgme_data_new} creates a new @code{gpgme_ctx_t}
 object and returns a handle for it in @var{ctx}.
 
-The function returns @code{GPGME_No_Error} if the context was
-successfully created, @code{GPGME_Invalid_Value} if @var{ctx} is not a
-valid pointer, and @code{GPGME_Out_Of_Core} if not enough memory is
-available.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+context was successfully created, @code{GPG_ERR_INV_VALUE} if
+@var{ctx} is not a valid pointer, and @code{GPG_ERR_ENOMEM} if not
+enough memory is available.
 @end deftypefun
 
 
@@ -1527,9 +1718,9 @@ Setting the protocol with @code{gpgme_set_protocol} does not check if
 the crypto engine for that protocol is available and installed
 correctly.  @xref{Engine Version Check}.
 
-The function returns @code{GPGME_No_Error} if the protocol could be
-set successfully, and @code{GPGME_Invalid_Value} if @var{protocol} is
-not a valid protocol.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+protocol could be set successfully, and @code{GPG_ERR_INV_VALUE} if
+@var{protocol} is not a valid protocol.
 @end deftypefun
 
 @deftypefun gpgme_protocol_t gpgme_get_protocol (@w{gpgme_ctx_t @var{ctx}})
@@ -1614,8 +1805,8 @@ from the sender's certificate.  The number @code{n} must be positive.
 
 Values of @var{nr_of_certs} smaller than -2 are undefined.
 
-This option is only relevant to the CMS crypto engine, and ignored
-by all other engines.
+This option is only relevant to the CMS crypto engine, and ignored by
+all other engines.
 @end deftypefun
 
 @deftypefun int gpgme_get_include_certs (@w{gpgme_ctx_t @var{ctx}})
@@ -1661,9 +1852,9 @@ appropriate bits, and then using that calulcated value in the
 bits in the mode value intact (in particular those that are not used
 in the current version of the library).
 
-The function returns @code{GPGME_No_Error} if the mode could be set
-correctly, and @code{GPGME_Invalid_Value} if @var{ctx} is not a valid
-pointer or @var{mode} is not a valid mode.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+mode could be set correctly, and @code{GPG_ERR_INV_VALUE} if @var{ctx}
+is not a valid pointer or @var{mode} is not a valid mode.
 @end deftypefun
 
 
@@ -1707,9 +1898,9 @@ to the file descriptor @var{fd}.  If the user does not return 0
 indicating success, the user must at least write a newline character
 before returning from the callback.
 
-If an error occurs, return the corresponding @code{gpgme_error_t} value.
-You can use @code{GPGME_Canceled} to abort the operation.  Otherwise,
-return @code{0}.
+If an error occurs, return the corresponding @code{gpgme_error_t}
+value.  You can use the error code @code{GPG_ERR_CANCELED} to abort
+the operation.  Otherwise, return @code{0}.
 @end deftp
 
 @deftypefun void gpgme_set_passphrase_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_passphrase_cb_t @var{passfunc}}, @w{void *@var{hook_value}})
@@ -1796,12 +1987,12 @@ respective keys that should be used for the operation.  The following
 section describes how such keys can be selected and manipulated.
 
 @deftp {Data type} gpgme_sub_key_t
-The @code{gpgme_sub_key_t} type is a pointer to a subkey structure.  Sub
-keys are one component of a @code{gpgme_key_t} object.  In fact, subkeys
-are those parts that contains the real information about the
+The @code{gpgme_sub_key_t} type is a pointer to a subkey structure.
+Sub keys are one component of a @code{gpgme_key_t} object.  In fact,
+subkeys are those parts that contains the real information about the
 individual cryptographic keys that belong to the same key object.  One
-@code{gpgme_key_t} can contain several subkeys.  The first subkey in the
-linked list is also called the primary key.
+@code{gpgme_key_t} can contain several subkeys.  The first subkey in
+the linked list is also called the primary key.
 
 The subkey structure has the following members:
 
@@ -2055,12 +2246,12 @@ If @var{secret_only} is not @code{0}, the list is restricted to secret
 keys only.
 
 The context will be busy until either all keys are received (and
-@code{gpgme_op_keylist_next} returns @code{GPGME_EOF}), or
+@code{gpgme_op_keylist_next} returns @code{GPG_ERR_EOF}), or
 @code{gpgme_op_keylist_end} is called to finish the operation.
 
-The function returns @code{GPGME_Invalid_Value} if @var{ctx} is not a
-valid pointer, and passes through any errors that are reported by the
-crypto engine support routines.
+The function returns the error code @code{GPG_ERR_INV_VALUE} if
+@var{ctx} is not a valid pointer, and passes through any errors that
+are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_keylist_ext_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}[]}, @w{int @var{secret_only}}, @w{int @var{reserved}})
@@ -2080,12 +2271,12 @@ keys only.
 The value of @var{reserved} must be @code{0}.
 
 The context will be busy until either all keys are received (and
-@code{gpgme_op_keylist_next} returns @code{GPGME_EOF}), or
+@code{gpgme_op_keylist_next} returns @code{GPG_ERR_EOF}), or
 @code{gpgme_op_keylist_end} is called to finish the operation.
 
-The function returns @code{GPGME_Invalid_Value} if @var{ctx} is not a
-valid pointer, and passes through any errors that are reported by the
-crypto engine support routines.
+The function returns the error code @code{GPG_ERR_INV_VALUE} if
+@var{ctx} is not a valid pointer, and passes through any errors that
+are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_keylist_next (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t *@var{r_key}})
@@ -2098,11 +2289,11 @@ This is the only way to get at @code{gpgme_key_t} objects in
 @acronym{GPGME}.
 
 If the last key in the list has already been returned,
-@code{gpgme_op_keylist_next} returns @code{GPGME_EOF}.
+@code{gpgme_op_keylist_next} returns @code{GPG_ERR_EOF}.
 
-The function returns @code{GPGME_Invalid_Value} if @var{ctx} or
-@var{r_key} is not a valid pointer, and @code{GPGME_Out_Of_Core} if
-there is not enough memory for the operation.
+The function returns the error code @code{GPG_ERR_INV_VALUE} if
+@var{ctx} or @var{r_key} is not a valid pointer, and
+@code{GPG_ERR_ENOMEM} if there is not enough memory for the operation.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_keylist_end (@w{gpgme_ctx_t @var{ctx}})
@@ -2113,9 +2304,9 @@ After the operation completed successfully, the result of the key
 listing operation can be retrieved with
 @code{gpgme_op_keylist_result}.
 
-The function returns @code{GPGME_Invalid_Value} if @var{ctx} is not a
-valid pointer, and @code{GPGME_Out_Of_Core} if at some time during the
-operation there was not enough memory available.
+The function returns the error code @code{GPG_ERR_INV_VALUE} if
+@var{ctx} is not a valid pointer, and @code{GPG_ERR_ENOMEM} if at some
+time during the operation there was not enough memory available.
 @end deftypefun
 
 The following example illustrates how all keys containing a certain
@@ -2129,8 +2320,11 @@ gpgme_error_t err = gpgme_new (&ctx);
 if (!err)
   @{
     err = gpgme_op_keylist_start (ctx, "g10code", 0);
-    while (!err && (err = gpgme_op_keylist_next (ctx, &key)) != GPGME_EOF)
+    while (!err)
       @{
+        err = gpgme_op_keylist_next (ctx, &key);
+        if (err)
+          break;
         printf ("%s: %s <%s>\n",
                 gpgme_key_get_string_attr (key, GPGME_ATTR_KEYID, 0, 0),
 	        gpgme_key_get_string_attr (key, GPGME_ATTR_NAME, 0, 0),
@@ -2139,7 +2333,7 @@ if (!err)
       @}
     gpgme_release (ctx);
   @}
-if (err)
+if (gpg_err_code (err) != GPG_ERR_EOF)
   @{
     fprintf (stderr, "%s: can not list keys: %s\n",
              argv[0], gpgme_strerror (err));
@@ -2163,11 +2357,12 @@ less than the desired keys could be listed.
 
 @deftypefun gpgme_keylist_result_t gpgme_op_keylist_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_keylist_result} returns a
-@code{gpgme_keylist_result_t} pointer to a structure holding the result of
-a @code{gpgme_op_keylist_*} operation.  The pointer is only valid if
-the last operation on the context was a key listing operation, and if
-this operation finished successfully.  The returned pointer is only
-valid until the next operation is started on the context.
+@code{gpgme_keylist_result_t} pointer to a structure holding the
+result of a @code{gpgme_op_keylist_*} operation.  The pointer is only
+valid if the last operation on the context was a key listing
+operation, and if this operation finished successfully.  The returned
+pointer is only valid until the next operation is started on the
+context.
 @end deftypefun
 
 In a simple program, for which a blocking operation is acceptable, the
@@ -2182,13 +2377,13 @@ If @var{secret} is true, get the secret key.  The currently active
 keylist mode is used to retrieve the key.
 
 If the key is not found in the keyring, @code{gpgme_get_key} returns
-@code{GPGME_No_Error} and *@var{r_key} will be set to @code{NULL}.
+the error code @code{GPG_ERR_NO_ERROR} and *@var{r_key} will be set to
+@code{NULL}.
 
-The function returns @code{GPGME_Invalid_Value} if @var{ctx} or
-@var{r_key} is not a valid pointer, @code{GPGME_Invalid_Key} if
-@var{fpr} is not a fingerprint or key ID, @code{GPGME_Out_Of_Core} if
-at some time during the operation there was not enough memory
-available.
+The function returns the error code @code{GPG_ERR_INV_VALUE} if
+@var{ctx} or @var{r_key} is not a valid pointer or @var{fpr} is not a
+fingerprint or key ID, and @code{GPG_ERR_ENOMEM} if at some time
+during the operation there was not enough memory available.
 @end deftypefun
 
 
@@ -2393,8 +2588,8 @@ returned.  The argument @var{reserved} is reserved for later use and
 should be @code{NULL}.
 
 The function returns @code{0} if the attribute can't be returned as a
-number, @var{key} is not a valid pointer, @var{idx} out of range,
-or @var{reserved} not @code{NULL}.
+number, @var{key} is not a valid pointer, @var{idx} out of range, or
+@var{reserved} not @code{NULL}.
 @end deftypefun
 
 
@@ -2590,11 +2785,11 @@ statements are not allowed.
 After the operation completed successfully, the result can be
 retrieved with @code{gpgme_op_genkey_result}.
 
-The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, @code{GPGME_Invalid_Value} if @var{parms} is not
-a valid XML string, @code{GPGME_Not_Supported} if @var{public} or
-@var{secret} is not valid, and @code{GPGME_General_Error} if no key
-was created by the backend.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
+@var{parms} is not a valid XML string, @code{GPG_ERR_NOT_SUPPORTED} if
+@var{public} or @var{secret} is not valid, and @code{GPG_ERR_GENERAL}
+if no key was created by the backend.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_genkey_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{parms}}, @w{gpgme_data_t @var{public}}, @w{gpgme_data_t @var{secret}})
@@ -2602,10 +2797,11 @@ The function @code{gpgme_op_genkey_start} initiates a
 @code{gpgme_op_genkey} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
-The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, @code{GPGME_Invalid_Value} if @var{parms} is not
-a valid XML string, and @code{GPGME_Not_Supported} if @var{public} or
-@var{secret} is not @code{NULL}.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
+@var{parms} is not a valid XML string, and
+@code{GPG_ERR_NOT_SUPPORTED} if @var{public} or @var{secret} is not
+@code{NULL}.
 @end deftypefun
 
 @deftp {Data type} {gpgme_genkey_result_t}
@@ -2660,10 +2856,10 @@ is used to limit the list to all keys matching the pattern.
 
 @var{reserved} is reserved for future use and must be @code{0}.
 
-The function returns @code{GPGME_No_Error} if the operation completed
-successfully, @code{GPGME_Invalid_Value} if @var{keydata} is not a
-valid empty data buffer, and passes through any errors that are
-reported by the crypto engine support routines.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation completed successfully, @code{GPG_ERR_INV_VALUE} if
+@var{keydata} is not a valid empty data buffer, and passes through any
+errors that are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_export_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}}, @w{unsigned int @var{reserved}}, @w{gpgme_data_t @var{keydata}})
@@ -2671,9 +2867,9 @@ The function @code{gpgme_op_export_start} initiates a
 @code{gpgme_op_export} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
-The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, and @code{GPGME_Invalid_Value} if @var{keydata}
-is not a valid empty data buffer.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
+if @var{keydata} is not a valid empty data buffer.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_export_ext (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}[]}, @w{unsigned int @var{reserved}}, @w{gpgme_data_t @var{keydata}})
@@ -2689,10 +2885,10 @@ at least one of the patterns verbatim.
 
 @var{reserved} is reserved for future use and must be @code{0}.
 
-The function returns @code{GPGME_No_Error} if the operation completed
-successfully, @code{GPGME_Invalid_Value} if @var{keydata} is not a
-valid empty data buffer, and passes through any errors that are
-reported by the crypto engine support routines.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation completed successfully, @code{GPG_ERR_INV_VALUE} if
+@var{keydata} is not a valid empty data buffer, and passes through any
+errors that are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_export_ext_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}[]}, @w{unsigned int @var{reserved}}, @w{gpgme_data_t @var{keydata}})
@@ -2700,9 +2896,9 @@ The function @code{gpgme_op_export_ext_start} initiates a
 @code{gpgme_op_export_ext} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
-The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, and @code{GPGME_Invalid_Value} if @var{keydata}
-is not a valid empty data buffer.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
+if @var{keydata} is not a valid empty data buffer.
 @end deftypefun
 
 
@@ -2720,10 +2916,10 @@ but the details are specific to the crypto engine.
 After the operation completed successfully, the result can be
 retrieved with @code{gpgme_op_import_result}.
 
-The function returns @code{GPGME_No_Error} if the import was completed
-successfully, @code{GPGME_Invalid_Value} if @var{keydata} if @var{ctx}
-or @var{keydata} is not a valid pointer, and @code{GPGME_No_Data} if
-@var{keydata} is an empty data buffer.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+import was completed successfully, @code{GPG_ERR_INV_VALUE} if
+@var{keydata} if @var{ctx} or @var{keydata} is not a valid pointer,
+and @code{GPG_ERR_NO_DATA} if @var{keydata} is an empty data buffer.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_import_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{keydata}})
@@ -2731,10 +2927,10 @@ The function @code{gpgme_op_import_start} initiates a
 @code{gpgme_op_import} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
-The function returns @code{GPGME_No_Error} if the import could be
-started successfully, @code{GPGME_Invalid_Value} if @var{keydata} if
-@var{ctx} or @var{keydata} is not a valid pointer, and
-@code{GPGME_No_Data} if @var{keydata} is an empty data buffer.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+import could be started successfully, @code{GPG_ERR_INV_VALUE} if
+@var{keydata} if @var{ctx} or @var{keydata} is not a valid pointer,
+and @code{GPG_ERR_NO_DATA} if @var{keydata} is an empty data buffer.
 @end deftypefun
 
 @deftp {Data type} {gpgme_import_status_t}
@@ -2753,7 +2949,8 @@ This is the fingerprint of the key that was considered.
 
 @item gpgme_error_t result
 If the import was not successful, this is the error value that caused
-the import to fail.  Otherwise it is @code{GPGME_No_Error}.
+the import to fail.  Otherwise the error code is
+@code{GPG_ERR_NO_ERROR}.
 
 @item unsigned int status
 This is a bit-wise OR of the following flags that give more
@@ -2834,9 +3031,9 @@ about the keys for which an import was attempted.
 
 @deftypefun gpgme_import_result_t gpgme_op_import_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_import_result} returns a
-@code{gpgme_import_result_t} pointer to a structure holding the result of
-a @code{gpgme_op_import} operation.  The pointer is only valid if the
-last operation on the context was a @code{gpgme_op_import} or
+@code{gpgme_import_result_t} pointer to a structure holding the result
+of a @code{gpgme_op_import} operation.  The pointer is only valid if
+the last operation on the context was a @code{gpgme_op_import} or
 @code{gpgme_op_import_start} operation, and if this operation finished
 successfully.  The returned pointer is only valid until the next
 operation is started on the context.
@@ -2871,12 +3068,13 @@ key ring of the crypto engine used by @var{ctx}.  If
 @var{allow_secret} is @code{0}, only public keys are deleted,
 otherwise secret keys are deleted as well, if that is supported.
 
-The function returns @code{GPGME_No_Error} if the key was deleted
-successfully, @code{GPGME_Invalid_Value} if @var{ctx} or @var{key} is
-not a valid pointer, @code{GPGME_Invalid_Key} if @var{key} could not
-be found in the keyring, @code{GPGME_Ambiguous_Specification} if the
-key was not specified unambiguously, and @code{GPGME_Conflict} if the
-secret key for @var{key} is available, but @var{allow_secret} is zero.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the key
+was deleted successfully, @code{GPG_ERR_INV_VALUE} if @var{ctx} or
+@var{key} is not a valid pointer, @code{GPG_ERR_NO_PUBKEY} if
+@var{key} could not be found in the keyring,
+@code{GPG_ERR_AMBIGUOUS_NAME} if the key was not specified
+unambiguously, and @code{GPG_ERR_CONFLICT} if the secret key for
+@var{key} is available, but @var{allow_secret} is zero.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_delete_start (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{int @var{allow_secret}})
@@ -2884,9 +3082,9 @@ The function @code{gpgme_op_delete_start} initiates a
 @code{gpgme_op_delete} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
-The function returns @code{GPGME_No_Error} if the operation was
-started successfully, and @code{GPGME_Invalid_Value} if @var{ctx} or
-@var{key} is not a valid pointer.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation was started successfully, and @code{GPG_ERR_INV_VALUE} if
+@var{ctx} or @var{key} is not a valid pointer.
 @end deftypefun
 
 
@@ -2946,12 +3144,12 @@ can not be the empty string.
 The argument @var{max_level} is currently ignored.
 
 The context will be busy until either all trust items are received
-(and @code{gpgme_op_trustlist_next} returns @code{GPGME_EOF}), or
+(and @code{gpgme_op_trustlist_next} returns @code{GPG_ERR_EOF}), or
 @code{gpgme_op_trustlist_end} is called to finish the operation.
 
-The function returns @code{GPGME_Invalid_Value} if @var{ctx} is not a
-valid pointer, and passes through any errors that are reported by the
-crypto engine support routines.
+The function returns the error code @code{GPG_ERR_INV_VALUE} if
+@var{ctx} is not a valid pointer, and passes through any errors that
+are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_trustlist_next (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_trust_item_t *@var{r_item}})
@@ -2964,10 +3162,10 @@ This is the only way to get at @code{gpgme_trust_item_t} objects in
 @acronym{GPGME}.
 
 If the last trust item in the list has already been returned,
-@code{gpgme_op_trustlist_next} returns @code{GPGME_EOF}.
+@code{gpgme_op_trustlist_next} returns @code{GPG_ERR_EOF}.
 
-The function returns @code{GPGME_Invalid_Value} if @var{ctx} or
-@var{r_item} is not a valid pointer, and @code{GPGME_Out_Of_Core} if
+The function returns the error code @code{GPG_ERR_INV_VALUE} if @var{ctx} or
+@var{r_item} is not a valid pointer, and @code{GPG_ERR_ENOMEM} if
 there is not enough memory for the operation.
 @end deftypefun
 
@@ -2975,9 +3173,9 @@ there is not enough memory for the operation.
 The function @code{gpgme_op_trustlist_next} ends a pending key list
 operation in the context @var{ctx}.
 
-The function returns @code{GPGME_Invalid_Value} if @var{ctx} is not a
-valid pointer, and @code{GPGME_Out_Of_Core} if at some time during the
-operation there was not enough memory available.
+The function returns the error code @code{GPG_ERR_INV_VALUE} if
+@var{ctx} is not a valid pointer, and @code{GPG_ERR_ENOMEM} if at some
+time during the operation there was not enough memory available.
 @end deftypefun
 
 
@@ -3095,12 +3293,12 @@ The function @code{gpgme_op_decrypt} decrypts the ciphertext in the
 data object @var{cipher} and stores it into the data object
 @var{plain}.
 
-The function returns @code{GPGME_No_Error} if the ciphertext could be
-decrypted successfully, @code{GPGME_Invalid_Value} if @var{ctx},
-@var{cipher} or @var{plain} is not a valid pointer,
-@code{GPGME_No_Data} if @var{cipher} does not contain any data to
-decrypt, @code{GPGME_Decryption_Failed} if @var{cipher} is not a valid
-cipher text, @code{GPGME_Bad_Passphrase} if the passphrase for the
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+ciphertext could be decrypted successfully, @code{GPG_ERR_INV_VALUE}
+if @var{ctx}, @var{cipher} or @var{plain} is not a valid pointer,
+@code{GPG_ERR_NO_DATA} if @var{cipher} does not contain any data to
+decrypt, @code{GPG_ERR_DECRYPT_FAILED} if @var{cipher} is not a valid
+cipher text, @code{GPG_ERR_BAD_PASSPHRASE} if the passphrase for the
 secret key could not be retrieved, and passes through any errors that
 are reported by the crypto engine support routines.
 @end deftypefun
@@ -3110,9 +3308,9 @@ The function @code{gpgme_op_decrypt_start} initiates a
 @code{gpgme_op_decrypt} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
-The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, and @code{GPGME_Invalid_Value} if @var{cipher}
-or @var{plain} is not a valid pointer.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
+if @var{cipher} or @var{plain} is not a valid pointer.
 @end deftypefun
 
 @deftp {Data type} {gpgme_decrypt_result_t}
@@ -3160,12 +3358,12 @@ verification.
 The results of the individual signature verifications can be retrieved
 with @code{gpgme_op_verify_result}.
 
-The function returns @code{GPGME_No_Error} if the operation could be
-completed successfully, @code{GPGME_Invalid_Value} if @var{ctx},
-@var{sig}, @var{plain} or @var{r_stat} is not a valid pointer,
-@code{GPGME_No_Data} if @var{sig} does not contain any data to verify,
-and passes through any errors that are reported by the crypto engine
-support routines.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be completed successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx}, @var{sig}, @var{plain} or @var{r_stat} is not a valid
+pointer, @code{GPG_ERR_NO_DATA} if @var{sig} does not contain any data
+to verify, and passes through any errors that are reported by the
+crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_verify_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{sig}}, @w{gpgme_data_t @var{signed_text}}, @w{gpgme_data_t @var{plain}})
@@ -3173,11 +3371,11 @@ The function @code{gpgme_op_verify_start} initiates a
 @code{gpgme_op_verify} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
-The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
-@var{sig}, @var{plain} or @var{r_stat} is not a valid pointer, and
-@code{GPGME_No_Data} if @var{sig} or @var{plain} does not contain any
-data to verify.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx}, @var{sig}, @var{plain} or @var{r_stat} is not a valid
+pointer, and @code{GPG_ERR_NO_DATA} if @var{sig} or @var{plain} does
+not contain any data to verify.
 @end deftypefun
 
 @deftp {Data type} {gpgme_sig_notation_t}
@@ -3265,30 +3463,30 @@ This is the status of the signature.  In particular, the following
 status codes are of interest:
 
   @table @code
-  @item GPGME_No_Error
+  @item GPG_ERR_NO_ERROR
   This status indicates that the signature is valid.  For the combined
   result this status means that all signatures are valid.
 
-  @item GPGME_Sig_Expired
+  @item GPG_ERR_SIG_EXPIRED
   This status indicates that the signature is valid but expired.  For
   the combined result this status means that all signatures are valid
   and expired.
 
-  @item GPGME_Key_Expired
+  @item GPG_ERR_KEY_EXPIRED
   This status indicates that the signature is valid but the key used to
   verify the signature has expired.  For the combined result this status
   means that all signatures are valid and all keys are expired.
 
-  @item GPGME_Bad_Signature
+  @item GPG_ERR_BAD_SIGNATURE
   This status indicates that the signature is invalid.  For the combined
   result this status means that all signatures are invalid.
 
-  @item GPGME_No_Public_Key
+  @item GPG_ERR_NO_PUBKEY
   This status indicates that the signature could not be verified due to
   a missing key.  For the combined result this status means that all
   signatures could not be checked due to missing keys.
 
-  @item GPGME_General_Error
+  @item GPG_ERR_GENERAL
   This status indicates that there was some other error which prevented
   the signature verification.
   @end table
@@ -3410,27 +3608,27 @@ The function @code{gpgme_get_sig_status} is equivalent to:
     @{
       switch (sig->status)
 	@{
-	case GPGME_No_Error:
+	case GPG_ERR_NO_ERROR:
 	  *r_stat = GPGME_SIG_STAT_GOOD;
 	  break;
 	  
-	case GPGME_Bad_Signature:
+	case GPG_ERR_BAD_SIGNATURE:
 	  *r_stat = GPGME_SIG_STAT_BAD;
 	  break;
 	  
-	case GPGME_No_Public_Key:
+	case GPG_ERR_NO_PUBKEY:
 	  *r_stat = GPGME_SIG_STAT_NOKEY;
 	  break;
 	  
-	case GPGME_No_Data:
+	case GPG_ERR_NO_DATA:
 	  *r_stat = GPGME_SIG_STAT_NOSIG;
 	  break;
 	  
-	case GPGME_Sig_Expired:
+	case GPG_ERR_SIG_EXPIRED:
 	  *r_stat = GPGME_SIG_STAT_GOOD_EXP;
 	  break;
 	  
-	case GPGME_Key_Expired:
+	case GPG_ERR_KEY_EXPIRED:
 	  *r_stat = GPGME_SIG_STAT_GOOD_EXPKEY;
 	  break;
 	  
@@ -3513,22 +3711,22 @@ The function @code{gpgme_get_sig_ulong_attr} is equivalent to:
     case GPGME_ATTR_SIG_STATUS:
       switch (sig->status)
 	@{
-	case GPGME_No_Error:
+	case GPG_ERR_NO_ERROR:
 	  return GPGME_SIG_STAT_GOOD;
 	  
-	case GPGME_Bad_Signature:
+	case GPG_ERR_BAD_SIGNATURE:
 	  return GPGME_SIG_STAT_BAD;
 	  
-	case GPGME_No_Public_Key:
+	case GPG_ERR_NO_PUBKEY:
 	  return GPGME_SIG_STAT_NOKEY;
 	  
-	case GPGME_No_Data:
+	case GPG_ERR_NO_DATA:
 	  return GPGME_SIG_STAT_NOSIG;
 	  
-	case GPGME_Sig_Expired:
+	case GPG_ERR_SIG_EXPIRED:
 	  return GPGME_SIG_STAT_GOOD_EXP;
 	  
-	case GPGME_Key_Expired:
+	case GPG_ERR_KEY_EXPIRED:
 	  return GPGME_SIG_STAT_GOOD_EXPKEY;
 	  
 	default:
@@ -3561,7 +3759,7 @@ The function @code{gpgme_get_sig_key} is equivalent to:
       idx--;
     @}
   if (!sig || idx)
-    return GPGME_EOF;
+    return gpg_error (GPG_ERR_EOF);
 
   return gpgme_get_key (ctx, sig->fpr, r_key, 0, 0);
 @end example
@@ -3585,14 +3783,14 @@ After the operation completed, @code{gpgme_op_get_sig_status} and
 @code{gpgme_op_get_sig_key} can be used to retrieve more information
 about the signatures.
 
-The function returns @code{GPGME_No_Error} if the ciphertext could be
-decrypted successfully, @code{GPGME_Invalid_Value} if @var{ctx},
-@var{cipher}, @var{plain} or @var{r_stat} is not a valid pointer,
-@code{GPGME_No_Data} if @var{cipher} does not contain any data to
-decrypt, @code{GPGME_Decryption_Failed} if @var{cipher} is not a valid
-cipher text, @code{GPGME_Bad_Passphrase} if the passphrase for the
-secret key could not be retrieved, and passes through any errors that
-are reported by the crypto engine support routines.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+ciphertext could be decrypted successfully, @code{GPG_ERR_INV_VALUE}
+if @var{ctx}, @var{cipher}, @var{plain} or @var{r_stat} is not a valid
+pointer, @code{GPG_ERR_NO_DATA} if @var{cipher} does not contain any
+data to decrypt, @code{GPG_ERR_DECRYPT_FAILED} if @var{cipher} is not
+a valid cipher text, @code{GPG_ERR_BAD_PASSPHRASE} if the passphrase
+for the secret key could not be retrieved, and passes through any
+errors that are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_decrypt_verify (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{cipher}}, @w{gpgme_data_t @var{plain}})
@@ -3601,11 +3799,11 @@ The function @code{gpgme_op_decrypt_verify_start} initiates a
 calling @code{gpgme_wait} on the context.  @xref{Waiting For
 Completion}.
 
-The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
-@var{cipher}, @var{plain} or @var{r_stat} is not a valid pointer, and
-@code{GPGME_No_Data} if @var{cipher} does not contain any data to
-decrypt.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx}, @var{cipher}, @var{plain} or @var{r_stat} is not a valid
+pointer, and @code{GPG_ERR_NO_DATA} if @var{cipher} does not contain
+any data to decrypt.
 @end deftypefun
 
 
@@ -3691,13 +3889,13 @@ If an S/MIME signed message is created using the CMS crypto engine,
 the number of certificates to include in the message can be specified
 with @code{gpgme_set_include_certs}.  @xref{Included Certificates}.
 
-The function returns @code{GPGME_No_Error} if the signature could be
-created successfully, @code{GPGME_Invalid_Value} if @var{ctx},
-@var{plain} or @var{sig} is not a valid pointer, @code{GPGME_No_Data}
-if the signature could not be created, @code{GPGME_Bad_Passphrase} if
-the passphrase for the secret key could not be retrieved, and passes
-through any errors that are reported by the crypto engine support
-routines.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+signature could be created successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx}, @var{plain} or @var{sig} is not a valid pointer,
+@code{GPG_ERR_NO_DATA} if the signature could not be created,
+@code{GPG_ERR_BAD_PASSPHRASE} if the passphrase for the secret key
+could not be retrieved, and passes through any errors that are
+reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_sign_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{sig}}, @w{gpgme_sig_mode_t @var{mode}})
@@ -3705,8 +3903,8 @@ The function @code{gpgme_op_sign_start} initiates a
 @code{gpgme_op_sign} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
-The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, and @code{GPGME_Invalid_Value} if @var{ctx},
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the operation could be
+started successfully, and @code{GPG_ERR_INV_VALUE} if @var{ctx},
 @var{plain} or @var{sig} is not a valid pointer.
 @end deftypefun
 
@@ -3808,9 +4006,9 @@ have a high enough validity in the keyring.  This flag should be used
 with care; in general it is not a good idea to use any untrusted keys.
 @end table
 
-If @code{GPGME_Invalid_Key} is returned, some recipients in @var{recp}
-are invalid, but not all.  In this case the plaintext might be
-encrypted for all valid recipients and returned in @var{cipher} (if
+If @code{GPG_ERR_UNUSABLE_PUBKEY} is returned, some recipients in
+@var{recp} are invalid, but not all.  In this case the plaintext might
+be encrypted for all valid recipients and returned in @var{cipher} (if
 this happens depends on the crypto engine).  More information about
 the invalid recipients is available with
 @code{gpgme_op_encrypt_result}.
@@ -3822,13 +4020,13 @@ crypto backend needs to retrieve a passphrase from the user.
 Symmetric encryption is currently only supported for the OpenPGP
 crypto backend.
 
-The function returns @code{GPGME_No_Error} if the ciphertext could be
-created successfully, @code{GPGME_Invalid_Value} if @var{ctx},
-@var{recp}, @var{plain} or @var{cipher} is not a valid pointer,
-@code{GPGME_Invalid_Key} if @var{recp} contains some invalid
-recipients, @code{GPGME_Bad_Passphrase} if the passphrase for the
-secret key could not be retrieved, and passes through any errors that
-are reported by the crypto engine support routines.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+ciphertext could be created successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx}, @var{recp}, @var{plain} or @var{cipher} is not a valid
+pointer, @code{GPG_ERR_UNUSABLE_PUBKEY} if @var{recp} contains some
+invalid recipients, @code{GPG_ERR_BAD_PASSPHRASE} if the passphrase
+for the secret key could not be retrieved, and passes through any
+errors that are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_encrypt_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{recp}[]}, @w{gpgme_encrypt_flags_t @var{flags}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
@@ -3840,11 +4038,11 @@ References to the keys only need to be held for the duration of this
 call.  The user can release its references to the keys after this
 function returns, even if the operation is not yet finished.
 
-The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, @code{GPGME_Invalid_Value} if @var{ctx},
-@var{rset}, @var{plain} or @var{cipher} is not a valid pointer, and
-@code{GPGME_No_UserID} if @var{rset} does not contain any valid
-recipients.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx}, @var{rset}, @var{plain} or @var{cipher} is not a valid
+pointer, and @code{GPG_ERR_UNUSABLE_PUBKEY} if @var{rset} does not
+contain any valid recipients.
 @end deftypefun
 
 @deftp {Data type} {gpgme_encrypt_result_t}
@@ -3888,9 +4086,10 @@ The function @code{gpgme_op_encrypt_sign_start} initiates a
 calling @code{gpgme_wait} on the context.  @xref{Waiting For
 Completion}.
 
-The function returns @code{GPGME_No_Error} if the operation could be
-started successfully, and @code{GPGME_Invalid_Value} if @var{ctx},
-@var{rset}, @var{plain} or @var{cipher} is not a valid pointer.
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
+if @var{ctx}, @var{rset}, @var{plain} or @var{cipher} is not a valid
+pointer.
 @end deftypefun
 
 
@@ -4230,7 +4429,7 @@ add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc, void *fnc_data,
     @}
   pthread_mutex_unlock (&loop->lock);
   if (i == MAX_FDS)
-    return GPGME_General_Error;
+    return gpg_error (GPG_ERR_GENERAL);
   *r_tag = &fds[i];
   return 0;
 @}
@@ -4249,13 +4448,12 @@ void
 event_io_cb (void *data, gpgme_event_io_t type, void *type_data)
 @{
   struct op_result *result = data;
-  gpgme_error_t *err = data;
 
   /* We don't support list operations here.  */
   if (type == GPGME_EVENT_DONE)
     @{
       result->done = 1;
-      result->err = *data;
+      result->err = *type_data;
     @}
 @}
 @end example
@@ -4367,7 +4565,8 @@ main (int argc, char *argv[])
     @}
   if (err)
     @{
-      fprintf (stderr, "gpgme error: %s\n", gpgme_strerror (err));
+      fprintf (stderr, "gpgme error: %s: %s\n",
+               gpgme_strsource (err), gpgme_strerror (err));
       exit (1);
     @}
 
@@ -4379,7 +4578,8 @@ main (int argc, char *argv[])
     @}
   if (!result.err)
     @{
-      fprintf (stderr, "verification failed: %s\n", gpgme_strerror (result.err));
+      fprintf (stderr, "verification failed: %s: %s\n",
+               gpgme_strsource (result.err), gpgme_strerror (result.err));
       exit (1);
     @}
   /* Evaluate STATUS.  */

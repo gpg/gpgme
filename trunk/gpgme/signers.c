@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "util.h"
 #include "context.h"
@@ -53,7 +54,7 @@ gpgme_error_t
 gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 {
   if (!ctx || !key)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (ctx->signers_len == ctx->signers_size)
     {
@@ -63,7 +64,7 @@ gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 
       newarr = realloc (ctx->signers, n * sizeof (*newarr));
       if (!newarr)
-	return GPGME_Out_Of_Core;
+	return gpg_error_from_errno (errno);
       for (j = ctx->signers_size; j < n; j++)
 	newarr[j] = NULL;
       ctx->signers = newarr;

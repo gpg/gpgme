@@ -22,6 +22,7 @@
 #include <config.h>
 #endif
 #include <assert.h>
+#include <errno.h>
 
 #include "gpgme.h"
 #include "context.h"
@@ -86,7 +87,7 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond)
 	     signal it.  */
 	  int idx;
 
-	  err = GPGME_File_Error;
+	  err = gpg_error_from_errno (errno);
 	  for (idx = 0; idx < ctx->fdt.size; idx++)
 	    if (ctx->fdt.fds[idx].fd != -1)
 	      _gpgme_io_close (ctx->fdt.fds[idx].fd);

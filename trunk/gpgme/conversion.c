@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -72,7 +73,7 @@ _gpgme_decode_c_string (const char *src, char **destp, int len)
   if (len)
     {
       if (len < strlen (src) + 1)
-	return GPGME_General_Error;
+	return gpg_error (GPG_ERR_INTERNAL);
 
       dest = *destp;
     }
@@ -82,7 +83,7 @@ _gpgme_decode_c_string (const char *src, char **destp, int len)
 	 string.  */
       dest = malloc (strlen (src) + 1);
       if (!dest)
-	return GPGME_Out_Of_Core;
+	return gpg_error_from_errno (errno);
 
       *destp = dest;
     }
@@ -175,7 +176,7 @@ _gpgme_decode_percent_string (const char *src, char **destp, int len)
   if (len)
     {
       if (len < strlen (src) + 1)
-	return GPGME_General_Error;
+	return gpg_error (GPG_ERR_INTERNAL);
 
       dest = *destp;
     }
@@ -185,7 +186,7 @@ _gpgme_decode_percent_string (const char *src, char **destp, int len)
 	 string.  */
       dest = malloc (strlen (src) + 1);
       if (!dest)
-	return GPGME_Out_Of_Core;
+	return gpg_error_from_errno (errno);
 
       *destp = dest;
     }
@@ -238,84 +239,84 @@ static struct
   gpgme_error_t err;
 } gnupg_errors[] =
   {
-    { "EOF", GPGME_EOF },
-    { "No_Error", GPGME_No_Error },
-    { "General_Error", GPGME_General_Error },
-    { "Out_Of_Core", GPGME_Out_Of_Core },
-    { "Invalid_Value", GPGME_Invalid_Value },
-    { "IO_Error", GPGME_General_Error },
-    { "Resource_Limit", GPGME_General_Error },
-    { "Internal_Error", GPGME_General_Error },
-    { "Bad_Certificate", GPGME_Invalid_Key },
-    { "Bad_Certificate_Chain", GPGME_General_Error },
-    { "Missing_Certificate", GPGME_No_Public_Key },
-    { "No_Data", GPGME_No_Data },
-    { "Bad_Signature", GPGME_Bad_Signature },
-    { "Not_Implemented", GPGME_Not_Implemented },
-    { "Conflict", GPGME_Conflict },
-    { "Bug", GPGME_General_Error },
-    { "Read_Error", GPGME_General_Error },
-    { "Write_Error", GPGME_General_Error },
-    { "Invalid_Line", GPGME_General_Error },
-    { "Incomplete_Line", GPGME_General_Error },
-    { "Invalid_Response", GPGME_General_Error },
-    { "Agent_Error", GPGME_General_Error },
-    { "No_Public_Key", GPGME_No_Public_Key },
-    { "No_Secret_Key", GPGME_No_Secret_Key },
-    { "File_Open_Error", GPGME_General_Error },
-    { "File_Create_Error", GPGME_General_Error },
-    { "File_Error", GPGME_General_Error },
-    { "Not_Supported", GPGME_General_Error },
-    { "Invalid_Data", GPGME_General_Error },
-    { "Assuan_Server_Fault", GPGME_General_Error },
-    { "Assuan_Error", GPGME_General_Error },
-    { "Invalid_Session_Key", GPGME_General_Error },
-    { "Invalid_Sexp", GPGME_General_Error },
-    { "Unsupported_Algorithm", GPGME_Unsupported_Algorithm },
-    { "No_PIN_Entry", GPGME_Invalid_Engine },
-    { "PIN_Entry_Error", GPGME_Invalid_Engine },
-    { "Bad_PIN", GPGME_Bad_Passphrase },
-    { "Bad_Passphrase", GPGME_Bad_Passphrase },
-    { "Invalid_Name", GPGME_General_Error },
-    { "Bad_Public_Key", GPGME_General_Error },
-    { "Bad_Secret_Key", GPGME_General_Error },
-    { "Bad_Data", GPGME_General_Error },
-    { "Invalid_Parameter", GPGME_General_Error },
-    { "Tribute_to_D_A", GPGME_General_Error },
-    { "No_Dirmngr", GPGME_Invalid_Engine },
-    { "Dirmngr_Error", GPGME_General_Error },
-    { "Certificate_Revoked", GPGME_Key_Revoked },
-    { "No_CRL_Known", GPGME_No_CRL_Known },
-    { "CRL_Too_Old", GPGME_CRL_Too_Old },
-    { "Line_Too_Long", GPGME_General_Error },
-    { "Not_Trusted", GPGME_Key_Not_Trusted },
-    { "Canceled", GPGME_Canceled },
-    { "Bad_CA_Certificate", GPGME_General_Error },
-    { "Certificate_Expired", GPGME_Key_Expired },
-    { "Certificate_Too_Young", GPGME_Invalid_Key },
-    { "Unsupported_Certificate", GPGME_General_Error },
-    { "Unknown_Sexp", GPGME_General_Error },
-    { "Unsupported_Protection", GPGME_General_Error },
-    { "Corrupted_Protection", GPGME_General_Error },
-    { "Ambiguous_Name", GPGME_Ambiguous_Specification },
-    { "Card_Error", GPGME_General_Error },
-    { "Card_Reset", GPGME_General_Error },
-    { "Card_Removed", GPGME_General_Error },
-    { "Invalid_Card", GPGME_General_Error },
-    { "Card_Not_Present", GPGME_General_Error },
-    { "No_PKCS15_App", GPGME_General_Error },
-    { "Not_Confirmed", GPGME_General_Error },
-    { "Configuration_Error", GPGME_General_Error },
-    { "No_Policy_Match", GPGME_Policy_Mismatch },
-    { "Invalid_Index", GPGME_General_Error },
-    { "Invalid_Id", GPGME_General_Error },
-    { "No_Scdaemon", GPGME_Invalid_Engine },
-    { "Scdaemon_Error", GPGME_General_Error },
-    { "Unsupported_Protocol", GPGME_General_Error },
-    { "Bad_PIN_Method", GPGME_General_Error },
-    { "Card_Not_Initialized", GPGME_General_Error },
-    { "Unsupported_Operation", GPGME_General_Error },
-    { "Wrong_Key_Usage", GPGME_Wrong_Key_Usage }
+    { "EOF", GPG_ERR_EOF },
+    { "No_Error", GPG_ERR_NO_ERROR },
+    { "General_Error", GPG_ERR_GENERAL },
+    { "Out_Of_Core", GPG_ERR_ENOMEM },
+    { "Invalid_Value", GPG_ERR_INV_VALUE },
+    { "IO_Error", GPG_ERR_GENERAL },
+    { "Resource_Limit", GPG_ERR_RESOURCE_LIMIT },
+    { "Internal_Error", GPG_ERR_INTERNAL },
+    { "Bad_Certificate", GPG_ERR_BAD_CERT },
+    { "Bad_Certificate_Chain", GPG_ERR_BAD_CERT_CHAIN},
+    { "Missing_Certificate", GPG_ERR_MISSING_CERT },
+    { "No_Data", GPG_ERR_NO_DATA },
+    { "Bad_Signature", GPG_ERR_BAD_SIGNATURE },
+    { "Not_Implemented", GPG_ERR_NOT_IMPLEMENTED },
+    { "Conflict", GPG_ERR_CONFLICT },
+    { "Bug", GPG_ERR_BUG },
+    { "Read_Error", GPG_ERR_GENERAL },
+    { "Write_Error", GPG_ERR_GENERAL },
+    { "Invalid_Line", GPG_ERR_GENERAL },
+    { "Incomplete_Line", GPG_ERR_INCOMPLETE_LINE },
+    { "Invalid_Response", GPG_ERR_INV_RESPONSE },
+    { "Agent_Error", GPG_ERR_AGENT },
+    { "No_Public_Key", GPG_ERR_NO_PUBKEY },
+    { "No_Secret_Key", GPG_ERR_NO_SECKEY },
+    { "File_Open_Error", GPG_ERR_GENERAL },
+    { "File_Create_Error", GPG_ERR_GENERAL },
+    { "File_Error", GPG_ERR_GENERAL },
+    { "Not_Supported", GPG_ERR_NOT_SUPPORTED },
+    { "Invalid_Data", GPG_ERR_INV_DATA },
+    { "Assuan_Server_Fault", GPG_ERR_ASSUAN_SERVER_FAULT },
+    { "Assuan_Error", GPG_ERR_ASSUAN },
+    { "Invalid_Session_Key", GPG_ERR_INV_SESSION_KEY },
+    { "Invalid_Sexp", GPG_ERR_INV_SEXP },
+    { "Unsupported_Algorithm", GPG_ERR_UNSUPPORTED_ALGORITHM },
+    { "No_PIN_Entry", GPG_ERR_NO_PIN_ENTRY },
+    { "PIN_Entry_Error", GPG_ERR_NO_PIN_ENTRY },
+    { "Bad_PIN", GPG_ERR_BAD_PIN },
+    { "Bad_Passphrase", GPG_ERR_BAD_PASSPHRASE },
+    { "Invalid_Name", GPG_ERR_INV_NAME },
+    { "Bad_Public_Key", GPG_ERR_BAD_PUBKEY },
+    { "Bad_Secret_Key", GPG_ERR_BAD_SECKEY },
+    { "Bad_Data", GPG_ERR_BAD_DATA },
+    { "Invalid_Parameter", GPG_ERR_INV_PARAMETER },
+    { "Tribute_to_D_A", GPG_ERR_TRIBUTE_TO_D_A },
+    { "No_Dirmngr", GPG_ERR_NO_DIRMNGR },
+    { "Dirmngr_Error", GPG_ERR_DIRMNGR },
+    { "Certificate_Revoked", GPG_ERR_CERT_REVOKED },
+    { "No_CRL_Known", GPG_ERR_NO_CRL_KNOWN },
+    { "CRL_Too_Old", GPG_ERR_CRL_TOO_OLD },
+    { "Line_Too_Long", GPG_ERR_LINE_TOO_LONG },
+    { "Not_Trusted", GPG_ERR_NOT_TRUSTED },
+    { "Canceled", GPG_ERR_CANCELED },
+    { "Bad_CA_Certificate", GPG_ERR_BAD_CA_CERT },
+    { "Certificate_Expired", GPG_ERR_CERT_EXPIRED },
+    { "Certificate_Too_Young", GPG_ERR_CERT_TOO_YOUNG },
+    { "Unsupported_Certificate", GPG_ERR_UNSUPPORTED_CERT },
+    { "Unknown_Sexp", GPG_ERR_UNKNOWN_SEXP },
+    { "Unsupported_Protection", GPG_ERR_UNSUPPORTED_PROTECTION },
+    { "Corrupted_Protection", GPG_ERR_CORRUPTED_PROTECTION },
+    { "Ambiguous_Name", GPG_ERR_AMBIGUOUS_NAME },
+    { "Card_Error", GPG_ERR_CARD },
+    { "Card_Reset", GPG_ERR_CARD_RESET },
+    { "Card_Removed", GPG_ERR_CARD_REMOVED },
+    { "Invalid_Card", GPG_ERR_INV_CARD },
+    { "Card_Not_Present", GPG_ERR_CARD_NOT_PRESENT },
+    { "No_PKCS15_App", GPG_ERR_NO_PKCS15_APP },
+    { "Not_Confirmed", GPG_ERR_NOT_CONFIRMED },
+    { "Configuration_Error", GPG_ERR_CONFIGURATION },
+    { "No_Policy_Match", GPG_ERR_NO_POLICY_MATCH },
+    { "Invalid_Index", GPG_ERR_INV_INDEX },
+    { "Invalid_Id", GPG_ERR_INV_ID },
+    { "No_Scdaemon", GPG_ERR_NO_SCDAEMON },
+    { "Scdaemon_Error", GPG_ERR_SCDAEMON },
+    { "Unsupported_Protocol", GPG_ERR_UNSUPPORTED_PROTOCOL },
+    { "Bad_PIN_Method", GPG_ERR_BAD_PIN_METHOD },
+    { "Card_Not_Initialized", GPG_ERR_CARD_NOT_INITIALIZED },
+    { "Unsupported_Operation", GPG_ERR_UNSUPPORTED_OPERATION },
+    { "Wrong_Key_Usage", GPG_ERR_WRONG_KEY_USAGE }
   };
     
 
@@ -326,7 +327,7 @@ _gpgme_map_gnupg_error (char *err)
 
   for (i = 0; i < DIM (gnupg_errors); i++)
     if (!strcmp (gnupg_errors[i].name, err))
-      return gnupg_errors[i].err;
+      return gpg_err_make (GPG_ERR_SOURCE_GPG, gnupg_errors[i].err);
 
-  return GPGME_General_Error;
+  return gpg_err_make (GPG_ERR_SOURCE_GPG, GPG_ERR_GENERAL);
 }

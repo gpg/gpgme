@@ -1,7 +1,13 @@
 Hey Emacs, this is -*- outline -*- mode!
 
+* Before release:
+** Change gpgme_invalid_user_id_t to gpgme_invalid_key_t.
+** Remove arg_error from rungpg.c
+** Make sure that notation value allocation has no leak at error
+** Make sure POSIX I/O functions set errno properly
+** gpgme-config must include info about libgpg-error.
+
 * ABI's to break:
-** Use libgpg-error.
 ** Compatibility interfaces that can be removed in future versions:
 *** gpgme_data_new_from_filepart
 *** gpgme_data_new_from_file
@@ -91,7 +97,8 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Error Values
 ** Map ASSUAN/GpgSM ERR error values in a better way than is done now. !!
-** Verify (and document) if Read_Error, Write_Error, Pipe_Error set errno.
+** Some error values should identify the source more correctly (mostly error
+   values derived from status messages).
 
 * Tests
 ** Write a fake gpg-agent so that we can supply known passphrases to

@@ -93,7 +93,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
 
   sig = malloc (sizeof (*sig));
   if (!sig)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
 
   sig->next = NULL;
   switch (*args)
@@ -113,14 +113,14 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
     default:
       /* The backend engine is not behaving.  */
       free (sig);
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_INV_ENGINE);
     }
 
   args++;
   if (*args != ' ')
     {
       free (sig);
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_INV_ENGINE);
     }
 
   errno = 0;
@@ -129,7 +129,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
     {
       /* The crypto backend does not behave.  */
       free (sig);
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_INV_ENGINE);
     }
   args = tail;
 
@@ -138,7 +138,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
     {
       /* The crypto backend does not behave.  */
       free (sig);
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_INV_ENGINE);
     }
   args = tail;
 
@@ -147,7 +147,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
     {
       /* The crypto backend does not behave.  */
       free (sig);
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_INV_ENGINE);
     }
   args = tail;
 
@@ -156,7 +156,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
     {
       /* The crypto backend does not behave.  */
       free (sig);
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_INV_ENGINE);
     }
   args = tail;
   while (*args == ' ')
@@ -166,7 +166,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
     {
       /* The crypto backend does not behave.  */
       free (sig);
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_INV_ENGINE);
     }
 
   tail = strchr (args, ' ');
@@ -176,8 +176,9 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
   sig->fpr = strdup (args);
   if (!sig->fpr)
     {
+      int saved_errno = errno;
       free (sig);
-      return GPGME_Out_Of_Core;
+      return gpg_error_from_errno (saved_errno);
     }
   *sigp = sig;
   return 0;
@@ -221,7 +222,7 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
     case GPGME_STATUS_EOF:
       if (opd->result.invalid_signers)
-	return GPGME_Invalid_UserID;
+	return gpg_error (GPG_ERR_INV_USER_ID);
       break;
 
     default:
@@ -273,12 +274,12 @@ sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain,
 
   if (mode != GPGME_SIG_MODE_NORMAL && mode != GPGME_SIG_MODE_DETACH
       && mode != GPGME_SIG_MODE_CLEAR)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (!plain)
-    return GPGME_No_Data;
+    return gpg_error (GPG_ERR_NO_DATA);
   if (!sig)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (ctx->passphrase_cb)
     {

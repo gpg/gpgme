@@ -94,38 +94,38 @@ calc_sig_summary (gpgme_signature_t sig)
   if (sig->validity == GPGME_VALIDITY_FULL
       || sig->validity == GPGME_VALIDITY_ULTIMATE)
     {
-      if (sig->status == GPGME_No_Error
-	  || sig->status == GPGME_Sig_Expired
-	  || sig->status == GPGME_Key_Expired)
+      if (gpg_err_code (sig->status) == GPG_ERR_NO_ERROR
+	  || gpg_err_code (sig->status) == GPG_ERR_SIG_EXPIRED
+	  || gpg_err_code (sig->status) == GPG_ERR_KEY_EXPIRED)
 	sum |= GPGME_SIGSUM_GREEN;
     }
   else if (sig->validity == GPGME_VALIDITY_NEVER)
     {
-      if (sig->status == GPGME_No_Error
-	  || sig->status == GPGME_Sig_Expired
-	  || sig->status == GPGME_Key_Expired)
+      if (gpg_err_code (sig->status) == GPG_ERR_NO_ERROR
+	  || gpg_err_code (sig->status) == GPG_ERR_SIG_EXPIRED
+	  || gpg_err_code (sig->status) == GPG_ERR_KEY_EXPIRED)
 	sum |= GPGME_SIGSUM_RED;
     }
-  else if (sig->status == GPGME_Bad_Signature)
+  else if (gpg_err_code (sig->status) == GPG_ERR_BAD_SIGNATURE)
     sum |= GPGME_SIGSUM_RED;
   
   /* FIXME: handle the case when key and message are expired. */
-  switch (sig->status)
+  switch (gpg_err_code (sig->status))
     {
-    case GPGME_Sig_Expired:
+    case GPG_ERR_SIG_EXPIRED:
       sum |= GPGME_SIGSUM_SIG_EXPIRED;
       break;
 
-    case GPGME_Key_Expired:
+    case GPG_ERR_KEY_EXPIRED:
       sum |= GPGME_SIGSUM_KEY_EXPIRED;
       break;
 
-    case GPGME_No_Public_Key:
+    case GPG_ERR_NO_PUBKEY:
       sum |= GPGME_SIGSUM_KEY_MISSING;
       break;
 
-    case GPGME_Bad_Signature:
-    case GPGME_No_Error:
+    case GPG_ERR_BAD_SIGNATURE:
+    case GPG_ERR_NO_ERROR:
       break;
 
     default:
@@ -159,29 +159,30 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
 
   sig = calloc (1, sizeof (*sig));
   if (!sig)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
   if (!opd->result.signatures)
     opd->result.signatures = sig;
   if (opd->current_sig)
     opd->current_sig->next = sig;
   opd->current_sig = sig;
 
+  /* FIXME: We should set the source of the state.  */
   switch (code)
     {
     case GPGME_STATUS_GOODSIG:
-      sig->status = GPGME_No_Error;
+      sig->status = gpg_error (GPG_ERR_NO_ERROR);
       break;
 
     case GPGME_STATUS_EXPSIG:
-      sig->status = GPGME_Sig_Expired;
+      sig->status = gpg_error (GPG_ERR_SIG_EXPIRED);
       break;
 
     case GPGME_STATUS_EXPKEYSIG:
-      sig->status = GPGME_Key_Expired;
+      sig->status = gpg_error (GPG_ERR_KEY_EXPIRED);
       break;
 
     case GPGME_STATUS_BADSIG:
-      sig->status = GPGME_Bad_Signature;
+      sig->status = gpg_error (GPG_ERR_BAD_SIGNATURE);
       break;
 
     case GPGME_STATUS_ERRSIG:
@@ -202,31 +203,31 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
 	      switch (end[0])
 		{
 		case '4':
-		  sig->status = GPGME_Unsupported_Algorithm;
+		  sig->status = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
 		  break;
-
+		  
 		case 9:
-		  sig->status = GPGME_No_Public_Key;
+		  sig->status = gpg_error (GPG_ERR_NO_PUBKEY);
 		  break;
-
+		  
 		default:
-		  sig->status = GPGME_General_Error;
+		  sig->status = gpg_error (GPG_ERR_GENERAL);
 		}
 	    }
 	}
       else
-	sig->status = GPGME_General_Error;
+	sig->status = gpg_error (GPG_ERR_GENERAL);
       break;
 
     default:
-      return GPGME_General_Error;
+      return gpg_error (GPG_ERR_GENERAL);
     }
 
   if (*args)
     {
       sig->fpr = strdup (args);
       if (!sig->fpr)
-	return GPGME_Out_Of_Core;
+	return gpg_error_from_errno (errno);
     }
   return 0;
 }
@@ -245,13 +246,13 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
 
   if (!*args)
     /* We require at least the fingerprint.  */
-    return GPGME_General_Error;
+    return gpg_error (GPG_ERR_GENERAL);
 
   if (sig->fpr)
     free (sig->fpr);
   sig->fpr = strdup (args);
   if (!sig->fpr)
-    return GPGME_Out_Of_Core;
+    return gpg_error_from_errno (errno);
 
   end = strchr (end, ' ');
   if (end)
@@ -260,12 +261,12 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
       errno = 0;
       sig->timestamp = strtol (end, &tail, 0);
       if (errno || end == tail || (*tail && *tail != ' '))
-	return GPGME_General_Error;
+	return gpg_error (GPG_ERR_INV_ENGINE);
       end = tail;
      
       sig->exp_timestamp = strtol (end, &tail, 0);
       if (errno || end == tail || (*tail && *tail != ' '))
-	return GPGME_General_Error;
+	return gpg_error (GPG_ERR_INV_ENGINE);
     }
   return 0;
 }
@@ -294,11 +295,11 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
       if (notation)
 	/* There is another notation name without data for the
 	   previous one.  The crypto backend misbehaves.  */
-	return GPGME_General_Error;
+	return gpg_error (GPG_ERR_INV_ENGINE);
 
       notation = malloc (sizeof (*sig));
       if (!notation)
-	return GPGME_Out_Of_Core;
+	return gpg_error_from_errno (errno);
       notation->next = NULL;
 
       if (code == GPGME_STATUS_NOTATION_NAME)
@@ -308,8 +309,9 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	  notation->name = malloc (len);
 	  if (!notation->name)
 	    {
+	      int saved_errno = errno;
 	      free (notation);
-	      return GPGME_Out_Of_Core;
+	      return gpg_error_from_errno (saved_errno);
 	    }
 	  err = _gpgme_decode_percent_string (args, &notation->name, len);
 	  if (err)
@@ -325,8 +327,9 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	  notation->value = malloc (len);
 	  if (!notation->value)
 	    {
+	      int saved_errno = errno;
 	      free (notation);
-	      return GPGME_Out_Of_Core;
+	      return gpg_error_from_errno (saved_errno);
 	    }
 	  err = _gpgme_decode_percent_string (args, &notation->value, len);
 	  if (err)
@@ -349,20 +352,20 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
       if (!notation || !notation->name)
 	/* There is notation data without a previous notation
 	   name.  The crypto backend misbehaves.  */
-	return GPGME_General_Error;
+	return gpg_error (GPG_ERR_INV_ENGINE);
       
       if (!notation->value)
 	{
 	  dest = notation->value = malloc (len);
 	  if (!dest)
-	    return GPGME_Out_Of_Core;
+	    return gpg_error_from_errno (errno);
 	}
       else
 	{
 	  int cur_len = strlen (notation->value);
 	  dest = realloc (notation->value, len + strlen (notation->value));
 	  if (!dest)
-	    return GPGME_Out_Of_Core;
+	    return gpg_error_from_errno (errno);
 	  notation->value = dest;
 	  dest += cur_len;
 	}
@@ -372,7 +375,7 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	return err;
     }
   else
-    return GPGME_General_Error;
+    return gpg_error (GPG_ERR_INV_ENGINE);
   return 0;
 }
 
@@ -432,13 +435,14 @@ parse_error (gpgme_signature_t sig, char *args)
       where = args;      
     }
   else
-    return GPGME_General_Error;
+    return gpg_error (GPG_ERR_INV_ENGINE);
 
   err = _gpgme_map_gnupg_error (which);
 
   if (!strcmp (where, "verify.findkey"))
     sig->status = err;
-  else if (!strcmp (where, "verify.keyusage") && err == GPGME_Wrong_Key_Usage)
+  else if (!strcmp (where, "verify.keyusage")
+	   && gpg_err_code (err) == GPG_ERR_WRONG_KEY_USAGE)
     sig->wrong_key_usage = 1;
 
   return 0;
@@ -473,34 +477,37 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
       return parse_new_sig (opd, code, args);
 
     case GPGME_STATUS_VALIDSIG:
-      return sig ? parse_valid_sig (sig, args) : GPGME_General_Error;
+      return sig ? parse_valid_sig (sig, args)
+	: gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_NODATA:
       if (!sig)
-	return GPGME_No_Data;
-      sig->status = GPGME_No_Data;
+	return gpg_error (GPG_ERR_NO_DATA);
+      sig->status = gpg_error (GPG_ERR_NO_DATA);
       break;
 
     case GPGME_STATUS_UNEXPECTED:
       if (!sig)
-	return GPGME_General_Error;
-      sig->status = GPGME_No_Data;
+	return gpg_error (GPG_ERR_GENERAL);
+      sig->status = gpg_error (GPG_ERR_NO_DATA);
       break;
 
     case GPGME_STATUS_NOTATION_NAME:
     case GPGME_STATUS_NOTATION_DATA:
     case GPGME_STATUS_POLICY_URL:
-      return sig ? parse_notation (sig, code, args) : GPGME_General_Error;
+      return sig ? parse_notation (sig, code, args)
+	: gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_TRUST_UNDEFINED:
     case GPGME_STATUS_TRUST_NEVER:
     case GPGME_STATUS_TRUST_MARGINAL:
     case GPGME_STATUS_TRUST_FULLY:
     case GPGME_STATUS_TRUST_ULTIMATE:
-      return sig ? parse_trust (sig, code, args) : GPGME_General_Error;
+      return sig ? parse_trust (sig, code, args)
+	: gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_ERROR:
-      return sig ? parse_error (sig, args) : GPGME_General_Error;
+      return sig ? parse_error (sig, args) : gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_EOF:
       if (sig)
@@ -550,9 +557,9 @@ verify_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t sig,
   _gpgme_engine_set_status_handler (ctx->engine, verify_status_handler, ctx);
 
   if (!sig)
-    return GPGME_No_Data;
+    return gpg_error (GPG_ERR_NO_DATA);
   if (!signed_text && !plaintext)
-    return GPGME_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   return _gpgme_engine_op_verify (ctx->engine, sig, signed_text, plaintext);
 }
@@ -602,7 +609,7 @@ gpgme_get_sig_key (gpgme_ctx_t ctx, int idx, gpgme_key_t *r_key)
       idx--;
     }
   if (!sig || idx)
-    return GPGME_EOF;
+    return gpg_error (GPG_ERR_EOF);
 
   return gpgme_get_key (ctx, sig->fpr, r_key, 0);
 }
@@ -631,29 +638,29 @@ const char *gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
 
   if (r_stat)
     {
-      switch (sig->status)
+      switch (gpg_err_code (sig->status))
 	{
-	case GPGME_No_Error:
+	case GPG_ERR_NO_ERROR:
 	  *r_stat = GPGME_SIG_STAT_GOOD;
 	  break;
 	  
-	case GPGME_Bad_Signature:
+	case GPG_ERR_BAD_SIGNATURE:
 	  *r_stat = GPGME_SIG_STAT_BAD;
 	  break;
 	  
-	case GPGME_No_Public_Key:
+	case GPG_ERR_NO_PUBKEY:
 	  *r_stat = GPGME_SIG_STAT_NOKEY;
 	  break;
 	  
-	case GPGME_No_Data:
+	case GPG_ERR_NO_DATA:
 	  *r_stat = GPGME_SIG_STAT_NOSIG;
 	  break;
 	  
-	case GPGME_Sig_Expired:
+	case GPG_ERR_SIG_EXPIRED:
 	  *r_stat = GPGME_SIG_STAT_GOOD_EXP;
 	  break;
 	  
-	case GPGME_Key_Expired:
+	case GPG_ERR_KEY_EXPIRED:
 	  *r_stat = GPGME_SIG_STAT_GOOD_EXPKEY;
 	  break;
 	  
@@ -701,24 +708,24 @@ unsigned long gpgme_get_sig_ulong_attr (gpgme_ctx_t ctx, int idx,
       return (unsigned long) sig->validity;
 
     case GPGME_ATTR_SIG_STATUS:
-      switch (sig->status)
+      switch (gpg_err_code (sig->status))
 	{
-	case GPGME_No_Error:
+	case GPG_ERR_NO_ERROR:
 	  return GPGME_SIG_STAT_GOOD;
 	  
-	case GPGME_Bad_Signature:
+	case GPG_ERR_BAD_SIGNATURE:
 	  return GPGME_SIG_STAT_BAD;
 	  
-	case GPGME_No_Public_Key:
+	case GPG_ERR_NO_PUBKEY:
 	  return GPGME_SIG_STAT_NOKEY;
 	  
-	case GPGME_No_Data:
+	case GPG_ERR_NO_DATA:
 	  return GPGME_SIG_STAT_NOSIG;
 	  
-	case GPGME_Sig_Expired:
+	case GPG_ERR_SIG_EXPIRED:
 	  return GPGME_SIG_STAT_GOOD_EXP;
 	  
-	case GPGME_Key_Expired:
+	case GPG_ERR_KEY_EXPIRED:
 	  return GPGME_SIG_STAT_GOOD_EXPKEY;
 	  
 	default:

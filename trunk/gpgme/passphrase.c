@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "gpgme.h"
 #include "context.h"
@@ -76,7 +77,7 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
       if (opd->uid_hint)
 	free (opd->uid_hint);
       if (!(opd->uid_hint = strdup (args)))
-	return GPGME_Out_Of_Core;
+      return gpg_error_from_errno (errno);
       break;
 
     case GPGME_STATUS_BAD_PASSPHRASE:
@@ -95,7 +96,7 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 	free (opd->passphrase_info);
       opd->passphrase_info = strdup (args);
       if (!opd->passphrase_info)
-	return GPGME_Out_Of_Core;
+	return gpg_error_from_errno (errno);
       break;
 
     case GPGME_STATUS_MISSING_PASSPHRASE:
@@ -104,7 +105,7 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 
     case GPGME_STATUS_EOF:
       if (opd->no_passphrase || opd->bad_passphrase)
-	return GPGME_Bad_Passphrase;
+	return gpg_error (GPG_ERR_BAD_PASSPHRASE);
       break;
 
     default:
