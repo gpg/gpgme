@@ -335,6 +335,7 @@ gpgsm_set_recipients (ASSUAN_CONTEXT ctx, GpgmeRecipients recp)
 	  return err;
 	}
     }
+  xfree (line);
   return 0;
 }
 
@@ -347,7 +348,7 @@ _gpgme_gpgsm_op_encrypt (GpgsmObject gpgsm, GpgmeRecipients recp,
   if (!gpgsm)
     return mk_error (Invalid_Value);
 
-  gpgsm->command = xtrystrdup (use_armor ? "ENCRYPT armor" : "ENCRYPT");
+  gpgsm->command = xtrystrdup ("ENCRYPT");
   if (!gpgsm->command)
     return mk_error (Out_Of_Core);
 
