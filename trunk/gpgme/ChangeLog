@@ -1,3 +1,9 @@
+2001-11-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.c (_gpgme_gpg_release): Release GPG->cmd.cb_data.
+	Release all members of the list GPG->arglist.
+	Reported by Michael Schmidt <mschmidt@cs.uni-sb.de>.
+
 2001-11-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.c (pipemode_copy): Change type of NBYTES to size_t.

@@ -244,45 +244,56 @@ _gpgme_gpg_new ( GpgObject *r_gpg )
 
 
 void
-_gpgme_gpg_release ( GpgObject gpg )
+_gpgme_gpg_release (GpgObject gpg)
 {
-    if ( !gpg )
-        return;
-    xfree (gpg->status.buffer);
-    xfree (gpg->colon.buffer);
-    if ( gpg->argv )
-        free_argv (gpg->argv);
-    xfree (gpg->cmd.keyword);
+  if (!gpg)
+    return;
 
-    if (gpg->pid != -1) 
-        _gpgme_remove_proc_from_wait_queue ( gpg->pid );
-    if (gpg->status.fd[0] != -1 )
-        _gpgme_io_close (gpg->status.fd[0]);
-    if (gpg->status.fd[1] != -1 )
-        _gpgme_io_close (gpg->status.fd[1]);
-    if (gpg->colon.fd[0] != -1 )
-        _gpgme_io_close (gpg->colon.fd[0]);
-    if (gpg->colon.fd[1] != -1 )
-        _gpgme_io_close (gpg->colon.fd[1]);
-    free_fd_data_map (gpg->fd_data_map);
-    if (gpg->running) {
-        int pid = gpg->pid;
-        struct reap_s *r;
+  while (gpg->arglist)
+    {
+      struct arg_and_data_s *next = gpg->arglist->next;
 
-        /* resuse the memory, so that we don't need to allocate another
-         * mem block and have to handle errors */
-        assert (sizeof *r < sizeof *gpg );
-        r = (void*)gpg;
-        memset (r, 0, sizeof *r);
-        r->pid = pid;
-        r->entered = time (NULL);
-        LOCK(reap_list_lock);
-        r->next = reap_list;
-        reap_list = r;
-        UNLOCK(reap_list_lock);
+      xfree (gpg->arglist);
+      gpg->arglist = next;
     }
-    else
-        xfree (gpg);
+
+  xfree (gpg->status.buffer);
+  xfree (gpg->colon.buffer);
+  if (gpg->argv)
+    free_argv (gpg->argv);
+  xfree (gpg->cmd.cb_data);
+  xfree (gpg->cmd.keyword);
+
+  if (gpg->pid != -1) 
+    _gpgme_remove_proc_from_wait_queue (gpg->pid);
+  if (gpg->status.fd[0] != -1)
+    _gpgme_io_close (gpg->status.fd[0]);
+  if (gpg->status.fd[1] != -1)
+    _gpgme_io_close (gpg->status.fd[1]);
+  if (gpg->colon.fd[0] != -1)
+    _gpgme_io_close (gpg->colon.fd[0]);
+  if (gpg->colon.fd[1] != -1)
+    _gpgme_io_close (gpg->colon.fd[1]);
+  free_fd_data_map (gpg->fd_data_map);
+  if (gpg->running)
+    {
+      int pid = gpg->pid;
+      struct reap_s *r;
+
+      /* Reuse the memory, so that we don't need to allocate another
+	 memory block and to handle errors.  */
+      assert (sizeof *r < sizeof *gpg);
+      r = (void*)gpg;
+      memset (r, 0, sizeof *r);
+      r->pid = pid;
+      r->entered = time (NULL);
+      LOCK(reap_list_lock);
+      r->next = reap_list;
+      reap_list = r;
+      UNLOCK(reap_list_lock);
+    }
+  else
+    xfree (gpg);
 }
 
 
