@@ -1,0 +1,9 @@
+Makefile Makefile.in
+aclocal.m4 config.h.in
+config.h
+configure
+libtool
+config.log config.status
+stamp-h
+stamp-h.in
+stamp-h1
