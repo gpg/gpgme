@@ -1,3 +1,15 @@
+2002-02-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (gpgme_set_keylist_mode): Possibly return an error
+	value.
+	(gpgme_get_keylist_mode): New function.
+	(gpgme_new): Set the default for keylist_mode member of CTX.
+
+	* gpgme.h (gpgme_set_keylist_mode): Fix prototype.
+	(gpgme_get_keylist_mode): New prototype.
+	(GPGME_KEYLIST_MODE_LOCAL): New macro.
+	(GPGME_KEYLIST_MODE_EXTERN): Likewise..
+
 2002-02-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	This patch has gotten a bit large... mmh.  The main thing that

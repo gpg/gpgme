@@ -1,5 +1,14 @@
  * There is a Texinfo manual documenting the API.
 
+ * The gpgme_set_keylist_mode function returns an error, and changed
+   its meaning.  It is no longer usable to select between normal and
+   fast mode (newer versions of GnuPG will always be fast), but
+   selects between local keyring, remote keyserver, or both.
+   For this, two new macros are defined, GPGME_KEYLIST_MODE_LOCAL
+   and GPGME_KEYLIST_MODE_EXTERN.  To make it possible to modify the
+   current setting, a fucntion gpgme_get_keylist_mode was added to
+   retrieve the current mode.
+
  * The LENGTH argument to gpgme_data_new_from_filepart changed its
    type from off_t to the unsigned size_t.
 
@@ -18,6 +27,11 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_data_new_from_filepart	CHANGED: Type of LENGTH is size_t.
 GpgmePassphraseCb               CHANGED: Type of R_HD is void **.
+gpgme_set_keylist_mode          CHANGED: Type of return value is GpgmeError.
+                                The function has a new meaning!
+gpgme_get_keylist_mode          NEW
+GPGME_KEYLIST_MODE_LOCAL        NEW
+GPGME_KEYLIST_MODE_EXTERN       NEW
 gpgme_op_trustlist_next		NEW
 GpgmeIdleFunc                   NEW
 gpgme_register_idle             NEW
