@@ -466,7 +466,7 @@ gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key)
   *r_key = NULL;
   if (!ctx)
     return mk_error (Invalid_Value);
-  if (!ctx->pending )
+  if (!ctx->pending)
     return mk_error (No_Request);
   if (ctx->out_of_core)
     return mk_error (Out_Of_Core);
@@ -506,7 +506,7 @@ gpgme_op_keylist_end (GpgmeCtx ctx)
 {
   if (!ctx)
     return mk_error (Invalid_Value);
-  if (!ctx->pending )
+  if (!ctx->pending)
     return mk_error (No_Request);
   if (ctx->out_of_core)
     return mk_error (Out_Of_Core);

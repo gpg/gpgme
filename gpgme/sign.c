@@ -277,7 +277,6 @@ gpgme_op_sign (GpgmeCtx ctx, GpgmeData in, GpgmeData out, GpgmeSigMode mode)
                 err = mk_error (No_Data); /* Hmmm: choose a better error? */
 	    }
 	}
-      ctx->pending = 0;
     }
   return err;
 }

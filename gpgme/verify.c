@@ -355,7 +355,6 @@ gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
             }
             *r_stat = _gpgme_intersect_stati (c->result.verify);
         }
-        c->pending = 0;
     }
     return rc;
 }

@@ -1,5 +1,29 @@
 2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
 
+	* wait.c (_gpgme_wait_on_condition): If the process finished,
+	reset the pending flag.  Also if the operation was cancelled.
+
+	(struct proc_s): Rename READY to DONE.
+	(wait_item_s): Likewise.
+	(set_process_ready): Rename to ...
+	(set_process_done): ... this.
+	(_gpgme_remove_proc_from_wait_queue): Call set_process_done
+	instead set_process_ready.
+	(_gpgme_wait_on_condition): Likewise.
+	(do_select): Rename READY to DONE.
+
+	* verify.c (gpgme_op_verify): Do not set pending to zero here.
+	* sign.c (gpgme_op_sign): Likewise.
+	* import.c (gpgme_op_import): Likewise.
+	* genkey.c (gpgme_op_genkey): Likewise.
+	* export.c (gpgme_op_export): Likewise.
+	* encrypt.c (gpgme_op_encrypt): Likewise.
+	* delete.c (gpgme_op_delete): Likewise.
+	* decrypt-verify.c (gpgme_op_decrypt_verify): Likewise.
+	* decrypt.c (gpgme_op_decrypt): Likewise.
+
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
 	* export.c: Cleanup.
 
 2002-01-15  Marcus Brinkmann  <marcus@g10code.de>

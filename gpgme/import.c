@@ -89,14 +89,12 @@ gpgme_op_import_start (GpgmeCtx ctx, GpgmeData keydata)
  * Return value: o on success or an error code.
  **/
 GpgmeError
-gpgme_op_import ( GpgmeCtx c, GpgmeData keydata )
+gpgme_op_import (GpgmeCtx ctx, GpgmeData keydata)
 {
-    int rc = gpgme_op_import_start ( c, keydata );
-    if ( !rc ) {
-        gpgme_wait (c, 1);
-        c->pending = 0;
-    }
-    return rc;
+  GpgmeError err = gpgme_op_import_start (ctx, keydata);
+  if (!err)
+    gpgme_wait (ctx, 1);
+  return err;
 }
 
 

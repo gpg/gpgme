@@ -204,15 +204,13 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
  * Return value: 0 for success or an error code
  **/
 GpgmeError
-gpgme_op_genkey( GpgmeCtx c, const char *parms,
-                 GpgmeData pubkey, GpgmeData seckey )
+gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
+                 GpgmeData pubkey, GpgmeData seckey)
 {
-    int rc = gpgme_op_genkey_start ( c, parms, pubkey, seckey );
-    if ( !rc ) {
-        gpgme_wait (c, 1);
-        c->pending = 0;
-    }
-    return rc;
+  GpgmeError err = gpgme_op_genkey_start (ctx, parms, pubkey, seckey);
+  if (!err)
+    gpgme_wait (ctx, 1);
+  return err;
 }
 
 

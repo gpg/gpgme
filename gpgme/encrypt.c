@@ -227,7 +227,6 @@ gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
             if (c->result.encrypt->no_recipients) 
                 err = mk_error (No_Recipients);
         }
-        c->pending = 0;
         /* Old gpg versions don't return status info for invalid
          * recipients, so we simply check whether we got any output at
          * all and if not assume that we don't have valid recipients
