@@ -464,7 +464,17 @@ gpgsm_new (void **engine)
 	      goto leave;
 	    }
 	}
+
       old_lc = setlocale (LC_CTYPE, NULL);
+      if (old_lc)
+        {
+          old_lc = strdup (old_lc);
+          if (!old_lc)
+            {
+              err = GPGME_Out_Of_Core;
+              goto leave;
+            }
+        }
       dft_lc = setlocale (LC_CTYPE, "");
       if (dft_lc)
 	{
@@ -472,19 +482,32 @@ gpgsm_new (void **engine)
 	    err = mk_error (Out_Of_Core);
 	  else
 	    {
-	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-				     NULL);
+	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
+                                     NULL, NULL, NULL, NULL);
 	      free (optstr);
 	      if (err)
 		err = map_assuan_error (err);
 	    }
 	}
       if (old_lc)
-	setlocale (LC_CTYPE, old_lc);
+        {
+          setlocale (LC_CTYPE, old_lc);
+          free (old_lc);
+        }
       if (err)
 	goto leave;
 
+
       old_lc = setlocale (LC_MESSAGES, NULL);
+      if (old_lc)
+        {
+          old_lc = strdup (old_lc);
+          if (!old_lc)
+            {
+              err = GPGME_Out_Of_Core;
+              goto leave;
+            }
+        }
       dft_lc = setlocale (LC_MESSAGES, "");
       if (dft_lc)
 	{
@@ -500,7 +523,10 @@ gpgsm_new (void **engine)
 	    }
 	}
       if (old_lc)
-	setlocale (LC_MESSAGES, old_lc);
+        {
+          setlocale (LC_MESSAGES, old_lc);
+          free (old_lc);
+        }
       if (err)
 	goto leave;
     }
