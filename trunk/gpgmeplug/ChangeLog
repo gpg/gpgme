@@ -1,3 +1,8 @@
+2002-03-08  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* A little better address-parsing. Not real rfc822 yet, but at least it fetches 
+	the address between '<' and '>' now if they are present.
+
 2002-03-07  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
 
 	* gpgmeplug.c (encryptMessage): Made the function accept multiple 
