@@ -206,12 +206,13 @@ _gpgme_op_sign_start (GpgmeCtx ctx, int synchronous,
 				    ctx);
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
-  _gpgme_engine_op_sign (ctx->engine, in, out, mode, ctx->use_armor,
-			 ctx->use_textmode, ctx->include_certs,
-			 ctx /* FIXME */);
+  err = _gpgme_engine_op_sign (ctx->engine, in, out, mode, ctx->use_armor,
+			       ctx->use_textmode, ctx->include_certs,
+			       ctx /* FIXME */);
 
   /* And kick off the process.  */
-  err = _gpgme_engine_start (ctx->engine, ctx);
+  if (!err)
+    err = _gpgme_engine_start (ctx->engine, ctx);
   
  leave:
   if (err)

@@ -1138,7 +1138,8 @@ _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
 
           strcpy (stpcpy (buf, "SIGNER "), s);
           err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, buf,
-                                             NULL, NULL);
+                                             gpgsm->status.fnc,
+					     gpgsm->status.fnc_value);
 	}
       else
         err = GPGME_Invalid_Key;
