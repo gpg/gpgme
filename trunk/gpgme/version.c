@@ -216,14 +216,14 @@ version_line_handler ( GpgmeCtx c, char *line )
 static const char *
 get_engine_info (void)
 {
-    const char *engine_info =NULL;
+    static const char *engine_info =NULL;
     GpgmeCtx c = NULL;
     GpgmeError err = 0;
     const char *path = NULL;
 
     /* FIXME: make sure that only one instance does run */
     if (engine_info)
-        goto leave;
+        return engine_info;
 
     path = _gpgme_get_gpg_path ();
     err = gpgme_new (&c);
@@ -297,5 +297,9 @@ get_engine_info (void)
     gpgme_release ( c );
     return engine_info;
 }
+
+
+
+
 
 

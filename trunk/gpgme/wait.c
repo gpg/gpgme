@@ -53,9 +53,6 @@ struct wait_item_s {
     void *handler_value;
     int pid;
     int inbound;       /* this is an inbound data handler fd */
-    int exited;
-    int exit_status;  
-    int exit_signal;
     GpgmeCtx ctx;
 };
 
@@ -82,50 +79,19 @@ queue_item_from_context ( GpgmeCtx ctx )
 }
 
 
-static void
-propagate_term_results ( const struct wait_item_s *first_q )
-{
-    struct wait_item_s *q;
-    int i;
-    
-    for (i=0; i < fd_table_size; i++ ) {
-        if ( fd_table[i].fd != -1 && (q=fd_table[i].opaque)
-             && q != first_q && !q->exited
-             && q->pid == first_q->pid  ) {
-            q->exited = first_q->exited;
-            q->exit_status = first_q->exit_status;
-            q->exit_signal = first_q->exit_signal;
-        }
-    }
-}
-
 static int
-count_active_fds ( int pid )
+count_active_and_thawed_fds ( int pid )
 {
     struct wait_item_s *q;
     int i, count = 0;
     
     for (i=0; i < fd_table_size; i++ ) {
         if ( fd_table[i].fd != -1 && (q=fd_table[i].opaque)
-             && q->active && q->pid == pid  ) 
+             && q->active && !fd_table[i].frozen && q->pid == pid  ) 
             count++;
     }
     return count;
 }
-
-static void
-clear_active_fds ( int pid )
-{
-    struct wait_item_s *q;
-    int i;
-    
-    for (i=0; i < fd_table_size; i++ ) {
-        if ( fd_table[i].fd != -1 && (q=fd_table[i].opaque)
-             && q->active && q->pid == pid  ) 
-            q->active = 0;
-    }
-}
-
 
 /* remove the given process from the queue */
 static void
@@ -187,28 +153,9 @@ _gpgme_wait_on_condition ( GpgmeCtx c, int hang, volatile int *cond )
             q = queue_item_from_context ( c );
             assert (q);
             
-            if (q->exited) {
-                /* this is the second time we reached this and we got no
-                 * more data from the pipe (which may happen due to buffering).
-                 * Set all FDs inactive.
-                 */
-                clear_active_fds (q->pid);
-            }
-            else if ( _gpgme_io_waitpid (q->pid, 0,
-                                          &q->exit_status, &q->exit_signal)){
-                q->exited = 1;     
-                propagate_term_results (q);
-            }
-
-            if ( q->exited ) {
-                if ( !count_active_fds (q->pid) ) {
-                    /* Hmmm, as long as we don't have a callback for
-                     * the exit status, we have no use for these
-                     * values and therefore we can remove this from
-                     * the queue */
-                    remove_process (q->pid);
-                    hang = 0;
-                }
+            if ( !count_active_and_thawed_fds (q->pid) ) {
+                remove_process (q->pid);
+                hang = 0;
             }
         }
         if (hang)
@@ -250,6 +197,7 @@ do_select ( void )
                 any = 1;
             if ( q->active && q->handler (q->handler_value,
                                           q->pid, fd_table[i].fd ) ) {
+                DEBUG1 ("setting fd %d inactive", fd_table[i].fd );
                 q->active = 0;
                 fd_table[i].for_read = 0;
                 fd_table[i].for_write = 0;
@@ -334,7 +282,7 @@ _gpgme_freeze_fd ( int fd )
     for (i=0; i < fd_table_size; i++ ) {
         if ( fd_table[i].fd == fd ) {
             fd_table[i].frozen = 1;
-            /*fprintf (stderr, "** FD %d frozen\n", fd );*/
+            DEBUG1 ("fd %d frozen", fd );
             break;
         }
     }
@@ -350,7 +298,7 @@ _gpgme_thaw_fd ( int fd )
     for (i=0; i < fd_table_size; i++ ) {
         if ( fd_table[i].fd == fd ) {
             fd_table[i].frozen = 0;
-            /*fprintf (stderr, "** FD %d thawed\n", fd );*/
+            DEBUG1 ("fd %d thawed", fd );
             break;
         }
     }

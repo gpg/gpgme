@@ -5,6 +5,4 @@
 * Allow to use GTK's main loop instead of the select stuff in
   wait.c
 
-* Remove all that funny exit code handling - we don't need it.
-
-
+* need to close a lot of handles in w32-io.c
