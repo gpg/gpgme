@@ -143,19 +143,7 @@ echo "Running aclocal..."
 aclocal
 echo "Running autoheader..."
 autoheader
-echo "Running automake --gnu ..."
-automake --gnu;
+echo "Running automake --gnu -a ..."
+automake --gnu -a
 echo "Running autoconf..."
 autoconf
-
-if test "$*" = ""; then
-    conf_options="--enable-maintainer-mode"
-else
-    conf_options=$*
-fi
-echo "Running ./configure $conf_options"
-./configure $conf_options
-
-
-
-
