@@ -3,6 +3,11 @@
 	* gpgme.spec.in: Changed user name in Wojciech Polak's email
 	address from ghostface to polak per request by himself.
 
+2002-08-28  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_CHECK_VA_COPY): New.
+	* configure.ac: Use it.
+
 2002-08-23  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (GPGME_CONFIG_CFLAGS): Renamed from GPGME_CFLAGS

@@ -154,11 +154,17 @@ dnl
 
 AC_REPLACE_FUNCS(stpcpy)
 
-# asprintf() is at least used in assuan
 AC_REPLACE_FUNCS(vasprintf)
+if test "$ac_cv_func_vasprintf" != yes; then
+  GNUPG_CHECK_VA_COPY
+fi
+
+
+
 # Note: fopencokie is only a dummy stub and not used.  
 #       However some code in assuan/ links against it.
 AC_REPLACE_FUNCS(fopencookie)
+
 
 
 dnl
