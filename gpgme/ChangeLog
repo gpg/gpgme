@@ -1,5 +1,7 @@
 2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* context.h (wait_on_request_or_fail): Remove macro.
+
 	* context.h (gpgme_context_s): Remove member ERROR.
 	* types.h (GpgmeStatusHandler): Change return type to GpgmeError.
 	(GpgmeCommandHandler): Change return type to GpgmeError and add

@@ -142,11 +142,4 @@ struct gpgme_recipients_s
                 if ((c)->pending) return GPGME_Busy;          \
              } while (0)
 
-#define wait_on_request_or_fail(c)                            \
-          do {                                                \
-                if (!(c))          return GPGME_Invalid_Value;\
-                if (!(c)->pending) return GPGME_No_Request;   \
-                gpgme_wait ((c), 1);                          \
-             } while (0)
-
 #endif	/* CONTEXT_H */
