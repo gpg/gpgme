@@ -1,3 +1,7 @@
+2005-03-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AH_BOTTOM): Removed.
+
 2005-03-09  Werner Koch  <wk@g10code.com>
 
 	* acinclude.m4 (GNUPG_CHECK_VA_COPY): Assume no when cross-compiling.

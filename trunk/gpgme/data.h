@@ -30,10 +30,6 @@
 
 #include "gpgme.h"
 
-#ifdef _WIN32
-# define EOPNOTSUPP      95
-#endif
-
 
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle DH.  Return the number of characters read, 0 on EOF and

@@ -33,11 +33,6 @@
 #include "ops.h"
 #include "priv-io.h"
 
-#if defined(HAVE_W32_SYSTEM) && !defined(EOPNOTSUPP)
-#define EOPNOTSUPP VALUE_FOR_EOPNOTSUPP
-#endif
-
-
 
 gpgme_error_t
 _gpgme_data_new (gpgme_data_t *r_dh, struct _gpgme_data_cbs *cbs)
@@ -80,7 +75,7 @@ gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
     }
   if (!dh->cbs->read)
     {
-      errno = EOPNOTSUPP;
+      errno = ENOSYS;
       return -1;
     }
   return (*dh->cbs->read) (dh, buffer, size);
@@ -100,7 +95,7 @@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
     }
   if (!dh->cbs->write)
     {
-      errno = EOPNOTSUPP;
+      errno = ENOSYS;
       return -1;
     }
   return (*dh->cbs->write) (dh, buffer, size);
@@ -120,7 +115,7 @@ gpgme_data_seek (gpgme_data_t dh, off_t offset, int whence)
     }
   if (!dh->cbs->seek)
     {
-      errno = EOPNOTSUPP;
+      errno = ENOSYS;
       return -1;
     }
 

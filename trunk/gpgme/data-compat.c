@@ -30,11 +30,6 @@
 #include "data.h"
 #include "util.h"
 
-#if defined(HAVE_W32_SYSTEM) && !defined(EOPNOTSUPP)
-#define EOPNOTSUPP VALUE_FOR_EOPNOTSUPP
-#endif
-
-
 
 /* Create a new data buffer filled with LENGTH bytes starting from
    OFFSET within the file FNAME or stream STREAM (exactly one must be
@@ -145,7 +140,7 @@ gpgme_error_to_errno (gpgme_error_t err)
       errno = EINVAL;
       return -1;
     case GPG_ERR_NOT_SUPPORTED:
-      errno = EOPNOTSUPP;
+      errno = ENOSYS;
       return -1;
     default:
       /* FIXME: Yeah, well.  */
