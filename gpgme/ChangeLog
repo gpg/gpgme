@@ -1,5 +1,7 @@
 2003-05-04  Marcus Brinkmann  <marcus@g10code.de>
 
+	* context.h (struct gpgme_context_s): Remove member op_info.
+
 	* key.c (_gpgme_key_add_sig): Initialize SIG->uid.
 
 	* gpgme.h (GpgmeError): Add deprecated values for

@@ -88,9 +88,6 @@ struct gpgme_context_s
   /* The operation data hooked into the context.  */
   struct ctx_op_data *op_data;
 
-  /* Last operation info.  */
-  GpgmeData op_info;
-
   /* The user provided passphrase callback and its hook value.  */
   GpgmePassphraseCb passphrase_cb;
   void *passphrase_cb_value;
