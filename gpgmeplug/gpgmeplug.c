@@ -2063,6 +2063,10 @@ static int add_dn_part( char* result, struct DnPair* dn, const char* part )
   for(; dn->key; ++dn ) {
     if( !strcmp( dn->key, part ) ) {
       if( any ) strcat( result, "+" );
+      /* email hack */
+      if( !strcmp( part, "1.2.840.113549.1.9.1" ) ) strcat( result, "EMail" );
+      else strcat( result, part );
+      strcat( result, "=" );
       strcat( result, dn->value );
       any = 1;
     }
