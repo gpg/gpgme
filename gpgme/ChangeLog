@@ -1,5 +1,10 @@
 2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* ath.h: Update list of symbols that get a prefix: Rename the
+	ath_mutex_*_available symbols to ath_*_available.
+
+2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
+
 	* stpcpy.c: New file from gnulib.
 	* Makefile.am (assuan_libobjs): Remove jnlib.
 
