@@ -24,7 +24,7 @@
 # system with an install MIDL and run the command
 #   midl /nocpp gpgcom.idl
 # Sorry, there is no other way yet.  
-EXTRA_DIST = gpgcom.idl gpgcom.tlb gpgcom.rc
+EXTRA_DIST = gpgcom.idl gpgcom.tlb gpgcom.rc vbtest.html vbtest.vbs
 
 # No need to install this because we are cross-compiling anyway.
 noinst_PROGRAMS = gpgcom tgpgcom 
