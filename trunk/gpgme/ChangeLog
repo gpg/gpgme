@@ -1,3 +1,9 @@
+2003-07-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme-config.in (gpg_error_libs): Quote GPG_ERROR_CFLAGS and
+	GPG_ERROR_LIBS when setting the corresponding variables.
+	Reported by Stéphane Corthésy.
+
 2003-07-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (set_recipients): Move declaration of NEWLEN to
