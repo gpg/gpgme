@@ -1,3 +1,9 @@
+2001-02-13  Werner Koch  <wk@gnupg.org>
+
+	* posix-io.c (_gpgme_io_read): Add some debug output. 
+	(_gpgme_io_write): Ditto.
+	(_gpgme_io_select): Increased the timeout.
+
 2001-02-12  Werner Koch  <wk@gnupg.org>
 
 	Enhanced the signature verification, so that it can how handle
