@@ -1,3 +1,8 @@
+2002-08-23  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (GPGME_CONFIG_CFLAGS): Renamed from GPGME_CFLAGS
+	and removed the libpath because it is set by the config script.
+
 2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Bump version number to 0.3.10.
