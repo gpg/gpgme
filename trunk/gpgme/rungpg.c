@@ -138,17 +138,12 @@ static void
 close_notify_handler (int fd, void *opaque)
 {
   GpgObject gpg = opaque;
-  int possibly_done = 0;
-  int not_done = 0;
   assert (fd != -1);
 
   if (gpg->status.fd[0] == fd)
     {
       if (gpg->status.tag)
-	{
-	  (*gpg->io_cbs.remove) (gpg->status.tag);
-	  possibly_done = 1;
-	}
+	(*gpg->io_cbs.remove) (gpg->status.tag);
       gpg->status.fd[0] = -1;
     }
   else if (gpg->status.fd[1] == fd)
@@ -156,10 +151,7 @@ close_notify_handler (int fd, void *opaque)
   else if (gpg->colon.fd[0] == fd)
     {
       if (gpg->colon.tag)
-	{
-	  (*gpg->io_cbs.remove) (gpg->colon.tag);
-	  possibly_done = 1;
-	}
+	(*gpg->io_cbs.remove) (gpg->colon.tag);
       gpg->colon.fd[0] = -1;
     }
   else if (gpg->colon.fd[1] == fd)
@@ -173,10 +165,7 @@ close_notify_handler (int fd, void *opaque)
 	  if (gpg->fd_data_map[i].fd == fd)
 	    {
 	      if (gpg->fd_data_map[i].tag)
-		{
-		  (*gpg->io_cbs.remove) (gpg->fd_data_map[i].tag);
-		  possibly_done = 1;
-		}
+		(*gpg->io_cbs.remove) (gpg->fd_data_map[i].tag);
 	      gpg->fd_data_map[i].fd = -1;
 	      break;
             }
@@ -187,25 +176,6 @@ close_notify_handler (int fd, void *opaque)
             }
         }
     }
-  if (!possibly_done)
-    not_done = 1;
-  else if (gpg->status.fd[0] != -1)
-    not_done = 1;
-  else if (gpg->colon.fd[0] != -1)
-    not_done = 1;
-  else if (gpg->fd_data_map)
-    {
-      int i;
-
-      for (i = 0; gpg->fd_data_map[i].data; i++)
-	if (gpg->fd_data_map[i].fd != -1)
-	  {
-	    not_done = 1;
-	    break;
-	  }
-    }
-  if (!not_done)
-    gpg_io_event (gpg, GPGME_EVENT_DONE, NULL);
 }
 
 static GpgmeError
@@ -500,12 +470,13 @@ command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
       return -1;
     }
 
-  value = gpg->cmd.fnc (gpg->cmd.fnc_value, 
-			gpg->cmd.code, gpg->cmd.keyword);
+  /* FIXME catch error */
+  gpg->cmd.fnc (gpg->cmd.fnc_value, 
+		gpg->cmd.code, gpg->cmd.keyword, &value);
   if (!value)
     {
       DEBUG0 ("command_cb: no data from user cb\n");
-      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
+      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value, &value);
       return -1;
     }
 
@@ -513,7 +484,7 @@ command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
   if (value_len + 1 > length)
     {
       DEBUG0 ("command_cb: too much data from user cb\n");
-      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
+      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value, &value);
       return -1;
     }
 
@@ -522,7 +493,7 @@ command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
     buffer[value_len++] = '\n';
   *nread = value_len;
     
-  gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
+  gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value, &value);
   gpg->cmd.code = 0;
   /* And sleep again until read_status will wake us up again.  */
   /* XXX We must check if there are any more fds active after removing
@@ -957,7 +928,7 @@ read_status (GpgObject gpg)
 }
 
 
-static void
+static GpgmeError
 status_handler (void *opaque, int fd)
 {
   GpgObject gpg = opaque;
@@ -967,16 +938,13 @@ status_handler (void *opaque, int fd)
   err = read_status (gpg);
   if (err)
     {
-      /* XXX Horrible kludge.  We really must not make use of
-	 fnc_value.  */
-      GpgmeCtx ctx = (GpgmeCtx) gpg->status.fnc_value;
-      ctx->error = err;
       DEBUG1 ("gpg_handler: read_status problem %d\n - stop", err);
       _gpgme_io_close (fd);
-      return;
+      return err;
     }
   if (gpg->status.eof)
     _gpgme_io_close (fd);
+  return 0;
 }
 
 
@@ -1058,7 +1026,7 @@ read_colon_line (GpgObject gpg)
    might be better to enhance the GpgmeData object to act as a wrapper
    for a callback.  Same goes for the status thing.  For now we use
    this thing here because it is easier to implement.  */
-static void
+static GpgmeError
 colon_line_handler (void *opaque, int fd)
 {
   GpgObject gpg = opaque;
@@ -1067,14 +1035,10 @@ colon_line_handler (void *opaque, int fd)
   assert (fd == gpg->colon.fd[0]);
   rc = read_colon_line (gpg);
   if (rc)
-    {
-      DEBUG1 ("gpg_colon_line_handler: "
-	      "read problem %d\n - stop", rc);
-      _gpgme_io_close (fd);
-      return;
-    }
+    return rc;
   if (gpg->colon.eof)
     _gpgme_io_close (fd);
+  return 0;
 }
 
 
@@ -1198,6 +1162,8 @@ start (GpgObject gpg)
 	    return rc;
 	}
     }
+
+  (*gpg->io_cbs.event) (gpg->io_cbs.event_priv, GPGME_EVENT_START, NULL);
   
   /* fixme: check what data we can release here */
   return 0;

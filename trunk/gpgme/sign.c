@@ -136,13 +136,13 @@ append_xml_siginfo (GpgmeData *rdh, char *args)
   _gpgme_data_append_string (dh, "</fpr>\n");
 }
 
-void
+GpgmeError
 _gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  _gpgme_passphrase_status_handler (ctx, code, args);
+  GpgmeError err = _gpgme_passphrase_status_handler (ctx, code, args);
+  if (err)
+    return err;
 
-  if (ctx->error)
-    return;
   test_and_allocate_result (ctx, sign);
 
   switch (code)
@@ -154,8 +154,8 @@ _gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 	  _gpgme_set_op_info (ctx, ctx->result.sign->xmlinfo);
 	  ctx->result.sign->xmlinfo = NULL;
         }
-      if (!ctx->error && !ctx->result.sign->okay)
-	ctx->error = mk_error (No_Data); /* Hmmm: choose a better error? */
+      if (!ctx->result.sign->okay)
+	return mk_error (No_Data); /* Hmmm: choose a better error? */
       break;
 
     case GPGME_STATUS_SIG_CREATED: 
@@ -167,6 +167,7 @@ _gpgme_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
     default:
       break;
     }
+  return 0;
 }
 
 static GpgmeError

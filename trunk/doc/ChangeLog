@@ -1,3 +1,14 @@
+2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (I/O Callback Interface): Document new even
+	GPGME_EVENT_START.
+	(Waiting For Completion): Document new possible return values.
+	(I/O Callback Interface): Document return type of GpgmeIOCb.
+
+2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Hooking Up Into Idle Time): Section removed.
+
 2002-12-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Verify): Drop R_STAT argument in gpgme_op_verify.

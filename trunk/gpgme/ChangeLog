@@ -1,5 +1,122 @@
 2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* context.h (gpgme_context_s): Remove member ERROR.
+	* types.h (GpgmeStatusHandler): Change return type to GpgmeError.
+	(GpgmeCommandHandler): Change return type to GpgmeError and add
+	new argument RESULT.
+	* gpgme.h (GpgmeIOCb): Change return type to GpgmeError.
+	(GpgmeEventIO): New event GPGME_EVENT_START.
+	(GpgmeIdleFunc): Remove type.
+	(gpgme_register_idle): Remove prototype.
+	* data.c: Include <assert.h>.
+	(_gpgme_data_inbound_handler): Change return type to GpgmeError.
+	Return any error instead ignoring it, don't close file descriptor
+	on error.
+	(_gpgme_data_outbound_handler): Likewise.
+	* decrypt.c: Do not include <stdio.h>, <string.h> and <assert.h>.
+	(_gpgme_decrypt_status_handler): Change return type to GpgmeError.
+	Return error instead setting ctx->error.  Return success at end of
+	function.
+	(gpgme_op_decrypt): Don't work around the old kludge anymore.
+	* decrypt-verify.c (decrypt_verify_status_handler): Change return
+	type to GpgmeError.  Return possible errors.
+	* delete.c: Do not include <stdio.h>, <string.h>, <time.h> and
+	<assert.h>.
+	(delete_status_handler): Change return type to GpgmeError.  Return
+	error instead setting ctx->error.  Return success at end of
+	function.
+	* edit.c: Do not include <stdio.h> and <string.h>.
+	(_gpgme_edit_status_handler): Change type to GpgmeError,
+	make static and rename to ...
+	(edit_status_handler): ... this.  Return error directly.
+	(command_handler): Change return type to GpgmeError, add result
+	argument.  Return error directly.
+	* encrypt.c (status_handler_finish): Remove function.
+	(_gpgme_encrypt_status_handler): Change return type to GpgmeError.
+	Return error directly.
+	(_gpgme_encrypt_sym_status_handler): Likewise.
+	* encrypt-sign.c (encrypt_sign_status_handler): Likewise.
+	* engine-gpgsm.c (close_notify_handler): Do not signal done event
+	anymore.
+	(status_handler): Change return type to GpgmeError.  Diddle things
+	around a bit to return errors directly.
+	(start): Send start event.
+	* export.c: Do not include <stdio.h>, <string.h> and <assert.h>.
+	(export_status_handler): Change return type to GpgmeError.  Don't
+	check ctx->error.
+	* genkey.c: Do not include <stdio.h> and <assert.h>.
+	(genkey_status_handler): Change return type to GpgmeError.  Don't
+	check ctx->error.  Return errors directly.
+	* gpgme.c (_gpgme_release_result): Do not initialize ctx->error.
+	(_gpgme_op_event_cb): Function removed.
+	(_gpgme_op_event_cb_user): Likewise.
+	* import.c: Do not include <stdio.h>, <string.h> and <assert.h>.
+	(import_status_handler): Change return type to GpgmeError.  Don't
+	check ctx->error.
+	* keylist.c (keylist_colon_handler, keylist_status_handler, finish_key):
+	Change return type to GpgmeError, return error directly.
+	* Makefile (libgpgme_la_SOURCES): Add wait-global.c,
+	wait-private.c and wait-user.c
+	* ops.h (test_and_allocate_result): Return error instead setting
+	ctx->error.
+	(_gpgme_data_inbound_handler, _gpgme_data_outbound_handler,
+	_gpgme_verify_status_handler, _gpgme_decrypt_status_handler,
+	_gpgme_sign_status_handler, _gpgme_encrypt_staus_handler,
+	_gpgme_passphrase_status_handler, _gpgme_progress_status_handler):
+	Change return type to GpgmeError.
+	(_gpgme_passphease_command_handler): Change return type to
+	GpgmeError and add new argument RESULT.
+	* op-support.c: Use new callback functions, and change private
+	data to ctx everywhere.
+	* passphrase.c (_gpgme_passphrase_status_handler): Change return
+	type to GpgmeError, return error directly.
+	(_gpgme_passphrase_command_handler): Change return type to
+	GpgmeError, add result argument.  Return results accordingly.
+	* progress.c (_gpgme_progress_status_handler): Change return type
+	to GpgmeError, return errors directly.
+	* rungpg.c (status_handler): Change return type to GpgmeError.
+	Return error directly.
+	(close_notify_handler): Don't send done event.
+	(colon_line_handler): Change return type to GpgmeError, return
+	errors directly.
+	* rungpg.c (start): Send start event.
+	* sign.c (_gpgme_sign_status_handler): Change return type to
+	GpgmeError, return errors directly.
+	* trustlist.c (trustlist_status_handler): Change return type to
+	GpgmeError.  Return 0.
+	(trustlist_colon_handler): Change return type GpgmeError.  Return
+	errors directly.
+	* verify.c (add_notation): Change return type to GpgmeError,
+	return errors directly.
+	(_gpgme_verify_status_handler): Likewise.
+	* wait.h (struct fd_table): Remove lock member.
+	(struct wait_item_s): Moved here from wait.c.
+	(struct tag): New structure.
+	(_gpgme_wait_event_cb): Remove prototype.
+	(_gpgme_wait_private_event_cb, _gpgme_wait_global_event_cb,
+	_gpgme_wait_user_add_io_cb, _gpgme_wait_user_remove_io_cb,
+	_gpgme_wait_user_event_io_cb): New prototypes.
+	* wait.c: Don't include <stdio.h>.
+	(ftd_global, ctx_done_list, ctx_done_list_size,
+	ctx_done_list_length, ctx_done_list_lock, idle_function): Remove
+	global variable.
+	(gpgme_register_idle, do_select, _gpgme_wait_event_cb): Remove
+	function.
+	(gpgme_wait): Move to file wait-global.c.
+	(_gpgme_add_io_cb): Take ctx as private argument, initialize ctx
+	member in wait item and tag.
+	(_gpgme_remove_io_cb): Take ctx from tag.  Don't use FDT lock.
+	(_gpgme_wait_one, _gpgme_wait_on_condition): Move to
+	wait-private.c.
+	(gpgme_fd_table_init): Don't initialize FDT->lock.
+	(gpgme_fd_table_deinit): Don't destroy FDT->lock.
+	(_gpgme_fd_table_put): Make static and rename to ...
+	(fd_table_put): ... this function.  Don't use FDT->lock.
+	(struct wait_item_s): Move to wait.h.
+	* wait-global.c: New file.
+	* wait-private.c: New file.
+	* wait-user.c: New file.
+
 	* key.c (gpgme_key_sig_get_string_attr): Use validity_to_string
 	instead otrust_to_string to calculate validity.
 	

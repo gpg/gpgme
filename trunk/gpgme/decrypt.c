@@ -21,10 +21,7 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <assert.h>
 
 #include "util.h"
 #include "context.h"
@@ -87,24 +84,25 @@ skip_token (const char *string, size_t *next)
 }
 
 
-void
+GpgmeError
 _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
+  GpgmeError err;
   size_t n;
 
-  _gpgme_passphrase_status_handler (ctx, code, args);
+  err = _gpgme_passphrase_status_handler (ctx, code, args);
+  if (err)
+    return err;
 
-  if (ctx->error)
-    return;
   test_and_allocate_result (ctx, decrypt);
 
   switch (code)
     {
     case GPGME_STATUS_EOF:
       if (ctx->result.decrypt->failed)
-	ctx->error = mk_error (Decryption_Failed);
+	return mk_error (Decryption_Failed);
       else if (!ctx->result.decrypt->okay)
-	ctx->error = mk_error (No_Data);
+	return mk_error (No_Data);
       break;
 
     case GPGME_STATUS_DECRYPTION_OKAY:
@@ -152,12 +150,12 @@ _gpgme_decrypt_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
             }
         }
       break;
-
         
     default:
-      /* Ignore all other codes.  */
       break;
     }
+
+  return 0;
 }
 
 
@@ -230,15 +228,5 @@ gpgme_op_decrypt (GpgmeCtx ctx, GpgmeData in, GpgmeData out)
 					 _gpgme_decrypt_status_handler);
   if (!err)
       err = _gpgme_wait_one (ctx);
-
-  /* Work around the kludge in engine-gpgsm.c */
-  if (err == GPGME_Invalid_Engine && ctx->error)
-    {
-      if (ctx->result.decrypt->failed)
-	err = mk_error (Decryption_Failed);
-      else if (!ctx->result.decrypt->okay)
-	err = mk_error (No_Data);
-    }
-
   return err;
 }

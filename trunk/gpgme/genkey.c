@@ -21,10 +21,8 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "util.h"
 #include "context.h"
@@ -50,13 +48,13 @@ _gpgme_release_genkey_result (GenKeyResult result)
 }
 
 
-static void
+static GpgmeError
 genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  _gpgme_progress_status_handler (ctx, code, args);
+  GpgmeError err = _gpgme_progress_status_handler (ctx, code, args);
+  if (err)
+    return err;
 
-  if (ctx->error)
-    return;
   test_and_allocate_result (ctx, genkey);
 
   switch (code)
@@ -74,7 +72,7 @@ genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 		free (ctx->result.genkey->fpr);
 	      ctx->result.genkey->fpr = strdup (&args[2]);
 	      if (!ctx->result.genkey->fpr)
-		ctx->error = mk_error (Out_Of_Core);
+		return mk_error (Out_Of_Core);
 	    }
 	}
       break;
@@ -83,12 +81,13 @@ genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       /* FIXME: Should return some more useful error value.  */
       if (!ctx->result.genkey->created_primary
 	  && !ctx->result.genkey->created_sub)
-	ctx->error = mk_error (General_Error);
+	return mk_error (General_Error);
       break;
 
     default:
       break;
     }
+  return 0;
 }
 
 

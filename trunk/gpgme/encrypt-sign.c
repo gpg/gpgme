@@ -32,11 +32,13 @@
 #include "ops.h"
 
 
-static void
+static GpgmeError
 encrypt_sign_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
-  _gpgme_encrypt_status_handler (ctx, code, args);
-  _gpgme_sign_status_handler (ctx, code, args);
+  GpgmeError err = _gpgme_encrypt_status_handler (ctx, code, args);
+  if (err)
+    return err;
+  return _gpgme_sign_status_handler (ctx, code, args);
 }
 
 

@@ -119,7 +119,7 @@ copy_token (const char *string, char *buffer, size_t length)
 
 
 /* FIXME: Check that we are adding this to the correct signature.  */
-static void
+static GpgmeError
 add_notation (GpgmeCtx ctx, GpgmeStatusCode code, const char *data)
 {
   GpgmeData dh = ctx->result.verify->notation;
@@ -127,10 +127,7 @@ add_notation (GpgmeCtx ctx, GpgmeStatusCode code, const char *data)
   if (!dh)
     {
       if (gpgme_data_new (&dh))
-	{
-	  ctx->error = mk_error (Out_Of_Core);
-	  return;
-        }
+	return mk_error (Out_Of_Core);
       ctx->result.verify->notation = dh;
       _gpgme_data_append_string (dh, "  <notation>\n");
     }
@@ -141,7 +138,7 @@ add_notation (GpgmeCtx ctx, GpgmeStatusCode code, const char *data)
 	_gpgme_data_append_string (dh, "  <data>");
       _gpgme_data_append_percentstring_for_xml (dh, data);
       ctx->result.verify->notation_in_data = 1;
-      return;
+      return 0;
     }
 
   if (ctx->result.verify->notation_in_data)
@@ -164,19 +161,20 @@ add_notation (GpgmeCtx ctx, GpgmeStatusCode code, const char *data)
     }
   else
     assert (0);
+  return 0;
 }
 
 
 /* Finish a pending signature info collection and prepare for a new
    signature info collection.  */
-static void
+static GpgmeError
 finish_sig (GpgmeCtx ctx, int stop)
 {
   if (ctx->result.verify->status == GPGME_SIG_STAT_GOOD)
     ctx->result.verify->status = ctx->result.verify->expstatus;
 
   if (stop)
-    return; /* nothing to do */
+    return 0; /* nothing to do */
 
   if (ctx->result.verify->collecting)
     {
@@ -186,28 +184,25 @@ finish_sig (GpgmeCtx ctx, int stop)
       /* Create a new result structure.  */
       res2 = calloc (1, sizeof *res2);
       if (!res2)
-	{
-	  ctx->error = mk_error (Out_Of_Core);
-	  return;
-        }
+	return mk_error (Out_Of_Core);
 
       res2->next = ctx->result.verify;
       ctx->result.verify = res2;
     }
     
   ctx->result.verify->collecting = 1;
+  return 0;
 }
 
 
-void
+GpgmeError
 _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 {
+  GpgmeError err;
   char *p;
   size_t n;
   int i;
 
-  if (ctx->error)
-    return;
   test_and_allocate_result (ctx, verify);
 
   if (code == GPGME_STATUS_GOODSIG
@@ -216,9 +211,9 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       || code == GPGME_STATUS_BADSIG
       || code == GPGME_STATUS_ERRSIG)
     {
-      finish_sig (ctx,0);
-      if (ctx->error)
-	return;
+      err = finish_sig (ctx,0);
+      if (err)
+	return err;
     }
 
   switch (code)
@@ -284,7 +279,9 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
     case GPGME_STATUS_NOTATION_NAME:
     case GPGME_STATUS_NOTATION_DATA:
     case GPGME_STATUS_POLICY_URL:
-      add_notation (ctx, code, args);
+      err = add_notation (ctx, code, args);
+      if (err)
+	return err;
       break;
 
     case GPGME_STATUS_TRUST_UNDEFINED:
@@ -333,7 +330,9 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       break;
 
     case GPGME_STATUS_EOF:
-      finish_sig (ctx,1);
+      err = finish_sig (ctx,1);
+      if (err)
+	return err;
 
       /* FIXME: Put all notation data into one XML fragment.  */
       if (ctx->result.verify->notation)
@@ -355,6 +354,7 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       /* Ignore all other codes.  */
       break;
     }
+  return 0;
 }
 
 

@@ -35,11 +35,11 @@ typedef unsigned long ulong;
  * Declaration of internal objects
  */
 
-typedef void (*GpgmeStatusHandler) (GpgmeCtx, GpgmeStatusCode code,
-				    char *args);
-typedef void (*GpgmeColonLineHandler) (GpgmeCtx, char *line);
-typedef const char *(*GpgmeCommandHandler) (void*, GpgmeStatusCode code,
-					    const char *keyword);
+typedef GpgmeError (*GpgmeStatusHandler) (GpgmeCtx, GpgmeStatusCode code,
+					  char *args);
+typedef GpgmeError (*GpgmeColonLineHandler) (GpgmeCtx, char *line);
+typedef GpgmeError (*GpgmeCommandHandler) (void*, GpgmeStatusCode code,
+					   const char *keyword, const char **result);
 
 
 /*-- engine.c --*/

@@ -72,7 +72,9 @@ libgpgme_la_SOURCES =							\
 	gpgme.h types.h util.h conversion.c context.h ops.h		\
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
 	data-compat.c							\
-	recipient.c signers.c wait.c wait.h op-support.c		\
+	recipient.c signers.c						\
+	wait.c wait-global.c wait-private.c wait-user.c wait.h		\
+	op-support.c							\
 	encrypt.c encrypt-sign.c decrypt.c decrypt-verify.c verify.c	\
 	sign.c passphrase.c progress.c					\
 	key.h key.c keylist.c trustlist.c				\

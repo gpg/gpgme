@@ -1,4 +1,4 @@
-/* gpgme.c -  GnuPG Made Easy
+/* gpgme.c - GnuPG Made Easy.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002 g10 Code GmbH
 
@@ -99,7 +99,6 @@ _gpgme_release_result (GpgmeCtx ctx)
   _gpgme_release_edit_result (ctx->result.edit);
   memset (&ctx->result, 0, sizeof (ctx->result));
   _gpgme_set_op_info (ctx, NULL);
-  ctx->error = 0;
 }
 
 
@@ -545,44 +544,4 @@ gpgme_get_io_cbs (GpgmeCtx ctx, struct GpgmeIOCbs *io_cbs)
 {
   if (ctx && io_cbs)
     *io_cbs = ctx->io_cbs;
-}
-
-
-void
-_gpgme_op_event_cb (void *data, GpgmeEventIO type, void *type_data)
-{
-  GpgmeCtx ctx = data;
-
-  switch (type)
-    {
-    case GPGME_EVENT_DONE:
-      ctx->pending = 0;
-      break;
-
-    case GPGME_EVENT_NEXT_KEY:
-      _gpgme_op_keylist_event_cb (data, type, type_data);
-      break;
-
-    case GPGME_EVENT_NEXT_TRUSTITEM:
-      _gpgme_op_trustlist_event_cb (data, type, type_data);
-      break;
-    }
-}
-
-void
-_gpgme_op_event_cb_user (void *data, GpgmeEventIO type, void *type_data)
-{
-  GpgmeCtx ctx = data;
-
-  if (type == GPGME_EVENT_DONE)
-    {
-      ctx->pending = 0;
-      if (ctx->io_cbs.event)
-	(*ctx->io_cbs.event) (ctx->io_cbs.event_priv, type, &ctx->error);
-    }
-  else
-    {
-      if (ctx->io_cbs.event)
-	(*ctx->io_cbs.event) (ctx->io_cbs.event_priv, type, type_data);
-    }
 }

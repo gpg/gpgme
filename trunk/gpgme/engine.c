@@ -436,6 +436,7 @@ _gpgme_engine_set_io_cbs (EngineObject engine,
   (*engine->ops->set_io_cbs) (engine->engine, io_cbs);
 }
 
+
 void
 _gpgme_engine_io_event (EngineObject engine,
 			GpgmeEventIO type, void *type_data)
