@@ -1989,7 +1989,7 @@ signatures should be included in the listed keys.
 @item GPGME_KEYLIST_MODE_VALIDATE
 The @code{GPGME_KEYLIST_MODE_VALIDATE} symbol specifies that the
 backend should do key or certificate validation and not just get the
-validity information from an interna cache.  This might be an
+validity information from an internal cache.  This might be an
 expensive operation and is in general not usefule.  Currently only
 implemented for the S/MIME backend and ignored for other backends.
 
@@ -3724,7 +3724,7 @@ verification was attempted.
 @end table
 @end deftp
 
-@deftypefun gpgme_sign_result_t gpgme_op_verify_result (@w{gpgme_ctx_t @var{ctx}})
+@deftypefun gpgme_verify_result_t gpgme_op_verify_result (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_op_verify_result} returns a
 @code{gpgme_verify_result_t} pointer to a structure holding the result of
 a @code{gpgme_op_verify} operation.  The pointer is only valid if the
