@@ -1,3 +1,8 @@
+2002-09-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh (autoconf_vers): Bump up to 2.53 to get the @&t@
+	quadrigraph.  Always cutting the edge!
+
 2002-09-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Create and substitute LTLIBOBJS.
