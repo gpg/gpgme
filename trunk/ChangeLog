@@ -1,5 +1,10 @@
 2002-06-02  Marcus Brinkmann  <marcus@g10code.de>
 
+	* acinclude.m4: Fix Pth check so that it doesn't error out if pth
+	is not found.
+
+2002-06-02  Marcus Brinkmann  <marcus@g10code.de>
+
 	* configure.ac: Add checks for Pth and pthreads.
 	* acinclude.m4: Add slightly hacked check for pth (seems to be an
 	autoconf version problem).
