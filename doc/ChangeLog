@@ -1,3 +1,8 @@
+2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Information About Keys): Document that
+	GPGME_ATTR_IS_SECRET is not representable as a string anymore.
+
 2002-12-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Key Signatures): New section.

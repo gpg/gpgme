@@ -1829,8 +1829,7 @@ for PGP and 1 for X.509.  It is also used for the type of a trust item.
 
 @item GPGME_ATTR_IS_SECRET
 This specifies if the key is a secret key.  It is representable as a
-string or a number.  If the key is a secret key, the representation is
-``1'' or @code{1}, otherwise it is @code{NULL} or @code{0}.
+number, and is @code{1} if the key is revoked, and @code{0} otherwise.
 
 @item GPGME_ATTR_KEY_REVOKED
 This specifies if a sub key is revoked.  It is representable as a
