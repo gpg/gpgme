@@ -107,7 +107,7 @@ check_result (gpgme_import_result_t result, char *fpr, int secret)
     }
   if ((secret
        && ((result->secret_imported == 0 && result->new_signatures != 0)
-	   || (result->secret_imported == 1 && result->new_signatures != 1)))
+	   || (result->secret_imported == 1 && result->new_signatures > 1)))
       || (!secret && result->new_signatures != 0))
     {
       fprintf (stderr, "Unexpected number of new signatures %i\n",
@@ -199,8 +199,8 @@ check_result (gpgme_import_result_t result, char *fpr, int secret)
 	{
 	  if (result->imports->status
 	      != (GPGME_IMPORT_SECRET | GPGME_IMPORT_NEW)
-	      || !result->imports->next
-	      || result->imports->next->status != GPGME_IMPORT_SIG)
+	      || (result->imports->next
+		  && result->imports->next->status != GPGME_IMPORT_SIG))
 	    {
 	      fprintf (stderr, "Unexpected status %i\n",
 		       result->imports->status);

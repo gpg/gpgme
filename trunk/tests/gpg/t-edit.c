@@ -93,9 +93,8 @@ edit_fnc (void *opaque, gpgme_status_code_t status, const char *args, int fd)
 	      result = "expire";
 	      break;
 
-	      /* Work around a bug in GPG 1.2.2, which causes the
-		 primary UID to change when setting the expiration
-		 date.  */
+	      /* This fixes the primary user ID so the keylisting
+		 tests will have predictable output.  */
 	    case 2:
 	      result = "1";
 	      break;

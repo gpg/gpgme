@@ -2,8 +2,7 @@
 
 	* gpg/Makefile.am (TESTS): Order t-keylist and t-keylist-sig after
 	t-import.
-	* gpg/t-edit.c (edit_fnc): Work around gpg 1.2.2 bug by resetting
-	primary uid after setting expiration date.
+	* gpg/t-edit.c (edit_fnc): Fix primary UID for keylisting tests.
 	* gpg/t-keylist.c: Change order of user IDs.
 	* gpg/t-keylist-sig.c: Likewise.
 	* gpg/t-import.c: Add support for gpg in CVS.
