@@ -1700,8 +1700,8 @@ bool requestDecentralCertificate( const char* certparms,
     }
 
     gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
-    // Don't ASCII-armor, the MUA will use base64 encoding
-    //    gpgme_set_armor (ctx, 1);
+    /* Don't ASCII-armor, the MUA will use base64 encoding */
+    /*    gpgme_set_armor (ctx, 1); */
     err = gpgme_op_genkey (ctx, certparms, pub, NULL );
     fprintf( stderr,  "3: gpgme returned %d\n", err );
     if( err != GPGME_No_Error ) {
@@ -1740,3 +1740,338 @@ bool archiveCertificate( const char* certificate ){ return true; }
 const char* displayCRL(){ return 0; }
 
 void updateCRL(){}
+
+/*
+ * Copyright (C) 2002 g10 Code GmbH
+ * 
+ *     This program is free software; you can redistribute it
+ *     and/or modify it under the terms of the GNU General Public
+ *     License as published by the Free Software Foundation; either
+ *     version 2 of the License, or (at your option) any later
+ *     version.
+ * 
+ *     This program is distributed in the hope that it will be
+ *     useful, but WITHOUT ANY WARRANTY; without even the implied
+ *     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *     PURPOSE.  See the GNU General Public License for more
+ *     details.
+ * 
+ *     You should have received a copy of the GNU General Public
+ *     License along with this program; if not, write to the Free
+ *     Software Foundation, Inc., 59 Temple Place - Suite 330,
+ *     Boston, MA  02111, USA.
+ */
+
+/* some macros to replace ctype ones and avoid locale problems */
+#define spacep(p)   (*(p) == ' ' || *(p) == '\t')
+#define digitp(p)   (*(p) >= '0' && *(p) <= '9')
+#define hexdigitp(a) (digitp (a)                     \
+                      || (*(a) >= 'A' && *(a) <= 'F')  \
+                      || (*(a) >= 'a' && *(a) <= 'f'))
+/* the atoi macros assume that the buffer has only valid digits */
+#define atoi_1(p)   (*(p) - '0' )
+#define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
+#define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
+#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
+                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
+#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+
+#define safe_malloc( x ) malloc( x )
+
+static void safe_free( void** x ) 
+{
+  free( *x );
+  *x = 0;
+}
+/*#define safe_free( x ) free( x )*/
+
+/* Parse a DN and return an array-ized one.  This is not a validating
+   parser and it does not support any old-stylish syntax; gpgme is
+   expected to return only rfc2253 compatible strings. */
+static const unsigned char *
+parse_dn_part (struct DnPair *array, const unsigned char *string)
+{
+  const unsigned char *s, *s1;
+  size_t n;
+  unsigned char *p;
+
+  /* parse attributeType */
+  for (s = string+1; *s && *s != '='; s++)
+    ;
+  if (!*s)
+    return NULL; /* error */
+  n = s - string;
+  if (!n)
+    return NULL; /* empty key */
+  array->key = p = safe_malloc (n+1);
+  memcpy (p, string, n); /* fixme: trim trailing spaces */
+  p[n] = 0;
+  string = s + 1;
+
+  if (*string == '#')
+    { /* hexstring */
+      string++;
+      for (s=string; hexdigitp (s); s++)
+        s++;
+      n = s - string;
+      if (!n || (n & 1))
+        return NULL; /* empty or odd number of digits */
+      n /= 2;
+      array->value = p = safe_malloc (n+1);
+      for (s1=string; n; s1 += 2, n--)
+        *p++ = xtoi_2 (s1);
+      *p = 0;
+   }
+  else
+    { /* regular v3 quoted string */
+      for (n=0, s=string; *s; s++)
+        {
+          if (*s == '\\')
+            { /* pair */
+              s++;
+              if (*s == ',' || *s == '=' || *s == '+'
+                  || *s == '<' || *s == '>' || *s == '#' || *s == ';' 
+                  || *s == '\\' || *s == '\"' || *s == ' ')
+                n++;
+              else if (hexdigitp (s) && hexdigitp (s+1))
+                {
+                  s++;
+                  n++;
+                }
+              else
+                return NULL; /* invalid escape sequence */
+            }
+          else if (*s == '\"')
+            return NULL; /* invalid encoding */
+          else if (*s == ',' || *s == '=' || *s == '+'
+                   || *s == '<' || *s == '>' || *s == '#' || *s == ';' )
+            break; 
+          else
+            n++;
+        }
+
+      array->value = p = safe_malloc (n+1);
+      for (s=string; n; s++, n--)
+        {
+          if (*s == '\\')
+            { 
+              s++;
+              if (hexdigitp (s))
+                {
+                  *p++ = xtoi_2 (s);
+                  s++;
+                }
+              else
+                *p++ = *s;
+            }
+          else
+            *p++ = *s;
+        }
+      *p = 0;
+    }
+  return s;
+}
+
+
+/* Parse a DN and return an array-ized one.  This is not a validating
+   parser and it does not support any old-stylish syntax; gpgme is
+   expected to return only rfc2253 compatible strings. */
+static struct DnPair *
+parse_dn (const unsigned char *string)
+{
+  struct DnPair *array;
+  size_t arrayidx, arraysize;
+  int i;
+
+  arraysize = 7; /* C,ST,L,O,OU,CN,email */
+  array = safe_malloc ((arraysize+1) * sizeof *array);
+  arrayidx = 0;
+  while (*string)
+    {
+      while (*string == ' ')
+        string++;
+      if (!*string)
+        break; /* ready */
+      if (arrayidx >= arraysize)
+        { /* mutt lacks a real safe_realoc - so we need to copy */
+          struct DnPair *a2;
+
+          arraysize += 5;
+          a2 = safe_malloc ((arraysize+1) * sizeof *array);
+          for (i=0; i < arrayidx; i++)
+            {
+              a2[i].key = array[i].key;
+              a2[i].value = array[i].value;
+            }
+          safe_free ((void **)&array);
+          array = a2;
+        }
+      array[arrayidx].key = NULL;
+      array[arrayidx].value = NULL;
+      string = parse_dn_part (array+arrayidx, string);
+      arrayidx++;
+      if (!string)
+        goto failure;
+      while (*string == ' ')
+        string++;
+      if (*string && *string != ',' && *string != ';' && *string != '+')
+        goto failure; /* invalid delimiter */
+      if (*string)
+        string++;
+    }
+  array[arrayidx].key = NULL;
+  array[arrayidx].value = NULL;
+  return array;
+
+ failure:
+  for (i=0; i < arrayidx; i++)
+    {
+      safe_free ((void**)&array[i].key);
+      safe_free ((void**)&array[i].value);
+    }
+  safe_free ((void**)&array);
+  return NULL;
+}
+
+
+
+struct CertIterator {
+  GpgmeCtx ctx;  
+  struct CertificateInfo info;
+};
+
+struct CertIterator* startListCertificates( void )
+{
+    GpgmeError err;
+    struct CertIterator* it;
+    /*fprintf( stderr,  "startListCertificates()" );*/
+
+    it = (struct CertIterator*)safe_malloc( sizeof( struct CertIterator ) );
+
+    err = gpgme_new (&(it->ctx));
+    /*fprintf( stderr,  "2: gpgme returned %d\n", err );*/
+    if( err != GPGME_No_Error ) {
+      free( it );
+      return NULL;
+    }
+
+    gpgme_set_protocol (it->ctx, GPGME_PROTOCOL_CMS);
+    err =  gpgme_op_keylist_start ( it->ctx, NULL, 0);
+    if( err != GPGME_No_Error ) {
+      endListCertificates( it );
+      return NULL;
+    }
+    memset( &(it->info), 0, sizeof( struct CertificateInfo ) );
+    return it;
+}
+
+#define MAX_GPGME_IDX 20
+
+static void freeStringArray( char** c )
+{
+    char** _c = c;
+    while( c && *c ) {
+      /*fprintf( stderr, "freeing \"%s\"\n", *c );*/
+      safe_free( (void**)&(*c) );
+      ++c;
+    }
+    safe_free( (void**)&_c );
+}
+
+static void freeInfo( struct CertificateInfo* info )
+{
+  struct DnPair* a = info->dnarray;
+  assert( info );
+  if( info->userid ) freeStringArray( info->userid );
+  if( info->serial ) safe_free( (void**)&(info->serial) );
+  if( info->fingerprint ) safe_free( (void**)&(info->fingerprint) );
+  if( info->issuer ) safe_free( (void**)&(info->issuer) );
+  if( info->chainid ) safe_free( (void**)&(info->chainid) );
+  if( info->caps ) safe_free( (void**)&(info->caps) );
+  while( a && a->key && a->value ) {
+    safe_free ((void**)&(a->key));
+    safe_free ((void**)&(a->value));
+    ++a;
+  }
+  if( info->dnarray ) safe_free ((void**)&(info->dnarray));
+  memset( info, 0, sizeof( *info ) );
+}
+
+#define xstrdup( x ) (x)?strdup(x):0
+
+struct CertificateInfo* nextCertificate( struct CertIterator* it )
+{
+  GpgmeError err;
+  GpgmeKey   key;
+  assert( it );
+  err = gpgme_op_keylist_next ( it->ctx, &key);
+  if( err != GPGME_EOF ) {   
+    int idx;
+    const char* s;
+    unsigned long u;
+    char* names[MAX_GPGME_IDX+1];
+    memset( names, 0, sizeof( names ) );
+    freeInfo( &(it->info) );
+
+    for( idx = 0; (s = gpgme_key_get_string_attr (key, GPGME_ATTR_USERID, 0, idx)) && idx < MAX_GPGME_IDX; 
+	 ++idx ) {
+      names[idx] = xstrdup( s );
+    }
+    
+    it->info.userid = safe_malloc( sizeof( char* ) * (idx+1) );
+    memset( it->info.userid, 0, sizeof( char* ) * (idx+1) );
+    it->info.dnarray = 0;
+    for( idx = 0; names[idx] != 0; ++idx ) {
+      struct DnPair* a = parse_dn( names[idx] ); 
+      it->info.userid[idx] = names[idx];
+      it->info.dnarray = a;
+    }
+    it->info.userid[idx] = 0;
+
+    s = gpgme_key_get_string_attr (key, GPGME_ATTR_SERIAL, 0, 0); 
+    it->info.serial = xstrdup(s);
+
+    s = gpgme_key_get_string_attr (key, GPGME_ATTR_FPR, 0, 0); 
+    it->info.fingerprint = xstrdup(s);
+
+    s = gpgme_key_get_string_attr (key, GPGME_ATTR_ISSUER, 0, 0); 
+    it->info.issuer = xstrdup(s);
+
+    s = gpgme_key_get_string_attr (key, GPGME_ATTR_CHAINID, 0, 0); 
+    it->info.chainid = xstrdup(s);
+
+    s = gpgme_key_get_string_attr (key, GPGME_ATTR_KEY_CAPS, 0, 0); 
+    it->info.caps = xstrdup(s);
+
+    u = gpgme_key_get_ulong_attr (key, GPGME_ATTR_CREATED, 0, 0); 
+    it->info.created = u;
+
+    u = gpgme_key_get_ulong_attr (key, GPGME_ATTR_EXPIRE, 0, 0); 
+    it->info.expire = u;
+
+    u = gpgme_key_get_ulong_attr (key, GPGME_ATTR_IS_SECRET, 0, 0); 
+    it->info.secret = u;
+
+    u = gpgme_key_get_ulong_attr (key, GPGME_ATTR_UID_INVALID, 0, 0); 
+    it->info.invalid = u;
+
+    u = gpgme_key_get_ulong_attr (key, GPGME_ATTR_KEY_EXPIRED, 0, 0); 
+    it->info.expired = u;
+
+    u = gpgme_key_get_ulong_attr (key, GPGME_ATTR_KEY_DISABLED, 0, 0); 
+    it->info.disabled = u;
+
+    gpgme_key_release (key);
+    return &(it->info);
+  } else return NULL;
+}
+
+void endListCertificates( struct CertIterator* it )
+{
+  /*fprintf( stderr,  "endListCertificates()\n" );*/
+  assert(it);
+  freeInfo( &(it->info) );
+  gpgme_op_keylist_end(it->ctx);
+  gpgme_release (it->ctx);
+  free( it );
+}

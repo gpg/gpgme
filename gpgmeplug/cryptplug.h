@@ -1713,7 +1713,23 @@ struct DnPair {
 
 struct CertificateInfo {
   char** userid;
+  char* serial;
+  char* fingerprint;
+
   char* issuer;
+  char* chainid;
+
+  char* caps;
+
+  unsigned long created;
+  unsigned long expire;
+
+  int secret   : 1;
+  int invalid  : 1;
+  int expired  : 1;
+  int disabled : 1;
+  
+
   struct DnPair *dnarray; /* parsed values from userid[0] */
 };
 
