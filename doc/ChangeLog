@@ -1,3 +1,8 @@
+2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Creating Contexts): Fix cut&paste error.  Reported
+	by Noel Torres <envite@rolamasao.org>.
+
 2004-09-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (gpgme_TEXINFOS): Remove fdl.texi.
