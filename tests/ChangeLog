@@ -1,5 +1,7 @@
 2003-04-28  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgsm/t-decrypt.c (main): Rewritten.
+
 	* gpg/t-decrypt.c: Rewritten.
 
 	* gpg/t-signers.c: Rewritten.

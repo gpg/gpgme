@@ -1,4 +1,4 @@
-/* t-import.c  - regression test
+/* t-import.c - Regression test.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2003 g10 Code GmbH
 
