@@ -152,6 +152,9 @@ close_notify_handler (int fd, void *opaque)
 static gpgme_error_t
 map_assuan_error (AssuanError err)
 {
+  if (err == -1)
+    return gpg_error (GPG_ERR_GENERAL);
+
   /* New code will use gpg_error_t values.  */
   if (gpg_err_source (err))
     return (gpgme_error_t) err;
