@@ -3615,7 +3615,7 @@ The function @code{gpgme_get_sig_status} is equivalent to:
 
   if (r_stat)
     @{
-      switch (sig->status)
+      switch (gpg_err_code (sig->status))
 	@{
 	case GPG_ERR_NO_ERROR:
 	  *r_stat = GPGME_SIG_STAT_GOOD;

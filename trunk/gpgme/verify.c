@@ -198,7 +198,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
 		end++;
 	      i++;
 	    }
-	  if (end && end[0] && (!end[1] || !end[1] == ' '))
+	  if (end && end[0] && (!end[1] || end[1] == ' '))
 	    {
 	      switch (end[0])
 		{
@@ -206,7 +206,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
 		  sig->status = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
 		  break;
 		  
-		case 9:
+		case '9':
 		  sig->status = gpg_error (GPG_ERR_NO_PUBKEY);
 		  break;
 		  

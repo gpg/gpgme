@@ -1,3 +1,7 @@
+2003-08-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* verify.c (parse_new_sig): Fix status parsing case.
+
 2003-07-31  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (struct _gpgme_subkey): Add flag CAN_AUTHENTICATE.
