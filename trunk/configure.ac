@@ -122,6 +122,13 @@ dnl
 dnl These are needed by libjnlib
 AC_CHECK_FUNCS(memicmp stpcpy strlwr strtoul memmove stricmp)
 
+# asprintf() is at least used in assuan
+AC_REPLACE_FUNCS(vasprintf)
+# Note: fopencokie is only a dummy stub and not used.  
+#       However some code in assuan/ links against it.
+AC_REPLACE_FUNCS(fopencookie)
+
+
 dnl We use jnlib, so tell other modules about it
 AC_DEFINE(HAVE_JNLIB_LOGGING, 1,
         [Defined if jnlib style logging fucntions are available.])
