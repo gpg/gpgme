@@ -761,6 +761,7 @@ bool signMessage( const char*  cleartext,
   size_t rSLen = 0;
   char*  rSig  = 0;
   bool   bOk   = false;
+  int sendCerts = 1;
 
   init_StructuringInfo( structuring );
 
@@ -773,8 +774,7 @@ bool signMessage( const char*  cleartext,
   gpgme_set_armor (ctx, 1);
   gpgme_set_textmode (ctx, 1);
 
-  int sendCerts;
-  switch ( config.sendCertificates() ) {
+  switch ( config.sendCertificates ) {
     case SendCert_undef:
       break;
     case SendCert_DontSend:
