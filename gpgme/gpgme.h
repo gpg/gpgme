@@ -233,6 +233,9 @@ char *gpgme_get_notation (GpgmeCtx ctx);
 /* Set the protocol to be used by CTX to PROTO.  */
 GpgmeError gpgme_set_protocol (GpgmeCtx ctx, GpgmeProtocol proto);
 
+/* Get the protocol used with CTX */
+GpgmeProtocol gpgme_get_protocol (GpgmeCtx ctx);
+
 /* If YES is non-zero, enable armor mode in CTX, disable it otherwise.  */
 void gpgme_set_armor (GpgmeCtx ctx, int yes);
 
@@ -409,11 +412,11 @@ GpgmeError gpgme_data_rewind (GpgmeData dh);
 /* Read LENGTH bytes from the data object DH and store them in the
    memory starting at BUFFER.  The number of bytes actually read is
    returned in NREAD.  */
-GpgmeError gpgme_data_read (GpgmeData dh, char *buffer,
+GpgmeError gpgme_data_read (GpgmeData dh, void *buffer,
 			    size_t length, size_t *nread);
 
 /* Write LENGTH bytes starting from BUFFER into the data object DH.  */
-GpgmeError gpgme_data_write (GpgmeData dh, const char *buffer, size_t length);
+GpgmeError gpgme_data_write (GpgmeData dh, const void *buffer, size_t length);
 
 
 /* Key and trust functions.  */

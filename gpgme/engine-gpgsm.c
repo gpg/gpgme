@@ -300,8 +300,9 @@ _gpgme_gpgsm_new (GpgsmObject *r_gpgsm)
   argv[1] = "--server";
   argv[2] = NULL;
 
-  err = assuan_pipe_connect (&gpgsm->assuan_ctx,
-			     _gpgme_get_gpgsm_path (), argv, child_fds);
+  err = assuan_pipe_connect2 (&gpgsm->assuan_ctx,
+                              _gpgme_get_gpgsm_path (), argv, child_fds,
+                              1 /* dup stderr to /dev/null */);
 
   dft_display = getenv ("DISPLAY");
   if (dft_display)
