@@ -1,4 +1,4 @@
-/* edit.c - Key edit functions.
+/* edit.c - Key edit function.
    Copyright (C) 2002, 2003 g10 Code GmbH
 
    This file is part of GPGME.
@@ -21,143 +21,109 @@
 #include <config.h>
 #endif
 #include <stdlib.h>
-#include <assert.h>
 
-#include "util.h"
+#include "gpgme.h"
 #include "context.h"
 #include "ops.h"
 
-
-struct edit_result
+
+typedef struct
 {
+  /* The user callback function and its hook value.  */
   GpgmeEditCb fnc;
   void *fnc_value;
-};
-typedef struct edit_result *EditResult;
+} *op_data_t;
 
+
 static GpgmeError
-edit_status_handler (GpgmeCtx ctx, GpgmeStatusCode status, char *args)
+edit_status_handler (void *priv, GpgmeStatusCode status, char *args)
 {
-  EditResult result;
-  GpgmeError err = _gpgme_passphrase_status_handler (ctx, status, args);
-  if (err)
-    return err;
+  GpgmeCtx ctx = (GpgmeCtx) priv;
+  op_data_t opd;
 
-  err = _gpgme_progress_status_handler (ctx, status, args);
-  if (err)
-    return err;
-
-  err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &result,
-			       -1, NULL);
-  if (err)
-    return err;
-  assert (result);
-
-  return (*result->fnc) (result->fnc_value, status, args, NULL);
+  return _gpgme_passphrase_status_handler (priv, status, args)
+    || _gpgme_progress_status_handler (priv, status, args)
+    || _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &opd, -1, NULL)
+    || (*opd->fnc) (opd->fnc_value, status, args, NULL);
 }
 
 
 static GpgmeError
-command_handler (void *opaque, GpgmeStatusCode status, const char *args,
-		 const char **result_r)
+command_handler (void *priv, GpgmeStatusCode status, const char *args,
+		 const char **result)
 {
-  EditResult result;
+  GpgmeCtx ctx = (GpgmeCtx) priv;
   GpgmeError err;
-  GpgmeCtx ctx = opaque;
+  op_data_t opd;
 
-  *result_r = NULL;
-  err = _gpgme_passphrase_command_handler (ctx, status, args, result_r);
-  if (err)
-    return err;
+  *result = NULL;
+  if (ctx->passphrase_cb)
+    {
+      err = _gpgme_passphrase_command_handler (ctx, status, args, result);
+      if (err)
+	return err;
+    }
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &result,
-			       -1, NULL);
-  if (err)
-    return err;
-  assert (result);
+  if (!*result)
+    {
+      err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &opd, -1, NULL);
+      if (err)
+	return err;
 
-  if (!*result_r)
-    err = (*result->fnc) (result->fnc_value, status, args, result_r);
-
-  return err;
+      return (*opd->fnc) (opd->fnc_value, status, args, result);
+    }
+  return 0;
 }
 
 
 static GpgmeError
-_gpgme_op_edit_start (GpgmeCtx ctx, int synchronous,
-		      GpgmeKey key,
-		      GpgmeEditCb fnc, void *fnc_value,
-		      GpgmeData out)
+edit_start (GpgmeCtx ctx, int synchronous, GpgmeKey key,
+	    GpgmeEditCb fnc, void *fnc_value, GpgmeData out)
 {
-  EditResult result;
-  GpgmeError err = 0;
-
-  if (!fnc)
-    return GPGME_Invalid_Value;
+  GpgmeError err;
+  op_data_t opd;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
-    goto leave;
+    return err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &result,
-			       sizeof (*result), NULL);
+  if (!fnc || !out)
+    return GPGME_Invalid_Value;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &opd,
+			       sizeof (*opd), NULL);
   if (err)
-    goto leave;
+    return err;
 
-  result->fnc = fnc;
-  result->fnc_value = fnc_value;
-
-  /* Check the supplied data.  */
-  if (!out)
-    {
-      err = GPGME_Invalid_Value;
-      goto leave;
-    }
+  opd->fnc = fnc;
+  opd->fnc_value = fnc_value;
 
   err = _gpgme_engine_set_command_handler (ctx->engine, command_handler,
 					   ctx, out);
   if (err)
-    goto leave;
+    return err;
 
   _gpgme_engine_set_status_handler (ctx->engine, edit_status_handler, ctx);
 
-  err = _gpgme_engine_op_edit (ctx->engine, key, out, ctx);
-
- leave:
-  if (err)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
-  return err;
+  return _gpgme_engine_op_edit (ctx->engine, key, out, ctx);
 }
 
+
 GpgmeError
-gpgme_op_edit_start (GpgmeCtx ctx,
-		     GpgmeKey key,
-		     GpgmeEditCb fnc, void *fnc_value,
-		     GpgmeData out)
+gpgme_op_edit_start (GpgmeCtx ctx, GpgmeKey key,
+		     GpgmeEditCb fnc, void *fnc_value, GpgmeData out)
 {
-  return _gpgme_op_edit_start (ctx, 0, key, fnc, fnc_value, out);
+  return edit_start (ctx, 0, key, fnc, fnc_value, out);
 }
 
-/**
- * gpgme_op_edit:
- * @ctx: The context
- * @key: The key to be edited.
- * @fnc: An edit callback handler.
- * @fnc_value: To be passed to @fnc as first arg.
- * @out: The output.
- * 
- * Return value: 0 on success or an error code.
- **/
+
+/* Edit the key KEY.  Send status and command requests to FNC and
+   output of edit commands to OUT.  */
 GpgmeError
-gpgme_op_edit (GpgmeCtx ctx,
-	       GpgmeKey key,
-	       GpgmeEditCb fnc, void *fnc_value,
-	       GpgmeData out)
+gpgme_op_edit (GpgmeCtx ctx, GpgmeKey key,
+	       GpgmeEditCb fnc, void *fnc_value, GpgmeData out)
 {
-  GpgmeError err = _gpgme_op_edit_start (ctx, 1, key, fnc, fnc_value, out);
+  GpgmeError err = edit_start (ctx, 1, key, fnc, fnc_value, out);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;
