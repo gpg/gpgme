@@ -1468,11 +1468,19 @@ The function @code{gpgme_op_genkey} generates a new key pair in the
 context @var{ctx} and puts it into the standard key ring if both
 @var{pubkey} and @var{seckey} are @code{NULL}.  In this case the
 function returns immediately after starting the operation, and does
-not wait for it to complete.  @var{pubkey} and @var{seckey} are
-reserved for later use and should be @code{NULL}.  (The function
-should return the public key in the data buffer @var{pubkey} and the
-secret key in the data buffer @var{seckey}, but this is not
-implemented yet).
+not wait for it to complete.  If @var{pubkey} is not @code{NULL} it
+should be the handle for an empty (newly created) data object, and
+upon successful completion the data object will contain the public
+key.  If @var{seckey} is not @code{NULL} it should be the handle for
+an empty (newly created) data object, and upon successful completion
+the data object will contain the secret key.
+
+Note that not all crypto engines support this interface equally.
+GnuPG does not support @var{pubkey} and @var{subkey}, they should be
+both @code{NULL}, and the key pair will be added to the standard key
+ring.  GpgSM does only support @var{pubkey}, the secret key will be
+stored by @command{gpg-agent}.  GpgSM expects @var{pubkey} being not
+@code{NULL}.
 
 The argument @var{parms} specifies parameters for the key in an XML
 string.  The details about the format of @var{parms} are specific to
@@ -1480,8 +1488,6 @@ the crypto engine used by @var{ctx}.  Here is an example for GnuPG as
 the crypto engine:
 
 @example
-<literal>
-<![CDATA[
 <GnupgKeyParms format="internal">
 Key-Type: DSA
 Key-Length: 1024
@@ -1493,8 +1499,16 @@ Name-Email: joe@@foo.bar
 Expire-Date: 0
 Passphrase: abc
 </GnupgKeyParms>
-]]>
-</literal>
+@end example
+
+Here is an example for GpgSM as the crypto engine:
+@example
+<GnupgKeyParms format="internal">
+Key-Type: RSA
+Key-Length: 1024
+Name-DN: C=de,O=g10 code,OU=Testlab,CN=Joe 2 Tester
+Name-Email: joe@foo.bar
+</GnupgKeyParms>
 @end example
 
 Strings should be given in UTF-8 encoding.  The only format supported
@@ -1505,8 +1519,8 @@ allowed.
 The function returns @code{GPGME_No_Error} if the operation could be
 started successfully, @code{GPGME_Invalid_Value} if @var{parms} is not
 a valid XML string, @code{GPGME_Not_Supported} if @var{pubkey} or
-@var{seckey} is not @code{NULL}, and @code{GPGME_General_Error} if no
-key was created by the backend.
+@var{seckey} is not valid, and @code{GPGME_General_Error} if no key
+was created by the backend.
 @end deftypefun
 
 @deftypefun GpgmeError gpgme_op_genkey_start (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{pubkey}}, @w{GpgmeData @var{seckey}})
@@ -2186,8 +2200,6 @@ release the string with @code{free}.
 
 Here is a sample of the information that might be returned:
 @example
-<literal>
-<![CDATA[
 <GnupgOperationInfo>
   <signature>
     <detached/> <!-- or cleartext or standard -->
@@ -2199,8 +2211,6 @@ Here is a sample of the information that might be returned:
     <fpr>121212121212121212</fpr>
   </signature>
 </GnupgOperationInfo>
-]]>
-</literal>
 @end example
 
 Currently, the only operations that return additional information are
