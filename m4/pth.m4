@@ -1,6 +1,6 @@
 dnl ##
 dnl ##  GNU Pth - The GNU Portable Threads
-dnl ##  Copyright (c) 1999-2003 Ralf S. Engelschall <rse@engelschall.com>
+dnl ##  Copyright (c) 1999-2002 Ralf S. Engelschall <rse@engelschall.com>
 dnl ##
 dnl ##  This file is part of GNU Pth, a non-preemptive thread scheduling
 dnl ##  library which can be found at http://www.gnu.org/software/pth/.
@@ -21,7 +21,7 @@ dnl ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 dnl ##  USA, or contact Ralf S. Engelschall <rse@engelschall.com>.
 dnl ##
 dnl ##  pth.m4: Autoconf macro for locating GNU Pth from within
-dnl ##          configure.ac of third-party software packages
+dnl ##          configure.in of third-party software packages
 dnl ##
 
 dnl ##
@@ -42,14 +42,14 @@ dnl
 dnl #   auxilliary macros
 AC_DEFUN(_AC_PTH_ERROR, [dnl
 AC_MSG_RESULT([*FAILED*])
-define(_ac_pth_line,dnl
-"+------------------------------------------------------------------------+")
-echo " _ac_pth_line" 1>&2
+dnl define(_ac_pth_line,dnl
+dnl "+------------------------------------------------------------------------+")
+dnl echo " _ac_pth_line" 1>&2
 cat <<EOT | sed -e 's/^[[ 	]]*/ | /' -e 's/>>/  /' 1>&2
 $1
 EOT
-echo " _ac_pth_line" 1>&2
-undefine(_ac_pth_line)
+dnl echo " _ac_pth_line" 1>&2
+dnl undefine(_ac_pth_line)
 exit 1
 ])
 AC_DEFUN(_AC_PTH_VERBOSE, [dnl
@@ -207,24 +207,26 @@ if test ".$with_pth" != .no; then
     _AC_PTH_VERBOSE([    o path: $_pth_location])
     _AC_PTH_VERBOSE([    o type: $_pth_type])
     if test ".$_pth_version" = .; then
-        if test ".$with_pth" != .yes; then
-             _AC_PTH_ERROR([dnl
-             Unable to locate GNU Pth under $with_pth.
-             Please specify the correct path to either a GNU Pth installation tree
-             (use --with-pth=DIR if you used --prefix=DIR for installing GNU Pth in
-             the past) or to a GNU Pth source tree (use --with-pth=DIR if DIR is a
-             path to a pth-X.Y.Z/ directory; but make sure the package is already
-             built, i.e., the "configure; make" step was already performed there).])
-        else
-             _AC_PTH_ERROR([dnl
-             Unable to locate GNU Pth in any system-wide location (see \$PATH).
-             Please specify the correct path to either a GNU Pth installation tree
-             (use --with-pth=DIR if you used --prefix=DIR for installing GNU Pth in
-             the past) or to a GNU Pth source tree (use --with-pth=DIR if DIR is a
-             path to a pth-X.Y.Z/ directory; but make sure the package is already
-             built, i.e., the "configure; make" step was already performed there).])
-        fi
-    fi
+	with_pth=no
+    else
+dnl        if test ".$with_pth" != .yes; then
+dnl             _AC_PTH_ERROR([dnl
+dnl             Unable to locate GNU Pth under $with_pth.
+dnl             Please specify the correct path to either a GNU Pth installation tree
+dnl             (use --with-pth=DIR if you used --prefix=DIR for installing GNU Pth in
+dnl             the past) or to a GNU Pth source tree (use --with-pth=DIR if DIR is a
+dnl             path to a pth-X.Y.Z/ directory; but make sure the package is already
+dnl             built, i.e., the "configure; make" step was already performed there).])
+dnl        else
+dnl             _AC_PTH_ERROR([dnl
+dnl             Unable to locate GNU Pth in any system-wide location (see \$PATH).
+dnl             Please specify the correct path to either a GNU Pth installation tree
+dnl             (use --with-pth=DIR if you used --prefix=DIR for installing GNU Pth in
+dnl             the past) or to a GNU Pth source tree (use --with-pth=DIR if DIR is a
+dnl             path to a pth-X.Y.Z/ directory; but make sure the package is already
+dnl             built, i.e., the "configure; make" step was already performed there).])
+dnl        fi
+dnl    fi
     dnl #
     dnl #  Check whether the found version is sufficiently new
     dnl #
@@ -392,6 +394,7 @@ if test ".$with_pth" != .no; then
     _AC_PTH_VERBOSE([    o PTH_LDFLAGS=\"$PTH_LDFLAGS\"])
     _AC_PTH_VERBOSE([    o PTH_LIBS=\"$PTH_LIBS\"])
 fi
+fi
 if test ".$with_pth" != .no; then
     AC_MSG_RESULT([version $_pth_version, $_pth_type under $_pth_location])
     ifelse([$5], , :, [$5])
@@ -400,4 +403,3 @@ else
     ifelse([$6], , :, [$6])
 fi
 ])
-
