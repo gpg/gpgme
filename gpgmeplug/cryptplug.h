@@ -118,13 +118,23 @@ typedef char bool;
     The following methods are used to maintain and query certificates.
 */
 
+
+/*! \defgroup groupSignCryptAct Signing and Encrypting Actions
+
+    This section describes methods and structures
+    used for signing and/or encrypting your mails.
+*/
+
+
 /*! \defgroup groupSignAct Signature Actions
+    \ingroup groupSignCryptAct
 
     This section describes methods that are used for working
     with signatures.
 */
 
 /*! \defgroup groupCryptAct Encryption and Decryption
+    \ingroup groupSignCryptAct
 
     The following methods are used to encrypt and decrypt
     email messages.
@@ -140,8 +150,15 @@ typedef char bool;
     This section describes functions for managing CRLs.
 */
 
+/*! \defgroup groupAdUsoInterno Important functions to be used by plugin implementors ONLY.
 
+    This section describes functions that have to be used by
+    plugin implementors but should not be used by plugin users
+    directly.
 
+    If you are not planning to write your own cryptography
+    plugin <b>you should ignore this</b> section!
+*/
 
 
 // dummy values:
@@ -220,6 +237,19 @@ typedef enum {
 
 
 
+
+/*! \ingroup groupGeneral
+    \brief This function returns a URL to be used for reporting a bug that
+           you found (or suspect, resp.) in this cryptography plug-in.
+
+   If the plugins for some reason cannot specify an appropriate URL you
+   should at least be provided with a text giving you some advise on
+   how to report a bug.
+
+   \note This function <b>must</b> be implemented by each plug-in using
+   this API specification.
+*/
+const char* bugURL( void );
 
 /*! \ingroup groupGeneral
     \brief This function sets up all internal structures.
@@ -310,7 +340,7 @@ const char* signatureConfigurationDialog( void );
 /*! \ingroup groupConfigSign
    \brief This function returns an XML representation of a
             configuration dialog for selecting a signature key.
-            
+
    This will typically be used when the user wants to select a
             signature key for one specific message only; the defaults
             are set in the dialog returned by
@@ -402,8 +432,8 @@ void setWarnSendUnsigned( bool );
   \brief Returns whether a warning should be emitted when the user
   tries to send an email message unsigned.
 */
-bool warnSendUnsigned( void );    
-    
+bool warnSendUnsigned( void );
+
     
 /*! \ingroup groupConfigSign
    \brief Specifies whether sent email messages should be stored
@@ -561,14 +591,14 @@ void setRootCertificateExpiryNearInterval( int );
 */
 int rootCertificateExpiryNearInterval( void );
 
-    
+
     
 
 /*! \ingroup groupConfigCrypt
    \brief This function returns an XML representation of a
             configuration dialog for configuring encryption
             handling.
-            
+
    The syntax is that of <filename>.ui</filename>
             files as specified in the <emphasis>Imhotep</emphasis>
             documentation. This function does not execute or show the
@@ -610,7 +640,7 @@ const char* encryptionHandlingDialog( void );
    \brief This function returns an XML representation of a
             dialog that lets the user select the certificate to use
             for encrypting.
-            
+
    If it was not possible to determine the
             correct certificate from the information in the email
             message, the user is presented with a list of possible
@@ -649,16 +679,16 @@ EncryptEmail encryptEmail( void );
   \brief Specifies whether a warning should be emitted when the user
   tries to send an email message unencrypted.
 */
-void setWarnSendUnencrypted( bool );    
+void setWarnSendUnencrypted( bool );
 
-    
+
 /*! \ingroup groupConfigSign
   \brief Returns whether a warning should be emitted when the user
   tries to send an email message unencrypted.
 */
 bool warnSendUnencrypted( void );    
     
-    
+
 /*! \ingroup groupConfigCrypt
    \brief Specifies whether encrypted email messages should be
             stored encrypted or decrypted.
@@ -712,7 +742,7 @@ void setReceiverCertificateExpiryNearWarning( bool );
 */
 bool receiverCertificateExpiryNearWarning( void );
     
-    
+
 /*! \ingroup groupConfigCrypt
   \brief Specifies the number of days which a receiver certificate
   must be valid before it is considered to expire in the near future.
@@ -724,7 +754,7 @@ void setReceiverCertificateExpiryNearWarningInterval( int );
   must be valid before it is considered to expire in the near future.
 */
 int receiverCertificateExpiryNearWarningInterval( void );
-    
+
 /*! \ingroup groupConfigCrypt
   \brief Specifies whether a warning should be emitted if 
   a certificate in the chain expires in the near future.
@@ -745,13 +775,13 @@ bool certificateInChainExpiryNearWarning( void );
   must be valid before it is considered to expire in the near future.
 */
 void setCertificateInChainExpiryNearWarningInterval( int );
-    
+
 /*! \ingroup groupConfigCrypt
   \brief Returns the number of days which a certificate in the chain
   must be valid before it is considered to expire in the near future.
 */
 int certificateInChainExpiryNearWarningInterval( void );
-    
+
     
 /*! \ingroup groupConfigCrypt
   \brief Specifies whether a warning is emitted if the email address
@@ -763,9 +793,9 @@ void setReceiverEmailAddressNotInCertificateWarning( bool );
   \brief Returns whether a warning is emitted if the email address
   of the receiver does not appear in the certificate.
 */
-bool receiverEmailAddressNotInCertificateWarning( void );    
+bool receiverEmailAddressNotInCertificateWarning( void );
 
-    
+
 /*! \ingroup groupConfigCrypt
    \brief Specifies whether certificate revocation lists should
             be used.
@@ -888,7 +918,7 @@ CertificateSource crlSource( void );
    \brief Returns \c true if and only if the
           certificates in the certificate chain starting at
           \c certificate are valid.
-          
+
    If \c level is non-null, the parameter contains
           the degree of trust on a backend-specific scale. In an X.509
           implementation, this will either be \c 1
@@ -898,18 +928,434 @@ CertificateSource crlSource( void );
 bool certificateValidity( const char* certificate, int* level );
 
 
+/*! \ingroup groupSignCryptAct
+   \brief Information record returned by signing and by encrypting
+   functions - this record should be used together with a
+   corresponding \c free_StructuringInfo() function call.
+
+   Use this information to compose a MIME object containing signed
+   and/or encrypted content (or to build a text frame around your
+   flat non-MIME message body, resp.)
+
+   <b>If</b> value returned in \c makeMimeObject is <b>TRUE</b> the
+   text strings returned in \c contentTypeMain and \c contentDispMain
+   and \c contentTEncMain (and, if required, \c content[..]Version and
+   \c bodyTextVersion and \c content[..]Sig) should be used to compose
+   a respective MIME object.<br>
+   If <b>FALSE</b> the texts returned in \c flatTextPrefix and
+   \c flatTextSeparator and \c flatTextPostfix are to be used instead.<br>
+   Allways <b>either</b> the \c content[..] and \c bodyTextVersion
+   parameters <b>or</b> the \c flatText[..] parameters are holding
+   valid data - never both of them may be used simultaneously
+   as plugins will just ignore the parameters not matching their
+   \c makeMimeObject setting.
+
+   When creating your MIME object please observe these common rules:
+   \li Parameters named \c contentType[..] and \c contentDisp[..] and
+   \c contentTEnc[..] will return the values for the respective MIME
+   headers 'Content-Type' and 'Content-Disposition' and
+   'Content-Transfer-Encoding'. The following applies to these parameters:
+   \li The relevant MIME part may <b>only</b> be created if the respective
+   \c contentType[..] parameter is holding a non-zero-length string. If the
+   \c contentType[..] parameter value is invalid or holding an empty string
+   the respective \c contentDisp[..] and \c contentTEnc[..] parameters
+   should be ignored.
+   \li If the respective \c contentDisp[..] or \c contentTEnc[..] parameter
+   is NULL or holding a zero-length string it is up to you whether you want
+   to add the relevant MIME header yourself, but since it in in the
+   responsibility of the plugin implementors to provide you with all
+   neccessary 'Content-[..]' header information you should <b>not need</b>
+   to define them if they are not returned by the signing or encrypting
+   function - otherwise this may be considered as a bug in the plugin and
+   you could report the missing MIME header information to the address
+   returned by the \c bugURL() function.
+
+   If \c makeMultiMime returns FALSE the \c contentTypeMain returned must
+   not be altered but used to specify a single part mime object holding the
+   code bloc, e.g. this is used for 'enveloped-data' single part MIME
+   objects. In this case you should ignore both the \c content[..]Version
+   and \c content[..]Code parameters.
+
+   If \c makeMultiMime returns TRUE also the following rules apply:
+   \li If \c includeCleartext is TRUE you should include the cleartext
+   as first part of our multipart MIME object, typically this is TRUE
+   when signing mails but FALSE when encrypting.
+   \li The \c contentTypeMain returned typically starts with
+   "multipart/" while providing a "protocol" and a "micalg" parameter: just
+   add an appropriate \c "; boundary=[your \c boundary \c string]" to get
+   the complete Content-Type value to be used for the MIME object embedding
+   both the signed part and the signature part (or - in case of
+   encrypting - the version part and the code part, resp.).
+   \li If \c contentTypeVersion is holding a non-zero-length string an
+   additional MIME part must added immediately before the code part, this
+   version part's MIME headers must have the unaltered values of
+   \c contentTypeVersion and (if they are holding non-zero-length strings)
+   \c contentDispVersion and \c contentTEncVersion, the unaltered contents
+   of \c bodyTextVersion must be it's body.
+   \li The value returned in \c contentTypeCode is specifying the complete
+   Content-Type to be used for this multipart MIME object's signature part
+   (or - in case of encrypting - for the code part following after the
+   version part, resp.), you should not add/change/remove anything here
+   but just use it's unaltered value for specifying the Content-Type header
+   of the respective MIME part.
+   \li The same applies to the \c contentDispCode value: just use it's
+   unaltered value to specify the Content-Disposition header entry of
+   the respective MIME part.
+   \li The same applies to the \c contentTEncCode value: just use it's
+   unaltered value to specify the Content-Transfer-Encoding header of
+   the respective MIME part.
+
+   <b>If</b> value returned in \c makeMimeObject is <b>FALSE</b> the
+   text strings returned in \c flatTextPrefix and \c flatTextPostfix
+   should be used to build a frame around the cleartext and the code
+   bloc holding the signature (or - in case of encrypting - the encoded
+   data bloc, resp.).<br>
+   If \c includeCleartext is TRUE this frame should also include the
+   cleartext as first bloc, this bloc should be divided from the code bloc
+   by the contents of \c flatTextSeparator - typically this is used for
+   signing but not when encrypting.<br>
+   If \c includeCleartext is FALSE you should ignore both the cleartext
+   and the \c flatTextSeparator parameter.
+
+   <b>How to use StructuringInfo data in your program:</b>
+   \li To compose a signed message please act as described below.
+   \li For constructing an encrypted message just replace the
+   \c signMessage() call by the respective \c encryptMessage() call
+   and then proceed exactly the same way.
+   \li In any case make <b>sure</b> to free your \c ciphertext <b>and</b>
+   to call \c free_StructuringInfo() when you are done with processing
+   the data returned by the signing (or encrypting, resp.) function.
+
+\verbatim
+
+    char* ciphertext;
+    StructuringInfo structInf;
+
+    if( ! signMessage( cleartext, &ciphertext, certificate,
+                       &structuring ) ) {
+
+        myErrorDialog( "Error: could not sign the message!" );
+
+    } else {
+      if( structInf.makeMimeObject ) {
+
+        // Build the main MIME object.
+        // This is done by
+        // using the header values returned in
+        // structInf.contentTypeMain and in
+        // structInf.contentDispMain and in
+        // structInf.contentTEncMain.
+        ..
+
+        if( ! structInf.makeMultiMime ) {
+
+          // Build the main MIME object's body.
+          // This is done by
+          // using the code bloc returned in
+          // ciphertext.
+          ..
+
+        } else {
+
+          // Build the encapsulated MIME parts.
+          if( structInf.includeCleartext ) {
+
+            // Build a MIME part holding the cleartext.
+            // This is done by
+            // using the original cleartext's headers and by
+            // taking it's original body text.
+            ..
+
+          }
+          if(    structInf.contentTypeVersion
+              && 0 < strlen( structInf.contentTypeVersion ) ) {
+
+            // Build a MIME part holding the version information.
+            // This is done by
+            // using the header values returned in
+            // structInf.contentTypeVersion and
+            // structInf.contentDispVersion and
+            // structInf.contentTEncVersion and by
+            // taking the body contents returned in
+            // structInf.bodyTextVersion.
+            ..
+
+          }
+          if(    structInf.contentTypeCode
+              && 0 < strlen( structInf.contentTypeCode ) ) {
+
+            // Build a MIME part holding the code information.
+            // This is done by
+            // using the header values returned in
+            // structInf.contentTypeCode and
+            // structInf.contentDispCode and
+            // structInf.contentTEncCode and by
+            // taking the body contents returned in
+            // ciphertext.
+            ..
+
+          } else {
+
+            // Plugin error!
+            myErrorDialog( "Error: Cryptography plugin returned a main"
+                           "Content-Type=Multipart/.. but did not "
+                           "specify the code bloc's Content-Type header."
+                           "\nYou may report this bug:"
+                           "\n" + cryptplug.bugURL() );
+          }
+        }
+      } else  {
+
+        // Build a plain message body
+        // based on the values returned in structInf.
+        // Note: We do _not_ insert line breaks between the parts since
+        //       it is the plugin job to provide us with ready-to-use
+        //       texts containing all neccessary line breaks.
+        strcpy( myMessageBody, structInf.plainTextPrefix );
+        if( structInf.includeCleartext ) {
+          strcat( myMessageBody, cleartext );
+          strcat( myMessageBody, structInf.plainTextSeparator );
+        }
+        strcat( myMessageBody, *ciphertext );
+        strcat( myMessageBody, structInf.plainTextPostfix );
+      }
+
+      // free the memory that was allocated
+      // for the ciphertext
+      free( ciphertext );
+
+      // free the memory that was allocated
+      // for our StructuringInfo's char* members
+      free_StructuringInfo( &structuring );
+    }
+
+\endverbatim
+
+   \note Make sure to call \c free_StructuringInfo() when you are done
+   with processing the StructuringInfo data!
+
+  \see free_StructuringInfo
+  \see signMessage, encryptMessage, encryptAndSignMessage
+*/
+struct StructuringInfo {
+  bool includeCleartext;     /*!< specifies whether we should include the
+                                  cleartext as first part of our multipart
+                                  MIME object (or - for non-MIME
+                                  messages - as flat text to be set before
+                                  the ciphertext, resp.), typically this
+                                  is TRUE when signing mails but FALSE
+                                  when encrypting<br>
+                                  (this parameter is relevant no matter
+                                  whether \c makeMimeObject is TRUE or
+                                  FALSE) */
+  bool  makeMimeObject;      /*!< specifies whether we should create a MIME
+                                  object or a flat text message body */
+  // the following are used for MIME messages only
+  bool  makeMultiMime;       /*!< specifies whether we should create a
+                                  'Multipart' MIME object or a single part
+                                  object, if FALSE only \c contentTypeMain,
+                                  \c contentDispMain and \c contentTEncMain
+                                  may be used and all other parameters have
+                                  to be ignored<br>
+                                  (ignore this parameter if \c makeMimeObject
+                                  is FALSE) */
+  char* contentTypeMain;     /*!< value of the main 'Content-Type'
+                                  header<br>
+                                  (ignore this parameter if \c makeMimeObject
+                                  is FALSE) */
+  char* contentDispMain;     /*!< value of the main 'Content-Disposition'
+                                  header<br>
+                                  (ignore this parameter if \c makeMimeObject
+                                  is FALSE) */
+  char* contentTEncMain;     /*!< value of the main
+                                  'Content-TransferEncoding' header<br>
+                                  (ignore this parameter if \c makeMimeObject
+                                  is FALSE) */
+  char* contentTypeVersion;  /*!< 'Content-Type' of the additional version
+                                  part that might preceed the code part -
+                                  if NULL or zero length no version part
+                                  must be created<br>
+                                  (ignore this parameter if either
+                                  \c makeMimeObject or \c makeMultiMime
+                                  is FALSE) */
+  char* contentDispVersion;  /*!< 'Content-Disposition' of the additional
+                                  preceeding the code part (only valid if
+                                  \c contentTypeVersion holds a
+                                  non-zero-length string)<br>
+                                  (ignore this parameter if either
+                                  \c makeMimeObject or \c makeMultiMime
+                                  is FALSE or if \c contentTypeVersion does
+                                  not return a non-zero-length string) */
+  char* contentTEncVersion;  /*!< 'Content-Transfer-Encoding' of the
+                                  additional version part (only valid if
+                                  \c contentTypeVersion holds a
+                                  non-zero-length string)<br>
+                                  (ignore this parameter if either
+                                  \c makeMimeObject or \c makeMultiMime
+                                  is FALSE or if \c contentTypeVersion does
+                                  not return a non-zero-length string) */
+  char* bodyTextVersion;     /*!< body text of the additional version part
+                                  (only valid if \c contentTypeVersion
+                                  holds a non-zero-length string)<br>
+                                  (ignore this parameter if either
+                                  \c makeMimeObject or \c makeMultiMime
+                                  is FALSE or if \c contentTypeVersion does
+                                  not return a non-zero-length string) */
+  char* contentTypeCode;     /*!< 'Content-Type' of the code part holding
+                                  the signature code (or the encrypted
+                                  data, resp.)<br>
+                                  (ignore this parameter if either
+                                  \c makeMimeObject or \c makeMultiMime
+                                  is FALSE) */
+  char* contentDispCode;     /*!< 'Content-Disposition' of the code part<br>
+                                  (ignore this parameter if either
+                                  \c makeMimeObject or \c makeMultiMime
+                                  is FALSE or if \c contentTypeCode does
+                                  not return a non-zero-length string) */
+  char* contentTEncCode;     /*!< 'Content-Type' of the code part<br>
+                                  (ignore this parameter if either
+                                  \c makeMimeObject or \c makeMultiMime
+                                  is FALSE or if \c contentTypeCode does
+                                  not return a non-zero-length string) */
+  // the following are used for flat non-MIME messages only
+  char* flatTextPrefix;      /*!< text to preceed the main text (or the
+                                  code bloc containing the encrypted main
+                                  text, resp.)<br>
+                                  (ignore this parameter if
+                                  \c makeMimeObject is TRUE) */
+  char* flatTextSeparator;   /*!< text to be put between the main text and
+                                  the signature code bloc (not used when
+                                  encrypting)<br>
+                                  (ignore this parameter if
+                                  \c makeMimeObject is TRUE or if
+                                  \c includeCleartext is FALSE) */
+  char* flatTextPostfix;     /*!< text to follow the signature code bloc
+                                  (or the encrypted data bloc, resp.)<br>
+                                  (ignore this parameter if
+                                  \c makeMimeObject is TRUE) */
+};
+
+
+/*! \ingroup groupAdUsoInterno
+    \brief If you are not planning to write your own cryptography
+    plugin <b>you should ignore this</b> function!
+
+    Usage of this function is depreciated for plugin users but highly
+    recommended for plugin implementors since this is an internal
+    function for initializing all char* members of a \c StructuringInfo
+    struct.<br>
+    This function <b>must</b> be called in <b>any</b> plugin's
+    implementations of the following functions:
+
+    \c signMessage() <br>
+    \c encryptMessage() <br>
+    \c encryptAndSignMessage()
+
+    Calling this function makes sure the corresponding
+    \c free_StructuringInfo() calls which will be embedded by
+    your plugin's users into their code will be able to
+    determine which of the char* members belonging to the
+    respective's StructuringInfo had been allocated memory
+    for during previous signing or encrypting actions.
+
+    \see free_StructuringInfo, StructuringInfo
+    \see signMessage, encryptMessage, encryptAndSignMessage
+*/
+  void init_StructuringInfo( struct StructuringInfo* s )
+  {
+    if( ! s ) return;
+
+    s->includeCleartext = false;
+
+    s->makeMimeObject = false;
+    s->makeMultiMime = false;
+
+    s->contentTypeMain = 0;
+    s->contentDispMain = 0;
+    s->contentTEncMain = 0;
+
+    s->contentTypeVersion = 0;
+    s->contentDispVersion = 0;
+    s->contentTEncVersion = 0;
+    s->bodyTextVersion = 0;
+
+    s->contentTypeCode = 0;
+    s->contentDispCode = 0;
+    s->contentTEncCode = 0;
+
+    s->flatTextPrefix = 0;
+    s->flatTextSeparator = 0;
+    s->flatTextPostfix = 0;
+  }
+
+/*! \ingroup groupSignCryptAct
+    \brief Important method for freeing all memory that was allocated
+    for the char* members of a \c StructuringInfo struct - use
+    this function after <b>each</b> signing or encrypting function
+    call.
+
+    \note Even when intending to call \c encryptMessage() immediately
+    after having called \c signMessage() you first <b>must</b> call
+    the \c free_StructuringInfo() function to make sure all memory is
+    set free that was allocated for your StructuringInfo's char* members
+    by the \c signMessage() function!
+
+    \see StructuringInfo
+*/
+  void free_StructuringInfo( struct StructuringInfo* s )
+  {
+    if( ! s ) return;
+    if( s->contentTypeMain )    free( s->contentTypeMain );
+    if( s->contentDispMain )    free( s->contentDispMain );
+    if( s->contentTEncMain )    free( s->contentTEncMain );
+    if( s->contentTypeVersion ) free( s->contentTypeVersion );
+    if( s->contentDispVersion ) free( s->contentDispVersion );
+    if( s->contentTEncVersion ) free( s->contentTEncVersion );
+    if( s->bodyTextVersion )    free( s->bodyTextVersion );
+    if( s->contentTypeCode )    free( s->contentTypeCode );
+    if( s->contentDispCode )    free( s->contentDispCode );
+    if( s->contentTEncCode )    free( s->contentTEncCode );
+    if( s->flatTextPrefix )     free( s->flatTextPrefix );
+    if( s->flatTextSeparator )  free( s->flatTextSeparator );
+    if( s->flatTextPostfix )    free( s->flatTextPostfix );
+  }
+
+
 /*! \ingroup groupSignAct
    \brief Signs a message \c cleartext and returns
-          in \c ciphertext the message including
-          signature.
+          in \c *ciphertext the signature data bloc that
+          is to be added to the message.
 
-   The signature role is specified by
-          \c certificate. If \c certificate is \c NULL,
-          the default certificate is used.
+   The signature role is specified by \c certificate.
+   If \c certificate is \c NULL, the default certificate is used.
+
+   If the message could be signed, the function returns
+          \c true, otherwise
+          \c false.
+
+   Use the StructuringInfo data returned in parameter \c structuring
+   to find out how to build the respective MIME object (or the plain
+   text message body, resp.).
+
+   \note The function allocates memory for the \c *ciphertext, so
+         make sure you set free that memory when no longer needing
+         it (as shown in example code provided with documentation
+         of the struct \c StructuringInfo).
+
+   \note The function also allocates memory for some char* members
+    of the StructuringInfo* parameter that you are providing,
+    therefore you <b>must</b> call the \c free_StructuringInfo() function
+    to make sure all memory is set free that was allocated. This must be
+    done <b>before</b> calling the next cryptography function - even if
+    you intend to call \c encryptMessage() immediately after
+    \c signMessage().
+
+   \see StructuringInfo, free_StructuringInfo
 */
-bool signMessage( const char* cleartext,
+bool signMessage( const char*  cleartext,
                   const char** ciphertext,
-                  const char* certificate );
+                  const char*  certificate,
+                  struct StructuringInfo* structuring );
 
 
 /*! \ingroup groupSignAct
@@ -956,17 +1402,36 @@ bool storeCertificatesFromMessage( const char* ciphertext );
 
 /*! \ingroup groupCryptAct
    \brief Encrypts an email message in
-          \c cleartext according to the current
-          settings (algorithm, etc.) and returns it in
-          \c ciphertext.
+          \c cleartext according to the \c addressee and
+          the current settings (algorithm, etc.) and
+          returns the encoded data bloc in \c *ciphertext.
 
    If the message could be encrypted, the function returns
           \c true, otherwise
           \c false.
+
+   Use the StructuringInfo data returned in parameter \c structuring
+   to find out how to build the respective MIME object (or the plain
+   text message body, resp.).
+
+   \note The function allocates memory for the \c *ciphertext, so
+         make sure you set free that memory when no longer needing
+         it (as shown in example code provided with documentation
+         of the struct \c StructuringInfo).
+
+   \note The function also allocates memory for some char* members
+    of the StructuringInfo* parameter that you are providing,
+    therefore you <b>must</b> call the \c free_StructuringInfo() function
+    to make sure all memory is set free that was allocated. This must be
+    done <b>before</b> calling the next cryptography function!
+
+   \see StructuringInfo, free_StructuringInfo
 */
 bool encryptMessage( const char*  cleartext,
                      const char** ciphertext,
-                     const char*  addressee );
+                     const char*  addressee,
+                     struct StructuringInfo* structuring );
+
 
 /*! \ingroup groupCryptAct
    \brief Combines the functionality of
@@ -974,16 +1439,33 @@ bool encryptMessage( const char*  cleartext,
           \c signMessage().
 
    If \c certificate is \c NULL,
-          the default certificate will be used.  If
-          \c sigmeta is non-null, the
-          \c SignatureMetaData object pointed to will
-          contain meta information about the signature after the
-          function call.
+   the default certificate will be used.
+
+   If the message could be signed and encrypted, the function returns
+          \c true, otherwise
+          \c false.
+
+   Use the StructuringInfo data returned in parameter \c structuring
+   to find out how to build the respective MIME object (or the plain
+   text message body, resp.).
+
+   \note The function allocates memory for the \c *ciphertext, so
+         make sure you set free that memory when no longer needing
+         it (as shown in example code provided with documentation
+         of the struct \c StructuringInfo).
+
+   \note The function also allocates memory for some char* members
+    of the StructuringInfo* parameter that you are providing,
+    therefore you <b>must</b> call the \c free_StructuringInfo() function
+    to make sure all memory is set free that was allocated. This must be
+    done <b>before</b> calling the next cryptography function!
+
+   \see StructuringInfo, free_StructuringInfo
 */
 bool encryptAndSignMessage( const char* cleartext,
                             const char** ciphertext,
                             const char* certificate,
-                            struct SignatureMetaData* sigmeta );
+                            struct StructuringInfo* structuring );
 
 /*! \ingroup groupCryptAct
    \brief Tries to decrypt an email message
@@ -1004,11 +1486,10 @@ bool decryptMessage( const char* ciphertext, const
           \c decryptMessage().
 
    If \c certificate is \c NULL,
-          the default certificate will be used.  If
-          \c sigmeta is non-null, the
-          \c SignatureMetaData object pointed to will
-          contain meta information about the signature after the
-          function call.
+   the default certificate will be used.
+   If \c sigmeta is non-null, the \c SignatureMetaData
+   object pointed to will contain meta information about
+   the signature after the function call.
 */
 bool decryptAndCheckMessage( const char* ciphertext,
                              const char** cleartext,
