@@ -62,9 +62,6 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
   void *hook;
   op_data_t opd;
 
-  if (!ctx->passphrase_cb)
-    return 0;
-
   err = _gpgme_op_data_lookup (ctx, OPDATA_PASSPHRASE, &hook,
 			       sizeof (*opd), release_op_data);
   opd = hook;
