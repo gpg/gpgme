@@ -1,10 +1,16 @@
 2004-04-05  Werner Koch  <wk@gnupg.org>
 
+	* gpgme.h: Add GPGME_STATUS_NEWSIG.
+
 	* verify.c (parse_error): Compare only the last part of the where
 	token.
+	(prepare_new_sig): New.
+	(parse_new_sig): Use prepare_new_sig when required.
+	(_gpgme_verify_status_handler): Handle STATUS_NEWSIG.
 
 	* engine-gpgsm.c (gpgsm_keylist_ext): Send with-validation
 	option.  Fixed pattern construction.
+	(status_handler): Add debugging output.
 
 2004-03-23  Marcus Brinkmann  <marcus@g10code.de>
 
