@@ -2328,10 +2328,10 @@ bool findCertificates( const char* addressee, char** certificates )
           if( nFound )
             strcat(*certificates,"\1" );
           dn = xstrdup( s );
-fprintf( stderr, "\n\n\nDN before reordering: \"%s\"\n", dn );
+/*fprintf( stderr, "\n\n\nDN before reordering: \"%s\"\n", dn );*/
           a = parse_dn( dn ); 
           dn = reorder_dn( a );
-fprintf( stderr, "\nDN after reordering: \"%s\"\n", dn );
+/*fprintf( stderr, "\nDN after reordering: \"%s\"\n", dn );*/
           strcat( *certificates, s );
           strcat( *certificates, "    (" );
           strcat( *certificates, s2 );
