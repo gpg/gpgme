@@ -70,7 +70,7 @@ struct fd_data_map_s
 };
 
 
-struct gpg_object_s
+struct engine_gpg
 {
   struct arg_and_data_s *arglist;
   struct arg_and_data_s **argtail;
@@ -124,13 +124,13 @@ struct gpg_object_s
   struct gpgme_io_cbs io_cbs;
 };
 
-typedef struct gpg_object_s *GpgObject;
+typedef struct engine_gpg *engine_gpg_t;
 
 
 static void
 gpg_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
 
   if (gpg->io_cbs.event)
     (*gpg->io_cbs.event) (gpg->io_cbs.event_priv, type, type_data);
@@ -140,7 +140,7 @@ gpg_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 static void
 close_notify_handler (int fd, void *opaque)
 {
-  GpgObject gpg = opaque;
+  engine_gpg_t gpg = opaque;
   assert (fd != -1);
 
   if (gpg->status.fd[0] == fd)
@@ -182,7 +182,7 @@ close_notify_handler (int fd, void *opaque)
 }
 
 static gpgme_error_t
-add_arg (GpgObject gpg, const char *arg)
+add_arg (engine_gpg_t gpg, const char *arg)
 {
   struct arg_and_data_s *a;
 
@@ -205,7 +205,7 @@ add_arg (GpgObject gpg, const char *arg)
 }
 
 static gpgme_error_t
-add_data (GpgObject gpg, gpgme_data_t data, int dup_to, int inbound)
+add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
 {
   struct arg_and_data_s *a;
 
@@ -292,7 +292,7 @@ free_fd_data_map (struct fd_data_map_s *fd_data_map)
 static void
 gpg_release (void *engine)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
 
   if (!gpg)
     return;
@@ -334,7 +334,7 @@ gpg_release (void *engine)
 static gpgme_error_t
 gpg_new (void **engine)
 {
-  GpgObject gpg;
+  engine_gpg_t gpg;
   int rc = 0;
 
   gpg = calloc (1, sizeof *gpg);
@@ -405,7 +405,7 @@ static void
 gpg_set_status_handler (void *engine, engine_status_handler_t fnc,
 			void *fnc_value)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
 
   gpg->status.fnc = fnc;
   gpg->status.fnc_value = fnc_value;
@@ -416,7 +416,7 @@ static gpgme_error_t
 gpg_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
 			    void *fnc_value)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
 
   gpg->colon.bufsize = 1024;
   gpg->colon.readpos = 0;
@@ -445,7 +445,7 @@ static gpgme_error_t
 command_handler (void *opaque, int fd)
 {
   gpgme_error_t err;
-  GpgObject gpg = (GpgObject) opaque;
+  engine_gpg_t gpg = (engine_gpg_t) opaque;
 
   assert (gpg->cmd.used);
   assert (gpg->cmd.code);
@@ -477,7 +477,7 @@ static gpgme_error_t
 gpg_set_command_handler (void *engine, engine_command_handler_t fnc,
 			 void *fnc_value, gpgme_data_t linked_data)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
 
   add_arg (gpg, "--command-fd");
   /* This is a hack.  We don't have a real data object.  The only
@@ -494,7 +494,7 @@ gpg_set_command_handler (void *engine, engine_command_handler_t fnc,
 
 
 static gpgme_error_t
-build_argv (GpgObject gpg)
+build_argv (engine_gpg_t gpg)
 {
   struct arg_and_data_s *a;
   struct fd_data_map_s *fd_data_map;
@@ -705,7 +705,7 @@ build_argv (GpgObject gpg)
 
 
 static gpgme_error_t
-add_io_cb (GpgObject gpg, int fd, int dir, gpgme_io_cb_t handler, void *data,
+add_io_cb (engine_gpg_t gpg, int fd, int dir, gpgme_io_cb_t handler, void *data,
 	   void **tag)
 {
   gpgme_error_t err;
@@ -738,7 +738,7 @@ status_cmp (const void *ap, const void *bp)
    with status line code we know about and skip all other stuff
    without buffering (i.e. without extending the buffer).  */
 static gpgme_error_t
-read_status (GpgObject gpg)
+read_status (engine_gpg_t gpg)
 {
   char *p;
   int nread;
@@ -898,7 +898,7 @@ read_status (GpgObject gpg)
 static gpgme_error_t
 status_handler (void *opaque, int fd)
 {
-  GpgObject gpg = opaque;
+  engine_gpg_t gpg = opaque;
   int err;
 
   assert (fd == gpg->status.fd[0]);
@@ -912,7 +912,7 @@ status_handler (void *opaque, int fd)
 
 
 static gpgme_error_t
-read_colon_line (GpgObject gpg)
+read_colon_line (engine_gpg_t gpg)
 {
   char *p;
   int nread;
@@ -992,7 +992,7 @@ read_colon_line (GpgObject gpg)
 static gpgme_error_t
 colon_line_handler (void *opaque, int fd)
 {
-  GpgObject gpg = opaque;
+  engine_gpg_t gpg = opaque;
   gpgme_error_t rc = 0;
 
   assert (fd == gpg->colon.fd[0]);
@@ -1006,7 +1006,7 @@ colon_line_handler (void *opaque, int fd)
 
 
 static gpgme_error_t
-start (GpgObject gpg)
+start (engine_gpg_t gpg)
 {
   gpgme_error_t rc;
   int i, n;
@@ -1136,7 +1136,7 @@ start (GpgObject gpg)
 static gpgme_error_t
 gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   err = add_arg (gpg, "--decrypt");
@@ -1159,7 +1159,7 @@ gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
 static gpgme_error_t
 gpg_delete (void *engine, gpgme_key_t key, int allow_secret)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   err = add_arg (gpg, allow_secret ? "--delete-secret-and-public-key"
@@ -1181,7 +1181,7 @@ gpg_delete (void *engine, gpgme_key_t key, int allow_secret)
 
 
 static gpgme_error_t
-append_args_from_signers (GpgObject gpg, gpgme_ctx_t ctx /* FIXME */)
+append_args_from_signers (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 {
   gpgme_error_t err = 0;
   int i;
@@ -1208,7 +1208,7 @@ static gpgme_error_t
 gpg_edit (void *engine, gpgme_key_t key, gpgme_data_t out,
 	  gpgme_ctx_t ctx /* FIXME */)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   err = add_arg (gpg, "--with-colons");
@@ -1236,7 +1236,7 @@ gpg_edit (void *engine, gpgme_key_t key, gpgme_data_t out,
 
 
 static gpgme_error_t
-append_args_from_recipients (GpgObject gpg, gpgme_user_id_t uid)
+append_args_from_recipients (engine_gpg_t gpg, gpgme_user_id_t uid)
 {
   gpgme_error_t err = 0;
 
@@ -1257,7 +1257,7 @@ static gpgme_error_t
 gpg_encrypt (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
 	     gpgme_data_t ciph, int use_armor)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
   int symmetric = !recp;
 
@@ -1301,7 +1301,7 @@ gpg_encrypt_sign (void *engine, gpgme_user_id_t recp, gpgme_data_t plain,
 		  gpgme_data_t ciph, int use_armor,
 		  gpgme_ctx_t ctx /* FIXME */)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   err = add_arg (gpg, "--encrypt");
@@ -1344,7 +1344,7 @@ static gpgme_error_t
 gpg_export (void *engine, gpgme_user_id_t uids, gpgme_data_t keydata,
 	    int use_armor)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   err = add_arg (gpg, "--export");
@@ -1372,7 +1372,7 @@ static gpgme_error_t
 gpg_genkey (void *engine, gpgme_data_t help_data, int use_armor,
 	    gpgme_data_t pubkey, gpgme_data_t seckey)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   if (!gpg)
@@ -1401,7 +1401,7 @@ gpg_genkey (void *engine, gpgme_data_t help_data, int use_armor,
 static gpgme_error_t
 gpg_import (void *engine, gpgme_data_t keydata)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   err = add_arg (gpg, "--import");
@@ -1419,7 +1419,7 @@ static gpgme_error_t
 gpg_keylist (void *engine, const char *pattern, int secret_only,
 	     int keylist_mode)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   err = add_arg (gpg, "--with-colons");
@@ -1451,7 +1451,7 @@ static gpgme_error_t
 gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
 		 int reserved, int keylist_mode)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   if (reserved)
@@ -1490,7 +1490,7 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 	  gpgme_sig_mode_t mode, int use_armor, int use_textmode,
 	  int include_certs, gpgme_ctx_t ctx /* FIXME */)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   if (mode == GPGME_SIG_MODE_CLEAR)
@@ -1524,7 +1524,7 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 static gpgme_error_t
 gpg_trustlist (void *engine, const char *pattern)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   err = add_arg (gpg, "--with-colons");
@@ -1548,7 +1548,7 @@ static gpgme_error_t
 gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 	    gpgme_data_t plaintext)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
   gpgme_error_t err = 0;
 
   if (plaintext)
@@ -1591,7 +1591,7 @@ gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 static void
 gpg_set_io_cbs (void *engine, gpgme_io_cbs_t io_cbs)
 {
-  GpgObject gpg = engine;
+  engine_gpg_t gpg = engine;
 
   gpg->io_cbs = *io_cbs;
 }

@@ -1,5 +1,10 @@
 2003-05-28  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c: Rename GpgsmObject to engine_gpgsm_t.
+	(struct gpgsm_object_s): Rename to struct engine_gpgsm.
+	* rungpg.c: Rename GpgObject to engine_gpg_t.
+	(struct gpg_object_s): Rename to struct engine_gpg.
+
 	* context.h (struct gpgme_context): Change EngineObject to
 	engine_object_t.
 	(enum ctx_op_data_type): Rename to ctx_op_data_id_t.
