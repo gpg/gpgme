@@ -1,3 +1,7 @@
+
+ * New operation to gpgme_op_decrypt_verify to decrypt and verify
+   signatures simultaneously.
+
 Noteworthy changes in version 0.2.3 (2001-09-17)
 ------------------------------------------------
 
