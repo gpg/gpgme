@@ -1,4 +1,4 @@
-/* gpgme.c -  GnuPG Made Easy
+/* util.c
  *	Copyright (C) 2000 Werner Koch (dd9jn)
  *
  * This file is part of GPGME.
@@ -21,75 +21,42 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
 #include "util.h"
-#include "context.h"
 
-
-/**
- * gpgme_new_context:
- * @r_ctx: Returns the new context
- * 
- * Create a new context to be used with most of the other GPGME
- * functions.  Use gpgme_release_contect() to release all resources
- *
- * Return value: An error code 
- **/
-GpgmeError
-gpgme_new_context (GpgmeCtx *r_ctx)
+void *
+_gpgme_malloc (size_t n )
 {
-    GpgmeCtx c;
-
-    c = xtrycalloc ( 1, sizeof *c );
-    if (!c)
-        return mk_error (Out_Of_Core);
-    c->verbosity = 1;
-    c->use_armor = 1;
-    *r_ctx = c;
-    return 0;
+    return malloc (n);
 }
 
-/**
- * gpgme_release_contect:
- * @c: Context to be released. 
- * 
- * Release all resources associated with the given context.
- **/
-void
-gpgme_release_context ( GpgmeCtx c )
+void *
+_gpgme_calloc (size_t n, size_t m )
 {
-    xfree ( c );
+    return calloc (n, m);
+}
+
+void *
+_gpgme_realloc (void *p, size_t n)
+{
+    return realloc (p, n );
 }
 
 
+char *
+_gpgme_strdup (const char *p)
+{
+    return strdup (p);
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void 
+_gpgme_free ( void *a )
+{
+    free (a);
+}
 
 
 
