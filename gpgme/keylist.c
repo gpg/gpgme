@@ -149,18 +149,24 @@ set_mainkey_trust_info (GpgmeKey key, const char *s)
 static void
 set_userid_flags (GpgmeKey key, const char *s)
 {
+  struct user_id_s *u = key->uids;
+
+  assert (u);
+  while (u->next)
+    u = u->next;
+
   /* Look at letters and stop at the first digit.  */
   for (; *s && !my_isdigit (*s); s++)
     {
       switch (*s)
 	{
-	case 'r': key->uids->revoked  = 1; break;
-	case 'i': key->uids->invalid  = 1; break;
+	case 'r': u->revoked  = 1; break;
+	case 'i': u->invalid  = 1; break;
 
-	case 'n': key->uids->validity = GPGME_VALIDITY_NEVER; break;
-	case 'm': key->uids->validity = GPGME_VALIDITY_MARGINAL; break;
-	case 'f': key->uids->validity = GPGME_VALIDITY_FULL; break;
-	case 'u': key->uids->validity = GPGME_VALIDITY_ULTIMATE; break;
+	case 'n': u->validity = GPGME_VALIDITY_NEVER; break;
+	case 'm': u->validity = GPGME_VALIDITY_MARGINAL; break;
+	case 'f': u->validity = GPGME_VALIDITY_FULL; break;
+	case 'u': u->validity = GPGME_VALIDITY_ULTIMATE; break;
         }
     }
 }
@@ -374,7 +380,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
                 break;
 	    case 4: /* pubkey algo */
 	      i = atoi (p);
-	      if (i > 1 && i < 128)
+	      if (i >= 1 && i < 128)
 		key->keys.key_algo = i;
 	      break;
               case 5: /* long keyid */
@@ -388,7 +394,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	      key->keys.expires_at = parse_timestamp (p);
 	      break;
 	    case 8: /* X.509 serial number */
-              if (rectype == RT_CRT)
+              if (rectype == RT_CRT || rectype == RT_CRS)
                 {
                   key->issuer_serial = xtrystrdup (p);
 		  if (!key->issuer_serial)
@@ -400,7 +406,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	      break;
 	    case 10: /* not used for gpg due to --fixed-list-mode option 
 			but gpgsm stores the issuer name */
-              if (rectype == RT_CRT)
+              if (rectype == RT_CRT || rectype == RT_CRS)
                 {
                   key->issuer_name = xtrystrdup (p);
 		  if (!key->issuer_name)
@@ -431,7 +437,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
                 break;
               case 4: /* pubkey algo */
                 i = atoi (p);
-                if (i > 1 && i < 128)
+                if (i >= 1 && i < 128)
 		  sk->key_algo = i;
                 break;
               case 5: /* long keyid */
@@ -442,6 +448,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
                 sk->timestamp = parse_timestamp (p);
                 break;
               case 7: /* expiration time (seconds) */
+                sk->expires_at = parse_timestamp (p);
                 break;
               case 8: /* reserved (LID) */
                 break;
@@ -473,7 +480,7 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 	      else
 		{
 		  if (trust_info)
-		  set_userid_flags (key, trust_info);
+                    set_userid_flags (key, trust_info);
 		}
 	      pend = NULL;  /* we can stop here */
 	      break;

@@ -392,6 +392,7 @@ _gpgme_key_add_secret_subkey (GpgmeKey key)
 void
 gpgme_key_release (GpgmeKey key)
 {
+  struct certsig_s *c, *c2;
   struct user_id_s *u, *u2;
   struct subkey_s *k, *k2;
 
@@ -417,6 +418,11 @@ gpgme_key_release (GpgmeKey key)
   for (u = key->uids; u; u = u2)
     {
       u2 = u->next;
+      for (c = u->certsigs; c; c = c2)
+        {
+          c2 = c->next;
+          xfree (c);
+        }
       xfree (u);
     }
   xfree (key->issuer_serial);
@@ -580,16 +586,10 @@ _gpgme_key_append_name (GpgmeKey key, const char *s)
   /* We can malloc a buffer of the same length, because the converted
      string will never be larger. Actually we allocate it twice the
      size, so that we are able to store the parsed stuff there too.  */
-  uid = xtrymalloc ( sizeof *uid + 2*strlen (s)+3);
+  uid = xtrymalloc (sizeof *uid + 2*strlen (s)+3);
   if (!uid)
     return mk_error (Out_Of_Core);
-  uid->revoked = 0;
-  uid->invalid = 0;
-  uid->validity = 0;
-  uid->name_part = NULL;
-  uid->email_part = NULL;
-  uid->comment_part = NULL;
-  uid->next = NULL;
+  memset (uid, 0, sizeof *uid);
   d = uid->name;
 
   while (*s)
@@ -897,6 +897,9 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
       if (k) 
 	val = pkalgo_to_string (k->key_algo);
       break;
+    case GPGME_ATTR_TYPE:
+      val = key->x509? "X.509":"PGP";
+      break;
     case GPGME_ATTR_LEN:     
     case GPGME_ATTR_CREATED: 
     case GPGME_ATTR_EXPIRE:  
@@ -961,7 +964,6 @@ gpgme_key_get_string_attr (GpgmeKey key, GpgmeAttr what,
         }
       break;
     case GPGME_ATTR_LEVEL:
-    case GPGME_ATTR_TYPE:
     case GPGME_ATTR_KEY_REVOKED:
     case GPGME_ATTR_KEY_INVALID:
     case GPGME_ATTR_KEY_EXPIRED:
@@ -1047,6 +1049,9 @@ gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
       if (k) 
 	val = (unsigned long) k->key_len;
       break;
+    case GPGME_ATTR_TYPE:
+      val = key->x509? 1:0;
+      break;
     case GPGME_ATTR_CREATED: 
       for (k = &key->keys; k && idx; k = k->next, idx--)
 	;
@@ -1121,3 +1126,4 @@ gpgme_key_get_ulong_attr (GpgmeKey key, GpgmeAttr what,
     }
   return val;
 }
+

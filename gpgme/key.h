@@ -26,6 +26,18 @@
 #include "types.h"
 #include "context.h"
 
+struct certsig_s {
+  struct certsig_s *next;
+  struct {
+    unsigned int revoked:1 ;
+    unsigned int expired:1 ;
+    unsigned int invalid:1 ;
+  } flags;
+  char keyid[16+1]; 
+  time_t timestamp;  /* -1 for invalid, 0 for not available */
+  time_t expires_at; /* 0 for does not expires */
+};
+
 struct subkey_s {
   struct subkey_s *next;
   unsigned int secret:1;
