@@ -22,7 +22,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "gpgme-memory.h"
+#include "gpgme-types.h"
 
 
+GPGME
+gpgme_new_context ()
+{
+    GPGME *c;
+
+    c = gpgme_xmalloc
+
+}
 
 
