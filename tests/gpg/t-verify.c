@@ -169,7 +169,8 @@ main (int argc, char **argv )
     GpgmeSigStat status;
     char *nota;
     int n = 0;
-    int i, j;
+    size_t len;
+    int j;
 
     err = gpgme_new (&ctx);
     fail_if_err (err);
@@ -227,8 +228,8 @@ main (int argc, char **argv )
     err = gpgme_op_verify (ctx, sig, text, &status);
     fail_if_err (err);
 
-    nota = gpgme_data_release_and_get_mem (text, &i);
-    for (j = 0; j < i; j++)
+    nota = gpgme_data_release_and_get_mem (text, &len);
+    for (j = 0; j < len; j++)
       putchar (nota[j]);
     if (strncmp (nota, test_text1, strlen (test_text1)))
       {

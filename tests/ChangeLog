@@ -1,3 +1,10 @@
+2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-encrypt-sym.c (main): Change type of I to size_t and
+	rename to LEN.
+	* gpg/t-verify.c (main): Likewise.  Submitted by Stéphane
+	Corthésy.
+
 2002-07-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-eventloop.c: New file.
