@@ -1,5 +1,14 @@
 2003-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* export.c: Do not include <stdlib.h>, "debug.h" and "util.h", but
+	"gpgme.h".
+	(export_status_handler): Change type of first argument to void *.
+	(_gpgme_op_export_start): Rename to ...
+	(export_start): ... this.  Rework error handling.
+	(gpgme_op_export_start): Rewritten to use export_start instead
+	_gpgme_op_export_start.
+	(gpgme_op_export): Likewise.
+
 	* gpgme.h (GpgmeError): Add GPGME_Busy, GPGME_No_Request.
 	(GPGME_No_Recipients, GPGME_Invalid_Recipient,
 	GPGME_No_Passphrase): New macros.
