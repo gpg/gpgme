@@ -51,7 +51,7 @@ else
 gpgmeplug = 
 endif
 
-SUBDIRS = ${assuan} jnlib gpgme ${tests} doc ${bonobo} ${complus} ${gpgmeplug}
+SUBDIRS = ${assuan} gpgme ${tests} doc ${bonobo} ${complus} ${gpgmeplug}
 
 # Fix the version of the spec file and create a file named VERSION 
 # to be used for patch's Prereq: feature.
