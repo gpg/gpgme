@@ -18,6 +18,10 @@ Noteworthy changes in version 0.4.3 (unreleased)
    variables of course also include the configuration for the thread
    package itself.  Alternatively, use libtool.
 
+ * gpgme-config doesn't support setting the prefix or exec prefix
+   anymore.  I don't think it ever worked correctly, and it seems to
+   be pointless.
+
  * gpgme_get_key fails with GPG_ERR_AMBIGUOUS_NAME if the key ID
    provided was not unique, instead returning the first matching key.
 
