@@ -1,3 +1,9 @@
+2002-11-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* verify.c (_gpgme_verify_status_handler): Treat
+	GPGME_STATUS_UNEXPECTED like GPGME_STATUS_NODATA.
+	Reported by Miguel Coca <e970095@zipi.fi.upm.es>.
+
 2002-11-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* genkey.c: Only include <config.h> if [HAVE_CONFIG_H].

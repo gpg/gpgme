@@ -1,25 +1,26 @@
-/* verify.c -  signature verification
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+/* verify.c - Signature verification.
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002 g10 Code GmbH
 
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+
+#if HAVE_CONFIG_H
 #include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,17 +36,17 @@ struct verify_result_s
 {
   struct verify_result_s *next;
   GpgmeSigStat status;
-  GpgmeSigStat expstatus; /* only used by finish_sig */
-  GpgmeData notation;	/* We store an XML fragment here.  */
-  int collecting;	/* Private to finish_sig().  */
-  int notation_in_data;	/* Private to add_notation().  */
-  char fpr[41];		/* Fingerprint of a good signature or keyid of
-			   a bad one.  */
-  ulong timestamp;	/* Signature creation time.  */
-  ulong exptimestamp;   /* signature exipration time or 0 */
+  GpgmeSigStat expstatus;	/* Only used by finish_sig.  */
+  GpgmeData notation;		/* We store an XML fragment here.  */
+  int collecting;		/* Private to finish_sig().  */
+  int notation_in_data;		/* Private to add_notation().  */
+  char fpr[41];			/* Fingerprint of a good signature or keyid of
+				   a bad one.  */
+  ulong timestamp;		/* Signature creation time.  */
+  ulong exptimestamp;		/* Signature exipration time or 0.  */
   GpgmeValidity validity;
   int wrong_key_usage;  
-  char trust_errtok[31]; /* error token send with the trust status */
+  char trust_errtok[31];	/* Error token send with the trust status.  */
 };
 
 
@@ -64,7 +65,7 @@ _gpgme_release_verify_result (VerifyResult result)
 /* Check whether STRING starts with TOKEN and return true in this
    case.  This is case insensitive.  If NEXT is not NULL return the
    number of bytes to be added to STRING to get to the next token; a
-   returned value of 0 indicates end of line. */
+   returned value of 0 indicates end of line.  */
 static int 
 is_token (const char *string, const char *token, size_t *next)
 {
@@ -166,10 +167,8 @@ add_notation (GpgmeCtx ctx, GpgmeStatusCode code, const char *data)
 }
 
 
-/* 
- * finish a pending signature info collection and prepare for a new
- * signature info collection
- */
+/* Finish a pending signature info collection and prepare for a new
+   signature info collection.  */
 static void
 finish_sig (GpgmeCtx ctx, int stop)
 {
@@ -225,6 +224,7 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
   switch (code)
     {
     case GPGME_STATUS_NODATA:
+    case GPGME_STATUS_UNEXPECTED:
       ctx->result.verify->status = GPGME_SIG_STAT_NOSIG;
       break;
 
@@ -357,6 +357,7 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
     }
 }
 
+
 static GpgmeError
 _gpgme_op_verify_start (GpgmeCtx ctx, int synchronous,
 			GpgmeData sig, GpgmeData signed_text, GpgmeData plaintext)
@@ -396,6 +397,7 @@ _gpgme_op_verify_start (GpgmeCtx ctx, int synchronous,
   return err;
 }
 
+
 GpgmeError
 gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
 		       GpgmeData plaintext)
@@ -403,9 +405,8 @@ gpgme_op_verify_start (GpgmeCtx ctx, GpgmeData sig, GpgmeData signed_text,
   return _gpgme_op_verify_start (ctx, 0, sig, signed_text, plaintext);
 }
 
-/* 
- * Figure out a common status value for all signatures 
- */
+
+/* Figure out a common status value for all signatures.  */
 GpgmeSigStat
 _gpgme_intersect_stati (VerifyResult result)
 {
@@ -596,6 +597,7 @@ gpgme_get_sig_string_attr (GpgmeCtx c, int idx, GpgmeAttr what, int whatidx)
   return NULL;
 }
 
+
 unsigned long
 gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
 {
@@ -627,7 +629,6 @@ gpgme_get_sig_ulong_attr (GpgmeCtx c, int idx, GpgmeAttr what, int reserved)
     }
   return 0;
 }
-
 
 
 /**
