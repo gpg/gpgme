@@ -31,7 +31,7 @@ libgpgme_la_LDFLAGS = -version-info \
       @LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 if BUILD_ASSUAN
 AM_CPPFLAGS = -I$(top_srcdir)/assuan
-libgpgme_la_LIBADD = -L../assuan -lassuan
+libgpgme_la_LIBADD = ../assuan/libassuan.a ../jnlib/libjnlib.a
 endif
 
 libgpgme_la_SOURCES = \

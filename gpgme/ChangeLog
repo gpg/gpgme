@@ -1,5 +1,14 @@
 2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (_gpgme_gpgsm_release): Call assuan_disconnect,
+	not assuan_pipe_disconnect.
+
+	* Makefile.am (libgpgme_la_LIBADD): Change to link assuan and
+	jnlib (needed by assuan) statically into libgpgme.  Linking a
+	static library into a shared library this way is not portable.
+
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.h (GpgmePassphraseCb): Change type of R_HD from void* to
 	void**.
 
