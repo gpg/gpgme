@@ -30,7 +30,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <alloca.h>
 #include <string.h>
 #include <assert.h>
 
