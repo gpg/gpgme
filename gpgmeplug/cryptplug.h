@@ -1420,10 +1420,12 @@ struct StructuringInfo {
    \see StructuringInfo, free_StructuringInfo
 */
 bool signMessage( const char*  cleartext,
-                  const char** ciphertext,
+                  char** ciphertext,
                   const size_t* cipherLen,
                   const char*  certificate,
-                  struct StructuringInfo* structuring );
+                  struct StructuringInfo* structuring,
+                  int* errId,
+                  char** errTxt );
 
 
 /*! \ingroup groupSignAct
@@ -1515,7 +1517,9 @@ bool encryptMessage( const char*  cleartext,
                      const char** ciphertext,
                      const size_t* cipherLen,
                      const char*  addressee,
-                     struct StructuringInfo* structuring );
+                     struct StructuringInfo* structuring,
+                     int* errId,
+                     char** errTxt );
 
 
 /*! \ingroup groupCryptAct

@@ -861,10 +861,12 @@ void storeNewCharPtr( char** dest, const char* src )
 
 
 bool signMessage( const char*  cleartext,
-                  const char** ciphertext,
+                  char** ciphertext,
                   const size_t* cipherLen,
                   const char*  certificate,
-                  struct StructuringInfo* structuring )
+                  struct StructuringInfo* structuring,
+                  int* errId,
+                  char** errTxt )
 {
   GpgmeCtx ctx;
   GpgmeError err;
@@ -905,7 +907,7 @@ bool signMessage( const char*  cleartext,
   }
   gpgme_set_include_certs (ctx, sendCerts);
 
-  /* PENDING(g10) Implement this 
+  /* PENDING(g10) Implement this
 
      gpgme_set_signature_algorithm( ctx, config.signatureAlgorithm )
      --> This does not make sense.  The algorithm is a property of
@@ -929,7 +931,7 @@ bool signMessage( const char*  cleartext,
           bOk = true;
           strncpy((char*)*ciphertext, rSig, *cipherLen );
         }
-        ((char*)(*ciphertext))[*cipherLen] = '\0';
+        (*ciphertext)[*cipherLen] = '\0';
       }
       free( rSig );
     }
@@ -937,8 +939,15 @@ bool signMessage( const char*  cleartext,
   else {
     gpgme_data_release( sig );
     *ciphertext = 0;
-    /* erro handling missing to detect wther signing failed (hier
-       fehlt eine Fehlerbehandlung, falls das Signieren schiefging) */
+    fprintf( stderr, "\ngpgme_op_sign() returned this error code:  %i\n\n", err );
+    if( errId )
+      *errId = err;
+    if( errTxt ) {
+      const char* _errTxt = gpgme_strerror( err );
+      *errTxt = malloc( strlen( _errTxt ) + 1 );
+      if( *errTxt )
+        strcpy(*errTxt, _errTxt );
+    }
   }
   gpgme_data_release( data );
   gpgme_release (ctx);
@@ -1251,7 +1260,9 @@ bool encryptMessage( const char*  cleartext,
                      const char** ciphertext,
                      const size_t* cipherLen,
                      const char*  certificate,
-                     struct StructuringInfo* structuring )
+                     struct StructuringInfo* structuring,
+                     int* errId,
+                     char** errTxt )
 {
   GpgmeCtx ctx;
   GpgmeError err;
@@ -1319,8 +1330,17 @@ bool encryptMessage( const char*  cleartext,
 
 
   err = gpgme_op_encrypt (ctx, rset, gPlaintext, gCiphertext );
-  if( err )
-    fprintf( stderr, "gpgme_op_encrypt() returned this error code:  %i\n\n", err );
+  if( err ) {
+    fprintf( stderr, "\ngpgme_op_encrypt() returned this error code:  %i\n\n", err );
+    if( errId )
+      *errId = err;
+    if( errTxt ) {
+      const char* _errTxt = gpgme_strerror( err );
+      *errTxt = malloc( strlen( _errTxt ) + 1 );
+      if( *errTxt )
+        strcpy(*errTxt, _errTxt );
+    }
+  }
 
   gpgme_recipients_release (rset);
   gpgme_data_release (gPlaintext);
