@@ -97,8 +97,8 @@ append_xml_encinfo (GpgmeData *rdh, char *args)
 }
 
 
-static void
-encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
+void
+_gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code, char *args)
 {
   if (ctx->error)
     return;
@@ -158,7 +158,8 @@ gpgme_op_encrypt_start (GpgmeCtx ctx, GpgmeRecipients recp, GpgmeData plain,
   if (err)
     goto leave;
 
-  _gpgme_engine_set_status_handler (ctx->engine, encrypt_status_handler, ctx);
+  _gpgme_engine_set_status_handler (ctx->engine, _gpgme_encrypt_status_handler,
+				    ctx);
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
   /* Check the supplied data */

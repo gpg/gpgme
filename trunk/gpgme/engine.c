@@ -333,6 +333,7 @@ _gpgme_engine_op_delete (EngineObject engine, GpgmeKey key, int allow_secret)
   return 0;
 }
 
+
 GpgmeError
 _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
 			  GpgmeData plain, GpgmeData ciph, int use_armor)
@@ -353,6 +354,29 @@ _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
     }
   return 0;
 }
+
+
+GpgmeError
+_gpgme_engine_op_encrypt_sign (EngineObject engine, GpgmeRecipients recp,
+			       GpgmeData plain, GpgmeData ciph, int use_armor,
+			       GpgmeCtx ctx /* FIXME */)
+{
+  if (!engine)
+    return mk_error (Invalid_Value);
+
+  switch (engine->protocol)
+    {
+    case GPGME_PROTOCOL_OpenPGP:
+      return _gpgme_gpg_op_encrypt_sign (engine->engine.gpg, recp, plain, ciph,
+					 use_armor, ctx);
+    case GPGME_PROTOCOL_CMS:
+      return mk_error (Not_Implemented);
+    default:
+      break;
+    }
+  return 0;
+}
+
 
 GpgmeError
 _gpgme_engine_op_export (EngineObject engine, GpgmeRecipients recp,

@@ -101,9 +101,13 @@ GpgmeError _gpgme_decrypt_result (GpgmeCtx ctx);
 
 /*-- sign.c --*/
 void _gpgme_release_sign_result ( SignResult res );
+void _gpgme_sign_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+				 char *args);
 
 /*-- encrypt.c --*/
 void _gpgme_release_encrypt_result ( EncryptResult res );
+void _gpgme_encrypt_status_handler (GpgmeCtx ctx, GpgStatusCode code,
+				    char *args);
 
 /*-- passphrase.c --*/
 void _gpgme_release_passphrase_result (PassphraseResult result);

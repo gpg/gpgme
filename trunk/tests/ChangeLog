@@ -1,3 +1,8 @@
+2002-02-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-encrypt-sign.c: New file.
+	* gpg/Makefile.am (TESTS): Add t-encrypt-sign.
+
 2002-02-13  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm/Makefile.am (private-keys-v1.d): Don't

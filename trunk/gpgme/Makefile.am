@@ -42,6 +42,7 @@ libgpgme_la_SOURCES = \
 	data.c recipient.c signers.c \
         wait.c wait.h \
 	encrypt.c \
+	encrypt-sign.c \
 	decrypt.c \
 	decrypt-verify.c \
 	verify.c \

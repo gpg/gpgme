@@ -3,10 +3,15 @@
    to set and get the number of certifications to include in S/MIME
    signed messages.
 
+ * New interfaces gpgme_op_encrypt_sign and gpgme_op_encrypt_sign_start
+   to encrypt and sign a message in a combined operation.
+
  * Interface changes relative to the 0.3.3 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_set_include_certs		NEW
 gpgme_get_include_certs		NEW
+gpgme_op_encrypt_sign		NEW
+gpgme_op_encrypt_sign_start	NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.3 (2002-02-12)

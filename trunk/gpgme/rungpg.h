@@ -126,6 +126,9 @@ GpgmeError _gpgme_gpg_op_delete (GpgObject gpg, GpgmeKey key, int allow_secret);
 GpgmeError _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
 				  GpgmeData plain, GpgmeData ciph,
 				  int use_armor);
+GpgmeError _gpgme_gpg_op_encrypt_sign (GpgObject gpg, GpgmeRecipients recp,
+				       GpgmeData plain, GpgmeData ciph,
+				       int use_armor, GpgmeCtx ctx);
 GpgmeError _gpgme_gpg_op_export (GpgObject gpg, GpgmeRecipients recp,
 				 GpgmeData keydata, int use_armor);
 GpgmeError _gpgme_gpg_op_genkey (GpgObject gpg, GpgmeData help_data,

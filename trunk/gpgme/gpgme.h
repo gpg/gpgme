@@ -427,6 +427,16 @@ GpgmeError gpgme_op_encrypt (GpgmeCtx ctx,
 			     GpgmeRecipients recp,
 			     GpgmeData plain, GpgmeData cipher);
 
+/* Encrypt plaintext PLAIN within CTX for the recipients RECP and
+   store the resulting ciphertext in CIPHER.  Also sign the ciphertext
+   with the signers in CTX.  */
+GpgmeError gpgme_op_encrypt_sign_start (GpgmeCtx ctx,
+					GpgmeRecipients recp,
+					GpgmeData plain, GpgmeData cipher);
+GpgmeError gpgme_op_encrypt_sign (GpgmeCtx ctx,
+				  GpgmeRecipients recp,
+				  GpgmeData plain, GpgmeData cipher);
+
 /* Decrypt ciphertext CIPHER within CTX and store the resulting
    plaintext in PLAIN.  */
 GpgmeError gpgme_op_decrypt_start (GpgmeCtx ctx,
