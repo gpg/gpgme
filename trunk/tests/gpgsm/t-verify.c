@@ -24,18 +24,7 @@
 
 #include <gpgme.h>
 
-
-#define fail_if_err(err)					\
-  do								\
-    {								\
-      if (err)							\
-        {							\
-          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
-                   __FILE__, __LINE__, gpgme_strerror (err));   \
-          exit (1);						\
-        }							\
-    }								\
-  while (0)
+#include "t-support.h"
 
 
 static const char test_text1[] = "Hallo Leute!\n";

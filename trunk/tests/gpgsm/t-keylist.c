@@ -24,20 +24,9 @@
 
 #include <gpgme.h>
 
+#include "t-support.h"
+
 
-#define fail_if_err(err)					\
-  do								\
-    {								\
-      if (err)							\
-        {							\
-          fprintf (stderr, "%s:%d: gpgme_error_t %s\n",		\
-                   __FILE__, __LINE__, gpgme_strerror (err));   \
-          exit (1);						\
-        }							\
-    }								\
-  while (0)
-
-
 struct
 {
   char *fpr;
@@ -72,6 +61,7 @@ keys[] =
       "O=Deutsches Forschungsnetz,C=DE" },
     { NULL }
   };
+
 
 int 
 main (int argc, char **argv)
