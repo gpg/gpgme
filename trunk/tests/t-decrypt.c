@@ -51,6 +51,22 @@ print_data ( GpgmeData dh )
 }
 
 
+static char *
+mk_fname ( const char *fname )
+{
+    const char *srcdir = getenv ("srcdir");
+    char *buf;
+
+    if (!srcdir)
+        srcdir = ".";
+    buf = malloc (strlen(srcdir) + strlen(fname) + 2 );
+    if (!buf ) 
+        exit (8);
+    strcpy (buf, srcdir);
+    strcat (buf, "/");
+    strcat (buf, fname );
+    return buf;
+}
 
 int 
 main (int argc, char **argv )
@@ -58,12 +74,13 @@ main (int argc, char **argv )
     GpgmeCtx ctx;
     GpgmeError err;
     GpgmeData in, out;
+    const char *cipher_1_asc = mk_fname ("cipher-1.asc");
 
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
 
-    err = gpgme_data_new_from_file ( &in, "cipher-1.asc", 1 );
+    err = gpgme_data_new_from_file ( &in, cipher_1_asc, 1 );
     fail_if_err (err);
 
     err = gpgme_data_new ( &out );

@@ -1,7 +1,23 @@
                   GPGME - GnuPG Made Easy
                 ---------------------------
 
-THIS IS WORK IN PROGRESS !!!
+             !!!! THIS IS WORK IN PROGRESS !!!
 
-Contact wk@gnupg.org for questions.
+If you want to hack on it, start with one of the tests/t-foo programs.
+You need the latest CVS version of GnuPG 1.0, see
+http://www.gnupg.org/cvs-access.html .  If you use passphrases for
+your keys, you should get the gpg-agent which comes with the GnuPG
+unstable version (either CVS HEAD or
+ftp.gnupg.org/pub/gcrypt/alpha/gnupg/gnupg-1.1.2.tar.gz) and install
+the agent from the agent subdirectory.
+
+Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
+to do serious work. 
+
+
+ 
+
+
+
+
 

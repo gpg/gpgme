@@ -312,6 +312,8 @@ build_argv ( GpgObject gpg )
     size_t datac=0, argc=0;  
     char **argv;
     int need_special = 0;
+    int use_agent = !!getenv ("GPG_AGENT_INFO");
+
        
     if ( gpg->argv ) {
         free_argv ( gpg->argv );
@@ -337,6 +339,8 @@ build_argv ( GpgObject gpg )
     }
     if ( need_special )
         argc++;
+    if (use_agent)
+        argc++;
 
     argv = xtrycalloc ( argc+1, sizeof *argv );
     if (!argv)
@@ -357,6 +361,15 @@ build_argv ( GpgObject gpg )
     argc++;
     if ( need_special ) {
         argv[argc] = xtrystrdup ( "--enable-special-filenames" );
+        if (!argv[argc]) {
+            xfree (fd_data_map);
+            free_argv (argv);
+            return mk_error (Out_Of_Core);
+        }
+        argc++;
+    }
+    if ( use_agent ) {
+        argv[argc] = xtrystrdup ( "--use-agent" );
         if (!argv[argc]) {
             xfree (fd_data_map);
             free_argv (argv);
@@ -535,7 +548,7 @@ _gpgme_gpg_spawn( GpgObject gpg, void *opaque )
             close (fd);
         }
 
-        execv ("./gpg", gpg->argv );
+        execv ("/usr/local/bin/gpg", gpg->argv );
         fprintf (stderr,"exec of gpg failed\n");
         _exit (8);
     }
