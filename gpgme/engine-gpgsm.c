@@ -43,12 +43,7 @@
 
 #include "engine-backend.h"
 
-
-#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
-                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
-#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
-
-
+
 typedef struct
 {
   int fd;	/* FD we talk about.  */
@@ -120,7 +115,7 @@ gpgsm_get_req_version (void)
   return NEED_GPGSM_VERSION;
 }
 
-
+
 static void
 close_notify_handler (int fd, void *opaque)
 {
@@ -746,7 +741,7 @@ status_handler (void *opaque, int fd)
 		    {
 		      /* Handle escaped characters.  */
 		      ++src;
-		      *dst = xtoi_2 (src);
+		      *dst = (unsigned char) _gpgme_hextobyte (src);
 		      (*alinelen)++;
 		      src += 2;
 		    }
@@ -828,10 +823,10 @@ add_io_cb (GpgsmObject gpgsm, iocb_data_t *iocbd, GpgmeIOCb handler)
 static GpgmeError
 start (GpgsmObject gpgsm, const char *command)
 {
-  GpgmeError err = 0;
+  GpgmeError err;
 
   err = add_io_cb (gpgsm, &gpgsm->status_cb, status_handler);
-  if (gpgsm->input_cb.fd != -1)
+  if (!err && gpgsm->input_cb.fd != -1)
     err = add_io_cb (gpgsm, &gpgsm->input_cb, _gpgme_data_outbound_handler);
   if (!err && gpgsm->output_cb.fd != -1)
     err = add_io_cb (gpgsm, &gpgsm->output_cb, _gpgme_data_inbound_handler);
@@ -841,7 +836,8 @@ start (GpgsmObject gpgsm, const char *command)
   if (!err)
     err = assuan_write_line (gpgsm->assuan_ctx, command);
 
-  (*gpgsm->io_cbs.event) (gpgsm->io_cbs.event_priv, GPGME_EVENT_START, NULL);
+  if (!err)
+    (*gpgsm->io_cbs.event) (gpgsm->io_cbs.event_priv, GPGME_EVENT_START, NULL);
 
   return err;
 }

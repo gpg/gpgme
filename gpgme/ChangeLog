@@ -1,5 +1,12 @@
 2003-02-01  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (start): Handle all errors, not only most of
+	them.
+	(xtoi_1, xtoi_2): Remove macro.
+	(status_handler): Replace use of xtoi_2 with _gpgme_hextobyte.
+
+2003-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
 	* engine-gpgsm.c (map_assuan_error): Replace
 	ASSUAN_Bad_Certificate_Path with ASSUAN_Bad_Certificate_Chain.
 	(gpgsm_new): Use assuan_pipe_connect instead assuan_pipe_connect2.
