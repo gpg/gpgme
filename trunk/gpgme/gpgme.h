@@ -165,7 +165,6 @@ typedef void (*GpgmeProgressCb)(void *opaque,
                                 const char *what, 
                                 int type, int current, int total );
 
-
 /* Context management */
 GpgmeError gpgme_new (GpgmeCtx *r_ctx);
 void       gpgme_release (GpgmeCtx c);
@@ -277,12 +276,13 @@ GpgmeError gpgme_op_delete_start ( GpgmeCtx c, const GpgmeKey key,
 
 
 /* Key management functions */
-GpgmeError gpgme_op_keylist_start ( GpgmeCtx c,
-                                    const char *pattern, int secret_only );
-GpgmeError gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key );
-GpgmeError gpgme_op_trustlist_start ( GpgmeCtx c,
-                                      const char *pattern, int max_level );
-GpgmeError gpgme_op_trustlist_next ( GpgmeCtx c, GpgmeTrustItem *r_item );
+GpgmeError gpgme_op_keylist_start (GpgmeCtx ctx,
+				   const char *pattern, int secret_only);
+GpgmeError gpgme_op_keylist_next (GpgmeCtx ctx, GpgmeKey *r_key);
+GpgmeError gpgme_op_keylist_end (GpgmeCtx ctx);
+GpgmeError gpgme_op_trustlist_start (GpgmeCtx ctx,
+				     const char *pattern, int max_level);
+GpgmeError gpgme_op_trustlist_next (GpgmeCtx ctx, GpgmeTrustItem *r_item);
 
 
 
@@ -313,6 +313,8 @@ const char *gpgme_get_engine_info (void);
 const char *gpgme_strerror (GpgmeError err);
 void        gpgme_register_idle (void (*fnc)(void));
 
+/* Engine support functions.  */
+GpgmeError gpgme_engine_check_version (GpgmeProtocol proto);
 
 #ifdef __cplusplus
 }

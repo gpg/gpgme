@@ -109,7 +109,6 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
 		       GpgmeData pubkey, GpgmeData seckey)
 {
   int err = 0;
-  int i;
   const char *s, *s2, *sx;
 
   fail_on_pending_request (ctx);
