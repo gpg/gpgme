@@ -510,6 +510,14 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 }
 
 
+static gpgme_error_t
+verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
+{
+  return _gpgme_progress_status_handler (priv, code, args)
+    || _gpgme_verify_status_handler (priv, code, args);
+}
+
+
 gpgme_error_t
 _gpgme_op_verify_init_result (gpgme_ctx_t ctx)
 {  
@@ -521,8 +529,8 @@ _gpgme_op_verify_init_result (gpgme_ctx_t ctx)
 
 
 static gpgme_error_t
-_gpgme_op_verify_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t sig,
-			gpgme_data_t signed_text, gpgme_data_t plaintext)
+verify_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t sig,
+	      gpgme_data_t signed_text, gpgme_data_t plaintext)
 {
   gpgme_error_t err;
 
@@ -534,8 +542,7 @@ _gpgme_op_verify_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t sig,
   if (err)
     return err;
 
-  _gpgme_engine_set_status_handler (ctx->engine, _gpgme_verify_status_handler,
-				    ctx);
+  _gpgme_engine_set_status_handler (ctx->engine, verify_status_handler, ctx);
 
   if (!sig)
     return GPGME_No_Data;
@@ -552,7 +559,7 @@ gpgme_error_t
 gpgme_op_verify_start (gpgme_ctx_t ctx, gpgme_data_t sig,
 		       gpgme_data_t signed_text, gpgme_data_t plaintext)
 {
-  return _gpgme_op_verify_start (ctx, 0, sig, signed_text, plaintext);
+  return verify_start (ctx, 0, sig, signed_text, plaintext);
 }
 
 
@@ -564,7 +571,7 @@ gpgme_op_verify (gpgme_ctx_t ctx, gpgme_data_t sig, gpgme_data_t signed_text,
 {
   gpgme_error_t err;
 
-  err = _gpgme_op_verify_start (ctx, 1, sig, signed_text, plaintext);
+  err = verify_start (ctx, 1, sig, signed_text, plaintext);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

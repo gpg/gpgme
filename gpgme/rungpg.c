@@ -384,6 +384,7 @@ gpg_new (void **engine)
   add_arg (gpg, "--no-tty");
   add_arg (gpg, "--charset");
   add_arg (gpg, "utf8");
+  add_arg (gpg, "--enable-progress-filter");
 
  leave:
   if (rc)

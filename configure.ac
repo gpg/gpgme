@@ -31,7 +31,7 @@ AC_INIT(gpgme, 0.4.1, [bug-gpgme@gnupg.org])
 LIBGPGME_LT_CURRENT=10
 LIBGPGME_LT_AGE=0
 LIBGPGME_LT_REVISION=0
-NEED_GPG_VERSION=1.2.0
+NEED_GPG_VERSION=1.2.2
 NEED_GPGSM_VERSION=0.9.0
 ##############################################
 AC_PREREQ(2.52)
