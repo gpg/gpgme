@@ -1,6 +1,6 @@
 /* w32-sema.c 
  *	Copyright (C) 2001 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -19,21 +19,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-
+#ifdef HAVE_CONFIG_H
 #include <config.h>
-#ifdef HAVE_DOSISH_SYSTEM
-
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <windows.h>
-#include "syshdr.h"
+#include <io.h>
 
 #include "util.h"
 #include "sema.h"
@@ -113,12 +112,3 @@ _gpgme_sema_cs_destroy ( struct critsect_s *s )
         s->private = NULL;
     }
 }
-
-
-
-#endif /*HAVE_DOSISH_SYSTEM*/
-
-
-
-
-

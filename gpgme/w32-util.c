@@ -1,7 +1,7 @@
 /* w32-util.c - Utility functions for the W32 API
  *      Copyright (C) 1999 Free Software Foundation, Inc
  *	Copyright (C) 2001 Werner Koch (dd9jn)
- *      Copyright (C) 2001 g10 Code GmbH
+ *      Copyright (C) 2001, 2002 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -20,10 +20,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-
+#ifdef HAVE_CONFIG_H
 #include <config.h>
-#ifdef HAVE_DOSISH_SYSTEM
-
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,59 +33,60 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <windows.h>
-#include "syshdr.h"
+#include <io.h>
 
 #include "util.h"
 
-/****************
- * Return a string from the Win32 Registry or NULL in case of
- * error.  Caller must release the return value.   A NULL for root
- * is an alias for HKEY_CURRENT_USER.
- */
+/* Return a string from the Win32 Registry or NULL in case of error.
+  Caller must release the return value.  A NULL for root is an alias
+  for HKEY_CURRENT_USER.  */
 static char *
-read_w32_registry_string ( const char *root,
-                           const char *dir, const char *name )
+read_w32_registry_string (const char *root, const char *dir, const char *name)
 {
-    HKEY root_key, key_handle;
-    DWORD n1, nbytes;
-    char *result = NULL;
+  HKEY root_key, key_handle;
+  DWORD n1, nbytes;
+  char *result = NULL;
 
-    if( !root )
-        root_key = HKEY_CURRENT_USER;
-    else if( !strcmp( root, "HKEY_CLASSES_ROOT" ) )
-        root_key = HKEY_CLASSES_ROOT;
-    else if( !strcmp( root, "HKEY_CURRENT_USER" ) )
-        root_key = HKEY_CURRENT_USER;
-    else if( !strcmp( root, "HKEY_LOCAL_MACHINE" ) )
-        root_key = HKEY_LOCAL_MACHINE;
-    else if( !strcmp( root, "HKEY_USERS" ) )
-        root_key = HKEY_USERS;
-    else if( !strcmp( root, "HKEY_PERFORMANCE_DATA" ) )
-        root_key = HKEY_PERFORMANCE_DATA;
-    else if( !strcmp( root, "HKEY_CURRENT_CONFIG" ) )
-        root_key = HKEY_CURRENT_CONFIG;
-    else
-        return NULL;
+  if (!root)
+    root_key = HKEY_CURRENT_USER;
+  else if (!strcmp (root, "HKEY_CLASSES_ROOT"))
+    root_key = HKEY_CLASSES_ROOT;
+  else if (!strcmp (root, "HKEY_CURRENT_USER"))
+    root_key = HKEY_CURRENT_USER;
+  else if (!strcmp (root, "HKEY_LOCAL_MACHINE"))
+    root_key = HKEY_LOCAL_MACHINE;
+  else if (!strcmp (root, "HKEY_USERS"))
+    root_key = HKEY_USERS;
+  else if (!strcmp (root, "HKEY_PERFORMANCE_DATA"))
+    root_key = HKEY_PERFORMANCE_DATA;
+  else if (!strcmp (root, "HKEY_CURRENT_CONFIG"))
+    root_key = HKEY_CURRENT_CONFIG;
+  else
+    return NULL;
 
-    if( RegOpenKeyEx( root_key, dir, 0, KEY_READ, &key_handle ) )
-        return NULL; /* no need for a RegClose, so return direct */
+  if (RegOpenKeyEx (root_key, dir, 0, KEY_READ, &key_handle))
+    return NULL;	/* No need for a RegClose, so return directly.  */
 
-    nbytes = 1;
-    if( RegQueryValueEx( key_handle, name, 0, NULL, NULL, &nbytes ) )
-        goto leave;
-    result = xtrymalloc( (n1=nbytes+1) );
-    if( !result )
-        goto leave;
-    if( RegQueryValueEx( key_handle, name, 0, NULL, result, &n1 ) ) {
-        xfree(result); result = NULL;
-        goto leave;
+  nbytes = 1;
+  if (RegQueryValueEx (key_handle, name, 0, NULL, NULL, &nbytes))
+    goto leave;
+  n1 = nbytes + 1;
+  result = xtrymalloc (n1);
+  if (!result)
+    goto leave;
+  if (RegQueryValueEx (key_handle, name, 0, NULL, result, &n1))
+    {
+      xfree(result);
+      result = NULL;
+      goto leave;
     }
-    result[nbytes] = 0; /* make sure it is really a string  */
+  result[nbytes] = 0;	/* Make sure it is really a string.  */
 
-  leave:
-    RegCloseKey( key_handle );
-    return result;
+ leave:
+  RegCloseKey (key_handle);
+  return result;
 }
+
 
 static const char *
 find_program_in_registry (const char *name)
@@ -98,7 +98,7 @@ find_program_in_registry (const char *name)
     {
       int i;
 
-      DEBUG1 ("found %s in registry: `%s'", name, program );
+      DEBUG1 ("found %s in registry: `%s'", name, program);
       for (i = 0; program[i]; i++)
 	{
 	  if (program[i] == '/')
@@ -107,6 +107,7 @@ find_program_in_registry (const char *name)
     }
   return program;
 }
+
 
 const char *
 _gpgme_get_gpg_path (void)
@@ -135,6 +136,3 @@ _gpgme_get_gpgsm_path (void)
 #endif
   return gpgsm_program;
 }
-
-
-#endif /*HAVE_DOSISH_SYSTEM*/

@@ -72,6 +72,7 @@ case "${target}" in
         # DOS with the DJGPP environment
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         AC_DEFINE(HAVE_DOSISH_SYSTEM)
+	have_dosish_system=yes
         GPG_DEFAULT='c:\\gnupg\\gpg.exe'
         GPGSM_DEFAULT='c:\\gnupg\\gpgsm.exe'
         #component_system='COM+'
@@ -82,6 +83,7 @@ dnl	GPG_DEFAULT='/usr/bin/gpg'
 dnl	GPGSM_DEFAULT='/usr/bin/gpgsm'
 	;;
 esac
+AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = "yes")
 
 dnl
 dnl Checks for libraries.

@@ -1,3 +1,30 @@
+2002-03-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (system_components): New variable, set depending on
+	HAVE_DOSISH_SYSTEM.
+	(libgpgme_la_SOURCES): Use system_components.  Remove `syshdr.h'.
+	* syshdr.h: File removed.
+
+	* posix-io.c: Remove !HAVE_DOSISH_SYSTEM safeguard.  Clean up source.
+	* posix-sema.c: Likewise.
+	* posix-util.c: Likewise.
+
+	* w32-io.c: Remove HAVE_DOSISH_SYSTEM safeguard.
+	* w32-sema.c: Likewise.
+	* w32-util.c: Likewise.
+
+	* posix-io.c: Include `unistd.h', do not include `syshdr.h'.
+	* posix-sema.c: Likewise.
+	* w32-io.c: Include `io.h', do not include `syshdr.h'
+	* w32-sema.c: Likewise.
+	* w32-util.c: Likewise.
+	* data.c: Do not include `syshdr.h'.
+	* wait.c: Likewise.
+	* wait.h: Code cleanup.
+
+	* mutex.h: New file.
+	* posix-sema.c: Implement.
+
 2002-03-08  Werner Koch  <wk@gnupg.org>
 
 	* util.h [!HAVE_FOPENCOOKIE]: Fixed type.  Thanks to Frank Heckenbach.
