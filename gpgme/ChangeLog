@@ -1,3 +1,15 @@
+2002-09-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* conversion.c: New file.
+	* util.h: Add prototypes for _gpgme_decode_c_string and
+	_gpgme_hextobyte.
+	* keylist.c (keylist_colon_handler): Call _gpgme_decode_c_string
+	on issuer name.
+	* Makefile.am (libgpgme_la_SOURCES): Add conversion.c
+	* key.c (_gpgme_key_append_name): Replace calls to hextobyte by
+	calls to _gpgme_hextobyte.
+	(hash_key): Likewise.
+
 2002-09-01  Marcus Brinkmann  <marcus@g10code.de>
 
 	* op-support.c (_gpgme_op_reset): Set CTX->pending after calling

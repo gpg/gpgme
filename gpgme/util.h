@@ -97,6 +97,8 @@ FILE *fopencookie (void *cookie, const char *opentype,
 #endif /*HAVE_CONFIG_H*/
 
 
-
+/*-- conversion.c --*/
+GpgmeError _gpgme_decode_c_string (const char *src, char **destp);
+int _gpgme_hextobyte (const byte *str);
 
 #endif /* UTIL_H */
