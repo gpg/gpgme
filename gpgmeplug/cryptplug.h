@@ -1518,8 +1518,9 @@ struct SignatureMetaDataExtendedInfo
     char* algo;
     char* userid;
     char* name;
-    char* email;
     char* comment;
+    char** emailList;
+    int    emailCount;
     unsigned long algo_num;
     unsigned long validity;
     unsigned long userid_num;
