@@ -248,8 +248,7 @@ _gpgme_engine_op_decrypt (EngineObject engine, GpgmeData ciph, GpgmeData plain)
     case GPGME_PROTOCOL_OpenPGP:
       return _gpgme_gpg_op_decrypt (engine->engine.gpg, ciph, plain);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
+      return _gpgme_gpgsm_op_decrypt (engine->engine.gpgsm, ciph, plain);
     default:
       break;
     }
@@ -267,8 +266,7 @@ _gpgme_engine_op_delete (EngineObject engine, GpgmeKey key, int allow_secret)
     case GPGME_PROTOCOL_OpenPGP:
       return _gpgme_gpg_op_delete (engine->engine.gpg, key, allow_secret);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
+      return _gpgme_gpgsm_op_delete (engine->engine.gpgsm, key, allow_secret);
     default:
       break;
     }
@@ -288,8 +286,8 @@ _gpgme_engine_op_encrypt (EngineObject engine, GpgmeRecipients recp,
       return _gpgme_gpg_op_encrypt (engine->engine.gpg, recp, plain, ciph,
 				    use_armor);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
+      return _gpgme_gpgsm_op_encrypt (engine->engine.gpgsm, recp, plain, ciph,
+				      use_armor);
     default:
       break;
     }
@@ -309,8 +307,8 @@ _gpgme_engine_op_export (EngineObject engine, GpgmeRecipients recp,
       return _gpgme_gpg_op_export (engine->engine.gpg, recp, keydata,
 				   use_armor);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
+      return _gpgme_gpgsm_op_export (engine->engine.gpgsm, recp, keydata,
+				     use_armor);
     default:
       break;
     }
@@ -328,8 +326,7 @@ _gpgme_engine_op_genkey (EngineObject engine, GpgmeData help_data, int use_armor
     case GPGME_PROTOCOL_OpenPGP:
       return _gpgme_gpg_op_genkey (engine->engine.gpg, help_data, use_armor);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
+      return _gpgme_gpgsm_op_genkey (engine->engine.gpgsm, help_data, use_armor);
     default:
       break;
     }
@@ -347,8 +344,7 @@ _gpgme_engine_op_import (EngineObject engine, GpgmeData keydata)
     case GPGME_PROTOCOL_OpenPGP:
       return _gpgme_gpg_op_import (engine->engine.gpg, keydata);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
+      return _gpgme_gpgsm_op_import (engine->engine.gpgsm, keydata);
     default:
       break;
     }
@@ -368,8 +364,8 @@ _gpgme_engine_op_keylist (EngineObject engine, const char *pattern, int secret_o
       return _gpgme_gpg_op_keylist (engine->engine.gpg, pattern, secret_only,
 				    keylist_mode);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
+      return _gpgme_gpgsm_op_keylist (engine->engine.gpgsm, pattern, secret_only,
+				      keylist_mode);
     default:
       break;
     }
@@ -390,7 +386,8 @@ _gpgme_engine_op_sign (EngineObject engine, GpgmeData in, GpgmeData out,
       return _gpgme_gpg_op_sign (engine->engine.gpg, in, out, mode, use_armor,
 				 use_textmode, ctx);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
+      return _gpgme_gpgsm_op_sign (engine->engine.gpgsm, in, out, mode,
+				   use_armor, use_textmode, ctx);
       break;
     default:
       break;
@@ -409,8 +406,7 @@ _gpgme_engine_op_trustlist (EngineObject engine, const char *pattern)
     case GPGME_PROTOCOL_OpenPGP:
       return _gpgme_gpg_op_trustlist (engine->engine.gpg, pattern);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
-      break;
+      return _gpgme_gpgsm_op_trustlist (engine->engine.gpgsm, pattern);
     default:
       break;
     }
