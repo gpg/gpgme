@@ -14,7 +14,7 @@ GpgmeEventIOCb			NEW
 struct GpgmeIOCbs		NEW
 gpgme_set_io_cbs		NEW
 gpgme_get_io_cbs		NEW
-GPGME_ATTR_ERRTOK           NEW
+GPGME_ATTR_ERRTOK		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.7 (2002-06-04)
