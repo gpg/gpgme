@@ -23,16 +23,13 @@
 
 #include "gpgme.h"
 
-#define SIZEOF_WAIT_QUEUE 10
+void _gpgme_remove_proc_from_wait_queue ( int pid );
 
-
-GpgmeError _gpgme_register_pipe_handler( 
+GpgmeError _gpgme_register_pipe_handler ( 
     void *opaque, 
     int (*handler)(void*,int,int),
     void *handler_value,
     int pid, int fd, int inbound );
-
-
 
 #endif /* WAIT_H */
 

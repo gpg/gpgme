@@ -52,11 +52,21 @@
 
 #define READBUF_SIZE 4096
 
+static struct {
+    int inuse;
+    int fd;
+    void (*handler)(int,void*);
+    void *value;
+} notify_table[256];
+DEFINE_STATIC_LOCK (notify_table_lock);
+
+
 struct reader_context_s {
     HANDLE file_hd;
     HANDLE thread_hd;	
     DECLARE_LOCK (mutex);
-    
+
+    int stop_me;
     int eof;
     int eof_shortcut;
     int error;
@@ -64,6 +74,7 @@ struct reader_context_s {
 
     HANDLE have_data_ev;  /* manually reset */
     HANDLE have_space_ev; /* auto reset */
+    HANDLE stopped;
     size_t readpos, writepos;
     char buffer[READBUF_SIZE];
 };
@@ -109,7 +120,7 @@ reader (void *arg)
     DEBUG2 ("reader thread %p for file %p started", c->thread_hd, c->file_hd );
     for (;;) {
         LOCK (c->mutex);
-        /* leave a one byte gap so that we can see wheter it is empty or full*/
+        /* leave a 1 byte gap so that we can see whether it is empty or full*/
         if ((c->writepos + 1) % READBUF_SIZE == c->readpos) { 
             /* wait for space */
             if (!ResetEvent (c->have_space_ev) )
@@ -120,6 +131,10 @@ reader (void *arg)
             DEBUG1 ("reader thread %p: got space", c->thread_hd );
             LOCK (c->mutex);
        	}
+        if ( c->stop_me ) {
+            UNLOCK (c->mutex);
+            break;
+        }
         nbytes = (c->readpos + READBUF_SIZE - c->writepos-1) % READBUF_SIZE;
         if ( nbytes > READBUF_SIZE - c->writepos )
             nbytes = READBUF_SIZE - c->writepos;
@@ -149,6 +164,10 @@ reader (void *arg)
         DEBUG2 ("reader thread %p: got %d bytes", c->thread_hd, (int)nread );
       
         LOCK (c->mutex);
+        if (c->stop_me) {
+            UNLOCK (c->mutex);
+            break;
+        }
         c->writepos = (c->writepos + nread) % READBUF_SIZE;
         if ( !SetEvent (c->have_data_ev) )
             DEBUG1 ("SetEvent failed: ec=%d", (int)GetLastError ());
@@ -158,6 +177,7 @@ reader (void *arg)
     if ( !SetEvent (c->have_data_ev) )
         DEBUG1 ("SetEvent failed: ec=%d", (int)GetLastError ());
     DEBUG1 ("reader thread %p ended", c->thread_hd );
+    SetEvent (c->stopped);
 
     return 0;
 }
@@ -182,12 +202,15 @@ create_reader (HANDLE fd)
     c->file_hd = fd;
     c->have_data_ev = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
     c->have_space_ev = CreateEvent (&sec_attr, FALSE, TRUE, NULL);
-    if (!c->have_data_ev || !c->have_space_ev) {
+    c->stopped = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
+    if (!c->have_data_ev || !c->have_space_ev || !c->stopped ) {
         DEBUG1 ("** CreateEvent failed: ec=%d\n", (int)GetLastError ());
         if (c->have_data_ev)
             CloseHandle (c->have_data_ev);
         if (c->have_space_ev)
             CloseHandle (c->have_space_ev);
+        if (c->stopped)
+            CloseHandle (c->stopped);
         xfree (c);
         return NULL;
     }
@@ -204,11 +227,34 @@ create_reader (HANDLE fd)
             CloseHandle (c->have_data_ev);
         if (c->have_space_ev)
             CloseHandle (c->have_space_ev);
+        if (c->stopped)
+            CloseHandle (c->stopped);
         xfree (c);
         return NULL;
     }    
 
     return c;
+}
+
+static void
+destroy_reader (struct reader_context_s *c)
+{
+    if (c->have_space_ev) 
+        SetEvent (c->have_space_ev);
+
+    DEBUG1 ("waiting for thread %p termination ...", c->thread_hd );
+    WaitForSingleObject (c->stopped, INFINITE);
+    DEBUG1 ("thread %p has terminated", c->thread_hd );
+    
+    if (c->stopped)
+        CloseHandle (c->stopped);
+    if (c->have_data_ev)
+        CloseHandle (c->have_data_ev);
+    if (c->have_space_ev)
+        CloseHandle (c->have_space_ev);
+    CloseHandle (c->thread_hd);
+    DESTROY_LOCK (c->mutex);
+    xfree (c);
 }
 
 
@@ -240,6 +286,24 @@ find_reader (int fd, int start_it)
     }
     UNLOCK (reader_table_lock);
     return NULL;
+}
+
+
+static void
+kill_reader (int fd)
+{
+    int i;
+
+    LOCK (reader_table_lock);
+    for (i=0; i < reader_table_size; i++ ) {
+        if (reader_table[i].used && reader_table[i].fd == fd ) {
+            destroy_reader (reader_table[i].context);
+            reader_table[i].context = NULL;
+            reader_table[i].used = 0;
+            break;
+        }
+    }
+    UNLOCK (reader_table_lock);
 }
 
 
@@ -375,11 +439,29 @@ _gpgme_io_pipe ( int filedes[2], int inherit_idx )
 int
 _gpgme_io_close ( int fd )
 {
+    int i;
+    void (*handler)(int, void*) = NULL;
+    void *value = NULL;
+
     if ( fd == -1 )
         return -1;
 
     DEBUG1 ("** closing handle for fd %d\n", fd);
-    /* fixme: destroy thread */
+    kill_reader (fd);
+    LOCK (notify_table_lock);
+    for ( i=0; i < DIM (notify_table); i++ ) {
+        if (notify_table[i].inuse && notify_table[i].fd == fd) {
+            handler = notify_table[i].handler;
+            value   = notify_table[i].value;
+            notify_table[i].handler = NULL;
+            notify_table[i].value = NULL;
+            notify_table[i].inuse = 0;
+            break;
+        }
+    }
+    UNLOCK (notify_table_lock);
+    if (handler)
+        handler (fd, value);
 
     if ( !CloseHandle (fd_to_handle (fd)) ) { 
         DEBUG2 ("CloseHandle for fd %d failed: ec=%d\n",
@@ -387,6 +469,37 @@ _gpgme_io_close ( int fd )
         return -1;
     }
 
+    return 0;
+}
+
+int
+_gpgme_io_set_close_notify (int fd, void (*handler)(int, void*), void *value)
+{
+    int i;
+
+    assert (fd != -1);
+
+    LOCK (notify_table_lock);
+    for (i=0; i < DIM (notify_table); i++ ) {
+        if ( notify_table[i].inuse && notify_table[i].fd == fd )
+            break;
+    }
+    if ( i == DIM (notify_table) ) {
+        for (i=0; i < DIM (notify_table); i++ ) {
+            if ( !notify_table[i].inuse )
+                break;
+        }
+    }
+    if ( i == DIM (notify_table) ) {
+        UNLOCK (notify_table_lock);
+        return -1;
+    }
+    notify_table[i].fd = fd;
+    notify_table[i].handler = handler;
+    notify_table[i].value = value;
+    notify_table[i].inuse = 1;
+    UNLOCK (notify_table_lock);
+    DEBUG2 ("set notification for fd %d (idx=%d)", fd, i );
     return 0;
 }
 
@@ -563,7 +676,8 @@ int
 _gpgme_io_waitpid ( int pid, int hang, int *r_status, int *r_signal )
 {
     HANDLE proc = fd_to_handle (pid);
-    int code, exc, ret = 0;
+    int code, ret = 0;
+    DWORD exc;
 
     *r_status = 0;
     *r_signal = 0;
@@ -619,7 +733,6 @@ _gpgme_io_kill ( int pid, int hard )
 int
 _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
 {
-#if 1
     HANDLE waitbuf[MAXIMUM_WAIT_OBJECTS];
     int    waitidx[MAXIMUM_WAIT_OBJECTS];
     int code, nwait;
@@ -631,11 +744,16 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
     DEBUG_BEGIN (dbg_help, "select on [ ");
     any = any_write = 0;
     nwait = 0;
+    count = 0;
     for ( i=0; i < nfds; i++ ) {
         if ( fds[i].fd == -1 ) 
             continue;
+        fds[i].signaled = 0;
         if ( fds[i].for_read || fds[i].for_write ) {
-            if ( fds[i].for_read ) {
+            if ( fds[i].frozen ) {
+                DEBUG_ADD1 (dbg_help, "f%d ", fds[i].fd );
+            }
+            else if ( fds[i].for_read ) {
                 struct reader_context_s *c = find_reader (fds[i].fd,1);
                 
                 if (!c) { 
@@ -650,28 +768,24 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
                     waitidx[nwait]   = i;
                     waitbuf[nwait++] = c->have_data_ev;
                 }
+                DEBUG_ADD1 (dbg_help, "r%d ", fds[i].fd );
+                any = 1;
             }
-            DEBUG_ADD2 (dbg_help, "%c%d ",
-                        fds[i].for_read? 'r':'w',fds[i].fd );
-            any = 1;
+            else if ( fds[i].for_write ) {
+                DEBUG_ADD1 (dbg_help, "w%d ", fds[i].fd );
+                any = 1;
+                /* no way to see whether a handle is ready for writing,
+                 * so we signal them all */
+                fds[i].signaled = 1;
+                any_write =1;
+                count++;
+            }
         }
-        fds[i].signaled = 0;
     }
     DEBUG_END (dbg_help, "]");
     if (!any) 
         return 0;
 
-    count = 0;
-    /* no way to see whether a handle is ready for writing, signal all */
-    for ( i=0; i < nfds; i++ ) {
-        if ( fds[i].fd == -1 ) 
-            continue;
-        if ( fds[i].for_write ) {
-            fds[i].signaled = 1;
-            any_write =1;
-            count++;
-        }
-    }
     code = WaitForMultipleObjects ( nwait, waitbuf, 0, any_write? 200:1000);
     if ( code >= WAIT_OBJECT_0 && code < WAIT_OBJECT_0 + nwait ) {
         /* This WFMO is a really silly function:  It does return either
@@ -735,79 +849,6 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
     }
     
     return count;
-#else  /* This is the code we use */
-    int i, any, count;
-    int once_more = 0;
-
-    DEBUG_SELECT ((stderr, "gpgme:fakedselect on [ "));
-    any = 0;
-    for ( i=0; i < nfds; i++ ) {
-        if ( fds[i].fd == -1 ) 
-            continue;
-        if ( fds[i].for_read || fds[i].for_write ) {
-            DEBUG_SELECT ((stderr, "%c%d ",
-                           fds[i].for_read? 'r':'w',fds[i].fd ));
-            any = 1;
-        }
-        fds[i].signaled = 0;
-    }
-    DEBUG_SELECT ((stderr, "]\n" ));
-    if (!any) 
-        return 0;
-
- restart:
-    count = 0;
-    /* no way to see whether a handle is ready fro writing, signal all */
-    for ( i=0; i < nfds; i++ ) {
-        if ( fds[i].fd == -1 ) 
-            continue;
-        if ( fds[i].for_write ) {
-            fds[i].signaled = 1;
-            count++;
-        }
-    }
-
-    /* now peek on all read handles */
-    for ( i=0; i < nfds; i++ ) {
-        if ( fds[i].fd == -1 ) 
-            continue;
-        if ( fds[i].for_read ) {
-            int navail;
-            
-            if ( !PeekNamedPipe (fd_to_handle (fds[i].fd),
-                                 NULL, 0, NULL, &navail, NULL) ) {
-                DEBUG1 ("select: PeekFile failed: ec=%d\n",
-                        (int)GetLastError ());
-            }
-            else if ( navail ) {
-                DEBUG2 ("fd %d has %d bytes to read\n",  fds[i].fd, navail );
-                fds[i].signaled = 1;
-                count++;
-            }
-        }
-    }
-    if ( !once_more && !count ) {
-        /* once more but after relinquishing our timeslot */
-        once_more = 1;
-        Sleep (0);
-        goto restart;
-    }
-
-    if ( count ) {
-        DEBUG_SELECT ((stderr, "gpgme:      signaled [ "));
-        for ( i=0; i < nfds; i++ ) {
-            if ( fds[i].fd == -1 ) 
-                continue;
-            if ( (fds[i].for_read || fds[i].for_write) && fds[i].signaled ) {
-                DEBUG_SELECT ((stderr, "%c%d ",
-                               fds[i].for_read? 'r':'w',fds[i].fd ));
-            }
-        }
-        DEBUG_SELECT ((stderr, "]\n" ));
-    }
-    
-    return count;
-#endif
 }
 
 #endif /*HAVE_DOSISH_SYSTEM*/
