@@ -154,6 +154,8 @@ fi
 dnl
 dnl Checks for library functions.
 dnl
+AC_CHECK_FUNCS(timegm)
+
 
 AC_REPLACE_FUNCS(stpcpy)
 

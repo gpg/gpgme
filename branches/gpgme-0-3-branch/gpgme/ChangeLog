@@ -1,3 +1,13 @@
+2003-11-18  Werner Koch  <wk@gnupg.org>
+
+	* conversion.c (_gpgme_parse_timestamp): New.  Now also handles ISO
+	8601 timestamps as used by gnupg 1.9.2.
+	* keylist.c (parse_timestamp): Removed.  Replaced calls by
+	_gpgme_parse_timestamp.
+	* verify.c (_gpgme_verify_status_handler): Replaced strtoul by
+	_gpgme_parse_timestamp.  
+	* sign.c (append_xml_siginfo): Ditto.
+
 2003-02-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (_gpgme_gpgsm_op_sign): Call

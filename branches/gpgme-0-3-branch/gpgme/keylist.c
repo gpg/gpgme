@@ -1,6 +1,6 @@
 /* keylist.c -  key listing
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002 g10 Code GmbH
+ *      Copyright (C) 2001, 2002, 2003 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -115,16 +115,6 @@ keylist_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       /* Ignore all other codes.  */
       break;
     }
-}
-
-
-static time_t
-parse_timestamp (char *p)
-{
-  if (!*p)
-    return 0;
-
-  return (time_t)strtoul (p, NULL, 10);
 }
 
 
@@ -389,10 +379,10 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 		  strcpy (key->keys.keyid, p);
                 break;
 	    case 6: /* timestamp (seconds) */
-	      key->keys.timestamp = parse_timestamp (p);
+	      key->keys.timestamp = _gpgme_parse_timestamp (p);
 	      break;
 	    case 7: /* expiration time (seconds) */
-	      key->keys.expires_at = parse_timestamp (p);
+	      key->keys.expires_at = _gpgme_parse_timestamp (p);
 	      break;
 	    case 8: /* X.509 serial number */
               if (rectype == RT_CRT || rectype == RT_CRS)
@@ -444,10 +434,10 @@ keylist_colon_handler (GpgmeCtx ctx, char *line)
 		  strcpy (sk->keyid, p);
                 break;
               case 6: /* timestamp (seconds) */
-                sk->timestamp = parse_timestamp (p);
+                sk->timestamp = _gpgme_parse_timestamp (p);
                 break;
               case 7: /* expiration time (seconds) */
-                sk->expires_at = parse_timestamp (p);
+                sk->expires_at = _gpgme_parse_timestamp (p);
                 break;
               case 8: /* reserved (LID) */
                 break;

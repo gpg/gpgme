@@ -251,9 +251,14 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       while (args[i] && args[i] != ' ')
 	i++;
       /* And get the timestamp.  */
-      ctx->result.verify->timestamp = strtoul (args+i, &p, 10);
+      ctx->result.verify->timestamp = _gpgme_parse_timestamp (args+i);
       if (args[i])
-        ctx->result.verify->exptimestamp = strtoul (p, NULL, 10);
+        {
+          /* Skip that timestamp. */
+          while (args[i] && args[i] != ' ')
+            i++;
+          ctx->result.verify->exptimestamp = _gpgme_parse_timestamp (args+i);
+        }
       break;
 
     case GPGME_STATUS_BADSIG:

@@ -1,6 +1,6 @@
 /* conversion.c - String conversion helper functions.
  *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002 g10 Code GmbH
+ *      Copyright (C) 2001, 2002, 2003 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -23,10 +23,16 @@
 #include <config.h>
 #endif
 
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 #include "gpgme.h"
 #include "util.h"
+
+#define atoi_1(p)   (*(p) - '0' )
+#define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
+#define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
 
 
 int
@@ -138,3 +144,56 @@ _gpgme_decode_c_string (const char *src, char **destp)
 
   return 0;
 }
+
+
+time_t
+_gpgme_parse_timestamp (const char *timestamp)
+{
+  /* Need toskip leading spaces, becuase that is what strtoul does but
+     not our ISO 8601 checking code. */
+  while (*timestamp && *timestamp== ' ')
+    timestamp++;
+  if (!*timestamp)
+    return 0;
+
+  if (strlen (timestamp) >= 15 && timestamp[8] == 'T')
+    {
+      struct tm buf;
+      int year;
+
+      year = atoi_4 (timestamp);
+      if (year < 1900)
+        return (time_t)(-1);
+
+      /* Fixme: We would better use a configure test to see whether
+         mktime can handle dates beyond 2038. */
+      if (sizeof (time_t) <= 4 && year >= 2038)
+        return (time_t)2145914603; /* 2037-12-31 23:23:23 */
+
+      memset (&buf, 0, sizeof buf);
+      buf.tm_year = year - 1900;
+      buf.tm_mon = atoi_2 (timestamp+4) - 1; 
+      buf.tm_mday = atoi_2 (timestamp+6);
+      buf.tm_hour = atoi_2 (timestamp+9);
+      buf.tm_min = atoi_2 (timestamp+11);
+      buf.tm_sec = atoi_2 (timestamp+13);
+
+#ifdef HAVE_TIMEGM
+      return timegm (&buf);
+#else
+      {
+        time_t tim;
+        
+        putenv ("TZ=UTC");
+        tim = mktime (&buf);
+#ifdef __GNUC__
+#warning fixme: we must somehow reset TZ here.  It is not threadsafe anyway.
+#endif
+        return tim;
+      }
+#endif /* !HAVE_TIMEGM */
+    }
+  else
+    return (time_t)strtoul (timestamp, NULL, 10);
+}
+

@@ -1,3 +1,7 @@
+2003-11-18  Werner Koch  <wk@gnupg.org>
+
+	* mkerrors: Prettier error formating for gpg-error style codes.
+
 2002-05-03  Werner Koch  <wk@gnupg.org>
 
 	* assuan-pipe-connect.c (assuan_pipe_connect2): New to extend
