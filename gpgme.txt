@@ -1,5 +1,5 @@
 %%comments:
-Copyright (C) 2001 Free Software Foundation, Inc.
+Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -12,7 +12,7 @@ Texts. A copy of the license is included in the file COPYING.
 %%short-description: GnuPG Made Easy 
 
 %%full-description: GPGME is a library designed to make access to
-GnuPG easier for applications.  It provides a High-Level Crypto API
+GnuPG easier for applications.  It provides a high-level crypto API
 for encryption, decryption, signing, signature verification and key
 management.  Currently it uses GnuPG and GpgSM as its backends to
 support OpenPGP and the Cryptographic Message Syntax.
@@ -25,7 +25,7 @@ support OpenPGP and the Cryptographic Message Syntax.
 
 %%maintainer: g10 Code GmbH <gpgme@g10code.com>
 
-%%updated: 2002-07-25
+%%updated: 2004-09-30
 
 %%keywords: encryption, public key, digital signature, GnuPG
 
@@ -47,7 +47,7 @@ support OpenPGP and the Cryptographic Message Syntax.
 
 %%sponsors: 
 
-%%source: ftp://ftp.gnupg.org/gcrypt/alpha/gpgme/
+%%source: ftp://ftp.gnupg.org/gcrypt/gpgme/
 
 %%debian:
 
@@ -61,15 +61,15 @@ support OpenPGP and the Cryptographic Message Syntax.
 
 %%supported-languages: C, C++
 
-%%use-requirements: GnuPG 1.0.7, GpgSM 0.3.8
+%%use-requirements: GnuPG 1.2.2, GpgSM 1.9.6
 
-%%build-prerequisites:
+%%build-prerequisites: libgpg-error 0.5
 
-%%weak-prerequisites: 
+%%weak-prerequisites: Pth 1.2.0
 
 %%source-prerequisites:
 
-%%version: 0.3.8 released on 2002-06-25
+%%version: 1.0.0 released on 2004-09-30
 
 %%announce-list: announce@gnupg.org  announce-request@gnupg.org
 
