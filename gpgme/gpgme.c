@@ -50,6 +50,14 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
     return gpg_error_from_errno (errno);
+
+  _gpgme_engine_info_copy (&ctx->engine_info);
+  if (!ctx->engine_info)
+    {
+      free (ctx);
+      return gpg_error_from_errno (errno);
+    }
+
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
   ctx->include_certs = 1;
   ctx->protocol = GPGME_PROTOCOL_OpenPGP;
@@ -62,6 +70,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
       if (!ctx->lc_ctype)
 	{
 	  UNLOCK (def_lc_lock);
+	  _gpgme_engine_info_release (ctx->engine_info);
 	  free (ctx);
 	  return gpg_error_from_errno (errno);
 	}
@@ -77,6 +86,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 	  UNLOCK (def_lc_lock);
 	  if (ctx->lc_ctype)
 	    free (ctx->lc_ctype);
+	  _gpgme_engine_info_release (ctx->engine_info);
 	  free (ctx);
 	  return gpg_error_from_errno (errno);
 	}
@@ -120,6 +130,7 @@ gpgme_release (gpgme_ctx_t ctx)
     free (ctx->lc_ctype);
   if (ctx->lc_messages)
     free (ctx->lc_messages);
+  _gpgme_engine_info_release (ctx->engine_info);
   free (ctx);
 }
 
@@ -387,6 +398,29 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
     UNLOCK (def_lc_lock);
 
   return 0;
+}
+
+
+/* Get the information about the configured engines.  A pointer to the
+   first engine in the statically allocated linked list is returned.
+   The returned data is valid until the next gpgme_ctx_set_engine_info.  */
+gpgme_engine_info_t
+gpgme_ctx_get_engine_info (gpgme_ctx_t ctx)
+{
+  return ctx->engine_info;
+}
+
+
+/* Set the engine info for the context CTX, protocol PROTO, to the
+   file name FILE_NAME and the home directory HOME_DIR.  */
+gpgme_error_t
+gpgme_ctx_set_engine_info (gpgme_ctx_t ctx, gpgme_protocol_t proto,
+			   const char *file_name, const char *home_dir)
+{
+  /* FIXME: Make sure to reset the context if we are running in daemon
+     mode.  */
+  return _gpgme_set_engine_info (ctx->engine_info, proto,
+				 file_name, home_dir);
 }
 
 

@@ -35,7 +35,14 @@ typedef gpgme_error_t (*engine_command_handler_t) (void *priv,
 						   const char *keyword,
 						   int fd);
 
-gpgme_error_t _gpgme_engine_new (gpgme_protocol_t proto,
+/* Get a deep copy of the engine info and return it in INFO.  */
+gpgme_error_t _gpgme_engine_info_copy (gpgme_engine_info_t *r_info);
+
+/* Release the engine info INFO.  */
+void _gpgme_engine_info_release (gpgme_engine_info_t info);
+
+
+gpgme_error_t _gpgme_engine_new (gpgme_engine_info_t info,
 				 engine_t *r_engine,
 				 const char *lc_ctype,
 				 const char *lc_messages);

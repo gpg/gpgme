@@ -136,8 +136,10 @@ void _gpgme_op_trustlist_event_cb (void *data, gpgme_event_io_t type,
 
 
 /*-- version.c --*/
-const char *_gpgme_compare_versions (const char *my_version,
-				     const char *req_version);
+/* Return true if MY_VERSION is at least REQ_VERSION, and false
+   otherwise.  */
+int _gpgme_compare_versions (const char *my_version,
+			     const char *req_version);
 char *_gpgme_get_program_version (const char *const path);
 
 #endif /* OPS_H */

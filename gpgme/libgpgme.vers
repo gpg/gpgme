@@ -18,6 +18,15 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 
+GPGME_1.1 {
+  global:
+    gpgme_set_engine_info;
+
+    gpgme_ctx_get_engine_info;
+    gpgme_ctx_set_engine_info;
+};
+
+
 GPGME_1.0 {
   global:
     gpgme_check_version;

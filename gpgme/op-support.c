@@ -66,17 +66,26 @@ gpgme_error_t
 _gpgme_op_reset (gpgme_ctx_t ctx, int type)
 {
   gpgme_error_t err = 0;
+  gpgme_engine_info_t info;
   struct gpgme_io_cbs io_cbs;
+
+  info = ctx->engine_info;
+  while (info && info->protocol != ctx->protocol)
+    info = info->next;
+
+  if (!info)
+    return gpg_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
 
   _gpgme_release_result (ctx);
 
-  /* Create an engine object.  */
-  if  (ctx->engine)
+  if (ctx->engine)
     {
       _gpgme_engine_release (ctx->engine);
       ctx->engine = NULL;
     }
-  err = _gpgme_engine_new (ctx->protocol, &ctx->engine,
+
+  /* Create an engine object.  */
+  err = _gpgme_engine_new (info, &ctx->engine,
 			   ctx->lc_ctype, ctx->lc_messages);
   if (err)
     return err;

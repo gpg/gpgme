@@ -412,13 +412,16 @@ struct _gpgme_engine_info
   gpgme_protocol_t protocol;
 
   /* The file name of the engine binary.  */
-  const char *file_name;
-
+  char *file_name;
+  
   /* The version string of the installed engine.  */
-  const char *version;
+  char *version;
 
   /* The minimum version required for GPGME.  */
   const char *req_version;
+
+  /* The home directory used, or NULL if default.  */
+  char *home_dir;
 };
 typedef struct _gpgme_engine_info *gpgme_engine_info_t;
 
@@ -741,6 +744,19 @@ void gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *cb,
    locale if CTX is a null pointer.  */
 gpgme_error_t gpgme_set_locale (gpgme_ctx_t ctx, int category,
 				const char *value);
+
+/* Get the information about the configured engines.  A pointer to the
+   first engine in the statically allocated linked list is returned.
+   The returned data is valid until the next gpgme_ctx_set_engine_info.  */
+gpgme_engine_info_t gpgme_ctx_get_engine_info (gpgme_ctx_t ctx);
+
+/* Set the engine info for the context CTX, protocol PROTO, to the
+   file name FILE_NAME and the home directory HOME_DIR.  */
+gpgme_error_t gpgme_ctx_set_engine_info (gpgme_ctx_t ctx,
+					 gpgme_protocol_t proto,
+					 const char *file_name,
+					 const char *home_dir);
+
 
 /* Return a statically allocated string with the name of the public
    key algorithm ALGO, or NULL if that name is not known.  */
@@ -1501,8 +1517,17 @@ int gpgme_trust_item_get_int_attr (gpgme_trust_item_t item, _gpgme_attr_t what,
 /* Check that the library fulfills the version requirement.  */
 const char *gpgme_check_version (const char *req_version);
 
-/* Retrieve information about the backend engines.  */
+/* Get the information about the configured and installed engines.  A
+   pointer to the first engine in the statically allocated linked list
+   is returned in *INFO.  If an error occurs, it is returned.  The
+   returned data is valid until the next gpgme_set_engine_info.  */
 gpgme_error_t gpgme_get_engine_info (gpgme_engine_info_t *engine_info);
+
+/* Set the default engine info for the protocol PROTO to the file name
+   FILE_NAME and the home directory HOME_DIR.  */
+gpgme_error_t gpgme_set_engine_info (gpgme_protocol_t proto,
+				     const char *file_name,
+				     const char *home_dir);
 
 
 /* Engine support functions.  */

@@ -95,18 +95,11 @@ struct engine_gpgsm
 typedef struct engine_gpgsm *engine_gpgsm_t;
 
 
-static const char *
-gpgsm_get_version (void)
+static char *
+gpgsm_get_version (const char *file_name)
 {
-  static const char *gpgsm_version;
-  DEFINE_STATIC_LOCK (gpgsm_version_lock);
-
-  LOCK (gpgsm_version_lock);
-  if (!gpgsm_version)
-    gpgsm_version = _gpgme_get_program_version (_gpgme_get_gpgsm_path ());
-  UNLOCK (gpgsm_version_lock);
-
-  return gpgsm_version;
+  return _gpgme_get_program_version (file_name ? file_name
+				     : _gpgme_get_gpgsm_path ());
 }
 
 
@@ -319,11 +312,13 @@ gpgsm_release (void *engine)
 
 
 static gpgme_error_t
-gpgsm_new (void **engine, const char *lc_ctype, const char *lc_messages)
+gpgsm_new (void **engine, const char *file_name, const char *home_dir,
+	   const char *lc_ctype, const char *lc_messages)
 {
   gpgme_error_t err = 0;
   engine_gpgsm_t gpgsm;
-  char *argv[3];
+  char *argv[5];
+  int argc;
   int fds[2];
   int child_fds[4];
   char *dft_display = NULL;
@@ -395,12 +390,19 @@ gpgsm_new (void **engine, const char *lc_ctype, const char *lc_messages)
   child_fds[2] = gpgsm->message_fd_server;
   child_fds[3] = -1;
 
-  argv[0] = "gpgsm";
-  argv[1] = "--server";
-  argv[2] = NULL;
+  argc = 0;
+  argv[argc++] = "gpgsm";
+  if (home_dir)
+    {
+      argv[argc++] = "--homedir";
+      argv[argc++] = home_dir;
+    }
+  argv[argc++] = "--server";
+  argv[argc++] = NULL;
 
   err = assuan_pipe_connect (&gpgsm->assuan_ctx,
-			     _gpgme_get_gpgsm_path (), argv, child_fds);
+			     file_name ? file_name : _gpgme_get_gpgsm_path (),
+			     argv, child_fds);
   /* FIXME: Check error.  */
 
   /* We need to know the fd used by assuan for reads.  We do this by

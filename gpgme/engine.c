@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -51,9 +52,14 @@ static struct engine_ops *engine_ops[] =
 #endif
   };
 
+
+/* The engine info.  */
+static gpgme_engine_info_t engine_info;
+DEFINE_STATIC_LOCK (engine_info_lock);
+
 
 /* Get the file name of the engine for PROTOCOL.  */
-static const char *
+static char *
 engine_get_file_name (gpgme_protocol_t proto)
 {
   if (proto > DIM (engine_ops))
@@ -66,15 +72,16 @@ engine_get_file_name (gpgme_protocol_t proto)
 }
 
 
-/* Get the version number of the engine for PROTOCOL.  */
-static const char *
-engine_get_version (gpgme_protocol_t proto)
+/* Get a malloced string containing the version number of the engine
+   for PROTOCOL.  */
+static char *
+engine_get_version (gpgme_protocol_t proto, const char *file_name)
 {
   if (proto > DIM (engine_ops))
     return NULL;
 
   if (engine_ops[proto] && engine_ops[proto]->get_version)
-    return (*engine_ops[proto]->get_version) ();
+    return (*engine_ops[proto]->get_version) (file_name);
   else
     return NULL;
 }
@@ -98,21 +105,45 @@ engine_get_req_version (gpgme_protocol_t proto)
 gpgme_error_t
 gpgme_engine_check_version (gpgme_protocol_t proto)
 {
-  return _gpgme_compare_versions (engine_get_version (proto),
-				  engine_get_req_version (proto))
-    ? 0 : gpg_error (GPG_ERR_INV_ENGINE);
+  int result;
+  char *engine_version = engine_get_version (proto, NULL);
+
+  result = _gpgme_compare_versions (engine_version,
+				    engine_get_req_version (proto));
+  if (engine_version)
+    free (engine_version);
+
+  return result ? 0 : gpg_error (GPG_ERR_INV_ENGINE);
+}
+
+
+/* Release the engine info INFO.  */
+void
+_gpgme_engine_info_release (gpgme_engine_info_t info)
+{
+  while (info)
+    {
+      gpgme_engine_info_t next_info = info->next;
+
+      assert (info->file_name);
+      free (info->file_name);
+      if (info->home_dir)
+	free (info->home_dir);
+      if (info->version)
+	free (info->version);
+      free (info);
+      info = next_info;
+    }
 }
 
 
 /* Get the information about the configured and installed engines.  A
    pointer to the first engine in the statically allocated linked list
-   is returned in *INFO.  If an error occurs, it is returned.  */
+   is returned in *INFO.  If an error occurs, it is returned.  The
+   returned data is valid until the next gpgme_set_engine_info.  */
 gpgme_error_t
 gpgme_get_engine_info (gpgme_engine_info_t *info)
 {
-  static gpgme_engine_info_t engine_info;
-  DEFINE_STATIC_LOCK (engine_info_lock);
-
   LOCK (engine_info_lock);
   if (!engine_info)
     {
@@ -123,70 +154,238 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 
       for (proto = 0; proto < DIM (proto_list); proto++)
 	{
-	  const char *file_name = engine_get_file_name (proto_list[proto]);
+	  char *file_name = engine_get_file_name (proto_list[proto]);
 
 	  if (!file_name)
 	    continue;
 
+	  file_name = strdup (file_name);
+
 	  *lastp = malloc (sizeof (*engine_info));
-	  if (!*lastp)
+	  if (!*lastp || !file_name)
 	    {
 	      int saved_errno = errno;
 
-	      while (engine_info)
-		{
-		  gpgme_engine_info_t next_info = engine_info->next;
-		  free (engine_info);
-		  engine_info = next_info;
-		}
+	      _gpgme_engine_info_release (engine_info);
+	      engine_info = NULL;
+
+	      if (file_name)
+		free (file_name);
+
 	      UNLOCK (engine_info_lock);
 	      return gpg_error_from_errno (saved_errno);
 	    }
 
 	  (*lastp)->protocol = proto_list[proto];
 	  (*lastp)->file_name = file_name;
-	  (*lastp)->version = engine_get_version (proto_list[proto]);
+	  (*lastp)->home_dir = NULL;
+	  (*lastp)->version = engine_get_version (proto_list[proto], NULL);
 	  (*lastp)->req_version = engine_get_req_version (proto_list[proto]);
 	  (*lastp)->next = NULL;
 	  lastp = &(*lastp)->next;
 	}
     }
-  UNLOCK (engine_info_lock);
+
   *info = engine_info;
+  UNLOCK (engine_info_lock);
   return 0;
+}
+
+
+/* Get a deep copy of the engine info and return it in INFO.  */
+gpgme_error_t
+_gpgme_engine_info_copy (gpgme_engine_info_t *r_info)
+{
+  gpgme_error_t err = 0;
+  gpgme_engine_info_t info;
+  gpgme_engine_info_t new_info;
+  gpgme_engine_info_t *lastp;
+
+  LOCK (engine_info_lock);
+  info = engine_info;
+  if (!info)
+    {
+      /* Make sure it is initialized.  */
+      UNLOCK (engine_info_lock);
+      err = gpgme_get_engine_info (&info);
+      if (err)
+	return err;
+
+      LOCK (engine_info_lock);
+    }
+
+  new_info = NULL;
+  lastp = &new_info;
+
+  while (info)
+    {
+      char *file_name;
+      char *home_dir;
+      char *version;
+
+      assert (info->file_name);
+      file_name = strdup (info->file_name);
+
+      if (info->home_dir)
+	{
+	  home_dir = strdup (info->home_dir);
+	  if (!home_dir)
+	    err = gpg_error_from_errno (errno);
+	}
+      else
+	home_dir = NULL;
+
+      if (info->version)
+	{
+	  version = strdup (info->version);
+	  if (!version)
+	    err = gpg_error_from_errno (errno);
+	}
+      else
+	version = NULL;
+
+      *lastp = malloc (sizeof (*engine_info));
+      if (!*lastp || !file_name || err)
+	{
+	  int saved_errno = errno;
+
+	  _gpgme_engine_info_release (new_info);
+
+	  if (file_name)
+	    free (file_name);
+	  if (home_dir)
+	    free (home_dir);
+	  if (version)
+	    free (version);
+
+	  UNLOCK (engine_info_lock);
+	  return gpg_error_from_errno (saved_errno);
+	}
+
+      (*lastp)->protocol = info->protocol;
+      (*lastp)->file_name = file_name;
+      (*lastp)->home_dir = home_dir;
+      (*lastp)->version = version;
+      (*lastp)->req_version = info->req_version;
+      (*lastp)->next = NULL;
+      lastp = &(*lastp)->next;
+
+      info = info->next;
+    }
+
+  *r_info = new_info;
+  UNLOCK (engine_info_lock);
+  return 0;
+}
+
+
+/* Set the engine info for the info list INFO, protocol PROTO, to the
+   file name FILE_NAME and the home directory HOME_DIR.  */
+gpgme_error_t
+_gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
+			const char *file_name, const char *home_dir)
+{
+  char *new_file_name;
+  char *new_home_dir;
+
+  /* FIXME: Use some PROTO_MAX definition.  */
+  if (proto > DIM (engine_ops))
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  while (info && info->protocol != proto)
+    info = info->next;
+
+  if (!info)
+    return gpg_error (GPG_ERR_INV_ENGINE);
+
+  /* Prepare new members.  */
+  if (file_name)
+    new_file_name = strdup (file_name);
+  else
+    {
+      new_file_name = engine_get_file_name (proto);
+      assert (file_name);
+      new_file_name = strdup (new_file_name);
+    }
+  if (!new_file_name)
+    return gpg_error_from_errno (errno);
+
+  if (home_dir)
+    {
+      new_home_dir = strdup (home_dir);
+      if (!new_home_dir)
+	{
+	  free (new_file_name);
+	  return gpg_error_from_errno (errno);
+	}
+    }
+  else
+    new_home_dir = NULL;
+
+  /* Remove the old members.  */
+  assert (info->file_name);
+  free (info->file_name);
+  if (info->home_dir)
+    free (info->home_dir);
+  if (info->version)
+    free (info->version);
+
+  /* Install the new members.  */
+  info->file_name = new_file_name;
+  info->home_dir = new_home_dir;
+  info->version = engine_get_version (proto, file_name);
+
+  return 0;
+}
+
+
+/* Set the default engine info for the protocol PROTO to the file name
+   FILE_NAME and the home directory HOME_DIR.  */
+gpgme_error_t
+gpgme_set_engine_info (gpgme_protocol_t proto,
+		       const char *file_name, const char *home_dir)
+{
+  gpgme_error_t err;
+  gpgme_engine_info_t info;
+
+  LOCK (engine_info_lock);
+  info = engine_info;
+  if (!info)
+    {
+      /* Make sure it is initialized.  */
+      UNLOCK (engine_info_lock);
+      err = gpgme_get_engine_info (&info);
+      if (err)
+	return err;
+
+      LOCK (engine_info_lock);
+    }
+
+  err = _gpgme_set_engine_info (info, proto, file_name, home_dir);
+  UNLOCK (engine_info_lock);
+  return err;
 }
 
 
 gpgme_error_t
-_gpgme_engine_new (gpgme_protocol_t proto, engine_t *r_engine,
+_gpgme_engine_new (gpgme_engine_info_t info, engine_t *r_engine,
 		   const char *lc_ctype, const char *lc_messages)
 {
   engine_t engine;
 
-  const char *file_name;
-  const char *version;
-
-  if (proto > DIM (engine_ops))
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  if (!engine_ops[proto])
-    return gpg_error (GPG_ERR_INV_ENGINE);
-
-  file_name = engine_get_file_name (proto);
-  version = engine_get_version (proto);
-  if (!file_name || !version)
+  if (!info->file_name || !info->version)
     return gpg_error (GPG_ERR_INV_ENGINE);
 
   engine = calloc (1, sizeof *engine);
   if (!engine)
     return gpg_error_from_errno (errno);
 
-  engine->ops = engine_ops[proto];
-  if (engine_ops[proto]->new)
+  engine->ops = engine_ops[info->protocol];
+  if (engine->ops->new)
     {
-      gpgme_error_t err = (*engine_ops[proto]->new) (&engine->engine,
-						     lc_ctype,
-						     lc_messages);
+      gpgme_error_t err = (*engine->ops->new) (&engine->engine,
+					       info->file_name, info->home_dir,
+					       lc_ctype, lc_messages);
       if (err)
 	{
 	  free (engine);
