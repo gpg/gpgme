@@ -53,11 +53,13 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Operations
 ** Passphrase callback should not copy password. !!!
+*** If no passphrase cb is installed, status handler is not run even if
+    password is required by crypto engine. !!
 ** Export status handler need much more work. !!!
 ** Import should return a useful error when one happened.
 *** Import does not take notice of NODATA status report.
 *** When GPGSM does issue IMPORT_OK status reports, make sure to check for them
-    in tests/gpgs   m/t-import.c.
+    in tests/gpgs m/t-import.c.
 ** Genkey should return something more useful than General_Error.
 ** Factor out common code in _op_*_start functions.
 ** Add ATTR to return the number of subkeys or uids.
