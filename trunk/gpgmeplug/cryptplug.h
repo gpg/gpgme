@@ -1575,12 +1575,16 @@ bool storeCertificatesFromMessage( const char* ciphertext );
 /*! \ingroup groupCryptAct
    \brief Find all certificate for a given addressee.
 
-   NOTE: The \c certificate parameter must point to an allready allocated
-   block of memory which is large enough to hold the complete list.
+  NOTE: The certificate parameter must point to a not-yet allocated
+        char*.  The function will allocate the memory needed and
+        return the size in newSize.
    If secretOnly is true, only secret keys are returned.
 */
-bool findCertificates( const char* addressee, char** certificates, bool secretOnly );
-
+bool findCertificates( const char* addressee,
+                       char** certificates,
+                       int* newSize,
+                       bool secretOnly );
+                       
 /*! \ingroup groupCryptAct
    \brief Encrypts an email message in
           \c cleartext according to the \c addressee and
