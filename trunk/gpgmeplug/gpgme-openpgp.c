@@ -3,7 +3,7 @@
 #define GPGMEPLUG_SIGN_INCLUDE_CLEARTEXT true
 #define GPGMEPLUG_SIGN_MAKE_MIME_OBJECT  true
 #define GPGMEPLUG_SIGN_MAKE_MULTI_MIME   true
-#define GPGMEPLUG_SIGN_CTYPE_MAIN        "multipart/signed;protocol=application/pgp-signature;micalg=pgp-sha1"
+#define GPGMEPLUG_SIGN_CTYPE_MAIN        "multipart/signed;protocol=\"application/pgp-signature\";micalg=pgp-sha1"
 #define GPGMEPLUG_SIGN_CDISP_MAIN        ""
 #define GPGMEPLUG_SIGN_CTENC_MAIN        ""
 #define GPGMEPLUG_SIGN_CTYPE_VERSION     ""
@@ -21,7 +21,7 @@
 #define GPGMEPLUG_ENC_INCLUDE_CLEARTEXT  false
 #define GPGMEPLUG_ENC_MAKE_MIME_OBJECT   true
 #define GPGMEPLUG_ENC_MAKE_MULTI_MIME    true
-#define GPGMEPLUG_ENC_CTYPE_MAIN         "multipart/encrypted; protocol=application/pgp-encrypted"
+#define GPGMEPLUG_ENC_CTYPE_MAIN         "multipart/encrypted; protocol=\"application/pgp-encrypted\""
 #define GPGMEPLUG_ENC_CDISP_MAIN         ""
 #define GPGMEPLUG_ENC_CTENC_MAIN         ""
 #define GPGMEPLUG_ENC_CTYPE_VERSION      "application/pgp-encrypted"
