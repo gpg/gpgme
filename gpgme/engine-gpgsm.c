@@ -602,6 +602,97 @@ _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
 
 
 GpgmeError
+_gpgme_gpgsm_op_keylist_ext (GpgsmObject gpgsm, const char *pattern[],
+			     int secret_only, int reserved, int keylist_mode)
+{
+  char *line;
+  /* Length is "LISTSECRETKEYS " + p + '\0'.  */
+  int length = 15 + 1;
+  char *linep;
+
+  if (reserved)
+    return mk_error (Invalid_Value);
+
+  if (pattern && *pattern)
+    {
+      const char **pat = pattern;
+
+      while (*pat)
+	{
+	  const char *patlet = *pat;
+
+	  while (*patlet)
+	    {
+	      length++;
+	      if (*patlet == '%' || *patlet == ' ' || *patlet == '+')
+		length += 2;
+	      patlet++;
+	    }
+	  pat++;
+	  /* This will allocate one byte more than necessary.  */
+	  length++;
+	}
+    }
+  line = xtrymalloc (length);
+  if (!line)
+    return mk_error (Out_Of_Core);
+  if (secret_only)
+    {
+      strcpy (line, "LISTSECRETKEYS ");
+      linep = &line[15];
+    }
+  else
+    {
+      strcpy (line, "LISTKEYS ");
+      linep = &line[9];
+    }
+
+  if (pattern && *pattern)
+    {
+      while (*pattern)
+	{
+	  const char *patlet = *pattern;
+
+	  while (*patlet)
+	    {
+	      switch (*patlet)
+		{
+		case '%':
+		  *(linep++) = '%';
+		  *(linep++) = '2';
+		  *(linep++) = '5';
+		  break;
+		case ' ':
+		  *(linep++) = '%';
+		  *(linep++) = '2';
+		  *(linep++) = '0';
+		  break;
+		case '+':
+		  *(linep++) = '%';
+		  *(linep++) = '2';
+		  *(linep++) = 'B';
+		  break;
+		default:
+		  *(linep++) = *patlet;
+		  break;
+		}
+	      patlet++;
+	    }
+	  pattern++;
+	}
+    }
+  *linep = '\0';
+
+  _gpgme_io_close (gpgsm->input_fd);
+  _gpgme_io_close (gpgsm->output_fd);
+  _gpgme_io_close (gpgsm->message_fd);
+
+  gpgsm->command = line;
+  return 0;
+}
+
+
+GpgmeError
 _gpgme_gpgsm_op_sign (GpgsmObject gpgsm, GpgmeData in, GpgmeData out,
 		      GpgmeSigMode mode, int use_armor,
 		      int use_textmode, int include_certs,

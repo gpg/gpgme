@@ -1,5 +1,15 @@
 2002-02-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.h (_gpgme_gpg_op_keylist_ext): New prototype.
+	* rungpg.c (_gpgme_gpg_op_keylist_ext): New function.
+	* engine-gpgsm.h (_gpgme_gpgsm_op_keylist_ext): New prototype.
+	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist_ext): New function.
+	* engine.h (_gpgme_engine_op_keylist_ext): New prototype.
+	* engine.c (_gpgme_engine_op_keylist_ext): New function.
+	* keylist.c (gpgme_op_keylist_ext_start): New function.
+
+2002-02-27  Marcus Brinkmann  <marcus@g10code.de>
+
 	* gpgme.h: Add new error code GPGME_Invalid_Recipient.
 	* encrypt.c (struct encrypt_result_s): New member invalid_recipients,
 	rename no_recipients to no_valid_recipients.

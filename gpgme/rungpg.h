@@ -137,6 +137,9 @@ GpgmeError _gpgme_gpg_op_genkey (GpgObject gpg, GpgmeData help_data,
 GpgmeError _gpgme_gpg_op_import (GpgObject gpg, GpgmeData keydata);
 GpgmeError _gpgme_gpg_op_keylist (GpgObject gpg, const char *pattern,
 				  int secret_only, int keylist_mode);
+GpgmeError _gpgme_gpg_op_keylist_ext (GpgObject gpg, const char *pattern[],
+				      int secret_only, int reserved,
+				      int keylist_mode);
 GpgmeError _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
 			       GpgmeSigMode mode, int use_armor,
 			       int use_textmode, GpgmeCtx ctx /* FIXME */);

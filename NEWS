@@ -1,4 +1,11 @@
 
+ * gpgme_op_encrypt does now fail with GPGME_Invalid_Recipients if
+   some recipients have been invalid, whereas earlier versions
+   succeeded in this case.  The plaintext is still encrypted for all valid
+   recipients, so the application might take this error as a hint that
+   the ciphertext is not usable for all requested recipients.
+   Information about invalid recipients is available with gpgme_get_op_info.
+
  * New interfaces gpgme_set_include_certs and gpgme_get_include_certs
    to set and get the number of certifications to include in S/MIME
    signed messages.
@@ -6,12 +13,7 @@
  * New interfaces gpgme_op_encrypt_sign and gpgme_op_encrypt_sign_start
    to encrypt and sign a message in a combined operation.
 
- * gpgme_op_encrypt does now fail with GPGME_Invalid_Recipients if
-   some recipients have been invalid, whereas earlier versions
-   succeeded in this case.  The plaintext is still encrypted for all valid
-   recipients, so the application might take this error as a hint that
-   the ciphertext is not usable for all requested recipients.
-   Information about invalid recipients is available with gpgme_get_op_info.
+ * New interface gpgme_op_keylist_ext_start to search for multiple patterns.
 
  * Interface changes relative to the 0.3.3 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -20,6 +22,7 @@ gpgme_set_include_certs		NEW
 gpgme_get_include_certs		NEW
 gpgme_op_encrypt_sign		NEW
 gpgme_op_encrypt_sign_start	NEW
+gpgme_op_keylist_ext_start	NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.3.3 (2002-02-12)

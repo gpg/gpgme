@@ -506,6 +506,73 @@ gpgme_op_keylist_start (GpgmeCtx ctx, const char *pattern, int secret_only)
 
 
 /**
+ * gpgme_op_keylist_ext_start:
+ * @c: context 
+ * @pattern: a NULL terminated array of search patterns
+ * @secret_only: List only keys where the secret part is available
+ * @reserved: Should be 0.
+ * 
+ * Note that this function also cancels a pending key listing
+ * operaton. To actually retrieve the key, use
+ * gpgme_op_keylist_next().
+ * 
+ * Return value:  0 on success or an errorcode. 
+ **/
+GpgmeError
+gpgme_op_keylist_ext_start (GpgmeCtx ctx, const char *pattern[],
+			    int secret_only, int reserved)
+{
+  GpgmeError err = 0;
+
+  if (!ctx)
+    return mk_error (Invalid_Value);
+  ctx->pending = 1;
+
+  _gpgme_release_result (ctx);
+
+  if (ctx->engine)
+    {
+      _gpgme_engine_release (ctx->engine); 
+      ctx->engine = NULL;
+    }
+  gpgme_key_release (ctx->tmp_key);
+  ctx->tmp_key = NULL;
+  /* Fixme: Release key_queue.  */
+    
+  err = _gpgme_engine_new (ctx->use_cms ? GPGME_PROTOCOL_CMS
+			   : GPGME_PROTOCOL_OpenPGP, &ctx->engine);
+  if (err)
+    goto leave;
+
+  _gpgme_engine_set_status_handler (ctx->engine, keylist_status_handler, ctx);
+  err = _gpgme_engine_set_colon_line_handler (ctx->engine,
+					      keylist_colon_handler, ctx);
+  if (err)
+    goto leave;
+
+  /* We don't want to use the verbose mode as this will also print 
+     the key signatures which is in most cases not needed and furthermore we 
+     just ignore those lines - This should speed up things */
+  _gpgme_engine_set_verbosity (ctx->engine, 0);
+
+  err = _gpgme_engine_op_keylist_ext (ctx->engine, pattern, secret_only,
+				      reserved, ctx->keylist_mode);
+
+  if (!err)	/* And kick off the process.  */
+    err = _gpgme_engine_start (ctx->engine, ctx);
+
+ leave:
+  if (err)
+    {
+      ctx->pending = 0; 
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
+    }
+  return err;
+}
+
+
+/**
  * gpgme_op_keylist_next:
  * @c: Context
  * @r_key: Returned key object
