@@ -22,4 +22,4 @@
 DISTCLEANFILES = gpgme.tmp
 
 info_TEXINFOS = gpgme.texi
-gpgme_TEXINFOS = gpl.texi fdl.texi
+gpgme_TEXINFOS = gpl.texi
