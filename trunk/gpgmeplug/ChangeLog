@@ -1,7 +1,14 @@
+2002-03-23  Werner Koch  <wk@gnupg.org>
+
+	* gpgmeplug.c: Converted it to real C; i.e. use standard comments -
+	we are doing ISO C 90.  Transalted a few German remarks and
+	commented on some things.
+
 2002-03-08  Steffen Hansen  <steffen@hrhansen.dk>
 
-	* A little better address-parsing. Not real rfc822 yet, but at least it fetches 
-	the address between '<' and '>' now if they are present.
+	* A little better address-parsing. Not real rfc822 yet, but at
+	least it fetches the address between '<' and '>' now if they are
+	present.
 
 2002-03-07  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
 
