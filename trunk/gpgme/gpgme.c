@@ -203,7 +203,7 @@ gpgme_set_protocol (GpgmeCtx c, GpgmeProtocol prot)
   
   switch (prot)
     {
-    case GPGME_PROTOCOL_OPENPGP:
+    case GPGME_PROTOCOL_OpenPGP:
       c->use_cms = 0;
       break;
     case GPGME_PROTOCOL_CMS:
