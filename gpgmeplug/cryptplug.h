@@ -427,7 +427,7 @@ SignEmail signEmail( void );
 */
 void setWarnSendUnsigned( bool );    
 
-    
+
 /*! \ingroup groupConfigSign
   \brief Returns whether a warning should be emitted when the user
   tries to send an email message unsigned.
@@ -1427,6 +1427,8 @@ struct SignatureMetaData {
 */
 bool checkMessageSignature( const char* ciphertext,
                             const char* signaturetext,
+                            bool signatureIsBinary,
+                            int signatureLen,
                             struct SignatureMetaData* sigmeta );
 
 /*! \ingroup groupSignAct

@@ -865,7 +865,7 @@ bool signMessage( const char*  cleartext,
       break;
   }
   gpgme_set_include_certs (ctx, sendCerts);
-  
+
   // PENDING(g10) Implement this
   //gpgme_set_signature_algorithm( ctx, config.signatureAlgorithm );
 
@@ -973,6 +973,8 @@ sig_status_to_string( GpgmeSigStat status )
 
 bool checkMessageSignature( const char* ciphertext,
                             const char* signaturetext,
+                            bool signatureIsBinary,
+                            int signatureLen,
                             struct SignatureMetaData* sigmeta )
 {
   GpgmeCtx ctx;
@@ -987,10 +989,18 @@ bool checkMessageSignature( const char* ciphertext,
 
   gpgme_new( &ctx );
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
+  gpgme_set_armor (ctx,    signatureIsBinary ? 0 : 1);
+//  gpgme_set_textmode (ctx, signatureIsBinary ? 0 : 1);
+
   gpgme_data_new_from_mem( &datapart, ciphertext,
                           1+strlen( ciphertext ), 1 );
-  gpgme_data_new_from_mem( &sigpart, signaturetext,
-                          1+strlen( signaturetext ), 1 );
+
+  gpgme_data_new_from_mem( &sigpart,
+                           signaturetext,
+                           signatureIsBinary
+                           ? signatureLen
+                           : (1+strlen( signaturetext )),
+                           1 );
 
   gpgme_op_verify( ctx, sigpart, datapart, &status );
   gpgme_data_release( datapart );
