@@ -36,6 +36,12 @@
 #include "util.h"
 #include "io.h"
 
+static struct {
+    void (*handler)(int,void*);
+    void *value;
+} notify_table[256];
+
+
 int
 _gpgme_io_read ( int fd, void *buffer, size_t count )
 {
@@ -75,8 +81,32 @@ _gpgme_io_close ( int fd )
 {
     if ( fd == -1 )
         return -1;
+    /* first call the notify handler */
+    DEBUG1 ("closing fd %d", fd );
+    if ( fd >= 0 && fd < DIM (notify_table) ) {
+        if (notify_table[fd].handler) {
+            notify_table[fd].handler (fd, notify_table[fd].value);
+            notify_table[fd].handler = NULL;
+            notify_table[fd].value = NULL;
+        }
+    }
+    /* then do the close */    
     return close (fd);
 }
+
+int
+_gpgme_io_set_close_notify (int fd, void (*handler)(int, void*), void *value)
+{
+    assert (fd != -1);
+
+    if ( fd < 0 || fd >= DIM (notify_table) )
+        return -1;
+    DEBUG1 ("set notification for fd %d", fd );
+    notify_table[fd].handler = handler;
+    notify_table[fd].value = value;
+    return 0;
+}
+
 
 int
 _gpgme_io_set_nonblocking ( int fd )
@@ -225,7 +255,7 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds )
     static fd_set readfds;
     static fd_set writefds;
     int any, i, max_fd, n, count;
-    struct timeval timeout = { 0, 200 }; /* Use a 200ms timeout */
+    struct timeval timeout = { 1, 0 }; /* Use a 1s timeout */
     void *dbg_help;
     
     FD_ZERO ( &readfds );

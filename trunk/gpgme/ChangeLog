@@ -1,3 +1,22 @@
+2001-02-19  Werner Koch  <wk@gnupg.org>
+
+	* posix-io.c (_gpgme_io_select): Use a 1 sec timeout and not 200
+	microseconds.
+
+	* wait.c (remove_process): Don't close the fd here.
+	(do_select): Set the fd to -1 and remove the is_closed flag everywhere.
+	(_gpgme_wait_on_condition): Remove the assert on the queue and
+	break out if we could not find the queue.  The whole thing should
+	be reworked.
+
+	* posix-io.c (_gpgme_io_set_close_notify): New.
+	(_gpgme_io_close): Do the notification.
+
+	* rungpg.c (close_notify_handler): New. 
+	(_gpgme_gpg_new): Register a callback for the fd.
+	(_gpgme_gpg_set_colon_line_handler): Ditto.
+	(build_argv): Ditto
+
 2001-02-13  Werner Koch  <wk@gnupg.org>
 
 	* rungpg.c (struct reap_s): Replaced pid_t by int.
