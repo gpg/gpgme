@@ -1764,7 +1764,7 @@ struct CertificateInfo {
 \verbatim
   struct CertificateInfo* info;
   struct CertIterator* it = startListCertificates("Steffen");
-  while( info = nextCertificate( it ) ) {
+  while( nextCertificate( it, &info ) == GPGME_No_Error && info ) {
     do something with info.
     dont free() it, the struct will be reused
     by the next call to nextCertificate()
@@ -1773,7 +1773,7 @@ struct CertificateInfo {
 \endverbatim
 */
 struct CertIterator*  startListCertificates( const char* pattern, int remote );
-struct CertificateInfo*  nextCertificate( struct CertIterator* );
+int  nextCertificate( struct CertIterator*, struct CertificateInfo** result );
 void endListCertificates( struct CertIterator* );
 
 

@@ -2115,6 +2115,7 @@ struct CertIterator* startListCertificates( const char* pattern, int remote )
     return it;
 }
 
+/* free() each string in a char*[] and the array itself */
 static void freeStringArray( char** c )
 {
     char** _c = c;
@@ -2126,6 +2127,7 @@ static void freeStringArray( char** c )
     safe_free( (void**)&_c );
 }
 
+/* free all malloc'ed data in a struct CertificateInfo */
 static void freeInfo( struct CertificateInfo* info )
 {
   struct DnPair* a = info->dnarray;
@@ -2145,6 +2147,8 @@ static void freeInfo( struct CertificateInfo* info )
   memset( info, 0, sizeof( *info ) );
 }
 
+/* Format the fingerprint nicely. The caller should
+   free the returned value with safe_free() */
 static char* make_fingerprint( const char* fpr )
 {
   int len = strlen(fpr);
@@ -2161,10 +2165,11 @@ static char* make_fingerprint( const char* fpr )
   return result;
 }
 
-struct CertificateInfo* nextCertificate( struct CertIterator* it )
+int nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
 {
   GpgmeError err;
   GpgmeKey   key;
+  int retval = GPGME_No_Error;
   assert( it );
   err = gpgme_op_keylist_next ( it->ctx, &key);
   if( err != GPGME_EOF ) {   
@@ -2173,6 +2178,7 @@ struct CertificateInfo* nextCertificate( struct CertIterator* it )
     unsigned long u;
     char* names[MAX_GPGME_IDX+1];
     struct DnPair *issuer_dn, *tmp_dn;
+    retval = err;
     memset( names, 0, sizeof( names ) );
     freeInfo( &(it->info) );
 
@@ -2188,10 +2194,10 @@ struct CertificateInfo* nextCertificate( struct CertIterator* it )
       struct DnPair* a = parse_dn( names[idx] ); 
       if( idx == 0 ) {
 	it->info.userid[idx] = reorder_dn( a );
+	it->info.dnarray = a;
 	safe_free( (void **)&(names[idx]) );
       } else {
 	it->info.userid[idx] = names[idx];
-	it->info.dnarray = a;
       }
     }
     it->info.userid[idx] = 0;
@@ -2241,8 +2247,10 @@ struct CertificateInfo* nextCertificate( struct CertIterator* it )
     it->info.disabled = u;
 
     gpgme_key_release (key);
-    return &(it->info);
-  } else return NULL;
+    /*return &(it->info);*/
+    *result =  &(it->info);
+  } else *result = NULL;
+  return retval;
 }
 
 void endListCertificates( struct CertIterator* it )
