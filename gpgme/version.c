@@ -219,11 +219,13 @@ get_engine_info (void)
     const char *engine_info =NULL;
     GpgmeCtx c = NULL;
     GpgmeError err = 0;
+    const char *path = NULL;
 
     /* FIXME: make sure that only one instance does run */
     if (engine_info)
         goto leave;
 
+    path = _gpgme_get_gpg_path ();
     err = gpgme_new (&c);
     if (err) 
         goto leave;
@@ -250,15 +252,17 @@ get_engine_info (void)
         fmt = "<GnupgInfo>\n"
               " <engine>\n"
               "  <version>%s</version>\n"
+              "  <path>%s</path>\n"
               " </engine>\n"
               "</GnupgInfo>\n";
         /*(yes, I know that we allocating 2 extra bytes)*/
-        p = xtrymalloc ( strlen(fmt) + strlen (tmp_engine_version) + 1);
+        p = xtrymalloc ( strlen(fmt) + strlen(path)
+                         + strlen (tmp_engine_version) + 1);
         if (!p) {
             err = mk_error (Out_Of_Core);
             goto leave;
         }
-        sprintf (p, fmt, tmp_engine_version);
+        sprintf (p, fmt, tmp_engine_version, path);
         engine_info = p;
         xfree (tmp_engine_version); tmp_engine_version = NULL;
     }
@@ -267,8 +271,29 @@ get_engine_info (void)
     }
 
  leave:
-    if (err)
-        engine_info = "<GnupgInfo>\n<error>No engine</error>\n</GnupgInfo>\n";
+    if (err) {
+        const char *fmt;
+        const char *errstr = gpgme_strerror (err);
+        char *p;
+
+        fmt = "<GnupgInfo>\n"
+            " <engine>\n"
+            "  <error>%s</error>\n"                
+            "  <path>%s</path>\n"
+            " </engine>\n"
+            "</GnupgInfo>\n";
+
+        p = xtrymalloc ( strlen(fmt) + strlen(errstr) + strlen(path) + 1);
+        if (p) { 
+            sprintf (p, fmt, errstr, path);
+            engine_info = p;
+        }
+        else {
+            engine_info = "<GnupgInfo>\n"
+                          "  <error>Out of core</error>\n"
+                          "</GnupgInfo>\n";
+        }
+    }
     gpgme_release ( c );
     return engine_info;
 }

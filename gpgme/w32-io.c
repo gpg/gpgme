@@ -484,9 +484,9 @@ _gpgme_io_spawn ( const char *path, char **argv,
         }
     }
 
-    DEBUG1 ("CreateProcess, args=`%s'", arg_string);
+    DEBUG2 ("CreateProcess, path=`%s' args=`%s'", path, arg_string);
     cr_flags |= CREATE_SUSPENDED; 
-    if ( !CreateProcessA (GPG_PATH,
+    if ( !CreateProcessA (path,
                           arg_string,
                           &sec_attr,     /* process security attributes */
                           &sec_attr,     /* thread security attributes */

@@ -99,10 +99,10 @@ _gpgme_get_gpg_path (void)
         if (gpg_program) {
             int i;
             
-            DEBUG1 ("found gpgProgram in registry: `%s'", gpgProgram );
-            for (i=0; gpg_program[i]; s++) {
+            DEBUG1 ("found gpgProgram in registry: `%s'", gpg_program );
+            for (i=0; gpg_program[i]; i++) {
                 if (gpg_program[i] == '/')
-                    gpg_program[i] == '\\';
+                    gpg_program[i] = '\\';
             }
         }
         else {
