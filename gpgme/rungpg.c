@@ -1,25 +1,26 @@
-/* rungpg.c 
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+/* rungpg.c - Gpg Engine.
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002 g10 Code GmbH
+ 
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
+#if HAVE_CONFIG_H
 #include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,12 +37,12 @@
 #include "util.h"
 #include "ops.h"
 #include "wait.h"
-#include "rungpg.h"
 #include "context.h"  /*temp hack until we have GpmeData methods to do I/O */
 #include "io.h"
 #include "sema.h"
 
 #include "status-table.h"
+#include "engine-backend.h"
 
 
 /* This type is used to build a list of gpg arguments and data
@@ -55,6 +56,7 @@ struct arg_and_data_s
   int print_fd;    /* Print the fd number and not the special form of it.  */
   char arg[1];     /* Used if data above is not used.  */
 };
+
 
 struct fd_data_map_s
 {
@@ -85,7 +87,7 @@ struct gpg_object_s
     void *tag;
   } status;
 
-  /* This is a kludge - see the comment at gpg_colon_line_handler.  */
+  /* This is a kludge - see the comment at colon_line_handler.  */
   struct
   {
     int fd[2];  
@@ -121,17 +123,16 @@ struct gpg_object_s
   struct GpgmeIOCbs io_cbs;
 };
 
-static void free_argv (char **argv);
-static void free_fd_data_map (struct fd_data_map_s *fd_data_map);
 
-static void gpg_status_handler (void *opaque, int fd);
-static GpgmeError read_status (GpgObject gpg);
+static void
+gpg_io_event (void *engine, GpgmeEventIO type, void *type_data)
+{
+  GpgObject gpg = engine;
 
-static void gpg_colon_line_handler (void *opaque, int fd);
-static GpgmeError read_colon_line (GpgObject gpg);
+  if (gpg->io_cbs.event)
+    (*gpg->io_cbs.event) (gpg->io_cbs.event_priv, type, type_data);
+}
 
-static int command_cb (void *opaque, char *buffer, size_t length,
-		       size_t *nread);
 
 static void
 close_notify_handler (int fd, void *opaque)
@@ -204,7 +205,7 @@ close_notify_handler (int fd, void *opaque)
 	  }
     }
   if (!not_done)
-    _gpgme_gpg_io_event (gpg, GPGME_EVENT_DONE, NULL);
+    gpg_io_event (gpg, GPGME_EVENT_DONE, NULL);
 }
 
 static GpgmeError
@@ -263,8 +264,8 @@ add_data (GpgObject gpg, GpgmeData data, int dup_to, int inbound)
 }
 
 
-const char *
-_gpgme_gpg_get_version (void)
+static const char *
+gpg_get_version (void)
 {
   static const char *gpg_version;
   DEFINE_STATIC_LOCK (gpg_version_lock);
@@ -276,16 +277,86 @@ _gpgme_gpg_get_version (void)
   return gpg_version;
 }
 
-GpgmeError
-_gpgme_gpg_check_version (void)
+
+static GpgmeError
+gpg_check_version (void)
 {
-  return _gpgme_compare_versions (_gpgme_gpg_get_version (),
-                                  NEED_GPG_VERSION)
+  return _gpgme_compare_versions (gpg_get_version (), NEED_GPG_VERSION)
     ? 0 : mk_error (Invalid_Engine);
 }
 
-GpgmeError
-_gpgme_gpg_new (GpgObject *r_gpg)
+
+static void
+free_argv (char **argv)
+{
+  int i;
+
+  for (i = 0; argv[i]; i++)
+    free (argv[i]);
+  free (argv);
+}
+
+
+static void
+free_fd_data_map (struct fd_data_map_s *fd_data_map)
+{
+  int i;
+
+  if (!fd_data_map)
+    return;
+
+  for (i = 0; fd_data_map[i].data; i++)
+    {
+      if (fd_data_map[i].fd != -1)
+	_gpgme_io_close (fd_data_map[i].fd);
+      if (fd_data_map[i].peer_fd != -1)
+	_gpgme_io_close (fd_data_map[i].peer_fd);
+      /* Don't release data because this is only a reference.  */
+    }
+  free (fd_data_map);
+}
+
+
+static void
+gpg_release (void *engine)
+{
+  GpgObject gpg = engine;
+
+  if (!gpg)
+    return;
+
+  while (gpg->arglist)
+    {
+      struct arg_and_data_s *next = gpg->arglist->next;
+
+      free (gpg->arglist);
+      gpg->arglist = next;
+    }
+
+  free (gpg->status.buffer);
+  free (gpg->colon.buffer);
+  if (gpg->argv)
+    free_argv (gpg->argv);
+  gpgme_data_release (gpg->cmd.cb_data);
+  free (gpg->cmd.keyword);
+
+  if (gpg->status.fd[0] != -1)
+    _gpgme_io_close (gpg->status.fd[0]);
+  if (gpg->status.fd[1] != -1)
+    _gpgme_io_close (gpg->status.fd[1]);
+  if (gpg->colon.fd[0] != -1)
+    _gpgme_io_close (gpg->colon.fd[0]);
+  if (gpg->colon.fd[1] != -1)
+    _gpgme_io_close (gpg->colon.fd[1]);
+  free_fd_data_map (gpg->fd_data_map);
+  if (gpg->cmd.fd != -1)
+    _gpgme_io_close (gpg->cmd.fd);
+  free (gpg);
+}
+
+
+static GpgmeError
+gpg_new (void **engine)
 {
   GpgObject gpg;
   int rc = 0;
@@ -344,55 +415,18 @@ _gpgme_gpg_new (GpgObject *r_gpg)
 
  leave:
   if (rc)
-    {
-      _gpgme_gpg_release (gpg);
-      *r_gpg = NULL;
-    }
+    gpg_release (gpg);
   else
-    *r_gpg = gpg;
+    *engine = gpg;
   return rc;
 }
 
 
-void
-_gpgme_gpg_release (GpgObject gpg)
+static GpgmeError
+gpg_set_verbosity (void *engine, int verbosity)
 {
-  if (!gpg)
-    return;
+  GpgObject gpg = engine;
 
-  while (gpg->arglist)
-    {
-      struct arg_and_data_s *next = gpg->arglist->next;
-
-      free (gpg->arglist);
-      gpg->arglist = next;
-    }
-
-  free (gpg->status.buffer);
-  free (gpg->colon.buffer);
-  if (gpg->argv)
-    free_argv (gpg->argv);
-  gpgme_data_release (gpg->cmd.cb_data);
-  free (gpg->cmd.keyword);
-
-  if (gpg->status.fd[0] != -1)
-    _gpgme_io_close (gpg->status.fd[0]);
-  if (gpg->status.fd[1] != -1)
-    _gpgme_io_close (gpg->status.fd[1]);
-  if (gpg->colon.fd[0] != -1)
-    _gpgme_io_close (gpg->colon.fd[0]);
-  if (gpg->colon.fd[1] != -1)
-    _gpgme_io_close (gpg->colon.fd[1]);
-  free_fd_data_map (gpg->fd_data_map);
-  if (gpg->cmd.fd != -1)
-    _gpgme_io_close (gpg->cmd.fd);
-  free (gpg);
-}
-
-
-GpgmeError
-_gpgme_gpg_set_verbosity (GpgObject gpg, int verbosity)
-{
   GpgmeError err = 0;
   while (!err && verbosity-- > 0)
     err = add_arg (gpg, "--verbose");
@@ -401,22 +435,21 @@ _gpgme_gpg_set_verbosity (GpgObject gpg, int verbosity)
 
 /* Note, that the status_handler is allowed to modifiy the args
    value.  */
-void
-_gpgme_gpg_set_status_handler (GpgObject gpg,
-			       GpgmeStatusHandler fnc, void *fnc_value)
+static void
+gpg_set_status_handler (void *engine, GpgmeStatusHandler fnc, void *fnc_value)
 {
-  assert (gpg);
+  GpgObject gpg = engine;
 
   gpg->status.fnc = fnc;
   gpg->status.fnc_value = fnc_value;
 }
 
 /* Kludge to process --with-colon output.  */
-GpgmeError
-_gpgme_gpg_set_colon_line_handler (GpgObject gpg,
-				   GpgmeColonLineHandler fnc, void *fnc_value)
+static GpgmeError
+gpg_set_colon_line_handler (void *engine, GpgmeColonLineHandler fnc,
+			    void *fnc_value)
 {
-  assert (gpg);
+  GpgObject gpg = engine;
 
   gpg->colon.bufsize = 1024;
   gpg->colon.readpos = 0;
@@ -441,20 +474,79 @@ _gpgme_gpg_set_colon_line_handler (GpgObject gpg,
 }
 
 
+/* Here we handle --command-fd.  This works closely together with the
+   status handler.  */
+static int
+command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
+{
+  GpgObject gpg = opaque;
+  const char *value;
+  int value_len;
+
+  DEBUG0 ("command_cb: enter\n");
+  assert (gpg->cmd.used);
+  if (!buffer || !length || !nread)
+    return 0; /* These values are reserved for extensions.  */
+  *nread = 0;
+  if (!gpg->cmd.code)
+    {
+      DEBUG0 ("command_cb: no code\n");
+      return -1;
+    }
+    
+  if (!gpg->cmd.fnc)
+    {
+      DEBUG0 ("command_cb: no user cb\n");
+      return -1;
+    }
+
+  value = gpg->cmd.fnc (gpg->cmd.fnc_value, 
+			gpg->cmd.code, gpg->cmd.keyword);
+  if (!value)
+    {
+      DEBUG0 ("command_cb: no data from user cb\n");
+      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
+      return -1;
+    }
+
+  value_len = strlen (value);
+  if (value_len + 1 > length)
+    {
+      DEBUG0 ("command_cb: too much data from user cb\n");
+      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
+      return -1;
+    }
+
+  memcpy (buffer, value, value_len);
+  if (!value_len || (value_len && value[value_len-1] != '\n')) 
+    buffer[value_len++] = '\n';
+  *nread = value_len;
+    
+  gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
+  gpg->cmd.code = 0;
+  /* And sleep again until read_status will wake us up again.  */
+  /* XXX We must check if there are any more fds active after removing
+     this one.  */
+  (*gpg->io_cbs.remove) (gpg->fd_data_map[gpg->cmd.idx].tag);
+  gpg->cmd.fd = gpg->fd_data_map[gpg->cmd.idx].fd;
+  gpg->fd_data_map[gpg->cmd.idx].fd = -1;
+
+  return 0;
+}
+
+
 /* The Fnc will be called to get a value for one of the commands with
    a key KEY.  If the Code pssed to FNC is 0, the function may release
    resources associated with the returned value from another call.  To
    match such a second call to a first call, the returned value from
    the first call is passed as keyword.  */
-GpgmeError
-_gpgme_gpg_set_command_handler (GpgObject gpg,
-				GpgmeCommandHandler fnc, void *fnc_value,
-				GpgmeData linked_data)
+static GpgmeError
+gpg_set_command_handler (void *engine, GpgmeCommandHandler fnc,
+			 void *fnc_value, GpgmeData linked_data)
 {
+  GpgObject gpg = engine;
   GpgmeData tmp;
   GpgmeError err;
-
-  assert (gpg);
 
   err = gpgme_data_new_with_read_cb (&tmp, command_cb, gpg);
   if (err)
@@ -468,37 +560,6 @@ _gpgme_gpg_set_command_handler (GpgObject gpg,
   gpg->cmd.linked_data = linked_data;
   gpg->cmd.used = 1;
   return 0;
-}
-
-
-static void
-free_argv (char **argv)
-{
-  int i;
-
-  for (i = 0; argv[i]; i++)
-    free (argv[i]);
-  free (argv);
-}
-
-
-static void
-free_fd_data_map (struct fd_data_map_s *fd_data_map)
-{
-  int i;
-
-  if (!fd_data_map)
-    return;
-
-  for (i = 0; fd_data_map[i].data; i++)
-    {
-      if (fd_data_map[i].fd != -1)
-	_gpgme_io_close (fd_data_map[i].fd);
-      if (fd_data_map[i].peer_fd != -1)
-	_gpgme_io_close (fd_data_map[i].peer_fd);
-      /* Don't release data because this is only a reference.  */
-    }
-  free (fd_data_map);
 }
 
 
@@ -712,9 +773,10 @@ build_argv (GpgObject gpg)
   return 0;
 }
 
+
 static GpgmeError
-_gpgme_gpg_add_io_cb (GpgObject gpg, int fd, int dir,
-		      GpgmeIOCb handler, void *data, void **tag)
+add_io_cb (GpgObject gpg, int fd, int dir, GpgmeIOCb handler, void *data,
+	   void **tag)
 {
   GpgmeError err;
 
@@ -727,179 +789,24 @@ _gpgme_gpg_add_io_cb (GpgObject gpg, int fd, int dir,
   return err;
 }
 
-GpgmeError
-_gpgme_gpg_spawn (GpgObject gpg, void *opaque)
-{
-  GpgmeError rc;
-  int i, n;
-  int status;
-  struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
-
-  if (!gpg)
-    return mk_error (Invalid_Value);
-
-  if (! _gpgme_get_gpg_path ())
-    return mk_error (Invalid_Engine);
-
-  /* Kludge, so that we don't need to check the return code of all the
-     add_arg ().  We bail out here instead.  */
-  if (gpg->arg_error)
-    return mk_error (Out_Of_Core);
-
-  rc = build_argv (gpg);
-  if (rc)
-    return rc;
-
-  n = 3; /* status_fd, colon_fd and end of list */
-  for (i = 0; gpg->fd_data_map[i].data; i++) 
-    n++;
-  fd_child_list = calloc (n + n, sizeof *fd_child_list);
-  if (!fd_child_list)
-    return mk_error (Out_Of_Core);
-  fd_parent_list = fd_child_list + n;
-
-  /* build the fd list for the child */
-  n = 0;
-  if (gpg->colon.fnc)
-    {
-      fd_child_list[n].fd = gpg->colon.fd[1]; 
-      fd_child_list[n].dup_to = 1; /* dup to stdout */
-      n++;
-    }
-  for (i = 0; gpg->fd_data_map[i].data; i++)
-    {
-      if (gpg->fd_data_map[i].dup_to != -1)
-	{
-	  fd_child_list[n].fd = gpg->fd_data_map[i].peer_fd;
-	  fd_child_list[n].dup_to = gpg->fd_data_map[i].dup_to;
-	  n++;
-        }
-    }
-  fd_child_list[n].fd = -1;
-  fd_child_list[n].dup_to = -1;
-
-  /* Build the fd list for the parent.  */
-  n = 0;
-  if (gpg->status.fd[1] != -1)
-    {
-      fd_parent_list[n].fd = gpg->status.fd[1];
-      fd_parent_list[n].dup_to = -1;
-      n++;
-      gpg->status.fd[1] = -1;
-    }
-  if (gpg->colon.fd[1] != -1)
-    {
-      fd_parent_list[n].fd = gpg->colon.fd[1];
-      fd_parent_list[n].dup_to = -1;
-      n++;
-      gpg->colon.fd[1] = -1;
-    }
-  for (i = 0; gpg->fd_data_map[i].data; i++)
-    {
-      fd_parent_list[n].fd = gpg->fd_data_map[i].peer_fd;
-      fd_parent_list[n].dup_to = -1;
-      n++;
-      gpg->fd_data_map[i].peer_fd = -1;
-    }        
-  fd_parent_list[n].fd = -1;
-  fd_parent_list[n].dup_to = -1;
-
-  status = _gpgme_io_spawn (_gpgme_get_gpg_path (),
-			    gpg->argv, fd_child_list, fd_parent_list);
-  free (fd_child_list);
-  if (status == -1)
-    return mk_error (Exec_Error);
-
-  /*_gpgme_register_term_handler ( closure, closure_value, pid );*/
-
-  rc = _gpgme_gpg_add_io_cb (gpg, gpg->status.fd[0], 1,
-			     gpg_status_handler, gpg, &gpg->status.tag);
-  if (rc)
-    /* FIXME: kill the child */
-    return rc;
-
-  if (gpg->colon.fnc)
-    {
-      assert (gpg->colon.fd[0] != -1);
-      rc = _gpgme_gpg_add_io_cb (gpg, gpg->colon.fd[0], 1,
-				 gpg_colon_line_handler, gpg,
-				 &gpg->colon.tag);
-      if (rc)
-	/* FIXME: kill the child */
-	return rc;
-    }
-
-  for (i = 0; gpg->fd_data_map[i].data; i++)
-    {
-      if (gpg->cmd.used && i == gpg->cmd.idx)
-	{
-	  /* Park the cmd fd.  */
-	  gpg->cmd.fd = gpg->fd_data_map[i].fd;
-	  gpg->fd_data_map[i].fd = -1;
-	}
-      else
-	{
-	  rc = _gpgme_gpg_add_io_cb (gpg, gpg->fd_data_map[i].fd,
-				     gpg->fd_data_map[i].inbound,
-				     gpg->fd_data_map[i].inbound
-				     ? _gpgme_data_inbound_handler
-				     : _gpgme_data_outbound_handler,
-				     gpg->fd_data_map[i].data,
-				     &gpg->fd_data_map[i].tag);
-	  
-	  if (rc)
-	    /* FIXME: kill the child */
-	    return rc;
-	}
-    }
-  
-  /* fixme: check what data we can release here */
-  return 0;
-}
-
-
-static void
-gpg_status_handler (void *opaque, int fd)
-{
-  GpgObject gpg = opaque;
-  int err;
-
-  assert (fd == gpg->status.fd[0]);
-  err = read_status (gpg);
-  if (err)
-    {
-      /* XXX Horrible kludge.  We really must not make use of
-	 fnc_value.  */
-      GpgmeCtx ctx = (GpgmeCtx) gpg->status.fnc_value;
-      ctx->error = err;
-      DEBUG1 ("gpg_handler: read_status problem %d\n - stop", err);
-      _gpgme_io_close (fd);
-      return;
-    }
-  if (gpg->status.eof)
-    _gpgme_io_close (fd);
-}
-
 
 static int
 status_cmp (const void *ap, const void *bp)
 {
-    const struct status_table_s *a = ap;
-    const struct status_table_s *b = bp;
+  const struct status_table_s *a = ap;
+  const struct status_table_s *b = bp;
 
-    return strcmp (a->name, b->name);
+  return strcmp (a->name, b->name);
 }
 
 
-
-/*
- * Handle the status output of GnuPG.  This function does read entire
- * lines and passes them as C strings to the callback function (we can
- * use C Strings because the status output is always UTF-8 encoded).
- * Of course we have to buffer the lines to cope with long lines
- * e.g. with a large user ID.  Note: We can optimize this to only cope
- * with status line code we know about and skip all other stuff
- * without buffering (i.e. without extending the buffer).  */
+/* Handle the status output of GnuPG.  This function does read entire
+   lines and passes them as C strings to the callback function (we can
+   use C Strings because the status output is always UTF-8 encoded).
+   Of course we have to buffer the lines to cope with long lines
+   e.g. with a large user ID.  Note: We can optimize this to only cope
+   with status line code we know about and skip all other stuff
+   without buffering (i.e. without extending the buffer).  */
 static GpgmeError
 read_status (GpgObject gpg)
 {
@@ -997,11 +904,10 @@ read_status (GpgObject gpg)
 			      while (fds.signaled);
 			    }
 
-			  _gpgme_gpg_add_io_cb
-			    (gpg, gpg->cmd.fd,
-			     0, _gpgme_data_outbound_handler,
-			     gpg->fd_data_map[gpg->cmd.idx].data,
-			     &gpg->fd_data_map[gpg->cmd.idx].tag);
+			  add_io_cb (gpg, gpg->cmd.fd, 0,
+				     _gpgme_data_outbound_handler,
+				     gpg->fd_data_map[gpg->cmd.idx].data,
+				     &gpg->fd_data_map[gpg->cmd.idx].tag);
 			  gpg->fd_data_map[gpg->cmd.idx].fd = gpg->cmd.fd;
 			  gpg->cmd.fd = -1;
                         }
@@ -1051,12 +957,109 @@ read_status (GpgObject gpg)
 }
 
 
+static void
+status_handler (void *opaque, int fd)
+{
+  GpgObject gpg = opaque;
+  int err;
+
+  assert (fd == gpg->status.fd[0]);
+  err = read_status (gpg);
+  if (err)
+    {
+      /* XXX Horrible kludge.  We really must not make use of
+	 fnc_value.  */
+      GpgmeCtx ctx = (GpgmeCtx) gpg->status.fnc_value;
+      ctx->error = err;
+      DEBUG1 ("gpg_handler: read_status problem %d\n - stop", err);
+      _gpgme_io_close (fd);
+      return;
+    }
+  if (gpg->status.eof)
+    _gpgme_io_close (fd);
+}
+
+
+static GpgmeError
+read_colon_line (GpgObject gpg)
+{
+  char *p;
+  int nread;
+  size_t bufsize = gpg->colon.bufsize; 
+  char *buffer = gpg->colon.buffer;
+  size_t readpos = gpg->colon.readpos; 
+
+  assert (buffer);
+  if (bufsize - readpos < 256)
+    { 
+      /* Need more room for the read.  */
+      bufsize += 1024;
+      buffer = realloc (buffer, bufsize);
+      if (!buffer) 
+	return mk_error (Out_Of_Core);
+    }
+
+  nread = _gpgme_io_read (gpg->colon.fd[0], buffer+readpos, bufsize-readpos);
+  if (nread == -1)
+    return mk_error (Read_Error);
+
+  if (!nread)
+    {
+      gpg->colon.eof = 1;
+      assert (gpg->colon.fnc);
+      gpg->colon.fnc (gpg->colon.fnc_value, NULL);
+      return 0;
+    }
+
+  while (nread > 0)
+    {
+      for (p = buffer + readpos; nread; nread--, p++)
+	{
+	  if ( *p == '\n' )
+	    {
+	      /* (we require that the last line is terminated by a LF)
+		 and we skip empty lines.  Note: we use UTF8 encoding
+		 and escaping of special characters We require at
+		 least one colon to cope with some other printed
+		 information.  */
+	      *p = 0;
+	      if (*buffer && strchr (buffer, ':'))
+		{
+		  assert (gpg->colon.fnc);
+		  gpg->colon.fnc (gpg->colon.fnc_value, buffer);
+		}
+            
+	      /* To reuse the buffer for the next line we have to
+		 shift the remaining data to the buffer start and
+		 restart the loop Hmmm: We can optimize this function
+		 by looking forward in the buffer to see whether a
+		 second complete line is available and in this case
+		 avoid the memmove for this line.  */
+	      nread--; p++;
+	      if (nread)
+		memmove (buffer, p, nread);
+	      readpos = 0;
+	      break; /* The for loop.  */
+            }
+	  else
+	    readpos++;
+        }
+    } 
+
+  /* Update the gpg object.  */
+  gpg->colon.bufsize = bufsize;
+  gpg->colon.buffer  = buffer;
+  gpg->colon.readpos = readpos;
+  return 0;
+}
+
+
 /* This colonline handler thing is not the clean way to do it.  It
    might be better to enhance the GpgmeData object to act as a wrapper
    for a callback.  Same goes for the status thing.  For now we use
    this thing here because it is easier to implement.  */
 static void
-gpg_colon_line_handler (void *opaque, int fd)
+colon_line_handler (void *opaque, int fd)
 {
   GpgObject gpg = opaque;
   GpgmeError rc = 0;
@@ -1074,143 +1077,141 @@ gpg_colon_line_handler (void *opaque, int fd)
     _gpgme_io_close (fd);
 }
 
+
 static GpgmeError
-read_colon_line ( GpgObject gpg )
+gpg_start (void *engine, void *opaque)
 {
-    char *p;
-    int nread;
-    size_t bufsize = gpg->colon.bufsize; 
-    char *buffer = gpg->colon.buffer;
-    size_t readpos = gpg->colon.readpos; 
+  GpgObject gpg = engine;
+  GpgmeError rc;
+  int i, n;
+  int status;
+  struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
 
-    assert (buffer);
-    if (bufsize - readpos < 256) { 
-        /* need more room for the read */
-        bufsize += 1024;
-        buffer = realloc (buffer, bufsize);
-        if ( !buffer ) 
-            return mk_error (Out_Of_Core);
+  if (!gpg)
+    return mk_error (Invalid_Value);
+
+  if (! _gpgme_get_gpg_path ())
+    return mk_error (Invalid_Engine);
+
+  /* Kludge, so that we don't need to check the return code of all the
+     add_arg ().  We bail out here instead.  */
+  if (gpg->arg_error)
+    return mk_error (Out_Of_Core);
+
+  rc = build_argv (gpg);
+  if (rc)
+    return rc;
+
+  n = 3; /* status_fd, colon_fd and end of list */
+  for (i = 0; gpg->fd_data_map[i].data; i++) 
+    n++;
+  fd_child_list = calloc (n + n, sizeof *fd_child_list);
+  if (!fd_child_list)
+    return mk_error (Out_Of_Core);
+  fd_parent_list = fd_child_list + n;
+
+  /* build the fd list for the child */
+  n = 0;
+  if (gpg->colon.fnc)
+    {
+      fd_child_list[n].fd = gpg->colon.fd[1]; 
+      fd_child_list[n].dup_to = 1; /* dup to stdout */
+      n++;
     }
-    
-
-    nread = _gpgme_io_read ( gpg->colon.fd[0],
-                             buffer+readpos, bufsize-readpos );
-    if (nread == -1)
-        return mk_error(Read_Error);
-
-    if (!nread) {
-        gpg->colon.eof = 1;
-        assert (gpg->colon.fnc);
-        gpg->colon.fnc ( gpg->colon.fnc_value, NULL );
-        return 0;
-    }
-
-    while (nread > 0) {
-        for (p = buffer + readpos; nread; nread--, p++) {
-            if ( *p == '\n' ) {
-                /* (we require that the last line is terminated by a
-                 * LF) and we skip empty lines.  Note: we use UTF8
-                 * encoding and escaping of special characters
-                 * We require at least one colon to cope with
-                 * some other printed information.
-                 */
-                *p = 0;
-                if (*buffer && strchr (buffer, ':'))
-		  {
-                    assert (gpg->colon.fnc);
-                    gpg->colon.fnc (gpg->colon.fnc_value, buffer);
-		  }
-            
-                /* To reuse the buffer for the next line we have to
-                 * shift the remaining data to the buffer start and
-                 * restart the loop Hmmm: We can optimize this
-                 * function by looking forward in the buffer to see
-                 * whether a second complete line is available and in
-                 * this case avoid the memmove for this line.  */
-                nread--; p++;
-                if (nread)
-                    memmove (buffer, p, nread);
-                readpos = 0;
-                break; /* the for loop */
-            }
-            else
-                readpos++;
+  for (i = 0; gpg->fd_data_map[i].data; i++)
+    {
+      if (gpg->fd_data_map[i].dup_to != -1)
+	{
+	  fd_child_list[n].fd = gpg->fd_data_map[i].peer_fd;
+	  fd_child_list[n].dup_to = gpg->fd_data_map[i].dup_to;
+	  n++;
         }
-    } 
-    
-    /* Update the gpg object.  */
-    gpg->colon.bufsize = bufsize;
-    gpg->colon.buffer  = buffer;
-    gpg->colon.readpos = readpos;
-    return 0;
-}
-
-/* 
- * Here we handle --command-fd.  This works closely together with
- * the status handler.  
- */
-
-static int
-command_cb (void *opaque, char *buffer, size_t length, size_t *nread)
-{
-  GpgObject gpg = opaque;
-  const char *value;
-  int value_len;
-
-  DEBUG0 ("command_cb: enter\n");
-  assert (gpg->cmd.used);
-  if (!buffer || !length || !nread)
-    return 0; /* These values are reserved for extensions.  */
-  *nread = 0;
-  if (!gpg->cmd.code)
-    {
-      DEBUG0 ("command_cb: no code\n");
-      return -1;
     }
-    
-  if (!gpg->cmd.fnc)
+  fd_child_list[n].fd = -1;
+  fd_child_list[n].dup_to = -1;
+
+  /* Build the fd list for the parent.  */
+  n = 0;
+  if (gpg->status.fd[1] != -1)
     {
-      DEBUG0 ("command_cb: no user cb\n");
-      return -1;
+      fd_parent_list[n].fd = gpg->status.fd[1];
+      fd_parent_list[n].dup_to = -1;
+      n++;
+      gpg->status.fd[1] = -1;
+    }
+  if (gpg->colon.fd[1] != -1)
+    {
+      fd_parent_list[n].fd = gpg->colon.fd[1];
+      fd_parent_list[n].dup_to = -1;
+      n++;
+      gpg->colon.fd[1] = -1;
+    }
+  for (i = 0; gpg->fd_data_map[i].data; i++)
+    {
+      fd_parent_list[n].fd = gpg->fd_data_map[i].peer_fd;
+      fd_parent_list[n].dup_to = -1;
+      n++;
+      gpg->fd_data_map[i].peer_fd = -1;
+    }        
+  fd_parent_list[n].fd = -1;
+  fd_parent_list[n].dup_to = -1;
+
+  status = _gpgme_io_spawn (_gpgme_get_gpg_path (),
+			    gpg->argv, fd_child_list, fd_parent_list);
+  free (fd_child_list);
+  if (status == -1)
+    return mk_error (Exec_Error);
+
+  /*_gpgme_register_term_handler ( closure, closure_value, pid );*/
+
+  rc = add_io_cb (gpg, gpg->status.fd[0], 1, status_handler, gpg,
+		  &gpg->status.tag);
+  if (rc)
+    /* FIXME: kill the child */
+    return rc;
+
+  if (gpg->colon.fnc)
+    {
+      assert (gpg->colon.fd[0] != -1);
+      rc = add_io_cb (gpg, gpg->colon.fd[0], 1, colon_line_handler, gpg,
+		      &gpg->colon.tag);
+      if (rc)
+	/* FIXME: kill the child */
+	return rc;
     }
 
-  value = gpg->cmd.fnc (gpg->cmd.fnc_value, 
-			gpg->cmd.code, gpg->cmd.keyword);
-  if (!value)
+  for (i = 0; gpg->fd_data_map[i].data; i++)
     {
-      DEBUG0 ("command_cb: no data from user cb\n");
-      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
-      return -1;
+      if (gpg->cmd.used && i == gpg->cmd.idx)
+	{
+	  /* Park the cmd fd.  */
+	  gpg->cmd.fd = gpg->fd_data_map[i].fd;
+	  gpg->fd_data_map[i].fd = -1;
+	}
+      else
+	{
+	  rc = add_io_cb (gpg, gpg->fd_data_map[i].fd,
+			  gpg->fd_data_map[i].inbound,
+			  gpg->fd_data_map[i].inbound
+			  ? _gpgme_data_inbound_handler
+			  : _gpgme_data_outbound_handler,
+			  gpg->fd_data_map[i].data, &gpg->fd_data_map[i].tag);
+	  
+	  if (rc)
+	    /* FIXME: kill the child */
+	    return rc;
+	}
     }
-
-  value_len = strlen (value);
-  if (value_len + 1 > length)
-    {
-      DEBUG0 ("command_cb: too much data from user cb\n");
-      gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
-      return -1;
-    }
-
-  memcpy (buffer, value, value_len);
-  if (!value_len || (value_len && value[value_len-1] != '\n')) 
-    buffer[value_len++] = '\n';
-  *nread = value_len;
-    
-  gpg->cmd.fnc (gpg->cmd.fnc_value, 0, value);
-  gpg->cmd.code = 0;
-  /* And sleep again until read_status will wake us up again.  */
-  /* XXX We must check if there are any more fds active after removing
-     this one.  */
-  (*gpg->io_cbs.remove) (gpg->fd_data_map[gpg->cmd.idx].tag);
-  gpg->cmd.fd = gpg->fd_data_map[gpg->cmd.idx].fd;
-  gpg->fd_data_map[gpg->cmd.idx].fd = -1;
-
+  
+  /* fixme: check what data we can release here */
   return 0;
 }
 
-GpgmeError
-_gpgme_gpg_op_decrypt (GpgObject gpg, GpgmeData ciph, GpgmeData plain)
+
+static GpgmeError
+gpg_decrypt (void *engine, GpgmeData ciph, GpgmeData plain)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
 
   err = add_arg (gpg, "--decrypt");
@@ -1228,9 +1229,10 @@ _gpgme_gpg_op_decrypt (GpgObject gpg, GpgmeData ciph, GpgmeData plain)
   return err;
 }
 
-GpgmeError
-_gpgme_gpg_op_delete (GpgObject gpg, GpgmeKey key, int allow_secret)
+static GpgmeError
+gpg_delete (void *engine, GpgmeKey key, int allow_secret)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
 
   err = add_arg (gpg, allow_secret ? "--delete-secret-and-public-key"
@@ -1251,8 +1253,7 @@ _gpgme_gpg_op_delete (GpgObject gpg, GpgmeKey key, int allow_secret)
 
 
 static GpgmeError
-_gpgme_append_gpg_args_from_signers (GpgObject gpg,
-				     GpgmeCtx ctx /* FIXME */)
+append_args_from_signers (GpgObject gpg, GpgmeCtx ctx /* FIXME */)
 {
   GpgmeError err = 0;
   int i;
@@ -1276,15 +1277,15 @@ _gpgme_append_gpg_args_from_signers (GpgObject gpg,
 }
 
 
-GpgmeError
-_gpgme_gpg_op_edit (GpgObject gpg, GpgmeKey key, GpgmeData out,
-		    GpgmeCtx ctx /* FIXME */)
+static GpgmeError
+gpg_edit (void *engine, GpgmeKey key, GpgmeData out, GpgmeCtx ctx /* FIXME */)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
 
   err = add_arg (gpg, "--with-colons");
   if (!err)
-    err = _gpgme_append_gpg_args_from_signers (gpg, ctx);
+    err = append_args_from_signers (gpg, ctx);
   if (!err)
   err = add_arg (gpg, "--edit-key");
   if (!err)
@@ -1305,8 +1306,7 @@ _gpgme_gpg_op_edit (GpgObject gpg, GpgmeKey key, GpgmeData out,
 
 
 static GpgmeError
-_gpgme_append_gpg_args_from_recipients (GpgObject gpg,
-					const GpgmeRecipients rset)
+append_args_from_recipients (GpgObject gpg, const GpgmeRecipients rset)
 {
   GpgmeError err = 0;
   struct user_id_s *r;
@@ -1324,10 +1324,11 @@ _gpgme_append_gpg_args_from_recipients (GpgObject gpg,
 }
 
 
-GpgmeError
-_gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
-		       GpgmeData plain, GpgmeData ciph, int use_armor)
+static GpgmeError
+gpg_encrypt (void *engine, GpgmeRecipients recp, GpgmeData plain,
+	     GpgmeData ciph, int use_armor)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
   int symmetric = !recp;
 
@@ -1344,7 +1345,7 @@ _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
 	err = add_arg (gpg, "--always-trust");
 
       if (!err)
-	err = _gpgme_append_gpg_args_from_recipients (gpg, recp);
+	err = append_args_from_recipients (gpg, recp);
     }
 
   /* Tell the gpg object about the data.  */
@@ -1362,11 +1363,11 @@ _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
   return err;
 }
 
-GpgmeError
-_gpgme_gpg_op_encrypt_sign (GpgObject gpg, GpgmeRecipients recp,
-			    GpgmeData plain, GpgmeData ciph, int use_armor,
-			    GpgmeCtx ctx /* FIXME */)
+static GpgmeError
+gpg_encrypt_sign (void *engine, GpgmeRecipients recp, GpgmeData plain,
+		  GpgmeData ciph, int use_armor, GpgmeCtx ctx /* FIXME */)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
 
   err = add_arg (gpg, "--encrypt");
@@ -1381,10 +1382,10 @@ _gpgme_gpg_op_encrypt_sign (GpgObject gpg, GpgmeRecipients recp,
     err = add_arg (gpg, "--always-trust");
 
   if (!err)
-    err = _gpgme_append_gpg_args_from_recipients (gpg, recp);
+    err = append_args_from_recipients (gpg, recp);
 
   if (!err)
-    err = _gpgme_append_gpg_args_from_signers (gpg, ctx);
+    err = append_args_from_signers (gpg, ctx);
 
   /* Tell the gpg object about the data.  */
   if (!err)
@@ -1401,10 +1402,11 @@ _gpgme_gpg_op_encrypt_sign (GpgObject gpg, GpgmeRecipients recp,
   return err;
 }
 
-GpgmeError
-_gpgme_gpg_op_export (GpgObject gpg, GpgmeRecipients recp,
-		      GpgmeData keydata, int use_armor)
+static GpgmeError
+gpg_export (void *engine, GpgmeRecipients recp, GpgmeData keydata,
+	    int use_armor)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
 
   err = add_arg (gpg, "--export");
@@ -1430,19 +1432,21 @@ _gpgme_gpg_op_export (GpgObject gpg, GpgmeRecipients recp,
   return err;
 }
 
-GpgmeError
-_gpgme_gpg_op_genkey (GpgObject gpg, GpgmeData help_data, int use_armor,
-		      GpgmeData pubkey, GpgmeData seckey)
+
+static GpgmeError
+gpg_genkey (void *engine, GpgmeData help_data, int use_armor,
+	    GpgmeData pubkey, GpgmeData seckey)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
 
   if (!gpg)
     return mk_error (Invalid_Value);
 
-  /* We need a special mechanism to get the fd of a pipe here, so
-   * that we can use this for the %pubring and %secring parameters.
-   * We don't have this yet, so we implement only the adding to the
-   * standard keyrings */
+  /* We need a special mechanism to get the fd of a pipe here, so that
+     we can use this for the %pubring and %secring parameters.  We
+     don't have this yet, so we implement only the adding to the
+     standard keyrings.  */
   if (pubkey || seckey)
     return err = mk_error (Not_Implemented);
 
@@ -1455,9 +1459,11 @@ _gpgme_gpg_op_genkey (GpgObject gpg, GpgmeData help_data, int use_armor,
   return err;
 }
 
-GpgmeError
-_gpgme_gpg_op_import (GpgObject gpg, GpgmeData keydata)
+
+static GpgmeError
+gpg_import (void *engine, GpgmeData keydata)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
 
   err = add_arg (gpg, "--import");
@@ -1468,10 +1474,11 @@ _gpgme_gpg_op_import (GpgObject gpg, GpgmeData keydata)
 }
 
 
-GpgmeError
-_gpgme_gpg_op_keylist (GpgObject gpg, const char *pattern, int secret_only,
-		       int keylist_mode)
+static GpgmeError
+gpg_keylist (void *engine, const char *pattern, int secret_only,
+	     int keylist_mode)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
 
   err = add_arg (gpg, "--with-colons");
@@ -1495,10 +1502,11 @@ _gpgme_gpg_op_keylist (GpgObject gpg, const char *pattern, int secret_only,
 }
 
 
-GpgmeError
-_gpgme_gpg_op_keylist_ext (GpgObject gpg, const char *pattern[],
-			   int secret_only, int reserved, int keylist_mode)
+static GpgmeError
+gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
+		 int reserved, int keylist_mode)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
 
   if (reserved)
@@ -1525,11 +1533,12 @@ _gpgme_gpg_op_keylist_ext (GpgObject gpg, const char *pattern[],
 }
 
 
-GpgmeError
-_gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
-		    GpgmeSigMode mode, int use_armor,
-		    int use_textmode, GpgmeCtx ctx /* FIXME */)
+static GpgmeError
+gpg_sign (void *engine, GpgmeData in, GpgmeData out, GpgmeSigMode mode,
+	  int use_armor, int use_textmode, int include_certs,
+	  GpgmeCtx ctx /* FIXME */)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
 
   if (mode == GPGME_SIG_MODE_CLEAR)
@@ -1546,7 +1555,7 @@ _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
     }
 
   if (!err)
-    err = _gpgme_append_gpg_args_from_signers (gpg, ctx);
+    err = append_args_from_signers (gpg, ctx);
 
   /* Tell the gpg object about the data.  */
   if (!err)
@@ -1557,9 +1566,10 @@ _gpgme_gpg_op_sign (GpgObject gpg, GpgmeData in, GpgmeData out,
   return err;
 }
 
-GpgmeError
-_gpgme_gpg_op_trustlist (GpgObject gpg, const char *pattern)
+static GpgmeError
+gpg_trustlist (void *engine, const char *pattern)
 {
+  GpgObject gpg = engine;
   GpgmeError err;
 
   err = add_arg (gpg, "--with-colons");
@@ -1575,10 +1585,12 @@ _gpgme_gpg_op_trustlist (GpgObject gpg, const char *pattern)
   return err;
 }
 
-GpgmeError
-_gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData signed_text,
-		      GpgmeData plaintext)
+
+static GpgmeError
+gpg_verify (void *engine, GpgmeData sig, GpgmeData signed_text,
+	    GpgmeData plaintext)
 {
+  GpgObject gpg = engine;
   GpgmeError err = 0;
 
   if (plaintext)
@@ -1614,16 +1626,43 @@ _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData signed_text,
 }
 
 
-void
-_gpgme_gpg_set_io_cbs (GpgObject gpg, struct GpgmeIOCbs *io_cbs)
+static void
+gpg_set_io_cbs (void *engine, struct GpgmeIOCbs *io_cbs)
 {
+  GpgObject gpg = engine;
+
   gpg->io_cbs = *io_cbs;
 }
 
+
+struct engine_ops _gpgme_engine_ops_gpg =
+  {
+    /* Static functions.  */
+    _gpgme_get_gpg_path,
+    gpg_get_version,
+    gpg_check_version,
+    gpg_new,
 
-void
-_gpgme_gpg_io_event (GpgObject gpg, GpgmeEventIO type, void *type_data)
-{
-  if (gpg->io_cbs.event)
-    (*gpg->io_cbs.event) (gpg->io_cbs.event_priv, type, type_data);
-}
+    /* Member functions.  */
+    gpg_release,
+    gpg_set_status_handler,
+    gpg_set_command_handler,
+    gpg_set_colon_line_handler,
+    gpg_set_verbosity,
+    gpg_decrypt,
+    gpg_delete,
+    gpg_edit,
+    gpg_encrypt,
+    gpg_encrypt_sign,
+    gpg_export,
+    gpg_genkey,
+    gpg_import,
+    gpg_keylist,
+    gpg_keylist_ext,
+    gpg_sign,
+    gpg_trustlist,
+    gpg_verify,
+    gpg_start,
+    gpg_set_io_cbs,
+    gpg_io_event
+  };

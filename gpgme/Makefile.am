@@ -55,6 +55,12 @@ else
 system_components = ${ath_components} posix-util.c posix-sema.c posix-io.c
 endif
 
+if HAVE_GPGSM
+gpgsm_components = engine-gpgsm.c
+else
+gpgsm_components =
+endif
+
 libgpgme_la_SOURCES =							\
 	gpgme.h types.h util.h conversion.c context.h ops.h		\
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
@@ -64,15 +70,14 @@ libgpgme_la_SOURCES =							\
 	sign.c passphrase.c progress.c					\
 	key.h key.c keylist.c trustlist.c				\
 	import.c export.c genkey.c delete.c edit.c			\
-	engine.h engine.c rungpg.h rungpg.c status-table.h		\
-	engine-gpgsm.c engine-gpgsm.h					\
-	sema.h io.h ${system_components}				\
+	engine.h engine-backend.h engine.c rungpg.c status-table.h	\
+	${gpgsm_components} sema.h io.h ${system_components}		\
 	debug.c debug.h gpgme.c version.c errors.c
 libgpgme_la_LIBADD = ${assuan_libobjs} @LTLIBOBJS@
 
 errors.c : gpgme.h
 	$(srcdir)/mkerrors < $(srcdir)/gpgme.h > errors.c
 
-status-table.h : rungpg.h
+status-table.h : gpgme.h
 	$(srcdir)/mkstatus < $(srcdir)/gpgme.h > status-table.h
 
