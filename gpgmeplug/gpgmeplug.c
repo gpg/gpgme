@@ -2079,6 +2079,7 @@ struct CertificateInfo* nextCertificate( struct CertIterator* it )
     const char* s;
     unsigned long u;
     char* names[MAX_GPGME_IDX+1];
+    struct DnPair *issuer_dn, *tmp_dn;
     memset( names, 0, sizeof( names ) );
     freeInfo( &(it->info) );
 
@@ -2109,8 +2110,19 @@ struct CertificateInfo* nextCertificate( struct CertIterator* it )
     it->info.fingerprint = make_fingerprint( s );
 
     s = gpgme_key_get_string_attr (key, GPGME_ATTR_ISSUER, 0, 0); 
-    it->info.issuer = xstrdup(s);
-
+    if( s ) {
+      issuer_dn = tmp_dn = parse_dn( s );     
+      /*it->info.issuer = xstrdup(s);*/
+      it->info.issuer = reorder_dn( issuer_dn );
+      while( tmp_dn->key ) {
+	safe_free( (void**)&issuer_dn->key );
+	safe_free( (void**)&issuer_dn->value );
+	++tmp_dn;
+      }
+      safe_free( (void**)&issuer_dn );
+    } else {
+      it->info.issuer = NULL;
+    }
     s = gpgme_key_get_string_attr (key, GPGME_ATTR_CHAINID, 0, 0); 
     it->info.chainid = xstrdup(s);
 
