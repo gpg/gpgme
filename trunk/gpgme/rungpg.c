@@ -1308,18 +1308,23 @@ _gpgme_gpg_op_encrypt (GpgObject gpg, GpgmeRecipients recp,
 		       GpgmeData plain, GpgmeData ciph, int use_armor)
 {
   GpgmeError err;
+  int symmetric = !recp;
 
-  err = _gpgme_gpg_add_arg (gpg, "--encrypt");
+  err = _gpgme_gpg_add_arg (gpg, symmetric ? "--symmetric" : "--encrypt");
+
   if (!err && use_armor)
     err = _gpgme_gpg_add_arg (gpg, "--armor");
 
-  /* If we know that all recipients are valid (full or ultimate trust)
-   * we can suppress further checks */
-  if (!err && _gpgme_recipients_all_valid (recp))
-    err = _gpgme_gpg_add_arg (gpg, "--always-trust");
+  if (!symmetric)
+    {
+      /* If we know that all recipients are valid (full or ultimate trust)
+	 we can suppress further checks.  */
+      if (!err && !symmetric && _gpgme_recipients_all_valid (recp))
+	err = _gpgme_gpg_add_arg (gpg, "--always-trust");
 
-  if (!err)
-    err = _gpgme_append_gpg_args_from_recipients (gpg, recp);
+      if (!err)
+	err = _gpgme_append_gpg_args_from_recipients (gpg, recp);
+    }
 
   /* Tell the gpg object about the data.  */
   if (!err)
@@ -1560,6 +1565,8 @@ _gpgme_gpg_op_verify (GpgObject gpg, GpgmeData sig, GpgmeData text)
       err = _gpgme_gpg_add_arg (gpg, "--output");
       if (!err)
 	err = _gpgme_gpg_add_arg (gpg, "-");
+      if (!err)
+	err = _gpgme_gpg_add_arg (gpg, "--");
       if (!err)
 	err = _gpgme_gpg_add_data (gpg, sig, 0);
       if (!err)

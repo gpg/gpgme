@@ -1,3 +1,16 @@
+2002-03-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* encrypt.c (_gpgme_encrypt_sym_status_handler): New function.
+	(gpgme_op_encrypt_start): New variable SYMMETRIC, set it if RECP
+	is null, and if it is set, use _gpgme_encrypt_sym_status_handler
+	as status handler and run _gpgme_passphrase_start.
+	* rungpg.c (_gpgme_gpg_op_encrypt): If RECP is zero, do symmetric
+	encryption.
+	* engine-gpgsm.c (_gpgme_gpgsm_op_encrypt): If RECP is zero,
+	return error value.
+
+	* rungpg.c (_gpgme_gpg_op_verify): Add "--" argument.
+
 2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* passphrase.c (_gpgme_passphrase_status_handler): Also set the

@@ -2289,6 +2289,13 @@ encrypted for all valid recipients and returned in @var{cipher}.  More
 information about the invalid recipients is available with
 @code{gpgme_get_op_info}.  @xref{Detailed Results}.
 
+If @var{recp} is @code{NULL}, symmetric rather than public key
+encryption is performed.  Symmetrically encrypted cipher text can be
+deciphered with @code{gpgme_op_decrypt}.  Note that in this case the
+crypto backend needs to retrieve a passphrase from the user.
+Symmetric encryption is currently only supported for the OpenPGP
+crypto backend.
+
 The function returns @code{GPGME_No_Error} if the ciphertext could be
 created successfully, @code{GPGME_Invalid_Value} if @var{ctx},
 @var{rset}, @var{plain} or @var{cipher} is not a valid pointer,
