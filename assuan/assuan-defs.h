@@ -45,6 +45,10 @@ struct assuan_context_s {
     int linelen;  /* w/o CR, LF - might not be the same as
                      strlen(line) due to embedded nuls. However a nul
                      is always written at this pos */
+    struct {
+      char line[LINELENGTH];
+      int linelen ;
+    } attic;
   } inbound;
 
   struct {
