@@ -1675,7 +1675,9 @@ bool decryptMessage( const char* ciphertext,
                      bool        cipherIsBinary,
                      int         cipherLen,
                      const char** cleartext,
-                     const char* certificate );
+                     const char* certificate,
+                     int* errId,
+                     char** errTxt );
 
 /*! \ingroup groupCryptAct
    \brief Combines the functionality of

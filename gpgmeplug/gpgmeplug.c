@@ -1797,7 +1797,9 @@ bool decryptMessage( const char* ciphertext,
                      bool        cipherIsBinary,
                      int         cipherLen,
                      const char** cleartext,
-                     const char* certificate )
+                     const char* certificate,
+                     int* errId,
+                     char** errTxt )
 {
   GpgmeCtx ctx;
   GpgmeError err;
@@ -1827,7 +1829,19 @@ bool decryptMessage( const char* ciphertext,
 
   gpgme_data_new( &gPlaintext );
 
-  gpgme_op_decrypt( ctx, gCiphertext, gPlaintext );
+  err = err = gpgme_op_decrypt( ctx, gCiphertext, gPlaintext );
+  if( err ) {
+    fprintf( stderr, "\ngpgme_op_decrypt() returned this error code:  %i\n\n", err );
+    if( errId )
+      *errId = err;
+    if( errTxt ) {
+      const char* _errTxt = gpgme_strerror( err );
+      *errTxt = malloc( strlen( _errTxt ) + 1 );
+      if( *errTxt )
+        strcpy(*errTxt, _errTxt );
+    }
+  }
+  
   gpgme_data_release( gCiphertext );
 
   rCiph = gpgme_data_release_and_get_mem( gPlaintext,  &rCLen );
