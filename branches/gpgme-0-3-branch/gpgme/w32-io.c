@@ -899,11 +899,8 @@ _gpgme_io_spawn ( const char *path, char **argv,
     }
 
     /* Close the other ends of the pipes */
-    for (i=0; fd_parent_list[i].fd != -1; i++ ) {
-        DEBUG1 ("Closing fd %d\n", fd_parent_list[i].fd );
-        if ( !CloseHandle ( fd_to_handle (fd_parent_list[i].fd) ) )
-            DEBUG1 ("CloseHandle failed: ec=%d", (int)GetLastError());
-    }
+    for (i = 0; fd_parent_list[i].fd != -1; i++)
+      _gpgme_io_close (fd_parent_list[i].fd);
 
     DEBUG4 ("CreateProcess ready\n"
             "-   hProcess=%p  hThread=%p\n"
