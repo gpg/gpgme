@@ -467,6 +467,11 @@ _gpgme_verify_status_handler (void *priv, GpgmeStatusCode code, char *args)
       return sig ? parse_valid_sig (sig, args) : GPGME_General_Error;
 
     case GPGME_STATUS_NODATA:
+      if (!sig)
+	return GPGME_No_Data;
+      sig->status = GPGME_No_Data;
+      break;
+
     case GPGME_STATUS_UNEXPECTED:
       if (!sig)
 	return GPGME_General_Error;
