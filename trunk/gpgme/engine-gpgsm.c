@@ -759,8 +759,24 @@ GpgmeError
 _gpgme_gpgsm_op_export (GpgsmObject gpgsm, GpgmeRecipients recp,
 			GpgmeData keydata, int use_armor)
 {
-  /* FIXME */
-  return mk_error (Not_Implemented);
+  GpgmeError err;
+
+  if (!gpgsm)
+    return mk_error (Invalid_Value);
+
+  gpgsm->command = xtrystrdup ("EXPORT");
+  if (!gpgsm->command)
+    return mk_error (Out_Of_Core);
+
+  gpgsm->output_cb.data = keydata;
+  err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
+		      use_armor ? "--armor" : 0);
+  if (err)
+    return err;
+  _gpgme_io_close (gpgsm->input_cb.fd);
+  _gpgme_io_close (gpgsm->message_cb.fd);
+
+  return 0;
 }
 
 
