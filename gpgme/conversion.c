@@ -1,6 +1,6 @@
 /* conversion.c - String conversion helper functions.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -31,9 +31,12 @@
 #include "gpgme.h"
 #include "util.h"
 
-
+
+/* Convert two hexadecimal digits from STR to the value they
+   represent.  Returns -1 if one of the characters is not a
+   hexadecimal digit.  */
 int
-_gpgme_hextobyte (const byte *str)
+_gpgme_hextobyte (const unsigned char *str)
 {
   int val = 0;
   int i;
@@ -68,12 +71,18 @@ _gpgme_decode_c_string (const char *src, char **destp, int len)
 {
   char *dest;
 
+  /* Set up the destination buffer.  */
   if (len)
-    dest = *destp;
+    {
+      if (len < strlen (src) + 1)
+	return GPGME_General_Error;
+
+      dest = *destp;
+    }
   else
     {
-      /* We can malloc a buffer of the same length, because the converted
-	 string will never be larger.  */
+      /* The converted string will never be larger than the original
+	 string.  */
       dest = malloc (strlen (src) + 1);
       if (!dest)
 	return GPGME_Out_Of_Core;
@@ -81,71 +90,70 @@ _gpgme_decode_c_string (const char *src, char **destp, int len)
       *destp = dest;
     }
 
+  /* Convert the string.  */
   while (*src)
     {
       if (*src != '\\')
-	*(dest++) = *(src++);
-      else if (src[1] == '\\')
 	{
-	  src++;
-	  *(dest++) = *(src++); 
-        }
-      else if (src[1] == 'n')
-	{
-	  src += 2;
-	  *(dest++) = '\n'; 
-        }
-      else if (src[1] == 'r')
-	{
-	  src += 2;
-	  *(dest++) = '\r'; 
-        }
-      else if (src[1] == 'v')
-	{
-	  src += 2;
-	  *(dest++) = '\v'; 
-        }
-      else if (src[1] == 'b')
-	{
-	  src += 2;
-	  *(dest++) = '\b'; 
-        }
-      else if (src[1] == '0')
-	{
-	  /* Hmmm: no way to express this */
-	  src += 2;
-	  *(dest++) = '\\';
-	  *(dest++) = '\0'; 
-        }
-      else if (src[1] == 'x' && isxdigit (src[2]) && isxdigit (src[3]))
-	{
-	  int val = _gpgme_hextobyte (&src[2]);
-	  if (val == -1)
-	    {
-	      /* Should not happen.  */
-	      *(dest++) = *(src++);
-	      *(dest++) = *(src++);
-	      *(dest++) = *(src++);
-	      *(dest++) = *(src++);
-	    }
-	  else
-	    {
-	      if (!val)
-		{
-		  *(dest++) = '\\';
-		  *(dest++) = '\0'; 
-		}
-	      else 
-		*(byte*)dest++ = val;
-	      src += 4;
-	    }
-        }
-      else
-	{
-	  /* should not happen */
-	  src++;
-	  *(dest++) = '\\'; 
 	  *(dest++) = *(src++);
+	  continue;
+	}
+
+      switch (src[1])
+	{
+#define DECODE_ONE(match,result)	\
+	case match:			\
+	  src += 2;			\
+	  *(dest++) = result;		\
+	  break;
+
+	  DECODE_ONE ('\'', '\'');
+	  DECODE_ONE ('\"', '\"');
+	  DECODE_ONE ('\?', '\?');
+	  DECODE_ONE ('\\', '\\');
+	  DECODE_ONE ('a', '\a');
+	  DECODE_ONE ('b', '\b');
+	  DECODE_ONE ('f', '\f');
+	  DECODE_ONE ('n', '\n');
+	  DECODE_ONE ('r', '\r');
+	  DECODE_ONE ('t', '\t');
+	  DECODE_ONE ('v', '\v');
+
+	case 'x':
+	  {
+	    int val = _gpgme_hextobyte (&src[2]);
+
+	    if (val == -1)
+	      {
+		/* Should not happen.  */
+		*(dest++) = *(src++);
+		*(dest++) = *(src++);
+		if (*src)
+		  *(dest++) = *(src++);
+		if (*src)
+		  *(dest++) = *(src++);
+	      }
+	    else
+	      {
+		if (!val)
+		  {
+		    /* A binary zero is not representable in a C
+		       string.  */
+		    *(dest++) = '\\';
+		    *(dest++) = '0'; 
+		  }
+		else 
+		  *((unsigned char *) dest++) = val;
+		src += 4;
+	      }
+	  }
+
+	default:
+	  {
+	    /* Should not happen.  */
+	    *(dest++) = *(src++);
+	    *(dest++) = *(src++);
+	  }
         } 
     }
   *(dest++) = 0;
@@ -244,8 +252,8 @@ _gpgme_data_append_string_for_xml (GpgmeData dh, const char *str)
 GpgmeError
 _gpgme_data_append_percentstring_for_xml (GpgmeData dh, const char *str)
 {
-  const byte *src;
-  byte *buf, *dst;
+  const unsigned char *src;
+  unsigned char *buf, *dst;
   int val;
   GpgmeError err;
 

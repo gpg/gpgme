@@ -1,6 +1,6 @@
 /* progress.c -  status handler for progress status
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -50,7 +50,7 @@ _gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       *p++ = 0;
       if (*p)
 	{
-	  type = *(byte *)p;
+	  type = *(unsigned char *)p;
 	  p = strchr (p+1, ' ');
 	  if (p)
 	    {

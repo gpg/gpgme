@@ -1,6 +1,6 @@
-/* types.h -  Some type definitions
+/* types.h - Type definitions.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -21,19 +21,9 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include "gpgme.h"  /* external objects and prototypes */
+#include "gpgme.h"
 
-#ifndef HAVE_BYTE_TYPEDEF
-typedef unsigned char byte;
-#endif
-#ifndef HAVE_ULONG_TYPEDEF
-typedef unsigned long ulong;
-#endif
-
-
-/*
- * Declaration of internal objects
- */
+/* Declaration of internal objects.  */
 
 typedef GpgmeError (*GpgmeStatusHandler) (GpgmeCtx, GpgmeStatusCode code,
 					  char *args);
@@ -93,6 +83,5 @@ typedef struct keylist_result_s *KeylistResult;
 /*-- edit.c --*/
 struct edit_result_s;
 typedef struct edit_result_s *EditResult;
-
 
 #endif /* TYPES_H */

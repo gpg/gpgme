@@ -82,6 +82,11 @@ FILE *fopencookie (void *cookie, const char *opentype,
 
 
 /*-- conversion.c --*/
+/* Convert two hexadecimal digits from STR to the value they
+   represent.  Returns -1 if one of the characters is not a
+   hexadecimal digit.  */
+int _gpgme_hextobyte (const unsigned char *str);
+
 /* Decode the C formatted string SRC and store the result in the
    buffer *DESTP which is LEN bytes long.  If LEN is zero, then a
    large enough buffer is allocated with malloc and *DESTP is set to
@@ -89,6 +94,6 @@ FILE *fopencookie (void *cookie, const char *opentype,
    is desired or not, the caller is expected to make sure that *DESTP
    is large enough if LEN is not zero.  */
 GpgmeError _gpgme_decode_c_string (const char *src, char **destp, int len);
-int _gpgme_hextobyte (const byte *str);
+
 
 #endif /* UTIL_H */
