@@ -808,7 +808,12 @@ read_status (GpgObject gpg)
     {
       gpg->status.eof = 1;
       if (gpg->status.fnc)
-	gpg->status.fnc (gpg->status.fnc_value, GPGME_STATUS_EOF, "");
+	{
+	  GpgmeError err;
+	  err = gpg->status.fnc (gpg->status.fnc_value, GPGME_STATUS_EOF, "");
+	  if (err)
+	    return err;
+	}
       return 0;
     }
 
@@ -886,8 +891,11 @@ read_status (GpgObject gpg)
                         }
 		      else if (gpg->status.fnc)
 			{
-			  gpg->status.fnc (gpg->status.fnc_value, 
-					   r->code, rest);
+			  GpgmeError err;
+			  err = gpg->status.fnc (gpg->status.fnc_value, 
+						 r->code, rest);
+			  if (err)
+			    return err;
                         }
                     
 		      if (r->code == GPGME_STATUS_END_STREAM)
@@ -939,11 +947,7 @@ status_handler (void *opaque, int fd)
   assert (fd == gpg->status.fd[0]);
   err = read_status (gpg);
   if (err)
-    {
-      DEBUG1 ("gpg_handler: read_status problem %d\n - stop", err);
-      _gpgme_io_close (fd);
-      return err;
-    }
+    return err;
   if (gpg->status.eof)
     _gpgme_io_close (fd);
   return 0;
