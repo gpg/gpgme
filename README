@@ -6,19 +6,14 @@
 If you want to hack on it, start with one of the `tests/gpg/t-foo'
 programs.
 
-For support of the OpenPGP protocol (default), you need the latest CVS
-version of GnuPG 1.0, see `http://www.gnupg.org/cvs-access.html'.
-
-You need at least GnuPG 1.0.7, but don't use a 1.1.x version.
+For support of the OpenPGP protocol (default), you need at least GnuPG
+1.2.0.
 
 If configure can't find the `gpg' binary in your path, you can specify
 the location with the --with-gpg=/path/to/gpg argument to configure.
 
 For support of the CMS (Cryptographic Message Syntax) protocol, you
-need the latest CVS version of GpgSM, module name `newpg', at
-`:pserver:anoncvs@cvs.gnupg.org:/cvs/aegypten'.
-
-You need at least GpgSM 0.3.8.
+need at least newpg 0.9.2
 
 If configure can't find the `gpgsm' binary in your path, you can
 specify the location with the --with-gpgsm=/path/to/gpgsm argument to
