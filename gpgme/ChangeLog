@@ -1,3 +1,55 @@
+2003-01-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.c (_gpgme_engine_ops_gpg): Remove gpg_start.
+	(gpg_start): Rename to ...
+	(start): ... this function.  Change arguments to GpgObject.
+	(gpg_decrypt): Call start.
+	(gpg_edit): Likewise.
+	(gpg_encrypt): Likewise.
+	(gpg_encrypt_sign): Likewise.
+	(gpg_export): Likewise.
+	(gpg_import): Likewise.
+	(gpg_keylist): Likewise.
+	(gpg_keylist_ext): Likewise.
+	(gpg_trustlist): Likewise.
+	(gpg_verify): Likewise.
+
+	* engine-gpgsm.c (_gpgme_engine_ops_encrypt): Remove gpgsm_start.
+	(gpgsm_start): Rename to ...
+	(struct gpgsm_object_s): Remove member command.
+	(gpgsm_release): Don't free command.
+	(start): ... this function.  Change arguments to GpgsmObject and
+	const char *.
+	(gpgsm_decrypt): Call start.
+	(gpgsm_delete): Likewise.
+	(gpgsm_encrypt): Likewise.
+	(gpgsm_export): Likewise.
+	(gpgsm_genkey): Likewise.
+	(gpgsm_import): Likewise.
+	(gpgsm_keylist): Likewise.
+	(gpgsm_keylist_ext): Likewise.
+	(gpgsm_verify): Likewise.
+
+	* decrypt.c (_gpgme_decrypt_start): Don't call
+	_gpgme_engine_start.
+	* delete.c (_gpgme_op_delete_start): Likewise.
+	* edit.c (_gpgme_op_edit_start): Likewise.
+	* encrypt.c (_gpgme_op_encrypt_start): 
+	* encrypt-sign.c (_gpgme_op_encrypt_sign_start): 
+	* export.c (_gpgme_op_export_start): Likewise.
+	* genkey.c (_gpgme_op_genkey_start): Likewise.
+	* import.c (_gpgme_op_import_start): Likewise.
+	* keylist.c (gpgme_op_keylist_ext_start): Likewise.
+	(gpgme_op_keylist_start): Likewise.
+	* sign.c (_gpgme_op_sign_start): Likewise.
+	* trustlist.c (gpgme_op_trustlist_start): Likewise.
+	* verify.c (_gpgme_op_verify_start): Likewise.
+
+	* engine-backend.h (struct engine_ops): Remove member start.
+
+	* engine.h (_gpgme_engine_start): Remove prototype.
+	* engine.c (_gpgme_engine_start): Remove function.
+
 2003-01-06  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (set_mainkey_capability): Handle 'd' and 'D' used

@@ -72,7 +72,6 @@ struct engine_ops
   GpgmeError (*trustlist) (void *engine, const char *pattern);
   GpgmeError (*verify) (void *engine, GpgmeData sig, GpgmeData signed_text,
 			   GpgmeData plaintext);
-  GpgmeError (*start) (void *engine, void *opaque);
   
   void (*set_io_cbs) (void *engine, struct GpgmeIOCbs *io_cbs);
   void (*io_event) (void *engine, GpgmeEventIO type, void *type_data);

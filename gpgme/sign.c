@@ -1,25 +1,26 @@
 /* sign.c -  signing functions
- *	Copyright (C) 2000 Werner Koch (dd9jn)
- *      Copyright (C) 2001, 2002 g10 Code GmbH
- *
- * This file is part of GPGME.
- *
- * GPGME is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * GPGME is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
+   Copyright (C) 2000 Werner Koch (dd9jn)
+   Copyright (C) 2001, 2002 g10 Code GmbH
 
+   This file is part of GPGME.
+ 
+   GPGME is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GPGME is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with GPGME; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+
+#if HAVE_CONFIG_H
 #include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,9 +53,9 @@ _gpgme_release_sign_result (SignResult result)
 }
 
 /* Parse the args and save the information 
- * <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
- * in an XML structure.  With args of NULL the xml structure is closed.
- */
+   <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
+   in an XML structure.  With args of NULL the xml structure is
+   closed.  */
 static void
 append_xml_siginfo (GpgmeData *rdh, char *args)
 {
@@ -204,13 +205,10 @@ _gpgme_op_sign_start (GpgmeCtx ctx, int synchronous,
 				    ctx);
   _gpgme_engine_set_verbosity (ctx->engine, ctx->verbosity);
 
-  _gpgme_engine_op_sign (ctx->engine, in, out, mode, ctx->use_armor,
-			 ctx->use_textmode, ctx->include_certs,
-			 ctx /* FIXME */);
+  err = _gpgme_engine_op_sign (ctx->engine, in, out, mode, ctx->use_armor,
+			       ctx->use_textmode, ctx->include_certs,
+			       ctx /* FIXME */);
 
-  /* And kick off the process.  */
-  err = _gpgme_engine_start (ctx->engine, ctx);
-  
  leave:
   if (err)
     {
