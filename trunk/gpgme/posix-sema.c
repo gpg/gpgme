@@ -35,7 +35,7 @@
 
 #include "util.h"
 #include "sema.h"
-#include "mutex.h"
+#include "ath.h"
 
 static void
 sema_fatal (const char *text)
@@ -44,76 +44,28 @@ sema_fatal (const char *text)
   abort ();
 }
 
-
-static void
-critsect_init (struct critsect_s *s)
-{
-  static mutex_t init_lock;
-  static int initialized;
-  mutex_t *mp;
-    
-  if (!initialized)
-    {
-      /* The very first time we call this function, we assume that
-         only one thread is running, so that we can bootstrap the
-         semaphore code.  */
-      mutex_init (init_lock);
-      initialized = 1;
-    }
-  if (!s)
-    return;	/* We just want to initialize ourself.  */
-  
-  /* First test whether it is really not initialized.  */
-  mutex_lock (init_lock);
-  if (s->private)
-    {
-      mutex_unlock (init_lock);
-      return;
-    }
-  /* Now initialize it.  */
-  mp = xtrymalloc (sizeof *mp);
-  if (!mp)
-    {
-      mutex_unlock (init_lock);
-      sema_fatal ("out of core while creating critical section lock");
-    }
-  mutex_init (*mp);
-  s->private = mp;
-  mutex_unlock (init_lock);
-}
-
-
 void
 _gpgme_sema_subsystem_init ()
 {
   /* FIXME: we should check that there is only one thread running */
-  critsect_init (NULL);
+  ath_init ();
 }
-
 
 void
 _gpgme_sema_cs_enter (struct critsect_s *s)
 {
-  if (!s->private)
-    critsect_init (s);
-  mutex_lock (*((mutex_t *) s->private));
+  ath_mutex_lock (&s->private);
 }
 
 void
 _gpgme_sema_cs_leave (struct critsect_s *s)
 {
-  if (!s->private)
-    critsect_init (s);
-  mutex_unlock (*((mutex_t *) s->private));
+  ath_mutex_unlock (&s->private);
 }
 
 void
 _gpgme_sema_cs_destroy (struct critsect_s *s)
 {
-  if (s && s->private)
-    {
-      mutex_destroy (*((mutex_t *) s->private));
-      xfree (s->private);
-      s->private = NULL;
-    }
+  ath_mutex_destroy (&s->private);
+  s->private = NULL;
 }

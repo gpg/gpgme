@@ -1,3 +1,9 @@
+2002-06-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add checks for Pth and pthreads.
+	* acinclude.m4: Add slightly hacked check for pth (seems to be an
+	autoconf version problem).
+
 2002-05-21  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (NEED_GPGSM_VERSION): We need gpgsm 0.3.7.

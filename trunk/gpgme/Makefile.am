@@ -35,10 +35,22 @@ AM_CPPFLAGS = -I$(top_srcdir)/assuan
 libgpgme_la_LIBADD = ../assuan/libassuan.la ../jnlib/libjnlib.la
 endif
 
+if HAVE_PTHREAD
+ath_components_pthread = ath-pthread.c
+else
+ath_components_pthread =
+endif
+if HAVE_PTH
+ath_components_pth = ath-pth.c
+else
+ath_components_pth =
+endif
+ath_components = ath.h ath.c ${ath_components_pthread} ${ath_components_pth}
+
 if HAVE_DOSISH_SYSTEM
 system_components = w32-util.c w32-sema.c w32-io.c
 else
-system_components = posix-util.c posix-sema.c posix-io.c
+system_components = ${ath_components} posix-util.c posix-sema.c posix-io.c
 endif
 
 libgpgme_la_SOURCES = \
