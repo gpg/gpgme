@@ -166,6 +166,14 @@
 	* engine-gpgsm.c (_gpgme_gpgsm_add_io_cb): Call IO_CBS->add with
 	new argument, fix up error handling.
 
+2002-07-03  Werner Koch  <wk@gnupg.org>
+
+	* encrypt.c (status_handler_finish): New.
+	(_gpgme_encrypt_status_handler): Moved some code out to the new
+	function and call this function also in case we get into the
+	status handler with an error which might happen due to a kludge in
+	engine-gpgsm.c
+
 2002-06-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* keylist.c (gpgme_op_keylist_ext_start): Always use our own FD
