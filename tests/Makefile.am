@@ -20,7 +20,7 @@
 ## Process this file with automake to produce Makefile.in
 
 
-TESTS_ENVIRONMENT = GNUPGHOME=$(srcdir)
+TESTS_ENVIRONMENT = GNUPGHOME=.
 
 TESTS = t-version t-data t-encrypt t-sign t-decrypt t-verify t-keylist	\
 	t-export t-import t-trustlist
