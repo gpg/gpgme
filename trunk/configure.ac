@@ -138,11 +138,7 @@ GNUPG_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(u16, HAVE_U16_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(u32, HAVE_U32_TYPEDEF)
 
-dnl We should not use them in this software;
-dnl However jnlib/types.h needs them - so we take the easy way.
-AC_CHECK_SIZEOF(unsigned short)
 AC_CHECK_SIZEOF(unsigned int)
-AC_CHECK_SIZEOF(unsigned long)
 
 dnl
 dnl Checks for compiler features.
@@ -155,8 +151,8 @@ fi
 dnl
 dnl Checks for library functions.
 dnl
-dnl These are needed by libjnlib
-AC_CHECK_FUNCS(memicmp stpcpy strlwr strtoul memmove stricmp)
+
+AC_REPLACE_FUNCS(stpcpy)
 
 # asprintf() is at least used in assuan
 AC_REPLACE_FUNCS(vasprintf)
@@ -164,10 +160,6 @@ AC_REPLACE_FUNCS(vasprintf)
 #       However some code in assuan/ links against it.
 AC_REPLACE_FUNCS(fopencookie)
 
-
-dnl We use jnlib, so tell other modules about it
-AC_DEFINE(HAVE_JNLIB_LOGGING, 1,
-        [Defined if jnlib style logging fucntions are available.])
 
 dnl
 dnl Checks for system services
@@ -258,7 +250,7 @@ dnl
 dnl Create config files 
 dnl
 
-AC_CONFIG_FILES(Makefile assuan/Makefile jnlib/Makefile gpgme/Makefile
+AC_CONFIG_FILES(Makefile assuan/Makefile gpgme/Makefile
 		tests/Makefile tests/gpg/Makefile tests/gpgsm/Makefile
 		doc/Makefile
 		bonobo/Makefile complus/Makefile gpgmeplug/Makefile)

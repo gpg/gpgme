@@ -32,7 +32,7 @@ libgpgme_la_LDFLAGS = -version-info \
       @LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 if BUILD_ASSUAN
 AM_CPPFLAGS = -I$(top_srcdir)/assuan
-assuan_libobjs = ../assuan/libassuan.la ../jnlib/libjnlib.la @LIBOBJS@
+assuan_libobjs = ../assuan/libassuan.la @LIBOBJS@
 else
 assuan_libobjs =
 endif
