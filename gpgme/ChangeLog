@@ -1,5 +1,23 @@
 2003-04-24  Marcus Brinkmann  <marcus@g10code.de>
 	
+	* gpgme.h (struct _gpgme_op_genkey_result): New structure.
+	(GpgmeGenKeyResult): New type.
+	(gpgme_op_genkey): Drop last argument.
+	(gpgme_op_genkey_result): New function.
+	* genkey.c: Do not include "util.h", but "gpgme.h".
+	(struct genkey_result): Replace with ...
+	(op_data_t): ... this new type.
+	(release_genkey_result): Replace with ...
+	(release_op_data): ... this new function.
+	(gpgme_op_genkey_result): New function.
+	(genkey_status_handler): Rewritten using new op_data_t type.
+	(get_key_parameter): New function.
+	(_gpgme_op_genkey_start): Renamed to
+	(genkey_start): ... this and rewritten.
+	(gpgme_op_genkey_start): Use genkey_start instead
+	_gpgme_op_genkey_start.
+	(gpgme_op_genkey): Rewritten.  Remove FPR argument.
+
 	* context.h (struct gpgme_context_s): Remove member verbosity.
 	* gpgme.c (gpgme_new): Do not set member verbosity.
 	* engine.h (_gpgme_engine_set_verbosity): Remove prototype.

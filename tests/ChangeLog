@@ -1,3 +1,7 @@
+2003-04-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-genkey.c: Rewritten to match new semantics.
+
 2003-02-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-decrypt.c (passphrase_cb): Fix to new prototype.

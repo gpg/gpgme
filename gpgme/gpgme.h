@@ -756,17 +756,36 @@ GpgmeError gpgme_op_export_start (GpgmeCtx ctx, GpgmeRecipients recp,
 GpgmeError gpgme_op_export (GpgmeCtx ctx, GpgmeRecipients recp,
 			    GpgmeData keydata);
 
+
+/* Key generation.  */
+struct _gpgme_op_genkey_result
+{
+  /* A primary key was generated.  */
+  unsigned int primary : 1;
+
+  /* A sub key was generated.  */
+  unsigned int sub : 1;
+
+  /* Internal to GPGME, do not use.  */
+  unsigned int _unused : 30;
+
+  /* The fingerprint of the generated key.  */
+  char *fpr;
+};
+typedef struct _gpgme_op_genkey_result *GpgmeGenKeyResult;
+
 /* Generate a new keypair and add it to the keyring.  PUBKEY and
    SECKEY should be null for now.  PARMS specifies what keys should be
-   generated.  On success, if *FPR is non-null, it contains a
-   malloc()'ed string with the fingerprint of the generated key on
-   success.  */
+   generated.  */
 GpgmeError gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
 				  GpgmeData pubkey, GpgmeData seckey);
 GpgmeError gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
-			    GpgmeData pubkey, GpgmeData seckey,
-			    char **fpr);
+			    GpgmeData pubkey, GpgmeData seckey);
 
+/* Retrieve a pointer to the result of the genkey operation.  */
+GpgmeGenKeyResult gpgme_op_genkey_result (GpgmeCtx ctx);
+
+
 /* Delete KEY from the keyring.  If ALLOW_SECRET is non-zero, secret
    keys are also deleted.  */
 GpgmeError gpgme_op_delete_start (GpgmeCtx ctx, const GpgmeKey key,

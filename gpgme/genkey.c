@@ -24,39 +24,60 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "util.h"
+#include "gpgme.h"
 #include "context.h"
 #include "ops.h"
 
-
-struct genkey_result
+
+typedef struct
 {
-  int created_primary : 1;
-  int created_sub : 1;
-  char *fpr;
-};
-typedef struct genkey_result *GenKeyResult;
+  struct _gpgme_op_genkey_result result;
+
+  /* The key parameters passed to the crypto engine.  */
+  GpgmeData key_parameter;
+} *op_data_t;
+
 
 static void
-release_genkey_result (void *hook)
+release_op_data (void *hook)
 {
-  GenKeyResult result = (GenKeyResult) hook;
+  op_data_t opd = (op_data_t) hook;
   
-  if (result->fpr)
-    free (result->fpr);
+  if (opd->result.fpr)
+    free (opd->result.fpr);
+  if (opd->key_parameter)
+    gpgme_data_release (opd->key_parameter);
 }
 
 
-static GpgmeError
-genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
+GpgmeGenKeyResult
+gpgme_op_genkey_result (GpgmeCtx ctx)
 {
-  GenKeyResult result;
-  GpgmeError err = _gpgme_progress_status_handler (ctx, code, args);
+  op_data_t opd;
+  GpgmeError err;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, (void **) &opd, -1, NULL);
+  if (err || !opd)
+    return NULL;
+
+  return &opd->result;
+}
+
+
+static GpgmeError
+genkey_status_handler (void *priv, GpgmeStatusCode code, char *args)
+{
+  GpgmeCtx ctx = (GpgmeCtx) priv;
+  GpgmeError err;
+  op_data_t opd;
+
+  /* Pipe the status code through the progress status handler.  */
+  err = _gpgme_progress_status_handler (ctx, code, args);
   if (err)
     return err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, (void **) &result,
-			       sizeof (*result), release_genkey_result);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, (void **) &opd,
+			       -1, NULL);
   if (err)
     return err;
 
@@ -66,15 +87,15 @@ genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
       if (args && *args)
 	{
 	  if (*args == 'B' || *args == 'P')
-	    result->created_primary = 1;
+	    opd->result.primary = 1;
 	  if (*args == 'B' || *args == 'S')
-	    result->created_sub = 1;
+	    opd->result.sub = 1;
 	  if (args[1] == ' ')
 	    {
-	      if (result->fpr)
-		free (result->fpr);
-	      result->fpr = strdup (&args[2]);
-	      if (!result->fpr)
+	      if (opd->result.fpr)
+		free (opd->result.fpr);
+	      opd->result.fpr = strdup (&args[2]);
+	      if (!opd->result.fpr)
 		return GPGME_Out_Of_Core;
 	    }
 	}
@@ -82,8 +103,7 @@ genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 
     case GPGME_STATUS_EOF:
       /* FIXME: Should return some more useful error value.  */
-      if (!result->created_primary
-	  && !result->created_sub)
+      if (!opd->result.primary && !opd->result.sub)
 	return GPGME_General_Error;
       break;
 
@@ -95,139 +115,84 @@ genkey_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
 
 
 static GpgmeError
-_gpgme_op_genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
-			GpgmeData pubkey, GpgmeData seckey)
+get_key_parameter (const char *parms, GpgmeData *key_parameter)
 {
-  int err = 0;
-  const char *s, *s2, *sx;
+  const char *content;
+  const char *attrib;
+  const char *endtag;
 
-  err = _gpgme_op_reset (ctx, synchronous);
-  if (err)
-    goto leave;
+  /* Extract the key parameter from the XML structure.  */
+  parms = strstr (parms, "<GnupgKeyParms ");
+  if (!parms)
+    return GPGME_Invalid_Value;
 
-  gpgme_data_release (ctx->help_data_1);
-  ctx->help_data_1 = NULL;
+  content = strchr (parms, '>');
+  if (!content)
+    return GPGME_Invalid_Value;
+  content++;
 
-  if ((parms = strstr (parms, "<GnupgKeyParms ")) 
-      && (s = strchr (parms, '>'))
-      && (sx = strstr (parms, "format=\"internal\""))
-      && sx < s
-      && (s2 = strstr (s+1, "</GnupgKeyParms>")))
-    {
-      /* FIXME: Check that there are no control statements inside.  */
-      s++;  /* Skip '>'.  */
-      while (*s == '\n')
-	s++;
-      err = gpgme_data_new_from_mem (&ctx->help_data_1, s, s2-s, 1);
-    }
-  else 
-    err = GPGME_Invalid_Value;
+  attrib = strstr (parms, "format=\"internal\"");
+  if (!attrib || attrib >= content)
+    return GPGME_Invalid_Value;
 
-  if (err)
-    goto leave;
+  endtag = strstr (content, "</GnupgKeyParms>");
+  /* FIXME: Check that there are no control statements inside.  */
+  while (*content == '\n')
+    content++;
 
-  _gpgme_engine_set_status_handler (ctx->engine, genkey_status_handler, ctx);
-
-  err = _gpgme_engine_op_genkey (ctx->engine, ctx->help_data_1, ctx->use_armor,
-				 pubkey, seckey);
-
- leave:
-  if (err)
-    {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-    }
-  return err;
+  return gpgme_data_new_from_mem (key_parameter, content,
+				  endtag - content, 0);
 }
 
 
-/**
- * gpgme_op_genkey:
- * @c: the context
- * @parms: XML string with the key parameters
- * @pubkey: Returns the public key
- * @seckey: Returns the secret key
- * 
- * Generate a new key and store the key in the default keyrings if
- * both @pubkey and @seckey are NULL.  If @pubkey and @seckey are
- * given, the newly created key will be returned in these data
- * objects.  This function just starts the gheneration and does not
- * wait for completion.
- *
- * Here is an example on how @parms should be formatted; for deatils
- * see the file doc/DETAILS from the GnuPG distribution.
- *
- * <literal>
- * <![CDATA[
- * <GnupgKeyParms format="internal">
- * Key-Type: DSA
- * Key-Length: 1024
- * Subkey-Type: ELG-E
- * Subkey-Length: 1024
- * Name-Real: Joe Tester
- * Name-Comment: with stupid passphrase
- * Name-Email: joe@foo.bar
- * Expire-Date: 0
- * Passphrase: abc
- * </GnupgKeyParms>
- * ]]>
- * </literal> 
- *
- * Strings should be given in UTF-8 encoding.  The format we support
- * for now is only "internal".  The content of the
- * &lt;GnupgKeyParms&gt; container is passed verbatim to GnuPG.
- * Control statements are not allowed.
- * 
- * Return value: 0 for success or an error code
- **/
+static GpgmeError
+genkey_start (GpgmeCtx ctx, int synchronous, const char *parms,
+	      GpgmeData pubkey, GpgmeData seckey)
+{
+  GpgmeError err;
+  op_data_t opd;
+  err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+  
+  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, (void **) &opd,
+			       sizeof (*opd), release_op_data);
+  if (err)
+    return err;
+
+  err = get_key_parameter (parms, &opd->key_parameter);
+  if (err)
+    return err;
+
+  _gpgme_engine_set_status_handler (ctx->engine, genkey_status_handler, ctx);
+
+  return _gpgme_engine_op_genkey (ctx->engine, opd->key_parameter,
+				  ctx->use_armor, pubkey, seckey);
+}
+
+
+/* Generate a new keypair and add it to the keyring.  PUBKEY and
+   SECKEY should be null for now.  PARMS specifies what keys should be
+   generated.  */
 GpgmeError
 gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
 		       GpgmeData pubkey, GpgmeData seckey)
 {
-  return _gpgme_op_genkey_start (ctx, 0, parms, pubkey, seckey);
+  return genkey_start (ctx, 0, parms, pubkey, seckey);
 }
 
 
-/**
- * gpgme_op_genkey:
- * @c: the context
- * @parms: XML string with the key parameters
- * @pubkey: Returns the public key
- * @seckey: Returns the secret key
- * @fpr: Returns the fingerprint of the key.
- *
- * Generate a new key and store the key in the default keyrings if both
- * @pubkey and @seckey are NULL.  If @pubkey and @seckey are given, the newly
- * created key will be returned in these data objects.
- * See gpgme_op_genkey_start() for a description of @parms.
- * 
- * Return value: 0 for success or an error code
- **/
+/* Generate a new keypair and add it to the keyring.  PUBKEY and
+   SECKEY should be null for now.  PARMS specifies what keys should be
+   generated.  */
 GpgmeError
-gpgme_op_genkey (GpgmeCtx ctx, const char *parms,
-                 GpgmeData pubkey, GpgmeData seckey,
-		 char **fpr)
+gpgme_op_genkey (GpgmeCtx ctx, const char *parms, GpgmeData pubkey,
+		 GpgmeData seckey)
 {
-  GpgmeError err = _gpgme_op_genkey_start (ctx, 1, parms, pubkey, seckey);
+  GpgmeError err;
+
+  err = genkey_start (ctx, 1, parms, pubkey, seckey);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  if (!err && fpr)
-    {
-      GenKeyResult result;
-
-      err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, (void **) &result,
-				   -1, NULL);
-      if (err)
-	return err;
-
-      if (result && result->fpr)
-	{
-	  *fpr = strdup (result->fpr);
-	  if (!*fpr)
-	    return GPGME_Out_Of_Core;
-	}
-      else
-	*fpr = NULL;
-    }
   return err;
 }
