@@ -1856,7 +1856,8 @@ void updateCRL(){}
 #define safe_malloc( x ) malloc( x )
 #define xstrdup( x ) (x)?strdup(x):0
 
-static void safe_free( void** x ) 
+static void 
+safe_free( void** x ) 
 {
   free( *x );
   *x = 0;
@@ -2040,7 +2041,8 @@ parse_dn (const unsigned char *string)
   return NULL;
 }
 
-static int add_dn_part( char* result, struct DnPair* dn, const char* part )
+static int 
+add_dn_part( char* result, struct DnPair* dn, const char* part )
 {
   int any = 0;
 
@@ -2058,7 +2060,8 @@ static int add_dn_part( char* result, struct DnPair* dn, const char* part )
   return any;
 }
 
-static char* reorder_dn( struct DnPair *dn )
+static char* 
+reorder_dn( struct DnPair *dn )
 {
   // note: The must parts are: CN, L, OU, O, C
   const char* stdpart[] = {
@@ -2111,7 +2114,8 @@ struct CertIterator {
   struct CertificateInfo info;
 };
 
-struct CertIterator* startListCertificates( const char* pattern, int remote )
+struct CertIterator* 
+startListCertificates( const char* pattern, int remote )
 {
     GpgmeError err;
     struct CertIterator* it;
@@ -2139,7 +2143,8 @@ struct CertIterator* startListCertificates( const char* pattern, int remote )
 }
 
 /* free() each string in a char*[] and the array itself */
-static void freeStringArray( char** c )
+static void 
+freeStringArray( char** c )
 {
     char** _c = c;
     while( c && *c ) {
@@ -2151,7 +2156,8 @@ static void freeStringArray( char** c )
 }
 
 /* free all malloc'ed data in a struct CertificateInfo */
-static void freeInfo( struct CertificateInfo* info )
+static void 
+freeInfo( struct CertificateInfo* info )
 {
   struct DnPair* a = info->dnarray;
   assert( info );
@@ -2188,7 +2194,8 @@ static char* make_fingerprint( const char* fpr )
   return result;
 }
 
-int nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
+int 
+nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
 {
   GpgmeError err;
   GpgmeKey   key;
@@ -2276,7 +2283,8 @@ int nextCertificate( struct CertIterator* it, struct CertificateInfo** result )
   return retval;
 }
 
-void endListCertificates( struct CertIterator* it )
+void 
+endListCertificates( struct CertIterator* it )
 {
   /*fprintf( stderr,  "endListCertificates()\n" );*/
   assert(it);
@@ -2286,7 +2294,92 @@ void endListCertificates( struct CertIterator* it )
   free( it );
 }
 
-    
+int
+importCertificate( const char* fingerprint )
+{
+  GpgmeError err;
+  GpgmeCtx  ctx;
+  GpgmeData keydata;
+  GpgmeRecipients recips;
+  /*
+  char* buf;
+  char* tmp1;
+  char* tmp2;
+  */
+  err = gpgme_new( &ctx );
+  /*fprintf( stderr,  "2: gpgme returned %d\n", err );*/
+  if( err != GPGME_No_Error ) {
+    return err;
+  }
+
+  err = gpgme_data_new( &keydata );
+  if( err ) {
+    fprintf( stderr,  "gpgme_data_new returned %d\n", err );
+    gpgme_release( ctx );
+    return err;
+  }
+
+  err = gpgme_recipients_new( &recips );
+  if( err ) {
+    fprintf( stderr,  "gpgme_recipients_new returned %d\n", err );
+    gpgme_data_release( keydata );
+    gpgme_release( ctx );
+    return err;
+  }
+  
+  /*
+  buf = safe_malloc( sizeof(char)*( strlen( fingerprint ) + 1 ) );
+  if( !buf ) {
+    gpgme_recipients_release( recips );
+    gpgme_data_release( keydata );    
+    gpgme_release( ctx );
+    return GPGME_Out_Of_Core;
+  }
+  tmp1 = fingerprint;
+  tmp2 = buf;
+  while( *tmp1 ) {
+    if( *tmp1 != ':' ) *tmp2++ = *tmp1;
+    tmp1++;
+  }
+  *tmp2 = 0;
+  fprintf( stderr,  "calling gpgme_recipients_add_name( %s )\n", buf );  
+  */
+
+  err = gpgme_recipients_add_name( recips, fingerprint ); 
+  if( err ) {
+    fprintf( stderr,  "gpgme_recipients_add_name returned %d\n", err );
+    /*safe_free( (void**)&buf );*/
+    gpgme_recipients_release( recips );
+    gpgme_data_release( keydata );    
+    gpgme_release( ctx );
+    return err;
+  }
+
+  err = gpgme_op_export( ctx, recips, keydata );
+  if( err ) {
+    fprintf( stderr,  "gpgme_op_export returned %d\n", err );
+    /*safe_free( (void**)&buf );*/
+    gpgme_recipients_release( recips );
+    gpgme_data_release( keydata );    
+    gpgme_release( ctx );
+    return err;
+  }
+  /*safe_free( (void**)&buf );*/
+
+  err = gpgme_op_import( ctx, keydata );
+  if( err ) {    
+    fprintf( stderr,  "gpgme_op_import returned %d\n", err );
+    gpgme_recipients_release( recips );
+    gpgme_data_release( keydata );    
+    gpgme_release( ctx );
+    return err;
+  }
+
+  gpgme_recipients_release( recips );
+  gpgme_data_release( keydata );    
+  gpgme_release( ctx );
+  return 0;
+}
 
     // // // // // // // // // // // // // // // // // // // // // // // // //
    //                                                                      //
