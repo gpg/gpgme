@@ -146,7 +146,7 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
     char *p, *pend;
     int field = 0;
     enum {
-        RT_NONE, RT_SIG, RT_UID, RT_SUB, RT_PUB, RT_FPR, RT_SSB, RT_SEC
+      RT_NONE, RT_SIG, RT_UID, RT_SUB, RT_PUB, RT_FPR, RT_SSB, RT_SEC, RT_CRT
     } rectype = RT_NONE;
     GpgmeKey key = ctx->tmp_key;
     int i;
@@ -211,13 +211,26 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 assert ( !ctx->tmp_key );
                 ctx->tmp_key = key;
             }
+            else if ( !strcmp (p, "crt") ) {
+                /* start a new certificate */
+                if ( _gpgme_key_new ( &key ) ) {
+                    ctx->out_of_core=1; /* the only kind of error we can get*/
+                    return;
+                }
+                key->x509 = 1;
+                rectype = RT_CRT;
+                finish_key ( ctx );
+                assert ( !ctx->tmp_key );
+                ctx->tmp_key = key;
+            }
             else if ( !strcmp ( p, "fpr" ) && key ) 
                 rectype = RT_FPR;
             else 
                 rectype = RT_NONE;
             
         }
-        else if ( rectype == RT_PUB || rectype == RT_SEC ) {
+        else if ( rectype == RT_PUB || rectype == RT_SEC || rectype == RT_CRT)
+          {
             switch (field) {
               case 2: /* trust info */
                 trust_info = p; 
@@ -242,11 +255,14 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 break;
               case 7: /* valid for n days */
                 break;
-              case 8: /* reserved (LID) */
+              case 8: /* X.509 serial number */
+                /* fixme: store it */
                 break;
               case 9: /* ownertrust */
                 break;
-              case 10: /* not used due to --fixed-list-mode option */
+              case 10: /* not used for gpg due to --fixed-list-mode option 
+                          but gpgsm stores the issuer name */
+                /* fixme: store issuer name */
                 break;
               case 11: /* signature class  */
                 break;
@@ -257,7 +273,7 @@ keylist_colon_handler ( GpgmeCtx ctx, char *line )
                 pend = NULL;  /* we can stop here */
                 break;
             }
-        }
+          }
         else if ( (rectype == RT_SUB || rectype== RT_SSB) && sk ) {
             switch (field) {
               case 2: /* trust info */

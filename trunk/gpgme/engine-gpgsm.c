@@ -86,7 +86,8 @@ struct gpgsm_object_s
 const char *
 _gpgme_gpgsm_get_version (void)
 {
-  static const char *gpgsm_version;
+#warning  version check is disabled
+  static const char *gpgsm_version = "0.0.1";
 
   /* FIXME: Locking.  */
   if (!gpgsm_version)
@@ -98,7 +99,7 @@ _gpgme_gpgsm_get_version (void)
 GpgmeError
 _gpgme_gpgsm_check_version (void)
 {
-  return _gpgme_compare_versions (_gpgme_gpgsm_get_version (),
+    return _gpgme_compare_versions (_gpgme_gpgsm_get_version (),
 				  NEED_GPGSM_VERSION)
     ? 0 : mk_error (Invalid_Engine);
 }
@@ -195,7 +196,7 @@ gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *line)
 {
   AssuanError err;
 
-  err = _assuan_write_line (ctx, line);
+  err = assuan_write_line (ctx, line);
   if (err)
     return err;
 
@@ -377,6 +378,9 @@ _gpgme_gpgsm_op_keylist (GpgsmObject gpgsm, const char *pattern,
 			 int secret_only, int keylist_mode)
 {
   char *line;
+
+  if (!pattern)
+    pattern = "";
 
   line = xtrymalloc (9 + strlen (pattern) + 1);	/* "LISTKEYS " + p + '\0'.  */
   if (!line)
@@ -575,7 +579,7 @@ _gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque)
     }
 
   if (!err)
-    err = _assuan_write_line (gpgsm->assuan_ctx, gpgsm->command);
+    err = assuan_write_line (gpgsm->assuan_ctx, gpgsm->command);
 
   return err;
 }

@@ -1,3 +1,16 @@
+2001-12-13  Werner Koch  <wk@gnupg.org>
+
+	* engine-gpgsm.c (_gpgme_gpgsm_op_keylist): Allow NULL for
+	pattern.
+	(gpgsm_assuan_simple_command): Removed underscore from
+	assuan_write_line.
+	(_gpgme_gpgsm_start): Ditto. 
+
+	* keylist.c (keylist_colon_handler): Handle "crt" records
+	* key.h (gpgme_key_s): Add an x509 flag.
+	* key.c (parse_x509_user_id): New.
+	(_gpgme_key_append_name): Handle x.509 names.
+
 2001-12-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (gpgsm_status_handler): Make it work with current
