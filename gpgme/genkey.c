@@ -140,12 +140,12 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
 
   if (!pubkey && !seckey)
     ; /* okay: Add key to the keyrings */
-  else if (!pubkey || gpgme_data_get_type (pubkey) != GPGME_DATA_TYPE_NONE)
+  else if (pubkey && gpgme_data_get_type (pubkey) != GPGME_DATA_TYPE_NONE)
     {
       err = mk_error (Invalid_Value);
       goto leave;
     }
-  else if (!seckey || gpgme_data_get_type (seckey) != GPGME_DATA_TYPE_NONE)
+  else if (seckey && gpgme_data_get_type (seckey) != GPGME_DATA_TYPE_NONE)
     {
       err = mk_error (Invalid_Value);
       goto leave;
@@ -166,7 +166,10 @@ gpgme_op_genkey_start (GpgmeCtx ctx, const char *parms,
       && (s2 = strstr (s+1, "</GnupgKeyParms>")))
     {
       /* FIXME: Check that there are no control statements inside.  */
-      err = gpgme_data_new_from_mem (&ctx->help_data_1, s+1, s2-s-1, 1);
+      s++;  /* Skip '>'.  */
+      while (*s == '\n')
+	s++;
+      err = gpgme_data_new_from_mem (&ctx->help_data_1, s, s2-s, 1);
     }
   else 
     err = mk_error (Invalid_Value);

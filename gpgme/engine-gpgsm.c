@@ -1006,7 +1006,7 @@ _gpgme_gpgsm_set_colon_line_handler (GpgsmObject gpgsm,
 
 
 GpgmeError
-_gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque, GpgmeError *errorp)
+_gpgme_gpgsm_start (GpgsmObject gpgsm, void *opaque)
 {
   return mk_error (Invalid_Engine);
 }
