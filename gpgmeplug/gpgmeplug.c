@@ -2363,6 +2363,7 @@ bool findCertificates( const char* addressee,
             break;
           }
         }
+        free (dn); 
       }
     }
   }
@@ -2378,7 +2379,7 @@ bool findCertificates( const char* addressee,
     *certificates = xmalloc(   sizeof(char) * siz );
     memset( *certificates, 0, sizeof(char) * siz );
     /* fill the buffer */
-    for( iFound=0; iFound < nFound; ++iFound ) {
+    for (iFound=0; iFound < nFound; iFound++) {
       if( !iFound )
         strcpy(*certificates, DNs[iFound] );
       else {
@@ -2388,7 +2389,6 @@ bool findCertificates( const char* addressee,
       strcat(  *certificates, openBracket );
       strcat(  *certificates, FPRs[iFound] );
       strcat(  *certificates, closeBracket );
-      ++iFound;
       free( DNs[ iFound ] );
       free( FPRs[iFound ] );
     }
