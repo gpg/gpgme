@@ -190,7 +190,6 @@ Encrypt
 Run Control
 
 * Waiting For Completion::        Waiting until an operation is completed.
-* Cancelling an Operation::       Interrupting a running operation.
 * Using External Event Loops::    Advanced control over what happens when.
 
 Using External Event Loops
@@ -3069,7 +3068,6 @@ time.
 
 @menu
 * Waiting For Completion::        Waiting until an operation is completed.
-* Cancelling an Operation::       Interrupting a running operation.
 * Using External Event Loops::    Advanced control over what happens when.
 @end menu
 
