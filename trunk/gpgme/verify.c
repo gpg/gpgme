@@ -1,6 +1,6 @@
 /* verify.c - Signature verification.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -550,7 +550,9 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 	: gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_ERROR:
-      return sig ? parse_error (sig, args) : gpg_error (GPG_ERR_INV_ENGINE);
+      /* The error status is informational, so we don't return an
+         error code if we are not ready to process this status. */
+      return sig ? parse_error (sig, args) : 0;
 
     case GPGME_STATUS_EOF:
       if (sig && !opd->did_prepare_new_sig)
