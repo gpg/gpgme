@@ -124,6 +124,9 @@ Noteworthy changes in version 0.4.1 (unreleased)
    interface, the generic gpgme_get_op_info interface is not useful
    anymore and dropped.
 
+ * The error values GPGME_Invalid_Type and GPGME_Invalid_Mode can not
+   occur anymore and are thus deprecated.
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
@@ -193,6 +196,8 @@ gpgme_key_get_as_xml		REMOVED
 GpgmeKeyListResult		NEW
 gpgme_op_keylist_result		NEW
 gpgme_get_op_info		REMOVED
+GPGME_Invalid_Type		DEPRECATED
+GPGME_Invalid_Mode		DEPRECATED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)

@@ -25,6 +25,7 @@ Hey Emacs, this is -*- outline -*- mode!
 *** gpgme_trust_item_get_string_attr
 *** gpgme_trust_item_get_ulong_attr
 *** GpgmeAttr
+*** GPGME_Invalid_Type, GPGME_Invalid_Mode
 
 * Thread support:
 ** Build thread modules for static linking (which just suck in the
