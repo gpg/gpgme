@@ -77,7 +77,7 @@ libgpgme_la_SOURCES =							\
 	op-support.c							\
 	encrypt.c encrypt-sign.c decrypt.c decrypt-verify.c verify.c	\
 	sign.c passphrase.c progress.c					\
-	key.h key.c keylist.c trustlist.c				\
+	key.h key.c key-cache.c keylist.c trustlist.c			\
 	import.c export.c genkey.c delete.c edit.c			\
 	engine.h engine-backend.h engine.c rungpg.c status-table.h	\
 	${gpgsm_components} sema.h io.h ${system_components}		\

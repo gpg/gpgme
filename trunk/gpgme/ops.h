@@ -94,6 +94,17 @@ GpgmeError _gpgme_passphrase_start (GpgmeCtx ctx);
 GpgmeError _gpgme_progress_status_handler (GpgmeCtx ctx, GpgmeStatusCode code,
 					   char *args);
 
+
+/* From key-cache.c.  */
+
+/* Acquire a reference to KEY and add it to the key cache.  */
+void _gpgme_key_cache_add (GpgmeKey key);
+
+/* Look up a key with fingerprint FPR in the key cache.  If such a key
+   is found, a reference is acquired for it and it is returned.
+   Otherwise, NULL is returned.  */
+GpgmeKey _gpgme_key_cache_get (const char *fpr);
+
 /*-- keylist.c --*/
 void _gpgme_op_keylist_event_cb (void *data, GpgmeEventIO type, void *type_data);
 

@@ -1,5 +1,18 @@
 2003-04-24  Marcus Brinkmann  <marcus@g10code.de>
 	
+	* Makefile.am (libgpgme_la_SOURCES): Add key-cache.c.
+	* key.c (key_cache_initialized, key_cache_size,
+	key_cache_max_chain_length, ): Removed.
+	(struct key_cache_item_s, key_cache_lock, key_cache,
+	key_cache_unused_items, hash_key, _gpgme_key_cache_add,
+	_gpgme_key_cache_get, gpgme_get_key): Moved to ...
+	* key-cache.c: ... here.  New file.
+	* key.h (_gpgme_key_cache_init): Remove prototypes.
+	(_gpgme_key_cache_add,_gpgme_key_cache_get): Move to ...
+	* ops.h: ... here.
+	* version.c: Do not include "key.h".
+	(do_subsystem_inits): Do not call _gpgme_key_cache_init.
+
 	* mkstatus: Strip trailing comma.
 	* gpgme.h (GpgmeStatus): Pretty print.
 
