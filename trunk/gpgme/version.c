@@ -31,9 +31,7 @@
 #include "sema.h"
 #include "util.h"
 #include "key.h" /* for key_cache_init */
-
-static int lineno;
-static char *tmp_engine_version;
+#include "io.h"
 
 static const char *get_engine_info (void);
 
@@ -192,36 +190,79 @@ gpgme_check_engine ()
 
 
 
-static void
-version_line_handler ( GpgmeCtx c, char *line )
+#define LINELENGTH 80
+
+char *
+_gpgme_get_program_version (const char *const path)
 {
-    char *p;
-    size_t len;
+  char line[LINELENGTH] = "";
+  int linelen = 0;
+  char *mark = NULL;
+  int rp[2];
+  pid_t pid;
+  int nread;
+  char *argv[] = {(char *) path, "--version", 0};
+  struct spawn_fd_item_s pfd[] = { {0, -1}, {-1, -1} };
+  struct spawn_fd_item_s cfd[] = { {0, -1}, {-1, 1 /* STDOUT_FILENO */},
+				   {-1, -1} };
+  int status, signal;
 
-    lineno++;
-    if ( c->out_of_core )
-        return;
-    if (!line)
-        return; /* EOF */
-    if (lineno==1) {
-        if ( memcmp (line, "gpg ", 4) )
-            return;
-        if ( !(p = strpbrk (line, "0123456789")) )
-            return;
-        len = strcspn (p, " \t\r\n()<>" );
-        p[len] = 0;
-        tmp_engine_version = xtrystrdup (p);
+  if (!path)
+    return NULL;
+
+  if (_gpgme_io_pipe (rp, 1) < 0)
+    return NULL;
+
+  pfd[0].fd = rp[1];
+  cfd[0].fd = rp[0];
+  cfd[1].fd = rp[1];
+
+  pid = _gpgme_io_spawn (path, argv, cfd, pfd);
+  if (pid < 0)
+    {
+      _gpgme_io_close (rp[0]);
+      _gpgme_io_close (rp[1]);
+      return NULL;
     }
-}
 
+  do
+    {
+      nread = _gpgme_io_read (rp[0], &line[linelen], LINELENGTH - linelen - 1);
+      if (nread > 0)
+	{
+	  line[linelen + nread] = '\0';
+	  mark = strchr (&line[linelen], '\n');
+	  if (mark)
+	    {
+	      *mark = '\0';
+	      break;
+	    }
+	  linelen += nread;
+	}
+    }
+  while (nread > 0 && linelen < LINELENGTH - 1);
+
+  _gpgme_io_close (rp[0]);
+  _gpgme_io_waitpid (pid, 1, &status, &signal);
+
+  if (mark)
+    {
+      mark = strrchr (line, ' ');
+      if (!mark)
+	return NULL;
+      return xtrystrdup (mark + 1);
+    }
+
+  return NULL;
+}
 
 static const char *
 get_engine_info (void)
 {
     static const char *engine_info =NULL;
-    GpgmeCtx c = NULL;
     GpgmeError err = 0;
     const char *path = NULL;
+    char *version;
 
     /* FIXME: make sure that only one instance does run */
     if (engine_info)
@@ -235,26 +276,9 @@ get_engine_info (void)
 	  "</GnupgInfo>\n";
 	goto leave;
       }
-    err = gpgme_new (&c);
-    if (err) 
-        goto leave;
-    err = _gpgme_gpg_new ( &c->gpg );
-    if (err)
-        goto leave;
+    version = _gpgme_get_program_version (path);
 
-    err = _gpgme_gpg_set_simple_line_handler ( c->gpg,
-                                               version_line_handler, c );
-    if (err)
-        goto leave;
-
-    _gpgme_gpg_add_arg ( c->gpg, "--version" );
-    lineno = 0;
-    xfree (tmp_engine_version); tmp_engine_version = NULL;
-    err = _gpgme_gpg_spawn ( c->gpg, c );
-    if (err)
-        goto leave;
-    gpgme_wait (c, 1);
-    if (tmp_engine_version) {
+    if (version) {
         const char *fmt;
         char *p;
 
@@ -266,14 +290,14 @@ get_engine_info (void)
               "</GnupgInfo>\n";
         /*(yes, I know that we allocating 2 extra bytes)*/
         p = xtrymalloc ( strlen(fmt) + strlen(path)
-                         + strlen (tmp_engine_version) + 1);
+                         + strlen (version) + 1);
         if (!p) {
             err = mk_error (Out_Of_Core);
             goto leave;
         }
-        sprintf (p, fmt, tmp_engine_version, path);
+        sprintf (p, fmt, version, path);
         engine_info = p;
-        xfree (tmp_engine_version); tmp_engine_version = NULL;
+        xfree (version);
     }
     else {
         err = mk_error (General_Error);
@@ -303,6 +327,5 @@ get_engine_info (void)
                           "</GnupgInfo>\n";
         }
     }
-    gpgme_release ( c );
     return engine_info;
 }

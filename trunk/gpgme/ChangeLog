@@ -1,3 +1,14 @@
+2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* version.c: Remove global variables lineno and
+	tmp_engine_version.
+	(version_handler): Removed.
+	(_gpgme_get_program_version): New function.
+	(get_engine_info): Don't use context and version_handler,
+	but _gpgme_get_program_version.
+	* ops.h (_gpgme_get_program_version): Add prototype for
+	_gpgme_get_program_version (we expect to use it elsewhere soon).
+
 2001-11-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* version.c (get_engine_info): If GnuPG is not available, return
