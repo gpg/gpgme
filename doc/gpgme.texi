@@ -4028,7 +4028,7 @@ ciphertext could be created successfully, @code{GPG_ERR_INV_VALUE} if
 @var{ctx}, @var{recp}, @var{plain} or @var{cipher} is not a valid
 pointer, @code{GPG_ERR_UNUSABLE_PUBKEY} if @var{recp} contains some
 invalid recipients, @code{GPG_ERR_BAD_PASSPHRASE} if the passphrase
-for the secret key could not be retrieved, and passes through any
+for the symmetric key could not be retrieved, and passes through any
 errors that are reported by the crypto engine support routines.
 @end deftypefun
 
