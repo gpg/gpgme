@@ -60,10 +60,12 @@ release_op_data (void *hook)
 gpgme_import_result_t
 gpgme_op_import_result (gpgme_ctx_t ctx)
 {
+  void *hook;
   op_data_t opd;
   gpgme_error_t err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, &hook, -1, NULL);
+  opd = hook;
   if (err || !opd)
     return NULL;
 
@@ -179,10 +181,11 @@ import_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &opd,
-			       -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return err;
 
@@ -213,14 +216,16 @@ static gpgme_error_t
 _gpgme_op_import_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t keydata)
 {
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     return err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, (void **) &opd,
+  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, &hook,
 			       sizeof (*opd), release_op_data);
+  opd = hook;
   if (err)
     return err;
   opd->lastp = &opd->result.imports;

@@ -126,14 +126,15 @@ _gpgme_op_trustlist_event_cb (void *data, gpgme_event_io_t type,
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) data;
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
   gpgme_trust_item_t item = (gpgme_trust_item_t) type_data;
   struct trust_queue_item_s *q, *q2;
 
   assert (type == GPGME_EVENT_NEXT_TRUSTITEM);
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, (void **) &opd,
-			       -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return;
 
@@ -165,6 +166,7 @@ gpgme_error_t
 gpgme_op_trustlist_start (gpgme_ctx_t ctx, const char *pattern, int max_level)
 {
   gpgme_error_t err = 0;
+  void *hook;
   op_data_t opd;
 
   if (!pattern || !*pattern)
@@ -174,8 +176,9 @@ gpgme_op_trustlist_start (gpgme_ctx_t ctx, const char *pattern, int max_level)
   if (err)
     return err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, (void **) &opd,
+  err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, &hook,
 			       sizeof (*opd), NULL);
+  opd = hook;
   if (err)
     return err;
 
@@ -194,6 +197,7 @@ gpgme_error_t
 gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
 {
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
   struct trust_queue_item_s *q;
 
@@ -203,8 +207,8 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
   if (!ctx)
     return GPGME_Invalid_Value;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, (void **) &opd,
-			       -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return err;
 

@@ -53,10 +53,12 @@ release_op_data (void *hook)
 gpgme_genkey_result_t
 gpgme_op_genkey_result (gpgme_ctx_t ctx)
 {
+  void *hook;
   op_data_t opd;
   gpgme_error_t err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, &hook, -1, NULL);
+  opd = hook;
   if (err || !opd)
     return NULL;
 
@@ -69,6 +71,7 @@ genkey_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
   /* Pipe the status code through the progress status handler.  */
@@ -76,8 +79,8 @@ genkey_status_handler (void *priv, gpgme_status_code_t code, char *args)
   if (err)
     return err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, (void **) &opd,
-			       -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return err;
 
@@ -150,13 +153,15 @@ genkey_start (gpgme_ctx_t ctx, int synchronous, const char *parms,
 	      gpgme_data_t pubkey, gpgme_data_t seckey)
 {
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     return err;
   
-  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, (void **) &opd,
+  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, &hook,
 			       sizeof (*opd), release_op_data);
+  opd = hook;
   if (err)
     return err;
 

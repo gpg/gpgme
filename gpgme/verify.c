@@ -72,10 +72,12 @@ release_op_data (void *hook)
 gpgme_verify_result_t
 gpgme_op_verify_result (gpgme_ctx_t ctx)
 {
+  void *hook;
   op_data_t opd;
   gpgme_error_t err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, &hook, -1, NULL);
+  opd = hook;
   if (err || !opd)
     return NULL;
 
@@ -448,10 +450,12 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
   gpgme_signature_t sig;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return err;
 
@@ -521,9 +525,10 @@ verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 gpgme_error_t
 _gpgme_op_verify_init_result (gpgme_ctx_t ctx)
 {  
+  void *hook;
   op_data_t opd;
 
-  return _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, (void **) &opd,
+  return _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, &hook,
 				sizeof (*opd), release_op_data);
 }
 

@@ -39,12 +39,24 @@ static gpgme_error_t
 edit_status_handler (void *priv, gpgme_status_code_t status, char *args)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
-  return _gpgme_passphrase_status_handler (priv, status, args)
-    || _gpgme_progress_status_handler (priv, status, args)
-    || _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &opd, -1, NULL)
-    || (*opd->fnc) (opd->fnc_value, status, args, -1);
+  err = _gpgme_passphrase_status_handler (priv, status, args);
+  if (err)
+    return err;
+
+  err = _gpgme_progress_status_handler (priv, status, args);
+  if (err)
+    return err;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, &hook, -1, NULL);
+  opd = hook;
+  if (err)
+    return err;
+
+  return (*opd->fnc) (opd->fnc_value, status, args, -1);
 }
 
 
@@ -54,7 +66,6 @@ command_handler (void *priv, gpgme_status_code_t status, const char *args,
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
-  op_data_t opd;
   int processed = 0;
 
   if (ctx->passphrase_cb)
@@ -67,7 +78,11 @@ command_handler (void *priv, gpgme_status_code_t status, const char *args,
 
   if (!processed)
     {
-      err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &opd, -1, NULL);
+      void *hook;
+      op_data_t opd;
+
+      err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, &hook, -1, NULL);
+      opd = hook;
       if (err)
 	return err;
 
@@ -82,6 +97,7 @@ edit_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
 	    gpgme_edit_cb_t fnc, void *fnc_value, gpgme_data_t out)
 {
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
   err = _gpgme_op_reset (ctx, synchronous);
@@ -91,8 +107,8 @@ edit_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
   if (!fnc || !out)
     return GPGME_Invalid_Value;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &opd,
-			       sizeof (*opd), NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, &hook, sizeof (*opd), NULL);
+  opd = hook;
   if (err)
     return err;
 

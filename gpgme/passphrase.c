@@ -58,13 +58,15 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
   if (!ctx->passphrase_cb)
     return 0;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_PASSPHRASE, (void **) &opd,
+  err = _gpgme_op_data_lookup (ctx, OPDATA_PASSPHRASE, &hook,
 			       sizeof (*opd), release_op_data);
+  opd = hook;
   if (err)
     return err;
 
@@ -121,12 +123,14 @@ _gpgme_passphrase_command_handler_internal (void *priv,
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
   assert (ctx->passphrase_cb);
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_PASSPHRASE, (void **) &opd,
+  err = _gpgme_op_data_lookup (ctx, OPDATA_PASSPHRASE, &hook,
 			       sizeof (*opd), release_op_data);
+  opd = hook;
   if (err)
     return err;
 

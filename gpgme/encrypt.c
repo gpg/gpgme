@@ -59,10 +59,13 @@ release_op_data (void *hook)
 gpgme_encrypt_result_t
 gpgme_op_encrypt_result (gpgme_ctx_t ctx)
 {
+  void *hook;
   op_data_t opd;
   gpgme_error_t err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, &hook, -1, NULL);
+  opd = hook;
+
   if (err || !opd)
     return NULL;
 
@@ -76,10 +79,11 @@ _gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &opd,
-			       -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return err;
 
@@ -129,12 +133,15 @@ gpgme_error_t
 _gpgme_op_encrypt_init_result (gpgme_ctx_t ctx)
 {
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, (void **) &opd,
-			       sizeof (*opd), release_op_data);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, &hook, sizeof (*opd),
+			       release_op_data);
+  opd = hook;
   if (err)
     return err;
+
   opd->lastp = &opd->result.invalid_recipients;
   return 0;
 }

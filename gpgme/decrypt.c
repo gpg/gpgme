@@ -52,10 +52,12 @@ release_op_data (void *hook)
 gpgme_decrypt_result_t
 gpgme_op_decrypt_result (gpgme_ctx_t ctx)
 {
+  void *hook;
   op_data_t opd;
   gpgme_error_t err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, &hook, -1, NULL);
+  opd = hook;
   if (err || !opd)
     return NULL;
 
@@ -69,13 +71,15 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
   err = _gpgme_passphrase_status_handler (priv, code, args);
   if (err)
     return err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return err;
 
@@ -148,9 +152,10 @@ decrypt_status_handler (void *priv, gpgme_status_code_t code, char *args)
 gpgme_error_t
 _gpgme_op_decrypt_init_result (gpgme_ctx_t ctx)
 {
+  void *hook;
   op_data_t opd;
 
-  return _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, (void **) &opd,
+  return _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, &hook,
 				sizeof (*opd), release_op_data);
 }
 

@@ -76,10 +76,12 @@ release_op_data (void *hook)
 gpgme_keylist_result_t
 gpgme_op_keylist_result (gpgme_ctx_t ctx)
 {
+  void *hook;
   op_data_t opd;
   gpgme_error_t err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
+  opd = hook;
   if (err || !opd)
     return NULL;
 
@@ -92,9 +94,11 @@ keylist_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return err;
 
@@ -352,6 +356,7 @@ keylist_colon_handler (void *priv, char *line)
 #define NR_FIELDS 13
   char *field[NR_FIELDS];
   int fields = 0;
+  void *hook;
   op_data_t opd;
   gpgme_error_t err;
   gpgme_key_t key;
@@ -361,7 +366,8 @@ keylist_colon_handler (void *priv, char *line)
   DEBUG3 ("keylist_colon_handler ctx = %p, key = %p, line = %s\n",
 	  ctx, key, line ? line : "(null)");
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return err;
 
@@ -666,12 +672,14 @@ _gpgme_op_keylist_event_cb (void *data, gpgme_event_io_t type, void *type_data)
   gpgme_error_t err;
   gpgme_ctx_t ctx = (gpgme_ctx_t) data;
   gpgme_key_t key = (gpgme_key_t) type_data;
+  void *hook;
   op_data_t opd;
   struct key_queue_item_s *q, *q2;
 
   assert (type == GPGME_EVENT_NEXT_KEY);
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return;
 
@@ -704,14 +712,16 @@ gpgme_error_t
 gpgme_op_keylist_start (gpgme_ctx_t ctx, const char *pattern, int secret_only)
 {
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
   err = _gpgme_op_reset (ctx, 2);
   if (err)
     return err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd,
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook,
 			       sizeof (*opd), release_op_data);
+  opd = hook;
   if (err)
     return err;
 
@@ -735,14 +745,16 @@ gpgme_op_keylist_ext_start (gpgme_ctx_t ctx, const char *pattern[],
 			    int secret_only, int reserved)
 {
   gpgme_error_t err;
+  void *hook;
   op_data_t opd;
 
   err = _gpgme_op_reset (ctx, 2);
   if (err)
     return err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd,
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook,
 			       sizeof (*opd), release_op_data);
+  opd = hook;
   if (err)
     return err;
 
@@ -763,6 +775,7 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
 {
   gpgme_error_t err;
   struct key_queue_item_s *queue_item;
+  void *hook;
   op_data_t opd;
 
   if (!ctx || !r_key)
@@ -771,7 +784,8 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
   if (!ctx)
     return GPGME_Invalid_Value;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, (void **) &opd, -1, NULL);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
+  opd = hook;
   if (err)
     return err;
 
