@@ -44,33 +44,34 @@ edit_status_handler (void *priv, gpgme_status_code_t status, char *args)
   return _gpgme_passphrase_status_handler (priv, status, args)
     || _gpgme_progress_status_handler (priv, status, args)
     || _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &opd, -1, NULL)
-    || (*opd->fnc) (opd->fnc_value, status, args, NULL);
+    || (*opd->fnc) (opd->fnc_value, status, args, -1);
 }
 
 
 static gpgme_error_t
 command_handler (void *priv, gpgme_status_code_t status, const char *args,
-		 const char **result)
+		 int fd)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
   op_data_t opd;
+  int processed = 0;
 
-  *result = NULL;
   if (ctx->passphrase_cb)
     {
-      err = _gpgme_passphrase_command_handler (ctx, status, args, result);
+      err = _gpgme_passphrase_command_handler_internal (ctx, status, args,
+							fd, &processed);
       if (err)
 	return err;
     }
 
-  if (!*result)
+  if (!processed)
     {
       err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, (void **) &opd, -1, NULL);
       if (err)
 	return err;
 
-      return (*opd->fnc) (opd->fnc_value, status, args, result);
+      return (*opd->fnc) (opd->fnc_value, status, args, fd);
     }
   return 0;
 }

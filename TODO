@@ -74,10 +74,8 @@ Hey Emacs, this is -*- outline -*- mode!
    release all resources on error (for example to free assuan_cmd).
 
 * Operations
-** Passphrase callback should not copy password. !!!
-*** If no passphrase cb is installed, status handler is not run even if
-    password is required by crypto engine. !!
-*** Verify that passphrase callback beaves correctly with cancel etc.
+** If no passphrase cb is installed, status handler is not run even if
+   password is required by crypto engine. !!
 ** Export status handler need much more work. !!!
 ** Import should return a useful error when one happened.
 *** Import does not take notice of NODATA status report.

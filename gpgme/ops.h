@@ -102,8 +102,11 @@ gpgme_error_t _gpgme_passphrase_status_handler (void *priv,
 						char *args);
 gpgme_error_t _gpgme_passphrase_command_handler (void *opaque,
 						 gpgme_status_code_t code,
-						 const char *key,
-						 const char **result);
+						 const char *key, int fd);
+gpgme_error_t _gpgme_passphrase_command_handler_internal (void *opaque,
+						 gpgme_status_code_t code,
+						 const char *key, int fd,
+						 int *processed);
 
 
 /* From progress.c.  */

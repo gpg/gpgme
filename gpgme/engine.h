@@ -33,7 +33,7 @@ typedef gpgme_error_t (*EngineColonLineHandler) (void *priv, char *line);
 typedef gpgme_error_t (*EngineCommandHandler) (void *priv,
 					       gpgme_status_code_t code,
 					       const char *keyword,
-					       const char **result);
+					       int fd);
 
 gpgme_error_t _gpgme_engine_new (gpgme_protocol_t proto,
 				 EngineObject *r_engine);

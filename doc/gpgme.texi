@@ -1684,21 +1684,28 @@ current mode otherwise.  Note that 0 is not a valid mode value.
 @cindex callback, passphrase
 @cindex passphrase callback
 
-@deftp {Data type} {gpgme_error_t (*gpgme_passphrase_cb_t)(void *@var{hook}, const char *@var{desc}, void **@var{r_hd}, const char **@var{result})}
+@deftp {Data type} {gpgme_error_t (*gpgme_passphrase_cb_t)(void *@var{hook}, const char *@var{uid_hint}, const char *@var{passphrase_info}, @w{int @var{prev_was_bad}}, @w{int @var{fd}})}
 @tindex gpgme_passphrase_cb_t
 The @code{gpgme_passphrase_cb_t} type is the type of functions usable as
 passphrase callback function.
 
-The string @var{desc} contains a text usable to be displayed to the
-user of the application.  The function should return a passphrase for
-the context when invoked with @var{desc} not being @code{NULL} in
-*@var{result}.
+The argument @var{uid_hint} might contain a string that gives an
+indication for which user ID the passphrase is required.  If this is
+not available, or not applicable (in the case of symmetric encryption,
+for example), @var{uid_hint} will be @code{NULL}.
 
-The user may store information about the resources associated with the
-returned passphrase in @var{*r_hd}.  When the passphrase is no longer
-needed by @acronym{GPGME}, the passphrase callback function will be
-called with @var{desc} being @var{NULL}, and @var{r_hd} being the same
-as at the first invocation.
+The argument @var{passphrase_info}, if not @code{NULL}, will give
+further information about the context in which the passphrase is
+required.  This information is engine and operation specific.
+
+If this is the repeated attempt to get the passphrase, because
+previous attempts failed, then @var{prev_was_bad} is 1, otherwise it
+will be 0.
+
+The user must write the passphrase, followed by a newline character,
+to the file descriptor @var{fd}.  If the user does not return 0
+indicating success, the user must at least write a newline character
+before returning from the callback.
 
 If an error occurs, return the corresponding @code{gpgme_error_t} value.
 You can use @code{GPGME_Canceled} to abort the operation.  Otherwise,

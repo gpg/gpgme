@@ -46,6 +46,18 @@ Noteworthy changes in version 0.4.1 (unreleased)
    signatures, the progress callback is invoked for both the detached
    signature and the plaintext message, though.
 
+ * gpgme_passphrase_cb_t has been changed to not return a complete
+   description, but the UID hint, passphrase info and a flag
+   indicating if this is a repeated attempt individually, so the user
+   can compose his own description from this information.  Furthermore
+   it does not expect the user to return a string, but write the
+   passphrase followed by a newline character directly to a file
+   descriptor.
+
+ * gpgme_edit_cb_t has been changed to take a file descriptor argument.
+   The user is expected to write the response to the file descriptor,
+   followed by a newline.
+
  * gpgme_op_verify and gpgme_op_decrypt_verify don't return a status
    summary anymore.  Use gpgme_get_sig_status to retrieve the individual
    stati.
@@ -226,6 +238,8 @@ gpgme_trust_item_t		NEW
 gpgme_status_code_t		NEW
 gpgme_io_cb_t			CHANGED: Return type from void to GpgmeError.
 gpgme_event_io_t		CHANGED: New event type (all numbers changed).
+gpgme_passphrase_cb_t		CHANGED: Desc decomposed, write directly to FD.
+gpgme_edit_cb_t			CHANGED: Write directly to FD.
 gpgme_key_get_string_attr	CHANGED: Don't handle GPGME_ATTR_IS_SECRET.
 gpgme_op_verify			CHANGED: Drop R_STAT argument.
 gpgme_op_decrypt_verify		CHANGED: Drop R_STAT argument.
