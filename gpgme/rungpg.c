@@ -577,7 +577,14 @@ build_argv (GpgObject gpg)
   size_t datac=0, argc=0;  
   char **argv;
   int need_special = 0;
-  int use_agent = !!getenv ("GPG_AGENT_INFO");
+  int use_agent = 0;
+  char *p;
+
+  /* We don't want to use the agent with a malformed environment
+     variable.  This is only a very basic test but sufficient to make
+     our life in the regression tests easier. */
+  p = getenv ("GPG_AGENT_INFO");
+  use_agent = (p && strchr (p, ':'));
        
   if (gpg->argv)
     {

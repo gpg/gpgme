@@ -1,5 +1,7 @@
 2002-06-20  Werner Koch  <wk@gnupg.org>
 
+	* rungpg.c (build_argv): Ignore GPG_AGENT_INFO if set but empty.
+
 	* verify.c (calc_sig_summary): Set bad policy for wrong key usage.
 	(skip_token): New.
 	(_gpgme_verify_status_handler): Watch out for wrong key usage.
