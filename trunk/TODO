@@ -6,17 +6,16 @@ Hey Emacs, this is -*- outline -*- mode!
    representable.
 
 * Allow to use GTK's main loop instead of the select stuff in
-  wait.c
+  wait.c. !!!
 
 * cleanup the namespace - we use log_* assuan_* ascii_* mutex_*
   But those are only used internally.  Some linker tricks should make
   it possible to hide them from the user (didn't work last time, try
-  again).
+  again). !!
 
 * Documentation
 ** Add note about GPGME clearing out pointer return values.
 ** validity/trust
-** Document gpgme.m4
 
 * Engines
 ** Move code common to all engines up from gpg to engine.
@@ -28,7 +27,8 @@ Hey Emacs, this is -*- outline -*- mode!
 *** For pipemode, make sure to release the pipemode callback data object.
 
 * Operations
-** gpgme_wait needs to be made thread safe!!!
+** gpgme_wait needs to be made thread safe. !!!
+** Passphrase callback should not copy password. !!!
 ** Export status handler need much more work.
 ** Import should return a useful error when one happened.
 ** Genkey should return something more useful than General_Error.
@@ -39,14 +39,14 @@ Hey Emacs, this is -*- outline -*- mode!
    reported by Stephane Corthesy.
 
 * Error Values
-** Map ASSUAN/GpgSM ERR error values in a better way than is done now.
+** Map ASSUAN/GpgSM ERR error values in a better way than is done now. !!
 ** Verify (and document) if Read_Error, Write_Error, Pipe_Error set errno.
 
 * Tests
 ** Write a fake gpg-agent so that we can supply known passphrases to
    gpgsm and setup the configuration files to use the agent.  Without
    this we are testing a currently running gpg-agent which is not a
-   clever idea.
+   clever idea. !
 ** t-data
 *** Test gpgme_data_release_and_get_mem.
 *** Test gpgme_data_rewind for invalid types.
@@ -54,7 +54,7 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Debug
 ** Handle malloc and vasprintf errors.  But decide first if they should be
-   ignored (and logged with 255?!), or really be assertions.
+   ignored (and logged with 255?!), or really be assertions. !
 
 * Build suite
 ** Make sure everything is cleaned correctly (esp. test area).
