@@ -1,5 +1,8 @@
 2004-03-11  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (gpgsm_new): Protect all tty related code with
+	isatty().
+
 	* rungpg.c (gpg_cancel): Set GPG->fd_data_map to NULL after
 	releasing it.
 	* engine-gpgsm.c (gpgsm_cancel): Only call assuan_disconnect if
