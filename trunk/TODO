@@ -11,9 +11,6 @@ Hey Emacs, this is -*- outline -*- mode!
 *** gpgme_data_new_from_file
 *** gpgme_data_new_with_read_cb
 *** gpgme_data_rewind
-*** GPGME_Busy, GPGME_No_Request
-*** GPGME_Invalid_Recipient, GPGME_No_Recipients
-*** GPGME_No_Passphrase
 *** gpgme_op_import_ext
 *** gpgme_get_sig_key
 *** gpgme_get_sig_ulong_attr
@@ -24,7 +21,6 @@ Hey Emacs, this is -*- outline -*- mode!
 *** gpgme_trust_item_get_string_attr
 *** gpgme_trust_item_get_ulong_attr
 *** gpgme_attr_t
-*** GPGME_Invalid_Type, GPGME_Invalid_Mode
 *** All Gpgme* typedefs.
 
 * Thread support:
