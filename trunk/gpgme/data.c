@@ -219,8 +219,18 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
     }
 
   nwritten = _gpgme_io_write (fd, dh->pending, dh->pending_len);
-  if (nwritten == -1 && errno == EAGAIN )
+  if (nwritten == -1 && errno == EAGAIN)
     return 0;
+
+  if (nwritten == -1 && errno == EPIPE)
+    {
+      /* Not much we can do.  The other end closed the pipe, but we
+	 still have data.  This should only ever happen if the other
+	 end is going to tell us what happened on some other channel.
+	 Silently close our end.  */
+      _gpgme_io_close (fd);
+      return 0;
+    }
 
   if (nwritten <= 0)
     return gpg_error_from_errno (errno);
