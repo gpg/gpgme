@@ -1038,13 +1038,13 @@ object with the handle @var{dh}.  If @var{dh} is not a valid pointer,
 @deftp {Data type} {enum GpgmeDataEncoding}
 @tindex GpgmeDataEncoding
 The @code{GpgmeDataEncoding} type specifies the encoding of a
-@code{GpgmeData} object.  This encoding is useful to give the backend a
-hint on the type of data.  The following data types are available:
+@code{GpgmeData} object.  This encoding is useful to give the backend
+a hint on the type of data.  The following data types are available:
 
 @table @code
 @item GPGME_DATA_ENCODING_NONE
-This specifies that the encoding is not known.  Thsi si the default for
-a new data object.
+This specifies that the encoding is not known.  This is the default
+for a new data object.
 
 @item GPGME_DATA_ENCODING_BINARY
 This specifies that the data is encoding in binary form; i.e. there is
@@ -1057,19 +1057,19 @@ scheme as used by @acronym{MIME} and other protocols.
 @item GPGME_DATA_ENCODING_ARMOR
 This specifies that the data is encoded in an armored form as used by
 OpenPGP and PEM.
-
 @end table
 @end deftp
 
 @deftypefun GpgmeDataEncoding gpgme_data_get_encoding (@w{GpgmeData @var{dh}})
-The function @code{gpgme_data_get_encoding} returns the encoding of the data
-object with the handle @var{dh}.  If @var{dh} is not a valid pointer
-(e.g. @code{NULL})@code{GPGME_DATA_ENCODING_NONE} is returned.
+The function @code{gpgme_data_get_encoding} returns the encoding of
+the data object with the handle @var{dh}.  If @var{dh} is not a valid
+pointer (e.g. @code{NULL}) @code{GPGME_DATA_ENCODING_NONE} is
+returned.
 @end deftypefun
 
 @deftypefun GpgmeError gpgme_data_set_encoding (@w{GpgmeData @var{dh}, GpgmeDataEncoding @var{enc}})
-The function @code{gpgme_data_set_encoding} changes the encoding of the data
-object with the handle @var{dh} to @var{enc}. 
+The function @code{gpgme_data_set_encoding} changes the encoding of
+the data object with the handle @var{dh} to @var{enc}.
 @end deftypefun
 
 
@@ -2109,14 +2109,14 @@ This status indicates that the signature is valid.  For the combined
 result this status means that all signatures are valid.
 
 @item GPGME_SIG_STAT_GOOD_EXP
-This status indicates that the signature is valid but expired.  For the
-combined result this status means that all signatures are valid and expired..
+This status indicates that the signature is valid but expired.  For
+the combined result this status means that all signatures are valid
+and expired.
 
 @item GPGME_SIG_STAT_GOOD_EXPKEY
 This status indicates that the signature is valid but the key used to
-verify the signature has expired.  For the
-combined result this status means that all signatures are valid and all
-keys are expired.
+verify the signature has expired.  For the combined result this status
+means that all signatures are valid and all keys are expired.
 
 @item GPGME_SIG_STAT_BAD
 This status indicates that the signature is invalid.  For the combined
