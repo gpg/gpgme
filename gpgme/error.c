@@ -32,14 +32,17 @@ gpgme_strerror (gpgme_error_t err)
 }
 
 
-/* Return a pointer to a string containing a description of the error
-   code in the error value ERR.  The buffer for the string is
-   allocated with malloc(), and has to be released by the user.  On
-   error, NULL is returned.  */
-char *
-gpgme_strerror_r (gpgme_error_t err)
+/* Return the error string for ERR in the user-supplied buffer BUF of
+   size BUFLEN.  This function is, in contrast to gpg_strerror,
+   thread-safe if a thread-safe strerror_r() function is provided by
+   the system.  If the function succeeds, 0 is returned and BUF
+   contains the string describing the error.  If the buffer was not
+   large enough, ERANGE is returned and BUF contains as much of the
+   beginning of the error string as fits into the buffer.  */
+int
+gpgme_strerror_r (gpg_error_t err, char *buf, size_t buflen)
 {
-  return gpg_strerror_r (err);
+  return gpg_strerror_r (err, buf, buflen);
 }
 
 
