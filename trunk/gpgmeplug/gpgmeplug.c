@@ -51,7 +51,8 @@
 #include <assert.h>
 #include <errno.h>
 
-#include <gpgme.h>
+#include "../gpgme/gpgme.h"
+#include "../gpgme/util.h"
 
 #include "cryptplug.h"
 
@@ -676,7 +677,7 @@ bool signMessage( const char*  cleartext,
   char buf[1024];
   size_t nread;
 
-  
+
   gpgme_new (&ctx);
   gpgme_set_armor (ctx, 1);
   gpgme_set_textmode (ctx, 1);
