@@ -226,11 +226,13 @@ GpgmeError _gpgme_engine_set_colon_line_handler (EngineObject engine,
   switch (engine->protocol)
     {
     case GPGME_PROTOCOL_OpenPGP:
-      return _gpgme_gpg_set_colon_line_handler (engine->engine.gpg, fnc,
-						fnc_value);
+      return _gpgme_gpg_set_colon_line_handler (engine->engine.gpg, 
+                                                fnc, fnc_value);
     case GPGME_PROTOCOL_CMS:
-      /* FIXME */
+      _gpgme_gpgsm_set_colon_line_handler (engine->engine.gpgsm,
+                                           fnc, fnc_value);
       break;
+
     default:
       break;
     }
