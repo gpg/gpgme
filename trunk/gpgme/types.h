@@ -47,6 +47,10 @@ typedef struct gpg_object_s *GpgObject;
 struct verify_result_s;
 typedef struct verify_result_s *VerifyResult;
 
+/*-- decrypt.c --*/
+struct decrypt_result_s;
+typedef struct decrypt_result_s *DecryptResult;
+
 /*-- key.c --*/
 
 

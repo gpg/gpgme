@@ -22,13 +22,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "../gpgme/gpgme.h"
 
-#define fail_if_err(a) do { if(a) {                                       \
-                               fprintf (stderr, "%s:%d: GpgmeError %s\n", \
-                                __FILE__, __LINE__, gpgme_strerror(a));   \
-                                exit (1); }                               \
+#define fail_if_err(a) do { if(a) { int my_errno = errno; \
+            fprintf (stderr, "%s:%d: GpgmeError %s\n", \
+                 __FILE__, __LINE__, gpgme_strerror(a));   \
+            if ((a) == GPGME_File_Error)                       \
+                   fprintf (stderr, "\terrno=`%s'\n", strerror (my_errno)); \
+                   exit (1); }                               \
                              } while(0)
 
 static void
@@ -55,27 +58,18 @@ main (int argc, char **argv )
     GpgmeCtx ctx;
     GpgmeError err;
     GpgmeData in, out;
-    GpgmeRecipients rset;
 
   do {
     err = gpgme_new (&ctx);
     fail_if_err (err);
 
-    err = gpgme_data_new_from_mem ( &in, "Hallo Leute\n", 12, 0 );
+    err = gpgme_data_new_from_file ( &in, "cipher-1.asc", 1 );
     fail_if_err (err);
 
     err = gpgme_data_new ( &out );
     fail_if_err (err);
 
-    err = gpgme_recipients_new (&rset);
-    fail_if_err (err);
-    err = gpgme_recipients_add_name (rset, "Bob");
-    fail_if_err (err);
-    err = gpgme_recipients_add_name (rset, "Alpha");
-    fail_if_err (err);
-
-
-    err = gpgme_op_encrypt (ctx, rset, in, out );
+    err = gpgme_op_decrypt (ctx, in, out );
     fail_if_err (err);
 
     fflush (NULL);
@@ -83,7 +77,6 @@ main (int argc, char **argv )
     print_data (out);
     fputs ("End Result.\n", stdout );
    
-    gpgme_recipients_release (rset);
     gpgme_data_release (in);
     gpgme_data_release (out);
     gpgme_release (ctx);

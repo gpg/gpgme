@@ -59,6 +59,8 @@ typedef enum {
     GPGME_Write_Error = 14,
     GPGME_Invalid_Type = 15,
     GPGME_Invalid_Mode = 16,
+    GPGME_File_Error = 17,  /* errno is set in this case */
+    GPGME_Decryption_Failed = 18,
 } GpgmeError;
 
 typedef enum {
@@ -95,8 +97,13 @@ GpgmeError   gpgme_recipients_add_name (GpgmeRecipients rset,
 unsigned int gpgme_recipients_count ( const GpgmeRecipients rset );
 
 /* Functions to handle data sources */
-GpgmeError    gpgme_data_new ( GpgmeData *r_dh,
-                               const char *buffer, size_t size, int copy );
+GpgmeError    gpgme_data_new ( GpgmeData *r_dh );
+GpgmeError    gpgme_data_new_from_mem ( GpgmeData *r_dh,
+                                        const char *buffer, size_t size,
+                                        int copy );
+GpgmeError    gpgme_data_new_from_file ( GpgmeData *r_dh,
+                                         const char *fname,
+                                         int copy );
 void          gpgme_data_release ( GpgmeData dh );
 GpgmeDataType gpgme_data_get_type ( GpgmeData dh );
 GpgmeError    gpgme_data_rewind ( GpgmeData dh );
@@ -108,8 +115,11 @@ char *gpgme_key_get_as_xml ( GpgmeKey key );
 
 
 /* Basic GnuPG functions */
-GpgmeError gpgme_op_encrypt_start ( GpgmeCtx c, GpgmeRecipients recp,
+GpgmeError gpgme_op_encrypt_start ( GpgmeCtx c,
+                                    GpgmeRecipients recp,
                                     GpgmeData in, GpgmeData out );
+GpgmeError gpgme_op_decrypt_start ( GpgmeCtx c,
+                                    GpgmeData ciph, GpgmeData plain );
 GpgmeError gpgme_op_verify_start ( GpgmeCtx c,
                                    GpgmeData sig, GpgmeData text );
 
@@ -123,6 +133,7 @@ GpgmeError gpgme_op_keylist_next ( GpgmeCtx c, GpgmeKey *r_key );
 /* Convenience functions for normal usage */
 GpgmeError gpgme_op_encrypt ( GpgmeCtx c, GpgmeRecipients recp,
                               GpgmeData in, GpgmeData out );
+GpgmeError gpgme_op_decrypt ( GpgmeCtx c, GpgmeData in, GpgmeData out );
 GpgmeError gpgme_op_verify ( GpgmeCtx c, GpgmeData sig, GpgmeData text,
                              GpgmeSigStat *r_status );
 

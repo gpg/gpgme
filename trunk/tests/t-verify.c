@@ -105,9 +105,11 @@ main (int argc, char **argv )
     fail_if_err (err);
 
   do {
-    err = gpgme_data_new ( &text, test_text1, strlen (test_text1), 0 );
+    err = gpgme_data_new_from_mem ( &text,
+                                    test_text1, strlen (test_text1), 0 );
     fail_if_err (err);
-    err = gpgme_data_new ( &sig, test_sig1, strlen (test_sig1), 0 );
+    err = gpgme_data_new_from_mem ( &sig,
+                                    test_sig1, strlen (test_sig1), 0 );
     fail_if_err (err);
 
     puts ("checking a valid message:\n");
@@ -119,7 +121,8 @@ main (int argc, char **argv )
 
     puts ("checking a manipulated message:\n");
     gpgme_data_release (text);
-    err = gpgme_data_new ( &text, test_text1f, strlen (test_text1f), 0 );
+    err = gpgme_data_new_from_mem ( &text,
+                                    test_text1f, strlen (test_text1f), 0 );
     fail_if_err (err);
     gpgme_data_rewind ( sig );
     err = gpgme_op_verify (ctx, sig, text, &status );
