@@ -1,8 +1,13 @@
- * The signature verfication functions are extended.  Instead of
-   always returning GPGME_SIG_STATUS_GOOD, the functions return more
-   specific codes for expired signatures.  2 new functions may be used
-   to retrieve more specific information like the signature expiartion
-   time and a validut information of the key without looking up the key.
+Noteworthy changes in version 0.3.6 (2002-05-03)
+------------------------------------------------
+
+ * All error outout of the gpgsm backend is send to the bit bucket.
+
+ * The signature verification functions are extended.  Instead of
+   always returning GPGME_SIG_STATUS_GOOD, the functions new codes for
+   expired signatures.  2 new functions may be used to retrieve more
+   detailed information like the signature expiration time and a
+   validity information of the key without an extra key looking.
 
  * The current passphrase callback and progress meter callback can be
    retrieved with the new functions gpgme_get_passphrase_cb and
