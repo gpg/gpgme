@@ -1,3 +1,7 @@
+2002-03-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Detailed Results): Fix syntax error in last change.
+
 2002-03-08  Werner Koch  <wk@gnupg.org>
 
 	* gpgme.texi (Detailed Results): Import does also return info.
