@@ -494,7 +494,7 @@ gpgme_data_rewind ( GpgmeData dh )
  * work for certain data types, all other will respond with an
  * %GPGME_Invalid_Type.
  * 
- * Return value: An errorcode or 0 on success, EOF is indcated by the
+ * Return value: An error code or 0 on success, EOF is indcated by the
  * error code GPGME_EOF.
  **/
 GpgmeError
@@ -596,12 +596,12 @@ _gpgme_data_get_as_string ( GpgmeData dh )
  * gpgme_data_write:
  * @dh: the context
  * @buffer: data to be written to the data object
- * @length: length o this data
+ * @length: length of this data
  * 
  * Write the content of @buffer to the data object @dh at the current write
  * position. 
  * 
- * Return value: 0 on succress or an errorcode
+ * Return value: 0 on success or an error code
  **/
 GpgmeError
 gpgme_data_write ( GpgmeData dh, const char *buffer, size_t length )
@@ -658,7 +658,7 @@ _gpgme_data_append ( GpgmeData dh, const char *buffer, size_t length )
     if ( dh->writepos + length > dh->private_len ) {
         char *p;
         size_t newlen = dh->private_len
-                        + (dh->len < ALLOC_CHUNK? ALLOC_CHUNK : length);
+                        + (length < ALLOC_CHUNK? ALLOC_CHUNK : length);
         p = xtryrealloc ( dh->private_buffer, newlen );
         if ( !p ) 
             return mk_error (Out_Of_Core);
@@ -784,10 +784,3 @@ _gpgme_data_append_percentstring_for_xml ( GpgmeData dh, const char *string )
     xfree (buf);
     return err;
 }
-
-
-
-
-
-
-
