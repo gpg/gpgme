@@ -53,6 +53,8 @@ struct gpgme_context_s {
     union {
         VerifyResult verify;
     } result;
+
+    GpgmeKey tmp_key;  /* used by keylist.c */
 };
 
 
