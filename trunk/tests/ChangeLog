@@ -1,5 +1,11 @@
 2003-09-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/t-thread1.c: New file.
+	* gpg/Makefile.am (TESTS): Add t-thread1.c.
+	(t_thread1_LDADD): New variable.
+	(LDADD): Remove GPG Error lib.
+	* gpgsm/Makefile.am (LDADD): Likewise.
+
 	* gpg/t-import.c (main): Likewise.
 	* gpg/t-keylist-sig.c (main): Likewise.
 	* gpg/t-keylist.c (main): Likewise.

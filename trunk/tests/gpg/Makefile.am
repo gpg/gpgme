@@ -28,7 +28,7 @@ noinst_HEADERS = t-support.h
 TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers	\
 	t-decrypt t-verify t-decrypt-verify \
 	t-export t-import t-trustlist t-eventloop t-edit \
-	t-keylist t-keylist-sig
+	t-keylist t-keylist-sig t-thread1
 
 CLEANFILES = secring.gpg pubring.gpg trustdb.gpg
 DISTCLEANFILES = pubring.gpg~ random_seed
@@ -39,7 +39,8 @@ EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 INCLUDES = -I$(top_srcdir)/gpgme
 
 AM_CPPFLAGS = @GPG_ERROR_CFLAGS@
-LDADD = ../../gpgme/libgpgme.la @GPG_ERROR_LIBS@
+LDADD = ../../gpgme/libgpgme.la
+t_thread1_LDADD = ../../gpgme/libgpgme-pthread.la
 
 # We don't run t-genkey in the test suite, because it takes too long
 noinst_PROGRAMS = $(TESTS) t-genkey
