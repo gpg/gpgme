@@ -39,6 +39,14 @@ typedef enum {
   ASSUAN_Timeout = 4,  
   ASSUAN_Read_Error = 5,
   ASSUAN_Write_Error = 6,
+  ASSUAN_Problem_Starting_Server = 7,
+  ASSUAN_Not_A_Server = 8,
+  ASSUAN_Not_A_Client = 9,
+  ASSUAN_Nested_Commands = 10,
+  ASSUAN_Invalid_Response = 11,
+  ASSUAN_No_Data_Callback = 12,
+  ASSUAN_No_Inquire_Callback = 13,
+  ASSUAN_Connect_Failed = 14,
 
   /* error codes above 99 are meant as status codes */
   ASSUAN_Not_Implemented = 100,
@@ -53,10 +61,28 @@ typedef enum {
   ASSUAN_No_Input = 109,
   ASSUAN_No_Output = 110,
   ASSUAN_Canceled = 111,
+  ASSUAN_Unsupported_Algorithm = 112,
+  ASSUAN_Server_Resource_Problem = 113,
+  ASSUAN_Server_IO_Error = 114,
+  ASSUAN_Server_Bug = 115,
+  ASSUAN_No_Data_Available = 116,
+  ASSUAN_Invalid_Data = 117,
+  ASSUAN_Unexpected_Command = 118,
+  ASSUAN_Too_Much_Data = 119,
+
+  ASSUAN_Bad_Certificate = 201,
+  ASSUAN_Bad_Certificate_Path = 202,
+  ASSUAN_Missing_Certificate = 203,
+  ASSUAN_Bad_Signature = 204,
+  ASSUAN_No_Agent = 205,
+  ASSUAN_Agent_Error = 206,
+  ASSUAN_No_Public_Key = 207,
+  ASSUAN_No_Secret_Key = 208,
+  ASSUAN_Invalid_Name = 209,
 
   ASSUAN_Cert_Revoked = 301,
   ASSUAN_No_CRL_For_Cert = 302,
-  ASSUNA_CRL_Too_Old = 303,
+  ASSUAN_CRL_Too_Old = 303,
 
 } AssuanError;
 
@@ -83,14 +109,30 @@ typedef struct assuan_context_s *ASSUAN_CONTEXT;
 int assuan_register_command (ASSUAN_CONTEXT ctx,
                              int cmd_id, const char *cmd_string,
                              int (*handler)(ASSUAN_CONTEXT, char *));
+int assuan_register_bye_notify (ASSUAN_CONTEXT ctx,
+                                void (*fnc)(ASSUAN_CONTEXT));
+int assuan_register_reset_notify (ASSUAN_CONTEXT ctx,
+                                  void (*fnc)(ASSUAN_CONTEXT));
+int assuan_register_cancel_notify (ASSUAN_CONTEXT ctx,
+                                   void (*fnc)(ASSUAN_CONTEXT));
+int assuan_register_input_notify (ASSUAN_CONTEXT ctx,
+                                  void (*fnc)(ASSUAN_CONTEXT, const char *));
+int assuan_register_output_notify (ASSUAN_CONTEXT ctx,
+                                  void (*fnc)(ASSUAN_CONTEXT, const char *));
 int assuan_process (ASSUAN_CONTEXT ctx);
+int assuan_process_next (ASSUAN_CONTEXT ctx);
+int assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
+                           int *fdarray, int fdarraysize);
+
+
 FILE *assuan_get_data_fp (ASSUAN_CONTEXT ctx);
 void assuan_write_status (ASSUAN_CONTEXT ctx,
                           const char *keyword, const char *text);
 
 
 /*-- assuan-listen.c --*/
-int assuan_accept (ASSUAN_CONTEXT ctx);
+AssuanError assuan_set_hello_line (ASSUAN_CONTEXT ctx, const char *line);
+AssuanError assuan_accept (ASSUAN_CONTEXT ctx);
 int assuan_get_input_fd (ASSUAN_CONTEXT ctx);
 int assuan_get_output_fd (ASSUAN_CONTEXT ctx);
 
@@ -105,6 +147,29 @@ AssuanError assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name,
                                  char *const argv[]);
 void assuan_pipe_disconnect (ASSUAN_CONTEXT ctx);
 pid_t assuan_get_pid (ASSUAN_CONTEXT ctx);
+
+/*-- assuan-client.c --*/
+AssuanError 
+assuan_transact (ASSUAN_CONTEXT ctx,
+                 const char *command,
+                 AssuanError (*data_cb)(void *, const void *, size_t),
+                 void *data_cb_arg,
+                 AssuanError (*inquire_cb)(void*, const char *),
+                 void *inquire_cb_arg);
+
+
+/*-- assuan-inquire.c --*/
+AssuanError assuan_inquire (ASSUAN_CONTEXT ctx, const char *keyword,
+                            char **r_buffer, size_t *r_length, size_t maxlen);
+
+/*-- assuan-buffer.c --*/
+AssuanError assuan_read_line (ASSUAN_CONTEXT ctx,
+                              char **line, size_t *linelen);
+int assuan_pending_line (ASSUAN_CONTEXT ctx);
+AssuanError assuan_write_line (ASSUAN_CONTEXT ctx, const char *line );
+AssuanError assuan_send_data (ASSUAN_CONTEXT ctx,
+                              const void *buffer, size_t length);
+
 
 /*-- assuan-util.c --*/
 void assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
@@ -123,3 +188,5 @@ const char *assuan_strerror (AssuanError err);
 }
 #endif
 #endif /*ASSUAN_H*/
+
+

@@ -123,16 +123,25 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
       return -1; 
     }
 
+  ctx->inbound.attic.pending = 0;
   for (n=0; n < nread; n++)
     {
       if (line[n] == '\n')
         {
           if (n+1 < nread)
             {
+              char *s, *d;
+              int i;
+
               n++;
               /* we have to copy the rest because the handlers are
                  allowed to modify the passed buffer */
-              memcpy (ctx->inbound.attic.line, line+n, nread-n);
+              for (d=ctx->inbound.attic.line, s=line+n, i=nread-n; i; i--)
+                {
+                  if (*s=='\n')
+                    ctx->inbound.attic.pending = 1;
+                  *d++ = *s++;
+                }
               ctx->inbound.attic.linelen = nread-n;
               n--;
             }
@@ -150,12 +159,43 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
 }
 
 
+/* Read the next line from the client or server and return a pointer
+   to a buffer with holding that line.  linelen returns the length of
+   the line.  This buffer is valid until another read operation is
+   done on this buffer.  The caller is allowed to modify this buffer.
+   He should only use the buffer if the function returns without an
+   error.
+
+   Returns: 0 on success or an assuan error code
+   See also: assuan_pending_line().
+*/
+AssuanError
+assuan_read_line (ASSUAN_CONTEXT ctx, char **line, size_t *linelen)
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  *line = ctx->inbound.line;
+  *linelen = ctx->inbound.linelen;
+  return _assuan_read_line (ctx);
+}
 
 
-int 
-_assuan_write_line (ASSUAN_CONTEXT ctx, const char *line )
+/* Return true when a full line is pending for a read, without the need
+   for actual IO */
+int
+assuan_pending_line (ASSUAN_CONTEXT ctx)
+{
+  return ctx && ctx->inbound.attic.pending;
+}
+
+
+AssuanError 
+assuan_write_line (ASSUAN_CONTEXT ctx, const char *line )
 {
   int rc;
+  
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
 
   /* fixme: we should do some kind of line buffering */
   rc = writen (ctx->outbound.fd, line, strlen(line));
@@ -261,6 +301,51 @@ _assuan_cookie_write_flush (void *cookie)
         }
       ctx->outbound.data.linelen = 0;
     }
+  return 0;
+}
+
+
+/**
+ * assuan_send_data:
+ * @ctx: An assuan context
+ * @buffer: Data to send or NULL to flush
+ * @length: length of the data to send/
+ * 
+ * This function may be used by the server or the client to send data
+ * lines.  The data will be escaped as required by the Assuan protocol
+ * and may get buffered until a line is full.  To force sending the
+ * data out @buffer may be passed as NULL (in which case @length must
+ * also be 0); however when used by a client this flush operation does
+ * also send the terminating "END" command to terminate the reponse on
+ * a INQUIRE response.  However, when assuan_transact() is used, this
+ * function takes care of sending END itself.
+ * 
+ * Return value: 0 on success or an error code
+ **/
+
+AssuanError
+assuan_send_data (ASSUAN_CONTEXT ctx, const void *buffer, size_t length)
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  if (!buffer && length)
+    return ASSUAN_Invalid_Value;
+
+  if (!buffer)
+    { /* flush what we have */
+      _assuan_cookie_write_flush (ctx);
+      if (ctx->outbound.data.error)
+        return ctx->outbound.data.error;
+      if (!ctx->is_server)
+        return assuan_write_line (ctx, "END");
+    }
+  else
+    {
+      _assuan_cookie_write_data (ctx, buffer, length);
+      if (ctx->outbound.data.error)
+        return ctx->outbound.data.error;
+    }
+
   return 0;
 }
 
