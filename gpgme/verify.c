@@ -225,6 +225,7 @@ _gpgme_verify_status_handler (GpgmeCtx ctx, GpgmeStatusCode code, char *args)
   switch (code)
     {
     case GPGME_STATUS_NODATA:
+    case GPGME_STATUS_UNEXPECTED:
       ctx->result.verify->status = GPGME_SIG_STAT_NOSIG;
       break;
 
