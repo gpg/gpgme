@@ -52,6 +52,24 @@ Noteworthy changes in version 0.4.1 (unreleased)
    works with gpgme_op_genkey.  The structure also provides other
    information about the generated keys.
 
+   So, instead:
+
+   char *fpr;
+   err = gpgme_op_genkey (ctx, NULL, NULL, &fpr); 
+   if (!err && fpr)
+     printf ("%s\n", fpr);
+
+   you should now do:
+
+   GpgmeGenKeyResult result;
+   err = gpgme_op_genkey (ctx, NULL, NULL);
+   if (!err)
+     {
+       result = gpgme_op_genkey_result (ctx);
+       if (result->fpr)
+         printf ("%s\n", result->fpr);
+     }
+
  * Interface changes relative to the 0.4.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GpgmeIOCb			CHANGED: Return type from void to GpgmeError.
