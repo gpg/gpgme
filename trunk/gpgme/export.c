@@ -99,6 +99,12 @@ gpgme_op_export (GpgmeCtx ctx, GpgmeRecipients recipients, GpgmeData keydata)
 {
   GpgmeError err = _gpgme_op_export_start (ctx, 1, recipients, keydata);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    {
+      err = _gpgme_wait_one (ctx);
+      /* XXX We don't get status information.  */
+      if (!ctx->error && gpgme_data_get_type (keydata) == GPGME_DATA_TYPE_NONE)
+	ctx->error = mk_error (No_Recipients);
+      err = ctx->error;
+    }
   return err;
 }

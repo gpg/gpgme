@@ -759,14 +759,52 @@ GpgmeError
 _gpgme_gpgsm_op_export (GpgsmObject gpgsm, GpgmeRecipients recp,
 			GpgmeData keydata, int use_armor)
 {
-  GpgmeError err;
+  GpgmeError err = 0;
+  char *cmd = NULL;
+  int cmdi;
+  int cmdlen = 32;
 
   if (!gpgsm)
     return mk_error (Invalid_Value);
 
-  gpgsm->command = xtrystrdup ("EXPORT");
-  if (!gpgsm->command)
+  cmd = malloc (cmdlen);
+  if (!cmd)
     return mk_error (Out_Of_Core);
+  strcpy (cmd, "EXPORT");
+  cmdi = 6;
+
+  if (recp)
+    {
+      void *ec;
+      const char *s;
+
+      err = gpgme_recipients_enum_open (recp, &ec);
+      while (!err && (s = gpgme_recipients_enum_read (recp, &ec)))
+	{
+	  int slen = strlen (s);
+	  /* New string is old string + ' ' + s + '\0'.  */
+	  if (cmdlen < cmdi + 1 + slen + 1)
+	    {
+	      char *newcmd = xtryrealloc (cmd, cmdlen * 2);
+	      if (!newcmd)
+		{
+		  xfree (cmd);
+		  return mk_error (Out_Of_Core);
+		}
+	      cmd = newcmd;
+	      cmdlen *= 2;
+	    }
+	  cmd[cmdi++] = ' ';
+	  strcpy (cmd + cmdi, s);
+	  cmdi += slen;
+	}
+      if (!err)
+	err = gpgme_recipients_enum_close (recp, &ec);
+      if (err)
+	return err;
+    }
+
+  gpgsm->command = cmd;
 
   gpgsm->output_cb.data = keydata;
   err = gpgsm_set_fd (gpgsm->assuan_ctx, "OUTPUT", gpgsm->output_fd_server,
