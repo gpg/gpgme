@@ -79,6 +79,7 @@
 #define GPGMEPLUG_SIGN_FLAT_PREFIX       ""
 #define GPGMEPLUG_SIGN_FLAT_SEPARATOR    ""
 #define GPGMEPLUG_SIGN_FLAT_POSTFIX      ""
+#define __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY false
 #endif
 // definitions for encoding
 #ifndef GPGMEPLUG_ENC_MAKE_MIME_OBJECT
@@ -98,6 +99,7 @@
 #define GPGMEPLUG_ENC_FLAT_PREFIX        ""
 #define GPGMEPLUG_ENC_FLAT_SEPARATOR     ""
 #define GPGMEPLUG_ENC_FLAT_POSTFIX       ""
+#define __GPGMEPLUG_ENCRYPTED_CODE_IS_BINARY false
 #endif
 // Note: The following specification will result in
 //       function encryptAndSignMessage() producing
@@ -860,15 +862,15 @@ void storeNewCharPtr( char** dest, const char* src )
 
 bool signMessage( const char*  cleartext,
                   const char** ciphertext,
+                  const size_t* cipherLen,
                   const char*  certificate,
                   struct StructuringInfo* structuring )
 {
   GpgmeCtx ctx;
   GpgmeError err;
   GpgmeData data,  sig;
-  size_t rSLen = 0;
-  char*  rSig  = 0;
-  bool   bOk   = false;
+  char* rSig  = 0;
+  bool  bOk   = false;
   int sendCerts = 1;
 
   init_StructuringInfo( structuring );
@@ -879,8 +881,8 @@ bool signMessage( const char*  cleartext,
   err = gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
 
-  gpgme_set_armor (ctx, 1);
-  gpgme_set_textmode (ctx, 1);
+  gpgme_set_armor (ctx, __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY ? 0 : 1);
+//  gpgme_set_textmode (ctx, 1);
 
   switch ( config.sendCertificates ) {
     case SendCert_undef:
@@ -912,16 +914,20 @@ bool signMessage( const char*  cleartext,
   err = gpgme_op_sign (ctx, data, sig, GPGME_SIG_MODE_DETACH );
 
   if (!err) {
-    rSig  = gpgme_data_release_and_get_mem( sig,  &rSLen );
-    *ciphertext = malloc( rSLen + 1 );
-    if( *ciphertext ) {
-      if( rSLen ) {
-        bOk = true;
-        strncpy((char*)*ciphertext, rSig, rSLen );
+    if( __GPGMEPLUG_SIGNATURE_CODE_IS_BINARY )
+      *ciphertext = gpgme_data_release_and_get_mem( sig, (size_t*)cipherLen );
+    else {
+      rSig = gpgme_data_release_and_get_mem( sig, (size_t*)cipherLen );
+      *ciphertext = malloc( *cipherLen + 1 );
+      if( *ciphertext ) {
+        if( *cipherLen ) {
+          bOk = true;
+          strncpy((char*)*ciphertext, rSig, *cipherLen );
+        }
+        ((char*)(*ciphertext))[*cipherLen] = '\0';
       }
-      ((char*)(*ciphertext))[rSLen] = '\0';
+      free( rSig );
     }
-    free( rSig );
   }
   else {
     gpgme_data_release( sig );
@@ -1238,6 +1244,7 @@ bool findCertificates( const char* addressee, char** certificates )
 
 bool encryptMessage( const char*  cleartext,
                      const char** ciphertext,
+                     const size_t* cipherLen,
                      const char*  certificate,
                      struct StructuringInfo* structuring )
 {
@@ -1245,7 +1252,6 @@ bool encryptMessage( const char*  cleartext,
   GpgmeError err;
   GpgmeData gCiphertext, gPlaintext;
   GpgmeRecipients rset;
-  size_t rCLen = 0;
   char*  rCiph = 0;
   bool   bOk   = false;
 
@@ -1254,8 +1260,8 @@ bool encryptMessage( const char*  cleartext,
   gpgme_new (&ctx);
   gpgme_set_protocol (ctx, GPGMEPLUG_PROTOCOL);
 
-  gpgme_set_armor (ctx, 1);
-  gpgme_set_textmode (ctx, 1);
+  gpgme_set_armor (ctx, __GPGMEPLUG_ENCRYPTED_CODE_IS_BINARY ? 0 : 1);
+//  gpgme_set_textmode (ctx, 1);
 
   gpgme_data_new_from_mem (&gPlaintext, cleartext,
                             1+strlen( cleartext ), 1 );
@@ -1308,16 +1314,20 @@ bool encryptMessage( const char*  cleartext,
   gpgme_data_release (gPlaintext);
 
   if( !err ) {
-    rCiph = gpgme_data_release_and_get_mem( gCiphertext,  &rCLen );
-    *ciphertext = malloc( rCLen + 1 );
-    if( *ciphertext ) {
-      if( rCLen ) {
-        bOk = true;
-        strncpy((char*)*ciphertext, rCiph, rCLen );
+    if( __GPGMEPLUG_ENCRYPTED_CODE_IS_BINARY )
+      *ciphertext = gpgme_data_release_and_get_mem( gCiphertext, (size_t*)cipherLen );
+    else {
+      rCiph = gpgme_data_release_and_get_mem( gCiphertext, (size_t*)cipherLen );
+      *ciphertext = malloc( *cipherLen + 1 );
+      if( *ciphertext ) {
+        if( *cipherLen ) {
+          bOk = true;
+          strncpy((char*)*ciphertext, rCiph, *cipherLen );
+        }
+        ((char*)(*ciphertext))[*cipherLen] = 0;
       }
-      ((char*)(*ciphertext))[rCLen] = 0;
+      free( rCiph );
     }
-    free( rCiph );
   }
   else {
     gpgme_data_release ( gCiphertext );

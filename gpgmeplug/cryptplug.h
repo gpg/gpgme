@@ -1386,7 +1386,12 @@ struct StructuringInfo {
 /*! \ingroup groupSignAct
    \brief Signs a message \c cleartext and returns
           in \c *ciphertext the signature data bloc that
-          is to be added to the message.
+          is to be added to the message. The length returned
+          in \c *cipherLen tells you the size (==amount of bytes)
+          of the ciphertext, if the structuring information
+          would return with contentTEncCode set to "base64"
+          the ciphertext might contain a char 0x00
+          and has to be converted into base64 before sending.
 
    The signature role is specified by \c certificate.
    If \c certificate is \c NULL, the default certificate is used.
@@ -1416,6 +1421,7 @@ struct StructuringInfo {
 */
 bool signMessage( const char*  cleartext,
                   const char** ciphertext,
+                  const size_t* cipherLen,
                   const char*  certificate,
                   struct StructuringInfo* structuring );
 
@@ -1477,6 +1483,12 @@ bool findCertificates( const char* addressee, char** certificates );
           \c cleartext according to the \c addressee and
           the current settings (algorithm, etc.) and
           returns the encoded data bloc in \c *ciphertext.
+          The length returned in \c *cipherLen tells you the
+          size (==amount of bytes) of the ciphertext, if the
+          structuring information would return with
+          contentTEncCode set to "base64" the ciphertext
+          might contain a char 0x00 and has to be converted
+          into base64 before sending.
 
    If the message could be encrypted, the function returns
           \c true, otherwise
@@ -1501,6 +1513,7 @@ bool findCertificates( const char* addressee, char** certificates );
 */
 bool encryptMessage( const char*  cleartext,
                      const char** ciphertext,
+                     const size_t* cipherLen,
                      const char*  addressee,
                      struct StructuringInfo* structuring );
 
