@@ -2342,7 +2342,7 @@ The defined bits are:
 @end deftypefun
 
 
-@deftypefun {const char *} gpgme_get_sig_key (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeSigKey *@var{r_stat}})
+@deftypefun {const char *} gpgme_get_sig_key (@w{GpgmeCtx @var{ctx}}, @w{int @var{idx}}, @w{GpgmeKey *@var{r_key}})
 The function @code{gpgme_get_sig_status} receives a @code{GpgmeKey}
 object for the key which was used to verify the signature after the
 @code{gpgme_op_verify} or @code{gpgme_op_verify_decrypt} operation.  A
