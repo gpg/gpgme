@@ -1,5 +1,8 @@
 2003-07-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Creating a Signature): Document
+	GPG_ERR_UNUSABLE_SECKEY.
+
 	* gpgme.texi (Encrypting a Plaintext): Mention encrypt and sign
 	operations in result function.
 	(Creating a Signature): Likewise.
