@@ -3,12 +3,6 @@
 @settitle The `GnuPG Made Easy' Reference Manual
 
 @c TODO:
-@c GpgmeError gpgme_op_import ( GpgmeCtx c, GpgmeData keydata );
-@c GpgmeError gpgme_op_export ( GpgmeCtx c, GpgmeRecipients recp,
-@c                              GpgmeData keydata );
-@c GpgmeError gpgme_op_genkey ( GpgmeCtx c, const char *parms,
-@c                              GpgmeData pubkey, GpgmeData seckey );
-@c GpgmeError gpgme_op_delete ( GpgmeCtx c, const GpgmeKey key, int allow_secret);
 @c char *gpgme_get_op_info (GpgmeCtx c, int reserved);
 @c void       gpgme_cancel (GpgmeCtx c);
 @c GpgmeCtx   gpgme_wait (GpgmeCtx c, int hang);
@@ -159,6 +153,10 @@ Key Management
 * Listing keys::                  Browsing the list of available keys.
 * Information about keys::        Requesting detailed information about keys.
 * Manipulating keys::             Operations on keys.
+* Generating keys::               Creating new key pairs.
+* Exporting keys::                Retrieving key data from the key ring.
+* Importing keys::                Adding keys to the keyring.
+* Deleting keys::                 Removing keys from the keyring.
 
 Trust Item Management
 
@@ -953,10 +951,10 @@ not a valid protocol.
 
 @deftypefun void gpgme_set_armor (@w{GpgmeCtx @var{ctx}}, @w{int @var{yes}})
 The function @code{gpgme_set_armor} specifies if the output should be
-@acronym{ASCII} armoured.  By default, output is not @acronym{ASCII}
-armoured.
+@acronym{ASCII} armored.  By default, output is not @acronym{ASCII}
+armored.
 
-@acronym{ASCII} armoured output is disabled if @var{yes} is zero, and
+@acronym{ASCII} armored output is disabled if @var{yes} is zero, and
 enabled otherwise.
 @end deftypefun
 
@@ -1092,6 +1090,10 @@ A key can contain several user IDs and sub keys.
 * Listing keys::                  Browsing the list of available keys.
 * Information about keys::        Requesting detailed information about keys.
 * Manipulating keys::             Operations on keys.
+* Generating keys::               Creating new key pairs.
+* Exporting keys::                Retrieving key data from the key ring.
+* Importing keys::                Adding keys to the keyring.
+* Deleting keys::                 Removing keys from the keyring.
 @end menu
 
 
@@ -1355,6 +1357,103 @@ and all resources associated to it will be released.
 
 The function @code{gpgme_key_release} is an alias for
 @code{gpgme_key_unref}.
+@end deftypefun
+
+
+@node Generating keys
+@subsection Generating keys
+
+@deftypefun GpgmeError gpgme_op_genkey (@w{GpgmeCtx @var{ctx}}, @w{const char *@var{parms}}, @w{GpgmeData @var{pubkey}}, @w{GpgmeData @var{seckey}})
+The function @code{gpgme_op_genkey} generates a new key pair in the
+context @var{ctx} and puts it into the standard keyring if both
+@var{pubkey} and @var{seckey} are @code{NULL}.  In this case the
+function returns immediately after starting the operation, and does
+not wait for it to complete.  @var{pubkey} and @var{seckey} are
+reserved for later use and should be @code{NULL}.  (The function
+should return the public key in the data buffer @var{pubkey} and the
+secret key in the data buffer @var{seckey}, but this is not
+implemented yet).
+
+The argument @var{parms} specifies parameters for the key in an XML
+string.  The details about the format of @var{parms} are specific to
+teh crypto engine used by @var{ctx}.  Here is an example for GnuPG as
+the crypto engine:
+
+@example
+<literal>
+<![CDATA[
+<GnupgKeyParms format="internal">
+Key-Type: DSA
+Key-Length: 1024
+Subkey-Type: ELG-E
+Subkey-Length: 1024
+Name-Real: Joe Tester
+Name-Comment: with stupid passphrase
+Name-Email: joe@@foo.bar
+Expire-Date: 0
+Passphrase: abc
+</GnupgKeyParms>
+]]>
+</literal>
+@end example
+
+Strings should be given in UTF-8 encoding.  The only format supported
+for now is ``internal''.  The content of the @code{GnupgKeyParms}
+container is passed verbatim to GnuPG.  Control statements are not
+allowed.
+
+The function returns @code{GPGME_No_Error} if the operation could be
+started, @code{GPGME_Invalid_Value} if @var{parms} is not a valid XML
+string, and @code{GPGME_Not_Supported} if @var{pubkey} or @var{seckey}
+is not @code{NULL}.
+@end deftypefun
+
+
+@node Exporting keys
+@subsection Exporting keys
+
+@deftypefun GpgmeError gpgme_op_export (@w{GpgmeCtx @var{ctx}}, @w{GpgmeRecipients @var{recipients}}, @w{GpgmeData @var{keydata}})
+The function @code{gpgme_op_export} extracts the public keys of the
+user IDs in @var{recipients} and returns them in the data buffer
+@var{keydata}.  The type of the public keys returned is determined by
+the @acronym{ASCII} armor attribute set for the context @var{ctx}.
+
+The function returns @code{GPGME_No_Error} if the operation completed
+successfully, @code{GPGME_Invalid_Value} if @var{recipients} is
+@code{NULL} or @var{keydata} is not a valid empty data buffer, and
+passes through any errors that are reported by the crypto engine
+support routines.
+@end deftypefun
+
+
+@node Importing keys
+@subsection Importing keys
+
+@deftypefun GpgmeError gpgme_op_import (@w{GpgmeCtx @var{ctx}}, @w{GpgmeData @var{keydata}})
+The function @code{gpgme_op_import} adds the keys in the data buffer
+@var{keydata} to the key ring of the crypto engine used by @var{ctx}.
+The format of @var{keydata} can be @var{ASCII} armored, for example,
+but the details are specific to the crypto engine.
+
+The function returns @code{GPGME_No_Error} if the import was completed
+successfully, @code{GPGME_Invalid_Value} if @var{keydata} if @var{ctx}
+or @var{keydata} is not a valid pointer, and @code{GPGME_No_Data} if
+@var{keydata} is an empty data buffer.
+@end deftypefun
+
+
+@node Deleting keys
+@subsection Deleting keys
+
+@deftypefun GpgmeError gpgme_op_delete (@w{GpgmeCtx @var{ctx}}, @w{const GpgmeKey @var{key}}, @w{int @var{allow_secret}})
+The function @code{gpgme_op_delete} deletes the key @var{key} from the
+key ring of the crypto engine used by @var{ctx}.  If
+@var{allow_secret} is @code{0}, only public keys are deleted,
+otherwise secret keys are deleted as well.
+
+The function returns @code{GPGME_No_Error} if the key was deleted
+successfully, and @code{GPGME_Invalid_Value} if @var{ctx} or @var{key}
+is not a valid pointer.
 @end deftypefun
 
 
@@ -1703,8 +1802,8 @@ mode settings of the context are ignored.
 The function @code{gpgme_op_sign} creates a signature for the text in
 the data object @var{plain} and returns it in the data object
 @var{sig}.  The type of the signature created is determined by the
-@acronym{ASCII} and text mode attributes set for the context @var{ctx}
-and the requested signature mode @var{mode}.
+@acronym{ASCII} armor and text mode attributes set for the context
+@var{ctx} and the requested signature mode @var{mode}.
 
 The function returns @code{GPGME_No_Error} if the signature could be
 created successfully, @code{GPGME_Invalid_Value} if @var{ctx},
@@ -1815,8 +1914,8 @@ The function @code{gpgme_recipients_enum_close} releases the iterator
 The function @code{gpgme_op_crypt} encrypts the plaintext in the data
 object @var{plain} for the recipients @var{rset} and stores the
 ciphertext in the data object @var{cipher}.  The type of the
-ciphertext created is determined by the @acronym{ASCII} and text mode
-attributes set for the context @var{ctx}.
+ciphertext created is determined by the @acronym{ASCII} armor and text
+mode attributes set for the context @var{ctx}.
 
 The function returns @code{GPGME_No_Error} if the ciphertext could be
 created successfully, @code{GPGME_Invalid_Value} if @var{ctx},
