@@ -1,3 +1,8 @@
+2004-09-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data.c (_gpgme_data_inbound_handler): Use _gpgme_io_read, not
+	read, to improve debug output.
+
 2004-09-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (GPGME_IMPORT_NEW, GPGME_IMPORT_UID, GPGME_IMPORT_SIG,
