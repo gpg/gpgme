@@ -222,18 +222,13 @@ log_debug( const char *fmt, ... )
 
 
 void
-log_printf( const char *fmt, ... )
+log_printf (const char *fmt, ...)
 {
-    va_list arg_ptr = 0;
+  va_list arg_ptr;
 
-    if( !fmt ) {
-	do_logv( MY_LOG_BEGIN, NULL, arg_ptr );
-    }
-    else {
-	va_start( arg_ptr, fmt ) ;
-	do_logv( MY_LOG_CONT, fmt, arg_ptr );
-	va_end(arg_ptr);
-    }
+  va_start (arg_ptr, fmt);
+  do_logv (fmt ? MY_LOG_CONT : MY_LOG_BEGIN, fmt, arg_ptr);
+  va_end (arg_ptr);
 }
 
 
