@@ -1,6 +1,12 @@
 Noteworthy changes in version 0.4.1 (unreleased)
 ------------------------------------------------
 
+ * GPGME_ATTR_IS_SECRET is not anymore representable as a string.
+
+ * Interface changes relative to the 0.4.0 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_key_get_string_attr	CHANGED: Don't handle GPGME_ATR_IS_SECRET.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 0.4.0 (2002-12-23)
 ------------------------------------------------

@@ -1,9 +1,7 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * ABI's to break:
-** string representation of non-secret keys and ATTR_IS_SECRET is NULL,
-   which can not be differentiated from the case that it is not
-   representable.
+** Currently none.
 
 * Thread support:
 ** Build thread modules for static linking (which just suck in the
