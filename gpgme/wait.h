@@ -62,14 +62,17 @@ void _gpgme_fd_table_deinit (fd_table_t fdt);
 gpgme_error_t _gpgme_add_io_cb (void *data, int fd, int dir,
 			     gpgme_io_cb_t fnc, void *fnc_data, void **r_tag);
 void _gpgme_remove_io_cb (void *tag);
-void _gpgme_wait_private_event_cb (void *data, gpgme_event_io_t type, void *type_data);
-void _gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type, void *type_data);
+void _gpgme_wait_private_event_cb (void *data, gpgme_event_io_t type,
+				   void *type_data);
+void _gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type,
+				  void *type_data);
 
 gpgme_error_t _gpgme_wait_user_add_io_cb (void *data, int fd, int dir,
 					  gpgme_io_cb_t fnc, void *fnc_data,
 					  void **r_tag);
 void _gpgme_wait_user_remove_io_cb (void *tag);
-void _gpgme_wait_user_event_cb (void *data, gpgme_event_io_t type, void *type_data);
+void _gpgme_wait_user_event_cb (void *data, gpgme_event_io_t type,
+				void *type_data);
 
 gpgme_error_t _gpgme_wait_one (gpgme_ctx_t ctx);
 

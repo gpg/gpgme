@@ -233,7 +233,8 @@ _gpgme_io_spawn (const char *path, char **argv,
 	      if (!duped_stderr)
 		if (dup2 (fd, 2) == -1)
 		  {
-		    DEBUG1 ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
+		    DEBUG1 ("dup2(dev/null, 2) failed: %s\n",
+			    strerror (errno));
 		    _exit (8);
 		  }
 	      close (fd);
@@ -349,7 +350,8 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 
   do
     {
-      count = _gpgme_ath_select (max_fd + 1, &readfds, &writefds, NULL, &timeout);
+      count = _gpgme_ath_select (max_fd + 1, &readfds, &writefds, NULL,
+				 &timeout);
     }
   while (count < 0 && errno == EINTR);
   if (count < 0)

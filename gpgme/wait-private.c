@@ -42,7 +42,8 @@
    event loops.  */
 
 void
-_gpgme_wait_private_event_cb (void *data, gpgme_event_io_t type, void *type_data)
+_gpgme_wait_private_event_cb (void *data, gpgme_event_io_t type,
+			      void *type_data)
 {
   switch (type)
     {

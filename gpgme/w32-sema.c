@@ -52,9 +52,9 @@ critsect_init (struct critsect_s *s)
     static int initialized;
     
     if (!initialized) {
-        /* the very first time we call this function, we assume that only
-         * one thread is running, so that we can bootstrap the semaphore code 
-         */
+        /* The very first time we call this function, we assume that
+	   only one thread is running, so that we can bootstrap the
+	   semaphore code.  */
         InitializeCriticalSection (&init_lock);
         initialized = 1;
     }
@@ -99,7 +99,7 @@ _gpgme_sema_cs_leave (struct critsect_s *s)
 {
     if (!s->private)
         critsect_init (s);
-    LeaveCriticalSection ( (CRITICAL_SECTION*)s->private );
+    LeaveCriticalSection ((CRITICAL_SECTION*)s->private);
 }
 
 void

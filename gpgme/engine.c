@@ -248,7 +248,8 @@ gpgme_error_t _gpgme_engine_set_colon_line_handler (EngineObject engine,
 }
 
 gpgme_error_t
-_gpgme_engine_op_decrypt (EngineObject engine, gpgme_data_t ciph, gpgme_data_t plain)
+_gpgme_engine_op_decrypt (EngineObject engine, gpgme_data_t ciph,
+			  gpgme_data_t plain)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -260,7 +261,8 @@ _gpgme_engine_op_decrypt (EngineObject engine, gpgme_data_t ciph, gpgme_data_t p
 }
 
 gpgme_error_t
-_gpgme_engine_op_delete (EngineObject engine, gpgme_key_t key, int allow_secret)
+_gpgme_engine_op_delete (EngineObject engine, gpgme_key_t key,
+			 int allow_secret)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -303,8 +305,8 @@ _gpgme_engine_op_encrypt (EngineObject engine, gpgme_recipients_t recp,
 
 gpgme_error_t
 _gpgme_engine_op_encrypt_sign (EngineObject engine, gpgme_recipients_t recp,
-			       gpgme_data_t plain, gpgme_data_t ciph, int use_armor,
-			       gpgme_ctx_t ctx /* FIXME */)
+			       gpgme_data_t plain, gpgme_data_t ciph,
+			       int use_armor, gpgme_ctx_t ctx /* FIXME */)
 {
   if (!engine)
     return GPGME_Invalid_Value;
@@ -334,7 +336,8 @@ _gpgme_engine_op_export (EngineObject engine, gpgme_recipients_t recp,
 
 gpgme_error_t
 _gpgme_engine_op_genkey (EngineObject engine, gpgme_data_t help_data,
-			 int use_armor, gpgme_data_t pubkey, gpgme_data_t seckey)
+			 int use_armor, gpgme_data_t pubkey,
+			 gpgme_data_t seckey)
 {
   if (!engine)
     return GPGME_Invalid_Value;

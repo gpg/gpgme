@@ -64,7 +64,8 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
 
 
 gpgme_error_t
-_gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code, char *args)
+_gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
+			       char *args)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
@@ -170,9 +171,8 @@ decrypt_start (gpgme_ctx_t ctx, int synchronous,
 
   if (ctx->passphrase_cb)
     {
-      err = _gpgme_engine_set_command_handler (ctx->engine,
-					       _gpgme_passphrase_command_handler,
-					       ctx, NULL);
+      err = _gpgme_engine_set_command_handler
+	(ctx->engine, _gpgme_passphrase_command_handler, ctx, NULL);
       if (err)
 	return err;
     }
@@ -185,7 +185,8 @@ decrypt_start (gpgme_ctx_t ctx, int synchronous,
 
 
 gpgme_error_t
-gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
+gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
+			gpgme_data_t plain)
 {
   return decrypt_start (ctx, 0, cipher, plain);
 }

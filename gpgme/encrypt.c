@@ -71,7 +71,8 @@ gpgme_op_encrypt_result (gpgme_ctx_t ctx)
 
 
 gpgme_error_t
-_gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code, char *args)
+_gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
+			       char *args)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
@@ -159,9 +160,8 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_recipients_t recp,
   if (symmetric && ctx->passphrase_cb)
     {
       /* Symmetric encryption requires a passphrase.  */
-      err = _gpgme_engine_set_command_handler (ctx->engine,
-					       _gpgme_passphrase_command_handler,
-					       ctx, NULL);
+      err = _gpgme_engine_set_command_handler
+	(ctx->engine, _gpgme_passphrase_command_handler, ctx, NULL);
       if (err)
 	return err;
     }
@@ -178,8 +178,8 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_recipients_t recp,
 
 
 gpgme_error_t
-gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_recipients_t recp, gpgme_data_t plain,
-			gpgme_data_t cipher)
+gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+			gpgme_data_t plain, gpgme_data_t cipher)
 {
   return encrypt_start (ctx, 0, recp, plain, cipher);
 }

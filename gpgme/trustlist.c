@@ -121,7 +121,8 @@ trustlist_colon_handler (void *priv, char *line)
 
 
 void
-_gpgme_op_trustlist_event_cb (void *data, gpgme_event_io_t type, void *type_data)
+_gpgme_op_trustlist_event_cb (void *data, gpgme_event_io_t type,
+			      void *type_data)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) data;
   gpgme_error_t err;

@@ -27,7 +27,8 @@
 
 
 static gpgme_error_t
-decrypt_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
+decrypt_verify_status_handler (void *priv, gpgme_status_code_t code,
+			       char *args)
 {
   return _gpgme_decrypt_status_handler (priv, code, args)
     || _gpgme_verify_status_handler (priv, code, args);
@@ -59,9 +60,8 @@ _gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, int synchronous,
 
   if (ctx->passphrase_cb)
     {
-      err = _gpgme_engine_set_command_handler (ctx->engine,
-					       _gpgme_passphrase_command_handler,
-					       ctx, NULL);
+      err = _gpgme_engine_set_command_handler
+	(ctx->engine, _gpgme_passphrase_command_handler, ctx, NULL);
       if (err)
 	return err;
     }
@@ -76,7 +76,8 @@ _gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, int synchronous,
 /* Decrypt ciphertext CIPHER and make a signature verification within
    CTX and store the resulting plaintext in PLAIN.  */
 gpgme_error_t
-gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
+gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
+			       gpgme_data_t plain)
 {
   return _gpgme_op_decrypt_verify_start (ctx, 0, cipher, plain);
 }
@@ -85,7 +86,8 @@ gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_
 /* Decrypt ciphertext CIPHER and make a signature verification within
    CTX and store the resulting plaintext in PLAIN.  */
 gpgme_error_t
-gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
+gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher,
+			 gpgme_data_t plain)
 {
   gpgme_error_t err = _gpgme_op_decrypt_verify_start (ctx, 1, cipher, plain);
   if (!err)

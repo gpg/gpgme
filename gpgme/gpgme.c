@@ -300,7 +300,8 @@ gpgme_get_keylist_mode (gpgme_ctx_t ctx)
  *
  **/
 void
-gpgme_set_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t cb, void *cb_value)
+gpgme_set_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t cb,
+			 void *cb_value)
 {
   if (ctx)
     {
@@ -320,7 +321,8 @@ gpgme_set_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t cb, void *cb_val
  * to the crypto engine.
  **/
 void
-gpgme_get_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t *r_cb, void **r_cb_value)
+gpgme_get_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t *r_cb,
+			 void **r_cb_value)
 {
   if (ctx)
     {
@@ -377,7 +379,8 @@ gpgme_set_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t cb, void *cb_value)
  * progress indicator.
  **/
 void
-gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *r_cb, void **r_cb_value)
+gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *r_cb,
+		       void **r_cb_value)
 {
   if (ctx)
     {

@@ -45,7 +45,8 @@ typedef ssize_t (*gpgme_data_write_cb) (gpgme_data_t dh, const void *buffer,
 /* Set the current position from where the next read or write starts
    in the data object with the handle DH to OFFSET, relativ to
    WHENCE.  */
-typedef off_t (*gpgme_data_seek_cb) (gpgme_data_t dh, off_t offset, int whence);
+typedef off_t (*gpgme_data_seek_cb) (gpgme_data_t dh, off_t offset,
+				     int whence);
 
 /* Release the data object with the handle DH.  */
 typedef void (*gpgme_data_release_cb) (gpgme_data_t dh);
@@ -111,7 +112,8 @@ struct gpgme_data
 };
 
 
-gpgme_error_t _gpgme_data_new (gpgme_data_t *r_dh, struct _gpgme_data_cbs *cbs);
+gpgme_error_t _gpgme_data_new (gpgme_data_t *r_dh,
+			       struct _gpgme_data_cbs *cbs);
 
 void _gpgme_data_release (gpgme_data_t dh);
 

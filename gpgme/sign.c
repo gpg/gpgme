@@ -244,8 +244,8 @@ _gpgme_op_sign_init_result (gpgme_ctx_t ctx)
 
 
 static gpgme_error_t
-sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain, gpgme_data_t sig,
-	    gpgme_sig_mode_t mode)
+sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain,
+	    gpgme_data_t sig, gpgme_sig_mode_t mode)
 {
   gpgme_error_t err;
 
@@ -268,9 +268,8 @@ sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain, gpgme_data_t s
 
   if (ctx->passphrase_cb)
     {
-      err = _gpgme_engine_set_command_handler (ctx->engine,
-					       _gpgme_passphrase_command_handler,
-					       ctx, NULL);
+      err = _gpgme_engine_set_command_handler
+	(ctx->engine, _gpgme_passphrase_command_handler, ctx, NULL);
       if (err)
 	return err;
     }
@@ -295,7 +294,8 @@ gpgme_op_sign_start (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
 
 /* Sign the plaintext PLAIN and store the signature in SIG.  */
 gpgme_error_t
-gpgme_op_sign (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig, gpgme_sig_mode_t mode)
+gpgme_op_sign (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
+	       gpgme_sig_mode_t mode)
 {
   gpgme_error_t err = sign_start (ctx, 1, plain, sig, mode);
   if (!err)

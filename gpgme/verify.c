@@ -544,8 +544,8 @@ _gpgme_op_verify_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t sig,
 /* Decrypt ciphertext CIPHER and make a signature verification within
    CTX and store the resulting plaintext in PLAIN.  */
 gpgme_error_t
-gpgme_op_verify_start (gpgme_ctx_t ctx, gpgme_data_t sig, gpgme_data_t signed_text,
-		       gpgme_data_t plaintext)
+gpgme_op_verify_start (gpgme_ctx_t ctx, gpgme_data_t sig,
+		       gpgme_data_t signed_text, gpgme_data_t plaintext)
 {
   return _gpgme_op_verify_start (ctx, 0, sig, signed_text, plaintext);
 }

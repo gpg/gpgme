@@ -55,7 +55,8 @@ export_start (gpgme_ctx_t ctx, int synchronous,
 
 /* Export the keys listed in RECP into KEYDATA.  */
 gpgme_error_t
-gpgme_op_export_start (gpgme_ctx_t ctx, gpgme_recipients_t recp, gpgme_data_t keydata)
+gpgme_op_export_start (gpgme_ctx_t ctx, gpgme_recipients_t recp,
+		       gpgme_data_t keydata)
 {
   return export_start (ctx, 0, recp, keydata);
 }

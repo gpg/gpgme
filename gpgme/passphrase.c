@@ -51,7 +51,8 @@ release_op_data (void *hook)
 
 
 gpgme_error_t
-_gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code, char *args)
+_gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
+				  char *args)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;

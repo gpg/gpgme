@@ -1241,7 +1241,8 @@ append_args_from_signers (GpgObject gpg, gpgme_ctx_t ctx /* FIXME */)
 
 
 static gpgme_error_t
-gpg_edit (void *engine, gpgme_key_t key, gpgme_data_t out, gpgme_ctx_t ctx /* FIXME */)
+gpg_edit (void *engine, gpgme_key_t key, gpgme_data_t out,
+	  gpgme_ctx_t ctx /* FIXME */)
 {
   GpgObject gpg = engine;
   gpgme_error_t err;
@@ -1334,7 +1335,8 @@ gpg_encrypt (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
 
 static gpgme_error_t
 gpg_encrypt_sign (void *engine, gpgme_recipients_t recp, gpgme_data_t plain,
-		  gpgme_data_t ciph, int use_armor, gpgme_ctx_t ctx /* FIXME */)
+		  gpgme_data_t ciph, int use_armor,
+		  gpgme_ctx_t ctx /* FIXME */)
 {
   GpgObject gpg = engine;
   gpgme_error_t err;
@@ -1527,9 +1529,9 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
 
 
 static gpgme_error_t
-gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out, gpgme_sig_mode_t mode,
-	  int use_armor, int use_textmode, int include_certs,
-	  gpgme_ctx_t ctx /* FIXME */)
+gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
+	  gpgme_sig_mode_t mode, int use_armor, int use_textmode,
+	  int include_certs, gpgme_ctx_t ctx /* FIXME */)
 {
   GpgObject gpg = engine;
   gpgme_error_t err;
