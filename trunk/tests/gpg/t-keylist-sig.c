@@ -51,7 +51,6 @@ struct
     {
       GpgmePubKeyAlgo algo;
       char *keyid;
-      int timestamp;
       char *name;
       char *comment;
       char *email;
@@ -64,13 +63,13 @@ keys[] =
   {
     { "A0FF4590BB6122EDEF6E3C542D727CC768697734", "6AE6D7EE46A871F8",
       { { "Alpha Test", "demo key", "alpha@example.net",
-          { GPGME_PK_DSA, "2D727CC768697734", 1052065447,
+          { GPGME_PK_DSA, "2D727CC768697734",
 	    "Alpha Test", "demo key", "alpha@example.net", 19, 1 } },
 	{ "Alice", "demo key", NULL,
-          { GPGME_PK_DSA, "2D727CC768697734", 1052065447,
+          { GPGME_PK_DSA, "2D727CC768697734",
 	    "Alpha Test", "demo key", "alpha@example.net", 19, 1 } },
 	{ "Alfa Test", "demo key", "alfa@example.net",
-          { GPGME_PK_DSA, "2D727CC768697734", 1052065447,
+          { GPGME_PK_DSA, "2D727CC768697734",
 	    "Alpha Test", "demo key", "alpha@example.net", 19, 1 } } } },
     { NULL }
   };
@@ -399,12 +398,6 @@ main (int argc, char **argv)
 		   key->uids->signatures->keyid);
 	  exit (1);
 	}
-      if (keys[i].uid[0].sig.timestamp != key->uids->signatures->timestamp)
-	{
-	  fprintf (stderr, "Unexpected timestamp in first user ID sig: %li\n",
-		   key->uids->signatures->timestamp);
-	  exit (1);
-	}
       if (strcmp (keys[i].uid[0].sig.name, key->uids->signatures->name))
 	{
 	  fprintf (stderr, "Unexpected name in first user ID sig: %s\n",
@@ -489,12 +482,6 @@ main (int argc, char **argv)
 	{
 	  fprintf (stderr, "Unexpected key ID in second user ID sig: %s\n",
 		   key->uids->next->signatures->keyid);
-	  exit (1);
-	}
-      if (keys[i].uid[1].sig.timestamp != key->uids->next->signatures->timestamp)
-	{
-	  fprintf (stderr, "Unexpected timestamp in second user ID sig: %li\n",
-		   key->uids->next->signatures->timestamp);
 	  exit (1);
 	}
       if (strcmp (keys[i].uid[1].sig.name, key->uids->next->signatures->name))
@@ -584,12 +571,6 @@ main (int argc, char **argv)
 	{
 	  fprintf (stderr, "Unexpected key ID in third user ID sig: %s\n",
 		   key->uids->next->next->signatures->keyid);
-	  exit (1);
-	}
-      if (keys[i].uid[2].sig.timestamp != key->uids->next->next->signatures->timestamp)
-	{
-	  fprintf (stderr, "Unexpected timestamp in third user ID sig: %li\n",
-		   key->uids->next->next->signatures->timestamp);
 	  exit (1);
 	}
       if (strcmp (keys[i].uid[2].sig.name, key->uids->next->next->signatures->name))

@@ -1,5 +1,7 @@
 2003-05-04  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/t-keylist-sig.c (main): Remove timestamp check.
+
 	* gpgsm/t-keylist.c: Add check for timestamp.
 
 	* gpg/Makefile.am (TESTS): Add t-keylist-sig.
