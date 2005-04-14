@@ -354,7 +354,7 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	  {
 	    ctx = NULL;
 	    if (status)
-	      *status = NULL;
+	      *status = 0;
 	  }
       }
     }
