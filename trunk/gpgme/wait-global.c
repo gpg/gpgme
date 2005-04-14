@@ -331,13 +331,15 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
       LOCK (ctx_list_lock);
       for (li = ctx_active_list; li; li = li->next)
 	{
-	  for (i = 0; i < ctx->fdt.size; i++)
-	    if (ctx->fdt.fds[i].fd != -1)
+	  gpgme_ctx_t actx = li->ctx;
+
+	  for (i = 0; i < actx->fdt.size; i++)
+	    if (actx->fdt.fds[i].fd != -1)
 	      break;
-	  if (i == ctx->fdt.size)
+	  if (i == actx->fdt.size)
 	    {
 	      gpgme_error_t err = 0;
-	      _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &err);
+	      _gpgme_engine_io_event (actx->engine, GPGME_EVENT_DONE, &err);
 	    }
 	}
       UNLOCK (ctx_list_lock);

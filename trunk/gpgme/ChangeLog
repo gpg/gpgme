@@ -1,5 +1,9 @@
 2005-04-14  Marcus Brinkmann  <marcus@g10code.de>
 
+	* wait-global.c (gpgme_wait): Use LI->ctx when checking a context
+	in the list, not the user-provided CTX.
+	Reported by Igor Belyi <gpgme@katehok.ac93.org>.
+
 	* wait-global.c (gpgme_wait): If no context is found, and we
 	should not hang, set *status to 0 and return NULL.
 	Reported by Igor Belyi <gpgme@katehok.ac93.org>.
