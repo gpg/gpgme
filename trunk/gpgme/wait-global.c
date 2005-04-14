@@ -350,6 +350,12 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	    ctx = dctx;
 	    hang = 0;
 	  }
+	else if (!hang)
+	  {
+	    ctx = NULL;
+	    if (status)
+	      *status = NULL;
+	  }
       }
     }
   while (hang);
