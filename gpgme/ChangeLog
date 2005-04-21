@@ -1,3 +1,7 @@
+2005-04-21  Werner Koch  <wk@g10code.com>
+
+	* verify.c (calc_sig_summary): Set the key revoked bit.
+
 2005-04-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* wait-global.c (gpgme_wait): Use LI->ctx when checking a context
@@ -4676,7 +4680,7 @@
 	* data.c (gpgme_data_rewind): Allow to rewind data_type_none.
 
 
- Copyright 2001, 2002, 2003, 2004 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
