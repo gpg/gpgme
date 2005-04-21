@@ -94,7 +94,8 @@ static void
 calc_sig_summary (gpgme_signature_t sig)
 {
   unsigned long sum = 0;
-
+  
+  /* Calculate the red/green flag.  */
   if (sig->validity == GPGME_VALIDITY_FULL
       || sig->validity == GPGME_VALIDITY_ULTIMATE)
     {
@@ -113,11 +114,6 @@ calc_sig_summary (gpgme_signature_t sig)
   else if (gpg_err_code (sig->status) == GPG_ERR_BAD_SIGNATURE)
     sum |= GPGME_SIGSUM_RED;
 
-  if (sig->validity == GPGME_VALIDITY_UNKNOWN)
-    {
-      if (gpg_err_code (sig->validity_reason) == GPG_ERR_CRL_TOO_OLD)
-	sum |= GPGME_SIGSUM_CRL_TOO_OLD;
-    }
 
   /* FIXME: handle the case when key and message are expired. */
   switch (gpg_err_code (sig->status))
@@ -143,6 +139,23 @@ calc_sig_summary (gpgme_signature_t sig)
       break;
     }
   
+  /* Now look at the certain reason codes.  */
+  switch (gpg_err_code (sig->validity_reason))
+    {
+    case GPG_ERR_CRL_TOO_OLD:
+      if (sig->validity == GPGME_VALIDITY_UNKNOWN)
+        sum |= GPGME_SIGSUM_CRL_TOO_OLD;
+      break;
+        
+    case GPG_ERR_CERT_REVOKED:
+      sum |= GPGME_SIGSUM_KEY_REVOKED;
+      break;
+
+    default:
+      break;
+    }
+
+  /* Check other flags. */
   if (sig->wrong_key_usage)
     sum |= GPGME_SIGSUM_BAD_POLICY;
   
