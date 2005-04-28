@@ -4,10 +4,21 @@ Noteworthy changes in version 1.1.0 (unreleased)
  * You can now configure the backend engine file name and home
    directory to be used, as default and per context.
 
+ * Previousy, GPGME would use a default "include certs" of 1.  This
+   has been changed.  Now GPGME will use the crypto backend engines
+   default unless you set the value with gpgme_set_include_certs()
+   explicitely.  A new macro GPGME_INCLUDE_CERTS_DEFAULT can be used
+   as a value to explicitely request the new default behaviour.
+
+   Because the default changes, this is a slight change of the API
+   semantics.  We consider it to be a bug fix.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_set_engine_info		NEW
 gpgme_ctx_get_engine_info	NEW
 gpgme_ctx_set_engine_info	NEW
+gpgme_set_include_certs		CHANGED DEFAULT
+GPGME_INCLUDE_CERTS_DEFAULT	NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
