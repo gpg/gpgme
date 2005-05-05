@@ -1,3 +1,10 @@
+2005-05-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data-user.c (user_release): Only call user hook if provided.
+	(user_seek): Return EBADF if no user hook is provided.
+	(user_read): Likewise.
+	(user_write): Likewise.
+
 2005-04-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (GPGME_INCLUDE_CERTS_DEFAULT): New macro.
