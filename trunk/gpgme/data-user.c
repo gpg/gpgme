@@ -30,6 +30,9 @@
 static ssize_t
 user_read (gpgme_data_t dh, void *buffer, size_t size)
 {
+  if (!dh->data.user.cbs->read)
+    return EBADF;
+
   return (*dh->data.user.cbs->read) (dh->data.user.handle, buffer, size);
 }
 
@@ -37,6 +40,9 @@ user_read (gpgme_data_t dh, void *buffer, size_t size)
 static ssize_t
 user_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
+  if (!dh->data.user.cbs->write)
+    return EBADF;
+
   return (*dh->data.user.cbs->write) (dh->data.user.handle, buffer, size);
 }
 
@@ -44,6 +50,9 @@ user_write (gpgme_data_t dh, const void *buffer, size_t size)
 static off_t
 user_seek (gpgme_data_t dh, off_t offset, int whence)
 {
+  if (!dh->data.user.cbs->seek)
+    return EBADF;
+
   return (*dh->data.user.cbs->seek) (dh->data.user.handle, offset, whence);
 }
 
@@ -51,7 +60,8 @@ user_seek (gpgme_data_t dh, off_t offset, int whence)
 static void
 user_release (gpgme_data_t dh)
 {
-  (*dh->data.user.cbs->release) (dh->data.user.handle);
+  if (dh->data.user.cbs->release)
+    (*dh->data.user.cbs->release) (dh->data.user.handle);
 }
 
 
