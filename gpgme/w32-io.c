@@ -1085,7 +1085,7 @@ _gpgme_io_select ( struct io_select_fd_s *fds, size_t nfds, int nonblock )
             int k, j = handle_to_fd (waitbuf[i]);
                     
             DEBUG1 ("WFMO invalid handle %d removed\n", j);
-            for (k=0 ; k < nfds; i++ ) {
+            for (k=0 ; k < nfds; k++ ) {
                 if ( fds[k].fd == j ) {
                     fds[k].for_read = fds[k].for_write = 0;
                     goto restart;
