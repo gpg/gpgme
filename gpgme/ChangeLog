@@ -1,3 +1,8 @@
+2005-05-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (gpgme_new): Set the CTX->include_certs default to the
+	default.
+
 2005-05-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	* w32-io.c (_gpgme_io_select): Fix loop increment.
