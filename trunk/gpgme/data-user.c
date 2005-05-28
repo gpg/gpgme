@@ -23,6 +23,7 @@
 #endif
 
 #include <sys/types.h>
+#include <errno.h>
 
 #include "data.h"
 

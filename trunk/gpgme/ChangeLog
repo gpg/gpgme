@@ -1,3 +1,7 @@
+2005-05-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data-user.c: Include <errno.h>.
+
 2005-05-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (gpgme_new): Set the CTX->include_certs default to the
