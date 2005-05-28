@@ -1,3 +1,14 @@
+2005-05-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Key Listing Mode): Fix return type of
+	gpgme_set_keylist_mode.
+	Reported by "Sergio" <ml_sergico@virgilio.it>.
+
+2005-04-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Included Certificates): Document
+	GPGME_INCLUDE_CERTS_DEFAULT.
+
 2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
 
 	* lesser.texi (Library Copying): Change from @appendixsec to

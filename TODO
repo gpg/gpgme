@@ -1,7 +1,6 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * Before release:
-** Switch to LGPL?
 ** Some gpg tests fail with gpg 1.3.4-cvs (gpg/t-keylist-sig)
    The test is currently disabled there and in gpg/t-import.
 ** Add notation data to key signatures.
@@ -9,7 +8,8 @@ Hey Emacs, this is -*- outline -*- mode!
 * ABI's to break:
 ** I/O and User Data could be made extensible.  But this can be done
    without breaking the ABI hopefully.
-*  All enums that should be enums need to have a maximum value to ensure	  a certain minimum width for extensibility.
+*  All enums that should be enums need to have a maximum value to ensure
+   a certain minimum width for extensibility.
 ** Compatibility interfaces that can be removed in future versions:
 *** ath compatibility modules.
 *** gpgme_data_new_from_filepart
@@ -27,6 +27,7 @@ Hey Emacs, this is -*- outline -*- mode!
 *** gpgme_trust_item_get_ulong_attr
 *** gpgme_attr_t
 *** All Gpgme* typedefs.
+
 
 * Thread support:
 ** When GNU Pth supports sendmsg/recvmsg, wrap them properly.
@@ -60,9 +61,6 @@ Hey Emacs, this is -*- outline -*- mode!
   This allows us to handle years later than 2037 properly.  With the
   time_t interface they are all mapped to 2037-12-31
 
-* Support
-** gpgme.m4 should check --api-version of gpgme-config.
- 
 * Documentation
 ** Document validity and trust issues.
 
@@ -143,14 +141,13 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Build suite
 ** Make sure everything is cleaned correctly (esp. test area).
-** Configure test for gpg and gpgsm version (as a warning).
 ** Enable AC_CONFIG_MACRO_DIR and bump up autoconf version requirement.
    (To fix "./autogen.sh; ./configure --enable-maintainer-mode; touch
-   configure.ac; make").
+   configure.ac; make").  Currently worked around with ACLOCAL_AMFLAGS???
 
 * Error checking 
 ** engine-gpgsm, with-validation
-  Add error checking some time after releasing a new gpgsm.
+   Add error checking some time after releasing a new gpgsm.
 
 
 Copyright 2004 g10 Code GmbH

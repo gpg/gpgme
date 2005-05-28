@@ -1,6 +1,6 @@
 /* engine-gpgsm.c - GpgSM engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -1433,18 +1433,26 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
-    return gpg_error_from_errno (errno);
-  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd, NULL,NULL);
-  free (assuan_cmd);
-  if (err)
-    return err;
-
   /* We must send a reset because we need to reset the list of
      signers.  Note that RESET does not reset OPTION commands. */
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, "RESET", NULL, NULL);
   if (err)
     return err;
+
+  if (include_certs != GPGME_INCLUDE_CERTS_DEFAULT)
+    {
+      /* FIXME: Make sure that if we run multiple operations, that we
+	 can reset any previously set value in case the default is
+	 requested.  */
+
+      if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
+	return gpg_error_from_errno (errno);
+      err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd,
+					 NULL, NULL);
+      free (assuan_cmd);
+      if (err)
+	return err;
+    }
 
   for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
     {
