@@ -52,7 +52,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   if (!ctx)
     return gpg_error_from_errno (errno);
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
-  ctx->include_certs = 1;
+  ctx->include_certs = GPGME_INCLUDE_CERTS_DEFAULT;
   ctx->protocol = GPGME_PROTOCOL_OpenPGP;
   _gpgme_fd_table_init (&ctx->fdt);
 
@@ -211,12 +211,14 @@ gpgme_get_textmode (gpgme_ctx_t ctx)
 
 
 /* Set the number of certifications to include in an S/MIME message.
-   The default is 1 (only the cert of the sender).  -1 means all
-   certs, and -2 means all certs except the root cert.  */
+   The default is GPGME_INCLUDE_CERTS_DEFAULT.  -1 means all certs,
+   and -2 means all certs except the root cert.  */
 void
 gpgme_set_include_certs (gpgme_ctx_t ctx, int nr_of_certs)
 {
-  if (nr_of_certs < -2)
+  if (nr_of_certs == GPGME_INCLUDE_CERTS_DEFAULT)
+    ctx->include_certs = GPGME_INCLUDE_CERTS_DEFAULT;
+  else if (nr_of_certs < -2)
     ctx->include_certs = -2;
   else
     ctx->include_certs = nr_of_certs;

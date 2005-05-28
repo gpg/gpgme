@@ -1,6 +1,45 @@
+2005-05-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data-user.c: Include <errno.h>.
+
+2005-05-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (gpgme_new): Set the CTX->include_certs default to the
+	default.
+
+2005-05-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* w32-io.c (_gpgme_io_select): Fix loop increment.
+
+2005-05-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data-user.c (user_release): Only call user hook if provided.
+	(user_seek): Return EBADF if no user hook is provided.
+	(user_read): Likewise.
+	(user_write): Likewise.
+
+2005-04-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (GPGME_INCLUDE_CERTS_DEFAULT): New macro.
+	* engine-gpgsm.c (gpgsm_sign): Send the include-certs option after
+	the reset, just for cleanliness, and do not sent it at all if the
+	default is requested.
+	* gpgme.c (gpgme_set_include_certs): Allow to use
+	GPGME_INCLUDE_CERTS_DEFAULT.
+
 2005-04-21  Werner Koch  <wk@g10code.com>
 
 	* verify.c (calc_sig_summary): Set the key revoked bit.
+
+2005-04-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* wait-global.c (gpgme_wait): Use LI->ctx when checking a context
+	in the list, not the user-provided CTX.
+	Reported by Igor Belyi <gpgme@katehok.ac93.org>.
+
+	* wait-global.c (gpgme_wait): If no context is found, and we
+	should not hang, set *status to 0 and return NULL.
+	Reported by Igor Belyi <gpgme@katehok.ac93.org>.
 
 2004-12-11  Marcus Brinkmann  <marcus@g10code.de>
 
@@ -4570,7 +4609,7 @@
 	* data.c (gpgme_data_rewind): Allow to rewind data_type_none.
 
 
- Copyright 2001, 2002, 2003, 2004 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

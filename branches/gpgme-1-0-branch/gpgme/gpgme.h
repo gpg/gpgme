@@ -705,6 +705,9 @@ void gpgme_set_textmode (gpgme_ctx_t ctx, int yes);
 /* Return non-zero if text mode is set in CTX.  */
 int gpgme_get_textmode (gpgme_ctx_t ctx);
 
+/* Use whatever the default of the backend crypto engine is.  */
+#define GPGME_INCLUDE_CERTS_DEFAULT	-256
+
 /* Include up to NR_OF_CERTS certificates in an S/MIME message.  */
 void gpgme_set_include_certs (gpgme_ctx_t ctx, int nr_of_certs);
 

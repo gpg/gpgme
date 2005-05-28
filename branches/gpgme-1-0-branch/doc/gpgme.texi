@@ -1944,6 +1944,9 @@ default, only the sender's certificate is included.  The possible
 values of @var{nr_of_certs} are:
 
 @table @code
+@item GPGME_INCLUDE_CERTS_DEFAULT
+Fall back to the default of the crypto backend.  This is the default
+for GPGME.
 @item -2
 Include all certificates except the root certificate.
 @item -1
@@ -1974,7 +1977,7 @@ certificates to include into an S/MIME signed message.
 @cindex key listing mode
 @cindex key listing, mode of
 
-@deftypefun void gpgme_set_keylist_mode (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_keylist_mode_t @var{mode}})
+@deftypefun gpgme_error_t gpgme_set_keylist_mode (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_keylist_mode_t @var{mode}})
 The function @code{gpgme_set_keylist_mode} changes the default
 behaviour of the key listing functions.  The value in @var{mode} is a
 bitwise-or combination of one or multiple of the following bit values:
