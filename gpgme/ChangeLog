@@ -1,3 +1,11 @@
+2005-06-02  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h: Add GPGME_STATUS_NEED_PASSPHRASE_PIN.
+	* passphrase.c (_gpgme_passphrase_status_handler): Take care of
+	GPGME_STATUS_NEED_PASSPHRASE_PIN.
+	(_gpgme_passphrase_command_handler_internal): Also act on the key
+	"passphrase.pin.ask".
+
 2005-05-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* data-user.c: Include <errno.h>.

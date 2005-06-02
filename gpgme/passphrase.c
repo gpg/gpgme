@@ -90,6 +90,7 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 
     case GPGME_STATUS_NEED_PASSPHRASE:
     case GPGME_STATUS_NEED_PASSPHRASE_SYM:
+    case GPGME_STATUS_NEED_PASSPHRASE_PIN:
       if (opd->passphrase_info)
 	free (opd->passphrase_info);
       opd->passphrase_info = strdup (args);
@@ -133,7 +134,9 @@ _gpgme_passphrase_command_handler_internal (void *priv,
   if (err)
     return err;
 
-  if (code == GPGME_STATUS_GET_HIDDEN && !strcmp (key, "passphrase.enter"))
+  if (code == GPGME_STATUS_GET_HIDDEN 
+      && (!strcmp (key, "passphrase.enter")
+          || !strcmp (key, "passphrase.pin.ask")))
     {
       if (processed)
 	*processed = 1;
