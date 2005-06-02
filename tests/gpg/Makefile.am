@@ -1,5 +1,5 @@
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2004 g10 Code GmbH
+# Copyright (C) 2001, 2004, 2005 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -28,7 +28,7 @@ noinst_HEADERS = t-support.h
 TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers	\
 	t-decrypt t-verify t-decrypt-verify \
 	t-export t-import t-trustlist t-eventloop t-edit \
-	t-keylist t-keylist-sig t-thread1
+	t-keylist t-keylist-sig t-thread1 t-wait
 
 CLEANFILES = secring.gpg pubring.gpg trustdb.gpg
 DISTCLEANFILES = pubring.gpg~ random_seed

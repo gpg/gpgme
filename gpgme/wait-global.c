@@ -322,6 +322,11 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 		      _gpgme_io_close (ictx->fdt.fds[idx].fd);
 		  _gpgme_engine_io_event (ictx->engine, GPGME_EVENT_DONE,
 					  &err);
+
+		  /* Break out of the loop, and retry the select()
+		     from scratch, because now all fds should be
+		     gone.  */
+		  break;
 		}
 	    }
 	}
