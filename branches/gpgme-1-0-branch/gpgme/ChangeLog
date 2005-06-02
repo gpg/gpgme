@@ -1,3 +1,11 @@
+2005-06-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* wait.h (_gpgme_run_io_cb): New prototype.
+	* wait.c (_gpgme_run_io_cb): New function.
+	* wait-global.c (gpgme_wait): Call it.
+	* wait-user.c (_gpgme_user_io_cb_handler): Likewise.
+	* wait-private.c (_gpgme_wait_on_condition): Likewise.
+
 2005-06-02  Werner Koch  <wk@g10code.com>
 
 	* gpgme.h: Add GPGME_STATUS_NEED_PASSPHRASE_PIN.

@@ -101,15 +101,11 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond)
 	{
 	  if (ctx->fdt.fds[i].fd != -1 && ctx->fdt.fds[i].signaled)
 	    {
-	      struct wait_item_s *item;
-	      
 	      ctx->fdt.fds[i].signaled = 0;
 	      assert (nr);
 	      nr--;
-	      
-	      item = (struct wait_item_s *) ctx->fdt.fds[i].opaque;
 
-	      err = item->handler (item->handler_value, ctx->fdt.fds[i].fd);
+	      err = _gpgme_run_io_cb (&ctx->fdt.fds[i], 0);
 	      if (err)
 		{
 		  /* An error occured.  Close all fds in this context,
