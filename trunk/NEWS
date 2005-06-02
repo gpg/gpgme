@@ -19,6 +19,12 @@ gpgme_ctx_get_engine_info	NEW
 gpgme_ctx_set_engine_info	NEW
 gpgme_set_include_certs		CHANGED DEFAULT
 GPGME_INCLUDE_CERTS_DEFAULT	NEW
+GPGME_STATUS_SIG_SUBPACKET	NEW
+GPGME_STATUS_NEED_PASSPHRASE_PIN NEW
+GPGME_STATUS_SC_OP_FAILURE	NEW
+GPGME_STATUS_SC_OP_SUCCESS	NEW
+GPGME_STATUS_CARDCTRL		NEW
+GPGME_STATUS_BACKUP_KEY_CREATED	NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
