@@ -310,7 +310,7 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	      ictx = item->ctx;
 	      assert (ictx);
 
-	      err = item->handler (item->handler_value, fdt.fds[i].fd);
+	      err = _gpgme_run_io_cb (&fdt.fds[i], 0);
 	      if (err)
 		{
 		  /* An error occured.  Close all fds in this context,

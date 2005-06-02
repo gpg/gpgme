@@ -77,4 +77,6 @@ void _gpgme_wait_user_event_cb (void *data, gpgme_event_io_t type,
 
 gpgme_error_t _gpgme_wait_one (gpgme_ctx_t ctx);
 
+gpgme_error_t _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked);
+
 #endif	/* WAIT_H */
