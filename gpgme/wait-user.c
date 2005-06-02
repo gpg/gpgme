@@ -42,15 +42,12 @@ _gpgme_user_io_cb_handler (void *data, int fd)
   gpgme_error_t err;
   struct tag *tag = (struct tag *) data;
   gpgme_ctx_t ctx;
-  struct wait_item_s *item;
 
   assert (data);
   ctx = tag->ctx;
   assert (ctx);
-  item = (struct wait_item_s *) ctx->fdt.fds[tag->idx].opaque;
-  assert (item);
 
-  err = (*item->handler) (item->handler_value, fd);
+  err = _gpgme_run_io_cb (&ctx->fdt.fds[tag->idx], 0);
   if (err)
     {
       unsigned int idx;

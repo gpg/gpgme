@@ -167,3 +167,38 @@ _gpgme_remove_io_cb (void *data)
   fdt->fds[idx].for_write = 0;
   fdt->fds[idx].opaque = NULL;
 }
+
+
+/* This is slightly embarrassing.  The problem is that running an I/O
+   callback _may_ influence the status of other file descriptors.  Our
+   own event loops could compensate for that, but the external event
+   loops cannot.  FIXME: We may still want to optimize this a bit when
+   we are called from our own event loops.  So if CHECKED is 1, the
+   check is skipped.  */
+gpgme_error_t
+_gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked)
+{
+  struct wait_item_s *item;
+  item = (struct wait_item_s *) an_fds->opaque;
+  assert (item);
+
+  if (!checked)
+    {
+      int nr;
+      struct io_select_fd_s fds;
+
+      fds = *an_fds;
+      fds.signaled = 0;
+      /* Just give it a quick poll.  */
+      nr = _gpgme_io_select (&fds, 1, 1);
+      assert (nr <= 1);
+      if (nr < 0)
+	return errno;
+      else if (nr == 0)
+	/* The status changed in the meantime, there is nothing left
+	   to do.  */
+	return 0;
+    }
+
+  return item->handler (item->handler_value, an_fds->fd);
+}
