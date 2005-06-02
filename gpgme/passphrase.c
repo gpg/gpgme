@@ -1,6 +1,6 @@
 /* passphrase.c - Passphrase callback.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -90,6 +90,7 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 
     case GPGME_STATUS_NEED_PASSPHRASE:
     case GPGME_STATUS_NEED_PASSPHRASE_SYM:
+    case GPGME_STATUS_NEED_PASSPHRASE_PIN:
       if (opd->passphrase_info)
 	free (opd->passphrase_info);
       opd->passphrase_info = strdup (args);
@@ -133,7 +134,9 @@ _gpgme_passphrase_command_handler_internal (void *priv,
   if (err)
     return err;
 
-  if (code == GPGME_STATUS_GET_HIDDEN && !strcmp (key, "passphrase.enter"))
+  if (code == GPGME_STATUS_GET_HIDDEN 
+      && (!strcmp (key, "passphrase.enter")
+          || !strcmp (key, "passphrase.pin.ask")))
     {
       if (processed)
 	*processed = 1;
