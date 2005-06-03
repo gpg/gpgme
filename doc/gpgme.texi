@@ -3622,9 +3622,38 @@ operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
 if @var{cipher} or @var{plain} is not a valid pointer.
 @end deftypefun
 
+@deftp {Data type} {gpgme_recipient_t}
+This is a pointer to a structure used to store information about the
+recipient of an encrypted text which is decrypted in a
+@code{gpgme_op_decrypt} operation.  This information (except for the
+status field) is even available before the operation finished
+successfully, for example in a passphrase callback.  The structure
+contains the following members:
+
+@table @code
+@item gpgme_recipient_t next
+This is a pointer to the next recipient structure in the linked list,
+or @code{NULL} if this is the last element.
+
+@item gpgme_pubkey_algo_t
+The public key algorithm used in the encryption.
+
+@item unsigned int wrong_key_usage : 1
+This is true if the key was not used according to its policy.
+
+@item char *keyid
+This is the key ID of the key (in hexadecimal digits) used as
+recipient.
+
+@item gpgme_error_t status
+This is an error number with the error code GPG_ERR_NO_SECKEY if the
+secret key for this recipient is not available, and 0 otherwise.
+@end table
+@end deftp
+
 @deftp {Data type} {gpgme_decrypt_result_t}
 This is a pointer to a structure used to store the result of a
-@code{gpgme_op_decrypt} operation.  After successfully encrypting
+@code{gpgme_op_decrypt} operation.  After successfully decrypting
 data, you can retrieve the pointer to the result with
 @code{gpgme_op_decrypt_result}.  The structure contains the following
 members:
@@ -3636,6 +3665,9 @@ algorithm that is not supported.
 
 @item unsigned int wrong_key_usage : 1
 This is true if the key was not used according to its policy.
+
+@item gpgme_recipient_t recipient
+This is a linked list of recipients to which this message was encrypted.
 @end table
 @end deftp
 

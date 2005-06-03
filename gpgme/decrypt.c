@@ -38,6 +38,11 @@ typedef struct
 
   int okay;
   int failed;
+  
+  /* A pointer to the next pointer of the last recipient in the list.
+     This makes appending new invalid signers painless while
+     preserving the order.  */
+  gpgme_recipient_t *last_recipient_p;
 } *op_data_t;
 
 
@@ -67,6 +72,60 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
 }
 
 
+static gpgme_error_t
+parse_enc_to (char *args, gpgme_recipient_t *recp)
+{
+  gpgme_recipient_t rec;
+  char *tail;
+  int i;
+
+  rec = malloc (sizeof (*rec));
+  if (!rec)
+    return gpg_error_from_errno (errno);
+
+  rec->next = NULL;
+  rec->keyid = rec->_keyid;
+  rec->status = 0;
+
+  for (i = 0; i < sizeof (rec->_keyid) - 1; i++)
+    {
+      if (args[i] == '\0' || args[i] == ' ')
+	break;
+
+      rec->_keyid[i] = args[i];
+    }
+  rec->_keyid[i] = '\0';
+
+  args = &args[i];
+  if (*args != '\0' && *args != ' ')
+    {
+      free (rec);
+      return gpg_error (GPG_ERR_INV_ENGINE);
+    }
+
+  while (*args == ' ')
+    args++;
+
+  if (*args)
+    {
+      errno = 0;
+      rec->pubkey_algo = strtol (args, &tail, 0);
+      if (errno || args == tail || *tail != ' ')
+	{
+	  /* The crypto backend does not behave.  */
+	  free (rec);
+	  return gpg_error (GPG_ERR_INV_ENGINE);
+	}
+    }
+
+  /* FIXME: The key length is always 0 right now, so no need to parse
+     it.  */
+
+  *recp = rec;
+  return 0;
+}
+
+
 gpgme_error_t
 _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 			       char *args)
@@ -151,7 +210,33 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 	  }
       }
       break;
-        
+
+    case GPGME_STATUS_ENC_TO:
+      err = parse_enc_to (args, opd->last_recipient_p);
+      if (err)
+	return err;
+
+      opd->last_recipient_p = &(*opd->last_recipient_p)->next;
+      break;
+
+    case GPGME_STATUS_NO_SECKEY:
+      {
+	gpgme_recipient_t rec = opd->result.recipients;
+
+	while (rec)
+	  {
+	    if (!strcmp (rec->keyid, args))
+	      {
+		rec->status = gpg_error (GPG_ERR_NO_SECKEY);
+		break;
+	      }
+	  }
+	/* FIXME: Is this ok?  */
+	if (!rec)
+	  return gpg_error (GPG_ERR_INV_ENGINE);
+      }
+      break;
+
     default:
       break;
     }
@@ -175,11 +260,18 @@ decrypt_status_handler (void *priv, gpgme_status_code_t code, char *args)
 gpgme_error_t
 _gpgme_op_decrypt_init_result (gpgme_ctx_t ctx)
 {
+  gpgme_error_t err;
   void *hook;
   op_data_t opd;
 
-  return _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, &hook,
-				sizeof (*opd), release_op_data);
+  err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, &hook,
+			       sizeof (*opd), release_op_data);
+  opd = hook;
+  if (err)
+    return err;
+
+  opd->last_recipient_p = &opd->result.recipients;
+  return 0;
 }
 
 
