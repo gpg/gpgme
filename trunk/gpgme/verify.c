@@ -203,6 +203,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
 {
   gpgme_signature_t sig;
   char *end = strchr (args, ' ');
+  char *tail;
 
   if (end)
     {
@@ -248,39 +249,70 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
       break;
 
     case GPGME_STATUS_ERRSIG:
-      if (end)
+      /* Parse the pubkey algo.  */
+      if (!end)
+	goto parse_err_sig_fail;
+      errno = 0;
+      sig->pubkey_algo = strtol (end, &tail, 0);
+      if (errno || end == tail || *tail != ' ')
+	goto parse_err_sig_fail;
+      end = tail;
+      while (*end == ' ')
+	end++;
+     
+      /* Parse the hash algo.  */
+      if (!*end)
+	goto parse_err_sig_fail;
+      errno = 0;
+      sig->hash_algo = strtol (end, &tail, 0);
+      if (errno || end == tail || *tail != ' ')
+	goto parse_err_sig_fail;
+      end = tail;
+      while (*end == ' ')
+	end++;
+
+      /* Skip the sig class.  */
+      end = strchr (end, ' ');
+      if (!end)
+	goto parse_err_sig_fail;
+      while (*end == ' ')
+	end++;
+
+      /* Parse the timestamp.  */
+      sig->timestamp = _gpgme_parse_timestamp (end, &tail);
+      if (sig->timestamp == -1 || end == tail || (*tail && *tail != ' '))
+	return gpg_error (GPG_ERR_INV_ENGINE);
+      end = tail;
+      while (*end == ' ')
+	end++;
+      
+      /* Parse the return code.  */
+      if (end[0] && (!end[1] || end[1] == ' '))
 	{
-	  int i = 0;
-	  /* The return code is the 6th argument, if it is 9, the
-	     problem is a missing key.  */
-	  while (end && i < 4)
+	  switch (end[0])
 	    {
-	      end = strchr (end, ' ');
-	      if (end)
-		end++;
-	      i++;
-	    }
-	  if (end && end[0] && (!end[1] || end[1] == ' '))
-	    {
-	      switch (end[0])
-		{
-		case '4':
-		  sig->status = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-		  break;
-		  
-		case '9':
-		  sig->status = gpg_error (GPG_ERR_NO_PUBKEY);
-		  break;
-		  
-		default:
-		  sig->status = gpg_error (GPG_ERR_GENERAL);
-		}
+	    case '4':
+	      sig->status = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+	      break;
+	      
+	    case '9':
+	      sig->status = gpg_error (GPG_ERR_NO_PUBKEY);
+	      break;
+	      
+	    default:
+	      sig->status = gpg_error (GPG_ERR_GENERAL);
 	    }
 	}
       else
-	sig->status = gpg_error (GPG_ERR_GENERAL);
-      break;
+	goto parse_err_sig_fail;
 
+      goto parse_err_sig_ok;
+      
+    parse_err_sig_fail:
+      sig->status = gpg_error (GPG_ERR_GENERAL);
+    parse_err_sig_ok:
+      break;
+      
     default:
       return gpg_error (GPG_ERR_GENERAL);
     }
@@ -299,7 +331,6 @@ static gpgme_error_t
 parse_valid_sig (gpgme_signature_t sig, char *args)
 {
   char *end = strchr (args, ' ');
-
   if (end)
     {
       *end = '\0';
@@ -316,6 +347,7 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
   if (!sig->fpr)
     return gpg_error_from_errno (errno);
 
+  /* Skip the creation date.  */
   end = strchr (end, ' ');
   if (end)
     {
@@ -329,6 +361,43 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
       sig->exp_timestamp = _gpgme_parse_timestamp (end, &tail);
       if (sig->exp_timestamp == -1 || end == tail || (*tail && *tail != ' '))
 	return gpg_error (GPG_ERR_INV_ENGINE);
+      end = tail;
+
+      while (*end == ' ')
+	end++;
+      /* Skip the signature version.  */
+      end = strchr (end, ' ');
+      if (end)
+	{
+	  while (*end == ' ')
+	    end++;
+
+	  /* Skip the reserved field.  */
+	  end = strchr (end, ' ');
+	  if (end)
+	    {
+	      /* Parse the pubkey algo.  */
+	      errno = 0;
+	      sig->pubkey_algo = strtol (end, &tail, 0);
+	      if (errno || end == tail || *tail != ' ')
+		return gpg_error (GPG_ERR_INV_ENGINE);
+	      end = tail;
+
+	      while (*end == ' ')
+		end++;
+
+	      if (*end)
+		{
+		  /* Parse the hash algo.  */
+
+		  errno = 0;
+		  sig->hash_algo = strtol (end, &tail, 0);
+		  if (errno || end == tail || *tail != ' ')
+		    return gpg_error (GPG_ERR_INV_ENGINE);
+		  end = tail;
+		}
+	    }
+	}
     }
   return 0;
 }

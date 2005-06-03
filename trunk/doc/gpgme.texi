@@ -3861,6 +3861,11 @@ The validity of the signature.
 @item gpgme_error_t validity_reason
 If a signature is not valid, this provides a reason why.
 
+@item gpgme_pubkey_algo_t
+The public key algorithm used to create this signature.
+
+@item gpgme_hash_algo_t
+The hash algorithm used to create this signature.
 @end table
 @end deftp
 

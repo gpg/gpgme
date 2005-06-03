@@ -1247,6 +1247,12 @@ struct _gpgme_signature
 
   gpgme_validity_t validity;
   gpgme_error_t validity_reason;
+
+  /* The public key algorithm used to create the signature.  */
+  gpgme_pubkey_algo_t pubkey_algo;
+
+  /* The hash algorithm used to create the signature.  */
+  gpgme_hash_algo_t hash_algo;
 };
 typedef struct _gpgme_signature *gpgme_signature_t;
 
