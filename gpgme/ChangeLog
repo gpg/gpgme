@@ -1,5 +1,10 @@
 2005-06-03  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (struct _gpgme_signature): New members pubkey_algo and
+	hash_algo.
+	* verify.c (parse_valid_sig): Parse pubkey and hash algo numbers.
+	(parse_new_sig): Parse pubkey, hash algo and timestamp for ERRSIG.
+
 	(_gpgme_decrypt_status_handler): Fix last change.
 
 	* gpgme.h (struct _gpgme_recipient): New structure.

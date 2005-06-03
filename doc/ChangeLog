@@ -1,5 +1,8 @@
 2005-06-03  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Verify): Add information about new fields in
+	gpgme_signature_t.
+
 	* gpgme.texi (Decrypt): Add gpgme_recipient_t.
 
 2005-05-28  Marcus Brinkmann  <marcus@g10code.de>

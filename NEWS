@@ -24,6 +24,7 @@ gpgme_set_include_certs		CHANGED DEFAULT
 GPGME_INCLUDE_CERTS_DEFAULT	NEW
 gpgme_recipient_t		NEW
 gpgme_decrypt_result_t		EXTENDED: New field recipients.
+gpgme_verify_result_t		EXTENDED: New fields pubkey_algo, hash_algo.
 GPGME_STATUS_SIG_SUBPACKET	NEW
 GPGME_STATUS_NEED_PASSPHRASE_PIN NEW
 GPGME_STATUS_SC_OP_FAILURE	NEW
