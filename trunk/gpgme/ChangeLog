@@ -1,5 +1,14 @@
 2005-06-03  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (struct _gpgme_recipient): New structure.
+	(gpgme_recipient_t): New type.
+	(struct _gpgme_op_decrypt_result): Add member recipients.
+	* decrypt.c (op_data_t): New member last_recipient_p.
+	(_gpgme_op_decrypt_init_result): Initialize last_recipient_p.
+	(parse_enc_to): New function.
+	(_gpgme_decrypt_status_handler): Handle status ENC_TO and
+	NO_SECKEY.
+
 	* wait-global.c (gpgme_wait): Break out of the fd processing loop
 	after an error.
 	Reported by Igor Belyi <gpgme@katehok.ac93.org>.

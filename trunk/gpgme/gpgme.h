@@ -1080,6 +1080,25 @@ gpgme_error_t gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_key_t recp[],
 
 
 /* Decryption.  */
+
+struct _gpgme_recipient
+{
+  struct _gpgme_recipient *next;
+
+  /* The key ID of key for which the text was encrypted.  */
+  char *keyid;
+
+  /* Internal to GPGME, do not use.  */
+  char _keyid[16 + 1];
+
+  /* The public key algorithm of the recipient key.  */
+  gpgme_pubkey_algo_t pubkey_algo;
+
+  /* The status of the recipient.  */
+  gpgme_error_t status;
+};
+typedef struct _gpgme_recipient *gpgme_recipient_t;
+
 struct _gpgme_op_decrypt_result
 {
   char *unsupported_algorithm;
@@ -1089,6 +1108,8 @@ struct _gpgme_op_decrypt_result
 
   /* Internal to GPGME, do not use.  */
   int _unused : 31;
+
+  gpgme_recipient_t recipients;
 };
 typedef struct _gpgme_op_decrypt_result *gpgme_decrypt_result_t;
 
