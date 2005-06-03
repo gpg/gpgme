@@ -1,5 +1,7 @@
 2005-06-03  Marcus Brinkmann  <marcus@g10code.de>
 
+	(_gpgme_decrypt_status_handler): Fix last change.
+
 	* gpgme.h (struct _gpgme_recipient): New structure.
 	(gpgme_recipient_t): New type.
 	(struct _gpgme_op_decrypt_result): Add member recipients.

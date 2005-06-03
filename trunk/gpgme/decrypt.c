@@ -230,6 +230,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 		rec->status = gpg_error (GPG_ERR_NO_SECKEY);
 		break;
 	      }
+	    rec = rec->next;
 	  }
 	/* FIXME: Is this ok?  */
 	if (!rec)
