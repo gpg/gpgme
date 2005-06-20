@@ -1,0 +1,55 @@
+#!/bin/sh
+# Copyright (C) 2004 g10 Code GmbH
+# 
+# This file is part of GPGME.
+# 
+# GPGME is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation; either version 2.1 of the
+# License, or (at your option) any later version.
+# 
+# GPGME is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General
+# Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public
+# License along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+
+set -e
+
+GPG="gpg --batch --quiet --no-secmem-warning"
+NAMES='Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel India
+       Juliet Kilo Lima Mike November Oscar Papa Quebec Romeo
+       Sierra Tango Uniform Victor Whisky XRay Yankee Zulu'
+
+if [ "$1" = "--clean" ]; then
+    (for i in $NAMES; do
+	[ -d $i ] && rm -r $i || true
+    done) || true
+    exit 0
+fi
+
+[ -z "$srcdir" ] && srcdir="../tests"
+
+
+$GPG --dearmor -o secdemo.gpg --yes $srcdir/secdemo.asc
+$GPG --dearmor -o pubdemo.gpg --yes $srcdir/pubdemo.asc
+[ -f ./tdb.tmp ] && rm ./tdb.tmp
+GPGDEMO="$GPG --homedir . --trustdb-name ./tdb.tmp --no-default-keyring
+	 --keyring pubdemo.gpg --secret-keyring secdemo.gpg"
+echo -n "Creating:"
+for name in $NAMES; do
+    echo -n " $name"
+    [ -d $name ] && rm -r $name
+    mkdir $name
+    $GPGDEMO --export-secret-key -o - $name > $name/Secret.gpg
+    $GPG --homedir $name --allow-secret-key-import --import $name/Secret.gpg
+    $GPGDEMO --export -o - $name > $name/Public.gpg
+    $GPG --homedir $name --import $name/Public.gpg
+    [ -f $name/pubring.gpg~ ] && rm $name/pubring.gpg~
+done
+echo "."
+[ -f ./tdb.tmp ] && rm ./tdb.tmp
+rm pubdemo.gpg secdemo.gpg
