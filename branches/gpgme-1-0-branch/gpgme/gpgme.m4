@@ -1,5 +1,5 @@
 # gpgme.m4 - autoconf macro to detect GPGME.
-# Copyright (C) 2002, 2003, 2004 g10 Code GmbH
+# Copyright (C) 2002, 2003, 2004, 2005 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
