@@ -20,7 +20,9 @@ AC_DEFUN([_AM_PATH_GPGME_CONFIG],
   fi
   AC_PATH_PROG(GPGME_CONFIG, gpgme-config, no)
 
-  gpgme_version=`$GPGME_CONFIG --version`
+  if test "$GPGME_CONFIG" != "no" ; then
+    gpgme_version=`$GPGME_CONFIG --version`
+  fi
   gpgme_version_major=`echo $gpgme_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
   gpgme_version_minor=`echo $gpgme_version | \
