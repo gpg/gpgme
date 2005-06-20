@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.0.3 (unreleased)
+Noteworthy changes in version 1.0.3 (2005-06-20)
 ------------------------------------------------
 
  * Previousy, GPGME would use a default "include certs" of 1.  This
@@ -10,6 +10,11 @@ Noteworthy changes in version 1.0.3 (unreleased)
    Because the default changes, this is a slight change of the API
    semantics.  We consider it to be a bug fix.
 
+ * A bug which made GPGME hang has been fixed.  If you have
+   experienced hanging before, please try out this version and let me
+   know if you still experience hanging problems.
+
+ * Interface changes relative to the 0.9.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_set_include_certs		CHANGED DEFAULT
 GPGME_INCLUDE_CERTS_DEFAULT	NEW
@@ -1045,7 +1050,7 @@ Noteworthy changes in version 0.2.1 (2001-04-02)
  * Made the W32 support more robust.
 
 
- Copyright 2001, 2002, 2003, 2004 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
