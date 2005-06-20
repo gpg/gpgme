@@ -1,6 +1,6 @@
 # configure.ac for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -24,18 +24,18 @@ AC_PREREQ(2.59)
 min_automake_version="1.9.3"
 
 # Version number: Remember to change it immediately *after* a release.
-AC_INIT(gpgme, 1.0.3-cvs, [bug-gpgme@gnupg.org])
+AC_INIT(gpgme, 1.0.3, [bug-gpgme@gnupg.org])
 # LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
 #   (Interfaces added/removed/changed:	CURRENT++, REVISION=0)
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed/changed:	AGE=0)
 #
-LIBGPGME_LT_CURRENT=14
-# Subtract 2 from this value if you want to make the LFS transition an
+LIBGPGME_LT_CURRENT=15
+# Subtract 2 from the AGE value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
-LIBGPGME_LT_AGE=3
-LIBGPGME_LT_REVISION=3
+LIBGPGME_LT_AGE=4
+LIBGPGME_LT_REVISION=0
 
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
