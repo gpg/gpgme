@@ -842,7 +842,7 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   if (!ctx || !r_key || !fpr)
     return gpg_error (GPG_ERR_INV_VALUE);
   
-  if (strlen (fpr) < 16)	/* We have at least a key ID.  */
+  if (strlen (fpr) < 8)	/* We have at least a key ID.  */
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* FIXME: We use our own context because we have to avoid the user's
