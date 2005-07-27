@@ -3668,6 +3668,10 @@ This is true if the key was not used according to its policy.
 
 @item gpgme_recipient_t recipient
 This is a linked list of recipients to which this message was encrypted.
+
+@item char *plaintext_filename
+This is the filename of the original plaintext message file if it is
+known, otherwise this is a null pointer.
 @end table
 @end deftp
 
@@ -3880,6 +3884,10 @@ a @code{NULL} pointer.  The structure contains the following member:
 @item gpgme_signature_t signatures
 A linked list with information about all signatures for which a
 verification was attempted.
+
+@item char *plaintext_filename
+This is the filename of the original plaintext message file if it is
+known, otherwise this is a null pointer.
 @end table
 @end deftp
 
