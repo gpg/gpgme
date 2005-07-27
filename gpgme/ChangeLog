@@ -1,3 +1,17 @@
+2005-07-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h (gpgme_status_code_t): Add GPGME_STATUS_PLAINTEXT.
+	(struct _gpgme_op_decrypt_result): New member plaintext_filename.
+	(struct _gpgme_op_verify_result): Likewise.
+	* ops.h (_gpgme_parse_plaintext): Add prototype.
+	* op-support.c (_gpgme_parse_plaintext): New function.
+	* decrypt.c (release_op_data): Release
+	OPD->result.plaintext_filename.
+	(_gpgme_decrypt_status_handler): Handle GPGME_STATUS_PLAINTEXT.
+	* verify.c (release_op_data): Release
+	OPD->result.plaintext_filename.
+	(_gpgme_verify_status_handler): Handle GPGME_STATUS_PLAINTEXT.
+
 2005-07-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* keylist.c (gpgme_get_key): Allow key IDs.

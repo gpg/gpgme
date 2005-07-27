@@ -123,6 +123,8 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
 }
 
 
+/* Parse the INV_RECP status line in ARGS and return the result in
+   KEY.  */
 gpgme_error_t
 _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
 {
@@ -207,5 +209,49 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
     inv_key->fpr = NULL;
 
   *key = inv_key;
+  return 0;
+}
+
+
+/* Parse the PLAINTEXT status line in ARGS and return the result in
+   FILENAMEP.  */
+gpgme_error_t
+_gpgme_parse_plaintext (char *args, char **filenamep)
+{
+  char *tail;
+
+  while (*args == ' ')
+    args++;
+  if (*args == '\0')
+    return 0;
+
+  /* First argument is file type.  */
+  while (*args != ' ' && *args != '\0')
+    args++;
+  while (*args == ' ')
+    args++;
+  if (*args == '\0')
+    return 0;
+
+  /* Second argument is the timestamp.  */
+  while (*args != ' ' && *args != '\0')
+    args++;
+  while (*args == ' ')
+    args++;
+  if (*args == '\0')
+    return 0;
+
+  tail = args;
+  while (*tail != ' ' && *tail != '\0')
+    tail++;
+  *tail = '\0';
+  if (filenamep && *args != '\0')
+    {
+      char *filename = strdup (args);
+      if (!filename)
+	return gpg_error_from_errno (errno);
+
+      *filenamep = filename;
+    }
   return 0;
 }

@@ -70,6 +70,9 @@ release_op_data (void *hook)
       free (sig);
       sig = next;
     }
+
+  if (opd->result.plaintext_filename)
+    free (opd->result.plaintext_filename);
 }
 
 
@@ -694,6 +697,11 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
         }
       opd->only_newsig_seen = 0;
       break;
+
+    case GPGME_STATUS_PLAINTEXT:
+      err = _gpgme_parse_plaintext (args, &opd->result.plaintext_filename);
+      if (err)
+	return err;
 
     default:
       break;

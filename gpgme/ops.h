@@ -54,6 +54,11 @@ gpgme_error_t _gpgme_op_reset (gpgme_ctx_t ctx, int synchronous);
    KEY.  */
 gpgme_error_t _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key);
 
+/* Parse the PLAINTEXT status line in ARGS and return the result in
+   FILENAMEP.  */
+gpgme_error_t _gpgme_parse_plaintext (char *args, char **filenamep);
+
+
 
 /* From verify.c.  */
 gpgme_error_t _gpgme_op_verify_init_result (gpgme_ctx_t ctx);

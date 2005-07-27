@@ -403,7 +403,9 @@ typedef enum
     GPGME_STATUS_SC_OP_FAILURE,
     GPGME_STATUS_SC_OP_SUCCESS,
     GPGME_STATUS_CARDCTRL,
-    GPGME_STATUS_BACKUP_KEY_CREATED
+    GPGME_STATUS_BACKUP_KEY_CREATED,
+
+    GPGME_STATUS_PLAINTEXT
   }
 gpgme_status_code_t;
 
@@ -1110,6 +1112,9 @@ struct _gpgme_op_decrypt_result
   int _unused : 31;
 
   gpgme_recipient_t recipients;
+
+  /* The original filename of the plaintext message, if available.  */
+  char *plaintext_filename;
 };
 typedef struct _gpgme_op_decrypt_result *gpgme_decrypt_result_t;
 
@@ -1259,6 +1264,9 @@ typedef struct _gpgme_signature *gpgme_signature_t;
 struct _gpgme_op_verify_result
 {
   gpgme_signature_t signatures;
+
+  /* The original filename of the plaintext message, if available.  */
+  char *plaintext_filename;
 };
 typedef struct _gpgme_op_verify_result *gpgme_verify_result_t;
 

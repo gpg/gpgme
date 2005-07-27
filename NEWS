@@ -16,6 +16,11 @@ Noteworthy changes in version 1.1.0 (unreleased)
  * Information about the recipients of an encrypted text is now
    available at decryption time.
 
+ * New status GPGME_STATUS_PLAINTEXT.  This is analyzed by the decrypt
+   and verify handlers, the information about the plaintext filename,
+   if available is made available in the new field plaintext_filename
+   of the respective result structure.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_set_engine_info		NEW
 gpgme_ctx_get_engine_info	NEW
@@ -31,6 +36,9 @@ GPGME_STATUS_SC_OP_FAILURE	NEW
 GPGME_STATUS_SC_OP_SUCCESS	NEW
 GPGME_STATUS_CARDCTRL		NEW
 GPGME_STATUS_BACKUP_KEY_CREATED	NEW
+gpgme_decrypt_result_t		EXTENDED: New field plaintext_filename.
+gpgme_verify_result_t		EXTENDED: New field plaintext_filename.
+GPGME_STATUS_PLAINTEXT		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
