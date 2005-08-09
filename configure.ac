@@ -169,7 +169,7 @@ fi
 # Checks for library functions.
 AC_FUNC_FSEEKO
 
-AC_REPLACE_FUNCS(stpcpy)
+AC_CHECK_FUNCS(stpcpy)
 
 AC_REPLACE_FUNCS(vasprintf)
 if test "$ac_cv_func_vasprintf" != yes; then

@@ -13,16 +13,15 @@ updating this directory, are:
    with ATH replacements.
 
 * assuan.h
-** Define _ASSUAN_IN_GPGME to enable GPGME specific code.
-** Put all exported Assuan functions in the _gpgme namespace.
-** Also wrap all system functions that are wrapped by GNU Pth to
-   _gpgme wrappers.
-
-* assuan-io.c
-** Don't try to support GNU Pth here.
-
-* assuan-pipe-connect.c
-** Do not install SIGPIPE signal handler here.
+** Preserve the block between "Begin/End GPGME specific modifications".
+   In particular make sure that
+     #define _ASSUAN_EXT_SYM_PREFIX _gpgme_
+     #define _ASSUAN_NO_PTH 
+     #define _ASSUAN_NO_FIXED_SIGNALS 
+     #define _ASSUAN_USE_DOUBLE_FORK
+   are defined.  This puts all exported Assuan functions in the _gpgme
+   namespace.  It also wraps all system functions that are wrapped by
+   GNU Pth to _gpgme wrappers.
 
 
  Copyright 2004 g10 Code GmbH

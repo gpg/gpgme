@@ -134,11 +134,11 @@ free_membuf (struct membuf *mb)
  * 
  * Return value: 0 on success or an ASSUAN error code
  **/
-AssuanError
-assuan_inquire (ASSUAN_CONTEXT ctx, const char *keyword,
-                char **r_buffer, size_t *r_length, size_t maxlen)
+assuan_error_t
+assuan_inquire (assuan_context_t ctx, const char *keyword,
+                unsigned char **r_buffer, size_t *r_length, size_t maxlen)
 {
-  AssuanError rc;
+  assuan_error_t rc;
   struct membuf mb;
   char cmdbuf[LINELENGTH-10]; /* (10 = strlen ("INQUIRE ")+CR,LF) */
   unsigned char *line, *p;

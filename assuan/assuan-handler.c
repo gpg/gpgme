@@ -135,7 +135,7 @@ std_handler_end (ASSUAN_CONTEXT ctx, char *line)
   return set_error (ctx, Not_Implemented, NULL); 
 }
 
-AssuanError
+assuan_error_t
 assuan_command_parse_fd (ASSUAN_CONTEXT ctx, char *line, int *rfd)
 {
   char *endp;
@@ -391,7 +391,7 @@ my_strcasecmp (const char *a, const char *b)
 }
 
 /* Parse the line, break out the command, find it in the command
-   table, remove leading and white spaces from the arguments, all the
+   table, remove leading and white spaces from the arguments, call the
    handler with the argument line and return the error */
 static int 
 dispatch_command (ASSUAN_CONTEXT ctx, char *line, int linelen)
@@ -484,7 +484,7 @@ process_request (ASSUAN_CONTEXT ctx)
     }
   else 
     {
-      char errline[256];
+      char errline[300];
 
       if (rc < 100)
         sprintf (errline, "ERR %d server fault (%.50s)",
@@ -493,8 +493,40 @@ process_request (ASSUAN_CONTEXT ctx)
         {
           const char *text = ctx->err_no == rc? ctx->err_str:NULL;
 
-          sprintf (errline, "ERR %d %.50s%s%.100s",
-                   rc, assuan_strerror (rc), text? " - ":"", text?text:"");
+#if defined(__GNUC__) && defined(__ELF__)
+          /* If we have weak symbol support we try to use the error
+             strings from libgpg-error without creating a dependency.
+             They are used for debugging purposes only, so there is no
+             problem if they are not available.  We need to make sure
+             that we are using elf because only this guarantees that
+             weak symbol support is available in case GNU ld is not
+             used. */
+          unsigned int source, code;
+
+          int gpg_strerror_r (unsigned int err, char *buf, size_t buflen)
+            __attribute__ ((weak));
+
+          const char *gpg_strsource (unsigned int err)
+            __attribute__ ((weak));
+
+          source = ((rc >> 24) & 0xff);
+          code = (rc & 0x00ffffff);
+          if (source && gpg_strsource && gpg_strerror_r)
+            {
+              /* Assume this is an libgpg-error. */
+              char ebuf[50];
+
+              gpg_strerror_r (rc, ebuf, sizeof ebuf );
+              sprintf (errline, "ERR %d %.50s <%.30s>%s%.100s",
+                       rc,
+                       ebuf,
+                       gpg_strsource (rc),
+                       text? " - ":"", text?text:"");
+            }
+          else
+#endif /* __GNUC__  && __ELF__ */
+            sprintf (errline, "ERR %d %.50s%s%.100s",
+                     rc, assuan_strerror (rc), text? " - ":"", text?text:"");
         }
       rc = assuan_write_line (ctx, errline);
     }
@@ -512,7 +544,7 @@ process_request (ASSUAN_CONTEXT ctx)
  * assuan_process:
  * @ctx: assuan context
  * 
- * This fucntion is used to handle the assuan protocol after a
+ * This function is used to handle the assuan protocol after a
  * connection has been established using assuan_accept().  This is the
  * main protocol handler.
  * 
@@ -625,7 +657,7 @@ assuan_get_data_fp (ASSUAN_CONTEXT ctx)
 
 /* Set the text used for the next OK reponse.  This string is
    automatically reset to NULL after the next command. */
-AssuanError
+assuan_error_t
 assuan_set_okay_line (ASSUAN_CONTEXT ctx, const char *line)
 {
   if (!ctx)
@@ -652,15 +684,16 @@ assuan_set_okay_line (ASSUAN_CONTEXT ctx, const char *line)
 
 
 
-void
+assuan_error_t
 assuan_write_status (ASSUAN_CONTEXT ctx, const char *keyword, const char *text)
 {
   char buffer[256];
   char *helpbuf;
   size_t n;
+  assuan_error_t ae;
 
   if ( !ctx || !keyword)
-    return;
+    return ASSUAN_Invalid_Value;
   if (!text)
     text = "";
 
@@ -674,7 +707,7 @@ assuan_write_status (ASSUAN_CONTEXT ctx, const char *keyword, const char *text)
           strcat (buffer, " ");
           strcat (buffer, text);
         }
-      assuan_write_line (ctx, buffer);
+      ae = assuan_write_line (ctx, buffer);
     }
   else if ( (helpbuf = xtrymalloc (n)) )
     {
@@ -685,7 +718,10 @@ assuan_write_status (ASSUAN_CONTEXT ctx, const char *keyword, const char *text)
           strcat (helpbuf, " ");
           strcat (helpbuf, text);
         }
-      assuan_write_line (ctx, helpbuf);
+      ae = assuan_write_line (ctx, helpbuf);
       xfree (helpbuf);
     }
+  else
+    ae = 0;
+  return ae;
 }

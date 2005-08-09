@@ -1,3 +1,7 @@
+2005-08-08  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (stpcpy): Changed from replace to test.
+
 2005-03-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac (AH_BOTTOM): Removed.

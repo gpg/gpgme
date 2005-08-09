@@ -1,5 +1,5 @@
 /* assuan-io.c - Wraps the read and write functions.
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2004 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -18,41 +18,53 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "assuan-defs.h"
 #include <sys/types.h>
 #include <unistd.h>
+#ifdef HAVE_W32_SYSTEM
+#include <windows.h>
+#endif
 
-#ifdef _ASSUAN_IN_GPGME
-ssize_t
-_assuan_simple_read (ASSUAN_CONTEXT ctx, void *buffer, size_t size)
-{
-  return read (ctx->inbound.fd, buffer, size);
-}
-
-ssize_t
-_assuan_simple_write (ASSUAN_CONTEXT ctx, const void *buffer, size_t size)
-{
-  return write (ctx->outbound.fd, buffer, size);
-}
-
-#else
-
+#ifndef _ASSUAN_NO_PTH
 extern ssize_t pth_read (int fd, void *buffer, size_t size);
 extern ssize_t pth_write (int fd, const void *buffer, size_t size);
 
+#ifndef HAVE_W32_SYSTEM
 #pragma weak pth_read
 #pragma weak pth_write
-
-ssize_t
-_assuan_simple_read (ASSUAN_CONTEXT ctx, void *buffer, size_t size)
-{
-  return (pth_read ? pth_read : read) (ctx->inbound.fd, buffer, size);
-}
-
-ssize_t
-_assuan_simple_write (ASSUAN_CONTEXT ctx, const void *buffer, size_t size)
-{
-  return (pth_write ? pth_write : write) (ctx->outbound.fd, buffer, size);
-}
-
 #endif
+#endif /*!_ASSUAN_NO_PTH*/
+
+ssize_t
+_assuan_simple_read (assuan_context_t ctx, void *buffer, size_t size)
+{
+#ifdef _ASSUAN_NO_PTH
+  return read (ctx->inbound.fd, buffer, size);
+#else
+# ifndef HAVE_W32_SYSTEM
+  return (pth_read ? pth_read : read) (ctx->inbound.fd, buffer, size);
+# else
+  return pth_read ? pth_read (ctx->inbound.fd, buffer, size)
+                  : recv (ctx->inbound.fd, buffer, size, 0);
+# endif
+# endif
+}
+
+ssize_t
+_assuan_simple_write (assuan_context_t ctx, const void *buffer, size_t size)
+{
+#ifdef _ASSUAN_NO_PTH
+  return write (ctx->outbound.fd, buffer, size);
+#else
+# ifndef HAVE_W32_SYSTEM
+  return (pth_write ? pth_write : write) (ctx->outbound.fd, buffer, size);
+# else
+  return pth_write ? pth_write (ctx->outbound.fd, buffer, size)
+                   : send (ctx->outbound.fd, buffer, size, 0);
+# endif
+#endif
+}
