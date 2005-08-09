@@ -1,6 +1,6 @@
 /* util.h 
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -35,9 +35,18 @@ const char *_gpgme_get_gpgsm_path (void);
 
 /*-- replacement functions in <funcname>.c --*/
 #ifdef HAVE_CONFIG_H
+
 #ifndef HAVE_STPCPY
-char *stpcpy (char *a, const char *b);
-#endif
+static _GPGME_INLINE char *
+_gpgme_stpcpy (char *a, const char *b)
+{
+  while (*b)
+    *a++ = *b++;
+  *a = 0;
+  return a;
+}
+#define stpcpy(a,b) _gpgme_stpcpy ((a), (b))
+#endif /*!HAVE_STPCPY*/
 
 #if !HAVE_VASPRINTF
 #include <stdarg.h>

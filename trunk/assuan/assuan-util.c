@@ -1,5 +1,5 @@
 /* assuan-util.c - Utility functions for Assuan 
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "assuan-defs.h"
 
@@ -55,9 +56,19 @@ _assuan_realloc (void *a, size_t n)
 void *
 _assuan_calloc (size_t n, size_t m)
 {
-  void *p = _assuan_malloc (n*m);
+  void *p;
+  size_t nbytes;
+    
+  nbytes = n * m;
+  if (m && nbytes / m != n) 
+    {
+      errno = ENOMEM;
+      return NULL;
+    }
+
+  p = _assuan_malloc (nbytes);
   if (p)
-    memset (p, 0, n* m);
+    memset (p, 0, nbytes);
   return p;
 }
 
@@ -73,7 +84,7 @@ _assuan_free (void *p)
   can take out a descriptive text.  Inside the assuan code, use the
   macro set_error instead of this function. */
 int
-assuan_set_error (ASSUAN_CONTEXT ctx, int err, const char *text)
+assuan_set_error (assuan_context_t ctx, int err, const char *text)
 {
   ctx->err_no = err;
   ctx->err_str = text;
@@ -81,33 +92,34 @@ assuan_set_error (ASSUAN_CONTEXT ctx, int err, const char *text)
 }
 
 void
-assuan_set_pointer (ASSUAN_CONTEXT ctx, void *pointer)
+assuan_set_pointer (assuan_context_t ctx, void *pointer)
 {
   if (ctx)
     ctx->user_pointer = pointer;
 }
 
 void *
-assuan_get_pointer (ASSUAN_CONTEXT ctx)
+assuan_get_pointer (assuan_context_t ctx)
 {
   return ctx? ctx->user_pointer : NULL;
 }
 
 
 void
-assuan_set_log_stream (ASSUAN_CONTEXT ctx, FILE *fp)
+assuan_set_log_stream (assuan_context_t ctx, FILE *fp)
 {
   if (ctx)
     {
       if (ctx->log_fp)
         fflush (ctx->log_fp);
       ctx->log_fp = fp;
+      _assuan_set_default_log_stream (fp);
     }
 }
 
 
 void
-assuan_begin_confidential (ASSUAN_CONTEXT ctx)
+assuan_begin_confidential (assuan_context_t ctx)
 {
   if (ctx)
     {
@@ -116,13 +128,43 @@ assuan_begin_confidential (ASSUAN_CONTEXT ctx)
 }
 
 void
-assuan_end_confidential (ASSUAN_CONTEXT ctx)
+assuan_end_confidential (assuan_context_t ctx)
 {
   if (ctx)
     {
       ctx->confidential = 0;
     }
 }
+
+
+
+/* For context CTX, set the flag FLAG to VALUE.  Values for flags
+   are usually 1 or 0 but certain flags might allow for other values;
+   see the description of the type assuan_flag_t for details. */
+void
+assuan_set_flag (assuan_context_t ctx, assuan_flag_t flag, int value)
+{
+  if (!ctx)
+    return;
+  switch (flag)
+    {
+    case ASSUAN_NO_WAITPID: ctx->flags.no_waitpid = value; break;
+    }
+}
+
+/* Return the VALUE of FLAG in context CTX. */ 
+int
+assuan_get_flag (assuan_context_t ctx, assuan_flag_t flag)
+{
+  if (!ctx)
+    return 0;
+  switch (flag)
+    {
+    case ASSUAN_NO_WAITPID: return ctx->flags.no_waitpid;
+    }
+  return 0;
+}
+
 
 /* Dump a possibly binary string (used for debugging).  Distinguish
    ascii text from binary and print it accordingly.  */
@@ -133,7 +175,7 @@ _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
   int n;
 
   for (n=length,s=buffer; n; n--, s++)
-    if  (!isascii (*s) || iscntrl (*s) || !isprint (*s))
+    if  ((!isascii (*s) || iscntrl (*s) || !isprint (*s)) && !(*s >= 0x80))
       break;
 
   s = buffer;
@@ -197,7 +239,7 @@ _assuan_log_sanitized_string (const char *string)
 	  break;
 
 	default:
-	  if (isascii (*s) && isprint (*s))
+	  if ((isascii (*s) && isprint (*s)) || (*s >= 0x80))
 	    putc_unlocked (*s, fp);
 	  else
 	    {
@@ -217,3 +259,4 @@ _assuan_log_sanitized_string (const char *string)
   funlockfile (fp);
 #endif
 }
+

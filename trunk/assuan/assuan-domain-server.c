@@ -27,12 +27,12 @@
 #include "assuan-defs.h"
 
 /* Initialize a server.  */
-AssuanError
+assuan_error_t
 assuan_init_domain_server (ASSUAN_CONTEXT *r_ctx,
 			   int rendezvousfd,
 			   pid_t peer)
 {
-  AssuanError err;
+  assuan_error_t err;
 
   err = _assuan_domain_init (r_ctx, rendezvousfd, peer);
   if (err)

@@ -22,26 +22,32 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
 #include <sys/types.h>
+#ifndef HAVE_W32_SYSTEM
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <unistd.h>
+#else
+#include <windows.h>
+#endif
 
 #include "assuan-defs.h"
 
 static int
-accept_connection_bottom (ASSUAN_CONTEXT ctx)
+accept_connection_bottom (assuan_context_t ctx)
 {
   int fd = ctx->connected_fd;
 
-  ctx->client_pid = (pid_t)-1;
 #ifdef HAVE_SO_PEERCRED
   {
+    /* This overrides any already set PID if the function returns a
+       valid one. */
     struct ucred cr; 
     int cl = sizeof cr;
 
-    if ( !getsockopt (fd, SOL_SOCKET, SO_PEERCRED, &cr, &cl) ) 
-      ctx->client_pid = cr.pid;
+    if ( !getsockopt (fd, SOL_SOCKET, SO_PEERCRED, &cr, &cl)
+         && cr.pid != (pid_t)-1 && cr.pid ) 
+      ctx->pid = cr.pid;
   }
 #endif
 
@@ -62,13 +68,12 @@ accept_connection_bottom (ASSUAN_CONTEXT ctx)
 
 
 static int
-accept_connection (ASSUAN_CONTEXT ctx)
+accept_connection (assuan_context_t ctx)
 {
   int fd;
   struct sockaddr_un clnt_addr;
   size_t len = sizeof clnt_addr;
 
-  ctx->client_pid = (pid_t)-1;
   fd = accept (ctx->listen_fd, (struct sockaddr*)&clnt_addr, &len );
   if (fd == -1)
     {
@@ -81,11 +86,11 @@ accept_connection (ASSUAN_CONTEXT ctx)
 }
 
 static int
-finish_connection (ASSUAN_CONTEXT ctx)
+finish_connection (assuan_context_t ctx)
 {
   if (ctx->inbound.fd != -1)
     {
-      close (ctx->inbound.fd);
+      _assuan_close (ctx->inbound.fd);
     }
   ctx->inbound.fd = -1;
   ctx->outbound.fd = -1;
@@ -94,7 +99,7 @@ finish_connection (ASSUAN_CONTEXT ctx)
 
 
 static void
-deinit_socket_server (ASSUAN_CONTEXT ctx)
+deinit_socket_server (assuan_context_t ctx)
 {
   finish_connection (ctx);
 }
@@ -105,9 +110,9 @@ static struct assuan_io io = { _assuan_simple_read,
 /* Initialize a server for the socket LISTEN_FD which has already be
    put into listen mode */
 int
-assuan_init_socket_server (ASSUAN_CONTEXT *r_ctx, int listen_fd)
+assuan_init_socket_server (assuan_context_t *r_ctx, int listen_fd)
 {
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
   int rc;
 
   *r_ctx = NULL;
@@ -139,9 +144,9 @@ assuan_init_socket_server (ASSUAN_CONTEXT *r_ctx, int listen_fd)
 
 /* Initialize a server using the already accepted socket FD. */
 int
-assuan_init_connected_socket_server (ASSUAN_CONTEXT *r_ctx, int fd)
+assuan_init_connected_socket_server (assuan_context_t *r_ctx, int fd)
 {
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
   int rc;
 
   *r_ctx = NULL;

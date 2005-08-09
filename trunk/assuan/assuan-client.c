@@ -32,12 +32,12 @@
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 
 
-AssuanError
+assuan_error_t
 _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off)
 {
   char *line;
   int linelen;
-  AssuanError rc;
+  assuan_error_t rc;
 
   *okay = 0;
   *off = 0;
@@ -126,14 +126,14 @@ _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off)
  * the one one returned by the server in error lines or from the
  * callback functions.
  **/
-AssuanError
+assuan_error_t
 assuan_transact (ASSUAN_CONTEXT ctx,
                  const char *command,
-                 AssuanError (*data_cb)(void *, const void *, size_t),
+                 assuan_error_t (*data_cb)(void *, const void *, size_t),
                  void *data_cb_arg,
-                 AssuanError (*inquire_cb)(void*, const char *),
+                 assuan_error_t (*inquire_cb)(void*, const char *),
                  void *inquire_cb_arg,
-                 AssuanError (*status_cb)(void*, const char *),
+                 assuan_error_t (*status_cb)(void*, const char *),
                  void *status_cb_arg)
 {
   int rc, okay, off;
@@ -143,6 +143,9 @@ assuan_transact (ASSUAN_CONTEXT ctx,
   rc = assuan_write_line (ctx, command);
   if (rc)
     return rc;
+
+  if (*command == '#' || !*command)
+    return 0; /* Don't expect a response for a comment line.  */
 
  again:
   rc = _assuan_read_from_server (ctx, &okay, &off);

@@ -1,5 +1,5 @@
 /* assuan-listen.c - Wait for a connection (server) 
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -26,8 +26,8 @@
 
 #include "assuan-defs.h"
 
-AssuanError
-assuan_set_hello_line (ASSUAN_CONTEXT ctx, const char *line)
+assuan_error_t
+assuan_set_hello_line (assuan_context_t ctx, const char *line)
 {
   if (!ctx)
     return ASSUAN_Invalid_Value;
@@ -41,8 +41,13 @@ assuan_set_hello_line (ASSUAN_CONTEXT ctx, const char *line)
       char *buf = xtrymalloc (3+strlen(line)+1);
       if (!buf)
         return ASSUAN_Out_Of_Core;
-      strcpy (buf, "OK ");
-      strcpy (buf+3, line);
+      if (strchr (line, '\n'))
+        strcpy (buf, line);
+      else
+        {
+          strcpy (buf, "OK ");
+          strcpy (buf+3, line);
+        }
       xfree (ctx->hello_line);
       ctx->hello_line = buf;
     }
@@ -61,10 +66,11 @@ assuan_set_hello_line (ASSUAN_CONTEXT ctx, const char *line)
  * Return value: 0 on success or an error if the connection could for
  * some reason not be established.
  **/
-AssuanError
-assuan_accept (ASSUAN_CONTEXT ctx)
+assuan_error_t
+assuan_accept (assuan_context_t ctx)
 {
   int rc;
+  const char *p, *pend;
 
   if (!ctx)
     return ASSUAN_Invalid_Value;
@@ -77,9 +83,26 @@ assuan_accept (ASSUAN_CONTEXT ctx)
   if (rc)
     return rc;
 
-  /* send the hello */
-  rc = assuan_write_line (ctx, ctx->hello_line? ctx->hello_line
-                                              : "OK Your orders please");
+  /* Send the hello. */
+  p = ctx->hello_line;
+  if (p && (pend = strchr (p, '\n')))
+    { /* This is a multi line hello.  Send all but the last line as
+         comments. */
+      do
+        {
+          rc = _assuan_write_line (ctx, "# ", p, pend - p);
+          if (rc)
+            return rc;
+          p = pend + 1;
+          pend = strchr (p, '\n');
+        }
+      while (pend);
+      rc = _assuan_write_line (ctx, "OK ", p, strlen (p));
+    }
+  else if (p)
+    rc = assuan_write_line (ctx, p);
+  else
+    rc = assuan_write_line (ctx, "OK Pleased to meet you");
   if (rc)
     return rc;
   
@@ -92,14 +115,14 @@ assuan_accept (ASSUAN_CONTEXT ctx)
 
 
 int
-assuan_get_input_fd (ASSUAN_CONTEXT ctx)
+assuan_get_input_fd (assuan_context_t ctx)
 {
   return ctx? ctx->input_fd : -1;
 }
 
 
 int
-assuan_get_output_fd (ASSUAN_CONTEXT ctx)
+assuan_get_output_fd (assuan_context_t ctx)
 {
   return ctx? ctx->output_fd : -1;
 }
@@ -107,25 +130,25 @@ assuan_get_output_fd (ASSUAN_CONTEXT ctx)
 
 /* Close the fd descriptor set by the command INPUT FD=n.  We handle
    this fd inside assuan so that we can do some initial checks */
-AssuanError
-assuan_close_input_fd (ASSUAN_CONTEXT ctx)
+assuan_error_t
+assuan_close_input_fd (assuan_context_t ctx)
 {
   if (!ctx || ctx->input_fd == -1)
     return ASSUAN_Invalid_Value;
-  close (ctx->input_fd);
+  _assuan_close (ctx->input_fd);
   ctx->input_fd = -1;
   return 0;
 }
 
 /* Close the fd descriptor set by the command OUTPUT FD=n.  We handle
    this fd inside assuan so that we can do some initial checks */
-AssuanError
-assuan_close_output_fd (ASSUAN_CONTEXT ctx)
+assuan_error_t
+assuan_close_output_fd (assuan_context_t ctx)
 {
   if (!ctx || ctx->output_fd == -1)
     return ASSUAN_Invalid_Value;
 
-  close (ctx->output_fd);
+  _assuan_close (ctx->output_fd);
   ctx->output_fd = -1;
   return 0;
 }

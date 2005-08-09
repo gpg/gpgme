@@ -1,3 +1,50 @@
+2005-08-09  Werner Koch  <wk@g10code.com>
+
+	* README.1st: Adjusted to cope with changes done in upstream Assuan.
+
+	Merged changes for W32 support from libassuan.
+	
+	* assuan.h [_ASSUAN_EXT_SYM_PREFIX]: New.
+	* assuan-io.c [_ASSUAN_NO_PTH]: New.
+	* assuan-pipe-connect.c (fix_signals) [_ASSUAN_NO_FIXED_SIGNALS]: New.
+	(assuan_pipe_connect2) [_ASSUAN_USE_DOUBLE_FORK]: Use double fork.
+	(fix_signals) [_ASSUAN_USE_DOUBLE_FORK]: Do not wait..
+	* assuan-logging.c, assuan-io.c: Include config.h
+	Replaced all usages of _WIN32 by the new HAVE_W32_SYSTEM because
+	there is nothing winning in this API.
+	* assuan-pipe-connect.c (assuan_pipe_connect2) [_WIN32]: Return
+	error Not Imlemented.
+	* assuan-logging.c (_assuan_w32_strerror): New. 
+	* assuan-defs.h (w32_strerror): new.
+	* assuan-pipe-connect.c (assuan_pipe_connect2, fix_signals):
+	Factored signal code out to new function.
+	(build_w32_commandline, create_inheritable_pipe): New.  Taken
+	from gnupg 1.9.
+	(assuan_pipe_connect2) [W32]: Implemented for W32.
+	* assuan-pipe-server.c (assuan_init_pipe_server) [W32]: Map file
+	descriptors using _get_osfhandle.
+	* assuan-socket-connect.c (assuan_socket_connect) [W32]: Allow for
+	a drive letter in the path.
+	* assuan-client.c (assuan_transact): Handle empty and comment
+	commands correctly.
+	* assuan-util.c (_assuan_calloc): Avoid integer overflow.
+	* assuan-util.c (assuan_set_flag, assuan_get_flag): New.
+	* assuan-defs.h (struct assuan_context_s): New field flags.
+	* assuan.h (assuan_flag_t): New with one flag value
+	ASSUAN_NO_WAITPID for now.
+	* assuan-pipe-connect.c (do_finish): Take care of the no_waitpid
+	flag.
+	* mkerrors: Include config.h into assuan-errors.c.  This is
+	required so that assuan.h knows about the W32 macro.
+
+2005-08-09 Timo Schulz  <twoaday@g10code.com> (ported from libassuan by wk)
+	
+	* assuan-io.c (_assuan_simple_read, _assuan_simple_write): W32
+	support.
+	* assuan-socket.c (_assuan_close): New.
+	(_assuan_sock_new): New.
+	(_assuan_sock_bind): New.
+
 2005-03-22  Werner Koch  <wk@g10code.com>
 
 	* assuan-defs.h (struct assuan_io): Renamed elements READ and
