@@ -467,6 +467,8 @@ assuan_pipe_connect2 (assuan_context_t *ctx,
   if ((*ctx)->pid == 0)
     {
 #ifdef _ASSUAN_USE_DOUBLE_FORK      
+      pid_t pid;
+
       if ((pid = fork ()) == 0)
 #endif
 	{
