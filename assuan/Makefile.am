@@ -44,6 +44,8 @@ libassuan_la_SOURCES = \
 	assuan-socket-server.c \
 	assuan-pipe-connect.c \
 	assuan-socket-connect.c  \
+	assuan-socket.c \
+	funopen.c \
 	assuan-io.c \
 	assuan-domain-connect.c \
 	assuan-domain-server.c \

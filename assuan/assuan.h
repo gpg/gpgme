@@ -58,6 +58,8 @@ ssize_t _gpgme_ath_waitpid (pid_t pid, int *status, int options);
 #ifdef HAVE_W32_SYSTEM
 int _gpgme_ath_accept (int s, void *addr, int *length_ptr);
 #else /*!HAVE_W32_SYSTEM*/
+struct sockaddr;
+struct msghdr;
 ssize_t _gpgme_ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
                            struct timeval *timeout);
 int _gpgme_ath_accept (int s, struct sockaddr *addr, socklen_t *length_ptr);

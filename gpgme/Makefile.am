@@ -20,7 +20,7 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = gpgme-config.in gpgme.m4 mkstatus libgpgme.vers \
-	     versioninfo.rc.in gpgme.de
+	     versioninfo.rc.in gpgme.def
 BUILT_SOURCES = status-table.h
 MOSTLYCLEANFILES = status-table.h
 bin_SCRIPTS = gpgme-config
