@@ -133,7 +133,11 @@ ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
   if (ath_ops && ath_ops->select)
     return ath_ops->select (nfd, rset, wset, eset, timeout);
   else
+#ifdef HAVE_W32_SYSTEM
+    return -1; /* We don't support this yet. */
+#else
     return select (nfd, rset, wset, eset, timeout);
+#endif
 }
 
  
@@ -143,7 +147,11 @@ ath_waitpid (pid_t pid, int *status, int options)
   if (ath_ops && ath_ops->waitpid)
     return ath_ops->waitpid (pid, status, options);
   else
+#ifdef HAVE_W32_SYSTEM
+    return -1; /* We don't support this yet. */
+#else
     return waitpid (pid, status, options);
+#endif
 }
 
 
@@ -153,7 +161,11 @@ ath_accept (int s, struct sockaddr *addr, socklen_t *length_ptr)
   if (ath_ops && ath_ops->accept)
     return ath_ops->accept (s, addr, length_ptr);
   else
+#ifdef HAVE_W32_SYSTEM
+    return -1; /* We don't support this yet. */
+#else
     return accept (s, addr, length_ptr);
+#endif
 }
 
 
@@ -163,7 +175,11 @@ ath_connect (int s, const struct sockaddr *addr, socklen_t length)
   if (ath_ops && ath_ops->connect)
     return ath_ops->connect (s, addr, length);
   else
+#ifdef HAVE_W32_SYSTEM
+    return -1; /* We don't support this yet. */
+#else
     return connect (s, addr, length);
+#endif
 }
 
 
@@ -173,7 +189,11 @@ ath_sendmsg (int s, const struct msghdr *msg, int flags)
   if (ath_ops && ath_ops->sendmsg)
     return ath_ops->sendmsg (s, msg, flags);
   else
+#ifdef HAVE_W32_SYSTEM
+    return -1; /* We don't support this yet. */
+#else
     return sendmsg (s, msg, flags);
+#endif
 }
 
 
@@ -183,5 +203,9 @@ ath_recvmsg (int s, struct msghdr *msg, int flags)
   if (ath_ops && ath_ops->recvmsg)
     return ath_ops->recvmsg (s, msg, flags);
   else
+#ifdef HAVE_W32_SYSTEM
+    return -1; /* We don't support this yet. */
+#else
     return recvmsg (s, msg, flags);
+#endif
 }

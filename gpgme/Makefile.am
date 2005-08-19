@@ -19,7 +19,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = gpgme-config.in gpgme.m4 mkstatus libgpgme.vers
+EXTRA_DIST = gpgme-config.in gpgme.m4 mkstatus libgpgme.vers \
+	     versioninfo.rc.in gpgme.de
 BUILT_SOURCES = status-table.h
 MOSTLYCLEANFILES = status-table.h
 bin_SCRIPTS = gpgme-config
@@ -124,3 +125,34 @@ libgpgme_pth_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
 
 status-table.h : gpgme.h
 	$(srcdir)/mkstatus < $(srcdir)/gpgme.h > status-table.h
+
+# Special code to build a DLL.  The current libtool (1.5.6) is not
+# able to do this properly; we better use gcc's built in magic.  
+if HAVE_W32_SYSTEM
+
+w32_o_files = ath-compat.o conversion.o data-compat.o data-fd.o \
+              data-mem.o data-stream.o data-user.o data.o debug.o \
+              decrypt-verify.o decrypt.o delete.o edit.o encrypt-sign.o \
+              encrypt.o engine-gpgsm.o engine.o error.o export.o genkey.o \
+              get-env.o gpgme.o import.o key.o keylist.o memrchr.o \
+              op-support.o passphrase.o progress.o putc_unlocked.o \
+              rungpg.o sign.o signers.o trust-item.o trustlist.o \
+              ttyname_r.o vasprintf.o verify.o version.o \
+              w32-io.o w32-sema.o w32-util.o \
+              wait-global.o wait-private.o wait-user.o wait.o
+
+all-local: gpgme.dll gpgme.dll.a
+
+install-exec-hook:
+	cp gpgme.dll gpgme.dll.a $(DESTDIR)$(libdir)/
+	$(STRIP) $(DESTDIR)$(libdir)/gpgme.dll
+
+gpgme.dll gpgme.dll.a: gpgme.def $(w32_o_files) versioninfo.o
+	$(CC) -shared -o gpgme.dll gpgme.def $(w32_o_files) \
+	   versioninfo.o @GPG_ERROR_LIBS@ -Wl,--out-implib,gpgme.dll.a
+
+
+.rc.o:
+	$(WINDRES) `test -f '$<' || echo '$(srcdir)/'`$< $@
+
+endif

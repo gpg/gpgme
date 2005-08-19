@@ -32,6 +32,9 @@
 int
 ttyname_r (int fd, char *buf, size_t buflen)
 {
+#if HAVE_W32_SYSTEM
+  errno = ENOTTY; /* The best error code I have under mingw. */
+#else
   char *tty;
 
   tty = ttyname (fd);
@@ -41,4 +44,5 @@ ttyname_r (int fd, char *buf, size_t buflen)
   strncpy (buf, tty, buflen);
   buf[buflen - 1] = '\0';
   return (strlen (tty) >= buflen) ? ERANGE : 0;
+#endif
 }

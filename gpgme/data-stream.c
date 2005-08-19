@@ -63,7 +63,11 @@ stream_seek (gpgme_data_t dh, off_t offset, int whence)
   if (err)
     return -1;
 
+#ifdef HAVE_FSEEKO
   return ftello (dh->data.stream);
+#else
+  return ftell (dh->data.stream);
+#endif
 }
 
 
