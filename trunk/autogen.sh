@@ -76,7 +76,7 @@ if test "$1" = "--build-w32"; then
     ./configure --enable-maintainer-mode  --prefix=${w32root}  \
             --host=i586-mingw32msvc --build=${build} \
             --with-gpg-error-prefix=${w32root}  \
-            --disable-shared --with-gpgsm=c:/gnupg/gpgsm.exe
+            --disable-shared --without-gpgsm
 
     exit $?
 fi

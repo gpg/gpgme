@@ -1,6 +1,8 @@
 Noteworthy changes in version 1.1.0 (unreleased)
 ------------------------------------------------
 
+ * "./autogen.sh --build-w32" does now build gpgme.dll.
+
  * You can now configure the backend engine file name and home
    directory to be used, as default and per context.
 

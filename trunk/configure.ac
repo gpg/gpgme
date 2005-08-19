@@ -69,6 +69,8 @@ AH_VERBATIM([_REENTRANT],
 #endif])
 
 AC_PROG_CC
+AC_CHECK_TOOL(DLLTOOL, dlltool, :)
+AC_CHECK_TOOL(WINDRES, windres, :)
 
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
@@ -342,9 +344,11 @@ if test "$GPGSM" = no; then
   fi
 else
   AC_DEFINE_UNQUOTED(GPGSM_PATH, "$GPGSM", [Path to the GPGSM binary.])
-  AC_SUBST(GPGSM)
+  AC_DEFINE(ENABLE_GPGSM,1,[Whether GPGSM support is enabled])
 fi
 AM_CONDITIONAL(HAVE_GPGSM, test "$GPGSM" != "no")
+
+
 dnl Check for GPGSM version requirement.
 GPGSM_VERSION=unknown
 ok=maybe
@@ -439,6 +443,22 @@ AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
 # (this is easier than to have a *.in file just for one substitution)
 GNUPG_FIX_HDR_VERSION(gpgme/gpgme.h, GPGME_VERSION)
 
+# Generate values for the DLL version info
+if test "$have_w32_system" = yes; then
+    BUILD_TIMESTAMP=`date --iso-8601=minutes`
+    changequote(,)dnl 
+    BUILD_FILEVERSION=`echo "$VERSION" | sed 's/\([0-9.]*\).*/\1./;s/\./,/g'`
+    changequote([,])dnl
+    case "$VERSION" in
+      *-cvs) BUILD_FILEVERSION="${BUILD_FILEVERSION}0" ;;
+      *-rc*) BUILD_FILEVERSION="${BUILD_FILEVERSION}1" ;;
+      *)     BUILD_FILEVERSION="${BUILD_FILEVERSION}2" ;;
+    esac
+fi
+AC_SUBST(BUILD_TIMESTAMP)
+AC_SUBST(BUILD_FILEVERSION)
+
+
 # Substitution used for gpgme-config 
 GPGME_CONFIG_LIBS="-lgpgme"
 GPGME_CONFIG_CFLAGS=""
@@ -456,7 +476,8 @@ AC_SUBST(LTLIBOBJS)
 
 AC_CONFIG_FILES(Makefile assuan/Makefile gpgme/Makefile
 		tests/Makefile tests/gpg/Makefile tests/gpgsm/Makefile
-		doc/Makefile complus/Makefile)
+		doc/Makefile complus/Makefile
+                gpgme/versioninfo.rc)
 AC_CONFIG_FILES(gpgme/gpgme-config, chmod +x gpgme/gpgme-config)
 AC_OUTPUT
 
