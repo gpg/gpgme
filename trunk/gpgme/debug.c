@@ -101,7 +101,7 @@ debug_init (void)
       if (e)
 	{
 	  debug_level = atoi (e);
-	  s1 = strchr (e, ':');
+	  s1 = strchr (e, PATHSEP_C);
 	  if (s1)
 	    {
 #ifndef HAVE_DOSISH_SYSTEM
@@ -112,7 +112,7 @@ debug_init (void)
 		  FILE *fp;
 
 		  s1++;
-		  if (!(s2 = strchr (s1, ':')))
+		  if (!(s2 = strchr (s1, PATHSEP_C)))
 		    s2 = s1 + strlen (s1);
 		  p = malloc (s2 - s1 + 1);
 		  if (p)

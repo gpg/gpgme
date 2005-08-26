@@ -395,12 +395,11 @@ _gpgme_io_read ( int fd, void *buffer, size_t count )
     UNLOCK (c->mutex);
 
     DEBUG2 ("fd %d: got %d bytes\n", fd, nread );
+    if (nread > 0)
+      _gpgme_debug (2, "fd %d: got `%.*s'\n", fd, nread, buffer);
 
     return nread;
 }
-
-
-
 /*
  * The writer does use a simple buffering strategy so that we are
  * informed about write errors as soon as possible (i.e. with the the
@@ -600,6 +599,7 @@ _gpgme_io_write ( int fd, const void *buffer, size_t count )
     struct writer_context_s *c = find_writer (fd,1);
 
     DEBUG2 ("fd %d: about to write %d bytes\n", fd, (int)count );
+    _gpgme_debug (2, "fd %d: write `%.*s'\n", fd, (int) count, buffer);
     if ( !c ) {
         DEBUG0 ( "no writer thread\n");
         return -1;

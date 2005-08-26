@@ -3,6 +3,10 @@ Noteworthy changes in version 1.1.0 (unreleased)
 
  * "./autogen.sh --build-w32" does now build gpgme.dll.
 
+ * [W32] The environment variable GPGME_DEBUG now uses a semicolon as
+   delimiter.  The standard install directory is used when locating
+   gpg or gpgsm before finally falling back to the hardwired name.
+
  * You can now configure the backend engine file name and home
    directory to be used, as default and per context.
 
