@@ -1,5 +1,7 @@
 2005-08-26  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.c (command_handler): Use _gpgme_io_write instead of write.
+
 	* edit.c (command_handler): Do not depend on PROCESSED being
 	available.
 
