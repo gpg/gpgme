@@ -6,6 +6,8 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Add notation data to key signatures.
 
 * ABI's to break:
+** gpgme_edit_cb_t: Add "processed" return argument
+   (see edit.c::command_handler).
 ** I/O and User Data could be made extensible.  But this can be done
    without breaking the ABI hopefully.
 *  All enums that should be enums need to have a maximum value to ensure

@@ -1,3 +1,18 @@
+2005-08-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine.h (engine_command_handler_t): Add new argument processed.
+	* ops.h (_gpgme_passphrase_command_handler_internal): Rename
+	prototype to ...
+	(_gpgme_passphrase_command_handler): ... this one.
+	* passphrase.c (_gpgme_passphrase_command_handler_internal):
+	Rename to ...
+	(_gpgme_passphrase_command_handler): ... this one.
+	* edit.c (command_handler): Add new argument processed.  Remove
+	local variable with the same name.  Always return processed as
+	true.
+	* rungpg.c (command_handler): Send a newline character if the
+	handler did not.
+
 2005-08-26  Werner Koch  <wk@g10code.com>
 
 	* w32-util.c (read_w32_registry_string): Updated from code used by
