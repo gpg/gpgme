@@ -34,7 +34,7 @@ typedef gpgme_error_t (*engine_colon_line_handler_t) (void *priv, char *line);
 typedef gpgme_error_t (*engine_command_handler_t) (void *priv,
 						   gpgme_status_code_t code,
 						   const char *keyword,
-						   int fd);
+						   int fd, int *processed);
 
 /* Get a deep copy of the engine info and return it in INFO.  */
 gpgme_error_t _gpgme_engine_info_copy (gpgme_engine_info_t *r_info);

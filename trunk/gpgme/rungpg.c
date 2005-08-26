@@ -478,14 +478,20 @@ command_handler (void *opaque, int fd)
 {
   gpgme_error_t err;
   engine_gpg_t gpg = (engine_gpg_t) opaque;
+  int processed = 0;
 
   assert (gpg->cmd.used);
   assert (gpg->cmd.code);
   assert (gpg->cmd.fnc);
 
-  err = gpg->cmd.fnc (gpg->cmd.fnc_value, gpg->cmd.code, gpg->cmd.keyword, fd);
+  err = gpg->cmd.fnc (gpg->cmd.fnc_value, gpg->cmd.code, gpg->cmd.keyword, fd,
+		      &processed);
   if (err)
     return err;
+
+  /* We always need to send at least a newline character.  */
+  if (!processed)
+    write (fd, "\n", 1);
 
   gpg->cmd.code = 0;
   /* And sleep again until read_status will wake us up again.  */

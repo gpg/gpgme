@@ -116,10 +116,8 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 
 
 gpgme_error_t
-_gpgme_passphrase_command_handler_internal (void *priv,
-					    gpgme_status_code_t code,
-					    const char *key, int fd,
-					    int *processed)
+_gpgme_passphrase_command_handler (void *priv, gpgme_status_code_t code,
+				   const char *key, int fd, int *processed)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
@@ -152,13 +150,4 @@ _gpgme_passphrase_command_handler_internal (void *priv,
     }
 
   return 0;
-}
-
-
-gpgme_error_t
-_gpgme_passphrase_command_handler (void *priv, gpgme_status_code_t code,
-				   const char *key, int fd)
-{
-  return _gpgme_passphrase_command_handler_internal (priv, code, key, fd,
-						     NULL);
 }
