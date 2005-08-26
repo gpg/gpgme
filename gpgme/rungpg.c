@@ -491,7 +491,7 @@ command_handler (void *opaque, int fd)
 
   /* We always need to send at least a newline character.  */
   if (!processed)
-    write (fd, "\n", 1);
+    _gpgme_io_write (fd, "\n", 1);
 
   gpg->cmd.code = 0;
   /* And sleep again until read_status will wake us up again.  */
