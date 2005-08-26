@@ -63,20 +63,21 @@ edit_status_handler (void *priv, gpgme_status_code_t status, char *args)
 
 static gpgme_error_t
 command_handler (void *priv, gpgme_status_code_t status, const char *args,
-		 int fd, int *processed)
+		 int fd, int *processed_r)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
+  int processed = 0;
 
   if (ctx->passphrase_cb)
     {
       err = _gpgme_passphrase_command_handler (ctx, status, args,
-					       fd, processed);
+					       fd, &processed);
       if (err)
 	return err;
     }
 
-  if (!*processed)
+  if (!processed)
     {
       void *hook;
       op_data_t opd;
@@ -89,11 +90,12 @@ command_handler (void *priv, gpgme_status_code_t status, const char *args,
       /* FIXME: We expect the user to handle _all_ status codes.
 	 Later, we may fix the callback interface to allow the user
 	 indicate if it processed the status code or not.  */
-      *processed = 1;
+      *processed_r = 1;
 
       return (*opd->fnc) (opd->fnc_value, status, args, fd);
     }
 
+  *processed_r = processed;
   return 0;
 }
 
