@@ -458,6 +458,29 @@ fi
 AC_SUBST(BUILD_TIMESTAMP)
 AC_SUBST(BUILD_FILEVERSION)
 
+# Add a few constants to help porting to W32
+AH_VERBATIM([SEPCONSTANTS],
+[
+/* Separators as used in file names and $PATH. Please note that the
+   string version must not contain more than one character because
+   the using code assumes strlen()==1 */
+#ifdef HAVE_DOSISH_SYSTEM
+#define DIRSEP_C '\\\\'
+#define EXTSEP_C '.'
+#define DIRSEP_S "\\\\"
+#define EXTSEP_S "."
+#define PATHSEP_C ';'
+#define PATHSEP_S ";"
+#else
+#define DIRSEP_C '/'
+#define EXTSEP_C '.'
+#define DIRSEP_S "/"
+#define EXTSEP_S "."
+#define PATHSEP_C ':'
+#define PATHSEP_S ":"
+#endif
+])
+
 
 # Substitution used for gpgme-config 
 GPGME_CONFIG_LIBS="-lgpgme"
