@@ -48,6 +48,7 @@ typedef struct
   struct _gpgme_op_keylist_result result;
 
   gpgme_key_t tmp_key;
+  /* This points to the last uid in tmp_key.  */
   gpgme_user_id_t tmp_uid;
   /* Something new is available.  */
   int key_cond;
@@ -63,8 +64,9 @@ release_op_data (void *hook)
 
   if (opd->tmp_key)
     gpgme_key_unref (opd->tmp_key);
-  if (opd->tmp_uid)
-    free (opd->tmp_uid);
+  /* opd->tmp_uid is actually part of opd->tmp_key, so we do not need
+     to release it here.  */
+
   while (key)
     {
       struct key_queue_item_s *next = key->next;
