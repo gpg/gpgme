@@ -1,3 +1,7 @@
+2005-09-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* keylist.c (release_op_data): Do not free opd->tmp_uid.
+
 2005-07-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* keylist.c (gpgme_get_key): Allow key IDs.
