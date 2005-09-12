@@ -1,12 +1,6 @@
 Noteworthy changes in version 1.1.0 (unreleased)
 ------------------------------------------------
 
- * "./autogen.sh --build-w32" does now build gpgme.dll.
-
- * [W32] The environment variable GPGME_DEBUG now uses a semicolon as
-   delimiter.  The standard install directory is used when locating
-   gpg or gpgsm before finally falling back to the hardwired name.
-
  * You can now configure the backend engine file name and home
    directory to be used, as default and per context.
 
@@ -26,6 +20,22 @@ Noteworthy changes in version 1.1.0 (unreleased)
    and verify handlers, the information about the plaintext filename,
    if available is made available in the new field plaintext_filename
    of the respective result structure.
+
+ * The code for "automagically detecting the thread library" has been
+   removed from libgpgme.  It is deprecated since version 0.4.3.
+   Since then, you had to link against libgpgme-pthread for
+   applications using pthread and libgpgme-pth for applications using
+   GNU Pth.
+
+   The code was removed because it caused compilation problems on
+   systems where the pthread.h header from GNU Pth is available in
+   addition to the system header (FreeBSD 6 and later for example).
+
+ * "./autogen.sh --build-w32" does now build gpgme.dll.
+
+ * [W32] The environment variable GPGME_DEBUG now uses a semicolon as
+   delimiter.  The standard install directory is used when locating
+   gpg or gpgsm before finally falling back to the hardwired name.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_set_engine_info		NEW

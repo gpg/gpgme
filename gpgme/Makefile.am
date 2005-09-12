@@ -83,18 +83,7 @@ libgpgme_real_la_SOURCES =						\
 	$(gpgsm_components) sema.h priv-io.h $(system_components)	\
 	debug.c debug.h gpgme.c version.c error.c
 
-# libgpgme_la_SOURCES = ath.h ath.c
-if HAVE_PTH
-  ath_pth_src = ath-pth-compat.c
-else
-  ath_pth_src =
-endif
-if HAVE_PTHREAD
-  ath_pthread_src = ath-pthread-compat.c
-else
-  ath_pthread_src =
-endif
-libgpgme_la_SOURCES = ath.h ath-compat.c $(ath_pth_src) $(ath_pthread_src)
+libgpgme_la_SOURCES = ath.h ath.c
 libgpgme_pthread_la_SOURCES = ath.h ath-pthread.c
 libgpgme_pth_la_SOURCES = ath.h ath-pth.c
 
@@ -114,6 +103,7 @@ libgpgme_pthread_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
 libgpgme_pthread_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
 	-lpthread @GPG_ERROR_LIBS@
 
+libgpgme_pth_la_CFLAGS = $(AM_CFLAGS) @PTH_CFLAGS@
 libgpgme_pth_la_CPPFLAGS = $(AM_CPPFLAGS) @PTH_CPPFLAGS@
 libgpgme_pth_la_LDFLAGS = @PTH_LDFLAGS@ \
 	$(libgpgme_version_script_cmd) -version-info \
@@ -130,7 +120,7 @@ status-table.h : gpgme.h
 # able to do this properly; we better use gcc's built in magic.  
 if HAVE_W32_SYSTEM
 
-w32_o_files = ath-compat.o conversion.o data-compat.o data-fd.o \
+w32_o_files = ath.o conversion.o data-compat.o data-fd.o \
               data-mem.o data-stream.o data-user.o data.o debug.o \
               decrypt-verify.o decrypt.o delete.o edit.o encrypt-sign.o \
               encrypt.o engine-gpgsm.o engine.o error.o export.o genkey.o \

@@ -1,5 +1,19 @@
 2005-09-12  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (libgpgme_la_SOURCES): Set to ath.h and ath.c.
+	(ath_pth_src, ath_pthread_src): Removed.
+	(w32_o_files): Replace ath-compat.o with ath.o.
+	(libgpgme_pth_la_CFLAGS): New variable.
+	* ath-compat.c, ath-pthread-compat.c, ath-pth-compat.c: Removed.
+	* ath.h (ath_pthread_available, ath_pth_available): Removed.
+	(ath_init) [!_ATH_EXT_SYM_PREFIX]: Do not define macro.
+	(struct ath_ops, ath_init) [_ATH_COMPAT]: Removed.
+	(_ATH_COMPAT): Macro removed.
+	* posix-sema.c (_gpgme_sema_subsystem_init): Do not call
+	_gpgme_ath_init.
+
+2005-09-12  Marcus Brinkmann  <marcus@g10code.de>
+
 	* keylist.c (release_op_data): Do not free opd->tmp_uid.
 
 2005-08-26  Marcus Brinkmann  <marcus@g10code.de>

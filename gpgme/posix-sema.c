@@ -40,8 +40,6 @@
 void
 _gpgme_sema_subsystem_init ()
 {
-  /* FIXME: we should check that there is only one thread running */
-  _gpgme_ath_init ();
 }
 
 void

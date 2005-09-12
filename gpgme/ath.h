@@ -86,34 +86,4 @@ int ath_connect (int s, const struct sockaddr *addr, socklen_t length);
 int ath_sendmsg (int s, const struct msghdr *msg, int flags);
 int ath_recvmsg (int s, struct msghdr *msg, int flags);
 
-#define _ATH_COMPAT
-#ifdef _ATH_COMPAT
-struct ath_ops
-{
-  int (*mutex_init) (void **priv, int just_check);
-  int (*mutex_destroy) (void *priv);
-  int (*mutex_lock) (void *priv);
-  int (*mutex_unlock) (void *priv);
-  ssize_t (*read) (int fd, void *buf, size_t nbytes);
-  ssize_t (*write) (int fd, const void *buf, size_t nbytes);
-  ssize_t (*select) (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
-		     struct timeval *timeout);
-  ssize_t (*waitpid) (pid_t pid, int *status, int options);
-  int (*accept) (int s, struct sockaddr *addr, socklen_t *length_ptr);
-  int (*connect) (int s, const struct sockaddr *addr, socklen_t length);
-  int (*sendmsg) (int s, const struct msghdr *msg, int flags);
-  int (*recvmsg) (int s, struct msghdr *msg, int flags);
-};
-
-/* Initialize the any-thread package.  */
-#define ath_init _ATH_PREFIX(ath_init)
-void ath_init (void);
-
-/* Used by ath_pkg_init.  */
-#define ath_pthread_available _ATH_PREFIX(ath_pthread_available)
-struct ath_ops *ath_pthread_available (void);
-#define ath_pth_available _ATH_PREFIX(ath_pth_available)
-struct ath_ops *ath_pth_available (void);
-#endif
-
 #endif	/* ATH_H */
