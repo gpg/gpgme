@@ -122,7 +122,6 @@ case "${host}" in
 	AC_CHECK_PTH(1.2.0,,,no,have_pth=yes)
 	if test "$have_pth" = yes; then
 	  AC_DEFINE(HAVE_PTH, ,[Define if we have Pth.])
-	  CFLAGS="$CFLAGS $PTH_CFLAGS"
 	fi
 	AC_CHECK_LIB(pthread,pthread_create,have_pthread=yes)
 	if test "$have_pthread" = yes; then
