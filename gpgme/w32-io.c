@@ -762,27 +762,36 @@ _gpgme_io_set_nonblocking ( int fd )
 static char *
 build_commandline ( char **argv )
 {
-    int i, n = 0;
-    char *buf, *p;
-
-    /* FIXME: we have to quote some things because under Windows the 
-     * program parses the commandline and does some unquoting */
-    for (i=0; argv[i]; i++)
-        n += strlen (argv[i]) + 2 + 1; /* 2 extra bytes for possible quoting */
-    buf = p = malloc (n);
-    if ( !buf )
-        return NULL;
-    *buf = 0;
-    if ( argv[0] )
+  int i, n = 0;
+  char *buf, *p;
+  
+  /* FIXME: we have to quote some things because under Windows the
+   * program parses the commandline and does some unquoting.  For now
+   * we only do very basic quoting to the first argument because this
+   * one often contains a space (e.g. C:\\Program Files\GNU\GnuPG\gpg.exe) 
+   * and we would produce an invalid line in that case.  */
+  for (i=0; argv[i]; i++)
+    n += strlen (argv[i]) + 2 + 1; /* 2 extra bytes for possible quoting */
+  buf = p = malloc (n);
+  if ( !buf )
+    return NULL;
+  *buf = 0;
+  if ( argv[0] )
+    {
+      if (strpbrk (argv[0], " \t"))
+        p = stpcpy (stpcpy (stpcpy (p, "\""), argv[0]), "\"");
+      else
         p = stpcpy (p, argv[0]);
-    for (i = 1; argv[i]; i++) {
-        if (!*argv[i])
+      for (i = 1; argv[i]; i++)
+        {
+          if (!*argv[i])
             p = stpcpy (p, " \"\"");
-        else
+          else
             p = stpcpy (stpcpy (p, " "), argv[i]);
+        }
     }
-
-    return buf;
+  
+  return buf;
 }
 
 

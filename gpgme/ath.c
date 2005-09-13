@@ -30,7 +30,9 @@
 # include <sys/time.h>
 #endif
 #include <sys/types.h>
+#ifndef HAVE_W32_SYSTEM
 #include <sys/wait.h>
+#endif
 
 #include "ath.h"
 
@@ -104,40 +106,64 @@ ssize_t
 ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
 	    struct timeval *timeout)
 {
+#ifdef HAVE_W32_SYSTEM
+  return -1; /* Not supported. */
+#else
   return select (nfd, rset, wset, eset, timeout);
+#endif
 }
 
  
 ssize_t
 ath_waitpid (pid_t pid, int *status, int options)
 {
+#ifdef HAVE_W32_SYSTEM
+  return -1; /* Not supported. */
+#else
   return waitpid (pid, status, options);
+#endif
 }
 
 
 int
 ath_accept (int s, struct sockaddr *addr, socklen_t *length_ptr)
 {
+#ifdef HAVE_W32_SYSTEM
+  return -1; /* Not supported. */
+#else
   return accept (s, addr, length_ptr);
+#endif
 }
 
 
 int
 ath_connect (int s, const struct sockaddr *addr, socklen_t length)
 {
+#ifdef HAVE_W32_SYSTEM
+  return -1; /* Not supported. */
+#else
   return connect (s, addr, length);
+#endif
 }
 
 
 int
 ath_sendmsg (int s, const struct msghdr *msg, int flags)
 {
+#ifdef HAVE_W32_SYSTEM
+  return -1; /* Not supported. */
+#else
   return sendmsg (s, msg, flags);
+#endif
 }
 
 
 int
 ath_recvmsg (int s, struct msghdr *msg, int flags)
 {
+#ifdef HAVE_W32_SYSTEM
+  return -1; /* Not supported. */
+#else
   return recvmsg (s, msg, flags);
+#endif
 }

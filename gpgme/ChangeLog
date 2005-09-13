@@ -1,3 +1,7 @@
+2005-09-13  Werner Koch  <wk@g10code.com>
+
+	* ath.c: Changes to make it work under W32.
+
 2005-09-12  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (libgpgme_la_SOURCES): Set to ath.h and ath.c.
@@ -15,6 +19,10 @@
 2005-09-12  Marcus Brinkmann  <marcus@g10code.de>
 
 	* keylist.c (release_op_data): Do not free opd->tmp_uid.
+
+2005-09-07  Werner Koch  <wk@g10code.com>
+
+	* w32-io.c (build_commandline): Quote argv[0].
 
 2005-08-26  Marcus Brinkmann  <marcus@g10code.de>
 
