@@ -51,6 +51,7 @@
 
 #define READBUF_SIZE 4096
 #define WRITEBUF_SIZE 4096
+#define PIPEBUF_SIZE  4096
 #define MAX_READERS 20
 #define MAX_WRITERS 20
 
@@ -261,6 +262,12 @@ create_reader (HANDLE fd)
         free (c);
         return NULL;
     }    
+    else {
+      /* We set the priority of the thread higher because we know that
+         it only runs for a short time.  This greatly helps to increase
+         the performance of the I/O. */
+      SetThreadPriority (c->thread_hd, THREAD_PRIORITY_HIGHEST);
+    }
 
     return c;
 }
@@ -513,6 +520,12 @@ create_writer (HANDLE fd)
         free (c);
         return NULL;
     }    
+    else {
+      /* We set the priority of the thread higher because we know that
+         it only runs for a short time.  This greatly helps to increase
+         the performance of the I/O. */
+      SetThreadPriority (c->thread_hd, THREAD_PRIORITY_HIGHEST);
+    }
 
     return c;
 }
@@ -646,9 +659,9 @@ _gpgme_io_pipe ( int filedes[2], int inherit_idx )
     sec_attr.nLength = sizeof sec_attr;
     sec_attr.bInheritHandle = FALSE;
     
-    if (!CreatePipe ( &r, &w, &sec_attr, 0))
+    if (!CreatePipe ( &r, &w, &sec_attr, PIPEBUF_SIZE))
         return -1;
-    /* make one end inheritable */
+    /* Make one end inheritable. */
     if ( inherit_idx == 0 ) {
         HANDLE h;
         if (!DuplicateHandle( GetCurrentProcess(), r,
@@ -900,13 +913,13 @@ _gpgme_io_spawn ( const char *path, char **argv,
         return -1;
     }
 
-    /* close the /dev/nul handle if used */
+    /* Close the /dev/nul handle if used. */
     if (hnul != INVALID_HANDLE_VALUE ) {
         if ( !CloseHandle ( hnul ) )
             DEBUG1 ("CloseHandle(hnul) failed: ec=%d\n", (int)GetLastError());
     }
 
-    /* Close the other ends of the pipes */
+    /* Close the other ends of the pipes. */
     for (i = 0; fd_parent_list[i].fd != -1; i++)
       _gpgme_io_close (fd_parent_list[i].fd);
 

@@ -1,3 +1,14 @@
+2005-09-23  Werner Koch  <wk@g10code.com>
+
+	* w32-io.c (_gpgme_io_pipe): Removed use of environment variable
+	again.
+	(create_reader, create_writer): Set thread priority higher.
+
+2005-09-19  Werner Koch  <wk@g10code.com>
+
+	* w32-io.c (_gpgme_io_pipe): New environment variable to change
+	the size of the pipe buffer.
+
 2005-09-13  Werner Koch  <wk@g10code.com>
 
 	* ath.c: Changes to make it work under W32.
