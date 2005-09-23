@@ -28,7 +28,7 @@ noinst_HEADERS = t-support.h
 TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers	\
 	t-decrypt t-verify t-decrypt-verify \
 	t-export t-import t-trustlist t-eventloop t-edit \
-	t-keylist t-keylist-sig t-thread1 t-wait
+	t-keylist t-keylist-sig t-thread1 t-wait t-encrypt-large
 
 CLEANFILES = secring.gpg pubring.gpg trustdb.gpg
 DISTCLEANFILES = pubring.gpg~ random_seed
