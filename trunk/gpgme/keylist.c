@@ -246,6 +246,10 @@ set_subkey_capability (gpgme_subkey_t subkey, const char *src)
 	  subkey->can_authenticate = 1;
 	  break;
 
+	case 'q':
+	  subkey->is_qualified = 1;
+	  break;
+
 	case 'd':
 	  subkey->disabled = 1;
 	  break;
@@ -293,6 +297,11 @@ set_mainkey_capability (gpgme_key_t key, const char *src)
 	case 'a':
 	case 'A':
 	  key->can_authenticate = 1;
+	  break;
+
+	case 'q':
+	case 'Q':
+	  key->is_qualified = 1;
 	  break;
         }
       src++;
