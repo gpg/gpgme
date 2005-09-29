@@ -465,8 +465,11 @@ struct _gpgme_subkey
   /* True if subkey can be used for authentication.  */
   unsigned int can_authenticate : 1;
 
+  /* True if subkey is qualified for signatures according to German law.  */
+  unsigned int is_qualified : 1;
+
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 23;
+  unsigned int _unused : 22;
   
   /* Public key algorithm supported by this subkey.  */
   gpgme_pubkey_algo_t pubkey_algo;
@@ -626,8 +629,11 @@ struct _gpgme_key
   /* True if key can be used for authentication.  */
   unsigned int can_authenticate : 1;
 
+  /* True if subkey is qualified for signatures according to German law.  */
+  unsigned int is_qualified : 1;
+
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 23;
+  unsigned int _unused : 22;
 
   /* This is the protocol supported by this key.  */
   gpgme_protocol_t protocol;
