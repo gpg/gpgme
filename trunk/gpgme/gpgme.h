@@ -1119,8 +1119,9 @@ struct _gpgme_op_decrypt_result
 
   gpgme_recipient_t recipients;
 
-  /* The original filename of the plaintext message, if available.  */
-  char *plaintext_filename;
+  /* The original file name of the plaintext message, if
+     available.  */
+  char *file_name;
 };
 typedef struct _gpgme_op_decrypt_result *gpgme_decrypt_result_t;
 
@@ -1271,8 +1272,9 @@ struct _gpgme_op_verify_result
 {
   gpgme_signature_t signatures;
 
-  /* The original filename of the plaintext message, if available.  */
-  char *plaintext_filename;
+  /* The original file name of the plaintext message, if
+     available.  */
+  char *file_name;
 };
 typedef struct _gpgme_op_verify_result *gpgme_verify_result_t;
 
