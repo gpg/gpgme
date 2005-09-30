@@ -4,22 +4,13 @@ Noteworthy changes in version 1.1.0 (unreleased)
  * You can now configure the backend engine file name and home
    directory to be used, as default and per context.
 
- * Previousy, GPGME would use a default "include certs" of 1.  This
-   has been changed.  Now GPGME will use the crypto backend engines
-   default unless you set the value with gpgme_set_include_certs()
-   explicitely.  A new macro GPGME_INCLUDE_CERTS_DEFAULT can be used
-   as a value to explicitely request the new default behaviour.
-
-   Because the default changes, this is a slight change of the API
-   semantics.  We consider it to be a bug fix.
-
  * Information about the recipients of an encrypted text is now
    available at decryption time.
 
  * New status GPGME_STATUS_PLAINTEXT.  This is analyzed by the decrypt
    and verify handlers, the information about the plaintext filename,
-   if available is made available in the new field plaintext_filename
-   of the respective result structure.
+   if available is made available in the new field file_name of the
+   respective result structure.
 
  * The code for "automagically detecting the thread library" has been
    removed from libgpgme.  It is deprecated since version 0.4.3.
@@ -37,24 +28,52 @@ Noteworthy changes in version 1.1.0 (unreleased)
    delimiter.  The standard install directory is used when locating
    gpg or gpgsm before finally falling back to the hardwired name.
 
+ * There is a new flag for keys and subkeys, is_qualified, which
+   indicates if a key can be used for qualified signatures according
+   to local government regulations.
+
+ * Interface changes relative to the 1.0.3 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_set_engine_info		NEW
 gpgme_ctx_get_engine_info	NEW
 gpgme_ctx_set_engine_info	NEW
-gpgme_set_include_certs		CHANGED DEFAULT
-GPGME_INCLUDE_CERTS_DEFAULT	NEW
 gpgme_recipient_t		NEW
 gpgme_decrypt_result_t		EXTENDED: New field recipients.
 gpgme_verify_result_t		EXTENDED: New fields pubkey_algo, hash_algo.
+gpgme_decrypt_result_t		EXTENDED: New field file_name.
+gpgme_verify_result_t		EXTENDED: New field file_name.
+GPGME_STATUS_PLAINTEXT		NEW
+gpgme_key_t			EXTENDED: New field is_qualified.
+gpgme_subkey_t			EXTENDED: New field is_qualified.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 1.0.3 (2005-06-20)
+------------------------------------------------
+
+ * Previousy, GPGME would use a default "include certs" of 1.  This
+   has been changed.  Now GPGME will use the crypto backend engines
+   default unless you set the value with gpgme_set_include_certs()
+   explicitely.  A new macro GPGME_INCLUDE_CERTS_DEFAULT can be used
+   as a value to explicitely request the new default behaviour.
+
+   Because the default changes, this is a slight change of the API
+   semantics.  We consider it to be a bug fix.
+
+ * A bug which made GPGME hang has been fixed.  If you have
+   experienced hanging before, please try out this version and let me
+   know if you still experience hanging problems.
+
+ * Interface changes relative to the 0.9.0 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_set_include_certs		CHANGED DEFAULT
+GPGME_INCLUDE_CERTS_DEFAULT	NEW
 GPGME_STATUS_SIG_SUBPACKET	NEW
 GPGME_STATUS_NEED_PASSPHRASE_PIN NEW
 GPGME_STATUS_SC_OP_FAILURE	NEW
 GPGME_STATUS_SC_OP_SUCCESS	NEW
 GPGME_STATUS_CARDCTRL		NEW
 GPGME_STATUS_BACKUP_KEY_CREATED	NEW
-gpgme_decrypt_result_t		EXTENDED: New field plaintext_filename.
-gpgme_verify_result_t		EXTENDED: New field plaintext_filename.
-GPGME_STATUS_PLAINTEXT		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

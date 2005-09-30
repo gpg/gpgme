@@ -54,8 +54,8 @@ release_op_data (void *hook)
   if (opd->result.unsupported_algorithm)
     free (opd->result.unsupported_algorithm);
 
-  if (opd->result.plaintext_filename)
-    free (opd->result.plaintext_filename);
+  if (opd->result.file_name)
+    free (opd->result.file_name);
 }
 
 
@@ -242,7 +242,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       break;
 
     case GPGME_STATUS_PLAINTEXT:
-      err = _gpgme_parse_plaintext (args, &opd->result.plaintext_filename);
+      err = _gpgme_parse_plaintext (args, &opd->result.file_name);
       if (err)
 	return err;
       
