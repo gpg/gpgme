@@ -1,5 +1,15 @@
 2005-09-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* data.h (struct gpgme_data): New member file_name.
+	* data.c (gpgme_data_set_filename): New function.
+	(_gpgme_data_release): Free DH->filename if necessary.
+	(gpgme_data_get_filename): New function.
+	* rungpg.c (gpg_encrypt): Set filename option.
+	(gpg_encrypt_sign): Likewise.
+	(gpg_sign): Likewise.
+	* libgpgme.vers (GPGME_1.1): Add gpgme_data_set_file_name and
+	gpgme_data_get_file_name.
+
 	* decrpyt.c, verify.c, gpgme.h: Replace plaintext_filename with
 	file_name.
 

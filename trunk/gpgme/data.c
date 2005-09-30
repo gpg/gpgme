@@ -57,8 +57,12 @@ _gpgme_data_new (gpgme_data_t *r_dh, struct _gpgme_data_cbs *cbs)
 void
 _gpgme_data_release (gpgme_data_t dh)
 {
-  if (dh)
-    free (dh);
+  if (!dh)
+    return;
+
+  if (dh->file_name)
+    free (dh->file_name);
+  free (dh);
 }
 
 
@@ -165,6 +169,36 @@ gpgme_data_set_encoding (gpgme_data_t dh, gpgme_data_encoding_t enc)
     return gpg_error (GPG_ERR_INV_VALUE);
   dh->encoding = enc;
   return 0;
+}
+
+
+/* Set the file name associated with the data object with handle DH to
+   FILE_NAME.  */
+gpgme_error_t
+gpgme_data_set_file_name (gpgme_data_t dh, const char *file_name)
+{
+  if (!dh)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (dh->file_name)
+    free (dh->file_name);
+
+  dh->file_name = strdup (file_name);
+  if (!dh->file_name)
+    return gpg_error_from_errno (errno);
+
+  return 0;
+}
+
+/* Get the file name associated with the data object with handle DH,
+   or NULL if there is none.  */
+char *
+gpgme_data_get_file_name (gpgme_data_t dh)
+{
+  if (!dh)
+    return NULL;
+
+  return dh->file_name;
 }
 
 

@@ -952,6 +952,14 @@ gpgme_data_encoding_t gpgme_data_get_encoding (gpgme_data_t dh);
 gpgme_error_t gpgme_data_set_encoding (gpgme_data_t dh,
 				       gpgme_data_encoding_t enc);
 
+/* Get the filename associated with the data object with handle DH, or
+   NULL if there is none.  */
+char *gpgme_data_get_file_name (gpgme_data_t dh);
+
+/* Set the filename associated with the data object with handle DH to
+   FILE_NAME.  */
+gpgme_error_t gpgme_data_set_file_name (gpgme_data_t dh,
+					const char *file_name);
 
 
 /* Create a new data buffer which retrieves the data from the callback
