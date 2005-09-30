@@ -153,6 +153,11 @@ Creating Data Buffers
 * File Based Data Buffers::       Creating file based data buffers.
 * Callback Based Data Buffers::   Creating callback based data buffers.
 
+Manipulating Data Buffers
+
+* Data Buffer I/O Operations::    I/O operations on data buffers.
+* Data Buffer Meta-Data::         Meta-data manipulation of data buffers.
+
 Contexts
 
 * Creating Contexts::             Creating new @acronym{GPGME} contexts.
@@ -1716,7 +1721,24 @@ be returned to the user, the function will return @code{NULL}.
 
 @node Manipulating Data Buffers
 @section Manipulating Data Buffers
-@cindex data buffere, manipulation
+@cindex data buffer, manipulation
+
+Data buffers contain data and meta-data.  The following operations can
+be used to manipulate both.
+
+
+@menu
+* Data Buffer I/O Operations::    I/O operations on data buffers.
+* Data Buffer Meta-Data::         Meta-data manipulation of data buffers.
+@end menu
+
+
+@node Data Buffer I/O Operations
+@subsection Data Buffer I/O Operations
+@cindex data buffer, I/O operations
+@cindex data buffer, read
+@cindex data buffer, write
+@cindex data buffer, seek
 
 @deftypefun ssize_t gpgme_data_read (@w{gpgme_data_t @var{dh}}, @w{void *@var{buffer}}, @w{size_t @var{length}})
 The function @code{gpgme_data_read} reads up to @var{length} bytes
@@ -1783,9 +1805,39 @@ The function @code{gpgme_data_rewind} is equivalent to:
 @end example
 @end deftypefun
 
-@c
-@c  gpgme_data_encoding_t
-@c
+
+
+
+@node Data Buffer Meta-Data
+@subsection Data Buffer Meta-Data
+@cindex data buffer, meta-data
+@cindex data buffer, file name
+@cindex data buffer, encoding
+
+@deftypefun char *gpgme_data_get_file_name (@w{gpgme_data_t @var{dh}})
+The function @code{gpgme_data_get_file_name} returns a pointer to a
+string containing the file name associated with the data object.  The
+file name will be stored in the output when encrypting or signing the
+data and will be returned to the user when decrypting or verifying the
+output data.
+
+If no error occurs, the string containing the file name is returned.
+Otherwise, @code{NULL} will be returned.
+@end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_data_set_file_name (@w{gpgme_data_t @var{dh}}, @w{const char *@var{file_name}})
+The function @code{gpgme_data_set_file_name} sets the file name
+associated with the data object.  The file name will be stored in the
+output when encrypting or signing the data and will be returned to the
+user when decrypting or verifying the output data.
+
+The function returns the error code @code{GPG_ERR_INV_VALUE} if
+@var{dh} is not a valid pointer and @code{GPG_ERR_ENOMEM} if not
+enough memory is available.
+@end deftypefun
+
+
 @deftp {Data type} {enum gpgme_data_encoding_t}
 @tindex gpgme_data_encoding_t
 The @code{gpgme_data_encoding_t} type specifies the encoding of a

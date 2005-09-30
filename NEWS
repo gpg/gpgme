@@ -32,6 +32,11 @@ Noteworthy changes in version 1.1.0 (unreleased)
    indicates if a key can be used for qualified signatures according
    to local government regulations.
 
+ * You can associate a filename with a data object using the new
+   gpgme_data_set_filename() function.  This filename will be stored
+   in the output when encrypting or signing the data and will be
+   returned when decrypting or verifying the output data.
+
  * Interface changes relative to the 1.0.3 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_set_engine_info		NEW
@@ -40,11 +45,12 @@ gpgme_ctx_set_engine_info	NEW
 gpgme_recipient_t		NEW
 gpgme_decrypt_result_t		EXTENDED: New field recipients.
 gpgme_verify_result_t		EXTENDED: New fields pubkey_algo, hash_algo.
-gpgme_decrypt_result_t		EXTENDED: New field file_name.
-gpgme_verify_result_t		EXTENDED: New field file_name.
+gpgme_decrypt_result_t		EXTENDED: New field plaintext_filename.
+gpgme_verify_result_t		EXTENDED: New field plaintext_filename.
 GPGME_STATUS_PLAINTEXT		NEW
 gpgme_key_t			EXTENDED: New field is_qualified.
 gpgme_subkey_t			EXTENDED: New field is_qualified.
+gpgme_data_set_filename		NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

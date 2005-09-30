@@ -1,5 +1,8 @@
 2005-09-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.texi (Data Buffer I/O Operations, Data Buffer Meta-Data):
+	New subsections.
+
 	* gpgme.texi: Replace plaintext_filename with file_name.
 
 	* gpgme.texi (Key Management): Document is_qualified.

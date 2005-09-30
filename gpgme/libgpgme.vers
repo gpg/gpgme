@@ -27,6 +27,9 @@ GPGME_1.1 {
 
     gpgme_ctx_get_engine_info;
     gpgme_ctx_set_engine_info;
+
+    gpgme_data_set_file_name;
+    gpgme_data_get_file_name;
 };
 
 

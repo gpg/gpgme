@@ -77,6 +77,9 @@ struct gpgme_data
   char pending[BUFFER_SIZE];
   int pending_len;
 
+  /* File name of the data object.  */
+  char *file_name;
+
   union
   {
     /* For gpgme_data_new_from_fd.  */

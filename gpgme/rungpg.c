@@ -1339,6 +1339,13 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
     err = add_arg (gpg, "-");
   if (!err)
     err = add_data (gpg, ciph, 1, 1);
+  if (gpgme_data_get_file_name (plain))
+    {
+      if (!err)
+	err = add_arg (gpg, "--set-filename");
+      if (!err)
+	err = add_arg (gpg, gpgme_data_get_file_name (plain));
+    }
   if (!err)
     err = add_arg (gpg, "--");
   if (!err)
@@ -1384,6 +1391,13 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
     err = add_arg (gpg, "-");
   if (!err)
     err = add_data (gpg, ciph, 1, 1);
+  if (gpgme_data_get_file_name (plain))
+    {
+      if (!err)
+	err = add_arg (gpg, "--set-filename");
+      if (!err)
+	err = add_arg (gpg, gpgme_data_get_file_name (plain));
+    }
   if (!err)
     err = add_arg (gpg, "--");
   if (!err)
@@ -1594,6 +1608,14 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
   if (!err)
     err = append_args_from_signers (gpg, ctx);
+
+  if (gpgme_data_get_file_name (in))
+    {
+      if (!err)
+	err = add_arg (gpg, "--set-filename");
+      if (!err)
+	err = add_arg (gpg, gpgme_data_get_file_name (in));
+    }
 
   /* Tell the gpg object about the data.  */
   if (!err)
