@@ -2313,6 +2313,10 @@ This is true if the subkey can be used to create key certificates.
 @item unsigned int can_authenticate : 1
 This is true if the subkey can be used for authentication.
 
+@item unsigned int is_qualified : 1
+This is true if the subkey can be used for qualified signatures
+according to local government regulations.
+
 @item unsigned int secret : 1
 This is true if the subkey is a secret key.
 
@@ -2480,6 +2484,10 @@ key certificates.
 @item unsigned int can_authenticate : 1
 This is true if the key (ie one of its subkeys) can be used for
 authentication.
+
+@item unsigned int is_qualified : 1
+This is true if the key can be used for qualified signatures according
+to local government regulations.
 
 @item unsigned int secret : 1
 This is true if the key is a secret key.

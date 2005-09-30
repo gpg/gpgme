@@ -1,3 +1,7 @@
+2005-09-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Key Management): Document is_qualified.
+
 2005-07-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Decrypt): Add plaintext_filename to
