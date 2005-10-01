@@ -744,7 +744,7 @@ This specifies the Cryptographic Message Syntax.
 @end deftp
 
 
-@deftypefun const char *gpgme_get_protocol_name (@w{gpgme_protocol_t @var{protocol}})
+@deftypefun {const char *} gpgme_get_protocol_name (@w{gpgme_protocol_t @var{protocol}})
 The function @code{gpgme_get_protocol_name} returns a statically
 allocated string describing the protocol @var{protocol}, or
 @code{NULL} if the protocol number is not valid.
@@ -1815,7 +1815,7 @@ The function @code{gpgme_data_rewind} is equivalent to:
 @cindex data buffer, file name
 @cindex data buffer, encoding
 
-@deftypefun char *gpgme_data_get_file_name (@w{gpgme_data_t @var{dh}})
+@deftypefun {char *} gpgme_data_get_file_name (@w{gpgme_data_t @var{dh}})
 The function @code{gpgme_data_get_file_name} returns a pointer to a
 string containing the file name associated with the data object.  The
 file name will be stored in the output when encrypting or signing the
