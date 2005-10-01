@@ -1,0 +1,47 @@
+<html>
+<head><title>g10 code - GPGCOM test</title>
+
+<object id="gpg"
+        classid="CLSID:3811fd40-7f72-11d5-8c9e-0080ad190cd5">
+</object>
+
+<script language="VBScript">
+Sub encrypt_text
+     On error resume next
+     Dim TheForm, plain
+
+     set TheForm = Document.forms ("MyForm")
+     gpg.armor = True
+     gpg.plaintext = TheForm.clear.value
+     gpg.ClearRecipients
+     gpg.AddRecipient TheForm.recp.value
+     Err.Clear
+     gpg.Encrypt
+     if Err <> 0 then
+         TheForm.encoded.value = "Error: " & CStr(Err.Number)
+     else
+         TheForm.encoded.value = gpg.ciphertext
+     end if
+end sub
+</script>
+</head>
+<body>
+<h1>Silly Gpgcom test page</h1>
+
+<form id="MyForm">
+<textarea name="clear" rows = 3 cols=40>Please enter the text here</textarea>
+<p>
+Encrypt for <input name="recp" value="alice">
+<input type="button" name="MyAction" value="Encrypt" 
+       language="VBScript" onclick="encrypt_text()">
+<p>
+<textarea name="encoded" rows=10 cols=75></textarea>
+</form>
+
+<p>
+
+</body>
+</html>     
+
+
+

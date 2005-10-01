@@ -1,0 +1,22 @@
+2004-12-28  Werner Koch  <wk@g10code.com>
+
+	* pth.m4: Changed quoting for use with automake 1.9.
+
+2004-09-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pth.m4: Disable _ac_pth_line, and don't fail if Pth is not
+	found.
+	
+	* glibc21.m4: New file.
+	* gpg-error.m4: New file.
+	* pth.m4: New file.
+
+ Copyright 2004 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
