@@ -32,10 +32,10 @@ TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers	\
 	t-file-name
 
 CLEANFILES = secring.gpg pubring.gpg trustdb.gpg
-DISTCLEANFILES = pubring.gpg~ random_seed
+DISTCLEANFILES = pubring.gpg~ random_seed gpg.conf
 
 EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
-	geheim.txt pubkey-1.asc seckey-1.asc gpg.conf
+	geheim.txt pubkey-1.asc seckey-1.asc
 
 INCLUDES = -I$(top_srcdir)/gpgme
 
@@ -49,11 +49,16 @@ noinst_PROGRAMS = $(TESTS) t-genkey
 clean-local:
 	$(srcdir)/mkdemodirs --clean
 
-all-local: ./pubring.gpg
+all-local: ./pubring.gpg ./gpg.conf
 
 ./pubring.gpg: $(srcdir)/pubdemo.asc ./Alpha/Secret.gpg 
 	$(GPG) --homedir . --import $(srcdir)/pubdemo.asc
-	$(GPG) --homedir . --allow-secret-key-import --import Alpha/Secret.gpg Zulu/Secret.gpg
+	$(GPG) --homedir . --allow-secret-key-import \
+		--import Alpha/Secret.gpg Zulu/Secret.gpg
 
 ./Alpha/Secret.gpg: secdemo.asc 
 	srcdir=$(srcdir) $(srcdir)/mkdemodirs 
+
+./gpg.conf:
+# This is required for t-sig-notations.
+	echo no-force-v3-sigs > ./gpg.conf
