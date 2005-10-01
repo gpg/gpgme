@@ -1,5 +1,11 @@
 2005-10-01  Marcus Brinkmann  <marcus@g10code.de>
 
+	* assuan.h (assuan_pipe_connect, assuan_pipe_connect2): Make type
+	of ARGV parameter const in prototype.
+	* assuan-pipe-connect.c (assuan_pipe_connect,
+	assuan_pipe_connect2): Likewise in declaration.
+	(assuan_pipe_connect2): Add braindead cast to make execv happy.
+
 	* assuan-client.c (assuan_transact): Change LINE, S and D from
 	unsigned char * to char * to silence gcc warning.
 	* assuan-util.c (_assuan_log_sanitized_string): Add explicit cast

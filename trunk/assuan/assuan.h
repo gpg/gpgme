@@ -365,9 +365,11 @@ int assuan_init_connected_socket_server (assuan_context_t *r_ctx, int fd);
 
 /*-- assuan-pipe-connect.c --*/
 assuan_error_t assuan_pipe_connect (assuan_context_t *ctx, const char *name,
-                                 char *const argv[], int *fd_child_list);
+				    const char *const argv[],
+				    int *fd_child_list);
 assuan_error_t assuan_pipe_connect2 (assuan_context_t *ctx, const char *name,
-                                     char *const argv[], int *fd_child_list,
+                                     const char *const argv[],
+				     int *fd_child_list,
                                      void (*atfork) (void*, int),
                                      void *atforkvalue);
 /*-- assuan-socket-connect.c --*/

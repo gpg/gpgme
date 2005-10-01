@@ -1,5 +1,5 @@
 /* assuan-pipe-connect.c - Establish a pipe connection (client) 
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -245,7 +245,7 @@ create_inheritable_pipe (int filedes[2], int for_write)
    function should only act if the second value is 0. */
 assuan_error_t
 assuan_pipe_connect2 (assuan_context_t *ctx,
-                      const char *name, char *const argv[],
+                      const char *name, const char *const argv[],
                       int *fd_child_list,
                       void (*atfork) (void *opaque, int reserved),
                       void *atforkvalue)
@@ -554,7 +554,7 @@ assuan_pipe_connect2 (assuan_context_t *ctx,
              initialized. */
           setenv ("_assuan_pipe_connect_pid", mypidstr, 1);
 
-          execv (name, argv); 
+          execv (name, (char *const *) argv); 
           /* oops - use the pipe to tell the parent about it */
           snprintf (errbuf, sizeof(errbuf)-1,
                     "ERR %d can't exec `%s': %.50s\n",
@@ -612,8 +612,8 @@ assuan_pipe_connect2 (assuan_context_t *ctx,
    vector in ARGV.  FD_CHILD_LIST is a -1 terminated list of file
    descriptors not to close in the child.  */
 assuan_error_t
-assuan_pipe_connect (assuan_context_t *ctx, const char *name, char *const argv[],
-		     int *fd_child_list)
+assuan_pipe_connect (assuan_context_t *ctx, const char *name,
+		     const char *const argv[], int *fd_child_list)
 {
   return assuan_pipe_connect2 (ctx, name, argv, fd_child_list, NULL, NULL);
 }
