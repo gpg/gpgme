@@ -21,7 +21,7 @@ This is Edition @value{EDITION}, last updated @value{UPDATED}, of
 @value{VERSION}.
 
 @c NOTE: Don't forget to update the year for the TeX version, too.
-Copyright @copyright{} 2002, 2003, 2004 g10 Code GmbH.
+Copyright @copyright{} 2002, 2003, 2004, 2005 g10 Code GmbH.
 
 The GPGME reference manual is free software; you can redistribute it
 and/or modify it under the terms of the GNU Lesser General Public
@@ -54,7 +54,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 @center for version @value{VERSION}
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 2002, 2003, 2004 g10 Code GmbH.
+Copyright @copyright{} 2002, 2003, 2004, 2005 g10 Code GmbH.
 
 
 The GPGME reference manual is free software; you can redistribute it
