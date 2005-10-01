@@ -42,6 +42,13 @@ gpgme_error_t _gpgme_engine_info_copy (gpgme_engine_info_t *r_info);
 /* Release the engine info INFO.  */
 void _gpgme_engine_info_release (gpgme_engine_info_t info);
 
+/* Set the engine info for the info list INFO, protocol PROTO, to the
+   file name FILE_NAME and the home directory HOME_DIR.  */
+gpgme_error_t _gpgme_set_engine_info (gpgme_engine_info_t info,
+				      gpgme_protocol_t praoto,
+				      const char *file_name,
+				      const char *home_dir);
+
 
 gpgme_error_t _gpgme_engine_new (gpgme_engine_info_t info,
 				 engine_t *r_engine,

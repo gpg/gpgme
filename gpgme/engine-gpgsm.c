@@ -85,7 +85,7 @@ struct engine_gpgsm
     void *fnc_value;
     struct
     {
-      unsigned char *line;
+      char *line;
       int linesize;
       int linelen;
     } attic;
@@ -320,7 +320,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 {
   gpgme_error_t err = 0;
   engine_gpgsm_t gpgsm;
-  char *argv[5];
+  const char *argv[5];
   int argc;
   int fds[2];
   int child_fds[4];
@@ -749,17 +749,16 @@ status_handler (void *opaque, int fd)
           /* FIXME We can't use this for binary data because we
              assume this is a string.  For the current usage of colon
              output it is correct.  */
-          unsigned char *src = line + 2;
-	  unsigned char *end = line + linelen;
-	  unsigned char *dst;
-          unsigned char **aline = &gpgsm->colon.attic.line;
+          char *src = line + 2;
+	  char *end = line + linelen;
+	  char *dst;
+          char **aline = &gpgsm->colon.attic.line;
 	  int *alinelen = &gpgsm->colon.attic.linelen;
 
 	  if (gpgsm->colon.attic.linesize
 	      < *alinelen + linelen + 1)
 	    {
-	      unsigned char *newline = realloc (*aline,
-						*alinelen + linelen + 1);
+	      char *newline = realloc (*aline, *alinelen + linelen + 1);
 	      if (!newline)
 		err = gpg_error_from_errno (errno);
 	      else
@@ -778,7 +777,7 @@ status_handler (void *opaque, int fd)
 		    {
 		      /* Handle escaped characters.  */
 		      ++src;
-		      *dst = (unsigned char) _gpgme_hextobyte (src);
+		      *dst = _gpgme_hextobyte (src);
 		      (*alinelen)++;
 		      src += 2;
 		    }

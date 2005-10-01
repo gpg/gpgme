@@ -33,7 +33,7 @@ struct engine_ops
   /* Static functions.  */
 
   /* Return the default file name for the binary of this engine.  */
-  char *(*get_file_name) (void);
+  const char *(*get_file_name) (void);
 
   /* Returns a malloced string containing the version of the engine
      with the given binary file name (or the default if FILE_NAME is
