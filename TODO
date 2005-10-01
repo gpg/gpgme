@@ -4,6 +4,7 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Some gpg tests fail with gpg 1.3.4-cvs (gpg/t-keylist-sig)
    The test is currently disabled there and in gpg/t-import.
 ** Add notation data to key signatures.
+** In gpgme.texi: Register callbacks under the right letter in the index.
 
 * ABI's to break:
 ** gpgme_edit_cb_t: Add "processed" return argument
