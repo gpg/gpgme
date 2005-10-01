@@ -1,5 +1,7 @@
 2005-10-01  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/Makefile.am (EXTRA_DIST): Add gpg.conf.
+
 	* gpg/Makefile.am (TESTS): Add t-sig-notation.
 	* gpg/t-sig-notation.c (check_result): New file.
 	* gpg/t-verify.c (check_result): Also check the length of the

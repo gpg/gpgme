@@ -35,7 +35,7 @@ CLEANFILES = secring.gpg pubring.gpg trustdb.gpg
 DISTCLEANFILES = pubring.gpg~ random_seed
 
 EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
-	geheim.txt pubkey-1.asc seckey-1.asc
+	geheim.txt pubkey-1.asc seckey-1.asc gpg.conf
 
 INCLUDES = -I$(top_srcdir)/gpgme
 
