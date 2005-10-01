@@ -33,7 +33,7 @@ Noteworthy changes in version 1.1.0 (2005-10-01)
    to local government regulations.
 
  * You can associate a filename with a data object using the new
-   function gpgme_data_set_filename().  This filename will be stored
+   function gpgme_data_set_file_name().  This filename will be stored
    in the output when encrypting or signing the data and will be
    returned when decrypting or verifying the output data.
 
@@ -53,7 +53,8 @@ gpgme_verify_result_t		EXTENDED: New field plaintext_filename.
 GPGME_STATUS_PLAINTEXT		NEW
 gpgme_key_t			EXTENDED: New field is_qualified.
 gpgme_subkey_t			EXTENDED: New field is_qualified.
-gpgme_data_set_filename		NEW
+gpgme_data_get_file_name	NEW
+gpgme_data_set_file_name	NEW
 gpgme_sig_notation_flags_t	NEW
 GPGME_SIG_NOTATION_HUMAN_READABLE NEW
 GPGME_SIG_NOTATAION_CRITICAL	NEW
