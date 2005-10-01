@@ -1,5 +1,5 @@
 # libgpgme.vers - List of symbols to export.
-# Copyright (C) 2002, 2004 g10 Code GmbH
+# Copyright (C) 2002, 2004, 2005 g10 Code GmbH
 #
 # This file is part of GPGME.
 #
@@ -30,6 +30,10 @@ GPGME_1.1 {
 
     gpgme_data_set_file_name;
     gpgme_data_get_file_name;
+
+    gpgme_sig_notation_clear;
+    gpgme_sig_notation_add;
+    gpgme_sig_notation_get;
 };
 
 

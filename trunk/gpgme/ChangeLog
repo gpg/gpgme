@@ -1,3 +1,26 @@
+2005-10-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.def: Add gpgme_data_set_file_name,
+	gpgme_data_get_file_name, gpgme_sig_notation_clear,
+	gpgme_sig_notation_add and gpgme_sig_notation_get.
+	* libgpgme.vers: Add gpgme_sig_notation_clear,
+	gpgme_sig_notation_add and gpgme_sig_notation_get.
+	* Makefile.am (libgpgme_real_la_SOURCES): Add sig-notation.c.
+	* context.h (struct gpgme_context): New field sig_notations.
+	* gpgme.h (struct _gpgme_sig_notation): New member value_len and
+	critical.
+	(GPGME_SIG_NOTATION_CRITICAL): New symbol.
+	(gpgme_sig_notation_flags_t): New type.
+	(gpgme_sig_notation_add, gpgme_sig_notation_clear,
+	gpgme_sig_notation_get): New prototypes.
+	* ops.h (_gpgme_sig_notation_create, _gpgme_sig_notation_free):
+	New prototypes.
+	* sig-notation.c (_gpgme_sig_notation_free): New file.
+	* verify.c (parse_notation): Use support functions.
+	(release_op_data): Likewise.
+	* rungpg.c (append_args_from_sig_notations): New function.
+	(gpg_encrypt_sign, gpg_sign): Call it.
+
 2005-09-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* data.h (struct gpgme_data): New member file_name.

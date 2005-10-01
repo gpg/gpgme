@@ -1256,6 +1256,91 @@ append_args_from_signers (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 
 
 static gpgme_error_t
+append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
+{
+  gpgme_error_t err = 0;
+  gpgme_sig_notation_t notation;
+
+  notation = gpgme_sig_notation_get (ctx);
+
+  while (!err && notation)
+    {
+      if (notation->name
+	  && !(notation->flags & GPGME_SIG_NOTATION_HUMAN_READABLE))
+	err = gpg_error (GPG_ERR_INV_VALUE);
+      else if (notation->name)
+	{
+	  char *arg;
+
+	  /* Maximum space needed is one byte for the "critical" flag,
+	     the name, one byte for '=', the value, and a terminating
+	     '\0'.  */
+
+	  arg = malloc (1 + notation->name_len + 1 + notation->value_len + 1);
+	  if (!arg)
+	    err = gpg_error_from_errno (errno);
+
+	  if (!err)
+	    {
+	      char *argp = arg;
+
+	      if (notation->critical)
+		*(argp++) = '!';
+
+	      memcpy (argp, notation->name, notation->name_len);
+	      argp += notation->name_len;
+
+	      *(argp++) = '=';
+
+	      /* We know that notation->name is '\0' terminated.  */
+	      strcpy (argp, notation->value);
+	    }
+
+	  if (!err)
+	    err = add_arg (gpg, "--sig-notation");
+	  if (!err)
+	    err = add_arg (gpg, arg);
+
+	  if (arg)
+	    free (arg);
+	}
+      else
+	{
+	  /* This is a policy URL.  */
+
+	  char *value;
+
+	  if (notation->critical)
+	    {
+	      value = malloc (1 + notation->value_len + 1);
+	      if (!value)
+		err = gpg_error_from_errno (errno);
+	      else
+		{
+		  value[0] = '!';
+		  /* We know that notation->value is '\0' terminated.  */
+		  strcpy (&value[1], notation->value);
+		}
+	    }
+	  else
+	    value = notation->value;
+
+	  if (!err)
+	    err = add_arg (gpg, "--sig-policy-url");
+	  if (!err)
+	    err = add_arg (gpg, value);
+
+	  if (value != notation->value)
+	    free (value);
+      	}
+
+      notation = notation->next;
+    }
+  return err;
+}
+
+
+static gpgme_error_t
 gpg_edit (void *engine, int type, gpgme_key_t key, gpgme_data_t out,
 	  gpgme_ctx_t ctx /* FIXME */)
 {
@@ -1383,6 +1468,8 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
 
   if (!err)
     err = append_args_from_signers (gpg, ctx);
+  if (!err)
+    err = append_args_from_sig_notations (gpg, ctx);
 
   /* Tell the gpg object about the data.  */
   if (!err)
@@ -1608,6 +1695,8 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
   if (!err)
     err = append_args_from_signers (gpg, ctx);
+  if (!err)
+    err = append_args_from_sig_notations (gpg, ctx);
 
   if (gpgme_data_get_file_name (in))
     {

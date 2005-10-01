@@ -1,6 +1,6 @@
 /* gpgme.h - Public interface to GnuPG Made Easy.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -311,6 +311,46 @@ gpgme_protocol_t;
 #define GPGME_KEYLIST_MODE_VALIDATE	256
 
 typedef unsigned int gpgme_keylist_mode_t;
+
+
+/* Signature notations.  */
+
+/* The available signature notation flags.  */
+#define GPGME_SIG_NOTATION_HUMAN_READABLE	1
+#define GPGME_SIG_NOTATION_CRITICAL		2
+
+typedef unsigned int gpgme_sig_notation_flags_t;
+
+struct _gpgme_sig_notation
+{
+  struct _gpgme_sig_notation *next;
+
+  /* If NAME is a null pointer, then VALUE contains a policy URL
+     rather than a notation.  */
+  char *name;
+
+  /* The value of the notation data.  */
+  char *value;
+
+  /* The length of the name of the notation data.  */
+  int name_len;
+
+  /* The length of the value of the notation data.  */
+  int value_len;
+
+  /* The accumulated flags.  */
+  gpgme_sig_notation_flags_t flags;
+
+  /* Notation data is human-readable.  */
+  unsigned int human_readable : 1;
+
+  /* Notation data is critical.  */
+  unsigned int critical : 1;
+
+  /* Internal to GPGME, do not use.  */
+  int _unused : 30;
+};
+typedef struct _gpgme_sig_notation *gpgme_sig_notation_t;
 
 
 /* The possible stati for the edit operation.  */
@@ -819,6 +859,22 @@ gpgme_error_t gpgme_get_sig_key (gpgme_ctx_t ctx, int idx, gpgme_key_t *r_key)
      _GPGME_DEPRECATED;
 
 
+/* Clear all notation data from the context.  */
+void gpgme_sig_notation_clear (gpgme_ctx_t ctx);
+
+/* Add the human-readable notation data with name NAME and value VALUE
+   to the context CTX, using the flags FLAGS.  If NAME is NULL, then
+   VALUE should be a policy URL.  The flag
+   GPGME_SIG_NOTATION_HUMAN_READABLE is forced to be true for notation
+   data, and false for policy URLs.  */
+gpgme_error_t gpgme_sig_notation_add (gpgme_ctx_t ctx, const char *name,
+				      const char *value,
+				      gpgme_sig_notation_flags_t flags);
+
+/* Get the sig notations for this context.  */
+gpgme_sig_notation_t gpgme_sig_notation_get (gpgme_ctx_t ctx);
+
+
 /* Run control.  */
 
 /* The type of an I/O callback function.  */
@@ -1209,16 +1265,6 @@ gpgme_error_t gpgme_op_sign (gpgme_ctx_t ctx,
 
 
 /* Verify.  */
-struct _gpgme_sig_notation
-{
-  struct _gpgme_sig_notation *next;
-
-  /* If NAME is a null pointer, then VALUE contains a policy URL
-     rather than a notation.  */
-  char *name;
-  char *value;
-};
-typedef struct _gpgme_sig_notation *gpgme_sig_notation_t;
 
 /* Flags used for the SUMMARY field in a gpgme_signature_t.  */
 typedef enum

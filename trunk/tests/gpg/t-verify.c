@@ -136,10 +136,14 @@ check_result (gpgme_verify_result_t result, unsigned int summary, char *fpr,
           for (i=0; i < DIM(expected_notations); i++)
             {
               if ( ((r->name && expected_notations[i].name
-                     && !strcmp (r->name, expected_notations[i].name))
-                    || (!r->name && !expected_notations[i].name))
+                     && !strcmp (r->name, expected_notations[i].name)
+		     && r->name_len
+		     == strlen (expected_notations[i].name))
+                    || (!r->name && !expected_notations[i].name
+			&& r->name_len == 0))
                    && r->value
-                   && !strcmp (r->value, expected_notations[i].value))
+                   && !strcmp (r->value, expected_notations[i].value)
+		   && r->value_len == strlen (expected_notations[i].value))
                 {
                   expected_notations[i].seen++;
                   any++;
