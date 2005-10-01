@@ -1,5 +1,5 @@
 /* assuan-client.c - client functions
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -137,7 +137,7 @@ assuan_transact (ASSUAN_CONTEXT ctx,
                  void *status_cb_arg)
 {
   int rc, okay, off;
-  unsigned char *line;
+  char *line;
   int linelen;
 
   rc = assuan_write_line (ctx, command);
@@ -167,7 +167,7 @@ assuan_transact (ASSUAN_CONTEXT ctx,
         rc = ASSUAN_No_Data_Callback;
       else 
         {
-          unsigned char *s, *d;
+          char *s, *d;
 
           for (s=d=line; linelen; linelen--)
             {
