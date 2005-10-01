@@ -1,5 +1,5 @@
 /* assuan-inquire.c - handle inquire stuff
- *	Copyright (C) 2001, 2002, 2003  Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003, 2005  Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -173,7 +173,7 @@ assuan_inquire (assuan_context_t ctx, const char *keyword,
           rc = _assuan_read_line (ctx);
           if (rc)
             goto leave;
-          line = ctx->inbound.line;
+          line = (unsigned char *) ctx->inbound.line;
           linelen = ctx->inbound.linelen;
         }    
       while (*line == '#' || !linelen);
