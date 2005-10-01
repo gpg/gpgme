@@ -1,6 +1,6 @@
 /* verify.c - Signature verification.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -58,10 +58,7 @@ release_op_data (void *hook)
 	{
 	  gpgme_sig_notation_t next_nota = notation->next;
 
-	  if (notation->name)
-	    free (notation->name);
-	  if (notation->value)
-	    free (notation->value);
+	  _gpgme_sig_notation_free (notation);
 	  notation = next_nota;
 	}
 
@@ -431,51 +428,39 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	   previous one.  The crypto backend misbehaves.  */
 	return gpg_error (GPG_ERR_INV_ENGINE);
 
-      notation = malloc (sizeof (*sig));
-      if (!notation)
-	return gpg_error_from_errno (errno);
-      notation->next = NULL;
+      err = _gpgme_sig_notation_create (&notation, NULL, 0, NULL, 0, 0);
+      if (err)
+	return err;
 
       if (code == GPGME_STATUS_NOTATION_NAME)
 	{
-	  int len = strlen (args) + 1;
-
-	  notation->name = malloc (len);
-	  if (!notation->name)
-	    {
-	      int saved_errno = errno;
-	      free (notation);
-	      return gpg_error_from_errno (saved_errno);
-	    }
-	  err = _gpgme_decode_percent_string (args, &notation->name, len);
+	  err = _gpgme_decode_percent_string (args, &notation->name, 0);
 	  if (err)
 	    {
-	      free (notation->name);
-	      free (notation);
+	      _gpgme_sig_notation_free (notation);
 	      return err;
 	    }
 
-	  notation->value = NULL;
+	  notation->name_len = strlen (notation->name);
+
+	  /* FIXME: For now we fake the human-readable flag.  The
+	     critical flag can not be reported as it is not
+	     provided.  */
+	  notation->flags = GPGME_SIG_NOTATION_HUMAN_READABLE;
+	  notation->human_readable = 1;
 	}
       else
 	{
-	  int len = strlen (args) + 1;
+	  /* This is a policy URL.  */
 
-	  notation->name = NULL;
-	  notation->value = malloc (len);
-	  if (!notation->value)
-	    {
-	      int saved_errno = errno;
-	      free (notation);
-	      return gpg_error_from_errno (saved_errno);
-	    }
-	  err = _gpgme_decode_percent_string (args, &notation->value, len);
+	  err = _gpgme_decode_percent_string (args, &notation->value, 0);
 	  if (err)
 	    {
-	      free (notation->value);
-	      free (notation);
+	      _gpgme_sig_notation_free (notation);
 	      return err;
 	    }
+
+	  notation->value_len = strlen (notation->value);
 	}
       *lastp = notation;
     }
@@ -515,6 +500,8 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
       err = _gpgme_decode_percent_string (args, &dest, len);
       if (err)
 	return err;
+
+      notation->value_len += strlen (dest);
     }
   else
     return gpg_error (GPG_ERR_INV_ENGINE);

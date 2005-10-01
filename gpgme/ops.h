@@ -1,6 +1,6 @@
 /* ops.h - Internal operation support.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -138,11 +138,26 @@ void _gpgme_op_trustlist_event_cb (void *data, gpgme_event_io_t type,
 				   void *type_data);
 
 
-/*-- version.c --*/
+/* From version.c.  */
+
 /* Return true if MY_VERSION is at least REQ_VERSION, and false
    otherwise.  */
 int _gpgme_compare_versions (const char *my_version,
 			     const char *req_version);
 char *_gpgme_get_program_version (const char *const path);
+
+
+/* From sig-notation.c.  */
+
+/* Create a new, empty signature notation data object.  */
+gpgme_error_t _gpgme_sig_notation_create (gpgme_sig_notation_t *notationp,
+					  const char *name, int name_len,
+					  const char *value, int value_len,
+					  gpgme_sig_notation_flags_t flags);
+
+/* Free the signature notation object and all associated resources.
+   The object must already be removed from any linked list as the next
+   pointer is ignored.  */
+void _gpgme_sig_notation_free (gpgme_sig_notation_t notation);
 
 #endif /* OPS_H */

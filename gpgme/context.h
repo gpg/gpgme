@@ -1,6 +1,6 @@
 /* context.h - Definitions for a GPGME context.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -90,6 +90,9 @@ struct gpgme_context
   /* Size of the following array.  */
   unsigned int signers_size;
   gpgme_key_t *signers;
+
+  /* The signature notations for this context.  */
+  gpgme_sig_notation_t sig_notations;
 
   /* The locale for the pinentry.  */
   char *lc_ctype;

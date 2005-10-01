@@ -72,7 +72,7 @@ libgpgme_real_la_SOURCES =						\
 	gpgme.h util.h conversion.c get-env.c context.h ops.h		\
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
 	data-compat.c							\
-	signers.c							\
+	signers.c sig-notation.c					\
 	wait.c wait-global.c wait-private.c wait-user.c wait.h		\
 	op-support.c							\
 	encrypt.c encrypt-sign.c decrypt.c decrypt-verify.c verify.c	\

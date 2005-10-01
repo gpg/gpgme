@@ -37,6 +37,8 @@ Hey Emacs, this is -*- outline -*- mode!
    There is a configure time warning, though.
 
 * New features:
+** Extended notation support.  When gpg supports arbitrary binary
+   notation data, provide a user interface for that.
 ** notification system
    We need a simple notification system, probably a simple callback
    with a string and some optional arguments.  This is for example

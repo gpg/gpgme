@@ -209,6 +209,7 @@ Sign
 
 * Selecting Signers::             How to choose the keys to sign with.
 * Creating a Signature::          How to create a signature.
+* Signature Notation Data::       How to add notation data to a signature.
 
 Encrypt
 
@@ -3753,6 +3754,8 @@ the context.
 @cindex signature, verification
 @cindex cryptographic operation, verification
 @cindex cryptographic operation, signature check
+@cindex signature notation data
+@cindex notation data
 
 @deftypefun gpgme_error_t gpgme_op_verify (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{sig}}, @w{gpgme_data_t @var{signed_text}}, @w{gpgme_data_t @var{plain}})
 The function @code{gpgme_op_verify} verifies that the signature in the
@@ -3801,9 +3804,45 @@ linked list, or @code{NULL} if this is the last element.
 The name of the notation field.  If this is @code{NULL}, then the
 member @code{value} will contain a policy URL.
 
+@item int name_len
+The length of the @code{name} field.  For strings the length is
+counted without the trailing binary zero.
+
 @item char *value
 The value of the notation field.  If @code{name} is @code{NULL}, then
 this is a policy URL.
+
+@item int value_len
+The length of the @code{value} field.  For strings the length is
+counted without the trailing binary zero.
+
+@item gpgme_sig_notation_flags_t flags
+The accumulated flags field.  This field contains the flags associated
+with the notation data in an accumulated form which can be used as an
+argument to the function @code{gpgme_sig_notation_add}.  The value
+@code{flags} is a bitwise-or combination of one or multiple of the
+following bit values:
+
+@table @code
+@item GPGME_SIG_NOTATION_HUMAN_READABLE
+The @code{GPGME_SIG_NOTATION_HUMAN_READABLE} symbol specifies that the
+notation data is in human readable form
+
+@item GPGME_SIG_NOTATION_CRITICAL
+The @code{GPGME_SIG_NOTATION_CRITICAL} symbol specifies that the
+notation data is critical.
+
+@end table
+
+@item unsigned int human_readable : 1
+This is true if the @code{GPGME_SIG_NOTATION_HUMAN_READABLE} flag is
+set and false otherwise.  This flag is only valid for notation data,
+not for policy URLs.
+
+@item unsigned int critical : 1
+This is true if the @code{GPGME_SIG_NOTATION_CRITICAL} flag is set and
+false otherwise.  This flag is valid for notation data and policy URLs.
+
 @end table
 @end deftp
 
@@ -4258,6 +4297,7 @@ set is changed).
 @menu
 * Selecting Signers::             How to choose the keys to sign with.
 * Creating a Signature::          How to create a signature.
+* Signature Notation Data::       How to add notation data to a signature.
 @end menu
 
 
@@ -4403,6 +4443,58 @@ last operation on the context was a @code{gpgme_op_sign},
 failed, the function might return a @code{NULL} pointer, The returned
 pointer is only valid until the next operation is started on the
 context.
+@end deftypefun
+
+
+@node Signature Notation Data
+@subsubsection Signature Notation Data
+@cindex notation data
+@cindex signature notation data
+@cindex policy URL
+
+Using the following functions, you can attach arbitrary notation data
+to a signature.  This information is then available to the user when
+the signature is verified.
+
+@deftypefun void gpgme_sig_notation_clear (@w{gpgme_ctx_t @var{ctx}})
+The function @code{gpgme_sig_notation_clear} removes the notation data
+from the context @var{ctx}.  Subsequent signing operations from this
+context will not include any notation data.
+
+Every context starts with an empty notation data list.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_sig_notation_add (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{name}}, @w{const char *@var{value}}, @w{gpgme_sig_notation_flags_t @var{flags}})
+The function @code{gpgme_sig_notation_add} adds the notation data with
+the name @var{name} and the value @var{value} to the context
+@var{ctx}.
+
+Subsequent signing operations will include this notation data, as well
+as any other notation data that was added since the creation of the
+context or the last @code{gpgme_sig_notation_clear} operation.
+
+The arguments @var{name} and @var{value} must be @code{NUL}-terminated
+strings in human-readable form.  The flag
+@code{GPGME_SIG_NOTATION_HUMAN_READABLE} is implied
+(non-human-readable notation data is currently not supported).  The
+strings must be in UTF-8 encoding.
+
+If @var{name} is @code{NULL}, then @var{value} should be a policy URL.
+
+The function @code{gpgme_sig_notation_add} returns the error code
+@code{GPG_ERR_NO_ERROR} if the notation data could be added
+successfully, @code{GPG_ERR_INV_VALUE} if @var{ctx} is not a valid
+pointer, or if @var{name}, @var{value} and @var{flags} are an invalid
+combination.  The function also passes through any errors that are
+reported by the crypto engine support routines.
+@end deftypefun
+
+@deftypefun gpgme_sig_notation_t gpgme_sig_notation_get (@w{const gpgme_ctx_t @var{ctx}})
+The function @code{gpgme_sig_notation_get} returns the linked list of
+notation data structures that are contained in the context @var{ctx}.
+
+If @var{ctx} is not a valid pointer, or there is no notation data
+added for this context, @code{NULL} is returned.
 @end deftypefun
 
 

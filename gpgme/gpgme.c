@@ -430,6 +430,71 @@ gpgme_ctx_set_engine_info (gpgme_ctx_t ctx, gpgme_protocol_t proto,
 }
 
 
+/* Clear all notation data from the context.  */
+void
+gpgme_sig_notation_clear (gpgme_ctx_t ctx)
+{
+  gpgme_sig_notation_t notation;
+
+  if (!ctx)
+    return;
+
+  notation = ctx->sig_notations;
+  while (notation)
+    {
+      gpgme_sig_notation_t next_notation = notation->next;
+      _gpgme_sig_notation_free (notation);
+      notation = next_notation;
+    }
+}
+
+
+/* Add the human-readable notation data with name NAME and value VALUE
+   to the context CTX, using the flags FLAGS.  If NAME is NULL, then
+   VALUE should be a policy URL.  The flag
+   GPGME_SIG_NOTATION_HUMAN_READABLE is forced to be true for notation
+   data, and false for policy URLs.  */
+gpgme_error_t
+gpgme_sig_notation_add (gpgme_ctx_t ctx, const char *name,
+			const char *value, gpgme_sig_notation_flags_t flags)
+{
+  gpgme_error_t err;
+  gpgme_sig_notation_t notation;
+  gpgme_sig_notation_t *lastp;
+
+  if (!ctx)
+     gpg_error (GPG_ERR_INV_VALUE);
+
+  if (name)
+    flags |= GPGME_SIG_NOTATION_HUMAN_READABLE;
+  else
+    flags &= ~GPGME_SIG_NOTATION_HUMAN_READABLE;
+
+  err = _gpgme_sig_notation_create (&notation, name, name ? strlen (name) : 0,
+				    value, value ? strlen (value) : 0, flags);
+  if (err)
+    return err;
+
+  lastp = &ctx->sig_notations;
+  while (*lastp)
+    lastp = &(*lastp)->next;
+
+  *lastp = notation;
+  return 0;
+}
+
+
+/* Get the sig notations for this context.  */
+gpgme_sig_notation_t
+gpgme_sig_notation_get (gpgme_ctx_t ctx)
+{
+  if (!ctx)
+    return NULL;
+
+  return ctx->sig_notations;
+}
+  
+
 const char *
 gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo)
 {

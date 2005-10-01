@@ -144,5 +144,12 @@ EXPORTS
     gpgme_ctx_get_engine_info             @113 
     gpgme_ctx_set_engine_info             @114
 
+    gpgme_data_set_file_name		  @115
+    gpgme_data_get_file_name		  @116
+
+    gpgme_sig_notation_clear		  @117
+    gpgme_sig_notation_add		  @118
+    gpgme_sig_notation_get		  @119
+
 ; END
 
