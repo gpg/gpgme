@@ -60,7 +60,7 @@ DEFINE_STATIC_LOCK (engine_info_lock);
 
 
 /* Get the file name of the engine for PROTOCOL.  */
-static char *
+static const char *
 engine_get_file_name (gpgme_protocol_t proto)
 {
   if (proto > DIM (engine_ops))
@@ -155,12 +155,13 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 
       for (proto = 0; proto < DIM (proto_list); proto++)
 	{
-	  char *file_name = engine_get_file_name (proto_list[proto]);
+	  const char *ofile_name = engine_get_file_name (proto_list[proto]);
+	  char *file_name;
 
-	  if (!file_name)
+	  if (!ofile_name)
 	    continue;
 
-	  file_name = strdup (file_name);
+	  file_name = strdup (ofile_name);
 
 	  *lastp = malloc (sizeof (*engine_info));
 	  if (!*lastp || !file_name)
@@ -304,9 +305,9 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
     new_file_name = strdup (file_name);
   else
     {
-      new_file_name = engine_get_file_name (proto);
-      assert (new_file_name);
-      new_file_name = strdup (new_file_name);
+      const char *ofile_name = engine_get_file_name (proto);
+      assert (ofile_name);
+      new_file_name = strdup (ofile_name);
     }
   if (!new_file_name)
     return gpg_error_from_errno (errno);

@@ -1,5 +1,19 @@
 2005-10-01  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine.h (_gpgme_set_engine_info): Add prototype.
+	* engine-backend.h (struct engine_ops): Change return type of
+	get_file_name() to const char * to silence gcc warning.
+	* engine.c (engine_get_file_name): Change return type to const
+	char * to silence gcc warning.
+	(gpgme_get_engine_info): Use transitional variable to go from
+	const char * to char * to silence gcc warning.
+	(_gpgme_set_engine_info): Likewise.
+	* engine-gpgsm.c (struct engine_gpgsm): Change type of LINE to
+	char * to silence gcc warning.
+	(gpgsm_new): Make ARGV a pointer to const char.
+	(status_handler): Change type of SRC, END, DST, ALINE and NEWLINE
+	to char * to silence gcc warning.
+
 	* gpgme.def: Add gpgme_data_set_file_name,
 	gpgme_data_get_file_name, gpgme_sig_notation_clear,
 	gpgme_sig_notation_add and gpgme_sig_notation_get.
