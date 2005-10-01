@@ -49,20 +49,22 @@ Hey Emacs, this is -*- outline -*- mode!
    This might be integrated with import. we still need to work out how
    to learn a card when gpg and gpgsm have support for smartcards.
 ** Might need a stat() for data objects and use it for length param to gpg.
-** Allow to export secret keys.
 ** Implement support for photo ids.
+** Allow selection of subkeys
+** Allow to return time stamps in ISO format
+  This allows us to handle years later than 2037 properly.  With the
+  time_t interface they are all mapped to 2037-12-31
 ** New features requested by our dear users, but rejected or left for
    later consideration:
+*** Allow to export secret keys.
+    Rejected because this is conceptually flawed.  Secret keys on a
+    smart card can not be exported, for example.
 *** Selecting the key ring, setting the version or comment in output.
     Rejected because the naive implementation is engine specific, the
     configuration is part of the engine's configuration or readily
     worked around in a different way
 *** Selecting the symmetric cipher.
 *** Exchanging keys with key servers.
-** Allow selection of subkeys
-** Allow to return time stamps in ISO format
-  This allows us to handle years later than 2037 properly.  With the
-  time_t interface they are all mapped to 2037-12-31
 
 * Documentation
 ** Document validity and trust issues.
@@ -100,19 +102,6 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Return ENC_TO output in verify result.  Again, this is not available
    for gpgsm.
 ** Genkey should return something more useful than General_Error.
-** Decrypt:
-   On Fri, Jun 27, 2003 at 06:28:23PM +0200, Heiko Abraham wrote:
-   > I have a cipher text and I use 'gpgme_op_decrypt_verify(..)'
-   > for decrypt and get the plaintext. But also I wish a list
-   > of all reciepient, that can also decrypt this file.
-   >
-   > If I store the file and check it with 'gpg --list-packets ${filename}'
-   > then I will become also a recipient-list.
-   > It this also possible with gpgme?
-
-   Currently not, but it is easy to add this to GPGME 0.4.1.  At least the key
-   ID and a user ID hint is available from gpg (of course key IDs are not
-   necessarily unique!).  I will put it on the TODO list.
 ** If possible, use --file-setsize to set the file size for proper progress
    callback handling.  Write data interface for file size.
 ** Optimize the file descriptor list, so the number of open fds is
@@ -153,7 +142,7 @@ Hey Emacs, this is -*- outline -*- mode!
    Add error checking some time after releasing a new gpgsm.
 
 
-Copyright 2004 g10 Code GmbH
+Copyright 2004, 2005 g10 Code GmbH
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
