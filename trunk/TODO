@@ -13,7 +13,6 @@ Hey Emacs, this is -*- outline -*- mode!
 *  All enums that should be enums need to have a maximum value to ensure
    a certain minimum width for extensibility.
 ** Compatibility interfaces that can be removed in future versions:
-*** ath compatibility modules.
 *** gpgme_data_new_from_filepart
 *** gpgme_data_new_from_file
 *** gpgme_data_new_with_read_cb
