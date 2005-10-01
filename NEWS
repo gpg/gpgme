@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.1.0 (unreleased)
+Noteworthy changes in version 1.1.0 (2005-10-01)
 ------------------------------------------------
 
  * You can now configure the backend engine file name and home
@@ -1115,7 +1115,7 @@ Noteworthy changes in version 0.2.1 (2001-04-02)
  * Made the W32 support more robust.
 
 
- Copyright 2001, 2002, 2003, 2004 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
