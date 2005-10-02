@@ -3,8 +3,6 @@ Hey Emacs, this is -*- outline -*- mode!
 * Before release:
 ** Some gpg tests fail with gpg 1.3.4-cvs (gpg/t-keylist-sig)
    The test is currently disabled there and in gpg/t-import.
-** Add notation data to key signatures.
-** In gpgme.texi: Register callbacks under the right letter in the index.
 
 * ABI's to break:
 ** gpgme_edit_cb_t: Add "processed" return argument
@@ -69,6 +67,7 @@ Hey Emacs, this is -*- outline -*- mode!
 
 * Documentation
 ** Document validity and trust issues.
+** In gpgme.texi: Register callbacks under the right letter in the index.
 
 * Engines
 ** Do not create/destroy engines, but create engine and then reset it.
