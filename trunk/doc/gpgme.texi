@@ -2136,6 +2136,12 @@ certificate server.
 The @code{GPGME_KEYLIST_MODE_SIGS} symbol specifies that the key
 signatures should be included in the listed keys.
 
+@item GPGME_KEYLIST_MODE_SIG_NOTATIONS
+The @code{GPGME_KEYLIST_MODE_SIG_NOTATIONS} symbol specifies that the
+signature notations on key signatures should be included in the listed
+keys.  This only works if @code{GPGME_KEYLIST_MODE_SIGS} is also
+enabled.
+
 @item GPGME_KEYLIST_MODE_VALIDATE
 The @code{GPGME_KEYLIST_MODE_VALIDATE} symbol specifies that the
 backend should do key or certificate validation and not just get the
@@ -2403,7 +2409,13 @@ validate user IDs on the key.
 
 The signatures on a key are only available if the key was retrieved
 via a listing operation with the @code{GPGME_KEYLIST_MODE_SIGS} mode
-enabled, because it is expensive to retrieve all signatures of a key.
+enabled, because it can be expensive to retrieve all signatures of a
+key.
+
+The signature notations on a key signature are only available if the
+key was retrieved via a listing operation with the
+@code{GPGME_KEYLIST_MODE_SIG_NOTATIONS} mode enabled, because it can
+be expensive to retrieve all signature notations.
 
 The key signature structure has the following members:
 
@@ -2458,6 +2470,9 @@ This is the comment component of @code{uid}, if available.
 
 @item char *email
 This is the email component of @code{uid}, if available.
+
+@item gpgme_sig_notation_t notations
+This is a linked list with the notation data and policy URLs.
 @end table
 @end deftp
 

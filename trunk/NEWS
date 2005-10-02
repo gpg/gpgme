@@ -1,11 +1,15 @@
 Noteworthy changes in version 1.x.y (unreleased)
 ------------------------------------------------
 
- * bla bla bla ...
+ * Reading signature notations and policy URLs on key signatures is
+   supported.  They can be found in the new field notations of the
+   gpgme_key_sig_t structure.  This has to be enabled with the keylist
+   mode flag GPGME_KEYLIST_MODE_SIG_NOTATIONS.
 
  * Interface changes relative to the 1.0.3 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-something			changed
+gpgme_key_sig_t			EXTENDED: New field notations.
+GPGME_KEYLIST_MODE_SIG_NOTATIONS NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

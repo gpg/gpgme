@@ -80,9 +80,10 @@ gpgme_error_t _gpgme_decode_c_string (const char *src, char **destp,
    large enough buffer is allocated with malloc and *DESTP is set to
    the result.  Currently, LEN is only used to specify if allocation
    is desired or not, the caller is expected to make sure that *DESTP
-   is large enough if LEN is not zero.  */
+   is large enough if LEN is not zero.  If BINARY is 1, then '\0'
+   characters are allowed in the output.  */
 gpgme_error_t _gpgme_decode_percent_string (const char *src, char **destp,
-					    size_t len);
+					    size_t len, int binary);
 
 
 /* Parse the string TIMESTAMP into a time_t.  The string may either be

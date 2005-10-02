@@ -160,4 +160,10 @@ gpgme_error_t _gpgme_sig_notation_create (gpgme_sig_notation_t *notationp,
    pointer is ignored.  */
 void _gpgme_sig_notation_free (gpgme_sig_notation_t notation);
 
+/* Parse a notation or policy URL subpacket.  If the packet type is
+   not known, return no error but NULL in NOTATION.  */
+gpgme_error_t _gpgme_parse_notation (gpgme_sig_notation_t *notationp,
+				     int type, int pkflags, int len,
+				     char *data);
+
 #endif /* OPS_H */

@@ -337,9 +337,19 @@ gpgme_key_unref (gpgme_key_t key)
 
       while (keysig)
 	{
-	  gpgme_key_sig_t next = keysig->next;
+	  gpgme_key_sig_t next_keysig = keysig->next;
+	  gpgme_sig_notation_t notation = keysig->notations;
+
+	  while (notation)
+	    {
+	      gpgme_sig_notation_t next_notation = notation->next;
+
+	      _gpgme_sig_notation_free (notation);
+	      notation = next_notation;
+	    }
+
           free (keysig);
-	  keysig = next;
+	  keysig = next_keysig;
         }
       free (uid);
       uid = next_uid;

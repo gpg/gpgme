@@ -1617,6 +1617,13 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
     err = add_arg (gpg, "--with-fingerprint");
   if (!err)
     err = add_arg (gpg, "--with-fingerprint");
+  if (!err && (mode & GPGME_KEYLIST_MODE_SIGS)
+      && (mode & GPGME_KEYLIST_MODE_SIG_NOTATIONS))
+    {
+      err = add_arg (gpg, "--list-options");
+      if (!err)
+	err = add_arg (gpg, "show-sig-subpackets=\"20,26\"");
+    }
   if (!err)
     err = add_arg (gpg, secret_only ? "--list-secret-keys"
 		   : ((mode & GPGME_KEYLIST_MODE_SIGS)
@@ -1652,6 +1659,13 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
     err = add_arg (gpg, "--with-fingerprint");
   if (!err)
     err = add_arg (gpg, "--with-fingerprint");
+  if (!err && (mode & GPGME_KEYLIST_MODE_SIGS)
+      && (mode & GPGME_KEYLIST_MODE_SIG_NOTATIONS))
+    {
+      err = add_arg (gpg, "--list-options");
+      if (!err)
+	err = add_arg (gpg, "show-sig-subpackets=\"20,26\"");
+    }
   if (!err)
     err = add_arg (gpg, secret_only ? "--list-secret-keys"
 		   : ((mode & GPGME_KEYLIST_MODE_SIGS)

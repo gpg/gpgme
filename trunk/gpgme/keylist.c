@@ -48,8 +48,13 @@ typedef struct
   struct _gpgme_op_keylist_result result;
 
   gpgme_key_t tmp_key;
+
   /* This points to the last uid in tmp_key.  */
   gpgme_user_id_t tmp_uid;
+
+  /* This points to the last sig in tmp_uid.  */
+  gpgme_key_sig_t tmp_keysig;
+
   /* Something new is available.  */
   int key_cond;
   struct key_queue_item_s *key_queue;
@@ -64,8 +69,9 @@ release_op_data (void *hook)
 
   if (opd->tmp_key)
     gpgme_key_unref (opd->tmp_key);
-  /* opd->tmp_uid is actually part of opd->tmp_key, so we do not need
-     to release it here.  */
+
+  /* opd->tmp_uid and opd->tmp_keysig are actually part of opd->tmp_key,
+     so we do not need to release them here.  */
 
   while (key)
     {
@@ -351,6 +357,7 @@ finish_key (gpgme_ctx_t ctx, op_data_t opd)
 
   opd->tmp_key = NULL;
   opd->tmp_uid = NULL;
+  opd->tmp_keysig = NULL;
 
   if (key)
     _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_NEXT_KEY, key);
@@ -365,7 +372,7 @@ keylist_colon_handler (void *priv, char *line)
   enum
     {
       RT_NONE, RT_SIG, RT_UID, RT_SUB, RT_PUB, RT_FPR,
-      RT_SSB, RT_SEC, RT_CRT, RT_CRS, RT_REV
+      RT_SSB, RT_SEC, RT_CRT, RT_CRS, RT_REV, RT_SPK
     }
   rectype = RT_NONE;
 #define NR_FIELDS 13
@@ -423,6 +430,8 @@ keylist_colon_handler (void *priv, char *line)
     rectype = RT_SUB; 
   else if (!strcmp (field[0], "ssb") && key)
     rectype = RT_SSB;
+  else if (!strcmp (field[0], "spk") && key)
+    rectype = RT_SPK;
   else 
     rectype = RT_NONE;
 
@@ -431,6 +440,12 @@ keylist_colon_handler (void *priv, char *line)
      signature.  */
   if (rectype != RT_SIG && rectype != RT_REV)
     opd->tmp_uid = NULL;
+
+  /* Only look at subpackets immediately following a signature.  For
+     this, clear the signature pointer when encountering anything but
+     a subpacket.  */
+  if (rectype != RT_SPK)
+    opd->tmp_keysig = NULL;
 
   switch (rectype)
     {
@@ -673,8 +688,51 @@ keylist_colon_handler (void *priv, char *line)
 	    if (field[10][2] == 'x')
 	      keysig->exportable = 1;
 	  }
+
+      opd->tmp_keysig = keysig;
       break;
 
+    case RT_SPK:
+      if (!opd->tmp_keysig)
+	return 0;
+      assert (opd->tmp_keysig == key->_last_uid->_last_keysig);
+
+      if (fields >= 4)
+	{
+	  /* Field 2 has the subpacket type.  */
+	  int type = atoi (field[1]);
+
+	  /* Field 3 has the flags.  */
+	  int flags = atoi (field[2]);
+
+	  /* Field 4 has the length.  */
+	  int len = atoi (field[3]);
+
+	  /* Field 5 has the data.  */
+	  char *data = field[4];
+
+	  /* Type 20: Notation data.  */
+	  /* Type 26: Policy URL.  */
+	  if (type == 20 || type == 26)
+	    {
+	      gpgme_sig_notation_t notation;
+
+	      keysig = opd->tmp_keysig;
+
+	      /* At this time, any error is serious.  */
+	      err = _gpgme_parse_notation (&notation, type, flags, len, data);
+	      if (err)
+		return err;
+
+	      /* Add a new notation.  FIXME: Could be factored out.  */
+	      if (!keysig->notations)
+		keysig->notations = notation;
+	      if (keysig->_last_notation)
+		keysig->_last_notation->next = notation;
+	      keysig->_last_notation = notation;
+	    }
+	}
+    
     case RT_NONE:
       /* Unknown record.  */
       break;
