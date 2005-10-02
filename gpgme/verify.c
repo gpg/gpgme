@@ -434,7 +434,7 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 
       if (code == GPGME_STATUS_NOTATION_NAME)
 	{
-	  err = _gpgme_decode_percent_string (args, &notation->name, 0);
+	  err = _gpgme_decode_percent_string (args, &notation->name, 0, 0);
 	  if (err)
 	    {
 	      _gpgme_sig_notation_free (notation);
@@ -453,7 +453,7 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	{
 	  /* This is a policy URL.  */
 
-	  err = _gpgme_decode_percent_string (args, &notation->value, 0);
+	  err = _gpgme_decode_percent_string (args, &notation->value, 0, 0);
 	  if (err)
 	    {
 	      _gpgme_sig_notation_free (notation);
@@ -497,7 +497,7 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	  dest += cur_len;
 	}
       
-      err = _gpgme_decode_percent_string (args, &dest, len);
+      err = _gpgme_decode_percent_string (args, &dest, len, 0);
       if (err)
 	return err;
 

@@ -1,3 +1,9 @@
+2005-10-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Key Management): Add the new member notations of
+	gpgme_sig_key_t.
+	(Key Listing Mode): Document GPGME_KEYLIST_MODE_SIG_NOTATIONS.
+
 2005-10-01  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi: Enclose all return parameters of deftypefuns in

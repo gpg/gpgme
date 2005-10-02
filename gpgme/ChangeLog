@@ -1,3 +1,21 @@
+2005-10-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* util.h (_gpgme_decode_percent_string): Add new argument BINARY
+	to prototype.
+	* verify.c (parse_notation): Likewise for invocation.
+	* conversion.c (_gpgme_decode_percent_string): Likewise to
+	declaration.  If set, do not replace '\0' characters with a
+	printable string.
+	* gpgme.h (struct _gpgme_key_sig): New field notations.
+	* ops.h (_gpgme_parse_notation): New prototype.
+	* sig-notation.c (_gpgme_parse_notation): New function.
+	* key.c (gpgme_key_unref): Free all signature notations.
+	* keylist.c (op_data_t): New member tmp_keysig.
+	(finish_key): Clear OPD->tmp_keysig.
+	* gpgme.c (gpgme_set_keylist_mode): Remove check.
+	* rungpg.c (gpg_keylist): Support listing signature notations.
+	(gpg_keylist_ext): Likewise.
+
 2005-10-01  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine.h (_gpgme_set_engine_info): Add prototype.

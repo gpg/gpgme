@@ -251,11 +251,6 @@ gpgme_get_include_certs (gpgme_ctx_t ctx)
 gpgme_error_t
 gpgme_set_keylist_mode (gpgme_ctx_t ctx, gpgme_keylist_mode_t mode)
 {
-  if (!((mode & GPGME_KEYLIST_MODE_LOCAL)
-	|| (mode & GPGME_KEYLIST_MODE_EXTERN)
-	|| (mode & GPGME_KEYLIST_MODE_SIGS)))
-    return gpg_error (GPG_ERR_INV_VALUE);
-
   ctx->keylist_mode = mode;
   return 0;
 }

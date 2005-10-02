@@ -305,10 +305,11 @@ gpgme_protocol_t;
 
 
 /* The available keylist mode flags.  */
-#define GPGME_KEYLIST_MODE_LOCAL	1
-#define GPGME_KEYLIST_MODE_EXTERN	2
-#define GPGME_KEYLIST_MODE_SIGS		4
-#define GPGME_KEYLIST_MODE_VALIDATE	256
+#define GPGME_KEYLIST_MODE_LOCAL		1
+#define GPGME_KEYLIST_MODE_EXTERN		2
+#define GPGME_KEYLIST_MODE_SIGS			4
+#define GPGME_KEYLIST_MODE_SIG_NOTATIONS	8
+#define GPGME_KEYLIST_MODE_VALIDATE		256
 
 typedef unsigned int gpgme_keylist_mode_t;
 
@@ -594,6 +595,12 @@ struct _gpgme_key_sig
 
   /* Crypto backend specific signature class.  */
   unsigned int sig_class;
+
+  /* Notation data and policy URLs.  */
+  gpgme_sig_notation_t notations;
+
+  /* Internal to GPGME, do not use.  */
+  gpgme_sig_notation_t _last_notation;
 };
 typedef struct _gpgme_key_sig *gpgme_key_sig_t;
 
