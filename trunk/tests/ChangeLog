@@ -1,3 +1,8 @@
+2005-10-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-sig-notation.c: Change critical notation to something
+	GnuPG understands.
+
 2005-10-01  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/Makefile.am (EXTRA_DIST): Remove gpg.conf.
