@@ -1,5 +1,8 @@
 2005-10-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (gpgme.dll gpgme.dll.a): Use $(srcdir) for
+	gpgme.def.
+
 	* gpgme.h (gpgme_free): New prototype.
 	* data-mem.c (gpgme_free): New function.
 	* libgpgme.vers (GPGME_1.1): Add gpgme_free.
