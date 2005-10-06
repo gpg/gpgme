@@ -138,7 +138,7 @@ install-exec-hook:
 	$(STRIP) $(DESTDIR)$(libdir)/gpgme.dll
 
 gpgme.dll gpgme.dll.a: gpgme.def $(w32_o_files) versioninfo.o
-	$(CC) -shared -o gpgme.dll gpgme.def $(w32_o_files) \
+	$(CC) -shared -o gpgme.dll $(srcdir)/gpgme.def $(w32_o_files) \
 	   versioninfo.o @GPG_ERROR_LIBS@ -Wl,--out-implib,gpgme.dll.a
 
 
