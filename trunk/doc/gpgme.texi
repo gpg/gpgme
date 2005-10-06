@@ -1711,12 +1711,20 @@ The function @code{gpgme_data_release_and_get_mem} is like
 @code{gpgme_data_release}, except that it returns the data buffer and
 its length that was provided by the object.
 
-The user has to release the buffer with @code{free}.  In case the user
-provided the data buffer in non-copy mode, a copy will be made for
-this purpose.
+The user has to release the buffer with @code{gpgme_free}.  In case
+the user provided the data buffer in non-copy mode, a copy will be
+made for this purpose.
 
 In case an error returns, or there is no suitable data buffer that can
 be returned to the user, the function will return @code{NULL}.
+@end deftypefun
+
+
+@deftypefun void gpgme_free (@w{void *@var{buffer}})
+The function @code{gpgme_free} releases the memory returned by
+@code{gpgme_data_release_and_get_mem}.  It should be used instead of
+the system libraries @code{free} function in case different allocators
+are used in a single program.
 @end deftypefun
 
 

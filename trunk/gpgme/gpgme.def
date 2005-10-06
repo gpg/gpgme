@@ -151,5 +151,6 @@ EXPORTS
     gpgme_sig_notation_add		  @118
     gpgme_sig_notation_get		  @119
 
+    gpgme_free				  @120
 ; END
 

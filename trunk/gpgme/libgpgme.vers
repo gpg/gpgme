@@ -34,6 +34,8 @@ GPGME_1.1 {
     gpgme_sig_notation_clear;
     gpgme_sig_notation_add;
     gpgme_sig_notation_get;
+
+    gpgme_free;
 };
 
 
