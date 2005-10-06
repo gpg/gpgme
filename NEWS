@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.x.y (unreleased)
+Noteworthy changes in version 1.1.1 (unreleased)
 ------------------------------------------------
 
  * Reading signature notations and policy URLs on key signatures is
@@ -6,10 +6,19 @@ Noteworthy changes in version 1.x.y (unreleased)
    gpgme_key_sig_t structure.  This has to be enabled with the keylist
    mode flag GPGME_KEYLIST_MODE_SIG_NOTATIONS.
 
- * Interface changes relative to the 1.0.3 release:
+ * A new gpgme_free() function solves the problem of using different
+   allocators in a single program.  This function should now be used
+   instead calling free() to release the buffer returned by
+   gpgme_data_release_and_get_mem.  It is recommended that you always
+   do this, but it is only necessary on certain platforms, so backwards
+   compatibility is provided.  In other words: If free() worked for
+   you before, it will keep working.
+
+ * Interface changes relative to the 1.1.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_key_sig_t			EXTENDED: New field notations.
 GPGME_KEYLIST_MODE_SIG_NOTATIONS NEW
+gpgme_free			NEW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

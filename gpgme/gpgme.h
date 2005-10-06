@@ -996,9 +996,12 @@ gpgme_error_t gpgme_data_new_from_mem (gpgme_data_t *r_dh,
 				       int copy);
 
 /* Destroy the data buffer DH and return a pointer to its content.
-   The memory has be to released with free by the user.  It's size is
-   returned in R_LEN.  */
+   The memory has be to released with gpgme_free() by the user.  It's
+   size is returned in R_LEN.  */
 char *gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len);
+
+/* Release the memory returned by gpgme_data_release_and_get_mem().  */
+void gpgme_free (void *buffer);
 
 gpgme_error_t gpgme_data_new_from_cbs (gpgme_data_t *dh,
 				       gpgme_data_cbs_t cbs,
