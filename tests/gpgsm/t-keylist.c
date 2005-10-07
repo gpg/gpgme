@@ -44,6 +44,7 @@ struct
   char *issuer_name;
   char *chain_id;
   char *uid;
+  char *email;
   gpgme_validity_t validity;
   unsigned int key_length;
 }
@@ -53,7 +54,7 @@ keys[] =
       "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=D\xc3\xbcsseldorf,C=DE",
       "3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E",
       "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=D\xc3\xbcsseldorf,C=DE",
-      GPGME_VALIDITY_ULTIMATE, 1024
+      NULL, GPGME_VALIDITY_ULTIMATE, 1024
     },
     { "DFA56FB5FC41E3A8921F77AD1622EEFD9152A5AD", 0, 909684190, 1009821790, "01",
       "1.2.840.113549.1.9.1=#63657274696679407063612E64666E2E6465,"
@@ -63,7 +64,7 @@ keys[] =
       "1.2.840.113549.1.9.1=#63657274696679407063612E64666E2E6465,"
       "CN=DFN Top Level Certification Authority,OU=DFN-PCA,"
       "O=Deutsches Forschungsnetz,C=DE",
-      GPGME_VALIDITY_NEVER, 2048
+      "<certify@pca.dfn.de>", GPGME_VALIDITY_NEVER, 2048
     },
     { "2C8F3C356AB761CB3674835B792CDA52937F9285", 0, 973183644, 1009735200, "15",
       "1.2.840.113549.1.9.1=#63657274696679407063612E64666E2E6465,"
@@ -73,7 +74,7 @@ keys[] =
       "1.2.840.113549.1.9.1=#63657274696679407063612E64666E2E6465,"
       "CN=DFN Server Certification Authority,OU=DFN-PCA,"
       "O=Deutsches Forschungsnetz,C=DE",
-      GPGME_VALIDITY_UNKNOWN, 2048
+      "<certify@pca.dfn.de>", GPGME_VALIDITY_UNKNOWN, 2048
     },
     { NULL }
   };
@@ -286,7 +287,8 @@ main (int argc, char **argv)
 	  exit (1);
 	}
 
-      if (!key->uids || key->uids->next)
+      /* Be tolerant against a missing email (ie, older gpgsm versions).  */
+      if (!key->uids || (key->uids->next && !keys[i].email))
 	{
 	  fprintf (stderr, "Key has unexpected number of user IDs\n");
 	  exit (1);
@@ -336,6 +338,13 @@ main (int argc, char **argv)
 		   key->uids->uid);
 	  exit (1);
 	}
+      if (key->uids->next && strcmp (key->uids->next->uid, keys[i].email))
+	{
+	  fprintf (stderr, "Unexpected email in user ID: %s\n",
+		   key->uids->next->uid);
+	  exit (1);
+	}
+
 
       gpgme_key_unref (key);
       i++;
