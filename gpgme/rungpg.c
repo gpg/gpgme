@@ -1356,7 +1356,7 @@ gpg_edit (void *engine, int type, gpgme_key_t key, gpgme_data_t out,
     err = add_data (gpg, out, 1, 1);
   if (!err)
     err = add_arg (gpg, "--");
-  if (!err)
+  if (!err && type == 0)
     {
       const char *s = key->subkeys ? key->subkeys->fpr : NULL;
       if (!s)
