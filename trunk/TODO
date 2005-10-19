@@ -5,6 +5,10 @@ Hey Emacs, this is -*- outline -*- mode!
    The test is currently disabled there and in gpg/t-import.
 ** When gpg supports it, write binary subpackets directly,
    and parse SUBPACKET status lines.
+** External key listing for OpenPGP.
+   This probably requires changes at gpg.
+
+
 * ABI's to break:
 ** gpgme_edit_cb_t: Add "processed" return argument
    (see edit.c::command_handler).

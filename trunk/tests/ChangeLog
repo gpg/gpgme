@@ -1,3 +1,13 @@
+2005-10-18  Werner Koch  <wk@g10code.com>
+
+	* gpg/pubdemo.asc, gpg/secdemo.asc: Add 2 expired subkeys to
+	Whisky.
+	* gpg/t-keylist.c: Reordered list to match new demo keyring.  Add
+	arg for number of subkeys and for extra checking function.
+	(main): Enhanced a few error outputs.  Changed subkey
+	counting. Call extra checking fucntion.
+	(check_whisky): New.
+
 2005-10-07  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm/t-keylist.c (main): Allow for an email address as a second
