@@ -33,8 +33,8 @@
 
 #include "t-support.h"
 
-
-struct
+
+struct key_info_s
 {
   char *fpr;
   char *sec_keyid;
@@ -44,72 +44,82 @@ struct
     char *comment;
     char *email;
   } uid[3];
-}
-keys[] =
+  int n_subkeys;
+  void (*misc_check)(struct key_info_s *keyinfo, gpgme_key_t key);
+};
+
+
+static void check_whisky (struct key_info_s *keyinfo, gpgme_key_t key);
+
+
+
+struct key_info_s keys[] =
   {
     { "A0FF4590BB6122EDEF6E3C542D727CC768697734", "6AE6D7EE46A871F8",
       { { "Alfa Test", "demo key", "alfa@example.net" },
         { "Alpha Test", "demo key", "alpha@example.net" },
-	{ "Alice", "demo key", NULL } } },
+	{ "Alice", "demo key", NULL } }, 1 },
+    { "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2", "5381EA4EE29BA37F",
+      { { "Bob", "demo key", NULL },
+	{ "Bravo Test", "demo key", "bravo@example.net" } }, 1 },
     { "61EE841A2A27EB983B3B3C26413F4AF31AFDAB6C", "E71E72ACBC43DA60",
-      { { "Charlie Test", "demo key", "charlie@example.net" } } },
+      { { "Charlie Test", "demo key", "charlie@example.net" } }, 1 },
+    { "6560C59C43D031C54D7C588EEBA9F240EB9DC9E6", "06F22880B0C45424",
+      { { "Delta Test", "demo key", "delta@example.net" } }, 1 },
     { "3531152DE293E26A07F504BC318C1FAEFAEF6D1B", "B5C79E1A7272144D",
       { { "Echelon", "demo key", NULL },
 	{ "Echo Test", "demo key", "echo@example.net" },
-	{ "Eve", "demo key", NULL } } },
-    { "C9C07DCC6621B9FB8D071B1D168410A48FC282E6", "247491CC9DCAD354",
-      { { "Golf Test", "demo key", "golf@example.net" } } },
-    { "CD538D6CC9FB3D745ECDA5201FE8FC6F04259677", "C1C8EFDE61F76C73",
-      { { "India Test", "demo key", "india@example.net" } } },
-    { "3FD11083779196C2ECDD9594AD1B0FAD43C2D0C7", "86CBB34A9AF64D02",
-      { { "Kilo Test", "demo key", "kilo@example.net" } } },
-    { "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2", "5381EA4EE29BA37F",
-      { { "Bob", "demo key", NULL },
-	{ "Bravo Test", "demo key", "bravo@example.net" } } },
-    { "6560C59C43D031C54D7C588EEBA9F240EB9DC9E6", "06F22880B0C45424",
-      { { "Delta Test", "demo key", "delta@example.net" } } },
+	{ "Eve", "demo key", NULL } }, 1 },
     { "56D33268F7FE693FBB594762D4BF57F37372E243", "0A32EE79EE45198E",
-      { { "Foxtrot Test", "demo key", "foxtrot@example.net" } } },
+      { { "Foxtrot Test", "demo key", "foxtrot@example.net" } }, 1 },
+    { "C9C07DCC6621B9FB8D071B1D168410A48FC282E6", "247491CC9DCAD354",
+      { { "Golf Test", "demo key", "golf@example.net" } }, 1 },
     { "9E91CBB11E4D4135583EF90513DB965534C6E3F1", "76E26537D622AD0A",
-      { { "Hotel Test", "demo key", "hotel@example.net" } } },
+      { { "Hotel Test", "demo key", "hotel@example.net" } }, 1 },
+    { "CD538D6CC9FB3D745ECDA5201FE8FC6F04259677", "C1C8EFDE61F76C73",
+      { { "India Test", "demo key", "india@example.net" } }, 1 },
     { "F8F1EDC73995AB739AD54B380C820C71D2699313", "BD0B108735F8F136",
-      { { "Juliet Test", "demo key", "juliet@example.net" } } },
+      { { "Juliet Test", "demo key", "juliet@example.net" } }, 1 },
+    { "3FD11083779196C2ECDD9594AD1B0FAD43C2D0C7", "86CBB34A9AF64D02",
+      { { "Kilo Test", "demo key", "kilo@example.net" } }, 1 },
     { "1DDD28CEF714F5B03B8C246937CAB51FB79103F8", "0363B449FE56350C",
-      { { "Lima Test", "demo key", "lima@example.net" } } },
+      { { "Lima Test", "demo key", "lima@example.net" } }, 1 },
     { "2686AA191A278013992C72EBBE794852BE5CF886", "5F600A834F31EAE8",
       { { "Mallory", "demo key", NULL },
-	{ "Mike Test", "demo key", "mike@example.net" } } },
+	{ "Mike Test", "demo key", "mike@example.net" } }, 1 },
     { "5AB9D6D7BAA1C95B3BAA3D9425B00FD430CEC684", "4C1D63308B70E472",
-      { { "November Test", "demo key", "november@example.net" } } },
+      { { "November Test", "demo key", "november@example.net" } }, 1 },
     { "43929E89F8F79381678CAE515F6356BA6D9732AC", "FF0785712681619F",
-      { { "Oscar Test", "demo key", "oscar@example.net" } } },
+      { { "Oscar Test", "demo key", "oscar@example.net" } }, 1 },
     { "6FAA9C201E5E26DCBAEC39FD5D15E01D3FF13206", "2764E18263330D9C",
-      { { "Papa test", "demo key", "papa@example.net" } } },
+      { { "Papa test", "demo key", "papa@example.net" } }, 1 },
     { "A7969DA1C3297AA96D49843F1C67EC133C661C84", "6CDCFC44A029ACF4",
-      { { "Quebec Test", "demo key", "quebec@example.net" } } },
+      { { "Quebec Test", "demo key", "quebec@example.net" } }, 1 },
     { "38FBE1E4BF6A5E1242C8F6A13BDBEDB1777FBED3", "9FAB805A11D102EA",
-      { { "Romeo Test", "demo key", "romeo@example.net" } } },
+      { { "Romeo Test", "demo key", "romeo@example.net" } }, 1 },
     { "045B2334ADD69FC221076841A5E67F7FA3AE3EA1", "93B88B0F0F1B50B4",
-      { { "Sierra Test", "demo key", "sierra@example.net" } } },
+      { { "Sierra Test", "demo key", "sierra@example.net" } }, 1 },
     { "ECAC774F4EEEB0620767044A58CB9A4C85A81F38", "97B60E01101C0402",
-      { { "Tango Test", "demo key", "tango@example.net" } } },
+      { { "Tango Test", "demo key", "tango@example.net" } }, 1 },
     { "0DBCAD3F08843B9557C6C4D4A94C0F75653244D6", "93079B915522BDB9",
-      { { "Uniform Test", "demo key", "uniform@example.net" } } },
+      { { "Uniform Test", "demo key", "uniform@example.net" } }, 1 },
     { "E8143C489C8D41124DC40D0B47AF4B6961F04784", "04071FB807287134",
-      { { "Victor Test", "demo key", "victor@example.org" } } },
+      { { "Victor Test", "demo key", "victor@example.org" } }, 1 },
     { "E8D6C90B683B0982BD557A99DEF0F7B8EC67DBDE", "D7FBB421FD6E27F6",
-      { { "Whisky Test", "demo key", "whisky@example.net" } } },
+      { { "Whisky Test", "demo key", "whisky@example.net" } }, 3,
+          check_whisky },
     { "04C1DF62EFA0EBB00519B06A8979A6C5567FB34A", "5CC6F87F41E408BE",
-      { { "XRay Test", "demo key", "xray@example.net" } } },
+      { { "XRay Test", "demo key", "xray@example.net" } }, 1 },
     { "ED9B316F78644A58D042655A9EEF34CD4B11B25F", "5ADFD255F7B080AD",
-      { { "Yankee Test", "demo key", "yankee@example.net" } } },
+      { { "Yankee Test", "demo key", "yankee@example.net" } }, 1 },
     { "23FD347A419429BACCD5E72D6BC4778054ACD246", "EF9DC276A172C881",
-      { { "Zulu Test", "demo key", "zulu@example.net" } } },
+      { { "Zulu Test", "demo key", "zulu@example.net" } }, 1 },
     { "ADAB7FCC1F4DE2616ECFA402AF82244F9CD9FD55", "087DD7E0381701C4",
       { { "Joe Random Hacker", "test key with passphrase \"x\"",
-	  "joe@setq.org" } } },
+	  "joe@setq.org" } }, 1 },
     { NULL }
   };
+
 
 int 
 main (int argc, char **argv)
@@ -119,6 +129,8 @@ main (int argc, char **argv)
   gpgme_key_t key;
   gpgme_keylist_result_t result;
   int i = 0;
+  int n;
+  gpgme_subkey_t subkey;
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
@@ -207,9 +219,13 @@ main (int argc, char **argv)
 		   key->owner_trust);
 	  exit (1);
 	}
-      if (!key->subkeys || !key->subkeys->next || key->subkeys->next->next)
+
+      for (n=0, subkey = key->subkeys; subkey; subkey = subkey->next) 
+        n++;
+      if (!n || n-1 != keys[i].n_subkeys)
 	{
-	  fprintf (stderr, "Key has unexpected number of subkeys\n");
+	  fprintf (stderr, "Key `%s' has unexpected number of subkeys\n",
+                   keys[i].uid[0].name);
 	  exit (1);
 	}
 
@@ -268,8 +284,8 @@ main (int argc, char **argv)
 	}
       if (strcmp (key->subkeys->keyid, &keys[i].fpr[40 - 16]))
 	{
-	  fprintf (stderr, "Primary key has unexpected key ID: %s\n",
-		   key->subkeys->keyid);
+	  fprintf (stderr, "Primary key `%s' has unexpected key ID: %s\n",
+		   keys[i].uid[0].name, key->subkeys->keyid);
 	  exit (1);
 	}
       if (strcmp (key->subkeys->fpr, keys[i].fpr))
@@ -280,8 +296,8 @@ main (int argc, char **argv)
 	}
       if (key->subkeys->expires)
 	{
-	  fprintf (stderr, "Primary key unexpectedly expires: %lu\n",
-		   key->subkeys->expires);
+	  fprintf (stderr, "Primary key `%s' unexpectedly expires: %lu\n",
+		   keys[i].uid[0].name, key->subkeys->expires);
 	  exit (1);
 	}
 
@@ -340,8 +356,9 @@ main (int argc, char **argv)
 	}
       if (strcmp (key->subkeys->next->keyid, keys[i].sec_keyid))
 	{
-	  fprintf (stderr, "Secondary key has unexpected key ID: %s\n",
-		   key->subkeys->next->keyid);
+	  fprintf (stderr, "Secondary key `%s' has unexpected key ID: %s/%s\n",
+		   keys[i].uid[0].name,
+                   key->subkeys->next->keyid, keys[i].sec_keyid );
 	  exit (1);
 	}
       if (key->subkeys->next->fpr)
@@ -506,6 +523,9 @@ main (int argc, char **argv)
 	  exit (1);
 	}
 
+      if (keys[i].misc_check)
+        keys[i].misc_check (keys+i, key);
+
       gpgme_key_unref (key);
       i++;
     }
@@ -530,3 +550,31 @@ main (int argc, char **argv)
   gpgme_release (ctx);
   return 0;
 }
+
+
+
+/* Check expration of keys.  This test assumes three subkeys of which
+   2 are expired; it is used with the "Whisky" test key.  It has
+   already been checked that these 3 subkeys are available. */
+static void
+check_whisky (struct key_info_s *keyinfo, gpgme_key_t key)
+{
+  const char *name = keyinfo->uid[0].name;
+  gpgme_subkey_t sub1, sub2;
+  
+  sub1 = key->subkeys->next->next;
+  sub2 = sub1->next;
+
+  if (!sub1->expired || !sub2->expired)
+    {
+      fprintf (stderr, "Subkey of `%s' not flagged as expired\n", name);
+      exit (1);
+    }
+  if (sub1->expires != 1129636886 || sub2->expires != 1129636939)
+    {
+      fprintf (stderr, "Subkey of `%s' has wrong expiration date\n", name);
+      exit (1);
+    }
+
+}
+
