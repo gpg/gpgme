@@ -96,21 +96,21 @@ LTRCCOMPILE = $(LIBTOOL) --mode=compile $(RC) \
      `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
      sed -e 's/-I/--include-dir /g;s/-D/--define /g'`
 
-%.o : %.rc
+%.lo : %.rc
 	$(LTRCCOMPILE) -i $< -o $@
 
-gpgme_res = versioninfo.o
-gpgme_res_ldflag = -Wl,$(gpgme_res)
+gpgme_res = versioninfo.lo
+gpgme_res_ldflag = -Wl,.libs/versioninfo.o
 no_undefined = -no-undefined
 export_symbols = -export-symbols $(srcdir)/gpgme.def
 
 install-def-file:
-	$(INSTALL) gpg-error.def $(DESTDIR)$(libdir)/gpgme.def
+	$(INSTALL) $(srcdir)/gpgme.def $(DESTDIR)$(libdir)/gpgme.def
 
 uninstall-def-file:
 	-rm $(DESTDIR)$(libdir)/gpgme.def
 
-libgpgme_la_DEPENDENCIES = $(gpgme_res) gpgme.def
+gpgme_deps = $(gpgme_res) gpgme.def
 
 else
 gpgme_res =
@@ -120,13 +120,14 @@ export_symbols =
 install-def-file:
 uninstall-def-file:
 
+gpgme_deps =
 endif
 
 libgpgme_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) $(export_symbols) \
 	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
-	@LTLIBOBJS@ $(srcdir)/libgpgme.vers
+	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@
 
