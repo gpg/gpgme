@@ -1,5 +1,0 @@
-2005-03-10  Timo Schulz  <twoaday@g10code.com>
-
-	* gpgme.def: New. Exported GPGME functions.
-	* build-dll: New.
-	
