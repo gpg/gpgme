@@ -69,9 +69,6 @@ AH_VERBATIM([_REENTRANT],
 #endif])
 
 AC_PROG_CC
-AC_CHECK_TOOL(DLLTOOL, dlltool, :)
-AC_CHECK_TOOL(WINDRES, windres, :)
-
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
@@ -88,6 +85,8 @@ AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
 
 # Don't default to build static libs.
 AC_DISABLE_STATIC
+AC_LIBTOOL_WIN32_DLL
+AC_LIBTOOL_RC
 AC_PROG_LIBTOOL
 
 # For now we hardcode the use of version scripts.  It would be better
