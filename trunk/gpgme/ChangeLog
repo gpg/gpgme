@@ -1,3 +1,8 @@
+2005-10-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am: Build versioninfo.lo, not versioninfo.o.  Also, fix
+	the whole mess.
+
 2005-10-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.c (gpg_edit): Don't add a key argument if in card edit
