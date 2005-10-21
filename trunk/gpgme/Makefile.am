@@ -101,6 +101,7 @@ LTRCCOMPILE = $(LIBTOOL) --mode=compile $(RC) \
 
 gpgme_res = versioninfo.lo
 gpgme_res_ldflag = -Wl,.libs/versioninfo.o
+
 no_undefined = -no-undefined
 export_symbols = -export-symbols $(srcdir)/gpgme.def
 
@@ -152,5 +153,5 @@ status-table.h : gpgme.h
 	$(srcdir)/mkstatus < $(srcdir)/gpgme.h > status-table.h
 
 install-data-local: install-def-file
-  
+
 uninstall-local: uninstall-def-file
