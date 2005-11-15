@@ -24,6 +24,7 @@ AC_PREREQ(2.59)
 min_automake_version="1.9.3"
 
 # Version number: Remember to change it immediately *after* a release.
+#                 Make sure to run  "svn up" before a "make dist".
 AC_INIT(gpgme, 1.2.0-cvs, [bug-gpgme@gnupg.org])
 # LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
@@ -446,12 +447,10 @@ if test "$have_w32_system" = yes; then
     BUILD_TIMESTAMP=`date --iso-8601=minutes`
     changequote(,)dnl 
     BUILD_FILEVERSION=`echo "$VERSION" | sed 's/\([0-9.]*\).*/\1./;s/\./,/g'`
+    tmp="`echo '$Revision$' | sed 's/[^0-9]//g'`"
     changequote([,])dnl
-    case "$VERSION" in
-      *-cvs) BUILD_FILEVERSION="${BUILD_FILEVERSION}0" ;;
-      *-rc*) BUILD_FILEVERSION="${BUILD_FILEVERSION}1" ;;
-      *)     BUILD_FILEVERSION="${BUILD_FILEVERSION}2" ;;
-    esac
+    test -z "$tmp" && tmp="0"
+    BUILD_FILEVERSION="${BUILD_FILEVERSION}$tmp"
 fi
 AC_SUBST(BUILD_TIMESTAMP)
 AC_SUBST(BUILD_FILEVERSION)

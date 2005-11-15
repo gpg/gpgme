@@ -2154,7 +2154,7 @@ enabled.
 The @code{GPGME_KEYLIST_MODE_VALIDATE} symbol specifies that the
 backend should do key or certificate validation and not just get the
 validity information from an internal cache.  This might be an
-expensive operation and is in general not usefule.  Currently only
+expensive operation and is in general not useful.  Currently only
 implemented for the S/MIME backend and ignored for other backends.
 
 @end table
