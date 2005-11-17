@@ -1,5 +1,22 @@
 2005-11-17  Marcus Brinkmann  <marcus@g10code.de>
 
+	* w32-glib-io.c: New file.
+	* gpgme.def (gpgme_get_giochannel): Add symbol.
+	* Makefile.am (system_components) [HAVE_DOSISH_SYSTEM]: Remove
+	w32-io.c.
+	(ltlib_gpgme_extra): New variable.
+	(lib_LTLIBRARIES): Add $(ltlib_gpgme_extra).
+	(system_components_not_extra): New variable.
+	(libgpgme_la_SOURCES, libgpgme_pthread_la_SOURCES,
+	(libgpgme_pth_la_SOURCES): Add $(system_components_not_extra).
+	(libgpgme_glib_la_LDFLAGS, libgpgme_glib_la_DEPENDENCIES,
+	(libgpgme_glib_la_LIBADD, libgpgme_glib_la_CFLAGS)
+	[BUILD_W32_GLIB]: New variables. 
+	* gpgme-config.in (glib): New option.
+	* gpgme.m4 (AM_PATH_GPGME_GLIB): New macro.
+
+2005-11-17  Marcus Brinkmann  <marcus@g10code.de>
+
 	* priv-io.h (_gpgme_io_waitpid, _gpgme_io_kill): Removed.
 	* w32-io.c (_gpgme_io_waitpid, _gpgme_io_kill): Removed.
 	* posix-io.c (_gpgme_io_kill): Removed.

@@ -25,9 +25,10 @@ thread_modules=""
 libs_pth="@PTH_LDFLAGS@ @PTH_LIBS@"
 cflags_pth="@PTH_CFLAGS@"
 
-@HAVE_PTHREAD_TRUE@thread_modules="$thread_modules pthread"
-libs_pthread="-lpthread"
-cflags_pthread=""
+# Configure glib.
+libs_glib="@GLIB_LIBS@"
+cflags_glib="@GLIB_CFLAGS@"
+with_glib=
 
 output=""
 
@@ -74,6 +75,9 @@ while test $# -gt 0; do
         --exec-prefix)
 	    output="$output $exec_prefix"
 	    ;;
+	--glib)
+	    with_glib=yes
+	    ;;
         --version)
             echo "@VERSION@"
 	    exit 0
@@ -95,6 +99,9 @@ while test $# -gt 0; do
 		    ;;
 	    esac
 	    output="$output $gpg_error_cflags"
+	    if test "x$with_glib" = "xyes"; then
+		output="$output $glib_cflags"
+	    fi
 	    ;;
 	--libs)
 	    if test "x$libdir" != "x/usr/lib" -a "x$libdir" != "x/lib"; then
@@ -105,12 +112,20 @@ while test $# -gt 0; do
 	            output="$output -lgpgme-pthread $libs_pthread"
 		    ;;
 	        pth)
-	            output="$output -lgpgme-pth $libs_pth"
+		    output="$output -lgpgme-pth $libs_pth"
 		    ;;
 		*)
-		    output="$output -lgpgme"
+		    if test "x$with_glib" = "xyes"; then
+			output="$output -lgpgme-glib"
+		    else
+			output="$output -lgpgme"
+		    fi
+		    ;;
 	    esac
 	    output="$output $gpg_error_libs"
+	    if test "x$with_glib" = "xyes"; then
+		output="$output $glib_cflags"
+	    fi
 	    ;;
 	--thread=*)
             for thread_mod in $thread_modules; do

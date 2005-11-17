@@ -1091,4 +1091,13 @@ _gpgme_io_subsystem_init (void)
   
 }
 
+
+/* The following interface is only useful for GPGME Glib.  */
+
+/* Look up the giochannel for file descriptor FD.  */
+void *
+gpgme_get_giochannel (int fd)
+{
+  return NULL;
+}
 

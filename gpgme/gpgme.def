@@ -152,5 +152,7 @@ EXPORTS
     gpgme_sig_notation_get		  @119
 
     gpgme_free				  @120
+
+    gpgme_get_giochannel		  @121
 ; END
 
