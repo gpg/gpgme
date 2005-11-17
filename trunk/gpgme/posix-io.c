@@ -174,6 +174,30 @@ _gpgme_io_set_nonblocking (int fd)
 }
 
 
+static int
+_gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal)
+{
+  int status;
+
+  *r_status = 0;
+  *r_signal = 0;
+  if (_gpgme_ath_waitpid (pid, &status, hang? 0 : WNOHANG) == pid)
+    {
+      if (WIFSIGNALED (status))
+	{
+	  *r_status = 4; /* Need some value here.  */
+	  *r_signal = WTERMSIG (status);
+	}
+      else if (WIFEXITED (status))
+	*r_status = WEXITSTATUS (status);
+      else
+	*r_status = 4; /* Oops.  */
+      return 1;
+    }
+  return 0;
+}
+
+
 /* Returns 0 on success, -1 on error.  */
 int
 _gpgme_io_spawn (const char *path, char **argv,
@@ -270,37 +294,6 @@ _gpgme_io_spawn (const char *path, char **argv,
     _gpgme_io_close (fd_parent_list[i].fd);
 
   return 0;
-}
-
-
-int
-_gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal)
-{
-  int status;
-
-  *r_status = 0;
-  *r_signal = 0;
-  if (_gpgme_ath_waitpid (pid, &status, hang? 0 : WNOHANG) == pid)
-    {
-      if (WIFSIGNALED (status))
-	{
-	  *r_status = 4; /* Need some value here.  */
-	  *r_signal = WTERMSIG (status);
-	}
-      else if (WIFEXITED (status))
-	*r_status = WEXITSTATUS (status);
-      else
-	*r_status = 4; /* Oops.  */
-      return 1;
-    }
-  return 0;
-}
-
-
-int
-_gpgme_io_kill (int pid, int hard)
-{
-  return kill (pid, hard ? SIGKILL : SIGTERM);
 }
 
 
