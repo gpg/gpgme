@@ -57,8 +57,6 @@ int _gpgme_io_set_nonblocking (int fd);
 int _gpgme_io_spawn (const char *path, char **argv,
 		     struct spawn_fd_item_s *fd_child_list,
 		     struct spawn_fd_item_s *fd_parent_list);
-int _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal);
-int _gpgme_io_kill (int pid, int hard);
 int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock);
 
 #endif /* IO_H */

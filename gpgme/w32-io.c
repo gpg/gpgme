@@ -942,60 +942,6 @@ _gpgme_io_spawn ( const char *path, char **argv,
 }
 
 
-
-
-int
-_gpgme_io_waitpid ( int pid, int hang, int *r_status, int *r_signal )
-{
-    HANDLE proc = fd_to_handle (pid);
-    int code, ret = 0;
-    DWORD exc;
-
-    *r_status = 0;
-    *r_signal = 0;
-    code = WaitForSingleObject ( proc, hang? INFINITE : 0 );
-    switch (code) {
-      case WAIT_FAILED:
-        DEBUG2 ("WFSO pid=%d failed: %d\n", (int)pid, (int)GetLastError () );
-        break;
-
-      case WAIT_OBJECT_0:
-        if (!GetExitCodeProcess (proc, &exc)) {
-            DEBUG2 ("** GECP pid=%d failed: ec=%d\n",
-                    (int)pid, (int)GetLastError () );
-            *r_status = 4; 
-        }
-        else {
-            DEBUG2 ("GECP pid=%d exit code=%d\n", (int)pid,  exc);
-            *r_status = exc;
-        }
-        ret = 1;
-        break;
-
-      case WAIT_TIMEOUT:
-        if (hang)
-            DEBUG1 ("WFSO pid=%d timed out\n", (int)pid);
-        break;
-
-      default:
-        DEBUG2 ("WFSO pid=%d returned %d\n", (int)pid, code );
-        break;
-    }
-    return ret;
-}
-
-int
-_gpgme_io_kill ( int pid, int hard )
-{
-    HANDLE proc = fd_to_handle (pid);
-
-    #warning I am not sure how to kill a process
-    /* fixme: figure out how this can be done */
-    return 0;
-}
-
-
-
 /*
  * Select on the list of fds.
  * Returns: -1 = error
