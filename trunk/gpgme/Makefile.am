@@ -1,4 +1,4 @@
-# Copyright (C) 2000 Werner Koch (dd9jn)
+ # Copyright (C) 2000 Werner Koch (dd9jn)
 # Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 # 
 # This file is part of GPGME.
@@ -39,8 +39,15 @@ else
 ltlib_gpgme_pth =
 endif
 
+if BUILD_W32_GLIB
+ltlib_gpgme_extra = libgpgme-glib.la
+else
+ltlib_gpgme_extra =
+endif
+
 noinst_LTLIBRARIES = libgpgme-real.la
-lib_LTLIBRARIES = libgpgme.la $(ltlib_gpgme_pthread) $(ltlib_gpgme_pth)
+lib_LTLIBRARIES = libgpgme.la $(ltlib_gpgme_extra) \
+	$(ltlib_gpgme_pthread) $(ltlib_gpgme_pth)
 
 if HAVE_LD_VERSION_SCRIPT
 libgpgme_version_script_cmd = -Wl,--version-script=$(srcdir)/libgpgme.vers
@@ -57,9 +64,11 @@ assuan_libobjs =
 endif
 
 if HAVE_DOSISH_SYSTEM
-system_components = w32-util.c w32-sema.c w32-io.c
+system_components = w32-util.c w32-sema.c
+system_components_not_extra = w32-io.c
 else
 system_components = ath.h posix-util.c posix-sema.c posix-io.c
+system_components_not_extra =
 endif
 
 if HAVE_GPGSM
@@ -83,9 +92,14 @@ libgpgme_real_la_SOURCES =						\
 	$(gpgsm_components) sema.h priv-io.h $(system_components)	\
 	debug.c debug.h gpgme.c version.c error.c
 
-libgpgme_la_SOURCES = ath.h ath.c
-libgpgme_pthread_la_SOURCES = ath.h ath-pthread.c
-libgpgme_pth_la_SOURCES = ath.h ath-pth.c
+libgpgme_la_SOURCES = ath.h ath.c $(system_components_not_extra)
+libgpgme_pthread_la_SOURCES = \
+	ath.h ath-pthread.c $(system_components_not_extra)
+libgpgme_pth_la_SOURCES = ath.h ath-pth.c $(system_components_not_extra)
+
+if BUILD_W32_GLIB
+libgpgme_glib_la_SOURCES = ath.h ath.c w32-glib-io.c
+endif
 
 AM_CPPFLAGS = $(assuan_cppflags) @GPG_ERROR_CFLAGS@
 
@@ -148,6 +162,17 @@ libgpgme_pth_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
 	@LTLIBOBJS@ $(srcdir)/libgpgme.vers
 libgpgme_pth_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
 	@PTH_LIBS@ @GPG_ERROR_LIBS@
+
+if BUILD_W32_GLIB
+libgpgme_glib_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
+	$(export_symbols) $(libgpgme_version_script_cmd) -version-info \
+	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
+libgpgme_glib_la_CFLAGS = $(AM_CFLAGS) @GLIB_CFLAGS@
+libgpgme_glib_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
+	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
+libgpgme_glib_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
+	@GPG_ERROR_LIBS@ @GLIB_LIBS@
+endif
 
 status-table.h : gpgme.h
 	$(srcdir)/mkstatus < $(srcdir)/gpgme.h > status-table.h

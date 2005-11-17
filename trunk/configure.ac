@@ -147,6 +147,12 @@ if test "$have_w32_system" = yes; then
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
 
+build_w32_glib=no
+AM_PATH_GLIB_2_0
+AC_ARG_ENABLE(w32-glib,
+	    AC_HELP_STRING([--enable-w32-glib], [build GPGME Glib for W32]),
+	    build_w32_glib=$withval)
+AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
 
 AM_CONDITIONAL(HAVE_PTH, test "$have_pth" = "yes")
 AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
