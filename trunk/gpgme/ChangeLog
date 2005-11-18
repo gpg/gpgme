@@ -1,3 +1,10 @@
+2005-11-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* w32-glib-io.c: Rewrote the file handle code.  We don't create
+	system fds for every handle (doesn't work for inherited handles),
+	but we create pseudo fds in a private namespace that designate a
+	handle and potentially a giochannel.
+
 2005-11-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* w32-glib-io.c: New file.
