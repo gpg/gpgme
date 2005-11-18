@@ -56,17 +56,7 @@
    whole thing is also interconnected with the creation of pipes and
    child processes.
 
-   The following rules apply only to this I/O backend:
-
-   * All "file descriptors" that GPGME gives to the application are
-   not system file descriptors, but some internal number maintained by
-   GPGME.  I call them "Something like a file descriptor" (SLAFD).
-   It's an ugly name for an ugly thing.
-
-   * The application can use this "file descriptor" for exactly one
-   thing: To call gpgme_get_giochannel on it.  This returns the
-   GIOChannel that the application can actually use.  The channel can
-   then be integrated in the event loop.
+   The following rule applies only to this I/O backend:
 
    * ALL operations must use the user defined event loop.  GPGME can
    not anymore provide its own event loop.  This is mostly a sanity
@@ -79,78 +69,41 @@
    a per-context level.  */
 
 
-/* Something like a file descriptor.  We can not use "real" file
-   descriptors, because for some reason we can't create them from
-   osfhandles to be inherited.  Argh!  */
-static struct
-{
-  /* This is non-null if the entry is used.  */
-  HANDLE osfhandle;
+#define MAX_SLAFD 256
 
-  /* This is non-null if there is a GIOChannel for this handle.  Only
-     for our end of the pipe.  */
-  GIOChannel *channel;
-} slafd_table[256];
-
-#define MAX_SLAFD ((int) DIM (slafd_table))
-
-static int
-create_slafd (HANDLE handle, int create_channel)
-{
-  int slafd;
-
-  for (slafd = 0; slafd < MAX_SLAFD; slafd++)
-    if (slafd_table[slafd].osfhandle == NULL)
-      break;
-
-  if (slafd == MAX_SLAFD)
-    return -1;
-
-  if (create_channel)
-    {
-      /* FIXME: Do we need to specify the direction, too?  */
-      //      int fd = _open_osfhandle ((long) handle, 0);
-      //      DEBUG2("opened handle %p to %i\n", handle, fd);
-      slafd_table[slafd].channel = g_io_channel_unix_new ((int)handle);
-      if (!slafd_table[slafd].channel)
-	{
-	  errno = EIO;	/* XXX */
-	  return -1;
-	}
-    }
-  else
-    slafd_table[slafd].channel = NULL;
-  
-  slafd_table[slafd].osfhandle = handle;
-  return slafd;
-}
+GIOChannel *giochannel_table[MAX_SLAFD];
 
 
 static GIOChannel *
-find_channel (int fd)
+find_channel (int fd, int create)
 {
   if (fd < 0 || fd >= MAX_SLAFD)
     return NULL;
 
-  return slafd_table[fd].channel;
+  if (create && !giochannel_table[fd])
+    giochannel_table[fd] = g_io_channel_unix_new (fd);
+      
+  return giochannel_table[fd];
 }
-
-
-static HANDLE
-find_handle (int fd)
-{
-  if (fd < 0 || fd >= MAX_SLAFD)
-    return NULL;
-
-  return slafd_table[fd].osfhandle;
-}
-
 
 /* Look up the giochannel for "file descriptor" FD.  */
 GIOChannel *
 gpgme_get_giochannel (int fd)
 {
-  return find_channel (fd);
+  return find_channel (fd, 0);
+}
+
+
+/* Write the printable version of FD to the buffer BUF of length
+   BUFLEN.  The printable version is the representation on the command
+   line that the child process expects.  */
+int
+_gpgme_io_fd2str (char *buf, int buflen, int fd)
+{
+  printf ("Converting fd %d to %ld\n", fd, (long) _get_osfhandle (fd));
+  printf ("Converting fd %d to %ld\n", fd, (long) _get_osfhandle (fd));
+  printf ("Converting fd %d to %ld\n", fd, (long) _get_osfhandle (fd));
+  return snprintf (buf, buflen, "%ld", (long) _get_osfhandle (fd));
 }
 
 
@@ -176,7 +129,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 
   DEBUG2 ("fd %d: about to read %d bytes\n", fd, (int) count);
 
-  chan = find_channel (fd);
+  chan = find_channel (fd, 0);
   if (!chan)
     {
       DEBUG1 ("fd %d: no channel registered\n", fd);
@@ -225,7 +178,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   DEBUG2 ("fd %d: about to write %d bytes\n", fd, (int) count);
   _gpgme_debug (2, "fd %d: write `%.*s'\n", fd, (int) count, buffer);
 
-  chan = find_channel (fd);
+  chan = find_channel (fd, 0);
   if (!chan)
     {
       DEBUG1 ("fd %d: no channel registered\n", fd);
@@ -247,69 +200,61 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 
 
 int
-_gpgme_io_pipe ( int filedes[2], int inherit_idx )
+_gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
-    HANDLE r, w;
-    SECURITY_ATTRIBUTES sec_attr;
+  GIOChannel *chan;
 
-    memset (&sec_attr, 0, sizeof sec_attr );
-    sec_attr.nLength = sizeof sec_attr;
-    sec_attr.bInheritHandle = FALSE;
-
-    DEBUG1("INHERIT: %i\n", inherit_idx);
-    
 #define PIPEBUF_SIZE  4096
-    if (!CreatePipe ( &r, &w, &sec_attr, PIPEBUF_SIZE))
-        return -1;
-    /* Make one end inheritable. */
-    if ( inherit_idx == 0 ) {
-        HANDLE h;
-        if (!DuplicateHandle( GetCurrentProcess(), r,
-                              GetCurrentProcess(), &h, 0,
-                              TRUE, DUPLICATE_SAME_ACCESS ) ) {
-            DEBUG1 ("DuplicateHandle failed: ec=%d\n", (int)GetLastError());
-            CloseHandle (r);
-            CloseHandle (w);
-            return -1;
-        }
-        CloseHandle (r);
-        r = h;
-    }
-    else if ( inherit_idx == 1 ) {
-        HANDLE h;
-        if (!DuplicateHandle( GetCurrentProcess(), w,
-                              GetCurrentProcess(), &h, 0,
-                              TRUE, DUPLICATE_SAME_ACCESS ) ) {
-            DEBUG1 ("DuplicateHandle failed: ec=%d\n", (int)GetLastError());
-            CloseHandle (r);
-            CloseHandle (w);
-            return -1;
-        }
-        CloseHandle (w);
-        w = h;
-    }
-    filedes[0] = create_slafd (r, inherit_idx == 1);
-    if (filedes[0] == -1)
-      {
-	DEBUG1 ("create_slafd failed: ec=%d\n", errno);
-	CloseHandle (r);
-	CloseHandle (w);
-	return -1;
-      }
+  if (_pipe (filedes, PIPEBUF_SIZE, O_NOINHERIT) == -1)
+    return -1;
 
-    filedes[1] = create_slafd (w, inherit_idx == 0);
-    if (filedes[1] == -1)
-      {
-	DEBUG1 ("create_slafd failed: ec=%d\n", errno);
-	_gpgme_io_close (filedes[0]);
-	CloseHandle (r);
-	CloseHandle (w);
-	return -1;
-      }
+  /* Make one end inheritable. */
+  if (inherit_idx == 0)
+    {
+      int new_read;
 
-    DEBUG5 ("CreatePipe %p %p %d %d inherit=%d\n", r, w,
-                   filedes[0], filedes[1], inherit_idx );
-    return 0;
+      new_read = _dup (filedes[0]);
+      _close (filedes[0]);
+      filedes[0] = new_read;
+
+      if (new_read < 0)
+	{
+	  _close (filedes[1]);
+	  return -1;
+	}
+    }
+  else if (inherit_idx == 1)
+    {
+      int new_write;
+
+      new_write = _dup (filedes[1]);
+      _close (filedes[1]);
+      filedes[1] = new_write;
+
+      if (new_write < 0)
+	{
+	  _close (filedes[0]);
+	  return -1;
+	}
+    }
+
+  /* Now we have a pipe with the right end inheritable.  The other end
+     should have a giochannel.  */
+  chan = find_channel (filedes[1 - inherit_idx], 1);
+  if (!chan)
+    {
+      DEBUG2 ("channel creation for %d failed: ec=%d\n",
+	      filedes[1 - inherit_idx], errno);
+      _close (filedes[0]);
+      _close (filedes[1]);
+      return -1;
+    }
+
+  DEBUG5 ("CreatePipe %d (%p) %d (%p) inherit=%p\n",
+	  filedes[0], (HANDLE) _get_osfhandle (filedes[0]),
+	  filedes[1], (HANDLE) _get_osfhandle (filedes[1]),
+	  chan);
+  return 0;
 }
 
 
@@ -334,20 +279,15 @@ _gpgme_io_close (int fd)
     }
 
   /* Then do the close.  */    
-  chan = slafd_table[fd].channel;
+  chan = giochannel_table[fd];
   if (chan)
     {
       g_io_channel_shutdown (chan, 1, NULL);
       g_io_channel_unref (chan);
-    }
-  
-  if (!CloseHandle (slafd_table[fd].osfhandle))
-    { 
-      DEBUG2 ("CloseHandle for fd %d failed: ec=%d\n",
-	      fd, (int)GetLastError ());
+      giochannel_table[fd] = NULL;
     }
 
-  slafd_table[fd].osfhandle = NULL;
+  _close (fd);
 
   return 0;
 }
@@ -373,7 +313,7 @@ _gpgme_io_set_nonblocking (int fd)
   GIOChannel *chan;
   GIOStatus status;
 
-  chan = find_channel (fd);
+  chan = find_channel (fd, 0);
   if (!chan)
     {
       errno = EIO;
@@ -453,11 +393,11 @@ _gpgme_io_spawn ( const char *path, char **argv,
     /* FIXME.  */
     int debug_me = 0;
 
-    memset (&sec_attr, 0, sizeof sec_attr );
+    memset (&sec_attr, 0, sizeof sec_attr);
     sec_attr.nLength = sizeof sec_attr;
     sec_attr.bInheritHandle = FALSE;
 
-    arg_string = build_commandline ( argv );
+    arg_string = build_commandline (argv);
     if (!arg_string )
         return -1; 
 
@@ -471,19 +411,20 @@ _gpgme_io_spawn ( const char *path, char **argv,
 
     for (i=0; fd_child_list[i].fd != -1; i++ ) {
         if (fd_child_list[i].dup_to == 0 ) {
-            si.hStdInput = find_handle (fd_child_list[i].fd);
+            si.hStdInput = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
             DEBUG2 ("using %d (%p) for stdin", fd_child_list[i].fd,
-		    find_handle (fd_child_list[i].fd));
+		    _get_osfhandle (fd_child_list[i].fd));
             duped_stdin=1;
         }
         else if (fd_child_list[i].dup_to == 1 ) {
-            si.hStdOutput = find_handle (fd_child_list[i].fd);
+            si.hStdOutput = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
             DEBUG2 ("using %d (%p) for stdout", fd_child_list[i].fd,
-		    find_handle (fd_child_list[i].fd));
+		    _get_osfhandle (fd_child_list[i].fd));
         }
         else if (fd_child_list[i].dup_to == 2 ) {
-            si.hStdError = find_handle (fd_child_list[i].fd);
-            DEBUG1 ("using %d for stderr", fd_child_list[i].fd );
+            si.hStdError = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
+            DEBUG2 ("using %d (%p) for stderr", fd_child_list[i].fd,
+		    _get_osfhandle (fd_child_list[i].fd));
             duped_stderr = 1;
         }
     }
@@ -574,7 +515,72 @@ _gpgme_io_spawn ( const char *path, char **argv,
 int
 _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 {
-  assert (!"ARGH!  The user of this library MUST define io callbacks!");
-  errno = EINVAL;
-  return -1;
+  int i;
+  int res = 0;
+  void *dbg_help = NULL;
+
+  /* Use g_io_channel_get_buffer_condition.  This will help with the
+     _gpgme_io_select uses in rungpg.c and wait.c::_gpgme_run_io_cb,
+     but not with the global or private event loop.  The user still
+     must define io cbs for all operations.  */
+
+  if (!nonblock)
+    assert (!"Can not provide blocking select on this target.");
+
+  DEBUG_BEGIN (dbg_help, 3, "gpgme:select on [ ");
+  for (i = 0; i < nfds; i++)
+    {
+      if (fds[i].fd == -1) 
+	continue;
+      if (fds[i].frozen)
+	DEBUG_ADD1 (dbg_help, "f%d ", fds[i].fd);
+      else if (fds[i].for_read)
+	{
+	  GIOChannel *chan = find_channel (fds[i].fd, 0);
+	  assert (chan);
+
+	  DEBUG2("channel %p cond %i\n",
+		 chan,
+		 g_io_channel_get_buffer_condition (chan));
+
+	  if (g_io_channel_get_buffer_condition (chan) & G_IO_IN)
+	    {
+	      fds[i].signaled = 1;
+	      res++;
+	    }
+	  DEBUG_ADD1 (dbg_help, "r%d ", fds[i].fd);
+        }
+      else if (fds[i].for_write)
+	{
+	  GIOChannel *chan = find_channel (fds[i].fd, 0);
+	  assert (chan);
+
+	  if (g_io_channel_get_buffer_condition (chan) & G_IO_OUT)
+	    {
+	      fds[i].signaled = 1;
+	      res++;
+	    }
+	  DEBUG_ADD1 (dbg_help, "w%d ", fds[i].fd);
+        }
+      else
+	fds[i].signaled = 0;
+    }
+  DEBUG_END (dbg_help, "]"); 
+
+  DEBUG_BEGIN (dbg_help, 3, "select OK [ ");
+  if (DEBUG_ENABLED (dbg_help))
+    {
+      for (i = 0; i <= nfds; i++)
+	{
+	  if (fds[i].fd == -1 || fds[i].frozen || !fds[i].signaled) 
+	    continue;
+	  else if (fds[i].for_read)
+	    DEBUG_ADD1 (dbg_help, "r%d ", i);
+	  else if (fds[i].for_write)
+	    DEBUG_ADD1 (dbg_help, "w%d ", i);
+        }
+      DEBUG_END (dbg_help, "]");
+    }
+
+  return 1;
 }

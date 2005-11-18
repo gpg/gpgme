@@ -407,7 +407,7 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
 
   {
     char buf[25];
-    sprintf (buf, "%d", gpg->status.fd[1]);
+    _gpgme_io_fd2str (buf, sizeof (buf), gpg->status.fd[1]);
     rc = add_arg (gpg, buf);
     if (rc)
       goto leave;
@@ -720,7 +720,10 @@ build_argv (engine_gpg_t gpg)
 	  fd_data_map[datac].dup_to = a->dup_to;
 	  if (a->dup_to == -1)
 	    {
-	      argv[argc] = malloc (25);
+	      char *ptr;
+	      int buflen = 25;
+
+	      argv[argc] = malloc (buflen);
 	      if (!argv[argc])
 		{
 		  int saved_errno = errno;
@@ -728,9 +731,16 @@ build_argv (engine_gpg_t gpg)
 		  free_argv (argv);
 		  return gpg_error_from_errno (saved_errno);
                 }
-	      sprintf (argv[argc], 
-		       a->print_fd ? "%d" : "-&%d",
-		       fd_data_map[datac].peer_fd);
+
+	      ptr = argv[argc];
+	      if (!a->print_fd)
+		{
+		  *(ptr++) = '-';
+		  *(ptr++) = '&';
+		  buflen -= 2;
+		}
+	      
+	      _gpgme_io_fd2str (ptr, buflen, fd_data_map[datac].peer_fd);
 	      argc++;
             }
 	  datac++;
