@@ -1,5 +1,12 @@
 2005-11-18  Marcus Brinkmann  <marcus@g10code.de>
 
+	* priv-io.h (_gpgme_io_fd2str): New prototype.
+	* posix-io.c (_gpgme_io_fd2str): New function.
+	* w32-io.c (_gpgme_io_fd2str): New function.
+	* rungpg.c: Use this new function.
+	* w32-glib-io.c (_gpgme_io_fd2str): Rewrote the file handle code
+	again.  Two's company, three's the musketeers.
+
 	* w32-glib-io.c: Rewrote the file handle code.  We don't create
 	system fds for every handle (doesn't work for inherited handles),
 	but we create pseudo fds in a private namespace that designate a

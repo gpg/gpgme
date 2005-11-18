@@ -1091,6 +1091,16 @@ _gpgme_io_subsystem_init (void)
   
 }
 
+
+/* Write the printable version of FD to the buffer BUF of length
+   BUFLEN.  The printable version is the representation on the command
+   line that the child process expects.  */
+int
+_gpgme_io_fd2str (char *buf, int buflen, int fd)
+{
+  return snprintf (buf, buflen, "%d", fd);
+}
+
 
 /* The following interface is only useful for GPGME Glib.  */
 

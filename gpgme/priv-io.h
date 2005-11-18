@@ -59,7 +59,9 @@ int _gpgme_io_spawn (const char *path, char **argv,
 		     struct spawn_fd_item_s *fd_parent_list);
 int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock);
 
+/* Write the printable version of FD to the buffer BUF of length
+   BUFLEN.  The printable version is the representation on the command
+   line that the child process expects.  */
+int _gpgme_io_fd2str (char *buf, int buflen, int fd);
+
 #endif /* IO_H */
-
-
-
