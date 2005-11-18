@@ -4738,7 +4738,7 @@ decide when to check the file descriptors and when to invoke the
 callback functions.  Usually this is done in an event loop, that also
 checks for events in other parts of the program.  If the callback
 functions are only called when the file descriptors are ready,
-@acronym{GPGME} will never block.  This gives the user mroe control
+@acronym{GPGME} will never block.  This gives the user more control
 over the program flow, and allows to perform other tasks when
 @acronym{GPGME} would block otherwise.
 
@@ -4777,7 +4777,7 @@ the return value to be reserved for later use.
 @deftp {Data type} {gpgme_error_t (*gpgme_register_io_cb_t) (@w{void *@var{data}}, @w{int @var{fd}}, @w{int @var{dir}}, @w{gpgme_io_cb_t @var{fnc}}, @w{void *@var{fnc_data}}, @w{void **@var{tag}})}
 @tindex gpgme_register_io_cb_t
 The @code{gpgme_register_io_cb_t} type is the type of functions which can
-be called by @acronym{GPGME} to register an I/O callback funtion
+be called by @acronym{GPGME} to register an I/O callback function
 @var{fnc} for the file descriptor @var{fd} with the user.
 @var{fnc_data} should be passed as the first argument to @var{fnc}
 when the handler is invoked (the second argument should be @var{fd}).

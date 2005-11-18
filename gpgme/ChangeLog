@@ -1,3 +1,12 @@
+2005-11-18  Werner Koch  <wk@g10code.com>
+
+	* w32-glib-io.c: Include glib.h before windows to avoid a symbol
+	shadowing warning.
+	(find_channel): Better use g_io_channel_win32_new_fd instead of
+	the autodetection function g_io_channel_unix_new.
+	(_gpgme_io_select): Rewritten.  It is now a fully working select
+	implementation.
+
 2005-11-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* priv-io.h (_gpgme_io_fd2str): New prototype.
@@ -11,6 +20,10 @@
 	system fds for every handle (doesn't work for inherited handles),
 	but we create pseudo fds in a private namespace that designate a
 	handle and potentially a giochannel.
+
+2005-11-18  Werner Koch  <wk@g10code.com>
+
+	* versioninfo.rc.in: Set file version to LT-version + Svn-revision.
 
 2005-11-17  Marcus Brinkmann  <marcus@g10code.de>
 
