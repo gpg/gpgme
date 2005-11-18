@@ -1,7 +1,15 @@
+2005-11-18  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (BUILD_REVISION): New.
+
 2005-11-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Add support for --enable-w32-glib (disabled by
 	default).  Invoke AM_PATH_GLIB_2_0.
+
+2005-11-16  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (CFLAGS) [W32]: Make sure that -mms-bitfields are used.
 
 2005-11-15  Werner Koch  <wk@g10code.com>
 

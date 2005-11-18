@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <glib.h>
 #include <windows.h>
 #include <io.h>
 
@@ -40,7 +41,6 @@
 #include "sema.h"
 #include "debug.h"
 
-#include <glib.h>
 
 
 /* This file is an ugly hack to get GPGME working with glib on Windows
@@ -81,7 +81,7 @@ find_channel (int fd, int create)
     return NULL;
 
   if (create && !giochannel_table[fd])
-    giochannel_table[fd] = g_io_channel_unix_new (fd);
+    giochannel_table[fd] = g_io_channel_win32_new_fd (fd);
       
   return giochannel_table[fd];
 }
@@ -515,72 +515,115 @@ _gpgme_io_spawn ( const char *path, char **argv,
 int
 _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 {
-  int i;
-  int res = 0;
+  int     npollfds;
+  GPollFD *pollfds;
+  int     *pollfds_map; 
+  int i, j;
+  int any, n, count;
+  int timeout = 1000;  /* Use a 1s timeout.  */
   void *dbg_help = NULL;
 
-  /* Use g_io_channel_get_buffer_condition.  This will help with the
-     _gpgme_io_select uses in rungpg.c and wait.c::_gpgme_run_io_cb,
-     but not with the global or private event loop.  The user still
-     must define io cbs for all operations.  */
+  if (nonblock)
+    timeout = 0;
 
-  if (!nonblock)
-    assert (!"Can not provide blocking select on this target.");
+  pollfds = calloc (nfds, sizeof *pollfds);
+  if (!pollfds)
+    return -1;
+  pollfds_map = calloc (nfds, sizeof *pollfds_map);
+  if (!pollfds_map)
+    {
+      free (pollfds);
+      return -1;
+    }
+  npollfds = 0;
 
   DEBUG_BEGIN (dbg_help, 3, "gpgme:select on [ ");
+  any = 0;
   for (i = 0; i < nfds; i++)
     {
       if (fds[i].fd == -1) 
 	continue;
       if (fds[i].frozen)
 	DEBUG_ADD1 (dbg_help, "f%d ", fds[i].fd);
-      else if (fds[i].for_read)
+      else if (fds[i].for_read )
 	{
-	  GIOChannel *chan = find_channel (fds[i].fd, 0);
-	  assert (chan);
-
-	  DEBUG2("channel %p cond %i\n",
-		 chan,
-		 g_io_channel_get_buffer_condition (chan));
-
-	  if (g_io_channel_get_buffer_condition (chan) & G_IO_IN)
-	    {
-	      fds[i].signaled = 1;
-	      res++;
-	    }
-	  DEBUG_ADD1 (dbg_help, "r%d ", fds[i].fd);
+          GIOChannel *chan = find_channel (fds[i].fd, 0);
+          assert (chan);
+          g_io_channel_win32_make_pollfd (chan, G_IO_IN, pollfds + npollfds);
+          pollfds_map[npollfds] = i;
+	  DEBUG_ADD2 (dbg_help, "r%d<%d> ", fds[i].fd, pollfds[npollfds].fd);
+          npollfds++;
+	  any = 1;
         }
       else if (fds[i].for_write)
 	{
-	  GIOChannel *chan = find_channel (fds[i].fd, 0);
-	  assert (chan);
-
-	  if (g_io_channel_get_buffer_condition (chan) & G_IO_OUT)
-	    {
-	      fds[i].signaled = 1;
-	      res++;
-	    }
-	  DEBUG_ADD1 (dbg_help, "w%d ", fds[i].fd);
+          GIOChannel *chan = find_channel (fds[i].fd, 0);
+          assert (chan);
+          g_io_channel_win32_make_pollfd (chan, G_IO_OUT, pollfds + npollfds);
+          pollfds_map[npollfds] = i;
+	  DEBUG_ADD2 (dbg_help, "w%d<%d> ", fds[i].fd, pollfds[npollfds].fd);
+          npollfds++;
+	  any = 1;
         }
-      else
-	fds[i].signaled = 0;
+      fds[i].signaled = 0;
     }
   DEBUG_END (dbg_help, "]"); 
+  if (!any)
+    {
+      count = 0;
+      goto leave;
+    }
+
+
+  count = g_io_channel_win32_poll (pollfds, npollfds, timeout);
+  if (count < 0)
+    {
+      int saved_errno = errno;
+      DEBUG1 ("_gpgme_io_select failed: %s\n", strerror (errno));
+      errno = saved_errno;
+      goto leave;
+    }
 
   DEBUG_BEGIN (dbg_help, 3, "select OK [ ");
   if (DEBUG_ENABLED (dbg_help))
     {
-      for (i = 0; i <= nfds; i++)
+      for (i = 0; i < npollfds; i++)
 	{
-	  if (fds[i].fd == -1 || fds[i].frozen || !fds[i].signaled) 
-	    continue;
-	  else if (fds[i].for_read)
+	  if ((pollfds[i].revents & G_IO_IN))
 	    DEBUG_ADD1 (dbg_help, "r%d ", i);
-	  else if (fds[i].for_write)
-	    DEBUG_ADD1 (dbg_help, "w%d ", i);
+          if ((pollfds[i].revents & G_IO_OUT))
+            DEBUG_ADD1 (dbg_help, "w%d ", i);
         }
       DEBUG_END (dbg_help, "]");
     }
+    
+  /* COUNT is used to stop the lop as soon as possible.  */
+  for (n = count, i = 0; i < npollfds && n; i++)
+    {
+      j = pollfds_map[i];
+      assert (j >= 0 && j < nfds);
+      if (fds[j].fd == -1)
+	;
+      else if (fds[j].for_read)
+	{
+	  if ((pollfds[i].revents & G_IO_IN))
+	    {
+	      fds[j].signaled = 1;
+	      n--;
+            }
+        }
+      else if (fds[j].for_write)
+	{
+	  if ((pollfds[i].revents & G_IO_OUT))
+	    {
+	      fds[j].signaled = 1;
+	      n--;
+            }
+        }
+    }
 
-  return 1;
+leave:
+  free (pollfds);
+  free (pollfds_map);
+  return count;
 }

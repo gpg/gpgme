@@ -170,6 +170,9 @@ AC_TYPE_OFF_T
 # Checks for compiler features.
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+    if test "$have_w32_system" = yes; then
+       CFLAGS="$CFLAGS -mms-bitfields"
+    fi
 fi
 
 
@@ -449,15 +452,18 @@ AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
 GNUPG_FIX_HDR_VERSION(gpgme/gpgme.h, GPGME_VERSION)
 
 # Generate values for the DLL version info
+changequote(,)dnl 
+BUILD_REVISION="`echo '$Revision$' | sed 's/[^0-9]//g'`"
+changequote([,])dnl
+test -z "$BUILD_REVISION" && BUILD_REVISION="0"
 if test "$have_w32_system" = yes; then
     BUILD_TIMESTAMP=`date --iso-8601=minutes`
     changequote(,)dnl 
     BUILD_FILEVERSION=`echo "$VERSION" | sed 's/\([0-9.]*\).*/\1./;s/\./,/g'`
-    tmp="`echo '$Revision$' | sed 's/[^0-9]//g'`"
     changequote([,])dnl
-    test -z "$tmp" && tmp="0"
-    BUILD_FILEVERSION="${BUILD_FILEVERSION}$tmp"
+    BUILD_FILEVERSION="${BUILD_FILEVERSION}${BUILD_REVISION}"
 fi
+AC_SUBST(BUILD_REVISION)
 AC_SUBST(BUILD_TIMESTAMP)
 AC_SUBST(BUILD_FILEVERSION)
 
