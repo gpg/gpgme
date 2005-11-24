@@ -100,9 +100,6 @@ gpgme_get_giochannel (int fd)
 int
 _gpgme_io_fd2str (char *buf, int buflen, int fd)
 {
-  printf ("Converting fd %d to %ld\n", fd, (long) _get_osfhandle (fd));
-  printf ("Converting fd %d to %ld\n", fd, (long) _get_osfhandle (fd));
-  printf ("Converting fd %d to %ld\n", fd, (long) _get_osfhandle (fd));
   return snprintf (buf, buflen, "%ld", (long) _get_osfhandle (fd));
 }
 
