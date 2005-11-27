@@ -335,7 +335,7 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
   /* Install the new members.  */
   info->file_name = new_file_name;
   info->home_dir = new_home_dir;
-  info->version = engine_get_version (proto, file_name);
+  info->version = engine_get_version (proto, new_file_name);
 
   return 0;
 }

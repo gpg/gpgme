@@ -1,3 +1,8 @@
+2005-11-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine.c (_gpgme_set_engine_info): Use new_file_name in
+	engine_get_version invocation.  Reported by Stéphane Corthésy.
+
 2005-11-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* w32-glib-io.c (_gpgme_io_fd2str): Remove debug printf.
