@@ -2385,7 +2385,9 @@ This is true if the subkey can be used for qualified signatures
 according to local government regulations.
 
 @item unsigned int secret : 1
-This is true if the subkey is a secret key.
+This is true if the subkey is a secret key.  Note that it will be false
+if the key is actually a stub key; i.e. a secret key operation is
+currently not possible (offline-key).
 
 @item gpgme_pubkey_algo_t pubkey_algo
 This is the public key algorithm supported by this subkey.
@@ -2398,7 +2400,7 @@ This is the key ID of the subkey in hexadecimal digits.
 
 @item char *fpr
 This is the fingerprint of the subkey in hexadecimal digits, if
-available.  This is usually only available for the primary key.
+available.
 
 @item long int timestamp
 This is the creation timestamp of the subkey.  This is -1 if the
@@ -2566,7 +2568,9 @@ This is true if the key can be used for qualified signatures according
 to local government regulations.
 
 @item unsigned int secret : 1
-This is true if the key is a secret key.
+This is true if the key is a secret key.  Note, that this will always be
+true even if the corresponding subkey flag may be false (offline/stub
+keys).
 
 @item gpgme_protocol_t protocol
 This is the protocol supported by this key.

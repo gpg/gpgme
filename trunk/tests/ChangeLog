@@ -1,3 +1,10 @@
+2005-12-06  Werner Koch  <wk@g10code.com>
+
+	* gpg/t-keylist.c (main): Changed for that secondary keys now have
+	a fingerprint.
+	* gpg/t-keylist-sig.c (main): Ditto.
+	* gpgsm/t-keylist.c (main): Ditto.  The test used to be wrong.
+
 2005-10-18  Werner Koch  <wk@g10code.com>
 
 	* gpg/pubdemo.asc, gpg/secdemo.asc: Add 2 expired subkeys to
