@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.1.1 (unreleased)
 ------------------------------------------------
 
+ * Fixed a bug in that the fingerprints of subkeys are not available.
+
+ * Clarified usage of the SECRET flag in key listings.  It is now
+   reset for stub keys.
+
  * Reading signature notations and policy URLs on key signatures is
    supported.  They can be found in the new field notations of the
    gpgme_key_sig_t structure.  This has to be enabled with the keylist

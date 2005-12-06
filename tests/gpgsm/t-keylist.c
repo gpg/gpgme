@@ -245,9 +245,10 @@ main (int argc, char **argv)
 	  fprintf (stderr, "Primary key unexpectedly unusable for certifications\n");
 	  exit (1);
 	}
-      if (key->subkeys->secret)
+      if (key->subkeys->secret != keys[i].secret)
 	{
-	  fprintf (stderr, "Primary key unexpectedly secret\n");
+	  fprintf (stderr, "Primary Key unexpectedly%s secret\n",
+		   key->secret ? "" : " not");
 	  exit (1);
 	}
       if (key->subkeys->pubkey_algo != GPGME_PK_RSA)

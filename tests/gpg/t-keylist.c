@@ -361,10 +361,9 @@ main (int argc, char **argv)
                    key->subkeys->next->keyid, keys[i].sec_keyid );
 	  exit (1);
 	}
-      if (key->subkeys->next->fpr)
+      if (!key->subkeys->next->fpr)
 	{
-	  fprintf (stderr, "Secondary key has unexpectedly a fingerprint: %s\n",
-		   key->subkeys->next->fpr);
+	  fprintf (stderr, "Secondary key has unexpectedly no fingerprint\n");
 	  exit (1);
 	}
       if (key->subkeys->next->expires)

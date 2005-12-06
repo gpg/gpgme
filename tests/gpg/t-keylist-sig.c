@@ -310,10 +310,9 @@ main (int argc, char **argv)
 		   key->subkeys->next->keyid);
 	  exit (1);
 	}
-      if (key->subkeys->next->fpr)
+      if (!key->subkeys->next->fpr)
 	{
-	  fprintf (stderr, "Secondary key has unexpectedly a fingerprint: %s\n",
-		   key->subkeys->next->fpr);
+	  fprintf (stderr, "Secondary key has unexpectedly no fingerprint\n");
 	  exit (1);
 	}
       if (key->subkeys->next->expires)
@@ -467,7 +466,7 @@ main (int argc, char **argv)
         after importing the secret key.  We disable this test for
         now. */
 #ifdef __GNUC__
-#warning test disabled due to problems with gpg 1.3.4
+#warning test disabled due to problems with gpg 1.3.4 generated key
 #endif
       if (key->uids && (!key->uids->next->signatures /*|| key->uids->next->signatures->next*/))
 	{

@@ -1,3 +1,9 @@
+2005-12-06  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (keylist_colon_handler): Store fingerprints of the
+	subkeys.  Reset the secret flag of subkeys for stub secret keys.
+	(NR_FIELDS): Bumped up to 16
+
 2005-11-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine.c (_gpgme_set_engine_info): Use new_file_name in

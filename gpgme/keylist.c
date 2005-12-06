@@ -375,7 +375,7 @@ keylist_colon_handler (void *priv, char *line)
       RT_SSB, RT_SEC, RT_CRT, RT_CRS, RT_REV, RT_SPK
     }
   rectype = RT_NONE;
-#define NR_FIELDS 13
+#define NR_FIELDS 16
   char *field[NR_FIELDS];
   int fields = 0;
   void *hook;
@@ -466,7 +466,7 @@ keylist_colon_handler (void *priv, char *line)
 	}
 
       if (rectype == RT_SEC || rectype == RT_CRS)
-	key->secret = 1;
+	key->secret = subkey->secret = 1;
       if (rectype == RT_CRT || rectype == RT_CRS)
 	key->protocol = GPGME_PROTOCOL_CMS;
       finish_key (ctx, opd);
@@ -528,6 +528,13 @@ keylist_colon_handler (void *priv, char *line)
       /* Field 12 has the capabilities.  */
       if (fields >= 12)
 	set_mainkey_capability (key, field[11]);
+
+      /* Field 15 carries special flags of a secret key.  We reset the
+         SECRET flag of a subkey here if the key is actually only a
+         stub. The SECRET flag of the key will be true even then. */
+      if (fields >= 15 && key->secret)
+        if (*field[14] == '#')
+          subkey->secret = 0;
       break;
 
     case RT_SUB:
@@ -582,6 +589,11 @@ keylist_colon_handler (void *priv, char *line)
       /* Field 12 has the capabilities.  */
       if (fields >= 12)
 	set_subkey_capability (subkey, field[11]);
+
+      /* Field 15 carries special flags of a secret key. */
+      if (fields >= 15 && key->secret)
+        if (*field[14] == '#')
+          subkey->secret = 0;
       break;
 
     case RT_UID:
@@ -601,11 +613,17 @@ keylist_colon_handler (void *priv, char *line)
 
     case RT_FPR:
       /* Field 10 has the fingerprint (take only the first one).  */
-      if (fields >= 10 && !key->subkeys->fpr && field[9] && *field[9])
+      if (fields >= 10 && field[9] && *field[9])
 	{
-	  key->subkeys->fpr = strdup (field[9]);
-	  if (!key->subkeys->fpr)
-	    return gpg_error_from_errno (errno);
+          /* Need to apply it to the last subkey because all subkeys
+             do have fingerprints. */
+          subkey = key->_last_subkey;
+          if (!subkey->fpr)
+            {
+              subkey->fpr = strdup (field[9]);
+              if (!subkey->fpr)
+                return gpg_error_from_errno (errno);
+            }
 	}
 
       /* Field 13 has the gpgsm chain ID (take only the first one).  */
