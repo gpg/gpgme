@@ -651,6 +651,15 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
       return sig ? parse_trust (sig, code, args)
 	: gpg_error (GPG_ERR_INV_ENGINE);
 
+    case GPGME_STATUS_PKA_TRUST_BAD:
+    case GPGME_STATUS_PKA_TRUST_GOOD:
+      opd->only_newsig_seen = 0;
+      if (sig && !sig->pka_trust)
+        sig->pka_trust = code == GPGME_STATUS_PKA_TRUST_GOOD? 2 : 1;
+      /* FIXME: We should set the mailbox which is the argument to
+         these status codes into a new field. */
+      break;
+
     case GPGME_STATUS_ERROR:
       opd->only_newsig_seen = 0;
       /* The error status is informational, so we don't return an

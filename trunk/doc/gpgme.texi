@@ -3985,6 +3985,22 @@ not expire.
 @item unsigned int wrong_key_usage : 1
 This is true if the key was not used according to its policy.
 
+@item unsigned int pka_trust : 2
+This is set to the trust information gained by means of the PKA system.
+Values are:
+  @table @code
+  @item 0
+        No PKA information available or verification not possible.
+  @item 1
+        PKA verification failed. 
+  @item 2
+        PKA verification succeeded.
+  @item 3
+        Reserved for future use.
+  @end table
+Depending on the configuration of the engine, this metric may also be
+reflected by the validity of the signature.
+
 @item gpgme_validity_t validity
 The validity of the signature.
 

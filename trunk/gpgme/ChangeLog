@@ -1,3 +1,10 @@
+2005-12-20  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h (gpgme_status_code_t): Added GPGME_STATUS_PKA_TRUST_BAD
+	and GPGME_STATUS_PKA_TRUST_GOOD.
+	(gpgme_signature_t): New field pka_trust.
+	* verify.c (_gpgme_verify_status_handler): Set pka_trust.
+
 2005-12-06  Werner Koch  <wk@g10code.com>
 
 	* keylist.c (keylist_colon_handler): Store fingerprints of the

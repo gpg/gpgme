@@ -345,6 +345,13 @@ main (int argc, char **argv)
 		   key->uids->next->uid);
 	  exit (1);
 	}
+      if (key->uids->next && strcmp (key->uids->next->uid, keys[i].email))
+	{
+	  fprintf (stderr, "Unexpected email in user ID: %s\n",
+		   key->uids->next->uid);
+	  exit (1);
+	}
+
 
 
       gpgme_key_unref (key);

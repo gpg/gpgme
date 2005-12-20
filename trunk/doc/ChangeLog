@@ -1,3 +1,7 @@
+2005-12-20  Werner Koch  <wk@g10code.com>
+
+	* gpgme.texi (Verify): Document pka_trust.
+
 2005-12-06  Werner Koch  <wk@g10code.com>
 
 	* gpgme.texi (Key Management): Updated to match the fixes for
