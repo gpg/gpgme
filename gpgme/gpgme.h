@@ -445,6 +445,8 @@ typedef enum
     GPGME_STATUS_SC_OP_SUCCESS,
     GPGME_STATUS_CARDCTRL,
     GPGME_STATUS_BACKUP_KEY_CREATED,
+    GPGME_STATUS_PKA_TRUST_BAD,
+    GPGME_STATUS_PKA_TRUST_GOOD,
 
     GPGME_STATUS_PLAINTEXT
   }
@@ -1318,8 +1320,11 @@ struct _gpgme_signature
   /* Key should not have been used for signing.  */
   unsigned int wrong_key_usage : 1;
 
+  /* PKA status: 0 = not available, 1 = bad, 2 = okay, 3 = RFU. */
+  unsigned int pka_trust : 2;
+
   /* Internal to GPGME, do not use.  */
-  int _unused : 31;
+  int _unused : 29;
 
   gpgme_validity_t validity;
   gpgme_error_t validity_reason;
