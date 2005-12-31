@@ -81,8 +81,12 @@ find_channel (int fd, int create)
     return NULL;
 
   if (create && !giochannel_table[fd])
-    giochannel_table[fd] = g_io_channel_win32_new_fd (fd);
-      
+    {
+      giochannel_table[fd] = g_io_channel_win32_new_fd (fd);
+      g_io_channel_set_encoding (giochannel_table[fd], NULL, NULL);
+      g_io_channel_set_buffered (giochannel_table[fd], FALSE);
+    }
+
   return giochannel_table[fd];
 }
 
@@ -587,9 +591,11 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
       for (i = 0; i < npollfds; i++)
 	{
 	  if ((pollfds[i].revents & G_IO_IN))
-	    DEBUG_ADD1 (dbg_help, "r%d ", i);
+	    DEBUG_ADD1 (dbg_help, "r%d ", fds[pollfds_map[i]].fd);
           if ((pollfds[i].revents & G_IO_OUT))
-            DEBUG_ADD1 (dbg_help, "w%d ", i);
+            DEBUG_ADD1 (dbg_help, "w%d ", fds[pollfds_map[i]].fd);
+	  DEBUG_ADD2 (dbg_help, "x%d(%x) ", fds[pollfds_map[i]].fd,
+		      pollfds[i].revents);
         }
       DEBUG_END (dbg_help, "]");
     }
