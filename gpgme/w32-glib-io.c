@@ -594,8 +594,6 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	    DEBUG_ADD1 (dbg_help, "r%d ", fds[pollfds_map[i]].fd);
           if ((pollfds[i].revents & G_IO_OUT))
             DEBUG_ADD1 (dbg_help, "w%d ", fds[pollfds_map[i]].fd);
-	  DEBUG_ADD2 (dbg_help, "x%d(%x) ", fds[pollfds_map[i]].fd,
-		      pollfds[i].revents);
         }
       DEBUG_END (dbg_help, "]");
     }
