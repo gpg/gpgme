@@ -1,3 +1,8 @@
+2005-12-31  Marcus Brinkmann  <marcus@g10code.de>
+
+	* w32-glib-io.c (find_channel): Set channel to unbuffered.
+	(_gpgme_io_select): Fix debug output.
+
 2005-12-20  Werner Koch  <wk@g10code.com>
 
 	* gpgme.h (gpgme_status_code_t): Added GPGME_STATUS_PKA_TRUST_BAD
