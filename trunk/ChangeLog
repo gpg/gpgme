@@ -1,3 +1,7 @@
+2006-01-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Append SVN revision to the version.
+
 2005-11-18  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (BUILD_REVISION): New.

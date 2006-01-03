@@ -25,7 +25,24 @@ min_automake_version="1.9.3"
 
 # Version number: Remember to change it immediately *after* a release.
 #                 Make sure to run  "svn up" before a "make dist".
-AC_INIT(gpgme, 1.1.1-cvs, [bug-gpgme@gnupg.org])
+#                 See below for the LT versions.
+#
+# The CVS version is usually the next intended release version with
+# the string "-cvs" appended.  The reason for this is that tests for a
+# specific feature can already be done under the assumption that the
+# CVS version is the most recent one in a branch.  To disable the CVS
+# version for the real release, just comment out the my_iscvs macro.
+# Note, that we are now using Subversion instead of CVS and append the
+# SVN revision number to the "cvs" suffix.  To make this most useful
+# for snapshot releases please do an "svn up" right before recreating
+# the configure script, so that a proper revision number for all files
+# is available when running a "make distcheck".
+m4_define(my_version, [1.1.1])
+m4_define(my_iscvs, yes)
+AC_INIT([gpgme], my_version[]m4_ifdef([my_iscvs], [-cvs[]m4_translit(
+               [$Revision$],[Ra-z $:])]),
+               [bug-gpgme@gnupg.org])
+
 # LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
 #   (Interfaces added/removed/changed:	CURRENT++, REVISION=0)
