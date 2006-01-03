@@ -64,6 +64,8 @@ release_op_data (void *hook)
 
       if (sig->fpr)
 	free (sig->fpr);
+      if (sig->pka_address)
+	free (sig->pka_address);
       free (sig);
       sig = next;
     }
@@ -588,6 +590,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
   void *hook;
   op_data_t opd;
   gpgme_signature_t sig;
+  char *end;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, &hook, -1, NULL);
   opd = hook;
@@ -654,10 +657,15 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_PKA_TRUST_BAD:
     case GPGME_STATUS_PKA_TRUST_GOOD:
       opd->only_newsig_seen = 0;
-      if (sig && !sig->pka_trust)
-        sig->pka_trust = code == GPGME_STATUS_PKA_TRUST_GOOD? 2 : 1;
-      /* FIXME: We should set the mailbox which is the argument to
-         these status codes into a new field. */
+      /* Check that we only get one of these status codes per
+         signature; if not the crypto backend misbehaves.  */
+      if (!sig || sig->pka_trust || sig->pka_address)
+        return gpg_error (GPG_ERR_INV_ENGINE);
+      sig->pka_trust = code == GPGME_STATUS_PKA_TRUST_GOOD? 2 : 1;
+      end = strchr (args, ' ');
+      if (end)
+        *end = 0;
+      sig->pka_address = strdup (args);
       break;
 
     case GPGME_STATUS_ERROR:

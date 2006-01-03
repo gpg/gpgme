@@ -8,11 +8,17 @@
 	* w32-glib-io.c (find_channel): Set channel to unbuffered.
 	(_gpgme_io_select): Fix debug output.
 
+2005-12-23  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h (struct _gpgme_signature): Append field PKA_ADDRESS.
+	* verify.c (release_op_data, _gpgme_verify_status_handler): Set
+	this field.
+
 2005-12-20  Werner Koch  <wk@g10code.com>
 
 	* gpgme.h (gpgme_status_code_t): Added GPGME_STATUS_PKA_TRUST_BAD
 	and GPGME_STATUS_PKA_TRUST_GOOD.
-	(gpgme_signature_t): New field pka_trust.
+	(struct _gpgme_signature): New field pka_trust.
 	* verify.c (_gpgme_verify_status_handler): Set pka_trust.
 
 2005-12-06  Werner Koch  <wk@g10code.com>
