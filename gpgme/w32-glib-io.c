@@ -287,8 +287,8 @@ _gpgme_io_close (int fd)
       g_io_channel_unref (chan);
       giochannel_table[fd] = NULL;
     }
-
-  _close (fd);
+  else
+    _close (fd);
 
   return 0;
 }
