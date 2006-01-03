@@ -21,8 +21,7 @@ Noteworthy changes in version 1.1.1 (unreleased)
 
  * New status codes GPGME_PKA_TRUST_GOOD and GPGME_PKA_TRUST_BAD.
    They are analyzed by the verify handlers and made available in the
-   new PKA_TRUST field of the signature result structure.
-
+   new PKA_TRUST and PKA_ADDRESS fields of the signature result structure.
 
  * Interface changes relative to the 1.1.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,6 +31,7 @@ gpgme_free			NEW
 GPGME_STATUS_PKA_TRUST_BAD      NEW
 GPGME_STATUS_PKA_TRUST_GOOD     NEW
 gpgme_signature_t               EXTENDED: New field pka_trust.
+gpgme_signature_t               EXTENDED: New field pka_address.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

@@ -72,7 +72,7 @@ extern "C" {
    AM_PATH_GPGME macro) check that this header matches the installed
    library.  Warning: Do not edit the next line.  configure will do
    that for you!  */
-#define GPGME_VERSION "1.2.0-cvs"
+#define GPGME_VERSION "1.1.1-cvs"
 
 
 
@@ -1020,11 +1020,11 @@ gpgme_data_encoding_t gpgme_data_get_encoding (gpgme_data_t dh);
 gpgme_error_t gpgme_data_set_encoding (gpgme_data_t dh,
 				       gpgme_data_encoding_t enc);
 
-/* Get the filename associated with the data object with handle DH, or
+/* Get the file name associated with the data object with handle DH, or
    NULL if there is none.  */
 char *gpgme_data_get_file_name (gpgme_data_t dh);
 
-/* Set the filename associated with the data object with handle DH to
+/* Set the file name associated with the data object with handle DH to
    FILE_NAME.  */
 gpgme_error_t gpgme_data_set_file_name (gpgme_data_t dh,
 					const char *file_name);
@@ -1334,6 +1334,9 @@ struct _gpgme_signature
 
   /* The hash algorithm used to create the signature.  */
   gpgme_hash_algo_t hash_algo;
+
+  /* The mailbox from the PKA information or NULL. */
+  char *pka_address;
 };
 typedef struct _gpgme_signature *gpgme_signature_t;
 
