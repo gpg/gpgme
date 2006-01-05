@@ -180,6 +180,7 @@ AC_CHECK_HEADERS(sys/select.h)
 
 
 # Type checks.
+AC_C_INLINE
 AC_CHECK_SIZEOF(unsigned int)
 AC_SYS_LARGEFILE
 AC_TYPE_OFF_T
@@ -504,6 +505,15 @@ AH_VERBATIM([SEPCONSTANTS],
 #define EXTSEP_S "."
 #define PATHSEP_C ':'
 #define PATHSEP_S ":"
+#endif
+])
+
+AH_BOTTOM([
+/* Definition of GCC specific attributes.  */
+#if __GNUC__ > 2 
+# define GPGME_GCC_A_PURE  __attribute__ ((__pure__))
+#else
+# define GPGME_GCC_A_PURE
 #endif
 ])
 
