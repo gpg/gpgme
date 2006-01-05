@@ -290,6 +290,7 @@ _gpgme_io_close (int fd)
   else
     _close (fd);
 
+
   return 0;
 }
 
@@ -313,21 +314,25 @@ _gpgme_io_set_nonblocking (int fd)
 {
   GIOChannel *chan;
   GIOStatus status;
-
+ 
   chan = find_channel (fd, 0);
   if (!chan)
     {
+      DEBUG1 ("set nonblocking for fd %d failed: channel not found", fd);
       errno = EIO;
       return -1;
     }
 
-  status = g_io_channel_set_flags (chan,
+   status = g_io_channel_set_flags (chan,
 				   g_io_channel_get_flags (chan) |
 				   G_IO_FLAG_NONBLOCK, NULL);
   if (status != G_IO_STATUS_NORMAL)
     {
-      errno = EIO;
-      return -1;
+      /* glib 1.9.2 does not implement set_flags and returns an error. */
+      DEBUG2 ("set nonblocking for fd %d failed: status=%d - ignored",
+              fd, status);
+/*       errno = EIO; */
+/*       return -1; */
     }
 
   return 0;

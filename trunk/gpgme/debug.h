@@ -1,5 +1,5 @@
 /* debug.h - interface to debugging functions
-   Copyright (C) 2002, 2004 g10 Code GmbH
+   Copyright (C) 2002, 2004, 2005 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -20,6 +20,20 @@
 
 #ifndef DEBUG_H
 #define DEBUG_H
+
+#include <string.h>
+
+/* Remove path components from filenames (i.e. __FILE__) for cleaner
+   logs. */
+static inline const char *_gpgme_debug_srcname (const char *file)
+                                                GPGME_GCC_A_PURE;
+
+static inline const char *
+_gpgme_debug_srcname (const char *file)
+{
+  const char *s = strrchr (file, '/');
+  return s? s+1:file;
+}
 
 /* Log the formatted string FORMAT at debug level LEVEL or higher.  */
 void _gpgme_debug (int level, const char *format, ...);
@@ -76,22 +90,26 @@ void _gpgme_debug_end (void **helper);
 #else
 /* This finally works everywhere, horror.  */
 #define DEBUG0(fmt) \
-  _gpgme_debug (1, "%s:%s: " fmt, __FILE__, XSTRINGIFY (__LINE__))
+  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
+                XSTRINGIFY (__LINE__))
 #define DEBUG1(fmt,a) \
-  _gpgme_debug (1, "%s:%s: " fmt, __FILE__, XSTRINGIFY (__LINE__), (a))
+  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
+                XSTRINGIFY (__LINE__), (a))
 #define DEBUG2(fmt,a,b) \
-  _gpgme_debug (1, "%s:%s: " fmt, __FILE__, XSTRINGIFY (__LINE__), (a), (b))
+  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
+                XSTRINGIFY (__LINE__), (a), (b))
 #define DEBUG3(fmt,a,b,c) \
-  _gpgme_debug (1, "%s:%s: " fmt, __FILE__, XSTRINGIFY (__LINE__), (a), (b), \
-		(c))
+  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
+                XSTRINGIFY (__LINE__), (a), (b), (c))
 #define DEBUG4(fmt,a,b,c,d) \
-  _gpgme_debug (1, "%s:%s: " fmt, __FILE__, XSTRINGIFY (__LINE__), (a), (b), \
-		(c), (d))
+  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
+                XSTRINGIFY (__LINE__), (a), (b), (c), (d))
 #define DEBUG5(fmt,a,b,c,d,e) \
-  _gpgme_debug (1, "%s:%s: " fmt, __FILE__, XSTRINGIFY (__LINE__), (a), (b), \
-		(c), (d), (e))
+  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
+                XSTRINGIFY (__LINE__), (a), (b), (c), (d), (e))
 #define DEBUG_BEGIN(hlp,lvl,fmt) \
-  _gpgme_debug_begin (&(hlp), lvl, "%s:%s: " fmt, __FILE__, XSTRINGIFY (__LINE__))
+  _gpgme_debug_begin (&(hlp), lvl, "%s:%s: " fmt, \
+                      _gpgme_debug_srcname (__FILE__), XSTRINGIFY (__LINE__))
 #define DEBUG_ADD0(hlp,fmt) \
   _gpgme_debug_add (&(hlp), fmt)
 #define DEBUG_ADD1(hlp,fmt,a) \
