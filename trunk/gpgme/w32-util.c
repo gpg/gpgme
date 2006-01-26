@@ -265,7 +265,6 @@ find_program_at_standard_place (const char *name)
   return result;
 }
 
-
 const char *
 _gpgme_get_gpg_path (void)
 {
@@ -300,4 +299,19 @@ _gpgme_get_gpgsm_path (void)
 #endif
   UNLOCK (get_path_lock);
   return gpgsm_program;
+}
+
+
+/* Return an integer value from gpgme specific configuration
+   entries. VALUE receives that value; function returns true if a value
+   has been configured and false if not. */
+int
+_gpgme_get_conf_int (const char *key, int *value)
+{
+  char *tmp = read_w32_registry_string (NULL, "Software\\GNU\\gpgme", key);
+  if (!tmp)
+    return 0;
+  *value = atoi (tmp);
+  free (tmp);
+  return 1;
 }

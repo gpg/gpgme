@@ -48,3 +48,10 @@ _gpgme_get_gpgsm_path (void)
   return NULL;
 #endif
 }
+
+/* See w32-util.c */
+int
+_gpgme_get_conf_int (const char *key, int *value)
+{
+  return 0;
+}
