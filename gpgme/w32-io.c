@@ -119,6 +119,23 @@ DEFINE_STATIC_LOCK (writer_table_lock);
 
 
 
+static int
+get_desired_thread_priority (void)
+{
+  int value;
+
+  if (!_gpgme_get_conf_int ("IOThreadPriority", &value))
+    {
+      value = THREAD_PRIORITY_HIGHEST;
+      DEBUG1 ("** Using standard IOThreadPriority of %d\n", value);
+    }
+  else
+    DEBUG1 ("** Configured IOThreadPriority is %d\n", value);
+
+  return value;
+}
+
+
 static HANDLE
 set_synchronize (HANDLE h)
 {
@@ -266,7 +283,7 @@ create_reader (HANDLE fd)
       /* We set the priority of the thread higher because we know that
          it only runs for a short time.  This greatly helps to increase
          the performance of the I/O. */
-      SetThreadPriority (c->thread_hd, THREAD_PRIORITY_HIGHEST);
+      SetThreadPriority (c->thread_hd, get_desired_thread_priority ());
     }
 
     return c;
@@ -524,7 +541,7 @@ create_writer (HANDLE fd)
       /* We set the priority of the thread higher because we know that
          it only runs for a short time.  This greatly helps to increase
          the performance of the I/O. */
-      SetThreadPriority (c->thread_hd, THREAD_PRIORITY_HIGHEST);
+      SetThreadPriority (c->thread_hd, get_desired_thread_priority ());
     }
 
     return c;
