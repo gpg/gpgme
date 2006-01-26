@@ -19,7 +19,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  
 # (Process this file with autoconf to produce a configure script.)
-
 AC_PREREQ(2.59)
 min_automake_version="1.9.3"
 
