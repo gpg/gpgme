@@ -1,5 +1,9 @@
 2006-02-22  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine.c (gpgme_engine_check_version): Reimplemented to allow
+	checking the version correctly even after changing the engine
+	information.  Bug reported by Stéphane Corthésy.
+
 	* rungpg.c (read_colon_line): Invoke colon preprocess handler if
 	it is set.
 	(colon_preprocessor_t): New type.
