@@ -106,14 +106,33 @@ engine_get_req_version (gpgme_protocol_t proto)
 gpgme_error_t
 gpgme_engine_check_version (gpgme_protocol_t proto)
 {
+  gpgme_error_t err;
+  gpgme_engine_info_t info;
   int result;
-  char *engine_version = engine_get_version (proto, NULL);
 
-  result = _gpgme_compare_versions (engine_version,
-				    engine_get_req_version (proto));
-  if (engine_version)
-    free (engine_version);
+  LOCK (engine_info_lock);
+  info = engine_info;
+  if (!info)
+    {
+      /* Make sure it is initialized.  */
+      UNLOCK (engine_info_lock);
+      err = gpgme_get_engine_info (&info);
+      if (err)
+	return err;
 
+      LOCK (engine_info_lock);
+    }
+
+  while (info && info->protocol != proto)
+    info = info->next;
+
+  if (!info)
+    result = 0;
+  else
+    result = _gpgme_compare_versions (info->version,
+				      info->req_version);
+
+  UNLOCK (engine_info_lock);
   return result ? 0 : gpg_error (GPG_ERR_INV_ENGINE);
 }
 
