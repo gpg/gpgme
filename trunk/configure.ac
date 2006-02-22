@@ -1,6 +1,6 @@
 # configure.ac for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -37,7 +37,7 @@ min_automake_version="1.9.3"
 # the configure script, so that a proper revision number for all files
 # is available when running a "make distcheck".
 m4_define(my_version, [1.1.1])
-m4_define(my_iscvs, yes)
+#m4_define(my_iscvs, yes)
 AC_INIT([gpgme], my_version[]m4_ifdef([my_iscvs], [-cvs[]m4_translit(
                [$Revision$],[Ra-z $:])]),
                [bug-gpgme@gnupg.org])
@@ -48,10 +48,10 @@ AC_INIT([gpgme], my_version[]m4_ifdef([my_iscvs], [-cvs[]m4_translit(
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed/changed:	AGE=0)
 #
-LIBGPGME_LT_CURRENT=16
+LIBGPGME_LT_CURRENT=17
 # Subtract 2 from this value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
-LIBGPGME_LT_AGE=5
+LIBGPGME_LT_AGE=7
 LIBGPGME_LT_REVISION=0
 
 # If the API is changed in an incompatible way: increment the next counter.
