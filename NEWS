@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.1.1 (unreleased)
+Noteworthy changes in version 1.1.1 (2006-02-22)
 ------------------------------------------------
 
  * Fixed a bug in that the fingerprints of subkeys are not available.
