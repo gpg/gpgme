@@ -1,3 +1,8 @@
+2006-02-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pth.m4: Fix code generation (required for Max OS X).
+	Submitted by Emanuele Giaquinta <exg@gentoo.org>.
+
 2005-11-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* glib-2.0.m4: New file.
