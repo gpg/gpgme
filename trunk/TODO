@@ -5,9 +5,6 @@ Hey Emacs, this is -*- outline -*- mode!
    The test is currently disabled there and in gpg/t-import.
 ** When gpg supports it, write binary subpackets directly,
    and parse SUBPACKET status lines.
-** External key listing for OpenPGP.
-   This probably requires changes at gpg.
-
 
 * ABI's to break:
 ** gpgme_edit_cb_t: Add "processed" return argument
@@ -81,7 +78,7 @@ Hey Emacs, this is -*- outline -*- mode!
    release everything properly at a reset and at an error.  Think hard
    about where to guarantee what (ie, what happens if start fails, are
    the fds unregistered immediately - i think so?)
-** Optimize the case where a data object has an underlying fd we can pass
+** Optimize the case where a data object has 0an underlying fd we can pass
    directly to the engine.  This will be automatic with socket I/O and
    descriptor passing.
 ** Move code common to all engines up from gpg to engine.

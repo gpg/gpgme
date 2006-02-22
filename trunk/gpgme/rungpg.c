@@ -65,6 +65,8 @@ struct fd_data_map_s
 };
 
 
+typedef gpgme_error_t (*colon_preprocessor_t) (char *line, char **rline);
+
 struct engine_gpg
 {
   char *file_name;
@@ -95,6 +97,7 @@ struct engine_gpg
     engine_colon_line_handler_t fnc;  /* this indicate use of this structrue */
     void *fnc_value;
     void *tag;
+    colon_preprocessor_t preprocess_fnc;
   } colon;
 
   char **argv;  
@@ -1013,14 +1016,27 @@ read_colon_line (engine_gpg_t gpg)
 	    {
 	      /* (we require that the last line is terminated by a LF)
 		 and we skip empty lines.  Note: we use UTF8 encoding
-		 and escaping of special characters We require at
+		 and escaping of special characters.  We require at
 		 least one colon to cope with some other printed
 		 information.  */
 	      *p = 0;
 	      if (*buffer && strchr (buffer, ':'))
 		{
+		  char *line = NULL;
+
+		  if (gpg->colon.preprocess_fnc)
+		    {
+		      gpgme_error_t err;
+
+		      err = gpg->colon.preprocess_fnc (buffer, &line);
+		      if (err)
+			return err;
+		    }
+
 		  assert (gpg->colon.fnc);
-		  gpg->colon.fnc (gpg->colon.fnc_value, buffer);
+		  gpg->colon.fnc (gpg->colon.fnc_value, line ? line : buffer);
+		  if (line)
+		    free (line);
 		}
             
 	      /* To reuse the buffer for the next line we have to
@@ -1613,6 +1629,93 @@ gpg_import (void *engine, gpgme_data_t keydata)
 }
 
 
+/* The output for external keylistings in GnuPG is different from all
+   the other key listings.  We catch this here with a special
+   preprocessor that reformats the colon handler lines.  */
+static gpgme_error_t
+gpg_keylist_preprocess (char *line, char **r_line)
+{
+  enum
+    {
+      RT_NONE, RT_INFO, RT_PUB, RT_UID
+    }
+  rectype = RT_NONE;
+#define NR_FIELDS 16
+  char *field[NR_FIELDS];
+  int fields = 0;
+
+  *r_line = NULL;
+
+  while (line && fields < NR_FIELDS)
+    {
+      field[fields++] = line;
+      line = strchr (line, ':');
+      if (line)
+	*(line++) = '\0';
+    }
+
+  if (!strcmp (field[0], "info"))
+    rectype = RT_INFO;
+  else if (!strcmp (field[0], "pub"))
+    rectype = RT_PUB;
+  else if (!strcmp (field[0], "uid"))
+    rectype = RT_UID;
+  else 
+    rectype = RT_NONE;
+
+  switch (rectype)
+    {
+    case RT_INFO:
+      /* FIXME: Eventually, check the version number at least.  */
+      return 0;
+
+    case RT_PUB:
+      if (fields < 7)
+	return 0;
+
+      /* The format is:
+
+	 pub:<keyid>:<algo>:<keylen>:<creationdate>:<expirationdate>:<flags>
+
+	 as defined in 5.2. Machine Readable Indexes of the OpenPGP
+	 HTTP Keyserver Protocol (draft). 
+
+	 We want:
+	 pub:o<flags>:<keylen>:<algo>:<keyid>:<creatdate>:<expdate>::::::::
+      */
+
+      if (asprintf (r_line, "pub:o%s:%s:%s:%s:%s:%s::::::::",
+		    field[6], field[3], field[2], field[1],
+		    field[4], field[5]) < 0)
+	return gpg_error_from_errno (errno);
+      return 0;
+
+    case RT_UID:
+      /* The format is:
+
+         uid:<escaped uid string>:<creationdate>:<expirationdate>:<flags>
+
+	 as defined in 5.2. Machine Readable Indexes of the OpenPGP
+	 HTTP Keyserver Protocol (draft). 
+
+	 We want:
+	 uid:o<flags>::::<creatdate>:<expdate>:::<uid>:
+      */
+
+      if (asprintf (r_line, "uid:o%s::::%s:%s:::%s:",
+		    field[4], field[2], field[3], field[1]) < 0)
+	return gpg_error_from_errno (errno);
+      return 0;
+
+    case RT_NONE:
+      /* Unknown record.  */
+      break;
+    }
+  return 0;
+
+}
+
+
 static gpgme_error_t
 gpg_keylist (void *engine, const char *pattern, int secret_only,
 	     gpgme_keylist_mode_t mode)
@@ -1620,6 +1723,13 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
+  if (mode & GPGME_KEYLIST_MODE_EXTERN)
+    {
+      if ((mode & GPGME_KEYLIST_MODE_LOCAL)
+	  || secret_only)
+	return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+  
   err = add_arg (gpg, "--with-colons");
   if (!err)
     err = add_arg (gpg, "--fixed-list-mode");
@@ -1635,10 +1745,20 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
 	err = add_arg (gpg, "show-sig-subpackets=\"20,26\"");
     }
   if (!err)
-    err = add_arg (gpg, secret_only ? "--list-secret-keys"
-		   : ((mode & GPGME_KEYLIST_MODE_SIGS)
-		      ? "--check-sigs" : "--list-keys"));
-  
+    {
+      if (mode & GPGME_KEYLIST_MODE_EXTERN)
+	{
+	  err = add_arg (gpg, "--search-keys");
+	  gpg->colon.preprocess_fnc = gpg_keylist_preprocess;
+	}
+      else
+	{
+	  err = add_arg (gpg, secret_only ? "--list-secret-keys"
+			 : ((mode & GPGME_KEYLIST_MODE_SIGS)
+			    ? "--check-sigs" : "--list-keys"));
+	}
+    }
+
   /* Tell the gpg object about the data.  */
   if (!err)
     err = add_arg (gpg, "--");

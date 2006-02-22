@@ -176,7 +176,8 @@ set_mainkey_trust_info (gpgme_key_t key, const char *src)
 
 	case 'd':
           /* Note that gpg 1.3 won't print that anymore but only uses
-             the capabilities field. */
+             the capabilities field.  However, it is still used for
+             external key listings.  */
 	  key->disabled = 1;
 	  break;
 
@@ -493,8 +494,9 @@ keylist_colon_handler (void *priv, char *line)
 	    subkey->pubkey_algo = i;
 	}
 
-      /* Field 5 has the long keyid.  */
-      if (fields >= 5 && strlen (field[4]) == DIM(subkey->_keyid) - 1)
+      /* Field 5 has the long keyid.  Allow short key IDs for the
+	 output of an external keyserver listing.  */
+      if (fields >= 5 && strlen (field[4]) <= DIM(subkey->_keyid) - 1)
 	strcpy (subkey->_keyid, field[4]);
 
       /* Field 6 has the timestamp (seconds).  */
