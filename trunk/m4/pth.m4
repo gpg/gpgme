@@ -285,8 +285,6 @@ dnl    fi
         #include <pth.h>
         ])
         define(_code2, [dnl
-        int main(int argc, char *argv[])
-        {
             FILE *fp;
             if (!(fp = fopen("conftestval", "w")))
                 exit(1);
@@ -299,7 +297,6 @@ dnl    fi
             fprintf(fp, "yes");
             fclose(fp);
             exit(0);
-        }
         ])
         _AC_PTH_VERBOSE([+ Performing Sanity Checks:])
         _AC_PTH_VERBOSE([    o pre-processor test])
@@ -329,7 +326,7 @@ dnl    fi
             See config.log for possibly more details.])
         fi
         _AC_PTH_VERBOSE([    o run-time check])
-        AC_TRY_RUN(_code1 _code2, _ok=`cat conftestval`, _ok=no, _ok=no)
+        AC_TRY_RUN(AC_LANG_PROGRAM(_code1, _code2), _ok=`cat conftestval`, _ok=no, _ok=no)
         if test ".$_ok" != .yes; then
             if test ".$_ok" = .no; then
                 _AC_PTH_ERROR([dnl
