@@ -51,7 +51,7 @@ AC_INIT([gpgme], my_version[]m4_ifdef([my_iscvs], [-cvs[]m4_translit(
 LIBGPGME_LT_CURRENT=17
 # Subtract 2 from this value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
-LIBGPGME_LT_AGE=7
+LIBGPGME_LT_AGE=6
 LIBGPGME_LT_REVISION=0
 
 # If the API is changed in an incompatible way: increment the next counter.
