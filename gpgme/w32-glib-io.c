@@ -41,6 +41,13 @@
 #include "sema.h"
 #include "debug.h"
 
+#ifndef O_BINARY
+#ifdef _O_BINARY
+#define O_BINARY	_O_BINARY
+#else
+#define O_BINARY	0
+#endif
+#endif
 
 
 /* This file is an ugly hack to get GPGME working with glib on Windows
@@ -206,7 +213,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   GIOChannel *chan;
 
 #define PIPEBUF_SIZE  4096
-  if (_pipe (filedes, PIPEBUF_SIZE, O_NOINHERIT) == -1)
+  if (_pipe (filedes, PIPEBUF_SIZE, O_NOINHERIT | O_BINARY) == -1)
     return -1;
 
   /* Make one end inheritable. */
