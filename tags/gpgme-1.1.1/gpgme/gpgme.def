@@ -1,0 +1,158 @@
+; gpgme.def - List of symbols to export.
+; Copyright (C) 2005 g10 Code GmbH
+;
+; This file is part of GPGME.
+;
+; GPGME is free software; you can redistribute it and/or modify
+; it under the terms of the GNU Lesser general Public License as
+; published by the Free Software Foundation; either version 2.1 of
+; the License, or (at your option) any later version.
+;
+; GPGME is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU Lesser General Public License for more details.
+;
+; You should have received a copy of the GNU Lesser General Public
+; License along with this program; if not, write to the Free Software
+; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+
+
+EXPORTS
+    gpgme_check_version                   @1
+    gpgme_get_engine_info                 @2   
+    gpgme_engine_check_version            @3   
+                                                
+    gpgme_err_code_from_errno             @4   
+    gpgme_err_code_to_errno               @5   
+    gpgme_err_make_from_errno             @6   
+    gpgme_error_from_errno                @7   
+    gpgme_strerror                        @8   
+    gpgme_strerror_r                      @9   
+    gpgme_strsource                       @10  
+                                                
+    gpgme_data_get_encoding               @11  
+    gpgme_data_new                        @12  
+    gpgme_data_new_from_cbs               @13  
+    gpgme_data_new_from_fd                @14  
+    gpgme_data_new_from_file              @15  
+    gpgme_data_new_from_filepart          @16  
+    gpgme_data_new_from_mem               @17  
+    gpgme_data_new_from_stream            @18  
+    gpgme_data_read                       @19  
+    gpgme_data_release                    @20  
+    gpgme_data_release_and_get_mem        @21  
+    gpgme_data_seek                       @22  
+    gpgme_data_set_encoding               @23  
+    gpgme_data_write                      @24  
+                                                        
+    gpgme_get_protocol_name               @25  
+    gpgme_hash_algo_name                  @26  
+    gpgme_pubkey_algo_name                @27  
+                                                
+    gpgme_new                             @28  
+    gpgme_get_armor                       @29  
+    gpgme_get_include_certs               @30  
+    gpgme_get_io_cbs                      @31  
+    gpgme_get_keylist_mode                @32  
+    gpgme_get_passphrase_cb               @33  
+    gpgme_get_progress_cb                 @34  
+    gpgme_get_protocol                    @35  
+    gpgme_get_textmode                    @36  
+    gpgme_release                         @37  
+    gpgme_set_armor                       @38  
+    gpgme_set_include_certs               @39  
+    gpgme_set_io_cbs                      @40  
+    gpgme_set_keylist_mode                @41  
+    gpgme_set_locale                      @42  
+    gpgme_set_passphrase_cb               @43  
+    gpgme_set_progress_cb                 @44  
+    gpgme_set_protocol                    @45  
+    gpgme_set_textmode                    @46  
+    gpgme_signers_add                     @47  
+    gpgme_signers_clear                   @48  
+    gpgme_signers_enum                    @49  
+                                                
+    gpgme_key_ref                         @50  
+    gpgme_key_unref                       @51  
+    gpgme_key_release                     @52  
+                                                
+    gpgme_trust_item_ref                  @53  
+    gpgme_trust_item_unref                @54  
+                                                
+    gpgme_cancel                          @55  
+    gpgme_op_card_edit                    @56  
+    gpgme_op_card_edit_start              @57  
+    gpgme_op_decrypt                      @58  
+    gpgme_op_decrypt_result               @59  
+    gpgme_op_decrypt_start                @60  
+    gpgme_op_decrypt_verify               @61  
+    gpgme_op_decrypt_verify_start         @62  
+    gpgme_op_delete                       @63  
+    gpgme_op_delete_start                 @64  
+    gpgme_op_edit                         @65  
+    gpgme_op_edit_start                   @66  
+    gpgme_op_encrypt                      @67  
+    gpgme_op_encrypt_result               @68  
+    gpgme_op_encrypt_sign                 @69  
+    gpgme_op_encrypt_sign_start           @70  
+    gpgme_op_encrypt_start                @71  
+    gpgme_op_export                       @72  
+    gpgme_op_export_ext                   @73  
+    gpgme_op_export_ext_start             @74  
+    gpgme_op_export_start                 @75  
+    gpgme_op_genkey                       @76  
+    gpgme_op_genkey_result                @77  
+    gpgme_op_genkey_start                 @78  
+    gpgme_get_key                         @79  
+    gpgme_op_import                       @80  
+    gpgme_op_import_result                @81  
+    gpgme_op_import_start                 @82  
+    gpgme_op_keylist_end                  @83  
+    gpgme_op_keylist_ext_start            @84  
+    gpgme_op_keylist_next                 @85  
+    gpgme_op_keylist_result               @86  
+    gpgme_op_keylist_start                @87  
+    gpgme_op_sign                         @88  
+    gpgme_op_sign_result                  @89  
+    gpgme_op_sign_start                   @90  
+    gpgme_op_trustlist_end                @91  
+    gpgme_op_trustlist_next               @92  
+    gpgme_op_trustlist_start              @93  
+    gpgme_op_verify                       @94  
+    gpgme_op_verify_result                @95  
+    gpgme_op_verify_start                 @96  
+    gpgme_wait                            @97  
+                                                
+    gpgme_data_new_with_read_cb           @98  
+    gpgme_data_rewind                     @99  
+    gpgme_get_sig_status                  @100 
+    gpgme_get_sig_string_attr             @101 
+    gpgme_get_sig_ulong_attr              @102 
+    gpgme_get_sig_key                     @103 
+    gpgme_key_get_string_attr             @104 
+    gpgme_key_get_ulong_attr              @105 
+    gpgme_key_sig_get_string_attr         @106 
+    gpgme_key_sig_get_ulong_attr          @107 
+    gpgme_op_import_ext                   @108 
+    gpgme_trust_item_get_int_attr         @109 
+    gpgme_trust_item_get_string_attr      @110 
+    gpgme_trust_item_release              @111 
+                                                
+    gpgme_set_engine_info                 @112 
+                                                
+    gpgme_ctx_get_engine_info             @113 
+    gpgme_ctx_set_engine_info             @114
+
+    gpgme_data_set_file_name		  @115
+    gpgme_data_get_file_name		  @116
+
+    gpgme_sig_notation_clear		  @117
+    gpgme_sig_notation_add		  @118
+    gpgme_sig_notation_get		  @119
+
+    gpgme_free				  @120
+
+    gpgme_get_giochannel		  @121
+; END
+
