@@ -1,0 +1,167 @@
+# libgpgme.vers - List of symbols to export.
+# Copyright (C) 2002, 2004, 2005 g10 Code GmbH
+#
+# This file is part of GPGME.
+#
+# GPGME is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser general Public License as
+# published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
+#
+# GPGME is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+
+#-------------------------------------------------------
+# Please remember to add new functions also to gpgme.def
+#-------------------------------------------------------
+
+GPGME_1.1 {
+  global:
+    gpgme_set_engine_info;
+
+    gpgme_ctx_get_engine_info;
+    gpgme_ctx_set_engine_info;
+
+    gpgme_data_set_file_name;
+    gpgme_data_get_file_name;
+
+    gpgme_sig_notation_clear;
+    gpgme_sig_notation_add;
+    gpgme_sig_notation_get;
+
+    gpgme_free;
+};
+
+
+GPGME_1.0 {
+  global:
+    gpgme_check_version;
+    gpgme_get_engine_info;
+    gpgme_engine_check_version;
+
+    gpgme_err_code_from_errno;
+    gpgme_err_code_to_errno;
+    gpgme_err_make_from_errno;
+    gpgme_error_from_errno;
+    gpgme_strerror;
+    gpgme_strerror_r;
+    gpgme_strsource;
+
+    gpgme_data_get_encoding;
+    gpgme_data_new;
+    gpgme_data_new_from_cbs;
+    gpgme_data_new_from_fd;
+    gpgme_data_new_from_file;
+    gpgme_data_new_from_filepart;
+    gpgme_data_new_from_mem;
+    gpgme_data_new_from_stream;
+    gpgme_data_read;
+    gpgme_data_release;
+    gpgme_data_release_and_get_mem;
+    gpgme_data_seek;
+    gpgme_data_set_encoding;
+    gpgme_data_write;
+
+    gpgme_get_protocol_name;
+    gpgme_hash_algo_name;
+    gpgme_pubkey_algo_name;
+
+    gpgme_new;
+    gpgme_get_armor;
+    gpgme_get_include_certs;
+    gpgme_get_io_cbs;
+    gpgme_get_keylist_mode;
+    gpgme_get_passphrase_cb;
+    gpgme_get_progress_cb;
+    gpgme_get_protocol;
+    gpgme_get_textmode;
+    gpgme_release;
+    gpgme_set_armor;
+    gpgme_set_include_certs;
+    gpgme_set_io_cbs;
+    gpgme_set_keylist_mode;
+    gpgme_set_locale;
+    gpgme_set_passphrase_cb;
+    gpgme_set_progress_cb;
+    gpgme_set_protocol;
+    gpgme_set_textmode;
+    gpgme_signers_add;
+    gpgme_signers_clear;
+    gpgme_signers_enum;
+
+    gpgme_key_ref;
+    gpgme_key_unref;
+    gpgme_key_release;
+
+    gpgme_trust_item_ref;
+    gpgme_trust_item_unref;
+
+    gpgme_cancel;
+    gpgme_op_card_edit;
+    gpgme_op_card_edit_start;
+    gpgme_op_decrypt;
+    gpgme_op_decrypt_result;
+    gpgme_op_decrypt_start;
+    gpgme_op_decrypt_verify;
+    gpgme_op_decrypt_verify_start;
+    gpgme_op_delete;
+    gpgme_op_delete_start;
+    gpgme_op_edit;
+    gpgme_op_edit_start;
+    gpgme_op_encrypt;
+    gpgme_op_encrypt_result;
+    gpgme_op_encrypt_sign;
+    gpgme_op_encrypt_sign_start;
+    gpgme_op_encrypt_start;
+    gpgme_op_export;
+    gpgme_op_export_ext;
+    gpgme_op_export_ext_start;
+    gpgme_op_export_start;
+    gpgme_op_genkey;
+    gpgme_op_genkey_result;
+    gpgme_op_genkey_start;
+    gpgme_get_key;
+    gpgme_op_import;
+    gpgme_op_import_result;
+    gpgme_op_import_start;
+    gpgme_op_keylist_end;
+    gpgme_op_keylist_ext_start;
+    gpgme_op_keylist_next;
+    gpgme_op_keylist_result;
+    gpgme_op_keylist_start;
+    gpgme_op_sign;
+    gpgme_op_sign_result;
+    gpgme_op_sign_start;
+    gpgme_op_trustlist_end;
+    gpgme_op_trustlist_next;
+    gpgme_op_trustlist_start;
+    gpgme_op_verify;
+    gpgme_op_verify_result;
+    gpgme_op_verify_start;
+    gpgme_wait;
+
+    gpgme_data_new_with_read_cb;
+    gpgme_data_rewind;
+    gpgme_get_sig_status;
+    gpgme_get_sig_string_attr;
+    gpgme_get_sig_ulong_attr;
+    gpgme_get_sig_key;
+    gpgme_key_get_string_attr;
+    gpgme_key_get_ulong_attr;
+    gpgme_key_sig_get_string_attr;
+    gpgme_key_sig_get_ulong_attr;
+    gpgme_op_import_ext;
+    gpgme_trust_item_get_int_attr;
+    gpgme_trust_item_get_string_attr;
+    gpgme_trust_item_release;
+
+  local:
+    *;
+
+};
