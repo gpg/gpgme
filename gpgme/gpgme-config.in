@@ -25,6 +25,10 @@ thread_modules=""
 libs_pth="@PTH_LDFLAGS@ @PTH_LIBS@"
 cflags_pth="@PTH_CFLAGS@"
 
+@HAVE_PTHREAD_TRUE@thread_modules="$thread_modules pthread"
+libs_pthread="-lpthread"
+cflags_pthread=""
+
 # Configure glib.
 libs_glib="@GLIB_LIBS@"
 cflags_glib="@GLIB_CFLAGS@"
