@@ -121,7 +121,7 @@ if test ".$with_pth" != .no; then
             _pth_cppflags=`pth-config --cflags`
             _pth_cflags=`pth-config --cflags`
             _pth_ldflags=`pth-config --ldflags`
-            _pth_libs=`pth-config --libs`
+            _pth_libs=`pth-config --libs --all`
         fi
     elif test -d "$with_pth"; then
         with_pth=`echo $with_pth | sed -e 's;/*$;;'`
@@ -162,7 +162,7 @@ if test ".$with_pth" != .no; then
                         _pth_cppflags=`$_dir/pth-config --cflags`
                         _pth_cflags=`$_dir/pth-config --cflags`
                         _pth_ldflags=`$_dir/pth-config --ldflags`
-                        _pth_libs=`$_dir/pth-config --libs`
+                        _pth_libs=`$_dir/pth-config --libs --all`
                         _pth_found=yes
                         break
                     fi
