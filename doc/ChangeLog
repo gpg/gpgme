@@ -1,3 +1,8 @@
+2006-06-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Passphrase Callback): Fix inverted condition in
+	description.
+
 2005-12-20  Werner Koch  <wk@g10code.com>
 
 	* gpgme.texi (Verify): Document pka_trust.
