@@ -939,8 +939,22 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   err = gpgme_new (&listctx);
   if (err)
     return err;
-  gpgme_set_protocol (listctx, gpgme_get_protocol (ctx));
-  gpgme_set_keylist_mode (listctx, ctx->keylist_mode);
+  {
+    gpgme_protocol_t proto;
+    gpgme_engine_info_t info;
+
+    /* Clone the relevant state.  */
+    proto = gpgme_get_protocol (ctx);
+    gpgme_set_protocol (listctx, proto);
+    gpgme_set_keylist_mode (listctx, gpgme_get_keylist_mode (ctx));
+    info = gpgme_ctx_get_engine_info (ctx);
+    while (info && info->protocol != proto)
+      info = info->next;
+    if (info)
+      gpgme_ctx_set_engine_info (listctx, proto,
+				 info->file_name, info->home_dir);
+  }
+
   err = gpgme_op_keylist_start (listctx, fpr, secret);
   if (!err)
     err = gpgme_op_keylist_next (listctx, r_key);
