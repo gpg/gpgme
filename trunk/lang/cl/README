@@ -1,0 +1,40 @@
+Common Lisp Support for GPGME
+-----------------------------
+
+Requirements:
+
+ASDF		Packaging Support
+CFFI		Foreign Function Interface
+gpg-error	GPG Error Codes
+
+Use with:
+
+> (asdf:operate 'asdf:load-op ':gpgme)
+
+
+Examples
+--------
+
+(with-open-file (stream "/tmp/myout" :direction :output
+			:if-exists :supersede :element-type '(unsigned-byte 8))
+  (with-context (ctx)
+    (setf (armor-p ctx) t)
+    (op-export ctx "DEADBEEF" out)))
+
+(with-context (ctx)
+  (with-output-to-string (out)
+    (setf (armor-p ctx) t)
+    (op-export ctx "McTester" out)))
+
+(gpgme:with-context (ctx :armor t)
+  (with-output-to-string (out)
+    (gpgme:op-export ctx "McTester" out)))
+
+
+TODO
+----
+
+* When GPGME defines macros for include cert values -2, -1, 0 and 1,
+  define lisp macros for them as well.
+
+* 

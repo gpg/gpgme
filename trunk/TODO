@@ -86,8 +86,20 @@ Hey Emacs, this is -*- outline -*- mode!
    (it's an internal error, as select_protocol checks already).
 ** When server mode is implemented properly, more care has to be taken to
    release all resources on error (for example to free assuan_cmd).
+* GPG breakage:
+** gpg 1.4.2 lacks error reporting if sign/encrypt with revoked key.
+** gpg 1.4.2 does crappy error reporting (namely none at all) when
+   smart card is missing for sign operation:
+    [GNUPG:] CARDCTRL 4
+    gpg: selecting openpgp failed: ec=6.110
+    gpg: signing failed: general error
+    [GNUPG:] BEGIN_ENCRYPTION 2 10
+    gpg: test: sign+encrypt failed: general error
+** Without agent and with wrong passphrase, gpg 1.4.2 enters into an
+   infinite loop.
 
 * Operations
+** Include cert values -2, -1, 0 and 1 should be defined as macros.
 ** If an operation failed, make sure that the result functions don't return
    corrupt partial information. !!!
    NOTE: The EOF status handler is not called in this case !!!

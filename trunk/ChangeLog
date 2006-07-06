@@ -1,3 +1,11 @@
+2006-07-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* lang, lang/cl: New subdirectories.
+	* lang/Makefile.am, lang/README: New files.
+	* configure.ac (AC_CONFIG_FILES): Add lang/Makefile,
+	lang/cl/Makefile and lang/cl/gpgme.asd.
+	* Makefile.am (SUBDIRS): Add lang.
+
 2006-03-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac (LIBGPGME_LT_REVISION): Bump for release.

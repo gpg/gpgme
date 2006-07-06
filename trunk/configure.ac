@@ -537,6 +537,7 @@ AC_CONFIG_FILES(Makefile assuan/Makefile gpgme/Makefile
 		doc/Makefile complus/Makefile
                 gpgme/versioninfo.rc)
 AC_CONFIG_FILES(gpgme/gpgme-config, chmod +x gpgme/gpgme-config)
+AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AC_OUTPUT
 
 echo "

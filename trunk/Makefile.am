@@ -43,7 +43,7 @@ else
 tests = 
 endif
 
-SUBDIRS = ${assuan} gpgme ${tests} doc ${complus}
+SUBDIRS = ${assuan} gpgme ${tests} doc ${complus} lang
 
 # Fix the version of the spec file and create a file named VERSION 
 # to be used for patch's Prereq: feature.
