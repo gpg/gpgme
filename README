@@ -1,7 +1,7 @@
                   GPGME - GnuPG Made Easy
                 ---------------------------
 
-               Copyright 2004 g10 Code GmbH
+               Copyright 2004, 2006 g10 Code GmbH
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
@@ -120,3 +120,4 @@ in the tests/gpg/ directory may also prove useful.
 
 Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
 to do serious work.
+
