@@ -845,6 +845,8 @@ read_status (engine_gpg_t gpg)
 	  if (*p == '\n')
 	    {
 	      /* (we require that the last line is terminated by a LF) */
+	      if (p > buffer && p[-1] = '\r')
+		p[-1] = 0;
 	      *p = 0;
 	      if (!strncmp (buffer, "[GNUPG:] ", 9)
 		  && buffer[9] >= 'A' && buffer[9] <= 'Z')
