@@ -1,5 +1,10 @@
 2006-07-16  Marcus Brinkmann  <marcus@g10code.de>
 
+	* rungpg.c (read_status): Strip potential carriage return.
+	* genkey.c (get_key_parameter): Skip potential carriage return.
+	* version.c (_gpgme_get_program_version): Strip potential carriage
+	return.
+
 	* data.c (gpgme_data_set_file_name): Allow to clear the file name
 	by passing NULL.
 

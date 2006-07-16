@@ -142,7 +142,8 @@ get_key_parameter (const char *parms, gpgme_data_t *key_parameter)
 
   endtag = strstr (content, "</GnupgKeyParms>");
   /* FIXME: Check that there are no control statements inside.  */
-  while (*content == '\n')
+  while (content[0] == '\n'
+	 || (content[0] == '\r' && content[1] == '\n'))
     content++;
 
   return gpgme_data_new_from_mem (key_parameter, content,
