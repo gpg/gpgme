@@ -1,3 +1,8 @@
+2006-07-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data.c (gpgme_data_set_file_name): Allow to clear the file name
+	by passing NULL.
+
 2006-06-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* keylist.c (gpgme_get_key): Also clone the engine info.
