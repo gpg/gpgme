@@ -1,3 +1,8 @@
+2005-03-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (gpgme_set_locale): Remove conditional on
+	HAVE_W32_SYSTEM, and just check for LC_MESSAGES.
+
 2006-07-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.c (read_status): Strip potential carriage return.
