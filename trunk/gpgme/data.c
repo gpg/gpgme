@@ -183,9 +183,14 @@ gpgme_data_set_file_name (gpgme_data_t dh, const char *file_name)
   if (dh->file_name)
     free (dh->file_name);
 
-  dh->file_name = strdup (file_name);
-  if (!dh->file_name)
-    return gpg_error_from_errno (errno);
+  if (file_name)
+    {
+      dh->file_name = strdup (file_name);
+      if (!dh->file_name)
+	return gpg_error_from_errno (errno);
+    }
+  else
+    dh->file_name = 0;
 
   return 0;
 }
