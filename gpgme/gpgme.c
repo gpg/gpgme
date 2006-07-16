@@ -1,6 +1,6 @@
 /* gpgme.c - GnuPG Made Easy.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -341,10 +341,9 @@ gpgme_get_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 gpgme_error_t
 gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
 {
-#ifndef HAVE_W32_SYSTEM
   int failed = 0;
-  char *new_lc_ctype;
-  char *new_lc_messages;
+  char *new_lc_ctype = NULL;
+  char *new_lc_messages = NULL;
 
 #define PREPARE_ONE_LOCALE(lcat, ucat)				\
   if (!failed && value						\
@@ -353,12 +352,12 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
       new_lc_ ## lcat = strdup (value);				\
       if (!new_lc_ ## lcat)					\
         failed = 1;						\
-    }								\
-  else								\
-    new_lc_ ## lcat = NULL;
+    }
 
   PREPARE_ONE_LOCALE (ctype, CTYPE);
+#ifdef LC_MESSAGES
   PREPARE_ONE_LOCALE (messages, MESSAGES);
+#endif
 
   if (failed)
     {
@@ -392,12 +391,12 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
   if (!ctx)
     LOCK (def_lc_lock);
   SET_ONE_LOCALE (ctype, CTYPE);
+#ifdef LC_MESSAGES
   SET_ONE_LOCALE (messages, MESSAGES);
+#endif
   if (!ctx)
     UNLOCK (def_lc_lock);
 
-#endif /*!HAVE_W32_SYSTEM*/
-  
   return 0;
 }
 

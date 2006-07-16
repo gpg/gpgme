@@ -609,13 +609,16 @@ init_program (void)
   setlocale (LC_ALL, "");
   gpgme_check_version (NULL);
   gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
+#ifdef LC_MESSAGES
   gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
+#endif
 @}
 @end example
 
 Note that you are highly recommended to initialize the locale settings
 like this.  @acronym{GPGME} can not do this for you because it would
-not be thread safe.
+not be thread safe.  The conditional on LC_MESSAGES is only necessary
+for portability to W32 systems.
 
 
 @node Signal Handling
