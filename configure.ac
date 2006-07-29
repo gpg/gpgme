@@ -192,6 +192,12 @@ if test "$GCC" = yes; then
     fi
 fi
 
+# Network library fun.
+AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname,
+	[NETLIBS="-lnsl $NETLIBS"]))
+AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
+	[NETLIBS="-lsocket $NETLIBS"]))
+AC_SUBST(NETLIBS)
 
 # Checks for library functions.
 AC_FUNC_FSEEKO

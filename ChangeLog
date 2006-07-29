@@ -1,3 +1,7 @@
+2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for network libraries and set NETLIBS.
+
 2006-07-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	* lang, lang/cl: New subdirectories.
