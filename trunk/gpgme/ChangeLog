@@ -1,3 +1,8 @@
+2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.c (read_status): Fix comparison disguising as an
+	assignment.
+
 2005-03-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (gpgme_set_locale): Remove conditional on
