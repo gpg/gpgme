@@ -14,6 +14,9 @@ exec_prefix=@exec_prefix@
 includedir=@includedir@
 libdir=@libdir@
 
+# Network libraries.
+netlibs="@NETLIBS@"
+
 # Configure libgpg-error.
 gpg_error_cflags="@GPG_ERROR_CFLAGS@"
 gpg_error_libs="@GPG_ERROR_LIBS@"
@@ -126,7 +129,7 @@ while test $# -gt 0; do
 		    fi
 		    ;;
 	    esac
-	    output="$output $gpg_error_libs"
+	    output="$output $gpg_error_libs $netlibs"
 	    if test "x$with_glib" = "xyes"; then
 		output="$output $glib_cflags"
 	    fi

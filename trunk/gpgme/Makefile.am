@@ -144,14 +144,14 @@ libgpgme_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) $(export_symbols) \
 libgpgme_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
 	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
-	@GPG_ERROR_LIBS@
+	@GPG_ERROR_LIBS@ @NETLIBS@
 
 libgpgme_pthread_la_LDFLAGS = $(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_pthread_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
 	@LTLIBOBJS@ $(srcdir)/libgpgme.vers
 libgpgme_pthread_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
-	-lpthread @GPG_ERROR_LIBS@
+	-lpthread @GPG_ERROR_LIBS@ @NETLIBS@
 
 libgpgme_pth_la_CFLAGS = $(AM_CFLAGS) @PTH_CFLAGS@
 libgpgme_pth_la_CPPFLAGS = $(AM_CPPFLAGS) @PTH_CPPFLAGS@
@@ -161,7 +161,7 @@ libgpgme_pth_la_LDFLAGS = @PTH_LDFLAGS@ \
 libgpgme_pth_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
 	@LTLIBOBJS@ $(srcdir)/libgpgme.vers
 libgpgme_pth_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
-	@PTH_LIBS@ @GPG_ERROR_LIBS@
+	@PTH_LIBS@ @GPG_ERROR_LIBS@ @NETLIBS@
 
 if BUILD_W32_GLIB
 libgpgme_glib_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
@@ -171,7 +171,7 @@ libgpgme_glib_la_CFLAGS = $(AM_CFLAGS) @GLIB_CFLAGS@
 libgpgme_glib_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
 	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_glib_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
-	@GPG_ERROR_LIBS@ @GLIB_LIBS@
+	@GPG_ERROR_LIBS@ @GLIB_LIBS@ @NETLIBS@
 endif
 
 status-table.h : gpgme.h

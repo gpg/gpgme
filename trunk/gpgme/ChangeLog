@@ -1,5 +1,9 @@
 2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme-config.in (Options): Add NETLIBS.
+	* Makefile.am (libgpgme_la_LIBADD, libgpgme_pthread_la_LIBADD,
+	libgpgme_pth_la_LIBADD, libgpgme_glib_la_LIBADD): Add NETLIBS.
+
 	* rungpg.c (read_status): Fix comparison disguising as an
 	assignment.
 
