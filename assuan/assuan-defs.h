@@ -1,5 +1,5 @@
 /* assuan-defs.c - Internal definitions to Assuan
- *	Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #ifndef ASSUAN_DEFS_H
@@ -62,24 +63,30 @@ char * stpcpy (char *dest, const char *src);
 
 #define LINELENGTH ASSUAN_LINELENGTH
 
+
 struct cmdtbl_s
 {
   const char *name;
-  int (*handler)(ASSUAN_CONTEXT, char *line);
+  int (*handler)(assuan_context_t, char *line);
 };
 
+
+/* A structure to dispatch I/O functions.  All these functions need to
+   return 0 on success and set ERRNO on failure.  */
 struct assuan_io
 {
   /* Routine to read from input_fd.  */
-  ssize_t (*readfnc) (ASSUAN_CONTEXT, void *, size_t);
+  ssize_t (*readfnc) (assuan_context_t, void *, size_t);
   /* Routine to write to output_fd.  */
-  ssize_t (*writefnc) (ASSUAN_CONTEXT, const void *, size_t);
+  ssize_t (*writefnc) (assuan_context_t, const void *, size_t);
   /* Send a file descriptor.  */
-  assuan_error_t (*sendfd) (ASSUAN_CONTEXT, int);
+  assuan_error_t (*sendfd) (assuan_context_t, int);
   /* Receive a file descriptor.  */
-  assuan_error_t (*receivefd) (ASSUAN_CONTEXT, int *);
-};  
+  assuan_error_t (*receivefd) (assuan_context_t, int *);
+};
 
+
+/* The context we use with most functions. */
 struct assuan_context_s
 {
   assuan_error_t err_no;
@@ -88,18 +95,18 @@ struct assuan_context_s
                          error codes. */
 
   /* Context specific flags (cf. assuan_flag_t). */
-  struct 
+  struct
   {
     unsigned int no_waitpid:1; /* See ASSUAN_NO_WAITPID. */
-  } flags; 
+  } flags;
 
   int confidential;
   int is_server;      /* Set if this is context belongs to a server */
   int in_inquire;
   char *hello_line;
   char *okay_line;    /* See assuan_set_okay_line() */
-  
-  void *user_pointer;  /* For assuan_get_pointer and assuan-set_pointer (). */
+
+  void *user_pointer;  /* For assuan_get_pointer and assuan_set_pointer (). */
 
   FILE *log_fp;
 
@@ -109,7 +116,7 @@ struct assuan_context_s
     char line[LINELENGTH];
     int linelen;  /* w/o CR, LF - might not be the same as
                      strlen(line) due to embedded nuls. However a nul
-                     is always written at this pos */
+                     is always written at this pos. */
     struct {
       char line[LINELENGTH];
       int linelen ;
@@ -122,49 +129,55 @@ struct assuan_context_s
     struct {
       FILE *fp;
       char line[LINELENGTH];
-      int linelen; 
+      int linelen;
       int error;
-    } data; 
+    } data;
   } outbound;
 
   int pipe_mode;  /* We are in pipe mode, i.e. we can handle just one
-                     connection and must terminate then */
-  pid_t pid;	  /* The the pid of the peer. */
+                     connection and must terminate then. */
+  pid_t pid;	  /* The pid of the peer. */
   int listen_fd;  /* The fd we are listening on (used by socket servers) */
   int connected_fd; /* helper */
 
+  struct {
+    int   valid;   /* Whether this structure has valid information. */
+    pid_t pid;     /* The pid of the peer. */
+    uid_t uid;     /* The uid of the peer. */
+    gid_t gid;     /* The gid of the peer. */
+  } peercred;
 
   /* Used for Unix domain sockets.  */
   struct sockaddr_un myaddr;
   struct sockaddr_un serveraddr;
-  /* When reading from datagram sockets, we must read an entire
-     message at a time.  This means that we have to do our own
-     buffering to be able to get the semantics of read.  */
-  void *domainbuffer;
-  /* Offset of start of buffer.  */
-  int domainbufferoffset;
-  /* Bytes buffered.  */
-  int domainbuffersize;
-  /* Memory allocated.  */
-  int domainbufferallocated;
 
-  int *pendingfds;
-  int pendingfdscount;
+  /* Structure used for unix domain socket buffering.  FIXME: We don't
+     use datagrams anymore thus we could get away with a simpler
+     buffering approach. */
+  struct {
+    void *buffer;         /* Malloced buffer. */
+    int bufferallocated;  /* Memory allocated.  */
+    int bufferoffset;     /* Offset of start of buffer.  */
+    int buffersize;       /* Bytes buffered.  */
+    
+    int pendingfds[5];    /* Array to save received descriptors.  */
+    int pendingfdscount;  /* Number of received descriptors. */
+  } uds;
 
-  void (*deinit_handler)(ASSUAN_CONTEXT);  
-  int (*accept_handler)(ASSUAN_CONTEXT);
-  int (*finish_handler)(ASSUAN_CONTEXT);
+  void (*deinit_handler)(assuan_context_t);
+  int (*accept_handler)(assuan_context_t);
+  int (*finish_handler)(assuan_context_t);
 
   struct cmdtbl_s *cmdtbl;
   size_t cmdtbl_used; /* used entries */
   size_t cmdtbl_size; /* allocated size of table */
 
-  void (*bye_notify_fnc)(ASSUAN_CONTEXT);
-  void (*reset_notify_fnc)(ASSUAN_CONTEXT);
-  void (*cancel_notify_fnc)(ASSUAN_CONTEXT);
-  int  (*option_handler_fnc)(ASSUAN_CONTEXT,const char*, const char*);
-  void (*input_notify_fnc)(ASSUAN_CONTEXT, const char *);
-  void (*output_notify_fnc)(ASSUAN_CONTEXT, const char *);
+  void (*bye_notify_fnc)(assuan_context_t);
+  void (*reset_notify_fnc)(assuan_context_t);
+  void (*cancel_notify_fnc)(assuan_context_t);
+  int  (*option_handler_fnc)(assuan_context_t,const char*, const char*);
+  void (*input_notify_fnc)(assuan_context_t, const char *);
+  void (*output_notify_fnc)(assuan_context_t, const char *);
 
   int input_fd;   /* set by INPUT command */
   int output_fd;  /* set by OUTPUT command */
@@ -174,29 +187,45 @@ struct assuan_context_s
 };
 
 /*-- assuan-pipe-server.c --*/
-int _assuan_new_context (ASSUAN_CONTEXT *r_ctx);
-void _assuan_release_context (ASSUAN_CONTEXT ctx);
+int _assuan_new_context (assuan_context_t *r_ctx);
+void _assuan_release_context (assuan_context_t ctx);
 
-/*-- assuan-domain-connect.c --*/
-/* Make a connection to the Unix domain socket NAME and return a new
-   Assuan context in CTX.  SERVER_PID is currently not used but may
-   become handy in the future.  */
-assuan_error_t _assuan_domain_init (ASSUAN_CONTEXT *r_ctx,
-				 int rendezvousfd,
-				 pid_t peer);
+/*-- assuan-uds.c --*/
+void _assuan_uds_close_fds (assuan_context_t ctx);
+void _assuan_uds_deinit (assuan_context_t ctx);
+void _assuan_init_uds_io (assuan_context_t ctx);
+
 
 /*-- assuan-handler.c --*/
-int _assuan_register_std_commands (ASSUAN_CONTEXT ctx);
+int _assuan_register_std_commands (assuan_context_t ctx);
 
 /*-- assuan-buffer.c --*/
-int _assuan_read_line (ASSUAN_CONTEXT ctx);
+assuan_error_t _assuan_read_line (assuan_context_t ctx);
 int _assuan_cookie_write_data (void *cookie, const char *buffer, size_t size);
 int _assuan_cookie_write_flush (void *cookie);
 assuan_error_t _assuan_write_line (assuan_context_t ctx, const char *prefix,
                                    const char *line, size_t len);
 
 /*-- assuan-client.c --*/
-assuan_error_t _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off);
+assuan_error_t _assuan_read_from_server (assuan_context_t ctx,
+                                         int *okay, int *off);
+
+/*-- assuan-error.c --*/
+
+
+/* Map error codes as used in this implementaion to the libgpg-error
+   codes. */
+assuan_error_t _assuan_error (int oldcode);
+
+/* Extrac the erro code from A.  This works for both the old and the
+   new style error codes. This needs to be whenever an error code is
+   compared. */
+#define err_code(a) ((a) & 0x00ffffff)
+
+/* Check whether A is the erro code for EOF.  We allow forold and new
+   style EOF error codes here.  */
+#define err_is_eof(a) ((a) == (-1) || err_code (a) == 16383)
+
 
 
 /*-- assuan-util.c --*/
@@ -210,10 +239,8 @@ void  _assuan_free (void *p);
 #define xtryrealloc(a,b) _assuan_realloc((a),(b))
 #define xfree(a)         _assuan_free ((a))
 
-#define set_error(c,e,t) assuan_set_error ((c), ASSUAN_ ## e, (t))
-
-void _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t  length);
-void _assuan_log_sanitized_string (const char *string);
+#define set_error(c,e,t) \
+        assuan_set_error ((c), _assuan_error (ASSUAN_ ## e), (t))
 
 #ifdef HAVE_W32_SYSTEM
 const char *_assuan_w32_strerror (int ec);
@@ -229,11 +256,18 @@ void _assuan_log_printf (const char *format, ...)
  __attribute__ ((format (printf,1,2)))
 #endif
      ;
+void _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t  length);
+void _assuan_log_sanitized_string (const char *string);
+
 
 /*-- assuan-io.c --*/
-ssize_t _assuan_simple_read (ASSUAN_CONTEXT ctx, void *buffer, size_t size);
-ssize_t _assuan_simple_write (ASSUAN_CONTEXT ctx, const void *buffer,
+pid_t _assuan_waitpid (pid_t pid, int *status, int options);
+
+ssize_t _assuan_simple_read (assuan_context_t ctx, void *buffer, size_t size);
+ssize_t _assuan_simple_write (assuan_context_t ctx, const void *buffer,
 			      size_t size);
+ssize_t _assuan_simple_sendmsg (assuan_context_t ctx, struct msghdr *msg);
+ssize_t _assuan_simple_recvmsg (assuan_context_t ctx, struct msghdr *msg);
 
 /*-- assuan-socket.c --*/
 int _assuan_close (int fd);
@@ -251,5 +285,25 @@ FILE *_assuan_funopen(void *cookie,
 #define funopen(a,r,w,s,c) _assuan_funopen ((a), (r), (w), (s), (c))
 #endif /*HAVE_FOPENCOOKIE*/
 
-#endif /*ASSUAN_DEFS_H*/
+/* Prototypes for replacement functions.  */
+#ifndef HAVE_MEMRCHR
+void *memrchr (const void *block, int c, size_t size);
+#endif
+#ifndef HAVE_STPCPY
+char *stpcpy (char *dest, const char *src);
+#endif
+#ifndef HAVE_SETENV
+#define setenv _assuan_setenv
+#define unsetenv _assuan_unsetenv
+#define clearenv _assuan_clearenv
+int setenv (const char *name, const char *value, int replace);
+#endif
+#ifndef HAVE_PUTC_UNLOCKED
+int putc_unlocked (int c, FILE *stream)
+#endif
 
+#define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
+#define DIMof(type,member)   DIM(((type *)0)->member)
+
+
+#endif /*ASSUAN_DEFS_H*/

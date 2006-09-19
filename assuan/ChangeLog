@@ -1,3 +1,171 @@
+2006-09-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan.h (assuan_init_socket_server_ext)
+	[_ASSUAN_EXT_SYM_PREFIX]: Fix typo in macro.
+
+2006-09-19  Werner Koch  <wk@g10code.com>
+
+	* assuan-defs.h (putc_unlocked): Add prototype.
+
+	* assuan-socket-server.c (accept_connection): Made LEN a socklen_t.
+
+	* assuan.h: Replaced assuan error code enum by simple defines and
+	made assuan_error_t an int.
+	* mkerrors: Changed parser accordingly.
+
+2006-09-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-pipe-connect.c: Add hacks for Slowaris.
+	* assuan-socket.c: Likewise here.
+
+	* assuan.h (enum): Avoid trailing comma in enumerator list.  Ugh.
+
+	* mkerrors (_assuan_error): Change return type to assuan_error_t.
+	* assuan-buffer.c (_assuan_read_line): Change return type to
+	assuan_error_t.  Map returned value of -1.
+	(_assuan_write_line): Change type of RC to assuan_error_t.
+	* assuan-defs.h (_assuan_read_line, _assuan_error): Likewise for
+	prototypes.
+
+	* assuan-defs.h (unsetenv): Define correctly.
+
+2006-09-14  Werner Koch  <wk@g10code.com>
+
+	* assuan-io.c (_assuan_waitpid): New.  Changed all waitpid calls
+	to this.
+
+	* assuan.h (_ASSUAN_DEPRECATED): New internal macro.
+	(assuan_pipe_connect2): Declare deprecated.
+	(assuan_init_connected_socket_server): Declare deprecated.
+
+	* assuan-connect.c (assuan_get_peercred): New.
+	* assuan-socket-server.c (accept_connection_bottom): Save uid and gid.
+
+2006-09-13  Werner Koch  <wk@g10code.com>
+
+	* assuan-client.c (assuan_transact): Need to map the error code.
+	* mkerrors: Need to map ASSUAN_No_Secret_Key.
+
+	* assuan-pipe-server.c (is_valid_socket): New.
+	(assuan_init_pipe_server): Use UDS with the environmet variable is
+	set and a valid descriptor is given.  Ignore FILEDES in this case.
+
+	* assuan-socket-server.c (assuan_init_socket_server_ext): New.
+	Changed other init fucntions to make use of it.
+
+	* assuan-handler.c (assuan_command_parse_fd): Allow for lowercase
+	"fd".
+	(std_handler_reset): Close pending fds.
+	* assuan-uds.c (uds_receivefd): Fixed.
+	(_assuan_uds_close_fds): New.
+
+	* assuan-socket-connect.c (assuan_socket_connect_ext): New. Takes
+	all code of assuan_socket_connect plus an option to use sendmsg.
+	* assuan-pipe-connect.c (assuan_pipe_connect_ext): New arg FLAGS.
+
+2006-09-12  Werner Koch  <wk@g10code.com>
+
+	* assuan-buffer.c (_assuan_write_line): Also log the prefix.
+
+	* assuan-defs.h (DIM, DIMof): New.
+
+	* assuan-domain-server.c: Removed.
+	* assuan-domain-connect.c: Renamed to ..
+	* assuan-uds.c: this.
+	(domain_reader, domain_writer, domain_sendfd, domain_receivefd) 
+	(assuan_domain_connect, _assuan_domain_init): Removed. 
+	(uds_reader, uds_writer, uds_sendfd, uds_receivefd) 
+	(_assuan_init_uds_io): New.
+	(_assuan_uds_deinit): New.
+
+	* assuan-io.c (_assuan_simple_sendmsg, _assuan_simple_recvmsg): New.
+	(my_pth_fdmode, my_pth_select): New.
+
+2006-09-11  Werner Koch  <wk@g10code.com>
+
+	* assuan-pipe-server.c (assuan_init_pipe_server): Allow for
+	FILEDES to be NULL and try to start as a socketpair server in this
+	case.
+
+	* assuan-pipe-connect.c (assuan_pipe_connect2): Split up into two
+	functions (unix and w32) for clarity.
+	(pipe_connect_unix): This is the new fucntion.  Add USE_CMSG flag.
+	(pipe_connect_w32): Ditto.
+	(initial_handshake): Factored out code.
+	(socketpair_connect): New.
+	(assuan_pipe_connect_ext): New.
+	(do_finish): Handle case if outbound and inbound fd are the same.
+	This is to support socketpairs.
+
+2006-09-10  Werner Koch  <wk@g10code.com>
+
+	* assuan-util.c (_assuan_log_print_buffer)
+	(_assuan_log_sanitized_string,assuan_set_log_stream): Moved to ..
+	* assuan-logging.c: .. here.
+	(_assuan_log_print_buffer): Only print the leading bytes in hex
+	log mode unless the new env variable ASSUAN_FULL_LOGGING has been
+	set.
+	(_assuan_set_default_log_stream): Test this env variable.
+
+2006-09-06  Werner Koch  <wk@g10code.com>
+
+	* assuan.h (_ASSUAN_ONLY_GPG_ERRORS): New.
+
+	* assuan-handler.c (dispatch_command): Use Syntax_Error instead of
+	Invalid_Command.
+
+	* assuan-domain-connect.c: Changed alloc malloc/free/realloc to
+	xtrymalloc et al.
+	(read_int, write_int): Make args void pointers.
+	(domain_receivefd): Take care of realloc shrinking failure.
+
+	* assuan-buffer.c (_assuan_read_line, _assuan_write_line)
+	(assuan_write_line, _assuan_cookie_write_data)
+	(_assuan_cookie_write_flush): Print the inbound fd instead of the
+	address of the context when logging I/0.  This makes it more
+	readable.
+
+2006-09-05  Werner Koch  <wk@g10code.com>
+
+	* assuan-defs.h (err_code, err_is_eof): New.
+
+	* mkerrors (_assuan_error): New.  Wrapped all error code
+	assignments in a call to this.
+	(assuan_strerror): Map gpg-style error codes back. Also print a
+	string for the old EOF code.
+	(assuan_set_assuan_err_source): New.
+
+	* assuan-logging.c (_assuan_log_printf): Do not change ERRNO and
+	print the pid.
+
+	* assuan-domain-connect.c (domain_reader): Replaced plain printf
+	by assuan_log function.
+
+2005-10-24  Werner Koch  <wk@g10code.com>
+
+	* putc_unlocked.c, memrchr.c, isascii.c, funopen.c: Changed
+	distribution terms to LGPL.  This are small and trivial files so
+	there are no obstacles of doing so.
+	* assuan-socket.c: Likewise, the stated GPL was not intended.
+
+2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-defs.h (setenv, unsetenv, clearenv) [!HAVE_SETENV]:
+	Define to _assuan_*.
+	* setenv.c: Include "assuan-defs.h".
+	(__add_to_environ): Make static.
+
+2005-10-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-defs.h (memrchr) [!HAVE_MEMRCHR]: New prototype.
+	(stpcpy) [!HAVE_STPCPY]: Likewise.
+	* stpcpy.c: New LGPL'ed file from the GNU C Library.
+	* setenv.c: New file.
+	* assuan-domain-connect.c (read_int): New function.
+	(write_int): New function.
+	(domain_reader): Use read_int.
+	(domain_sendfd): Use write_int.
+
 2005-10-01  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan.h (assuan_pipe_connect, assuan_pipe_connect2): Make type

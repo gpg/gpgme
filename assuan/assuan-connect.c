@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA. 
  */
 
 #ifdef HAVE_CONFIG_H
@@ -49,10 +50,30 @@ assuan_disconnect (assuan_context_t ctx)
     }
 }
 
-/* Return the PID of the peer or -1 if not known. */
+/* Return the PID of the peer or -1 if not known. This function works
+   in some situations where assuan_get_ucred fails. */
 pid_t
 assuan_get_pid (assuan_context_t ctx)
 {
   return (ctx && ctx->pid)? ctx->pid : -1;
 }
 
+
+/* Return user credentials. PID, UID and GID amy be gived as NULL if
+   you are not interested in this value.  For getting the pid of the
+   peer the assuan_get_pid is usually better suited. */
+assuan_error_t
+assuan_get_peercred (assuan_context_t ctx, pid_t *pid, uid_t *uid, gid_t *gid)
+{
+  if (!ctx)
+    return _assuan_error (ASSUAN_Invalid_Value);
+  if (!ctx->peercred.valid)
+    return _assuan_error (ASSUAN_General_Error);
+  if (pid)
+    *pid = ctx->peercred.pid;
+  if (uid)
+    *uid = ctx->peercred.uid;
+  if (gid)
+    *gid = ctx->peercred.gid;
+  return 0;
+}

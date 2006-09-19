@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA. 
  */
 
 #ifndef ASSUAN_H
@@ -26,24 +27,32 @@
 #include <unistd.h>
 
 
-/* To use this file with libraries the following macros are often
-   useful:
+/* To use this file with libraries the following macros are useful:
 
-   #define _ASSUAN_EXT_SYM_PREFIX _foo_
+     #define _ASSUAN_EXT_SYM_PREFIX _foo_
    
      This prefixes all external symbols with "_foo_".
 
-   #define _ASSUAN_NO_PTH 
+     #define _ASSUAN_ONLY_GPG_ERRORS
 
-     This avoids inclusion of special GNU Pth hacks.
+     If this is defined all old-style Assuan error codes are made
+     inactive as well as other dereacted stuff.
 
-   #define _ASSUAN_NO_FIXED_SIGNALS 
+   The follwing macros are used internally in the implementation of
+   libassuan:
 
-     This disables changing of certain signal handler; i.e. SIGPIPE.
+     #define _ASSUAN_NO_PTH 
 
-   #define _ASSUAN_USE_DOUBLE_FORK
+       This avoids inclusion of special GNU Pth hacks.
 
-     Use a double fork approach when connecting to a server through a pipe.
+     #define _ASSUAN_NO_FIXED_SIGNALS 
+
+       This disables changing of certain signal handler; i.e. SIGPIPE.
+
+     #define _ASSUAN_USE_DOUBLE_FORK
+
+       Use a double fork approach when connecting to a server through
+       a pipe.
  */
 /**** Begin GPGME specific modifications. ******/
 #define _ASSUAN_EXT_SYM_PREFIX _gpgme_
@@ -115,12 +124,15 @@ int _gpgme_ath_recvmsg (int s, struct msghdr *msg, int flags);
 #define assuan_init_socket_server _ASSUAN_PREFIX(assuan_init_socket_server)
 #define assuan_init_connected_socket_server \
   _ASSUAN_PREFIX(assuan_init_connected_socket_server)
+#define assuan_init_socket_server_ext \
+  _ASSUAN_PREFIX(assuan_init_socket_server_ext)
 #define assuan_pipe_connect _ASSUAN_PREFIX(assuan_pipe_connect)
+#define assuan_pipe_connect_ext _ASSUAN_PREFIX(assuan_pipe_connect_ext)
 #define assuan_socket_connect _ASSUAN_PREFIX(assuan_socket_connect)
-#define assuan_domain_connect _ASSUAN_PREFIX(assuan_domain_connect)
-#define assuan_init_domain_server _ASSUAN_PREFIX(assuan_init_domain_server)
+#define assuan_socket_connect_ext _ASSUAN_PREFIX(assuan_socket_connect_ext)
 #define assuan_disconnect _ASSUAN_PREFIX(assuan_disconnect)
 #define assuan_get_pid _ASSUAN_PREFIX(assuan_get_pid)
+#define assuan_get_peercred _ASSUAN_PREFIX(assuan_get_peercred)
 #define assuan_transact _ASSUAN_PREFIX(assuan_transact)
 #define assuan_inquire _ASSUAN_PREFIX(assuan_inquire)
 #define assuan_read_line _ASSUAN_PREFIX(assuan_read_line)
@@ -137,6 +149,8 @@ int _gpgme_ath_recvmsg (int s, struct msghdr *msg, int flags);
 #define assuan_begin_confidential _ASSUAN_PREFIX(assuan_begin_confidential)
 #define assuan_end_confidential _ASSUAN_PREFIX(assuan_end_confidential)
 #define assuan_strerror _ASSUAN_PREFIX(assuan_strerror)
+#define assuan_set_assuan_err_source \
+  _ASSUAN_PREFIX(assuan_set_assuan_err_source)
 #define assuan_set_assuan_log_stream \
   _ASSUAN_PREFIX(assuan_set_assuan_log_stream)
 #define assuan_get_assuan_log_stream \
@@ -189,89 +203,121 @@ extern "C"
 #endif
 
 
-typedef enum
-{
-  ASSUAN_No_Error = 0,
-  ASSUAN_General_Error = 1,
-  ASSUAN_Out_Of_Core = 2,
-  ASSUAN_Invalid_Value = 3,
-  ASSUAN_Timeout = 4,
-  ASSUAN_Read_Error = 5,
-  ASSUAN_Write_Error = 6,
-  ASSUAN_Problem_Starting_Server = 7,
-  ASSUAN_Not_A_Server = 8,
-  ASSUAN_Not_A_Client = 9,
-  ASSUAN_Nested_Commands = 10,
-  ASSUAN_Invalid_Response = 11,
-  ASSUAN_No_Data_Callback = 12,
-  ASSUAN_No_Inquire_Callback = 13,
-  ASSUAN_Connect_Failed = 14,
-  ASSUAN_Accept_Failed = 15,
+/* Check for compiler features.  */
+#if __GNUC__
+#define _ASSUAN_GCC_VERSION (__GNUC__ * 10000 \
+                            + __GNUC_MINOR__ * 100 \
+                            + __GNUC_PATCHLEVEL__)
+
+#if _ASSUAN_GCC_VERSION > 30100
+#define _ASSUAN_DEPRECATED  __attribute__ ((__deprecated__))
+#endif
+#endif
+#ifndef _ASSUAN_DEPRECATED
+#define _ASSUAN_DEPRECATED
+#endif
+
+
+/* Assuan error codes.  These are only used by old applications or
+   those applications which won't make use of libgpg-error. */
+#ifndef _ASSUAN_ONLY_GPG_ERRORS
+#ifndef _ASSUAN_IN_LIBASSUAN
+#define  ASSUAN_No_Error 0
+#endif
+#define  ASSUAN_General_Error 1
+#define  ASSUAN_Out_Of_Core 2
+#define  ASSUAN_Invalid_Value 3
+#ifndef _ASSUAN_IN_LIBASSUAN
+#define  ASSUAN_Timeout 4
+#endif
+#define  ASSUAN_Read_Error 5
+#define  ASSUAN_Write_Error 6
+#define  ASSUAN_Problem_Starting_Server 7
+#define  ASSUAN_Not_A_Server 8
+#ifndef _ASSUAN_IN_LIBASSUAN
+#define  ASSUAN_Not_A_Client 9
+#endif
+#define  ASSUAN_Nested_Commands 10
+#define  ASSUAN_Invalid_Response 11
+#define  ASSUAN_No_Data_Callback 12
+#define  ASSUAN_No_Inquire_Callback 13
+#define  ASSUAN_Connect_Failed 14
+#define  ASSUAN_Accept_Failed 15
 
   /* Error codes above 99 are meant as status codes */
-  ASSUAN_Not_Implemented = 100,
-  ASSUAN_Server_Fault    = 101,
-  ASSUAN_Invalid_Command = 102,
-  ASSUAN_Unknown_Command = 103,
-  ASSUAN_Syntax_Error    = 104,
-  ASSUAN_Parameter_Error = 105,
-  ASSUAN_Parameter_Conflict = 106,
-  ASSUAN_Line_Too_Long = 107,
-  ASSUAN_Line_Not_Terminated = 108,
-  ASSUAN_No_Input = 109,
-  ASSUAN_No_Output = 110,
-  ASSUAN_Canceled = 111,
-  ASSUAN_Unsupported_Algorithm = 112,
-  ASSUAN_Server_Resource_Problem = 113,
-  ASSUAN_Server_IO_Error = 114,
-  ASSUAN_Server_Bug = 115,
-  ASSUAN_No_Data_Available = 116,
-  ASSUAN_Invalid_Data = 117,
-  ASSUAN_Unexpected_Command = 118,
-  ASSUAN_Too_Much_Data = 119,
-  ASSUAN_Inquire_Unknown = 120,
-  ASSUAN_Inquire_Error = 121,
-  ASSUAN_Invalid_Option = 122,
-  ASSUAN_Invalid_Index = 123,
-  ASSUAN_Unexpected_Status = 124,
-  ASSUAN_Unexpected_Data = 125,
-  ASSUAN_Invalid_Status = 126,
-  ASSUAN_Locale_Problem = 127,
-  ASSUAN_Not_Confirmed = 128,
+#define  ASSUAN_Not_Implemented 100
+#define  ASSUAN_Server_Fault    101
+#ifndef _ASSUAN_IN_LIBASSUAN
+#define  ASSUAN_Invalid_Command 102
+#endif
+#define  ASSUAN_Unknown_Command 103
+#define  ASSUAN_Syntax_Error    104
+#ifndef _ASSUAN_IN_LIBASSUAN
+#define  ASSUAN_Parameter_Error 105
+#endif
+#define  ASSUAN_Parameter_Conflict 106
+#define  ASSUAN_Line_Too_Long 107
+#define  ASSUAN_Line_Not_Terminated 108
+#ifndef _ASSUAN_IN_LIBASSUAN
+#define  ASSUAN_No_Input 109
+#define  ASSUAN_No_Output 110
+#endif
+#define  ASSUAN_Canceled 111
+#ifndef _ASSUAN_IN_LIBASSUAN
+#define  ASSUAN_Unsupported_Algorithm 112
+#define  ASSUAN_Server_Resource_Problem 113
+#define  ASSUAN_Server_IO_Error 114
+#define  ASSUAN_Server_Bug 115
+#define  ASSUAN_No_Data_Available 116
+#define  ASSUAN_Invalid_Data 117
+#endif
+#define  ASSUAN_Unexpected_Command 118
+#define  ASSUAN_Too_Much_Data 119
+#ifndef _ASSUAN_IN_LIBASSUAN
+#define  ASSUAN_Inquire_Unknown 120
+#define  ASSUAN_Inquire_Error 121
+#define  ASSUAN_Invalid_Option 122
+#define  ASSUAN_Invalid_Index 123
+#define  ASSUAN_Unexpected_Status 124
+#define  ASSUAN_Unexpected_Data 125
+#define  ASSUAN_Invalid_Status 126
+#define  ASSUAN_Locale_Problem 127
+#define  ASSUAN_Not_Confirmed 128
 
-  /* Warning: Don't use the rror codes, below they are deprecated. */
-  ASSUAN_Bad_Certificate = 201,
-  ASSUAN_Bad_Certificate_Chain = 202,
-  ASSUAN_Missing_Certificate = 203,
-  ASSUAN_Bad_Signature = 204,
-  ASSUAN_No_Agent = 205,
-  ASSUAN_Agent_Error = 206,
-  ASSUAN_No_Public_Key = 207,
-  ASSUAN_No_Secret_Key = 208,
-  ASSUAN_Invalid_Name = 209,
+  /* Warning: Don't use the Error codes, below they are deprecated. */
+#define  ASSUAN_Bad_Certificate 201
+#define  ASSUAN_Bad_Certificate_Chain 202
+#define  ASSUAN_Missing_Certificate 203
+#define  ASSUAN_Bad_Signature 204
+#define  ASSUAN_No_Agent 205
+#define  ASSUAN_Agent_Error 206
+#define  ASSUAN_No_Public_Key 207
+#define  ASSUAN_No_Secret_Key 208
+#define  ASSUAN_Invalid_Name 209
 
-  ASSUAN_Cert_Revoked = 301,
-  ASSUAN_No_CRL_For_Cert = 302,
-  ASSUAN_CRL_Too_Old = 303,
-  ASSUAN_Not_Trusted = 304,
+#define  ASSUAN_Cert_Revoked 301
+#define  ASSUAN_No_CRL_For_Cert 302
+#define  ASSUAN_CRL_Too_Old 303
+#define  ASSUAN_Not_Trusted 304
 
-  ASSUAN_Card_Error = 401,
-  ASSUAN_Invalid_Card = 402,
-  ASSUAN_No_PKCS15_App = 403,
-  ASSUAN_Card_Not_Present = 404,
-  ASSUAN_Invalid_Id = 405,
+#define  ASSUAN_Card_Error 401
+#define  ASSUAN_Invalid_Card 402
+#define  ASSUAN_No_PKCS15_App 403
+#define  ASSUAN_Card_Not_Present 404
+#define  ASSUAN_Invalid_Id 405
 
   /* Error codes in the range 1000 to 9999 may be used by applications
      at their own discretion. */
-  ASSUAN_USER_ERROR_FIRST = 1000,
-  ASSUAN_USER_ERROR_LAST = 9999
+#define  ASSUAN_USER_ERROR_FIRST 1000
+#define  ASSUAN_USER_ERROR_LAST 9999
+#endif
 
-} assuan_error_t;
+typedef int assuan_error_t;
 
-typedef assuan_error_t AssuanError; /* Deprecated. */
+typedef assuan_error_t AssuanError _ASSUAN_DEPRECATED; 
 
 /* This is a list of pre-registered ASSUAN commands */
-/* NOTE, these command IDs are now deprectated and solely exists for
+/* Note, these command IDs are now deprectated and solely exists for
    compatibility reasons. */
 typedef enum
 {
@@ -290,6 +336,13 @@ typedef enum
 } AssuanCommand;
 
 
+#else  /*!_ASSUAN_ONLY_GPG_ERRORS*/
+
+typedef int assuan_error_t;
+
+#endif /*!_ASSUAN_ONLY_GPG_ERRORS*/
+
+
 /* Definitions of flags for assuan_set_flag(). */
 typedef enum
   {
@@ -306,7 +359,9 @@ assuan_flag_t;
 
 struct assuan_context_s;
 typedef struct assuan_context_s *assuan_context_t;
-typedef struct assuan_context_s *ASSUAN_CONTEXT;
+#ifndef _ASSUAN_ONLY_GPG_ERRORS
+typedef struct assuan_context_s *ASSUAN_CONTEXT _ASSUAN_DEPRECATED;
+#endif /*_ASSUAN_ONLY_GPG_ERRORS*/
 
 /*-- assuan-handler.c --*/
 int assuan_register_command (assuan_context_t ctx,
@@ -343,7 +398,7 @@ assuan_error_t assuan_write_status (assuan_context_t ctx,
    file descriptor via CTX and stores it in *RDF (the CTX must be
    capable of passing file descriptors).  */
 assuan_error_t assuan_command_parse_fd (assuan_context_t ctx, char *line,
-				     int *rfd);
+                                        int *rfd);
 
 /*-- assuan-listen.c --*/
 assuan_error_t assuan_set_hello_line (assuan_context_t ctx, const char *line);
@@ -360,55 +415,54 @@ void assuan_deinit_server (assuan_context_t ctx);
 
 /*-- assuan-socket-server.c --*/
 int assuan_init_socket_server (assuan_context_t *r_ctx, int listen_fd);
-int assuan_init_connected_socket_server (assuan_context_t *r_ctx, int fd);
-
+int assuan_init_connected_socket_server (assuan_context_t *r_ctx, 
+                                         int fd) _ASSUAN_DEPRECATED;
+int assuan_init_socket_server_ext (assuan_context_t *r_ctx, int fd,
+                                   unsigned int flags);
 
 /*-- assuan-pipe-connect.c --*/
-assuan_error_t assuan_pipe_connect (assuan_context_t *ctx, const char *name,
+assuan_error_t assuan_pipe_connect (assuan_context_t *ctx,
+                                    const char *name,
 				    const char *const argv[],
 				    int *fd_child_list);
-assuan_error_t assuan_pipe_connect2 (assuan_context_t *ctx, const char *name,
+assuan_error_t assuan_pipe_connect2 (assuan_context_t *ctx,
+                                     const char *name,
                                      const char *const argv[],
 				     int *fd_child_list,
                                      void (*atfork) (void*, int),
-                                     void *atforkvalue);
+                                     void *atforkvalue) _ASSUAN_DEPRECATED;
+assuan_error_t assuan_pipe_connect_ext (assuan_context_t *ctx, 
+                                        const char *name,
+                                        const char *const argv[],
+                                        int *fd_child_list,
+                                        void (*atfork) (void *, int),
+                                        void *atforkvalue,
+                                        unsigned int flags);
+
 /*-- assuan-socket-connect.c --*/
-assuan_error_t assuan_socket_connect (assuan_context_t *ctx, const char *name,
+assuan_error_t assuan_socket_connect (assuan_context_t *ctx, 
+                                      const char *name,
                                       pid_t server_pid);
-
-/*-- assuan-domain-connect.c --*/
-
-/* Connect to a Unix domain socket server.  RENDEZVOUSFD is
-   bidirectional file descriptor (normally returned via socketpair)
-   which the client can use to rendezvous with the server.  SERVER s
-   the server's pid.  */
-assuan_error_t assuan_domain_connect (assuan_context_t *r_ctx,
-				   int rendezvousfd,
-				   pid_t server);
-
-/*-- assuan-domain-server.c --*/
-
-/* RENDEZVOUSFD is a bidirectional file descriptor (normally returned
-   via socketpair) that the domain server can use to rendezvous with
-   the client.  CLIENT is the client's pid.  */
-assuan_error_t assuan_init_domain_server (assuan_context_t *r_ctx,
-				       int rendezvousfd,
-				       pid_t client);
-
+assuan_error_t assuan_socket_connect_ext (assuan_context_t *ctx,
+                                          const char *name,
+                                          pid_t server_pid,
+                                          unsigned int flags);
 
 /*-- assuan-connect.c --*/
 void assuan_disconnect (assuan_context_t ctx);
 pid_t assuan_get_pid (assuan_context_t ctx);
+assuan_error_t assuan_get_peercred (assuan_context_t ctx,
+                                    pid_t *pid, uid_t *uid, gid_t *gid);
 
 /*-- assuan-client.c --*/
 assuan_error_t 
 assuan_transact (assuan_context_t ctx,
                  const char *command,
-                 assuan_error_t (*data_cb)(void *, const void *, size_t),
+                 int (*data_cb)(void *, const void *, size_t),
                  void *data_cb_arg,
-                 assuan_error_t (*inquire_cb)(void*, const char *),
+                 int (*inquire_cb)(void*, const char *),
                  void *inquire_cb_arg,
-                 assuan_error_t (*status_cb)(void*, const char *),
+                 int (*status_cb)(void*, const char *),
                  void *status_cb_arg);
 
 
@@ -426,9 +480,8 @@ assuan_error_t assuan_send_data (assuan_context_t ctx,
                               const void *buffer, size_t length);
 
 /* The file descriptor must be pending before assuan_receivefd is
-   call.  This means that assuan_sendfd should be called *before* the
-   trigger is sent (normally via assuan_send_data ("I sent you a
-   descriptor")).  */
+   called.  This means that assuan_sendfd should be called *before* the
+   trigger is sent (normally via assuan_write_line ("INPUT FD")).  */
 assuan_error_t assuan_sendfd (assuan_context_t ctx, int fd);
 assuan_error_t assuan_receivefd (assuan_context_t ctx, int *fd);
 
@@ -453,8 +506,20 @@ void assuan_set_flag (assuan_context_t ctx, assuan_flag_t flag, int value);
 int  assuan_get_flag (assuan_context_t ctx, assuan_flag_t flag);
 
 
-/*-- assuan-errors.c (built) --*/
+/*-- assuan-errors.c --*/
+
+#ifndef _ASSUAN_ONLY_GPG_ERRORS
+/* Return a string describing the assuan error.  The use of this
+   function is deprecated; it is better to call
+   assuan_set_assuan_err_source once and then make use libgpg-error. */
 const char *assuan_strerror (assuan_error_t err);
+#endif /*_ASSUAN_ONLY_GPG_ERRORS*/
+
+/* Enable gpg-error style error codes.  ERRSOURCE is one of gpg-error
+   sources.  Note, that this function is not thread-safe and should be
+   used right at startup. Switching back to the old style mode is not
+   supported. */
+void assuan_set_assuan_err_source (int errsource);
 
 /*-- assuan-logging.c --*/
 
