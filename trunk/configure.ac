@@ -202,8 +202,6 @@ AC_SUBST(NETLIBS)
 # Checks for library functions.
 AC_FUNC_FSEEKO
 
-AC_CHECK_FUNCS(stpcpy)
-
 AC_REPLACE_FUNCS(vasprintf)
 if test "$ac_cv_func_vasprintf" != yes; then
   GNUPG_CHECK_VA_COPY
@@ -462,6 +460,10 @@ fi
 AC_REPLACE_FUNCS(isascii)
 AC_REPLACE_FUNCS(putc_unlocked)
 AC_REPLACE_FUNCS(memrchr)
+AC_REPLACE_FUNCS(stpcpy)
+# Check for unistd.h for setenv replacement function.
+AC_CHECK_HEADERS(unistd.h)
+AC_REPLACE_FUNCS(setenv)
 
 # More assuan checks.
 AC_CHECK_HEADERS([sys/uio.h])

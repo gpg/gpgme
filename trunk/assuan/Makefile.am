@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA 
 
 ## Process this file with automake to produce Makefile.in
 
@@ -44,12 +44,11 @@ libassuan_la_SOURCES = \
 	assuan-socket-server.c \
 	assuan-pipe-connect.c \
 	assuan-socket-connect.c  \
-	assuan-socket.c \
+	assuan-uds.c \
 	funopen.c \
 	assuan-io.c \
-	assuan-domain-connect.c \
-	assuan-domain-server.c \
-	assuan-logging.c
+	assuan-logging.c \
+	assuan-socket.c
 
-assuan-errors.c : assuan.h
+assuan-errors.c : assuan.h mkerrors
 	$(srcdir)/mkerrors < $(srcdir)/assuan.h > assuan-errors.c

@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA. 
  */
 
 #include <config.h>
@@ -146,14 +147,14 @@ assuan_inquire (assuan_context_t ctx, const char *keyword,
   int nodataexpected;
 
   if (!ctx || !keyword || (10 + strlen (keyword) >= sizeof (cmdbuf)))
-    return ASSUAN_Invalid_Value;
+    return _assuan_error (ASSUAN_Invalid_Value);
   nodataexpected = !r_buffer && !r_length && !maxlen;
   if (!nodataexpected && (!r_buffer || !r_length))
-    return ASSUAN_Invalid_Value;
+    return _assuan_error (ASSUAN_Invalid_Value);
   if (!ctx->is_server)
-    return ASSUAN_Not_A_Server;
+    return _assuan_error (ASSUAN_Not_A_Server);
   if (ctx->in_inquire)
-    return ASSUAN_Nested_Commands;
+    return _assuan_error (ASSUAN_Nested_Commands);
   
   ctx->in_inquire = 1;
   if (nodataexpected)
@@ -182,12 +183,12 @@ assuan_inquire (assuan_context_t ctx, const char *keyword,
         break; /* END command received*/
       if (line[0] == 'C' && line[1] == 'A' && line[2] == 'N')
         {
-          rc = ASSUAN_Canceled;
+          rc = _assuan_error (ASSUAN_Canceled);
           goto leave;
         }
       if (line[0] != 'D' || line[1] != ' ' || nodataexpected)
         {
-          rc = ASSUAN_Unexpected_Command;
+          rc = _assuan_error (ASSUAN_Unexpected_Command);
           goto leave;
         }
       if (linelen < 3)
@@ -214,7 +215,7 @@ assuan_inquire (assuan_context_t ctx, const char *keyword,
         }
       if (mb.too_large)
         {
-          rc = ASSUAN_Too_Much_Data;
+          rc = _assuan_error (ASSUAN_Too_Much_Data);
           goto leave;
         }
     }
@@ -223,7 +224,7 @@ assuan_inquire (assuan_context_t ctx, const char *keyword,
     {
       *r_buffer = get_membuf (&mb, r_length);
       if (!*r_buffer)
-        rc = ASSUAN_Out_Of_Core;
+        rc = _assuan_error (ASSUAN_Out_Of_Core);
     }
 
  leave:

@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA. 
  */
 
 #include <config.h>
@@ -106,19 +107,6 @@ assuan_get_pointer (assuan_context_t ctx)
 
 
 void
-assuan_set_log_stream (assuan_context_t ctx, FILE *fp)
-{
-  if (ctx)
-    {
-      if (ctx->log_fp)
-        fflush (ctx->log_fp);
-      ctx->log_fp = fp;
-      _assuan_set_default_log_stream (fp);
-    }
-}
-
-
-void
 assuan_begin_confidential (assuan_context_t ctx)
 {
   if (ctx)
@@ -165,98 +153,4 @@ assuan_get_flag (assuan_context_t ctx, assuan_flag_t flag)
   return 0;
 }
 
-
-/* Dump a possibly binary string (used for debugging).  Distinguish
-   ascii text from binary and print it accordingly.  */
-void
-_assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
-{
-  const unsigned char *s;
-  int n;
-
-  for (n=length,s=buffer; n; n--, s++)
-    if  ((!isascii (*s) || iscntrl (*s) || !isprint (*s)) && !(*s >= 0x80))
-      break;
-
-  s = buffer;
-  if (!n && *s != '[')
-    fwrite (buffer, length, 1, fp);
-  else
-    {
-#ifdef HAVE_FLOCKFILE
-      flockfile (fp);
-#endif
-      putc_unlocked ('[', fp);
-      for (n=0; n < length; n++, s++)
-          fprintf (fp, " %02x", *s);
-      putc_unlocked (' ', fp);
-      putc_unlocked (']', fp);
-#ifdef HAVE_FUNLOCKFILE
-      funlockfile (fp);
-#endif
-    }
-}
-
-/* Log a user supplied string.  Escapes non-printable before
-   printing.  */
-void
-_assuan_log_sanitized_string (const char *string)
-{
-  const unsigned char *s = (const unsigned char *) string;
-  FILE *fp = assuan_get_assuan_log_stream ();
-
-  if (! *s)
-    return;
-
-#ifdef HAVE_FLOCKFILE
-  flockfile (fp);
-#endif
-
-  for (; *s; s++)
-    {
-      int c = 0;
-
-      switch (*s)
-	{
-	case '\r':
-	  c = 'r';
-	  break;
-
-	case '\n':
-	  c = 'n';
-	  break;
-
-	case '\f':
-	  c = 'f';
-	  break;
-
-	case '\v':
-	  c = 'v';
-	  break;
-
-	case '\b':
-	  c = 'b';
-	  break;
-
-	default:
-	  if ((isascii (*s) && isprint (*s)) || (*s >= 0x80))
-	    putc_unlocked (*s, fp);
-	  else
-	    {
-	      putc_unlocked ('\\', fp);
-	      fprintf (fp, "x%02x", *s);
-	    }
-	}
-
-      if (c)
-	{
-	  putc_unlocked ('\\', fp);
-	  putc_unlocked (c, fp);
-	}
-    }
-
-#ifdef HAVE_FUNLOCKFILE
-  funlockfile (fp);
-#endif
-}
 
