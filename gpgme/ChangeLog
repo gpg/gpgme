@@ -1,3 +1,8 @@
+2006-09-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* keylist.c (keylist_colon_handler): Move debug output after
+	initialising KEY.
+
 2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme-config.in (Options): Add NETLIBS.

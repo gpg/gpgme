@@ -386,15 +386,15 @@ keylist_colon_handler (void *priv, char *line)
   gpgme_subkey_t subkey = NULL;
   gpgme_key_sig_t keysig = NULL;
 
-  DEBUG3 ("keylist_colon_handler ctx = %p, key = %p, line = %s\n",
-	  ctx, key, line ? line : "(null)");
-
   err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
   opd = hook;
   if (err)
     return err;
 
   key = opd->tmp_key;
+
+  DEBUG3 ("keylist_colon_handler ctx = %p, key = %p, line = %s\n",
+	  ctx, key, line ? line : "(null)");
 
   if (!line)
     {
