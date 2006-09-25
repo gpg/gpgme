@@ -1,3 +1,8 @@
+2006-09-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Destroying Data Buffers): Clarify that
+	gpgme_data_release_and_get_mem destroys DH unconditionally.
+
 2005-03-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Library Version Check): Make example code compatible
