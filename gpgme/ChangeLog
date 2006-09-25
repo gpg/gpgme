@@ -1,3 +1,8 @@
+2006-09-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data-mem.c (gpgme_data_release_and_get_mem): Release the data
+	object properly.
+
 2006-09-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* keylist.c (keylist_colon_handler): Move debug output after

@@ -210,19 +210,31 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
   char *str = NULL;
 
   if (!dh || dh->cbs != &mem_cbs)
-    return NULL;
+    {
+      gpgme_data_release (dh);
+      return NULL;
+    }
 
   str = dh->data.mem.buffer;
   if (!str && dh->data.mem.orig_buffer)
     {
       str = malloc (dh->data.mem.length);
       if (!str)
-	return NULL;
+	{
+	  gpgme_data_release (dh);
+	  return NULL;
+	}
       memcpy (str, dh->data.mem.orig_buffer, dh->data.mem.length);
     }
+  else
+    /* Prevent mem_release from releasing the buffer memory.  We must
+       not fail from this point.  */
+    dh->data.mem.buffer = NULL;
 
   if (r_len)
     *r_len = dh->data.mem.length;
+
+  gpgme_data_release (dh);
 
   return str;
 }
