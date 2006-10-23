@@ -883,6 +883,8 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
   opd = hook;
   if (err)
     return err;
+  if (opd == NULL)
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (!opd->key_queue)
     {
