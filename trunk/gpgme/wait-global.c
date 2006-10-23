@@ -334,6 +334,7 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 
       /* Now some contexts might have finished successfully.  */
       LOCK (ctx_list_lock);
+    retry:
       for (li = ctx_active_list; li; li = li->next)
 	{
 	  gpgme_ctx_t actx = li->ctx;
@@ -344,7 +345,19 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	  if (i == actx->fdt.size)
 	    {
 	      gpgme_error_t err = 0;
+
+	      /* FIXME: This does not perform too well.  We have to
+		 release the lock because the I/O event handler
+		 acquires it to remove the context from the active
+		 list.  Two alternative strategies are worth
+		 considering: Either implement the DONE event handler
+		 here in a lock-free manner, or save a list of all
+		 contexts to be released and call the DONE events
+		 afterwards.  */
+	      UNLOCK (ctx_list_lock);
 	      _gpgme_engine_io_event (actx->engine, GPGME_EVENT_DONE, &err);
+	      LOCK (ctx_list_lock);
+	      goto retry;
 	    }
 	}
       UNLOCK (ctx_list_lock);
