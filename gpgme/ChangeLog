@@ -1,5 +1,8 @@
 2006-10-23  Marcus Brinkmann  <marcus@g10code.de>
 
+	* wait-global.c (gpgme_wait): Unlock CTX_LIST_LOCK while calling
+	_gpgme_engine_io_event().
+
 	* keylist.c (gpgme_op_keylist_next): Return error if OPD is NULL.
 
 2006-09-25  Marcus Brinkmann  <marcus@g10code.de>
