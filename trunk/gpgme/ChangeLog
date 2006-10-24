@@ -1,3 +1,8 @@
+2006-10-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* trustlist.c (gpgme_op_trustlist_next): Return error if OPD is
+	NULL.
+
 2006-10-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* wait-global.c (gpgme_wait): Unlock CTX_LIST_LOCK while calling
