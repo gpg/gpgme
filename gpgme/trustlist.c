@@ -215,6 +215,8 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
   opd = hook;
   if (err)
     return err;
+  if (opd == NULL)
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (!opd->trust_queue)
     {
