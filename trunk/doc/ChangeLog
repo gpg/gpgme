@@ -1,3 +1,8 @@
+2006-11-01  Moritz Schulte  <moritz@g10code.com>
+
+	* gpgme.texi (Data Buffer I/O Operations): Fixed entry for
+	gpgme_data_seek: OFFSET is not a pointer; some s/whence/offset/.
+
 2006-09-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Destroying Data Buffers): Clarify that

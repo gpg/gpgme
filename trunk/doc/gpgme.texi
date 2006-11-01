@@ -1773,7 +1773,7 @@ The function returns the number of bytes actually written, or -1 if an
 error occurs.  If an error occurs, @var{errno} is set.
 @end deftypefun
 
-@deftypefun off_t gpgme_data_seek (@w{gpgme_data_t @var{dh}}, @w{off_t *@var{offset}}, @w{int @var{whence}})
+@deftypefun off_t gpgme_data_seek (@w{gpgme_data_t @var{dh}}, @w{off_t @var{offset}}, @w{int @var{whence}})
 The function @code{gpgme_data_seek} changes the current read/write
 position.
 
@@ -1782,15 +1782,15 @@ interpreted.  It must be one of the following symbolic constants:
 
 @table @code
 @item SEEK_SET
-Specifies that @var{whence} is a count of characters from the
+Specifies that @var{offset} is a count of characters from the
 beginning of the data object.
 
 @item SEEK_CUR
-Specifies that @var{whence} is a count of characters from the current
+Specifies that @var{offset} is a count of characters from the current
 file position.  This count may be positive or negative.
 
 @item SEEK_END
-Specifies that @var{whence} is a count of characters from the end of
+Specifies that @var{offset} is a count of characters from the end of
 the data object.  A negative count specifies a position within the
 current extent of the data object; a positive count specifies a
 position past the current end.  If you set the position past the
