@@ -406,7 +406,8 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
   err = assuan_pipe_connect (&gpgsm->assuan_ctx,
 			     file_name ? file_name : _gpgme_get_gpgsm_path (),
 			     argv, child_fds);
-  /* FIXME: Check error.  */
+  if (err)
+    goto leave;
 
   /* We need to know the fd used by assuan for reads.  We do this by
      using the assumption that the first returned fd from
