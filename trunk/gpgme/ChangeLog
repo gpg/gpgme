@@ -1,5 +1,8 @@
 2006-11-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (gpgsm_new): Check return value of
+	assuan_pipe_connect.
+
 	* rungpg.c: Include <unistd.h>.
 	(gpg_new): Support --display, --ttyname, --ttytype, --lc-ctype and
 	--lc-messages.  Fixes issue 734.
