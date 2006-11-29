@@ -125,6 +125,21 @@ assuan_end_confidential (assuan_context_t ctx)
 }
 
 
+void 
+assuan_set_io_monitor (assuan_context_t ctx,
+                       unsigned int (*monitor)(assuan_context_t ctx,
+                                               int direction,
+                                               const char *line,
+                                               size_t linelen))
+{
+  if (ctx)
+    {
+      ctx->io_monitor = monitor;
+    }
+}
+
+
+
 
 /* For context CTX, set the flag FLAG to VALUE.  Values for flags
    are usually 1 or 0 but certain flags might allow for other values;

@@ -1,5 +1,5 @@
 /* assuan-buffer.c - read and send data
- *	Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -159,7 +159,9 @@ _assuan_read_line (assuan_context_t ctx)
 
   if (endp)
     {
+      unsigned monitor_result;
       int n = endp - line + 1;
+
       if (n < nread)
 	/* LINE contains more than one line.  We copy it to the attic
 	   now as handlers are allowed to modify the passed
@@ -176,7 +178,16 @@ _assuan_read_line (assuan_context_t ctx)
       *endp = 0;
 
       ctx->inbound.linelen = endp - line;
-      if (ctx->log_fp)
+
+      monitor_result = (ctx->io_monitor
+                        ? ctx->io_monitor (ctx, 0,
+                                           ctx->inbound.line,
+                                           ctx->inbound.linelen)
+                        : 0);
+      if ( (monitor_result & 2) )
+        ctx->inbound.linelen = 0;
+      
+      if (ctx->log_fp && !(monitor_result & 1))
 	{
 	  fprintf (ctx->log_fp, "%s[%u.%d] DBG: <- ",
 		   assuan_get_assuan_log_prefix (),
@@ -245,6 +256,7 @@ _assuan_write_line (assuan_context_t ctx, const char *prefix,
 {
   assuan_error_t rc = 0;
   size_t prefixlen = prefix? strlen (prefix):0;
+  unsigned int monitor_result;
 
   /* Make sure that the line is short enough. */
   if (len + prefixlen + 2 > ASSUAN_LINELENGTH)
@@ -260,8 +272,12 @@ _assuan_write_line (assuan_context_t ctx, const char *prefix,
         len = ASSUAN_LINELENGTH - prefixlen - 2 - 1;
     }
 
+  monitor_result = (ctx->io_monitor
+                    ? ctx->io_monitor (ctx, 1, line, len)
+                    : 0);
+
   /* Fixme: we should do some kind of line buffering.  */
-  if (ctx->log_fp)
+  if (ctx->log_fp && !(monitor_result & 1))
     {
       fprintf (ctx->log_fp, "%s[%u.%d] DBG: -> ",
 	       assuan_get_assuan_log_prefix (),
@@ -277,13 +293,13 @@ _assuan_write_line (assuan_context_t ctx, const char *prefix,
       putc ('\n', ctx->log_fp);
     }
 
-  if (prefixlen)
+  if (prefixlen && !(monitor_result & 2))
     {
       rc = writen (ctx, prefix, prefixlen);
       if (rc)
         rc = _assuan_error (ASSUAN_Write_Error);
     }
-  if (!rc)
+  if (!rc && !(monitor_result & 2))
     {
       rc = writen (ctx, line, len);
       if (rc)
@@ -325,7 +341,7 @@ assuan_write_line (assuan_context_t ctx, const char *line)
 
 
 /* Write out the data in buffer as datalines with line wrapping and
-   percent escaping.  This function is used for GNU's custom streams */
+   percent escaping.  This function is used for GNU's custom streams. */
 int
 _assuan_cookie_write_data (void *cookie, const char *buffer, size_t orig_size)
 {
@@ -342,7 +358,9 @@ _assuan_cookie_write_data (void *cookie, const char *buffer, size_t orig_size)
   line += linelen;
   while (size)
     {
-      /* insert data line header */
+      unsigned int monitor_result;
+
+      /* Insert data line header. */
       if (!linelen)
         {
           *line++ = 'D';
@@ -350,7 +368,7 @@ _assuan_cookie_write_data (void *cookie, const char *buffer, size_t orig_size)
           linelen += 2;
         }
       
-      /* copy data, keep some space for the CRLF and to escape one character */
+      /* Copy data, keep space for the CRLF and to escape one character. */
       while (size && linelen < LINELENGTH-2-2)
         {
           if (*buffer == '%' || *buffer == '\r' || *buffer == '\n')
@@ -368,9 +386,15 @@ _assuan_cookie_write_data (void *cookie, const char *buffer, size_t orig_size)
           size--;
         }
       
+      
+      monitor_result = (ctx->io_monitor
+                        ? ctx->io_monitor (ctx, 1,
+                                           ctx->outbound.data.line, linelen)
+                        : 0);
+
       if (linelen >= LINELENGTH-2-2)
         {
-          if (ctx->log_fp)
+          if (ctx->log_fp && !(monitor_result & 1))
             {
 	      fprintf (ctx->log_fp, "%s[%u.%d] DBG: -> ",
 		       assuan_get_assuan_log_prefix (),
@@ -386,7 +410,8 @@ _assuan_cookie_write_data (void *cookie, const char *buffer, size_t orig_size)
             }
           *line++ = '\n';
           linelen++;
-          if (writen (ctx, ctx->outbound.data.line, linelen))
+          if ( !(monitor_result & 2)
+               && writen (ctx, ctx->outbound.data.line, linelen))
             {
               ctx->outbound.data.error = _assuan_error (ASSUAN_Write_Error);
               return 0;
@@ -409,6 +434,7 @@ _assuan_cookie_write_flush (void *cookie)
   assuan_context_t ctx = cookie;
   char *line;
   size_t linelen;
+  unsigned int monitor_result;
 
   if (ctx->outbound.data.error)
     return 0;
@@ -416,9 +442,15 @@ _assuan_cookie_write_flush (void *cookie)
   line = ctx->outbound.data.line;
   linelen = ctx->outbound.data.linelen;
   line += linelen;
+
+  monitor_result = (ctx->io_monitor
+                    ? ctx->io_monitor (ctx, 1,
+                                       ctx->outbound.data.line, linelen)
+                    : 0);
+  
   if (linelen)
     {
-      if (ctx->log_fp)
+      if (ctx->log_fp && !(monitor_result & 1))
 	{
 	  fprintf (ctx->log_fp, "%s[%u.%d] DBG: -> ",
 		   assuan_get_assuan_log_prefix (),
@@ -432,7 +464,8 @@ _assuan_cookie_write_flush (void *cookie)
 	}
       *line++ = '\n';
       linelen++;
-      if (writen (ctx, ctx->outbound.data.line, linelen))
+      if ( !(monitor_result & 2)
+           && writen (ctx, ctx->outbound.data.line, linelen))
         {
           ctx->outbound.data.error = _assuan_error (ASSUAN_Write_Error);
           return 0;
@@ -490,6 +523,15 @@ assuan_send_data (assuan_context_t ctx, const void *buffer, size_t length)
 assuan_error_t
 assuan_sendfd (assuan_context_t ctx, int fd)
 {
+  /* It is explicitly allowed to use (NULL, -1) as a runtime test to
+     check whether descriptor passing is available. */
+  if (!ctx && fd == -1)
+#ifdef USE_DESCRIPTOR_PASSING
+    return 0;
+#else
+    return _assuan_error (ASSUAN_Not_Implemented);
+#endif
+
   if (! ctx->io->sendfd)
     return set_error (ctx, Not_Implemented,
 		      "server does not support sending and receiving "

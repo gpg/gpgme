@@ -168,6 +168,7 @@ _assuan_release_context (assuan_context_t ctx)
     {
       xfree (ctx->hello_line);
       xfree (ctx->okay_line);
+      xfree (ctx->cmdtbl);
       xfree (ctx);
     }
 }

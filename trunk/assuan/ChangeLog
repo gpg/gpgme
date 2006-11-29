@@ -1,3 +1,70 @@
+2006-11-22  Werner Koch  <wk@g10code.com>
+
+	* assuan-handler.c (fun1_cookie_write, fun2_cookie_write): New.
+	(assuan_get_data_fp) [HAVE_FUNOPEN]: Use it.
+
+2006-11-21  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (libassuan_pth_a_CFLAGS): New.
+
+	* assuan-pipe-server.c (_assuan_release_context): Free CMDTBL.
+
+2006-11-14  Werner Koch  <wk@g10code.com>
+
+	* libassuan.m4 (AM_CHECK_LIBASSUAN): New.
+
+	* assuan-handler.c (assuan_register_post_cmd_notify) 
+	(assuan_register_post_cmd_notify): New.
+	* assuan-util.c (assuan_set_io_monitor): New.
+	* assuan-buffer.c (_assuan_read_line): Use it.
+	(_assuan_write_line): Ditto.
+	(_assuan_cookie_write_data): Ditto.
+	(_assuan_cookie_write_flush): Ditto.
+
+2006-10-18  Werner Koch  <wk@g10code.com>
+
+	* libassuan.m4: Pass "pthread" to the common macro.  Reported by
+	Rex Dieter.
+
+2006-10-16  Werner Koch  <wk@g10code.com>
+
+	* mkerrors: Map ASSUAN_Not_Confirmed.
+
+2006-10-10  Werner Koch  <wk@g10code.com>
+
+	* libassuan.m4 (AM_PATH_LIBASSUAN_PTH)
+	(AM_PATH_LIBASSUAN_PTHREAD): Fixed.
+
+	* assuan-buffer.c (assuan_sendfd): Implement a runtime detection
+	of implemented descripotr passing.
+
+	* assuan-uds.c: Take care of USE_DESCRIPTOR_PASSING.
+
+	* assuan-defs.h: Add missing semicolon.
+
+2006-10-09  Werner Koch  <wk@g10code.com>
+
+	* assuan-handler.c (process_request): Use weak pragma for the sake
+	of old gcc's.  Reported by Alain Guibert.
+
+	* assuan-io.c: Removed Pth support.
+	* assuan-io-pth.c: New. Based on assuan-io.c
+
+2006-10-06  Werner Koch  <wk@g10code.com>
+
+	* libassuan-config.in: New options --api-version and --thread.
+
+2006-10-04  Werner Koch  <wk@g10code.com>
+
+	* assuan-client.c (assuan_transact): Need to map old assuan status
+	codes so that for example CANCELED is correctly mapped.
+
+2006-09-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-client.c (assuan_transact): Do not convert error on
+	status line, it is already a gpg-error.  Do convert
+	ASSUAN_Server_Fault.
+
 2006-09-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan.h (assuan_init_socket_server_ext)

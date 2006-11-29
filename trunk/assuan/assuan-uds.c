@@ -44,6 +44,26 @@
 
 #include "assuan-defs.h"
 
+#ifdef USE_DESCRIPTOR_PASSING
+/* Provide replacement for missing CMSG maccros.  We assume that
+   size_t matches the alignment requirement. */
+#define MY_ALIGN(n) ((((n))+ sizeof(size_t)-1) & (size_t)~(sizeof(size_t)-1))
+#ifndef CMSG_SPACE
+#define CMSG_SPACE(n) (MY_ALIGN(sizeof(struct cmsghdr)) + MY_ALIGN((n)))
+#endif 
+#ifndef CMSG_LEN
+#define CMSG_LEN(n) (MY_ALIGN(sizeof(struct cmsghdr)) + (n))
+#endif 
+#ifndef CMSG_FIRSTHDR
+#define CMSG_FIRSTHDR(mhdr) \
+  ((size_t)(mhdr)->msg_controllen >= sizeof (struct cmsghdr)		      \
+   ? (struct cmsghdr*) (mhdr)->msg_control : (struct cmsghdr*)NULL)
+#endif
+#ifndef CMSG_DATA
+#define CMSG_DATA(cmsg) ((unsigned char*)((struct cmsghdr*)(cmsg)+1))
+#endif
+#endif /*USE_DESCRIPTOR_PASSING*/
+
 
 /* Read from a unix domain socket using sendmsg. 
 
@@ -55,7 +75,6 @@ uds_reader (assuan_context_t ctx, void *buf, size_t buflen)
   int len = ctx->uds.buffersize;
 
 #ifndef HAVE_W32_SYSTEM
-
   if (!ctx->uds.bufferallocated)
     {
       ctx->uds.buffer = xtrymalloc (2048);
@@ -68,11 +87,13 @@ uds_reader (assuan_context_t ctx, void *buf, size_t buflen)
     {
       struct msghdr msg;
       struct iovec iovec;
+#ifdef USE_DESCRIPTOR_PASSING
       union {
         struct cmsghdr cm;
         char control[CMSG_SPACE(sizeof (int))];
       } control_u;
       struct cmsghdr *cmptr;
+#endif /*USE_DESCRIPTOR_PASSING*/
 
       memset (&msg, 0, sizeof (msg));
 
@@ -82,8 +103,10 @@ uds_reader (assuan_context_t ctx, void *buf, size_t buflen)
       msg.msg_iovlen = 1;
       iovec.iov_base = ctx->uds.buffer;
       iovec.iov_len = ctx->uds.bufferallocated;
+#ifdef USE_DESCRIPTOR_PASSING
       msg.msg_control = control_u.control;
       msg.msg_controllen = sizeof (control_u.control);
+#endif
 
       len = _assuan_simple_recvmsg (ctx, &msg);
       if (len < 0)
@@ -92,6 +115,7 @@ uds_reader (assuan_context_t ctx, void *buf, size_t buflen)
       ctx->uds.buffersize = len;
       ctx->uds.bufferoffset = 0;
 
+#ifdef USE_DESCRIPTOR_PASSING
       cmptr = CMSG_FIRSTHDR (&msg);
       if (cmptr && cmptr->cmsg_len == CMSG_LEN (sizeof(int)))
         {
@@ -112,9 +136,13 @@ uds_reader (assuan_context_t ctx, void *buf, size_t buflen)
                 ctx->uds.pendingfds[ctx->uds.pendingfdscount++] = fd;
             }
 	}
+#endif /*USE_DESCRIPTOR_PASSING*/
     }
+
 #else /*HAVE_W32_SYSTEM*/
+
   len = recvfrom (ctx->inbound.fd, buf, buflen, 0, NULL, NULL);
+
 #endif /*HAVE_W32_SYSTEM*/
 
   /* Return some data to the user.  */
@@ -149,8 +177,6 @@ uds_writer (assuan_context_t ctx, const void *buf, size_t buflen)
   msg.msg_iov = &iovec;
   iovec.iov_base = (void*)buf;
   iovec.iov_len = buflen;
-  msg.msg_control = 0;
-  msg.msg_controllen = 0;
 
   len = _assuan_simple_sendmsg (ctx, &msg);
 #else /*HAVE_W32_SYSTEM*/
@@ -167,7 +193,7 @@ uds_writer (assuan_context_t ctx, const void *buf, size_t buflen)
 static assuan_error_t
 uds_sendfd (assuan_context_t ctx, int fd)
 {
-#ifndef HAVE_W32_SYSTEM
+#ifdef USE_DESCRIPTOR_PASSING
   struct msghdr msg;
   struct iovec iovec;
   union {
@@ -217,7 +243,7 @@ uds_sendfd (assuan_context_t ctx, int fd)
 static assuan_error_t
 uds_receivefd (assuan_context_t ctx, int *fd)
 {
-#ifndef HAVE_W32_SYSTEM
+#ifdef USE_DESCRIPTOR_PASSING
   int i;
 
   if (!ctx->uds.pendingfdscount)

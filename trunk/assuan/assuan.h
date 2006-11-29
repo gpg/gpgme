@@ -95,6 +95,8 @@ int _gpgme_ath_recvmsg (int s, struct msghdr *msg, int flags);
 #define _ASSUAN_PREFIX(x) _ASSUAN_PREFIX2(_ASSUAN_EXT_SYM_PREFIX,x)
 #define assuan_ _ASSUAN_PREFIX(assuan_)
 #define assuan_register_command _ASSUAN_PREFIX(assuan_register_command)
+#define assuan_register_post_cmd_notify \
+  _ASSUAN_PREFIX(assuan_register_post_cmd_notify)
 #define assuan_register_bye_notify _ASSUAN_PREFIX(assuan_register_bye_notify)
 #define assuan_register_reset_notify \
   _ASSUAN_PREFIX(assuan_register_reset_notify)
@@ -146,6 +148,7 @@ int _gpgme_ath_recvmsg (int s, struct msghdr *msg, int flags);
 #define assuan_set_error _ASSUAN_PREFIX(assuan_set_error)
 #define assuan_set_pointer _ASSUAN_PREFIX(assuan_set_pointer)
 #define assuan_get_pointer _ASSUAN_PREFIX(assuan_get_pointer)
+#define assuan_set_io_monitor _ASSUAN_PREFIX(assuan_set_io_monitor)
 #define assuan_begin_confidential _ASSUAN_PREFIX(assuan_begin_confidential)
 #define assuan_end_confidential _ASSUAN_PREFIX(assuan_end_confidential)
 #define assuan_strerror _ASSUAN_PREFIX(assuan_strerror)
@@ -282,9 +285,11 @@ extern "C"
 #define  ASSUAN_Unexpected_Data 125
 #define  ASSUAN_Invalid_Status 126
 #define  ASSUAN_Locale_Problem 127
+#endif
 #define  ASSUAN_Not_Confirmed 128
 
   /* Warning: Don't use the Error codes, below they are deprecated. */
+#ifndef _ASSUAN_IN_LIBASSUAN
 #define  ASSUAN_Bad_Certificate 201
 #define  ASSUAN_Bad_Certificate_Chain 202
 #define  ASSUAN_Missing_Certificate 203
@@ -367,6 +372,8 @@ typedef struct assuan_context_s *ASSUAN_CONTEXT _ASSUAN_DEPRECATED;
 int assuan_register_command (assuan_context_t ctx,
                              const char *cmd_string,
                              int (*handler)(assuan_context_t, char *));
+int assuan_register_post_cmd_notify (assuan_context_t ctx,
+                                     void (*fnc)(assuan_context_t, int));
 int assuan_register_bye_notify (assuan_context_t ctx,
                                 void (*fnc)(assuan_context_t));
 int assuan_register_reset_notify (assuan_context_t ctx,
@@ -496,6 +503,12 @@ void *assuan_get_pointer (assuan_context_t ctx);
 
 void assuan_begin_confidential (assuan_context_t ctx);
 void assuan_end_confidential (assuan_context_t ctx);
+
+void assuan_set_io_monitor (assuan_context_t ctx,
+                            unsigned int (*monitor)(assuan_context_t ctx,
+                                                    int direction,
+                                                    const char *line,
+                                                    size_t linelen));
 
 /* For context CTX, set the flag FLAG to VALUE.  Values for flags
    are usually 1 or 0 but certain flags might allow for other values;
