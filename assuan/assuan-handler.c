@@ -292,6 +292,16 @@ assuan_register_command (assuan_context_t ctx,
 }
 
 int
+assuan_register_post_cmd_notify (assuan_context_t ctx,
+                                 void (*fnc)(assuan_context_t, int))
+{
+  if (!ctx)
+    return _assuan_error (ASSUAN_Invalid_Value);
+  ctx->post_cmd_notify_fnc = fnc;
+  return 0;
+}
+
+int
 assuan_register_bye_notify (assuan_context_t ctx,
                             void (*fnc)(assuan_context_t))
 {
@@ -506,14 +516,20 @@ process_request (assuan_context_t ctx)
              problem if they are not available.  We need to make sure
              that we are using ELF because only this guarantees that
              weak symbol support is available in case GNU ld is not
-             used. */
+             used.  It seems that old gcc versions don't implement the
+             weak attribute properly but it works with the weak
+             pragma. */
+
           unsigned int source, code;
 
           int gpg_strerror_r (unsigned int err, char *buf, size_t buflen)
             __attribute__ ((weak));
-
           const char *gpg_strsource (unsigned int err)
             __attribute__ ((weak));
+#if !defined(HAVE_W32_SYSTEM) && __GNUC__ < 3
+#pragma weak gpg_strerror_r
+#pragma weak gpg_strsource
+#endif
 
           source = ((rc >> 24) & 0xff);
           code = (rc & 0x00ffffff);
@@ -536,6 +552,9 @@ process_request (assuan_context_t ctx)
         }
       rc = assuan_write_line (ctx, errline);
     }
+
+  if (ctx->post_cmd_notify_fnc)
+    ctx->post_cmd_notify_fnc (ctx, rc);
 
   ctx->confidential = 0;
   if (ctx->okay_line)
@@ -633,6 +652,23 @@ assuan_get_active_fds (assuan_context_t ctx, int what,
   return n;
 }
 
+
+/* Two simple wrappers to make the expected function types match. */
+#ifdef HAVE_FUNOPEN
+static int
+fun1_cookie_write (void *cookie, const char *buffer, int orig_size)
+{
+  return _assuan_cookie_write_data (cookie, buffer, orig_size);
+}
+#endif /*HAVE_FUNOPEN*/
+#ifdef HAVE_FOPENCOOKIE
+static ssize_t
+fun2_cookie_write (void *cookie, const char *buffer, size_t orig_size)
+{
+  return _assuan_cookie_write_data (cookie, buffer, orig_size);
+}
+#endif /*HAVE_FOPENCOOKIE*/
+
 /* Return a FP to be used for data output.  The FILE pointer is valid
    until the end of a handler.  So a close is not needed.  Assuan does
    all the buffering needed to insert the status line as well as the
@@ -648,10 +684,14 @@ assuan_get_data_fp (assuan_context_t ctx)
   if (ctx->outbound.data.fp)
     return ctx->outbound.data.fp;
   
-
-  ctx->outbound.data.fp = funopen (ctx, 0,
-				   _assuan_cookie_write_data,
+#ifdef HAVE_FUNOPEN
+  ctx->outbound.data.fp = funopen (ctx, 0, fun1_cookie_write,
 				   0, _assuan_cookie_write_flush);
+#else
+  ctx->outbound.data.fp = funopen (ctx, 0, fun2_cookie_write,
+				   0, _assuan_cookie_write_flush);
+#endif                                   
+
   ctx->outbound.data.error = 0;
   return ctx->outbound.data.fp;
 #else

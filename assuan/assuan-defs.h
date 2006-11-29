@@ -179,6 +179,20 @@ struct assuan_context_s
   void (*input_notify_fnc)(assuan_context_t, const char *);
   void (*output_notify_fnc)(assuan_context_t, const char *);
 
+  /* This function is called right after a command has been processed.
+     It may be used to command related cleanup.  */
+  void (*post_cmd_notify_fnc)(assuan_context_t, int);
+
+  /* If set, this is called right before logging an I/O line.  With
+     DIRECTION set to 1 it is called for an output oeration; 0 means
+     an input operation. If bit 0 is set in the return value, the
+     logging of the will be suppressed.  With bit 1 set, the entire
+     line will be ignored. */
+  unsigned int (*io_monitor)(assuan_context_t ctx,
+                             int direction,
+                             const char *line,
+                             size_t linelen);
+
   int input_fd;   /* set by INPUT command */
   int output_fd;  /* set by OUTPUT command */
 
@@ -299,7 +313,7 @@ char *stpcpy (char *dest, const char *src);
 int setenv (const char *name, const char *value, int replace);
 #endif
 #ifndef HAVE_PUTC_UNLOCKED
-int putc_unlocked (int c, FILE *stream)
+int putc_unlocked (int c, FILE *stream);
 #endif
 
 #define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
