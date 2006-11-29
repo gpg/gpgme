@@ -57,7 +57,7 @@ LIBGPGME_LT_REVISION=1
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
 
-NEED_GPG_VERSION=1.2.2
+NEED_GPG_VERSION=1.3.0
 NEED_GPGSM_VERSION=1.9.6
 ##############################################
 
