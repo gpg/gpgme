@@ -27,6 +27,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -344,6 +345,9 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
 {
   engine_gpg_t gpg;
   gpgme_error_t rc = 0;
+  char *dft_display = NULL;
+  char dft_ttyname[64];
+  char *dft_ttytype = NULL;
 
   gpg = calloc (1, sizeof *gpg);
   if (!gpg)
@@ -423,6 +427,64 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
     rc = add_arg (gpg, "utf8");
   if (!rc)
     rc = add_arg (gpg, "--enable-progress-filter");
+  if (rc)
+    goto leave;
+
+  rc = _gpgme_getenv ("DISPLAY", &dft_display);
+  if (dft_display)
+    {
+      rc = add_arg (gpg, "--display");
+      if (!rc)
+	rc = add_arg (gpg, dft_display);
+
+      free (dft_display);
+    }
+  if (rc)
+    goto leave;
+
+  if (isatty (1))
+    {
+      if (ttyname_r (1, dft_ttyname, sizeof (dft_ttyname)))
+	rc = gpg_error_from_errno (errno);
+      else
+	{
+	  rc = add_arg (gpg, "--ttyname");
+	  if (!rc)
+	    rc = add_arg (gpg, dft_ttyname);
+	  if (!rc)
+	    {
+	      rc = _gpgme_getenv ("TERM", &dft_ttytype);
+	      if (!rc)
+		goto leave;
+
+	      rc = add_arg (gpg, "--ttytype");
+	      if (!rc)
+		rc = add_arg (gpg, dft_ttytype);
+
+	      free (dft_ttytype);
+	    }
+	}
+      if (rc)
+	goto leave;
+    }
+
+  if (lc_ctype)
+    {
+      rc = add_arg (gpg, "--lc-ctype");
+      if (!rc)
+	rc = add_arg (gpg, lc_ctype);
+      if (rc)
+	goto leave;
+    }
+
+  if (lc_messages)
+    {
+      rc = add_arg (gpg, "--lc-messages");
+      if (!rc)
+	rc = add_arg (gpg, lc_messages);
+      if (rc)
+	goto leave;
+    }
 
  leave:
   if (rc)

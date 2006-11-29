@@ -1,3 +1,9 @@
+2006-11-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.c: Include <unistd.h>.
+	(gpg_new): Support --display, --ttyname, --ttytype, --lc-ctype and
+	--lc-messages.  Fixes issue 734.
+
 2006-10-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* trustlist.c (gpgme_op_trustlist_next): Return error if OPD is
