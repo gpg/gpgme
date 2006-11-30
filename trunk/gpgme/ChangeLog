@@ -1,3 +1,8 @@
+2006-11-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c: Replace AssuanError with gpg_error_t and
+	ASSUAN_CONTEXT with assuan_context_t.
+
 2006-11-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (gpgsm_new): Check return value of
