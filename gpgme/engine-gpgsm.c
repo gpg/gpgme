@@ -59,7 +59,7 @@ typedef struct
 
 struct engine_gpgsm
 {
-  ASSUAN_CONTEXT assuan_ctx;
+  assuan_context_t assuan_ctx;
 
   iocb_data_t status_cb;
 
@@ -147,7 +147,7 @@ close_notify_handler (int fd, void *opaque)
 
 
 static gpgme_error_t
-map_assuan_error (AssuanError err)
+map_assuan_error (gpg_error_t err)
 {
   if (!err)
     return 0;
@@ -573,11 +573,11 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 static gpgme_status_code_t parse_status (const char *name);
 
 static gpgme_error_t
-gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd,
+gpgsm_assuan_simple_command (assuan_context_t ctx, char *cmd,
 			     engine_status_handler_t status_fnc,
 			     void *status_fnc_value)
 {
-  AssuanError err;
+  gpg_error_t err;
   char *line;
   size_t linelen;
 
@@ -632,7 +632,7 @@ gpgsm_assuan_simple_command (ASSUAN_CONTEXT ctx, char *cmd,
 
 #define COMMANDLINELEN 40
 static gpgme_error_t
-gpgsm_set_fd (ASSUAN_CONTEXT ctx, const char *which, int fd, const char *opt)
+gpgsm_set_fd (assuan_context_t ctx, const char *which, int fd, const char *opt)
 {
   char line[COMMANDLINELEN];
 
@@ -689,7 +689,7 @@ parse_status (const char *name)
 static gpgme_error_t
 status_handler (void *opaque, int fd)
 {
-  AssuanError assuan_err;
+  gpg_error_t assuan_err;
   gpgme_error_t err = 0;
   engine_gpgsm_t gpgsm = opaque;
   char *line;
@@ -980,7 +980,7 @@ static gpgme_error_t
 set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
 {
   gpgme_error_t err = 0;
-  ASSUAN_CONTEXT ctx = gpgsm->assuan_ctx;
+  assuan_context_t ctx = gpgsm->assuan_ctx;
   char *line;
   int linelen;
   int invalid_recipients = 0;
