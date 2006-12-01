@@ -45,7 +45,6 @@ else
 ltlib_gpgme_extra =
 endif
 
-noinst_LTLIBRARIES = libgpgme-real.la
 lib_LTLIBRARIES = libgpgme.la $(ltlib_gpgme_extra) \
 	$(ltlib_gpgme_pthread) $(ltlib_gpgme_pth)
 
@@ -77,7 +76,12 @@ else
 gpgsm_components =
 endif
 
-libgpgme_real_la_SOURCES =						\
+# These are the source files common to all library versions.  We used
+# to build a non-installed library for that, but that does not work
+# correctly on all platforms (in particular, one can not specify the
+# right linking order with libtool, as the non-installed version has
+# unresolved symbols to the thread module.
+main_sources =								\
 	gpgme.h util.h conversion.c get-env.c context.h ops.h		\
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
 	data-compat.c							\
@@ -92,17 +96,21 @@ libgpgme_real_la_SOURCES =						\
 	$(gpgsm_components) sema.h priv-io.h $(system_components)	\
 	debug.c debug.h gpgme.c version.c error.c
 
-libgpgme_la_SOURCES = ath.h ath.c $(system_components_not_extra)
-libgpgme_pthread_la_SOURCES = \
+libgpgme_la_SOURCES = $(main_sources)					\
+	ath.h ath.c $(system_components_not_extra) 
+libgpgme_pthread_la_SOURCES = $(main_sources)				\
 	ath.h ath-pthread.c $(system_components_not_extra)
-libgpgme_pth_la_SOURCES = ath.h ath-pth.c $(system_components_not_extra)
+libgpgme_pth_la_SOURCES = $(main_sources)				\
+	ath.h ath-pth.c $(system_components_not_extra)
 
 if BUILD_W32_GLIB
-libgpgme_glib_la_SOURCES = ath.h ath.c w32-glib-io.c
+libgpgme_glib_la_SOURCES = $(main_sources) ath.h ath.c w32-glib-io.c
 endif
 
-AM_CPPFLAGS = $(assuan_cppflags) @GPG_ERROR_CFLAGS@
-
+# We use a global CFLAGS and CPPFLAGS setting for all library
+# versions, because then every object file is only compiled once.
+AM_CPPFLAGS = $(assuan_cppflags) @GPG_ERROR_CFLAGS@ @PTH_CPPFLAGS@
+AM_CFLAGS = @PTH_CFLAGS@ @GLIB_CFLAGS@
 
 if HAVE_W32_SYSTEM
 
@@ -141,36 +149,33 @@ endif
 libgpgme_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) $(export_symbols) \
 	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
+libgpgme_la_DEPENDENCIES = $(assuan_libobjs) \
 	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
-libgpgme_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
+libgpgme_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@ @NETLIBS@
 
 libgpgme_pthread_la_LDFLAGS = $(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_pthread_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
+libgpgme_pthread_la_DEPENDENCIES = $(assuan_libobjs) \
 	@LTLIBOBJS@ $(srcdir)/libgpgme.vers
-libgpgme_pthread_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
+libgpgme_pthread_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
 	-lpthread @GPG_ERROR_LIBS@ @NETLIBS@
 
-libgpgme_pth_la_CFLAGS = $(AM_CFLAGS) @PTH_CFLAGS@
-libgpgme_pth_la_CPPFLAGS = $(AM_CPPFLAGS) @PTH_CPPFLAGS@
 libgpgme_pth_la_LDFLAGS = @PTH_LDFLAGS@ \
 	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_pth_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
+libgpgme_pth_la_DEPENDENCIES = $(assuan_libobjs) \
 	@LTLIBOBJS@ $(srcdir)/libgpgme.vers
-libgpgme_pth_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
+libgpgme_pth_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
 	@PTH_LIBS@ @GPG_ERROR_LIBS@ @NETLIBS@
 
 if BUILD_W32_GLIB
 libgpgme_glib_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
 	$(export_symbols) $(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_glib_la_CFLAGS = $(AM_CFLAGS) @GLIB_CFLAGS@
-libgpgme_glib_la_DEPENDENCIES = libgpgme-real.la $(assuan_libobjs) \
+libgpgme_glib_la_DEPENDENCIES = $(assuan_libobjs) \
 	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
-libgpgme_glib_la_LIBADD = libgpgme-real.la $(assuan_libobjs) @LTLIBOBJS@ \
+libgpgme_glib_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@ @GLIB_LIBS@ @NETLIBS@
 endif
 
