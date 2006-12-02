@@ -106,6 +106,15 @@ main (int argc, char **argv)
 	  exit (1);
 	}
 
+      if (strcmp (key->subkeys->fpr, keys[i].fpr))
+	{
+	  fprintf (stderr, "Warning: Skipping unknown key %s\n",
+		   key->subkeys->fpr);
+	  continue;
+	}
+      else
+	printf ("Checking key %s\n", key->subkeys->fpr);
+
       /* Global key flags.  */
       if (key->revoked)
 	{
