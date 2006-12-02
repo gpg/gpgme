@@ -1,3 +1,8 @@
+2006-12-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* version.c: Include "assuan.h".
+	(do_subsystem_inits): Call assuan_set_assuan_err_source.
+
 2006-12-01  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (libgpgme_real_la_SOURCES): Rename to main_sources.

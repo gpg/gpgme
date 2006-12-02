@@ -32,6 +32,8 @@
 /* For _gpgme_sema_subsystem_init ().  */
 #include "sema.h"
 
+#include "assuan.h"
+
 
 /* Bootstrap the subsystems needed for concurrent operation.  This
    must be done once at startup.  We can not guarantee this using a
@@ -48,6 +50,7 @@ do_subsystem_inits (void)
 
   _gpgme_sema_subsystem_init ();
   _gpgme_io_subsystem_init ();
+  assuan_set_assuan_err_source (GPG_ERR_SOURCE_GPGME);
 
   done = 1;
 }
