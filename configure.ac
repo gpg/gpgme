@@ -468,6 +468,32 @@ AC_REPLACE_FUNCS(setenv)
 # More assuan checks.
 AC_CHECK_HEADERS([sys/uio.h])
 
+# Assuan check for descriptor passing.
+AC_CHECK_MEMBER(struct cmsghdr.cmsg_len,
+                [use_descriptor_passing=yes],
+                [use_descriptor_passing=no
+                 AC_MSG_WARN([
+***
+*** Data structure for sending ancillary data missing.
+*** Descriptor passing won't work.
+***])],[
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#if HAVE_SYS_UIO_H
+#include <sys/uio.h>
+#endif
+#include <unistd.h>
+       ])
+if test "$use_descriptor_passing" = "yes"; then
+ AC_DEFINE(USE_DESCRIPTOR_PASSING, 1,
+            [Defined if descriptor passing is supported])
+fi
+AM_CONDITIONAL(USE_DESCRIPTOR_PASSING, test "$use_descriptor_passing" = "yes")
+
 # End of assuan checks.
 
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
