@@ -470,8 +470,8 @@ AC_CHECK_HEADERS([sys/uio.h])
 
 # Assuan check for descriptor passing.
 AC_CHECK_MEMBER(struct cmsghdr.cmsg_len,
-                [use_descriptor_passing=yes],
-                [use_descriptor_passing=no
+                [supports_descriptor_passing=yes],
+                [supports_descriptor_passing=no
                  AC_MSG_WARN([
 ***
 *** Data structure for sending ancillary data missing.
@@ -488,10 +488,23 @@ AC_CHECK_MEMBER(struct cmsghdr.cmsg_len,
 #endif
 #include <unistd.h>
        ])
-if test "$use_descriptor_passing" = "yes"; then
- AC_DEFINE(USE_DESCRIPTOR_PASSING, 1,
-            [Defined if descriptor passing is supported])
+
+AC_ARG_ENABLE(fd-passing,
+  AC_HELP_STRING([--enable-fd-passing], [use FD passing if supported]),
+  use_desciptor_passing=$withval)
+
+if test "$supports_descriptor_passing" != "yes"; then
+  use_descriptor_passing=no
 fi
+
+if test "$use_descriptor_passing" = "yes"; then
+  fd_passing=1
+else
+  fd_passing=0
+fi
+
+AC_DEFINE_UNQUOTED(USE_DESCRIPTOR_PASSING, $fd_passing,
+          [Defined if descriptor passing is enabled and supported])
 AM_CONDITIONAL(USE_DESCRIPTOR_PASSING, test "$use_descriptor_passing" = "yes")
 
 # End of assuan checks.
