@@ -45,8 +45,7 @@ struct engine_ops
   const char *(*get_req_version) (void);
 
   gpgme_error_t (*new) (void **r_engine,
-			const char *file_name, const char *home_dir,
-			const char *lc_ctype, const char *lc_messages);
+			const char *file_name, const char *home_dir);
 
   /* Member functions.  */
   void (*release) (void *engine);
@@ -58,6 +57,7 @@ struct engine_ops
   gpgme_error_t (*set_colon_line_handler) (void *engine,
 					   engine_colon_line_handler_t fnc,
 					   void *fnc_value);
+  gpgme_error_t (*set_locale) (void *engine, int category, const char *value);
   gpgme_error_t (*decrypt) (void *engine, gpgme_data_t ciph,
 			    gpgme_data_t plain);
   gpgme_error_t (*delete) (void *engine, gpgme_key_t key, int allow_secret);

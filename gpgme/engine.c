@@ -389,8 +389,7 @@ gpgme_set_engine_info (gpgme_protocol_t proto,
 
 
 gpgme_error_t
-_gpgme_engine_new (gpgme_engine_info_t info, engine_t *r_engine,
-		   const char *lc_ctype, const char *lc_messages)
+_gpgme_engine_new (gpgme_engine_info_t info, engine_t *r_engine)
 {
   engine_t engine;
 
@@ -404,9 +403,9 @@ _gpgme_engine_new (gpgme_engine_info_t info, engine_t *r_engine,
   engine->ops = engine_ops[info->protocol];
   if (engine->ops->new)
     {
-      gpgme_error_t err = (*engine->ops->new) (&engine->engine,
-					       info->file_name, info->home_dir,
-					       lc_ctype, lc_messages);
+      gpgme_error_t err;
+      err = (*engine->ops->new) (&engine->engine,
+				 info->file_name, info->home_dir);
       if (err)
 	{
 	  free (engine);
@@ -474,6 +473,19 @@ _gpgme_engine_set_colon_line_handler (engine_t engine,
 
   return (*engine->ops->set_colon_line_handler) (engine->engine,
 						 fnc, fnc_value);
+}
+
+gpgme_error_t
+_gpgme_engine_set_locale (engine_t engine, int category,
+			  const char *value)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->set_locale)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->set_locale) (engine->engine, category, value);
 }
 
 gpgme_error_t

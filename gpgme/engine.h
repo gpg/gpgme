@@ -51,9 +51,11 @@ gpgme_error_t _gpgme_set_engine_info (gpgme_engine_info_t info,
 
 
 gpgme_error_t _gpgme_engine_new (gpgme_engine_info_t info,
-				 engine_t *r_engine,
-				 const char *lc_ctype,
-				 const char *lc_messages);
+				 engine_t *r_engine);
+
+gpgme_error_t _gpgme_engine_set_locale (engine_t engine, int category,
+					const char *value);
+
 void _gpgme_engine_release (engine_t engine);
 void _gpgme_engine_set_status_handler (engine_t engine,
 				       engine_status_handler_t fnc,
