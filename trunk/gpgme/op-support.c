@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <locale.h>
 
 #include "gpgme.h"
 #include "context.h"
@@ -86,10 +87,20 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
     }
 
   /* Create an engine object.  */
-  err = _gpgme_engine_new (info, &ctx->engine,
-			   ctx->lc_ctype, ctx->lc_messages);
+  err = _gpgme_engine_new (info, &ctx->engine);
   if (err)
     return err;
+
+  err = _gpgme_engine_set_locale (ctx->engine, LC_CTYPE, ctx->lc_ctype);
+  if (!err)
+    err = _gpgme_engine_set_locale (ctx->engine,
+				    LC_MESSAGES, ctx->lc_messages);
+  if (err)
+    {
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
+      return err;
+    }
 
   if (type == 1 || (type == 2 && !ctx->io_cbs.add))
     {

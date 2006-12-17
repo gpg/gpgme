@@ -62,6 +62,9 @@ struct engine_gpgsm
 {
   assuan_context_t assuan_ctx;
 
+  int lc_ctype_set;
+  int lc_messages_set;
+
   iocb_data_t status_cb;
 
   /* Input, output etc are from the servers perspective.  */
@@ -317,8 +320,7 @@ gpgsm_release (void *engine)
 
 
 static gpgme_error_t
-gpgsm_new (void **engine, const char *file_name, const char *home_dir,
-	   const char *lc_ctype, const char *lc_messages)
+gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 {
   gpgme_error_t err = 0;
   engine_gpgsm_t gpgsm;
@@ -516,38 +518,6 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 	}
     }
 
-  if (lc_ctype)
-    {
-      if (asprintf (&optstr, "OPTION lc-ctype=%s", lc_ctype) < 0)
-	err = gpg_error_from_errno (errno);
-      else
-	{
-	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
-				 NULL, NULL, NULL, NULL);
-	  free (optstr);
-	  if (err)
-	    err = map_assuan_error (err);
-	}
-    }
-  if (err)
-    goto leave;
-  
-  if (lc_messages)
-    {
-      if (asprintf (&optstr, "OPTION lc-messages=%s", lc_messages) < 0)
-	err = gpg_error_from_errno (errno);
-      else
-	{
-	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
-				 NULL, NULL, NULL, NULL);
-	  free (optstr);
-	  if (err)
-	    err = map_assuan_error (err);
-	}
-    }
-  if (err)
-    goto leave;
-
   if (!err
       && (_gpgme_io_set_close_notify (gpgsm->status_cb.fd,
 				      close_notify_handler, gpgsm)))
@@ -587,6 +557,50 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
   else
     *engine = gpgsm;
 
+  return err;
+}
+
+
+static gpgme_error_t
+gpgsm_set_locale (void *engine, int category, const char *value)
+{
+  engine_gpgsm_t gpgsm = engine;
+  gpgme_error_t err;
+  char *optstr;
+  char *catstr;
+
+  /* FIXME: If value is NULL, we need to reset the option to default.
+     But we can't do this.  So we error out here.  GPGSM needs support
+     for this.  */
+  if (category == LC_CTYPE)
+    {
+      catstr = "lc-ctype";
+      if (!value && gpgsm->lc_ctype_set)
+	return gpg_error (GPG_ERR_INV_VALUE);
+      if (value)
+	gpgsm->lc_ctype_set = 1;
+    }
+  else if (category == LC_MESSAGES)
+    {
+      catstr = "lc-messages";
+      if (!value && gpgsm->lc_messages_set)
+	return gpg_error (GPG_ERR_INV_VALUE);
+      if (value)
+	gpgsm->lc_messages_set = 1;
+    }
+  else
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
+    err = gpg_error_from_errno (errno);
+  else
+    {
+      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
+			     NULL, NULL, NULL, NULL);
+      free (optstr);
+      if (err)
+	err = map_assuan_error (err);
+    }
   return err;
 }
 
@@ -1693,6 +1707,7 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_set_status_handler,
     NULL,		/* set_command_handler */
     gpgsm_set_colon_line_handler,
+    gpgsm_set_locale,
     gpgsm_decrypt,
     gpgsm_delete,
     NULL,		/* edit */

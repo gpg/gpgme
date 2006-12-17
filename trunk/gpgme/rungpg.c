@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <unistd.h>
+#include <locale.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -71,6 +72,9 @@ typedef gpgme_error_t (*colon_preprocessor_t) (char *line, char **rline);
 struct engine_gpg
 {
   char *file_name;
+
+  char *lc_messages;
+  char *lc_ctype;
 
   struct arg_and_data_s *arglist;
   struct arg_and_data_s **argtail;
@@ -181,8 +185,10 @@ close_notify_handler (int fd, void *opaque)
     }
 }
 
+/* If FRONT is true, push at the front of the list.  Use this for
+   options added late in the process.  */
 static gpgme_error_t
-add_arg (engine_gpg_t gpg, const char *arg)
+add_arg_ext (engine_gpg_t gpg, const char *arg, int front)
 {
   struct arg_and_data_s *a;
 
@@ -192,13 +198,35 @@ add_arg (engine_gpg_t gpg, const char *arg)
   a = malloc (sizeof *a + strlen (arg));
   if (!a)
     return gpg_error_from_errno (errno);
-  a->next = NULL;
+
   a->data = NULL;
   a->dup_to = -1;
   strcpy (a->arg, arg);
-  *gpg->argtail = a;
-  gpg->argtail = &a->next;
+  if (front)
+    {
+      a->next = gpg->arglist;
+      if (!gpg->arglist)
+	{
+	  /* If this is the first argument, we need to update the tail
+	     pointer.  */
+	  gpg->argtail = &a->next;
+	}
+      gpg->arglist = a;
+    }
+  else
+    {
+      a->next = NULL;
+      *gpg->argtail = a;
+      gpg->argtail = &a->next;
+    }
+
   return 0;
+}
+
+static gpgme_error_t
+add_arg (engine_gpg_t gpg, const char *arg)
+{
+  return add_arg_ext (gpg, arg, 0);
 }
 
 static gpgme_error_t
@@ -317,6 +345,11 @@ gpg_release (void *engine)
   if (gpg->file_name)
     free (gpg->file_name);
 
+  if (gpg->lc_messages)
+    free (gpg->lc_messages);
+  if (gpg->lc_ctype)
+    free (gpg->lc_ctype);
+
   while (gpg->arglist)
     {
       struct arg_and_data_s *next = gpg->arglist->next;
@@ -340,8 +373,7 @@ gpg_release (void *engine)
 
 
 static gpgme_error_t
-gpg_new (void **engine, const char *file_name, const char *home_dir,
-	 const char *lc_ctype, const char *lc_messages)
+gpg_new (void **engine, const char *file_name, const char *home_dir)
 {
   engine_gpg_t gpg;
   gpgme_error_t rc = 0;
@@ -468,30 +500,46 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
 	goto leave;
     }
 
-  if (lc_ctype)
-    {
-      rc = add_arg (gpg, "--lc-ctype");
-      if (!rc)
-	rc = add_arg (gpg, lc_ctype);
-      if (rc)
-	goto leave;
-    }
-
-  if (lc_messages)
-    {
-      rc = add_arg (gpg, "--lc-messages");
-      if (!rc)
-	rc = add_arg (gpg, lc_messages);
-      if (rc)
-	goto leave;
-    }
-
  leave:
   if (rc)
     gpg_release (gpg);
   else
     *engine = gpg;
   return rc;
+}
+
+
+static gpgme_error_t
+gpg_set_locale (void *engine, int category, const char *value)
+{
+  engine_gpg_t gpg = engine;
+
+  if (category == LC_CTYPE)
+    {
+      if (gpg->lc_ctype)
+	free (gpg->lc_ctype);
+      if (value)
+	{
+	  gpg->lc_ctype = strdup (value);
+	  if (!gpg->lc_ctype)
+	    return gpg_error_from_syserror ();
+	}
+    }
+  else if (category == LC_MESSAGES)
+    {
+      if (gpg->lc_messages)
+	free (gpg->lc_messages);
+      if (value)
+	{
+	  gpg->lc_messages = strdup (value);
+	  if (!gpg->lc_messages)
+	    return gpg_error_from_syserror ();
+	}
+    }
+  else
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  return 0;
 }
 
 
@@ -1162,6 +1210,24 @@ start (engine_gpg_t gpg)
 
   if (!gpg->file_name && !_gpgme_get_gpg_path ())
     return gpg_error (GPG_ERR_INV_ENGINE);
+
+  if (gpg->lc_ctype)
+    {
+      rc = add_arg_ext (gpg, gpg->lc_ctype, 1);
+      if (!rc)
+	rc = add_arg_ext (gpg, "--lc-ctype", 1);
+      if (rc)
+	return rc;
+    }
+
+  if (gpg->lc_messages)
+    {
+      rc = add_arg_ext (gpg, gpg->lc_messages, 1);
+      if (!rc)
+	rc = add_arg_ext (gpg, "--lc-messages", 1);
+      if (rc)
+	return rc;
+    }
 
   rc = build_argv (gpg);
   if (rc)
@@ -2015,6 +2081,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_set_status_handler,
     gpg_set_command_handler,
     gpg_set_colon_line_handler,
+    gpg_set_locale,
     gpg_decrypt,
     gpg_delete,
     gpg_edit,
