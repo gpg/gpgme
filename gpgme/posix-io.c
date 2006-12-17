@@ -412,3 +412,86 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
     }
   return count;
 }
+
+
+int
+_gpgme_io_recvmsg (int fd, struct msghdr *msg, int flags)
+{
+  int nread;
+  int saved_errno;
+  struct iovec *iov;
+
+  nread = 0;
+  iov = msg->msg_iov;
+  while (iov < msg->msg_iov + msg->msg_iovlen)
+    {
+      nread += iov->iov_len;
+      iov++;
+    }
+  
+  DEBUG2 ("fd %d: about to receive %d bytes\n",
+	  fd, (int) nread);
+  do
+    {
+      nread = _gpgme_ath_recvmsg (fd, msg, flags);
+    }
+  while (nread == -1 && errno == EINTR);
+  saved_errno = errno;
+  DEBUG2 ("fd %d: got %d bytes\n", fd, nread);
+  if (nread > 0)
+    {
+      int nr = nread;
+
+      iov = msg->msg_iov;
+      while (nr > 0)
+	{
+	  int len = nr > iov->iov_len ? iov->iov_len : nr;
+	  _gpgme_debug (2, "fd %d: got `%.*s'\n", fd, len,
+			msg->msg_iov->iov_base);
+	  iov++;
+	  nr -= len;
+	}
+    }
+  errno = saved_errno;
+  return nread;
+}
+
+
+int
+_gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
+{
+  int saved_errno;
+  int nwritten;
+  struct iovec *iov;
+
+  nwritten = 0;
+  iov = msg->msg_iov;
+  while (iov < msg->msg_iov + msg->msg_iovlen)
+    {
+      nwritten += iov->iov_len;
+      iov++;
+    }
+
+  DEBUG2 ("fd %d: about to write %d bytes\n", fd, (int) nwritten);
+  iov = msg->msg_iov;
+  while (nwritten > 0)
+    {
+      int len = nwritten > iov->iov_len ? iov->iov_len : nwritten;
+      _gpgme_debug (2, "fd %d: write `%.*s'\n", fd, len,
+		    msg->msg_iov->iov_base);
+      iov++;
+      nwritten -= len;
+    }
+
+  do
+    {
+      nwritten = _gpgme_ath_sendmsg (fd, msg, flags);
+    }
+  while (nwritten == -1 && errno == EINTR);
+  saved_errno = errno;
+  DEBUG2 ("fd %d:          wrote %d bytes\n", fd, (int) nwritten);
+  errno = saved_errno;
+  return nwritten;
+}
+
+

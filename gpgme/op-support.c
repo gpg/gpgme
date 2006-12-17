@@ -68,28 +68,37 @@ gpgme_error_t
 _gpgme_op_reset (gpgme_ctx_t ctx, int type)
 {
   gpgme_error_t err = 0;
-  gpgme_engine_info_t info;
   struct gpgme_io_cbs io_cbs;
-
-  info = ctx->engine_info;
-  while (info && info->protocol != ctx->protocol)
-    info = info->next;
-
-  if (!info)
-    return gpg_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
 
   _gpgme_release_result (ctx);
 
   if (ctx->engine)
     {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
+      /* Attempt to reset an existing engine.  */
+
+      err = _gpgme_engine_reset (ctx->engine);
+      if (gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED)
+	{
+	  _gpgme_engine_release (ctx->engine);
+	  ctx->engine = NULL;
+	}
     }
 
-  /* Create an engine object.  */
-  err = _gpgme_engine_new (info, &ctx->engine);
-  if (err)
-    return err;
+  if (!ctx->engine)
+    {
+      gpgme_engine_info_t info;
+      info = ctx->engine_info;
+      while (info && info->protocol != ctx->protocol)
+	info = info->next;
+
+      if (!info)
+	return gpg_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
+
+      /* Create an engine object.  */
+      err = _gpgme_engine_new (info, &ctx->engine);
+      if (err)
+	return err;
+    }
 
   err = _gpgme_engine_set_locale (ctx->engine, LC_CTYPE, ctx->lc_ctype);
   if (!err)

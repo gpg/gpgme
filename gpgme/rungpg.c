@@ -2078,6 +2078,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
 
     /* Member functions.  */
     gpg_release,
+    NULL,				/* reset */
     gpg_set_status_handler,
     gpg_set_command_handler,
     gpg_set_colon_line_handler,

@@ -78,6 +78,8 @@ Hey Emacs, this is -*- outline -*- mode!
    release everything properly at a reset and at an error.  Think hard
    about where to guarantee what (ie, what happens if start fails, are
    the fds unregistered immediately - i think so?)
+   Note that we need support in gpgsm to set include-certs to default
+   as RESET does not reset it.
 ** Optimize the case where a data object has 0an underlying fd we can pass
    directly to the engine.  This will be automatic with socket I/O and
    descriptor passing.

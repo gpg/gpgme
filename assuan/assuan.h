@@ -75,6 +75,8 @@ int _gpgme_ath_accept (int s, struct sockaddr *addr, socklen_t *length_ptr);
 int _gpgme_ath_connect (int s, struct sockaddr *addr, socklen_t length);
 int _gpgme_ath_sendmsg (int s, const struct msghdr *msg, int flags);
 int _gpgme_ath_recvmsg (int s, struct msghdr *msg, int flags);
+int _gpgme_io_sendmsg (int sock, const struct msghdr *msg, int flags);
+int _gpgme_io_recvmsg (int sock, struct msghdr *msg, int flags);
 #endif /*!HAVE_W32_SYSTEM*/
 
 #define read          _gpgme_io_read
@@ -83,8 +85,8 @@ int _gpgme_ath_recvmsg (int s, struct msghdr *msg, int flags);
 #define select	      _gpgme_ath_select
 #define accept        _gpgme_ath_accept
 #define connect       _gpgme_ath_connect
-#define sendmsg	      _gpgme_ath_sendmsg
-#define recvmsg       _gpgme_ath_recvmsg
+#define sendmsg	      _gpgme_io_sendmsg
+#define recvmsg       _gpgme_io_recvmsg
 #endif /*_ASSUAN_IN_GPGME_BUILD_ASSUAN*/
 /**** End GPGME specific modifications. ******/
 

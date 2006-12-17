@@ -334,15 +334,15 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   char dft_ttyname[64];
   char *dft_ttytype = NULL;
   char *optstr;
-  int fdlist[5];
-  int nfds;
 
   gpgsm = calloc (1, sizeof *gpgsm);
   if (!gpgsm)
     return gpg_error_from_errno (errno);
 
   gpgsm->status_cb.fd = -1;
+  gpgsm->status_cb.dir = 1;
   gpgsm->status_cb.tag = 0;
+  gpgsm->status_cb.data = gpgsm;
 
   gpgsm->input_cb.fd = -1;
   gpgsm->input_cb.dir = 0;
@@ -423,30 +423,6 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   if (err)
     goto leave;
 
-  /* We need to know the fd used by assuan for reads.  We do this by
-     using the assumption that the first returned fd from
-     assuan_get_active_fds() is always this one.  */
-  nfds = assuan_get_active_fds (gpgsm->assuan_ctx, 0 /* read fds */,
-                                fdlist, DIM (fdlist));
-  if (nfds < 1)
-    {
-      err = gpg_error (GPG_ERR_GENERAL);	/* FIXME */
-      goto leave;
-    }
-  /* We duplicate the file descriptor, so we can close it without
-     disturbing assuan.  Alternatively, we could special case
-     status_fd and register/unregister it manually as needed, but this
-     increases code duplication and is more complicated as we can not
-     use the close notifications etc.  */
-  gpgsm->status_cb.fd = dup (fdlist[0]);
-  if (gpgsm->status_cb.fd < 0)
-    {
-      err = gpg_error (GPG_ERR_GENERAL);	/* FIXME */
-      goto leave;
-    }
-  gpgsm->status_cb.dir = 1;
-  gpgsm->status_cb.data = gpgsm;
-
   err = _gpgme_getenv ("DISPLAY", &dft_display);
   if (err)
     goto leave;
@@ -516,14 +492,6 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 		}
 	    }
 	}
-    }
-
-  if (!err
-      && (_gpgme_io_set_close_notify (gpgsm->status_cb.fd,
-				      close_notify_handler, gpgsm)))
-    {
-      err = gpg_error (GPG_ERR_GENERAL);
-      goto leave;
     }
 
 #if !USE_DESCRIPTOR_PASSING
@@ -997,6 +965,33 @@ static gpgme_error_t
 start (engine_gpgsm_t gpgsm, const char *command)
 {
   gpgme_error_t err;
+  int fdlist[5];
+  int nfds;
+
+  /* We need to know the fd used by assuan for reads.  We do this by
+     using the assumption that the first returned fd from
+     assuan_get_active_fds() is always this one.  */
+  nfds = assuan_get_active_fds (gpgsm->assuan_ctx, 0 /* read fds */,
+                                fdlist, DIM (fdlist));
+  if (nfds < 1)
+    return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
+
+  /* We duplicate the file descriptor, so we can close it without
+     disturbing assuan.  Alternatively, we could special case
+     status_fd and register/unregister it manually as needed, but this
+     increases code duplication and is more complicated as we can not
+     use the close notifications etc.  */
+  gpgsm->status_cb.fd = dup (fdlist[0]);
+  if (gpgsm->status_cb.fd < 0)
+    return gpg_error_from_syserror ();
+
+  if (_gpgme_io_set_close_notify (gpgsm->status_cb.fd,
+				  close_notify_handler, gpgsm))
+    {
+      close (gpgsm->status_cb.fd);
+      gpgsm->status_cb.fd = -1;
+      return gpg_error (GPG_ERR_GENERAL);
+    }
 
   err = add_io_cb (gpgsm, &gpgsm->status_cb, status_handler);
   if (!err && gpgsm->input_cb.fd != -1)
@@ -1014,6 +1009,19 @@ start (engine_gpgsm_t gpgsm, const char *command)
 
   return err;
 }
+
+
+#if USE_DESCRIPTOR_PASSING
+static gpgme_error_t
+gpgsm_reset (void *engine)
+{
+  engine_gpgsm_t gpgsm = engine;
+
+  /* We must send a reset because we need to reset the list of
+     signers.  Note that RESET does not reset OPTION commands. */
+  return gpgsm_assuan_simple_command (gpgsm->assuan_ctx, "RESET", NULL, NULL);
+}
+#endif
 
 
 static gpgme_error_t
@@ -1385,6 +1393,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
   if (!pattern)
     pattern = "";
 
+  /* Always send list-mode option because RESET does not reset it.  */
   if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
     return gpg_error_from_errno (errno);
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
@@ -1392,6 +1401,8 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
   if (err)
     return err;
 
+
+  /* Always send key validation because RESET does not reset it.  */
 
   /* Use the validation mode if required.  We don't check for an error
      yet because this is a pretty fresh gpgsm features. */
@@ -1448,6 +1459,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
   if (mode & GPGME_KEYLIST_MODE_EXTERN)
     list_mode |= 2;
 
+  /* Always send list-mode option because RESET does not reset it.  */
   if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
     return gpg_error_from_errno (errno);
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
@@ -1455,6 +1467,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
   if (err)
     return err;
 
+  /* Always send key validation because RESET does not reset it.  */
   /* Use the validation mode if required.  We don't check for an error
      yet because this is a pretty fresh gpgsm features. */
   gpgsm_assuan_simple_command (gpgsm->assuan_ctx, 
@@ -1561,12 +1574,8 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  /* We must send a reset because we need to reset the list of
-     signers.  Note that RESET does not reset OPTION commands. */
-  err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, "RESET", NULL, NULL);
-  if (err)
-    return err;
-
+  /* FIXME: This does not work as RESET does not reset it so we can't
+     revert back to default.  */
   if (include_certs != GPGME_INCLUDE_CERTS_DEFAULT)
     {
       /* FIXME: Make sure that if we run multiple operations, that we
@@ -1704,6 +1713,11 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
 
     /* Member functions.  */
     gpgsm_release,
+#if USE_DESCRIPTOR_PASSING
+    gpgsm_reset,
+#else
+    NULL,			/* reset */
+#endif
     gpgsm_set_status_handler,
     NULL,		/* set_command_handler */
     gpgsm_set_colon_line_handler,

@@ -491,7 +491,7 @@ AC_CHECK_MEMBER(struct cmsghdr.cmsg_len,
 
 AC_ARG_ENABLE(fd-passing,
   AC_HELP_STRING([--enable-fd-passing], [use FD passing if supported]),
-  use_desciptor_passing=$withval)
+  use_descriptor_passing=$enableval)
 
 if test "$supports_descriptor_passing" != "yes"; then
   use_descriptor_passing=no

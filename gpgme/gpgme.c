@@ -159,7 +159,17 @@ gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
   if (protocol != GPGME_PROTOCOL_OpenPGP && protocol != GPGME_PROTOCOL_CMS)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  ctx->protocol = protocol;
+  if (ctx->protocol != protocol)
+    {
+      /* Shut down the engine when switching protocols.  */
+      if (ctx->engine)
+	{
+	  _gpgme_engine_release (ctx->engine);
+	  ctx->engine = NULL;
+	}
+
+      ctx->protocol = protocol;
+    }
   return 0;
 }
 
@@ -417,8 +427,12 @@ gpgme_error_t
 gpgme_ctx_set_engine_info (gpgme_ctx_t ctx, gpgme_protocol_t proto,
 			   const char *file_name, const char *home_dir)
 {
-  /* FIXME: Make sure to reset the context if we are running in daemon
-     mode.  */
+  /* Shut down the engine when changing engine info.  */
+  if (ctx->engine)
+    {
+      _gpgme_engine_release (ctx->engine);
+      ctx->engine = NULL;
+    }
   return _gpgme_set_engine_info (ctx->engine_info, proto,
 				 file_name, home_dir);
 }

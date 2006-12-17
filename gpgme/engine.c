@@ -420,6 +420,19 @@ _gpgme_engine_new (gpgme_engine_info_t info, engine_t *r_engine)
 }
 
 
+gpgme_error_t
+_gpgme_engine_reset (engine_t engine)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->reset)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->reset) (engine->engine);
+}
+
+
 void
 _gpgme_engine_release (engine_t engine)
 {
