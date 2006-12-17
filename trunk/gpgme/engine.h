@@ -52,6 +52,7 @@ gpgme_error_t _gpgme_set_engine_info (gpgme_engine_info_t info,
 
 gpgme_error_t _gpgme_engine_new (gpgme_engine_info_t info,
 				 engine_t *r_engine);
+gpgme_error_t _gpgme_engine_reset (engine_t engine);
 
 gpgme_error_t _gpgme_engine_set_locale (engine_t engine, int category,
 					const char *value);

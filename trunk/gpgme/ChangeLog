@@ -1,5 +1,23 @@
 2006-12-17  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.c (gpgme_set_protocol): Shut down the engine when
+	switching protocols.
+	(gpgme_ctx_set_engine_info): Likewise for engine info.
+	* engine.h (_gpgme_engine_reset): New function prototype.
+	* engine.c (_gpgme_engine_reset): New function.
+	* engine-backend.h (struct engine_ops): New member RESET.
+	* rungpg.c (_gpgme_engine_ops_gpg): Add NULL for reset function.
+	* engine-gpgsm.c (_gpgme_engine_ops_gpgsm)
+	[USE_DESCRIPTOR_PASSING]: Add gpgsm_reset for reset.
+	(_gpgme_engine_ops_gpgsm) [!USE_DESCRIPTOR_PASSING]: Add NULL for
+	reset function.
+	(gpgsm_reset) [USE_DESCRIPTOR_PASSING]: New function.
+	* op-support.c (_gpgme_op_reset): Try to use the engine's reset
+	function if available.
+	* engine-gpgsm.c (gpgsm_new): Move code to dup status_fd to ...
+	(start): ... here.
+	* posix-io.c (_gpgme_io_recvmsg, _gpgme_io_sendmsg): New functions.
+	
 	* engine.h (_gpgme_engine_new): Remove arguments lc_ctype and
 	lc_messages from prototype.
 	(_gpgme_engine_set_locale): New prototype.
