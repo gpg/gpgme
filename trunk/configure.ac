@@ -56,9 +56,6 @@ LIBGPGME_LT_REVISION=1
 
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
-
-NEED_GPG_VERSION=1.3.0
-NEED_GPGSM_VERSION=1.9.6
 ##############################################
 
 
@@ -253,6 +250,30 @@ AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
 
 
 # Checks for system services
+NEED_GPG_VERSION_DEFAULT=1.3.0
+NEED_GPGSM_VERSION_DEFAULT=1.9.6
+NEED_GPG_VERSION="$NEED_GPG_VERSION_DEFAULT"
+NEED_GPGSM_VERSION="$NEED_GPGSM_VERSION_DEFAULT"
+AC_ARG_WITH(gpg-version,
+	    AC_HELP_STRING([--with-gpg-version=VER], [require GnuPG version VER]),
+	    NEED_GPG_VERSION=$withval)
+if test "$NEED_GPG_VERSION" = "yes"; then
+  NEED_GPG_VERSION="$NEED_GPG_VERSION_DEFAULT"
+fi
+if test "$NEED_GPG_VERSION" = "no"; then
+  NEED_GPG_VERSION=0.0.0
+fi
+AC_ARG_WITH(gpgsm-version,
+	    AC_HELP_STRING([--with-gpgsm-version=VER], [require GPGSM version VER]),
+	    NEED_GPGSM_VERSION=$withval)
+if test "$NEED_GPGSM_VERSION" = "yes"; then
+  NEED_GPGSM_VERSION="$NEED_GPGSM_VERSION_DEFAULT"
+fi
+if test "$NEED_GPGSM_VERSION" = "no"; then
+  NEED_GPGSM_VERSION=0.0.0
+fi
+
+
 NO_OVERRIDE=no
 AC_ARG_WITH(gpg,
 	    AC_HELP_STRING([--with-gpg=PATH], [use GnuPG binary at PATH]),
