@@ -101,9 +101,12 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
     }
 
   err = _gpgme_engine_set_locale (ctx->engine, LC_CTYPE, ctx->lc_ctype);
+#ifdef LC_MESSAGES
   if (!err)
     err = _gpgme_engine_set_locale (ctx->engine,
 				    LC_MESSAGES, ctx->lc_messages);
+#endif
+
   if (err)
     {
       _gpgme_engine_release (ctx->engine);

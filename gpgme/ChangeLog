@@ -1,3 +1,15 @@
+2007-01-08  Werner Koch  <wk@g10code.com>
+
+	* version.c (do_subsystem_inits): Do assuan init only if building
+	with Assuan.
+	* setenv.c: Include assuan-def.h only if building with Assuan
+	support.
+
+	* op-support.c (_gpgme_op_reset): Set LC_MESSAGES only if
+	if defined.
+	* engine-gpgsm.c (gpgsm_set_locale): Ditto.
+	* rungpg.c (gpg_set_locale): Ditto.
+
 2006-12-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (gpgme_set_protocol): Shut down the engine when

@@ -1,3 +1,9 @@
+2007-01-08  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require gpg-error 1.4 due to the use of
+	gpg_error_from_syserror.
+	(HAVE_ASSUAN_H): New.
+
 2007-01-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Add options --with-gpg-version and

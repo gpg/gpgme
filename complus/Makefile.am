@@ -19,11 +19,11 @@
 
 ## Process this file with automake to produce Makefile.in
 
-# Because there is no free IDL compiler for OLE, we have to distribute
-# a binary typelibrary.  To generate a new one, copy the idl file to a
-# system with an install MIDL and run the command
-#   midl /nocpp gpgcom.idl
-# Sorry, there is no other way yet.  
+# Because WIDL does not yet fully support generation of typelibs, we
+# have to distribute a binary type library.  To generate a new one,
+# copy the idl file to a system with an install MIDL and run the
+# command "midl /nocpp gpgcom.idl". Sorry, there is no other way yet.
+
 EXTRA_DIST = gpgcom.idl gpgcom.tlb gpgcom.rc vbtest.html vbtest.vbs README
 
 # No need to install this because we are cross-compiling anyway.

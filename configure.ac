@@ -243,7 +243,7 @@ if test "$ac_cv_func_timegm" != yes; then
 fi
 
 # Checking for libgpg-error.
-AM_PATH_GPG_ERROR(0.5,, AC_MSG_ERROR([libgpg-error was not found]))
+AM_PATH_GPG_ERROR(1.4,, AC_MSG_ERROR([libgpg-error was not found]))
 AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
           [The default error source for GPGME.])
 
@@ -458,7 +458,9 @@ AM_CONDITIONAL(RUN_GPGSM_TESTS, test "$ok" = "yes")
 
 # FIXME: Only build if supported.
 AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
-
+if test "$GPGSM" != "no"; then
+  AC_DEFINE(HAVE_ASSUAN_H, ,[Defined if we are building with assuan support.])
+fi
 
 # The assuan code uses funopen but it will also build without it.  So
 # test for it.  Frankly, this is not required in gpgme, but thats the

@@ -32,7 +32,9 @@
 /* For _gpgme_sema_subsystem_init ().  */
 #include "sema.h"
 
+#ifdef HAVE_ASSUAN_H
 #include "assuan.h"
+#endif
 
 
 /* Bootstrap the subsystems needed for concurrent operation.  This
@@ -50,7 +52,9 @@ do_subsystem_inits (void)
 
   _gpgme_sema_subsystem_init ();
   _gpgme_io_subsystem_init ();
+#ifdef HAVE_ASSUAN_H
   assuan_set_assuan_err_source (GPG_ERR_SOURCE_GPGME);
+#endif
 
   done = 1;
 }
