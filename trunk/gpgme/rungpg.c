@@ -525,6 +525,7 @@ gpg_set_locale (void *engine, int category, const char *value)
 	    return gpg_error_from_syserror ();
 	}
     }
+#ifdef LC_MESSAGES
   else if (category == LC_MESSAGES)
     {
       if (gpg->lc_messages)
@@ -536,6 +537,7 @@ gpg_set_locale (void *engine, int category, const char *value)
 	    return gpg_error_from_syserror ();
 	}
     }
+#endif /* LC_MESSAGES */
   else
     return gpg_error (GPG_ERR_INV_VALUE);
 

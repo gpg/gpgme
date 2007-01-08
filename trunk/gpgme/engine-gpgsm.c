@@ -548,6 +548,7 @@ gpgsm_set_locale (void *engine, int category, const char *value)
       if (value)
 	gpgsm->lc_ctype_set = 1;
     }
+#ifdef LC_MESSAGES
   else if (category == LC_MESSAGES)
     {
       catstr = "lc-messages";
@@ -556,6 +557,7 @@ gpgsm_set_locale (void *engine, int category, const char *value)
       if (value)
 	gpgsm->lc_messages_set = 1;
     }
+#endif /* LC_MESSAGES */
   else
     return gpg_error (GPG_ERR_INV_VALUE);
 

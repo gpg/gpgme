@@ -20,7 +20,11 @@
 # include <config.h>
 #endif
 
+#if HAVE_ASSUAN_H
+/* Fixme: Why do we need to include the assuan header and why the
+   internal ones? */
 #include "assuan-defs.h"
+#endif /*HAVE_ASSUAN_H*/
 
 #define __builtin_expect(cond,val) (cond)
 
