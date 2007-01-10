@@ -1,3 +1,9 @@
+2007-01-09  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (NEED_GPG_VERSION,
+	(NEED_GPGSM_VERSION): Must define after it may have been changed
+	by an option.
+
 2007-01-08  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Require gpg-error 1.4 due to the use of

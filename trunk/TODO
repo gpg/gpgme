@@ -99,6 +99,11 @@ Hey Emacs, this is -*- outline -*- mode!
     gpg: test: sign+encrypt failed: general error
 ** Without agent and with wrong passphrase, gpg 1.4.2 enters into an
    infinite loop.
+** Use correct argv[0]
+   In rungpg.c:build_argv we use
+      argv[argc] = strdup ("gpg"); /* argv[0] */
+   This should be changed to take the real file name used in account.
+
 
 * Operations
 ** Include cert values -2, -1, 0 and 1 should be defined as macros.

@@ -32,17 +32,22 @@
 int
 ttyname_r (int fd, char *buf, size_t buflen)
 {
-#if HAVE_W32_SYSTEM
-  errno = ENOTTY; /* The best error code I have under mingw. */
-#else
   char *tty;
 
+#if HAVE_W32_SYSTEM
+  /* We use this default one for now.  AFAICS we only need it to be
+     passed to gpg and in turn to pinentry.  Providing a replacement
+     is needed because elsewhere we bail out on error.  If we
+     eventually implement a pinentry for Windows it is uinlikely that
+     we need a real tty at all.  */
+  tty = "/dev/tty"; 
+#else
   tty = ttyname (fd);
   if (!tty)
     return errno;
+#endif
   
   strncpy (buf, tty, buflen);
   buf[buflen - 1] = '\0';
   return (strlen (tty) >= buflen) ? ERANGE : 0;
-#endif
 }
