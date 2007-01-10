@@ -1,3 +1,7 @@
+2007-01-10  Werner Koch  <wk@g10code.com>
+
+	* ttyname_r.c (ttyname_r) [W32]: Return a dummy name.
+
 2007-01-08  Werner Koch  <wk@g10code.com>
 
 	* version.c (do_subsystem_inits): Do assuan init only if building
