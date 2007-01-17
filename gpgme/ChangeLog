@@ -1,3 +1,8 @@
+2007-01-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* w32-io.c (build_commandline): Quote all command line arguments.
+	* w32-glib-io.c (build_commandline): Likewise.
+
 2007-01-10  Werner Koch  <wk@g10code.com>
 
 	* ttyname_r.c (ttyname_r) [W32]: Return a dummy name.
