@@ -347,37 +347,57 @@ _gpgme_io_set_nonblocking (int fd)
 
 
 static char *
-build_commandline ( char **argv )
+build_commandline (char **argv)
 {
-  int i, n = 0;
-  char *buf, *p;
+  int i;
+  int j;
+  int n = 0;
+  char *buf;
+  char *p;
   
-  /* FIXME: we have to quote some things because under Windows the
-   * program parses the commandline and does some unquoting.  For now
-   * we only do very basic quoting to the first argument because this
-   * one often contains a space (e.g. C:\\Program Files\GNU\GnuPG\gpg.exe) 
-   * and we would produce an invalid line in that case.  */
-  for (i=0; argv[i]; i++)
-    n += strlen (argv[i]) + 2 + 1; /* 2 extra bytes for possible quoting */
-  buf = p = malloc (n);
-  if ( !buf )
-    return NULL;
-  *buf = 0;
-  if ( argv[0] )
+  /* We have to quote some things because under Windows the program
+     parses the commandline and does some unquoting.  We enclose the
+     whole argument in double-quotes, and escape literal double-quotes
+     as well as backslashes with a backslash.  We end up with a
+     trailing space at the end of the line, but that is harmless.  */
+  for (i = 0; argv[i]; i++)
     {
-      if (strpbrk (argv[0], " \t"))
-        p = stpcpy (stpcpy (stpcpy (p, "\""), argv[0]), "\"");
-      else
-        p = stpcpy (p, argv[0]);
-      for (i = 1; argv[i]; i++)
-        {
-          if (!*argv[i])
-            p = stpcpy (p, " \"\"");
-          else
-            p = stpcpy (stpcpy (p, " "), argv[i]);
-        }
+      p = argv[i];
+      /* The leading double-quote.  */
+      n++;
+      while (*p)
+	{
+	  /* An extra one for each literal that must be escaped.  */
+	  if (*p == '\\' || *p == '"')
+	    n++;
+	  n++;
+	  p++;
+	}
+      /* The trailing double-quote and the delimiter.  */
+      n += 2;
     }
-  
+  /* And a trailing zero.  */
+  n++;
+
+  buf = p = malloc (n);
+  if (!buf)
+    return NULL;
+  for (i = 0; argv[i]; i++)
+    {
+      char *argvp = argv[i];
+
+      *(p++) = '"';
+      while (*argvp)
+	{
+	  if (*p == '\\' || *p == '"')
+	    *(p++) = '\\';
+	  *(p++) = *(argvp++);
+	}
+      *(p++) = '"';
+      *(p++) = ' ';
+    }
+  *(p++) = 0;
+
   return buf;
 }
 
