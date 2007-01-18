@@ -74,6 +74,7 @@ stream_seek (gpgme_data_t dh, off_t offset, int whence)
 static int
 stream_get_fd (gpgme_data_t dh)
 {
+  fflush (dh->data.stream);
   return fileno (dh->data.stream);
 }
 
