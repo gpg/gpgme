@@ -692,22 +692,26 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
   dir = iocb_data->dir;
 
 #if USE_DESCRIPTOR_PASSING
-  {
-    int fds[2];
+  /* We try to short-cut the communication by giving GPGSM direct
+     access to the file descriptor, rather than using a pipe.  */
+  iocb_data->server_fd = _gpgme_data_get_fd (iocb_data->data);
+  if (iocb_data->server_fd < 0)
+    {
+      int fds[2];
 
-    if (_gpgme_io_pipe (fds, 0) < 0)
-      return gpg_error_from_errno (errno);
+      if (_gpgme_io_pipe (fds, 0) < 0)
+	return gpg_error_from_errno (errno);
 
-    iocb_data->fd = dir ? fds[0] : fds[1];
-    iocb_data->server_fd = dir ? fds[1] : fds[0];
+      iocb_data->fd = dir ? fds[0] : fds[1];
+      iocb_data->server_fd = dir ? fds[1] : fds[0];
 
-    if (_gpgme_io_set_close_notify (iocb_data->fd,
-				    close_notify_handler, gpgsm))
-      {
-	err = gpg_error (GPG_ERR_GENERAL);
-	goto leave_set_fd;
-      }
-  }
+      if (_gpgme_io_set_close_notify (iocb_data->fd,
+				      close_notify_handler, gpgsm))
+	{
+	  err = gpg_error (GPG_ERR_GENERAL);
+	  goto leave_set_fd;
+	}
+    }
 #endif
 
   fd = iocb_data->server_fd;

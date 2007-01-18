@@ -71,7 +71,8 @@ static struct _gpgme_data_cbs user_cbs =
     user_read,
     user_write,
     user_seek,
-    user_release
+    user_release,
+    NULL
   };
 
 
