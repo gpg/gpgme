@@ -280,3 +280,14 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
   dh->pending_len -= nwritten;
   return 0;
 }
+
+
+/* Get the file descriptor associated with DH, if possible.  Otherwise
+   return -1.  */
+int
+_gpgme_data_get_fd (gpgme_data_t dh)
+{
+  if (!dh || !dh->cbs->get_fd)
+    return -1;
+  return (*dh->cbs->get_fd) (dh);
+}

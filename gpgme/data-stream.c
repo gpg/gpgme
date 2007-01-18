@@ -71,12 +71,20 @@ stream_seek (gpgme_data_t dh, off_t offset, int whence)
 }
 
 
+static int
+stream_get_fd (gpgme_data_t dh)
+{
+  return fileno (dh->data.stream);
+}
+
+
 static struct _gpgme_data_cbs stream_cbs =
   {
     stream_read,
     stream_write,
     stream_seek,
-    NULL
+    NULL,
+    stream_get_fd
   };
 
 

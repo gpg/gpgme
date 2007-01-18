@@ -52,12 +52,16 @@ typedef off_t (*gpgme_data_seek_cb) (gpgme_data_t dh, off_t offset,
 /* Release the data object with the handle DH.  */
 typedef void (*gpgme_data_release_cb) (gpgme_data_t dh);
 
+/* Get the FD associated with the handle DH, or -1.  */
+typedef int (*gpgme_data_get_fd_cb) (gpgme_data_t dh);
+
 struct _gpgme_data_cbs
 {
   gpgme_data_read_cb read;
   gpgme_data_write_cb write;
   gpgme_data_seek_cb seek;
   gpgme_data_release_cb release;
+  gpgme_data_get_fd_cb get_fd;
 };
 
 struct gpgme_data
@@ -120,5 +124,9 @@ gpgme_error_t _gpgme_data_new (gpgme_data_t *r_dh,
 			       struct _gpgme_data_cbs *cbs);
 
 void _gpgme_data_release (gpgme_data_t dh);
+
+/* Get the file descriptor associated with DH, if possible.  Otherwise
+   return -1.  */
+int _gpgme_data_get_fd (gpgme_data_t dh);
 
 #endif	/* DATA_H */

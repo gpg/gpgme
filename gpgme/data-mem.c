@@ -157,7 +157,8 @@ static struct _gpgme_data_cbs mem_cbs =
     mem_read,
     mem_write,
     mem_seek,
-    mem_release
+    mem_release,
+    NULL
   };
 
 

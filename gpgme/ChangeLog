@@ -1,3 +1,18 @@
+2007-01-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data.h (_gpgme_data_get_fd): Add prototype.
+	(gpgme_data_get_fd_cb): New type.
+	(struct _gpgme_data_cbs): New member get_fd.
+	* data.c (_gpgme_data_get_fd): New function.
+	* data-fd.c (fd_get_fd): New function.
+	(fd_cbs): Add fd_get_fd.
+	* data-stream.c (stream_get_fd): New function.
+	(stream_cbs): Add stream_get_fd.
+	* data-mem.c (mem_cbs): Add NULL for get_fd callback.	
+	* data-user.c (user_cbs): Likewise.
+	* engine-gpgsm.c (gpgsm_set_fd) [USE_DESCRIPTOR_PASSING]: Try to
+	short-cut by passing the data descriptor directly.
+
 2007-01-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* w32-io.c (build_commandline): Quote all command line arguments.

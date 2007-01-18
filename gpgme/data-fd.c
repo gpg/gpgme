@@ -49,12 +49,20 @@ fd_seek (gpgme_data_t dh, off_t offset, int whence)
 }
 
 
+static int
+fd_get_fd (gpgme_data_t dh)
+{
+  return (dh->data.fd);
+}
+
+
 static struct _gpgme_data_cbs fd_cbs =
   {
     fd_read,
     fd_write,
     fd_seek,
-    NULL
+    NULL,
+    fd_get_fd
   };
 
 
