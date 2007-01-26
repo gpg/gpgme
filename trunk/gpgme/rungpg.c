@@ -517,7 +517,10 @@ gpg_set_locale (void *engine, int category, const char *value)
   if (category == LC_CTYPE)
     {
       if (gpg->lc_ctype)
-	free (gpg->lc_ctype);
+        {
+          free (gpg->lc_ctype);
+          gpg->lc_ctype = NULL;
+        }
       if (value)
 	{
 	  gpg->lc_ctype = strdup (value);
@@ -529,7 +532,10 @@ gpg_set_locale (void *engine, int category, const char *value)
   else if (category == LC_MESSAGES)
     {
       if (gpg->lc_messages)
-	free (gpg->lc_messages);
+        {
+          free (gpg->lc_messages);
+          gpg->lc_messages = NULL;
+        }
       if (value)
 	{
 	  gpg->lc_messages = strdup (value);

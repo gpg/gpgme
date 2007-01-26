@@ -1,8 +1,13 @@
+2007-01-26  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Changed gpg and gpgsm version checks to work with
+	arbitrary names of the gpg binary. New option --disable-gpg-test
+	and --disable-gpgsm-test.
+
 2007-01-09  Werner Koch  <wk@g10code.com>
 
-	* configure.ac (NEED_GPG_VERSION,
-	(NEED_GPGSM_VERSION): Must define after it may have been changed
-	by an option.
+	* configure.ac (NEED_GPG_VERSION, NEED_GPGSM_VERSION): Must define
+	after it may have been changed by an option.
 
 2007-01-08  Werner Koch  <wk@g10code.com>
 

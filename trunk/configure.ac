@@ -324,21 +324,20 @@ else
   fi
 fi
 if test "$ok" = "maybe"; then
-  AC_MSG_CHECKING(for GnuPG >= $NEED_GPG_VERSION)
+  AC_MSG_CHECKING(for GPG >= $NEED_GPG_VERSION)
   req_major=`echo $NEED_GPG_VERSION | \
              sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
   req_minor=`echo $NEED_GPG_VERSION | \
 	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
   req_micro=`echo $NEED_GPG_VERSION | \
 	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
-  gpg_version=`$GPG --version | grep ^gpg`
-  major=`echo $gpg_version | \
-	 sed 's/^gpg (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
-  minor=`echo $gpg_version | \
-	 sed 's/^gpg (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
-  micro=`echo $gpg_version | \
-	 sed 's/^gpg (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
-  GPG_VERSION=`echo $gpg_version | sed 's/^gpg (GnuPG) //'`
+  GPG_VERSION=`$GPG --version | sed -n '1 s/[[^0-9]]*\(.*\)/\1/p'`
+  major=`echo $GPG_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+  minor=`echo $GPG_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+  micro=`echo $GPG_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
 
   if test "$major" -gt "$req_major"; then
     ok=yes
@@ -359,10 +358,14 @@ if test "$ok" = "maybe"; then
     AC_MSG_RESULT(yes)
   else
     AC_MSG_RESULT(no)
-    AC_MSG_WARN([GnuPG must be at least version $NEED_GPG_VERSION])
+    AC_MSG_WARN([GPG must be at least version $NEED_GPG_VERSION])
   fi
 fi
-AM_CONDITIONAL(RUN_GPG_TESTS, test "$ok" = "yes")
+run_gpg_test="$ok"
+AC_ARG_ENABLE(gpg-test,
+  AC_HELP_STRING([--disable-gpg-test], [disable GPG run test]),
+         run_gpg_test=$enableval)
+AM_CONDITIONAL(RUN_GPG_TESTS, test "$run_gpg_test" = "yes")
 AC_SUBST(GPG_PATH)
 
 NO_OVERRIDE=no
@@ -424,14 +427,13 @@ if test "$ok" = "maybe"; then
 	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
   req_micro=`echo $NEED_GPGSM_VERSION | \
 	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
-  gpgsm_version=`$GPGSM --version | grep ^gpgsm`
-  major=`echo $gpgsm_version | \
-	 sed 's/^gpgsm (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
-  minor=`echo $gpgsm_version | \
-	 sed 's/^gpgsm (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
-  micro=`echo $gpgsm_version | \
-	 sed 's/^gpgsm (GnuPG) \([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
-  GPGSM_VERSION=`echo $gpgsm_version | sed 's/^gpgsm (GnuPG) //'`
+  GPGSM_VERSION=`$GPGSM --version | sed -n '1 s/[[^0-9]]*\(.*\)/\1/p'`
+  major=`echo $GPGSM_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+  minor=`echo $GPGSM_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+  micro=`echo $GPGSM_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
 
   if test "$major" -gt "$req_major"; then
     ok=yes
@@ -455,7 +457,12 @@ if test "$ok" = "maybe"; then
     AC_MSG_WARN([GPGSM must be at least version $NEED_GPGSM_VERSION])
   fi
 fi
-AM_CONDITIONAL(RUN_GPGSM_TESTS, test "$ok" = "yes")
+run_gpgsm_test="$ok"
+AC_ARG_ENABLE(gpgsm-test,
+  AC_HELP_STRING([--disable-gpgsm-test], [disable GPGSM run test]),
+         run_gpgsm_test=$enableval)
+AM_CONDITIONAL(RUN_GPGSM_TESTS, test "$run_gpgsm_test" = "yes")
+
 
 # FIXME: Only build if supported.
 AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
