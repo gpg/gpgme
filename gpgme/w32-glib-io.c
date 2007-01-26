@@ -389,7 +389,7 @@ build_commandline (char **argv)
       *(p++) = '"';
       while (*argvp)
 	{
-	  if (*p == '\\' || *p == '"')
+	  if (*argvp == '\\' || *argvp == '"')
 	    *(p++) = '\\';
 	  *(p++) = *(argvp++);
 	}

@@ -1,3 +1,12 @@
+2007-01-26  Werner Koch  <wk@g10code.com>
+
+	* w32-io.c (build_commandline): Fixed stupid quoting bug.
+	* w32-glib-io.c (build_commandline): Ditto.
+
+	* rungpg.c (gpg_set_locale): Avoid dangling pointer after free.
+
+	* gpgme-config.in: New options --get-gpg and --get-gpgsm.
+
 2007-01-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* data.h (_gpgme_data_get_fd): Add prototype.

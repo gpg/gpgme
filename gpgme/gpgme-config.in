@@ -51,6 +51,8 @@ Options:
         [--api-version]
 	[--libs]
 	[--cflags]
+        [--get-gpg]
+        [--get-gpgsm]
 EOF
     exit $1
 }
@@ -144,6 +146,12 @@ while test $# -gt 0; do
 		usage 1 1>&2
 	    fi
 	    ;;
+        --get-gpg)
+            output="$output @GPG@"
+            ;;
+        --get-gpgsm)
+            output="$output @GPGSM@"
+            ;;
 	*)
             usage 1 1>&2
 	    ;;
