@@ -23,7 +23,7 @@
 ## the same distribution terms that you use for the rest of that program.
 
 # serial 47 AC_PROG_LIBTOOL
-# Debian $Rev: 203 $
+# Debian $Rev$
 
 
 # AC_PROVIDE_IFELSE(MACRO-NAME, IF-PROVIDED, IF-NOT-PROVIDED)
