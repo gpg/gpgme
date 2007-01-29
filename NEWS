@@ -1,13 +1,9 @@
-Noteworthy changes in version 1.1.3 (unreleased)
+Noteworthy changes in version 1.1.3 (2007-01-29)
 ------------------------------------------------
 
  * Fixed a memory leak in gpgme_data_release_and_get_mem.
 
  * Fixed a bug in Windows command line quoting.
-
- * Interface changes relative to the 1.1.1 release:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 Noteworthy changes in version 1.1.2 (2006-03-02)
