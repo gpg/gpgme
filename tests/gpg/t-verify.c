@@ -76,6 +76,20 @@ static const char test_sig2[] =
 "=Crq6\n"
 "-----END PGP MESSAGE-----\n";
 
+/* A message with a prepended but unsigned plaintext packet. */
+static const char double_plaintext_sig[] = 
+"-----BEGIN PGP MESSAGE-----\n"
+"\n"
+"rDRiCmZvb2Jhci50eHRF4pxNVGhpcyBpcyBteSBzbmVha3kgcGxhaW50ZXh0IG1l\n"
+"c3NhZ2UKowGbwMvMwCSoW1RzPCOz3IRxTWISa6JebnG666MFD1wzSzJSixQ81XMV\n"
+"UlITUxTyixRyKxXKE0uSMxQyEosVikvyCwpSU/S4FNCArq6Ce1F+aXJGvoJvYlGF\n"
+"erFCTmJxiUJ5flFKMVeHGwuDIBMDGysTyA4GLk4BmO036xgWzMgzt9V85jCtfDFn\n"
+"UqVooWlGXHwNw/xg/fVzt9VNbtjtJ/fhUqYo0/LyCGEA\n"
+"=6+AK\n"
+"-----END PGP MESSAGE-----\n";
+
+
+
 
 static void
 check_result (gpgme_verify_result_t result, unsigned int summary, char *fpr,
@@ -234,6 +248,23 @@ main (int argc, char *argv[])
   result = gpgme_op_verify_result (ctx);
   check_result (result, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
 		GPG_ERR_NO_ERROR, 0);
+
+
+  /* Checking an invalid message.  */
+  gpgme_data_release (sig);
+  gpgme_data_release (text);
+  err = gpgme_data_new_from_mem (&sig, double_plaintext_sig,
+                                 strlen (double_plaintext_sig), 0);
+  fail_if_err (err);
+  err = gpgme_data_new (&text);
+  fail_if_err (err);
+  err = gpgme_op_verify (ctx, sig, NULL, text);
+  if (gpg_err_code (err) != GPG_ERR_BAD_DATA)
+    {
+      fprintf (stderr, "%s:%i: Double plaintext message not detected\n",
+	       __FILE__, __LINE__);
+      exit (1);
+    }
 
   gpgme_data_release (sig);
   gpgme_data_release (text);
