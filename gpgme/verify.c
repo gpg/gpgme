@@ -716,7 +716,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
       break;
 
     case GPGME_STATUS_PLAINTEXT:
-      if (++opd->only_newsig_seen > 1)
+      if (++opd->plaintext_seen > 1)
         return gpg_error (GPG_ERR_BAD_DATA);
       err = _gpgme_parse_plaintext (args, &opd->result.file_name);
       if (err)
