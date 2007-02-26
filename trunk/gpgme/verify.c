@@ -40,6 +40,7 @@ typedef struct
   gpgme_signature_t current_sig;
   int did_prepare_new_sig;
   int only_newsig_seen;
+  int plaintext_seen;
 } *op_data_t;
 
 
@@ -549,8 +550,11 @@ parse_trust (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 }
 
 
+/* Parse an error status line and if SET_STATUS is true update the
+   result status as appropriate.  With SET_STATUS being false, only
+   check for an error.  */
 static gpgme_error_t
-parse_error (gpgme_signature_t sig, char *args)
+parse_error (gpgme_signature_t sig, char *args, int set_status)
 {
   gpgme_error_t err;
   char *where = strchr (args, ' ');
@@ -572,7 +576,16 @@ parse_error (gpgme_signature_t sig, char *args)
 
   err = _gpgme_map_gnupg_error (which);
 
-  if (!strcmp (where, "verify.findkey"))
+  if (!strcmp (where, "proc_pkt.plaintext")
+      && gpg_err_code (err) == GPG_ERR_BAD_DATA)
+    {
+      /* This indicates a double plaintext.  The only solid way to
+         handle this is by failing the oepration.  */
+      return gpg_error (GPG_ERR_BAD_DATA);
+    }
+  else if (!set_status)
+    ;
+  else if (!strcmp (where, "verify.findkey"))
     sig->status = err;
   else if (!strcmp (where, "verify.keyusage")
 	   && gpg_err_code (err) == GPG_ERR_WRONG_KEY_USAGE)
@@ -670,9 +683,9 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
     case GPGME_STATUS_ERROR:
       opd->only_newsig_seen = 0;
-      /* The error status is informational, so we don't return an
-         error code if we are not ready to process this status. */
-      return sig ? parse_error (sig, args) : 0;
+      /* Some  error stati are informational, so we don't return an
+         error code if we are not ready to process this status.  */
+      return parse_error (sig, args, !!sig );
 
     case GPGME_STATUS_EOF:
       if (sig && !opd->did_prepare_new_sig)
@@ -703,6 +716,8 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
       break;
 
     case GPGME_STATUS_PLAINTEXT:
+      if (++opd->only_newsig_seen > 1)
+        return gpg_error (GPG_ERR_BAD_DATA);
       err = _gpgme_parse_plaintext (args, &opd->result.file_name);
       if (err)
 	return err;
@@ -816,8 +831,9 @@ gpgme_get_sig_key (gpgme_ctx_t ctx, int idx, gpgme_key_t *r_key)
    successful verify operation in R_STAT (if non-null).  The creation
    time stamp of the signature is returned in R_CREATED (if non-null).
    The function returns a string containing the fingerprint.  */
-const char *gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
-                                  _gpgme_sig_stat_t *r_stat, time_t *r_created)
+const char *
+gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
+                      _gpgme_sig_stat_t *r_stat, time_t *r_created)
 {
   gpgme_verify_result_t result;
   gpgme_signature_t sig;
@@ -876,8 +892,9 @@ const char *gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
    number of the signature after a successful verify operation.  WHAT
    is an attribute where GPGME_ATTR_EXPIRE is probably the most useful
    one.  WHATIDX is to be passed as 0 for most attributes . */
-unsigned long gpgme_get_sig_ulong_attr (gpgme_ctx_t ctx, int idx,
-                                        _gpgme_attr_t what, int whatidx)
+unsigned long 
+gpgme_get_sig_ulong_attr (gpgme_ctx_t ctx, int idx,
+                          _gpgme_attr_t what, int whatidx)
 {
   gpgme_verify_result_t result;
   gpgme_signature_t sig;
@@ -939,8 +956,9 @@ unsigned long gpgme_get_sig_ulong_attr (gpgme_ctx_t ctx, int idx,
 }
 
 
-const char *gpgme_get_sig_string_attr (gpgme_ctx_t ctx, int idx,
-                                      _gpgme_attr_t what, int whatidx)
+const char *
+gpgme_get_sig_string_attr (gpgme_ctx_t ctx, int idx,
+                           _gpgme_attr_t what, int whatidx)
 {
   gpgme_verify_result_t result;
   gpgme_signature_t sig;
