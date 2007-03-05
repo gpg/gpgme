@@ -36,8 +36,8 @@ min_automake_version="1.9.3"
 # for snapshot releases please do an "svn up" right before recreating
 # the configure script, so that a proper revision number for all files
 # is available when running a "make distcheck".
-m4_define(my_version, [1.1.4])
-#m4_define(my_iscvs, yes)
+m4_define(my_version, [1.1.5])
+m4_define(my_iscvs, yes)
 AC_INIT([gpgme], my_version[]m4_ifdef([my_iscvs], [-cvs[]m4_translit(
                [$Revision$],[Ra-z $:])]),
                [bug-gpgme@gnupg.org])
