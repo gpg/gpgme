@@ -36,7 +36,7 @@ min_automake_version="1.9.3"
 # for snapshot releases please do an "svn up" right before recreating
 # the configure script, so that a proper revision number for all files
 # is available when running a "make distcheck".
-m4_define(my_version, [1.1.3])
+m4_define(my_version, [1.1.4])
 #m4_define(my_iscvs, yes)
 AC_INIT([gpgme], my_version[]m4_ifdef([my_iscvs], [-cvs[]m4_translit(
                [$Revision$],[Ra-z $:])]),
@@ -52,7 +52,7 @@ LIBGPGME_LT_CURRENT=17
 # Subtract 2 from this value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
 LIBGPGME_LT_AGE=6
-LIBGPGME_LT_REVISION=2
+LIBGPGME_LT_REVISION=3
 
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
