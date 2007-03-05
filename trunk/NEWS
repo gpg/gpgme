@@ -1,7 +1,10 @@
-Noteworthy changes in version 1.1.4
+Noteworthy changes in version 1.1.4 (2007-03-05)
 ------------------------------------------------
 
- * Detect and bail out on double plaintext messages.
+ * Detect and bail out on double plaintext messages.  This is required
+   so that applications can properly detect the signed parts of a
+   message.  Actual there is now a double protection as GnuPG 1.4.7
+   will detect this case too.
 
 
 Noteworthy changes in version 1.1.3 (2007-01-29)

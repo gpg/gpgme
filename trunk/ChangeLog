@@ -1,6 +1,14 @@
+2007-03-05  Werner Koch  <wk@g10code.com>
+
+	Released 1.1.4.
+
+	* configure.ac (LIBGPGME_LT_REVISION): Bump for release.
+
+	* autogen.sh: New option --force.
+
 2007-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
-	* Released 1.1.3.
+	Released 1.1.3.
 	
 	* configure.ac (LIBGPGME_LT_REVISION): Bump for release.
 
