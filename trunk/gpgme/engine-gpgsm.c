@@ -448,9 +448,12 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 
   if (isatty (1))
     {
-      if (ttyname_r (1, dft_ttyname, sizeof (dft_ttyname)))
+      int rc;
+
+      rc = ttyname_r (1, dft_ttyname, sizeof (dft_ttyname));
+      if (rc)
 	{
-	  err = gpg_error_from_errno (errno);
+	  err = gpg_error_from_errno (rc);
 	  goto leave;
 	}
       else
