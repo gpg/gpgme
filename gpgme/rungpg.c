@@ -476,7 +476,10 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 
   if (isatty (1))
     {
-      if (ttyname_r (1, dft_ttyname, sizeof (dft_ttyname)))
+      int err;
+
+      err = ttyname_r (1, dft_ttyname, sizeof (dft_ttyname));
+      if (err)
 	rc = gpg_error_from_errno (errno);
       else
 	{

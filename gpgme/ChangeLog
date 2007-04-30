@@ -1,3 +1,9 @@
+2007-04-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c (gpgsm_new): Fix error handling for ttyname_r.
+	* rungpg.c (gpg_new): Likewise.
+	Submitted by Stephen Tether.
+
 2007-02-26  Werner Koch  <wk@g10code.com>
 
 	* verify.c (op_data_t): New element PLAINTEXT_SEEN.
