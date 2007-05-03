@@ -4915,8 +4915,8 @@ callback handler.  It must be specified.
 
 @item gpgme_event_io_cb_t event
 This is the function called by @acronym{GPGME} to signal an event for
-an operation.  It is optional, but if you don't specify it, you can
-not retrieve the return value of the operation.
+an operation.  It must be specified, because at least the start event
+must be processed.
 
 @item void *event_data
 This is passed as the first argument to the @code{event} function when
