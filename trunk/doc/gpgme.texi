@@ -21,7 +21,7 @@ This is Edition @value{EDITION}, last updated @value{UPDATED}, of
 @value{VERSION}.
 
 @c NOTE: Don't forget to update the year for the TeX version, too.
-Copyright @copyright{} 2002, 2003, 2004, 2005 g10 Code GmbH.
+Copyright @copyright{} 2002, 2003, 2004, 2005, 2006, 2007 g10 Code GmbH.
 
 The GPGME reference manual is free software; you can redistribute it
 and/or modify it under the terms of the GNU Lesser General Public
@@ -54,7 +54,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 @center for version @value{VERSION}
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 2002, 2003, 2004, 2005 g10 Code GmbH.
+Copyright @copyright{} 2002, 2003, 2004, 2005, 2006, 2007 g10 Code GmbH.
 
 
 The GPGME reference manual is free software; you can redistribute it
@@ -1403,12 +1403,15 @@ multi-threaded programs.
 @end deftypefun
 
 
-@deftypefun {char *} gpgme_strerror_r (@w{gpgme_error_t @var{err}})
-The function @code{gpgme_strerror_r} returns a pointer to a
-dynamically allocated string containing a description of the error
-code contained in the error value @var{err}.  This string can be used
-to output a diagnostic message to the user.  When it is not needed
-anymore, the user must deallocate it with @code{free}.
+@deftypefun {int} gpgme_strerror_r (@w{gpgme_error_t @var{err}}, @w{char *@var{buf}}, @w{size_t @var{buflen}})
+The function @code{gpgme_strerror_r} returns the error string for
+@var{err} in the user-supplied buffer @var{buf} of size @var{buflen}.
+This function is, in contrast to @code{gpgme_strerror}, thread-safe if
+a thread-safe @code{strerror_r} function is provided by the system.
+If the function succeeds, 0 is returned and @var{buf} contains the
+string describing the error.  If the buffer was not large enough,
+ERANGE is returned and @var{buf} contains as much of the beginning of
+the error string as fits into the buffer.
 @end deftypefun
 
 
