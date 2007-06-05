@@ -1,3 +1,7 @@
+2007-06-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Advanced Key Editing): New section.
+
 2007-05-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Error Strings): Fix documentation of
