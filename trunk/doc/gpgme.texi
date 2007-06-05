@@ -1,4 +1,4 @@
-\input texinfo                  @c -*- Texinfo -*-
+()\input texinfo                  @c -*- Texinfo -*-
 @setfilename gpgme.info
 @settitle The `GnuPG Made Easy' Reference Manual
 
@@ -190,6 +190,7 @@ Key Management
 * Exporting Keys::                Retrieving key data from the key ring.
 * Importing Keys::                Adding keys to the key ring.
 * Deleting Keys::                 Removing keys from the key ring.
+* Advanced Key Editing::          Advanced key edit operation.
 
 Trust Item Management
 
@@ -2617,6 +2618,7 @@ in the list is the main (or primary) user ID.
 * Exporting Keys::                Retrieving key data from the key ring.
 * Importing Keys::                Adding keys to the key ring.
 * Deleting Keys::                 Removing keys from the key ring.
+* Advanced Key Editing::          Advanced key edit operation.
 @end menu
 
 
@@ -3484,6 +3486,68 @@ unambiguously, and @code{GPG_ERR_CONFLICT} if the secret key for
 @deftypefun gpgme_error_t gpgme_op_delete_start (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{int @var{allow_secret}})
 The function @code{gpgme_op_delete_start} initiates a
 @code{gpgme_op_delete} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation was started successfully, and @code{GPG_ERR_INV_VALUE} if
+@var{ctx} or @var{key} is not a valid pointer.
+@end deftypefun
+
+
+@node Advanced Key Editing
+@subsection Advanced Key Editing
+@cindex key, edit
+
+@deftp {Data type} {gpgme_error_t (*gpgme_edit_cb_t) (@w{void *@var{handle}}, @w{gpgme_status_code_t @var{status}}, @w{const char *@var{args}}, @w{int @var{fd}})}
+@tindex gpgme_edit_cb_t
+The @code{gpgme_edit_cb_t} type is the type of functions which
+@acronym{GPGME} calls if it a key edit operation is on-going.  The
+status code @var{status} and the argument line @var{args} are passed
+through by @acronym{GPGME} from the crypto engine.  The file
+descriptor @var{fd} is -1 for normal status messages.  If @var{status}
+indicates a command rather than a status message, the response to the
+command should be written to @var{fd}.  The @var{handle} is provided
+by the user at start of operation.
+
+The function should return @code{GPG_ERR_NO_ERROR} or an error value.
+@end deftp
+
+@deftypefun gpgme_error_t gpgme_op_edit (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{key}}, @w{gpgme_edit_cb_t @var{fnc}}, @w{void *@var{handle}}, @w{gpgme_data_t @var{out}})
+The function @code{gpgme_op_edit} processes the key @var{KEY}
+interactively, using the edit callback function @var{FNC} with the
+handle @var{HANDLE}.  The callback is invoked for every status and
+command request from the crypto engine.  The output of the crypto
+engine is written to the data object @var{out}.
+
+Note that the protocol between the callback function and the crypto
+engine is specific to the crypto engine and no further support in
+implementing this protocol correctly is provided by @acronym{GPGME}.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+edit operation completes successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx} or @var{key} is not a valid pointer, and any error returned
+by the crypto engine or the edit callback handler.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_edit_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{key}}, @w{gpgme_edit_cb_t @var{fnc}}, @w{void *@var{handle}}, @w{gpgme_data_t @var{out}})
+The function @code{gpgme_op_edit_start} initiates a
+@code{gpgme_op_edit} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation was started successfully, and @code{GPG_ERR_INV_VALUE} if
+@var{ctx} or @var{key} is not a valid pointer.
+@end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_card_edit (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{key}}, @w{gpgme_edit_cb_t @var{fnc}}, @w{void *@var{handle}}, @w{gpgme_data_t @var{out}})
+The function @code{gpgme_op_card_edit} is analogous to
+@code{gpgme_op_edit}, but should be used to process the smart card corresponding to the key @var{key}.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_card_edit_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{key}}, @w{gpgme_edit_cb_t @var{fnc}}, @w{void *@var{handle}}, @w{gpgme_data_t @var{out}})
+The function @code{gpgme_op_card_edit_start} initiates a
+@code{gpgme_op_card_edit} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
