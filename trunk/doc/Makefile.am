@@ -23,3 +23,12 @@ DISTCLEANFILES = gpgme.tmp
 
 info_TEXINFOS = gpgme.texi
 gpgme_TEXINFOS = lesser.texi
+
+online: gpgme.html gpgme.pdf
+	set -e; \
+	echo "Uploading current manuals to www.gnupg.org ..."; \
+        user=werner ; \
+	(cd gpgme.html && rsync -vr --exclude='.svn' .  \
+	  $${user}@cvs.gnupg.org:webspace/manuals/gpgme/ ); \
+        rsync -v gpgme.pdf $${user}@cvs.gnupg.org:webspace/manuals/
+
