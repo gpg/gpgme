@@ -554,7 +554,7 @@ socketpair_connect (assuan_context_t *ctx,
 /* Build a command line for use with W32's CreateProcess.  On success
    CMDLINE gets the address of a newly allocated string.  */
 static int
-build_w32_commandline (char * const *argv, char **cmdline)
+build_w32_commandline (const char * const *argv, char **cmdline)
 {
   int i, n;
   const char *s;

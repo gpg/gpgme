@@ -1,3 +1,71 @@
+2007-07-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	Change _WIN32 to HAVE_W32_SYSTEM for consistency.
+
+	* assuan-defs.h (struct assuan_context_s): Have full peercred
+	structure even if not HAVE_SO_PEERCRED, but not if
+	HAVE_W32_SYSTEM.
+
+2007-06-18  Werner Koch  <wk@g10code.com>
+
+	* assuan-logging.c (load_libgpg_error, _assuan_gpg_strerror_r) 
+	(_assuan_gpg_strsource): New.
+	* assuan-handler.c (process_request) [W32]: Use these new
+	functions for human understable error codes.
+
+2007-06-12  Werner Koch  <wk@g10code.com>
+
+	* assuan-io.c (_assuan_simple_read): Hack to allow reading from a
+	socket.
+	(_assuan_simple_write): Likewise.
+
+2007-06-11  Werner Koch  <wk@g10code.com>
+
+	* assuan-io-pth.c (_assuan_simple_read, _assuan_simple_write): Use
+	pth versions also for W32.
+
+2007-05-29  Werner Koch  <wk@g10code.com>
+
+	* assuan-io-pth.c: Include sys/socket.h only if available.  Remove
+	double inclusion of sys/wait.h
+	
+	* assuan-pipe-connect.c (build_w32_commandline): Make ARGV const.
+
+	* assuan-pipe-server.c (is_valid_socket) [W32]: Do not define.
+
+	* assuan-socket-server.c [W32]: Include ws2tcpip.h to define
+	socklen_t.
+	* assuan-defs.h (struct assuan_context_s): Define most peercred
+	members only if we can really set them.
+	(_assuan_simple_sendmsg, _assuan_simple_recvmsg) [W32]: Use a
+	different prototype.
+	* assuan.h (assuan_get_peercred) [W32]: Do not define.
+	* assuan-io.c (_assuan_simple_sendmsg, _assuan_simple_recvmsg)
+	[w32]: Use another prototype.
+
+2007-05-09  Werner Koch  <wk@g10code.com>
+
+	* libassuan.m4: Print found version on success.
+
+2007-05-01  Werner Koch  <wk@g10code.com>
+
+	* assuan-uds.c (uds_reader): Cast void ptr for arithmetics.
+	Reported by Peter O'Gorman.
+
+2006-12-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-handler.c (assuan_command_parse_fd): Also allow white
+	space after FD.
+
+2006-12-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-uds.c (uds_reader): Return 0 if recvmsg returns 0.
+
+2006-12-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-client.c (assuan_transact): Also translate some of the
+	legacy error codes.
+
 2006-11-22  Werner Koch  <wk@g10code.com>
 
 	* assuan-handler.c (fun1_cookie_write, fun2_cookie_write): New.
@@ -328,20 +396,106 @@
 	* assuan-buffer.c (assuan_write_line): If the line is longer than
 	the maximum line length, bail out early.
 
+2004-04-21  Werner Koch  <wk@gnupg.org>
+
+	* assuan-socket-server.c (accept_connection_bottom): Save the pid
+	of the peer if it is available.
+	* assuan-socket-connect.c (assuan_socket_connect): Do not save the
+	dummy SERVED_PID arg.
+	* assuan-pipe-connect.c (do_finish): Don't wait if the pid is 0.
+	(assuan_pipe_connect2): Store the parents pid in the environment
+	of the child.
+	* assuan-pipe-server.c (assuan_init_pipe_server): Initialize the
+	peer's pid from the environment.
+	* assuan-connect.c (assuan_get_pid): Do not return 0 as a PID.
+
 2004-04-19  Werner Koch  <wk@gnupg.org>
 
-	* assuan-socket-connect.c: Include sys/types.h
-	* assuan-socket-server.c: Ditto
+	* assuan-socket-server.c, assuan-socket-connect.c: Includes
+	sys/types.h.  Reported by Michael Nottebrock.
 	* assuan-domain-connect.c: Ditto.
 
+2004-04-13  Werner Koch  <wk@gnupg.org>
+
+	* assuan-util.c (_assuan_log_print_buffer): Relaxed quoting.
+	(_assuan_log_sanitized_string): Ditto.
+
+2004-03-14  Werner Koch  <wk@gnupg.org>
+
+	* assuan-handler.c: Include <errno.h>.  Reported by Bernd Kuhls.
+
 2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* libassuan-config.in: Ignore setting of --prefix.
 
 	* assuan-handler.c (assuan_get_data_fp): Fail with ENOSYS if we
 	can't implement this.
 
+2004-02-15  Werner Koch  <wk@gnupg.org>
+
+	* memrchr.c (memrchr): Fixed implementation. Taken from gpgme.
+
 2004-02-13  Werner Koch  <wk@gnupg.org>
 
-	* assuan-domain-connect.c: Removed the unneeded alloca.h
+	* assuan-domain-connect.c: Removed the unneeded alloca.h.
+
+2004-01-24  Werner Koch  <wk@gnupg.org>
+
+	* assuan-pipe-connect.c (assuan_pipe_connect2): New as an
+	extension of assuan_pipe_connect. Made the latter call this one.
+
+2004-01-14  Werner Koch  <wk@gnupg.org>
+
+	* assuan-buffer.c (_assuan_cookie_write_data): Return the
+	requested size to indicate successful operation.  Fixes a spurious
+	bug we previously fixed using fflush().
+
+2003-12-22  Werner Koch  <wk@gnupg.org>
+
+	* assuan.h (ASSUAN_Locale_Problem): Added.
+	* assuan-errors.c (assuan_strerror): Ditto.
+
+2003-12-18  Werner Koch  <wk@gnupg.org>
+
+	* assuan.h (AssuanCommand): Clarified that these are now
+	deprecated and actually useless.
+	(assuan_error_t): Clarified and added ASSUAN_USER_ERROR_FIRST,
+	ASSUAN_USER_ERROR_LAST.
+
+2003-12-16  Werner Koch  <wk@gnupg.org>
+
+	* assuan-buffer.c: Changed formatting of the debug output prefix.
+	* assuan-util.c (assuan_set_log_stream): Set global log stream if
+	it has not been done yet.
+	* assuan-logging.c (_assuan_set_default_log_stream): New.
+	(assuan_set_assuan_log_prefix): New.
+
+2003-12-11  Werner Koch  <wk@gnupg.org>
+
+	* funopen.c (_assuan_funopen): Renamed from funopen, to keep the
+	name space clean and avoid duplicate definitions if another
+	library uses the same replacement.
+	* assuan-defs.h (funopen): Renamed prototype and add a macro.
+
+2003-12-08  Werner Koch  <wk@gnupg.org>
+
+	* TODO: Removed.
+
+2003-11-12  Werner Koch  <wk@gnupg.org>
+
+	* assuan-handler.c (process_request): Kludge to print better error
+	messages for gpg-error enabled programs.
+
+2003-11-06  Werner Koch  <wk@gnupg.org>
+
+	* assuan.h (assuan_context_t): New.  Should be used in favor of
+	ASSUAN_CONTEXT.
+	(assuan_error_t): New. To be used instead of AssuanError.
+
+2003-11-11  Moritz Schulte  <mo@g10code.com>
+
+	* assuan-socket-connect.c (assuan_socket_connect): Fix computation
+	of socket address length.
 
 2003-08-13  Werner Koch  <wk@gnupg.org>
 
@@ -818,7 +972,7 @@
 	* assuan-defs.h: Add space in the context for this.
 
 	
- Copyright 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ Copyright 2001, 2002, 2006 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

@@ -25,12 +25,18 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
-#ifndef HAVE_W32_SYSTEM
-#include <sys/socket.h>
-#include <sys/un.h>
+#ifdef HAVE_W32_SYSTEM
+# include <windows.h>
+# if HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+# elif HAVE_WS2TCPIP_H
+#  include <ws2tcpip.h>
+# endif
 #else
-#include <windows.h>
+# include <sys/socket.h>
+# include <sys/un.h>
 #endif
+
 
 #include "assuan-defs.h"
 
