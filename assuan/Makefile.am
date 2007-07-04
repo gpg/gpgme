@@ -20,7 +20,7 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = mkerrors
-INCLUDES = -I.. -I$(top_srcdir)/include
+INCLUDES = -I.. -I$(top_srcdir)/gpgme
 BUILT_SOURCES = assuan-errors.c
 MOSTLYCLEANFILES = assuan-errors.c
 
