@@ -142,8 +142,8 @@ assuan_command_parse_fd (assuan_context_t ctx, char *line, int *rfd)
 {
   char *endp;
 
-  if ( (strncmp (line, "FD", 2) && strncmp (line, "fd", 2))
-       || (line[2] != '=' && line[2] != '\0'))
+  if ((strncmp (line, "FD", 2) && strncmp (line, "fd", 2))
+      || (line[2] != '=' && line[2] != '\0' && !spacep(&line[2])))
     return set_error (ctx, Syntax_Error, "FD[=<n>] expected");
   line += 2;
   if (*line == '=')
@@ -509,7 +509,24 @@ process_request (assuan_context_t ctx)
         {
           const char *text = ctx->err_no == rc? ctx->err_str:NULL;
 
-#if defined(__GNUC__) && defined(__ELF__)
+#if defined(HAVE_W32_SYSTEM)
+          unsigned int source, code;
+          char ebuf[50];
+          const char *esrc;
+
+          source = ((rc >> 24) & 0xff);
+          code = (rc & 0x00ffffff);
+          if (source
+              && !_assuan_gpg_strerror_r (rc, ebuf, sizeof ebuf)
+              && (esrc=_assuan_gpg_strsource (rc)))
+            {
+              /* Assume this is an libgpg-error. */
+              sprintf (errline, "ERR %d %.50s <%.30s>%s%.100s",
+                       rc, ebuf, esrc,
+                       text? " - ":"", text?text:"");
+            }
+          else
+#elif defined(__GNUC__) && defined(__ELF__)
           /* If we have weak symbol support we try to use the error
              strings from libgpg-error without creating a dependency.
              They are used for debugging purposes only, so there is no
@@ -526,7 +543,7 @@ process_request (assuan_context_t ctx)
             __attribute__ ((weak));
           const char *gpg_strsource (unsigned int err)
             __attribute__ ((weak));
-#if !defined(HAVE_W32_SYSTEM) && __GNUC__ < 3
+#if __GNUC__ < 3
 #pragma weak gpg_strerror_r
 #pragma weak gpg_strsource
 #endif

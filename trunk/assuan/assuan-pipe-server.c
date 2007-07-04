@@ -92,6 +92,7 @@ _assuan_new_context (assuan_context_t *r_ctx)
 
 
 /* Returns true if atoi(S) denotes a valid socket. */
+#ifndef HAVE_W32_SYSTEM
 static int
 is_valid_socket (const char *s)
 {
@@ -101,6 +102,7 @@ is_valid_socket (const char *s)
     return 0;
   return S_ISSOCK (buf.st_mode);
 }
+#endif /*!HAVE_W32_SYSTEM*/
 
 
 int

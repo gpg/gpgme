@@ -460,8 +460,10 @@ assuan_error_t assuan_socket_connect_ext (assuan_context_t *ctx,
 /*-- assuan-connect.c --*/
 void assuan_disconnect (assuan_context_t ctx);
 pid_t assuan_get_pid (assuan_context_t ctx);
+#ifndef HAVE_W32_SYSTEM
 assuan_error_t assuan_get_peercred (assuan_context_t ctx,
                                     pid_t *pid, uid_t *uid, gid_t *gid);
+#endif
 
 /*-- assuan-client.c --*/
 assuan_error_t 

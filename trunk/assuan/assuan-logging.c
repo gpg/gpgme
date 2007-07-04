@@ -1,5 +1,5 @@
 /* assuan-logging.c - Default logging function.
- *	Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -237,5 +237,52 @@ _assuan_w32_strerror (int ec)
                  MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
                  strerr, sizeof (strerr)-1, NULL);
   return strerr;    
+}
+
+static int (*my_strerror_r) (unsigned int err, char *buf, size_t buflen);
+static const char * (*my_strsource) (unsigned int err);
+
+static int
+load_libgpg_error (void)
+{
+  /* This code is not race free but suitable for our purpose.  */
+  static volatile int initialized;
+  void *handle;
+
+  if (initialized)
+    return (my_strerror_r && my_strsource)? 0:-1;
+  handle = LoadLibrary ("libgpg-error-0.dll");
+  if (handle)
+    {
+      void *foo, *bar;
+      foo = GetProcAddress (handle, "gpg_strerror_r");
+      bar = GetProcAddress (handle, "gpg_strsource");
+      if (foo && bar)
+        {
+          my_strerror_r = foo;
+          my_strsource = bar;
+        }
+      else
+        CloseHandle (handle);
+    }
+  initialized = 1;
+  return 0;
+}
+
+int
+_assuan_gpg_strerror_r (unsigned int err, char *buf, size_t buflen)
+{
+  if (load_libgpg_error ())
+    return -1;
+  return my_strerror_r (err, buf, buflen);
+}
+
+
+const char *
+_assuan_gpg_strsource (unsigned int err)
+{
+  if (load_libgpg_error ())
+    return NULL;
+  return my_strsource (err);
 }
 #endif /*HAVE_W32_SYSTEM*/

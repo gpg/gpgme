@@ -23,6 +23,9 @@ updating this directory, are:
    namespace.  It also wraps all system functions that are wrapped by
    GNU Pth to _gpgme wrappers.
 
+* assuan-io-pth.c
+  We don't need this file as GPGME doesn't use sendmsg and recvmsg.
+  If it would, we would need to pick up the W32 implementation.
 
  Copyright 2004 g10 Code GmbH
 
