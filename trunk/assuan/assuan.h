@@ -61,23 +61,12 @@
 #define _ASSUAN_USE_DOUBLE_FORK
 
 #ifdef _ASSUAN_IN_GPGME_BUILD_ASSUAN
+#include <ath.h>
+
 int _gpgme_io_read (int fd, void *buffer, size_t count);
 int _gpgme_io_write (int fd, const void *buffer, size_t count);
-ssize_t _gpgme_ath_waitpid (pid_t pid, int *status, int options);
-#ifdef HAVE_W32_SYSTEM
-int _gpgme_ath_accept (int s, void *addr, int *length_ptr);
-#else /*!HAVE_W32_SYSTEM*/
-struct sockaddr;
-struct msghdr;
-ssize_t _gpgme_ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
-                           struct timeval *timeout);
-int _gpgme_ath_accept (int s, struct sockaddr *addr, socklen_t *length_ptr);
-int _gpgme_ath_connect (int s, struct sockaddr *addr, socklen_t length);
-int _gpgme_ath_sendmsg (int s, const struct msghdr *msg, int flags);
-int _gpgme_ath_recvmsg (int s, struct msghdr *msg, int flags);
 int _gpgme_io_sendmsg (int sock, const struct msghdr *msg, int flags);
 int _gpgme_io_recvmsg (int sock, struct msghdr *msg, int flags);
-#endif /*!HAVE_W32_SYSTEM*/
 
 #define read          _gpgme_io_read
 #define write         _gpgme_io_write
