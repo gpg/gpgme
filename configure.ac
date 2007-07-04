@@ -538,6 +538,22 @@ AC_DEFINE_UNQUOTED(USE_DESCRIPTOR_PASSING, $fd_passing,
           [Defined if descriptor passing is enabled and supported])
 AM_CONDITIONAL(USE_DESCRIPTOR_PASSING, test "$use_descriptor_passing" = "yes")
 
+# Assuan check for the getsockopt SO_PEERCRED
+AC_MSG_CHECKING(for SO_PEERCRED)
+AC_CACHE_VAL(assuan_cv_sys_so_peercred,
+      [AC_TRY_COMPILE([#include <sys/socket.h>], 
+         [struct ucred cr; 
+          int cl = sizeof cr;
+          getsockopt (1, SOL_SOCKET, SO_PEERCRED, &cr, &cl);],
+          assuan_cv_sys_so_peercred=yes,
+          assuan_cv_sys_so_peercred=no)
+       ])
+AC_MSG_RESULT($assuan_cv_sys_so_peercred) 
+if test $assuan_cv_sys_so_peercred = yes; then
+  AC_DEFINE(HAVE_SO_PEERCRED, 1,
+            [Defined if SO_PEERCRED is supported (Linux specific)])
+fi
+
 # End of assuan checks.
 
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
