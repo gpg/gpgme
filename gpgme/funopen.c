@@ -24,19 +24,39 @@
 
 #include <stdio.h>
 
+
+/* Replacement for the *BSD function:
+
+  FILE *funopen (void *cookie,
+                 int (*readfn)(void *, char *, int),
+                 int (*writefn)(void *, const char *, int),
+                 fpos_t (*seekfn)(void *, fpos_t, int),
+                 int (*closefn)(void *));
+
+  The functions to provide my either be NULL if not required or
+  similar to the unistd function with the exception of using the
+  cookie instead of the fiel descripor.
+*/
+
+
 #ifdef HAVE_FOPENCOOKIE
 FILE *
-funopen(const void *cookie, cookie_read_function_t *readfn,
-	cookie_write_function_t *writefn,
-	cookie_seek_function_t *seekfn,
-	cookie_close_function_t *closefn)
+_gpgme_funopen(void *cookie,
+                cookie_read_function_t *readfn,
+                cookie_write_function_t *writefn,
+                cookie_seek_function_t *seekfn,
+                cookie_close_function_t *closefn)
 {
-  cookie_io_functions_t io = { read: readfn, write: writefn, 
-			       seek: seekfn, close: closefn };
+  cookie_io_functions_t io = { NULL };
 
-  return fopencookie ((void *) cookie,
-		      readfn ? (writefn ? "rw" : "r")
-		      : (writefn ? "w" : ""), io);
+  io.read = readfn;
+  io.write = writefn;
+  io.seek = seekfn;
+  io.close = closefn;
+
+  return fopencookie (cookie,
+		      readfn ? ( writefn ? "rw" : "r" )
+		      : ( writefn ? "w" : ""), io);
 }
 #else
 #error No known way to implement funopen.

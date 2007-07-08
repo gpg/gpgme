@@ -23,8 +23,6 @@
 #include <config.h>
 #endif
 
-#ifndef HAVE_W32_SYSTEM
-
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -1749,5 +1747,3 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_io_event,
     gpgsm_cancel
   };
-
-#endif /*!HAVE_W32_SYSTEM*/

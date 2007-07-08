@@ -1,3 +1,11 @@
+2007-07-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-defs.h (struct assuan_context_s): Have partial peercred
+	structure even if HAVE_W32_SYSTEM, and have full peercred
+	structure only if HAVE_SO_PEERCRED.
+	* assuan-connect.c (assuan_get_peercred) [!HAVE_SO_PEERCRED]: Do
+	not try to set PID, UID and GID.
+
 2007-07-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	Change _WIN32 to HAVE_W32_SYSTEM for consistency.

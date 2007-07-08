@@ -1,3 +1,8 @@
+2007-07-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgsm.c [HAVE_W32_SYSTEM]: Enable the bunch of the file.
+	* funopen.c (funopen): Rename to _gpgme_funopen.
+
 2007-04-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (gpgsm_new): Fix error handling for ttyname_r.
