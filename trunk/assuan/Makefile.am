@@ -45,7 +45,6 @@ libassuan_la_SOURCES = \
 	assuan-pipe-connect.c \
 	assuan-socket-connect.c  \
 	assuan-uds.c \
-	funopen.c \
 	assuan-io.c \
 	assuan-logging.c \
 	assuan-socket.c

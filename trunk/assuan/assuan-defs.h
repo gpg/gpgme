@@ -140,14 +140,14 @@ struct assuan_context_s
   int listen_fd;  /* The fd we are listening on (used by socket servers) */
   int connected_fd; /* helper */
 
-#ifndef HAVE_W32_SYSTEM
   struct {
     int valid;   /* Whether this structure has valid information. */
+#ifdef HAVE_SO_PEERCRED
     pid_t pid;     /* The pid of the peer. */
     uid_t uid;     /* The uid of the peer. */
     gid_t gid;     /* The gid of the peer. */
+#endif /* HAVE_SO_PEERCRED */
   } peercred;
-#endif /* HAVE_W32_SYSTEM */
 
   /* Used for Unix domain sockets.  */
   struct sockaddr_un myaddr;

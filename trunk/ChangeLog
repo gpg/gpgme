@@ -1,3 +1,18 @@
+2007-07-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (GPGSM_DEFAULT) [*-mingw32*]: Initialize it.
+	(HAVE_ASSUAN_H): Set to 1 if we have it.
+	(funopen): Use AC_REPLACE_FUNCS.
+	(USE_DESCRIPTOR_PASSING): Define to 1 if we have it.  Do not
+	define it at all if we don't.
+	(NETLIBS) [have_w32_system]: Add -lws2_32.
+	(DIRSEP_C, DIRSEP_S, EXPSEP_C, EXPSEP_S, PATHSEP_S)
+	[HAVE_DOSISH_SYSTEM]: Remove definitions.
+
+	* assuan/assuan.h (_assuan_funopen): Define to _gpgme_funopen.
+	* assuan/funopen.c: Move to ../gpgme/funopen.c.
+	* assuan/Makefile.am (libassuan_la_SOURCES): Remove funopen.c.
+
 2007-07-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan/Makefile.am (INCLUDES): Include $(top_srcdir)/gpgme.  *

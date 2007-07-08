@@ -59,10 +59,10 @@ assuan_get_pid (assuan_context_t ctx)
 }
 
 
+#ifndef HAVE_W32_SYSTEM
 /* Return user credentials. PID, UID and GID amy be gived as NULL if
    you are not interested in this value.  For getting the pid of the
    peer the assuan_get_pid is usually better suited. */
-#ifndef HAVE_W32_SYSTEM
 assuan_error_t
 assuan_get_peercred (assuan_context_t ctx, pid_t *pid, uid_t *uid, gid_t *gid)
 {
@@ -70,12 +70,16 @@ assuan_get_peercred (assuan_context_t ctx, pid_t *pid, uid_t *uid, gid_t *gid)
     return _assuan_error (ASSUAN_Invalid_Value);
   if (!ctx->peercred.valid)
     return _assuan_error (ASSUAN_General_Error);
+
+#ifdef HAVE_SO_PEERCRED
   if (pid)
     *pid = ctx->peercred.pid;
   if (uid)
     *uid = ctx->peercred.uid;
   if (gid)
     *gid = ctx->peercred.gid;
+#endif
+
   return 0;
 }
 #endif /* HAVE_W32_SYSTEM */

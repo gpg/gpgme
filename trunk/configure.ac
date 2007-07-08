@@ -123,8 +123,7 @@ case "${host}" in
 	have_dosish_system=yes
         have_w32_system=yes
         GPG_DEFAULT='c:\\gnupg\\gpg.exe'
-	# XXX Assuan is not supported in this configuration.
-	#GPGSM_DEFAULT='c:\\gnupg\\gpgsm.exe'
+	GPGSM_DEFAULT='c:\\gnupg\\gpgsm.exe'
         #component_system='COM+'
         ;;
     *)
@@ -467,18 +466,17 @@ AM_CONDITIONAL(RUN_GPGSM_TESTS, test "$run_gpgsm_test" = "yes")
 # FIXME: Only build if supported.
 AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
 if test "$GPGSM" != "no"; then
-  AC_DEFINE(HAVE_ASSUAN_H, ,[Defined if we are building with assuan support.])
+  AC_DEFINE(HAVE_ASSUAN_H, 1,
+            [Defined if we are building with assuan support.])
 fi
 
-# The assuan code uses funopen but it will also build without it.  So
-# test for it.  Frankly, this is not required in gpgme, but thats the
-# way we handle it in libassuan.
+# Check for funopen
 AC_CHECK_FUNCS(funopen)
 if test $ac_cv_func_funopen != yes; then
     # No funopen but we can implement that in terms of fopencookie.
     AC_CHECK_FUNCS(fopencookie)
     if test $ac_cv_func_fopencookie = yes; then
-        AC_LIBOBJ([funopen])
+        AC_REPLACE_FUNCS(funopen)
     else
         AC_MSG_WARN([
 ***
@@ -529,13 +527,10 @@ if test "$supports_descriptor_passing" != "yes"; then
 fi
 
 if test "$use_descriptor_passing" = "yes"; then
-  fd_passing=1
-else
-  fd_passing=0
+AC_DEFINE(USE_DESCRIPTOR_PASSING,1,
+          [Defined if descriptor passing is enabled and supported])
 fi
 
-AC_DEFINE_UNQUOTED(USE_DESCRIPTOR_PASSING, $fd_passing,
-          [Defined if descriptor passing is enabled and supported])
 AM_CONDITIONAL(USE_DESCRIPTOR_PASSING, test "$use_descriptor_passing" = "yes")
 
 # Assuan check for the getsockopt SO_PEERCRED
@@ -552,6 +547,10 @@ AC_MSG_RESULT($assuan_cv_sys_so_peercred)
 if test $assuan_cv_sys_so_peercred = yes; then
   AC_DEFINE(HAVE_SO_PEERCRED, 1,
             [Defined if SO_PEERCRED is supported (Linux specific)])
+fi
+
+if test "$have_w32_system" = yes; then
+   NETLIBS="-lws2_32 $NETLIBS"
 fi
 
 # End of assuan checks.
@@ -581,23 +580,11 @@ AC_SUBST(BUILD_FILEVERSION)
 # Add a few constants to help porting to W32
 AH_VERBATIM([SEPCONSTANTS],
 [
-/* Separators as used in file names and $PATH. Please note that the
-   string version must not contain more than one character because
-   the using code assumes strlen()==1 */
+/* Separators as used in $PATH.  */
 #ifdef HAVE_DOSISH_SYSTEM
-#define DIRSEP_C '\\\\'
-#define EXTSEP_C '.'
-#define DIRSEP_S "\\\\"
-#define EXTSEP_S "."
 #define PATHSEP_C ';'
-#define PATHSEP_S ";"
 #else
-#define DIRSEP_C '/'
-#define EXTSEP_C '.'
-#define DIRSEP_S "/"
-#define EXTSEP_S "."
 #define PATHSEP_C ':'
-#define PATHSEP_S ":"
 #endif
 ])
 
