@@ -15,8 +15,8 @@
 
 2007-07-04  Marcus Brinkmann  <marcus@g10code.de>
 
-	* assuan/Makefile.am (INCLUDES): Include $(top_srcdir)/gpgme.  *
-	assuan/assuan.h: Include <ath.h> instead of trying to duplicate
+	* assuan/Makefile.am (INCLUDES): Include $(top_srcdir)/gpgme.
+	* assuan/assuan.h: Include <ath.h> instead of trying to duplicate
 	the definitions.
 	
 	* assuan/: Update files to 2007-07-04 version of assuan.
