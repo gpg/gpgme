@@ -1,0 +1,123 @@
+                  GPGME - GnuPG Made Easy
+                ---------------------------
+
+               Copyright 2004, 2006 g10 Code GmbH
+
+This file is free software; as a special exception the author gives
+unlimited permission to copy and/or distribute it, with or without
+modifications, as long as this notice is preserved.
+
+This file is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
+
+
+Introduction
+--------------
+
+GnuPG Made Easy (GPGME) is a C language library that allows to add
+support for cryptography to a program.  It is designed to make access
+to public key crypto engines like GnuPG or GpgSM easier for
+applications.  GPGME provides a high-level crypto API for encryption,
+decryption, signing, signature verification and key management.
+
+GPGME uses GnuPG and GpgSM as its backends to support OpenPGP and the
+Cryptographic Message Syntax (CMS).
+
+GPGME runs best on GNU/Linux or *BSD systems.  Other Unices may
+require small portability fixes, send us your patches.
+
+See the file COPYING.LESSER and each file for copyright and warranty
+information.
+
+
+Installation
+--------------
+
+See the file INSTALL for generic installation instructions.
+
+Check that you have unmodified sources.  See below on how to do this.
+Don't skip it - this is an important step!
+
+To build GPGME, you need to install libgpg-error.  You need at least
+libgpg-error 0.5.
+
+For support of the OpenPGP protocol (default), you should use the
+latest version of GnuPG 1.2 or 1.4, available at:
+ftp://ftp.gnupg.org/gcrypt/gnupg/
+
+You need at least GnuPG 1.2.2.
+
+If configure can't find the `gpg' binary in your path, you can specify
+the location with the --with-gpg=/path/to/gpg argument to configure.
+
+For support of the CMS (Cryptographic Message Syntax) protocol, you
+need the latest CVS version of GnuPG 1.9, which is available in the
+GnuPG repository:
+http://www.gnupg.org/download/cvs_access.html
+Use the tag `GNUPG-1-9-BRANCH'.  There are also snapshots available at:
+ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/
+
+You need at least GpgSM 1.9.6.
+
+If configure can't find the `gpgsm' binary in your path, you can
+specify the location with the --with-gpgsm=/path/to/gpgsm argument to
+configure.
+
+For building the CVS version of GPGME please see the file README.CVS
+for more information.
+
+
+How to Verify the Source
+--------------------------
+
+In order to check that the version of GPGME which you are going to
+install is an original and unmodified one, you can do it in one of the
+following ways:
+
+a) If you have a trusted Version of GnuPG installed, you can simply check
+   the supplied signature:
+
+	$ gpg --verify gpgme-x.y.z.tar.gz.sig
+
+   This checks that the detached signature gpgme-x.y.z.tar.gz.sig is
+   indeed a a signature of gpgme-x.y.z.tar.gz.  The key used to create
+   this signature is either of:
+
+   "pub  1024D/57548DCD 1998-07-07 Werner Koch (gnupg sig) <dd9jn@gnu.org>"
+   "pub  1024D/87978569 1999-05-13
+                        Marcus Brinkmann <Marcus.Brinkmann@ruhr-uni-bochum.de>
+                        Marcus Brinkmann <mb@g10code.com>"
+
+   If you do not have this key, you can get it from any keyserver.  You
+   have to make sure that this is really the key and not a faked one.
+   You can do this by comparing the output of:
+
+	$ gpg --fingerprint 0x57548DCD
+
+   with the fingerprint published elsewhere.
+
+b) If you don't have any of the above programs, you have to verify
+   the SHA1 checksum:
+
+	$ sha1sum gpgme-x.y.z.tar.gz
+
+   This should yield an output _similar_ to this:
+
+   fd9351b26b3189c1d577f0970f9dcadc3412def1  gpgme-x.y.z.tar.gz
+
+   Now check that this checksum is _exactly_ the same as the one
+   published via the announcement list and probably via Usenet.
+
+
+Documentation
+---------------
+
+For information how to use the library you can read the info manual,
+which is also a reference book, in the doc/ directory.  The programs
+in the tests/gpg/ directory may also prove useful.
+
+Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
+to do serious work.
+

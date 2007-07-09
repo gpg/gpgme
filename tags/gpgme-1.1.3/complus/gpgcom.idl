@@ -1,0 +1,62 @@
+/* ignupg.idl - Interface definition for the COM+ class GnuPG
+ *	Copyright (C) 2001 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ */
+
+
+import "unknwn.idl";
+import "oaidl.idl";
+
+
+[ object, uuid(3811fd50-7f72-11d5-8c9e-0080ad190cd5), dual]
+interface IGpgme : IDispatch
+{
+  HRESULT GetVersion([out] BSTR *retval);
+  HRESULT GetEngineInfo([out] BSTR *retval);
+  HRESULT Cancel(void);
+  [propput] HRESULT Armor([in] BOOL flag);
+  [propget] HRESULT Armor([out, retval] BOOL *retval);
+  [propput] HRESULT Textmode([in] BOOL flag);
+  [propget] HRESULT Textmode([out, retval] BOOL *retval);
+  [propput] HRESULT Plaintext([in] VARIANT val);
+  [propget] HRESULT Plaintext([out, retval] VARIANT *retval);
+  [propput] HRESULT Ciphertext([in] VARIANT val);
+  [propget] HRESULT Ciphertext([out,retval] VARIANT *retval);
+  HRESULT ClearRecipients(void);
+  HRESULT AddRecipient([in] BSTR name,
+                       [in, optional, defaultvalue(-1)] signed short trust);
+  HRESULT ResetSignKeys(void);
+  HRESULT AddSignKey([in] BSTR name);
+  HRESULT Encrypt(void);              
+  HRESULT Sign([in,optional,defaultvalue(0)] signed short signmode);
+  HRESULT SignEncrypt([in,optional,defaultvalue(0)] signed short signmode);
+
+};
+
+
+[ uuid(3811fd48-7f72-11d5-8c9e-0080ad190cd5),
+  helpstring("g10Code.gpgcom, type library"),
+  version(1.0) ]
+library GpgcomLib
+{
+  [ uuid(3811fd40-7f72-11d5-8c9e-0080ad190cd5) ]
+    coclass Gpgcom
+    {
+      [default] interface IGpgme;
+    }
+};
