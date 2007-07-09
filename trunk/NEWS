@@ -1,5 +1,7 @@
-Noteworthy changes in version 1.1.5 (unreleased)
+Noteworthy changes in version 1.1.5 (2007-07-09)
 ------------------------------------------------
+
+ * Bug and portability fixes (mainly for W32).
 
 
 Noteworthy changes in version 1.1.4 (2007-03-05)
