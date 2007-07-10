@@ -495,3 +495,8 @@ _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
 }
 
 
+int
+_gpgme_io_dup (int fd)
+{
+  return dup (fd);
+}

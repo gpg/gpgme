@@ -660,3 +660,11 @@ leave:
   free (pollfds_map);
   return count;
 }
+
+
+int
+_gpgme_io_dup (int fd)
+{
+  return _dup (fd);
+}  
+
