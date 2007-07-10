@@ -988,7 +988,8 @@ start (engine_gpgsm_t gpgsm, const char *command)
      status_fd and register/unregister it manually as needed, but this
      increases code duplication and is more complicated as we can not
      use the close notifications etc.  */
-  gpgsm->status_cb.fd = dup (fdlist[0]);
+
+  gpgsm->status_cb.fd = _gpgme_io_dup (fdlist[0]);
   if (gpgsm->status_cb.fd < 0)
     return gpg_error_from_syserror ();
 

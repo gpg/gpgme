@@ -1140,6 +1140,25 @@ _gpgme_io_fd2str (char *buf, int buflen, int fd)
   return snprintf (buf, buflen, "%d", fd);
 }
 
+
+int
+_gpgme_io_dup (int fd)
+{
+  HANDLE handle = fd_to_handle (fd);
+  HANDLE new_handle = fd_to_handle (fd);
+    
+  /* For NT we have to set the sync flag.  It seems that the only
+   * way to do it is by duplicating the handle.  Tsss.. */
+  if (!DuplicateHandle( GetCurrentProcess(), handle,
+			GetCurrentProcess(), &new_handle,
+			0, FALSE, DUPLICATE_SAME_ACCESS))
+    {
+      DEBUG1 ("** DuplicateHandle failed: ec=%d\n", (int) GetLastError());
+    }
+
+  return handle_to_fd (new_handle);
+}  
+
 
 /* The following interface is only useful for GPGME Glib.  */
 
