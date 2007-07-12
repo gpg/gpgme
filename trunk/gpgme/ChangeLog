@@ -1,3 +1,8 @@
+2007-07-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am: Replace implicite rule by suffix rule.  Add
+	SUFFIXES for that.
+
 2007-07-12  Werner Koch  <wk@g10code.com>
 
 	* version.c (do_subsystem_inits) [W32]: Make sure that the socket
