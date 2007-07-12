@@ -50,7 +50,7 @@ _assuan_close (int fd)
 #else
   int rc = closesocket (fd);
   if (rc && WSAGetLastError () == WSAENOTSOCK)
-      rc = close (fd);
+    rc = CloseHandle (fd);
   return rc;
 #endif
 }
