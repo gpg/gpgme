@@ -1,4 +1,4 @@
- # Copyright (C) 2000 Werner Koch (dd9jn)
+# Copyright (C) 2000 Werner Koch (dd9jn)
 # Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 # 
 # This file is part of GPGME.
@@ -118,7 +118,9 @@ LTRCCOMPILE = $(LIBTOOL) --mode=compile $(RC) \
      `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
      sed -e 's/-I/--include-dir /g;s/-D/--define /g'`
 
-%.lo : %.rc
+.SUFFIXES: .rc .lo
+
+.rc.lo:
 	$(LTRCCOMPILE) -i $< -o $@
 
 gpgme_res = versioninfo.lo
