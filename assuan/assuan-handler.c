@@ -663,7 +663,11 @@ assuan_get_active_fds (assuan_context_t ctx, int what,
       if (ctx->outbound.fd != -1)
         fdarray[n++] = ctx->outbound.fd;
       if (ctx->outbound.data.fp)
+#ifdef HAVE_W32_SYSTEM
+        fdarray[n++] = _get_osfhandle (fileno (ctx->outbound.data.fp));
+#else
         fdarray[n++] = fileno (ctx->outbound.data.fp);
+#endif
     }
 
   return n;

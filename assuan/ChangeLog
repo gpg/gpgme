@@ -1,5 +1,9 @@
 2007-07-12  Werner Koch  <wk@g10code.com>
 
+	* assuan-handler.c (assuan_get_active_fds): Use get_osfhandle for
+	the data fp.
+	* assuan-socket.c (_assuan_close) [W32]: Use CloseHandle and not close.
+
 	* assuan-io.c (_assuan_simple_write, _assuan_simple_read): Map
 	ERROR_BROKEN_PIPE to EPIPE.
 
