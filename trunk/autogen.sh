@@ -80,7 +80,7 @@ if test "$1" = "--build-w32"; then
 
     ./configure --enable-maintainer-mode  --prefix=${w32root}  \
             --host=i586-mingw32msvc --build=${build} \
-            --with-gpg-error-prefix=${w32root} --without-gpgsm \
+            --with-gpg-error-prefix=${w32root} \
             --enable-shared --enable-static --enable-w32-glib \
             PKG_CONFIG_LIBDIR="$w32root/lib/pkgconfig"
 

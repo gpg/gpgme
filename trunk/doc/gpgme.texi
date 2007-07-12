@@ -572,7 +572,11 @@ can verify that the version number is higher than a certain required
 version number.  In either case, the function initializes some
 sub-systems, and for this reason alone it must be invoked early in
 your program, before you make use of the other functions in
-@acronym{GPGME}.
+@acronym{GPGME}. 
+
+As a side effect for W32 based systems, the socket layer will get
+initialized.
+
 
 If @var{required_version} is @code{NULL}, the function returns a
 pointer to a statically allocated string containing the version number

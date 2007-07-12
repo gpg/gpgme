@@ -1,3 +1,8 @@
+2007-07-12  Werner Koch  <wk@g10code.com>
+
+	* gpgme.texi (Library Version Check): Add remark that the socket
+	layer will get initialized.
+
 2007-06-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Advanced Key Editing): New section.

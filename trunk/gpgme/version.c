@@ -25,6 +25,9 @@
 #include <string.h>
 #include <limits.h>
 #include <ctype.h>
+#ifdef HAVE_W32_SYSTEM
+#include <winsock2.h>
+#endif
 
 #include "gpgme.h"
 #include "priv-io.h"
@@ -41,7 +44,7 @@
    must be done once at startup.  We can not guarantee this using a
    lock, though, because the semaphore subsystem needs to be
    initialized itself before it can be used.  So we expect that the
-   user performs the necessary syncrhonization.  */
+   user performs the necessary synchronization.  */
 static void
 do_subsystem_inits (void)
 {
@@ -54,7 +57,15 @@ do_subsystem_inits (void)
   _gpgme_io_subsystem_init ();
 #ifdef HAVE_ASSUAN_H
   assuan_set_assuan_err_source (GPG_ERR_SOURCE_GPGME);
-#endif
+#ifdef HAVE_W32_SYSTEM
+  /* We need to make sure that the sockets are initialized.  */
+  {
+    WSADATA wsadat;
+    
+    WSAStartup (0x202, &wsadat);
+  }
+#endif /*HAVE_W32_SYSTEM*/
+#endif /*HAVE_ASSUAN_H*/
 
   done = 1;
 }
