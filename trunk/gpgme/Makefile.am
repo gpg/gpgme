@@ -118,7 +118,7 @@ LTRCCOMPILE = $(LIBTOOL) --mode=compile $(RC) \
      `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
      sed -e 's/-I/--include-dir /g;s/-D/--define /g'`
 
-.SUFFIXES: .rc .lo
+SUFFIXES: .rc .lo
 
 .rc.lo:
 	$(LTRCCOMPILE) -i $< -o $@
