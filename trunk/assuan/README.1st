@@ -27,7 +27,13 @@ updating this directory, are:
   We don't need this file as GPGME doesn't use sendmsg and recvmsg.
   If it would, we would need to pick up the W32 implementation.
 
- Copyright 2004 g10 Code GmbH
+* assuan-io.c
+** _assuan_simple_read() and _assuan_simple_write() must always use
+   read()/write() (which actually translates to _gpgme_io_read() and
+   _gpgme_io_write()).
+
+
+ Copyright 2004, 2007 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

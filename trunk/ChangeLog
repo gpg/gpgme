@@ -1,3 +1,9 @@
+2007-07-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan/assuan-io.c (_assuan_simple_read, _assuan_simple_write):
+	Always use read/write (which means _gpgme_io_read and
+	_gpgme_io_write).
+
 2007-07-09  Marcus Brinkmann  <marcus@g10code.de>
 
 	Released 1.1.5.

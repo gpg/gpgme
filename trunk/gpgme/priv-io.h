@@ -47,7 +47,8 @@ int _gpgme_io_read (int fd, void *buffer, size_t count);
 int _gpgme_io_write (int fd, const void *buffer, size_t count);
 int _gpgme_io_pipe (int filedes[2], int inherit_idx);
 int _gpgme_io_close (int fd);
-int _gpgme_io_set_close_notify (int fd, void (*handler) (int, void *),
+typedef int (*_gpgme_close_notify_handler_t) (int,void*);
+int _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
 				void *value);
 int _gpgme_io_set_nonblocking (int fd);
 
@@ -63,8 +64,5 @@ int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock);
    BUFLEN.  The printable version is the representation on the command
    line that the child process expects.  */
 int _gpgme_io_fd2str (char *buf, int buflen, int fd);
-
-/* Like dup().  */
-int _gpgme_io_dup (int fd);
 
 #endif /* IO_H */

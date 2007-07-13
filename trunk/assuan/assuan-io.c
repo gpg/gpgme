@@ -51,7 +51,7 @@ _assuan_waitpid (pid_t pid, int *status, int options)
 ssize_t
 _assuan_simple_read (assuan_context_t ctx, void *buffer, size_t size)
 {
-#ifdef HAVE_W32_SYSTEM
+#if defined(HAVE_W32_SYSTEM) && !defined(_ASSUAN_IN_GPGME_BUILD_ASSUAN)
   /* Due to the peculiarities of the W32 API we can't use read for a
      network socket and thus we try to use recv first and fallback to
      read if recv detects that it is not a network socket.  */
@@ -84,7 +84,7 @@ _assuan_simple_read (assuan_context_t ctx, void *buffer, size_t size)
 ssize_t
 _assuan_simple_write (assuan_context_t ctx, const void *buffer, size_t size)
 {
-#ifdef HAVE_W32_SYSTEM
+#if defined(HAVE_W32_SYSTEM) && !defined(_ASSUAN_IN_GPGME_BUILD_ASSUAN)
   /* Due to the peculiarities of the W32 API we can't use write for a
      network socket and thus we try to use send first and fallback to
      write if send detects that it is not a network socket.  */

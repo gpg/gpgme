@@ -1,3 +1,28 @@
+2007-07-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* priv-io.h (_gpgme_io_set_close_notify): Change type of HANDLER
+	to _gpgme_close_notify_handler.
+	(_gpgme_close_notify_handler): New type.
+	(_gpgme_io_dup): Remove prototype.
+	* posix-io.c (notify_table, _gpgme_io_set_close_notify): Change
+	type of HANDLER to _gpgme_close_notify_handler_t.
+	(_gpgme_io_close): Do not close the FD if handler returns 0.
+	(_gpgme_io_dup): Remove function.
+	* w32-io.c (notify_table, _gpgme_io_set_close_notify,
+	_gpgme_io_close): Change type of HANDLER to
+	_gpgme_close_notify_handler_t.
+	(_gpgme_io_close): Do not close the FD if handler returns 0.
+	(_gpgme_io_dup): Remove function.
+	* w32-glib-io.c (_gpgme_io_dup): Remove function.
+	(_gpgme_io_set_close_notify, notify_table): Change type of HANDLER
+	to _gpgme_close_notify_handler_t.
+	(_gpgme_io_close): Do not close the FD if handler returns 0.
+	* rungpg.c (close_notify_handler): Change return type to int,
+	return 1.
+	* engine-gpgsm.c (close_notify_handler): Change return type to
+	int, return 0 for status FD and 1 for all other FDs.
+	(start): Do not duplicate the status FD.
+
 2007-07-12  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am: Replace implicite rule by suffix rule.  Add
