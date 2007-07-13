@@ -374,6 +374,7 @@ _gpgme_io_read ( int fd, void *buffer, size_t count )
     DEBUG2 ("fd %d: about to read %d bytes\n", fd, (int)count );
     if ( !c ) {
         DEBUG0 ( "no reader thread\n");
+	errno = EBADF;
         return -1;
     }
     if (c->eof_shortcut) {
@@ -402,6 +403,7 @@ _gpgme_io_read ( int fd, void *buffer, size_t count )
             return 0;
         }
         DEBUG1 ("fd %d: read error", fd );
+	errno = c->error_code;
         return -1;
     }
       
@@ -631,11 +633,12 @@ _gpgme_io_write ( int fd, const void *buffer, size_t count )
     _gpgme_debug (2, "fd %d: write `%.*s'\n", fd, (int) count, buffer);
     if ( !c ) {
         DEBUG0 ( "no writer thread\n");
+	errno = EBADF;
         return -1;
     }
 
     LOCK (c->mutex);
-    if ( c->nbytes ) { /* bytes are pending for send */
+    if ( !c->error && c->nbytes ) { /* bytes are pending for send */
         /* Reset the is_empty event.  Better safe than sorry.  */
         if (!ResetEvent (c->is_empty))
             DEBUG1 ("ResetEvent failed: ec=%d", (int)GetLastError ());
@@ -650,6 +653,7 @@ _gpgme_io_write ( int fd, const void *buffer, size_t count )
     if ( c->error) {
         UNLOCK (c->mutex);
         DEBUG1 ("fd %d: write error", fd );
+	errno = c->error_code;
         return -1;
     }
 
@@ -729,7 +733,6 @@ _gpgme_io_close ( int fd )
     int i;
     _gpgme_close_notify_handler_t handler = NULL;
     void *value = NULL;
-    int really_close = 1;
 
     if ( fd == -1 )
         return -1;
@@ -750,9 +753,9 @@ _gpgme_io_close ( int fd )
     }
     UNLOCK (notify_table_lock);
     if (handler)
-        really_close = handler (fd, value);
+        handler (fd, value);
 
-    if ( really_close && !CloseHandle (fd_to_handle (fd)) ) { 
+    if ( !CloseHandle (fd_to_handle (fd)) ) { 
         DEBUG2 ("CloseHandle for fd %d failed: ec=%d\n",
                  fd, (int)GetLastError ());
         return -1;

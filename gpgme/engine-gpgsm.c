@@ -112,7 +112,7 @@ gpgsm_get_req_version (void)
 }
 
 
-static int
+static void
 close_notify_handler (int fd, void *opaque)
 {
   engine_gpgsm_t gpgsm = opaque;
@@ -124,9 +124,6 @@ close_notify_handler (int fd, void *opaque)
 	(*gpgsm->io_cbs.remove) (gpgsm->status_cb.tag);
       gpgsm->status_cb.fd = -1;
       gpgsm->status_cb.tag = NULL;
-      /* We do not want to close the status FD, as it is controled by
-	 Assuan.  */
-      return 0;
     }
   else if (gpgsm->input_cb.fd == fd)
     {
@@ -149,7 +146,6 @@ close_notify_handler (int fd, void *opaque)
       gpgsm->message_cb.fd = -1;
       gpgsm->message_cb.tag = NULL;
     }
-  return 1;
 }
 
 
@@ -287,8 +283,6 @@ gpgsm_cancel (void *engine)
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (gpgsm->status_cb.fd != -1)
-    _gpgme_io_close (gpgsm->status_cb.fd);
   if (gpgsm->input_cb.fd != -1)
     _gpgme_io_close (gpgsm->input_cb.fd);
   if (gpgsm->output_cb.fd != -1)
@@ -827,6 +821,8 @@ status_handler (void *opaque, int fd)
 	    err = gpg_error (GPG_ERR_GENERAL);
           DEBUG2 ("fd %d: ERR line - mapped to: %s\n",
                   fd, err? gpg_strerror (err):"ok");
+	  /* Try our best to terminate the connection friendly.  */
+	  assuan_write_line (gpgsm->assuan_ctx, "BYE");
 	}
       else if (linelen >= 2
 	       && line[0] == 'O' && line[1] == 'K'
@@ -846,7 +842,6 @@ status_handler (void *opaque, int fd)
               gpgsm->colon.any = 0;
               err = gpgsm->colon.fnc (gpgsm->colon.fnc_value, NULL);
             }
-	  _gpgme_io_close (gpgsm->status_cb.fd);
           DEBUG2 ("fd %d: OK line - final status: %s\n",
                   fd, err? gpg_strerror (err):"ok");
 	  return err;
@@ -990,8 +985,7 @@ start (engine_gpgsm_t gpgsm, const char *command)
   /* We used to duplicate the file descriptor so that we do not
   disturb Assuan.  But this gets in the way of the Handle-to-Thread
   mapping in w32-io.c, so instead we just share the file descriptor
-  *carefully*, by avoiding to close it ourselves (this is achieved by
-  returning 0 from the close_notify_handler for this descriptor).  */
+  but leave it to Assuan to close it.  */
   gpgsm->status_cb.fd = fdlist[0];
 
   if (_gpgme_io_set_close_notify (gpgsm->status_cb.fd,

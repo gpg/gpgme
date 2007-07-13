@@ -139,8 +139,6 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 int
 _gpgme_io_close (int fd)
 {
-  int really_close = 1;
-
   if (fd == -1)
     return -1;
   /* First call the notify handler.  */
@@ -149,16 +147,13 @@ _gpgme_io_close (int fd)
     {
       if (notify_table[fd].handler)
 	{
-	  really_close = notify_table[fd].handler (fd, notify_table[fd].value);
+	  notify_table[fd].handler (fd, notify_table[fd].value);
 	  notify_table[fd].handler = NULL;
 	  notify_table[fd].value = NULL;
         }
     }
   /* Then do the close.  */    
-  if (really_close)
-    return close (fd);
-
-  return 0;
+  return close (fd);
 }
 
 
