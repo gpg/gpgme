@@ -32,7 +32,10 @@ static ssize_t
 user_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   if (!dh->data.user.cbs->read)
-    return EBADF;
+    {
+      errno = EBADF;
+      return -1;
+    }
 
   return (*dh->data.user.cbs->read) (dh->data.user.handle, buffer, size);
 }
@@ -42,7 +45,10 @@ static ssize_t
 user_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   if (!dh->data.user.cbs->write)
-    return EBADF;
+    {
+      errno = EBADF;
+      return -1;
+    }
 
   return (*dh->data.user.cbs->write) (dh->data.user.handle, buffer, size);
 }
@@ -52,7 +58,10 @@ static off_t
 user_seek (gpgme_data_t dh, off_t offset, int whence)
 {
   if (!dh->data.user.cbs->seek)
-    return EBADF;
+    {
+      errno = EBADF;
+      return -1;
+    }
 
   return (*dh->data.user.cbs->seek) (dh->data.user.handle, offset, whence);
 }
