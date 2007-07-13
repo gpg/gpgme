@@ -55,11 +55,12 @@
 #define MAX_READERS 20
 #define MAX_WRITERS 20
 
-static struct {
-    int inuse;
-    int fd;
-    void (*handler)(int,void*);
-    void *value;
+static struct
+{
+  int inuse;
+  int fd;
+  _gpgme_close_notify_handler_t handler;
+  void *value;
 } notify_table[256];
 DEFINE_STATIC_LOCK (notify_table_lock);
 
@@ -726,8 +727,9 @@ int
 _gpgme_io_close ( int fd )
 {
     int i;
-    void (*handler)(int, void*) = NULL;
+    _gpgme_close_notify_handler_t handler = NULL;
     void *value = NULL;
+    int really_close = 1;
 
     if ( fd == -1 )
         return -1;
@@ -738,7 +740,7 @@ _gpgme_io_close ( int fd )
     LOCK (notify_table_lock);
     for ( i=0; i < DIM (notify_table); i++ ) {
         if (notify_table[i].inuse && notify_table[i].fd == fd) {
-            handler = notify_table[i].handler;
+	    handler = notify_table[i].handler;
             value   = notify_table[i].value;
             notify_table[i].handler = NULL;
             notify_table[i].value = NULL;
@@ -748,9 +750,9 @@ _gpgme_io_close ( int fd )
     }
     UNLOCK (notify_table_lock);
     if (handler)
-        handler (fd, value);
+        really_close = handler (fd, value);
 
-    if ( !CloseHandle (fd_to_handle (fd)) ) { 
+    if ( really_close && !CloseHandle (fd_to_handle (fd)) ) { 
         DEBUG2 ("CloseHandle for fd %d failed: ec=%d\n",
                  fd, (int)GetLastError ());
         return -1;
@@ -760,7 +762,8 @@ _gpgme_io_close ( int fd )
 }
 
 int
-_gpgme_io_set_close_notify (int fd, void (*handler)(int, void*), void *value)
+_gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
+			    void *value)
 {
     int i;
 
@@ -1139,25 +1142,6 @@ _gpgme_io_fd2str (char *buf, int buflen, int fd)
 {
   return snprintf (buf, buflen, "%d", fd);
 }
-
-
-int
-_gpgme_io_dup (int fd)
-{
-  HANDLE handle = fd_to_handle (fd);
-  HANDLE new_handle = fd_to_handle (fd);
-    
-  /* For NT we have to set the sync flag.  It seems that the only
-   * way to do it is by duplicating the handle.  Tsss.. */
-  if (!DuplicateHandle( GetCurrentProcess(), handle,
-			GetCurrentProcess(), &new_handle,
-			0, FALSE, DUPLICATE_SAME_ACCESS))
-    {
-      DEBUG1 ("** DuplicateHandle failed: ec=%d\n", (int) GetLastError());
-    }
-
-  return handle_to_fd (new_handle);
-}  
 
 
 /* The following interface is only useful for GPGME Glib.  */

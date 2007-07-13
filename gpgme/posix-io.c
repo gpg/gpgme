@@ -69,7 +69,7 @@ _gpgme_io_fd2str (char *buf, int buflen, int fd)
 
 static struct
 {
-  void (*handler) (int,void*);
+  _gpgme_close_notify_handler_t handler;
   void *value;
 } notify_table[256];
 
@@ -139,6 +139,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 int
 _gpgme_io_close (int fd)
 {
+  int really_close = 1;
+
   if (fd == -1)
     return -1;
   /* First call the notify handler.  */
@@ -147,18 +149,22 @@ _gpgme_io_close (int fd)
     {
       if (notify_table[fd].handler)
 	{
-	  notify_table[fd].handler (fd, notify_table[fd].value);
+	  really_close = notify_table[fd].handler (fd, notify_table[fd].value);
 	  notify_table[fd].handler = NULL;
 	  notify_table[fd].value = NULL;
         }
     }
   /* Then do the close.  */    
-  return close (fd);
+  if (really_close)
+    return close (fd);
+
+  return 0;
 }
 
 
 int
-_gpgme_io_set_close_notify (int fd, void (*handler)(int, void*), void *value)
+_gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
+			    void *value)
 {
   assert (fd != -1);
 
@@ -492,11 +498,4 @@ _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
   DEBUG2 ("fd %d:          wrote %d bytes\n", fd, (int) nwritten);
   errno = saved_errno;
   return nwritten;
-}
-
-
-int
-_gpgme_io_dup (int fd)
-{
-  return dup (fd);
 }

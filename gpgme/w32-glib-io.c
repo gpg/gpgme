@@ -123,9 +123,10 @@ _gpgme_io_subsystem_init (void)
 
 static struct
 {
-  void (*handler) (int,void*);
+  _gpgme_close_notify_handler_t handler;
   void *value;
 } notify_table[MAX_SLAFD];
+
 
 int
 _gpgme_io_read (int fd, void *buffer, size_t count)
@@ -270,6 +271,7 @@ int
 _gpgme_io_close (int fd)
 {
   GIOChannel *chan;
+  int really_close = 1;
 
   if (fd < 0 || fd >= MAX_SLAFD)
     {
@@ -281,29 +283,32 @@ _gpgme_io_close (int fd)
   DEBUG1 ("closing fd %d", fd);
   if (notify_table[fd].handler)
     {
-      notify_table[fd].handler (fd, notify_table[fd].value);
+      really_close = notify_table[fd].handler (fd, notify_table[fd].value);
       notify_table[fd].handler = NULL;
       notify_table[fd].value = NULL;
     }
 
   /* Then do the close.  */    
-  chan = giochannel_table[fd];
-  if (chan)
+  if (really_close)
     {
-      g_io_channel_shutdown (chan, 1, NULL);
-      g_io_channel_unref (chan);
-      giochannel_table[fd] = NULL;
+      chan = giochannel_table[fd];
+      if (chan)
+	{
+	  g_io_channel_shutdown (chan, 1, NULL);
+	  g_io_channel_unref (chan);
+	  giochannel_table[fd] = NULL;
+	}
+      else
+	_close (fd);
     }
-  else
-    _close (fd);
-
 
   return 0;
 }
 
 
 int
-_gpgme_io_set_close_notify (int fd, void (*handler)(int, void*), void *value)
+_gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
+			    void *value)
 {
   assert (fd != -1);
 
@@ -660,11 +665,3 @@ leave:
   free (pollfds_map);
   return count;
 }
-
-
-int
-_gpgme_io_dup (int fd)
-{
-  return _dup (fd);
-}  
-

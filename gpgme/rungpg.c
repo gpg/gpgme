@@ -141,7 +141,7 @@ gpg_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 }
 
 
-static void
+static int
 close_notify_handler (int fd, void *opaque)
 {
   engine_gpg_t gpg = opaque;
@@ -183,6 +183,7 @@ close_notify_handler (int fd, void *opaque)
             }
         }
     }
+  return 1;
 }
 
 /* If FRONT is true, push at the front of the list.  Use this for
