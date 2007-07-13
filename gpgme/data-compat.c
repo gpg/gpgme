@@ -167,7 +167,10 @@ old_user_seek (gpgme_data_t dh, off_t offset, int whence)
 {
   gpgme_error_t err;
   if (whence != SEEK_SET || offset)
-    return EINVAL;
+    {
+      errno = EINVAL;
+      return -1;
+    }
   err = (*dh->data.old_user.cb) (dh->data.old_user.handle, NULL, 0, NULL);
   if (err)
     return gpgme_error_to_errno (err);

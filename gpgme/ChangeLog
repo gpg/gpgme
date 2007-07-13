@@ -1,5 +1,10 @@
 2007-07-13  Marcus Brinkmann  <marcus@g10code.de>
 
+	* data-user.c (user_read, user_write, user_seek): Set errno and
+	return -1 instead returning the error code directly.
+	* data-compat.c (old_user_seek): Likewise.
+	* gpgme.c (gpgme_sig_notation_add): Return error properly.
+
 	* Revert the "close_notify_handler" returns int stuff.  Always
 	close in the _gpgme_io_close implementations.
 	* engine-gpgsm.c (status_handler): Try to terminate the connection

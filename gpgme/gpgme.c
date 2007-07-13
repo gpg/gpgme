@@ -471,7 +471,7 @@ gpgme_sig_notation_add (gpgme_ctx_t ctx, const char *name,
   gpgme_sig_notation_t *lastp;
 
   if (!ctx)
-     gpg_error (GPG_ERR_INV_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (name)
     flags |= GPGME_SIG_NOTATION_HUMAN_READABLE;
