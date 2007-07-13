@@ -1,5 +1,12 @@
 2007-07-13  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Revert the "close_notify_handler" returns int stuff.  Always
+	close in the _gpgme_io_close implementations.
+	* engine-gpgsm.c (status_handler): Try to terminate the connection
+	in case of error.
+	* w32-io.c (_gpgme_io_read): Return C->error_code in ERRNO.
+	(_gpgme_io_write): Likewise.
+	
 	* priv-io.h (_gpgme_io_set_close_notify): Change type of HANDLER
 	to _gpgme_close_notify_handler.
 	(_gpgme_close_notify_handler): New type.

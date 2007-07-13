@@ -271,7 +271,6 @@ int
 _gpgme_io_close (int fd)
 {
   GIOChannel *chan;
-  int really_close = 1;
 
   if (fd < 0 || fd >= MAX_SLAFD)
     {
@@ -283,24 +282,21 @@ _gpgme_io_close (int fd)
   DEBUG1 ("closing fd %d", fd);
   if (notify_table[fd].handler)
     {
-      really_close = notify_table[fd].handler (fd, notify_table[fd].value);
+      notify_table[fd].handler (fd, notify_table[fd].value);
       notify_table[fd].handler = NULL;
       notify_table[fd].value = NULL;
     }
 
   /* Then do the close.  */    
-  if (really_close)
+  chan = giochannel_table[fd];
+  if (chan)
     {
-      chan = giochannel_table[fd];
-      if (chan)
-	{
-	  g_io_channel_shutdown (chan, 1, NULL);
-	  g_io_channel_unref (chan);
-	  giochannel_table[fd] = NULL;
-	}
-      else
-	_close (fd);
+      g_io_channel_shutdown (chan, 1, NULL);
+      g_io_channel_unref (chan);
+      giochannel_table[fd] = NULL;
     }
+  else
+    _close (fd);
 
   return 0;
 }
