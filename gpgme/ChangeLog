@@ -1,5 +1,7 @@
 2007-07-16  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-gpgsm.c (status_handler): Do not send BYE here.
+
 	* w32-io.c (struct reader_context_s, struct writer_context_s): New
 	members REFCOUNT.
 	(create_reader, create_writer): Initialize C->refcount to 1.
@@ -11,7 +13,7 @@
 	* w32-io.c (_gpgme_io_dup): Likewise.
 	* w32-glib-io.c (_gpgme_io_dup): Likewise.
 	* engine-gpgsm.c (start): Reverting to version 2007-07-10.
-	
+
 2007-07-13  Marcus Brinkmann  <marcus@g10code.de>
 
 	* data-user.c (user_read, user_write, user_seek): Set errno and

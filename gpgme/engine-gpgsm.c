@@ -807,8 +807,10 @@ status_handler (void *opaque, int fd)
       assuan_err = assuan_read_line (gpgsm->assuan_ctx, &line, &linelen);
       if (assuan_err)
 	{
+#if 0
 	  /* Try our best to terminate the connection friendly.  */
-	  /*	  assuan_write_line (gpgsm->assuan_ctx, "BYE"); */
+	  assuan_write_line (gpgsm->assuan_ctx, "BYE");
+#endif
 	  err = map_assuan_error (assuan_err);
           DEBUG3 ("fd %d: error from assuan (%d) getting status line : %s \n",
                   fd, assuan_err, gpg_strerror (err));
@@ -823,8 +825,10 @@ status_handler (void *opaque, int fd)
 	    err = gpg_error (GPG_ERR_GENERAL);
           DEBUG2 ("fd %d: ERR line - mapped to: %s\n",
                   fd, err? gpg_strerror (err):"ok");
+#if 0
 	  /* Try our best to terminate the connection friendly.  */
 	  assuan_write_line (gpgsm->assuan_ctx, "BYE");
+#endif
 	}
       else if (linelen >= 2
 	       && line[0] == 'O' && line[1] == 'K'
