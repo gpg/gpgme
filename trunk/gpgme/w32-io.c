@@ -68,6 +68,8 @@ DEFINE_STATIC_LOCK (notify_table_lock);
 struct reader_context_s {
     HANDLE file_hd;
     HANDLE thread_hd;	
+    int refcount;
+
     DECLARE_LOCK (mutex);
 
     int stop_me;
@@ -96,6 +98,8 @@ DEFINE_STATIC_LOCK (reader_table_lock);
 struct writer_context_s {
     HANDLE file_hd;
     HANDLE thread_hd;	
+    int refcount;
+
     DECLARE_LOCK (mutex);
 
     int stop_me;
@@ -248,6 +252,7 @@ create_reader (HANDLE fd)
         return NULL;
 
     c->file_hd = fd;
+    c->refcount = 1;
     c->have_data_ev = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
     c->have_space_ev = CreateEvent (&sec_attr, FALSE, TRUE, NULL);
     c->stopped = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
@@ -294,6 +299,12 @@ static void
 destroy_reader (struct reader_context_s *c)
 {
     LOCK (c->mutex);
+    c->refcount--;
+    if (c->refcount != 0)
+      {
+	UNLOCK (c->mutex);
+	return;
+      }
     c->stop_me = 1;
     if (c->have_space_ev) 
         SetEvent (c->have_space_ev);
@@ -315,54 +326,60 @@ destroy_reader (struct reader_context_s *c)
 }
 
 
-/* 
- * Find a reader context or create a new one 
- * Note that the reader context will last until a io_close.
- */
+/* Find a reader context or create a new one.  Note that the reader
+   context will last until a _gpgme_io_close.  */
 static struct reader_context_s *
 find_reader (int fd, int start_it)
 {
-    int i;
+  struct reader_context_s *rd = NULL;
+  int i;
 
-    for (i=0; i < reader_table_size ; i++ ) {
-        if ( reader_table[i].used && reader_table[i].fd == fd )
-            return reader_table[i].context;
-    }
-    if (!start_it)
-        return NULL;
+  LOCK (reader_table_lock);
+  for (i = 0; i < reader_table_size; i++)
+    if (reader_table[i].used && reader_table[i].fd == fd)
+      rd = reader_table[i].context;
 
-    LOCK (reader_table_lock);
-    for (i=0; i < reader_table_size; i++ ) {
-        if (!reader_table[i].used) {
-            reader_table[i].fd = fd;
-            reader_table[i].context = create_reader (fd_to_handle (fd));
-            reader_table[i].used = 1;
-            UNLOCK (reader_table_lock);
-            return reader_table[i].context;
-        }
+  if (rd || !start_it)
+    {
+      UNLOCK (reader_table_lock);
+      return rd;
     }
-    UNLOCK (reader_table_lock);
-    return NULL;
+
+  for (i = 0; i < reader_table_size; i++)
+    if (!reader_table[i].used)
+      break;
+
+  if (i != reader_table_size)
+    {
+      rd = create_reader (fd_to_handle (fd));
+      reader_table[i].fd = fd;
+      reader_table[i].context = rd;
+      reader_table[i].used = 1;
+    }
+
+  UNLOCK (reader_table_lock);
+  return rd;
 }
 
 
 static void
 kill_reader (int fd)
 {
-    int i;
+  int i;
 
-    LOCK (reader_table_lock);
-    for (i=0; i < reader_table_size; i++ ) {
-        if (reader_table[i].used && reader_table[i].fd == fd ) {
-            destroy_reader (reader_table[i].context);
-            reader_table[i].context = NULL;
-            reader_table[i].used = 0;
-            break;
-        }
+  LOCK (reader_table_lock);
+  for (i = 0; i < reader_table_size; i++)
+    {
+      if (reader_table[i].used && reader_table[i].fd == fd)
+	{
+	  destroy_reader (reader_table[i].context);
+	  reader_table[i].context = NULL;
+	  reader_table[i].used = 0;
+	  break;
+	}
     }
-    UNLOCK (reader_table_lock);
+  UNLOCK (reader_table_lock);
 }
-
 
 
 int
@@ -506,6 +523,7 @@ create_writer (HANDLE fd)
         return NULL;
 
     c->file_hd = fd;
+    c->refcount = 1;
     c->have_data = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
     c->is_empty  = CreateEvent (&sec_attr, TRUE, TRUE, NULL);
     c->stopped = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
@@ -552,6 +570,12 @@ static void
 destroy_writer (struct writer_context_s *c)
 {
     LOCK (c->mutex);
+    ctx->refcount--;
+    if (ctx->refcount != 0)
+      {
+	UNLOCK (ctx->mutex);
+	return;
+      }
     c->stop_me = 1;
     if (c->have_data) 
         SetEvent (c->have_data);
@@ -580,45 +604,54 @@ destroy_writer (struct writer_context_s *c)
 static struct writer_context_s *
 find_writer (int fd, int start_it)
 {
-    int i;
+  struct writer_context_s *wt = NULL;
+  int i;
 
-    for (i=0; i < writer_table_size ; i++ ) {
-        if ( writer_table[i].used && writer_table[i].fd == fd )
-            return writer_table[i].context;
-    }
-    if (!start_it)
-        return NULL;
+  LOCK (writer_table_lock);
+  for (i = 0; i < writer_table_size; i++)
+    if (writer_table[i].used && writer_table[i].fd == fd)
+      wt = writer_table[i].context;
 
-    LOCK (writer_table_lock);
-    for (i=0; i < writer_table_size; i++ ) {
-        if (!writer_table[i].used) {
-            writer_table[i].fd = fd;
-            writer_table[i].context = create_writer (fd_to_handle (fd));
-            writer_table[i].used = 1;
-            UNLOCK (writer_table_lock);
-            return writer_table[i].context;
-        }
+  if (wt || !start_it)
+    {
+      UNLOCK (writer_table_lock);
+      return wt;
     }
-    UNLOCK (writer_table_lock);
-    return NULL;
+
+  for (i = 0; i < writer_table_size; i++)
+    if (!writer_table[i].used)
+      break;
+
+  if (i != writer_table_size)
+    {
+      wt = create_writer (fd_to_handle (fd));
+      writer_table[i].fd = fd;
+      writer_table[i].context = wt; 
+      writer_table[i].used = 1;
+    }
+
+  UNLOCK (writer_table_lock);
+  return wt;
 }
 
 
 static void
 kill_writer (int fd)
 {
-    int i;
+  int i;
 
-    LOCK (writer_table_lock);
-    for (i=0; i < writer_table_size; i++ ) {
-        if (writer_table[i].used && writer_table[i].fd == fd ) {
-            destroy_writer (writer_table[i].context);
-            writer_table[i].context = NULL;
-            writer_table[i].used = 0;
-            break;
-        }
+  LOCK (writer_table_lock);
+  for (i = 0; i < writer_table_size; i++)
+    {
+      if (writer_table[i].used && writer_table[i].fd == fd)
+	{
+	  destroy_writer (writer_table[i].context);
+	  writer_table[i].context = NULL;
+	  writer_table[i].used = 0;
+	  break;
+	}
     }
-    UNLOCK (writer_table_lock);
+  UNLOCK (writer_table_lock);
 }
 
 
@@ -1144,6 +1177,67 @@ int
 _gpgme_io_fd2str (char *buf, int buflen, int fd)
 {
   return snprintf (buf, buflen, "%d", fd);
+}
+
+
+int
+_gpgme_io_dup (int fd)
+{
+  HANDLE handle = fd_to_handle (fd);
+  HANDLE new_handle = fd_to_handle (fd);
+  int i;
+  struct reader_context_s *rd_ctx;
+  struct writer_context_s *wt_ctx;
+
+  if (!DuplicateHandle (GetCurrentProcess(), handle,
+			GetCurrentProcess(), &new_handle,
+			0, FALSE, DUPLICATE_SAME_ACCESS))
+    {
+      DEBUG1 ("DuplicateHandle failed: ec=%d\n", (int) GetLastError ());
+      /* FIXME: Translate error code.  */
+      errno = EIO;
+      return -1;
+    }
+
+  rd_ctx = find_reader (fd, 1);
+  if (rd_ctx)
+    {
+      /* No need for locking, as the only races are against the reader
+	 thread itself, which doesn't touch refcount.  */
+      rd_ctx->refcount++;
+
+      LOCK (reader_table_lock);
+      for (i = 0; i < reader_table_size; i++)
+	if (!reader_table[i].used)
+	  break;
+      /* FIXME.  */
+      assert (i != reader_table_size);
+      reader_table[i].fd = handle_to_fd (new_handle);
+      reader_table[i].context = rd_ctx;
+      reader_table[i].used = 1;
+      UNLOCK (reader_table_lock);
+    }
+
+  wt_ctx = find_writer (fd, 1);
+  if (wt_ctx)
+    {
+      /* No need for locking, as the only races are against the writer
+	 thread itself, which doesn't touch refcount.  */
+      wt_ctx->refcount++;
+
+      LOCK (writer_table_lock);
+      for (i = 0; i < writer_table_size; i++)
+	if (!writer_table[i].used)
+	  break;
+      /* FIXME.  */
+      assert (i != writer_table_size);
+      writer_table[i].fd = handle_to_fd (new_handle);
+      writer_table[i].context = wt_ctx;
+      writer_table[i].used = 1;
+      UNLOCK (writer_table_lock);
+    }
+
+  return handle_to_fd (new_handle);
 }
 
 

@@ -494,3 +494,10 @@ _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
   errno = saved_errno;
   return nwritten;
 }
+
+
+int
+_gpgme_io_dup (int fd)
+{
+  return dup (fd);
+}

@@ -283,6 +283,8 @@ gpgsm_cancel (void *engine)
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  if (gpgsm->status_cb.fd != -1)
+    _gpgme_io_close (gpgsm->status_cb.fd);
   if (gpgsm->input_cb.fd != -1)
     _gpgme_io_close (gpgsm->input_cb.fd);
   if (gpgsm->output_cb.fd != -1)
@@ -842,6 +844,7 @@ status_handler (void *opaque, int fd)
               gpgsm->colon.any = 0;
               err = gpgsm->colon.fnc (gpgsm->colon.fnc_value, NULL);
             }
+ 	  _gpgme_io_close (gpgsm->status_cb.fd);
           DEBUG2 ("fd %d: OK line - final status: %s\n",
                   fd, err? gpg_strerror (err):"ok");
 	  return err;
@@ -982,15 +985,20 @@ start (engine_gpgsm_t gpgsm, const char *command)
   if (nfds < 1)
     return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
 
-  /* We used to duplicate the file descriptor so that we do not
-  disturb Assuan.  But this gets in the way of the Handle-to-Thread
-  mapping in w32-io.c, so instead we just share the file descriptor
-  but leave it to Assuan to close it.  */
-  gpgsm->status_cb.fd = fdlist[0];
+  /* We duplicate the file descriptor, so we can close it without
+     disturbing assuan.  Alternatively, we could special case
+     status_fd and register/unregister it manually as needed, but this
+     increases code duplication and is more complicated as we can not
+     use the close notifications etc.  */
+
+  gpgsm->status_cb.fd = _gpgme_io_dup (fdlist[0]);
+  if (gpgsm->status_cb.fd < 0)
+    return gpg_error_from_syserror ();
 
   if (_gpgme_io_set_close_notify (gpgsm->status_cb.fd,
 				  close_notify_handler, gpgsm))
     {
+      _gpgme_io_close (gpgsm->status_cb.fd);
       gpgsm->status_cb.fd = -1;
       return gpg_error (GPG_ERR_GENERAL);
     }
