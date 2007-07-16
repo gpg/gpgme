@@ -65,4 +65,7 @@ int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock);
    line that the child process expects.  */
 int _gpgme_io_fd2str (char *buf, int buflen, int fd);
 
+/* Like dup().  */
+int _gpgme_io_dup (int fd);
+
 #endif /* IO_H */

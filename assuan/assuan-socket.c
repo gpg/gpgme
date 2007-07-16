@@ -45,13 +45,13 @@
 int
 _assuan_close (int fd)
 {
-#ifndef HAVE_W32_SYSTEM
-  return close (fd);
-#else
+#if defined (HAVE_W32_SYSTEM) && !defined(_ASSUAN_IN_GPGME_BUILD_ASSUAN)
   int rc = closesocket (fd);
   if (rc && WSAGetLastError () == WSAENOTSOCK)
     rc = CloseHandle (fd);
   return rc;
+#else
+  return close (fd);
 #endif
 }
 

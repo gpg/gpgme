@@ -1,3 +1,9 @@
+2007-07-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan/assuan-socket.c (_assuan_close): Always use close().
+	* assuan/assuan.h (_gpgme_io_close): New prototype.
+	(close): New macro, define as _gpgme_io_close.
+
 2007-07-13  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan/assuan-io.c (_assuan_simple_read, _assuan_simple_write):

@@ -63,11 +63,13 @@
 #ifdef _ASSUAN_IN_GPGME_BUILD_ASSUAN
 #include <ath.h>
 
+int _gpgme_io_close (int fd);
 int _gpgme_io_read (int fd, void *buffer, size_t count);
 int _gpgme_io_write (int fd, const void *buffer, size_t count);
 int _gpgme_io_sendmsg (int sock, const struct msghdr *msg, int flags);
 int _gpgme_io_recvmsg (int sock, struct msghdr *msg, int flags);
 
+#define close         _gpgme_io_close
 #define read          _gpgme_io_read
 #define write         _gpgme_io_write
 #define waitpid	      _gpgme_ath_waitpid

@@ -30,7 +30,8 @@ updating this directory, are:
 * assuan-io.c
 ** _assuan_simple_read() and _assuan_simple_write() must always use
    read()/write() (which actually translates to _gpgme_io_read() and
-   _gpgme_io_write()).
+   _gpgme_io_write()).  _assuan_close must always() use close() (which
+   translates to _gpgme_io_close()).
 
 
  Copyright 2004, 2007 g10 Code GmbH
