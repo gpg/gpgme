@@ -570,10 +570,10 @@ static void
 destroy_writer (struct writer_context_s *c)
 {
     LOCK (c->mutex);
-    ctx->refcount--;
-    if (ctx->refcount != 0)
+    c->refcount--;
+    if (c->refcount != 0)
       {
-	UNLOCK (ctx->mutex);
+	UNLOCK (c->mutex);
 	return;
       }
     c->stop_me = 1;
