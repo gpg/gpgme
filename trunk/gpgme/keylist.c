@@ -1,6 +1,6 @@
 /* keylist.c - Listing keys.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2006 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2006, 2007 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -393,8 +393,8 @@ keylist_colon_handler (void *priv, char *line)
 
   key = opd->tmp_key;
 
-  DEBUG3 ("keylist_colon_handler ctx = %p, key = %p, line = %s\n",
-	  ctx, key, line ? line : "(null)");
+  TRACE2 (DEBUG_CTX, "gpgme:keylist_colon_handler", ctx,
+	  "key = %p, line = %s", key, line ? line : "(null)");
 
   if (!line)
     {

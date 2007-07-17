@@ -1,6 +1,6 @@
 /* rungpg.c - Gpg Engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -1002,7 +1002,8 @@ read_status (engine_gpg_t gpg)
 			     received and the next thing will be that
 			     the command handler does its action.  */
 			  if (nread > 1)
-			    DEBUG0 ("ERROR, unexpected data in read_status");
+			    TRACE0 (DEBUG_CTX, "gpgme:read_status", 0,
+				    "error: unexpected data");
 
 			  add_io_cb (gpg, gpg->cmd.fd, 0,
 				     command_handler, gpg,

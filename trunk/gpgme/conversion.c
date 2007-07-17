@@ -1,6 +1,6 @@
 /* conversion.c - String conversion helper functions.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2007 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -30,7 +30,7 @@
 
 #include "gpgme.h"
 #include "util.h"
-
+#include "debug.h"
 
 #define atoi_1(p)   (*(p) - '0' )
 #define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
@@ -392,23 +392,27 @@ static struct
     
 
 gpgme_error_t
-_gpgme_map_gnupg_error (char *err)
+_gpgme_map_gnupg_error (char *errstr)
 {
   unsigned int i;
+  gpgme_error_t err = gpg_err_make (GPG_ERR_SOURCE_GPG, GPG_ERR_GENERAL);
 
   /* Future version of GnuPG might return the error code directly, so
      we first test for a a numerical value and use that verbatim.
      Note that this numerical value might be followed by an
      underschore and the textual representation of the error code. */
-  if (*err >= '0' && *err <= '9')
-    return strtoul (err, NULL, 10);
+  if (*errstr >= '0' && *errstr <= '9')
+    return strtoul (errstr, NULL, 10);
 
   /* Well, this is a token, use the mapping table to get the error.
      The drawback is that we won't receive an error source and have to
      use GPG as source. */
   for (i = 0; i < DIM (gnupg_errors); i++)
-    if (!strcmp (gnupg_errors[i].name, err))
-      return gpg_err_make (GPG_ERR_SOURCE_GPG, gnupg_errors[i].err);
+    if (!strcmp (gnupg_errors[i].name, errstr))
+      err = gpg_err_make (GPG_ERR_SOURCE_GPG, gnupg_errors[i].err);
 
-  return gpg_err_make (GPG_ERR_SOURCE_GPG, GPG_ERR_GENERAL);
+  TRACE3 (DEBUG_CTX, "_gpgme_map_gnupg_error", 0,
+	  "mapped %s to %s <%s>", errstr, gpgme_strerror (err),
+	  gpgme_strsource (err));
+  return err;
 }

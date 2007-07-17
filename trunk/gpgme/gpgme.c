@@ -1,6 +1,6 @@
 /* gpgme.c - GnuPG Made Easy.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -33,6 +33,7 @@
 #include "context.h"
 #include "ops.h"
 #include "wait.h"
+#include "debug.h"
 
 
 /* The default locale.  */
@@ -47,16 +48,17 @@ gpgme_error_t
 gpgme_new (gpgme_ctx_t *r_ctx)
 {
   gpgme_ctx_t ctx;
+  TRACE_BEG (DEBUG_CTX, "gpgme_new", r_ctx);
 
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
-    return gpg_error_from_errno (errno);
+    return TRACE_ERR (gpg_error_from_errno (errno));
 
   _gpgme_engine_info_copy (&ctx->engine_info);
   if (!ctx->engine_info)
     {
       free (ctx);
-      return gpg_error_from_errno (errno);
+      return TRACE_ERR (gpg_error_from_errno (errno));
     }
 
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
@@ -73,7 +75,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 	  UNLOCK (def_lc_lock);
 	  _gpgme_engine_info_release (ctx->engine_info);
 	  free (ctx);
-	  return gpg_error_from_errno (errno);
+	  return TRACE_ERR (gpg_error_from_errno (errno));
 	}
     }
   else
@@ -89,7 +91,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 	    free (ctx->lc_ctype);
 	  _gpgme_engine_info_release (ctx->engine_info);
 	  free (ctx);
-	  return gpg_error_from_errno (errno);
+	  return TRACE_ERR (gpg_error_from_errno (errno));
 	}
     }
   else
@@ -97,7 +99,8 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   UNLOCK (def_lc_lock);
 
   *r_ctx = ctx;
-  return 0;
+
+  return TRACE_SUC1 ("ctx=%p", ctx);
 }
 
 
@@ -106,21 +109,24 @@ gpgme_error_t
 gpgme_cancel (gpgme_ctx_t ctx)
 {
   gpgme_error_t err;
+  TRACE_BEG (DEBUG_CTX, "gpgme_cancel", ctx);
 
   err = _gpgme_engine_cancel (ctx->engine);
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
   err = gpg_error (GPG_ERR_CANCELED);
   _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &err);
 
-  return 0;
+  return TRACE_ERR (0);
 }
 
 /* Release all resources associated with the given context.  */
 void
 gpgme_release (gpgme_ctx_t ctx)
 {
+  TRACE (DEBUG_CTX, "gpgme_release", ctx);
+
   _gpgme_engine_release (ctx->engine);
   _gpgme_fd_table_deinit (&ctx->fdt);
   _gpgme_release_result (ctx);
@@ -156,27 +162,36 @@ _gpgme_release_result (gpgme_ctx_t ctx)
 gpgme_error_t
 gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
 {
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_set_protocol", ctx, "protocol=%i (%s)",
+	      protocol, gpgme_get_protocol_name (protocol)
+	      ? gpgme_get_protocol_name (protocol) : "unknown");
+
   if (protocol != GPGME_PROTOCOL_OpenPGP && protocol != GPGME_PROTOCOL_CMS)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (ctx->protocol != protocol)
     {
       /* Shut down the engine when switching protocols.  */
       if (ctx->engine)
 	{
+	  TRACE_LOG1 ("releasing ctx->engine=%p", ctx->engine);
 	  _gpgme_engine_release (ctx->engine);
 	  ctx->engine = NULL;
 	}
 
       ctx->protocol = protocol;
     }
-  return 0;
+  return TRACE_ERR (0);
 }
 
 
 gpgme_protocol_t
 gpgme_get_protocol (gpgme_ctx_t ctx)
 {
+  TRACE2 (DEBUG_CTX, "gpgme_get_protocol", ctx,
+	  "ctx->protocol=%i (%s)", ctx->protocol,
+	  gpgme_get_protocol_name (ctx->protocol)
+	  ? gpgme_get_protocol_name (ctx->protocol) : "unknown");
   return ctx->protocol;
 }
 
@@ -199,9 +214,11 @@ gpgme_get_protocol_name (gpgme_protocol_t protocol)
 
 /* Enable or disable the use of an ascii armor for all output.  */
 void
-gpgme_set_armor (gpgme_ctx_t ctx, int yes)
+gpgme_set_armor (gpgme_ctx_t ctx, int use_armor)
 {
-  ctx->use_armor = yes;
+  TRACE2 (DEBUG_CTX, "gpgme_set_armor", ctx, "use_armor=%i (%s)",
+	  use_armor, use_armor ? "yes" : "no");
+  ctx->use_armor = use_armor;
 }
 
 
@@ -209,6 +226,8 @@ gpgme_set_armor (gpgme_ctx_t ctx, int yes)
 int
 gpgme_get_armor (gpgme_ctx_t ctx)
 {
+  TRACE2 (DEBUG_CTX, "gpgme_get_armor", ctx, "ctx->use_armor=%i (%s)",
+	  ctx->use_armor, ctx->use_armor ? "yes" : "no");
   return ctx->use_armor;
 }
 
@@ -218,15 +237,19 @@ gpgme_get_armor (gpgme_ctx_t ctx)
   3156 mandates that the MUA does some preparations so that textmode
   is not needed anymore.  */
 void
-gpgme_set_textmode (gpgme_ctx_t ctx, int yes)
+gpgme_set_textmode (gpgme_ctx_t ctx, int use_textmode)
 {
-  ctx->use_textmode = yes;
+  TRACE2 (DEBUG_CTX, "gpgme_set_textmode", ctx, "use_textmode=%i (%s)",
+	  use_textmode, use_textmode ? "yes" : "no");
+  ctx->use_textmode = use_textmode;
 }
 
 /* Return the state of the textmode flag.  */
 int
 gpgme_get_textmode (gpgme_ctx_t ctx)
 {
+  TRACE2 (DEBUG_CTX, "gpgme_get_textmode", ctx, "ctx->use_textmode=%i (%s)",
+	  ctx->use_textmode, ctx->use_textmode ? "yes" : "no");
   return ctx->use_textmode;
 }
 
@@ -243,6 +266,9 @@ gpgme_set_include_certs (gpgme_ctx_t ctx, int nr_of_certs)
     ctx->include_certs = -2;
   else
     ctx->include_certs = nr_of_certs;
+
+  TRACE2 (DEBUG_CTX, "gpgme_set_include_certs", ctx, "nr_of_certs=%i%s",
+	  nr_of_certs, nr_of_certs == ctx->include_certs ? "" : " (-2)");
 }
 
 
@@ -251,6 +277,8 @@ gpgme_set_include_certs (gpgme_ctx_t ctx, int nr_of_certs)
 int
 gpgme_get_include_certs (gpgme_ctx_t ctx)
 {
+  TRACE1 (DEBUG_CTX, "gpgme_get_include_certs", ctx, "ctx->include_certs=%i",
+	  ctx->include_certs);
   return ctx->include_certs;
 }
 
@@ -261,6 +289,9 @@ gpgme_get_include_certs (gpgme_ctx_t ctx)
 gpgme_error_t
 gpgme_set_keylist_mode (gpgme_ctx_t ctx, gpgme_keylist_mode_t mode)
 {
+  TRACE1 (DEBUG_CTX, "gpgme_set_keylist_mode", ctx, "keylist_mode=0x%x",
+	  mode);
+
   ctx->keylist_mode = mode;
   return 0;
 }
@@ -270,6 +301,8 @@ gpgme_set_keylist_mode (gpgme_ctx_t ctx, gpgme_keylist_mode_t mode)
 gpgme_keylist_mode_t
 gpgme_get_keylist_mode (gpgme_ctx_t ctx)
 {
+  TRACE1 (DEBUG_CTX, "gpgme_get_keylist_mode", ctx,
+	  "ctx->keylist_mode=0x%x", ctx->keylist_mode);
   return ctx->keylist_mode;
 }
 
@@ -280,6 +313,8 @@ void
 gpgme_set_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t cb,
 			 void *cb_value)
 {
+  TRACE2 (DEBUG_CTX, "gpgme_set_passphrase_cb", ctx,
+	  "passphrase_cb=%p/%p", cb, cb_value);
   ctx->passphrase_cb = cb;
   ctx->passphrase_cb_value = cb_value;
 }
@@ -291,6 +326,9 @@ void
 gpgme_get_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t *r_cb,
 			 void **r_cb_value)
 {
+  TRACE2 (DEBUG_CTX, "gpgme_get_passphrase_cb", ctx,
+	  "ctx->passphrase_cb=%p/%p",
+	  ctx->passphrase_cb, ctx->passphrase_cb_value);
   if (r_cb)
     *r_cb = ctx->passphrase_cb;
   if (r_cb_value)
@@ -303,6 +341,8 @@ gpgme_get_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t *r_cb,
 void
 gpgme_set_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t cb, void *cb_value)
 {
+  TRACE2 (DEBUG_CTX, "gpgme_set_progress_cb", ctx, "progress_cb=%p/%p",
+	  cb, cb_value);
   ctx->progress_cb = cb;
   ctx->progress_cb_value = cb_value;
 }
@@ -314,6 +354,8 @@ void
 gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *r_cb,
 		       void **r_cb_value)
 {
+  TRACE2 (DEBUG_CTX, "gpgme_get_progress_cb", ctx, "ctx->progress_cb=%p/%p",
+	  ctx->progress_cb, ctx->progress_cb_value);
   if (r_cb)
     *r_cb = ctx->progress_cb;
   if (r_cb_value)
@@ -326,9 +368,17 @@ void
 gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 {
   if (io_cbs)
-    ctx->io_cbs = *io_cbs;
+    {
+      TRACE6 (DEBUG_CTX, "gpgme_set_io_cbs", ctx,
+	      "io_cbs=%p (add=%p/%p, remove=%p, event=%p/%p",
+	      io_cbs, io_cbs->add, io_cbs->add_priv, io_cbs->remove,
+	      io_cbs->event, io_cbs->event_priv);
+      ctx->io_cbs = *io_cbs;
+    }
   else
     {
+      TRACE1 (DEBUG_CTX, "gpgme_set_io_cbs", ctx,
+	      "io_cbs=%p (default)", io_cbs);
       ctx->io_cbs.add = NULL;
       ctx->io_cbs.add_priv = NULL;
       ctx->io_cbs.remove = NULL;
@@ -342,6 +392,11 @@ gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 void
 gpgme_get_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 {
+  TRACE6 (DEBUG_CTX, "gpgme_get_io_cbs", ctx,
+	  "io_cbs=%p, ctx->io_cbs.add=%p/%p, .remove=%p, .event=%p/%p",
+	  io_cbs, io_cbs->add, io_cbs->add_priv, io_cbs->remove,
+	  io_cbs->event, io_cbs->event_priv);
+
   *io_cbs = ctx->io_cbs;
 }
 
@@ -354,6 +409,9 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
   int failed = 0;
   char *new_lc_ctype = NULL;
   char *new_lc_messages = NULL;
+
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_set_locale", ctx,
+	       "category=%i, value=%s", category, value ? value : "(null)");
 
 #define PREPARE_ONE_LOCALE(lcat, ucat)				\
   if (!failed && value						\
@@ -378,7 +436,7 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
       if (new_lc_messages)
 	free (new_lc_messages);
 
-      return gpg_error_from_errno (saved_errno);
+      return TRACE_ERR (gpg_error_from_errno (saved_errno));
     }
 
 #define SET_ONE_LOCALE(lcat, ucat)			\
@@ -407,7 +465,7 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
   if (!ctx)
     UNLOCK (def_lc_lock);
 
-  return 0;
+  return TRACE_ERR (0);
 }
 
 
@@ -417,6 +475,8 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
 gpgme_engine_info_t
 gpgme_ctx_get_engine_info (gpgme_ctx_t ctx)
 {
+  TRACE1 (DEBUG_CTX, "gpgme_ctx_get_engine_info", ctx,
+	  "ctx->engine_info=%p", ctx->engine_info);
   return ctx->engine_info;
 }
 
@@ -427,14 +487,24 @@ gpgme_error_t
 gpgme_ctx_set_engine_info (gpgme_ctx_t ctx, gpgme_protocol_t proto,
 			   const char *file_name, const char *home_dir)
 {
+  gpgme_error_t err;
+  TRACE_BEG4 (DEBUG_CTX, "gpgme_ctx_set_engine_info", ctx,
+	      "protocol=%i (%s), file_name=%s, home_dir=%s",
+	      proto, gpgme_get_protocol_name (proto)
+	      ? gpgme_get_protocol_name (proto) : "unknown",
+	      file_name ? file_name : "(default)",
+	      home_dir ? home_dir : "(default)");
+	      
   /* Shut down the engine when changing engine info.  */
   if (ctx->engine)
     {
+      TRACE_LOG1 ("releasing ctx->engine=%p", ctx->engine);
       _gpgme_engine_release (ctx->engine);
       ctx->engine = NULL;
     }
-  return _gpgme_set_engine_info (ctx->engine_info, proto,
-				 file_name, home_dir);
+  err = _gpgme_set_engine_info (ctx->engine_info, proto,
+				file_name, home_dir);
+  return TRACE_ERR (err);
 }
 
 
@@ -443,6 +513,7 @@ void
 gpgme_sig_notation_clear (gpgme_ctx_t ctx)
 {
   gpgme_sig_notation_t notation;
+  TRACE (DEBUG_CTX, "gpgme_sig_notation_clear", ctx);
 
   if (!ctx)
     return;
@@ -470,8 +541,13 @@ gpgme_sig_notation_add (gpgme_ctx_t ctx, const char *name,
   gpgme_sig_notation_t notation;
   gpgme_sig_notation_t *lastp;
 
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_sig_notation_add", ctx,
+	      "name=%s, value=%s, flags=0x%x",
+	      name ? name : "(null)", value ? value : "(null)",
+	      flags);
+  
   if (!ctx)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (name)
     flags |= GPGME_SIG_NOTATION_HUMAN_READABLE;
@@ -481,14 +557,14 @@ gpgme_sig_notation_add (gpgme_ctx_t ctx, const char *name,
   err = _gpgme_sig_notation_create (&notation, name, name ? strlen (name) : 0,
 				    value, value ? strlen (value) : 0, flags);
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
   lastp = &ctx->sig_notations;
   while (*lastp)
     lastp = &(*lastp)->next;
 
   *lastp = notation;
-  return 0;
+  return TRACE_ERR (0);
 }
 
 
@@ -497,7 +573,12 @@ gpgme_sig_notation_t
 gpgme_sig_notation_get (gpgme_ctx_t ctx)
 {
   if (!ctx)
-    return NULL;
+    {
+      TRACE (DEBUG_CTX, "gpgme_sig_notation_get", ctx);
+      return NULL;
+    }
+  TRACE1 (DEBUG_CTX, "gpgme_sig_notation_get", ctx,
+	  "ctx->sig_notations=%p", ctx->sig_notations);
 
   return ctx->sig_notations;
 }

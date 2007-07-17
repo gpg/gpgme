@@ -1,7 +1,7 @@
 /* w32-util.c - Utility functions for the W32 API
    Copyright (C) 1999 Free Software Foundation, Inc
    Copyright (C) 2001 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2007 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -232,7 +232,8 @@ find_program_in_registry (const char *name)
     {
       int i;
 
-      DEBUG2 ("found %s in registry: `%s'", name, program);
+      TRACE2 (DEBUG_CTX, "gpgme:find_program_in_registry", 0,
+	      "found %s in registry: `%s'", name, program);
       for (i = 0; program[i]; i++)
 	{
 	  if (program[i] == '/')
