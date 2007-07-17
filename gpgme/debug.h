@@ -1,5 +1,5 @@
 /* debug.h - interface to debugging functions
-   Copyright (C) 2002, 2004, 2005 g10 Code GmbH
+   Copyright (C) 2002, 2004, 2005, 2007 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -23,6 +23,21 @@
 
 #include <string.h>
 
+/* Indirect stringification, requires __STDC__ to work.  */
+#define STRINGIFY(v) #v
+#define XSTRINGIFY(v) STRINGIFY(v)
+
+
+/* The debug levels.  */
+
+#define DEBUG_INIT	1
+#define DEBUG_CTX	2
+#define DEBUG_ENGINE	3
+#define DEBUG_DATA	4
+#define DEBUG_ASSUAN	5
+#define DEBUG_SYSIO	6
+
+
 /* Remove path components from filenames (i.e. __FILE__) for cleaner
    logs. */
 static inline const char *_gpgme_debug_srcname (const char *file)
@@ -49,80 +64,160 @@ void _gpgme_debug_add (void **helper, const char *format, ...);
    stream.  */
 void _gpgme_debug_end (void **helper);
 
-/* Indirect stringification, requires __STDC__ to work.  */
-#define STRINGIFY(v) #v
-#define XSTRINGIFY(v) STRINGIFY(v)
+void _gpgme_debug_buffer (int lvl, const char *const fmt,
+			  const char *const func, const char *const tagname,
+			  void *tag, const char *const buffer, size_t len);
 
-#if 0
-/* Only works in GNU.  */
-#define DEBUG(fmt, arg...) \
-  _gpgme_debug (1, "%s:%s: " fmt, __FILE__, XSTRINGIFY (__LINE__) , ##arg)
-#define DEBUG_BEGIN(hlp, lvl, fmt, arg...) \
-  _gpgme_debug_begin (&(hlp), lvl, "%s:%s: " fmt, __FILE__, \
-		      XSTRINGIFY (__LINE__) , ##arg)
-#define DEBUG_ADD(hlp, fmt, arg...) \
-  _gpgme_debug_add (&(hlp), fmt , ##arg)
-#define DEBUG_END(hlp, fmt, arg...) \
-  _gpgme_debug_add (&(hlp), fmt , ##arg); \
-  _gpgme_debug_end (&(hlp))
-#elif 0
-/* Only works in C99.  */
-#define DEBUG0(fmt) \
-  _gpgme_debug (1, "%s:%s: " fmt, __FILE__, XSTRINGIFY (__LINE__))
-#define DEBUG(fmt, ...) \
-  _gpgme_debug (1, "%s:%s: " fmt, __FILE__, XSTRINGIFY (__LINE__), __VA_ARGS__)
-#define DEBUG_BEGIN(hlp, lvl, fmt) \
-  _gpgme_debug_begin (&(hlp), lvl, "%s:%s: " fmt, __FILE__, \
-		      XSTRINGIFY (__LINE__))
-#define DEBUG_BEGINX(hlp, lvl, fmt, ...) \
-  _gpgme_debug_begin (&(hlp), lvl, "%s:%s: " fmt, __FILE__, \
-		      XSTRINGIFY (__LINE__), __VA_ARGS__)
-#define DEBUG_ADD0(hlp, fmt) \
+
+/* Trace support.  */
+
+/* FIXME: For now.  */
+#define _gpgme_debug_trace() 1
+
+#define _TRACE(lvl, name, tag)					\
+  int _gpgme_trace_level = lvl;					\
+  const char *const _gpgme_trace_func = name;			\
+  const char *const _gpgme_trace_tagname = STRINGIFY (tag);	\
+  void *_gpgme_trace_tag = (void *) tag
+
+#define TRACE_BEG(lvl, name, tag)			   \
+  _TRACE (lvl, name, tag);				   \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): enter\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,   \
+		_gpgme_trace_tag), 0
+#define TRACE_BEG0(lvl, name, tag, fmt)					\
+  _TRACE (lvl, name, tag);						\
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): enter: " fmt "\n",	\
+		_gpgme_trace_func, _gpgme_trace_tagname,		\
+		_gpgme_trace_tag), 0
+#define TRACE_BEG1(lvl, name, tag, fmt, arg1)				\
+  _TRACE (lvl, name, tag);						\
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): enter: " fmt "\n",	\
+		_gpgme_trace_func, _gpgme_trace_tagname,		\
+		_gpgme_trace_tag, arg1), 0
+#define TRACE_BEG2(lvl, name, tag, fmt, arg1, arg2)		    \
+  _TRACE (lvl, name, tag);					    \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): enter: " fmt "\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,	    \
+		_gpgme_trace_tag, arg1, arg2), 0
+#define TRACE_BEG3(lvl, name, tag, fmt, arg1, arg2, arg3)	    \
+  _TRACE (lvl, name, tag);					    \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): enter: " fmt "\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,	    \
+		_gpgme_trace_tag, arg1, arg2, arg3), 0
+#define TRACE_BEG4(lvl, name, tag, fmt, arg1, arg2, arg3, arg4)	    \
+  _TRACE (lvl, name, tag);					    \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): enter: " fmt "\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,	    \
+		_gpgme_trace_tag, arg1, arg2, arg3, arg4), 0
+
+#define TRACE(lvl, name, tag)						\
+  _gpgme_debug (lvl, "%s (%s=0x%x): call\n",				\
+		name, STRINGIFY (tag), (void *) tag), 0
+#define TRACE0(lvl, name, tag, fmt)					\
+  _gpgme_debug (lvl, "%s (%s=0x%x): call: " fmt "\n",			\
+		name, STRINGIFY (tag), (void *) tag), 0
+#define TRACE1(lvl, name, tag, fmt, arg1)			       \
+  _gpgme_debug (lvl, "%s (%s=0x%x): call: " fmt "\n",		       \
+		name, STRINGIFY (tag), (void *) tag, arg1), 0
+#define TRACE2(lvl, name, tag, fmt, arg1, arg2)			       \
+  _gpgme_debug (lvl, "%s (%s=0x%x): call: " fmt "\n",		       \
+		name, STRINGIFY (tag), (void *) tag, arg1, arg2), 0
+#define TRACE3(lvl, name, tag, fmt, arg1, arg2, arg3)		       \
+  _gpgme_debug (lvl, "%s (%s=0x%x): call: " fmt "\n",		       \
+		name, STRINGIFY (tag), (void *) tag, arg1, arg2,       \
+		arg3), 0
+#define TRACE6(lvl, name, tag, fmt, arg1, arg2, arg3, arg4, arg5, arg6)	\
+  _gpgme_debug (lvl, "%s (%s=0x%x): call: " fmt "\n",			\
+		name, STRINGIFY (tag), (void *) tag, arg1, arg2, arg3,	\
+		arg4, arg5, arg6), 0
+
+#define TRACE_ERR(err)							\
+  err == 0 ? (TRACE_SUC ()) :						\
+    (_gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): error: %s <%s>\n",	\
+		   _gpgme_trace_func, _gpgme_trace_tagname,		\
+		   _gpgme_trace_tag, gpgme_strerror (err),		\
+		   gpgme_strsource (err)), (err))
+/* The cast to void suppresses GCC warnings.  */
+#define TRACE_SYSRES(res)						\
+  res >= 0 ? ((void) (TRACE_SUC1 ("result=%i", res)), (res)) :		\
+    (_gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): error: %s\n",	\
+		   _gpgme_trace_func, _gpgme_trace_tagname,		\
+		   _gpgme_trace_tag, strerror (errno)), (res))
+#define TRACE_SYSERR(res)						\
+  res == 0 ? ((void) (TRACE_SUC1 ("result=%i", res)), (res)) :		\
+    (_gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): error: %s\n",	\
+		   _gpgme_trace_func, _gpgme_trace_tagname,		\
+		   _gpgme_trace_tag, strerror (res)), (res))
+
+#define TRACE_SUC()						 \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): leave\n",       \
+		_gpgme_trace_func, _gpgme_trace_tagname,	 \
+		_gpgme_trace_tag), 0
+#define TRACE_SUC0(fmt)							\
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): leave: " fmt "\n",	\
+		_gpgme_trace_func, _gpgme_trace_tagname,		\
+		_gpgme_trace_tag), 0
+#define TRACE_SUC1(fmt, arg1)						\
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): leave: " fmt "\n",	\
+		_gpgme_trace_func, _gpgme_trace_tagname,		\
+		_gpgme_trace_tag, arg1), 0
+#define TRACE_SUC2(fmt, arg1, arg2)					\
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): leave: " fmt "\n",	\
+		_gpgme_trace_func, _gpgme_trace_tagname,		\
+		_gpgme_trace_tag, arg1, arg2), 0
+#define TRACE_SUC5(fmt, arg1, arg2, arg3, arg4, arg5)			\
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): leave: " fmt "\n",	\
+		_gpgme_trace_func, _gpgme_trace_tagname,		\
+		_gpgme_trace_tag, arg1, arg2, arg3, arg4, arg5), 0
+
+#define TRACE_LOG(fmt)							\
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): check: " fmt "\n",	\
+		_gpgme_trace_func, _gpgme_trace_tagname,		\
+		_gpgme_trace_tag), 0
+#define TRACE_LOG1(fmt, arg1)						\
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): check: " fmt "\n",	\
+		_gpgme_trace_func, _gpgme_trace_tagname,		\
+		_gpgme_trace_tag, arg1), 0
+#define TRACE_LOG2(fmt, arg1, arg2)				    \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): check: " fmt "\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,	    \
+		_gpgme_trace_tag, arg1, arg2), 0
+#define TRACE_LOG3(fmt, arg1, arg2, arg3)			    \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): check: " fmt "\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,	    \
+		_gpgme_trace_tag, arg1, arg2, arg3), 0
+#define TRACE_LOG4(fmt, arg1, arg2, arg3, arg4)			    \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): check: " fmt "\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,	    \
+		_gpgme_trace_tag, arg1, arg2, arg3, arg4), 0
+#define TRACE_LOG6(fmt, arg1, arg2, arg3, arg4, arg5, arg6)	    \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=0x%x): check: " fmt "\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,	    \
+		_gpgme_trace_tag, arg1, arg2, arg3, arg4, arg5,	    \
+		arg6), 0
+
+#define TRACE_LOGBUF(buf, len)						\
+  _gpgme_debug_buffer (_gpgme_trace_level, "%s (%s=0x%x): check: %s",	\
+		       _gpgme_trace_func, _gpgme_trace_tagname,		\
+		       _gpgme_trace_tag, buf, len)
+
+#define TRACE_SEQ(hlp,fmt)						\
+  _gpgme_debug_begin (&(hlp), _gpgme_trace_level,			\
+		      "%s (%s=0x%x): check: " fmt,			\
+		      _gpgme_trace_func, _gpgme_trace_tagname,		\
+		      _gpgme_trace_tag)
+#define TRACE_ADD0(hlp,fmt) \
   _gpgme_debug_add (&(hlp), fmt)
-#define DEBUG_ADD(hlp, fmt, ...) \
-  _gpgme_debug_add (&(hlp), fmt, __VA_ARGS__)
-#define DEBUG_END(hlp, fmt) \
-  _gpgme_debug_add (&(hlp), fmt); \
-  _gpgme_debug_end (&(hlp))
-#define DEBUG_ENDX(hlp, fmt, ...) \
-  _gpgme_debug_add (&(hlp), fmt, __VA_ARGS__); \
-  _gpgme_debug_end (&(hlp))
-#else
-/* This finally works everywhere, horror.  */
-#define DEBUG0(fmt) \
-  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
-                XSTRINGIFY (__LINE__))
-#define DEBUG1(fmt,a) \
-  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
-                XSTRINGIFY (__LINE__), (a))
-#define DEBUG2(fmt,a,b) \
-  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
-                XSTRINGIFY (__LINE__), (a), (b))
-#define DEBUG3(fmt,a,b,c) \
-  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
-                XSTRINGIFY (__LINE__), (a), (b), (c))
-#define DEBUG4(fmt,a,b,c,d) \
-  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
-                XSTRINGIFY (__LINE__), (a), (b), (c), (d))
-#define DEBUG5(fmt,a,b,c,d,e) \
-  _gpgme_debug (1, "%s:%s: " fmt, _gpgme_debug_srcname (__FILE__), \
-                XSTRINGIFY (__LINE__), (a), (b), (c), (d), (e))
-#define DEBUG_BEGIN(hlp,lvl,fmt) \
-  _gpgme_debug_begin (&(hlp), lvl, "%s:%s: " fmt, \
-                      _gpgme_debug_srcname (__FILE__), XSTRINGIFY (__LINE__))
-#define DEBUG_ADD0(hlp,fmt) \
-  _gpgme_debug_add (&(hlp), fmt)
-#define DEBUG_ADD1(hlp,fmt,a) \
+#define TRACE_ADD1(hlp,fmt,a) \
   _gpgme_debug_add (&(hlp), fmt, (a))
-#define DEBUG_ADD2(hlp,fmt,a,b) \
+#define TRACE_ADD2(hlp,fmt,a,b) \
   _gpgme_debug_add (&(hlp), fmt, (a), (b))
-#define DEBUG_ADD3(hlp,fmt,a,b,c) \
+#define TRACE_ADD3(hlp,fmt,a,b,c) \
   _gpgme_debug_add (&(hlp), fmt, (a), (b), (c))
-#define DEBUG_END(hlp,fmt) \
+#define TRACE_END(hlp,fmt) \
   _gpgme_debug_add (&(hlp), fmt); \
   _gpgme_debug_end (&(hlp))
-#endif
-
-#define DEBUG_ENABLED(hlp) (!!(hlp))
+#define TRACE_ENABLED(hlp) (!!(hlp))
 
 #endif	/* DEBUG_H */

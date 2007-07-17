@@ -1,6 +1,6 @@
 /* version.c - Version check routines.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -31,6 +31,7 @@
 
 #include "gpgme.h"
 #include "priv-io.h"
+#include "debug.h"
 
 /* For _gpgme_sema_subsystem_init ().  */
 #include "sema.h"
@@ -169,6 +170,9 @@ _gpgme_compare_versions (const char *my_version,
 const char *
 gpgme_check_version (const char *req_version)
 {
+  TRACE2 (DEBUG_INIT, "gpgme_check_version: ", 0,
+	  "req_version=%s, VERSION=%s", req_version, VERSION);
+
   do_subsystem_inits ();
   return _gpgme_compare_versions (VERSION, req_version) ? VERSION : NULL;
 }

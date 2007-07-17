@@ -1,6 +1,6 @@
 /* wait.c 
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -156,8 +156,10 @@ _gpgme_remove_io_cb (void *data)
   assert (fdt);
   idx = tag->idx;
 
-  DEBUG2 ("setting fd %d (item=%p) done", fdt->fds[idx].fd,
+  TRACE2 (DEBUG_CTX, "_gpgme_remove_io_cb", data,
+	  "setting fd 0x%x (item=%p) done", fdt->fds[idx].fd,
 	  fdt->fds[idx].opaque);
+
   free (fdt->fds[idx].opaque);
   free (tag);
 

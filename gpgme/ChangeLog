@@ -1,3 +1,14 @@
+2007-07-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* debug.c:;5B Include <errno.h> and "debug.h".
+	(_gpgme_debug): Save and restore ERRNO.
+	(TOHEX): New macro.
+	(_gpgme_debug_buffer): New function.
+	* conversion.c, data-compat.c, data-mem.c, data.c, engine-gpgsm.c,
+	gpgme.c, keylist.c, posix-io.c, rungpg.c, sign.c, version.c,
+	w32-io.c, wait.c: Replace DEBUG macros by TRACE_* variants.  In
+	most of these files, add many more tracepoints.
+
 2007-07-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (status_handler): Do not send BYE here.

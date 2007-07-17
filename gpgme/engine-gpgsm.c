@@ -1,6 +1,6 @@
 /* engine-gpgsm.c - GpgSM engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -807,12 +807,11 @@ status_handler (void *opaque, int fd)
       assuan_err = assuan_read_line (gpgsm->assuan_ctx, &line, &linelen);
       if (assuan_err)
 	{
-#if 0
 	  /* Try our best to terminate the connection friendly.  */
-	  assuan_write_line (gpgsm->assuan_ctx, "BYE");
-#endif
+	  /*	  assuan_write_line (gpgsm->assuan_ctx, "BYE"); */
 	  err = map_assuan_error (assuan_err);
-          DEBUG3 ("fd %d: error from assuan (%d) getting status line : %s \n",
+          TRACE3 (DEBUG_CTX, "gpgme:status_handler", gpgsm,
+		  "fd 0x%x: error from assuan (%d) getting status line : %s",
                   fd, assuan_err, gpg_strerror (err));
 	}
       else if (linelen >= 3
@@ -823,12 +822,11 @@ status_handler (void *opaque, int fd)
 	    err = map_assuan_error (atoi (&line[4]));
 	  else
 	    err = gpg_error (GPG_ERR_GENERAL);
-          DEBUG2 ("fd %d: ERR line - mapped to: %s\n",
-                  fd, err? gpg_strerror (err):"ok");
-#if 0
+          TRACE2 (DEBUG_CTX, "gpgme:status_handler", gpgsm,
+		  "fd 0x%x: ERR line - mapped to: %s",
+                  fd, err ? gpg_strerror (err) : "ok");
 	  /* Try our best to terminate the connection friendly.  */
-	  assuan_write_line (gpgsm->assuan_ctx, "BYE");
-#endif
+	  //	  assuan_write_line (gpgsm->assuan_ctx, "BYE");
 	}
       else if (linelen >= 2
 	       && line[0] == 'O' && line[1] == 'K'
@@ -848,9 +846,10 @@ status_handler (void *opaque, int fd)
               gpgsm->colon.any = 0;
               err = gpgsm->colon.fnc (gpgsm->colon.fnc_value, NULL);
             }
- 	  _gpgme_io_close (gpgsm->status_cb.fd);
-          DEBUG2 ("fd %d: OK line - final status: %s\n",
-                  fd, err? gpg_strerror (err):"ok");
+	  _gpgme_io_close (gpgsm->status_cb.fd);
+          TRACE2 (DEBUG_CTX, "gpgme:status_handler", gpgsm,
+		  "fd 0x%x: OK line - final status: %s",
+                  fd, err ? gpg_strerror (err) : "ok");
 	  return err;
 	}
       else if (linelen > 2
@@ -923,7 +922,8 @@ status_handler (void *opaque, int fd)
 		    dst++;
 		}
 	    }
-          DEBUG2 ("fd %d: D line; final status: %s\n",
+          TRACE2 (DEBUG_CTX, "gpgme:status_handler", gpgsm,
+		  "fd 0x%x: D line; final status: %s",
                   fd, err? gpg_strerror (err):"ok");
         }
       else if (linelen > 2
@@ -947,7 +947,8 @@ status_handler (void *opaque, int fd)
 	    }
 	  else
 	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", line + 2, rest);
-          DEBUG3 ("fd %d: S line (%s) - final status: %s\n",
+          TRACE3 (DEBUG_CTX, "gpgme:status_handler", gpgsm,
+		  "fd 0x%x: S line (%s) - final status: %s",
                   fd, line+2, err? gpg_strerror (err):"ok");
 	}
     }

@@ -135,17 +135,17 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
   gsize nread;
   GIOChannel *chan;
   GIOStatus status;
-
-  DEBUG2 ("fd %d: about to read %d bytes\n", fd, (int) count);
+  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_read", fd,
+	      "buffer=%p, count=%u", buffer, count);
 
   chan = find_channel (fd, 0);
   if (!chan)
     {
-      DEBUG1 ("fd %d: no channel registered\n", fd);
+      TRACE_LOG ("no channel registered");
       errno = EINVAL;
-      return -1;
+      return TRACE_SYSRES (-1);
     }
-  DEBUG2 ("fd %d: channel %p\n", fd, chan);
+  TRACE_LOG1 ("channel %p", chan);
 
   {
     GError *err = NULL;
@@ -153,7 +153,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 				      count, &nread, &err);
     if (err)
       {
-	DEBUG3 ("fd %d: status %i, err %s\n", fd, status, err->message);
+	TRACE_LOG2 ("status %i, err %s", status, err->message);
 	g_error_free (err);
       }
   }
@@ -162,17 +162,15 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
     nread = 0;
   else if (status != G_IO_STATUS_NORMAL)
     {
-      DEBUG2 ("fd %d: status %d\n", fd, status);
+      TRACE_LOG1 ("status %d", status);
       nread = -1;
       saved_errno = EIO;
     }
 
-  DEBUG2 ("fd %d: got %d bytes\n", fd, nread);
-  if (nread > 0)
-    _gpgme_debug (2, "fd %d: got `%.*s'\n", fd, nread, buffer);
+  TRACE_LOGBUF (buffer, nread);
 
   errno = saved_errno;
-  return nread;
+  return TRACE_SYSRES (nread);
 }
 
 
@@ -183,14 +181,14 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   gsize nwritten;
   GIOChannel *chan;
   GIOStatus status;
-
-  DEBUG2 ("fd %d: about to write %d bytes\n", fd, (int) count);
-  _gpgme_debug (2, "fd %d: write `%.*s'\n", fd, (int) count, buffer);
+  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_write", fd,
+	      "buffer=%p, count=%u", buffer, count);
+  TRACE_LOGBUF (buffer, count);
 
   chan = find_channel (fd, 0);
   if (!chan)
     {
-      DEBUG1 ("fd %d: no channel registered\n", fd);
+      TRACE_LOG ("fd %d: no channel registered");
       errno = EINVAL;
       return -1;
     }
@@ -202,9 +200,9 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
       nwritten = -1;
       saved_errno = EIO;
     }
-  DEBUG2 ("fd %d:          wrote %d bytes\n", fd, (int) nwritten);
   errno = saved_errno;
-  return nwritten;
+
+  return TRACE_SYSRES (nwritten);
 }
 
 
@@ -212,10 +210,13 @@ int
 _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
   GIOChannel *chan;
+  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
+	      "inherit_idx=%i (GPGME uses it for %s)",
+	      inherit_idx, inherit_idx ? "writing" : "reading");
 
 #define PIPEBUF_SIZE  4096
   if (_pipe (filedes, PIPEBUF_SIZE, O_NOINHERIT | O_BINARY) == -1)
-    return -1;
+    return TRACE_SYSRES (-1);
 
   /* Make one end inheritable. */
   if (inherit_idx == 0)
@@ -229,7 +230,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
       if (new_read < 0)
 	{
 	  _close (filedes[1]);
-	  return -1;
+	  return TRACE_SYSRES (-1);
 	}
     }
   else if (inherit_idx == 1)
@@ -243,7 +244,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
       if (new_write < 0)
 	{
 	  _close (filedes[0]);
-	  return -1;
+	  return TRACE_SYSRES (-1);
 	}
     }
 
@@ -252,18 +253,17 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   chan = find_channel (filedes[1 - inherit_idx], 1);
   if (!chan)
     {
-      DEBUG2 ("channel creation for %d failed: ec=%d\n",
-	      filedes[1 - inherit_idx], errno);
+      int saved_errno = errno;
       _close (filedes[0]);
       _close (filedes[1]);
-      return -1;
+      errno = saved_errno;
+      return TRACE_SYSRES (-1);
     }
 
-  DEBUG5 ("CreatePipe %d (%p) %d (%p) inherit=%p\n",
+  return TRACE_SUC5 ("read=0x%x/%p, write=0x%x/%p, channel=%p",
 	  filedes[0], (HANDLE) _get_osfhandle (filedes[0]),
 	  filedes[1], (HANDLE) _get_osfhandle (filedes[1]),
 	  chan);
-  return 0;
 }
 
 
@@ -271,15 +271,15 @@ int
 _gpgme_io_close (int fd)
 {
   GIOChannel *chan;
+  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd);
 
   if (fd < 0 || fd >= MAX_SLAFD)
     {
       errno = EBADF;
-      return -1;
+      return TRACE_SYSRES (-1);
     }
 
   /* First call the notify handler.  */
-  DEBUG1 ("closing fd %d", fd);
   if (notify_table[fd].handler)
     {
       notify_table[fd].handler (fd, notify_table[fd].value);
@@ -306,14 +306,19 @@ int
 _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
 			    void *value)
 {
+  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_set_close_notify", fd,
+	      "close_handler=%p/%p", handler, value);
+
   assert (fd != -1);
 
   if (fd < 0 || fd >= (int) DIM (notify_table))
-    return -1;
-  DEBUG1 ("set notification for fd %d", fd);
+    {
+      errno = EINVAL;
+      return TRACE_SYSRES (-1);
+    }
   notify_table[fd].handler = handler;
   notify_table[fd].value = value;
-  return 0;
+  return TRACE_SYSRES (0);
 }
 
 
@@ -323,12 +328,13 @@ _gpgme_io_set_nonblocking (int fd)
   GIOChannel *chan;
   GIOStatus status;
  
+  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", fd);
+
   chan = find_channel (fd, 0);
   if (!chan)
     {
-      DEBUG1 ("set nonblocking for fd %d failed: channel not found", fd);
       errno = EIO;
-      return -1;
+      return TRACE_SYSRES (-1);
     }
 
    status = g_io_channel_set_flags (chan,
@@ -336,14 +342,18 @@ _gpgme_io_set_nonblocking (int fd)
 				   G_IO_FLAG_NONBLOCK, NULL);
   if (status != G_IO_STATUS_NORMAL)
     {
-      /* glib 1.9.2 does not implement set_flags and returns an error. */
-      DEBUG2 ("set nonblocking for fd %d failed: status=%d - ignored",
-              fd, status);
-/*       errno = EIO; */
-/*       return -1; */
+#if 0
+      /* glib 1.9.2 does not implement set_flags and returns an
+	 error.  */
+      errno = EIO;
+      return TRACE_SYSRES (-1);
+#else
+      TRACE_LOG1 ("g_io_channel_set_flags failed: status=%d (ignored)",
+		  status);
+#endif
     }
 
-  return 0;
+  return TRACE_SYSRES (0);
 }
 
 
@@ -351,7 +361,6 @@ static char *
 build_commandline (char **argv)
 {
   int i;
-  int j;
   int n = 0;
   char *buf;
   char *p;
@@ -404,158 +413,181 @@ build_commandline (char **argv)
 
 
 int
-_gpgme_io_spawn ( const char *path, char **argv,
-                  struct spawn_fd_item_s *fd_child_list,
-                  struct spawn_fd_item_s *fd_parent_list )
+_gpgme_io_spawn (const char *path, char **argv,
+		 struct spawn_fd_item_s *fd_child_list,
+		 struct spawn_fd_item_s *fd_parent_list)
 {
-    SECURITY_ATTRIBUTES sec_attr;
-    PROCESS_INFORMATION pi = {
-        NULL,      /* returns process handle */
-        0,         /* returns primary thread handle */
-        0,         /* returns pid */
-        0         /* returns tid */
+  SECURITY_ATTRIBUTES sec_attr;
+  PROCESS_INFORMATION pi =
+    {
+      NULL,      /* returns process handle */
+      0,         /* returns primary thread handle */
+      0,         /* returns pid */
+      0         /* returns tid */
     };
-    STARTUPINFO si;
-    char *envblock = NULL;
-    int cr_flags = CREATE_DEFAULT_ERROR_MODE
-                 | GetPriorityClass (GetCurrentProcess ());
-    int i;
-    char *arg_string;
-    int duped_stdin = 0;
-    int duped_stderr = 0;
-    HANDLE hnul = INVALID_HANDLE_VALUE;
-    /* FIXME.  */
-    int debug_me = 0;
-
-    memset (&sec_attr, 0, sizeof sec_attr);
-    sec_attr.nLength = sizeof sec_attr;
-    sec_attr.bInheritHandle = FALSE;
-
-    arg_string = build_commandline (argv);
-    if (!arg_string )
-        return -1; 
-
-    memset (&si, 0, sizeof si);
-    si.cb = sizeof (si);
-    si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-    si.wShowWindow = debug_me? SW_SHOW : SW_HIDE;
-    si.hStdInput = GetStdHandle (STD_INPUT_HANDLE);
-    si.hStdOutput = GetStdHandle (STD_OUTPUT_HANDLE);
-    si.hStdError = GetStdHandle (STD_ERROR_HANDLE);
-
-    for (i=0; fd_child_list[i].fd != -1; i++ ) {
-        if (fd_child_list[i].dup_to == 0 ) {
-            si.hStdInput = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
-            DEBUG2 ("using %d (%p) for stdin", fd_child_list[i].fd,
-		    _get_osfhandle (fd_child_list[i].fd));
-            duped_stdin=1;
-        }
-        else if (fd_child_list[i].dup_to == 1 ) {
-            si.hStdOutput = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
-            DEBUG2 ("using %d (%p) for stdout", fd_child_list[i].fd,
-		    _get_osfhandle (fd_child_list[i].fd));
-        }
-        else if (fd_child_list[i].dup_to == 2 ) {
-            si.hStdError = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
-            DEBUG2 ("using %d (%p) for stderr", fd_child_list[i].fd,
-		    _get_osfhandle (fd_child_list[i].fd));
-            duped_stderr = 1;
-        }
+  STARTUPINFO si;
+  char *envblock = NULL;
+  int cr_flags = CREATE_DEFAULT_ERROR_MODE
+    | GetPriorityClass (GetCurrentProcess ());
+  int i;
+  char *arg_string;
+  int duped_stdin = 0;
+  int duped_stderr = 0;
+  HANDLE hnul = INVALID_HANDLE_VALUE;
+  /* FIXME.  */
+  int debug_me = 0;
+  TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
+	      "path=%s", path);
+  i = 0;
+  while (argv[i])
+    {
+      TRACE_LOG2 ("argv[%2i] = %s", i, argv[i]);
+      i++;
     }
-
-    if( !duped_stdin || !duped_stderr ) {
-        SECURITY_ATTRIBUTES sa;
-
-        memset (&sa, 0, sizeof sa );
-        sa.nLength = sizeof sa;
-        sa.bInheritHandle = TRUE;
-        hnul = CreateFile ( "nul",
-                            GENERIC_READ|GENERIC_WRITE,
-                            FILE_SHARE_READ|FILE_SHARE_WRITE,
-                            &sa,
-                            OPEN_EXISTING,
-                            FILE_ATTRIBUTE_NORMAL,
-                            NULL );
-        if ( hnul == INVALID_HANDLE_VALUE ) {
-            DEBUG1 ("can't open `nul': ec=%d\n", (int)GetLastError ());
-            free (arg_string);
-            return -1;
+  
+  memset (&sec_attr, 0, sizeof sec_attr);
+  sec_attr.nLength = sizeof sec_attr;
+  sec_attr.bInheritHandle = FALSE;
+  
+  arg_string = build_commandline (argv);
+  if (!arg_string)
+    return TRACE_SYSRES (-1);
+  
+  memset (&si, 0, sizeof si);
+  si.cb = sizeof (si);
+  si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+  si.wShowWindow = debug_me? SW_SHOW : SW_HIDE;
+  si.hStdInput = GetStdHandle (STD_INPUT_HANDLE);
+  si.hStdOutput = GetStdHandle (STD_OUTPUT_HANDLE);
+  si.hStdError = GetStdHandle (STD_ERROR_HANDLE);
+  
+  for (i = 0; fd_child_list[i].fd != -1; i++)
+    {
+      if (fd_child_list[i].dup_to == 0)
+	{
+	  si.hStdInput = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
+	  TRACE_LOG2 ("using 0x%x/%p for stdin", fd_child_list[i].fd,
+		      _get_osfhandle (fd_child_list[i].fd));
+	  duped_stdin = 1;
         }
-        /* Make sure that the process has a connected stdin */
-        if ( !duped_stdin ) {
-            si.hStdInput = hnul;
-            DEBUG1 ("using %d for dummy stdin", (int)hnul );
-        }
-        /* We normally don't want all the normal output */
-        if ( !duped_stderr ) {
-            si.hStdError = hnul;
-            DEBUG1 ("using %d for dummy stderr", (int)hnul );
+      else if (fd_child_list[i].dup_to == 1)
+	{
+	  si.hStdOutput = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
+	  TRACE_LOG2 ("using 0x%x/%p for stdout", fd_child_list[i].fd,
+		      _get_osfhandle (fd_child_list[i].fd));
+	}
+      else if (fd_child_list[i].dup_to == 2)
+	{
+	  si.hStdError = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
+	  TRACE_LOG2 ("using 0x%x/%p for stderr", fd_child_list[i].fd,
+		      _get_osfhandle (fd_child_list[i].fd));
+	  duped_stderr = 1;
         }
     }
-
-    DEBUG2 ("CreateProcess, path=`%s' args=`%s'", path, arg_string);
-    cr_flags |= CREATE_SUSPENDED; 
-    if ( !CreateProcessA (path,
-                          arg_string,
-                          &sec_attr,     /* process security attributes */
-                          &sec_attr,     /* thread security attributes */
-                          TRUE,          /* inherit handles */
-                          cr_flags,      /* creation flags */
-                          envblock,      /* environment */
-                          NULL,          /* use current drive/directory */
-                          &si,           /* startup information */
-                          &pi            /* returns process information */
-        ) ) {
-        DEBUG1 ("CreateProcess failed: ec=%d\n", (int) GetLastError ());
-        free (arg_string);
-        return -1;
+  
+  if (!duped_stdin || !duped_stderr)
+    {
+      SECURITY_ATTRIBUTES sa;
+      
+      memset (&sa, 0, sizeof sa);
+      sa.nLength = sizeof sa;
+      sa.bInheritHandle = TRUE;
+      hnul = CreateFile ("nul",
+			 GENERIC_READ|GENERIC_WRITE,
+			 FILE_SHARE_READ|FILE_SHARE_WRITE,
+			 &sa,
+			 OPEN_EXISTING,
+			 FILE_ATTRIBUTE_NORMAL,
+			 NULL);
+      if (hnul == INVALID_HANDLE_VALUE)
+	{
+	  TRACE_LOG1 ("CreateFile (\"nul\") failed: ec=%d",
+		      (int) GetLastError ());
+	  free (arg_string);
+	  /* FIXME: Should translate the error code.  */
+	  errno = EIO;
+	  return TRACE_SYSRES (-1);
+        }
+      /* Make sure that the process has a connected stdin.  */
+      if (!duped_stdin)
+	{
+	  si.hStdInput = hnul;
+	  TRACE_LOG1 ("using 0x%x for dummy stdin", (int) hnul);
+	}
+      /* We normally don't want all the normal output.  */
+      if (!duped_stderr)
+	{
+	  si.hStdError = hnul;
+	  TRACE_LOG1 ("using %d for dummy stderr", (int)hnul);
+	}
     }
-
-    /* Close the /dev/nul handle if used. */
-    if (hnul != INVALID_HANDLE_VALUE ) {
-        if ( !CloseHandle ( hnul ) )
-            DEBUG1 ("CloseHandle(hnul) failed: ec=%d\n", (int)GetLastError());
+  
+  cr_flags |= CREATE_SUSPENDED; 
+  if (!CreateProcessA (path,
+		       arg_string,
+		       &sec_attr,     /* process security attributes */
+		       &sec_attr,     /* thread security attributes */
+		       TRUE,          /* inherit handles */
+		       cr_flags,      /* creation flags */
+		       envblock,      /* environment */
+		       NULL,          /* use current drive/directory */
+		       &si,           /* startup information */
+		       &pi))          /* returns process information */
+    {
+      TRACE_LOG1 ("CreateProcess failed: ec=%d", (int) GetLastError ());
+      free (arg_string);
+      /* FIXME: Should translate the error code.  */
+      errno = EIO;
+      return TRACE_SYSRES (-1);
     }
-
-    /* Close the other ends of the pipes. */
-    for (i = 0; fd_parent_list[i].fd != -1; i++)
-      _gpgme_io_close (fd_parent_list[i].fd);
-
-    DEBUG4 ("CreateProcess ready\n"
-            "-   hProcess=%p  hThread=%p\n"
-            "-   dwProcessID=%d dwThreadId=%d\n",
-            pi.hProcess, pi.hThread, 
-            (int) pi.dwProcessId, (int) pi.dwThreadId);
-
-    if ( ResumeThread ( pi.hThread ) < 0 ) {
-        DEBUG1 ("ResumeThread failed: ec=%d\n", (int)GetLastError ());
+  
+  /* Close the /dev/nul handle if used.  */
+  if (hnul != INVALID_HANDLE_VALUE)
+    {
+      if (!CloseHandle (hnul))
+	TRACE_LOG1 ("CloseHandle (hnul) failed: ec=%d (ignored)",
+		    (int) GetLastError ());
     }
+  
+  /* Close the other ends of the pipes.  */
+  for (i = 0; fd_parent_list[i].fd != -1; i++)
+    _gpgme_io_close (fd_parent_list[i].fd);
+  
+  TRACE_LOG4 ("CreateProcess ready: hProcess=%p, hThread=%p, "
+	      "dwProcessID=%d, dwThreadId=%d",
+	      pi.hProcess, pi.hThread, 
+	      (int) pi.dwProcessId, (int) pi.dwThreadId);
+  
+  if (ResumeThread (pi.hThread) < 0)
+    TRACE_LOG1 ("ResumeThread failed: ec=%d", (int) GetLastError ());
+  
+  if (!CloseHandle (pi.hThread))
+    TRACE_LOG1 ("CloseHandle of thread failed: ec=%d",
+		(int) GetLastError ());
 
-    if ( !CloseHandle (pi.hThread) ) { 
-        DEBUG1 ("CloseHandle of thread failed: ec=%d\n",
-                 (int)GetLastError ());
-    }
-
-    return 0;
+  TRACE_SUC1 ("process=%p", pi.hProcess);
+  return 0;
 }
 
 
-/*
- * Select on the list of fds.
- * Returns: -1 = error
- *           0 = timeout or nothing to select
- *          >0 = number of signaled fds
- */
+/* Select on the list of fds.  Returns: -1 = error, 0 = timeout or
+   nothing to select, > 0 = number of signaled fds.  */
 int
 _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 {
-  int     npollfds;
+  int npollfds;
   GPollFD *pollfds;
-  int     *pollfds_map; 
-  int i, j;
-  int any, n, count;
-  int timeout = 1000;  /* Use a 1s timeout.  */
+  int *pollfds_map; 
+  int i;
+  int j;
+  int any;
+  int n;
+  int count;
+  /* Use a 1s timeout.  */
+  int timeout = 1000;
   void *dbg_help = NULL;
+  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_select", fds,
+	      "nfds=%u, nonblock=%u", nfds, nonblock);
 
   if (nonblock)
     timeout = 0;
@@ -571,21 +603,21 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
     }
   npollfds = 0;
 
-  DEBUG_BEGIN (dbg_help, 3, "gpgme:select on [ ");
+  TRACE_SEQ (dbg_help, "select on [ ");
   any = 0;
   for (i = 0; i < nfds; i++)
     {
       if (fds[i].fd == -1) 
 	continue;
       if (fds[i].frozen)
-	DEBUG_ADD1 (dbg_help, "f%d ", fds[i].fd);
+	TRACE_ADD1 (dbg_help, "f0x%x ", fds[i].fd);
       else if (fds[i].for_read )
 	{
           GIOChannel *chan = find_channel (fds[i].fd, 0);
           assert (chan);
           g_io_channel_win32_make_pollfd (chan, G_IO_IN, pollfds + npollfds);
           pollfds_map[npollfds] = i;
-	  DEBUG_ADD2 (dbg_help, "r%d<%d> ", fds[i].fd, pollfds[npollfds].fd);
+	  TRACE_ADD2 (dbg_help, "r0x%x<%d> ", fds[i].fd, pollfds[npollfds].fd);
           npollfds++;
 	  any = 1;
         }
@@ -595,13 +627,13 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
           assert (chan);
           g_io_channel_win32_make_pollfd (chan, G_IO_OUT, pollfds + npollfds);
           pollfds_map[npollfds] = i;
-	  DEBUG_ADD2 (dbg_help, "w%d<%d> ", fds[i].fd, pollfds[npollfds].fd);
+	  TRACE_ADD2 (dbg_help, "w0x%x<%d> ", fds[i].fd, pollfds[npollfds].fd);
           npollfds++;
 	  any = 1;
         }
       fds[i].signaled = 0;
     }
-  DEBUG_END (dbg_help, "]"); 
+  TRACE_END (dbg_help, "]"); 
   if (!any)
     {
       count = 0;
@@ -613,22 +645,21 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   if (count < 0)
     {
       int saved_errno = errno;
-      DEBUG1 ("_gpgme_io_select failed: %s\n", strerror (errno));
       errno = saved_errno;
       goto leave;
     }
 
-  DEBUG_BEGIN (dbg_help, 3, "select OK [ ");
-  if (DEBUG_ENABLED (dbg_help))
+  TRACE_SEQ (dbg_help, "select OK [ ");
+  if (TRACE_ENABLED (dbg_help))
     {
       for (i = 0; i < npollfds; i++)
 	{
 	  if ((pollfds[i].revents & G_IO_IN))
-	    DEBUG_ADD1 (dbg_help, "r%d ", fds[pollfds_map[i]].fd);
+	    TRACE_ADD1 (dbg_help, "r0x%x ", fds[pollfds_map[i]].fd);
           if ((pollfds[i].revents & G_IO_OUT))
-            DEBUG_ADD1 (dbg_help, "w%d ", fds[pollfds_map[i]].fd);
+            TRACE_ADD1 (dbg_help, "w0x%x ", fds[pollfds_map[i]].fd);
         }
-      DEBUG_END (dbg_help, "]");
+      TRACE_END (dbg_help, "]");
     }
     
   /* COUNT is used to stop the lop as soon as possible.  */
@@ -659,7 +690,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 leave:
   free (pollfds);
   free (pollfds_map);
-  return count;
+  return TRACE_SYSRES (count);
 }
 
 

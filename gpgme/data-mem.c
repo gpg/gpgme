@@ -1,5 +1,5 @@
 /* data-mem.c - A memory based data object.
-   Copyright (C) 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2002, 2003, 2004, 2007 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -30,6 +30,7 @@
 
 #include "data.h"
 #include "util.h"
+#include "debug.h"
 
 
 static ssize_t
@@ -164,13 +165,17 @@ static struct _gpgme_data_cbs mem_cbs =
 
 /* Create a new data buffer and return it in R_DH.  */
 gpgme_error_t
-gpgme_data_new (gpgme_data_t *dh)
+gpgme_data_new (gpgme_data_t *r_dh)
 {
-  gpgme_error_t err = _gpgme_data_new (dh, &mem_cbs);
-  if (err)
-    return err;
+  gpgme_error_t err;
+  TRACE_BEG (DEBUG_DATA, "gpgme_data_new", r_dh);
 
-  return 0;
+  err = _gpgme_data_new (r_dh, &mem_cbs);
+
+  if (err)
+    return TRACE_ERR (err);
+
+  return TRACE_SUC1 ("r_dh=%p", *r_dh);
 }
 
 
@@ -178,27 +183,36 @@ gpgme_data_new (gpgme_data_t *dh)
    BUFFER.  If COPY is zero, copying is delayed until necessary, and
    the data is taken from the original location when needed.  */
 gpgme_error_t
-gpgme_data_new_from_mem (gpgme_data_t *dh, const char *buffer,
+gpgme_data_new_from_mem (gpgme_data_t *r_dh, const char *buffer,
 			 size_t size, int copy)
 {
-  gpgme_error_t err = _gpgme_data_new (dh, &mem_cbs);
+  gpgme_error_t err;
+  TRACE_BEG4 (DEBUG_DATA, "gpgme_data_new_from_mem", r_dh,
+	      "buffer=%p, size=%u, copy=%i (%s)", buffer, size,
+	      copy, copy ? "yes" : "no");
+
+  err = _gpgme_data_new (r_dh, &mem_cbs);
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
   if (copy)
     {
       char *bufcpy = malloc (size);
       if (!bufcpy)
-	_gpgme_data_release (*dh);
+	{
+	  int saved_errno = errno;
+	  _gpgme_data_release (*r_dh);
+	  return TRACE_ERR (gpg_error_from_errno (saved_errno));
+	}
       memcpy (bufcpy, buffer, size);
-      (*dh)->data.mem.buffer = bufcpy;
+      (*r_dh)->data.mem.buffer = bufcpy;
     }
   else
-    (*dh)->data.mem.orig_buffer = buffer;
+    (*r_dh)->data.mem.orig_buffer = buffer;
   
-  (*dh)->data.mem.size = size;
-  (*dh)->data.mem.length = size;
-  return 0;
+  (*r_dh)->data.mem.size = size;
+  (*r_dh)->data.mem.length = size;
+  return TRACE_SUC1 ("dh=%p", *r_dh);
 }
 
 
@@ -210,9 +224,13 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
 {
   char *str = NULL;
 
+  TRACE_BEG1 (DEBUG_DATA, "gpgme_data_release_and_get_mem", dh,
+	      "r_len=%p", r_len);
+
   if (!dh || dh->cbs != &mem_cbs)
     {
       gpgme_data_release (dh);
+      TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
       return NULL;
     }
 
@@ -222,7 +240,9 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
       str = malloc (dh->data.mem.length);
       if (!str)
 	{
+	  int saved_errno = errno;
 	  gpgme_data_release (dh);
+	  TRACE_ERR (gpg_error_from_errno (saved_errno));
 	  return NULL;
 	}
       memcpy (str, dh->data.mem.orig_buffer, dh->data.mem.length);
@@ -237,6 +257,7 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
 
   gpgme_data_release (dh);
 
+  TRACE_SUC2 ("buffer=%p, len=%u", str, *r_len);
   return str;
 }
 
@@ -245,7 +266,8 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
 void
 gpgme_free (void *buffer)
 {
+  TRACE (DEBUG_DATA, "gpgme_free", buffer);
+
   if (buffer)
     free (buffer);
 }
-

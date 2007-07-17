@@ -1,6 +1,6 @@
 /* sign.c - Signing function.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2007 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -30,6 +30,7 @@
 #include "context.h"
 #include "ops.h"
 #include "util.h"
+#include "debug.h"
 
 
 typedef struct
@@ -79,11 +80,56 @@ gpgme_op_sign_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_sign_result", ctx);
+
   err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
-    return NULL;
+    {
+      TRACE_SUC0 ("result=(null)");
+      return NULL;
+    }
 
+  if (_gpgme_debug_trace ())
+    {
+      gpgme_invalid_key_t inv_key = opd->result.invalid_signers;
+      gpgme_new_signature_t sig = opd->result.signatures;
+      int inv_signers = 0;
+      int signatures = 0;
+
+      while (inv_key)
+	{
+	  inv_signers++;
+	  inv_key = inv_key->next;
+	}
+      while (sig)
+	{
+	  signatures++;
+	  sig = sig->next;
+	}
+
+      TRACE_LOG2 ("result: invalid signers: %i, signatures: %i",
+		  inv_signers, signatures);
+      inv_key = opd->result.invalid_signers;
+      while (inv_key)
+	{
+	  TRACE_LOG3 ("result: invalid signer: fpr=%s, reason=%s <%s>",
+		      inv_key->fpr, gpgme_strerror (inv_key->reason),
+		      gpgme_strsource (inv_key->reason));
+	  inv_key = inv_key->next;
+	}
+      sig = opd->result.signatures;
+      while (sig)
+	{
+	  TRACE_LOG6 ("result: signature: type=%i, pubkey_algo=%i, "
+		      "hash_algo=%i, timestamp=%li, fpr=%s, sig_class=%i",
+		      sig->type, sig->pubkey_algo, sig->hash_algo,
+		      sig->timestamp, sig->fpr, sig->sig_class);
+	  sig = sig->next;
+	}
+    }
+
+  TRACE_SUC1 ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -312,7 +358,9 @@ gpgme_error_t
 gpgme_op_sign_start (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
 		     gpgme_sig_mode_t mode)
 {
-  return sign_start (ctx, 0, plain, sig, mode);
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_sign_start", ctx,
+	      "plain=%p, sig=%p, mode=%i", plain, sig, mode);
+  return TRACE_ERR (sign_start (ctx, 0, plain, sig, mode));
 }
 
 
@@ -321,8 +369,12 @@ gpgme_error_t
 gpgme_op_sign (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
 	       gpgme_sig_mode_t mode)
 {
-  gpgme_error_t err = sign_start (ctx, 1, plain, sig, mode);
+  gpgme_error_t err;
+
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_sign_start", ctx,
+	      "plain=%p, sig=%p, mode=%i", plain, sig, mode);
+  err = sign_start (ctx, 1, plain, sig, mode);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  return err;
+  return TRACE_ERR (err);
 }

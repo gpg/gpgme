@@ -1,6 +1,6 @@
 /* debug.c - helpful output in desperate situations
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -28,6 +28,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <errno.h>
 #ifndef HAVE_DOSISH_SYSTEM
   #include <sys/types.h>
   #include <sys/stat.h>
@@ -37,6 +38,7 @@
 
 #include "util.h"
 #include "sema.h"
+#include "debug.h"
 
 
 /* Lock to serialize initialization of the debug output subsystem and
@@ -147,6 +149,9 @@ void
 _gpgme_debug (int level, const char *format, ...)
 {
   va_list arg_ptr;
+  int saved_errno;
+
+  saved_errno = errno;
 
   debug_init ();
   if (debug_level < level)
@@ -160,6 +165,8 @@ _gpgme_debug (int level, const char *format, ...)
     putc ('\n', errfp);
   UNLOCK (debug_lock);
   fflush (errfp);
+
+  errno = saved_errno;
 }
 
 
@@ -218,4 +225,49 @@ _gpgme_debug_end (void **line)
   _gpgme_debug (1, "%s", *line);
   free (*line);
   *line = NULL;
+}
+
+
+#define TOHEX(val) (((val) < 10) ? ((val) + '0') : ((val) - 10 + 'a'))
+
+void
+_gpgme_debug_buffer (int lvl, const char *const fmt,
+		     const char *const func, const char *const tagname,
+		     void *tag, const char *const buffer, size_t len)
+{
+  int idx = 0;
+  int j;
+
+  if (!_gpgme_debug_trace ())
+    return;
+
+  while (idx < len)
+    {
+      char str[51];
+      char *strp = str;
+      char *strp2 = &str[34];
+      
+      for (j = 0; j < 16; j++)
+	{
+	  unsigned char val;
+	  if (idx < len)
+	    {
+	      val = buffer[idx++];
+	      *(strp++) = TOHEX (val >> 4);
+	      *(strp++) = TOHEX (val % 16);
+	      *(strp2++) = isprint (val) ? val : '.';
+	    }
+	  else
+	    {
+	      *(strp++) = ' ';
+	      *(strp++) = ' ';
+	    }
+	  if (j == 7)
+	    *(strp++) = ' ';
+	}
+      *(strp++) = ' ';
+      *(strp2) = '\0';
+
+      _gpgme_debug (lvl, fmt, func, tagname, tag, str);
+    }
 }
