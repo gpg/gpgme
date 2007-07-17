@@ -149,6 +149,18 @@ Hey Emacs, this is -*- outline -*- mode!
 ** Test reading key signatures.
 
 * Debug
+** Tracepoints should be added at: Every public interface enter/leave,
+   before and in every callback, at major decision points, at every
+   internal data point which might easily be observed by the outside
+   (system handles).  We also trace handles and I/O support threads in
+   the w32 implementation because that's fragile code.
+   Files left to do:
+   data-fd.c data-mem.c data-stream.c data-user.c debug.c rungpg.c
+   engine.c engine-gpgsm.c funopen.c w32-glib-io.c wait.c
+   wait-global.c wait-private.c wait-user.c op-support.c decrypt.c
+   decrypt-verify.c delete.c edit.c encrypt.c encrypt-sign.c export.c
+   genkey.c import.c key.c keylist.c passphrase.c progress.c signers.c
+   sig-notation.c trust-item.c trustlist.c verify.c
 ** Handle malloc and vasprintf errors.  But decide first if they should be
    ignored (and logged with 255?!), or really be assertions. !
 
