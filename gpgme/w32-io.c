@@ -752,7 +752,10 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   if (ctx->error)
     {
       UNLOCK (ctx->mutex);
-      errno = ctx->error_code;
+      if (ctx->error_code == ERROR_NO_DATA)
+        errno = EPIPE;
+      else
+        errno = EIO;
       return TRACE_SYSRES (-1);
     }
 
@@ -1104,6 +1107,7 @@ _gpgme_io_spawn (const char *path, char **argv,
     }
   
   cr_flags |= CREATE_SUSPENDED; 
+  cr_flags |= DETACHED_PROCESS;
   if (!CreateProcessA (path,
 		       arg_string,
 		       &sec_attr,     /* process security attributes */

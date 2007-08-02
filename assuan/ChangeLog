@@ -1,3 +1,11 @@
+2007-08-02  Werner Koch  <wk@g10code.com>
+
+	* assuan-pipe-connect.c (pipe_connect_w32): A bit more debug output.
+	(pipe_connect_w32): Use DETACHED_PROCESS flag.
+	* assuan-logging.c (log_level): New.  Use this to disable logging.
+	(assuan_set_assuan_log_level): New.
+	* assuan.h: Add prototype.
+
 2007-07-12  Werner Koch  <wk@g10code.com>
 
 	* assuan-handler.c (assuan_get_active_fds): Use get_osfhandle for
