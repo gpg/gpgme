@@ -16,8 +16,8 @@
    
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+   MA 02110-1301, USA.  */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -30,11 +30,15 @@
 #include <ctype.h>
 #include <errno.h>
 #ifndef HAVE_DOSISH_SYSTEM
-  #include <sys/types.h>
-  #include <sys/stat.h>
-  #include <fcntl.h>
+#  include <sys/types.h>
+#  include <sys/stat.h>
+#  include <fcntl.h>
 #endif
 #include <assert.h>
+
+#ifdef HAVE_ASSUAN_H
+#include "assuan.h"
+#endif
 
 #include "util.h"
 #include "sema.h"
@@ -138,10 +142,28 @@ debug_init (void)
         }
 
       if (debug_level > 0)
-	fprintf (errfp, "gpgme_debug: level=%d\n", debug_level);
+        fprintf (errfp, "gpgme_debug: level=%d\n", debug_level);
+#ifdef HAVE_ASSUAN_H
+      assuan_set_assuan_log_prefix ("gpgme-assuan");
+      assuan_set_assuan_log_stream (errfp);
+      assuan_set_assuan_log_level (debug_level >= 0? debug_level:0);
+#endif /* HAVE_ASSUAN_H*/
     }
   UNLOCK (debug_lock);
 }
+
+
+
+/* This should be called as soon as the locks are intialized.  It is
+   required so that the assuan logging gets conncted to the gpgme log
+   stream as early as possible.  */
+void
+_gpgme_debug_subsystem_init (void)
+{
+  debug_init ();
+}
+
+
 
 
 /* Log the formatted string FORMAT at debug level LEVEL or higher.  */

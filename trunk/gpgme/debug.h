@@ -50,6 +50,9 @@ _gpgme_debug_srcname (const char *file)
   return s? s+1:file;
 }
 
+/* Called early to initialize the logging.  */
+void _gpgme_debug_subsystem_init (void);
+
 /* Log the formatted string FORMAT at debug level LEVEL or higher.  */
 void _gpgme_debug (int level, const char *format, ...);
 

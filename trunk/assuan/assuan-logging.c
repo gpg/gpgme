@@ -37,6 +37,23 @@
 static char prefix_buffer[80];
 static FILE *_assuan_log;
 static int full_logging;
+static int log_level = 1;  /* Defaults to logging enabled.  */
+
+
+/* Set the log level for general assuan commands.  0 is no logging at
+   all, 1 is the standard logging and the default. Higher leveles may
+   be defined in the future.  Passing a level of -1 will not change
+   the current log level.  Returns previosu log level.  */
+int
+assuan_set_assuan_log_level (int level)
+{
+  int old = log_level;
+
+  if (level != -1)
+    log_level = level;
+  return old;
+}
+
 
 void
 _assuan_set_default_log_stream (FILE *fp)
@@ -105,6 +122,9 @@ _assuan_log_printf (const char *format, ...)
   FILE *fp;
   const char *prf;
   int save_errno = errno;
+
+  if (!log_level)
+    return;
   
   fp = assuan_get_assuan_log_stream ();
   prf = assuan_get_assuan_log_prefix ();
@@ -127,6 +147,9 @@ _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
 {
   const unsigned char *s;
   int n;
+
+  if (!log_level)
+    return;
 
   for (n=length,s=buffer; n; n--, s++)
     if  ((!isascii (*s) || iscntrl (*s) || !isprint (*s)) && !(*s >= 0x80))
@@ -166,10 +189,15 @@ void
 _assuan_log_sanitized_string (const char *string)
 {
   const unsigned char *s = (const unsigned char *) string;
-  FILE *fp = assuan_get_assuan_log_stream ();
+  FILE *fp;
 
-  if (! *s)
+  if (!log_level)
     return;
+
+  if (!*s)
+    return;
+
+  fp = assuan_get_assuan_log_stream ();
 
 #ifdef HAVE_FLOCKFILE
   flockfile (fp);

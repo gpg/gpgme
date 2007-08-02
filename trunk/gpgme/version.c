@@ -55,18 +55,20 @@ do_subsystem_inits (void)
     return;
 
   _gpgme_sema_subsystem_init ();
-  _gpgme_io_subsystem_init ();
 #ifdef HAVE_ASSUAN_H
+  assuan_set_assuan_log_level (0);
   assuan_set_assuan_err_source (GPG_ERR_SOURCE_GPGME);
-#ifdef HAVE_W32_SYSTEM
+#endif /*HAVE_ASSUAN_H*/
+  _gpgme_debug_subsystem_init ();
+#if defined(HAVE_W32_SYSTEM) && defined(HAVE_ASSUAN_H)
+  _gpgme_io_subsystem_init ();
   /* We need to make sure that the sockets are initialized.  */
   {
     WSADATA wsadat;
     
     WSAStartup (0x202, &wsadat);
   }
-#endif /*HAVE_W32_SYSTEM*/
-#endif /*HAVE_ASSUAN_H*/
+#endif /*HAVE_W32_SYSTEM && HAVE_ASSUAN_H*/
 
   done = 1;
 }
@@ -170,10 +172,15 @@ _gpgme_compare_versions (const char *my_version,
 const char *
 gpgme_check_version (const char *req_version)
 {
+  do_subsystem_inits ();
+
+  /* Catch-22: We need to get at least the debug subsystem ready
+     before using the tarce facility.  If we won't the tarce would
+     automagically initialize the debug system with out the locks
+     being initialized and missing the assuan log level setting. */
   TRACE2 (DEBUG_INIT, "gpgme_check_version: ", 0,
 	  "req_version=%s, VERSION=%s", req_version, VERSION);
-
-  do_subsystem_inits ();
+ 
   return _gpgme_compare_versions (VERSION, req_version) ? VERSION : NULL;
 }
 

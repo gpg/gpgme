@@ -641,6 +641,9 @@ create_inheritable_pipe (int filedes[2], int for_write)
       w = h;
     }
 
+  _assuan_log_printf ("created pipe: read=%p%s, write=%p%s\n",
+                      r, for_write? " (inherit)":"",
+                      w, for_write? "":" (inherit)");
   filedes[0] = handle_to_fd (r);
   filedes[1] = handle_to_fd (w);
   return 0;
@@ -752,6 +755,7 @@ pipe_connect_w32 (assuan_context_t *ctx,
       nullfd = CreateFile ("nul", GENERIC_WRITE,
                            FILE_SHARE_READ | FILE_SHARE_WRITE,
                            NULL, OPEN_EXISTING, 0, NULL);
+      _assuan_log_printf ("created nul device, hd=%p\n", nullfd);
       if (nullfd == INVALID_HANDLE_VALUE)
         {
           _assuan_log_printf ("can't open `nul': %s\n", w32_strerror (-1));
@@ -772,14 +776,17 @@ pipe_connect_w32 (assuan_context_t *ctx,
   /* Note: We inherit all handles flagged as inheritable.  This seems
      to be a security flaw but there seems to be no way of selecting
      handles to inherit. */
-  /*   _assuan_log_printf ("CreateProcess, path=`%s' cmdline=`%s'\n", */
-  /*                       name, cmdline); */
+  _assuan_log_printf ("CreateProcess, path=`%s' cmdline=`%s'\n",
+                      name, cmdline);
+  _assuan_log_printf ("        stdin=%p stdout=%p stderr=%p\n",
+                      si.hStdInput, si.hStdOutput, si.hStdError);
   if (!CreateProcess (name,                 /* Program to start.  */
                       cmdline,              /* Command line arguments.  */
                       &sec_attr,            /* Process security attributes.  */
                       &sec_attr,            /* Thread security attributes.  */
                       TRUE,                 /* Inherit handles.  */
                       (CREATE_DEFAULT_ERROR_MODE
+                       | DETACHED_PROCESS
                        | GetPriorityClass (GetCurrentProcess ())
                        | CREATE_SUSPENDED), /* Creation flags.  */
                       NULL,                 /* Environment.  */
@@ -807,13 +814,15 @@ pipe_connect_w32 (assuan_context_t *ctx,
       nullfd = INVALID_HANDLE_VALUE;
     }
 
+  _assuan_log_printf ("closing handles %p and %p\n", 
+                      fd_to_handle (rp[1]), fd_to_handle (wp[0]) );
   CloseHandle (fd_to_handle (rp[1]));
   CloseHandle (fd_to_handle (wp[0]));
 
-  /*   _assuan_log_printf ("CreateProcess ready: hProcess=%p hThread=%p" */
-  /*                       " dwProcessID=%d dwThreadId=%d\n", */
-  /*                       pi.hProcess, pi.hThread, */
-  /*                       (int) pi.dwProcessId, (int) pi.dwThreadId); */
+  _assuan_log_printf ("CreateProcess ready: hProcess=%p hThread=%p"
+                      " dwProcessID=%d dwThreadId=%d\n",
+                      pi.hProcess, pi.hThread,
+                      (int) pi.dwProcessId, (int) pi.dwThreadId);
 
   ResumeThread (pi.hThread);
   CloseHandle (pi.hThread); 

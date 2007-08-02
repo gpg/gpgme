@@ -137,6 +137,7 @@ int _gpgme_io_recvmsg (int sock, struct msghdr *msg, int flags);
 #define assuan_sendfd _ASSUAN_PREFIX(assuan_sendfd)
 #define assuan_receivefd _ASSUAN_PREFIX(assuan_receivefd)
 #define assuan_set_malloc_hooks _ASSUAN_PREFIX(assuan_set_malloc_hooks)
+#define assuan_set_assuan_log_level _ASSUAN_PREFIX(assuan_set_assuan_log_level)
 #define assuan_set_log_stream _ASSUAN_PREFIX(assuan_set_log_stream)
 #define assuan_set_error _ASSUAN_PREFIX(assuan_set_error)
 #define assuan_set_pointer _ASSUAN_PREFIX(assuan_set_pointer)
@@ -531,6 +532,14 @@ const char *assuan_strerror (assuan_error_t err);
 void assuan_set_assuan_err_source (int errsource);
 
 /*-- assuan-logging.c --*/
+
+/* Set the log level for general assuan commands.  0 is no logging at
+   all, 1 is the standard logging and the default. Higher leveles may
+   be defined in the future.  Passing a level of -1 will not change
+   the current log level.  Returns previous log level.  Note, that
+   this function is not thread-safe and should in general be used
+   right at startup. */
+int assuan_set_assuan_log_level (int level);
 
 /* Set the stream to which assuan should log message not associated
    with a context.  By default, this is stderr.  The default value

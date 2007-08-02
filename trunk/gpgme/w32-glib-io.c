@@ -522,7 +522,8 @@ _gpgme_io_spawn (const char *path, char **argv,
 	}
     }
   
-  cr_flags |= CREATE_SUSPENDED; 
+  cr_flags |= CREATE_SUSPENDED;
+  cr_flags |= DETACHED_PROCESS;
   if (!CreateProcessA (path,
 		       arg_string,
 		       &sec_attr,     /* process security attributes */
