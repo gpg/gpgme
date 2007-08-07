@@ -1,3 +1,8 @@
+2007-08-07  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h (struct _gpgme_signature): Add member CHAIN_MODEL.
+	* verify.c (parse_trust): Set Chain_MODEL.
+
 2007-08-02  Werner Koch  <wk@g10code.com>
 
 	* w32-glib-io.c (_gpgme_io_spawn): Use DETACHED_PROCESS flag.
@@ -12,7 +17,7 @@
 
 2007-07-17  Marcus Brinkmann  <marcus@g10code.de>
 
-	* debug.c:;5B Include <errno.h> and "debug.h".
+	* debug.c: Include <errno.h> and "debug.h".
 	(_gpgme_debug): Save and restore ERRNO.
 	(TOHEX): New macro.
 	(_gpgme_debug_buffer): New function.

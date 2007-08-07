@@ -1,3 +1,7 @@
+2007-08-07  Werner Koch  <wk@g10code.com>
+
+	* gpgme.texi (Verify): Describe chain_model.
+
 2007-07-12  Werner Koch  <wk@g10code.com>
 
 	* gpgme.texi (Library Version Check): Add remark that the socket

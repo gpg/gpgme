@@ -2,6 +2,10 @@ Noteworthy changes in version 1.1.6 (unreleased)
 ------------------------------------------------
 
 
+ * Interface changes relative to the 1.1.1 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_signature_t               EXTENDED: New field chain_model.
+
 
 Noteworthy changes in version 1.1.5 (2007-07-09)
 ------------------------------------------------
