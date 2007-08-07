@@ -1,6 +1,6 @@
 /* gpgme.h - Public interface to GnuPG Made Easy.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -1323,8 +1323,11 @@ struct _gpgme_signature
   /* PKA status: 0 = not available, 1 = bad, 2 = okay, 3 = RFU. */
   unsigned int pka_trust : 2;
 
+  /* Validity has been verified using the chain model. */
+  unsigned int chain_model : 1;
+
   /* Internal to GPGME, do not use.  */
-  int _unused : 29;
+  int _unused : 28;
 
   gpgme_validity_t validity;
   gpgme_error_t validity_reason;

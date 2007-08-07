@@ -4076,6 +4076,16 @@ Values are:
 Depending on the configuration of the engine, this metric may also be
 reflected by the validity of the signature.
 
+@item unsigned int chain_model : 1
+This is true if the validity of the signature has been checked using the
+chain model.  In the chain model the time the signature has been created
+must be within the validity period of the certificate and the time the
+certificate itself has been created must be within the validity period
+of the issuing certificate.  In contrast the default validation model
+checks the validity of signature as well at the entire certificate chain
+at the current time.
+
+
 @item gpgme_validity_t validity
 The validity of the signature.
 

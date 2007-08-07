@@ -541,10 +541,21 @@ parse_trust (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
       break;
     }
 
+  sig->validity_reason = 0;
+  sig->chain_model = 0;
   if (*args)
-    sig->validity_reason = _gpgme_map_gnupg_error (args);
-  else
-    sig->validity_reason = 0;
+    {
+      sig->validity_reason = _gpgme_map_gnupg_error (args);
+      while (*args && *args != ' ')
+        args++;
+      if (*args)
+        {
+          while (*args == ' ')
+            args++;
+          if (!strncmp (args, "cm", 2) && (args[2] == ' ' || !args[2]))
+            sig->chain_model = 1;
+        }
+    }
 
   return 0;
 }
