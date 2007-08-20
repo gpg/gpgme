@@ -40,6 +40,8 @@
 # include <sys/types.h>
 #endif
 
+#include <gpg-error.h>
+
 #ifdef __cplusplus
 extern "C" {
 #if 0 /* just to make Emacs auto-indent happy */
@@ -47,7 +49,6 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-#include <gpg-error.h>
 
 
 /* Check for compiler features.  */
