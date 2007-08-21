@@ -1,3 +1,8 @@
+2007-08-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (--enable-w32-glib): Use --enableval, not
+	--withval.
+
 2007-07-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan/assuan-socket.c (_assuan_close): Always use close().
