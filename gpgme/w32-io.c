@@ -531,20 +531,22 @@ writer (void *arg)
       UNLOCK (ctx->mutex);
       
       TRACE_LOG1 ("writing %d bytes", ctx->nbytes);
-        if (ctx->nbytes
-	    && !WriteFile (ctx->file_hd, ctx->buffer,
-			   ctx->nbytes, &nwritten, NULL))
-	  {
-            ctx->error_code = (int) GetLastError ();
-            ctx->error = 1;
-            TRACE_LOG1 ("write error: ec=%d", ctx->error_code);
-            break;
-	  }
-        TRACE_LOG1 ("wrote %d bytes", (int) nwritten);
+      /* Note that CTX->nbytes is not zero at this point, because
+	 _gpgme_io_write always writes at least 1 byte before waking
+	 us up, unless CTX->stop_me is true, which we catch above.  */
+      if (!WriteFile (ctx->file_hd, ctx->buffer,
+		      ctx->nbytes, &nwritten, NULL))
+	{
+	  ctx->error_code = (int) GetLastError ();
+	  ctx->error = 1;
+	  TRACE_LOG1 ("write error: ec=%d", ctx->error_code);
+	  break;
+	}
+      TRACE_LOG1 ("wrote %d bytes", (int) nwritten);
       
-        LOCK (ctx->mutex);
-        ctx->nbytes -= nwritten;
-        UNLOCK (ctx->mutex);
+      LOCK (ctx->mutex);
+      ctx->nbytes -= nwritten;
+      UNLOCK (ctx->mutex);
     }
   /* Indicate that we have an error.  */
   if (!SetEvent (ctx->is_empty))
@@ -723,6 +725,9 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_write", fd,
 	      "buffer=%p, count=%u", buffer, count);
   TRACE_LOGBUF (buffer, count);
+
+  if (count == 0)
+    return TRACE_SYS (0);
 
   ctx = find_writer (fd, 1);
   if (!ctx)
