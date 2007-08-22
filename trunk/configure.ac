@@ -159,7 +159,7 @@ build_w32_glib=no
 AM_PATH_GLIB_2_0
 AC_ARG_ENABLE(w32-glib,
 	    AC_HELP_STRING([--enable-w32-glib], [build GPGME Glib for W32]),
-	    build_w32_glib=enableval)
+	    build_w32_glib=$enableval)
 AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
 
 AM_CONDITIONAL(HAVE_PTH, test "$have_pth" = "yes")
