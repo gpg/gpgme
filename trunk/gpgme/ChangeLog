@@ -1,3 +1,8 @@
+2007-08-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* w32-io.c (_gpgme_io_write): Return early if COUNT is zero.
+	(writer): Remove superfluous check.
+
 2007-08-20  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h: Move include of gpg-error.h out of extern "C".
