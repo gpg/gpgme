@@ -1,3 +1,8 @@
+2007-09-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan.h [_ASSUAN_EXT_SYM_PREFIX]: Add missing symbol renames
+	with _ASSUAN_PREFIX.
+
 2007-08-02  Werner Koch  <wk@g10code.com>
 
 	* assuan-pipe-connect.c (pipe_connect_w32): A bit more debug output.

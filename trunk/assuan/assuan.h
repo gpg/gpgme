@@ -1,5 +1,5 @@
-/* assuan.c - Definitions for the Assuan IPC library
- * Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
+/* assuan.h - Definitions for the Assuan IPC library
+ * Copyright (C) 2001, 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -156,6 +156,9 @@ int _gpgme_io_recvmsg (int sock, struct msghdr *msg, int flags);
   _ASSUAN_PREFIX(assuan_get_assuan_log_prefix)
 #define assuan_set_flag _ASSUAN_PREFIX(assuan_set_flag)
 #define assuan_get_flag _ASSUAN_PREFIX(assuan_get_flag)
+#define assuan_pipe_connect2 _ASSUAN_PREFIX(assuan_pipe_connect2)
+#define assuan_set_assuan_log_prefix \
+  _ASSUAN_PREFIX(assuan_set_assuan_log_prefix)
 
 /* And now the internal functions, argh...  */
 #define _assuan_read_line _ASSUAN_PREFIX(_assuan_read_line)
@@ -187,6 +190,13 @@ int _gpgme_io_recvmsg (int sock, struct msghdr *msg, int flags);
 #define _assuan_sock_new _ASSUAN_PREFIX(_assuan_sock_new)  
 #define _assuan_sock_bind _ASSUAN_PREFIX(_assuan_sock_bind)
 #define _assuan_sock_connect _ASSUAN_PREFIX(_assuan_sock_connect)
+#define _assuan_error _ASSUAN_PREFIX(_assuan_error)
+#define _assuan_init_uds_io _ASSUAN_PREFIX(_assuan_init_uds_io)
+#define _assuan_uds_close_fds _ASSUAN_PREFIX(_assuan_uds_close_fds)
+#define _assuan_uds_deinit _ASSUAN_PREFIX(_assuan_uds_deinit)
+#define _assuan_simple_recvmsg _ASSUAN_PREFIX(_assuan_simple_recvmsg)
+#define _assuan_simple_sendmsg _ASSUAN_PREFIX(_assuan_simple_sendmsg)
+#define _assuan_waitpid _ASSUAN_PREFIX(_assuan_waitpid)
 
 #define _assuan_funopen _gpgme_funopen
 #endif /*_ASSUAN_EXT_SYM_PREFIX*/
