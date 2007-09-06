@@ -1403,9 +1403,9 @@ _gpgme_io_dup (int fd)
 }
 
 
-/* The following interface is only useful for GPGME Glib.  */
+/* The following interface is only useful for GPGME Glib and Qt.  */
 
-/* Look up the giochannel for file descriptor FD.  */
+/* Compatibility interface, obsolete.  */
 void *
 gpgme_get_giochannel (int fd)
 {
@@ -1413,3 +1413,9 @@ gpgme_get_giochannel (int fd)
 }
 
 
+/* Look up the giochannel or qiodevice for file descriptor FD.  */
+void *
+gpgme_get_fdptr (int fd)
+{
+  return NULL;
+}

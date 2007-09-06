@@ -154,5 +154,7 @@ EXPORTS
     gpgme_free				  @120
 
     gpgme_get_giochannel		  @121
+    gpgme_get_fdptr			  @122
+
 ; END
 

@@ -1,3 +1,8 @@
+2007-09-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for C++, Qt and support --enable-w32-qt.
+	* m4/pkg.m4: New file.
+
 2007-08-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac (--enable-w32-glib): Use --enableval, not
@@ -775,7 +780,7 @@
 	* autogen.sh: Added option --build-w32.
 
 
- Copyright 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

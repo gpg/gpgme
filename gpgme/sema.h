@@ -1,6 +1,6 @@
 /* sema.h - Definitions for semaphores.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2003, 2004, 2007 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -25,7 +25,7 @@
 struct critsect_s
 {
   const char *name;
-  void *private;
+  void *priv;
 };
 
 #define DEFINE_GLOBAL_LOCK(name) \
@@ -39,7 +39,7 @@ struct critsect_s
   do					\
     {					\
       (a).name = #a;			\
-      (a).private = NULL;		\
+      (a).priv = NULL;			\
     }					\
   while (0)
 #define DESTROY_LOCK(name) _gpgme_sema_cs_destroy (&(name))

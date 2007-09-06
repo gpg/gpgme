@@ -83,6 +83,7 @@ AH_VERBATIM([_REENTRANT],
 #endif])
 
 AC_PROG_CC
+AC_PROG_CXX
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
@@ -161,6 +162,13 @@ AC_ARG_ENABLE(w32-glib,
 	    AC_HELP_STRING([--enable-w32-glib], [build GPGME Glib for W32]),
 	    build_w32_glib=$enableval)
 AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
+
+build_w32_qt=no
+PKG_CHECK_MODULES(QT4_CORE, QtCore)
+AC_ARG_ENABLE(w32-qt,
+	    AC_HELP_STRING([--enable-w32-qt], [build GPGME Qt for W32]),
+	    build_w32_qt=$enableval)
+AM_CONDITIONAL(BUILD_W32_QT, test "$build_w32_qt" = yes)
 
 AM_CONDITIONAL(HAVE_PTH, test "$have_pth" = "yes")
 AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")

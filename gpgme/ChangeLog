@@ -1,3 +1,27 @@
+2007-09-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* kdpipeiodevice.h, kdpipeiodevice.cpp, moc_kdpipeiodevice.cpp,
+	kdpipeiodevice.moc, w32-qt-io.c: New files.
+	* Makefile.am (ltlib_gpgme_extra): Rename to ltlib_gpgme_glib.
+	(ltlib_gpgme_qt): New variable.
+	(lib_LTLIBRARIES): Add $(ltlib_gpgme_qt).
+	(libgpgme_qt_la_SOURCES): New variable.
+	(AM_CPPFLAGS): Add @QT4_CORE_INCLUDES@
+	(AM_CFLAGS): Add @QT4_CORE_CFLAGS@.
+	(libgpgme_qt_la_LDFLAGS, libgpgme_qt_la_DEPENDENCIES)
+	(libgpgme_qt_la_LIBADD): New variables.
+	* sema.h (struct critsect_s): Rename "private" to "priv" to make
+	C++ users happy.  Change users.
+	* posix-sema.c (_gpgme_sema_cs_enter, _gpgme_sema_cs_leave)
+	(_gpgme_sema_cs_destroy): Likewise.
+	* w32-sema.c (critsect_init, _gpgme_sema_cs_enter)
+	(_gpgme_sema_cs_leave, _gpgme_sema_cs_destroy): Likewise.
+	* w32-glib-io.c (gpgme_get_giochannel): Change return type to
+	void*.
+	(gpgme_get_fdptr): New function.
+	* w32-io.c (gpgme_get_fdptr): New function
+	* gpgme.def: Add gpgme_get_fdptr.
+
 2007-08-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* w32-io.c (_gpgme_io_write): Return early if COUNT is zero.

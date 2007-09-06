@@ -1,5 +1,5 @@
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -40,12 +40,18 @@ ltlib_gpgme_pth =
 endif
 
 if BUILD_W32_GLIB
-ltlib_gpgme_extra = libgpgme-glib.la
+ltlib_gpgme_glib = libgpgme-glib.la
 else
-ltlib_gpgme_extra =
+ltlib_gpgme_glib =
 endif
 
-lib_LTLIBRARIES = libgpgme.la $(ltlib_gpgme_extra) \
+if BUILD_W32_QT
+ltlib_gpgme_qt = libgpgme-qt.la
+else
+ltlib_gpgme_qt =
+endif
+
+lib_LTLIBRARIES = libgpgme.la $(ltlib_gpgme_glib) $(ltlib_gpgme_qt) \
 	$(ltlib_gpgme_pthread) $(ltlib_gpgme_pth)
 
 if HAVE_LD_VERSION_SCRIPT
@@ -107,10 +113,24 @@ if BUILD_W32_GLIB
 libgpgme_glib_la_SOURCES = $(main_sources) ath.h ath.c w32-glib-io.c
 endif
 
+if BUILD_W32_QT
+libgpgme_qt_la_SOURCES = $(main_sources) ath.h ath.c w32-qt-io.cpp \
+	kdpipeiodevice.h kdpipeiodevice.cpp moc_kdpipeiodevice.cpp \
+	kdpipeiodevice.moc
+
+# These are built sources (normally).
+# moc_kdpipeiodevice.cpp: kdpipeiodevice.h
+#	$(MOC4) -o $@ $<
+#
+# kdpipeiodevice.moc: kdpipeiodevice.cpp
+#	$(MOC4) -o $@ $<
+endif
+
 # We use a global CFLAGS and CPPFLAGS setting for all library
 # versions, because then every object file is only compiled once.
-AM_CPPFLAGS = $(assuan_cppflags) @GPG_ERROR_CFLAGS@ @PTH_CPPFLAGS@
-AM_CFLAGS = @PTH_CFLAGS@ @GLIB_CFLAGS@
+AM_CPPFLAGS = $(assuan_cppflags) @GPG_ERROR_CFLAGS@ @PTH_CPPFLAGS@ \
+	@QT4_CORE_CFLAGS@
+AM_CFLAGS = @PTH_CFLAGS@ @GLIB_CFLAGS@ @QT4_CORE_CFLAGS@
 
 if HAVE_W32_SYSTEM
 
@@ -179,6 +199,16 @@ libgpgme_glib_la_DEPENDENCIES = $(assuan_libobjs) \
 	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_glib_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@ @GLIB_LIBS@ @NETLIBS@
+endif
+
+if BUILD_W32_QT
+libgpgme_qt_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
+	$(export_symbols) $(libgpgme_version_script_cmd) -version-info \
+	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
+libgpgme_qt_la_DEPENDENCIES = $(assuan_libobjs) \
+	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
+libgpgme_qt_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
+	@GPG_ERROR_LIBS@ @QT4_CORE_LIB@ @NETLIBS@
 endif
 
 status-table.h : gpgme.h

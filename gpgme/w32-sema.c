@@ -1,6 +1,6 @@
 /* w32-sema.c 
    Copyright (C) 2001 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2004, 2007 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -65,7 +65,7 @@ critsect_init (struct critsect_s *s)
 
     /* first test whether it is really not initialized */
     EnterCriticalSection (&init_lock);
-    if ( s->private ) {
+    if ( s->priv ) {
         LeaveCriticalSection (&init_lock);
         return;
     }
@@ -76,7 +76,7 @@ critsect_init (struct critsect_s *s)
         sema_fatal ("out of core while creating critical section lock");
     }
     InitializeCriticalSection (mp);
-    s->private = mp;
+    s->priv = mp;
     LeaveCriticalSection (&init_lock);
 }
 
@@ -91,25 +91,25 @@ _gpgme_sema_subsystem_init ()
 void
 _gpgme_sema_cs_enter ( struct critsect_s *s )
 {
-    if (!s->private)
+    if (!s->priv)
         critsect_init (s);
-    EnterCriticalSection ( (CRITICAL_SECTION*)s->private );
+    EnterCriticalSection ( (CRITICAL_SECTION*)s->priv );
 }
 
 void
 _gpgme_sema_cs_leave (struct critsect_s *s)
 {
-    if (!s->private)
+    if (!s->priv)
         critsect_init (s);
-    LeaveCriticalSection ((CRITICAL_SECTION*)s->private);
+    LeaveCriticalSection ((CRITICAL_SECTION*)s->priv);
 }
 
 void
 _gpgme_sema_cs_destroy ( struct critsect_s *s )
 {
-    if (s && s->private) {
-        DeleteCriticalSection ((CRITICAL_SECTION*)s->private);
-        free (s->private);
-        s->private = NULL;
+    if (s && s->priv) {
+        DeleteCriticalSection ((CRITICAL_SECTION*)s->priv);
+        free (s->priv);
+        s->priv = NULL;
     }
 }
