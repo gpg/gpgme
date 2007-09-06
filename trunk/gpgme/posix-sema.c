@@ -1,6 +1,6 @@
 /* posix-sema.c 
    Copyright (C) 2001 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2004, 2007 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -45,18 +45,18 @@ _gpgme_sema_subsystem_init ()
 void
 _gpgme_sema_cs_enter (struct critsect_s *s)
 {
-  _gpgme_ath_mutex_lock (&s->private);
+  _gpgme_ath_mutex_lock (&s->priv);
 }
 
 void
 _gpgme_sema_cs_leave (struct critsect_s *s)
 {
-  _gpgme_ath_mutex_unlock (&s->private);
+  _gpgme_ath_mutex_unlock (&s->priv);
 }
 
 void
 _gpgme_sema_cs_destroy (struct critsect_s *s)
 {
-  _gpgme_ath_mutex_destroy (&s->private);
-  s->private = NULL;
+  _gpgme_ath_mutex_destroy (&s->priv);
+  s->priv = NULL;
 }
