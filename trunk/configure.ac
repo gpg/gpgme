@@ -118,6 +118,8 @@ GPGSM_DEFAULT=no
 component_system=None
 have_dosish_system=no
 have_w32_system=no
+build_w32_glib=no
+build_w32_qt=no
 case "${host}" in
     *-mingw32*)
         # special stuff for Windoze NT
@@ -126,6 +128,23 @@ case "${host}" in
         GPG_DEFAULT='c:\\gnupg\\gpg.exe'
 	GPGSM_DEFAULT='c:\\gnupg\\gpgsm.exe'
         #component_system='COM+'
+
+	AM_PATH_GLIB_2_0
+	AC_ARG_ENABLE(w32-glib,
+	    AC_HELP_STRING([--enable-w32-glib], [build GPGME Glib for W32]),
+	    		   build_w32_glib=$enableval)
+
+	# Check disabled, because the qt-dev packages in gpg4win do
+	# not provide any support for cross compilation.
+	# PKG_CHECK_MODULES(QT4_CORE, QtCore)
+
+	# Use it like this:
+	# ./configure --enable-w32-qt QT4_CORE_CFLAGS="..." QT4_CORE_LIBS="..."
+	AC_SUBST(QT4_CORE_CFLAGS)
+	AC_SUBST(QT4_CORE_LIBS)
+	AC_ARG_ENABLE(w32-qt,
+	    AC_HELP_STRING([--enable-w32-qt], [build GPGME Qt for W32]),
+	    		   build_w32_qt=$enableval)
         ;;
     *)
 	AC_CHECK_PTH(1.2.0,,,no,have_pth=yes)
@@ -155,19 +174,7 @@ if test "$have_w32_system" = yes; then
    AC_DEFINE(HAVE_W32_SYSTEM,1, [Defined if we run on a W32 API based system])
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
-
-build_w32_glib=no
-AM_PATH_GLIB_2_0
-AC_ARG_ENABLE(w32-glib,
-	    AC_HELP_STRING([--enable-w32-glib], [build GPGME Glib for W32]),
-	    build_w32_glib=$enableval)
 AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
-
-build_w32_qt=no
-PKG_CHECK_MODULES(QT4_CORE, QtCore)
-AC_ARG_ENABLE(w32-qt,
-	    AC_HELP_STRING([--enable-w32-qt], [build GPGME Qt for W32]),
-	    build_w32_qt=$enableval)
 AM_CONDITIONAL(BUILD_W32_QT, test "$build_w32_qt" = yes)
 
 AM_CONDITIONAL(HAVE_PTH, test "$have_pth" = "yes")

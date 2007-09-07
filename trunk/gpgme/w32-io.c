@@ -727,7 +727,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   TRACE_LOGBUF (buffer, count);
 
   if (count == 0)
-    return TRACE_SYS (0);
+    return TRACE_SYSRES (0);
 
   ctx = find_writer (fd, 1);
   if (!ctx)
