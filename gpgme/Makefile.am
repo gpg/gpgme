@@ -19,8 +19,9 @@
 
 ## Process this file with automake to produce Makefile.in
 
+# Note: moc_kdpipeiodevice should actually be a dependcy below.
 EXTRA_DIST = gpgme-config.in gpgme.m4 mkstatus libgpgme.vers \
-	     versioninfo.rc.in gpgme.def
+	     versioninfo.rc.in gpgme.def moc_kdpipeiodevice.cpp
 BUILT_SOURCES = status-table.h
 MOSTLYCLEANFILES = status-table.h
 bin_SCRIPTS = gpgme-config
@@ -115,8 +116,8 @@ endif
 
 if BUILD_W32_QT
 libgpgme_qt_la_SOURCES = $(main_sources) ath.h ath.c w32-qt-io.cpp \
-	kdpipeiodevice.h kdpipeiodevice.cpp moc_kdpipeiodevice.cpp \
-	kdpipeiodevice.moc
+	kdpipeiodevice.h kdpipeiodevice.cpp kdpipeiodevice.moc
+# FIXME: Add extra depedency: moc_kdpipeiodevice.cpp
 
 # These are built sources (normally).
 # moc_kdpipeiodevice.cpp: kdpipeiodevice.h
