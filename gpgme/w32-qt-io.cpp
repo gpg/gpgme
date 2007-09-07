@@ -140,19 +140,15 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
     }
   TRACE_LOG1 ("channel %p", chan);
 
-  {
-//  GError *err = NULL;
-//  status = g_io_channel_read_chars (chan, (gchar *) buffer,
-//				      count, &nread, &err);
-    nread = chan->read( buffer, count );
-    if ( nread < 0 ) {
-        TRACE_LOG1 ("err %s", qPrintable( chan->errorString() ) );
-        saved_errno = EIO;
-        nread = -1;
+  nread = chan->read ((char *) buffer, count);
+  if (nread < 0)
+    {
+      TRACE_LOG1 ("err %s", qPrintable (chan->errorString ()));
+      saved_errno = EIO;
+      nread = -1;
     }
-  }
 
-  TRACE_LOGBUF (buffer, nread);
+  TRACE_LOGBUF ((char *) buffer, nread);
 
   errno = saved_errno;
   return TRACE_SYSRES (nread);
@@ -166,7 +162,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   QIODevice *chan;
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_write", fd,
 	      "buffer=%p, count=%u", buffer, count);
-  TRACE_LOGBUF (buffer, count);
+  TRACE_LOGBUF ((char *) buffer, count);
 
   chan = find_channel (fd, 0);
   if (!chan)
@@ -176,13 +172,13 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
       return -1;
     }
 
-  nwritten = chan->write( buffer, count );
+  nwritten = chan->write ((char *) buffer, count);
 
   if (nwritten < 0)
     {
       nwritten = -1;
       errno = EIO;
-      return TRACE_SYSRES(-1)
+      return TRACE_SYSRES(-1);
     }
   errno = 0;
   return TRACE_SYSRES (nwritten);
@@ -348,7 +344,7 @@ build_commandline (char **argv)
   /* And a trailing zero.  */
   n++;
 
-  buf = p = malloc (n);
+  buf = p = (char *) malloc (n);
   if (!buf)
     return NULL;
   for (i = 0; argv[i]; i++)
@@ -543,8 +539,8 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_select", fds,
 	      "nfds=%u, nonblock=%u", nfds, nonblock);
 
-  // we only implement the special case of nonblock == true
-  assert( nonblock );
+  /* We only implement the special case of nonblock == true.  */
+  assert (nonblock);
 
   count = 0;
 

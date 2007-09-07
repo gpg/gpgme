@@ -1,5 +1,9 @@
 2007-09-07  Marcus Brinkmann  <marcus@g10code.de>
 
+	* w32-qt-io.cpp (_gpgme_io_spawn): Fix several cast errors and typos.
+	* w32-io.c (_gpgme_io_write): Use TRACE_SYSRES instead of TRACE_SYS.
+	(libgpgme_qt_la_LIBADD): Add QT4_CORE_LIBS, not QT4_CORE_LIB.
+
 	* kdpipeiodevice.h, kdpipeiodevice.cpp, moc_kdpipeiodevice.cpp,
 	kdpipeiodevice.moc, w32-qt-io.c: New files.
 	* Makefile.am (ltlib_gpgme_extra): Rename to ltlib_gpgme_glib.
@@ -10,6 +14,7 @@
 	(AM_CFLAGS): Add @QT4_CORE_CFLAGS@.
 	(libgpgme_qt_la_LDFLAGS, libgpgme_qt_la_DEPENDENCIES)
 	(libgpgme_qt_la_LIBADD): New variables.
+
 	* sema.h (struct critsect_s): Rename "private" to "priv" to make
 	C++ users happy.  Change users.
 	* posix-sema.c (_gpgme_sema_cs_enter, _gpgme_sema_cs_leave)

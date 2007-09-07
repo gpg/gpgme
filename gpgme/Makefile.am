@@ -208,7 +208,7 @@ libgpgme_qt_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
 libgpgme_qt_la_DEPENDENCIES = $(assuan_libobjs) \
 	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_qt_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
-	@GPG_ERROR_LIBS@ @QT4_CORE_LIB@ @NETLIBS@
+	@GPG_ERROR_LIBS@ @QT4_CORE_LIBS@ @NETLIBS@
 endif
 
 status-table.h : gpgme.h
