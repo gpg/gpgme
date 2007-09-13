@@ -463,6 +463,8 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
     goto leave;
 
   rc = _gpgme_getenv ("DISPLAY", &dft_display);
+  if (rc)
+    goto leave;
   if (dft_display)
     {
       rc = add_arg (gpg, "--display");
@@ -471,8 +473,6 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 
       free (dft_display);
     }
-  if (rc)
-    goto leave;
 
   if (isatty (1))
     {
@@ -489,7 +489,7 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 	  if (!rc)
 	    {
 	      rc = _gpgme_getenv ("TERM", &dft_ttytype);
-	      if (!rc)
+	      if (rc)
 		goto leave;
 
 	      rc = add_arg (gpg, "--ttytype");

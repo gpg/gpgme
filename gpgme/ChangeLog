@@ -1,3 +1,8 @@
+2007-09-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.c (gpg_new): Handle return value of _gpgme_getenv (fixes
+	small memory leak).
+
 2007-09-07  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (libgpgme_qt_la_SOURCES): Move
