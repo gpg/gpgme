@@ -147,6 +147,8 @@ main (int argc, char **argv)
 		"3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E",
 		GPG_ERR_BAD_SIGNATURE, GPGME_VALIDITY_UNKNOWN);
 
+  gpgme_data_release (text);
+  gpgme_data_release (sig);
   gpgme_release (ctx);  
   return 0;
 }
