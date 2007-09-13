@@ -131,6 +131,7 @@ gpgme_release (gpgme_ctx_t ctx)
   _gpgme_fd_table_deinit (&ctx->fdt);
   _gpgme_release_result (ctx);
   gpgme_signers_clear (ctx);
+  gpgme_sig_notation_clear (ctx);
   if (ctx->signers)
     free (ctx->signers);
   if (ctx->lc_ctype)
