@@ -1,3 +1,7 @@
+2007-09-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (gpgme_release): Call gpgme_sig_notation_clear.
+
 2007-09-13  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.c (gpg_new): Handle return value of _gpgme_getenv (fixes
