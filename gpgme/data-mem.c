@@ -257,7 +257,14 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
 
   gpgme_data_release (dh);
 
-  TRACE_SUC2 ("buffer=%p, len=%u", str, *r_len);
+  if (r_len)
+    {
+      TRACE_SUC2 ("buffer=%p, len=%u", str, *r_len);
+    }
+  else
+    {
+      TRACE_SUC1 ("buffer=%p", str);
+    }
   return str;
 }
 

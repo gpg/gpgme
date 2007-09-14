@@ -5031,7 +5031,7 @@ monitor these file descriptors for activity and call the appropriate
 I/O callbacks.
 
 The following example illustrates how to do that.  The example uses
-locking to show in which way the the callbacks and the event loop can
+locking to show in which way the callbacks and the event loop can
 run concurrently.  For the event loop, we use a fixed array.  For a
 real-world implementation, you should use a dynamically sized
 structure because the number of file descriptors needed for a crypto

@@ -1,3 +1,7 @@
+2007-09-14  Werner Koch  <wk@g10code.com>
+
+	* data-mem.c (gpgme_data_release_and_get_mem): Fix tracing bug.
+
 2007-09-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (gpgme_release): Call gpgme_sig_notation_clear.
