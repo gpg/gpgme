@@ -1,3 +1,7 @@
+2007-09-11  Werner Koch  <wk@g10code.com>
+
+	* gpgme.texi (I/O Callback Example): Typo fix.
+
 2007-08-07  Werner Koch  <wk@g10code.com>
 
 	* gpgme.texi (Verify): Describe chain_model.
