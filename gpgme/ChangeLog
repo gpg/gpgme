@@ -1,3 +1,8 @@
+2007-09-17  Werner Koch  <wk@g10code.com>
+
+	* rungpg.c (gpg_new): Make robust against undefined ttyname or
+	ttytype.
+
 2007-09-14  Werner Koch  <wk@g10code.com>
 
 	* data-mem.c (gpgme_data_release_and_get_mem): Fix tracing bug.

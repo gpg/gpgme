@@ -23,24 +23,22 @@ AC_PREREQ(2.59)
 min_automake_version="1.9.3"
 
 # Version number: Remember to change it immediately *after* a release.
-#                 Make sure to run  "svn up" before a "make dist".
-#                 See below for the LT versions.
+#                 Make sure to run  "svn up" and "./autogen.sh --force"
+#                  before a "make dist".  See below for the LT versions.
 #
-# The CVS version is usually the next intended release version with
-# the string "-cvs" appended.  The reason for this is that tests for a
+# The SVN version is usually the next intended release version with
+# the string "-svnNNN" appended.  The reason for this is that tests for a
 # specific feature can already be done under the assumption that the
-# CVS version is the most recent one in a branch.  To disable the CVS
-# version for the real release, just comment out the my_iscvs macro.
-# Note, that we are now using Subversion instead of CVS and append the
-# SVN revision number to the "cvs" suffix.  To make this most useful
-# for snapshot releases please do an "svn up" right before recreating
-# the configure script, so that a proper revision number for all files
-# is available when running a "make distcheck".
+# SVN version is the most recent one in a branch.  To disable the SVN
+# version for the real release, set the my_issvn macro to no.
 m4_define(my_version, [1.1.5])
-m4_define(my_iscvs, yes)
-AC_INIT([gpgme], my_version[]m4_ifdef([my_iscvs], [-cvs[]m4_translit(
-               [$Revision$],[Ra-z $:])]),
-               [bug-gpgme@gnupg.org])
+m4_define(my_issvn, [yes])
+
+m4_define([svn_revision], m4_esyscmd([echo -n $( (svn info 2>/dev/null \
+            || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
+AC_INIT([gpgme], my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision]),
+        [bug-gpgme@gnupg.org])
+
 
 # LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
@@ -59,6 +57,7 @@ GPGME_CONFIG_API_VERSION=1
 ##############################################
 
 
+BUILD_REVISION=svn_revision
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
 
@@ -577,10 +576,6 @@ AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
 GNUPG_FIX_HDR_VERSION(gpgme/gpgme.h, GPGME_VERSION)
 
 # Generate values for the DLL version info
-changequote(,)dnl 
-BUILD_REVISION="`echo '$Revision$' | sed 's/[^0-9]//g'`"
-changequote([,])dnl
-test -z "$BUILD_REVISION" && BUILD_REVISION="0"
 if test "$have_w32_system" = yes; then
     BUILD_TIMESTAMP=`date --iso-8601=minutes`
     changequote(,)dnl 

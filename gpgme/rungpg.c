@@ -483,18 +483,26 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 	rc = gpg_error_from_errno (errno);
       else
 	{
-	  rc = add_arg (gpg, "--ttyname");
-	  if (!rc)
-	    rc = add_arg (gpg, dft_ttyname);
-	  if (!rc)
+          if (dft_ttyname)
+            {
+              rc = add_arg (gpg, "--ttyname");
+              if (!rc)
+                rc = add_arg (gpg, dft_ttyname);
+            }
+          else
+            rc = 0;
+          if (!rc)
 	    {
 	      rc = _gpgme_getenv ("TERM", &dft_ttytype);
 	      if (rc)
 		goto leave;
-
-	      rc = add_arg (gpg, "--ttytype");
-	      if (!rc)
-		rc = add_arg (gpg, dft_ttytype);
+              
+              if (dft_ttytype)
+                {
+                  rc = add_arg (gpg, "--ttytype");
+                  if (!rc)
+                    rc = add_arg (gpg, dft_ttytype);
+                }
 
 	      free (dft_ttytype);
 	    }
