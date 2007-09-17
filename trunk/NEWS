@@ -1,6 +1,7 @@
 Noteworthy changes in version 1.1.6 (unreleased)
 ------------------------------------------------
 
+ * Bug fixes for for W32.
 
  * Interface changes relative to the 1.1.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
