@@ -1,5 +1,7 @@
 2007-09-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* conversion.c, keylist.c: Include <sys/types.h>.
+
 	* kdpipeiodevice.h: Use namespace _gpgme_.
 	* kdpipeiodevice.cpp: Use namespace _gpgme_.
 	[Q_OS_WIN32 && NOMINMAX]: Do not define NOMINMAX again.

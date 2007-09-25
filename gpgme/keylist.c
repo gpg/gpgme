@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+/* Solaris 8 needs sys/types.h before time.h.  */
+#include <sys/types.h>
 #include <time.h>
 #include <assert.h>
 #include <ctype.h>
