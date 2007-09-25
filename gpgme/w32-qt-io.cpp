@@ -53,9 +53,12 @@ extern "C"
 #endif
 #endif
 
+using _gpgme_::KDPipeIODevice;
+
 
 /* This file is an ugly hack to get GPGME working with Qt on Windows
    targets.  On Windows, you can not select() on file descriptors.
+
    The only way to check if there is something to read is to read
    something.  This means that GPGME can not let Qt check for data
    without letting Qt also handle the data on Windows targets.

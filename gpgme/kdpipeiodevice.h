@@ -26,6 +26,8 @@
 
 //#include "checker.h"
 
+namespace _gpgme_ {
+
 class KDPipeIODevice : public QIODevice {
     Q_OBJECT
     //KDAB_MAKE_CHECKABLE( KDPipeIODevice )
