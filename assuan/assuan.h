@@ -185,6 +185,8 @@ int _gpgme_io_recvmsg (int sock, struct msghdr *msg, int flags);
 #define _assuan_set_default_log_stream \
   _ASSUAN_PREFIX(_assuan_set_default_log_stream)
 #define _assuan_w32_strerror _ASSUAN_PREFIX(_assuan_w32_strerror)
+#define _assuan_gpg_strerror_r _ASSUAN_PREFIX(_assuan_gpg_strerror_r)
+#define _assuan_gpg_strsource  _ASSUAN_PREFIX(_assuan_gpg_strsource)
 #define _assuan_write_line _ASSUAN_PREFIX(_assuan_write_line)
 #define _assuan_close _ASSUAN_PREFIX(_assuan_close)   
 #define _assuan_sock_new _ASSUAN_PREFIX(_assuan_sock_new)  
