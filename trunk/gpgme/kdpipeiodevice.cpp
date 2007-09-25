@@ -26,13 +26,17 @@
 #include <algorithm>
 
 #ifdef Q_OS_WIN32
-# define NOMINMAX
+# ifndef NOMINMAX
+#  define NOMINMAX
+# endif
 # include <windows.h>
 # include <io.h>
 #else
 # include <unistd.h>
 # include <errno.h>
 #endif
+
+using namespace _gpgme_;
 
 #ifndef KDAB_CHECK_THIS
 # define KDAB_CHECK_CTOR (void)1
