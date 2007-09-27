@@ -1263,6 +1263,7 @@ start (engine_gpg_t gpg)
 
   /* build the fd list for the child */
   n = 0;
+  /* The status fd is never dup'ed, so do not include it in the list.  */
   if (gpg->colon.fnc)
     {
       fd_child_list[n].fd = gpg->colon.fd[1]; 
