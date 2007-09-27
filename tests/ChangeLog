@@ -1,3 +1,11 @@
+2007-09-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* t-engine-info.c (check_engine_info): Fix debug output.
+	* gpg/Makefile.am (tests_unix): New variable.
+	(TESTS): Use it.
+	* gpg/t-support.h (passphrase_cb) [HAVE_W32_SYSTEM]: Use WriteFile instead of write.
+	* gpg/t-wait.c [HAVE_W32_SYSTEM]: Define sleep as _sleep.
+
 2007-09-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm/t-verify.c (main): Release TEXT and SIG.

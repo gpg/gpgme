@@ -25,11 +25,17 @@ TESTS_ENVIRONMENT = GNUPGHOME=. GPG_AGENT_INFO=
 
 # The keylist tests must come after the import and the edit test.
 noinst_HEADERS = t-support.h
-TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers	\
-	t-decrypt t-verify t-decrypt-verify t-sig-notation \
-	t-export t-import t-trustlist t-eventloop t-edit \
-	t-keylist t-keylist-sig t-thread1 t-wait t-encrypt-large \
-	t-file-name
+
+if HAVE_W32_SYSTEM
+tests_unix =
+else
+tests_unix = t-eventloop t-thread1
+endif
+
+TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers		\
+	t-decrypt t-verify t-decrypt-verify t-sig-notation t-export	\
+	t-import t-trustlist t-edit t-keylist t-keylist-sig t-wait	\
+	t-encrypt-large t-file-name $(tests_unix)
 
 CLEANFILES = secring.gpg pubring.gpg trustdb.gpg
 DISTCLEANFILES = pubring.gpg~ random_seed gpg.conf
