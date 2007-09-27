@@ -82,10 +82,18 @@ using _gpgme_::KDPipeIODevice;
    really nice callback interfaces to let the user control all this at
    a per-context level.  */
 
-
-#define MAX_SLAFD 256
+#define MAX_SLAFD 50000
 
-QIODevice *iodevice_table[MAX_SLAFD];
+struct DeviceEntry {
+  DeviceEntry() : iodev( 0 ), actual_fd( -1 ), refCount( 1 ) {}
+    QIODevice* iodev;
+    int actual_fd;
+    mutable int refCount;
+    void ref() const { ++refCount; }
+    int unref() const { return --refCount; }
+};
+
+DeviceEntry* iodevice_table[MAX_SLAFD];
 
 
 static QIODevice *
@@ -95,12 +103,15 @@ find_channel (int fd, int create)
     return NULL;
 
   if (create && !iodevice_table[fd])
-    iodevice_table[fd] = new KDPipeIODevice
-      (fd, QIODevice::ReadOnly|QIODevice::Unbuffered);
-
-  return iodevice_table[fd];
+  {
+    DeviceEntry* entry = new DeviceEntry;
+    entry->actual_fd = fd;
+    entry->iodev = new KDPipeIODevice
+      (fd, QIODevice::ReadWrite|QIODevice::Unbuffered);
+    iodevice_table[fd] = entry; 
+  }
+  return iodevice_table[fd] ? iodevice_table[fd]->iodev : 0;
 }
-
 
 /* Write the printable version of FD to the buffer BUF of length
    BUFLEN.  The printable version is the representation on the command
@@ -232,7 +243,9 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 
   /* Now we have a pipe with the right end inheritable.  The other end
      should have a giochannel.  */
+
   chan = find_channel (filedes[1 - inherit_idx], 1);
+
   if (!chan)
     {
       int saved_errno = errno;
@@ -247,7 +260,6 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 	  filedes[1], (HANDLE) _get_osfhandle (filedes[1]),
 	  chan);
 }
-
 
 int
 _gpgme_io_close (int fd)
@@ -270,16 +282,29 @@ _gpgme_io_close (int fd)
     }
 
   /* Then do the close.  */    
-  chan = iodevice_table[fd];
-  if (chan)
-    {
-      chan->close();
-      delete chan;
-      iodevice_table[fd] = NULL;
+  
+  DeviceEntry* const entry = iodevice_table[fd];
+  if ( entry )
+  {
+    assert( entry->refCount > 0 );
+    const int actual_fd = entry->actual_fd;
+    assert( actual_fd > 0 );
+    if ( !entry->unref() ) {
+      entry->iodev->close();
+      delete entry->iodev;
+      delete entry;
+      for ( int i = 0; i < MAX_SLAFD; ++i ) {
+        if ( iodevice_table[i] == entry )
+          iodevice_table[i] = 0;      
+      }
     }
+
+    if ( fd != actual_fd )
+      _close( fd );       
+  }
   else
     _close (fd);
-
+  
   return 0;
 }
 
@@ -334,7 +359,7 @@ build_commandline (char **argv)
       /* The leading double-quote.  */
       n++;
       while (*p)
-	{
+      {
 	  /* An extra one for each literal that must be escaped.  */
 	  if (*p == '\\' || *p == '"')
 	    n++;
@@ -586,13 +611,6 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 }
 
 
-int
-_gpgme_io_dup (int fd)
-{
-  return _dup (fd);
-}
-
-
 /* Look up the qiodevice for file descriptor FD.  */
 extern "C"
 void *
@@ -608,5 +626,18 @@ void *
 gpgme_get_giochannel (int fd)
 {
   return NULL;
+}
+
+
+int
+_gpgme_io_dup (int fd)
+{
+  const int new_fd = _dup( fd );
+  iodevice_table[new_fd] = iodevice_table[fd];
+  if ( iodevice_table[new_fd] )
+    iodevice_table[new_fd]->ref();
+  else
+    find_channel( new_fd, /*create=*/1 ); 
+  return new_fd;
 }
 
