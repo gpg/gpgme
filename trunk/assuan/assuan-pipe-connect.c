@@ -550,6 +550,108 @@ socketpair_connect (assuan_context_t *ctx,
 
 
 
+#ifdef _ASSUAN_IN_GPGME_BUILD_ASSUAN
+
+#define pipe_connect pipe_connect_gpgme
+
+/* From GPGME priv-io.h  */
+struct spawn_fd_item_s
+{
+  int fd;
+  int dup_to;
+};
+
+/* W32 version of the pipe connection code. */
+static assuan_error_t
+pipe_connect_gpgme (assuan_context_t *ctx,
+		    const char *name, const char *const argv[],
+		    int *fd_child_list,
+		    void (*atfork) (void *opaque, int reserved),
+		    void *atforkvalue)
+{
+  assuan_error_t err;
+  int pid;
+int rp[2];
+  int wp[2];
+  char mypidstr[50];
+  struct spawn_fd_item_s child_fds[3]; /* stdin, stdout, terminating -1 */
+
+  if (!ctx || !name || !argv || !argv[0])
+    return _assuan_error (ASSUAN_Invalid_Value);
+
+  /* Actually, GPGME does this for us.  But we plan to reuse this code
+     in the generic assuan.  */
+  fix_signals ();
+
+  sprintf (mypidstr, "%lu", (unsigned long)getpid ());
+
+  /* Create the two pipes. */
+  if (_gpgme_io_pipe (rp, 0))
+    return _assuan_error (ASSUAN_General_Error);
+  
+  if (_gpgme_io_pipe (wp, 1))
+    {
+      _gpgme_io_close (rp[0]);
+      _gpgme_io_close (rp[1]);
+      return _assuan_error (ASSUAN_General_Error);
+    }
+
+  err = _assuan_new_context (ctx);
+  if (err)
+    {
+      _gpgme_io_close (rp[0]);
+      _gpgme_io_close (rp[1]);
+      _gpgme_io_close (wp[0]);
+      _gpgme_io_close (wp[1]);
+      return _assuan_error (ASSUAN_General_Error);
+    }
+
+  (*ctx)->pipe_mode = 1;
+  (*ctx)->inbound.fd  = rp[0];  /* Our inbound is read end of read pipe. */
+  (*ctx)->outbound.fd = wp[1];  /* Our outbound is write end of write pipe. */
+  (*ctx)->deinit_handler = do_deinit;
+  (*ctx)->finish_handler = do_finish;
+
+  /* fixme: Actually we should set the "_assuan_pipe_connect_pid" env
+     variable to mypidstr.  However this requires us to write a full
+     environment handler, because the strings are expected in sorted
+     order.  The suggestion given in the MS Reference Library, to save
+     the old value, changeit, create proces and restore it, is not
+     thread safe.  */
+
+  /* Parent list is same as client list.  Note that GPGME will dup nul
+     to stderr even if the caller wants to inherit the handle for
+     it.  */
+  /* Server stdout is its write end of our read pipe.  */
+  child_fds[0].fd = rp[1];
+  child_fds[0].dup_to = 1;
+  /* Server stdin is its read end of our write pipe.  */
+  child_fds[1].fd = wp[0];
+  child_fds[1].dup_to = 0;
+  child_fds[2].fd = -1;
+
+  /* Start the process.  */
+  pid = _gpgme_io_spawn (name, argv, child_fds, child_fds);
+  if (pid == -1)
+    {
+      _assuan_log_printf ("CreateProcess failed: %s\n", strerror (errno));
+      _gpgme_io_close (rp[0]);
+      _gpgme_io_close (rp[1]);
+      _gpgme_io_close (wp[0]);
+      _gpgme_io_close (wp[1]);
+      return _assuan_error (ASSUAN_General_Error);
+    }
+
+  /* ERR contains the PID.  */
+  (*ctx)->pid = 0;  /* We don't use the PID. */
+
+  /* FIXME: Should be done by GPGME.  */
+  CloseHandle ((HANDLE) pid); /* We don't need to wait for the process. */
+
+  return initial_handshake (ctx);
+}
+
+#else
 #ifdef HAVE_W32_SYSTEM
 /* Build a command line for use with W32's CreateProcess.  On success
    CMDLINE gets the address of a newly allocated string.  */
@@ -648,8 +750,7 @@ create_inheritable_pipe (int filedes[2], int for_write)
   filedes[1] = handle_to_fd (w);
   return 0;
 }
-#endif /*HAVE_W32_SYSTEM*/
-
+#endif /* HAVE_W32_SYSTEM */
 
 #ifdef HAVE_W32_SYSTEM
 #define pipe_connect pipe_connect_w32
@@ -832,6 +933,7 @@ pipe_connect_w32 (assuan_context_t *ctx,
   return initial_handshake (ctx);
 }
 #endif /*HAVE_W32_SYSTEM*/
+#endif /* !_ASSUAN_IN_GPGME_BUILD_ASSUAN */ 
 
 
 /* Connect to a server over a pipe, creating the assuan context and
