@@ -64,5 +64,7 @@ private:
     Private * d;
 };
 
+} /* namespace _gpgme_ */
+
 #endif /* __KDTOOLSCORE_KDPIPEIODEVICE_H__ */
 
