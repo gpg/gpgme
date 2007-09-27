@@ -181,6 +181,8 @@ initial_handshake (assuan_context_t *ctx)
 }
 
 
+#ifndef _ASSUAN_IN_GPGME_BUILD_ASSUAN
+
 #ifndef HAVE_W32_SYSTEM
 #define pipe_connect pipe_connect_unix
 /* Unix version of the pipe connection code.  We use an extra macro to
@@ -365,6 +367,7 @@ pipe_connect_unix (assuan_context_t *ctx,
   return initial_handshake (ctx);
 }
 #endif /*!HAVE_W32_SYSTEM*/
+#endif /* _ASSUAN_IN_GPGME_BUILD_ASSUAN */
 
 
 #ifndef HAVE_W32_SYSTEM
@@ -550,6 +553,7 @@ socketpair_connect (assuan_context_t *ctx,
 
 
 
+
 #ifdef _ASSUAN_IN_GPGME_BUILD_ASSUAN
 
 #define pipe_connect pipe_connect_gpgme
@@ -570,7 +574,7 @@ pipe_connect_gpgme (assuan_context_t *ctx,
 		    void *atforkvalue)
 {
   assuan_error_t err;
-  int pid;
+  int res;
   int rp[2];
   int wp[2];
   char mypidstr[50];
@@ -631,8 +635,8 @@ pipe_connect_gpgme (assuan_context_t *ctx,
   child_fds[2].fd = -1;
 
   /* Start the process.  */
-  pid = _gpgme_io_spawn (name, argv, child_fds, child_fds);
-  if (pid == -1)
+  res = _gpgme_io_spawn (name, argv, child_fds, child_fds);
+  if (res == -1)
     {
       _assuan_log_printf ("CreateProcess failed: %s\n", strerror (errno));
       _gpgme_io_close (rp[0]);
@@ -642,11 +646,7 @@ pipe_connect_gpgme (assuan_context_t *ctx,
       return _assuan_error (ASSUAN_General_Error);
     }
 
-  /* ERR contains the PID.  */
   (*ctx)->pid = 0;  /* We don't use the PID. */
-
-  /* FIXME: Should be done by GPGME.  */
-  CloseHandle ((HANDLE) pid); /* We don't need to wait for the process. */
 
   return initial_handshake (ctx);
 }

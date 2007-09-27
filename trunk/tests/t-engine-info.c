@@ -1,5 +1,5 @@
 /* t-engine-info.c - Regression test for gpgme_get_engine_info.
-   Copyright (C) 2003, 2004 g10 Code GmbH
+   Copyright (C) 2003, 2004, 2007 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -54,13 +54,13 @@ check_engine_info (gpgme_engine_info_t info, gpgme_protocol_t protocol,
     }
   if (strcmp (info->file_name, file_name))
     {
-      fprintf (stderr, "Unexpected file name to executable %s (expected %s instead)",
+      fprintf (stderr, "Unexpected file name to executable %s (expected %s instead)\n",
 	       info->file_name, file_name);
       exit (1);
     }
   if (strcmp (info->req_version, req_version))
     {
-      fprintf (stderr, "Unexpected required version %s (expected %s instead)",
+      fprintf (stderr, "Unexpected required version %s (expected %s instead)\n",
 	       info->req_version, req_version);
       exit (1);
     }

@@ -1,5 +1,9 @@
 2007-09-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* w32-glib-io.c (_gpgme_io_spawn),
+	w32-qt-io.cpp (_gpgme_io_spawn), w32-io.c (_gpgme_io_spawn): Close
+	the process handle, return 0.
+
 	* gpgme.h (gpgme_protocol_t): Add GPGME_PROTOCOL_UNKNOWN.
 	* gpgme.c (gpgme_get_protocol_name): Implement support for
 	GPGME_PROTOCOL_UNKNOWN.

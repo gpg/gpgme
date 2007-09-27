@@ -24,6 +24,10 @@
 #include <stdlib.h>
 #include <locale.h>
 
+#ifdef HAVE_W32_SYSTEM
+#include <windows.h>
+#endif
+
 #include <gpgme.h>
 
 #ifndef DIM
@@ -65,7 +69,13 @@ gpgme_error_t
 passphrase_cb (void *opaque, const char *uid_hint, const char *passphrase_info,
 	       int last_was_bad, int fd)
 {
+#ifdef HAVE_W32_SYSTEM
+  DWORD written;
+  WriteFile ((HANDLE) fd, "abc\n", 4, &written, 0);
+#else
   write (fd, "abc\n", 4);
+#endif
+
   return 0;
 }
 

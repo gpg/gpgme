@@ -525,7 +525,11 @@ _gpgme_io_spawn (const char *path, char **argv,
 		(int) GetLastError ());
 
   TRACE_SUC1 ("process=%p", pi.hProcess);
-  return 0;
+
+  /* We don't need to wait for the process. */
+  CloseHandle (pi.hProcess);
+
+  return TRACE_SYSRES (0);
 }
 
 
