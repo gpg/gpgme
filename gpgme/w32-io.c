@@ -805,7 +805,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   SECURITY_ATTRIBUTES sec_attr;
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
 	      "inherit_idx=%i (GPGME uses it for %s)",
-	      inherit_idx, inherit_idx ? "writing" : "reading");
+	      inherit_idx, inherit_idx ? "reading" : "writing");
 
   memset (&sec_attr, 0, sizeof (sec_attr));
   sec_attr.nLength = sizeof (sec_attr);

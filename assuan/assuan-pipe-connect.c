@@ -571,7 +571,7 @@ pipe_connect_gpgme (assuan_context_t *ctx,
 {
   assuan_error_t err;
   int pid;
-int rp[2];
+  int rp[2];
   int wp[2];
   char mypidstr[50];
   struct spawn_fd_item_s child_fds[3]; /* stdin, stdout, terminating -1 */
@@ -586,10 +586,10 @@ int rp[2];
   sprintf (mypidstr, "%lu", (unsigned long)getpid ());
 
   /* Create the two pipes. */
-  if (_gpgme_io_pipe (rp, 0))
+  if (_gpgme_io_pipe (rp, 1))
     return _assuan_error (ASSUAN_General_Error);
   
-  if (_gpgme_io_pipe (wp, 1))
+  if (_gpgme_io_pipe (wp, 0))
     {
       _gpgme_io_close (rp[0]);
       _gpgme_io_close (rp[1]);
@@ -706,7 +706,7 @@ build_w32_commandline (const char * const *argv, char **cmdline)
 
 
 #ifdef HAVE_W32_SYSTEM
-/* Create pipe where one end end is inheritable.  */
+/* Create pipe where one end is inheritable.  */
 static int
 create_inheritable_pipe (int filedes[2], int for_write)
 {

@@ -194,7 +194,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   QIODevice *chan;
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
 	      "inherit_idx=%i (GPGME uses it for %s)",
-	      inherit_idx, inherit_idx ? "writing" : "reading");
+	      inherit_idx, inherit_idx ? "reading" : "writing");
 
 #define PIPEBUF_SIZE  4096
   if (_pipe (filedes, PIPEBUF_SIZE, O_NOINHERIT | O_BINARY) == -1)
