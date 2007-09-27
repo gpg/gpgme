@@ -208,6 +208,9 @@ gpgme_get_protocol_name (gpgme_protocol_t protocol)
     case GPGME_PROTOCOL_CMS:
       return "CMS";
 
+    case GPGME_PROTOCOL_UNKNOWN:
+      return "unknown";
+
     default:
       return NULL;
     }

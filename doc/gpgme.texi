@@ -748,6 +748,12 @@ This specifies the OpenPGP protocol.
 
 @item GPGME_PROTOCOL_CMS
 This specifies the Cryptographic Message Syntax.
+
+@item GPGME_PROTOCOL_UNKNOWN
+Reserved for future extension.  You may use this to indicate that the
+used protocol is not known to the application.  Currently,
+@acronym{GPGME} does not accept this value in any operation, though,
+except for @code{gpgme_get_protocol_name}.
 @end table
 @end deftp
 

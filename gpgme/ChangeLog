@@ -1,5 +1,9 @@
 2007-09-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h (gpgme_protocol_t): Add GPGME_PROTOCOL_UNKNOWN.
+	* gpgme.c (gpgme_get_protocol_name): Implement support for
+	GPGME_PROTOCOL_UNKNOWN.
+
 	* kdpipeiodevice.h: Fix last change.
 
 	* w32-glib-io.c (_gpgme_io_pipe), w32-qt-io.c (_gpgme_io_pipe),

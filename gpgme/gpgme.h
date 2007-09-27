@@ -300,7 +300,8 @@ gpgme_validity_t;
 typedef enum
   {
     GPGME_PROTOCOL_OpenPGP = 0,  /* The default mode.  */
-    GPGME_PROTOCOL_CMS     = 1
+    GPGME_PROTOCOL_CMS     = 1,
+    GPGME_PROTOCOL_UNKNOWN = 255
   }
 gpgme_protocol_t;
 

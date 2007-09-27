@@ -1,3 +1,7 @@
+2007-09-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Protocols and Engines): Document GPGME_PROTOCOL_UNKNOWN.
+
 2007-09-11  Werner Koch  <wk@g10code.com>
 
 	* gpgme.texi (I/O Callback Example): Typo fix.

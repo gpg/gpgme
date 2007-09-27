@@ -1,5 +1,7 @@
 2007-09-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* assuan-pipe-connect.c (pipe_connect_gpgme): Fix last change.
+
 	* assuan-pipe-connect.c (pipe_connect_gpgme): New function, use it
 	if _ASSUAN_IN_GPGME_BUILD_ASSUAN.
 
