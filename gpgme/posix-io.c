@@ -393,9 +393,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
     {
       if (fds[i].fd == -1) 
 	continue;
-      if (fds[i].frozen)
-	TRACE_ADD1 (dbg_help, "f0x%x ", fds[i].fd);
-      else if (fds[i].for_read)
+      if (fds[i].for_read)
 	{
 	  assert (!FD_ISSET (fds[i].fd, &readfds));
 	  FD_SET (fds[i].fd, &readfds);

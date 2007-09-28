@@ -136,6 +136,9 @@ gpg_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 {
   engine_gpg_t gpg = engine;
 
+  TRACE3 (DEBUG_ENGINE, "gpgme:gpg_io_event", gpg,
+          "event %p, type %d, type_data %p",
+          gpg->io_cbs.event, type, type_data);
   if (gpg->io_cbs.event)
     (*gpg->io_cbs.event) (gpg->io_cbs.event_priv, type, type_data);
 }
@@ -1044,7 +1047,6 @@ read_status (engine_gpg_t gpg)
 				    gpg->fd_data_map[gpg->cmd.linked_idx].fd;
 				  fds.for_read = 1;
 				  fds.for_write = 0;
-				  fds.frozen = 0;
 				  fds.opaque = NULL;
 				  do
 				    {
@@ -1354,7 +1356,7 @@ start (engine_gpg_t gpg)
 	}
     }
 
-  (*gpg->io_cbs.event) (gpg->io_cbs.event_priv, GPGME_EVENT_START, NULL);
+  gpg_io_event (gpg, GPGME_EVENT_START, NULL);
   
   /* fixme: check what data we can release here */
   return 0;
