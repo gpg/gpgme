@@ -1,5 +1,9 @@
 2007-09-28  Werner Koch  <wk@g10code.com>
 
+	* engine-gpgsm.c (iocb_data_t): Add SERVER_FD_STR.
+	(gpgsm_new): Set it.
+	(gpgsm_set_fd): Use it.
+
 	* w32-glib-io.c (find_channel): Add a new primary flag.
 	(_gpgme_io_close): Close channel only if primary.
 	(_gpgme_io_dup): Put newfd into the table as shallow copy.
