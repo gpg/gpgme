@@ -82,7 +82,6 @@ fd_table_put (fd_table_t fdt, int fd, int dir, void *opaque, int *idx)
   fdt->fds[i].fd = fd;
   fdt->fds[i].for_read = (dir == 1);
   fdt->fds[i].for_write = (dir == 0);
-  fdt->fds[i].frozen = 0;
   fdt->fds[i].signaled = 0;
   fdt->fds[i].opaque = opaque;
   *idx = i;
@@ -135,6 +134,9 @@ _gpgme_add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc,
       free (item);
       return err;
     }
+
+  TRACE3 (DEBUG_CTX, "_gpgme_add_io_cb", ctx,
+	  "fd %d, dir=%d -> tag=%p", fd, dir, tag);
 
   *r_tag = tag;
   return 0;
@@ -189,6 +191,7 @@ _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked)
       int nr;
       struct io_select_fd_s fds;
 
+      TRACE0 (DEBUG_CTX, "_gpgme_run_io_cb", item, "need to check");
       fds = *an_fds;
       fds.signaled = 0;
       /* Just give it a quick poll.  */
@@ -202,5 +205,7 @@ _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked)
 	return 0;
     }
 
+  TRACE2 (DEBUG_CTX, "_gpgme_run_io_cb", item, "handler (%p, %d)",
+          item->handler_value, an_fds->fd);
   return item->handler (item->handler_value, an_fds->fd);
 }

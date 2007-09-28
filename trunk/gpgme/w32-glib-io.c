@@ -78,7 +78,11 @@
 
 #define MAX_SLAFD 256
 
-GIOChannel *giochannel_table[MAX_SLAFD];
+static struct 
+{
+  GIOChannel *chan;
+  int primary;   /* Set if CHAN is the one we used to create the channel.  */
+} giochannel_table[MAX_SLAFD];
 
 
 static GIOChannel *
@@ -87,14 +91,15 @@ find_channel (int fd, int create)
   if (fd < 0 || fd >= MAX_SLAFD)
     return NULL;
 
-  if (create && !giochannel_table[fd])
+  if (create && !giochannel_table[fd].chan)
     {
-      giochannel_table[fd] = g_io_channel_win32_new_fd (fd);
-      g_io_channel_set_encoding (giochannel_table[fd], NULL, NULL);
-      g_io_channel_set_buffered (giochannel_table[fd], FALSE);
+      giochannel_table[fd].chan = g_io_channel_win32_new_fd (fd);
+      giochannel_table[fd].primary = 1;
+      g_io_channel_set_encoding (giochannel_table[fd].chan, NULL, NULL);
+      g_io_channel_set_buffered (giochannel_table[fd].chan, FALSE);
     }
 
-  return giochannel_table[fd];
+  return giochannel_table[fd].chan;
 }
 
 
@@ -279,7 +284,6 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 int
 _gpgme_io_close (int fd)
 {
-  GIOChannel *chan;
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd);
 
   if (fd < 0 || fd >= MAX_SLAFD)
@@ -297,16 +301,19 @@ _gpgme_io_close (int fd)
     }
 
   /* Then do the close.  */    
-  chan = giochannel_table[fd];
-  if (chan)
+  if (giochannel_table[fd].chan)
     {
-      g_io_channel_shutdown (chan, 1, NULL);
-      g_io_channel_unref (chan);
-      giochannel_table[fd] = NULL;
+      if (giochannel_table[fd].primary)
+        {
+          g_io_channel_shutdown (giochannel_table[fd].chan, 1, NULL);
+          g_io_channel_unref (giochannel_table[fd].chan);
+        }
+      giochannel_table[fd].chan = NULL;
     }
   else
     _close (fd);
 
+  TRACE_SUC ();
   return 0;
 }
 
@@ -621,14 +628,21 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   any = 0;
   for (i = 0; i < nfds; i++)
     {
+      GIOChannel *chan = NULL;
+
       if (fds[i].fd == -1) 
 	continue;
-      if (fds[i].frozen)
-	TRACE_ADD1 (dbg_help, "f0x%x ", fds[i].fd);
+
+      if ((fds[i].for_read || fds[i].for_write)
+          && !(chan = find_channel (fds[i].fd, 0)))
+        {
+          TRACE_ADD1 (dbg_help, "[BAD0x%x ", fds[i].fd);
+          TRACE_END (dbg_help, "]"); 
+          assert (!"see log file");
+        }
       else if (fds[i].for_read )
 	{
-          GIOChannel *chan = find_channel (fds[i].fd, 0);
-          assert (chan);
+          assert(chan);
           g_io_channel_win32_make_pollfd (chan, G_IO_IN, pollfds + npollfds);
           pollfds_map[npollfds] = i;
 	  TRACE_ADD2 (dbg_help, "r0x%x<%d> ", fds[i].fd, pollfds[npollfds].fd);
@@ -637,8 +651,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
         }
       else if (fds[i].for_write)
 	{
-          GIOChannel *chan = find_channel (fds[i].fd, 0);
-          assert (chan);
+          assert(chan);
           g_io_channel_win32_make_pollfd (chan, G_IO_OUT, pollfds + npollfds);
           pollfds_map[npollfds] = i;
 	  TRACE_ADD2 (dbg_help, "w0x%x<%d> ", fds[i].fd, pollfds[npollfds].fd);
@@ -711,5 +724,45 @@ leave:
 int
 _gpgme_io_dup (int fd)
 {
-  return _dup (fd);
+  int newfd;
+  GIOChannel *chan;
+  
+  TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_dup", fd, "dup (%d)", fd);
+
+  newfd =_dup (fd);
+  if (newfd == -1)
+    return TRACE_SYSRES (-1);
+  if (newfd < 0 || newfd >= MAX_SLAFD)
+    {
+      /* New fd won't fit into our table.  */
+      _close (newfd);
+      errno = EIO; 
+      return TRACE_SYSRES (-1);
+    }
+
+  chan = find_channel (fd, 0);
+  if (!chan)
+    {
+      /* No channel exists for the original fd, thus we create one for
+         our new fd.  */
+      if ( !find_channel (newfd, 1) )
+        {
+          _close (newfd);
+          errno = EIO;
+          return TRACE_SYSRES (-1);
+        }
+    }
+  else
+    {
+      /* There is already a channel for the original one.  Copy that
+         channel into a new table entry unless we already did so.  */
+      if ( !giochannel_table[newfd].chan)
+        {
+          giochannel_table[newfd].chan = chan;
+          giochannel_table[newfd].primary = 0;
+        }
+      assert (giochannel_table[newfd].chan == chan);
+    }
+
+  return TRACE_SYSRES (newfd);
 }

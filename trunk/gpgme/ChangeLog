@@ -1,3 +1,23 @@
+2007-09-28  Werner Koch  <wk@g10code.com>
+
+	* w32-glib-io.c (find_channel): Add a new primary flag.
+	(_gpgme_io_close): Close channel only if primary.
+	(_gpgme_io_dup): Put newfd into the table as shallow copy.
+
+	* priv-io.h (struct io_select_fd_s): Remove member FROZEN.
+	* w32-io.c (_gpgme_io_select): Ditto.
+	* w32-glib-io.c (_gpgme_io_select): Ditto.
+
+	* posix-io.c (_gpgme_io_select): Ditto.
+	* rungpg.c (read_status): Ditto.
+	* wait.c (fd_table_put): Ditto.
+
+	* rungpg.c (gpg_io_event): Add tracing.
+	(start): Use gpg_io_event for sending the start event.
+	* engine-gpgsm.c (gpgsm_io_event): Add tracing.
+	(start): Use gpgsm_io_event for sending the start event.
+	* wait.c (_gpgme_add_io_cb, _gpgme_run_io_cb): Add tracing.
+
 2007-09-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* kdpipeiodevice.moc, w32-qt-io.cpp, kdpipeiodevice.cpp: New

@@ -1192,9 +1192,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
       fds[i].signaled = 0;
       if (fds[i].for_read || fds[i].for_write)
 	{
-	  if (fds[i].frozen)
-	    TRACE_ADD1 (dbg_help, "f0x%x ", fds[i].fd);
-	  else if (fds[i].for_read)
+	  if (fds[i].for_read)
 	    {
 	      struct reader_context_s *ctx = find_reader (fds[i].fd,1);
 	      

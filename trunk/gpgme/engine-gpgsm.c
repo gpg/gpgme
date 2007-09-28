@@ -96,6 +96,11 @@ struct engine_gpgsm
 
 typedef struct engine_gpgsm *engine_gpgsm_t;
 
+
+static void gpgsm_io_event (void *engine, 
+                            gpgme_event_io_t type, void *type_data);
+
+
 
 static char *
 gpgsm_get_version (const char *file_name)
@@ -846,10 +851,10 @@ status_handler (void *opaque, int fd)
               gpgsm->colon.any = 0;
               err = gpgsm->colon.fnc (gpgsm->colon.fnc_value, NULL);
             }
-	  _gpgme_io_close (gpgsm->status_cb.fd);
           TRACE2 (DEBUG_CTX, "gpgme:status_handler", gpgsm,
 		  "fd 0x%x: OK line - final status: %s",
                   fd, err ? gpg_strerror (err) : "ok");
+	  _gpgme_io_close (gpgsm->status_cb.fd);
 	  return err;
 	}
       else if (linelen > 2
@@ -963,15 +968,17 @@ add_io_cb (engine_gpgsm_t gpgsm, iocb_data_t *iocbd, gpgme_io_cb_t handler)
 {
   gpgme_error_t err;
 
+  TRACE_BEG2 (DEBUG_ENGINE, "engine-gpgsm:add_io_cb", gpgsm,
+              "fd %d, dir %d", iocbd->fd, iocbd->dir);
   err = (*gpgsm->io_cbs.add) (gpgsm->io_cbs.add_priv,
 			      iocbd->fd, iocbd->dir,
 			      handler, iocbd->data, &iocbd->tag);
   if (err)
-    return err;
+    return TRACE_ERR (err);
   if (!iocbd->dir)
     /* FIXME Kludge around poll() problem.  */
     err = _gpgme_io_set_nonblocking (iocbd->fd);
-  return err;
+  return TRACE_ERR (err);
 }
 
 
@@ -1020,7 +1027,7 @@ start (engine_gpgsm_t gpgsm, const char *command)
     err = map_assuan_error (assuan_write_line (gpgsm->assuan_ctx, command));
 
   if (!err)
-    (*gpgsm->io_cbs.event) (gpgsm->io_cbs.event_priv, GPGME_EVENT_START, NULL);
+    gpgsm_io_event (gpgsm, GPGME_EVENT_START, NULL);
 
   return err;
 }
@@ -1713,6 +1720,9 @@ gpgsm_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 {
   engine_gpgsm_t gpgsm = engine;
 
+  TRACE3 (DEBUG_ENGINE, "gpgme:gpgsm_io_event", gpgsm,
+          "event %p, type %d, type_data %p",
+          gpgsm->io_cbs.event, type, type_data);
   if (gpgsm->io_cbs.event)
     (*gpgsm->io_cbs.event) (gpgsm->io_cbs.event_priv, type, type_data);
 }
