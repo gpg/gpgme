@@ -49,10 +49,13 @@
 typedef struct
 {
   int fd;	/* FD we talk about.  */
-  int server_fd; /* Server FD for this connection.  */
+  int server_fd;/* Server FD for this connection.  */
   int dir;	/* Inbound/Outbound, maybe given implicit?  */
   void *data;	/* Handler-specific data.  */
   void *tag;	/* ID from the user for gpgme_remove_io_callback.  */
+  char server_fd_str[15]; /* Same as SERVER_FD but as a string.  We
+                             need this because _gpgme_io_fdstr can't
+                             be used on a closed descriptor.  */
 } iocb_data_t;
 
 
@@ -351,14 +354,17 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   gpgsm->input_cb.dir = 0;
   gpgsm->input_cb.tag = 0;
   gpgsm->input_cb.server_fd = -1;
+  *gpgsm->input_cb.server_fd_str = 0;
   gpgsm->output_cb.fd = -1;
   gpgsm->output_cb.dir = 1;
   gpgsm->output_cb.tag = 0;
   gpgsm->output_cb.server_fd = -1;
+  *gpgsm->output_cb.server_fd_str = 0;
   gpgsm->message_cb.fd = -1;
   gpgsm->message_cb.dir = 0;
   gpgsm->message_cb.tag = 0;
   gpgsm->message_cb.server_fd = -1;
+  *gpgsm->message_cb.server_fd_str = 0;
 
   gpgsm->status.fnc = 0;
   gpgsm->colon.fnc = 0;
@@ -381,6 +387,9 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
     }
   gpgsm->input_cb.fd = fds[1];
   gpgsm->input_cb.server_fd = fds[0];
+  _gpgme_io_fd2str (gpgsm->input_cb.server_fd_str, 
+                    sizeof gpgsm->input_cb.server_fd_str,
+                    gpgsm->input_cb.server_fd);
 
   if (_gpgme_io_pipe (fds, 1) < 0)
     {
@@ -389,6 +398,9 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
     }
   gpgsm->output_cb.fd = fds[0];
   gpgsm->output_cb.server_fd = fds[1];
+  _gpgme_io_fd2str (gpgsm->output_cb.server_fd_str, 
+                    sizeof gpgsm->output_cb.server_fd_str,
+                    gpgsm->output_cb.server_fd);
 
   if (_gpgme_io_pipe (fds, 0) < 0)
     {
@@ -397,6 +409,9 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
     }
   gpgsm->message_cb.fd = fds[1];
   gpgsm->message_cb.server_fd = fds[0];
+  _gpgme_io_fd2str (gpgsm->message_cb.server_fd_str, 
+                    sizeof gpgsm->message_cb.server_fd_str,
+                    gpgsm->message_cb.server_fd);
 
   child_fds[0] = gpgsm->input_cb.server_fd;
   child_fds[1] = gpgsm->output_cb.server_fd;
@@ -672,7 +687,6 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
   char *which;
   iocb_data_t *iocb_data;
   int dir;
-  int fd;
 
   switch (fd_type)
     {
@@ -718,16 +732,13 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
 	  goto leave_set_fd;
 	}
     }
-#endif
 
-  fd = iocb_data->server_fd;
-
-#if USE_DESCRIPTOR_PASSING
-  err = assuan_sendfd (gpgsm->assuan_ctx, fd);
+  err = assuan_sendfd (gpgsm->assuan_ctx, iocb_data->server_fd);
   if (err)
     goto leave_set_fd;
 
-  _gpgme_io_close (fd);
+  _gpgme_io_close (iocb_data->server_fd);
+  iocb_data->server_fd = -1;
 
   if (opt)
     snprintf (line, COMMANDLINELEN, "%s FD %s", which, opt);
@@ -735,9 +746,11 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
     snprintf (line, COMMANDLINELEN, "%s FD", which);
 #else
   if (opt)
-    snprintf (line, COMMANDLINELEN, "%s FD=%i %s", which, fd, opt);
+    snprintf (line, COMMANDLINELEN, "%s FD=%s %s", 
+              which, iocb_data->server_fd_str, opt);
   else
-    snprintf (line, COMMANDLINELEN, "%s FD=%i", which, fd);
+    snprintf (line, COMMANDLINELEN, "%s FD=%s", 
+              which, iocb_data->server_fd_str);
 #endif
 
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
@@ -747,9 +760,12 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
   if (err)
     {
       _gpgme_io_close (iocb_data->fd);
-      _gpgme_io_close (iocb_data->server_fd);
       iocb_data->fd = -1;
-      iocb_data->server_fd = -1;
+      if (iocb_data->server_fd != -1)
+        {
+          _gpgme_io_close (iocb_data->server_fd);
+          iocb_data->server_fd = -1;
+        }
     }
 #endif
 
