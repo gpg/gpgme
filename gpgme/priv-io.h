@@ -64,7 +64,13 @@ int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock);
    line that the child process expects.  */
 int _gpgme_io_fd2str (char *buf, int buflen, int fd);
 
-/* Like dup().  */
+/* Duplicate a file descriptor.  This is more restrictive than dup():
+   it assumes that the resulting file descriptors are essentially
+   co-equal (for example, no private offset), which is true for pipes
+   and sockets (but not files) under Unix with the standard dup()
+   function.  Basically, this function is used to reference count the
+   status output file descriptor shared between GPGME and libassuan
+   (in engine-gpgsm.c).  */
 int _gpgme_io_dup (int fd);
 
 #endif /* IO_H */

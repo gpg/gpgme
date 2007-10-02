@@ -1,4 +1,4 @@
-/* w32-glib-io.c - W32 Glib I/O functions
+/* w32-qt-io.c - W32 Glib I/O functions
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2004, 2005, 2007 g10 Code GmbH
 
@@ -583,12 +583,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
         {
           fds[i].signaled = 0;
         }
-      else if (fds[i].frozen)
-        {
-          TRACE_ADD1 (dbg_help, "f0x%x ", fds[i].fd);
-          fds[i].signaled = 0;
-        }
-      else if (fds[i].for_read )
+      else if (fds[i].for_read)
         {
           const QIODevice * const chan = find_channel (fds[i].fd, 0);
           assert (chan);

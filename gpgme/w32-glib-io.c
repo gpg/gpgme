@@ -81,7 +81,23 @@
 static struct 
 {
   GIOChannel *chan;
-  int primary;   /* Set if CHAN is the one we used to create the channel.  */
+  /* The boolean PRIMARY is true if this file descriptor caused the
+     allocation of CHAN.  Only then should CHAN be destroyed when this
+     FD is closed.  This, together with the fact that dup'ed file
+     descriptors are closed before the file descriptors from which
+     they are dup'ed are closed, ensures that CHAN is always valid,
+     and shared among all file descriptors refering to the same
+     underlying object.
+
+     The logic behind this is that there is only one reason for us to
+     dup file descriptors anyway: to allow simpler book-keeping of
+     file descriptors shared between GPGME and libassuan, which both
+     want to close something.  Using the same channel for these
+     duplicates works just fine (and in fact, using different channels
+     does not work because the W32 backend in glib does not support
+     that: One would end up with several competing reader/writer
+     threads.  */
+  int primary;
 } giochannel_table[MAX_SLAFD];
 
 
@@ -306,10 +322,11 @@ _gpgme_io_close (int fd)
   if (giochannel_table[fd].chan)
     {
       if (giochannel_table[fd].primary)
-        {
-          g_io_channel_shutdown (giochannel_table[fd].chan, 1, NULL);
-          g_io_channel_unref (giochannel_table[fd].chan);
-        }
+	g_io_channel_shutdown (giochannel_table[fd].chan, 1, NULL);
+      else
+	_close (fd);
+
+      g_io_channel_unref (giochannel_table[fd].chan);
       giochannel_table[fd].chan = NULL;
     }
   else
@@ -731,40 +748,24 @@ _gpgme_io_dup (int fd)
   
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_dup", fd, "dup (%d)", fd);
 
-  newfd =_dup (fd);
+  newfd = _dup (fd);
   if (newfd == -1)
     return TRACE_SYSRES (-1);
   if (newfd < 0 || newfd >= MAX_SLAFD)
     {
-      /* New fd won't fit into our table.  */
+      /* New FD won't fit into our table.  */
       _close (newfd);
       errno = EIO; 
       return TRACE_SYSRES (-1);
     }
+  assert (giochannel_table[newfd].chan == NULL);
 
   chan = find_channel (fd, 0);
-  if (!chan)
-    {
-      /* No channel exists for the original fd, thus we create one for
-         our new fd.  */
-      if ( !find_channel (newfd, 1) )
-        {
-          _close (newfd);
-          errno = EIO;
-          return TRACE_SYSRES (-1);
-        }
-    }
-  else
-    {
-      /* There is already a channel for the original one.  Copy that
-         channel into a new table entry unless we already did so.  */
-      if ( !giochannel_table[newfd].chan)
-        {
-          giochannel_table[newfd].chan = chan;
-          giochannel_table[newfd].primary = 0;
-        }
-      assert (giochannel_table[newfd].chan == chan);
-    }
+  assert (chan);
+
+  g_io_channel_ref (chan);
+  giochannel_table[newfd].chan = chan;
+  giochannel_table[newfd].primary = 0;
 
   return TRACE_SYSRES (newfd);
 }
