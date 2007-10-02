@@ -54,7 +54,7 @@ typedef struct
   void *data;	/* Handler-specific data.  */
   void *tag;	/* ID from the user for gpgme_remove_io_callback.  */
   char server_fd_str[15]; /* Same as SERVER_FD but as a string.  We
-                             need this because _gpgme_io_fdstr can't
+                             need this because _gpgme_io_fd2str can't
                              be used on a closed descriptor.  */
 } iocb_data_t;
 
@@ -530,8 +530,9 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 #endif
 
  leave:
-  /* Close the server ends of the pipes.  Our ends are closed in
-     gpgsm_release().  */
+  /* Close the server ends of the pipes (because of this, we must use
+     the stored server_fd_str in the function start).  Our ends are
+     closed in gpgsm_release().  */
 #if !USE_DESCRIPTOR_PASSING
   if (gpgsm->input_cb.server_fd != -1)
     _gpgme_io_close (gpgsm->input_cb.server_fd);
@@ -1013,11 +1014,15 @@ start (engine_gpgsm_t gpgsm, const char *command)
   if (nfds < 1)
     return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
 
-  /* We duplicate the file descriptor, so we can close it without
-     disturbing assuan.  Alternatively, we could special case
-     status_fd and register/unregister it manually as needed, but this
-     increases code duplication and is more complicated as we can not
-     use the close notifications etc.  */
+  /* We "duplicate" the file descriptor, so we can close it here (we
+     can't close fdlist[0], as that is closed by libassuan, and
+     closing it here might cause libassuan to close some unrelated FD
+     later).  Alternatively, we could special case status_fd and
+     register/unregister it manually as needed, but this increases
+     code duplication and is more complicated as we can not use the
+     close notifications etc.  A third alternative would be to let
+     Assuan know that we closed the FD, but that complicates the
+     Assuan interface.  */
 
   gpgsm->status_cb.fd = _gpgme_io_dup (fdlist[0]);
   if (gpgsm->status_cb.fd < 0)
