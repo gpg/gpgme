@@ -1,5 +1,10 @@
 2007-10-02  Marcus Brinkmann  <marcus@g10code.de>
 
+	* kdpipeiodevice.cpp, kdpipeiodevice.moc: New versions.
+	* w32-qt-io.cpp (_gpgme_io_fd2str): Print actual_fd if available.
+	(_gpgme_io_dup): Only acquire a reference, do not actually dup.
+	Submitted by Frank Osterfeld.
+
 	* priv-io.h, engine-gpgsm.c: Add comments.
 	* w32-qt-io.cpp (_gpgme_io_select): Remove code handling frozen FDs.
 	* w32-glib-io.c (_gpgme_io_close): Always dereference the channel,
