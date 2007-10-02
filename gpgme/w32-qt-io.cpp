@@ -117,9 +117,11 @@ find_channel (int fd, int create)
    BUFLEN.  The printable version is the representation on the command
    line that the child process expects.  */
 int
-_gpgme_io_fd2str (char *buf, int buflen, int fd)
+_gpgme_io_fd2str (char *buf, int buflen, int fd_)
 {
-  return snprintf (buf, buflen, "%ld", (long) _get_osfhandle (fd));
+  const int actual_fd = iodevice_table[fd_] ? iodevice_table[fd_]->actual_fd : fd_;
+  return snprintf (buf, buflen, "%ld", (long) _get_osfhandle (actual_fd));
+  //  return snprintf (buf, buflen, "%d", fd);
 }
 
 
@@ -627,6 +629,14 @@ gpgme_get_giochannel (int fd)
 int
 _gpgme_io_dup (int fd)
 {
+    DeviceEntry* const existing = iodevice_table[fd];
+    if ( existing )
+        existing->ref();
+    else
+        find_channel( fd, /*create=*/1 );
+    return fd;
+ 
+#if 0
   const int new_fd = _dup( fd );
   iodevice_table[new_fd] = iodevice_table[fd];
   if ( iodevice_table[new_fd] )
@@ -634,5 +644,6 @@ _gpgme_io_dup (int fd)
   else
     find_channel( new_fd, /*create=*/1 ); 
   return new_fd;
+#endif
 }
 

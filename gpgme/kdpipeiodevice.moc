@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'kdpipeiodevice.cpp'
 **
-** Created: Wed Sep 26 11:05:05 2007
+** Created: Mon Oct 1 16:08:44 2007
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.3.1)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -136,15 +136,18 @@ static const uint qt_meta_data_KDPipeIODevice__Private[] = {
        1,       // revision
        0,       // classname
        0,    0, // classinfo
-       0,    0, // methods
+       1,   10, // methods
        0,    0, // properties
        0,    0, // enums/sets
+
+ // slots: signature, parameters, type, tag, flags
+      25,   24,   24,   24, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_KDPipeIODevice__Private[] = {
-    "KDPipeIODevice::Private\0"
+    "KDPipeIODevice::Private\0\0emitReadyRead()\0"
 };
 
 const QMetaObject KDPipeIODevice::Private::staticMetaObject = {
@@ -170,5 +173,11 @@ int KDPipeIODevice::Private::qt_metacall(QMetaObject::Call _c, int _id, void **_
     _id = QObject::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        switch (_id) {
+        case 0: emitReadyRead(); break;
+        }
+        _id -= 1;
+    }
     return _id;
 }
