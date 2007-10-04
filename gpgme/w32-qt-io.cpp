@@ -82,30 +82,29 @@ using _gpgme_::KDPipeIODevice;
    really nice callback interfaces to let the user control all this at
    a per-context level.  */
 
-#define MAX_SLAFD 50000
+#define MAX_SLAFD 1024
 
 struct DeviceEntry {
-  DeviceEntry() : iodev( 0 ), actual_fd( -1 ), refCount( 1 ) {}
-    QIODevice* iodev;
-    int actual_fd;
+  DeviceEntry() : iodev( 0 ), refCount( 1 ) {}
+    KDPipeIODevice* iodev;
     mutable int refCount;
     void ref() const { ++refCount; }
-    int unref() const { return --refCount; }
+    int unref() const { assert( refCount > 0 ); return --refCount; }
 };
 
 DeviceEntry* iodevice_table[MAX_SLAFD];
 
 
-static QIODevice *
+static KDPipeIODevice *
 find_channel (int fd, int create)
 {
+  assert( fd < MAX_SLAFD );
   if (fd < 0 || fd >= MAX_SLAFD)
     return NULL;
 
   if (create && !iodevice_table[fd])
   {
     DeviceEntry* entry = new DeviceEntry;
-    entry->actual_fd = fd;
     entry->iodev = new KDPipeIODevice
       (fd, QIODevice::ReadWrite|QIODevice::Unbuffered);
     iodevice_table[fd] = entry; 
@@ -117,11 +116,9 @@ find_channel (int fd, int create)
    BUFLEN.  The printable version is the representation on the command
    line that the child process expects.  */
 int
-_gpgme_io_fd2str (char *buf, int buflen, int fd_)
+_gpgme_io_fd2str (char *buf, int buflen, int fd)
 {
-  const int actual_fd = iodevice_table[fd_] ? iodevice_table[fd_]->actual_fd : fd_;
-  return snprintf (buf, buflen, "%ld", (long) _get_osfhandle (actual_fd));
-  //  return snprintf (buf, buflen, "%d", fd);
+  return snprintf (buf, buflen, "%d", (long)_get_osfhandle( fd ) );
 }
 
 
@@ -143,7 +140,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 {
   int saved_errno = 0;
   qint64 nread;
-  QIODevice *chan;
+  KDPipeIODevice *chan;
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_read", fd,
 	      "buffer=%p, count=%u", buffer, count);
 
@@ -175,7 +172,7 @@ int
 _gpgme_io_write (int fd, const void *buffer, size_t count)
 {
   qint64 nwritten;
-  QIODevice *chan;
+  KDPipeIODevice *chan;
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_write", fd,
 	      "buffer=%p, count=%u", buffer, count);
   TRACE_LOGBUF ((char *) buffer, count);
@@ -204,7 +201,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 int
 _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
-  QIODevice *chan;
+  KDPipeIODevice *chan;
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
 	      "inherit_idx=%i (GPGME uses it for %s)",
 	      inherit_idx, inherit_idx ? "reading" : "writing");
@@ -266,7 +263,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 int
 _gpgme_io_close (int fd)
 {
-  QIODevice *chan;
+  KDPipeIODevice *chan;
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd);
 
   if (fd < 0 || fd >= MAX_SLAFD)
@@ -286,27 +283,19 @@ _gpgme_io_close (int fd)
   /* Then do the close.  */    
   
   DeviceEntry* const entry = iodevice_table[fd];
-  if ( entry )
-  {
-    assert( entry->refCount > 0 );
-    const int actual_fd = entry->actual_fd;
-    assert( actual_fd > 0 );
-    if ( !entry->unref() ) {
-      entry->iodev->close();
-      delete entry->iodev;
-      delete entry;
-      for ( int i = 0; i < MAX_SLAFD; ++i ) {
-        if ( iodevice_table[i] == entry )
-          iodevice_table[i] = 0;      
+  if ( entry ) {
+      if ( entry->unref() == 0 ) {
+          entry->iodev->close();
+          delete entry->iodev;
+          delete entry;
+          iodevice_table[fd] = 0;
       }
-    }
-
-    if ( fd != actual_fd )
-      _close( fd );       
+  } else {
+      _close( fd );
   }
-  else
-    _close (fd);
+
   
+
   return 0;
 }
 
@@ -337,7 +326,6 @@ _gpgme_io_set_nonblocking (int fd)
   /* Qt always uses non-blocking IO, except for files, maybe, but who
      uses that?  */
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", fd);
-
   return TRACE_SYSRES (0);
 }
 
@@ -538,6 +526,7 @@ _gpgme_io_spawn (const char *path, char **argv,
   /* Close the other ends of the pipes.  */
   for (i = 0; fd_parent_list[i].fd != -1; i++)
     _gpgme_io_close (fd_parent_list[i].fd);
+
   
   TRACE_LOG4 ("CreateProcess ready: hProcess=%p, hThread=%p, "
 	      "dwProcessID=%d, dwThreadId=%d",
@@ -565,8 +554,6 @@ _gpgme_io_spawn (const char *path, char **argv,
 int
 _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 {
-  int i;
-  int count;
   /* Use a 1s timeout.  */
 
   void *dbg_help = NULL;
@@ -576,30 +563,32 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   /* We only implement the special case of nonblock == true.  */
   assert (nonblock);
 
-  count = 0;
+  int count = 0;
 
   TRACE_SEQ (dbg_help, "select on [ ");
-  for (i = 0; i < nfds; i++)
+  for (int i = 0; i < nfds; i++)
     {
       if (fds[i].fd == -1)
         {
           fds[i].signaled = 0;
-        }
-      else if (fds[i].for_read)
-        {
-          const QIODevice * const chan = find_channel (fds[i].fd, 0);
-          assert (chan);
-          fds[i].signaled = chan->bytesAvailable() > 0 ? 1 : 0 ;
-          TRACE_ADD1 (dbg_help, "w0x%x ", fds[i].fd);
-          count++;
+	}
+      else if (fds[i].for_read )
+      {
+          const KDPipeIODevice * const chan = find_channel (fds[i].fd, 0);
+          assert (chan);   
+          fds[i].signaled = chan->readWouldBlock() ? 0 : 1;
+	  TRACE_ADD1 (dbg_help, "w0x%x ", fds[i].fd);
+          if ( fds[i].signaled ) 
+              count++;
         }
       else if (fds[i].for_write)
         {
-          const QIODevice * const chan = find_channel (fds[i].fd, 0);
+          const KDPipeIODevice * const chan = find_channel (fds[i].fd, 0);
           assert (chan);
-          fds[i].signaled = chan->bytesToWrite() > 0 ? 0 : 1 ;
+          fds[i].signaled = chan->writeWouldBlock() ? 0 : 1;
           TRACE_ADD1 (dbg_help, "w0x%x ", fds[i].fd);
-          count++;
+          if ( fds[i].signaled ) 
+              count++;
         }
     }
   TRACE_END (dbg_help, "]"); 
@@ -629,21 +618,8 @@ gpgme_get_giochannel (int fd)
 int
 _gpgme_io_dup (int fd)
 {
-    DeviceEntry* const existing = iodevice_table[fd];
-    if ( existing )
-        existing->ref();
-    else
-        find_channel( fd, /*create=*/1 );
+    assert( iodevice_table[fd] );
+    iodevice_table[fd]->ref();
     return fd;
- 
-#if 0
-  const int new_fd = _dup( fd );
-  iodevice_table[new_fd] = iodevice_table[fd];
-  if ( iodevice_table[new_fd] )
-    iodevice_table[new_fd]->ref();
-  else
-    find_channel( new_fd, /*create=*/1 ); 
-  return new_fd;
-#endif
 }
 
