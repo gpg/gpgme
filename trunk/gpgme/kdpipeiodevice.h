@@ -45,6 +45,9 @@ public:
     Qt::HANDLE handle() const;
     int descriptor() const;
 
+    bool readWouldBlock() const;
+    bool writeWouldBlock() const;
+
     /* reimp */ qint64 bytesAvailable() const;
     /* reimp */ qint64 bytesToWrite() const;
     /* reimp */ bool canReadLine() const;
