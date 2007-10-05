@@ -493,7 +493,7 @@ bool KDPipeIODevice::writeWouldBlock() const
 {
    d->startWriterThread();
    LOCKED( d->writer );
-   return d->writer->bufferFull() && !d->writer->error;
+   return !d->writer->bufferEmpty() && !d->writer->error;
 }  
 
 
@@ -684,6 +684,7 @@ void Reader::run() {
         if ( !cancel && ( eof || error ) ) {
 	    qDebug( "%p: Reader::run: received eof(%d) or error(%d), waking everyone", this, eof, error );
             notifyReadyRead();
+            cancel = true;
         } else if ( !cancel && !bufferFull() && !bufferEmpty() ) {
 	    qDebug( "%p: Reader::run: buffer no longer empty, waking everyone", this );
             notifyReadyRead();
