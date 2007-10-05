@@ -85,8 +85,9 @@ using _gpgme_::KDPipeIODevice;
 #define MAX_SLAFD 1024
 
 struct DeviceEntry {
-  DeviceEntry() : iodev( 0 ), refCount( 1 ) {}
+  DeviceEntry() : iodev( 0 ), refCount( 1 ), blocking( true ) {}
     KDPipeIODevice* iodev;
+    bool blocking;
     mutable int refCount;
     void ref() const { ++refCount; }
     int unref() const { assert( refCount > 0 ); return --refCount; }
@@ -152,7 +153,11 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
       return TRACE_SYSRES (-1);
     }
   TRACE_LOG1 ("channel %p", chan);
-
+  if ( iodevice_table[fd] && !iodevice_table[fd]->blocking && chan->readWouldBlock() ) {
+      errno = EAGAIN;
+      return TRACE_SYSRES( -1 );
+  }
+ 
   nread = chan->read ((char *) buffer, count);
   if (nread < 0)
     {
@@ -185,6 +190,11 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
       return -1;
     }
 
+  if ( iodevice_table[fd] && !iodevice_table[fd]->blocking && chan->writeWouldBlock() )
+  {
+      errno = EAGAIN;
+      return TRACE_SYSRES( -1 );
+  }
   nwritten = chan->write ((char *) buffer, count);
 
   if (nwritten < 0)
@@ -323,8 +333,9 @@ _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
 int
 _gpgme_io_set_nonblocking (int fd)
 {
-  /* Qt always uses non-blocking IO, except for files, maybe, but who
-     uses that?  */
+  DeviceEntry* const entry = iodevice_table[fd];
+  assert( entry );
+  entry->blocking = false; 
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", fd);
   return TRACE_SYSRES (0);
 }
