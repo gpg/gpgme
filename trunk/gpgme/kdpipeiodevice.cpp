@@ -95,6 +95,7 @@ private:
     Qt::HANDLE handle;
 public:
     QMutex mutex;
+    QWaitCondition waitForCancelCondition;
     QWaitCondition bufferNotFullCondition;
     QWaitCondition bufferNotEmptyCondition;
     QWaitCondition hasStarted;
@@ -126,8 +127,8 @@ Reader::Reader( int fd_, Qt::HANDLE handle_ )
       error( false ),
       eofShortCut( false ),
       errorCode( 0 ),
-      rptr( 0 ), wptr( 0 ),
-      consumerBlocksOnUs( false )
+      consumerBlocksOnUs( false ),
+      rptr( 0 ), wptr( 0 )
 {
     
 }
@@ -207,8 +208,6 @@ public:
     bool startReaderThread(); 
     bool startWriterThread(); 
     void stopThreads();
-    bool triedToStartReader;
-    bool triedToStartWriter;
 
 public Q_SLOTS:
     void emitReadyRead();
@@ -218,6 +217,8 @@ private:
     Qt::HANDLE handle;
     Reader * reader;
     Writer * writer;
+    bool triedToStartReader;
+    bool triedToStartWriter;
 };
 
 KDPipeIODevice::Private::Private( KDPipeIODevice * qq )
@@ -521,9 +522,9 @@ qint64 KDPipeIODevice::readData( char * data, qint64 maxSize ) { KDAB_CHECK_THIS
 	if ( bytesAvailable() > 0 )
 	    maxSize = std::min( maxSize, bytesAvailable() ); // don't block
     }
-    qDebug( "%p: KDPipeIODevice::readData: try to lock reader (CONSUMER THREAD)" );
+    qDebug( "%p: KDPipeIODevice::readData: try to lock reader (CONSUMER THREAD)", this );
     LOCKED( r );
-    qDebug( "%p: KDPipeIODevice::readData: locked reader (CONSUMER THREAD)" );
+    qDebug( "%p: KDPipeIODevice::readData: locked reader (CONSUMER THREAD)", this );
 
     r->readyReadSentCondition.wakeAll();
     if ( /* maxSize > 0 && */ r->bufferEmpty() &&  !r->error && !r->eof ) { // ### block on maxSize == 0?
@@ -626,6 +627,7 @@ void KDPipeIODevice::Private::stopThreads()
 	    // tell thread to cancel:
 	    r->cancel = true;
 	    // and wake it, so it can terminate:
+            r->waitForCancelCondition.wakeAll();
 	    r->bufferNotFullCondition.wakeAll();
             r->readyReadSentCondition.wakeAll();
       	}
@@ -653,7 +655,7 @@ void KDPipeIODevice::close() { KDAB_CHECK_THIS;
     qDebug( "KPipeIODevice::close(%p): wait and closing writer %p", this, d->writer );
     waitAndDelete( d->writer );
     qDebug( "KPipeIODevice::close(%p): wait and closing reader %p", this, d->reader );
-    {
+    if ( d->reader ) {
         LOCKED( d->reader );
         d->reader->readyReadSentCondition.wakeAll();
     }
@@ -682,15 +684,20 @@ void Reader::run() {
 
     while ( true ) {
         if ( !cancel && ( eof || error ) ) {
+            //notify the client until the buffer is empty and then once 
+            //again so he receives eof/error. After that, wait for him 
+            //to cancel 
+            const bool wasEmpty = bufferEmpty();
 	    qDebug( "%p: Reader::run: received eof(%d) or error(%d), waking everyone", this, eof, error );
             notifyReadyRead();
-            cancel = true;
+            if ( !cancel && wasEmpty ) 
+                waitForCancelCondition.wait( &mutex );
         } else if ( !cancel && !bufferFull() && !bufferEmpty() ) {
 	    qDebug( "%p: Reader::run: buffer no longer empty, waking everyone", this );
             notifyReadyRead();
         } 
  
-        while ( !error && !cancel && bufferFull() ) {
+        while ( !cancel && !error && bufferFull() ) {
             notifyReadyRead();
             if ( bufferFull() ) {
                 qDebug( "%p: Reader::run: buffer is full, going to sleep", this );
@@ -836,8 +843,7 @@ void Writer::run() {
                 goto leave;
 	    }
 #endif
-            qDebug( "%p (fd=%d): Writer::run: buffer after WriteFile (numBytes=%lld): %s:", this, fd, numBytesInBuffer,
-buffer );
+            qDebug( "%p (fd=%d): Writer::run: buffer after WriteFile (numBytes=%u): %s:", this, fd, numBytesInBuffer, buffer );
 	    totalWritten += numWritten;
             mutex.lock();
 	} while ( totalWritten < numBytesInBuffer );
