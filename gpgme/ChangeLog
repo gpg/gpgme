@@ -1,3 +1,8 @@
+2007-10-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* kdpipeiodevice.cpp: New version from Frank Osterfeld and Marc
+	Mutz.
+
 2007-10-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* kdpipeiodevice.cpp, w32-qt-io.cpp: New versions from Frank
