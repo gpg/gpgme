@@ -728,7 +728,12 @@ void Reader::run() {
             DWORD numRead;
 	    const bool ok = ReadFile( handle, buffer + wptr, numBytes, &numRead, 0 );
 	    mutex.lock();
-	    if ( !ok ) {
+	    if ( ok ) {
+                if ( numRead == 0 ) {
+                    qDebug( "%p: Reader::run: got eof (numRead==0)", this );
+                    eof = true;
+                } 
+            } else { // !ok
 	        errorCode = static_cast<int>( GetLastError() );
 	        if ( errorCode == ERROR_BROKEN_PIPE ) {
                     assert( numRead == 0 );
@@ -758,7 +763,7 @@ void Reader::run() {
             }
 #endif
 	    qDebug( "%p: Reader::run: read %ld bytes", this, static_cast<long>(numRead) );
-	    qDebug( "%p (fd=%d): KDPipeIODevice::readData: %s", this, fd, buffer );
+	    qDebug( "%p: Reader::run(fd=%d): %s", this, fd, buffer );
 
 	    if ( numRead > 0 ) {
 	        qDebug( "%p: Reader::run: buffer before: rptr=%4d, wptr=%4d", this, rptr, wptr );
