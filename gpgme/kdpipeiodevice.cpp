@@ -276,7 +276,7 @@ bool KDPipeIODevice::open( int fd, OpenMode mode ) { KDAB_CHECK_THIS;
 bool KDPipeIODevice::open( Qt::HANDLE h, OpenMode mode ) { KDAB_CHECK_THIS;
 
 #ifdef Q_OS_WIN32
-    return d->doOpen( 0, h, mode );
+    return d->doOpen( -1, h, mode );
 #else
     Q_UNUSED( h );
     Q_UNUSED( mode );
@@ -341,11 +341,14 @@ void KDPipeIODevice::Private::emitReadyRead()
 
 bool KDPipeIODevice::Private::doOpen( int fd_, Qt::HANDLE handle_, OpenMode mode_ ) {
 
-    if ( q->isOpen() || fd_ < 0 )
+    if ( q->isOpen() )
 	return false;
 
 #ifdef Q_OS_WIN32
     if ( !handle_ )
+	return false;
+#else
+    if ( fd_ < 0 )
 	return false;
 #endif
 
@@ -662,8 +665,10 @@ void KDPipeIODevice::close() { KDAB_CHECK_THIS;
     waitAndDelete( d->reader );
 #undef waitAndDelete
 #ifdef Q_OS_WIN32
-    qDebug( "Closing handle" );
-    CloseHandle( d->handle );
+    if ( d->fd != -1 )
+        _close( d->fd );
+    else
+        CloseHandle( d->handle );
 #else
     ::close( d->fd );
 #endif
