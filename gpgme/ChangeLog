@@ -1,3 +1,7 @@
+2007-11-20  Werner Koch  <wk@g10code.com>
+
+	* op-support.c (_gpgme_parse_inv_recp): Add new reason code 11.
+
 2007-11-12  Marcus Brinkmann  <marcus@g10code.de>
 
 	* kdpipeiodevice.cpp: New version from Frank Osterfeld.

@@ -1,5 +1,5 @@
-/* op-support.c 
-   Copyright (C) 2002, 2003, 2004 g10 Code GmbH
+/* op-support.c - Supporting functions.
+   Copyright (C) 2002, 2003, 2004, 2007 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -14,9 +14,8 @@
    Lesser General Public License for more details.
    
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -213,6 +212,10 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
 
     case 10:
       inv_key->reason = gpg_error (GPG_ERR_PUBKEY_NOT_TRUSTED);
+      break;
+
+    case 11:
+      inv_key->reason = gpg_error (GPG_ERR_MISSING_CERT);
       break;
     }
 
