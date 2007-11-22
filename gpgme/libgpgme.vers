@@ -36,6 +36,9 @@ GPGME_1.1 {
     gpgme_sig_notation_get;
 
     gpgme_free;
+
+    gpgme_op_getauditlog_start;
+    gpgme_op_getauditlog;
 };
 
 

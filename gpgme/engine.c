@@ -710,6 +710,20 @@ _gpgme_engine_op_verify (engine_t engine, gpgme_data_t sig,
 }
 
 
+gpgme_error_t
+_gpgme_engine_op_getauditlog (engine_t engine, gpgme_data_t output,
+                              unsigned int flags)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->getauditlog)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->getauditlog) (engine->engine, output, flags);
+}
+
+
 void
 _gpgme_engine_set_io_cbs (engine_t engine, gpgme_io_cbs_t io_cbs)
 {

@@ -515,6 +515,15 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 	}
     }
 
+  /* Ask gpgsm to enable the audit log support.  */
+  if (!err)
+    {
+      err = assuan_transact (gpgsm->assuan_ctx, "OPTION enable-audit-log=1",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+      if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
+        err = 0; /* This is an optional feature of gpgsm.  */
+    }
+
 #if !USE_DESCRIPTOR_PASSING
   if (!err
       && (_gpgme_io_set_close_notify (gpgsm->input_cb.fd,
@@ -1704,6 +1713,32 @@ gpgsm_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 }
 
 
+/* Send the GETAUDITLOG command.  The result is saved to a gpgme data
+   object.  */
+static gpgme_error_t
+gpgsm_getauditlog (void *engine, gpgme_data_t output, unsigned int flags)
+{
+  engine_gpgsm_t gpgsm = engine;
+  gpgme_error_t err = 0;
+
+  if (!gpgsm || !output)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  gpgsm->output_cb.data = output;
+  err = gpgsm_set_fd (gpgsm, OUTPUT_FD, 0);
+  if (err)
+    return err;
+
+  gpgsm_clear_fd (gpgsm, INPUT_FD);
+  gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+
+  err = start (gpgsm, "GETAUDITLOG");
+
+  return err;
+}
+
+
+
 static void
 gpgsm_set_status_handler (void *engine, engine_status_handler_t fnc,
 			  void *fnc_value) 
@@ -1782,6 +1817,7 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_sign,
     NULL,		/* trustlist */
     gpgsm_verify,
+    gpgsm_getauditlog,
     gpgsm_set_io_cbs,
     gpgsm_io_event,
     gpgsm_cancel

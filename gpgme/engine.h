@@ -123,6 +123,10 @@ gpgme_error_t _gpgme_engine_op_verify (engine_t engine, gpgme_data_t sig,
 				       gpgme_data_t signed_text,
 				       gpgme_data_t plaintext);
 
+gpgme_error_t _gpgme_engine_op_getauditlog (engine_t engine,
+                                            gpgme_data_t output,
+                                            unsigned int flags);
+
 void _gpgme_engine_set_io_cbs (engine_t engine,
 			       gpgme_io_cbs_t io_cbs);
 void _gpgme_engine_io_event (engine_t engine,

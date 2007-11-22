@@ -108,6 +108,21 @@ check_result (gpgme_verify_result_t result, int summary, char *fpr,
 }
 
 
+static void
+show_auditlog (gpgme_ctx_t ctx)
+{
+  gpgme_error_t err;
+  gpgme_data_t data;
+
+  err = gpgme_data_new (&data);
+  fail_if_err (err);
+  err = gpgme_op_getauditlog (ctx, data, 0);
+  fail_if_err (err);
+  gpgme_data_release (data);
+}
+
+
+
 int 
 main (int argc, char **argv)
 {
@@ -134,6 +149,8 @@ main (int argc, char **argv)
   check_result (result, GPGME_SIGSUM_VALID | GPGME_SIGSUM_GREEN,
 		"3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E",
 		GPG_ERR_NO_ERROR, GPGME_VALIDITY_FULL);
+
+  show_auditlog (ctx);
 
   /* Checking a manipulated message.  */
   gpgme_data_release (text);

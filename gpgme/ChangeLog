@@ -1,3 +1,15 @@
+2007-11-22  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h (gpgme_op_getauditlog_start, gpgme_op_getauditlog): New.
+	* libgpgme.vers: Ditto.
+	* gpgme.def: Ditto.
+	* getauditlog.c: New.
+	* engine-backend.h (struct engine_ops): Add member GETAUDITLOG.
+	* engine-gpgsm.c (gpgsm_getauditlog): New.
+	(_gpgme_engine_ops_gpgsm): Insert new function.
+	(gpgsm_new): Try to enable audit log support.
+	* rungpg.c (_gpgme_engine_ops_gpg): Insert dummy entry.
+	
 2007-11-20  Werner Koch  <wk@g10code.com>
 
 	* op-support.c (_gpgme_parse_inv_recp): Add new reason code 11.

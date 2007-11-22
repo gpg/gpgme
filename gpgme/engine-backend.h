@@ -94,7 +94,9 @@ struct engine_ops
   gpgme_error_t (*verify) (void *engine, gpgme_data_t sig,
 			   gpgme_data_t signed_text,
 			   gpgme_data_t plaintext);
-  
+  gpgme_error_t  (*getauditlog) (void *engine, gpgme_data_t output,
+                                 unsigned int flags);
+
   void (*set_io_cbs) (void *engine, gpgme_io_cbs_t io_cbs);
   void (*io_event) (void *engine, gpgme_event_io_t type, void *type_data);
 
