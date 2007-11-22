@@ -315,6 +315,11 @@ gpgme_protocol_t;
 typedef unsigned int gpgme_keylist_mode_t;
 
 
+/* Flags for the audit log functions.  */
+#define GPGME_AUDITLOG_HTML      1 
+#define GPGME_AUDITLOG_WITH_HELP 128
+
+
 /* Signature notations.  */
 
 /* The available signature notation flags.  */
@@ -1637,6 +1642,16 @@ const char *gpgme_trust_item_get_string_attr (gpgme_trust_item_t item,
 int gpgme_trust_item_get_int_attr (gpgme_trust_item_t item, _gpgme_attr_t what,
 				   const void *reserved, int idx)
      _GPGME_DEPRECATED;
+
+
+/* Return the auditlog for the current session.  This may be called
+   after a successful or failed operation.  If no audit log is
+   available GPG_ERR_NO_DATA is returned.  */
+gpgme_error_t gpgme_op_getauditlog_start (gpgme_ctx_t ctx, gpgme_data_t output,
+                                          unsigned int flags);
+gpgme_error_t gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output, 
+                                    unsigned int flags);
+
 
 
 /* Various functions.  */

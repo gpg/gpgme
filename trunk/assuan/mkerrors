@@ -16,9 +16,7 @@
 # Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA 
-
+# License along with this program; if not, see <http://www.gnu.org/licenses/>.
 cat <<EOF
 /* Generated automatically by mkerrors */
 /* Do not edit!  See mkerrors for copyright notice. */
@@ -58,8 +56,13 @@ _assuan_error (int oldcode)
   unsigned int n;
 
   if (!err_source)
-    return (oldcode & 0x00ffffff); /* Make sure that the gpg-error
-                                      source part is cleared. */
+    {
+      if (oldcode == -1)
+        return -1;
+      else
+        return (oldcode & 0x00ffffff); /* Make sure that the gpg-error
+                                          source part is cleared. */
+    }
 
   switch (oldcode)
     {
@@ -90,6 +93,12 @@ _assuan_error (int oldcode)
       switch (errno)
         {
         case 0: n = 16381; /*GPG_ERR_MISSING_ERRNO*/  break;
+        case EAGAIN:
+          if (errno > 0 && errno < 4096)
+            {
+              n = (EAGAIN | (1 << 15)); 
+              break;
+            }
         default: n = 270;  /*GPG_ERR_ASS_READ_ERROR*/ break;
         }
       break;
@@ -98,6 +107,12 @@ _assuan_error (int oldcode)
       switch (errno)
         {
         case 0: n = 16381; /*GPG_ERR_MISSING_ERRNO*/  break;
+        case EAGAIN:
+          if (errno > 0 && errno < 4096)
+            {
+              n = (EAGAIN | (1 << 15)); 
+              break;
+            }
         default: n = 271;  /*GPG_ERR_ASS_WRITE_ERROR*/ break;
         }
       break;
@@ -111,7 +126,12 @@ _assuan_error (int oldcode)
                     an error is indeed returned. */
           n = 16381; /*GPG_ERR_MISSING_ERRNO*/
           break;
-        case ENOMEM: n = (1 << 15) | 86; break;
+        case ENOMEM:
+          if (errno > 0 && errno < 4096)
+            {
+              n = (ENOMEM | (1 << 15));
+              break;
+            }
         default:  
           n = 16382; /*GPG_ERR_UNKNOWN_ERRNO*/
           break;

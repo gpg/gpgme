@@ -156,5 +156,8 @@ EXPORTS
     gpgme_get_giochannel		  @121
     gpgme_get_fdptr			  @122
 
+    gpgme_op_getauditlog_start            @123
+    gpgme_op_getauditlog                  @124
+
 ; END
 

@@ -98,7 +98,7 @@ main_sources =								\
 	encrypt.c encrypt-sign.c decrypt.c decrypt-verify.c verify.c	\
 	sign.c passphrase.c progress.c					\
 	key.c keylist.c trust-item.c trustlist.c			\
-	import.c export.c genkey.c delete.c edit.c			\
+	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
 	engine.h engine-backend.h engine.c rungpg.c status-table.h	\
 	$(gpgsm_components) sema.h priv-io.h $(system_components)	\
 	debug.c debug.h gpgme.c version.c error.c

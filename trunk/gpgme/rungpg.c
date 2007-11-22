@@ -2120,6 +2120,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_sign,
     gpg_trustlist,
     gpg_verify,
+    NULL,
     gpg_set_io_cbs,
     gpg_io_event,
     gpg_cancel

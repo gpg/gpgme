@@ -2,6 +2,7 @@ Package: gpgme
 Maintainer: Marcus Brinkmann <marcus@g10code.com>
 Bug reports: bug-gpgme@gnupg.org
 Security related bug reports: security@gnupg.org
+License: LGPLv2.1+
 
 
 FSF <gnu@gnu.org>
