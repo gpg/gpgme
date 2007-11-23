@@ -1,3 +1,7 @@
+2007-11-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm/t-verify.c (show_auditlog): Check for GPG_ERR_ASS_UNKNOWN_CMD.
+
 2007-11-23  Werner Koch  <wk@g10code.com>
 
 	* gpgsm/t-verify.c (check_result): Don't exit on error but set a flag.
