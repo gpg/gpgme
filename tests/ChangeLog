@@ -1,3 +1,10 @@
+2007-11-23  Werner Koch  <wk@g10code.com>
+
+	* gpgsm/t-verify.c (check_result): Don't exit on error but set a flag.
+	(main): Cosnult flag for return value.
+	(show_auditlog): New.
+	(main): Use it.
+
 2007-09-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* t-engine-info.c (check_engine_info): Fix debug output.

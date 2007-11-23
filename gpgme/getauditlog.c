@@ -42,7 +42,7 @@ getauditlog_start (gpgme_ctx_t ctx, int synchronous,
   if (!output)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  err = _gpgme_op_reset (ctx, synchronous);
+  err = _gpgme_op_reset (ctx, ((synchronous&255) | 256) );
   if (err)
     return err;
 
