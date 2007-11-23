@@ -123,7 +123,8 @@ show_auditlog (gpgme_ctx_t ctx)
     {
       fprintf (stderr, "%s:%i: Can't get audit log: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (err));
-      got_errors = 1;
+      if (gpg_err_code (err) != GPG_ERR_ASS_UNKNOWN_CMD)
+	got_errors = 1;
     }
   print_data (data);
   gpgme_data_release (data);
