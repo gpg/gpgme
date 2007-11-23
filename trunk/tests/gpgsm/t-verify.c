@@ -34,6 +34,8 @@
 #include "t-support.h"
 
 
+static int got_errors;
+
 static const char test_text1[] = "Hallo Leute!\n";
 static const char test_text1f[]= "Hallo Leute?\n";
 static const char test_sig1[] =
@@ -60,50 +62,50 @@ check_result (gpgme_verify_result_t result, int summary, char *fpr,
     {
       fprintf (stderr, "%s:%i: Unexpected number of signatures\n",
 	       __FILE__, __LINE__);
-      exit (1);
+      got_errors = 1;
     }
   if (sig->summary != summary)
     {
       fprintf (stderr, "%s:%i: Unexpected signature summary: "
                "want=0x%x have=0x%x\n",
 	       __FILE__, __LINE__, summary, sig->summary);
-      exit (1);
+      got_errors = 1;
     }
   if (strcmp (sig->fpr, fpr))
     {
       fprintf (stderr, "%s:%i: Unexpected fingerprint: %s\n",
 	       __FILE__, __LINE__, sig->fpr);
-      exit (1);
+      got_errors = 1;
     }
   if (gpg_err_code (sig->status) != status)
     {
       fprintf (stderr, "%s:%i: Unexpected signature status: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->status));
-      exit (1);
+      got_errors = 1;
     }
   if (sig->notations)
     {
       fprintf (stderr, "%s:%i: Unexpected notation data\n",
 	       __FILE__, __LINE__);
-      exit (1);
+      got_errors = 1;
     }
   if (sig->wrong_key_usage)
     {
       fprintf (stderr, "%s:%i: Unexpectedly wrong key usage\n",
 	       __FILE__, __LINE__);
-      exit (1);
+      got_errors = 1;
     }
   if (sig->validity != validity)
     {
       fprintf (stderr, "%s:%i: Unexpected validity: %i\n",
 	       __FILE__, __LINE__, sig->validity);
-      exit (1);
+      got_errors = 1;
     }
   if (gpg_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
     {
       fprintf (stderr, "%s:%i: Unexpected validity reason: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->validity_reason));
-      exit (1);
+      got_errors = 1;
     }
 }
 
@@ -117,7 +119,13 @@ show_auditlog (gpgme_ctx_t ctx)
   err = gpgme_data_new (&data);
   fail_if_err (err);
   err = gpgme_op_getauditlog (ctx, data, 0);
-  fail_if_err (err);
+  if (err)
+    {
+      fprintf (stderr, "%s:%i: Can't get audit log: %s\n",
+	       __FILE__, __LINE__, gpgme_strerror (err));
+      got_errors = 1;
+    }
+  print_data (data);
   gpgme_data_release (data);
 }
 
@@ -164,8 +172,10 @@ main (int argc, char **argv)
 		"3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E",
 		GPG_ERR_BAD_SIGNATURE, GPGME_VALIDITY_UNKNOWN);
 
+  show_auditlog (ctx);
+
   gpgme_data_release (text);
   gpgme_data_release (sig);
   gpgme_release (ctx);  
-  return 0;
+  return got_errors? 1 : 0;
 }

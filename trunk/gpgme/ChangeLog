@@ -1,3 +1,8 @@
+2007-11-23  Werner Koch  <wk@g10code.com>
+
+	* op-support.c (_gpgme_op_reset): Implement a no-reset flag.
+	* getauditlog.c (getauditlog_start): Use that flag.
+
 2007-11-22  Werner Koch  <wk@g10code.com>
 
 	* gpgme.h (gpgme_op_getauditlog_start, gpgme_op_getauditlog): New.

@@ -62,16 +62,24 @@ _gpgme_op_data_lookup (gpgme_ctx_t ctx, ctx_op_data_id_t type, void **hook,
 /* type is: 0: asynchronous operation (use global or user event loop).
             1: synchronous operation (always use private event loop).
             2: asynchronous private operation (use private or user
-            event loop).  */
+            event loop).  
+            256: Modification flag to suppress the engine reset.
+*/
 gpgme_error_t
 _gpgme_op_reset (gpgme_ctx_t ctx, int type)
 {
   gpgme_error_t err = 0;
   struct gpgme_io_cbs io_cbs;
+  int no_reset = (type & 256);
+  int reuse_engine = 0;
+
+  type &= 255;
 
   _gpgme_release_result (ctx);
 
-  if (ctx->engine)
+  if (ctx->engine && no_reset)
+    reuse_engine = 1;
+  else if (ctx->engine)
     {
       /* Attempt to reset an existing engine.  */
 
@@ -99,18 +107,20 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
 	return err;
     }
 
-  err = _gpgme_engine_set_locale (ctx->engine, LC_CTYPE, ctx->lc_ctype);
-#ifdef LC_MESSAGES
-  if (!err)
-    err = _gpgme_engine_set_locale (ctx->engine,
-				    LC_MESSAGES, ctx->lc_messages);
-#endif
-
-  if (err)
+  if (!reuse_engine)
     {
-      _gpgme_engine_release (ctx->engine);
-      ctx->engine = NULL;
-      return err;
+      err = _gpgme_engine_set_locale (ctx->engine, LC_CTYPE, ctx->lc_ctype);
+#ifdef LC_MESSAGES
+      if (!err)
+        err = _gpgme_engine_set_locale (ctx->engine,
+                                        LC_MESSAGES, ctx->lc_messages);
+#endif
+      if (err)
+        {
+          _gpgme_engine_release (ctx->engine);
+          ctx->engine = NULL;
+          return err;
+        }
     }
 
   if (type == 1 || (type == 2 && !ctx->io_cbs.add))
