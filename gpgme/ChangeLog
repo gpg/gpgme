@@ -1,3 +1,11 @@
+2007-11-26  Werner Koch  <wk@g10code.com>
+
+	* engine-gpgsm.c (struct engine_gpgsm): Add field INLINE_DATA and
+	always reset it before calling start.
+	(gpgsm_new): Clear it.
+	(status_handler): Implement it.
+	(gpgsm_getauditlog) [USE_DESCRIPTOR_PASSING]: Use INLINE_DATA.
+
 2007-11-23  Werner Koch  <wk@g10code.com>
 
 	* op-support.c (_gpgme_op_reset): Implement a no-reset flag.

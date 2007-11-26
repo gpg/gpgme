@@ -94,6 +94,8 @@ struct engine_gpgsm
     int any; /* any data line seen */
   } colon; 
 
+  gpgme_data_t inline_data;  /* Used to collect D lines.  */
+
   struct gpgme_io_cbs io_cbs;
 };
 
@@ -372,6 +374,8 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   gpgsm->colon.attic.linesize = 0;
   gpgsm->colon.attic.linelen = 0;
   gpgsm->colon.any = 0;
+
+  gpgsm->inline_data = NULL;
 
   gpgsm->io_cbs.add = NULL;
   gpgsm->io_cbs.add_priv = NULL;
@@ -899,8 +903,7 @@ status_handler (void *opaque, int fd)
           char **aline = &gpgsm->colon.attic.line;
 	  int *alinelen = &gpgsm->colon.attic.linelen;
 
-	  if (gpgsm->colon.attic.linesize
-	      < *alinelen + linelen + 1)
+	  if (gpgsm->colon.attic.linesize < *alinelen + linelen + 1)
 	    {
 	      char *newline = realloc (*aline, *alinelen + linelen + 1);
 	      if (!newline)
@@ -955,6 +958,49 @@ status_handler (void *opaque, int fd)
 	    }
           TRACE2 (DEBUG_CTX, "gpgme:status_handler", gpgsm,
 		  "fd 0x%x: D line; final status: %s",
+                  fd, err? gpg_strerror (err):"ok");
+        }
+      else if (linelen > 2
+	       && line[0] == 'D' && line[1] == ' '
+	       && gpgsm->inline_data)
+        {
+          char *src = line + 2;
+	  char *end = line + linelen;
+	  char *dst = src;
+          ssize_t nwritten;
+
+          linelen = 0;
+          while (src < end)
+            {
+              if (*src == '%' && src + 2 < end)
+                {
+                  /* Handle escaped characters.  */
+                  ++src;
+                  *dst++ = _gpgme_hextobyte (src);
+                  src += 2;
+                }
+              else
+                *dst++ = *src++;
+              
+              linelen++;
+            }
+          
+          src = line + 2;
+          while (linelen > 0)
+            {
+              nwritten = gpgme_data_write (gpgsm->inline_data, src, linelen);
+              if (!nwritten || (nwritten < 0 && errno != EINTR)
+                  || nwritten > linelen)
+                {
+                  err = gpg_error_from_errno (errno);
+                  break;
+                }
+              src += nwritten;
+              linelen -= nwritten;
+            }
+
+          TRACE2 (DEBUG_CTX, "gpgme:status_handler", gpgsm,
+		  "fd 0x%x: D inlinedata; final status: %s",
                   fd, err? gpg_strerror (err):"ok");
         }
       else if (linelen > 2
@@ -1094,6 +1140,7 @@ gpgsm_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
   if (err)
     return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
 
   err = start (engine, "DECRYPT");
   return err;
@@ -1159,6 +1206,7 @@ gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
   gpgsm_clear_fd (gpgsm, OUTPUT_FD);
   gpgsm_clear_fd (gpgsm, INPUT_FD);
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
 
   err = start (gpgsm, line);
   free (line);
@@ -1248,6 +1296,7 @@ gpgsm_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
   if (err)
     return err;
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
 
   err = set_recipients (gpgsm, recp);
 
@@ -1284,6 +1333,7 @@ gpgsm_export (void *engine, const char *pattern, unsigned int reserved,
     return err;
   gpgsm_clear_fd (gpgsm, INPUT_FD);
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
 
   err = start (gpgsm, cmd);
   free (cmd);
@@ -1375,6 +1425,7 @@ gpgsm_export_ext (void *engine, const char *pattern[], unsigned int reserved,
     return err;
   gpgsm_clear_fd (gpgsm, INPUT_FD);
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
 
   err = start (gpgsm, line);
   free (line);
@@ -1401,6 +1452,7 @@ gpgsm_genkey (void *engine, gpgme_data_t help_data, int use_armor,
   if (err)
     return err;
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
 
   err = start (gpgsm, "GENKEY");
   return err;
@@ -1422,6 +1474,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata)
     return err;
   gpgsm_clear_fd (gpgsm, OUTPUT_FD);
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
 
   err = start (gpgsm, "IMPORT");
   return err;
@@ -1483,6 +1536,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
   gpgsm_clear_fd (gpgsm, INPUT_FD);
   gpgsm_clear_fd (gpgsm, OUTPUT_FD);
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
 
   err = start (gpgsm, line);
   free (line);
@@ -1605,6 +1659,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
   gpgsm_clear_fd (gpgsm, INPUT_FD);
   gpgsm_clear_fd (gpgsm, OUTPUT_FD);
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
 
   err = start (gpgsm, line);
   free (line);
@@ -1670,6 +1725,7 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   if (err)
     return err;
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
 
   err = start (gpgsm, mode == GPGME_SIG_MODE_DETACH
 	       ? "SIGN --detached" : "SIGN");
@@ -1705,6 +1761,7 @@ gpgsm_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
       err = gpgsm_set_fd (gpgsm, MESSAGE_FD, 0);
       gpgsm_clear_fd (gpgsm, OUTPUT_FD);
     }
+  gpgsm->inline_data = NULL;
 
   if (!err)
     err = start (gpgsm, "VERIFY");
@@ -1724,6 +1781,7 @@ gpgsm_getauditlog (void *engine, gpgme_data_t output, unsigned int flags)
   if (!gpgsm || !output)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+#if USE_DESCRIPTOR_PASSING
   gpgsm->output_cb.data = output;
   err = gpgsm_set_fd (gpgsm, OUTPUT_FD, 0);
   if (err)
@@ -1731,8 +1789,17 @@ gpgsm_getauditlog (void *engine, gpgme_data_t output, unsigned int flags)
 
   gpgsm_clear_fd (gpgsm, INPUT_FD);
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
+# define CMD  "GETAUDITLOG"
+#else
+  gpgsm_clear_fd (gpgsm, OUTPUT_FD);
+  gpgsm_clear_fd (gpgsm, INPUT_FD);
+  gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = output;
+# define CMD  "GETAUDITLOG --data"
+#endif
 
-  err = start (gpgsm, "GETAUDITLOG");
+  err = start (gpgsm, (flags & GPGME_AUDITLOG_HTML)? CMD " --html" : CMD);
 
   return err;
 }
