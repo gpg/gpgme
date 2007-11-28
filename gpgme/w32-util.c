@@ -245,6 +245,36 @@ find_program_in_registry (const char *name)
 
 
 static char *
+find_program_in_inst_dir (const char *name)
+{
+  char *result = NULL;
+  char *tmp;
+
+  tmp = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
+					"Software\\GNU\\GnuPG",
+					"Install Directory");
+  if (!tmp)
+    return NULL;
+
+  result = malloc (strlen (tmp) + 1 + strlen (name) + 1);
+  if (!result)
+    {
+      free (tmp);
+      return NULL;
+    }
+
+  strcpy (stpcpy (stpcpy (result, tmp), "\\"), name);
+  free (tmp);
+  if (access (result, F_OK))
+    {
+      free (result);
+      return NULL;
+    }
+
+  return result;
+}
+
+static char *
 find_program_at_standard_place (const char *name)
 {
   char path[MAX_PATH];
@@ -266,6 +296,7 @@ find_program_at_standard_place (const char *name)
   return result;
 }
 
+
 const char *
 _gpgme_get_gpg_path (void)
 {
@@ -275,11 +306,9 @@ _gpgme_get_gpg_path (void)
   if (!gpg_program)
     gpg_program = find_program_in_registry ("gpgProgram");
   if (!gpg_program)
-    gpg_program = find_program_at_standard_place ("GNU\\GnuPG\\gpg.exe");
-#ifdef GPG_PATH
+    gpg_program = find_program_in_inst_dir ("gpg.exe");
   if (!gpg_program)
-    gpg_program = GPG_PATH;
-#endif
+    gpg_program = find_program_at_standard_place ("GNU\\GnuPG\\gpg.exe");
   UNLOCK (get_path_lock);
   return gpg_program;
 }
@@ -293,11 +322,9 @@ _gpgme_get_gpgsm_path (void)
   if (!gpgsm_program)
     gpgsm_program = find_program_in_registry ("gpgsmProgram");
   if (!gpgsm_program)
-    gpgsm_program = find_program_at_standard_place ("GNU\\GnuPG\\gpgsm.exe");
-#ifdef GPGSM_PATH
+    gpgsm_program = find_program_in_inst_dir ("gpgsm.exe");
   if (!gpgsm_program)
-    gpgsm_program = GPGSM_PATH;
-#endif
+    gpgsm_program = find_program_at_standard_place ("GNU\\GnuPG\\gpgsm.exe");
   UNLOCK (get_path_lock);
   return gpgsm_program;
 }

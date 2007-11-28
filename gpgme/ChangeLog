@@ -1,3 +1,9 @@
+2007-11-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* w32-util.c (_gpgme_get_gpg_path, _gpgme_get_gpgsm_path): Search
+	for installation directory.  Remove old fallback default.
+	(find_program_in_inst_dir): New function.
+
 2007-11-26  Werner Koch  <wk@g10code.com>
 
 	* engine-gpgsm.c (struct engine_gpgsm): Add field INLINE_DATA and
