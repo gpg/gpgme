@@ -39,6 +39,14 @@
 
 #include "assuan-defs.h"
 
+#ifdef _ASSUAN_IN_GPGME_BUILD_ASSUAN
+
+int _gpgme_io_pipe (int filedes[2], int inherit_idx);
+int _gpgme_io_spawn (const char *path, char **argv,
+		     struct spawn_fd_item_s *fd_child_list,
+		     struct spawn_fd_item_s *fd_parent_list);
+#endif
+
 /* Hacks for Slowaris.  */
 #ifndef PF_LOCAL
 # ifdef PF_UNIX
