@@ -1885,6 +1885,8 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     NULL,		/* trustlist */
     gpgsm_verify,
     gpgsm_getauditlog,
+    NULL,		/* conf_load */
+    NULL,		/* conf_save */
     gpgsm_set_io_cbs,
     gpgsm_io_event,
     gpgsm_cancel

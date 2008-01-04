@@ -97,6 +97,9 @@ struct engine_ops
   gpgme_error_t  (*getauditlog) (void *engine, gpgme_data_t output,
                                  unsigned int flags);
 
+  gpgme_error_t  (*conf_load) (void *engine, gpgme_conf_comp_t *conf_p);
+  gpgme_error_t  (*conf_save) (void *engine, gpgme_conf_comp_t conf);
+
   void (*set_io_cbs) (void *engine, gpgme_io_cbs_t io_cbs);
   void (*io_event) (void *engine, gpgme_event_io_t type, void *type_data);
 
@@ -107,6 +110,9 @@ struct engine_ops
 extern struct engine_ops _gpgme_engine_ops_gpg;		/* OpenPGP.  */
 #ifdef ENABLE_GPGSM
 extern struct engine_ops _gpgme_engine_ops_gpgsm;	/* CMS.  */
+#endif
+#ifdef ENABLE_GPGCONF
+extern struct engine_ops _gpgme_engine_ops_gpgconf;	/* gpg-conf.  */
 #endif
 
 #endif /* ENGINE_BACKEND_H */

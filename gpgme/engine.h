@@ -127,6 +127,11 @@ gpgme_error_t _gpgme_engine_op_getauditlog (engine_t engine,
                                             gpgme_data_t output,
                                             unsigned int flags);
 
+gpgme_error_t _gpgme_engine_op_conf_load (engine_t engine,
+					  gpgme_conf_comp_t *conf_p);
+gpgme_error_t _gpgme_engine_op_conf_save (engine_t engine,
+					  gpgme_conf_comp_t conf);
+
 void _gpgme_engine_set_io_cbs (engine_t engine,
 			       gpgme_io_cbs_t io_cbs);
 void _gpgme_engine_io_event (engine_t engine,

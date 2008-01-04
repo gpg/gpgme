@@ -274,6 +274,7 @@ find_program_in_inst_dir (const char *name)
   return result;
 }
 
+
 static char *
 find_program_at_standard_place (const char *name)
 {
@@ -313,6 +314,7 @@ _gpgme_get_gpg_path (void)
   return gpg_program;
 }
 
+
 const char *
 _gpgme_get_gpgsm_path (void)
 {
@@ -327,6 +329,24 @@ _gpgme_get_gpgsm_path (void)
     gpgsm_program = find_program_at_standard_place ("GNU\\GnuPG\\gpgsm.exe");
   UNLOCK (get_path_lock);
   return gpgsm_program;
+}
+
+
+const char *
+_gpgme_get_gpgconf_path (void)
+{
+  static char *gpgconf_program;
+
+  LOCK (get_path_lock);
+  if (!gpgconf_program)
+    gpgconf_program = find_program_in_registry ("gpgconfProgram");
+  if (!gpgconf_program)
+    gpgconf_program = find_program_in_inst_dir ("gpgconf.exe");
+  if (!gpgconf_program)
+    gpgconf_program
+      = find_program_at_standard_place ("GNU\\GnuPG\\gpgconf.exe");
+  UNLOCK (get_path_lock);
+  return gpgconf_program;
 }
 
 

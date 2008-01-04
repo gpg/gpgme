@@ -83,6 +83,12 @@ else
 gpgsm_components =
 endif
 
+if HAVE_GPGCONF
+gpgconf_components = engine-gpgconf.c
+else
+gpgconf_components =
+endif
+
 # These are the source files common to all library versions.  We used
 # to build a non-installed library for that, but that does not work
 # correctly on all platforms (in particular, one can not specify the
@@ -100,7 +106,8 @@ main_sources =								\
 	key.c keylist.c trust-item.c trustlist.c			\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
 	engine.h engine-backend.h engine.c rungpg.c status-table.h	\
-	$(gpgsm_components) sema.h priv-io.h $(system_components)	\
+	$(gpgsm_components) $(gpgconf_components) gpgconf.c		\
+	sema.h priv-io.h $(system_components)				\
 	debug.c debug.h gpgme.c version.c error.c
 
 libgpgme_la_SOURCES = $(main_sources)					\

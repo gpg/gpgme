@@ -159,5 +159,12 @@ EXPORTS
     gpgme_op_getauditlog_start            @123
     gpgme_op_getauditlog                  @124
 
+    gpgme_conf_release			  @125
+    gpgme_conf_arg_new			  @126
+    gpgme_conf_arg_release		  @127
+    gpgme_conf_opt_change		  @128
+    gpgme_op_conf_load			  @129
+    gpgme_op_conf_save			  @130
+
 ; END
 
