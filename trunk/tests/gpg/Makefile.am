@@ -37,7 +37,7 @@ TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers		\
 	t-import t-trustlist t-edit t-keylist t-keylist-sig t-wait	\
 	t-encrypt-large t-file-name t-gpgconf $(tests_unix)
 
-CLEANFILES = secring.gpg pubring.gpg trustdb.gpg dirmngr.conf
+CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf
 DISTCLEANFILES = pubring.gpg~ random_seed gpg.conf
 
 EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
