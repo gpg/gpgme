@@ -1,3 +1,9 @@
+2008-01-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-pipe-connect.c (_gpgme_io_pipe)
+	(_gpgme_io_spawn) [_ASSUAN_IN_GPGME_BUILD_ASSUAN]: Add prototypes
+	to silence compiler warning.  Reported by Alon Bar-Lev.
+
 2007-09-25  Werner Koch  <wk@g10code.com>
 
 	* assuan.h (_assuan_gpg_strerror_r, _assuan_gpg_strsource): Add
