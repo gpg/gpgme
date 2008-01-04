@@ -1,5 +1,7 @@
 2008-01-04  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/Makefile.am (CLEANFILES): Add pubring.kbx and dirmngr.conf.
+
 	* Makefile.am (TESTS_ENVIRONMENT): Use absolute path for
 	GNUPGHOME.
 	* gpg/Makefile.am (TESTS_ENVIRONMENT): Use absolute path for
