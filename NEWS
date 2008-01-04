@@ -1,3 +1,13 @@
+Noteworthy changes in version 1.1.7 (unreleased)
+------------------------------------------------
+
+ * 
+
+ * Interface changes relative to the 1.1.6 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 Noteworthy changes in version 1.1.6 (2008-01-04)
 ------------------------------------------------
 
@@ -14,6 +24,7 @@ Noteworthy changes in version 1.1.6 (2008-01-04)
  gpgme_op_getauditlog            NEW.
  GPGME_AUDITLOG_HTML             NEW.
  GPGME_AUDITLOG_WITH_HELP        NEW.
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 Noteworthy changes in version 1.1.5 (2007-07-09)
