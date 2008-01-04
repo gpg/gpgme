@@ -39,6 +39,13 @@ GPGME_1.1 {
 
     gpgme_op_getauditlog_start;
     gpgme_op_getauditlog;
+
+    gpgme_conf_release;
+    gpgme_conf_arg_new;
+    gpgme_conf_arg_release;
+    gpgme_conf_opt_change;
+    gpgme_op_conf_load;
+    gpgme_op_conf_save;
 };
 
 

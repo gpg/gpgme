@@ -31,6 +31,7 @@
 /*-- {posix,w32}-util.c --*/
 const char *_gpgme_get_gpg_path (void);
 const char *_gpgme_get_gpgsm_path (void);
+const char *_gpgme_get_gpgconf_path (void);
 int _gpgme_get_conf_int (const char *key, int *value);
 
 

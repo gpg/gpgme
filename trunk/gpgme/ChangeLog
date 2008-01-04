@@ -1,3 +1,35 @@
+2008-01-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (gpgconf_components): New variable.
+	(main_sources): Add gpgconf.c.
+	* gpgme.h (gpgme_protocol_t): New protocol GPGME_PROTOCOL_GPGCONF.
+	(gpgme_conf_level_t, gpgme_conf_type_t, gpgme_conf_arg_t)
+	(gpgme_conf_opt_t, gpgme_conf_comp_t, gpgme_conf_arg_new)
+	(gpgme_conf_arg_release, gpgme_conf_opt_change)
+	(gpgme_conf_release, gpgme_op_conf_load, gpgme_op_conf_save): New
+	types.
+	* gpgconf.c, engine-gpgconf.c: New files.
+	* engine.h: (_gpgme_engine_op_conf_load,
+	(_gpgme_engine_op_conf_save): New prototypes.
+	* op-support.c (_gpgme_op_reset): Ignore not implemented locale
+	function.
+	* posix-util.c (_gpgme_get_gpgconf_path): New function.
+	* w32-util.c (_gpgme_get_gpgconf_path): New function.
+	* engine-gpgsm.c:
+	(_gpgme_engine_ops_gpgsm): Add stubs for conf_load and conf_save.
+	* rungpg.c:
+	(_gpgme_engine_ops_gpg): Add stubs for conf_load and conf_save.
+	* gpgme.def: Add new gpgconf related interfaces.
+	* libgpgme.vers: Likewise.
+	* util.h (_gpgme_get_gpgconf_path): New prototype.
+	* gpgme.h (gpgme_protocol_t): Add GPGME_PROTOCOL_GPGCONF.
+	* engine-backend.h (_gpgme_engine_ops_gpgconf): New prototype.
+	(struct engine_ops): Add members for conf_load and conf_save.
+	* engine.c (engine_ops): Add _gpgme_engine_ops_gpgconf.
+	(_gpgme_engine_op_conf_load,
+	(_gpgme_engine_op_conf_save): New functions.
+	(gpgme_get_engine_info): Allow protocol GPGME_PROTOCOL_GPGCONF.
+
 2007-11-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* w32-util.c (_gpgme_get_gpg_path, _gpgme_get_gpgsm_path): Search

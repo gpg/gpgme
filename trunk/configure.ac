@@ -114,6 +114,7 @@ AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
 
 GPG_DEFAULT=no
 GPGSM_DEFAULT=no
+GPGCONF_DEFAULT=no
 component_system=None
 have_dosish_system=no
 have_w32_system=no
@@ -126,6 +127,7 @@ case "${host}" in
         have_w32_system=yes
         GPG_DEFAULT='c:\\gnupg\\gpg.exe'
 	GPGSM_DEFAULT='c:\\gnupg\\gpgsm.exe'
+        GPGCONF_DEFAULT='c:\\gnupg\\gpgconf.exe'
         #component_system='COM+'
 
 	AM_PATH_GLIB_2_0
@@ -158,6 +160,7 @@ case "${host}" in
 	# XXX: Probably use exec-prefix here?
 #	GPG_DEFAULT='/usr/bin/gpg'
 #	GPGSM_DEFAULT='/usr/bin/gpgsm'
+#	GPGCONF_DEFAULT='/usr/bin/gpgconf'
 	;;
 esac
 
@@ -261,8 +264,10 @@ AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
 # Checks for system services
 NEED_GPG_VERSION_DEFAULT=1.3.0
 NEED_GPGSM_VERSION_DEFAULT=1.9.6
+NEED_GPGCONF_VERSION_DEFAULT=2.0.4
 NEED_GPG_VERSION="$NEED_GPG_VERSION_DEFAULT"
 NEED_GPGSM_VERSION="$NEED_GPGSM_VERSION_DEFAULT"
+NEED_GPGCONF_VERSION="$NEED_GPGCONF_VERSION_DEFAULT"
 AC_ARG_WITH(gpg-version,
 	    AC_HELP_STRING([--with-gpg-version=VER], [require GnuPG version VER]),
 	    NEED_GPG_VERSION=$withval)
@@ -281,11 +286,22 @@ fi
 if test "$NEED_GPGSM_VERSION" = "no"; then
   NEED_GPGSM_VERSION=0.0.0
 fi
+AC_ARG_WITH(gpgconf-version,
+	    AC_HELP_STRING([--with-gpgconf-version=VER], [require GPGCONF version VER]),
+	    NEED_GPGCONF_VERSION=$withval)
+if test "$NEED_GPGCONF_VERSION" = "yes"; then
+  NEED_GPGCONF_VERSION="$NEED_GPGCONF_VERSION_DEFAULT"
+fi
+if test "$NEED_GPGCONF_VERSION" = "no"; then
+  NEED_GPGCONF_VERSION=0.0.0
+fi
 
 AC_DEFINE_UNQUOTED(NEED_GPG_VERSION, "$NEED_GPG_VERSION",
 				     [Min. needed GnuPG version.])
 AC_DEFINE_UNQUOTED(NEED_GPGSM_VERSION, "$NEED_GPGSM_VERSION",
 				       [Min. needed GPGSM version.])
+AC_DEFINE_UNQUOTED(NEED_GPGCONF_VERSION, "$NEED_GPGCONF_VERSION",
+				         [Min. needed GPGCONF version.])
 
 
 NO_OVERRIDE=no
@@ -477,6 +493,109 @@ AC_ARG_ENABLE(gpgsm-test,
 AM_CONDITIONAL(RUN_GPGSM_TESTS, test "$run_gpgsm_test" = "yes")
 
 
+NO_OVERRIDE=no
+AC_ARG_WITH(gpgconf,
+	    AC_HELP_STRING([--with-gpgconf=PATH],
+                           [use gpgconf binary at PATH]),
+	    GPGCONF=$withval, NO_OVERRIDE=yes)
+if test "$NO_OVERRIDE" = "yes" || test "$GPGCONF" = "yes"; then
+  GPGCONF=
+  NO_OVERRIDE=yes
+  if test "$cross_compiling" != "yes"; then
+    AC_PATH_PROG(GPGCONF, gpgconf)
+  fi
+  if test -z "$GPGCONF"; then
+    GPGCONF="$GPGCONF_DEFAULT"
+  fi
+fi
+if test "$GPGCONF" = no; then
+  if test "$NO_OVERRIDE" = "yes"; then
+    if test "$cross_compiling" != "yes"; then
+      AC_MSG_WARN([
+***
+*** Could not find gpgconf, install gpgconf or use --with-gpgconf=PATH to enable it
+***])
+    else
+      AC_MSG_ERROR([
+***
+*** Can not determine path to gpgconf when cross-compiling, use --with-gpgconf=PATH
+***])
+    fi
+  fi
+else
+  AC_DEFINE_UNQUOTED(GPGCONF_PATH, "$GPGCONF", [Path to the GPGCONF binary.])
+  AC_DEFINE(ENABLE_GPGCONF,1,[Whether GPGCONF support is enabled])
+fi
+AM_CONDITIONAL(HAVE_GPGCONF, test "$GPGCONF" != "no")
+
+dnl Check for GPGCONF version requirement.
+GPGCONF_VERSION=unknown
+ok=maybe
+if test -z "$GPGCONF" -o "x$GPGCONF" = "xno"; then
+  ok=no
+else
+  if test "$cross_compiling" = "yes"; then
+    AC_MSG_WARN([GPGCONF version can not be checked when cross compiling])
+    ok=no
+  else
+    if test ! -x "$GPGCONF"; then
+      AC_MSG_WARN([GPGCONF not executable, version check disabled])
+      ok=no
+    fi
+  fi
+fi
+if test "$ok" = "maybe"; then
+  AC_MSG_CHECKING(for GPGCONF >= $NEED_GPGCONF_VERSION)
+  req_major=`echo $NEED_GPGCONF_VERSION | \
+             sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+  req_minor=`echo $NEED_GPGCONF_VERSION | \
+	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+  req_micro=`echo $NEED_GPGCONF_VERSION | \
+	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+  GPGCONF_VERSION=`$GPGCONF --version | sed -n '1 s/[[^0-9]]*\(.*\)/\1/p'`
+  major=`echo $GPGCONF_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+  minor=`echo $GPGCONF_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+  micro=`echo $GPGCONF_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
+
+  if test "$major" -gt "$req_major"; then
+    ok=yes
+  else
+    if test "$major" -eq "$req_major"; then
+      if test "$minor" -gt "$req_minor"; then
+        ok=yes
+      else
+        if test "$minor" -eq "$req_minor"; then
+          if test "$micro" -ge "$req_micro"; then
+            ok=yes
+	  fi
+        fi
+      fi
+    fi
+  fi
+  if test "$ok" = "yes"; then
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+    AC_MSG_WARN([GPGCONF must be at least version $NEED_GPGCONF_VERSION])
+  fi
+fi
+run_gpgconf_test="$ok"
+AC_ARG_ENABLE(gpgconf-test,
+  AC_HELP_STRING([--disable-gpgconf-test], [disable GPGCONF run test]),
+         run_gpgconf_test=$enableval)
+AM_CONDITIONAL(RUN_GPGCONF_TESTS, test "$run_gpgconf_test" = "yes")
+
+# Only build if supported.
+AM_CONDITIONAL(BUILD_GPGCONF, test "$GPGCONF" != "no")
+if test "$GPGCONF" != "no"; then
+  AC_DEFINE(HAVE_GPGCONF, 1,
+            [Defined if we are building with gpgconf support.])
+fi
+
+
 # FIXME: Only build if supported.
 AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
 if test "$GPGSM" != "no"; then
@@ -634,12 +753,15 @@ AC_OUTPUT
 echo "
 	GPGME v${VERSION} has been configured as follows:
 
-	GnuPG path:    $GPG
-        GnuPG version: $GPG_VERSION, min. $NEED_GPG_VERSION
+	GnuPG path:      $GPG
+        GnuPG version:   $GPG_VERSION, min. $NEED_GPG_VERSION
 
-	GpgSM path:    $GPGSM
-        GpgSM version: $GPGSM_VERSION, min. $NEED_GPGSM_VERSION
+	GpgSM path:      $GPGSM
+        GpgSM version:   $GPGSM_VERSION, min. $NEED_GPGSM_VERSION
 
-	GPGME Pthread: $have_pthread
-	GPGME Pth:     $have_pth
+	GpgConf path:    $GPGCONF
+        GpgConf version: $GPGCONF_VERSION, min. $NEED_GPGCONF_VERSION
+
+	GPGME Pthread:   $have_pthread
+	GPGME Pth:       $have_pth
 "

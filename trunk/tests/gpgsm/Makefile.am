@@ -21,7 +21,7 @@
 
 GPGSM = @GPGSM@
 
-TESTS_ENVIRONMENT = GNUPGHOME=. GPG_AGENT_INFO= 
+TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO= 
 
 noinst_HEADERS = t-support.h
 TESTS = t-import t-keylist t-encrypt t-verify t-decrypt t-sign t-export

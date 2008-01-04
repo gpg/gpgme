@@ -47,7 +47,12 @@ static struct engine_ops *engine_ops[] =
   {
     &_gpgme_engine_ops_gpg,		/* OpenPGP.  */
 #ifdef ENABLE_GPGSM
-    &_gpgme_engine_ops_gpgsm		/* CMS.  */
+    &_gpgme_engine_ops_gpgsm,		/* CMS.  */
+#else
+    NULL,
+#endif
+#ifdef ENABLE_GPGCONF
+    &_gpgme_engine_ops_gpgconf		/* gpg-conf.  */
 #else
     NULL
 #endif
@@ -169,7 +174,8 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
     {
       gpgme_engine_info_t *lastp = &engine_info;
       gpgme_protocol_t proto_list[] = { GPGME_PROTOCOL_OpenPGP,
-					GPGME_PROTOCOL_CMS };
+					GPGME_PROTOCOL_CMS,
+					GPGME_PROTOCOL_GPGCONF };
       unsigned int proto;
 
       for (proto = 0; proto < DIM (proto_list); proto++)
@@ -721,6 +727,32 @@ _gpgme_engine_op_getauditlog (engine_t engine, gpgme_data_t output,
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   return (*engine->ops->getauditlog) (engine->engine, output, flags);
+}
+
+
+gpgme_error_t
+_gpgme_engine_op_conf_load (engine_t engine, gpgme_conf_comp_t *conf_p)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->conf_load)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->conf_load) (engine->engine, conf_p);
+}
+
+
+gpgme_error_t
+_gpgme_engine_op_conf_save (engine_t engine, gpgme_conf_comp_t conf)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->conf_save)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->conf_save) (engine->engine, conf);
 }
 
 

@@ -72,7 +72,7 @@ extern "C" {
    AM_PATH_GPGME macro) check that this header matches the installed
    library.  Warning: Do not edit the next line.  configure will do
    that for you!  */
-#define GPGME_VERSION "1.1.6-svn1258"
+#define GPGME_VERSION "1.1.6-svn1282"
 
 
 
@@ -300,6 +300,7 @@ typedef enum
   {
     GPGME_PROTOCOL_OpenPGP = 0,  /* The default mode.  */
     GPGME_PROTOCOL_CMS     = 1,
+    GPGME_PROTOCOL_GPGCONF = 2,  /* Special code for gpgconf.  */
     GPGME_PROTOCOL_UNKNOWN = 255
   }
 gpgme_protocol_t;
@@ -1652,6 +1653,163 @@ gpgme_error_t gpgme_op_getauditlog_start (gpgme_ctx_t ctx, gpgme_data_t output,
 gpgme_error_t gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output, 
                                     unsigned int flags);
 
+
+/* Interface to gpg-conf.  */
+
+/* The expert level at which a configuration option or group of
+   options should be displayed.  See the gpg-conf documentation for
+   more details.  */
+typedef enum
+  {
+    GPGME_CONF_BASIC = 0,
+    GPGME_CONF_ADVANCED = 1,
+    GPGME_CONF_EXPERT = 2,
+    GPGME_CONF_INVISIBLE = 3,
+    GPGME_CONF_INTERNAL = 4
+  }
+gpgme_conf_level_t;
+
+
+/* The data type of a configuration option argument.  See the gpg-conf
+   documentation for more details.  */
+typedef enum
+  {
+    /* Basic types.  */
+    GPGME_CONF_NONE = 0,
+    GPGME_CONF_STRING = 1,
+    GPGME_CONF_INT32 = 2,
+    GPGME_CONF_UINT32 = 3,
+
+    /* Complex types.  */
+    GPGME_CONF_PATHNAME = 32,
+    GPGME_CONF_LDAP_SERVER = 33
+  }
+gpgme_conf_type_t;
+
+
+/* This represents a single argument for a configuration option.
+   Which of the members of value is used depends on the ALT_TYPE.  */
+typedef struct gpgme_conf_arg
+{
+  struct gpgme_conf_arg *next;
+  /* True if the option appears without an (optional) argument.  */
+  unsigned int no_arg;
+  union
+  {
+    unsigned int count;
+    unsigned int uint32;
+    int int32;
+    char *string;
+  } value;
+} *gpgme_conf_arg_t;
+
+
+/* The flags of a configuration option.  See the gpg-conf
+   documentation for details.  */
+#define GPGME_CONF_GROUP	(1 << 0)
+#define GPGME_CONF_OPTIONAL	(1 << 1)
+#define GPGME_CONF_LIST		(1 << 2)
+#define GPGME_CONF_RUNTIME	(1 << 3)
+#define GPGME_CONF_DEFAULT	(1 << 4)
+#define GPGME_CONF_DEFAULT_DESC	(1 << 5)
+#define GPGME_CONF_NO_ARG_DESC	(1 << 6)
+#define GPGME_CONF_NO_CHANGE	(1 << 7)
+
+
+/* The representation of a single configuration option.  See the
+   gpg-conf documentation for details.  */
+typedef struct gpgme_conf_opt
+{
+  struct gpgme_conf_opt *next;
+  
+  /* The option name.  */
+  char *name;
+
+  /* The flags for this option.  */
+  unsigned int flags;
+
+  /* The level of this option.  */
+  gpgme_conf_level_t level;
+
+  /* The localized description of this option.  */
+  char *description;
+
+  /* The type and alternate type of this option.  */
+  gpgme_conf_type_t type;
+  gpgme_conf_type_t alt_type;
+
+  /* The localized (short) name of the argument, if any.  */
+  char *argname;
+
+  /* The default value.  */
+  gpgme_conf_arg_t default_value;
+  char *default_description;
+  
+  /* The default value if the option is not set.  */
+  gpgme_conf_arg_t no_arg_value;
+  char *no_arg_description;
+
+  /* The current value if the option is set.  */
+  gpgme_conf_arg_t value;
+
+  /* The new value, if any.  NULL means reset to default.  */
+  int change_value;
+  gpgme_conf_arg_t new_value;
+
+  /* Free for application use.  */
+  void *user_data;
+} *gpgme_conf_opt_t;
+
+
+/* The representation of a component that can be configured.  See the
+   gpg-conf documentation for details.  */
+typedef struct gpgme_conf_comp
+{
+  struct gpgme_conf_comp *next;
+
+  /* Internal to GPGME, do not use!  */
+  gpgme_conf_opt_t *_last_opt_p;
+
+  /* The component name.  */
+  char *name;
+
+  /* A human-readable description for the component.  */
+  char *description;
+
+  /* The program name (an absolute path to the program).  */
+  char *program_name;  
+
+  /* A linked list of options for this component.  */
+  struct gpgme_conf_opt *options;
+} *gpgme_conf_comp_t;
+
+
+/* Allocate a new gpgme_conf_arg_t.  If VALUE is NULL, a "no arg
+   default" is prepared.  If type is a string type, VALUE should point
+   to the string.  Else, it should point to an unsigned or signed
+   integer respectively.  */
+gpgme_error_t gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
+				  gpgme_conf_type_t type, void *value);
+
+/* This also releases all chained argument structures!  */
+void gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type);
+
+/* Register a change for the value of OPT to ARG.  If RESET is 1 (do
+   not use any values but 0 or 1), ARG is ignored and the option is
+   not changed (reverting a previous change).  Otherwise, if ARG is
+   NULL, the option is cleared or reset to its default.  */
+gpgme_error_t gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset,
+				     gpgme_conf_arg_t arg);
+
+/* Release a set of configurations.  */
+void gpgme_conf_release (gpgme_conf_comp_t conf);
+ 
+/* Retrieve the current configurations.  */
+gpgme_error_t gpgme_op_conf_load (gpgme_ctx_t ctx, gpgme_conf_comp_t *conf_p);
+
+/* Save the configuration of component comp.  This function does not
+   follow chained components!  */
+gpgme_error_t gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp);
 
 
 /* Various functions.  */

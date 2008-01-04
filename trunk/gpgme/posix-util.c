@@ -49,6 +49,16 @@ _gpgme_get_gpgsm_path (void)
 #endif
 }
 
+const char *
+_gpgme_get_gpgconf_path (void)
+{
+#ifdef GPGCONF_PATH
+  return GPGCONF_PATH;
+#else
+  return NULL;
+#endif
+}
+
 /* See w32-util.c */
 int
 _gpgme_get_conf_int (const char *key, int *value)

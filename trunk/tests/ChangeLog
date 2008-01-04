@@ -1,3 +1,14 @@
+2008-01-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (TESTS_ENVIRONMENT): Use absolute path for
+	GNUPGHOME.
+	* gpg/Makefile.am (TESTS_ENVIRONMENT): Use absolute path for
+	GNUPGHOME.
+	* gpgsm/Makefile.am (TESTS_ENVIRONMENT): Use absolute path for
+	GNUPGHOME.
+	* gpg/Makefile.am (TESTS): Add t-gpgconf.
+	t-gpgconf.c: New file.
+
 2007-11-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm/t-verify.c (show_auditlog): Check for GPG_ERR_ASS_UNKNOWN_CMD.
