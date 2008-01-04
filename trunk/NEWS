@@ -1,7 +1,11 @@
-Noteworthy changes in version 1.1.6 (unreleased)
+Noteworthy changes in version 1.1.6 (2008-01-04)
 ------------------------------------------------
 
  * Bug fixes for for W32.
+
+ * A new, experimental (and thus undocumented and potentially
+   unstable) interface for accessing gpg-conf through GPGME has been
+   added.
 
  * Interface changes relative to the 1.1.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

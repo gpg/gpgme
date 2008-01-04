@@ -1,5 +1,7 @@
 2008-01-04  Marcus Brinkmann  <marcus@g10code.de>
 
+	Release GPGME 1.1.6.
+
 	* configure.ac: Support gpgconf.
 
 2007-09-27  Marcus Brinkmann  <marcus@g10code.de>
