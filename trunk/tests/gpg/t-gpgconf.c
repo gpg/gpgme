@@ -292,15 +292,23 @@ main (int argc, char **argv)
     comp = conf;
     while (comp && strcmp (comp->name, "dirmngr"))
       comp = comp->next;
-    opt = comp->options;
-    while (opt && strcmp (opt->name, "verbose"))
-      opt = opt->next;
 
-    err = gpgme_conf_opt_change (opt, 0, arg);
-    fail_if_err (err);
-
-    err = gpgme_op_conf_save (ctx, comp);
-    fail_if_err (err);
+    if (comp)
+      {
+	opt = comp->options;
+	while (opt && strcmp (opt->name, "verbose"))
+	  opt = opt->next;
+	
+	/* Allow for the verbose option not to be there.  */
+	if (opt)
+	  {
+	    err = gpgme_conf_opt_change (opt, 0, arg);
+	    fail_if_err (err);
+	    
+	    err = gpgme_op_conf_save (ctx, comp);
+	    fail_if_err (err);
+	  }
+      }
   }
 #endif
 
