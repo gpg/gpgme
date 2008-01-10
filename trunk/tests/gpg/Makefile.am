@@ -71,4 +71,4 @@ all-local: ./pubring.gpg ./gpg.conf ./gpg-agent.conf
 
 ./gpg-agent.conf:
 # This is required for gpg2, which does not support command fd.
-	echo pinentry-program $(abs_builddir)/pinentry > ./gpg-agent.conf
+	echo pinentry-program $(abs_srcdir)/pinentry > ./gpg-agent.conf
