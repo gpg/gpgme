@@ -1,5 +1,10 @@
 2008-01-10  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/pinentry: New file.
+	* gpg/Makefile.am (DISTCLEANFILES, all-local): Add gpg-agent.conf
+	(./gpg-agent.conf): New target.
+	(EXTRA_DIST): Add pinentry.
+
 	* gpg/t-gpgconf.c (main): Exit early if compiled without gpgconf.
 
 2008-01-04  Marcus Brinkmann  <marcus@g10code.de>
