@@ -329,11 +329,14 @@ void KDPipeIODevice::Private::emitReadyRead()
     emit q->readyRead();
 
     if ( !thisPointer )
-	return;
-    qDebug( "KDPipeIODevice::Private::emitReadyRead %p, %d: locking reader (CONSUMER THREAD)", this, counter );
-    synchronized( reader ) {
-        qDebug( "KDPipeIODevice::Private::emitReadyRead %p, %d: locked reader (CONSUMER THREAD)", this, counter );
-        reader->readyReadSentCondition.wakeAll();
+        return;
+    
+    if ( reader ) {
+        qDebug( "KDPipeIODevice::Private::emitReadyRead %p, %d: locking reader (CONSUMER THREAD)", this, counter );
+        synchronized( reader ) {
+            qDebug( "KDPipeIODevice::Private::emitReadyRead %p, %d: locked reader (CONSUMER THREAD)", this, counter );
+            reader->readyReadSentCondition.wakeAll();
+        }
     }
     qDebug( "KDPipeIODevice::Private::emitReadyRead %p leaving %d", this, counter );
 
@@ -704,7 +707,7 @@ void Reader::run() {
  
         while ( !cancel && !error && bufferFull() ) {
             notifyReadyRead();
-            if ( bufferFull() ) {
+            if ( !cancel && bufferFull() ) {
                 qDebug( "%p: Reader::run: buffer is full, going to sleep", this );
 	        bufferNotFullCondition.wait( &mutex );
 	    }
