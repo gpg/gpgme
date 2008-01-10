@@ -1,5 +1,7 @@
 2008-01-10  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/t-gpgconf.c (main): Allow for dirmngr not to be available.
+
 	* gpg/Makefile.am (./gpg-agent.conf): Correct pinentry path.
 
 	* gpg/pinentry: New file.
