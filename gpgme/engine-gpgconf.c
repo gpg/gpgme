@@ -1,9 +1,6 @@
-// Check protocol.
-// IMPLEMENT NO_ARG_DESC!!!!
-
 /* engine-gpgconf.c - gpg-conf engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -457,9 +454,18 @@ gpgconf_config_load_cb2 (void *hook, char *line)
 	return gpg_error_from_syserror ();
     }
 
-  err = gpgconf_parse_option (opt, &opt->no_arg_value, field[8]);
-  if (err)
-    return err;
+  if (opt->flags & GPGME_CONF_NO_ARG_DESC)
+    {
+      opt->no_arg_description = strdup (field[8]);
+      if (!opt->no_arg_description)
+	return gpg_error_from_syserror ();
+    }
+  else
+    {
+      err = gpgconf_parse_option (opt, &opt->no_arg_value, field[8]);
+      if (err)
+	return err;
+    }
 
   err = gpgconf_parse_option (opt, &opt->value, field[9]);
   if (err)
