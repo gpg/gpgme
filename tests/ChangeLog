@@ -1,5 +1,7 @@
 2008-01-10  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpg/Makefile.am (./gpg-agent.conf): Correct pinentry path.
+
 	* gpg/pinentry: New file.
 	* gpg/Makefile.am (DISTCLEANFILES, all-local): Add gpg-agent.conf
 	(./gpg-agent.conf): New target.
