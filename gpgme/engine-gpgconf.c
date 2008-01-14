@@ -310,8 +310,8 @@ gpgconf_config_load_cb (void *hook, char *line)
 
   if (fields >= 3)
     {
-      comp->description = strdup (field[2]);
-      if (!comp->description)
+      comp->program_name = strdup (field[2]);
+      if (!comp->program_name)
 	return gpg_error_from_syserror ();
     }
 
