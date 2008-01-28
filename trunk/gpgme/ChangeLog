@@ -1,3 +1,7 @@
+2008-01-28  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (gpgme_get_key): Skip duplicated keys.  Fixes bug 876.
+
 2008-01-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgconf.c (gpgconf_config_load_cb): Fix program_name
