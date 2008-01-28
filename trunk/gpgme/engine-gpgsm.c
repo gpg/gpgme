@@ -788,7 +788,7 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
 
 
 static const char *
-map_input_enc (gpgme_data_t d)
+map_data_enc (gpgme_data_t d)
 {
   switch (gpgme_data_get_encoding (d))
     {
@@ -1132,7 +1132,7 @@ gpgsm_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   gpgsm->input_cb.data = ciph;
-  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_input_enc (gpgsm->input_cb.data));
+  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
   if (err)
     return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
   gpgsm->output_cb.data = plain;
@@ -1288,11 +1288,12 @@ gpgsm_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   gpgsm->input_cb.data = plain;
-  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_input_enc (gpgsm->input_cb.data));
+  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
   if (err)
     return err;
   gpgsm->output_cb.data = ciph;
-  err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor" : 0);
+  err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor"
+		      : map_data_enc (gpgsm->output_cb.data));
   if (err)
     return err;
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
@@ -1328,7 +1329,8 @@ gpgsm_export (void *engine, const char *pattern, unsigned int reserved,
   strcpy (&cmd[7], pattern);
 
   gpgsm->output_cb.data = keydata;
-  err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor" : 0);
+  err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor"
+		      : map_data_enc (gpgsm->output_cb.data));
   if (err)
     return err;
   gpgsm_clear_fd (gpgsm, INPUT_FD);
@@ -1420,7 +1422,8 @@ gpgsm_export_ext (void *engine, const char *pattern[], unsigned int reserved,
   *linep = '\0';
 
   gpgsm->output_cb.data = keydata;
-  err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor" : 0);
+  err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor"
+		      : map_data_enc (gpgsm->output_cb.data));
   if (err)
     return err;
   gpgsm_clear_fd (gpgsm, INPUT_FD);
@@ -1444,11 +1447,12 @@ gpgsm_genkey (void *engine, gpgme_data_t help_data, int use_armor,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   gpgsm->input_cb.data = help_data;
-  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_input_enc (gpgsm->input_cb.data));
+  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
   if (err)
     return err;
   gpgsm->output_cb.data = pubkey;
-  err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor" : 0);
+  err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor"
+		      : map_data_enc (gpgsm->output_cb.data));
   if (err)
     return err;
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
@@ -1469,7 +1473,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   gpgsm->input_cb.data = keydata;
-  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_input_enc (gpgsm->input_cb.data));
+  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
   if (err)
     return err;
   gpgsm_clear_fd (gpgsm, OUTPUT_FD);
@@ -1717,11 +1721,12 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
     }
 
   gpgsm->input_cb.data = in;
-  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_input_enc (gpgsm->input_cb.data));
+  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
   if (err)
     return err;
   gpgsm->output_cb.data = out;
-  err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor" : 0);
+  err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor"
+		      : map_data_enc (gpgsm->output_cb.data));
   if (err)
     return err;
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
@@ -1744,7 +1749,7 @@ gpgsm_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   gpgsm->input_cb.data = sig;
-  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_input_enc (gpgsm->input_cb.data));
+  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
   if (err)
     return err;
   if (plaintext)
