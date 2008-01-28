@@ -1,10 +1,25 @@
 Noteworthy changes in version 1.1.7 (unreleased)
 ------------------------------------------------
 
- * 
+ * The encoding of gpgme_data_t objects can affect the output encoding
+   of export, sign and encrypt operations now (the same operations
+   that are also affected by the ASCII mode switch).  We believe this
+   change in the ABI is innocent enough not to break existing
+   applications (it only affects the S/MIME backend on certain
+   operations).
 
  * Interface changes relative to the 1.1.6 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_op_encrypt		CHANGED: Output encoding can affect result.
+gpgme_op_encrypt_start		CHANGED: Output encoding can affect result.
+gpgme_op_encrypt_sign		CHANGED: Output encoding can affect result.
+gpgme_op_encrypt_sign_start	CHANGED: Output encoding can affect result.
+gpgme_op_sign			CHANGED: Output encoding can affect result.
+gpgme_op_sign_start		CHANGED: Output encoding can affect result.
+gpgme_op_export			CHANGED: Output encoding can affect result.
+gpgme_op_export_start		CHANGED: Output encoding can affect result.
+gpgme_op_export_ext		CHANGED: Output encoding can affect result.
+gpgme_op_export_ext_start	CHANGED: Output encoding can affect result.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

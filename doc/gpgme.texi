@@ -1868,8 +1868,11 @@ enough memory is available.
 @deftp {Data type} {enum gpgme_data_encoding_t}
 @tindex gpgme_data_encoding_t
 The @code{gpgme_data_encoding_t} type specifies the encoding of a
-@code{gpgme_data_t} object.  This encoding is useful to give the backend
-a hint on the type of data.  The following data types are available:
+@code{gpgme_data_t} object.  For input data objects, the encoding is
+useful to give the backend a hint on the type of data.  For output
+data objects, the encoding can specify the output data format on
+certain operations.  Please note that not all backends support all
+encodings on all operations.  The following data types are available:
 
 @table @code
 @item GPGME_DATA_ENCODING_NONE
@@ -3264,7 +3267,8 @@ operation is started on the context.
 The function @code{gpgme_op_export} extracts public keys and returns
 them in the data buffer @var{keydata}.  The output format of the key
 data returned is determined by the @acronym{ASCII} armor attribute set
-for the context @var{ctx}.
+for the context @var{ctx}, or, if that is not set, by the encoding
+specified for @var{keydata}.
 
 If @var{pattern} is @code{NULL}, all available keys are returned.
 Otherwise, @var{pattern} contains an engine specific expression that
@@ -3292,7 +3296,8 @@ if @var{keydata} is not a valid empty data buffer.
 The function @code{gpgme_op_export} extracts public keys and returns
 them in the data buffer @var{keydata}.  The output format of the key
 data returned is determined by the @acronym{ASCII} armor attribute set
-for the context @var{ctx}.
+for the context @var{ctx}, or, if that is not set, by the encoding
+specified for @var{keydata}.
 
 If @var{pattern} or @var{*pattern} is @code{NULL}, all available keys
 are returned.  Otherwise, @var{pattern} is a @code{NULL} terminated
@@ -4490,7 +4495,8 @@ mode settings of the context are ignored.
 The function @code{gpgme_op_sign} creates a signature for the text in
 the data object @var{plain} and returns it in the data object
 @var{sig}.  The type of the signature created is determined by the
-@acronym{ASCII} armor and text mode attributes set for the context
+@acronym{ASCII} armor (or, if that is not set, by the encoding
+specified for @var{sig}), the text mode attributes set for the context
 @var{ctx} and the requested signature mode @var{mode}.
 
 After the operation completed successfully, the result can be
@@ -4650,11 +4656,12 @@ and then passed to the encryption operation.
 @subsubsection Encrypting a Plaintext
 
 @deftypefun gpgme_error_t gpgme_op_encrypt (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{recp}[]}, @w{gpgme_encrypt_flags_t @var{flags}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
-The function @code{gpgme_op_encrypt} encrypts the plaintext in the data
-object @var{plain} for the recipients @var{recp} and stores the
+The function @code{gpgme_op_encrypt} encrypts the plaintext in the
+data object @var{plain} for the recipients @var{recp} and stores the
 ciphertext in the data object @var{cipher}.  The type of the
-ciphertext created is determined by the @acronym{ASCII} armor and text
-mode attributes set for the context @var{ctx}.
+ciphertext created is determined by the @acronym{ASCII} armor (or, if
+that is not set, by the encoding specified for @var{cipher}) and the
+text mode attributes set for the context @var{ctx}.
 
 @var{key} must be a @code{NULL}-terminated array of keys.  The user
 must keep references for all keys during the whole duration of the
