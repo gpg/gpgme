@@ -1,6 +1,7 @@
 /* keylist.c - Listing keys.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2006, 2007 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2006, 2007,
+                 2008  g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -15,9 +16,8 @@
    Lesser General Public License for more details.
    
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -964,11 +964,26 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
     err = gpgme_op_keylist_next (listctx, r_key);
   if (!err)
     {
+    try_next_key:
       err = gpgme_op_keylist_next (listctx, &key);
       if (gpgme_err_code (err) == GPG_ERR_EOF)
-	err = gpg_error (GPG_ERR_NO_ERROR);
+	err = 0;
       else
 	{
+          if (!err
+              && *r_key && (*r_key)->subkeys && (*r_key)->subkeys->fpr
+              && key && key->subkeys && key->subkeys->fpr
+              && !strcmp ((*r_key)->subkeys->fpr, key->subkeys->fpr))
+            {
+              /* The fingerprint is identical.  We assume that this is
+                 the same key and don't mark it as an ambiguous.  This
+                 problem may occur with corrupted keyrings and has
+                 been noticed often with gpgsm.  In fact gpgsm uses a
+                 similar hack to sort out such duplicates but it can't
+                 do that while listing keys.  */
+              gpgme_key_unref (key);
+              goto try_next_key;
+            }
 	  if (!err)
 	    {
 	      gpgme_key_unref (key);
