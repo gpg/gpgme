@@ -38,7 +38,7 @@ TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers		\
 	t-encrypt-large t-file-name t-gpgconf $(tests_unix)
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf
-DISTCLEANFILES = pubring.gpg~ random_seed gpg.conf gpg-agent.conf
+DISTCLEANFILES = pubring.gpg~ pubring.kbx~ random_seed gpg.conf gpg-agent.conf
 
 EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 	geheim.txt pubkey-1.asc seckey-1.asc pinentry
