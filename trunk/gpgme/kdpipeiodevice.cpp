@@ -106,6 +106,7 @@ public:
     bool error;
     bool eofShortCut;
     int errorCode;
+    bool isReading;
     bool consumerBlocksOnUs;
    
 private:
@@ -127,6 +128,7 @@ Reader::Reader( int fd_, Qt::HANDLE handle_ )
       error( false ),
       eofShortCut( false ),
       errorCode( 0 ),
+      isReading( false ),
       consumerBlocksOnUs( false ),
       rptr( 0 ), wptr( 0 )
 {
@@ -321,24 +323,28 @@ bool KDPipeIODevice::Private::startWriterThread()
 
 void KDPipeIODevice::Private::emitReadyRead()
 {
-    static int s_counter = 0;
-    const int counter = s_counter++;
     QPointer<Private> thisPointer( this );
-    qDebug( "KDPipeIODevice::Private::emitReadyRead %p, %d", this, counter );
+    qDebug( "KDPipeIODevice::Private::emitReadyRead %p", this );
 
     emit q->readyRead();
 
     if ( !thisPointer )
         return;
-    
+
+    bool mustNotify = false;
+
     if ( reader ) {
-        qDebug( "KDPipeIODevice::Private::emitReadyRead %p, %d: locking reader (CONSUMER THREAD)", this, counter );
+        qDebug( "KDPipeIODevice::Private::emitReadyRead %p: locking reader (CONSUMER THREAD)", this );
         synchronized( reader ) {
-            qDebug( "KDPipeIODevice::Private::emitReadyRead %p, %d: locked reader (CONSUMER THREAD)", this, counter );
+            qDebug( "KDPipeIODevice::Private::emitReadyRead %p: locked reader (CONSUMER THREAD)", this );
             reader->readyReadSentCondition.wakeAll();
+            mustNotify = !reader->bufferEmpty() && reader->isReading;
+            qDebug( "KDPipeIODevice::emitReadyRead %p: bufferEmpty: %d reader in ReadFile: %d", this, reader->bufferEmpty(), reader->isReading );
         }
     }
-    qDebug( "KDPipeIODevice::Private::emitReadyRead %p leaving %d", this, counter );
+    if ( mustNotify )
+        QTimer::singleShot( 100, this, SLOT( emitReadyRead() ) );  
+    qDebug( "KDPipeIODevice::Private::emitReadyRead %p leaving", this );
 
 }
 
@@ -732,10 +738,12 @@ void Reader::run() {
 
 	    qDebug( "%p: Reader::run: trying to read %d bytes", this, numBytes );
 #ifdef Q_OS_WIN32
+            isReading = true;
 	    mutex.unlock();
             DWORD numRead;
 	    const bool ok = ReadFile( handle, buffer + wptr, numBytes, &numRead, 0 );
 	    mutex.lock();
+            isReading = false;
 	    if ( ok ) {
                 if ( numRead == 0 ) {
                     qDebug( "%p: Reader::run: got eof (numRead==0)", this );
