@@ -1,3 +1,8 @@
+2008-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Bump required version of automake up to 1.10.
+	* autogen.sh: Fix aclocal check.
+
 2008-01-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	Release GPGME 1.1.6.
