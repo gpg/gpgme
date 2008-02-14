@@ -235,7 +235,7 @@ _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal)
 int
 _gpgme_io_spawn (const char *path, char **argv,
 		 struct spawn_fd_item_s *fd_child_list,
-		 struct spawn_fd_item_s *fd_parent_list)
+		 struct spawn_fd_item_s *fd_parent_list, pid_t *r_pid)
 {
   pid_t pid;
   int i;
@@ -357,6 +357,9 @@ _gpgme_io_spawn (const char *path, char **argv,
   /* .dup_to is not used in the parent list.  */
   for (i = 0; fd_parent_list[i].fd != -1; i++)
     _gpgme_io_close (fd_parent_list[i].fd);
+
+  if (r_pid)
+    *r_pid = pid;
 
   return TRACE_SYSRES (0);
 }

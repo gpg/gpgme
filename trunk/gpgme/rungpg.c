@@ -1226,6 +1226,7 @@ start (engine_gpg_t gpg)
   int i, n;
   int status;
   struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
+  pid_t pid;
 
   if (!gpg)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1309,7 +1310,7 @@ start (engine_gpg_t gpg)
 
   status = _gpgme_io_spawn (gpg->file_name ? gpg->file_name :
 			    _gpgme_get_gpg_path (),
-			    gpg->argv, fd_child_list, fd_parent_list);
+			    gpg->argv, fd_child_list, fd_parent_list, &pid);
   saved_errno = errno;
   free (fd_child_list);
   if (status == -1)
@@ -1355,6 +1356,8 @@ start (engine_gpg_t gpg)
 	    return rc;
 	}
     }
+
+  _gpgme_allow_set_foregound_window (pid);
 
   gpg_io_event (gpg, GPGME_EVENT_START, NULL);
   

@@ -212,7 +212,7 @@ _gpgme_get_program_version (const char *const file_name)
   pfd[0].fd = rp[1];
   cfd[0].fd = rp[1];
 
-  status = _gpgme_io_spawn (file_name, argv, cfd, pfd);
+  status = _gpgme_io_spawn (file_name, argv, cfd, pfd, NULL);
   if (status < 0)
     {
       _gpgme_io_close (rp[0]);

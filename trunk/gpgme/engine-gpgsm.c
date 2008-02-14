@@ -285,6 +285,20 @@ map_assuan_error (gpg_error_t err)
 }
 
 
+/* This is the default inquiry callback.  We use it to handle the
+   Pinentry notifications.  */
+static gpgme_error_t
+default_inq_cb (engine_gpgsm_t gpgsm, const char *line)
+{
+  if (!strncmp (line, "PINENTRY_LAUNCHED", 17) && (line[17]==' '||!line[17]))
+    {
+      _gpgme_allow_set_foregound_window ((pid_t)strtoul (line+17, NULL, 10));
+    }
+
+  return 0;
+}
+
+
 static gpgme_error_t
 gpgsm_cancel (void *engine)
 {
@@ -527,6 +541,19 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
       if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
         err = 0; /* This is an optional feature of gpgsm.  */
     }
+
+
+#ifdef HAVE_W32_SYSTEM
+  /* Under Windows we need to use AllowSetForegroundWindow.  Tell
+     gpgsm to tell us when it needs it.  */
+  if (!err)
+    {
+      err = assuan_transact (gpgsm->assuan_ctx, "OPTION allow-pinentry-notify",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+      if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
+        err = 0; /* This is a new feature of gpgsm.  */
+    }
+#endif /*HAVE_W32_SYSTEM*/
 
 #if !USE_DESCRIPTOR_PASSING
   if (!err
@@ -861,7 +888,7 @@ status_handler (void *opaque, int fd)
 		  "fd 0x%x: ERR line - mapped to: %s",
                   fd, err ? gpg_strerror (err) : "ok");
 	  /* Try our best to terminate the connection friendly.  */
-	  //	  assuan_write_line (gpgsm->assuan_ctx, "BYE");
+	  /*	  assuan_write_line (gpgsm->assuan_ctx, "BYE"); */
 	}
       else if (linelen >= 2
 	       && line[0] == 'O' && line[1] == 'K'
@@ -1028,6 +1055,20 @@ status_handler (void *opaque, int fd)
 		  "fd 0x%x: S line (%s) - final status: %s",
                   fd, line+2, err? gpg_strerror (err):"ok");
 	}
+      else if (linelen >= 7
+               && line[0] == 'I' && line[1] == 'N' && line[2] == 'Q'
+               && line[3] == 'U' && line[4] == 'I' && line[5] == 'R'
+               && line[6] == 'E' 
+               && (line[7] == '\0' || line[7] == ' '))
+        {
+          char *keyword = line+7;
+
+          while (*keyword == ' ')
+            keyword++;;
+          default_inq_cb (gpgsm, keyword);
+          assuan_write_line (gpgsm->assuan_ctx, "END");
+        }
+
     }
   while (!err && assuan_pending_line (gpgsm->assuan_ctx));
 	  

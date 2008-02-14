@@ -363,3 +363,35 @@ _gpgme_get_conf_int (const char *key, int *value)
   free (tmp);
   return 1;
 }
+
+
+void 
+_gpgme_allow_set_foregound_window (pid_t pid)
+{
+  static int initialized;
+  static BOOL (WINAPI * func)(DWORD);
+  void *handle;
+
+  if (!initialized)
+    {
+      /* Available since W2000; thus we dynload it.  */
+      initialized = 1;
+      handle = dlopen ("user32.dll", RTLD_LAZY);
+      if (handle)
+        {
+          func = dlsym (handle, "AllowSetForegroundWindow");
+          if (!func)
+            {
+              dlclose (handle);
+              handle = NULL;
+            }
+        }
+    }
+
+  if (!pid || pid == (pid_t)(-1))
+    ;
+  else if (func)
+    func (pid);
+
+}
+
