@@ -399,7 +399,7 @@ build_commandline (char **argv)
 int
 _gpgme_io_spawn (const char *path, char **argv,
 		 struct spawn_fd_item_s *fd_child_list,
-		 struct spawn_fd_item_s *fd_parent_list)
+		 struct spawn_fd_item_s *fd_parent_list, pid_t *r_pid)
 {
   SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi =
@@ -543,6 +543,8 @@ _gpgme_io_spawn (const char *path, char **argv,
 	      "dwProcessID=%d, dwThreadId=%d",
 	      pi.hProcess, pi.hThread, 
 	      (int) pi.dwProcessId, (int) pi.dwThreadId);
+  if (r_pid)
+    *r_pid = (pid_t)pi.dwProcessId;
   
   if (ResumeThread (pi.hThread) < 0)
     TRACE_LOG1 ("ResumeThread failed: ec=%d", (int) GetLastError ());

@@ -44,7 +44,7 @@
 int _gpgme_io_pipe (int filedes[2], int inherit_idx);
 int _gpgme_io_spawn (const char *path, char **argv,
 		     struct spawn_fd_item_s *fd_child_list,
-		     struct spawn_fd_item_s *fd_parent_list);
+		     struct spawn_fd_item_s *fd_parent_list, pid_t *r_pid);
 #endif
 
 /* Hacks for Slowaris.  */
@@ -643,7 +643,7 @@ pipe_connect_gpgme (assuan_context_t *ctx,
   child_fds[2].fd = -1;
 
   /* Start the process.  */
-  res = _gpgme_io_spawn (name, argv, child_fds, child_fds);
+  res = _gpgme_io_spawn (name, argv, child_fds, child_fds, NULL);
   if (res == -1)
     {
       _assuan_log_printf ("CreateProcess failed: %s\n", strerror (errno));

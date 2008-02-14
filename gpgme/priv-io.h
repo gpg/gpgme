@@ -56,7 +56,7 @@ int _gpgme_io_set_nonblocking (int fd);
    fds in FD_CHILD_LIST in the child.  */
 int _gpgme_io_spawn (const char *path, char **argv,
 		     struct spawn_fd_item_s *fd_child_list,
-		     struct spawn_fd_item_s *fd_parent_list);
+		     struct spawn_fd_item_s *fd_parent_list, pid_t *r_pid);
 int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock);
 
 /* Write the printable version of FD to the buffer BUF of length

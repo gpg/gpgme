@@ -1,3 +1,18 @@
+2008-02-14  Werner Koch  <wk@g10code.com>
+
+	* w32-io.c (_gpgme_io_spawn): Add arg R_PID to return the pid.
+	* posix-io.c (_gpgme_io_spawn): Ditto.
+	* w32-glib-io.c (_gpgme_io_spawn): Ditto.
+	* w32-qt-io.cpp (_gpgme_io_spawn): Ditto.
+	* priv-io.h (_gpgme_io_spawn): Adjust prototyp and change all callers.
+	* rungpg.c (start): Call _gpgme_allow_set_foregound_window.
+
+	* w32-util.c (_gpgme_allow_set_foregound_window): New.
+	* posix-util.c (_gpgme_allow_set_foregound_window): New.
+	* engine-gpgsm.c (default_inq_cb): New.
+	(gpgsm_new) [W32]: Enable pinentry notifications.
+	(status_handler): Handle inquiries.
+
 2008-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* kdpipeiodevice.cpp: New version by Frank Osterfeld, fixes race
