@@ -1,6 +1,10 @@
 Hey Emacs, this is -*- outline -*- mode!
 
 * Before release:
+** Figure out if _gpgme_io_pipe should pre-create reader/writer and if we
+   then can use !start_it in most invocations.  Note that gpgme_io_dup
+   probably should always use !start_it, because currently it will
+   always create reader/writer if they don't exist(!?).
 ** Some gpg tests fail with gpg 1.3.4-cvs (gpg/t-keylist-sig)
    The test is currently disabled there and in gpg/t-import.
 ** When gpg supports it, write binary subpackets directly,
