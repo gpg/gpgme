@@ -232,24 +232,24 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
       nread = _gpgme_io_read (rp[0], &line[linelen], LINELENGTH - linelen - 1);
       if (nread > 0)
 	{
-	  line[linelen + nread] = '\0';
 	  linelen += nread;
+	  line[linelen] = '\0';
 
 	  while ((mark = strchr (line, '\n')))
 	    {
 	      char *eol = mark;
 	      
-	      if (eol > &line[0] && *eol == '\r')
+	      if (eol > line && eol[-1] == '\r')
 		eol--;
 	      *eol = '\0';
-	      
+
 	      /* Got a full line.  */
 	      err = (*cb) (hook, line);
 	      if (err)
 		break;
 	      
-	      linelen -= mark - line;
-	      memmove (line, eol + 1, linelen);
+	      linelen -= mark + 1 - line;
+	      memmove (line, mark + 1, linelen);
 	    }
 	}
     }
