@@ -50,12 +50,20 @@ static void
 release_op_data (void *hook)
 {
   op_data_t opd = (op_data_t) hook;
+  gpgme_recipient_t recipient = opd->result.recipients;
 
   if (opd->result.unsupported_algorithm)
     free (opd->result.unsupported_algorithm);
 
   if (opd->result.file_name)
     free (opd->result.file_name);
+
+  while (recipient)
+    {
+      gpgme_recipient_t next = recipient->next;
+      free (recipient);
+      recipient = next;
+    }
 }
 
 

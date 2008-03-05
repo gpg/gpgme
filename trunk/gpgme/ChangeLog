@@ -1,3 +1,8 @@
+2008-03-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* decrypt.c (release_op_data): Release OPD->result.recipients.
+	* encrypt.c (release_op_data): Release invalid_recipient.
+
 2008-02-15  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgconf.c (gpgconf_read): Fix end-of-line handline.
