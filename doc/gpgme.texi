@@ -608,7 +608,7 @@ pinentry.  Here is an example of a complete initialization:
 #include <gpgme.h>
 
 void
-init_program (void)
+init_gpgme (void)
 @{
   /* Initialize the locale environment.  */
   setlocale (LC_ALL, "");
@@ -5221,6 +5221,8 @@ main (int argc, char *argv[])
     event_io_cb,
     &result
   @};
+
+  init_gpgme (void);
 
   /* Initialize the loop structure.  */
   loop.lock = PTHREAD_MUTEX_INITIALIZER;

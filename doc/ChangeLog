@@ -1,3 +1,9 @@
+2008-03-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Library Version Check): Rename snippet function to
+	init_gpgme.
+	(I/O Callback Example): Call it here.
+
 2008-01-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi: Document that data encoding affects some output data
