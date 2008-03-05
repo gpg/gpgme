@@ -53,6 +53,7 @@ release_op_data (void *hook)
       gpgme_invalid_key_t next = invalid_recipient->next;
       if (invalid_recipient->fpr)
 	free (invalid_recipient->fpr);
+      free (invalid_recipient);
       invalid_recipient = next;
     }
 }
