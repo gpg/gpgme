@@ -1,3 +1,8 @@
+2008-03-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* key.c (_gpgme_key_add_sig): Terminate UID in case SRC is NULL.
+	Reported by Marc Mutz.
+
 2008-03-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* decrypt.c (release_op_data): Release OPD->result.recipients.
