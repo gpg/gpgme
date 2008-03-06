@@ -252,7 +252,7 @@ _gpgme_key_add_sig (gpgme_key_t key, char *src)
   assert (uid);	/* XXX */
 
   /* We can malloc a buffer of the same length, because the converted
-     string will never be larger. Actually we allocate it twice the
+     string will never be larger.  Actually we allocate it twice the
      size, so that we are able to store the parsed stuff there too.  */
   sig = malloc (sizeof (*sig) + 2 * src_len + 3);
   if (!sig)
@@ -275,6 +275,8 @@ _gpgme_key_add_sig (gpgme_key_t key, char *src)
 	parse_user_id (sig->uid, &sig->name, &sig->email,
 		       &sig->comment, dst);
     }
+  else
+    sig->uid = '\0';
 
   if (!uid->signatures)
     uid->signatures = sig;
