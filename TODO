@@ -41,6 +41,15 @@ Hey Emacs, this is -*- outline -*- mode!
    There is a configure time warning, though.
 
 * New features:
+** Flow control for data objects.
+   Currently, gpgme_data_t objects are assumed to be blocking.  To
+   break this assumption, we need either (A) a way for an user I/O
+   callback to store the current operation in a continuation that can
+   be resumed later.  While the continuation exists, file descriptors
+   associated with this operation must be removed from their
+   respective event loop.  or (B) a way for gpgme data objects to be
+   associated with a waitable object, that can be registered with the
+   user event loop.  Neither is particularly simple.
 ** Extended notation support.  When gpg supports arbitrary binary
    notation data, provide a user interface for that.
 ** notification system

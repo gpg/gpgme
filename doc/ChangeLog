@@ -1,3 +1,9 @@
+2008-03-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (File Based Data Buffers): Document the need for
+	blocking operations.
+	(Callback Based Data Buffers): Likewise.
+
 2008-03-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Library Version Check): Rename snippet function to

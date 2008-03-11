@@ -1,3 +1,7 @@
+2008-03-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* data.c (gpgme_data_read, gpgme_data_write): Retry on EINTR.
+
 2008-03-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	* key.c (_gpgme_key_add_sig): Terminate UID in case SRC is NULL.

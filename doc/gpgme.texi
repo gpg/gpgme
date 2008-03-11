@@ -1464,6 +1464,14 @@ The @code{gpgme_data_t} type is a handle for a container for generic
 data, which is used by @acronym{GPGME} to exchange data with the user.
 @end deftp
 
+@code{gpgme_data_t} objects do not provide notifications on events.
+It is assumed that read and write operations are blocking until data
+is available.  If this is undesirable, the application must ensure
+that all GPGME data operations always have data available, for example
+by using memory buffers or files rather than pipes or sockets.  This
+might be relevant, for example, if the external event loop mechanism
+is used.
+
 @menu
 * Creating Data Buffers::         Creating new data buffers.
 * Destroying Data Buffers::       Releasing data buffers.
@@ -1575,6 +1583,10 @@ When using the data object as an input buffer, the function might read
 a bit more from the file descriptor than is actually needed by the
 crypto engine in the desired operation because of internal buffering.
 
+Note that GPGME assumes that the file descriptor is set to blocking
+mode.  Errors during I/O operations, except for EINTR, are usually
+fatal for crypto operations.
+
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 data object was successfully created, and @code{GPG_ERR_ENOMEM} if not
 enough memory is available.
@@ -1589,6 +1601,10 @@ output data object).
 When using the data object as an input buffer, the function might read
 a bit more from the stream than is actually needed by the crypto
 engine in the desired operation because of internal buffering.
+
+Note that GPGME assumes that the stream is in blocking mode.  Errors
+during I/O operations, except for EINTR, are usually fatal for crypto
+operations.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 data object was successfully created, and @code{GPG_ERR_ENOMEM} if not
@@ -1611,6 +1627,10 @@ data object.  The function should read up to @var{size} bytes from the
 current read position into the space starting at @var{buffer}.  The
 @var{handle} is provided by the user at data object creation time.
 
+Note that GPGME assumes that the read blocks until data is available.
+Errors during I/O operations, except for EINTR, are usually fatal for
+crypto operations.
+
 The function should return the number of bytes read, 0 on EOF, and -1
 on error.  If an error occurs, @var{errno} should be set to describe
 the type of the error.
@@ -1623,6 +1643,10 @@ The @code{gpgme_data_write_cb_t} type is the type of functions which
 data object.  The function should write up to @var{size} bytes to the
 current write position from the space starting at @var{buffer}.  The
 @var{handle} is provided by the user at data object creation time.
+
+Note that GPGME assumes that the write blocks until data is available.
+Errors during I/O operations, except for EINTR, are usually fatal for
+crypto operations.
 
 The function should return the number of bytes written, and -1 on
 error.  If an error occurs, @var{errno} should be set to describe the
