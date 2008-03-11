@@ -87,7 +87,10 @@ gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
       errno = ENOSYS;
       return TRACE_SYSRES (-1);
     }
-  res = (*dh->cbs->read) (dh, buffer, size);
+  do
+    res = (*dh->cbs->read) (dh, buffer, size);
+  while (res < 0 && errno == EINTR);
+
   return TRACE_SYSRES (res);
 }
 
@@ -112,7 +115,10 @@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
       errno = ENOSYS;
       return TRACE_SYSRES (-1);
     }
-  res = (*dh->cbs->write) (dh, buffer, size);
+  do
+    res = (*dh->cbs->write) (dh, buffer, size);
+  while (res < 0 && errno == EINTR);
+
   return TRACE_SYSRES (res);
 }
 
