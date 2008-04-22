@@ -573,9 +573,6 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_select", fds,
 	      "nfds=%u, nonblock=%u", nfds, nonblock);
 
-  /* We only implement the special case of nonblock == true.  */
-  assert (nonblock);
-
   int count = 0;
 
   TRACE_SEQ (dbg_help, "select on [ ");
@@ -587,9 +584,12 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	}
       else if (fds[i].for_read )
       {
-          const KDPipeIODevice * const chan = find_channel (fds[i].fd, 0);
-          assert (chan);   
-          fds[i].signaled = chan->readWouldBlock() ? 0 : 1;
+          KDPipeIODevice * const chan = find_channel (fds[i].fd, 0);
+          assert (chan);
+          if ( nonblock )
+              fds[i].signaled = chan->readWouldBlock() ? 0 : 1;
+          else
+              fds[i].signaled = chan->waitForReadyRead( 1000 ) ? 1 : 0;
 	  TRACE_ADD1 (dbg_help, "w0x%x ", fds[i].fd);
           if ( fds[i].signaled ) 
               count++;
@@ -598,7 +598,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
         {
           const KDPipeIODevice * const chan = find_channel (fds[i].fd, 0);
           assert (chan);
-          fds[i].signaled = chan->writeWouldBlock() ? 0 : 1;
+          fds[i].signaled = nonblock ? ( chan->writeWouldBlock() ? 0 : 1 ) : 1;
           TRACE_ADD1 (dbg_help, "w0x%x ", fds[i].fd);
           if ( fds[i].signaled ) 
               count++;
