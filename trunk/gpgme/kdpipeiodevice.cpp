@@ -480,8 +480,8 @@ bool KDPipeIODevice::waitForReadyRead( int msecs ) { KDAB_CHECK_THIS;
     LOCKED( r );
     if ( r->bytesInBuffer() != 0 || r->eof || r->error )
         return true;
-    assert( false );
-    return r->bufferNotEmptyCondition.wait( &r->mutex, msecs ) ;
+
+    return msecs >= 0 ? r->bufferNotEmptyCondition.wait( &r->mutex, msecs ) : r->bufferNotEmptyCondition.wait( &r->mutex );
 }
 
 template <typename T>
