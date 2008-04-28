@@ -198,7 +198,7 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
   struct engine_gpgconf *gpgconf = engine;
   gpgme_error_t err = 0;
 #define LINELENGTH 1024
-  char line[LINELENGTH] = "";
+  char linebuf[LINELENGTH] = "";
   int linelen = 0;
   char *argv[] = { NULL /* file_name */, arg1, arg2, 0 };
   int rp[2];
@@ -229,28 +229,33 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
 
   do
     {
-      nread = _gpgme_io_read (rp[0], &line[linelen], LINELENGTH - linelen - 1);
+      nread = _gpgme_io_read (rp[0], 
+                              linebuf + linelen, LINELENGTH - linelen - 1);
       if (nread > 0)
 	{
-	  linelen += nread;
-	  line[linelen] = '\0';
+          char *line;
+          const char *lastmark = NULL;
+          size_t nused;
 
-	  while ((mark = strchr (line, '\n')))
+	  linelen += nread;
+	  linebuf[linelen] = '\0';
+
+	  for (line=linebuf; (mark = strchr (line, '\n')); line = mark+1 )
 	    {
-	      char *eol = mark;
-	      
-	      if (eol > line && eol[-1] == '\r')
-		eol--;
-	      *eol = '\0';
+              lastmark = mark;
+	      if (mark > line && mark[-1] == '\r')
+		mark--;
+	      *mark = '\0';
 
 	      /* Got a full line.  */
 	      err = (*cb) (hook, line);
 	      if (err)
-		break;
-	      
-	      linelen -= mark + 1 - line;
-	      memmove (line, mark + 1, linelen);
+		goto leave;
 	    }
+
+          nused = lastmark? (lastmark + 1 - linebuf) : 0;
+          memmove (linebuf, linebuf + nused, nused);
+          linelen -= nused;
 	}
     }
   while (nread > 0 && linelen < LINELENGTH - 1);
@@ -260,6 +265,7 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
   if (!err && nread > 0)
     err = gpg_error (GPG_ERR_LINE_TOO_LONG);
 
+ leave:
   _gpgme_io_close (rp[0]);
 
   return err;
