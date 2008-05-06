@@ -1,3 +1,9 @@
+2008-05-06  Werner Koch  <wk@g10code.com>
+
+	* version.c (extract_version_string): New.
+	(_gpgme_get_program_version): Use it to allow for suffixes in the
+	version line.
+
 2008-04-28  Werner Koch  <wk@g10code.com>
 
 	* engine-gpgconf.c (gpgconf_read): Fixed segv.  Avoid memmove for
