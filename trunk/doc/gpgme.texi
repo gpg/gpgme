@@ -2180,10 +2180,10 @@ is the default.
 
 @item GPGME_KEYLIST_MODE_EXTERN
 The @code{GPGME_KEYLIST_MODE_EXTERN} symbol specifies that an external
-source should be searched for keys in the keylisting
-operation.  The type of external source is dependant on the crypto
-engine used.  For example, it can be a remote keyserver or LDAP
-certificate server.
+source should be searched for keys in the keylisting operation.  The
+type of external source is dependant on the crypto engine used and
+whether it is combined with @code{GPGME_KEYLIST_MODE_LOCAL}.  For
+example, it can be a remote keyserver or LDAP certificate server.
 
 @item GPGME_KEYLIST_MODE_SIGS
 The @code{GPGME_KEYLIST_MODE_SIGS} symbol specifies that the key
@@ -2208,7 +2208,7 @@ At least one of @code{GPGME_KEYLIST_MODE_LOCAL} and
 @code{GPGME_KEYLIST_MODE_EXTERN} must be specified.  For future binary
 compatibility, you should get the current mode with
 @code{gpgme_get_keylist_mode} and modify it by setting or clearing the
-appropriate bits, and then using that calulcated value in the
+appropriate bits, and then using that calculated value in the
 @code{gpgme_set_keylisting_mode} operation.  This will leave all other
 bits in the mode value intact (in particular those that are not used
 in the current version of the library).

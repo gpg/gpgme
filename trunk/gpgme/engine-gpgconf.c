@@ -628,7 +628,7 @@ gpgconf_write (void *engine, char *arg1, char *arg2, gpgme_data_t conf)
 
   /* _gpgme_engine_new guarantees that this is not NULL.  */
   argv[0] = gpgconf->file_name;
-  argv[0] = "/home/marcus/g10/install/bin/gpgconf";
+  argv[0] = "/nowhere/path-needs-to-be-fixed/gpgconf";
 
   if (_gpgme_io_pipe (rp, 0) < 0)
     return gpg_error_from_syserror ();

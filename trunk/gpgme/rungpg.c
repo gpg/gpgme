@@ -486,7 +486,7 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 	rc = gpg_error_from_errno (errno);
       else
 	{
-          if (dft_ttyname)
+          if (*dft_ttyname)
             {
               rc = add_arg (gpg, "--ttyname");
               if (!rc)
@@ -1872,20 +1872,12 @@ gpg_keylist_preprocess (char *line, char **r_line)
 }
 
 
-static gpgme_error_t
-gpg_keylist (void *engine, const char *pattern, int secret_only,
-	     gpgme_keylist_mode_t mode)
+static gpg_error_t
+gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
+                           gpgme_keylist_mode_t mode)
 {
-  engine_gpg_t gpg = engine;
-  gpgme_error_t err;
+  gpg_error_t err;
 
-  if (mode & GPGME_KEYLIST_MODE_EXTERN)
-    {
-      if ((mode & GPGME_KEYLIST_MODE_LOCAL)
-	  || secret_only)
-	return gpg_error (GPG_ERR_NOT_SUPPORTED);
-    }
-  
   err = add_arg (gpg, "--with-colons");
   if (!err)
     err = add_arg (gpg, "--fixed-list-mode");
@@ -1893,7 +1885,8 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
     err = add_arg (gpg, "--with-fingerprint");
   if (!err)
     err = add_arg (gpg, "--with-fingerprint");
-  if (!err && (mode & GPGME_KEYLIST_MODE_SIGS)
+  if (!err
+      && (mode & GPGME_KEYLIST_MODE_SIGS)
       && (mode & GPGME_KEYLIST_MODE_SIG_NOTATIONS))
     {
       err = add_arg (gpg, "--list-options");
@@ -1902,22 +1895,51 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
     }
   if (!err)
     {
-      if (mode & GPGME_KEYLIST_MODE_EXTERN)
+      if ( (mode & GPGME_KEYLIST_MODE_EXTERN) )
 	{
-	  err = add_arg (gpg, "--search-keys");
-	  gpg->colon.preprocess_fnc = gpg_keylist_preprocess;
+          if (secret_only)
+            err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+          else if ( (mode & GPGME_KEYLIST_MODE_LOCAL))
+            {
+              /* The local+extern mode is special.  It works only with
+                 gpg >= 2.0.10.  FIXME: We should check that we have
+                 such a version to that we can return a proper error
+                 code.  The problem is that we don't know the context
+                 here and thus can't accesses the cached version
+                 number for the engine info structure.  */
+              err = add_arg (gpg, "--locate-keys");
+              if ((mode & GPGME_KEYLIST_MODE_SIGS))
+                err = add_arg (gpg, "--with-sig-check");
+            }
+          else
+            {
+              err = add_arg (gpg, "--search-keys");
+              gpg->colon.preprocess_fnc = gpg_keylist_preprocess;
+            }
 	}
       else
-	{
-	  err = add_arg (gpg, secret_only ? "--list-secret-keys"
-			 : ((mode & GPGME_KEYLIST_MODE_SIGS)
-			    ? "--check-sigs" : "--list-keys"));
-	}
+        {
+          err = add_arg (gpg, secret_only ? "--list-secret-keys"
+                         : ((mode & GPGME_KEYLIST_MODE_SIGS)
+                            ? "--check-sigs" : "--list-keys"));
+        }
     }
-
-  /* Tell the gpg object about the data.  */
   if (!err)
     err = add_arg (gpg, "--");
+  
+  return err;
+}
+                           
+
+static gpgme_error_t
+gpg_keylist (void *engine, const char *pattern, int secret_only,
+	     gpgme_keylist_mode_t mode)
+{
+  engine_gpg_t gpg = engine;
+  gpgme_error_t err;
+
+  err = gpg_keylist_build_options (gpg, secret_only, mode);
+
   if (!err && pattern && *pattern)
     err = add_arg (gpg, pattern);
 
@@ -1938,26 +1960,7 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
   if (reserved)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  err = add_arg (gpg, "--with-colons");
-  if (!err)
-    err = add_arg (gpg, "--fixed-list-mode");
-  if (!err)
-    err = add_arg (gpg, "--with-fingerprint");
-  if (!err)
-    err = add_arg (gpg, "--with-fingerprint");
-  if (!err && (mode & GPGME_KEYLIST_MODE_SIGS)
-      && (mode & GPGME_KEYLIST_MODE_SIG_NOTATIONS))
-    {
-      err = add_arg (gpg, "--list-options");
-      if (!err)
-	err = add_arg (gpg, "show-sig-subpackets=\"20,26\"");
-    }
-  if (!err)
-    err = add_arg (gpg, secret_only ? "--list-secret-keys"
-		   : ((mode & GPGME_KEYLIST_MODE_SIGS)
-		      ? "--check-sigs" : "--list-keys"));
-  if (!err)
-    err = add_arg (gpg, "--");
+  err = gpg_keylist_build_options (gpg, secret_only, mode);
 
   if (pattern)
     {
