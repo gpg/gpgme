@@ -1,3 +1,14 @@
+2008-05-07  Werner Koch  <wk@g10code.com>
+
+	* engine-gpgconf.c (gpgconf_write): Change argv[0] to a
+	self-explaining string.  Needs a proper fix, though.
+
+	* rungpg.c (gpg_keylist, gpg_keylist_ext): Factor common code out
+	to ..
+	(gpg_build_keylist_options): .. new. Allow combination of extern
+	and intern mode.
+	(gpg_new): DFT_TTYNAME is an array, thus check the first character.
+
 2008-05-06  Werner Koch  <wk@g10code.com>
 
 	* version.c (extract_version_string): New.

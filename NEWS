@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.1.7 (unreleased)
 ------------------------------------------------
 
+ * Using GPGME_KEYLIST_MODE_LOCAL combined with
+   GPGME_KEYLIST_MODE_EXTERN is now supported; it uses the
+   --locate-keys feature of gpg (>= 2.0.10).
+   
  * The encoding of gpgme_data_t objects can affect the output encoding
    of export, sign and encrypt operations now (the same operations
    that are also affected by the ASCII mode switch).  We believe this
