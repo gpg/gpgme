@@ -247,8 +247,11 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
 		mark--;
 	      *mark = '\0';
 
-	      /* Got a full line.  */
-	      err = (*cb) (hook, line);
+	      /* Got a full line.  Due to the CR removal code (which
+                 occurs only on Windows) we might be one-off and thus
+                 would see empty lines.  Don't pass them to the
+                 callback. */
+	      err = *line? (*cb) (hook, line) : NULL;
 	      if (err)
 		goto leave;
 	    }
