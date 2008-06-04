@@ -1,3 +1,9 @@
+2008-06-04  Werner Koch  <wk@g10code.com>
+
+	* gpgme.texi: Use @copying command. Change license to
+	GPLv3. Include protocol specis from GpgOL and GPGEx.  Minor
+	cleanups.
+
 2008-03-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (File Based Data Buffers): Document the need for
