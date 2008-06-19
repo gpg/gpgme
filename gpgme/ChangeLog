@@ -1,3 +1,15 @@
+2008-06-19  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h (GPGME_CONF_PATHNAME): Replace by GPGME_CONF_FILENAME,
+	change all callers and provide compatibilty macro.
+	(gpgme_conf_type_t): Add complex types 34..37.
+	* engine-gpgconf.c (gpgconf_parse_option, arg_to_data)
+	(_gpgme_conf_arg_new, _gpgme_conf_arg_release): Add new types.
+
+2008-06-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* engine-gpgconf.c (gpgconf_parse_option): Fix comma detection.
+
 2008-05-09  Werner Koch  <wk@g10code.com>
 
 	* engine-gpgconf.c (gpgconf_read): Do not pass empty lines to the

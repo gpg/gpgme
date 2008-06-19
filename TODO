@@ -9,6 +9,8 @@ Hey Emacs, this is -*- outline -*- mode!
    The test is currently disabled there and in gpg/t-import.
 ** When gpg supports it, write binary subpackets directly,
    and parse SUBPACKET status lines.
+** A few months after 1.1.7:
+   Remove GPGME_CONF_PATHNAME macro.
 
 * ABI's to break:
 ** gpgme_edit_cb_t: Add "processed" return argument

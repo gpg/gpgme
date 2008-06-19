@@ -1,3 +1,8 @@
+2008-06-05  Werner Koch  <wk@g10code.com>
+
+	* uiserver.texi (Miscellaneous UI Server Commands): Describe
+	START_CONFDIALOG.
+
 2008-06-04  Werner Koch  <wk@g10code.com>
 
 	* gpgme.texi: Use @copying command. Change license to
