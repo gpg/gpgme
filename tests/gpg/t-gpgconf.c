@@ -104,7 +104,11 @@ dump_arg (int type, gpgme_conf_arg_t arg)
 	case GPGME_CONF_STRING:
 	case GPGME_CONF_PATHNAME:
 	case GPGME_CONF_LDAP_SERVER:
-	  printf ("%s", arg->value.string);
+        case GPGME_CONF_KEY_FPR:
+        case GPGME_CONF_PUB_KEY:
+        case GPGME_CONF_SEC_KEY:
+        case GPGME_CONF_ALIAS_LIST:
+	  printf ("`%s'", arg->value.string);
 	  break;
 
 	case GPGME_CONF_UINT32:
