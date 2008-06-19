@@ -15,9 +15,8 @@
    Lesser General Public License for more details.
    
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -338,13 +337,15 @@ gpgconf_parse_option (gpgme_conf_opt_t opt,
   if (!line[0])
     return 0;
 
-  mark = strchr (line, ',');
-  if (mark)
-    *mark = '\0';
-
   while (line)
     {
-      gpgme_conf_arg_t arg = calloc (1, sizeof (*arg));
+      gpgme_conf_arg_t arg;
+
+      mark = strchr (line, ',');
+      if (mark)
+	*mark = '\0';
+
+      arg = calloc (1, sizeof (*arg));
       if (!arg)
 	return gpg_error_from_syserror ();
       *arg_p = arg;
@@ -367,8 +368,14 @@ gpgconf_parse_option (gpgme_conf_opt_t opt,
 	      break;
 	      
 	    case GPGME_CONF_STRING:
-	    case GPGME_CONF_PATHNAME:
-	    case GPGME_CONF_LDAP_SERVER:
+              /* The complex types below are only here to silent the
+                 compiler warning. */
+            case GPGME_CONF_FILENAME: 
+            case GPGME_CONF_LDAP_SERVER:
+            case GPGME_CONF_KEY_FPR:
+            case GPGME_CONF_PUB_KEY:
+            case GPGME_CONF_SEC_KEY:
+            case GPGME_CONF_ALIAS_LIST:
 	      /* Skip quote character.  */
 	      line++;
 	      
@@ -535,6 +542,8 @@ _gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
     arg->no_arg = 1;
   else
     {
+      /* We need to switch on type here because the alt-type is not
+         yet known.  */
       switch (type)
 	{
 	case GPGME_CONF_NONE:
@@ -547,8 +556,12 @@ _gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
 	  break;
 	  
 	case GPGME_CONF_STRING:
-	case GPGME_CONF_PATHNAME:
+	case GPGME_CONF_FILENAME:
 	case GPGME_CONF_LDAP_SERVER:
+        case GPGME_CONF_KEY_FPR:
+        case GPGME_CONF_PUB_KEY:
+        case GPGME_CONF_SEC_KEY:
+        case GPGME_CONF_ALIAS_LIST:
 	  arg->value.string = strdup (value);
 	  if (!arg->value.string)
 	    {
@@ -571,6 +584,7 @@ _gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
 void
 _gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type)
 {
+  /* Lacking the alt_type we need to switch on type here.  */
   switch (type)
     {
     case GPGME_CONF_NONE:
@@ -580,8 +594,12 @@ _gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type)
     default:
       break;
        
-    case GPGME_CONF_PATHNAME:
+    case GPGME_CONF_FILENAME:
     case GPGME_CONF_LDAP_SERVER:
+    case GPGME_CONF_KEY_FPR:
+    case GPGME_CONF_PUB_KEY:
+    case GPGME_CONF_SEC_KEY:
+    case GPGME_CONF_ALIAS_LIST:
       type = GPGME_CONF_STRING;
       break;
     }
@@ -718,10 +736,17 @@ arg_to_data (gpgme_data_t conf, gpgme_conf_opt_t option, gpgme_conf_arg_t arg)
 	  buf[sizeof (buf) - 1] = '\0';
 	  amt = gpgme_data_write (conf, buf, strlen (buf));
 	  break;
-	  
+	
+          
 	case GPGME_CONF_STRING:
-	case GPGME_CONF_PATHNAME:
-	case GPGME_CONF_LDAP_SERVER:
+          /* The complex types below are only here to silent the
+             compiler warning. */
+        case GPGME_CONF_FILENAME: 
+        case GPGME_CONF_LDAP_SERVER:
+        case GPGME_CONF_KEY_FPR:
+        case GPGME_CONF_PUB_KEY:
+        case GPGME_CONF_SEC_KEY:
+        case GPGME_CONF_ALIAS_LIST:
 	  /* One quote character, and three times to allow
 	     for percent escaping.  */
 	  {
