@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <locale.h>
 
 #include <gpgme.h>
@@ -38,6 +39,55 @@
   while (0)
 
 
+
+
+static void
+print_one_alias (const char *string)
+{
+  const char *value, *s;
+  size_t namelen;
+  int first = 1;
+  int any = 0;
+
+  while (isascii (*string) && isspace (*string))
+    string++;
+
+  value = strchr (string, '=');
+  if (value)
+    {
+      for (s=value-1; s > string ; s--)
+        if (!isascii (*s) || !isspace (*s))
+          break;
+    }
+  if (!value || s == value )
+    {
+      printf ("# error: invalid group definition!\n");
+      return;
+    }
+  value++;
+  namelen = (s + 1 - string);
+  printf ("%.*s: ", (int)namelen, string);
+
+  for (;;)
+    {
+      while (isascii (*value) && isspace (*value))
+        value++;
+      if (!*value)
+        break;
+      for (s = value; *s && !(isascii (*s) && isspace (*s)); s++)
+        ;
+      printf ("%s%*s%.*s",
+              first? "":",\n",
+              any? (int)namelen+2:0, "",
+              (int)(s-value), value);
+      first = 0;
+      any = 1;
+      value = s;
+    }
+  putchar ('\n');
+}
+
+
 
 
 static void
@@ -65,9 +115,8 @@ print_gpgconf_string (const char *cname, const char *name)
               {
                 for (value = opt->value; value; value = value->next)
                   {
-                    if (opt->alt_type == GPGME_CONF_STRING)
-                      printf ("%s/%s -> `%s'\n",
-                              cname,name, value->value.string);
+                    if (opt->type == GPGME_CONF_ALIAS_LIST)
+                      print_one_alias (value->value.string);
                   }
                 break;
               }
