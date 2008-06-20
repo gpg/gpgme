@@ -199,13 +199,17 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
 #define LINELENGTH 1024
   char linebuf[LINELENGTH] = "";
   int linelen = 0;
-  char *argv[] = { NULL /* file_name */, arg1, arg2, 0 };
+  char *argv[4] = { NULL /* file_name */, NULL, NULL, NULL };
   int rp[2];
   struct spawn_fd_item_s pfd[] = { {0, -1}, {-1, -1} };
   struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */}, {-1, -1} };
   int status;
   int nread;
   char *mark = NULL;
+
+  argv[1] = arg1;
+  argv[2] = arg2;
+
 
   /* FIXME: Deal with engine->home_dir.  */
 
@@ -243,20 +247,21 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
 	    {
               lastmark = mark;
 	      if (mark > line && mark[-1] == '\r')
-		mark--;
-	      *mark = '\0';
+		mark[-1] = '\0';
+              else
+                mark[0] = '\0';
 
 	      /* Got a full line.  Due to the CR removal code (which
                  occurs only on Windows) we might be one-off and thus
                  would see empty lines.  Don't pass them to the
                  callback. */
-	      err = *line? (*cb) (hook, line) : NULL;
+	      err = *line? (*cb) (hook, line) : 0;
 	      if (err)
 		goto leave;
 	    }
 
           nused = lastmark? (lastmark + 1 - linebuf) : 0;
-          memmove (linebuf, linebuf + nused, nused);
+          memmove (linebuf, linebuf + nused, linelen - nused);
           linelen -= nused;
 	}
     }
