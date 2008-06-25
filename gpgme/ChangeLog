@@ -1,3 +1,49 @@
+2008-06-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme-w32spawn.c: New file.
+	* Makefile.am (libexec_PROGRAMS) [HAVE_W32_SYSTEM]: New variable
+	with gpgme-w32spawn.
+	* engine-gpgsm.c (gpgsm_new): Use server translated handles.
+	(gpgsm_set_locale): Return early if locale value is NULL.
+	* util.h (_gpgme_mkstemp)
+	(_gpgme_get_w32spawn_path) [HAVE_W32_SYSTEM]: New function
+	prototypes.
+	* w32-util.c: Include <stdint.h>, <sys/stat.h> and <unistd.h>.
+	(letters, mkstemp, _gpgme_mkstemp, _gpgme_get_w32spawn_path): New
+	functions.
+	* rungpg.c (gpg_decrypt, gpg_encrypt, gpg_encrypt_sign)
+	(gpg_genkey, gpg_import, gpg_verify, gpg_sign): Pass data over
+	special filename FD rather than stdin.
+	(struct arg_and_data_s): Add member ARG_LOCP.
+	(struct fd_data_map_s): Add member ARG_LOC.
+	(struct engine_gpg): Add member ARG_LOC to status and colon.
+	(_add_arg, add_arg_with_locp): New function.
+	(add_arg_ext): Reimplement in terms of _add_arg.
+	(gpg_new): Remember argument location for status FD.
+	(build_argv): Set argument location if requested.  Also set
+	argument location of fd_data_map for data items.
+	(start): Adjust caller of _gpgme_io_spawn.
+	* priv-io.h (struct spawn_fd_item_s): Add members peer_name and
+	arg_loc.
+	(_gpgme_io_spawn): Remove parent fd list argument.
+	* posix-io.c (get_max_fds): New function.
+	(_gpgme_io_dup): Add tracing.
+	(_gpgme_io_spawn): Remove parent fd list.  Change meaning of child
+	fd list to contain all child fds that should be inherited.  Close
+	all other file descriptors after fork.
+	* w32-io.c, w32-glib-io.c, w32-qt-io.c(_gpgme_io_spawn): Remove
+	parent fd list.  Change meaning of child fd list to contain all
+	child fds that should be inherited.  Do not inherit any file
+	descriptors, but DuplicateHandle them.  Spawn process through
+	wrapper process.  Provide wrapper process with a temporary file
+	containing handle translation data.  Return translated handle
+	names.
+	* w32-io.c (reader): Add more tracing output.
+	(_gpgme_io_read): Likewise.
+	* engine-gpgconf.c (gpgconf_read): Adjust caller of
+	_gpgme_io_spawn.
+	* version.c (_gpgme_get_program_version): Likewise.
+
 2008-06-20  Werner Koch  <wk@g10code.com>
 
 	* engine-gpgconf.c (gpgconf_read): Change ARGV initialization for

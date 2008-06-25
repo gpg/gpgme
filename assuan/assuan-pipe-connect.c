@@ -41,10 +41,19 @@
 
 #ifdef _ASSUAN_IN_GPGME_BUILD_ASSUAN
 
+/* From GPGME priv-io.h  */
+struct spawn_fd_item_s
+{
+  int fd;
+  int dup_to;
+  int peer_name;
+  int arg_loc;
+};
+
+
 int _gpgme_io_pipe (int filedes[2], int inherit_idx);
 int _gpgme_io_spawn (const char *path, char **argv,
-		     struct spawn_fd_item_s *fd_child_list,
-		     struct spawn_fd_item_s *fd_parent_list, pid_t *r_pid);
+		     struct spawn_fd_item_s *fd_list, pid_t *r_pid);
 #endif
 
 /* Hacks for Slowaris.  */
@@ -566,13 +575,6 @@ socketpair_connect (assuan_context_t *ctx,
 
 #define pipe_connect pipe_connect_gpgme
 
-/* From GPGME priv-io.h  */
-struct spawn_fd_item_s
-{
-  int fd;
-  int dup_to;
-};
-
 /* W32 version of the pipe connection code. */
 static assuan_error_t
 pipe_connect_gpgme (assuan_context_t *ctx,
@@ -583,13 +585,24 @@ pipe_connect_gpgme (assuan_context_t *ctx,
 {
   assuan_error_t err;
   int res;
+  int idx;
+  int nr;
   int rp[2];
   int wp[2];
   char mypidstr[50];
-  struct spawn_fd_item_s child_fds[3]; /* stdin, stdout, terminating -1 */
+  struct spawn_fd_item_s *child_fds;
 
   if (!ctx || !name || !argv || !argv[0])
     return _assuan_error (ASSUAN_Invalid_Value);
+
+  /* stdin, stdout, terminating -1 */
+  nr = 3;
+  for (idx = 0; fd_child_list[idx] != -1; idx++)
+    nr++;
+
+  child_fds = calloc (nr, sizeof *child_fds);
+  if (! child_fds)
+    return _assuan_error (ASSUAN_Out_Of_Core);
 
   /* Actually, GPGME does this for us.  But we plan to reuse this code
      in the generic assuan.  */
@@ -631,19 +644,28 @@ pipe_connect_gpgme (assuan_context_t *ctx,
      the old value, changeit, create proces and restore it, is not
      thread safe.  */
 
-  /* Parent list is same as client list.  Note that GPGME will dup nul
-     to stderr even if the caller wants to inherit the handle for
-     it.  */
+  nr = 0;
   /* Server stdout is its write end of our read pipe.  */
-  child_fds[0].fd = rp[1];
-  child_fds[0].dup_to = 1;
+  child_fds[nr].fd = rp[1];
+  child_fds[nr].dup_to = 1;
+  nr++;
   /* Server stdin is its read end of our write pipe.  */
-  child_fds[1].fd = wp[0];
-  child_fds[1].dup_to = 0;
-  child_fds[2].fd = -1;
+  child_fds[nr].fd = wp[0];
+  child_fds[nr].dup_to = 0;
+  nr++;
+
+  for (idx = 0; fd_child_list[idx] != -1; idx++)
+    {
+      child_fds[nr].fd = fd_child_list[idx];
+      child_fds[nr].dup_to = -1;
+      nr++;
+    }
+
+  child_fds[nr].fd = -1;
+  child_fds[nr].dup_to = -1;
 
   /* Start the process.  */
-  res = _gpgme_io_spawn (name, argv, child_fds, child_fds, NULL);
+  res = _gpgme_io_spawn (name, argv, child_fds, NULL);
   if (res == -1)
     {
       _assuan_log_printf ("CreateProcess failed: %s\n", strerror (errno));
@@ -652,6 +674,14 @@ pipe_connect_gpgme (assuan_context_t *ctx,
       _gpgme_io_close (wp[0]);
       _gpgme_io_close (wp[1]);
       return _assuan_error (ASSUAN_General_Error);
+    }
+  else
+    {
+      /* For W32, the user needs to know the server-local names of the
+	 inherited handles.  Return them here.  */
+      for (idx = 0; fd_child_list[idx] != -1; idx++)
+	/* We add 2 to skip over the stdin/stdout pair.  */
+	fd_child_list[idx] = child_fds[idx + 2].peer_name;
     }
 
   (*ctx)->pid = 0;  /* We don't use the PID. */

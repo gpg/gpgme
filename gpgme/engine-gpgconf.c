@@ -201,8 +201,8 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
   int linelen = 0;
   char *argv[4] = { NULL /* file_name */, NULL, NULL, NULL };
   int rp[2];
-  struct spawn_fd_item_s pfd[] = { {0, -1}, {-1, -1} };
-  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */}, {-1, -1} };
+  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */, -1, 0},
+				   {-1, -1} };
   int status;
   int nread;
   char *mark = NULL;
@@ -219,10 +219,9 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
   if (_gpgme_io_pipe (rp, 1) < 0)
     return gpg_error_from_syserror ();
 
-  pfd[0].fd = rp[1];
   cfd[0].fd = rp[1];
 
-  status = _gpgme_io_spawn (gpgconf->file_name, argv, cfd, pfd, NULL);
+  status = _gpgme_io_spawn (gpgconf->file_name, argv, cfd, NULL);
   if (status < 0)
     {
       _gpgme_io_close (rp[0]);
@@ -645,7 +644,6 @@ gpgconf_write (void *engine, char *arg1, char *arg2, gpgme_data_t conf)
   int buflen = 0;
   char *argv[] = { NULL /* file_name */, arg1, arg2, 0 };
   int rp[2];
-  struct spawn_fd_item_s pfd[] = { {1, -1}, {-1, -1} };
   struct spawn_fd_item_s cfd[] = { {-1, 0 /* STDIN_FILENO */}, {-1, -1} };
   int status;
   int nwrite;
@@ -659,10 +657,9 @@ gpgconf_write (void *engine, char *arg1, char *arg2, gpgme_data_t conf)
   if (_gpgme_io_pipe (rp, 0) < 0)
     return gpg_error_from_syserror ();
 
-  pfd[0].fd = rp[0];
   cfd[0].fd = rp[0];
 
-  status = _gpgme_io_spawn (gpgconf->file_name, argv, cfd, pfd, NULL);
+  status = _gpgme_io_spawn (gpgconf->file_name, argv, cfd, NULL);
   if (status < 0)
     {
       _gpgme_io_close (rp[0]);

@@ -24,11 +24,19 @@
 
 
 /* A single file descriptor passed to spawn.  For child fds, dup_to
-   specifies the fd it should become in the child.  */
+   specifies the fd it should become in the child, but only 0, 1 and 2
+   are valid values (due to a limitation in the W32 code).  As return
+   value, the PEER_NAME fields specify the name of the file
+   descriptor in the spawned process, or -1 if no change.  If ARG_LOC
+   is not 0, it specifies the index in the argument vector of the
+   program which contains a numerical representation of the file
+   descriptor for translation purposes.  */
 struct spawn_fd_item_s
 {
   int fd;
   int dup_to;
+  int peer_name;
+  int arg_loc;
 };
 
 struct io_select_fd_s
@@ -51,12 +59,13 @@ int _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
 				void *value);
 int _gpgme_io_set_nonblocking (int fd);
 
-/* Spawn the executable PATH with ARGV as arguments, after forking
-   close all fds in FD_PARENT_LIST in the parent and close or dup all
-   fds in FD_CHILD_LIST in the child.  */
+/* Spawn the executable PATH with ARGV as arguments.  After forking
+   close all fds except for those in FD_LIST in the child, then
+   optionally dup() the child fds.  Finally, all fds in the list are
+   closed in the parent.  */
 int _gpgme_io_spawn (const char *path, char **argv,
-		     struct spawn_fd_item_s *fd_child_list,
-		     struct spawn_fd_item_s *fd_parent_list, pid_t *r_pid);
+		     struct spawn_fd_item_s *fd_list, pid_t *r_pid);
+
 int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock);
 
 /* Write the printable version of FD to the buffer BUF of length

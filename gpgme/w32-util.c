@@ -28,8 +28,11 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <stdint.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <windows.h>
@@ -251,8 +254,8 @@ find_program_in_inst_dir (const char *name)
   char *tmp;
 
   tmp = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
-					"Software\\GNU\\GnuPG",
-					"Install Directory");
+				  "Software\\GNU\\GnuPG",
+				  "Install Directory");
   if (!tmp)
     return NULL;
 
@@ -350,6 +353,22 @@ _gpgme_get_gpgconf_path (void)
 }
 
 
+const char *
+_gpgme_get_w32spawn_path (void)
+{
+  static char *w32spawn_program;
+
+  LOCK (get_path_lock);
+  if (!w32spawn_program)
+    w32spawn_program = find_program_in_inst_dir ("gpgme-w32spawn.exe");
+  if (!w32spawn_program)
+    w32spawn_program
+      = find_program_at_standard_place ("GNU\\GnuPG\\gpgme-w32spawn.exe");
+  UNLOCK (get_path_lock);
+  return w32spawn_program;
+}
+
+
 /* Return an integer value from gpgme specific configuration
    entries. VALUE receives that value; function returns true if a value
    has been configured and false if not. */
@@ -395,3 +414,134 @@ _gpgme_allow_set_foregound_window (pid_t pid)
 
 }
 
+
+
+/* mkstemp extracted from libc/sysdeps/posix/tempname.c.  Copyright
+   (C) 1991-1999, 2000, 2001, 2006 Free Software Foundation, Inc.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.  */
+
+static const char letters[] =
+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+/* Generate a temporary file name based on TMPL.  TMPL must match the
+   rules for mk[s]temp (i.e. end in "XXXXXX").  The name constructed
+   does not exist at the time of the call to mkstemp.  TMPL is
+   overwritten with the result.  */
+static int
+mkstemp (char *tmpl)
+{
+  int len;
+  char *XXXXXX;
+  static uint64_t value;
+  uint64_t random_time_bits;
+  unsigned int count;
+  int fd = -1;
+  int save_errno = errno;
+
+  /* A lower bound on the number of temporary files to attempt to
+     generate.  The maximum total number of temporary file names that
+     can exist for a given template is 62**6.  It should never be
+     necessary to try all these combinations.  Instead if a reasonable
+     number of names is tried (we define reasonable as 62**3) fail to
+     give the system administrator the chance to remove the problems.  */
+#define ATTEMPTS_MIN (62 * 62 * 62)
+
+  /* The number of times to attempt to generate a temporary file.  To
+     conform to POSIX, this must be no smaller than TMP_MAX.  */
+#if ATTEMPTS_MIN < TMP_MAX
+  unsigned int attempts = TMP_MAX;
+#else
+  unsigned int attempts = ATTEMPTS_MIN;
+#endif
+
+  len = strlen (tmpl);
+  if (len < 6 || strcmp (&tmpl[len - 6], "XXXXXX"))
+    {
+      errno = EINVAL;
+      return -1;
+    }
+
+  /* This is where the Xs start.  */
+  XXXXXX = &tmpl[len - 6];
+
+  /* Get some more or less random data.  */
+  {
+    struct timeval tv;
+    gettimeofday (&tv, NULL);
+    random_time_bits = ((uint64_t) tv.tv_usec << 16) ^ tv.tv_sec;
+  }
+  value += random_time_bits ^ getpid ();
+
+  for (count = 0; count < attempts; value += 7777, ++count)
+    {
+      uint64_t v = value;
+
+      /* Fill in the random bits.  */
+      XXXXXX[0] = letters[v % 62];
+      v /= 62;
+      XXXXXX[1] = letters[v % 62];
+      v /= 62;
+      XXXXXX[2] = letters[v % 62];
+      v /= 62;
+      XXXXXX[3] = letters[v % 62];
+      v /= 62;
+      XXXXXX[4] = letters[v % 62];
+      v /= 62;
+      XXXXXX[5] = letters[v % 62];
+
+      fd = open (tmpl, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+      if (fd >= 0)
+	{
+	  errno = save_errno;
+	  return fd;
+	}
+      else if (errno != EEXIST)
+	return -1;
+    }
+
+  /* We got out of the loop because we ran out of combinations to try.  */
+  errno = EEXIST;
+  return -1;
+}
+
+
+int
+_gpgme_mkstemp (int *fd, char **name)
+{
+  char tmp[MAX_PATH + 2];
+  char *tmpname;
+  int err;
+
+  *fd = -1;
+  *name = NULL;
+
+  err = GetTempPath (MAX_PATH + 1, tmp);
+  if (err == 0 || err > MAX_PATH + 1)
+    strcpy (tmp,"c:\\windows\\temp");
+  else
+    {
+      int len = strlen(tmp);
+      
+      /* GetTempPath may return with \ on the end */
+      while(len > 0 && tmp[len - 1] == '\\')
+	{
+	  tmp[len-1] = '\0';
+	  len--;
+	}
+    }
+
+  tmpname = malloc (strlen (tmp) + 13 + 1);
+  if (!tmpname)
+    return -1;
+  sprintf (tmpname, "%s\\gpgme-XXXXXX", tmp);
+  *fd = mkstemp (tmpname);
+  if (fd < 0)
+    return -1;
+
+  *name = tmpname;
+  return 0;
+}

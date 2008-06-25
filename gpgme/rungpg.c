@@ -52,6 +52,8 @@ struct arg_and_data_s
   int inbound;     /* True if this is used for reading from gpg.  */
   int dup_to;
   int print_fd;    /* Print the fd number and not the special form of it.  */
+  int *arg_locp;   /* Write back the argv idx of this argument when
+		      building command line to this location.  */
   char arg[1];     /* Used if data above is not used.  */
 };
 
@@ -62,7 +64,8 @@ struct fd_data_map_s
   int inbound;  /* true if this is used for reading from gpg */
   int dup_to;
   int fd;       /* the fd to use */
-  int peer_fd;  /* the outher side of the pipe */
+  int peer_fd;  /* the other side of the pipe */
+  int arg_loc;  /* The index into the argv for translation purposes.  */
   void *tag;
 };
 
@@ -82,6 +85,7 @@ struct engine_gpg
   struct
   {
     int fd[2];  
+    int arg_loc;
     size_t bufsize;
     char *buffer;
     size_t readpos;
@@ -95,6 +99,7 @@ struct engine_gpg
   struct
   {
     int fd[2];  
+    int arg_loc;
     size_t bufsize;
     char *buffer;
     size_t readpos;
@@ -191,7 +196,7 @@ close_notify_handler (int fd, void *opaque)
 /* If FRONT is true, push at the front of the list.  Use this for
    options added late in the process.  */
 static gpgme_error_t
-add_arg_ext (engine_gpg_t gpg, const char *arg, int front)
+_add_arg (engine_gpg_t gpg, const char *arg, int front, int *arg_locp)
 {
   struct arg_and_data_s *a;
 
@@ -204,6 +209,8 @@ add_arg_ext (engine_gpg_t gpg, const char *arg, int front)
 
   a->data = NULL;
   a->dup_to = -1;
+  a->arg_locp = arg_locp;
+
   strcpy (a->arg, arg);
   if (front)
     {
@@ -227,10 +234,25 @@ add_arg_ext (engine_gpg_t gpg, const char *arg, int front)
 }
 
 static gpgme_error_t
+add_arg_ext (engine_gpg_t gpg, const char *arg, int front)
+{
+  return _add_arg (gpg, arg, front, NULL);
+}
+
+
+static gpgme_error_t
+add_arg_with_locp (engine_gpg_t gpg, const char *arg, int *locp)
+{
+  return _add_arg (gpg, arg, 0, locp);
+}
+
+
+static gpgme_error_t
 add_arg (engine_gpg_t gpg, const char *arg)
 {
   return add_arg_ext (gpg, arg, 0);
 }
+
 
 static gpgme_error_t
 add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
@@ -246,6 +268,8 @@ add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
   a->next = NULL;
   a->data = data;
   a->inbound = inbound;
+  a->arg_locp = NULL;
+
   if (dup_to == -2)
     {
       a->print_fd = 1;
@@ -450,7 +474,7 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
   {
     char buf[25];
     _gpgme_io_fd2str (buf, sizeof (buf), gpg->status.fd[1]);
-    rc = add_arg (gpg, buf);
+    rc = add_arg_with_locp (gpg, buf, &gpg->status.arg_loc);
     if (rc)
       goto leave;
   }
@@ -798,6 +822,9 @@ build_argv (engine_gpg_t gpg)
   argc++;
   for (a = gpg->arglist; a; a = a->next)
     {
+      if (a->arg_locp)
+	*(a->arg_locp) = argc;
+
       if (a->data)
 	{
 	  /* Create a pipe to pass it down to gpg.  */
@@ -853,6 +880,7 @@ build_argv (engine_gpg_t gpg)
 
 	  fd_data_map[datac].data = a->data;
 	  fd_data_map[datac].dup_to = a->dup_to;
+
 	  if (a->dup_to == -1)
 	    {
 	      char *ptr;
@@ -874,8 +902,9 @@ build_argv (engine_gpg_t gpg)
 		  *(ptr++) = '&';
 		  buflen -= 2;
 		}
-	      
+
 	      _gpgme_io_fd2str (ptr, buflen, fd_data_map[datac].peer_fd);
+	      fd_data_map[datac].arg_loc = argc;
 	      argc++;
             }
 	  datac++;
@@ -1225,7 +1254,7 @@ start (engine_gpg_t gpg)
   int saved_errno;
   int i, n;
   int status;
-  struct spawn_fd_item_s *fd_child_list, *fd_parent_list;
+  struct spawn_fd_item_s *fd_list;
   pid_t pid;
 
   if (!gpg)
@@ -1256,63 +1285,41 @@ start (engine_gpg_t gpg)
   if (rc)
     return rc;
 
-  n = 3; /* status_fd, colon_fd and end of list */
+  /* status_fd, colon_fd and end of list.  */
+  n = 3;
   for (i = 0; gpg->fd_data_map[i].data; i++) 
     n++;
-  fd_child_list = calloc (n + n, sizeof *fd_child_list);
-  if (!fd_child_list)
+  fd_list = calloc (n, sizeof *fd_list);
+  if (! fd_list)
     return gpg_error_from_errno (errno);
-  fd_parent_list = fd_child_list + n;
 
-  /* build the fd list for the child */
+  /* Build the fd list for the child.  */
   n = 0;
-  /* The status fd is never dup'ed, so do not include it in the list.  */
+  fd_list[n].fd = gpg->status.fd[1];
+  fd_list[n].dup_to = -1;
+  fd_list[n].arg_loc = gpg->status.arg_loc;
+  n++;
   if (gpg->colon.fnc)
     {
-      fd_child_list[n].fd = gpg->colon.fd[1]; 
-      fd_child_list[n].dup_to = 1; /* dup to stdout */
+      fd_list[n].fd = gpg->colon.fd[1]; 
+      fd_list[n].dup_to = 1;
       n++;
     }
   for (i = 0; gpg->fd_data_map[i].data; i++)
     {
-      if (gpg->fd_data_map[i].dup_to != -1)
-	{
-	  fd_child_list[n].fd = gpg->fd_data_map[i].peer_fd;
-	  fd_child_list[n].dup_to = gpg->fd_data_map[i].dup_to;
-	  n++;
-        }
-    }
-  fd_child_list[n].fd = -1;
-  fd_child_list[n].dup_to = -1;
-
-  /* Build the fd list for the parent.  */
-  n = 0;
-  if (gpg->status.fd[1] != -1)
-    {
-      fd_parent_list[n].fd = gpg->status.fd[1];
-      fd_parent_list[n].dup_to = -1;
+      fd_list[n].fd = gpg->fd_data_map[i].peer_fd;
+      fd_list[n].dup_to = gpg->fd_data_map[i].dup_to;
+      fd_list[n].arg_loc = gpg->fd_data_map[i].arg_loc;
       n++;
     }
-  if (gpg->colon.fd[1] != -1)
-    {
-      fd_parent_list[n].fd = gpg->colon.fd[1];
-      fd_parent_list[n].dup_to = -1;
-      n++;
-    }
-  for (i = 0; gpg->fd_data_map[i].data; i++)
-    {
-      fd_parent_list[n].fd = gpg->fd_data_map[i].peer_fd;
-      fd_parent_list[n].dup_to = -1;
-      n++;
-    }        
-  fd_parent_list[n].fd = -1;
-  fd_parent_list[n].dup_to = -1;
+  fd_list[n].fd = -1;
+  fd_list[n].dup_to = -1;
 
   status = _gpgme_io_spawn (gpg->file_name ? gpg->file_name :
-			    _gpgme_get_gpg_path (),
-			    gpg->argv, fd_child_list, fd_parent_list, &pid);
+			    _gpgme_get_gpg_path (), gpg->argv, fd_list, &pid);
   saved_errno = errno;
-  free (fd_child_list);
+
+  free (fd_list);
   if (status == -1)
     return gpg_error_from_errno (saved_errno);
 
@@ -1382,7 +1389,9 @@ gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
   if (!err)
     err = add_data (gpg, plain, 1, 1);
   if (!err)
-    err = add_data (gpg, ciph, 0, 0);
+    err = add_arg (gpg, "--");
+  if (!err)
+    err = add_data (gpg, ciph, -1, 0);
 
   if (!err)
     start (gpg);
@@ -1616,7 +1625,7 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
   if (!err)
     err = add_arg (gpg, "--");
   if (!err)
-    err = add_data (gpg, plain, 0, 0);
+    err = add_data (gpg, plain, -1, 0);
 
   if (!err)
     err = start (gpg);
@@ -1670,7 +1679,7 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
   if (!err)
     err = add_arg (gpg, "--");
   if (!err)
-    err = add_data (gpg, plain, 0, 0);
+    err = add_data (gpg, plain, -1, 0);
 
   if (!err)
     err = start (gpg);
@@ -1759,7 +1768,9 @@ gpg_genkey (void *engine, gpgme_data_t help_data, int use_armor,
   if (!err && use_armor)
     err = add_arg (gpg, "--armor");
   if (!err)
-    err = add_data (gpg, help_data, 0, 0);
+    err = add_arg (gpg, "--");
+  if (!err)
+    err = add_data (gpg, help_data, -1, 0);
 
   if (!err)
     err = start (gpg);
@@ -1776,7 +1787,9 @@ gpg_import (void *engine, gpgme_data_t keydata)
 
   err = add_arg (gpg, "--import");
   if (!err)
-    err = add_data (gpg, keydata, 0, 0);
+    err = add_arg (gpg, "--");
+  if (!err)
+    err = add_data (gpg, keydata, -1, 0);
 
   if (!err)
     err = start (gpg);
@@ -2011,7 +2024,9 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
   /* Tell the gpg object about the data.  */
   if (!err)
-    err = add_data (gpg, in, 0, 0);
+    err = add_arg (gpg, "--");
+  if (!err)
+    err = add_data (gpg, in, -1, 0);
   if (!err)
     err = add_data (gpg, out, 1, 1);
 
@@ -2061,7 +2076,7 @@ gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
       if (!err)
 	err = add_arg (gpg, "--");
       if (!err)
-	err = add_data (gpg, sig, 0, 0);
+	err = add_data (gpg, sig, -1, 0);
       if (!err)
 	err = add_data (gpg, plaintext, 1, 1);
     }
@@ -2072,13 +2087,8 @@ gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 	err = add_arg (gpg, "--");
       if (!err)
 	err = add_data (gpg, sig, -1, 0);
-      if (signed_text)
-	{
-	  if (!err)
-	    err = add_arg (gpg, "-");
-	  if (!err)
-	    err = add_data (gpg, signed_text, 0, 0);
-	}
+      if (!err && signed_text)
+	err = add_data (gpg, signed_text, -1, 0);
     }
 
   if (!err)

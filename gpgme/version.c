@@ -247,8 +247,8 @@ _gpgme_get_program_version (const char *const file_name)
   int rp[2];
   int nread;
   char *argv[] = {NULL /* file_name */, "--version", 0};
-  struct spawn_fd_item_s pfd[] = { {0, -1}, {-1, -1} };
-  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */}, {-1, -1} };
+  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */, -1, 0},
+				   {-1, -1} };
   int status;
 
   if (!file_name)
@@ -258,10 +258,9 @@ _gpgme_get_program_version (const char *const file_name)
   if (_gpgme_io_pipe (rp, 1) < 0)
     return NULL;
 
-  pfd[0].fd = rp[1];
   cfd[0].fd = rp[1];
 
-  status = _gpgme_io_spawn (file_name, argv, cfd, pfd, NULL);
+  status = _gpgme_io_spawn (file_name, argv, cfd, NULL);
   if (status < 0)
     {
       _gpgme_io_close (rp[0]);

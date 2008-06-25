@@ -398,8 +398,7 @@ build_commandline (char **argv)
 
 int
 _gpgme_io_spawn (const char *path, char **argv,
-		 struct spawn_fd_item_s *fd_child_list,
-		 struct spawn_fd_item_s *fd_parent_list, pid_t *r_pid)
+		 struct spawn_fd_item_s *fd_list, pid_t *r_pid)
 {
   SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi =
@@ -410,16 +409,16 @@ _gpgme_io_spawn (const char *path, char **argv,
       0         /* returns tid */
     };
   STARTUPINFO si;
-  char *envblock = NULL;
   int cr_flags = CREATE_DEFAULT_ERROR_MODE
     | GetPriorityClass (GetCurrentProcess ());
   int i;
+  char **args;
   char *arg_string;
-  int duped_stdin = 0;
-  int duped_stderr = 0;
-  HANDLE hnul = INVALID_HANDLE_VALUE;
   /* FIXME.  */
   int debug_me = 0;
+  int tmp_fd;
+  char *tmp_name;
+
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
 	      "path=%s", path);
   i = 0;
@@ -429,120 +428,145 @@ _gpgme_io_spawn (const char *path, char **argv,
       i++;
     }
   
+  /* We do not inherit any handles by default, and just insert those
+     handles we want the child to have afterwards.  But some handle
+     values occur on the command line, and we need to move
+     stdin/out/err to the right location.  So we use a wrapper program
+     which gets the information from a temporary file.  */
+  if (_gpgme_mkstemp (&tmp_fd, &tmp_name) < 0)
+    {
+      TRACE_LOG1 ("_gpgme_mkstemp failed: %s", strerror (errno));
+      return TRACE_SYSRES (-1);
+    }
+  TRACE_LOG1 ("tmp_name = %s", tmp_name);
+
+  args = (char **) calloc (2 + i + 1, sizeof (*args));
+  args[0] = (char *) _gpgme_get_w32spawn_path ();
+  args[1] = tmp_name;
+  args[2] = const_cast<char *>(path);
+  memcpy (&args[3], &argv[1], i * sizeof (*args));
+
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
   
-  arg_string = build_commandline (argv);
+  arg_string = build_commandline (args);
+  free (args);
   if (!arg_string)
-    return TRACE_SYSRES (-1);
+    {
+      close (tmp_fd);
+      DeleteFile (tmp_name);
+      return TRACE_SYSRES (-1);
+    }
   
   memset (&si, 0, sizeof si);
   si.cb = sizeof (si);
   si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-  si.wShowWindow = debug_me? SW_SHOW : SW_HIDE;
-  si.hStdInput = GetStdHandle (STD_INPUT_HANDLE);
-  si.hStdOutput = GetStdHandle (STD_OUTPUT_HANDLE);
-  si.hStdError = GetStdHandle (STD_ERROR_HANDLE);
-  
-  for (i = 0; fd_child_list[i].fd != -1; i++)
-    {
-      if (fd_child_list[i].dup_to == 0)
-	{
-	  si.hStdInput = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
-	  TRACE_LOG2 ("using 0x%x/%p for stdin", fd_child_list[i].fd,
-		      _get_osfhandle (fd_child_list[i].fd));
-	  duped_stdin = 1;
-        }
-      else if (fd_child_list[i].dup_to == 1)
-	{
-	  si.hStdOutput = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
-	  TRACE_LOG2 ("using 0x%x/%p for stdout", fd_child_list[i].fd,
-		      _get_osfhandle (fd_child_list[i].fd));
-	}
-      else if (fd_child_list[i].dup_to == 2)
-	{
-	  si.hStdError = (HANDLE) _get_osfhandle (fd_child_list[i].fd);
-	  TRACE_LOG2 ("using 0x%x/%p for stderr", fd_child_list[i].fd,
-		      _get_osfhandle (fd_child_list[i].fd));
-	  duped_stderr = 1;
-        }
-    }
-  
-  if (!duped_stdin || !duped_stderr)
-    {
-      SECURITY_ATTRIBUTES sa;
-      
-      memset (&sa, 0, sizeof sa);
-      sa.nLength = sizeof sa;
-      sa.bInheritHandle = TRUE;
-      hnul = CreateFile ("nul",
-			 GENERIC_READ|GENERIC_WRITE,
-			 FILE_SHARE_READ|FILE_SHARE_WRITE,
-			 &sa,
-			 OPEN_EXISTING,
-			 FILE_ATTRIBUTE_NORMAL,
-			 NULL);
-      if (hnul == INVALID_HANDLE_VALUE)
-	{
-	  TRACE_LOG1 ("CreateFile (\"nul\") failed: ec=%d",
-		      (int) GetLastError ());
-	  free (arg_string);
-	  /* FIXME: Should translate the error code.  */
-	  errno = EIO;
-	  return TRACE_SYSRES (-1);
-        }
-      /* Make sure that the process has a connected stdin.  */
-      if (!duped_stdin)
-	{
-	  si.hStdInput = hnul;
-	  TRACE_LOG1 ("using 0x%x for dummy stdin", (int) hnul);
-	}
-      /* We normally don't want all the normal output.  */
-      if (!duped_stderr)
-	{
-	  si.hStdError = hnul;
-	  TRACE_LOG1 ("using %d for dummy stderr", (int)hnul);
-	}
-    }
-  
+  si.wShowWindow = debug_me ? SW_SHOW : SW_HIDE;
+  si.hStdInput = INVALID_HANDLE_VALUE;
+  si.hStdOutput = INVALID_HANDLE_VALUE;
+  si.hStdError = INVALID_HANDLE_VALUE;
+
   cr_flags |= CREATE_SUSPENDED;
   cr_flags |= DETACHED_PROCESS;
-  if (!CreateProcessA (path,
+  if (!CreateProcessA (_gpgme_get_w32spawn_path (),
 		       arg_string,
 		       &sec_attr,     /* process security attributes */
 		       &sec_attr,     /* thread security attributes */
-		       TRUE,          /* inherit handles */
+		       FALSE,         /* inherit handles */
 		       cr_flags,      /* creation flags */
-		       envblock,      /* environment */
+		       NULL,          /* environment */
 		       NULL,          /* use current drive/directory */
 		       &si,           /* startup information */
 		       &pi))          /* returns process information */
     {
       TRACE_LOG1 ("CreateProcess failed: ec=%d", (int) GetLastError ());
       free (arg_string);
+      close (tmp_fd);
+      DeleteFile (tmp_name);
+
       /* FIXME: Should translate the error code.  */
       errno = EIO;
       return TRACE_SYSRES (-1);
     }
-  
-  /* Close the /dev/nul handle if used.  */
-  if (hnul != INVALID_HANDLE_VALUE)
-    {
-      if (!CloseHandle (hnul))
-	TRACE_LOG1 ("CloseHandle (hnul) failed: ec=%d (ignored)",
-		    (int) GetLastError ());
-    }
-  
-  /* Close the other ends of the pipes.  */
-  for (i = 0; fd_parent_list[i].fd != -1; i++)
-    _gpgme_io_close (fd_parent_list[i].fd);
 
+  free (arg_string);
+
+  /* Insert the inherited handles.  */
+  for (i = 0; fd_list[i].fd != -1; i++)
+    {
+      HANDLE hd;
+
+      if (!DuplicateHandle (GetCurrentProcess(),
+			    (HANDLE) _get_osfhandle (fd_list[i].fd),
+			    pi.hProcess, &hd, 0, TRUE, DUPLICATE_SAME_ACCESS))
+	{
+	  TRACE_LOG1 ("DuplicateHandle failed: ec=%d", (int) GetLastError ());
+	  TerminateProcess (pi.hProcess, 0);
+	  /* Just in case TerminateProcess didn't work, let the
+	     process fail on its own.  */
+	  ResumeThread (pi.hThread);
+	  CloseHandle (pi.hThread);
+	  CloseHandle (pi.hProcess);
+
+	  close (tmp_fd);
+	  DeleteFile (tmp_name);
+
+	  /* FIXME: Should translate the error code.  */
+	  errno = EIO;
+	  return TRACE_SYSRES (-1);
+        }
+      /* Return the child name of this handle.  */
+      fd_list[i].peer_name = (int) hd;
+    }
+    
+  /* Write the handle translation information to the temporary
+     file.  */
+  {
+    /* Hold roughly MAX_TRANS quadruplets of 64 bit numbers in hex
+       notation: "0xFEDCBA9876543210" with an extra white space after
+       every quadruplet.  10*(19*4 + 1) - 1 = 769.  This plans ahead
+       for a time when a HANDLE is 64 bit.  */
+#define BUFFER_MAX 800
+    char line[BUFFER_MAX + 1];
+    int res;
+    int written;
+    size_t len;
+
+    line[0] = '\n';
+    line[1] = '\0';
+    for (i = 0; fd_list[i].fd != -1; i++)
+      {
+	/* Strip the newline.  */
+	len = strlen (line) - 1;
+	
+	/* Format is: Local name, stdin/stdout/stderr, peer name, argv idx.  */
+	snprintf (&line[len], BUFFER_MAX - len, "0x%x %d 0x%x %d  \n",
+		  fd_list[i].fd, fd_list[i].dup_to,
+		  fd_list[i].peer_name, fd_list[i].arg_loc);
+	/* Rather safe than sorry.  */
+	line[BUFFER_MAX - 1] = '\n';
+	line[BUFFER_MAX] = '\0';
+      }
+    len = strlen (line);
+    written = 0;
+    do
+      {
+	res = write (tmp_fd, &line[written], len - written);
+	if (res > 0)
+	  written += res;
+      }
+    while (res > 0 || (res < 0 && errno == EAGAIN));
+  }
+  close (tmp_fd);
+  /* The temporary file is deleted by the gpgme-w32spawn process
+     (hopefully).  */
   
   TRACE_LOG4 ("CreateProcess ready: hProcess=%p, hThread=%p, "
 	      "dwProcessID=%d, dwThreadId=%d",
 	      pi.hProcess, pi.hThread, 
 	      (int) pi.dwProcessId, (int) pi.dwThreadId);
+
   if (r_pid)
     *r_pid = (pid_t)pi.dwProcessId;
   
@@ -553,10 +577,24 @@ _gpgme_io_spawn (const char *path, char **argv,
     TRACE_LOG1 ("CloseHandle of thread failed: ec=%d",
 		(int) GetLastError ());
 
-  TRACE_SUC1 ("process=%p", pi.hProcess);
+  TRACE_LOG1 ("process=%p", pi.hProcess);
 
-  /* We don't need to wait for the process. */
-  CloseHandle (pi.hProcess);
+  /* We don't need to wait for the process.  */
+  if (!CloseHandle (pi.hProcess))
+    TRACE_LOG1 ("CloseHandle of process failed: ec=%d",
+		(int) GetLastError ());
+
+  for (i = 0; fd_list[i].fd != -1; i++)
+    _gpgme_io_close (fd_list[i].fd);
+
+  for (i = 0; fd_list[i].fd != -1; i++)
+    if (fd_list[i].dup_to == -1)
+      TRACE_LOG3 ("fd[%i] = 0x%x -> 0x%x", i, fd_list[i].fd,
+		  fd_list[i].peer_name);
+    else
+      TRACE_LOG4 ("fd[%i] = 0x%x -> 0x%x (std%s)", i, fd_list[i].fd,
+		  fd_list[i].peer_name, (fd_list[i].dup_to == 0) ? "in" :
+		  ((fd_list[i].dup_to == 1) ? "out" : "err"));
 
   return TRACE_SYSRES (0);
 }

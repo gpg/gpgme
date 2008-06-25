@@ -105,4 +105,10 @@ gpgme_error_t _gpgme_map_gnupg_error (char *err);
    set, return NULL in *VALUE.  */
 gpgme_error_t _gpgme_getenv (const char *name, char **value);
 
+
+#ifdef HAVE_W32_SYSTEM
+int _gpgme_mkstemp (int *fd, char **name);
+const char *_gpgme_get_w32spawn_path (void);
+#endif
+
 #endif /* UTIL_H */

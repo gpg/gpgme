@@ -142,6 +142,12 @@ AM_CFLAGS = @PTH_CFLAGS@ @GLIB_CFLAGS@ @QT4_CORE_CFLAGS@
 
 if HAVE_W32_SYSTEM
 
+# Windows provides us with an endless stream of Tough Love.  To spawn
+# processes with a controlled set of inherited handles, we need a
+# wrapper process.
+libexec_PROGRAMS = gpgme-w32spawn
+
+
 LTRCCOMPILE = $(LIBTOOL) --mode=compile $(RC) \
      `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
      sed -e 's/-I/--include-dir /g;s/-D/--define /g'`

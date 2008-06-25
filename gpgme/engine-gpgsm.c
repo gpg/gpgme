@@ -405,9 +405,6 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
     }
   gpgsm->input_cb.fd = fds[1];
   gpgsm->input_cb.server_fd = fds[0];
-  _gpgme_io_fd2str (gpgsm->input_cb.server_fd_str, 
-                    sizeof gpgsm->input_cb.server_fd_str,
-                    gpgsm->input_cb.server_fd);
 
   if (_gpgme_io_pipe (fds, 1) < 0)
     {
@@ -416,9 +413,6 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
     }
   gpgsm->output_cb.fd = fds[0];
   gpgsm->output_cb.server_fd = fds[1];
-  _gpgme_io_fd2str (gpgsm->output_cb.server_fd_str, 
-                    sizeof gpgsm->output_cb.server_fd_str,
-                    gpgsm->output_cb.server_fd);
 
   if (_gpgme_io_pipe (fds, 0) < 0)
     {
@@ -427,9 +421,6 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
     }
   gpgsm->message_cb.fd = fds[1];
   gpgsm->message_cb.server_fd = fds[0];
-  _gpgme_io_fd2str (gpgsm->message_cb.server_fd_str, 
-                    sizeof gpgsm->message_cb.server_fd_str,
-                    gpgsm->message_cb.server_fd);
 
   child_fds[0] = gpgsm->input_cb.server_fd;
   child_fds[1] = gpgsm->output_cb.server_fd;
@@ -455,9 +446,34 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   err = assuan_pipe_connect
     (&gpgsm->assuan_ctx, file_name ? file_name : _gpgme_get_gpgsm_path (),
      argv, child_fds);
+
+  /* On Windows, handles are inserted in the spawned process with
+     DuplicateHandle, and child_fds contains the server-local names
+     for the inserted handles when assuan_pipe_connect returns.  */
+  if (!err)
+    {
+      /* Note: We don't use _gpgme_io_fd2str here.  On W32 the
+	 returned handles are real W32 system handles, not whatever
+	 GPGME uses internally (which may be a system handle, a C
+	 library handle or a GLib/Qt channel.  Confusing, yes, but
+	 remember these are server-local names, so they are not part
+	 of GPGME at all.  */
+      snprintf (gpgsm->input_cb.server_fd_str,
+		sizeof gpgsm->input_cb.server_fd_str, "%d", child_fds[0]);
+      snprintf (gpgsm->output_cb.server_fd_str,
+		sizeof gpgsm->output_cb.server_fd_str, "%d", child_fds[1]);
+      snprintf (gpgsm->message_cb.server_fd_str,
+		sizeof gpgsm->message_cb.server_fd_str, "%d", child_fds[2]);
+    }
 #endif
   if (err)
     goto leave;
+
+  /* assuan_pipe_connect in this case uses _gpgme_io_spawn which
+     closes the child fds for us.  */
+  gpgsm->input_cb.server_fd = -1;
+  gpgsm->output_cb.server_fd = -1;
+  gpgsm->message_cb.server_fd = -1;
 
   err = _gpgme_getenv ("DISPLAY", &dft_display);
   if (err)
@@ -623,6 +639,10 @@ gpgsm_set_locale (void *engine, int category, const char *value)
   else
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  /* FIXME: Reset value to default.  */
+  if (!value) 
+    return 0;
+
   if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
     err = gpg_error_from_errno (errno);
   else
@@ -633,6 +653,7 @@ gpgsm_set_locale (void *engine, int category, const char *value)
       if (err)
 	err = map_assuan_error (err);
     }
+
   return err;
 }
 
