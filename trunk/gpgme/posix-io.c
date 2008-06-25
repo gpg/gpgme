@@ -34,6 +34,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <ctype.h>
+#include <sys/resource.h>
+#include <unistd.h>
 
 #include "util.h"
 #include "priv-io.h"
@@ -207,6 +209,72 @@ _gpgme_io_set_nonblocking (int fd)
 }
 
 
+static long int
+get_max_fds (void)
+{
+  char *source = NULL;
+  long int fds = -1;
+  int rc;
+
+#ifdef RLIMIT_NOFILE
+  {
+    struct rlimit rl;
+    rc = getrlimit (RLIMIT_NOFILE, &rl);
+    if (rc == 0)
+      {
+	source = "RLIMIT_NOFILE";
+	fds = rl.rlim_max;
+      }
+  }
+#endif
+#ifdef RLIMIT_OFILE
+  if (fds == -1)
+    {
+      struct rlimit rl;
+      rc = getrlimit (RLIMIT_OFILE, &rl);
+      if (rc == 0)
+	{
+	  source = "RLIMIT_OFILE";
+	  fds = rl.rlim_max;
+	}
+    }
+#endif
+#ifdef _SC_OPEN_MAX
+  if (fds == -1)
+    {
+      long int scres;
+      scres = sysconf (_SC_OPEN_MAX);
+      if (scres >= 0)
+	{
+	  source = "_SC_OPEN_MAX";
+	  return scres;
+	}
+    }
+#endif
+#ifdef OPEN_MAX
+  if (fds == -1)
+    {
+      source = "OPEN_MAX";
+      fds = OPEN_MAX;
+    }
+#endif
+
+#if !defined(RLIMIT_NOFILE) && !defined(RLIMIT_OFILE) \
+  && !defined(_SC_OPEN_MAX) && !defined(OPEN_MAX)
+#warning "No known way to get the maximum number of file descriptors."
+#endif
+  if (fds == -1)
+    {
+      source = "arbitrary";
+      /* Arbitrary limit.  */
+      fds = 1024;
+    }
+
+  TRACE2 (DEBUG_SYSIO, "gpgme:max_fds", NULL, "max fds=%i (%s)", fds, source);
+  return fds;
+}
+
+
 static int
 _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal)
 {
@@ -234,8 +302,7 @@ _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal)
 /* Returns 0 on success, -1 on error.  */
 int
 _gpgme_io_spawn (const char *path, char **argv,
-		 struct spawn_fd_item_s *fd_child_list,
-		 struct spawn_fd_item_s *fd_parent_list, pid_t *r_pid)
+		 struct spawn_fd_item_s *fd_list, pid_t *r_pid)
 {
   pid_t pid;
   int i;
@@ -249,52 +316,75 @@ _gpgme_io_spawn (const char *path, char **argv,
       TRACE_LOG2 ("argv[%2i] = %s", i, argv[i]);
       i++;
     }
-  
+  for (i = 0; fd_list[i].fd != -1; i++)
+    if (fd_list[i].dup_to == -1)
+      TRACE_LOG2 ("fd[%i] = 0x%x", i, fd_list[i].fd);
+    else
+      TRACE_LOG3 ("fd[%i] = 0x%x -> 0x%x", i, fd_list[i].fd, fd_list[i].dup_to);
+
   pid = fork ();
   if (pid == -1) 
     return TRACE_SYSRES (-1);
-  
+
   if (!pid)
     {
       /* Intermediate child to prevent zombie processes.  */
       if ((pid = fork ()) == 0)
 	{
+	  int max_fds = get_max_fds ();
+	  int fd;
+
 	  /* Child.  */
-	  int duped_stdin = 0;
-	  int duped_stderr = 0;
+	  int seen_stdin = 0;
+	  int seen_stderr = 0;
 
-	  /* First close all fds which will not be duped.  */
-	  for (i=0; fd_child_list[i].fd != -1; i++)
-	    if (fd_child_list[i].dup_to == -1)
-	      close (fd_child_list[i].fd);
-
-	  /* And now dup and close the rest.  */
-	  for (i=0; fd_child_list[i].fd != -1; i++)
+	  /* First close all fds which will not be inherited.  */
+	  for (fd = 0; fd < max_fds; fd++)
 	    {
-	      if (fd_child_list[i].dup_to != -1)
+	      for (i = 0; fd_list[i].fd != -1; i++)
+		if (fd_list[i].fd == fd)
+		  break;
+	      if (fd_list[i].fd == -1)
+		close (fd);
+	    }
+
+	  /* And now dup and close those to be duplicated.  */
+	  for (i = 0; fd_list[i].fd != -1; i++)
+	    {
+	      int child_fd;
+	      int res;
+
+	      if (fd_list[i].dup_to != -1)
+		child_fd = fd_list[i].dup_to;
+	      else
+		child_fd = fd_list[i].fd;
+
+	      if (child_fd == 0)
+		seen_stdin = 1;
+	      else if (child_fd == 2)
+		seen_stderr = 1;
+
+	      if (fd_list[i].dup_to == -1)
+		continue;
+
+	      res = dup2 (fd_list[i].fd, fd_list[i].dup_to);
+	      if (res < 0)
 		{
-		  if (dup2 (fd_child_list[i].fd,
-			    fd_child_list[i].dup_to) == -1)
-		    {
 #if 0
-		      /* FIXME: The debug file descriptor is not
-			 dup'ed anyway, so we can't see this.  */
-		      TRACE_LOG1 ("dup2 failed in child: %s\n",
-				  strerror (errno));
+		  /* FIXME: The debug file descriptor is not
+		     dup'ed anyway, so we can't see this.  */
+		  TRACE_LOG1 ("dup2 failed in child: %s\n",
+			      strerror (errno));
 #endif
-		      _exit (8);
-		    }
-		  if (fd_child_list[i].dup_to == 0)
-		    duped_stdin=1;
-		  if (fd_child_list[i].dup_to == 2)
-		    duped_stderr=1;
-		  close (fd_child_list[i].fd);
+		  _exit (8);
 		}
+
+	      close (fd_list[i].fd);
 	    }
 	  
-	  if (!duped_stdin || !duped_stderr)
+	  if (! seen_stdin || ! seen_stderr)
 	    {
-	      int fd = open ("/dev/null", O_RDWR);
+	      fd = open ("/dev/null", O_RDWR);
 	      if (fd == -1)
 		{
 #if 0
@@ -306,7 +396,7 @@ _gpgme_io_spawn (const char *path, char **argv,
 		  _exit (8);
 		}
 	      /* Make sure that the process has a connected stdin.  */
-	      if (!duped_stdin)
+	      if (! seen_stdin && fd != 0)
 		{
 		  if (dup2 (fd, 0) == -1)
 		    {
@@ -319,7 +409,7 @@ _gpgme_io_spawn (const char *path, char **argv,
 		      _exit (8);
 		    }
 		}
-	      if (!duped_stderr)
+	      if (! seen_stderr && fd != 2)
 		if (dup2 (fd, 2) == -1)
 		  {
 #if 0
@@ -330,10 +420,11 @@ _gpgme_io_spawn (const char *path, char **argv,
 #endif
 		    _exit (8);
 		  }
-	      close (fd);
+	      if (fd != 0 && fd != 2)
+		close (fd);
 	    }
     
-	  execv ( path, argv );
+	  execv (path, argv);
 	  /* Hmm: in that case we could write a special status code to the
 	     status-pipe.  */
 #if 0
@@ -342,7 +433,8 @@ _gpgme_io_spawn (const char *path, char **argv,
 	  TRACE_LOG1 ("exec of `%s' failed\n", path);
 #endif
 	  _exit (8);
-	} /* End child.  */
+	  /* End child.  */
+	}
       if (pid == -1)
 	_exit (1);
       else
@@ -354,9 +446,12 @@ _gpgme_io_spawn (const char *path, char **argv,
   if (status)
     return TRACE_SYSRES (-1);
 
-  /* .dup_to is not used in the parent list.  */
-  for (i = 0; fd_parent_list[i].fd != -1; i++)
-    _gpgme_io_close (fd_parent_list[i].fd);
+  for (i = 0; fd_list[i].fd != -1; i++)
+    {
+      _gpgme_io_close (fd_list[i].fd);
+      /* No handle translation.  */
+      fd_list[i].peer_name = fd_list[i].fd;
+    }
 
   if (r_pid)
     *r_pid = pid;
@@ -549,5 +644,9 @@ _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
 int
 _gpgme_io_dup (int fd)
 {
-  return dup (fd);
+  int new_fd = dup (fd);
+
+  TRACE1 (DEBUG_SYSIO, "_gpgme_io_dup", fd, "new fd==%i", new_fd);
+
+  return new_fd;
 }
