@@ -2772,6 +2772,7 @@ and e-mail address of the main user ID:
 
 @example
 gpgme_ctx_t ctx;
+gpgme_key_t key;
 gpgme_error_t err = gpgme_new (&ctx);
 
 if (!err)
@@ -2782,15 +2783,19 @@ if (!err)
         err = gpgme_op_keylist_next (ctx, &key);
         if (err)
           break;
-        printf ("%s: %s <%s>\n", key->keyid, key->name, key->email);
+        printf ("%s:", key->subkeys->keyid);
+        if (key->uids && key->uids->name)
+          printf (" %s", key->uids->name);
+        if (key->uids && key->uids->email)
+          printf (" <%s>", key->uids->email);
+        putchar ('\n');
         gpgme_key_release (key);
       @}
     gpgme_release (ctx);
   @}
 if (gpg_err_code (err) != GPG_ERR_EOF)
   @{
-    fprintf (stderr, "%s: can not list keys: %s\n",
-             argv[0], gpgme_strerror (err));
+    fprintf (stderr, "can not list keys: %s\n", gpgme_strerror (err));
     exit (1);
   @}
 @end example
