@@ -470,9 +470,11 @@ mkstemp (char *tmpl)
 
   /* Get some more or less random data.  */
   {
-    struct timeval tv;
-    gettimeofday (&tv, NULL);
-    random_time_bits = ((uint64_t) tv.tv_usec << 16) ^ tv.tv_sec;
+    FILETIME ft;
+
+    GetSystemTimeAsFileTime (&ft);
+    random_time_bits = (((uint64_t)ft.dwHighDateTime << 32)
+                        | (uint64_t)ft.dwLowDateTime);
   }
   value += random_time_bits ^ getpid ();
 
@@ -537,7 +539,7 @@ _gpgme_mkstemp (int *fd, char **name)
   tmpname = malloc (strlen (tmp) + 13 + 1);
   if (!tmpname)
     return -1;
-  sprintf (tmpname, "%s\\gpgme-XXXXXX", tmp);
+  strcpy (stpcpy (tmpname, tmp), "\\gpgme-XXXXXX");
   *fd = mkstemp (tmpname);
   if (fd < 0)
     return -1;
