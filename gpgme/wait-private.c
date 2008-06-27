@@ -105,7 +105,13 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond)
 	      assert (nr);
 	      nr--;
 
-	      err = _gpgme_run_io_cb (&ctx->fdt.fds[i], 0);
+	      LOCK (ctx->lock);
+	      if (ctx->canceled)
+		err = gpg_error (GPG_ERR_CANCELED);
+	      UNLOCK (ctx->lock);
+	      
+	      if (!err)
+		err = _gpgme_run_io_cb (&ctx->fdt.fds[i], 0);
 	      if (err)
 		{
 		  /* An error occured.  Close all fds in this context,

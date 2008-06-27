@@ -299,7 +299,7 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	  if (fdt.fds[i].fd != -1 && fdt.fds[i].signaled)
 	    {
 	      gpgme_ctx_t ictx;
-	      gpgme_error_t err;
+	      gpgme_error_t err = 0;
 	      struct wait_item_s *item;
 	      
 	      assert (nr);
@@ -310,7 +310,13 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	      ictx = item->ctx;
 	      assert (ictx);
 
-	      err = _gpgme_run_io_cb (&fdt.fds[i], 0);
+	      LOCK (ctx->lock);
+	      if (ctx->canceled)
+		err = gpg_error (GPG_ERR_CANCELED);
+	      UNLOCK (ctx->lock);
+
+	      if (!err)
+		err = _gpgme_run_io_cb (&fdt.fds[i], 0);
 	      if (err)
 		{
 		  /* An error occured.  Close all fds in this context,

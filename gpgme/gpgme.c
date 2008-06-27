@@ -54,6 +54,8 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   if (!ctx)
     return TRACE_ERR (gpg_error_from_errno (errno));
 
+  INIT_LOCK (ctx->lock);
+  
   _gpgme_engine_info_copy (&ctx->engine_info);
   if (!ctx->engine_info)
     {
@@ -121,6 +123,22 @@ gpgme_cancel (gpgme_ctx_t ctx)
   return TRACE_ERR (0);
 }
 
+
+/* Cancel a pending operation asynchronously.  */
+gpgme_error_t
+gpgme_cancel_async (gpgme_ctx_t ctx)
+{
+  gpgme_error_t err;
+  TRACE_BEG (DEBUG_CTX, "gpgme_cancel_async", ctx);
+
+  LOCK (ctx->lock);
+  ctx->canceled = 1;
+  UNLOCK (ctx->lock);
+
+  return TRACE_ERR (0);
+}
+
+
 /* Release all resources associated with the given context.  */
 void
 gpgme_release (gpgme_ctx_t ctx)
@@ -139,6 +157,7 @@ gpgme_release (gpgme_ctx_t ctx)
   if (ctx->lc_messages)
     free (ctx->lc_messages);
   _gpgme_engine_info_release (ctx->engine_info);
+  DESTROY_LOCK (ctx->lock);
   free (ctx);
 }
 

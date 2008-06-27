@@ -5488,13 +5488,15 @@ private:
 @cindex aborting operations
 @cindex cancelling operations
 
-Sometimes you do not want to wait for an operation to finish.  If you
-use external I/O callbacks, you can cancel a pending operation.
-However, you must ensure that no other thread is currently using the
-context in which the operation you want to cancel runs.  This includes
-callback handlers.  So your external event loop must either be halted
-or otherwise it must be guaranteed that no installed I/O callbacks are
-run for this context.
+Sometimes you do not want to wait for an operation to finish.
+@acronym{GPGME} provides two different functions to achieve that.  The
+function @code{gpgme_cancel} takes effect immediately.  When it
+returns, the operation is effectively canceled.  However, it has some
+limitations and can not be used with synchronous operations.  In
+contrast, the function @code{gpgme_cancel_async} can be used with any
+context and from any thread, but it is not guaranteed to take effect
+immediately.  Instead, cancellation occurs at the next possible time
+(typically the next time I/O occurs in the target context).
 
 @deftypefun gpgme_ctx_t gpgme_cancel (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_cancel} attempts to cancel a pending
@@ -5512,6 +5514,18 @@ callbacks are invoked for this context (for example by halting the
 event loop).  On successful cancellation, all registered I/O callbacks
 for this context will be unregistered, and a @code{GPGME_EVENT_DONE}
 event with the error code @code{GPG_ERR_CANCEL} will be signaled.
+
+The function returns an error code if the cancellation failed (in this
+case the state of @var{ctx} is not modified).
+@end deftypefun
+
+
+@deftypefun gpgme_ctx_t gpgme_cancel_async (@w{gpgme_ctx_t @var{ctx}})
+The function @code{gpgme_cancel} attempts to cancel a pending
+operation in the context @var{ctx}.  This can be called by any thread
+at any time after starting an operation on the context, but will not
+take effect immediately.  The actual cancellation happens at the next
+time GPGME processes I/O in that context.
 
 The function returns an error code if the cancellation failed (in this
 case the state of @var{ctx} is not modified).

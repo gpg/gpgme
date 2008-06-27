@@ -25,6 +25,7 @@
 #include "gpgme.h"
 #include "engine.h"
 #include "wait.h"
+#include "sema.h"
 
 
 /* Operations might require to remember arbitrary information and data
@@ -63,6 +64,11 @@ typedef struct ctx_op_data *ctx_op_data_t;
    be performed (sequentially).  */
 struct gpgme_context
 {
+  DECLARE_LOCK (lock);
+
+  /* True if the context was canceled asynchronously.  */
+  int canceled;
+
   /* The engine info for this context.  */
   gpgme_engine_info_t engine_info;
 
