@@ -39,7 +39,7 @@
 gpgme_error_t
 _gpgme_user_io_cb_handler (void *data, int fd)
 {
-  gpgme_error_t err;
+  gpgme_error_t err = 0;
   struct tag *tag = (struct tag *) data;
   gpgme_ctx_t ctx;
 
@@ -47,7 +47,13 @@ _gpgme_user_io_cb_handler (void *data, int fd)
   ctx = tag->ctx;
   assert (ctx);
 
-  err = _gpgme_run_io_cb (&ctx->fdt.fds[tag->idx], 0);
+  LOCK (ctx->lock);
+  if (ctx->canceled)
+    err = gpg_error (GPG_ERR_CANCELED);
+  UNLOCK (ctx->lock);
+
+  if (! err)
+    err = _gpgme_run_io_cb (&ctx->fdt.fds[tag->idx], 0);
   if (err)
     {
       unsigned int idx;

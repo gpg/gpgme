@@ -76,6 +76,9 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
   type &= 255;
 
   _gpgme_release_result (ctx);
+  LOCK (ctx->lock);
+  ctx->canceled = 0;
+  UNLOCK (ctx->lock);
 
   if (ctx->engine && no_reset)
     reuse_engine = 1;
