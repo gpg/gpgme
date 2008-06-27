@@ -15,6 +15,9 @@ Noteworthy changes in version 1.1.7 (unreleased)
  * The reference manual now includes the specification of "The GnuPG
    UI Server protocol".
 
+ * A new function gpgme_cancel_async can be used to asynchronously
+   cancel any pending operation at any time, from any thread.
+
  * Interface changes relative to the 1.1.6 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gpgme_op_encrypt		CHANGED: Output encoding can affect result.
@@ -27,6 +30,7 @@ gpgme_op_export			CHANGED: Output encoding can affect result.
 gpgme_op_export_start		CHANGED: Output encoding can affect result.
 gpgme_op_export_ext		CHANGED: Output encoding can affect result.
 gpgme_op_export_ext_start	CHANGED: Output encoding can affect result.
+gpgme_cancel_async		NEW
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
