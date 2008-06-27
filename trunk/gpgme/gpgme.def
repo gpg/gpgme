@@ -166,5 +166,6 @@ EXPORTS
     gpgme_op_conf_load			  @129
     gpgme_op_conf_save			  @130
 
+    gpgme_cancel_async                    @131
 ; END
 
