@@ -46,6 +46,8 @@ GPGME_1.1 {
     gpgme_conf_opt_change;
     gpgme_op_conf_load;
     gpgme_op_conf_save;
+
+    gpgme_cancel_async;
 };
 
 

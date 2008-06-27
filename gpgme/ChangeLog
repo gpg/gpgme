@@ -1,5 +1,8 @@
 2008-06-27  Marcus Brinkmann  <marcus@g10code.de>
 
+	* libgpgme.vers: Add gpgme_cancel_async.
+	* gpgme.def: Likewise.
+
 	* context.h: Include "sema.h".
 	(struct gpgme_context): New members lock and canceled.
 	* gpgme.c (gpgme_new): Initialize lock.
