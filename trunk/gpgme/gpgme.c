@@ -128,7 +128,6 @@ gpgme_cancel (gpgme_ctx_t ctx)
 gpgme_error_t
 gpgme_cancel_async (gpgme_ctx_t ctx)
 {
-  gpgme_error_t err;
   TRACE_BEG (DEBUG_CTX, "gpgme_cancel_async", ctx);
 
   LOCK (ctx->lock);
