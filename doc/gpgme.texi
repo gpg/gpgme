@@ -954,8 +954,10 @@ The @acronym{CMS} protocol is specified by @code{GPGME_PROTOCOL_CMS}.
 @cindex algorithms
 
 The crypto backends support a variety of algorithms used in public key
-cryptography.  The following sections list the identifiers used to
-denote such an algorithm.
+cryptography.@footnote{Some engines also provide symmetric only
+encryption; see the description of the encryption function on how to use
+this.}  The following sections list the identifiers used to denote such
+an algorithm.
 
 @menu
 * Public Key Algorithms::         A list of all public key algorithms.
