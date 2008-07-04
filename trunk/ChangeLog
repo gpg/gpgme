@@ -1,3 +1,8 @@
+2008-07-04  Werner Koch  <wk@g10code.com>
+
+	* config.guess, config.sub: Update to 2007-11-19.  Also update
+	missing et al scripts. 
+
 2008-04-01  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (AC_INIT): Fix quoting.

@@ -1,3 +1,7 @@
+2008-07-04  Werner Koch  <wk@g10code.com>
+
+	* gpgme.texi (Algorithms): Add a hint on symmetric only encryption.
+
 2008-06-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Cancellation): Document gpgme_cancel_async.
