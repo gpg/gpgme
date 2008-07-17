@@ -1,3 +1,7 @@
+2008-07-17  Werner Koch  <wk@g10code.com>
+
+	* module-overview.sk: New.
+
 2008-07-04  Werner Koch  <wk@g10code.com>
 
 	* gpgme.texi (Algorithms): Add a hint on symmetric only encryption.
