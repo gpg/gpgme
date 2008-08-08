@@ -645,12 +645,6 @@ command_handler (void *opaque, int fd)
 
   err = gpg->cmd.fnc (gpg->cmd.fnc_value, gpg->cmd.code, gpg->cmd.keyword, fd,
 		      &processed);
-  if (err)
-    return err;
-
-  /* We always need to send at least a newline character.  */
-  if (!processed)
-    _gpgme_io_write (fd, "\n", 1);
 
   gpg->cmd.code = 0;
   /* And sleep again until read_status will wake us up again.  */
@@ -659,6 +653,13 @@ command_handler (void *opaque, int fd)
   (*gpg->io_cbs.remove) (gpg->fd_data_map[gpg->cmd.idx].tag);
   gpg->cmd.fd = gpg->fd_data_map[gpg->cmd.idx].fd;
   gpg->fd_data_map[gpg->cmd.idx].fd = -1;
+
+  if (err)
+    return err;
+
+  /* We always need to send at least a newline character.  */
+  if (!processed)
+    _gpgme_io_write (fd, "\n", 1);
 
   return 0;
 }
