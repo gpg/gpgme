@@ -106,21 +106,28 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 }
 
 
-/* Cancel a pending asynchronous operation.  */
 gpgme_error_t
-gpgme_cancel (gpgme_ctx_t ctx)
+_gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err)
 {
   gpgme_error_t err;
-  TRACE_BEG (DEBUG_CTX, "gpgme_cancel", ctx);
+  TRACE_BEG1 (DEBUG_CTX, "_gpgme_cancel_with_err", ctx, "ctx_err=%i",
+	      ctx_err);
 
   err = _gpgme_engine_cancel (ctx->engine);
   if (err)
     return TRACE_ERR (err);
 
-  err = gpg_error (GPG_ERR_CANCELED);
-  _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &err);
+  _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &ctx_err);
 
   return TRACE_ERR (0);
+}
+
+
+/* Cancel a pending asynchronous operation.  */
+gpgme_error_t
+gpgme_cancel (gpgme_ctx_t ctx)
+{
+  return _gpgme_cancel_with_err (ctx, gpg_error (GPG_ERR_CANCELED));
 }
 
 

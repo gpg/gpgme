@@ -340,6 +340,17 @@ gpg_cancel (void *engine)
   if (!gpg)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  /* If gpg may be waiting for a cmd, close the cmd fd first.  On
+     Windows, close operations block on the reader/writer thread.  */
+  if (gpg->cmd.used)
+    {
+      if (gpg->cmd.fd != -1)
+	_gpgme_io_close (gpg->cmd.fd);
+      else if (gpg->fd_data_map
+	       && gpg->fd_data_map[gpg->cmd.idx].fd != -1)
+	_gpgme_io_close (gpg->fd_data_map[gpg->cmd.idx].fd);
+    }
+
   if (gpg->status.fd[0] != -1)
     _gpgme_io_close (gpg->status.fd[0]);
   if (gpg->status.fd[1] != -1)
@@ -353,8 +364,6 @@ gpg_cancel (void *engine)
       free_fd_data_map (gpg->fd_data_map);
       gpg->fd_data_map = NULL;
     }
-  if (gpg->cmd.fd != -1)
-    _gpgme_io_close (gpg->cmd.fd);
 
   return 0;
 }

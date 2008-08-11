@@ -200,16 +200,9 @@ _gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type,
 	gpgme_error_t err = ctx_active (ctx);
 
 	if (err)
-	  {
-	    /* An error occured.  Close all fds in this context, and
-	       send the error in a done event.  */
-	    unsigned int idx;
-	    
-	    for (idx = 0; idx <= ctx->fdt.size; idx++)
-	      if (ctx->fdt.fds[idx].fd != -1)
-		_gpgme_io_close (ctx->fdt.fds[idx].fd);
-	    _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &err);
-	  }
+	  /* An error occured.  Close all fds in this context, and
+	     send the error in a done event.  */
+	  _gpgme_cancel_with_err (ctx, &err);
       }
       break;
 
@@ -321,13 +314,7 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 		{
 		  /* An error occured.  Close all fds in this context,
 		     and signal it.  */
-		  unsigned int idx;
-	    
-		  for (idx = 0; idx < ictx->fdt.size; idx++)
-		    if (ictx->fdt.fds[idx].fd != -1)
-		      _gpgme_io_close (ictx->fdt.fds[idx].fd);
-		  _gpgme_engine_io_event (ictx->engine, GPGME_EVENT_DONE,
-					  &err);
+		  _gpgme_cancel_with_err (ictx, err);
 
 		  /* Break out of the loop, and retry the select()
 		     from scratch, because now all fds should be
