@@ -55,14 +55,7 @@ _gpgme_user_io_cb_handler (void *data, int fd)
   if (! err)
     err = _gpgme_run_io_cb (&ctx->fdt.fds[tag->idx], 0);
   if (err)
-    {
-      unsigned int idx;
-
-      for (idx = 0; idx < ctx->fdt.size; idx++)
-	if (ctx->fdt.fds[idx].fd != -1)
-	  _gpgme_io_close (ctx->fdt.fds[idx].fd);
-      _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &err);
-    }
+    _gpgme_cancel_with_err (ctx, err);
   else
     {
       unsigned int i;

@@ -27,6 +27,8 @@
 
 
 /* From gpgme.c.  */
+gpgme_error_t _gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err);
+
 void _gpgme_release_result (gpgme_ctx_t ctx);
 
 
