@@ -110,6 +110,11 @@ case "${host}" in
     *-*-gnu*)
 	have_ld_version_script=yes
         ;;
+    *-apple-darwin*)
+        AC_DEFINE(_XOPEN_SOURCE, 500, Activate POSIX interface on MacOS X)
+        ;;
+esac
+
 esac
 AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
 
