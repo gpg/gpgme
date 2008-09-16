@@ -516,7 +516,7 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 
       err = ttyname_r (1, dft_ttyname, sizeof (dft_ttyname));
       if (err)
-	rc = gpg_error_from_errno (errno);
+	rc = gpg_error_from_errno (err);
       else
 	{
           if (*dft_ttyname)

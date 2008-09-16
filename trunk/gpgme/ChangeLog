@@ -1,3 +1,7 @@
+2008-09-16  Marcus Brinkmann  <marcus@g10code.com>
+
+	* rungpg.c (gpg_new): Don't use errno with ttyname_r.
+
 2008-08-11  Marcus Brinkmann  <marcus@g10code.com>
 
 	* rungpg.c (gpg_cancel): Remove cmd fd before status fd.
@@ -12,7 +16,7 @@
 
 	* rungpg.c (command_handler): Remove I/O callback on error, too.
 
-2008-06-29  Marcus Brinkmann  <marcus@ulysses.g10code.com>
+2008-06-29  Marcus Brinkmann  <marcus@g10code.com>
 
 	* gpgme.c (gpgme_cancel_async): Remove unused variable.
 
