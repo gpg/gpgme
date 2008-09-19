@@ -115,7 +115,6 @@ case "${host}" in
         ;;
 esac
 
-esac
 AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
 
 GPG_DEFAULT=no

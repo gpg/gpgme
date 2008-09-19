@@ -1,3 +1,7 @@
+2008-09-19  Moritz  <moritz@gnu.org>
+
+	* configure.ac: Remove bogus "esac".
+
 2008-09-16  Marcus Brinkmann  <marcus@g10code.com>
 
 	* configure.ac (_XOPEN_SOURCE) [apple-darwin]: Define it. 
