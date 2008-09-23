@@ -554,6 +554,7 @@ gpgme_sig_notation_clear (gpgme_ctx_t ctx)
       _gpgme_sig_notation_free (notation);
       notation = next_notation;
     }
+  ctx->sig_notations = NULL;
 }
 
 
