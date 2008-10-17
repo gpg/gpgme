@@ -1,3 +1,11 @@
+2008-10-18  Marcus Brinkmann  <marcus@g10code.com>
+
+	* w32-util.c (find_program_in_registry): Don't define.
+	(_gpgme_get_gpg_path, _gpgme_get_gpgsm_path)
+	(_gpgme_get_gpgconf_path): Do not check for fooProgram in the
+	registry anymore.  It is now no longer possible to overwrite the
+	default location in that way.
+
 2008-10-17  Werner Koch  <wk@g10code.com>
 
 	* w32-glib-io.c (_gpgme_io_fd2str): Use "%d" and not "%ld" to work
