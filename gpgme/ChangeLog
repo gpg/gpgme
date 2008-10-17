@@ -1,3 +1,8 @@
+2008-10-17  Werner Koch  <wk@g10code.com>
+
+	* w32-glib-io.c (_gpgme_io_fd2str): Use "%d" and not "%ld" to work
+	around a bug in mingw32.
+
 2008-09-23  Marcus Brinkmann  <marcus@g10code.com>
 
 	* gpgme.c (gpgme_sig_notation_clear): Clear CTX->sig_notations.
