@@ -143,7 +143,7 @@ _gpgme_io_fd2str (char *buf, int buflen, int fd)
 {
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_fd2str", fd, "fd=%d", fd);
   TRACE_SUC1 ("syshd=%p", _get_osfhandle (fd));
-  return snprintf (buf, buflen, "%ld", (long) _get_osfhandle (fd));
+  return snprintf (buf, buflen, "%d", (int) _get_osfhandle (fd));
 }
 
 
