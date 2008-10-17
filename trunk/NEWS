@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.1.7 (unreleased)
+Noteworthy changes in version 1.1.7 (2008-10-177)
 ------------------------------------------------
 
  * Using GPGME_KEYLIST_MODE_LOCAL combined with
@@ -1237,7 +1237,7 @@ Noteworthy changes in version 0.2.1 (2001-04-02)
  * Made the W32 support more robust.
 
 
- Copyright 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004, 2005, 2007, 2008 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
