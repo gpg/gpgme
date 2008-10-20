@@ -33,6 +33,9 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#ifdef HAVE_SYS_UIO_H
+# include <sys/uio.h>
+#endif
 #include <ctype.h>
 #include <sys/resource.h>
 #include <unistd.h>

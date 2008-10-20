@@ -1,3 +1,8 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AC_CONFIG_FILES): Add gpgme.h.
+	(GNUPG_FIX_HDR_VERSION): Remove.
+
 2008-10-17  Marcus Brinkmann  <marcus@g10code.com>
 
 	Release GPGME 1.1.7.
@@ -828,7 +833,7 @@
 	* autogen.sh: Added option --build-w32.
 
 
- Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

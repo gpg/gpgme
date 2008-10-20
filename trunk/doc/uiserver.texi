@@ -568,7 +568,7 @@ fully brought up).
 When doing an operation on a mail, it is useful to let the server know
 the address of the sender:
 
-@deffn Command SENDER [-@w{}-info] @var{email}
+@deffn Command SENDER [-@w{}-info] [-@w{}-protocol=@var{name}] @var{email}
 @var{email} is the plain ASCII encoded address ("addr-spec" as per
 RFC-2822) enclosed in angle brackets.  The address set with this command
 is valid until a successful completion of the operation or until a
@@ -580,6 +580,9 @@ If option @option{--info} is not given, the server shall also suggest a
 protocol to use for signing.  The client may use this suggested protocol
 on its own discretion.  The same status line as with PREP_ENCRYPT is
 used for this.
+
+The option @option{--protocol} may be used to give the server a hint on
+which signing protocol should be preferred.
 @end deffn
 
 @noindent 

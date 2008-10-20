@@ -1,4 +1,4 @@
-/* gpgme.h - Public interface to GnuPG Made Easy.
+/* gpgme.h - Public interface to GnuPG Made Easy.                   -*- c -*-
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
 
@@ -16,7 +16,8 @@
    
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
+ 
+   File: @configure_input@  */
 
 #ifndef GPGME_H
 #define GPGME_H
@@ -70,9 +71,8 @@ extern "C" {
    not use this symbol in your application, use gpgme_check_version
    instead.  The purpose of this macro is to let autoconf (using the
    AM_PATH_GPGME macro) check that this header matches the installed
-   library.  Warning: Do not edit the next line.  configure will do
-   that for you!  */
-#define GPGME_VERSION "1.1.7-svn1329"
+   library.  */
+#define GPGME_VERSION "@PACKAGE_VERSION@"
 
 
 
