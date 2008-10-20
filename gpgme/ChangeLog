@@ -1,3 +1,12 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (EXTRA_DIST): Add gpgme.h.in.
+
+	* gpgme.h: Rename to gpgme.h.in.
+	* gpgme.h.in (GPGME_VERSION): Use autoconf substitution.
+
+	* posix-io.c: Include sys/uio.h.  Fixes bug #818.
+
 2008-10-18  Marcus Brinkmann  <marcus@g10code.com>
 
 	* w32-util.c (find_program_in_registry): Don't define.

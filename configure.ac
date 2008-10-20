@@ -62,7 +62,7 @@ BUILD_REVISION=svn_revision
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
 
-AC_CONFIG_SRCDIR(gpgme/gpgme.h)
+AC_CONFIG_SRCDIR(gpgme/gpgme.h.in)
 dnl FIXME: Enable this with autoconf 2.59.
 dnl AC_CONFIG_MACRO_DIR(m4)
 AM_CONFIG_HEADER(config.h)
@@ -695,10 +695,6 @@ fi
 
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
 
-# Make the version number in gpgme/gpgme.h the same as the one here.
-# (this is easier than to have a *.in file just for one substitution)
-GNUPG_FIX_HDR_VERSION(gpgme/gpgme.h, GPGME_VERSION)
-
 # Generate values for the DLL version info
 if test "$have_w32_system" = yes; then
     BUILD_TIMESTAMP=`date --iso-8601=minutes`
@@ -750,7 +746,8 @@ AC_SUBST(LTLIBOBJS)
 AC_CONFIG_FILES(Makefile assuan/Makefile gpgme/Makefile
 		tests/Makefile tests/gpg/Makefile tests/gpgsm/Makefile
 		doc/Makefile complus/Makefile
-                gpgme/versioninfo.rc)
+                gpgme/versioninfo.rc
+                gpgme/gpgme.h)
 AC_CONFIG_FILES(gpgme/gpgme-config, chmod +x gpgme/gpgme-config)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AC_OUTPUT
