@@ -1,3 +1,8 @@
+2008-10-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* rungpg.c (gpg_keylist_preprocess): Convert percent escaped
+	string to C coded string.
+
 2008-10-20  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (EXTRA_DIST): Add gpgme.h.in.
