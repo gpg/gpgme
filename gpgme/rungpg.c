@@ -1884,9 +1884,8 @@ gpg_keylist_preprocess (char *line, char **r_line)
       {
 	/* The user ID is percent escaped, but we want c-coded.
 	   Because we have to replace each '%HL' by '\xHL', we need at
-	   most 4/3 th the number of bytes.  But because this 
-	   security software, we err on the good side and allocate
-	   twice as much.  */
+	   most 4/3 th the number of bytes.  But because we also need
+	   to escape the backslashes we allocate twice as much.  */
 	char *uid = malloc (2 * strlen (field[1]) + 1);
 	char *src;
 	char *dst;
@@ -1902,14 +1901,17 @@ gpg_keylist_preprocess (char *line, char **r_line)
 		*(dst++) = '\\';
 		*(dst++) = 'x';
 		src++;
-		/* Copy the next two bytes unconditionally.  This is
-		   what reduces the maximum number of needed bytes
-		   from 2n+1 to (4/3)n+1, even for invalid strings.  */
+		/* Copy the next two bytes unconditionally.  */
 		if (*src)
 		  *(dst++) = *(src++);
 		if (*src)
 		  *(dst++) = *(src++);
 	      }
+	    else if (*src == '\\')
+              {
+                *dst++ = '\\';
+                *dst++ = '\\';
+              }
 	    else
 	      *(dst++) = *(src++);
 	  }
