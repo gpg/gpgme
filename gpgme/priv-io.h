@@ -63,7 +63,7 @@ int _gpgme_io_set_nonblocking (int fd);
    close all fds except for those in FD_LIST in the child, then
    optionally dup() the child fds.  Finally, all fds in the list are
    closed in the parent.  */
-int _gpgme_io_spawn (const char *path, char **argv,
+int _gpgme_io_spawn (const char *path, char *const argv[],
 		     struct spawn_fd_item_s *fd_list, pid_t *r_pid);
 
 int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock);

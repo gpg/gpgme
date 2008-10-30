@@ -1,3 +1,16 @@
+2008-10-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* wait-private.c (_gpgme_wait_on_condition): Remove unused
+	variable IDX.
+	* wait-global.c: Include ops.h to silence gcc warning.
+	(_gpgme_wait_global_event_cb): Pass error value directly.
+	* wait-user.c: Include ops.h to silence gcc warning.
+
+	* posix-io.c (_gpgme_io_spawn): Make ARGV argument const to
+	silence gcc warning.  Cast argument to execv to silence warning.
+	* w32-io.c (_gpgme_io_spawn): Likewise.
+	* priv-io.h (_gpgme_io_spawn): Likewise for prototype.
+
 2008-10-24  Werner Koch  <wk@g10code.com>
 
 	* rungpg.c (gpg_keylist_preprocess): Escape backslashes too.

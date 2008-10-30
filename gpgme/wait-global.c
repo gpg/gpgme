@@ -33,6 +33,7 @@
 #include "context.h"
 #include "wait.h"
 #include "priv-io.h"
+#include "ops.h"
 
 /* The global event loop is used for all asynchronous operations
    (except key listing) for which no user I/O callbacks are specified.
@@ -202,7 +203,7 @@ _gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type,
 	if (err)
 	  /* An error occured.  Close all fds in this context, and
 	     send the error in a done event.  */
-	  _gpgme_cancel_with_err (ctx, &err);
+	  _gpgme_cancel_with_err (ctx, err);
       }
       break;
 

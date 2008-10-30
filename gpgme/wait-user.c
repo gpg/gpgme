@@ -28,6 +28,7 @@
 #include "context.h"
 #include "priv-io.h"
 #include "wait.h"
+#include "ops.h"
 
 
 /* The user event loops are used for all asynchronous operations for
