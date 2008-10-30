@@ -63,6 +63,9 @@ main (int argc, char **argv)
   fail_if_err (err);
   gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
 
+  gpgme_set_keylist_mode (ctx, (gpgme_get_keylist_mode (ctx)
+                                | GPGME_KEYLIST_MODE_VALIDATE));
+
   err = gpgme_op_keylist_start (ctx, argc? argv[0]:NULL, 0);
   fail_if_err (err);
     
