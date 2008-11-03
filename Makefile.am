@@ -1,6 +1,6 @@
 # Makefile.am - Top level Makefile for GPGME.
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2004, 2005 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2004, 2005, 2008 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -43,7 +43,7 @@ else
 tests = 
 endif
 
-SUBDIRS = ${assuan} gpgme ${tests} doc ${complus} lang
+SUBDIRS = ${assuan} src ${tests} doc ${complus} lang
 
 # Fix the version of the spec file and create a file named VERSION 
 # to be used for patch's Prereq: feature.

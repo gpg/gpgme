@@ -1,3 +1,9 @@
+2008-11-03  Marcus Brinkmann  <marcus@g10code.com>
+
+	* gpgsm/Makefile.am (INCLUDES, LDADD): Replace gpgme path with src.
+	* gpg/Makefile.am (INCLUDES, LDADD, t_thread1_LDADD): Likewise.
+	* Makefile.am (LDADD): Likewise.
+
 2008-06-19  Werner Koch  <wk@g10code.com>
 
 	* gpg/t-gpgconf.c (dump_arg): Add new types.  Print strings in

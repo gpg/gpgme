@@ -43,11 +43,11 @@ DISTCLEANFILES = pubring.gpg~ pubring.kbx~ random_seed gpg.conf gpg-agent.conf
 EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 	geheim.txt pubkey-1.asc seckey-1.asc pinentry
 
-INCLUDES = -I$(top_srcdir)/gpgme
+INCLUDES = -I$(top_srcdir)/src
 
 AM_CPPFLAGS = @GPG_ERROR_CFLAGS@
-LDADD = ../../gpgme/libgpgme.la
-t_thread1_LDADD = ../../gpgme/libgpgme-pthread.la
+LDADD = ../../src/libgpgme.la
+t_thread1_LDADD = ../../src/libgpgme-pthread.la
 
 # We don't run t-genkey in the test suite, because it takes too long
 noinst_PROGRAMS = $(TESTS) t-genkey

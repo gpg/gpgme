@@ -29,7 +29,7 @@ EXTRA_DIST = t-data-1.txt t-data-2.txt
 INCLUDES = -I$(top_srcdir)/gpgme
 
 AM_CPPFLAGS = @GPG_ERROR_CFLAGS@
-LDADD = ../gpgme/libgpgme.la @GPG_ERROR_LIBS@
+LDADD = ../src/libgpgme.la @GPG_ERROR_LIBS@
 
 noinst_PROGRAMS = $(TESTS)
 
