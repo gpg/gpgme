@@ -60,8 +60,8 @@ do_subsystem_inits (void)
   assuan_set_assuan_err_source (GPG_ERR_SOURCE_GPGME);
 #endif /*HAVE_ASSUAN_H*/
   _gpgme_debug_subsystem_init ();
-#if defined(HAVE_W32_SYSTEM) && defined(HAVE_ASSUAN_H)
   _gpgme_io_subsystem_init ();
+#if defined(HAVE_W32_SYSTEM) && defined(HAVE_ASSUAN_H)
   /* We need to make sure that the sockets are initialized.  */
   {
     WSADATA wsadat;

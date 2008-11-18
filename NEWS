@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.1.7 (unreleased)
 ------------------------------------------------
 
+ * SIGPIPE is now again ignored as described in the manual.  Fixes
+   regresion introduced with 1.1.6.
+
  * Interface changes relative to the 1.1.7 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

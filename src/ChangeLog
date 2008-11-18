@@ -1,3 +1,11 @@
+2008-11-18  Werner Koch  <wk@g10code.com>
+
+	* version.c (do_subsystem_inits): Always initialize I/O
+	subsystem.  Fixes regression from 2007-08-02.
+
+	* decrypt.c (_gpgme_decrypt_status_handler): Use
+	_gpgme_map_gnupg_error to parse the error code for decrypt.algorithm.
+
 2008-10-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* wait-private.c (_gpgme_wait_on_condition): Remove unused
@@ -479,9 +487,9 @@
 	* w32-io.c (_gpgme_io_spawn): Ditto.
 	(_gpgme_io_write): Map ERROR_NO_DATA to EPIPE.
 	* debug.c (_gpgme_debug): Enable assuan logging.
-	(_gpgme_debug_subsystem_init): New.  * version.c
-	(do_subsystem_inits): Disable assuan logging and initialize de
-	debug system.
+	(_gpgme_debug_subsystem_init): New.
+	* version.c (do_subsystem_inits): Disable assuan logging and
+	initialize the debug system.
 	(gpgme_check_version): Do not trace before the subsystems are
 	initialized.
 
