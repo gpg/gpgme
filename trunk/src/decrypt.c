@@ -180,7 +180,6 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
          related to the backend.  */
       {
 	const char d_alg[] = "decrypt.algorithm";
-	const char u_alg[] = "Unsupported_Algorithm";
 	const char k_alg[] = "decrypt.keyusage";
 
 	if (!strncmp (args, d_alg, sizeof (d_alg) - 1))
@@ -189,11 +188,13 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 	    while (*args == ' ')
 	      args++;
 
-	    if (!strncmp (args, u_alg, sizeof (u_alg) - 1))
+	    if (gpg_err_code (_gpgme_map_gnupg_error (args))
+                == GPG_ERR_UNSUPPORTED_ALGORITHM)
 	      {
 		char *end;
 
-		args += sizeof (u_alg) - 1;
+		while (*args && *args != ' ')
+		  args++;
 		while (*args == ' ')
 		  args++;
 
