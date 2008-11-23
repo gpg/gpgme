@@ -40,18 +40,15 @@
 
 ; FIXME: Use cffi-grovel?  cffi-unix?
 
-(defctype size-t :unsigned-int
-  :documentation "The system size_t type.")
+(defctype size-t :unsigned-int "The system size_t type.")
 
-(defctype ssize-t :int
-  :documentation "The system ssize_t type.")
+(defctype ssize-t :int "The system ssize_t type.")
 
 ; FIXME: Ouch.  Grovel?  Helper function?
 (defconstant +seek-set+ 0)
 (defconstant +seek-cur+ 1)
 (defconstant +seek-end+ 2)
-(defctype off-t :long-long
-  :documentation "The system off_t type.")
+(defctype off-t :long-long "The system off_t type.")
 
 (defcfun ("strerror" c-strerror) :string
   (err :int))
@@ -110,26 +107,22 @@
 
 ;;; Some opaque data types used by GPGME.
 
-(defctype gpgme-ctx-t :pointer
-  :documentation "The GPGME context type.")
+(defctype gpgme-ctx-t :pointer "The GPGME context type.")
 
-(defctype gpgme-data-t :pointer
-  :documentation "The GPGME data object type.")
+(defctype gpgme-data-t :pointer "The GPGME data object type.")
 
 ;;; Wrappers for the libgpg-error library.
 
-(defctype gpgme-error-t gpg-error::gpg-error-t
-  :documentation "The GPGME error type.")
+(defctype gpgme-error-t gpg-error::gpg-error-t "The GPGME error type.")
 
 (defctype gpgme-error-no-signal-t gpg-error::gpg-error-t
-  :documentation "The GPGME error type (this version does not
-  signal conditions in translation.")
+  "The GPGME error type (this version does not signal conditions in translation.")
 
 (defctype gpgme-err-code-t gpg-error::gpg-err-code-t
-  :documentation "The GPGME error code type.")
+  "The GPGME error code type.")
 
 (defctype gpgme-err-source-t gpg-error::gpg-err-source-t
-  :documentation "The GPGME error source type.")
+  "The GPGME error source type.")
 
 (defun gpgme-err-make (source code)
   "Construct an error value from an error code and source."
@@ -251,7 +244,7 @@
   (:critical 2))
 
 (defctype gpgme-sig-notation-t :pointer
-  :documentation "Signature notation pointer type.")
+  "Signature notation pointer type.")
 
 ;; FIXME: Doesn't this depend on endianess?
 (defbitfield (gpgme-sig-notation-bitfield :unsigned-int)
@@ -279,7 +272,7 @@
 ;;;
 
 (defctype gpgme-engine-info-t :pointer
-  :documentation "The engine information structure pointer type.")
+  "The engine information structure pointer type.")
 
 (defcstruct gpgme-engine-info
   "Engine information."
@@ -292,8 +285,7 @@
 
 ;;;
 
-(defctype gpgme-subkey-t :pointer
-  :documentation "A subkey from a key.")
+(defctype gpgme-subkey-t :pointer "A subkey from a key.")
 
 ;; FIXME: Doesn't this depend on endianess?
 (defbitfield (gpgme-subkey-bitfield :unsigned-int)
@@ -323,7 +315,7 @@
 
 
 (defctype gpgme-key-sig-t :pointer
-  :documentation "A signature on a user ID.")
+  "A signature on a user ID.")
 
 ;; FIXME: Doesn't this depend on endianess?
 (defbitfield (gpgme-key-sig-bitfield :unsigned-int)
@@ -352,7 +344,7 @@
 
 
 (defctype gpgme-user-id-t :pointer
-  :documentation "A user ID from a key.")
+  "A user ID from a key.")
 
 ;; FIXME: Doesn't this depend on endianess?
 (defbitfield (gpgme-user-id-bitfield :unsigned-int)
@@ -374,7 +366,7 @@
 
 
 (defctype gpgme-key-t :pointer
-  :documentation "A key from the keyring.")
+  "A key from the keyring.")
 
 ;; FIXME: Doesn't this depend on endianess?
 (defbitfield (gpgme-key-bitfield :unsigned-int)
@@ -603,7 +595,7 @@
   (release gpgme-data-release-cb-t))
 
 (defctype gpgme-data-cbs-t :pointer
-  :documentation "Data callbacks pointer.")
+  "Data callbacks pointer.")
 
 (defcfun ("gpgme_data_read" c-gpgme-data-read) ssize-t
   (dh gpgme-data-t)
@@ -702,7 +694,7 @@
 ;;;
 
 (defctype gpgme-invalid-key-t :pointer
-  :documentation "An invalid key structure.")
+  "An invalid key structure.")
 
 (defcstruct gpgme-invalid-key
   "An invalid key structure."
@@ -717,7 +709,7 @@
   (invalid-recipients gpgme-invalid-key-t))
 
 (defctype gpgme-op-encrypt-result-t :pointer
-  :documentation "An encryption result structure.")
+  "An encryption result structure.")
 
 (defcfun ("gpgme_op_encrypt_result" c-gpgme-op-encrypt-result)
     gpgme-op-encrypt-result-t
@@ -758,7 +750,7 @@
 ;;; Decryption.
 
 (defctype gpgme-recipient-t :pointer
-  :documentation "A recipient structure.")
+  "A recipient structure.")
 
 (defcstruct gpgme-recipient
   "Recipient structure."
@@ -780,7 +772,7 @@
   (file-name :string))
 
 (defctype gpgme-op-decrypt-result-t :pointer
-  :documentation "A decryption result structure.")
+  "A decryption result structure.")
 
 (defcfun ("gpgme_op_decrypt_result" c-gpgme-op-decrypt-result)
     gpgme-op-decrypt-result-t
@@ -810,7 +802,7 @@
 ;;; Signing.
 
 (defctype gpgme-new-signature-t :pointer
-  :documentation "A new signature structure.")
+  "A new signature structure.")
 
 (defcstruct gpgme-new-signature
   "New signature structure."
@@ -830,7 +822,7 @@
   (signatures gpgme-new-signature-t))
 
 (defctype gpgme-op-sign-result-t :pointer
-  :documentation "A signing result structure.")
+  "A signing result structure.")
 
 (defcfun ("gpgme_op_sign_result" c-gpgme-op-sign-result)
     gpgme-op-sign-result-t
@@ -865,7 +857,7 @@
   (:sys-error #x0800))
 
 (defctype gpgme-signature-t :pointer
-  :documentation "A signature structure.")
+  "A signature structure.")
 
 ;; FIXME: Doesn't this depend on endianess?
 (defbitfield (gpgme-signature-bitfield :unsigned-int)
@@ -893,7 +885,7 @@
   (file-name :string))
 
 (defctype gpgme-op-verify-result-t :pointer
-  :documentation "A verify result structure.")
+  "A verify result structure.")
 
 (defcfun ("gpgme_op_verify_result" c-gpgme-op-verify-result)
     gpgme-op-verify-result-t
@@ -922,7 +914,7 @@
   (:secret #x0010))
 
 (defctype gpgme-import-status-t :pointer
-  :documentation "An import status structure.")
+  "An import status structure.")
 
 (defcstruct gpgme-import-status
   "New import status structure."
@@ -950,7 +942,7 @@
   (imports gpgme-import-status-t))
 
 (defctype gpgme-op-import-result-t :pointer
-  :documentation "An import status result structure.")
+  "An import status result structure.")
 
 (defcfun ("gpgme_op_import_result" c-gpgme-op-import-result)
     gpgme-op-import-result-t
@@ -993,7 +985,7 @@
   (fpr :string))
 
 (defctype gpgme-op-genkey-result-t :pointer
-  :documentation "A key generation result structure.")
+  "A key generation result structure.")
 
 (defcfun ("gpgme_op_genkey_result" c-gpgme-op-genkey-result)
     gpgme-op-genkey-result-t
@@ -1036,7 +1028,7 @@
   (bitfield gpgme-keylist-flags-t))
 
 (defctype gpgme-op-keylist-result-t :pointer
-  :documentation "A key listing result structure.")
+  "A key listing result structure.")
 
 (defcfun ("gpgme_op_keylist_result" c-gpgme-op-keylist-result)
     gpgme-op-keylist-result-t
