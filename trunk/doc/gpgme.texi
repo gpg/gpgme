@@ -2837,7 +2837,7 @@ currently active keylist mode is used to retrieve the key.  The key
 will have one reference for the user.
 
 If the key is not found in the keyring, @code{gpgme_get_key} returns
-the error code @code{GPG_ERR_NO_ERROR} and *@var{r_key} will be set to
+the error code @code{GPG_ERR_EOF} and *@var{r_key} will be set to
 @code{NULL}.
 
 The function returns the error code @code{GPG_ERR_INV_VALUE} if
