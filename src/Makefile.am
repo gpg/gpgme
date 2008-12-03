@@ -226,7 +226,7 @@ libgpgme_qt_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
 endif
 
 status-table.h : gpgme.h
-	$(srcdir)/mkstatus < $(srcdir)/gpgme.h > status-table.h
+	$(srcdir)/mkstatus < $(builddir)/gpgme.h > status-table.h
 
 install-data-local: install-def-file
 
