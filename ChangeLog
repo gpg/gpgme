@@ -1,3 +1,9 @@
+2008-12-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	Release GPGME 1.1.8.
+
+	* configure.ac: Bump API revision.
+
 2008-11-03  Marcus Brinkmann  <marcus@g10code.com>
 
 	* configure.ac: Replace gpgme paths with src.
