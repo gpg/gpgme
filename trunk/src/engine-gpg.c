@@ -1,6 +1,7 @@
-/* rungpg.c - Gpg Engine.
+/* engine-gpg.c - Gpg Engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+                 2009 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -15,9 +16,8 @@
    Lesser General Public License for more details.
    
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+*/
 
 #if HAVE_CONFIG_H
 #include <config.h>
