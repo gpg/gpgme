@@ -105,7 +105,7 @@ main_sources =								\
 	sign.c passphrase.c progress.c					\
 	key.c keylist.c trust-item.c trustlist.c			\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
-	engine.h engine-backend.h engine.c rungpg.c status-table.h	\
+	engine.h engine-backend.h engine.c engine-gpg.c status-table.h	\
 	$(gpgsm_components) $(gpgconf_components) gpgconf.c		\
 	sema.h priv-io.h $(system_components)				\
 	debug.c debug.h gpgme.c version.c error.c

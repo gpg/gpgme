@@ -1,3 +1,8 @@
+2009-01-19  Werner Koch  <wk@g10code.com>
+
+	* rungpg.c: Rename to engine-gpg.c
+	* Makefile.am (main_sources): Ditto.
+
 2008-12-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (status-table.h): Use $(builddir) to find gpgme.h.
@@ -5893,7 +5898,7 @@
 	* data.c (gpgme_data_rewind): Allow to rewind data_type_none.
 
 
- Copyright 2001,2002,2003,2004,2005,2006,2007 g10 Code GmbH
+ Copyright 2001,2002,2003,2004,2005,2006,2007,2008,2009 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
