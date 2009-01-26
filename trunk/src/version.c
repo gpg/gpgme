@@ -179,7 +179,8 @@ gpgme_check_version (const char *req_version)
      automagically initialize the debug system with out the locks
      being initialized and missing the assuan log level setting. */
   TRACE2 (DEBUG_INIT, "gpgme_check_version: ", 0,
-	  "req_version=%s, VERSION=%s", req_version, VERSION);
+	  "req_version=%s, VERSION=%s",
+          req_version? req_version:"(null)", VERSION);
  
   return _gpgme_compare_versions (VERSION, req_version) ? VERSION : NULL;
 }

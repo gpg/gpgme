@@ -1,5 +1,5 @@
 /* engine-backend.h - A crypto backend for the engine interface.
-   Copyright (C) 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2002, 2003, 2004, 2009 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -14,9 +14,8 @@
    Lesser General Public License for more details.
    
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef ENGINE_BACKEND_H
 #define ENGINE_BACKEND_H
@@ -34,6 +33,11 @@ struct engine_ops
 
   /* Return the default file name for the binary of this engine.  */
   const char *(*get_file_name) (void);
+
+  /* Return the default home dir for the binary of this engine.  If
+     this function pointer is not set, the standard default home dir
+     of the engine is used. */
+  const char *(*get_home_dir) (void);
 
   /* Returns a malloced string containing the version of the engine
      with the given binary file name (or the default if FILE_NAME is
@@ -96,6 +100,16 @@ struct engine_ops
 			   gpgme_data_t plaintext);
   gpgme_error_t  (*getauditlog) (void *engine, gpgme_data_t output,
                                  unsigned int flags);
+  gpgme_error_t  (*opassuan_transact) (void *engine, 
+                                       const char *command,
+                                       engine_assuan_result_cb_t result_cb,
+                                       void *result_cb_value,
+                                       gpgme_assuan_data_cb_t data_cb,
+                                       void *data_cb_value,
+                                       gpgme_assuan_inquire_cb_t inq_cb,
+                                       void *inq_cb_value,
+                                       gpgme_assuan_status_cb_t status_cb,
+                                       void *status_cb_value);
 
   gpgme_error_t  (*conf_load) (void *engine, gpgme_conf_comp_t *conf_p);
   gpgme_error_t  (*conf_save) (void *engine, gpgme_conf_comp_t conf);
@@ -113,6 +127,9 @@ extern struct engine_ops _gpgme_engine_ops_gpgsm;	/* CMS.  */
 #endif
 #ifdef ENABLE_GPGCONF
 extern struct engine_ops _gpgme_engine_ops_gpgconf;	/* gpg-conf.  */
+#endif
+#ifdef ENABLE_GPGSM  /* If this is enabled we also have assuan support.  */
+extern struct engine_ops _gpgme_engine_ops_assuan;	/* Low-level Assuan. */
 #endif
 
 #endif /* ENGINE_BACKEND_H */

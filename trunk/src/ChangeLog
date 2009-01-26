@@ -1,3 +1,36 @@
+2009-01-26  Werner Koch  <wk@g10code.com>
+
+	* opassuan.c, dirinfo.c, engine-assuan.c: New.
+	* Makefile.am:  Add them.
+	* engine-backend.h: Add _gpgme_engine_ops_assuan. 
+	(struct engine_ops): Add field OPASSUAN_TRANSACT.  Update all
+	engine intializers.
+	* Makefile.am (gpgsm_components): Add engine-assuan.c.
+	* gpgme.h.in (gpgme_protocol_t): Add GPGME_PROTOCOL_ASSUAN.
+	(gpgme_assuan_data_cb_t, gpgme_assuan_sendfnc_ctx_t)
+	(gpgme_assuan_inquire_cb_t, gpgme_assuan_status_cb_t): New.
+	(gpgme_op_assuan_transact_start, gpgme_op_assuan_transact): New.
+	* gpgme.c (gpgme_get_protocol_name): Ditto.
+	(gpgme_set_protocol): Support it.
+	* engine.c (gpgme_get_engine_info): Ditto.
+	(engine_ops): Register it.
+	(_gpgme_engine_op_assuan_transact): New.
+	* libgpgme.vers (gpgme_op_assuan_transact_start)
+	(gpgme_op_assuan_transact): New.
+	* gpgme.def (gpgme_op_assuan_transact_start)
+	(gpgme_op_assuan_transact): New.
+	* engine-backend.h (struct engine_ops): Add GET_HOME_DIR and
+	initialize to NULL for all engines.
+	* engine.c (engine_get_home_dir): New.
+	(gpgme_get_engine_info): Use it.
+	(_gpgme_set_engine_info): Use it.
+	* engine.h (engine_assuan_result_cb_t): New.
+	* context.h (ctx_op_data_id_t): Add OPDATA_ASSUAN.
+
+	* util.h (GPG_ERR_UNFINISHED): Define if not yet defined.
+
+	* version.c (gpgme_check_version): Protect trace arg against NULL.
+
 2009-01-19  Werner Koch  <wk@g10code.com>
 
 	* rungpg.c: Rename to engine-gpg.c
@@ -803,7 +836,7 @@
 
 	* engine.c (gpgme_engine_check_version): Reimplemented to allow
 	checking the version correctly even after changing the engine
-	information.  Bug reported by Stéphane Corthésy.
+	information.  Bug reported by StÃ©phane CorthÃ©sy.
 
 	* rungpg.c (read_colon_line): Invoke colon preprocess handler if
 	it is set.
@@ -868,7 +901,7 @@
 2005-11-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine.c (_gpgme_set_engine_info): Use new_file_name in
-	engine_get_version invocation.  Reported by Stéphane Corthésy.
+	engine_get_version invocation.  Reported by StÃ©phane CorthÃ©sy.
 
 2005-11-24  Marcus Brinkmann  <marcus@g10code.de>
 
@@ -1818,7 +1851,7 @@
 
 	* gpgme-config.in (gpg_error_libs): Quote GPG_ERROR_CFLAGS and
 	GPG_ERROR_LIBS when setting the corresponding variables.
-	Reported by Stéphane Corthésy.
+	Reported by StÃ©phane CorthÃ©sy.
 
 2003-07-22  Marcus Brinkmann  <marcus@g10code.de>
 
@@ -3707,7 +3740,7 @@
 2002-09-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* conversion.c (_gpgme_hextobyte): Prevent superfluous
-	multiplication with base.  Reported by Stéphane Corthésy.
+	multiplication with base.  Reported by StÃ©phane CorthÃ©sy.
 
 	* keylist.c (gpgme_op_keylist_ext_start): Use private asynchronous
 	operation type in invocation of _gpgme_op_reset.
@@ -3820,7 +3853,7 @@
 	variables encrypt_info and encrypt_info_len.
 	* trustlist.c (gpgme_op_trustlist_start): Set colon line handler.
 	* posix-sema.c (sema_fatal): Remove function.
-	All these reported by Stéphane Corthésy.
+	All these reported by StÃ©phane CorthÃ©sy.
 
 2002-08-23  Werner Koch  <wk@gnupg.org>
 
@@ -3993,7 +4026,7 @@
 	* vasprintf.c: Update to more recent libiberty version.
 	* debug.h: Replace #elsif with #elif.
 
-	Submitted by Stéphane Corthésy:
+	Submitted by StÃ©phane CorthÃ©sy:
 	* util.h (vasprintf): Correct prototype.
 	* encrypt-sign.c: Include <stddef.h>.
 	(encrypt_sign_status_handler): Change type of ENCRYPT_INFO_LEN to
@@ -4003,14 +4036,14 @@
 
 2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
 
-	* wait.c (fdt_global): Make static.  Reported by Stéphane
-	Corthésy.
+	* wait.c (fdt_global): Make static.  Reported by StÃ©phane
+	CorthÃ©sy.
 
 	* rungpg.c (_gpgme_gpg_op_keylist_ext): Skip empty string
-	patterns.  Reported by Stéphane Corthésy.
+	patterns.  Reported by StÃ©phane CorthÃ©sy.
 
 	* key.c (gpgme_key_get_as_xml): Add OTRUST attribute.  Requested
-	by Stéphane Corthésy.
+	by StÃ©phane CorthÃ©sy.
 	(gpgme_key_get_string_attr): Add GPGME_ATTR_SIG_SUMMARY case to
 	silence gcc warning.
 
@@ -5060,7 +5093,7 @@
 
 2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
 
-	* engine.c: Include `string.h'.  Reported by Stéphane Corthésy.
+	* engine.c: Include `string.h'.  Reported by StÃ©phane CorthÃ©sy.
 
 	* version.c (get_engine_info): Remove prototype.
 
@@ -5597,7 +5630,7 @@
 	callers to use this function without a check for tmp_key.
 	
 	* keylist.c (gpgme_op_keylist_next): Reset the key_cond after
-	emptying the queue.  Bug reported by Stéphane Corthésy.
+	emptying the queue.  Bug reported by StÃ©phane CorthÃ©sy.
 
 2001-09-12  Werner Koch  <wk@gnupg.org>
 
@@ -5679,7 +5712,7 @@
 	* version.c (gpgme_check_engine): Stop version number parsing at
 	the opening angle and not the closing one.  By Tommy Reynolds.
 
-2001-05-01  José Carlos García Sogo <jose@jaimedelamo.eu.org>
+2001-05-01  JosÃ© Carlos GarcÃ­a Sogo <jose@jaimedelamo.eu.org>
 
 	* encrypt.c (gpgme_op_encrypt_start): Deleted the assert ( !c->gpg )
 	line, because it gave an error if another operation had been made 
@@ -5865,8 +5898,8 @@
 	* rungpg.c (_gpgme_gpg_spawn): Use new function to get GPG's path.
 
 	* signers.c (gpgme_signers_add): Ooops, one should test code and
-	not just write it; the newarr was not assigned.  Thanks to José
-	for pointing this out.  Hmmm, still not tested, why shoudl a coder
+	not just write it; the newarr was not assigned.  Thanks to JosÃ©
+	for pointing this out.  Hmmm, still not tested, why should a coder
 	test his fix :-)
 
 	* w32-io.c: Does now use reader threads, so that we can use

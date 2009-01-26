@@ -2158,6 +2158,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
   {
     /* Static functions.  */
     _gpgme_get_gpg_path,
+    NULL,               
     gpg_get_version,
     gpg_get_req_version,
     gpg_new,
@@ -2184,6 +2185,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_trustlist,
     gpg_verify,
     NULL,		/* getauditlog */
+    NULL,               /* opassuan_transact */
     NULL,		/* conf_load */
     NULL,		/* conf_save */
     gpg_set_io_cbs,

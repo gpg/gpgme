@@ -1,6 +1,6 @@
 /* engine.c - GPGME engine support.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2006 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2006, 2009 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -15,9 +15,8 @@
    Lesser General Public License for more details.
    
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -52,7 +51,12 @@ static struct engine_ops *engine_ops[] =
     NULL,
 #endif
 #ifdef ENABLE_GPGCONF
-    &_gpgme_engine_ops_gpgconf		/* gpg-conf.  */
+    &_gpgme_engine_ops_gpgconf,		/* gpg-conf.  */
+#else
+    NULL,
+#endif
+#ifdef ENABLE_GPGSM  /* This indicates that we have assuan support.  */
+    &_gpgme_engine_ops_assuan		/* Low-Level Assuan.  */
 #else
     NULL
 #endif
@@ -73,6 +77,20 @@ engine_get_file_name (gpgme_protocol_t proto)
 
   if (engine_ops[proto] && engine_ops[proto]->get_file_name)
     return (*engine_ops[proto]->get_file_name) ();
+  else
+    return NULL;
+}
+
+
+/* Get the standard home dir of the engine for PROTOCOL.  */
+static const char *
+engine_get_home_dir (gpgme_protocol_t proto)
+{
+  if (proto > DIM (engine_ops))
+    return NULL;
+
+  if (engine_ops[proto] && engine_ops[proto]->get_home_dir)
+    return (*engine_ops[proto]->get_home_dir) ();
   else
     return NULL;
 }
@@ -175,18 +193,22 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
       gpgme_engine_info_t *lastp = &engine_info;
       gpgme_protocol_t proto_list[] = { GPGME_PROTOCOL_OpenPGP,
 					GPGME_PROTOCOL_CMS,
-					GPGME_PROTOCOL_GPGCONF };
+					GPGME_PROTOCOL_GPGCONF,
+					GPGME_PROTOCOL_ASSUAN };
       unsigned int proto;
 
       for (proto = 0; proto < DIM (proto_list); proto++)
 	{
 	  const char *ofile_name = engine_get_file_name (proto_list[proto]);
+	  const char *ohome_dir  = engine_get_home_dir (proto_list[proto]);
 	  char *file_name;
+	  char *home_dir;
 
 	  if (!ofile_name)
 	    continue;
 
 	  file_name = strdup (ofile_name);
+          home_dir = ohome_dir? strdup (ohome_dir): NULL;
 
 	  *lastp = malloc (sizeof (*engine_info));
 	  if (!*lastp || !file_name)
@@ -198,6 +220,8 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 
 	      if (file_name)
 		free (file_name);
+	      if (home_dir)
+		free (home_dir);
 
 	      UNLOCK (engine_info_lock);
 	      return gpg_error_from_errno (saved_errno);
@@ -205,7 +229,7 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 
 	  (*lastp)->protocol = proto_list[proto];
 	  (*lastp)->file_name = file_name;
-	  (*lastp)->home_dir = NULL;
+	  (*lastp)->home_dir = home_dir;
 	  (*lastp)->version = engine_get_version (proto_list[proto], NULL);
 	  (*lastp)->req_version = engine_get_req_version (proto_list[proto]);
 	  (*lastp)->next = NULL;
@@ -347,7 +371,20 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
 	}
     }
   else
-    new_home_dir = NULL;
+    {
+      const char *ohome_dir = engine_get_home_dir (proto);
+      if (ohome_dir)
+        {
+          new_home_dir = strdup (ohome_dir);
+          if (!new_home_dir)
+            {
+              free (new_file_name);
+              return gpg_error_from_errno (errno);
+            }
+        }
+      else
+        new_home_dir = NULL;
+    }
 
   /* Remove the old members.  */
   assert (info->file_name);
@@ -727,6 +764,33 @@ _gpgme_engine_op_getauditlog (engine_t engine, gpgme_data_t output,
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   return (*engine->ops->getauditlog) (engine->engine, output, flags);
+}
+
+
+gpgme_error_t
+_gpgme_engine_op_assuan_transact (engine_t engine, 
+                                  const char *command,
+                                  engine_assuan_result_cb_t result_cb,
+                                  void *result_cb_value,
+                                  gpgme_assuan_data_cb_t data_cb,
+                                  void *data_cb_value,
+                                  gpgme_assuan_inquire_cb_t inq_cb,
+                                  void *inq_cb_value,
+                                  gpgme_assuan_status_cb_t status_cb,
+                                  void *status_cb_value)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->opassuan_transact)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->opassuan_transact) (engine->engine, 
+                                            command,
+                                            result_cb, result_cb_value,
+                                            data_cb, data_cb_value,
+                                            inq_cb, inq_cb_value,
+                                            status_cb, status_cb_value);
 }
 
 

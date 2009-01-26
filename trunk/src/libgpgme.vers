@@ -1,5 +1,5 @@
 # libgpgme.vers - List of symbols to export.
-# Copyright (C) 2002, 2004, 2005 g10 Code GmbH
+# Copyright (C) 2002, 2004, 2005, 2009 g10 Code GmbH
 #
 # This file is part of GPGME.
 #
@@ -14,8 +14,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+# License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #-------------------------------------------------------
 # Please remember to add new functions also to gpgme.def
@@ -48,6 +47,10 @@ GPGME_1.1 {
     gpgme_op_conf_save;
 
     gpgme_cancel_async;
+
+    gpgme_op_assuan_result;    
+    gpgme_op_assuan_transact;    
+    gpgme_op_assuan_transact_start;    
 };
 
 

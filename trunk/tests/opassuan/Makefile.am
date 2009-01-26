@@ -1,6 +1,4 @@
-# Makefile.am - Top level Makefile for GPGME.
-# Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2004, 2005, 2008 g10 Code GmbH
+# Copyright (C) 2009 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -19,35 +17,19 @@
 
 ## Process this file with automake to produce Makefile.in
 
-ACLOCAL_AMFLAGS = -I m4
-AUTOMAKE_OPTIONS = dist-bzip2
+TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO= 
 
-EXTRA_DIST = gpgme.spec.in autogen.sh 
+noinst_HEADERS =
+TESTS = 
 
-if BUILD_ASSUAN
-assuan = assuan
-else
-assuan =
-endif
+EXTRA_DIST = 
 
-if BUILD_COMPLUS
-complus = complus
-else
-complus = 
-endif
+INCLUDES = -I$(top_builddir)/src
 
-if RUN_GPG_TESTS
-tests = tests
-else
-tests = 
-endif
+AM_CPPFLAGS = @GPG_ERROR_CFLAGS@
+LDADD = ../../src/libgpgme.la
 
-SUBDIRS = ${assuan} src ${tests} doc ${complus} lang
+noinst_PROGRAMS = $(TESTS) t-command
 
-# Fix the version of the spec file and create a file named VERSION 
-# to be used for patch's Prereq: feature.
-dist-hook:
-	@set -e; \
-	sed -e 's/@pkg_version@/$(VERSION)/g' \
-	    $(top_srcdir)/gpgme.spec.in  > $(distdir)/gpgme.spec
-	echo "$(VERSION)" > $(distdir)/VERSION
+DISTCLEANFILES = 
+

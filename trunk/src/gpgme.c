@@ -192,7 +192,9 @@ gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
 	      protocol, gpgme_get_protocol_name (protocol)
 	      ? gpgme_get_protocol_name (protocol) : "unknown");
 
-  if (protocol != GPGME_PROTOCOL_OpenPGP && protocol != GPGME_PROTOCOL_CMS)
+  if (protocol != GPGME_PROTOCOL_OpenPGP
+      && protocol != GPGME_PROTOCOL_CMS
+      && protocol != GPGME_PROTOCOL_ASSUAN)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (ctx->protocol != protocol)
@@ -232,6 +234,9 @@ gpgme_get_protocol_name (gpgme_protocol_t protocol)
 
     case GPGME_PROTOCOL_CMS:
       return "CMS";
+
+    case GPGME_PROTOCOL_ASSUAN:
+      return "Assuan";
 
     case GPGME_PROTOCOL_UNKNOWN:
       return "unknown";

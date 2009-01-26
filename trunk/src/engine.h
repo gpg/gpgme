@@ -35,6 +35,9 @@ typedef gpgme_error_t (*engine_command_handler_t) (void *priv,
 						   gpgme_status_code_t code,
 						   const char *keyword,
 						   int fd, int *processed);
+typedef gpgme_error_t (*engine_assuan_result_cb_t) (void *priv,
+                                                    gpgme_error_t result);
+
 
 /* Get a deep copy of the engine info and return it in INFO.  */
 gpgme_error_t _gpgme_engine_info_copy (gpgme_engine_info_t *r_info);
@@ -126,6 +129,17 @@ gpgme_error_t _gpgme_engine_op_verify (engine_t engine, gpgme_data_t sig,
 gpgme_error_t _gpgme_engine_op_getauditlog (engine_t engine,
                                             gpgme_data_t output,
                                             unsigned int flags);
+gpgme_error_t _gpgme_engine_op_assuan_transact 
+                (engine_t engine, 
+                 const char *command,
+                 engine_assuan_result_cb_t result_cb,
+                 void *result_cb_value,
+                 gpgme_assuan_data_cb_t data_cb,
+                 void *data_cb_value,
+                 gpgme_assuan_inquire_cb_t inq_cb,
+                 void *inq_cb_value,
+                 gpgme_assuan_status_cb_t status_cb,
+                 void *status_cb_value);
 
 gpgme_error_t _gpgme_engine_op_conf_load (engine_t engine,
 					  gpgme_conf_comp_t *conf_p);

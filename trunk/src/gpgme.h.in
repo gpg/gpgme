@@ -1,6 +1,6 @@
 /* gpgme.h - Public interface to GnuPG Made Easy.                   -*- c -*-
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -301,6 +301,7 @@ typedef enum
     GPGME_PROTOCOL_OpenPGP = 0,  /* The default mode.  */
     GPGME_PROTOCOL_CMS     = 1,
     GPGME_PROTOCOL_GPGCONF = 2,  /* Special code for gpgconf.  */
+    GPGME_PROTOCOL_ASSUAN  = 3,  /* Low-level access to an Assuan server.  */
     GPGME_PROTOCOL_UNKNOWN = 255
   }
 gpgme_protocol_t;
@@ -745,6 +746,8 @@ typedef void (*gpgme_progress_cb_t) (void *opaque, const char *what,
 typedef gpgme_error_t (*gpgme_edit_cb_t) (void *opaque,
 					  gpgme_status_code_t status,
 					  const char *args, int fd);
+
+
 
 
 /* Context management functions.  */
@@ -1655,6 +1658,51 @@ gpgme_error_t gpgme_op_getauditlog_start (gpgme_ctx_t ctx, gpgme_data_t output,
                                           unsigned int flags);
 gpgme_error_t gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output, 
                                     unsigned int flags);
+
+
+
+/* Low-level Assuan protocol access.  */
+typedef gpgme_error_t (*gpgme_assuan_data_cb_t) 
+     (void *opaque, const void *data, size_t datalen);
+
+struct _gpgme_assuan_sendfnc_ctx;
+typedef struct _gpgme_assuan_sendfnc_ctx *gpgme_assuan_sendfnc_ctx_t;
+typedef gpgme_error_t (*gpgme_assuan_sendfnc_t)
+     (gpgme_assuan_sendfnc_ctx_t ctx, const void *data, size_t datalen);
+
+typedef gpgme_error_t (*gpgme_assuan_inquire_cb_t)
+     (void *opaque, const char *name, const char *args,
+      gpgme_assuan_sendfnc_t sendfnc, 
+      gpgme_assuan_sendfnc_ctx_t sendfnc_ctx);
+
+typedef gpgme_error_t (*gpgme_assuan_status_cb_t)
+     (void *opaque, const char *status, const char *args);
+
+/* Return the result of the last Assuan command. */
+gpgme_error_t gpgme_op_assuan_result (gpgme_ctx_t ctx);
+
+/* Send the Assuan COMMAND and return results via the callbacks.
+   Asynchronous variant. */
+gpgme_error_t gpgme_op_assuan_transact_start (gpgme_ctx_t ctx, 
+                                              const char *command,
+                                              gpgme_assuan_data_cb_t data_cb,
+                                              void *data_cb_value,
+                                              gpgme_assuan_inquire_cb_t inq_cb,
+                                              void *inq_cb_value,
+                                              gpgme_assuan_status_cb_t stat_cb,
+                                              void *stat_cb_value);
+
+/* Send the Assuan COMMAND and return results via the callbacks.
+   Synchronous variant. */
+gpgme_error_t gpgme_op_assuan_transact (gpgme_ctx_t ctx, 
+                                        const char *command,
+                                        gpgme_assuan_data_cb_t data_cb,
+                                        void *data_cb_value,
+                                        gpgme_assuan_inquire_cb_t inq_cb,
+                                        void *inq_cb_value,
+                                        gpgme_assuan_status_cb_t stat_cb,
+                                        void *stat_cb_value);
+
 
 
 /* Interface to gpgconf(1).  */
