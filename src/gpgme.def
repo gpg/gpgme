@@ -167,5 +167,9 @@ EXPORTS
     gpgme_op_conf_save			  @130
 
     gpgme_cancel_async                    @131
+
+    gpgme_op_assuan_result                @132
+    gpgme_op_assuan_transact_start        @133
+    gpgme_op_assuan_transact              @134
 ; END
 

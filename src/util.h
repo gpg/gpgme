@@ -35,6 +35,11 @@ const char *_gpgme_get_gpgconf_path (void);
 int _gpgme_get_conf_int (const char *key, int *value);
 void _gpgme_allow_set_foregound_window (pid_t pid);
 
+/*-- dirinfo.c --*/
+const char *_gpgme_get_default_homedir (void);
+const char *_gpgme_get_default_agent_socket (void);
+
+
 
 /*-- replacement functions in <funcname>.c --*/
 #ifdef HAVE_CONFIG_H
@@ -110,5 +115,11 @@ gpgme_error_t _gpgme_getenv (const char *name, char **value);
 int _gpgme_mkstemp (int *fd, char **name);
 const char *_gpgme_get_w32spawn_path (void);
 #endif
+
+/*--  Error codes not yet available in current gpg-error.h.   --*/
+#ifndef GPG_ERR_UNFINISHED
+#define GPG_ERR_UNFINISHED 199
+#endif
+
 
 #endif /* UTIL_H */

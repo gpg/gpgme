@@ -1922,6 +1922,7 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
   {
     /* Static functions.  */
     _gpgme_get_gpgsm_path,
+    NULL,
     gpgsm_get_version,
     gpgsm_get_req_version,
     gpgsm_new,
@@ -1952,6 +1953,7 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     NULL,		/* trustlist */
     gpgsm_verify,
     gpgsm_getauditlog,
+    NULL,               /* opassuan_transact */
     NULL,		/* conf_load */
     NULL,		/* conf_save */
     gpgsm_set_io_cbs,

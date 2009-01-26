@@ -78,7 +78,7 @@ system_components_not_extra =
 endif
 
 if HAVE_GPGSM
-gpgsm_components = engine-gpgsm.c
+gpgsm_components = engine-gpgsm.c engine-assuan.c
 else
 gpgsm_components =
 endif
@@ -105,9 +105,10 @@ main_sources =								\
 	sign.c passphrase.c progress.c					\
 	key.c keylist.c trust-item.c trustlist.c			\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
+	opassuan.c                                                      \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.h	\
 	$(gpgsm_components) $(gpgconf_components) gpgconf.c		\
-	sema.h priv-io.h $(system_components)				\
+	sema.h priv-io.h $(system_components) dirinfo.c			\
 	debug.c debug.h gpgme.c version.c error.c
 
 libgpgme_la_SOURCES = $(main_sources)					\

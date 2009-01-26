@@ -36,7 +36,7 @@ typedef enum
   {
     OPDATA_DECRYPT, OPDATA_SIGN, OPDATA_ENCRYPT, OPDATA_PASSPHRASE,
     OPDATA_IMPORT, OPDATA_GENKEY, OPDATA_KEYLIST, OPDATA_EDIT,
-    OPDATA_VERIFY, OPDATA_TRUSTLIST
+    OPDATA_VERIFY, OPDATA_TRUSTLIST, OPDATA_ASSUAN
   } ctx_op_data_id_t;
 
 
@@ -51,7 +51,7 @@ struct ctx_op_data
   ctx_op_data_id_t type;
 
   /* The function to release HOOK and all its associated resources.
-     Can be NULL if no special dealllocation routine is necessary.  */
+     Can be NULL if no special deallocation routine is necessary.  */
   void (*cleanup) (void *hook);
 
   /* The hook that points to the operation data.  */
