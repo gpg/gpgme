@@ -1,3 +1,9 @@
+2009-02-04  Werner Koch  <wk@g10code.com>
+
+	* w32-glib-io.c (_gpgme_io_spawn): Make ARGV argument const to
+	match prototype.
+	* w32-qt-io.cpp (_gpgme_io_spawn): Ditto.
+
 2009-02-03  Werner Koch  <wk@g10code.com>
 
 	* gpgme.h.in (struct _gpgme_subkey): Add fields IS_CARDKEY and
