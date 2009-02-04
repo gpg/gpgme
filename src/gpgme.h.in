@@ -519,8 +519,11 @@ struct _gpgme_subkey
   /* True if subkey is qualified for signatures according to German law.  */
   unsigned int is_qualified : 1;
 
+  /* True if the secret key is stored on a smart card.  */
+  unsigned int is_cardkey : 1;
+
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 22;
+  unsigned int _unused : 21;
   
   /* Public key algorithm supported by this subkey.  */
   gpgme_pubkey_algo_t pubkey_algo;
@@ -542,6 +545,9 @@ struct _gpgme_subkey
 
   /* The expiration timestamp, 0 if the subkey does not expire.  */
   long int expires;
+
+  /* The serial number of a smart card holding this key or NULL.  */
+  char *card_number;
 };
 typedef struct _gpgme_subkey *gpgme_subkey_t;
 
