@@ -11,6 +11,7 @@ Noteworthy changes in version 1.1.9
  gpgme_op_assuan_transact_start NEW.
  gpgme_op_assuan_transact       NEW.
  gpgme_op_assuan_result         NEW.
+ gpgme_subkey_t                 EXTENDED: New fields is_cardkey, card_number.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

@@ -1,7 +1,7 @@
 /* keylist.c - Listing keys.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2006, 2007,
-                 2008  g10 Code GmbH
+                 2008, 2009  g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -351,6 +351,38 @@ set_ownertrust (gpgme_key_t key, const char *src)
 }
 
 
+/* Parse field 15 of a secret key or subkey.  This fields holds a
+   reference to smartcards.  FIELD is the content of the field and we
+   are allowed to modify it.  */
+static gpg_error_t
+parse_sec_field15 (gpgme_subkey_t subkey, char *field)
+{
+  if (!*field)
+    ; /* Empty.  */
+  else if (*field == '#')
+    {
+      /* This is a stub for an offline key.  We reset the SECRET flag
+         of the subkey here.  Note that the secret flag of the entire
+         key will be true even then.  */
+      subkey->secret = 0;
+    }
+  else if (strchr ("01234567890ABCDEFabcdef", *field))
+    {
+      /* Fields starts with a hex digit; thus it is a serial number.  */
+      subkey->is_cardkey = 1;
+      subkey->card_number = strdup (field);
+      if (!subkey->card_number)
+        return gpg_error_from_syserror ();
+    }
+  else
+    {
+      /* RFU.  */
+    }
+
+  return 0;
+}
+
+
 /* We have read an entire key into tmp_key and should now finish it.
    It is assumed that this releases tmp_key.  */
 static void
@@ -533,12 +565,13 @@ keylist_colon_handler (void *priv, char *line)
       if (fields >= 12)
 	set_mainkey_capability (key, field[11]);
 
-      /* Field 15 carries special flags of a secret key.  We reset the
-         SECRET flag of a subkey here if the key is actually only a
-         stub. The SECRET flag of the key will be true even then. */
+      /* Field 15 carries special flags of a secret key.  */
       if (fields >= 15 && key->secret)
-        if (*field[14] == '#')
-          subkey->secret = 0;
+        {
+          err = parse_sec_field15 (subkey, field[14]);
+          if (err)
+            return err;
+        }
       break;
 
     case RT_SUB:
@@ -596,8 +629,11 @@ keylist_colon_handler (void *priv, char *line)
 
       /* Field 15 carries special flags of a secret key. */
       if (fields >= 15 && key->secret)
-        if (*field[14] == '#')
-          subkey->secret = 0;
+        {
+          err = parse_sec_field15 (subkey, field[14]);
+          if (err)
+            return err;
+        }
       break;
 
     case RT_UID:

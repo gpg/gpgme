@@ -1,3 +1,8 @@
+2009-02-03  Werner Koch  <wk@g10code.com>
+
+	* gpg/t-keylist.c (main): Check that new fields is_cardkey and
+	card_number are not set.
+
 2009-01-26  Werner Koch  <wk@g10code.com>
 
 	* opassuan/: New.

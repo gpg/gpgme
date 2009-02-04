@@ -270,6 +270,16 @@ main (int argc, char **argv)
 	  fprintf (stderr, "Primary key unexpectedly secret\n");
 	  exit (1);
 	}
+      if (key->subkeys->is_cardkey)
+	{
+	  fprintf (stderr, "Public key marked as card key\n");
+	  exit (1);
+	}
+      if (key->subkeys->card_number)
+	{
+	  fprintf (stderr, "Public key with card number set\n");
+	  exit (1);
+	}
       if (key->subkeys->pubkey_algo != GPGME_PK_DSA)
 	{
 	  fprintf (stderr, "Primary key has unexpected public key algo: %s\n",
@@ -340,6 +350,16 @@ main (int argc, char **argv)
       if (key->subkeys->next->secret)
 	{
 	  fprintf (stderr, "Secondary key unexpectedly secret\n");
+	  exit (1);
+	}
+      if (key->subkeys->next->is_cardkey)
+	{
+	  fprintf (stderr, "Secondary public key marked as card key\n");
+	  exit (1);
+	}
+      if (key->subkeys->next->card_number)
+	{
+	  fprintf (stderr, "Secondary public key with card number set\n");
 	  exit (1);
 	}
       if (key->subkeys->next->pubkey_algo != GPGME_PK_ELG_E)

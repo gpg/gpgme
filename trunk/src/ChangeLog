@@ -1,3 +1,11 @@
+2009-02-03  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h.in (struct _gpgme_subkey): Add fields IS_CARDKEY and
+	CARD_NUMBER..
+	* key.c (gpgme_key_unref): Release field CARD_NUMBER.
+	* keylist.c (keylist_colon_handler): Factor common code out to ...
+	(parse_sec_field15): New.  Set card number.
+
 2009-01-26  Werner Koch  <wk@g10code.com>
 
 	* opassuan.c, dirinfo.c, engine-assuan.c: New.
