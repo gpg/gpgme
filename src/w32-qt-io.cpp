@@ -397,7 +397,7 @@ build_commandline (char **argv)
 
 
 int
-_gpgme_io_spawn (const char *path, char **argv,
+_gpgme_io_spawn (const char *path, char * const argv[],
 		 struct spawn_fd_item_s *fd_list, pid_t *r_pid)
 {
   SECURITY_ATTRIBUTES sec_attr;
