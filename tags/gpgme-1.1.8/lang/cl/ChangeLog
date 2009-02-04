@@ -1,0 +1,34 @@
+2008-11-08  Moritz  <moritz@gnu.org>
+
+	* gpgme.lisp (size-t): Wrong call to defctype: function accepts
+	optional, not keyword argument.
+	(ssize-t): Likewise.
+	(off-t): Likewise.
+	(gpgme-data-t, gpgme-ctx-t): Likewise.
+	(gpgme-error-t): Likewise.
+	(gpgme-error-no-signal-t): Likewise.
+	(gpgme-err-code-t): Likewise.
+	(gpgme-err-source-t): Likewise.
+	(gpgme-sig-notation-t, gpgme-engine-info-t): Likewise.
+	(gpgme-subkey-t): Likewise.
+	(gpgme-key-sig-t): Likewise.
+	(gpgme-user-id-t): Likewise.
+	(gpgme-key-t): Likewise.
+	(gpgme-data-cbs-t): Likewise.
+	(gpgme-invalid-key-t): Likewise.
+	(gpgme-op-encrypt-result-t): Likewise.
+	(gpgme-recipient-t): Likewise.
+	(gpgme-op-decrypt-result-t): Likewise.
+	(gpgme-new-signature-t): Likewise.
+	(gpgme-op-sign-result-t): Likewise.
+	(gpgme-signature-t): Likewise.
+	(gpgme-op-verify-result-t): Likewise.
+	(gpgme-import-status-t): Likewise.
+	(gpgme-op-import-result-t): Likewise.
+	(gpgme-op-genkey-result-t): Likewise.
+	(gpgme-op-keylist-result-t): Likewise.
+
+2006-07-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Initial release.
+

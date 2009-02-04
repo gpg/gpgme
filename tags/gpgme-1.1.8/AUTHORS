@@ -1,0 +1,30 @@
+Package: gpgme
+Maintainer: Marcus Brinkmann <marcus@g10code.com>
+Bug reports: bug-gpgme@gnupg.org
+Security related bug reports: security@gnupg.org
+License (software): LGPLv2.1+
+License (manual): GPLv3+
+
+
+FSF <gnu@gnu.org>
+ - Code taken from GnuPG 1.0: gpgme/w32-util.c, GnuPG 1.1: jnlib/.
+
+g10 Code GmbH <code@g10code.com>
+ - All stuff since mid march 2001.
+
+Werner Koch <wk@gnupg.org>
+ - Design and most stuff.
+
+Wojciech Polak <polak@lodz.pdi.net>
+ - gpgme.spec
+
+
+ Copyright 2001, 2002 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

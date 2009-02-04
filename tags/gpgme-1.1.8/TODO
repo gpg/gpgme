@@ -1,0 +1,206 @@
+Hey Emacs, this is -*- outline -*- mode!
+
+* Before release:
+** Figure out if _gpgme_io_pipe should pre-create reader/writer and if we
+   then can use !start_it in most invocations.  Note that gpgme_io_dup
+   probably should always use !start_it, because currently it will
+   always create reader/writer if they don't exist(!?).
+** Some gpg tests fail with gpg 1.3.4-cvs (gpg/t-keylist-sig)
+   The test is currently disabled there and in gpg/t-import.
+** When gpg supports it, write binary subpackets directly,
+   and parse SUBPACKET status lines.
+** A few months after 1.1.7:
+   Remove GPGME_CONF_PATHNAME macro.
+
+* ABI's to break:
+** gpgme_edit_cb_t: Add "processed" return argument
+   (see edit.c::command_handler).
+** I/O and User Data could be made extensible.  But this can be done
+   without breaking the ABI hopefully.
+*  All enums that should be enums need to have a maximum value to ensure
+   a certain minimum width for extensibility.
+** Compatibility interfaces that can be removed in future versions:
+*** gpgme_data_new_from_filepart
+*** gpgme_data_new_from_file
+*** gpgme_data_new_with_read_cb
+*** gpgme_data_rewind
+*** gpgme_op_import_ext
+*** gpgme_get_sig_key
+*** gpgme_get_sig_ulong_attr
+*** gpgme_get_sig_string_attr
+*** GPGME_SIG_STAT_*
+*** gpgme_get_sig_status
+*** gpgme_trust_item_release
+*** gpgme_trust_item_get_string_attr
+*** gpgme_trust_item_get_ulong_attr
+*** gpgme_attr_t
+*** All Gpgme* typedefs.
+
+
+* Thread support:
+** When GNU Pth supports sendmsg/recvmsg, wrap them properly.
+** Without timegm (3) support our ISO time parser is not thread safe.
+   There is a configure time warning, though.
+
+* New features:
+** Flow control for data objects.
+   Currently, gpgme_data_t objects are assumed to be blocking.  To
+   break this assumption, we need either (A) a way for an user I/O
+   callback to store the current operation in a continuation that can
+   be resumed later.  While the continuation exists, file descriptors
+   associated with this operation must be removed from their
+   respective event loop.  or (B) a way for gpgme data objects to be
+   associated with a waitable object, that can be registered with the
+   user event loop.  Neither is particularly simple.
+** Extended notation support.  When gpg supports arbitrary binary
+   notation data, provide a user interface for that.
+** notification system
+   We need a simple notification system, probably a simple callback
+   with a string and some optional arguments.  This is for example
+   required to notify an application of a changed smartcard, The
+   application can then do whatever is required.  There are other
+   usages too.  This notfication system should be independent of any
+   contextes of course.
+** --learn-code support
+   This might be integrated with import. we still need to work out how
+   to learn a card when gpg and gpgsm have support for smartcards.
+** Might need a stat() for data objects and use it for length param to gpg.
+** Implement support for photo ids.
+** Allow selection of subkeys
+** Allow to return time stamps in ISO format
+  This allows us to handle years later than 2037 properly.  With the
+  time_t interface they are all mapped to 2037-12-31
+** New features requested by our dear users, but rejected or left for
+   later consideration:
+*** Allow to export secret keys.
+    Rejected because this is conceptually flawed.  Secret keys on a
+    smart card can not be exported, for example.
+*** Selecting the key ring, setting the version or comment in output.
+    Rejected because the naive implementation is engine specific, the
+    configuration is part of the engine's configuration or readily
+    worked around in a different way
+*** Selecting the symmetric cipher.
+*** Exchanging keys with key servers.
+
+* Documentation
+** Document validity and trust issues.
+** In gpgme.texi: Register callbacks under the right letter in the index.
+
+* Engines
+** Do not create/destroy engines, but create engine and then reset it.
+   Internally the reset operation still spawns a new engine process,
+   but this can be replaced with a reset later.  Also, be very sure to
+   release everything properly at a reset and at an error.  Think hard
+   about where to guarantee what (ie, what happens if start fails, are
+   the fds unregistered immediately - i think so?)
+   Note that we need support in gpgsm to set include-certs to default
+   as RESET does not reset it.
+** Optimize the case where a data object has 0an underlying fd we can pass
+   directly to the engine.  This will be automatic with socket I/O and
+   descriptor passing.
+** Move code common to all engines up from gpg to engine.
+** engine operations can return General Error on unknown protocol
+   (it's an internal error, as select_protocol checks already).
+** When server mode is implemented properly, more care has to be taken to
+   release all resources on error (for example to free assuan_cmd).
+* GPG breakage:
+** gpg 1.4.2 lacks error reporting if sign/encrypt with revoked key.
+** gpg 1.4.2 does crappy error reporting (namely none at all) when
+   smart card is missing for sign operation:
+    [GNUPG:] CARDCTRL 4
+    gpg: selecting openpgp failed: ec=6.110
+    gpg: signing failed: general error
+    [GNUPG:] BEGIN_ENCRYPTION 2 10
+    gpg: test: sign+encrypt failed: general error
+** Without agent and with wrong passphrase, gpg 1.4.2 enters into an
+   infinite loop.
+** Use correct argv[0]
+   In rungpg.c:build_argv we use
+      argv[argc] = strdup ("gpg"); /* argv[0] */
+   This should be changed to take the real file name used in account.
+
+
+* Operations
+** Include cert values -2, -1, 0 and 1 should be defined as macros.
+** If an operation failed, make sure that the result functions don't return
+   corrupt partial information. !!!
+   NOTE: The EOF status handler is not called in this case !!!
+** Verify must not fail on NODATA premature if auto-key-retrieval failed.
+   It should not fail silently if it knows there is an error. !!!
+** All operations: Better error reporting. !!
+** Export status handler need much more work. !!!
+** Import should return a useful error when one happened.
+*** Import does not take notice of NODATA status report.
+*** When GPGSM does issue IMPORT_OK status reports, make sure to check for
+    them in tests/gpgs m/t-import.c.
+** Verify can include info about version/algo/class, but currently
+   this is only available for gpg, not gpgsm.
+** Return ENC_TO output in verify result.  Again, this is not available
+   for gpgsm.
+** Genkey should return something more useful than General_Error.
+** If possible, use --file-setsize to set the file size for proper progress
+   callback handling.  Write data interface for file size.
+** Optimize the file descriptor list, so the number of open fds is
+   always known easily.
+** Encryption: It should be verified that the behaviour for partially untrusted
+   recipients is correct.
+** When GPG issues INV_something for invalid signers, catch them.
+
+* Error Values
+** Map ASSUAN/GpgSM ERR error values in a better way than is done now. !!
+** Some error values should identify the source more correctly (mostly error
+   values derived from status messages).
+** In rungpg.c we need to check the version of the engine
+   This requires a way to get the cached version number from the
+   engine layer.
+
+
+* Tests
+** Write a fake gpg-agent so that we can supply known passphrases to
+   gpgsm and setup the configuration files to use the agent.  Without
+   this we are testing a currently running gpg-agent which is not a
+   clever idea. !
+** t-data
+*** Test gpgme_data_release_and_get_mem.
+*** Test gpgme_data_seek for invalid types.
+** t-keylist
+   Write a test for ext_keylist.
+** Test reading key signatures.
+
+* Debug
+** Tracepoints should be added at: Every public interface enter/leave,
+   before and in every callback, at major decision points, at every
+   internal data point which might easily be observed by the outside
+   (system handles).  We also trace handles and I/O support threads in
+   the w32 implementation because that's fragile code.
+   Files left to do:
+   data-fd.c data-mem.c data-stream.c data-user.c debug.c rungpg.c
+   engine.c engine-gpgsm.c funopen.c w32-glib-io.c wait.c
+   wait-global.c wait-private.c wait-user.c op-support.c decrypt.c
+   decrypt-verify.c delete.c edit.c encrypt.c encrypt-sign.c export.c
+   genkey.c import.c key.c keylist.c passphrase.c progress.c signers.c
+   sig-notation.c trust-item.c trustlist.c verify.c
+** Handle malloc and vasprintf errors.  But decide first if they should be
+   ignored (and logged with 255?!), or really be assertions. !
+
+* Build suite
+** Make sure everything is cleaned correctly (esp. test area).
+** Enable AC_CONFIG_MACRO_DIR and bump up autoconf version requirement.
+   (To fix "./autogen.sh; ./configure --enable-maintainer-mode; touch
+   configure.ac; make").  Currently worked around with ACLOCAL_AMFLAGS???
+
+* Error checking 
+** engine-gpgsm, with-validation
+   Add error checking some time after releasing a new gpgsm.
+
+
+Copyright 2004, 2005 g10 Code GmbH
+
+This file is free software; as a special exception the author gives
+unlimited permission to copy and/or distribute it, with or without
+modifications, as long as this notice is preserved.
+
+This file is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.

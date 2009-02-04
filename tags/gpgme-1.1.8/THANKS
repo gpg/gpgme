@@ -1,0 +1,33 @@
+For a list of the authors of the source code of GPGME, please see the
+file AUTHORS.  The following people supported GPGME development in
+various ways (for example by finding bugs or giving advice), and we
+want to thank them for their help.  If we forgot you, please let us
+know.
+
+Adriaan de Groot        adridg@cs.kun.nl
+Albrecht Dreß		albrecht.dress@arcor.de
+Alfons Hoogervorst      alfons@proteus.demon.nl
+Daniel Mueller		daniel@danm.de
+Enno Cramer             uebergeek@web.de
+Frank Heckenbach        frank@g-n-u.de
+Igor Belyi		gpgme@katehok.ac93.org
+Jan-Oliver Wagner       jan@intevation.de
+Johannes Poehlmann      jhp@caldera.de
+Jose C. García Sogo     jose@jaimedelamo.eu.org
+Mark Mutz               mutz@kde.org
+Miguel Coca		mcoca@gnu.org
+Noel Torres		envite@rolamasao.org
+Stéphane Corthésy       stephane@sente.ch
+Timo Schulz             twoaday@freakmail.de
+Tommy Reynolds          reynolds@redhat.com
+                        
+
+ Copyright 2001, 2002, 2004 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

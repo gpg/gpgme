@@ -1,0 +1,1255 @@
+Noteworthy changes in version 1.1.8 (2008-12-08)
+------------------------------------------------
+
+ * SIGPIPE is now again ignored as described in the manual.  Fixes
+   regresion introduced with 1.1.6.
+
+
+Noteworthy changes in version 1.1.7 (2008-10-17)
+------------------------------------------------
+
+ * Using GPGME_KEYLIST_MODE_LOCAL combined with
+   GPGME_KEYLIST_MODE_EXTERN is now supported; it uses the
+   --locate-keys feature of gpg (>= 2.0.10).
+   
+ * The encoding of gpgme_data_t objects can affect the output encoding
+   of export, sign and encrypt operations now (the same operations
+   that are also affected by the ASCII mode switch).  We believe this
+   change in the ABI is innocent enough not to break existing
+   applications (it only affects the S/MIME backend on certain
+   operations).
+
+ * The reference manual now includes the specification of "The GnuPG
+   UI Server protocol".
+
+ * A new function gpgme_cancel_async can be used to asynchronously
+   cancel any pending operation at any time, from any thread.
+
+ * Interface changes relative to the 1.1.6 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_op_encrypt		CHANGED: Output encoding can affect result.
+gpgme_op_encrypt_start		CHANGED: Output encoding can affect result.
+gpgme_op_encrypt_sign		CHANGED: Output encoding can affect result.
+gpgme_op_encrypt_sign_start	CHANGED: Output encoding can affect result.
+gpgme_op_sign			CHANGED: Output encoding can affect result.
+gpgme_op_sign_start		CHANGED: Output encoding can affect result.
+gpgme_op_export			CHANGED: Output encoding can affect result.
+gpgme_op_export_start		CHANGED: Output encoding can affect result.
+gpgme_op_export_ext		CHANGED: Output encoding can affect result.
+gpgme_op_export_ext_start	CHANGED: Output encoding can affect result.
+gpgme_cancel_async		NEW
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 1.1.6 (2008-01-04)
+------------------------------------------------
+
+ * Bug fixes for for W32.
+
+ * A new, experimental (and thus undocumented and potentially
+   unstable) interface for accessing gpg-conf through GPGME has been
+   added.
+
+ * Interface changes relative to the 1.1.1 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_signature_t               EXTENDED: New field chain_model.
+ gpgme_op_getauditlog_start      NEW.
+ gpgme_op_getauditlog            NEW.
+ GPGME_AUDITLOG_HTML             NEW.
+ GPGME_AUDITLOG_WITH_HELP        NEW.
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 1.1.5 (2007-07-09)
+------------------------------------------------
+
+ * Bug and portability fixes (mainly for W32).
+
+
+Noteworthy changes in version 1.1.4 (2007-03-05)
+------------------------------------------------
+
+ * Detect and bail out on double plaintext messages.  This is required
+   so that applications can properly detect the signed parts of a
+   message.  Actual there is now a double protection as GnuPG 1.4.7
+   will detect this case too.
+
+
+Noteworthy changes in version 1.1.3 (2007-01-29)
+------------------------------------------------
+
+ * Fixed a memory leak in gpgme_data_release_and_get_mem.
+
+ * Fixed a bug in Windows command line quoting.
+
+
+Noteworthy changes in version 1.1.2 (2006-03-02)
+------------------------------------------------
+
+ * Fixed a bug in the W32 glib backend.
+
+
+Noteworthy changes in version 1.1.1 (2006-02-23)
+------------------------------------------------
+
+ * Fixed a bug in that the fingerprints of subkeys are not available.
+
+ * Clarified usage of the SECRET flag in key listings.  It is now
+   reset for stub keys.
+
+ * Reading signature notations and policy URLs on key signatures is
+   supported.  They can be found in the new field notations of the
+   gpgme_key_sig_t structure.  This has to be enabled with the keylist
+   mode flag GPGME_KEYLIST_MODE_SIG_NOTATIONS.
+
+ * A new gpgme_free() function solves the problem of using different
+   allocators in a single program.  This function should now be used
+   instead calling free() to release the buffer returned by
+   gpgme_data_release_and_get_mem.  It is recommended that you always
+   do this, but it is only necessary on certain platforms, so backwards
+   compatibility is provided.  In other words: If free() worked for
+   you before, it will keep working.
+
+ * New status codes GPGME_PKA_TRUST_GOOD and GPGME_PKA_TRUST_BAD.
+   They are analyzed by the verify handlers and made available in the
+   new PKA_TRUST and PKA_ADDRESS fields of the signature result structure.
+
+ * Interface changes relative to the 1.1.0 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_key_sig_t			EXTENDED: New field notations.
+GPGME_KEYLIST_MODE_SIG_NOTATIONS NEW
+gpgme_free			NEW
+GPGME_STATUS_PKA_TRUST_BAD      NEW
+GPGME_STATUS_PKA_TRUST_GOOD     NEW
+gpgme_signature_t               EXTENDED: New field pka_trust.
+gpgme_signature_t               EXTENDED: New field pka_address.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 1.1.0 (2005-10-01)
+------------------------------------------------
+
+ * You can now configure the backend engine file name and home
+   directory to be used, as default and per context.
+
+ * Information about the recipients of an encrypted text is now
+   available at decryption time.
+
+ * New status GPGME_STATUS_PLAINTEXT.  This is analyzed by the decrypt
+   and verify handlers, the information about the plaintext filename,
+   if available is made available in the new field file_name of the
+   respective result structure.
+
+ * The code for "automagically detecting the thread library" has been
+   removed from libgpgme.  It is deprecated since version 0.4.3.
+   Since then, you had to link against libgpgme-pthread for
+   applications using pthread and libgpgme-pth for applications using
+   GNU Pth.
+
+   The code was removed because it caused compilation problems on
+   systems where the pthread.h header from GNU Pth is available in
+   addition to the system header (FreeBSD 6 and later for example).
+
+ * "./autogen.sh --build-w32" does now build gpgme.dll.
+
+ * [W32] The environment variable GPGME_DEBUG now uses a semicolon as
+   delimiter.  The standard install directory is used when locating
+   gpg or gpgsm before finally falling back to the hardwired name.
+
+ * There is a new flag for keys and subkeys, is_qualified, which
+   indicates if a key can be used for qualified signatures according
+   to local government regulations.
+
+ * You can associate a filename with a data object using the new
+   function gpgme_data_set_file_name().  This filename will be stored
+   in the output when encrypting or signing the data and will be
+   returned when decrypting or verifying the output data.
+
+ * You can now set notation data at signature creation with the new
+   function gpgme_sig_notation_add().
+
+ * Interface changes relative to the 1.0.3 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_set_engine_info		NEW
+gpgme_ctx_get_engine_info	NEW
+gpgme_ctx_set_engine_info	NEW
+gpgme_recipient_t		NEW
+gpgme_decrypt_result_t		EXTENDED: New field recipients.
+gpgme_verify_result_t		EXTENDED: New fields pubkey_algo, hash_algo.
+gpgme_decrypt_result_t		EXTENDED: New field plaintext_filename.
+gpgme_verify_result_t		EXTENDED: New field plaintext_filename.
+GPGME_STATUS_PLAINTEXT		NEW
+gpgme_key_t			EXTENDED: New field is_qualified.
+gpgme_subkey_t			EXTENDED: New field is_qualified.
+gpgme_data_get_file_name	NEW
+gpgme_data_set_file_name	NEW
+gpgme_sig_notation_flags_t	NEW
+GPGME_SIG_NOTATION_HUMAN_READABLE NEW
+GPGME_SIG_NOTATAION_CRITICAL	NEW
+gpgme_sig_notation_clear	NEW
+gpgme_sig_notation_add		NEW
+gpgme_sig_notation_get		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 1.0.3 (2005-06-20)
+------------------------------------------------
+
+ * Previousy, GPGME would use a default "include certs" of 1.  This
+   has been changed.  Now GPGME will use the crypto backend engines
+   default unless you set the value with gpgme_set_include_certs()
+   explicitely.  A new macro GPGME_INCLUDE_CERTS_DEFAULT can be used
+   as a value to explicitely request the new default behaviour.
+
+   Because the default changes, this is a slight change of the API
+   semantics.  We consider it to be a bug fix.
+
+ * A bug which made GPGME hang has been fixed.  If you have
+   experienced hanging before, please try out this version and let me
+   know if you still experience hanging problems.
+
+ * Interface changes relative to the 0.9.0 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_set_include_certs		CHANGED DEFAULT
+GPGME_INCLUDE_CERTS_DEFAULT	NEW
+GPGME_STATUS_SIG_SUBPACKET	NEW
+GPGME_STATUS_NEED_PASSPHRASE_PIN NEW
+GPGME_STATUS_SC_OP_FAILURE	NEW
+GPGME_STATUS_SC_OP_SUCCESS	NEW
+GPGME_STATUS_CARDCTRL		NEW
+GPGME_STATUS_BACKUP_KEY_CREATED	NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 1.0.2 (2004-12-28)
+------------------------------------------------
+
+ * Changed the license of the library to the GNU Lesser General Public
+   License (LGPL), version 2.1 or later.
+
+
+Noteworthy changes in version 1.0.1 (2004-10-22)
+------------------------------------------------
+
+ * Only bug fixes.
+
+
+Noteworthy changes in version 1.0.0 (2004-09-30)
+------------------------------------------------
+
+ * Version 1.0.0!  We are proud to present you with a thoroughly
+   tested and stable version of the GPGME library.  A big Thank You!
+   to all the people who made this possible.
+
+   The development will be branched into a stable 1.x.y series and the
+   head.
+
+ * The gpgme.m4 macro supports checking the API version.  Just prepend
+   it to the required version string, separated by a colon.  For
+   example, this release has the version "1:1.0.0".  The last release
+   to which this version is (mostly) ABI compatible is "1:0.4.2",
+   which is the default required version.
+
+
+Noteworthy changes in version 0.9.0 (2004-06-08)
+------------------------------------------------
+
+ * The type gpgme_key_t has now a new field keylist_mode that contains
+   the keylist mode that was active at the time the key was retrieved.
+
+ * The type gpgme_decrypt_result_t has a new field "wrong_key_usage"
+   that contains a flag indicating that the key should not have been
+   used for encryption.
+
+ * Verifying a signature of a revoked key gives the correct result now
+   (GPG_ERR_CERT_REVOKED error code).
+
+ * Clarified that the error code GPG_ERR_NO_DATA from the decrypt &
+   verify operations still allows you to look at the signature
+   verification result.
+
+ * Clarified that patterns in keylisting operations have an upper
+   limit, and thus are not suited to list many keys at once by their
+   fingerprint.  Also improve the error message if the pattern is too
+   long for the CMS protocol to handle.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_key_t			EXTENDED: New field keylist_mode.
+gpgme_decrypt_result_t		EXTENDED: New field wrong_key_usage.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 0.4.7 (2004-04-29)
+------------------------------------------------
+
+ * Correctly initialize the fields expired, revoked, invalid, and
+   disabled in the gpgme_key_t structures.
+
+ * A bug fix: The flag wrong_key_usage of gpgme_signature_t was
+   accidently of type int instead unsigned int.
+
+ * Interface changes relative to the 0.4.5 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_signature_t		CHANGED: wrong_key_usage is unsigned int now.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.4.6 (2004-04-06)
+------------------------------------------------
+
+ * Bug fixes
+
+
+Noteworthy changes in version 0.4.5 (2004-03-07)
+------------------------------------------------
+
+ * GPGME is now compiled with LFS (large file support) by default.
+   This means that _all_ programs using GPGME must be compiled with
+   LFS support enabled by default.  You can do this easily with
+   autoconf, by using the AC_SYS_LARGEFILE macro.  Or you can do this
+   without autoconf by defining the preprocessor symbol
+   _FILE_OFFSET_BITS to 64 (by passing the -D_FILE_OFFSET_BITS=64 to
+   the C compiler command line, or by defining this preprocessor
+   symbol before including any system header files).  For more
+   details, read the section on LFS in the manual.
+
+   Up to now, it was undocumented that GPGME was not using LFS.
+   But the public interfaces use off_t, and file descriptors are
+   exchanged between the application and GPGME.  This was an oversight,
+   and bound to cause troubles in the future.
+
+   Writing GPGME as a dual mode library that seamlessly supports LFS
+   while keeping backwards compatibility is possible, but does not
+   solve the problem: Many applications already expect GPGME to have
+   LFS (they are compiled with off_t being a 64bit value).  This is true
+   in particular for the popular Gtk+ and Qt programs.
+
+   So, although this is an ABI (but not an API) break, we will not
+   change the library version to reflect that.  Because the interfaces
+   affected are probably not used yet in any GPGME 0.4 based
+   application, we don't expect any real failures from this change.
+   In fact, applications already using LFS will have some subtle bugs
+   fixed.
+
+   However, if you encounter an application using GPGME 0.4.x that
+   does _not_ use LFS by default (off_t is a 32bit value), _and_
+   uses at least one of the functions gpgme_data_seek,
+   gpgme_data_new_from_filepart, or a gpgme_data_seek_cb_t with
+   gpgme_data_new_from_cbs, then indeed this library will be ABI
+   incompatible with the program.  As said above, we don't believe
+   such a program exists.  If we are in error, then you have two
+   options: As a quick hack, you can configure GPGME with the
+   --disable-largefile option.  This will revert the change, and GPGME
+   will not use LFS.  However, GPGME will be incompatible with
+   programs that expect GPGME to use LFS.  All applications are
+   required to use LFS when using GPGME, so this is only good as a
+   temporary local work-around.
+
+   The other option is to change the versioning of the library and
+   recompile all applications.  We have reserved a special version of
+   the library for that, so you can do that without expecting a
+   version clash in the future.  Furthermore, everyone who does this
+   will agree on the version to use (this is important for
+   distribution makers).  Read the comment in configure.ac (before
+   LIBGPGME_LT_AGE) if you want to do this.  Please don't do this
+   blindly: As stated above, we think it is unlikely this measure is
+   needed.  Still, it is there if necessary.  If in doubt, contact us
+   and we will give our advise for your specific situation.
+
+ * New key listing mode GPGME_KEYLIST_MODE_VALIDATE for validation of
+   the listed keys.
+
+ * New interface gpgme_cancel() that can be used to cancel
+   asynchronous operations.
+
+ * Interface changes relative to the 0.4.4 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_data_seek_cb_t		CHANGED: off_t is now a largefile type.
+gpgme_data_seek			CHANGED: off_t is now a largefile type.
+gpgme_data_new_from_filepart	CHANGED: off_t is now a largefile type.
+GPGME_KEYLIST_MODE_VALIDATE     NEW
+gpgme_cancel			NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.4.4 (2004-01-12)
+------------------------------------------------
+
+ * The member "class" in gpgme_key_sig_t and gpgme_new_signature_t has
+   been renamed to "sig_class", to avoid clash with C++ compilers.  In
+   the C API, the old name "class" has been preserved for backwards
+   compatibility, but is deprecated.
+
+ * Interface changes relative to the 0.4.3 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_key_sig_t			CHANGED: class deprecated, use new sig_class.
+gpgme_new_signature_t		CHANGED: class deprecated, use new sig_class.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.4.3 (2003-10-06)
+------------------------------------------------
+
+ * libgpgme should not be used for threaded programs anymore.  This
+   never worked reliably in all cases, because you had to
+   be careful about the linking order and libtool wouldn't do that for
+   you automatically.  Instead, now you have to link against
+   libgpgme-pthread for applications using pthread and libgpgme-pth for
+   applications using GNU Pth.
+
+   The old code for automagically detecting the thread library is
+   still part of libgpgme, but it is DEPRECATED.
+
+ * There are new automake macros AM_PATH_GPGME_PTH and
+   AM_PATH_GPGME_PTHREAD, which support checking for thread-enabled
+   versions of GPGME.  They define GPGME_PTH_CFLAGS, GPGME_PTH_LIBS,
+   GPGME_PTHREAD_CFLAGS and GPGME_PTHREAD_LIBS respectively.  These
+   variables of course also include the configuration for the thread
+   package itself.  Alternatively, use libtool.
+
+ * gpgme_strerror_r as a thread safe variant of gpgme_strerror was
+   added.
+
+ * gpgme-config doesn't support setting the prefix or exec prefix
+   anymore.  I don't think it ever worked correctly, and it seems to
+   be pointless.
+
+ * gpgme_get_key fails with GPG_ERR_AMBIGUOUS_NAME if the key ID
+   provided was not unique, instead returning the first matching key.
+
+ * gpgme_key_t and gpgme_subkey_t have a new field, can_authenticate,
+   that indicates if the key can be used for authentication.
+
+ * gpgme_signature_t's status field is now correctly set to an error
+   with error code GPG_ERR_NO_PUBKEY if public key is not found.
+
+ * gpgme_new_signature_t's class field is now an unsigned int, rather
+   than an unsigned long (the old class field is preserved for
+   backwards compatibility).
+
+ * A new function gpgme_set_locale() is provided to allow configuring
+   the locale for the crypto backend.  This is necessary for text
+   terminals so that programs like the pinentry can be started with
+   the right locale settings for the terminal the application is running
+   on, in case the terminal has different settings than the system
+   default (for example, if it is a remote terminal).  You are highly
+   recommended to call the following functions directly after
+   gpgme_check_version:
+
+   #include <locale.h>
+
+   setlocale (LC_ALL, "");
+   gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
+   gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
+
+   GPGME can not do this for you, as setlocale is not thread safe, and
+   there is no alternative.
+
+ * The signal action for SIGPIPE is now set to SIG_IGN by
+   gpgme_check_version, instead the first time a crypto engine is
+   started (which is not well defined).
+
+ * In the output of gpgme_hash_algo_name, change RMD160 to RIPEMD160,
+   TIGER to TIGER192, CRC32-RFC1510 to CRC32RFC1510, and CRC24-RFC2440
+   to CRC24RFC2440.  For now, these strings can be used as the MIC
+   parameter for PGP/MIME (if appropriately modified).
+
+ * Interface changes relative to the 0.4.2 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_strerror_t		NEW
+gpgme_get_key			CHANGED: Fails correctly if key ID not unique.
+gpgme_key_t			EXTENDED: New field can_authenticate.
+gpgme_subkey_t			EXTENDED: New field can_authenticate.
+gpgme_new_signature_t		CHANGED: New type for class field.
+gpgme_set_locale		NEW
+gpgme_hash_algo_name		CHANGED: Slight adjustment of algo names.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.4.2 (2003-07-30)
+------------------------------------------------
+
+ * Allow gpg-error to be in non-standard place when linking the test suite.
+
+ * Configure will fail now if gpg-error can not be found.
+
+ * Fixed initialized memory backed data objects for writing, which
+   caused the test program to crash (but only on Mac OS, surprisingly).
+
+ * Eliminate use of C99 constructs.
+
+ * Small improvements to the manual.
+
+
+Noteworthy changes in version 0.4.1 (2003-06-06)
+------------------------------------------------
+
+ This is the release that 0.4.0 should have been.  There are many
+ interface changes, please see below for the details.  The changes are
+ sometimes the result of new functionality, but more often express a
+ paradigm shift.  Others are an overdue cleanup to get GPGME in line
+ with the GNU coding standards and to make the interface more
+ self-consistent.  Here is an overview on the changes:
+
+ All types have been renamed to conform to the GNU coding standards,
+ most of the time by keeping the whole name in lowercase and inserting
+ underscores between words.
+
+ All operations consistently only accept input parameters in their
+ invocation function, and return only an error code directly.  Further
+ information about the result of the operation has to be retrieved
+ afterwards by calling one of the result functions.  This unifies the
+ synchronous and the asynchronous interface.
+
+ The error values have been completely replaced by a more
+ sophisticated model that allows GPGME to transparently and accurately
+ report all errors from the other GnuPG components, irregardless of
+ process boundaries.  This is achieved by using the library
+ libgpg-errors, which is shared by all GnuPG components.  This library
+ is now required for GPGME.
+
+ The results of all operations are now provided by pointers to C
+ structs rather than by XML structs or in other ways.
+
+ Objects which used to be opaque (for example a key) are now pointers
+ to accessible structs, so no accessor functions are necessary.
+
+ Backward compatibility is provided where it was possible without too
+ much effort and did not collide with the overall sanitization effort.
+ However, this is only for ease of transition.  NO DEPRECATED FUNCTION
+ OR DATA TYPE IS CONSIDERED A PART OF THE API OR ABI AND WILL BE
+ DROPPED IN THE FUTURE WITHOUT CHANGING THE SONAME OF THE LIBRARY.
+ Recommendations how to replace deprecated or removed functionality
+ can be found within the description of each change.
+
+ What follows are all changes to the interface and behaviour of GPGME
+ in detail.
+
+ * If gpgme.h is included in sources compiled by GCC 3.1 or later,
+   deprecated attributes will warn about use of obsolete functions and
+   type definitions.  You can suppress these warnings by passing
+   -Wno-deprecated-declarations to the gcc command.
+
+ * The following types have been renamed.  The old types are still
+   available as aliases, but they are deprecated now:
+   Old name:		New name:
+   GpgmeCtx		gpgme_ctx_t
+   GpgmeData		gpgme_data_t
+   GpgmeError		gpgme_error_t
+   GpgmeDataEncoding	gpgme_data_encoding_t
+   GpgmeSigStat		gpgme_sig_stat_t
+   GpgmeSigMode		gpgme_sig_mode_t
+   GpgmeAttr		gpgme_attr_t
+   GpgmeValidity	gpgme_validity_t
+   GpgmeProtocol	gpgme_protocol_t
+   GpgmeKey		gpgme_key_t
+   GpgmePassphraseCb	gpgme_passphrase_cb_t
+   GpgmeProgressCb	gpgme_progress_cb_t
+   GpgmeIOCb		gpgme_io_cb_t
+   GpgmeRegisterIOCb	gpgme_register_io_cb_t
+   GpgmeRemoveIOCb	gpgme_remove_io_cb_t
+   GpgmeEventIO		gpgme_event_io_t
+   GpgmeEventIOCb	gpgme_event_io_cb_t
+   GpgmeIOCbs		gpgme_io_cbs
+   GpgmeDataReadCb	gpgme_data_read_cb_t
+   GpgmeDataWriteCb	gpgme_data_write_cb_t
+   GpgmeDataSeekCb	gpgme_data_seek_cb_t
+   GpgmeDataReleaseCb	gpgme_data_release_cb_t
+   GpgmeDataCbs		gpgme_data_cbs_t
+   GpgmeTrustItem	gpgme_trust_item_t
+   GpgmeStatusCode	gpgme_status_code_t
+
+ * gpgme_error_t is now identical to gpg_error_t, the error type
+   provided by libgpg-error.  More about using libgpg-error with GPGME
+   can be found in the manual.  All error symbols have been removed!
+
+ * All functions and types in libgpg-error have been wrapped in GPGME.
+   The new types are gpgme_err_code_t and gpgme_err_source_t.  The new
+   functions are gpgme_err_code, gpgme_err_source, gpgme_error,
+   gpgme_err_make, gpgme_error_from_errno, gpgme_err_make_from_errno,
+   gpgme_err_code_from_errno, gpgme_err_code_to_errno,
+   gpgme_strsource.
+
+ * GPGME_ATTR_IS_SECRET is not anymore representable as a string.
+
+ * GnuPG 1.2.2 is required.  The progress callback is now also invoked
+   for encrypt, sign, encrypt-sign, decrypt, verify, and
+   decrypt-verify operations.  For verify operations on detached
+   signatures, the progress callback is invoked for both the detached
+   signature and the plaintext message, though.
+
+ * gpgme_passphrase_cb_t has been changed to not provide a complete
+   description, but the UID hint, passphrase info and a flag
+   indicating if this is a repeated attempt individually, so the user
+   can compose his own description from this information.
+
+   The passphrase is not returned as a C string, but must be written
+   to a file descriptor directly.  This allows for secure passphrase
+   entries.
+
+   The return type has been changed to gpgme_error_t value.  This
+   allowed to remove the gpgme_cancel function; just return
+   the error code GPG_ERR_CANCELED in the passphrase callback directly.
+
+ * gpgme_edit_cb_t has been changed to take a file descriptor argument.
+   The user is expected to write the response to the file descriptor,
+   followed by a newline.
+
+ * The recipients interface has been removed.  Instead, you use
+   NULL-terminated lists of keys for specifying the recipients of an
+   encryption operation.  Use the new encryption flag
+   GPGME_ENCRYPT_ALWAYS_TRUST if you want to override the validity of
+   the keys (but note that in general this is not a good idea).
+
+   This change has been made to the prototypes of gpgme_op_encrypt,
+   gpgme_op_encrypt_start, gpgme_op_encrypt_sign and
+   gpgme_op_encrypt_sign_start.
+
+   The export interface has been changed to use pattern strings like
+   the keylist interface.  Thus, new functions gpgme_op_export_ext and
+   gpgme_op_export_ext_start have been added as well.  Now the
+   prototypes of gpgme_op_export_start and gpgme_op_export finally
+   make sense.
+
+ * gpgme_op_verify and gpgme_op_decrypt_verify don't return a status
+   summary anymore.  Use gpgme_get_sig_status to retrieve the individual
+   stati.
+
+ * gpgme_io_cb_t changed from a void function to a function returning
+   a gpgme_error_t value.  However, it will always return 0, so you
+   can safely ignore the return value.
+
+ * A new I/O callback event GPGME_EVENT_START has been added.  The new
+   requirement is that you must wait until this event until you are
+   allowed to call the I/O callback handlers previously registered for
+   this context operation.  Calling I/O callback functions for this
+   context operation before the start event happened is unsafe because
+   it can lead to race conditions in a multi-threaded environment.
+
+ * The idle function feature has been removed.  It was not precisely
+   defined in a multi-threaded environment and is obsoleted by the
+   user I/O callback functions.  If you still need a simple way to
+   call something while waiting on one or multiple asynchronous
+   operations to complete, don't set the HANG flag in gpgme_wait (note
+   that this will return to your program more often than the idle
+   function did).
+
+ * gpgme_wait can return NULL even if hang is true, if an error
+   occurs.  In that case *status contains the error code.
+
+ * gpgme_get_engine_info was radically changed.  Instead an XML
+   string, an info structure of the new type gpgme_engine_info_t is
+   returned.  This makes it easier and more robust to evaluate the
+   information in an application.
+
+ * The new function gpgme_get_protocol_name can be used to convert a
+   gpgme_protocol_t value into a string.
+
+ * The status of a context operation is not checked anymore.  Starting
+   a new operation will silently cancel the previous one.  Calling a
+   function that requires you to have started an operation before without
+   doing so is undefined.
+
+ * The FPR argument to gpgme_op_genkey was removed.  Instead, use the
+   gpgme_op_genkey_result function to retrieve a gpgme_genkey_result_t
+   pointer to a structure which contains the fingerprint.  This also
+   works with gpgme_op_genkey_start.  The structure also provides
+   other information about the generated keys.
+
+   So, instead:
+
+   char *fpr;
+   err = gpgme_op_genkey (ctx, NULL, NULL, &fpr); 
+   if (!err && fpr)
+     printf ("%s\n", fpr);
+
+   you should now do:
+
+   gpgme_genkey_result_t result;
+   err = gpgme_op_genkey (ctx, NULL, NULL);
+   if (!err)
+     {
+       result = gpgme_op_genkey_result (ctx);
+       if (result->fpr)
+         printf ("%s\n", result->fpr);
+     }
+
+ * The new gpgme_op_import_result function provides detailed
+   information about the result of an import operation in
+   gpgme_import_result_t and gpgme_import_status_t objects.
+   Thus, the gpgme_op_import_ext variant is deprecated.
+
+ * The new gpgme_op_sign_result function provides detailed information
+   about the result of a signing operation in gpgme_sign_result_t,
+   gpgme_invalid_key_t and gpgme_new_signature_t objects.
+
+ * The new gpgme_op_encrypt_result function provides detailed
+   information about the result of an encryption operation in
+   a GpgmeEncryptResult object.
+
+ * The new gpgme_op_decrypt_result function provides detailed
+   information about the result of a decryption operation in
+   a GpgmeDecryptResult object.
+
+ * The new gpgme_op_verify_result function provides detailed
+   information about the result of an verify operation in
+   a GpgmeVerifyResult object.  Because of this, the GPGME_SIG_STAT_*
+   values, gpgme_get_sig_status, gpgme_get_sig_ulong_attr,
+   gpgme_get_sig_string_attr and gpgme_get_sig_key are now deprecated,
+   and gpgme_get_notation is removed.
+
+ * GpgmeTrustItem objects have now directly accessible data, so the
+   gpgme_trust_item_get_string_attr and gpgme_trust_item_get_ulong_attr
+   accessor functions are deprecated.  Also, reference counting is
+   available through gpgme_trust_item_ref and gpgme_trust_item_unref
+   (the gpgme_trust_item_release alias for the latter is deprecated).
+
+ * Keys are not cached internally anymore, so the force_update argument
+   to gpgme_get_key has been removed.
+
+ * GpgmeKey objects have now directly accessible data so the
+   gpgme_key_get_string_attr, gpgme_key_get_ulong_attr,
+   gpgme_key_sig_get_string_attr and gpgme_key_sig_get_ulong_attr
+   functions are deprecated.  Also, gpgme_key_release is now
+   deprecated.  The gpgme_key_get_as_xml function has been dropped.
+
+ * Because all interfaces using attributes are deprecated, the
+   GpgmeAttr data type is also deprecated.
+
+ * The new gpgme_op_keylist_result function provides detailed
+   information about the result of a key listing operation in
+   a GpgmeKeyListResult object.
+
+ * Now that each function comes with its own result retrieval
+   interface, the generic gpgme_get_op_info interface is not useful
+   anymore and dropped.
+
+ * The type and mode of data objects is not available anymore.
+
+ * Interface changes relative to the 0.4.0 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GpgmeCtx			DEPRECATED: Use gpgme_ctx_t.
+GpgmeData			DEPRECATED: Use gpgme_data_t.
+GpgmeError			DEPRECATED: Use gpgme_error_t.
+GpgmeDataEncoding		DEPRECATED: Use gpgme_data_encoding_t.
+GpgmeSigStat			DEPRECATED: Use gpgme_sig_stat_t.
+GpgmeSigMode			DEPRECATED: Use gpgme_sig_mode_t.
+GpgmeAttr			DEPRECATED: Use gpgme_attr_t.
+GpgmeValidity			DEPRECATED: Use gpgme_validity_t.
+GpgmeProtocol			DEPRECATED: Use gpgme_protocol_t.
+GpgmeKey			DEPRECATED: Use gpgme_key_t.
+GpgmePassphraseCb		DEPRECATED: Use gpgme_passphrase_cb_t.
+GpgmeProgressCb			DEPRECATED: Use gpgme_progress_cb_t.
+GpgmeIOCb			DEPRECATED: Use gpgme_io_cb_t.
+GpgmeRegisterIOCb		DEPRECATED: Use gpgme_register_io_cb_t.
+GpgmeRemoveIOCb			DEPRECATED: Use gpgme_remove_io_cb_t.
+GpgmeEventIO			DEPRECATED: Use gpgme_event_io_t.
+GpgmeEventIOCb			DEPRECATED: Use gpgme_event_io_cb_t.
+GpgmeIOCbs			DEPRECATED: Use gpgme_io_cbs.
+GpgmeDataReadCb			DEPRECATED: Use gpgme_data_read_cb_t.
+GpgmeDataWriteCb		DEPRECATED: Use gpgme_data_write_cb_t.
+GpgmeDataSeekCb			DEPRECATED: Use gpgme_data_seek_cb_t.
+GpgmeDataReleaseCb		DEPRECATED: Use gpgme_data_release_cb_t.
+GpgmeDataCbs			DEPRECATED: Use gpgme_data_cbs_t.
+GpgmeTrustItem			DEPRECATED: Use gpgme_trust_item_t.
+GpgmeStatusCode			DEPRECATED: Use gpgme_status_code_t.
+gpgme_ctx_t			NEW
+gpgme_data_t			NEW
+gpgme_recipients_t		NEW
+gpgme_error_t			NEW
+gpgme_data_encoding_t		NEW
+gpgme_sig_stat_t		NEW
+gpgme_sig_mode_t		NEW
+gpgme_attr_t			NEW
+gpgme_validity_t		NEW
+gpgme_protocol_t		NEW
+gpgme_key_t			NEW
+gpgme_passphrase_cb_t		NEW
+gpgme_progress_cb_t		NEW
+gpgme_io_cb_t			NEW
+gpgme_register_io_cb_t		NEW
+gpgme_remove_io_cb_t		NEW
+gpgme_event_io_t		NEW
+gpgme_event_io_cb_t		NEW
+gpgme_io_cbs			NEW
+gpgme_data_read_cb_t		NEW
+gpgme_data_write_cb_t		NEW
+gpgme_data_seek_cb_t		NEW
+gpgme_data_release_cb_t		NEW
+gpgme_data_cbs_t		NEW
+gpgme_trust_item_t		NEW
+gpgme_status_code_t		NEW
+GPGME_{some error code}		REMOVED! Use GPG_ERR_* from libgpg-error.
+gpgme_err_code_t		NEW
+gpgme_err_source_t		NEW
+gpgme_err_code			NEW
+gpgme_err_source		NEW
+gpgme_error			NEW
+gpgme_err_make			NEW
+gpgme_error_from_errno		NEW
+gpgme_err_make_from_errno	NEW
+gpgme_err_code_from_errno	NEW
+gpgme_err_code_to_errno		NEW
+gpgme_strsource			NEW
+gpgme_io_cb_t			CHANGED: Return type from void to GpgmeError.
+gpgme_event_io_t		CHANGED: New event type (all numbers changed).
+gpgme_passphrase_cb_t		CHANGED: Desc decomposed, write directly to FD.
+gpgme_edit_cb_t			CHANGED: Write directly to FD.
+gpgme_key_get_string_attr	CHANGED: Don't handle GPGME_ATTR_IS_SECRET.
+gpgme_op_verify			CHANGED: Drop R_STAT argument.
+gpgme_op_decrypt_verify		CHANGED: Drop R_STAT argument.
+gpgme_wait			CHANGED: Can return NULL even if hang is true.
+GpgmeIdleFunc                   REMOVED
+gpgme_register_idle             REMOVED
+GpgmeRecipients			REMOVED
+gpgme_recipients_new		REMOVED
+gpgme_recipients_release	REMOVED
+gpgme_recipients_add_name	REMOVED
+gpgme_recipients_add_name_with_validity	REMOVED
+gpgme_recipients_count		REMOVED
+gpgme_recipients_enum_open	REMOVED
+gpgme_recipients_enum_read	REMOVED
+gpgme_recipients_enum_close	REMOVED
+gpgme_encrypt_flags_t		NEW
+GPGME_ENCRYPT_ALWAYS_TRUST	NEW
+gpgme_op_encrypt		CHANGED: Recipients passed as gpgme_key_t[].
+gpgme_op_encrypt_start		CHANGED: Recipients passed as gpgme_key_t[].
+gpgme_op_encrypt_sign		CHANGED: Recipients passed as gpgme_key_t[].
+gpgme_op_encrypt_sign_start	CHANGED: Recipients passed as gpgme_key_t[].
+gpgme_op_export_start		CHANGED: User IDs passed as patterns.
+gpgme_op_export			CHANGED: User IDs passed as patterns.
+gpgme_op_export_ext_start	NEW
+gpgme_op_export_ext		NEW
+gpgme_keylist_mode_t		NEW
+gpgme_sigsum_t			NEW
+gpgme_engine_info_t		NEW
+gpgme_get_engine_info		CHANGED: Return info structure instead XML.
+gpgme_get_protocol_name		NEW
+gpgme_cancel			REMOVED: Return error in callback directly.
+gpgme_op_genkey			CHANGED: FPR argument dropped.
+gpgme_op_genkey_result		NEW
+gpgme_genkey_result_t		NEW
+gpgme_op_import_ext		DEPRECATED: Use gpgme_op_import_result.
+gpgme_op_import_result		NEW
+gpgme_import_status_t		NEW
+gpgme_import_result_t		NEW
+gpgme_pubkey_algo_t		NEW
+gpgme_hash_algo_t		NEW
+gpgme_invalid_key_t		NEW
+gpgme_new_signature_t		NEW
+gpgme_sign_result_t		NEW
+gpgme_op_sign_result		NEW
+gpgme_pubkey_algo_name		NEW
+gpgme_hash_algo_name		NEW
+gpgme_encrypt_result_t		NEW
+gpgme_op_encrypt_result		NEW
+gpgme_decrypt_result_t		NEW
+gpgme_op_decrypt_result		NEW
+gpgme_verify_result_t		NEW
+gpgme_op_verify_result		NEW
+gpgme_get_notation		REMOVED: Access verify result directly instead.
+gpgme_get_sig_key		DEPRECATED: Use gpgme_get_key with fingerprint.
+gpgme_get_sig_ulong_attr	DEPRECATED: Use verify result directly.
+gpgme_get_sig_string_attr	DEPRECATED: Use verify result directly.
+GPGME_SIG_STAT_*		DEPRECATED: Use error value in sig status.
+gpgme_get_sig_status		DEPRECATED: Use verify result directly.
+gpgme_trust_item_t		CHANGED: Now has user accessible data members.
+gpgme_trust_item_ref		NEW
+gpgme_trust_item_unref		NEW
+gpgme_trust_item_release	DEPRECATED: Use gpgme_trust_item_unref.
+gpgme_trust_item_get_string_attr DEPRECATED
+gpgme_trust_item_get_ulong_attr	DEPRECATED
+gpgme_get_key			CHANGED: Removed force_update argument.
+gpgme_sub_key_t			NEW
+gpgme_key_sig_t			NEW
+gpgme_user_id_t			NEW
+gpgme_key_t			CHANGED: Now has user accessible data members.
+gpgme_key_get_string_attr	DEPRECATED
+gpgme_key_get_ulong_attr	DEPRECATED
+gpgme_key_sig_get_string_attr	DEPRECATED
+gpgme_key_sig_get_ulong_attr	DEPRECATED
+gpgme_key_get_as_xml		REMOVED
+gpgme_key_list_result_t		NEW
+gpgme_op_keylist_result		NEW
+gpgme_get_op_info		REMOVED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.4.0 (2002-12-23)
+------------------------------------------------
+
+ * Key generation returns the fingerprint of the generated key.
+
+ * New convenience function gpgme_get_key.
+
+ * Supports signatures of user IDs in keys via the new
+   GPGME_KEYLIST_MODE_SIGS keylist mode and the
+   gpgme_key_sig_get_string_attr and gpgme_key_sig_get_ulong_attr
+   interfaces.  The XML info about a key also includes the signatures
+   if available.
+
+ * New data object interface, which is more flexible and transparent.
+
+ * Interface changes relative to the 0.3.9 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GpgmeDataReadCb			NEW
+GpgmeDataWriteCb		NEW
+GpgmeDataSeekCb			NEW
+GpgmeDataReleaseCb		NEW
+GpgmeDataCbs			NEW
+gpgme_data_read			CHANGED: Match read() closely.
+gpgme_data_write		CHANGED: Match write() closely.
+gpgme_data_seek			NEW
+gpgme_data_new_from_fd		NEW
+gpgme_data_new_from_stream	NEW
+gpgme_data_new_from_cbs		NEW
+gpgme_data_rewind		DEPRECATED: Replaced by gpgme_data_seek().
+gpgme_data_new_from_read_cb	DEPRECATED: Replaced by gpgme_data_from_cbs().
+gpgme_data_get_type		REMOVED: No replacement.
+gpgme_op_verify			CHANGED: Take different data objects for
+				signed text and plain text.
+gpgme_op_verify_start		CHANGED: See gpgme_op_verify.
+gpgme_check_engine		REMOVED: Deprecated since 0.3.0.
+gpgme_op_genkey			CHANGED: New parameter FPR.
+GPGME_KEYLIST_MODE_SIGS		NEW
+gpgme_key_sig_get_string_attr	NEW
+gpgme_key_sig_get_ulong_attr	NEW
+gpgme_get_key			NEW
+GPGME_ATTR_SIG_CLASS		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.3.16 (2003-11-19)
+-------------------------------------------------
+
+ * Compatibility fixes for GnuPG 1.9.x
+
+Noteworthy changes in version 0.3.15 (2003-02-18)
+-------------------------------------------------
+
+ * The progress status is sent via the progress callbacks in
+   gpgme_op_edit.
+
+ * Bug fix for signing operations with explicit signer settings for
+   the CMS protocol.
+
+Noteworthy changes in version 0.3.14 (2002-12-04)
+-------------------------------------------------
+
+ * GPGME-Plug is now in its own package "cryptplug".
+
+ * Workaround for a setlocale problem.  Fixed a segv related to not
+   correctly as closed marked file descriptors.
+
+Noteworthy changes in version 0.3.13 (2002-11-20)
+-------------------------------------------------
+
+ * Release due to changes in gpgmeplug.
+
+Noteworthy changes in version 0.3.12 (2002-10-15)
+-------------------------------------------------
+
+ * Fixed some bux with key listings.  
+
+ * The development has been branched to clean up some API issues.
+   This 0.3 series will be kept for compatibility reasons; so do don't
+   expect new features.
+
+Noteworthy changes in version 0.3.11 (2002-09-20)
+-------------------------------------------------
+        
+ * Bug fixes.
+
+Noteworthy changes in version 0.3.10 (2002-09-02)
+-------------------------------------------------
+
+ * Setting the signing keys for the CMS protocol does now work.
+
+ * The signers setting is honoured by gpgme_op_edit.
+
+Noteworthy changes in version 0.3.9 (2002-08-21)
+------------------------------------------------
+
+ * A spec file for creating RPMs has been added.
+
+ * An experimental interface to GnuPG's --edit-key functionality is
+   introduced, see gpgme_op_edit.
+
+ * The new gpgme_import_ext function provides a convenient access to
+   the number of processed keys.
+
+ * Interface changes relative to the 0.3.8 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GpgmeStatusCode			NEW
+GpgmeEditCb			NEW
+gpgme_op_edit_start		NEW
+gpgme_op_edit			NEW
+gpgme_op_import_ext		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.3.8 (2002-06-25)
+------------------------------------------------
+
+ * It is possible to use an outside event loop for the I/O to the
+   crypto engine by setting the I/O callbacks with gpgme_set_io_cbs.
+
+ * Interface changes relative to the 0.3.6 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GpgmeIOCb			NEW
+GpgmeRegisterIOCb		NEW
+GpgmeRemoveIOCb			NEW
+GpgmeEventIO			NEW
+GpgmeEventIOCb			NEW
+struct GpgmeIOCbs		NEW
+gpgme_set_io_cbs		NEW
+gpgme_get_io_cbs		NEW
+GPGME_ATTR_ERRTOK		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.3.7 (2002-06-04)
+------------------------------------------------
+
+ * GPGME_ATTR_OTRUST is implemented now.
+
+ * A first step toward thread safeness has been achieved, see the
+   documentation for details.  Supported thread libraries are pthread
+   and Pth.
+
+Noteworthy changes in version 0.3.6 (2002-05-03)
+------------------------------------------------
+
+ * All error output of the gpgsm backend is send to the bit bucket.
+
+ * The signature verification functions are extended.  Instead of
+   always returning GPGME_SIG_STATUS_GOOD, the functions new codes for
+   expired signatures.  2 new functions may be used to retrieve more
+   detailed information like the signature expiration time and a
+   validity information of the key without an extra key looking.
+
+ * The current passphrase callback and progress meter callback can be
+   retrieved with the new functions gpgme_get_passphrase_cb and
+   gpgme_get_progress_cb respectively.
+
+ * Interface changes relative to the 0.3.5 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_get_passphrase_cb		NEW
+gpgme_get_progress_cb		NEW
+GpgmeDataEncoding               NEW
+gpgme_data_set_encoding         NEW
+gpgme_data_get_encoding         NEW
+GPGME_SIG_STAT_GOOD_EXP         NEW
+GPGME_SIG_STAT_GOOD_EXPKEY      NEW
+gpgme_op_verify                 CHANGED: Returns more status codes.
+GPGME_ATTR_SIG_STATUS           NEW
+gpgme_get_sig_string_attr       NEW
+gpgme_get_sig_ulong_attr        NEW
+gpgme_get_protocol              NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.3.5 (2002-04-01)
+------------------------------------------------
+
+ * gpgme_op_encrypt can be called with RECIPIENTS being 0.  In this
+   case, symmetric encryption is performed.  Note that this requires a
+   passphrase from the user.
+
+ * More information is returned for X.509 certificates.
+
+ * Interface changes relative to the 0.3.4 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_op_encrypt		EXTENDED: Symmetric encryption possible
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.3.4 (2002-03-04)
+------------------------------------------------
+
+ * gpgme_op_encrypt does now fail with GPGME_Invalid_Recipients if
+   some recipients have been invalid, whereas earlier versions
+   succeeded in this case.  The plaintext is still encrypted for all valid
+   recipients, so the application might take this error as a hint that
+   the ciphertext is not usable for all requested recipients.
+   Information about invalid recipients is available with gpgme_get_op_info.
+
+ * gpgme_op_verify now allows to pass an uninitialized data object as
+   its plaintext argument to check for normal and cleartext
+   signatures.  The plaintext is then returned in the data object.
+
+ * New interfaces gpgme_set_include_certs and gpgme_get_include_certs
+   to set and get the number of certifications to include in S/MIME
+   signed messages.
+
+ * New interfaces gpgme_op_encrypt_sign and gpgme_op_encrypt_sign_start
+   to encrypt and sign a message in a combined operation.
+
+ * New interface gpgme_op_keylist_ext_start to search for multiple patterns.
+
+ * gpgme_key_get_ulong_attr supports the GPGME_ATTR_EXPIRE attribute.
+
+ * Interface changes relative to the 0.3.3 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_op_encrypt		CHANGED: Can fail with GPGME_Invalid_Recipients
+gpgme_op_verify			EXTENDED: Accepts uninitialized text argument
+gpgme_key_get_ulong_attr	EXTENDED: Supports GPGME_ATTR_EXPIRE
+gpgme_set_include_certs		NEW
+gpgme_get_include_certs		NEW
+gpgme_op_encrypt_sign		NEW
+gpgme_op_encrypt_sign_start	NEW
+gpgme_op_keylist_ext_start	NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.3.3 (2002-02-12)
+------------------------------------------------
+
+ * Fix the Makefile in jnlib.
+
+ * Fix the test suite (hopefully).  It should clean up all its state
+   with `make check' now.
+
+
+Noteworthy changes in version 0.3.2 (2002-02-10)
+------------------------------------------------
+
+ * Remove erroneous dependency on libgcrypt in jnlib.
+
+
+Noteworthy changes in version 0.3.1 (2002-02-09)
+------------------------------------------------
+
+ * There is a Texinfo manual documenting the API.
+
+ * The gpgme_set_keylist_mode function returns an error, and changed
+   its meaning.  It is no longer usable to select between normal and
+   fast mode (newer versions of GnuPG will always be fast), but
+   selects between local keyring, remote keyserver, or both.
+   For this, two new macros are defined, GPGME_KEYLIST_MODE_LOCAL
+   and GPGME_KEYLIST_MODE_EXTERN.  To make it possible to modify the
+   current setting, a fucntion gpgme_get_keylist_mode was added to
+   retrieve the current mode.
+
+ * gpgme_wait accepts a new argument STATUS to return the error status
+   of the operation on the context.  Its definition is closer to
+   waitpid() now than before.
+
+ * The LENGTH argument to gpgme_data_new_from_filepart changed its
+   type from off_t to the unsigned size_t.
+
+ * The R_HD argument to the GpgmePassphraseCb type changed its type
+   from void* to void**.
+
+ * New interface gpgme_op_trustlist_end() to match
+   gpgme_op_keylist_end().
+
+ * The CryptPlug modules have been renamed to gpgme-openpgp and
+   gpgme-smime, and they are installed in pkglibdir by `make install'.
+
+ * An idle function can be registered with gpgme_register_idle().
+
+ * The GpgSM backend supports key generation with gpgme_op_genkey().
+
+ * Interface changes relative to the 0.3.0 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_data_new_from_filepart	CHANGED: Type of LENGTH is size_t.
+GpgmePassphraseCb               CHANGED: Type of R_HD is void **.
+gpgme_wait                      CHANGED: New argument STATUS.
+gpgme_set_keylist_mode          CHANGED: Type of return value is GpgmeError.
+                                The function has a new meaning!
+gpgme_get_keylist_mode          NEW
+GPGME_KEYLIST_MODE_LOCAL        NEW
+GPGME_KEYLIST_MODE_EXTERN       NEW
+gpgme_op_trustlist_next		NEW
+GpgmeIdleFunc                   NEW
+gpgme_register_idle             NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.3.0 (2001-12-19)
+------------------------------------------------
+ 
+ * New interface gpgme_set_protocol() to set the protocol and thus the
+   crypto engine to be used by the context.  Currently, the OpenPGP
+   and the CMS protocols are supported.  They are specified by the new
+   preprocessor symbols GPGME_PROTOCOL_OpenPGP and GPGME_PROTOCOL_CMS.
+   A new context uses the OpenPGP engine by default.
+
+ * gpgme_get_engine_info() returns information for all crypto engines
+   compiled into the library.  The XML format has changed.  To
+   reliably get the version of a crypto engine, the <version> tag
+   after the appropriate <protocol> tag has to be looked for.
+
+ * New interface gpgme_engine_check_version(), obsoleting
+   gpgme_check_engine().  Check the version of all engines you are
+   supporting in your software.
+
+ * GpgmeKey lists the user ids in the order as they are returned by
+   GnuPG, first the primary key with index 0, then the sub-user ids.
+
+ * New operation gpgme_op_decrypt_verify() to decrypt and verify
+   signatures simultaneously.
+
+ * The new interface gpgme_op_keylist_end() terminates a pending
+   keylist operation.  A keylist operation is also terminated when
+   gpgme_op_keylist_next() returns GPGME_EOF.
+
+ * GPGME can be compiled without GnuPG being installed (`--with-gpg=PATH'),
+   cross-compiled, or even compiled without support for GnuPG
+   (`--without-gpg').
+
+ * GPGME can be compiled with support for GpgSM (GnuPG for S/MIME,
+   `--with-gpgsm=PATH').  It is enabled by default if the `gpgsm' is found
+   in the path, but it can also be compiled without support for GpgSM
+   (`--without-gpgsm').
+
+ * CryptPlug modules for GPGME are included and can be enabled at
+   configure time (`--enable-gpgmeplug').  There is one module which
+   uses the GnuPG engine (`gpgmeplug') and one module which uses the
+   GpgSM engine (`gpgsmplug').
+
+ * Interface changes relative to the latest 0.2.x release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpgme_key_get_as_xml		CHANGED: Sub-user ids reversed in order.
+gpgme_key_get_string_attr	CHANGED: User ids reversed in order.
+gpgme_key_get_ulong_attr	CHANGED: User ids reversed in order.
+gpgme_get_engine_info		CHANGED: New format, extended content.
+gpgme_engine_check_version	NEW
+gpgme_decrypt_verify_start	NEW
+gpgme_decrypt_verify		NEW
+gpgme_op_keylist_next		NEW
+gpgme_set_protocol		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 0.2.3 (2001-09-17)
+------------------------------------------------
+
+ * New function gpgme_get_op_info which can be used to get the micalg
+   parameter needed for MOSS.
+
+ * New functions gpgme_get_armor and gpgme_get_textmode.
+
+ * The usual bug fixes and some minor functionality improvements.
+
+ * Added a simple encryption component for MS-Windows; however the
+   build procedure might have some problems.
+
+
+Noteworthy changes in version 0.2.2 (2001-06-12)
+------------------------------------------------
+ 
+ * Implemented a key cache.
+
+ * Fixed a race condition under W32 and some other bug fixes.
+
+
+Noteworthy changes in version 0.2.1 (2001-04-02)
+------------------------------------------------
+
+ * Changed debug output and GPGME_DEBUG variable (gpgme/debug.c)
+
+ * Handle GnuPG's new key capabilities output and support revocation
+   et al. attributes
+
+ * Made the W32 support more robust.
+
+
+ Copyright 2001, 2002, 2003, 2004, 2005, 2007, 2008 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
