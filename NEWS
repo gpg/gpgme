@@ -5,7 +5,6 @@ Noteworthy changes in version 1.1.9
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_PROTOCOL_ASSUAN          NEW.
  gpgme_assuan_data_cb_t         NEW.
- gpgme_assuan_sendfnc_ctx_t     NEW.
  gpgme_assuan_inquire_cb_t      NEW.
  gpgme_assuan_status_cb_t       NEW.
  gpgme_op_assuan_transact_start NEW.

@@ -1671,21 +1671,24 @@ gpgme_error_t gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output,
 typedef gpgme_error_t (*gpgme_assuan_data_cb_t) 
      (void *opaque, const void *data, size_t datalen);
 
-struct _gpgme_assuan_sendfnc_ctx;
-typedef struct _gpgme_assuan_sendfnc_ctx *gpgme_assuan_sendfnc_ctx_t;
-typedef gpgme_error_t (*gpgme_assuan_sendfnc_t)
-     (gpgme_assuan_sendfnc_ctx_t ctx, const void *data, size_t datalen);
-
 typedef gpgme_error_t (*gpgme_assuan_inquire_cb_t)
      (void *opaque, const char *name, const char *args,
-      gpgme_assuan_sendfnc_t sendfnc, 
-      gpgme_assuan_sendfnc_ctx_t sendfnc_ctx);
+      gpgme_data_t *r_data);
 
 typedef gpgme_error_t (*gpgme_assuan_status_cb_t)
      (void *opaque, const char *status, const char *args);
 
+struct _gpgme_op_assuan_result
+{
+  /* The result of the actual assuan command.  An OK is indicated by a
+     value of 0 and an ERR by the respective error error value.  */
+  gpgme_error_t err;
+};
+typedef struct _gpgme_op_assuan_result *gpgme_assuan_result_t;
+
+
 /* Return the result of the last Assuan command. */
-gpgme_error_t gpgme_op_assuan_result (gpgme_ctx_t ctx);
+gpgme_assuan_result_t gpgme_op_assuan_result (gpgme_ctx_t ctx);
 
 /* Send the Assuan COMMAND and return results via the callbacks.
    Asynchronous variant. */

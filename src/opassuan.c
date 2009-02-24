@@ -26,11 +26,11 @@
 #include "ops.h"
 #include "util.h"
 
+
 typedef struct
 {
-  /* The result of the assuan command with 0 for OK and an error value
-     for ERR.  */
-  gpgme_error_t result;
+  struct _gpgme_op_assuan_result result;
+
 } *op_data_t;
 
 
@@ -55,12 +55,12 @@ result_cb (void *priv, gpgme_error_t result)
   if (!opd)
     return gpg_error (GPG_ERR_INTERNAL);
 
-  opd->result = result;
+  opd->result.err = result;
   return 0;
 }
 
 
-gpgme_error_t
+gpgme_assuan_result_t
 gpgme_op_assuan_result (gpgme_ctx_t ctx)
 {
   gpgme_error_t err;
@@ -69,12 +69,12 @@ gpgme_op_assuan_result (gpgme_ctx_t ctx)
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_ASSUAN, &hook, -1, NULL);
   opd = hook;
-  if (err)
-    return err;
-  if (!opd)
-    return gpg_error (GPG_ERR_INTERNAL);
+  /* Check in case this function is used without having run a command
+     before.  */
+  if (err || !opd)
+    return NULL;
 
-  return opd->result;
+  return &opd->result;
 }
 
 
@@ -105,7 +105,7 @@ opassuan_start (gpgme_ctx_t ctx, int synchronous,
   opd = hook;
   if (err)
     return err;
-  opd->result = gpg_error (GPG_ERR_UNFINISHED);
+  opd->result.err = gpg_error (GPG_ERR_UNFINISHED);
 
   return _gpgme_engine_op_assuan_transact (ctx->engine, command,
                                            result_cb, ctx,

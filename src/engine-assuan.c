@@ -94,12 +94,6 @@ struct engine_llass
 };
 typedef struct engine_llass *engine_llass_t;
 
-/* Helper to pass data to a callback.  */
-struct _gpgme_assuan_sendfnc_ctx
-{
-  assuan_context_t assuan_ctx;
-};
-
 
 
 /* Prototypes.  */
@@ -212,6 +206,8 @@ llass_new (void **engine, const char *file_name, const char *home_dir)
     {
       home_dir++;
       /* Very simple parser only working for the one option we support.  */
+      /* Note that wk promised to write a regression test if this
+         parser will be extended.  */
       if (!strncmp (home_dir, "GPG_AGENT", 9) 
           && (!home_dir[9] || home_dir[9] == ' '))
         llass->opt.gpg_agent = 1;
@@ -372,18 +368,6 @@ llass_set_locale (void *engine, int category, const char *value)
 }
 
 
-
-static gpgme_error_t
-inquire_cb_sendfnc (gpgme_assuan_sendfnc_ctx_t ctx,
-                    const void *data, size_t datalen)
-{
-  if (data && datalen)
-    return assuan_send_data (ctx->assuan_ctx, data, datalen);
-  else
-    return 0;  /* Don't allow an inquire to send a flush.  */
-}
-
-
 /* This is the inquiry callback.  It handles stuff which ee need to
    handle here and passes everything on to the user callback.  */
 static gpgme_error_t
@@ -398,12 +382,18 @@ inquire_cb (engine_llass_t llass, const char *keyword, const char *args)
 
   if (llass->user.inq_cb)
     {
-      struct _gpgme_assuan_sendfnc_ctx sendfnc_ctx;
+      gpgme_data_t data = NULL;
 
-      sendfnc_ctx.assuan_ctx = llass->assuan_ctx;
       err = llass->user.inq_cb (llass->user.inq_cb_value,
-                                keyword, args,
-                                inquire_cb_sendfnc, &sendfnc_ctx);
+                                keyword, args, &data);
+      if (!err && data)
+        {
+          /* FIXME: Returning data is not yet implemented.  However we
+             need to allow the caller to cleanup his data object.
+             Thus we run the callback in finish mode immediately.  */
+          err = llass->user.inq_cb (llass->user.inq_cb_value,
+                                    NULL, NULL, &data);
+        }
     }
   else
     err = 0;
@@ -528,8 +518,16 @@ llass_status_handler (void *opaque, int fd)
             args++;
 
           err = inquire_cb (llass, src, args);
-          if (!err) /* Flush and send END.  */
-            err = assuan_send_data (llass->assuan_ctx, NULL, 0);
+          if (!err) 
+            {
+              /* Flush and send END.  */
+              err = assuan_send_data (llass->assuan_ctx, NULL, 0);
+            }
+          else if (gpg_err_code (err) == GPG_ERR_ASS_CANCELED)
+            {
+              /* Flush and send CANcel.  */
+              err = assuan_send_data (llass->assuan_ctx, NULL, 1);
+            }
         }
       else if (linelen >= 3
 	       && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'

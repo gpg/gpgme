@@ -491,6 +491,9 @@ _assuan_cookie_write_flush (void *cookie)
  * a INQUIRE response.  However, when assuan_transact() is used, this
  * function takes care of sending END itself.
  * 
+ * If BUFFER is NULL and LENGTH is 1 and we are a client, a "CAN" is
+ * send instead of an "END".
+ * 
  * Return value: 0 on success or an error code
  **/
 
@@ -499,7 +502,7 @@ assuan_send_data (assuan_context_t ctx, const void *buffer, size_t length)
 {
   if (!ctx)
     return _assuan_error (ASSUAN_Invalid_Value);
-  if (!buffer && length)
+  if (!buffer && length > 1)
     return _assuan_error (ASSUAN_Invalid_Value);
 
   if (!buffer)
@@ -508,7 +511,7 @@ assuan_send_data (assuan_context_t ctx, const void *buffer, size_t length)
       if (ctx->outbound.data.error)
         return ctx->outbound.data.error;
       if (!ctx->is_server)
-        return assuan_write_line (ctx, "END");
+        return assuan_write_line (ctx, length == 1? "CAN":"END");
     }
   else
     {

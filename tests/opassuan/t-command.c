@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
+#include <assert.h>
 
 #include <gpgme.h>
 
@@ -52,10 +53,36 @@ data_cb (void *opaque, const void *data, size_t datalen)
 
 static gpg_error_t
 inq_cb (void *opaque, const char *name, const char *args,
-        gpgme_assuan_sendfnc_t sendfnc,
-        gpgme_assuan_sendfnc_ctx_t sendfnc_value)
+        gpgme_data_t *r_data)
 {
-  printf ("INQ_CB: name=`%s' args=`%s'\n", name, args);
+  gpgme_data_t data;
+  gpg_error_t err;
+
+  if (name)
+    {
+      printf ("INQ_CB: name=`%s' args=`%s'\n", name, args);
+      /* There shall be no data object.  */
+      assert (!*r_data);
+      
+      err = gpgme_data_new (&data);
+      fail_if_err (err);
+      *r_data = data;
+      printf ("        sending data object %p\n", data);
+    }
+  else /* Finished using the formerly returned data object.  */
+    {
+      printf ("INQ_CB: data object %p finished\n", *r_data);
+      /* There shall be a data object so that it can be cleaned up. */
+      assert (r_data);
+
+      gpgme_data_release (*r_data);
+    }
+
+  /* Uncomment the next lines and send a "SCD LEARN" to test sending
+     cancel from in inquiry.  */
+  /* if (name && !strcmp (name, "KNOWNCARDP")) */
+  /*   return gpg_error (GPG_ERR_ASS_CANCELED); */
+
 
   return 0;
 }     
@@ -67,9 +94,6 @@ status_cb (void *opaque, const char *status, const char *args)
   printf ("STATUS_CB: status=`%s'  args=`%s'\n", status, args);
   return 0;
 }     
-
-
-
 
 
 
@@ -106,7 +130,7 @@ main (int argc, char **argv)
                                   inq_cb, NULL,
                                   status_cb, NULL);
   fail_if_err (err);
-  err = gpgme_op_assuan_result (ctx);
+  err = gpgme_op_assuan_result (ctx)->err;
   if (err)
     fprintf (stderr, "assuan command `%s' failed: %s <%s> (%d)\n", 
              command, gpg_strerror (err), gpg_strsource (err), err);

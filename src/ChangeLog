@@ -1,3 +1,20 @@
+2009-02-24  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h.in (struct _gpgme_op_assuan_result): New.
+	(gpgme_assuan_result_t): New.
+	(gpgme_op_assuan_result): Change return type.
+	(struct _gpgme_assuan_sendfnc_ctx)
+	(gpgme_assuan_sendfnc_ctx_t, gpgme_assuan_sendfnc_t):Remove.
+	(gpgme_assuan_inquire_cb_t): Changed.
+	* opassuan.c (op_data_t): Make use of a result structure.
+	(gpgme_op_assuan_result): Change return type.
+	(opassuan_start): Use result structure.
+	(result_cb): Ditto.
+	* engine-assuan.c (struct _gpgme_assuan_sendfnc_ctx): Remove.
+	(inquire_cb_sendfnc): Remove.
+	(inquire_cb): Change for new callback scheme.  Not yet finished.
+	(llass_status_handler): Allow sending a CANCEL from the inquire CB.
+
 2009-02-04  Werner Koch  <wk@g10code.com>
 
 	* w32-glib-io.c (_gpgme_io_spawn): Make ARGV argument const to
