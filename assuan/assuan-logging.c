@@ -14,9 +14,7 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA. 
+ * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -37,23 +35,6 @@
 static char prefix_buffer[80];
 static FILE *_assuan_log;
 static int full_logging;
-static int log_level = 1;  /* Defaults to logging enabled.  */
-
-
-/* Set the log level for general assuan commands.  0 is no logging at
-   all, 1 is the standard logging and the default. Higher leveles may
-   be defined in the future.  Passing a level of -1 will not change
-   the current log level.  Returns previosu log level.  */
-int
-assuan_set_assuan_log_level (int level)
-{
-  int old = log_level;
-
-  if (level != -1)
-    log_level = level;
-  return old;
-}
-
 
 void
 _assuan_set_default_log_stream (FILE *fp)
@@ -122,9 +103,6 @@ _assuan_log_printf (const char *format, ...)
   FILE *fp;
   const char *prf;
   int save_errno = errno;
-
-  if (!log_level)
-    return;
   
   fp = assuan_get_assuan_log_stream ();
   prf = assuan_get_assuan_log_prefix ();
@@ -134,29 +112,31 @@ _assuan_log_printf (const char *format, ...)
   va_start (arg_ptr, format);
   vfprintf (fp, format, arg_ptr );
   va_end (arg_ptr);
+  /* If the log stream is a file, the output would be buffered.  This
+     is bad for debugging, thus we flush the stream if FORMAT ends
+     with a LF.  */ 
+  if (format && *format && format[strlen(format)-1] == '\n')
+    fflush (fp);
   errno = save_errno;
 }
 
 
 /* Dump a possibly binary string (used for debugging).  Distinguish
    ascii text from binary and print it accordingly.  This function
-   takes FILE pointer arg becuase logging may be enabled on a per
-   context basis. */
+   takes FILE pointer arg because logging may be enabled on a per
+   context basis.  */
 void
 _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
 {
   const unsigned char *s;
-  int n;
+  unsigned int n;
 
-  if (!log_level)
-    return;
-
-  for (n=length,s=buffer; n; n--, s++)
-    if  ((!isascii (*s) || iscntrl (*s) || !isprint (*s)) && !(*s >= 0x80))
+  for (n = length, s = buffer; n; n--, s++)
+    if  ((! isascii (*s) || iscntrl (*s) || ! isprint (*s)) && !(*s >= 0x80))
       break;
 
   s = buffer;
-  if (!n && *s != '[')
+  if (! n && *s != '[')
     fwrite (buffer, length, 1, fp);
   else
     {
@@ -164,15 +144,15 @@ _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
       flockfile (fp);
 #endif
       putc_unlocked ('[', fp);
-      if ( length > 16 && !full_logging)
+      if (length > 16 && ! full_logging)
         {
-          for (n=0; n < 12; n++, s++)
+          for (n = 0; n < 12; n++, s++)
             fprintf (fp, " %02x", *s);
-          fprintf (fp, " ...(%d bytes skipped)", (int)length - 12);
+          fprintf (fp, " ...(%d bytes skipped)", (int) length - 12);
         }
       else
         {
-          for (n=0; n < length; n++, s++)
+          for (n = 0; n < length; n++, s++)
             fprintf (fp, " %02x", *s);
         }
       putc_unlocked (' ', fp);
@@ -189,15 +169,10 @@ void
 _assuan_log_sanitized_string (const char *string)
 {
   const unsigned char *s = (const unsigned char *) string;
-  FILE *fp;
+  FILE *fp = assuan_get_assuan_log_stream ();
 
-  if (!log_level)
+  if (! *s)
     return;
-
-  if (!*s)
-    return;
-
-  fp = assuan_get_assuan_log_stream ();
 
 #ifdef HAVE_FLOCKFILE
   flockfile (fp);

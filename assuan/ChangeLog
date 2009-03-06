@@ -3,67 +3,261 @@
 	* assuan-buffer.c (assuan_send_data): Add hack to optionally send
 	a final "CAN".
 
-2008-11-03  Marcus Brinkmann  <marcus@g10code.com>
+2008-11-03  Marcus Brinkmann  <marcus@g10code.de>
 
-	* Makefile.am (INCLUDES): Replace gpgme path with src.
+	* assuan-handler.c (std_handler_help): Make I unsigned to silence
+	gcc -W warning.
+	* assuan-logging.c (_assuan_log_print_buffer): Likewise for N.
+	* funopen.c (_assuan_funopen): Remove initializer to silence gcc
+	-W warning.
+	* assuan-handler.c (std_cmd_table): Add missing initializer to
+	silence gcc -W warning.
+	* assuan-socket-server.c (io): Likewise.
+	* assuan-socket-connect.c (assuan_socket_connect_ext): Likewise.
 
-2008-10-30  Marcus Brinkmann  <marcus@g10code.de>
+2008-10-29  Marcus Brinkmann  <marcus@g10code.de>
 
-	* assuan-pipe-connect.c: Fix prototype for _gpgme_io_spawn.  Cast
-	second argument in its invocation to silence gcc warning.
+	* assuan.h (assuan_error_t) (_ASSUAN_ONLY_GPG_ERRORS): Make
+	unsigned int.
+	(assuan_transact): Change return type of callback handlers to
+	assuan_error_t.
 
-2008-06-25  Marcus Brinkmann  <marcus@g10code.de>
+2008-10-15  Werner Koch  <wk@g10code.com>
 
-	* assuan-pipe-connect.c (struct spawn_fd_item_s): Add new members.
-	(HANDLE_TRANSLATION): New macro.
-	(pipe_connect_gpgme): Adjust caller of _gpgme_io_spawn.
-	[HANDLE_TRANSLATION]: Return translated handles.
+	* assuan-logging.c (_assuan_log_printf): Flush if the format
+	string ends with a LF.
 
-2008-02-14  Werner Koch  <wk@g10code.com>
+2008-09-01  Werner Koch  <wk@g10code.com>
 
-	* assuan-pipe-connect.c (_gpgme_io_spawn): Adjust prototype.
-	(pipe_connect_gpgme, pipe_connect_gpgme): Adjust call.
+	* assuan-io.c: Include time.h.  Fixes bug#951.
+	(_assuan_usleep): Use nanosleep only is available.
 
-2008-01-04  Marcus Brinkmann  <marcus@g10code.de>
+2008-03-25  Marcus Brinkmann  <marcus@g10code.de>
 
-	* assuan-pipe-connect.c (_gpgme_io_pipe)
-	(_gpgme_io_spawn) [_ASSUAN_IN_GPGME_BUILD_ASSUAN]: Add prototypes
-	to silence compiler warning.  Reported by Alon Bar-Lev.
+	* assuan-inquire.c (assuan_inquire): Loop over _assuan_read_line
+	for EAGAIN.
+
+2008-03-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-defs.h (_assuan_usleep): New prototype.
+	* assuan-io.c (_assuan_usleep): New function.
+	* assuan-io-pth.c (_assuan_usleep): New function.
+	* mkerrors: Do not incude <windows.h>, but assuan-defs.h.
+	(_assuan_error_is_eagain): Call _assuan_usleep.
+
+	* mkerrors [HAVE_W32_SYSTEM]: Include <windows.h>
+	(_assuan_error_is_eagain) [HAVE_W32_SYSTEM]: Wait the tenth of a
+	second.
+
+2007-11-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-inquire.c (_assuan_inquire_ext_cb): Pass through return
+	value from callback function.
+	Suggested by Ben Kibbey <bjk@luxsci.net>.
+
+2007-11-14  Werner Koch  <wk@g10code.com>
+
+	* assuan-pipe-connect.c (pipe_connect_unix): Add dummy arg FLAGS.
+	(pipe_connect_w32): Add arg FLAGS and start process detached if
+	requested.  Changed callers to pass 0.
+	(assuan_pipe_connect_ext): Pass FLAG.
+
+2007-11-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-inquire.c (_assuan_inquire_ext_cb): Clear
+	CTX->inquire_membuf after deallocating it.
+
+2007-10-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-handler.c (std_handler_help): New function.
+	(std_cmd_table): Add new command HELP.
+
+2007-10-08  Werner Koch  <wk@g10code.com>
+
+	* assuan-util.c (assuan_set_io_hooks): New.
+	* assuan.h (struct assuan_io_hooks): New.
+	(assuan_set_io_hooks, _assuan_io_hooks): Add prefix macros.
+	* assuan-defs.h (_assuan_io_hooks): New.
+	* assuan-io.c (do_io_read): Take all code from _assuan_io_read.
+	(_assuan_io_read, _assuan_simple_read): Add hook feature.
+	(do_io_write): Take all code from _assuan_io_write.
+	(_assuan_io_write, _assuan_simple_write): Add hook feature.
+	* assuan-io-pth.c (_assuan_simple_read, _assuan_simple_write) 
+	(_assuan_io_read, _assuan_io_write): Add hook feature.
+	
+2007-10-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan.h (_assuan_error_is_eagain): Add prefix macro.
+
+	* assuan-defs.h (_assuan_error_is_eagain): New prototype.
+	* mkerrors (_assuan_error_is_eagain): New function.
+	* assuan-handler.c (process_next): Leave on EAGAIN.
+	* assuan-handler.c (process_request),
+	assuan-client.c (_assuan_read_from_server),
+	assuan-buffer.c (assuan_read_line): Busy loop over EAGAIN.
+
+2007-10-05  Werner Koch  <wk@g10code.com>
+
+	* assuan-socket.c (_assuan_sock_wsa2errno): Map WSANOTINITIALISED.
+	(_assuan_sock_new): Use assuan_fd_t.
+	* assuan.h (_assuan_sock_wsa2errno): Add prefix macro.
+
+2007-10-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-defs.h (_assuan_sock_wsa2errno) [HAVE_W32_SYSTEM]: Add prototype.
+	* assuan-uds.c (wsa2errno) [HAVE_W32_SYSTEM]: Move and rename to ...
+	* assuan-socket.c (_assuan_sock_wsa2errno) [HAVE_W32_SYSTEM]: ... this.
+	(_assuan_close, _assuan_sock_new, _assuan_sock_connect, _assuan_sock_bind):
+	Always set errno on error.
+
+	* assuan-uds.c (wsa2errno) [HAVE_W32_SYSTEM]: New function.
+	(uds_reader, uds_writer) [HAVE_W32_SYSTEM]: Set errno.
+
+2007-10-04  Werner Koch  <wk@g10code.com>
+
+	* mkerrors: Map EAGAIN to GPG_ERR_EAGAIN for read and write
+	errors. 
+
+2007-10-02  Werner Koch  <wk@g10code.com>
+
+	* assuan-io.c (_assuan_io_read) [W32]: Map WSAEWOULDBLOCK to EAGAIN.
+	* assuan-socket.c (_assuan_sock_check_nonce): N needs to be signed.
+
+	* assuan-defs.h (struct assuan_context_s): Add LISTEN_NONCE.
+	* assuan-socket-server.c (assuan_set_sock_nonce): New.
+	(accept_connection): Check the nonce.
+
+2007-10-01  Werner Koch  <wk@g10code.com>
+
+	* assuan.h (ASSUAN_INT2FD, ASSUAN_FD2INT): New.
+
+	* assuan-socket.c: Rewritten.
+	(assuan_sock_new, assuan_sock_connect, assuan_sock_bind) 
+	(assuan_sock_get_nonce, assuan_sock_check_nonce): New APIs.
+
+	* assuan-io.c (_assuan_simple_read, _assuan_simple_write):
+	Factored code out to ...
+	(_assuan_io_read, _assuan_io_write): .. new.
+	* assuan-io-pth.c (_assuan_io_read, _assuan_io_write): New.
 
 2007-09-25  Werner Koch  <wk@g10code.com>
 
 	* assuan.h (_assuan_gpg_strerror_r, _assuan_gpg_strsource): Add
-	new wrappers.
+	wrappers for these new internal functions.
+
+2007-09-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-uds.c (uds_reader) [HAVE_W32_SYSTEM]: Do not touch the
+	UDS structure in the context.  Reported by Frank Osterfeld.
+	(uds_writer): Clarify code.
+
+2007-09-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-pipe-connect.c (do_finish) [HAVE_W32_SYSTEM]: Close
+	ctx->pid as handle.
+	(pipe_connect_w32): Save the spawned processes handle.
+
+2007-09-13  Werner Koch  <wk@g10code.com>
+
+	* assuan-socket.c (_assuan_close): Add inactive debug outputs.
+
+2007-09-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan.h: Use _WIN32 instead of HAVE_W32_SYSTEM.
+
+2007-09-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-inquire.c (assuan_inquire_ext): If MAXLEN is 0, still
+	initialize MEMBUF.
+	
+	* assuan-inquire.c (_assuan_inquire_ext_cb): Clear CTX->in_inquire
+	before invoking callback and returning.
+
+2007-09-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-handler.c (dispatch_command): Return non-critical errors
+	with PROCESS_DONE ().
 
 2007-09-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan.h [_ASSUAN_EXT_SYM_PREFIX]: Add missing symbol renames
 	with _ASSUAN_PREFIX.
 
-2007-08-02  Werner Koch  <wk@g10code.com>
+2007-09-03  Marcus Brinkmann  <marcus@g10code.de>
 
-	* assuan-pipe-connect.c (pipe_connect_w32): A bit more debug output.
-	(pipe_connect_w32): Use DETACHED_PROCESS flag.
-	* assuan-logging.c (log_level): New.  Use this to disable logging.
-	(assuan_set_assuan_log_level): New.
-	* assuan.h: Add prototype.
+	* assuan.h [_ASSUAN_EXT_SYM_PREFIX]: Add missing symbol renames
+	with _ASSUAN_PREFIX.
 
+	* assuan.h (assuan_inquire_ext): Move buffer and buffer_length
+	arguments callback in prototype.
+	* assuan-defs.h (struct assuan_context_s): Remove members
+	inquire_r_buffer and inquire_r_buffer_len.  Add buffer and buffer
+	length arguments to inquire_cb.
+	* assuan-inquire.c (_assuan_inquire_ext_cb): Return buffer and
+	buffer length via callback.
+	(assuan_inquire_ext): Move buffer and buffer length arguments to
+	callback.
+
+2007-08-24  Werner Koch  <wk@g10code.com>
+
+	Switched license to back to LGPLv2.1.
+
+2007-08-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan.h (assuan_process_done, assuan_inquire_ext): New
+	prototypes.
+	* assuan-defs.h (struct assuan_context_s): New members
+	in_process_next, in_command, inquire_cb, inquire_cb_data,
+	inquire_r_buffer, inquire_r_buffer_len, inquire_membuf.
+	(_assuan_inquire_ext_cb, _assuan_inquire_release): New prototypes.
+	* assuan-handler.c (PROCESS_DONE): New macro.
+	(dummy_handler, std_handler_nop, std_handler_cancel)
+	(std_handler_option, std_handler_bye, std_handler_auth)
+	(std_handler_reset, std_handler_end): Use PROCESS_DONE to
+	optionally call assuan_process_done if CTX->in_process_next is
+	true.
+	(assuan_process_done, process_next): New functions.
+	(assuan_process_next): Rewritten to support external event
+	handling.
+	* mkerrors: Do not clear high bits of -1 for old style EOF.
+	* assuan-inquire.c (_assuan_inquire_release)
+	(_assuan_inquire_ext_cb, assuan_inquire_ext): New functions.
+	* assuan-pipe-server.c (_assuan_release_context): Call
+	_assuan_inquire_release.
+	
 2007-07-12  Werner Koch  <wk@g10code.com>
 
-	* assuan-handler.c (assuan_get_active_fds): Use get_osfhandle for
-	the data fp.
-	* assuan-socket.c (_assuan_close) [W32]: Use CloseHandle and not close.
+	* assuan.h (assuan_fd_t): New.
+	(ASSUAN_INVALID_FD): New.  Use it everywhere.
+	* assuan-defs.h (SOCKET2HANDLE, HANDLE2SOCKET) [W32]: New.  Use
+	them to cast descriptors for socket fucntions.
+	* assuan-pipe-connect.c (fd_to_handle, handle_to_fd): Remove
+	definition and all uses.
+	(pid_to_handle, handle_to_pid): Remove as they are ununsed.
+	* assuan-io.c (_assuan_simple_write, _assuan_simple_read) [W32]:
+	Make use of HANDLE2SOCKET.
+	* assuan-socket.c (_assuan_close) [W32]: Use CloseHandle and not
+	close.
+	* assuan-handler.c (assuan_get_active_fds) [W32]: Use
+	_get_osfhandle for the data fp.
 
-	* assuan-io.c (_assuan_simple_write, _assuan_simple_read): Map
-	ERROR_BROKEN_PIPE to EPIPE.
-
+	* assuan-io.c (_assuan_simple_write): Return EPIPE on a closed pipe.
+	(_assuan_simple_read): Likewise
+	
 2007-07-08  Marcus Brinkmann  <marcus@g10code.de>
 
-	* assuan-defs.h (struct assuan_context_s): Have partial peercred
-	structure even if HAVE_W32_SYSTEM, and have full peercred
-	structure only if HAVE_SO_PEERCRED.
+	* assuan-defs.h (struct assuan_context_s): Have full peercred
+	structure for HAVE_SO_PEERCRED.
 	* assuan-connect.c (assuan_get_peercred) [!HAVE_SO_PEERCRED]: Do
 	not try to set PID, UID and GID.
+
+2007-07-05  Werner Koch  <wk@g10code.com>
+
+	* assuan-defs.h (struct assuan_context_s): Have peercred.valid
+	even for Windows.  This makes some other code cleaner.
+
+	* assuan.h (ASSUAN_CONFIDENTIAL): New flag.
+	* assuan-util.c (assuan_set_flag, assuan_get_flag): Support flag.
 
 2007-07-04  Marcus Brinkmann  <marcus@g10code.de>
 
@@ -382,28 +576,63 @@
 	to silence gcc warning.
 	* assuan-inquire.c (assuan_inquire): Likewise.
 
-2005-08-19  Werner Koch  <wk@g10code.com>
+2005-09-08  Marcus Brinkmann  <marcus@g10code.com>
 
-	* funopen.c, assuan-socket.c: Copied from libassuan CVS.
 	* assuan-pipe-connect.c (assuan_pipe_connect2): Add missing
 	declaration of PID.
 
 2005-08-09  Werner Koch  <wk@g10code.com>
 
-	* README.1st: Adjusted to cope with changes done in upstream Assuan.
+	* mkerrors: Include config.h into assuan-errors.c.  This is
+	required so that assuan.h knows about the W32 macro.
 
-	Merged changes for W32 support from libassuan.
-	
 	* assuan.h [_ASSUAN_EXT_SYM_PREFIX]: New.
 	* assuan-io.c [_ASSUAN_NO_PTH]: New.
 	* assuan-pipe-connect.c (fix_signals) [_ASSUAN_NO_FIXED_SIGNALS]: New.
 	(assuan_pipe_connect2) [_ASSUAN_USE_DOUBLE_FORK]: Use double fork.
 	(fix_signals) [_ASSUAN_USE_DOUBLE_FORK]: Do not wait..
-	* assuan-logging.c, assuan-io.c: Include config.h
-	Replaced all usages of _WIN32 by the new HAVE_W32_SYSTEM because
-	there is nothing winning in this API.
-	* assuan-pipe-connect.c (assuan_pipe_connect2) [_WIN32]: Return
-	error Not Imlemented.
+	
+2005-05-21  Werner Koch  <wk@g10code.com>
+
+	* assuan-util.c (assuan_set_flag, assuan_get_flag): New.
+	* assuan-defs.h (struct assuan_context_s): New field flags.
+	* assuan.h (assuan_flag_t): New with one flag value
+	ASSUAN_NO_WAITPID for now.
+	* assuan-pipe-connect.c (do_finish): Take care of the no_waitpid
+	flag.
+
+2005-04-04  Werner Koch  <wk@g10code.com>
+
+	* assuan-util.c (_assuan_calloc): Avoid integer overflow.
+
+2005-03-22  Werner Koch  <wk@g10code.com>
+
+	* assuan-defs.h (struct assuan_io): Renamed elements READ and
+	WRITE to READFNC and WRITEFNC to avoid problems with read defined
+	as macros.  Changed callers.  Noted by Ville Skyttä.
+
+2005-02-24  Werner Koch  <wk@g10code.com>
+
+	* assuan-client.c (assuan_transact): Handle empty and comment
+	commands correctly.
+
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* assuan-socket-connect.c (assuan_socket_connect) [W32]: Allow for
+	a drive letter in the path.
+
+2004-12-19  Werner Koch  <wk@g10code.com>
+
+	* assuan-pipe-server.c (assuan_init_pipe_server) [W32]: Map file
+	descriptors using _get_osfhandle.
+
+2004-12-19  Moritz Schulte  <moritz@g10code.com>
+
+	* assuan-pipe-connect.c (assuan_pipe_connect2): Removed "`"
+	character at beginning of line 532.
+
+2004-12-18  Werner Koch  <wk@g10code.com>
+
 	* assuan-logging.c (_assuan_w32_strerror): New. 
 	* assuan-defs.h (w32_strerror): new.
 	* assuan-pipe-connect.c (assuan_pipe_connect2, fix_signals):
@@ -411,57 +640,95 @@
 	(build_w32_commandline, create_inheritable_pipe): New.  Taken
 	from gnupg 1.9.
 	(assuan_pipe_connect2) [W32]: Implemented for W32.
-	* assuan-pipe-server.c (assuan_init_pipe_server) [W32]: Map file
-	descriptors using _get_osfhandle.
-	* assuan-socket-connect.c (assuan_socket_connect) [W32]: Allow for
-	a drive letter in the path.
-	* assuan-client.c (assuan_transact): Handle empty and comment
-	commands correctly.
-	* assuan-util.c (_assuan_calloc): Avoid integer overflow.
-	* assuan-util.c (assuan_set_flag, assuan_get_flag): New.
-	* assuan-defs.h (struct assuan_context_s): New field flags.
-	* assuan.h (assuan_flag_t): New with one flag value
-	ASSUAN_NO_WAITPID for now.
-	* assuan-pipe-connect.c (do_finish): Take care of the no_waitpid
-	flag.
-	* mkerrors: Include config.h into assuan-errors.c.  This is
-	required so that assuan.h knows about the W32 macro.
 
-2005-08-09 Timo Schulz  <twoaday@g10code.com> (ported from libassuan by wk)
+2004-12-14  Werner Koch  <wk@g10code.com>
+
+	* assuan-socket-connect.c (assuan_socket_connect): Always allow
+	NAME to start with a froward slash.
+
+2004-12-07  Werner Koch  <wk@g10code.com>
+
+	* assuan-logging.c, assuan-io.c: Include config.h
+
+	Replaced all usages of _WIN32 by the new HAVE_W32_SYSTEM because
+	there is nothing winning in this API.
+
+	* assuan-pipe-connect.c (assuan_pipe_connect2) [_WIN32]: Return
+	error Not Imlemented.
+
+2004-11-27  Werner Koch  <wk@g10code.com>
+
+	* assuan-socket.c: Include sys/types.h.  Noted by Michael
+	Nottebrock.
+
+2004-11-26  Werner Koch  <wk@g10code.com>
+
+	* assuan-io.c [_WIN32]: Avoid warnings about unknown pragmas.
+
+2004-11-24  Werner Koch  <wk@g10code.com>
+
+	* assuan-logging.c (_assuan_log_printf): New.
+	* assuan-domain-connect.c (LOG): Removed and replaced all callers
+	by _assuan_log_printf.  This is needed for C89 and gcc 2.95 which
+	both don't have C99 style variable arg macros.
+	* assuan-pipe-connect.c (LOG): Ditto.
+	* assuan-socket-connect.c (LOG): Ditto.
+
+	* assuan-socket.c[!_WIN32]: Fixed includes.
+
+2004-11-23  Timo Schulz  <twoaday@g10code.com>
+
+	* assuan-socket.c (_assuan_sock_connect): Get local port from
+	the sun_path[] file.
+	(_assuan_sock_bind): Write local port to the sun_path[] file.
+	* assuan-socket-connect.c (assuan_socket_connect): Use DIRSEP_C
+	for a better portability.
+	(assuan-defs.h): Define DIRSEP_C.
 	
+2004-11-19  Werner Koch  <wk@g10code.com>
+
+	* assuan-handler.c (assuan_write_status): Return an error code.
+
+2004-11-22  Timo Schulz  <twoaday@g10code.com>
+
 	* assuan-io.c (_assuan_simple_read, _assuan_simple_write): W32
 	support.
 	* assuan-socket.c (_assuan_close): New.
 	(_assuan_sock_new): New.
 	(_assuan_sock_bind): New.
+	
+2004-11-16  Werner Koch  <wk@g10code.com>
 
-2005-03-22  Werner Koch  <wk@g10code.com>
+	* assuan-socket-connect.c (LOG): Fixed macro to print not only the
+	prefix.
+	* assuan-domain-connect.c, assuan-socket-connect.c (LOG): Ditto.
 
-	* assuan-defs.h (struct assuan_io): Renamed elements READ and
-	WRITE to READFNC and WRITEFNC to avoid problems with read defined
-	as macro.  Changed callers.  Noted by Ville Skyttä.
+2004-10-02  Werner Koch  <wk@g10code.com>
 
-2004-12-16  Marcus Brinkmann  <marcus@g10code.de>
-
-	* assuan-pipe-connect.c (do_finish): Do not wait for child to finish.
-	(assuan_pipe_connect): Use double-fork approach.
-	* assuan-connect.c (assuan_disconnect): Do not write BYE to the
-	status line.
-
-2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
-
-	* README.1st: Add copyright notice.
+	* assuan-socket-connect.c: Define SUN_LEN, AF_LOCAL and PF_LOCAL
+	if they are not available.
+	* assuan-domain-connect.c: Define PF_LOCAL and AF_LOCAL if needed.
 
 2004-06-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan-domain-connect.c [HAVE_SYS_UIO_H]: Include <sys/uio.h>.
 
-	* assuan-handler.c: Include <errno.h>.
+2004-05-11  Werner Koch  <wk@gnupg.org>
 
-2004-06-08  Marcus Brinkmann  <marcus@g10code.de>
+	* assuan-listen.c (assuan_set_hello_line, assuan_accept): Allow
+	for multi line hello strings.
 
-	* assuan-buffer.c (assuan_write_line): If the line is longer than
-	the maximum line length, bail out early.
+	* assuan-buffer.c (_assuan_write_line): New with parts of ..
+	(assuan_write_line): .. factored out.
+
+2004-04-29  Werner Koch  <wk@gnupg.org>
+
+	* assuan-socket-connect.c: Include string.h.
+	* assuan-logging.c: Ditto.
+
+2004-04-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* libassuan.m4: Quote first argument to AC_DEFUN.
 
 2004-04-21  Werner Koch  <wk@gnupg.org>
 
@@ -1039,7 +1306,7 @@
 	* assuan-defs.h: Add space in the context for this.
 
 	
- Copyright 2001, 2002, 2006 Free Software Foundation, Inc.
+ Copyright 2001, 2002, 2006, 2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

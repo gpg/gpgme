@@ -1,5 +1,5 @@
 /* assuan-io.c - Wraps the read and write functions.
- *	Copyright (C) 2002, 2004, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2004, 2006, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of Assuan.
  *
@@ -14,15 +14,14 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA. 
+ * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
+#include <time.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #ifdef HAVE_SYS_SOCKET_H
@@ -48,8 +47,8 @@ _assuan_waitpid (pid_t pid, int *status, int options)
 #endif
 
 
-ssize_t
-_assuan_simple_read (assuan_context_t ctx, void *buffer, size_t size)
+static ssize_t
+do_io_read (assuan_fd_t fd, void *buffer, size_t size)
 {
 #if defined(HAVE_W32_SYSTEM) && !defined(_ASSUAN_IN_GPGME_BUILD_ASSUAN)
   /* Due to the peculiarities of the W32 API we can't use read for a
@@ -57,32 +56,71 @@ _assuan_simple_read (assuan_context_t ctx, void *buffer, size_t size)
      read if recv detects that it is not a network socket.  */
   int n;
 
-  n = recv (ctx->inbound.fd, buffer, size, 0);
-  if (n == -1 && WSAGetLastError () == WSAENOTSOCK)
+  n = recv (HANDLE2SOCKET(fd), buffer, size, 0);
+  if (n == -1)
     {
-      DWORD nread = 0;
-
-      n = ReadFile ((HANDLE)ctx->inbound.fd, buffer, size, &nread, NULL);
-      if (!n)
+      switch (WSAGetLastError ())
         {
-          switch (GetLastError())
-            {
-            case ERROR_BROKEN_PIPE: errno = EPIPE; break;
-            default: errno = EIO; 
-            }
-          n = -1;
+        case WSAENOTSOCK:
+          {
+            DWORD nread = 0;
+            
+            n = ReadFile (fd, buffer, size, &nread, NULL);
+            if (!n)
+              {
+                switch (GetLastError())
+                  {
+                  case ERROR_BROKEN_PIPE: errno = EPIPE; break;
+                  default: errno = EIO; 
+                  }
+                n = -1;
+              }
+            else
+              n = (int)nread;
+          }
+          break;
+          
+        case WSAEWOULDBLOCK: errno = EAGAIN; break;
+        case ERROR_BROKEN_PIPE: errno = EPIPE; break;
+        default: errno = EIO; break;
         }
-      else
-        n = (int)nread;
     }
   return n;
 #else /*!HAVE_W32_SYSTEM*/
-  return read (ctx->inbound.fd, buffer, size);
+  return read (fd, buffer, size);
 #endif /*!HAVE_W32_SYSTEM*/
 }
 
+
 ssize_t
-_assuan_simple_write (assuan_context_t ctx, const void *buffer, size_t size)
+_assuan_io_read (assuan_fd_t fd, void *buffer, size_t size)
+{
+  ssize_t retval;
+  
+  if (_assuan_io_hooks.read_hook
+      && _assuan_io_hooks.read_hook (NULL, fd, buffer, size, &retval) == 1)
+    return retval;
+
+  return do_io_read (fd, buffer, size);
+}
+
+ssize_t
+_assuan_simple_read (assuan_context_t ctx, void *buffer, size_t size)
+{
+  ssize_t retval;
+  
+  if (_assuan_io_hooks.read_hook
+      && _assuan_io_hooks.read_hook (ctx, ctx->inbound.fd, 
+                                     buffer, size, &retval) == 1)
+    return retval;
+
+  return do_io_read (ctx->inbound.fd, buffer, size);
+}
+
+
+
+static ssize_t
+do_io_write (assuan_fd_t fd, const void *buffer, size_t size)
 {
 #if defined(HAVE_W32_SYSTEM) && !defined(_ASSUAN_IN_GPGME_BUILD_ASSUAN)
   /* Due to the peculiarities of the W32 API we can't use write for a
@@ -90,12 +128,12 @@ _assuan_simple_write (assuan_context_t ctx, const void *buffer, size_t size)
      write if send detects that it is not a network socket.  */
   int n;
 
-  n = send (ctx->outbound.fd, buffer, size, 0);
+  n = send (HANDLE2SOCKET(fd), buffer, size, 0);
   if (n == -1 && WSAGetLastError () == WSAENOTSOCK)
     {
       DWORD nwrite;
 
-      n = WriteFile ((HANDLE)ctx->outbound.fd, buffer, size, &nwrite, NULL);
+      n = WriteFile (fd, buffer, size, &nwrite, NULL);
       if (!n)
         {
           switch (GetLastError ())
@@ -111,8 +149,32 @@ _assuan_simple_write (assuan_context_t ctx, const void *buffer, size_t size)
     }
   return n;
 #else /*!HAVE_W32_SYSTEM*/
-  return write (ctx->outbound.fd, buffer, size);
+  return write (fd, buffer, size);
 #endif /*!HAVE_W32_SYSTEM*/
+}
+
+ssize_t
+_assuan_io_write (assuan_fd_t fd, const void *buffer, size_t size)
+{
+  ssize_t retval;
+  
+  if (_assuan_io_hooks.write_hook
+      && _assuan_io_hooks.write_hook (NULL, fd, buffer, size, &retval) == 1)
+    return retval;
+  return do_io_write (fd, buffer, size);
+}
+
+ssize_t
+_assuan_simple_write (assuan_context_t ctx, const void *buffer, size_t size)
+{
+  ssize_t retval;
+  
+  if (_assuan_io_hooks.write_hook
+      && _assuan_io_hooks.write_hook (ctx, ctx->outbound.fd, 
+                                      buffer, size, &retval) == 1)
+    return retval;
+
+  return do_io_write (ctx->outbound.fd, buffer, size);
 }
 
 
@@ -152,3 +214,32 @@ _assuan_simple_recvmsg (assuan_context_t ctx, struct msghdr *msg)
   return ret;
 #endif
 }
+
+
+void
+_assuan_usleep (unsigned int usec)
+{
+  if (usec)
+    {
+#ifdef HAVE_NANOSLEEP
+      struct timespec req;
+      struct timespec rem;
+      
+      req.tv_sec = 0;
+      req.tv_nsec = usec * 1000;
+      
+      while (nanosleep (&req, &rem) < 0 && errno == EINTR)
+        req = rem;
+
+#elif defined(HAVE_W32_SYSTEM)
+      Sleep (usec / 1000);
+#else
+      struct timeval tv;
+
+      tv.tv_sec  = usec / 1000000;
+      tv.tv_usec = usec % 1000000;
+      select (0, NULL, NULL, NULL, &tv);
+#endif
+    }
+}
+

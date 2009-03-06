@@ -14,9 +14,7 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA. 
+ * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -57,12 +55,12 @@
 static int
 do_finish (assuan_context_t ctx)
 {
-  if (ctx->inbound.fd != -1)
+  if (ctx->inbound.fd != ASSUAN_INVALID_FD)
     {
       _assuan_close (ctx->inbound.fd);
     }
-  ctx->inbound.fd = -1;
-  ctx->outbound.fd = -1;
+  ctx->inbound.fd = ASSUAN_INVALID_FD;
+  ctx->outbound.fd = ASSUAN_INVALID_FD;
   return 0;
 }
 
@@ -87,18 +85,17 @@ assuan_socket_connect (assuan_context_t *r_ctx,
 /* Make a connection to the Unix domain socket NAME and return a new
    Assuan context in CTX.  SERVER_PID is currently not used but may
    become handy in the future.  With flags set to 1 sendmsg and
-   recvmesg are used. */
+   recvmsg are used. */
 assuan_error_t
 assuan_socket_connect_ext (assuan_context_t *r_ctx,
                            const char *name, pid_t server_pid,
                            unsigned int flags)
 {
-  static struct assuan_io io = { _assuan_simple_read,
-				 _assuan_simple_write };
-
+  static struct assuan_io io = { _assuan_simple_read, _assuan_simple_write,
+				 NULL, NULL };
   assuan_error_t err;
   assuan_context_t ctx;
-  int fd;
+  assuan_fd_t fd;
   struct sockaddr_un srvr_addr;
   size_t len;
   const char *s;
@@ -109,7 +106,7 @@ assuan_socket_connect_ext (assuan_context_t *r_ctx,
 
   /* We require that the name starts with a slash, so that we
      eventually can reuse this function for other socket types.  To
-     make things easier we allow an optional dirver prefix.  */
+     make things easier we allow an optional driver prefix.  */
   s = name;
   if (*s && s[1] == ':')
     s += 2;
@@ -126,7 +123,7 @@ assuan_socket_connect_ext (assuan_context_t *r_ctx,
   ctx->finish_handler = do_finish;
 
   fd = _assuan_sock_new (PF_LOCAL, SOCK_STREAM, 0);
-  if (fd == -1)
+  if (fd == ASSUAN_INVALID_FD)
     {
       _assuan_log_printf ("can't create socket: %s\n", strerror (errno));
       _assuan_release_context (ctx);
@@ -139,8 +136,7 @@ assuan_socket_connect_ext (assuan_context_t *r_ctx,
   srvr_addr.sun_path[sizeof (srvr_addr.sun_path) - 1] = 0;
   len = SUN_LEN (&srvr_addr);
 
-
-  if (_assuan_sock_connect (fd, (struct sockaddr *) &srvr_addr, len) == -1)
+  if ( _assuan_sock_connect (fd, (struct sockaddr *) &srvr_addr, len) == -1 )
     {
       _assuan_log_printf ("can't connect to `%s': %s\n",
                           name, strerror (errno));
