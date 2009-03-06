@@ -14,9 +14,7 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA. 
+ * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -60,8 +58,8 @@ assuan_get_pid (assuan_context_t ctx)
 
 
 #ifndef HAVE_W32_SYSTEM
-/* Return user credentials. PID, UID and GID amy be gived as NULL if
-   you are not interested in this value.  For getting the pid of the
+/* Return user credentials. PID, UID and GID may be given as NULL if
+   you are not interested in a value.  For getting the pid of the
    peer the assuan_get_pid is usually better suited. */
 assuan_error_t
 assuan_get_peercred (assuan_context_t ctx, pid_t *pid, uid_t *uid, gid_t *gid)

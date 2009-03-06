@@ -1,3 +1,7 @@
+2009-03-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan/: Update to libassuan SVN 2009-03-06.
+
 2009-01-26  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (AC_CONFIG_FILES): Add tests/opassuan/Makefile.

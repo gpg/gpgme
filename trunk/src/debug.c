@@ -145,8 +145,7 @@ debug_init (void)
         fprintf (errfp, "gpgme_debug: level=%d\n", debug_level);
 #ifdef HAVE_ASSUAN_H
       assuan_set_assuan_log_prefix ("gpgme-assuan");
-      assuan_set_assuan_log_stream (errfp);
-      assuan_set_assuan_log_level (debug_level >= 0? debug_level:0);
+      assuan_set_assuan_log_stream (debug_level > 0 ? errfp : NULL);
 #endif /* HAVE_ASSUAN_H*/
     }
   UNLOCK (debug_lock);

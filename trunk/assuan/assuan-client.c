@@ -14,9 +14,7 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA. 
+ * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -44,7 +42,11 @@ _assuan_read_from_server (assuan_context_t ctx, int *okay, int *off)
   *off = 0;
   do 
     {
-      rc = _assuan_read_line (ctx);
+      do
+	{
+	  rc = _assuan_read_line (ctx);
+	}
+      while (_assuan_error_is_eagain (rc));
       if (rc)
         return rc;
       line = ctx->inbound.line;

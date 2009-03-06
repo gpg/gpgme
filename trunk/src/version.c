@@ -56,7 +56,6 @@ do_subsystem_inits (void)
 
   _gpgme_sema_subsystem_init ();
 #ifdef HAVE_ASSUAN_H
-  assuan_set_assuan_log_level (0);
   assuan_set_assuan_err_source (GPG_ERR_SOURCE_GPGME);
 #endif /*HAVE_ASSUAN_H*/
   _gpgme_debug_subsystem_init ();
