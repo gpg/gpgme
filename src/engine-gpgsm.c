@@ -1,6 +1,6 @@
 /* engine-gpgsm.c - GpgSM engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -1575,12 +1575,19 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
 
   /* Always send key validation because RESET does not reset it.  */
 
-  /* Use the validation mode if required.  We don't check for an error
+  /* Use the validation mode if requested.  We don't check for an error
      yet because this is a pretty fresh gpgsm features. */
   gpgsm_assuan_simple_command (gpgsm->assuan_ctx, 
                                (mode & GPGME_KEYLIST_MODE_VALIDATE)?
                                "OPTION with-validation=1":
                                "OPTION with-validation=0" ,
+                               NULL, NULL);
+  /* Include the ephemeral keys if requested.  We don't check for an error
+     yet because this is a pretty fresh gpgsm features. */
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx, 
+                               (mode & GPGME_KEYLIST_MODE_EPHEMERAL)?
+                               "OPTION with-ephemeral-keys=1":
+                               "OPTION with-ephemeral-keys=0" ,
                                NULL, NULL);
 
 

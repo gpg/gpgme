@@ -1,3 +1,8 @@
+2009-03-18  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h.in (GPGME_KEYLIST_MODE_EPHEMERAL): New.
+	* engine-gpgsm.c (gpgsm_keylist): Send new option.
+
 2009-03-13  Werner Koch  <wk@g10code.com>
 
 	* gpgme-config.in: Make sure locale is set to C.
