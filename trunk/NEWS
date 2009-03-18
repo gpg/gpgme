@@ -3,6 +3,7 @@ Noteworthy changes in version 1.1.9
 
  * Interface changes relative to the 1.1.7 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPGME_KEYLIST_MODE_EPHEMERAL   NEW.
  GPGME_PROTOCOL_ASSUAN          NEW.
  gpgme_assuan_data_cb_t         NEW.
  gpgme_assuan_inquire_cb_t      NEW.

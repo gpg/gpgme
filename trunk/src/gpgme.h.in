@@ -312,6 +312,7 @@ gpgme_protocol_t;
 #define GPGME_KEYLIST_MODE_EXTERN		2
 #define GPGME_KEYLIST_MODE_SIGS			4
 #define GPGME_KEYLIST_MODE_SIG_NOTATIONS	8
+#define GPGME_KEYLIST_MODE_EPHEMERAL            128
 #define GPGME_KEYLIST_MODE_VALIDATE		256
 
 typedef unsigned int gpgme_keylist_mode_t;

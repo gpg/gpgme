@@ -2208,6 +2208,10 @@ signature notations on key signatures should be included in the listed
 keys.  This only works if @code{GPGME_KEYLIST_MODE_SIGS} is also
 enabled.
 
+@item GPGME_KEYLIST_MODE_EPHEMERAL
+The @code{GPGME_KEYLIST_MODE_EPHEMERAL} symbol specifies that keys
+flagged as ephemeral are included in the listing.
+
 @item GPGME_KEYLIST_MODE_VALIDATE
 The @code{GPGME_KEYLIST_MODE_VALIDATE} symbol specifies that the
 backend should do key or certificate validation and not just get the
