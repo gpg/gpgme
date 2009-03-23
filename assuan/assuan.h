@@ -224,6 +224,8 @@ int _gpgme_io_recvmsg (int sock, struct msghdr *msg, int flags);
 #define _assuan_sock_bind        _ASSUAN_PREFIX(_assuan_sock_bind)       
 #define _assuan_sock_get_nonce   _ASSUAN_PREFIX(_assuan_sock_get_nonce)
 #define _assuan_sock_check_nonce _ASSUAN_PREFIX(_assuan_sock_check_nonce)
+#define _assuan_close _ASSUAN_PREFIX(_assuan_close)
+#define _assuan_usleep _ASSUAN_PREFIX(_assuan_usleep)
 
 #endif /*_ASSUAN_EXT_SYM_PREFIX*/
 
