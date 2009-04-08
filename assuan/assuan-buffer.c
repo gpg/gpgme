@@ -245,11 +245,7 @@ assuan_read_line (assuan_context_t ctx, char **line, size_t *linelen)
   if (!ctx)
     return _assuan_error (ASSUAN_Invalid_Value);
 
-  do
-    {
-      err = _assuan_read_line (ctx);
-    }
-  while (_assuan_error_is_eagain (err));
+  err = _assuan_read_line (ctx);
 
   *line = ctx->inbound.line;
   *linelen = ctx->inbound.linelen;

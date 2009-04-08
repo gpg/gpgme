@@ -80,6 +80,13 @@
 
 static struct 
 {
+  int used;
+
+  /* If this is not -1, then it's a libc file descriptor.  */
+  int fd;
+  /* If fd is -1, this is the Windows socket handle.  */
+  int socket;
+
   GIOChannel *chan;
   /* The boolean PRIMARY is true if this file descriptor caused the
      allocation of CHAN.  Only then should CHAN be destroyed when this
@@ -102,20 +109,96 @@ static struct
 
 
 static GIOChannel *
-find_channel (int fd, int create)
+find_channel (int fd)
 {
   if (fd < 0 || fd >= MAX_SLAFD)
     return NULL;
 
-  if (create && !giochannel_table[fd].chan)
+  return giochannel_table[fd].chan;
+}
+
+
+/* Returns the FD or -1 on resource limit.  */
+int
+new_dummy_channel_from_fd (int cfd)
+{
+  int idx;
+
+  for (idx = 0; idx < MAX_SLAFD; idx++)
+    if (! giochannel_table[idx].used)
+      break;
+
+  if (idx == MAX_SLAFD)
     {
-      giochannel_table[fd].chan = g_io_channel_win32_new_fd (fd);
-      giochannel_table[fd].primary = 1;
-      g_io_channel_set_encoding (giochannel_table[fd].chan, NULL, NULL);
-      g_io_channel_set_buffered (giochannel_table[fd].chan, FALSE);
+      errno = EIO;
+      return -1;
     }
 
-  return giochannel_table[fd].chan;
+  giochannel_table[idx].used = 1;
+  giochannel_table[idx].chan = NULL;
+  giochannel_table[idx].fd = cfd;
+  giochannel_table[idx].socket = INVALID_SOCKET;
+  giochannel_table[idx].primary = 1;
+
+  return idx;
+}
+
+
+/* Returns the FD or -1 on resource limit.  */
+int
+new_channel_from_fd (int cfd)
+{
+  int idx;
+
+  for (idx = 0; idx < MAX_SLAFD; idx++)
+    if (! giochannel_table[idx].used)
+      break;
+
+  if (idx == MAX_SLAFD)
+    {
+      errno = EIO;
+      return -1;
+    }
+
+  giochannel_table[idx].used = 1;
+  giochannel_table[idx].chan = g_io_channel_win32_new_fd (cfd);
+  giochannel_table[idx].fd = cfd;
+  giochannel_table[idx].socket = INVALID_SOCKET;
+  giochannel_table[idx].primary = 1;
+
+  g_io_channel_set_encoding (giochannel_table[idx].chan, NULL, NULL);
+  g_io_channel_set_buffered (giochannel_table[idx].chan, FALSE);
+
+  return idx;
+}
+
+
+/* Returns the FD or -1 on resource limit.  */
+int
+new_channel_from_socket (int sock)
+{
+  int idx;
+
+  for (idx = 0; idx < MAX_SLAFD; idx++)
+    if (! giochannel_table[idx].used)
+      break;
+
+  if (idx == MAX_SLAFD)
+    {
+      errno = EIO;
+      return -1;
+    }
+
+  giochannel_table[idx].used = 1;
+  giochannel_table[idx].chan = g_io_channel_win32_new_socket (sock);
+  giochannel_table[idx].fd = -1;
+  giochannel_table[idx].socket = sock;
+  giochannel_table[idx].primary = 1;
+
+  g_io_channel_set_encoding (giochannel_table[idx].chan, NULL, NULL);
+  g_io_channel_set_buffered (giochannel_table[idx].chan, FALSE);
+
+  return idx;
 }
 
 
@@ -123,7 +206,7 @@ find_channel (int fd, int create)
 void *
 gpgme_get_giochannel (int fd)
 {
-  return find_channel (fd, 0);
+  return find_channel (fd);
 }
 
 
@@ -131,7 +214,7 @@ gpgme_get_giochannel (int fd)
 void *
 gpgme_get_fdptr (int fd)
 {
-  return find_channel (fd, 0);
+  return find_channel (fd);
 }
 
 
@@ -141,9 +224,17 @@ gpgme_get_fdptr (int fd)
 int
 _gpgme_io_fd2str (char *buf, int buflen, int fd)
 {
+  HANDLE hndl;
+    
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_fd2str", fd, "fd=%d", fd);
-  TRACE_SUC1 ("syshd=%p", _get_osfhandle (fd));
-  return snprintf (buf, buflen, "%d", (int) _get_osfhandle (fd));
+  if (giochannel_table[fd].fd != -1)
+    hndl = (HANDLE) _get_osfhandle (giochannel_table[fd].fd);
+  else
+    hndl = (HANDLE) giochannel_table[fd].socket;
+
+  TRACE_SUC1 ("syshd=%p", hndl);
+  
+  return snprintf (buf, buflen, "%d", (int) hndl);
 }
 
 
@@ -170,7 +261,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_read", fd,
 	      "buffer=%p, count=%u", buffer, count);
 
-  chan = find_channel (fd, 0);
+  chan = find_channel (fd);
   if (!chan)
     {
       TRACE_LOG ("no channel registered");
@@ -192,14 +283,20 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 
   if (status == G_IO_STATUS_EOF)
     nread = 0;
+  else if (status == G_IO_STATUS_AGAIN)
+    {
+      nread = -1;
+      saved_errno = EAGAIN;
+    }
   else if (status != G_IO_STATUS_NORMAL)
     {
       TRACE_LOG1 ("status %d", status);
       nread = -1;
       saved_errno = EIO;
     }
-
-  TRACE_LOGBUF (buffer, nread);
+  
+  if (nread != 0 && nread != -1)
+    TRACE_LOGBUF (buffer, nread);
 
   errno = saved_errno;
   return TRACE_SYSRES (nread);
@@ -213,11 +310,13 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   gsize nwritten;
   GIOChannel *chan;
   GIOStatus status;
+  GError *err = NULL;
+
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_write", fd,
 	      "buffer=%p, count=%u", buffer, count);
   TRACE_LOGBUF (buffer, count);
 
-  chan = find_channel (fd, 0);
+  chan = find_channel (fd);
   if (!chan)
     {
       TRACE_LOG ("fd %d: no channel registered");
@@ -226,8 +325,19 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
     }
 
   status = g_io_channel_write_chars (chan, (gchar *) buffer, count,
-				     &nwritten, NULL);
-  if (status != G_IO_STATUS_NORMAL)
+				     &nwritten, &err);
+  if (err)
+    {
+      TRACE_LOG1 ("write error: %s", err->message);
+      g_error_free (err);
+    }
+
+  if (status == G_IO_STATUS_AGAIN)
+    {
+      nwritten = -1;
+      saved_errno = EAGAIN;
+    }
+  else if (status != G_IO_STATUS_NORMAL)
     {
       nwritten = -1;
       saved_errno = EIO;
@@ -241,13 +351,14 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 int
 _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
-  GIOChannel *chan;
+  int fds[2];
+
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
 	      "inherit_idx=%i (GPGME uses it for %s)",
 	      inherit_idx, inherit_idx ? "reading" : "writing");
 
 #define PIPEBUF_SIZE  4096
-  if (_pipe (filedes, PIPEBUF_SIZE, O_NOINHERIT | O_BINARY) == -1)
+  if (_pipe (fds, PIPEBUF_SIZE, O_NOINHERIT | O_BINARY) == -1)
     return TRACE_SYSRES (-1);
 
   /* Make one end inheritable. */
@@ -255,13 +366,13 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
     {
       int new_read;
 
-      new_read = _dup (filedes[0]);
-      _close (filedes[0]);
-      filedes[0] = new_read;
+      new_read = _dup (fds[0]);
+      _close (fds[0]);
+      fds[0] = new_read;
 
       if (new_read < 0)
 	{
-	  _close (filedes[1]);
+	  _close (fds[1]);
 	  return TRACE_SYSRES (-1);
 	}
     }
@@ -269,33 +380,48 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
     {
       int new_write;
 
-      new_write = _dup (filedes[1]);
-      _close (filedes[1]);
-      filedes[1] = new_write;
+      new_write = _dup (fds[1]);
+      _close (fds[1]);
+      fds[1] = new_write;
 
       if (new_write < 0)
 	{
-	  _close (filedes[0]);
+	  _close (fds[0]);
 	  return TRACE_SYSRES (-1);
 	}
     }
 
-  /* Now we have a pipe with the right end inheritable.  The other end
-     should have a giochannel.  */
-  chan = find_channel (filedes[1 - inherit_idx], 1);
-  if (!chan)
+  /* For _gpgme_io_close.  */
+  filedes[inherit_idx] = new_dummy_channel_from_fd (fds[inherit_idx]);
+  if (filedes[inherit_idx] < 0)
     {
       int saved_errno = errno;
-      _close (filedes[0]);
-      _close (filedes[1]);
+      
+      _close (fds[0]);
+      _close (fds[1]);
       errno = saved_errno;
       return TRACE_SYSRES (-1);
     }
 
+  /* Now we have a pipe with the correct end inheritable.  The other end
+     should have a giochannel.  */
+  filedes[1 - inherit_idx] = new_channel_from_fd (fds[1 - inherit_idx]);
+  if (filedes[1 - inherit_idx] < 0)
+    {
+      int saved_errno = errno;
+      
+      _gpgme_io_close (fds[inherit_idx]);
+      _close (fds[1 - inherit_idx]);
+      errno = saved_errno;
+      return TRACE_SYSRES (-1);
+    }
+  
   return TRACE_SUC5 ("read=0x%x/%p, write=0x%x/%p, channel=%p",
-	  filedes[0], (HANDLE) _get_osfhandle (filedes[0]),
-	  filedes[1], (HANDLE) _get_osfhandle (filedes[1]),
-	  chan);
+		     filedes[0],
+		     (HANDLE) _get_osfhandle (giochannel_table[filedes[0]].fd),
+		     filedes[1],
+		     (HANDLE) _get_osfhandle (giochannel_table[filedes[1]].fd),
+		     giochannel_table[1 - inherit_idx].chan);
 }
 
 
@@ -310,6 +436,8 @@ _gpgme_io_close (int fd)
       return TRACE_SYSRES (-1);
     }
 
+  assert (giochannel_table[fd].used);
+
   /* First call the notify handler.  */
   if (notify_table[fd].handler)
     {
@@ -318,19 +446,26 @@ _gpgme_io_close (int fd)
       notify_table[fd].value = NULL;
     }
 
-  /* Then do the close.  */    
+  /* Then do the close.  */
   if (giochannel_table[fd].chan)
     {
       if (giochannel_table[fd].primary)
 	g_io_channel_shutdown (giochannel_table[fd].chan, 1, NULL);
-      else
-	_close (fd);
-
+      
       g_io_channel_unref (giochannel_table[fd].chan);
-      giochannel_table[fd].chan = NULL;
     }
   else
-    _close (fd);
+    {
+      /* Dummy entry, just close.  */
+      assert (giochannel_table[fd].fd != -1);
+      _close (giochannel_table[fd].fd);
+    }
+	
+  giochannel_table[fd].used = 0;
+  giochannel_table[fd].fd = -1;
+  giochannel_table[fd].socket = INVALID_SOCKET;
+  giochannel_table[fd].chan = NULL;
+  giochannel_table[fd].primary = 0;
 
   TRACE_SUC ();
   return 0;
@@ -365,16 +500,17 @@ _gpgme_io_set_nonblocking (int fd)
  
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", fd);
 
-  chan = find_channel (fd, 0);
+  chan = find_channel (fd);
   if (!chan)
     {
       errno = EIO;
       return TRACE_SYSRES (-1);
     }
 
-   status = g_io_channel_set_flags (chan,
+  status = g_io_channel_set_flags (chan,
 				   g_io_channel_get_flags (chan) |
 				   G_IO_FLAG_NONBLOCK, NULL);
+
   if (status != G_IO_STATUS_NORMAL)
     {
 #if 0
@@ -549,7 +685,8 @@ _gpgme_io_spawn (const char *path, char * const argv[],
       HANDLE hd;
 
       /* Make it inheritable for the wrapper process.  */
-      if (!DuplicateHandle (GetCurrentProcess(), _get_osfhandle (fd_list[i].fd),
+      if (!DuplicateHandle (GetCurrentProcess(),
+			    _get_osfhandle (giochannel_table[fd_list[i].fd].fd),
 			    pi.hProcess, &hd, 0, TRUE, DUPLICATE_SAME_ACCESS))
 	{
 	  TRACE_LOG1 ("DuplicateHandle failed: ec=%d", (int) GetLastError ());
@@ -694,7 +831,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	continue;
 
       if ((fds[i].for_read || fds[i].for_write)
-          && !(chan = find_channel (fds[i].fd, 0)))
+          && !(chan = find_channel (fds[i].fd)))
         {
           TRACE_ADD1 (dbg_help, "[BAD0x%x ", fds[i].fd);
           TRACE_END (dbg_help, "]"); 
@@ -786,27 +923,147 @@ _gpgme_io_dup (int fd)
 {
   int newfd;
   GIOChannel *chan;
-  
-  TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_dup", fd, "dup (%d)", fd);
 
-  newfd = _dup (fd);
-  if (newfd == -1)
-    return TRACE_SYSRES (-1);
-  if (newfd < 0 || newfd >= MAX_SLAFD)
+  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_dup", fd);
+
+  if (fd < 0 || fd >= MAX_SLAFD || !giochannel_table[fd].used)
     {
-      /* New FD won't fit into our table.  */
-      _close (newfd);
-      errno = EIO; 
+      errno = EINVAL;
       return TRACE_SYSRES (-1);
     }
-  assert (giochannel_table[newfd].chan == NULL);
 
-  chan = find_channel (fd, 0);
-  assert (chan);
-
+  for (newfd = 0; newfd < MAX_SLAFD; newfd++)
+    if (! giochannel_table[newfd].used)
+      break;
+  if (newfd == MAX_SLAFD)
+    {
+      errno = EIO;
+      return TRACE_SYSRES (-1);
+    }
+  
+  chan = giochannel_table[fd].chan;
   g_io_channel_ref (chan);
+  giochannel_table[newfd].used = 1;
   giochannel_table[newfd].chan = chan;
+  giochannel_table[newfd].fd = -1;
+  giochannel_table[newfd].socket = INVALID_SOCKET;
   giochannel_table[newfd].primary = 0;
 
   return TRACE_SYSRES (newfd);
+}
+
+
+
+
+
+static int
+wsa2errno (int err)
+{
+  switch (err)
+    {
+    case WSAENOTSOCK:
+      return EINVAL;
+    case WSAEWOULDBLOCK:
+      return EAGAIN;
+    case ERROR_BROKEN_PIPE:
+      return EPIPE;
+    case WSANOTINITIALISED:
+      return ENOSYS;
+    default:
+      return EIO;
+    }
+}
+
+
+int
+_gpgme_io_socket (int domain, int type, int proto)
+{
+  int res;
+  int fd;
+
+  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_socket", domain,
+	      "type=%i, protp=%i", type, proto);
+
+  res = socket (domain, type, proto);
+  if (res == INVALID_SOCKET)
+    {
+      errno = wsa2errno (WSAGetLastError ());
+      return TRACE_SYSRES (-1);
+    }
+
+  fd = new_channel_from_socket (res);
+  if (fd < 0)
+    {
+      int saved_errno = errno;
+      closesocket (res);
+      errno = saved_errno;
+      return TRACE_SYSRES (-1);
+    }
+
+  TRACE_SUC2 ("fd=%i, socket=0x%x", fd, res);
+  
+  return fd;
+}
+
+
+int
+_gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
+{
+  GIOChannel *chan; 
+  int sockfd;
+  int res;
+  GIOFlags flags;
+  GIOStatus status;
+  GError *err = NULL;
+
+  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_connect", fd,
+	      "addr=%p, addrlen=%i", addr, addrlen);
+
+  chan = find_channel (fd);
+  if (! chan)
+    {
+      errno = EINVAL;
+      return TRACE_SYSRES (-1);
+    }
+
+  flags = g_io_channel_get_flags (chan);
+  if (flags & G_IO_FLAG_NONBLOCK)
+    {
+      status = g_io_channel_set_flags (chan, flags & ~G_IO_FLAG_NONBLOCK, &err);
+      if (err)
+	{
+	  TRACE_LOG1 ("setting flags error: %s", err->message);
+	  g_error_free (err);
+	  err = NULL;
+	}
+      if (status != G_IO_STATUS_NORMAL)
+	{
+	  errno = EIO;
+	  return TRACE_SYSRES (-1);
+	}
+    }
+
+  sockfd = giochannel_table[fd].socket;
+  if (sockfd == INVALID_SOCKET)
+    {
+      errno = EINVAL;
+      return TRACE_SYSRES (-1);
+    }
+
+  TRACE_LOG1 ("connect sockfd=0x%x", sockfd);
+  res = connect (sockfd, addr, addrlen);
+
+  /* FIXME: Error ignored here.  */
+  if (! (flags & G_IO_FLAG_NONBLOCK))
+    g_io_channel_set_flags (chan, flags, NULL);
+
+  if (res)
+    {
+      TRACE_LOG2 ("connect failed: %i %i", res, WSAGetLastError ());
+
+      errno = wsa2errno (WSAGetLastError ());
+      return TRACE_SYSRES (-1);
+    }
+
+  return TRACE_SUC ();
 }

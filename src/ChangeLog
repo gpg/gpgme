@@ -1,3 +1,22 @@
+2009-04-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* w32-glib-io.c (giochannel_table): New members used, fd, socket.
+	(find_channel): Drop CREATE argument.
+	(new_dummy_channel_from_fd, new_channel_from_fd)
+	(new_channel_from_socket): New functions.
+	(_gpgm_io_fd2str): Implement for sockets.
+	(_gpgme_io_write, _gpgme_io_read): Translate EAGAIN errors
+	correctly.
+	(_gpgme_io_pipe): Fix for new channel bookkeeping.
+	(_gpgme_io_close, _gpgme_io_dup): Likewise.
+	(wsa2errno, _gpgme_io_socket, _gpgme_io_connect): New.
+	* w32-io.c (MAX_READERS, MAX_WRITERS): Bump up to 40.
+	(wsa2errno, _gpgme_io_socket, _gpgme_io_connect): New.
+	* w32-qt-io.cpp (_gpgme_io_socket, _gpgme_io_connect): New stubs.
+	* version.c [HAVE_W32_SYSTEM]: Include "windows.h.
+	(do_subsystem_inits) [HAVE_W32_SYSTEM]: Call WSAStartup.
+	* engine-assuan.c (llass_status_handler): Ignore EAGAIN errors.
+
 2009-03-18  Werner Koch  <wk@g10code.com>
 
 	* gpgme.h.in (GPGME_KEYLIST_MODE_EPHEMERAL): New.
