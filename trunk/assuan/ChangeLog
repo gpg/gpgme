@@ -1,3 +1,16 @@
+2009-04-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan.h (_gpgme_io_socket): New prototype.
+	(_ASSUAN_CUSTOM_IO, _assuan_custom_close, _assuan_custom_read)
+	(_assuan_custom_write, _assuan_custom_pipe, _assuan_custom_socket)
+	(_assuan_custom_connect): New macros.
+	* assuan-socket.c (_assuan_close, _assuan_sock_new)
+	(_assuan_sock_connect) [_ASSUAN_CUSTOM_IO]: Use custom I/O function.
+	* assuan-buffer.c (assuan_read_line): Do not handle EAGAIN anymore.
+	* assuan-client.c (_assuan_read_from_server): Likewise.
+	* assuan-handler.c (process_next): Likewise
+	* assuan-inquire.c (assuan_inquire): Likewise.
+
 2009-03-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan.h: Add prefix macros for _assuan_close and _assuan_usleep.

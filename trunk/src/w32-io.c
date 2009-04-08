@@ -53,8 +53,8 @@
 #define READBUF_SIZE 4096
 #define WRITEBUF_SIZE 4096
 #define PIPEBUF_SIZE  4096
-#define MAX_READERS 20
-#define MAX_WRITERS 20
+#define MAX_READERS 40
+#define MAX_WRITERS 40
 
 static struct
 {
@@ -1468,4 +1468,64 @@ void *
 gpgme_get_fdptr (int fd)
 {
   return NULL;
+}
+
+
+static int
+wsa2errno (int err)
+{
+  switch (err)
+    {
+    case WSAENOTSOCK:
+      return EINVAL;
+    case WSAEWOULDBLOCK:
+      return EAGAIN;
+    case ERROR_BROKEN_PIPE:
+      return EPIPE;
+    case WSANOTINITIALISED:
+      return ENOSYS;
+    default:
+      return EIO;
+    }
+}
+
+
+int
+_gpgme_io_socket (int domain, int type, int proto)
+{
+  int res;
+
+  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_socket", domain,
+	      "type=%i, protp=%i", type, proto);
+
+  res = socket (domain, type, proto);
+  if (res == INVALID_SOCKET)
+    {
+      errno = wsa2errno (WSAGetLastError ());
+      return TRACE_SYSRES (-1);
+    }
+
+  TRACE_SUC1 ("socket=0x%x", res);
+  
+  return res;
+}
+
+
+int
+_gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
+{
+  int sockfd;
+  int res;
+
+  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_connect", fd,
+	      "addr=%p, addrlen=%i", addr, addrlen);
+
+  res = connect (sockfd, addr, addrlen);
+  if (!res)
+    {
+      errno = wsa2errno (WSAGetLastError ());
+      return TRACE_SYSRES (-1);
+    }
+
+  return TRACE_SUC ();
 }

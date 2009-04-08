@@ -1,5 +1,12 @@
 Hey Emacs, this is -*- outline -*- mode!
 
+* IMPORTANT
+** When using descriptor passing, we need to set the fd to blocking before
+   issueing simple commands, because we are mixing synchronous
+   commands into potentially asynchronous operations.
+** Might want to implement nonblock for w32 native backend!  Right now,
+   we block reading the next line with assuan.
+
 * Before release:
 ** Figure out if _gpgme_io_pipe should pre-create reader/writer and if we
    then can use !start_it in most invocations.  Note that gpgme_io_dup

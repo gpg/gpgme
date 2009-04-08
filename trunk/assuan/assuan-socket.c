@@ -145,7 +145,10 @@ read_port_and_nonce (const char *fname, unsigned short *port, char *nonce)
 int
 _assuan_close (assuan_fd_t fd)
 {
-#if defined (HAVE_W32_SYSTEM) && !defined(_ASSUAN_IN_GPGME_BUILD_ASSUAN)
+#ifdef _ASSUAN_CUSTOM_IO
+  return _assuan_custom_close (fd);
+#else
+#ifdef (HAVE_W32_SYSTEM)
   int rc = closesocket (HANDLE2SOCKET(fd));
   if (rc)
     errno = _assuan_sock_wsa2errno (WSAGetLastError ());
@@ -160,6 +163,7 @@ _assuan_close (assuan_fd_t fd)
 #else
   return close (fd);
 #endif
+#endif
 }
 
 
@@ -173,12 +177,24 @@ _assuan_sock_new (int domain, int type, int proto)
   assuan_fd_t res;
   if (domain == AF_UNIX || domain == AF_LOCAL)
     domain = AF_INET;
+
+#ifdef _ASSUAN_CUSTOM_IO
+  return _assuan_custom_socket (domain, type, proto);
+#else
   res = SOCKET2HANDLE(socket (domain, type, proto));
   if (res == ASSUAN_INVALID_FD)
     errno = _assuan_sock_wsa2errno (WSAGetLastError ());
   return res;
+#endif
+
+#else
+
+#ifdef _ASSUAN_CUSTOM_IO
+  return _gpgme_io_socket (domain, type, proto);
 #else
   return socket (domain, type, proto);
+#endif
+
 #endif
 }
 
@@ -208,11 +224,18 @@ _assuan_sock_connect (assuan_fd_t sockfd, struct sockaddr *addr, int addrlen)
       unaddr->sun_port = myaddr.sin_port;
       unaddr->sun_addr.s_addr = myaddr.sin_addr.s_addr;
   
+#ifdef _ASSUAN_CUSTOM_IO
+      ret = _assuan_custom_connect (sockfd,
+				    (struct sockaddr *)&myaddr, sizeof myaddr);
+#else
       ret = connect (HANDLE2SOCKET(sockfd), 
                      (struct sockaddr *)&myaddr, sizeof myaddr);
+#endif
+
       if (!ret)
         {
           /* Send the nonce. */
+
           ret = _assuan_io_write (sockfd, nonce, 16);
           if (ret >= 0 && ret != 16)
             {
@@ -220,6 +243,8 @@ _assuan_sock_connect (assuan_fd_t sockfd, struct sockaddr *addr, int addrlen)
               ret = -1;
             }
         }
+      else
+        errno = _assuan_sock_wsa2errno (WSAGetLastError ());
       return ret;
     }
   else
@@ -231,7 +256,13 @@ _assuan_sock_connect (assuan_fd_t sockfd, struct sockaddr *addr, int addrlen)
       return res;
     }      
 #else
+
+#ifdef _ASSUAN_CUSTOM_IO
+  return _assuan_custom_connect (sockfd, addr, addrlen);
+#else
   return connect (sockfd, addr, addrlen);
+#endif
+
 #endif
 }
 

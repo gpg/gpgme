@@ -674,3 +674,20 @@ _gpgme_io_dup (int fd)
     return fd;
 }
 
+
+extern "C"
+int
+_gpgme_io_socket (int domain, int type, int proto)
+{
+  errno = EIO;
+  return -1;
+}
+
+
+extern "C"
+int
+_gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
+{
+  errno = EIO;
+  return -1;
+}

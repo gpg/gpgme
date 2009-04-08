@@ -415,7 +415,18 @@ llass_status_handler (void *opaque, int fd)
       err = assuan_read_line (llass->assuan_ctx, &line, &linelen);
       if (err)
 	{
-          TRACE2 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
+	  /* Reading a full line may not be possible when
+	     communicating over a socket in nonblocking mode.  In this
+	     case, we are done for now.  */
+	  if (gpg_err_code (err) == GPG_ERR_EAGAIN)
+	    {
+	      TRACE1 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
+		      "fd 0x%x: EAGAIN reading assuan line (ignored)", fd);
+	      err = 0;
+	      continue;
+	    }
+	  
+	  TRACE2 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: error reading assuan line: %s",
                   fd, gpg_strerror (err));
 	}

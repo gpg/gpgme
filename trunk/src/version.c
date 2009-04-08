@@ -40,6 +40,10 @@
 #include "assuan.h"
 #endif
 
+#ifdef HAVE_W32_SYSTEM
+#include "windows.h"
+#endif
+
 
 /* Bootstrap the subsystems needed for concurrent operation.  This
    must be done once at startup.  We can not guarantee this using a
@@ -53,6 +57,14 @@ do_subsystem_inits (void)
 
   if (done)
     return;
+
+#ifdef HAVE_W32_SYSTEM
+      {
+        WSADATA wsadat;
+        
+        WSAStartup (0x202, &wsadat);
+      }
+#endif
 
   _gpgme_sema_subsystem_init ();
 #ifdef HAVE_ASSUAN_H

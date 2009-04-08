@@ -77,6 +77,7 @@ int _gpgme_io_read (int fd, void *buffer, size_t count);
 int _gpgme_io_write (int fd, const void *buffer, size_t count);
 int _gpgme_io_sendmsg (int sock, const struct msghdr *msg, int flags);
 int _gpgme_io_recvmsg (int sock, struct msghdr *msg, int flags);
+int _gpgme_io_socket (int domain, int type, int proto);
 
 #define _assuan_funopen _gpgme_funopen
 
@@ -90,6 +91,15 @@ int _gpgme_io_recvmsg (int sock, struct msghdr *msg, int flags);
 #define sendmsg	      _gpgme_io_sendmsg
 #define recvmsg       _gpgme_io_recvmsg
 #endif /*_ASSUAN_IN_GPGME_BUILD_ASSUAN*/
+
+#define _ASSUAN_CUSTOM_IO 1
+#define _assuan_custom_close _gpgme_io_close
+#define _assuan_custom_read _gpgme_io_read
+#define _assuan_custom_write _gpgme_io_write
+#define _assuan_custom_pipe _gpgme_io_pipe
+#define _assuan_custom_socket _gpgme_io_socket
+#define _assuan_custom_connect _gpgme_io_connect
+
 /**** End GPGME specific modifications. ******/
 
 
