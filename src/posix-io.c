@@ -653,3 +653,31 @@ _gpgme_io_dup (int fd)
 
   return new_fd;
 }
+
+
+int
+_gpgme_io_socket (int domain, int type, int proto)
+{
+  int res;
+
+  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_socket", domain,
+	      "type=%i, proto=%i", type, proto);
+
+  res = socket (domain, type, proto);
+
+  return TRACE_SYSRES (res);
+}
+
+
+int
+_gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
+{
+  int res;
+
+  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_connect", fd,
+	      "addr=%p, addrlen=%i", addr, addrlen);
+
+  res = ath_connect (fd, addr, addrlen);
+
+  return TRACE_SYSRES (res);
+}

@@ -1514,13 +1514,12 @@ _gpgme_io_socket (int domain, int type, int proto)
 int
 _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
 {
-  int sockfd;
   int res;
 
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_connect", fd,
 	      "addr=%p, addrlen=%i", addr, addrlen);
 
-  res = connect (sockfd, addr, addrlen);
+  res = connect (fd, addr, addrlen);
   if (!res)
     {
       errno = wsa2errno (WSAGetLastError ());
