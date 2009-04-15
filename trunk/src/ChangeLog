@@ -1,3 +1,8 @@
+2009-04-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* posix-io.c (_gpgme_io_socket, _gpgme_io_connect): New functions.
+	* w32-io.c (_gpgme_io_connect): Fix stupid error.
+
 2009-04-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* w32-glib-io.c (giochannel_table): New members used, fd, socket.
