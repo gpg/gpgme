@@ -1,5 +1,5 @@
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2004, 2005 g10 Code GmbH
+# Copyright (C) 2001, 2004, 2005, 2009 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -40,7 +40,7 @@ TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers		\
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf
 DISTCLEANFILES = pubring.gpg~ pubring.kbx~ random_seed gpg.conf gpg-agent.conf
 
-EXTRA_DIST = mkdemodirs pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
+EXTRA_DIST = mkdemodirs.in pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 	geheim.txt pubkey-1.asc seckey-1.asc pinentry
 
 INCLUDES = -I$(top_builddir)/src
@@ -52,8 +52,13 @@ t_thread1_LDADD = ../../src/libgpgme-pthread.la
 # We don't run t-genkey in the test suite, because it takes too long
 noinst_PROGRAMS = $(TESTS) t-genkey
 
+mkdemodirs: mkdemodirs.in Makefile
+	sed -e 's,[@]GPG[@],$(GPG),g' < $(srcdir)/mkdemodirs.in > mkdemodirs
+	chmod +x mkdemodirs
+
 clean-local:
-	$(srcdir)/mkdemodirs --clean
+	-./mkdemodirs --clean
+	-rm -f mkdemodirs
 
 all-local: ./pubring.gpg ./gpg.conf ./gpg-agent.conf
 
@@ -62,8 +67,8 @@ all-local: ./pubring.gpg ./gpg.conf ./gpg-agent.conf
 	$(GPG) --homedir . --allow-secret-key-import \
 		--import Alpha/Secret.gpg Zulu/Secret.gpg
 
-./Alpha/Secret.gpg: secdemo.asc 
-	srcdir=$(srcdir) $(srcdir)/mkdemodirs 
+./Alpha/Secret.gpg: mkdemodirs secdemo.asc 
+	srcdir=$(srcdir) ./mkdemodirs 
 
 ./gpg.conf:
 # This is required for t-sig-notations.

@@ -1,3 +1,14 @@
+2009-04-19  Moritz  <moritz@gnu.org>
+
+	* gpg/Makefile.am (EXTRA_DIST): Replaced mkdemodirs with mkdemodirs.in.
+	(mkdemodirs): New target.
+	(clean-local): Added command for removing mkdemodirs script.
+	(./Alpha/Secret.gpg): Added dependency on mkdemodirs.
+
+	* gpg/mkdemodirs: Renamed to ...
+	* gpg/mkdemodirs.in: ... here.
+	* gpg/mkdemodirs.in (GPG): Derive value from @GPG@ instead of hard-coding "gpg".
+
 2009-02-24  Werner Koch  <wk@g10code.com>
 
 	* opassuan/t-command.c: Adjust for changed new op_assuan interface.

@@ -19,7 +19,7 @@
 
 set -e
 
-GPG="gpg --batch --quiet --no-secmem-warning"
+GPG="@GPG@ --batch --quiet --no-secmem-warning"
 NAMES='Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel India
        Juliet Kilo Lima Mike November Oscar Papa Quebec Romeo
        Sierra Tango Uniform Victor Whisky XRay Yankee Zulu'
