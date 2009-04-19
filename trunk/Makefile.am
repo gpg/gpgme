@@ -1,6 +1,6 @@
 # Makefile.am - Top level Makefile for GPGME.
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2004, 2005, 2008 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2004, 2005, 2008, 2009 g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -21,6 +21,8 @@
 
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = dist-bzip2
+
+DISTCHECK_CONFIGURE_FLAGS = --with-gpg="@GPG@"
 
 EXTRA_DIST = gpgme.spec.in autogen.sh 
 
