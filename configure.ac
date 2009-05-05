@@ -198,6 +198,18 @@ AC_CHECK_SIZEOF(unsigned int)
 AC_SYS_LARGEFILE
 AC_TYPE_OFF_T
 
+# A simple compile time check in gpgme.h for GNU/Linux systems that
+# prevents a file offset bits mismatch between gpgme and the application.
+NEED__FILE_OFFSET_BITS=0
+case $ac_cv_sys_file_offset_bits in
+  no | unknown) ;;
+  *)
+  NEED__FILE_OFFSET_BITS=$ac_cv_sys_file_offset_bits
+  ;;
+esac
+AC_SUBST(NEED__FILE_OFFSET_BITS)
+
+
 # Checks for compiler features.
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
