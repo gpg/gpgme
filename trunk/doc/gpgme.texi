@@ -874,12 +874,12 @@ if (gpgme_err_code (err) == GPG_ERR_INV_ENGINE)
         if (!info)
           fprintf (stderr, "GPGME compiled without support for protocol %s",
                    gpgme_get_protocol_name (info->protocol));
-        else if (info->path && !info->version)
+        else if (info->file_name && !info->version)
           fprintf (stderr, "Engine %s not installed properly",
-                   info->path);
-        else if (info->path && info->version && info->req_version)
+                   info->file_name);
+        else if (info->file_name && info->version && info->req_version)
           fprintf (stderr, "Engine %s version %s installed, "
-                   "but at least version %s required", info->path,
+                   "but at least version %s required", info->file_name,
                    info->version, info->req_version);
         else
           fprintf (stderr, "Unknown problem with engine for protocol %s",
