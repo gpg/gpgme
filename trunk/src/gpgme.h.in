@@ -74,6 +74,17 @@ extern "C" {
    library.  */
 #define GPGME_VERSION "@PACKAGE_VERSION@"
 
+/* Check for a matching _FILE_OFFSET_BITS definition.  */
+#if @NEED__FILE_OFFSET_BITS@
+#ifndef _FILE_OFFSET_BITS
+#error GPGME was compiled with _FILE_OFFSET_BITS = @NEED__FILE_OFFSET_BITS@, please see the section "Largefile support (LFS)" in the GPGME manual.
+#else
+#if (_FILE_OFFSET_BITS) != (@NEED__FILE_OFFSET_BITS@)
+#error GPGME was compiled with a different value for _FILE_OFFSET_BITS, namely @NEED__FILE_OFFSET_BITS@, please see the section "Largefile support (LFS)" in the GPGME manual.
+#endif
+#endif
+#endif
+
 
 
 /* Some opaque data types used by GPGME.  */
