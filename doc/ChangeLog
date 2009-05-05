@@ -1,3 +1,7 @@
+2009-05-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Engine Information): Replace path by file_name.
+
 2008-11-28  Werner Koch  <wk@g10code.com>
 
 	* gpgme.texi (Listing Keys): Change description of the return
