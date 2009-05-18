@@ -4723,6 +4723,12 @@ The @code{GPGME_ENCRYPT_ALWAYS_TRUST} symbol specifies that all the
 recipients in @var{recp} should be trusted, even if the keys do not
 have a high enough validity in the keyring.  This flag should be used
 with care; in general it is not a good idea to use any untrusted keys.
+
+@item GPGME_ENCRYPT_NO_ENCRYPT_TO
+The @code{GPGME_ENCRYPT_NO_ENCRYPT_TO} symbol specifies that no
+default or hidden default recipients as configured in the crypto
+backend should be included.  This can be useful for managing different
+user profiles.
 @end table
 
 If @code{GPG_ERR_UNUSABLE_PUBKEY} is returned, some recipients in

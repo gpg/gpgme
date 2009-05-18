@@ -1168,7 +1168,8 @@ gpgme_encrypt_result_t gpgme_op_encrypt_result (gpgme_ctx_t ctx);
 /* The valid encryption flags.  */
 typedef enum
   {
-    GPGME_ENCRYPT_ALWAYS_TRUST = 1
+    GPGME_ENCRYPT_ALWAYS_TRUST = 1,
+    GPGME_ENCRYPT_NO_ENCRYPT_TO = 2
   }
 gpgme_encrypt_flags_t;
 
