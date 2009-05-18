@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.1.9
 ------------------------------------------------
 
+ * New encryption flag GPGME_ENCRYPT_NO_ENCRYPT_TO to disable default
+   recipients.
+
  * Interface changes relative to the 1.1.7 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_KEYLIST_MODE_EPHEMERAL   NEW.
@@ -12,6 +15,7 @@ Noteworthy changes in version 1.1.9
  gpgme_op_assuan_transact       NEW.
  gpgme_op_assuan_result         NEW.
  gpgme_subkey_t                 EXTENDED: New fields is_cardkey, card_number.
+ GPGME_ENCRYPT_NO_ENCRYPT_TO    NEW.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

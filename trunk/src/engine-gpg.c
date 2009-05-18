@@ -1611,8 +1611,11 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
     {
       /* If we know that all recipients are valid (full or ultimate trust)
 	 we can suppress further checks.  */
-      if (!err && !symmetric && (flags & GPGME_ENCRYPT_ALWAYS_TRUST))
+      if (!err && (flags & GPGME_ENCRYPT_ALWAYS_TRUST))
 	err = add_arg (gpg, "--always-trust");
+
+      if (!err && (flags & GPGME_ENCRYPT_NO_ENCRYPT_TO))
+	err = add_arg (gpg, "--no-encrypt-to");
 
       if (!err)
 	err = append_args_from_recipients (gpg, recp);

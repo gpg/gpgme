@@ -1,3 +1,10 @@
+2009-05-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h.in (gpgme_encrypt_flags_t): Add
+	GPGME_ENCRYPT_NO_ENCRYPT_TO.
+	* engine-gpg.c (gpg_encrypt): Pass --no-encrypt-to to gpg if
+	GPGME_ENCRYPT_NO_ENCRYPT_TO flag is set.
+
 2009-05-14  Werner Koch  <wk@g10code.com>
 
 	* gpgme.h.in (gpgme_status_code_t): Explicitly initialize for
