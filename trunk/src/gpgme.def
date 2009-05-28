@@ -171,5 +171,8 @@ EXPORTS
     gpgme_op_assuan_result                @132
     gpgme_op_assuan_transact_start        @133
     gpgme_op_assuan_transact              @134
+
+    gpgme_check_version_internal	  @135
+
 ; END
 

@@ -577,13 +577,13 @@ automatically by Libtool.
 @cindex version check, of the library
 
 @deftypefun {const char *} gpgme_check_version (@w{const char *@var{required_version}})
-The function @code{gpgme_check_version} has three purposes.  It can be
+The function @code{gpgme_check_version} has four purposes.  It can be
 used to retrieve the version number of the library.  In addition it
 can verify that the version number is higher than a certain required
 version number.  In either case, the function initializes some
 sub-systems, and for this reason alone it must be invoked early in
 your program, before you make use of the other functions in
-@acronym{GPGME}. 
+@acronym{GPGME}.  The last purpose is to run selftests.
 
 As a side effect for W32 based systems, the socket layer will get
 initialized.
@@ -606,6 +606,11 @@ If you use a version of a library that is backwards compatible with
 older releases, but contains additional interfaces which your program
 uses, this function provides a run-time check if the necessary
 features are provided by the installed version of the library.
+
+If a selftest fails, the function may still succeed.  Selftest errors
+are returned later when invoking @code{gpgme_new}, so that a detailed
+error code can be returned (historically, @code{gpgme_check_version}
+does not return a detailed error code).
 @end deftypefun
 
 
@@ -1985,7 +1990,11 @@ and returns a handle for it in @var{ctx}.
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 context was successfully created, @code{GPG_ERR_INV_VALUE} if
 @var{ctx} is not a valid pointer, and @code{GPG_ERR_ENOMEM} if not
-enough memory is available.
+enough memory is available.  Also, it returns
+@code{GPG_ERR_NOT_OPERATIONAL} if @code{gpgme_check_version} was not
+called to initialize GPGME, and @code{GPG_ERR_SELFTEST_FAILED} if a
+selftest failed.  Currently, the only selftest is for Windows MingW32
+targets to see if @code{-mms-bitfields} was used (as required).
 @end deftypefun
 
 

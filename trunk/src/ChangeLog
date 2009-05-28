@@ -1,3 +1,16 @@
+2009-05-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h.in (gpgme_check_version_internal): New prototype.
+	(gpgme_check_version): New macro, overriding function of the same
+	name.
+	* libgpgme.vers, gpgme.def: Add gpgme_check_version_internal.o
+	* context.h (_gpgme_selftest): New variable declaration.
+	* version.c: Include "context.h".
+	(gpgme_check_version): Set _gpgme_selftest on success.
+	(gpgme_check_version_internal): New function.
+	* gpgme.c (_gpgme_selftest): Define it.
+	(gpgme_new): Check the selftest result.
+
 2009-05-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h.in (gpgme_encrypt_flags_t): Add
