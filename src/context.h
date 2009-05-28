@@ -28,6 +28,8 @@
 #include "sema.h"
 
 
+extern gpgme_error_t _gpgme_selftest;
+
 /* Operations might require to remember arbitrary information and data
    objects during invocations of the status handler.  The
    ctx_op_data structure provides a generic framework to hook in

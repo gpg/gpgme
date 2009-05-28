@@ -42,6 +42,9 @@ static char *def_lc_ctype;
 static char *def_lc_messages;
 
 
+gpgme_error_t _gpgme_selftest = GPG_ERR_NOT_OPERATIONAL;
+
+
 /* Create a new context as an environment for GPGME crypto
    operations.  */
 gpgme_error_t
@@ -49,6 +52,9 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 {
   gpgme_ctx_t ctx;
   TRACE_BEG (DEBUG_CTX, "gpgme_new", r_ctx);
+
+  if (_gpgme_selftest)
+    return TRACE_ERR (gpgme_error (_gpgme_selftest));
 
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)

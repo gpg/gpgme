@@ -32,6 +32,7 @@
 #include "gpgme.h"
 #include "priv-io.h"
 #include "debug.h"
+#include "context.h"
 
 /* For _gpgme_sema_subsystem_init ().  */
 #include "sema.h"
@@ -43,6 +44,10 @@
 #ifdef HAVE_W32_SYSTEM
 #include "windows.h"
 #endif
+
+/* We implement this function, so we have to disable the overriding
+   macro.  */
+#undef gpgme_check_version
 
 
 /* Bootstrap the subsystems needed for concurrent operation.  This
@@ -183,6 +188,7 @@ _gpgme_compare_versions (const char *my_version,
 const char *
 gpgme_check_version (const char *req_version)
 {
+  char *result;
   do_subsystem_inits ();
 
   /* Catch-22: We need to get at least the debug subsystem ready
@@ -193,7 +199,39 @@ gpgme_check_version (const char *req_version)
 	  "req_version=%s, VERSION=%s",
           req_version? req_version:"(null)", VERSION);
  
-  return _gpgme_compare_versions (VERSION, req_version) ? VERSION : NULL;
+  result = _gpgme_compare_versions (VERSION, req_version) ? VERSION : NULL;
+  if (result != NULL)
+    _gpgme_selftest = 0;
+
+  return result;
+}
+
+/* Check the version and also at runtime if the struct layout of the
+   library matches the one of the user.  This is particular useful for
+   Windows targets (-mms-bitfields).  */
+const char *
+gpgme_check_version_internal (const char *req_version,
+			      size_t offset_sig_validity)
+{
+  char *result;
+
+  TRACE2 (DEBUG_INIT, "gpgme_check_version_internal: ", 0,
+	  "req_version=%s, offset_sig_validity=%i",
+	  req_version ? req_version : "(null)", offset_sig_validity);
+
+  result = gpgme_check_version (req_version);
+  if (result == NULL)
+    return result;
+
+  if (offset_sig_validity != offsetof (struct _gpgme_signature, validity))
+    {
+      TRACE1 (DEBUG_INIT, "gpgme_check_version_internal: ", 0,
+	      "offset_sig_validity mismatch: expected %i",
+	      offsetof (struct _gpgme_signature, validity));
+      _gpgme_selftest = GPG_ERR_SELFTEST_FAILED;
+    }
+
+  return result;
 }
 
 

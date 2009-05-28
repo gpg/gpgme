@@ -1894,8 +1894,20 @@ gpgme_error_t gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp);
 
 /* Various functions.  */
 
-/* Check that the library fulfills the version requirement.  */
+/* Check that the library fulfills the version requirement.  Note:
+   This is here only for the case where a user takes a pointer from
+   the old version of this function.  The new version and macro for
+   run-time checks are below.  */
 const char *gpgme_check_version (const char *req_version);
+
+/* Check that the library fulfills the version requirement and check
+   for struct layout mismatch involving bitfields.  */
+const char *gpgme_check_version_internal (const char *req_version,
+					  size_t offset_sig_validity);
+
+#define gpgme_check_version(req_version)				\
+  gpgme_check_version_internal (req_version,				\
+				offsetof (struct _gpgme_signature, validity))
 
 /* Get the information about the configured and installed engines.  A
    pointer to the first engine in the statically allocated linked list

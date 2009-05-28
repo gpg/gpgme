@@ -1,3 +1,8 @@
+2009-05-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.texi (Library Version Check): Document selftest error.
+	(Creating Contexts): Likewise.
+
 2009-05-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Encrypting a Plaintext): Document
