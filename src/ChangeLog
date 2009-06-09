@@ -1,5 +1,9 @@
 2009-06-09  Werner Koch  <wk@g10code.com>
 
+	* Makefile.am (main_sources): Remove gpgme.h.
+	(include_HEADERS): Rename to nodist_include_HEADERS so that a
+	VPATH build won't use the distributed one.
+
 	* util.h (GPG_ERR_NOT_OPERATIONAL): Define.
 
 2009-05-28  Marcus Brinkmann  <marcus@g10code.de>
