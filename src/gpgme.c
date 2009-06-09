@@ -34,6 +34,7 @@
 #include "ops.h"
 #include "wait.h"
 #include "debug.h"
+#include "priv-io.h"
 
 
 /* The default locale.  */
@@ -425,6 +426,33 @@ gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
       ctx->io_cbs.event = NULL;
       ctx->io_cbs.event_priv = NULL;
     }
+}
+
+
+/* This function provides access to the internal read function; it is
+   normally not used. */
+ssize_t
+gpgme_io_read (int fd, void *buffer, size_t count)
+{
+  int ret;
+
+  ret = _gpgme_io_read (fd, buffer, count);
+
+  return ret;
+}
+
+
+/* This function provides access to the internal write function.  It
+   is to be used by user callbacks to return data to gpgme.  See
+   gpgme_passphrase_cb_t and gpgme_edit_cb_t.  */
+ssize_t
+gpgme_io_write (int fd, const void *buffer, size_t count)
+{
+  int ret;
+
+  ret = _gpgme_io_write (fd, buffer, count);
+
+  return ret;
 }
 
 

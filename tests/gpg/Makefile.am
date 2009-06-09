@@ -63,8 +63,9 @@ clean-local:
 all-local: ./pubring.gpg ./gpg.conf ./gpg-agent.conf
 
 ./pubring.gpg: $(srcdir)/pubdemo.asc ./Alpha/Secret.gpg 
-	$(GPG) --homedir . --import $(srcdir)/pubdemo.asc
-	$(GPG) --homedir . --allow-secret-key-import \
+	-$(GPG) --homedir . --no-permission-warning \
+                --import $(srcdir)/pubdemo.asc
+	-$(GPG) --homedir . --no-permission-warning \
 		--import Alpha/Secret.gpg Zulu/Secret.gpg
 
 ./Alpha/Secret.gpg: mkdemodirs secdemo.asc 

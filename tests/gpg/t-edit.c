@@ -103,8 +103,8 @@ edit_fnc (void *opaque, gpgme_status_code_t status, const char *args, int fd)
 
   if (result)
     {
-      write (fd, result, strlen (result));
-      write (fd, "\n", 1);
+      gpgme_io_write (fd, result, strlen (result));
+      gpgme_io_write (fd, "\n", 1);
     }
   return 0;
 }
