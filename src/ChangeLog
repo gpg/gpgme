@@ -1,5 +1,7 @@
 2009-06-09  Werner Koch  <wk@g10code.com>
 
+	* engine-gpg.c (gpg_io_event): Test for cmd.fd.
+
 	* version.c (gpgme_check_version_internal): Make result const.
 
 	* gpgme.c: Include priv-io.h.

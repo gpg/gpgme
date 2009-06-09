@@ -171,6 +171,8 @@ close_notify_handler (int fd, void *opaque)
     }
   else if (gpg->colon.fd[1] == fd)
     gpg->colon.fd[1] = -1;
+  else if (gpg->cmd.fd == fd)
+    gpg->cmd.fd = -1;
   else if (gpg->fd_data_map)
     {
       int i;
