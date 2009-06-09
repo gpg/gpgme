@@ -1,5 +1,12 @@
 2009-06-09  Werner Koch  <wk@g10code.com>
 
+	* version.c (gpgme_check_version_internal): Make result const.
+
+	* gpgme.c: Include priv-io.h.
+	(gpgme_io_read, gpgme_io_write): New.
+	* libgpgme.vers (GPGME_1.1): Add them. 
+	* gpgme.def: Ditto.
+
 	* Makefile.am (main_sources): Remove gpgme.h.
 	(include_HEADERS): Rename to nodist_include_HEADERS so that a
 	VPATH build won't use the distributed one.

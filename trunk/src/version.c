@@ -213,7 +213,7 @@ const char *
 gpgme_check_version_internal (const char *req_version,
 			      size_t offset_sig_validity)
 {
-  char *result;
+  const char *result;
 
   TRACE2 (DEBUG_INIT, "gpgme_check_version_internal: ", 0,
 	  "req_version=%s, offset_sig_validity=%i",

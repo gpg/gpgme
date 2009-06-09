@@ -173,6 +173,10 @@ EXPORTS
     gpgme_op_assuan_transact              @134
 
     gpgme_check_version_internal	  @135
+    
+    gpgme_io_read                         @136
+    gpgme_io_write                        @137
+
 
 ; END
 

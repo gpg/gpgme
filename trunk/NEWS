@@ -8,6 +8,10 @@ Noteworthy changes in version 1.1.9
    selftest failed (for example, if -mms-bitfields was not used on
    MingW32 targets).
 
+ * New functions gpgme_io_read and gpgme_io_write for use with
+   gpgme_passphrase_cb_t and gpgme_edit_cb_t functions.
+
+
  * Interface changes relative to the 1.1.7 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_KEYLIST_MODE_EPHEMERAL   NEW.
@@ -22,6 +26,8 @@ Noteworthy changes in version 1.1.9
  GPGME_ENCRYPT_NO_ENCRYPT_TO    NEW.
  gpgme_check_version            CHANGED: Is now a macro.
  gpgme_new                      EXTENDED: More failure codes.
+ gpgme_io_read                  NEW.
+ gpgme_io_write                 NEW.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

@@ -1,3 +1,12 @@
+2009-06-09  Werner Koch  <wk@g10code.com>
+
+	* gpg/Makefile.am (./pubring.gpg): Ignore errors in case of
+	already imported keys.  Add --no-permission-warning and remove
+	obsolete --allow-secret-key-import.
+	* gpg/mkdemodirs.in (GPG): Add --no-permission-warning.
+
+	* gpg/t-edit.c (edit_fnc): Use gpgme_io_write.
+
 2009-04-19  Moritz  <moritz@gnu.org>
 
 	* gpg/Makefile.am (EXTRA_DIST): Replaced mkdemodirs with mkdemodirs.in.
