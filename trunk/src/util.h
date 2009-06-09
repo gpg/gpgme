@@ -120,6 +120,8 @@ const char *_gpgme_get_w32spawn_path (void);
 #ifndef GPG_ERR_UNFINISHED
 #define GPG_ERR_UNFINISHED 199
 #endif
-
+#ifndef GPG_ERR_NOT_OPERATIONAL 
+#define GPG_ERR_NOT_OPERATIONAL 176
+#endif
 
 #endif /* UTIL_H */

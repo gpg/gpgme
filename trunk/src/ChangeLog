@@ -1,3 +1,7 @@
+2009-06-09  Werner Koch  <wk@g10code.com>
+
+	* util.h (GPG_ERR_NOT_OPERATIONAL): Define.
+
 2009-05-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h.in (gpgme_check_version_internal): New prototype.
