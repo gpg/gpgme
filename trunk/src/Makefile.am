@@ -14,8 +14,7 @@
 # Public License for more details.
 # 
 # You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+# License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## Process this file with automake to produce Makefile.in
 
@@ -27,7 +26,7 @@ MOSTLYCLEANFILES = status-table.h
 bin_SCRIPTS = gpgme-config
 m4datadir = $(datadir)/aclocal
 m4data_DATA = gpgme.m4
-include_HEADERS = gpgme.h
+nodist_include_HEADERS = gpgme.h
 
 if HAVE_PTHREAD
 ltlib_gpgme_pthread = libgpgme-pthread.la
@@ -95,7 +94,7 @@ endif
 # right linking order with libtool, as the non-installed version has
 # unresolved symbols to the thread module.
 main_sources =								\
-	gpgme.h util.h conversion.c get-env.c context.h ops.h		\
+	util.h conversion.c get-env.c context.h ops.h		        \
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
 	data-compat.c							\
 	signers.c sig-notation.c					\
