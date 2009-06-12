@@ -34,6 +34,13 @@
 #include <process.h>
 #include <windows.h>
 
+/* Flag values as used by gpgme.  */
+#define IOSPAWN_FLAG_ALLOW_SET_FG 1
+
+
+/* Name of this program.  */
+#define PGM "gpgme-w32spawn"
+
 
 
 struct spawn_fd_item_s
@@ -101,7 +108,7 @@ build_commandline (char **argv)
 
 
 int
-my_spawn (char **argv, struct spawn_fd_item_s *fd_list)
+my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
 {
   SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi =
@@ -127,7 +134,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list)
   i = 0;
   while (argv[i])
     {
-      fprintf (stderr, "argv[%2i] = %s\n", i, argv[i]);
+      fprintf (stderr, PGM": argv[%2i] = %s\n", i, argv[i]);
       i++;
     }
 
@@ -147,7 +154,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list)
   si.hStdOutput = GetStdHandle (STD_OUTPUT_HANDLE);
   si.hStdError = GetStdHandle (STD_ERROR_HANDLE);
 
-  fprintf (stderr, "spawning: %s\n", arg_string);
+  fprintf (stderr, PGM": spawning: %s\n", arg_string);
 
   for (i = 0; fd_list[i].handle != -1; i++)
     {
@@ -156,19 +163,19 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list)
 	{
 	  si.hStdInput = (HANDLE) fd_list[i].peer_name;
 	  duped_stdin = 1;
-	  fprintf (stderr, "dup 0x%x to stdin\n", fd_list[i].peer_name);
+	  fprintf (stderr, PGM": dup 0x%x to stdin\n", fd_list[i].peer_name);
         }
       else if (fd_list[i].dup_to == 1)
 	{
 	  si.hStdOutput = (HANDLE) fd_list[i].peer_name;
 	  duped_stdout = 1;
-	  fprintf (stderr, "dup 0x%x to stdout\n", fd_list[i].peer_name);
+	  fprintf (stderr, PGM": dup 0x%x to stdout\n", fd_list[i].peer_name);
         }
       else if (fd_list[i].dup_to == 2)
 	{
 	  si.hStdError = (HANDLE) fd_list[i].peer_name;
 	  duped_stderr = 1;
-	  fprintf (stderr, "dup 0x%x to stderr\n", fd_list[i].peer_name);
+	  fprintf (stderr, PGM":dup 0x%x to stderr\n", fd_list[i].peer_name);
         }
     }
   
@@ -231,6 +238,33 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list)
   
   for (i = 0; fd_list[i].handle != -1; i++)
     CloseHandle ((HANDLE) fd_list[i].handle);
+
+  if (flags & IOSPAWN_FLAG_ALLOW_SET_FG)
+    {
+      static int initialized;
+      static BOOL (WINAPI * func)(DWORD);
+      void *handle;
+  
+      if (!initialized)
+        {
+          /* Available since W2000; thus we dynload it.  */
+          initialized = 1;
+          handle = LoadLibrary ("user32.dll");
+          if (handle)
+            {
+              func = GetProcAddress (handle, "AllowSetForegroundWindow");
+              if (!func)
+                FreeLibrary (handle);
+            }
+        }
+      
+      if (func)
+        {
+          int rc = func (pi.dwProcessId);
+          fprintf (stderr, PGM": AllowSetForegroundWindow(%d): rc=%d\n",
+                   (int)pi.dwProcessId, rc);
+        }
+    }
   
   ResumeThread (pi.hThread);
   CloseHandle (pi.hThread);
@@ -244,18 +278,21 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list)
 
 int
 translate_get_from_file (const char *trans_file, 
-			 struct spawn_fd_item_s *fd_list)
+			 struct spawn_fd_item_s *fd_list, 
+                         unsigned int *r_flags)
 {
   /* Hold roughly MAX_TRANS triplets of 64 bit numbers in hex
      notation: "0xFEDCBA9876543210".  10*19*4 - 1 = 759.  This plans
      ahead for a time when a HANDLE is 64 bit.  */
-#define BUFFER_MAX 800
+#define BUFFER_MAX 810
 
   char line[BUFFER_MAX + 1];
   char *linep;
   int idx;
   int res;
   int fd;
+
+  *r_flags = 0;
 
   fd = open (trans_file, O_RDONLY);
   if (fd < 0)
@@ -269,10 +306,12 @@ translate_get_from_file (const char *trans_file,
 
   line[BUFFER_MAX] = '\0';
   linep = strchr (line, '\n');
-  if (linep > line && linep[-1] == '\r')
-    linep--;
-  *linep = '\0';
-
+  if (linep)
+    {
+      if (linep > line && linep[-1] == '\r')
+        linep--;
+      *linep = '\0';
+    }
   linep = line;
 
   /* Now start to read mapping pairs.  */
@@ -289,6 +328,21 @@ translate_get_from_file (const char *trans_file,
 	linep++;
       if (*linep == '\0')
 	break;
+      if (!idx && *linep == '~')
+        {
+          /* Spawn flags have been passed.  */
+          linep++;
+          *r_flags = strtoul (linep, &tail, 0);
+          if (tail == NULL || ! (*tail == '\0' || isspace (*tail)))
+            break;
+          linep = tail;
+          
+          while (isspace (*((unsigned char *)linep)))
+            linep++;
+          if (*linep == '\0')
+            break;
+        }
+
       from = strtoul (linep, &tail, 0);
       if (tail == NULL || ! (*tail == '\0' || isspace (*tail)))
 	break;
@@ -339,13 +393,14 @@ translate_get_from_file (const char *trans_file,
    FD_LIST (which must be MAX_TRANS+1 large).  */
 char **
 translate_handles (const char *trans_file, const char * const *argv,
-		   struct spawn_fd_item_s *fd_list)
+		   struct spawn_fd_item_s *fd_list, unsigned int *r_flags)
 {
   int res;
   int idx;
+  int n_args;
   char **args;
 
-  res = translate_get_from_file (trans_file, fd_list);
+  res = translate_get_from_file (trans_file, fd_list, r_flags);
   if (res < 0)
     return NULL;
 
@@ -359,6 +414,7 @@ translate_handles (const char *trans_file, const char * const *argv,
 	return NULL;
     }
   args[idx] = NULL;
+  n_args = idx;
 
   for (idx = 0; fd_list[idx].handle != -1; idx++)
     {
@@ -368,6 +424,12 @@ translate_handles (const char *trans_file, const char * const *argv,
       aidx = fd_list[idx].arg_loc;
       if (aidx == 0)
 	continue;
+
+      if (aidx >= n_args)
+        {
+	  fprintf (stderr, PGM": translation file does not match args\n");
+          return NULL;
+        }
 
       args[aidx] = malloc (sizeof (buf));
       /* We currently disable translation for stdin/stdout/stderr.  We
@@ -394,6 +456,7 @@ main (int argc, const char * const *argv)
   int rc = 0;
   char **argv_spawn;
   struct spawn_fd_item_s fd_list[MAX_TRANS + 1];
+  unsigned int flags;
 
   if (argc < 3)
     {
@@ -401,7 +464,7 @@ main (int argc, const char * const *argv)
       goto leave;
     }
 
-  argv_spawn = translate_handles (argv[1], &argv[2], fd_list);
+  argv_spawn = translate_handles (argv[1], &argv[2], fd_list, &flags);
   if (!argv_spawn)
     {
       rc = 2;
@@ -411,10 +474,10 @@ main (int argc, const char * const *argv)
   /* Using execv does not replace the existing program image, but
      spawns a new one and daemonizes it, confusing the command line
      interpreter.  So we have to use spawnv.  */
-  rc = my_spawn (argv_spawn, fd_list);
+  rc = my_spawn (argv_spawn, fd_list, flags);
   if (rc < 0)
     {
-      fprintf (stderr, "gpgwrap: executing `%s' failed: %s\n",
+      fprintf (stderr, PGM": executing `%s' failed: %s\n",
 	       argv[0], strerror (errno));
       rc = 2;
       goto leave;
@@ -422,12 +485,12 @@ main (int argc, const char * const *argv)
 
  leave:
   if (rc)
-    fprintf (stderr, "gpg-w32spawn: internal error\n");
+    fprintf (stderr, PGM": internal error\n");
   /* Always try to delete the temporary file.  */
   if (argc >= 2)
     {
       if (DeleteFile (argv[1]) == 0)
-	fprintf (stderr, "Failed to delete %s: ec=%ld\n",
+	fprintf (stderr, PGM": failed to delete %s: ec=%ld\n",
 		 argv[1], GetLastError ());
     }
   return rc;

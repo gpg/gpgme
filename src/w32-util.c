@@ -393,7 +393,7 @@ _gpgme_get_conf_int (const char *key, int *value)
 
 
 void 
-_gpgme_allow_set_foregound_window (pid_t pid)
+_gpgme_allow_set_foreground_window (pid_t pid)
 {
   static int initialized;
   static BOOL (WINAPI * func)(DWORD);
@@ -416,9 +416,22 @@ _gpgme_allow_set_foregound_window (pid_t pid)
     }
 
   if (!pid || pid == (pid_t)(-1))
-    ;
+    {
+      TRACE1 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
+	      "no action for pid %d", (int)pid);
+    }
   else if (func)
-    func (pid);
+    {
+      int rc = func (pid);
+      TRACE2 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
+	      "called for pid %d; result=%d", (int)pid, rc);
+
+    }
+  else
+    {
+      TRACE0 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
+	      "function not available");
+    }
 
 }
 
