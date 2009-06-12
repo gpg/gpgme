@@ -304,13 +304,16 @@ _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal)
 
 /* Returns 0 on success, -1 on error.  */
 int
-_gpgme_io_spawn (const char *path, char *const argv[],
+_gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		 struct spawn_fd_item_s *fd_list, pid_t *r_pid)
 {
   pid_t pid;
   int i;
   int status;
   int signo;
+
+  (void)flags;
+
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
 	      "path=%s", path);
   i = 0;

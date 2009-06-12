@@ -67,7 +67,7 @@ _gpgme_get_conf_int (const char *key, int *value)
 }
 
 void 
-_gpgme_allow_set_foregound_window (pid_t pid)
+_gpgme_allow_set_foreground_window (pid_t pid)
 {
   (void)pid;
   /* Not needed.  */

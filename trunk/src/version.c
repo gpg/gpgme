@@ -310,7 +310,7 @@ _gpgme_get_program_version (const char *const file_name)
 
   cfd[0].fd = rp[1];
 
-  status = _gpgme_io_spawn (file_name, argv, cfd, NULL);
+  status = _gpgme_io_spawn (file_name, argv, 0, cfd, NULL);
   if (status < 0)
     {
       _gpgme_io_close (rp[0]);

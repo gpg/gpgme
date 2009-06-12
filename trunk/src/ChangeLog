@@ -1,3 +1,26 @@
+2009-06-12  Werner Koch  <wk@g10code.com>
+
+	* gpgme-w32spawn.c (translate_get_from_file): Parse optional spawn
+	flags.  Add new arg R_FLAGS.  Fix segv on file w/o LF.
+	(translate_handles): Add new arg R_FLAGS.  Avoid possible segv.
+	(main): Pass flags for my_spawn.
+	(my_spawn): Add arg FLAGS and implement AllowSetForegroundWindow.
+
+	* priv-io.h (IOSPAWN_FLAG_ALLOW_SET_FG): New.
+	* w32-io.c (_gpgme_io_spawn): Add arg FLAGS and implement it.
+	* w32-glib-io.c (_gpgme_io_spawn): Ditto.
+	* w32-qt-io.cpp (_gpgme_io_spawn): Ditto.
+	* posix-io.c (_gpgme_io_spawn): Add dummy arg FLAGS.
+	* engine-gpg.c (start): Call spawn with new flag.
+
+	* w32-util.c (_gpgme_allow_set_foregound_window): Rename to
+	_gpgme_allow_set_foreground_window.  Change all callers.
+	* posix-util.c (_gpgme_allow_set_foreground_window): Ditto.
+
+2009-06-10  Werner Koch  <wk@g10code.com>
+
+	* w32-util.c (_gpgme_allow_set_foregound_window): Add trace support.
+
 2009-06-09  Werner Koch  <wk@g10code.com>
 
 	* engine-gpg.c (gpg_io_event): Test for cmd.fd.

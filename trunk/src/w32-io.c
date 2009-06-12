@@ -1009,7 +1009,7 @@ build_commandline (char **argv)
 
 
 int
-_gpgme_io_spawn (const char *path, char *const argv[],
+_gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		 struct spawn_fd_item_s *fd_list, pid_t *r_pid)
 {
   SECURITY_ATTRIBUTES sec_attr;
@@ -1021,8 +1021,8 @@ _gpgme_io_spawn (const char *path, char *const argv[],
       0          /* returns tid */
     };
   STARTUPINFO si;
-  int cr_flags = CREATE_DEFAULT_ERROR_MODE
-    | GetPriorityClass (GetCurrentProcess ());
+  int cr_flags = (CREATE_DEFAULT_ERROR_MODE
+                  | GetPriorityClass (GetCurrentProcess ()));
   int i;
   char **args;
   char *arg_string;
@@ -1104,6 +1104,9 @@ _gpgme_io_spawn (const char *path, char *const argv[],
 
   free (arg_string);
 
+  if (flags & IOSPAWN_FLAG_ALLOW_SET_FG)
+    _gpgme_allow_set_foreground_window ((pid_t)pi.dwProcessId);
+
   /* Insert the inherited handles.  */
   for (i = 0; fd_list[i].fd != -1; i++)
     {
@@ -1139,14 +1142,16 @@ _gpgme_io_spawn (const char *path, char *const argv[],
        notation: "0xFEDCBA9876543210" with an extra white space after
        every quadruplet.  10*(19*4 + 1) - 1 = 769.  This plans ahead
        for a time when a HANDLE is 64 bit.  */
-#define BUFFER_MAX 800
+#define BUFFER_MAX 810
     char line[BUFFER_MAX + 1];
     int res;
     int written;
     size_t len;
 
-    line[0] = '\n';
-    line[1] = '\0';
+    if ((flags & IOSPAWN_FLAG_ALLOW_SET_FG))
+      strcpy (line, "~1 \n");
+    else
+      strcpy (line, "\n");
     for (i = 0; fd_list[i].fd != -1; i++)
       {
 	/* Strip the newline.  */
@@ -1181,6 +1186,7 @@ _gpgme_io_spawn (const char *path, char *const argv[],
   
   if (r_pid)
     *r_pid = (pid_t)pi.dwProcessId;
+
   
   if (ResumeThread (pi.hThread) < 0)
     TRACE_LOG1 ("ResumeThread failed: ec=%d", (int) GetLastError ());

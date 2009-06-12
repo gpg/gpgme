@@ -59,11 +59,15 @@ int _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
 				void *value);
 int _gpgme_io_set_nonblocking (int fd);
 
+/* A flag to tell the spawn function to allow the child process to set
+   the foreground window. */
+#define IOSPAWN_FLAG_ALLOW_SET_FG 1
+
 /* Spawn the executable PATH with ARGV as arguments.  After forking
    close all fds except for those in FD_LIST in the child, then
    optionally dup() the child fds.  Finally, all fds in the list are
    closed in the parent.  */
-int _gpgme_io_spawn (const char *path, char *const argv[],
+int _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		     struct spawn_fd_item_s *fd_list, pid_t *r_pid);
 
 int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock);

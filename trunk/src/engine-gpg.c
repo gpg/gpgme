@@ -1328,7 +1328,9 @@ start (engine_gpg_t gpg)
   fd_list[n].dup_to = -1;
 
   status = _gpgme_io_spawn (gpg->file_name ? gpg->file_name :
-			    _gpgme_get_gpg_path (), gpg->argv, fd_list, &pid);
+			    _gpgme_get_gpg_path (), gpg->argv,
+                            IOSPAWN_FLAG_ALLOW_SET_FG,
+                            fd_list, &pid);
   saved_errno = errno;
 
   free (fd_list);
@@ -1375,8 +1377,6 @@ start (engine_gpg_t gpg)
 	    return rc;
 	}
     }
-
-  _gpgme_allow_set_foregound_window (pid);
 
   gpg_io_event (gpg, GPGME_EVENT_START, NULL);
   

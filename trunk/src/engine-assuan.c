@@ -377,7 +377,7 @@ inquire_cb (engine_llass_t llass, const char *keyword, const char *args)
 
   if (llass->opt.gpg_agent && !strcmp (keyword, "PINENTRY_LAUNCHED"))
     {
-      _gpgme_allow_set_foregound_window ((pid_t)strtoul (args, NULL, 10));
+      _gpgme_allow_set_foreground_window ((pid_t)strtoul (args, NULL, 10));
     }
 
   if (llass->user.inq_cb)
