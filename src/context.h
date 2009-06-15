@@ -45,7 +45,7 @@ typedef enum
 struct ctx_op_data
 {
   /* The next element in the linked list, or NULL if this is the last
-     element.  */
+     element.  Used by op data structures linked into a context.  */
   struct ctx_op_data *next;
 
   /* The type of the hook data, which can be used by a routine to
@@ -58,6 +58,9 @@ struct ctx_op_data
 
   /* The hook that points to the operation data.  */
   void *hook;
+
+  /* The number of outstanding references.  */
+  int references;
 };
 typedef struct ctx_op_data *ctx_op_data_t;
 

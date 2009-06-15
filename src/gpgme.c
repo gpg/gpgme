@@ -176,6 +176,35 @@ gpgme_release (gpgme_ctx_t ctx)
 
 
 void
+gpgme_result_ref (void *result)
+{
+  struct ctx_op_data *data = result - sizeof (struct ctx_op_data);
+
+  if (! result)
+    return;
+
+  data->references++;
+}
+
+
+void
+gpgme_result_unref (void *result)
+{
+  struct ctx_op_data *data = result - sizeof (struct ctx_op_data);
+
+  if (! result)
+    return;
+
+  if (--data->references == 0)
+    {
+      if (data->cleanup)
+	(*data->cleanup) (data->hook);
+      free (data);
+    }
+}
+
+
+void
 _gpgme_release_result (gpgme_ctx_t ctx)
 {
   struct ctx_op_data *data = ctx->op_data;
@@ -183,9 +212,8 @@ _gpgme_release_result (gpgme_ctx_t ctx)
   while (data)
     {
       struct ctx_op_data *next_data = data->next;
-      if (data->cleanup)
-	(*data->cleanup) (data->hook);
-      free (data);
+      data->next = NULL;
+      gpgme_result_unref (data->hook);
       data = next_data;
     }
   ctx->op_data = NULL;
@@ -430,7 +458,7 @@ gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 
 
 /* This function provides access to the internal read function; it is
-   normally not used. */
+   normally not used.  */
 ssize_t
 gpgme_io_read (int fd, void *buffer, size_t count)
 {

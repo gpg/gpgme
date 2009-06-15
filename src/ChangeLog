@@ -1,3 +1,14 @@
+2009-06-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.h.in (gpgme_result_ref, gpgme_result_unref): Add
+	prototypes.
+	* gpgme.def, libgpgme.vers (gpgme_result_ref, gpgme_result_unref):
+	Add these.
+	* context.h (struct ctx_op_data): Add member "references".
+	* gpgme.c (gpgme_result_ref, gpgme_result_unref): New functions.
+	(_gpgme_release_result): Use gpgme_result_unref.
+	* op-support.c (_gpgme_op_data_lookup): Initialize references.
+
 2009-06-12  Werner Koch  <wk@g10code.com>
 
 	* gpgme-w32spawn.c (translate_get_from_file): Parse optional spawn
