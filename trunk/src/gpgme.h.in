@@ -1934,6 +1934,10 @@ gpgme_error_t gpgme_set_engine_info (gpgme_protocol_t proto,
 gpgme_error_t gpgme_engine_check_version (gpgme_protocol_t proto);
 
 
+void gpgme_result_ref (void *result);
+void gpgme_result_unref (void *result);
+
+
 /* Deprecated types.  */
 typedef gpgme_ctx_t GpgmeCtx _GPGME_DEPRECATED;
 typedef gpgme_data_t GpgmeData _GPGME_DEPRECATED;

@@ -56,7 +56,9 @@ GPGME_1.1 {
 
     gpgme_io_read;
     gpgme_io_write;
-    
+
+    gpgme_result_ref;
+    gpgme_result_unref;
 };
 
 

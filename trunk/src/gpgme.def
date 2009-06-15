@@ -177,6 +177,8 @@ EXPORTS
     gpgme_io_read                         @136
     gpgme_io_write                        @137
 
+    gpgme_release_ref                     @138
+    gpgme_release_unref                   @139
 
 ; END
 
