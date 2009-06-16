@@ -59,6 +59,11 @@ GPGME_1.1 {
 
     gpgme_result_ref;
     gpgme_result_unref;
+
+    gpgme_op_import_keys;
+    gpgme_op_import_keys_start;
+    gpgme_op_export_keys;
+    gpgme_op_export_keys_start;
 };
 
 

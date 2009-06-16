@@ -620,7 +620,7 @@ _gpgme_engine_op_encrypt_sign (engine_t engine, gpgme_key_t recp[],
 
 gpgme_error_t
 _gpgme_engine_op_export (engine_t engine, const char *pattern,
-			 unsigned int reserved, gpgme_data_t keydata,
+			 gpgme_export_mode_t mode, gpgme_data_t keydata,
 			 int use_armor)
 {
   if (!engine)
@@ -629,7 +629,7 @@ _gpgme_engine_op_export (engine_t engine, const char *pattern,
   if (!engine->ops->export)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->export) (engine->engine, pattern, reserved,
+  return (*engine->ops->export) (engine->engine, pattern, mode,
 				 keydata, use_armor);
 }
 
@@ -667,7 +667,8 @@ _gpgme_engine_op_genkey (engine_t engine, gpgme_data_t help_data,
 
 
 gpgme_error_t
-_gpgme_engine_op_import (engine_t engine, gpgme_data_t keydata)
+_gpgme_engine_op_import (engine_t engine, gpgme_data_t keydata,
+                         gpgme_key_t *keyarray)
 {
   if (!engine)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -675,7 +676,7 @@ _gpgme_engine_op_import (engine_t engine, gpgme_data_t keydata)
   if (!engine->ops->import)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->import) (engine->engine, keydata);
+  return (*engine->ops->import) (engine->engine, keydata, keyarray);
 }
 
 

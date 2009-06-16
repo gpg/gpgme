@@ -1,4 +1,4 @@
-Hey Emacs, this is -*- outline -*- mode!
+Hey Emacs, this is -*- org -*- mode!
 
 * IMPORTANT
 ** When using descriptor passing, we need to set the fd to blocking before
@@ -24,7 +24,7 @@ Hey Emacs, this is -*- outline -*- mode!
    (see edit.c::command_handler).
 ** I/O and User Data could be made extensible.  But this can be done
    without breaking the ABI hopefully.
-*  All enums that should be enums need to have a maximum value to ensure
+** All enums that should be enums need to have a maximum value to ensure
    a certain minimum width for extensibility.
 ** Compatibility interfaces that can be removed in future versions:
 *** gpgme_data_new_from_filepart
@@ -68,9 +68,15 @@ Hey Emacs, this is -*- outline -*- mode!
    application can then do whatever is required.  There are other
    usages too.  This notfication system should be independent of any
    contextes of course.
+
+   Not sure whether this is still required.  GPGME_PROTOCOL_ASSUAN is
+   sufficient for this.
+
 ** --learn-code support
    This might be integrated with import. we still need to work out how
-   to learn a card when gpg and gpgsm have support for smartcards.
+   to learn a card when gpg and gpgsm have support for smartcards.  In
+   GPA we currently invoke gpg directly.
+
 ** Might need a stat() for data objects and use it for length param to gpg.
 ** Implement support for photo ids.
 ** Allow selection of subkeys
@@ -82,6 +88,7 @@ Hey Emacs, this is -*- outline -*- mode!
 *** Allow to export secret keys.
     Rejected because this is conceptually flawed.  Secret keys on a
     smart card can not be exported, for example.
+    May eventually e supproted with a keywrapping system.
 *** Selecting the key ring, setting the version or comment in output.
     Rejected because the naive implementation is engine specific, the
     configuration is part of the engine's configuration or readily
@@ -110,6 +117,11 @@ Hey Emacs, this is -*- outline -*- mode!
    (it's an internal error, as select_protocol checks already).
 ** When server mode is implemented properly, more care has to be taken to
    release all resources on error (for example to free assuan_cmd).
+** op_import_keys and op_export_keys have a limit ion the number of keys.
+   This is because we pass them in gpg via the command line and gpgsm
+   via an assuan control line.  We should pipe them instead and maybe
+   change gpg/gpgsm to not put them in memory.
+
 * GPG breakage:
 ** gpg 1.4.2 lacks error reporting if sign/encrypt with revoked key.
 ** gpg 1.4.2 does crappy error reporting (namely none at all) when

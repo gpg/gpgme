@@ -1379,15 +1379,18 @@ gpgsm_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 
 
 static gpgme_error_t
-gpgsm_export (void *engine, const char *pattern, unsigned int reserved,
+gpgsm_export (void *engine, const char *pattern, gpgme_export_mode_t mode,
 	      gpgme_data_t keydata, int use_armor)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err = 0;
   char *cmd;
 
-  if (!gpgsm || reserved)
+  if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
+  
+  if (mode)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (!pattern)
     pattern = "";
@@ -1414,7 +1417,7 @@ gpgsm_export (void *engine, const char *pattern, unsigned int reserved,
 
 
 static gpgme_error_t
-gpgsm_export_ext (void *engine, const char *pattern[], unsigned int reserved,
+gpgsm_export_ext (void *engine, const char *pattern[], gpgme_export_mode_t mode,
 		  gpgme_data_t keydata, int use_armor)
 {
   engine_gpgsm_t gpgsm = engine;
@@ -1424,8 +1427,11 @@ gpgsm_export_ext (void *engine, const char *pattern[], unsigned int reserved,
   int length = 7 + 1;
   char *linep;
 
-  if (!gpgsm || reserved)
+  if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (mode)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (pattern && *pattern)
     {
@@ -1534,7 +1540,7 @@ gpgsm_genkey (void *engine, gpgme_data_t help_data, int use_armor,
 
 
 static gpgme_error_t
-gpgsm_import (void *engine, gpgme_data_t keydata)
+gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
@@ -1542,13 +1548,23 @@ gpgsm_import (void *engine, gpgme_data_t keydata)
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  gpgsm->input_cb.data = keydata;
-  err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
-  if (err)
-    return err;
-  gpgsm_clear_fd (gpgsm, OUTPUT_FD);
-  gpgsm_clear_fd (gpgsm, MESSAGE_FD);
-  gpgsm->inline_data = NULL;
+  if (keydata && keyarray)
+    gpg_error (GPG_ERR_INV_VALUE); /* Only one is allowed.  */
+
+  if (keyarray)
+    {
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+  else
+    {
+      gpgsm->input_cb.data = keydata;
+      err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
+      if (err)
+        return err;
+      gpgsm_clear_fd (gpgsm, OUTPUT_FD);
+      gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+      gpgsm->inline_data = NULL;
+    }
 
   err = start (gpgsm, "IMPORT");
   return err;

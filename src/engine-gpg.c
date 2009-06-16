@@ -678,7 +678,7 @@ command_handler (void *opaque, int fd)
 
 
 /* The Fnc will be called to get a value for one of the commands with
-   a key KEY.  If the Code pssed to FNC is 0, the function may release
+   a key KEY.  If the Code passed to FNC is 0, the function may release
    resources associated with the returned value from another call.  To
    match such a second call to a first call, the returned value from
    the first call is passed as keyword.  */
@@ -1704,22 +1704,41 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
 
 
 static gpgme_error_t
-gpg_export (void *engine, const char *pattern, unsigned int reserved,
+export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
+               gpgme_data_t keydata, int use_armor)
+{
+  gpgme_error_t err;
+
+  if ((mode & ~GPGME_EXPORT_MODE_EXTERN))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  if ((mode & GPGME_EXPORT_MODE_EXTERN))
+    {
+      err = add_arg (gpg, "--send-keys");
+    }
+  else
+    {
+      err = add_arg (gpg, "--export");
+      if (!err && use_armor)
+        err = add_arg (gpg, "--armor");
+      if (!err)
+        err = add_data (gpg, keydata, 1, 1);
+    }
+  if (!err)
+    err = add_arg (gpg, "--");
+
+  return err;
+}
+
+
+static gpgme_error_t
+gpg_export (void *engine, const char *pattern, gpgme_export_mode_t mode,
 	    gpgme_data_t keydata, int use_armor)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
-  if (reserved)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  err = add_arg (gpg, "--export");
-  if (!err && use_armor)
-    err = add_arg (gpg, "--armor");
-  if (!err)
-    err = add_data (gpg, keydata, 1, 1);
-  if (!err)
-    err = add_arg (gpg, "--");
+  err = export_common (gpg, mode, keydata, use_armor);
 
   if (!err && pattern && *pattern)
     err = add_arg (gpg, pattern);
@@ -1732,22 +1751,13 @@ gpg_export (void *engine, const char *pattern, unsigned int reserved,
 
 
 static gpgme_error_t
-gpg_export_ext (void *engine, const char *pattern[], unsigned int reserved,
+gpg_export_ext (void *engine, const char *pattern[], gpgme_export_mode_t mode,
 		gpgme_data_t keydata, int use_armor)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
-  if (reserved)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  err = add_arg (gpg, "--export");
-  if (!err && use_armor)
-    err = add_arg (gpg, "--armor");
-  if (!err)
-    err = add_data (gpg, keydata, 1, 1);
-  if (!err)
-    err = add_arg (gpg, "--");
+  err = export_common (gpg, mode, keydata, use_armor);
 
   if (pattern)
     {
@@ -1795,16 +1805,40 @@ gpg_genkey (void *engine, gpgme_data_t help_data, int use_armor,
 
 
 static gpgme_error_t
-gpg_import (void *engine, gpgme_data_t keydata)
+gpg_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
+  int idx;
 
-  err = add_arg (gpg, "--import");
-  if (!err)
-    err = add_arg (gpg, "--");
-  if (!err)
-    err = add_data (gpg, keydata, -1, 0);
+  if (keydata && keyarray)
+    gpg_error (GPG_ERR_INV_VALUE); /* Only one is allowed.  */
+
+  if (keyarray)
+    {
+      err = add_arg (gpg, "--recv-keys");
+      if (!err)
+        err = add_arg (gpg, "--");
+      for (idx=0; !err && keyarray[idx]; idx++)
+        {
+          if (keyarray[idx]->protocol != GPGME_PROTOCOL_OpenPGP)
+            ;
+          else if (!keyarray[idx]->subkeys)
+            ;
+          else if (keyarray[idx]->subkeys->fpr && *keyarray[idx]->subkeys->fpr)
+            err = add_arg (gpg, keyarray[idx]->subkeys->fpr);
+          else if (*keyarray[idx]->subkeys->keyid)
+            err = add_arg (gpg, keyarray[idx]->subkeys->keyid);
+        }
+    }
+  else
+    {
+      err = add_arg (gpg, "--import");
+      if (!err)
+        err = add_arg (gpg, "--");
+      if (!err)
+        err = add_data (gpg, keydata, -1, 0);
+    }
 
   if (!err)
     err = start (gpg);

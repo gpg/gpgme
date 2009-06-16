@@ -3318,7 +3318,25 @@ operation is started on the context.
 @cindex key, export
 @cindex key ring, export from
 
-@deftypefun gpgme_error_t gpgme_op_export (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}}, @w{unsigned int @var{reserved}}, @w{gpgme_data_t @var{keydata}})
+Exporting keys means the same as running @command{gpg} with the command
+@option{--export}.  However, a mode flag can be used to change the way
+the export works.  The available mode flags are described below, they
+may be or-ed together.
+
+@table @code
+
+@item GPGME_EXPORT_MODE_EXTERN
+If this bit is set, the output is send directly to the default
+keyserver. This is currently only allowed for OpenPGP keys.  It is good
+practise to not send more than a few dozens key to a keyserver at one
+time.  Using this flag requires that the @var{keydata} argument of the
+export function is set to @code{NULL}.
+
+@end table
+
+
+
+@deftypefun gpgme_error_t gpgme_op_export (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}}, @w{gpgme_export_mode_t @var{mode}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_export} extracts public keys and returns
 them in the data buffer @var{keydata}.  The output format of the key
 data returned is determined by the @acronym{ASCII} armor attribute set
@@ -3329,7 +3347,7 @@ If @var{pattern} is @code{NULL}, all available keys are returned.
 Otherwise, @var{pattern} contains an engine specific expression that
 is used to limit the list to all keys matching the pattern.
 
-@var{reserved} is reserved for future use and must be @code{0}.
+@var{mode} is usually 0; other values are described above.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 operation completed successfully, @code{GPG_ERR_INV_VALUE} if
@@ -3337,7 +3355,7 @@ operation completed successfully, @code{GPG_ERR_INV_VALUE} if
 errors that are reported by the crypto engine support routines.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_export_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}}, @w{unsigned int @var{reserved}}, @w{gpgme_data_t @var{keydata}})
+@deftypefun gpgme_error_t gpgme_op_export_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}}, @w{gpgme_export_mode_t @var{mode}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_export_start} initiates a
 @code{gpgme_op_export} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -3347,7 +3365,7 @@ operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
 if @var{keydata} is not a valid empty data buffer.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_export_ext (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}[]}, @w{unsigned int @var{reserved}}, @w{gpgme_data_t @var{keydata}})
+@deftypefun gpgme_error_t gpgme_op_export_ext (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}[]}, @w{gpgme_export_mode_t @var{mode}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_export} extracts public keys and returns
 them in the data buffer @var{keydata}.  The output format of the key
 data returned is determined by the @acronym{ASCII} armor attribute set
@@ -3359,7 +3377,7 @@ are returned.  Otherwise, @var{pattern} is a @code{NULL} terminated
 array of strings that are used to limit the list to all keys matching
 at least one of the patterns verbatim.
 
-@var{reserved} is reserved for future use and must be @code{0}.
+@var{mode} is usually 0; other values are described above.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 operation completed successfully, @code{GPG_ERR_INV_VALUE} if
@@ -3367,7 +3385,7 @@ operation completed successfully, @code{GPG_ERR_INV_VALUE} if
 errors that are reported by the crypto engine support routines.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_export_ext_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}[]}, @w{unsigned int @var{reserved}}, @w{gpgme_data_t @var{keydata}})
+@deftypefun gpgme_error_t gpgme_op_export_ext_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}[]}, @w{gpgme_export_mode_t @var{mode}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_export_ext_start} initiates a
 @code{gpgme_op_export_ext} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -3378,10 +3396,49 @@ if @var{keydata} is not a valid empty data buffer.
 @end deftypefun
 
 
+@deftypefun gpgme_error_t gpgme_op_export_keys (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t keys[]}, @w{gpgme_export_mode_t @var{mode}}, @w{gpgme_data_t @var{keydata}})
+The function @code{gpgme_op_export_keys} extracts public keys and returns
+them in the data buffer @var{keydata}.  The output format of the key
+data returned is determined by the @acronym{ASCII} armor attribute set
+for the context @var{ctx}, or, if that is not set, by the encoding
+specified for @var{keydata}.
+
+The keys to export are taken form the @code{NULL} terminated array
+@var{keys}.  Only keys of the the currently selected protocol of
+@var{ctx} which do have a fingerprint set are considered for export.
+Other keys specified by the @var{keys} are ignored.  In particular
+OpenPGP keys retrieved via an external key listing are not included.
+
+@var{mode} is usually 0; other values are described above.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation completed successfully, @code{GPG_ERR_INV_VALUE} if
+@var{keydata} is not a valid empty data buffer, @code{GPG_ERR_NO_DATA}
+if no useful keys are in @var{keys} and passes through any errors that
+are reported by the crypto engine support routines.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_export_keys_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{keys}[]}, @w{gpgme_export_mode_t @var{mode}}, @w{gpgme_data_t @var{keydata}})
+The function @code{gpgme_op_export_keys_start} initiates a
+@code{gpgme_op_export_ext} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
+if @var{keydata} is not a valid empty data buffer, @code{GPG_ERR_NO_DATA}
+if no useful keys are in @var{keys} and passes through any errors that
+are reported by the crypto engine support routines.
+@end deftypefun
+
+
 @node Importing Keys
 @subsection Importing Keys
 @cindex key, import
 @cindex key ring, import to
+
+Importing keys means the same as running @command{gpg} with the command
+@option{--import}. 
+
 
 @deftypefun gpgme_error_t gpgme_op_import (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{keydata}})
 The function @code{gpgme_op_import} adds the keys in the data buffer
@@ -3407,6 +3464,44 @@ The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 import could be started successfully, @code{GPG_ERR_INV_VALUE} if
 @var{keydata} if @var{ctx} or @var{keydata} is not a valid pointer,
 and @code{GPG_ERR_NO_DATA} if @var{keydata} is an empty data buffer.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_import_keys (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t *@var{keys}})
+The function @code{gpgme_op_import_keys} adds the keys described by the
+@code{NULL} terminated array @var{keys} to the key ring of the crypto
+engine used by @var{ctx}.  This function is the general interface to
+move a key from one crypto engine to another as long as they are
+compatible.  In particular it is used to actually import and make keys
+permanent which have been retrieved from an external source (i.e. using
+@code{GPGME_KEYLIST_MODE_EXTERN}).  @footnote{Thus it is a replacement
+for the usual workaround of exporting and then importing a key to make
+an X.509 key permanent.}
+
+Only keys of the the currently selected protocol of @var{ctx} are
+considered for import.  Other keys specified by the @var{keys} are
+ignored.  As of now all considered keys must have been retrieved using
+the same method, that is the used key listing mode must be identical.
+
+After the operation completed successfully, the result can be
+retrieved with @code{gpgme_op_import_result}.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+import was completed successfully, @code{GPG_ERR_INV_VALUE} if
+@var{keydata} if @var{ctx} or @var{keydata} is not a valid pointer,
+@code{GPG_ERR_CONFLICT} if the key listing mode does not match, and
+@code{GPG_ERR_NO_DATA} if no keys are considered for export.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_import_keys_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t *@var{keys}})
+The function @code{gpgme_op_import_keys_start} initiates a
+@code{gpgme_op_import_keys} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+import was completed successfully, @code{GPG_ERR_INV_VALUE} if
+@var{keydata} if @var{ctx} or @var{keydata} is not a valid pointer,
+@code{GPG_ERR_CONFLICT} if the key listing mode does not match, and
+@code{GPG_ERR_NO_DATA} if no keys are considered for export.
 @end deftypefun
 
 @deftp {Data type} {gpgme_import_status_t}

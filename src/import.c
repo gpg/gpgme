@@ -238,7 +238,7 @@ _gpgme_op_import_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t keydata)
 
   _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
 
-  return _gpgme_engine_op_import (ctx->engine, keydata);
+  return _gpgme_engine_op_import (ctx->engine, keydata, NULL);
 }
 
 
@@ -260,6 +260,84 @@ gpgme_op_import (gpgme_ctx_t ctx, gpgme_data_t keydata)
 }
 
 
+
+static gpgme_error_t
+_gpgme_op_import_keys_start (gpgme_ctx_t ctx, int synchronous, 
+                             gpgme_key_t *keys)
+{
+  gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
+  int idx, firstidx, nkeys;
+
+  err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, &hook,
+			       sizeof (*opd), release_op_data);
+  opd = hook;
+  if (err)
+    return err;
+  opd->lastp = &opd->result.imports;
+
+  if (!keys)
+    return gpg_error (GPG_ERR_NO_DATA);
+
+  for (idx=nkeys=0, firstidx=-1; keys[idx]; idx++)
+    {
+      /* We only consider keys of the current protocol.  */
+      if (keys[idx]->protocol != ctx->protocol)
+        continue;
+      if (firstidx == -1)
+        firstidx = idx;
+      /* If a key has been found using a different key listing mode,
+         we bail out.  This makes the processing easier.  Fixme: To
+         allow a mix of keys we would need to sort them by key listing
+         mode and start two import operations one after the other.  */
+      if (keys[idx]->keylist_mode != keys[firstidx]->keylist_mode)
+        return gpg_error (GPG_ERR_CONFLICT);
+      nkeys++;
+    }
+  if (!nkeys)
+    return gpg_error (GPG_ERR_NO_DATA);
+
+  _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
+
+  return _gpgme_engine_op_import (ctx->engine, NULL, keys);
+}
+
+
+/* Asynchronous version of gpgme_op_import_key.  */
+gpgme_error_t
+gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t *keys)
+{
+  return _gpgme_op_import_keys_start (ctx, 0, keys);
+}
+
+
+/* Import the keys from the array KEYS into the keyring.  This
+   function allows to move a key from one engine to another as long as
+   they are compatible.  In particular it is used to actually import
+   keys retrieved from an external source (i.e. using
+   GPGME_KEYLIST_MODE_EXTERN).  It replaces the old workaround of
+   exporting and then importing a key as used to make an X.509 key
+   permanent.  This function automagically does the right thing.
+
+   KEYS is a NULL terminated array of gpgme key objects.  The result
+   is the usual import result structure.  Only keys matching the
+   current protocol are imported; other keys are ignored.  */
+gpgme_error_t
+gpgme_op_import_keys (gpgme_ctx_t ctx, gpgme_key_t *keys)
+{
+  gpgme_error_t err = _gpgme_op_import_keys_start (ctx, 1, keys);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  return err;
+}
+
+
+/* Deprecated interface.  */
 gpgme_error_t
 gpgme_op_import_ext (gpgme_ctx_t ctx, gpgme_data_t keydata, int *nr)
 {

@@ -329,6 +329,12 @@ gpgme_protocol_t;
 typedef unsigned int gpgme_keylist_mode_t;
 
 
+/* The available export mode flags.  */
+#define GPGME_EXPORT_MODE_EXTERN                2
+
+typedef unsigned int gpgme_export_mode_t;
+
+
 /* Flags for the audit log functions.  */
 #define GPGME_AUDITLOG_HTML      1 
 #define GPGME_AUDITLOG_WITH_HELP 128
@@ -1497,21 +1503,38 @@ gpgme_error_t gpgme_op_import (gpgme_ctx_t ctx, gpgme_data_t keydata);
 gpgme_error_t gpgme_op_import_ext (gpgme_ctx_t ctx, gpgme_data_t keydata,
 				   int *nr) _GPGME_DEPRECATED;
 
+/* Import the keys from the array KEYS into the keyring.  */
+gpgme_error_t gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t keys[]);
+gpgme_error_t gpgme_op_import_keys (gpgme_ctx_t ctx, gpgme_key_t keys[]);
+
+
 
 /* Export the keys found by PATTERN into KEYDATA.  */
 gpgme_error_t gpgme_op_export_start (gpgme_ctx_t ctx, const char *pattern,
-				     unsigned int reserved,
+				     gpgme_export_mode_t mode,
 				     gpgme_data_t keydata);
 gpgme_error_t gpgme_op_export (gpgme_ctx_t ctx, const char *pattern,
-			       unsigned int reserved, gpgme_data_t keydata);
+			       gpgme_export_mode_t mode,
+                               gpgme_data_t keydata);
 
 gpgme_error_t gpgme_op_export_ext_start (gpgme_ctx_t ctx,
 					 const char *pattern[],
-					 unsigned int reserved,
+					 gpgme_export_mode_t mode,
 					 gpgme_data_t keydata);
 gpgme_error_t gpgme_op_export_ext (gpgme_ctx_t ctx, const char *pattern[],
-				   unsigned int reserved,
+				   gpgme_export_mode_t mode,
 				   gpgme_data_t keydata);
+
+/* Export the keys from the array KEYS into KEYDATA.  */
+gpgme_error_t gpgme_op_export_keys_start (gpgme_ctx_t ctx,
+                                          gpgme_key_t keys[],
+                                          gpgme_export_mode_t mode,
+                                          gpgme_data_t keydata);
+gpgme_error_t gpgme_op_export_keys (gpgme_ctx_t ctx,
+                                    gpgme_key_t keys[],
+                                    gpgme_export_mode_t mode,
+                                    gpgme_data_t keydata);
+
 
 
 /* Key generation.  */

@@ -1,3 +1,7 @@
+2009-06-16  Werner Koch  <wk@g10code.com>
+
+	* gpg/pgp-export.c, gpg/pgp-keylist.c: New.
+
 2009-06-09  Werner Koch  <wk@g10code.com>
 
 	* gpg/Makefile.am (./pubring.gpg): Ignore errors in case of
@@ -16,7 +20,8 @@
 
 	* gpg/mkdemodirs: Renamed to ...
 	* gpg/mkdemodirs.in: ... here.
-	* gpg/mkdemodirs.in (GPG): Derive value from @GPG@ instead of hard-coding "gpg".
+	* gpg/mkdemodirs.in (GPG): Derive value from @GPG@ instead of
+	hard-coding "gpg".
 
 2009-02-24  Werner Koch  <wk@g10code.com>
 

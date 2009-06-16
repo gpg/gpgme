@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.1.9
+Noteworthy changes in version 1.2.0
 ------------------------------------------------
 
  * New encryption flag GPGME_ENCRYPT_NO_ENCRYPT_TO to disable default
@@ -11,7 +11,6 @@ Noteworthy changes in version 1.1.9
  * New functions gpgme_io_read and gpgme_io_write for use with
    gpgme_passphrase_cb_t and gpgme_edit_cb_t functions.
 
-
  * Interface changes relative to the 1.1.7 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_KEYLIST_MODE_EPHEMERAL   NEW.
@@ -22,12 +21,23 @@ Noteworthy changes in version 1.1.9
  gpgme_op_assuan_transact_start NEW.
  gpgme_op_assuan_transact       NEW.
  gpgme_op_assuan_result         NEW.
+ gpgme_op_import_keys           NEW.
+ gpgme_op_import_keys_start     NEW.
  gpgme_subkey_t                 EXTENDED: New fields is_cardkey, card_number.
  GPGME_ENCRYPT_NO_ENCRYPT_TO    NEW.
  gpgme_check_version            CHANGED: Is now a macro.
  gpgme_new                      EXTENDED: More failure codes.
  gpgme_io_read                  NEW.
  gpgme_io_write                 NEW.
+ gpgme_result_ref               NEW.
+ gpgme_result_unref             NEW.
+ gpgme_export_mode_t            NEW.
+ gpgme_export_ext_start         EXTENDED: Arg RESERVED is now a MODE flag.
+ gpgme_op_export                EXTENDED: Arg RESERVED is now a MODE flag.
+ gpgme_op_export_ext_start      EXTENDED: Arg RESERVED is now a MODE flag.
+ gpgme_op_export_ext            EXTENDED: Arg RESERVED is now a MODE flag.
+ gpgme_op_export_keys_start     NEW.
+ gpgme_op_export_keys           NEW.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
