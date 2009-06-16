@@ -1,3 +1,8 @@
+2009-06-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.c (result_ref_lock): New global variable.
+	(gpgme_result_ref, gpgme_result_unref): use it.
+
 2009-06-16  Werner Koch  <wk@g10code.com>
 
 	* gpgme.h.in (gpgme_op_export_keys_start, gpgme_op_export_keys): New.

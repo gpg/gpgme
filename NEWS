@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.2.0
+Noteworthy changes in version 1.2.0 (unreleased)
 ------------------------------------------------
 
  * New encryption flag GPGME_ENCRYPT_NO_ENCRYPT_TO to disable default
@@ -10,6 +10,16 @@ Noteworthy changes in version 1.2.0
 
  * New functions gpgme_io_read and gpgme_io_write for use with
    gpgme_passphrase_cb_t and gpgme_edit_cb_t functions.
+
+ * New functions gpgme_result_ref and gpgme_result_unref to detach
+   result structures from a context.
+
+ * New functions gpgme_op_export_keys_start and gpgme_op_export_keys
+   that allow to specify exported keys through gpgme_key_t objects
+   instead of patterns.
+
+ * New mode of operation gpgme_export_mode_t that allows exporting
+   external keys.
 
  * Interface changes relative to the 1.1.7 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

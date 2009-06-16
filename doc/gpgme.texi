@@ -173,6 +173,7 @@ Contexts
 
 * Creating Contexts::             Creating new @acronym{GPGME} contexts.
 * Destroying Contexts::           Releasing @acronym{GPGME} contexts.
+* Result Management::             Managing the result of crypto operations.
 * Context Attributes::            Setting properties of a context.
 * Key Management::                Managing keys with @acronym{GPGME}.
 * Trust Item Management::         Managing trust items with @acronym{GPGME}.
@@ -1971,6 +1972,7 @@ cryptographic operations.
 @menu
 * Creating Contexts::             Creating new @acronym{GPGME} contexts.
 * Destroying Contexts::           Releasing @acronym{GPGME} contexts.
+* Result Management::             Managing the result of crypto operations.
 * Context Attributes::            Setting properties of a context.
 * Key Management::                Managing keys with @acronym{GPGME}.
 * Trust Item Management::         Managing trust items with @acronym{GPGME}.
@@ -2006,6 +2008,38 @@ targets to see if @code{-mms-bitfields} was used (as required).
 The function @code{gpgme_release} destroys the context with the handle
 @var{ctx} and releases all associated resources.
 @end deftypefun
+
+
+@node Result Management
+@section Result Management
+@cindex context, result of operation
+
+The detailed result of an operation is returned in operation-specific
+structures such as @code{gpgme_decrypt_result_t}.  The corresponding
+retrieval functions such as @code{gpgme_op_decrypt_result} provide
+static access to the results after an operation completes.  The
+following interfaces make it possible to detach a result structure
+from its associated context and give it a lifetime beyond that of the
+current operation or context.
+
+@deftypefun void gpgme_result_ref (@w{void *@var{result}})
+The function @code{gpgme_result_ref} acquires an additional reference
+for the result @var{result}, which may be of any type
+@code{gpgme_*_result_t}.  As long as the user holds a reference, the
+result structure is guaranteed to be valid and unmodified.
+@end deftypefun
+
+@deftypefun void gpgme_result_unref (@w{void *@var{result}})
+The function @code{gpgme_result_unref} releases a reference for the
+result @var{result}.  If this was the last reference, the result
+structure will be destroyed and all resources associated to it will be
+released.
+@end deftypefun
+
+Note that a context may hold its own references to result structures,
+typically until the context is destroyed or the next operation is
+started.  In fact, these references are accessed through the
+@code{gpgme_op_*_result} functions.
 
 
 @node Context Attributes
