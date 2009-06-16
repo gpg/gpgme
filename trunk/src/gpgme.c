@@ -45,6 +45,10 @@ static char *def_lc_messages;
 
 gpgme_error_t _gpgme_selftest = GPG_ERR_NOT_OPERATIONAL;
 
+/* Protects all reference counters in result structures.  All other
+   accesses to a key are read only.  */
+DEFINE_STATIC_LOCK (result_ref_lock);
+
 
 /* Create a new context as an environment for GPGME crypto
    operations.  */
@@ -178,29 +182,39 @@ gpgme_release (gpgme_ctx_t ctx)
 void
 gpgme_result_ref (void *result)
 {
-  struct ctx_op_data *data = result - sizeof (struct ctx_op_data);
+  struct ctx_op_data *data;
 
   if (! result)
     return;
 
+  data = result - sizeof (struct ctx_op_data);
+
+  LOCK (result_ref_lock);
   data->references++;
+  UNLOCK (result_ref_lock);
 }
 
 
 void
 gpgme_result_unref (void *result)
 {
-  struct ctx_op_data *data = result - sizeof (struct ctx_op_data);
+  struct ctx_op_data *data;
 
   if (! result)
     return;
 
-  if (--data->references == 0)
+  data = result - sizeof (struct ctx_op_data);
+
+  LOCK (result_ref_lock);
+  if (--data->references)
     {
-      if (data->cleanup)
-	(*data->cleanup) (data->hook);
-      free (data);
+      UNLOCK (result_ref_lock);
+      return;
     }
+
+  if (data->cleanup)
+    (*data->cleanup) (data->hook);
+  free (data);
 }
 
 
