@@ -1803,6 +1803,107 @@ gpg_genkey (void *engine, gpgme_data_t help_data, int use_armor,
   return err;
 }
 
+/* Return the next DELIM delimited string from DATA as a C-string.
+   The caller needs to provide the address of a pointer variable which
+   he has to set to NULL before the first call.  After the last call
+   to this function, this function needs to be called once more with
+   DATA set to NULL so that the function can release its internal
+   state.  After that the pointer variable is free for use again.
+   Note that we use a delimiter and thus a trailing delimiter is not
+   required.  DELIM may not be changed after the first call. */
+static const char *
+string_from_data (gpgme_data_t data, int delim, 
+                  void **helpptr, gpgme_error_t *r_err)
+{
+#define MYBUFLEN 2000 /* Fixme: We don't support URLs longer than that.  */
+  struct {
+    int  eof_seen;
+    int  nbytes;      /* Length of the last returned string including
+                         the delimiter. */
+    int  buflen;      /* Valid length of BUF.  */
+    char buf[MYBUFLEN+1];  /* Buffer with one byte extra space.  */
+  } *self;
+  char *p;
+  int nread;
+
+  *r_err = 0;
+  if (!data)
+    {
+      if (*helpptr)
+        {
+          free (*helpptr);
+          *helpptr = NULL;
+        }
+      return NULL;
+    }
+
+  if (*helpptr)
+    self = *helpptr;
+  else
+    {
+      self = malloc (sizeof *self);
+      if (!self)
+        {
+          *r_err = gpg_error_from_syserror ();
+          return NULL;
+        }
+      *helpptr = self;
+      self->eof_seen = 0;
+      self->nbytes = 0;
+      self->buflen = 0;
+    }
+
+  if (self->eof_seen)
+    return NULL;
+
+  assert (self->nbytes <= self->buflen);
+  memmove (self->buf, self->buf + self->nbytes, self->buflen - self->nbytes);
+  self->buflen -= self->nbytes;
+  self->nbytes = 0;
+
+  do
+    {
+      /* Fixme: This is fairly infective scanning because we may scan
+         the buffer several times.  */
+      p = memchr (self->buf, delim, self->buflen);
+      if (p)
+        {
+          *p = 0;
+          self->nbytes = p - self->buf + 1;
+          return self->buf;
+        }
+
+      if ( !(MYBUFLEN - self->buflen) )
+        {
+          /* Not enough space - URL too long.  */
+          *r_err = gpg_error (GPG_ERR_TOO_LARGE);
+          return NULL;
+        }
+
+      nread = gpgme_data_read (data, self->buf + self->buflen, 
+                               MYBUFLEN - self->buflen);
+      if (nread < 0)
+        {
+          *r_err = gpg_error_from_syserror ();
+          return NULL;
+        }
+      self->buflen += nread;
+    }
+  while (nread);
+
+  /* EOF reached.  If we have anything in the buffer, append a Nul and
+     return it. */
+  self->eof_seen = 1;
+  if (self->buflen)
+    {
+      self->buf[self->buflen] = 0;  /* (we allocated one extra byte)  */
+      return self->buf;
+    }
+  return NULL;
+#undef MYBUFLEN
+}
+
+
 
 static gpgme_error_t
 gpg_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
@@ -1810,9 +1911,12 @@ gpg_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
   int idx;
+  gpgme_data_encoding_t dataenc;
 
   if (keydata && keyarray)
     gpg_error (GPG_ERR_INV_VALUE); /* Only one is allowed.  */
+
+  dataenc = gpgme_data_get_encoding (keydata);
 
   if (keyarray)
     {
@@ -1830,6 +1934,38 @@ gpg_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
           else if (*keyarray[idx]->subkeys->keyid)
             err = add_arg (gpg, keyarray[idx]->subkeys->keyid);
         }
+    }
+  else if (dataenc == GPGME_DATA_ENCODING_URL
+           || dataenc == GPGME_DATA_ENCODING_URL0)
+    {
+      void *helpptr;
+      const char *string;
+      gpgme_error_t xerr;
+      int delim = (dataenc == GPGME_DATA_ENCODING_URL)? '\n': 0;
+
+      /* FIXME: --fetch-keys is probably not correct because it can't
+         grok all kinds of URLs.  On Unix it should just work but on
+         Windows we will build the command line and that may fail for
+         some embedded control characters.  It is anyway limited to
+         the maximum size of the command line.  We need another
+         command which can take its input from a file.  Maybe we
+         should use an option to gpg to modify such commands (ala
+         --multifile).  */
+      err = add_arg (gpg, "--fetch-keys");
+      if (!err)
+        err = add_arg (gpg, "--");
+      helpptr = NULL;
+      while (!err
+             && (string = string_from_data (keydata, delim, &helpptr, &xerr)))
+        err = add_arg (gpg, string);
+      if (!err)
+        err = xerr;
+      string_from_data (NULL, delim, &helpptr, &xerr);
+    }
+  else if (dataenc == GPGME_DATA_ENCODING_URLESC)
+    {
+      /* Already escaped URLs are not yet supported.  */
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
     }
   else
     {

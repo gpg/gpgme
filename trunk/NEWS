@@ -48,6 +48,9 @@ Noteworthy changes in version 1.2.0 (unreleased)
  gpgme_op_export_ext            EXTENDED: Arg RESERVED is now a MODE flag.
  gpgme_op_export_keys_start     NEW.
  gpgme_op_export_keys           NEW.
+ GPGME_DATA_ENCODING_URL        NEW.
+ GPGME_DATA_ENCODING_URL0       NEW.
+ GPGME_DATA_ENCODING_URLESC     NEW.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

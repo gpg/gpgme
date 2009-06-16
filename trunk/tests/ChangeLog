@@ -1,5 +1,9 @@
 2009-06-16  Werner Koch  <wk@g10code.com>
 
+	* gpg/pgp-import.c: New.
+	* gpg/t-support.h (print_import_result, nonnull): Factored out
+	from other tools.
+
 	* gpg/pgp-export.c, gpg/pgp-keylist.c: New.
 
 2009-06-09  Werner Koch  <wk@g10code.com>

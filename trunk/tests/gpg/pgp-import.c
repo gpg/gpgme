@@ -1,4 +1,4 @@
-/* pgp-export.c  - Helper to run an export command
+/* pgp-import.c  - Helper to run an import command
    Copyright (C) 2008, 2009 g10 Code GmbH
 
    This file is part of GPGME.
@@ -29,7 +29,7 @@
 
 #include <gpgme.h>
 
-#define PGM "pgp-export"
+#define PGM "pgp-import"
 
 #include "t-support.h"
 
@@ -40,10 +40,11 @@ static int verbose;
 static int
 show_usage (int ex)
 {
-  fputs ("usage: " PGM " [options] USERIDS\n\n"
+  fputs ("usage: " PGM " [options] FILENAMEs\n\n"
          "Options:\n"
          "  --verbose        run in verbose mode\n"
-         "  --extern         send keys to the keyserver (TAKE CARE!)\n"
+         "  --url            import from given URLs\n"
+         "  -0               URLs are delimited by a nul\n"
          , stderr);
   exit (ex);
 }
@@ -54,16 +55,13 @@ main (int argc, char **argv)
   int last_argc = -1;
   gpgme_error_t err;
   gpgme_ctx_t ctx;
-  gpgme_key_t key;
-  gpgme_keylist_result_t result;
-  gpgme_key_t keyarray[100];
-  int keyidx = 0;
-  gpgme_data_t out;
-  gpgme_export_mode_t mode = 0;
+  int url_mode = 0;
+  int nul_mode = 0;
+  gpgme_import_result_t impres;
+  gpgme_data_t data;
 
   if (argc)
     { argc--; argv++; }
-
   while (argc && last_argc != argc )
     {
       last_argc = argc;
@@ -79,9 +77,14 @@ main (int argc, char **argv)
           verbose = 1;
           argc--; argv++;
         }
-      else if (!strcmp (*argv, "--extern"))
+      else if (!strcmp (*argv, "--url"))
         {
-          mode |= GPGME_KEYLIST_MODE_EXTERN;
+          url_mode = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "-0"))
+        {
+          nul_mode = 1;
           argc--; argv++;
         }
       else if (!strncmp (*argv, "--", 2))
@@ -98,63 +101,28 @@ main (int argc, char **argv)
   fail_if_err (err);
   gpgme_set_protocol (ctx, GPGME_PROTOCOL_OpenPGP);
 
-  /* Lookup the keys.  */
-  err = gpgme_op_keylist_ext_start (ctx, (const char**)argv, 0, 0);
-  fail_if_err (err);
-    
-  while (!(err = gpgme_op_keylist_next (ctx, &key)))
+  for (; argc; argc--, argv++)
     {
-      printf ("keyid: %s  (fpr: %s)\n",
-              key->subkeys?nonnull (key->subkeys->keyid):"?",
-              key->subkeys?nonnull (key->subkeys->fpr):"?");
+      printf ("reading file `%s'\n", *argv);
+      err = gpgme_data_new_from_file (&data, *argv, 1);
+      fail_if_err (err);
 
-      if (keyidx < DIM (keyarray)-1)
-        keyarray[keyidx++] = key;
-      else
+      if (url_mode)
+        gpgme_data_set_encoding (data, (nul_mode? GPGME_DATA_ENCODING_URL0
+                                        : GPGME_DATA_ENCODING_URL));
+      
+      err = gpgme_op_import (ctx, data);
+      fail_if_err (err);
+      impres = gpgme_op_import_result (ctx);
+      if (!impres)
         {
-          fprintf (stderr, PGM": too many keys"
-                   "- skipping this key\n");
-          gpgme_key_unref (key);
+          fprintf (stderr, PGM ": no import result returned\n");
+          exit (1);
         }
+      print_import_result (impres);
+      
+      gpgme_data_release (data);
     }
-  if (gpg_err_code (err) != GPG_ERR_EOF)
-    fail_if_err (err);
-  err = gpgme_op_keylist_end (ctx);
-  fail_if_err (err);
-  keyarray[keyidx] = NULL;
-
-  result = gpgme_op_keylist_result (ctx);
-  if (result->truncated)
-    {
-      fprintf (stderr, PGM ": key listing unexpectedly truncated\n");
-      exit (1);
-    }
-
-  /* Now for the actual export.  */
-  if ((mode & GPGME_KEYLIST_MODE_EXTERN))
-    printf ("sending keys to keyserver\n");
-
-  err = gpgme_data_new (&out);
-  fail_if_err (err);
-
-  gpgme_set_armor (ctx, 1);
-  err = gpgme_op_export_keys (ctx, keyarray, mode, 
-                              (mode & GPGME_KEYLIST_MODE_EXTERN)? NULL:out);
-  fail_if_err (err);
-
-  fflush (NULL);
-  if (!(mode & GPGME_KEYLIST_MODE_EXTERN))
-    {
-      fputs ("Begin Result:\n", stdout);
-      print_data (out);
-      fputs ("End Result.\n", stdout);
-    }
-
-  /* Cleanup.  */
-  gpgme_data_release (out);
-
-  for (keyidx=0; keyarray[keyidx]; keyidx++)
-    gpgme_key_unref (keyarray[keyidx]);
 
   gpgme_release (ctx);
   return 0;
