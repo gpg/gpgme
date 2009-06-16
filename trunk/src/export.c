@@ -22,6 +22,8 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
+#include <stdlib.h>
+#include <string.h>
 
 #include "gpgme.h"
 #include "context.h"
@@ -37,12 +39,24 @@ export_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 static gpgme_error_t
 export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
-	      unsigned int reserved, gpgme_data_t keydata)
+	      gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
   gpgme_error_t err;
 
-  if (!keydata)
-    return gpg_error (GPG_ERR_INV_VALUE);
+  if ((mode & ~(GPGME_EXPORT_MODE_EXTERN)))
+    return gpg_error (GPG_ERR_INV_VALUE); /* Invalid flags in MODE.  */
+
+  
+  if ((mode & GPGME_EXPORT_MODE_EXTERN))
+    {
+      if (keydata)
+        return gpg_error (GPG_ERR_INV_VALUE);
+    }
+  else
+    {
+      if (!keydata)
+        return gpg_error (GPG_ERR_INV_VALUE);
+    }
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -50,26 +64,26 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
 
   _gpgme_engine_set_status_handler (ctx->engine, export_status_handler, ctx);
 
-  return _gpgme_engine_op_export (ctx->engine, pattern, reserved, keydata,
+  return _gpgme_engine_op_export (ctx->engine, pattern, mode, keydata,
 				  ctx->use_armor);
 }
 
 
-/* Export the keys listed in RECP into KEYDATA.  */
+/* Export the keys listed in PATTERN into KEYDATA.  */
 gpgme_error_t
 gpgme_op_export_start (gpgme_ctx_t ctx, const char *pattern,
-		       unsigned int reserved, gpgme_data_t keydata)
+		       gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
-  return export_start (ctx, 0, pattern, reserved, keydata);
+  return export_start (ctx, 0, pattern, mode, keydata);
 }
 
 
-/* Export the keys listed in RECP into KEYDATA.  */
+/* Export the keys listed in PATTERN into KEYDATA.  */
 gpgme_error_t
-gpgme_op_export (gpgme_ctx_t ctx, const char *pattern, unsigned int reserved,
-		 gpgme_data_t keydata)
+gpgme_op_export (gpgme_ctx_t ctx, const char *pattern,
+		 gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
-  gpgme_error_t err = export_start (ctx, 1, pattern, reserved, keydata);
+  gpgme_error_t err = export_start (ctx, 1, pattern, mode, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;
@@ -78,12 +92,23 @@ gpgme_op_export (gpgme_ctx_t ctx, const char *pattern, unsigned int reserved,
 
 static gpgme_error_t
 export_ext_start (gpgme_ctx_t ctx, int synchronous, const char *pattern[],
-		  unsigned int reserved, gpgme_data_t keydata)
+		  gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
   gpgme_error_t err;
 
-  if (!keydata)
-    return gpg_error (GPG_ERR_INV_VALUE);
+  if ((mode & ~(GPGME_EXPORT_MODE_EXTERN)))
+    return gpg_error (GPG_ERR_INV_VALUE); /* Invalid flags in MODE.  */
+
+  if ((mode & GPGME_EXPORT_MODE_EXTERN))
+    {
+      if (keydata)
+        return gpg_error (GPG_ERR_INV_VALUE);
+    }
+  else
+    {
+      if (!keydata)
+        return gpg_error (GPG_ERR_INV_VALUE);
+    }
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -91,27 +116,108 @@ export_ext_start (gpgme_ctx_t ctx, int synchronous, const char *pattern[],
 
   _gpgme_engine_set_status_handler (ctx->engine, export_status_handler, ctx);
 
-  return _gpgme_engine_op_export_ext (ctx->engine, pattern, reserved, keydata,
+  return _gpgme_engine_op_export_ext (ctx->engine, pattern, mode, keydata,
 				      ctx->use_armor);
 }
 
 
-/* Export the keys listed in RECP into KEYDATA.  */
+/* Export the keys listed in PATTERN into KEYDATA.  */
 gpgme_error_t
 gpgme_op_export_ext_start (gpgme_ctx_t ctx, const char *pattern[],
-			   unsigned int reserved, gpgme_data_t keydata)
+			   gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
-  return export_ext_start (ctx, 0, pattern, reserved, keydata);
+  return export_ext_start (ctx, 0, pattern, mode, keydata);
 }
 
 
-/* Export the keys listed in RECP into KEYDATA.  */
+/* Export the keys listed in PATTERN into KEYDATA.  */
 gpgme_error_t
 gpgme_op_export_ext (gpgme_ctx_t ctx, const char *pattern[],
-		     unsigned int reserved, gpgme_data_t keydata)
+		     gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
-  gpgme_error_t err = export_ext_start (ctx, 1, pattern, reserved, keydata);
+  gpgme_error_t err = export_ext_start (ctx, 1, pattern, mode, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;
 }
+
+
+
+
+
+static gpgme_error_t
+export_keys_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t keys[],
+                   gpgme_export_mode_t mode, gpgme_data_t keydata)
+{
+  gpgme_error_t err;
+  int nkeys, idx;
+  char **pattern;
+
+  if (!keys)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* Create a list of pattern from the keys.  */
+  for (idx=nkeys=0; keys[idx]; idx++)
+    if (keys[idx]->protocol == ctx->protocol)
+      nkeys++;
+  if (!nkeys)
+    return gpg_error (GPG_ERR_NO_DATA);
+  
+  pattern = calloc (nkeys+1, sizeof *pattern);
+  if (!pattern)
+    return gpg_error_from_syserror ();
+
+  for (idx=nkeys=0; keys[idx]; idx++)
+    if (keys[idx]->protocol == ctx->protocol
+        && keys[idx]->subkeys
+        && keys[idx]->subkeys->fpr
+        && *keys[idx]->subkeys->fpr)
+      {
+        pattern[nkeys] = strdup (keys[idx]->subkeys->fpr);
+        if (!pattern[nkeys])
+          {
+            err = gpg_error_from_syserror ();
+            goto leave;
+          }
+        nkeys++;
+      }
+
+
+  /* Pass on to the regular function.  */
+  err = export_ext_start (ctx, synchronous, (const char**)pattern,
+                          mode, keydata);
+
+ leave:
+  for (idx=0; pattern[idx]; idx++)
+    free (pattern[idx]);
+  free (pattern);
+
+  return err;
+}
+
+
+/* Export the keys from the array KEYS into KEYDATA.  Only keys of the
+   current protocol are exported and only those which have a
+   fingerprint set; that is keys received with some external search
+   methods are silently skipped.  */
+gpgme_error_t
+gpgme_op_export_keys_start (gpgme_ctx_t ctx,
+                            gpgme_key_t keys[],
+                            gpgme_export_mode_t mode,
+                            gpgme_data_t keydata)
+{
+  return export_keys_start (ctx, 0, keys, mode, keydata);
+}
+
+gpgme_error_t
+gpgme_op_export_keys (gpgme_ctx_t ctx,
+                      gpgme_key_t keys[],
+                      gpgme_export_mode_t mode,
+                      gpgme_data_t keydata)
+{
+  gpgme_error_t err = export_keys_start (ctx, 1, keys, mode, keydata);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  return err;
+}
+

@@ -50,7 +50,8 @@ LDADD = ../../src/libgpgme.la
 t_thread1_LDADD = ../../src/libgpgme-pthread.la
 
 # We don't run t-genkey in the test suite, because it takes too long
-noinst_PROGRAMS = $(TESTS) t-genkey
+# The other programs are used for debugging.
+noinst_PROGRAMS = $(TESTS) t-genkey pgp-keylist pgp-export
 
 mkdemodirs: mkdemodirs.in Makefile
 	sed -e 's,[@]GPG[@],$(GPG),g' < $(srcdir)/mkdemodirs.in > mkdemodirs

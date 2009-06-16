@@ -93,11 +93,11 @@ gpgme_error_t _gpgme_engine_op_encrypt_sign (engine_t engine,
 					     int use_armor,
 					     gpgme_ctx_t ctx /* FIXME */);
 gpgme_error_t _gpgme_engine_op_export (engine_t engine, const char *pattern,
-				       unsigned int reserved,
+				       gpgme_export_mode_t mode,
 				       gpgme_data_t keydata, int use_armor);
 gpgme_error_t _gpgme_engine_op_export_ext (engine_t engine,
 					   const char *pattern[],
-					   unsigned int reserved,
+					   gpgme_export_mode_t mode,
 					   gpgme_data_t keydata,
 					   int use_armor);
 gpgme_error_t _gpgme_engine_op_genkey (engine_t engine,
@@ -105,7 +105,8 @@ gpgme_error_t _gpgme_engine_op_genkey (engine_t engine,
 				       int use_armor, gpgme_data_t pubkey,
 				       gpgme_data_t seckey);
 gpgme_error_t _gpgme_engine_op_import (engine_t engine,
-				       gpgme_data_t keydata);
+				       gpgme_data_t keydata,
+                                       gpgme_key_t *keyarray);
 gpgme_error_t _gpgme_engine_op_keylist (engine_t engine,
 					const char *pattern,
 					int secret_only,

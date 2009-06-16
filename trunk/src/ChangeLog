@@ -1,3 +1,34 @@
+2009-06-16  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h.in (gpgme_op_export_keys_start, gpgme_op_export_keys): New.
+	* gpgme.def, libgpgme.vers: Add them.
+	* export.c (gpgme_op_export_keys_start, gpgme_op_export_keys): New.
+	(export_keys_start): New.
+
+	* gpgme.h.in (gpgme_export_mode_t, GPGME_EXPORT_MODE_EXTERN): New.
+	(gpgme_op_export_start, gpgme_op_export, gpgme_op_export_ext_start)
+	(gpgme_op_export_ext): Change arg RESERVED to MODE of new
+	compatible type.
+	* export.c (gpgme_export_ext_start, gpgme_op_export)
+	(gpgme_op_export_ext_start, gpgme_op_export_ext): Ditto.
+	(export_start): Ditto.
+	* engine.c (_gpgme_engine_op_export): Ditto.
+	* engine-backend.h (struct engine_ops): Ditto.
+	* engine-gpgsm.c (gpgsm_export, gpgsm_export_ext): Ditto.
+	* engine-gpg.c (gpg_export, gpg_export_ext): Ditto.  Implement
+	mode EXTERN.
+	(gpg_export, gpg_export_ext): Factor common code out to ..
+	(export_common): .. this.
+
+	* gpgme.h.in (gpgme_op_import_keys_start, gpgme_op_import_keys): New.
+	* gpgme.def, libgpgme.vers: Add them.
+	* import.c (gpgme_op_import_keys_start, gpgme_op_import_keys): New.
+	(_gpgme_op_import_keys_start): New.
+	* engine.c (_gpgme_engine_op_import): Add arg KEYARRAY.
+	* engine-backend.h (struct engine_ops): Ditto.
+	* engine-gpgsm.c (gpgsm_import): Ditto.  Not functional.
+	* engine-gpg.c (gpg_import): Ditto.  Implement it.
+
 2009-06-15  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h.in (gpgme_result_ref, gpgme_result_unref): Add

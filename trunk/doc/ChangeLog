@@ -1,3 +1,8 @@
+2009-06-16  Werner Koch  <wk@g10code.com>
+
+	* gpgme.texi (Exporting Keys): Document gpgme_op_export_keys.
+	(Importing Keys): Document gpgme_op_import_keys.
+
 2009-05-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Library Version Check): Document selftest error.

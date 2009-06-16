@@ -51,7 +51,7 @@ struct spawn_fd_item_s
 
 
 int _gpgme_io_pipe (int filedes[2], int inherit_idx);
-int _gpgme_io_spawn (const char *path, char *const argv[],
+int _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		     struct spawn_fd_item_s *fd_list, pid_t *r_pid);
 #endif
 
@@ -659,7 +659,7 @@ pipe_connect_gpgme (assuan_context_t *ctx,
   child_fds[nr].dup_to = -1;
 
   /* Start the process.  */
-  res = _gpgme_io_spawn (name, (char *const *) argv, child_fds, NULL);
+  res = _gpgme_io_spawn (name, (char *const *) argv, 0, child_fds, NULL);
   if (res == -1)
     {
       _assuan_log_printf ("CreateProcess failed: %s\n", strerror (errno));

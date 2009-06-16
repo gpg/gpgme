@@ -77,14 +77,15 @@ struct engine_ops
 				 gpgme_data_t plain, gpgme_data_t ciph,
 				 int use_armor, gpgme_ctx_t ctx /* FIXME */);
   gpgme_error_t (*export) (void *engine, const char *pattern,
-			   unsigned int reserved, gpgme_data_t keydata,
+			   gpgme_export_mode_t mode, gpgme_data_t keydata,
 			   int use_armor);
   gpgme_error_t (*export_ext) (void *engine, const char *pattern[],
-			       unsigned int reserved, gpgme_data_t keydata,
+			       gpgme_export_mode_t mode, gpgme_data_t keydata,
 			       int use_armor);
   gpgme_error_t (*genkey) (void *engine, gpgme_data_t help_data, int use_armor,
 			   gpgme_data_t pubkey, gpgme_data_t seckey);
-  gpgme_error_t (*import) (void *engine, gpgme_data_t keydata);
+  gpgme_error_t (*import) (void *engine, gpgme_data_t keydata,
+                           gpgme_key_t *keyarray);
   gpgme_error_t (*keylist) (void *engine, const char *pattern,
 			    int secret_only, gpgme_keylist_mode_t mode);
   gpgme_error_t (*keylist_ext) (void *engine, const char *pattern[],

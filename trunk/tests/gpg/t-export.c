@@ -42,6 +42,7 @@ main (int argc, char **argv)
   gpgme_error_t err;
   gpgme_data_t  out;
   const char *pattern[] = { "Alpha", "Bob", NULL };
+  gpgme_key_t keyarray[3];
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
@@ -61,6 +62,32 @@ main (int argc, char **argv)
   fputs ("End Result.\n", stdout);
    
   gpgme_data_release (out);
+
+  /* Again. Now using a key array.  */
+  err = gpgme_data_new (&out);
+  fail_if_err (err);
+
+  err = gpgme_get_key (ctx, "0x68697734" /* Alpha */, keyarray+0, 0);
+  fail_if_err (err);
+  err = gpgme_get_key (ctx, "0xA9E3B0B2" /* Bob */, keyarray+1, 0);
+  fail_if_err (err);
+  keyarray[2] = NULL;
+
+  gpgme_set_armor (ctx, 1);
+  err = gpgme_op_export_keys (ctx, keyarray, 0, out);
+  fail_if_err (err);
+
+  gpgme_key_unref (keyarray[0]);
+  gpgme_key_unref (keyarray[1]);
+
+  fflush (NULL);
+  fputs ("Begin Result:\n", stdout);
+  print_data (out);
+  fputs ("End Result.\n", stdout);
+   
+  gpgme_data_release (out);
+
+
   gpgme_release (ctx);
    
   return 0;
