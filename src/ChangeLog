@@ -5,6 +5,14 @@
 
 2009-06-16  Werner Koch  <wk@g10code.com>
 
+	* version.c: Include stdlib.h. 
+
+	* gpgme.h.in (gpgme_data_encoding_t): Add GPGME_DATA_ENCODING_URL,
+	GPGME_DATA_ENCODING_URLESC, GPGME_DATA_ENCODING_URL0.
+	* data.c (gpgme_data_set_encoding): Adjust for new values.
+	* engine-gpg.c (string_from_data): New.
+	(gpg_import): Implement --fetch-key feature.
+
 	* gpgme.h.in (gpgme_op_export_keys_start, gpgme_op_export_keys): New.
 	* gpgme.def, libgpgme.vers: Add them.
 	* export.c (gpgme_op_export_keys_start, gpgme_op_export_keys): New.

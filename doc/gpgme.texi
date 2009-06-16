@@ -1934,6 +1934,19 @@ scheme as used by @acronym{MIME} and other protocols.
 @item GPGME_DATA_ENCODING_ARMOR
 This specifies that the data is encoded in an armored form as used by
 OpenPGP and PEM.
+
+@item GPGME_DATA_ENCODING_URL
+The data is a list of linefeed delimited URLs.  This is only useful with
+@code{gpgme_op_import}.
+
+@item GPGME_DATA_ENCODING_URL0
+The data is a list of binary zero delimited URLs.  This is only useful
+with @code{gpgme_op_import}.
+
+@item GPGME_DATA_ENCODING_URLESC
+The data is a list of linefeed delimited URLs with all control and space
+characters percent escaped.  This mode is is not yet implemented.
+
 @end table
 @end deftp
 

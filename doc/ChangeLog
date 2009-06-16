@@ -6,6 +6,7 @@
 
 	* gpgme.texi (Exporting Keys): Document gpgme_op_export_keys.
 	(Importing Keys): Document gpgme_op_import_keys.
+	(Data Buffer Meta-Data): Document URL encodings.
 
 2009-05-28  Marcus Brinkmann  <marcus@g10code.de>
 

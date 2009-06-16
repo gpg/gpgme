@@ -185,7 +185,10 @@ typedef enum
     GPGME_DATA_ENCODING_NONE   = 0,	/* Not specified.  */
     GPGME_DATA_ENCODING_BINARY = 1,
     GPGME_DATA_ENCODING_BASE64 = 2,
-    GPGME_DATA_ENCODING_ARMOR  = 3	/* Either PEM or OpenPGP Armor.  */
+    GPGME_DATA_ENCODING_ARMOR  = 3,	/* Either PEM or OpenPGP Armor.  */
+    GPGME_DATA_ENCODING_URL    = 4,     /* LF delimited URL list.        */
+    GPGME_DATA_ENCODING_URLESC = 5,     /* Ditto, but percent escaped.   */
+    GPGME_DATA_ENCODING_URL0   = 6      /* Nul delimited URL list.       */
   }
 gpgme_data_encoding_t;
 
