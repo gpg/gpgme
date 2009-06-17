@@ -211,6 +211,7 @@ gpgme_result_unref (void *result)
       UNLOCK (result_ref_lock);
       return;
     }
+  UNLOCK (result_ref_lock);
 
   if (data->cleanup)
     (*data->cleanup) (data->hook);
