@@ -1,5 +1,7 @@
 2009-06-16  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.c (gpgme_result_unref): Hot fix to release a lock.
+
 	* gpgme.c (result_ref_lock): New global variable.
 	(gpgme_result_ref, gpgme_result_unref): use it.
 
