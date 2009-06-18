@@ -863,6 +863,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
     }
   else if (inherit_idx == 1)
     {
+      struct reader_context_s *ctx;
       HANDLE hd;
       if (!DuplicateHandle( GetCurrentProcess(), wh,
 			    GetCurrentProcess(), &hd, 0,
