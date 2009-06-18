@@ -189,6 +189,8 @@ gpgme_result_ref (void *result)
 
   data = result - sizeof (struct ctx_op_data);
 
+  assert (data->magic == CTX_OP_DATA_MAGIC);
+
   LOCK (result_ref_lock);
   data->references++;
   UNLOCK (result_ref_lock);
@@ -204,6 +206,8 @@ gpgme_result_unref (void *result)
     return;
 
   data = result - sizeof (struct ctx_op_data);
+
+  assert (data->magic == CTX_OP_DATA_MAGIC);
 
   LOCK (result_ref_lock);
   if (--data->references)

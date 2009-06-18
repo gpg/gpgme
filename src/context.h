@@ -42,8 +42,14 @@ typedef enum
   } ctx_op_data_id_t;
 
 
+/* "gpgmeres" in ASCII.  */
+#define CTX_OP_DATA_MAGIC 0x736572656d677067ULL
 struct ctx_op_data
 {
+  /* A magic word just to make sure people don't deallocate something
+     that ain't a result structure.  */
+  unsigned long long magic;
+
   /* The next element in the linked list, or NULL if this is the last
      element.  Used by op data structures linked into a context.  */
   struct ctx_op_data *next;
