@@ -1793,9 +1793,6 @@ typedef enum
     GPGME_CONF_ALIAS_LIST = 37
   }
 gpgme_conf_type_t;
-/* Macro for backward compatibility (even though it was undocumented
-   and marked as experimental in 1.1.6 - will be removed after 1.1.7): */
-#define GPGME_CONF_PATHNAME GPGME_CONF_FILENAME
 
 
 /* This represents a single argument for a configuration option.
