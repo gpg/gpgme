@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.2.0 (unreleased)
+Noteworthy changes in version 1.2.0 (2009-06-18)
 ------------------------------------------------
 
  * New encryption flag GPGME_ENCRYPT_NO_ENCRYPT_TO to disable default
