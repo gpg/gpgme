@@ -1,5 +1,14 @@
 2009-06-18  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h.in (GPGME_CONF_PATHNAME): Remove obsolete macro.
+
+	* w32-io.c (_gpgme_io_pipe): Allocate reader/writer thread right
+	away.
+	(_gpgme_io_read, _gpgme_io_write, _gpgme_io_select)
+	(_gpgme_io_dup): Never allocate threads here.
+	(find_writer, find_reader): Check return value of thread creation
+	function.
+
 	* context.h (CTX_OP_DATA_MAGIC): New macro.
 	(struct ctx_op_data): New member MAGIC.
 	* op-support.c (_gpgme_op_data_lookup): Initialize magic.
