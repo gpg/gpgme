@@ -1,3 +1,10 @@
+2009-06-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* context.h (CTX_OP_DATA_MAGIC): New macro.
+	(struct ctx_op_data): New member MAGIC.
+	* op-support.c (_gpgme_op_data_lookup): Initialize magic.
+	* gpgme.c (gpgme_result_unref, gpgme_result_ref): Check magic.
+
 2009-06-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (gpgme_result_unref): Hot fix to release a lock.
