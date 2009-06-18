@@ -1794,6 +1794,9 @@ typedef enum
   }
 gpgme_conf_type_t;
 
+/* For now, compatibility.  */
+#define GPGME_CONF_PATHNAME GPGME_CONF_FILENAME
+
 
 /* This represents a single argument for a configuration option.
    Which of the members of value is used depends on the ALT_TYPE.  */
