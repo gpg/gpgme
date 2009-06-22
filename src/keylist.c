@@ -32,6 +32,8 @@
 #include <ctype.h>
 #include <errno.h>
 
+/* Suppress warning for accessing deprecated member "class".  */
+#define _GPGME_IN_GPGME
 #include "gpgme.h"
 #include "util.h"
 #include "context.h"

@@ -1,6 +1,6 @@
 /* debug.c - helpful output in desperate situations
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -197,6 +197,7 @@ void
 _gpgme_debug_begin (void **line, int level, const char *format, ...)
 {
   va_list arg_ptr;
+  int res;
 
   debug_init ();
   if (debug_level < level)
@@ -207,8 +208,10 @@ _gpgme_debug_begin (void **line, int level, const char *format, ...)
     }
 
   va_start (arg_ptr, format);
-  vasprintf ((char **) line, format, arg_ptr);
+  res = vasprintf ((char **) line, format, arg_ptr);
   va_end (arg_ptr);
+  if (res < 0)
+    *line = NULL;
 }
 
 
@@ -219,17 +222,26 @@ _gpgme_debug_add (void **line, const char *format, ...)
   va_list arg_ptr;
   char *toadd;
   char *result;
+  int res;
 
   if (!*line)
     return;
 
   va_start (arg_ptr, format);
-  vasprintf (&toadd, format, arg_ptr);
+  res = vasprintf (&toadd, format, arg_ptr);
   va_end (arg_ptr);
-  asprintf (&result, "%s%s", *(char **) line, toadd);
-  free (*line);
+  if (res < 0)
+    {
+      free (*line);
+      *line = NULL;
+    }
+  res = asprintf (&result, "%s%s", *(char **) line, toadd);
   free (toadd);
-  *line = result;
+  free (*line);
+  if (res < 0)
+    *line = NULL;
+  else
+    *line = result;
 }
 
 

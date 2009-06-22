@@ -75,6 +75,7 @@
 int _gpgme_io_close (int fd);
 int _gpgme_io_read (int fd, void *buffer, size_t count);
 int _gpgme_io_write (int fd, const void *buffer, size_t count);
+int _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen);
 int _gpgme_io_sendmsg (int sock, const struct msghdr *msg, int flags);
 int _gpgme_io_recvmsg (int sock, struct msghdr *msg, int flags);
 int _gpgme_io_socket (int domain, int type, int proto);

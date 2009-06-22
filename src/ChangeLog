@@ -1,3 +1,20 @@
+2009-06-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* debug.h: Everywhere, use %p instead of 0x%x to print pointer.
+	[HAVE_STDINT_H]: Include <stdint.h>.
+	(_TRACE, TRACE, TRACE0, TRACE1, TRACE2, TRACE3, TRACE6): Cast tag
+	to (uintptr_t) before casting it to (void*) to silence GCC
+	warning.
+
+	* gpgme.h.in (_GPGME_DEPRECATED_OUTSIDE_GPGME): New macro.
+	* sign.c (_GPGME_IN_GPGME): Define it.
+	* keylist.c (_GPGME_IN_GPGME): Define it.
+
+	* debug.c (_gpgme_debug_begin, _gpgme_debug_add): Handle error in
+	vasprintf and asprintf.
+
+	* priv-io.h: Include <sys/socket.h>.  Declare _gpgme_io_connect.
+
 2009-06-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h.in (GPGME_CONF_PATHNAME): Revert last change, it's

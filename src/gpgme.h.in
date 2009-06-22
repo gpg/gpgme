@@ -66,6 +66,14 @@ extern "C" {
 #define _GPGME_DEPRECATED
 #endif
 
+/* The macro _GPGME_DEPRECATED_OUTSIDE_GPGME suppresses warnings for
+   fields we must access in GPGME for ABI compatibility.  */
+#ifdef _GPGME_IN_GPGME
+#define _GPGME_DEPRECATED_OUTSIDE_GPGME
+#else
+#define _GPGME_DEPRECATED_OUTSIDE_GPGME _GPGME_DEPRECATED
+#endif
+
 
 /* The version of this header should match the one of the library.  Do
    not use this symbol in your application, use gpgme_check_version
@@ -615,7 +623,7 @@ struct _gpgme_key_sig
   unsigned int _obsolete_class _GPGME_DEPRECATED;
 #else
   /* Must be set to SIG_CLASS below.  */
-  unsigned int class _GPGME_DEPRECATED;
+  unsigned int class _GPGME_DEPRECATED_OUTSIDE_GPGME;
 #endif
 
   /* The user ID string.  */
@@ -1294,7 +1302,7 @@ struct _gpgme_new_signature
   unsigned int _obsolete_class_2;
 #else
   /* Must be set to SIG_CLASS below.  */
-  unsigned int class _GPGME_DEPRECATED;
+  unsigned int class _GPGME_DEPRECATED_OUTSIDE_GPGME;
 #endif
 
   /* Crypto backend specific signature class.  */

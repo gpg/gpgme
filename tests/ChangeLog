@@ -1,3 +1,9 @@
+2009-06-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg/t-support.h (passphrase_cb): Implement write() according to
+	the book to silence compiler warning.
+	* gpgsm/t-support.h (passphrase_cb): Likewise.
+
 2009-06-16  Werner Koch  <wk@g10code.com>
 
 	* gpg/pgp-import.c: New.

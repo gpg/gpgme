@@ -197,6 +197,7 @@ AC_C_INLINE
 AC_CHECK_SIZEOF(unsigned int)
 AC_SYS_LARGEFILE
 AC_TYPE_OFF_T
+AC_TYPE_UINTPTR_T
 
 # A simple compile time check in gpgme.h for GNU/Linux systems that
 # prevents a file offset bits mismatch between gpgme and the application.

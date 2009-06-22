@@ -26,6 +26,8 @@
 #include <string.h>
 #include <errno.h>
 
+/* Suppress warning for accessing deprecated member "class".  */
+#define _GPGME_IN_GPGME 1
 #include "gpgme.h"
 #include "context.h"
 #include "ops.h"

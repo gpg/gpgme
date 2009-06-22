@@ -80,7 +80,20 @@ passphrase_cb (void *opaque, const char *uid_hint, const char *passphrase_info,
   DWORD written;
   WriteFile ((HANDLE) fd, "abc\n", 4, &written, 0);
 #else
-  write (fd, "abc\n", 4);
+  int res;
+  char *pass = "abc\n";
+  int passlen = strlen (pass);
+  int off = 0;
+
+  do
+    {
+      res = write (fd, &pass[off], passlen - off);
+      if (res > 0)
+	off += res;
+    }
+  while (res > 0 && off != passlen);
+
+  return off == passlen ? 0 : gpgme_error_from_errno (errno);
 #endif
 
   return 0;

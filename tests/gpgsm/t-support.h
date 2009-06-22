@@ -62,8 +62,20 @@ gpgme_error_t
 passphrase_cb (void *opaque, const char *uid_hint, const char *passphrase_info,
 	       int last_was_bad, int fd)
 {
-  write (fd, "abc\n", 4);
-  return 0;
+  int res;
+  char *pass = "abc\n";
+  int passlen = strlen (pass);
+  int off = 0;
+
+  do
+    {
+      res = write (fd, &pass[off], passlen - off);
+      if (res > 0)
+	off += res;
+    }
+  while (res > 0 && off != passlen);
+
+  return off == passlen ? 0 : gpgme_error_from_errno (errno);
 }
 
 
