@@ -30,7 +30,10 @@ INCLUDES = -I$(top_builddir)/src
 AM_CPPFLAGS = @GPG_ERROR_CFLAGS@
 LDADD = ../src/libgpgme.la @GPG_ERROR_LIBS@
 
-noinst_PROGRAMS = $(TESTS)
+noinst_HEADERS = run-support.h
+
+noinst_PROGRAMS = $(TESTS) run-keylist run-export run-import
+
 
 if RUN_GPG_TESTS
 gpgtests = gpg

@@ -29,9 +29,9 @@
 
 #include <gpgme.h>
 
-#define PGM "pgp-export"
+#define PGM "run-export"
 
-#include "t-support.h"
+#include "run-support.h"
 
 
 static int verbose;

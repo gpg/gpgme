@@ -1,3 +1,16 @@
+2009-07-07  Werner Koch  <wk@g10code.com>
+
+	* gpg/pgp-keylist.c: Rename to ...
+	* run-keylist.c: ... this.
+	* gpg/pgp-import.c: Rename to ...
+	* run-import.c: ... this.
+	* gpg/pgp-export.c: Rename to ...
+	* run-export.c: ... this.
+	* run-support.h: New. Copied from gpg/t-support.h.
+	* gpg/Makefile.am (noinst_PROGRAMS): Remove them.
+	* Makefile.am (noinst_PROGRAMS): Add them.
+	(noinst_HEADERS): New.
+
 2009-06-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-support.h (passphrase_cb): Implement write() according to

@@ -1,4 +1,4 @@
-/* pgp-keylist.c  - Helper to show a key listing.
+/* run-keylist.c  - Helper to show a key listing.
    Copyright (C) 2008, 2009 g10 Code GmbH
 
    This file is part of GPGME.
@@ -29,9 +29,9 @@
 
 #include <gpgme.h>
 
-#define PGM "pgp-keylist"
+#define PGM "run-keylist"
 
-#include "t-support.h"
+#include "run-support.h"
 
 
 static int verbose;
