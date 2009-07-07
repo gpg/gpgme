@@ -1544,6 +1544,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
+  gpgme_data_encoding_t dataenc;
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1551,7 +1552,15 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
   if (keydata && keyarray)
     gpg_error (GPG_ERR_INV_VALUE); /* Only one is allowed.  */
 
+  dataenc = gpgme_data_get_encoding (keydata);
+
   if (keyarray)
+    {
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+  else if (dataenc == GPGME_DATA_ENCODING_URL
+           || dataenc == GPGME_DATA_ENCODING_URL0
+           || dataenc == GPGME_DATA_ENCODING_URLESC)
     {
       return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
     }
