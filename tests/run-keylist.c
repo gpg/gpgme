@@ -43,6 +43,8 @@ show_usage (int ex)
   fputs ("usage: " PGM " [options] [USERID]\n\n"
          "Options:\n"
          "  --verbose        run in verbose mode\n"
+         "  --openpgp        use the OpenPGP protocol (default)\n"
+         "  --cms            use the CMS protocol\n"
          "  --local          use GPGME_KEYLIST_MODE_LOCAL\n"
          "  --extern         use GPGME_KEYLIST_MODE_EXTERN\n"
          "  --sigs           use GPGME_KEYLIST_MODE_SIGS\n"
@@ -53,6 +55,7 @@ show_usage (int ex)
          , stderr);
   exit (ex);
 }
+
 
 int 
 main (int argc, char **argv)
@@ -66,6 +69,7 @@ main (int argc, char **argv)
   int import = 0;
   gpgme_key_t keyarray[100];
   int keyidx = 0;
+  gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
 
   if (argc)
     { argc--; argv++; }
@@ -83,6 +87,16 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--verbose"))
         {
           verbose = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--openpgp"))
+        {
+          protocol = GPGME_PROTOCOL_OpenPGP;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--cms"))
+        {
+          protocol = GPGME_PROTOCOL_CMS;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--local"))
@@ -128,11 +142,11 @@ main (int argc, char **argv)
   if (argc > 1)
     show_usage (1);
 
-  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+  init_gpgme (protocol);
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
-  gpgme_set_protocol (ctx, GPGME_PROTOCOL_OpenPGP);
+  gpgme_set_protocol (ctx, protocol);
 
   gpgme_set_keylist_mode (ctx, mode);
 

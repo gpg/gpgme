@@ -1914,7 +1914,7 @@ gpg_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
   gpgme_data_encoding_t dataenc;
 
   if (keydata && keyarray)
-    gpg_error (GPG_ERR_INV_VALUE); /* Only one is allowed.  */
+    return gpg_error (GPG_ERR_INV_VALUE); /* Only one is allowed.  */
 
   dataenc = gpgme_data_get_encoding (keydata);
 
