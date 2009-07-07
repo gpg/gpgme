@@ -2140,8 +2140,8 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
                  gpg >= 2.0.10.  FIXME: We should check that we have
                  such a version to that we can return a proper error
                  code.  The problem is that we don't know the context
-                 here and thus can't accesses the cached version
-                 number for the engine info structure.  */
+                 here and thus can't access the cached version number
+                 for the engine info structure.  */
               err = add_arg (gpg, "--locate-keys");
               if ((mode & GPGME_KEYLIST_MODE_SIGS))
                 err = add_arg (gpg, "--with-sig-check");
