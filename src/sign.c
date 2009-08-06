@@ -50,6 +50,7 @@ typedef struct
   /* Flags used while processing the status lines.  */
   unsigned int ignore_inv_recp:1;
   unsigned int inv_sgnr_seen:1;
+  unsigned int sig_created_seen:1;
 } *op_data_t;
 
 
@@ -262,6 +263,7 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
   switch (code)
     {
     case GPGME_STATUS_SIG_CREATED:
+      opd->sig_created_seen = 1;
       err = parse_sig_created (args, opd->last_sig_p);
       if (err)
 	return err;
@@ -285,7 +287,9 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
     case GPGME_STATUS_EOF:
       if (opd->result.invalid_signers)
-	return gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+	err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+      else if (!opd->sig_created_seen)
+	err = gpg_error (GPG_ERR_GENERAL);
       break;
 
     default:
@@ -323,6 +327,7 @@ sign_init_result (gpgme_ctx_t ctx, int ignore_inv_recp)
   opd->last_sig_p = &opd->result.signatures;
   opd->ignore_inv_recp = !!ignore_inv_recp;
   opd->inv_sgnr_seen = 0;
+  opd->sig_created_seen = 0;
   return 0;
 }
 
