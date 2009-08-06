@@ -118,7 +118,7 @@ Use the CMS (PKCS#7) protocol (RFC-3852).
 To support automagically selection of the protocol depending on the
 selected keys, the server MAY implement the command:
 
-@deffn Command PREP_ENCRYPT [-@w{}-protocol=@var{name}]
+@deffn Command PREP_ENCRYPT [-@w{}-protocol=@var{name}] [-@w{}-expect-sign]
 
 This commands considers all recipients set so far and decides whether it
 is able to take input and start the actual decryption.  This is kind of
@@ -129,8 +129,15 @@ command is send.  The @option{--protocol} option is optional; if it is
 not given, the server should allow the user to select the protocol to be
 used based on the recipients given or by any other means.
 
+If @option{--expect-sign} is given the server should expect that the
+message will also be signed and use this hint to present a unified
+recipient and signer selection dialog if possible and desired.  A
+selected signer should then be cached for the expected SIGN command
+(which is expected in the same session but possible on another
+connection).
+
 If this command is given again before a successful @command{ENCRYPT}
-command, the second one takes effect. 
+command, the second one takes effect.
 
 Before sending the OK response the server shall tell the client the
 protocol to be used (either the one given by the argument or the one

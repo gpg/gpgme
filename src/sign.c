@@ -46,6 +46,10 @@ typedef struct
 
   /* Likewise for signature information.  */
   gpgme_new_signature_t *last_sig_p;
+
+  /* Flags used while processing the status lines.  */
+  unsigned int ignore_inv_recp:1;
+  unsigned int inv_sgnr_seen:1;
 } *op_data_t;
 
 
@@ -266,6 +270,12 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
       break;
 
     case GPGME_STATUS_INV_RECP:
+      if (opd->inv_sgnr_seen && opd->ignore_inv_recp)
+        break; 
+      /* FALLTROUGH */
+    case GPGME_STATUS_INV_SGNR:
+      if (code == GPGME_STATUS_INV_SGNR)
+        opd->inv_sgnr_seen = 1;
       err = _gpgme_parse_inv_recp (args, opd->last_signer_p);
       if (err)
 	return err;
@@ -297,8 +307,8 @@ sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 }
 
 
-gpgme_error_t
-_gpgme_op_sign_init_result (gpgme_ctx_t ctx)
+static gpgme_error_t
+sign_init_result (gpgme_ctx_t ctx, int ignore_inv_recp)
 {
   gpgme_error_t err;
   void *hook;
@@ -311,7 +321,15 @@ _gpgme_op_sign_init_result (gpgme_ctx_t ctx)
     return err;
   opd->last_signer_p = &opd->result.invalid_signers;
   opd->last_sig_p = &opd->result.signatures;
+  opd->ignore_inv_recp = !!ignore_inv_recp;
+  opd->inv_sgnr_seen = 0;
   return 0;
+}
+
+gpgme_error_t
+_gpgme_op_sign_init_result (gpgme_ctx_t ctx)
+{
+  return sign_init_result (ctx, 0);
 }
 
 
@@ -325,7 +343,10 @@ sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain,
   if (err)
     return err;
 
-  err = _gpgme_op_sign_init_result (ctx);
+  /* If we are using the CMS protocol, we ignore the INV_RECP status
+     code if a newer GPGSM is in use.  GPGMS does not support combined
+     sign+encrypt and thus this can't harm.  */
+  err = sign_init_result (ctx, (ctx->protocol == GPGME_PROTOCOL_CMS));
   if (err)
     return err;
 

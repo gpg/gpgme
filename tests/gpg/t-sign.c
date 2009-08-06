@@ -102,6 +102,17 @@ main (int argc, char **argv)
 
   gpgme_set_textmode (ctx, 1);
   gpgme_set_armor (ctx, 1);
+  
+#if 0
+  {
+    gpgme_key_t akey;
+    err = gpgme_get_key (ctx, "0x68697734", &akey, 0);
+    fail_if_err (err);
+    err = gpgme_signers_add (ctx, akey);
+    fail_if_err (err);
+    gpgme_key_unref (akey);
+  }
+#endif
 
   err = gpgme_data_new_from_mem (&in, "Hallo Leute\n", 12, 0);
   fail_if_err (err);

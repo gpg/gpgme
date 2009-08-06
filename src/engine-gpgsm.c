@@ -1870,7 +1870,7 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
       if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
 	return gpg_error_from_errno (errno);
       err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd,
-					 NULL, NULL);
+                                         NULL, NULL);
       free (assuan_cmd);
       if (err)
 	return err;
@@ -1885,7 +1885,8 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
           strcpy (stpcpy (buf, "SIGNER "), s);
           err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, buf,
-                                             NULL, NULL);
+                                             gpgsm->status.fnc,
+                                             gpgsm->status.fnc_value);
 	}
       else
         err = gpg_error (GPG_ERR_INV_VALUE);

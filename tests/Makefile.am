@@ -32,7 +32,7 @@ LDADD = ../src/libgpgme.la @GPG_ERROR_LIBS@
 
 noinst_HEADERS = run-support.h
 
-noinst_PROGRAMS = $(TESTS) run-keylist run-export run-import
+noinst_PROGRAMS = $(TESTS) run-keylist run-export run-import run-sign
 
 
 if RUN_GPG_TESTS

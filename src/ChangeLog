@@ -1,3 +1,16 @@
+2009-08-06  Werner Koch  <wk@g10code.com>
+
+	* op-support.c (_gpgme_parse_inv_recp): Allow for no fingerprint.
+
+	* engine-gpgsm.c (gpgsm_sign): Hook up the status func for the
+	SIGNER command.
+	* gpgme.h.in (GPGME_STATUS_INV_SGNR, GPGME_STATUS_NO_SGNR): New.
+	* sign.c (op_data_t): Add fields IGNORE_INV_RECP and INV_SGNR_SEEN.
+	(_gpgme_op_sign_init_result): Factor code out to ...
+	(sign_init_result): .. new.  Init new fields.
+	(sign_start): Use sign_init_result.
+	(_gpgme_sign_status_handler): Take care of the new INV_SGNR.
+
 2009-07-07  Werner Koch  <wk@g10code.com>
 
 	* engine-gpgsm.c (struct engine_gpgsm): Add fields

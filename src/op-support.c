@@ -162,8 +162,8 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
 }
 
 
-/* Parse the INV_RECP status line in ARGS and return the result in
-   KEY.  */
+/* Parse the INV_RECP or INV-SNDR status line in ARGS and return the
+   result in KEY.  */
 gpgme_error_t
 _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
 {
@@ -177,7 +177,7 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
   inv_key->next = NULL;
   errno = 0;
   reason = strtol (args, &tail, 0);
-  if (errno || args == tail || *tail != ' ')
+  if (errno || args == tail || (*tail && *tail != ' '))
     {
       /* The crypto backend does not behave.  */
       free (inv_key);
@@ -236,7 +236,7 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
       break;
     }
 
-  while (*tail == ' ')
+  while (*tail && *tail == ' ')
     tail++;
   if (*tail)
     {

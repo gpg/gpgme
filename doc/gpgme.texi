@@ -4777,7 +4777,7 @@ of a @code{gpgme_op_sign} operation.  The pointer is only valid if the
 last operation on the context was a @code{gpgme_op_sign},
 @code{gpgme_op_sign_start}, @code{gpgme_op_encrypt_sign} or
 @code{gpgme_op_encrypt_sign_start} operation.  If that operation
-failed, the function might return a @code{NULL} pointer, The returned
+failed, the function might return a @code{NULL} pointer. The returned
 pointer is only valid until the next operation is started on the
 context.
 @end deftypefun

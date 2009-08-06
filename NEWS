@@ -3,6 +3,12 @@ Noteworthy changes in version 1.2.1 (unreleased)
 
  * (none yet)
 
+ * Interface changes relative to the 1.1.7 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPGME_STATUS_INV_SGNR    NEW.
+ GPGME_STATUS_NO_SGNR     NEW.
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Noteworthy changes in version 1.2.0 (2009-06-18)
 ------------------------------------------------
 
