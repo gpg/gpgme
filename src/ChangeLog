@@ -1,3 +1,7 @@
+2009-10-07    <wk@g10code.com>
+
+	* priv-io.h [W32]: Include windows.h instead of sys/socket.h.
+
 2009-08-06  Werner Koch  <wk@g10code.com>
 
 	* op-support.c (_gpgme_parse_inv_recp): Allow for no fingerprint.

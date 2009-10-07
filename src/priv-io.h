@@ -22,7 +22,11 @@
 #ifndef IO_H
 #define IO_H
 
-#include <sys/socket.h>
+#ifdef HAVE_W32_SYSTEM
+# include <windows.h>
+#else
+# include <sys/socket.h>
+#endif
 
 /* A single file descriptor passed to spawn.  For child fds, dup_to
    specifies the fd it should become in the child, but only 0, 1 and 2
