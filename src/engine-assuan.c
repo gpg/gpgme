@@ -161,7 +161,7 @@ llass_cancel (void *engine)
 
   if (llass->assuan_ctx)
     {
-      assuan_disconnect (llass->assuan_ctx);
+      assuan_release (llass->assuan_ctx);
       llass->assuan_ctx = NULL;
     }
 
@@ -213,7 +213,10 @@ llass_new (void **engine, const char *file_name, const char *home_dir)
         llass->opt.gpg_agent = 1;
     }
 
-  err = assuan_socket_connect (&llass->assuan_ctx, file_name, 0);
+  err = assuan_new (&llass->assuan_ctx);
+  if (err)
+    goto leave;
+  err = assuan_socket_connect (llass->assuan_ctx, file_name, 0);
   if (err)
     goto leave;
 

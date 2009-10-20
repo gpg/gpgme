@@ -124,4 +124,14 @@ const char *_gpgme_get_w32spawn_path (void);
 #define GPG_ERR_NOT_OPERATIONAL 176
 #endif
 
+
+#ifdef ENABLE_ASSUAN
+#include <assuan.h>
+/* System hooks for assuan integration.  */
+extern struct assuan_system_hooks _gpgme_assuan_system_hooks;
+extern struct assuan_malloc_hooks _gpgme_assuan_malloc_hooks;
+int _gpgme_assuan_log_cb (assuan_context_t ctx, void *hook,
+			  unsigned int cat, const char *msg);
+#endif
+
 #endif /* UTIL_H */

@@ -129,7 +129,7 @@ extern struct engine_ops _gpgme_engine_ops_gpgsm;	/* CMS.  */
 #ifdef ENABLE_GPGCONF
 extern struct engine_ops _gpgme_engine_ops_gpgconf;	/* gpg-conf.  */
 #endif
-#ifdef ENABLE_GPGSM  /* If this is enabled we also have assuan support.  */
+#ifdef ENABLE_ASSUAN
 extern struct engine_ops _gpgme_engine_ops_assuan;	/* Low-level Assuan. */
 #endif
 

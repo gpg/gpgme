@@ -26,11 +26,6 @@ DISTCHECK_CONFIGURE_FLAGS = --with-gpg="@GPG@"
 
 EXTRA_DIST = gpgme.spec.in autogen.sh 
 
-if BUILD_ASSUAN
-assuan = assuan
-else
-assuan =
-endif
 
 if BUILD_COMPLUS
 complus = complus
@@ -44,7 +39,7 @@ else
 tests = 
 endif
 
-SUBDIRS = ${assuan} src ${tests} doc ${complus} lang
+SUBDIRS = src ${tests} doc ${complus} lang
 
 # Fix the version of the spec file and create a file named VERSION 
 # to be used for patch's Prereq: feature.

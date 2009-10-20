@@ -1,3 +1,33 @@
+2009-10-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (assuan_cppflags, assuan_libobjs): Removed.
+	(gpgsm_components): Move engine-assuan.c to ...
+	(assuan_components): ... this new variable.
+	(main_sources): Add this new variable.
+	(AM_CPPFLAGS): Remove $(assuan_cppflags).
+	(AM_CFLAGS): Add @LIBASSUAN_CFLAGS@.
+	(libgpgme_la_DEPENDENCIES, libgpgme_pth_la_DEPENDENCIES)
+	(libgpgme_glib_la_DEPENDENCIES, libgpgme_qt_la_DEPENDENCIES)
+	(libgpgme_pthread_la_DEPENDENCIES): Remove $(assuan_libobjs).
+	(libgpgme_la_LIBADD, libgpgme_pth_la_LIBADD)
+	(libgpgme_glib_la_LIBADD, libgpgme_qt_la_LIBADD))
+	(libgpgme_pthread_la_LIBADD): Replace $(assuan_libobjs) by
+	@LIBASSUAN_LIBS@.
+	* priv-io.h [!HAVE_W32_SYSTEM]: Declare _gpgme_io_recvmsg,
+	_gpgme_io_sendmsg, _gpgme_io_waitpid.
+	* engine-backend.h: Define with [ENABLE_ASSUAN] instead
+	of [ENABLE_GPGSM].
+	* posix-io.c (_gpgme_io_waitpid): Make non-static.
+	* util.h (ENABLE_ASSUAN): Declar _gpgme_assuan_system_hooks,
+	_gpgme_assuan_malloc_hooks, _gpgme_assuan_log_cb.
+	* engine-gpgsm.c: Don't map assuan error codes.  Use
+	assuan_release instead of assuan_disconnect.
+	(map_assuan_error): Remove function.
+	(gpgsm_new): Use new assuan context interface.
+	* engine-assuan.c: Use assuan_release instead of
+	assuan_disconnect.
+	(llass_new): Use new assuan context interface.
+
 2009-10-07    <wk@g10code.com>
 
 	* priv-io.h [W32]: Include windows.h instead of sys/socket.h.

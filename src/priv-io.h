@@ -92,4 +92,10 @@ int _gpgme_io_fd2str (char *buf, int buflen, int fd);
    (in engine-gpgsm.c).  */
 int _gpgme_io_dup (int fd);
 
+#ifndef HAVE_W32_SYSTEM
+int _gpgme_io_recvmsg (int fd, struct msghdr *msg, int flags);
+int _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags);
+int _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal);
+#endif
+
 #endif /* IO_H */

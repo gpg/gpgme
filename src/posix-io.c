@@ -278,7 +278,7 @@ get_max_fds (void)
 }
 
 
-static int
+int
 _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal)
 {
   int status;

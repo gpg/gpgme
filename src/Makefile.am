@@ -60,14 +60,6 @@ else
 libgpgme_version_script_cmd =
 endif
 
-if BUILD_ASSUAN
-assuan_cppflags = -I$(top_srcdir)/assuan
-assuan_libobjs = ../assuan/libassuan.la
-else
-assuan_cppflags =
-assuan_libobjs =
-endif
-
 if HAVE_DOSISH_SYSTEM
 system_components = w32-util.c w32-sema.c
 system_components_not_extra = w32-io.c
@@ -77,9 +69,15 @@ system_components_not_extra =
 endif
 
 if HAVE_GPGSM
-gpgsm_components = engine-gpgsm.c engine-assuan.c
+gpgsm_components = engine-gpgsm.c
 else
 gpgsm_components =
+endif
+
+if HAVE_ASSUAN
+assuan_components = assuan-support.c engine-assuan.c
+else
+assuan_components =
 endif
 
 if HAVE_GPGCONF
@@ -106,7 +104,8 @@ main_sources =								\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
 	opassuan.c                                                      \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.h	\
-	$(gpgsm_components) $(gpgconf_components) gpgconf.c		\
+	$(gpgsm_components) $(assuan_components) $(gpgconf_components)  \
+	gpgconf.c							\
 	sema.h priv-io.h $(system_components) dirinfo.c			\
 	debug.c debug.h gpgme.c version.c error.c
 
@@ -136,9 +135,9 @@ endif
 
 # We use a global CFLAGS and CPPFLAGS setting for all library
 # versions, because then every object file is only compiled once.
-AM_CPPFLAGS = $(assuan_cppflags) @GPG_ERROR_CFLAGS@ @PTH_CPPFLAGS@ \
+AM_CPPFLAGS = @GPG_ERROR_CFLAGS@ @PTH_CPPFLAGS@ \
 	@QT4_CORE_CFLAGS@
-AM_CFLAGS = @PTH_CFLAGS@ @GLIB_CFLAGS@ @QT4_CORE_CFLAGS@
+AM_CFLAGS = @LIBASSUAN_CFLAGS@ @PTH_CFLAGS@ @GLIB_CFLAGS@ @QT4_CORE_CFLAGS@
 
 if HAVE_W32_SYSTEM
 
@@ -185,33 +184,30 @@ endif
 libgpgme_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) $(export_symbols) \
 	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_la_DEPENDENCIES = $(assuan_libobjs) \
-	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
-libgpgme_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
+libgpgme_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
+libgpgme_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@ @NETLIBS@
 
 libgpgme_pthread_la_LDFLAGS = $(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_pthread_la_DEPENDENCIES = $(assuan_libobjs) \
-	@LTLIBOBJS@ $(srcdir)/libgpgme.vers
-libgpgme_pthread_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
+libgpgme_pthread_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers
+libgpgme_pthread_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	-lpthread @GPG_ERROR_LIBS@ @NETLIBS@
 
 libgpgme_pth_la_LDFLAGS = @PTH_LDFLAGS@ \
 	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_pth_la_DEPENDENCIES = $(assuan_libobjs) \
-	@LTLIBOBJS@ $(srcdir)/libgpgme.vers
-libgpgme_pth_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
+libgpgme_pth_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers
+libgpgme_pth_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	@PTH_LIBS@ @GPG_ERROR_LIBS@ @NETLIBS@
 
 if BUILD_W32_GLIB
 libgpgme_glib_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
 	$(export_symbols) $(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_glib_la_DEPENDENCIES = $(assuan_libobjs) \
-	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
-libgpgme_glib_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
+libgpgme_glib_la_DEPENDENCIES =	@LTLIBOBJS@ \
+	$(srcdir)/libgpgme.vers $(gpgme_deps)
+libgpgme_glib_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@ @GLIB_LIBS@ @NETLIBS@
 endif
 
@@ -219,9 +215,8 @@ if BUILD_W32_QT
 libgpgme_qt_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
 	$(export_symbols) $(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_qt_la_DEPENDENCIES = $(assuan_libobjs) \
-	@LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
-libgpgme_qt_la_LIBADD = $(assuan_libobjs) @LTLIBOBJS@ \
+libgpgme_qt_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
+libgpgme_qt_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@ @QT4_CORE_LIBS@ @NETLIBS@
 endif
 

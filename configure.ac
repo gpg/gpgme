@@ -188,8 +188,10 @@ AM_CONDITIONAL(HAVE_PTH, test "$have_pth" = "yes")
 AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 
 
+
 # Checks for header files.
 AC_CHECK_HEADERS(sys/select.h)
+AC_CHECK_HEADERS([sys/uio.h])
 
 
 # Type checks.
@@ -218,13 +220,6 @@ if test "$GCC" = yes; then
        CFLAGS="$CFLAGS -mms-bitfields"
     fi
 fi
-
-# Network library fun.
-AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname,
-	[NETLIBS="-lnsl $NETLIBS"]))
-AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
-	[NETLIBS="-lsocket $NETLIBS"]))
-AC_SUBST(NETLIBS)
 
 # Checks for library functions.
 AC_FUNC_FSEEKO
@@ -277,7 +272,15 @@ AM_PATH_GPG_ERROR(1.4,, AC_MSG_ERROR([libgpg-error was not found]))
 AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
           [The default error source for GPGME.])
 
-
+# And for libassuan.
+NEED_LIBASSUAN_VERSION=1.1.0
+have_libassuan=no
+AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_VERSION",
+                  have_libassuan=yes, have_libassuan=no)
+AM_CONDITIONAL(HAVE_ASSUAN, test "$have_libassuan" = "yes")
+if test "$have_libassuan" = "yes"; then
+  AC_DEFINE(ENABLE_ASSUAN,1,[Whether Assuan support is enabled])
+fi
 
 # Checks for system services
 NEED_GPG_VERSION_DEFAULT=1.3.0
@@ -510,6 +513,12 @@ AC_ARG_ENABLE(gpgsm-test,
          run_gpgsm_test=$enableval)
 AM_CONDITIONAL(RUN_GPGSM_TESTS, test "$run_gpgsm_test" = "yes")
 
+# Require libassuan if GPGSM is here.
+require_libassuan=no
+if test "$GPGSM" != "no"; then
+  require_libassuan=yes
+fi
+
 
 NO_OVERRIDE=no
 AC_ARG_WITH(gpgconf,
@@ -614,13 +623,6 @@ if test "$GPGCONF" != "no"; then
 fi
 
 
-# FIXME: Only build if supported.
-AM_CONDITIONAL(BUILD_ASSUAN, test "$GPGSM" != "no")
-if test "$GPGSM" != "no"; then
-  AC_DEFINE(HAVE_ASSUAN_H, 1,
-            [Defined if we are building with assuan support.])
-fi
-
 # Check for funopen
 AC_CHECK_FUNCS(funopen)
 if test $ac_cv_func_funopen != yes; then
@@ -636,17 +638,11 @@ if test $ac_cv_func_funopen != yes; then
     fi
 fi
 
-# More assuan replacement functions.
-AC_REPLACE_FUNCS(isascii)
-AC_REPLACE_FUNCS(putc_unlocked)
-AC_REPLACE_FUNCS(memrchr)
+# Replacement functions.
 AC_REPLACE_FUNCS(stpcpy)
 # Check for unistd.h for setenv replacement function.
 AC_CHECK_HEADERS(unistd.h)
 AC_REPLACE_FUNCS(setenv)
-
-# More assuan checks.
-AC_CHECK_HEADERS([sys/uio.h])
 
 # Assuan check for descriptor passing.
 AC_CHECK_MEMBER(struct cmsghdr.cmsg_len,
@@ -684,27 +680,6 @@ fi
 
 AM_CONDITIONAL(USE_DESCRIPTOR_PASSING, test "$use_descriptor_passing" = "yes")
 
-# Assuan check for the getsockopt SO_PEERCRED
-AC_MSG_CHECKING(for SO_PEERCRED)
-AC_CACHE_VAL(assuan_cv_sys_so_peercred,
-      [AC_TRY_COMPILE([#include <sys/socket.h>], 
-         [struct ucred cr; 
-          int cl = sizeof cr;
-          getsockopt (1, SOL_SOCKET, SO_PEERCRED, &cr, &cl);],
-          assuan_cv_sys_so_peercred=yes,
-          assuan_cv_sys_so_peercred=no)
-       ])
-AC_MSG_RESULT($assuan_cv_sys_so_peercred) 
-if test $assuan_cv_sys_so_peercred = yes; then
-  AC_DEFINE(HAVE_SO_PEERCRED, 1,
-            [Defined if SO_PEERCRED is supported (Linux specific)])
-fi
-
-if test "$have_w32_system" = yes; then
-   NETLIBS="-lws2_32 $NETLIBS"
-fi
-
-# End of assuan checks.
 
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
 
@@ -753,6 +728,28 @@ LTLIBOBJS=`echo "$LIB@&t@OBJS" |
            sed 's,\.[[^.]]* ,.lo ,g;s,\.[[^.]]*$,.lo,'`
 AC_SUBST(LTLIBOBJS)
 
+# Last check.
+die=no
+if test "$require_libassuan" = "no"; then
+   die=yes
+   AC_MSG_NOTICE([[
+***
+*** You need libassuan to build this program with GPGSM support.
+*** This library is for example available at
+***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/libassuan/
+*** (at least version $NEED_LIBASSUAN_VERSION is required).
+***]])
+fi
+
+if test "$die" = "yes"; then
+    AC_MSG_ERROR([[
+***
+*** Required libraries not found. Please consult the above messages
+*** and install them before running configure again.
+***]])
+fi
+
+
 #
 # Create config files 
 
@@ -779,6 +776,8 @@ echo "
 
 	GpgConf path:    $GPGCONF
         GpgConf version: $GPGCONF_VERSION, min. $NEED_GPGCONF_VERSION
+
+        Assuan version:  $LIBASSUAN_VERSION
 
 	GPGME Pthread:   $have_pthread
 	GPGME Pth:       $have_pth

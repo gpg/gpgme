@@ -171,132 +171,6 @@ close_notify_handler (int fd, void *opaque)
 }
 
 
-static gpgme_error_t
-map_assuan_error (gpg_error_t err)
-{
-  if (!err)
-    return 0;
-
-  if (err == -1)
-    return gpg_error (GPG_ERR_INV_ENGINE);
-
-  /* New code will use gpg_error_t values.  */
-  if (gpg_err_source (err))
-    return (gpgme_error_t) err;
-
-  /* Legacy code will use old values.  */
-  switch (err)
-    {
-    case ASSUAN_No_Error:
-      return gpg_error (GPG_ERR_NO_ERROR);
-    case ASSUAN_General_Error:
-      return gpg_error (GPG_ERR_GENERAL);
-    case ASSUAN_Out_Of_Core:
-      return gpg_error (GPG_ERR_ENOMEM);
-    case ASSUAN_Invalid_Value:
-      return gpg_error (GPG_ERR_INV_VALUE);
-    case ASSUAN_Timeout:
-      return gpg_error (GPG_ERR_ETIMEDOUT);
-    case ASSUAN_Read_Error:
-      return gpg_error (GPG_ERR_GENERAL);
-    case ASSUAN_Write_Error:
-      return gpg_error (GPG_ERR_GENERAL);
-
-    case ASSUAN_Problem_Starting_Server:
-    case ASSUAN_Not_A_Server:
-    case ASSUAN_Not_A_Client:
-    case ASSUAN_Nested_Commands:
-    case ASSUAN_No_Data_Callback:
-    case ASSUAN_No_Inquire_Callback:
-    case ASSUAN_Connect_Failed:
-    case ASSUAN_Accept_Failed:
-    case ASSUAN_Invalid_Command:
-    case ASSUAN_Unknown_Command:
-    case ASSUAN_Syntax_Error:
-    case ASSUAN_Parameter_Error:
-    case ASSUAN_Parameter_Conflict:
-    case ASSUAN_No_Input:
-    case ASSUAN_No_Output:
-    case ASSUAN_No_Data_Available:
-    case ASSUAN_Too_Much_Data:
-    case ASSUAN_Inquire_Unknown:
-    case ASSUAN_Inquire_Error:
-    case ASSUAN_Invalid_Option:
-    case ASSUAN_Unexpected_Status:
-    case ASSUAN_Unexpected_Data:
-    case ASSUAN_Invalid_Status:
-      return gpg_error (GPG_ERR_ASSUAN);
-
-    case ASSUAN_Invalid_Response:
-      return gpg_error (GPG_ERR_INV_RESPONSE);
-
-    case ASSUAN_Not_Implemented:
-      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-    case ASSUAN_Line_Too_Long:
-      return gpg_error (GPG_ERR_LINE_TOO_LONG);
-    case ASSUAN_Line_Not_Terminated:
-      return gpg_error (GPG_ERR_INCOMPLETE_LINE);
-    case ASSUAN_Canceled:
-      return gpg_error (GPG_ERR_CANCELED);
-
-    case ASSUAN_Unsupported_Algorithm:
-      return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-    case ASSUAN_Server_Resource_Problem:
-      return gpg_error (GPG_ERR_RESOURCE_LIMIT);
-    case ASSUAN_Server_IO_Error:
-      return gpg_error (GPG_ERR_GENERAL);
-    case ASSUAN_Server_Bug:
-      return gpg_error (GPG_ERR_BUG);
-    case ASSUAN_Invalid_Data:
-      return gpg_error (GPG_ERR_INV_DATA);
-    case ASSUAN_Invalid_Index:
-      return gpg_error (GPG_ERR_INV_INDEX);
-    case ASSUAN_Not_Confirmed:
-      return gpg_error (GPG_ERR_NOT_CONFIRMED);
-    case ASSUAN_Bad_Certificate:
-      return gpg_error (GPG_ERR_BAD_CERT);
-    case ASSUAN_Bad_Certificate_Chain:
-      return gpg_error (GPG_ERR_BAD_CERT_CHAIN);
-    case ASSUAN_Missing_Certificate:
-      return gpg_error (GPG_ERR_MISSING_CERT);
-    case ASSUAN_Bad_Signature:
-      return gpg_error (GPG_ERR_BAD_SIGNATURE);
-    case ASSUAN_No_Agent:
-      return gpg_error (GPG_ERR_NO_AGENT);
-    case ASSUAN_Agent_Error:
-      return gpg_error (GPG_ERR_AGENT);
-    case ASSUAN_No_Public_Key:
-      return gpg_error (GPG_ERR_NO_PUBKEY);
-    case ASSUAN_No_Secret_Key:
-      return gpg_error (GPG_ERR_NO_SECKEY);
-    case ASSUAN_Invalid_Name:
-      return gpg_error (GPG_ERR_INV_NAME);
-      
-    case ASSUAN_Cert_Revoked:
-      return gpg_error (GPG_ERR_CERT_REVOKED);
-    case ASSUAN_No_CRL_For_Cert:
-      return gpg_error (GPG_ERR_NO_CRL_KNOWN);
-    case ASSUAN_CRL_Too_Old:
-      return gpg_error (GPG_ERR_CRL_TOO_OLD);
-    case ASSUAN_Not_Trusted:
-      return gpg_error (GPG_ERR_NOT_TRUSTED);
-
-    case ASSUAN_Card_Error:
-      return gpg_error (GPG_ERR_CARD);
-    case ASSUAN_Invalid_Card:
-      return gpg_error (GPG_ERR_INV_CARD);
-    case ASSUAN_No_PKCS15_App:
-      return gpg_error (GPG_ERR_NO_PKCS15_APP);
-    case ASSUAN_Card_Not_Present:
-      return gpg_error (GPG_ERR_CARD_NOT_PRESENT);
-    case ASSUAN_Invalid_Id:
-      return gpg_error (GPG_ERR_INV_ID);
-    default:
-      return gpg_error (GPG_ERR_GENERAL);
-    }
-}
-
-
 /* This is the default inquiry callback.  We use it to handle the
    Pinentry notifications.  */
 static gpgme_error_t
@@ -330,7 +204,7 @@ gpgsm_cancel (void *engine)
 
   if (gpgsm->assuan_ctx)
     {
-      assuan_disconnect (gpgsm->assuan_ctx);
+      assuan_release (gpgsm->assuan_ctx);
       gpgsm->assuan_ctx = NULL;
     }
 
@@ -450,13 +324,20 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   argv[argc++] = "--server";
   argv[argc++] = NULL;
 
+  err = assuan_new_ext (&gpgsm->assuan_ctx, GPG_ERR_SOURCE_GPGME,
+			&_gpgme_assuan_malloc_hooks, _gpgme_assuan_log_cb,
+			NULL);
+  if (err)
+    goto leave;
+  assuan_ctx_set_system_hooks (gpgsm->assuan_ctx, &_gpgme_assuan_system_hooks);
+
 #if USE_DESCRIPTOR_PASSING
   err = assuan_pipe_connect_ext
-    (&gpgsm->assuan_ctx, file_name ? file_name : _gpgme_get_gpgsm_path (),
+    (gpgsm->assuan_ctx, file_name ? file_name : _gpgme_get_gpgsm_path (),
      argv, NULL, NULL, NULL, 1);
 #else
   err = assuan_pipe_connect
-    (&gpgsm->assuan_ctx, file_name ? file_name : _gpgme_get_gpgsm_path (),
+    (gpgsm->assuan_ctx, file_name ? file_name : _gpgme_get_gpgsm_path (),
      argv, child_fds);
 
   /* On Windows, handles are inserted in the spawned process with
@@ -504,10 +385,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 			     NULL, NULL, NULL);
       free (optstr);
       if (err)
-	{
-	  err = map_assuan_error (err);
-	  goto leave;
-	}
+	goto leave;
     }
 
   if (isatty (1))
@@ -531,10 +409,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 				 NULL, NULL, NULL);
 	  free (optstr);
 	  if (err)
-	    {
-	      err = map_assuan_error (err);
-	      goto leave;
-	    }
+	    goto leave;
 
 	  err = _gpgme_getenv ("TERM", &dft_ttytype);
 	  if (err)
@@ -553,10 +428,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 				     NULL, NULL, NULL, NULL);
 	      free (optstr);
 	      if (err)
-		{
-		  err = map_assuan_error (err);
-		  goto leave;
-		}
+		goto leave;
 	    }
 	}
     }
@@ -662,8 +534,6 @@ gpgsm_set_locale (void *engine, int category, const char *value)
       err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
 			     NULL, NULL, NULL, NULL);
       free (optstr);
-      if (err)
-	err = map_assuan_error (err);
     }
 
   return err;
@@ -684,13 +554,13 @@ gpgsm_assuan_simple_command (assuan_context_t ctx, char *cmd,
 
   err = assuan_write_line (ctx, cmd);
   if (err)
-    return map_assuan_error (err);
+    return err;
 
   do
     {
       err = assuan_read_line (ctx, &line, &linelen);
       if (err)
-	return map_assuan_error (err);
+	return err;
 
       if (*line == '#' || !linelen)
 	continue;
@@ -702,7 +572,7 @@ gpgsm_assuan_simple_command (assuan_context_t ctx, char *cmd,
       else if (linelen >= 4
 	  && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
 	  && line[3] == ' ')
-	err = map_assuan_error (atoi (&line[4]));
+	err = atoi (&line[4]);
       else if (linelen >= 2
 	       && line[0] == 'S' && line[1] == ' ')
 	{
@@ -891,7 +761,6 @@ parse_status (const char *name)
 static gpgme_error_t
 status_handler (void *opaque, int fd)
 {
-  gpg_error_t assuan_err;
   gpgme_error_t err = 0;
   engine_gpgsm_t gpgsm = opaque;
   char *line;
@@ -899,23 +768,22 @@ status_handler (void *opaque, int fd)
 
   do
     {
-      assuan_err = assuan_read_line (gpgsm->assuan_ctx, &line, &linelen);
-      if (assuan_err)
+      err = assuan_read_line (gpgsm->assuan_ctx, &line, &linelen);
+      if (err)
 	{
 	  /* Try our best to terminate the connection friendly.  */
 	  /*	  assuan_write_line (gpgsm->assuan_ctx, "BYE"); */
-	  err = map_assuan_error (assuan_err);
           TRACE3 (DEBUG_CTX, "gpgme:status_handler", gpgsm,
 		  "fd 0x%x: error from assuan (%d) getting status line : %s",
-                  fd, assuan_err, gpg_strerror (err));
+                  fd, err, gpg_strerror (err));
 	}
       else if (linelen >= 3
 	       && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
 	       && (line[3] == '\0' || line[3] == ' '))
 	{
 	  if (line[3] == ' ')
-	    err = map_assuan_error (atoi (&line[4]));
-	  else
+	    err = atoi (&line[4]);
+	  if (! err)
 	    err = gpg_error (GPG_ERR_GENERAL);
           TRACE2 (DEBUG_CTX, "gpgme:status_handler", gpgsm,
 		  "fd 0x%x: ERR line - mapped to: %s",
@@ -1174,7 +1042,7 @@ start (engine_gpgsm_t gpgsm, const char *command)
     err = add_io_cb (gpgsm, &gpgsm->message_cb, _gpgme_data_outbound_handler);
 
   if (!err)
-    err = map_assuan_error (assuan_write_line (gpgsm->assuan_ctx, command));
+    err = assuan_write_line (gpgsm->assuan_ctx, command);
 
   if (!err)
     gpgsm_io_event (gpgsm, GPGME_EVENT_START, NULL);
