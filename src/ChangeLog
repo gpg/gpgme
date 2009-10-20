@@ -1,5 +1,8 @@
 2009-10-20  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme-config.in (netlibs): Remove.
+	(assuan_cflags, assuan_libs): Add.
+
 	* Makefile.am (assuan_cppflags, assuan_libobjs): Removed.
 	(gpgsm_components): Move engine-assuan.c to ...
 	(assuan_components): ... this new variable.

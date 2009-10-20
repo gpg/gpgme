@@ -20,7 +20,8 @@ LC_ALL=C
 LANG=C
 
 # Network libraries.
-netlibs="@NETLIBS@"
+assuan_cflags="@LIBASSUAN_CFLAGS@"
+assuan_libs="@LIBASSUAN_LIBS@"
 
 # Configure libgpg-error.
 gpg_error_cflags="@GPG_ERROR_CFLAGS@"
@@ -112,7 +113,7 @@ while test $# -gt 0; do
 		    output="$output $cflags_pth"
 		    ;;
 	    esac
-	    output="$output $gpg_error_cflags"
+	    output="$output $assuan_cflags $gpg_error_cflags"
 	    if test "x$with_glib" = "xyes"; then
 		output="$output $glib_cflags"
 	    fi
@@ -136,7 +137,7 @@ while test $# -gt 0; do
 		    fi
 		    ;;
 	    esac
-	    output="$output $gpg_error_libs $netlibs"
+	    output="$output $assuan_libs $gpg_error_libs"
 	    if test "x$with_glib" = "xyes"; then
 		output="$output $glib_cflags"
 	    fi
