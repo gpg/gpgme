@@ -1,7 +1,10 @@
 Noteworthy changes in version 1.2.1 (unreleased)
 ------------------------------------------------
 
- * (none yet)
+ * GPGME does not come with an internal libassuan version anymore.
+   The external libassuan 1.1.0 release or later is required.  For
+   application programmers on systems that can resolve inter-library
+   dependencies at runtime, this is a transparent change.
 
  * Interface changes relative to the 1.1.7 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
