@@ -753,7 +753,7 @@ fi
 #
 # Create config files 
 
-AC_CONFIG_FILES(Makefile assuan/Makefile src/Makefile
+AC_CONFIG_FILES(Makefile src/Makefile
 		tests/Makefile 
                 tests/gpg/Makefile
                 tests/gpgsm/Makefile
