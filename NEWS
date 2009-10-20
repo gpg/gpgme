@@ -6,7 +6,7 @@ Noteworthy changes in version 1.2.1 (unreleased)
    application programmers on systems that can resolve inter-library
    dependencies at runtime, this is a transparent change.
 
- * Interface changes relative to the 1.1.7 release:
+ * Interface changes relative to the 1.2.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_STATUS_INV_SGNR    NEW.
  GPGME_STATUS_NO_SGNR     NEW.
