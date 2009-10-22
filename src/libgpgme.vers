@@ -64,6 +64,8 @@ GPGME_1.1 {
     gpgme_op_import_keys_start;
     gpgme_op_export_keys;
     gpgme_op_export_keys_start;
+
+    gpgme_op_g13_mount;
 };
 
 

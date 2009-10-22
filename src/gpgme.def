@@ -185,5 +185,7 @@ EXPORTS
     gpgme_op_export_keys                  @142
     gpgme_op_export_keys_start            @143
 
+    gpgme_op_g13_mount			  @144
+
 ; END
 

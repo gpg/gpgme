@@ -59,6 +59,16 @@ _gpgme_get_gpgconf_path (void)
 #endif
 }
 
+const char *
+_gpgme_get_g13_path (void)
+{
+#ifdef G13_PATH
+  return G13_PATH;
+#else
+  return NULL;
+#endif
+}
+
 /* See w32-util.c */
 int
 _gpgme_get_conf_int (const char *key, int *value)

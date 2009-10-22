@@ -1,3 +1,24 @@
+2009-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am: Remove @NETLIBS@ from LIBADDs.
+	(g13_components): New variable.
+	(main_sources): Add $(g13_components).
+	* g13.c, engine-g13.c: New files.
+	* engine.c (engine_ops): Check for assuan for assuan engine, add
+	g13 engine.
+	* util.h (_gpgme_get_g13_path, _gpgme_encode_percent_string): New
+	prototypes.
+	* conversion.c (_gpgme_encode_percent_string): New function.
+	* gpgme.h.in (gpgme_protocol_t): Add GPGME_PROTOCOL_G13.
+	(struct _gpgme_op_g13_result, gpgme_g13_result_t): New types.
+	(gpgme_op_g13_mount): New function.
+	* gpgme.def, libgpgme.vers: Add gpgme_op_g13_mount.
+	* gpgme.c (gpgme_set_protocol): Allow GPGME_PROTOCOL_G13.
+	(gpgme_get_protocol_name): Add GPGME_PROTOCOL_G13.
+	* posix-util.c (_gpgme_get_g13_path): New function.
+	* w32-util.c (_gpgme_get_g13_path): New function.
+	* engine-backend.h (_gpgme_engine_ops_g13): New declaration.
+
 2009-10-20  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme-config.in (netlibs): Remove.

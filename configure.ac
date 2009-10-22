@@ -120,6 +120,7 @@ AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
 GPG_DEFAULT=no
 GPGSM_DEFAULT=no
 GPGCONF_DEFAULT=no
+G13_DEFAULT=no
 component_system=None
 have_dosish_system=no
 have_w32_system=no
@@ -133,6 +134,7 @@ case "${host}" in
         GPG_DEFAULT='c:\\gnupg\\gpg.exe'
 	GPGSM_DEFAULT='c:\\gnupg\\gpgsm.exe'
         GPGCONF_DEFAULT='c:\\gnupg\\gpgconf.exe'
+        G13_DEFAULT='c:\\gnupg\\g13.exe'
         #component_system='COM+'
 
 	AM_PATH_GLIB_2_0
@@ -166,6 +168,7 @@ case "${host}" in
 #	GPG_DEFAULT='/usr/bin/gpg'
 #	GPGSM_DEFAULT='/usr/bin/gpgsm'
 #	GPGCONF_DEFAULT='/usr/bin/gpgconf'
+#	G13_DEFAULT='/usr/bin/g13'
 	;;
 esac
 
@@ -286,9 +289,11 @@ fi
 NEED_GPG_VERSION_DEFAULT=1.3.0
 NEED_GPGSM_VERSION_DEFAULT=1.9.6
 NEED_GPGCONF_VERSION_DEFAULT=2.0.4
+NEED_G13_VERSION_DEFAULT=2.1.0
 NEED_GPG_VERSION="$NEED_GPG_VERSION_DEFAULT"
 NEED_GPGSM_VERSION="$NEED_GPGSM_VERSION_DEFAULT"
 NEED_GPGCONF_VERSION="$NEED_GPGCONF_VERSION_DEFAULT"
+NEED_G13_VERSION="$NEED_G13_VERSION_DEFAULT"
 AC_ARG_WITH(gpg-version,
 	    AC_HELP_STRING([--with-gpg-version=VER], [require GnuPG version VER]),
 	    NEED_GPG_VERSION=$withval)
@@ -316,6 +321,15 @@ fi
 if test "$NEED_GPGCONF_VERSION" = "no"; then
   NEED_GPGCONF_VERSION=0.0.0
 fi
+AC_ARG_WITH(g13-version,
+	    AC_HELP_STRING([--with-g13-version=VER], [require G13 version VER]),
+	    NEED_G13_VERSION=$withval)
+if test "$NEED_G13_VERSION" = "yes"; then
+  NEED_G13_VERSION="$NEED_G13_VERSION_DEFAULT"
+fi
+if test "$NEED_G13_VERSION" = "no"; then
+  NEED_G13_VERSION=0.0.0
+fi
 
 AC_DEFINE_UNQUOTED(NEED_GPG_VERSION, "$NEED_GPG_VERSION",
 				     [Min. needed GnuPG version.])
@@ -323,6 +337,8 @@ AC_DEFINE_UNQUOTED(NEED_GPGSM_VERSION, "$NEED_GPGSM_VERSION",
 				       [Min. needed GPGSM version.])
 AC_DEFINE_UNQUOTED(NEED_GPGCONF_VERSION, "$NEED_GPGCONF_VERSION",
 				         [Min. needed GPGCONF version.])
+AC_DEFINE_UNQUOTED(NEED_G13_VERSION, "$NEED_G13_VERSION",
+				         [Min. needed G13 version.])
 
 
 NO_OVERRIDE=no
@@ -518,6 +534,9 @@ require_libassuan=no
 if test "$GPGSM" != "no"; then
   require_libassuan=yes
 fi
+if test "$G13" != "no"; then
+  require_libassuan=yes
+fi
 
 
 NO_OVERRIDE=no
@@ -620,6 +639,109 @@ AM_CONDITIONAL(BUILD_GPGCONF, test "$GPGCONF" != "no")
 if test "$GPGCONF" != "no"; then
   AC_DEFINE(HAVE_GPGCONF, 1,
             [Defined if we are building with gpgconf support.])
+fi
+
+
+NO_OVERRIDE=no
+AC_ARG_WITH(g13,
+	    AC_HELP_STRING([--with-g13=PATH],
+                           [use g13 binary at PATH]),
+	    G13=$withval, NO_OVERRIDE=yes)
+if test "$NO_OVERRIDE" = "yes" || test "$G13" = "yes"; then
+  G13=
+  NO_OVERRIDE=yes
+  if test "$cross_compiling" != "yes"; then
+    AC_PATH_PROG(G13, g13)
+  fi
+  if test -z "$G13"; then
+    G13="$G13_DEFAULT"
+  fi
+fi
+if test "$G13" = no; then
+  if test "$NO_OVERRIDE" = "yes"; then
+    if test "$cross_compiling" != "yes"; then
+      AC_MSG_WARN([
+***
+*** Could not find g13, install g13 or use --with-g13=PATH to enable it
+***])
+    else
+      AC_MSG_ERROR([
+***
+*** Can not determine path to g13 when cross-compiling, use --with-g13=PATH
+***])
+    fi
+  fi
+else
+  AC_DEFINE_UNQUOTED(G13_PATH, "$G13", [Path to the G13 binary.])
+  AC_DEFINE(ENABLE_G13,1,[Whether G13 support is enabled])
+fi
+AM_CONDITIONAL(HAVE_G13, test "$G13" != "no")
+
+dnl Check for G13 version requirement.
+G13_VERSION=unknown
+ok=maybe
+if test -z "$G13" -o "x$G13" = "xno"; then
+  ok=no
+else
+  if test "$cross_compiling" = "yes"; then
+    AC_MSG_WARN([G13 version can not be checked when cross compiling])
+    ok=no
+  else
+    if test ! -x "$G13"; then
+      AC_MSG_WARN([G13 not executable, version check disabled])
+      ok=no
+    fi
+  fi
+fi
+if test "$ok" = "maybe"; then
+  AC_MSG_CHECKING(for G13 >= $NEED_G13_VERSION)
+  req_major=`echo $NEED_G13_VERSION | \
+             sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+  req_minor=`echo $NEED_G13_VERSION | \
+	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+  req_micro=`echo $NEED_G13_VERSION | \
+	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+  G13_VERSION=`$G13 --version | sed -n '1 s/.*\ \([[0-9]].*\)/\1/p'`
+  major=`echo $G13_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+  minor=`echo $G13_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+  micro=`echo $G13_VERSION | \
+	 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
+
+  if test "$major" -gt "$req_major"; then
+    ok=yes
+  else
+    if test "$major" -eq "$req_major"; then
+      if test "$minor" -gt "$req_minor"; then
+        ok=yes
+      else
+        if test "$minor" -eq "$req_minor"; then
+          if test "$micro" -ge "$req_micro"; then
+            ok=yes
+	  fi
+        fi
+      fi
+    fi
+  fi
+  if test "$ok" = "yes"; then
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+    AC_MSG_WARN([G13 must be at least version $NEED_G13_VERSION])
+  fi
+fi
+run_g13_test="$ok"
+AC_ARG_ENABLE(g13-test,
+  AC_HELP_STRING([--disable-g13-test], [disable G13 run test]),
+         run_g13_test=$enableval)
+AM_CONDITIONAL(RUN_G13_TESTS, test "$run_g13_test" = "yes")
+
+# Only build if supported.
+AM_CONDITIONAL(BUILD_G13, test "$G13" != "no")
+if test "$G13" != "no"; then
+  AC_DEFINE(HAVE_G13, 1,
+            [Defined if we are building with g13 support.])
 fi
 
 
@@ -776,6 +898,9 @@ echo "
 
 	GpgConf path:    $GPGCONF
         GpgConf version: $GPGCONF_VERSION, min. $NEED_GPGCONF_VERSION
+
+	G13 path:        $G13
+        G13 version:     $G13_VERSION, min. $NEED_G13_VERSION
 
         Assuan version:  $LIBASSUAN_VERSION
 

@@ -6,11 +6,16 @@ Noteworthy changes in version 1.2.1 (unreleased)
    application programmers on systems that can resolve inter-library
    dependencies at runtime, this is a transparent change.
 
+ * New engine GPGME_PROTOCOL_G13 to support the new g13 tool.
+
  * Interface changes relative to the 1.2.0 release:
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- GPGME_STATUS_INV_SGNR    NEW.
- GPGME_STATUS_NO_SGNR     NEW.
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GPGME_STATUS_INV_SGNR    NEW
+GPGME_STATUS_NO_SGNR     NEW
+GPGME_PROTOCOL_G13	 NEW
+gpgme_op_g13_mount	 NEW
+gpgme_g13_result_t	 NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Noteworthy changes in version 1.2.0 (2009-06-18)
 ------------------------------------------------

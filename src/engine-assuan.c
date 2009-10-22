@@ -554,6 +554,8 @@ llass_status_handler (void *opaque, int fd)
           TRACE2 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: ERR line: %s",
                   fd, err ? gpg_strerror (err) : "ok");
+	  /* Command execution errors are not fatal, as we use
+	     a session based protocol.  */
           if (llass->result_cb)
             err = llass->result_cb (llass->result_cb_value, err);
           else

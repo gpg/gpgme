@@ -362,6 +362,25 @@ _gpgme_get_gpgconf_path (void)
 
 
 const char *
+_gpgme_get_g13_path (void)
+{
+  static char *g13_program;
+
+  LOCK (get_path_lock);
+#if 0
+  if (!g13_program)
+    g13_program = find_program_in_registry ("g13Program");
+#endif
+  if (!g13_program)
+    g13_program = find_program_in_inst_dir ("g13.exe");
+  if (!g13_program)
+    g13_program = find_program_at_standard_place ("GNU\\GnuPG\\g13.exe");
+  UNLOCK (get_path_lock);
+  return g13_program;
+}
+
+
+const char *
 _gpgme_get_w32spawn_path (void)
 {
   static char *w32spawn_program;

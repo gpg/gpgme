@@ -55,8 +55,13 @@ static struct engine_ops *engine_ops[] =
 #else
     NULL,
 #endif
-#ifdef ENABLE_GPGSM  /* This indicates that we have assuan support.  */
-    &_gpgme_engine_ops_assuan		/* Low-Level Assuan.  */
+#ifdef ENABLE_ASSUAN
+    &_gpgme_engine_ops_assuan,		/* Low-Level Assuan.  */
+#else
+    NULL
+#endif
+#ifdef ENABLE_G13
+    &_gpgme_engine_ops_g13		/* Crypto VFS.  */
 #else
     NULL
 #endif
@@ -194,7 +199,8 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
       gpgme_protocol_t proto_list[] = { GPGME_PROTOCOL_OpenPGP,
 					GPGME_PROTOCOL_CMS,
 					GPGME_PROTOCOL_GPGCONF,
-					GPGME_PROTOCOL_ASSUAN };
+					GPGME_PROTOCOL_ASSUAN,
+					GPGME_PROTOCOL_G13 };
       unsigned int proto;
 
       for (proto = 0; proto < DIM (proto_list); proto++)

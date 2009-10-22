@@ -324,6 +324,7 @@ typedef enum
     GPGME_PROTOCOL_CMS     = 1,
     GPGME_PROTOCOL_GPGCONF = 2,  /* Special code for gpgconf.  */
     GPGME_PROTOCOL_ASSUAN  = 3,  /* Low-level access to an Assuan server.  */
+    GPGME_PROTOCOL_G13     = 4,
     GPGME_PROTOCOL_UNKNOWN = 255
   }
 gpgme_protocol_t;
@@ -1735,7 +1736,10 @@ typedef gpgme_error_t (*gpgme_assuan_status_cb_t)
 struct _gpgme_op_assuan_result
 {
   /* The result of the actual assuan command.  An OK is indicated by a
-     value of 0 and an ERR by the respective error error value.  */
+     value of 0 and an ERR by the respective error error value.  This
+     is required because assuan operations use a session-based
+     interface.  The error code of the GPGME function calls just
+     reflects transmission errors.  */
   gpgme_error_t err;
 };
 typedef struct _gpgme_op_assuan_result *gpgme_assuan_result_t;
@@ -1766,6 +1770,26 @@ gpgme_error_t gpgme_op_assuan_transact (gpgme_ctx_t ctx,
                                         gpgme_assuan_status_cb_t stat_cb,
                                         void *stat_cb_value);
 
+
+
+/* Crypto container support.  */
+struct _gpgme_op_g13_result
+{
+  /* The result of the actual assuan command.  An OK is indicated by a
+     value of 0 and an ERR by the respective error error value.  This
+     is required because assuan operations use a session-based
+     interface.  The error code of the GPGME function calls just
+     reflects transmission errors.  */
+  gpgme_error_t err;
+};
+typedef struct _gpgme_op_g13_result *gpgme_g13_result_t;
+
+/* The container is automatically unmounted when the context is reset
+   or destroyed.  This is a synchronous convenience interface, which
+   automatically returns an operation error if there is no
+   transmission error.  */
+gpgme_error_t gpgme_op_g13_mount (gpgme_ctx_t ctx, const char *container_file,
+				  const char *mount_dir, int flags);
 
 
 /* Interface to gpgconf(1).  */

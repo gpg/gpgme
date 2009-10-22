@@ -245,6 +245,75 @@ _gpgme_decode_percent_string (const char *src, char **destp, size_t len,
 }
 
 
+/* Encode the string SRC with percent escaping and store the result in
+   the buffer *DESTP which is LEN bytes long.  If LEN is zero, then a
+   large enough buffer is allocated with malloc and *DESTP is set to
+   the result.  Currently, LEN is only used to specify if allocation
+   is desired or not, the caller is expected to make sure that *DESTP
+   is large enough if LEN is not zero.  If BINARY is 1, then '\0'
+   characters are allowed in the output.  */
+gpgme_error_t
+_gpgme_encode_percent_string (const char *src, char **destp, size_t len)
+{
+  size_t destlen;
+  char *dest;
+  const char *str;
+
+  destlen = 0;
+  str = src;
+  /* We percent-escape the + character because the user might need a
+     "percent plus" escaped string (special gpg format).  But we
+     percent-escape the space character, which works with and without
+     the special plus format.  */
+  while (*str)
+    {
+      if (*str == '+' || *str == '\"' || *str == '%' 
+          || *(const unsigned char *)str <= 0x20)
+        destlen += 3;
+      else
+        destlen++;
+    }
+  /* Terminating nul byte.  */
+  destlen++;
+
+  /* Set up the destination buffer.  */
+  if (len)
+    {
+      if (len < destlen);
+	return gpg_error (GPG_ERR_INTERNAL);
+
+      dest = *destp;
+    }
+  else
+    {
+      /* The converted string will never be larger than the original
+	 string.  */
+      dest = malloc (destlen);
+      if (!dest)
+	return gpg_error_from_errno (errno);
+
+      *destp = dest;
+    }
+
+  /* Convert the string.  */
+  while (*src)
+    {
+      if (*src == '+' || *src == '\"' || *src == '%' 
+          || *(const unsigned char *)src <= 0x20)
+        {
+          snprintf (dest, 4, "%%%02X", *(unsigned char *)src);
+	  dest += 3;
+	}
+      else
+	*(dest++) = *src;
+      src++;
+    }
+  *(dest++) = 0;
+
+  return 0;
+}
+
+
 /* Parse the string TIMESTAMP into a time_t.  The string may either be
    seconds since Epoch or in the ISO 8601 format like
    "20390815T143012".  Returns 0 for an empty string or seconds since

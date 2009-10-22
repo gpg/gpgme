@@ -22,11 +22,6 @@
 
 #include "engine.h"
 
-/* FIXME: Correct check?  */
-#ifdef GPGSM_PATH
-#define ENABLE_GPGSM 1
-#endif
-
 struct engine_ops
 {
   /* Static functions.  */
@@ -131,6 +126,9 @@ extern struct engine_ops _gpgme_engine_ops_gpgconf;	/* gpg-conf.  */
 #endif
 #ifdef ENABLE_ASSUAN
 extern struct engine_ops _gpgme_engine_ops_assuan;	/* Low-level Assuan. */
+#endif
+#ifdef ENABLE_G13
+extern struct engine_ops _gpgme_engine_ops_g13;         /* Crypto VFS. */
 #endif
 
 #endif /* ENGINE_BACKEND_H */

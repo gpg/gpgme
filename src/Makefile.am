@@ -86,6 +86,12 @@ else
 gpgconf_components =
 endif
 
+if HAVE_G13
+g13_components = engine-g13.c
+else
+g13_components =
+endif
+
 # These are the source files common to all library versions.  We used
 # to build a non-installed library for that, but that does not work
 # correctly on all platforms (in particular, one can not specify the
@@ -105,6 +111,7 @@ main_sources =								\
 	opassuan.c                                                      \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.h	\
 	$(gpgsm_components) $(assuan_components) $(gpgconf_components)  \
+	$(g13_components) g13.c						\
 	gpgconf.c							\
 	sema.h priv-io.h $(system_components) dirinfo.c			\
 	debug.c debug.h gpgme.c version.c error.c
@@ -185,21 +192,20 @@ libgpgme_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) $(export_symbols) \
 	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
-libgpgme_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
-	@GPG_ERROR_LIBS@ @NETLIBS@
+libgpgme_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ @GPG_ERROR_LIBS@
 
 libgpgme_pthread_la_LDFLAGS = $(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_pthread_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers
 libgpgme_pthread_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
-	-lpthread @GPG_ERROR_LIBS@ @NETLIBS@
+	-lpthread @GPG_ERROR_LIBS@
 
 libgpgme_pth_la_LDFLAGS = @PTH_LDFLAGS@ \
 	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_pth_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers
 libgpgme_pth_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
-	@PTH_LIBS@ @GPG_ERROR_LIBS@ @NETLIBS@
+	@PTH_LIBS@ @GPG_ERROR_LIBS@
 
 if BUILD_W32_GLIB
 libgpgme_glib_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
@@ -208,7 +214,7 @@ libgpgme_glib_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
 libgpgme_glib_la_DEPENDENCIES =	@LTLIBOBJS@ \
 	$(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_glib_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
-	@GPG_ERROR_LIBS@ @GLIB_LIBS@ @NETLIBS@
+	@GPG_ERROR_LIBS@ @GLIB_LIBS@
 endif
 
 if BUILD_W32_QT
@@ -217,7 +223,7 @@ libgpgme_qt_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_qt_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_qt_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
-	@GPG_ERROR_LIBS@ @QT4_CORE_LIBS@ @NETLIBS@
+	@GPG_ERROR_LIBS@ @QT4_CORE_LIBS@
 endif
 
 status-table.h : gpgme.h

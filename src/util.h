@@ -32,6 +32,7 @@
 const char *_gpgme_get_gpg_path (void);
 const char *_gpgme_get_gpgsm_path (void);
 const char *_gpgme_get_gpgconf_path (void);
+const char *_gpgme_get_g13_path (void);
 int _gpgme_get_conf_int (const char *key, int *value);
 void _gpgme_allow_set_foreground_window (pid_t pid);
 
@@ -92,6 +93,9 @@ gpgme_error_t _gpgme_decode_c_string (const char *src, char **destp,
    characters are allowed in the output.  */
 gpgme_error_t _gpgme_decode_percent_string (const char *src, char **destp,
 					    size_t len, int binary);
+
+gpgme_error_t _gpgme_encode_percent_string (const char *src, char **destp,
+					    size_t len);
 
 
 /* Parse the string TIMESTAMP into a time_t.  The string may either be
