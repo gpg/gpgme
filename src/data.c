@@ -247,7 +247,8 @@ gpgme_data_get_file_name (gpgme_data_t dh)
 gpgme_error_t
 _gpgme_data_inbound_handler (void *opaque, int fd)
 {
-  gpgme_data_t dh = (gpgme_data_t) opaque;
+  struct io_cb_data *data = (struct io_cb_data *) opaque;
+  gpgme_data_t dh = (gpgme_data_t) data->handler_value;
   char buffer[BUFFER_SIZE];
   char *bufp = buffer;
   ssize_t buflen;
@@ -279,7 +280,8 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
 gpgme_error_t
 _gpgme_data_outbound_handler (void *opaque, int fd)
 {
-  gpgme_data_t dh = (gpgme_data_t) opaque;
+  struct io_cb_data *data = (struct io_cb_data *) opaque;
+  gpgme_data_t dh = (gpgme_data_t) data->handler_value;
   ssize_t nwritten;
   TRACE_BEG1 (DEBUG_CTX, "_gpgme_data_outbound_handler", dh,
 	      "fd=0x%x", fd);

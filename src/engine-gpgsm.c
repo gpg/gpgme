@@ -761,8 +761,9 @@ parse_status (const char *name)
 static gpgme_error_t
 status_handler (void *opaque, int fd)
 {
+  struct io_cb_data *data = (struct io_cb_data *) opaque;
+  engine_gpgsm_t gpgsm = (engine_gpgsm_t) data->handler_value;
   gpgme_error_t err = 0;
-  engine_gpgsm_t gpgsm = opaque;
   char *line;
   size_t linelen;
 
@@ -799,7 +800,7 @@ status_handler (void *opaque, int fd)
 	    err = gpgsm->status.fnc (gpgsm->status.fnc_value,
 				     GPGME_STATUS_EOF, "");
 	  
-	  if (!err && gpgsm->colon.fnc && gpgsm->colon.any )
+	  if (!err && gpgsm->colon.fnc && gpgsm->colon.any)
             {
               /* We must tell a colon function about the EOF. We do
                  this only when we have seen any data lines.  Note
@@ -1939,5 +1940,6 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     NULL,		/* conf_save */
     gpgsm_set_io_cbs,
     gpgsm_io_event,
-    gpgsm_cancel
+    gpgsm_cancel,
+    NULL		/* cancel_op */
   };

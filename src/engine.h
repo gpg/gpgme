@@ -133,8 +133,6 @@ gpgme_error_t _gpgme_engine_op_getauditlog (engine_t engine,
 gpgme_error_t _gpgme_engine_op_assuan_transact 
                 (engine_t engine, 
                  const char *command,
-                 engine_assuan_result_cb_t result_cb,
-                 void *result_cb_value,
                  gpgme_assuan_data_cb_t data_cb,
                  void *data_cb_value,
                  gpgme_assuan_inquire_cb_t inq_cb,
@@ -153,5 +151,7 @@ void _gpgme_engine_io_event (engine_t engine,
 			     gpgme_event_io_t type, void *type_data);
 
 gpgme_error_t _gpgme_engine_cancel (engine_t engine);
+
+gpgme_error_t _gpgme_engine_cancel_op (engine_t engine);
 
 #endif /* ENGINE_H */

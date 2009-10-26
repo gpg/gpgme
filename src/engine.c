@@ -58,7 +58,7 @@ static struct engine_ops *engine_ops[] =
 #ifdef ENABLE_ASSUAN
     &_gpgme_engine_ops_assuan,		/* Low-Level Assuan.  */
 #else
-    NULL
+    NULL,
 #endif
 #ifdef ENABLE_G13
     &_gpgme_engine_ops_g13		/* Crypto VFS.  */
@@ -777,8 +777,6 @@ _gpgme_engine_op_getauditlog (engine_t engine, gpgme_data_t output,
 gpgme_error_t
 _gpgme_engine_op_assuan_transact (engine_t engine, 
                                   const char *command,
-                                  engine_assuan_result_cb_t result_cb,
-                                  void *result_cb_value,
                                   gpgme_assuan_data_cb_t data_cb,
                                   void *data_cb_value,
                                   gpgme_assuan_inquire_cb_t inq_cb,
@@ -794,7 +792,6 @@ _gpgme_engine_op_assuan_transact (engine_t engine,
 
   return (*engine->ops->opassuan_transact) (engine->engine, 
                                             command,
-                                            result_cb, result_cb_value,
                                             data_cb, data_cb_value,
                                             inq_cb, inq_cb_value,
                                             status_cb, status_cb_value);
@@ -848,6 +845,7 @@ _gpgme_engine_io_event (engine_t engine,
 }
 
 
+/* Cancel the session and the pending operation if any.  */
 gpgme_error_t
 _gpgme_engine_cancel (engine_t engine)
 {
@@ -858,4 +856,18 @@ _gpgme_engine_cancel (engine_t engine)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   return (*engine->ops->cancel) (engine->engine);
+}
+
+
+/* Cancel the pending operation, but not the complete session.  */
+gpgme_error_t
+_gpgme_engine_cancel_op (engine_t engine)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->cancel_op)
+    return 0;
+
+  return (*engine->ops->cancel_op) (engine->engine);
 }

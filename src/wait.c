@@ -180,9 +180,13 @@ _gpgme_remove_io_cb (void *data)
    we are called from our own event loops.  So if CHECKED is 1, the
    check is skipped.  */
 gpgme_error_t
-_gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked)
+_gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked,
+		  gpgme_error_t *op_err)
 {
   struct wait_item_s *item;
+  struct io_cb_data iocb_data;
+  gpgme_error_t err;
+
   item = (struct wait_item_s *) an_fds->opaque;
   assert (item);
 
@@ -207,5 +211,11 @@ _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked)
 
   TRACE2 (DEBUG_CTX, "_gpgme_run_io_cb", item, "handler (%p, %d)",
           item->handler_value, an_fds->fd);
-  return item->handler (item->handler_value, an_fds->fd);
+
+  iocb_data.handler_value = item->handler_value;
+  iocb_data.op_err = 0;
+  err = item->handler (&iocb_data, an_fds->fd);
+
+  *op_err = iocb_data.op_err;
+  return err;
 }

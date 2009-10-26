@@ -27,14 +27,17 @@
 
 
 /* From gpgme.c.  */
-gpgme_error_t _gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err);
+gpgme_error_t _gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err,
+				      gpg_error_t op_err);
 
 void _gpgme_release_result (gpgme_ctx_t ctx);
 
 
 /* From wait.c.  */
 gpgme_error_t _gpgme_wait_one (gpgme_ctx_t ctx);
-gpgme_error_t _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond);
+gpgme_error_t _gpgme_wait_one_ext (gpgme_ctx_t ctx, gpgme_error_t *op_err);
+gpgme_error_t _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
+					gpgme_error_t *op_err);
 
 
 /* From data.c.  */

@@ -1,5 +1,85 @@
 2009-10-26  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h.in (struct gpgme_io_event_done_data)
+	(gpgme_io_event_done_data_t): New types.
+	(struct _gpgme_op_assuan_result): Deprecate the err member.
+	(gpgme_op_assuan_result): Deprecate (for now).
+	(gpgme_op_assuan_transact_ext): New prototype.
+	(gpgme_op_assuan_transact): Deprecate.
+	(struct _gpgme_op_g13_result): Replace with ...
+	(struct _gpgme_op_vfs_mount_result): ... this.
+	(gpgme_op_g13_mount): Replace with ...
+	(gpgme_op_vfs_mount): ... this.
+	* gpgme.def (gpgme_op_assuan_transact_ext, gpgme_wait_ext)
+	(gpgme_op_vfs_mount_result, gpgme_op_vfs_mount): New.
+	(gpgme_op_g13_mount): Remove.
+	* libgpgme.vers: Likewise.
+	* engine-backend.h (struct engine_ops): Remove RESULT_CB and
+	RESULT_CB_VALUE args in opassuan_transact member.  Add CANCEL_OP
+	member.
+	* ops.h (_gpgme_cancel_with_err, _gpgme_wait_on_condition): Add
+	OP_ERR argument.
+	(_gpgme_wait_one_ext): New prototype.
+	* context.h (ctx_op_data_id_t): Add OPDATA_VFS_MOUNT.
+	* engine-g13.c (g13_cancel_op): New function.
+	(parse_status): Remove declaration.
+	(g13_assuan_simple_command): Do nothing with status lines for now.
+	(status_handler): Update opaque value access.
+	(_gpgme_engine_ops_g13): Add new cancel_op member.
+	* gpgme.c (_gpgme_cancel_with_err): Add new parameter OP_ERR.
+	Handle operational errors.
+	(gpgme_cancel, gpgme_io_read, gpgme_io_write): Add debug output.
+	* data.c (_gpgme_data_inbound_handler)
+	(_gpgme_data_outbound_handler): Adjust opaque value access.
+	* engine-gpg.c (command_handler, status_handler)
+	(colon_line_handler): Likewise.
+	* engine-gpgsm.c (status_handler): Likewise.
+	* engine-gpg.c (_gpgme_engine_ops_gpg): Add cancel_op member.
+	* engine-gpgsm.c (_gpgme_engine_ops_gpgsm): Likewise.
+	* g13.c: Rewritten (and will be rewritten again).
+	* engine.h (_gpgme_engine_op_assuan_transact): Remove result_cb
+	and result_cb_value parameters from prototype.
+	(_gpgme_engine_cancel_op): New prototype.
+	* engine.c (engine_ops) [! ENABLE_ASSUAN]: Add missing comma.
+	(_gpgme_engine_op_assuan_transact): Remove result_cb and
+	result_cb_value parameter.
+	(_gpgme_engine_cancel_op): New function.
+	* wait.h (_gpgme_run_io_cb): Add new argument OP_ERR.
+	(struct io_cb_data): New struct to pass opaque data and get a
+	op_err return value.  Needed because we can't modify I/O callback
+	handler signature because it is exposed to the user.
+	* wait.c (_gpgme_run_io_cb): Add OP_ERR parameter.  Handle
+	operational errors.
+	* wait-user.c (_gpgme_user_io_cb_handler): Handle operational
+	errors.
+	* wait-private.c (_gpgme_wait_on_condition): New argument to
+	retrieve the operational result.  Handle operational errors in
+	session based protocols.
+	(_gpgme_wait_one_ext): New function.
+	(_gpgme_wait_one): Pass argument in invocation of
+	_gpgme_wait_on_condition.
+	* wait-global.c (struct ctx_list_item): Add member OP_ERR.
+	(ctx_done): New argument OP_ERR.
+	(ctx_wait): New argument OP_ERR.
+	(gpgme_wait_ext): New function based on gpgme_wait but handling
+	operational errors.
+	(gpgme_wait): Implement in term of gpgme_wait_ext.
+	* keylist.c (gpgme_op_keylist_next): Pass argument in invocation
+	of _gpgme_wait_on_condition.
+	* trustlist.c (gpgme_op_trustlist_next): Pass argument in
+	invocation of _gpgme_wait_on_condition.
+	* engine-assuan.c (struct engine_llass): Replace members RESULT_CB
+	and RESULT_CB_VALUE by LAST_OP_ERR.
+	(_gpgme_engine_assuan_last_op_err): Add this hack function.
+	(llass_cancel_op): New function.
+	(_gpgme_engine_llass_ops): Add cancel_op member.
+	(llass_status_handler): Update opaque value access.
+	(llass_transact): Remove RESULT_CB and RESULT_CB_VALUE arguments.
+	* opassuan.c: Move compat hacks to the end of file.
+	(opassuan_start): Do not set OPD->result.err.
+	Do not pass RESULT_Cb and CTX to _gpgme_engine_op_assuan_transact.
+	(gpgme_op_assuan_transact_ext): New function.
+
 	* debug.h (DEBUG_GLOBAL): New debug level.
 	* conversion.c (gnupg_errors, _gpgme_map_gnupg_error): Removed.
 	* data-user.c (gpgme_data_new_from_cbs): Add debug output.

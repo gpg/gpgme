@@ -65,7 +65,12 @@ GPGME_1.1 {
     gpgme_op_export_keys;
     gpgme_op_export_keys_start;
 
-    gpgme_op_g13_mount;
+    gpgme_op_assuan_transact_ext;
+
+    gpgme_wait_ext;
+
+    gpgme_op_vfs_mount_result;
+    gpgme_op_vfs_mount;
 };
 
 

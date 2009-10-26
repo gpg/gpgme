@@ -70,9 +70,8 @@ struct engine_llass
 
   struct gpgme_io_cbs io_cbs;
 
-  /* Internal callbacks.  */
-  engine_assuan_result_cb_t result_cb;
-  void *result_cb_value; 
+  /* Hack for old opassuan.c interface, see there the result struct.  */
+  gpg_error_t last_op_err;
 
   /* User provided callbacks.  */
   struct {
@@ -94,6 +93,12 @@ struct engine_llass
 };
 typedef struct engine_llass *engine_llass_t;
 
+
+gpg_error_t _gpgme_engine_assuan_last_op_err (void *engine)
+{
+  engine_llass_t llass = engine;
+  return llass->last_op_err;
+}
 
 
 /* Prototypes.  */
@@ -164,6 +169,21 @@ llass_cancel (void *engine)
       assuan_release (llass->assuan_ctx);
       llass->assuan_ctx = NULL;
     }
+
+  return 0;
+}
+
+
+static gpgme_error_t
+llass_cancel_op (void *engine)
+{
+  engine_llass_t llass = engine;
+
+  if (!llass)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (llass->status_cb.fd != -1)
+    _gpgme_io_close (llass->status_cb.fd);
 
   return 0;
 }
@@ -408,8 +428,9 @@ inquire_cb (engine_llass_t llass, const char *keyword, const char *args)
 static gpgme_error_t
 llass_status_handler (void *opaque, int fd)
 {
+  struct io_cb_data *data = (struct io_cb_data *) opaque;
+  engine_llass_t llass = (engine_llass_t) data->handler_value;
   gpgme_error_t err = 0;
-  engine_llass_t llass = opaque;
   char *line;
   size_t linelen;
 
@@ -459,8 +480,6 @@ llass_status_handler (void *opaque, int fd)
           if (linelen && llass->user.data_cb)
             err = llass->user.data_cb (llass->user.data_cb_value,
                                        src, linelen);
-          else
-            err = 0;
 
           TRACE2 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: D inlinedata; status from cb: %s",
@@ -474,8 +493,6 @@ llass_status_handler (void *opaque, int fd)
           /* END received.  Tell the data callback.  */
           if (llass->user.data_cb)
             err = llass->user.data_cb (llass->user.data_cb_value, NULL, 0);
-          else
-            err = 0;
 
           TRACE2 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: END line; status from cb: %s",
@@ -502,8 +519,6 @@ llass_status_handler (void *opaque, int fd)
           if (llass->user.status_cb)
             err = llass->user.status_cb (llass->user.status_cb_value,
                                          src, args);
-          else
-            err = 0;
 
           TRACE3 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: S line (%s) - status from cb: %s",
@@ -554,17 +569,15 @@ llass_status_handler (void *opaque, int fd)
           TRACE2 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: ERR line: %s",
                   fd, err ? gpg_strerror (err) : "ok");
+
 	  /* Command execution errors are not fatal, as we use
 	     a session based protocol.  */
-          if (llass->result_cb)
-            err = llass->result_cb (llass->result_cb_value, err);
-          else
-            err = 0;
-          if (!err)
-            {
-              _gpgme_io_close (llass->status_cb.fd);
-              return 0;
-            }
+	  data->op_err = err;
+	  llass->last_op_err = err;
+
+	  /* The caller will do the rest (namely, call cancel_op,
+	     which closes status_fd).  */
+	  return 0;
 	}
       else if (linelen >= 2
 	       && line[0] == 'O' && line[1] == 'K'
@@ -572,15 +585,11 @@ llass_status_handler (void *opaque, int fd)
 	{
           TRACE1 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: OK line", fd);
-          if (llass->result_cb)
-            err = llass->result_cb (llass->result_cb_value, 0);
-          else
-            err = 0;
-          if (!err)
-            {
-              _gpgme_io_close (llass->status_cb.fd);
-              return 0;
-            }
+
+	  llass->last_op_err = 0;
+
+	  _gpgme_io_close (llass->status_cb.fd);
+	  return 0;
 	}
       else
         {
@@ -667,8 +676,6 @@ start (engine_llass_t llass, const char *command)
 static gpgme_error_t
 llass_transact (void *engine,
                 const char *command,
-                engine_assuan_result_cb_t result_cb,
-                void *result_cb_value,
                 gpgme_assuan_data_cb_t data_cb,
                 void *data_cb_value,
                 gpgme_assuan_inquire_cb_t inq_cb,
@@ -682,8 +689,6 @@ llass_transact (void *engine,
   if (!llass || !command || !*command)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  llass->result_cb = result_cb;
-  llass->result_cb_value = result_cb_value;
   llass->user.data_cb = data_cb;
   llass->user.data_cb_value = data_cb_value;
   llass->user.inq_cb = inq_cb;
@@ -754,5 +759,6 @@ struct engine_ops _gpgme_engine_ops_assuan =
     NULL,		/* conf_save */
     llass_set_io_cbs,
     llass_io_event,
-    llass_cancel
+    llass_cancel,
+    llass_cancel_op
   };

@@ -185,7 +185,11 @@ EXPORTS
     gpgme_op_export_keys                  @142
     gpgme_op_export_keys_start            @143
 
-    gpgme_op_g13_mount			  @144
+    gpgme_op_assuan_transact_ext	  @144
+
+    gpgme_wait_ext			  @145
+    gpgme_op_vfs_mount_result		  @146
+    gpgme_op_vfs_mount			  @147
 
 ; END
 

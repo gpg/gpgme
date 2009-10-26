@@ -98,8 +98,6 @@ struct engine_ops
                                  unsigned int flags);
   gpgme_error_t  (*opassuan_transact) (void *engine, 
                                        const char *command,
-                                       engine_assuan_result_cb_t result_cb,
-                                       void *result_cb_value,
                                        gpgme_assuan_data_cb_t data_cb,
                                        void *data_cb_value,
                                        gpgme_assuan_inquire_cb_t inq_cb,
@@ -113,7 +111,11 @@ struct engine_ops
   void (*set_io_cbs) (void *engine, gpgme_io_cbs_t io_cbs);
   void (*io_event) (void *engine, gpgme_event_io_t type, void *type_data);
 
+  /* Cancel the whole engine session.  */
   gpgme_error_t (*cancel) (void *engine);
+
+  /* Cancel only the current operation, not the whole session.  */
+  gpgme_error_t (*cancel_op) (void *engine);
 };
 
 

@@ -26,39 +26,95 @@
 #include "ops.h"
 #include "util.h"
 
-
-typedef struct
+static gpgme_error_t
+opassuan_start (gpgme_ctx_t ctx, int synchronous,
+                const char *command,
+                gpgme_assuan_data_cb_t data_cb,
+                void *data_cb_value,
+                gpgme_assuan_inquire_cb_t inq_cb,
+                void *inq_cb_value,
+                gpgme_assuan_status_cb_t status_cb,
+                void *status_cb_value)
 {
-  struct _gpgme_op_assuan_result result;
+  gpgme_error_t err;
 
-} *op_data_t;
+  if (!command || !*command)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* The flag value 256 is used to suppress an engine reset.  This is
+     required to keep the connection running.  */
+  err = _gpgme_op_reset (ctx, ((synchronous&255) | 256));
+  if (err)
+    return err;
+
+  return _gpgme_engine_op_assuan_transact (ctx->engine, command,
+                                           data_cb, data_cb_value,
+                                           inq_cb, inq_cb_value,
+                                           status_cb, status_cb_value);
+}
+
+
+
+/* XXXX.  This is the asynchronous variant. */
+gpgme_error_t
+gpgme_op_assuan_transact_start (gpgme_ctx_t ctx, 
+				const char *command,
+				gpgme_assuan_data_cb_t data_cb,
+				void *data_cb_value,
+				gpgme_assuan_inquire_cb_t inq_cb,
+				void *inq_cb_value,
+				gpgme_assuan_status_cb_t status_cb,
+				void *status_cb_value)
+{
+  return opassuan_start (ctx, 0, command, 
+                         data_cb, data_cb_value,
+                         inq_cb, inq_cb_value,
+                         status_cb, status_cb_value);
+}
+
+
+/* XXXX.  This is the synchronous variant. */
+gpgme_error_t
+gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
+			      const char *command,
+			      gpgme_assuan_data_cb_t data_cb,
+			      void *data_cb_value,
+			      gpgme_assuan_inquire_cb_t inq_cb,
+			      void *inq_cb_value,
+			      gpgme_assuan_status_cb_t status_cb,
+			      void *status_cb_value,
+			      gpgme_error_t *op_err)
+{
+  gpgme_error_t err;
+
+  err = opassuan_start (ctx, 1, command, 
+                        data_cb, data_cb_value,
+                        inq_cb, inq_cb_value,
+                        status_cb, status_cb_value);
+  if (!err)
+    err = _gpgme_wait_one_ext (ctx, op_err);
+  return err;
+}
 
 
 
 
-/* This callback is used to return the status of the assuan command
-   back.  Note that this is different from the error code returned
-   from gpgme_op_assuan_transact because the later only reflects error
-   with the connection.  */
-static gpgme_error_t
-result_cb (void *priv, gpgme_error_t result)
+/* Compatibility code for old interface.  */
+
+/* Evil hack breaking abstractions for the purpose of localizing our
+   other hack.  This is copied from engine.c.  */
+struct engine
 {
-  gpgme_ctx_t ctx = (gpgme_ctx_t)priv;
-  gpgme_error_t err;
-  void *hook;
-  op_data_t opd;
+  struct engine_ops *ops;
+  void *engine;
+};
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_ASSUAN, &hook, -1, NULL);
-  opd = hook;
-  if (err)
-    return err;
-  if (!opd)
-    return gpg_error (GPG_ERR_INTERNAL);
+typedef struct
+{
+  struct _gpgme_op_assuan_result result;
+} *op_data_t;
 
-  opd->result.err = result;
-  return 0;
-}
-
+gpg_error_t _gpgme_engine_assuan_last_op_err (void *engine);
 
 gpgme_assuan_result_t
 gpgme_op_assuan_result (gpgme_ctx_t ctx)
@@ -74,85 +130,32 @@ gpgme_op_assuan_result (gpgme_ctx_t ctx)
   if (err || !opd)
     return NULL;
 
+  /* All of this is a hack for the old style interface.  The new style
+     interface returns op errors directly.  */
+  opd->result.err = _gpgme_engine_assuan_last_op_err (ctx->engine->engine);
+
   return &opd->result;
 }
 
 
-static gpgme_error_t
-opassuan_start (gpgme_ctx_t ctx, int synchronous,
-                const char *command,
-                gpgme_assuan_data_cb_t data_cb,
-                void *data_cb_value,
-                gpgme_assuan_inquire_cb_t inq_cb,
-                void *inq_cb_value,
-                gpgme_assuan_status_cb_t status_cb,
-                void *status_cb_value)
-{
-  gpgme_error_t err;
-  void *hook;
-  op_data_t opd;
-
-  if (!command || !*command)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  /* The flag value 256 is used to suppress an engine reset.  This is
-     required to keep the connection running.  */
-  err = _gpgme_op_reset (ctx, ((synchronous&255) | 256));
-  if (err)
-    return err;
-
-  err = _gpgme_op_data_lookup (ctx, OPDATA_ASSUAN, &hook, sizeof (*opd), NULL);
-  opd = hook;
-  if (err)
-    return err;
-  opd->result.err = gpg_error (GPG_ERR_UNFINISHED);
-
-  return _gpgme_engine_op_assuan_transact (ctx->engine, command,
-                                           result_cb, ctx,
-                                           data_cb, data_cb_value,
-                                           inq_cb, inq_cb_value,
-                                           status_cb, status_cb_value);
-}
-
-
-
-/* XXXX.  This is the asynchronous variant. */
-gpgme_error_t
-gpgme_op_assuan_transact_start (gpgme_ctx_t ctx, 
-                                const char *command,
-                                gpgme_assuan_data_cb_t data_cb,
-                                void *data_cb_value,
-                                gpgme_assuan_inquire_cb_t inq_cb,
-                                void *inq_cb_value,
-                                gpgme_assuan_status_cb_t status_cb,
-                                void *status_cb_value)
-{
-  return opassuan_start (ctx, 0, command, 
-                         data_cb, data_cb_value,
-                         inq_cb, inq_cb_value,
-                         status_cb, status_cb_value);
-}
-
-
-/* XXXX.  This is the synchronous variant. */
 gpgme_error_t
 gpgme_op_assuan_transact (gpgme_ctx_t ctx,
-                          const char *command,
-                          gpgme_assuan_data_cb_t data_cb,
-                          void *data_cb_value,
-                          gpgme_assuan_inquire_cb_t inq_cb,
-                          void *inq_cb_value,
-                          gpgme_assuan_status_cb_t status_cb,
-                          void *status_cb_value)
+			  const char *command,
+			  gpgme_assuan_data_cb_t data_cb,
+			  void *data_cb_value,
+			  gpgme_assuan_inquire_cb_t inq_cb,
+			  void *inq_cb_value,
+			  gpgme_assuan_status_cb_t status_cb,
+			  void *status_cb_value)
 {
+  gpgme_error_t op_err;
   gpgme_error_t err;
 
-  err = opassuan_start (ctx, 1, command, 
-                        data_cb, data_cb_value,
-                        inq_cb, inq_cb_value,
-                        status_cb, status_cb_value);
-  if (!err)
-    err = _gpgme_wait_one (ctx);
+  /* Users of the old-style session based interfaces need to look at
+     the result structure.  */
+  gpgme_op_assuan_transact_ext (ctx, command, data_cb, data_cb_value,
+				inq_cb, inq_cb_value,
+				status_cb, status_cb_value, &op_err);
+
   return err;
 }
-

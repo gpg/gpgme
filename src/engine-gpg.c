@@ -646,10 +646,10 @@ gpg_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
 static gpgme_error_t
 command_handler (void *opaque, int fd)
 {
+  struct io_cb_data *data = (struct io_cb_data *) opaque;
+  engine_gpg_t gpg = (engine_gpg_t) data->handler_value;
   gpgme_error_t err;
-  engine_gpg_t gpg = (engine_gpg_t) opaque;
   int processed = 0;
-
   assert (gpg->cmd.used);
   assert (gpg->cmd.code);
   assert (gpg->cmd.fnc);
@@ -1139,7 +1139,8 @@ read_status (engine_gpg_t gpg)
 static gpgme_error_t
 status_handler (void *opaque, int fd)
 {
-  engine_gpg_t gpg = opaque;
+  struct io_cb_data *data = (struct io_cb_data *) opaque;
+  engine_gpg_t gpg = (engine_gpg_t) data->handler_value;
   int err;
 
   assert (fd == gpg->status.fd[0]);
@@ -1246,7 +1247,8 @@ read_colon_line (engine_gpg_t gpg)
 static gpgme_error_t
 colon_line_handler (void *opaque, int fd)
 {
-  engine_gpg_t gpg = opaque;
+  struct io_cb_data *data = (struct io_cb_data *) opaque;
+  engine_gpg_t gpg = (engine_gpg_t) data->handler_value;
   gpgme_error_t rc = 0;
 
   assert (fd == gpg->colon.fd[0]);
@@ -2365,5 +2367,6 @@ struct engine_ops _gpgme_engine_ops_gpg =
     NULL,		/* conf_save */
     gpg_set_io_cbs,
     gpg_io_event,
-    gpg_cancel
+    gpg_cancel,
+    NULL		/* cancel_op */
   };

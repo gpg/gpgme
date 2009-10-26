@@ -75,8 +75,22 @@ void _gpgme_wait_user_remove_io_cb (void *tag);
 void _gpgme_wait_user_event_cb (void *data, gpgme_event_io_t type,
 				void *type_data);
 
-gpgme_error_t _gpgme_wait_one (gpgme_ctx_t ctx);
+gpgme_error_t _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked,
+				gpgme_error_t *err);
 
-gpgme_error_t _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked);
+
+/* Session based interfaces require to make a distinction between IPC
+   errors and operational errors.  To glue this into the old
+   interface, I/O handlers (esp. the status handler) are called with a
+   struct as the opaque value that contains the handlers opaque value
+   but also a field for the operational error to be returned.  */
+struct io_cb_data
+{
+  /* If this is the first field, the old internal code will still work.  */
+  void *handler_value;
+  
+  /* The I/O callback can pass an operational error here.  */
+  gpgme_error_t op_err;
+};
 
 #endif	/* WAIT_H */

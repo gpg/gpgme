@@ -180,6 +180,21 @@ g13_cancel (void *engine)
 }
 
 
+static gpgme_error_t
+g13_cancel_op (void *engine)
+{
+  engine_g13_t g13 = engine;
+
+  if (!g13)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (g13->status_cb.fd != -1)
+    _gpgme_io_close (g13->status_cb.fd);
+
+  return 0;
+}
+
+
 static void
 g13_release (void *engine)
 {
@@ -385,9 +400,6 @@ g13_set_locale (void *engine, int category, const char *value)
 }
 
 
-/* Forward declaration.  */
-static gpgme_status_code_t parse_status (const char *name);
-
 static gpgme_error_t
 g13_assuan_simple_command (assuan_context_t ctx, char *cmd,
 			     engine_status_handler_t status_fnc,
@@ -422,7 +434,6 @@ g13_assuan_simple_command (assuan_context_t ctx, char *cmd,
 	       && line[0] == 'S' && line[1] == ' ')
 	{
 	  char *rest;
-	  gpgme_status_code_t r;
 
 	  rest = strchr (line + 2, ' ');
 	  if (!rest)
@@ -430,12 +441,7 @@ g13_assuan_simple_command (assuan_context_t ctx, char *cmd,
 	  else
 	    *(rest++) = 0;
 
-	  r = parse_status (line + 2);
-
-	  if (r >= 0 && status_fnc)
-	    err = status_fnc (status_fnc_value, r, rest);
-	  else
-	    err = gpg_error (GPG_ERR_GENERAL);
+	  /* Nothing to do with status lines.  */
 	}
       else
 	err = gpg_error (GPG_ERR_GENERAL);
@@ -449,8 +455,9 @@ g13_assuan_simple_command (assuan_context_t ctx, char *cmd,
 static gpgme_error_t
 status_handler (void *opaque, int fd)
 {
+  struct io_cb_data *data = (struct io_cb_data *) opaque;
+  engine_g13_t g13 = (engine_g13_t) data->handler_value;
   gpgme_error_t err = 0;
-  engine_g13_t g13 = opaque;
   char *line;
   size_t linelen;
 
@@ -792,5 +799,6 @@ struct engine_ops _gpgme_engine_ops_g13 =
     NULL,		/* conf_save */
     g13_set_io_cbs,
     g13_io_event,
-    g13_cancel
+    g13_cancel,
+    g13_cancel_op,
   };

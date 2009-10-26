@@ -41,6 +41,7 @@ gpgme_error_t
 _gpgme_user_io_cb_handler (void *data, int fd)
 {
   gpgme_error_t err = 0;
+  gpgme_error_t op_err = 0;
   struct tag *tag = (struct tag *) data;
   gpgme_ctx_t ctx;
 
@@ -54,9 +55,9 @@ _gpgme_user_io_cb_handler (void *data, int fd)
   UNLOCK (ctx->lock);
 
   if (! err)
-    err = _gpgme_run_io_cb (&ctx->fdt.fds[tag->idx], 0);
-  if (err)
-    _gpgme_cancel_with_err (ctx, err);
+    err = _gpgme_run_io_cb (&ctx->fdt.fds[tag->idx], 0, &op_err);
+  if (err || op_err)
+    _gpgme_cancel_with_err (ctx, err, op_err);
   else
     {
       unsigned int i;
@@ -64,8 +65,15 @@ _gpgme_user_io_cb_handler (void *data, int fd)
       for (i = 0; i < ctx->fdt.size; i++)
 	if (ctx->fdt.fds[i].fd != -1)
 	  break;
+
       if (i == ctx->fdt.size)
-	_gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &err);
+	{
+	  struct gpgme_io_event_done_data done_data;
+
+	  done_data.err = 0;
+	  done_data.op_err = 0;
+	  _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &done_data);
+	}
     }
   return 0;
 }

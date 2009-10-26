@@ -46,7 +46,7 @@ static char *def_lc_messages;
 gpgme_error_t _gpgme_selftest = GPG_ERR_NOT_OPERATIONAL;
 
 /* Protects all reference counters in result structures.  All other
-   accesses to a key are read only.  */
+   accesses to a result structure are read only.  */
 DEFINE_STATIC_LOCK (result_ref_lock);
 
 
@@ -118,17 +118,32 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 
 
 gpgme_error_t
-_gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err)
+_gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err,
+			gpg_error_t op_err)
 {
   gpgme_error_t err;
-  TRACE_BEG1 (DEBUG_CTX, "_gpgme_cancel_with_err", ctx, "ctx_err=%i",
-	      ctx_err);
+  struct gpgme_io_event_done_data data;
 
-  err = _gpgme_engine_cancel (ctx->engine);
-  if (err)
-    return TRACE_ERR (err);
+  TRACE_BEG2 (DEBUG_CTX, "_gpgme_cancel_with_err", ctx, "ctx_err=%i, op_err=%i",
+	      ctx_err, op_err);
 
-  _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &ctx_err);
+  if (ctx_err)
+    {
+      err = _gpgme_engine_cancel (ctx->engine);
+      if (err)
+	return TRACE_ERR (err);
+    }
+  else
+    {
+      err = _gpgme_engine_cancel_op (ctx->engine);
+      if (err)
+	return TRACE_ERR (err);
+    }
+
+  data.err = ctx_err;
+  data.op_err = op_err;
+
+  _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &data);
 
   return TRACE_ERR (0);
 }
@@ -138,7 +153,13 @@ _gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err)
 gpgme_error_t
 gpgme_cancel (gpgme_ctx_t ctx)
 {
-  return _gpgme_cancel_with_err (ctx, gpg_error (GPG_ERR_CANCELED));
+  gpg_error_t err;
+
+  TRACE_BEG (DEBUG_CTX, "gpgme_cancel", ctx);
+
+  err = _gpgme_cancel_with_err (ctx, gpg_error (GPG_ERR_CANCELED), 0);
+
+  return TRACE_ERR (err);
 }
 
 
@@ -486,10 +507,12 @@ ssize_t
 gpgme_io_read (int fd, void *buffer, size_t count)
 {
   int ret;
+  TRACE_BEG2 (DEBUG_GLOBAL, "gpgme_io_read", fd,
+	      "buffer=%p, count=%u", buffer, count);
 
   ret = _gpgme_io_read (fd, buffer, count);
 
-  return ret;
+  return TRACE_SYSRES (ret);
 }
 
 
@@ -500,10 +523,12 @@ ssize_t
 gpgme_io_write (int fd, const void *buffer, size_t count)
 {
   int ret;
+  TRACE_BEG2 (DEBUG_GLOBAL, "gpgme_io_write", fd,
+	      "buffer=%p, count=%u", buffer, count);
 
   ret = _gpgme_io_write (fd, buffer, count);
 
-  return ret;
+  return TRACE_SYSRES (ret);
 }
 
 

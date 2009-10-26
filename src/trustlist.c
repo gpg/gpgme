@@ -220,7 +220,7 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
 
   if (!opd->trust_queue)
     {
-      err = _gpgme_wait_on_condition (ctx, &opd->trust_cond);
+      err = _gpgme_wait_on_condition (ctx, &opd->trust_cond, NULL);
       if (err)
 	return err;
       if (!opd->trust_cond)

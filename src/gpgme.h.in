@@ -960,6 +960,17 @@ typedef enum
   }
 gpgme_event_io_t;
 
+struct gpgme_io_event_done_data
+{
+  /* A fatal IPC error or an operational error in state-less
+     protocols.  */
+  gpgme_error_t err;
+
+  /* An operational errors in session-based protocols.  */
+  gpgme_error_t op_err;
+};
+typedef struct gpgme_io_event_done_data *gpgme_io_event_done_data_t;
+
 /* The type of a function that is called when a context finished an
    operation.  */
 typedef void (*gpgme_event_io_cb_t) (void *data, gpgme_event_io_t type,
@@ -989,6 +1000,9 @@ ssize_t gpgme_io_write (int fd, const void *buffer, size_t count);
 /* Process the pending operation and, if HANG is non-zero, wait for
    the pending operation to finish.  */
 gpgme_ctx_t gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang);
+
+gpgme_ctx_t gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
+			    gpgme_error_t *op_err, int hang);
 
 
 /* Functions to handle data objects.  */
@@ -1733,21 +1747,6 @@ typedef gpgme_error_t (*gpgme_assuan_inquire_cb_t)
 typedef gpgme_error_t (*gpgme_assuan_status_cb_t)
      (void *opaque, const char *status, const char *args);
 
-struct _gpgme_op_assuan_result
-{
-  /* The result of the actual assuan command.  An OK is indicated by a
-     value of 0 and an ERR by the respective error error value.  This
-     is required because assuan operations use a session-based
-     interface.  The error code of the GPGME function calls just
-     reflects transmission errors.  */
-  gpgme_error_t err;
-};
-typedef struct _gpgme_op_assuan_result *gpgme_assuan_result_t;
-
-
-/* Return the result of the last Assuan command. */
-gpgme_assuan_result_t gpgme_op_assuan_result (gpgme_ctx_t ctx);
-
 /* Send the Assuan COMMAND and return results via the callbacks.
    Asynchronous variant. */
 gpgme_error_t gpgme_op_assuan_transact_start (gpgme_ctx_t ctx, 
@@ -1761,35 +1760,56 @@ gpgme_error_t gpgme_op_assuan_transact_start (gpgme_ctx_t ctx,
 
 /* Send the Assuan COMMAND and return results via the callbacks.
    Synchronous variant. */
-gpgme_error_t gpgme_op_assuan_transact (gpgme_ctx_t ctx, 
-                                        const char *command,
-                                        gpgme_assuan_data_cb_t data_cb,
-                                        void *data_cb_value,
-                                        gpgme_assuan_inquire_cb_t inq_cb,
-                                        void *inq_cb_value,
-                                        gpgme_assuan_status_cb_t stat_cb,
-                                        void *stat_cb_value);
+gpgme_error_t gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx, 
+					    const char *command,
+					    gpgme_assuan_data_cb_t data_cb,
+					    void *data_cb_value,
+					    gpgme_assuan_inquire_cb_t inq_cb,
+					    void *inq_cb_value,
+					    gpgme_assuan_status_cb_t stat_cb,
+					    void *stat_cb_value,
+					    gpgme_error_t *op_err);
 
+/* Compat.  */
+struct _gpgme_op_assuan_result
+{
+  /* Deprecated.  Use the second value in a DONE event or the
+     synchronous variant gpgme_op_assuan_transact_ext.  */
+  gpgme_error_t err _GPGME_DEPRECATED_OUTSIDE_GPGME;
+};
+typedef struct _gpgme_op_assuan_result *gpgme_assuan_result_t;
+
+
+/* Return the result of the last Assuan command. */
+gpgme_assuan_result_t gpgme_op_assuan_result (gpgme_ctx_t ctx)
+  _GPGME_DEPRECATED;
+
+gpgme_error_t
+gpgme_op_assuan_transact (gpgme_ctx_t ctx,
+			      const char *command,
+			      gpgme_assuan_data_cb_t data_cb,
+			      void *data_cb_value,
+			      gpgme_assuan_inquire_cb_t inq_cb,
+			      void *inq_cb_value,
+			      gpgme_assuan_status_cb_t status_cb,
+			      void *status_cb_value) _GPGME_DEPRECATED;
 
 
 /* Crypto container support.  */
-struct _gpgme_op_g13_result
+struct _gpgme_op_vfs_mount_result
 {
-  /* The result of the actual assuan command.  An OK is indicated by a
-     value of 0 and an ERR by the respective error error value.  This
-     is required because assuan operations use a session-based
-     interface.  The error code of the GPGME function calls just
-     reflects transmission errors.  */
-  gpgme_error_t err;
+  char *mount_dir;
 };
-typedef struct _gpgme_op_g13_result *gpgme_g13_result_t;
+typedef struct _gpgme_op_vfs_mount_result *gpgme_vfs_mount_result_t;
+
+gpgme_vfs_mount_result_t gpgme_op_vfs_mount_result (gpgme_ctx_t ctx);
 
 /* The container is automatically unmounted when the context is reset
-   or destroyed.  This is a synchronous convenience interface, which
-   automatically returns an operation error if there is no
-   transmission error.  */
-gpgme_error_t gpgme_op_g13_mount (gpgme_ctx_t ctx, const char *container_file,
-				  const char *mount_dir, int flags);
+   or destroyed.  Transmission errors are returned directly,
+   operational errors are returned in OP_ERR.  */
+gpgme_error_t gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
+				  const char *mount_dir, int flags,
+				  gpgme_error_t *op_err);
 
 
 /* Interface to gpgconf(1).  */

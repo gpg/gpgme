@@ -101,6 +101,7 @@ int
 main (int argc, char **argv)
 {
   gpgme_error_t err;
+  gpgme_error_t op_err;
   gpgme_ctx_t ctx;
   const char *command;
 
@@ -125,18 +126,9 @@ main (int argc, char **argv)
   err = gpgme_set_protocol (ctx, GPGME_PROTOCOL_ASSUAN);
   fail_if_err (err);
 
-  err = gpgme_op_assuan_transact (ctx, command,
-                                  data_cb, NULL,
-                                  inq_cb, NULL,
-                                  status_cb, NULL);
-  fail_if_err (err);
-  err = gpgme_op_assuan_result (ctx)->err;
-  if (err)
-    fprintf (stderr, "assuan command `%s' failed: %s <%s> (%d)\n", 
-             command, gpg_strerror (err), gpg_strsource (err), err);
-  else
-    fprintf (stderr, "assuan command `%s' succeeded\n", command);
-
+  err = gpgme_op_assuan_transact_ext (ctx, command, data_cb, NULL,
+                                  inq_cb, NULL, status_cb, NULL, &op_err);
+  fail_if_err (err || op_err);
 
   gpgme_release (ctx);
 

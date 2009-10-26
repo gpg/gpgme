@@ -74,6 +74,7 @@ struct ctx_list_item
   gpgme_ctx_t ctx;
   /* The status is set when the ctx is moved to the done list.  */
   gpgme_error_t status;
+  gpgme_error_t op_err;
 };
 
 /* The active list contains all contexts that are in the global event
@@ -112,7 +113,7 @@ ctx_active (gpgme_ctx_t ctx)
 
 /* Enter the context CTX into the done list with status STATUS.  */
 static void
-ctx_done (gpgme_ctx_t ctx, gpgme_error_t status)
+ctx_done (gpgme_ctx_t ctx, gpgme_error_t status, gpgme_error_t op_err)
 {
   struct ctx_list_item *li;
 
@@ -131,6 +132,7 @@ ctx_done (gpgme_ctx_t ctx, gpgme_error_t status)
     ctx_active_list = li->next;
 
   li->status = status;
+  li->op_err = op_err;
 
   /* Add LI to done list.  */
   li->next = ctx_done_list;
@@ -147,7 +149,7 @@ ctx_done (gpgme_ctx_t ctx, gpgme_error_t status)
    If a matching context could be found, return it.  Return NULL if no
    context could be found.  */
 static gpgme_ctx_t
-ctx_wait (gpgme_ctx_t ctx, gpgme_error_t *status)
+ctx_wait (gpgme_ctx_t ctx, gpgme_error_t *status, gpgme_error_t *op_err)
 {
   struct ctx_list_item *li;
 
@@ -164,6 +166,8 @@ ctx_wait (gpgme_ctx_t ctx, gpgme_error_t *status)
       ctx = li->ctx;
       if (status)
 	*status = li->status;
+      if (op_err)
+	*op_err = li->op_err;
 
       /* Remove LI from done list.  */
       if (li->next)
@@ -203,15 +207,16 @@ _gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type,
 	if (err)
 	  /* An error occured.  Close all fds in this context, and
 	     send the error in a done event.  */
-	  _gpgme_cancel_with_err (ctx, err);
+	  _gpgme_cancel_with_err (ctx, err, 0);
       }
       break;
 
     case GPGME_EVENT_DONE:
       {
-	gpgme_error_t *errp = (gpgme_error_t *) type_data;
-	assert (errp);
-	ctx_done (ctx, *errp);
+	gpgme_io_event_done_data_t done_data =
+	  (gpgme_io_event_done_data_t) type_data;
+
+	ctx_done (ctx, done_data->err, done_data->op_err);
       }
       break;
 
@@ -246,7 +251,8 @@ _gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type,
    error occurs, NULL is returned and *STATUS is set to the error
    value.  */
 gpgme_ctx_t
-gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
+gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
+		gpgme_error_t *op_err, int hang)
 {
   do
     {
@@ -266,6 +272,8 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	  UNLOCK (ctx_list_lock);
 	  if (status)
 	    *status = gpg_error_from_errno (saved_errno);
+	  if (op_err)
+	    *op_err = 0;
 	  return NULL;
 	}
       fdt.size = i;
@@ -285,6 +293,8 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	  free (fdt.fds);
 	  if (status)
 	    *status = gpg_error_from_errno (saved_errno);
+	  if (op_err)
+	    *op_err = 0;
 	  return NULL;
 	}
 
@@ -294,6 +304,7 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	    {
 	      gpgme_ctx_t ictx;
 	      gpgme_error_t err = 0;
+	      gpgme_error_t local_op_err = 0;
 	      struct wait_item_s *item;
 	      
 	      assert (nr);
@@ -310,12 +321,12 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	      UNLOCK (ctx->lock);
 
 	      if (!err)
-		err = _gpgme_run_io_cb (&fdt.fds[i], 0);
-	      if (err)
+		err = _gpgme_run_io_cb (&fdt.fds[i], 0, &local_op_err);
+	      if (err || local_op_err)
 		{
 		  /* An error occured.  Close all fds in this context,
 		     and signal it.  */
-		  _gpgme_cancel_with_err (ictx, err);
+		  _gpgme_cancel_with_err (ictx, err, local_op_err);
 
 		  /* Break out of the loop, and retry the select()
 		     from scratch, because now all fds should be
@@ -338,8 +349,10 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	      break;
 	  if (i == actx->fdt.size)
 	    {
-	      gpgme_error_t err = 0;
-
+	      struct gpgme_io_event_done_data data;
+	      data.err = 0;
+	      data.op_err = 0;
+	      
 	      /* FIXME: This does not perform too well.  We have to
 		 release the lock because the I/O event handler
 		 acquires it to remove the context from the active
@@ -349,7 +362,7 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 		 contexts to be released and call the DONE events
 		 afterwards.  */
 	      UNLOCK (ctx_list_lock);
-	      _gpgme_engine_io_event (actx->engine, GPGME_EVENT_DONE, &err);
+	      _gpgme_engine_io_event (actx->engine, GPGME_EVENT_DONE, &data);
 	      LOCK (ctx_list_lock);
 	      goto retry;
 	    }
@@ -357,7 +370,7 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
       UNLOCK (ctx_list_lock);
 
       {
-	gpgme_ctx_t dctx = ctx_wait (ctx, status);
+	gpgme_ctx_t dctx = ctx_wait (ctx, status, op_err);
 
 	if (dctx)
 	  {
@@ -369,10 +382,19 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 	    ctx = NULL;
 	    if (status)
 	      *status = 0;
+	    if (op_err)
+	      *op_err = 0;
 	  }
       }
     }
   while (hang);
 
   return ctx;
+}
+
+
+gpgme_ctx_t
+gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
+{
+  return gpgme_wait_ext (ctx, status, NULL, hang);
 }
