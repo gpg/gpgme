@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include "debug.h"
 #include "gpgme.h"
 #include "context.h"
 #include "ops.h"
@@ -93,7 +94,11 @@ gpgme_error_t
 gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 		       int allow_secret)
 {
-  return delete_start (ctx, 0, key, allow_secret);
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete", ctx,
+	      "key=%p (%s), allow_secret=%i", key,
+	      (key->subkeys && !key->subkeys->fpr) ? 
+	      key->subkeys->fpr : "invalid", allow_secret);
+  return TRACE_ERR (delete_start (ctx, 0, key, allow_secret));
 }
 
 
@@ -102,7 +107,13 @@ gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 gpgme_error_t
 gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key, int allow_secret)
 {
-  gpgme_error_t err = delete_start (ctx, 1, key, allow_secret);
+  gpgme_error_t err;
+
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete", ctx,
+	      "key=%p (%s), allow_secret=%i", key,
+	      (key->subkeys && !key->subkeys->fpr) ? 
+	      key->subkeys->fpr : "invalid", allow_secret);
+  err = delete_start (ctx, 1, key, allow_secret);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

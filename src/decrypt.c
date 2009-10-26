@@ -26,6 +26,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "debug.h"
 #include "gpgme.h"
 #include "util.h"
 #include "context.h"
@@ -74,11 +75,45 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_decrypt_result", ctx);
+
   err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
-    return NULL;
+    {
+      TRACE_SUC0 ("result=(null)");
+      return NULL;
+    }
 
+  if (_gpgme_debug_trace ())
+    {
+      gpgme_recipient_t rcp;
+      int signatures = 0;
+
+      if (opd->result.unsupported_algorithm)
+	{
+	  TRACE_LOG1 ("result: unsupported_algorithm: %s",
+		      opd->result.unsupported_algorithm);
+	}
+      if (opd->result.wrong_key_usage)
+	{
+	  TRACE_LOG ("result: wrong key usage");
+	}
+      rcp = opd->result.recipients;
+      while (rcp)
+	{
+	  TRACE_LOG3 ("result: recipient: keyid=%s, pubkey_algo=%i, "
+		      "status=%s", rcp->keyid, rcp->pubkey_algo,
+		      gpg_strerror (rcp->status));
+	  rcp = rcp->next;
+	}
+      if (opd->result.file_name)
+	{
+	  TRACE_LOG1 ("result: original file name: %s", opd->result.file_name);
+	}
+    }
+
+  TRACE_SUC1 ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -188,8 +223,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 	    while (*args == ' ')
 	      args++;
 
-	    if (gpg_err_code (_gpgme_map_gnupg_error (args))
-                == GPG_ERR_UNSUPPORTED_ALGORITHM)
+	    if (gpg_err_code (atoi (args)) == GPG_ERR_UNSUPPORTED_ALGORITHM)
 	      {
 		char *end;
 
@@ -216,8 +250,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 	    while (*args == ' ')
 	      args++;
 
-	    err = _gpgme_map_gnupg_error (args);
-	    if (gpg_err_code (err) == GPG_ERR_WRONG_KEY_USAGE)
+	    if (gpg_err_code (atoi (args)) == GPG_ERR_WRONG_KEY_USAGE)
 	      opd->result.wrong_key_usage = 1;
 	  }
       }
@@ -333,7 +366,9 @@ gpgme_error_t
 gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
 			gpgme_data_t plain)
 {
-  return decrypt_start (ctx, 0, cipher, plain);
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_start", ctx,
+	      "cipher=%p, plain=%p", cipher, plain);
+  return TRACE_ERR (decrypt_start (ctx, 0, cipher, plain));
 }
 
 
@@ -342,8 +377,12 @@ gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
 gpgme_error_t
 gpgme_op_decrypt (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
 {
-  gpgme_error_t err = decrypt_start (ctx, 1, cipher, plain);
+  gpgme_error_t err;
+
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_start", ctx,
+	      "cipher=%p, plain=%p", cipher, plain);
+  err = decrypt_start (ctx, 1, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  return err;
+  return TRACE_ERR (err);
 }

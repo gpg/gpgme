@@ -175,7 +175,7 @@ gpgme_data_new (gpgme_data_t *r_dh)
   if (err)
     return TRACE_ERR (err);
 
-  return TRACE_SUC1 ("r_dh=%p", *r_dh);
+  return TRACE_SUC1 ("dh=%p", *r_dh);
 }
 
 

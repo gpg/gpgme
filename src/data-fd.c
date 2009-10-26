@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+#include "debug.h"
 #include "data.h"
 
 
@@ -67,12 +68,15 @@ static struct _gpgme_data_cbs fd_cbs =
 
 
 gpgme_error_t
-gpgme_data_new_from_fd (gpgme_data_t *dh, int fd)
+gpgme_data_new_from_fd (gpgme_data_t *r_dh, int fd)
 {
-  gpgme_error_t err = _gpgme_data_new (dh, &fd_cbs);
-  if (err)
-    return err;
+  gpgme_error_t err;
+  TRACE_BEG1 (DEBUG_DATA, "gpgme_data_new_from_fd", r_dh, "fd=0x%x", fd);
 
-  (*dh)->data.fd = fd;
-  return 0;
+  err = _gpgme_data_new (r_dh, &fd_cbs);
+  if (err)
+    return TRACE_ERR (err);
+
+  (*r_dh)->data.fd = fd;
+  return TRACE_SUC1 ("dh=%p", *r_dh);
 }

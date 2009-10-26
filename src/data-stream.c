@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 
+#include "debug.h"
 #include "data.h"
 
 
@@ -90,12 +91,16 @@ static struct _gpgme_data_cbs stream_cbs =
 
 
 gpgme_error_t
-gpgme_data_new_from_stream (gpgme_data_t *dh, FILE *stream)
+gpgme_data_new_from_stream (gpgme_data_t *r_dh, FILE *stream)
 {
-  gpgme_error_t err = _gpgme_data_new (dh, &stream_cbs);
-  if (err)
-    return err;
+  gpgme_error_t err;
+  TRACE_BEG1 (DEBUG_DATA, "gpgme_data_new_from_stream", r_dh, "stream=%p",
+	      stream);
 
-  (*dh)->data.stream = stream;
-  return 0;
+  err = _gpgme_data_new (r_dh, &stream_cbs);
+  if (err)
+    return TRACE_ERR (err);
+
+  (*r_dh)->data.stream = stream;
+  return TRACE_SUC1 ("dh=%p", *r_dh);
 }

@@ -399,7 +399,7 @@ gpgme_op_sign (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_sign_start", ctx,
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_sign", ctx,
 	      "plain=%p, sig=%p, mode=%i", plain, sig, mode);
   err = sign_start (ctx, 1, plain, sig, mode);
   if (!err)

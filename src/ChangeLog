@@ -1,3 +1,21 @@
+2009-10-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* debug.h (DEBUG_GLOBAL): New debug level.
+	* conversion.c (gnupg_errors, _gpgme_map_gnupg_error): Removed.
+	* data-user.c (gpgme_data_new_from_cbs): Add debug output.
+	* data-fd.c (gpgme_data_new_from_fd): Likewise.
+	* data-stream.c (gpgme_data_new_from_stream): Likewise.
+	* decrypt.c (gpgme_op_decrypt_result, gpgme_op_decrypt_start)
+	(gpgme_op_decrypt): Likewise.
+	* delete.c (gpgme_op_delete_start, gpgme_op_delete): Likewise.
+	* decrypt-verify.c (gpgme_op_decrypt_verify_start)
+	(gpgme_op_decrypt_verify): Likewise.
+	* sign.c (gpgme_op_sign_result): Fix debug message.
+	* data-mem.c (gpgme_data_new): Improve debug output.
+	* verify.c (parse_trust): Use atoi instead of
+	_gpgme_map_gnupg_error.
+	* decrypt.c (_gpgme_decrypt_status_handler): Likewise.
+
 2009-10-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am: Remove @NETLIBS@ from LIBADDs.

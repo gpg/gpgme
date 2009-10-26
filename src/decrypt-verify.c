@@ -23,6 +23,7 @@
 #include <config.h>
 #endif
 
+#include "debug.h"
 #include "gpgme.h"
 #include "ops.h"
 
@@ -86,7 +87,9 @@ gpgme_error_t
 gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
 			       gpgme_data_t plain)
 {
-  return decrypt_verify_start (ctx, 0, cipher, plain);
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_verify_start", ctx,
+	      "cipher=%p, plain=%p", cipher, plain);
+  return TRACE_ERR (decrypt_verify_start (ctx, 0, cipher, plain));
 }
 
 
@@ -96,8 +99,12 @@ gpgme_error_t
 gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher,
 			 gpgme_data_t plain)
 {
-  gpgme_error_t err = decrypt_verify_start (ctx, 1, cipher, plain);
+  gpgme_error_t err;
+
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_verify", ctx,
+	      "cipher=%p, plain=%p", cipher, plain);
+  err = decrypt_verify_start (ctx, 1, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  return err;
+  return TRACE_ERR (err);
 }

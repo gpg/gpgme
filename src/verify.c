@@ -545,7 +545,7 @@ parse_trust (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
   sig->chain_model = 0;
   if (*args)
     {
-      sig->validity_reason = _gpgme_map_gnupg_error (args);
+      sig->validity_reason = atoi (args);
       while (*args && *args != ' ')
         args++;
       if (*args)
@@ -585,7 +585,7 @@ parse_error (gpgme_signature_t sig, char *args, int set_status)
   else
     return gpg_error (GPG_ERR_INV_ENGINE);
 
-  err = _gpgme_map_gnupg_error (which);
+  err = atoi (which);
 
   if (!strcmp (where, "proc_pkt.plaintext")
       && gpg_err_code (err) == GPG_ERR_BAD_DATA)

@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <errno.h>
 
+#include "debug.h"
 #include "data.h"
 
 
@@ -86,13 +87,16 @@ static struct _gpgme_data_cbs user_cbs =
 
 
 gpgme_error_t
-gpgme_data_new_from_cbs (gpgme_data_t *dh, gpgme_data_cbs_t cbs, void *handle)
+gpgme_data_new_from_cbs (gpgme_data_t *r_dh, gpgme_data_cbs_t cbs, void *handle)
 {
-  gpgme_error_t err = _gpgme_data_new (dh, &user_cbs);
-  if (err)
-    return err;
+  gpgme_error_t err;
+  TRACE_BEG1 (DEBUG_DATA, "gpgme_data_new_from_cbs", r_dh, "handle=%p", handle);
 
-  (*dh)->data.user.cbs = cbs;
-  (*dh)->data.user.handle = handle;
-  return 0;
+  err = _gpgme_data_new (r_dh, &user_cbs);
+  if (err)
+    return TRACE_ERR (err);
+
+  (*r_dh)->data.user.cbs = cbs;
+  (*r_dh)->data.user.handle = handle;
+  return TRACE_SUC1 ("dh=%p", *r_dh);
 }

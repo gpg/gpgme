@@ -34,11 +34,12 @@
 /* The debug levels.  */
 
 #define DEBUG_INIT	1
-#define DEBUG_CTX	2
-#define DEBUG_ENGINE	3
-#define DEBUG_DATA	4
-#define DEBUG_ASSUAN	5
-#define DEBUG_SYSIO	6
+#define DEBUG_GLOBAL    2
+#define DEBUG_CTX	3
+#define DEBUG_ENGINE	4
+#define DEBUG_DATA	5
+#define DEBUG_ASSUAN	6
+#define DEBUG_SYSIO	7
 
 
 /* Remove path components from filenames (i.e. __FILE__) for cleaner
