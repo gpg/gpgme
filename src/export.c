@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "gpgme.h"
+#include "debug.h"
 #include "context.h"
 #include "ops.h"
 
@@ -74,7 +75,9 @@ gpgme_error_t
 gpgme_op_export_start (gpgme_ctx_t ctx, const char *pattern,
 		       gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
-  return export_start (ctx, 0, pattern, mode, keydata);
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_export_start", ctx,
+	      "pattern=%s, mode=0x%x, keydata=%p", pattern, mode, keydata);
+  return TRACE_ERR (export_start (ctx, 0, pattern, mode, keydata));
 }
 
 
@@ -83,7 +86,12 @@ gpgme_error_t
 gpgme_op_export (gpgme_ctx_t ctx, const char *pattern,
 		 gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
-  gpgme_error_t err = export_start (ctx, 1, pattern, mode, keydata);
+  gpgme_error_t err;
+
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_export", ctx,
+	      "pattern=%s, mode=0x%x, keydata=%p", pattern, mode, keydata);
+
+  err = export_start (ctx, 1, pattern, mode, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;
@@ -126,7 +134,21 @@ gpgme_error_t
 gpgme_op_export_ext_start (gpgme_ctx_t ctx, const char *pattern[],
 			   gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
-  return export_ext_start (ctx, 0, pattern, mode, keydata);
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_ext_start", ctx,
+	      "mode=0x%x, keydata=%p", mode, keydata);
+
+  if (_gpgme_debug_trace () && pattern)
+    {
+      int i = 0;
+
+      while (pattern[i])
+	{
+	  TRACE_LOG2 ("pattern[%i] = %s", i, pattern[i]);
+	  i++;
+	}
+    }
+
+  return TRACE_ERR (export_ext_start (ctx, 0, pattern, mode, keydata));
 }
 
 
@@ -135,10 +157,26 @@ gpgme_error_t
 gpgme_op_export_ext (gpgme_ctx_t ctx, const char *pattern[],
 		     gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
-  gpgme_error_t err = export_ext_start (ctx, 1, pattern, mode, keydata);
+  gpgme_error_t err;
+
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_ext_start", ctx,
+	      "mode=0x%x, keydata=%p", mode, keydata);
+
+  if (_gpgme_debug_trace () && pattern)
+    {
+      int i = 0;
+
+      while (pattern[i])
+	{
+	  TRACE_LOG2 ("pattern[%i] = %s", i, pattern[i]);
+	  i++;
+	}
+    }
+
+  err = export_ext_start (ctx, 1, pattern, mode, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  return err;
+  return TRACE_ERR (err);
 }
 
 
@@ -206,7 +244,23 @@ gpgme_op_export_keys_start (gpgme_ctx_t ctx,
                             gpgme_export_mode_t mode,
                             gpgme_data_t keydata)
 {
-  return export_keys_start (ctx, 0, keys, mode, keydata);
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_keys_start", ctx,
+	      "mode=0x%x, keydata=%p", mode, keydata);
+  
+  if (_gpgme_debug_trace () && keys)
+    {
+      int i = 0;
+
+      while (keys[i])
+	{
+	  TRACE_LOG3 ("keys[%i] = %p (%s)", i,keys[i],
+		      (keys[i]->subkeys && !keys[i]->subkeys->fpr) ? 
+		      keys[i]->subkeys->fpr : "invalid");
+	  i++;
+	}
+    }
+
+  return TRACE_ERR (export_keys_start (ctx, 0, keys, mode, keydata));
 }
 
 gpgme_error_t
@@ -215,7 +269,25 @@ gpgme_op_export_keys (gpgme_ctx_t ctx,
                       gpgme_export_mode_t mode,
                       gpgme_data_t keydata)
 {
-  gpgme_error_t err = export_keys_start (ctx, 1, keys, mode, keydata);
+  gpgme_error_t err;
+
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_keys", ctx,
+	      "mode=0x%x, keydata=%p", mode, keydata);
+  
+  if (_gpgme_debug_trace () && keys)
+    {
+      int i = 0;
+
+      while (keys[i])
+	{
+	  TRACE_LOG3 ("keys[%i] = %p (%s)", i,keys[i],
+		      (keys[i]->subkeys && !keys[i]->subkeys->fpr) ? 
+		      keys[i]->subkeys->fpr : "invalid");
+	  i++;
+	}
+    }
+
+  err = export_keys_start (ctx, 1, keys, mode, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

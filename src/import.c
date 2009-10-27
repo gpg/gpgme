@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "gpgme.h"
+#include "debug.h"
 #include "context.h"
 #include "ops.h"
 
@@ -65,11 +66,48 @@ gpgme_op_import_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_import_result", ctx);
+
   err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
-    return NULL;
+    {
+      TRACE_SUC0 ("result=(null)");
+      return NULL;
+    }
 
+  
+  if (_gpgme_debug_trace ())
+    {
+      gpgme_import_status_t impstat;
+      int i;
+
+      TRACE_LOG5 ("%i considered, %i no UID, %i imported, %i imported RSA, "
+		  "%i unchanged", opd->result.considered,
+		  opd->result.no_user_id, opd->result.imported,
+		  opd->result.imported_rsa, opd->result.unchanged);
+      TRACE_LOG4 ("%i new UIDs, %i new sub keys, %i new signatures, "
+		  "%i new revocations", opd->result.new_user_ids,
+		  opd->result.new_sub_keys, opd->result.new_signatures,
+		  opd->result.new_revocations);
+      TRACE_LOG3 ("%i secret keys, %i imported, %i unchanged",
+		  opd->result.secret_read, opd->result.secret_imported,
+		  opd->result.secret_unchanged);
+      TRACE_LOG2 ("%i skipped new keys, %i not imported",
+		  opd->result.skipped_new_keys, opd->result.not_imported);
+
+      impstat = opd->result.imports;
+      i = 0;
+      while (impstat)
+	{
+	  TRACE_LOG4 ("import[%i] for %s = 0x%x (%s)",
+		      i, impstat->fpr, impstat->status, impstat->result);
+	  impstat = impstat->next;
+	  i++;
+	}
+    }
+
+  TRACE_SUC1 ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -245,7 +283,10 @@ _gpgme_op_import_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t keydata)
 gpgme_error_t
 gpgme_op_import_start (gpgme_ctx_t ctx, gpgme_data_t keydata)
 {
-  return _gpgme_op_import_start (ctx, 0, keydata);
+  TRACE_BEG1 (DEBUG_CTX, "gpgme_op_import_start", ctx,
+	      "keydata=%p", keydata);
+
+  return TRACE_ERR (_gpgme_op_import_start (ctx, 0, keydata));
 }
 
 
@@ -253,10 +294,15 @@ gpgme_op_import_start (gpgme_ctx_t ctx, gpgme_data_t keydata)
 gpgme_error_t
 gpgme_op_import (gpgme_ctx_t ctx, gpgme_data_t keydata)
 {
-  gpgme_error_t err = _gpgme_op_import_start (ctx, 1, keydata);
+  gpgme_error_t err;
+
+  TRACE_BEG1 (DEBUG_CTX, "gpgme_op_import", ctx,
+	      "keydata=%p", keydata);
+
+  err = _gpgme_op_import_start (ctx, 1, keydata);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  return err;
+  return TRACE_ERR (err);
 }
 
 
@@ -312,7 +358,21 @@ _gpgme_op_import_keys_start (gpgme_ctx_t ctx, int synchronous,
 gpgme_error_t
 gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t *keys)
 {
-  return _gpgme_op_import_keys_start (ctx, 0, keys);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_import_keys_start", ctx);
+  if (_gpgme_debug_trace () && keys)
+    {
+      int i = 0;
+
+      while (keys[i])
+	{
+	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
+		      (keys[i]->subkeys && !keys[i]->subkeys->fpr) ? 
+		      keys[i]->subkeys->fpr : "invalid");
+	  i++;
+	}
+    }
+
+  return TRACE_ERR (_gpgme_op_import_keys_start (ctx, 0, keys));
 }
 
 
@@ -330,10 +390,26 @@ gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t *keys)
 gpgme_error_t
 gpgme_op_import_keys (gpgme_ctx_t ctx, gpgme_key_t *keys)
 {
-  gpgme_error_t err = _gpgme_op_import_keys_start (ctx, 1, keys);
+  gpgme_error_t err;
+
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_import_keys", ctx);
+  if (_gpgme_debug_trace () && keys)
+    {
+      int i = 0;
+
+      while (keys[i])
+	{
+	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
+		      (keys[i]->subkeys && !keys[i]->subkeys->fpr) ? 
+		      keys[i]->subkeys->fpr : "invalid");
+	  i++;
+	}
+    }
+
+  err = _gpgme_op_import_keys_start (ctx, 1, keys);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  return err;
+  return TRACE_ERR (err);
 }
 
 

@@ -117,6 +117,25 @@ void _gpgme_debug_buffer (int lvl, const char *const fmt,
   _gpgme_debug (_gpgme_trace_level, "%s (%s=%p): enter: " fmt "\n", \
 		_gpgme_trace_func, _gpgme_trace_tagname,	    \
 		_gpgme_trace_tag, arg1, arg2, arg3, arg4), 0
+#define TRACE_BEG5(lvl, name, tag, fmt, arg1, arg2, arg3, arg4, arg5) \
+  _TRACE (lvl, name, tag);					    \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=%p): enter: " fmt "\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,	    \
+		_gpgme_trace_tag, arg1, arg2, arg3, arg4, arg5), 0
+#define TRACE_BEG7(lvl, name, tag, fmt, arg1, arg2, arg3, arg4,	    \
+		   arg5, arg6, arg7)				    \
+  _TRACE (lvl, name, tag);					    \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=%p): enter: " fmt "\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,	    \
+		_gpgme_trace_tag, arg1, arg2, arg3, arg4, arg5,	    \
+		arg6, arg7), 0
+#define TRACE_BEG8(lvl, name, tag, fmt, arg1, arg2, arg3, arg4,	    \
+		   arg5, arg6, arg7, arg8)			    \
+  _TRACE (lvl, name, tag);					    \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=%p): enter: " fmt "\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,	    \
+		_gpgme_trace_tag, arg1, arg2, arg3, arg4, arg5,	    \
+		arg6, arg7, arg8), 0
 
 #define TRACE(lvl, name, tag)						\
   _gpgme_debug (lvl, "%s (%s=%p): call\n",				\
@@ -199,6 +218,10 @@ void _gpgme_debug_buffer (int lvl, const char *const fmt,
   _gpgme_debug (_gpgme_trace_level, "%s (%s=%p): check: " fmt "\n", \
 		_gpgme_trace_func, _gpgme_trace_tagname,	    \
 		_gpgme_trace_tag, arg1, arg2, arg3, arg4), 0
+#define TRACE_LOG5(fmt, arg1, arg2, arg3, arg4, arg5)		    \
+  _gpgme_debug (_gpgme_trace_level, "%s (%s=%p): check: " fmt "\n", \
+		_gpgme_trace_func, _gpgme_trace_tagname,	    \
+		_gpgme_trace_tag, arg1, arg2, arg3, arg4, arg5), 0
 #define TRACE_LOG6(fmt, arg1, arg2, arg3, arg4, arg5, arg6)	    \
   _gpgme_debug (_gpgme_trace_level, "%s (%s=%p): check: " fmt "\n", \
 		_gpgme_trace_func, _gpgme_trace_tagname,	    \

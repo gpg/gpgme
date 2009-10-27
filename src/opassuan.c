@@ -21,10 +21,13 @@
 #include <config.h>
 #endif
 
+/* Suppress warning for accessing deprecated member "err".  */
+#define _GPGME_IN_GPGME 1
 #include "gpgme.h"
 #include "context.h"
 #include "ops.h"
 #include "util.h"
+#include "debug.h"
 
 static gpgme_error_t
 opassuan_start (gpgme_ctx_t ctx, int synchronous,
@@ -66,10 +69,15 @@ gpgme_op_assuan_transact_start (gpgme_ctx_t ctx,
 				gpgme_assuan_status_cb_t status_cb,
 				void *status_cb_value)
 {
-  return opassuan_start (ctx, 0, command, 
-                         data_cb, data_cb_value,
-                         inq_cb, inq_cb_value,
-                         status_cb, status_cb_value);
+  TRACE_BEG7 (DEBUG_CTX, "gpgme_op_assuan_transact_start", ctx,
+	      "command=%s, data_cb=%p/%p, inq_cb=%p/%p, status_cb=%p/%p",
+	      command, data_cb, data_cb_value, inq_cb, inq_cb_value,
+	      status_cb, status_cb_value);
+
+  return TRACE_ERR (opassuan_start (ctx, 0, command, 
+				    data_cb, data_cb_value,
+				    inq_cb, inq_cb_value,
+				    status_cb, status_cb_value));
 }
 
 
@@ -83,17 +91,37 @@ gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
 			      void *inq_cb_value,
 			      gpgme_assuan_status_cb_t status_cb,
 			      void *status_cb_value,
-			      gpgme_error_t *op_err)
+			      gpgme_error_t *op_err_p)
 {
   gpgme_error_t err;
+  gpgme_error_t op_err;
+
+  TRACE_BEG8 (DEBUG_CTX, "gpgme_op_assuan_transact", ctx,
+	      "command=%s, data_cb=%p/%p, inq_cb=%p/%p, status_cb=%p/%p, "
+	      "op_err=%p",
+	      command, data_cb, data_cb_value, inq_cb, inq_cb_value,
+	      status_cb, status_cb_value, op_err_p);
 
   err = opassuan_start (ctx, 1, command, 
                         data_cb, data_cb_value,
                         inq_cb, inq_cb_value,
                         status_cb, status_cb_value);
   if (!err)
-    err = _gpgme_wait_one_ext (ctx, op_err);
-  return err;
+    err = _gpgme_wait_one_ext (ctx, &op_err);
+
+  if (op_err)
+    {
+      TRACE_LOG2 ("op_err = %s <%s>", gpgme_strerror (op_err),
+		  gpgme_strsource (op_err));
+      if (! op_err_p)
+	{
+	  TRACE_LOG ("warning: operational error ignored by user");
+	}
+    }
+  if (op_err_p)
+    *op_err_p = op_err;
+
+  return TRACE_ERR (err);
 }
 
 
@@ -123,17 +151,32 @@ gpgme_op_assuan_result (gpgme_ctx_t ctx)
   void *hook;
   op_data_t opd;
 
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_assuan_result", ctx);
+
   err = _gpgme_op_data_lookup (ctx, OPDATA_ASSUAN, &hook, -1, NULL);
   opd = hook;
   /* Check in case this function is used without having run a command
      before.  */
   if (err || !opd)
-    return NULL;
+    {
+      TRACE_SUC0 ("result=(null)");
+      return NULL;
+    }
 
   /* All of this is a hack for the old style interface.  The new style
      interface returns op errors directly.  */
   opd->result.err = _gpgme_engine_assuan_last_op_err (ctx->engine->engine);
+  if (opd->result.err)
+    {
+      TRACE_LOG1 ("err = %s", gpg_strerror (0));
+    }
+  else
+    {
+      TRACE_LOG2 ("err = %s <%s>", gpg_strerror (opd->result.err),
+		  gpg_strsource (opd->result.err));
+    }
 
+  TRACE_SUC1 ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -148,14 +191,15 @@ gpgme_op_assuan_transact (gpgme_ctx_t ctx,
 			  gpgme_assuan_status_cb_t status_cb,
 			  void *status_cb_value)
 {
-  gpgme_error_t op_err;
   gpgme_error_t err;
+
+  TRACE (DEBUG_CTX, "gpgme_op_assuan_transact", ctx);
 
   /* Users of the old-style session based interfaces need to look at
      the result structure.  */
   gpgme_op_assuan_transact_ext (ctx, command, data_cb, data_cb_value,
 				inq_cb, inq_cb_value,
-				status_cb, status_cb_value, &op_err);
+				status_cb, status_cb_value, NULL);
 
   return err;
 }

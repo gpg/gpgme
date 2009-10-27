@@ -24,6 +24,7 @@
 #endif
 
 #include "gpgme.h"
+#include "debug.h"
 #include "context.h"
 #include "ops.h"
 
@@ -91,7 +92,23 @@ gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
 			     gpgme_encrypt_flags_t flags,
 			     gpgme_data_t plain, gpgme_data_t cipher)
 {
-  return encrypt_sign_start (ctx, 0, recp, flags, plain, cipher);
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_encrypt_sign_start", ctx,
+	      "flags=0x%x, plain=%p, cipher=%p", flags, plain, cipher);
+  
+  if (_gpgme_debug_trace () && recp)
+    {
+      int i = 0;
+
+      while (recp[i])
+	{
+	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i,recp[i],
+		      (recp[i]->subkeys && !recp[i]->subkeys->fpr) ? 
+		      recp[i]->subkeys->fpr : "invalid");
+	  i++;
+	}
+    }
+
+  return TRACE_ERR (encrypt_sign_start (ctx, 0, recp, flags, plain, cipher));
 }
 
 
@@ -103,8 +120,26 @@ gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_key_t recp[],
 		       gpgme_encrypt_flags_t flags,
 		       gpgme_data_t plain, gpgme_data_t cipher)
 {
-  gpgme_error_t err = encrypt_sign_start (ctx, 1, recp, flags, plain, cipher);
+  gpgme_error_t err;
+
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_encrypt_sign", ctx,
+	      "flags=0x%x, plain=%p, cipher=%p", flags, plain, cipher);
+  
+  if (_gpgme_debug_trace () && recp)
+    {
+      int i = 0;
+
+      while (recp[i])
+	{
+	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i,recp[i],
+		      (recp[i]->subkeys && !recp[i]->subkeys->fpr) ? 
+		      recp[i]->subkeys->fpr : "invalid");
+	  i++;
+	}
+    }
+
+  err = encrypt_sign_start (ctx, 1, recp, flags, plain, cipher);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  return err;
+  return TRACE_ERR (err);
 }

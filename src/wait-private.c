@@ -78,6 +78,9 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
   gpgme_error_t err = 0;
   int hang = 1;
 
+  if (op_err_p)
+    *op_err_p = 0;
+
   do
     {
       int nr = _gpgme_io_select (ctx->fdt.fds, ctx->fdt.size, 0);
@@ -90,8 +93,6 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
 	  err = gpg_error_from_errno (errno);
           _gpgme_cancel_with_err (ctx, err, 0);
 
-	  if (op_err_p)
-	    *op_err_p = 0;
 	  return err;
 	}
       
@@ -118,8 +119,6 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
 		     and signal it.  */
 		  _gpgme_cancel_with_err (ctx, err, 0);
 
-		  if (op_err_p)
-		    *op_err_p = 0;
 		  return err;
 		}
 	      else if (op_err)
@@ -157,8 +156,6 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
     }
   while (hang);
 
-  if (op_err_p)
-    *op_err_p = 0;
   return 0;
 }
 

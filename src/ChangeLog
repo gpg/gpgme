@@ -1,3 +1,32 @@
+2009-10-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* edit.c (gpgme_op_edit_start, gpgme_op_edit)
+	(gpgme_op_card_edit_start, gpgme_op_card_edit): Add debug output.
+	* encrypt-sign.c (gpgme_op_encrypt_sign_start)
+	(gpgme_op_encrypt_sign): Likewise.
+	* encrypt.c (gpgme_op_encrypt_start, gpgme_op_encrypt)
+	(gpgme_op_encrypt_result): Likewise.
+	* export.c (gpgme_op_export_start, gpgme_op_export)
+	(gpgme_op_export_ext_start, gpgme_op_export_ext)
+	(gpgme_op_export_keys_start, gpgme_op_export_keys): Likewise.
+	* genkey.c (gpgme_op_genkey_start, gpgme_op_genkey)
+	(gpgme_op_genkey_result): Likewise.
+	* getauditlog.c (gpgme_op_getauditlog_start)
+	(gpgme_op_getauditlog): Likewise.
+	* import.c (gpgme_op_import_result, gpgme_op_import_start)
+	(gpgme_op_import): Likewise.
+	* keylist.c (gpgme_op_keylist_result, keylist_colon_handler)
+	(gpgme_op_keylist_start, gpgme_op_keylist_ext_start)
+	(gpgme_op_keylist_next, gpgme_op_keylist_end, gpgme_get_key): Likewise.
+	* opassuan.c (gpgme_op_assuan_transact_start)
+	(gpgme_op_assuan_transact_ext, gpgme_op_assuan_result)
+	(gpgme_op_assuan_transact): Likewise.
+	* signers.c (gpgme_signers_add, gpgme_signers_clear): Likewise.
+	* trustlist.c (gpgme_op_trustlist_start)
+	(gpgme_op_trustlist_next, gpgme_op_trustlist_end): Likewise.
+	* verify.c (gpgme_op_verify_start, gpgme_op_verify)
+	(gpgme_op_verify_result): Likewise.
+
 2009-10-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h.in (struct gpgme_io_event_done_data)

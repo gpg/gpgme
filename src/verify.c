@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "gpgme.h"
+#include "debug.h"
 #include "util.h"
 #include "context.h"
 #include "ops.h"
@@ -83,11 +84,48 @@ gpgme_op_verify_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_verify_result", ctx);
   err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
-    return NULL;
+    {
+      TRACE_SUC0 ("result=(null)");
+      return NULL;
+    }
 
+  if (_gpgme_debug_trace ())
+    {
+      gpgme_signature_t sig = opd->result.signatures;
+      int i = 0;
+
+      while (sig)
+	{
+	  TRACE_LOG4 ("sig[%i] = fpr %s, summary 0x%x, status %s",
+		      i, sig->fpr, sig->summary, gpg_strerror (sig->status));
+	  TRACE_LOG6 ("sig[%i] = timestamps 0x%x/0x%x flags:%s%s%s",
+		      i, sig->timestamp, sig->exp_timestamp,
+		      sig->wrong_key_usage ? "wrong key usage" : "",
+		      sig->pka_trust == 1 ? "pka bad"
+		      : (sig->pka_trust == 2 ? "pka_okay" : "pka RFU"),
+		      sig->chain_model ? "chain model" : "");
+	  TRACE_LOG5 ("sig[%i] = validity 0x%x (%s), algos %s/%s",
+		      i, sig->validity, gpg_strerror (sig->validity_reason),
+		      gpgme_pubkey_algo_name (sig->pubkey_algo),
+		      gpgme_hash_algo_name (sig->hash_algo));
+	  if (sig->pka_address)
+	    {
+	      TRACE_LOG2 ("sig[%i] = PKA address %s", i, sig->pka_address);
+	    }
+	  if (sig->notations)
+	    {
+	      TRACE_LOG1 ("sig[%i] = has notations (not shown)", i);
+	    }	  
+	  sig = sig->next;
+	  i++;
+	}
+    }
+
+  TRACE_SUC1 ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -794,7 +832,10 @@ gpgme_error_t
 gpgme_op_verify_start (gpgme_ctx_t ctx, gpgme_data_t sig,
 		       gpgme_data_t signed_text, gpgme_data_t plaintext)
 {
-  return verify_start (ctx, 0, sig, signed_text, plaintext);
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_verify_start", ctx,
+	      "sig=%p, signed_text=%p, plaintext=%p",
+	      sig, signed_text, plaintext);
+  return TRACE_ERR (verify_start (ctx, 0, sig, signed_text, plaintext));
 }
 
 
@@ -806,10 +847,14 @@ gpgme_op_verify (gpgme_ctx_t ctx, gpgme_data_t sig, gpgme_data_t signed_text,
 {
   gpgme_error_t err;
 
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_verify", ctx,
+	      "sig=%p, signed_text=%p, plaintext=%p",
+	      sig, signed_text, plaintext);
+
   err = verify_start (ctx, 1, sig, signed_text, plaintext);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  return err;
+  return TRACE_ERR (err);
 }
 
 

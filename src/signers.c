@@ -28,8 +28,10 @@
 #include <assert.h>
 #include <errno.h>
 
+#include "gpgme.h"
 #include "util.h"
 #include "context.h"
+#include "debug.h"
 
 
 /* Delete all signers from CTX.  */
@@ -37,6 +39,8 @@ void
 gpgme_signers_clear (gpgme_ctx_t ctx)
 {
   unsigned int i;
+
+  TRACE (DEBUG_CTX, "gpgme_signers_clear", ctx);
 
   if (!ctx || !ctx->signers)
     return;
@@ -54,8 +58,12 @@ gpgme_signers_clear (gpgme_ctx_t ctx)
 gpgme_error_t
 gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 {
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_signers_add", ctx,
+	      "key=%p (%s)", key, (key->subkeys && !key->subkeys->fpr) ? 
+	      key->subkeys->fpr : "invalid");
+
   if (!ctx || !key)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (ctx->signers_len == ctx->signers_size)
     {
@@ -65,7 +73,7 @@ gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 
       newarr = realloc (ctx->signers, n * sizeof (*newarr));
       if (!newarr)
-	return gpg_error_from_errno (errno);
+	return TRACE_ERR (gpg_error_from_errno (errno));
       for (j = ctx->signers_size; j < n; j++)
 	newarr[j] = NULL;
       ctx->signers = newarr;
@@ -74,7 +82,7 @@ gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 
   gpgme_key_ref (key);
   ctx->signers[ctx->signers_len++] = key;
-  return 0;
+  return TRACE_SUC ();
 }
 
 

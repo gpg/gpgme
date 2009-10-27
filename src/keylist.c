@@ -94,11 +94,19 @@ gpgme_op_keylist_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_keylist_result", ctx);
+
   err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
-    return NULL;
+    {
+      TRACE_SUC0 ("result=(null)");
+      return NULL;
+    }
 
+  TRACE_LOG1 ("truncated = %i", opd->result.truncated);
+
+  TRACE_SUC1 ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -850,25 +858,29 @@ gpgme_op_keylist_start (gpgme_ctx_t ctx, const char *pattern, int secret_only)
   void *hook;
   op_data_t opd;
 
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_keylist_start", ctx,
+	      "pattern=%s, secret_only=%i", pattern, secret_only);
+
   err = _gpgme_op_reset (ctx, 2);
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook,
 			       sizeof (*opd), release_op_data);
   opd = hook;
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
   _gpgme_engine_set_status_handler (ctx->engine, keylist_status_handler, ctx);
 
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
 					      keylist_colon_handler, ctx);
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
-  return _gpgme_engine_op_keylist (ctx->engine, pattern, secret_only,
-				   ctx->keylist_mode);
+  err = _gpgme_engine_op_keylist (ctx->engine, pattern, secret_only,
+				  ctx->keylist_mode);
+  return TRACE_ERR (err);
 }
 
 
@@ -883,24 +895,28 @@ gpgme_op_keylist_ext_start (gpgme_ctx_t ctx, const char *pattern[],
   void *hook;
   op_data_t opd;
 
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_keylist_ext_start", ctx,
+	      "secret_only=%i, reserved=0x%x", secret_only, reserved);
+
   err = _gpgme_op_reset (ctx, 2);
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook,
 			       sizeof (*opd), release_op_data);
   opd = hook;
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
   _gpgme_engine_set_status_handler (ctx->engine, keylist_status_handler, ctx);
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
 					      keylist_colon_handler, ctx);
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
-  return _gpgme_engine_op_keylist_ext (ctx->engine, pattern, secret_only,
-				       reserved, ctx->keylist_mode);
+  err = _gpgme_engine_op_keylist_ext (ctx->engine, pattern, secret_only,
+				      reserved, ctx->keylist_mode);
+  return TRACE_ERR (err);
 }
 
 
@@ -913,27 +929,29 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
   void *hook;
   op_data_t opd;
 
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_keylist_next", ctx);
+
   if (!ctx || !r_key)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
   *r_key = NULL;
   if (!ctx)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
   opd = hook;
   if (err)
-    return err;
+    return TRACE_ERR (err);
   if (opd == NULL)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (!opd->key_queue)
     {
       err = _gpgme_wait_on_condition (ctx, &opd->key_cond, NULL);
       if (err)
-	return err;
+	return TRACE_ERR (err);
 
       if (!opd->key_cond)
-	return gpg_error (GPG_ERR_EOF);
+	return TRACE_ERR (gpg_error (GPG_ERR_EOF));
 
       opd->key_cond = 0; 
       assert (opd->key_queue);
@@ -945,7 +963,10 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
   
   *r_key = queue_item->key;
   free (queue_item);
-  return 0;
+
+  return TRACE_SUC2 ("key=%p (%s)", *r_key,
+		     ((*r_key)->subkeys && !(*r_key)->subkeys->fpr) ? 
+		     (*r_key)->subkeys->fpr : "invalid");
 }
 
 
@@ -953,6 +974,8 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
 gpgme_error_t
 gpgme_op_keylist_end (gpgme_ctx_t ctx)
 {
+  TRACE (DEBUG_CTX, "gpgme_op_keylist_end", ctx);
+  
   if (!ctx)
     return gpg_error (GPG_ERR_INV_VALUE);
 
@@ -970,17 +993,20 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   gpgme_error_t err;
   gpgme_key_t key;
 
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_get_key", ctx,
+	      "fpr=%s, secret=%i", fpr, secret);
+
   if (!ctx || !r_key || !fpr)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
   
   if (strlen (fpr) < 8)	/* We have at least a key ID.  */
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   /* FIXME: We use our own context because we have to avoid the user's
      I/O callback handlers.  */
   err = gpgme_new (&listctx);
   if (err)
-    return err;
+    return TRACE_ERR (err);
   {
     gpgme_protocol_t proto;
     gpgme_engine_info_t info;
@@ -1031,5 +1057,11 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
 	}
     }
   gpgme_release (listctx);
-  return err;
+  if (! err)
+    {
+      TRACE_LOG2 ("key=%p (%s)", *r_key,
+		  ((*r_key)->subkeys && !(*r_key)->subkeys->fpr) ? 
+		  (*r_key)->subkeys->fpr : "invalid");
+    }
+  return TRACE_ERR (err);
 }

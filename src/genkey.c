@@ -27,6 +27,7 @@
 #include <errno.h>
 
 #include "gpgme.h"
+#include "debug.h"
 #include "context.h"
 #include "ops.h"
 
@@ -59,11 +60,21 @@ gpgme_op_genkey_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_genkey_result", ctx);
+
   err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
-    return NULL;
+    {
+      TRACE_SUC0 ("result=(null)");
+      return NULL;
+    }
 
+  TRACE_LOG3 ("fpr = %s, %s, %s", opd->result.fpr,
+	      opd->result.primary ? "primary" : "no primary",
+	      opd->result.sub ? "sub" : "no sub");
+
+  TRACE_SUC1 ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -186,7 +197,10 @@ gpgme_error_t
 gpgme_op_genkey_start (gpgme_ctx_t ctx, const char *parms,
 		       gpgme_data_t pubkey, gpgme_data_t seckey)
 {
-  return genkey_start (ctx, 0, parms, pubkey, seckey);
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_genkey_start", ctx,
+	      "pubkey=%p, seckey=%p", pubkey, seckey);
+  TRACE_LOGBUF (parms, strlen (parms));
+  return TRACE_ERR (genkey_start (ctx, 0, parms, pubkey, seckey));
 }
 
 
@@ -198,6 +212,10 @@ gpgme_op_genkey (gpgme_ctx_t ctx, const char *parms, gpgme_data_t pubkey,
 		 gpgme_data_t seckey)
 {
   gpgme_error_t err;
+
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_genkey", ctx,
+	      "pubkey=%p, seckey=%p", pubkey, seckey);
+  TRACE_LOGBUF (parms, strlen (parms));
 
   err = genkey_start (ctx, 1, parms, pubkey, seckey);
   if (!err)

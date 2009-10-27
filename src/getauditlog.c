@@ -22,6 +22,7 @@
 #endif
 
 #include "gpgme.h"
+#include "debug.h"
 #include "context.h"
 #include "ops.h"
 
@@ -62,7 +63,9 @@ gpgme_error_t
 gpgme_op_getauditlog_start (gpgme_ctx_t ctx, 
                             gpgme_data_t output, unsigned int flags)
 {
-  return getauditlog_start (ctx, 0, output, flags);
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_getauditlog_start", ctx,
+	      "output=%p, flags=0x%x", output, flags);
+  return TRACE_ERR (getauditlog_start (ctx, 0, output, flags));
 }
 
 
@@ -73,9 +76,14 @@ gpgme_op_getauditlog_start (gpgme_ctx_t ctx,
 gpgme_error_t
 gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output, unsigned int flags)
 {
-  gpgme_error_t err = getauditlog_start (ctx, 1, output, flags);
+  gpgme_error_t err;
+
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_getauditlog", ctx,
+	      "output=%p, flags=0x%x", output, flags);
+
+  err = getauditlog_start (ctx, 1, output, flags);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  return err;
+  return TRACE_ERR (err);
 }
 

@@ -28,6 +28,7 @@
 #include <errno.h>
 
 #include "gpgme.h"
+#include "debug.h"
 #include "util.h"
 #include "context.h"
 #include "ops.h"
@@ -173,27 +174,31 @@ gpgme_op_trustlist_start (gpgme_ctx_t ctx, const char *pattern, int max_level)
   void *hook;
   op_data_t opd;
 
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_trustlist_start", ctx,
+	      "pattern=%s, max_level=%i", pattern, max_level);
+
   if (!pattern || !*pattern)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   err = _gpgme_op_reset (ctx, 2);
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, &hook,
 			       sizeof (*opd), NULL);
   opd = hook;
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
   _gpgme_engine_set_status_handler (ctx->engine,
 				    trustlist_status_handler, ctx);
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
 					      trustlist_colon_handler, ctx);
   if (err)
-    return err;
+    return TRACE_ERR (err);
 
-  return _gpgme_engine_op_trustlist (ctx->engine, pattern);
+  err = _gpgme_engine_op_trustlist (ctx->engine, pattern);
+  return TRACE_ERR (err);
 }
 
 
@@ -205,26 +210,28 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
   op_data_t opd;
   struct trust_queue_item_s *q;
 
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_trustlist_next", ctx);
+
   if (!r_item)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
   *r_item = NULL;
   if (!ctx)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_TRUSTLIST, &hook, -1, NULL);
   opd = hook;
   if (err)
-    return err;
+    return TRACE_ERR (err);
   if (opd == NULL)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (!opd->trust_queue)
     {
       err = _gpgme_wait_on_condition (ctx, &opd->trust_cond, NULL);
       if (err)
-	return err;
+	return TRACE_ERR (err);
       if (!opd->trust_cond)
-	return gpg_error (GPG_ERR_EOF);
+	return TRACE_ERR (gpg_error (GPG_ERR_EOF));
       opd->trust_cond = 0; 
       assert (opd->trust_queue);
     }
@@ -233,6 +240,25 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
 
   *r_item = q->item;
   free (q);
+  if ((*r_item)->type == 1)
+    {
+      TRACE_SUC5 ("trust_item=%p: %s: owner trust %s with level %i "
+		  "and validity 0x%x", *r_item, (*r_item)->keyid,
+		  (*r_item)->owner_trust, (*r_item)->level,
+		  (*r_item)->validity);
+    }
+  else if ((*r_item)->type == 2)
+    {
+      TRACE_SUC5 ("trust_item=%p: %s: UID %s with level %i "
+		  "and validity 0x%x", *r_item, (*r_item)->keyid,
+		  (*r_item)->name, (*r_item)->level, (*r_item)->validity);
+    }
+  else
+    {
+      TRACE_SUC5 ("trust_item=%p: %s: unknown type %i with level %i "
+		  "and validity 0x%x", *r_item, (*r_item)->keyid,
+		  (*r_item)->type, (*r_item)->level, (*r_item)->validity);
+    }
   return 0;
 }
 
@@ -241,6 +267,8 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
 gpgme_error_t
 gpgme_op_trustlist_end (gpgme_ctx_t ctx)
 {
+  TRACE (DEBUG_CTX, "gpgme_op_trustlist_end", ctx);
+
   if (!ctx)
     return gpg_error (GPG_ERR_INV_VALUE);
 

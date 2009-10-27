@@ -379,7 +379,7 @@ gpgme_op_decrypt (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_start", ctx,
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt", ctx,
 	      "cipher=%p, plain=%p", cipher, plain);
   err = decrypt_start (ctx, 1, cipher, plain);
   if (!err)
