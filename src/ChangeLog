@@ -1,3 +1,8 @@
+2009-10-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* signers.c, encrypt-sign.c, encrypt.c, delete.c, keylist.c,
+	edit.c, import.c, export.c: Fix last change in debug output.
+
 2009-10-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* edit.c (gpgme_op_edit_start, gpgme_op_edit)

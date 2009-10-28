@@ -253,8 +253,8 @@ gpgme_op_export_keys_start (gpgme_ctx_t ctx,
 
       while (keys[i])
 	{
-	  TRACE_LOG3 ("keys[%i] = %p (%s)", i,keys[i],
-		      (keys[i]->subkeys && !keys[i]->subkeys->fpr) ? 
+	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
+		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ? 
 		      keys[i]->subkeys->fpr : "invalid");
 	  i++;
 	}
@@ -280,8 +280,8 @@ gpgme_op_export_keys (gpgme_ctx_t ctx,
 
       while (keys[i])
 	{
-	  TRACE_LOG3 ("keys[%i] = %p (%s)", i,keys[i],
-		      (keys[i]->subkeys && !keys[i]->subkeys->fpr) ? 
+	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
+		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ? 
 		      keys[i]->subkeys->fpr : "invalid");
 	  i++;
 	}

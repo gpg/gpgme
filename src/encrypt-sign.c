@@ -101,8 +101,8 @@ gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
 
       while (recp[i])
 	{
-	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i,recp[i],
-		      (recp[i]->subkeys && !recp[i]->subkeys->fpr) ? 
+	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
+		      (recp[i]->subkeys && recp[i]->subkeys->fpr) ? 
 		      recp[i]->subkeys->fpr : "invalid");
 	  i++;
 	}
@@ -131,8 +131,8 @@ gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_key_t recp[],
 
       while (recp[i])
 	{
-	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i,recp[i],
-		      (recp[i]->subkeys && !recp[i]->subkeys->fpr) ? 
+	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
+		      (recp[i]->subkeys && recp[i]->subkeys->fpr) ? 
 		      recp[i]->subkeys->fpr : "invalid");
 	  i++;
 	}

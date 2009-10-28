@@ -141,7 +141,7 @@ gpgme_op_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 {
   TRACE_BEG5 (DEBUG_CTX, "gpgme_op_edit_start", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
-	      (key->subkeys && !key->subkeys->fpr) ? 
+	      (key->subkeys && key->subkeys->fpr) ? 
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
   return TRACE_ERR (edit_start (ctx, 0, 0, key, fnc, fnc_value, out));
 }
@@ -157,7 +157,7 @@ gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 
   TRACE_BEG5 (DEBUG_CTX, "gpgme_op_edit", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
-	      (key->subkeys && !key->subkeys->fpr) ? 
+	      (key->subkeys && key->subkeys->fpr) ? 
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
 
   err = edit_start (ctx, 1, 0, key, fnc, fnc_value, out);
@@ -175,7 +175,7 @@ gpgme_op_card_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 {
   TRACE_BEG5 (DEBUG_CTX, "gpgme_op_card_edit_start", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
-	      (key->subkeys && !key->subkeys->fpr) ? 
+	      (key->subkeys && key->subkeys->fpr) ? 
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
   return TRACE_ERR (edit_start (ctx, 0, 1, key, fnc, fnc_value, out));
 }
@@ -191,7 +191,7 @@ gpgme_op_card_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 
   TRACE_BEG5 (DEBUG_CTX, "gpgme_op_card_edit", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
-	      (key->subkeys && !key->subkeys->fpr) ? 
+	      (key->subkeys && key->subkeys->fpr) ? 
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
   err = edit_start (ctx, 1, 1, key, fnc, fnc_value, out);
   if (!err)

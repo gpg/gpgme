@@ -965,7 +965,7 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
   free (queue_item);
 
   return TRACE_SUC2 ("key=%p (%s)", *r_key,
-		     ((*r_key)->subkeys && !(*r_key)->subkeys->fpr) ? 
+		     ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ? 
 		     (*r_key)->subkeys->fpr : "invalid");
 }
 
@@ -1060,7 +1060,7 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   if (! err)
     {
       TRACE_LOG2 ("key=%p (%s)", *r_key,
-		  ((*r_key)->subkeys && !(*r_key)->subkeys->fpr) ? 
+		  ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ? 
 		  (*r_key)->subkeys->fpr : "invalid");
     }
   return TRACE_ERR (err);
