@@ -14,6 +14,7 @@ Hey Emacs, this is -*- org -*- mode!
    and parse SUBPACKET status lines.
 
 * ABI's to break:
+** Old opassuan interface.
 ** Implementation: Remove support for old style error codes in
    conversion.c::_gpgme_map_gnupg_error.
 ** gpgme_edit_cb_t: Add "processed" return argument
@@ -104,7 +105,8 @@ Hey Emacs, this is -*- org -*- mode!
    about where to guarantee what (ie, what happens if start fails, are
    the fds unregistered immediately - i think so?)
    Note that we need support in gpgsm to set include-certs to default
-   as RESET does not reset it.
+   as RESET does not reset it, also for no_encrypt_to and probably
+   other options.
 ** Optimize the case where a data object has an underlying fd we can pass
    directly to the engine.  This will be automatic with socket I/O and
    descriptor passing.
