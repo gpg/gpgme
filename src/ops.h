@@ -29,6 +29,8 @@
 /* From gpgme.c.  */
 gpgme_error_t _gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err,
 				      gpg_error_t op_err);
+/* Clear all notation data from the context.  */
+void _gpgme_sig_notation_clear (gpgme_ctx_t ctx);
 
 void _gpgme_release_result (gpgme_ctx_t ctx);
 
@@ -79,6 +81,9 @@ gpgme_error_t _gpgme_decrypt_status_handler (void *priv,
 					     char *args);
 
 
+/* From signers.c.  */
+void _gpgme_signers_clear (gpgme_ctx_t ctx);
+
 /* From sign.c.  */
 
 /* Create an initial op data object for signing.  Needs to be called

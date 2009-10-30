@@ -153,7 +153,6 @@ if HAVE_W32_SYSTEM
 # wrapper process.
 libexec_PROGRAMS = gpgme-w32spawn
 
-
 LTRCCOMPILE = $(LIBTOOL) --mode=compile $(RC) \
      `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
      sed -e 's/-I/--include-dir /g;s/-D/--define /g'`
@@ -225,6 +224,9 @@ libgpgme_qt_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_qt_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@ @QT4_CORE_LIBS@
 endif
+
+noinst_PROGRAMS = gpgme-tool
+gpgme_tool_LDADD = libgpgme.la
 
 status-table.h : gpgme.h
 	$(srcdir)/mkstatus < $(builddir)/gpgme.h > status-table.h

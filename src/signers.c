@@ -36,11 +36,9 @@
 
 /* Delete all signers from CTX.  */
 void
-gpgme_signers_clear (gpgme_ctx_t ctx)
+_gpgme_signers_clear (gpgme_ctx_t ctx)
 {
   unsigned int i;
-
-  TRACE (DEBUG_CTX, "gpgme_signers_clear", ctx);
 
   if (!ctx || !ctx->signers)
     return;
@@ -53,6 +51,15 @@ gpgme_signers_clear (gpgme_ctx_t ctx)
     }
   ctx->signers_len = 0;
 }
+
+
+void
+gpgme_signers_clear (gpgme_ctx_t ctx)
+{
+  TRACE (DEBUG_CTX, "gpgme_signers_clear", ctx);
+  return _gpgme_signers_clear (ctx);
+}
+
 
 /* Add KEY to list of signers in CTX.  */
 gpgme_error_t

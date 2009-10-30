@@ -186,8 +186,8 @@ gpgme_release (gpgme_ctx_t ctx)
   _gpgme_engine_release (ctx->engine);
   _gpgme_fd_table_deinit (&ctx->fdt);
   _gpgme_release_result (ctx);
-  gpgme_signers_clear (ctx);
-  gpgme_sig_notation_clear (ctx);
+  _gpgme_signers_clear (ctx);
+  _gpgme_sig_notation_clear (ctx);
   if (ctx->signers)
     free (ctx->signers);
   if (ctx->lc_ctype)
@@ -269,6 +269,7 @@ gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
 
   if (protocol != GPGME_PROTOCOL_OpenPGP
       && protocol != GPGME_PROTOCOL_CMS
+      && protocol != GPGME_PROTOCOL_GPGCONF
       && protocol != GPGME_PROTOCOL_ASSUAN
       && protocol != GPGME_PROTOCOL_G13)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
@@ -310,6 +311,9 @@ gpgme_get_protocol_name (gpgme_protocol_t protocol)
 
     case GPGME_PROTOCOL_CMS:
       return "CMS";
+
+    case GPGME_PROTOCOL_GPGCONF:
+      return "GPGCONF";
 
     case GPGME_PROTOCOL_ASSUAN:
       return "Assuan";
@@ -654,10 +658,9 @@ gpgme_ctx_set_engine_info (gpgme_ctx_t ctx, gpgme_protocol_t proto,
 
 /* Clear all notation data from the context.  */
 void
-gpgme_sig_notation_clear (gpgme_ctx_t ctx)
+_gpgme_sig_notation_clear (gpgme_ctx_t ctx)
 {
   gpgme_sig_notation_t notation;
-  TRACE (DEBUG_CTX, "gpgme_sig_notation_clear", ctx);
 
   if (!ctx)
     return;
@@ -670,6 +673,13 @@ gpgme_sig_notation_clear (gpgme_ctx_t ctx)
       notation = next_notation;
     }
   ctx->sig_notations = NULL;
+}
+
+void
+gpgme_sig_notation_clear (gpgme_ctx_t ctx)
+{
+  TRACE (DEBUG_CTX, "gpgme_sig_notation_clear", ctx);
+  _gpgme_sig_notation_clear (ctx);
 }
 
 

@@ -272,6 +272,7 @@ _gpgme_encode_percent_string (const char *src, char **destp, size_t len)
         destlen += 3;
       else
         destlen++;
+      str++;
     }
   /* Terminating nul byte.  */
   destlen++;

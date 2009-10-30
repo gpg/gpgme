@@ -117,19 +117,25 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   i = 0;
-  while (fd_child_list[i] != ASSUAN_INVALID_FD)
-    i++;
+  if (fd_child_list)
+    {
+      while (fd_child_list[i] != ASSUAN_INVALID_FD)
+	i++;
+    }
   /* fd_in, fd_out, terminator */
   i += 3;
   fd_items = malloc (sizeof (struct spawn_fd_item_s) * i);
   if (! fd_items)
     return gpg_error_from_syserror ();
   i = 0;
-  while (fd_child_list[i] != ASSUAN_INVALID_FD)
+  if (fd_child_list)
     {
-      fd_items[i].fd = fd_child_list[i];
-      fd_items[i].dup_to = -1;
-      i++;
+      while (fd_child_list[i] != ASSUAN_INVALID_FD)
+	{
+	  fd_items[i].fd = fd_child_list[i];
+	  fd_items[i].dup_to = -1;
+	  i++;
+	}
     }
   if (fd_in != ASSUAN_INVALID_FD)
     {
@@ -151,10 +157,13 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
     {
       i = 0;
 
-      while (fd_child_list[i] != ASSUAN_INVALID_FD)
+      if (fd_child_list)
 	{
-	  fd_child_list[i] = fd_items[i].peer_name;
-	  i++;
+	  while (fd_child_list[i] != ASSUAN_INVALID_FD)
+	    {
+	      fd_child_list[i] = fd_items[i].peer_name;
+	      i++;
+	    }
 	}
     }
   free (fd_items);

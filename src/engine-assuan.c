@@ -233,9 +233,13 @@ llass_new (void **engine, const char *file_name, const char *home_dir)
         llass->opt.gpg_agent = 1;
     }
 
-  err = assuan_new (&llass->assuan_ctx);
+  err = assuan_new_ext (&llass->assuan_ctx, GPG_ERR_SOURCE_GPGME,
+			&_gpgme_assuan_malloc_hooks, _gpgme_assuan_log_cb,
+			NULL);
   if (err)
     goto leave;
+  assuan_ctx_set_system_hooks (llass->assuan_ctx, &_gpgme_assuan_system_hooks);
+
   err = assuan_socket_connect (llass->assuan_ctx, file_name, 0);
   if (err)
     goto leave;

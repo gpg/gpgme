@@ -850,6 +850,14 @@ LTLIBOBJS=`echo "$LIB@&t@OBJS" |
            sed 's,\.[[^.]]* ,.lo ,g;s,\.[[^.]]*$,.lo,'`
 AC_SUBST(LTLIBOBJS)
 
+# Some checks for gpgme-tool
+AC_CHECK_HEADER([argp.h])
+AC_CHECK_TYPES([error_t], [],
+   [AC_DEFINE([error_t], [int],
+   [Define to a type to use for `error_t' if it is not otherwise available.])],
+   [#include <errno.h>])
+
+
 # Last check.
 die=no
 if test "$require_libassuan" = "no"; then

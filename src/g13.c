@@ -25,6 +25,7 @@
 #include <stdlib.h>
 
 #include "gpgme.h"
+#include "debug.h"
 #include "context.h"
 #include "ops.h"
 #include "util.h"
@@ -135,9 +136,9 @@ gpgme_op_vfs_transact (gpgme_ctx_t ctx,
    or destroyed.  This is a synchronous convenience interface, which
    automatically returns an operation error if there is no
    transmission error.  */
-gpgme_error_t
-gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
-		    const char *mount_dir, int flags, gpgme_error_t *op_err)
+static gpgme_error_t
+_gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
+		     const char *mount_dir, int flags, gpgme_error_t *op_err)
 {
   gpg_error_t err;
   char *cmd;
@@ -194,3 +195,15 @@ gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
 
   return err;
 }
+
+gpgme_error_t
+gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
+		     const char *mount_dir, int flags, gpgme_error_t *op_err)
+{
+  TRACE_BEG4 (DEBUG_CTX, "gpgme_op_vfs_mount", ctx,
+	      "container=%s, mount_dir=%s, flags=0x%x, op_err=%p",
+	      container_file, mount_dir, flags, op_err);
+  return TRACE_ERR (_gpgme_op_vfs_mount (ctx, container_file, mount_dir,
+					 flags, op_err));
+}
+

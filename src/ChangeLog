@@ -1,3 +1,25 @@
+2009-10-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (noinst_PROGRAMS): New target gpgme-tool.
+	(gpgme_tool_LDADD): New variable.
+	* gpgme-tool.c: New file.
+	* ops.h (_gpgme_sig_notation_clearm _gpgme_signers_clear): New
+	prototypes.
+	* gpgme.c (gpgme_set_protocol): Allow GPGME_PROTOCOL_GPGCONF (when
+	had that gone missing?).
+	(_gpgme_sig_notation_clear): New function without debug output.
+	(gpgme_release): Call it and _gpgme_signers_clear.
+	* signers.c (_gpgme_signers_clear): New function without debug output.
+	* g13.c (gpgme_op_vfs_mount): Add debug output.
+	* assuan-support.c (my_spawn): Allow fd_child_list to be NULL.
+	* conversion.c (_gpgme_encode_percent_string): Fix infinite loop.
+	* debug.h: Put tag in front of debug lines, should make for nicer
+	output.
+	* engine-assuan.c (llass_new): Use our new system hooks for libassuan.
+	* engine-g13.c (g13_new): Remove redundant assuan context allocation.
+	* version.c (gpgme_check_version_internal): Delay debug output
+	until after gpgme_check_version was called.
+
 2009-10-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* signers.c, encrypt-sign.c, encrypt.c, delete.c, keylist.c,

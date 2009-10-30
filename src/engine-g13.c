@@ -230,10 +230,6 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
   g13->status_cb.tag = 0;
   g13->status_cb.data = g13;
 
-  err = assuan_new (&g13->assuan_ctx);
-  if (err)
-    goto leave;
-
   argc = 0;
   argv[argc++] = "g13";
   if (home_dir)
