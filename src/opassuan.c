@@ -197,9 +197,9 @@ gpgme_op_assuan_transact (gpgme_ctx_t ctx,
 
   /* Users of the old-style session based interfaces need to look at
      the result structure.  */
-  gpgme_op_assuan_transact_ext (ctx, command, data_cb, data_cb_value,
-				inq_cb, inq_cb_value,
-				status_cb, status_cb_value, NULL);
+  err = gpgme_op_assuan_transact_ext (ctx, command, data_cb, data_cb_value,
+				      inq_cb, inq_cb_value,
+				      status_cb, status_cb_value, NULL);
 
-  return err;
+  return TRACE_ERR (err);
 }
