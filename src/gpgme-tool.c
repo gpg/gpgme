@@ -1203,19 +1203,21 @@ cmd_keylist_mode (assuan_context_t ctx, char *line)
 }
 
 
-static void
-input_notify (assuan_context_t ctx, const char *line)
+static gpg_error_t
+input_notify (assuan_context_t ctx, char *line)
 {
   struct server *server = assuan_get_pointer (ctx);
   server->input_enc = server_data_encoding (line);
+  return 0;
 }
 
 
-static void
-output_notify (assuan_context_t ctx, const char *line)
+static gpg_error_t
+output_notify (assuan_context_t ctx, char *line)
 {
   struct server *server = assuan_get_pointer (ctx);
   server->output_enc = server_data_encoding (line);
+  return 0;
 }
 
 

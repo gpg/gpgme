@@ -266,7 +266,8 @@ _gpgme_debug_end (void **line)
 void
 _gpgme_debug_buffer (int lvl, const char *const fmt,
 		     const char *const func, const char *const tagname,
-		     void *tag, const char *const buffer, size_t len)
+		     const void *const tag, const char *const buffer,
+		     size_t len)
 {
   int idx = 0;
   int j;

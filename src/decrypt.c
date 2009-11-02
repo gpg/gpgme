@@ -88,7 +88,6 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
   if (_gpgme_debug_trace ())
     {
       gpgme_recipient_t rcp;
-      int signatures = 0;
 
       if (opd->result.unsupported_algorithm)
 	{

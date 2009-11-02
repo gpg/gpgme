@@ -200,6 +200,5 @@ gpgme_op_assuan_transact (gpgme_ctx_t ctx,
   err = gpgme_op_assuan_transact_ext (ctx, command, data_cb, data_cb_value,
 				      inq_cb, inq_cb_value,
 				      status_cb, status_cb_value, NULL);
-
-  return TRACE_ERR (err);
+  return err;
 }

@@ -1,5 +1,10 @@
 2009-11-02  Marcus Brinkmann  <marcus@g10code.de>
 
+	* debug.h (_gpgme_debug_buffer): Make TAG argument const const.
+	* debug.c (_gpgme_debug_buffer): Likewise.
+	* gpgme-tool.c (input_notify, output_notify): Adjust type to new
+	assuan interface.
+	* decrypt.c (gpgme_op_decrypt_result): Remove unused variable.
 	* opassuan.c (gpgme_op_assuan_transact): Fix return value.
 
 2009-10-30  Marcus Brinkmann  <marcus@g10code.de>
