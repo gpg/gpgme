@@ -38,7 +38,7 @@
     {								\
       if (err)							\
         {							\
-          fprintf (stderr, "%s:%d: %s: %s\n",			\
+          fprintf (stderr, PGM": file %s line %d: <%s> %s\n",	\
                    __FILE__, __LINE__, gpgme_strsource (err),	\
 		   gpgme_strerror (err));			\
           exit (1);						\

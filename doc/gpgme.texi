@@ -766,6 +766,15 @@ This specifies the OpenPGP protocol.
 @item GPGME_PROTOCOL_CMS
 This specifies the Cryptographic Message Syntax.
 
+@item GPGME_PROTOCOL_ASSUAN
+Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
+
+@item GPGME_PROTOCOL_G13
+Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
+
+@item GPGME_PROTOCOL_UISERVER
+Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
+
 @item GPGME_PROTOCOL_UNKNOWN
 Reserved for future extension.  You may use this to indicate that the
 used protocol is not known to the application.  Currently,

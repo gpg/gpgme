@@ -69,6 +69,7 @@ show_usage (int ex)
          "  --verbose        run in verbose mode\n"
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
+         "  --uiserver       use the UI server\n"
          "  --key NAME       use key NAME for signing\n"
          , stderr);
   exit (ex);
@@ -115,6 +116,11 @@ main (int argc, char **argv)
           protocol = GPGME_PROTOCOL_CMS;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--uiserver"))
+        {
+          protocol = GPGME_PROTOCOL_UISERVER;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--key"))
         {
           argc--; argv++;
@@ -131,6 +137,12 @@ main (int argc, char **argv)
   if (argc != 1)
     show_usage (1);
 
+  if (key_string && protocol == GPGME_PROTOCOL_UISERVER)
+    {
+      fprintf (stderr, PGM ": ignoring --key in UI-server mode\n");
+      key_string = NULL;
+    }
+
   init_gpgme (protocol);
 
   err = gpgme_new (&ctx);
@@ -141,12 +153,10 @@ main (int argc, char **argv)
   if (key_string)
     {
       gpgme_key_t akey;
-
+      
       err = gpgme_get_key (ctx, key_string, &akey, 1);
       if (err)
         {
-          fprintf (stderr, PGM ": error getting key `%s': %s\n",
-                   key_string, gpg_strerror (err));
           exit (1);
         }
       err = gpgme_signers_add (ctx, akey);

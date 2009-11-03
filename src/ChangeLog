@@ -1,3 +1,7 @@
+2009-11-03  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h.in (GPGME_PROTOCOL_UISERVER): New.
+
 2009-11-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (main_sources): Change g13.c to vfs-mount.c.  Add

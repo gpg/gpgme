@@ -201,7 +201,7 @@ calc_sig_summary (gpgme_signature_t sig)
     sum |= GPGME_SIGSUM_BAD_POLICY;
   
   /* Set the valid flag when the signature is unquestionable
-     valid. */
+     valid.  (The test is identical to if(sum == GPGME_SIGSUM_GREEN)). */
   if ((sum & GPGME_SIGSUM_GREEN) && !(sum & ~GPGME_SIGSUM_GREEN))
     sum |= GPGME_SIGSUM_VALID;
   

@@ -1,3 +1,9 @@
+2009-11-03  Werner Koch  <wk@g10code.com>
+
+	* run-support.h (fail_if_err): Include program name.
+
+	* run-sign.c (main): Add option --uiserver.
+
 2009-10-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* opassuan/t-command.c: Update to new interface.
