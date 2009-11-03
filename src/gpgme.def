@@ -190,6 +190,7 @@ EXPORTS
     gpgme_wait_ext			  @145
     gpgme_op_vfs_mount_result		  @146
     gpgme_op_vfs_mount			  @147
+    gpgme_op_vfs_create			  @148
 
 ; END
 

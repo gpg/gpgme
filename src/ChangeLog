@@ -1,3 +1,15 @@
+2009-11-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (main_sources): Change g13.c to vfs-mount.c.  Add
+	vfs-create.c
+	* vfs-create.c: New file.
+	* g13.c: Renamed to ...
+	* vfs-mount.c: ... this new file.
+	* gpgme.h.in (gpgme_op_vfs_create): New prototype.
+	* gpgme.def, libgpgme.vers: Add gpgme_op_vfs_create.
+	* gpgme-tool.c (gt_vfs_create, cmd_vfs_create): New functions.
+	(register_commands): Add VFS_CREATE and CREAET.
+
 2009-11-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* debug.h (_gpgme_debug_buffer): Make TAG argument const const.

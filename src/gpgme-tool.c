@@ -483,6 +483,7 @@ typedef enum status
     STATUS_TEXTMODE,
     STATUS_INCLUDE_CERTS,
     STATUS_KEYLIST_MODE,
+    STATUS_RECIPIENT,
     STATUS_ENCRYPT_RESULT
   } status_t;
 
@@ -495,6 +496,7 @@ const char *status_string[] =
     "TEXTMODE",
     "INCLUDE_CERTS",
     "KEYLIST_MODE",
+    "RECIPIENT",
     "ENCRYPT_RESULT"
   };
 
@@ -574,7 +576,88 @@ gt_signers_clear (gpgme_tool_t gt)
 
 
 gpg_error_t
-gt_recipients_add (gpgme_tool_t gt, const char *fpr)
+gt_get_key (gpgme_tool_t gt, const char *pattern, gpgme_key_t *r_key)
+{
+  gpgme_ctx_t ctx;
+  gpgme_ctx_t listctx;
+  gpgme_error_t err;
+  gpgme_key_t key;
+
+  if (!gt || !r_key || !pattern)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  
+  ctx = gt->ctx;
+
+  err = gpgme_new (&listctx);
+  if (err)
+    return err;
+
+  {
+    gpgme_protocol_t proto;
+    gpgme_engine_info_t info;
+
+    /* Clone the relevant state.  */
+    proto = gpgme_get_protocol (ctx);
+    /* The g13 protocol does not allow keylisting, we need to choose
+       something else.  */
+    if (proto == GPGME_PROTOCOL_G13)
+      proto = GPGME_PROTOCOL_OpenPGP;
+
+    gpgme_set_protocol (listctx, proto);
+    gpgme_set_keylist_mode (listctx, gpgme_get_keylist_mode (ctx));
+    info = gpgme_ctx_get_engine_info (ctx);
+    while (info && info->protocol != proto)
+      info = info->next;
+    if (info)
+      gpgme_ctx_set_engine_info (listctx, proto,
+				 info->file_name, info->home_dir);
+  }
+
+  err = gpgme_op_keylist_start (listctx, pattern, 0);
+  if (!err)
+    err = gpgme_op_keylist_next (listctx, r_key);
+  if (!err)
+    {
+    try_next_key:
+      err = gpgme_op_keylist_next (listctx, &key);
+      if (gpgme_err_code (err) == GPG_ERR_EOF)
+	err = 0;
+      else
+	{
+          if (!err
+              && *r_key && (*r_key)->subkeys && (*r_key)->subkeys->fpr
+              && key && key->subkeys && key->subkeys->fpr
+              && !strcmp ((*r_key)->subkeys->fpr, key->subkeys->fpr))
+            {
+              /* The fingerprint is identical.  We assume that this is
+                 the same key and don't mark it as an ambiguous.  This
+                 problem may occur with corrupted keyrings and has
+                 been noticed often with gpgsm.  In fact gpgsm uses a
+                 similar hack to sort out such duplicates but it can't
+                 do that while listing keys.  */
+              gpgme_key_unref (key);
+              goto try_next_key;
+            }
+	  if (!err)
+	    {
+	      gpgme_key_unref (key);
+	      err = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+	    }
+	  gpgme_key_unref (*r_key);
+	}
+    }
+  gpgme_release (listctx);
+  
+  if (! err)
+    gt_write_status (gt, STATUS_RECIPIENT, 
+		     ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ? 
+		     (*r_key)->subkeys->fpr : "invalid", NULL);
+  return err;
+}
+
+
+gpg_error_t
+gt_recipients_add (gpgme_tool_t gt, const char *pattern)
 {
   gpg_error_t err;
   gpgme_key_t key;
@@ -582,7 +665,7 @@ gt_recipients_add (gpgme_tool_t gt, const char *fpr)
   if (gt->recipients_nr >= MAX_RECIPIENTS)
     return gpg_error_from_errno (ENOMEM);
 
-  err = gpgme_get_key (gt->ctx, fpr, &key, 0);
+  err = gt_get_key (gt, pattern, &key);
   if (err)
     return err;
 
@@ -958,6 +1041,18 @@ gt_vfs_mount (gpgme_tool_t gt, const char *container_file,
   gpg_error_t err;
   gpg_error_t op_err;
   err = gpgme_op_vfs_mount (gt->ctx, container_file, mount_dir, flags, &op_err);
+  return err || op_err;
+}
+
+
+gpg_error_t
+gt_vfs_create (gpgme_tool_t gt, const char *container_file, int flags)
+{
+  gpg_error_t err;
+  gpg_error_t op_err;
+  err = gpgme_op_vfs_create (gt->ctx, gt->recipients, container_file,
+			     flags, &op_err);
+  gt_recipients_clear (gt);
   return err || op_err;
 }
 
@@ -1743,6 +1838,27 @@ cmd_vfs_mount (assuan_context_t ctx, char *line)
 
 
 static gpg_error_t
+cmd_vfs_create (assuan_context_t ctx, char *line)
+{
+  struct server *server = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  char *end;
+
+  end = strchr (line, ' ');
+  if (end)
+    {
+      *(end++) = '\0';
+      while (*end == ' ')
+	end++;
+    }
+
+  err = gt_vfs_create (server->gt, line, 0);
+
+  return err;
+}
+
+
+static gpg_error_t
 cmd_result (assuan_context_t ctx, char *line)
 {
   struct server *server = assuan_get_pointer (ctx);
@@ -1835,6 +1951,8 @@ register_commands (assuan_context_t ctx)
     // TODO: ASSUAN
     { "VFS_MOUNT", cmd_vfs_mount },
     { "MOUNT", cmd_vfs_mount },
+    { "VFS_CREATE", cmd_vfs_create },
+    { "CREATE", cmd_vfs_create },
     // TODO: GPGCONF
     { "RESULT", cmd_result },
     { "STRERROR", cmd_strerror },

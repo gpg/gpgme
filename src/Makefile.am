@@ -111,7 +111,7 @@ main_sources =								\
 	opassuan.c                                                      \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.h	\
 	$(gpgsm_components) $(assuan_components) $(gpgconf_components)  \
-	$(g13_components) g13.c						\
+	$(g13_components) vfs-mount.c vfs-create.c			\
 	gpgconf.c							\
 	sema.h priv-io.h $(system_components) dirinfo.c			\
 	debug.c debug.h gpgme.c version.c error.c

@@ -1,4 +1,4 @@
-/* g13.c - g13 support in GPGME
+/* vfs-mount.c - vfs mount support in GPGME
    Copyright (C) 2009 g10 Code GmbH
 
    This file is part of GPGME.
@@ -198,7 +198,8 @@ _gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
 
 gpgme_error_t
 gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
-		     const char *mount_dir, int flags, gpgme_error_t *op_err)
+		    const char *mount_dir, unsigned int flags,
+		    gpgme_error_t *op_err)
 {
   TRACE_BEG4 (DEBUG_CTX, "gpgme_op_vfs_mount", ctx,
 	      "container=%s, mount_dir=%s, flags=0x%x, op_err=%p",
