@@ -34,6 +34,14 @@
 /* The lock we take while checking for lazy lock initialization.  */
 static pth_mutex_t check_init_lock = PTH_MUTEX_INIT;
 
+
+uintptr_t
+ath_self (void)
+{
+  return (uintptr_t) pth_self ();
+}
+
+
 /* Initialize the mutex *PRIV.  If JUST_CHECK is true, only do this if
    it is not already initialized.  */
 static int

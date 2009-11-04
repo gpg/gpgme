@@ -21,6 +21,9 @@
 #ifndef ATH_H
 #define ATH_H
 
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
 #ifdef HAVE_W32_SYSTEM
   /* fixme: Check how we did it in libgcrypt.  */
   struct msghdr { int dummy; };
@@ -67,6 +70,8 @@
 
 typedef void *ath_mutex_t;
 #define ATH_MUTEX_INITIALIZER 0;
+
+uintptr_t ath_self (void);
 
 /* Functions for mutual exclusion.  */
 int ath_mutex_init (ath_mutex_t *mutex);

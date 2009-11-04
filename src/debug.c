@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <errno.h>
+#include <time.h>
 #ifndef HAVE_DOSISH_SYSTEM
 #  include <sys/types.h>
 #  include <sys/stat.h>
@@ -36,11 +37,8 @@
 #endif
 #include <assert.h>
 
-#ifdef HAVE_ASSUAN_H
-#include "assuan.h"
-#endif
-
 #include "util.h"
+#include "ath.h"
 #include "sema.h"
 #include "debug.h"
 
@@ -55,6 +53,28 @@ static int debug_level;
 
 /* The output stream for the debug messages.  */
 static FILE *errfp;
+
+
+#ifdef __GNUC__
+#define FRAME_NR
+static __thread int frame_nr = 0;
+#endif
+
+void
+_gpgme_debug_frame_begin (void)
+{
+#ifdef FRAME_NR
+  frame_nr++;
+#endif
+}
+
+void _gpgme_debug_frame_end (void)
+{
+#ifdef FRAME_NR
+  frame_nr--;
+#endif
+}
+
 
 
 /* Remove leading and trailing white spaces.  */
@@ -140,15 +160,11 @@ debug_init (void)
 	    }
 	  free (e);
         }
-
-      if (debug_level > 0)
-        fprintf (errfp, "gpgme_debug: level=%d\n", debug_level);
-#ifdef HAVE_ASSUAN_H
-      assuan_set_assuan_log_prefix ("gpgme-assuan");
-      assuan_set_assuan_log_stream (debug_level > 0 ? errfp : NULL);
-#endif /* HAVE_ASSUAN_H*/
     }
   UNLOCK (debug_lock);
+
+  if (debug_level > 0)
+    _gpgme_debug (DEBUG_INIT, "gpgme_debug: level=%d\n", debug_level);
 }
 
 
@@ -173,13 +189,37 @@ _gpgme_debug (int level, const char *format, ...)
   int saved_errno;
 
   saved_errno = errno;
-
-  debug_init ();
   if (debug_level < level)
     return;
     
   va_start (arg_ptr, format);
   LOCK (debug_lock);
+  {
+    struct tm *tp;
+    time_t atime = time (NULL);
+    
+    tp = localtime (&atime);
+    fprintf (errfp, "GPGME %04d-%02d-%02d %02d:%02d:%02d <0x%04llx>  ",
+	     1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+	     tp->tm_hour, tp->tm_min, tp->tm_sec,
+	     (unsigned long long) ath_self ());
+  }
+#ifdef FRAME_NR
+  {
+    char spaces[] = "                                        ";
+    int nr_spaces = sizeof (spaces) - 1;
+    int nr_columns;
+
+    nr_columns = 2 * (frame_nr - 1);
+    if (nr_columns > nr_spaces)
+      nr_columns = nr_spaces;
+    if (nr_columns < 0)
+      nr_columns = 0;
+    spaces[nr_columns] = '\0';
+    fprintf (errfp, "%s", spaces);
+  }
+#endif
+
   vfprintf (errfp, format, arg_ptr);
   va_end (arg_ptr);
   if(format && *format && format[strlen (format) - 1] != '\n')
@@ -199,7 +239,6 @@ _gpgme_debug_begin (void **line, int level, const char *format, ...)
   va_list arg_ptr;
   int res;
 
-  debug_init ();
   if (debug_level < level)
     {
       /* Disable logging of this line.  */
@@ -265,8 +304,7 @@ _gpgme_debug_end (void **line)
 
 void
 _gpgme_debug_buffer (int lvl, const char *const fmt,
-		     const char *const func, const char *const tagname,
-		     const void *const tag, const char *const buffer,
+		     const char *const func, const char *const buffer,
 		     size_t len)
 {
   int idx = 0;
@@ -302,6 +340,6 @@ _gpgme_debug_buffer (int lvl, const char *const fmt,
       *(strp++) = ' ';
       *(strp2) = '\0';
 
-      _gpgme_debug (lvl, fmt, func, tagname, tag, str);
+      _gpgme_debug (lvl, fmt, func, str);
     }
 }

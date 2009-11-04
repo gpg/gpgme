@@ -73,9 +73,6 @@ do_subsystem_inits (void)
 #endif
 
   _gpgme_sema_subsystem_init ();
-#ifdef HAVE_ASSUAN_H
-  assuan_set_assuan_err_source (GPG_ERR_SOURCE_GPGME);
-#endif /*HAVE_ASSUAN_H*/
   _gpgme_debug_subsystem_init ();
   _gpgme_io_subsystem_init ();
 #if defined(HAVE_W32_SYSTEM) && defined(HAVE_ASSUAN_H)
@@ -196,7 +193,7 @@ gpgme_check_version (const char *req_version)
      before using the trace facility.  If we won't the trace would
      automagically initialize the debug system with out the locks
      being initialized and missing the assuan log level setting. */
-  TRACE2 (DEBUG_INIT, "gpgme_check_version: ", 0,
+  TRACE2 (DEBUG_INIT, "gpgme_check_version", 0,
 	  "req_version=%s, VERSION=%s",
           req_version? req_version:"(null)", VERSION);
  
@@ -221,13 +218,13 @@ gpgme_check_version_internal (const char *req_version,
     return result;
 
   /* Catch-22, see above.  */
-  TRACE2 (DEBUG_INIT, "gpgme_check_version_internal: ", 0,
+  TRACE2 (DEBUG_INIT, "gpgme_check_version_internal", 0,
 	  "req_version=%s, offset_sig_validity=%i",
 	  req_version ? req_version : "(null)", offset_sig_validity);
 
   if (offset_sig_validity != offsetof (struct _gpgme_signature, validity))
     {
-      TRACE1 (DEBUG_INIT, "gpgme_check_version_internal: ", 0,
+      TRACE1 (DEBUG_INIT, "gpgme_check_version_internal", 0,
 	      "offset_sig_validity mismatch: expected %i",
 	      offsetof (struct _gpgme_signature, validity));
       _gpgme_selftest = GPG_ERR_SELFTEST_FAILED;

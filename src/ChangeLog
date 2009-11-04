@@ -1,3 +1,22 @@
+2009-11-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* ath.h (ath_self): New prototype.  Include <stdint.h>
+	* ath.c, ath-pth.c, ath-pthread.c (ath_self): New function.
+	* debug.h: Rewrite most macros to beautify debug output.
+	(_gpgme_debug_buffer): Remove tagname and tag argument.
+	(_gpgme_debug_frame_begin, _gpgme_debug_frame_end): New prototypes.
+	* debug.c: Include <time.h>.  Don't include assuan.h.
+	(frame_nr, FRAME_NR): New thread-specific variable and macro.
+	(debug_init): Do not initialize assuan.  Call _gpgme_debug after
+	initialization instead using printf directly.
+	(_gpgme_debug): Do not call debug_init (we now ensure proper
+	initialization by user).  Add timestamp and thread/process ID.
+	(_gpgme_debug_buffer): Do not take tagname and tag argument.
+	(_gpgme_debug_frame_begin, _gpgme_debug_frame_end): New functions.
+	* version.c (gpgme_check_version_internal, gpgme_check_version):
+	Fix debug string.  Do not initialize assuan.
+	* posix-io.c (get_max_fds): Use 0 not NULL (nicer debug output).
+
 2009-11-04  Werner Koch  <wk@g10code.com>
 
 	* gpgme-tool.c (register_commands): Add HELP feature.

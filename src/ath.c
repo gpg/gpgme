@@ -42,6 +42,33 @@
 #define MUTEX_DESTROYED	((ath_mutex_t) 2)
 
 
+#ifdef HAVE_W32_SYSTEM
+#include <windows.h>
+uintptr_t
+ath_self (void)
+{
+  return (uintptr_t) GetCurrentThreadID ();
+}
+#else
+# ifdef __linux
+#include <sys/types.h>
+#include <sys/syscall.h>
+uintptr_t
+ath_self (void)
+{
+  /* Just to catch users who don't use gpgme-pthread.  */
+  return (uintptr_t) syscall (SYS_gettid);
+}
+# else
+uintptr_t
+ath_self (void)
+{
+  return (uintptr_t) getpid ();
+}
+# endif
+#endif
+
+
 int
 ath_mutex_init (ath_mutex_t *lock)
 {

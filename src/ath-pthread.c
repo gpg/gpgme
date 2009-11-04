@@ -77,6 +77,13 @@ ath_init (void)
 }
 
 
+uintptr_t
+ath_self (void)
+{
+  return (uintptr_t) pthread_self ();
+}
+
+
 int
 ath_mutex_init (ath_mutex_t *lock)
 {

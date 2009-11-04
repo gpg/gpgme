@@ -273,7 +273,7 @@ get_max_fds (void)
       fds = 1024;
     }
 
-  TRACE2 (DEBUG_SYSIO, "gpgme:max_fds", NULL, "max fds=%i (%s)", fds, source);
+  TRACE2 (DEBUG_SYSIO, "gpgme:max_fds", 0, "max fds=%i (%s)", fds, source);
   return fds;
 }
 
