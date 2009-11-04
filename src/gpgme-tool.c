@@ -1174,7 +1174,10 @@ reset_notify (assuan_context_t ctx, char *line)
   return 0;
 }
 
-
+static const char hlp_version[] = 
+  "VERSION [<string>]\n"
+  "\n"
+  "Call the function gpgme_check_version.";
 static gpg_error_t
 cmd_version (assuan_context_t ctx, char *line)
 {
@@ -1199,6 +1202,10 @@ cmd_engine (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_protocol[] = 
+  "PROTOCOL [<name>]\n"
+  "\n"
+  "With NAME, set the protocol.  Without return the current protocol.";
 static gpg_error_t
 cmd_protocol (assuan_context_t ctx, char *line)
 {
@@ -1911,13 +1918,14 @@ register_commands (assuan_context_t ctx)
   gpg_error_t err;
   static struct {
     const char *name;
-    gpg_error_t (*handler)(assuan_context_t, char *line);
+    assuan_handler_t handler;
+    const char * const help;
   } table[] = {
     // RESET, BYE are implicit.
-    { "VERSION", cmd_version },
+    { "VERSION", cmd_version, hlp_version },
     // TODO: Set engine info.
     { "ENGINE", cmd_engine },
-    { "PROTOCOL", cmd_protocol },
+    { "PROTOCOL", cmd_protocol, hlp_protocol },
     { "ARMOR", cmd_armor },
     { "TEXTMODE", cmd_textmode },
     { "INCLUDE_CERTS", cmd_include_certs },
@@ -1964,7 +1972,8 @@ register_commands (assuan_context_t ctx)
 
   for (idx = 0; table[idx].name; idx++)
     {
-      err = assuan_register_command (ctx, table[idx].name, table[idx].handler);
+      err = assuan_register_command (ctx, table[idx].name, table[idx].handler,
+                                     table[idx].help);
       if (err)
         return err;
     } 
