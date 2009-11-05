@@ -1,5 +1,9 @@
 2009-11-05  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-assuan.c (llass_new): Update use of assuan_socket_connect.
+	* engine-gpgsm.c (gpgsm_new): Update use of assuan_pipe_connect.
+	* engine-g13.c (g13_new): Likewise.
+
 	* priv-io.h (IOSPAWN_FLAG_NOCLOSE): New flag.
 	* w32-io.c (_gpgme_io_spawn): Implement this flag.
 	* posix-io.c (_gpgme_io_spawn): Likewise.

@@ -248,13 +248,13 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
   assuan_ctx_set_system_hooks (g13->assuan_ctx, &_gpgme_assuan_system_hooks);
 
 #if USE_DESCRIPTOR_PASSING
-  err = assuan_pipe_connect_ext
+  err = assuan_pipe_connect
     (g13->assuan_ctx, file_name ? file_name : _gpgme_get_g13_path (),
-     argv, NULL, NULL, NULL, 1);
+     argv, NULL, NULL, NULL, ASSUAN_PIPE_CONNECT_FDPASSING);
 #else
   err = assuan_pipe_connect
     (g13->assuan_ctx, file_name ? file_name : _gpgme_get_g13_path (),
-     argv, NULL);
+     argv, NULL, NULL, NULL, 0);
 #endif
   if (err)
     goto leave;

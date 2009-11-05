@@ -332,13 +332,13 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   assuan_ctx_set_system_hooks (gpgsm->assuan_ctx, &_gpgme_assuan_system_hooks);
 
 #if USE_DESCRIPTOR_PASSING
-  err = assuan_pipe_connect_ext
+  err = assuan_pipe_connect
     (gpgsm->assuan_ctx, file_name ? file_name : _gpgme_get_gpgsm_path (),
-     argv, NULL, NULL, NULL, 1);
+     argv, NULL, NULL, NULL, ASSUAN_PIPE_CONNECT_FDPASSING);
 #else
   err = assuan_pipe_connect
     (gpgsm->assuan_ctx, file_name ? file_name : _gpgme_get_gpgsm_path (),
-     argv, child_fds);
+     argv, child_fds, NULL, NULL, 0);
 
   /* On Windows, handles are inserted in the spawned process with
      DuplicateHandle, and child_fds contains the server-local names
