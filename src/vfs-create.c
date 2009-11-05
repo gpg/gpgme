@@ -170,6 +170,8 @@ gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
 		      const char *container_file, unsigned int flags,
 		      gpgme_error_t *op_err)
 {
+  gpg_error_t err;
+
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_vfs_create", ctx,
 	      "container_file=%s, flags=0x%x, op_err=%p",
 	      container_file, flags, op_err);
@@ -177,7 +179,7 @@ gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
   if (_gpgme_debug_trace () && recp)
     {
       int i = 0;
-
+      
       while (recp[i])
 	{
 	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
@@ -187,7 +189,7 @@ gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
 	}
     }
 
-  return TRACE_ERR (_gpgme_op_vfs_create (ctx, recp, container_file,
-					  flags, op_err));
+  err = _gpgme_op_vfs_create (ctx, recp, container_file, flags, op_err);
+  return TRACE_ERR (err);
 }
 

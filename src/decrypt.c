@@ -365,9 +365,12 @@ gpgme_error_t
 gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
 			gpgme_data_t plain)
 {
+  gpgme_error_t err;
+
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_start", ctx,
 	      "cipher=%p, plain=%p", cipher, plain);
-  return TRACE_ERR (decrypt_start (ctx, 0, cipher, plain));
+  err = decrypt_start (ctx, 0, cipher, plain);
+  return TRACE_ERR (err);
 }
 
 

@@ -1,3 +1,4 @@
+
 /* getauditlog.c - Retrieve the audit log.
    Copyright (C) 2007 g10 Code GmbH
 
@@ -63,9 +64,11 @@ gpgme_error_t
 gpgme_op_getauditlog_start (gpgme_ctx_t ctx, 
                             gpgme_data_t output, unsigned int flags)
 {
+  gpg_error_t err;
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_getauditlog_start", ctx,
 	      "output=%p, flags=0x%x", output, flags);
-  return TRACE_ERR (getauditlog_start (ctx, 0, output, flags));
+  err = getauditlog_start (ctx, 0, output, flags);
+  return TRACE_ERR (err);
 }
 
 

@@ -69,15 +69,16 @@ gpgme_op_assuan_transact_start (gpgme_ctx_t ctx,
 				gpgme_assuan_status_cb_t status_cb,
 				void *status_cb_value)
 {
+  gpg_error_t err;
+
   TRACE_BEG7 (DEBUG_CTX, "gpgme_op_assuan_transact_start", ctx,
 	      "command=%s, data_cb=%p/%p, inq_cb=%p/%p, status_cb=%p/%p",
 	      command, data_cb, data_cb_value, inq_cb, inq_cb_value,
 	      status_cb, status_cb_value);
 
-  return TRACE_ERR (opassuan_start (ctx, 0, command, 
-				    data_cb, data_cb_value,
-				    inq_cb, inq_cb_value,
-				    status_cb, status_cb_value));
+  err = opassuan_start (ctx, 0, command, data_cb, data_cb_value,
+			inq_cb, inq_cb_value, status_cb, status_cb_value);
+  return TRACE_ERR (err);
 }
 
 

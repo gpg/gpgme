@@ -832,10 +832,12 @@ gpgme_error_t
 gpgme_op_verify_start (gpgme_ctx_t ctx, gpgme_data_t sig,
 		       gpgme_data_t signed_text, gpgme_data_t plaintext)
 {
+  gpg_error_t err;
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_verify_start", ctx,
 	      "sig=%p, signed_text=%p, plaintext=%p",
 	      sig, signed_text, plaintext);
-  return TRACE_ERR (verify_start (ctx, 0, sig, signed_text, plaintext));
+  err = verify_start (ctx, 0, sig, signed_text, plaintext);
+  return TRACE_ERR (err);
 }
 
 

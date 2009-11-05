@@ -386,9 +386,11 @@ gpgme_error_t
 gpgme_op_sign_start (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
 		     gpgme_sig_mode_t mode)
 {
+  gpg_error_t err;
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_sign_start", ctx,
 	      "plain=%p, sig=%p, mode=%i", plain, sig, mode);
-  return TRACE_ERR (sign_start (ctx, 0, plain, sig, mode));
+  err = sign_start (ctx, 0, plain, sig, mode);
+  return TRACE_ERR (err);
 }
 
 

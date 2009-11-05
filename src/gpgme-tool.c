@@ -1041,7 +1041,7 @@ gt_vfs_mount (gpgme_tool_t gt, const char *container_file,
   gpg_error_t err;
   gpg_error_t op_err;
   err = gpgme_op_vfs_mount (gt->ctx, container_file, mount_dir, flags, &op_err);
-  return err || op_err;
+  return err ? err : op_err;
 }
 
 
@@ -1053,7 +1053,7 @@ gt_vfs_create (gpgme_tool_t gt, const char *container_file, int flags)
   err = gpgme_op_vfs_create (gt->ctx, gt->recipients, container_file,
 			     flags, &op_err);
   gt_recipients_clear (gt);
-  return err || op_err;
+  return err ? err : op_err;
 }
 
 

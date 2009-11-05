@@ -94,11 +94,14 @@ gpgme_error_t
 gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 		       int allow_secret)
 {
+  gpgme_error_t err;
+
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete", ctx,
 	      "key=%p (%s), allow_secret=%i", key,
 	      (key->subkeys && key->subkeys->fpr) ? 
 	      key->subkeys->fpr : "invalid", allow_secret);
-  return TRACE_ERR (delete_start (ctx, 0, key, allow_secret));
+  err = delete_start (ctx, 0, key, allow_secret);
+  return TRACE_ERR (err);
 }
 
 

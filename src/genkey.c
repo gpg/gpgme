@@ -197,10 +197,13 @@ gpgme_error_t
 gpgme_op_genkey_start (gpgme_ctx_t ctx, const char *parms,
 		       gpgme_data_t pubkey, gpgme_data_t seckey)
 {
+  gpgme_error_t err;
+
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_genkey_start", ctx,
 	      "pubkey=%p, seckey=%p", pubkey, seckey);
   TRACE_LOGBUF (parms, strlen (parms));
-  return TRACE_ERR (genkey_start (ctx, 0, parms, pubkey, seckey));
+  err = genkey_start (ctx, 0, parms, pubkey, seckey);
+  return TRACE_ERR (err);
 }
 
 

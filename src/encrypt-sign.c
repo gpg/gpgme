@@ -92,6 +92,8 @@ gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
 			     gpgme_encrypt_flags_t flags,
 			     gpgme_data_t plain, gpgme_data_t cipher)
 {
+  gpgme_error_t err;
+
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_encrypt_sign_start", ctx,
 	      "flags=0x%x, plain=%p, cipher=%p", flags, plain, cipher);
   
@@ -108,7 +110,8 @@ gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
 	}
     }
 
-  return TRACE_ERR (encrypt_sign_start (ctx, 0, recp, flags, plain, cipher));
+  err = encrypt_sign_start (ctx, 0, recp, flags, plain, cipher);
+  return err;
 }
 
 

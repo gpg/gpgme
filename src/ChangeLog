@@ -1,3 +1,24 @@
+2009-11-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* decrypt.c (gpgme_op_decrypt_start): Fix use of debug macro.
+	* decrypt-verify.c (gpgme_op_decrypt_verify_start): Likewise.
+	* delete.c (gpgme_op_delete_start): Likewise.
+	* edit.c (gpgme_op_edit_start, gpgme_op_card_edit_start):
+	Likewise.
+	* encrypt.c (gpgme_op_encrypt_start): Likewise.
+	* encrypt-sign.c (gpgme_op_encrypt_sign_start): Likewise.
+	* export.c (gpgme_op_export_start, gpgme_op_export_ext_start)
+	(gpgme_op_export_keys_start, gpgme_op_export_keys): Likewise.
+	* genkey.c (gpgme_op_genkey_start): Likewise.
+	* getauditlog.c (gpgme_op_getauditlog_start): Likewise.
+	* import.c (gpgme_op_import_start, gpgme_op_import_keys_start):
+	Likewise.
+	* opassuan.c (gpgme_op_assuan_transact_start): Likewise.
+	* sign.c (gpgme_op_sign_start): Likewise.
+	* verify.c (gpgme_op_verify_start): Likewise.
+	* vfs-create.c (gpgme_op_vfs_create): Likewise.
+	* vfs-mount.c (gpgme_op_vfs_mount): Likewise.
+
 2009-11-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* ath.h (ath_self): New prototype.  Include <stdint.h>
