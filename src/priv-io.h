@@ -68,6 +68,8 @@ int _gpgme_io_set_nonblocking (int fd);
 /* A flag to tell the spawn function to allow the child process to set
    the foreground window. */
 #define IOSPAWN_FLAG_ALLOW_SET_FG 1
+/* Don't close any child FDs.  */
+#define IOSPAWN_FLAG_NOCLOSE 2
 
 /* Spawn the executable PATH with ARGV as arguments.  After forking
    close all fds except for those in FD_LIST in the child, then

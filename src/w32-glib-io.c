@@ -777,8 +777,11 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
     TRACE_LOG1 ("CloseHandle of process failed: ec=%d",
 		(int) GetLastError ());
 
-  for (i = 0; fd_list[i].fd != -1; i++)
-    _gpgme_io_close (fd_list[i].fd);
+  if (! (flags & IOSPAWN_FLAG_NOCLOSE))
+    {
+      for (i = 0; fd_list[i].fd != -1; i++)
+	_gpgme_io_close (fd_list[i].fd);
+    }
 
   for (i = 0; fd_list[i].fd != -1; i++)
     if (fd_list[i].dup_to == -1)

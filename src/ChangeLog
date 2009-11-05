@@ -1,5 +1,11 @@
 2009-11-05  Marcus Brinkmann  <marcus@g10code.de>
 
+	* priv-io.h (IOSPAWN_FLAG_NOCLOSE): New flag.
+	* w32-io.c (_gpgme_io_spawn): Implement this flag.
+	* posix-io.c (_gpgme_io_spawn): Likewise.
+	* w32-glib-io.c (_gpgme_io_spawn): Likewise.
+	* assuan-support.c (my_spawn): Set this flag.
+
 	* decrypt.c (gpgme_op_decrypt_start): Fix use of debug macro.
 	* decrypt-verify.c (gpgme_op_decrypt_verify_start): Likewise.
 	* delete.c (gpgme_op_delete_start): Likewise.

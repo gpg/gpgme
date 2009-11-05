@@ -152,7 +152,7 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
   fd_items[i].fd = -1;
   fd_items[i].dup_to = -1;
 
-  err = _gpgme_io_spawn (name, argv, 0, fd_items, r_pid);
+  err = _gpgme_io_spawn (name, argv, IOSPAWN_FLAG_NOCLOSE, fd_items, r_pid);
   if (! err)
     {
       i = 0;
