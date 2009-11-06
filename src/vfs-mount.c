@@ -56,6 +56,30 @@ gpgme_op_vfs_mount_result (gpgme_ctx_t ctx)
 
 
 static gpgme_error_t
+_gpgme_vfs_mount_status_handler (void *priv, const char *code, const char *args)
+{
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_VFS_MOUNT, &hook, -1, NULL);
+  opd = hook;
+  if (err)
+    return err;
+
+  if (! strcasecmp ("MOUNTPOINT", code))
+    {
+      if (opd->result.mount_dir)
+	free (opd->result.mount_dir);
+      opd->result.mount_dir = strdup (args);
+    }
+
+  return 0;
+}
+
+
+static gpgme_error_t
 vfs_start (gpgme_ctx_t ctx, int synchronous,
 	   const char *command,
 	   gpgme_assuan_data_cb_t data_cb,
@@ -190,7 +214,7 @@ _gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
     }
     
   err = gpgme_op_vfs_transact (ctx, cmd, NULL, NULL, NULL, NULL,
-			       NULL, NULL, op_err);
+			       _gpgme_vfs_mount_status_handler, ctx, op_err);
   free (cmd);
 
   return err;

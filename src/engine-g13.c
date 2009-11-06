@@ -69,10 +69,6 @@ struct engine_g13
 
   struct gpgme_io_cbs io_cbs;
 
-  /* Internal callbacks.  */
-  engine_assuan_result_cb_t result_cb;
-  void *result_cb_value; 
-
   /* User provided callbacks.  */
   struct {
     gpgme_assuan_data_cb_t data_cb;
@@ -398,8 +394,8 @@ g13_set_locale (void *engine, int category, const char *value)
 
 static gpgme_error_t
 g13_assuan_simple_command (assuan_context_t ctx, char *cmd,
-			     engine_status_handler_t status_fnc,
-			     void *status_fnc_value)
+			   engine_status_handler_t status_fnc,
+			   void *status_fnc_value)
 {
   gpg_error_t err;
   char *line;
@@ -480,17 +476,13 @@ status_handler (void *opaque, int fd)
 		  "fd 0x%x: ERR line: %s",
                   fd, err ? gpg_strerror (err) : "ok");
 	  
-	  /* In g13, command execution errors are not fatal, as we use
+	  /* Command execution errors are not fatal, as we use
 	     a session based protocol.  */
-          if (g13->result_cb)
-            err = g13->result_cb (g13->result_cb_value, err);
-          else
-            err = 0;
-          if (!err)
-            {
-              _gpgme_io_close (g13->status_cb.fd);
-              return 0;
-	    }
+	  data->op_err = err;
+
+	  /* The caller will do the rest (namely, call cancel_op,
+	     which closes status_fd).  */
+	  return 0;
 	}
       else if (linelen >= 2
 	       && line[0] == 'O' && line[1] == 'K'
@@ -498,15 +490,9 @@ status_handler (void *opaque, int fd)
 	{
           TRACE1 (DEBUG_CTX, "gpgme:status_handler", g13,
 		  "fd 0x%x: OK line", fd);
-          if (g13->result_cb)
-            err = g13->result_cb (g13->result_cb_value, 0);
-          else
-            err = 0;
-	  if (!err)
-            {
-              _gpgme_io_close (g13->status_cb.fd);
-              return 0;
-            }
+
+	  _gpgme_io_close (g13->status_cb.fd);
+	  return 0;
 	}
       else if (linelen > 2
 	       && line[0] == 'D' && line[1] == ' ')
@@ -704,8 +690,6 @@ g13_reset (void *engine)
 static gpgme_error_t
 g13_transact (void *engine,
                 const char *command,
-                engine_assuan_result_cb_t result_cb,
-                void *result_cb_value,
                 gpgme_assuan_data_cb_t data_cb,
                 void *data_cb_value,
                 gpgme_assuan_inquire_cb_t inq_cb,
@@ -719,8 +703,6 @@ g13_transact (void *engine,
   if (!g13 || !command || !*command)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  g13->result_cb = result_cb;
-  g13->result_cb_value = result_cb_value;
   g13->user.data_cb = data_cb;
   g13->user.data_cb_value = data_cb_value;
   g13->user.inq_cb = inq_cb;
