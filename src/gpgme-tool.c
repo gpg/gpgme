@@ -35,6 +35,8 @@
 #include <argp.h>
 #endif
 
+#include <assuan.h>
+
 #include "gpgme.h"
 
 
@@ -509,6 +511,8 @@ struct gpgme_tool
 
   gpg_error_t (*write_status) (void *hook, const char *status, const char *msg);
   void *write_status_hook;
+  gpg_error_t (*write_data) (void *hook, const void *buf, size_t len);
+  void *write_data_hook;
 };
 typedef struct gpgme_tool *gpgme_tool_t;
 
@@ -735,6 +739,13 @@ gt_write_status (gpgme_tool_t gt, status_t status, ...)
   err = gt->write_status (gt->write_status_hook, status_string[status], buf);
   if (err)
     log_error (1, err, "can't write status line");
+}
+
+
+gpg_error_t
+gt_write_data (gpgme_tool_t gt, void *buf, size_t len)
+{
+  return gt->write_data (gt->write_data_hook, buf, len);
 }
 
 
@@ -1085,6 +1096,18 @@ gt_result (gpgme_tool_t gt, unsigned int flags)
 	    }
 	}
     }
+  if (flags & GT_RESULT_VFS_MOUNT)
+    {
+      gpgme_vfs_mount_result_t res = gpgme_op_vfs_mount_result (gt->ctx);
+      if (res)
+	{
+	  gt_write_data (gt, "vfs_mount\n", 10);
+	  gt_write_data (gt, "mount_dir:", 10);
+	  gt_write_data (gt, res->mount_dir, strlen (res->mount_dir));
+	  gt_write_data (gt, "\n", 1);
+	}
+    }
+
   return 0;
 }
 
@@ -1110,6 +1133,14 @@ server_write_status (void *hook, const char *status, const char *msg)
 {
   struct server *server = hook;
   return assuan_write_status (server->assuan_ctx, status, msg);
+}
+
+
+gpg_error_t
+server_write_data (void *hook, const void *buf, size_t len)
+{
+  struct server *server = hook;
+  return assuan_send_data (server->assuan_ctx, buf, len);
 }
 
 
@@ -1999,6 +2030,8 @@ gpgme_server (gpgme_tool_t gt)
   server.gt = gt;
   gt->write_status = server_write_status;
   gt->write_status_hook = &server;
+  gt->write_data = server_write_data;
+  gt->write_data_hook = &server;
 
   /* We use a pipe based server so that we can work from scripts.
      assuan_init_pipe_server will automagically detect when we are
