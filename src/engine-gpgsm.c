@@ -364,9 +364,9 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 
   /* assuan_pipe_connect in this case uses _gpgme_io_spawn which
      closes the child fds for us.  */
-  gpgsm->input_cb.server_fd = -1;
-  gpgsm->output_cb.server_fd = -1;
-  gpgsm->message_cb.server_fd = -1;
+  _gpgme_io_close (gpgsm->input_cb.server_fd);
+  _gpgme_io_close (gpgsm->output_cb.server_fd);
+  _gpgme_io_close (gpgsm->message_cb.server_fd);
 
   err = _gpgme_getenv ("DISPLAY", &dft_display);
   if (err)
