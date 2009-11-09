@@ -362,10 +362,6 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   if (err)
     goto leave;
 
-  _gpgme_io_close (gpgsm->input_cb.server_fd);
-  _gpgme_io_close (gpgsm->output_cb.server_fd);
-  _gpgme_io_close (gpgsm->message_cb.server_fd);
-
   err = _gpgme_getenv ("DISPLAY", &dft_display);
   if (err)
     goto leave;
