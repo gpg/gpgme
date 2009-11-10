@@ -294,7 +294,7 @@ uiserver_new (void **engine, const char *file_name, const char *home_dir)
   err = assuan_socket_connect (uiserver->assuan_ctx,
 			       file_name ?
 			       file_name : _gpgme_get_uiserver_socket_path (),
-			       0, 0);
+			       0, ASSUAN_SOCKET_SERVER_FDPASSING);
   if (err)
     goto leave;
 

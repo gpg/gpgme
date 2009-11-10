@@ -1,3 +1,8 @@
+2009-11-10  Werner Koch  <wk@g10code.com>
+
+	* engine-uiserver.c (uiserver_new): Pass fdpassing flag to
+	assuan_socket_connect.
+
 2009-11-10  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.c (gpgme_new): Set default sub protocol.
