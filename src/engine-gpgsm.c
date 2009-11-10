@@ -1161,14 +1161,14 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
   char *line;
   int linelen;
   int invalid_recipients = 0;
-  int i = 0;
+  int i;
 
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
   line = malloc (10 + 40 + 1);
   if (!line)
     return gpg_error_from_errno (errno);
   strcpy (line, "RECIPIENT ");
-  while (!err && recp[i])
+  for (i =0; !err && recp[i]; i++)
     {
       char *fpr;
       int newlen;
@@ -1205,7 +1205,6 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
 	  free (line);
 	  return err;
 	}
-      i++;
     }
   free (line);
   return gpg_error (invalid_recipients

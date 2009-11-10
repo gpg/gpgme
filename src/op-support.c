@@ -131,6 +131,8 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
     }
 
   err = _gpgme_engine_set_protocol (ctx->engine, ctx->sub_protocol);
+  if (gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED)
+    err = 0;
   if (err)
     return err;
 
