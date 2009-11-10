@@ -194,6 +194,7 @@ EXPORTS
 
     gpgme_key_from_uid                    @149
     gpgme_set_sub_protocol                @150
+    gpgme_get_sub_protocol                @151
 
 ; END
 

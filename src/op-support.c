@@ -130,6 +130,10 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
         }
     }
 
+  err = _gpgme_engine_set_protocol (ctx->engine, ctx->sub_protocol);
+  if (err)
+    return err;
+
   if (type == 1 || (type == 2 && !ctx->io_cbs.add))
     {
       /* Use private event loop.  */

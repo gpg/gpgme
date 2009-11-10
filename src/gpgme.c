@@ -305,13 +305,22 @@ gpgme_get_protocol (gpgme_ctx_t ctx)
 gpgme_error_t
 gpgme_set_sub_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
 {
-  gpgme_error_t err;
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_set_sub_protocol", ctx, "protocol=%i (%s)",
-	      protocol, gpgme_get_protocol_name (protocol)
-	      ? gpgme_get_protocol_name (protocol) : "invalid");
+  TRACE2 (DEBUG_CTX, "gpgme_set_sub_protocol", ctx, "protocol=%i (%s)",
+	  protocol, gpgme_get_protocol_name (protocol)
+	  ? gpgme_get_protocol_name (protocol) : "invalid");
+  ctx->sub_protocol = protocol;
+  return 0;
+}
 
-  err = _gpgme_engine_set_protocol (ctx->engine, protocol);
-  return TRACE_ERR (err);
+
+gpgme_error_t
+gpgme_get_sub_protocol (gpgme_ctx_t ctx)
+{
+  TRACE2 (DEBUG_CTX, "gpgme_get_sub_protocol", ctx,
+	  "ctx->sub_protocol=%i (%s)", ctx->sub_protocol,
+	  gpgme_get_protocol_name (ctx->sub_protocol)
+	  ? gpgme_get_protocol_name (ctx->sub_protocol) : "invalid");
+  return ctx->sub_protocol;
 }
 
 

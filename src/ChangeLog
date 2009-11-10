@@ -1,5 +1,12 @@
 2009-11-10  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.h.in (gpgme_get_sub_protocol): Add prototype.
+	* gpgme.def, libgpgme.vers: Add gpgme_get_sub_protocol.
+	* context.h (struct gpgme_context): New member sub_protocol.
+	* gpgme.c (gpgme_set_sub_protocol): Set CTX->sub_protocol.
+	(gpgme_get_sub_protocol): New function.
+	* op-support.c (_gpgme_op_reset): Set sub protocol.
+
 	* Makefile.am (uiserver_components): New variable.
 	(main_sources): Add it.
 	* ops.h, key.c (_gpgme_key_append_name): Take CONVERT argument,

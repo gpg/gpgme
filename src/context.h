@@ -89,6 +89,9 @@ struct gpgme_context
   /* The running engine process.  */
   engine_t engine;
 
+  /* Engine's sub protocol.  */
+  gpgme_protocol_t sub_protocol;
+
   /* True if armor mode should be used.  */
   unsigned int use_armor : 1;
 
