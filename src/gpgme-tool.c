@@ -799,6 +799,18 @@ gt_set_protocol (gpgme_tool_t gt, gpgme_protocol_t proto)
 
 
 gpg_error_t
+gt_get_protocol (gpgme_tool_t gt)
+{
+  gpgme_protocol_t proto = gpgme_get_protocol (gt->ctx);
+
+  gt_write_status (gt, STATUS_PROTOCOL, gpgme_get_protocol_name (proto),
+		   NULL);
+
+  return 0;
+}
+
+
+gpg_error_t
 gt_set_sub_protocol (gpgme_tool_t gt, gpgme_protocol_t proto)
 {
   return gpgme_set_sub_protocol (gt->ctx, proto);
@@ -806,9 +818,9 @@ gt_set_sub_protocol (gpgme_tool_t gt, gpgme_protocol_t proto)
 
 
 gpg_error_t
-gt_get_protocol (gpgme_tool_t gt)
+gt_get_sub_protocol (gpgme_tool_t gt)
 {
-  gpgme_protocol_t proto = gpgme_get_protocol (gt->ctx);
+  gpgme_protocol_t proto = gpgme_get_sub_protocol (gt->ctx);
 
   gt_write_status (gt, STATUS_PROTOCOL, gpgme_get_protocol_name (proto),
 		   NULL);
@@ -1268,8 +1280,8 @@ cmd_sub_protocol (assuan_context_t ctx, char *line)
   struct server *server = assuan_get_pointer (ctx);
   if (line && *line)
     return gt_set_sub_protocol (server->gt, gt_protocol_from_name (line));
-  /* FIXME.  */
-  return 0;
+  else
+    return gt_get_sub_protocol (server->gt);
 }
 
 

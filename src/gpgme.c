@@ -77,6 +77,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
   ctx->include_certs = GPGME_INCLUDE_CERTS_DEFAULT;
   ctx->protocol = GPGME_PROTOCOL_OpenPGP;
+  ctx->sub_protocol = GPGME_PROTOCOL_DEFAULT;
   _gpgme_fd_table_init (&ctx->fdt);
 
   LOCK (def_lc_lock);

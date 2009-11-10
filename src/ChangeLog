@@ -1,5 +1,8 @@
 2009-11-10  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme.c (gpgme_new): Set default sub protocol.
+	* gpgme-tool.c: Implement get sub protocol.
+
 	* gpgme.h.in (gpgme_get_sub_protocol): Add prototype.
 	* gpgme.def, libgpgme.vers: Add gpgme_get_sub_protocol.
 	* context.h (struct gpgme_context): New member sub_protocol.
