@@ -58,8 +58,11 @@ struct engine_ops
 					   engine_colon_line_handler_t fnc,
 					   void *fnc_value);
   gpgme_error_t (*set_locale) (void *engine, int category, const char *value);
+  gpgme_error_t (*set_protocol) (void *engine, gpgme_protocol_t protocol);
   gpgme_error_t (*decrypt) (void *engine, gpgme_data_t ciph,
 			    gpgme_data_t plain);
+  gpgme_error_t (*decrypt_verify) (void *engine, gpgme_data_t ciph,
+				   gpgme_data_t plain);
   gpgme_error_t (*delete) (void *engine, gpgme_key_t key, int allow_secret);
   gpgme_error_t (*edit) (void *engine, int type, gpgme_key_t key,
 			 gpgme_data_t out, gpgme_ctx_t ctx /* FIXME */);
@@ -88,12 +91,11 @@ struct engine_ops
 				gpgme_keylist_mode_t mode);
   gpgme_error_t (*sign) (void *engine, gpgme_data_t in, gpgme_data_t out,
 			 gpgme_sig_mode_t mode, int use_armor,
-			 int use_textmode,
-			 int include_certs, gpgme_ctx_t ctx /* FIXME */);
+			 int use_textmode, int include_certs,
+			 gpgme_ctx_t ctx /* FIXME */);
   gpgme_error_t (*trustlist) (void *engine, const char *pattern);
   gpgme_error_t (*verify) (void *engine, gpgme_data_t sig,
-			   gpgme_data_t signed_text,
-			   gpgme_data_t plaintext);
+			   gpgme_data_t signed_text, gpgme_data_t plaintext);
   gpgme_error_t  (*getauditlog) (void *engine, gpgme_data_t output,
                                  unsigned int flags);
   gpgme_error_t  (*opassuan_transact) (void *engine, 
@@ -131,6 +133,9 @@ extern struct engine_ops _gpgme_engine_ops_assuan;	/* Low-level Assuan. */
 #endif
 #ifdef ENABLE_G13
 extern struct engine_ops _gpgme_engine_ops_g13;         /* Crypto VFS. */
+#endif
+#ifdef ENABLE_UISERVER
+extern struct engine_ops _gpgme_engine_ops_uiserver;
 #endif
 
 #endif /* ENGINE_BACKEND_H */

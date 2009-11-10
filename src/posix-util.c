@@ -69,6 +69,30 @@ _gpgme_get_g13_path (void)
 #endif
 }
 
+
+const char *
+_gpgme_get_uiserver_socket_path (void)
+{
+  static char *socket_path;
+  char *homedir;
+  const char name[] = "S.uiserver";
+
+  if (socket_path)
+    return socket_path;
+
+  homedir = _gpgme_get_default_homedir ();
+  if (! homedir)
+    return NULL;
+
+  socket_path = malloc (strlen (homedir) + 1 + strlen (name) + 1);
+  if (! socket_path)
+    return NULL;
+
+  strcpy (stpcpy (stpcpy (socket_path, homedir), "/"), name);
+  return socket_path;
+}
+
+
 /* See w32-util.c */
 int
 _gpgme_get_conf_int (const char *key, int *value)

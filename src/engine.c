@@ -61,7 +61,12 @@ static struct engine_ops *engine_ops[] =
     NULL,
 #endif
 #ifdef ENABLE_G13
-    &_gpgme_engine_ops_g13		/* Crypto VFS.  */
+    &_gpgme_engine_ops_g13,		/* Crypto VFS.  */
+#else
+    NULL,
+#endif
+#ifdef ENABLE_UISERVER
+    &_gpgme_engine_ops_uiserver		/* Crypto VFS.  */
 #else
     NULL
 #endif
@@ -200,7 +205,8 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 					GPGME_PROTOCOL_CMS,
 					GPGME_PROTOCOL_GPGCONF,
 					GPGME_PROTOCOL_ASSUAN,
-					GPGME_PROTOCOL_G13 };
+					GPGME_PROTOCOL_G13,
+					GPGME_PROTOCOL_UISERVER };
       unsigned int proto;
 
       for (proto = 0; proto < DIM (proto_list); proto++)
@@ -550,6 +556,20 @@ _gpgme_engine_set_locale (engine_t engine, int category,
   return (*engine->ops->set_locale) (engine->engine, category, value);
 }
 
+
+gpgme_error_t
+_gpgme_engine_set_protocol (engine_t engine, gpgme_protocol_t protocol)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->set_protocol)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->set_protocol) (engine->engine, protocol);
+}
+  
+
 gpgme_error_t
 _gpgme_engine_op_decrypt (engine_t engine, gpgme_data_t ciph,
 			  gpgme_data_t plain)
@@ -562,6 +582,21 @@ _gpgme_engine_op_decrypt (engine_t engine, gpgme_data_t ciph,
 
   return (*engine->ops->decrypt) (engine->engine, ciph, plain);
 }
+
+
+gpgme_error_t
+_gpgme_engine_op_decrypt_verify (engine_t engine, gpgme_data_t ciph,
+				 gpgme_data_t plain)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->decrypt_verify)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->decrypt_verify) (engine->engine, ciph, plain);
+}
+
 
 gpgme_error_t
 _gpgme_engine_op_delete (engine_t engine, gpgme_key_t key,

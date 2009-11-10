@@ -128,7 +128,7 @@ gpgme_error_t _gpgme_progress_status_handler (void *priv,
 gpgme_error_t _gpgme_key_new (gpgme_key_t *r_key);
 gpgme_error_t _gpgme_key_add_subkey (gpgme_key_t key,
 				     gpgme_subkey_t *r_subkey);
-gpgme_error_t _gpgme_key_append_name (gpgme_key_t key, char *src);
+gpgme_error_t _gpgme_key_append_name (gpgme_key_t key, char *src, int convert);
 gpgme_key_sig_t _gpgme_key_add_sig (gpgme_key_t key, char *src);
 
 

@@ -1,3 +1,7 @@
+2009-11-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* libassuan.m4: Fix LIBASSUAN_VERSION.
+
 2006-06-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* pth.m4: Add --all to pth-config invocation.

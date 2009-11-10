@@ -102,7 +102,7 @@ read_gpgconf_dirs (void)
 
   cfd[0].fd = rp[1];
 
-  status = _gpgme_io_spawn (pgmname, argv, 0, cfd, NULL);
+  status = _gpgme_io_spawn (pgmname, argv, 0, cfd, NULL, NULL, NULL);
   if (status < 0)
     {
       _gpgme_io_close (rp[0]);

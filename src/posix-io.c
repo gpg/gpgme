@@ -305,7 +305,9 @@ _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal)
 /* Returns 0 on success, -1 on error.  */
 int
 _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
-		 struct spawn_fd_item_s *fd_list, pid_t *r_pid)
+		 struct spawn_fd_item_s *fd_list,
+		 void (*atfork) (void *opaque, int reserved),
+		 void *atforkvalue, pid_t *r_pid)
 {
   pid_t pid;
   int i;
@@ -343,6 +345,9 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	  /* Child.  */
 	  int seen_stdin = 0;
 	  int seen_stderr = 0;
+
+	  if (atfork)
+	    atfork (atforkvalue, 0);
 
 	  /* First close all fds which will not be inherited.  */
 	  for (fd = 0; fd < max_fds; fd++)

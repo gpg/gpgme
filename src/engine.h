@@ -59,7 +59,8 @@ gpgme_error_t _gpgme_engine_reset (engine_t engine);
 
 gpgme_error_t _gpgme_engine_set_locale (engine_t engine, int category,
 					const char *value);
-
+gpgme_error_t _gpgme_engine_set_protocol (engine_t engine,
+					  gpgme_protocol_t protocol);
 void _gpgme_engine_release (engine_t engine);
 void _gpgme_engine_set_status_handler (engine_t engine,
 				       engine_status_handler_t fnc,
@@ -72,9 +73,11 @@ gpgme_error_t
 _gpgme_engine_set_colon_line_handler (engine_t engine,
 				      engine_colon_line_handler_t fnc,
 				      void *fnc_value);
-gpgme_error_t _gpgme_engine_op_decrypt (engine_t engine,
-					gpgme_data_t ciph,
+gpgme_error_t _gpgme_engine_op_decrypt (engine_t engine, gpgme_data_t ciph,
 					gpgme_data_t plain);
+gpgme_error_t _gpgme_engine_op_decrypt_verify (engine_t engine,
+					       gpgme_data_t ciph,
+					       gpgme_data_t plain);
 gpgme_error_t _gpgme_engine_op_delete (engine_t engine, gpgme_key_t key,
 				       int allow_secret);
 gpgme_error_t _gpgme_engine_op_edit (engine_t engine, int type,

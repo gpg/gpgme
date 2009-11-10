@@ -192,5 +192,8 @@ EXPORTS
     gpgme_op_vfs_mount			  @147
     gpgme_op_vfs_create			  @148
 
+    gpgme_key_from_uid                    @149
+    gpgme_set_sub_protocol                @150
+
 ; END
 

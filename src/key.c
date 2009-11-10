@@ -202,7 +202,7 @@ parse_x509_user_id (char *src, char **name, char **email,
 /* Take a name from the --with-colon listing, remove certain escape
    sequences sequences and put it into the list of UIDs.  */
 gpgme_error_t
-_gpgme_key_append_name (gpgme_key_t key, char *src)
+_gpgme_key_append_name (gpgme_key_t key, char *src, int convert)
 {
   gpgme_user_id_t uid;
   char *dst;
@@ -219,7 +219,10 @@ _gpgme_key_append_name (gpgme_key_t key, char *src)
 
   uid->uid = ((char *) uid) + sizeof (*uid);
   dst = uid->uid;
-  _gpgme_decode_c_string (src, &dst, src_len + 1);
+  if (convert)
+    _gpgme_decode_c_string (src, &dst, src_len + 1);
+  else
+    memcpy (dst, src, src_len + 1);
 
   dst += strlen (dst) + 1;
   if (key->protocol == GPGME_PROTOCOL_CMS)
@@ -369,6 +372,32 @@ gpgme_key_unref (gpgme_key_t key)
 
   free (key);
 }
+
+
+/* Support functions.  */
+
+/* Create a dummy key to specify an email address.  */
+gpgme_error_t
+gpgme_key_from_uid (gpgme_key_t *r_key, const char *name)
+{
+  gpgme_error_t err;
+  gpgme_key_t key;
+
+  *r_key = NULL;
+  err = _gpgme_key_new (&key);
+  if (err)
+    return err;
+
+  /* Note: protocol doesn't matter if only email is provided.  */
+  err = _gpgme_key_append_name (key, name, 0);
+  if (err)
+    gpgme_key_unref (key);
+  else
+    *r_key = key;
+
+  return err;
+}
+
 
 
 /* Compatibility interfaces.  */

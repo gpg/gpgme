@@ -33,6 +33,8 @@ const char *_gpgme_get_gpg_path (void);
 const char *_gpgme_get_gpgsm_path (void);
 const char *_gpgme_get_gpgconf_path (void);
 const char *_gpgme_get_g13_path (void);
+const char *_gpgme_get_uiserver_socket_path (void);
+
 int _gpgme_get_conf_int (const char *key, int *value);
 void _gpgme_allow_set_foreground_window (pid_t pid);
 

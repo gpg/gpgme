@@ -1332,7 +1332,7 @@ start (engine_gpg_t gpg)
   status = _gpgme_io_spawn (gpg->file_name ? gpg->file_name :
 			    _gpgme_get_gpg_path (), gpg->argv,
                             IOSPAWN_FLAG_ALLOW_SET_FG,
-                            fd_list, &pid);
+                            fd_list, NULL, NULL, &pid);
   saved_errno = errno;
 
   free (fd_list);
@@ -2347,7 +2347,9 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_set_command_handler,
     gpg_set_colon_line_handler,
     gpg_set_locale,
+    NULL,				/* set_protocol */
     gpg_decrypt,
+    gpg_decrypt,			/* decrypt_verify */
     gpg_delete,
     gpg_edit,
     gpg_encrypt,

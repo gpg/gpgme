@@ -92,6 +92,13 @@ else
 g13_components =
 endif
 
+if HAVE_UISERVER
+uiserver_components = engine-uiserver.c
+else
+uiserver_components = 
+endif
+
+
 # These are the source files common to all library versions.  We used
 # to build a non-installed library for that, but that does not work
 # correctly on all platforms (in particular, one can not specify the
@@ -111,6 +118,7 @@ main_sources =								\
 	opassuan.c                                                      \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.h	\
 	$(gpgsm_components) $(assuan_components) $(gpgconf_components)  \
+	$(uiserver_components)						\
 	$(g13_components) vfs-mount.c vfs-create.c			\
 	gpgconf.c							\
 	sema.h priv-io.h $(system_components) dirinfo.c			\

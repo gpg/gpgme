@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "assuan.h"
 
@@ -76,7 +77,8 @@ my_recvmsg (assuan_context_t ctx, assuan_fd_t fd, assuan_msghdr_t msg,
 	    int flags)
 {
 #ifdef HAVE_W32_SYSTEM
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  errno = ENOSYS;
+  return -1;
 #else
   return _gpgme_io_recvmsg (fd, msg, flags);
 #endif
@@ -89,7 +91,8 @@ my_sendmsg (assuan_context_t ctx, assuan_fd_t fd, const assuan_msghdr_t msg,
 	    int flags)
 {
 #ifdef HAVE_W32_SYSTEM
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  errno = ENOSYS;
+  return -1;
 #else
   return _gpgme_io_sendmsg (fd, msg, flags);
 #endif
@@ -107,14 +110,17 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
 	  void (*atfork) (void *opaque, int reserved),
 	  void *atforkvalue, unsigned int flags)
 {
-  gpg_error_t err;
+  int err;
   struct spawn_fd_item_s *fd_items;
   int i;
 
   assert (name);
 
   if (! name)
-    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    {
+      errno = ENOSYS;
+      return -1;
+    }
 
   i = 0;
   if (fd_child_list)
@@ -126,7 +132,7 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
   i += 3;
   fd_items = malloc (sizeof (struct spawn_fd_item_s) * i);
   if (! fd_items)
-    return gpg_error_from_syserror ();
+    return -1;
   i = 0;
   if (fd_child_list)
     {
@@ -152,7 +158,8 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
   fd_items[i].fd = -1;
   fd_items[i].dup_to = -1;
 
-  err = _gpgme_io_spawn (name, argv, IOSPAWN_FLAG_NOCLOSE, fd_items, r_pid);
+  err = _gpgme_io_spawn (name, argv, IOSPAWN_FLAG_NOCLOSE, fd_items,
+			 atfork, atforkvalue, r_pid);
   if (! err)
     {
       i = 0;
@@ -195,8 +202,13 @@ static int
 my_socketpair (assuan_context_t ctx, int namespace, int style,
 	       int protocol, assuan_fd_t filedes[2])
 {
-  assert ("Should never happen.");
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#ifdef HAVE_W32_SYSTEM
+  errno = ENOSYS;
+  return -1;
+#else
+  /* FIXME: Debug output missing.  */
+  return __assuan_socketpair (ctx, namespace, style, protocol, filedes);
+#endif
 }
 
 

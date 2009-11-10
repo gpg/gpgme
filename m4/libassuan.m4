@@ -63,7 +63,7 @@ AC_DEFUN([AM_PATH_LIBASSUAN],
   if test $ok = yes; then
     LIBASSUAN_CFLAGS=`$LIBASSUAN_CONFIG $libassuan_config_args --cflags`
     LIBASSUAN_LIBS=`$LIBASSUAN_CONFIG $libassuan_config_args --libs`
-    LIBASSUAN_VERSION="$LIBASSUAN_CONFIG_VERSION"
+    LIBASSUAN_VERSION="$libassuan_config_version"
     AC_MSG_RESULT(yes)
     ifelse([$2], , :, [$2])
   else

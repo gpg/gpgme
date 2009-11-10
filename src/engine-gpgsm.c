@@ -38,6 +38,7 @@
 #include "wait.h"
 #include "priv-io.h"
 #include "sema.h"
+#include "data.h"
 
 #include "assuan.h"
 #include "status-table.h"
@@ -657,7 +658,7 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
     {
       int fds[2];
 
-      if (_gpgme_io_pipe (fds, 0) < 0)
+      if (_gpgme_io_pipe (fds, dir) < 0)
 	return gpg_error_from_errno (errno);
 
       iocb_data->fd = dir ? fds[0] : fds[1];
@@ -1914,8 +1915,10 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     NULL,		/* set_command_handler */
     gpgsm_set_colon_line_handler,
     gpgsm_set_locale,
+    NULL,		/* set_protocol */
     gpgsm_decrypt,
-    gpgsm_delete,
+    gpgsm_decrypt,
+    gpgsm_delete,	/* decrypt_verify */
     NULL,		/* edit */
     gpgsm_encrypt,
     NULL,		/* encrypt_sign */

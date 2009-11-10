@@ -265,13 +265,14 @@ gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
 {
   TRACE_BEG2 (DEBUG_CTX, "gpgme_set_protocol", ctx, "protocol=%i (%s)",
 	      protocol, gpgme_get_protocol_name (protocol)
-	      ? gpgme_get_protocol_name (protocol) : "unknown");
+	      ? gpgme_get_protocol_name (protocol) : "invalid");
 
   if (protocol != GPGME_PROTOCOL_OpenPGP
       && protocol != GPGME_PROTOCOL_CMS
       && protocol != GPGME_PROTOCOL_GPGCONF
       && protocol != GPGME_PROTOCOL_ASSUAN
-      && protocol != GPGME_PROTOCOL_G13)
+      && protocol != GPGME_PROTOCOL_G13
+      && protocol != GPGME_PROTOCOL_UISERVER)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (ctx->protocol != protocol)
@@ -296,8 +297,21 @@ gpgme_get_protocol (gpgme_ctx_t ctx)
   TRACE2 (DEBUG_CTX, "gpgme_get_protocol", ctx,
 	  "ctx->protocol=%i (%s)", ctx->protocol,
 	  gpgme_get_protocol_name (ctx->protocol)
-	  ? gpgme_get_protocol_name (ctx->protocol) : "unknown");
+	  ? gpgme_get_protocol_name (ctx->protocol) : "invalid");
   return ctx->protocol;
+}
+
+
+gpgme_error_t
+gpgme_set_sub_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
+{
+  gpgme_error_t err;
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_set_sub_protocol", ctx, "protocol=%i (%s)",
+	      protocol, gpgme_get_protocol_name (protocol)
+	      ? gpgme_get_protocol_name (protocol) : "invalid");
+
+  err = _gpgme_engine_set_protocol (ctx->engine, protocol);
+  return TRACE_ERR (err);
 }
 
 
@@ -320,6 +334,12 @@ gpgme_get_protocol_name (gpgme_protocol_t protocol)
 
     case GPGME_PROTOCOL_G13:
       return "G13";
+
+    case GPGME_PROTOCOL_UISERVER:
+      return "UIServer";
+
+    case GPGME_PROTOCOL_DEFAULT:
+      return "default";
 
     case GPGME_PROTOCOL_UNKNOWN:
       return "unknown";

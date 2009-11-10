@@ -326,6 +326,7 @@ typedef enum
     GPGME_PROTOCOL_ASSUAN  = 3,  /* Low-level access to an Assuan server.  */
     GPGME_PROTOCOL_G13     = 4,
     GPGME_PROTOCOL_UISERVER= 5,  
+    GPGME_PROTOCOL_DEFAULT = 254,
     GPGME_PROTOCOL_UNKNOWN = 255
   }
 gpgme_protocol_t;
@@ -803,6 +804,15 @@ gpgme_error_t gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t proto);
 /* Get the protocol used with CTX */
 gpgme_protocol_t gpgme_get_protocol (gpgme_ctx_t ctx);
 
+/* Set the crypto protocol to be used by CTX to PROTO.
+   gpgme_set_protocol actually sets the backend engine.  This sets the
+   crypto protocol used in engines that support more than one crypto
+   prococol (for example, an UISERVER can support OpenPGP and CMS).
+   This is reset to the default with gpgme_set_protocol.  */
+gpgme_error_t gpgme_set_sub_protocol (gpgme_ctx_t ctx,
+					 gpgme_protocol_t proto);
+
+
 /* Get the string describing protocol PROTO, or NULL if invalid.  */
 const char *gpgme_get_protocol_name (gpgme_protocol_t proto);
 
@@ -1209,7 +1219,9 @@ gpgme_encrypt_result_t gpgme_op_encrypt_result (gpgme_ctx_t ctx);
 typedef enum
   {
     GPGME_ENCRYPT_ALWAYS_TRUST = 1,
-    GPGME_ENCRYPT_NO_ENCRYPT_TO = 2
+    GPGME_ENCRYPT_NO_ENCRYPT_TO = 2,
+    GPGME_ENCRYPT_PREPARE = 4,
+    GPGME_ENCRYPT_EXPECT_SIGN = 8
   }
 gpgme_encrypt_flags_t;
 
@@ -1980,6 +1992,13 @@ gpgme_error_t gpgme_op_conf_load (gpgme_ctx_t ctx, gpgme_conf_comp_t *conf_p);
 /* Save the configuration of component comp.  This function does not
    follow chained components!  */
 gpgme_error_t gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp);
+
+
+/* UIServer support.  */
+
+/* Create a dummy key to specify an email address.  */
+gpgme_error_t gpgme_key_from_uid (gpgme_key_t *key, const char *name);
+
 
 
 /* Various functions.  */

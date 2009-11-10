@@ -1,3 +1,38 @@
+2009-11-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (uiserver_components): New variable.
+	(main_sources): Add it.
+	* ops.h, key.c (_gpgme_key_append_name): Take CONVERT argument,
+	implement it.  Adjust callers.
+	(gpgme_key_from_uid): New function.
+	* gpgme.h.in (gpgme_protocol_t): Add GPGME_PROTOCOL_DEFAULT.
+	(gpgme_encrypt_flags_t): Add GPGME_ENCRYPT_PREPARE,
+	GPGME_ENCRYPT_EXPECT_SIGN.
+	(gpgme_set_sub_protocol, gpgme_key_from_uid): New functions.
+	* libgpgme.vers, gpgme.def: Add new functions.
+	* gpgme.c (gpgme_set_protocol): Add UIServer protocol.
+	(gpgme_set_sub_protocol): New function.
+	(gpgme_get_protocol_name): Add UIServer and default protocol.
+	* assuan-support.c: Return correct error values, implement
+	socketpair for POSIX.
+	* priv-io.h, posix-io.c, w32-io.c, w32-glib-io.c,
+	w32-qt-io.cpp (_gpgme_io_spawn): Add ATFORK and ATFORKVALUE
+	arguments.  Implement it for POSIX.  Adjust all callers.
+	* engine.h, engine-backend.h (_gpgme_engine_set_protocol)
+	(_gpgme_engine_op_decrypt_verify): New prototypes.  Adjust all
+	users.
+	* engine.c (engine_ops, gpgme_get_engine_info): Add UIServer
+	engine.
+	(_gpgme_engine_set_protocol, _gpgme_engine_op_decrypt_verify): New
+	function.
+	* decrypt-verify.c (decrypt_verify_start): Call
+	_gpgme_engine_op_decrypt_verify.
+	* util.h, posix-util.c,
+	w32-util.c (_gpgme_get_uiserver_socket_path): New function.
+	* engine-gpgsm.c (gpgsm_set_fd): Fix _gpgme_io_pipe invocation.
+	* gpgme-tool.c: Some support for UIServer protocol.
+	* engine-uiserver.c: New file.
+
 2009-11-09  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c (gpgsm_new): Close server side FDs.

@@ -1,5 +1,10 @@
 Hey Emacs, this is -*- org -*- mode!
 
+* Document all the new stuff.
+* Fix the remaining UI Server problems:
+** VERIFY --silent support.
+** ENCRYPT/DECRYPT/VERIFY/SIGN reset the engine, shouldn't be done with UISERVER?
+
 * IMPORTANT
 ** When using descriptor passing, we need to set the fd to blocking before
    issueing simple commands, because we are mixing synchronous

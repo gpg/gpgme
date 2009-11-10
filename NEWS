@@ -8,6 +8,8 @@ Noteworthy changes in version 1.2.1 (unreleased)
 
  * New engine GPGME_PROTOCOL_G13 to support the new g13 tool.
 
+ * New engine GPGME_PROTOCOL_UISERVER to support UI Servers.
+
  * Interface changes relative to the 1.2.0 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GPGME_STATUS_INV_SGNR    NEW

@@ -757,7 +757,9 @@ struct engine_ops _gpgme_engine_ops_g13 =
     NULL,		/* set_command_handler */
     NULL,               /* set_colon_line_handler */
     g13_set_locale,
+    NULL,		/* set_protocol */
     NULL,               /* decrypt */
+    NULL,               /* decrypt_verify */
     NULL,               /* delete */
     NULL,		/* edit */
     NULL,               /* encrypt */

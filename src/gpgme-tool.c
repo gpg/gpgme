@@ -669,7 +669,10 @@ gt_recipients_add (gpgme_tool_t gt, const char *pattern)
   if (gt->recipients_nr >= MAX_RECIPIENTS)
     return gpg_error_from_errno (ENOMEM);
 
-  err = gt_get_key (gt, pattern, &key);
+  if (gpgme_get_protocol (gt->ctx) == GPGME_PROTOCOL_UISERVER)
+    err = gpgme_key_from_uid (&key, pattern);
+  else
+    err = gt_get_key (gt, pattern, &key);
   if (err)
     return err;
 
@@ -780,6 +783,10 @@ gt_protocol_from_name (const char *name)
     return GPGME_PROTOCOL_ASSUAN;
   if (! strcasecmp (name, gpgme_get_protocol_name (GPGME_PROTOCOL_G13)))
     return GPGME_PROTOCOL_G13;
+  if (! strcasecmp (name, gpgme_get_protocol_name (GPGME_PROTOCOL_UISERVER)))
+    return GPGME_PROTOCOL_UISERVER;
+  if (! strcasecmp (name, gpgme_get_protocol_name (GPGME_PROTOCOL_DEFAULT)))
+    return GPGME_PROTOCOL_DEFAULT;
   return GPGME_PROTOCOL_UNKNOWN;
 }
 
@@ -788,6 +795,13 @@ gpg_error_t
 gt_set_protocol (gpgme_tool_t gt, gpgme_protocol_t proto)
 {
   return gpgme_set_protocol (gt->ctx, proto);
+}
+
+
+gpg_error_t
+gt_set_sub_protocol (gpgme_tool_t gt, gpgme_protocol_t proto)
+{
+  return gpgme_set_sub_protocol (gt->ctx, proto);
 }
 
 
@@ -1249,6 +1263,17 @@ cmd_protocol (assuan_context_t ctx, char *line)
 
 
 static gpg_error_t
+cmd_sub_protocol (assuan_context_t ctx, char *line)
+{
+  struct server *server = assuan_get_pointer (ctx);
+  if (line && *line)
+    return gt_set_sub_protocol (server->gt, gt_protocol_from_name (line));
+  /* FIXME.  */
+  return 0;
+}
+
+
+static gpg_error_t
 cmd_armor (assuan_context_t ctx, char *line)
 {
   struct server *server = assuan_get_pointer (ctx);
@@ -1456,30 +1481,35 @@ _cmd_sign_encrypt (assuan_context_t ctx, char *line, int sign)
   gpg_error_t err;
   assuan_fd_t inp_fd;
   assuan_fd_t out_fd;
-  gpgme_data_t inp_data;
-  gpgme_data_t out_data;
+  gpgme_data_t inp_data = NULL;
+  gpgme_data_t out_data = NULL;
   gpgme_encrypt_flags_t flags = 0;
 
   if (strstr (line, "--always-trust"))
     flags |= GPGME_ENCRYPT_ALWAYS_TRUST;
   if (strstr (line, "--no-encrypt-to"))
     flags |= GPGME_ENCRYPT_NO_ENCRYPT_TO;
+  if (strstr (line, "--prepare"))
+    flags |= GPGME_ENCRYPT_PREPARE;
+  if (strstr (line, "--expect-sign"))
+    flags |= GPGME_ENCRYPT_EXPECT_SIGN;
   
   inp_fd = assuan_get_input_fd (ctx);
-  if (inp_fd == ASSUAN_INVALID_FD)
-    return GPG_ERR_ASS_NO_INPUT;
   out_fd = assuan_get_output_fd (ctx);
-  if (out_fd == ASSUAN_INVALID_FD)
-    return GPG_ERR_ASS_NO_OUTPUT;
-  
-  err = server_data_obj (inp_fd, server->input_enc, &inp_data);
-  if (err)
-    return err;
-  err = server_data_obj (out_fd, server->output_enc, &out_data);
-  if (err)
+  if (inp_fd != ASSUAN_INVALID_FD)
     {
-      gpgme_data_release (inp_data);
-      return err;
+      err = server_data_obj (inp_fd, server->input_enc, &inp_data);
+      if (err)
+	return err;
+    }
+  if (out_fd != ASSUAN_INVALID_FD)
+    {
+      err = server_data_obj (out_fd, server->output_enc, &out_data);
+      if (err)
+	{
+	  gpgme_data_release (inp_data);
+	  return err;
+	}
     }
 
   err = gt_sign_encrypt (server->gt, flags, inp_data, out_data, sign); 
@@ -1957,6 +1987,7 @@ register_commands (assuan_context_t ctx)
     // TODO: Set engine info.
     { "ENGINE", cmd_engine },
     { "PROTOCOL", cmd_protocol, hlp_protocol },
+    { "SUB_PROTOCOL", cmd_sub_protocol },
     { "ARMOR", cmd_armor },
     { "TEXTMODE", cmd_textmode },
     { "INCLUDE_CERTS", cmd_include_certs },

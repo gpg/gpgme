@@ -650,7 +650,7 @@ keylist_colon_handler (void *priv, char *line)
       /* Field 2 has the trust info, and field 10 has the user ID.  */
       if (fields >= 10)
 	{
-	  if (_gpgme_key_append_name (key, field[9]))
+	  if (_gpgme_key_append_name (key, field[9], 1))
 	    return gpg_error_from_errno (GPG_ERR_ENOMEM);	/* FIXME */
 	  else
 	    {

@@ -338,7 +338,7 @@ AC_DEFINE_UNQUOTED(NEED_GPGSM_VERSION, "$NEED_GPGSM_VERSION",
 AC_DEFINE_UNQUOTED(NEED_GPGCONF_VERSION, "$NEED_GPGCONF_VERSION",
 				         [Min. needed GPGCONF version.])
 AC_DEFINE_UNQUOTED(NEED_G13_VERSION, "$NEED_G13_VERSION",
-				         [Min. needed G13 version.])
+				     [Min. needed G13 version.])
 
 
 NO_OVERRIDE=no
@@ -634,13 +634,6 @@ AC_ARG_ENABLE(gpgconf-test,
          run_gpgconf_test=$enableval)
 AM_CONDITIONAL(RUN_GPGCONF_TESTS, test "$run_gpgconf_test" = "yes")
 
-# Only build if supported.
-AM_CONDITIONAL(BUILD_GPGCONF, test "$GPGCONF" != "no")
-if test "$GPGCONF" != "no"; then
-  AC_DEFINE(HAVE_GPGCONF, 1,
-            [Defined if we are building with gpgconf support.])
-fi
-
 
 NO_OVERRIDE=no
 AC_ARG_WITH(g13,
@@ -737,13 +730,6 @@ AC_ARG_ENABLE(g13-test,
          run_g13_test=$enableval)
 AM_CONDITIONAL(RUN_G13_TESTS, test "$run_g13_test" = "yes")
 
-# Only build if supported.
-AM_CONDITIONAL(BUILD_G13, test "$G13" != "no")
-if test "$G13" != "no"; then
-  AC_DEFINE(HAVE_G13, 1,
-            [Defined if we are building with g13 support.])
-fi
-
 
 # Check for funopen
 AC_CHECK_FUNCS(funopen)
@@ -801,6 +787,17 @@ AC_DEFINE(USE_DESCRIPTOR_PASSING,1,
 fi
 
 AM_CONDITIONAL(USE_DESCRIPTOR_PASSING, test "$use_descriptor_passing" = "yes")
+
+
+uiserver=no
+if test "$use_descriptor_passing" = "yes" && test "$have_libassuan" = "yes"; then
+  uiserver=yes
+fi
+if test "$uiserver" != "no"; then
+  AC_DEFINE(ENABLE_UISERVER, 1,
+            [Defined if we are building with uiserver support.])
+fi
+AM_CONDITIONAL(HAVE_UISERVER, test "$uiserver" != "no")
 
 
 AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
@@ -911,6 +908,9 @@ echo "
         G13 version:     $G13_VERSION, min. $NEED_G13_VERSION
 
         Assuan version:  $LIBASSUAN_VERSION
+
+	UI Server:       $uiserver
+        FD Passing:      $use_descriptor_passing
 
 	GPGME Pthread:   $have_pthread
 	GPGME Pth:       $have_pth

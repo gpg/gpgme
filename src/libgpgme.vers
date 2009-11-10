@@ -73,6 +73,8 @@ GPGME_1.1 {
     gpgme_op_vfs_mount;
     gpgme_op_vfs_create;
 
+    gpgme_key_from_uid;
+    gpgme_set_sub_protocol;
 };
 
 
