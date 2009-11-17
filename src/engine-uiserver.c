@@ -1153,6 +1153,7 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   gpgme_error_t err = 0;
   const char *protocol;
   char *cmd;
+  gpgme_key_t key;
 
   if (!uiserver || !in || !out)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1169,26 +1170,27 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 		(mode == GPGME_SIG_MODE_DETACH) ? " --detached" : "") < 0)
     return gpg_error_from_errno (errno);
 
-  {
-    gpgme_key_t key = gpgme_signers_enum (ctx, 0);
-    const char *s = NULL;
-
-    if (key && key->uids)
-      s = key->uids->email;
-    
-    if (s && strlen (s) < 80)
-      {
-	char buf[100];
-	
-	strcpy (stpcpy (buf, "SENDER --info "), s);
-	err = uiserver_assuan_simple_command (uiserver->assuan_ctx, buf,
-					      uiserver->status.fnc,
-					      uiserver->status.fnc_value);
-      }
-    else
-      err = gpg_error (GPG_ERR_INV_VALUE);
-    gpgme_key_unref (key);
-    if (err) 
+  key = gpgme_signers_enum (ctx, 0);
+  if (key)
+    {
+      const char *s = NULL;
+      
+      if (key && key->uids)
+        s = key->uids->email;
+      
+      if (s && strlen (s) < 80)
+        {
+          char buf[100];
+          
+          strcpy (stpcpy (buf, "SENDER --info "), s);
+          err = uiserver_assuan_simple_command (uiserver->assuan_ctx, buf,
+                                                uiserver->status.fnc,
+                                                uiserver->status.fnc_value);
+        }
+      else
+        err = gpg_error (GPG_ERR_INV_VALUE);
+      gpgme_key_unref (key);
+      if (err) 
       {
 	free (cmd);
 	return err;

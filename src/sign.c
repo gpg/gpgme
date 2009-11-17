@@ -286,9 +286,13 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
       break;
 
     case GPGME_STATUS_EOF:
+      /* The UI server does not send information about the created
+         signature.  This is irrelevant for this protocol and thus we
+         should not check for that.  */
       if (opd->result.invalid_signers)
 	err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
-      else if (!opd->sig_created_seen)
+      else if (!opd->sig_created_seen
+               && ctx->protocol != GPGME_PROTOCOL_UISERVER)
 	err = gpg_error (GPG_ERR_GENERAL);
       break;
 
