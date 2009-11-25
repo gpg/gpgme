@@ -2060,7 +2060,7 @@ void
 gpgme_server (gpgme_tool_t gt)
 {
   gpg_error_t err;
-  int filedes[2];
+  assuan_fd_t filedes[2];
   struct server server;
   static const char hello[] = ("GPGME-Tool " VERSION " ready");
 
@@ -2079,8 +2079,8 @@ gpgme_server (gpgme_tool_t gt)
   /* We use a pipe based server so that we can work from scripts.
      assuan_init_pipe_server will automagically detect when we are
      called with a socketpair and ignore FIELDES in this case. */
-  filedes[0] = 0;
-  filedes[1] = 1;
+  filedes[0] = assuan_fdopen (0);
+  filedes[1] = assuan_fdopen (1);
   err = assuan_new (&server.assuan_ctx);
   if (err)
     log_error (1, err, "can't create assuan context");

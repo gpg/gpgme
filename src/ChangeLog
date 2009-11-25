@@ -1,3 +1,8 @@
+2009-11-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme-tool.c (gpgme_server): Use assuan_fd_t and assuan_fdopen
+	on fds.
+
 2009-11-13    <wk@g10code.com>
 
 	* sign.c (_gpgme_sign_status_handler): Handle SIG_CREATED_SEEN.
