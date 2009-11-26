@@ -1,3 +1,8 @@
+2009-11-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* opassuan.c (opassuan_start): Allocate result structure before
+	beginning operation.
+
 2009-11-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme-tool.c (gpgme_server): Use assuan_fd_t and assuan_fdopen

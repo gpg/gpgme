@@ -29,6 +29,14 @@
 #include "util.h"
 #include "debug.h"
 
+/* LEGACY: Remove this when removing the deprecated result
+   structure.  */
+typedef struct
+{
+  struct _gpgme_op_assuan_result result;
+} *op_data_t;
+
+
 static gpgme_error_t
 opassuan_start (gpgme_ctx_t ctx, int synchronous,
                 const char *command,
@@ -49,6 +57,17 @@ opassuan_start (gpgme_ctx_t ctx, int synchronous,
   err = _gpgme_op_reset (ctx, ((synchronous&255) | 256));
   if (err)
     return err;
+
+  {
+    /* LEGACY: Remove this when removing the deprecated result
+       structure.  */
+    void *hook;
+    op_data_t opd;
+    err = _gpgme_op_data_lookup (ctx, OPDATA_ASSUAN, &hook,
+				 sizeof (*opd), NULL);
+    if (err)
+      return err;
+  }
 
   return _gpgme_engine_op_assuan_transact (ctx->engine, command,
                                            data_cb, data_cb_value,
@@ -137,11 +156,6 @@ struct engine
   struct engine_ops *ops;
   void *engine;
 };
-
-typedef struct
-{
-  struct _gpgme_op_assuan_result result;
-} *op_data_t;
 
 gpg_error_t _gpgme_engine_assuan_last_op_err (void *engine);
 
