@@ -565,8 +565,8 @@ _gt_gpgme_new (gpgme_tool_t gt, gpgme_ctx_t *ctx)
   err = gpgme_new (ctx);
   if (err)
     return err;
-   gpgme_set_progress_cb (*ctx, _gt_progress_cb, gt);
-   return 0;
+  gpgme_set_progress_cb (*ctx, _gt_progress_cb, gt);
+  return 0;
 }
 
 
@@ -1897,6 +1897,11 @@ cmd_keylist (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_getauditlog[] = 
+  "GETAUDITLOG [--html] [--with-help]\n"
+  "\n"
+  "Call the function gpgme_op_getauditlog with the given flags.  Write\n"
+  "the output to the object set by the last OUTPUT command.";
 static gpg_error_t
 cmd_getauditlog (assuan_context_t ctx, char *line)
 {
@@ -1904,6 +1909,7 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
   gpg_error_t err;
   assuan_fd_t out_fd;
   gpgme_data_t out_data;
+  unsigned int flags = 0;
 
   out_fd = assuan_get_output_fd (ctx);
   if (out_fd == ASSUAN_INVALID_FD)
@@ -1912,7 +1918,12 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
   if (err)
     return err;
 
-  err = gt_getauditlog (server->gt, out_data, 0);
+  if (strstr (line, "--html"))
+    flags |= GPGME_AUDITLOG_HTML;
+  if (strstr (line, "--with-help"))
+    flags |= GPGME_AUDITLOG_WITH_HELP;
+
+  err = gt_getauditlog (server->gt, out_data, flags);
 
   gpgme_data_release (out_data);
   server_reset_fds (server);
@@ -2054,7 +2065,7 @@ register_commands (assuan_context_t ctx)
     { "KEYLIST", cmd_keylist },
     { "LISTKEYS", cmd_keylist },
     // TODO: TRUSTLIST, TRUSTLIST_EXT
-    { "GETAUDITLOG", cmd_getauditlog },
+    { "GETAUDITLOG", cmd_getauditlog, hlp_getauditlog },
     // TODO: ASSUAN
     { "VFS_MOUNT", cmd_vfs_mount },
     { "MOUNT", cmd_vfs_mount },
