@@ -39,6 +39,21 @@
 
 #include "gpgme.h"
 
+/* GCC attributes.  */
+#if __GNUC__ >= 4 
+# define GT_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))
+#else
+# define GT_GCC_A_SENTINEL(a) 
+#endif
+
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+# define GT_GCC_A_PRINTF(f, a)  __attribute__ ((format (printf,f,a)))
+#else
+# define GT_GCC_A_PRINTF(f, a)
+#endif
+
+
+
 
 #ifndef HAVE_ARGP_H
 /* Minimal argp implementation.  */
@@ -133,6 +148,11 @@ struct argp
 #define ARGP_HELP_STD_HELP \
   (ARGP_HELP_SHORT_USAGE | ARGP_HELP_LONG | ARGP_HELP_EXIT_OK	\
    | ARGP_HELP_DOC | ARGP_HELP_BUG_ADDR)
+
+
+void argp_error (const struct argp_state *state, 
+                 const char *fmt, ...) GT_GCC_A_PRINTF(2, 3);
+  
 
 
 char *
@@ -397,7 +417,7 @@ argp_parse (const struct argp *argp, int argc,
 	  rc = argp->parser (ARGP_KEY_ARGS, NULL, &state);
 	  if (rc == ARGP_ERR_UNKNOWN)
 	    {
-	      argp_error (&state, "Too many arguments", state.argv[idx]);
+	      argp_error (&state, "Too many arguments");
 	      goto argperror;
 	    }
 	  if (! rc && state.next == old_next)
@@ -449,6 +469,10 @@ argp_parse (const struct argp *argp, int argc,
 /* SUPPORT.  */
 FILE *log_stream;
 char *program_name = "gpgme-tool";
+
+void log_error (int status, gpg_error_t errnum, 
+                const char *fmt, ...) GT_GCC_A_PRINTF(3,4);
+
 
 void
 log_init (void)
@@ -518,7 +542,8 @@ typedef struct gpgme_tool *gpgme_tool_t;
 
 
 /* Forward declaration.  */
-void gt_write_status (gpgme_tool_t gt, status_t status, ...);
+void gt_write_status (gpgme_tool_t gt, 
+                      status_t status, ...) GT_GCC_A_SENTINEL(0);
 
 void
 _gt_progress_cb (void *opaque, const char *what,
@@ -528,7 +553,7 @@ _gt_progress_cb (void *opaque, const char *what,
   char buf[100];
 
   snprintf (buf, sizeof (buf), "0x%02x %i %i", type, current, total);
-  gt_write_status (gt, STATUS_PROGRESS, what, buf);
+  gt_write_status (gt, STATUS_PROGRESS, what, buf, NULL);
 }
 
 
@@ -763,7 +788,7 @@ gt_get_engine_info (gpgme_tool_t gt, gpgme_protocol_t proto)
 	gt_write_status (gt, STATUS_ENGINE,
 			 gpgme_get_protocol_name (info->protocol),
 			 info->file_name, info->version,
-			 info->req_version, info->home_dir);
+			 info->req_version, info->home_dir, NULL);
       info = info->next;
     }
   return 0;
@@ -896,7 +921,7 @@ gt_get_keylist_mode (gpgme_tool_t gt)
   modes[idx++] = NULL;
 
   gt_write_status (gt, STATUS_KEYLIST_MODE, modes[0], modes[1], modes[2],
-		   modes[3], modes[4], modes[5], modes[6]);
+		   modes[3], modes[4], modes[5], modes[6], NULL);
 
   return 0;
 }
@@ -1117,7 +1142,7 @@ gt_result (gpgme_tool_t gt, unsigned int flags)
 	  while (invrec)
 	    {
 	      gt_write_status (gt, STATUS_ENCRYPT_RESULT, "invalid_recipient",
-			       invrec->fpr, invrec->reason);
+			       invrec->fpr, invrec->reason, NULL);
 	      invrec = invrec->next;
 	    }
 	}
