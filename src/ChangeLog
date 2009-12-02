@@ -1,3 +1,8 @@
+2009-12-02  Werner Koch  <wk@g10code.com>
+
+	* gpgconf.c (gpgme_conf_arg_release): No return in a function
+	returning void.  Reported by Wyllys Ingersoll.
+
 2009-12-01  Werner Koch  <wk@g10code.com>
 
 	* gpgme-tool.c (cmd_getauditlog): Add flag --html.

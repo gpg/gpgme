@@ -59,7 +59,7 @@ void
 gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type)
 {
 #ifdef ENABLE_GPGCONF
-  return _gpgme_conf_arg_release (arg, type);
+  _gpgme_conf_arg_release (arg, type);
 #endif
 }
 
