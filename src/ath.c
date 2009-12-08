@@ -47,7 +47,7 @@
 uintptr_t
 ath_self (void)
 {
-  return (uintptr_t) GetCurrentThreadID ();
+  return (uintptr_t) GetCurrentThreadId ();
 }
 #else
 # ifdef __linux
