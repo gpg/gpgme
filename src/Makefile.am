@@ -161,18 +161,16 @@ if HAVE_W32_SYSTEM
 # wrapper process.
 libexec_PROGRAMS = gpgme-w32spawn
 
-LTRCCOMPILE = $(LIBTOOL) --mode=compile $(RC) \
-     `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
-     sed -e 's/-I/--include-dir /g;s/-D/--define /g'`
+RCCOMPILE = $(RC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS)
+LTRCCOMPILE = $(LIBTOOL) --mode=compile --tag=RC $(RCCOMPILE)
 
-SUFFIXES: .rc .lo
+SUFFIXES = .rc .lo
 
 .rc.lo:
-	$(LTRCCOMPILE) -i $< -o $@
+	$(LTRCCOMPILE) -i "$<" -o "$@"
 
 gpgme_res = versioninfo.lo
-gpgme_res_ldflag = -Wl,.libs/versioninfo.o
-
 no_undefined = -no-undefined
 export_symbols = -export-symbols $(srcdir)/gpgme.def
 
@@ -186,7 +184,6 @@ gpgme_deps = $(gpgme_res) gpgme.def
 
 else
 gpgme_res =
-gpgme_res_ldflag =
 no_undefined =
 export_symbols =
 install-def-file:
@@ -195,41 +192,42 @@ uninstall-def-file:
 gpgme_deps =
 endif
 
-libgpgme_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) $(export_symbols) \
+libgpgme_la_LDFLAGS = $(no_undefined) $(export_symbols) \
 	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
-libgpgme_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ @GPG_ERROR_LIBS@
+libgpgme_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ @GPG_ERROR_LIBS@
 
-libgpgme_pthread_la_LDFLAGS = $(libgpgme_version_script_cmd) -version-info \
+libgpgme_pthread_la_LDFLAGS = $(no_undefined) $(export_symbols) \
+	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_pthread_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers
-libgpgme_pthread_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
+libgpgme_pthread_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	-lpthread @GPG_ERROR_LIBS@
 
-libgpgme_pth_la_LDFLAGS = @PTH_LDFLAGS@ \
+libgpgme_pth_la_LDFLAGS = @PTH_LDFLAGS@ $(no_undefined) $(export_symbols) \
 	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_pth_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers
-libgpgme_pth_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
+libgpgme_pth_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	@PTH_LIBS@ @GPG_ERROR_LIBS@
 
 if BUILD_W32_GLIB
-libgpgme_glib_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
+libgpgme_glib_la_LDFLAGS = $(no_undefined) \
 	$(export_symbols) $(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_glib_la_DEPENDENCIES =	@LTLIBOBJS@ \
 	$(srcdir)/libgpgme.vers $(gpgme_deps)
-libgpgme_glib_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
+libgpgme_glib_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@ @GLIB_LIBS@
 endif
 
 if BUILD_W32_QT
-libgpgme_qt_la_LDFLAGS = $(gpgme_res_ldflag) $(no_undefined) \
+libgpgme_qt_la_LDFLAGS = $(no_undefined) \
 	$(export_symbols) $(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_qt_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
-libgpgme_qt_la_LIBADD = @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
+libgpgme_qt_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@ @QT4_CORE_LIBS@
 endif
 

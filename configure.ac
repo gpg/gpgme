@@ -66,6 +66,7 @@ AC_CONFIG_SRCDIR(src/gpgme.h.in)
 dnl FIXME: Enable this with autoconf 2.59.
 dnl AC_CONFIG_MACRO_DIR(m4)
 AM_CONFIG_HEADER(config.h)
+AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
@@ -95,10 +96,9 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
 
 # Don't default to build static libs.
-AC_DISABLE_STATIC
-AC_LIBTOOL_WIN32_DLL
-AC_LIBTOOL_RC
-AC_PROG_LIBTOOL
+LT_PREREQ([2.2.6])
+LT_INIT([win32-dll disable-static])
+LT_LANG([Windows Resource])
 
 # For now we hardcode the use of version scripts.  It would be better
 # to write a test for this or even implement this within libtool.

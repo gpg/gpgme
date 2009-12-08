@@ -1,5 +1,13 @@
 2009-12-08  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (LTRCCOMPILE): Refactor with ...
+	(RCCOMPILE): ... this new macro.
+	(SUFFIXES): Add .lo.
+	(gpgme_res_ldflag): Removed.
+	(gpgme_res): Use libtool object file name here.
+	(libgpgme_la_LDFLAGS): Remove gpgme_res_ldflag usage.
+	(libgpgme_la_LIBADD): Add gpgme_res.
+
 	* ath.c (ath_self) [HAVE_W32_SYSTEM]: Fix typo.
 
 2009-12-02  Werner Koch  <wk@g10code.com>
