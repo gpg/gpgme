@@ -131,7 +131,11 @@ debug_init (void)
 	  if (s1)
 	    {
 #ifndef HAVE_DOSISH_SYSTEM
-	      if (getuid () == geteuid ())
+	      if (getuid () == geteuid ()
+#if defined(HAVE_GETGID) && defined(HAVE_GETEGID)
+                  && getgid () == getegid ()
+#endif
+                  )
 		{
 #endif
 		  char *p;

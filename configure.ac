@@ -746,6 +746,10 @@ if test $ac_cv_func_funopen != yes; then
     fi
 fi
 
+# Check for getgid etc
+AC_CHECK_FUNCS(getgid getegid)
+
+
 # Replacement functions.
 AC_REPLACE_FUNCS(stpcpy)
 # Check for unistd.h for setenv replacement function.

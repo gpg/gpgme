@@ -1,3 +1,7 @@
+2009-12-10  Werner Koch  <wk@g10code.com>
+
+	* debug.c (debug_init): Test on sgid process.
+
 2009-12-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (LTRCCOMPILE): Refactor with ...
@@ -5810,7 +5814,7 @@
 	* wait.c: Include `engine.h'.
 	(run_idle): Call _gpgme_engine_housecleaning(), not
 	_gpgme_gpg_housecleaning().
-	
+
 2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* key.c (_gpgme_key_append_name): Append, not prepend, the uid.
