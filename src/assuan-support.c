@@ -130,7 +130,7 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
     }
   /* fd_in, fd_out, terminator */
   i += 3;
-  fd_items = malloc (sizeof (struct spawn_fd_item_s) * i);
+  fd_items = calloc (i, sizeof (struct spawn_fd_item_s));
   if (! fd_items)
     return -1;
   i = 0;
