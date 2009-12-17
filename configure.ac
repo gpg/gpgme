@@ -207,8 +207,8 @@ AC_TYPE_UINTPTR_T
 # A simple compile time check in gpgme.h for GNU/Linux systems that
 # prevents a file offset bits mismatch between gpgme and the application.
 NEED__FILE_OFFSET_BITS=0
-case $ac_cv_sys_file_offset_bits in
-  no | unknown) ;;
+case "$ac_cv_sys_file_offset_bits" in
+  "" | no | unknown) ;;
   *)
   NEED__FILE_OFFSET_BITS=$ac_cv_sys_file_offset_bits
   ;;
