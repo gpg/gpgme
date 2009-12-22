@@ -1,3 +1,7 @@
+2009-12-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* debug.c: Test for TLS, not __GNUC__
+
 2009-12-15  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan-support.c (my_spawn): Calloc, not malloc, the fd_items.

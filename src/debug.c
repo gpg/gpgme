@@ -55,7 +55,7 @@ static int debug_level;
 static FILE *errfp;
 
 
-#ifdef __GNUC__
+#ifdef HAVE_TLS
 #define FRAME_NR
 static __thread int frame_nr = 0;
 #endif

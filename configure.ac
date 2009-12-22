@@ -34,7 +34,7 @@ min_automake_version="1.10"
 m4_define(my_version, [1.2.1])
 m4_define(my_issvn, [yes])
 
-m4_define([svn_revision], m4_esyscmd([echo -n $( (svn info 2>/dev/null \
+m4_define([svn_revision], m4_esyscmd([printf "%d" $( (svn info 2>/dev/null \
             || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
 AC_INIT([gpgme], 
         [my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision])],
@@ -223,6 +223,17 @@ if test "$GCC" = yes; then
        CFLAGS="$CFLAGS -mms-bitfields"
     fi
 fi
+
+# Only used for debugging, so no serious test needed (for actual
+# functionality you have to test libc as well, this only tests the
+# compiler).
+AC_CACHE_CHECK([for __thread],[gpgme_cv_tls_works],
+   AC_COMPILE_IFELSE([__thread int foo;],
+     gpgme_cv_tls_works=yes,gpgme_cv_tls_works=no))
+if test "$gpgme_cv_tls_works" = yes; then
+  AC_DEFINE(HAVE_TLS, [1], [Define if __thread is supported])
+fi
+
 
 # Checks for library functions.
 AC_FUNC_FSEEKO

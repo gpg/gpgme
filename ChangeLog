@@ -1,3 +1,7 @@
+2009-12-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Do not use echo -n.  Test for __thread.
+
 2009-12-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Make largefile check more robust.
