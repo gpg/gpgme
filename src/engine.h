@@ -1,6 +1,6 @@
 /* engine.h - GPGME engine interface.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2010 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -156,5 +156,9 @@ void _gpgme_engine_io_event (engine_t engine,
 gpgme_error_t _gpgme_engine_cancel (engine_t engine);
 
 gpgme_error_t _gpgme_engine_cancel_op (engine_t engine);
+
+gpgme_error_t _gpgme_engine_op_passwd (engine_t engine, gpgme_key_t key,
+                                       unsigned int flags);
+
 
 #endif /* ENGINE_H */

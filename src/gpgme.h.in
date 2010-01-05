@@ -1,6 +1,7 @@
 /* gpgme.h - Public interface to GnuPG Made Easy.                   -*- c -*-
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009
+                 2010 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -209,7 +210,9 @@ typedef enum
     GPGME_PK_RSA_S = 3,
     GPGME_PK_ELG_E = 16,
     GPGME_PK_DSA   = 17,
-    GPGME_PK_ELG   = 20
+    GPGME_PK_ELG   = 20,
+    GPGME_PK_ECDSA = 301,
+    GPGME_PK_ECDH  = 302
   }
 gpgme_pubkey_algo_t;
 
@@ -1663,6 +1666,14 @@ gpgme_error_t gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key);
 
 /* Terminate a pending keylist operation within CTX.  */
 gpgme_error_t gpgme_op_keylist_end (gpgme_ctx_t ctx);
+
+/* Change the passphrase for KEY.  FLAGS is reserved for future use
+   and must be passed as 0.  */
+gpgme_error_t gpgme_op_passwd_start (gpgme_ctx_t ctx, gpgme_key_t key,
+                                     unsigned int flags);
+gpgme_error_t gpgme_op_passwd (gpgme_ctx_t ctx, gpgme_key_t key,
+                               unsigned int flags);
+
 
 
 /* Trust items and operations.  */

@@ -13,7 +13,8 @@
 @syncodeindex pg fn
 
 @copying
-Copyright @copyright{} 2002, 2003, 2004, 2005, 2006, 2007, 2008 g10 Code GmbH.
+Copyright @copyright{} 2002, 2003, 2004, 2005, 2006, 2007,
+2008, 2010 g10 Code GmbH.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -1014,6 +1015,18 @@ This value indicates ElGamal.
 
 @item GPGME_PK_ELG_E
 This value also indicates ElGamal and is used specifically in GnuPG.
+
+@item GPGME_PK_ELG_E
+This value also indicates ElGamal and is used specifically in GnuPG.
+
+@item GPGME_PK_ECDSA
+This value indicates ECDSA, the Elliptic Curve Digital Signature
+Algorithm as defined by FIPS 186-2.
+
+@item GPGME_PK_ECDH
+This value indicates ECDH, the Eliptic Curve Diffie-Hellmann encryption
+algorithm as defined by the ECC in OpenPGP draft.
+
 @end table
 @end deftp
 
@@ -2737,6 +2750,7 @@ in the list is the main (or primary) user ID.
 * Exporting Keys::                Retrieving key data from the key ring.
 * Importing Keys::                Adding keys to the key ring.
 * Deleting Keys::                 Removing keys from the key ring.
+* Changing Passphrases::          Change the passphrase of a key.
 * Advanced Key Editing::          Advanced key edit operation.
 @end menu
 
@@ -3712,6 +3726,38 @@ The function @code{gpgme_op_delete_start} initiates a
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 operation was started successfully, and @code{GPG_ERR_INV_VALUE} if
 @var{ctx} or @var{key} is not a valid pointer.
+@end deftypefun
+
+
+@node Changing Passphrases
+@subsection  Changing Passphrases
+@cindex passphrase, change
+
+@deftypefun gpgme_error_t gpgme_op_passwd      @
+             (@w{gpgme_ctx_t @var{ctx}},       @
+              @w{const gpgme_key_t @var{key}}, @
+              @w{unsigned int @var{flags}})
+
+The function @code{gpgme_op_passwd} changes the passphrase of the
+private key associated with @var{key}.  The only allowed value for
+@var{flags} is @code{0}.  The backend engine will usually popup a window
+to ask for the old and the new passphrase.  Thus this function is not
+useful in a server application (where passphrases are not required
+anyway).
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_passwd_start      @
+             (@w{gpgme_ctx_t @var{ctx}},       @
+              @w{const gpgme_key_t @var{key}}, @
+              @w{unsigned int @var{flags}})
+
+The function @code{gpgme_op_passwd_start} initiates a
+@code{gpgme_op_passwd} operation.    It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns @code{0} if the operation was started successfully,
+and an error code if one of the arguments is not valid or the oepration
+could not be started.
 @end deftypefun
 
 

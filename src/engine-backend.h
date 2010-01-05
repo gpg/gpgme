@@ -118,6 +118,9 @@ struct engine_ops
 
   /* Cancel only the current operation, not the whole session.  */
   gpgme_error_t (*cancel_op) (void *engine);
+
+  /* Change the passphrase for KEY. */
+  gpgme_error_t (*passwd) (void *engine, gpgme_key_t key, unsigned int flags);
 };
 
 

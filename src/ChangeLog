@@ -1,3 +1,21 @@
+2010-01-05  Werner Koch  <wk@g10code.com>
+
+	* gpgme-tool.c (gt_passwd, cmd_passwd): New.
+	(register_commands): Register.
+
+	* gpgme.h.in (gpgme_op_passwd_start, gpgme_op_passwd): New.
+	* libgpgme.vers, gpgme.def: Add new functions.
+	* passwd.c: New.
+	* Makefile.am (main_sources): Add passwd.c
+	* engine.c, engine.h (_gpgme_engine_op_passwd): New.
+	* engine-backend.h (struct engine_ops): Add PASSWD.
+	* engine-gpgsm.c (gpgsm_passwd): New.
+	(_gpgme_engine_ops_gpgsm): Register.
+	(gpgsm_reset): Reset only if we have a conenction.
+
+	* gpgme.h.in (GPGME_PK_ECDSA, GPGME_PK_ECDH): New.
+	* gpgme.c (gpgme_pubkey_algo_name): Add them.
+
 2009-12-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* debug.c: Test for TLS, not __GNUC__

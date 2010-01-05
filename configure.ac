@@ -1,6 +1,7 @@
 # configure.ac for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+#               2009, 2010  g10 Code GmbH
 # 
 # This file is part of GPGME.
 # 
@@ -31,7 +32,7 @@ min_automake_version="1.10"
 # specific feature can already be done under the assumption that the
 # SVN version is the most recent one in a branch.  To disable the SVN
 # version for the real release, set the my_issvn macro to no.
-m4_define(my_version, [1.2.1])
+m4_define(my_version, [1.3.0])
 m4_define(my_issvn, [yes])
 
 m4_define([svn_revision], m4_esyscmd([printf "%d" $( (svn info 2>/dev/null \

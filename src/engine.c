@@ -1,6 +1,6 @@
 /* engine.c - GPGME engine support.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2006, 2009 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2006, 2009, 2010 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -906,3 +906,19 @@ _gpgme_engine_cancel_op (engine_t engine)
 
   return (*engine->ops->cancel_op) (engine->engine);
 }
+
+
+/* Change the passphrase for KEY.  */
+gpgme_error_t
+_gpgme_engine_op_passwd (engine_t engine, gpgme_key_t key,
+                         unsigned int flags)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->passwd)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->passwd) (engine->engine, key, flags);
+}
+

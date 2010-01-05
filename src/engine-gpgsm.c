@@ -1,6 +1,7 @@
 /* engine-gpgsm.c - GpgSM engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009,
+                 2010 g10 Code GmbH
  
    This file is part of GPGME.
 
@@ -1053,11 +1054,16 @@ gpgsm_reset (void *engine)
 {
   engine_gpgsm_t gpgsm = engine;
 
-  /* We must send a reset because we need to reset the list of
-     signers.  Note that RESET does not reset OPTION commands. */
-  return gpgsm_assuan_simple_command (gpgsm->assuan_ctx, "RESET", NULL, NULL);
+  /* IF we have an active connection we must send a reset because we
+     need to reset the list of signers.  Note that RESET does not
+     reset OPTION commands. */
+  return (gpgsm->assuan_ctx
+          ? gpgsm_assuan_simple_command (gpgsm->assuan_ctx, "RESET",
+                                         NULL, NULL)
+          : 0);
 }
 #endif
+
 
 
 static gpgme_error_t
@@ -1894,6 +1900,32 @@ gpgsm_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 }
 
 
+static gpgme_error_t
+gpgsm_passwd (void *engine, gpgme_key_t key, unsigned int flags)
+{
+  engine_gpgsm_t gpgsm = engine;
+  gpgme_error_t err;
+  char *line;
+
+  if (!key || !key->subkeys || !key->subkeys->fpr)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (asprintf (&line, "PASSWD -- %s", key->subkeys->fpr) < 0)
+    return gpg_error_from_syserror ();
+  
+  gpgsm_clear_fd (gpgsm, OUTPUT_FD);
+  gpgsm_clear_fd (gpgsm, INPUT_FD);
+  gpgsm_clear_fd (gpgsm, MESSAGE_FD);
+  gpgsm->inline_data = NULL;
+
+  err = start (gpgsm, line);
+  free (line);
+
+  return err;
+}
+
+
+
 struct engine_ops _gpgme_engine_ops_gpgsm =
   {
     /* Static functions.  */
@@ -1937,5 +1969,6 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_set_io_cbs,
     gpgsm_io_event,
     gpgsm_cancel,
-    NULL		/* cancel_op */
+    NULL,		/* cancel_op */
+    gpgsm_passwd
   };

@@ -1,6 +1,5 @@
 /* gpgme-tool.c - GnuPG Made Easy.
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
+   Copyright (C) 2009, 2010 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -15,9 +14,8 @@
    Lesser General Public License for more details.
    
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -1119,7 +1117,30 @@ gt_vfs_create (gpgme_tool_t gt, const char *container_file, int flags)
 }
 
 
-// TODO
+static const char hlp_passwd[] = 
+  "PASSWD <user-id>\n"
+  "\n"
+  "Ask the backend to change the passphrase for the key\n"
+  "specified by USER-ID.";
+gpg_error_t
+gt_passwd (gpgme_tool_t gt, char *fpr)
+{
+  gpg_error_t err;
+  gpgme_key_t key;
+
+  err = gpgme_get_key (gt->ctx, fpr, &key, 0);
+  if (err)
+    return err;
+
+  err = gpgme_op_passwd (gt->ctx, key, 0);
+  gpgme_key_unref (key);
+  return err;
+}
+
+
+
+
+/* TODO */
 #define GT_RESULT_ENCRYPT 0x1
 #define GT_RESULT_DECRYPT 0x2
 #define GT_RESULT_SIGN 0x4
@@ -1975,6 +1996,16 @@ cmd_vfs_create (assuan_context_t ctx, char *line)
 
 
 static gpg_error_t
+cmd_passwd (assuan_context_t ctx, char *line)
+{
+  struct server *server = assuan_get_pointer (ctx);
+
+  return gt_passwd (server->gt, line);
+}
+
+
+
+static gpg_error_t
 cmd_result (assuan_context_t ctx, char *line)
 {
   struct server *server = assuan_get_pointer (ctx);
@@ -2076,6 +2107,7 @@ register_commands (assuan_context_t ctx)
     { "STRERROR", cmd_strerror },
     { "PUBKEY_ALGO_NAME", cmd_pubkey_algo_name },
     { "HASH_ALGO_NAME", cmd_hash_algo_name },
+    { "PASSWD", cmd_passwd, hlp_passwd },
     { NULL }
   };
   int idx;

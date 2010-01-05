@@ -792,6 +792,12 @@ gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo)
     case GPGME_PK_ELG:
       return "ELG";
 
+    case GPGME_PK_ECDSA:
+      return "ECDSA";
+
+    case GPGME_PK_ECDH:
+      return "ECDH";
+
     default:
       return NULL;
     }

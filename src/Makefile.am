@@ -115,7 +115,7 @@ main_sources =								\
 	sign.c passphrase.c progress.c					\
 	key.c keylist.c trust-item.c trustlist.c			\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
-	opassuan.c                                                      \
+	opassuan.c passwd.c                                             \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.h	\
 	$(gpgsm_components) $(assuan_components) $(gpgconf_components)  \
 	$(uiserver_components)						\

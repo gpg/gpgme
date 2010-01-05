@@ -76,6 +76,9 @@ GPGME_1.1 {
     gpgme_key_from_uid;
     gpgme_set_sub_protocol;
     gpgme_get_sub_protocol;
+
+    gpgme_op_passwd_start;
+    gpgme_op_passwd;
 };
 
 

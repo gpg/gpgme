@@ -196,5 +196,8 @@ EXPORTS
     gpgme_set_sub_protocol                @150
     gpgme_get_sub_protocol                @151
 
+    gpgme_op_passwd_start                 @152
+    gpgme_op_passwd                       @153
+
 ; END
 
