@@ -498,6 +498,605 @@ log_error (int status, gpg_error_t errnum, const char *fmt, ...)
 
 
 
+typedef gpg_error_t (*result_xml_write_cb_t) (void *hook, const void *buf,
+					      size_t len);
+
+struct result_xml_state
+{
+  int indent;
+  result_xml_write_cb_t cb;
+  void *hook;
+
+#define MAX_TAGS 20
+  int next_tag;
+  char *tag[MAX_TAGS];
+  int had_data[MAX_TAGS];
+};
+
+
+void
+result_init (struct result_xml_state *state, int indent,
+	     result_xml_write_cb_t cb, void *hook)
+{
+  memset (state, '\0', sizeof (*state));
+  state->indent = indent;
+  state->cb = cb;
+  state->hook = hook;
+}
+
+
+gpg_error_t
+result_xml_indent (struct result_xml_state *state)
+{
+  char spaces[state->indent + 1];
+  int i;
+  for (i = 0; i < state->indent; i++)
+    spaces[i] = ' ';
+  spaces[i] = '\0';
+  return (*state->cb) (state->hook, spaces, i);
+}
+
+
+gpg_error_t
+result_xml_tag_start (struct result_xml_state *state, char *name, ...)
+{
+  result_xml_write_cb_t cb = state->cb;
+  void *hook = state->hook;
+  va_list ap;
+  char *attr;
+  char *attr_val;
+
+  va_start (ap, name);
+
+  if (state->next_tag > 0)
+    {
+      if (! state->had_data[state->next_tag - 1])
+	{
+	  (*cb) (hook, ">\n", 2);
+	  (*cb) (hook, NULL, 0);
+	}
+      state->had_data[state->next_tag - 1] = 1;
+    }
+
+  result_xml_indent (state);
+  (*cb) (hook, "<", 1);
+  (*cb) (hook, name, strlen (name));
+
+  state->tag[state->next_tag] = name;
+  state->had_data[state->next_tag] = 0;
+  state->indent += 2;
+  state->next_tag++;
+  
+  while (1)
+    {
+      attr = va_arg (ap, char *);
+      if (attr == NULL)
+	break;
+
+      attr_val = va_arg (ap, char *);
+      if (attr_val == NULL)
+	attr_val = "(null)";
+
+      (*cb) (hook, " ", 1);
+      (*cb) (hook, attr, strlen (attr));
+      (*cb) (hook, "=\"", 2);
+      (*cb) (hook, attr_val, strlen (attr_val));
+      (*cb) (hook, "\"", 1);
+    }
+  va_end (ap);
+  return 0;
+}
+
+
+gpg_error_t
+result_xml_tag_data (struct result_xml_state *state, char *data)
+{
+  result_xml_write_cb_t cb = state->cb;
+  void *hook = state->hook;
+
+  if (state->had_data[state->next_tag - 1])
+    {
+      (*cb) (hook, "\n", 2);
+      (*cb) (hook, NULL, 0);
+      result_xml_indent (state);
+    }
+  else
+    (*cb) (hook, ">", 1);
+  state->had_data[state->next_tag - 1] = 2;
+
+  (*cb) (hook, data, strlen (data));
+
+  return 0;
+}
+
+
+gpg_error_t
+result_xml_tag_end (struct result_xml_state *state)
+{
+  result_xml_write_cb_t cb = state->cb;
+  void *hook = state->hook;
+
+  state->next_tag--;
+  state->indent -= 2;
+
+  if (state->had_data[state->next_tag])
+    {
+      if (state->had_data[state->next_tag] == 1)
+	result_xml_indent (state);
+      (*cb) (hook, "</", 2);
+      (*cb) (hook, state->tag[state->next_tag],
+	     strlen (state->tag[state->next_tag]));
+      (*cb) (hook, ">\n", 2);
+      (*cb) (hook, NULL, 0);
+    }
+  else
+    {
+      (*cb) (hook, " />\n", 4);
+      (*cb) (hook, NULL, 0);
+    }
+  return 0;
+}
+
+
+gpg_error_t
+result_add_error (struct result_xml_state *state, char *name, gpg_error_t err)
+{		  
+  char code[20];
+  char msg[1024];
+  snprintf (code, sizeof (code) - 1, "0x%x", err);
+  snprintf (msg, sizeof (msg) - 1, "%s &lt;%s&gt;",
+	    gpg_strerror (err), gpg_strsource (err));
+  result_xml_tag_start (state, name, "value", code, NULL);
+  result_xml_tag_data (state, msg);
+  result_xml_tag_end (state);
+  return 0;
+}
+
+
+gpg_error_t
+result_add_pubkey_algo (struct result_xml_state *state,
+			char *name, gpgme_pubkey_algo_t algo)
+{		  
+  char code[20];
+  char msg[80];
+  snprintf (code, sizeof (code) - 1, "0x%x", algo);
+  snprintf (msg, sizeof (msg) - 1, "%s",
+	    gpgme_pubkey_algo_name (algo));
+  result_xml_tag_start (state, name, "value", code, NULL);
+  result_xml_tag_data (state, msg);
+  result_xml_tag_end (state);
+  return 0;
+}
+
+
+gpg_error_t
+result_add_hash_algo (struct result_xml_state *state,
+			 char *name, gpgme_hash_algo_t algo)
+{		  
+  char code[20];
+  char msg[80];
+  snprintf (code, sizeof (code) - 1, "0x%x", algo);
+  snprintf (msg, sizeof (msg) - 1, "%s",
+	    gpgme_hash_algo_name (algo));
+  result_xml_tag_start (state, name, "value", code, NULL);
+  result_xml_tag_data (state, msg);
+  result_xml_tag_end (state);
+  return 0;
+}
+
+
+gpg_error_t
+result_add_keyid (struct result_xml_state *state, char *name, char *keyid)
+{		  
+  result_xml_tag_start (state, name, NULL);
+  result_xml_tag_data (state, keyid);
+  result_xml_tag_end (state);
+  return 0;
+}
+
+
+gpg_error_t
+result_add_fpr (struct result_xml_state *state, char *name, char *fpr)
+{		  
+  result_xml_tag_start (state, name, NULL);
+  result_xml_tag_data (state, fpr);
+  result_xml_tag_end (state);
+  return 0;
+}
+
+
+gpg_error_t
+result_add_timestamp (struct result_xml_state *state, char *name,
+		      unsigned int timestamp)
+{		  
+  char code[20];
+
+  snprintf (code, sizeof (code) - 1, "%ui", timestamp);
+  result_xml_tag_start (state, name, "unix", code);
+  result_xml_tag_end (state);
+  return 0;
+}
+
+
+gpg_error_t
+result_add_sig_mode (struct result_xml_state *state, char *name,
+		     gpgme_sig_mode_t sig_mode)
+{		  
+  char *mode;
+  char code[20];
+
+  snprintf (code, sizeof (code) - 1, "%i", sig_mode);
+  switch (sig_mode)
+    {
+    case GPGME_SIG_MODE_NORMAL:
+      mode = "normal";
+      break;
+    case GPGME_SIG_MODE_DETACH:
+      mode = "detach";
+      break;
+    case GPGME_SIG_MODE_CLEAR:
+      mode = "clear";
+      break;
+    default:
+      mode = "unknown";
+    }
+
+  result_xml_tag_start (state, name, "type", mode, "value", code, NULL);
+  result_xml_tag_data (state, mode);
+  result_xml_tag_end (state);
+  return 0;
+}
+
+
+gpg_error_t
+result_add_value (struct result_xml_state *state,
+		  char *name, unsigned int val)
+{		  
+  char code[20];
+
+  snprintf (code, sizeof (code) - 1, "0x%x", val);
+  result_xml_tag_start (state, name, "value", code, NULL);
+  result_xml_tag_end (state);
+  return 0;
+}
+
+
+gpg_error_t
+result_add_string (struct result_xml_state *state,
+		   char *name, char *str)
+{		  
+  result_xml_tag_start (state, name, NULL);
+  result_xml_tag_data (state, str);
+  result_xml_tag_end (state);
+  return 0;
+}
+
+
+gpg_error_t
+result_encrypt_to_xml (gpgme_ctx_t ctx, int indent,
+		       result_xml_write_cb_t cb, void *hook)
+{
+  struct result_xml_state state;
+  gpgme_encrypt_result_t res = gpgme_op_encrypt_result (ctx);
+  gpgme_invalid_key_t inv_recp;
+
+  if (! res)
+    return 0;
+
+  result_init (&state, indent, cb, hook);
+  result_xml_tag_start (&state, "encrypt-result", NULL);
+
+  inv_recp = res->invalid_recipients;
+  if (inv_recp)
+    {
+      result_xml_tag_start (&state, "invalid-recipients", NULL);
+      
+      while (inv_recp)
+	{
+	  result_xml_tag_start (&state, "invalid-key", NULL);
+	  result_add_fpr (&state, "fpr", inv_recp->fpr);
+	  result_add_error (&state, "reason", inv_recp->reason);
+	  result_xml_tag_end (&state);
+	  inv_recp = inv_recp->next;
+	}
+      result_xml_tag_end (&state);
+    }
+  result_xml_tag_end (&state);
+  
+  return 0;
+}
+
+
+gpg_error_t
+result_decrypt_to_xml (gpgme_ctx_t ctx, int indent,
+		       result_xml_write_cb_t cb, void *hook)
+{
+  struct result_xml_state state;
+  gpgme_decrypt_result_t res = gpgme_op_decrypt_result (ctx);
+  gpgme_recipient_t recp;
+
+  if (! res)
+    return 0;
+
+  result_init (&state, indent, cb, hook);
+  result_xml_tag_start (&state, "decrypt-result", NULL);
+
+  if (res->file_name)
+    {
+      result_xml_tag_start (&state, "file-name", NULL);
+      result_xml_tag_data (&state, res->file_name);
+      result_xml_tag_end (&state);
+    }
+  if (res->unsupported_algorithm)
+    {
+      result_xml_tag_start (&state, "unsupported-alogorithm", NULL);
+      result_xml_tag_data (&state, res->unsupported_algorithm);
+      result_xml_tag_end (&state);
+    }
+  if (res->wrong_key_usage)
+    {
+      result_xml_tag_start (&state, "wrong-key-usage", NULL);
+      result_xml_tag_end (&state);
+    }
+
+  recp = res->recipients;
+  if (recp)
+    {
+      result_xml_tag_start (&state, "recipients", NULL);
+      while (recp)
+	{
+	  result_xml_tag_start (&state, "recipient", NULL);
+	  result_add_keyid (&state, "keyid", recp->keyid);
+	  result_add_pubkey_algo (&state, "pubkey-algo", recp->pubkey_algo);
+	  result_add_error (&state, "status", recp->status);
+	  result_xml_tag_end (&state);
+	  recp = recp->next;
+	}
+      result_xml_tag_end (&state);
+    }
+  result_xml_tag_end (&state);
+  
+  return 0;
+}
+
+
+gpg_error_t
+result_sign_to_xml (gpgme_ctx_t ctx, int indent,
+		    result_xml_write_cb_t cb, void *hook)
+{
+  struct result_xml_state state;
+  gpgme_sign_result_t res = gpgme_op_sign_result (ctx);
+  gpgme_invalid_key_t inv_key;
+  gpgme_new_signature_t new_sig;
+
+  if (! res)
+    return 0;
+
+  result_init (&state, indent, cb, hook);
+  result_xml_tag_start (&state, "sign-result", NULL);
+
+  inv_key = res->invalid_signers;
+  if (inv_key)
+    {
+      result_xml_tag_start (&state, "invalid-signers", NULL);
+      
+      while (inv_key)
+	{
+	  result_xml_tag_start (&state, "invalid-key", NULL);
+	  result_add_fpr (&state, "fpr", inv_key->fpr);
+	  result_add_error (&state, "reason", inv_key->reason);
+	  result_xml_tag_end (&state);
+	  inv_key = inv_key->next;
+	}
+      result_xml_tag_end (&state);
+    }
+
+  new_sig = res->signatures;
+  if (new_sig)
+    {
+      result_xml_tag_start (&state, "signatures", NULL);
+
+      while (new_sig)
+	{
+	  result_xml_tag_start (&state, "new-signature", NULL);
+	  result_add_sig_mode (&state, "type", new_sig->type);
+	  result_add_pubkey_algo (&state, "pubkey-algo", new_sig->pubkey_algo);
+	  result_add_hash_algo (&state, "hash-algo", new_sig->hash_algo);
+	  result_add_timestamp (&state, "timestamp", new_sig->timestamp);
+	  result_add_fpr (&state, "fpr", new_sig->fpr);
+	  result_add_value (&state, "sig-class", new_sig->sig_class);
+
+	  result_xml_tag_end (&state);
+	  new_sig = new_sig->next;
+	}
+      result_xml_tag_end (&state);
+    }
+
+  result_xml_tag_end (&state);
+  
+  return 0;
+}
+
+
+gpg_error_t
+result_verify_to_xml (gpgme_ctx_t ctx, int indent,
+		      result_xml_write_cb_t cb, void *hook)
+{
+  struct result_xml_state state;
+  gpgme_verify_result_t res = gpgme_op_verify_result (ctx);
+  gpgme_signature_t sig;
+
+  if (! res)
+    return 0;
+
+  result_init (&state, indent, cb, hook);
+  result_xml_tag_start (&state, "verify-result", NULL);
+
+  if (res->file_name)
+    {
+      result_xml_tag_start (&state, "file-name", NULL);
+      result_xml_tag_data (&state, res->file_name);
+      result_xml_tag_end (&state);
+    }
+
+  sig = res->signatures;
+  if (sig)
+    {
+      result_xml_tag_start (&state, "signatures", NULL);
+
+      while (sig)
+	{
+	  result_xml_tag_start (&state, "signature", NULL);
+	  
+	  // FIXME: Could be done better.
+	  result_add_value (&state, "summary", sig->summary);
+	  result_add_fpr (&state, "fpr", sig->fpr);
+	  result_add_error (&state, "status", sig->status);
+	  // FIXME: notations
+	  result_add_timestamp (&state, "timestamp", sig->timestamp);
+	  result_add_timestamp (&state, "exp-timestamp", sig->exp_timestamp);
+	  result_add_value (&state, "wrong-key-usage", sig->wrong_key_usage);
+	  result_add_value (&state, "pka-trust", sig->pka_trust);
+	  result_add_value (&state, "chain-model", sig->chain_model);
+	  result_add_value (&state, "validity", sig->validity);
+	  result_add_error (&state, "validity-reason", sig->validity_reason);
+	  result_add_pubkey_algo (&state, "pubkey-algo", sig->pubkey_algo);
+	  result_add_hash_algo (&state, "hash-algo", sig->hash_algo);
+	  if (sig->pka_address)
+	    result_add_string (&state, "pka_address", sig->pka_address);
+	  
+	  result_xml_tag_end (&state);
+	  sig = sig->next;
+	}
+      result_xml_tag_end (&state);
+    }
+
+  result_xml_tag_end (&state);
+  
+  return 0;
+}
+
+
+gpg_error_t
+result_import_to_xml (gpgme_ctx_t ctx, int indent,
+		      result_xml_write_cb_t cb, void *hook)
+{
+  struct result_xml_state state;
+  gpgme_import_result_t res = gpgme_op_import_result (ctx);
+  gpgme_import_status_t stat;
+
+  if (! res)
+    return 0;
+
+  result_init (&state, indent, cb, hook);
+  result_xml_tag_start (&state, "import-result", NULL);
+
+  result_add_value (&state, "considered", res->considered);
+  result_add_value (&state, "no-user-id", res->no_user_id);
+  result_add_value (&state, "imported", res->imported);
+  result_add_value (&state, "imported-rsa", res->imported_rsa);
+  result_add_value (&state, "unchanged", res->unchanged);
+  result_add_value (&state, "new-user-ids", res->new_user_ids);
+  result_add_value (&state, "new-sub-keys", res->new_sub_keys);
+  result_add_value (&state, "new-signatures", res->new_signatures);
+  result_add_value (&state, "new-revocations", res->new_revocations);
+  result_add_value (&state, "secret-read", res->secret_read);
+  result_add_value (&state, "secret-imported", res->secret_imported);
+  result_add_value (&state, "secret-unchanged", res->secret_unchanged);
+  result_add_value (&state, "skipped-new-keys", res->skipped_new_keys);
+  result_add_value (&state, "not-imported", res->not_imported);
+
+  stat = res->imports;
+  if (stat)
+    {
+      result_xml_tag_start (&state, "imports", NULL);
+      
+      while (stat)
+	{
+	  result_xml_tag_start (&state, "import-status", NULL);
+
+	  result_add_fpr (&state, "fpr", stat->fpr);
+	  result_add_error (&state, "result", stat->result);
+	  // FIXME: Could be done better.
+	  result_add_value (&state, "status", stat->status);
+
+	  result_xml_tag_end (&state);
+	  stat = stat->next;
+	}
+      result_xml_tag_end (&state);
+    }
+
+  result_xml_tag_end (&state);
+  
+  return 0;
+}
+
+
+gpg_error_t
+result_genkey_to_xml (gpgme_ctx_t ctx, int indent,
+		      result_xml_write_cb_t cb, void *hook)
+{
+  struct result_xml_state state;
+  gpgme_genkey_result_t res = gpgme_op_genkey_result (ctx);
+
+  if (! res)
+    return 0;
+
+  result_init (&state, indent, cb, hook);
+  result_xml_tag_start (&state, "genkey-result", NULL);
+
+  result_add_value (&state, "primary", res->primary);
+  result_add_value (&state, "sub", res->sub);
+  result_add_fpr (&state, "fpr", res->fpr);
+
+  result_xml_tag_end (&state);
+  
+  return 0;
+}
+
+
+gpg_error_t
+result_keylist_to_xml (gpgme_ctx_t ctx, int indent,
+		      result_xml_write_cb_t cb, void *hook)
+{
+  struct result_xml_state state;
+  gpgme_keylist_result_t res = gpgme_op_keylist_result (ctx);
+
+  if (! res)
+    return 0;
+
+  result_init (&state, indent, cb, hook);
+  result_xml_tag_start (&state, "keylist-result", NULL);
+
+  result_add_value (&state, "truncated", res->truncated);
+
+  result_xml_tag_end (&state);
+  
+  return 0;
+}
+
+
+gpg_error_t
+result_vfs_mount_to_xml (gpgme_ctx_t ctx, int indent,
+			 result_xml_write_cb_t cb, void *hook)
+{
+  struct result_xml_state state;
+  gpgme_vfs_mount_result_t res = gpgme_op_vfs_mount_result (ctx);
+
+  if (! res)
+    return 0;
+
+  result_init (&state, indent, cb, hook);
+  result_xml_tag_start (&state, "vfs-mount-result", NULL);
+
+  result_add_string (&state, "mount-dir", res->mount_dir);
+
+  result_xml_tag_end (&state);
+  
+  return 0;
+}
+
+
 typedef enum status
   {
     STATUS_PROTOCOL,
@@ -769,7 +1368,7 @@ gt_write_status (gpgme_tool_t gt, status_t status, ...)
 
 
 gpg_error_t
-gt_write_data (gpgme_tool_t gt, void *buf, size_t len)
+gt_write_data (gpgme_tool_t gt, const void *buf, size_t len)
 {
   return gt->write_data (gt->write_data_hook, buf, len);
 }
@@ -968,9 +1567,9 @@ gt_sign_encrypt (gpgme_tool_t gt, gpgme_encrypt_flags_t flags,
   gpg_error_t err;
 
   if (sign)
-    err = gpgme_op_encrypt (gt->ctx, gt->recipients, flags, plain, cipher);
-  else
     err = gpgme_op_encrypt_sign (gt->ctx, gt->recipients, flags, plain, cipher);
+  else
+    err = gpgme_op_encrypt (gt->ctx, gt->recipients, flags, plain, cipher);
 
   gt_recipients_clear (gt);
 
@@ -1138,9 +1737,6 @@ gt_passwd (gpgme_tool_t gt, char *fpr)
 }
 
 
-
-
-/* TODO */
 #define GT_RESULT_ENCRYPT 0x1
 #define GT_RESULT_DECRYPT 0x2
 #define GT_RESULT_SIGN 0x4
@@ -1154,31 +1750,41 @@ gt_passwd (gpgme_tool_t gt, char *fpr)
 gpg_error_t
 gt_result (gpgme_tool_t gt, unsigned int flags)
 {
+  static const char xml_preamble1[] = "<?xml version=\"1.0\" "
+    "encoding=\"UTF-8\" standalone=\"yes\"?>\n";
+  static const char xml_preamble2[] = "<gpgme>\n";
+  static const char xml_end[] = "</gpgme>\n";
+  int indent = 2;
+
+  gt_write_data (gt, xml_preamble1, sizeof (xml_preamble1));
+  gt_write_data (gt, NULL, 0);
+  gt_write_data (gt, xml_preamble2, sizeof (xml_preamble2));
+  gt_write_data (gt, NULL, 0);
   if (flags & GT_RESULT_ENCRYPT)
-    {
-      gpgme_encrypt_result_t res = gpgme_op_encrypt_result (gt->ctx);
-      if (res)
-	{
-	  gpgme_invalid_key_t invrec = res->invalid_recipients;
-	  while (invrec)
-	    {
-	      gt_write_status (gt, STATUS_ENCRYPT_RESULT, "invalid_recipient",
-			       invrec->fpr, invrec->reason, NULL);
-	      invrec = invrec->next;
-	    }
-	}
-    }
+    result_encrypt_to_xml (gt->ctx, indent,
+			   (result_xml_write_cb_t) gt_write_data, gt);
+  if (flags & GT_RESULT_DECRYPT)
+    result_decrypt_to_xml (gt->ctx, indent,
+			   (result_xml_write_cb_t) gt_write_data, gt);
+  if (flags & GT_RESULT_SIGN)
+    result_sign_to_xml (gt->ctx, indent,
+			(result_xml_write_cb_t) gt_write_data, gt);
+  if (flags & GT_RESULT_VERIFY)
+    result_verify_to_xml (gt->ctx, indent,
+			  (result_xml_write_cb_t) gt_write_data, gt);
+  if (flags & GT_RESULT_IMPORT)
+    result_import_to_xml (gt->ctx, indent,
+			  (result_xml_write_cb_t) gt_write_data, gt);
+  if (flags & GT_RESULT_GENKEY)
+    result_genkey_to_xml (gt->ctx, indent,
+			  (result_xml_write_cb_t) gt_write_data, gt);
+  if (flags & GT_RESULT_KEYLIST)
+    result_keylist_to_xml (gt->ctx, indent,
+			   (result_xml_write_cb_t) gt_write_data, gt);
   if (flags & GT_RESULT_VFS_MOUNT)
-    {
-      gpgme_vfs_mount_result_t res = gpgme_op_vfs_mount_result (gt->ctx);
-      if (res)
-	{
-	  gt_write_data (gt, "vfs_mount\n", 10);
-	  gt_write_data (gt, "mount_dir:", 10);
-	  gt_write_data (gt, res->mount_dir, strlen (res->mount_dir));
-	  gt_write_data (gt, "\n", 1);
-	}
-    }
+    result_vfs_mount_to_xml (gt->ctx, indent,
+			     (result_xml_write_cb_t) gt_write_data, gt);
+  gt_write_data (gt, xml_end, sizeof (xml_end));
 
   return 0;
 }

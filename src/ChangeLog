@@ -1,3 +1,19 @@
+2010-01-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme-tool.c (result_xml_write_cb_t, struct result_xml_state):
+	New types.
+	(MAX_TAGS): New macro.
+	(result_init, result_xml_indent, result_xml_tag_start)
+	(result_xml_tag_data, result_xml_tag_end, result_add_error)
+	(result_add_pubkey_algo, result_add_hash_algo, result_add_keyid)
+	(result_add_fpr, result_add_timestamp, result_add_sig_mode)
+	(result_add_value, result_add_string, result_encrypt_to_xml)
+	(result_decrypt_to_xml, result_sign_to_xml)
+	(result_verify_to_xml, result_import_to_xml)
+	(result_genkey_to_xml, result_keylist_to_xml)
+	(result_vfs_mount_to_xml): New functions.
+	(gt_result): Rewritten.
+
 2010-01-05  Werner Koch  <wk@g10code.com>
 
 	* gpgme-tool.c (gt_passwd, cmd_passwd): New.
