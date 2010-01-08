@@ -1,6 +1,6 @@
 /* context.h - Definitions for a GPGME context.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2010 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -15,9 +15,8 @@
    Lesser General Public License for more details.
    
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef CONTEXT_H
 #define CONTEXT_H

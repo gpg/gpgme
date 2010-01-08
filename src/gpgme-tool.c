@@ -1729,7 +1729,7 @@ gt_passwd (gpgme_tool_t gt, char *fpr)
 
   err = gpgme_get_key (gt->ctx, fpr, &key, 0);
   if (err)
-    return err;
+    return gpg_err_code (err) == GPG_ERR_EOF? gpg_error (GPG_ERR_NO_PUBKEY):err;
 
   err = gpgme_op_passwd (gt->ctx, key, 0);
   gpgme_key_unref (key);

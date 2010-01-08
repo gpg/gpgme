@@ -1,3 +1,10 @@
+2010-01-08  Werner Koch  <wk@g10code.com>
+
+	* engine-gpg.c (gpg_passwd): New.
+	(_gpgme_engine_ops_gpg): Register.
+	* passwd.c (parse_error): New.
+	(passwd_status_handler): Use it.
+
 2010-01-07  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme-tool.c (result_xml_write_cb_t, struct result_xml_state):

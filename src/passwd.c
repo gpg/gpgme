@@ -20,6 +20,7 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
+#include <stdlib.h>
 
 #include "gpgme.h"
 #include "debug.h"
@@ -27,13 +28,56 @@
 #include "ops.h"
 
 
+/* Parse an error status line and return the error code.  */
+static gpgme_error_t
+parse_error (char *args)
+{
+  gpgme_error_t err;
+  char *where = strchr (args, ' ');
+  char *which;
+
+  if (where)
+    {
+      *where = '\0';
+      which = where + 1;
+
+      where = strchr (which, ' ');
+      if (where)
+	*where = '\0';
+
+      where = args;      
+    }
+  else
+    return gpg_error (GPG_ERR_INV_ENGINE);
+
+  err = atoi (which);
+
+  if (!strcmp (where, "keyedit.passwd"))
+    return err;
+
+  return 0;
+}
+
+
 static gpgme_error_t
 passwd_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
-  (void)priv;
-  (void)code;
-  (void)args;
-  return 0;
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err = 0;
+
+  (void)ctx;
+
+  switch (code)
+    {
+    case GPGME_STATUS_ERROR:
+      err = parse_error (args);
+      break;
+                         
+    default:
+      break;
+    }
+
+  return err;
 }
 
 

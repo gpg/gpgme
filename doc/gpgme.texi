@@ -3744,6 +3744,9 @@ private key associated with @var{key}.  The only allowed value for
 to ask for the old and the new passphrase.  Thus this function is not
 useful in a server application (where passphrases are not required
 anyway).
+
+Note that old @code{gpg} engines (before version 2.0.15) do not support
+this comamnd and will silently ignore it.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_passwd_start      @

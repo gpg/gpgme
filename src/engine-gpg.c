@@ -1,7 +1,7 @@
 /* engine-gpg.c - Gpg Engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-                 2009 g10 Code GmbH
+                 2009, 2010 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -1437,6 +1437,24 @@ gpg_delete (void *engine, gpgme_key_t key, int allow_secret)
 
 
 static gpgme_error_t
+gpg_passwd (void *engine, gpgme_key_t key, unsigned int flags)
+{
+  engine_gpg_t gpg = engine;
+  gpgme_error_t err;
+
+  if (!key || !key->subkeys || !key->subkeys->fpr)
+    return gpg_error (GPG_ERR_INV_CERT_OBJ);
+
+  err = add_arg (gpg, "--passwd");
+  if (!err)
+    err = add_arg (gpg, key->subkeys->fpr);
+  if (!err)
+    start (gpg);
+  return err;
+}
+
+
+static gpgme_error_t
 append_args_from_signers (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 {
   gpgme_error_t err = 0;
@@ -2370,5 +2388,6 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_set_io_cbs,
     gpg_io_event,
     gpg_cancel,
-    NULL		/* cancel_op */
+    NULL,		/* cancel_op */
+    gpg_passwd
   };
