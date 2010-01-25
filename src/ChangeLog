@@ -1,3 +1,15 @@
+2010-01-25  Werner Koch  <wk@g10code.com>
+
+	* w32-io.c (_gpgme_io_connect): Fix return code check to make it work.
+
+	* version.c (do_subsystem_inits): Remove superfluous second
+	WSAStartup.
+
+2010-01-22  Werner Koch  <wk@g10code.com>
+
+	* w32-io.c (writer): Try to use send first.
+	(reader): Try to use recv first.
+
 2010-01-08  Werner Koch  <wk@g10code.com>
 
 	* engine-gpg.c (gpg_passwd): New.
@@ -727,7 +739,7 @@
 
 	* opassuan.c, dirinfo.c, engine-assuan.c: New.
 	* Makefile.am:  Add them.
-	* engine-backend.h: Add _gpgme_engine_ops_assuan. 
+	* engine-backend.h: Add _gpgme_engine_ops_assuan.
 	(struct engine_ops): Add field OPASSUAN_TRANSACT.  Update all
 	engine intializers.
 	* Makefile.am (gpgsm_components): Add engine-assuan.c.

@@ -65,24 +65,17 @@ do_subsystem_inits (void)
     return;
 
 #ifdef HAVE_W32_SYSTEM
-      {
-        WSADATA wsadat;
-        
-        WSAStartup (0x202, &wsadat);
-      }
-#endif
-
-  _gpgme_sema_subsystem_init ();
-  _gpgme_debug_subsystem_init ();
-  _gpgme_io_subsystem_init ();
-#if defined(HAVE_W32_SYSTEM) && defined(HAVE_ASSUAN_H)
   /* We need to make sure that the sockets are initialized.  */
   {
     WSADATA wsadat;
     
     WSAStartup (0x202, &wsadat);
   }
-#endif /*HAVE_W32_SYSTEM && HAVE_ASSUAN_H*/
+#endif
+
+  _gpgme_sema_subsystem_init ();
+  _gpgme_debug_subsystem_init ();
+  _gpgme_io_subsystem_init ();
 
   done = 1;
 }
