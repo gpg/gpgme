@@ -948,11 +948,11 @@ result_verify_to_xml (gpgme_ctx_t ctx, int indent,
 	{
 	  result_xml_tag_start (&state, "signature", NULL);
 	  
-	  // FIXME: Could be done better.
+	  /* FIXME: Could be done better. */
 	  result_add_value (&state, "summary", sig->summary);
 	  result_add_fpr (&state, "fpr", sig->fpr);
 	  result_add_error (&state, "status", sig->status);
-	  // FIXME: notations
+	  /* FIXME: notations */
 	  result_add_timestamp (&state, "timestamp", sig->timestamp);
 	  result_add_timestamp (&state, "exp-timestamp", sig->exp_timestamp);
 	  result_add_value (&state, "wrong-key-usage", sig->wrong_key_usage);
@@ -1017,7 +1017,7 @@ result_import_to_xml (gpgme_ctx_t ctx, int indent,
 
 	  result_add_fpr (&state, "fpr", stat->fpr);
 	  result_add_error (&state, "result", stat->result);
-	  // FIXME: Could be done better.
+	  /* FIXME: Could be done better. */
 	  result_add_value (&state, "status", stat->status);
 
 	  result_xml_tag_end (&state);
@@ -2667,9 +2667,9 @@ register_commands (assuan_context_t ctx)
     assuan_handler_t handler;
     const char * const help;
   } table[] = {
-    // RESET, BYE are implicit.
+    /* RESET, BYE are implicit.  */
     { "VERSION", cmd_version, hlp_version },
-    // TODO: Set engine info.
+    /* TODO: Set engine info.  */
     { "ENGINE", cmd_engine },
     { "PROTOCOL", cmd_protocol, hlp_protocol },
     { "SUB_PROTOCOL", cmd_sub_protocol },
@@ -2683,10 +2683,10 @@ register_commands (assuan_context_t ctx)
     { "RECIPIENT", cmd_recipient },
     { "SIGNER", cmd_signer },
     { "SIGNERS_CLEAR", cmd_signers_clear },
-    // TODO: SIGNOTATION missing.
-    // TODO: Could add wait interface if we allow more than one context
-    // and add _START variants.
-    // TODO: Could add data interfaces if we allow multiple data objects.
+     /* TODO: SIGNOTATION missing. */
+     /* TODO: Could add wait interface if we allow more than one context */
+     /* and add _START variants. */
+     /* TODO: Could add data interfaces if we allow multiple data objects. */
     { "DECRYPT", cmd_decrypt },
     { "DECRYPT_VERIFY", cmd_decrypt_verify },
     { "ENCRYPT", cmd_encrypt },
@@ -2698,17 +2698,17 @@ register_commands (assuan_context_t ctx)
     { "EXPORT", cmd_export },
     { "GENKEY", cmd_genkey },
     { "DELETE", cmd_delete },
-    // TODO: EDIT, CARD_EDIT (with INQUIRE)
+    /* TODO: EDIT, CARD_EDIT (with INQUIRE) */
     { "KEYLIST", cmd_keylist },
     { "LISTKEYS", cmd_keylist },
-    // TODO: TRUSTLIST, TRUSTLIST_EXT
+    /* TODO: TRUSTLIST, TRUSTLIST_EXT */
     { "GETAUDITLOG", cmd_getauditlog, hlp_getauditlog },
-    // TODO: ASSUAN
+    /* TODO: ASSUAN */
     { "VFS_MOUNT", cmd_vfs_mount },
     { "MOUNT", cmd_vfs_mount },
     { "VFS_CREATE", cmd_vfs_create },
     { "CREATE", cmd_vfs_create },
-    // TODO: GPGCONF
+    /* TODO: GPGCONF  */
     { "RESULT", cmd_result },
     { "STRERROR", cmd_strerror },
     { "PUBKEY_ALGO_NAME", cmd_pubkey_algo_name },
