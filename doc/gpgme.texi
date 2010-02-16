@@ -3402,6 +3402,12 @@ practise to not send more than a few dozens key to a keyserver at one
 time.  Using this flag requires that the @var{keydata} argument of the
 export function is set to @code{NULL}.
 
+@item GPGME_EXPORT_MODE_MINIMAL
+If this bit is set, the smallest possible key is exported.  For OpenPGP
+keys it removes all signatures except for the latest self-signatures.
+For X.509 keys it has no effect.
+
+
 @end table
 
 

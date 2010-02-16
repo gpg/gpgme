@@ -468,6 +468,9 @@ argp_parse (const struct argp *argp, int argc,
 FILE *log_stream;
 char *program_name = "gpgme-tool";
 
+#define spacep(p)   (*(p) == ' ' || *(p) == '\t')
+
+
 void log_error (int status, gpg_error_t errnum, 
                 const char *fmt, ...) GT_GCC_A_PRINTF(3,4);
 
@@ -495,6 +498,35 @@ log_error (int status, gpg_error_t errnum, const char *fmt, ...)
   if (status)
     exit (status);
 }
+
+
+/* Check whether the option NAME appears in LINE.  */
+static int
+has_option (const char *line, const char *name)
+{
+  const char *s;
+  int n = strlen (name);
+
+  s = strstr (line, name);
+  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
+}
+
+/* Skip over options.  It is assumed that leading spaces have been
+   removed (this is the case for lines passed to a handler from
+   assuan).  Blanks after the options are also removed.  */
+static char *
+skip_options (char *line)
+{
+  while ( *line == '-' && line[1] == '-' )
+    {
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
+  return line;
+}
+
 
 
 
@@ -2334,6 +2366,11 @@ cmd_import (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_export[] = 
+  "EXPORT [--extern] [--minimal] [<pattern>]\n"
+  "\n"
+  "Export the keys described by PATTERN.  Write the\n"
+  "the output to the object set by the last OUTPUT command.";
 static gpg_error_t
 cmd_export (assuan_context_t ctx, char *line)
 {
@@ -2343,7 +2380,6 @@ cmd_export (assuan_context_t ctx, char *line)
   gpgme_data_t out_data;
   gpgme_export_mode_t mode = 0;
   const char *pattern[2];
-  const char optstr[] = "--extern ";
 
   out_fd = assuan_get_output_fd (ctx);
   if (out_fd == ASSUAN_INVALID_FD)
@@ -2352,11 +2388,13 @@ cmd_export (assuan_context_t ctx, char *line)
   if (err)
     return err;
 
-  if (strncasecmp (line, optstr, strlen (optstr)))
-    {
-      mode |= GPGME_EXPORT_MODE_EXTERN;
-      line += strlen (optstr);
-    }
+  if (has_option (line, "--extern"))
+    mode |= GPGME_EXPORT_MODE_EXTERN;
+  if (has_option (line, "--minimal"))
+    mode |= GPGME_EXPORT_MODE_MINIMAL;
+
+  line = skip_options (line);
+
   pattern[0] = line;
   pattern[1] = NULL;
 
@@ -2695,7 +2733,7 @@ register_commands (assuan_context_t ctx)
     { "SIGN", cmd_sign },
     { "VERIFY", cmd_verify },
     { "IMPORT", cmd_import },
-    { "EXPORT", cmd_export },
+    { "EXPORT", cmd_export, hlp_export },
     { "GENKEY", cmd_genkey },
     { "DELETE", cmd_delete },
     /* TODO: EDIT, CARD_EDIT (with INQUIRE) */

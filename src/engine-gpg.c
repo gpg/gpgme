@@ -1727,12 +1727,18 @@ static gpgme_error_t
 export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
                gpgme_data_t keydata, int use_armor)
 {
-  gpgme_error_t err;
+  gpgme_error_t err = 0;
 
-  if ((mode & ~GPGME_EXPORT_MODE_EXTERN))
+  if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
+                |GPGME_EXPORT_MODE_MINIMAL)))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
-  if ((mode & GPGME_EXPORT_MODE_EXTERN))
+  if ((mode & GPGME_EXPORT_MODE_MINIMAL))
+    err = add_arg (gpg, "--export-options=export-minimal");
+
+  if (err)
+    ;
+  else if ((mode & GPGME_EXPORT_MODE_EXTERN))
     {
       err = add_arg (gpg, "--send-keys");
     }

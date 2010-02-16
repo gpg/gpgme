@@ -1,6 +1,6 @@
 /* export.c - Export a key.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2010 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -15,9 +15,8 @@
    Lesser General Public License for more details.
    
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -44,7 +43,8 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
 {
   gpgme_error_t err;
 
-  if ((mode & ~(GPGME_EXPORT_MODE_EXTERN)))
+  if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
+                |GPGME_EXPORT_MODE_MINIMAL)))
     return gpg_error (GPG_ERR_INV_VALUE); /* Invalid flags in MODE.  */
 
   
@@ -107,7 +107,8 @@ export_ext_start (gpgme_ctx_t ctx, int synchronous, const char *pattern[],
 {
   gpgme_error_t err;
 
-  if ((mode & ~(GPGME_EXPORT_MODE_EXTERN)))
+  if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
+                |GPGME_EXPORT_MODE_MINIMAL)))
     return gpg_error (GPG_ERR_INV_VALUE); /* Invalid flags in MODE.  */
 
   if ((mode & GPGME_EXPORT_MODE_EXTERN))
