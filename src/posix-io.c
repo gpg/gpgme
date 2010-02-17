@@ -1,6 +1,6 @@
 /* posix-io.c - Posix I/O functions
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2004, 2005, 2007 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2004, 2005, 2007, 2010 g10 Code GmbH
 
    This file is part of GPGME.
  
@@ -15,9 +15,8 @@
    Lesser General Public License for more details.
    
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -73,13 +72,22 @@ _gpgme_io_fd2str (char *buf, int buflen, int fd)
 }
 
 
-static struct
+/* The table to hold notification handlers.  We use a linear search
+   and extend the table as needed.  */
+struct notify_table_item_s
 {
+  int fd;  /* -1 indicates an unused entry.  */
   _gpgme_close_notify_handler_t handler;
   void *value;
-} notify_table[256];
+};
+typedef struct notify_table_item_s *notify_table_item_t;
+
+static notify_table_item_t notify_table;
+static size_t notify_table_size;
+DEFINE_STATIC_LOCK (notify_table_lock);
 
 
+
 int
 _gpgme_io_read (int fd, void *buffer, size_t count)
 {
@@ -149,6 +157,9 @@ int
 _gpgme_io_close (int fd)
 {
   int res;
+  _gpgme_close_notify_handler_t handler = NULL;
+  void *handler_value;
+  int idx;
 
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd);
 
@@ -159,17 +170,26 @@ _gpgme_io_close (int fd)
     }
 
   /* First call the notify handler.  */
-  if (fd >= 0 && fd < (int) DIM (notify_table))
+  LOCK (notify_table_lock);
+  for (idx=0; idx < notify_table_size; idx++)
     {
-      if (notify_table[fd].handler)
-	{
-	  TRACE_LOG2 ("invoking close handler %p/%p",
-		      notify_table[fd].handler, notify_table[fd].value);
-	  notify_table[fd].handler (fd, notify_table[fd].value);
-	  notify_table[fd].handler = NULL;
-	  notify_table[fd].value = NULL;
+      if (notify_table[idx].fd == fd)
+        {
+	  handler       = notify_table[idx].handler;
+	  handler_value = notify_table[idx].value;
+	  notify_table[idx].handler = NULL;
+	  notify_table[idx].value = NULL;
+	  notify_table[idx].fd = -1; /* Mark slot as free.  */
+          break;
         }
     }
+  UNLOCK (notify_table_lock);
+  if (handler)
+    {
+      TRACE_LOG2 ("invoking close handler %p/%p", handler, handler_value);
+      handler (fd, handler_value);
+    }
+
   /* Then do the close.  */    
   res = close (fd);
   return TRACE_SYSRES (res);
@@ -180,19 +200,52 @@ int
 _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
 			    void *value)
 {
+  int res = 0;
+  int idx;
+
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_set_close_notify", fd,
 	      "close_handler=%p/%p", handler, value);
 
   assert (fd != -1);
-
-  if (fd < 0 || fd >= (int) DIM (notify_table))
+  
+  LOCK (notify_table_lock);
+  for (idx=0; idx < notify_table_size; idx++)
+    if (notify_table[idx].fd == -1)
+      break;
+  if (idx == notify_table_size)
     {
-      errno = EINVAL;
-      return TRACE_SYSRES (-1);
+      /* We need to increase the size of the table.  The approach we
+         take is straightforward to minimize the risk of bugs.  */
+      notify_table_item_t newtbl;
+      size_t newsize = notify_table_size + 64;
+
+      newtbl = calloc (newsize, sizeof *newtbl);
+      if (!newtbl)
+        {
+          res = -1;
+          goto leave;
+        }
+      for (idx=0; idx < notify_table_size; idx++)
+        newtbl[idx] = notify_table[idx];
+      for (; idx < newsize; idx++)
+        {
+          newtbl[idx].fd = -1;
+          newtbl[idx].handler = NULL;
+          newtbl[idx].value = NULL;
+        }
+      free (notify_table);
+      notify_table = newtbl;
+      idx = notify_table_size;
+      notify_table_size = newsize;
     }
-  notify_table[fd].handler = handler;
-  notify_table[fd].value = value;
-  return TRACE_SYSRES (0);
+  notify_table[idx].fd = fd;
+  notify_table[idx].handler = handler;
+  notify_table[idx].value = value;
+  
+ leave:
+  UNLOCK (notify_table_lock);
+
+  return TRACE_SYSRES (res);
 }
 
 

@@ -1,3 +1,10 @@
+2010-02-17  Werner Koch  <wk@g10code.com>
+
+	* posix-io.c (notify_table): Change implementation.
+	(notify_table_item_t, notify_table_size, notify_table_lock): New.
+	(_gpgme_io_close, _gpgme_io_set_close_notify): Adjust for new
+	implementation.
+
 2010-02-16  Werner Koch  <wk@g10code.com>
 
 	* gpgme-tool.c (spacep, has_option, skip_options): New.
