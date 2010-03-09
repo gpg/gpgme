@@ -1538,6 +1538,18 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
   if (!pattern)
     pattern = "";
 
+  /* Hack to make sure that the agent is started.  Only if the agent
+     has been started an application may connect to the agent via
+     GPGME_PROTOCOL_ASSUAN - for example to look for smartcards.  We
+     do this only if a secret key listing has been requested.  In
+     general this is not needed because a secret key listing starts
+     the agent.  However on a fresh installation no public keys are
+     available and thus there is no need for gpgsm to ask the agent
+     whether a secret key exists for the public key.  */
+  if (secret_only)
+    gpgsm_assuan_simple_command (gpgsm->assuan_ctx, "GETINFO agent-check",
+                                 NULL, NULL);
+
   /* Always send list-mode option because RESET does not reset it.  */
   if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
     return gpg_error_from_errno (errno);

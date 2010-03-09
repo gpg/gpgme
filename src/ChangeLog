@@ -1,3 +1,7 @@
+2010-03-09  Werner Koch  <wk@g10code.com>
+
+	* engine-gpgsm.c (gpgsm_keylist): Try to start the agent.
+
 2010-02-17  Werner Koch  <wk@g10code.com>
 
 	* posix-io.c (notify_table): Change implementation.
