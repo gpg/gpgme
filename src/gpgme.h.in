@@ -494,7 +494,8 @@ typedef enum
 
     GPGME_STATUS_PLAINTEXT = 81,
     GPGME_STATUS_INV_SGNR = 82,
-    GPGME_STATUS_NO_SGNR = 83
+    GPGME_STATUS_NO_SGNR = 83,
+    GPGME_STATUS_SUCCESS = 84
   }
 gpgme_status_code_t;
 
