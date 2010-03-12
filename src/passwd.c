@@ -27,6 +27,14 @@
 #include "context.h"
 #include "ops.h"
 
+
+typedef struct
+{
+  int success_seen;
+  int error_seen;
+} *op_data_t;
+
+
 
 /* Parse an error status line and return the error code.  */
 static gpgme_error_t
@@ -63,16 +71,39 @@ static gpgme_error_t
 passwd_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
-  gpgme_error_t err = 0;
+  gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
 
-  (void)ctx;
+  err = _gpgme_op_data_lookup (ctx, OPDATA_PASSWD, &hook, -1, NULL);
+  opd = hook;
+  if (err)
+    return err;
 
   switch (code)
     {
     case GPGME_STATUS_ERROR:
       err = parse_error (args);
+      if (err)
+        opd->error_seen = 1;
       break;
-                         
+
+    case GPGME_STATUS_SUCCESS:
+      opd->success_seen = 1;
+      break;
+      
+    case GPGME_STATUS_EOF:
+      /* In case the OpenPGP engine does not properly implement the
+         passwd command we won't get a success status back and thus we
+         conclude that this operation is not supported.  This is for
+         example the case for GnuPG < 2.0.16.  Note that this test is
+         obsolete for assuan based engines because they will properly
+         return an error for an unknown command.  */
+      if (ctx->protocol == GPGME_PROTOCOL_OpenPGP
+          && !opd->error_seen && !opd->success_seen)
+        err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      break;
+
     default:
       break;
     }
@@ -86,6 +117,8 @@ passwd_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
               unsigned int flags)
 {
   gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
 
   if (!key)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -95,6 +128,14 @@ passwd_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     return err;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_PASSWD, &hook, sizeof (*opd), NULL);
+  opd = hook;
+  if (err)
+    return err;
+
+  opd->success_seen = 0;
+  opd->error_seen = 0;
 
   _gpgme_engine_set_status_handler (ctx->engine, passwd_status_handler, ctx);
 

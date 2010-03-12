@@ -1,3 +1,11 @@
+2010-03-12  Werner Koch  <wk@g10code.com>
+
+	* passwd.c (op_data_t): New.
+	(passwd_start): Setup OPD.
+	(passwd_status_handler): Return GPG_ERR_NOT_SUPPORTED if needed.
+	* context.h (OPDATA_PASSWD): New.
+	* gpgme.h (GPGME_STATUS_SUCCESS): New.
+
 2010-03-09  Werner Koch  <wk@g10code.com>
 
 	* engine-gpgsm.c (gpgsm_keylist): Try to start the agent.
