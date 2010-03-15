@@ -2101,3 +2101,8 @@ typedef gpgme_status_code_t GpgmeStatusCode _GPGME_DEPRECATED;
 }
 #endif
 #endif /* GPGME_H */
+/*
+@emacs_local_vars_begin@
+@emacs_local_vars_read_only@
+@emacs_local_vars_end@
+*/

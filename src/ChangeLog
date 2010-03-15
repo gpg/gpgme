@@ -1,3 +1,8 @@
+2010-03-15  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h.in: Add autoconf template to set generated file to
+	read-only in an emacs buffer.
+
 2010-03-12  Werner Koch  <wk@g10code.com>
 
 	* gpgme.h.in (GPGME_STATUS_SUCCESS): Use the right file for the
