@@ -1,3 +1,8 @@
+2010-04-16  Werner Koch  <wk@g10code.com>
+
+	* w32-io.c (is_socket): New.
+	(reader, writer): Use it to figure out the API to use.
+
 2010-03-15  Werner Koch  <wk@g10code.com>
 
 	* gpgme.h.in: Add autoconf template to set generated file to
