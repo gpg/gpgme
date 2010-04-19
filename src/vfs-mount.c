@@ -116,6 +116,7 @@ vfs_start (gpgme_ctx_t ctx, int synchronous,
 
 
 
+#if 0
 /* XXXX.  This is the asynchronous variant. */
 static gpgme_error_t
 gpgme_op_vfs_transact_start (gpgme_ctx_t ctx, 
@@ -130,6 +131,7 @@ gpgme_op_vfs_transact_start (gpgme_ctx_t ctx,
   return vfs_start (ctx, 0, command, data_cb, data_cb_value,
 		    inq_cb, inq_cb_value, status_cb, status_cb_value);
 }
+#endif
 
 
 /* XXXX.  This is the synchronous variant. */

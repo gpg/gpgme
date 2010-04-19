@@ -74,7 +74,7 @@ const char *
 _gpgme_get_uiserver_socket_path (void)
 {
   static char *socket_path;
-  char *homedir;
+  const char *homedir;
   const char name[] = "S.uiserver";
 
   if (socket_path)

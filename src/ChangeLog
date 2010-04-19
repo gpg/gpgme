@@ -1,3 +1,18 @@
+2010-04-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-support.c (my_spawn): Cast to avoid warning.
+	* engine-g13.c (g13_new): Make ARGV array of pointer to const
+	char.
+	(g13_assuan_simple_command) [!USE_DESCRIPTOR_FUNCTION]: Don't define.
+	* ops.h (_gpgme_key_append_name): Same in prototype.
+	* key.c (_gpgme_key_append_name): Make SRC argument pointer to
+	const char.
+	* posix-util.c (_gpgme_get_uiserver_socket_path): Make HOMEDIR
+	const.
+	* vfs-mount.c (gpgme_op_vfs_transact_start): Never define this
+	potentially useful but currently unused function.
+	* vfs-create.c (gpgme_op_vfs_transact_start): Likewise.
+
 2010-04-16  Werner Koch  <wk@g10code.com>
 
 	* w32-io.c (is_socket): New.

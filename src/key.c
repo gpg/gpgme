@@ -202,7 +202,7 @@ parse_x509_user_id (char *src, char **name, char **email,
 /* Take a name from the --with-colon listing, remove certain escape
    sequences sequences and put it into the list of UIDs.  */
 gpgme_error_t
-_gpgme_key_append_name (gpgme_key_t key, char *src, int convert)
+_gpgme_key_append_name (gpgme_key_t key, const char *src, int convert)
 {
   gpgme_user_id_t uid;
   char *dst;

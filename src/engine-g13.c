@@ -211,7 +211,7 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
   gpgme_error_t err = 0;
   engine_g13_t g13;
   int argc;
-  char *argv[5];
+  const char *argv[5];
   char *dft_display = NULL;
   char dft_ttyname[64];
   char *dft_ttytype = NULL;
@@ -392,6 +392,7 @@ g13_set_locale (void *engine, int category, const char *value)
 }
 
 
+#if USE_DESCRIPTOR_PASSING
 static gpgme_error_t
 g13_assuan_simple_command (assuan_context_t ctx, char *cmd,
 			   engine_status_handler_t status_fnc,
@@ -442,6 +443,7 @@ g13_assuan_simple_command (assuan_context_t ctx, char *cmd,
 
   return err;
 }
+#endif
 
 
 static gpgme_error_t
