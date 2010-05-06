@@ -107,7 +107,7 @@ struct argp_state
   void *pstate;
 };
 
-#define ARGP_ERR_UNKNOWN E2BIG
+#define ARGP_ERR_UNKNOWN EDEADLOCK
 #define ARGP_KEY_ARG 0
 #define ARGP_KEY_ARGS 0x1000006
 #define ARGP_KEY_END 0x1000001
@@ -1651,7 +1651,7 @@ gt_genkey (gpgme_tool_t gt, const char *parms, gpgme_data_t public,
 gpg_error_t
 gt_import_keys (gpgme_tool_t gt, char *fpr[])
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   int cnt;
   int idx;
   gpgme_key_t *keys;

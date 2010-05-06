@@ -93,7 +93,7 @@ _gpgme_decode_c_string (const char *src, char **destp, size_t len)
 	 string.  */
       dest = malloc (strlen (src) + 1);
       if (!dest)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
 
       *destp = dest;
     }
@@ -198,7 +198,7 @@ _gpgme_decode_percent_string (const char *src, char **destp, size_t len,
 	 string.  */
       dest = malloc (strlen (src) + 1);
       if (!dest)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
 
       *destp = dest;
     }
@@ -291,7 +291,7 @@ _gpgme_encode_percent_string (const char *src, char **destp, size_t len)
 	 string.  */
       dest = malloc (destlen);
       if (!dest)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
 
       *destp = dest;
     }

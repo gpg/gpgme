@@ -227,7 +227,7 @@ prepare_new_sig (op_data_t opd)
     {
       sig = calloc (1, sizeof (*sig));
       if (!sig)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
       if (!opd->result.signatures)
         opd->result.signatures = sig;
       if (opd->current_sig)
@@ -293,7 +293,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
       /* Parse the pubkey algo.  */
       if (!end)
 	goto parse_err_sig_fail;
-      errno = 0;
+      gpg_err_set_errno (0);
       sig->pubkey_algo = strtol (end, &tail, 0);
       if (errno || end == tail || *tail != ' ')
 	goto parse_err_sig_fail;
@@ -304,7 +304,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
       /* Parse the hash algo.  */
       if (!*end)
 	goto parse_err_sig_fail;
-      errno = 0;
+      gpg_err_set_errno (0);
       sig->hash_algo = strtol (end, &tail, 0);
       if (errno || end == tail || *tail != ' ')
 	goto parse_err_sig_fail;
@@ -362,7 +362,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
     {
       sig->fpr = strdup (args);
       if (!sig->fpr)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
     }
   return 0;
 }
@@ -386,7 +386,7 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
     free (sig->fpr);
   sig->fpr = strdup (args);
   if (!sig->fpr)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   /* Skip the creation date.  */
   end = strchr (end, ' ');
@@ -418,7 +418,7 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
 	  if (end)
 	    {
 	      /* Parse the pubkey algo.  */
-	      errno = 0;
+	      gpg_err_set_errno (0);
 	      sig->pubkey_algo = strtol (end, &tail, 0);
 	      if (errno || end == tail || *tail != ' ')
 		return gpg_error (GPG_ERR_INV_ENGINE);
@@ -431,7 +431,7 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
 		{
 		  /* Parse the hash algo.  */
 
-		  errno = 0;
+		  gpg_err_set_errno (0);
 		  sig->hash_algo = strtol (end, &tail, 0);
 		  if (errno || end == tail || *tail != ' ')
 		    return gpg_error (GPG_ERR_INV_ENGINE);
@@ -526,14 +526,14 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	{
 	  dest = notation->value = malloc (len);
 	  if (!dest)
-	    return gpg_error_from_errno (errno);
+	    return gpg_error_from_syserror ();
 	}
       else
 	{
 	  int cur_len = strlen (notation->value);
 	  dest = realloc (notation->value, len + strlen (notation->value));
 	  if (!dest)
-	    return gpg_error_from_errno (errno);
+	    return gpg_error_from_syserror ();
 	  notation->value = dest;
 	  dest += cur_len;
 	}

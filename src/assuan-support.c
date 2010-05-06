@@ -77,7 +77,7 @@ my_recvmsg (assuan_context_t ctx, assuan_fd_t fd, assuan_msghdr_t msg,
 	    int flags)
 {
 #ifdef HAVE_W32_SYSTEM
-  errno = ENOSYS;
+  gpg_err_set_errno (ENOSYS);
   return -1;
 #else
   return _gpgme_io_recvmsg (fd, msg, flags);
@@ -91,7 +91,7 @@ my_sendmsg (assuan_context_t ctx, assuan_fd_t fd, const assuan_msghdr_t msg,
 	    int flags)
 {
 #ifdef HAVE_W32_SYSTEM
-  errno = ENOSYS;
+  gpg_err_set_errno (ENOSYS);
   return -1;
 #else
   return _gpgme_io_sendmsg (fd, msg, flags);
@@ -118,7 +118,7 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
 
   if (! name)
     {
-      errno = ENOSYS;
+      gpg_err_set_errno (ENOSYS);
       return -1;
     }
 
@@ -203,7 +203,7 @@ my_socketpair (assuan_context_t ctx, int namespace, int style,
 	       int protocol, assuan_fd_t filedes[2])
 {
 #ifdef HAVE_W32_SYSTEM
-  errno = ENOSYS;
+  gpg_err_set_errno (ENOSYS);
   return -1;
 #else
   /* FIXME: Debug output missing.  */

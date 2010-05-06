@@ -121,10 +121,10 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
 
   import = malloc (sizeof (*import));
   if (!import)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   import->next = NULL;
 
-  errno = 0;
+  gpg_err_set_errno (0);
   nr = strtol (args, &tail, 0);
   if (errno || args == tail || *tail != ' ')
     {
@@ -189,7 +189,7 @@ parse_import_res (char *args, gpgme_import_result_t result)
 {
   char *tail;
 
-  errno = 0;
+  gpg_err_set_errno (0);
 
 #define PARSE_NEXT(x)					\
   (x) = strtol (args, &tail, 0);			\

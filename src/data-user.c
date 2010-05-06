@@ -34,7 +34,7 @@ user_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   if (!dh->data.user.cbs->read)
     {
-      errno = EBADF;
+      gpg_err_set_errno (EBADF);
       return -1;
     }
 
@@ -47,7 +47,7 @@ user_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   if (!dh->data.user.cbs->write)
     {
-      errno = EBADF;
+      gpg_err_set_errno (EBADF);
       return -1;
     }
 
@@ -60,7 +60,7 @@ user_seek (gpgme_data_t dh, off_t offset, int whence)
 {
   if (!dh->data.user.cbs->seek)
     {
-      errno = EBADF;
+      gpg_err_set_errno (EBADF);
       return -1;
     }
 

@@ -126,7 +126,7 @@ parse_enc_to (char *args, gpgme_recipient_t *recp)
 
   rec = malloc (sizeof (*rec));
   if (!rec)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   rec->next = NULL;
   rec->keyid = rec->_keyid;
@@ -153,7 +153,7 @@ parse_enc_to (char *args, gpgme_recipient_t *recp)
 
   if (*args)
     {
-      errno = 0;
+      gpg_err_set_errno (0);
       rec->pubkey_algo = strtol (args, &tail, 0);
       if (errno || args == tail || *tail != ' ')
 	{
@@ -239,7 +239,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 		  {
 		    opd->result.unsupported_algorithm = strdup (args);
 		    if (!opd->result.unsupported_algorithm)
-		      return gpg_error_from_errno (errno);
+		      return gpg_error_from_syserror ();
 		  }
 	      }
 	  }

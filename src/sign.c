@@ -149,7 +149,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
 
   sig = malloc (sizeof (*sig));
   if (!sig)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   sig->next = NULL;
   switch (*args)
@@ -179,7 +179,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
       return gpg_error (GPG_ERR_INV_ENGINE);
     }
 
-  errno = 0;
+  gpg_err_set_errno (0);
   sig->pubkey_algo = strtol (args, &tail, 0);
   if (errno || args == tail || *tail != ' ')
     {

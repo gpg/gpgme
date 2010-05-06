@@ -20,6 +20,9 @@
 # include <config.h>
 #endif
 
+#include <gpg-error.h>
+#define __set_errno(ev) (gpg_err_set_errno (ev))
+
 #if HAVE_ASSUAN_H
 /* Fixme: Why do we need to include the assuan header and why the
    internal ones? */
@@ -29,12 +32,6 @@
 #define __builtin_expect(cond,val) (cond)
 
 #include <errno.h>
-#if !_LIBC
-# if !defined errno && !defined HAVE_ERRNO_DECL
-extern int errno;
-# endif
-# define __set_errno(ev) ((errno) = (ev))
-#endif
 
 #if _LIBC || HAVE_STDLIB_H
 # include <stdlib.h>

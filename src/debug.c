@@ -231,7 +231,7 @@ _gpgme_debug (int level, const char *format, ...)
   UNLOCK (debug_lock);
   fflush (errfp);
 
-  errno = saved_errno;
+  gpg_err_set_errno (saved_errno);
 }
 
 

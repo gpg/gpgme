@@ -45,7 +45,7 @@ delete_status_handler (void *priv, gpgme_status_code_t code, char *args)
       long problem;
       char *tail;
 
-      errno = 0;
+      gpg_err_set_errno (0);
       problem = strtol (args, &tail, 0);
       if (errno || (*tail && *tail != ' '))
 	return gpg_error (GPG_ERR_INV_ENGINE);

@@ -524,7 +524,7 @@ mkstemp (char *tmpl)
   len = strlen (tmpl);
   if (len < 6 || strcmp (&tmpl[len - 6], "XXXXXX"))
     {
-      errno = EINVAL;
+      gpg_err_set_errno (EINVAL);
       return -1;
     }
 
@@ -561,7 +561,7 @@ mkstemp (char *tmpl)
       fd = open (tmpl, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
       if (fd >= 0)
 	{
-	  errno = save_errno;
+	  gpg_err_set_errno (save_errno);
 	  return fd;
 	}
       else if (errno != EEXIST)
@@ -569,7 +569,7 @@ mkstemp (char *tmpl)
     }
 
   /* We got out of the loop because we ran out of combinations to try.  */
-  errno = EEXIST;
+  gpg_err_set_errno (EEXIST);
   return -1;
 }
 

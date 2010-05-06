@@ -158,7 +158,7 @@ gpgme_error_to_errno (gpgme_error_t err)
   TRACE3 (DEBUG_DATA, "gpgme:gpgme_error_to_errno", 0,
 	  "mapping %s <%s> to: %s", gpgme_strerror (err),
 	  gpgme_strsource (err), strerror (res));
-  errno = res;
+  gpg_err_set_errno (res);
   return res ? -1 : 0;
 }
 
@@ -188,7 +188,7 @@ old_user_seek (gpgme_data_t dh, off_t offset, int whence)
 
   if (whence != SEEK_SET || offset)
     {
-      errno = EINVAL;
+      gpg_err_set_errno (EINVAL);
       return TRACE_SYSRES (-1);
     }
   err = (*dh->data.old_user.cb) (dh->data.old_user.handle, NULL, 0, NULL);

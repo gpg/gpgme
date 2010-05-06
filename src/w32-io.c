@@ -166,7 +166,7 @@ set_synchronize (HANDLE hd)
       TRACE1 (DEBUG_SYSIO, "gpgme:set_synchronize", hd,
 	      "DuplicateHandle failed: ec=%d", (int) GetLastError ());
       /* FIXME: Should translate the error code.  */
-      errno = EIO;
+      gpg_err_set_errno (EIO);
       return INVALID_HANDLE_VALUE;
     }
 
@@ -492,7 +492,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
   ctx = find_reader (fd, 1);
   if (!ctx)
     {
-      errno = EBADF;
+      gpg_err_set_errno (EBADF);
       return TRACE_SYSRES (-1);
     }
   if (ctx->eof_shortcut)
@@ -520,7 +520,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 	  TRACE_LOG ("EOF but ctx->eof flag not set");
 	  return 0;
 	}
-      errno = ctx->error_code;
+      gpg_err_set_errno (ctx->error_code);
       return TRACE_SYSRES (-1);
     }
   
@@ -538,7 +538,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 	  TRACE_LOG1 ("ResetEvent failed: ec=%d", (int) GetLastError ());
 	  UNLOCK (ctx->mutex);
 	  /* FIXME: Should translate the error code.  */
-	  errno = EIO;
+	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
 	}
     }
@@ -548,7 +548,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 		  ctx->have_space_ev, (int) GetLastError ());
       UNLOCK (ctx->mutex);
       /* FIXME: Should translate the error code.  */
-      errno = EIO;
+      gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }
   UNLOCK (ctx->mutex);
@@ -837,7 +837,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 	  TRACE_LOG1 ("ResetEvent failed: ec=%d", (int) GetLastError ());
 	  UNLOCK (ctx->mutex);
 	  /* FIXME: Should translate the error code.  */
-	  errno = EIO;
+	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
 	}
       UNLOCK (ctx->mutex);
@@ -851,9 +851,9 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
     {
       UNLOCK (ctx->mutex);
       if (ctx->error_code == ERROR_NO_DATA)
-        errno = EPIPE;
+        gpg_err_set_errno (EPIPE);
       else
-        errno = EIO;
+        gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }
 
@@ -873,7 +873,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
       TRACE_LOG1 ("ResetEvent failed: ec=%d", (int) GetLastError ());
       UNLOCK (ctx->mutex);
       /* FIXME: Should translate the error code.  */
-      errno = EIO;
+      gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }
   if (!SetEvent (ctx->have_data))
@@ -881,7 +881,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
       TRACE_LOG1 ("SetEvent failed: ec=%d", (int) GetLastError ());
       UNLOCK (ctx->mutex);
       /* FIXME: Should translate the error code.  */
-      errno = EIO;
+      gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }
   UNLOCK (ctx->mutex);
@@ -908,7 +908,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
     {
       TRACE_LOG1 ("CreatePipe failed: ec=%d", (int) GetLastError ());
       /* FIXME: Should translate the error code.  */
-      errno = EIO;
+      gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }
 
@@ -926,7 +926,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 	  CloseHandle (rh);
 	  CloseHandle (wh);
 	  /* FIXME: Should translate the error code.  */
-	  errno = EIO;
+	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
         }
       CloseHandle (rh);
@@ -940,7 +940,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 	  CloseHandle (rh);
 	  CloseHandle (wh);
 	  /* FIXME: Should translate the error code.  */
-	  errno = EIO;
+	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
 	}
     }
@@ -957,7 +957,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 	  CloseHandle (rh);
 	  CloseHandle (wh);
 	  /* FIXME: Should translate the error code.  */
-	  errno = EIO;
+	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
         }
       CloseHandle (wh);
@@ -971,7 +971,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 	  CloseHandle (rh);
 	  CloseHandle (wh);
 	  /* FIXME: Should translate the error code.  */
-	  errno = EIO;
+	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
 	}
     }
@@ -992,7 +992,7 @@ _gpgme_io_close (int fd)
 
   if (fd == -1)
     {
-      errno = EBADF;
+      gpg_err_set_errno (EBADF);
       return TRACE_SYSRES (-1);
     }
 
@@ -1019,7 +1019,7 @@ _gpgme_io_close (int fd)
     { 
       TRACE_LOG1 ("CloseHandle failed: ec=%d", (int) GetLastError ());
       /* FIXME: Should translate the error code.  */
-      errno = EIO;
+      gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }
 
@@ -1048,7 +1048,7 @@ _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
   if (i == DIM (notify_table))
     {
       UNLOCK (notify_table_lock);
-      errno = EINVAL;
+      gpg_err_set_errno (EINVAL);
       return TRACE_SYSRES (-1);
     }
   notify_table[i].fd = fd;
@@ -1215,7 +1215,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       DeleteFile (tmp_name);
 
       /* FIXME: Should translate the error code.  */
-      errno = EIO;
+      gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }
 
@@ -1245,7 +1245,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	  DeleteFile (tmp_name);
 
 	  /* FIXME: Should translate the error code.  */
-	  errno = EIO;
+	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
         }
       /* Return the child name of this handle.  */
@@ -1380,7 +1380,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 		      TRACE_END (dbg_help, "oops ]");
 		      TRACE_LOG ("Too many objects for WFMO!");
 		      /* FIXME: Should translate the error code.  */
-		      errno = EIO;
+		      gpg_err_set_errno (EIO);
 		      return TRACE_SYSRES (-1);
                     }
 		  waitidx[nwait] = i;
@@ -1403,7 +1403,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 		      TRACE_END (dbg_help, "oops ]");
 		      TRACE_LOG ("Too many objects for WFMO!");
 		      /* FIXME: Should translate the error code.  */
-		      errno = EIO;
+		      gpg_err_set_errno (EIO);
 		      return TRACE_SYSRES (-1);
                     }
 		  waitidx[nwait] = i;
@@ -1492,7 +1492,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   if (count < 0)
     {
       /* FIXME: Should determine a proper error code.  */
-      errno = EIO;
+      gpg_err_set_errno (EIO);
     }
   
   return TRACE_SYSRES (count);
@@ -1533,7 +1533,7 @@ _gpgme_io_dup (int fd)
     {
       TRACE_LOG1 ("DuplicateHandle failed: ec=%d\n", (int) GetLastError ());
       /* FIXME: Translate error code.  */
-      errno = EIO;
+      gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }
 
@@ -1627,7 +1627,7 @@ _gpgme_io_socket (int domain, int type, int proto)
   res = socket (domain, type, proto);
   if (res == INVALID_SOCKET)
     {
-      errno = wsa2errno (WSAGetLastError ());
+      gpg_err_set_errno (wsa2errno (WSAGetLastError ()));
       return TRACE_SYSRES (-1);
     }
 
@@ -1648,7 +1648,7 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
   res = connect (fd, addr, addrlen);
   if (res)
     {
-      errno = wsa2errno (WSAGetLastError ());
+      gpg_err_set_errno (wsa2errno (WSAGetLastError ()));
       return TRACE_SYSRES (-1);
     }
 

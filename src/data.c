@@ -46,7 +46,7 @@ _gpgme_data_new (gpgme_data_t *r_dh, struct _gpgme_data_cbs *cbs)
   *r_dh = NULL;
   dh = calloc (1, sizeof (*dh));
   if (!dh)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   dh->cbs = cbs;
 
@@ -79,12 +79,12 @@ gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
 
   if (!dh)
     {
-      errno = EINVAL;
+      gpg_err_set_errno (EINVAL);
       return TRACE_SYSRES (-1);
     }
   if (!dh->cbs->read)
     {
-      errno = ENOSYS;
+      gpg_err_set_errno (ENOSYS);
       return TRACE_SYSRES (-1);
     }
   do
@@ -107,12 +107,12 @@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
 
   if (!dh)
     {
-      errno = EINVAL;
+      gpg_err_set_errno (EINVAL);
       return TRACE_SYSRES (-1);
     }
   if (!dh->cbs->write)
     {
-      errno = ENOSYS;
+      gpg_err_set_errno (ENOSYS);
       return TRACE_SYSRES (-1);
     }
   do
@@ -134,12 +134,12 @@ gpgme_data_seek (gpgme_data_t dh, off_t offset, int whence)
 
   if (!dh)
     {
-      errno = EINVAL;
+      gpg_err_set_errno (EINVAL);
       return TRACE_SYSRES (-1);
     }
   if (!dh->cbs->seek)
     {
-      errno = ENOSYS;
+      gpg_err_set_errno (ENOSYS);
       return TRACE_SYSRES (-1);
     }
 
@@ -216,7 +216,7 @@ gpgme_data_set_file_name (gpgme_data_t dh, const char *file_name)
     {
       dh->file_name = strdup (file_name);
       if (!dh->file_name)
-	return TRACE_ERR (gpg_error_from_errno (errno));
+	return TRACE_ERR (gpg_error_from_syserror ());
     }
   else
     dh->file_name = 0;
@@ -257,7 +257,7 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
 
   buflen = _gpgme_io_read (fd, buffer, BUFFER_SIZE);
   if (buflen < 0)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   if (buflen == 0)
     {
       _gpgme_io_close (fd);
@@ -268,7 +268,7 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
     {
       ssize_t amt = gpgme_data_write (dh, bufp, buflen);
       if (amt == 0 || (amt < 0 && errno != EINTR))
-	return TRACE_ERR (gpg_error_from_errno (errno));
+	return TRACE_ERR (gpg_error_from_syserror ());
       bufp += amt;
       buflen -= amt;
     }
@@ -290,7 +290,7 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
     {
       ssize_t amt = gpgme_data_read (dh, dh->pending, BUFFER_SIZE);
       if (amt < 0)
-	return TRACE_ERR (gpg_error_from_errno (errno));
+	return TRACE_ERR (gpg_error_from_syserror ());
       if (amt == 0)
 	{
 	  _gpgme_io_close (fd);
@@ -314,7 +314,7 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
     }
 
   if (nwritten <= 0)
-    return TRACE_ERR (gpg_error_from_errno (errno));
+    return TRACE_ERR (gpg_error_from_syserror ());
 
   if (nwritten < dh->pending_len)
     memmove (dh->pending, dh->pending + nwritten, dh->pending_len - nwritten);

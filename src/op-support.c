@@ -182,7 +182,7 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
   if (!inv_key)
     return gpg_error_from_errno (errno);
   inv_key->next = NULL;
-  errno = 0;
+  gpg_err_set_errno (0);
   reason = strtol (args, &tail, 0);
   if (errno || args == tail || (*tail && *tail != ' '))
     {
@@ -299,7 +299,7 @@ _gpgme_parse_plaintext (char *args, char **filenamep)
     {
       char *filename = strdup (args);
       if (!filename)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
 
       *filenamep = filename;
     }

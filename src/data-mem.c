@@ -115,7 +115,7 @@ mem_seek (gpgme_data_t dh, off_t offset, int whence)
     case SEEK_SET:
       if (offset < 0 || offset > dh->data.mem.length)
 	{
-	  errno = EINVAL;
+	  gpg_err_set_errno (EINVAL);
 	  return -1;
 	}
       dh->data.mem.offset = offset;
@@ -124,7 +124,7 @@ mem_seek (gpgme_data_t dh, off_t offset, int whence)
       if ((offset > 0 && dh->data.mem.length - dh->data.mem.offset < offset)
 	  || (offset < 0 && dh->data.mem.offset < -offset)) 
 	{
-	  errno = EINVAL;
+	  gpg_err_set_errno (EINVAL);
 	  return -1;
 	}
       dh->data.mem.offset += offset;
@@ -132,13 +132,13 @@ mem_seek (gpgme_data_t dh, off_t offset, int whence)
     case SEEK_END:
       if (offset > 0 || -offset > dh->data.mem.length)
 	{
-	  errno = EINVAL;
+	  gpg_err_set_errno (EINVAL);
 	  return -1;
 	}
       dh->data.mem.offset = dh->data.mem.length - offset;
       break;
     default:
-      errno = EINVAL;
+      gpg_err_set_errno (EINVAL);
       return -1;
     }
   return dh->data.mem.offset;

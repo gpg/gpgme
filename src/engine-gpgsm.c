@@ -247,7 +247,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 
   gpgsm = calloc (1, sizeof *gpgsm);
   if (!gpgsm)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   gpgsm->status_cb.fd = -1;
   gpgsm->status_cb.dir = 1;
@@ -288,7 +288,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 #if !USE_DESCRIPTOR_PASSING
   if (_gpgme_io_pipe (fds, 0) < 0)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto leave;
     }
   gpgsm->input_cb.fd = fds[1];
@@ -296,7 +296,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 
   if (_gpgme_io_pipe (fds, 1) < 0)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto leave;
     }
   gpgsm->output_cb.fd = fds[0];
@@ -304,7 +304,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 
   if (_gpgme_io_pipe (fds, 0) < 0)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto leave;
     }
   gpgsm->message_cb.fd = fds[1];
@@ -372,7 +372,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
       if (asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
         {
 	  free (dft_display);
-	  err = gpg_error_from_errno (errno);
+	  err = gpg_error_from_syserror ();
 	  goto leave;
 	}
       free (dft_display);
@@ -398,7 +398,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 	{
 	  if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
 	    {
-	      err = gpg_error_from_errno (errno);
+	      err = gpg_error_from_syserror ();
 	      goto leave;
 	    }
 	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
@@ -415,7 +415,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 	      if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
 		{
 		  free (dft_ttytype);
-		  err = gpg_error_from_errno (errno);
+		  err = gpg_error_from_syserror ();
 		  goto leave;
 		}
 	      free (dft_ttytype);
@@ -524,7 +524,7 @@ gpgsm_set_locale (void *engine, int category, const char *value)
     return 0;
 
   if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     {
       err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
@@ -660,7 +660,7 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
       int fds[2];
 
       if (_gpgme_io_pipe (fds, dir) < 0)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
 
       iocb_data->fd = dir ? fds[0] : fds[1];
       iocb_data->server_fd = dir ? fds[1] : fds[0];
@@ -832,7 +832,7 @@ status_handler (void *opaque, int fd)
 	    {
 	      char *newline = realloc (*aline, *alinelen + linelen + 1);
 	      if (!newline)
-		err = gpg_error_from_errno (errno);
+		err = gpg_error_from_syserror ();
 	      else
 		{
 		  *aline = newline;
@@ -917,7 +917,7 @@ status_handler (void *opaque, int fd)
               if (!nwritten || (nwritten < 0 && errno != EINTR)
                   || nwritten > linelen)
                 {
-                  err = gpg_error_from_errno (errno);
+                  err = gpg_error_from_syserror ();
                   break;
                 }
               src += nwritten;
@@ -1115,7 +1115,7 @@ gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
 
   line = malloc (length);
   if (!line)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   strcpy (line, "DELKEYS ");
   linep = &line[8];
@@ -1172,7 +1172,7 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
   line = malloc (10 + 40 + 1);
   if (!line)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   strcpy (line, "RECIPIENT ");
   for (i =0; !err && recp[i]; i++)
     {
@@ -1278,7 +1278,7 @@ gpgsm_export (void *engine, const char *pattern, gpgme_export_mode_t mode,
 
   cmd = malloc (7 + strlen (pattern) + 1);
   if (!cmd)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   strcpy (cmd, "EXPORT ");
   strcpy (&cmd[7], pattern);
 
@@ -1335,7 +1335,7 @@ gpgsm_export_ext (void *engine, const char *pattern[], gpgme_export_mode_t mode,
     }
   line = malloc (length);
   if (!line)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   strcpy (line, "EXPORT ");
   linep = &line[7];
@@ -1552,7 +1552,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
 
   /* Always send list-mode option because RESET does not reset it.  */
   if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
   free (line);
   if (err)
@@ -1580,7 +1580,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
   line = malloc (15 + strlen (pattern) + 1);
   if (!line)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   if (secret_only)
     {
       strcpy (line, "LISTSECRETKEYS ");
@@ -1626,7 +1626,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
 
   /* Always send list-mode option because RESET does not reset it.  */
   if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
   free (line);
   if (err)
@@ -1663,7 +1663,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
     }
   line = malloc (length);
   if (!line)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   if (secret_only)
     {
       strcpy (line, "LISTSECRETKEYS ");
@@ -1749,7 +1749,7 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 	 requested.  */
 
       if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
       err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd,
                                          NULL, NULL);
       free (assuan_cmd);

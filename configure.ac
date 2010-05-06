@@ -283,7 +283,7 @@ if test "$ac_cv_func_timegm" != yes; then
 fi
 
 # Checking for libgpg-error.
-AM_PATH_GPG_ERROR(1.4,, AC_MSG_ERROR([libgpg-error was not found]))
+AM_PATH_GPG_ERROR(1.8,, AC_MSG_ERROR([libgpg-error was not found]))
 AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
           [The default error source for GPGME.])
 
