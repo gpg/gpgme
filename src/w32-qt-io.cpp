@@ -27,7 +27,6 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
-#include <signal.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/time.h>

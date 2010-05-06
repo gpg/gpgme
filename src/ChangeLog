@@ -1,5 +1,8 @@
 2010-05-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* w32-glib-io.c, w32-io.c, w32-qt-io.cpp, w32-sema.c, w32-util.c:
+	Do not include <signal.h>.
+
 	* sign.c, data-user.c, conversion.c, debug.c, verify.c, data.c,
 	decrypt.c, delete.c, assuan-support.c, import.c, engine-gpgsm.c,
 	data-mem.c, op-support.c, w32-io.c, w32-util.c, data-compat.c: Use
