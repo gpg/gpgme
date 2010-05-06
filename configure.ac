@@ -128,7 +128,12 @@ have_w32_system=no
 build_w32_glib=no
 build_w32_qt=no
 case "${host}" in
-    *-mingw32*)
+    *-mingw32ce*)
+        have_w32ce_system=yes
+	;;
+esac
+case "${host}" in
+    *-mingw32ce*|*-mingw32*)
         # special stuff for Windoze NT
 	have_dosish_system=yes
         have_w32_system=yes
@@ -185,6 +190,10 @@ if test "$have_w32_system" = yes; then
    AC_DEFINE(HAVE_W32_SYSTEM,1, [Defined if we run on a W32 API based system])
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
+if test "$have_w32ce_system" = yes; then
+   AC_DEFINE(HAVE_W32CE_SYSTEM,1, [Defined if we run on a W32 CE API based system])
+fi
+AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
 AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
 AM_CONDITIONAL(BUILD_W32_QT, test "$build_w32_qt" = yes)
 

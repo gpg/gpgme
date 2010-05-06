@@ -1,3 +1,16 @@
+2010-05-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* sign.c, data-user.c, conversion.c, debug.c, verify.c, data.c,
+	decrypt.c, delete.c, assuan-support.c, import.c, engine-gpgsm.c,
+	data-mem.c, op-support.c, w32-io.c, w32-util.c, data-compat.c: Use
+	gpg_error_from_syserror instead gpg_error_from_errno, and use
+	gpg_err_set_errno to set error number.
+	* setenv.c: Include <gpg-error.h> and define __set_errno to use
+	gpg_err_set_errno.
+	* gpgme-tool.c (ARGP_ERR_UNKNOWN): Define to EDEADLOCK (which is
+	mapped in Windows CE) instead of E2BIG (which is not).
+	(gt_import_keys): Initialize err.
+
 2010-04-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan-support.c (my_spawn): Cast to avoid warning.

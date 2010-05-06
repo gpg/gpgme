@@ -3007,6 +3007,17 @@ cygwin*)
   lt_cv_file_magic_cmd='func_win32_libid'
   ;;
 
+
+mingw32ce*)
+  # Windows CE is often used with non-x86 platforms and thus the below
+  # mingw and cegcc checks don't work.  It would be possible to
+  # support other architectures in these checks.  However x86 is pretty
+  # hard coded and changing this would require quite some tests on all
+  # the platforms to be sure not to break something.  Thus we take the
+  # easy way out and don't check at all.
+  lt_cv_deplibs_check_method=pass_all
+  ;;
+
 mingw* | pw32*)
   # Base MSYS/MinGW do not provide the 'file' command needed by
   # func_win32_libid shell function, so use a weaker test based on 'objdump',
@@ -4260,9 +4271,6 @@ dnl Note also adjust exclude_expsyms for C++ above.
     ;;
   openbsd*)
     with_gnu_ld=no
-    ;;
-  linux* | k*bsd*-gnu)
-    _LT_TAGVAR(link_all_deplibs, $1)=no
     ;;
   esac
 
