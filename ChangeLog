@@ -1,5 +1,7 @@
 2010-05-07  Marcus Brinkmann  <marcus@g10code.de>
 
+	* autogen.sh: Update the thing.
+
 	* configure.ac: Check for locale.h.
 
 2010-05-06  Marcus Brinkmann  <marcus@g10code.de>

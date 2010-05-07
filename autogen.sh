@@ -31,13 +31,55 @@ check_version () {
 
 DIE=no
 FORCE=
-if test "$1" = "--force"; then
+if test x"$1" = x"--force"; then
   FORCE=" --force"
   shift
 fi
 
+# Begin list of optional variables sourced from ~/.gnupg-autogen.rc
+w32_toolprefixes=
+w32_extraoptions=
+w32ce_toolprefixes=
+w32ce_extraoptions=
+amd64_toolprefixes=
+# End list of optional variables sourced from ~/.gnupg-autogen.rc
+# What follows are variables which are sourced but default to 
+# environment variables or lacking them hardcoded values.
+#w32root=
+#w32ce_root=
+#amd64root=
+
+if [ -f "$HOME/.gnupg-autogen.rc" ]; then
+    echo "sourcing extra definitions from $HOME/.gnupg-autogen.rc"
+    . "$HOME/.gnupg-autogen.rc"
+fi
+
+# Convenience option to use certain configure options for some hosts.
+myhost="" 
+myhostsub=""
+case "$1" in
+    --build-w32)
+        myhost="w32"
+        ;;
+    --build-w32ce)
+        myhost="w32"
+        myhostsub="ce"
+        ;;
+    --build-amd64)
+        myhost="amd64"
+        ;;
+    --build*)
+        echo "**Error**: invalid build option $1" >&2
+        exit 1
+        ;;
+    *)
+        ;;
+esac
+
+
+# ***** W32 build script *******
 # Used to cross-compile for Windows.
-if test "$1" = "--build-w32"; then
+if [ "$myhost" = "w32" ]; then
     tmp=`dirname $0`
     tsdir=`cd "$tmp"; pwd`
     shift
@@ -47,28 +89,35 @@ if test "$1" = "--build-w32"; then
     fi
     build=`$tsdir/config.guess`
 
-    [ -z "$w32root" ] && w32root="$HOME/w32root"
+    case $myhostsub in
+        ce)
+          w32root="$w32ce_root"
+          [ -z "$w32root" ] && w32root="$HOME/w32ce_root"
+          toolprefixes="arm-mingw32ce"
+          ;;
+        *)
+          [ -z "$w32root" ] && w32root="$HOME/w32root"
+          toolprefixes="i586-mingw32msvc i386-mingw32msvc"
+          ;;
+    esac
     echo "Using $w32root as standard install directory" >&2
     
-    # See whether we have the Debian cross compiler package or the
-    # old mingw32/cpd system
-    if i586-mingw32msvc-gcc --version >/dev/null 2>&1 ; then
-        host=i586-mingw32msvc
-        crossbindir=/usr/$host/bin
-    else
-       host=i386--mingw32
-       if ! mingw32 --version >/dev/null; then
-          echo "We need at least version 0.3 of MingW32/CPD" >&2
-          exit 1
-       fi
-       crossbindir=`mingw32 --install-dir`/bin
-       # Old autoconf version required us to setup the environment
-       # with the proper tool names.
-       CC=`mingw32 --get-path gcc`
-       CPP=`mingw32 --get-path cpp`
-       AR=`mingw32 --get-path ar`
-       RANLIB=`mingw32 --get-path ranlib`
-       export CC CPP AR RANLIB 
+    crossbindir=
+    for host in $toolprefixes; do
+        if ${host}-gcc --version >/dev/null 2>&1 ; then
+            crossbindir=/usr/${host}/bin
+            conf_CC="CC=${host}-gcc"
+            break;
+        fi
+    done
+    if [ -z "$crossbindir" ]; then
+        echo "Cross compiler kit not installed" >&2
+        if [ -z "$sub" ]; then 
+          echo "Under Debian GNU/Linux, you may install it using" >&2
+          echo "  apt-get install mingw32 mingw32-runtime mingw32-binutils" >&2 
+        fi
+        echo "Stop." >&2
+        exit 1
     fi
    
     if [ -f "$tsdir/config.log" ]; then
@@ -79,16 +128,58 @@ if test "$1" = "--build-w32"; then
     fi
 
     ./configure --enable-maintainer-mode  --prefix=${w32root}  \
-            --host=i586-mingw32msvc --build=${build} \
+            --host=${host} --build=${build} \
             --with-gpg-error-prefix=${w32root} \
-            --with-libassuan-prefix=${w32root} \
-            --enable-shared --enable-static --enable-w32-glib \
-            PKG_CONFIG_LIBDIR="$w32root/lib/pkgconfig"
+            --with-libassuan-prefix=${w32root} "$@"
 
     exit $?
 fi
+# ***** end W32 build script *******
 
 
+# ***** AMD64 cross build script *******
+# Used to cross-compile for AMD64 (for testing)
+if [ "$myhost" = "amd64" ]; then
+    tmp=`dirname $0`
+    tsdir=`cd "$tmp"; pwd`
+    shift
+    if [ ! -f $tsdir/config.guess ]; then
+        echo "$tsdir/config.guess not found" >&2
+        exit 1
+    fi
+    build=`$tsdir/config.guess`
+
+    [ -z "$amd64root" ] && amd64root="$HOME/amd64root"
+    echo "Using $amd64root as standard install directory" >&2
+    
+    # Locate the cross compiler
+    crossbindir=
+    for host in x86_64-linux-gnu amd64-linux-gnu; do
+        if ${host}-gcc --version >/dev/null 2>&1 ; then
+            crossbindir=/usr/${host}/bin
+            conf_CC="CC=${host}-gcc"
+            break;
+        fi
+    done
+    if [ -z "$crossbindir" ]; then
+        echo "Cross compiler kit not installed" >&2
+        echo "Stop." >&2
+        exit 1
+    fi
+   
+    if [ -f "$tsdir/config.log" ]; then
+        if ! head $tsdir/config.log | grep "$host" >/dev/null; then
+            echo "Please run a 'make distclean' first" >&2
+            exit 1
+        fi
+    fi
+
+    $tsdir/configure --enable-maintainer-mode --prefix=${amd64root}  \
+             --host=${host} --build=${build} 
+    rc=$?
+    exit $rc
+fi
+# ***** end AMD64 cross build script *******
 
 
 
@@ -128,14 +219,12 @@ ACLOCAL=${AUTOMAKE_PREFIX}${ACLOCAL:-aclocal}${AUTOMAKE_SUFFIX}
 #GETTEXT=${GETTEXT_PREFIX}${GETTEXT:-gettext}${GETTEXT_SUFFIX}
 #MSGMERGE=${GETTEXT_PREFIX}${MSGMERGE:-msgmerge}${GETTEXT_SUFFIX}
 
-DIE=no
-
 
 if check_version $AUTOCONF $autoconf_vers_num $autoconf_vers ; then
     check_version $AUTOHEADER $autoconf_vers_num $autoconf_vers autoconf
 fi
 if check_version $AUTOMAKE $automake_vers_num $automake_vers; then
-    check_version $ACLOCAL $automake_vers_num $automake_vers automake
+  check_version $ACLOCAL $automake_vers_num $autoconf_vers automake
 fi
 #if check_version $GETTEXT $gettext_vers_num $gettext_vers; then
 #  check_version $MSGMERGE $gettext_vers_num $gettext_vers gettext
@@ -160,7 +249,6 @@ $AUTOMAKE --gnu;
 echo "Running autoconf${FORCE} ..."
 $AUTOCONF${FORCE}
 
-echo "You may now run:
+echo "You may now run 
   ./configure --enable-maintainer-mode && make
 "
-
