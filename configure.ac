@@ -58,6 +58,9 @@ LIBGPGME_LT_REVISION=0
 GPGME_CONFIG_API_VERSION=1
 ##############################################
 
+NEED_LIBASSUAN_API=2
+NEED_LIBASSUAN_VERSION=2.0.0
+
 
 BUILD_REVISION=svn_revision
 PACKAGE=$PACKAGE_NAME
@@ -298,10 +301,13 @@ AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
           [The default error source for GPGME.])
 
 # And for libassuan.
-NEED_LIBASSUAN_VERSION=1.1.0
 have_libassuan=no
-AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_VERSION",
+AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
                   have_libassuan=yes, have_libassuan=no)
+if test "$have_libassuan" = "yes"; then
+  AC_DEFINE_UNQUOTED(GPGME_LIBASSUAN_VERSION, "$libassuan_version",
+                     [version of the libassuan library])
+fi
 AM_CONDITIONAL(HAVE_ASSUAN, test "$have_libassuan" = "yes")
 if test "$have_libassuan" = "yes"; then
   AC_DEFINE(ENABLE_ASSUAN,1,[Whether Assuan support is enabled])
@@ -551,15 +557,6 @@ AC_ARG_ENABLE(gpgsm-test,
          run_gpgsm_test=$enableval)
 AM_CONDITIONAL(RUN_GPGSM_TESTS, test "$run_gpgsm_test" = "yes")
 
-# Require libassuan if GPGSM is here.
-require_libassuan=no
-if test "$GPGSM" != "no"; then
-  require_libassuan=yes
-fi
-if test "$G13" != "no"; then
-  require_libassuan=yes
-fi
-
 
 NO_OVERRIDE=no
 AC_ARG_WITH(gpgconf,
@@ -799,6 +796,7 @@ AC_CHECK_MEMBER(struct cmsghdr.cmsg_len,
 #include <unistd.h>
        ])
 
+use_descriptor_passing=no
 AC_ARG_ENABLE(fd-passing,
   AC_HELP_STRING([--enable-fd-passing], [use FD passing if supported]),
   use_descriptor_passing=$enableval)
@@ -889,14 +887,14 @@ AC_SUBST(emacs_local_vars_end, ['End:'])
 
 # Last check.
 die=no
-if test "$require_libassuan" = "no"; then
+if test "$have_libassuan" = "no"; then
    die=yes
    AC_MSG_NOTICE([[
 ***
 *** You need libassuan to build this program with GPGSM support.
 *** This library is for example available at
-***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/libassuan/
-*** (at least version $NEED_LIBASSUAN_VERSION is required).
+***   ftp://ftp.gnupg.org/gcrypt/libassuan/
+*** (at least version $NEED_LIBASSUAN_VERSION (API $NEED_LIBASSUAN_API) is required).
 ***]])
 fi
 
@@ -925,25 +923,25 @@ AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AC_OUTPUT
 
 echo "
-	GPGME v${VERSION} has been configured as follows:
+        GPGME v${VERSION} has been configured as follows:
 
-	GnuPG path:      $GPG
+        GnuPG path:      $GPG
         GnuPG version:   $GPG_VERSION, min. $NEED_GPG_VERSION
 
-	GpgSM path:      $GPGSM
+        GpgSM path:      $GPGSM
         GpgSM version:   $GPGSM_VERSION, min. $NEED_GPGSM_VERSION
 
-	GpgConf path:    $GPGCONF
+        GpgConf path:    $GPGCONF
         GpgConf version: $GPGCONF_VERSION, min. $NEED_GPGCONF_VERSION
 
-	G13 path:        $G13
+        G13 path:        $G13
         G13 version:     $G13_VERSION, min. $NEED_G13_VERSION
 
-        Assuan version:  $LIBASSUAN_VERSION
+        Assuan version:  $libassuan_version, min. $NEED_LIBASSUAN_VERSION
 
-	UI Server:       $uiserver
+        UI Server:       $uiserver
         FD Passing:      $use_descriptor_passing
 
-	GPGME Pthread:   $have_pthread
-	GPGME Pth:       $have_pth
+        GPGME Pthread:   $have_pthread
+        GPGME Pth:       $have_pth
 "
