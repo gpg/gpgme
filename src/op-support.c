@@ -23,7 +23,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#ifdef HAVE_LOCALE_H
 #include <locale.h>
+#endif
 
 #include "gpgme.h"
 #include "context.h"
@@ -114,7 +116,10 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
 
   if (!reuse_engine)
     {
+      err = 0;
+#ifdef LC_CTYPE
       err = _gpgme_engine_set_locale (ctx->engine, LC_CTYPE, ctx->lc_ctype);
+#endif
 #ifdef LC_MESSAGES
       if (!err)
         err = _gpgme_engine_set_locale (ctx->engine,

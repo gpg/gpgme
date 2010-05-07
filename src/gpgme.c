@@ -27,7 +27,9 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#ifdef HAVE_LOCALE_H
 #include <locale.h>
+#endif
 
 #include "util.h"
 #include "context.h"
@@ -600,7 +602,9 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
         failed = 1;						\
     }
 
+#ifdef LC_CTYPE
   PREPARE_ONE_LOCALE (ctype, CTYPE);
+#endif
 #ifdef LC_MESSAGES
   PREPARE_ONE_LOCALE (messages, MESSAGES);
 #endif
@@ -636,7 +640,9 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
 
   if (!ctx)
     LOCK (def_lc_lock);
+#ifdef LC_CTYPE
   SET_ONE_LOCALE (ctype, CTYPE);
+#endif
 #ifdef LC_MESSAGES
   SET_ONE_LOCALE (messages, MESSAGES);
 #endif

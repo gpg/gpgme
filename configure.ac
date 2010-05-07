@@ -203,6 +203,7 @@ AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 
 
 # Checks for header files.
+AC_CHECK_HEADERS([locale.h])
 AC_CHECK_HEADERS(sys/select.h)
 AC_CHECK_HEADERS([sys/uio.h])
 

@@ -1,5 +1,11 @@
 2010-05-07  Marcus Brinkmann  <marcus@g10code.de>
 
+	* engine-g13.c, gpgme.c, engine-gpgsm.c, engine-gpg.c,
+	op-support.c, engine-assuan.c, gpgme-tool.c: Include <locale.h>
+	only if available with HAVE_LOCALE_H and conditionalize use of
+	LC_CTYPE on its definition.
+	* engine-gpgconf.c: Do not include <locale.h>.
+
 	* engine-gpgsm.c (gpgsm_new, start): Cast between int and
 	assuan_fd_t.
 	* assuan-support.c (my_pipe, my_close, my_read, my_write): Likewise.

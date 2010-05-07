@@ -28,7 +28,9 @@
 #include <getopt.h>
 #include <ctype.h>
 #include <stdarg.h>
+#ifdef HAVE_LOCALE_H
 #include <locale.h>
+#endif
 #ifdef HAVE_ARGP_H
 #include <argp.h>
 #endif
@@ -2908,10 +2910,13 @@ main (int argc, char *argv[])
 
   setlocale (LC_ALL, "");
   gpgme_check_version (NULL);
+#ifdef LC_CTYPE
   gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
+#endif
 #ifdef LC_MESSAGES
   gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
 #endif
+
   args_init (&args);
 
   argp_parse (&argp, argc, argv, 0, 0, &args);

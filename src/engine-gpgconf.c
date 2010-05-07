@@ -27,7 +27,6 @@
 #include <sys/types.h>
 #include <assert.h>
 #include <unistd.h>
-#include <locale.h>
 #include <fcntl.h> /* FIXME */
 #include <errno.h>
 

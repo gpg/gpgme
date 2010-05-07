@@ -28,7 +28,9 @@
 #include <sys/types.h>
 #include <assert.h>
 #include <unistd.h>
+#ifdef HAVE_LOCALE_H
 #include <locale.h>
+#endif
 #include <fcntl.h> /* FIXME */
 #include <errno.h>
 
@@ -354,7 +356,10 @@ g13_set_locale (void *engine, int category, const char *value)
   /* FIXME: If value is NULL, we need to reset the option to default.
      But we can't do this.  So we error out here.  G13 needs support
      for this.  */
-  if (category == LC_CTYPE)
+  if (0)
+    ;
+#ifdef LC_CTYPE
+  else if (category == LC_CTYPE)
     {
       catstr = "lc-ctype";
       if (!value && g13->lc_ctype_set)
@@ -362,6 +367,7 @@ g13_set_locale (void *engine, int category, const char *value)
       if (value)
 	g13->lc_ctype_set = 1;
     }
+#endif
 #ifdef LC_MESSAGES
   else if (category == LC_MESSAGES)
     {

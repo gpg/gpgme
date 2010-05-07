@@ -28,7 +28,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <unistd.h>
+#ifdef HAVE_LOCALE_H
 #include <locale.h>
+#endif
 
 #include "gpgme.h"
 #include "util.h"
@@ -563,7 +565,10 @@ gpg_set_locale (void *engine, int category, const char *value)
 {
   engine_gpg_t gpg = engine;
 
-  if (category == LC_CTYPE)
+  if (0)
+    ;
+#ifdef LC_CTYPE
+  else if (category == LC_CTYPE)
     {
       if (gpg->lc_ctype)
         {
@@ -577,6 +582,7 @@ gpg_set_locale (void *engine, int category, const char *value)
 	    return gpg_error_from_syserror ();
 	}
     }
+#endif
 #ifdef LC_MESSAGES
   else if (category == LC_MESSAGES)
     {
