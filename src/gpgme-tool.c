@@ -1879,7 +1879,8 @@ server_data_obj (assuan_fd_t fd, gpgme_data_encoding_t encoding,
 {
   gpgme_error_t err;
 
-  err = gpgme_data_new_from_fd (data, fd);
+  /* For now... */
+  err = gpgme_data_new_from_fd (data, (int) fd);
   if (err)
     return err;
   return gpgme_data_set_encoding (*data, encoding);
@@ -1894,11 +1895,15 @@ server_reset_fds (struct server *server)
      here.  */
   assuan_close_input_fd (server->assuan_ctx);
   assuan_close_output_fd (server->assuan_ctx);
-  if (server->message_fd != -1)
+  if (server->message_fd != ASSUAN_INVALID_FD)
     {
       /* FIXME: Assuan should provide a close function.  */
+#if HAVE_W32_SYSTEM
+      CloseHandle (server->message_fd);
+#else
       close (server->message_fd);
-      server->message_fd = -1;
+#endif
+      server->message_fd = ASSUAN_INVALID_FD;
     }
   server->input_enc = GPGME_DATA_ENCODING_NONE;
   server->output_enc = GPGME_DATA_ENCODING_NONE;
@@ -2777,7 +2782,7 @@ gpgme_server (gpgme_tool_t gt)
   static const char hello[] = ("GPGME-Tool " VERSION " ready");
 
   memset (&server, 0, sizeof (server));
-  server.message_fd = -1;
+  server.message_fd = ASSUAN_INVALID_FD;
   server.input_enc = GPGME_DATA_ENCODING_NONE;
   server.output_enc = GPGME_DATA_ENCODING_NONE;
   server.message_enc = GPGME_DATA_ENCODING_NONE;

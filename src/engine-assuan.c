@@ -630,16 +630,21 @@ static gpgme_error_t
 start (engine_llass_t llass, const char *command)
 {
   gpgme_error_t err;
+  assuan_fd_t afdlist[5];
   int fdlist[5];
   int nfds;
+  int i;
 
   /* We need to know the fd used by assuan for reads.  We do this by
      using the assumption that the first returned fd from
      assuan_get_active_fds() is always this one.  */
   nfds = assuan_get_active_fds (llass->assuan_ctx, 0 /* read fds */,
-                                fdlist, DIM (fdlist));
+                                afdlist, DIM (afdlist));
   if (nfds < 1)
     return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
+  /* For now... */
+  for (i = 0; i < nfds; i++)
+    fdlist[i] = (int) afdlist[i];
 
   /* We "duplicate" the file descriptor, so we can close it here (we
      can't close fdlist[0], as that is closed by libassuan, and

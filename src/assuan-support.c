@@ -41,11 +41,21 @@ my_usleep (assuan_context_t ctx, unsigned int usec)
   __assuan_usleep (ctx, usec);
 }
 
+
 /* Create a pipe with an inheritable end.  */
 static int
 my_pipe (assuan_context_t ctx, assuan_fd_t fds[2], int inherit_idx)
 {
-  return _gpgme_io_pipe (fds, inherit_idx);
+  int res;
+  int gfds[2];
+
+  res = _gpgme_io_pipe (gfds, inherit_idx);
+
+  /* For now... */
+  fds[0] = (assuan_fd_t) gfds[0];
+  fds[1] = (assuan_fd_t) gfds[1];
+
+  return res;
 }
 
 
@@ -54,21 +64,21 @@ my_pipe (assuan_context_t ctx, assuan_fd_t fds[2], int inherit_idx)
 static int
 my_close (assuan_context_t ctx, assuan_fd_t fd)
 {
-  return _gpgme_io_close (fd);
+  return _gpgme_io_close ((int) fd);
 }
 
 
 static ssize_t
 my_read (assuan_context_t ctx, assuan_fd_t fd, void *buffer, size_t size)
 {
-  return _gpgme_io_read (fd, buffer, size);
+  return _gpgme_io_read ((int) fd, buffer, size);
 }
 
 
 static ssize_t
 my_write (assuan_context_t ctx, assuan_fd_t fd, const void *buffer, size_t size)
 {
-  return _gpgme_io_write (fd, buffer, size);
+  return _gpgme_io_write ((int) fd, buffer, size);
 }
 
 
@@ -80,7 +90,7 @@ my_recvmsg (assuan_context_t ctx, assuan_fd_t fd, assuan_msghdr_t msg,
   gpg_err_set_errno (ENOSYS);
   return -1;
 #else
-  return _gpgme_io_recvmsg (fd, msg, flags);
+  return _gpgme_io_recvmsg ((int) fd, msg, flags);
 #endif
 }
 
@@ -94,7 +104,7 @@ my_sendmsg (assuan_context_t ctx, assuan_fd_t fd, const assuan_msghdr_t msg,
   gpg_err_set_errno (ENOSYS);
   return -1;
 #else
-  return _gpgme_io_sendmsg (fd, msg, flags);
+  return _gpgme_io_sendmsg ((int) fd, msg, flags);
 #endif
 }
 
@@ -138,20 +148,20 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
     {
       while (fd_child_list[i] != ASSUAN_INVALID_FD)
 	{
-	  fd_items[i].fd = fd_child_list[i];
+	  fd_items[i].fd = (int) fd_child_list[i];
 	  fd_items[i].dup_to = -1;
 	  i++;
 	}
     }
   if (fd_in != ASSUAN_INVALID_FD)
     {
-      fd_items[i].fd = fd_in;
+      fd_items[i].fd = (int) fd_in;
       fd_items[i].dup_to = 0;
       i++;
     }
   if (fd_out != ASSUAN_INVALID_FD)
     {
-      fd_items[i].fd = fd_out;
+      fd_items[i].fd = (int) fd_out;
       fd_items[i].dup_to = 1;
       i++;
     }
@@ -168,7 +178,7 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
 	{
 	  while (fd_child_list[i] != ASSUAN_INVALID_FD)
 	    {
-	      fd_child_list[i] = fd_items[i].peer_name;
+	      fd_child_list[i] = (assuan_fd_t) fd_items[i].peer_name;
 	      i++;
 	    }
 	}
