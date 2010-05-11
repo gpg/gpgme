@@ -34,12 +34,14 @@
 /* Include stdio.h for the FILE type definition.  */
 #include <stdio.h>
 
-#ifdef _MSC_VER
+#ifdef _WIN32
   typedef long off_t;
   typedef long ssize_t;
 #else
 # include <sys/types.h>
 #endif
+
+#include <time.h>
 
 #include <gpg-error.h>
 
