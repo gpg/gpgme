@@ -38,12 +38,21 @@
 #include <shlobj.h>
 #include <io.h>
 
+#include "ath.h"
 #include "util.h"
 #include "sema.h"
 #include "debug.h"
 
+
+#ifndef HAVE_W32CE_SYSTEM
+#define HAVE_ALLOW_SET_FOREGROUND_WINDOW 1
+#endif
+
+
 DEFINE_STATIC_LOCK (get_path_lock);
 
+
+#ifdef HAVE_ALLOW_SET_FOREGROUND_WINDOW
 
 #define RTLD_LAZY 0
 
@@ -77,6 +86,52 @@ dlclose (void * hd)
     }
   return -1;
 }  
+#endif /* HAVE_ALLOW_SET_FOREGROUND_WINDOW */
+
+
+void 
+_gpgme_allow_set_foreground_window (pid_t pid)
+{
+#ifdef HAVE_ALLOW_SET_FOREGROUND_WINDOW
+  static int initialized;
+  static BOOL (WINAPI * func)(DWORD);
+  void *handle;
+
+  if (!initialized)
+    {
+      /* Available since W2000; thus we dynload it.  */
+      initialized = 1;
+      handle = dlopen ("user32.dll", RTLD_LAZY);
+      if (handle)
+        {
+          func = dlsym (handle, "AllowSetForegroundWindow");
+          if (!func)
+            {
+              dlclose (handle);
+              handle = NULL;
+            }
+        }
+    }
+
+  if (!pid || pid == (pid_t)(-1))
+    {
+      TRACE1 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
+	      "no action for pid %d", (int)pid);
+    }
+  else if (func)
+    {
+      int rc = func (pid);
+      TRACE2 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
+	      "called for pid %d; result=%d", (int)pid, rc);
+
+    }
+  else
+    {
+      TRACE0 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
+	      "function not available");
+    }
+#endif /* HAVE_ALLOW_SET_FOREGROUND_WINDOW */
+}
 
 
 /* Return a string from the W32 Registry or NULL in case of error.
@@ -89,59 +144,64 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
   DWORD n1, nbytes, type;
   char *result = NULL;
 	
-  if ( !root )
+  if (!root)
     root_key = HKEY_CURRENT_USER;
-  else if ( !strcmp( root, "HKEY_CLASSES_ROOT" ) )
+  else if (!strcmp( root, "HKEY_CLASSES_ROOT"))
     root_key = HKEY_CLASSES_ROOT;
-  else if ( !strcmp( root, "HKEY_CURRENT_USER" ) )
+  else if (!strcmp( root, "HKEY_CURRENT_USER"))
     root_key = HKEY_CURRENT_USER;
-  else if ( !strcmp( root, "HKEY_LOCAL_MACHINE" ) )
+  else if (!strcmp( root, "HKEY_LOCAL_MACHINE"))
     root_key = HKEY_LOCAL_MACHINE;
-  else if ( !strcmp( root, "HKEY_USERS" ) )
+  else if (!strcmp( root, "HKEY_USERS"))
     root_key = HKEY_USERS;
-  else if ( !strcmp( root, "HKEY_PERFORMANCE_DATA" ) )
+  else if (!strcmp( root, "HKEY_PERFORMANCE_DATA"))
     root_key = HKEY_PERFORMANCE_DATA;
-  else if ( !strcmp( root, "HKEY_CURRENT_CONFIG" ) )
+  else if (!strcmp( root, "HKEY_CURRENT_CONFIG"))
     root_key = HKEY_CURRENT_CONFIG;
   else
     return NULL;
 	
-  if ( RegOpenKeyEx ( root_key, dir, 0, KEY_READ, &key_handle ) )
+  if (RegOpenKeyExA (root_key, dir, 0, KEY_READ, &key_handle))
     {
       if (root)
         return NULL; /* no need for a RegClose, so return direct */
       /* It seems to be common practise to fall back to HKLM. */
-      if (RegOpenKeyEx (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle) )
+      if (RegOpenKeyExA (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle))
         return NULL; /* still no need for a RegClose, so return direct */
     }
 
   nbytes = 1;
-  if ( RegQueryValueEx( key_handle, name, 0, NULL, NULL, &nbytes ) )
+  if (RegQueryValueExA (key_handle, name, 0, NULL, NULL, &nbytes))
     {
       if (root)
         goto leave;
       /* Try to fallback to HKLM also vor a missing value.  */
       RegCloseKey (key_handle);
-      if (RegOpenKeyEx (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle) )
+      if (RegOpenKeyExA (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle))
         return NULL; /* Nope.  */
-      if (RegQueryValueEx ( key_handle, name, 0, NULL, NULL, &nbytes))
+      if (RegQueryValueExA (key_handle, name, 0, NULL, NULL, &nbytes))
         goto leave;
     }
-  result = malloc ( (n1=nbytes+1) );
-  if ( !result )
+  n1 = nbytes + 1;
+  result = malloc (n1);
+  if (!result)
     goto leave;
-  if ( RegQueryValueEx ( key_handle, name, 0, &type, result, &n1 ) )
+  if (RegQueryValueExA (key_handle, name, 0, &type, (LPBYTE) result, &n1))
     {
-      free(result); result = NULL;
+      free (result);
+      result = NULL;
       goto leave;
     }
   result[nbytes] = 0; /* Make sure it is really a string.  */
+
+#ifndef HAVE_W32CE_SYSTEM
+  /* Windows CE does not have an environment.  */
   if (type == REG_EXPAND_SZ && strchr (result, '%')) 
     {
       char *tmp;
         
       n1 += 1000;
-      tmp = malloc (n1+1);
+      tmp = malloc (n1 + 1);
       if (!tmp)
         goto leave;
       nbytes = ExpandEnvironmentStrings (result, tmp, n1);
@@ -179,48 +239,11 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
           free (tmp);
         }
     }
+#endif
 
  leave:
-  RegCloseKey( key_handle );
+  RegCloseKey (key_handle);
   return result;
-}
-
-
-/* This is a helper function to load and run a Windows function from
-   either of one DLLs. */
-static HRESULT
-w32_shgetfolderpath (HWND a, int b, HANDLE c, DWORD d, LPSTR e)
-{
-  static int initialized;
-  static HRESULT (WINAPI * func)(HWND,int,HANDLE,DWORD,LPSTR);
-
-  if (!initialized)
-    {
-      static char *dllnames[] = { "shell32.dll", "shfolder.dll", NULL };
-      void *handle;
-      int i;
-
-      initialized = 1;
-
-      for (i=0, handle = NULL; !handle && dllnames[i]; i++)
-        {
-          handle = dlopen (dllnames[i], RTLD_LAZY);
-          if (handle)
-            {
-              func = dlsym (handle, "SHGetFolderPathA");
-              if (!func)
-                {
-                  dlclose (handle);
-                  handle = NULL;
-                }
-            }
-        }
-    }
-
-  if (func)
-    return func (a,b,c,d,e);
-  else
-    return -1;
 }
 
 
@@ -285,7 +308,8 @@ find_program_at_standard_place (const char *name)
   char path[MAX_PATH];
   char *result = NULL;
       
-  if (w32_shgetfolderpath (NULL, CSIDL_PROGRAM_FILES, NULL, 0, path) >= 0) 
+  /* See http://wiki.tcl.tk/17492 for details on compatibility.  */
+  if (SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILES, 0))
     {
       result = malloc (strlen (path) + 1 + strlen (name) + 1);
       if (result)
@@ -383,7 +407,7 @@ const char *
 _gpgme_get_uiserver_socket_path (void)
 {
   static char *socket_path;
-  char *homedir;
+  const char *homedir;
   const char name[] = "S.uiserver";
 
   if (socket_path)
@@ -431,51 +455,6 @@ _gpgme_get_conf_int (const char *key, int *value)
   free (tmp);
   return 1;
 }
-
-
-void 
-_gpgme_allow_set_foreground_window (pid_t pid)
-{
-  static int initialized;
-  static BOOL (WINAPI * func)(DWORD);
-  void *handle;
-
-  if (!initialized)
-    {
-      /* Available since W2000; thus we dynload it.  */
-      initialized = 1;
-      handle = dlopen ("user32.dll", RTLD_LAZY);
-      if (handle)
-        {
-          func = dlsym (handle, "AllowSetForegroundWindow");
-          if (!func)
-            {
-              dlclose (handle);
-              handle = NULL;
-            }
-        }
-    }
-
-  if (!pid || pid == (pid_t)(-1))
-    {
-      TRACE1 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
-	      "no action for pid %d", (int)pid);
-    }
-  else if (func)
-    {
-      int rc = func (pid);
-      TRACE2 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
-	      "called for pid %d; result=%d", (int)pid, rc);
-
-    }
-  else
-    {
-      TRACE0 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
-	      "function not available");
-    }
-
-}
-
 
 
 /* mkstemp extracted from libc/sysdeps/posix/tempname.c.  Copyright
@@ -538,7 +517,7 @@ mkstemp (char *tmpl)
     random_time_bits = (((uint64_t)ft.dwHighDateTime << 32)
                         | (uint64_t)ft.dwLowDateTime);
   }
-  value += random_time_bits ^ getpid ();
+  value += random_time_bits ^ ath_self ();
 
   for (count = 0; count < attempts; value += 7777, ++count)
     {
@@ -583,7 +562,7 @@ _gpgme_mkstemp (int *fd, char **name)
   *fd = -1;
   *name = NULL;
 
-  err = GetTempPath (MAX_PATH + 1, tmp);
+  err = GetTempPathA (MAX_PATH + 1, tmp);
   if (err == 0 || err > MAX_PATH + 1)
     strcpy (tmp,"c:\\windows\\temp");
   else

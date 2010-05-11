@@ -1,5 +1,22 @@
 2010-05-11  Marcus Brinkmann  <marcus@g10code.de>
 
+	* w32-util.c: Include ath.h
+	(HAVE_ALLOW_SET_FOREGROUND_WINDOW) [!HAVE_W32CE_SYSTEM]: Define
+	it.
+	(RTLD_LAZY, dlopen, dlsym,
+	dlclose) [!HAVE_ALLOW_SET_FORGROUND_WINDOW]: Don't define anymore.
+	(_gpgme_allow_set_foreground_window) [!HAVE_ALLOW_SET_FOREGROUND_WINDOW]:
+	Make it a stub.
+	(read_w32_registry_string): Use FooA variants of Windows functions
+	instead of Foo (which dispatches depending on UNICODE).
+	[!HAVE_W32CE_SYSTEM]: Don't check environment.
+	(w32_shgetfolderpath): Remove.
+	(find_program_at_standard_place): Call
+	SHGetSpecialFolderPath (which is available on all Windows systems
+	and also Windows CE).
+	(mkstemp): Use ath_self instead of getpid.
+	(_gpgme_mkstemp): Use GetTempPathA instead of GetTempPath.
+
 	* gpgme.h.in: Use _WIN32 instead of _MSC_VER.  Include time.h for
 	time_t.
 
