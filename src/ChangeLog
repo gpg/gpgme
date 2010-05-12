@@ -1,5 +1,8 @@
 2010-05-12  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme-tool.c (main): Protect call to setlocale with
+	HAVE_SETLOCALE.
+
 	* Makefile.am (system_components): Remove custom cppflags from
 	RCCOMPILE (because gpg-error adds -idirafter that makes RC bail.
 	[HAVE_W32CE_SYSTEM]: Add w32-ce.h and w32-ce.c, clear

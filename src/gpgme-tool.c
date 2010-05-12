@@ -2908,7 +2908,9 @@ main (int argc, char *argv[])
   struct args args;
   struct gpgme_tool gt;
 
+#ifdef HAVE_SETLOCALE
   setlocale (LC_ALL, "");
+#endif
   gpgme_check_version (NULL);
 #ifdef LC_CTYPE
   gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
