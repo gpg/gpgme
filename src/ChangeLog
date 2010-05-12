@@ -1,5 +1,9 @@
 2010-05-12  Marcus Brinkmann  <marcus@g10code.de>
 
+	* conversion.c (_gpgme_timegm) [HAVE_W32_SYSTEM]: New static
+	function.
+	(_gpgme_parse_timestamp) [HAVE_W32_SYSTEM]: Use it.
+
 	* gpgme-tool.c (main): Protect call to setlocale with
 	HAVE_SETLOCALE.
 

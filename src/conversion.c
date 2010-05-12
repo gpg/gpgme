@@ -315,6 +315,39 @@ _gpgme_encode_percent_string (const char *src, char **destp, size_t len)
 }
 
 
+#ifdef HAVE_W32_SYSTEM
+static time_t
+_gpgme_timegm (struct tm *tm)
+{
+  /* This one is thread safe.  */
+  SYSTEMTIME st;
+  FILETIME ft;
+  unsigned long long cnsecs;
+  
+  st.wYear   = tm->tm_year + 1900;
+  st.wMonth  = tm->tm_mon  + 1;
+  st.wDay    = tm->tm_mday;
+  st.wHour   = tm->tm_hour;
+  st.wMinute = tm->tm_min;
+  st.wSecond = tm->tm_sec;
+  st.wMilliseconds = 0; /* Not available.  */
+  st.wDayOfWeek = 0;    /* Ignored.  */
+
+  /* System time is UTC thus the conversion is pretty easy.  */
+  if (!SystemTimeToFileTime (&st, &ft))
+    {
+      gpg_err_set_errno (EINVAL);
+      return (time_t)(-1);
+    }
+  
+  cnsecs = (((unsigned long long)ft.dwHighDateTime << 32)
+	    | ft.dwLowDateTime);
+  cnsecs -= 116444736000000000ULL; /* The filetime epoch is 1601-01-01.  */
+  return (time_t)(cnsecs / 10000000ULL);
+}
+#endif
+
+
 /* Parse the string TIMESTAMP into a time_t.  The string may either be
    seconds since Epoch or in the ISO 8601 format like
    "20390815T143012".  Returns 0 for an empty string or seconds since
@@ -354,6 +387,9 @@ _gpgme_parse_timestamp (const char *timestamp, char **endp)
 
       if (endp)
         *endp = (char*)(timestamp + 15);
+#ifdef HAVE_W32_SYSTEM
+      return _gpgme_timegm (&buf);
+#else
 #ifdef HAVE_TIMEGM
       return timegm (&buf);
 #else
@@ -368,6 +404,7 @@ _gpgme_parse_timestamp (const char *timestamp, char **endp)
         return tim;
       }
 #endif /* !HAVE_TIMEGM */
+#endif /* !HAVE_W32_SYSTEM */
     }
   else
     return (time_t)strtoul (timestamp, endp, 10);
