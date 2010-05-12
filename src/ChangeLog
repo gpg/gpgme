@@ -1,3 +1,8 @@
+2010-05-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* priv-io.h: Include <sys/types.h>
+	* util.h: Likewise.
+
 2010-05-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	* w32-util.c: Include ath.h

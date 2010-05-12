@@ -28,6 +28,10 @@
 # include <sys/socket.h>
 #endif
 
+/* For pid_t.  */
+#include <sys/types.h>
+
+
 /* A single file descriptor passed to spawn.  For child fds, dup_to
    specifies the fd it should become in the child, but only 0, 1 and 2
    are valid values (due to a limitation in the W32 code).  As return

@@ -22,6 +22,13 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#ifdef HAVE_W32CE_SYSTEM
+#include "w32-ce.h"
+#endif
+
+/* For pid_t.  */
+#include <sys/types.h>
+
 #include "gpgme.h"
 
 
