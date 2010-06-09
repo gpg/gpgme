@@ -1,5 +1,24 @@
 2010-06-09  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme-tool.c (result_add_timestamp): Add missing NULL argument.
+	(result_sign_to_xml): Protect against NULL fingerprint.
+	(struct server): New members input_fd, input_filename,
+	input_stream output_fd, output_filename, output_stream,
+	message_filename, message_stream.
+	(server_reset_fds): Deallocate those.
+	(server_parse_fd): New function.
+	(server_data_obj): Take optional filename argument and direction
+	argument.  Also take new argument to return a filestream that
+	needs to be closed after destroying the data object.
+	Change all callers, too.
+	(input_notify, output_notify): Removed.
+	(cmd_input, cmd_output): New functions.
+	(gpgme_server): Do not register input and output notifier.
+	(register_commands): Use cmd_input and cmd_output.
+	(cmd_message): Rewritten to use server_parse_fd.
+	(cmd_delete, cmd_keylist): Fix inverted option check.
+	(main) [HAVE_W32CE_SYSTEM]: Sleep a bit to work around bug in ssh.
+
 	* genkey.c (gpgme_op_genkey): Return err with TRACE_ERR.
 
 2010-05-12  Marcus Brinkmann  <marcus@g10code.de>
