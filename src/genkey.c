@@ -223,5 +223,5 @@ gpgme_op_genkey (gpgme_ctx_t ctx, const char *parms, gpgme_data_t pubkey,
   err = genkey_start (ctx, 1, parms, pubkey, seckey);
   if (!err)
     err = _gpgme_wait_one (ctx);
-  return err;
+  return TRACE_ERR (err);
 }
