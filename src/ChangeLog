@@ -1,5 +1,24 @@
 2010-06-09  Marcus Brinkmann  <marcus@g10code.de>
 
+	* w32-io.c [HAVE_W32CE_SYSTEM]: Include assuan.h and winioctl.h.
+	(GPGCEDEV_IOCTL_UNBLOCK) [HAVE_W32CE_SYSTEM]: Define.
+	(set_synchronize) [HAVE_W32CE_SYSTEM]: Stub it out.
+	(is_socket): Allow to return -1 for auto-detect (old behaviour).
+	(is_socket) [HAVE_W32CE_SYSTEM]: Return -1.
+	(reader): Handle auto-detect case.  Handle ctx->stop_me before
+	checking for EOF.
+	(destroy_reader) [HAVE_W32CE_SYSTEM]: Unblock a pending reader.
+	(writer): Handle auto-detect case.  Handle ctx->stop_me with
+	ERROR_BUSY.
+	(destroy_writer) [HAVE_W32CE_SYSTEM]: Unblock a pending writer.
+	(_gpgme_io_pipe) [HAVE_W32CE_SYSTEM]: Implement in terms of a
+	half-pipe.
+	(build_commandline) [HAVE_W32CE_SYSTEM]: New function.
+	(_gpgme_io_spawn) [HAVE_W32CE_SYSTEM]: Implement it differently
+	for this platform.
+	(_gpgme_io_fd2str) [HAVE_W32CE_SYSTEM]: Implement it for RVIDs.
+	(_gpgme_io_dup) [HAVE_W32CE_SYSTEM]: Stub it out.
+
 	* gpgme-tool.c (result_add_timestamp): Add missing NULL argument.
 	(result_sign_to_xml): Protect against NULL fingerprint.
 	(struct server): New members input_fd, input_filename,

@@ -33,6 +33,13 @@
 #include <windows.h>
 #include <io.h>
 
+#ifdef HAVE_W32CE_SYSTEM
+#include <assuan.h>
+#include <winioctl.h>
+#define GPGCEDEV_IOCTL_UNBLOCK                                        \
+  CTL_CODE (FILE_DEVICE_STREAMS, 2050, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#endif
+
 #include "util.h"
 #include "sema.h"
 #include "priv-io.h"
@@ -154,6 +161,9 @@ get_desired_thread_priority (void)
 static HANDLE
 set_synchronize (HANDLE hd)
 {
+#ifdef HAVE_W32CE_SYSTEM
+  return hd;
+#else
   HANDLE new_hd;
 
   /* For NT we have to set the sync flag.  It seems that the only way
@@ -171,13 +181,18 @@ set_synchronize (HANDLE hd)
 
   CloseHandle (hd);
   return new_hd;
+#endif
 }
 
 
-/* Return true if HD refers to a socket.  */
+/* Return 1 if HD refers to a socket, 0 if it does not refer to a
+   socket, and -1 for unknown (autodetect).  */
 static int
 is_socket (HANDLE hd)
 {
+#ifdef HAVE_W32CE_SYSTEM
+  return -1;
+#else
   /* We need to figure out whether we are working on a socket or on a
      handle.  A trivial way would be to check for the return code of
      recv and see if it is WSAENOTSOCK.  However the recv may block
@@ -193,12 +208,14 @@ is_socket (HANDLE hd)
      only if it is supported by the service provider.  Tests on a
      stock XP using a local TCP socket show that it does not work.  */
   DWORD dummyflags, dummyoutsize, dummyinsize, dummyinst;
+
   if (GetFileType (hd) == FILE_TYPE_PIPE
       && !GetNamedPipeInfo (hd, &dummyflags, &dummyoutsize,
                             &dummyinsize, &dummyinst))
     return 1; /* Function failed; thus we assume it is a socket.  */
   else
     return 0; /* Success; this is not a socket.  */
+#endif
 }
 
 
@@ -243,7 +260,7 @@ reader (void *arg)
       
       TRACE_LOG2 ("%s %d bytes", sock? "receiving":"reading", nbytes);
 
-      if (sock)
+      if (sock == -1 || sock == 1)
         {
           int n;
 
@@ -251,6 +268,17 @@ reader (void *arg)
                     ctx->buffer + ctx->writepos, nbytes, 0);
           if (n < 0)
             {
+	      if (sock == -1)
+		{
+		  if (WSAGetLastError () == WSAENOTSOCK)
+		    {
+		      sock = 0;
+		      goto try_readfile;
+		    }
+		  else
+		    sock = 1;
+		}
+
               ctx->error_code = (int) WSAGetLastError ();
               if (ctx->error_code == ERROR_BROKEN_PIPE)
                 {
@@ -268,10 +296,13 @@ reader (void *arg)
         }
       else
         {
+	try_readfile:
           if (!ReadFile (ctx->file_hd,
                          ctx->buffer + ctx->writepos, nbytes, &nread, NULL))
             {
               ctx->error_code = (int) GetLastError ();
+	      /* NOTE (W32CE): Do not ignore ERROR_BUSY!  Check at
+		 least stop_me if that happens.  */
               if (ctx->error_code == ERROR_BROKEN_PIPE)
                 {
                   ctx->eof = 1;
@@ -285,20 +316,21 @@ reader (void *arg)
               break;
             }
         }
-      if (!nread)
-	{
-	  ctx->eof = 1;
-	  TRACE_LOG ("got eof");
-	  break;
-        }
-      TRACE_LOG1 ("got %u bytes", nread);
-      
       LOCK (ctx->mutex);
       if (ctx->stop_me)
 	{
 	  UNLOCK (ctx->mutex);
 	  break;
         }
+      if (!nread)
+	{
+	  ctx->eof = 1;
+	  TRACE_LOG ("got eof");
+	  UNLOCK (ctx->mutex);
+	  break;
+        }
+      TRACE_LOG1 ("got %u bytes", nread);
+      
       ctx->writepos = (ctx->writepos + nread) % READBUF_SIZE;
       if (!SetEvent (ctx->have_data_ev))
 	TRACE_LOG2 ("SetEvent (0x%x) failed: ec=%d", ctx->have_data_ev,
@@ -402,6 +434,19 @@ destroy_reader (struct reader_context_s *ctx)
   if (ctx->have_space_ev) 
     SetEvent (ctx->have_space_ev);
   UNLOCK (ctx->mutex);
+
+#ifdef HAVE_W32CE_SYSTEM
+  /* Scenario: We never create a full pipe, but already started
+     reading.  Then we need to unblock the reader in the pipe driver
+     to make our reader thread notice that we want it to go away.  */
+
+  if (!DeviceIoControl (ctx->file_hd, GPGCEDEV_IOCTL_UNBLOCK,
+			NULL, 0, NULL, 0, NULL, NULL))
+    {
+      TRACE1 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx->file_hd,
+	      "unblock control call failed for thread %p", ctx->thread_hd);
+    }
+#endif
 
   TRACE1 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx->file_hd,
 	  "waiting for termination of thread %p", ctx->thread_hd);
@@ -603,16 +648,27 @@ writer (void *arg)
       /* Note that CTX->nbytes is not zero at this point, because
 	 _gpgme_io_write always writes at least 1 byte before waking
 	 us up, unless CTX->stop_me is true, which we catch above.  */
-      if (sock)
+      if (sock == -1 || sock == 1)
         {
           /* We need to try send first because a socket handle can't
              be used with WriteFile.  */
           int n;
-          
+
           n = send (handle_to_socket (ctx->file_hd),
                     ctx->buffer, ctx->nbytes, 0);
           if (n < 0)
             {
+	      if (sock == -1)
+		{
+		  if (WSAGetLastError () == WSAENOTSOCK)
+		    {
+		      sock = 0;
+		      goto try_writefile;
+		    }
+		  else
+		    sock = 1;
+		}
+
               ctx->error_code = (int) WSAGetLastError ();
               ctx->error = 1;
               TRACE_LOG1 ("send error: ec=%d", ctx->error_code);
@@ -622,9 +678,17 @@ writer (void *arg)
         }
       else
         {
+	try_writefile:
           if (!WriteFile (ctx->file_hd, ctx->buffer,
                           ctx->nbytes, &nwritten, NULL))
             {
+	      if (GetLastError () == ERROR_BUSY)
+		{
+		  /* Probably stop_me is set now.  */
+                  TRACE_LOG ("pipe busy (unblocked?)");
+		  continue;
+                }
+
               ctx->error_code = (int) GetLastError ();
               ctx->error = 1;
               TRACE_LOG1 ("write error: ec=%d", ctx->error_code);
@@ -732,6 +796,19 @@ destroy_writer (struct writer_context_s *ctx)
   if (ctx->have_data) 
     SetEvent (ctx->have_data);
   UNLOCK (ctx->mutex);
+
+#ifdef HAVE_W32CE_SYSTEM
+  /* Scenario: We never create a full pipe, but already started
+     reading.  Then we need to unblock the reader in the pipe driver
+     to make our reader thread notice that we want it to go away.  */
+
+  if (!DeviceIoControl (ctx->file_hd, GPGCEDEV_IOCTL_UNBLOCK,
+			NULL, 0, NULL, 0, NULL, NULL))
+    {
+      TRACE1 (DEBUG_SYSIO, "gpgme:destroy_writer", ctx->file_hd,
+	      "unblock control call failed for thread %p", ctx->thread_hd);
+    }
+#endif
   
   TRACE1 (DEBUG_SYSIO, "gpgme:destroy_writer", ctx->file_hd,
 	  "waiting for termination of thread %p", ctx->thread_hd);
@@ -894,10 +971,39 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
   HANDLE rh;
   HANDLE wh;
-  SECURITY_ATTRIBUTES sec_attr;
+
+#ifdef HAVE_W32CE_SYSTEM
+  HANDLE hd;
+  int rvid;
+
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
 	      "inherit_idx=%i (GPGME uses it for %s)",
 	      inherit_idx, inherit_idx ? "reading" : "writing");
+
+  hd = _assuan_w32ce_prepare_pipe (&rvid, !inherit_idx);
+  if (hd == INVALID_HANDLE_VALUE)
+    {
+      TRACE_LOG1 ("_assuan_w32ce_prepare_pipe failed: ec=%d",
+		  (int) GetLastError ());
+      /* FIXME: Should translate the error code.  */
+      gpg_err_set_errno (EIO);
+      return TRACE_SYSRES (-1);
+    }
+
+  if (inherit_idx == 0)
+    {
+      /* FIXME: For now.  We need to detect them at close.  */
+      rh = (void*) ((rvid << 1) | 1);
+      wh = hd;
+    }
+  else
+    {
+      rh = hd;
+      /* FIXME: For now.  We need to detect them at close.  */
+      wh = (void*) ((rvid << 1) | 1);
+    }  
+#else
+  SECURITY_ATTRIBUTES sec_attr;
 
   memset (&sec_attr, 0, sizeof (sec_attr));
   sec_attr.nLength = sizeof (sec_attr);
@@ -914,7 +1020,6 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   /* Make one end inheritable.  */
   if (inherit_idx == 0)
     {
-      struct writer_context_s *ctx;
       HANDLE hd;
       if (!DuplicateHandle (GetCurrentProcess(), rh,
 			    GetCurrentProcess(), &hd, 0,
@@ -930,22 +1035,9 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
         }
       CloseHandle (rh);
       rh = hd;
-
-      ctx = find_writer (handle_to_fd (wh), 0);
-      assert (ctx == NULL);
-      ctx = find_writer (handle_to_fd (wh), 1);
-      if (!ctx)
-	{
-	  CloseHandle (rh);
-	  CloseHandle (wh);
-	  /* FIXME: Should translate the error code.  */
-	  gpg_err_set_errno (EIO);
-	  return TRACE_SYSRES (-1);
-	}
     }
   else if (inherit_idx == 1)
     {
-      struct reader_context_s *ctx;
       HANDLE hd;
       if (!DuplicateHandle( GetCurrentProcess(), wh,
 			    GetCurrentProcess(), &hd, 0,
@@ -961,14 +1053,38 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
         }
       CloseHandle (wh);
       wh = hd;
+    }
+#endif
 
+  if (inherit_idx == 0)
+    {
+      struct writer_context_s *ctx;
+      ctx = find_writer (handle_to_fd (wh), 0);
+      assert (ctx == NULL);
+      ctx = find_writer (handle_to_fd (wh), 1);
+      if (!ctx)
+	{
+#ifndef HAVE_W32CE_SYSTEM
+	  CloseHandle (rh);
+#endif
+	  CloseHandle (wh);
+	  /* FIXME: Should translate the error code.  */
+	  gpg_err_set_errno (EIO);
+	  return TRACE_SYSRES (-1);
+	}
+    }
+  else if (inherit_idx == 1)
+    {
+      struct reader_context_s *ctx;
       ctx = find_reader (handle_to_fd (rh), 0);
       assert (ctx == NULL);
       ctx = find_reader (handle_to_fd (rh), 1);
       if (!ctx)
 	{
 	  CloseHandle (rh);
+#ifndef HAVE_W32CE_SYSTEM
 	  CloseHandle (wh);
+#endif
 	  /* FIXME: Should translate the error code.  */
 	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
@@ -994,6 +1110,12 @@ _gpgme_io_close (int fd)
       gpg_err_set_errno (EBADF);
       return TRACE_SYSRES (-1);
     }
+
+#ifdef HAVE_W32CE_SYSTEM
+  /* FIXME: For now: This is a rendezvous id.  */
+  if (fd & 1)
+    return TRACE_SYSRES (0);
+#endif
 
   kill_reader (fd);
   kill_writer (fd);
@@ -1066,7 +1188,105 @@ _gpgme_io_set_nonblocking (int fd)
   return 0;
 }
 
+#ifdef HAVE_W32CE_SYSTEM
+static char *
+build_commandline (char **argv, int fd0, int fd0_isnull,
+		   int fd1, int fd1_isnull,
+		   int fd2, int fd2_isnull)
+{
+  int i, n;
+  const char *s;
+  char *buf, *p;
+  char fdbuf[3*30];
 
+  p = fdbuf;
+  *p = 0;
+  
+  strcpy (p, "-&S0=null ");
+  p += strlen (p);
+  if (fd0 != -1)
+    {
+      /* FIXME */
+      if (fd0 & 1)
+	fd0 = fd0 >> 1;
+
+      if (fd0_isnull)
+        strcpy (p, "-&S0=null ");
+      else
+	snprintf (p, 25, "-&S0=%d ", (int)fd0);
+      p += strlen (p);
+    }
+  if (fd1 != -1)
+    {
+      /* FIXME */
+      if (fd1 & 1)
+	fd1 = fd1 >> 1;
+
+      if (fd1_isnull)
+        strcpy (p, "-&S1=null ");
+      else
+	snprintf (p, 25, "-&S1=%d ", (int)fd1);
+      p += strlen (p);
+    }
+  if (fd2 != -1)
+    {
+      /* FIXME */
+      if (fd2 & 1)
+	fd2 = fd2 >> 1;
+
+      if (fd2_isnull)
+        strcpy (p, "-&S2=null ");
+      else
+        snprintf (p, 25, "-&S2=%d ", (int)fd2);
+      p += strlen (p);
+    }
+  strcpy (p, "-&S2=null ");
+  p += strlen (p);
+  
+  n = strlen (fdbuf);
+  for (i=0; (s = argv[i]); i++)
+    {
+      if (!i)
+        continue; /* Ignore argv[0].  */
+      n += strlen (s) + 1 + 2;  /* (1 space, 2 quoting) */
+      for (; *s; s++)
+        if (*s == '\"')
+          n++;  /* Need to double inner quotes.  */
+    }
+  n++;
+  buf = p = malloc (n);
+  if (! buf)
+    return NULL;
+
+  p = stpcpy (p, fdbuf);
+  for (i = 0; argv[i]; i++) 
+    {
+      if (!i)
+        continue; /* Ignore argv[0].  */
+      if (i > 1)
+        p = stpcpy (p, " ");
+
+      if (! *argv[i]) /* Empty string. */
+        p = stpcpy (p, "\"\"");
+      else if (strpbrk (argv[i], " \t\n\v\f\""))
+        {
+          p = stpcpy (p, "\"");
+          for (s = argv[i]; *s; s++)
+            {
+              *p++ = *s;
+              if (*s == '\"')
+                *p++ = *s;
+            }
+          *p++ = '\"';
+          *p = 0;
+        }
+      else
+        p = stpcpy (p, argv[i]);
+    }
+
+  return buf;  
+}
+#else
 static char *
 build_commandline (char **argv)
 {
@@ -1120,6 +1340,7 @@ build_commandline (char **argv)
 
   return buf;
 }
+#endif
 
 
 int
@@ -1128,7 +1349,6 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		 void (*atfork) (void *opaque, int reserved),
 		 void *atforkvalue, pid_t *r_pid)
 {
-  SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi =
     {
       NULL,      /* returns process handle */
@@ -1136,10 +1356,85 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       0,         /* returns pid */
       0          /* returns tid */
     };
-  STARTUPINFO si;
-  int cr_flags = (CREATE_DEFAULT_ERROR_MODE
-                  | GetPriorityClass (GetCurrentProcess ()));
   int i;
+
+#ifdef HAVE_W32CE_SYSTEM
+  int fd_in = -1;
+  int fd_out = -1;
+  int fd_err = -1;
+  int fd_in_isnull = 1;
+  int fd_out_isnull = 1;
+  int fd_err_isnull = 1;
+  char *cmdline;
+
+  TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
+	      "path=%s", path);
+  i = 0;
+  while (argv[i])
+    {
+      TRACE_LOG2 ("argv[%2i] = %s", i, argv[i]);
+      i++;
+    }
+
+  for (i = 0; fd_list[i].fd != -1; i++)
+    {
+      TRACE_LOG3 ("fd_list[%2i] = fd %i, dup_to %i", i, fd_list[i].fd, fd_list[i].dup_to);
+      if (fd_list[i].dup_to == 0)
+	{
+	  fd_in = fd_list[i].fd;
+	  fd_in_isnull = 0;
+	}
+      else if (fd_list[i].dup_to == 1)
+	{
+	  fd_out = fd_list[i].fd;
+	  fd_out_isnull = 0;
+	}
+      else if (fd_list[i].dup_to == 2)
+	{
+	  fd_err = fd_list[i].fd;
+	  fd_err_isnull = 0;
+	}
+    }
+
+  cmdline = build_commandline (argv, fd_in, fd_in_isnull,
+			       fd_out, fd_out_isnull, fd_err, fd_err_isnull);
+  if (!cmdline)
+    {
+      TRACE_LOG1 ("build_commandline failed: %s", strerror (errno));
+      return TRACE_SYSRES (-1);
+    }
+
+  fprintf (stderr, "SPAWNY: %s\n", cmdline);
+
+  if (!CreateProcessA (path,                /* Program to start.  */
+		       cmdline,             /* Command line arguments.  */
+		       NULL,                 /* (not supported)  */
+		       NULL,                 /* (not supported)  */
+		       FALSE,                /* (not supported)  */
+		       (CREATE_SUSPENDED),   /* Creation flags.  */
+		       NULL,                 /* (not supported)  */
+		       NULL,                 /* (not supported)  */
+		       NULL,                 /* (not supported) */
+		       &pi                   /* Returns process information.*/
+		       ))
+    {
+      TRACE_LOG1 ("CreateProcess failed: ec=%d", (int) GetLastError ());
+      free (cmdline);
+      gpg_err_set_errno (EIO);
+      return TRACE_SYSRES (-1);
+    }
+
+  /* Insert the inherited handles.  */
+  for (i = 0; fd_list[i].fd != -1; i++)
+    {
+      /* Return the child name of this handle.  */
+      fd_list[i].peer_name = fd_list[i].fd;
+    }
+
+#else
+  SECURITY_ATTRIBUTES sec_attr;
+  STARTUPINFOA si;
+  int cr_flags = CREATE_DEFAULT_ERROR_MODE;
   char **args;
   char *arg_string;
   /* FIXME.  */
@@ -1183,7 +1478,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   if (!arg_string)
     {
       close (tmp_fd);
-      DeleteFile (tmp_name);
+      DeleteFileA (tmp_name);
       return TRACE_SYSRES (-1);
     }
 
@@ -1196,7 +1491,10 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   si.hStdError = INVALID_HANDLE_VALUE;
 
   cr_flags |= CREATE_SUSPENDED; 
+#ifndef HAVE_W32CE_SYSTEM
   cr_flags |= DETACHED_PROCESS;
+  cr_flags |= GetPriorityClass (GetCurrentProcess ());
+#endif
   if (!CreateProcessA (_gpgme_get_w32spawn_path (),
 		       arg_string,
 		       &sec_attr,     /* process security attributes */
@@ -1211,7 +1509,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       TRACE_LOG1 ("CreateProcess failed: ec=%d", (int) GetLastError ());
       free (arg_string);
       close (tmp_fd);
-      DeleteFile (tmp_name);
+      DeleteFileA (tmp_name);
 
       /* FIXME: Should translate the error code.  */
       gpg_err_set_errno (EIO);
@@ -1241,7 +1539,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	  CloseHandle (pi.hProcess);
 
 	  close (tmp_fd);
-	  DeleteFile (tmp_name);
+	  DeleteFileA (tmp_name);
 
 	  /* FIXME: Should translate the error code.  */
 	  gpg_err_set_errno (EIO);
@@ -1294,6 +1592,8 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   close (tmp_fd);
   /* The temporary file is deleted by the gpgme-w32spawn process
      (hopefully).  */
+#endif
+
 
   TRACE_LOG4 ("CreateProcess ready: hProcess=%p, hThread=%p, "
 	      "dwProcessID=%d, dwThreadId=%d",
@@ -1511,6 +1811,13 @@ _gpgme_io_subsystem_init (void)
 int
 _gpgme_io_fd2str (char *buf, int buflen, int fd)
 {
+#ifdef HAVE_W32CE_SYSTEM
+  /* FIXME: For now. See above.  */
+  if (fd & 1)
+    fd = fd >> 1;
+  /* FIXME: The real problems start if fd is not of this type!  */
+#endif
+
   return snprintf (buf, buflen, "%d", fd);
 }
 
@@ -1518,6 +1825,10 @@ _gpgme_io_fd2str (char *buf, int buflen, int fd)
 int
 _gpgme_io_dup (int fd)
 {
+#ifdef HAVE_W32CE_SYSTEM
+  gpg_err_set_errno (EIO);
+  return -1;
+#else
   HANDLE handle = fd_to_handle (fd);
   HANDLE new_handle = fd_to_handle (fd);
   int i;
@@ -1575,6 +1886,7 @@ _gpgme_io_dup (int fd)
     }
 
   return TRACE_SYSRES (handle_to_fd (new_handle));
+#endif
 }
 
 
