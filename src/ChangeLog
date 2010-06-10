@@ -1,5 +1,8 @@
 2010-06-10  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgme-tool.c (gpgme_server): Use special hack for Windows CE to
+	get at stdin and stdout.
+
 	* engine-gpgsm.c (gpgsm_new): Translate returned achild_fds back
 	to child_fds.
 
