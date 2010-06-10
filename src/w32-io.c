@@ -1520,8 +1520,6 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       return TRACE_SYSRES (-1);
     }
 
-  fprintf (stderr, "SPAWNY: %s\n", cmdline);
-
   if (!CreateProcessA (path,                /* Program to start.  */
 		       cmdline,             /* Command line arguments.  */
 		       NULL,                 /* (not supported)  */
