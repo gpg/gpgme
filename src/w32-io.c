@@ -46,22 +46,87 @@
 #include "debug.h"
 
 
-/* We assume that a HANDLE can be represented by an int which should
-   be true for all i386 systems (HANDLE is defined as void *) and
-   these are the only systems for which Windows is available.  Further
-   we assume that -1 denotes an invalid handle.  */
+/* FIXME: Optimize.  */
+#define MAX_SLAFD 512
 
-#define fd_to_handle(a)  ((HANDLE)(a))
-#define handle_to_fd(a)  ((int)(a))
+static struct
+{
+  int used;
+
+  /* If this is not INVALID_HANDLE_VALUE, then it's a handle.  */
+  HANDLE handle;
+
+  /* If this is not INVALID_SOCKET, then it's a Windows socket.  */
+  int socket;
+
+  /* If this is not 0, then it's a rendezvous ID for the pipe server.  */
+  int rvid;
+
+  /* DUP_FROM is -1 if this file descriptor was allocated by pipe or
+     socket functions.  Only then should the handle or socket be
+     destroyed when this FD is closed.  This, together with the fact
+     that dup'ed file descriptors are closed before the file
+     descriptors from which they are dup'ed are closed, ensures that
+     the handle or socket is always valid, and shared among all file
+     descriptors refering to the same underlying object.
+
+     The logic behind this is that there is only one reason for us to
+     dup file descriptors anyway: to allow simpler book-keeping of
+     file descriptors shared between GPGME and libassuan, which both
+     want to close something.  Using the same handle for these
+     duplicates works just fine.  */
+  int dup_from;
+} fd_table[MAX_SLAFD];  
+
+
+/* Returns the FD or -1 on resource limit.  */
+int
+new_fd (void)
+{
+  int idx;
+
+  for (idx = 0; idx < MAX_SLAFD; idx++)
+    if (! fd_table[idx].used)
+      break;
+
+  if (idx == MAX_SLAFD)
+    {
+      gpg_err_set_errno (EIO);
+      return -1;
+    }
+
+  fd_table[idx].used = 1;
+  fd_table[idx].handle = INVALID_HANDLE_VALUE;
+  fd_table[idx].socket = INVALID_SOCKET;
+  fd_table[idx].rvid = 0;
+  fd_table[idx].dup_from = -1;
+
+  return idx;
+}
+
+
+void
+release_fd (int fd)
+{
+  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
+    return;
+
+  fd_table[fd].used = 0;
+  fd_table[fd].handle = INVALID_HANDLE_VALUE;
+  fd_table[fd].socket = INVALID_SOCKET;
+  fd_table[fd].rvid = 0;
+  fd_table[fd].dup_from = -1;
+}
+
+
 #define pid_to_handle(a) ((HANDLE)(a))
 #define handle_to_pid(a) ((int)(a))
-#define handle_to_socket(a)  ((unsigned int)(a))
 
 #define READBUF_SIZE 4096
 #define WRITEBUF_SIZE 4096
 #define PIPEBUF_SIZE  4096
-#define MAX_READERS 40
-#define MAX_WRITERS 40
+#define MAX_READERS 64
+#define MAX_WRITERS 64
 
 static struct
 {
@@ -69,13 +134,14 @@ static struct
   int fd;
   _gpgme_close_notify_handler_t handler;
   void *value;
-} notify_table[256];
+} notify_table[MAX_SLAFD];
 DEFINE_STATIC_LOCK (notify_table_lock);
 
 
 struct reader_context_s
 {
   HANDLE file_hd;
+  int file_sock;
   HANDLE thread_hd;	
   int refcount;
 
@@ -110,6 +176,7 @@ DEFINE_STATIC_LOCK (reader_table_lock);
 struct writer_context_s
 {
   HANDLE file_hd;
+  int file_sock;
   HANDLE thread_hd;	
   int refcount;
 
@@ -229,7 +296,10 @@ reader (void *arg)
   TRACE_BEG1 (DEBUG_SYSIO, "gpgme:reader", ctx->file_hd,
 	      "thread=%p", ctx->thread_hd);
 
-  sock = is_socket (ctx->file_hd);
+  if (ctx->file_hd != INVALID_HANDLE_VALUE)
+    sock = 0;
+  else
+    sock = 1;
 
   for (;;)
     {
@@ -260,25 +330,13 @@ reader (void *arg)
       
       TRACE_LOG2 ("%s %d bytes", sock? "receiving":"reading", nbytes);
 
-      if (sock == -1 || sock == 1)
+      if (sock)
         {
           int n;
 
-          n = recv (handle_to_socket (ctx->file_hd),
-                    ctx->buffer + ctx->writepos, nbytes, 0);
+          n = recv (ctx->file_sock, ctx->buffer + ctx->writepos, nbytes, 0);
           if (n < 0)
             {
-	      if (sock == -1)
-		{
-		  if (WSAGetLastError () == WSAENOTSOCK)
-		    {
-		      sock = 0;
-		      goto try_readfile;
-		    }
-		  else
-		    sock = 1;
-		}
-
               ctx->error_code = (int) WSAGetLastError ();
               if (ctx->error_code == ERROR_BROKEN_PIPE)
                 {
@@ -296,7 +354,6 @@ reader (void *arg)
         }
       else
         {
-	try_readfile:
           if (!ReadFile (ctx->file_hd,
                          ctx->buffer + ctx->writepos, nbytes, &nread, NULL))
             {
@@ -348,7 +405,7 @@ reader (void *arg)
 
 
 static struct reader_context_s *
-create_reader (HANDLE fd)
+create_reader (int fd)
 {
   struct reader_context_s *ctx;
   SECURITY_ATTRIBUTES sec_attr;
@@ -367,7 +424,14 @@ create_reader (HANDLE fd)
       return NULL;
     }
 
-  ctx->file_hd = fd;
+  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
+    {
+      TRACE_SYSERR (EIO);
+      return NULL;
+    }
+  ctx->file_hd = fd_table[fd].handle;
+  ctx->file_sock = fd_table[fd].socket;
+
   ctx->refcount = 1;
   ctx->have_data_ev = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
   if (ctx->have_data_ev)
@@ -440,11 +504,14 @@ destroy_reader (struct reader_context_s *ctx)
      reading.  Then we need to unblock the reader in the pipe driver
      to make our reader thread notice that we want it to go away.  */
 
-  if (!DeviceIoControl (ctx->file_hd, GPGCEDEV_IOCTL_UNBLOCK,
-			NULL, 0, NULL, 0, NULL, NULL))
+  if (ctx->file_hd != INVALID_HANDLE_VALUE)
     {
-      TRACE1 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx->file_hd,
-	      "unblock control call failed for thread %p", ctx->thread_hd);
+      if (!DeviceIoControl (ctx->file_hd, GPGCEDEV_IOCTL_UNBLOCK,
+			NULL, 0, NULL, 0, NULL, NULL))
+	{
+	  TRACE1 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx->file_hd,
+		  "unblock control call failed for thread %p", ctx->thread_hd);
+	}
     }
 #endif
 
@@ -491,7 +558,7 @@ find_reader (int fd, int start_it)
 
   if (i != reader_table_size)
     {
-      rd = create_reader (fd_to_handle (fd));
+      rd = create_reader (fd);
       if (rd)
 	{
 	  reader_table[i].fd = fd;
@@ -614,7 +681,10 @@ writer (void *arg)
   TRACE_BEG1 (DEBUG_SYSIO, "gpgme:writer", ctx->file_hd,
 	      "thread=%p", ctx->thread_hd);
 
-  sock = is_socket (ctx->file_hd);
+  if (ctx->file_hd != INVALID_HANDLE_VALUE)
+    sock = 0;
+  else
+    sock = 1;
 
   for (;;)
     {
@@ -648,27 +718,15 @@ writer (void *arg)
       /* Note that CTX->nbytes is not zero at this point, because
 	 _gpgme_io_write always writes at least 1 byte before waking
 	 us up, unless CTX->stop_me is true, which we catch above.  */
-      if (sock == -1 || sock == 1)
+      if (sock)
         {
           /* We need to try send first because a socket handle can't
              be used with WriteFile.  */
           int n;
 
-          n = send (handle_to_socket (ctx->file_hd),
-                    ctx->buffer, ctx->nbytes, 0);
+          n = send (ctx->file_sock, ctx->buffer, ctx->nbytes, 0);
           if (n < 0)
             {
-	      if (sock == -1)
-		{
-		  if (WSAGetLastError () == WSAENOTSOCK)
-		    {
-		      sock = 0;
-		      goto try_writefile;
-		    }
-		  else
-		    sock = 1;
-		}
-
               ctx->error_code = (int) WSAGetLastError ();
               ctx->error = 1;
               TRACE_LOG1 ("send error: ec=%d", ctx->error_code);
@@ -678,7 +736,6 @@ writer (void *arg)
         }
       else
         {
-	try_writefile:
           if (!WriteFile (ctx->file_hd, ctx->buffer,
                           ctx->nbytes, &nwritten, NULL))
             {
@@ -711,7 +768,7 @@ writer (void *arg)
 
 
 static struct writer_context_s *
-create_writer (HANDLE fd)
+create_writer (int fd)
 {
   struct writer_context_s *ctx;
   SECURITY_ATTRIBUTES sec_attr;
@@ -730,7 +787,14 @@ create_writer (HANDLE fd)
       return NULL;
     }
   
-  ctx->file_hd = fd;
+  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
+    {
+      TRACE_SYSERR (EIO);
+      return NULL;
+    }
+  ctx->file_hd = fd_table[fd].handle;
+  ctx->file_sock = fd_table[fd].socket;
+
   ctx->refcount = 1;
   ctx->have_data = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
   if (ctx->have_data)
@@ -853,7 +917,7 @@ find_writer (int fd, int start_it)
 
   if (i != writer_table_size)
     {
-      wt = create_writer (fd_to_handle (fd));
+      wt = create_writer (fd);
       if (wt)
 	{
 	  writer_table[i].fd = fd;
@@ -969,22 +1033,39 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 int
 _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
-  HANDLE rh;
-  HANDLE wh;
-
+  int rfd;
+  int wfd;
 #ifdef HAVE_W32CE_SYSTEM
   HANDLE hd;
   int rvid;
+#else
+  HANDLE rh;
+  HANDLE wh;
+  SECURITY_ATTRIBUTES sec_attr;
+#endif
 
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
 	      "inherit_idx=%i (GPGME uses it for %s)",
 	      inherit_idx, inherit_idx ? "reading" : "writing");
 
+  rfd = new_fd ();
+  if (rfd == -1)
+    return TRACE_SYSRES (-1);
+  wfd = new_fd ();
+  if (wfd == -1)
+    {
+      release_fd (rfd);
+      return TRACE_SYSRES (-1);
+    }
+
+#ifdef HAVE_W32CE_SYSTEM
   hd = _assuan_w32ce_prepare_pipe (&rvid, !inherit_idx);
   if (hd == INVALID_HANDLE_VALUE)
     {
       TRACE_LOG1 ("_assuan_w32ce_prepare_pipe failed: ec=%d",
 		  (int) GetLastError ());
+      release_fd (rfd);
+      release_fd (wfd);
       /* FIXME: Should translate the error code.  */
       gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
@@ -992,18 +1073,16 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 
   if (inherit_idx == 0)
     {
-      /* FIXME: For now.  We need to detect them at close.  */
-      rh = (void*) ((rvid << 1) | 1);
-      wh = hd;
+      fd_table[rfd].rvid = rvid;
+      fd_table[wfd].handle = hd;
     }
   else
     {
-      rh = hd;
-      /* FIXME: For now.  We need to detect them at close.  */
-      wh = (void*) ((rvid << 1) | 1);
+      fd_table[rfd].handle = hd;
+      fd_table[wfd].rvid = rvid;
     }  
+
 #else
-  SECURITY_ATTRIBUTES sec_attr;
 
   memset (&sec_attr, 0, sizeof (sec_attr));
   sec_attr.nLength = sizeof (sec_attr);
@@ -1012,6 +1091,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   if (!CreatePipe (&rh, &wh, &sec_attr, PIPEBUF_SIZE))
     {
       TRACE_LOG1 ("CreatePipe failed: ec=%d", (int) GetLastError ());
+      release_fd (rfd);
+      release_fd (wfd);
       /* FIXME: Should translate the error code.  */
       gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
@@ -1027,6 +1108,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 	{
 	  TRACE_LOG1 ("DuplicateHandle failed: ec=%d",
 		      (int) GetLastError ());
+	  release_fd (rfd);
+	  release_fd (wfd);
 	  CloseHandle (rh);
 	  CloseHandle (wh);
 	  /* FIXME: Should translate the error code.  */
@@ -1045,6 +1128,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 	{
 	  TRACE_LOG1 ("DuplicateHandle failed: ec=%d",
 		      (int) GetLastError ());
+	  release_fd (rfd);
+	  release_fd (wfd);
 	  CloseHandle (rh);
 	  CloseHandle (wh);
 	  /* FIXME: Should translate the error code.  */
@@ -1054,20 +1139,25 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
       CloseHandle (wh);
       wh = hd;
     }
+  fd_table[rfd].handle = rh;
+  fd_table[wfd].handle = wh;
 #endif
 
   if (inherit_idx == 0)
     {
       struct writer_context_s *ctx;
-      ctx = find_writer (handle_to_fd (wh), 0);
+      ctx = find_writer (wfd, 0);
       assert (ctx == NULL);
-      ctx = find_writer (handle_to_fd (wh), 1);
+      ctx = find_writer (wfd, 1);
       if (!ctx)
 	{
-#ifndef HAVE_W32CE_SYSTEM
-	  CloseHandle (rh);
-#endif
-	  CloseHandle (wh);
+	  /* No way/need to close RVIDs on Windows CE.  */
+	  if (fd_table[rfd].handle)
+	    CloseHandle (fd_table[rfd].handle);
+	  if (fd_table[wfd].handle)
+	    CloseHandle (fd_table[wfd].handle);
+	  release_fd (rfd);
+	  release_fd (wfd);
 	  /* FIXME: Should translate the error code.  */
 	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
@@ -1076,24 +1166,29 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   else if (inherit_idx == 1)
     {
       struct reader_context_s *ctx;
-      ctx = find_reader (handle_to_fd (rh), 0);
+      ctx = find_reader (rfd, 0);
       assert (ctx == NULL);
-      ctx = find_reader (handle_to_fd (rh), 1);
+      ctx = find_reader (rfd, 1);
       if (!ctx)
 	{
-	  CloseHandle (rh);
-#ifndef HAVE_W32CE_SYSTEM
-	  CloseHandle (wh);
-#endif
+	  if (fd_table[rfd].handle)
+	    CloseHandle (fd_table[rfd].handle);
+	  /* No way/need to close RVIDs on Windows CE.  */
+	  if (fd_table[wfd].handle)
+	    CloseHandle (fd_table[wfd].handle);
+	  release_fd (rfd);
+	  release_fd (wfd);
 	  /* FIXME: Should translate the error code.  */
 	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
 	}
     }
   
-  filedes[0] = handle_to_fd (rh);
-  filedes[1] = handle_to_fd (wh);
-  return TRACE_SUC2 ("read=%p, write=%p", rh, wh);
+  filedes[0] = rfd;
+  filedes[1] = wfd;
+  return TRACE_SUC6 ("read=0x%x (%p/0x%x), write=0x%x (%p/0x%x)",
+		     rfd, fd_table[rfd].handle, fd_table[rfd].rvid,
+		     wfd, fd_table[wfd].handle, fd_table[wfd].rvid);
 }
 
 
@@ -1103,6 +1198,7 @@ _gpgme_io_close (int fd)
   int i;
   _gpgme_close_notify_handler_t handler = NULL;
   void *value = NULL;
+
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd);
 
   if (fd == -1)
@@ -1110,12 +1206,11 @@ _gpgme_io_close (int fd)
       gpg_err_set_errno (EBADF);
       return TRACE_SYSRES (-1);
     }
-
-#ifdef HAVE_W32CE_SYSTEM
-  /* FIXME: For now: This is a rendezvous id.  */
-  if (fd & 1)
-    return TRACE_SYSRES (0);
-#endif
+  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
+    {
+      gpg_err_set_errno (EBADF);
+      return TRACE_SYSRES (-1);
+    }
 
   kill_reader (fd);
   kill_writer (fd);
@@ -1136,14 +1231,33 @@ _gpgme_io_close (int fd)
   if (handler)
     handler (fd, value);
 
-  if (!CloseHandle (fd_to_handle (fd)))
-    { 
-      TRACE_LOG1 ("CloseHandle failed: ec=%d", (int) GetLastError ());
-      /* FIXME: Should translate the error code.  */
-      gpg_err_set_errno (EIO);
-      return TRACE_SYSRES (-1);
+  if (fd_table[fd].dup_from == -1)
+    {
+      if (fd_table[fd].handle != INVALID_HANDLE_VALUE)
+	{
+	  if (!CloseHandle (fd_table[fd].handle))
+	    { 
+	      TRACE_LOG1 ("CloseHandle failed: ec=%d", (int) GetLastError ());
+	      /* FIXME: Should translate the error code.  */
+	      gpg_err_set_errno (EIO);
+	      return TRACE_SYSRES (-1);
+	    }
+	}
+      else if (fd_table[fd].socket != INVALID_SOCKET)
+	{
+	  if (closesocket (fd_table[fd].socket))
+	    { 
+	      TRACE_LOG1 ("closesocket failed: ec=%d", (int) WSAGetLastError ());
+	      /* FIXME: Should translate the error code.  */
+	      gpg_err_set_errno (EIO);
+	      return TRACE_SYSRES (-1);
+	    }
+	}
+      /* Nothing to do for RVIDs.  */
     }
 
+  release_fd (fd);
+      
   return TRACE_SYSRES (0);
 }
 
@@ -1188,6 +1302,7 @@ _gpgme_io_set_nonblocking (int fd)
   return 0;
 }
 
+
 #ifdef HAVE_W32CE_SYSTEM
 static char *
 build_commandline (char **argv, int fd0, int fd0_isnull,
@@ -1202,42 +1317,28 @@ build_commandline (char **argv, int fd0, int fd0_isnull,
   p = fdbuf;
   *p = 0;
   
-  strcpy (p, "-&S0=null ");
-  p += strlen (p);
   if (fd0 != -1)
     {
-      /* FIXME */
-      if (fd0 & 1)
-	fd0 = fd0 >> 1;
-
       if (fd0_isnull)
         strcpy (p, "-&S0=null ");
       else
-	snprintf (p, 25, "-&S0=%d ", (int)fd0);
+	snprintf (p, 25, "-&S0=%d ", fd_table[fd0].rvid);
       p += strlen (p);
     }
   if (fd1 != -1)
     {
-      /* FIXME */
-      if (fd1 & 1)
-	fd1 = fd1 >> 1;
-
       if (fd1_isnull)
         strcpy (p, "-&S1=null ");
       else
-	snprintf (p, 25, "-&S1=%d ", (int)fd1);
+	snprintf (p, 25, "-&S1=%d ", fd_table[fd1].rvid);
       p += strlen (p);
     }
   if (fd2 != -1)
     {
-      /* FIXME */
-      if (fd2 & 1)
-	fd2 = fd2 >> 1;
-
       if (fd2_isnull)
         strcpy (p, "-&S2=null ");
       else
-        snprintf (p, 25, "-&S2=%d ", (int)fd2);
+        snprintf (p, 25, "-&S2=%d ", fd_table[fd2].rvid);
       p += strlen (p);
     }
   strcpy (p, "-&S2=null ");
@@ -1378,7 +1479,22 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 
   for (i = 0; fd_list[i].fd != -1; i++)
     {
-      TRACE_LOG3 ("fd_list[%2i] = fd %i, dup_to %i", i, fd_list[i].fd, fd_list[i].dup_to);
+      int fd = fd_list[i].fd;
+
+      TRACE_LOG3 ("fd_list[%2i] = fd %i, dup_to %i", i, fd, fd_list[i].dup_to);
+      if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
+	{
+	  TRACE_LOG1 ("invalid fd 0x%x", fd);
+	  gpg_err_set_errno (EBADF);
+	  return TRACE_SYSRES (-1);
+	}
+      if (fd_table[fd].rvid == 0)
+	{
+	  TRACE_LOG1 ("fd 0x%x not inheritable (not an RVID)", fd);
+	  gpg_err_set_errno (EBADF);
+	  return TRACE_SYSRES (-1);
+	}
+      
       if (fd_list[i].dup_to == 0)
 	{
 	  fd_in = fd_list[i].fd;
@@ -1428,7 +1544,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   for (i = 0; fd_list[i].fd != -1; i++)
     {
       /* Return the child name of this handle.  */
-      fd_list[i].peer_name = fd_list[i].fd;
+      fd_list[i].peer_name = fd_table[fd_list[i].fd].rvid;
     }
 
 #else
@@ -1749,6 +1865,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   else if (code == WAIT_FAILED)
     {
       int le = (int) GetLastError ();
+#if 0
       if (le == ERROR_INVALID_HANDLE)
 	{
 	  int k;
@@ -1765,6 +1882,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
             }
 	  TRACE_LOG (" oops, or not???");
         }
+#endif
       TRACE_LOG1 ("WFMO failed: %d", le);
       count = -1;
     }
@@ -1813,9 +1931,11 @@ _gpgme_io_fd2str (char *buf, int buflen, int fd)
 {
 #ifdef HAVE_W32CE_SYSTEM
   /* FIXME: For now. See above.  */
-  if (fd & 1)
-    fd = fd >> 1;
-  /* FIXME: The real problems start if fd is not of this type!  */
+  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used
+      || fd_table[fd].rvid == 0)
+    fd = -1;
+  else
+    fd = fd_table[fd].rvid;
 #endif
 
   return snprintf (buf, buflen, "%d", fd);
@@ -1825,27 +1945,27 @@ _gpgme_io_fd2str (char *buf, int buflen, int fd)
 int
 _gpgme_io_dup (int fd)
 {
-#ifdef HAVE_W32CE_SYSTEM
-  gpg_err_set_errno (EIO);
-  return -1;
-#else
-  HANDLE handle = fd_to_handle (fd);
-  HANDLE new_handle = fd_to_handle (fd);
-  int i;
+  int newfd;
   struct reader_context_s *rd_ctx;
   struct writer_context_s *wt_ctx;
+  int i;
 
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_dup", fd);
 
-  if (!DuplicateHandle (GetCurrentProcess(), handle,
-			GetCurrentProcess(), &new_handle,
-			0, FALSE, DUPLICATE_SAME_ACCESS))
+  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
     {
-      TRACE_LOG1 ("DuplicateHandle failed: ec=%d\n", (int) GetLastError ());
-      /* FIXME: Translate error code.  */
-      gpg_err_set_errno (EIO);
+      gpg_err_set_errno (EINVAL);
       return TRACE_SYSRES (-1);
     }
+
+  newfd = new_fd();
+  if (newfd == -1)
+    return TRACE_SYSRES (-1);
+  
+  fd_table[newfd].handle = fd_table[fd].handle;
+  fd_table[newfd].socket = fd_table[fd].socket;
+  fd_table[newfd].rvid = fd_table[fd].rvid;
+  fd_table[newfd].dup_from = fd;
 
   rd_ctx = find_reader (fd, 0);
   if (rd_ctx)
@@ -1860,7 +1980,7 @@ _gpgme_io_dup (int fd)
 	  break;
       /* FIXME.  */
       assert (i != reader_table_size);
-      reader_table[i].fd = handle_to_fd (new_handle);
+      reader_table[i].fd = newfd;
       reader_table[i].context = rd_ctx;
       reader_table[i].used = 1;
       UNLOCK (reader_table_lock);
@@ -1879,14 +1999,13 @@ _gpgme_io_dup (int fd)
 	  break;
       /* FIXME.  */
       assert (i != writer_table_size);
-      writer_table[i].fd = handle_to_fd (new_handle);
+      writer_table[i].fd = newfd;
       writer_table[i].context = wt_ctx;
       writer_table[i].used = 1;
       UNLOCK (writer_table_lock);
     }
 
-  return TRACE_SYSRES (handle_to_fd (new_handle));
-#endif
+  return TRACE_SYSRES (newfd);
 }
 
 
@@ -1931,18 +2050,25 @@ int
 _gpgme_io_socket (int domain, int type, int proto)
 {
   int res;
+  int fd;
 
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_socket", domain,
 	      "type=%i, protp=%i", type, proto);
 
+  fd = new_fd();
+  if (fd == -1)
+    return TRACE_SYSRES (-1);
+      
   res = socket (domain, type, proto);
   if (res == INVALID_SOCKET)
     {
+      release_fd (fd);
       gpg_err_set_errno (wsa2errno (WSAGetLastError ()));
       return TRACE_SYSRES (-1);
     }
+  fd_table[fd].socket = res;
 
-  TRACE_SUC1 ("socket=0x%x", res);
+  TRACE_SUC2 ("socket=0x%x (0x%x)", fd, fd_table[fd].socket);
   
   return res;
 }
@@ -1956,7 +2082,13 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_connect", fd,
 	      "addr=%p, addrlen=%i", addr, addrlen);
 
-  res = connect (fd, addr, addrlen);
+  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
+    {
+      gpg_err_set_errno (EBADF);
+      return TRACE_SYSRES (-1);
+    }
+    
+  res = connect (fd_table[fd].socket, addr, addrlen);
   if (res)
     {
       gpg_err_set_errno (wsa2errno (WSAGetLastError ()));

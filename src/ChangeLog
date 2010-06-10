@@ -1,3 +1,30 @@
+2010-06-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* debug.h (TRACE_SUC6): New macro.
+	* w32-io.c (MAX_SLAFD): New macro.
+	(fd_table): New static variable.
+	(new_fd, release_fd): New functions.
+	(fd_to_handle, handle_to_fd, handle_to_socket): Remove macros.
+	(MAX_READERS, MAX_WRITERS): Increase to 64.
+	(notify_table): Increase to MAX_SLAFD.
+	(struct reader_context_s, struct writer_context_s): Add member
+	file_sock.
+	(reader, writer): Use file_hd vs file_sock to decide if socket
+	operations to use.  Remove auto-detect mode.
+	(create_reader, create_writer): Set file_sock.  Unblock pending
+	thread only if this is a pipe fd.
+	(_gpgme_io_pipe): Allocate fds from table and return slot indices
+	instead of windows handles.  This allows to properly handle RVIDs.
+	(_gpgme_io_close): Handle dup'ed file descriptors.
+	(build_commandline) [HAVE_W32_SYSTEM]: Use RVID from fd table now.
+	(_gpgme_io_spawn): Use fd table now.
+	(_gpgme_io_fd2str): Use RVID from fd table now.
+	(_gpgme_io_dup): Implement using fd table.
+	(_gpgme_io_socket): Allocate fds from table.
+	(_gpgme_io_connect): Use fd from table.
+
+	* w32-glib-io.c (find_channel): Check that the slot is used.
+
 2010-06-09  Marcus Brinkmann  <marcus@g10code.de>
 
 	* w32-io.c [HAVE_W32CE_SYSTEM]: Include assuan.h and winioctl.h.

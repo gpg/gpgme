@@ -204,6 +204,10 @@ void _gpgme_debug_frame_end (void);
   _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
 		_gpgme_trace_func, arg1, arg2, arg3, arg4, arg5), \
     _gpgme_debug_frame_end (), 0
+#define TRACE_SUC6(fmt, arg1, arg2, arg3, arg4, arg5, arg6)	\
+  _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
+		_gpgme_trace_func, arg1, arg2, arg3, arg4, arg5, arg6),	\
+    _gpgme_debug_frame_end (), 0
 
 #define TRACE_LOG(fmt)							\
   _gpgme_debug (_gpgme_trace_level, "%s: check: %s=%p, " fmt "\n",	\
