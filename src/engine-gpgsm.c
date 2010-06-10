@@ -351,6 +351,10 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
     err = assuan_pipe_connect
       (gpgsm->assuan_ctx, file_name ? file_name : _gpgme_get_gpgsm_path (),
        argv, achild_fds, NULL, NULL, 0);
+
+    /* For now... */
+    for (i = 0; i < 4; i++)
+      child_fds[i] = (int) achild_fds[i];
   }
 
   /* On Windows, handles are inserted in the spawned process with
