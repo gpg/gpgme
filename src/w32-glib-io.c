@@ -110,7 +110,7 @@ static struct
 static GIOChannel *
 find_channel (int fd)
 {
-  if (fd < 0 || fd >= MAX_SLAFD)
+  if (fd < 0 || fd >= MAX_SLAFD || !giochannel_table[fd].used)
     return NULL;
 
   return giochannel_table[fd].chan;
