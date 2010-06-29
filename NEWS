@@ -23,7 +23,7 @@ Noteworthy changes in version 1.3.0 (2010-01-11)
 
  * New engine GPGME_PROTOCOL_UISERVER to support UI Servers.
 
- * New API to change the passpgrase of a key.
+ * New API to change the passphrase of a key.
 
  * Interface changes relative to the 1.2.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

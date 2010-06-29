@@ -66,7 +66,7 @@ static struct engine_ops *engine_ops[] =
     NULL,
 #endif
 #ifdef ENABLE_UISERVER
-    &_gpgme_engine_ops_uiserver		/* Crypto VFS.  */
+    &_gpgme_engine_ops_uiserver		/* UI-Server.  */
 #else
     NULL
 #endif
