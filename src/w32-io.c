@@ -38,6 +38,8 @@
 #include <winioctl.h>
 #define GPGCEDEV_IOCTL_UNBLOCK                                        \
   CTL_CODE (FILE_DEVICE_STREAMS, 2050, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define GPGCEDEV_IOCTL_ASSIGN_RVID                                    \
+  CTL_CODE (FILE_DEVICE_STREAMS, 2051, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #endif
 
 #include "util.h"
@@ -863,8 +865,9 @@ destroy_writer (struct writer_context_s *ctx)
 
 #ifdef HAVE_W32CE_SYSTEM
   /* Scenario: We never create a full pipe, but already started
-     reading.  Then we need to unblock the reader in the pipe driver
-     to make our reader thread notice that we want it to go away.  */
+     writing more than the pipe buffer.  Then we need to unblock the
+     writer in the pipe driver to make our writer thread notice that
+     we want it to go away.  */
 
   if (!DeviceIoControl (ctx->file_hd, GPGCEDEV_IOCTL_UNBLOCK,
 			NULL, 0, NULL, 0, NULL, NULL))
@@ -1467,6 +1470,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   int fd_out_isnull = 1;
   int fd_err_isnull = 1;
   char *cmdline;
+  HANDLE hd = INVALID_HANDLE_VALUE;
 
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
 	      "path=%s", path);
@@ -1538,12 +1542,39 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       return TRACE_SYSRES (-1);
     }
 
+  /* Create arbitrary pipe descriptor to send in ASSIGN_RVID
+     commands.  Errors are ignored.  We don't need read or write access,
+     as ASSIGN_RVID works without any permissions, yay!  */
+  hd = CreateFile (L"GPG1:", 0, 0,
+		   NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (hd == INVALID_HANDLE_VALUE)
+    {
+      TRACE_LOG1 (DEBUG_SYSIO, "CreateFile failed (ignored): ec=%d",
+		  (int) GetLastError ());
+    }
+
   /* Insert the inherited handles.  */
   for (i = 0; fd_list[i].fd != -1; i++)
     {
       /* Return the child name of this handle.  */
       fd_list[i].peer_name = fd_table[fd_list[i].fd].rvid;
+
+      if (hd != INVALID_HANDLE_VALUE)
+	{
+	  DWORD data[2];
+	  data[0] = (DWORD) fd_table[fd_list[i].fd].rvid;
+	  data[1] = pi.dwProcessId;
+	  if (!DeviceIoControl (hd, GPGCEDEV_IOCTL_ASSIGN_RVID,
+				data, sizeof (data), NULL, 0, NULL, NULL))
+	    {
+	      TRACE_LOG1 (DEBUG_SYSIO,
+			  "ASSIGN_RVID(%i, %i) failed (ignored): %i",
+			  data[0], data[1], (int) GetLastError ());
+	    }
+	}
     }
+  if (hd != INVALID_HANDLE_VALUE)
+    CloseHandle (hd);
 
 #else
   SECURITY_ATTRIBUTES sec_attr;
