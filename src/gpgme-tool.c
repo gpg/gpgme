@@ -742,8 +742,8 @@ result_add_fpr (struct result_xml_state *state, char *name, char *fpr)
 gpg_error_t
 result_add_timestamp (struct result_xml_state *state, char *name,
 		      unsigned int timestamp)
-{		  
-  char code[20];
+{
+  code[20];
 
   snprintf (code, sizeof (code) - 1, "%ui", timestamp);
   result_xml_tag_start (state, name, "unix", code, NULL);
@@ -828,7 +828,8 @@ result_encrypt_to_xml (gpgme_ctx_t ctx, int indent,
       while (inv_recp)
 	{
 	  result_xml_tag_start (&state, "invalid-key", NULL);
-	  result_add_fpr (&state, "fpr", inv_recp->fpr);
+	  if (inv_recp->fpr)
+	    result_add_fpr (&state, "fpr", inv_recp->fpr);
 	  result_add_error (&state, "reason", inv_recp->reason);
 	  result_xml_tag_end (&state);
 	  inv_recp = inv_recp->next;
@@ -917,7 +918,8 @@ result_sign_to_xml (gpgme_ctx_t ctx, int indent,
       while (inv_key)
 	{
 	  result_xml_tag_start (&state, "invalid-key", NULL);
-	  result_add_fpr (&state, "fpr", inv_key->fpr);
+	  if (inv_key->fpr)
+	    result_add_fpr (&state, "fpr", inv_key->fpr);
 	  result_add_error (&state, "reason", inv_key->reason);
 	  result_xml_tag_end (&state);
 	  inv_key = inv_key->next;
@@ -985,7 +987,8 @@ result_verify_to_xml (gpgme_ctx_t ctx, int indent,
 	  
 	  /* FIXME: Could be done better. */
 	  result_add_value (&state, "summary", sig->summary);
-	  result_add_fpr (&state, "fpr", sig->fpr);
+	  if (sig->fpr)
+	    result_add_fpr (&state, "fpr", sig->fpr);
 	  result_add_error (&state, "status", sig->status);
 	  /* FIXME: notations */
 	  result_add_timestamp (&state, "timestamp", sig->timestamp);
@@ -1050,7 +1053,8 @@ result_import_to_xml (gpgme_ctx_t ctx, int indent,
 	{
 	  result_xml_tag_start (&state, "import-status", NULL);
 
-	  result_add_fpr (&state, "fpr", stat->fpr);
+	  if (stat->fpr)
+	    result_add_fpr (&state, "fpr", stat->fpr);
 	  result_add_error (&state, "result", stat->result);
 	  /* FIXME: Could be done better. */
 	  result_add_value (&state, "status", stat->status);
@@ -1082,7 +1086,8 @@ result_genkey_to_xml (gpgme_ctx_t ctx, int indent,
 
   result_add_value (&state, "primary", res->primary);
   result_add_value (&state, "sub", res->sub);
-  result_add_fpr (&state, "fpr", res->fpr);
+  if (res->fpr)
+    result_add_fpr (&state, "fpr", res->fpr);
 
   result_xml_tag_end (&state);
   
