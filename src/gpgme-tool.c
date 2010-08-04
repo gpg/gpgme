@@ -743,7 +743,7 @@ gpg_error_t
 result_add_timestamp (struct result_xml_state *state, char *name,
 		      unsigned int timestamp)
 {
-  code[20];
+  char code[20];
 
   snprintf (code, sizeof (code) - 1, "%ui", timestamp);
   result_xml_tag_start (state, name, "unix", code, NULL);
