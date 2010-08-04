@@ -1549,7 +1549,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		   NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
   if (hd == INVALID_HANDLE_VALUE)
     {
-      TRACE_LOG1 (DEBUG_SYSIO, "CreateFile failed (ignored): ec=%d",
+      TRACE_LOG1 ("CreateFile failed (ignored): ec=%d",
 		  (int) GetLastError ());
     }
 
@@ -1567,8 +1567,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	  if (!DeviceIoControl (hd, GPGCEDEV_IOCTL_ASSIGN_RVID,
 				data, sizeof (data), NULL, 0, NULL, NULL))
 	    {
-	      TRACE_LOG1 (DEBUG_SYSIO,
-			  "ASSIGN_RVID(%i, %i) failed (ignored): %i",
+	      TRACE_LOG3 ("ASSIGN_RVID(%i, %i) failed (ignored): %i",
 			  data[0], data[1], (int) GetLastError ());
 	    }
 	}
