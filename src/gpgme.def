@@ -199,5 +199,8 @@ EXPORTS
     gpgme_op_passwd_start                 @152
     gpgme_op_passwd                       @153
 
+    gpgme_err_code_from_syserror          @154
+    gpgme_err_set_errno                   @155
+
 ; END
 

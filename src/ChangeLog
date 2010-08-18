@@ -1,3 +1,16 @@
+2010-08-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.def: Add gpgme_err_code_from_syserror and gpgme_err_set_errno.
+	* libgpgme.vers: Likewise.
+	* gpgme.h.in (gpgme_error_from_errno): Fix return type to
+	gpgme_error_t.
+	(gpgme_err_code_from_syserror, gpgme_err_set_errno): New prototype.
+	(gpgme_error_from_syserror): New inline function (why are
+	gpgme_err_make_from_errno and gpgme_error_from_errno not inline
+	functions?).
+	* error.c (gpgme_error_from_errno): Fix return type to gpgme_error_t.
+	(gpgme_err_set_errno, gpgme_err_code_from_syserror): New functions.
+
 2010-08-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme-tool.c (result_encrypt_to_xml, result_sign_to_xml)

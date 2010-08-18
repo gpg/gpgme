@@ -74,6 +74,25 @@ gpgme_err_code_to_errno (gpgme_err_code_t code)
   return gpg_err_code_from_errno (code);
 }
 
+
+/* Retrieve the error code directly from the ERRNO variable.  This
+   returns GPG_ERR_UNKNOWN_ERRNO if the system error is not mapped
+   (report this) and GPG_ERR_MISSING_ERRNO if ERRNO has the value 0. */
+gpgme_err_code_t
+gpgme_err_code_from_syserror (void)
+{
+  return gpg_err_code_from_syserror ();
+}
+
+
+/* Set the ERRNO variable.  This function is the preferred way to set
+   ERRNO due to peculiarities on WindowsCE.  */
+void
+gpgme_err_set_errno (int err)
+{
+  gpg_err_set_errno (err);
+}
+
   
 /* Return an error value with the error source SOURCE and the system
    error ERR.  */
@@ -85,7 +104,7 @@ gpgme_err_make_from_errno (gpg_err_source_t source, int err)
 
 
 /* Return an error value with the system error ERR.  */
-gpgme_err_code_t
+gpgme_error_t
 gpgme_error_from_errno (int err)
 {
   return gpgme_error (gpg_err_code_from_errno (err));

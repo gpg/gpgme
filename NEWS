@@ -7,7 +7,11 @@ Noteworthy changes in version 1.3.1 (unreleased)
 
  * Interface changes relative to the 1.3.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- GPGME_EXPORT_MODE_MINIMAL  NEW.
+ GPGME_EXPORT_MODE_MINIMAL      NEW
+ gpgme_err_code_from_syserror   NEW
+ gpgme_err_set_errno            NEW
+ gpgme_error_from_errno		CHANGED: Return gpgme_error_t (compatible type).
+ gpgme_error_from_syserror      NEW
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
