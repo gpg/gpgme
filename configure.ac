@@ -858,6 +858,9 @@ AH_BOTTOM([
 #else
 # define GPGME_GCC_A_PURE
 #endif
+
+/* Under WindowsCE we need gpg-error's strerror macro.  */
+#define GPG_ERR_ENABLE_ERRNO_MACROS 1
 ])
 
 
