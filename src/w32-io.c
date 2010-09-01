@@ -561,12 +561,9 @@ find_reader (int fd, int start_it)
   if (i != reader_table_size)
     {
       rd = create_reader (fd);
-      if (rd)
-	{
-	  reader_table[i].fd = fd;
-	  reader_table[i].context = rd;
-	  reader_table[i].used = 1;
-	}
+      reader_table[i].fd = fd;
+      reader_table[i].context = rd;
+      reader_table[i].used = 1;
     }
 
   UNLOCK (reader_table_lock);
@@ -921,12 +918,9 @@ find_writer (int fd, int start_it)
   if (i != writer_table_size)
     {
       wt = create_writer (fd);
-      if (wt)
-	{
-	  writer_table[i].fd = fd;
-	  writer_table[i].context = wt; 
-	  writer_table[i].used = 1;
-	}
+      writer_table[i].fd = fd;
+      writer_table[i].context = wt; 
+      writer_table[i].used = 1;
     }
 
   UNLOCK (writer_table_lock);
@@ -965,7 +959,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   if (count == 0)
     return TRACE_SYSRES (0);
 
-  ctx = find_writer (fd, 0);
+  ctx = find_writer (fd, 1);
   if (!ctx)
     return TRACE_SYSRES (-1);
 
@@ -1146,47 +1140,6 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   fd_table[wfd].handle = wh;
 #endif
 
-  if (inherit_idx == 0)
-    {
-      struct writer_context_s *ctx;
-      ctx = find_writer (wfd, 0);
-      assert (ctx == NULL);
-      ctx = find_writer (wfd, 1);
-      if (!ctx)
-	{
-	  /* No way/need to close RVIDs on Windows CE.  */
-	  if (fd_table[rfd].handle)
-	    CloseHandle (fd_table[rfd].handle);
-	  if (fd_table[wfd].handle)
-	    CloseHandle (fd_table[wfd].handle);
-	  release_fd (rfd);
-	  release_fd (wfd);
-	  /* FIXME: Should translate the error code.  */
-	  gpg_err_set_errno (EIO);
-	  return TRACE_SYSRES (-1);
-	}
-    }
-  else if (inherit_idx == 1)
-    {
-      struct reader_context_s *ctx;
-      ctx = find_reader (rfd, 0);
-      assert (ctx == NULL);
-      ctx = find_reader (rfd, 1);
-      if (!ctx)
-	{
-	  if (fd_table[rfd].handle)
-	    CloseHandle (fd_table[rfd].handle);
-	  /* No way/need to close RVIDs on Windows CE.  */
-	  if (fd_table[wfd].handle)
-	    CloseHandle (fd_table[wfd].handle);
-	  release_fd (rfd);
-	  release_fd (wfd);
-	  /* FIXME: Should translate the error code.  */
-	  gpg_err_set_errno (EIO);
-	  return TRACE_SYSRES (-1);
-	}
-    }
-  
   filedes[0] = rfd;
   filedes[1] = wfd;
   return TRACE_SUC6 ("read=0x%x (%p/0x%x), write=0x%x (%p/0x%x)",
@@ -1811,7 +1764,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	{
 	  if (fds[i].for_read)
 	    {
-	      struct reader_context_s *ctx = find_reader (fds[i].fd,0);
+	      struct reader_context_s *ctx = find_reader (fds[i].fd,1);
 	      
 	      if (!ctx)
 		TRACE_LOG1 ("error: no reader for FD 0x%x (ignored)",
@@ -1834,7 +1787,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
             }
 	  else if (fds[i].for_write)
 	    {
-	      struct writer_context_s *ctx = find_writer (fds[i].fd,0);
+	      struct writer_context_s *ctx = find_writer (fds[i].fd,1);
               
 	      if (!ctx)
 		TRACE_LOG1 ("error: no writer for FD 0x%x (ignored)",
@@ -1995,7 +1948,7 @@ _gpgme_io_dup (int fd)
   fd_table[newfd].rvid = fd_table[fd].rvid;
   fd_table[newfd].dup_from = fd;
 
-  rd_ctx = find_reader (fd, 0);
+  rd_ctx = find_reader (fd, 1);
   if (rd_ctx)
     {
       /* No need for locking, as the only races are against the reader
@@ -2014,7 +1967,7 @@ _gpgme_io_dup (int fd)
       UNLOCK (reader_table_lock);
     }
 
-  wt_ctx = find_writer (fd, 0);
+  wt_ctx = find_writer (fd, 1);
   if (wt_ctx)
     {
       /* No need for locking, as the only races are against the writer
