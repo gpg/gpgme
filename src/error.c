@@ -71,7 +71,7 @@ gpgme_err_code_from_errno (int err)
 int
 gpgme_err_code_to_errno (gpgme_err_code_t code)
 {
-  return gpg_err_code_from_errno (code);
+  return gpg_err_code_to_errno (code);
 }
 
 
