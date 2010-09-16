@@ -1,5 +1,8 @@
 2010-09-16  Werner Koch  <wk@g10code.com>
 
+	* import.c: Include "util.h".
+	(parse_import): Return GPG_ERR_MISSING_ISSUER_CERT.
+
 	* util.h: Add fallback define for GPG_ERR_MISSING_ISSUER_CERT.
 	* op-support.c: Include "util.h".
 	(_gpgme_parse_inv_recp): Handle new code 12.

@@ -30,6 +30,7 @@
 #include "debug.h"
 #include "context.h"
 #include "ops.h"
+#include "util.h"
 
 
 typedef struct
@@ -149,7 +150,7 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
 	  break;
 
 	case 2:
-	  import->result = gpg_error (GPG_ERR_MISSING_CERT);
+	  import->result = gpg_error (GPG_ERR_MISSING_ISSUER_CERT);
 	  break;
 
 	case 3:
