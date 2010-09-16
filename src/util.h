@@ -136,6 +136,9 @@ const char *_gpgme_get_w32spawn_path (void);
 #ifndef GPG_ERR_NOT_OPERATIONAL 
 #define GPG_ERR_NOT_OPERATIONAL 176
 #endif
+#ifndef GPG_ERR_MISSING_ISSUER_CERT
+#define GPG_ERR_MISSING_ISSUER_CERT 185
+#endif
 
 
 #ifdef ENABLE_ASSUAN

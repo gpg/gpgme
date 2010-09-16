@@ -1,3 +1,9 @@
+2010-09-16  Werner Koch  <wk@g10code.com>
+
+	* util.h: Add fallback define for GPG_ERR_MISSING_ISSUER_CERT.
+	* op-support.c: Include "util.h".
+	(_gpgme_parse_inv_recp): Handle new code 12.
+
 2010-09-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* error.c (gpgme_err_code_to_errno): Fix cut and paste bug (thanks

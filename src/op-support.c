@@ -30,6 +30,7 @@
 #include "gpgme.h"
 #include "context.h"
 #include "ops.h"
+#include "util.h"
 
 
 gpgme_error_t
@@ -245,6 +246,10 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
 
     case 11:
       inv_key->reason = gpg_error (GPG_ERR_MISSING_CERT);
+      break;
+
+    case 12:
+      inv_key->reason = gpg_error (GPG_ERR_MISSING_ISSUER_CERT);
       break;
     }
 
