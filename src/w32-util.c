@@ -600,7 +600,7 @@ _gpgme_w32ce_get_debug_envvar (void)
 {
   char *tmp;
 
-  tmp = w32_read_registry (L"\\Software\\GNU\\gpgme", L"debug");
+  tmp = read_w32_registry_string (NULL, L"\\Software\\GNU\\gpgme", L"debug");
   if (tmp && !*tmp)
     {
       free (tmp);
