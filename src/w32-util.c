@@ -588,3 +588,24 @@ _gpgme_mkstemp (int *fd, char **name)
   *name = tmpname;
   return 0;
 }
+
+
+
+#ifdef HAVE_W32CE_SYSTEM
+/* Return a malloced string with the replacement value for the
+   GPGME_DEBUG envvar.  Caller must release.  Returns NULL if not
+   set.  */
+char *
+_gpgme_w32ce_get_debug_envvar (void)
+{
+  char *tmp;
+
+  tmp = w32_read_registry (L"\\Software\\GNU\\gpgme", L"debug");
+  if (tmp && !*tmp)
+    {
+      free (tmp);
+      tmp = NULL;
+    }
+  return NULL;
+}
+#endif /*HAVE_W32CE_SYSTEM*/

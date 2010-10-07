@@ -115,12 +115,16 @@ debug_init (void)
       char *e;
       const char *s1, *s2;;
 
+#ifdef HAVE_W32CE_SYSTEM
+      e = _gpgme_w32ce_get_debug_envvar ();
+#else /*!HAVE_W32CE_SYSTEM*/
       err = _gpgme_getenv ("GPGME_DEBUG", &e);
       if (err)
 	{
 	  UNLOCK (debug_lock);
 	  return;
 	}
+#endif /*!HAVE_W32CE_SYSTEM*/
 
       initialized = 1;
       errfp = stderr;

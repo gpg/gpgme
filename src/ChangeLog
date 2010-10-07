@@ -1,3 +1,10 @@
+2010-10-07  Werner Koch  <wk@g10code.com>
+
+	* gpgme-tool.c (ARGP_ERR_UNKNOWN): Use EDEADLK if available.
+
+	* w32-util.c (_gpgme_w32ce_get_debug_envvar) [W32CE]: New.
+	* debug.c (debug_init) [W32CE]: Use new function.
+
 2010-09-16  Werner Koch  <wk@g10code.com>
 
 	* import.c: Include "util.h".

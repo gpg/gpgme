@@ -127,7 +127,10 @@ gpgme_error_t _gpgme_getenv (const char *name, char **value);
 #ifdef HAVE_W32_SYSTEM
 int _gpgme_mkstemp (int *fd, char **name);
 const char *_gpgme_get_w32spawn_path (void);
-#endif
+#endif /*HAVE_W32_SYSTEM*/
+#ifdef HAVE_W32CE_SYSTEM
+char *_gpgme_w32ce_get_debug_envvar (void);
+#endif /*HAVE_W32CE_SYSTEM*/
 
 /*--  Error codes not yet available in current gpg-error.h.   --*/
 #ifndef GPG_ERR_UNFINISHED

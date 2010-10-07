@@ -109,7 +109,11 @@ struct argp_state
   void *pstate;
 };
 
-#define ARGP_ERR_UNKNOWN EDEADLOCK
+#ifdef EDEADLK
+# define ARGP_ERR_UNKNOWN EDEADLK /* POSIX */
+#else
+# define ARGP_ERR_UNKNOWN EDEADLOCK /* *GNU/kFreebsd does not define this) */
+#endif
 #define ARGP_KEY_ARG 0
 #define ARGP_KEY_ARGS 0x1000006
 #define ARGP_KEY_END 0x1000001
