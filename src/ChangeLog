@@ -1,3 +1,8 @@
+2010-10-28  Marcus Brinkmann  <marcus.brinkmann@ruhr-uni-bochum.de>
+
+	* opassuan.c (gpgme_op_assuan_transact_ext): Fix uninitialized
+	value use.  Reported by Marc Mutz.
+
 2010-10-07  Werner Koch  <wk@g10code.com>
 
 	* gpgme-tool.c (ARGP_ERR_UNKNOWN): Use EDEADLK if available.

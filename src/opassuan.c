@@ -126,9 +126,10 @@ gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
                         data_cb, data_cb_value,
                         inq_cb, inq_cb_value,
                         status_cb, status_cb_value);
-  if (!err)
-    err = _gpgme_wait_one_ext (ctx, &op_err);
+  if (err)
+    goto out;
 
+  err = _gpgme_wait_one_ext (ctx, &op_err);
   if (op_err)
     {
       TRACE_LOG2 ("op_err = %s <%s>", gpgme_strerror (op_err),
@@ -140,7 +141,8 @@ gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
     }
   if (op_err_p)
     *op_err_p = op_err;
-
+  
+ out:
   return TRACE_ERR (err);
 }
 
