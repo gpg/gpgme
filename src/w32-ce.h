@@ -24,8 +24,12 @@
 #include <time.h>
 #include <stdarg.h>
 
-/* For getaddrinfo.  */
-#define _MSV_VER 0x401
+#ifdef _MSC_VER
+typedef int pid_t;
+#endif
+
+#include <winsock2.h>
+#include <ws2tcpip.h> /* For getaddrinfo.  */
 #include <windows.h>
 
 

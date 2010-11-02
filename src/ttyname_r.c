@@ -24,10 +24,14 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <unistd.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 
-#warning ttyname is not thread-safe, and ttyname_r is missing
+#ifdef __GNUC__
+# warning ttyname is not thread-safe, and ttyname_r is missing
+#endif
 
 int
 ttyname_r (int fd, char *buf, size_t buflen)

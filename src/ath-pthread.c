@@ -24,11 +24,15 @@
 
 #include <stdlib.h>
 #include <errno.h>
-#include <unistd.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #else
-# include <sys/time.h>
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# endif
 #endif
 #include <sys/types.h>
 #include <sys/wait.h>

@@ -22,6 +22,7 @@
 #include <config.h>
 #endif
 
+#include <string.h>
 #include <errno.h>
 #include <assert.h>
 
@@ -248,7 +249,7 @@ RegOpenKeyExA (HKEY hKey, LPCSTR lpSubKey, DWORD ulOptions,
 }
 
 
-LONG
+LONG WINAPI
 RegQueryValueExA (HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
                   LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData)
 {

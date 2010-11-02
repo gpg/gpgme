@@ -31,7 +31,9 @@
 #include <string.h>
 #include <sys/types.h>
 #include <assert.h>
-#include <unistd.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #include <locale.h>
 #include <fcntl.h> /* FIXME */
 #include <errno.h>

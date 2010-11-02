@@ -28,10 +28,13 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/time.h>
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
 #include <sys/types.h>
-#include <windows.h>
 #include <io.h>
+
+#include "util.h"
 
 #ifdef HAVE_W32CE_SYSTEM
 #include <assuan.h>
@@ -42,7 +45,6 @@
   CTL_CODE (FILE_DEVICE_STREAMS, 2051, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #endif
 
-#include "util.h"
 #include "sema.h"
 #include "priv-io.h"
 #include "debug.h"
@@ -123,6 +125,8 @@ release_fd (int fd)
 
 #define pid_to_handle(a) ((HANDLE)(a))
 #define handle_to_pid(a) ((int)(a))
+#define fd_to_handle(a)  ((HANDLE)(a))
+#define handle_to_fd(a)  ((int)(a))
 
 #define READBUF_SIZE 4096
 #define WRITEBUF_SIZE 4096

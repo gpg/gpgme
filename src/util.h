@@ -22,8 +22,12 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#ifdef HAVE_W32CE_SYSTEM
-#include "w32-ce.h"
+#ifdef HAVE_W32_SYSTEM
+# ifdef HAVE_W32CE_SYSTEM
+#  include "w32-ce.h"
+# else
+#  include "windows.h"
+# endif
 #endif
 
 /* For pid_t.  */

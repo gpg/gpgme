@@ -28,8 +28,12 @@
 #include <errno.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <sys/time.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
 #include <sys/types.h>
 #include <sys/wait.h>
 #ifdef HAVE_SYS_UIO_H
@@ -37,7 +41,6 @@
 #endif
 #include <ctype.h>
 #include <sys/resource.h>
-#include <unistd.h>
 
 #include "util.h"
 #include "priv-io.h"

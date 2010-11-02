@@ -23,6 +23,9 @@
 #define IO_H
 
 #ifdef HAVE_W32_SYSTEM
+# ifdef HAVE_W32CE_SYSTEM
+#  include "w32-ce.h"
+# endif
 # include <windows.h>
 #else
 # include <sys/socket.h>

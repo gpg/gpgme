@@ -211,7 +211,7 @@ gpgme_result_ref (void *result)
   if (! result)
     return;
 
-  data = result - sizeof (struct ctx_op_data);
+  data = (void*)((char*)result - sizeof (struct ctx_op_data));
 
   assert (data->magic == CTX_OP_DATA_MAGIC);
 
@@ -229,7 +229,7 @@ gpgme_result_unref (void *result)
   if (! result)
     return;
 
-  data = result - sizeof (struct ctx_op_data);
+  data = (void*)((char*)result - sizeof (struct ctx_op_data));
 
   assert (data->magic == CTX_OP_DATA_MAGIC);
 

@@ -1,4 +1,29 @@
-2010-10-28  Marcus Brinkmann  <marcus.brinkmann@ruhr-uni-bochum.de>
+2010-11-02  Werner Koch  <wk@g10code.com>
+
+	* w32-io.c (handle_to_fd, fd_tohandle): Add.  We need them for W32.
+	* w32-util.c (_WIN32_IE): Define to 0x0400.
+
+	* util.h [W32]: Include windows.h.
+	* w32-sema.c: Do not include windows.h directly.
+	* ath.c (ssize_t, pid_t)[_MSC_VER]: Add new types.
+	* gpgme.c (gpgme_result_ref, gpgme_result_unref): Do not use a
+	void pointer in pointer arithmetic.
+	* w32-util.c: Include util.h prior to ath.h.  Don't include
+	windows.h directly.
+	(F_OK): Define if not defined.
+	* w32-ce.c: Include string.h.
+	(RegQueryValueExA): Use WINAPI modifier to match the declaration.
+	* vfs-create.c: Include string.h because under W32CE with MSC we
+	get a warning related to our strerror replacement.
+	* encrypt-sign.c: Include stdlib.h, string.h and errno.h.
+	* priv-io.h [W32CE]: Include w32-ce.h
+	* w32-ce.h: Include winsock2.h and ws2tcpip.h.
+	(_MSV_VER): Remove useless macro.
+	(pid_t): Add typedef.
+
+	Guard all includes of unistd.h and sys/time.h.
+
+2010-10-28  Marcus Brinkmann  <marcus@g10code.com>
 
 	* opassuan.c (gpgme_op_assuan_transact_ext): Fix uninitialized
 	value use.  Reported by Marc Mutz.

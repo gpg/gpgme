@@ -29,23 +29,31 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
-#include <sys/time.h>
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #include <fcntl.h>
-#include <windows.h>
-#include <shlobj.h>
 #include <io.h>
 
-#include "ath.h"
+#define _WIN32_IE 0x0400 /* Required for SHGetSpecialFolderPathA.  */
+
 #include "util.h"
+#include <shlobj.h>
+#include "ath.h"
 #include "sema.h"
 #include "debug.h"
 
 
 #ifndef HAVE_W32CE_SYSTEM
 #define HAVE_ALLOW_SET_FOREGROUND_WINDOW 1
+#endif
+#ifndef F_OK
+# define F_OK 0
 #endif
 
 

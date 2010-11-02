@@ -23,6 +23,7 @@
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "gpgme.h"
 #include "debug.h"

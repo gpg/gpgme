@@ -1,0 +1,5 @@
+2010-11-01  Werner Koch  <wk@g10code.com>
+
+	* conf-w32ce-msc/config.h: New.
+	* conf-w32ce-msc/build.mk: New.
+

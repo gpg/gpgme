@@ -27,7 +27,9 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
-#include <unistd.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
