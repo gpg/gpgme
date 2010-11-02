@@ -1,5 +1,18 @@
 2010-11-02  Werner Koch  <wk@g10code.com>
 
+	* data-fd.c (read, write, lseek) [W32CE && ! __MINGW32CE__]: New.
+	Taken from Pedro Alves Public Domain code.
+
+	* w32-ce.h (SHGetSpecialFolderPath): Remove our defines and
+	prototypes.  We use the system provided prototypes now.
+	* w32-ce.c: Include shlobj.h
+	(_WIN32_IE): Define to 0x0400
+	(CreateFileA): New.
+	* w32-util.c: Explicitly include windows headers before util.h.
+	(_gpgme_w32ce_get_debug_envvar): Do not use wchar_t strings for
+	read_w32_registry_string.
+	(mkstemp): Use CreateFile instead of open.
+
 	* w32-io.c (handle_to_fd, fd_tohandle): Add.  We need them for W32.
 	* w32-util.c (_WIN32_IE): Define to 0x0400.
 

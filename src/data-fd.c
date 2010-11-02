@@ -30,6 +30,62 @@
 #include "debug.h"
 #include "data.h"
 
+
+
+#if defined(HAVE_W32CE_SYSTEM) && !defined(__MINGW32CE__)
+/* We need to provide replacements for read, write and lseek.  They
+   are taken from the cegcc runtime files, written by Pedro Alves
+   <pedro_alves@portugalmail.pt> in Feb 2007 and placed in the public
+   domain. (cf. cegcc/src/mingw/mingwex/wince/)  */
+
+#include <windows.h>
+
+static int
+read (int fildes, void *buf, unsigned int bufsize)
+{
+  DWORD NumberOfBytesRead;
+  if (bufsize > 0x7fffffff)
+    bufsize = 0x7fffffff;
+  if (!ReadFile ((HANDLE) fildes, buf, bufsize, &NumberOfBytesRead, NULL))
+    return -1;
+  return (int) NumberOfBytesRead;
+}
+
+static int
+write (int fildes, const void *buf, unsigned int bufsize)
+{
+  DWORD NumberOfBytesWritten;
+  if (bufsize > 0x7fffffff)
+    bufsize = 0x7fffffff;
+  if (!WriteFile ((HANDLE) fildes, buf, bufsize, &NumberOfBytesWritten, NULL))
+    return -1;
+  return (int) NumberOfBytesWritten;
+}
+
+static long
+lseek (int fildes, long offset, int whence)
+{
+  DWORD mode;
+  switch (whence)
+    {
+    case SEEK_SET:
+      mode = FILE_BEGIN;
+      break;
+    case SEEK_CUR:
+      mode = FILE_CURRENT;
+      break;
+    case SEEK_END:
+      mode = FILE_END;
+      break;
+    default:
+      /* Specify an invalid mode so SetFilePointer catches it.  */
+      mode = (DWORD)-1;
+    }
+  return (long) SetFilePointer ((HANDLE) fildes, offset, NULL, mode);
+}
+#endif /*HAVE_W32CE_SYSTEM && !__MINGW32CE__*/
+
+
 
 static ssize_t
 fd_read (gpgme_data_t dh, void *buffer, size_t size)

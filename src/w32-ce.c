@@ -28,8 +28,18 @@
 
 #include <gpg-error.h>
 
-#include "w32-ce.h"
+#define _WIN32_IE 0x0400 /* Required for SHGetSpecialFolderPathW.  */
 
+/* We need to include the windows stuff here prior to shlobj.h so that
+   we get the right winsock version.  This is usually done in w32-ce.h
+   but that header also redefines some Windows functions which we need
+   to avoid unless having included shlobj.h.  */
+#include <winsock2.h>
+#include <ws2tcpip.h> 
+#include <windows.h>
+#include <shlobj.h>
+
+#include "w32-ce.h"
 
 /* Return a malloced string encoded in UTF-8 from the wide char input
    string STRING.  Caller must free this value.  Returns NULL and sets
@@ -167,6 +177,31 @@ DeleteFileA (LPCSTR lpFileName)
     return FALSE;
 
   result = DeleteFileW (filename);
+
+  err = GetLastError ();
+  free (filename);
+  SetLastError (err);
+  return result;
+}
+
+
+HANDLE
+CreateFileA (LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSharedMode,
+	     LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+	     DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
+	     HANDLE hTemplateFile)
+{
+  wchar_t *filename;
+  HANDLE result;
+  int err;
+
+  filename = utf8_to_wchar (lpFileName);
+  if (!filename)
+    return INVALID_HANDLE_VALUE;
+
+  result = CreateFileW (filename, dwDesiredAccess, dwSharedMode,
+			lpSecurityAttributes, dwCreationDisposition,
+			dwFlagsAndAttributes, hTemplateFile);
 
   err = GetLastError ();
   free (filename);
@@ -382,6 +417,12 @@ GetTempPathA (DWORD nBufferLength, LPSTR lpBuffer)
 }
 
 
+/* The symbol is named SHGetSpecialFolderPath and not
+   SHGetSpecialFolderPathW but shlobj.h from cegcc redefines it to *W
+   which is a bug.  Work around it.  */
+#ifdef __MINGW32CE__
+# undef SHGetSpecialFolderPath
+#endif
 BOOL
 SHGetSpecialFolderPathA (HWND hwndOwner, LPSTR lpszPath, int nFolder,
                          BOOL fCreate)
@@ -391,7 +432,7 @@ SHGetSpecialFolderPathA (HWND hwndOwner, LPSTR lpszPath, int nFolder,
   BOOL result;
 
   path[0] = (wchar_t) 0;
-  result = SHGetSpecialFolderPathW (hwndOwner, path, nFolder, fCreate);
+  result = SHGetSpecialFolderPath (hwndOwner, path, nFolder, fCreate);
   /* Note: May return false even if succeeds.  */
 
   path[MAX_PATH - 1] = (wchar_t) 0;

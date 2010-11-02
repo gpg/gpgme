@@ -42,8 +42,16 @@
 
 #define _WIN32_IE 0x0400 /* Required for SHGetSpecialFolderPathA.  */
 
-#include "util.h"
+/* We need to include the windows stuff here prior to shlobj.h so that
+   we get the right winsock version.  This is usually done in util.h
+   but that header also redefines some Windows functions which we need
+   to avoid unless having included shlobj.h.  */
+#include <winsock2.h>
+#include <ws2tcpip.h> 
+#include <windows.h>
 #include <shlobj.h>
+
+#include "util.h"
 #include "ath.h"
 #include "sema.h"
 #include "debug.h"
@@ -488,7 +496,7 @@ mkstemp (char *tmpl)
   static uint64_t value;
   uint64_t random_time_bits;
   unsigned int count;
-  int fd = -1;
+  HANDLE fd = INVALID_HANDLE_VALUE;
   int save_errno = errno;
 
   /* A lower bound on the number of temporary files to attempt to
@@ -544,14 +552,23 @@ mkstemp (char *tmpl)
       v /= 62;
       XXXXXX[5] = letters[v % 62];
 
-      fd = open (tmpl, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
-      if (fd >= 0)
+      fd = CreateFileA (tmpl, 
+                        GENERIC_WRITE|GENERIC_READ,
+                        FILE_SHARE_READ|FILE_SHARE_WRITE,
+                        NULL,
+                        CREATE_NEW,
+                        FILE_ATTRIBUTE_NORMAL,
+                        NULL);
+      if (fd != INVALID_HANDLE_VALUE)
 	{
 	  gpg_err_set_errno (save_errno);
-	  return fd;
+	  return (int)fd;
 	}
-      else if (errno != EEXIST)
-	return -1;
+      else if (GetLastError () != ERROR_FILE_EXISTS)
+        {
+	  gpg_err_set_errno (EIO);
+          return -1;
+        }
     }
 
   /* We got out of the loop because we ran out of combinations to try.  */
@@ -608,7 +625,7 @@ _gpgme_w32ce_get_debug_envvar (void)
 {
   char *tmp;
 
-  tmp = read_w32_registry_string (NULL, L"\\Software\\GNU\\gpgme", L"debug");
+  tmp = read_w32_registry_string (NULL, "\\Software\\GNU\\gpgme", "debug");
   if (tmp && !*tmp)
     {
       free (tmp);

@@ -33,13 +33,6 @@ typedef int pid_t;
 #include <windows.h>
 
 
-/* shlobj.h declares these only for _WIN32_IE that we don't want to define.
-   In any case, with mingw32ce we only get a SHGetSpecialFolderPath.  */
-#define SHGetSpecialFolderPathW SHGetSpecialFolderPath
-BOOL WINAPI SHGetSpecialFolderPathA(HWND,LPSTR,int,BOOL);
-BOOL WINAPI SHGetSpecialFolderPathW(HWND,LPWSTR,int,BOOL);
-
-
 #define getenv _gpgme_wince_getenv
 char *getenv (const char *name);
 
@@ -54,6 +47,10 @@ void GetSystemTimeAsFileTime (LPFILETIME ftp);
 
 #define DeleteFileA _gpgme_wince_DeleteFileA
 BOOL DeleteFileA(LPCSTR);
+
+#define CreateFileA _gpgme_wince_CreateFileA
+HANDLE CreateFileA (LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES,
+                    DWORD, DWORD, HANDLE);
 
 #define CreateProcessA _gpgme_wince_CreateProcessA
 BOOL CreateProcessA(LPCSTR,LPSTR,LPSECURITY_ATTRIBUTES,LPSECURITY_ATTRIBUTES,BOOL,DWORD,PVOID,LPCSTR,LPSTARTUPINFOA,LPPROCESS_INFORMATION);

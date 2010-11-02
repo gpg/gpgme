@@ -102,7 +102,6 @@ else
 uiserver_components = 
 endif
 
-
 # These are the source files common to all library versions.  We used
 # to build a non-installed library for that, but that does not work
 # correctly on all platforms (in particular, one can not specify the
