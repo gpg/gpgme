@@ -290,7 +290,7 @@ RegQueryValueExA (HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
 {
   wchar_t *name;
   LONG err;
-  BYTE *data;
+  void *data;
   DWORD data_len;
   DWORD type;
 
@@ -335,8 +335,8 @@ RegQueryValueExA (HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
       int data_c_len;
 
       /* This is valid since we allocated one more above.  */
-      data[data_len] = '\0';
-      data[data_len + 1] = '\0';
+      ((char*)data)[data_len] = '\0';
+      ((char*)data)[data_len + 1] = '\0';
       
       data_c = wchar_to_utf8 ((wchar_t*) data);
       if (!data_c)
@@ -444,4 +444,32 @@ SHGetSpecialFolderPathA (HWND hwndOwner, LPSTR lpszPath, int nFolder,
   free (path_c);
   lpszPath[MAX_PATH - 1] = '\0';
   return result;
+}
+
+/* Replacement for the access function.  Note that we can't use fopen
+   here because wince might now allow to have a shared read for an
+   executable; it is better to to read the file attributes.
+   
+   Limitation:  Only F_OK is supported.
+*/
+int
+_gpgme_wince_access (const char *fname, int mode)
+{
+  DWORD attr;
+  wchar_t *wfname;
+
+  (void)mode;
+
+  wfname = utf8_to_wchar (fname);
+  if (!wfname)
+    return -1;
+
+  attr = GetFileAttributes (wfname);
+  free (wfname);
+  if (attr == (DWORD)(-1))
+    {
+      gpg_err_set_errno (ENOENT);
+      return -1;
+    }
+  return 0;
 }

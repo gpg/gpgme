@@ -774,7 +774,7 @@ AC_CHECK_FUNCS(getgid getegid)
 # Replacement functions.
 AC_REPLACE_FUNCS(stpcpy)
 # Check for unistd.h for setenv replacement function.
-AC_CHECK_HEADERS([unistd.h sys/time.h])
+AC_CHECK_HEADERS([unistd.h sys/time.h sys/types.h sys/stat.h])
 AC_REPLACE_FUNCS(setenv)
 
 # Assuan check for descriptor passing.

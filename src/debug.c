@@ -33,9 +33,13 @@
 #include <errno.h>
 #include <time.h>
 #ifndef HAVE_DOSISH_SYSTEM
+# ifdef HAVE_SYS_TYPES_H
 #  include <sys/types.h>
+# endif
+# ifdef HAVE_SYS_STAT_H
 #  include <sys/stat.h>
-#  include <fcntl.h>
+# endif
+# include <fcntl.h>
 #endif
 #include <assert.h>
 

@@ -33,7 +33,9 @@
 #  include <sys/time.h>
 # endif
 #endif
-#include <sys/types.h>
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
 #ifndef HAVE_W32_SYSTEM
 #include <sys/wait.h>
 #endif
@@ -60,7 +62,6 @@ ath_self (void)
 }
 #else
 # ifdef __linux
-#include <sys/types.h>
 #include <sys/syscall.h>
 uintptr_t
 ath_self (void)

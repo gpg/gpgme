@@ -32,8 +32,12 @@
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
 #endif
-#include <sys/types.h>
-#include <sys/stat.h>
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -103,7 +107,6 @@ dlclose (void * hd)
   return -1;
 }  
 #endif /* HAVE_ALLOW_SET_FOREGROUND_WINDOW */
-
 
 void 
 _gpgme_allow_set_foreground_window (pid_t pid)

@@ -52,7 +52,9 @@
 # define LONG_MAX LONG_MAX_32_BITS
 #endif
 
-#include <sys/types.h>
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
 
 #undef __memrchr
 #undef memrchr

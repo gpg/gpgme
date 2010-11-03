@@ -40,7 +40,9 @@
 #   include <sys/time.h>
 #  endif
 # endif
-# include <sys/types.h>
+# ifdef HAVE_SYS_TYPES_H
+#  include <sys/types.h>
+# endif
 # include <sys/socket.h>
 
 #endif  /*!HAVE_W32_SYSTEM*/

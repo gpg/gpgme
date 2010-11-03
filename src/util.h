@@ -31,7 +31,9 @@
 #endif
 
 /* For pid_t.  */
-#include <sys/types.h>
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
 
 #include "gpgme.h"
 

@@ -25,7 +25,9 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
 #include <assert.h>
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>

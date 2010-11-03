@@ -26,7 +26,9 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
-#include <sys/types.h>
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
 
 #include "util.h"
 #include "context.h"

@@ -67,5 +67,9 @@ DWORD GetTempPathA(DWORD,LPSTR);
 #define SHGetSpecialFolderPathA _gpgme_wince_SHGetSpecialFolderPathA
 BOOL SHGetSpecialFolderPathA(HWND,LPSTR,int,BOOL);
 
+int _gpgme_wince_access (const char *fname, int mode);
+#define access(a,b) _gpgme_wince_access ((a), (b))
+
+
 
 #endif /* GPGME_W32_CE_H */

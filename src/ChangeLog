@@ -1,3 +1,13 @@
+2010-11-03  Werner Koch  <wk@g10code.com>
+
+	* setenv.c: Include string.h due to our strerror replacement.
+
+	* w32-ce.h (access): New macro.
+	* w32-ce.c (_gpgme_wince_access): New.
+	(RegQueryValueExA): Change DATA to a void*.
+
+	Guard include of sys/stat.h and sys/types.h.
+
 2010-11-02  Werner Koch  <wk@g10code.com>
 
 	* data-fd.c (read, write, lseek) [W32CE && ! __MINGW32CE__]: New.

@@ -32,7 +32,9 @@
 #endif
 
 /* For pid_t.  */
-#include <sys/types.h>
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
 
 
 /* A single file descriptor passed to spawn.  For child fds, dup_to
