@@ -57,7 +57,7 @@ void
 gpgme_signers_clear (gpgme_ctx_t ctx)
 {
   TRACE (DEBUG_CTX, "gpgme_signers_clear", ctx);
-  return _gpgme_signers_clear (ctx);
+  _gpgme_signers_clear (ctx);
 }
 
 

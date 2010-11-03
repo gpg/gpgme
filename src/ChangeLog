@@ -1,10 +1,18 @@
 2010-11-03  Werner Koch  <wk@g10code.com>
 
+	* debug.c (_gpgme_debug) [W32CE]: Replace locatime by GetLocalTime.
+
+	* signers.c (gpgme_signers_clear): Remove useless return.
+	Reported by Patrick Spendrin.
+
+	* w32-util.c: s/__inline__/GPG_ERR_INLINE/
+
 	* setenv.c: Include string.h due to our strerror replacement.
 
-	* w32-ce.h (access): New macro.
+	* w32-ce.h (access, bsearch): New macros.
 	* w32-ce.c (_gpgme_wince_access): New.
 	(RegQueryValueExA): Change DATA to a void*.
+	(_gpgme_wince_bsearch): New.  Taken from glibc 2.6.
 
 	Guard include of sys/stat.h and sys/types.h.
 

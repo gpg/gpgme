@@ -1,5 +1,6 @@
 /* w32-ce.h 
    Copyright (C) 2010 g10 Code GmbH
+   Copyright (C) 1991,92,97,2000,02 Free Software Foundation, Inc.
 
    This file is part of GPGME.
  
@@ -14,9 +15,8 @@
    Lesser General Public License for more details.
    
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -473,3 +473,35 @@ _gpgme_wince_access (const char *fname, int mode)
     }
   return 0;
 }
+
+
+/* Perform a binary search for KEY in BASE which has NMEMB elements
+   of SIZE bytes each.  The comparisons are done by (*COMPAR)().  
+   Code taken from glibc-2.6. */
+void *
+_gpgme_wince_bsearch (const void *key, const void *base,
+                      size_t nmemb, size_t size,
+                      int (*compar) (const void *, const void *))
+{
+  size_t l, u, idx;
+  const void *p;
+  int comparison;
+
+  l = 0;
+  u = nmemb;
+  while (l < u)
+    {
+      idx = (l + u) / 2;
+      p = (void *) (((const char *) base) + (idx * size));
+      comparison = (*compar) (key, p);
+      if (comparison < 0)
+	u = idx;
+      else if (comparison > 0)
+	l = idx + 1;
+      else
+	return (void *) p;
+    }
+
+  return NULL;
+}
+

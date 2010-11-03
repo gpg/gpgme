@@ -70,6 +70,11 @@ BOOL SHGetSpecialFolderPathA(HWND,LPSTR,int,BOOL);
 int _gpgme_wince_access (const char *fname, int mode);
 #define access(a,b) _gpgme_wince_access ((a), (b))
 
+void *_gpgme_wince_bsearch (const void *key, const void *base,
+                            size_t nmemb, size_t size,
+                            int (*compar) (const void *, const void *));
+#define bsearch(a,b,c,d,e) _gpgme_wince_bsearch ((a),(b),(c),(d),(e)) 
+
 
 
 #endif /* GPGME_W32_CE_H */

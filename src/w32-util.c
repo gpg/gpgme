@@ -76,14 +76,14 @@ DEFINE_STATIC_LOCK (get_path_lock);
 
 #define RTLD_LAZY 0
 
-static __inline__ void *
+static GPG_ERR_INLINE void *
 dlopen (const char * name, int flag)
 {
   void * hd = LoadLibrary (name);
   return hd;
 }
 
-static __inline__ void *
+static GPG_ERR_INLINE void *
 dlsym (void * hd, const char * sym)
 {
   if (hd && sym)
@@ -96,7 +96,7 @@ dlsym (void * hd, const char * sym)
   return NULL;
 }
 
-static __inline__ int
+static GPG_ERR_INLINE int
 dlclose (void * hd)
 {
   if (hd)
