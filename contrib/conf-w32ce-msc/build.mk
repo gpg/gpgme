@@ -219,19 +219,13 @@ copy-static-source:
 	cd ../contrib/conf-w32ce-msc ; \
             cp -t $(targetsrc)/gpgme/src $(conf_sources)
 
-# We create a dummy sehmap.h which will be included first due to -I. .
-# For some reasons sehmap.h is included by MSC for WindowsCE and
-# introduces a macro "leave" which conflicts of our use of "leave" for
-# a label (leave and enter are pretty common names for pro- and epilog
-# code).
 copy-built-source:
 	@if [ ! -f ./gpgme.h ]; then \
            echo "Please build using ./autogen.sh --build-w32ce first"; \
 	   exit 1; \
         fi
 	cp -t $(targetsrc)/gpgme/src $(built_sources)
-	echo '/* Dummy replacement for useless header. */' \
-              > $(targetsrc)/gpgme/src/sehmap.h
+	echo '/* Dummy io.h header. */' > $(targetsrc)/gpgme/src/io.h
 
 copy-source: copy-static-source copy-built-source 
 

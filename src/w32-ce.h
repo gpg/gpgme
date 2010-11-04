@@ -75,6 +75,11 @@ void *_gpgme_wince_bsearch (const void *key, const void *base,
                             int (*compar) (const void *, const void *));
 #define bsearch(a,b,c,d,e) _gpgme_wince_bsearch ((a),(b),(c),(d),(e)) 
 
-
+/* Remove the redefined __leave keyword.  It is defined by MSC for W32
+   in excpt.h and not in sehmap.h as for the plain windows
+   version.  */
+#if defined(_MSC_VER) && defined(HAVE_W32CE_SYSTEM)
+# undef leave
+#endif
 
 #endif /* GPGME_W32_CE_H */

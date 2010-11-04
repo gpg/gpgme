@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "gpgme.h"
+#include "util.h"
 #include "debug.h"
 #include "context.h"
 #include "ops.h"

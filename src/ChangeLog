@@ -1,3 +1,11 @@
+2010-11-04  Werner Koch  <wk@g10code.com>
+
+	* w32-ce.h [_MSC_VER && W32CE]: Undef leave.
+	* export.c: Include util.h so that we get the above undef.
+
+	* memrchr.c: Remove.  Used to be a replacement function required
+	by the formerly included assuan code.
+
 2010-11-03  Werner Koch  <wk@g10code.com>
 
 	* debug.c (_gpgme_debug) [W32CE]: Replace locatime by GetLocalTime.
