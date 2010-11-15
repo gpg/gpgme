@@ -1,3 +1,17 @@
+2010-11-15  Werner Koch  <wk@g10code.com>
+
+	* data-compat.c (gpgme_data_new_from_filepart)
+	(gpgme_data_new_from_file) [W32CE && _MSC_VER]: Return not
+	GPG_ERR_NOT_IMPLEMENTED.
+
+	* w32-ce.h (HKEY_PERFORMANCE_DATA, HKEY_CURRENT_CONFIG, _IOLBF)
+	(abort) [_MSC_VER]: Provide these macros.
+
+	* ath.h [W32CE && _MSC_VER]: Include winsock2.h.
+
+	* ath.c (ath_read, ath_write) [W32CE && _MSC_VER]: Do not call
+	non-available functions.
+
 2010-11-04  Werner Koch  <wk@g10code.com>
 
 	* w32-ce.h [_MSC_VER && W32CE]: Undef leave.

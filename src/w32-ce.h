@@ -32,7 +32,6 @@ typedef int pid_t;
 #include <ws2tcpip.h> /* For getaddrinfo.  */
 #include <windows.h>
 
-
 #define getenv _gpgme_wince_getenv
 char *getenv (const char *name);
 
@@ -75,11 +74,16 @@ void *_gpgme_wince_bsearch (const void *key, const void *base,
                             int (*compar) (const void *, const void *));
 #define bsearch(a,b,c,d,e) _gpgme_wince_bsearch ((a),(b),(c),(d),(e)) 
 
-/* Remove the redefined __leave keyword.  It is defined by MSC for W32
-   in excpt.h and not in sehmap.h as for the plain windows
-   version.  */
-#if defined(_MSC_VER) && defined(HAVE_W32CE_SYSTEM)
+#if defined(_MSC_VER)
+  /* Remove the redefined __leave keyword.  It is defined by MSC for
+     W32 in excpt.h and not in sehmap.h as for the plain windows
+     version.  */
 # undef leave
+# define HKEY_PERFORMANCE_DATA ((HKEY)0x80000004)
+# define HKEY_CURRENT_CONFIG  ((HKEY)0x80000005)
+  /* Replace the Mingw32CE provided abort function.  */
+# define abort() do { TerminateProcess (GetCurrentProcess(), 8); } while (0)
+# define _IOLBF 0x40
 #endif
 
 #endif /* GPGME_W32_CE_H */

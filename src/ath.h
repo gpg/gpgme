@@ -28,6 +28,9 @@
   /* fixme: Check how we did it in libgcrypt.  */
   struct msghdr { int dummy; };
   typedef int socklen_t;
+# if defined(HAVE_W32CE_SYSTEM) && defined(_MSC_VER)
+#  include <winsock2.h>
+# endif
 # include <windows.h>
 # include <io.h>
 
