@@ -634,6 +634,6 @@ _gpgme_w32ce_get_debug_envvar (void)
       free (tmp);
       tmp = NULL;
     }
-  return NULL;
+  return tmp;
 }
 #endif /*HAVE_W32CE_SYSTEM*/

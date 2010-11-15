@@ -1,3 +1,7 @@
+2010-11-15  Marcus Brinkmann  <mb@g10code.com>
+
+	* w32-util.c (_gpgme_w32ce_get_debug_envvar): Fix return value.
+
 2010-11-15  Werner Koch  <wk@g10code.com>
 
 	* data-compat.c (gpgme_data_new_from_filepart)
