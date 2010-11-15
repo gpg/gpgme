@@ -203,7 +203,7 @@ objs = \
 conf_sources = \
 	build.mk \
 	config.h \
-        stdint.h
+        stdint.h io.h
 
 # Source files built by running the standard build system.
 built_sources = \
@@ -225,7 +225,6 @@ copy-built-source:
 	   exit 1; \
         fi
 	cp -t $(targetsrc)/gpgme/src $(built_sources)
-	echo '/* Dummy io.h header. */' > $(targetsrc)/gpgme/src/io.h
 
 copy-source: copy-static-source copy-built-source 
 
