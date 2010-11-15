@@ -1,3 +1,9 @@
+2010-11-15  Marcus Brinkmann  <mb@g10code.com>
+
+	* conf-w32ce-msc/stdint.h: New file.
+	* conf-w32ce-msc/build.mk (conf_sources): Add stdint.h.
+	* conf-w32ce-msc/build.mk (copy-static-source): Revert last change.
+
 2010-11-15  Werner Koch  <wk@g10code.com>
 
 	* conf-w32ce-msc/build.mk (copy-static-source): Create stdint.h.

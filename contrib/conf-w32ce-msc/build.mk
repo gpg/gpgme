@@ -202,14 +202,13 @@ objs = \
 # Sources files in this directory inclduing this Makefile
 conf_sources = \
 	build.mk \
-	config.h
+	config.h \
+        stdint.h
 
 # Source files built by running the standard build system.
 built_sources = \
 	gpgme.h         \
 	status-table.h
-
-my_stdint = $(targetsrc)/libassuan/src/stdint.h
 
 copy-static-source:
 	@if [ ! -f ./gpgme.c ]; then \
@@ -219,14 +218,6 @@ copy-static-source:
 	cp -t $(targetsrc)/gpgme/src $(sources);
 	cd ../contrib/conf-w32ce-msc ; \
             cp -t $(targetsrc)/gpgme/src $(conf_sources)
-	@echo typedef unsigned long long uint64_t;  >$(my_stdint)
-	@echo typedef long long int64_t;	   >>$(my_stdint)
-	@echo typedef unsigned int uint32_t;	   >>$(my_stdint)
-	@echo typedef int int32_t;		   >>$(my_stdint)
-	@echo typedef unsigned short uint16_t;	   >>$(my_stdint)
-	@echo typedef short int16_t;		   >>$(my_stdint)
-	@echo typedef unsigned int uintptr_t;	   >>$(my_stdint)
-	@echo typedef int intptr_t;                >>$(my_stdint)
 
 copy-built-source:
 	@if [ ! -f ./gpgme.h ]; then \
