@@ -1,5 +1,9 @@
 2010-11-15  Marcus Brinkmann  <mb@g10code.com>
 
+	* conf-w32ce-msc/fcntl.h: New file.
+	* conf-w32ce-msc/build.mk (conf_sources): Add fnctl.h.
+	(sources): Remove memrchr.c.
+
 	* conf-w32ce-msc/io.h: New file.
 	* conf-w32ce-msc/build.mk (conf_sources): Add io.h.
 	

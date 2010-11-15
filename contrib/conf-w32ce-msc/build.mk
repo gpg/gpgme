@@ -99,7 +99,6 @@ sources = \
 	kdpipeiodevice.h    \
 	key.c		    \
 	keylist.c	    \
-	memrchr.c	    \
 	op-support.c	    \
 	opassuan.c	    \
 	ops.h		    \
@@ -203,7 +202,7 @@ objs = \
 conf_sources = \
 	build.mk \
 	config.h \
-        stdint.h io.h
+        stdint.h io.h fcntl.h
 
 # Source files built by running the standard build system.
 built_sources = \
