@@ -26,6 +26,8 @@
 
 #ifdef _MSC_VER
 typedef int pid_t;
+#define strdup _strdup
+#define strcasecmp _stricmp
 #endif
 
 #include <winsock2.h>
