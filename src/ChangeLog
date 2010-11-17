@@ -1,3 +1,8 @@
+2010-11-17  Marcus Brinkmann  <mb@g10code.com>
+
+	* vasprintf.c (int_vasprintf) [HAVE_W32CE_SYSTEM]: Just use a
+	fixed size buffer, as va_copy is not easy to fake.
+
 2010-11-15  Marcus Brinkmann  <mb@g10code.com>
 
 	* w32-ce.h (strcasecmp, strdup) [_MSC_VER]: Define.

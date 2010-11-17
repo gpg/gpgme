@@ -51,6 +51,19 @@ int_vasprintf (result, format, args)
      const char *format;
      va_list *args;
 {
+#ifdef HAVE_W32CE_SYSTEM
+  /* No va_copy and the replacement above doesn't work.  */
+#define MAX_STRLEN 256
+  *result = malloc (MAX_STRLEN);
+  if (*result != NULL)
+    {
+      int res = _vsnprintf (*result, MAX_STRLEN, format, *args);
+      (*result)[MAX_STRLEN - 1] = '\0';
+      return res;
+    }
+  else
+    return 0;
+#else
   const char *p = format;
   /* Add one to make sure that it is never zero, which might cause malloc
      to return NULL.  */
@@ -133,6 +146,7 @@ int_vasprintf (result, format, args)
     return vsprintf (*result, format, *args);
   else
     return 0;
+#endif
 }
 
 int
