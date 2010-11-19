@@ -618,17 +618,22 @@ _gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type)
 gpgme_error_t
 _gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset, gpgme_conf_arg_t arg)
 {
-  if (opt->new_value)
-    release_arg (opt->new_value, opt->alt_type);
-
   if (reset)
     {
-      opt->new_value = NULL;
+      if (opt->new_value)
+	release_arg (opt->new_value, opt->alt_type);
+     opt->new_value = NULL;
       opt->change_value = 0;
     }
   else
     {
-      opt->new_value = arg;
+      /* Support self-assignment, for example for adding an item to an
+	 existing list.  */
+      if (opt->new_value && arg != opt->new_value)
+	{
+	  release_arg (opt->new_value, opt->alt_type);
+	  opt->new_value = arg;
+	}
       opt->change_value = 1;
     }
   return 0;

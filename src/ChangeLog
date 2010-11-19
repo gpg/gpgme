@@ -1,3 +1,8 @@
+2010-11-19  Marcus Brinkmann  <mb@g10code.com>
+
+	* engine-gpgconf.c (_gpgme_conf_opt_change): Support
+	self-assignment.  Requested by Marc Mutz.
+
 2010-11-17  Marcus Brinkmann  <mb@g10code.com>
 
 	* vasprintf.c (int_vasprintf) [HAVE_W32CE_SYSTEM]: Just use a
