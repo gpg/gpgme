@@ -1,5 +1,10 @@
 2010-11-23  Marcus Brinkmann  <mb@g10code.com>
 
+	* w32-io.c (create_reader, create_writer): Use small stack size on
+	Windows CE.
+
+2010-11-23  Marcus Brinkmann  <mb@g10code.com>
+
 	* gpgme.h.in (gpgme_conf_arg_new): Make VALUE arg const void *.
 	* gpgconf.c (_gpgme_conf_arg_new): Likewise.
 	(gpgme_conf_arg_new): Likewise.

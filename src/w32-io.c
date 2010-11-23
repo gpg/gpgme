@@ -464,7 +464,13 @@ create_reader (int fd)
   ctx->have_data_ev = set_synchronize (ctx->have_data_ev);
   INIT_LOCK (ctx->mutex);
 
+#ifdef HAVE_W32CE_SYSTEM
+  ctx->thread_hd = CreateThread (&sec_attr, 64 * 1024, reader, ctx,
+				 STACK_SIZE_PARAM_IS_A_RESERVATION, &tid);
+#else
   ctx->thread_hd = CreateThread (&sec_attr, 0, reader, ctx, 0, &tid);
+#endif
+
   if (!ctx->thread_hd)
     {
       TRACE_LOG1 ("CreateThread failed: ec=%d", (int) GetLastError ());
@@ -824,7 +830,13 @@ create_writer (int fd)
   ctx->is_empty = set_synchronize (ctx->is_empty);
   INIT_LOCK (ctx->mutex);
 
+#ifdef HAVE_W32CE_SYSTEM
+  ctx->thread_hd = CreateThread (&sec_attr, 64 * 1024, writer, ctx,
+				 STACK_SIZE_PARAM_IS_A_RESERVATION, &tid);
+#else
   ctx->thread_hd = CreateThread (&sec_attr, 0, writer, ctx, 0, &tid );
+#endif
+
   if (!ctx->thread_hd)
     {
       TRACE_LOG1 ("CreateThread failed: ec=%d", (int) GetLastError ());
