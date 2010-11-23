@@ -30,7 +30,7 @@
 #ifdef ENABLE_GPGCONF
 /* engine-gpgconf.c.  */
 gpgme_error_t _gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
-				  gpgme_conf_type_t type, void *value);
+				  gpgme_conf_type_t type, const void *value);
 void _gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type);
 gpgme_error_t _gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset,
 				      gpgme_conf_arg_t arg);
@@ -44,7 +44,7 @@ gpgme_error_t gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp);
 /* Allocate a new gpgme_conf_arg_t.  */
 gpgme_error_t
 gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
-		    gpgme_conf_type_t type, void *value)
+		    gpgme_conf_type_t type, const void *value)
 {
 #ifdef ENABLE_GPGCONF
   return _gpgme_conf_arg_new (arg_p, type, value);

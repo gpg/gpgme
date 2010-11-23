@@ -1999,7 +1999,7 @@ typedef struct gpgme_conf_comp
    to the string.  Else, it should point to an unsigned or signed
    integer respectively.  */
 gpgme_error_t gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
-				  gpgme_conf_type_t type, void *value);
+				  gpgme_conf_type_t type, const void *value);
 
 /* This also releases all chained argument structures!  */
 void gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type);

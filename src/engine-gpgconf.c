@@ -537,7 +537,7 @@ gpgconf_conf_load (void *engine, gpgme_conf_comp_t *comp_p)
 
 gpgme_error_t
 _gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
-		     gpgme_conf_type_t type, void *value)
+		     gpgme_conf_type_t type, const void *value)
 {
   gpgme_conf_arg_t arg;
 
@@ -660,7 +660,6 @@ gpgconf_write (void *engine, char *arg1, char *arg2, gpgme_data_t conf)
 
   /* _gpgme_engine_new guarantees that this is not NULL.  */
   argv[0] = gpgconf->file_name;
-  argv[0] = "/nowhere/path-needs-to-be-fixed/gpgconf";
 
   if (_gpgme_io_pipe (rp, 0) < 0)
     return gpg_error_from_syserror ();
