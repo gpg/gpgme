@@ -52,6 +52,10 @@
 # define GT_GCC_A_PRINTF(f, a)
 #endif
 
+#define DIM(v) (sizeof(v)/sizeof((v)[0]))
+#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
+                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
+#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 
 
 
@@ -503,6 +507,28 @@ log_error (int status, gpg_error_t errnum, const char *fmt, ...)
   fprintf (log_stream, "\n");
   if (status)
     exit (status);
+}
+
+
+/* Note that it is sufficient to allocate the target string D as long
+   as the source string S, i.e.: strlen(s)+1;.  D == S is allowed.  */
+static void
+strcpy_escaped_plus (char *d, const char *s)
+{
+  while (*s)
+    {
+      if (*s == '%' && s[1] && s[2])
+        { 
+          s++;
+          *d++ = xtoi_2 (s);
+          s += 2;
+        }
+      else if (*s == '+')
+        *d++ = ' ', s++;
+      else
+        *d++ = *s++;
+    }
+  *d = 0; 
 }
 
 
@@ -2671,14 +2697,22 @@ cmd_delete (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_keylist[] = 
+  "KEYLIST [--secret-only] [<patterns>]\n"
+  "\n"
+  "List all certificates or only those specified by PATTERNS.  Each\n"
+  "pattern shall be a percent-plus escaped certificate specification.";
 static gpg_error_t
 cmd_keylist (assuan_context_t ctx, char *line)
 {
+#define MAX_CMD_KEYLIST_PATTERN 20
   struct server *server = assuan_get_pointer (ctx);
   gpg_error_t err;
   int secret_only = 0;
-  const char *pattern[2];
+  int idx;
+  const char *pattern[MAX_CMD_KEYLIST_PATTERN+1];
   const char optstr[] = "--secret-only";
+  char *p;
 
   if (!strncasecmp (line, optstr, strlen (optstr)))
     {
@@ -2687,8 +2721,23 @@ cmd_keylist (assuan_context_t ctx, char *line)
       while (*line && !spacep (line))
 	line++;
     }
-  pattern[0] = line;
-  pattern[1] = NULL;
+
+  idx = 0;
+  for (p=line; *p; line = p)
+    {
+      while (*p && *p != ' ')
+        p++;
+      if (*p)
+        *p++ = 0;
+      if (*line)
+        {
+          if (idx+1 == DIM (pattern))
+            return gpg_error (GPG_ERR_TOO_MANY);
+          strcpy_escaped_plus (line, line);
+          pattern[idx++] = line;
+        }
+    }
+  pattern[idx] = NULL;
 
   err = gt_keylist_start (server->gt, pattern, secret_only);
   while (! err)
@@ -2706,7 +2755,11 @@ cmd_keylist (assuan_context_t ctx, char *line)
 	  char buf[100];
 	  /* FIXME: More data.  */
 	  snprintf (buf, sizeof (buf), "key:%s\n", key->subkeys->fpr);
-	  assuan_send_data (ctx, buf, strlen (buf));
+          /* Write data and flush so that we see one D line for each
+             key.  This does not change the semantics but is easier to
+             read by organic eyes.  */
+	  if (!assuan_send_data (ctx, buf, strlen (buf)))
+            assuan_send_data (ctx, NULL, 0);
 	  gpgme_key_unref (key);
 	}
     }
@@ -2895,8 +2948,8 @@ register_commands (assuan_context_t ctx)
     { "GENKEY", cmd_genkey },
     { "DELETE", cmd_delete },
     /* TODO: EDIT, CARD_EDIT (with INQUIRE) */
-    { "KEYLIST", cmd_keylist },
-    { "LISTKEYS", cmd_keylist },
+    { "KEYLIST", cmd_keylist, hlp_keylist },
+    { "LISTKEYS", cmd_keylist, hlp_keylist },
     /* TODO: TRUSTLIST, TRUSTLIST_EXT */
     { "GETAUDITLOG", cmd_getauditlog, hlp_getauditlog },
     /* TODO: ASSUAN */

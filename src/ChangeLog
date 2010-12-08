@@ -1,3 +1,9 @@
+2010-12-08  Werner Koch  <wk@g10code.com>
+
+	* gpgme-tool.c (strcpy_escaped_plus): New.
+	(DIM, xtoi_1, xtoi_2): New.
+	(cmd_keylist): Allow for multiple patterns.
+
 2010-11-23  Marcus Brinkmann  <mb@g10code.com>
 
 	* w32-io.c (create_reader, create_writer): Use small stack size on
