@@ -37,8 +37,11 @@ m4_define(my_issvn, [yes])
 
 m4_define([svn_revision], m4_esyscmd([printf "%d" $( (svn info 2>/dev/null \
             || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
+m4_define([git_revision], m4_esyscmd([git branch -v 2>/dev/null \
+          | awk '/^\* / {printf "%s",$3}']))
 AC_INIT([gpgme], 
-        [my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision])],
+        [my_version[]m4_if(my_issvn,[yes],
+        [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])],
         [bug-gpgme@gnupg.org])
 
 
@@ -62,7 +65,7 @@ NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.0.0
 
 
-BUILD_REVISION=svn_revision
+BUILD_REVISION=m4_if(git_revision,[],[svn_revision],[git_revision])
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
 
