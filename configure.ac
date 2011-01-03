@@ -65,7 +65,8 @@ NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.0.0
 
 
-BUILD_REVISION=m4_if(git_revision,[],[svn_revision],[git_revision])
+m4_define([git_brevis],m4_esyscmd(printf "%u" 0x[]m4_substr(git_revision,0,4)))
+BUILD_REVISION=m4_if(git_revision,[],[svn_revision],[git_brevis])
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
 
