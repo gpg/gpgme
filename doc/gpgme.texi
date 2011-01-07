@@ -2839,7 +2839,7 @@ The function returns the error code @code{GPG_ERR_INV_VALUE} if
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_keylist_end (@w{gpgme_ctx_t @var{ctx}})
-The function @code{gpgme_op_keylist_next} ends a pending key list
+The function @code{gpgme_op_keylist_end} ends a pending key list
 operation in the context @var{ctx}.
 
 After the operation completed successfully, the result of the key
@@ -3914,7 +3914,7 @@ there is not enough memory for the operation.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_trustlist_end (@w{gpgme_ctx_t @var{ctx}})
-The function @code{gpgme_op_trustlist_next} ends a pending key list
+The function @code{gpgme_op_trustlist_end} ends a pending trust list
 operation in the context @var{ctx}.
 
 The function returns the error code @code{GPG_ERR_INV_VALUE} if
