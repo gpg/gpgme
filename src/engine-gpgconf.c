@@ -622,7 +622,7 @@ _gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset, gpgme_conf_arg_t arg)
     {
       if (opt->new_value)
 	release_arg (opt->new_value, opt->alt_type);
-     opt->new_value = NULL;
+      opt->new_value = NULL;
       opt->change_value = 0;
     }
   else
@@ -630,10 +630,8 @@ _gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset, gpgme_conf_arg_t arg)
       /* Support self-assignment, for example for adding an item to an
 	 existing list.  */
       if (opt->new_value && arg != opt->new_value)
-	{
-	  release_arg (opt->new_value, opt->alt_type);
-	  opt->new_value = arg;
-	}
+	release_arg (opt->new_value, opt->alt_type);
+      opt->new_value = arg;
       opt->change_value = 1;
     }
   return 0;

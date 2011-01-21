@@ -1,3 +1,8 @@
+2011-01-21  Marcus Brinkmann  <mb@g10code.com>
+
+	* engine-gpgconf.c (_gpgme_conf_opt_change): Fix the case that is
+	not self-assignment.
+
 2010-12-08  Werner Koch  <wk@g10code.com>
 
 	* gpgme-tool.c (strcpy_escaped_plus): New.
