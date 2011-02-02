@@ -1,3 +1,9 @@
+2011-02-02  Marcus Brinkmann  <mb@g10code.com>
+
+	* w32-util.c (mkstemp): Don't use CreateFile instead of open (the
+	function is not used on Windows CE, and the callers were not
+	adjusted).
+
 2011-01-21  Marcus Brinkmann  <mb@g10code.com>
 
 	* engine-gpgconf.c (_gpgme_conf_opt_change): Fix the case that is
