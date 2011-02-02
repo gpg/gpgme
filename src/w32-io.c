@@ -125,9 +125,6 @@ release_fd (int fd)
 }
 
 
-#define pid_to_handle(a) ((HANDLE)(a))
-#define handle_to_pid(a) ((int)(a))
-#define fd_to_handle(a)  ((HANDLE)(a))
 #define handle_to_fd(a)  ((int)(a))
 
 #define READBUF_SIZE 4096
@@ -256,40 +253,6 @@ set_synchronize (HANDLE hd)
 
   CloseHandle (hd);
   return new_hd;
-#endif
-}
-
-
-/* Return 1 if HD refers to a socket, 0 if it does not refer to a
-   socket, and -1 for unknown (autodetect).  */
-static int
-is_socket (HANDLE hd)
-{
-#ifdef HAVE_W32CE_SYSTEM
-  return -1;
-#else
-  /* We need to figure out whether we are working on a socket or on a
-     handle.  A trivial way would be to check for the return code of
-     recv and see if it is WSAENOTSOCK.  However the recv may block
-     after the server process died and thus the destroy_reader will
-     hang.  Another option is to use getsockopt to test whether it is
-     a socket.  The bug here is that once a socket with a certain
-     values has been opened, closed and later a CreatePipe returned
-     the same value (i.e. handle), getsockopt still believes it is a
-     socket.  What we do now is to use a combination of GetFileType
-     and GetNamedPipeInfo.  The specs say that the latter may be used
-     on anonymous pipes as well.  Note that there are claims that
-     since winsocket version 2 ReadFile may be used on a socket but
-     only if it is supported by the service provider.  Tests on a
-     stock XP using a local TCP socket show that it does not work.  */
-  DWORD dummyflags, dummyoutsize, dummyinsize, dummyinst;
-
-  if (GetFileType (hd) == FILE_TYPE_PIPE
-      && !GetNamedPipeInfo (hd, &dummyflags, &dummyoutsize,
-                            &dummyinsize, &dummyinst))
-    return 1; /* Function failed; thus we assume it is a socket.  */
-  else
-    return 0; /* Success; this is not a socket.  */
 #endif
 }
 
@@ -1605,11 +1568,9 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   si.hStdOutput = INVALID_HANDLE_VALUE;
   si.hStdError = INVALID_HANDLE_VALUE;
 
-  cr_flags |= CREATE_SUSPENDED; 
-#ifndef HAVE_W32CE_SYSTEM
+  cr_flags |= CREATE_SUSPENDED;
   cr_flags |= DETACHED_PROCESS;
   cr_flags |= GetPriorityClass (GetCurrentProcess ());
-#endif
   if (!CreateProcessA (_gpgme_get_w32spawn_path (),
 		       arg_string,
 		       &sec_attr,     /* process security attributes */
@@ -1639,10 +1600,15 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   /* Insert the inherited handles.  */
   for (i = 0; fd_list[i].fd != -1; i++)
     {
-      HANDLE hd;
-
+      int fd = fd_list[i].fd;
+      HANDLE ohd = INVALID_HANDLE_VALUE;
+      HANDLE hd = INVALID_HANDLE_VALUE;
+      
       /* Make it inheritable for the wrapper process.  */
-      if (!DuplicateHandle (GetCurrentProcess(), fd_to_handle (fd_list[i].fd),
+      if (fd >= 0 && fd < MAX_SLAFD && fd_table[fd].used)
+	ohd = fd_table[fd].handle;
+
+      if (!DuplicateHandle (GetCurrentProcess(), ohd,
 			    pi.hProcess, &hd, 0, TRUE, DUPLICATE_SAME_ACCESS))
 	{
 	  TRACE_LOG1 ("DuplicateHandle failed: ec=%d", (int) GetLastError ());

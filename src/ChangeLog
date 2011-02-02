@@ -1,5 +1,15 @@
 2011-02-02  Marcus Brinkmann  <mb@g10code.com>
 
+	* assuan-support.c (my_socket, my_connect): New functions.
+	(_gpgme_assuan_system_hooks): Add my_Socket, my_connect.
+	* priv-io.h (_gpgme_io_socket): New prototype.
+	* w32-io.c (pid_to_handle, handle_to_oid, fd_to_handle): Remove macros.
+	(is_socket): Remove function.
+	(_gpgme_io_spawn) [HAVE_W32CE_SYSTEM]: Remove some dead code.
+	(_gpgme_io_spawn): Translate handles before DuplicateHandle them.
+	
+2011-02-02  Marcus Brinkmann  <mb@g10code.com>
+
 	* w32-util.c (mkstemp): Don't use CreateFile instead of open (the
 	function is not used on Windows CE, and the callers were not
 	adjusted).

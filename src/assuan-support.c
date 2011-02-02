@@ -222,6 +222,21 @@ my_socketpair (assuan_context_t ctx, int namespace, int style,
 }
 
 
+static int
+my_socket (assuan_context_t ctx, int namespace, int style, int protocol)
+{
+  return _gpgme_io_socket (namespace, style, protocol);
+}
+
+
+static int
+my_connect (assuan_context_t ctx, int sock, struct sockaddr *addr,
+	    socklen_t length)
+{
+  return _gpgme_io_connect (sock, addr, length);
+}
+
+
 struct assuan_system_hooks _gpgme_assuan_system_hooks =
   {
     ASSUAN_SYSTEM_HOOKS_VERSION,
@@ -234,6 +249,8 @@ struct assuan_system_hooks _gpgme_assuan_system_hooks =
     my_sendmsg,
     my_spawn,
     my_waitpid,
-    my_socketpair
+    my_socketpair,
+    my_socket,
+    my_connect
   };
 
