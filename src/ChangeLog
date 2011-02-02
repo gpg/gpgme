@@ -1,3 +1,9 @@
+2011-02-02  Marcus Brinkmann  <mb@g10code.com>
+
+	* w32-util.c (mkstemp): Don't use CreateFile instead of open (the
+	function is not used on Windows CE, and the callers were not
+	adjusted).
+
 2010-11-02  Werner Koch  <wk@g10code.com>
 
 	* data-fd.c (read, write, lseek) [W32CE && ! __MINGW32CE__]: New.
