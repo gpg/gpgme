@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -31,6 +31,8 @@
 #include "util.h"
 #include "context.h"
 #include "ops.h"
+#include "extra-stati.h"
+
 
 
 typedef struct
@@ -39,7 +41,7 @@ typedef struct
 
   int okay;
   int failed;
-  
+
   /* A pointer to the next pointer of the last recipient in the list.
      This makes appending new invalid signers painless while
      preserving the order.  */
@@ -200,6 +202,10 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 	return gpg_error (GPG_ERR_NO_DATA);
       break;
 
+    case GPGME_STATUS_DECRYPTION_INFO:
+      /* Fixme: Provide a way to return the used symmetric algorithm. */
+      break;
+
     case GPGME_STATUS_DECRYPTION_OKAY:
       opd->okay = 1;
       break;
@@ -286,7 +292,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       err = _gpgme_parse_plaintext (args, &opd->result.file_name);
       if (err)
 	return err;
-      
+
     default:
       break;
     }

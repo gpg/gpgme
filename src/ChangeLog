@@ -1,3 +1,10 @@
+2011-02-03  Werner Koch  <wk@g10code.com>
+
+	* extra-stati.h: New.
+	* mkstatus: Extend to also process extra-stati.h
+	* Makefile.am (main_sources): Add extra-stati.h
+	(status-table.h): Depend on extra-stati.h and adjust rule.
+
 2010-12-08  Werner Koch  <wk@g10code.com>
 
 	* gpgme-tool.c (strcpy_escaped_plus): New.
@@ -928,7 +935,7 @@
 
 2009-06-16  Werner Koch  <wk@g10code.com>
 
-	* version.c: Include stdlib.h. 
+	* version.c: Include stdlib.h.
 
 	* gpgme.h.in (gpgme_data_encoding_t): Add GPGME_DATA_ENCODING_URL,
 	GPGME_DATA_ENCODING_URLESC, GPGME_DATA_ENCODING_URL0.
@@ -1007,7 +1014,7 @@
 
 	* gpgme.c: Include priv-io.h.
 	(gpgme_io_read, gpgme_io_write): New.
-	* libgpgme.vers (GPGME_1.1): Add them. 
+	* libgpgme.vers (GPGME_1.1): Add them.
 	* gpgme.def: Ditto.
 
 	* Makefile.am (main_sources): Remove gpgme.h.
@@ -1471,7 +1478,7 @@
 	(_gpgme_engine_ops_gpgsm): Insert new function.
 	(gpgsm_new): Try to enable audit log support.
 	* rungpg.c (_gpgme_engine_ops_gpg): Insert dummy entry.
-	
+
 2007-11-20  Werner Koch  <wk@g10code.com>
 
 	* op-support.c (_gpgme_parse_inv_recp): Add new reason code 11.
@@ -1668,7 +1675,7 @@
 	drops to 0.
 	(find_reader, find_writer, kill_reader, kill_writer): Beautify.
 	* priv-io.h (_gpgme_io_dup): New prototype.
-	* posix-io.c (_gpgme_io_dup): New function. 
+	* posix-io.c (_gpgme_io_dup): New function.
 	* w32-io.c (_gpgme_io_dup): Likewise.
 	* w32-glib-io.c (_gpgme_io_dup): Likewise.
 	* engine-gpgsm.c (start): Reverting to version 2007-07-10.
@@ -1686,7 +1693,7 @@
 	in case of error.
 	* w32-io.c (_gpgme_io_read): Return C->error_code in ERRNO.
 	(_gpgme_io_write): Likewise.
-	
+
 	* priv-io.h (_gpgme_io_set_close_notify): Change type of HANDLER
 	to _gpgme_close_notify_handler.
 	(_gpgme_close_notify_handler): New type.
@@ -1723,7 +1730,7 @@
 2007-07-10  Marcus Brinkmann  <marcus@g10code.de>
 
 	* priv-io.h (_gpgme_io_dup): New prototype.
-	* posix-io.c (_gpgme_io_dup): New function. 
+	* posix-io.c (_gpgme_io_dup): New function.
 	* w32-io.c (_gpgme_io_dup): Likewise.
 	* w32-glib-io.c (_gpgme_io_dup): Likewise.
 	* engine-gpgsm.c (start): Use _gpgme_dup() instead of dup().
@@ -1766,7 +1773,7 @@
 	(fd_cbs): Add fd_get_fd.
 	* data-stream.c (stream_get_fd): New function.
 	(stream_cbs): Add stream_get_fd.
-	* data-mem.c (mem_cbs): Add NULL for get_fd callback.	
+	* data-mem.c (mem_cbs): Add NULL for get_fd callback.
 	* data-user.c (user_cbs): Likewise.
 	* engine-gpgsm.c (gpgsm_set_fd) [USE_DESCRIPTOR_PASSING]: Try to
 	short-cut by passing the data descriptor directly.
@@ -1811,7 +1818,7 @@
 	* engine-gpgsm.c (gpgsm_new): Move code to dup status_fd to ...
 	(start): ... here.
 	* posix-io.c (_gpgme_io_recvmsg, _gpgme_io_sendmsg): New functions.
-	
+
 	* engine.h (_gpgme_engine_new): Remove arguments lc_ctype and
 	lc_messages from prototype.
 	(_gpgme_engine_set_locale): New prototype.
@@ -2058,7 +2065,7 @@
 	(libgpgme_pth_la_SOURCES): Add $(system_components_not_extra).
 	(libgpgme_glib_la_LDFLAGS, libgpgme_glib_la_DEPENDENCIES,
 	(libgpgme_glib_la_LIBADD, libgpgme_glib_la_CFLAGS)
-	[BUILD_W32_GLIB]: New variables. 
+	[BUILD_W32_GLIB]: New variables.
 	* gpgme-config.in (glib): New option.
 	* gpgme.m4 (AM_PATH_GPGME_GLIB): New macro.
 
@@ -2254,7 +2261,7 @@
 	* gpgme.def: New.
 	* versioninfo.rc.in: New.
 	* Makefile.am: Addes support for building a W32 DLL.
-	
+
 	* ttyname_r.c (ttyname_r) [W32]: Return error.
 	* ath-compat.c [W32]: select and co are not yet supported; return
 	error.
@@ -2266,7 +2273,7 @@
 	(_gpgme_stpcpy): .. this and made inline.  This avoids duplicate
 	definitions when linking statically.
 	* stpcpy.c: Removed.
-	
+
 2005-07-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h (gpgme_status_code_t): Add GPGME_STATUS_PLAINTEXT.
@@ -2392,7 +2399,7 @@
 	* data.c, engine-gpgsm.c, posix-io.c, rungpg.c, version.c,
 	w32-io.c, wait-private.c, wait-global.c, wait-user.c, wait.c:
 	Change all includes of "io.h" to "priv-io.h"
-	
+
 2005-03-09  Werner Koch  <wk@g10code.com>
 
 	* w32-util.c (_gpgme_get_gpg_path, _gpgme_get_gpgsm_path): Do not
@@ -2408,7 +2415,7 @@
 	files.
 
 2005-03-07  Timo Schulz  <twoaday@g10code.de>
- 
+
         * gpgme.h: [_WIN32] Removed ssize_t typedef.
         * ath.h: [_WIN32] Added some (dummy) types.
         * io.h: [_WIN32] include stdio.h.
@@ -2548,7 +2555,7 @@
 
 	* data.c (_gpgme_data_outbound_handler): Close the file descriptor
 	if we get an EPIPE.
-	
+
 	* data-stream.c (stream_seek): Call ftello and return the current
 	offset.
 	* data.h (struct gpgme_data): Change type of data.mem.offset to
@@ -2711,7 +2718,7 @@
 
 2004-02-17  Werner Koch  <wk@gnupg.org>
 
-	* gpgme.h: Add GPGME_KEYLIST_MODE_VALIDATE. 
+	* gpgme.h: Add GPGME_KEYLIST_MODE_VALIDATE.
 	* engine-gpgsm.c (gpgsm_keylist): Send this to gpgsm.
 
 2004-02-15  Werner Koch  <wk@gnupg.org>
@@ -3114,7 +3121,7 @@
 	* engine.c: Rename EngineObject to engine_t in the file.  Also
 	EngineStatusHandler to engine_status_handler_t,
 	EngineCommandHandler to engine_command_handler_t and
-	EngineColonLineHandler to engine_colon_line_handler.	
+	EngineColonLineHandler to engine_colon_line_handler.
 	* rungpg.c (start): Likewise.
 	* engine-gpgsm.c: Likewise.
 	* engine-backend.h (struct engine_ops): Likewise
@@ -3613,7 +3620,7 @@
 	(gpgme_op_sign): Likewise.
 	* encrypt-sign.c (_gpgme_op_encrypt_sign_start): Call
 	_gpgme_op_sign_init_result.
-	
+
 	* delete.c: Include <errno.h> and "gpgme.h", but not "util.h" or
 	"key.h".
 	(enum delete_problem): Move into function delete_status_handler.
@@ -3699,7 +3706,7 @@
 	(_gpgme_data_inbound_handler): Expand _gpgme_data_append, because
 	it will go.  Do not assert DH.
 	(_gpgme_data_outbound_handler): Do not assert DH.
-	
+
 	* export.c: Do not include <stdlib.h>, "debug.h" and "util.h", but
 	"gpgme.h".
 	(export_status_handler): Change type of first argument to void *.
@@ -3716,7 +3723,7 @@
 	* key.c (gpgme_key_get_string_attr): Fix validity attribute.
 
 2003-04-24  Marcus Brinkmann  <marcus@g10code.de>
-	
+
 	* gpgme.h (struct _gpgme_op_genkey_result): New structure.
 	(GpgmeGenKeyResult): New type.
 	(gpgme_op_genkey): Drop last argument.
@@ -4060,7 +4067,7 @@
 	* version.c (gpgme_get_engine_info): Rewritten.
 	* gpgme.h (gpgme_engine_info): New structure.
 	(GpgmeEngineInfo): New type.
-	
+
 2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* types.h: Remove byte and ulong types.
@@ -4205,7 +4212,7 @@
 
 	* key.c (gpgme_key_sig_get_string_attr): Use validity_to_string
 	instead otrust_to_string to calculate validity.
-	
+
 2003-01-19  Miguel Coca  <mcoca@gnu.org>
 
 	* w32-io.c (_gpgme_io_select): Add missing argument in calls to
@@ -4250,8 +4257,8 @@
 	_gpgme_engine_start.
 	* delete.c (_gpgme_op_delete_start): Likewise.
 	* edit.c (_gpgme_op_edit_start): Likewise.
-	* encrypt.c (_gpgme_op_encrypt_start): 
-	* encrypt-sign.c (_gpgme_op_encrypt_sign_start): 
+	* encrypt.c (_gpgme_op_encrypt_start):
+	* encrypt-sign.c (_gpgme_op_encrypt_sign_start):
 	* export.c (_gpgme_op_export_start): Likewise.
 	* genkey.c (_gpgme_op_genkey_start): Likewise.
 	* import.c (_gpgme_op_import_start): Likewise.
@@ -4323,7 +4330,7 @@
 	(mem_release): Change return type to void.
 	* data-user.c (user_read): Change return type to ssize_t.
 	(user_release): Change return type to void.
-	* data-compat.c (old_user_read): Change return type to ssize_t.	
+	* data-compat.c (old_user_read): Change return type to ssize_t.
 	* gpgme.h (GpgmeDataReadCb): Likewise.
 	(gpgme_data_read): Likewise.
 	(GpgmeDataSeekCb): Change return type to off_t.
@@ -4436,7 +4443,7 @@
 	_gpgme_data_append_string_for_xml rather than
 	_gpgme_data_append_string for the field content.
 	Submitted by Miguel Coca <e970095@zipi.fi.upm.es>.
-	
+
 2002-10-10  Marcus Brinkmann  <marcus@g10code.de>
 
 	* rungpg.h, engine-gpgsm.h: File removed.
@@ -4798,7 +4805,7 @@
 	* import.c (_gpgme_op_import_start): Likewise.
 	* sign.c (_gpgme_op_sign_start): Likewise.
 	* verify.c (_gpgme_op_verify_start): Likewise.
-	
+
 	* encrypt.c (gpgme_op_encrypt): Remove hack that returns invalid
 	no recipient if no data was returned.
 	* encrypt-sign.c (gpgme_op_encrypt_sign): Remove hack that returns
@@ -4833,7 +4840,7 @@
 	(build_argv): Use new member INBOUND to determine direction of
 	file descriptor.  Don't check the data type.
 	* rungpg.h (_gpgme_gpg_add_data): Add new argument to prototype.
-	
+
 	* gpgme.c (gpgme_get_op_info): Don't call
 	_gpgme_data_get_as_string if CTX->op_info is NULL.
 
@@ -4968,7 +4975,7 @@
 
 2002-08-23  Werner Koch  <wk@gnupg.org>
 
-	* gpgme-config.in: Made --prefix work for --libs. 
+	* gpgme-config.in: Made --prefix work for --libs.
 
 2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
 
@@ -4994,7 +5001,7 @@
 
 	* gpgme.m4: Replaced with a new and faster version.  This does not
 	anymore try to build test programs.  If we really need test
-	programs, we should add an option to gpgme-config to do so. 
+	programs, we should add an option to gpgme-config to do so.
 
 	* vasprintf.c (int_vasprintf): Hack to handle NULL passed for %s.
 
@@ -5019,7 +5026,7 @@
 	* gpgme.h (GPGME_KEYLIST_MODE_SIGS): New.
 	* rungpg.c (_gpgme_gpg_op_keylist): Include sigs in listing depending
 	non the list mode.
-	
+
 	* key.c (gpgme_key_get_string_attr): Use GPGME_ATTR_TYPE to return
 	information about the key type (PGP or X.509).
 	(gpgme_key_get_ulong_attr): Likewise.
@@ -5101,7 +5108,7 @@
 	* rungpg.c (struct gpg_object_s): Likewise for CMD.code.
 
 	These changes add an edit operation to GPGME:
-	
+
 	* context.h (struct gpgme_context_s): New member RESULT.edit.  *
 	ops.h: Add prototype for _gpgme_release_edit_result and
 	_gpgme_passphrase_command_handler.
@@ -5232,7 +5239,7 @@
 	table (eg use synchronous mode).
 	(gpgme_op_trustlist_next): Remove HANG argument from
 	_gpgme_wait_on_condition.  Check its return value.
-	
+
 2002-06-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.h: Fix documentation of key attribute retrieval functions.
@@ -5308,7 +5315,7 @@
 2002-06-12  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (struct keylist_result_s): New.
-	(_gpgme_release_keylist_result): Release it here 
+	(_gpgme_release_keylist_result): Release it here
 	(keylist_status_handler): Handle truncated.
 	(append_xml_keylistinfo): New.
 	* gpgme.c (_gpgme_release_result): and use it here.
@@ -5661,7 +5668,7 @@
 
 	* verify.c (_gpgme_verify_status_handler): Handle TRUST_* status
 	lines so that a claim can be made without looking up the key.
-	(gpgme_get_sig_string_attr): New. 
+	(gpgme_get_sig_string_attr): New.
 	(gpgme_get_sig_ulong_attr): New.
 
 	* gpgme.h (GpgmeAttr): Added GPGME_ATTR_SIG_STATUS.
@@ -5671,7 +5678,7 @@
 
 	* gpgme.h (GpgmeSigStat): Add _GOOD_EXP and _GOOD_EXPKEY.
 	* verify.c (_gpgme_verify_status_handler, finish_sig): Handle
-	these new status codes.  Store the expiration time 
+	these new status codes.  Store the expiration time
 
 2002-04-27  Werner Koch  <wk@gnupg.org>
 
@@ -5845,7 +5852,7 @@
 	* rungpg.c (_gpgme_append_gpg_args_from_signers): New function.
 	(_gpgme_gpg_op_sign): Use that new function.
 	(_gpgme_gpg_op_encrypt_sign): New function.
-	* rungpg.h (_gpgme_gpg_op_encrypt_sign): New prototype. 
+	* rungpg.h (_gpgme_gpg_op_encrypt_sign): New prototype.
 	* gpgme.h (gpgme_op_encrypt_sign_start): New prototype.
 	(gpgme_op_encrypt_sign): Likewise.
 	* Makefile.am (libgpgme_la_SOURCES): Add encrypt-sign.c.
@@ -5857,7 +5864,7 @@
 	(_gpgme_encrypt_status_handler): ... this and make non-static.
 	* encrypt.c (gpgme_op_encrypt_start): Use new status handler name.
 	* sign.c (gpgme_op_sign_start): Likewise.
-	
+
 2002-02-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* verify.c (_gpgme_verify_status_handler): Parse the args line to
@@ -6460,7 +6467,7 @@
 	server process from wait queue.
 	(_gpgme_gpgsm_op_verify, _gpgme_gpgsm_start,
 	_gpgme_gpgsm_set_status_handler, gpgms_status_handler): New function.
-	
+
 	* engine.c (_gpgme_engine_start): Implement for GPGME_PROTOCOL_CMS.
 	(_gpgme_engine_set_status_handler): Likewise.
 	(_gpgme_engine_op_verify): Likewise.
@@ -6544,7 +6551,7 @@
 	* engine.c: Likewise.
 	* engine-gpgsm.h: Likewise.
 	* engine-gpgsm.c: Likewise.
-	
+
 	* rungpg.c (_gpgme_gpg_get_version): New function.
 	(_gpgme_gpg_check_version): Likewise.
 	* rungpg.h: Add prototypes for _gpgme_gpg_get_version and
@@ -6739,7 +6746,7 @@
 
 	* keylist.c (finish_key): Shortcut for no tmp_key.  Changed all
 	callers to use this function without a check for tmp_key.
-	
+
 	* keylist.c (gpgme_op_keylist_next): Reset the key_cond after
 	emptying the queue.  Bug reported by Stéphane Corthésy.
 
@@ -6771,12 +6778,12 @@
 	* keylist.c (keylist_colon_handler): Do a finish key if we receive
 	an EOF here.  This is probably the reason for a lot of bugs
 	related to keylisting.  It is so obvious.  Kudos to Enno Cramer
-	for pointing that out. 
+	for pointing that out.
 
 2001-08-28  Werner Koch  <wk@gnupg.org>
 
 	* gpgme.c, gpgme.h (gpgme_get_op_info): New.
-	(_gpgme_set_op_info): New. 
+	(_gpgme_set_op_info): New.
 	(_gpgme_release_result): Reset the op_info here.
 	* sign.c (append_xml_siginfo): New.
 	(sign_status_handler): Store the sig create information.
@@ -6826,12 +6833,12 @@
 2001-05-01  José Carlos García Sogo <jose@jaimedelamo.eu.org>
 
 	* encrypt.c (gpgme_op_encrypt_start): Deleted the assert ( !c->gpg )
-	line, because it gave an error if another operation had been made 
+	line, because it gave an error if another operation had been made
 	before using the same context.
-	
-	* decrypt.c (gpgme_op_decrypt_start): The same as above. Also added 
+
+	* decrypt.c (gpgme_op_decrypt_start): The same as above. Also added
 	one line to release the gpg object in the context (if any).
-	
+
 2001-04-26  Werner Koch  <wk@gnupg.org>
 
 	* key.c, key.h (_gpgme_key_cache_init): New.
@@ -6854,14 +6861,14 @@
 
 	* w32-io.c (_gpgme_io_select): Don't select on the writer if there
 	are still bytes pending.  Timo found this not easy to track down
-	race condition. 
+	race condition.
 
 2001-04-02  Werner Koch  <wk@gnupg.org>
 
 	* gpgme.h: Add GPGME_ATTR_KEY_{EXPIRED,DISABLED}.
 	* key.c (gpgme_key_get_ulong_attr): And return those attribs.
 
-	* verify.c (gpgme_get_sig_key): Set keyliosting mode depending on 
+	* verify.c (gpgme_get_sig_key): Set keyliosting mode depending on
 	the mode set in the current context.  Suggested by Timo.
 
 	* key.c (gpgme_key_get_ulong_attr): Return can_certify and not
@@ -6889,7 +6896,7 @@
 
 2001-03-14  Werner Koch  <wk@gnupg.org>
 
-	* w32-io.c (destroy_reader,destroy_writer): Fixed syntax error. 
+	* w32-io.c (destroy_reader,destroy_writer): Fixed syntax error.
 	Thanks to Jan Oliver Wagner.
 
 2001-03-13  Werner Koch  <wk@gnupg.org>
@@ -6897,7 +6904,7 @@
 	* context.h: Add invalid and revoke flags to user_id structure.
 	* keylist.c (gpgme_op_keylist_start): Use --fixed-list-mode.
 	(keylist_colon_handler): Adjust for that.
- 	(set_userid_flags): New. 
+ 	(set_userid_flags): New.
 	(set_mainkey_trust_info): Handle new key invalid flag
 	(set_subkey_trust_info): Ditto.
 	* gpgme.h: Add new attributes for key and user ID flags.
@@ -6919,11 +6926,11 @@
 
 2001-02-20  Werner Koch  <wk@gnupg.org>
 
-	* w32-io.c (destroy_reader,kill_reader): New. 
+	* w32-io.c (destroy_reader,kill_reader): New.
 	(create_reader, reader): Add a new event to stop the thread.
 	(_gpgme_io_close): Kill the reader thread.
 
-	* posix-io.c (_gpgme_io_select): Handle frozen fds here. 
+	* posix-io.c (_gpgme_io_select): Handle frozen fds here.
 	* 32-io.c (_gpgme_io_select): Ditto. Removed a bunch of unused code.
 
 	* wait.c: Reworked the whole thing.
@@ -6947,7 +6954,7 @@
 	* posix-io.c (_gpgme_io_set_close_notify): New.
 	(_gpgme_io_close): Do the notification.
 
-	* rungpg.c (close_notify_handler): New. 
+	* rungpg.c (close_notify_handler): New.
 	(_gpgme_gpg_new): Register a callback for the fd.
 	(_gpgme_gpg_set_colon_line_handler): Ditto.
 	(build_argv): Ditto
@@ -6965,19 +6972,19 @@
 
 	* keylist.c (gpgme_op_keylist_start): Cancel a pending request.
 
-	* posix-io.c (_gpgme_io_read): Add some debug output. 
+	* posix-io.c (_gpgme_io_read): Add some debug output.
 	(_gpgme_io_write): Ditto.
 	(_gpgme_io_select): Increased the timeout.
 
 2001-02-12  Werner Koch  <wk@gnupg.org>
 
 	Enhanced the signature verification, so that it can how handle
-	more than one signature and is able to return more information on 
+	more than one signature and is able to return more information on
 	the signatures.
 	* verify.c (gpgme_get_sig_key): New.
 	(gpgme_get_sig_status): New.
 
-	* gpgme.h: Add stdio.h. 
+	* gpgme.h: Add stdio.h.
 	(GpgmeSigStat): New status DIFF.
 
 2001-02-01  Werner Koch  <wk@gnupg.org>
@@ -6992,8 +6999,8 @@
 
 	* wait.c (_gpgme_wait_on_condition): Removed all exit code processing.
 	(propagate_term_results,clear_active_fds): Removed.
-	(count_active_fds): Renamed to .. 
-	(count_active_and_thawed_fds): .. this and count only thawed fds. 
+	(count_active_fds): Renamed to ..
+	(count_active_and_thawed_fds): .. this and count only thawed fds.
 
 	* rungpg.c (gpg_colon_line_handler): Return colon.eof and not
 	status.eof ;-)
@@ -7014,7 +7021,7 @@
 	test his fix :-)
 
 	* w32-io.c: Does now use reader threads, so that we can use
-	WaitForMultipleObjects. 
+	WaitForMultipleObjects.
 	* sema.h, posix-sema.c, w32-sema.c: Support for Critcial sections.
 	Does currently only work for W32.
 

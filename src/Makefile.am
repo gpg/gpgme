@@ -1,18 +1,18 @@
 # Copyright (C) 2000 Werner Koch (dd9jn)
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
-# 
+#
 # This file is part of GPGME.
-# 
+#
 # GPGME is free software; you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as
 # published by the Free Software Foundation; either version 2.1 of the
 # License, or (at your option) any later version.
-# 
+#
 # GPGME is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General
 # Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -99,7 +99,7 @@ endif
 if HAVE_UISERVER
 uiserver_components = engine-uiserver.c
 else
-uiserver_components = 
+uiserver_components =
 endif
 
 # These are the source files common to all library versions.  We used
@@ -120,6 +120,7 @@ main_sources =								\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
 	opassuan.c passwd.c                                             \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.h	\
+	extra-stati.h 	                                                \
 	$(gpgsm_components) $(assuan_components) $(gpgconf_components)  \
 	$(uiserver_components)						\
 	$(g13_components) vfs-mount.c vfs-create.c			\
@@ -128,7 +129,7 @@ main_sources =								\
 	debug.c debug.h gpgme.c version.c error.c
 
 libgpgme_la_SOURCES = $(main_sources)					\
-	ath.h ath.c $(system_components_not_extra) 
+	ath.h ath.c $(system_components_not_extra)
 libgpgme_pthread_la_SOURCES = $(main_sources)				\
 	ath.h ath-pthread.c $(system_components_not_extra)
 libgpgme_pth_la_SOURCES = $(main_sources)				\
@@ -241,8 +242,9 @@ endif
 noinst_PROGRAMS = gpgme-tool
 gpgme_tool_LDADD = libgpgme.la
 
-status-table.h : gpgme.h
-	$(srcdir)/mkstatus < $(builddir)/gpgme.h > status-table.h
+status-table.h : gpgme.h extra-stati.h
+	cat $(builddir)/gpgme.h $(srcdir)extra-stati.h \
+          | $(srcdir)/mkstatus  > status-table.h
 
 install-data-local: install-def-file
 
