@@ -2035,7 +2035,7 @@ _gpgme_io_socket (int domain, int type, int proto)
 
   TRACE_SUC2 ("socket=0x%x (0x%x)", fd, fd_table[fd].socket);
   
-  return res;
+  return fd;
 }
 
 
