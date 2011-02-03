@@ -1,3 +1,7 @@
+2011-02-02  Marcus Brinkmann  <mb@g10code.com>
+
+	* configure.ac (NEED_LIBASSUAN_VERSION): Bump to 2.0.2 for system hooks.
+
 2010-12-30  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Support a git revision.

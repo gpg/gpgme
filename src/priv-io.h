@@ -64,6 +64,7 @@ struct io_select_fd_s
 
 /* These function are either defined in posix-io.c or w32-io.c.  */
 void _gpgme_io_subsystem_init (void);
+int _gpgme_io_socket (int namespace, int style, int protocol);
 int _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen);
 int _gpgme_io_read (int fd, void *buffer, size_t count);
 int _gpgme_io_write (int fd, const void *buffer, size_t count);

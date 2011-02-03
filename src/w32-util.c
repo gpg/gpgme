@@ -476,6 +476,14 @@ _gpgme_get_conf_int (const char *key, int *value)
 }
 
 
+#ifdef HAVE_W32CE_SYSTEM
+int
+_gpgme_mkstemp (int *fd, char **name)
+{
+  return -1;
+}
+#else
+
 /* mkstemp extracted from libc/sysdeps/posix/tempname.c.  Copyright
    (C) 1991-1999, 2000, 2001, 2006 Free Software Foundation, Inc.
 
@@ -499,7 +507,7 @@ mkstemp (char *tmpl)
   static uint64_t value;
   uint64_t random_time_bits;
   unsigned int count;
-  HANDLE fd = INVALID_HANDLE_VALUE;
+  int fd = -1;
   int save_errno = errno;
 
   /* A lower bound on the number of temporary files to attempt to
@@ -555,23 +563,14 @@ mkstemp (char *tmpl)
       v /= 62;
       XXXXXX[5] = letters[v % 62];
 
-      fd = CreateFileA (tmpl, 
-                        GENERIC_WRITE|GENERIC_READ,
-                        FILE_SHARE_READ|FILE_SHARE_WRITE,
-                        NULL,
-                        CREATE_NEW,
-                        FILE_ATTRIBUTE_NORMAL,
-                        NULL);
-      if (fd != INVALID_HANDLE_VALUE)
+      fd = open (tmpl, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+      if (fd >= 0)
 	{
 	  gpg_err_set_errno (save_errno);
-	  return (int)fd;
+	  return fd;
 	}
-      else if (GetLastError () != ERROR_FILE_EXISTS)
-        {
-	  gpg_err_set_errno (EIO);
-          return -1;
-        }
+      else if (errno != EEXIST)
+	return -1;
     }
 
   /* We got out of the loop because we ran out of combinations to try.  */
@@ -616,6 +615,7 @@ _gpgme_mkstemp (int *fd, char **name)
   *name = tmpname;
   return 0;
 }
+#endif
 
 
 

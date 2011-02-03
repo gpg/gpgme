@@ -62,7 +62,7 @@ GPGME_CONFIG_API_VERSION=1
 ##############################################
 
 NEED_LIBASSUAN_API=2
-NEED_LIBASSUAN_VERSION=2.0.0
+NEED_LIBASSUAN_VERSION=2.0.2
 
 
 m4_define([git_brevis],m4_esyscmd(printf "%u" 0x[]m4_substr(git_revision,0,4)))
