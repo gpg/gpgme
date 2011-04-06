@@ -263,6 +263,7 @@ else
    INSERT__TYPEDEFS_FOR_GPGME_H="#include <sys/types.h>"
 fi
 AC_SUBST(INSERT__TYPEDEFS_FOR_GPGME_H)
+AM_SUBST_NOTMAKE(INSERT__TYPEDEFS_FOR_GPGME_H)
 
 # Checks for compiler features.
 if test "$GCC" = yes; then
