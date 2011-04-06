@@ -1,3 +1,8 @@
+2011-04-06  Werner Koch  <wk@g10code.com>
+
+	* gpgme.h.in: Use INSERT__TYPEDEFS_FOR_GPGME_H to include platform
+	specific typedefs.
+
 2011-02-03  Werner Koch  <wk@g10code.com>
 
 	* extra-stati.h: New.
@@ -18,7 +23,7 @@
 	(is_socket): Remove function.
 	(_gpgme_io_spawn) [HAVE_W32CE_SYSTEM]: Remove some dead code.
 	(_gpgme_io_spawn): Translate handles before DuplicateHandle them.
-	
+
 2011-02-02  Marcus Brinkmann  <mb@g10code.com>
 
 	* w32-util.c (mkstemp): Don't use CreateFile instead of open (the
@@ -7074,7 +7079,8 @@
 	* data.c (gpgme_data_rewind): Allow to rewind data_type_none.
 
 
- Copyright 2001,2002,2003,2004,2005,2006,2007,2008,2009 g10 Code GmbH
+ Copyright 2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,
+	   2011 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

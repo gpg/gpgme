@@ -1,24 +1,24 @@
 # configure.ac for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-#               2009, 2010  g10 Code GmbH
-# 
+#               2009, 2010, 2011  g10 Code GmbH
+#
 # This file is part of GPGME.
-# 
+#
 # GPGME is free software; you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as
 # published by the Free Software Foundation; either version 2.1 of the
 # License, or (at your option) any later version.
-# 
+#
 # GPGME is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General
 # Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- 
+
 # (Process this file with autoconf to produce a configure script.)
 AC_PREREQ(2.59)
 min_automake_version="1.10"
@@ -39,7 +39,7 @@ m4_define([svn_revision], m4_esyscmd([printf "%d" $( (svn info 2>/dev/null \
             || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
 m4_define([git_revision], m4_esyscmd([git branch -v 2>/dev/null \
           | awk '/^\* / {printf "%s",$3}']))
-AC_INIT([gpgme], 
+AC_INIT([gpgme],
         [my_version[]m4_if(my_issvn,[yes],
         [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])],
         [bug-gpgme@gnupg.org])
@@ -132,16 +132,19 @@ G13_DEFAULT=no
 component_system=None
 have_dosish_system=no
 have_w32_system=no
+have_w64_system=no
 build_w32_glib=no
 build_w32_qt=no
 case "${host}" in
+    x86_64-*mingw32*)
+        have_w64_system=yes
+        ;;
     *-mingw32ce*)
         have_w32ce_system=yes
 	;;
 esac
 case "${host}" in
     *-mingw32ce*|*-mingw32*)
-        # special stuff for Windoze NT
 	have_dosish_system=yes
         have_w32_system=yes
         GPG_DEFAULT='c:\\gnupg\\gpg.exe'
@@ -187,20 +190,31 @@ esac
 
 if test "$have_dosish_system" = yes; then
    AC_DEFINE(HAVE_DOSISH_SYSTEM,1,
-             [Defined if we run on some of the PCDOS like systems 
+             [Defined if we run on some of the PCDOS like systems
               (DOS, Windoze. OS/2) with special properties like
               no file modes])
 fi
 AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
 
 if test "$have_w32_system" = yes; then
-   AC_DEFINE(HAVE_W32_SYSTEM,1, [Defined if we run on a W32 API based system])
+   AC_DEFINE(HAVE_W32_SYSTEM,1,
+             [Defined if we run on any kind of W32 API based system])
+   ACSUBST
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
+
+if test "$have_w64_system" = yes; then
+   AC_DEFINE(HAVE_W64_SYSTEM,1,
+             [Defined if we run on a 64 bit W32 API based system])
+fi
+AM_CONDITIONAL(HAVE_W64_SYSTEM, test "$have_w64_system" = yes)
+
 if test "$have_w32ce_system" = yes; then
-   AC_DEFINE(HAVE_W32CE_SYSTEM,1, [Defined if we run on a W32 CE API based system])
+   AC_DEFINE(HAVE_W32CE_SYSTEM,1,
+             [Defined if we run on a W32 CE API based system])
 fi
 AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
+
 AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
 AM_CONDITIONAL(BUILD_W32_QT, test "$build_w32_qt" = yes)
 
@@ -233,6 +247,22 @@ case "$ac_cv_sys_file_offset_bits" in
 esac
 AC_SUBST(NEED__FILE_OFFSET_BITS)
 
+# Figure out platform dependent typedefs for gpgme.h
+if test "$have_w32_system" = yes; then
+   if test "$have_w64_system" = yes; then
+      INSERT__TYPEDEFS_FOR_GPGME_H="/* Typedefs for the 64 bit W32 API.  */
+#include <basetsd.h>
+typedef long off_t;
+typedef __int64 ssize_t;"
+   else
+      INSERT__TYPEDEFS_FOR_GPGME_H="/* Typedefs for the 32 bit W32 API.  */
+typedef long off_t;
+typedef long ssize_t;"
+   fi
+else
+   INSERT__TYPEDEFS_FOR_GPGME_H="#include <sys/types.h>"
+fi
+AC_SUBST(INSERT__TYPEDEFS_FOR_GPGME_H)
 
 # Checks for compiler features.
 if test "$GCC" = yes; then
@@ -835,7 +865,7 @@ AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
 # Generate values for the DLL version info
 if test "$have_w32_system" = yes; then
     BUILD_TIMESTAMP=`date --iso-8601=minutes`
-    changequote(,)dnl 
+    changequote(,)dnl
     BUILD_FILEVERSION=`echo "$VERSION" | sed 's/\([0-9.]*\).*/\1./;s/\./,/g'`
     changequote([,])dnl
     BUILD_FILEVERSION="${BUILD_FILEVERSION}${BUILD_REVISION}"
@@ -857,7 +887,7 @@ AH_VERBATIM([SEPCONSTANTS],
 
 AH_BOTTOM([
 /* Definition of GCC specific attributes.  */
-#if __GNUC__ > 2 
+#if __GNUC__ > 2
 # define GPGME_GCC_A_PURE  __attribute__ ((__pure__))
 #else
 # define GPGME_GCC_A_PURE
@@ -868,7 +898,7 @@ AH_BOTTOM([
 ])
 
 
-# Substitution used for gpgme-config 
+# Substitution used for gpgme-config
 GPGME_CONFIG_LIBS="-lgpgme"
 GPGME_CONFIG_CFLAGS=""
 AC_SUBST(GPGME_CONFIG_API_VERSION)
@@ -917,10 +947,10 @@ fi
 
 
 #
-# Create config files 
+# Create config files
 
 AC_CONFIG_FILES(Makefile src/Makefile
-		tests/Makefile 
+		tests/Makefile
                 tests/gpg/Makefile
                 tests/gpgsm/Makefile
                 tests/opassuan/Makefile

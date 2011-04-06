@@ -1,3 +1,9 @@
+2011-04-06  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh (--build-w32): Support option --build-w64.
+	* configure.ac (HAVE_W64_SYSTEM): Define.
+	(INSERT__TYPEDEFS_FOR_GPGME_H): New.
+
 2011-02-02  Marcus Brinkmann  <mb@g10code.com>
 
 	* configure.ac (NEED_LIBASSUAN_VERSION): Bump to 2.0.2 for system hooks.
@@ -168,12 +174,12 @@
 
 2008-09-16  Marcus Brinkmann  <marcus@g10code.com>
 
-	* configure.ac (_XOPEN_SOURCE) [apple-darwin]: Define it. 
+	* configure.ac (_XOPEN_SOURCE) [apple-darwin]: Define it.
 
 2008-07-04  Werner Koch  <wk@g10code.com>
 
 	* config.guess, config.sub: Update to 2007-11-19.  Also update
-	missing et al scripts. 
+	missing et al scripts.
 
 2008-04-01  Werner Koch  <wk@g10code.com>
 
@@ -252,7 +258,7 @@
 	* assuan/Makefile.am (INCLUDES): Include $(top_srcdir)/gpgme.
 	* assuan/assuan.h: Include <ath.h> instead of trying to duplicate
 	the definitions.
-	
+
 	* assuan/: Update files to 2007-07-04 version of assuan.
 
 	* autogen.sh: Use = not == in test.
@@ -268,7 +274,7 @@
 2007-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	Released 1.1.3.
-	
+
 	* configure.ac (LIBGPGME_LT_REVISION): Bump for release.
 
 2007-01-26  Werner Koch  <wk@g10code.com>
@@ -515,7 +521,7 @@
 2004-04-06  Werner Koch  <wk@gnupg.org>
 
 	Released 0.4.6.
-	
+
 	* config.guess, config.sub, ltmain.sh: Updated to those from
 	libtools 1.5.4.
 
@@ -552,8 +558,8 @@
 2004-01-12  Werner Koch  <wk@gnupg.org>
 
 	Released 0.4.4.
-	
-	* configure.ac: Bumbed LT_Revision; now at C12/A1/R1. 
+
+	* configure.ac: Bumbed LT_Revision; now at C12/A1/R1.
 	(NEED_GPGSM_VERSION): Set to 1.9.3.
 	(min_automake_version): Added.
 	* README.CVS: New.
@@ -650,7 +656,7 @@
 	(AC_CONFIG_FILES): Remove bonobo/Makefile.
 	* Makefile.am (bonobo): Remove variable.
 	(SUBDIRS): Remove ${bonobo}.
-	
+
 	* configure.ac: Remove all uses of GNUPG_CHECK_TYPEDEF, for byte,
 	ushort, ulong, u16 and u32.
 	* acinclude.m4 (GNUPG_CHECK_TYPEDEF): Remove macro.
@@ -663,7 +669,7 @@
 2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Bump up to 0.4.1.
-	
+
 	Released 0.4.0.
 
 2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
@@ -708,7 +714,7 @@
 2002-09-20  Werner Koch  <wk@gnupg.org>
 
 	Released 0.3.11.
-	
+
 	* configure.ac: Bump up LIBGPGME_LT_REVISION.
 
 	* configure.ac (AC_CHECK_HEADERS): Check for sys/select.h.
@@ -788,7 +794,7 @@
 2002-06-25  Werner Koch  <wk@gnupg.org>
 
 	Released 0.3.8.
-	
+
 	* configure.ac: Bumbed LT version to 9/3/0.
 	(NEED_GPGSM_VERSION): Need 0.3.8 due to fixed export command.
 
@@ -844,7 +850,7 @@
 	* configure.ac: Bumbed version to 0.3.4-cvs to continue development.
 
 	Released 0.3.4.
-	
+
 	* configure.ac: Bumbed LT version numbers to (7,1,0), requires
 	gpgsm 0.3.1.
 
@@ -863,7 +869,7 @@
 	* jnlib/Makefile.am: Rever to older version that includes xmalloc
 	but not dotlock and some other files.  Reported by Stéphane
 	Corthésy.
-	
+
 2002-02-10  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Released 0.3.2.
@@ -957,7 +963,7 @@
 2001-09-17  Werner Koch  <wk@gnupg.org>
 
 	Released 0.2.3.
-	
+
 	* configure.in (NEED_GPG_VERSION): Set to 1.0.6. Incremented LT
 	current and age.
 
@@ -969,14 +975,14 @@
 
 2001-04-05  Werner Koch  <wk@gnupg.org>
 
-	* configure.in (NEED_GPG_VERSION): Set to 1.0.4g 
+	* configure.in (NEED_GPG_VERSION): Set to 1.0.4g
 
 2001-04-02  Werner Koch  <wk@gnupg.org>
 
 	Released 0.2.1.
 
 	Changed the copyright notices all over the place.
-	
+
 2001-02-28  Werner Koch  <wk@gnupg.org>
 
 	Released 0.2.0.

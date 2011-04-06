@@ -4,20 +4,20 @@
                  2010 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
- 
+
    File: @configure_input@  */
 
 #ifndef GPGME_H
@@ -34,12 +34,7 @@
 /* Include stdio.h for the FILE type definition.  */
 #include <stdio.h>
 
-#ifdef _WIN32
-  typedef long off_t;
-  typedef long ssize_t;
-#else
-# include <sys/types.h>
-#endif
+@INSERT__TYPEDEFS_FOR_GPGME_H@
 
 #include <time.h>
 
@@ -233,7 +228,7 @@ gpgme_pubkey_algo_t;
 /* Hash algorithms from libgcrypt.  */
 typedef enum
   {
-    GPGME_MD_NONE          = 0,  
+    GPGME_MD_NONE          = 0,
     GPGME_MD_MD5           = 1,
     GPGME_MD_SHA1          = 2,
     GPGME_MD_RMD160        = 3,
@@ -341,7 +336,7 @@ typedef enum
     GPGME_PROTOCOL_GPGCONF = 2,  /* Special code for gpgconf.  */
     GPGME_PROTOCOL_ASSUAN  = 3,  /* Low-level access to an Assuan server.  */
     GPGME_PROTOCOL_G13     = 4,
-    GPGME_PROTOCOL_UISERVER= 5,  
+    GPGME_PROTOCOL_UISERVER= 5,
     GPGME_PROTOCOL_DEFAULT = 254,
     GPGME_PROTOCOL_UNKNOWN = 255
   }
@@ -367,7 +362,7 @@ typedef unsigned int gpgme_export_mode_t;
 
 
 /* Flags for the audit log functions.  */
-#define GPGME_AUDITLOG_HTML      1 
+#define GPGME_AUDITLOG_HTML      1
 #define GPGME_AUDITLOG_WITH_HELP 128
 
 
@@ -523,7 +518,7 @@ struct _gpgme_engine_info
 
   /* The file name of the engine binary.  */
   char *file_name;
-  
+
   /* The version string of the installed engine.  */
   char *version;
 
@@ -576,7 +571,7 @@ struct _gpgme_subkey
 
   /* Internal to GPGME, do not use.  */
   unsigned int _unused : 21;
-  
+
   /* Public key algorithm supported by this subkey.  */
   gpgme_pubkey_algo_t pubkey_algo;
 
@@ -688,7 +683,7 @@ struct _gpgme_user_id
   unsigned int _unused : 30;
 
   /* The validity of the user ID.  */
-  gpgme_validity_t validity; 
+  gpgme_validity_t validity;
 
   /* The user ID string.  */
   char *uid;
@@ -1718,7 +1713,7 @@ struct _gpgme_trust_item
 
   /* The calculated validity.  */
   char *validity;
- 
+
   /* Internal to GPGME, do not use.  */
   char _validity[2];
 
@@ -1772,13 +1767,13 @@ int gpgme_trust_item_get_int_attr (gpgme_trust_item_t item, _gpgme_attr_t what,
    available GPG_ERR_NO_DATA is returned.  */
 gpgme_error_t gpgme_op_getauditlog_start (gpgme_ctx_t ctx, gpgme_data_t output,
                                           unsigned int flags);
-gpgme_error_t gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output, 
+gpgme_error_t gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output,
                                     unsigned int flags);
 
 
 
 /* Low-level Assuan protocol access.  */
-typedef gpgme_error_t (*gpgme_assuan_data_cb_t) 
+typedef gpgme_error_t (*gpgme_assuan_data_cb_t)
      (void *opaque, const void *data, size_t datalen);
 
 typedef gpgme_error_t (*gpgme_assuan_inquire_cb_t)
@@ -1790,7 +1785,7 @@ typedef gpgme_error_t (*gpgme_assuan_status_cb_t)
 
 /* Send the Assuan COMMAND and return results via the callbacks.
    Asynchronous variant. */
-gpgme_error_t gpgme_op_assuan_transact_start (gpgme_ctx_t ctx, 
+gpgme_error_t gpgme_op_assuan_transact_start (gpgme_ctx_t ctx,
                                               const char *command,
                                               gpgme_assuan_data_cb_t data_cb,
                                               void *data_cb_value,
@@ -1801,7 +1796,7 @@ gpgme_error_t gpgme_op_assuan_transact_start (gpgme_ctx_t ctx,
 
 /* Send the Assuan COMMAND and return results via the callbacks.
    Synchronous variant. */
-gpgme_error_t gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx, 
+gpgme_error_t gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
 					    const char *command,
 					    gpgme_assuan_data_cb_t data_cb,
 					    void *data_cb_value,
@@ -1931,7 +1926,7 @@ typedef struct gpgme_conf_arg
 typedef struct gpgme_conf_opt
 {
   struct gpgme_conf_opt *next;
-  
+
   /* The option name.  */
   char *name;
 
@@ -1954,7 +1949,7 @@ typedef struct gpgme_conf_opt
   /* The default value.  */
   gpgme_conf_arg_t default_value;
   char *default_description;
-  
+
   /* The default value if the option is not set.  */
   gpgme_conf_arg_t no_arg_value;
   char *no_arg_description;
@@ -1987,7 +1982,7 @@ typedef struct gpgme_conf_comp
   char *description;
 
   /* The program name (an absolute path to the program).  */
-  char *program_name;  
+  char *program_name;
 
   /* A linked list of options for this component.  */
   struct gpgme_conf_opt *options;
@@ -2013,7 +2008,7 @@ gpgme_error_t gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset,
 
 /* Release a set of configurations.  */
 void gpgme_conf_release (gpgme_conf_comp_t conf);
- 
+
 /* Retrieve the current configurations.  */
 gpgme_error_t gpgme_op_conf_load (gpgme_ctx_t ctx, gpgme_conf_comp_t *conf_p);
 
