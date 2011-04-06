@@ -1,3 +1,7 @@
+2011-04-06  Werner Koch  <wk@g10code.com>
+
+	* gpg-error.m4: Update from current libgpg-error repo.
+
 2010-05-07  Werner Koch  <wk@g10code.com>
 
 	* libassuan.m4: Update from libassuan svn.
