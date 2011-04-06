@@ -1,5 +1,9 @@
 2011-04-06  Werner Koch  <wk@g10code.com>
 
+	* gpgme-config.in: Add option --host.  Change options --cflags and
+	--libs to collapse duplicate include and lib dirs.  Try to put
+	extra libs at the end.
+
 	* gpgme.h.in: Use INSERT__TYPEDEFS_FOR_GPGME_H to include platform
 	specific typedefs.
 

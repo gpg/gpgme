@@ -3,6 +3,7 @@
 	* autogen.sh (--build-w32): Support option --build-w64.
 	* configure.ac (HAVE_W64_SYSTEM): Define.
 	(INSERT__TYPEDEFS_FOR_GPGME_H): New.
+	(GPGME_CONFIG_HOST): New.
 
 2011-02-02  Marcus Brinkmann  <mb@g10code.com>
 
@@ -992,7 +993,7 @@
 	* autogen.sh: Added option --build-w32.
 
 
- Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2011 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

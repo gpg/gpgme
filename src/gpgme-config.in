@@ -11,13 +11,15 @@
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
-includedir=@includedir@
-libdir=@libdir@
 
 # Make sure that no weird locale setting messes up our sed regexps etc.
 LC_COLLATE=C
 LC_ALL=C
 LANG=C
+
+# GPGME's own cflags and libs
+cflags="-I@includedir@"
+libs="-L@libdir@"
 
 # Network libraries.
 assuan_cflags="@LIBASSUAN_CFLAGS@"
@@ -55,6 +57,7 @@ Options:
 	[--exec-prefix]
 	[--version]
         [--api-version]
+        [--host]
 	[--libs]
 	[--cflags]
         [--get-gpg]
@@ -101,46 +104,75 @@ while test $# -gt 0; do
 	    echo "@GPGME_CONFIG_API_VERSION@"
 	    exit 0
 	    ;;
-        --cflags)
-	    if test "x$includedir" != "x/usr/include" -a "x$includedir" != "x/include"; then
-		output="$output -I$includedir"
-	    fi
-	    case "$thread_module" in
-	        pthread)
-	            output="$output $cflags_pthread"
-		    ;;
-	        pth)
-		    output="$output $cflags_pth"
-		    ;;
-	    esac
-	    output="$output $assuan_cflags $gpg_error_cflags"
-	    if test "x$with_glib" = "xyes"; then
-		output="$output $glib_cflags"
-	    fi
+        --host)
+	    echo "@GPGME_CONFIG_HOST@"
+	    exit 0
 	    ;;
-	--libs)
-	    if test "x$libdir" != "x/usr/lib" -a "x$libdir" != "x/lib"; then
-		output="$output -L$libdir"
-	    fi
+        --cflags)
+            result=
+            tmp_c=
+            tmp_g=
 	    case "$thread_module" in
-		pthread)
-	            output="$output -lgpgme-pthread $libs_pthread"
-		    ;;
-	        pth)
-		    output="$output -lgpgme-pth $libs_pth"
-		    ;;
+	        pthread) tmp_c="$cflags_pthread" ;;
+	        pth)     tmp_c="$cflags_pth"     ;;
+	    esac
+	    test "x$with_glib" = "xyes" && tmp_g="$cflags_glib"
+            for i in $cflags $tmp_c $assuan_cflags $gpg_error_cflags $tmp_g ; do
+              skip=no
+              case $i in
+                  -I/usr/include|-I/include)
+                      skip=yes
+                      ;;
+                  -I*)
+                      for j in $result ; do
+                          if test x"$j" = x"$i" ; then
+                              skip=yes
+                              break;
+                          fi
+                      done
+                      ;;
+              esac
+              if test $skip = no ; then
+                  result="$result $i"
+              fi
+            done
+            output="$output $result"
+            ;;
+	--libs)
+            result=
+            tmp_x=
+	    case "$thread_module" in
+	        pthread) tmp_l="-lgpgme-pthread"; tmp_x="$libs_pthread" ;;
+	        pth)     tmp_l="-lgpgme-pth";     tmp_x="$libs_pth"  ;;
 		*)
-		    if test "x$with_glib" = "xyes"; then
-			output="$output -lgpgme-glib"
+		    if test "x$with_glib" = "xyes" ; then
+		         tmp_l="-lgpgme-glib"
+                         tmp_x="$libs_glib"
 		    else
-			output="$output -lgpgme"
+			 tmp_l="-lgpgme"
 		    fi
 		    ;;
 	    esac
-	    output="$output $assuan_libs $gpg_error_libs"
-	    if test "x$with_glib" = "xyes"; then
-		output="$output $glib_cflags"
-	    fi
+            for i in $libs $tmp_l $assuan_libs $gpg_error_libs $tmp_x; do
+              skip=no
+              case $i in
+                  -L/usr/lib|-L/lib)
+                      skip=yes
+                      ;;
+                  -L*|-l*)
+                      for j in $result ; do
+                          if test x"$j" = x"$i" ; then
+                              skip=yes
+                              break;
+                          fi
+                      done
+                      ;;
+              esac
+              if test $skip = no ; then
+                  result="$result $i"
+              fi
+            done
+            output="$output $result"
 	    ;;
 	--thread=*)
             for thread_mod in $thread_modules; do
