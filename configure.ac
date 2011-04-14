@@ -21,7 +21,7 @@
 
 # (Process this file with autoconf to produce a configure script.)
 AC_PREREQ(2.59)
-min_automake_version="1.10"
+min_automake_version="1.11"
 
 # Version number: Remember to change it immediately *after* a release.
 #                 Make sure to run  "svn up" and "./autogen.sh --force"
