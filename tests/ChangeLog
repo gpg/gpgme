@@ -1,3 +1,22 @@
+2011-04-27  Marcus Brinkmann  <marcus@g10code.com>
+
+	* gpg/Makefile.am (DISTCLEANFILES): Add S.gpg-agent.
+	(mkdemodirs, ./Alpha/Secret.gpg): Remove targets.
+	(GNUPGHOME): Export as absolute build directory (for gpg-agent).
+	(./pubring.gpg): Remove --homedir option, import secdemo.asc.
+	(clean-local): Rewrite.
+	* gpg/secdemo.asc: New file.
+	* gpg/pubkey-1.asc, gpg/seckey-1.asc: Change passphrase to
+	"abc" (now needed as GnuPG 2.1 asks for secret key passphrase on
+	import).
+	* gpg/t-keylist.c (keys): Update key info for Joe Random Hacker.
+	(main): Disable check for can_encrypt, as this is now in a
+	different subkey.
+	* gpg/t-encrypt-sign.c (check_result): Allow RMD160 hash
+	algorithm.
+	* gpg/t-import.c (check_result): One secret key pair now counts as
+	two secret keys, allow that.
+
 2009-11-03  Werner Koch  <wk@g10code.com>
 
 	* run-support.h (fail_if_err): Include program name.

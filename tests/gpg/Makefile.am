@@ -38,7 +38,7 @@ TESTS = t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers		\
 	t-encrypt-large t-file-name t-gpgconf $(tests_unix)
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf
-DISTCLEANFILES = pubring.gpg~ pubring.kbx~ random_seed gpg.conf gpg-agent.conf
+DISTCLEANFILES = pubring.gpg~ pubring.kbx~ random_seed gpg.conf gpg-agent.conf S.gpg-agent
 
 EXTRA_DIST = mkdemodirs.in pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 	geheim.txt pubkey-1.asc seckey-1.asc pinentry
@@ -52,24 +52,18 @@ t_thread1_LDADD = ../../src/libgpgme-pthread.la
 # We don't run t-genkey in the test suite, because it takes too long
 noinst_PROGRAMS = $(TESTS) t-genkey
 
-mkdemodirs: mkdemodirs.in Makefile
-	sed -e 's,[@]GPG[@],$(GPG),g' < $(srcdir)/mkdemodirs.in > mkdemodirs
-	chmod +x mkdemodirs
-
 clean-local:
-	-./mkdemodirs --clean
-	-rm -f mkdemodirs
+	-rm -fR private-keys-v1.d
 
-all-local: ./pubring.gpg ./gpg.conf ./gpg-agent.conf
+all-local: ./gpg.conf ./gpg-agent.conf ./pubring.gpg 
 
-./pubring.gpg: $(srcdir)/pubdemo.asc ./Alpha/Secret.gpg 
-	-$(GPG) --homedir . --no-permission-warning \
+export GNUPGHOME := $(abs_builddir)
+
+./pubring.gpg: $(srcdir)/pubdemo.asc
+	-$(GPG) --no-permission-warning \
                 --import $(srcdir)/pubdemo.asc
-	-$(GPG) --homedir . --no-permission-warning \
-		--import Alpha/Secret.gpg Zulu/Secret.gpg
-
-./Alpha/Secret.gpg: mkdemodirs secdemo.asc 
-	srcdir=$(srcdir) ./mkdemodirs 
+	-$(GPG) --no-permission-warning \
+		--import $(srcdir)/secdemo.asc
 
 ./gpg.conf:
 # This is required for t-sig-notations.

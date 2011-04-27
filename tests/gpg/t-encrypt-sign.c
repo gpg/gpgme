@@ -60,7 +60,8 @@ check_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
 	       result->signatures->pubkey_algo);
       exit (1);
     }
-  if (result->signatures->hash_algo != GPGME_MD_SHA1)
+  if (result->signatures->hash_algo != GPGME_MD_SHA1
+      && result->signatures->hash_algo != GPGME_MD_RMD160)
     {
       fprintf (stderr, "Wrong hash algorithm reported: %i\n",
 	       result->signatures->hash_algo);

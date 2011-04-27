@@ -38,7 +38,7 @@
 void
 check_result (gpgme_import_result_t result, char *fpr, int secret)
 {
-  if (result->considered != 1)
+  if (result->considered != 1 && (secret && result->considered != 3))
     {
       fprintf (stderr, "Unexpected number of considered keys %i\n",
 	       result->considered);
@@ -63,7 +63,7 @@ check_result (gpgme_import_result_t result, char *fpr, int secret)
 	       result->imported_rsa);
       exit (1);
     }
-  if ((secret && result->unchanged != 0)
+  if ((secret && (result->unchanged != 0 && result->unchanged != 1))
       || (!secret && ((result->imported == 0 && result->unchanged != 1)
 		      || (result->imported == 1 && result->unchanged != 0))))
     {
@@ -101,7 +101,7 @@ check_result (gpgme_import_result_t result, char *fpr, int secret)
 	       result->new_revocations);
       exit (1);
     }
-  if ((secret && result->secret_read != 1)
+  if ((secret && result->secret_read != 1 && result->secret_read != 3)
       || (!secret && result->secret_read != 0))
     {
       fprintf (stderr, "Unexpected number of secret keys read %i\n",
@@ -116,7 +116,8 @@ check_result (gpgme_import_result_t result, char *fpr, int secret)
       exit (1);
     }
   if ((secret
-       && ((result->secret_imported == 0 && result->secret_unchanged != 1)
+       && ((result->secret_imported == 0 && result->secret_unchanged != 1
+	    && result->secret_unchanged != 2)
 	   || (result->secret_imported == 1 && result->secret_unchanged != 0)))
       || (!secret && result->secret_unchanged != 0))
     {

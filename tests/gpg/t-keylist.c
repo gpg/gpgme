@@ -115,8 +115,8 @@ struct key_info_s keys[] =
     { "23FD347A419429BACCD5E72D6BC4778054ACD246", "EF9DC276A172C881",
       { { "Zulu Test", "demo key", "zulu@example.net" } }, 1 },
     { "ADAB7FCC1F4DE2616ECFA402AF82244F9CD9FD55", "087DD7E0381701C4",
-      { { "Joe Random Hacker", "test key with passphrase \"x\"",
-	  "joe@setq.org" } }, 1 },
+      { { "Joe Random Hacker", "test key with passphrase \"abc\"",
+	  "joe@example.com" } }, 1 },
     { NULL }
   };
 
@@ -169,11 +169,14 @@ main (int argc, char **argv)
 	  fprintf (stderr, "Key unexpectedly invalid\n");
 	  exit (1);
 	}
+#if 0
+      /* GnuPG 2.1+ have a different subkey for encryption.  */
       if (!key->can_encrypt)
 	{
 	  fprintf (stderr, "Key unexpectedly unusable for encryption\n");
 	  exit (1);
 	}
+#endif
       if (!key->can_sign)
 	{
 	  fprintf (stderr, "Key unexpectedly unusable for signing\n");
