@@ -1,3 +1,9 @@
+2011-05-04  Marcus Brinkmann  <marcus@g10code.com>
+
+	* gpg/t-import.c (check_result): Complete secret key pair counting
+	and disable status check, as GPG 2.1 currently emits two IMPORT_OK
+	lines and we only look at the first.
+
 2011-04-27  Marcus Brinkmann  <marcus@g10code.com>
 
 	* gpg/Makefile.am (DISTCLEANFILES): Add S.gpg-agent.
