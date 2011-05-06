@@ -17,32 +17,6 @@ dnl You should have received a copy of the GNU Lesser General Public
 dnl License along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
-dnl GNUPG_FIX_HDR_VERSION(FILE, NAME)
-dnl   Make the version number stored in NAME in the header file FILE the
-dnl   same as the one here.  This is easier than to have a .in file just
-dnl   for one substitution.
-dnl   We must use a temp file in the current directory because make
-dnl   distcheck installs all sourcefiles RO.
-dnl   (wk 2001-12-18)
-AC_DEFUN([GNUPG_FIX_HDR_VERSION],
-  [ sed "s/^#define $2 \".*/#define $2 \"$VERSION\"/" $srcdir/$1 > fixhdr.tmp
-    if cmp -s $srcdir/$1 fixhdr.tmp 2>/dev/null; then
-        rm -f fixhdr.tmp
-    else
-        rm -f $srcdir/$1
-        if mv fixhdr.tmp $srcdir/$1 ; then
-            :
-        else
-            AC_MSG_ERROR([[
-***
-*** Failed to fix the version string macro $2 in $1.
-*** The old file has been saved as fixhdr.tmp
-***]])
-        fi
-        AC_MSG_WARN([fixed the $2 macro in $1])
-    fi
-  ])
-
 dnl GNUPG_CHECK_VA_COPY()
 dnl   Do some check on how to implement va_copy.
 dnl   May define MUST_COPY_VA_BY_VAL.
