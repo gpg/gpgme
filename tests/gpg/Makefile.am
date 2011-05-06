@@ -53,11 +53,14 @@ t_thread1_LDADD = ../../src/libgpgme-pthread.la
 noinst_PROGRAMS = $(TESTS) t-genkey
 
 clean-local:
+	-gpg-connect-agent KILLAGENT /bye
 	-rm -fR private-keys-v1.d
 
 all-local: ./gpg.conf ./gpg-agent.conf ./pubring.gpg 
 
 export GNUPGHOME := $(abs_builddir)
+
+export GPG_AGENT_INFO := 
 
 ./pubring.gpg: $(srcdir)/pubdemo.asc
 	-$(GPG) --no-permission-warning \

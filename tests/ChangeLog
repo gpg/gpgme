@@ -1,3 +1,9 @@
+2011-05-05  Marcus Brinkmann  <marcus@g10code.com>
+
+	* gpg/Makefile.am: Unset GPG_AGENT_INFO when setting up local
+	configuration.
+	(clean-local): Shut down local gpg-agent.
+
 2011-05-04  Marcus Brinkmann  <marcus@g10code.com>
 
 	* gpg/t-import.c (check_result): Complete secret key pair counting
