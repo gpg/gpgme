@@ -861,8 +861,6 @@ fi
 AM_CONDITIONAL(HAVE_UISERVER, test "$uiserver" != "no")
 
 
-AM_CONDITIONAL(BUILD_COMPLUS, test "$component_system" = "COM+")
-
 # Generate values for the DLL version info
 if test "$have_w32_system" = yes; then
     BUILD_TIMESTAMP=`date --iso-8601=minutes`
@@ -957,7 +955,7 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 tests/gpg/Makefile
                 tests/gpgsm/Makefile
                 tests/opassuan/Makefile
-		doc/Makefile complus/Makefile
+		doc/Makefile
                 src/versioninfo.rc
                 src/gpgme.h)
 AC_CONFIG_FILES(src/gpgme-config, chmod +x src/gpgme-config)
