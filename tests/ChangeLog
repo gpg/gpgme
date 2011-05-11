@@ -1,3 +1,11 @@
+2011-05-11  Marcus Brinkmann  <marcus@g10code.com>
+
+	* gpgsm/Makefile.am (DISTCLEANFILES): Move to ...
+	(CLEANFILES): ... here.
+	(clean-local): New rule.
+	* gpg/Makefile.am (DISTCLEANFILES): Move to ...
+	(CLEANFILES): ... here.
+
 2011-05-05  Marcus Brinkmann  <marcus@g10code.com>
 
 	* gpg/Makefile.am: Unset GPG_AGENT_INFO when setting up local

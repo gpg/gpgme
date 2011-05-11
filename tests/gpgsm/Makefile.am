@@ -40,14 +40,21 @@ noinst_PROGRAMS = $(TESTS) t-genkey cms-keylist cms-decrypt
 
 key_id = 32100C27173EF6E9C4E9A25D3D69F86D37A4F939
 
-DISTCLEANFILES = pubring.kbx pubring.kbx~ gpgsm.conf trustlist.txt \
-	private-keys-v1.d/$(key_id).key random_seed
+CLEANFILES = pubring.kbx pubring.kbx~ gpgsm.conf trustlist.txt \
+	random_seed S.gpg-agent  
 
+clean-local:
+	-gpg-connect-agent KILLAGENT /bye
+	-rm -fR private-keys-v1.d
 
 all-local: ./pubring.kbx ./gpgsm.conf ./private-keys-v1.d/$(key_id).key ./trustlist.txt
 
+export GNUPGHOME := $(abs_builddir)
+
+export GPG_AGENT_INFO := 
+
 ./pubring.kbx: $(srcdir)/cert_g10code_test1.der
-	$(GPGSM) --homedir . --import $(srcdir)/cert_g10code_test1.der
+	$(GPGSM) --import $(srcdir)/cert_g10code_test1.der
 
 ./gpgsm.conf:
 	echo disable-crl-checks > ./gpgsm.conf
