@@ -3294,14 +3294,13 @@ used.  GpgSM does not make the fingerprint available.
 The argument @var{parms} specifies parameters for the key in an XML
 string.  The details about the format of @var{parms} are specific to
 the crypto engine used by @var{ctx}.  Here is an example for GnuPG as
-the crypto engine:
+the crypto engine (all parameters of OpenPGP key generation are
+documented in the GPG manual):
 
 @example
 <GnupgKeyParms format="internal">
-Key-Type: DSA
-Key-Length: 1024
-Subkey-Type: ELG-E
-Subkey-Length: 1024
+Key-Type: default
+Subkey-Type: default
 Name-Real: Joe Tester
 Name-Comment: with stupid passphrase
 Name-Email: joe@@foo.bar
@@ -3310,7 +3309,8 @@ Passphrase: abc
 </GnupgKeyParms>
 @end example
 
-Here is an example for GpgSM as the crypto engine:
+Here is an example for GpgSM as the crypto engine (all parameters of
+OpenPGP key generation are documented in the GPGSM manual):
 
 @example
 <GnupgKeyParms format="internal">
