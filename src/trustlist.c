@@ -177,7 +177,7 @@ gpgme_op_trustlist_start (gpgme_ctx_t ctx, const char *pattern, int max_level)
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_trustlist_start", ctx,
 	      "pattern=%s, max_level=%i", pattern, max_level);
 
-  if (!pattern || !*pattern)
+  if (!ctx || !pattern || !*pattern)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   err = _gpgme_op_reset (ctx, 2);
@@ -212,7 +212,7 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
 
   TRACE_BEG (DEBUG_CTX, "gpgme_op_trustlist_next", ctx);
 
-  if (!r_item)
+  if (!ctx || !r_item)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
   *r_item = NULL;
   if (!ctx)

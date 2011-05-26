@@ -836,6 +836,10 @@ gpgme_op_verify_start (gpgme_ctx_t ctx, gpgme_data_t sig,
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_verify_start", ctx,
 	      "sig=%p, signed_text=%p, plaintext=%p",
 	      sig, signed_text, plaintext);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   err = verify_start (ctx, 0, sig, signed_text, plaintext);
   return TRACE_ERR (err);
 }
@@ -853,6 +857,9 @@ gpgme_op_verify (gpgme_ctx_t ctx, gpgme_data_t sig, gpgme_data_t signed_text,
 	      "sig=%p, signed_text=%p, plaintext=%p",
 	      sig, signed_text, plaintext);
 
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   err = verify_start (ctx, 1, sig, signed_text, plaintext);
   if (!err)
     err = _gpgme_wait_one (ctx);
@@ -869,6 +876,9 @@ gpgme_get_sig_key (gpgme_ctx_t ctx, int idx, gpgme_key_t *r_key)
 {
   gpgme_verify_result_t result;
   gpgme_signature_t sig;
+
+  if (!ctx)
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   result = gpgme_op_verify_result (ctx);
   sig = result->signatures;

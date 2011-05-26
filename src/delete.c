@@ -100,6 +100,10 @@ gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 	      "key=%p (%s), allow_secret=%i", key,
 	      (key->subkeys && key->subkeys->fpr) ? 
 	      key->subkeys->fpr : "invalid", allow_secret);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+  
   err = delete_start (ctx, 0, key, allow_secret);
   return TRACE_ERR (err);
 }
@@ -116,6 +120,10 @@ gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key, int allow_secret)
 	      "key=%p (%s), allow_secret=%i", key,
 	      (key->subkeys && key->subkeys->fpr) ? 
 	      key->subkeys->fpr : "invalid", allow_secret);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+  
   err = delete_start (ctx, 1, key, allow_secret);
   if (!err)
     err = _gpgme_wait_one (ctx);

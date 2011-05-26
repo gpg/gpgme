@@ -203,6 +203,10 @@ gpgme_op_genkey_start (gpgme_ctx_t ctx, const char *parms,
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_genkey_start", ctx,
 	      "pubkey=%p, seckey=%p", pubkey, seckey);
   TRACE_LOGBUF (parms, strlen (parms));
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   err = genkey_start (ctx, 0, parms, pubkey, seckey);
   return TRACE_ERR (err);
 }
@@ -220,6 +224,9 @@ gpgme_op_genkey (gpgme_ctx_t ctx, const char *parms, gpgme_data_t pubkey,
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_genkey", ctx,
 	      "pubkey=%p, seckey=%p", pubkey, seckey);
   TRACE_LOGBUF (parms, strlen (parms));
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   err = genkey_start (ctx, 1, parms, pubkey, seckey);
   if (!err)

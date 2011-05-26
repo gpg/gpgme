@@ -37,7 +37,12 @@ gpgme_error_t
 _gpgme_op_data_lookup (gpgme_ctx_t ctx, ctx_op_data_id_t type, void **hook,
 		       int size, void (*cleanup) (void *))
 {
-  struct ctx_op_data *data = ctx->op_data;
+  struct ctx_op_data *data;
+
+  if (!ctx)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  data = ctx->op_data;
   while (data && data->type != type)
     data = data->next;
   if (!data)

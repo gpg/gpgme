@@ -90,6 +90,9 @@ gpgme_op_vfs_transact (gpgme_ctx_t ctx,
 		       gpgme_error_t *op_err)
 {
   gpgme_error_t err;
+
+  if (!ctx)
+    return gpg_error (GPG_ERR_INV_VALUE);
   
   err = vfs_start (ctx, 1, command, data_cb, data_cb_value,
 		   inq_cb, inq_cb_value, status_cb, status_cb_value);
@@ -177,6 +180,9 @@ gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_vfs_create", ctx,
 	      "container_file=%s, flags=0x%x, op_err=%p",
 	      container_file, flags, op_err);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (_gpgme_debug_trace () && recp)
     {

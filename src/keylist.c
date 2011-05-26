@@ -863,6 +863,9 @@ gpgme_op_keylist_start (gpgme_ctx_t ctx, const char *pattern, int secret_only)
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_keylist_start", ctx,
 	      "pattern=%s, secret_only=%i", pattern, secret_only);
 
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   err = _gpgme_op_reset (ctx, 2);
   if (err)
     return TRACE_ERR (err);
@@ -899,6 +902,9 @@ gpgme_op_keylist_ext_start (gpgme_ctx_t ctx, const char *pattern[],
 
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_keylist_ext_start", ctx,
 	      "secret_only=%i, reserved=0x%x", secret_only, reserved);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   err = _gpgme_op_reset (ctx, 2);
   if (err)

@@ -1,3 +1,43 @@
+2011-05-26  Marcus Brinkmann  <marcus@g10code.com>
+
+	* decrypt.c (gpgme_op_decrypt_start, gpgme_op_decrypt): Check CTX.
+	* decrypt-verify.c (gpgme_op_decrypt_verify_start)
+	(gpgme_op_decrypt_verify): Likewise.
+	* delete.c (gpgme_op_delete_start, gpgme_op_delete): Likewise.
+	* edit.c (gpgme_op_edit_start, gpgme_op_edit)
+	(gpgme_op_card_edit_start, gpgme_op_card_edit): Likewise.
+	* encrypt.c (gpgme_op_encrypt_start, gpgme_op_encrypt): Likewise.
+	* encrypt-sign.c (gpgme_op_encrypt_sign_start)
+	(gpgme_op_encrypt_sign): Likewise.
+	* export.c (gpgme_op_export_start, gpgme_op_export)
+	(gpgme_op_export_ext_start, gpgme_op_export_ext)
+	(gpgme_op_export_keys_start, gpgme_op_export_keys): Likewise.
+	* genkey.c (gpgme_op_genkey_start, gpgme_op_genkey): Likewise.
+	* getauditlog.c (gpgme_op_getauditlog_start)
+	(gpgme_op_getauditlog): Likewise.
+	* gpgconf.c (gpgme_op_conf_load, gpgme_op_conf_save): Likewise.
+	* import.c (gpgme_op_import_start, gpgme_op_import_keys_start)
+	(gpgme_op_import_keys, gpgme_op_import): Likewise.
+	* keylist.c (gpgme_op_keylist_start, gpgme_op_keylist_ext_start): Likewise.
+	* opassuan.c (gpgme_op_assuan_transact_start)
+	(gpgme_op_assuan_transact_ext): Likewise.
+	* passwd.c (gpgme_op_passwd_start, gpgme_op_passwd): Likewise.
+	* sign.c (gpgme_op_sign_start, gpgme_op_sign): Likewise.
+	* trustlist.c (gpgme_op_trustlist_start)
+	(gpgme_op_trustlist_next): Likewise.
+	* verify.c (gpgme_op_verify_start, gpgme_get_sig_key): Likewise.
+	* op-support.c (_gpgme_op_data_lookup): Likewise.
+	* vfs-create.c (gpgme_op_vfs_transact, gpgme_op_vfs_create): Likewise.
+	* vfs-mount.c (gpgme_op_vfs_mount, gpgme_op_vfs_transact): Likewise.
+	* gpgme.c (gpgme_set_protocol)
+	(gpgme_set_sub_protocol)
+	(gpgme_set_armor, gpgme_set_include_certs)
+	(gpgme_set_keylist_mode, gpgme_set_passphrase_cb)
+	(gpgme_set_progress_cb, gpgme_set_io_cbs, gpgme_set_locale)
+	(gpgme_ctx_set_engine_info, gpgme_sig_notation_clear): Likewise.
+	* gpgme.c (gpgme_new): Check for valid R_CTX.
+	(gpgme_cancel, gpgme_cancel_async, gpgme_release): Likewise.
+
 2011-04-06  Werner Koch  <wk@g10code.com>
 
 	* gpgme-config.in: Add option --host.  Change options --cflags and

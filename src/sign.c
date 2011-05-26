@@ -393,6 +393,10 @@ gpgme_op_sign_start (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
   gpg_error_t err;
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_sign_start", ctx,
 	      "plain=%p, sig=%p, mode=%i", plain, sig, mode);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   err = sign_start (ctx, 0, plain, sig, mode);
   return TRACE_ERR (err);
 }
@@ -407,6 +411,10 @@ gpgme_op_sign (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
 
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_sign", ctx,
 	      "plain=%p, sig=%p, mode=%i", plain, sig, mode);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   err = sign_start (ctx, 1, plain, sig, mode);
   if (!err)
     err = _gpgme_wait_one (ctx);

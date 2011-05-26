@@ -289,6 +289,9 @@ gpgme_op_import_start (gpgme_ctx_t ctx, gpgme_data_t keydata)
   TRACE_BEG1 (DEBUG_CTX, "gpgme_op_import_start", ctx,
 	      "keydata=%p", keydata);
 
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   err = _gpgme_op_import_start (ctx, 0, keydata);
   return TRACE_ERR (err);
 }
@@ -302,6 +305,9 @@ gpgme_op_import (gpgme_ctx_t ctx, gpgme_data_t keydata)
 
   TRACE_BEG1 (DEBUG_CTX, "gpgme_op_import", ctx,
 	      "keydata=%p", keydata);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   err = _gpgme_op_import_start (ctx, 1, keydata);
   if (!err)
@@ -365,6 +371,10 @@ gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t *keys)
   gpg_error_t err;
 
   TRACE_BEG (DEBUG_CTX, "gpgme_op_import_keys_start", ctx);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   if (_gpgme_debug_trace () && keys)
     {
       int i = 0;
@@ -400,6 +410,10 @@ gpgme_op_import_keys (gpgme_ctx_t ctx, gpgme_key_t *keys)
   gpgme_error_t err;
 
   TRACE_BEG (DEBUG_CTX, "gpgme_op_import_keys", ctx);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   if (_gpgme_debug_trace () && keys)
     {
       int i = 0;

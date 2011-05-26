@@ -80,6 +80,10 @@ gpgme_op_export_start (gpgme_ctx_t ctx, const char *pattern,
 
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_export_start", ctx,
 	      "pattern=%s, mode=0x%x, keydata=%p", pattern, mode, keydata);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   err = export_start (ctx, 0, pattern, mode, keydata);
   return TRACE_ERR (err);
 }
@@ -94,6 +98,9 @@ gpgme_op_export (gpgme_ctx_t ctx, const char *pattern,
 
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_export", ctx,
 	      "pattern=%s, mode=0x%x, keydata=%p", pattern, mode, keydata);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   err = export_start (ctx, 1, pattern, mode, keydata);
   if (!err)
@@ -144,6 +151,9 @@ gpgme_op_export_ext_start (gpgme_ctx_t ctx, const char *pattern[],
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_ext_start", ctx,
 	      "mode=0x%x, keydata=%p", mode, keydata);
 
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   if (_gpgme_debug_trace () && pattern)
     {
       int i = 0;
@@ -169,6 +179,9 @@ gpgme_op_export_ext (gpgme_ctx_t ctx, const char *pattern[],
 
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_ext_start", ctx,
 	      "mode=0x%x, keydata=%p", mode, keydata);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (_gpgme_debug_trace () && pattern)
     {
@@ -256,6 +269,9 @@ gpgme_op_export_keys_start (gpgme_ctx_t ctx,
 
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_keys_start", ctx,
 	      "mode=0x%x, keydata=%p", mode, keydata);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
   
   if (_gpgme_debug_trace () && keys)
     {
@@ -284,6 +300,9 @@ gpgme_op_export_keys (gpgme_ctx_t ctx,
 
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_keys", ctx,
 	      "mode=0x%x, keydata=%p", mode, keydata);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
   
   if (_gpgme_debug_trace () && keys)
     {

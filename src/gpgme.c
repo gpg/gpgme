@@ -63,6 +63,9 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   if (_gpgme_selftest)
     return TRACE_ERR (gpgme_error (_gpgme_selftest));
 
+  if (!r_ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
     return TRACE_ERR (gpg_error_from_errno (errno));
@@ -160,6 +163,9 @@ gpgme_cancel (gpgme_ctx_t ctx)
 
   TRACE_BEG (DEBUG_CTX, "gpgme_cancel", ctx);
 
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   err = _gpgme_cancel_with_err (ctx, gpg_error (GPG_ERR_CANCELED), 0);
 
   return TRACE_ERR (err);
@@ -171,6 +177,9 @@ gpgme_error_t
 gpgme_cancel_async (gpgme_ctx_t ctx)
 {
   TRACE_BEG (DEBUG_CTX, "gpgme_cancel_async", ctx);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   LOCK (ctx->lock);
   ctx->canceled = 1;
@@ -185,6 +194,9 @@ void
 gpgme_release (gpgme_ctx_t ctx)
 {
   TRACE (DEBUG_CTX, "gpgme_release", ctx);
+
+  if (!ctx)
+    return;
 
   _gpgme_engine_release (ctx->engine);
   _gpgme_fd_table_deinit (&ctx->fdt);
@@ -278,6 +290,9 @@ gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
       && protocol != GPGME_PROTOCOL_UISERVER)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   if (ctx->protocol != protocol)
     {
       /* Shut down the engine when switching protocols.  */
@@ -301,6 +316,7 @@ gpgme_get_protocol (gpgme_ctx_t ctx)
 	  "ctx->protocol=%i (%s)", ctx->protocol,
 	  gpgme_get_protocol_name (ctx->protocol)
 	  ? gpgme_get_protocol_name (ctx->protocol) : "invalid");
+
   return ctx->protocol;
 }
 
@@ -311,6 +327,10 @@ gpgme_set_sub_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
   TRACE2 (DEBUG_CTX, "gpgme_set_sub_protocol", ctx, "protocol=%i (%s)",
 	  protocol, gpgme_get_protocol_name (protocol)
 	  ? gpgme_get_protocol_name (protocol) : "invalid");
+
+  if (!ctx)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
   ctx->sub_protocol = protocol;
   return 0;
 }
@@ -323,6 +343,7 @@ gpgme_get_sub_protocol (gpgme_ctx_t ctx)
 	  "ctx->sub_protocol=%i (%s)", ctx->sub_protocol,
 	  gpgme_get_protocol_name (ctx->sub_protocol)
 	  ? gpgme_get_protocol_name (ctx->sub_protocol) : "invalid");
+
   return ctx->sub_protocol;
 }
 
@@ -367,6 +388,10 @@ gpgme_set_armor (gpgme_ctx_t ctx, int use_armor)
 {
   TRACE2 (DEBUG_CTX, "gpgme_set_armor", ctx, "use_armor=%i (%s)",
 	  use_armor, use_armor ? "yes" : "no");
+
+  if (!ctx)
+    return;
+
   ctx->use_armor = use_armor;
 }
 
@@ -390,6 +415,10 @@ gpgme_set_textmode (gpgme_ctx_t ctx, int use_textmode)
 {
   TRACE2 (DEBUG_CTX, "gpgme_set_textmode", ctx, "use_textmode=%i (%s)",
 	  use_textmode, use_textmode ? "yes" : "no");
+
+  if (!ctx)
+    return;
+
   ctx->use_textmode = use_textmode;
 }
 
@@ -409,6 +438,9 @@ gpgme_get_textmode (gpgme_ctx_t ctx)
 void
 gpgme_set_include_certs (gpgme_ctx_t ctx, int nr_of_certs)
 {
+  if (!ctx)
+    return;
+
   if (nr_of_certs == GPGME_INCLUDE_CERTS_DEFAULT)
     ctx->include_certs = GPGME_INCLUDE_CERTS_DEFAULT;
   else if (nr_of_certs < -2)
@@ -441,6 +473,9 @@ gpgme_set_keylist_mode (gpgme_ctx_t ctx, gpgme_keylist_mode_t mode)
   TRACE1 (DEBUG_CTX, "gpgme_set_keylist_mode", ctx, "keylist_mode=0x%x",
 	  mode);
 
+  if (!ctx)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
   ctx->keylist_mode = mode;
   return 0;
 }
@@ -464,6 +499,10 @@ gpgme_set_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t cb,
 {
   TRACE2 (DEBUG_CTX, "gpgme_set_passphrase_cb", ctx,
 	  "passphrase_cb=%p/%p", cb, cb_value);
+
+  if (!ctx)
+    return;
+
   ctx->passphrase_cb = cb;
   ctx->passphrase_cb_value = cb_value;
 }
@@ -492,6 +531,10 @@ gpgme_set_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t cb, void *cb_value)
 {
   TRACE2 (DEBUG_CTX, "gpgme_set_progress_cb", ctx, "progress_cb=%p/%p",
 	  cb, cb_value);
+
+  if (!ctx)
+    return;
+
   ctx->progress_cb = cb;
   ctx->progress_cb_value = cb_value;
 }
@@ -516,6 +559,9 @@ gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *r_cb,
 void
 gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 {
+  if (!ctx)
+    return;
+
   if (io_cbs)
     {
       TRACE6 (DEBUG_CTX, "gpgme_set_io_cbs", ctx,
@@ -592,6 +638,9 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
 
   TRACE_BEG2 (DEBUG_CTX, "gpgme_set_locale", ctx,
 	       "category=%i, value=%s", category, value ? value : "(null)");
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
 #define PREPARE_ONE_LOCALE(lcat, ucat)				\
   if (!failed && value						\
@@ -678,6 +727,9 @@ gpgme_ctx_set_engine_info (gpgme_ctx_t ctx, gpgme_protocol_t proto,
 	      ? gpgme_get_protocol_name (proto) : "unknown",
 	      file_name ? file_name : "(default)",
 	      home_dir ? home_dir : "(default)");
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 	      
   /* Shut down the engine when changing engine info.  */
   if (ctx->engine)
@@ -715,6 +767,10 @@ void
 gpgme_sig_notation_clear (gpgme_ctx_t ctx)
 {
   TRACE (DEBUG_CTX, "gpgme_sig_notation_clear", ctx);
+
+  if (!ctx)
+    return;
+
   _gpgme_sig_notation_clear (ctx);
 }
 

@@ -145,6 +145,10 @@ gpgme_op_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
 	      (key->subkeys && key->subkeys->fpr) ? 
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+  
   err = edit_start (ctx, 0, 0, key, fnc, fnc_value, out);
   return err;
 }
@@ -163,6 +167,9 @@ gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 	      (key->subkeys && key->subkeys->fpr) ? 
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
 
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+  
   err = edit_start (ctx, 1, 0, key, fnc, fnc_value, out);
 
   if (!err)
@@ -182,6 +189,10 @@ gpgme_op_card_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
 	      (key->subkeys && key->subkeys->fpr) ? 
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+  
   err = edit_start (ctx, 0, 1, key, fnc, fnc_value, out);
   return err;
 }
@@ -199,6 +210,10 @@ gpgme_op_card_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
 	      (key->subkeys && key->subkeys->fpr) ? 
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+  
   err = edit_start (ctx, 1, 1, key, fnc, fnc_value, out);
   if (!err)
     err = _gpgme_wait_one (ctx);

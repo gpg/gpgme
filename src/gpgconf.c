@@ -94,8 +94,12 @@ gpgme_op_conf_load (gpgme_ctx_t ctx, gpgme_conf_comp_t *conf_p)
 {
 #ifdef ENABLE_GPGCONF
   gpgme_error_t err;
-  gpgme_protocol_t proto = ctx->protocol;
+  gpgme_protocol_t proto;
 
+  if (!ctx)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  proto = ctx->protocol;
   ctx->protocol = GPGME_PROTOCOL_GPGCONF;
   err = _gpgme_op_reset (ctx, 1);
   if (err)
@@ -116,8 +120,12 @@ gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp)
 {
 #ifdef ENABLE_GPGCONF
   gpgme_error_t err;
-  gpgme_protocol_t proto = ctx->protocol;
+  gpgme_protocol_t proto;
 
+  if (!ctx)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  proto = ctx->protocol;
   ctx->protocol = GPGME_PROTOCOL_GPGCONF;
   err = _gpgme_op_reset (ctx, 1);
   if (err)

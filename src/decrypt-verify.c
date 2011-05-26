@@ -91,6 +91,10 @@ gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
 
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_verify_start", ctx,
 	      "cipher=%p, plain=%p", cipher, plain);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+  
   err = decrypt_verify_start (ctx, 0, cipher, plain);
   return TRACE_ERR (err);
 }
@@ -106,6 +110,10 @@ gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher,
 
   TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_verify", ctx,
 	      "cipher=%p, plain=%p", cipher, plain);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+  
   err = decrypt_verify_start (ctx, 1, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);

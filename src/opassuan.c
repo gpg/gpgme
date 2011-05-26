@@ -95,6 +95,9 @@ gpgme_op_assuan_transact_start (gpgme_ctx_t ctx,
 	      command, data_cb, data_cb_value, inq_cb, inq_cb_value,
 	      status_cb, status_cb_value);
 
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
   err = opassuan_start (ctx, 0, command, data_cb, data_cb_value,
 			inq_cb, inq_cb_value, status_cb, status_cb_value);
   return TRACE_ERR (err);
@@ -121,6 +124,9 @@ gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
 	      "op_err=%p",
 	      command, data_cb, data_cb_value, inq_cb, inq_cb_value,
 	      status_cb, status_cb_value, op_err_p);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   err = opassuan_start (ctx, 1, command, 
                         data_cb, data_cb_value,
@@ -211,6 +217,9 @@ gpgme_op_assuan_transact (gpgme_ctx_t ctx,
   gpgme_error_t err;
 
   TRACE (DEBUG_CTX, "gpgme_op_assuan_transact", ctx);
+
+  if (!ctx)
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Users of the old-style session based interfaces need to look at
      the result structure.  */
