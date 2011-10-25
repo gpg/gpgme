@@ -33,11 +33,6 @@ ltlib_gpgme_pthread = libgpgme-pthread.la
 else
 ltlib_gpgme_pthread =
 endif
-if HAVE_PTH
-ltlib_gpgme_pth = libgpgme-pth.la
-else
-ltlib_gpgme_pth =
-endif
 
 if BUILD_W32_GLIB
 ltlib_gpgme_glib = libgpgme-glib.la
@@ -52,7 +47,7 @@ ltlib_gpgme_qt =
 endif
 
 lib_LTLIBRARIES = libgpgme.la $(ltlib_gpgme_glib) $(ltlib_gpgme_qt) \
-	$(ltlib_gpgme_pthread) $(ltlib_gpgme_pth)
+	$(ltlib_gpgme_pthread)
 
 if HAVE_LD_VERSION_SCRIPT
 libgpgme_version_script_cmd = -Wl,--version-script=$(srcdir)/libgpgme.vers
@@ -132,8 +127,6 @@ libgpgme_la_SOURCES = $(main_sources)					\
 	ath.h ath.c $(system_components_not_extra)
 libgpgme_pthread_la_SOURCES = $(main_sources)				\
 	ath.h ath-pthread.c $(system_components_not_extra)
-libgpgme_pth_la_SOURCES = $(main_sources)				\
-	ath.h ath-pth.c $(system_components_not_extra)
 
 if BUILD_W32_GLIB
 libgpgme_glib_la_SOURCES = $(main_sources) ath.h ath.c w32-glib-io.c
@@ -154,9 +147,8 @@ endif
 
 # We use a global CFLAGS and CPPFLAGS setting for all library
 # versions, because then every object file is only compiled once.
-AM_CPPFLAGS = @GPG_ERROR_CFLAGS@ @PTH_CPPFLAGS@ \
-	@QT4_CORE_CFLAGS@
-AM_CFLAGS = @LIBASSUAN_CFLAGS@ @PTH_CFLAGS@ @GLIB_CFLAGS@ @QT4_CORE_CFLAGS@
+AM_CPPFLAGS = @GPG_ERROR_CFLAGS@ @QT4_CORE_CFLAGS@
+AM_CFLAGS = @LIBASSUAN_CFLAGS@ @GLIB_CFLAGS@ @QT4_CORE_CFLAGS@
 
 if HAVE_W32_SYSTEM
 # Windows provides us with an endless stream of Tough Love.  To spawn
@@ -212,13 +204,6 @@ libgpgme_pthread_la_LDFLAGS = $(no_undefined) $(export_symbols) \
 libgpgme_pthread_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers
 libgpgme_pthread_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	-lpthread @GPG_ERROR_LIBS@
-
-libgpgme_pth_la_LDFLAGS = @PTH_LDFLAGS@ $(no_undefined) $(export_symbols) \
-	$(libgpgme_version_script_cmd) -version-info \
-	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_pth_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers
-libgpgme_pth_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
-	@PTH_LIBS@ @GPG_ERROR_LIBS@
 
 if BUILD_W32_GLIB
 libgpgme_glib_la_LDFLAGS = $(no_undefined) \

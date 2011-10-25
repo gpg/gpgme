@@ -1,3 +1,9 @@
+2011-10-25  Marcus Brinkmann  <marcus@g10code.com>
+
+	* m4/pth.m4: Removed.
+	* configure.ac: Remove check for pth and automake conditional
+	HAVE_PTH.
+
 2011-06-16  Marcus Brinkmann  <marcus@g10code.com>
 
 	Release 1.3.1

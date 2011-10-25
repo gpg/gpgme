@@ -171,10 +171,6 @@ case "${host}" in
 	    		   build_w32_qt=$enableval)
         ;;
     *)
-	AC_CHECK_PTH(1.2.0,,,no,have_pth=yes)
-	if test "$have_pth" = yes; then
-	  AC_DEFINE(HAVE_PTH, ,[Define if we have Pth.])
-	fi
 	AC_CHECK_LIB(pthread,pthread_create,have_pthread=yes)
 	if test "$have_pthread" = yes; then
 	  AC_DEFINE(HAVE_PTHREAD, ,[Define if we have pthread.])
@@ -218,7 +214,6 @@ AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
 AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
 AM_CONDITIONAL(BUILD_W32_QT, test "$build_w32_qt" = yes)
 
-AM_CONDITIONAL(HAVE_PTH, test "$have_pth" = "yes")
 AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 
 
@@ -983,5 +978,4 @@ echo "
         FD Passing:      $use_descriptor_passing
 
         GPGME Pthread:   $have_pthread
-        GPGME Pth:       $have_pth
 "

@@ -1,3 +1,8 @@
+2011-10-25  Marcus Brinkmann  <marcus@g10code.com>
+
+	* Makefile.am: Remove build rules for libgpgme-pth.
+	* gpgme.m4: Remove support for libgpgme-pth.
+
 2011-05-26  Marcus Brinkmann  <marcus@g10code.com>
 
 	* decrypt.c (gpgme_op_decrypt_start, gpgme_op_decrypt): Check CTX.
