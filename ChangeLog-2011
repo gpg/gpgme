@@ -1,0 +1,1038 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
+2011-10-25  Marcus Brinkmann  <marcus@g10code.com>
+
+	* m4/pth.m4: Removed.
+	* configure.ac: Remove check for pth and automake conditional
+	HAVE_PTH.
+
+2011-06-16  Marcus Brinkmann  <marcus@g10code.com>
+
+	Release 1.3.1
+
+	* configure.ac: Set LT version to C19/A8/R0.
+
+2011-05-06  Marcus Brinkmann  <marcus@g10code.com>
+
+	* Makefile.am (SUBDIRS): Remove complus.
+
+	* configure.ac (AC_CONFIG_FILES): Remove complus/Makefile.
+	(BUILD_COMPLUS): Remove AM_CONDITIONAL.
+	* complus/: Remove very old and stale component.
+
+	* acinclude.m4 (GNUPG_FIX_HDR_VERSION): Remove.
+
+2011-04-14  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require automake 1.11.
+
+2011-04-06  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh (--build-w32): Support option --build-w64.
+	* configure.ac (HAVE_W64_SYSTEM): Define.
+	(INSERT__TYPEDEFS_FOR_GPGME_H): New.
+	(GPGME_CONFIG_HOST): New.
+
+2011-02-02  Marcus Brinkmann  <mb@g10code.com>
+
+	* configure.ac (NEED_LIBASSUAN_VERSION): Bump to 2.0.2 for system hooks.
+
+2010-12-30  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Support a git revision.
+
+2010-11-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AC_CHECK_HEADERS): Check for sys/types.h and
+	sys.stat.h.
+
+2010-11-02  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AC_CHECK_HEADERS): Check for sys.time.h.
+
+2010-08-19  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AH_BOTTOM): Define GPG_ERR_ENABLE_ERRNO_MACROS.
+
+2010-05-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for setlocale.
+
+2010-05-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Change checks to always require libassuan.
+
+2010-05-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh: Update the thing.
+
+	* configure.ac: Check for locale.h.
+
+2010-05-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Detect Windows CE.
+	(HAVE_W32CE_SYSTEM): New symbol and automake conditional.
+	* ltmain.sh, m4/libtool.m4: Patch so that it works for Windows CE.
+
+	* configure.ac: Require libgpg-error 1.8.
+
+2010-03-15  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (emacs_local_vars_begin)
+	(emacs_local_vars_read_only, emacs_local_vars_end): New.
+
+2010-01-22  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh (--build-w32): Add --with-libassuan-prefix.
+
+2010-01-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	Release 1.3.0.
+
+2009-12-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Do not use echo -n.  Test for __thread.
+
+2009-12-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Make largefile check more robust.
+
+2009-12-10  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Check for getgid and getegid.
+
+2009-12-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	Update to libtool 2.2.6a.
+	* configure.ac: Invoke AC_CONFIG_MACRO_DIR.
+	(AC_LIBTOOL_WIN32_DLL, AC_LIBTOOL_RC): Replace by ...
+	(LT_PREREQ, LT_INIT, LT_LANG): ... these.
+	* config.guess, config.sub, install-sh, ltmain.sh, m4/libtool.m4:
+	Updated to libtool 2.2.6a.
+	* m4/ltoptions.m4, m4/ltsugar.m4, m4/ltversion.m4,
+	m4/lt~obsolete.m4: New files from libtool 2.2.6a.
+
+2009-11-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Activate UIServer if FD passing is enabled and
+	Assuan is available.
+
+2009-10-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for argp.h and error_t.
+
+2009-10-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (NEED_GPG_VERSION_DEFAULT): Bump to 1.4.0 as 1.3.0
+	was development versions only.
+
+2009-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add support for G13.
+
+2009-10-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_CONFIG_FILES): Remove assuan/Makefile.
+
+2009-10-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Replace internal libassuan by external libassuan.
+	* m4/libassuan.m4: New file.
+	* Makefile.am (assuan): Remove variable.
+	(SUBDIRS): Remove ${assuan}.
+	* assuan/: Removed.
+
+2009-06-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add AC_TYPE_UINTPTR_T.
+
+	* assuan/assuan.h [_ASSUAN_IN_GPGME_BUILD_ASSUAN]: Declare
+	_gpgme_io_connect.
+
+2009-06-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released GPGME 1.2.0.
+
+	* configure.ac (my_version): Set to 1.2.0.
+	(LIBGPGME_LT_CURRENT, LIBGPGME_LT_AGE): Bump.
+	(LIBGPGME_LT_REVISION): Reset.
+
+2009-05-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add infrastructure for compile time check of
+	_FILE_OFFSET_BITS.
+
+2009-04-19  Moritz  <moritz@gnu.org>
+
+	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): Specify --with-gpg.
+
+2009-03-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan/: Update to libassuan SVN 2009-03-06.
+
+2009-01-26  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AC_CONFIG_FILES): Add tests/opassuan/Makefile.
+
+2008-12-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	Release GPGME 1.1.8.
+
+	* configure.ac: Bump API revision.
+
+2008-11-03  Marcus Brinkmann  <marcus@g10code.com>
+
+	* configure.ac: Replace gpgme paths with src.
+	* gpgme: Move to ...
+	* src: ... this new directory.
+
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AC_CONFIG_FILES): Add gpgme.h.
+	(GNUPG_FIX_HDR_VERSION): Remove.
+
+2008-10-17  Marcus Brinkmann  <marcus@g10code.com>
+
+	Release GPGME 1.1.7.
+
+	* configure.ac (LIBGPGME_LT_REVISION): Bump for release.
+
+2008-09-19  Moritz  <moritz@gnu.org>
+
+	* configure.ac: Remove bogus "esac".
+
+2008-09-16  Marcus Brinkmann  <marcus@g10code.com>
+
+	* configure.ac (_XOPEN_SOURCE) [apple-darwin]: Define it.
+
+2008-07-04  Werner Koch  <wk@g10code.com>
+
+	* config.guess, config.sub: Update to 2007-11-19.  Also update
+	missing et al scripts.
+
+2008-04-01  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AC_INIT): Fix quoting.
+
+2008-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Bump required version of automake up to 1.10.
+	* autogen.sh: Fix aclocal check.
+
+2008-01-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	Release GPGME 1.1.6.
+
+	* configure.ac: Support gpgconf.
+
+2007-09-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-pipe-connect.c (pipe_connect_gpgme): Do not close process
+	handle here.  Use this function also on Unix systems.
+
+	* assuan-pipe-connect.c (pipe_connect_gpgme): Fix last change.
+
+	* assuan-pipe-connect.c (pipe_connect_gpgme): New function, use it
+	if _ASSUAN_IN_GPGME_BUILD_ASSUAN.
+
+2007-09-17  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Use the svn version magic.
+
+2007-09-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for C++, Qt and support --enable-w32-qt.
+	* m4/pkg.m4: New file.
+
+2007-08-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (--enable-w32-glib): Use --enableval, not
+	--withval.
+
+2007-07-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan/assuan-socket.c (_assuan_close): Always use close().
+	* assuan/assuan.h (_gpgme_io_close): New prototype.
+	(close): New macro, define as _gpgme_io_close.
+
+2007-07-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan/assuan-io.c (_assuan_simple_read, _assuan_simple_write):
+	Always use read/write (which means _gpgme_io_read and
+	_gpgme_io_write).
+
+2007-07-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 1.1.5.
+
+	* configure.ac (LIBGPGME_LT_REVISION): Bump for release.
+
+2007-07-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (GPGSM_DEFAULT) [*-mingw32*]: Initialize it.
+	(HAVE_ASSUAN_H): Set to 1 if we have it.
+	(funopen): Use AC_REPLACE_FUNCS.
+	(USE_DESCRIPTOR_PASSING): Define to 1 if we have it.  Do not
+	define it at all if we don't.
+	(NETLIBS) [have_w32_system]: Add -lws2_32.
+	(DIRSEP_C, DIRSEP_S, EXPSEP_C, EXPSEP_S, PATHSEP_S)
+	[HAVE_DOSISH_SYSTEM]: Remove definitions.
+
+	* assuan/assuan.h (_assuan_funopen): Define to _gpgme_funopen.
+	* assuan/funopen.c: Move to ../gpgme/funopen.c.
+	* assuan/Makefile.am (libassuan_la_SOURCES): Remove funopen.c.
+
+2007-07-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan/Makefile.am (INCLUDES): Include $(top_srcdir)/gpgme.
+	* assuan/assuan.h: Include <ath.h> instead of trying to duplicate
+	the definitions.
+
+	* assuan/: Update files to 2007-07-04 version of assuan.
+
+	* autogen.sh: Use = not == in test.
+
+2007-03-05  Werner Koch  <wk@g10code.com>
+
+	Released 1.1.4.
+
+	* configure.ac (LIBGPGME_LT_REVISION): Bump for release.
+
+	* autogen.sh: New option --force.
+
+2007-01-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 1.1.3.
+
+	* configure.ac (LIBGPGME_LT_REVISION): Bump for release.
+
+2007-01-26  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Changed gpg and gpgsm version checks to work with
+	arbitrary names of the gpg binary. New option --disable-gpg-test
+	and --disable-gpgsm-test.
+
+2007-01-09  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (NEED_GPG_VERSION, NEED_GPGSM_VERSION): Must define
+	after it may have been changed by an option.
+
+2007-01-08  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require gpg-error 1.4 due to the use of
+	gpg_error_from_syserror.
+	(HAVE_ASSUAN_H): New.
+
+2007-01-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add options --with-gpg-version and
+	--with-gpgsm-version to allow overriding the minimum version
+	requirements.
+
+2006-12-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Fix two typos in last change.
+
+2006-12-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Use descriptor passing only if --enable-fd-passing
+	is provided.
+
+	* configure.ac: Add check for use of descriptor passing.
+
+2006-11-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (NEED_GPG_VERSION): Bump to 1.3.0.
+
+2006-09-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Turn stpcpy into a replacement function.
+	Check for unistd.h and add setenv as replacement function.
+
+2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for network libraries and set NETLIBS.
+
+2006-07-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* lang, lang/cl: New subdirectories.
+	* lang/Makefile.am, lang/README: New files.
+	* configure.ac (AC_CONFIG_FILES): Add lang/Makefile,
+	lang/cl/Makefile and lang/cl/gpgme.asd.
+	* Makefile.am (SUBDIRS): Add lang.
+
+2006-03-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (LIBGPGME_LT_REVISION): Bump for release.
+
+2006-02-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 1.1.1.
+
+	* configure.ac (LIBGPGME_LT_CURRENT, LIBGPGME_LT_AGE): Bump for
+	release.
+	(LIBGPGME_LT_REVISION): Reset to 0 for release.
+
+2006-01-05  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Test for inline feature.
+	(AH_BOTTOM): New to define the pure attribute.
+
+2006-01-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Append SVN revision to the version.
+
+2005-11-18  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (BUILD_REVISION): New.
+
+2005-11-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add support for --enable-w32-glib (disabled by
+	default).  Invoke AM_PATH_GLIB_2_0.
+
+2005-11-16  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (CFLAGS) [W32]: Make sure that -mms-bitfields are used.
+
+2005-11-15  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Create BUILD_FILEVERSION from SVN Revision.
+
+	* autogen.sh [W32]: Build shared and static versions of the library.
+
+2005-10-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* w32-dll/ChangeLog, w32-dll/build-dll, w32-dll/gpgme.def: Remove
+	files.
+
+	* configure.ac: Instead checking for windres and dlltool, invoke
+	AC_LIBTOOL_WIN32_DLL and AC_LIBTOOL_RC.
+	* src/Makefile.am [HAVE_W32_SYSTEM]: Use libtool, which simplifies
+	the rules.
+
+2005-10-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 1.1.0.
+
+	* configure.ac (LIBGPGME_LT_CURRENT, LIBGPGME_LT_AGE): Bump for
+	release.
+	(LIBGPGME_LT_REVISION): Reset to 0 for release.
+
+2005-09-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (HAVE_PTH): Don't add $PTH_CFLAGS to $CFLAGS here.
+
+2005-08-26  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (SEPCONSTANTS): New to define DIRSEP_C et al.
+
+2005-08-19  Werner Koch  <wk@g10code.com>
+
+	* configure.ac [W32]: Create values for versioninfo.rc and list
+	substuture versioninfo.rc.
+	* configure.ac: Define ENABLE_GPGSM.
+
+2005-08-08  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (stpcpy): Changed from replace to test.
+
+2005-03-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AH_BOTTOM): Removed.
+
+2005-03-09  Werner Koch  <wk@g10code.com>
+
+	* acinclude.m4 (GNUPG_CHECK_VA_COPY): Assume no when cross-compiling.
+
+	* Makefile.am (EXTRA_DIST): Include autogen.sh
+
+	* autogen.sh: Added the usual code to build for W32 (--build-w32).
+
+	* configure.ac: Fixed the mingw32 host string, removed OS/2 stuff.
+	(HAVE_DRIVE_LETTERS): Removed.
+	(HAVE_W32_SYSTEM): Added.
+	(AC_GNU_SOURCE): New to replace the identical AH_VERBATIM.
+	(AH_BOTTOM): Added.
+
+2004-12-28  Werner Koch  <wk@g10code.com>
+
+	Released 1.0.2.
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Build bzip 2 version.
+	(ACLOCAL_AMFLAGS): Add -I m4.
+	* configure.ac: Require automake 1.9.3 and autoconf 2.59.
+	* acinclude.m4: Changed quoting for automake 1.9.
+	* README: Use SHA1 instead of MD5.
+
+2004-12-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Replace ttyname_r if it doesn't exist (and warn in
+	that case).
+
+2004-12-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* README: Refer to COPYING.LESSER and "each file" instead of
+	COPYING.
+	* COPYING.LESSER: New file.
+	* gpgme.spec.in (%doc): Add COPYING.LESSER.
+	* acinclude.m4, configure.ac, Makefile.am: Change license to LGPL
+	2.1 or later.
+	* TODO: Add copyright notice.
+	* README.CVS: Likewise.
+
+	* configure.ac (GPGSM_VERSION): Fix filter to get it.
+
+2004-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 1.0.1.
+
+	* configure.ac (LIBGPGME_LT_REVISION): Bump up to 2.
+	(AC_INIT): Set version to 1.0.1.
+
+	* configure.ac: Set HAVE_GPGSM to true only if $GPGSM is not "no".
+
+2004-09-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 1.0.0.
+
+	* configure.ac (LIBGPGME_LT_REVISION): Bump up to 1.
+	(AC_INIT): Set version to 1.0.0.
+
+	* Makefile.am (EXTRA_DIST): Remove README-alpha.
+	* README-alpha: Remove file.
+
+2004-09-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Disable AC_CONFIG_MACRO_DIR for now.
+
+2004-09-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Improve diagnostics with version check.
+
+	* configure.ac: Print diagnostics about found thread libraries at
+	the end.  Check for the versions of GPG and GPGSM and print the
+	found versions at the end.
+	(HAVE_GPGSM): Do not require GPGSM to exist and be readable.
+	(AC_CONFIG_MACRO_DIR): Invoke with argument m4.
+
+	* acinclude.m4: Add copyright notice.
+	(jm_GLIBC21, AM_PATH_GPG_ERROR, _AC_PTH_ERROR, _AC_PTH_VERBOSE,
+	AC_CHECK_PTH): Removed.
+
+2004-06-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for <sys/uio.h>.
+
+2004-06-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.9.0.
+
+	* configure.ac (AC_INIT): Set version number to 0.9.0.
+	(LIBGPGME_LT_CURRENT, LIBGPGME_LT_AGE): Bump up by one.
+	(LIBGPGME_LT_REVISION): Reset to zero.
+
+2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (GPGME_CONFIG_API_VERSION): New variable,
+	substitute it.
+
+2004-04-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.4.7.
+
+	* configure.ac (LIBGPGME_LT_REVISION): Bump it up.
+
+2004-04-02  Thomas Schwinge  <schwinge@nic-nac-project.de>
+
+	* autogen.sh: Added ACLOCAL_FLAGS.
+
+2004-04-06  Werner Koch  <wk@gnupg.org>
+
+	Released 0.4.6.
+
+	* config.guess, config.sub, ltmain.sh: Updated to those from
+	libtools 1.5.4.
+
+2004-03-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.4.5.
+
+	* configure.ac (NEED_GPGSM_VERSION): Bump up to 1.9.6.
+
+	* Makefile.am (EXTRA_DIST): Remove autogen.sh and README.CVS.
+
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Make the check for funopen fail with just a
+	warning.
+
+2004-02-11  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh (check_version): Removed bashism and simplified.
+
+2004-02-10  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Fixed funopen test change.
+
+2004-02-06  Moritz Schulte  <mo@g10code.com>
+
+	* configure.ac: Fix funopen replacement mechanism.
+
+2004-01-31  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add invocation of AC_SYS_LARGEFILE, AC_TYPE_OFF_T
+	and AC_FUNC_FSEEKO.
+
+2004-01-12  Werner Koch  <wk@gnupg.org>
+
+	Released 0.4.4.
+
+	* configure.ac: Bumbed LT_Revision; now at C12/A1/R1.
+	(NEED_GPGSM_VERSION): Set to 1.9.3.
+	(min_automake_version): Added.
+	* README.CVS: New.
+	* Makefile.am (EXTRA_DIST): Added README.CVS.
+	* autogen.sh: Updated.
+
+2003-11-19  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4: Add AM_PATH_GPG_ERROR.
+	* configure.ac: Check for timegm.  Made warning messages more
+	prominent.
+
+2003-10-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.4.3.
+
+	* configure.ac (LIBGPGME_LT_CURRENT, LIBGPGME_LT_AGE): Bump up by 1.
+	(LIBGPGME_LT_REVISION): Set to 0.
+
+2003-09-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Require libgpg-error 0.5.
+
+	* acinclude.m4: Remove libtool cruft, add jm_GLIBC21.
+	* configure.ac: Add check for getenv_r, and call jm_GLIBC21.
+	Define HAVE_THREAD_SAFE_GETENV if appropriate.
+
+2003-09-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Remove GPGME_CONFIG_LIBS and GPGME_CONFIG_CFLAGS.
+
+2003-09-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Move invocation of AC_CANONICAL_HOST up to
+	suppress warning by autoconf.
+
+2003-08-30  Robert Schiele <rschiele@uni-mannheim.de>
+
+	* gpgme.spec.in: %{_infodir}/dir is not packaged,
+	remove to prevent checking failure.
+
+2003-08-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: If building Assuan, check for funopen and
+	fopencookie, and make isascii, putc_unlocked and memrchr
+	replacement functions.
+	(AM_PATH_GPG_ERROR): Require 0.3.
+
+2003-07-31  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_INIT): Bump version to 0.4.3.
+
+2003-07-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (LIBGPGME_LT_REVISION): Bump up to 1.
+
+	Released 0.4.2.
+
+2003-07-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Complain if libgpg-error is not found.
+
+2003-06-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_INIT): Bump version to 0.4.2.
+
+2003-06-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (LIBGPGME_LT_CURRENT): Bump up to 11.
+
+	* configure.ac: Use AM_PATH_GPG_ERROR.
+
+	* configure.ac: Check for libgpg-error.  Define
+	GPG_ERR_SOURCE_DEFAULT.
+
+2003-05-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (NEED_GPG_VERSION): Bump up to 1.2.2.
+
+2003-05-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	In all files, replace the Gpgme* type names with the new gpgme_*
+	type names.
+
+2003-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan/: Update files to 2002-11-10 version of assuan.
+
+2003-01-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* bonobo/gpgme.c, bonobo/main.c, bonobo/main.h, bonobo/Makefile,
+	bonobo/Makefile.am, bonobo/Makefile.in: Dead files removed.
+	* configure.ac: Remove automake conditional BUILD_BONOBO
+	(AC_CONFIG_FILES): Remove bonobo/Makefile.
+	* Makefile.am (bonobo): Remove variable.
+	(SUBDIRS): Remove ${bonobo}.
+
+	* configure.ac: Remove all uses of GNUPG_CHECK_TYPEDEF, for byte,
+	ushort, ulong, u16 and u32.
+	* acinclude.m4 (GNUPG_CHECK_TYPEDEF): Remove macro.
+
+2002-12-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: New conditional HAVE_LD_VERSION_SCRIPT.
+	Call AC_CANONICAL_HOST, use host instead target.
+
+2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Bump up to 0.4.1.
+
+	Released 0.4.0.
+
+2002-12-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh (automake_vers): Require 1.7 (really 1.7.1) for the
+	conditional source distribution bug fix.
+
+2002-12-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (LIBGPGME_LT_CURRENT): Increase by one.
+	(LIBGPGME_LT_AGE, LIBGPGME_LT_REVISION): Set to 0.
+
+2002-11-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* NEWS: Add note about moving "gpgmeplug" to the "cryptplug"
+	package.
+	* README: Remove instructions related to "gpgmeplug".
+	* configure.ac: Remove enable option "gpgmeplug" and automake
+	conditional BUILD_GPGMEPLUG, as well as the status info about it.
+	(GPGMEPLUG): Remove variable.
+	* Makefile.am (gpgmeplug): Remove variable.
+	(SUBDIRS): Remove ${gpgmeplug}.
+	* cryptplug.h, gpgme-openpgp.c, gpgmeplug.dox, gpgme-smime.c,
+	Makefile.am, gpgmeplug.c, ChangeLog: Files removed.
+
+2002-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Disable GPGSM for all dosish systems.
+
+2002-10-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add automake conditional HAVE_GPGSM.
+
+2002-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_INIT): Bump version up to 0.4.0.
+	(NEED_GPG_VERSION): Bump up to 1.2.0.
+	(NEED_GPGSM_VERSION): Bump up to 0.9.0.
+	* README: Update version numbers.
+	* NEWS: Start entry for 0.4.0.
+
+2002-09-20  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.11.
+
+	* configure.ac: Bump up LIBGPGME_LT_REVISION.
+
+	* configure.ac (AC_CHECK_HEADERS): Check for sys/select.h.
+
+2002-09-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh (autoconf_vers): Bump up to 2.53 to get the @&t@
+	quadrigraph.  Always cutting the edge!
+
+2002-09-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Create and substitute LTLIBOBJS.
+
+2002-09-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.3.10.
+
+	* NEWS: Update for 0.3.9 release.
+	* configure.ac: Bump up LIBGPGME_LT_REVISION.
+
+2002-08-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgme.spec.in: Changed user name in Wojciech Polak's email
+	address from ghostface to polak per request by himself.
+
+2002-08-28  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_CHECK_VA_COPY): New.
+	* configure.ac: Use it.
+
+2002-08-23  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (GPGME_CONFIG_CFLAGS): Renamed from GPGME_CFLAGS
+	and removed the libpath because it is set by the config script.
+
+2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Bump version number to 0.3.10.
+
+	* NEWS: Add template for development version.
+
+2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.3.9.
+
+	* NEWS: Update for 0.3.9 release.
+	* Makefile.am (EXTRA_DIST): Add gpgme.spec.in.
+
+2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* jnlib/argparse.c, jnlib/argparse.h, jnlib/ChangeLog,
+	jnlib/dotlock.c, jnlib/dotlock.h, jnlib/libjnlib-config.h,
+	jnlib/logging.c, jnlib/logging.h,jnlib/Makefile.am,
+	jnlib/mischelp.h, jnlib/README, jnlib/stringhelp.c,
+	jnlib/stringhelp.h, jnlib/strlist.c, jnlib/strlist.h,
+	jnlib/types.h, jnlib/xmalloc.c, jnlib/xmalloc.h: Remove files.
+
+2002-08-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (SUBDIRS): Remove jnlib.
+	* configure.ac: Don't check for unsigned short or unsigned long.
+	Don't check for memicmp, strlwr, strtoul, memmove, stricmp.
+	Make stpcpy a replaced function.
+	Don't define HAVE_JNLIB_LOGGING.
+	Don't generate jnlib/Makefile.
+
+2002-07-02  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Bumbed version number to 0.3.9; add a comment on
+	when to change it.
+
+	* gpgme.spec.in: New. Contributed by Wojciech Polak.
+	* Makefile.am (dist-hook): New.
+
+	* AUTHORS: Added Wojciech and bug reporting addresses.
+
+2002-06-25  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.8.
+
+	* configure.ac: Bumbed LT version to 9/3/0.
+	(NEED_GPGSM_VERSION): Need 0.3.8 due to fixed export command.
+
+2002-06-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.3.7.
+
+	* configure.ac (AC_INIT): Set version to 0.3.7.
+	(LIBGPGME_LT_REVISION): Add one.
+
+	* README: Document version requirement correctly.
+
+2002-06-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acinclude.m4: Fix Pth check so that it doesn't error out if pth
+	is not found.
+
+2002-06-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add checks for Pth and pthreads.
+	* acinclude.m4: Add slightly hacked check for pth (seems to be an
+	autoconf version problem).
+
+2002-05-21  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (NEED_GPGSM_VERSION): We need gpgsm 0.3.7.
+
+2002-05-03  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.6.
+
+2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acconfig.h: File removed.
+	* configure.ac (NEED_GPG_VERSION): Add description.
+	(NEED_GPGSM_VERSION): Likewise.
+	(HAVE_DOSISH_SYSTEM): Likewise.
+	(HAVE_DRIVE_LETTERS): Likewise.
+	(GPG_PATH): Likewise.
+	(GPGSM_PATH): Likewise.
+	* acinclude.m4 (GNUPG_CHECK_TYPEDEF): Likewise.
+
+2002-04-01  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.5.
+
+2002-03-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add automake conditional HAVE_DOSISH_SYSTEM.
+
+2002-03-04  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Bumbed version to 0.3.4-cvs to continue development.
+
+	Released 0.3.4.
+
+	* configure.ac: Bumbed LT version numbers to (7,1,0), requires
+	gpgsm 0.3.1.
+
+2002-03-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_INIT): Change version number to snapshot CVS
+	version.
+
+2002-02-13  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (vasprintf,fopencookie): Add checks.
+
+2002-02-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_INIT): Bump version to 0.3.3.
+	* jnlib/Makefile.am: Rever to older version that includes xmalloc
+	but not dotlock and some other files.  Reported by Stéphane
+	Corthésy.
+
+2002-02-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Released 0.3.2.
+
+	* configure.ac (AC_INIT): Bump version to 0.3.2.
+	* jnlib/libjnlibconfig.h: Revert to older version that doesn't
+	expect libgcrypt.  Reported by Jose Carlos Garcia Sogo
+	<jsogo@debian.org>.
+
+2002-02-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Released 0.3.1.
+
+	* configure.ac (LIBGPGME_LT_CURRENT): Bump it up to 6!
+	(NEED_GPGSM_VERSION): Bump it up to 0.3.0!
+	(AC_INIT): Bump version to 0.3.1
+
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (HAVE_JNLIB_LOGGING): Define always for assuan.
+
+2001-12-19  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (VERSION,PACKAGE): Defined and subst.  Used for
+	AM_INIT_AUTOMAKE and moved all version number more to the top.
+
+2001-12-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh (libtool_vers): Bump to 1.4.
+
+	* configure.ac (LIBGPGME_LT_CURRENT): Increment.
+	(LIBGPGME_LT_AGE): Reset.
+	Improve comment.
+	Fix wrong comment character.
+
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_FIX_HDR_VERSION): Fixed for new automake.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (GPG): Substitute this variable.
+	(GPGSM): Likewise.
+
+2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AC_CONFIG_FILES): Add tests/gpg/Makefile and
+	tests/gpgsm/Makefile.
+
+2001-11-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (gpgmeplug): New variable, set to gpgmeplug if
+	[BUILD_GPGMEPLUG].
+	* configure.ac (AC_CONFIG_FILES): Add gpgmeplug/Makefile.
+	Support --enable-gpgmeplug.
+
+2001-11-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh: Tighten version dependencies.
+
+2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (SUBDIRS): Support building the assuan library
+	(currently if GPGSM_PATH is set)..
+	* configure.ac: Support building the assuan library.
+	* assuan: New directory, populated with the Assuan library
+	(copied from the newpg repository).
+
+2001-11-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (NEED_GPGSM_VERSION): New variable.  Treat it
+	similarly to NEED_GPG_VERSION.
+	* acconfig.h: Likewise.
+
+2001-11-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.in: Renamed to ...
+	* configure.ac: ... this.  Update to autoconf 2.52.  Lots of small
+	changes in the transition.  Support --with-gpg=PATH and
+	--with-gpgsm=PATH options.  Check if test suites can be run.
+	* acconfig.h: Add GPGSM_PATH.
+	* Makefile.am: New variable `tests', set to `tests' if
+	RUN_GPG_TESTS.
+	(SUBDIRS): Replace string `tests' with variable `tests'.
+
+2001-10-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh: Invoke automake with `-a' (add missing files).
+	Do not invoke configure.
+
+2001-09-17  Werner Koch  <wk@gnupg.org>
+
+	Released 0.2.3.
+
+	* configure.in (NEED_GPG_VERSION): Set to 1.0.6. Incremented LT
+	current and age.
+
+	* Makefile.am (SUBDIRS): Add doc
+
+2001-06-12  Werner Koch  <wk@gnupg.org>
+
+	Released 0.2.2.
+
+2001-04-05  Werner Koch  <wk@gnupg.org>
+
+	* configure.in (NEED_GPG_VERSION): Set to 1.0.4g
+
+2001-04-02  Werner Koch  <wk@gnupg.org>
+
+	Released 0.2.1.
+
+	Changed the copyright notices all over the place.
+
+2001-02-28  Werner Koch  <wk@gnupg.org>
+
+	Released 0.2.0.
+
+2001-01-18  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Added option --build-w32.
+
+
+ Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
+	       2011 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

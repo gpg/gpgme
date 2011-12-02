@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-04-06  Werner Koch  <wk@g10code.com>
 
 	* gpg-error.m4: Update from current libgpg-error repo.
@@ -36,7 +43,8 @@
 	* gpg-error.m4: New file.
 	* pth.m4: New file.
 
- Copyright 2004 g10 Code GmbH
+
+ Copyright (C) 2004, 2005, 2009, 2010, 2011 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

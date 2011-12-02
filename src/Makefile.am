@@ -19,8 +19,9 @@
 ## Process this file with automake to produce Makefile.in
 
 # Note: moc_kdpipeiodevice should actually be a dependcy below.
-EXTRA_DIST = gpgme-config.in gpgme.m4 mkstatus libgpgme.vers \
+EXTRA_DIST = gpgme-config.in gpgme.m4 mkstatus libgpgme.vers ChangeLog-2011 \
 	     gpgme.h.in versioninfo.rc.in gpgme.def moc_kdpipeiodevice.cpp
+
 BUILT_SOURCES = status-table.h
 MOSTLYCLEANFILES = status-table.h
 bin_SCRIPTS = gpgme-config

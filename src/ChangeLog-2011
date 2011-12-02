@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-10-25  Marcus Brinkmann  <marcus@g10code.com>
 
 	* Makefile.am: Remove build rules for libgpgme-pth.
@@ -23,7 +30,8 @@
 	* gpgconf.c (gpgme_op_conf_load, gpgme_op_conf_save): Likewise.
 	* import.c (gpgme_op_import_start, gpgme_op_import_keys_start)
 	(gpgme_op_import_keys, gpgme_op_import): Likewise.
-	* keylist.c (gpgme_op_keylist_start, gpgme_op_keylist_ext_start): Likewise.
+	* keylist.c (gpgme_op_keylist_start, gpgme_op_keylist_ext_start):
+	Likewise.
 	* opassuan.c (gpgme_op_assuan_transact_start)
 	(gpgme_op_assuan_transact_ext): Likewise.
 	* passwd.c (gpgme_op_passwd_start, gpgme_op_passwd): Likewise.
@@ -6983,7 +6991,7 @@
 	* context.h: Add invalid and revoke flags to user_id structure.
 	* keylist.c (gpgme_op_keylist_start): Use --fixed-list-mode.
 	(keylist_colon_handler): Adjust for that.
- 	(set_userid_flags): New.
+	(set_userid_flags): New.
 	(set_mainkey_trust_info): Handle new key invalid flag
 	(set_subkey_trust_info): Ditto.
 	* gpgme.h: Add new attributes for key and user ID flags.
@@ -7128,8 +7136,8 @@
 	* data.c (gpgme_data_rewind): Allow to rewind data_type_none.
 
 
- Copyright 2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,
-	   2011 g10 Code GmbH
+ Copyright (C) 2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,
+               2011 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
