@@ -194,7 +194,6 @@ AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
 if test "$have_w32_system" = yes; then
    AC_DEFINE(HAVE_W32_SYSTEM,1,
              [Defined if we run on any kind of W32 API based system])
-   ACSUBST
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
 
@@ -286,7 +285,7 @@ if test "$ac_cv_func_vasprintf" != yes; then
 fi
 
 # Try to find a thread-safe version of ttyname().
-AC_REPLACE_FUNCS(ttyname_r)
+gnupg_REPLACE_TTYNAME_R
 if test "$ac_cv_func_ttyname_r" != yes; then
   AC_MSG_WARN([
 ***

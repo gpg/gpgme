@@ -1,19 +1,19 @@
-/* util.h 
+/* util.h
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -33,6 +33,10 @@
 /* For pid_t.  */
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
+#endif
+/* We must see the symbol ttyname_r before a redefinition. */
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
 #endif
 
 #include "gpgme.h"
@@ -78,10 +82,13 @@ int vasprintf (char **result, const char *format, va_list args);
 int asprintf (char **result, const char *format, ...);
 #endif
 
-#ifndef HAVE_TTYNAME_R
-int ttyname_r (int fd, char *buf, size_t buflen);
+#if REPLACE_TTYNAME_R
+int _gpgme_ttyname_r (int fd, char *buf, size_t buflen);
+#undef  ttyname_r
+#define ttyname_r(a,b,c) _gpgme_ttyname_r ((a), (b), (c))
 #endif
-#endif
+
+#endif /*HAVE_CONFIG_H*/
 
 
 /*-- conversion.c --*/
@@ -142,7 +149,7 @@ char *_gpgme_w32ce_get_debug_envvar (void);
 #ifndef GPG_ERR_UNFINISHED
 #define GPG_ERR_UNFINISHED 199
 #endif
-#ifndef GPG_ERR_NOT_OPERATIONAL 
+#ifndef GPG_ERR_NOT_OPERATIONAL
 #define GPG_ERR_NOT_OPERATIONAL 176
 #endif
 #ifndef GPG_ERR_MISSING_ISSUER_CERT

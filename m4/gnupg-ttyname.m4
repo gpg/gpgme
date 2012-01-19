@@ -1,16 +1,35 @@
-# ttyname_r.m4 serial 8
-dnl Copyright (C) 2010-2012 Free Software Foundation, Inc.
-dnl This file is free software; the Free Software Foundation
-dnl gives unlimited permission to copy and/or distribute it,
-dnl with or without modifications, as long as this notice is preserved.
+# gnupg-ttyname.m4
+# Copyright (C) 2010-2012 Free Software Foundation, Inc.
+# This file is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+#
+# This file is based on gnulib/m4/ttyname_r.m4 serial 8.
+#
 
-AC_DEFUN([gl_FUNC_TTYNAME_R],
+
+# gnupg_REPLACE_TTYNAME_R
+#
+# This macro is an extended version of AC_REPLACE_FUNCS(ttyname_r).
+# It takes peculiarities in the implementation of ttyname_r in account.
+#
+# The macro HAVE_TTYNAME_R will be defined to 1 if the function
+# exists; it will be defined to 0 if it does not exists or no
+# declaration is available.
+#
+# The macro HAVE_POSIXDECL_TTYNAME_R is defined if ttyname_r conforms
+# to the Posix declaration.
+#
+# The macro HAVE_BROKEN_TTYNAME_R is defined it ttyname_r does not work
+# correctly with the supplied buffer size.  If this is defined the function
+# will also be replaced.
+#
+# The macro REPLACE_TTYNAME_R is defined if ttyname_r is a replacement
+# function.  This macro is useful for the definition of the prototype.
+#
+AC_DEFUN([gnupg_REPLACE_TTYNAME_R],
 [
-  AC_REQUIRE([gl_UNISTD_H_DEFAULTS])
-
-  dnl Persuade Solaris <unistd.h> to provide the POSIX compliant declaration of
-  dnl ttyname_r().
-  AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
+  AC_CHECK_HEADERS([unistd.h])
 
   AC_CHECK_DECLS_ONCE([ttyname_r])
   if test $ac_cv_have_decl_ttyname_r = no; then
@@ -20,23 +39,27 @@ AC_DEFUN([gl_FUNC_TTYNAME_R],
   AC_CHECK_FUNCS([ttyname_r])
   if test $ac_cv_func_ttyname_r = no; then
     HAVE_TTYNAME_R=0
+    AC_LIBOBJ([ttyname_r])
+    AC_DEFINE([REPLACE_TTYNAME_R],[1],
+              [Define to 1 if ttyname_r is a replacement function.])
   else
     HAVE_TTYNAME_R=1
-    dnl On MacOS X 10.4 (and Solaris 10 without gl_USE_SYSTEM_EXTENSIONS)
+    dnl On MacOS X 10.4 (and Solaris 10 without __EXTENSIONS__)
     dnl the return type is 'char *', not 'int'.
     AC_CACHE_CHECK([whether ttyname_r is compatible with its POSIX signature],
-      [gl_cv_func_ttyname_r_posix],
+      [gnupg_cv_func_ttyname_r_posix],
       [AC_COMPILE_IFELSE(
          [AC_LANG_PROGRAM(
             [[#include <stddef.h>
               #include <unistd.h>]],
             [[*ttyname_r (0, NULL, 0);]])
          ],
-         [gl_cv_func_ttyname_r_posix=no],
-         [gl_cv_func_ttyname_r_posix=yes])
+         [gnupg_cv_func_ttyname_r_posix=no],
+         [gnupg_cv_func_ttyname_r_posix=yes])
       ])
-    if test $gl_cv_func_ttyname_r_posix = no; then
-      REPLACE_TTYNAME_R=1
+    if test $gnupg_cv_func_ttyname_r_posix = no; then
+      AC_LIBOBJ([ttyname_r])
+      AC_DEFINE([REPLACE_TTYNAME_R],[1])
     else
       AC_DEFINE([HAVE_POSIXDECL_TTYNAME_R], [1],
         [Define if the ttyname_r function has a POSIX compliant declaration.])
@@ -47,18 +70,18 @@ AC_DEFUN([gl_FUNC_TTYNAME_R],
       dnl buffer is large enough.
       AC_REQUIRE([AC_CANONICAL_HOST])
       AC_CACHE_CHECK([whether ttyname_r works with small buffers],
-        [gl_cv_func_ttyname_r_works],
+        [gnupg_cv_func_ttyname_r_works],
         [
           dnl Initial guess, used when cross-compiling or when /dev/tty cannot
           dnl be opened.
 changequote(,)dnl
           case "$host_os" in
                       # Guess no on Solaris.
-            solaris*) gl_cv_func_ttyname_r_works="guessing no" ;;
+            solaris*) gnupg_cv_func_ttyname_r_works="guessing no" ;;
                       # Guess no on OSF/1.
-            osf*)     gl_cv_func_ttyname_r_works="guessing no" ;;
+            osf*)     gnupg_cv_func_ttyname_r_works="guessing no" ;;
                       # Guess yes otherwise.
-            *)        gl_cv_func_ttyname_r_works="guessing yes" ;;
+            *)        gnupg_cv_func_ttyname_r_works="guessing yes" ;;
           esac
 changequote([,])dnl
           AC_RUN_IFELSE(
@@ -81,21 +104,20 @@ main (void)
     result |= 18;
   return result;
 }]])],
-            [gl_cv_func_ttyname_r_works=yes],
+            [gnupg_cv_func_ttyname_r_works=yes],
             [case $? in
-               17 | 18) gl_cv_func_ttyname_r_works=no ;;
+               17 | 18) gnupg_cv_func_ttyname_r_works=no ;;
              esac],
             [:])
         ])
-      case "$gl_cv_func_ttyname_r_works" in
+      case "$gnupg_cv_func_ttyname_r_works" in
         *yes) ;;
-        *) REPLACE_TTYNAME_R=1 ;;
+        *) AC_LIBOBJ([ttyname_r])
+           AC_DEFINE([REPLACE_TTYNAME_R],[1])
+           AC_DEFINE([HAVE_BROKEN_TTYNAME_R], [1],
+                     [Define if ttyname_r is does not work with small buffers])
+           ;;
       esac
     fi
   fi
-])
-
-# Prerequisites of lib/ttyname_r.c.
-AC_DEFUN([gl_PREREQ_TTYNAME_R], [
-  AC_CHECK_FUNCS([ttyname])
 ])
