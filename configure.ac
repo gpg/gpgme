@@ -218,9 +218,8 @@ AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 
 
 # Checks for header files.
-AC_CHECK_HEADERS([locale.h])
-AC_CHECK_HEADERS(sys/select.h)
-AC_CHECK_HEADERS([sys/uio.h])
+AC_CHECK_HEADERS_ONCE([locale.h sys/select.h sys/uio.h argp.h
+                       unistd.h sys/time.h sys/types.h sys/stat.h])
 
 
 # Type checks.
@@ -802,8 +801,6 @@ AC_CHECK_FUNCS(getgid getegid)
 
 # Replacement functions.
 AC_REPLACE_FUNCS(stpcpy)
-# Check for unistd.h for setenv replacement function.
-AC_CHECK_HEADERS([unistd.h sys/time.h sys/types.h sys/stat.h])
 AC_REPLACE_FUNCS(setenv)
 
 # Assuan check for descriptor passing.
@@ -911,7 +908,7 @@ LTLIBOBJS=`echo "$LIB@&t@OBJS" |
 AC_SUBST(LTLIBOBJS)
 
 # Some checks for gpgme-tool
-AC_CHECK_HEADER([argp.h])
+# Done at top: AC_CHECK_HEADER([argp.h])
 AC_CHECK_TYPES([error_t], [],
    [AC_DEFINE([error_t], [int],
    [Define to a type to use for `error_t' if it is not otherwise available.])],
