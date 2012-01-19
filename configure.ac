@@ -25,7 +25,9 @@ min_automake_version="1.11"
 
 # Version number: Remember to change it immediately *after* a release.
 #                 Make sure to run  "svn up" and "./autogen.sh --force"
-#                  before a "make dist".  See below for the LT versions.
+#                 before a "make dist".  See below for the LT versions.
+#                 Never do a binary build with the same version number
+#                 in another year; this would mess up the build number.
 #
 # The SVN version is usually the next intended release version with
 # the string "-svnNNN" appended.  The reason for this is that tests for a
@@ -39,11 +41,10 @@ m4_define([svn_revision], m4_esyscmd([printf "%d" $( (svn info 2>/dev/null \
             || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
 m4_define([git_revision], m4_esyscmd([git branch -v 2>/dev/null \
           | awk '/^\* / {printf "%s",$3}']))
-AC_INIT([gpgme],
-        [my_version[]m4_if(my_issvn,[yes],
-        [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])],
-        [bug-gpgme@gnupg.org])
+m4_define([my_full_version], [my_version[]m4_if(my_issvn,[yes],
+          [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])])
 
+AC_INIT([gpgme],[my_full_version],[http://bugs.gnupg.org])
 
 # LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
@@ -71,8 +72,6 @@ PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
 
 AC_CONFIG_SRCDIR(src/gpgme.h.in)
-dnl FIXME: Enable this with autoconf 2.59.
-dnl AC_CONFIG_MACRO_DIR(m4)
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
@@ -272,8 +271,8 @@ fi
 # functionality you have to test libc as well, this only tests the
 # compiler).
 AC_CACHE_CHECK([for __thread],[gpgme_cv_tls_works],
-   AC_COMPILE_IFELSE([__thread int foo;],
-     gpgme_cv_tls_works=yes,gpgme_cv_tls_works=no))
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([__thread int foo;])],
+                     gpgme_cv_tls_works=yes,gpgme_cv_tls_works=no))
 if test "$gpgme_cv_tls_works" = yes; then
   AC_DEFINE(HAVE_TLS, [1], [Define if __thread is supported])
 fi
