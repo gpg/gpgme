@@ -856,14 +856,19 @@ AM_CONDITIONAL(HAVE_UISERVER, test "$uiserver" != "no")
 
 
 # Generate values for the DLL version info
+
+dnl Windows uses an internal build number.  We use the last day of the
+dnl year concatenated with the hour for it.  WARNING: You should not
+dnl do a build with the same version number in another year.
 if test "$have_w32_system" = yes; then
     BUILD_TIMESTAMP=`date --iso-8601=minutes`
+    BUILD_NUMBER="$(date -u '+%j%H' | sed 's/^0*\(.*\)/\1/')"
     changequote(,)dnl
     BUILD_FILEVERSION=`echo "$VERSION" | sed 's/\([0-9.]*\).*/\1./;s/\./,/g'`
     changequote([,])dnl
-    BUILD_FILEVERSION="${BUILD_FILEVERSION}${BUILD_REVISION}"
+    BUILD_FILEVERSION="${BUILD_FILEVERSION}${BUILD_NUMBER}"
 fi
-AC_SUBST(BUILD_REVISION)
+AC_SUBST(BUILD_NUMBER)
 AC_SUBST(BUILD_TIMESTAMP)
 AC_SUBST(BUILD_FILEVERSION)
 
