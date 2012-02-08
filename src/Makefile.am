@@ -226,7 +226,7 @@ libgpgme_qt_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 endif
 
 noinst_PROGRAMS = gpgme-tool
-gpgme_tool_LDADD = libgpgme.la
+gpgme_tool_LDADD = libgpgme.la @LIBASSUAN_LIBS@
 
 status-table.h : gpgme.h extra-stati.h
 	cat $(builddir)/gpgme.h $(srcdir)extra-stati.h \
