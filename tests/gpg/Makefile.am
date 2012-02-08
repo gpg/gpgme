@@ -48,7 +48,7 @@ INCLUDES = -I$(top_builddir)/src
 
 AM_CPPFLAGS = @GPG_ERROR_CFLAGS@
 LDADD = ../../src/libgpgme.la
-t_thread1_LDADD = ../../src/libgpgme-pthread.la
+t_thread1_LDADD = ../../src/libgpgme-pthread.la -lpthread
 
 # We don't run t-genkey in the test suite, because it takes too long
 noinst_PROGRAMS = $(TESTS) t-genkey
