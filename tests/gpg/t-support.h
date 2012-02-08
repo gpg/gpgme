@@ -143,7 +143,7 @@ print_import_result (gpgme_import_result_t r)
   for (st=r->imports; st; st = st->next)
     {
       printf ("  fpr: %s err: %d (%s) status:", nonnull (st->fpr),
-              st->result, gpg_strerror (st->result));
+              st->result, gpgme_strerror (st->result));
       if (st->status & GPGME_IMPORT_NEW)
         fputs (" new", stdout);
       if (st->status & GPGME_IMPORT_UID)

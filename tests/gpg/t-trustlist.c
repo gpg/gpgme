@@ -56,7 +56,7 @@ main (int argc, char *argv[])
 	      item->validity, item->name);
       gpgme_trust_item_unref (item);
     }
-  if (gpg_err_code (err) != GPG_ERR_EOF)
+  if (gpgme_err_code (err) != GPG_ERR_EOF)
     fail_if_err (err);
 
   gpgme_release (ctx);

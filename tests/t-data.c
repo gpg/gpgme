@@ -163,7 +163,7 @@ write_test (round_t round, gpgme_data_t data)
 
   amt = gpgme_data_write (data, text, strlen (text));
   if (amt != strlen (text))
-    fail_if_err (gpg_error_from_errno (errno));
+    fail_if_err (gpgme_error_from_errno (errno));
 
   gpgme_data_seek (data, 0, SEEK_SET);
 
@@ -237,8 +237,8 @@ main (int argc, char **argv)
 	case TEST_INOUT_MEM_FROM_FILE_NO_COPY:
 	  err = gpgme_data_new_from_file (&data, text_filename, 0);
 	  /* This is not implemented yet.  */
-	  if (gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED
-	      || gpg_err_code (err) == GPG_ERR_INV_VALUE)
+	  if (gpgme_err_code (err) == GPG_ERR_NOT_IMPLEMENTED
+	      || gpgme_err_code (err) == GPG_ERR_INV_VALUE)
 	    continue;
 	  break;
 	case TEST_INOUT_MEM_FROM_FILE_PART_BY_NAME:

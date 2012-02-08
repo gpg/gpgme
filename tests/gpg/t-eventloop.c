@@ -78,7 +78,7 @@ add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc, void *fnc_data,
 	}
     }
   if (i == FDLIST_MAX)
-    return gpg_err_make (GPG_ERR_SOURCE_USER_1, GPG_ERR_GENERAL);
+    return gpgme_err_make (GPG_ERR_SOURCE_USER_1, GPG_ERR_GENERAL);
   *r_tag = &fds[i];
   return 0;
 }

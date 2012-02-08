@@ -117,10 +117,10 @@ check_result (gpgme_verify_result_t result, unsigned int summary, char *fpr,
 	       __FILE__, __LINE__, sig->fpr);
       exit (1);
     }
-  if (gpg_err_code (sig->status) != status)
+  if (gpgme_err_code (sig->status) != status)
     {
       fprintf (stderr, "%s:%i: Unexpected signature status: %s\n",
-	       __FILE__, __LINE__, gpg_strerror (sig->status));
+	       __FILE__, __LINE__, gpgme_strerror (sig->status));
       exit (1);
     }
   if (notation)
@@ -192,7 +192,7 @@ check_result (gpgme_verify_result_t result, unsigned int summary, char *fpr,
 	       __FILE__, __LINE__, sig->validity);
       exit (1);
     }
-  if (gpg_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
+  if (gpgme_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
     {
       fprintf (stderr, "%s:%i: Unexpected validity reason: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->validity_reason));
@@ -259,7 +259,7 @@ main (int argc, char *argv[])
   err = gpgme_data_new (&text);
   fail_if_err (err);
   err = gpgme_op_verify (ctx, sig, NULL, text);
-  if (gpg_err_code (err) != GPG_ERR_BAD_DATA)
+  if (gpgme_err_code (err) != GPG_ERR_BAD_DATA)
     {
       fprintf (stderr, "%s:%i: Double plaintext message not detected\n",
 	       __FILE__, __LINE__);

@@ -61,7 +61,7 @@ check_verify_result (gpgme_verify_result_t result, unsigned int summary,
 	       __FILE__, __LINE__, sig->fpr);
       exit (1);
     }
-  if (gpg_err_code (sig->status) != status)
+  if (gpgme_err_code (sig->status) != status)
     {
       fprintf (stderr, "%s:%i: Unexpected signature status: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->status));
@@ -85,7 +85,7 @@ check_verify_result (gpgme_verify_result_t result, unsigned int summary,
 	       __FILE__, __LINE__, sig->validity);
       exit (1);
     }
-  if (gpg_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
+  if (gpgme_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
     {
       fprintf (stderr, "%s:%i: Unexpected validity reason: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->validity_reason));

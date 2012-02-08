@@ -46,11 +46,11 @@ flush_data (gpgme_data_t dh)
   
   ret = gpgme_data_seek (dh, 0, SEEK_SET);
   if (ret)
-    fail_if_err (gpg_error_from_errno (errno));
+    fail_if_err (gpgme_error_from_errno (errno));
   while ((ret = gpgme_data_read (dh, buf, 100)) > 0)
     fwrite (buf, ret, 1, stdout);
   if (ret < 0)
-    fail_if_err (gpg_error_from_errno (errno));
+    fail_if_err (gpgme_error_from_errno (errno));
 }
 
 

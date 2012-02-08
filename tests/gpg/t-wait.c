@@ -61,7 +61,7 @@ main (int argc, char *argv[])
   while (gpgme_wait (ctx, &err, 0) == NULL && err == 0)
     sleep(1);
 
-  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
+  if (gpgme_err_code (err) != GPG_ERR_NO_DATA)
     {
       fprintf (stderr, "%s:%d: %s: %s\n",
 	       __FILE__, __LINE__, gpgme_strsource (err),

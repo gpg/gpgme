@@ -77,7 +77,7 @@ check_result (gpgme_verify_result_t result, int summary, char *fpr,
 	       __FILE__, __LINE__, sig->fpr);
       got_errors = 1;
     }
-  if (gpg_err_code (sig->status) != status)
+  if (gpgme_err_code (sig->status) != status)
     {
       fprintf (stderr, "%s:%i: Unexpected signature status: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->status));
@@ -101,7 +101,7 @@ check_result (gpgme_verify_result_t result, int summary, char *fpr,
 	       __FILE__, __LINE__, sig->validity);
       got_errors = 1;
     }
-  if (gpg_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
+  if (gpgme_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
     {
       fprintf (stderr, "%s:%i: Unexpected validity reason: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (sig->validity_reason));
@@ -123,7 +123,7 @@ show_auditlog (gpgme_ctx_t ctx)
     {
       fprintf (stderr, "%s:%i: Can't get audit log: %s\n",
 	       __FILE__, __LINE__, gpgme_strerror (err));
-      if (gpg_err_code (err) != GPG_ERR_ASS_UNKNOWN_CMD)
+      if (gpgme_err_code (err) != GPG_ERR_ASS_UNKNOWN_CMD)
 	got_errors = 1;
     }
   print_data (data);

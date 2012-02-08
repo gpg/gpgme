@@ -551,7 +551,7 @@ main (int argc, char **argv)
       gpgme_key_unref (key);
       i++;
     }
-  if (gpg_err_code (err) != GPG_ERR_EOF)
+  if (gpgme_err_code (err) != GPG_ERR_EOF)
     fail_if_err (err);
   err = gpgme_op_keylist_end (ctx);
   fail_if_err (err);

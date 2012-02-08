@@ -73,7 +73,7 @@ main (int argc, char **argv)
 
   err = gpgme_op_decrypt (ctx, in, out);
   printf ("gpgme_op_decrypt: %s <%s> (%u)\n",
-          gpg_strerror (err), gpg_strsource (err), err);
+          gpgme_strerror (err), gpgme_strsource (err), err);
   result = gpgme_op_decrypt_result (ctx);
   if (!result)
     {
@@ -88,7 +88,7 @@ main (int argc, char **argv)
   for (recp = result->recipients; recp; recp = recp->next)
     {
       printf ("recipient.status: %s <%s> (%u)\n",
-              gpg_strerror (recp->status), gpg_strsource (recp->status),
+              gpgme_strerror (recp->status), gpgme_strsource (recp->status),
               recp->status);
       printf ("recipient.pkalgo: %d\n", recp->pubkey_algo);
       printf ("recipient.keyid : %s\n", nonnull (recp->keyid));

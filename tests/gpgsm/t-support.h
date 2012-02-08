@@ -32,9 +32,9 @@
       if (err)							\
         {							\
           fprintf (stderr, "%s:%d: %s: %s (%d.%d)\n",        	\
-                   __FILE__, __LINE__, gpg_strsource (err),	\
-		   gpg_strerror (err),                          \
-                   gpg_err_source (err), gpg_err_code (err));	\
+                   __FILE__, __LINE__, gpgme_strsource (err),	\
+		   gpgme_strerror (err),                        \
+                   gpgme_err_source (err), gpgme_err_code (err)); \
           exit (1);						\
         }							\
     }								\
@@ -50,11 +50,11 @@ print_data (gpgme_data_t dh)
   
   ret = gpgme_data_seek (dh, 0, SEEK_SET);
   if (ret)
-    fail_if_err (gpg_error_from_errno (errno));
+    fail_if_err (gpgme_error_from_errno (errno));
   while ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) > 0)
     fwrite (buf, ret, 1, stdout);
   if (ret < 0)
-    fail_if_err (gpg_error_from_errno (errno));
+    fail_if_err (gpgme_error_from_errno (errno));
 }
 
 

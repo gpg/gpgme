@@ -34,16 +34,16 @@
       if (err)							\
         {							\
           fprintf (stderr, "%s:%d: %s: %s (%d.%d)\n",        	\
-                   __FILE__, __LINE__, gpg_strsource (err),	\
-		   gpg_strerror (err),                          \
-                   gpg_err_source (err), gpg_err_code (err));	\
+                   __FILE__, __LINE__, gpgme_strsource (err),	\
+		   gpgme_strerror (err),                        \
+                   gpgme_err_source (err), gpgme_err_code (err)); \
           exit (1);						\
         }							\
     }								\
   while (0)
 
 
-static gpg_error_t
+static gpgme_error_t
 data_cb (void *opaque, const void *data, size_t datalen)
 {
   printf ("DATA_CB: datalen=%d\n", (int)datalen);
@@ -51,12 +51,12 @@ data_cb (void *opaque, const void *data, size_t datalen)
 }     
 
 
-static gpg_error_t
+static gpgme_error_t
 inq_cb (void *opaque, const char *name, const char *args,
         gpgme_data_t *r_data)
 {
   gpgme_data_t data;
-  gpg_error_t err;
+  gpgme_error_t err;
 
   if (name)
     {
@@ -81,14 +81,14 @@ inq_cb (void *opaque, const char *name, const char *args,
   /* Uncomment the next lines and send a "SCD LEARN" to test sending
      cancel from in inquiry.  */
   /* if (name && !strcmp (name, "KNOWNCARDP")) */
-  /*   return gpg_error (GPG_ERR_ASS_CANCELED); */
+  /*   return gpgme_error (GPG_ERR_ASS_CANCELED); */
 
 
   return 0;
 }     
 
 
-static gpg_error_t
+static gpgme_error_t
 status_cb (void *opaque, const char *status, const char *args)
 {
   printf ("STATUS_CB: status=`%s'  args=`%s'\n", status, args);

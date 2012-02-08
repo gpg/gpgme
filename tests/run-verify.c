@@ -94,14 +94,14 @@ print_result (gpgme_verify_result_t result)
   for (sig = result->signatures; sig; sig = sig->next)
     {
       printf ("Signature %d\n", count++);
-      printf ("  status ....: %s\n", gpg_strerror (sig->status));
+      printf ("  status ....: %s\n", gpgme_strerror (sig->status));
       printf ("  summary ...:"); print_summary (sig->summary); putchar ('\n');
       printf ("  fingerprint: %s\n", nonnull (sig->fpr));
       printf ("  created ...: %lu\n", sig->timestamp);
       printf ("  expires ...: %lu\n", sig->exp_timestamp);
       printf ("  validity ..: ");
       print_validity (sig->validity); putchar ('\n');
-      printf ("  val.reason : %s\n", gpg_strerror (sig->status));
+      printf ("  val.reason : %s\n", gpgme_strerror (sig->status));
       printf ("  pubkey algo: %d\n", sig->pubkey_algo);
       printf ("  digest algo: %d\n", sig->hash_algo);
       printf ("  pka address: %s\n", nonnull (sig->pka_address));
@@ -185,9 +185,9 @@ main (int argc, char **argv)
   fp_sig = fopen (argv[0], "rb");
   if (!fp_sig)
     {
-      err = gpg_error_from_syserror ();
+      err = gpgme_error_from_syserror ();
       fprintf (stderr, PGM ": can't open `%s': %s\n", 
-               argv[0], gpg_strerror (err));
+               argv[0], gpgme_strerror (err));
       exit (1);
     }
   if (argc > 1)
@@ -195,9 +195,9 @@ main (int argc, char **argv)
       fp_msg = fopen (argv[1], "rb");
       if (!fp_msg)
         {
-          err = gpg_error_from_syserror ();
+          err = gpgme_error_from_syserror ();
           fprintf (stderr, PGM ": can't open `%s': %s\n", 
-                   argv[1], gpg_strerror (err));
+                   argv[1], gpgme_strerror (err));
           exit (1);
         }
     }
@@ -212,7 +212,7 @@ main (int argc, char **argv)
   if (err)
     {
       fprintf (stderr, PGM ": error allocating data object: %s\n",
-               gpg_strerror (err));
+               gpgme_strerror (err));
       exit (1);
     }
   if (fp_msg)
@@ -221,7 +221,7 @@ main (int argc, char **argv)
       if (err)
         {
           fprintf (stderr, PGM ": error allocating data object: %s\n",
-                   gpg_strerror (err));
+                   gpgme_strerror (err));
           exit (1);
         }
     }
@@ -232,7 +232,7 @@ main (int argc, char **argv)
     print_result (result);
   if (err)
     {
-      fprintf (stderr, PGM ": signing failed: %s\n", gpg_strerror (err));
+      fprintf (stderr, PGM ": signing failed: %s\n", gpgme_strerror (err));
       exit (1);
     }
 
