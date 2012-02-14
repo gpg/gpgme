@@ -137,6 +137,12 @@ gpgme_error_t _gpgme_map_gnupg_error (char *err);
 gpgme_error_t _gpgme_getenv (const char *name, char **value);
 
 
+/*-- status-table.c --*/
+/* Convert a status string to a status code.  */
+void _gpgme_status_init (void);
+gpgme_status_code_t _gpgme_parse_status (const char *name);
+
+
 #ifdef HAVE_W32_SYSTEM
 int _gpgme_mkstemp (int *fd, char **name);
 const char *_gpgme_get_w32spawn_path (void);

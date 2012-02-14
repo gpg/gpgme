@@ -453,9 +453,6 @@ uiserver_set_protocol (void *engine, gpgme_protocol_t protocol)
 }
 
 
-/* Forward declaration.  */
-static gpgme_status_code_t parse_status (const char *name);
-
 static gpgme_error_t
 uiserver_assuan_simple_command (assuan_context_t ctx, char *cmd,
 			     engine_status_handler_t status_fnc,
@@ -498,7 +495,7 @@ uiserver_assuan_simple_command (assuan_context_t ctx, char *cmd,
 	  else
 	    *(rest++) = 0;
 
-	  r = parse_status (line + 2);
+	  r = _gpgme_parse_status (line + 2);
 
 	  if (r >= 0 && status_fnc)
 	    err = status_fnc (status_fnc_value, r, rest);
@@ -617,27 +614,6 @@ map_data_enc (gpgme_data_t d)
       break;
     }
   return NULL;
-}
-
-
-static int
-status_cmp (const void *ap, const void *bp)
-{
-  const struct status_table_s *a = ap;
-  const struct status_table_s *b = bp;
-
-  return strcmp (a->name, b->name);
-}
-
-
-static gpgme_status_code_t
-parse_status (const char *name)
-{
-  struct status_table_s t, *r;
-  t.name = name;
-  r = bsearch (&t, status_table, DIM(status_table) - 1,
-	       sizeof t, status_cmp);
-  return r ? r->code : -1;
 }
 
 
@@ -827,7 +803,7 @@ status_handler (void *opaque, int fd)
 	  else
 	    *(rest++) = 0;
 
-	  r = parse_status (line + 2);
+	  r = _gpgme_parse_status (line + 2);
 
 	  if (r >= 0)
 	    {

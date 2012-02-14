@@ -19,11 +19,9 @@
 ## Process this file with automake to produce Makefile.in
 
 # Note: moc_kdpipeiodevice should actually be a dependcy below.
-EXTRA_DIST = gpgme-config.in gpgme.m4 mkstatus libgpgme.vers ChangeLog-2011 \
+EXTRA_DIST = gpgme-config.in gpgme.m4 libgpgme.vers ChangeLog-2011 \
 	     gpgme.h.in versioninfo.rc.in gpgme.def moc_kdpipeiodevice.cpp
 
-BUILT_SOURCES = status-table.h
-MOSTLYCLEANFILES = status-table.h
 bin_SCRIPTS = gpgme-config
 m4datadir = $(datadir)/aclocal
 m4data_DATA = gpgme.m4
@@ -115,8 +113,7 @@ main_sources =								\
 	key.c keylist.c trust-item.c trustlist.c			\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
 	opassuan.c passwd.c                                             \
-	engine.h engine-backend.h engine.c engine-gpg.c status-table.h	\
-	extra-stati.h 	                                                \
+	engine.h engine-backend.h engine.c engine-gpg.c status-table.c	\
 	$(gpgsm_components) $(assuan_components) $(gpgconf_components)  \
 	$(uiserver_components)						\
 	$(g13_components) vfs-mount.c vfs-create.c			\
@@ -227,10 +224,6 @@ endif
 
 noinst_PROGRAMS = gpgme-tool
 gpgme_tool_LDADD = libgpgme.la @LIBASSUAN_LIBS@
-
-status-table.h : gpgme.h extra-stati.h
-	cat $(builddir)/gpgme.h $(srcdir)extra-stati.h \
-          | $(srcdir)/mkstatus  > status-table.h
 
 install-data-local: install-def-file
 

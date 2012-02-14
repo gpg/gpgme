@@ -1,7 +1,7 @@
 /* engine-gpg.c - Gpg Engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-                 2009, 2010 g10 Code GmbH
+                 2009, 2010, 2012 g10 Code GmbH
  
    This file is part of GPGME.
  
@@ -43,7 +43,6 @@
 #include "sema.h"
 #include "debug.h"
 
-#include "status-table.h"
 #include "engine-backend.h"
 
 
@@ -965,16 +964,6 @@ add_io_cb (engine_gpg_t gpg, int fd, int dir, gpgme_io_cb_t handler, void *data,
 }
 
 
-static int
-status_cmp (const void *ap, const void *bp)
-{
-  const struct status_table_s *a = ap;
-  const struct status_table_s *b = bp;
-
-  return strcmp (a->name, b->name);
-}
-
-
 /* Handle the status output of GnuPG.  This function does read entire
    lines and passes them as C strings to the callback function (we can
    use C Strings because the status output is always UTF-8 encoded).
@@ -1032,8 +1021,8 @@ read_status (engine_gpg_t gpg)
 	      if (!strncmp (buffer, "[GNUPG:] ", 9)
 		  && buffer[9] >= 'A' && buffer[9] <= 'Z')
 		{
-		  struct status_table_s t, *r;
 		  char *rest;
+		  gpgme_status_code_t r;
 
 		  rest = strchr (buffer + 9, ' ');
 		  if (!rest)
@@ -1041,18 +1030,15 @@ read_status (engine_gpg_t gpg)
 		  else
 		    *rest++ = 0;
                     
-		  t.name = buffer+9;
-		  /* (the status table has one extra element) */
-		  r = bsearch (&t, status_table, DIM(status_table) - 1,
-			       sizeof t, status_cmp);
-		  if (r)
+		  r = _gpgme_parse_status (buffer + 9);
+		  if (r >= 0)
 		    {
 		      if (gpg->cmd.used
-			  && (r->code == GPGME_STATUS_GET_BOOL
-			      || r->code == GPGME_STATUS_GET_LINE
-			      || r->code == GPGME_STATUS_GET_HIDDEN))
+			  && (r == GPGME_STATUS_GET_BOOL
+			      || r == GPGME_STATUS_GET_LINE
+			      || r == GPGME_STATUS_GET_HIDDEN))
 			{
-			  gpg->cmd.code = r->code;
+			  gpg->cmd.code = r;
 			  if (gpg->cmd.keyword)
 			    free (gpg->cmd.keyword);
 			  gpg->cmd.keyword = strdup (rest);
@@ -1075,12 +1061,12 @@ read_status (engine_gpg_t gpg)
 			{
 			  gpgme_error_t err;
 			  err = gpg->status.fnc (gpg->status.fnc_value, 
-						 r->code, rest);
+						 r, rest);
 			  if (err)
 			    return err;
                         }
                     
-		      if (r->code == GPGME_STATUS_END_STREAM)
+		      if (r == GPGME_STATUS_END_STREAM)
 			{
 			  if (gpg->cmd.used)
 			    {

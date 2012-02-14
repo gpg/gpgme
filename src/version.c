@@ -35,8 +35,9 @@
 #include "debug.h"
 #include "context.h"
 
-/* For _gpgme_sema_subsystem_init ().  */
+/* For _gpgme_sema_subsystem_init and _gpgme_status_init.  */
 #include "sema.h"
+#include "util.h"
 
 #ifdef HAVE_ASSUAN_H
 #include "assuan.h"
@@ -76,6 +77,7 @@ do_subsystem_inits (void)
   _gpgme_sema_subsystem_init ();
   _gpgme_debug_subsystem_init ();
   _gpgme_io_subsystem_init ();
+  _gpgme_status_init ();
 
   done = 1;
 }
