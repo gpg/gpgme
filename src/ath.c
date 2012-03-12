@@ -67,7 +67,7 @@ uintptr_t
 ath_self (void)
 {
   /* Just to catch users who don't use gpgme-pthread.  */
-  return (uintptr_t) syscall (SYS_gettid);
+  return (uintptr_t) syscall (__NR_gettid);
 }
 # else
 uintptr_t
