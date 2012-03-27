@@ -121,7 +121,7 @@ selected keys, the server MAY implement the command:
 @deffn Command PREP_ENCRYPT [-@w{}-protocol=@var{name}] [-@w{}-expect-sign]
 
 This commands considers all recipients set so far and decides whether it
-is able to take input and start the actual decryption.  This is kind of
+is able to take input and start the actual encryption.  This is kind of
 a dry-run @command{ENCRYPT} without requiring or using the input and
 output file descriptors.  The server shall cache the result of any user
 selection to avoid asking this again when the actual @command{ENCRYPT}
