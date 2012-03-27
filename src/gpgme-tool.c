@@ -1,4 +1,4 @@
-/* gpgme-tool.c - GnuPG Made Easy.
+/* gpgme-tool.c - Assuan server exposing GnuPG Made Easy operations.
    Copyright (C) 2009, 2010 g10 Code GmbH
 
    This file is part of GPGME.
@@ -2053,6 +2053,10 @@ cmd_version (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_engine[] =
+  "ENGINE [<string>]\n"
+  "\n"
+  "Get information about a GPGME engine (a.k.a. protocol).";
 static gpg_error_t
 cmd_engine (assuan_context_t ctx, char *line)
 {
@@ -2064,7 +2068,8 @@ cmd_engine (assuan_context_t ctx, char *line)
 static const char hlp_protocol[] = 
   "PROTOCOL [<name>]\n"
   "\n"
-  "With NAME, set the protocol.  Without return the current protocol.";
+  "With NAME, set the protocol.  Without, return the current\n"
+  "protocol.";
 static gpg_error_t
 cmd_protocol (assuan_context_t ctx, char *line)
 {
@@ -2076,6 +2081,11 @@ cmd_protocol (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_sub_protocol[] =
+  "SUB_PROTOCOL [<name>]\n"
+  "\n"
+  "With NAME, set the sub-protocol.  Without, return the\n"
+  "current sub-protocol.";
 static gpg_error_t
 cmd_sub_protocol (assuan_context_t ctx, char *line)
 {
@@ -2087,6 +2097,11 @@ cmd_sub_protocol (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_armor[] =
+  "ARMOR [true|false]\n"
+  "\n"
+  "With 'true' or 'false', turn output ASCII armoring on or\n"
+  "off.  Without, return the current armoring status.";
 static gpg_error_t
 cmd_armor (assuan_context_t ctx, char *line)
 {
@@ -2106,6 +2121,11 @@ cmd_armor (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_textmode[] =
+  "TEXTMODE [true|false]\n"
+  "\n"
+  "With 'true' or 'false', turn text mode on or off.\n"
+  "Without, return the current text mode status.";
 static gpg_error_t
 cmd_textmode (assuan_context_t ctx, char *line)
 {
@@ -2125,6 +2145,13 @@ cmd_textmode (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_include_certs[] =
+  "INCLUDE_CERTS [default|<n>]\n"
+  "\n"
+  "With DEFAULT or N, set how many certificates should be\n"
+  "included in the next S/MIME signed message.  See the\n"
+  "GPGME documentation for details on the meaning of"
+  "various N.  Without either, return the current setting.";
 static gpg_error_t
 cmd_include_certs (assuan_context_t ctx, char *line)
 {
@@ -2146,6 +2173,11 @@ cmd_include_certs (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_keylist_mode[] =
+  "KEYLIST_MODE [local] [extern] [sigs] [sig_notations]\n"
+  "  [ephemeral] [validate]\n"
+  "\n"
+  "Set the mode for the next KEYLIST command.";
 static gpg_error_t
 cmd_keylist_mode (assuan_context_t ctx, char *line)
 {
@@ -2175,6 +2207,11 @@ cmd_keylist_mode (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_input[] =
+  "INPUT [<fd>|FILE=<path>]\n"
+  "\n"
+  "Set the input for the next command.  Use either the\n"
+  "Assuan file descriptor FD or a filesystem PATH.";
 static gpg_error_t
 cmd_input (assuan_context_t ctx, char *line)
 {
@@ -2193,6 +2230,11 @@ cmd_input (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_output[] =
+  "OUTPUT [<fd>|FILE=<path>]\n"
+  "\n"
+  "Set the output for the next command.  Use either the\n"
+  "Assuan file descriptor FD or a filesystem PATH.";
 static gpg_error_t
 cmd_output (assuan_context_t ctx, char *line)
 {
@@ -2211,6 +2253,12 @@ cmd_output (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_message[] =
+  "MESSAGE [<fd>|FILE=<path>]\n"
+  "\n"
+  "Set the plaintext message for the next VERIFY command\n"
+  "with a detached signature.  Use either the Assuan file\n"
+  "descriptor FD or a filesystem PATH.";
 static gpg_error_t
 cmd_message (assuan_context_t ctx, char *line)
 {
@@ -2229,6 +2277,11 @@ cmd_message (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_recipient[] =
+  "RECIPIENT <pattern>\n"
+  "\n"
+  "Add the key matching PATTERN to the list of recipients\n"
+  "for the next encryption command.";
 static gpg_error_t
 cmd_recipient (assuan_context_t ctx, char *line)
 {
@@ -2238,6 +2291,11 @@ cmd_recipient (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_signer[] =
+  "SIGNER <fingerprint>\n"
+  "\n"
+  "Add the key with FINGERPRINT to the list of signers to\n"
+  "be used for the next signing command.";
 static gpg_error_t
 cmd_signer (assuan_context_t ctx, char *line)
 {
@@ -2247,6 +2305,11 @@ cmd_signer (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_signers_clear[] =
+  "SIGNERS_CLEAR\n"
+  "\n"
+  "Clear the list of signers specified by previous SIGNER\n"
+  "commands.";
 static gpg_error_t
 cmd_signers_clear (assuan_context_t ctx, char *line)
 {
@@ -2300,6 +2363,12 @@ _cmd_decrypt_verify (assuan_context_t ctx, char *line, int verify)
 }
 
 
+static const char hlp_decrypt[] =
+  "DECRYPT\n"
+  "\n"
+  "Decrypt the object set by the last INPUT command and\n"
+  "write the decrypted message to the object set by the\n"
+  "last OUTPUT command.";
 static gpg_error_t
 cmd_decrypt (assuan_context_t ctx, char *line)
 {
@@ -2307,6 +2376,12 @@ cmd_decrypt (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_decrypt_verify[] =
+  "DECRYPT_VERIFY\n"
+  "\n"
+  "Decrypt the object set by the last INPUT command and\n"
+  "verify any embedded signatures.  Write the decrypted\n"
+  "message to the object set by the last OUTPUT command.";
 static gpg_error_t
 cmd_decrypt_verify (assuan_context_t ctx, char *line)
 {
@@ -2369,6 +2444,14 @@ _cmd_sign_encrypt (assuan_context_t ctx, char *line, int sign)
 }
 
 
+static const char hlp_encrypt[] =
+  "ENCRYPT [--always-trust] [--no-encrypt-to]\n"
+  "  [--prepare] [--expect-sign]\n"
+  "\n"
+  "Encrypt the object set by the last INPUT command to\n"
+  "the keys specified by previous RECIPIENT commands.  \n"
+  "Write the signed and encrypted message to the object\n"
+  "set by the last OUTPUT command.";
 static gpg_error_t
 cmd_encrypt (assuan_context_t ctx, char *line)
 {
@@ -2376,6 +2459,15 @@ cmd_encrypt (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_sign_encrypt[] =
+  "SIGN_ENCRYPT [--always-trust] [--no-encrypt-to]\n"
+  "  [--prepare] [--expect-sign]\n"
+  "\n"
+  "Sign the object set by the last INPUT command with the\n"
+  "keys specified by previous SIGNER commands and encrypt\n"
+  "it to the keys specified by previous RECIPIENT\n"
+  "commands.  Write the signed and encrypted message to\n"
+  "the object set by the last OUTPUT command.";
 static gpg_error_t
 cmd_sign_encrypt (assuan_context_t ctx, char *line)
 {
@@ -2383,6 +2475,15 @@ cmd_sign_encrypt (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_sign[] =
+  "SIGN [--clear|--detach]\n"
+  "\n"
+  "Sign the object set by the last INPUT command with the\n"
+  "keys specified by previous SIGNER commands.  Write the\n"
+  "signed message to the object set by the last OUTPUT\n"
+  "command.  With `--clear`, generate a clear text\n"
+  "signature.  With `--detach`, generate a detached\n"
+  "signature.";
 static gpg_error_t
 cmd_sign (assuan_context_t ctx, char *line)
 {
@@ -2432,6 +2533,13 @@ cmd_sign (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_verify[] =
+  "VERIFY\n"
+  "\n"
+  "Verify signatures on the object set by the last INPUT\n"
+  "and MESSAGE commands.  If the message was encrypted,\n"
+  "write the plaintext to the object set by the last\n"
+  "OUTPUT command.";
 static gpg_error_t
 cmd_verify (assuan_context_t ctx, char *line)
 {
@@ -2496,6 +2604,12 @@ cmd_verify (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_import[] =
+  "IMPORT [<pattern>]\n"
+  "\n"
+  "With PATTERN, import the keys described by PATTERN.\n"
+  "Without, read a key (or keys) from the object set by the\n"
+  "last INPUT command.";
 static gpg_error_t
 cmd_import (assuan_context_t ctx, char *line)
 {
@@ -2919,31 +3033,31 @@ register_commands (assuan_context_t ctx)
     /* RESET, BYE are implicit.  */
     { "VERSION", cmd_version, hlp_version },
     /* TODO: Set engine info.  */
-    { "ENGINE", cmd_engine },
+    { "ENGINE", cmd_engine, hlp_engine },
     { "PROTOCOL", cmd_protocol, hlp_protocol },
-    { "SUB_PROTOCOL", cmd_sub_protocol },
-    { "ARMOR", cmd_armor },
-    { "TEXTMODE", cmd_textmode },
-    { "INCLUDE_CERTS", cmd_include_certs },
-    { "KEYLIST_MODE", cmd_keylist_mode },
-    { "INPUT", cmd_input }, 
-    { "OUTPUT", cmd_output }, 
-    { "MESSAGE", cmd_message },
-    { "RECIPIENT", cmd_recipient },
-    { "SIGNER", cmd_signer },
-    { "SIGNERS_CLEAR", cmd_signers_clear },
+    { "SUB_PROTOCOL", cmd_sub_protocol, hlp_sub_protocol },
+    { "ARMOR", cmd_armor, hlp_armor },
+    { "TEXTMODE", cmd_textmode, hlp_textmode },
+    { "INCLUDE_CERTS", cmd_include_certs, hlp_include_certs },
+    { "KEYLIST_MODE", cmd_keylist_mode, hlp_keylist_mode },
+    { "INPUT", cmd_input, hlp_input },
+    { "OUTPUT", cmd_output, hlp_output },
+    { "MESSAGE", cmd_message, hlp_message },
+    { "RECIPIENT", cmd_recipient, hlp_recipient },
+    { "SIGNER", cmd_signer, hlp_signer },
+    { "SIGNERS_CLEAR", cmd_signers_clear, hlp_signers_clear },
      /* TODO: SIGNOTATION missing. */
      /* TODO: Could add wait interface if we allow more than one context */
      /* and add _START variants. */
      /* TODO: Could add data interfaces if we allow multiple data objects. */
-    { "DECRYPT", cmd_decrypt },
-    { "DECRYPT_VERIFY", cmd_decrypt_verify },
-    { "ENCRYPT", cmd_encrypt },
-    { "ENCRYPT_SIGN", cmd_sign_encrypt },
-    { "SIGN_ENCRYPT", cmd_sign_encrypt },
-    { "SIGN", cmd_sign },
-    { "VERIFY", cmd_verify },
-    { "IMPORT", cmd_import },
+    { "DECRYPT", cmd_decrypt, hlp_decrypt },
+    { "DECRYPT_VERIFY", cmd_decrypt_verify, hlp_decrypt_verify },
+    { "ENCRYPT", cmd_encrypt, hlp_encrypt },
+    { "ENCRYPT_SIGN", cmd_sign_encrypt, hlp_sign_encrypt },
+    { "SIGN_ENCRYPT", cmd_sign_encrypt, hlp_sign_encrypt },
+    { "SIGN", cmd_sign, hlp_sign },
+    { "VERIFY", cmd_verify, hlp_verify },
+    { "IMPORT", cmd_import, hlp_import },
     { "EXPORT", cmd_export, hlp_export },
     { "GENKEY", cmd_genkey },
     { "DELETE", cmd_delete },
@@ -3056,7 +3170,7 @@ const char *argp_program_version = VERSION;
 const char *argp_program_bug_address = "bug-gpgme@gnupg.org";
 error_t argp_err_exit_status = 1;
 
-static char doc[] = "GPGME Tool -- invoke GPGME operations";
+static char doc[] = "GPGME Tool -- Assuan server exposing GPGME operations";
 static char args_doc[] = "COMMAND [OPTIONS...]";
 
 static struct argp_option options[] = {
