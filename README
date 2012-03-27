@@ -85,7 +85,7 @@ a) If you have a trusted Version of GnuPG installed, you can simply check
    indeed a a signature of gpgme-x.y.z.tar.gz.  The key used to create
    this signature is either of:
 
-   "pub  1024D/57548DCD 1998-07-07 Werner Koch (gnupg sig) <dd9jn@gnu.org>"
+   "pub  2048R/4F25E3B6 2011-01-12 Werner Koch (dist sig)"
    "pub  1024D/87978569 1999-05-13
                         Marcus Brinkmann <Marcus.Brinkmann@ruhr-uni-bochum.de>
                         Marcus Brinkmann <mb@g10code.com>"
@@ -94,7 +94,7 @@ a) If you have a trusted Version of GnuPG installed, you can simply check
    have to make sure that this is really the key and not a faked one.
    You can do this by comparing the output of:
 
-	$ gpg --fingerprint 0x57548DCD
+	$ gpg --fingerprint 0x4F25E3B6
 
    with the fingerprint published elsewhere.
 
