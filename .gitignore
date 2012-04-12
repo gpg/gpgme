@@ -2,9 +2,12 @@
 /autom4te.cache
 /config.h.in
 /configure
+/config.h
+/config.log
+/config.status
+/libtool
 Makefile.in
-/doc/gpgme.info
-/doc/gpgme.info-1
-/doc/gpgme.info-2
-/doc/stamp-vti
-/doc/version.texi
+Makefile
+stamp-h1
+*.o
+*.lo

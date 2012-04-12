@@ -1,0 +1,7 @@
+.deps
+.libs
+gpgme-config
+gpgme-tool
+gpgme.h
+versioninfo.rc
+*.la

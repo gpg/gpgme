@@ -1,0 +1,10 @@
+.deps
+.libs
+run-export
+run-import
+run-keylist
+run-sign
+run-verify
+t-data
+t-engine-info
+t-version

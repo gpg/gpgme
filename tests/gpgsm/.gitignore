@@ -1,0 +1,17 @@
+.deps
+.libs
+cms-decrypt
+cms-keylist
+gpgsm.conf
+private-keys-v1.d
+pubring.kbx
+pubring.kbx~
+t-decrypt
+t-encrypt
+t-export
+t-genkey
+t-import
+t-keylist
+t-sign
+t-verify
+trustlist.txt
