@@ -1,19 +1,19 @@
 /* conversion.c - String conversion helper functions.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2007 g10 Code GmbH
- 
+
    This file is part of GPGME.
 
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -150,9 +150,9 @@ _gpgme_decode_c_string (const char *src, char **destp, size_t len)
 		    /* A binary zero is not representable in a C
 		       string.  */
 		    *(dest++) = '\\';
-		    *(dest++) = '0'; 
+		    *(dest++) = '0';
 		  }
-		else 
+		else
 		  *((unsigned char *) dest++) = val;
 		src += 4;
 	      }
@@ -165,7 +165,7 @@ _gpgme_decode_c_string (const char *src, char **destp, size_t len)
 	    *(dest++) = *(src++);
 	    *(dest++) = *(src++);
 	  }
-        } 
+        }
     }
   *(dest++) = 0;
 
@@ -216,7 +216,7 @@ _gpgme_decode_percent_string (const char *src, char **destp, size_t len,
       else
 	{
 	  int val = _gpgme_hextobyte (&src[1]);
-	  
+
 	  if (val == -1)
 	    {
 	      /* Should not happen.  */
@@ -233,9 +233,9 @@ _gpgme_decode_percent_string (const char *src, char **destp, size_t len,
 		  /* A binary zero is not representable in a C
 		     string.  */
 		  *(dest++) = '\\';
-		  *(dest++) = '0'; 
+		  *(dest++) = '0';
 		}
-	      else 
+	      else
 		*((unsigned char *) dest++) = val;
 	      src += 3;
 	    }
@@ -269,7 +269,7 @@ _gpgme_encode_percent_string (const char *src, char **destp, size_t len)
      the special plus format.  */
   while (*str)
     {
-      if (*str == '+' || *str == '\"' || *str == '%' 
+      if (*str == '+' || *str == '\"' || *str == '%'
           || *(const unsigned char *)str <= 0x20)
         destlen += 3;
       else
@@ -301,7 +301,7 @@ _gpgme_encode_percent_string (const char *src, char **destp, size_t len)
   /* Convert the string.  */
   while (*src)
     {
-      if (*src == '+' || *src == '\"' || *src == '%' 
+      if (*src == '+' || *src == '\"' || *src == '%'
           || *(const unsigned char *)src <= 0x20)
         {
           snprintf (dest, 4, "%%%02X", *(unsigned char *)src);
@@ -325,7 +325,7 @@ _gpgme_timegm (struct tm *tm)
   SYSTEMTIME st;
   FILETIME ft;
   unsigned long long cnsecs;
-  
+
   st.wYear   = tm->tm_year + 1900;
   st.wMonth  = tm->tm_mon  + 1;
   st.wDay    = tm->tm_mday;
@@ -341,7 +341,7 @@ _gpgme_timegm (struct tm *tm)
       gpg_err_set_errno (EINVAL);
       return (time_t)(-1);
     }
-  
+
   cnsecs = (((unsigned long long)ft.dwHighDateTime << 32)
 	    | ft.dwLowDateTime);
   cnsecs -= 116444736000000000ULL; /* The filetime epoch is 1601-01-01.  */
@@ -381,7 +381,7 @@ _gpgme_parse_timestamp (const char *timestamp, char **endp)
 
       memset (&buf, 0, sizeof buf);
       buf.tm_year = year - 1900;
-      buf.tm_mon = atoi_2 (timestamp+4) - 1; 
+      buf.tm_mon = atoi_2 (timestamp+4) - 1;
       buf.tm_mday = atoi_2 (timestamp+6);
       buf.tm_hour = atoi_2 (timestamp+9);
       buf.tm_min = atoi_2 (timestamp+11);
@@ -397,7 +397,7 @@ _gpgme_parse_timestamp (const char *timestamp, char **endp)
 #else
       {
         time_t tim;
-        
+
         putenv ("TZ=UTC");
         tim = mktime (&buf);
 #ifdef __GNUC__

@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -119,7 +119,7 @@ gpgme_op_verify_result (gpgme_ctx_t ctx)
 	  if (sig->notations)
 	    {
 	      TRACE_LOG1 ("sig[%i] = has notations (not shown)", i);
-	    }	  
+	    }
 	  sig = sig->next;
 	  i++;
 	}
@@ -135,7 +135,7 @@ static void
 calc_sig_summary (gpgme_signature_t sig)
 {
   unsigned long sum = 0;
-  
+
   /* Calculate the red/green flag.  */
   if (sig->validity == GPGME_VALIDITY_FULL
       || sig->validity == GPGME_VALIDITY_ULTIMATE)
@@ -179,7 +179,7 @@ calc_sig_summary (gpgme_signature_t sig)
       sum |= GPGME_SIGSUM_SYS_ERROR;
       break;
     }
-  
+
   /* Now look at the certain reason codes.  */
   switch (gpg_err_code (sig->validity_reason))
     {
@@ -187,7 +187,7 @@ calc_sig_summary (gpgme_signature_t sig)
       if (sig->validity == GPGME_VALIDITY_UNKNOWN)
         sum |= GPGME_SIGSUM_CRL_TOO_OLD;
       break;
-        
+
     case GPG_ERR_CERT_REVOKED:
       sum |= GPGME_SIGSUM_KEY_REVOKED;
       break;
@@ -199,15 +199,15 @@ calc_sig_summary (gpgme_signature_t sig)
   /* Check other flags. */
   if (sig->wrong_key_usage)
     sum |= GPGME_SIGSUM_BAD_POLICY;
-  
+
   /* Set the valid flag when the signature is unquestionable
      valid.  (The test is identical to if(sum == GPGME_SIGSUM_GREEN)). */
   if ((sum & GPGME_SIGSUM_GREEN) && !(sum & ~GPGME_SIGSUM_GREEN))
     sum |= GPGME_SIGSUM_VALID;
-  
+
   sig->summary = sum;
 }
-  
+
 
 static gpgme_error_t
 prepare_new_sig (op_data_t opd)
@@ -300,7 +300,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
       end = tail;
       while (*end == ' ')
 	end++;
-     
+
       /* Parse the hash algo.  */
       if (!*end)
 	goto parse_err_sig_fail;
@@ -326,7 +326,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
       end = tail;
       while (*end == ' ')
 	end++;
-      
+
       /* Parse the return code.  */
       if (end[0] && (!end[1] || end[1] == ' '))
 	{
@@ -335,11 +335,11 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
 	    case '4':
 	      sig->status = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
 	      break;
-	      
+
 	    case '9':
 	      sig->status = gpg_error (GPG_ERR_NO_PUBKEY);
 	      break;
-	      
+
 	    default:
 	      sig->status = gpg_error (GPG_ERR_GENERAL);
 	    }
@@ -348,12 +348,12 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
 	goto parse_err_sig_fail;
 
       goto parse_err_sig_ok;
-      
+
     parse_err_sig_fail:
       sig->status = gpg_error (GPG_ERR_GENERAL);
     parse_err_sig_ok:
       break;
-      
+
     default:
       return gpg_error (GPG_ERR_GENERAL);
     }
@@ -398,7 +398,7 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
       if (sig->timestamp == -1 || end == tail || (*tail && *tail != ' '))
 	return gpg_error (GPG_ERR_INV_ENGINE);
       end = tail;
-     
+
       sig->exp_timestamp = _gpgme_parse_timestamp (end, &tail);
       if (sig->exp_timestamp == -1 || end == tail || (*tail && *tail != ' '))
 	return gpg_error (GPG_ERR_INV_ENGINE);
@@ -521,7 +521,7 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	/* There is notation data without a previous notation
 	   name.  The crypto backend misbehaves.  */
 	return gpg_error (GPG_ERR_INV_ENGINE);
-      
+
       if (!notation->value)
 	{
 	  dest = notation->value = malloc (len);
@@ -537,7 +537,7 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	  notation->value = dest;
 	  dest += cur_len;
 	}
-      
+
       err = _gpgme_decode_percent_string (args, &dest, len, 0);
       if (err)
 	return err;
@@ -618,7 +618,7 @@ parse_error (gpgme_signature_t sig, char *args, int set_status)
       if (where)
 	*where = '\0';
 
-      where = args;      
+      where = args;
     }
   else
     return gpg_error (GPG_ERR_INV_ENGINE);
@@ -792,7 +792,7 @@ verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 gpgme_error_t
 _gpgme_op_verify_init_result (gpgme_ctx_t ctx)
-{  
+{
   void *hook;
   op_data_t opd;
 
@@ -924,27 +924,27 @@ gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
 	case GPG_ERR_NO_ERROR:
 	  *r_stat = GPGME_SIG_STAT_GOOD;
 	  break;
-	  
+
 	case GPG_ERR_BAD_SIGNATURE:
 	  *r_stat = GPGME_SIG_STAT_BAD;
 	  break;
-	  
+
 	case GPG_ERR_NO_PUBKEY:
 	  *r_stat = GPGME_SIG_STAT_NOKEY;
 	  break;
-	  
+
 	case GPG_ERR_NO_DATA:
 	  *r_stat = GPGME_SIG_STAT_NOSIG;
 	  break;
-	  
+
 	case GPG_ERR_SIG_EXPIRED:
 	  *r_stat = GPGME_SIG_STAT_GOOD_EXP;
 	  break;
-	  
+
 	case GPG_ERR_KEY_EXPIRED:
 	  *r_stat = GPGME_SIG_STAT_GOOD_EXPKEY;
 	  break;
-	  
+
 	default:
 	  *r_stat = GPGME_SIG_STAT_ERROR;
 	  break;
@@ -960,7 +960,7 @@ gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
    number of the signature after a successful verify operation.  WHAT
    is an attribute where GPGME_ATTR_EXPIRE is probably the most useful
    one.  WHATIDX is to be passed as 0 for most attributes . */
-unsigned long 
+unsigned long
 gpgme_get_sig_ulong_attr (gpgme_ctx_t ctx, int idx,
                           _gpgme_attr_t what, int whatidx)
 {
@@ -994,22 +994,22 @@ gpgme_get_sig_ulong_attr (gpgme_ctx_t ctx, int idx,
 	{
 	case GPG_ERR_NO_ERROR:
 	  return GPGME_SIG_STAT_GOOD;
-	  
+
 	case GPG_ERR_BAD_SIGNATURE:
 	  return GPGME_SIG_STAT_BAD;
-	  
+
 	case GPG_ERR_NO_PUBKEY:
 	  return GPGME_SIG_STAT_NOKEY;
-	  
+
 	case GPG_ERR_NO_DATA:
 	  return GPGME_SIG_STAT_NOSIG;
-	  
+
 	case GPG_ERR_SIG_EXPIRED:
 	  return GPGME_SIG_STAT_GOOD_EXP;
-	  
+
 	case GPG_ERR_KEY_EXPIRED:
 	  return GPGME_SIG_STAT_GOOD_EXPKEY;
-	  
+
 	default:
 	  return GPGME_SIG_STAT_ERROR;
 	}
