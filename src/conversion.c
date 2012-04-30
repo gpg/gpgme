@@ -374,6 +374,9 @@ _gpgme_parse_timestamp (const char *timestamp, char **endp)
       if (year < 1900)
         return (time_t)(-1);
 
+      if (endp)
+        *endp = (char*)(timestamp + 15);
+
       /* Fixme: We would better use a configure test to see whether
          mktime can handle dates beyond 2038. */
       if (sizeof (time_t) <= 4 && year >= 2038)
@@ -387,8 +390,6 @@ _gpgme_parse_timestamp (const char *timestamp, char **endp)
       buf.tm_min = atoi_2 (timestamp+11);
       buf.tm_sec = atoi_2 (timestamp+13);
 
-      if (endp)
-        *endp = (char*)(timestamp + 15);
 #ifdef HAVE_W32_SYSTEM
       return _gpgme_timegm (&buf);
 #else
