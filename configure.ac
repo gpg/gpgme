@@ -33,8 +33,8 @@ min_automake_version="1.11"
 # for a specific feature can already be done under the assumption that
 # the GIT version is the most recent one in a branch.  To disable the
 # GIT version for the real release, set the my_isgit macro to no.
-m4_define(my_version, [1.3.2])
-m4_define(my_isgit, [no])
+m4_define(my_version, [1.3.3])
+m4_define(my_isgit, [yes])
 
 m4_define([svn_revision], m4_esyscmd([printf "%d" $( (svn info 2>/dev/null \
             || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
