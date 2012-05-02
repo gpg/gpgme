@@ -83,6 +83,7 @@ gpgme_op_verify_result (gpgme_ctx_t ctx)
   void *hook;
   op_data_t opd;
   gpgme_error_t err;
+  gpgme_signature_t sig;
 
   TRACE_BEG (DEBUG_CTX, "gpgme_op_verify_result", ctx);
   err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, &hook, -1, NULL);
@@ -93,12 +94,37 @@ gpgme_op_verify_result (gpgme_ctx_t ctx)
       return NULL;
     }
 
+  /* It is possible that we saw a new signature only followed by an
+     ERROR line for that.  In particular a missing X.509 key triggers
+     this.  In this case it is surprising that the summary field has
+     not been updated.  We fix it here by explicitly looking for this
+     case.  The real fix would be to have GPGME emit ERRSIG.  */
+  for (sig = opd->result.signatures; sig; sig = sig->next)
+    {
+      if (!sig->summary)
+        {
+          switch (gpg_err_code (sig->status))
+            {
+            case GPG_ERR_KEY_EXPIRED:
+              sig->summary |= GPGME_SIGSUM_KEY_EXPIRED;
+              break;
+
+            case GPG_ERR_NO_PUBKEY:
+              sig->summary |= GPGME_SIGSUM_KEY_MISSING;
+              break;
+
+            default:
+              break;
+            }
+        }
+    }
+
+  /* Now for some tracing stuff. */
   if (_gpgme_debug_trace ())
     {
-      gpgme_signature_t sig = opd->result.signatures;
-      int i = 0;
+      int i;
 
-      while (sig)
+      for (sig = opd->result.signatures, i = 0; sig; sig = sig->next, i++)
 	{
 	  TRACE_LOG4 ("sig[%i] = fpr %s, summary 0x%x, status %s",
 		      i, sig->fpr, sig->summary, gpg_strerror (sig->status));
@@ -120,8 +146,6 @@ gpgme_op_verify_result (gpgme_ctx_t ctx)
 	    {
 	      TRACE_LOG1 ("sig[%i] = has notations (not shown)", i);
 	    }
-	  sig = sig->next;
-	  i++;
 	}
     }
 
