@@ -1,7 +1,7 @@
 # configure.ac for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-#               2009, 2010, 2011  g10 Code GmbH
+#               2009, 2010, 2011, 2012  g10 Code GmbH
 #
 # This file is part of GPGME.
 #
@@ -15,9 +15,8 @@
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General
 # Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 # (Process this file with autoconf to produce a configure script.)
 AC_PREREQ(2.59)
@@ -29,19 +28,19 @@ min_automake_version="1.11"
 #                 Never do a binary build with the same version number
 #                 in another year; this would mess up the build number.
 #
-# The SVN version is usually the next intended release version with
-# the string "-svnNNN" appended.  The reason for this is that tests for a
-# specific feature can already be done under the assumption that the
-# SVN version is the most recent one in a branch.  To disable the SVN
-# version for the real release, set the my_issvn macro to no.
-m4_define(my_version, [1.3.1])
-m4_define(my_issvn, [yes])
+# The GIT version is usually the next intended release version with
+# the string "-gitNNNNNN" appended.  The reason for this is that tests
+# for a specific feature can already be done under the assumption that
+# the GIT version is the most recent one in a branch.  To disable the
+# GIT version for the real release, set the my_isgit macro to no.
+m4_define(my_version, [1.3.2])
+m4_define(my_isgit, [no])
 
 m4_define([svn_revision], m4_esyscmd([printf "%d" $( (svn info 2>/dev/null \
             || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
 m4_define([git_revision], m4_esyscmd([git branch -v 2>/dev/null \
           | awk '/^\* / {printf "%s",$3}']))
-m4_define([my_full_version], [my_version[]m4_if(my_issvn,[yes],
+m4_define([my_full_version], [my_version[]m4_if(my_isgit,[yes],
           [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])])
 
 AC_INIT([gpgme],[my_full_version],[http://bugs.gnupg.org])
@@ -56,7 +55,7 @@ LIBGPGME_LT_CURRENT=19
 # Subtract 2 from this value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
 LIBGPGME_LT_AGE=8
-LIBGPGME_LT_REVISION=0
+LIBGPGME_LT_REVISION=1
 
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
@@ -92,6 +91,8 @@ AH_VERBATIM([_REENTRANT],
 
 AC_PROG_CC
 AC_PROG_CXX
+AC_CHECK_PROGS(GITLOG_TO_CHANGELOG, gitlog-to-changelog,
+               [build-aux/gitlog-to-changelog])
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
