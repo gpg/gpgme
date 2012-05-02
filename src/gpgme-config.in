@@ -32,10 +32,6 @@ gpg_error_libs="@GPG_ERROR_LIBS@"
 # Configure thread packages.
 thread_modules=""
 
-@HAVE_PTH_TRUE@thread_modules="$thread_modules pth"
-libs_pth="@PTH_LDFLAGS@ @PTH_LIBS@"
-cflags_pth="@PTH_CFLAGS@"
-
 @HAVE_PTHREAD_TRUE@thread_modules="$thread_modules pthread"
 libs_pthread="-lpthread"
 cflags_pthread=""
@@ -114,7 +110,6 @@ while test $# -gt 0; do
             tmp_g=
 	    case "$thread_module" in
 	        pthread) tmp_c="$cflags_pthread" ;;
-	        pth)     tmp_c="$cflags_pth"     ;;
 	    esac
 	    test "x$with_glib" = "xyes" && tmp_g="$cflags_glib"
             for i in $cflags $tmp_c $assuan_cflags $gpg_error_cflags $tmp_g ; do
@@ -143,7 +138,6 @@ while test $# -gt 0; do
             tmp_x=
 	    case "$thread_module" in
 	        pthread) tmp_l="-lgpgme-pthread"; tmp_x="$libs_pthread" ;;
-	        pth)     tmp_l="-lgpgme-pth";     tmp_x="$libs_pth"  ;;
 		*)
 		    if test "x$with_glib" = "xyes" ; then
 		         tmp_l="-lgpgme-glib"
