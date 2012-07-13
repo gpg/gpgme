@@ -1,19 +1,19 @@
 /* engine-uiserver.c - Uiserver engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
- 
+
    This file is part of GPGME.
 
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -49,7 +49,6 @@
 #include "data.h"
 
 #include "assuan.h"
-#include "status-table.h"
 #include "debug.h"
 
 #include "engine-backend.h"
@@ -104,7 +103,7 @@ struct engine_uiserver
       int linelen;
     } attic;
     int any; /* any data line seen */
-  } colon; 
+  } colon;
 
   gpgme_data_t inline_data;  /* Used to collect D lines.  */
 
@@ -114,7 +113,7 @@ struct engine_uiserver
 typedef struct engine_uiserver *engine_uiserver_t;
 
 
-static void uiserver_io_event (void *engine, 
+static void uiserver_io_event (void *engine,
                             gpgme_event_io_t type, void *type_data);
 
 
@@ -422,7 +421,7 @@ uiserver_set_locale (void *engine, int category, const char *value)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* FIXME: Reset value to default.  */
-  if (!value) 
+  if (!value)
     return 0;
 
   if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
@@ -658,7 +657,7 @@ status_handler (void *opaque, int fd)
 	  if (uiserver->status.fnc)
 	    err = uiserver->status.fnc (uiserver->status.fnc_value,
 				     GPGME_STATUS_EOF, "");
-	  
+
 	  if (!err && uiserver->colon.fnc && uiserver->colon.any)
             {
               /* We must tell a colon function about the EOF. We do
@@ -721,12 +720,12 @@ status_handler (void *opaque, int fd)
 		      *dst = *src++;
 		      (*alinelen)++;
 		    }
-		  
+
 		  if (*dst == '\n')
 		    {
 		      /* Terminate the pending line, pass it to the colon
 			 handler and reset it.  */
-		      
+
 		      uiserver->colon.any = 1;
 		      if (*alinelen > 1 && *(dst - 1) == '\r')
 			dst--;
@@ -769,10 +768,10 @@ status_handler (void *opaque, int fd)
                 }
               else
                 *dst++ = *src++;
-              
+
               linelen++;
             }
-          
+
           src = line + 2;
           while (linelen > 0)
             {
@@ -796,7 +795,7 @@ status_handler (void *opaque, int fd)
 	{
 	  char *rest;
 	  gpgme_status_code_t r;
-	  
+
 	  rest = strchr (line + 2, ' ');
 	  if (!rest)
 	    rest = line + linelen; /* set to an empty string */
@@ -819,7 +818,7 @@ status_handler (void *opaque, int fd)
       else if (linelen >= 7
                && line[0] == 'I' && line[1] == 'N' && line[2] == 'Q'
                && line[3] == 'U' && line[4] == 'I' && line[5] == 'R'
-               && line[6] == 'E' 
+               && line[6] == 'E'
                && (line[7] == '\0' || line[7] == ' '))
         {
           char *keyword = line+7;
@@ -832,7 +831,7 @@ status_handler (void *opaque, int fd)
 
     }
   while (!err && assuan_pending_line (uiserver->assuan_ctx));
-	  
+
   return err;
 }
 
@@ -1093,7 +1092,7 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 	  return err;
 	}
     }
-    
+
   if (ciph)
     {
       uiserver->output_cb.data = ciph;
@@ -1154,14 +1153,14 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   if (key)
     {
       const char *s = NULL;
-      
+
       if (key && key->uids)
         s = key->uids->email;
-      
+
       if (s && strlen (s) < 80)
         {
           char buf[100];
-          
+
           strcpy (stpcpy (buf, "SENDER --info "), s);
           err = uiserver_assuan_simple_command (uiserver->assuan_ctx, buf,
                                                 uiserver->status.fnc,
@@ -1170,7 +1169,7 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
       else
         err = gpg_error (GPG_ERR_INV_VALUE);
       gpgme_key_unref (key);
-      if (err) 
+      if (err)
       {
 	free (cmd);
 	return err;
@@ -1257,7 +1256,7 @@ uiserver_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 
 static void
 uiserver_set_status_handler (void *engine, engine_status_handler_t fnc,
-			  void *fnc_value) 
+			  void *fnc_value)
 {
   engine_uiserver_t uiserver = engine;
 
@@ -1268,7 +1267,7 @@ uiserver_set_status_handler (void *engine, engine_status_handler_t fnc,
 
 static gpgme_error_t
 uiserver_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
-			      void *fnc_value) 
+			      void *fnc_value)
 {
   engine_uiserver_t uiserver = engine;
 
