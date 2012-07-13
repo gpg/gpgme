@@ -1,19 +1,19 @@
 /* engine-gpgconf.c - gpg-conf engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 g10 Code GmbH
- 
+
    This file is part of GPGME.
 
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -147,7 +147,7 @@ release_opt (gpgme_conf_opt_t opt)
   release_arg (opt->default_value, opt->alt_type);
   if (opt->default_description)
     free (opt->default_description);
-  
+
   release_arg (opt->no_arg_value, opt->alt_type);
   release_arg (opt->value, opt->alt_type);
   release_arg (opt->new_value, opt->alt_type);
@@ -218,7 +218,7 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
 
   /* _gpgme_engine_new guarantees that this is not NULL.  */
   argv[0] = gpgconf->file_name;
-  
+
   if (_gpgme_io_pipe (rp, 1) < 0)
     return gpg_error_from_syserror ();
 
@@ -234,7 +234,7 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
 
   do
     {
-      nread = _gpgme_io_read (rp[0], 
+      nread = _gpgme_io_read (rp[0],
                               linebuf + linelen, LINELENGTH - linelen - 1);
       if (nread > 0)
 	{
@@ -268,7 +268,7 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
 	}
     }
   while (nread > 0 && linelen < LINELENGTH - 1);
-  
+
   if (!err && nread < 0)
     err = gpg_error_from_syserror ();
   if (!err && nread > 0)
@@ -369,15 +369,15 @@ gpgconf_parse_option (gpgme_conf_opt_t opt,
 	    case GPGME_CONF_UINT32:
 	      arg->value.uint32 = strtoul (line, NULL, 0);
 	      break;
-	      
+
 	    case GPGME_CONF_INT32:
 	      arg->value.uint32 = strtol (line, NULL, 0);
 	      break;
-	      
+
 	    case GPGME_CONF_STRING:
               /* The complex types below are only here to silent the
                  compiler warning. */
-            case GPGME_CONF_FILENAME: 
+            case GPGME_CONF_FILENAME:
             case GPGME_CONF_LDAP_SERVER:
             case GPGME_CONF_KEY_FPR:
             case GPGME_CONF_PUB_KEY:
@@ -385,7 +385,7 @@ gpgconf_parse_option (gpgme_conf_opt_t opt,
             case GPGME_CONF_ALIAS_LIST:
 	      /* Skip quote character.  */
 	      line++;
-	      
+
 	      err = _gpgme_decode_percent_string (line, &arg->value.string,
 						  0, 0);
 	      if (err)
@@ -557,11 +557,11 @@ _gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
 	case GPGME_CONF_UINT32:
 	  arg->value.uint32 = *((unsigned int *) value);
 	  break;
-	  
+
 	case GPGME_CONF_INT32:
 	  arg->value.int32 = *((int *) value);
 	  break;
-	  
+
 	case GPGME_CONF_STRING:
 	case GPGME_CONF_FILENAME:
 	case GPGME_CONF_LDAP_SERVER:
@@ -576,7 +576,7 @@ _gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
 	      return gpg_error_from_syserror ();
 	    }
 	  break;
-	  
+
 	default:
 	  free (arg);
 	  return gpg_error (GPG_ERR_INV_VALUE);
@@ -600,7 +600,7 @@ _gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type)
     case GPGME_CONF_STRING:
     default:
       break;
-       
+
     case GPGME_CONF_FILENAME:
     case GPGME_CONF_LDAP_SERVER:
     case GPGME_CONF_KEY_FPR:
@@ -737,53 +737,54 @@ arg_to_data (gpgme_data_t conf, gpgme_conf_opt_t option, gpgme_conf_arg_t arg)
 	  buf[sizeof (buf) - 1] = '\0';
 	  amt = gpgme_data_write (conf, buf, strlen (buf));
 	  break;
-	  
+
 	case GPGME_CONF_INT32:
 	  snprintf (buf, sizeof (buf), "%i", arg->value.uint32);
 	  buf[sizeof (buf) - 1] = '\0';
 	  amt = gpgme_data_write (conf, buf, strlen (buf));
 	  break;
-	
-          
+
+
 	case GPGME_CONF_STRING:
           /* The complex types below are only here to silent the
              compiler warning. */
-        case GPGME_CONF_FILENAME: 
+        case GPGME_CONF_FILENAME:
         case GPGME_CONF_LDAP_SERVER:
         case GPGME_CONF_KEY_FPR:
         case GPGME_CONF_PUB_KEY:
         case GPGME_CONF_SEC_KEY:
         case GPGME_CONF_ALIAS_LIST:
-	  /* One quote character, and three times to allow
-	     for percent escaping.  */
-	  {
-	    char *ptr = arg->value.string;
-	    amt = gpgme_data_write (conf, "\"", 1);
-	    if (amt < 0)
-	      break;
+          if (arg->value.string)
+            {
+              /* One quote character, and three times to allow for
+                 percent escaping.  */
+              char *ptr = arg->value.string;
+              amt = gpgme_data_write (conf, "\"", 1);
+              if (amt < 0)
+                break;
 
-	    while (!err && *ptr)
-	      {
-		switch (*ptr)
-		  {
-		  case '%':
-		    amt = gpgme_data_write (conf, "%25", 3);
-		    break;
+              while (!err && *ptr)
+                {
+                  switch (*ptr)
+                    {
+                    case '%':
+                      amt = gpgme_data_write (conf, "%25", 3);
+                      break;
 
-		  case ':':
-		    amt = gpgme_data_write (conf, "%3a", 3);
-		    break;
+                    case ':':
+                      amt = gpgme_data_write (conf, "%3a", 3);
+                      break;
 
-		  case ',':
-		    amt = gpgme_data_write (conf, "%2c", 3);
-		    break;
+                    case ',':
+                      amt = gpgme_data_write (conf, "%2c", 3);
+                      break;
 
-		  default:
-		    amt = gpgme_data_write (conf, ptr, 1);
-		  }
-		ptr++;
-	      }
-	  }
+                    default:
+                      amt = gpgme_data_write (conf, ptr, 1);
+                    }
+                  ptr++;
+                }
+            }
 	  break;
 	}
 
@@ -798,7 +799,7 @@ arg_to_data (gpgme_data_t conf, gpgme_conf_opt_t option, gpgme_conf_arg_t arg)
 
   if (amt < 0)
     return gpg_error_from_syserror ();
-  
+
   return 0;
 }
 
