@@ -639,9 +639,6 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
   TRACE_BEG2 (DEBUG_CTX, "gpgme_set_locale", ctx,
 	       "category=%i, value=%s", category, value ? value : "(null)");
 
-  if (!ctx)
-    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-
 #define PREPARE_ONE_LOCALE(lcat, ucat)				\
   if (!failed && value						\
       && (category == LC_ALL || category == LC_ ## ucat))	\
