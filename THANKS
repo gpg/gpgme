@@ -14,6 +14,7 @@ Igor Belyi		gpgme@katehok.ac93.org
 Jan-Oliver Wagner       jan@intevation.de
 Johannes Poehlmann      jhp@caldera.de
 Jose C. García Sogo     jose@jaimedelamo.eu.org
+Leo Gaspard             ekleog@gmail.com
 Mark Mutz               mutz@kde.org
 Miguel Coca		mcoca@gnu.org
 Noel Torres		envite@rolamasao.org
@@ -21,9 +22,9 @@ Patrick Spendrin        patrick.spendrin@kdab.com
 Stéphane Corthésy       stephane@sente.ch
 Timo Schulz             twoaday@freakmail.de
 Tommy Reynolds          reynolds@redhat.com
-                        
+W. Trevor King          wking@tremily.us
 
- Copyright 2001, 2002, 2004, 2010 g10 Code GmbH
+ Copyright 2001, 2002, 2004, 2010, 2012 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
