@@ -137,7 +137,7 @@ mem_seek (gpgme_data_t dh, off_t offset, int whence)
 	  gpg_err_set_errno (EINVAL);
 	  return -1;
 	}
-      dh->data.mem.offset = dh->data.mem.length - offset;
+      dh->data.mem.offset = dh->data.mem.length + offset;
       break;
     default:
       gpg_err_set_errno (EINVAL);
