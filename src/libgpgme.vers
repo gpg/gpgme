@@ -1,5 +1,5 @@
 # libgpgme.vers - List of symbols to export.
-# Copyright (C) 2002, 2004, 2005, 2009 g10 Code GmbH
+# Copyright (C) 2002, 2004, 2005, 2009, 2012 g10 Code GmbH
 #
 # This file is part of GPGME.
 #
@@ -79,6 +79,8 @@ GPGME_1.1 {
 
     gpgme_op_passwd_start;
     gpgme_op_passwd;
+
+    gpgme_set_global_flag;
 };
 
 

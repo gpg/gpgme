@@ -2026,6 +2026,9 @@ gpgme_error_t gpgme_key_from_uid (gpgme_key_t *key, const char *name);
 
 /* Various functions.  */
 
+/* Set special global flags; consult the manual before use.  */
+int gpgme_set_global_flag (const char *name, const char *value);
+
 /* Check that the library fulfills the version requirement.  Note:
    This is here only for the case where a user takes a pointer from
    the old version of this function.  The new version and macro for

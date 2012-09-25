@@ -14,7 +14,7 @@
 
 @copying
 Copyright @copyright{} 2002, 2003, 2004, 2005, 2006, 2007,
-2008, 2010 g10 Code GmbH.
+2008, 2010, 2012 g10 Code GmbH.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -613,6 +613,30 @@ If a selftest fails, the function may still succeed.  Selftest errors
 are returned later when invoking @code{gpgme_new}, so that a detailed
 error code can be returned (historically, @code{gpgme_check_version}
 does not return a detailed error code).
+@end deftypefun
+
+
+@deftypefun {int} gpgme_set_global_flag  @
+            (@w{const char *@var{name}}, @
+            @w{const char *@var{value}})
+
+On some systems it is not easy to set environment variables and thus
+hard to use @acronym{GPGME}'s internal trace facility for debugging.
+This function has been introduced as an alternative way to enable
+debugging.  It is important to assure that only one thread accesses
+@acronym{GPGME} functions between a call to this function and after
+the return from the call to @code{gpgme_check_version}.
+
+To enable debugging, you need to call this function as early as
+possible --- even before @code{gpgme_check_version} --- with the
+string ``debug'' for @var{name} and @var{value} identical to the value
+used with the environment variable @code{GPGME_DEBUG}.
+
+This function returns @code{0} on success.  In contrast to other
+functions the non-zero return value on failure does not convey any
+error code.  For setting ``debug'' the only possible error cause is an
+out of memory condition; which would exhibit itself later anyway.
+Thus the return value may be ignored.
 @end deftypefun
 
 

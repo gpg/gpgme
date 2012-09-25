@@ -1,6 +1,6 @@
 /* gpgme.c - GnuPG Made Easy.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2012 g10 Code GmbH
 
    This file is part of GPGME.
 
@@ -50,6 +50,25 @@ gpgme_error_t _gpgme_selftest = GPG_ERR_NOT_OPERATIONAL;
 /* Protects all reference counters in result structures.  All other
    accesses to a result structure are read only.  */
 DEFINE_STATIC_LOCK (result_ref_lock);
+
+
+/* Set the global flag NAME to VALUE.  Return 0 on success.  Note that
+   this function does use gpgme_error and thus a non-zero return value
+   merely means "error".  Certain flags may be set before
+   gpgme_check_version is called.  See the manual for a description of
+   supported flags.  The caller must assure that this function is
+   called only by one thread at a time.  */
+int
+gpgme_set_global_flag (const char *name, const char *value)
+{
+  if (!name || !value)
+    return -1;
+  else if (!strcmp (name, "debug"))
+    return _gpgme_debug_set_debug_envvar (value);
+  else
+    return -1;
+}
+
 
 
 /* Create a new context as an environment for GPGME crypto

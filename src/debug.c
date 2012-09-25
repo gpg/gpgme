@@ -60,6 +60,12 @@ static int debug_level;
 /* The output stream for the debug messages.  */
 static FILE *errfp;
 
+/* If not NULL, this malloced string is used instead of the
+   GPGME_DEBUG envvar.  It must have been set before the debug
+   subsystem has been initialized.  Using it later may or may not have
+   any effect.  */
+static char *envvar_override;
+
 
 #ifdef HAVE_TLS
 #define FRAME_NR
@@ -109,6 +115,19 @@ trim_spaces (char *str)
 }
 
 
+/* This is an internal function to set debug info.  The caller must
+   assure that this function is called only by one thread at a time.
+   The function may have no effect if called after the debug system
+   has been initialized.  Returns 0 on success.  */
+int
+_gpgme_debug_set_debug_envvar (const char *value)
+{
+  free (envvar_override);
+  envvar_override = strdup (value);
+  return !envvar_override;
+}
+
+
 static void
 debug_init (void)
 {
@@ -121,16 +140,25 @@ debug_init (void)
       char *e;
       const char *s1, *s2;;
 
+      if (envvar_override)
+        {
+          e = strdup (envvar_override);
+          free (envvar_override);
+          envvar_override = NULL;
+        }
+      else
+        {
 #ifdef HAVE_W32CE_SYSTEM
-      e = _gpgme_w32ce_get_debug_envvar ();
+          e = _gpgme_w32ce_get_debug_envvar ();
 #else /*!HAVE_W32CE_SYSTEM*/
-      err = _gpgme_getenv ("GPGME_DEBUG", &e);
-      if (err)
-	{
-	  UNLOCK (debug_lock);
-	  return;
-	}
+          err = _gpgme_getenv ("GPGME_DEBUG", &e);
+          if (err)
+            {
+              UNLOCK (debug_lock);
+              return;
+            }
 #endif /*!HAVE_W32CE_SYSTEM*/
+        }
 
       initialized = 1;
       errfp = stderr;

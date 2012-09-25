@@ -202,5 +202,7 @@ EXPORTS
     gpgme_err_code_from_syserror          @154
     gpgme_err_set_errno                   @155
 
+    gpgme_set_global_flag                 @156
+
 ; END
 

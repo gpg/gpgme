@@ -54,6 +54,9 @@ _gpgme_debug_srcname (const char *file)
   return s? s+1:file;
 }
 
+/* Initialization helper function; see debug.c.  */
+int _gpgme_debug_set_debug_envvar (const char *value);
+
 /* Called early to initialize the logging.  */
 void _gpgme_debug_subsystem_init (void);
 
