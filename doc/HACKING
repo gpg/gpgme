@@ -2,7 +2,8 @@
 #+TITLE: Hacking notes for GPGME
 #+STARTUP: showall
 
-* No more ChangeLog files
+* How to contribute
+** No more ChangeLog files
 
   Do not modify any of the ChangeLog files in GPGME.  Starting
   on December 1st, 2011 we put change information only in the GIT
@@ -12,7 +13,7 @@
   be renamed to ChangeLog-2011
 
 
-* Commit log requirements
+** Commit log requirements
 
   Your commit log should always start with a one-line summary, the
   second line should be blank, and the remaining lines are usually
@@ -26,3 +27,54 @@
 
   Note that ./autogen.sh installs a git hook to do some basic syntax
   checking on the commit log message.
+
+** License policy
+
+  GPGME is currently licensed under the LGPLv2.1+ with tools and the
+  manual being under the GPLv3+.  We may eventually update to a newer
+  version of the licenses or a combination of them.  It is thus
+  important, that all contributed code allows for an update of the
+  license; for example we can't accept code under the LGPLv2(only).
+
+  If you want to contribute code or documentation to GPGME you are
+  asked to assert that the contribution is in accordance to the "GPGME
+  Developer's Certificate of Origin" as found in the file "DCO".
+  Except for a slight wording change, this DCO is identical to the one
+  used by the Linux kernel.  Please take these simple steps:
+
+  - Decide which mail address you want to use.  Please have your real
+    name in the address and not a pseudonym.  Anonymous contributions
+    can only be done if you find a proxy who certifies for you.
+
+  - If your employer or school might claim ownership of code written
+    by you; you need to talk to them to make sure that you have the
+    right to contribute under the DCO.
+
+  - Send an OpenPGP signed mail to the gnupg-devel@gnupg.org public
+    mailing list from your mail address.  Include a copy of the DCO as
+    found in the official master branch.  Insert your name and email
+    address into the DCO in the same way you want to use it later.
+    Example:
+
+      Signed-off-by: Joe R. Hacker <joe@example.org>
+
+    If you need it, you may perform simple transformations on the mail
+    address: Replacing "@" by " at " or "." by " dot ".)
+
+  - That's it.  From now on you only need to add a "Signed-off-by:"
+    line with your name and mail address to the GIT commit message.
+    It is recommended to send the patches using a PGP/MIME signed
+    mail.
+
+** Coding standards
+
+  Please follow the GNU coding standards.  If you are in doubt consult
+  the existing code as an example.  Do no re-indent code without a
+  need.  If you really need to do it, use a separate commit for such a
+  change.
+
+* Debug hints
+
+  - Use gpgme-tool for manual tests.
+  - The envvar GPGME_DEBUG enables debugging; see debug.[ch] for
+    details.

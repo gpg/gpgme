@@ -21,7 +21,7 @@
 
 DISTCLEANFILES = gpgme.tmp
 
-EXTRA_DIST = module-overview.sk HACKING ChangeLog-2011
+EXTRA_DIST = module-overview.sk HACKING DCO ChangeLog-2011
 
 info_TEXINFOS = gpgme.texi
 gpgme_TEXINFOS = uiserver.texi lesser.texi gpl.texi

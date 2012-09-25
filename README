@@ -111,3 +111,5 @@ in the tests/gpg/ directory may also prove useful.
 
 Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
 to do serious work.
+
+For hacking on GPGME, please have a look at doc/HACKING.
