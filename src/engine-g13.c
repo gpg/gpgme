@@ -1,19 +1,19 @@
 /* engine-g13.c - G13 engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
- 
+
    This file is part of GPGME.
 
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -91,7 +91,7 @@ struct engine_g13
 typedef struct engine_g13 *engine_g13_t;
 
 
-static void g13_io_event (void *engine, 
+static void g13_io_event (void *engine,
                             gpgme_event_io_t type, void *type_data);
 
 
@@ -386,7 +386,7 @@ g13_set_locale (void *engine, int category, const char *value)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* FIXME: Reset value to default.  */
-  if (!value) 
+  if (!value)
     return 0;
 
   if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
@@ -487,7 +487,7 @@ status_handler (void *opaque, int fd)
           TRACE2 (DEBUG_CTX, "gpgme:status_handler", g13,
 		  "fd 0x%x: ERR line: %s",
                   fd, err ? gpg_strerror (err) : "ok");
-	  
+
 	  /* Command execution errors are not fatal, as we use
 	     a session based protocol.  */
 	  data->op_err = err;
@@ -557,7 +557,7 @@ status_handler (void *opaque, int fd)
 	  src = line + 2;
           while (*src == ' ')
             src++;
-	  
+
 	  args = strchr (line + 2, ' ');
 	  if (!args)
 	    args = line + linelen; /* set to an empty string */
@@ -581,12 +581,12 @@ status_handler (void *opaque, int fd)
       else if (linelen >= 7
                && line[0] == 'I' && line[1] == 'N' && line[2] == 'Q'
                && line[3] == 'U' && line[4] == 'I' && line[5] == 'R'
-               && line[6] == 'E' 
+               && line[6] == 'E'
                && (line[7] == '\0' || line[7] == ' '))
         {
           char *src;
 	  char *args;
-	  
+
           for (src=line+7; *src == ' '; src++)
             ;
 
@@ -600,7 +600,7 @@ status_handler (void *opaque, int fd)
             args++;
 
           err = default_inq_cb (g13, src, args);
-          if (!err) 
+          if (!err)
             {
               /* Flush and send END.  */
               err = assuan_send_data (g13->assuan_ctx, NULL, 0);
@@ -614,10 +614,10 @@ status_handler (void *opaque, int fd)
         }
     }
   while (!err && assuan_pending_line (g13->assuan_ctx));
-  
+
   return err;
 }
-  
+
 
 static gpgme_error_t
 add_io_cb (engine_g13_t g13, iocb_data_t *iocbd, gpgme_io_cb_t handler)

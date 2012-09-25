@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -76,7 +76,7 @@ decrypt_verify_start (gpgme_ctx_t ctx, int synchronous,
 
   _gpgme_engine_set_status_handler (ctx->engine,
 				    decrypt_verify_status_handler, ctx);
-  
+
   return _gpgme_engine_op_decrypt_verify (ctx->engine, cipher, plain);
 }
 
@@ -94,7 +94,7 @@ gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-  
+
   err = decrypt_verify_start (ctx, 0, cipher, plain);
   return TRACE_ERR (err);
 }
@@ -113,7 +113,7 @@ gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher,
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-  
+
   err = decrypt_verify_start (ctx, 1, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);

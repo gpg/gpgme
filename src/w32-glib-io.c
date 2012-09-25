@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2004, 2005 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -83,7 +83,7 @@
 
 #define MAX_SLAFD 256
 
-static struct 
+static struct
 {
   int used;
 
@@ -230,7 +230,7 @@ int
 _gpgme_io_fd2str (char *buf, int buflen, int fd)
 {
   HANDLE hndl;
-    
+
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_fd2str", fd, "fd=%d", fd);
   if (giochannel_table[fd].fd != -1)
     hndl = (HANDLE) _get_osfhandle (giochannel_table[fd].fd);
@@ -238,7 +238,7 @@ _gpgme_io_fd2str (char *buf, int buflen, int fd)
     hndl = (HANDLE) giochannel_table[fd].socket;
 
   TRACE_SUC1 ("syshd=%p", hndl);
-  
+
   return snprintf (buf, buflen, "%d", (int) hndl);
 }
 
@@ -299,7 +299,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
       nread = -1;
       saved_errno = EIO;
     }
-  
+
   if (nread != 0 && nread != -1)
     TRACE_LOGBUF (buffer, nread);
 
@@ -401,7 +401,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   if (filedes[inherit_idx] < 0)
     {
       int saved_errno = errno;
-      
+
       _close (fds[0]);
       _close (fds[1]);
       errno = saved_errno;
@@ -414,13 +414,13 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   if (filedes[1 - inherit_idx] < 0)
     {
       int saved_errno = errno;
-      
+
       _gpgme_io_close (fds[inherit_idx]);
       _close (fds[1 - inherit_idx]);
       errno = saved_errno;
       return TRACE_SYSRES (-1);
     }
-  
+
   return TRACE_SUC5 ("read=0x%x/%p, write=0x%x/%p, channel=%p",
 		     filedes[0],
 		     (HANDLE) _get_osfhandle (giochannel_table[filedes[0]].fd),
@@ -456,7 +456,7 @@ _gpgme_io_close (int fd)
     {
       if (giochannel_table[fd].primary)
 	g_io_channel_shutdown (giochannel_table[fd].chan, 1, NULL);
-      
+
       g_io_channel_unref (giochannel_table[fd].chan);
     }
   else
@@ -465,7 +465,7 @@ _gpgme_io_close (int fd)
       assert (giochannel_table[fd].fd != -1);
       _close (giochannel_table[fd].fd);
     }
-	
+
   giochannel_table[fd].used = 0;
   giochannel_table[fd].fd = -1;
   giochannel_table[fd].socket = INVALID_SOCKET;
@@ -502,7 +502,7 @@ _gpgme_io_set_nonblocking (int fd)
 {
   GIOChannel *chan;
   GIOStatus status;
- 
+
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", fd);
 
   chan = find_channel (fd);
@@ -540,7 +540,7 @@ build_commandline (char **argv)
   int n = 0;
   char *buf;
   char *p;
-  
+
   /* We have to quote some things because under Windows the program
      parses the commandline and does some unquoting.  We enclose the
      whole argument in double-quotes, and escape literal double-quotes
@@ -621,7 +621,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
       TRACE_LOG2 ("argv[%2i] = %s", i, argv[i]);
       i++;
     }
-  
+
   /* We do not inherit any handles by default, and just insert those
      handles we want the child to have afterwards.  But some handle
      values occur on the command line, and we need to move
@@ -643,7 +643,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-  
+
   arg_string = build_commandline (args);
   free (args);
   if (!arg_string)
@@ -685,7 +685,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
     }
 
   free (arg_string);
-  
+
   if (flags & IOSPAWN_FLAG_ALLOW_SET_FG)
     _gpgme_allow_set_foreground_window ((pid_t)pi.dwProcessId);
 
@@ -739,7 +739,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
       {
 	/* Strip the newline.  */
 	len = strlen (line) - 1;
-	
+
 	/* Format is: Local name, stdin/stdout/stderr, peer name, argv idx.  */
 	snprintf (&line[len], BUFFER_MAX - len, "0x%x %d 0x%x %d  \n",
 		  fd_list[i].fd, fd_list[i].dup_to,
@@ -761,18 +761,18 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
   close (tmp_fd);
   /* The temporary file is deleted by the gpgme-w32spawn process
      (hopefully).  */
-    
+
   TRACE_LOG4 ("CreateProcess ready: hProcess=%p, hThread=%p, "
 	      "dwProcessID=%d, dwThreadId=%d",
-	      pi.hProcess, pi.hThread, 
+	      pi.hProcess, pi.hThread,
 	      (int) pi.dwProcessId, (int) pi.dwThreadId);
-  
+
   if (r_pid)
     *r_pid = (pid_t)pi.dwProcessId;
 
   if (ResumeThread (pi.hThread) < 0)
     TRACE_LOG1 ("ResumeThread failed: ec=%d", (int) GetLastError ());
-  
+
   if (!CloseHandle (pi.hThread))
     TRACE_LOG1 ("CloseHandle of thread failed: ec=%d",
 		(int) GetLastError ());
@@ -810,7 +810,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 {
   int npollfds;
   GPollFD *pollfds;
-  int *pollfds_map; 
+  int *pollfds_map;
   int i;
   int j;
   int any;
@@ -842,14 +842,14 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
     {
       GIOChannel *chan = NULL;
 
-      if (fds[i].fd == -1) 
+      if (fds[i].fd == -1)
 	continue;
 
       if ((fds[i].for_read || fds[i].for_write)
           && !(chan = find_channel (fds[i].fd)))
         {
           TRACE_ADD1 (dbg_help, "[BAD0x%x ", fds[i].fd);
-          TRACE_END (dbg_help, "]"); 
+          TRACE_END (dbg_help, "]");
           assert (!"see log file");
         }
       else if (fds[i].for_read )
@@ -872,7 +872,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
         }
       fds[i].signaled = 0;
     }
-  TRACE_END (dbg_help, "]"); 
+  TRACE_END (dbg_help, "]");
   if (!any)
     {
       count = 0;
@@ -900,7 +900,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
         }
       TRACE_END (dbg_help, "]");
     }
-    
+
   /* COUNT is used to stop the lop as soon as possible.  */
   for (n = count, i = 0; i < npollfds && n; i++)
     {
@@ -955,7 +955,7 @@ _gpgme_io_dup (int fd)
       errno = EIO;
       return TRACE_SYSRES (-1);
     }
-  
+
   chan = giochannel_table[fd].chan;
   g_io_channel_ref (chan);
   giochannel_table[newfd].used = 1;
@@ -1016,7 +1016,7 @@ _gpgme_io_socket (int domain, int type, int proto)
     }
 
   TRACE_SUC2 ("fd=%i, socket=0x%x", fd, res);
-  
+
   return fd;
 }
 
@@ -1024,7 +1024,7 @@ _gpgme_io_socket (int domain, int type, int proto)
 int
 _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
 {
-  GIOChannel *chan; 
+  GIOChannel *chan;
   int sockfd;
   int res;
   GIOFlags flags;

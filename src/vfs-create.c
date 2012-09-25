@@ -2,17 +2,17 @@
    Copyright (C) 2009 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -62,7 +62,7 @@ vfs_start (gpgme_ctx_t ctx, int synchronous,
 #if 0
 /* XXXX.  This is the asynchronous variant. */
 static gpgme_error_t
-gpgme_op_vfs_transact_start (gpgme_ctx_t ctx, 
+gpgme_op_vfs_transact_start (gpgme_ctx_t ctx,
 			     const char *command,
 			     gpgme_assuan_data_cb_t data_cb,
 			     void *data_cb_value,
@@ -93,7 +93,7 @@ gpgme_op_vfs_transact (gpgme_ctx_t ctx,
 
   if (!ctx)
     return gpg_error (GPG_ERR_INV_VALUE);
-  
+
   err = vfs_start (ctx, 1, command, data_cb, data_cb_value,
 		   inq_cb, inq_cb_value, status_cb, status_cb_value);
   if (!err)
@@ -142,7 +142,7 @@ _gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
 	  free (container_file_esc);
 	  return err;
 	}
-      
+
       err = gpgme_op_vfs_transact (ctx, cmd, NULL, NULL, NULL, NULL,
 				   NULL, NULL, op_err);
       free (cmd);
@@ -161,7 +161,7 @@ _gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
       return err;
     }
   free (container_file_esc);
-    
+
   err = gpgme_op_vfs_transact (ctx, cmd, NULL, NULL, NULL, NULL,
 			       NULL, NULL, op_err);
   free (cmd);
@@ -187,11 +187,11 @@ gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
   if (_gpgme_debug_trace () && recp)
     {
       int i = 0;
-      
+
       while (recp[i])
 	{
 	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
-		      (recp[i]->subkeys && recp[i]->subkeys->fpr) ? 
+		      (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
 		      recp[i]->subkeys->fpr : "invalid");
 	  i++;
 	}

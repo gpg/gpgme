@@ -2,19 +2,19 @@
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009,
                  2010 g10 Code GmbH
- 
+
    This file is part of GPGME.
 
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -101,7 +101,7 @@ struct engine_gpgsm
       int linelen;
     } attic;
     int any; /* any data line seen */
-  } colon; 
+  } colon;
 
   gpgme_data_t inline_data;  /* Used to collect D lines.  */
 
@@ -111,7 +111,7 @@ struct engine_gpgsm
 typedef struct engine_gpgsm *engine_gpgsm_t;
 
 
-static void gpgsm_io_event (void *engine, 
+static void gpgsm_io_event (void *engine,
                             gpgme_event_io_t type, void *type_data);
 
 
@@ -542,7 +542,7 @@ gpgsm_set_locale (void *engine, int category, const char *value)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* FIXME: Reset value to default.  */
-  if (!value) 
+  if (!value)
     return 0;
 
   if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
@@ -705,10 +705,10 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
     snprintf (line, COMMANDLINELEN, "%s FD", which);
 #else
   if (opt)
-    snprintf (line, COMMANDLINELEN, "%s FD=%s %s", 
+    snprintf (line, COMMANDLINELEN, "%s FD=%s %s",
               which, iocb_data->server_fd_str, opt);
   else
-    snprintf (line, COMMANDLINELEN, "%s FD=%s", 
+    snprintf (line, COMMANDLINELEN, "%s FD=%s",
               which, iocb_data->server_fd_str);
 #endif
 
@@ -793,7 +793,7 @@ status_handler (void *opaque, int fd)
 	  if (gpgsm->status.fnc)
 	    err = gpgsm->status.fnc (gpgsm->status.fnc_value,
 				     GPGME_STATUS_EOF, "");
-	  
+
 	  if (!err && gpgsm->colon.fnc && gpgsm->colon.any)
             {
               /* We must tell a colon function about the EOF. We do
@@ -856,12 +856,12 @@ status_handler (void *opaque, int fd)
 		      *dst = *src++;
 		      (*alinelen)++;
 		    }
-		  
+
 		  if (*dst == '\n')
 		    {
 		      /* Terminate the pending line, pass it to the colon
 			 handler and reset it.  */
-		      
+
 		      gpgsm->colon.any = 1;
 		      if (*alinelen > 1 && *(dst - 1) == '\r')
 			dst--;
@@ -904,10 +904,10 @@ status_handler (void *opaque, int fd)
                 }
               else
                 *dst++ = *src++;
-              
+
               linelen++;
             }
-          
+
           src = line + 2;
           while (linelen > 0)
             {
@@ -931,7 +931,7 @@ status_handler (void *opaque, int fd)
 	{
 	  char *rest;
 	  gpgme_status_code_t r;
-	  
+
 	  rest = strchr (line + 2, ' ');
 	  if (!rest)
 	    rest = line + linelen; /* set to an empty string */
@@ -954,7 +954,7 @@ status_handler (void *opaque, int fd)
       else if (linelen >= 7
                && line[0] == 'I' && line[1] == 'N' && line[2] == 'Q'
                && line[3] == 'U' && line[4] == 'I' && line[5] == 'R'
-               && line[6] == 'E' 
+               && line[6] == 'E'
                && (line[7] == '\0' || line[7] == ' '))
         {
           char *keyword = line+7;
@@ -967,7 +967,7 @@ status_handler (void *opaque, int fd)
 
     }
   while (!err && assuan_pending_line (gpgsm->assuan_ctx));
-	  
+
   return err;
 }
 
@@ -1272,7 +1272,7 @@ gpgsm_export (void *engine, const char *pattern, gpgme_export_mode_t mode,
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
-  
+
   if (mode)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
@@ -1446,8 +1446,8 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
 
       /* Fist check whether the engine already features the
          --re-import option.  */
-      err = gpgsm_assuan_simple_command 
-        (gpgsm->assuan_ctx, 
+      err = gpgsm_assuan_simple_command
+        (gpgsm->assuan_ctx,
          "GETINFO cmd_has_option IMPORT re-import", NULL, NULL);
       if (err)
 	return gpg_error (GPG_ERR_NOT_SUPPORTED);
@@ -1460,7 +1460,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
         {
           if (keyarray[idx]->protocol == GPGME_PROTOCOL_CMS
               && keyarray[idx]->subkeys
-              && keyarray[idx]->subkeys->fpr 
+              && keyarray[idx]->subkeys->fpr
               && *keyarray[idx]->subkeys->fpr)
             buflen += strlen (keyarray[idx]->subkeys->fpr) + 1;
         }
@@ -1473,11 +1473,11 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
         {
           if (keyarray[idx]->protocol == GPGME_PROTOCOL_CMS
               && keyarray[idx]->subkeys
-              && keyarray[idx]->subkeys->fpr 
+              && keyarray[idx]->subkeys->fpr
               && *keyarray[idx]->subkeys->fpr)
             p = stpcpy (stpcpy (p, keyarray[idx]->subkeys->fpr), "\n");
         }
-      
+
       err = gpgme_data_new_from_mem (&gpgsm->input_helper_data,
                                      buffer, buflen, 0);
       if (err)
@@ -1566,14 +1566,14 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
 
   /* Use the validation mode if requested.  We don't check for an error
      yet because this is a pretty fresh gpgsm features. */
-  gpgsm_assuan_simple_command (gpgsm->assuan_ctx, 
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx,
                                (mode & GPGME_KEYLIST_MODE_VALIDATE)?
                                "OPTION with-validation=1":
                                "OPTION with-validation=0" ,
                                NULL, NULL);
   /* Include the ephemeral keys if requested.  We don't check for an error
      yet because this is a pretty fresh gpgsm features. */
-  gpgsm_assuan_simple_command (gpgsm->assuan_ctx, 
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx,
                                (mode & GPGME_KEYLIST_MODE_EPHEMERAL)?
                                "OPTION with-ephemeral-keys=1":
                                "OPTION with-ephemeral-keys=0" ,
@@ -1638,7 +1638,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
   /* Always send key validation because RESET does not reset it.  */
   /* Use the validation mode if required.  We don't check for an error
      yet because this is a pretty fresh gpgsm features. */
-  gpgsm_assuan_simple_command (gpgsm->assuan_ctx, 
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx,
                                (mode & GPGME_KEYLIST_MODE_VALIDATE)?
                                "OPTION with-validation=1":
                                "OPTION with-validation=0" ,
@@ -1775,7 +1775,7 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
       else
         err = gpg_error (GPG_ERR_INV_VALUE);
       gpgme_key_unref (key);
-      if (err) 
+      if (err)
         return err;
     }
 
@@ -1872,7 +1872,7 @@ gpgsm_getauditlog (void *engine, gpgme_data_t output, unsigned int flags)
 
 static void
 gpgsm_set_status_handler (void *engine, engine_status_handler_t fnc,
-			  void *fnc_value) 
+			  void *fnc_value)
 {
   engine_gpgsm_t gpgsm = engine;
 
@@ -1883,7 +1883,7 @@ gpgsm_set_status_handler (void *engine, engine_status_handler_t fnc,
 
 static gpgme_error_t
 gpgsm_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
-			      void *fnc_value) 
+			      void *fnc_value)
 {
   engine_gpgsm_t gpgsm = engine;
 
@@ -1927,7 +1927,7 @@ gpgsm_passwd (void *engine, gpgme_key_t key, unsigned int flags)
 
   if (asprintf (&line, "PASSWD -- %s", key->subkeys->fpr) < 0)
     return gpg_error_from_syserror ();
-  
+
   gpgsm_clear_fd (gpgsm, OUTPUT_FD);
   gpgsm_clear_fd (gpgsm, INPUT_FD);
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);

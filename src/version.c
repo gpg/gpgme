@@ -1,19 +1,19 @@
 /* version.c - Version check routines.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 g10 Code GmbH
- 
+
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -69,7 +69,7 @@ do_subsystem_inits (void)
   /* We need to make sure that the sockets are initialized.  */
   {
     WSADATA wsadat;
-    
+
     WSAStartup (0x202, &wsadat);
   }
 #endif
@@ -159,7 +159,7 @@ _gpgme_compare_versions (const char *my_version,
 
   if (my_major > rq_major
       || (my_major == rq_major && my_minor > rq_minor)
-      || (my_major == rq_major && my_minor == rq_minor 
+      || (my_major == rq_major && my_minor == rq_minor
 	  && my_micro > rq_micro)
       || (my_major == rq_major && my_minor == rq_minor
 	  && my_micro == rq_micro && strcmp (my_plvl, rq_plvl) >= 0))
@@ -191,7 +191,7 @@ gpgme_check_version (const char *req_version)
   TRACE2 (DEBUG_INIT, "gpgme_check_version", 0,
 	  "req_version=%s, VERSION=%s",
           req_version? req_version:"(null)", VERSION);
- 
+
   result = _gpgme_compare_versions (VERSION, req_version) ? VERSION : NULL;
   if (result != NULL)
     _gpgme_selftest = 0;
@@ -233,7 +233,7 @@ gpgme_check_version_internal (const char *req_version,
 
 /* Extract the version string of a program from STRING.  The version
    number is expected to be in GNU style format:
-   
+
      foo 1.2.3
      foo (bar system) 1.2.3
      foo 1.2.3 cruft

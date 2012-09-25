@@ -210,7 +210,7 @@ llass_release (void *engine)
 
 
 /* Create a new instance. If HOME_DIR is NULL standard options for use
-   with gpg-agent are issued.  */  
+   with gpg-agent are issued.  */
 static gpgme_error_t
 llass_new (void **engine, const char *file_name, const char *home_dir)
 {
@@ -234,7 +234,7 @@ llass_new (void **engine, const char *file_name, const char *home_dir)
       /* Very simple parser only working for the one option we support.  */
       /* Note that wk promised to write a regression test if this
          parser will be extended.  */
-      if (!strncmp (home_dir, "GPG_AGENT", 9) 
+      if (!strncmp (home_dir, "GPG_AGENT", 9)
           && (!home_dir[9] || home_dir[9] == ' '))
         llass->opt.gpg_agent = 1;
     }
@@ -312,7 +312,7 @@ llass_new (void **engine, const char *file_name, const char *home_dir)
 		  goto leave;
 		}
 	      free (dft_ttytype);
-              
+
 	      err = assuan_transact (llass->assuan_ctx, optstr, NULL, NULL,
 				     NULL, NULL, NULL, NULL);
 	      free (optstr);
@@ -463,7 +463,7 @@ llass_status_handler (void *opaque, int fd)
 	      err = 0;
 	      continue;
 	    }
-	  
+
 	  TRACE2 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: error reading assuan line: %s",
                   fd, gpg_strerror (err));
@@ -561,7 +561,7 @@ llass_status_handler (void *opaque, int fd)
             args++;
 
           err = inquire_cb (llass, src, args);
-          if (!err) 
+          if (!err)
             {
               /* Flush and send END.  */
               err = assuan_send_data (llass->assuan_ctx, NULL, 0);

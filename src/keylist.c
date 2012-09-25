@@ -4,17 +4,17 @@
                  2008, 2009  g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -218,7 +218,7 @@ set_userid_flags (gpgme_key_t key, const char *src)
 	case 'r':
 	  uid->revoked = 1;
 	  break;
-	  
+
 	case 'i':
 	  uid->invalid = 1;
 	  break;
@@ -469,17 +469,17 @@ keylist_colon_handler (void *priv, char *line)
     rectype = RT_CRT;
   else if (!strcmp (field[0], "crs"))
     rectype = RT_CRS;
-  else if (!strcmp (field[0], "fpr") && key) 
+  else if (!strcmp (field[0], "fpr") && key)
     rectype = RT_FPR;
   else if (!strcmp (field[0], "uid") && key)
     rectype = RT_UID;
   else if (!strcmp (field[0], "sub") && key)
-    rectype = RT_SUB; 
+    rectype = RT_SUB;
   else if (!strcmp (field[0], "ssb") && key)
     rectype = RT_SSB;
   else if (!strcmp (field[0], "spk") && key)
     rectype = RT_SPK;
-  else 
+  else
     rectype = RT_NONE;
 
   /* Only look at signatures immediately following a user ID.  For
@@ -529,7 +529,7 @@ keylist_colon_handler (void *priv, char *line)
 	  int i = atoi (field[2]);
 	  /* Ignore invalid values.  */
 	  if (i > 1)
-	    subkey->length = i; 
+	    subkey->length = i;
 	}
 
       /* Field 4 has the public key algorithm.  */
@@ -560,7 +560,7 @@ keylist_colon_handler (void *priv, char *line)
 	  if (!key->issuer_serial)
 	    return gpg_error_from_errno (errno);
 	}
-	  
+
       /* Field 9 has the ownertrust.  */
       if (fields >= 9)
 	set_ownertrust (key, field[8]);
@@ -632,7 +632,7 @@ keylist_colon_handler (void *priv, char *line)
       /* Field 8 is reserved (LID).  */
       /* Field 9 has the ownertrust.  */
       /* Field 10, the user ID, is n/a for a subkey.  */
-      
+
       /* Field 11 has the signature class.  */
 
       /* Field 12 has the capabilities.  */
@@ -730,11 +730,11 @@ keylist_colon_handler (void *priv, char *line)
 	  if (i >= 1 && i < 128)
 	    keysig->pubkey_algo = i;
 	}
-      
+
       /* Field 5 has the long keyid.  */
       if (fields >= 5 && strlen (field[4]) == DIM(keysig->_keyid) - 1)
 	strcpy (keysig->_keyid, field[4]);
-      
+
       /* Field 6 has the timestamp (seconds).  */
       if (fields >= 6)
 	keysig->timestamp = _gpgme_parse_timestamp (field[5], NULL);
@@ -802,7 +802,7 @@ keylist_colon_handler (void *priv, char *line)
 	      keysig->_last_notation = notation;
 	    }
 	}
-    
+
     case RT_NONE:
       /* Unknown record.  */
       break;
@@ -961,19 +961,19 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
       if (!opd->key_cond)
 	return TRACE_ERR (gpg_error (GPG_ERR_EOF));
 
-      opd->key_cond = 0; 
+      opd->key_cond = 0;
       assert (opd->key_queue);
     }
   queue_item = opd->key_queue;
   opd->key_queue = queue_item->next;
   if (!opd->key_queue)
     opd->key_cond = 0;
-  
+
   *r_key = queue_item->key;
   free (queue_item);
 
   return TRACE_SUC2 ("key=%p (%s)", *r_key,
-		     ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ? 
+		     ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ?
 		     (*r_key)->subkeys->fpr : "invalid");
 }
 
@@ -983,7 +983,7 @@ gpgme_error_t
 gpgme_op_keylist_end (gpgme_ctx_t ctx)
 {
   TRACE (DEBUG_CTX, "gpgme_op_keylist_end", ctx);
-  
+
   if (!ctx)
     return gpg_error (GPG_ERR_INV_VALUE);
 
@@ -1006,7 +1006,7 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
 
   if (!ctx || !r_key || !fpr)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-  
+
   if (strlen (fpr) < 8)	/* We have at least a key ID.  */
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
@@ -1068,7 +1068,7 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   if (! err)
     {
       TRACE_LOG2 ("key=%p (%s)", *r_key,
-		  ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ? 
+		  ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ?
 		  (*r_key)->subkeys->fpr : "invalid");
     }
   return TRACE_ERR (err);

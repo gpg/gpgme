@@ -2,17 +2,17 @@
    Copyright (C) 2008 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -63,7 +63,7 @@ build_commandline (char **argv)
   int n = 0;
   char *buf;
   char *p;
-  
+
   /* We have to quote some things because under Windows the program
      parses the commandline and does some unquoting.  We enclose the
      whole argument in double-quotes, and escape literal double-quotes
@@ -145,7 +145,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-  
+
   arg_string = build_commandline (argv);
   if (!arg_string)
     return -1;
@@ -182,11 +182,11 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
 	  fprintf (stderr, PGM":dup 0x%x to stderr\n", fd_list[i].peer_name);
         }
     }
-  
+
   if (!duped_stdin || !duped_stdout || !duped_stderr)
     {
       SECURITY_ATTRIBUTES sa;
-      
+
       memset (&sa, 0, sizeof sa);
       sa.nLength = sizeof sa;
       sa.bInheritHandle = TRUE;
@@ -214,8 +214,8 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
       if (!duped_stderr)
 	si.hStdError = hnul;
     }
-  
-  cr_flags |= CREATE_SUSPENDED; 
+
+  cr_flags |= CREATE_SUSPENDED;
   cr_flags |= DETACHED_PROCESS;
   if (!CreateProcessA (argv[0],
 		       arg_string,
@@ -239,7 +239,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
   /* Close the /dev/nul handle if used.  */
   if (hnul != INVALID_HANDLE_VALUE)
     CloseHandle (hnul);
-  
+
   for (i = 0; fd_list[i].handle != -1; i++)
     CloseHandle ((HANDLE) fd_list[i].handle);
 
@@ -248,7 +248,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
       static int initialized;
       static BOOL (WINAPI * func)(DWORD);
       void *handle;
-  
+
       if (!initialized)
         {
           /* Available since W2000; thus we dynload it.  */
@@ -261,7 +261,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
                 FreeLibrary (handle);
             }
         }
-      
+
       if (func)
         {
           int rc = func (pi.dwProcessId);
@@ -269,7 +269,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
                    (int)pi.dwProcessId, rc);
         }
     }
-  
+
   ResumeThread (pi.hThread);
   CloseHandle (pi.hThread);
   CloseHandle (pi.hProcess);
@@ -281,8 +281,8 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
 #define MAX_TRANS 10
 
 int
-translate_get_from_file (const char *trans_file, 
-			 struct spawn_fd_item_s *fd_list, 
+translate_get_from_file (const char *trans_file,
+			 struct spawn_fd_item_s *fd_list,
                          unsigned int *r_flags)
 {
   /* Hold roughly MAX_TRANS triplets of 64 bit numbers in hex
@@ -340,7 +340,7 @@ translate_get_from_file (const char *trans_file,
           if (tail == NULL || ! (*tail == '\0' || isspace (*tail)))
             break;
           linep = tail;
-          
+
           while (isspace (*((unsigned char *)linep)))
             linep++;
           if (*linep == '\0')

@@ -2,17 +2,17 @@
    Copyright (C) 2009 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -79,7 +79,7 @@ opassuan_start (gpgme_ctx_t ctx, int synchronous,
 
 /* XXXX.  This is the asynchronous variant. */
 gpgme_error_t
-gpgme_op_assuan_transact_start (gpgme_ctx_t ctx, 
+gpgme_op_assuan_transact_start (gpgme_ctx_t ctx,
 				const char *command,
 				gpgme_assuan_data_cb_t data_cb,
 				void *data_cb_value,
@@ -128,7 +128,7 @@ gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = opassuan_start (ctx, 1, command, 
+  err = opassuan_start (ctx, 1, command,
                         data_cb, data_cb_value,
                         inq_cb, inq_cb_value,
                         status_cb, status_cb_value);
@@ -147,7 +147,7 @@ gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
     }
   if (op_err_p)
     *op_err_p = op_err;
-  
+
  out:
   return TRACE_ERR (err);
 }

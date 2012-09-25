@@ -1,19 +1,19 @@
-/* w32-ce.h 
+/* w32-ce.h
    Copyright (C) 2010 g10 Code GmbH
    Copyright (C) 1991,92,97,2000,02 Free Software Foundation, Inc.
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -35,7 +35,7 @@
    but that header also redefines some Windows functions which we need
    to avoid unless having included shlobj.h.  */
 #include <winsock2.h>
-#include <ws2tcpip.h> 
+#include <ws2tcpip.h>
 #include <windows.h>
 #include <shlobj.h>
 
@@ -92,7 +92,7 @@ utf8_to_wchar (const char *string)
     }
 
   nbytes = (size_t)(n+1) * sizeof(*result);
-  if (nbytes / sizeof(*result) != (n+1)) 
+  if (nbytes / sizeof(*result) != (n+1))
     {
       gpg_err_set_errno (ENOMEM);
       return NULL;
@@ -317,7 +317,7 @@ RegQueryValueExA (HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
       free (name);
       return ERROR_NOT_ENOUGH_MEMORY;
     }
-  
+
   err = RegQueryValueExW (hKey, name, lpReserved, &type, data, &data_len);
   if (lpType)
     *lpType = type;
@@ -337,7 +337,7 @@ RegQueryValueExA (HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
       /* This is valid since we allocated one more above.  */
       ((char*)data)[data_len] = '\0';
       ((char*)data)[data_len + 1] = '\0';
-      
+
       data_c = wchar_to_utf8 ((wchar_t*) data);
       if (!data_c)
         return GetLastError();
@@ -439,7 +439,7 @@ SHGetSpecialFolderPathA (HWND hwndOwner, LPSTR lpszPath, int nFolder,
   path_c = wchar_to_utf8 (path);
   if (! path_c)
     return 0;
-  
+
   strncpy (lpszPath, path_c, MAX_PATH);
   free (path_c);
   lpszPath[MAX_PATH - 1] = '\0';
@@ -449,7 +449,7 @@ SHGetSpecialFolderPathA (HWND hwndOwner, LPSTR lpszPath, int nFolder,
 /* Replacement for the access function.  Note that we can't use fopen
    here because wince might now allow to have a shared read for an
    executable; it is better to to read the file attributes.
-   
+
    Limitation:  Only F_OK is supported.
 */
 int
@@ -476,7 +476,7 @@ _gpgme_wince_access (const char *fname, int mode)
 
 
 /* Perform a binary search for KEY in BASE which has NMEMB elements
-   of SIZE bytes each.  The comparisons are done by (*COMPAR)().  
+   of SIZE bytes each.  The comparisons are done by (*COMPAR)().
    Code taken from glibc-2.6. */
 void *
 _gpgme_wince_bsearch (const void *key, const void *base,

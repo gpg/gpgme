@@ -2,17 +2,17 @@
    Copyright (C) 2009, 2010 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -40,10 +40,10 @@
 #include "gpgme.h"
 
 /* GCC attributes.  */
-#if __GNUC__ >= 4 
+#if __GNUC__ >= 4
 # define GT_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))
 #else
-# define GT_GCC_A_SENTINEL(a) 
+# define GT_GCC_A_SENTINEL(a)
 #endif
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
@@ -158,9 +158,9 @@ struct argp
    | ARGP_HELP_DOC | ARGP_HELP_BUG_ADDR)
 
 
-void argp_error (const struct argp_state *state, 
+void argp_error (const struct argp_state *state,
                  const char *fmt, ...) GT_GCC_A_PRINTF(2, 3);
-  
+
 
 
 char *
@@ -374,10 +374,10 @@ argp_parse (const struct argp *argp, int argc,
 	      *arg = '\0';
 	      arg++;
 	    }
-	    
+
 	  if (state.argv[idx][1] != '-')
 	    key = state.argv[idx][1];
-	  
+
 	  while (! found && opt->key)
 	    {
 	      if (key == opt->key
@@ -453,7 +453,7 @@ argp_parse (const struct argp *argp, int argc,
   rc = argp->parser (ARGP_KEY_FINI, NULL, &state);
   if (rc && rc != ARGP_ERR_UNKNOWN)
     goto argperror;
-  
+
   rc = 0;
   argp->parser (ARGP_KEY_SUCCESS, NULL, &state);
 
@@ -481,7 +481,7 @@ char *program_name = "gpgme-tool";
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 
 
-void log_error (int status, gpg_error_t errnum, 
+void log_error (int status, gpg_error_t errnum,
                 const char *fmt, ...) GT_GCC_A_PRINTF(3,4);
 
 
@@ -518,7 +518,7 @@ strcpy_escaped_plus (char *d, const char *s)
   while (*s)
     {
       if (*s == '%' && s[1] && s[2])
-        { 
+        {
           s++;
           *d++ = xtoi_2 (s);
           s += 2;
@@ -528,7 +528,7 @@ strcpy_escaped_plus (char *d, const char *s)
       else
         *d++ = *s++;
     }
-  *d = 0; 
+  *d = 0;
 }
 
 
@@ -630,7 +630,7 @@ result_xml_tag_start (struct result_xml_state *state, char *name, ...)
   state->had_data[state->next_tag] = 0;
   state->indent += 2;
   state->next_tag++;
-  
+
   while (1)
     {
       attr = va_arg (ap, char *);
@@ -704,7 +704,7 @@ result_xml_tag_end (struct result_xml_state *state)
 
 gpg_error_t
 result_add_error (struct result_xml_state *state, char *name, gpg_error_t err)
-{		  
+{
   char code[20];
   char msg[1024];
   snprintf (code, sizeof (code) - 1, "0x%x", err);
@@ -720,7 +720,7 @@ result_add_error (struct result_xml_state *state, char *name, gpg_error_t err)
 gpg_error_t
 result_add_pubkey_algo (struct result_xml_state *state,
 			char *name, gpgme_pubkey_algo_t algo)
-{		  
+{
   char code[20];
   char msg[80];
   snprintf (code, sizeof (code) - 1, "0x%x", algo);
@@ -736,7 +736,7 @@ result_add_pubkey_algo (struct result_xml_state *state,
 gpg_error_t
 result_add_hash_algo (struct result_xml_state *state,
 			 char *name, gpgme_hash_algo_t algo)
-{		  
+{
   char code[20];
   char msg[80];
   snprintf (code, sizeof (code) - 1, "0x%x", algo);
@@ -751,7 +751,7 @@ result_add_hash_algo (struct result_xml_state *state,
 
 gpg_error_t
 result_add_keyid (struct result_xml_state *state, char *name, char *keyid)
-{		  
+{
   result_xml_tag_start (state, name, NULL);
   result_xml_tag_data (state, keyid);
   result_xml_tag_end (state);
@@ -761,7 +761,7 @@ result_add_keyid (struct result_xml_state *state, char *name, char *keyid)
 
 gpg_error_t
 result_add_fpr (struct result_xml_state *state, char *name, char *fpr)
-{		  
+{
   result_xml_tag_start (state, name, NULL);
   result_xml_tag_data (state, fpr);
   result_xml_tag_end (state);
@@ -785,7 +785,7 @@ result_add_timestamp (struct result_xml_state *state, char *name,
 gpg_error_t
 result_add_sig_mode (struct result_xml_state *state, char *name,
 		     gpgme_sig_mode_t sig_mode)
-{		  
+{
   char *mode;
   char code[20];
 
@@ -815,7 +815,7 @@ result_add_sig_mode (struct result_xml_state *state, char *name,
 gpg_error_t
 result_add_value (struct result_xml_state *state,
 		  char *name, unsigned int val)
-{		  
+{
   char code[20];
 
   snprintf (code, sizeof (code) - 1, "0x%x", val);
@@ -828,7 +828,7 @@ result_add_value (struct result_xml_state *state,
 gpg_error_t
 result_add_string (struct result_xml_state *state,
 		   char *name, char *str)
-{		  
+{
   result_xml_tag_start (state, name, NULL);
   result_xml_tag_data (state, str);
   result_xml_tag_end (state);
@@ -854,7 +854,7 @@ result_encrypt_to_xml (gpgme_ctx_t ctx, int indent,
   if (inv_recp)
     {
       result_xml_tag_start (&state, "invalid-recipients", NULL);
-      
+
       while (inv_recp)
 	{
 	  result_xml_tag_start (&state, "invalid-key", NULL);
@@ -867,7 +867,7 @@ result_encrypt_to_xml (gpgme_ctx_t ctx, int indent,
       result_xml_tag_end (&state);
     }
   result_xml_tag_end (&state);
-  
+
   return 0;
 }
 
@@ -920,7 +920,7 @@ result_decrypt_to_xml (gpgme_ctx_t ctx, int indent,
       result_xml_tag_end (&state);
     }
   result_xml_tag_end (&state);
-  
+
   return 0;
 }
 
@@ -944,7 +944,7 @@ result_sign_to_xml (gpgme_ctx_t ctx, int indent,
   if (inv_key)
     {
       result_xml_tag_start (&state, "invalid-signers", NULL);
-      
+
       while (inv_key)
 	{
 	  result_xml_tag_start (&state, "invalid-key", NULL);
@@ -980,7 +980,7 @@ result_sign_to_xml (gpgme_ctx_t ctx, int indent,
     }
 
   result_xml_tag_end (&state);
-  
+
   return 0;
 }
 
@@ -1014,7 +1014,7 @@ result_verify_to_xml (gpgme_ctx_t ctx, int indent,
       while (sig)
 	{
 	  result_xml_tag_start (&state, "signature", NULL);
-	  
+
 	  /* FIXME: Could be done better. */
 	  result_add_value (&state, "summary", sig->summary);
 	  if (sig->fpr)
@@ -1032,7 +1032,7 @@ result_verify_to_xml (gpgme_ctx_t ctx, int indent,
 	  result_add_hash_algo (&state, "hash-algo", sig->hash_algo);
 	  if (sig->pka_address)
 	    result_add_string (&state, "pka_address", sig->pka_address);
-	  
+
 	  result_xml_tag_end (&state);
 	  sig = sig->next;
 	}
@@ -1040,7 +1040,7 @@ result_verify_to_xml (gpgme_ctx_t ctx, int indent,
     }
 
   result_xml_tag_end (&state);
-  
+
   return 0;
 }
 
@@ -1078,7 +1078,7 @@ result_import_to_xml (gpgme_ctx_t ctx, int indent,
   if (stat)
     {
       result_xml_tag_start (&state, "imports", NULL);
-      
+
       while (stat)
 	{
 	  result_xml_tag_start (&state, "import-status", NULL);
@@ -1096,7 +1096,7 @@ result_import_to_xml (gpgme_ctx_t ctx, int indent,
     }
 
   result_xml_tag_end (&state);
-  
+
   return 0;
 }
 
@@ -1120,7 +1120,7 @@ result_genkey_to_xml (gpgme_ctx_t ctx, int indent,
     result_add_fpr (&state, "fpr", res->fpr);
 
   result_xml_tag_end (&state);
-  
+
   return 0;
 }
 
@@ -1141,7 +1141,7 @@ result_keylist_to_xml (gpgme_ctx_t ctx, int indent,
   result_add_value (&state, "truncated", res->truncated);
 
   result_xml_tag_end (&state);
-  
+
   return 0;
 }
 
@@ -1162,7 +1162,7 @@ result_vfs_mount_to_xml (gpgme_ctx_t ctx, int indent,
   result_add_string (&state, "mount-dir", res->mount_dir);
 
   result_xml_tag_end (&state);
-  
+
   return 0;
 }
 
@@ -1209,7 +1209,7 @@ typedef struct gpgme_tool *gpgme_tool_t;
 
 
 /* Forward declaration.  */
-void gt_write_status (gpgme_tool_t gt, 
+void gt_write_status (gpgme_tool_t gt,
                       status_t status, ...) GT_GCC_A_SENTINEL(0);
 
 void
@@ -1281,7 +1281,7 @@ gt_get_key (gpgme_tool_t gt, const char *pattern, gpgme_key_t *r_key)
 
   if (!gt || !r_key || !pattern)
     return gpg_error (GPG_ERR_INV_VALUE);
-  
+
   ctx = gt->ctx;
 
   err = gpgme_new (&listctx);
@@ -1343,10 +1343,10 @@ gt_get_key (gpgme_tool_t gt, const char *pattern, gpgme_key_t *r_key)
 	}
     }
   gpgme_release (listctx);
-  
+
   if (! err)
-    gt_write_status (gt, STATUS_RECIPIENT, 
-		     ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ? 
+    gt_write_status (gt, STATUS_RECIPIENT,
+		     ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ?
 		     (*r_key)->subkeys->fpr : "invalid", NULL);
   return err;
 }
@@ -1390,7 +1390,7 @@ gt_reset (gpgme_tool_t gt)
 {
   gpg_error_t err;
   gpgme_ctx_t ctx;
-  
+
   err = _gt_gpgme_new (gt, &ctx);
   if (err)
     return err;
@@ -1482,7 +1482,7 @@ gt_protocol_from_name (const char *name)
   return GPGME_PROTOCOL_UNKNOWN;
 }
 
-  
+
 gpg_error_t
 gt_set_protocol (gpgme_tool_t gt, gpgme_protocol_t proto)
 {
@@ -1572,7 +1572,7 @@ gt_get_keylist_mode (gpgme_tool_t gt)
   const char *modes[NR_KEYLIST_MODES + 1];
   int idx = 0;
   gpgme_keylist_mode_t mode = gpgme_get_keylist_mode (gt->ctx);
-  
+
   if (mode & GPGME_KEYLIST_MODE_LOCAL)
     modes[idx++] = "local";
   if (mode & GPGME_KEYLIST_MODE_EXTERN)
@@ -1693,18 +1693,18 @@ gt_import_keys (gpgme_tool_t gt, char *fpr[])
   int cnt;
   int idx;
   gpgme_key_t *keys;
-  
+
   cnt = 0;
   while (fpr[cnt])
     cnt++;
-  
+
   if (! cnt)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   keys = malloc ((cnt + 1) * sizeof (gpgme_key_t));
   if (! keys)
     return gpg_error_from_syserror ();
-  
+
   for (idx = 0; idx < cnt; idx++)
     {
       err = gpgme_get_key (gt->ctx, fpr[idx], &keys[idx], 0);
@@ -1716,7 +1716,7 @@ gt_import_keys (gpgme_tool_t gt, char *fpr[])
       keys[cnt] = NULL;
       err = gpgme_op_import_keys (gt->ctx, keys);
     }
-  
+
   /* Rollback.  */
   while (--idx >= 0)
     gpgme_key_unref (keys[idx]);
@@ -1786,7 +1786,7 @@ gt_vfs_create (gpgme_tool_t gt, const char *container_file, int flags)
 }
 
 
-static const char hlp_passwd[] = 
+static const char hlp_passwd[] =
   "PASSWD <user-id>\n"
   "\n"
   "Ask the backend to change the passphrase for the key\n"
@@ -1922,7 +1922,7 @@ server_parse_fd (assuan_context_t ctx, char *line, assuan_fd_t *rfd,
   else
     return assuan_command_parse_fd (ctx, line, rfd);
 }
-    
+
 
 static gpgme_data_encoding_t
 server_data_encoding (const char *line)
@@ -2033,7 +2033,7 @@ reset_notify (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_version[] = 
+static const char hlp_version[] =
   "VERSION [<string>]\n"
   "\n"
   "Call the function gpgme_check_version.";
@@ -2065,7 +2065,7 @@ cmd_engine (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_protocol[] = 
+static const char hlp_protocol[] =
   "PROTOCOL [<name>]\n"
   "\n"
   "With NAME, set the protocol.  Without, return the current\n"
@@ -2109,11 +2109,11 @@ cmd_armor (assuan_context_t ctx, char *line)
   if (line && *line)
     {
       int flag = 0;
-      
+
       if (! strcasecmp (line, "true") || ! strcasecmp (line, "yes")
 	  || line[0] == '1')
 	flag = 1;
-      
+
       return gt_set_armor (server->gt, flag);
     }
   else
@@ -2137,7 +2137,7 @@ cmd_textmode (assuan_context_t ctx, char *line)
       if (! strcasecmp (line, "true") || ! strcasecmp (line, "yes")
 	  || line[0] == '1')
 	flag = 1;
-      
+
       return gt_set_textmode (server->gt, flag);
     }
   else
@@ -2160,12 +2160,12 @@ cmd_include_certs (assuan_context_t ctx, char *line)
   if (line && *line)
     {
       int include_certs = 0;
-      
+
       if (! strcasecmp (line, "default"))
 	include_certs = GPGME_INCLUDE_CERTS_DEFAULT;
       else
 	include_certs = atoi (line);
-      
+
       return gt_set_include_certs (server->gt, include_certs);
     }
   else
@@ -2186,7 +2186,7 @@ cmd_keylist_mode (assuan_context_t ctx, char *line)
   if (line && *line)
     {
       gpgme_keylist_mode_t mode = 0;
-      
+
       if (strstr (line, "local"))
 	mode |= GPGME_KEYLIST_MODE_LOCAL;
       if (strstr (line, "extern"))
@@ -2199,7 +2199,7 @@ cmd_keylist_mode (assuan_context_t ctx, char *line)
 	mode |= GPGME_KEYLIST_MODE_EPHEMERAL;
       if (strstr (line, "validate"))
 	mode |= GPGME_KEYLIST_MODE_VALIDATE;
-      
+
       return gt_set_keylist_mode (server->gt, mode);
     }
   else
@@ -2339,7 +2339,7 @@ _cmd_decrypt_verify (assuan_context_t ctx, char *line, int verify)
   out_fn = server->output_filename;
   if (out_fd == ASSUAN_INVALID_FD && !out_fn)
     return GPG_ERR_ASS_NO_OUTPUT;
-  
+
   err = server_data_obj (inp_fd, inp_fn, 0, server->input_enc, &inp_data,
 			 &server->input_stream);
   if (err)
@@ -2352,7 +2352,7 @@ _cmd_decrypt_verify (assuan_context_t ctx, char *line, int verify)
       return err;
     }
 
-  err = gt_decrypt_verify (server->gt, inp_data, out_data, verify); 
+  err = gt_decrypt_verify (server->gt, inp_data, out_data, verify);
 
   gpgme_data_release (inp_data);
   gpgme_data_release (out_data);
@@ -2410,7 +2410,7 @@ _cmd_sign_encrypt (assuan_context_t ctx, char *line, int sign)
     flags |= GPGME_ENCRYPT_PREPARE;
   if (strstr (line, "--expect-sign"))
     flags |= GPGME_ENCRYPT_EXPECT_SIGN;
-  
+
   inp_fd = assuan_get_input_fd (ctx);
   inp_fn = server->input_filename;
   out_fd = assuan_get_output_fd (ctx);
@@ -2433,7 +2433,7 @@ _cmd_sign_encrypt (assuan_context_t ctx, char *line, int sign)
 	}
     }
 
-  err = gt_sign_encrypt (server->gt, flags, inp_data, out_data, sign); 
+  err = gt_sign_encrypt (server->gt, flags, inp_data, out_data, sign);
 
   gpgme_data_release (inp_data);
   gpgme_data_release (out_data);
@@ -2510,7 +2510,7 @@ cmd_sign (assuan_context_t ctx, char *line)
   out_fn = server->output_filename;
   if (out_fd == ASSUAN_INVALID_FD && !out_fn)
     return GPG_ERR_ASS_NO_OUTPUT;
-  
+
   err = server_data_obj (inp_fd, inp_fn, 0, server->input_enc, &inp_data,
 			 &server->input_stream);
   if (err)
@@ -2614,7 +2614,7 @@ static gpg_error_t
 cmd_import (assuan_context_t ctx, char *line)
 {
   struct server *server = assuan_get_pointer (ctx);
-  
+
   if (line && *line)
     {
       char *fprs[2] = { line, NULL };
@@ -2627,7 +2627,7 @@ cmd_import (assuan_context_t ctx, char *line)
       assuan_fd_t inp_fd;
       char *inp_fn;
       gpgme_data_t inp_data;
-      
+
       inp_fd = assuan_get_input_fd (ctx);
       inp_fn = server->input_filename;
       if (inp_fd == ASSUAN_INVALID_FD && !inp_fn)
@@ -2637,9 +2637,9 @@ cmd_import (assuan_context_t ctx, char *line)
 			     &server->input_stream);
       if (err)
 	return err;
-      
-      err = gt_import (server->gt, inp_data); 
-      
+
+      err = gt_import (server->gt, inp_data);
+
       gpgme_data_release (inp_data);
       server_reset_fds (server);
 
@@ -2648,7 +2648,7 @@ cmd_import (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_export[] = 
+static const char hlp_export[] =
   "EXPORT [--extern] [--minimal] [<pattern>]\n"
   "\n"
   "Export the keys described by PATTERN.  Write the\n"
@@ -2730,7 +2730,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
     return GPG_ERR_ASS_NO_INPUT;
   out_fd = assuan_get_output_fd (ctx);
   out_fn = server->output_filename;
-  
+
   err = server_data_obj (inp_fd, inp_fn, 0, server->input_enc, &inp_data,
 			 &server->input_stream);
   if (err)
@@ -2789,7 +2789,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   if (parms_data)
     gpgme_data_release (parms_data);
 
-  return err; 
+  return err;
 }
 
 
@@ -2811,7 +2811,7 @@ cmd_delete (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_keylist[] = 
+static const char hlp_keylist[] =
   "KEYLIST [--secret-only] [<patterns>]\n"
   "\n"
   "List all certificates or only those specified by PATTERNS.  Each\n"
@@ -2877,14 +2877,14 @@ cmd_keylist (assuan_context_t ctx, char *line)
 	  gpgme_key_unref (key);
 	}
     }
-  
+
   server_reset_fds (server);
 
   return err;
 }
 
 
-static const char hlp_getauditlog[] = 
+static const char hlp_getauditlog[] =
   "GETAUDITLOG [--html] [--with-help]\n"
   "\n"
   "Call the function gpgme_op_getauditlog with the given flags.  Write\n"
@@ -3087,7 +3087,7 @@ register_commands (assuan_context_t ctx)
                                      table[idx].help);
       if (err)
         return err;
-    } 
+    }
   return 0;
 }
 
@@ -3153,7 +3153,7 @@ gpgme_server (gpgme_tool_t gt)
 	  log_error (0, err, "assuan accept problem");
 	  break;
         }
-      
+
       err = assuan_process (server.assuan_ctx);
       if (err)
 	log_error (0, err, "assuan processing failed");

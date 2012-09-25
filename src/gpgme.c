@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -71,7 +71,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
     return TRACE_ERR (gpg_error_from_errno (errno));
 
   INIT_LOCK (ctx->lock);
-  
+
   _gpgme_engine_info_copy (&ctx->engine_info);
   if (!ctx->engine_info)
     {
@@ -727,7 +727,7 @@ gpgme_ctx_set_engine_info (gpgme_ctx_t ctx, gpgme_protocol_t proto,
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-	      
+
   /* Shut down the engine when changing engine info.  */
   if (ctx->engine)
     {
@@ -789,7 +789,7 @@ gpgme_sig_notation_add (gpgme_ctx_t ctx, const char *name,
 	      "name=%s, value=%s, flags=0x%x",
 	      name ? name : "(null)", value ? value : "(null)",
 	      flags);
-  
+
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
@@ -826,7 +826,7 @@ gpgme_sig_notation_get (gpgme_ctx_t ctx)
 
   return ctx->sig_notations;
 }
-  
+
 
 const char *
 gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo)

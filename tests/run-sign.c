@@ -2,17 +2,17 @@
    Copyright (C) 2009 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
@@ -44,10 +44,10 @@ print_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
   gpgme_new_signature_t sig;
 
   for (invkey = result->invalid_signers; invkey; invkey = invkey->next)
-    printf ("Signing key `%s' not used: %s <%s>\n", 
-            nonnull (invkey->fpr), 
+    printf ("Signing key `%s' not used: %s <%s>\n",
+            nonnull (invkey->fpr),
             gpg_strerror (invkey->reason), gpg_strsource (invkey->reason));
-  
+
   for (sig = result->signatures; sig; sig = sig->next)
     {
       printf ("Key fingerprint: %s\n", nonnull (sig->fpr));
@@ -76,7 +76,7 @@ show_usage (int ex)
 }
 
 
-int 
+int
 main (int argc, char **argv)
 {
   int last_argc = -1;
@@ -131,9 +131,9 @@ main (int argc, char **argv)
         }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
-      
-    }          
- 
+
+    }
+
   if (argc != 1)
     show_usage (1);
 
@@ -153,7 +153,7 @@ main (int argc, char **argv)
   if (key_string)
     {
       gpgme_key_t akey;
-      
+
       err = gpgme_get_key (ctx, key_string, &akey, 1);
       if (err)
         {

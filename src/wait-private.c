@@ -1,19 +1,19 @@
-/* wait-private.c 
+/* wait-private.c
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
- 
+
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -95,7 +95,7 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
 
 	  return err;
 	}
-      
+
       for (i = 0; i < ctx->fdt.size && nr; i++)
 	{
 	  if (ctx->fdt.fds[i].fd != -1 && ctx->fdt.fds[i].signaled)
@@ -110,9 +110,9 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
 	      if (ctx->canceled)
 		err = gpg_error (GPG_ERR_CANCELED);
 	      UNLOCK (ctx->lock);
-	      
+
 	      if (!err)
-		err = _gpgme_run_io_cb (&ctx->fdt.fds[i], 0, &op_err);  
+		err = _gpgme_run_io_cb (&ctx->fdt.fds[i], 0, &op_err);
 	      if (err)
 		{
 		  /* An error occured.  Close all fds in this context,

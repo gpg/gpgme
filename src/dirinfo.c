@@ -7,12 +7,12 @@
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
  * the License, or (at your option) any later version.
- * 
+ *
  * GPGME is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -33,7 +33,7 @@
 DEFINE_STATIC_LOCK (dirinfo_lock);
 
 /* Constants used internally to select the data.  */
-enum 
+enum
   {
     WANT_HOMEDIR,
     WANT_AGENT_SOCKET
@@ -65,7 +65,7 @@ parse_output (char *line)
     return;
   if (!*value)
     return;
-  
+
   if (!strcmp (line, "homedir") && !dirinfo.homedir)
     dirinfo.homedir = strdup (value);
   else if (!strcmp (line, "agent-socket") && !dirinfo.agent_socket)
@@ -76,7 +76,7 @@ parse_output (char *line)
 /* Read the directory information from gpgconf.  This function expects
    that DIRINFO_LOCK is held by the caller.  */
 static void
-read_gpgconf_dirs (void) 
+read_gpgconf_dirs (void)
 {
   const char *pgmname;
   char linebuf[1024] = {0};
@@ -112,8 +112,8 @@ read_gpgconf_dirs (void)
 
   do
     {
-      nread = _gpgme_io_read (rp[0], 
-                              linebuf + linelen, 
+      nread = _gpgme_io_read (rp[0],
+                              linebuf + linelen,
                               sizeof linebuf - linelen - 1);
       if (nread > 0)
 	{
@@ -141,7 +141,7 @@ read_gpgconf_dirs (void)
 	}
     }
   while (nread > 0 && linelen < sizeof linebuf - 1);
-  
+
   _gpgme_io_close (rp[0]);
 }
 

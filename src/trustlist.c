@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -83,7 +83,7 @@ trustlist_colon_handler (void *priv, char *line)
     {
       field++;
       pend = strchr (p, ':');
-      if (pend) 
+      if (pend)
 	*pend++ = 0;
 
       switch (field)
@@ -232,7 +232,7 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
 	return TRACE_ERR (err);
       if (!opd->trust_cond)
 	return TRACE_ERR (gpg_error (GPG_ERR_EOF));
-      opd->trust_cond = 0; 
+      opd->trust_cond = 0;
       assert (opd->trust_queue);
     }
   q = opd->trust_queue;

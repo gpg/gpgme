@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -77,7 +77,7 @@ gpgme_op_import_result (gpgme_ctx_t ctx)
       return NULL;
     }
 
-  
+
   if (_gpgme_debug_trace ())
     {
       gpgme_import_status_t impstat;
@@ -318,7 +318,7 @@ gpgme_op_import (gpgme_ctx_t ctx, gpgme_data_t keydata)
 
 
 static gpgme_error_t
-_gpgme_op_import_keys_start (gpgme_ctx_t ctx, int synchronous, 
+_gpgme_op_import_keys_start (gpgme_ctx_t ctx, int synchronous,
                              gpgme_key_t *keys)
 {
   gpgme_error_t err;
@@ -382,7 +382,7 @@ gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t *keys)
       while (keys[i])
 	{
 	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
-		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ? 
+		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ?
 		      keys[i]->subkeys->fpr : "invalid");
 	  i++;
 	}
@@ -421,7 +421,7 @@ gpgme_op_import_keys (gpgme_ctx_t ctx, gpgme_key_t *keys)
       while (keys[i])
 	{
 	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
-		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ? 
+		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ?
 		      keys[i]->subkeys->fpr : "invalid");
 	  i++;
 	}

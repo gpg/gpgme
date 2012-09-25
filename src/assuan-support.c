@@ -200,7 +200,7 @@ my_waitpid (assuan_context_t ctx, pid_t pid,
      NOWAIT in POSIX systems just means the caller already did the
      waitpid for this child.  */
   if (! nowait)
-    return _gpgme_ath_waitpid (pid, status, options); 
+    return _gpgme_ath_waitpid (pid, status, options);
 #endif
   return 0;
 }

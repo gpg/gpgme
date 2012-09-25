@@ -2,17 +2,17 @@
    Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -98,12 +98,12 @@ gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete", ctx,
 	      "key=%p (%s), allow_secret=%i", key,
-	      (key->subkeys && key->subkeys->fpr) ? 
+	      (key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", allow_secret);
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-  
+
   err = delete_start (ctx, 0, key, allow_secret);
   return TRACE_ERR (err);
 }
@@ -118,12 +118,12 @@ gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key, int allow_secret)
 
   TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete", ctx,
 	      "key=%p (%s), allow_secret=%i", key,
-	      (key->subkeys && key->subkeys->fpr) ? 
+	      (key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", allow_secret);
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-  
+
   err = delete_start (ctx, 1, key, allow_secret);
   if (!err)
     err = _gpgme_wait_one (ctx);

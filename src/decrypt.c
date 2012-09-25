@@ -377,7 +377,7 @@ gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-  
+
   err = decrypt_start (ctx, 0, cipher, plain);
   return TRACE_ERR (err);
 }
@@ -395,7 +395,7 @@ gpgme_op_decrypt (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-  
+
   err = decrypt_start (ctx, 1, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);

@@ -33,10 +33,10 @@ Boston, MA 02111-1307, USA.  */
 #define va_copy(d, s) (*(d) = *(s))
 #elif defined (MUST_COPY_VA_BYVAL)
 #define va_copy(d, s) ((d) = (s))
-#else 
+#else
 #define va_copy(d, s) memcpy ((d), (s), sizeof (va_list))
-#endif 
-#endif 
+#endif
+#endif
 
 
 #ifdef TEST

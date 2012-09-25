@@ -1,18 +1,18 @@
 /* data-mem.c - A memory based data object.
    Copyright (C) 2002, 2003, 2004, 2007 g10 Code GmbH
- 
+
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -72,7 +72,7 @@ mem_write (gpgme_data_t dh, const void *buffer, size_t size)
 	return -1;
       memcpy (new_buffer, dh->data.mem.orig_buffer, dh->data.mem.length);
 
-      dh->data.mem.buffer = new_buffer;      
+      dh->data.mem.buffer = new_buffer;
       dh->data.mem.size = new_size;
     }
 
@@ -124,7 +124,7 @@ mem_seek (gpgme_data_t dh, off_t offset, int whence)
       break;
     case SEEK_CUR:
       if ((offset > 0 && dh->data.mem.length - dh->data.mem.offset < offset)
-	  || (offset < 0 && dh->data.mem.offset < -offset)) 
+	  || (offset < 0 && dh->data.mem.offset < -offset))
 	{
 	  gpg_err_set_errno (EINVAL);
 	  return -1;
@@ -211,7 +211,7 @@ gpgme_data_new_from_mem (gpgme_data_t *r_dh, const char *buffer,
     }
   else
     (*r_dh)->data.mem.orig_buffer = buffer;
-  
+
   (*r_dh)->data.mem.size = size;
   (*r_dh)->data.mem.length = size;
   return TRACE_SUC1 ("dh=%p", *r_dh);

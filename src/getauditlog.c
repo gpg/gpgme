@@ -3,17 +3,17 @@
    Copyright (C) 2007 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -48,7 +48,7 @@ getauditlog_start (gpgme_ctx_t ctx, int synchronous,
   if (err)
     return err;
 
-  _gpgme_engine_set_status_handler (ctx->engine, 
+  _gpgme_engine_set_status_handler (ctx->engine,
                                     getauditlog_status_handler, ctx);
 
   return _gpgme_engine_op_getauditlog (ctx->engine, output, flags);
@@ -61,7 +61,7 @@ getauditlog_start (gpgme_ctx_t ctx, int synchronous,
    available GPG_ERR_NO_DATA is returned.  This is the asynchronous
    variant. */
 gpgme_error_t
-gpgme_op_getauditlog_start (gpgme_ctx_t ctx, 
+gpgme_op_getauditlog_start (gpgme_ctx_t ctx,
                             gpgme_data_t output, unsigned int flags)
 {
   gpg_error_t err;

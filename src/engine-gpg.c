@@ -2,19 +2,19 @@
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007,
                  2009, 2010, 2012 g10 Code GmbH
- 
+
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
@@ -87,7 +87,7 @@ struct engine_gpg
 
   struct
   {
-    int fd[2];  
+    int fd[2];
     int arg_loc;
     size_t bufsize;
     char *buffer;
@@ -101,7 +101,7 @@ struct engine_gpg
   /* This is a kludge - see the comment at colon_line_handler.  */
   struct
   {
-    int fd[2];  
+    int fd[2];
     int arg_loc;
     size_t bufsize;
     char *buffer;
@@ -113,7 +113,7 @@ struct engine_gpg
     colon_preprocessor_t preprocess_fnc;
   } colon;
 
-  char **argv;  
+  char **argv;
   struct fd_data_map_s *fd_data_map;
 
   /* stuff needed for interactive (command) mode */
@@ -125,7 +125,7 @@ struct engine_gpg
     int idx;		/* Index in fd_data_map */
     gpgme_status_code_t code;  /* last code */
     char *keyword;       /* what has been requested (malloced) */
-    engine_command_handler_t fnc; 
+    engine_command_handler_t fnc;
     void *fnc_value;
     /* The kludges never end.  This is used to couple command handlers
        with output data in edit key mode.  */
@@ -537,7 +537,7 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 	      rc = _gpgme_getenv ("TERM", &dft_ttytype);
 	      if (rc)
 		goto leave;
-              
+
               if (dft_ttytype)
                 {
                   rc = add_arg (gpg, "--ttytype");
@@ -632,7 +632,7 @@ gpg_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
   if (!gpg->colon.buffer)
     return gpg_error_from_errno (errno);
 
-  if (_gpgme_io_pipe (gpg->colon.fd, 1) == -1) 
+  if (_gpgme_io_pipe (gpg->colon.fd, 1) == -1)
     {
       int saved_errno = errno;
       free (gpg->colon.buffer);
@@ -722,7 +722,7 @@ build_argv (engine_gpg_t gpg)
   gpgme_error_t err;
   struct arg_and_data_s *a;
   struct fd_data_map_s *fd_data_map;
-  size_t datac=0, argc=0;  
+  size_t datac=0, argc=0;
   char **argv;
   int need_special = 0;
   int use_agent = 0;
@@ -850,9 +850,9 @@ build_argv (engine_gpg_t gpg)
 	  fd_data_map[datac].inbound = a->inbound;
 
 	  /* Create a pipe.  */
-	  {   
+	  {
 	    int fds[2];
-	    
+
 	    if (_gpgme_io_pipe (fds, fd_data_map[datac].inbound ? 1 : 0)
 		== -1)
 	      {
@@ -976,13 +976,13 @@ read_status (engine_gpg_t gpg)
 {
   char *p;
   int nread;
-  size_t bufsize = gpg->status.bufsize; 
+  size_t bufsize = gpg->status.bufsize;
   char *buffer = gpg->status.buffer;
-  size_t readpos = gpg->status.readpos; 
+  size_t readpos = gpg->status.readpos;
 
   assert (buffer);
   if (bufsize - readpos < 256)
-    { 
+    {
       /* Need more room for the read.  */
       bufsize += 1024;
       buffer = realloc (buffer, bufsize);
@@ -1029,7 +1029,7 @@ read_status (engine_gpg_t gpg)
 		    rest = p; /* Set to an empty string.  */
 		  else
 		    *rest++ = 0;
-                    
+
 		  r = _gpgme_parse_status (buffer + 9);
 		  if (r >= 0)
 		    {
@@ -1060,12 +1060,12 @@ read_status (engine_gpg_t gpg)
 		      else if (gpg->status.fnc)
 			{
 			  gpgme_error_t err;
-			  err = gpg->status.fnc (gpg->status.fnc_value, 
+			  err = gpg->status.fnc (gpg->status.fnc_value,
 						 r, rest);
 			  if (err)
 			    return err;
                         }
-                    
+
 		      if (r == GPGME_STATUS_END_STREAM)
 			{
 			  if (gpg->cmd.used)
@@ -1120,7 +1120,7 @@ read_status (engine_gpg_t gpg)
 	  else
 	    readpos++;
         }
-    } 
+    }
 
   /* Update the gpg object.  */
   gpg->status.bufsize = bufsize;
@@ -1152,17 +1152,17 @@ read_colon_line (engine_gpg_t gpg)
 {
   char *p;
   int nread;
-  size_t bufsize = gpg->colon.bufsize; 
+  size_t bufsize = gpg->colon.bufsize;
   char *buffer = gpg->colon.buffer;
-  size_t readpos = gpg->colon.readpos; 
+  size_t readpos = gpg->colon.readpos;
 
   assert (buffer);
   if (bufsize - readpos < 256)
-    { 
+    {
       /* Need more room for the read.  */
       bufsize += 1024;
       buffer = realloc (buffer, bufsize);
-      if (!buffer) 
+      if (!buffer)
 	return gpg_error_from_errno (errno);
     }
 
@@ -1208,7 +1208,7 @@ read_colon_line (engine_gpg_t gpg)
 		  if (line)
 		    free (line);
 		}
-            
+
 	      /* To reuse the buffer for the next line we have to
 		 shift the remaining data to the buffer start and
 		 restart the loop Hmmm: We can optimize this function
@@ -1224,7 +1224,7 @@ read_colon_line (engine_gpg_t gpg)
 	  else
 	    readpos++;
         }
-    } 
+    }
 
   /* Update the gpg object.  */
   gpg->colon.bufsize = bufsize;
@@ -1295,7 +1295,7 @@ start (engine_gpg_t gpg)
 
   /* status_fd, colon_fd and end of list.  */
   n = 3;
-  for (i = 0; gpg->fd_data_map[i].data; i++) 
+  for (i = 0; gpg->fd_data_map[i].data; i++)
     n++;
   fd_list = calloc (n, sizeof *fd_list);
   if (! fd_list)
@@ -1309,7 +1309,7 @@ start (engine_gpg_t gpg)
   n++;
   if (gpg->colon.fnc)
     {
-      fd_list[n].fd = gpg->colon.fd[1]; 
+      fd_list[n].fd = gpg->colon.fd[1];
       fd_list[n].dup_to = 1;
       n++;
     }
@@ -1367,7 +1367,7 @@ start (engine_gpg_t gpg)
 			  ? _gpgme_data_inbound_handler
 			  : _gpgme_data_outbound_handler,
 			  gpg->fd_data_map[i].data, &gpg->fd_data_map[i].tag);
-	  
+
 	  if (rc)
 	    /* FIXME: kill the child */
 	    return rc;
@@ -1375,7 +1375,7 @@ start (engine_gpg_t gpg)
     }
 
   gpg_io_event (gpg, GPGME_EVENT_START, NULL);
-  
+
   /* fixme: check what data we can release here */
   return 0;
 }
@@ -1605,7 +1605,7 @@ append_args_from_recipients (engine_gpg_t gpg, gpgme_key_t recp[])
       if (err)
 	break;
       i++;
-    }    
+    }
   return err;
 }
 
@@ -1832,7 +1832,7 @@ gpg_genkey (void *engine, gpgme_data_t help_data, int use_armor,
    Note that we use a delimiter and thus a trailing delimiter is not
    required.  DELIM may not be changed after the first call. */
 static const char *
-string_from_data (gpgme_data_t data, int delim, 
+string_from_data (gpgme_data_t data, int delim,
                   void **helpptr, gpgme_error_t *r_err)
 {
 #define MYBUFLEN 2000 /* Fixme: We don't support URLs longer than that.  */
@@ -1900,7 +1900,7 @@ string_from_data (gpgme_data_t data, int delim,
           return NULL;
         }
 
-      nread = gpgme_data_read (data, self->buf + self->buflen, 
+      nread = gpgme_data_read (data, self->buf + self->buflen,
                                MYBUFLEN - self->buflen);
       if (nread < 0)
         {
@@ -2034,7 +2034,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
     rectype = RT_PUB;
   else if (!strcmp (field[0], "uid"))
     rectype = RT_UID;
-  else 
+  else
     rectype = RT_NONE;
 
   switch (rectype)
@@ -2052,7 +2052,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
 	 pub:<keyid>:<algo>:<keylen>:<creationdate>:<expirationdate>:<flags>
 
 	 as defined in 5.2. Machine Readable Indexes of the OpenPGP
-	 HTTP Keyserver Protocol (draft). 
+	 HTTP Keyserver Protocol (draft).
 
 	 We want:
 	 pub:o<flags>:<keylen>:<algo>:<keyid>:<creatdate>:<expdate>::::::::
@@ -2070,7 +2070,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
          uid:<escaped uid string>:<creationdate>:<expirationdate>:<flags>
 
 	 as defined in 5.2. Machine Readable Indexes of the OpenPGP
-	 HTTP Keyserver Protocol (draft). 
+	 HTTP Keyserver Protocol (draft).
 
 	 We want:
 	 uid:o<flags>::::<creatdate>:<expdate>:::<c-coded uid>:
@@ -2181,10 +2181,10 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
     }
   if (!err)
     err = add_arg (gpg, "--");
-  
+
   return err;
 }
-                           
+
 
 static gpgme_error_t
 gpg_keylist (void *engine, const char *pattern, int secret_only,
@@ -2287,7 +2287,7 @@ gpg_trustlist (void *engine, const char *pattern)
   err = add_arg (gpg, "--with-colons");
   if (!err)
     err = add_arg (gpg, "--list-trust-path");
-  
+
   /* Tell the gpg object about the data.  */
   if (!err)
     err = add_arg (gpg, "--");
@@ -2353,7 +2353,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
   {
     /* Static functions.  */
     _gpgme_get_gpg_path,
-    NULL,               
+    NULL,
     gpg_get_version,
     gpg_get_req_version,
     gpg_new,

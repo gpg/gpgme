@@ -4,17 +4,17 @@
    Copyright (C) 2001, 2002, 2003, 2004, 2007 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -51,7 +51,7 @@
    but that header also redefines some Windows functions which we need
    to avoid unless having included shlobj.h.  */
 #include <winsock2.h>
-#include <ws2tcpip.h> 
+#include <ws2tcpip.h>
 #include <windows.h>
 #include <shlobj.h>
 
@@ -105,10 +105,10 @@ dlclose (void * hd)
       return 0;
     }
   return -1;
-}  
+}
 #endif /* HAVE_ALLOW_SET_FOREGROUND_WINDOW */
 
-void 
+void
 _gpgme_allow_set_foreground_window (pid_t pid)
 {
 #ifdef HAVE_ALLOW_SET_FOREGROUND_WINDOW
@@ -162,7 +162,7 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
   HKEY root_key, key_handle;
   DWORD n1, nbytes, type;
   char *result = NULL;
-	
+
   if (!root)
     root_key = HKEY_CURRENT_USER;
   else if (!strcmp( root, "HKEY_CLASSES_ROOT"))
@@ -179,7 +179,7 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
     root_key = HKEY_CURRENT_CONFIG;
   else
     return NULL;
-	
+
   if (RegOpenKeyExA (root_key, dir, 0, KEY_READ, &key_handle))
     {
       if (root)
@@ -215,10 +215,10 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
 
 #ifndef HAVE_W32CE_SYSTEM
   /* Windows CE does not have an environment.  */
-  if (type == REG_EXPAND_SZ && strchr (result, '%')) 
+  if (type == REG_EXPAND_SZ && strchr (result, '%'))
     {
       char *tmp;
-        
+
       n1 += 1000;
       tmp = malloc (n1 + 1);
       if (!tmp)
@@ -247,7 +247,7 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
           result = malloc (strlen (tmp)+1);
           if (!result)
             result = tmp;
-          else 
+          else
             {
               strcpy (result, tmp);
               free (tmp);
@@ -271,7 +271,7 @@ static char *
 find_program_in_registry (const char *name)
 {
   char *program = NULL;
-    
+
   program = read_w32_registry_string (NULL, "Software\\GNU\\GnuPG", name);
   if (program)
     {
@@ -326,7 +326,7 @@ find_program_at_standard_place (const char *name)
 {
   char path[MAX_PATH];
   char *result = NULL;
-      
+
   /* See http://wiki.tcl.tk/17492 for details on compatibility.  */
   if (SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILES, 0))
     {
@@ -595,7 +595,7 @@ _gpgme_mkstemp (int *fd, char **name)
   else
     {
       int len = strlen(tmp);
-      
+
       /* GetTempPath may return with \ on the end */
       while(len > 0 && tmp[len - 1] == '\\')
 	{

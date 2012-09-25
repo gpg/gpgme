@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004, 2010 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -48,7 +48,7 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
                 |GPGME_EXPORT_MODE_MINIMAL)))
     return gpg_error (GPG_ERR_INV_VALUE); /* Invalid flags in MODE.  */
 
-  
+
   if ((mode & GPGME_EXPORT_MODE_EXTERN))
     {
       if (keydata)
@@ -221,7 +221,7 @@ export_keys_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t keys[],
       nkeys++;
   if (!nkeys)
     return gpg_error (GPG_ERR_NO_DATA);
-  
+
   pattern = calloc (nkeys+1, sizeof *pattern);
   if (!pattern)
     return gpg_error_from_syserror ();
@@ -272,7 +272,7 @@ gpgme_op_export_keys_start (gpgme_ctx_t ctx,
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-  
+
   if (_gpgme_debug_trace () && keys)
     {
       int i = 0;
@@ -280,7 +280,7 @@ gpgme_op_export_keys_start (gpgme_ctx_t ctx,
       while (keys[i])
 	{
 	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
-		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ? 
+		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ?
 		      keys[i]->subkeys->fpr : "invalid");
 	  i++;
 	}
@@ -303,7 +303,7 @@ gpgme_op_export_keys (gpgme_ctx_t ctx,
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-  
+
   if (_gpgme_debug_trace () && keys)
     {
       int i = 0;
@@ -311,7 +311,7 @@ gpgme_op_export_keys (gpgme_ctx_t ctx,
       while (keys[i])
 	{
 	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
-		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ? 
+		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ?
 		      keys[i]->subkeys->fpr : "invalid");
 	  i++;
 	}

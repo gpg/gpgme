@@ -2,17 +2,17 @@
    Copyright (C) 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -55,7 +55,7 @@ gpgme_strsource (gpgme_error_t err)
   return gpg_strsource (err);
 }
 
-  
+
 /* Retrieve the error code for the system error ERR.  This returns
    GPG_ERR_UNKNOWN_ERRNO if the system error is not mapped (report
    this).  */
@@ -93,7 +93,7 @@ gpgme_err_set_errno (int err)
   gpg_err_set_errno (err);
 }
 
-  
+
 /* Return an error value with the error source SOURCE and the system
    error ERR.  */
 gpgme_error_t

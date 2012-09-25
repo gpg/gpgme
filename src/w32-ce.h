@@ -1,18 +1,18 @@
-/* w32-ce.h 
+/* w32-ce.h
    Copyright (C) 2010 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -74,7 +74,7 @@ int _gpgme_wince_access (const char *fname, int mode);
 void *_gpgme_wince_bsearch (const void *key, const void *base,
                             size_t nmemb, size_t size,
                             int (*compar) (const void *, const void *));
-#define bsearch(a,b,c,d,e) _gpgme_wince_bsearch ((a),(b),(c),(d),(e)) 
+#define bsearch(a,b,c,d,e) _gpgme_wince_bsearch ((a),(b),(c),(d),(e))
 
 #if defined(_MSC_VER)
   /* Remove the redefined __leave keyword.  It is defined by MSC for

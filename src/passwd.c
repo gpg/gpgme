@@ -2,17 +2,17 @@
    Copyright (C) 2010 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -53,7 +53,7 @@ parse_error (char *args)
       if (where)
 	*where = '\0';
 
-      where = args;      
+      where = args;
     }
   else
     return gpg_error (GPG_ERR_INV_ENGINE);
@@ -91,7 +91,7 @@ passwd_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_SUCCESS:
       opd->success_seen = 1;
       break;
-      
+
     case GPGME_STATUS_EOF:
       /* In case the OpenPGP engine does not properly implement the
          passwd command we won't get a success status back and thus we
@@ -147,7 +147,7 @@ passwd_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
 /* Change the passphrase for KEY.  FLAGS is reserved for future use
    and must be passed as 0.  The engine is expected to present a user
    interface to enter the old and the new passphrase.  This is the
-   asynchronous variant. 
+   asynchronous variant.
 
    Note that if ever the need arises to supply a passphrase we can do
    this with a flag value and the passphrase callback feature.  */

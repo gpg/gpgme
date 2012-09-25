@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -46,7 +46,7 @@ static void
 release_op_data (void *hook)
 {
   op_data_t opd = (op_data_t) hook;
-  
+
   if (opd->result.fpr)
     free (opd->result.fpr);
   if (opd->key_parameter)
@@ -173,7 +173,7 @@ genkey_start (gpgme_ctx_t ctx, int synchronous, const char *parms,
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     return err;
-  
+
   err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, &hook,
 			       sizeof (*opd), release_op_data);
   opd = hook;

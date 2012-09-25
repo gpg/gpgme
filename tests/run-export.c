@@ -2,17 +2,17 @@
    Copyright (C) 2008, 2009 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
@@ -48,7 +48,7 @@ show_usage (int ex)
   exit (ex);
 }
 
-int 
+int
 main (int argc, char **argv)
 {
   int last_argc = -1;
@@ -86,9 +86,9 @@ main (int argc, char **argv)
         }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
-      
-    }          
- 
+
+    }
+
   if (!argc)
     show_usage (1);
 
@@ -101,7 +101,7 @@ main (int argc, char **argv)
   /* Lookup the keys.  */
   err = gpgme_op_keylist_ext_start (ctx, (const char**)argv, 0, 0);
   fail_if_err (err);
-    
+
   while (!(err = gpgme_op_keylist_next (ctx, &key)))
     {
       printf ("keyid: %s  (fpr: %s)\n",
@@ -138,7 +138,7 @@ main (int argc, char **argv)
   fail_if_err (err);
 
   gpgme_set_armor (ctx, 1);
-  err = gpgme_op_export_keys (ctx, keyarray, mode, 
+  err = gpgme_op_export_keys (ctx, keyarray, mode,
                               (mode & GPGME_KEYLIST_MODE_EXTERN)? NULL:out);
   fail_if_err (err);
 

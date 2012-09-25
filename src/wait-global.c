@@ -1,19 +1,19 @@
-/* wait-global.c 
+/* wait-global.c
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
- 
+
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -306,10 +306,10 @@ gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
 	      gpgme_error_t err = 0;
 	      gpgme_error_t local_op_err = 0;
 	      struct wait_item_s *item;
-	      
+
 	      assert (nr);
 	      nr--;
-	      
+
 	      item = (struct wait_item_s *) fdt.fds[i].opaque;
 	      assert (item);
 	      ictx = item->ctx;
@@ -352,7 +352,7 @@ gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
 	      struct gpgme_io_event_done_data data;
 	      data.err = 0;
 	      data.op_err = 0;
-	      
+
 	      /* FIXME: This does not perform too well.  We have to
 		 release the lock because the I/O event handler
 		 acquires it to remove the context from the active

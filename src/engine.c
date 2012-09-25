@@ -1,19 +1,19 @@
 /* engine.c - GPGME engine support.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2006, 2009, 2010 g10 Code GmbH
- 
+
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
@@ -568,7 +568,7 @@ _gpgme_engine_set_protocol (engine_t engine, gpgme_protocol_t protocol)
 
   return (*engine->ops->set_protocol) (engine->engine, protocol);
 }
-  
+
 
 gpgme_error_t
 _gpgme_engine_op_decrypt (engine_t engine, gpgme_data_t ciph,
@@ -810,7 +810,7 @@ _gpgme_engine_op_getauditlog (engine_t engine, gpgme_data_t output,
 
 
 gpgme_error_t
-_gpgme_engine_op_assuan_transact (engine_t engine, 
+_gpgme_engine_op_assuan_transact (engine_t engine,
                                   const char *command,
                                   gpgme_assuan_data_cb_t data_cb,
                                   void *data_cb_value,
@@ -825,7 +825,7 @@ _gpgme_engine_op_assuan_transact (engine_t engine,
   if (!engine->ops->opassuan_transact)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->opassuan_transact) (engine->engine, 
+  return (*engine->ops->opassuan_transact) (engine->engine,
                                             command,
                                             data_cb, data_cb_value,
                                             inq_cb, inq_cb_value,

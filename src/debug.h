@@ -1,18 +1,18 @@
 /* debug.h - interface to debugging functions
    Copyright (C) 2002, 2004, 2005, 2007 g10 Code GmbH
- 
+
    This file is part of GPGME.
 
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -245,7 +245,7 @@ void _gpgme_debug_frame_end (void);
 #define TRACE_SEQ(hlp,fmt)						\
   _gpgme_debug_begin (&(hlp), _gpgme_trace_level,			\
                       "%s: check: %s=%p, " fmt, _gpgme_trace_func,	\
-                      _gpgme_trace_tagname, _gpgme_trace_tag)		
+                      _gpgme_trace_tagname, _gpgme_trace_tag)
 #define TRACE_ADD0(hlp,fmt) \
   _gpgme_debug_add (&(hlp), fmt)
 #define TRACE_ADD1(hlp,fmt,a) \

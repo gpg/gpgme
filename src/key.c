@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -78,7 +78,7 @@ _gpgme_key_add_subkey (gpgme_key_t key, gpgme_subkey_t *r_subkey)
 static char *
 set_user_id_part (char *tail, const char *buf, size_t len)
 {
-  while (len && (buf[len - 1] == ' ' || buf[len - 1] == '\t')) 
+  while (len && (buf[len - 1] == ' ' || buf[len - 1] == '\t'))
     len--;
   for (; len; len--)
     *tail++ = *buf++;
@@ -157,10 +157,10 @@ parse_user_id (char *src, char **name, char **email,
 	{
 	  in_name = 1;
 	  start = src;
-	}    
+	}
       src++;
     }
- 
+
   if (in_name)
     {
       if (!*name)
@@ -169,7 +169,7 @@ parse_user_id (char *src, char **name, char **email,
 	  tail = set_user_id_part (tail, start, src - start);
 	}
     }
- 
+
   /* Let unused parts point to an EOS.  */
   tail--;
   if (!*name)
@@ -187,7 +187,7 @@ parse_x509_user_id (char *src, char **name, char **email,
 {
   if (*src == '<' && src[strlen (src) - 1] == '>')
     *email = src;
-  
+
   /* Let unused parts point to an EOS.  */
   tail--;
   if (!*name)
@@ -361,7 +361,7 @@ gpgme_key_unref (gpgme_key_t key)
       free (uid);
       uid = next_uid;
     }
-  
+
   if (key->issuer_serial)
     free (key->issuer_serial);
   if (key->issuer_name)
@@ -518,7 +518,7 @@ gpgme_key_get_string_attr (gpgme_key_t key, _gpgme_attr_t what,
     case GPGME_ATTR_FPR:
       return subkey ? subkey->fpr : NULL;
 
-    case GPGME_ATTR_ALGO:    
+    case GPGME_ATTR_ALGO:
       return subkey ? gpgme_pubkey_algo_name (subkey->pubkey_algo) : NULL;
 
     case GPGME_ATTR_TYPE:
@@ -527,10 +527,10 @@ gpgme_key_get_string_attr (gpgme_key_t key, _gpgme_attr_t what,
     case GPGME_ATTR_OTRUST:
       return otrust_to_string (key->owner_trust);
 
-    case GPGME_ATTR_USERID:  
+    case GPGME_ATTR_USERID:
       return uid ? uid->uid : NULL;
 
-    case GPGME_ATTR_NAME:   
+    case GPGME_ATTR_NAME:
       return uid ? uid->name : NULL;
 
     case GPGME_ATTR_EMAIL:
@@ -542,7 +542,7 @@ gpgme_key_get_string_attr (gpgme_key_t key, _gpgme_attr_t what,
     case GPGME_ATTR_VALIDITY:
       return uid ? validity_to_string (uid->validity) : NULL;
 
-    case GPGME_ATTR_KEY_CAPS:    
+    case GPGME_ATTR_KEY_CAPS:
       return subkey ? capabilities_to_string (subkey) : NULL;
 
     case GPGME_ATTR_SERIAL:
@@ -604,7 +604,7 @@ gpgme_key_get_ulong_attr (gpgme_key_t key, _gpgme_attr_t what,
       return (subkey && subkey->timestamp >= 0)
 	? (unsigned long) subkey->timestamp : 0;
 
-    case GPGME_ATTR_EXPIRE: 
+    case GPGME_ATTR_EXPIRE:
       return (subkey && subkey->expires >= 0)
 	? (unsigned long) subkey->expires : 0;
 
@@ -693,13 +693,13 @@ gpgme_key_sig_get_string_attr (gpgme_key_t key, int uid_idx,
     case GPGME_ATTR_KEYID:
       return certsig->keyid;
 
-    case GPGME_ATTR_ALGO:    
+    case GPGME_ATTR_ALGO:
       return gpgme_pubkey_algo_name (certsig->pubkey_algo);
 
     case GPGME_ATTR_USERID:
       return certsig->uid;
 
-    case GPGME_ATTR_NAME:   
+    case GPGME_ATTR_NAME:
       return certsig->name;
 
     case GPGME_ATTR_EMAIL:
@@ -707,7 +707,7 @@ gpgme_key_sig_get_string_attr (gpgme_key_t key, int uid_idx,
 
     case GPGME_ATTR_COMMENT:
       return certsig->comment;
-   
+
     default:
       return NULL;
     }
@@ -725,13 +725,13 @@ gpgme_key_sig_get_ulong_attr (gpgme_key_t key, int uid_idx, _gpgme_attr_t what,
 
   switch (what)
     {
-    case GPGME_ATTR_ALGO:    
+    case GPGME_ATTR_ALGO:
       return (unsigned long) certsig->pubkey_algo;
 
-    case GPGME_ATTR_CREATED: 
+    case GPGME_ATTR_CREATED:
       return certsig->timestamp < 0 ? 0L : (unsigned long) certsig->timestamp;
 
-    case GPGME_ATTR_EXPIRE: 
+    case GPGME_ATTR_EXPIRE:
       return certsig->expires < 0 ? 0L : (unsigned long) certsig->expires;
 
     case GPGME_ATTR_KEY_REVOKED:

@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -120,7 +120,7 @@ const char *gpgme_trust_item_get_string_attr (gpgme_trust_item_t item,
       val = item->keyid;
       break;
 
-    case GPGME_ATTR_OTRUST:  
+    case GPGME_ATTR_OTRUST:
       val = item->owner_trust;
       break;
 
@@ -128,7 +128,7 @@ const char *gpgme_trust_item_get_string_attr (gpgme_trust_item_t item,
       val = item->validity;
       break;
 
-    case GPGME_ATTR_USERID:  
+    case GPGME_ATTR_USERID:
       val = item->name;
       break;
 
@@ -156,11 +156,11 @@ int gpgme_trust_item_get_int_attr (gpgme_trust_item_t item, _gpgme_attr_t what,
 
   switch (what)
     {
-    case GPGME_ATTR_LEVEL:    
+    case GPGME_ATTR_LEVEL:
       val = item->level;
       break;
 
-    case GPGME_ATTR_TYPE:    
+    case GPGME_ATTR_TYPE:
       val = item->type;
       break;
 

@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2004, 2005, 2007, 2010 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -195,7 +195,7 @@ _gpgme_io_close (int fd)
       handler (fd, handler_value);
     }
 
-  /* Then do the close.  */    
+  /* Then do the close.  */
   res = close (fd);
   return TRACE_SYSRES (res);
 }
@@ -212,7 +212,7 @@ _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
 	      "close_handler=%p/%p", handler, value);
 
   assert (fd != -1);
-  
+
   LOCK (notify_table_lock);
   for (idx=0; idx < notify_table_size; idx++)
     if (notify_table[idx].fd == -1)
@@ -246,7 +246,7 @@ _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
   notify_table[idx].fd = fd;
   notify_table[idx].handler = handler;
   notify_table[idx].value = value;
-  
+
  leave:
   UNLOCK (notify_table_lock);
 
@@ -389,7 +389,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       TRACE_LOG3 ("fd[%i] = 0x%x -> 0x%x", i, fd_list[i].fd, fd_list[i].dup_to);
 
   pid = fork ();
-  if (pid == -1) 
+  if (pid == -1)
     return TRACE_SYSRES (-1);
 
   if (!pid)
@@ -450,7 +450,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 
 	      close (fd_list[i].fd);
 	    }
-	  
+
 	  if (! seen_stdin || ! seen_stderr)
 	    {
 	      fd = open ("/dev/null", O_RDWR);
@@ -492,7 +492,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	      if (fd != 0 && fd != 2)
 		close (fd);
 	    }
-    
+
 	  execv (path, (char *const *) argv);
 	  /* Hmm: in that case we could write a special status code to the
 	     status-pipe.  */
@@ -559,7 +559,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   any = 0;
   for (i = 0; i < nfds; i++)
     {
-      if (fds[i].fd == -1) 
+      if (fds[i].fd == -1)
 	continue;
       if (fds[i].for_read)
 	{
@@ -581,7 +581,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
         }
       fds[i].signaled = 0;
     }
-  TRACE_END (dbg_help, "]"); 
+  TRACE_END (dbg_help, "]");
   if (!any)
     return TRACE_SYSRES (0);
 
@@ -606,7 +606,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
         }
       TRACE_END (dbg_help, "]");
     }
-    
+
   /* The variable N is used to optimize it a little bit.  */
   for (n = count, i = 0; i < nfds && n; i++)
     {
@@ -649,7 +649,7 @@ _gpgme_io_recvmsg (int fd, struct msghdr *msg, int flags)
       nread += iov->iov_len;
       iov++;
     }
-  
+
   TRACE_LOG1 ("about to receive %d bytes", nread);
 
   do

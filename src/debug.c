@@ -1,22 +1,22 @@
 /* debug.c - helpful output in desperate situations
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
- 
+
    This file is part of GPGME.
 
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301, USA.  */
 
 #if HAVE_CONFIG_H
@@ -205,7 +205,7 @@ _gpgme_debug (int level, const char *format, ...)
   saved_errno = errno;
   if (debug_level < level)
     return;
-    
+
   va_start (arg_ptr, format);
   LOCK (debug_lock);
   {
@@ -220,7 +220,7 @@ _gpgme_debug (int level, const char *format, ...)
 #else
     struct tm *tp;
     time_t atime = time (NULL);
-    
+
     tp = localtime (&atime);
     fprintf (errfp, "GPGME %04d-%02d-%02d %02d:%02d:%02d <0x%04llx>  ",
 	     1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
@@ -342,7 +342,7 @@ _gpgme_debug_buffer (int lvl, const char *const fmt,
       char str[51];
       char *strp = str;
       char *strp2 = &str[34];
-      
+
       for (j = 0; j < 16; j++)
 	{
 	  unsigned char val;

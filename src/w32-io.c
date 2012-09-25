@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004, 2007, 2010 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -82,7 +82,7 @@ static struct
      want to close something.  Using the same handle for these
      duplicates works just fine.  */
   int dup_from;
-} fd_table[MAX_SLAFD];  
+} fd_table[MAX_SLAFD];
 
 
 /* Returns the FD or -1 on resource limit.  */
@@ -147,7 +147,7 @@ struct reader_context_s
 {
   HANDLE file_hd;
   int file_sock;
-  HANDLE thread_hd;	
+  HANDLE thread_hd;
   int refcount;
 
   DECLARE_LOCK (mutex);
@@ -157,7 +157,7 @@ struct reader_context_s
   int eof_shortcut;
   int error;
   int error_code;
-  
+
   /* This is manually reset.  */
   HANDLE have_data_ev;
   /* This is automatically reset.  */
@@ -182,11 +182,11 @@ struct writer_context_s
 {
   HANDLE file_hd;
   int file_sock;
-  HANDLE thread_hd;	
+  HANDLE thread_hd;
   int refcount;
 
   DECLARE_LOCK (mutex);
-  
+
   int stop_me;
   int error;
   int error_code;
@@ -195,7 +195,7 @@ struct writer_context_s
   HANDLE have_data;
   HANDLE is_empty;
   HANDLE stopped;
-  size_t nbytes; 
+  size_t nbytes;
   char buffer[WRITEBUF_SIZE];
 };
 
@@ -257,7 +257,7 @@ set_synchronize (HANDLE hd)
 }
 
 
-static DWORD CALLBACK 
+static DWORD CALLBACK
 reader (void *arg)
 {
   struct reader_context_s *ctx = arg;
@@ -278,7 +278,7 @@ reader (void *arg)
       /* Leave a 1 byte gap so that we can see whether it is empty or
 	 full.  */
       if ((ctx->writepos + 1) % READBUF_SIZE == ctx->readpos)
-	{ 
+	{
 	  /* Wait for space.  */
 	  if (!ResetEvent (ctx->have_space_ev))
 	    TRACE_LOG1 ("ResetEvent failed: ec=%d", (int) GetLastError ());
@@ -298,7 +298,7 @@ reader (void *arg)
       if (nbytes > READBUF_SIZE - ctx->writepos)
 	nbytes = READBUF_SIZE - ctx->writepos;
       UNLOCK (ctx->mutex);
-      
+
       TRACE_LOG2 ("%s %d bytes", sock? "receiving":"reading", nbytes);
 
       if (sock)
@@ -358,7 +358,7 @@ reader (void *arg)
 	  break;
         }
       TRACE_LOG1 ("got %u bytes", nread);
-      
+
       ctx->writepos = (ctx->writepos + nread) % READBUF_SIZE;
       if (!SetEvent (ctx->have_data_ev))
 	TRACE_LOG2 ("SetEvent (0x%x) failed: ec=%d", ctx->have_data_ev,
@@ -370,7 +370,7 @@ reader (void *arg)
 	TRACE_LOG2 ("SetEvent (0x%x) failed: ec=%d", ctx->have_data_ev,
 		    (int) GetLastError ());
   SetEvent (ctx->stopped);
-  
+
   return TRACE_SUC ();
 }
 
@@ -387,7 +387,7 @@ create_reader (int fd)
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-  
+
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
     {
@@ -447,7 +447,7 @@ create_reader (int fd)
       free (ctx);
       TRACE_SYSERR (EIO);
       return NULL;
-    }    
+    }
   else
     {
       /* We set the priority of the thread higher because we know that
@@ -472,7 +472,7 @@ destroy_reader (struct reader_context_s *ctx)
       return;
     }
   ctx->stop_me = 1;
-  if (ctx->have_space_ev) 
+  if (ctx->have_space_ev)
     SetEvent (ctx->have_space_ev);
   UNLOCK (ctx->mutex);
 
@@ -497,7 +497,7 @@ destroy_reader (struct reader_context_s *ctx)
   WaitForSingleObject (ctx->stopped, INFINITE);
   TRACE1 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx->file_hd,
 	  "thread %p has terminated", ctx->thread_hd);
-    
+
   if (ctx->stopped)
     CloseHandle (ctx->stopped);
   if (ctx->have_data_ev)
@@ -573,7 +573,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
   struct reader_context_s *ctx;
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_read", fd,
 	      "buffer=%p, count=%u", buffer, count);
-  
+
   ctx = find_reader (fd, 1);
   if (!ctx)
     {
@@ -593,7 +593,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
       TRACE_LOG1 ("data from thread %p available", ctx->thread_hd);
       LOCK (ctx->mutex);
     }
-  
+
   if (ctx->readpos == ctx->writepos || ctx->error)
     {
       UNLOCK (ctx->mutex);
@@ -608,7 +608,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
       gpg_err_set_errno (ctx->error_code);
       return TRACE_SYSRES (-1);
     }
-  
+
   nread = ctx->readpos < ctx->writepos
     ? ctx->writepos - ctx->readpos
     : READBUF_SIZE - ctx->readpos;
@@ -637,7 +637,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
       return TRACE_SYSRES (-1);
     }
   UNLOCK (ctx->mutex);
-  
+
   TRACE_LOGBUF (buffer, nread);
   return TRACE_SYSRES (nread);
 }
@@ -646,7 +646,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 /* The writer does use a simple buffering strategy so that we are
    informed about write errors as soon as possible (i. e. with the the
    next call to the write function.  */
-static DWORD CALLBACK 
+static DWORD CALLBACK
 writer (void *arg)
 {
   struct writer_context_s *ctx = arg;
@@ -669,7 +669,7 @@ writer (void *arg)
 	  break;
         }
       if (!ctx->nbytes)
-	{ 
+	{
 	  if (!SetEvent (ctx->is_empty))
 	    TRACE_LOG1 ("SetEvent failed: ec=%d", (int) GetLastError ());
 	  if (!ResetEvent (ctx->have_data))
@@ -686,7 +686,7 @@ writer (void *arg)
 	  break;
         }
       UNLOCK (ctx->mutex);
-      
+
       TRACE_LOG2 ("%s %d bytes", sock?"sending":"writing", ctx->nbytes);
 
       /* Note that CTX->nbytes is not zero at this point, because
@@ -727,7 +727,7 @@ writer (void *arg)
             }
         }
       TRACE_LOG1 ("wrote %d bytes", (int) nwritten);
-      
+
       LOCK (ctx->mutex);
       ctx->nbytes -= nwritten;
       UNLOCK (ctx->mutex);
@@ -760,7 +760,7 @@ create_writer (int fd)
       TRACE_SYSERR (errno);
       return NULL;
     }
-  
+
   if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
     {
       TRACE_SYSERR (EIO);
@@ -813,7 +813,7 @@ create_writer (int fd)
       free (ctx);
       TRACE_SYSERR (EIO);
       return NULL;
-    }    
+    }
   else
     {
       /* We set the priority of the thread higher because we know
@@ -837,7 +837,7 @@ destroy_writer (struct writer_context_s *ctx)
       return;
     }
   ctx->stop_me = 1;
-  if (ctx->have_data) 
+  if (ctx->have_data)
     SetEvent (ctx->have_data);
   UNLOCK (ctx->mutex);
 
@@ -854,13 +854,13 @@ destroy_writer (struct writer_context_s *ctx)
 	      "unblock control call failed for thread %p", ctx->thread_hd);
     }
 #endif
-  
+
   TRACE1 (DEBUG_SYSIO, "gpgme:destroy_writer", ctx->file_hd,
 	  "waiting for termination of thread %p", ctx->thread_hd);
   WaitForSingleObject (ctx->stopped, INFINITE);
   TRACE1 (DEBUG_SYSIO, "gpgme:destroy_writer", ctx->file_hd,
 	  "thread %p has terminated", ctx->thread_hd);
-  
+
   if (ctx->stopped)
     CloseHandle (ctx->stopped);
   if (ctx->have_data)
@@ -900,7 +900,7 @@ find_writer (int fd, int start_it)
     {
       wt = create_writer (fd);
       writer_table[i].fd = fd;
-      writer_table[i].context = wt; 
+      writer_table[i].context = wt;
       writer_table[i].used = 1;
     }
 
@@ -1058,14 +1058,14 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
     {
       fd_table[rfd].handle = hd;
       fd_table[wfd].rvid = rvid;
-    }  
+    }
 
 #else
 
   memset (&sec_attr, 0, sizeof (sec_attr));
   sec_attr.nLength = sizeof (sec_attr);
   sec_attr.bInheritHandle = FALSE;
-  
+
   if (!CreatePipe (&rh, &wh, &sec_attr, PIPEBUF_SIZE))
     {
       TRACE_LOG1 ("CreatePipe failed: ec=%d", (int) GetLastError ());
@@ -1173,7 +1173,7 @@ _gpgme_io_close (int fd)
       if (fd_table[fd].handle != INVALID_HANDLE_VALUE)
 	{
 	  if (!CloseHandle (fd_table[fd].handle))
-	    { 
+	    {
 	      TRACE_LOG1 ("CloseHandle failed: ec=%d", (int) GetLastError ());
 	      /* FIXME: Should translate the error code.  */
 	      gpg_err_set_errno (EIO);
@@ -1183,7 +1183,7 @@ _gpgme_io_close (int fd)
       else if (fd_table[fd].socket != INVALID_SOCKET)
 	{
 	  if (closesocket (fd_table[fd].socket))
-	    { 
+	    {
 	      TRACE_LOG1 ("closesocket failed: ec=%d", (int) WSAGetLastError ());
 	      /* FIXME: Should translate the error code.  */
 	      gpg_err_set_errno (EIO);
@@ -1194,7 +1194,7 @@ _gpgme_io_close (int fd)
     }
 
   release_fd (fd);
-      
+
   return TRACE_SYSRES (0);
 }
 
@@ -1253,7 +1253,7 @@ build_commandline (char **argv, int fd0, int fd0_isnull,
 
   p = fdbuf;
   *p = 0;
-  
+
   if (fd0 != -1)
     {
       if (fd0_isnull)
@@ -1280,7 +1280,7 @@ build_commandline (char **argv, int fd0, int fd0_isnull,
     }
   strcpy (p, "-&S2=null ");
   p += strlen (p);
-  
+
   n = strlen (fdbuf);
   for (i=0; (s = argv[i]); i++)
     {
@@ -1297,7 +1297,7 @@ build_commandline (char **argv, int fd0, int fd0_isnull,
     return NULL;
 
   p = stpcpy (p, fdbuf);
-  for (i = 0; argv[i]; i++) 
+  for (i = 0; argv[i]; i++)
     {
       if (!i)
         continue; /* Ignore argv[0].  */
@@ -1322,7 +1322,7 @@ build_commandline (char **argv, int fd0, int fd0_isnull,
         p = stpcpy (p, argv[i]);
     }
 
-  return buf;  
+  return buf;
 }
 #else
 static char *
@@ -1332,7 +1332,7 @@ build_commandline (char **argv)
   int n = 0;
   char *buf;
   char *p;
-  
+
   /* We have to quote some things because under Windows the program
      parses the commandline and does some unquoting.  We enclose the
      whole argument in double-quotes, and escape literal double-quotes
@@ -1432,7 +1432,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	  gpg_err_set_errno (EBADF);
 	  return TRACE_SYSRES (-1);
 	}
-      
+
       if (fd_list[i].dup_to == 0)
 	{
 	  fd_in = fd_list[i].fd;
@@ -1550,7 +1550,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
- 
+
   arg_string = build_commandline (args);
   free (args);
   if (!arg_string)
@@ -1603,7 +1603,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       int fd = fd_list[i].fd;
       HANDLE ohd = INVALID_HANDLE_VALUE;
       HANDLE hd = INVALID_HANDLE_VALUE;
-      
+
       /* Make it inheritable for the wrapper process.  */
       if (fd >= 0 && fd < MAX_SLAFD && fd_table[fd].used)
 	ohd = fd_table[fd].handle;
@@ -1629,7 +1629,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       /* Return the child name of this handle.  */
       fd_list[i].peer_name = handle_to_fd (hd);
     }
-  
+
   /* Write the handle translation information to the temporary
      file.  */
   {
@@ -1651,7 +1651,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       {
 	/* Strip the newline.  */
 	len = strlen (line) - 1;
-	
+
 	/* Format is: Local name, stdin/stdout/stderr, peer name, argv idx.  */
 	snprintf (&line[len], BUFFER_MAX - len, "0x%x %d 0x%x %d  \n",
 		  fd_list[i].fd, fd_list[i].dup_to,
@@ -1678,16 +1678,16 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 
   TRACE_LOG4 ("CreateProcess ready: hProcess=%p, hThread=%p, "
 	      "dwProcessID=%d, dwThreadId=%d",
-	      pi.hProcess, pi.hThread, 
+	      pi.hProcess, pi.hThread,
 	      (int) pi.dwProcessId, (int) pi.dwThreadId);
-  
+
   if (r_pid)
     *r_pid = (pid_t)pi.dwProcessId;
 
-  
+
   if (ResumeThread (pi.hThread) < 0)
     TRACE_LOG1 ("ResumeThread failed: ec=%d", (int) GetLastError ());
-  
+
   if (!CloseHandle (pi.hThread))
     TRACE_LOG1 ("CloseHandle of thread failed: ec=%d",
 		(int) GetLastError ());
@@ -1749,7 +1749,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	  if (fds[i].for_read)
 	    {
 	      struct reader_context_s *ctx = find_reader (fds[i].fd,1);
-	      
+
 	      if (!ctx)
 		TRACE_LOG1 ("error: no reader for FD 0x%x (ignored)",
 			    fds[i].fd);
@@ -1772,7 +1772,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	  else if (fds[i].for_write)
 	    {
 	      struct writer_context_s *ctx = find_writer (fds[i].fd,1);
-              
+
 	      if (!ctx)
 		TRACE_LOG1 ("error: no writer for FD 0x%x (ignored)",
 			    fds[i].fd);
@@ -1795,7 +1795,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
         }
     }
   TRACE_END (dbg_help, "]");
-  if (!any) 
+  if (!any)
     return TRACE_SYSRES (0);
 
   code = WaitForMultipleObjects (nwait, waitbuf, 0, nonblock ? 0 : 1000);
@@ -1835,7 +1835,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	{
 	  int k;
 	  int j = handle_to_fd (waitbuf[i]);
-          
+
 	  TRACE_LOG1 ("WFMO invalid handle %d removed", j);
 	  for (k = 0 ; k < nfds; k++)
 	    {
@@ -1856,7 +1856,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
       TRACE_LOG1 ("WFMO returned %d", code);
       count = -1;
     }
-  
+
   if (count > 0)
     {
       TRACE_SEQ (dbg_help, "select OK [ ");
@@ -1876,7 +1876,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
       /* FIXME: Should determine a proper error code.  */
       gpg_err_set_errno (EIO);
     }
-  
+
   return TRACE_SYSRES (count);
 }
 
@@ -1926,7 +1926,7 @@ _gpgme_io_dup (int fd)
   newfd = new_fd();
   if (newfd == -1)
     return TRACE_SYSRES (-1);
-  
+
   fd_table[newfd].handle = fd_table[fd].handle;
   fd_table[newfd].socket = fd_table[fd].socket;
   fd_table[newfd].rvid = fd_table[fd].rvid;
@@ -2023,7 +2023,7 @@ _gpgme_io_socket (int domain, int type, int proto)
   fd = new_fd();
   if (fd == -1)
     return TRACE_SYSRES (-1);
-      
+
   res = socket (domain, type, proto);
   if (res == INVALID_SOCKET)
     {
@@ -2034,7 +2034,7 @@ _gpgme_io_socket (int domain, int type, int proto)
   fd_table[fd].socket = res;
 
   TRACE_SUC2 ("socket=0x%x (0x%x)", fd, fd_table[fd].socket);
-  
+
   return fd;
 }
 
@@ -2052,7 +2052,7 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
       gpg_err_set_errno (EBADF);
       return TRACE_SYSRES (-1);
     }
-    
+
   res = connect (fd_table[fd].socket, addr, addrlen);
   if (res)
     {
