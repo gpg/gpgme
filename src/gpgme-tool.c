@@ -1900,7 +1900,10 @@ server_write_data (void *hook, const void *buf, size_t len)
 }
 
 
-
+/* Wrapper around assuan_command_parse_fd to also handle a
+   "file=FILENAME" argument.  On success either a filename is returned
+   at FILENAME or a file descriptor at RFD; the other one is set to
+   NULL respective ASSUAN_INVALID_FD.  */
 static gpg_error_t
 server_parse_fd (assuan_context_t ctx, char *line, assuan_fd_t *rfd,
 		 char **filename)
@@ -1974,8 +1977,24 @@ server_reset_fds (struct server *server)
   /* assuan closes the input and output FDs for us when doing a RESET,
      but we use this same function after commands, so repeat it
      here.  */
-  assuan_close_input_fd (server->assuan_ctx);
-  assuan_close_output_fd (server->assuan_ctx);
+  if (server->input_fd != ASSUAN_INVALID_FD)
+    {
+#if HAVE_W32_SYSTEM
+      CloseHandle (server->input_fd);
+#else
+      close (server->input_fd);
+#endif
+      server->input_fd = ASSUAN_INVALID_FD;
+    }
+  if (server->output_fd != ASSUAN_INVALID_FD)
+    {
+#if HAVE_W32_SYSTEM
+      CloseHandle (server->output_fd);
+#else
+      close (server->output_fd);
+#endif
+      server->output_fd = ASSUAN_INVALID_FD;
+    }
   if (server->message_fd != ASSUAN_INVALID_FD)
     {
       /* FIXME: Assuan should provide a close function.  */
@@ -2331,11 +2350,11 @@ _cmd_decrypt_verify (assuan_context_t ctx, char *line, int verify)
   gpgme_data_t inp_data;
   gpgme_data_t out_data;
 
-  inp_fd = assuan_get_input_fd (ctx);
+  inp_fd = server->input_fd;
   inp_fn = server->input_filename;
   if (inp_fd == ASSUAN_INVALID_FD && !inp_fn)
     return GPG_ERR_ASS_NO_INPUT;
-  out_fd = assuan_get_output_fd (ctx);
+  out_fd = server->output_fd;
   out_fn = server->output_filename;
   if (out_fd == ASSUAN_INVALID_FD && !out_fn)
     return GPG_ERR_ASS_NO_OUTPUT;
@@ -2411,9 +2430,9 @@ _cmd_sign_encrypt (assuan_context_t ctx, char *line, int sign)
   if (strstr (line, "--expect-sign"))
     flags |= GPGME_ENCRYPT_EXPECT_SIGN;
 
-  inp_fd = assuan_get_input_fd (ctx);
+  inp_fd = server->input_fd;
   inp_fn = server->input_filename;
-  out_fd = assuan_get_output_fd (ctx);
+  out_fd = server->output_fd;
   out_fn = server->output_filename;
   if (inp_fd != ASSUAN_INVALID_FD || inp_fn)
     {
@@ -2502,11 +2521,11 @@ cmd_sign (assuan_context_t ctx, char *line)
   if (strstr (line, "--detach"))
     mode = GPGME_SIG_MODE_DETACH;
 
-  inp_fd = assuan_get_input_fd (ctx);
+  inp_fd = server->input_fd;
   inp_fn = server->input_filename;
   if (inp_fd == ASSUAN_INVALID_FD && !inp_fn)
     return GPG_ERR_ASS_NO_INPUT;
-  out_fd = assuan_get_output_fd (ctx);
+  out_fd = server->output_fd;
   out_fn = server->output_filename;
   if (out_fd == ASSUAN_INVALID_FD && !out_fn)
     return GPG_ERR_ASS_NO_OUTPUT;
@@ -2555,13 +2574,13 @@ cmd_verify (assuan_context_t ctx, char *line)
   gpgme_data_t msg_data = NULL;
   gpgme_data_t out_data = NULL;
 
-  inp_fd = assuan_get_input_fd (ctx);
+  inp_fd = server->input_fd;
   inp_fn = server->input_filename;
   if (inp_fd == ASSUAN_INVALID_FD && !inp_fn)
     return GPG_ERR_ASS_NO_INPUT;
   msg_fd = server->message_fd;
   msg_fn = server->message_filename;
-  out_fd = assuan_get_output_fd (ctx);
+  out_fd = server->output_fd;
   out_fn = server->output_filename;
 
   err = server_data_obj (inp_fd, inp_fn, 0, server->input_enc, &inp_data,
@@ -2628,7 +2647,7 @@ cmd_import (assuan_context_t ctx, char *line)
       char *inp_fn;
       gpgme_data_t inp_data;
 
-      inp_fd = assuan_get_input_fd (ctx);
+      inp_fd = server->input_fd;
       inp_fn = server->input_filename;
       if (inp_fd == ASSUAN_INVALID_FD && !inp_fn)
 	return GPG_ERR_ASS_NO_INPUT;
@@ -2664,7 +2683,7 @@ cmd_export (assuan_context_t ctx, char *line)
   gpgme_export_mode_t mode = 0;
   const char *pattern[2];
 
-  out_fd = assuan_get_output_fd (ctx);
+  out_fd = server->output_fd;
   out_fn = server->output_filename;
   if (out_fd == ASSUAN_INVALID_FD && !out_fn)
     return GPG_ERR_ASS_NO_OUTPUT;
@@ -2724,11 +2743,11 @@ cmd_genkey (assuan_context_t ctx, char *line)
   gpgme_data_t parms_data = NULL;
   const char *parms;
 
-  inp_fd = assuan_get_input_fd (ctx);
+  inp_fd = server->input_fd;
   inp_fn = server->input_filename;
   if (inp_fd == ASSUAN_INVALID_FD && !inp_fn)
     return GPG_ERR_ASS_NO_INPUT;
-  out_fd = assuan_get_output_fd (ctx);
+  out_fd = server->output_fd;
   out_fn = server->output_filename;
 
   err = server_data_obj (inp_fd, inp_fn, 0, server->input_enc, &inp_data,
@@ -2899,7 +2918,7 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
   gpgme_data_t out_data;
   unsigned int flags = 0;
 
-  out_fd = assuan_get_output_fd (ctx);
+  out_fd = server->output_fd;
   out_fn = server->output_filename;
   if (out_fd == ASSUAN_INVALID_FD && !out_fn)
     return GPG_ERR_ASS_NO_OUTPUT;
