@@ -3121,6 +3121,8 @@ gpgme_server (gpgme_tool_t gt)
   static const char hello[] = ("GPGME-Tool " VERSION " ready");
 
   memset (&server, 0, sizeof (server));
+  server.input_fd = ASSUAN_INVALID_FD;
+  server.output_fd = ASSUAN_INVALID_FD;
   server.message_fd = ASSUAN_INVALID_FD;
   server.input_enc = GPGME_DATA_ENCODING_NONE;
   server.output_enc = GPGME_DATA_ENCODING_NONE;
