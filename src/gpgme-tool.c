@@ -565,6 +565,12 @@ skip_options (char *line)
 typedef gpg_error_t (*result_xml_write_cb_t) (void *hook, const void *buf,
 					      size_t len);
 
+static char xml_preamble1[] = "<?xml version=\"1.0\" "
+  "encoding=\"UTF-8\" standalone=\"yes\"?>\n";
+static const char xml_preamble2[] = "<gpgme>\n";
+static const char xml_end[] = "</gpgme>\n";
+
+
 struct result_xml_state
 {
   int indent;
@@ -653,7 +659,7 @@ result_xml_tag_start (struct result_xml_state *state, char *name, ...)
 
 
 gpg_error_t
-result_xml_tag_data (struct result_xml_state *state, char *data)
+result_xml_tag_data (struct result_xml_state *state, const char *data)
 {
   result_xml_write_cb_t cb = state->cb;
   void *hook = state->hook;
@@ -813,6 +819,60 @@ result_add_sig_mode (struct result_xml_state *state, char *name,
 
 
 gpg_error_t
+result_add_protocol (struct result_xml_state *state, char *name,
+		     gpgme_protocol_t protocol)
+{
+  const char *str;
+  char code[20];
+
+  snprintf (code, sizeof (code) - 1, "%i", protocol);
+  str = gpgme_get_protocol_name(protocol);
+  if (!str)
+    str = "invalid";
+  result_xml_tag_start (state, name, "value", code, NULL);
+  result_xml_tag_data (state, str);
+  result_xml_tag_end (state);
+  return 0;
+}
+
+
+gpg_error_t
+result_add_validity (struct result_xml_state *state, char *name,
+		     gpgme_validity_t validity)
+{
+  const char *str;
+  char code[20];
+
+  snprintf (code, sizeof (code) - 1, "%i", validity);
+  switch (validity)
+    {
+    case GPGME_VALIDITY_UNDEFINED:
+      str ="undefined";
+      break;
+    case GPGME_VALIDITY_NEVER:
+      str ="never";
+      break;
+    case GPGME_VALIDITY_MARGINAL:
+      str ="marginal";
+      break;
+    case GPGME_VALIDITY_FULL:
+      str ="full";
+      break;
+    case GPGME_VALIDITY_ULTIMATE:
+      str ="ultimate";
+      break;
+    default:
+      str ="unknown";
+    }
+
+  result_xml_tag_start (state, name, "value", code, NULL);
+  result_xml_tag_data (state, str);
+  result_xml_tag_end (state);
+  return 0;
+}
+
+
+gpg_error_t
 result_add_value (struct result_xml_state *state,
 		  char *name, unsigned int val)
 {
@@ -829,6 +889,8 @@ gpg_error_t
 result_add_string (struct result_xml_state *state,
 		   char *name, char *str)
 {
+  if (!str)
+    str = "";
   result_xml_tag_start (state, name, NULL);
   result_xml_tag_data (state, str);
   result_xml_tag_end (state);
@@ -1820,10 +1882,6 @@ gt_passwd (gpgme_tool_t gt, char *fpr)
 gpg_error_t
 gt_result (gpgme_tool_t gt, unsigned int flags)
 {
-  static const char xml_preamble1[] = "<?xml version=\"1.0\" "
-    "encoding=\"UTF-8\" standalone=\"yes\"?>\n";
-  static const char xml_preamble2[] = "<gpgme>\n";
-  static const char xml_end[] = "</gpgme>\n";
   int indent = 2;
 
   gt_write_data (gt, xml_preamble1, sizeof (xml_preamble1));
@@ -2840,9 +2898,11 @@ cmd_keylist (assuan_context_t ctx, char *line)
 {
 #define MAX_CMD_KEYLIST_PATTERN 20
   struct server *server = assuan_get_pointer (ctx);
+  gpgme_tool_t gt = server->gt;
+  struct result_xml_state state;
   gpg_error_t err;
   int secret_only = 0;
-  int idx;
+  int idx, indent=2;
   const char *pattern[MAX_CMD_KEYLIST_PATTERN+1];
   const char optstr[] = "--secret-only";
   char *p;
@@ -2872,10 +2932,19 @@ cmd_keylist (assuan_context_t ctx, char *line)
     }
   pattern[idx] = NULL;
 
+  gt_write_data (gt, xml_preamble1, sizeof (xml_preamble1));
+  gt_write_data (gt, NULL, 0);
+  gt_write_data (gt, xml_preamble2, sizeof (xml_preamble2));
+  gt_write_data (gt, NULL, 0);
+  result_init (&state, indent, (result_xml_write_cb_t) gt_write_data, gt);
+  result_xml_tag_start (&state, "keylist", NULL);
+
   err = gt_keylist_start (server->gt, pattern, secret_only);
   while (! err)
     {
       gpgme_key_t key;
+      gpgme_subkey_t subkey;
+      gpgme_user_id_t uid;
 
       err = gt_keylist_next (server->gt, &key);
       if (gpg_err_code (err) == GPG_ERR_EOF)
@@ -2885,17 +2954,54 @@ cmd_keylist (assuan_context_t ctx, char *line)
 	}
       else if (! err)
 	{
-	  char buf[100];
-	  /* FIXME: More data.  */
-	  snprintf (buf, sizeof (buf), "key:%s\n", key->subkeys->fpr);
-          /* Write data and flush so that we see one D line for each
-             key.  This does not change the semantics but is easier to
-             read by organic eyes.  */
-	  if (!assuan_send_data (ctx, buf, strlen (buf)))
-            assuan_send_data (ctx, NULL, 0);
+	  result_xml_tag_start (&state, "key", NULL);
+	  result_add_value (&state, "revoked", key->revoked);
+	  result_add_value (&state, "expired", key->expired);
+	  result_add_value (&state, "disabled", key->disabled);
+	  result_add_value (&state, "invalid", key->invalid);
+	  result_add_value (&state, "can-encrypt", key->can_encrypt);
+	  result_add_value (&state, "can-sign", key->can_sign);
+	  result_add_value (&state, "can-certify", key->can_certify);
+	  result_add_value (&state, "can-authenticate", key->can_authenticate);
+	  result_add_value (&state, "is-qualified", key->is_qualified);
+	  result_add_value (&state, "secret", key->secret);
+	  result_add_protocol (&state, "protocol", key->protocol);
+	  result_xml_tag_start (&state, "issuer", NULL);
+	  result_add_string (&state, "serial", key->issuer_serial);
+	  result_add_string (&state, "name", key->issuer_name);
+	  result_xml_tag_end (&state);  /* issuer */
+	  result_add_string (&state, "chain_id", key->chain_id);
+	  result_add_validity (&state, "owner-trust", key->owner_trust);
+	  result_xml_tag_start (&state, "subkeys", NULL);
+	  subkey = key->subkeys;
+	  while (subkey) {
+	    result_xml_tag_start (&state, "subkey", NULL);
+	    /* FIXME: more data */
+	    result_add_fpr (&state, "fpr", subkey->fpr);
+	    result_xml_tag_end (&state);  /* subkey */
+	    subkey = subkey->next;
+	  }
+	  result_xml_tag_end (&state);  /* subkeys */
+	  result_xml_tag_start (&state, "uids", NULL);
+	  uid = key->uids;
+	  while (uid) {
+	    result_xml_tag_start (&state, "uid", NULL);
+	    /* FIXME: more data */
+	    result_add_string (&state, "uid", uid->uid);
+	    result_add_string (&state, "name", uid->name);
+	    result_add_string (&state, "email", uid->email);
+	    result_add_string (&state, "comment", uid->comment);
+	    result_xml_tag_end (&state);  /* uid */
+	    uid = uid->next;
+	  }
+	  result_xml_tag_end (&state);  /* uids */
+	  result_xml_tag_end (&state);  /* key */
 	  gpgme_key_unref (key);
 	}
     }
+
+  result_xml_tag_end (&state);  /* keylist */
+  gt_write_data (gt, xml_end, sizeof (xml_end));
 
   server_reset_fds (server);
 
