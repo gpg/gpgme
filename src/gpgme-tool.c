@@ -2970,7 +2970,7 @@ cmd_keylist (assuan_context_t ctx, char *line)
 	  result_add_string (&state, "serial", key->issuer_serial);
 	  result_add_string (&state, "name", key->issuer_name);
 	  result_xml_tag_end (&state);  /* issuer */
-	  result_add_string (&state, "chain_id", key->chain_id);
+	  result_add_string (&state, "chain-id", key->chain_id);
 	  result_add_validity (&state, "owner-trust", key->owner_trust);
 	  result_xml_tag_start (&state, "subkeys", NULL);
 	  subkey = key->subkeys;
