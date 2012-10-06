@@ -657,12 +657,71 @@ result_xml_tag_start (struct result_xml_state *state, char *name, ...)
   return 0;
 }
 
+const char *
+result_xml_escape_replacement(char c)
+{
+  switch (c)
+    {
+    case '<':
+      return "&lt;";
+    case '>':
+      return "&gt;";
+    case '&':
+      return "&amp;";
+    default:
+      return NULL;
+    }
+}
+
+gpg_error_t
+result_xml_escape (const char *data, char **buf)
+{
+  int data_len, i, j = 1;
+  const char *r;
+	char *b;
+
+  data_len = strlen (data);
+  for (i = 0; i < data_len; i++)
+    {
+      r = result_xml_escape_replacement(data[i]);
+      if (r)
+        j += strlen (r);
+      else
+        j += 1;
+    }
+
+  b = (char *) malloc (j);
+  if (! b)
+		return gpg_error_from_syserror ();
+
+  j = 0;
+  for (i = 0; i < data_len; i++)
+    {
+      r = result_xml_escape_replacement(data[i]);
+      if (r)
+        {
+          strcpy (b + j, r);
+          j += strlen (r);
+        }
+      else
+        {
+          b[j] = data[i];
+          j += 1;
+        }
+    }
+  b[j] = 0;
+	*buf = b;
+
+  return 0;
+}
 
 gpg_error_t
 result_xml_tag_data (struct result_xml_state *state, const char *data)
 {
+  gpg_error_t err;
   result_xml_write_cb_t cb = state->cb;
   void *hook = state->hook;
+  char *buf = NULL;
 
   if (state->had_data[state->next_tag - 1])
     {
@@ -674,7 +733,13 @@ result_xml_tag_data (struct result_xml_state *state, const char *data)
     (*cb) (hook, ">", 1);
   state->had_data[state->next_tag - 1] = 2;
 
-  (*cb) (hook, data, strlen (data));
+  err = result_xml_escape(data, &buf);
+  if (err)
+    return err;
+
+  (*cb) (hook, buf, strlen (buf));
+
+  free (buf);
 
   return 0;
 }
@@ -714,7 +779,7 @@ result_add_error (struct result_xml_state *state, char *name, gpg_error_t err)
   char code[20];
   char msg[1024];
   snprintf (code, sizeof (code) - 1, "0x%x", err);
-  snprintf (msg, sizeof (msg) - 1, "%s &lt;%s&gt;",
+  snprintf (msg, sizeof (msg) - 1, "%s <%s>",
 	    gpg_strerror (err), gpg_strsource (err));
   result_xml_tag_start (state, name, "value", code, NULL);
   result_xml_tag_data (state, msg);
