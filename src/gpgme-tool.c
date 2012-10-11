@@ -475,6 +475,148 @@ argp_parse (const struct argp *argp, int argc,
 #endif
 
 
+/* MEMBUF */
+
+/* A simple implementation of a dynamic buffer.  Use init_membuf() to
+   create a buffer, put_membuf to append bytes and get_membuf to
+   release and return the buffer.  Allocation errors are detected but
+   only returned at the final get_membuf(), this helps not to clutter
+   the code with out-of-core checks.  */
+
+/* The definition of the structure is private, we only need it here,
+   so it can be allocated on the stack. */
+struct private_membuf_s
+{
+  size_t len;
+  size_t size;
+  char *buf;
+  int out_of_core;
+};
+
+typedef struct private_membuf_s membuf_t;
+
+/* Return the current length of the membuf.  */
+#define get_membuf_len(a)  ((a)->len)
+#define is_membuf_ready(a) ((a)->buf || (a)->out_of_core)
+#define MEMBUF_ZERO        { 0, 0, NULL, 0}
+
+
+static void
+init_membuf (membuf_t *mb, int initiallen)
+{
+  mb->len = 0;
+  mb->size = initiallen;
+  mb->out_of_core = 0;
+  mb->buf = malloc (initiallen);
+  if (!mb->buf)
+    mb->out_of_core = errno;
+}
+
+
+/* Shift the the content of the membuf MB by AMOUNT bytes.  The next
+   operation will then behave as if AMOUNT bytes had not been put into
+   the buffer.  If AMOUNT is greater than the actual accumulated
+   bytes, the membuf is basically reset to its initial state.  */
+#if 0 /* Not yet used.  */
+static void
+clear_membuf (membuf_t *mb, size_t amount)
+{
+  /* No need to clear if we are already out of core.  */
+  if (mb->out_of_core)
+    return;
+  if (amount >= mb->len)
+    mb->len = 0;
+  else
+    {
+      mb->len -= amount;
+      memmove (mb->buf, mb->buf+amount, mb->len);
+    }
+}
+#endif /* unused */
+
+static void
+put_membuf (membuf_t *mb, const void *buf, size_t len)
+{
+  if (mb->out_of_core || !len)
+    return;
+
+  if (mb->len + len >= mb->size)
+    {
+      char *p;
+
+      mb->size += len + 1024;
+      p = realloc (mb->buf, mb->size);
+      if (!p)
+        {
+          mb->out_of_core = errno ? errno : ENOMEM;
+          return;
+        }
+      mb->buf = p;
+    }
+  memcpy (mb->buf + mb->len, buf, len);
+  mb->len += len;
+}
+
+
+#if 0 /* Not yet used.  */
+static void
+put_membuf_str (membuf_t *mb, const char *string)
+{
+  put_membuf (mb, string, strlen (string));
+}
+#endif /* unused */
+
+
+static void *
+get_membuf (membuf_t *mb, size_t *len)
+{
+  char *p;
+
+  if (mb->out_of_core)
+    {
+      if (mb->buf)
+        {
+          free (mb->buf);
+          mb->buf = NULL;
+        }
+      gpg_err_set_errno (mb->out_of_core);
+      return NULL;
+    }
+
+  p = mb->buf;
+  if (len)
+    *len = mb->len;
+  mb->buf = NULL;
+  mb->out_of_core = ENOMEM; /* hack to make sure it won't get reused. */
+  return p;
+}
+
+
+/* Peek at the membuf MB.  On success a pointer to the buffer is
+   returned which is valid until the next operation on MB.  If LEN is
+   not NULL the current LEN of the buffer is stored there.  On error
+   NULL is returned and ERRNO is set.  */
+#if 0 /* Not yet used.  */
+static const void *
+peek_membuf (membuf_t *mb, size_t *len)
+{
+  const char *p;
+
+  if (mb->out_of_core)
+    {
+      gpg_err_set_errno (mb->out_of_core);
+      return NULL;
+    }
+
+  p = mb->buf;
+  if (len)
+    *len = mb->len;
+  return p;
+}
+#endif /* unused */
+
+
+
 /* SUPPORT.  */
 FILE *log_stream;
 char *program_name = "gpgme-tool";
@@ -658,7 +800,8 @@ result_xml_tag_start (struct result_xml_state *state, char *name, ...)
   return 0;
 }
 
-const char *
+/* Return a constant string with an XML entity for C.  */
+static const char *
 result_xml_escape_replacement(char c)
 {
   switch (c)
@@ -674,47 +817,31 @@ result_xml_escape_replacement(char c)
     }
 }
 
-gpg_error_t
+/* Escape DATA by replacing certain characters with their XML
+   entities.  The result is stored in a newly allocated buffer which
+   address will be stored at BUF.   Returns 0 on success. */
+static gpg_error_t
 result_xml_escape (const char *data, char **buf)
 {
-  int data_len, i, j = 1;
+  int data_len, i;
   const char *r;
-	char *b;
+  membuf_t mb;
 
+  init_membuf (&mb, 128);
   data_len = strlen (data);
   for (i = 0; i < data_len; i++)
     {
-      r = result_xml_escape_replacement(data[i]);
+      r = result_xml_escape_replacement (data[i]);
       if (r)
-        j += strlen (r);
+        put_membuf (&mb, r, strlen (r));
       else
-        j += 1;
+        put_membuf (&mb, data+i, 1);
     }
-
-  b = (char *) malloc (j);
-  if (! b)
-		return gpg_error_from_syserror ();
-
-  j = 0;
-  for (i = 0; i < data_len; i++)
-    {
-      r = result_xml_escape_replacement(data[i]);
-      if (r)
-        {
-          strcpy (b + j, r);
-          j += strlen (r);
-        }
-      else
-        {
-          b[j] = data[i];
-          j += 1;
-        }
-    }
-  b[j] = 0;
-	*buf = b;
-
-  return 0;
+  put_membuf (&mb, "", 1);
+  *buf = get_membuf (&mb, NULL);
+  return *buf? 0 : gpg_error_from_syserror ();
 }
+
 
 gpg_error_t
 result_xml_tag_data (struct result_xml_state *state, const char *data)
@@ -734,7 +861,7 @@ result_xml_tag_data (struct result_xml_state *state, const char *data)
     (*cb) (hook, ">", 1);
   state->had_data[state->next_tag - 1] = 2;
 
-  err = result_xml_escape(data, &buf);
+  err = result_xml_escape (data, &buf);
   if (err)
     return err;
 
