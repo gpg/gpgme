@@ -56,7 +56,7 @@ parse_error (char *args)
       where = args;
     }
   else
-    return gpg_error (GPG_ERR_INV_ENGINE);
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
   err = atoi (which);
 

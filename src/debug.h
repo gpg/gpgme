@@ -26,6 +26,9 @@
 #include <stdint.h>
 #endif
 
+#include "gpgme.h"  /* Required for gpgme_error stuff.  */
+
+
 /* Indirect stringification, requires __STDC__ to work.  */
 #define STRINGIFY(v) #v
 #define XSTRINGIFY(v) STRINGIFY(v)
@@ -81,6 +84,13 @@ void _gpgme_debug_buffer (int lvl, const char *const fmt,
 void _gpgme_debug_frame_begin (void);
 void _gpgme_debug_frame_end (void);
 
+static inline gpgme_error_t
+_gpgme_trace_gpgme_error (gpgme_error_t err, const char *file, int line)
+{
+  _gpgme_debug (DEBUG_ENGINE, "%s:%d: returning error: %s\n",
+                _gpgme_debug_srcname (file), line, gpgme_strerror (err));
+  return err;
+}
 
 
 /* Trace support.  */
@@ -261,5 +271,12 @@ void _gpgme_debug_frame_end (void);
   _gpgme_debug_add (&(hlp), fmt); \
   _gpgme_debug_end (&(hlp))
 #define TRACE_ENABLED(hlp) (!!(hlp))
+
+/* And finally a simple macro to trace the location of an error code.
+   This macro is independent of the other trace macros and may be used
+   without any preconditions.  */
+#define trace_gpg_error(e) \
+  _gpgme_trace_gpgme_error (gpg_error (e), __FILE__, __LINE__)
+
 
 #endif	/* DEBUG_H */

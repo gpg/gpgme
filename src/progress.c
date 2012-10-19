@@ -28,6 +28,7 @@
 
 #include "util.h"
 #include "context.h"
+#include "debug.h"
 
 
 gpgme_error_t

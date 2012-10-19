@@ -346,7 +346,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
       /* Parse the timestamp.  */
       sig->timestamp = _gpgme_parse_timestamp (end, &tail);
       if (sig->timestamp == -1 || end == tail || (*tail && *tail != ' '))
-	return gpg_error (GPG_ERR_INV_ENGINE);
+	return trace_gpg_error (GPG_ERR_INV_ENGINE);
       end = tail;
       while (*end == ' ')
 	end++;
@@ -420,12 +420,12 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
 
       sig->timestamp = _gpgme_parse_timestamp (end, &tail);
       if (sig->timestamp == -1 || end == tail || (*tail && *tail != ' '))
-	return gpg_error (GPG_ERR_INV_ENGINE);
+	return trace_gpg_error (GPG_ERR_INV_ENGINE);
       end = tail;
 
       sig->exp_timestamp = _gpgme_parse_timestamp (end, &tail);
       if (sig->exp_timestamp == -1 || end == tail || (*tail && *tail != ' '))
-	return gpg_error (GPG_ERR_INV_ENGINE);
+	return trace_gpg_error (GPG_ERR_INV_ENGINE);
       end = tail;
 
       while (*end == ' ')
@@ -445,7 +445,7 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
 	      gpg_err_set_errno (0);
 	      sig->pubkey_algo = strtol (end, &tail, 0);
 	      if (errno || end == tail || *tail != ' ')
-		return gpg_error (GPG_ERR_INV_ENGINE);
+		return trace_gpg_error (GPG_ERR_INV_ENGINE);
 	      end = tail;
 
 	      while (*end == ' ')
@@ -458,7 +458,7 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
 		  gpg_err_set_errno (0);
 		  sig->hash_algo = strtol (end, &tail, 0);
 		  if (errno || end == tail || *tail != ' ')
-		    return gpg_error (GPG_ERR_INV_ENGINE);
+		    return trace_gpg_error (GPG_ERR_INV_ENGINE);
 		  end = tail;
 		}
 	    }
@@ -491,7 +491,7 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
       if (notation)
 	/* There is another notation name without data for the
 	   previous one.  The crypto backend misbehaves.  */
-	return gpg_error (GPG_ERR_INV_ENGINE);
+	return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
       err = _gpgme_sig_notation_create (&notation, NULL, 0, NULL, 0, 0);
       if (err)
@@ -544,7 +544,7 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
       if (!notation || !notation->name)
 	/* There is notation data without a previous notation
 	   name.  The crypto backend misbehaves.  */
-	return gpg_error (GPG_ERR_INV_ENGINE);
+	return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
       if (!notation->value)
 	{
@@ -569,7 +569,7 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
       notation->value_len += strlen (dest);
     }
   else
-    return gpg_error (GPG_ERR_INV_ENGINE);
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
   return 0;
 }
 
@@ -645,7 +645,7 @@ parse_error (gpgme_signature_t sig, char *args, int set_status)
       where = args;
     }
   else
-    return gpg_error (GPG_ERR_INV_ENGINE);
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
   err = atoi (which);
 
@@ -708,7 +708,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_VALIDSIG:
       opd->only_newsig_seen = 0;
       return sig ? parse_valid_sig (sig, args)
-	: gpg_error (GPG_ERR_INV_ENGINE);
+	: trace_gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_NODATA:
       opd->only_newsig_seen = 0;
@@ -729,7 +729,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_POLICY_URL:
       opd->only_newsig_seen = 0;
       return sig ? parse_notation (sig, code, args)
-	: gpg_error (GPG_ERR_INV_ENGINE);
+	: trace_gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_TRUST_UNDEFINED:
     case GPGME_STATUS_TRUST_NEVER:
@@ -738,7 +738,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_TRUST_ULTIMATE:
       opd->only_newsig_seen = 0;
       return sig ? parse_trust (sig, code, args)
-	: gpg_error (GPG_ERR_INV_ENGINE);
+	: trace_gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_PKA_TRUST_BAD:
     case GPGME_STATUS_PKA_TRUST_GOOD:
@@ -746,7 +746,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
       /* Check that we only get one of these status codes per
          signature; if not the crypto backend misbehaves.  */
       if (!sig || sig->pka_trust || sig->pka_address)
-        return gpg_error (GPG_ERR_INV_ENGINE);
+        return trace_gpg_error (GPG_ERR_INV_ENGINE);
       sig->pka_trust = code == GPGME_STATUS_PKA_TRUST_GOOD? 2 : 1;
       end = strchr (args, ' ');
       if (end)

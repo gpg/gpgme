@@ -1269,7 +1269,7 @@ start (engine_gpg_t gpg)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if (!gpg->file_name && !_gpgme_get_gpg_path ())
-    return gpg_error (GPG_ERR_INV_ENGINE);
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
   if (gpg->lc_ctype)
     {

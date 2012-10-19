@@ -34,6 +34,7 @@
 #include "wait.h"
 #include "priv-io.h"
 #include "ops.h"
+#include "debug.h"
 
 /* The global event loop is used for all asynchronous operations
    (except key listing) for which no user I/O callbacks are specified.

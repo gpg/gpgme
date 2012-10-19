@@ -30,6 +30,7 @@
 #include "util.h"
 #include "context.h"
 #include "ops.h"
+#include "debug.h"
 
 
 /* Free the signature notation object and all associated resources.
@@ -159,13 +160,13 @@ _gpgme_parse_notation (gpgme_sig_notation_t *notationp,
 
   /* A few simple sanity checks.  */
   if (len > strlen (data))
-    return gpg_error (GPG_ERR_INV_ENGINE);
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
   /* See below for the format of a notation subpacket.  It has at
      least four octets of flags and two times two octets of length
      information.  */
   if (type == 20 && len < 4 + 2 + 2)
-    return gpg_error (GPG_ERR_INV_ENGINE);
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
   err = _gpgme_decode_percent_string (data, &decoded_data, 0, 1);
   if (err)
@@ -234,7 +235,7 @@ _gpgme_parse_notation (gpgme_sig_notation_t *notationp,
       if (4 + 2 + 2 + name_len + value_len > len)
 	{
 	  free (decoded_data);
-	  return gpg_error (GPG_ERR_INV_ENGINE);
+	  return trace_gpg_error (GPG_ERR_INV_ENGINE);
 	}
 
       name = (char *) bdata;

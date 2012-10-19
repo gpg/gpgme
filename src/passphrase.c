@@ -32,6 +32,7 @@
 #include "context.h"
 #include "ops.h"
 #include "util.h"
+#include "debug.h"
 
 
 typedef struct

@@ -30,6 +30,7 @@
 #include "util.h"
 #include "sema.h"
 #include "ops.h"
+#include "debug.h"
 
 #include "engine.h"
 #include "engine-backend.h"
@@ -166,7 +167,7 @@ gpgme_engine_check_version (gpgme_protocol_t proto)
 				      info->req_version);
 
   UNLOCK (engine_info_lock);
-  return result ? 0 : gpg_error (GPG_ERR_INV_ENGINE);
+  return result ? 0 : trace_gpg_error (GPG_ERR_INV_ENGINE);
 }
 
 
@@ -359,7 +360,7 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
     info = info->next;
 
   if (!info)
-    return gpg_error (GPG_ERR_INV_ENGINE);
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
   /* Prepare new members.  */
   if (file_name)
@@ -449,7 +450,7 @@ _gpgme_engine_new (gpgme_engine_info_t info, engine_t *r_engine)
   engine_t engine;
 
   if (!info->file_name || !info->version)
-    return gpg_error (GPG_ERR_INV_ENGINE);
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
   engine = calloc (1, sizeof *engine);
   if (!engine)

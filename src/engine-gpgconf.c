@@ -300,7 +300,7 @@ gpgconf_config_load_cb (void *hook, char *line)
 
   /* We require at least the first 3 fields.  */
   if (fields < 2)
-    return gpg_error (GPG_ERR_INV_ENGINE);
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
   /* Find the pointer to the new component in the list.  */
   while (comp && comp->next)
@@ -426,7 +426,7 @@ gpgconf_config_load_cb2 (void *hook, char *line)
 
   /* We require at least the first 10 fields.  */
   if (fields < 10)
-    return gpg_error (GPG_ERR_INV_ENGINE);
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
   opt = calloc (1, sizeof (*opt));
   if (!opt)

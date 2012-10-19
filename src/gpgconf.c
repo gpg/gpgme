@@ -26,6 +26,7 @@
 
 #include "ops.h"
 #include "engine.h"
+#include "debug.h"
 
 #ifdef ENABLE_GPGCONF
 /* engine-gpgconf.c.  */

@@ -31,6 +31,7 @@
 #include "context.h"
 #include "ops.h"
 #include "util.h"
+#include "debug.h"
 
 
 gpgme_error_t
@@ -199,7 +200,7 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
     {
       /* The crypto backend does not behave.  */
       free (inv_key);
-      return gpg_error (GPG_ERR_INV_ENGINE);
+      return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
 
   switch (reason)

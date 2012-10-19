@@ -131,7 +131,7 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
     {
       /* The crypto backend does not behave.  */
       free (import);
-      return gpg_error (GPG_ERR_INV_ENGINE);
+      return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
   args = tail;
 
@@ -196,7 +196,7 @@ parse_import_res (char *args, gpgme_import_result_t result)
   (x) = strtol (args, &tail, 0);			\
   if (errno || args == tail || *tail != ' ')		\
     /* The crypto backend does not behave.  */		\
-    return gpg_error (GPG_ERR_INV_ENGINE);		\
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);        \
   args = tail;
 
   PARSE_NEXT (result->considered);

@@ -30,6 +30,7 @@
 #include "util.h"
 #include "ops.h"
 #include "sema.h"
+#include "debug.h"
 
 
 /* Protects all reference counters in keys.  All other accesses to a

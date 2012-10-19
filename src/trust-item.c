@@ -30,6 +30,7 @@
 #include "util.h"
 #include "ops.h"
 #include "sema.h"
+#include "debug.h"
 
 
 /* Protects all reference counters in trust items.  All other accesses

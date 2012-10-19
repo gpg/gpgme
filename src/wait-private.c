@@ -31,6 +31,7 @@
 #include "ops.h"
 #include "priv-io.h"
 #include "util.h"
+#include "debug.h"
 
 
 /* The private event loops are used for all blocking operations, and

@@ -146,7 +146,7 @@ parse_enc_to (char *args, gpgme_recipient_t *recp)
   if (*args != '\0' && *args != ' ')
     {
       free (rec);
-      return gpg_error (GPG_ERR_INV_ENGINE);
+      return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
 
   while (*args == ' ')
@@ -160,7 +160,7 @@ parse_enc_to (char *args, gpgme_recipient_t *recp)
 	{
 	  /* The crypto backend does not behave.  */
 	  free (rec);
-	  return gpg_error (GPG_ERR_INV_ENGINE);
+	  return trace_gpg_error (GPG_ERR_INV_ENGINE);
 	}
     }
 
@@ -283,7 +283,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 	  }
 	/* FIXME: Is this ok?  */
 	if (!rec)
-	  return gpg_error (GPG_ERR_INV_ENGINE);
+	  return trace_gpg_error (GPG_ERR_INV_ENGINE);
       }
       break;
 
