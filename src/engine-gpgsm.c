@@ -645,7 +645,9 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
   char line[COMMANDLINELEN];
   char *which;
   iocb_data_t *iocb_data;
+#if USE_DESCRIPTOR_PASSING
   int dir;
+#endif
 
   switch (fd_type)
     {
@@ -668,9 +670,8 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
       return gpg_error (GPG_ERR_INV_VALUE);
     }
 
-  dir = iocb_data->dir;
-
 #if USE_DESCRIPTOR_PASSING
+  dir = iocb_data->dir;
   /* We try to short-cut the communication by giving GPGSM direct
      access to the file descriptor, rather than using a pipe.  */
   iocb_data->server_fd = _gpgme_data_get_fd (iocb_data->data);
