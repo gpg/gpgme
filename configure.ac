@@ -925,7 +925,7 @@ AC_CHECK_TYPES([error_t], [],
 
 
 # A substitution to set generated files in a Emacs buffer to read-only.
-AC_SUBST(emacs_local_vars_begin, ['Local Variables:'])
+AC_SUBST(emacs_local_vars_begin, [['Local][ ][Variables:']])
 AC_SUBST(emacs_local_vars_read_only, ['buffer-read-only: t'])
 AC_SUBST(emacs_local_vars_end, ['End:'])
 
