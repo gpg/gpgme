@@ -131,6 +131,7 @@ GPGCONF_DEFAULT=no
 G13_DEFAULT=no
 component_system=None
 have_dosish_system=no
+have_android_system=no
 have_w32_system=no
 have_w64_system=no
 build_w32_glib=no
@@ -142,6 +143,9 @@ case "${host}" in
     *-mingw32ce*)
         have_w32ce_system=yes
 	;;
+    *-linux-androideabi)
+        have_android_system=yes
+        ;;
 esac
 case "${host}" in
     *-mingw32ce*|*-mingw32*)
@@ -209,6 +213,11 @@ if test "$have_w32ce_system" = yes; then
              [Defined if we run on a W32 CE API based system])
 fi
 AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
+
+if test "$have_android_system" = yes; then
+   AC_DEFINE(HAVE_ANDROID_SYSTEM,1, [Defined if we build for an Android system])
+fi
+AM_CONDITIONAL(HAVE_ANDROID_SYSTEM, test "$have_android_system" = yes)
 
 AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
 AM_CONDITIONAL(BUILD_W32_QT, test "$build_w32_qt" = yes)

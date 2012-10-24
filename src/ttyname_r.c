@@ -32,6 +32,12 @@
 # warning ttyname is not thread-safe, and ttyname_r is missing
 #endif
 
+/* For Android we force the use of our replacement code.  */
+#if HAVE_ANDROID_SYSTEM
+# undef HAVE_TTYNAME_R
+#endif
+
+
 int
 _gpgme_ttyname_r (int fd, char *buf, size_t buflen)
 {
@@ -110,12 +116,11 @@ _gpgme_ttyname_r (int fd, char *buf, size_t buflen)
 #else /*!HAVE_TTYNAME_R*/
   char *tty;
 
-# if HAVE_W32_SYSTEM
+# if HAVE_W32_SYSTEM || HAVE_ANDROID_SYSTEM
   /* We use this default one for now.  AFAICS we only need it to be
      passed to gpg and in turn to pinentry.  Providing a replacement
-     is needed because elsewhere we bail out on error.  If we
-     eventually implement a pinentry for Windows it is inlikely that
-     we need a real tty at all.  */
+     is needed because elsewhere we bail out on error or Android
+     provided ttyname_r prints an error message if used. */
   tty = "/dev/tty";
 # else
   tty = ttyname (fd);

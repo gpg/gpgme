@@ -27,6 +27,9 @@
 # The macro REPLACE_TTYNAME_R is defined if ttyname_r is a replacement
 # function.  This macro is useful for the definition of the prototype.
 #
+# If the macro "have_android_system" has a value of "yes", ttyname_r
+# will also be replaced by our own function.
+#
 AC_DEFUN([gnupg_REPLACE_TTYNAME_R],
 [
   AC_CHECK_HEADERS([unistd.h])
@@ -58,6 +61,12 @@ AC_DEFUN([gnupg_REPLACE_TTYNAME_R],
          [gnupg_cv_func_ttyname_r_posix=yes])
       ])
     if test $gnupg_cv_func_ttyname_r_posix = no; then
+      AC_LIBOBJ([ttyname_r])
+      AC_DEFINE([REPLACE_TTYNAME_R],[1])
+    elif test "$have_android_system" = yes; then
+      # Android has ttyname and ttyname_r but they are only stubs and
+      # print an annoying warning message.  Thus we need to replace
+      # ttyname_r with our own dummy function.
       AC_LIBOBJ([ttyname_r])
       AC_DEFINE([REPLACE_TTYNAME_R],[1])
     else
