@@ -73,6 +73,7 @@ main (int argc, char **argv )
   gpgme_engine_info_t info;
   gpgme_error_t err;
 
+  gpgme_check_version (NULL);
   err = gpgme_get_engine_info (&info);
   fail_if_err (err);
 
