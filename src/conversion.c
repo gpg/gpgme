@@ -282,7 +282,7 @@ _gpgme_encode_percent_string (const char *src, char **destp, size_t len)
   /* Set up the destination buffer.  */
   if (len)
     {
-      if (len < destlen);
+      if (len < destlen)
 	return gpg_error (GPG_ERR_INTERNAL);
 
       dest = *destp;
