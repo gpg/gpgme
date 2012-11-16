@@ -261,14 +261,14 @@ if [ -d .git ]; then
     and .git/hooks/pre-commit.sample out of the way.
 EOF
       cp -av .git/hooks/pre-commit.sample .git/hooks/pre-commit
-      chmod -c +x  .git/hooks/pre-commit
+      chmod +x  .git/hooks/pre-commit
   fi
   if [ -f build-aux/git-hooks/commit-msg -a ! -f .git/hooks/commit-msg ] ; then
     cat <<EOF >&2
 *** Activating commit log message check hook. ***
 EOF
       cp -av build-aux/git-hooks/commit-msg .git/hooks/commit-msg
-      chmod -c +x  .git/hooks/commit-msg
+      chmod +x  .git/hooks/commit-msg
   fi
 fi
 
