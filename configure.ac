@@ -38,8 +38,8 @@ m4_define(my_isgit, [yes])
 
 m4_define([svn_revision], m4_esyscmd([printf "%d" $( (svn info 2>/dev/null \
             || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
-m4_define([git_revision], m4_esyscmd([git branch -v 2>/dev/null \
-          | awk '/^\* / {printf "%s",$3}']))
+m4_define([git_revision],
+          m4_esyscmd([git rev-parse --short HEAD | tr -d '\n\r']))
 m4_define([my_full_version], [my_version[]m4_if(my_isgit,[yes],
           [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])])
 
@@ -970,15 +970,15 @@ AC_OUTPUT
 echo "
         GPGME v${VERSION} has been configured as follows:
 
+        Revision:        git_revision  (git_brevis)
+        Platform:        $host
+
         GnuPG path:      $GPG
         GnuPG version:   $GPG_VERSION, min. $NEED_GPG_VERSION
-
         GpgSM path:      $GPGSM
         GpgSM version:   $GPGSM_VERSION, min. $NEED_GPGSM_VERSION
-
         GpgConf path:    $GPGCONF
         GpgConf version: $GPGCONF_VERSION, min. $NEED_GPGCONF_VERSION
-
         G13 path:        $G13
         G13 version:     $G13_VERSION, min. $NEED_G13_VERSION
 
@@ -986,6 +986,5 @@ echo "
 
         UI Server:       $uiserver
         FD Passing:      $use_descriptor_passing
-
         GPGME Pthread:   $have_pthread
 "
