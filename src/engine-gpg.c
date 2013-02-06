@@ -210,7 +210,7 @@ _add_arg (engine_gpg_t gpg, const char *arg, int front, int *arg_locp)
 
   a = malloc (sizeof *a + strlen (arg));
   if (!a)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   a->data = NULL;
   a->dup_to = -1;
@@ -269,7 +269,7 @@ add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
 
   a = malloc (sizeof *a - 1);
   if (!a)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   a->next = NULL;
   a->data = data;
   a->inbound = inbound;
@@ -424,14 +424,14 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 
   gpg = calloc (1, sizeof *gpg);
   if (!gpg)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   if (file_name)
     {
       gpg->file_name = strdup (file_name);
       if (!gpg->file_name)
 	{
-	  rc = gpg_error_from_errno (errno);
+	  rc = gpg_error_from_syserror ();
 	  goto leave;
 	}
     }
@@ -452,14 +452,14 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
   gpg->status.buffer = malloc (gpg->status.bufsize);
   if (!gpg->status.buffer)
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       goto leave;
     }
   /* In any case we need a status pipe - create it right here and
      don't handle it with our generic gpgme_data_t mechanism.  */
   if (_gpgme_io_pipe (gpg->status.fd, 1) == -1)
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       goto leave;
     }
   if (_gpgme_io_set_close_notify (gpg->status.fd[0],
@@ -630,14 +630,14 @@ gpg_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
   gpg->colon.readpos = 0;
   gpg->colon.buffer = malloc (gpg->colon.bufsize);
   if (!gpg->colon.buffer)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   if (_gpgme_io_pipe (gpg->colon.fd, 1) == -1)
     {
-      int saved_errno = errno;
+      int saved_err = gpg_error_from_syserror ();
       free (gpg->colon.buffer);
       gpg->colon.buffer = NULL;
-      return gpg_error_from_errno (saved_errno);
+      return saved_err;
     }
   if (_gpgme_io_set_close_notify (gpg->colon.fd[0], close_notify_handler, gpg)
       || _gpgme_io_set_close_notify (gpg->colon.fd[1],
@@ -775,23 +775,23 @@ build_argv (engine_gpg_t gpg)
 
   argv = calloc (argc + 1, sizeof *argv);
   if (!argv)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   fd_data_map = calloc (datac + 1, sizeof *fd_data_map);
   if (!fd_data_map)
     {
-      int saved_errno = errno;
+      int saved_err = gpg_error_from_syserror ();
       free_argv (argv);
-      return gpg_error_from_errno (saved_errno);
+      return saved_err;
     }
 
   argc = datac = 0;
   argv[argc] = strdup ("gpg"); /* argv[0] */
   if (!argv[argc])
     {
-      int saved_errno = errno;
+      int saved_err = gpg_error_from_syserror ();
       free (fd_data_map);
       free_argv (argv);
-      return gpg_error_from_errno (saved_errno);
+      return saved_err;
     }
   argc++;
   if (need_special)
@@ -799,10 +799,10 @@ build_argv (engine_gpg_t gpg)
       argv[argc] = strdup ("--enable-special-filenames");
       if (!argv[argc])
 	{
-	  int saved_errno = errno;
+          int saved_err = gpg_error_from_syserror ();
 	  free (fd_data_map);
 	  free_argv (argv);
-	  return gpg_error_from_errno (saved_errno);
+	  return saved_err;
         }
       argc++;
     }
@@ -811,10 +811,10 @@ build_argv (engine_gpg_t gpg)
       argv[argc] = strdup ("--use-agent");
       if (!argv[argc])
 	{
-	  int saved_errno = errno;
+          int saved_err = gpg_error_from_syserror ();
 	  free (fd_data_map);
 	  free_argv (argv);
-	  return gpg_error_from_errno (saved_errno);
+	  return saved_err;
         }
       argc++;
     }
@@ -823,20 +823,20 @@ build_argv (engine_gpg_t gpg)
       argv[argc] = strdup ("--batch");
       if (!argv[argc])
 	{
-	  int saved_errno = errno;
+          int saved_err = gpg_error_from_syserror ();
 	  free (fd_data_map);
 	  free_argv (argv);
-	  return gpg_error_from_errno (saved_errno);
+	  return saved_err;
         }
       argc++;
     }
   argv[argc] = strdup ("--no-sk-comment");
   if (!argv[argc])
     {
-      int saved_errno = errno;
+      int saved_err = gpg_error_from_syserror ();
       free (fd_data_map);
       free_argv (argv);
-      return gpg_error_from_errno (saved_errno);
+      return saved_err;
     }
   argc++;
   for (a = gpg->arglist; a; a = a->next)
@@ -908,10 +908,10 @@ build_argv (engine_gpg_t gpg)
 	      argv[argc] = malloc (buflen);
 	      if (!argv[argc])
 		{
-		  int saved_errno = errno;
+                  int saved_err = gpg_error_from_syserror ();
 		  free (fd_data_map);
 		  free_argv (argv);
-		  return gpg_error_from_errno (saved_errno);
+		  return saved_err;
                 }
 
 	      ptr = argv[argc];
@@ -933,10 +933,10 @@ build_argv (engine_gpg_t gpg)
 	  argv[argc] = strdup (a->arg);
 	  if (!argv[argc])
 	    {
-	      int saved_errno = errno;
+              int saved_err = gpg_error_from_syserror ();
 	      free (fd_data_map);
 	      free_argv (argv);
-	      return gpg_error_from_errno (saved_errno);
+	      return saved_err;
             }
             argc++;
         }
@@ -987,13 +987,13 @@ read_status (engine_gpg_t gpg)
       bufsize += 1024;
       buffer = realloc (buffer, bufsize);
       if (!buffer)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
     }
 
   nread = _gpgme_io_read (gpg->status.fd[0],
 			  buffer + readpos, bufsize-readpos);
   if (nread == -1)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   if (!nread)
     {
@@ -1043,7 +1043,7 @@ read_status (engine_gpg_t gpg)
 			    free (gpg->cmd.keyword);
 			  gpg->cmd.keyword = strdup (rest);
 			  if (!gpg->cmd.keyword)
-			    return gpg_error_from_errno (errno);
+			    return gpg_error_from_syserror ();
 			  /* This should be the last thing we have
 			     received and the next thing will be that
 			     the command handler does its action.  */
@@ -1163,12 +1163,12 @@ read_colon_line (engine_gpg_t gpg)
       bufsize += 1024;
       buffer = realloc (buffer, bufsize);
       if (!buffer)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
     }
 
   nread = _gpgme_io_read (gpg->colon.fd[0], buffer+readpos, bufsize-readpos);
   if (nread == -1)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   if (!nread)
     {
@@ -1259,7 +1259,6 @@ static gpgme_error_t
 start (engine_gpg_t gpg)
 {
   gpgme_error_t rc;
-  int saved_errno;
   int i, n;
   int status;
   struct spawn_fd_item_s *fd_list;
@@ -1299,7 +1298,7 @@ start (engine_gpg_t gpg)
     n++;
   fd_list = calloc (n, sizeof *fd_list);
   if (! fd_list)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   /* Build the fd list for the child.  */
   n = 0;
@@ -1327,11 +1326,12 @@ start (engine_gpg_t gpg)
 			    _gpgme_get_gpg_path (), gpg->argv,
                             IOSPAWN_FLAG_ALLOW_SET_FG,
                             fd_list, NULL, NULL, &pid);
-  saved_errno = errno;
-
-  free (fd_list);
-  if (status == -1)
-    return gpg_error_from_errno (saved_errno);
+  {
+    int saved_err = gpg_error_from_syserror ();
+    free (fd_list);
+    if (status == -1)
+      return saved_err;
+  }
 
   /*_gpgme_register_term_handler ( closure, closure_value, pid );*/
 
@@ -1495,7 +1495,7 @@ append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 
 	  arg = malloc (1 + notation->name_len + 1 + notation->value_len + 1);
 	  if (!arg)
-	    err = gpg_error_from_errno (errno);
+	    err = gpg_error_from_syserror ();
 
 	  if (!err)
 	    {
@@ -1531,7 +1531,7 @@ append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 	    {
 	      value = malloc (1 + notation->value_len + 1);
 	      if (!value)
-		err = gpg_error_from_errno (errno);
+		err = gpg_error_from_syserror ();
 	      else
 		{
 		  value[0] = '!';
@@ -2061,7 +2061,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
       if (asprintf (r_line, "pub:o%s:%s:%s:%s:%s:%s::::::::",
 		    field[6], field[3], field[2], field[1],
 		    field[4], field[5]) < 0)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
       return 0;
 
     case RT_UID:
@@ -2086,7 +2086,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
 	char *dst;
 
 	if (! uid)
-	  return gpg_error_from_errno (errno);
+	  return gpg_error_from_syserror ();
 	src = field[1];
 	dst = uid;
 	while (*src)
@@ -2114,7 +2114,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
 
 	if (asprintf (r_line, "uid:o%s::::%s:%s:::%s:",
 		      field[4], field[2], field[3], uid) < 0)
-	  return gpg_error_from_errno (errno);
+	  return gpg_error_from_syserror ();
       }
       return 0;
 

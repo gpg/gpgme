@@ -1196,9 +1196,9 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
 	  char *newline = realloc (line, newlen);
 	  if (! newline)
 	    {
-	      int saved_errno = errno;
+	      int saved_err = gpg_error_from_syserror ();
 	      free (line);
-	      return gpg_error_from_errno (saved_errno);
+	      return saved_err;
 	    }
 	  line = newline;
 	  linelen = newlen;

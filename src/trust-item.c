@@ -47,7 +47,7 @@ _gpgme_trust_item_new (gpgme_trust_item_t *r_item)
 
   item = calloc (1, sizeof *item);
   if (!item)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   item->_refs = 1;
   item->keyid = item->_keyid;
   item->_keyid[16] = '\0';

@@ -111,9 +111,9 @@ trustlist_colon_handler (void *priv, char *line)
 	  item->name = strdup (p);
 	  if (!item->name)
 	    {
-	      int saved_errno = errno;
+              int saved_err = gpg_error_from_syserror ();
 	      gpgme_trust_item_unref (item);
-	      return gpg_error_from_errno (saved_errno);
+	      return saved_err;
 	    }
 	  break;
         }

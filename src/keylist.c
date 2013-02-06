@@ -558,7 +558,7 @@ keylist_colon_handler (void *priv, char *line)
 	{
 	  key->issuer_serial = strdup (field[7]);
 	  if (!key->issuer_serial)
-	    return gpg_error_from_errno (errno);
+	    return gpg_error_from_syserror ();
 	}
 
       /* Field 9 has the ownertrust.  */
@@ -653,7 +653,7 @@ keylist_colon_handler (void *priv, char *line)
       if (fields >= 10)
 	{
 	  if (_gpgme_key_append_name (key, field[9], 1))
-	    return gpg_error_from_errno (GPG_ERR_ENOMEM);	/* FIXME */
+	    return gpg_error (GPG_ERR_ENOMEM);	/* FIXME */
 	  else
 	    {
 	      if (field[1])
@@ -674,7 +674,7 @@ keylist_colon_handler (void *priv, char *line)
             {
               subkey->fpr = strdup (field[9]);
               if (!subkey->fpr)
-                return gpg_error_from_errno (errno);
+                return gpg_error_from_syserror ();
             }
 	}
 
@@ -683,7 +683,7 @@ keylist_colon_handler (void *priv, char *line)
 	{
 	  key->chain_id = strdup (field[12]);
 	  if (!key->chain_id)
-	    return gpg_error_from_errno (errno);
+	    return gpg_error_from_syserror ();
 	}
       break;
 

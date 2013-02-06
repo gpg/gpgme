@@ -46,7 +46,7 @@ _gpgme_getenv (const char *name, char **value)
     {
       *value = strdup (env_value);
       if (!*value)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
     }
   return 0;
 }

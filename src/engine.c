@@ -226,7 +226,7 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 	  *lastp = malloc (sizeof (*engine_info));
 	  if (!*lastp || !file_name)
 	    {
-	      int saved_errno = errno;
+	      int saved_err = gpg_error_from_syserror ();
 
 	      _gpgme_engine_info_release (engine_info);
 	      engine_info = NULL;
@@ -237,7 +237,7 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 		free (home_dir);
 
 	      UNLOCK (engine_info_lock);
-	      return gpg_error_from_errno (saved_errno);
+	      return saved_err;
 	    }
 
 	  (*lastp)->protocol = proto_list[proto];
@@ -294,7 +294,7 @@ _gpgme_engine_info_copy (gpgme_engine_info_t *r_info)
 	{
 	  home_dir = strdup (info->home_dir);
 	  if (!home_dir)
-	    err = gpg_error_from_errno (errno);
+	    err = gpg_error_from_syserror ();
 	}
       else
 	home_dir = NULL;
@@ -303,7 +303,7 @@ _gpgme_engine_info_copy (gpgme_engine_info_t *r_info)
 	{
 	  version = strdup (info->version);
 	  if (!version)
-	    err = gpg_error_from_errno (errno);
+	    err = gpg_error_from_syserror ();
 	}
       else
 	version = NULL;
@@ -311,7 +311,7 @@ _gpgme_engine_info_copy (gpgme_engine_info_t *r_info)
       *lastp = malloc (sizeof (*engine_info));
       if (!*lastp || !file_name || err)
 	{
-	  int saved_errno = errno;
+	  int saved_err = gpg_error_from_syserror ();
 
 	  _gpgme_engine_info_release (new_info);
 
@@ -323,7 +323,7 @@ _gpgme_engine_info_copy (gpgme_engine_info_t *r_info)
 	    free (version);
 
 	  UNLOCK (engine_info_lock);
-	  return gpg_error_from_errno (saved_errno);
+	  return saved_err;
 	}
 
       (*lastp)->protocol = info->protocol;
@@ -372,7 +372,7 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
       new_file_name = strdup (ofile_name);
     }
   if (!new_file_name)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   if (home_dir)
     {
@@ -380,7 +380,7 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
       if (!new_home_dir)
 	{
 	  free (new_file_name);
-	  return gpg_error_from_errno (errno);
+	  return gpg_error_from_syserror ();
 	}
     }
   else
@@ -392,7 +392,7 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
           if (!new_home_dir)
             {
               free (new_file_name);
-              return gpg_error_from_errno (errno);
+              return gpg_error_from_syserror ();
             }
         }
       else
@@ -454,7 +454,7 @@ _gpgme_engine_new (gpgme_engine_info_t info, engine_t *r_engine)
 
   engine = calloc (1, sizeof *engine);
   if (!engine)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   engine->ops = engine_ops[info->protocol];
   if (engine->ops->new)

@@ -79,7 +79,7 @@ _gpgme_sig_notation_create (gpgme_sig_notation_t *notationp,
 
   notation = calloc (1, sizeof (*notation));
   if (!notation)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   /* This is critical.  We want to reliably identify policy URLs by
      using a NULL pointer for NAME.  So all notations must have a NAME
@@ -91,7 +91,7 @@ _gpgme_sig_notation_create (gpgme_sig_notation_t *notationp,
       notation->name = malloc (name_len + 1);
       if (!notation->name)
 	{
-	  err = gpg_error_from_errno (errno);
+	  err = gpg_error_from_syserror ();
 	  goto err;
 	}
 
@@ -107,7 +107,7 @@ _gpgme_sig_notation_create (gpgme_sig_notation_t *notationp,
       notation->value = malloc (value_len + 1);
       if (!notation->value)
 	{
-	  err = gpg_error_from_errno (errno);
+	  err = gpg_error_from_syserror ();
 	  goto err;
 	}
 

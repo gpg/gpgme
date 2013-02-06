@@ -234,9 +234,8 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
   sig->fpr = strdup (args);
   if (!sig->fpr)
     {
-      int saved_errno = errno;
       free (sig);
-      return gpg_error_from_errno (saved_errno);
+      return gpg_error_from_syserror ();
     }
   *sigp = sig;
   return 0;

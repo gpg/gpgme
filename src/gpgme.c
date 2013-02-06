@@ -87,7 +87,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
-    return TRACE_ERR (gpg_error_from_errno (errno));
+    return TRACE_ERR (gpg_error_from_syserror ());
 
   INIT_LOCK (ctx->lock);
 
@@ -95,7 +95,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   if (!ctx->engine_info)
     {
       free (ctx);
-      return TRACE_ERR (gpg_error_from_errno (errno));
+      return TRACE_ERR (gpg_error_from_syserror ());
     }
 
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
@@ -110,10 +110,11 @@ gpgme_new (gpgme_ctx_t *r_ctx)
       ctx->lc_ctype = strdup (def_lc_ctype);
       if (!ctx->lc_ctype)
 	{
+          int saved_err = gpg_error_from_syserror ();
 	  UNLOCK (def_lc_lock);
 	  _gpgme_engine_info_release (ctx->engine_info);
 	  free (ctx);
-	  return TRACE_ERR (gpg_error_from_errno (errno));
+	  return TRACE_ERR (saved_err);
 	}
     }
   else
@@ -124,12 +125,13 @@ gpgme_new (gpgme_ctx_t *r_ctx)
       ctx->lc_messages = strdup (def_lc_messages);
       if (!ctx->lc_messages)
 	{
+          int saved_err = gpg_error_from_syserror ();
 	  UNLOCK (def_lc_lock);
 	  if (ctx->lc_ctype)
 	    free (ctx->lc_ctype);
 	  _gpgme_engine_info_release (ctx->engine_info);
 	  free (ctx);
-	  return TRACE_ERR (gpg_error_from_errno (errno));
+	  return TRACE_ERR (saved_err);
 	}
     }
   else
@@ -676,14 +678,14 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
 
   if (failed)
     {
-      int saved_errno = errno;
+      int saved_err = gpg_error_from_syserror ();
 
       if (new_lc_ctype)
 	free (new_lc_ctype);
       if (new_lc_messages)
 	free (new_lc_messages);
 
-      return TRACE_ERR (gpg_error_from_errno (saved_errno));
+      return TRACE_ERR (saved_err);
     }
 
 #define SET_ONE_LOCALE(lcat, ucat)			\

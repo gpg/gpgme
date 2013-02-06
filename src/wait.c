@@ -73,7 +73,7 @@ fd_table_put (fd_table_t fdt, int fd, int dir, void *opaque, int *idx)
       new_fds = realloc (fdt->fds, (fdt->size + FDT_ALLOCSIZE)
 			 * sizeof (*new_fds));
       if (!new_fds)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
 
       fdt->fds = new_fds;
       fdt->size += FDT_ALLOCSIZE;
@@ -113,16 +113,15 @@ _gpgme_add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc,
 
   tag = malloc (sizeof *tag);
   if (!tag)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   tag->ctx = ctx;
 
   /* Allocate a structure to hold information about the handler.  */
   item = calloc (1, sizeof *item);
   if (!item)
     {
-      int saved_errno = errno;
       free (tag);
-      return gpg_error_from_errno (saved_errno);
+      return gpg_error_from_syserror ();
     }
   item->ctx = ctx;
   item->dir = dir;

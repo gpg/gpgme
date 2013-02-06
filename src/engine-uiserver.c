@@ -308,8 +308,8 @@ uiserver_new (void **engine, const char *file_name, const char *home_dir)
     {
       if (asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
         {
+	  err = gpg_error_from_syserror ();
 	  free (dft_display);
-	  err = gpg_error_from_errno (errno);
 	  goto leave;
 	}
       free (dft_display);
@@ -335,7 +335,7 @@ uiserver_new (void **engine, const char *file_name, const char *home_dir)
 	{
 	  if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
 	    {
-	      err = gpg_error_from_errno (errno);
+	      err = gpg_error_from_syserror ();
 	      goto leave;
 	    }
 	  err = assuan_transact (uiserver->assuan_ctx, optstr, NULL, NULL, NULL,
@@ -351,8 +351,8 @@ uiserver_new (void **engine, const char *file_name, const char *home_dir)
 	    {
 	      if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
 		{
+		  err = gpg_error_from_syserror ();
 		  free (dft_ttytype);
-		  err = gpg_error_from_errno (errno);
 		  goto leave;
 		}
 	      free (dft_ttytype);
@@ -425,7 +425,7 @@ uiserver_set_locale (void *engine, int category, const char *value)
     return 0;
 
   if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     {
       err = assuan_transact (uiserver->assuan_ctx, optstr, NULL, NULL,
@@ -553,7 +553,7 @@ uiserver_set_fd (engine_uiserver_t uiserver, fd_type_t fd_type, const char *opt)
       int fds[2];
 
       if (_gpgme_io_pipe (fds, 0) < 0)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
 
       iocb_data->fd = dir ? fds[0] : fds[1];
       iocb_data->server_fd = dir ? fds[1] : fds[0];
@@ -694,7 +694,7 @@ status_handler (void *opaque, int fd)
 	    {
 	      char *newline = realloc (*aline, *alinelen + linelen + 1);
 	      if (!newline)
-		err = gpg_error_from_errno (errno);
+		err = gpg_error_from_syserror ();
 	      else
 		{
 		  *aline = newline;
@@ -779,7 +779,7 @@ status_handler (void *opaque, int fd)
               if (!nwritten || (nwritten < 0 && errno != EINTR)
                   || nwritten > linelen)
                 {
-                  err = gpg_error_from_errno (errno);
+                  err = gpg_error_from_syserror ();
                   break;
                 }
               src += nwritten;
@@ -943,7 +943,7 @@ _uiserver_decrypt (void *engine, int verify,
 
   if (asprintf (&cmd, "DECRYPT%s%s", protocol,
 		verify ? "" : " --no-verify") < 0)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   uiserver->input_cb.data = ciph;
   err = uiserver_set_fd (uiserver, INPUT_FD,
@@ -995,7 +995,7 @@ set_recipients (engine_uiserver_t uiserver, gpgme_key_t recp[])
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
   line = malloc (10 + 40 + 1);
   if (!line)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   strcpy (line, "RECIPIENT ");
   for (i=0; !err && recp[i]; i++)
     {
@@ -1015,9 +1015,9 @@ set_recipients (engine_uiserver_t uiserver, gpgme_key_t recp[])
 	  char *newline = realloc (line, newlen);
 	  if (! newline)
 	    {
-	      int saved_errno = errno;
+	      int saved_err = gpg_error_from_syserror ();
 	      free (line);
-	      return gpg_error_from_errno (saved_errno);
+	      return saved_err;
 	    }
 	  line = newline;
 	  linelen = newlen;
@@ -1070,7 +1070,7 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
       if (asprintf (&cmd, "PREP_ENCRYPT%s%s", protocol,
 		    (flags & GPGME_ENCRYPT_EXPECT_SIGN)
 		    ? " --expect-sign" : "") < 0)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
     }
   else
     {
@@ -1078,7 +1078,7 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 	return gpg_error (GPG_ERR_INV_VALUE);
 
       if (asprintf (&cmd, "ENCRYPT%s", protocol) < 0)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
     }
 
   if (plain)
@@ -1147,7 +1147,7 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
   if (asprintf (&cmd, "SIGN%s%s", protocol,
 		(mode == GPGME_SIG_MODE_DETACH) ? " --detached" : "") < 0)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   key = gpgme_signers_enum (ctx, 0);
   if (key)
@@ -1222,7 +1222,7 @@ uiserver_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
     return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
 
   if (asprintf (&cmd, "VERIFY%s", protocol) < 0)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   uiserver->input_cb.data = sig;
   err = uiserver_set_fd (uiserver, INPUT_FD,

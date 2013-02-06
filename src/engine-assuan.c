@@ -394,7 +394,7 @@ llass_set_locale (void *engine, int category, const char *value)
     return 0;
 
   if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     {
       err = assuan_transact (llass->assuan_ctx, optstr, NULL, NULL,

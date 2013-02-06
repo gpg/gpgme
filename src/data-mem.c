@@ -202,9 +202,9 @@ gpgme_data_new_from_mem (gpgme_data_t *r_dh, const char *buffer,
       char *bufcpy = malloc (size);
       if (!bufcpy)
 	{
-	  int saved_errno = errno;
+	  int saved_err = gpg_error_from_syserror ();
 	  _gpgme_data_release (*r_dh);
-	  return TRACE_ERR (gpg_error_from_errno (saved_errno));
+	  return TRACE_ERR (saved_err);
 	}
       memcpy (bufcpy, buffer, size);
       (*r_dh)->data.mem.buffer = bufcpy;
@@ -242,9 +242,9 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
       str = malloc (dh->data.mem.length);
       if (!str)
 	{
-	  int saved_errno = errno;
+	  int saved_err = gpg_error_from_syserror ();
 	  gpgme_data_release (dh);
-	  TRACE_ERR (gpg_error_from_errno (saved_errno));
+	  TRACE_ERR (saved_err);
 	  return NULL;
 	}
       memcpy (str, dh->data.mem.orig_buffer, dh->data.mem.length);

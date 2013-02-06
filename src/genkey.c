@@ -113,7 +113,7 @@ genkey_status_handler (void *priv, gpgme_status_code_t code, char *args)
 		free (opd->result.fpr);
 	      opd->result.fpr = strdup (&args[2]);
 	      if (!opd->result.fpr)
-		return gpg_error_from_errno (errno);
+		return gpg_error_from_syserror ();
 	    }
 	}
       break;

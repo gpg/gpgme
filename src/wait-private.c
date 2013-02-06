@@ -91,7 +91,7 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
 	{
 	  /* An error occured.  Close all fds in this context, and
 	     signal it.  */
-	  err = gpg_error_from_errno (errno);
+	  err = gpg_error_from_syserror ();
           _gpgme_cancel_with_err (ctx, err, 0);
 
 	  return err;

@@ -46,7 +46,7 @@ _gpgme_key_new (gpgme_key_t *r_key)
 
   key = calloc (1, sizeof *key);
   if (!key)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   key->_refs = 1;
 
   *r_key = key;
@@ -61,7 +61,7 @@ _gpgme_key_add_subkey (gpgme_key_t key, gpgme_subkey_t *r_subkey)
 
   subkey = calloc (1, sizeof *subkey);
   if (!subkey)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   subkey->keyid = subkey->_keyid;
   subkey->_keyid[16] = '\0';
 
@@ -215,7 +215,7 @@ _gpgme_key_append_name (gpgme_key_t key, const char *src, int convert)
      size, so that we are able to store the parsed stuff there too.  */
   uid = malloc (sizeof (*uid) + 2 * src_len + 3);
   if (!uid)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   memset (uid, 0, sizeof *uid);
 
   uid->uid = ((char *) uid) + sizeof (*uid);

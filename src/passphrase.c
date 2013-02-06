@@ -77,7 +77,7 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
       if (opd->uid_hint)
 	free (opd->uid_hint);
       if (!(opd->uid_hint = strdup (args)))
-      return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
       break;
 
     case GPGME_STATUS_BAD_PASSPHRASE:
@@ -97,7 +97,7 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 	free (opd->passphrase_info);
       opd->passphrase_info = strdup (args);
       if (!opd->passphrase_info)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
       break;
 
     case GPGME_STATUS_MISSING_PASSPHRASE:

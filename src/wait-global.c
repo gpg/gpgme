@@ -97,7 +97,7 @@ ctx_active (gpgme_ctx_t ctx)
 {
   struct ctx_list_item *li = malloc (sizeof (struct ctx_list_item));
   if (!li)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   li->ctx = ctx;
 
   LOCK (ctx_list_lock);
@@ -269,10 +269,10 @@ gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
       fdt.fds = malloc (i * sizeof (struct io_select_fd_s));
       if (!fdt.fds)
 	{
-	  int saved_errno = errno;
+          int saved_err = gpg_error_from_syserror ();
 	  UNLOCK (ctx_list_lock);
 	  if (status)
-	    *status = gpg_error_from_errno (saved_errno);
+	    *status = saved_err;
 	  if (op_err)
 	    *op_err = 0;
 	  return NULL;
@@ -290,10 +290,10 @@ gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
       nr = _gpgme_io_select (fdt.fds, fdt.size, 0);
       if (nr < 0)
 	{
-	  int saved_errno = errno;
+          int saved_err = gpg_error_from_syserror ();
 	  free (fdt.fds);
 	  if (status)
-	    *status = gpg_error_from_errno (saved_errno);
+	    *status = saved_err;
 	  if (op_err)
 	    *op_err = 0;
 	  return NULL;

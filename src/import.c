@@ -174,9 +174,8 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
   import->fpr = strdup (args);
   if (!import->fpr)
     {
-      int saved_errno = errno;
       free (import);
-      return gpg_error_from_errno (saved_errno);
+      return gpg_error_from_syserror ();
     }
 
   *import_status = import;

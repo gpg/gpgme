@@ -80,7 +80,7 @@ gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 
       newarr = realloc (ctx->signers, n * sizeof (*newarr));
       if (!newarr)
-	return TRACE_ERR (gpg_error_from_errno (errno));
+	return TRACE_ERR (gpg_error_from_syserror ());
       for (j = ctx->signers_size; j < n; j++)
 	newarr[j] = NULL;
       ctx->signers = newarr;

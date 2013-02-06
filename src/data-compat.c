@@ -60,7 +60,7 @@ gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
   if (fname)
     stream = fopen (fname, "rb");
   if (!stream)
-    return TRACE_ERR (gpg_error_from_errno (errno));
+    return TRACE_ERR (gpg_error_from_syserror ());
 
 #ifdef HAVE_FSEEKO
   res = fseeko (stream, offset, SEEK_SET);
@@ -71,31 +71,31 @@ gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
 
   if (res)
     {
-      int saved_errno = errno;
+      int saved_err = gpg_error_from_syserror ();
       if (fname)
 	fclose (stream);
-      return TRACE_ERR (gpg_error_from_errno (saved_errno));
+      return TRACE_ERR (saved_err);
     }
 
   buf = malloc (length);
   if (!buf)
     {
-      int saved_errno = errno;
+      int saved_err = gpg_error_from_syserror ();
       if (fname)
 	fclose (stream);
-      return TRACE_ERR (gpg_error_from_errno (saved_errno));
+      return TRACE_ERR (saved_err);
     }
 
   while (fread (buf, length, 1, stream) < 1
 	 && ferror (stream) && errno == EINTR);
   if (ferror (stream))
     {
-      int saved_errno = errno;
+      int saved_err = gpg_error_from_syserror ();
       if (buf)
 	free (buf);
       if (fname)
 	fclose (stream);
-      return TRACE_ERR (gpg_error_from_errno (saved_errno));
+      return TRACE_ERR (saved_err);
     }
 
   if (fname)
@@ -135,7 +135,7 @@ gpgme_data_new_from_file (gpgme_data_t *r_dh, const char *fname, int copy)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (stat (fname, &statbuf) < 0)
-    return TRACE_ERR (gpg_error_from_errno (errno));
+    return TRACE_ERR (gpg_error_from_syserror ());
 
   err = gpgme_data_new_from_filepart (r_dh, fname, NULL, 0, statbuf.st_size);
   return TRACE_ERR (err);
@@ -247,8 +247,8 @@ gpgme_data_rewind (gpgme_data_t dh)
   gpgme_error_t err;
   TRACE_BEG (DEBUG_DATA, "gpgme_data_rewind", dh);
 
-  err = (gpgme_data_seek (dh, 0, SEEK_SET) == -1)
-    ? gpg_error_from_errno (errno) : 0;
+  err = ((gpgme_data_seek (dh, 0, SEEK_SET) == -1)
+         ? gpg_error_from_syserror () : 0);
 
   return TRACE_ERR (err);
 }

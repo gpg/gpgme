@@ -56,7 +56,7 @@ _gpgme_op_data_lookup (gpgme_ctx_t ctx, ctx_op_data_id_t type, void **hook,
 
       data = calloc (1, sizeof (struct ctx_op_data) + size);
       if (!data)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
       data->magic = CTX_OP_DATA_MAGIC;
       data->next = ctx->op_data;
       data->type = type;
@@ -192,7 +192,7 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
 
   inv_key = malloc (sizeof (*inv_key));
   if (!inv_key)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   inv_key->next = NULL;
   gpg_err_set_errno (0);
   reason = strtol (args, &tail, 0);
@@ -266,9 +266,8 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
       inv_key->fpr = strdup (tail);
       if (!inv_key->fpr)
 	{
-	  int saved_errno = errno;
 	  free (inv_key);
-	  return gpg_error_from_errno (saved_errno);
+	  return gpg_error_from_syserror ();
 	}
     }
   else

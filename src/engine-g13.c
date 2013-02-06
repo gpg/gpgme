@@ -225,7 +225,7 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
 
   g13 = calloc (1, sizeof *g13);
   if (!g13)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   g13->status_cb.fd = -1;
   g13->status_cb.dir = 1;
@@ -269,7 +269,7 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
       if (asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
         {
 	  free (dft_display);
-	  err = gpg_error_from_errno (errno);
+	  err = gpg_error_from_syserror ();
 	  goto leave;
 	}
       free (dft_display);
@@ -295,7 +295,7 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
 	{
 	  if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
 	    {
-	      err = gpg_error_from_errno (errno);
+	      err = gpg_error_from_syserror ();
 	      goto leave;
 	    }
 	  err = assuan_transact (g13->assuan_ctx, optstr, NULL, NULL, NULL,
@@ -312,7 +312,7 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
 	      if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
 		{
 		  free (dft_ttytype);
-		  err = gpg_error_from_errno (errno);
+		  err = gpg_error_from_syserror ();
 		  goto leave;
 		}
 	      free (dft_ttytype);
@@ -390,7 +390,7 @@ g13_set_locale (void *engine, int category, const char *value)
     return 0;
 
   if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     {
       err = assuan_transact (g13->assuan_ctx, optstr, NULL, NULL,

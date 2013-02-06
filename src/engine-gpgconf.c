@@ -96,7 +96,7 @@ gpgconf_new (void **engine, const char *file_name, const char *home_dir)
 
   gpgconf = calloc (1, sizeof *gpgconf);
   if (!gpgconf)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   gpgconf->file_name = strdup (file_name ? file_name
 			       : _gpgme_get_gpgconf_path ());

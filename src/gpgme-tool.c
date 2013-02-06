@@ -1614,7 +1614,7 @@ gt_recipients_add (gpgme_tool_t gt, const char *pattern)
   gpgme_key_t key;
 
   if (gt->recipients_nr >= MAX_RECIPIENTS)
-    return gpg_error_from_errno (ENOMEM);
+    return gpg_error (GPG_ERR_ENOMEM);
 
   if (gpgme_get_protocol (gt->ctx) == GPGME_PROTOCOL_UISERVER)
     err = gpgme_key_from_uid (&key, pattern);

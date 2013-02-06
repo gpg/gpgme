@@ -47,7 +47,7 @@ _gpgme_progress_status_handler (void *priv, gpgme_status_code_t code,
 
   args_cpy = strdup (args);
   if (!args_cpy)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   p = strchr (args_cpy, ' ');
   if (p)
