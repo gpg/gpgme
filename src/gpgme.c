@@ -634,6 +634,30 @@ gpgme_io_write (int fd, const void *buffer, size_t count)
   return TRACE_SYSRES (ret);
 }
 
+/* This function provides access to the internal write function.  It
+   is to be used by user callbacks to return data to gpgme.  See
+   gpgme_passphrase_cb_t and gpgme_edit_cb_t.  Note that this is a
+   variant of gpgme_io_write which guarantees that all COUNT bytes are
+   written or an error is return.  Returns: 0 on success or -1 on
+   error and the sets errno. */
+int
+gpgme_io_writen (int fd, const void *buffer, size_t count)
+{
+  int ret = 0;
+  TRACE_BEG2 (DEBUG_GLOBAL, "gpgme_io_writen", fd,
+	      "buffer=%p, count=%u", buffer, count);
+  while (count)
+    {
+      ret = _gpgme_io_write (fd, buffer, count);
+      if (ret < 0)
+        break;
+      buffer += ret;
+      count -= ret;
+      ret = 0;
+    }
+  return TRACE_SYSRES (ret);
+}
+
 
 /* This function returns the callback function for I/O.  */
 void

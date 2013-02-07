@@ -48,9 +48,9 @@ GPGME_1.1 {
 
     gpgme_cancel_async;
 
-    gpgme_op_assuan_result;    
-    gpgme_op_assuan_transact;    
-    gpgme_op_assuan_transact_start;    
+    gpgme_op_assuan_result;
+    gpgme_op_assuan_transact;
+    gpgme_op_assuan_transact_start;
 
     gpgme_check_version_internal;
 
@@ -81,6 +81,8 @@ GPGME_1.1 {
     gpgme_op_passwd;
 
     gpgme_set_global_flag;
+
+    gpgme_io_writen;
 };
 
 

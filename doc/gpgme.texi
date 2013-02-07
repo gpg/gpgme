@@ -2374,9 +2374,10 @@ previous attempts failed, then @var{prev_was_bad} is 1, otherwise it
 will be 0.
 
 The user must write the passphrase, followed by a newline character,
-to the file descriptor @var{fd}.  If the user returns 0 indicating
-success, the user must at least write a newline character before
-returning from the callback.
+to the file descriptor @var{fd}.  The function @code{gpgme_io_writen}
+should be used for the write operation.  Note that if the user returns
+0 to indicate success, the user must at least write a newline
+character before returning from the callback.
 
 If an error occurs, return the corresponding @code{gpgme_error_t}
 value.  You can use the error code @code{GPG_ERR_CANCELED} to abort
