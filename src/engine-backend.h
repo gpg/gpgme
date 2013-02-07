@@ -121,6 +121,9 @@ struct engine_ops
 
   /* Change the passphrase for KEY. */
   gpgme_error_t (*passwd) (void *engine, gpgme_key_t key, unsigned int flags);
+
+  /* Set the pinentry mode.  */
+  gpgme_error_t (*set_pinentry_mode) (void *engine, gpgme_pinentry_mode_t mode);
 };
 
 

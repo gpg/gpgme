@@ -134,6 +134,15 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
 #endif
       if (gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED)
 	err = 0;
+
+      if (!err)
+        {
+          err = _gpgme_engine_set_pinentry_mode (ctx->engine,
+                                                 ctx->pinentry_mode);
+          if (gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED)
+            err = 0;
+        }
+
       if (err)
         {
           _gpgme_engine_release (ctx->engine);

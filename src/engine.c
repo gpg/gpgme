@@ -923,3 +923,16 @@ _gpgme_engine_op_passwd (engine_t engine, gpgme_key_t key,
   return (*engine->ops->passwd) (engine->engine, key, flags);
 }
 
+
+/* Set the pinentry mode for ENGINE to MODE.  */
+gpgme_error_t
+_gpgme_engine_set_pinentry_mode (engine_t engine, gpgme_pinentry_mode_t mode)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->set_pinentry_mode)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->set_pinentry_mode) (engine->engine, mode);
+}

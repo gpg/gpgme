@@ -925,5 +925,8 @@ struct engine_ops _gpgme_engine_ops_gpgconf =
     gpgconf_conf_save,
     gpgconf_set_io_cbs,
     NULL,		/* io_event */
-    NULL		/* cancel */
+    NULL,		/* cancel */
+    NULL,               /* cancel_op */
+    NULL,               /* passwd */
+    NULL                /* set_pinentry_mode */
   };

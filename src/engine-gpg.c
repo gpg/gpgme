@@ -134,6 +134,7 @@ struct engine_gpg
   } cmd;
 
   struct gpgme_io_cbs io_cbs;
+  gpgme_pinentry_mode_t pinentry_mode;
 };
 
 typedef struct engine_gpg *engine_gpg_t;
@@ -769,6 +770,8 @@ build_argv (engine_gpg_t gpg)
     argc++;
   if (use_agent)
     argc++;
+  if (gpg->pinentry_mode)
+    argc++;
   if (!gpg->cmd.used)
     argc++;	/* --batch */
   argc += 1;	/* --no-sk-comment */
@@ -818,6 +821,32 @@ build_argv (engine_gpg_t gpg)
         }
       argc++;
     }
+
+  if (gpg->pinentry_mode)
+    {
+      const char *s = NULL;
+      switch (gpg->pinentry_mode)
+        {
+        case GPGME_PINENTRY_MODE_DEFAULT: break;
+        case GPGME_PINENTRY_MODE_ASK:     s = "--pinentry-mode=ask"; break;
+        case GPGME_PINENTRY_MODE_CANCEL:  s = "--pinentry-mode=cancel"; break;
+        case GPGME_PINENTRY_MODE_ERROR:   s = "--pinentry-mode=error"; break;
+        case GPGME_PINENTRY_MODE_LOOPBACK:s = "--pinentry-mode=loopback"; break;
+        }
+      if (s)
+        {
+          argv[argc] = strdup (s);
+          if (!argv[argc])
+            {
+              int saved_err = gpg_error_from_syserror ();
+              free (fd_data_map);
+              free_argv (argv);
+              return saved_err;
+            }
+          argc++;
+        }
+    }
+
   if (!gpg->cmd.used)
     {
       argv[argc] = strdup ("--batch");
@@ -2348,6 +2377,17 @@ gpg_set_io_cbs (void *engine, gpgme_io_cbs_t io_cbs)
   gpg->io_cbs = *io_cbs;
 }
 
+
+static gpgme_error_t
+gpg_set_pinentry_mode (void *engine, gpgme_pinentry_mode_t mode)
+{
+  engine_gpg_t gpg = engine;
+
+  gpg->pinentry_mode = mode;
+  return 0;
+}
+
+
 
 struct engine_ops _gpgme_engine_ops_gpg =
   {
@@ -2389,5 +2429,6 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_io_event,
     gpg_cancel,
     NULL,		/* cancel_op */
-    gpg_passwd
+    gpg_passwd,
+    gpg_set_pinentry_mode
   };

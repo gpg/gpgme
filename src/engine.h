@@ -160,5 +160,8 @@ gpgme_error_t _gpgme_engine_cancel_op (engine_t engine);
 gpgme_error_t _gpgme_engine_op_passwd (engine_t engine, gpgme_key_t key,
                                        unsigned int flags);
 
+gpgme_error_t _gpgme_engine_set_pinentry_mode (engine_t engine,
+                                               gpgme_pinentry_mode_t mode);
+
 
 #endif /* ENGINE_H */

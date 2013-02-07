@@ -101,6 +101,9 @@ struct gpgme_context
   /* Flags for keylist mode.  */
   gpgme_keylist_mode_t keylist_mode;
 
+  /* The current pinnetry mode.  */
+  gpgme_pinentry_mode_t pinentry_mode;
+
   /* Number of certs to be included.  */
   unsigned int include_certs;
 

@@ -53,8 +53,8 @@ DEFINE_STATIC_LOCK (result_ref_lock);
 
 
 /* Set the global flag NAME to VALUE.  Return 0 on success.  Note that
-   this function does use gpgme_error and thus a non-zero return value
-   merely means "error".  Certain flags may be set before
+   this function does not use gpgme_error and thus a non-zero return
+   value merely means "error".  Certain flags may be set before
    gpgme_check_version is called.  See the manual for a description of
    supported flags.  The caller must assure that this function is
    called only by one thread at a time.  */
@@ -509,6 +509,33 @@ gpgme_get_keylist_mode (gpgme_ctx_t ctx)
   TRACE1 (DEBUG_CTX, "gpgme_get_keylist_mode", ctx,
 	  "ctx->keylist_mode=0x%x", ctx->keylist_mode);
   return ctx->keylist_mode;
+}
+
+
+/* Set the pinentry mode for CTX to MODE. */
+gpgme_error_t
+gpgme_set_pinentry_mode (gpgme_ctx_t ctx, gpgme_keylist_mode_t mode)
+{
+  TRACE1 (DEBUG_CTX, "gpgme_set_pinentry_mode", ctx, "pinentry_mode=%u",
+	  (unsigned int)mode);
+
+  if (!ctx)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  switch (mode)
+    {
+    case GPGME_PINENTRY_MODE_DEFAULT:
+    case GPGME_PINENTRY_MODE_ASK:
+    case GPGME_PINENTRY_MODE_CANCEL:
+    case GPGME_PINENTRY_MODE_ERROR:
+    case GPGME_PINENTRY_MODE_LOOPBACK:
+      break;
+    default:
+      return gpg_error (GPG_ERR_INV_VALUE);
+    }
+
+  ctx->pinentry_mode = mode;
+  return 0;
 }
 
 

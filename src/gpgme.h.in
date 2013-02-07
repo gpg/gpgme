@@ -1,7 +1,7 @@
 /* gpgme.h - Public interface to GnuPG Made Easy.                   -*- c -*-
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009
-                 2010, 2011, 2012 g10 Code GmbH
+                 2010, 2011, 2012, 2013 g10 Code GmbH
 
    This file is part of GPGME.
 
@@ -352,6 +352,18 @@ gpgme_protocol_t;
 #define GPGME_KEYLIST_MODE_VALIDATE		256
 
 typedef unsigned int gpgme_keylist_mode_t;
+
+
+/* The pinentry modes. */
+typedef enum
+  {
+    GPGME_PINENTRY_MODE_DEFAULT  = 0,
+    GPGME_PINENTRY_MODE_ASK      = 1,
+    GPGME_PINENTRY_MODE_CANCEL   = 2,
+    GPGME_PINENTRY_MODE_ERROR    = 3,
+    GPGME_PINENTRY_MODE_LOOPBACK = 4
+  }
+gpgme_pinentry_mode_t;
 
 
 /* The available export mode flags.  */
@@ -858,6 +870,10 @@ gpgme_error_t gpgme_set_keylist_mode (gpgme_ctx_t ctx,
 
 /* Get keylist mode in CTX.  */
 gpgme_keylist_mode_t gpgme_get_keylist_mode (gpgme_ctx_t ctx);
+
+/* Set the pinentry mode for CTX to MODE. */
+gpgme_error_t gpgme_set_pinentry_mode (gpgme_ctx_t ctx,
+                                       gpgme_pinentry_mode_t mode);
 
 /* Set the passphrase callback function in CTX to CB.  HOOK_VALUE is
    passed as first argument to the passphrase callback function.  */

@@ -1986,5 +1986,6 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_io_event,
     gpgsm_cancel,
     NULL,		/* cancel_op */
-    gpgsm_passwd
+    gpgsm_passwd,
+    NULL                /* set_pinentry_mode */
   };

@@ -1339,4 +1339,6 @@ struct engine_ops _gpgme_engine_ops_uiserver =
     uiserver_io_event,
     uiserver_cancel,
     NULL		/* cancel_op */
+    NULL,               /* passwd */
+    NULL                /* set_pinentry_mode */
   };

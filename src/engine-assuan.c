@@ -781,5 +781,7 @@ struct engine_ops _gpgme_engine_ops_assuan =
     llass_set_io_cbs,
     llass_io_event,
     llass_cancel,
-    llass_cancel_op
+    llass_cancel_op,
+    NULL,               /* passwd */
+    NULL                /* set_pinentry_mode */
   };

@@ -3,7 +3,15 @@ Noteworthy changes in version 1.3.3 (unreleased)
 
  * Interface changes relative to the 1.3.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_io_writen                NEW.
  gpgme_set_global_flag          NEW.
+ gpgme_set_pinentry_mode        NEW.
+ gpgme_pinentry_mode_t          NEW.
+ GPGME_PINENTRY_MODE_DEFAULT    NEW.
+ GPGME_PINENTRY_MODE_ASK        NEW.
+ GPGME_PINENTRY_MODE_CANCEL     NEW.
+ GPGME_PINENTRY_MODE_ERROR      NEW.
+ GPGME_PINENTRY_MODE_LOOPBACK   NEW.
 
 
 Noteworthy changes in version 1.3.2 (2012-05-02)
