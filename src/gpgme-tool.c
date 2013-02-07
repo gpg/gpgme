@@ -1,5 +1,5 @@
 /* gpgme-tool.c - Assuan server exposing GnuPG Made Easy operations.
-   Copyright (C) 2009, 2010, 2012 g10 Code GmbH
+   Copyright (C) 2009, 2010, 2012, 2013 g10 Code GmbH
    Copyright (C) 2001, 2003, 2009, 2011 Free Software Foundation, Inc.
 
    This file is part of GPGME.
@@ -645,8 +645,11 @@ log_error (int status, gpg_error_t errnum, const char *fmt, ...)
   vfprintf (log_stream, fmt, ap);
   va_end (ap);
   if (errnum)
-    fprintf (log_stream, ": %s <%s>", gpg_strerror (errnum),
-	     gpg_strsource (errnum));
+    {
+      fprintf (log_stream, ": %s", gpg_strerror (errnum));
+      if (gpg_err_source (errnum) != GPG_ERR_SOURCE_GPGME)
+        fprintf (log_stream, " <%s>", gpg_strsource (errnum));
+    }
   fprintf (log_stream, "\n");
   if (status)
     exit (status);
@@ -1466,6 +1469,10 @@ typedef struct gpgme_tool *gpgme_tool_t;
 /* Forward declaration.  */
 void gt_write_status (gpgme_tool_t gt,
                       status_t status, ...) GT_GCC_A_SENTINEL(0);
+static gpg_error_t
+server_passphrase_cb (void *opaque, const char *uid_hint, const char *info,
+                      int was_bad, int fd);
+
 
 void
 _gt_progress_cb (void *opaque, const char *what,
@@ -1495,8 +1502,9 @@ _gt_gpgme_new (gpgme_tool_t gt, gpgme_ctx_t *ctx)
 void
 gt_init (gpgme_tool_t gt)
 {
-  memset (gt, '\0', sizeof (*gt));
   gpg_error_t err;
+
+  memset (gt, '\0', sizeof (*gt));
 
   err = _gt_gpgme_new (gt, &gt->ctx);
   if (err)
@@ -1773,6 +1781,19 @@ gt_get_sub_protocol (gpgme_tool_t gt)
 		   NULL);
 
   return 0;
+}
+
+
+gpg_error_t
+gt_set_pinentry_mode (gpgme_tool_t gt, gpgme_pinentry_mode_t mode, void *opaque)
+{
+  gpg_error_t err;
+
+  gpgme_set_passphrase_cb (gt->ctx, NULL, NULL);
+  err = gpgme_set_pinentry_mode (gt->ctx, mode);
+  if (!err && mode == GPGME_PINENTRY_MODE_LOOPBACK)
+    gpgme_set_passphrase_cb (gt->ctx, server_passphrase_cb, opaque);
+  return err;
 }
 
 
@@ -2151,6 +2172,41 @@ server_write_data (void *hook, const void *buf, size_t len)
 }
 
 
+static gpg_error_t
+server_passphrase_cb (void *opaque, const char *uid_hint, const char *info,
+                      int was_bad, int fd)
+{
+  struct server *server = opaque;
+  gpg_error_t err;
+  unsigned char *buf = NULL;
+  size_t buflen = 0;
+
+  if (server && server->assuan_ctx)
+    {
+      if (uid_hint)
+        assuan_write_status (server->assuan_ctx, "USERID_HINT", uid_hint);
+      if (info)
+        assuan_write_status (server->assuan_ctx, "NEED_PASSPHRASE", info);
+
+      err = assuan_inquire (server->assuan_ctx, "PASSPHRASE",
+                            &buf, &buflen, 100);
+    }
+  else
+    err = gpg_error (GPG_ERR_NO_PASSPHRASE);
+
+  if (!err)
+    {
+      /* We take care to always send a LF.  */
+      if (gpgme_io_writen (fd, buf, buflen))
+        err = gpg_error_from_syserror ();
+      else if (!memchr (buf, '\n', buflen) && gpgme_io_writen (fd, "\n", 1))
+        err = gpg_error_from_syserror ();
+    }
+  free (buf);
+  return err;
+}
+
+
 /* Wrapper around assuan_command_parse_fd to also handle a
    "file=FILENAME" argument.  On success either a filename is returned
    at FILENAME or a file descriptor at RFD; the other one is set to
@@ -2364,6 +2420,39 @@ cmd_sub_protocol (assuan_context_t ctx, char *line)
     return gt_set_sub_protocol (server->gt, gt_protocol_from_name (line));
   else
     return gt_get_sub_protocol (server->gt);
+}
+
+
+static const char hlp_pinentry_mode[] =
+  "PINENTRY_MODE <name>\n"
+  "\n"
+  "Set the pinentry mode to NAME.   Allowedvalues for NAME are:\n"
+  "  default  - reset to the default of the engine,\n"
+  "  ask      - force the use of the pinentry,\n"
+  "  cancel   - emulate use of pinentry's cancel button,\n"
+  "  error    - return a pinentry error,\n"
+  "  loopback - redirect pinentry queries to the caller.\n"
+  "Note that only recent versions of GPG support changing the pinentry mode.";
+static gpg_error_t
+cmd_pinentry_mode (assuan_context_t ctx, char *line)
+{
+  struct server *server = assuan_get_pointer (ctx);
+  gpgme_pinentry_mode_t mode;
+
+  if (!line || !*line || !strcmp (line, "default"))
+    mode = GPGME_PINENTRY_MODE_DEFAULT;
+  else if (!strcmp (line, "ask"))
+    mode = GPGME_PINENTRY_MODE_ASK;
+  else if (!strcmp (line, "cancel"))
+    mode = GPGME_PINENTRY_MODE_CANCEL;
+  else if (!strcmp (line, "error"))
+    mode = GPGME_PINENTRY_MODE_ERROR;
+  else if (!strcmp (line, "loopback"))
+    mode = GPGME_PINENTRY_MODE_LOOPBACK;
+  else
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  return gt_set_pinentry_mode (server->gt, mode, server);
 }
 
 
@@ -3354,6 +3443,7 @@ register_commands (assuan_context_t ctx)
     { "ENGINE", cmd_engine, hlp_engine },
     { "PROTOCOL", cmd_protocol, hlp_protocol },
     { "SUB_PROTOCOL", cmd_sub_protocol, hlp_sub_protocol },
+    { "PINENTRY_MODE", cmd_pinentry_mode, hlp_pinentry_mode },
     { "ARMOR", cmd_armor, hlp_armor },
     { "TEXTMODE", cmd_textmode, hlp_textmode },
     { "INCLUDE_CERTS", cmd_include_certs, hlp_include_certs },
@@ -3410,7 +3500,6 @@ register_commands (assuan_context_t ctx)
 }
 
 
-/* TODO: password callback can do INQUIRE.  */
 void
 gpgme_server (gpgme_tool_t gt)
 {
@@ -3495,6 +3584,7 @@ static char args_doc[] = "COMMAND [OPTIONS...]";
 
 static struct argp_option options[] = {
   { "server", 's', 0, 0, "Server mode" },
+  { "gpg-binary", 501, "FILE", 0, "Use FILE for the GPG backend" },
   { 0 }
 };
 
@@ -3504,6 +3594,7 @@ static struct argp argp = { options, parse_options, args_doc, doc };
 struct args
 {
   enum { CMD_DEFAULT, CMD_SERVER } cmd;
+  const char *gpg_binary;
 };
 
 void
@@ -3523,6 +3614,10 @@ parse_options (int key, char *arg, struct argp_state *state)
     {
     case 's':
       args->cmd = CMD_SERVER;
+      break;
+
+    case 501:
+      args->gpg_binary = arg;
       break;
 #if 0
     case ARGP_KEY_ARG:
@@ -3548,6 +3643,7 @@ main (int argc, char *argv[])
 {
   struct args args;
   struct gpgme_tool gt;
+  gpg_error_t err;
 
 #ifdef HAVE_SETLOCALE
   setlocale (LC_ALL, "");
@@ -3564,6 +3660,18 @@ main (int argc, char *argv[])
 
   argp_parse (&argp, argc, argv, 0, 0, &args);
   log_init ();
+
+  if (args.gpg_binary)
+    {
+      if (access (args.gpg_binary, X_OK))
+        err = gpg_error_from_syserror ();
+      else
+        err = gpgme_set_engine_info (GPGME_PROTOCOL_OpenPGP,
+                                     args.gpg_binary, NULL);
+      if (err)
+        log_error (1, err, "error witching OpenPGP engine to '%s'",
+                   args.gpg_binary);
+    }
 
   gt_init (&gt);
 

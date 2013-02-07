@@ -205,5 +205,8 @@ EXPORTS
     gpgme_set_global_flag                 @156
 
     gpgme_io_writen                       @157
+
+    gpgme_set_pinentry_mode               @158
+
 ; END
 

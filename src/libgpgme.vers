@@ -83,6 +83,8 @@ GPGME_1.1 {
     gpgme_set_global_flag;
 
     gpgme_io_writen;
+
+    gpgme_set_pinentry_mode;
 };
 
 
