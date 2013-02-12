@@ -875,6 +875,9 @@ gpgme_keylist_mode_t gpgme_get_keylist_mode (gpgme_ctx_t ctx);
 gpgme_error_t gpgme_set_pinentry_mode (gpgme_ctx_t ctx,
                                        gpgme_pinentry_mode_t mode);
 
+/* Get the pinentry mode of CTX.  */
+gpgme_pinentry_mode_t gpgme_get_pinentry_mode (gpgme_ctx_t ctx);
+
 /* Set the passphrase callback function in CTX to CB.  HOOK_VALUE is
    passed as first argument to the passphrase callback function.  */
 void gpgme_set_passphrase_cb (gpgme_ctx_t ctx,

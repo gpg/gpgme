@@ -207,6 +207,7 @@ EXPORTS
     gpgme_io_writen                       @157
 
     gpgme_set_pinentry_mode               @158
+    gpgme_get_pinentry_mode               @159
 
 ; END
 

@@ -539,6 +539,16 @@ gpgme_set_pinentry_mode (gpgme_ctx_t ctx, gpgme_keylist_mode_t mode)
 }
 
 
+/* Get the pinentry mode of CTX.  */
+gpgme_pinentry_mode_t
+gpgme_get_pinentry_mode (gpgme_ctx_t ctx)
+{
+  TRACE1 (DEBUG_CTX, "gpgme_get_pinentry_mode", ctx,
+	  "ctx->pinentry_mode=%u", (unsigned int)ctx->pinentry_mode);
+  return ctx->pinentry_mode;
+}
+
+
 /* This function sets a callback function to be used to pass a
    passphrase to gpg.  */
 void
