@@ -33,9 +33,12 @@ min_automake_version="1.11"
 # for a specific feature can already be done under the assumption that
 # the GIT version is the most recent one in a branch.  To disable the
 # GIT version for the real release, set the my_isgit macro to no.
-m4_define(my_version, [1.3.3])
+m4_define(my_version_major, [1])
+m4_define(my_version_minor, [3])
+m4_define(my_version_micro, [3])
 m4_define(my_isgit, [yes])
 
+m4_define(my_version, [my_version_major.my_version_minor.my_version_micro])
 m4_define([svn_revision], m4_esyscmd([printf "%d" $( (svn info 2>/dev/null \
             || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
 m4_define([git_revision],
@@ -64,9 +67,10 @@ GPGME_CONFIG_API_VERSION=1
 NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.0.2
 
-
 m4_define([git_brevis],m4_esyscmd(printf "%u" 0x[]m4_substr(git_revision,0,4)))
 BUILD_REVISION=m4_if(git_revision,[],[svn_revision],[git_brevis])
+VERSION_NUMBER=m4_esyscmd(printf "0x%02x%02x%02x" \
+                          my_version_major my_version_minor my_version_micro)
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
 
@@ -100,6 +104,7 @@ AC_SUBST(LIBGPGME_LT_REVISION)
 
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
+AC_SUBST(VERSION_NUMBER)
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
 

@@ -80,6 +80,10 @@ extern "C" {
    library.  */
 #define GPGME_VERSION "@PACKAGE_VERSION@"
 
+/* The version number of this header.  It may be used to handle minor
+   API incompatibilities.  */
+#define GPGME_VERSION_NUMBER @VERSION_NUMBER@
+
 /* Check for a matching _FILE_OFFSET_BITS definition.  */
 #if @NEED__FILE_OFFSET_BITS@
 #ifndef _FILE_OFFSET_BITS
@@ -95,7 +99,7 @@ extern "C" {
 
 /* Some opaque data types used by GPGME.  */
 
-/* The context holds some global state and configration options, as
+/* The context holds some global state and configuration options, as
    well as the results of a crypto operation.  */
 struct gpgme_context;
 typedef struct gpgme_context *gpgme_ctx_t;
