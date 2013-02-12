@@ -34,8 +34,8 @@ min_automake_version="1.11"
 # the GIT version is the most recent one in a branch.  To disable the
 # GIT version for the real release, set the my_isgit macro to no.
 m4_define(my_version_major, [1])
-m4_define(my_version_minor, [3])
-m4_define(my_version_micro, [3])
+m4_define(my_version_minor, [4])
+m4_define(my_version_micro, [0])
 m4_define(my_isgit, [yes])
 
 m4_define(my_version, [my_version_major.my_version_minor.my_version_micro])
