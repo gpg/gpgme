@@ -95,8 +95,9 @@ AH_VERBATIM([_REENTRANT],
 
 AC_PROG_CC
 AC_PROG_CXX
-AC_CHECK_PROGS(GITLOG_TO_CHANGELOG, gitlog-to-changelog,
-               [build-aux/gitlog-to-changelog])
+
+# Note: A suitable gitlog-to-changelog script can be found in GnuPG master.
+AC_CHECK_PROGS(GITLOG_TO_CHANGELOG, gitlog-to-changelog, [gitlog-to-changelog])
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
