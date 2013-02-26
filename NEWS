@@ -1,6 +1,23 @@
 Noteworthy changes in version 1.4.0 (unreleased)
 ------------------------------------------------
 
+ * New function gpgme_set_global_flag to help debugging on Android.
+
+ * New function gpgme_io_writen as a convenience wrapper around
+   gpgme_io_write.
+
+ * New functions to support the pinentry mode feature of GnuPG 2.1.
+
+ * New macro GPGME_VERSION_NUMBER to allow supporting different API
+   versions without the need for a configure test.
+
+ * Several improvements for gpgme-tool.
+
+ * Better logging of the common "invalid engine" error code.
+
+ * Support for FD passing is now enabled by default.  The configure
+   option --disable-fd-passing may be used to disable this.
+
  * Interface changes relative to the 1.3.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_VERSION_NUMBER           NEW.

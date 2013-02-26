@@ -870,9 +870,9 @@ AC_CHECK_MEMBER(struct cmsghdr.cmsg_len,
 #include <unistd.h>
        ])
 
-use_descriptor_passing=no
+use_descriptor_passing=yes
 AC_ARG_ENABLE(fd-passing,
-  AC_HELP_STRING([--enable-fd-passing], [use FD passing if supported]),
+  AC_HELP_STRING([--disable-fd-passing], [do not use FD passing]),
   use_descriptor_passing=$enableval)
 
 if test "$supports_descriptor_passing" != "yes"; then
