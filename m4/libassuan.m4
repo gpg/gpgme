@@ -1,5 +1,5 @@
 dnl Autoconf macros for libassuan
-dnl       Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+dnl Copyright (C) 2002, 2003, 2011 Free Software Foundation, Inc.
 dnl
 dnl This file is free software; as a special exception the author gives
 dnl unlimited permission to copy and/or distribute it, with or without
@@ -14,7 +14,8 @@ dnl Common code used for libassuan detection [internal]
 dnl Returns ok set to yes or no.
 dnl
 AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
-[ AC_ARG_WITH(libassuan-prefix,
+[ AC_REQUIRE([AC_CANONICAL_HOST])
+  AC_ARG_WITH(libassuan-prefix,
               AC_HELP_STRING([--with-libassuan-prefix=PFX],
                              [prefix where LIBASSUAN is installed (optional)]),
      libassuan_config_prefix="$withval", libassuan_config_prefix="")
@@ -24,7 +25,8 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
       LIBASSUAN_CONFIG=$libassuan_config_prefix/bin/libassuan-config
     fi
   fi
-  AC_PATH_PROG(LIBASSUAN_CONFIG, libassuan-config, no)
+
+  AC_PATH_TOOL(LIBASSUAN_CONFIG, libassuan-config, no)
 
   tmp=ifelse([$1], ,1:0.9.2,$1)
   if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
@@ -35,46 +37,44 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
     min_libassuan_version="$tmp"
   fi
 
-  if test "$LIBASSUAN_CONFIG" != "no" ; then
-    libassuan_version=`$LIBASSUAN_CONFIG --version`
-  fi
-  libassuan_version_major=`echo $libassuan_version | \
-               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
-  libassuan_version_minor=`echo $libassuan_version | \
-               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
-  libassuan_version_micro=`echo $libassuan_version | \
-               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
-
-  AC_MSG_CHECKING(for LIBASSUAN ifelse([$2], ,,[$2 ])- version >= $min_libassuan_version)
+  AC_MSG_CHECKING(for LIBASSUAN - version >= $min_libassuan_version)
   ok=no
-  if test "$LIBASSUAN_CONFIG" != "no" ; then
-    ifelse([$2], ,,[if `$LIBASSUAN_CONFIG --thread=$2 2> /dev/null` ; then])
+  if test "$LIBASSUAN_CONFIG" != "no" \
+     && test -f "$LIBASSUAN_CONFIG" ; then
     req_major=`echo $min_libassuan_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
     req_minor=`echo $min_libassuan_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
     req_micro=`echo $min_libassuan_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
-    if test "$libassuan_version_major" -gt "$req_major"; then
+
+    libassuan_config_version=`$LIBASSUAN_CONFIG --version`
+    major=`echo $libassuan_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+    minor=`echo $libassuan_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+    micro=`echo $libassuan_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
+
+    if test "$major" -gt "$req_major"; then
         ok=yes
     else 
-        if test "$libassuan_version_major" -eq "$req_major"; then
-            if test "$libassuan_version_minor" -gt "$req_minor"; then
+        if test "$major" -eq "$req_major"; then
+            if test "$minor" -gt "$req_minor"; then
                ok=yes
             else
-               if test "$libassuan_version_minor" -eq "$req_minor"; then
-                   if test "$libassuan_version_micro" -ge "$req_micro"; then
+               if test "$minor" -eq "$req_minor"; then
+                   if test "$micro" -ge "$req_micro"; then
                      ok=yes
                    fi
                fi
             fi
         fi
     fi
-    ifelse([$2], ,,[fi])
   fi
 
   if test $ok = yes; then
-    AC_MSG_RESULT([yes ($libassuan_version)])
+    AC_MSG_RESULT([yes ($libassuan_config_version)])
   else
     AC_MSG_RESULT(no)
   fi
@@ -83,7 +83,7 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
     if test "$req_libassuan_api" -gt 0 ; then
       tmp=`$LIBASSUAN_CONFIG --api-version 2>/dev/null || echo 0`
       if test "$tmp" -gt 0 ; then
-        AC_MSG_CHECKING([LIBASSUAN ifelse([$2], ,,[$2 ])API version])
+        AC_MSG_CHECKING([LIBASSUAN API version])
         if test "$req_libassuan_api" -eq "$tmp" ; then
           AC_MSG_RESULT(okay)
         else
@@ -94,6 +94,23 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
     fi
   fi
 
+  if test $ok = yes; then
+    if test x"$host" != x ; then
+      libassuan_config_host=`$LIBASSUAN_CONFIG --host 2>/dev/null || echo none`
+      if test x"$libassuan_config_host" != xnone ; then
+        if test x"$libassuan_config_host" != x"$host" ; then
+  AC_MSG_WARN([[
+***
+*** The config script $LIBASSUAN_CONFIG was
+*** built for $libassuan_config_host and thus may not match the
+*** used host $host.
+*** You may want to use the configure option --with-libassuan-prefix
+*** to specify a matching config script.
+***]])
+        fi
+      fi
+    fi
+  fi
 ])
 
 dnl AM_CHECK_LIBASSUAN([MINIMUM-VERSION,
