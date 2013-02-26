@@ -287,8 +287,12 @@ typedef long off_t;
 typedef __int64 ssize_t;"
    else
       INSERT__TYPEDEFS_FOR_GPGME_H="/* Typedefs for the 32 bit W32 API.  */
+#ifndef _OFF_T_DEFINED   /* Defined by newer mingw32 toolkits.  */
 typedef long off_t;
-typedef long ssize_t;"
+#endif
+#ifndef _SSIZE_T_DEFINED /* Defined by newer mingw32 toolkits.  */
+typedef long ssize_t;
+#endif"
    fi
 else
    INSERT__TYPEDEFS_FOR_GPGME_H="#include <sys/types.h>"

@@ -44,7 +44,11 @@
 #include <fcntl.h>
 #include <io.h>
 
-#define _WIN32_IE 0x0400 /* Required for SHGetSpecialFolderPathA.  */
+#if __MINGW64_VERSION_MAJOR >= 2
+# define _WIN32_IE 0x0501 /* Required by mingw64 toolkit.  */
+#else
+# define _WIN32_IE 0x0400 /* Required for SHGetSpecialFolderPathA.  */
+#endif
 
 /* We need to include the windows stuff here prior to shlobj.h so that
    we get the right winsock version.  This is usually done in util.h

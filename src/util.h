@@ -26,6 +26,7 @@
 # ifdef HAVE_W32CE_SYSTEM
 #  include "w32-ce.h"
 # else
+#  include "winsock2.h"
 #  include "windows.h"
 # endif
 #endif
