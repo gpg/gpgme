@@ -22,31 +22,32 @@
 AC_PREREQ(2.59)
 min_automake_version="1.11"
 
-# Version number: Remember to change it immediately *after* a release.
-#                 Make sure to run  "svn up" and "./autogen.sh --force"
-#                 before a "make dist".  See below for the LT versions.
-#                 Never do a binary build with the same version number
-#                 in another year; this would mess up the build number.
-#
-# The GIT version is usually the next intended release version with
-# the string "-gitNNNNNN" appended.  The reason for this is that tests
-# for a specific feature can already be done under the assumption that
-# the GIT version is the most recent one in a branch.  To disable the
-# GIT version for the real release, set the my_isgit macro to no.
-m4_define(my_version_major, [1])
-m4_define(my_version_minor, [4])
-m4_define(my_version_micro, [0])
-m4_define(my_isgit, [yes])
+# To build a release you need to create a tag with the version number
+# (git tag -s gpgme-n.m.k) and run "./autogen.sh --force".  Please
+# bump the version number immediately after the release and do another
+# commit and push so that the git magic is able to work.  See below
+# for the LT versions.
+m4_define(mym4_version_major, [1])
+m4_define(mym4_version_minor, [4])
+m4_define(mym4_version_micro, [0])
 
-m4_define(my_version, [my_version_major.my_version_minor.my_version_micro])
-m4_define([svn_revision], m4_esyscmd([printf "%d" $( (svn info 2>/dev/null \
-            || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
-m4_define([git_revision],
+# Below is m4 magic to extract and compute the revision number, the
+# decimalized short revision number, a beta version string, and a flag
+# indicating a development version (mym4_isgit). Note that the m4
+# processing is done by autoconf and not during the configure run.
+m4_define(mym4_version,
+          [mym4_version_major.mym4_version_minor.mym4_version_micro])
+m4_define([mym4_revision],
           m4_esyscmd([git rev-parse --short HEAD | tr -d '\n\r']))
-m4_define([my_full_version], [my_version[]m4_if(my_isgit,[yes],
-          [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])])
+m4_define([mym4_revision_dec],
+          m4_esyscmd_s([echo $((0x$(echo ]mym4_revision[|head -c 4)))]))
+m4_define([mym4_betastring],
+          m4_esyscmd_s([git describe --match 'gpgme-[0-9].*[0-9]' --long|\
+                        awk -F- '$3!=0{print"-beta"$3}']))
+m4_define([mym4_isgit],m4_if(mym4_betastring,[],[no],[yes]))
+m4_define([mym4_full_version],[mym4_version[]mym4_betastring])
 
-AC_INIT([gpgme],[my_full_version],[http://bugs.gnupg.org])
+AC_INIT([gpgme],[mym4_full_version],[http://bugs.gnupg.org])
 
 # LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
@@ -67,10 +68,7 @@ GPGME_CONFIG_API_VERSION=1
 NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.0.2
 
-m4_define([git_brevis],m4_esyscmd(printf "%u" 0x[]m4_substr(git_revision,0,4)))
-BUILD_REVISION=m4_if(git_revision,[],[svn_revision],[git_brevis])
-VERSION_NUMBER=m4_esyscmd(printf "0x%02x%02x%02x" \
-                          my_version_major my_version_minor my_version_micro)
+
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
 
@@ -106,9 +104,11 @@ AC_SUBST(LIBGPGME_LT_REVISION)
 
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
-AC_SUBST(VERSION_NUMBER)
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
+VERSION_NUMBER=m4_esyscmd(printf "0x%02x%02x%02x" mym4_version_major \
+                          mym4_version_minor mym4_version_micro)
+AC_SUBST(VERSION_NUMBER)
 
 # Don't default to build static libs.
 LT_PREREQ([2.2.6])
@@ -230,6 +230,27 @@ AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
 AM_CONDITIONAL(BUILD_W32_QT, test "$build_w32_qt" = yes)
 
 AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
+
+
+#
+# Provide information about the build.
+#
+BUILD_REVISION="mym4_revision"
+AC_SUBST(BUILD_REVISION)
+AC_DEFINE_UNQUOTED(BUILD_REVISION, "$BUILD_REVISION",
+                   [GIT commit id revision used to build this package])
+
+changequote(,)dnl
+BUILD_FILEVERSION=`echo "$PACKAGE_VERSION"|sed 's/\([0-9.]*\).*/\1./;s/\./,/g'`
+changequote([,])dnl
+BUILD_FILEVERSION="${BUILD_FILEVERSION}mym4_revision_dec"
+AC_SUBST(BUILD_FILEVERSION)
+
+BUILD_TIMESTAMP=`date -u +%Y-%m-%dT%H:%M+0000 2>/dev/null || date`
+AC_SUBST(BUILD_TIMESTAMP)
+AC_DEFINE_UNQUOTED(BUILD_TIMESTAMP, "$BUILD_TIMESTAMP",
+                   [The time this package was configured for a build])
+
 
 
 
@@ -868,23 +889,6 @@ fi
 AM_CONDITIONAL(HAVE_UISERVER, test "$uiserver" != "no")
 
 
-# Generate values for the DLL version info
-
-dnl Windows uses an internal build number.  We use the last day of the
-dnl year concatenated with the hour for it.  WARNING: You should not
-dnl do a build with the same version number in another year.
-if test "$have_w32_system" = yes; then
-    BUILD_TIMESTAMP=`date --iso-8601=minutes`
-    BUILD_NUMBER="$(date -u '+%j%H' | sed 's/^0*\(.*\)/\1/')"
-    changequote(,)dnl
-    BUILD_FILEVERSION=`echo "$VERSION" | sed 's/\([0-9.]*\).*/\1./;s/\./,/g'`
-    changequote([,])dnl
-    BUILD_FILEVERSION="${BUILD_FILEVERSION}${BUILD_NUMBER}"
-fi
-AC_SUBST(BUILD_NUMBER)
-AC_SUBST(BUILD_TIMESTAMP)
-AC_SUBST(BUILD_FILEVERSION)
-
 # Add a few constants to help porting to W32
 AH_VERBATIM([SEPCONSTANTS],
 [
@@ -906,6 +910,9 @@ AH_BOTTOM([
 
 /* Under WindowsCE we need gpg-error's strerror macro.  */
 #define GPG_ERR_ENABLE_ERRNO_MACROS 1
+
+#define CRIGHTBLURB "Copyright (C) 2000 Werner Koch\n" \
+                    "Copyright (C) 2001--2013 g10 Code GmbH\n"
 ])
 
 
@@ -977,7 +984,7 @@ AC_OUTPUT
 echo "
         GPGME v${VERSION} has been configured as follows:
 
-        Revision:        git_revision  (git_brevis)
+        Revision:        mym4_revision  (mym4_revision_dec)
         Platform:        $host
 
         GnuPG path:      $GPG

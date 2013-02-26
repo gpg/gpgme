@@ -18,7 +18,7 @@
 
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION @LIBGPGME_LT_CURRENT@,@LIBGPGME_LT_AGE@,@LIBGPGME_LT_REVISION@,@BUILD_NUMBER@
+ FILEVERSION @BUILD_FILEVERSION@
  PRODUCTVERSION @BUILD_FILEVERSION@
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -37,9 +37,9 @@ BEGIN
             VALUE "Comments", "Provided under the terms of the GNU Lesser General Public License.\0"
             VALUE "CompanyName", "g10 Code GmbH\0"
             VALUE "FileDescription", "GPGME - GnuPG Made Easy\0"
-            VALUE "FileVersion", "@LIBGPGME_LT_CURRENT@.@LIBGPGME_LT_AGE@.@LIBGPGME_LT_REVISION@.@BUILD_NUMBER@\0"
+            VALUE "FileVersion", "@LIBGPGME_LT_CURRENT@.@LIBGPGME_LT_AGE@.@LIBGPGME_LT_REVISION@.@BUILD_REVISION@\0"
             VALUE "InternalName", "gpgme\0"
-            VALUE "LegalCopyright", "Copyright © 2005 g10 Code GmbH\0"
+            VALUE "LegalCopyright", "Copyright © 2001-2013 g10 Code GmbH\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "gpgme.dll\0"
             VALUE "PrivateBuild", "\0"

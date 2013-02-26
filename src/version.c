@@ -83,6 +83,21 @@ do_subsystem_inits (void)
 }
 
 
+/* Put vesion information into the binary.  */
+static const char *
+cright_blurb (void)
+{
+  static const char blurb[] =
+    "\n\n"
+    "This is GPGME " PACKAGE_VERSION " - The GnuPG Made Easy library\n"
+    CRIGHTBLURB
+    "\n"
+    "(" BUILD_REVISION " " BUILD_TIMESTAMP ")\n"
+    "\n\n";
+  return blurb;
+}
+
+
 /* Read the next number in the version string STR and return it in
    *NUMBER.  Return a pointer to the tail of STR after parsing, or
    *NULL if the version string was invalid.  */
@@ -208,6 +223,8 @@ gpgme_check_version_internal (const char *req_version,
 {
   const char *result;
 
+  if (req_version && req_version[0] == 1 && req_version[1] == 1)
+    return cright_blurb ();
   result = gpgme_check_version (req_version);
   if (result == NULL)
     return result;
