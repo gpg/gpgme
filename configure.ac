@@ -65,6 +65,7 @@ LIBGPGME_LT_REVISION=1
 GPGME_CONFIG_API_VERSION=1
 ##############################################
 
+NEED_GPG_ERROR_VERSION=1.8
 NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.0.2
 
@@ -315,6 +316,8 @@ fi
 
 
 # Checks for library functions.
+AC_MSG_NOTICE([checking for libraries])
+
 AC_FUNC_FSEEKO
 
 AC_REPLACE_FUNCS(vasprintf)
@@ -363,7 +366,9 @@ fi
 AC_CHECK_FUNCS(setlocale)
 
 # Checking for libgpg-error.
-AM_PATH_GPG_ERROR(1.8,, AC_MSG_ERROR([libgpg-error was not found]))
+have_gpg_error=no
+AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION",
+                  have_gpg_error=yes, have_gpg_error=no)
 AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
           [The default error source for GPGME.])
 
@@ -946,6 +951,16 @@ AC_SUBST(emacs_local_vars_end, ['End:'])
 
 # Last check.
 die=no
+if test "$have_gpg_error" = "no"; then
+   die=yes
+   AC_MSG_NOTICE([[
+***
+*** You need libgpg-error to build this program.
+**  This library is for example available at
+***   ftp://ftp.gnupg.org/gcrypt/libgpg-error
+*** (at least version $NEED_GPG_ERROR_VERSION is required.)
+***]])
+fi
 if test "$have_libassuan" = "no"; then
    die=yes
    AC_MSG_NOTICE([[
@@ -996,7 +1011,7 @@ echo "
         G13 path:        $G13
         G13 version:     $G13_VERSION, min. $NEED_G13_VERSION
 
-        Assuan version:  $libassuan_version, min. $NEED_LIBASSUAN_VERSION
+        Assuan version:  $libassuan_config_version, min. $NEED_LIBASSUAN_VERSION
 
         UI Server:       $uiserver
         FD Passing:      $use_descriptor_passing
