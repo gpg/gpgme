@@ -1,7 +1,7 @@
 # configure.ac for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-#               2009, 2010, 2011, 2012  g10 Code GmbH
+#               2009, 2010, 2011, 2012, 2013  g10 Code GmbH
 #
 # This file is part of GPGME.
 #
@@ -74,10 +74,11 @@ VERSION_NUMBER=m4_esyscmd(printf "0x%02x%02x%02x" \
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
 
-AC_CONFIG_SRCDIR(src/gpgme.h.in)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AC_CONFIG_SRCDIR(src/gpgme.h.in)
+AC_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
 

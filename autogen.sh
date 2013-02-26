@@ -87,11 +87,11 @@ if [ "$myhost" = "w32" ]; then
     tmp=`dirname $0`
     tsdir=`cd "$tmp"; pwd`
     shift
-    if [ ! -f $tsdir/config.guess ]; then
-        echo "$tsdir/config.guess not found" >&2
+    if [ ! -f $tsdir/build-aux/config.guess ]; then
+        echo "$tsdir/build-aux/config.guess not found" >&2
         exit 1
     fi
-    build=`$tsdir/config.guess`
+    build=`$tsdir/build-aux/config.guess`
 
     case $myhostsub in
         ce)
@@ -102,11 +102,12 @@ if [ "$myhost" = "w32" ]; then
         64)
           w32root="$w64root"
           [ -z "$w32root" ] && w32root="$HOME/w64root"
-          toolprefixes="i686-w64-mingw32 amd64-mingw32msvc"
+          toolprefixes="$amd64_toolprefixes amd64-mingw32msvc"
           ;;
         *)
           [ -z "$w32root" ] && w32root="$HOME/w32root"
-          toolprefixes="i686-w64-mingw32 i586-mingw32msvc i386-mingw32msvc"
+          toolprefixes="$w32_toolprefixes i686-w64-mingw32 i586-mingw32msvc"
+          toolprefixes="$toolprefixes i386-mingw32msvc mingw32"
           ;;
     esac
     echo "Using $w32root as standard install directory" >&2
@@ -152,11 +153,11 @@ if [ "$myhost" = "amd64" ]; then
     tmp=`dirname $0`
     tsdir=`cd "$tmp"; pwd`
     shift
-    if [ ! -f $tsdir/config.guess ]; then
-        echo "$tsdir/config.guess not found" >&2
+    if [ ! -f $tsdir/build-aux/config.guess ]; then
+        echo "$tsdir/build-aux/config.guess not found" >&2
         exit 1
     fi
-    build=`$tsdir/config.guess`
+    build=`$tsdir/build-aux/config.guess`
 
     [ -z "$amd64root" ] && amd64root="$HOME/amd64root"
     echo "Using $amd64root as standard install directory" >&2
