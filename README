@@ -26,10 +26,11 @@ GPGME uses GnuPG and GpgSM as its backends to support OpenPGP and the
 Cryptographic Message Syntax (CMS).
 
 GPGME runs best on GNU/Linux or *BSD systems.  Other Unices may
-require small portability fixes, send us your patches.
+require small portability fixes, please send us your patches.
 
-See the file COPYING.LESSER and each file for copyright and warranty
-information.
+See the files COPYING, COPYING.LESSER, and each file for copyright and
+warranty information.  The file AUTHORS has a list of authors and
+useful web and mail addresses.
 
 
 Installation

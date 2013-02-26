@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.4.0 (unreleased)
+Noteworthy changes in version 1.4.0 (2013-02-26)
 ------------------------------------------------
 
  * New function gpgme_set_global_flag to help debugging on Android.

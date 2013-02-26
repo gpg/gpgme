@@ -1,3 +1,10 @@
 # This file is expected to be used via gitlog-to-changelog's --amend=FILE
 # option.  It specifies what changes to make to each given SHA1's commit
 # log and metadata, using Perl-eval'able expressions.
+
+3f1329e1c9b99b1632cc4c4eec2e4399676fd93d
+# Fix cruft inserted by Gnus
+s/.*PGP.*//
+
+c28ebca9f2e21344d68e9fdcec60553f225c2e54
+s/.*PGP.*//

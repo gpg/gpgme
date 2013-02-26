@@ -1,6 +1,7 @@
 Package: gpgme
+Homepage: http://www.gnupg.org/related_software/gpgme/
 Maintainer: Werner Koch <wk@gnupg.org>
-Bug reports: bug-gpgme@gnupg.org
+Bug reports: http://bugs.gnupg.org (use category "gpgme")
 Security related bug reports: security@gnupg.org
 License (software): LGPLv2.1+
 License (manual+tools): GPLv3+
@@ -22,7 +23,7 @@ Wojciech Polak <polak@lodz.pdi.net>
  - gpgme.spec
 
 
- Copyright 2001, 2002, 2012 g10 Code GmbH
+ Copyright 2001, 2002, 2012, 2013 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
