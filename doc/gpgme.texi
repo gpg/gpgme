@@ -101,6 +101,7 @@ This is Edition @value{EDITION}, last updated @value{UPDATED}, of
 Appendices
 
 * UI Server Protocol::            The GnuPG UI Server Protocol.
+* Debugging::                     How to solve problems.
 
 * Library Copying::               The GNU Lesser General Public License says
                                   how you can copy and share `GnuPG Made Easy'.
@@ -5793,6 +5794,47 @@ case the state of @var{ctx} is not modified).
 @c **********************************************************
 
 @include uiserver.texi
+
+@node Debugging
+@appendix How to solve problems
+@cindex debug
+@cindex GPGME_DEBUG
+
+Everyone knows that software often does not do what it should do and thus
+there is a need to track down problems.  This is in particular true
+for applications using a complex library like @acronym{GPGME} and of
+course also for the library itself.  Here we give a few hints on how
+to solve such problems.
+
+First of all you should make sure that the keys you want to use are
+installed in the GnuPG engine and are usable.  Thus the first test is
+to run the desired operation using @command{gpg} or @command{gpgsm} on
+the command line.  If you can't figure out why things don't work, you
+may use @acronym{GPGME}'s built in trace feature.  This feature is
+either enabled using the environment variable @code{GPGME_DEBUG} or,
+if this is not possible, by calling the function
+@code{gpgme_set_global_flag}.  The value is the trace level and
+an optional file name.
+
+@noindenr
+For example
+@smallexample
+GPGME_DEBUG=9:/home/user/mygpgme.log
+@end smallexample
+@noindent
+(Note that under Windows you use a semicolon in place of the colon to
+separate the fields.)
+
+A trace level of 9 is pretty verbose and thus you may want to start
+off with a lower level.  The exact definition of the trace levels and
+the output format may change with any release; you need to check the
+source code for details.  In any case the trace log should be helpful
+to understand what is going going on.  Warning: The trace log may
+reveal sensitive details like passphrases or other data you use in
+your application.  If you are asked to send a log file, make sure that
+you run your tests only with play data.
+
+
 
 @include lesser.texi
 
