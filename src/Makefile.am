@@ -172,6 +172,7 @@ no_undefined = -no-undefined
 export_symbols = -export-symbols $(srcdir)/gpgme.def
 
 install-def-file:
+	-$(INSTALL) -d $(DESTDIR)$(libdir)
 	$(INSTALL) $(srcdir)/gpgme.def $(DESTDIR)$(libdir)/gpgme.def
 
 uninstall-def-file:
