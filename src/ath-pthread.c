@@ -39,6 +39,8 @@
 
 #include <pthread.h>
 
+#include "gpgme.h"
+
 #include "ath.h"
 
 
@@ -130,21 +132,21 @@ ath_mutex_unlock (ath_mutex_t *lock)
 }
 
 
-ssize_t
+gpgme_ssize_t
 ath_read (int fd, void *buf, size_t nbytes)
 {
   return read (fd, buf, nbytes);
 }
 
 
-ssize_t
+gpgme_ssize_t
 ath_write (int fd, const void *buf, size_t nbytes)
 {
   return write (fd, buf, nbytes);
 }
 
 
-ssize_t
+gpgme_ssize_t
 ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
 	    struct timeval *timeout)
 {
@@ -152,7 +154,7 @@ ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
 }
 
 
-ssize_t
+gpgme_ssize_t
 ath_waitpid (pid_t pid, int *status, int options)
 {
   return waitpid (pid, status, options);

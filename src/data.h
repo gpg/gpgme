@@ -36,20 +36,23 @@
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle DH.  Return the number of characters read, 0 on EOF and
    -1 on error.  If an error occurs, errno is set.  */
-typedef ssize_t (*gpgme_data_read_cb) (gpgme_data_t dh, void *buffer,
-				       size_t size);
+typedef gpgme_ssize_t (*gpgme_data_read_cb) (gpgme_data_t dh,
+                                             void *buffer,
+                                             size_t size);
 
 /* Write up to SIZE bytes from buffer BUFFER to the data object with
    the handle DH.  Return the number of characters written, or -1 on
    error.  If an error occurs, errno is set.  */
-typedef ssize_t (*gpgme_data_write_cb) (gpgme_data_t dh, const void *buffer,
-					size_t size);
+typedef gpgme_ssize_t (*gpgme_data_write_cb) (gpgme_data_t dh,
+                                              const void *buffer,
+                                              size_t size);
 
 /* Set the current position from where the next read or write starts
    in the data object with the handle DH to OFFSET, relativ to
    WHENCE.  */
-typedef off_t (*gpgme_data_seek_cb) (gpgme_data_t dh, off_t offset,
-				     int whence);
+typedef gpgme_off_t (*gpgme_data_seek_cb) (gpgme_data_t dh,
+                                            gpgme_off_t offset,
+                                            int whence);
 
 /* Release the data object with the handle DH.  */
 typedef void (*gpgme_data_release_cb) (gpgme_data_t dh);
@@ -109,7 +112,7 @@ struct gpgme_data
       /* Allocated size of BUFFER.  */
       size_t size;
       size_t length;
-      off_t offset;
+      gpgme_off_t offset;
     } mem;
 
     /* For gpgme_data_new_from_read_cb.  */

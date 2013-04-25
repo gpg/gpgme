@@ -754,7 +754,7 @@ status_handler (void *opaque, int fd)
           char *src = line + 2;
 	  char *end = line + linelen;
 	  char *dst = src;
-          ssize_t nwritten;
+          gpgme_ssize_t nwritten;
 
           linelen = 0;
           while (src < end)

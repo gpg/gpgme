@@ -31,7 +31,7 @@
 #include "data.h"
 
 
-static ssize_t
+static gpgme_ssize_t
 user_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   if (!dh->data.user.cbs->read)
@@ -44,7 +44,7 @@ user_read (gpgme_data_t dh, void *buffer, size_t size)
 }
 
 
-static ssize_t
+static gpgme_ssize_t
 user_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   if (!dh->data.user.cbs->write)
@@ -57,8 +57,8 @@ user_write (gpgme_data_t dh, const void *buffer, size_t size)
 }
 
 
-static off_t
-user_seek (gpgme_data_t dh, off_t offset, int whence)
+static gpgme_off_t
+user_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
 {
   if (!dh->data.user.cbs->seek)
     {

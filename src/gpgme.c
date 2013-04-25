@@ -643,7 +643,7 @@ gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
 
 /* This function provides access to the internal read function; it is
    normally not used.  */
-ssize_t
+gpgme_ssize_t
 gpgme_io_read (int fd, void *buffer, size_t count)
 {
   int ret;
@@ -659,7 +659,7 @@ gpgme_io_read (int fd, void *buffer, size_t count)
 /* This function provides access to the internal write function.  It
    is to be used by user callbacks to return data to gpgme.  See
    gpgme_passphrase_cb_t and gpgme_edit_cb_t.  */
-ssize_t
+gpgme_ssize_t
 gpgme_io_write (int fd, const void *buffer, size_t count)
 {
   int ret;

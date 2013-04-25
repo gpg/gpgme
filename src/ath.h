@@ -88,11 +88,11 @@ int ath_mutex_unlock (ath_mutex_t *mutex);
 
 /* Replacement for the POSIX functions, which can be used to allow
    other (user-level) threads to run.  */
-ssize_t ath_read (int fd, void *buf, size_t nbytes);
-ssize_t ath_write (int fd, const void *buf, size_t nbytes);
-ssize_t ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
-		    struct timeval *timeout);
-ssize_t ath_waitpid (pid_t pid, int *status, int options);
+gpgme_ssize_t ath_read (int fd, void *buf, size_t nbytes);
+gpgme_ssize_t ath_write (int fd, const void *buf, size_t nbytes);
+gpgme_ssize_t ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
+                           struct timeval *timeout);
+gpgme_ssize_t ath_waitpid (pid_t pid, int *status, int options);
 int ath_accept (int s, struct sockaddr *addr, socklen_t *length_ptr);
 int ath_connect (int s, const struct sockaddr *addr, socklen_t length);
 int ath_sendmsg (int s, const struct msghdr *msg, int flags);

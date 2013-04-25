@@ -3056,7 +3056,7 @@ _cmd_genkey_write (gpgme_data_t data, const void *buf, size_t size)
 {
   while (size > 0)
     {
-      ssize_t writen = gpgme_data_write (data, buf, size);
+      gpgme_ssize_t writen = gpgme_data_write (data, buf, size);
       if (writen < 0 && errno != EAGAIN)
 	return gpg_error_from_syserror ();
       else if (writen > 0)
@@ -3112,7 +3112,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   do
     {
       char buf[512];
-      ssize_t readn = gpgme_data_read (inp_data, buf, sizeof (buf));
+      gpgme_ssize_t readn = gpgme_data_read (inp_data, buf, sizeof (buf));
       if (readn < 0)
 	{
 	  err = gpg_error_from_syserror ();

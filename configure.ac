@@ -282,25 +282,31 @@ AC_SUBST(NEED__FILE_OFFSET_BITS)
 
 # Figure out platform dependent typedefs for gpgme.h
 if test "$have_w32_system" = yes; then
-   if test "$have_w64_system" = yes; then
-      INSERT__TYPEDEFS_FOR_GPGME_H="/* Typedefs for the 64 bit W32 API.  */
-#include <basetsd.h>
-typedef long off_t;
-typedef __int64 ssize_t;"
-   else
-      INSERT__TYPEDEFS_FOR_GPGME_H="/* Typedefs for the 32 bit W32 API.  */
-#ifndef _OFF_T_DEFINED   /* Defined by newer mingw32 toolkits.  */
-typedef long off_t;
-#endif
-#ifndef _SSIZE_T_DEFINED /* Defined by newer mingw32 toolkits.  */
-typedef long ssize_t;
-#endif"
-   fi
+    INSERT__TYPEDEFS_FOR_GPGME_H="
+#ifdef _WIN64
+# include <stdint.h>
+  typedef int64_t gpgme_off_t;
+  typedef int64_t gpgme_ssize_t;
+#else /* _WIN32 */
+  typedef long gpgme_off_t;
+  typedef long gpgme_ssize_t;
+#endif /* _WIN32 */"
+    API__OFF_T="gpgme_off_t"
+    API__SSIZE_T="gpgme_ssize_t"
 else
-   INSERT__TYPEDEFS_FOR_GPGME_H="#include <sys/types.h>"
+    INSERT__TYPEDEFS_FOR_GPGME_H="
+#include <sys/types.h>
+typedef off_t   gpgme_off_t;
+typedef ssize_t gpgme_ssize_t;"
+    API__OFF_T="off_t"
+    API__SSIZE_T="ssize_t"
 fi
 AC_SUBST(INSERT__TYPEDEFS_FOR_GPGME_H)
 AM_SUBST_NOTMAKE(INSERT__TYPEDEFS_FOR_GPGME_H)
+AC_SUBST(API__OFF_T)
+AM_SUBST_NOTMAKE(API__OFF_T)
+AC_SUBST(API__SSIZE_T)
+AM_SUBST_NOTMAKE(API__SSIZE_T)
 
 # Checks for compiler features.
 if test "$GCC" = yes; then

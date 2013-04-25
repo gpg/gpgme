@@ -40,8 +40,9 @@
 #include <sys/wait.h>
 #endif
 
+#include "gpgme.h"
+
 #ifdef _MSC_VER
-  typedef long ssize_t;
   typedef int  pid_t;
 #endif
 
@@ -125,7 +126,7 @@ ath_mutex_unlock (ath_mutex_t *lock)
 }
 
 
-ssize_t
+gpgme_ssize_t
 ath_read (int fd, void *buf, size_t nbytes)
 {
 #if defined(HAVE_W32CE_SYSTEM) && defined(_MSC_VER)
@@ -136,7 +137,7 @@ ath_read (int fd, void *buf, size_t nbytes)
 }
 
 
-ssize_t
+gpgme_ssize_t
 ath_write (int fd, const void *buf, size_t nbytes)
 {
 #if defined(HAVE_W32CE_SYSTEM) && defined(_MSC_VER)
@@ -147,7 +148,7 @@ ath_write (int fd, const void *buf, size_t nbytes)
 }
 
 
-ssize_t
+gpgme_ssize_t
 ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
 	    struct timeval *timeout)
 {
@@ -159,7 +160,7 @@ ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
 }
 
 
-ssize_t
+gpgme_ssize_t
 ath_waitpid (pid_t pid, int *status, int options)
 {
 #ifdef HAVE_W32_SYSTEM

@@ -68,14 +68,14 @@ my_close (assuan_context_t ctx, assuan_fd_t fd)
 }
 
 
-static ssize_t
+static gpgme_ssize_t
 my_read (assuan_context_t ctx, assuan_fd_t fd, void *buffer, size_t size)
 {
   return _gpgme_io_read ((int) fd, buffer, size);
 }
 
 
-static ssize_t
+static gpgme_ssize_t
 my_write (assuan_context_t ctx, assuan_fd_t fd, const void *buffer, size_t size)
 {
   return _gpgme_io_write ((int) fd, buffer, size);

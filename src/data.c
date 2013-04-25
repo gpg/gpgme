@@ -72,10 +72,10 @@ _gpgme_data_release (gpgme_data_t dh)
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle DH.  Return the number of characters read, 0 on EOF and
    -1 on error.  If an error occurs, errno is set.  */
-ssize_t
+gpgme_ssize_t
 gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
 {
-  ssize_t res;
+  gpgme_ssize_t res;
   TRACE_BEG2 (DEBUG_DATA, "gpgme_data_read", dh,
 	      "buffer=%p, size=%u", buffer, size);
 
@@ -100,10 +100,10 @@ gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
 /* Write up to SIZE bytes from buffer BUFFER to the data object with
    the handle DH.  Return the number of characters written, or -1 on
    error.  If an error occurs, errno is set.  */
-ssize_t
+gpgme_ssize_t
 gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
-  ssize_t res;
+  gpgme_ssize_t res;
   TRACE_BEG2 (DEBUG_DATA, "gpgme_data_write", dh,
 	      "buffer=%p, size=%u", buffer, size);
 
@@ -128,8 +128,8 @@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
 /* Set the current position from where the next read or write starts
    in the data object with the handle DH to OFFSET, relativ to
    WHENCE.  */
-off_t
-gpgme_data_seek (gpgme_data_t dh, off_t offset, int whence)
+gpgme_off_t
+gpgme_data_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
 {
   TRACE_BEG2 (DEBUG_DATA, "gpgme_data_seek", dh,
 	      "offset=%lli, whence=%i", offset, whence);
@@ -253,7 +253,7 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
   gpgme_data_t dh = (gpgme_data_t) data->handler_value;
   char buffer[BUFFER_SIZE];
   char *bufp = buffer;
-  ssize_t buflen;
+  gpgme_ssize_t buflen;
   TRACE_BEG1 (DEBUG_CTX, "_gpgme_data_inbound_handler", dh,
 	      "fd=0x%x", fd);
 
@@ -268,7 +268,7 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
 
   do
     {
-      ssize_t amt = gpgme_data_write (dh, bufp, buflen);
+      gpgme_ssize_t amt = gpgme_data_write (dh, bufp, buflen);
       if (amt == 0 || (amt < 0 && errno != EINTR))
 	return TRACE_ERR (gpg_error_from_syserror ());
       bufp += amt;
@@ -284,13 +284,13 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
 {
   struct io_cb_data *data = (struct io_cb_data *) opaque;
   gpgme_data_t dh = (gpgme_data_t) data->handler_value;
-  ssize_t nwritten;
+  gpgme_ssize_t nwritten;
   TRACE_BEG1 (DEBUG_CTX, "_gpgme_data_outbound_handler", dh,
 	      "fd=0x%x", fd);
 
   if (!dh->pending_len)
     {
-      ssize_t amt = gpgme_data_read (dh, dh->pending, BUFFER_SIZE);
+      gpgme_ssize_t amt = gpgme_data_read (dh, dh->pending, BUFFER_SIZE);
       if (amt < 0)
 	return TRACE_ERR (gpg_error_from_syserror ());
       if (amt == 0)

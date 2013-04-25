@@ -31,7 +31,7 @@
 #include "data.h"
 
 
-static ssize_t
+static gpgme_ssize_t
 stream_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   size_t amt = fread (buffer, 1, size, dh->data.stream);
@@ -41,7 +41,7 @@ stream_read (gpgme_data_t dh, void *buffer, size_t size)
 }
 
 
-static ssize_t
+static gpgme_ssize_t
 stream_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   size_t amt = fwrite (buffer, 1, size, dh->data.stream);
@@ -51,8 +51,8 @@ stream_write (gpgme_data_t dh, const void *buffer, size_t size)
 }
 
 
-static off_t
-stream_seek (gpgme_data_t dh, off_t offset, int whence)
+static gpgme_off_t
+stream_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
 {
   int err;
 

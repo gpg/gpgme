@@ -493,18 +493,42 @@ support by default and just use that.  The compatibility modes (small
 file sizes or dual mode) can be considered an historic artefact, only
 useful to allow for a transitional period.
 
-@acronym{GPGME} is compiled using largefile support by default.  This
-means that your application must do the same, at least as far as it is
-relevant for using the @file{gpgme.h} header file.  All types in this
-header files refer to their largefile counterparts, if they are
-different from any default types on the system.
+On POSIX platforms @acronym{GPGME} is compiled using largefile support
+by default.  This means that your application must do the same, at
+least as far as it is relevant for using the @file{gpgme.h} header
+file.  All types in this header files refer to their largefile
+counterparts, if they are different from any default types on the
+system.
 
-You can enable largefile support, if it is different from the default
-on the system the application is compiled on, by using the Autoconf
-macro @code{AC_SYS_LARGEFILE}.  If you do this, then you don't need to
-worry about anything else: It will just work.  In this case you might
-also want to use @code{AC_FUNC_FSEEKO} to take advantage of some new
-interfaces, and @code{AC_TYPE_OFF_T} (just in case).
+On 32 and 64 bit Windows platforms @code{off_t} is declared as 32 bit
+signed integer.  There is no specific support for LFS in the C
+library.  The recommendation from Microsoft is to use the native
+interface (@code{CreateFile} et al.) for large files.  Released binary
+versions of @acronym{GPGME} (libgpgme-11.dll) have always been build
+with a 32 bit @code{off_t}.  To avoid an ABI break we stick to this
+convention for 32 bit Windows by using @code{long} there.
+@acronym{GPGME} versions for 64 bit Windows have never been released
+and thus we are able to use @code{int64_t} instead of @code{off_t}
+there.  For easier migration the typedef @code{gpgme_off_t} has been
+defined.  The reason we cannot use @code{off_t} directly is that some
+toolchains (e.g. mingw64) introduce a POSIX compatible hack for
+@code{off_t}.  Some widely used toolkits make use of this hack and in
+turn @acronym{GPGME} would need to use it also.  However, this would
+introduce an ABI break and existing software making use of libgpgme
+might suffer from a severe break.  Thus with version 1.4.2 we
+redefined all functions using @code{off_t} to use @code{gpgme_off_t}
+which is defined as explained above.  This way we keep the ABI well
+defined and independent of any toolchain hacks.  The bottom line is
+that LFS support in @acronym{GPGME} is only available on 64 bit
+versions of Windows.
+
+On POSIX platforms you can enable largefile support, if it is
+different from the default on the system the application is compiled
+on, by using the Autoconf macro @code{AC_SYS_LARGEFILE}.  If you do
+this, then you don't need to worry about anything else: It will just
+work.  In this case you might also want to use @code{AC_FUNC_FSEEKO}
+to take advantage of some new interfaces, and @code{AC_TYPE_OFF_T}
+(just in case).
 
 If you do not use Autoconf, you can define the preprocessor symbol
 @code{_FILE_OFFSET_BITS} to 64 @emph{before} including any header
@@ -1537,6 +1561,20 @@ that all GPGME data operations always have data available, for example
 by using memory buffers or files rather than pipes or sockets.  This
 might be relevant, for example, if the external event loop mechanism
 is used.
+
+@deftp {Data type} {gpgme_off_t}
+On POSIX platforms the @code{gpgme_off_t} type is an alias for
+@code{off_t}; it may be used interchangeable.  On Windows platforms
+@code{gpgme_off_t} is defined as a long (i.e. 32 bit) for 32 bit
+Windows and as a 64 bit signed integer for 64 bit Windows.
+@end deftp
+
+@deftp {Data type} {gpgme_ssize_t}
+The @code{gpgme_ssize_t} type is an alias for @code{ssize_t}.  It has
+only been introduced to overcome portability problems pertaining to
+the declaration of @code{ssize_t} by different toolchains.
+@end deftp
+
 
 @menu
 * Creating Data Buffers::         Creating new data buffers.

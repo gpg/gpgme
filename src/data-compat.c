@@ -41,7 +41,7 @@
    non-zero).  */
 gpgme_error_t
 gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
-			      FILE *stream, off_t offset, size_t length)
+			      FILE *stream, gpgme_off_t offset, size_t length)
 {
 #if defined (HAVE_W32CE_SYSTEM) && defined (_MSC_VER)
   return gpgme_error (GPG_ERR_NOT_IMPLEMENTED);
@@ -175,7 +175,7 @@ gpgme_error_to_errno (gpgme_error_t err)
 }
 
 
-static ssize_t
+static gpgme_ssize_t
 old_user_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   gpgme_error_t err;
@@ -191,8 +191,8 @@ old_user_read (gpgme_data_t dh, void *buffer, size_t size)
 }
 
 
-static off_t
-old_user_seek (gpgme_data_t dh, off_t offset, int whence)
+static gpgme_off_t
+old_user_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
 {
   gpgme_error_t err;
   TRACE_BEG2 (DEBUG_DATA, "gpgme:old_user_seek", dh,

@@ -35,7 +35,7 @@
 #include "debug.h"
 
 
-static ssize_t
+static gpgme_ssize_t
 mem_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   size_t amt = dh->data.mem.length - dh->data.mem.offset;
@@ -54,7 +54,7 @@ mem_read (gpgme_data_t dh, void *buffer, size_t size)
 }
 
 
-static ssize_t
+static gpgme_ssize_t
 mem_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   size_t unused;
@@ -109,8 +109,8 @@ mem_write (gpgme_data_t dh, const void *buffer, size_t size)
 }
 
 
-static off_t
-mem_seek (gpgme_data_t dh, off_t offset, int whence)
+static gpgme_off_t
+mem_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
 {
   switch (whence)
     {

@@ -89,22 +89,22 @@ lseek (int fildes, long offset, int whence)
 
 
 
-static ssize_t
+static gpgme_ssize_t
 fd_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   return read (dh->data.fd, buffer, size);
 }
 
 
-static ssize_t
+static gpgme_ssize_t
 fd_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   return write (dh->data.fd, buffer, size);
 }
 
 
-static off_t
-fd_seek (gpgme_data_t dh, off_t offset, int whence)
+static gpgme_off_t
+fd_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
 {
   return lseek (dh->data.fd, offset, whence);
 }

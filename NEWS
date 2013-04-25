@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.4.2 (unreleased)
 ------------------------------------------------
 
+ * Interface changes relative to the 1.4.1 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_off_t                    NEW.
+ gpgme_size_t                   NEW.
+
 
 Noteworthy changes in version 1.4.1 (2013-05-01)
 ------------------------------------------------
