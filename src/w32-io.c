@@ -316,6 +316,21 @@ reader (void *arg)
                 }
               else
                 {
+                  /* Check whether the shutdown triggered the error -
+                     no need to to print a warning in this case.  */
+                  if ( ctx->error_code == WSAECONNABORTED
+                       || ctx->error_code == WSAECONNRESET)
+                    {
+                      LOCK (ctx->mutex);
+                      if (ctx->stop_me)
+                        {
+                          UNLOCK (ctx->mutex);
+                          TRACE_LOG ("got shutdown");
+                          break;
+                        }
+                      UNLOCK (ctx->mutex);
+                    }
+
                   ctx->error = 1;
                   TRACE_LOG1 ("recv error: ec=%d", ctx->error_code);
                 }
@@ -357,6 +372,7 @@ reader (void *arg)
 	  UNLOCK (ctx->mutex);
 	  break;
         }
+
       TRACE_LOG1 ("got %u bytes", nread);
 
       ctx->writepos = (ctx->writepos + nread) % READBUF_SIZE;
@@ -494,6 +510,26 @@ destroy_reader (struct reader_context_s *ctx)
 	}
     }
 #endif
+
+  /* The reader thread is usually blocking in recv or ReadFile.  If
+     the peer does not send an EOF or breaks the pipe the WFSO might
+     get stuck waiting for the termination of the reader thread.  This
+     happens quite often with sockets, thus we definitely need to get
+     out of the recv.  A shutdown does this nicely.  For handles
+     (i.e. pipes) it would also be nice to cancel the operation, but
+     such a feature is only available since Vista.  Thus we need to
+     dlopen that syscall.  */
+  if (ctx->file_hd != INVALID_HANDLE_VALUE)
+    {
+      /* Fixme: Call CancelSynchronousIo (handle_of_thread).  */
+    }
+  else if (ctx->file_sock != INVALID_SOCKET)
+    {
+      if (shutdown (ctx->file_sock, 2))
+        TRACE2 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx->file_hd,
+                "shutdown socket %d failed: %s",
+                ctx->file_sock, (int) WSAGetLastError ());
+    }
 
   TRACE1 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx->file_hd,
 	  "waiting for termination of thread %p", ctx->thread_hd);
