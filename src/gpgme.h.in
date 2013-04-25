@@ -34,8 +34,6 @@
 /* Include stdio.h for the FILE type definition.  */
 #include <stdio.h>
 #include <time.h>
-@INSERT__TYPEDEFS_FOR_GPGME_H@
-
 #include <gpg-error.h>
 
 #ifdef __cplusplus
@@ -45,6 +43,7 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
+@INSERT__TYPEDEFS_FOR_GPGME_H@
 
 
 /* Check for compiler features.  */
