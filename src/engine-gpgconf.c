@@ -1,6 +1,7 @@
 /* engine-gpgconf.c - gpg-conf engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008,
+                 2013 g10 Code GmbH
 
    This file is part of GPGME.
 
@@ -191,7 +192,10 @@ gpgconf_config_release (gpgme_conf_comp_t conf)
     }
 }
 
-
+/* Read from gpgconf and pass line after line to the hook function.
+   We put a limit of 64 k on the maximum size for a line.  This should
+   allow for quite a long "group" line, which is usually the longest
+   line (mine is currently ~3k).  */
 static gpgme_error_t
 gpgconf_read (void *engine, char *arg1, char *arg2,
 	      gpgme_error_t (*cb) (void *hook, char *line),
@@ -199,9 +203,9 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
 {
   struct engine_gpgconf *gpgconf = engine;
   gpgme_error_t err = 0;
-#define LINELENGTH 1024
-  char linebuf[LINELENGTH] = "";
-  int linelen = 0;
+  char *linebuf;
+  size_t linebufsize;
+  int linelen;
   char *argv[4] = { NULL /* file_name */, NULL, NULL, NULL };
   int rp[2];
   struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */, -1, 0},
@@ -232,51 +236,80 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
       return gpg_error_from_syserror ();
     }
 
-  do
+  linebufsize = 1024; /* Usually enough for conf lines.  */
+  linebuf = malloc (linebufsize);
+  if (!linebuf)
     {
-      nread = _gpgme_io_read (rp[0],
-                              linebuf + linelen, LINELENGTH - linelen - 1);
-      if (nread > 0)
-	{
-          char *line;
-          const char *lastmark = NULL;
-          size_t nused;
-
-	  linelen += nread;
-	  linebuf[linelen] = '\0';
-
-	  for (line=linebuf; (mark = strchr (line, '\n')); line = mark+1 )
-	    {
-              lastmark = mark;
-	      if (mark > line && mark[-1] == '\r')
-		mark[-1] = '\0';
-              else
-                mark[0] = '\0';
-
-	      /* Got a full line.  Due to the CR removal code (which
-                 occurs only on Windows) we might be one-off and thus
-                 would see empty lines.  Don't pass them to the
-                 callback. */
-	      err = *line? (*cb) (hook, line) : 0;
-	      if (err)
-		goto leave;
-	    }
-
-          nused = lastmark? (lastmark + 1 - linebuf) : 0;
-          memmove (linebuf, linebuf + nused, linelen - nused);
-          linelen -= nused;
-	}
+      err = gpg_error_from_syserror ();
+      goto leave;
     }
-  while (nread > 0 && linelen < LINELENGTH - 1);
+  linelen = 0;
 
-  if (!err && nread < 0)
-    err = gpg_error_from_syserror ();
-  if (!err && nread > 0)
-    err = gpg_error (GPG_ERR_LINE_TOO_LONG);
+  while ((nread = _gpgme_io_read (rp[0], linebuf + linelen,
+                                  linebufsize - linelen - 1)))
+    {
+      char *line;
+      const char *lastmark = NULL;
+      size_t nused;
+
+      if (nread < 0)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      linelen += nread;
+      linebuf[linelen] = '\0';
+
+      for (line=linebuf; (mark = strchr (line, '\n')); line = mark+1 )
+        {
+          lastmark = mark;
+          if (mark > line && mark[-1] == '\r')
+            mark[-1] = '\0';
+          else
+            mark[0] = '\0';
+
+          /* Got a full line.  Due to the CR removal code (which
+             occurs only on Windows) we might be one-off and thus
+             would see empty lines.  Don't pass them to the
+             callback. */
+          err = *line? (*cb) (hook, line) : 0;
+          if (err)
+            goto leave;
+        }
+
+      nused = lastmark? (lastmark + 1 - linebuf) : 0;
+      memmove (linebuf, linebuf + nused, linelen - nused);
+      linelen -= nused;
+
+      if (!(linelen < linebufsize - 1))
+        {
+          char *newlinebuf;
+
+          if (linelen <  8 * 1024 - 1)
+            linebufsize = 8 * 1024;
+          else if (linelen < 64 * 1024 - 1)
+            linebufsize = 64 * 1024;
+          else
+            {
+              /* We reached our limit - give up.  */
+              err = gpg_error (GPG_ERR_LINE_TOO_LONG);
+              goto leave;
+            }
+
+          newlinebuf = realloc (linebuf, linebufsize);
+          if (!newlinebuf)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          linebuf = newlinebuf;
+        }
+    }
 
  leave:
+  free (linebuf);
   _gpgme_io_close (rp[0]);
-
   return err;
 }
 

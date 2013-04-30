@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.4.1 (unreleased)
 ------------------------------------------------
 
+ * Fix reading of gpg conf files with excessive use of the group
+   option.
+
+ * Fix building with the i686-w64-mingw32 toolchain.
+
 
 Noteworthy changes in version 1.4.0 (2013-02-26)
 ------------------------------------------------
