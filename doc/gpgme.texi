@@ -5816,7 +5816,7 @@ if this is not possible, by calling the function
 @code{gpgme_set_global_flag}.  The value is the trace level and
 an optional file name.
 
-@noindenr
+@noindent
 For example
 @smallexample
 GPGME_DEBUG=9:/home/user/mygpgme.log
