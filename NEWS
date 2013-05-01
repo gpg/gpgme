@@ -1,10 +1,12 @@
-Noteworthy changes in version 1.4.1 (unreleased)
+Noteworthy changes in version 1.4.1 (2013-05-01)
 ------------------------------------------------
 
- * Fix reading of gpg conf files with excessive use of the group
+ * Fixed reading of gpg.conf files with excessive use of the group
    option.
 
- * Fix building with the i686-w64-mingw32 toolchain.
+ * Fixed building with the i686-w64-mingw32 toolchain.
+
+ * Disabled FD passing by default for Apple.
 
 
 Noteworthy changes in version 1.4.0 (2013-02-26)
