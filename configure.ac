@@ -872,7 +872,18 @@ AC_CHECK_MEMBER(struct cmsghdr.cmsg_len,
 #include <unistd.h>
        ])
 
-use_descriptor_passing=yes
+
+dnl There seems to be a problem with Apple and decriptor passing.
+dnl Until we found a solution we change the default to no.
+dnl See bug 1483.
+case "${host}" in
+    *-apple-darwin*)
+      use_descriptor_passing=no
+      ;;
+    *)
+      use_descriptor_passing=yes
+      ;;
+esac
 AC_ARG_ENABLE(fd-passing,
   AC_HELP_STRING([--disable-fd-passing], [do not use FD passing]),
   use_descriptor_passing=$enableval)
