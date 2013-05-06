@@ -264,8 +264,8 @@ reader (void *arg)
   int nbytes;
   DWORD nread;
   int sock;
-  TRACE_BEG1 (DEBUG_SYSIO, "gpgme:reader", ctx->file_hd,
-	      "thread=%p", ctx->thread_hd);
+  TRACE_BEG2 (DEBUG_SYSIO, "gpgme:reader", ctx->file_hd,
+	      "file_sock=%d, thread=%p", ctx->file_sock, ctx->thread_hd);
 
   if (ctx->file_hd != INVALID_HANDLE_VALUE)
     sock = 0;
@@ -400,6 +400,9 @@ create_reader (int fd)
       TRACE_SYSERR (EIO);
       return NULL;
     }
+  TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d",
+              fd, fd_table[fd].handle, fd_table[fd].socket,
+              fd_table[fd].dup_from);
   ctx->file_hd = fd_table[fd].handle;
   ctx->file_sock = fd_table[fd].socket;
 
@@ -652,8 +655,8 @@ writer (void *arg)
   struct writer_context_s *ctx = arg;
   DWORD nwritten;
   int sock;
-  TRACE_BEG1 (DEBUG_SYSIO, "gpgme:writer", ctx->file_hd,
-	      "thread=%p", ctx->thread_hd);
+  TRACE_BEG2 (DEBUG_SYSIO, "gpgme:writer", ctx->file_hd,
+	      "file_sock=%d, thread=%p", ctx->file_sock, ctx->thread_hd);
 
   if (ctx->file_hd != INVALID_HANDLE_VALUE)
     sock = 0;
@@ -766,6 +769,9 @@ create_writer (int fd)
       TRACE_SYSERR (EIO);
       return NULL;
     }
+  TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d",
+              fd, fd_table[fd].handle, fd_table[fd].socket,
+              fd_table[fd].dup_from);
   ctx->file_hd = fd_table[fd].handle;
   ctx->file_sock = fd_table[fd].socket;
 
@@ -1148,6 +1154,10 @@ _gpgme_io_close (int fd)
       gpg_err_set_errno (EBADF);
       return TRACE_SYSRES (-1);
     }
+
+  TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d",
+              fd, fd_table[fd].handle, fd_table[fd].socket,
+              fd_table[fd].dup_from);
 
   kill_reader (fd);
   kill_writer (fd);
@@ -1544,7 +1554,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   args = calloc (2 + i + 1, sizeof (*args));
   args[0] = (char *) _gpgme_get_w32spawn_path ();
   args[1] = tmp_name;
-  args[2] = path;
+  args[2] = (char *)path;
   memcpy (&args[3], &argv[1], i * sizeof (*args));
 
   memset (&sec_attr, 0, sizeof sec_attr);
@@ -1734,7 +1744,9 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_select", fds,
 	      "nfds=%u, nonblock=%u", nfds, nonblock);
 
+#if 0
  restart:
+#endif
   TRACE_SEQ (dbg_help, "select on [ ");
   any = 0;
   nwait = 0;
