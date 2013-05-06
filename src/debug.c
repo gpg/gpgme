@@ -258,17 +258,10 @@ _gpgme_debug (int level, const char *format, ...)
   }
 #ifdef FRAME_NR
   {
-    char spaces[] = "                                        ";
-    int nr_spaces = sizeof (spaces) - 1;
-    int nr_columns;
+    int indent;
 
-    nr_columns = 2 * (frame_nr - 1);
-    if (nr_columns > nr_spaces)
-      nr_columns = nr_spaces;
-    if (nr_columns < 0)
-      nr_columns = 0;
-    spaces[nr_columns] = '\0';
-    fprintf (errfp, "%s", spaces);
+    indent = frame_nr > 0? (2 * (frame_nr - 1)):0;
+    fprintf (errfp, "%*s", indent < 40? indent : 40, "");
   }
 #endif
 
