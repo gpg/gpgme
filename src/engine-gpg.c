@@ -1716,6 +1716,9 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
       if (!err && (flags & GPGME_ENCRYPT_ALWAYS_TRUST))
 	err = add_arg (gpg, "--always-trust");
 
+      if (!err && (flags & GPGME_ENCRYPT_NO_ENCRYPT_TO))
+	err = add_arg (gpg, "--no-encrypt-to");
+
       if (!err)
 	err = append_args_from_recipients (gpg, recp);
     }
