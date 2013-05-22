@@ -1,6 +1,8 @@
 Noteworthy changes in version 1.4.2 (unreleased)
 ------------------------------------------------
 
+ * Allow symmetric encryption with gpgme_op_encrypt_sign.
+
  * Interface changes relative to the 1.4.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_off_t                    NEW.

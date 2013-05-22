@@ -47,19 +47,38 @@ encrypt_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 
 static gpgme_error_t
+encrypt_sym_status_handler (void *priv, gpgme_status_code_t code, char *args)
+{
+  gpgme_error_t err;
+
+  err = _gpgme_progress_status_handler (priv, code, args);
+  if (!err)
+    err = _gpgme_sign_status_handler (priv, code, args);
+  if (!err)
+    err = _gpgme_passphrase_status_handler (priv, code, args);
+  return err;
+}
+
+
+static gpgme_error_t
 encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
 		    gpgme_encrypt_flags_t flags,
 		    gpgme_data_t plain, gpgme_data_t cipher)
 {
   gpgme_error_t err;
+  int symmetric;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     return err;
 
+  symmetric = !recp;
+
   if (!plain)
     return gpg_error (GPG_ERR_NO_DATA);
-  if (!cipher || !recp)
+  if (!cipher)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (recp && !*recp)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_encrypt_init_result (ctx);
@@ -79,7 +98,10 @@ encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
     }
 
   _gpgme_engine_set_status_handler (ctx->engine,
-				    encrypt_sign_status_handler, ctx);
+                                    symmetric
+                                    ? encrypt_sym_status_handler
+                                    : encrypt_sign_status_handler,
+				    ctx);
 
   return _gpgme_engine_op_encrypt_sign (ctx->engine, recp, flags, plain,
 					cipher, ctx->use_armor,

@@ -1700,23 +1700,29 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
+  int symmetric = !recp;
 
-  err = add_arg (gpg, "--encrypt");
+  err = add_arg (gpg, symmetric ? "--symmetric" : "--encrypt");
+
   if (!err)
     err = add_arg (gpg, "--sign");
   if (!err && use_armor)
     err = add_arg (gpg, "--armor");
 
-  /* If we know that all recipients are valid (full or ultimate trust)
-     we can suppress further checks.  */
-  if (!err && (flags & GPGME_ENCRYPT_ALWAYS_TRUST))
-    err = add_arg (gpg, "--always-trust");
+  if (!symmetric)
+    {
+      /* If we know that all recipients are valid (full or ultimate trust)
+	 we can suppress further checks.  */
+      if (!err && (flags & GPGME_ENCRYPT_ALWAYS_TRUST))
+	err = add_arg (gpg, "--always-trust");
 
-  if (!err)
-    err = append_args_from_recipients (gpg, recp);
+      if (!err)
+	err = append_args_from_recipients (gpg, recp);
+    }
 
   if (!err)
     err = append_args_from_signers (gpg, ctx);
+
   if (!err)
     err = append_args_from_sig_notations (gpg, ctx);
 

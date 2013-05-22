@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -83,7 +83,7 @@ check_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
 }
 
 
-int 
+int
 main (int argc, char **argv)
 {
   gpgme_ctx_t ctx;
@@ -95,7 +95,7 @@ main (int argc, char **argv)
   char *agent_info;
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
-    
+
   err = gpgme_new (&ctx);
   fail_if_err (err);
   gpgme_set_textmode (ctx, 1);
@@ -135,6 +135,24 @@ main (int argc, char **argv)
   gpgme_key_unref (key[1]);
   gpgme_data_release (in);
   gpgme_data_release (out);
+
+  /* Now a second time using symmetric encryption.  */
+  err = gpgme_data_new_from_mem (&in, "Hallo Leute\n", 12, 0);
+  fail_if_err (err);
+
+  err = gpgme_data_new (&out);
+  fail_if_err (err);
+
+  err = gpgme_op_encrypt_sign (ctx, NULL, GPGME_ENCRYPT_ALWAYS_TRUST, in, out);
+  fail_if_err (err);
+  sign_result = gpgme_op_sign_result (ctx);
+  check_result (sign_result, GPGME_SIG_MODE_NORMAL);
+  print_data (out);
+
+  gpgme_data_release (in);
+  gpgme_data_release (out);
+
+
   gpgme_release (ctx);
   return 0;
 }
