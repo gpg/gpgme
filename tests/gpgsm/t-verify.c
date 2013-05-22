@@ -118,7 +118,7 @@ show_auditlog (gpgme_ctx_t ctx)
 
   err = gpgme_data_new (&data);
   fail_if_err (err);
-  err = gpgme_op_getauditlog (ctx, data, GPGME_AUDITLOG_HTML);
+  err = gpgme_op_getauditlog (ctx, data, 0);
   if (err)
     {
       fprintf (stderr, "%s:%i: Can't get audit log: %s\n",
