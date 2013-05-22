@@ -1911,11 +1911,14 @@ gt_sign_encrypt (gpgme_tool_t gt, gpgme_encrypt_flags_t flags,
 		 gpgme_data_t plain, gpgme_data_t cipher, int sign)
 {
   gpg_error_t err;
+  gpgme_key_t *recp;
+
+  recp = gt->recipients_nr? gt->recipients : NULL;
 
   if (sign)
-    err = gpgme_op_encrypt_sign (gt->ctx, gt->recipients, flags, plain, cipher);
+    err = gpgme_op_encrypt_sign (gt->ctx, recp, flags, plain, cipher);
   else
-    err = gpgme_op_encrypt (gt->ctx, gt->recipients, flags, plain, cipher);
+    err = gpgme_op_encrypt (gt->ctx, recp, flags, plain, cipher);
 
   gt_recipients_clear (gt);
 
