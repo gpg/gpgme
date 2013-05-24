@@ -2545,8 +2545,8 @@ signers are specified.  This is always done by specifying the
 respective keys that should be used for the operation.  The following
 section describes how such keys can be selected and manipulated.
 
-@deftp {Data type} gpgme_sub_key_t
-The @code{gpgme_sub_key_t} type is a pointer to a subkey structure.
+@deftp {Data type} gpgme_subkey_t
+The @code{gpgme_subkey_t} type is a pointer to a subkey structure.
 Sub keys are one component of a @code{gpgme_key_t} object.  In fact,
 subkeys are those parts that contains the real information about the
 individual cryptographic keys that belong to the same key object.  One
@@ -2556,7 +2556,7 @@ the linked list is also called the primary key.
 The subkey structure has the following members:
 
 @table @code
-@item gpgme_sub_key_t next
+@item gpgme_subkey_t next
 This is a pointer to the next subkey structure in the linked list, or
 @code{NULL} if this is the last element.
 
@@ -2795,7 +2795,7 @@ chain ID, which can be used to built the certificate chain.
 If @code{protocol} is @code{GPGME_PROTOCOL_OpenPGP}, then this is the
 owner trust.
 
-@item gpgme_sub_key_t subkeys
+@item gpgme_subkey_t subkeys
 This is a linked list with the subkeys of the key.  The first subkey
 in the list is the primary key and usually available.
 

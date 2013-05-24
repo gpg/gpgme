@@ -1026,7 +1026,7 @@ gpgme_trust_item_release	DEPRECATED: Use gpgme_trust_item_unref.
 gpgme_trust_item_get_string_attr DEPRECATED
 gpgme_trust_item_get_ulong_attr	DEPRECATED
 gpgme_get_key			CHANGED: Removed force_update argument.
-gpgme_sub_key_t			NEW
+gpgme_subkey_t			NEW
 gpgme_key_sig_t			NEW
 gpgme_user_id_t			NEW
 gpgme_key_t			CHANGED: Now has user accessible data members.
