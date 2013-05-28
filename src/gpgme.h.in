@@ -342,6 +342,8 @@ typedef enum
     GPGME_PROTOCOL_UNKNOWN = 255
   }
 gpgme_protocol_t;
+/* Convenience macro for the surprisingly mixed spelling.  */
+#define GPGME_PROTOCOL_OPENPGP GPGME_PROTOCOL_OpenPGP
 
 
 /* The available keylist mode flags.  */
