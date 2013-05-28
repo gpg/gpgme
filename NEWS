@@ -1,12 +1,15 @@
-Noteworthy changes in version 1.4.2 (unreleased)
+Noteworthy changes in version 1.4.2 (2013-05-28)
 ------------------------------------------------
 
  * Allow symmetric encryption with gpgme_op_encrypt_sign.
+
+ * Fixed mismatching off_t definitions on Windows.
 
  * Interface changes relative to the 1.4.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_off_t                    NEW.
  gpgme_size_t                   NEW.
+ GPGME_PROTOCOL_OPENPGP         NEW alias.
 
 
 Noteworthy changes in version 1.4.1 (2013-05-01)

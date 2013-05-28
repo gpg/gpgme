@@ -57,6 +57,10 @@ If configure can't find the `gpgsm' binary in your path, you can
 specify the location with the --with-gpgsm=/path/to/gpgsm argument to
 configure.
 
+On some platforms GPGME based applications might hang at certain
+operations when using GPGME_PROTOCOL_CMS.  A workaround for this
+problem is to build with the configure option --disable-fd-passing.
+
 For building the GIT version of GPGME please see the file README.GIT
 for more information.
 
