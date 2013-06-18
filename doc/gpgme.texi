@@ -4993,7 +4993,7 @@ ciphertext created is determined by the @acronym{ASCII} armor (or, if
 that is not set, by the encoding specified for @var{cipher}) and the
 text mode attributes set for the context @var{ctx}.
 
-@var{key} must be a @code{NULL}-terminated array of keys.  The user
+@var{recp} must be a @code{NULL}-terminated array of keys.  The user
 must keep references for all keys during the whole duration of the
 call (but see @code{gpgme_op_encrypt_start} for the requirements with
 the asynchronous variant).
