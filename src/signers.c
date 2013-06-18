@@ -93,6 +93,14 @@ gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 }
 
 
+/* Return the number of signers in CTX.  */
+unsigned int
+gpgme_signers_count (const gpgme_ctx_t ctx)
+{
+  return ctx? ctx->signers_len : 0;
+}
+
+
 /* Return the SEQth signer's key in CTX with one reference.  */
 gpgme_key_t
 gpgme_signers_enum (const gpgme_ctx_t ctx, int seq)

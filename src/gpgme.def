@@ -209,5 +209,7 @@ EXPORTS
     gpgme_set_pinentry_mode               @158
     gpgme_get_pinentry_mode               @159
 
+    gpgme_signers_count                   @160
+
 ; END
 

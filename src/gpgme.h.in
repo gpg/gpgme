@@ -934,6 +934,9 @@ void gpgme_signers_clear (gpgme_ctx_t ctx);
 /* Add KEY to list of signers in CTX.  */
 gpgme_error_t gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key);
 
+/* Return the number of signers in CTX.  */
+unsigned int gpgme_signers_count (const gpgme_ctx_t ctx);
+
 /* Return the SEQth signer's key in CTX.  */
 gpgme_key_t gpgme_signers_enum (const gpgme_ctx_t ctx, int seq);
 

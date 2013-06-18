@@ -143,6 +143,7 @@ GPGME_1.0 {
     gpgme_set_textmode;
     gpgme_signers_add;
     gpgme_signers_clear;
+    gpgme_signers_count;
     gpgme_signers_enum;
 
     gpgme_key_ref;

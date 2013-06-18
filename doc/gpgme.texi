@@ -4785,6 +4785,11 @@ list of signers in the context @var{ctx}.
 Calling this function acquires an additional reference for the key.
 @end deftypefun
 
+@deftypefun @w{unsigned int} gpgme_signers_count (@w{const gpgme_ctx_t @var{ctx}})
+The function @code{gpgme_signers_count} returns the number of signer keys in
+the context @var{ctx}.
+@end deftypefun
+
 @deftypefun gpgme_key_t gpgme_signers_enum (@w{const gpgme_ctx_t @var{ctx}}, @w{int @var{seq}})
 The function @code{gpgme_signers_enum} returns the @var{seq}th key in
 the list of signers in the context @var{ctx}.  An additional reference

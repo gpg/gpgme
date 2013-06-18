@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.4.3 (unreleased)
 ------------------------------------------------
 
+ * Interface changes relative to the 1.4.2 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_signers_count            NEW.
+
 
 Noteworthy changes in version 1.4.2 (2013-05-28)
 ------------------------------------------------
