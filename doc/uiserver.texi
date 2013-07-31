@@ -61,7 +61,7 @@ commands are to be used:
 
 @deffn Command INPUT FD=@var{n}
 Set the file descriptor for the message to be encrypted to @var{n}.  The
-message send to the server is binary encoded. 
+message send to the server is binary encoded.
 
 GpgOL is a Windows only program, thus @var{n} is not a libc file
 descriptor but a regular system handle.  Given that the Assuan
@@ -77,14 +77,15 @@ time replaces the file descriptor set by the last one.
 @c %Libassuan manual}, on how to do descriptor passing.
 @end deffn
 
-@deffn Command OUTPUT FD=@var{n}
+@deffn Command OUTPUT FD=@var{n} [--binary]
 Set the file descriptor to be used for the output (i.e. the encrypted
-message) to @var{n}.  For OpenPGP, the output needs to be ASCII armored;
-for CMS, the output needs to be Base-64 encoded.  For details on the
-file descriptor, see the @code{INPUT} command.
+message) to @var{n}.  If the option @code{--binary} is given the
+output shall be in binary format; if not given, the output for OpenPGP
+needs to be ASCII armored and for CMS Base-64 encoded.  For details on
+the file descriptor, see the @code{INPUT} command.
 @end deffn
 
-@noindent  
+@noindent
 The setting of the recipients, the data source and destination may
 happen in any order, even intermixed.  If this has been done the actual
 encryption operation is called using:
@@ -193,12 +194,13 @@ descriptor, see the description of @code{INPUT} in the @code{ENCRYPT}
 section.
 @end deffn
 
-@deffn Command OUTPUT FD=@var{n}
-Set the file descriptor to be used for the output.  The output is either
-the complete signed message or in case of a detached signature just that
-detached signature.  For OpenPGP, the output needs to be ASCII armored;
-for CMS, the output needs to be Base-64 encoded.  For details on the
-file descriptor, see the @code{INPUT} command.
+@deffn Command OUTPUT FD=@var{n} [--binary]
+Set the file descriptor to be used for the output.  The output is
+either the complete signed message or in case of a detached signature
+just that detached signature.  If the option @code{--binary} is given
+the output shall be in binary format; if not given, the output for
+OpenPGP needs to be ASCII armored and for CMS Base-64 encoded.  For
+details on the file descriptor, see the @code{INPUT} command.
 @end deffn
 
 @noindent
@@ -209,7 +211,7 @@ SENDER}.
 @noindent
 The signing operation is then initiated by:
 
-@deffn Command SIGN -@w{}-protocol=@var{name} [-@w{}-detached] 
+@deffn Command SIGN -@w{}-protocol=@var{name} [-@w{}-detached]
 Sign the data set with the @code{INPUT} command and write it to the sink
 set by OUTPUT.  @var{name} is the signing protocol used for the
 message. For a description of the allowed protocols see the
@@ -272,7 +274,7 @@ is an OpenPGP combined message.
 
 The server needs to support the verification of opaque signatures as
 well as detached signatures.  The kind of input sources controls what
-kind message is to be verified. 
+kind message is to be verified.
 
 @deffn Command MESSAGE FD=@var{n}
 This command is used with detached signatures to set the file descriptor
@@ -309,7 +311,7 @@ to select the appropriate verification mode:
 @table @asis
 @item MESSAGE and INPUT
 This indicates a detached signature.  Output data is not applicable.
-@item INPUT 
+@item INPUT
 This indicates an opaque signature.  As no output command has been given,
 the server is only required to check the signature.
 @item INPUT and OUTPUT
@@ -338,7 +340,7 @@ The signature is fully valid.
 The signature is valid but additional information was shown regarding the
 validity of the key.
 @item red
-The signature is not valid. 
+The signature is not valid.
 @end table
 
 @var{displaystring} is a percent-and-plus-encoded string with a short
@@ -539,7 +541,7 @@ data line.
 To allow the server to pop up the windows in the correct relation to the
 client, the client is advised to tell the server by sending the option:
 
-@deffn {Command option} window-id @var{number} 
+@deffn {Command option} window-id @var{number}
 The @var{number} represents the native window ID of the clients current
 window.  On Windows systems this is a windows handle (@code{HWND}) and
 on X11 systems it is the @code{X Window ID}.  The number needs to be
@@ -592,7 +594,7 @@ The option @option{--protocol} may be used to give the server a hint on
 which signing protocol should be preferred.
 @end deffn
 
-@noindent 
+@noindent
 To allow the UI-server to visually identify a running operation or to
 associate operations the server MAY support the command:
 
