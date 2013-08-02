@@ -1,6 +1,12 @@
 Noteworthy changes in version 1.4.3 (unreleased)
 ------------------------------------------------
 
+ * The default engine names are now taken from the output of gpgconf.
+   If gpgconf is not found the use of gpg 1 is assumed.
+
+ * Under Windows the default engines names are first searched in the
+   installation directory of the gpgme DLL.
+
  * Interface changes relative to the 1.4.2 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_signers_count            NEW.

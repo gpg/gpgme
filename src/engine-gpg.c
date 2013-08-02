@@ -296,7 +296,7 @@ static char *
 gpg_get_version (const char *file_name)
 {
   return _gpgme_get_program_version (file_name ? file_name
-				     : _gpgme_get_gpg_path ());
+				     : _gpgme_get_default_gpg_name ());
 }
 
 
@@ -1296,7 +1296,7 @@ start (engine_gpg_t gpg)
   if (!gpg)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (!gpg->file_name && !_gpgme_get_gpg_path ())
+  if (!gpg->file_name && !_gpgme_get_default_gpg_name ())
     return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
   if (gpg->lc_ctype)
@@ -1352,7 +1352,7 @@ start (engine_gpg_t gpg)
   fd_list[n].dup_to = -1;
 
   status = _gpgme_io_spawn (gpg->file_name ? gpg->file_name :
-			    _gpgme_get_gpg_path (), gpg->argv,
+			    _gpgme_get_default_gpg_name (), gpg->argv,
                             IOSPAWN_FLAG_ALLOW_SET_FG,
                             fd_list, NULL, NULL, &pid);
   {
@@ -2401,7 +2401,7 @@ gpg_set_pinentry_mode (void *engine, gpgme_pinentry_mode_t mode)
 struct engine_ops _gpgme_engine_ops_gpg =
   {
     /* Static functions.  */
-    _gpgme_get_gpg_path,
+    _gpgme_get_default_gpg_name,
     NULL,
     gpg_get_version,
     gpg_get_req_version,

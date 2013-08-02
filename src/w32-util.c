@@ -62,6 +62,7 @@
 #include "ath.h"
 #include "sema.h"
 #include "debug.h"
+#include "sys-util.h"
 
 
 #ifndef HAVE_W32CE_SYSTEM
@@ -489,29 +490,6 @@ _gpgme_get_g13_path (void)
     g13_program = find_program_at_standard_place ("GNU\\GnuPG\\g13.exe");
   UNLOCK (get_path_lock);
   return g13_program;
-}
-
-
-const char *
-_gpgme_get_uiserver_socket_path (void)
-{
-  static char *socket_path;
-  const char *homedir;
-  const char name[] = "S.uiserver";
-
-  if (socket_path)
-    return socket_path;
-
-  homedir = _gpgme_get_default_homedir ();
-  if (! homedir)
-    return NULL;
-
-  socket_path = malloc (strlen (homedir) + 1 + strlen (name) + 1);
-  if (! socket_path)
-    return NULL;
-
-  strcpy (stpcpy (stpcpy (socket_path, homedir), "\\"), name);
-  return socket_path;
 }
 
 

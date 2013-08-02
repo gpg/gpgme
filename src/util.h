@@ -47,18 +47,17 @@
 
 
 /*-- {posix,w32}-util.c --*/
-const char *_gpgme_get_gpg_path (void);
-const char *_gpgme_get_gpgsm_path (void);
-const char *_gpgme_get_gpgconf_path (void);
-const char *_gpgme_get_g13_path (void);
-const char *_gpgme_get_uiserver_socket_path (void);
-
 int _gpgme_get_conf_int (const char *key, int *value);
 void _gpgme_allow_set_foreground_window (pid_t pid);
 
 /*-- dirinfo.c --*/
 const char *_gpgme_get_default_homedir (void);
 const char *_gpgme_get_default_agent_socket (void);
+const char *_gpgme_get_default_gpg_name (void);
+const char *_gpgme_get_default_gpgsm_name (void);
+const char *_gpgme_get_default_g13_name (void);
+const char *_gpgme_get_default_gpgconf_name (void);
+const char *_gpgme_get_default_uisrv_socket (void);
 
 
 

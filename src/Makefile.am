@@ -118,7 +118,7 @@ main_sources =								\
 	$(uiserver_components)						\
 	$(g13_components) vfs-mount.c vfs-create.c			\
 	gpgconf.c							\
-	sema.h priv-io.h $(system_components) dirinfo.c			\
+	sema.h priv-io.h $(system_components) sys-util.h dirinfo.c	\
 	debug.c debug.h gpgme.c version.c error.c
 
 libgpgme_la_SOURCES = $(main_sources)					\

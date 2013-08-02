@@ -100,7 +100,7 @@ static char *
 g13_get_version (const char *file_name)
 {
   return _gpgme_get_program_version (file_name ? file_name
-				     : _gpgme_get_g13_path ());
+				     : _gpgme_get_default_g13_name ());
 }
 
 
@@ -251,11 +251,11 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
 
 #if USE_DESCRIPTOR_PASSING
   err = assuan_pipe_connect
-    (g13->assuan_ctx, file_name ? file_name : _gpgme_get_g13_path (),
+    (g13->assuan_ctx, file_name ? file_name : _gpgme_get_default_g13_name (),
      argv, NULL, NULL, NULL, ASSUAN_PIPE_CONNECT_FDPASSING);
 #else
   err = assuan_pipe_connect
-    (g13->assuan_ctx, file_name ? file_name : _gpgme_get_g13_path (),
+    (g13->assuan_ctx, file_name ? file_name : _gpgme_get_default_g13_name (),
      argv, NULL, NULL, NULL, 0);
 #endif
   if (err)
@@ -757,7 +757,7 @@ g13_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 struct engine_ops _gpgme_engine_ops_g13 =
   {
     /* Static functions.  */
-    _gpgme_get_g13_path,
+    _gpgme_get_default_g13_name,
     NULL,
     g13_get_version,
     g13_get_req_version,

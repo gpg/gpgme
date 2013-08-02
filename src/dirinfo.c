@@ -1,5 +1,5 @@
 /* dirinfo.c - Get directory information
- * Copyright (C) 2009 g10 Code GmbH
+ * Copyright (C) 2009, 2013 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -29,6 +29,7 @@
 #include "priv-io.h"
 #include "debug.h"
 #include "sema.h"
+#include "sys-util.h"
 
 DEFINE_STATIC_LOCK (dirinfo_lock);
 
@@ -36,7 +37,11 @@ DEFINE_STATIC_LOCK (dirinfo_lock);
 enum
   {
     WANT_HOMEDIR,
-    WANT_AGENT_SOCKET
+    WANT_AGENT_SOCKET,
+    WANT_GPG_NAME,
+    WANT_GPGSM_NAME,
+    WANT_G13_NAME,
+    WANT_UISRV_SOCKET
   };
 
 /* Values retrieved via gpgconf and cached here.  */
@@ -44,13 +49,18 @@ static struct {
   int  valid;         /* Cached information is valid.  */
   char *homedir;
   char *agent_socket;
+  char *gpg_name;
+  char *gpgsm_name;
+  char *g13_name;
+  char *uisrv_socket;
 } dirinfo;
 
 
 /* Parse the output of "gpgconf --list-dirs".  This function expects
-   that DIRINFO_LOCK is held by the caller.  */
+   that DIRINFO_LOCK is held by the caller.  If COMPONENTS is set, the
+   output of --list-components is expected. */
 static void
-parse_output (char *line)
+parse_output (char *line, int components)
 {
   char *value, *p;
 
@@ -58,6 +68,14 @@ parse_output (char *line)
   if (!value)
     return;
   *value++ = 0;
+  if (components)
+    {
+      /* Skip the second field.  */
+      value = strchr (value, ':');
+      if (!value)
+        return;
+      *value++ = 0;
+    }
   p = strchr (value, ':');
   if (p)
     *p = 0;
@@ -66,19 +84,45 @@ parse_output (char *line)
   if (!*value)
     return;
 
-  if (!strcmp (line, "homedir") && !dirinfo.homedir)
-    dirinfo.homedir = strdup (value);
-  else if (!strcmp (line, "agent-socket") && !dirinfo.agent_socket)
-    dirinfo.agent_socket = strdup (value);
+  if (components)
+    {
+      if (!strcmp (line, "gpg") && !dirinfo.gpg_name)
+        dirinfo.gpg_name = strdup (value);
+      else if (!strcmp (line, "gpgsm") && !dirinfo.gpgsm_name)
+        dirinfo.gpgsm_name = strdup (value);
+      else if (!strcmp (line, "g13") && !dirinfo.g13_name)
+        dirinfo.g13_name = strdup (value);
+    }
+  else
+    {
+      if (!strcmp (line, "homedir") && !dirinfo.homedir)
+        {
+          const char name[] = "S.uiserver";
+
+          dirinfo.homedir = strdup (value);
+          if (dirinfo.homedir)
+            {
+              dirinfo.uisrv_socket = malloc (strlen (dirinfo
+                                                     .homedir)
+                                             + 1 + strlen (name) + 1);
+              if (dirinfo.uisrv_socket)
+                strcpy (stpcpy (stpcpy (dirinfo.uisrv_socket, dirinfo.homedir),
+                                DIRSEP_S), name);
+            }
+        }
+      else if (!strcmp (line, "agent-socket") && !dirinfo.agent_socket)
+        dirinfo.agent_socket = strdup (value);
+    }
 }
 
 
 /* Read the directory information from gpgconf.  This function expects
-   that DIRINFO_LOCK is held by the caller.  */
+   that DIRINFO_LOCK is held by the caller.  PGNAME is the name of the
+   gpgconf binary. If COMPONENTS is set, not the directories bit the
+   name of the componeNts are read. */
 static void
-read_gpgconf_dirs (void)
+read_gpgconf_dirs (const char *pgmname, int components)
 {
-  const char *pgmname;
   char linebuf[1024] = {0};
   int linelen = 0;
   char * argv[3];
@@ -89,12 +133,8 @@ read_gpgconf_dirs (void)
   int nread;
   char *mark = NULL;
 
-  pgmname = _gpgme_get_gpgconf_path ();
-  if (!pgmname)
-    return;  /* No way.  */
-
   argv[0] = (char *)pgmname;
-  argv[1] = "--list-dirs";
+  argv[1] = components? "--list-components" : "--list-dirs";
   argv[2] = NULL;
 
   if (_gpgme_io_pipe (rp, 1) < 0)
@@ -132,7 +172,7 @@ read_gpgconf_dirs (void)
               else
                 mark[0] = '\0';
 
-              parse_output (line);
+              parse_output (line, components);
 	    }
 
           nused = lastmark? (lastmark + 1 - linebuf) : 0;
@@ -147,14 +187,38 @@ read_gpgconf_dirs (void)
 
 
 static const char *
-get_gpgconf_dir (int what)
+get_gpgconf_item (int what)
 {
   const char *result = NULL;
 
   LOCK (dirinfo_lock);
   if (!dirinfo.valid)
     {
-      read_gpgconf_dirs ();
+      const char *pgmname;
+
+      pgmname = _gpgme_get_gpgconf_path ();
+      if (pgmname && access (pgmname, F_OK))
+        {
+          _gpgme_debug (DEBUG_INIT,
+                        "gpgme_dinfo: gpgconf='%s' [not installed]\n", pgmname);
+          pgmname = NULL; /* Not available.  */
+        }
+      else
+        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo: gpgconf='%s'\n",
+                      pgmname? pgmname : "[null]");
+      if (!pgmname)
+        {
+          /* Probably gpgconf is not installed.  Assume we are using
+             GnuPG-1.  */
+          pgmname = _gpgme_get_gpg_path ();
+          if (pgmname)
+            dirinfo.gpg_name = strdup (pgmname);
+        }
+      else
+        {
+          read_gpgconf_dirs (pgmname, 0);
+          read_gpgconf_dirs (pgmname, 1);
+        }
       /* Even if the reading of the directories failed (e.g. due to an
          too old version gpgconf or no gpgconf at all), we need to
          mark the entries as valid so that we won't try over and over
@@ -162,11 +226,33 @@ get_gpgconf_dir (int what)
          the read values later because they are practically statically
          allocated.  */
       dirinfo.valid = 1;
+      if (dirinfo.gpg_name)
+        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo:     gpg='%s'\n",
+                      dirinfo.gpg_name);
+      if (dirinfo.g13_name)
+        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo:     g13='%s'\n",
+                      dirinfo.g13_name);
+      if (dirinfo.gpgsm_name)
+        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo:   gpgsm='%s'\n",
+                      dirinfo.gpgsm_name);
+      if (dirinfo.homedir)
+        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo: homedir='%s'\n",
+                      dirinfo.homedir);
+      if (dirinfo.agent_socket)
+        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo:   agent='%s'\n",
+                      dirinfo.agent_socket);
+      if (dirinfo.uisrv_socket)
+        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo:   uisrv='%s'\n",
+                      dirinfo.uisrv_socket);
     }
   switch (what)
     {
     case WANT_HOMEDIR: result = dirinfo.homedir; break;
     case WANT_AGENT_SOCKET: result = dirinfo.agent_socket; break;
+    case WANT_GPG_NAME:   result = dirinfo.gpg_name; break;
+    case WANT_GPGSM_NAME: result = dirinfo.gpgsm_name; break;
+    case WANT_G13_NAME:   result = dirinfo.g13_name; break;
+    case WANT_UISRV_SOCKET:  result = dirinfo.uisrv_socket; break;
     }
   UNLOCK (dirinfo_lock);
   return result;
@@ -177,13 +263,51 @@ get_gpgconf_dir (int what)
 const char *
 _gpgme_get_default_homedir (void)
 {
-  return get_gpgconf_dir (WANT_HOMEDIR);
+  return get_gpgconf_item (WANT_HOMEDIR);
 }
 
 /* Return the default gpg-agent socket name.  Returns NULL if not known.  */
 const char *
 _gpgme_get_default_agent_socket (void)
 {
-  return get_gpgconf_dir (WANT_AGENT_SOCKET);
+  return get_gpgconf_item (WANT_AGENT_SOCKET);
 }
 
+/* Return the default gpg file name.  Returns NULL if not known.  */
+const char *
+_gpgme_get_default_gpg_name (void)
+{
+  return get_gpgconf_item (WANT_GPG_NAME);
+}
+
+/* Return the default gpgsm file name.  Returns NULL if not known.  */
+const char *
+_gpgme_get_default_gpgsm_name (void)
+{
+  return get_gpgconf_item (WANT_GPGSM_NAME);
+}
+
+/* Return the default g13 file name.  Returns NULL if not known.  */
+const char *
+_gpgme_get_default_g13_name (void)
+{
+  return get_gpgconf_item (WANT_G13_NAME);
+}
+
+/* Return the default gpgconf file name.  Returns NULL if not known.
+   Because gpgconf is the binary used to retrieved all these default
+   names, this function is merely a simple wrapper around the function
+   used to locate this binary.  */
+const char *
+_gpgme_get_default_gpgconf_name (void)
+{
+  return _gpgme_get_gpgconf_path ();
+}
+
+/* Return the default UI-server socket name.  Returns NULL if not
+   known.  */
+const char *
+_gpgme_get_default_uisrv_socket (void)
+{
+  return get_gpgconf_item (WANT_UISRV_SOCKET);
+}

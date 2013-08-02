@@ -120,7 +120,7 @@ static char *
 gpgsm_get_version (const char *file_name)
 {
   return _gpgme_get_program_version (file_name ? file_name
-				     : _gpgme_get_gpgsm_path ());
+				     : _gpgme_get_default_gpgsm_name ());
 }
 
 
@@ -340,7 +340,8 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 
 #if USE_DESCRIPTOR_PASSING
   err = assuan_pipe_connect
-    (gpgsm->assuan_ctx, file_name ? file_name : _gpgme_get_gpgsm_path (),
+    (gpgsm->assuan_ctx,
+     file_name ? file_name : _gpgme_get_default_gpgsm_name (),
      argv, NULL, NULL, NULL, ASSUAN_PIPE_CONNECT_FDPASSING);
 #else
   {
@@ -352,7 +353,8 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
       achild_fds[i] = (assuan_fd_t) child_fds[i];
 
     err = assuan_pipe_connect
-      (gpgsm->assuan_ctx, file_name ? file_name : _gpgme_get_gpgsm_path (),
+      (gpgsm->assuan_ctx,
+       file_name ? file_name : _gpgme_get_default_gpgsm_name (),
        argv, achild_fds, NULL, NULL, 0);
 
     /* For now... */
@@ -1945,7 +1947,7 @@ gpgsm_passwd (void *engine, gpgme_key_t key, unsigned int flags)
 struct engine_ops _gpgme_engine_ops_gpgsm =
   {
     /* Static functions.  */
-    _gpgme_get_gpgsm_path,
+    _gpgme_get_default_gpgsm_name,
     NULL,
     gpgsm_get_version,
     gpgsm_get_req_version,

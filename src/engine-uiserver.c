@@ -296,7 +296,7 @@ uiserver_new (void **engine, const char *file_name, const char *home_dir)
 
   err = assuan_socket_connect (uiserver->assuan_ctx,
 			       file_name ?
-			       file_name : _gpgme_get_uiserver_socket_path (),
+			       file_name : _gpgme_get_default_uisrv_socket (),
 			       0, ASSUAN_SOCKET_SERVER_FDPASSING);
   if (err)
     goto leave;
@@ -1302,7 +1302,7 @@ uiserver_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 struct engine_ops _gpgme_engine_ops_uiserver =
   {
     /* Static functions.  */
-    _gpgme_get_uiserver_socket_path,
+    _gpgme_get_default_uisrv_socket,
     NULL,
     uiserver_get_version,
     uiserver_get_req_version,

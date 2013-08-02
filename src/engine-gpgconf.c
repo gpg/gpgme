@@ -61,7 +61,7 @@ static char *
 gpgconf_get_version (const char *file_name)
 {
   return _gpgme_get_program_version (file_name ? file_name
-				     : _gpgme_get_gpgconf_path ());
+				     : _gpgme_get_default_gpgconf_name ());
 }
 
 
@@ -100,7 +100,7 @@ gpgconf_new (void **engine, const char *file_name, const char *home_dir)
     return gpg_error_from_syserror ();
 
   gpgconf->file_name = strdup (file_name ? file_name
-			       : _gpgme_get_gpgconf_path ());
+			       : _gpgme_get_default_gpgconf_name ());
   if (!gpgconf->file_name)
     err = gpg_error_from_syserror ();
 
@@ -923,7 +923,7 @@ _gpgme_conf_release (gpgme_conf_comp_t conf)
 struct engine_ops _gpgme_engine_ops_gpgconf =
   {
     /* Static functions.  */
-    _gpgme_get_gpgconf_path,
+    _gpgme_get_default_gpgconf_name,
     NULL,
     gpgconf_get_version,
     gpgconf_get_req_version,

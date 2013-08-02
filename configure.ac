@@ -920,11 +920,15 @@ AM_CONDITIONAL(HAVE_UISERVER, test "$uiserver" != "no")
 # Add a few constants to help porting to W32
 AH_VERBATIM([SEPCONSTANTS],
 [
-/* Separators as used in $PATH.  */
+/* Separators as used in $PATH and file name.  */
 #ifdef HAVE_DOSISH_SYSTEM
 #define PATHSEP_C ';'
+#define DIRSEP_C '\\'
+#define DIRSEP_S "\\"
 #else
 #define PATHSEP_C ':'
+#define DIRSEP_C '/'
+#define DIRSEP_S "/"
 #endif
 ])
 
