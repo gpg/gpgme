@@ -103,8 +103,9 @@ endif
 # unresolved symbols to the thread module.
 main_sources =								\
 	util.h conversion.c get-env.c context.h ops.h		        \
+	parsetlv.c parsetlv.h                                           \
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
-	data-compat.c							\
+	data-compat.c data-identify.c					\
 	signers.c sig-notation.c					\
 	wait.c wait-global.c wait-private.c wait-user.c wait.h		\
 	op-support.c							\

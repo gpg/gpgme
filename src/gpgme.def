@@ -211,5 +211,7 @@ EXPORTS
 
     gpgme_signers_count                   @160
 
+    gpgme_data_identify                   @161
+
 ; END
 

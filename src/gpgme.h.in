@@ -210,6 +210,22 @@ typedef enum
   }
 gpgme_data_encoding_t;
 
+/* Known data types.  */
+typedef enum
+  {
+    GPGME_DATA_TYPE_INVALID      = 0,   /* Not detected.  */
+    GPGME_DATA_TYPE_UNKNOWN      = 1,
+    GPGME_DATA_TYPE_PGP_SIGNED   = 0x10,
+    GPGME_DATA_TYPE_PGP_OTHER    = 0x12,
+    GPGME_DATA_TYPE_PGP_KEY      = 0x13,
+    GPGME_DATA_TYPE_CMS_SIGNED   = 0x20,
+    GPGME_DATA_TYPE_CMS_ENCRYPTED= 0x21,
+    GPGME_DATA_TYPE_CMS_OTHER    = 0x22,
+    GPGME_DATA_TYPE_X509_CERT    = 0x23,
+    GPGME_DATA_TYPE_PKCS12       = 0x24,
+  }
+gpgme_data_type_t;
+
 
 /* Public key algorithms from libgcrypt.  */
 typedef enum
@@ -1148,6 +1164,9 @@ char *gpgme_data_get_file_name (gpgme_data_t dh);
    FILE_NAME.  */
 gpgme_error_t gpgme_data_set_file_name (gpgme_data_t dh,
 					const char *file_name);
+
+/* Try to identify the type of the data in DH.  */
+gpgme_data_type_t gpgme_data_identify (gpgme_data_t dh, int reserved);
 
 
 /* Create a new data buffer which retrieves the data from the callback

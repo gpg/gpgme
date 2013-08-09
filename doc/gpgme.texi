@@ -1885,6 +1885,7 @@ be used to manipulate both.
 @menu
 * Data Buffer I/O Operations::    I/O operations on data buffers.
 * Data Buffer Meta-Data::         Meta-data manipulation of data buffers.
+* Data Buffer Convenience::       Convenience fucntion for data buffers.
 @end menu
 
 
@@ -2045,6 +2046,56 @@ returned.
 @deftypefun gpgme_error_t gpgme_data_set_encoding (@w{gpgme_data_t @var{dh}, gpgme_data_encoding_t @var{enc}})
 The function @code{gpgme_data_set_encoding} changes the encoding of
 the data object with the handle @var{dh} to @var{enc}.
+@end deftypefun
+
+@node Data Buffer Convenience
+@subsection Data Buffer Convenience Functions
+@cindex data buffer, convenience
+@cindex type of data
+@cindex identify
+
+@deftp {Data type} {enum gpgme_data_type_t}
+@tindex gpgme_data_type_t
+The @code{gpgme_data_type_t} type is used to return the detected type
+of the content of a data buffer.
+@end deftp
+
+@table @code
+@item GPGME_DATA_TYPE_INVALID
+This is returned by @code{gpgme_data_identify} if it was not possible
+to identify the data.  Reasons for this might be a non-seekable stream
+or a memory problem.  The value is 0.
+@item GPGME_DATA_TYPE_UNKNOWN
+The type of the data is not known.
+@item GPGME_DATA_TYPE_PGP_SIGNED
+The data is an OpenPGP signed message.  This may be a binary
+signature, a detached one or a cleartext signature.
+@item GPGME_DATA_TYPE_PGP_OTHER
+This is a generic OpenPGP message.  In most cases this will be
+encrypted data.
+@item GPGME_DATA_TYPE_PGP_KEY
+This is an OpenPGP key (private or public).
+@item GPGME_DATA_TYPE_CMS_SIGNED
+This is a CMS signed message.
+@item GPGME_DATA_TYPE_CMS_ENCRYPTED
+This is a CMS encrypted (enveloped data) message.
+@item GPGME_DATA_TYPE_CMS_OTHER
+This is used for other CMS message types.
+@item GPGME_DATA_TYPE_X509_CERT
+The data is a X.509 certificate
+@item GPGME_DATA_TYPE_PKCS12
+The data is a PKCS#12 message.  This is commonly used to exchange
+private keys for X.509.
+@end table
+
+@deftypefun gpgme_data_type_t gpgme_data_identify (@w{gpgme_data_t @var{dh}})
+The function @code{gpgme_data_identify} returns the type of the data
+with the handle @var{dh}.  If it is not possible to perform the
+identification, the function returns zero
+(@code{GPGME_DATA_TYPE_INVALID}).  Note that depending on how the data
+object has been created the identification may not be possible or the
+data object may change its internal state (file pointer moved).  For
+file or memory based data object, the state should not change.
 @end deftypefun
 
 

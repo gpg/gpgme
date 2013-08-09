@@ -7,9 +7,13 @@ Noteworthy changes in version 1.4.3 (unreleased)
  * Under Windows the default engines names are first searched in the
    installation directory of the gpgme DLL.
 
+ * New function gpgme_data_identify to detect the type of a message.
+
  * Interface changes relative to the 1.4.2 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_signers_count            NEW.
+ gpgme_data_type_t              NEW.
+ gpgme_data_identify            NEW.
 
 
 Noteworthy changes in version 1.4.2 (2013-05-28)

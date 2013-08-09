@@ -1435,7 +1435,8 @@ typedef enum status
     STATUS_INCLUDE_CERTS,
     STATUS_KEYLIST_MODE,
     STATUS_RECIPIENT,
-    STATUS_ENCRYPT_RESULT
+    STATUS_ENCRYPT_RESULT,
+    STATUS_IDENTIFY_RESULT
   } status_t;
 
 const char *status_string[] =
@@ -1448,7 +1449,8 @@ const char *status_string[] =
     "INCLUDE_CERTS",
     "KEYLIST_MODE",
     "RECIPIENT",
-    "ENCRYPT_RESULT"
+    "ENCRYPT_RESULT",
+    "IDENTIFY_RESULT"
   };
 
 struct gpgme_tool
@@ -2065,11 +2067,6 @@ gt_vfs_create (gpgme_tool_t gt, const char *container_file, int flags)
 }
 
 
-static const char hlp_passwd[] =
-  "PASSWD <user-id>\n"
-  "\n"
-  "Ask the backend to change the passphrase for the key\n"
-  "specified by USER-ID.";
 gpg_error_t
 gt_passwd (gpgme_tool_t gt, char *fpr)
 {
@@ -2083,6 +2080,29 @@ gt_passwd (gpgme_tool_t gt, char *fpr)
   err = gpgme_op_passwd (gt->ctx, key, 0);
   gpgme_key_unref (key);
   return err;
+}
+
+
+gpg_error_t
+gt_identify (gpgme_tool_t gt, gpgme_data_t data)
+{
+  const char *s = "?";
+
+  switch (gpgme_data_identify (data, 0))
+    {
+    case GPGME_DATA_TYPE_INVALID: return gpg_error (GPG_ERR_GENERAL);
+    case GPGME_DATA_TYPE_UNKNOWN      : s = "unknown"; break;
+    case GPGME_DATA_TYPE_PGP_SIGNED   : s = "PGP-signed"; break;
+    case GPGME_DATA_TYPE_PGP_OTHER    : s = "PGP"; break;
+    case GPGME_DATA_TYPE_PGP_KEY      : s = "PGP-key"; break;
+    case GPGME_DATA_TYPE_CMS_SIGNED   : s = "CMS-signed"; break;
+    case GPGME_DATA_TYPE_CMS_ENCRYPTED: s = "CMS-encrypted"; break;
+    case GPGME_DATA_TYPE_CMS_OTHER    : s = "CMS"; break;
+    case GPGME_DATA_TYPE_X509_CERT    : s = "X.509"; break;
+    case GPGME_DATA_TYPE_PKCS12       : s = "PKCS12"; break;
+    }
+  gt_write_status (gt, STATUS_IDENTIFY_RESULT, s, NULL);
+  return 0;
 }
 
 
@@ -3374,6 +3394,11 @@ cmd_vfs_create (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_passwd[] =
+  "PASSWD <user-id>\n"
+  "\n"
+  "Ask the backend to change the passphrase for the key\n"
+  "specified by USER-ID.";
 static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
@@ -3428,6 +3453,39 @@ cmd_hash_algo_name (assuan_context_t ctx, char *line)
   snprintf (buf, sizeof (buf), "%s", gpgme_hash_algo_name (algo));
   return assuan_send_data (ctx, buf, strlen (buf));
 }
+
+
+static const char hlp_identify[] =
+  "IDENTIY\n"
+  "\n"
+  "Identify the type of data set with the INPUT command.";
+static gpg_error_t
+cmd_identify (assuan_context_t ctx, char *line)
+{
+  struct server *server = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  assuan_fd_t inp_fd;
+  char *inp_fn;
+  gpgme_data_t inp_data;
+
+  inp_fd = server->input_fd;
+  inp_fn = server->input_filename;
+  if (inp_fd == ASSUAN_INVALID_FD && !inp_fn)
+    return GPG_ERR_ASS_NO_INPUT;
+
+  err = server_data_obj (inp_fd, inp_fn, 0, server->input_enc, &inp_data,
+                         &server->input_stream);
+  if (err)
+    return err;
+
+  err = gt_identify (server->gt, inp_data);
+
+  gpgme_data_release (inp_data);
+  server_reset_fds (server);
+
+  return err;
+}
+
 
 
 /* Tell the assuan library about our commands.  */
@@ -3488,6 +3546,7 @@ register_commands (assuan_context_t ctx)
     { "PUBKEY_ALGO_NAME", cmd_pubkey_algo_name },
     { "HASH_ALGO_NAME", cmd_hash_algo_name },
     { "PASSWD", cmd_passwd, hlp_passwd },
+    { "IDENTIFY", cmd_identify, hlp_identify },
     { NULL }
   };
   int idx;
