@@ -1,0 +1,4 @@
+#!/bin/sh
+
+${srcdir}/start-stop-agent --stop
+exit 0

@@ -1,0 +1,45 @@
+#!/bin/sh
+# Copyright (C) 2013 g10 Code GmbH
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.  This file is
+# distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY, to the extent permitted by law; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+if [ -z "$(command -v gpg-connect-agent)" ]; then
+   echo "gpg-agent not installed and thus not started" >&2
+   exit 0;
+fi
+
+GPG_AGENT_INFO=
+export GPG_AGENT_INFO
+
+token=$(echo "gpgme-$(pwd)" | tr ' ' '_')
+
+if [ "$1" = "--stop" ]; then
+  if [ "$(gpg-connect-agent getval\ $token /bye 2>/dev/null | head -1)" \
+        != "D set" ]; then
+    echo "gpg-agent not running" >&2
+    exit 0
+  fi
+  echo "stopping gpg-agent " >&2
+  gpg-connect-agent KILLAGENT /bye >/dev/null 2>&1
+  exit 0
+fi
+
+if [ "$(gpg-connect-agent getval\ $token /bye 2>/dev/null | head -1)" \
+      = "D set" ]; then
+  echo "gpg-agent already running" >&2
+  exit 0
+fi
+
+echo "starting gpg-agent " >&2
+gpg-connect-agent putval\ $token\ set /bye >/dev/null 2>&1
+if [ "$(gpg-connect-agent getval\ $token /bye 2>/dev/null | head -1)" \
+      != "D set" ]; then
+  echo "error starting gpg-agent" >&2
+  exit 1
+fi
+exit 0
