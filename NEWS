@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.4.3 (unreleased)
+Noteworthy changes in version 1.4.3 (2013-08-12)
 ------------------------------------------------
 
  * The default engine names are now taken from the output of gpgconf.
