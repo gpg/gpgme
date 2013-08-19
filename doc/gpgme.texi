@@ -5335,9 +5335,9 @@ callback handlers must not be run before this event is signalled.
 @item GPGME_EVENT_DONE
 The operation is finished, the last I/O callback for this operation
 was removed.  The accompanying @var{type_data} points to a
-@code{gpgme_error_t} variable that contains the status of the operation
-that finished.  This event is signalled after the last I/O callback
-has been removed.
+@code{struct gpgme_io_event_done_data} variable that contains the
+status of the operation that finished.  This event is signalled after
+the last I/O callback has been removed.
 
 @item GPGME_EVENT_NEXT_KEY
 In a @code{gpgme_op_keylist_start} operation, the next key was
