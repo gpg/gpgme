@@ -143,7 +143,7 @@ gpgme_op_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 
   TRACE_BEG5 (DEBUG_CTX, "gpgme_op_edit_start", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
-	      (key->subkeys && key->subkeys->fpr) ?
+	      (key && key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
 
   if (!ctx)
@@ -164,7 +164,7 @@ gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 
   TRACE_BEG5 (DEBUG_CTX, "gpgme_op_edit", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
-	      (key->subkeys && key->subkeys->fpr) ?
+	      (key && key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
 
   if (!ctx)
@@ -187,7 +187,7 @@ gpgme_op_card_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 
   TRACE_BEG5 (DEBUG_CTX, "gpgme_op_card_edit_start", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
-	      (key->subkeys && key->subkeys->fpr) ?
+	      (key && key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
 
   if (!ctx)
@@ -208,7 +208,7 @@ gpgme_op_card_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 
   TRACE_BEG5 (DEBUG_CTX, "gpgme_op_card_edit", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
-	      (key->subkeys && key->subkeys->fpr) ?
+	      (key && key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
 
   if (!ctx)
