@@ -63,6 +63,8 @@ check_result (gpgme_verify_result_t result, int summary, char *fpr,
       fprintf (stderr, "%s:%i: Unexpected number of signatures\n",
 	       __FILE__, __LINE__);
       got_errors = 1;
+      if (!sig)
+        return;
     }
   if (sig->summary != summary)
     {
@@ -71,7 +73,7 @@ check_result (gpgme_verify_result_t result, int summary, char *fpr,
 	       __FILE__, __LINE__, summary, sig->summary);
       got_errors = 1;
     }
-  if (strcmp (sig->fpr, fpr))
+  if (sig->fpr && strcmp (sig->fpr, fpr))
     {
       fprintf (stderr, "%s:%i: Unexpected fingerprint: %s\n",
 	       __FILE__, __LINE__, sig->fpr);
