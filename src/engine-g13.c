@@ -107,7 +107,7 @@ g13_get_version (const char *file_name)
 static const char *
 g13_get_req_version (void)
 {
-  return NEED_G13_VERSION;
+  return "2.1.0";
 }
 
 

@@ -1,3 +1,16 @@
+Noteworthy changes in version 1.5.0 (unreleased)
+------------------------------------------------
+
+ * On Unices the engine file names are not not anymore hardwired but
+   located via the envvar PATH.  All configuration options to set the
+   name of the engines for configure run are removed.
+
+ * If GPGME find the gpgconf binary it defaults to using gpg2 or
+   whatever gpgconf tells as name for the OpenPGP engine.  If gpgconf
+   is not found, GPGME looks for an engine named "gpg".
+
+
+
 Noteworthy changes in version 1.4.3 (2013-08-12)
 ------------------------------------------------
 

@@ -19,8 +19,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
-GPG = @GPG@
-GPG_AGENT = @GPG_AGENT@
+GPG = gpg
+GPG_AGENT = gpg-agent
 
 TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) LC_ALL=C GPG_AGENT_INFO=
 

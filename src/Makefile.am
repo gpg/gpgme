@@ -66,30 +66,6 @@ if HAVE_W32CE_SYSTEM
 system_components += w32-ce.h w32-ce.c
 endif
 
-if HAVE_GPGSM
-gpgsm_components = engine-gpgsm.c
-else
-gpgsm_components =
-endif
-
-if HAVE_ASSUAN
-assuan_components = assuan-support.c engine-assuan.c
-else
-assuan_components =
-endif
-
-if HAVE_GPGCONF
-gpgconf_components = engine-gpgconf.c
-else
-gpgconf_components =
-endif
-
-if HAVE_G13
-g13_components = engine-g13.c
-else
-g13_components =
-endif
-
 if HAVE_UISERVER
 uiserver_components = engine-uiserver.c
 else
@@ -113,11 +89,11 @@ main_sources =								\
 	sign.c passphrase.c progress.c					\
 	key.c keylist.c trust-item.c trustlist.c			\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
-	opassuan.c passwd.c                                             \
+	opassuan.c passwd.c assuan-support.c                            \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.c	\
-	$(gpgsm_components) $(assuan_components) $(gpgconf_components)  \
+	engine-gpgsm.c engine-assuan.c engine-gpgconf.c                 \
 	$(uiserver_components)						\
-	$(g13_components) vfs-mount.c vfs-create.c			\
+	engine-g13.c vfs-mount.c vfs-create.c			        \
 	gpgconf.c							\
 	sema.h priv-io.h $(system_components) sys-util.h dirinfo.c	\
 	debug.c debug.h gpgme.c version.c error.c

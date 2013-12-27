@@ -41,30 +41,6 @@
     }								\
   while (0)
 
-
-void
-check_engine_info (gpgme_engine_info_t info, gpgme_protocol_t protocol,
-		   const char *file_name, const char *req_version)
-{
-  if (info->protocol != protocol)
-    {
-      fprintf (stderr, "Unexpected protocol %i (expected %i instead)\n",
-	       info->protocol, protocol);
-      exit (1);
-    }
-  if (strcmp (info->file_name, file_name))
-    {
-      fprintf (stderr, "Unexpected file name to executable %s (expected %s instead)\n",
-	       info->file_name, file_name);
-      exit (1);
-    }
-  if (strcmp (info->req_version, req_version))
-    {
-      fprintf (stderr, "Unexpected required version %s (expected %s instead)\n",
-	       info->req_version, req_version);
-      exit (1);
-    }
-}
 
 
 int
@@ -77,18 +53,9 @@ main (int argc, char **argv )
   err = gpgme_get_engine_info (&info);
   fail_if_err (err);
 
-  check_engine_info (info, GPGME_PROTOCOL_OpenPGP, GPG_PATH, NEED_GPG_VERSION);
-
-  info = info->next;
-#ifdef GPGSM_PATH
-  check_engine_info (info, GPGME_PROTOCOL_CMS, GPGSM_PATH, NEED_GPGSM_VERSION);
-#else
-  if (info)
-    {
-      fprintf (stderr, "Unexpected engine info.\n");
-      exit (1);
-    }
-#endif
+  for (; info; info = info->next)
+    fprintf (stdout, "protocol=%d engine='%s' v='%s' (min='%s')\n",
+             info->protocol, info->file_name, info->version, info->req_version);
 
   return 0;
 }

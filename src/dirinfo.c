@@ -38,6 +38,7 @@ enum
   {
     WANT_HOMEDIR,
     WANT_AGENT_SOCKET,
+    WANT_GPGCONF_NAME,
     WANT_GPG_NAME,
     WANT_GPGSM_NAME,
     WANT_G13_NAME,
@@ -49,6 +50,7 @@ static struct {
   int  valid;         /* Cached information is valid.  */
   char *homedir;
   char *agent_socket;
+  char *gpgconf_name;
   char *gpg_name;
   char *gpgsm_name;
   char *g13_name;
@@ -194,13 +196,14 @@ get_gpgconf_item (int what)
   LOCK (dirinfo_lock);
   if (!dirinfo.valid)
     {
-      const char *pgmname;
+      char *pgmname;
 
       pgmname = _gpgme_get_gpgconf_path ();
       if (pgmname && access (pgmname, F_OK))
         {
           _gpgme_debug (DEBUG_INIT,
                         "gpgme_dinfo: gpgconf='%s' [not installed]\n", pgmname);
+          free (pgmname);
           pgmname = NULL; /* Not available.  */
         }
       else
@@ -212,12 +215,13 @@ get_gpgconf_item (int what)
              GnuPG-1.  */
           pgmname = _gpgme_get_gpg_path ();
           if (pgmname)
-            dirinfo.gpg_name = strdup (pgmname);
+            dirinfo.gpg_name = pgmname;
         }
       else
         {
           read_gpgconf_dirs (pgmname, 0);
           read_gpgconf_dirs (pgmname, 1);
+          dirinfo.gpgconf_name = pgmname;
         }
       /* Even if the reading of the directories failed (e.g. due to an
          too old version gpgconf or no gpgconf at all), we need to
@@ -249,6 +253,7 @@ get_gpgconf_item (int what)
     {
     case WANT_HOMEDIR: result = dirinfo.homedir; break;
     case WANT_AGENT_SOCKET: result = dirinfo.agent_socket; break;
+    case WANT_GPGCONF_NAME: result = dirinfo.gpgconf_name; break;
     case WANT_GPG_NAME:   result = dirinfo.gpg_name; break;
     case WANT_GPGSM_NAME: result = dirinfo.gpgsm_name; break;
     case WANT_G13_NAME:   result = dirinfo.g13_name; break;
@@ -294,14 +299,11 @@ _gpgme_get_default_g13_name (void)
   return get_gpgconf_item (WANT_G13_NAME);
 }
 
-/* Return the default gpgconf file name.  Returns NULL if not known.
-   Because gpgconf is the binary used to retrieved all these default
-   names, this function is merely a simple wrapper around the function
-   used to locate this binary.  */
+/* Return the default gpgconf file name.  Returns NULL if not known.  */
 const char *
 _gpgme_get_default_gpgconf_name (void)
 {
-  return _gpgme_get_gpgconf_path ();
+  return get_gpgconf_item (WANT_GPGCONF_NAME);
 }
 
 /* Return the default UI-server socket name.  Returns NULL if not

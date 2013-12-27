@@ -127,7 +127,7 @@ gpgsm_get_version (const char *file_name)
 static const char *
 gpgsm_get_req_version (void)
 {
-  return NEED_GPGSM_VERSION;
+  return "2.0.4";
 }
 
 

@@ -21,9 +21,7 @@
 #define SYS_UTIL_H
 
 /*-- {posix,w32}-util.c --*/
-const char *_gpgme_get_gpg_path (void);
-const char *_gpgme_get_gpgsm_path (void);
-const char *_gpgme_get_gpgconf_path (void);
-const char *_gpgme_get_g13_path (void);
+char *_gpgme_get_gpg_path (void);
+char *_gpgme_get_gpgconf_path (void);
 
 #endif /* SYS_UTIL_H */

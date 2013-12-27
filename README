@@ -41,7 +41,7 @@ See the file INSTALL for generic installation instructions.
 Check that you have unmodified sources.  See below on how to do this.
 Don't skip it - this is an important step!
 
-To build GPGME, you need to install libgpg-error (>= 1.8) and
+To build GPGME, you need to install libgpg-error (>= 1.11) and
 Libassuan (>= 2.0.2).
 
 For support of the OpenPGP protocol (default), you should use the
@@ -49,13 +49,6 @@ latest version of GnuPG (>= 1.4) , available at:
 ftp://ftp.gnupg.org/gcrypt/gnupg/
 For support of the CMS (Cryptographic Message Syntax) protocol, you
 need a GnuPG version >= 2.0.
-
-If configure can't find the `gpg' binary in your path, you can specify
-the location with the --with-gpg=/path/to/gpg argument to configure.
-
-If configure can't find the `gpgsm' binary in your path, you can
-specify the location with the --with-gpgsm=/path/to/gpgsm argument to
-configure.
 
 On some platforms GPGME based applications might hang at certain
 operations when using GPGME_PROTOCOL_CMS.  A workaround for this

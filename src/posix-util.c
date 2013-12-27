@@ -30,46 +30,59 @@
 #include "util.h"
 #include "sys-util.h"
 
-const char *
+
+/* Find an executable program PGM along the envvar PATH.  */
+static char *
+walk_path (const char *pgm)
+{
+  const char *path, *s;
+  char *fname, *p;
+
+  path = getenv ("PATH");
+  if (!path)
+    path = "/bin:/usr/bin:.";
+
+  fname = malloc (strlen (path) + 1 + strlen (pgm) + 1);
+  if (!fname)
+    return NULL;
+
+  for (;;)
+    {
+      for (s=path, p=fname; *s && *s != ':'; s++, p++)
+        *p = *s;
+      if (*p != '/')
+        *p++ = '/';
+      strcpy (p, pgm);
+      if (!access (fname, X_OK))
+        return fname;
+      if (!*s)
+        break;
+      path = s + 1;
+    }
+
+  free (fname);
+  return NULL;
+}
+
+
+/* Return the full file name of the GPG binary.  This function is used
+   if gpgconf was not found and thus it can be assumed that gpg2 is
+   not installed.  This function is only called by get_gpgconf_item
+   and may not be called concurrently.  */
+char *
 _gpgme_get_gpg_path (void)
 {
-#ifdef GPG_PATH
-  return GPG_PATH;
-#else
-  return NULL;
-#endif
+  return walk_path ("gpg");
 }
 
-const char *
-_gpgme_get_gpgsm_path (void)
-{
-#ifdef GPGSM_PATH
-  return GPGSM_PATH;
-#else
-  return NULL;
-#endif
-}
 
-const char *
+/* This function is only called by get_gpgconf_item and may not be
+   called concurrently.  */
+char *
 _gpgme_get_gpgconf_path (void)
 {
-#ifdef GPGCONF_PATH
-  return GPGCONF_PATH;
-#else
-  return NULL;
-#endif
+  return walk_path ("gpgconf");
 }
-
-const char *
-_gpgme_get_g13_path (void)
-{
-#ifdef G13_PATH
-  return G13_PATH;
-#else
-  return NULL;
-#endif
-}
-
 
 /* See w32-util.c */
 int

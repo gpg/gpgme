@@ -68,7 +68,7 @@ gpgconf_get_version (const char *file_name)
 static const char *
 gpgconf_get_req_version (void)
 {
-  return NEED_GPGCONF_VERSION;
+  return "2.0.4";
 }
 
 

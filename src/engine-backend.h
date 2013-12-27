@@ -128,18 +128,10 @@ struct engine_ops
 
 
 extern struct engine_ops _gpgme_engine_ops_gpg;		/* OpenPGP.  */
-#ifdef ENABLE_GPGSM
 extern struct engine_ops _gpgme_engine_ops_gpgsm;	/* CMS.  */
-#endif
-#ifdef ENABLE_GPGCONF
 extern struct engine_ops _gpgme_engine_ops_gpgconf;	/* gpg-conf.  */
-#endif
-#ifdef ENABLE_ASSUAN
 extern struct engine_ops _gpgme_engine_ops_assuan;	/* Low-level Assuan. */
-#endif
-#ifdef ENABLE_G13
 extern struct engine_ops _gpgme_engine_ops_g13;         /* Crypto VFS. */
-#endif
 #ifdef ENABLE_UISERVER
 extern struct engine_ops _gpgme_engine_ops_uiserver;
 #endif

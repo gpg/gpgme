@@ -151,25 +151,13 @@ const char *_gpgme_get_w32spawn_path (void);
 char *_gpgme_w32ce_get_debug_envvar (void);
 #endif /*HAVE_W32CE_SYSTEM*/
 
-/*--  Error codes not yet available in current gpg-error.h.   --*/
-#ifndef GPG_ERR_UNFINISHED
-#define GPG_ERR_UNFINISHED 199
-#endif
-#ifndef GPG_ERR_NOT_OPERATIONAL
-#define GPG_ERR_NOT_OPERATIONAL 176
-#endif
-#ifndef GPG_ERR_MISSING_ISSUER_CERT
-#define GPG_ERR_MISSING_ISSUER_CERT 185
-#endif
 
 
-#ifdef ENABLE_ASSUAN
 #include <assuan.h>
 /* System hooks for assuan integration.  */
 extern struct assuan_system_hooks _gpgme_assuan_system_hooks;
 extern struct assuan_malloc_hooks _gpgme_assuan_malloc_hooks;
 int _gpgme_assuan_log_cb (assuan_context_t ctx, void *hook,
 			  unsigned int cat, const char *msg);
-#endif
 
 #endif /* UTIL_H */

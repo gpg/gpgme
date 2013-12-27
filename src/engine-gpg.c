@@ -1,7 +1,7 @@
 /* engine-gpg.c - Gpg Engine.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-                 2009, 2010, 2012 g10 Code GmbH
+                 2009, 2010, 2012, 2013 g10 Code GmbH
 
    This file is part of GPGME.
 
@@ -303,7 +303,7 @@ gpg_get_version (const char *file_name)
 static const char *
 gpg_get_req_version (void)
 {
-  return NEED_GPG_VERSION;
+  return "1.4.0";
 }
 
 

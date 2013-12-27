@@ -374,7 +374,7 @@ find_program_in_inst_dir (const char *inst_dir, const char *name)
 
   /* If an installation directory has been passed, this overrides a
      location given bu the registry.  The idea here is that we prefer
-     a a program installed alongside with gpgme.  We don't want the
+     a program installed alongside with gpgme.  We don't want the
      registry to override this to have a better isolation of an gpgme
      aware applications for other effects.  Note that the "Install
      Directory" registry item has been used for ages in Gpg4win and
@@ -424,72 +424,36 @@ find_program_at_standard_place (const char *name)
 }
 
 
-const char *
+/* Return the full file name of the GPG binary.  This function is used
+   if gpgconf was not found and thus it can be assumed that gpg2 is
+   not installed.  This function is only called by get_gpgconf_item
+   and may not be called concurrently. */
+char *
 _gpgme_get_gpg_path (void)
 {
-  static char *gpg_program;
+  char *gpg;
   const char *inst_dir;
 
   inst_dir = _gpgme_get_inst_dir ();
-  LOCK (get_path_lock);
-  if (!gpg_program)
-    gpg_program = find_program_in_inst_dir (inst_dir, "gpg.exe");
-  if (!gpg_program)
-    gpg_program = find_program_at_standard_place ("GNU\\GnuPG\\gpg.exe");
-  UNLOCK (get_path_lock);
-  return gpg_program;
+  gpg = find_program_in_inst_dir (inst_dir, "gpg.exe");
+  if (!gpg)
+    gpg = find_program_at_standard_place ("GNU\\GnuPG\\gpg.exe");
+  return gpg;
 }
 
-
-const char *
-_gpgme_get_gpgsm_path (void)
-{
-  static char *gpgsm_program;
-  const char *inst_dir;
-
-  inst_dir = _gpgme_get_inst_dir ();
-  LOCK (get_path_lock);
-  if (!gpgsm_program)
-    gpgsm_program = find_program_in_inst_dir (inst_dir, "gpgsm.exe");
-  if (!gpgsm_program)
-    gpgsm_program = find_program_at_standard_place ("GNU\\GnuPG\\gpgsm.exe");
-  UNLOCK (get_path_lock);
-  return gpgsm_program;
-}
-
-
-const char *
+/* This function is only called by get_gpgconf_item and may not be
+   called concurrently.  */
+char *
 _gpgme_get_gpgconf_path (void)
 {
-  static char *gpgconf_program;
+  char *gpgconf;
   const char *inst_dir;
 
   inst_dir = _gpgme_get_inst_dir ();
-  LOCK (get_path_lock);
-  if (!gpgconf_program)
-    gpgconf_program = find_program_in_inst_dir (inst_dir, "gpgconf.exe");
-  if (!gpgconf_program)
-    gpgconf_program
-      = find_program_at_standard_place ("GNU\\GnuPG\\gpgconf.exe");
-  UNLOCK (get_path_lock);
-  return gpgconf_program;
-}
-
-
-const char *
-_gpgme_get_g13_path (void)
-{
-  static char *g13_program;
-  const char *inst_dir;
-
-  inst_dir = _gpgme_get_inst_dir ();
-  LOCK (get_path_lock);
-  if (!g13_program)
-    g13_program = find_program_in_inst_dir (inst_dir, "g13.exe");
-  if (!g13_program)
-    g13_program = find_program_at_standard_place ("GNU\\GnuPG\\g13.exe");
-  UNLOCK (get_path_lock);
-  return g13_program;
+  gpgconf = find_program_in_inst_dir (inst_dir, "gpgconf.exe");
+  if (!gpgconf)
+    gpgconf = find_program_at_standard_place ("GNU\\GnuPG\\gpgconf.exe");
+  return gpgconf;
 }
 
 

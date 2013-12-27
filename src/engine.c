@@ -46,26 +46,10 @@ struct engine
 static struct engine_ops *engine_ops[] =
   {
     &_gpgme_engine_ops_gpg,		/* OpenPGP.  */
-#ifdef ENABLE_GPGSM
     &_gpgme_engine_ops_gpgsm,		/* CMS.  */
-#else
-    NULL,
-#endif
-#ifdef ENABLE_GPGCONF
     &_gpgme_engine_ops_gpgconf,		/* gpg-conf.  */
-#else
-    NULL,
-#endif
-#ifdef ENABLE_ASSUAN
     &_gpgme_engine_ops_assuan,		/* Low-Level Assuan.  */
-#else
-    NULL,
-#endif
-#ifdef ENABLE_G13
     &_gpgme_engine_ops_g13,		/* Crypto VFS.  */
-#else
-    NULL,
-#endif
 #ifdef ENABLE_UISERVER
     &_gpgme_engine_ops_uiserver		/* UI-Server.  */
 #else
