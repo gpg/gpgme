@@ -37,6 +37,7 @@
 #include "wait.h"
 #include "debug.h"
 #include "priv-io.h"
+#include "sys-util.h"
 
 
 /* The default locale.  */
@@ -65,6 +66,15 @@ gpgme_set_global_flag (const char *name, const char *value)
     return -1;
   else if (!strcmp (name, "debug"))
     return _gpgme_debug_set_debug_envvar (value);
+  else if (!strcmp (name, "disable-gpgconf"))
+    {
+      _gpgme_dirinfo_disable_gpgconf ();
+      return 0;
+    }
+  else if (!strcmp (name, "gpgconf-name"))
+    return _gpgme_set_default_gpgconf_name (value);
+  else if (!strcmp (name, "gpg-name"))
+    return _gpgme_set_default_gpg_name (value);
   else
     return -1;
 }

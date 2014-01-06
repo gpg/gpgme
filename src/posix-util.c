@@ -29,6 +29,46 @@
 
 #include "util.h"
 #include "sys-util.h"
+#include "debug.h"
+
+/* These variables store the malloced name of alternative default
+   binaries.  The are set only once by gpgme_set_global_flag.  */
+static char *default_gpg_name;
+static char *default_gpgconf_name;
+
+/* Set the default name for the gpg binary.  This function may only be
+   called by gpgme_set_global_flag.  Returns 0 on success.  Leading
+   directories are removed from NAME.  */
+int
+_gpgme_set_default_gpg_name (const char *name)
+{
+  const char *s;
+
+  s = strrchr (name, '/');
+  if (s)
+    name = s + 1;
+
+  if (!default_gpg_name)
+    default_gpg_name = strdup (name);
+  return !default_gpg_name;
+}
+
+/* Set the default name for the gpgconf binary.  This function may
+   only be called by gpgme_set_global_flag.  Returns 0 on success.
+   Leading directories are removed from NAME.  */
+int
+_gpgme_set_default_gpgconf_name (const char *name)
+{
+  const char *s;
+
+  s = strrchr (name, '/');
+  if (s)
+    name = s + 1;
+
+  if (!default_gpgconf_name)
+    default_gpgconf_name = strdup (name);
+  return !default_gpgconf_name;
+}
 
 
 /* Find an executable program PGM along the envvar PATH.  */
@@ -60,6 +100,9 @@ walk_path (const char *pgm)
       path = s + 1;
     }
 
+  _gpgme_debug (DEBUG_ENGINE, "gpgme-walk_path: '%s' not found in '%s'",
+                pgm, path);
+
   free (fname);
   return NULL;
 }
@@ -72,7 +115,7 @@ walk_path (const char *pgm)
 char *
 _gpgme_get_gpg_path (void)
 {
-  return walk_path ("gpg");
+  return walk_path (default_gpg_name? default_gpg_name : "gpg");
 }
 
 
@@ -81,7 +124,7 @@ _gpgme_get_gpg_path (void)
 char *
 _gpgme_get_gpgconf_path (void)
 {
-  return walk_path ("gpgconf");
+  return walk_path (default_gpgconf_name? default_gpgconf_name : "gpgconf");
 }
 
 /* See w32-util.c */

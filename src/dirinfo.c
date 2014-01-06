@@ -48,6 +48,7 @@ enum
 /* Values retrieved via gpgconf and cached here.  */
 static struct {
   int  valid;         /* Cached information is valid.  */
+  int  disable_gpgconf;
   char *homedir;
   char *agent_socket;
   char *gpgconf_name;
@@ -56,6 +57,15 @@ static struct {
   char *g13_name;
   char *uisrv_socket;
 } dirinfo;
+
+
+
+/* Helper function to be used only by gpgme_set_global_flag.  */
+void
+_gpgme_dirinfo_disable_gpgconf (void)
+{
+  dirinfo.disable_gpgconf = 1;
+}
 
 
 /* Parse the output of "gpgconf --list-dirs".  This function expects
@@ -198,16 +208,16 @@ get_gpgconf_item (int what)
     {
       char *pgmname;
 
-      pgmname = _gpgme_get_gpgconf_path ();
+      pgmname = dirinfo.disable_gpgconf? NULL : _gpgme_get_gpgconf_path ();
       if (pgmname && access (pgmname, F_OK))
         {
           _gpgme_debug (DEBUG_INIT,
-                        "gpgme_dinfo: gpgconf='%s' [not installed]\n", pgmname);
+                        "gpgme-dinfo: gpgconf='%s' [not installed]\n", pgmname);
           free (pgmname);
           pgmname = NULL; /* Not available.  */
         }
       else
-        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo: gpgconf='%s'\n",
+        _gpgme_debug (DEBUG_INIT, "gpgme-dinfo: gpgconf='%s'\n",
                       pgmname? pgmname : "[null]");
       if (!pgmname)
         {
@@ -231,22 +241,22 @@ get_gpgconf_item (int what)
          allocated.  */
       dirinfo.valid = 1;
       if (dirinfo.gpg_name)
-        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo:     gpg='%s'\n",
+        _gpgme_debug (DEBUG_INIT, "gpgme-dinfo:     gpg='%s'\n",
                       dirinfo.gpg_name);
       if (dirinfo.g13_name)
-        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo:     g13='%s'\n",
+        _gpgme_debug (DEBUG_INIT, "gpgme-dinfo:     g13='%s'\n",
                       dirinfo.g13_name);
       if (dirinfo.gpgsm_name)
-        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo:   gpgsm='%s'\n",
+        _gpgme_debug (DEBUG_INIT, "gpgme-dinfo:   gpgsm='%s'\n",
                       dirinfo.gpgsm_name);
       if (dirinfo.homedir)
-        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo: homedir='%s'\n",
+        _gpgme_debug (DEBUG_INIT, "gpgme-dinfo: homedir='%s'\n",
                       dirinfo.homedir);
       if (dirinfo.agent_socket)
-        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo:   agent='%s'\n",
+        _gpgme_debug (DEBUG_INIT, "gpgme-dinfo:   agent='%s'\n",
                       dirinfo.agent_socket);
       if (dirinfo.uisrv_socket)
-        _gpgme_debug (DEBUG_INIT, "gpgme_dinfo:   uisrv='%s'\n",
+        _gpgme_debug (DEBUG_INIT, "gpgme-dinfo:   uisrv='%s'\n",
                       dirinfo.uisrv_socket);
     }
   switch (what)

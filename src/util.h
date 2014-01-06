@@ -51,6 +51,8 @@ int _gpgme_get_conf_int (const char *key, int *value);
 void _gpgme_allow_set_foreground_window (pid_t pid);
 
 /*-- dirinfo.c --*/
+void _gpgme_dirinfo_disable_gpgconf (void);
+
 const char *_gpgme_get_default_homedir (void);
 const char *_gpgme_get_default_agent_socket (void);
 const char *_gpgme_get_default_gpg_name (void);

@@ -28,6 +28,12 @@
 
 #include <gpgme.h>
 
+#define PGM "t-engine-info"
+
+static int verbose;
+
+
+
 
 #define fail_if_err(err)					\
   do								\
@@ -42,12 +48,65 @@
   while (0)
 
 
-
 int
 main (int argc, char **argv )
 {
+  int last_argc = -1;
   gpgme_engine_info_t info;
   gpgme_error_t err;
+
+  if (argc)
+    { argc--; argv++; }
+
+  while (argc && last_argc != argc )
+    {
+      last_argc = argc;
+      if (!strcmp (*argv, "--"))
+        {
+          argc--; argv++;
+          break;
+        }
+      else if (!strcmp (*argv, "--help"))
+        {
+          fputs ("usage: " PGM " [options]\n"
+                 "Options:\n"
+                 "  --set-global-flag KEY VALUE\n",
+                 stdout);
+          exit (0);
+        }
+      else if (!strcmp (*argv, "--verbose"))
+        {
+          verbose++;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--set-global-flag"))
+        {
+          argc--; argv++;
+          if (argc < 2)
+            {
+              fprintf (stderr, PGM ": not enough arguments for option\n");
+              exit (1);
+            }
+          if (gpgme_set_global_flag (argv[0], argv[1]))
+            {
+              fprintf (stderr, PGM ": gpgme_set_global_flag failed\n");
+              exit (1);
+            }
+          argc--; argv++;
+          argc--; argv++;
+        }
+      else if (!strncmp (*argv, "--", 2))
+        {
+          fprintf (stderr, PGM ": unknown option '%s'\n", *argv);
+          exit (1);
+        }
+    }
+
+  if (argc)
+    {
+      fprintf (stderr, PGM ": unexpected arguments\n");
+      exit (1);
+    }
 
   gpgme_check_version (NULL);
   err = gpgme_get_engine_info (&info);

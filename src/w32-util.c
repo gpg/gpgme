@@ -81,6 +81,11 @@ DEFINE_STATIC_LOCK (get_path_lock);
    file name of the DLL or executable which contains the gpgme code.  */
 static HMODULE my_hmodule;
 
+/* These variables store the malloced name of alternative default
+   binaries.  The are set only once by gpgme_set_global_flag.  */
+static char *default_gpg_name;
+static char *default_gpgconf_name;
+
 
 #ifdef HAVE_ALLOW_SET_FOREGROUND_WINDOW
 
@@ -148,6 +153,32 @@ wchar_to_utf8 (const wchar_t *string)
       result = NULL;
     }
   return result;
+}
+
+
+/* Replace all forward slashes by backslashes.  */
+static void
+replace_slashes (char *string)
+{
+  for (; *string; string++)
+    if (*string == '/')
+      *string = '\\';
+}
+
+
+/* Get the base name of NAME.  Returns a pointer into NAME right after
+   the last slash or backslash or to NAME if no slash or backslash
+   exists.  */
+static const char *
+get_basename (const char *name)
+{
+  const char *mark, *s;
+
+  for (mark=NULL, s=name; *s; s++)
+    if (*s == '/' || *s == '\\')
+      mark = s;
+
+  return mark? mark+1 : name;
 }
 
 
@@ -373,7 +404,7 @@ find_program_in_inst_dir (const char *inst_dir, const char *name)
   char *dir;
 
   /* If an installation directory has been passed, this overrides a
-     location given bu the registry.  The idea here is that we prefer
+     location given by the registry.  The idea here is that we prefer
      a program installed alongside with gpgme.  We don't want the
      registry to override this to have a better isolation of an gpgme
      aware applications for other effects.  Note that the "Install
@@ -424,6 +455,41 @@ find_program_at_standard_place (const char *name)
 }
 
 
+/* Set the default name for the gpg binary.  This function may only be
+   called by gpgme_set_global_flag.  Returns 0 on success.  */
+int
+_gpgme_set_default_gpg_name (const char *name)
+{
+  if (!default_gpg_name)
+    {
+      default_gpg_name = malloc (strlen (name) + 5);
+      if (default_gpg_name)
+        {
+          strcpy (stpcpy (default_gpg_name, name), ".exe");
+          replace_slashes (default_gpg_name);
+        }
+    }
+  return !default_gpg_name;
+}
+
+/* Set the default name for the gpgconf binary.  This function may only be
+   called by gpgme_set_global_flag.  Returns 0 on success.  */
+int
+_gpgme_set_default_gpgconf_name (const char *name)
+{
+  if (!default_gpgconf_name)
+    {
+      default_gpgconf_name = malloc (strlen (name) + 5);
+      if (default_gpgconf_name)
+        {
+          strcpy (stpcpy (default_gpgconf_name, name), ".exe");
+          replace_slashes (default_gpgconf_name);
+        }
+    }
+  return !default_gpgconf_name;
+}
+
+
 /* Return the full file name of the GPG binary.  This function is used
    if gpgconf was not found and thus it can be assumed that gpg2 is
    not installed.  This function is only called by get_gpgconf_item
@@ -432,14 +498,25 @@ char *
 _gpgme_get_gpg_path (void)
 {
   char *gpg;
-  const char *inst_dir;
+  const char *inst_dir, *name;
 
   inst_dir = _gpgme_get_inst_dir ();
-  gpg = find_program_in_inst_dir (inst_dir, "gpg.exe");
+  gpg = find_program_in_inst_dir
+    (inst_dir,
+     default_gpg_name? get_basename (default_gpg_name) : "gpg.exe");
   if (!gpg)
-    gpg = find_program_at_standard_place ("GNU\\GnuPG\\gpg.exe");
+    {
+      name = (default_gpg_name? default_gpg_name
+              /* */           : "GNU\\GnuPG\\gpg.exe");
+      gpg = find_program_at_standard_place (name);
+      if (!gpg)
+        _gpgme_debug (DEBUG_ENGINE, "_gpgme_get_gpg_path: '%s' not found",
+                      name);
+    }
+
   return gpg;
 }
+
 
 /* This function is only called by get_gpgconf_item and may not be
    called concurrently.  */
@@ -447,12 +524,21 @@ char *
 _gpgme_get_gpgconf_path (void)
 {
   char *gpgconf;
-  const char *inst_dir;
+  const char *inst_dir, *name;
 
   inst_dir = _gpgme_get_inst_dir ();
-  gpgconf = find_program_in_inst_dir (inst_dir, "gpgconf.exe");
+  gpgconf = find_program_in_inst_dir
+    (inst_dir,
+     default_gpgconf_name? get_basename (default_gpgconf_name) : "gpgconf.exe");
   if (!gpgconf)
-    gpgconf = find_program_at_standard_place ("GNU\\GnuPG\\gpgconf.exe");
+    {
+      name = (default_gpgconf_name? default_gpgconf_name
+              /* */               : "GNU\\GnuPG\\gpgconf.exe");
+      gpgconf = find_program_at_standard_place (name);
+      if (!gpgconf)
+        _gpgme_debug (DEBUG_ENGINE, "_gpgme_get_gpgconf_path: '%s' not found",
+                      name);
+    }
   return gpgconf;
 }
 
