@@ -75,17 +75,18 @@ _gpgme_set_default_gpgconf_name (const char *name)
 static char *
 walk_path (const char *pgm)
 {
-  const char *path, *s;
+  const char *orig_path, *path, *s;
   char *fname, *p;
 
-  path = getenv ("PATH");
-  if (!path)
-    path = "/bin:/usr/bin:.";
+  orig_path = getenv ("PATH");
+  if (!orig_path)
+    orig_path = "/bin:/usr/bin:.";
 
-  fname = malloc (strlen (path) + 1 + strlen (pgm) + 1);
+  fname = malloc (strlen (orig_path) + 1 + strlen (pgm) + 1);
   if (!fname)
     return NULL;
 
+  path = orig_path;
   for (;;)
     {
       for (s=path, p=fname; *s && *s != ':'; s++, p++)
@@ -101,7 +102,7 @@ walk_path (const char *pgm)
     }
 
   _gpgme_debug (DEBUG_ENGINE, "gpgme-walk_path: '%s' not found in '%s'",
-                pgm, path);
+                pgm, orig_path);
 
   free (fname);
   return NULL;
