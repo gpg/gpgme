@@ -28,18 +28,7 @@
 #include "engine.h"
 #include "debug.h"
 
-#ifdef ENABLE_GPGCONF
-/* engine-gpgconf.c.  */
-gpgme_error_t _gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
-				  gpgme_conf_type_t type, const void *value);
-void _gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type);
-gpgme_error_t _gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset,
-				      gpgme_conf_arg_t arg);
-void _gpgme_conf_release (gpgme_conf_comp_t conf);
-gpgme_error_t _gpgme_conf_load (void *engine, gpgme_conf_comp_t *conf_p);
-gpgme_error_t gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp);
-
-#endif
+#include "engine-backend.h"
 
 
 /* Allocate a new gpgme_conf_arg_t.  */
@@ -47,11 +36,7 @@ gpgme_error_t
 gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
 		    gpgme_conf_type_t type, const void *value)
 {
-#ifdef ENABLE_GPGCONF
   return _gpgme_conf_arg_new (arg_p, type, value);
-#else
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#endif
 }
 
 
@@ -59,9 +44,7 @@ gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
 void
 gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type)
 {
-#ifdef ENABLE_GPGCONF
   _gpgme_conf_arg_release (arg, type);
-#endif
 }
 
 
@@ -69,11 +52,7 @@ gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type)
 gpgme_error_t
 gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset, gpgme_conf_arg_t arg)
 {
-#ifdef ENABLE_GPGCONF
   return _gpgme_conf_opt_change (opt, reset, arg);
-#else
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#endif
 }
 
 
@@ -82,9 +61,7 @@ gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset, gpgme_conf_arg_t arg)
 void
 gpgme_conf_release (gpgme_conf_comp_t conf)
 {
-#ifdef ENABLE_GPGCONF
   _gpgme_conf_release (conf);
-#endif
 }
 
 
@@ -93,7 +70,6 @@ gpgme_conf_release (gpgme_conf_comp_t conf)
 gpgme_error_t
 gpgme_op_conf_load (gpgme_ctx_t ctx, gpgme_conf_comp_t *conf_p)
 {
-#ifdef ENABLE_GPGCONF
   gpgme_error_t err;
   gpgme_protocol_t proto;
 
@@ -109,9 +85,6 @@ gpgme_op_conf_load (gpgme_ctx_t ctx, gpgme_conf_comp_t *conf_p)
   err = _gpgme_engine_op_conf_load (ctx->engine, conf_p);
   ctx->protocol = proto;
   return err;
-#else
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#endif
 }
 
 
@@ -119,7 +92,6 @@ gpgme_op_conf_load (gpgme_ctx_t ctx, gpgme_conf_comp_t *conf_p)
 gpgme_error_t
 gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp)
 {
-#ifdef ENABLE_GPGCONF
   gpgme_error_t err;
   gpgme_protocol_t proto;
 
@@ -135,9 +107,6 @@ gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp)
   err = _gpgme_engine_op_conf_save (ctx->engine, comp);
   ctx->protocol = proto;
   return err;
-#else
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#endif
 }
 
 

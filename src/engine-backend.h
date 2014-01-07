@@ -136,4 +136,16 @@ extern struct engine_ops _gpgme_engine_ops_g13;         /* Crypto VFS. */
 extern struct engine_ops _gpgme_engine_ops_uiserver;
 #endif
 
+
+/* Prototypes for extra functions in engine-gpgconf.c  */
+gpgme_error_t _gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
+                                   gpgme_conf_type_t type, const void *value);
+void _gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type);
+gpgme_error_t _gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset,
+				      gpgme_conf_arg_t arg);
+void _gpgme_conf_release (gpgme_conf_comp_t conf);
+gpgme_error_t _gpgme_conf_load (void *engine, gpgme_conf_comp_t *conf_p);
+
+
+
 #endif /* ENGINE_BACKEND_H */
