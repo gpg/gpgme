@@ -182,6 +182,8 @@ _gpgme_engine_info_release (gpgme_engine_info_t info)
 gpgme_error_t
 gpgme_get_engine_info (gpgme_engine_info_t *info)
 {
+  gpgme_error_t err;
+
   LOCK (engine_info_lock);
   if (!engine_info)
     {
@@ -194,6 +196,7 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 					GPGME_PROTOCOL_UISERVER };
       unsigned int proto;
 
+      err = 0;
       for (proto = 0; proto < DIM (proto_list); proto++)
 	{
 	  const char *ofile_name = engine_get_file_name (proto_list[proto]);
@@ -205,13 +208,24 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 	    continue;
 
 	  file_name = strdup (ofile_name);
-          home_dir = ohome_dir? strdup (ohome_dir): NULL;
+          if (!file_name)
+            err = gpg_error_from_syserror ();
+
+          if (ohome_dir)
+            {
+              home_dir = strdup (ohome_dir);
+              if (!home_dir && !err)
+                err = gpg_error_from_syserror ();
+            }
+          else
+            home_dir = NULL;
 
 	  *lastp = malloc (sizeof (*engine_info));
-	  if (!*lastp || !file_name)
-	    {
-	      int saved_err = gpg_error_from_syserror ();
+          if (!*lastp && !err)
+            err = gpg_error_from_syserror ();
 
+	  if (err)
+	    {
 	      _gpgme_engine_info_release (engine_info);
 	      engine_info = NULL;
 
@@ -221,7 +235,7 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 		free (home_dir);
 
 	      UNLOCK (engine_info_lock);
-	      return saved_err;
+	      return err;
 	    }
 
 	  (*lastp)->protocol = proto_list[proto];
@@ -273,11 +287,13 @@ _gpgme_engine_info_copy (gpgme_engine_info_t *r_info)
 
       assert (info->file_name);
       file_name = strdup (info->file_name);
+      if (!file_name)
+        err = gpg_error_from_syserror ();
 
       if (info->home_dir)
 	{
 	  home_dir = strdup (info->home_dir);
-	  if (!home_dir)
+	  if (!home_dir && !err)
 	    err = gpg_error_from_syserror ();
 	}
       else
@@ -286,19 +302,19 @@ _gpgme_engine_info_copy (gpgme_engine_info_t *r_info)
       if (info->version)
 	{
 	  version = strdup (info->version);
-	  if (!version)
+	  if (!version && !err)
 	    err = gpg_error_from_syserror ();
 	}
       else
 	version = NULL;
 
       *lastp = malloc (sizeof (*engine_info));
-      if (!*lastp || !file_name || err)
+      if (!*lastp && !err)
+        err = gpg_error_from_syserror ();
+
+      if (err)
 	{
-	  int saved_err = gpg_error_from_syserror ();
-
 	  _gpgme_engine_info_release (new_info);
-
 	  if (file_name)
 	    free (file_name);
 	  if (home_dir)
@@ -307,7 +323,7 @@ _gpgme_engine_info_copy (gpgme_engine_info_t *r_info)
 	    free (version);
 
 	  UNLOCK (engine_info_lock);
-	  return saved_err;
+	  return err;
 	}
 
       (*lastp)->protocol = info->protocol;

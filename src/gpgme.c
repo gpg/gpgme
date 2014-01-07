@@ -86,6 +86,7 @@ gpgme_set_global_flag (const char *name, const char *value)
 gpgme_error_t
 gpgme_new (gpgme_ctx_t *r_ctx)
 {
+  gpgme_error_t err;
   gpgme_ctx_t ctx;
   TRACE_BEG (DEBUG_CTX, "gpgme_new", r_ctx);
 
@@ -101,11 +102,13 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 
   INIT_LOCK (ctx->lock);
 
-  _gpgme_engine_info_copy (&ctx->engine_info);
-  if (!ctx->engine_info)
+  err = _gpgme_engine_info_copy (&ctx->engine_info);
+  if (!err && !ctx->engine_info)
+    err = gpg_error (GPG_ERR_NO_ENGINE);
+  if (err)
     {
       free (ctx);
-      return TRACE_ERR (gpg_error_from_syserror ());
+      return TRACE_ERR (err);
     }
 
   ctx->keylist_mode = GPGME_KEYLIST_MODE_LOCAL;
