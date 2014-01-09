@@ -82,6 +82,7 @@ AC_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
+AM_SILENT_RULES
 
 # Enable GNU extensions on systems that have them.
 AC_GNU_SOURCE

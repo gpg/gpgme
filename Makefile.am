@@ -22,9 +22,9 @@
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = dist-bzip2
 
-DISTCHECK_CONFIGURE_FLAGS = --with-gpg="@GPG@"
+DISTCHECK_CONFIGURE_FLAGS =
 
-EXTRA_DIST = gpgme.spec.in autogen.sh                               	\
+EXTRA_DIST = autogen.sh autogen.rc gpgme.spec.in                   	\
              ChangeLog-2011 m4/ChangeLog-2011 contrib/ChangeLog-2011
 
 
