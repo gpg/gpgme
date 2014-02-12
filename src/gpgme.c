@@ -527,7 +527,7 @@ gpgme_get_keylist_mode (gpgme_ctx_t ctx)
 
 /* Set the pinentry mode for CTX to MODE. */
 gpgme_error_t
-gpgme_set_pinentry_mode (gpgme_ctx_t ctx, gpgme_keylist_mode_t mode)
+gpgme_set_pinentry_mode (gpgme_ctx_t ctx, gpgme_pinentry_mode_t mode)
 {
   TRACE1 (DEBUG_CTX, "gpgme_set_pinentry_mode", ctx, "pinentry_mode=%u",
 	  (unsigned int)mode);
