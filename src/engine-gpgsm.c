@@ -239,6 +239,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 {
   gpgme_error_t err = 0;
   engine_gpgsm_t gpgsm;
+  const char *pgmname;
   const char *argv[5];
   int argc;
 #if !USE_DESCRIPTOR_PASSING
@@ -321,8 +322,10 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   child_fds[3] = -1;
 #endif
 
+  pgmname = file_name ? file_name : _gpgme_get_default_gpgsm_name ();
+
   argc = 0;
-  argv[argc++] = "gpgsm";
+  argv[argc++] = _gpgme_get_basename (pgmname);
   if (home_dir)
     {
       argv[argc++] = "--homedir";
@@ -339,10 +342,8 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   assuan_ctx_set_system_hooks (gpgsm->assuan_ctx, &_gpgme_assuan_system_hooks);
 
 #if USE_DESCRIPTOR_PASSING
-  err = assuan_pipe_connect
-    (gpgsm->assuan_ctx,
-     file_name ? file_name : _gpgme_get_default_gpgsm_name (),
-     argv, NULL, NULL, NULL, ASSUAN_PIPE_CONNECT_FDPASSING);
+  err = assuan_pipe_connect (gpgsm->assuan_ctx, pgmname, argv,
+                             NULL, NULL, NULL, ASSUAN_PIPE_CONNECT_FDPASSING);
 #else
   {
     assuan_fd_t achild_fds[4];
@@ -352,10 +353,8 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
     for (i = 0; i < 4; i++)
       achild_fds[i] = (assuan_fd_t) child_fds[i];
 
-    err = assuan_pipe_connect
-      (gpgsm->assuan_ctx,
-       file_name ? file_name : _gpgme_get_default_gpgsm_name (),
-       argv, achild_fds, NULL, NULL, 0);
+    err = assuan_pipe_connect (gpgsm->assuan_ctx, pgmname, argv,
+                               achild_fds, NULL, NULL, 0);
 
     /* For now... */
     for (i = 0; i < 4; i++)

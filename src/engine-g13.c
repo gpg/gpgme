@@ -216,6 +216,7 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
 {
   gpgme_error_t err = 0;
   engine_g13_t g13;
+  const char *pgmname;
   int argc;
   const char *argv[5];
   char *dft_display = NULL;
@@ -232,8 +233,9 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
   g13->status_cb.tag = 0;
   g13->status_cb.data = g13;
 
+  pgmname = file_name ? file_name : _gpgme_get_default_g13_name ();
   argc = 0;
-  argv[argc++] = "g13";
+  argv[argc++] = _gpgme_get_basename (pgmname);
   if (home_dir)
     {
       argv[argc++] = "--homedir";
@@ -250,13 +252,11 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
   assuan_ctx_set_system_hooks (g13->assuan_ctx, &_gpgme_assuan_system_hooks);
 
 #if USE_DESCRIPTOR_PASSING
-  err = assuan_pipe_connect
-    (g13->assuan_ctx, file_name ? file_name : _gpgme_get_default_g13_name (),
-     argv, NULL, NULL, NULL, ASSUAN_PIPE_CONNECT_FDPASSING);
+  err = assuan_pipe_connect (g13->assuan_ctx, pgmname, argv,
+                             NULL, NULL, NULL, ASSUAN_PIPE_CONNECT_FDPASSING);
 #else
-  err = assuan_pipe_connect
-    (g13->assuan_ctx, file_name ? file_name : _gpgme_get_default_g13_name (),
-     argv, NULL, NULL, NULL, 0);
+  err = assuan_pipe_connect (g13->assuan_ctx, pgmname, argv,
+                             NULL, NULL, NULL, 0);
 #endif
   if (err)
     goto leave;

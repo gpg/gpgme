@@ -718,7 +718,7 @@ gpg_set_command_handler (void *engine, engine_command_handler_t fnc,
 
 
 static gpgme_error_t
-build_argv (engine_gpg_t gpg)
+build_argv (engine_gpg_t gpg, const char *pgmname)
 {
   gpgme_error_t err;
   struct arg_and_data_s *a;
@@ -729,15 +729,20 @@ build_argv (engine_gpg_t gpg)
   int use_agent = 0;
   char *p;
 
-  /* We don't want to use the agent with a malformed environment
-     variable.  This is only a very basic test but sufficient to make
-     our life in the regression tests easier. */
-  err = _gpgme_getenv ("GPG_AGENT_INFO", &p);
-  if (err)
-    return err;
-  use_agent = (p && strchr (p, ':'));
-  if (p)
-    free (p);
+  if (_gpgme_in_gpg_one_mode ())
+    {
+      /* In GnuPG-1 mode we don't want to use the agent with a
+         malformed environment variable.  This is only a very basic
+         test but sufficient to make our life in the regression tests
+         easier.  With GnuPG-2 the agent is anyway required and on
+         modern installations GPG_AGENT_INFO is optional.  */
+      err = _gpgme_getenv ("GPG_AGENT_INFO", &p);
+      if (err)
+        return err;
+      use_agent = (p && strchr (p, ':'));
+      if (p)
+        free (p);
+    }
 
   if (gpg->argv)
     {
@@ -788,7 +793,7 @@ build_argv (engine_gpg_t gpg)
     }
 
   argc = datac = 0;
-  argv[argc] = strdup ("gpg"); /* argv[0] */
+  argv[argc] = strdup (_gpgme_get_basename (pgmname)); /* argv[0] */
   if (!argv[argc])
     {
       int saved_err = gpg_error_from_syserror ();
@@ -1292,6 +1297,7 @@ start (engine_gpg_t gpg)
   int status;
   struct spawn_fd_item_s *fd_list;
   pid_t pid;
+  const char *pgmname;
 
   if (!gpg)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1317,7 +1323,8 @@ start (engine_gpg_t gpg)
 	return rc;
     }
 
-  rc = build_argv (gpg);
+  pgmname = gpg->file_name ? gpg->file_name : _gpgme_get_default_gpg_name ();
+  rc = build_argv (gpg, pgmname);
   if (rc)
     return rc;
 
@@ -1351,8 +1358,7 @@ start (engine_gpg_t gpg)
   fd_list[n].fd = -1;
   fd_list[n].dup_to = -1;
 
-  status = _gpgme_io_spawn (gpg->file_name ? gpg->file_name :
-			    _gpgme_get_default_gpg_name (), gpg->argv,
+  status = _gpgme_io_spawn (pgmname, gpg->argv,
                             IOSPAWN_FLAG_ALLOW_SET_FG,
                             fd_list, NULL, NULL, &pid);
   {

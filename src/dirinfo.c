@@ -42,7 +42,8 @@ enum
     WANT_GPG_NAME,
     WANT_GPGSM_NAME,
     WANT_G13_NAME,
-    WANT_UISRV_SOCKET
+    WANT_UISRV_SOCKET,
+    WANT_GPG_ONE_MODE
   };
 
 /* Values retrieved via gpgconf and cached here.  */
@@ -56,6 +57,7 @@ static struct {
   char *gpgsm_name;
   char *g13_name;
   char *uisrv_socket;
+  int  gpg_one_mode;  /* System is in gpg1 mode.  */
 } dirinfo;
 
 
@@ -223,12 +225,14 @@ get_gpgconf_item (int what)
         {
           /* Probably gpgconf is not installed.  Assume we are using
              GnuPG-1.  */
+          dirinfo.gpg_one_mode = 1;
           pgmname = _gpgme_get_gpg_path ();
           if (pgmname)
             dirinfo.gpg_name = pgmname;
         }
       else
         {
+          dirinfo.gpg_one_mode = 0;
           read_gpgconf_dirs (pgmname, 0);
           read_gpgconf_dirs (pgmname, 1);
           dirinfo.gpgconf_name = pgmname;
@@ -268,6 +272,7 @@ get_gpgconf_item (int what)
     case WANT_GPGSM_NAME: result = dirinfo.gpgsm_name; break;
     case WANT_G13_NAME:   result = dirinfo.g13_name; break;
     case WANT_UISRV_SOCKET:  result = dirinfo.uisrv_socket; break;
+    case WANT_GPG_ONE_MODE: result = dirinfo.gpg_one_mode? "1":NULL; break;
     }
   UNLOCK (dirinfo_lock);
   return result;
@@ -322,4 +327,32 @@ const char *
 _gpgme_get_default_uisrv_socket (void)
 {
   return get_gpgconf_item (WANT_UISRV_SOCKET);
+}
+
+/* Return true if we are in GnuPG-1 mode - ie. no gpgconf and agent
+   being optional.  */
+int
+_gpgme_in_gpg_one_mode (void)
+{
+  return !!get_gpgconf_item (WANT_GPG_ONE_MODE);
+}
+
+
+
+/* Helper function to return the basename of the passed filename.  */
+const char *
+_gpgme_get_basename (const char *name)
+{
+  const char *s;
+
+  if (!name || !*name)
+    return name;
+  for (s = name + strlen (name) -1; s >= name; s--)
+    if (*s == '/'
+#ifdef HAVE_W32_SYSTEM
+        || *s == '\\' || *s == ':'
+#endif
+        )
+      return s+1;
+  return name;
 }
