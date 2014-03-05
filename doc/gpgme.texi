@@ -2689,6 +2689,12 @@ timestamp is invalid, and 0 if it is not available.
 @item long int expires
 This is the expiration timestamp of the subkey, or 0 if the subkey
 does not expire.
+
+@item unsigned int is_cardkey : 1
+True if the secret key is stored on a smart card.
+
+@item char *card_number
+The serial number of a smart card holding this key or @code{NULL}.
 @end table
 @end deftp
 
@@ -4213,9 +4219,6 @@ or @code{NULL} if this is the last element.
 @item gpgme_pubkey_algo_t
 The public key algorithm used in the encryption.
 
-@item unsigned int wrong_key_usage : 1
-This is true if the key was not used according to its policy.
-
 @item char *keyid
 This is the key ID of the key (in hexadecimal digits) used as
 recipient.
@@ -4509,6 +4512,9 @@ The public key algorithm used to create this signature.
 
 @item gpgme_hash_algo_t
 The hash algorithm used to create this signature.
+
+@item char *pka_address
+The mailbox from the PKA information or @code{NULL}.
 @end table
 @end deftp
 
@@ -4945,10 +4951,10 @@ list, or @code{NULL} if this is the last element.
 @item gpgme_sig_mode_t type
 The type of this signature.
 
-@item gpgme_pubkey_algo_t
+@item gpgme_pubkey_algo_t pubkey_algo
 The public key algorithm used to create this signature.
 
-@item gpgme_hash_algo_t
+@item gpgme_hash_algo_t hash_algo
 The hash algorithm used to create this signature.
 
 @item unsigned int sig_class
@@ -5400,7 +5406,7 @@ list of possible @code{gpgme_event_io_t} types.
 @node Registering I/O Callbacks
 @subsubsection Registering I/O Callbacks
 
-@deftp {Data type} {struct gpgme_io_cb_ts}
+@deftp {Data type} {struct gpgme_io_cbs}
 @tindex gpgme_event_io_t
 This structure is used to store the I/O callback interface functions
 described in the previous section.  It has the following members:
@@ -5410,7 +5416,7 @@ described in the previous section.  It has the following members:
 This is the function called by @acronym{GPGME} to register an I/O
 callback handler.  It must be specified.
 
-@item void *add_data
+@item void *add_priv
 This is passed as the first argument to the @code{add} function when
 it is called by @acronym{GPGME}.  For example, it can be used to
 determine the event loop to which the file descriptor should be added.
@@ -5424,14 +5430,14 @@ This is the function called by @acronym{GPGME} to signal an event for
 an operation.  It must be specified, because at least the start event
 must be processed.
 
-@item void *event_data
+@item void *event_priv
 This is passed as the first argument to the @code{event} function when
 it is called by @acronym{GPGME}.  For example, it can be used to
 determine the context in which the event has occured.
 @end table
 @end deftp
 
-@deftypefun void gpgme_set_io_cbs (@w{gpgme_ctx_t @var{ctx}}, @w{struct gpgme_io_cb_ts *@var{io_cbs}})
+@deftypefun void gpgme_set_io_cbs (@w{gpgme_ctx_t @var{ctx}}, @w{struct gpgme_io_cbs *@var{io_cbs}})
 The function @code{gpgme_set_io_cbs} enables the I/O callback
 interface for the context @var{ctx}.  The I/O callback functions are
 specified by @var{io_cbs}.
@@ -5440,7 +5446,7 @@ If @var{io_cbs}->@code{add} is @code{NULL}, the I/O callback interface
 is disabled for the context, and normal operation is restored.
 @end deftypefun
 
-@deftypefun void gpgme_get_io_cbs (@w{gpgme_ctx_t @var{ctx}}, @w{struct gpgme_io_cb_ts *@var{io_cbs}})
+@deftypefun void gpgme_get_io_cbs (@w{gpgme_ctx_t @var{ctx}}, @w{struct gpgme_io_cbs *@var{io_cbs}})
 The function @code{gpgme_get_io_cbs} returns the I/O callback
 functions set with @code{gpgme_set_io_cbs} in @var{io_cbs}.
 @end deftypefun
@@ -5630,7 +5636,7 @@ main (int argc, char *argv[])
   gpgme_error_t err;
   gpgme_data_t sig, text;
   int i;
-  struct gpgme_io_cb_ts io_cbs =
+  struct gpgme_io_cbs io_cbs =
   @{
     add_io_cb,
     &loop,
