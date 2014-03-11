@@ -678,8 +678,9 @@ gpgme_io_write (int fd, const void *buffer, size_t count)
    written or an error is return.  Returns: 0 on success or -1 on
    error and the sets errno. */
 int
-gpgme_io_writen (int fd, const void *buffer, size_t count)
+gpgme_io_writen (int fd, const void *buffer_arg, size_t count)
 {
+  const char *buffer = buffer_arg;
   int ret = 0;
   TRACE_BEG2 (DEBUG_GLOBAL, "gpgme_io_writen", fd,
 	      "buffer=%p, count=%u", buffer, count);
