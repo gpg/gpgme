@@ -78,9 +78,13 @@ walk_path (const char *pgm)
   const char *orig_path, *path, *s;
   char *fname, *p;
 
+#ifdef FIXED_SEARCH_PATH
+  orig_path = FIXED_SEARCH_PATH;
+#else
   orig_path = getenv ("PATH");
   if (!orig_path)
-    orig_path = "/bin:/usr/bin:.";
+    orig_path = "/bin:/usr/bin";
+#endif
 
   fname = malloc (strlen (orig_path) + 1 + strlen (pgm) + 1);
   if (!fname)

@@ -236,6 +236,17 @@ AM_CONDITIONAL(BUILD_W32_QT, test "$build_w32_qt" = yes)
 AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 
 
+AC_ARG_ENABLE([fixed-path],
+              AC_HELP_STRING([--enable-fixed-path=PATH],
+                             [locate binaries only via this PATH]),
+              [fixed_search_path="$enableval"],
+              [fixed_search_path=""])
+if test x$fixed_search_path != x ; then
+  AC_DEFINE_UNQUOTED(FIXED_SEARCH_PATH, "$fixed_search_path",
+                    [Locate binaries only via this PATH])
+fi
+
+
 #
 # Provide information about the build.
 #
