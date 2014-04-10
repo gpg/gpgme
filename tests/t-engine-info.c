@@ -109,12 +109,26 @@ main (int argc, char **argv )
     }
 
   gpgme_check_version (NULL);
+
+  {
+    const char *keys[] = {"homedir", "agent-socket", "uiserver-socket",
+                          "gpgconf-name", "gpg-name", "gpgsm-name",
+                          "g13-name", NULL };
+    const char *s;
+    int i;
+
+    for (i=0; keys[i]; i++)
+      if ((s = gpgme_get_dirinfo (keys[i])))
+        fprintf (stderr, "dirinfo: %s='%s'\n", keys[i], s);
+  }
+
   err = gpgme_get_engine_info (&info);
   fail_if_err (err);
 
   for (; info; info = info->next)
-    fprintf (stdout, "protocol=%d engine='%s' v='%s' (min='%s')\n",
-             info->protocol, info->file_name, info->version, info->req_version);
+    fprintf (stdout, "protocol=%d engine='%s' v='%s' (min='%s') home='%s'\n",
+             info->protocol, info->file_name, info->version, info->req_version,
+             info->home_dir? info->home_dir : "[default]");
 
   return 0;
 }

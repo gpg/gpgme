@@ -87,6 +87,8 @@ GPGME_1.1 {
 
     gpgme_set_pinentry_mode;
     gpgme_get_pinentry_mode;
+
+    gpgme_get_dirinfo;
 };
 
 

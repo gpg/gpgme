@@ -357,3 +357,28 @@ _gpgme_get_basename (const char *name)
       return s+1;
   return name;
 }
+
+
+/* Return default values for various directories and file names.  */
+const char *
+gpgme_get_dirinfo (const char *what)
+{
+  if (!what)
+    return NULL;
+  else if (!strcmp (what, "homedir"))
+    return get_gpgconf_item (WANT_HOMEDIR);
+  else if (!strcmp (what, "agent-socket"))
+    return get_gpgconf_item (WANT_AGENT_SOCKET);
+  else if (!strcmp (what, "uiserver-socket"))
+    return get_gpgconf_item (WANT_UISRV_SOCKET);
+  else if (!strcmp (what, "gpgconf-name"))
+    return get_gpgconf_item (WANT_GPGCONF_NAME);
+  else if (!strcmp (what, "gpg-name"))
+    return get_gpgconf_item (WANT_GPG_NAME);
+  else if (!strcmp (what, "gpgsm-name"))
+    return get_gpgconf_item (WANT_GPGSM_NAME);
+  else if (!strcmp (what, "g13-name"))
+    return get_gpgconf_item (WANT_G13_NAME);
+  else
+    return NULL;
+}

@@ -2090,6 +2090,9 @@ const char *gpgme_check_version_internal (const char *req_version,
   gpgme_check_version_internal (req_version,				\
 				offsetof (struct _gpgme_signature, validity))
 
+/* Return the default values for various directories.  */
+const char *gpgme_get_dirinfo (const char *what);
+
 /* Get the information about the configured and installed engines.  A
    pointer to the first engine in the statically allocated linked list
    is returned in *INFO.  If an error occurs, it is returned.  The

@@ -878,6 +878,41 @@ allocated string describing the protocol @var{protocol}, or
 @section Engine Version Check
 @cindex version check, of the engines
 
+@deftypefun @w{const char *} gpgme_get_dirinfo (@w{cons char *@var{what}})
+The function @code{gpgme_get_dirinfo} returns a statically allocated
+string with the value associated to @var{what}.  The returned values
+are the defaults and won't change even after
+@code{gpgme_set_engine_info} has been used to configure a different
+engine.  @code{NULL} is returned if no value is available.  Commonly
+supported values for @var{what} are:
+
+@table @code
+@item homedir
+Return the default home directory.
+
+@item agent-socket
+Return the name of the socket to connect to the gpg-agent.
+
+@item uiserver-socket
+Return the name of the socket to connect to the user interface server.
+
+@item gpgconf-name
+Return the file name of the engine configuration tool.
+
+@item gpg-name
+Return the file name of the OpenPGP engine.
+
+@item gpgsm-name
+Return the file name of the CMS engine.
+
+@item g13-name
+Return the name of the file container encryption engine.
+
+@end table
+
+@end deftypefun
+
+
 @deftypefun gpgme_error_t gpgme_engine_check_version (@w{gpgme_protocol_t @var{protocol}})
 The function @code{gpgme_engine_check_version} verifies that the
 engine implementing the protocol @var{PROTOCOL} is installed in the
@@ -916,7 +951,8 @@ reserved for future use, so always check before you use it.
 @item const char *home_dir
 This is a string holding the directory name of the crypto engine's
 configuration directory.  If it is @code{NULL}, then the default
-directory is used.
+directory is used.  See @code{gpgme_get_dirinfo} on how to get the
+default directory.
 
 @item const char *version
 This is a string containing the version number of the crypto engine.

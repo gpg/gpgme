@@ -213,5 +213,7 @@ EXPORTS
 
     gpgme_data_identify                   @161
 
+    gpgme_get_dirinfo                     @162
+
 ; END
 
