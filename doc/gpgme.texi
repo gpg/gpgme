@@ -5261,12 +5261,13 @@ with the GPGME API.
 
 The function @code{gpgme_op_spawn} runs the program @var{file} with
 the arguments taken from the NULL terminated array @var{argv}.  If no
-arguments are required @var{argv} may be given as @code{NULL} (in that
-case GPGME uses the basename of @var{file} for @code{argv[0]}).  The
-file descriptors @code{stdin}, @code{stdout}, and @code{stderr} are
-connected to the data objects @var{datain}, @var{dataout}, and
-@var{dataerr}.  If NULL is passed for one of these data objects the
-corresponding file descriptor is connected to @file{/dev/null}.
+arguments are required @var{argv} may be given as @code{NULL}.  In the
+latter case or if @code{argv[0]} is the empty string, GPGME uses the
+basename of @var{file} for @code{argv[0]}.  The file descriptors
+@code{stdin}, @code{stdout}, and @code{stderr} are connected to the
+data objects @var{datain}, @var{dataout}, and @var{dataerr}.  If NULL
+is passed for one of these data objects the corresponding file
+descriptor is connected to @file{/dev/null}.
 
 The value in @var{flags} is a bitwise-or combination of one or
 multiple of the following bit values:

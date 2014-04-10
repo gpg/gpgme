@@ -34,7 +34,8 @@ static gpgme_error_t
 spawn_start (gpgme_ctx_t ctx, int synchronous,
              const char *file, const char *argv[],
              gpgme_data_t datain,
-             gpgme_data_t dataout, gpgme_data_t dataerr)
+             gpgme_data_t dataout, gpgme_data_t dataerr,
+             unsigned int flags)
 {
   gpgme_error_t err;
   const char *tmp_argv[2];
@@ -54,7 +55,7 @@ spawn_start (gpgme_ctx_t ctx, int synchronous,
     }
 
   return _gpgme_engine_op_spawn (ctx->engine, file, argv,
-                                 datain, dataout, dataerr);
+                                 datain, dataout, dataerr, flags);
 }
 
 
@@ -75,7 +76,7 @@ gpgme_op_spawn_start (gpgme_ctx_t ctx, const char *file, const char *argv[],
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = spawn_start (ctx, 0, file, argv, datain, dataout, dataerr);
+  err = spawn_start (ctx, 0, file, argv, datain, dataout, dataerr, flags);
   return err;
 }
 
@@ -97,7 +98,7 @@ gpgme_op_spawn (gpgme_ctx_t ctx, const char *file, const char *argv[],
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = spawn_start (ctx, 1, file, argv, datain, dataout, dataerr);
+  err = spawn_start (ctx, 1, file, argv, datain, dataout, dataerr, flags);
 
   if (!err)
     err = _gpgme_wait_one (ctx);

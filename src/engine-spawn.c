@@ -231,6 +231,7 @@ engspawn_start (engine_spawn_t esp, const char *file, const char *argv[],
   struct spawn_fd_item_s *fd_list;
   pid_t pid;
   unsigned int spflags;
+  const char *save_argv0 = NULL;
 
   if (!esp || !file || !argv || !argv[0])
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -264,8 +265,15 @@ engspawn_start (engine_spawn_t esp, const char *file, const char *argv[],
   fd_list[n].fd = -1;
   fd_list[n].dup_to = -1;
 
+  if (argv[0] && !*argv[0])
+    {
+      save_argv0 = argv[0];
+      argv[0] = _gpgme_get_basename (file);
+    }
   status = _gpgme_io_spawn (file, (char * const *)argv, spflags,
                             fd_list, NULL, NULL, &pid);
+  if (save_argv0)
+    argv[0] = save_argv0;
   free (fd_list);
   if (status == -1)
     return gpg_error_from_syserror ();

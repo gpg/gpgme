@@ -130,7 +130,7 @@ struct engine_ops
                             const char *file, const char *argv[],
                             gpgme_data_t datain,
                             gpgme_data_t dataout,
-                            gpgme_data_t dataerr);
+                            gpgme_data_t dataerr, unsigned int flags);
 
 };
 

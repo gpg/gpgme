@@ -167,7 +167,8 @@ gpgme_error_t _gpgme_engine_op_spawn (engine_t engine,
                                       const char *file, const char *argv[],
                                       gpgme_data_t datain,
                                       gpgme_data_t dataout,
-                                      gpgme_data_t dataerr);
+                                      gpgme_data_t dataerr,
+                                      unsigned int flags);
 
 
 #endif /* ENGINE_H */
