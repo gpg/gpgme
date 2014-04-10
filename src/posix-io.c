@@ -402,6 +402,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 
 	  /* Child.  */
 	  int seen_stdin = 0;
+	  int seen_stdout = 0;
 	  int seen_stderr = 0;
 
 	  if (atfork)
@@ -430,6 +431,8 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 
 	      if (child_fd == 0)
 		seen_stdin = 1;
+	      else if (child_fd == 1)
+		seen_stdout = 1;
 	      else if (child_fd == 2)
 		seen_stderr = 1;
 
@@ -451,56 +454,38 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	      close (fd_list[i].fd);
 	    }
 
-	  if (! seen_stdin || ! seen_stderr)
+	  if (! seen_stdin || ! seen_stdout || !seen_stderr)
 	    {
 	      fd = open ("/dev/null", O_RDWR);
 	      if (fd == -1)
 		{
-#if 0
-		  /* FIXME: The debug file descriptor is not dup'ed
-		     anyway, so we can't see this.  */
-		  TRACE_LOG1 ("can't open `/dev/null': %s\n",
-			      strerror (errno));
-#endif
+		  /* The debug file descriptor is not dup'ed, so we
+		     can't do a trace output.  */
 		  _exit (8);
 		}
-	      /* Make sure that the process has a connected stdin.  */
+	      /* Make sure that the process has connected stdin.  */
 	      if (! seen_stdin && fd != 0)
 		{
 		  if (dup2 (fd, 0) == -1)
-		    {
-#if 0
-		  /* FIXME: The debug file descriptor is not dup'ed
-		     anyway, so we can't see this.  */
-		      TRACE_LOG1 ("dup2(/dev/null, 0) failed: %s\n",
-				  strerror (errno));
-#endif
-		      _exit (8);
-		    }
+                    _exit (8);
 		}
+	      if (! seen_stdout && fd != 1)
+                {
+                  if (dup2 (fd, 1) == -1)
+                    _exit (8);
+                }
 	      if (! seen_stderr && fd != 2)
-		if (dup2 (fd, 2) == -1)
-		  {
-#if 0
-		    /* FIXME: The debug file descriptor is not dup'ed
-		       anyway, so we can't see this.  */
-		    TRACE_LOG1 ("dup2(dev/null, 2) failed: %s\n",
-				strerror (errno));
-#endif
-		    _exit (8);
-		  }
-	      if (fd != 0 && fd != 2)
+                {
+                  if (dup2 (fd, 2) == -1)
+                    _exit (8);
+                }
+	      if (fd != 0 && fd != 1 && fd != 2)
 		close (fd);
 	    }
 
 	  execv (path, (char *const *) argv);
 	  /* Hmm: in that case we could write a special status code to the
 	     status-pipe.  */
-#if 0
-	  /* FIXME: The debug file descriptor is not dup'ed anyway, so
-	     we can't see this.  */
-	  TRACE_LOG1 ("exec of `%s' failed\n", path);
-#endif
 	  _exit (8);
 	  /* End child.  */
 	}
