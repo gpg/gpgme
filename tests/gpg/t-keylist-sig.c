@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -53,7 +53,7 @@ struct
       unsigned int sig_class;
       int exportable;
     } sig;
-  } uid[3];  
+  } uid[3];
 }
 keys[] =
   {
@@ -71,7 +71,7 @@ keys[] =
   };
 
 
-int 
+int
 main (int argc, char **argv)
 {
   gpgme_error_t err;
@@ -93,7 +93,7 @@ main (int argc, char **argv)
 
   err = gpgme_op_keylist_start (ctx, "Alpha", 0);
   fail_if_err (err);
-    
+
   while (!(err = gpgme_op_keylist_next (ctx, &key)))
     {
       if (!keys[i].fpr)
@@ -462,12 +462,9 @@ main (int argc, char **argv)
 		   key->uids->next->email);
 	  exit (1);
 	}
-      /*FIXME: There is a bug in gpg 1.3.4 which duplicates a signaure
-        after importing the secret key.  We disable this test for
-        now. */
-#ifdef __GNUC__
-#warning test disabled due to problems with gpg 1.3.4 generated key
-#endif
+      /* Note: There is a bug in gpg 1.3.4 which duplicates a
+         signature after importing the secret key.  Thus we disable
+         the second part of the check. */
       if (key->uids && (!key->uids->next->signatures /*|| key->uids->next->signatures->next*/))
 	{
 	  fprintf (stderr, "Second user ID unexpected number of signatures\n");
