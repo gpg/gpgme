@@ -168,7 +168,8 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
   fd_items[i].fd = -1;
   fd_items[i].dup_to = -1;
 
-  err = _gpgme_io_spawn (name, (char*const*)argv, IOSPAWN_FLAG_NOCLOSE,
+  err = _gpgme_io_spawn (name, (char*const*)argv,
+                         (IOSPAWN_FLAG_NOCLOSE | IOSPAWN_FLAG_DETACHED),
 			 fd_items, atfork, atforkvalue, r_pid);
   if (! err)
     {

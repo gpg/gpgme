@@ -1359,7 +1359,7 @@ start (engine_gpg_t gpg)
   fd_list[n].dup_to = -1;
 
   status = _gpgme_io_spawn (pgmname, gpg->argv,
-                            IOSPAWN_FLAG_ALLOW_SET_FG,
+                            (IOSPAWN_FLAG_DETACHED |IOSPAWN_FLAG_ALLOW_SET_FG),
                             fd_list, NULL, NULL, &pid);
   {
     int saved_err = gpg_error_from_syserror ();

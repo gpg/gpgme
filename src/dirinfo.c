@@ -156,7 +156,8 @@ read_gpgconf_dirs (const char *pgmname, int components)
 
   cfd[0].fd = rp[1];
 
-  status = _gpgme_io_spawn (pgmname, argv, 0, cfd, NULL, NULL, NULL);
+  status = _gpgme_io_spawn (pgmname, argv, IOSPAWN_FLAG_DETACHED,
+                            cfd, NULL, NULL, NULL);
   if (status < 0)
     {
       _gpgme_io_close (rp[0]);

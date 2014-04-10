@@ -372,8 +372,6 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   int status;
   int signo;
 
-  (void)flags;
-
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
 	      "path=%s", path);
   i = 0;

@@ -662,7 +662,8 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
   si.hStdError = INVALID_HANDLE_VALUE;
 
   cr_flags |= CREATE_SUSPENDED;
-  cr_flags |= DETACHED_PROCESS;
+  if ((flags & IOSPAWN_FLAG_DETACHED))
+    cr_flags |= DETACHED_PROCESS;
   if (!CreateProcessA (_gpgme_get_w32spawn_path (),
 		       arg_string,
 		       &sec_attr,     /* process security attributes */

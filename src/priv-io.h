@@ -75,11 +75,13 @@ int _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
 				void *value);
 int _gpgme_io_set_nonblocking (int fd);
 
+/* Under Windows do not allocate a console.  */
+#define IOSPAWN_FLAG_DETACHED 1
 /* A flag to tell the spawn function to allow the child process to set
    the foreground window. */
-#define IOSPAWN_FLAG_ALLOW_SET_FG 1
+#define IOSPAWN_FLAG_ALLOW_SET_FG 2
 /* Don't close any child FDs.  */
-#define IOSPAWN_FLAG_NOCLOSE 2
+#define IOSPAWN_FLAG_NOCLOSE 4
 
 /* Spawn the executable PATH with ARGV as arguments.  After forking
    close all fds except for those in FD_LIST in the child, then

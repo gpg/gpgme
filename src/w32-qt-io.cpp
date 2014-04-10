@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2004, 2005, 2007 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -107,7 +107,7 @@ find_channel (int fd, int create)
     DeviceEntry* entry = new DeviceEntry;
     entry->iodev = new KDPipeIODevice
       (fd, QIODevice::ReadWrite|QIODevice::Unbuffered);
-    iodevice_table[fd] = entry; 
+    iodevice_table[fd] = entry;
   }
   return iodevice_table[fd] ? iodevice_table[fd]->iodev : 0;
 }
@@ -156,7 +156,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
       errno = EAGAIN;
       return TRACE_SYSRES( -1 );
   }
- 
+
   nread = chan->read ((char *) buffer, count);
   if (nread < 0)
     {
@@ -289,8 +289,8 @@ _gpgme_io_close (int fd)
       notify_table[fd].value = NULL;
     }
 
-  /* Then do the close.  */    
-  
+  /* Then do the close.  */
+
   DeviceEntry* const entry = iodevice_table[fd];
   if ( entry ) {
       if ( entry->unref() == 0 ) {
@@ -303,7 +303,7 @@ _gpgme_io_close (int fd)
       _close( fd );
   }
 
-  
+
 
   return 0;
 }
@@ -334,7 +334,7 @@ _gpgme_io_set_nonblocking (int fd)
 {
   DeviceEntry* const entry = iodevice_table[fd];
   assert( entry );
-  entry->blocking = false; 
+  entry->blocking = false;
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", fd);
   return TRACE_SYSRES (0);
 }
@@ -347,7 +347,7 @@ build_commandline (char **argv)
   int n = 0;
   char *buf;
   char *p;
-  
+
   /* We have to quote some things because under Windows the program
      parses the commandline and does some unquoting.  We enclose the
      whole argument in double-quotes, and escape literal double-quotes
@@ -428,7 +428,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
       TRACE_LOG2 ("argv[%2i] = %s", i, argv[i]);
       i++;
     }
-  
+
   /* We do not inherit any handles by default, and just insert those
      handles we want the child to have afterwards.  But some handle
      values occur on the command line, and we need to move
@@ -450,7 +450,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-  
+
   arg_string = build_commandline (args);
   free (args);
   if (!arg_string)
@@ -459,7 +459,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
       DeleteFile (tmp_name);
       return TRACE_SYSRES (-1);
     }
-  
+
   memset (&si, 0, sizeof si);
   si.cb = sizeof (si);
   si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
@@ -469,7 +469,8 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
   si.hStdError = INVALID_HANDLE_VALUE;
 
   cr_flags |= CREATE_SUSPENDED;
-  cr_flags |= DETACHED_PROCESS;
+  if ((flags & IOSPAWN_FLAG_DETACHED))
+    cr_flags |= DETACHED_PROCESS;
   if (!CreateProcessA (_gpgme_get_w32spawn_path (),
 		       arg_string,
 		       &sec_attr,     /* process security attributes */
@@ -523,7 +524,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
       /* Return the child name of this handle.  */
       fd_list[i].peer_name = (int) hd;
     }
-    
+
   /* Write the handle translation information to the temporary
      file.  */
   {
@@ -545,7 +546,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
       {
 	/* Strip the newline.  */
 	len = strlen (line) - 1;
-	
+
 	/* Format is: Local name, stdin/stdout/stderr, peer name, argv idx.  */
 	snprintf (&line[len], BUFFER_MAX - len, "0x%x %d 0x%x %d  \n",
 		  fd_list[i].fd, fd_list[i].dup_to,
@@ -567,18 +568,18 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
   close (tmp_fd);
   /* The temporary file is deleted by the gpgme-w32spawn process
      (hopefully).  */
-  
+
   TRACE_LOG4 ("CreateProcess ready: hProcess=%p, hThread=%p, "
 	      "dwProcessID=%d, dwThreadId=%d",
-	      pi.hProcess, pi.hThread, 
+	      pi.hProcess, pi.hThread,
 	      (int) pi.dwProcessId, (int) pi.dwThreadId);
 
   if (r_pid)
     *r_pid = (pid_t)pi.dwProcessId;
-  
+
   if (ResumeThread (pi.hThread) < 0)
     TRACE_LOG1 ("ResumeThread failed: ec=%d", (int) GetLastError ());
-  
+
   if (!CloseHandle (pi.hThread))
     TRACE_LOG1 ("CloseHandle of thread failed: ec=%d",
 		(int) GetLastError ());
@@ -635,7 +636,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
           else
               fds[i].signaled = chan->waitForReadyRead( 1000 ) ? 1 : 0;
 	  TRACE_ADD1 (dbg_help, "w0x%x ", fds[i].fd);
-          if ( fds[i].signaled ) 
+          if ( fds[i].signaled )
               count++;
         }
       else if (fds[i].for_write)
@@ -644,11 +645,11 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
           assert (chan);
           fds[i].signaled = nonblock ? ( chan->writeWouldBlock() ? 0 : 1 ) : 1;
           TRACE_ADD1 (dbg_help, "w0x%x ", fds[i].fd);
-          if ( fds[i].signaled ) 
+          if ( fds[i].signaled )
               count++;
         }
     }
-  TRACE_END (dbg_help, "]"); 
+  TRACE_END (dbg_help, "]");
 
   return TRACE_SYSRES (count);
 }

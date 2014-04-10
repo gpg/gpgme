@@ -228,7 +228,8 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
 
   cfd[0].fd = rp[1];
 
-  status = _gpgme_io_spawn (gpgconf->file_name, argv, 0, cfd, NULL, NULL, NULL);
+  status = _gpgme_io_spawn (gpgconf->file_name, argv,
+                            IOSPAWN_FLAG_DETACHED, cfd, NULL, NULL, NULL);
   if (status < 0)
     {
       _gpgme_io_close (rp[0]);
@@ -697,7 +698,8 @@ gpgconf_write (void *engine, char *arg1, char *arg2, gpgme_data_t conf)
 
   cfd[0].fd = rp[0];
 
-  status = _gpgme_io_spawn (gpgconf->file_name, argv, 0, cfd, NULL, NULL, NULL);
+  status = _gpgme_io_spawn (gpgconf->file_name, argv,
+                            IOSPAWN_FLAG_DETACHED, cfd, NULL, NULL, NULL);
   if (status < 0)
     {
       _gpgme_io_close (rp[0]);
