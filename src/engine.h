@@ -163,5 +163,11 @@ gpgme_error_t _gpgme_engine_op_passwd (engine_t engine, gpgme_key_t key,
 gpgme_error_t _gpgme_engine_set_pinentry_mode (engine_t engine,
                                                gpgme_pinentry_mode_t mode);
 
+gpgme_error_t _gpgme_engine_op_spawn (engine_t engine,
+                                      const char *file, const char *argv[],
+                                      gpgme_data_t datain,
+                                      gpgme_data_t dataout,
+                                      gpgme_data_t dataerr);
+
 
 #endif /* ENGINE_H */

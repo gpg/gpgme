@@ -1,6 +1,7 @@
 /* gpgme.c - GnuPG Made Easy.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2012 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2012,
+                 2014 g10 Code GmbH
 
    This file is part of GPGME.
 
@@ -15,9 +16,8 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -321,7 +321,8 @@ gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
       && protocol != GPGME_PROTOCOL_GPGCONF
       && protocol != GPGME_PROTOCOL_ASSUAN
       && protocol != GPGME_PROTOCOL_G13
-      && protocol != GPGME_PROTOCOL_UISERVER)
+      && protocol != GPGME_PROTOCOL_UISERVER
+      && protocol != GPGME_PROTOCOL_SPAWN)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (!ctx)
@@ -404,6 +405,9 @@ gpgme_get_protocol_name (gpgme_protocol_t protocol)
 
     case GPGME_PROTOCOL_UISERVER:
       return "UIServer";
+
+    case GPGME_PROTOCOL_SPAWN:
+      return "Spawn";
 
     case GPGME_PROTOCOL_DEFAULT:
       return "default";

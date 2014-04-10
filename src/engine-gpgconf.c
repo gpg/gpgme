@@ -963,5 +963,6 @@ struct engine_ops _gpgme_engine_ops_gpgconf =
     NULL,		/* cancel */
     NULL,               /* cancel_op */
     NULL,               /* passwd */
-    NULL                /* set_pinentry_mode */
+    NULL,               /* set_pinentry_mode */
+    NULL                /* opspawn */
   };

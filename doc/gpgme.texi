@@ -113,7 +113,6 @@ Indices
 * Concept Index::                 Index of concepts and programs.
 * Function and Data Index::       Index of functions, variables and data types.
 
-
 @detailmenu
  --- The Detailed Node Listing ---
 
@@ -170,6 +169,7 @@ Manipulating Data Buffers
 
 * Data Buffer I/O Operations::    I/O operations on data buffers.
 * Data Buffer Meta-Data::         Meta-data manipulation of data buffers.
+* Data Buffer Convenience::       Convenience function for data buffers.
 
 Contexts
 
@@ -180,6 +180,7 @@ Contexts
 * Key Management::                Managing keys with @acronym{GPGME}.
 * Trust Item Management::         Managing trust items with @acronym{GPGME}.
 * Crypto Operations::             Using a context for cryptography.
+* Miscellaneous::                 Miscellaneous operations.
 * Run Control::                   Controlling how operations are run.
 
 Context Attributes
@@ -204,6 +205,7 @@ Key Management
 * Exporting Keys::                Retrieving key data from the key ring.
 * Importing Keys::                Adding keys to the key ring.
 * Deleting Keys::                 Removing keys from the key ring.
+* Changing Passphrases::          Change the passphrase of a key.
 * Advanced Key Editing::          Advanced key edit operation.
 
 Trust Item Management
@@ -229,6 +231,10 @@ Sign
 Encrypt
 
 * Encrypting a Plaintext::        How to encrypt a plaintext.
+
+Miscellaneous
+
+* Running other Programs::        Running other Programs
 
 Run Control
 
@@ -849,6 +855,9 @@ Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
 
 @item GPGME_PROTOCOL_UISERVER
 Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
+
+@item GPGME_PROTOCOL_SPAWN
+Special protocol for use with @code{gpgme_op_spawn}.
 
 @item GPGME_PROTOCOL_UNKNOWN
 Reserved for future extension.  You may use this to indicate that the
@@ -1946,7 +1955,7 @@ be used to manipulate both.
 @menu
 * Data Buffer I/O Operations::    I/O operations on data buffers.
 * Data Buffer Meta-Data::         Meta-data manipulation of data buffers.
-* Data Buffer Convenience::       Convenience fucntion for data buffers.
+* Data Buffer Convenience::       Convenience function for data buffers.
 @end menu
 
 
@@ -2187,6 +2196,7 @@ cryptographic operations.
 * Key Management::                Managing keys with @acronym{GPGME}.
 * Trust Item Management::         Managing trust items with @acronym{GPGME}.
 * Crypto Operations::             Using a context for cryptography.
+* Miscellaneous::                 Miscellaneous operations
 * Run Control::                   Controlling how operations are run.
 @end menu
 
@@ -2261,7 +2271,7 @@ started.  In fact, these references are accessed through the
 * Crypto Engine::                 Configuring the crypto engine.
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
-* Included Certificates::       Including a number of certificates.
+* Included Certificates::         Including a number of certificates.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
@@ -5219,6 +5229,66 @@ The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
 if @var{ctx}, @var{rset}, @var{plain} or @var{cipher} is not a valid
 pointer.
+@end deftypefun
+
+
+@node Miscellaneous
+@section Miscellaneous operations
+
+Here are some support functions which are sometimes useful.
+
+@menu
+* Running other Programs::      Running other Programs
+@end menu
+
+
+@node Running other Programs
+@subsection Running other Programs
+
+GPGME features an internal subsystem to run the actual backend
+engines.  Along with data abstraction object this subsystem can be
+used to run arbitrary simple programs which even need not be related
+to cryptographic features.  It may for example be used to run tools
+which are part of the GnuPG system but are not directly accessible
+with the GPGME API.
+
+
+@deftypefun gpgme_error_t gpgme_op_spawn
+            (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{file}}, @
+             @w{const char *@var{argv}[]}, @w{gpgme_data_t @var{datain}}, @
+             @w{gpgme_data_t @var{dataout}}, @w{gpgme_data_t @var{dataerr}}, @
+             @w{unsigned int @var{flags}})
+
+The function @code{gpgme_op_spawn} runs the program @var{file} with
+the arguments taken from the NULL terminated array @var{argv}.  If no
+arguments are required @var{argv} may be given as @code{NULL} (in that
+case GPGME uses the basename of @var{file} for @code{argv[0]}).  The
+file descriptors @code{stdin}, @code{stdout}, and @code{stderr} are
+connected to the data objects @var{datain}, @var{dataout}, and
+@var{dataerr}.  If NULL is passed for one of these data objects the
+corresponding file descriptor is connected to @file{/dev/null}.
+
+The value in @var{flags} is a bitwise-or combination of one or
+multiple of the following bit values:
+
+@table @code
+@item GPGME_SPAWN_DETACHED
+Under Windows this flag inhibits the allocation of a new console for
+the program.  This is useful for a GUI application which needs to call
+a command line helper tool.
+@item GPGME_SPAWN_ALLOW_SET_FG
+Under Windows this flag allows the called program to put itself into
+the foreground.
+@end table
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_spawn_start
+            (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{file}}, @
+             @w{const char *@var{argv}[]}, @w{gpgme_data_t @var{datain}}, @
+             @w{gpgme_data_t @var{dataout}}, @w{gpgme_data_t @var{dataerr}}, @
+             @w{unsigned int @var{flags}})
+
+This is the asynchronous variant of @code{gpgme_op_spawn}.
 @end deftypefun
 
 

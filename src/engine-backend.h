@@ -124,6 +124,14 @@ struct engine_ops
 
   /* Set the pinentry mode.  */
   gpgme_error_t (*set_pinentry_mode) (void *engine, gpgme_pinentry_mode_t mode);
+
+  /* The spawn command.  */
+  gpgme_error_t (*opspawn) (void * engine,
+                            const char *file, const char *argv[],
+                            gpgme_data_t datain,
+                            gpgme_data_t dataout,
+                            gpgme_data_t dataerr);
+
 };
 
 
@@ -135,6 +143,7 @@ extern struct engine_ops _gpgme_engine_ops_g13;         /* Crypto VFS. */
 #ifdef ENABLE_UISERVER
 extern struct engine_ops _gpgme_engine_ops_uiserver;
 #endif
+extern struct engine_ops _gpgme_engine_ops_spawn;       /* Spawn engine. */
 
 
 /* Prototypes for extra functions in engine-gpgconf.c  */

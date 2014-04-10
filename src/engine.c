@@ -51,10 +51,11 @@ static struct engine_ops *engine_ops[] =
     &_gpgme_engine_ops_assuan,		/* Low-Level Assuan.  */
     &_gpgme_engine_ops_g13,		/* Crypto VFS.  */
 #ifdef ENABLE_UISERVER
-    &_gpgme_engine_ops_uiserver		/* UI-Server.  */
+    &_gpgme_engine_ops_uiserver,	/* UI-Server.  */
 #else
-    NULL
+    NULL,
 #endif
+    &_gpgme_engine_ops_spawn
   };
 
 
@@ -193,7 +194,8 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 					GPGME_PROTOCOL_GPGCONF,
 					GPGME_PROTOCOL_ASSUAN,
 					GPGME_PROTOCOL_G13,
-					GPGME_PROTOCOL_UISERVER };
+					GPGME_PROTOCOL_UISERVER,
+                                        GPGME_PROTOCOL_SPAWN    };
       unsigned int proto;
 
       err = 0;
@@ -935,4 +937,21 @@ _gpgme_engine_set_pinentry_mode (engine_t engine, gpgme_pinentry_mode_t mode)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   return (*engine->ops->set_pinentry_mode) (engine->engine, mode);
+}
+
+
+gpgme_error_t
+_gpgme_engine_op_spawn (engine_t engine,
+                        const char *file, const char *argv[],
+                        gpgme_data_t datain,
+                        gpgme_data_t dataout, gpgme_data_t dataerr)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->opspawn)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->opspawn) (engine->engine, file, argv,
+                                  datain, dataout, dataerr);
 }

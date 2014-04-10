@@ -89,11 +89,12 @@ main_sources =								\
 	sign.c passphrase.c progress.c					\
 	key.c keylist.c trust-item.c trustlist.c			\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
-	opassuan.c passwd.c assuan-support.c                            \
+	opassuan.c passwd.c spawn.c assuan-support.c                    \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.c	\
 	engine-gpgsm.c engine-assuan.c engine-gpgconf.c                 \
 	$(uiserver_components)						\
 	engine-g13.c vfs-mount.c vfs-create.c			        \
+	engine-spawn.c 	                                                \
 	gpgconf.c							\
 	sema.h priv-io.h $(system_components) sys-util.h dirinfo.c	\
 	debug.c debug.h gpgme.c version.c error.c

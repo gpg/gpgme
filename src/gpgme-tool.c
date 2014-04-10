@@ -1742,6 +1742,8 @@ gt_protocol_from_name (const char *name)
     return GPGME_PROTOCOL_G13;
   if (! strcasecmp (name, gpgme_get_protocol_name (GPGME_PROTOCOL_UISERVER)))
     return GPGME_PROTOCOL_UISERVER;
+  if (! strcasecmp (name, gpgme_get_protocol_name (GPGME_PROTOCOL_SPAWN)))
+    return GPGME_PROTOCOL_SPAWN;
   if (! strcasecmp (name, gpgme_get_protocol_name (GPGME_PROTOCOL_DEFAULT)))
     return GPGME_PROTOCOL_DEFAULT;
   return GPGME_PROTOCOL_UNKNOWN;
@@ -2103,6 +2105,18 @@ gt_identify (gpgme_tool_t gt, gpgme_data_t data)
     }
   gt_write_status (gt, STATUS_IDENTIFY_RESULT, s, NULL);
   return 0;
+}
+
+
+gpg_error_t
+gt_spawn (gpgme_tool_t gt, const char *pgm,
+          gpgme_data_t inp, gpgme_data_t outp)
+{
+  gpg_error_t err;
+
+  err = gpgme_op_spawn (gt->ctx, pgm, NULL, inp, outp, outp, 0);
+
+  return err;
 }
 
 
@@ -3487,6 +3501,55 @@ cmd_identify (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_spawn[] =
+  "SPAWN PGM [args]\n"
+  "\n"
+  "Run program PGM with stdin connected to the INPUT source;\n"
+  "stdout and stderr to the OUTPUT source.";
+static gpg_error_t
+cmd_spawn (assuan_context_t ctx, char *line)
+{
+  struct server *server = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  assuan_fd_t inp_fd;
+  char *inp_fn;
+  assuan_fd_t out_fd;
+  char *out_fn;
+  gpgme_data_t inp_data = NULL;
+  gpgme_data_t out_data = NULL;
+
+  inp_fd = server->input_fd;
+  inp_fn = server->input_filename;
+  out_fd = server->output_fd;
+  out_fn = server->output_filename;
+  if (inp_fd != ASSUAN_INVALID_FD || inp_fn)
+    {
+      err = server_data_obj (inp_fd, inp_fn, 0, server->input_enc, &inp_data,
+			     &server->input_stream);
+      if (err)
+	return err;
+    }
+  if (out_fd != ASSUAN_INVALID_FD || out_fn)
+    {
+      err = server_data_obj (out_fd, out_fn, 1, server->output_enc, &out_data,
+			     &server->output_stream);
+      if (err)
+	{
+	  gpgme_data_release (inp_data);
+	  return err;
+	}
+    }
+
+  err = gt_spawn (server->gt, line, inp_data, out_data);
+
+  gpgme_data_release (inp_data);
+  gpgme_data_release (out_data);
+
+  server_reset_fds (server);
+
+  return err;
+}
+
 
 /* Tell the assuan library about our commands.  */
 static gpg_error_t
@@ -3547,6 +3610,7 @@ register_commands (assuan_context_t ctx)
     { "HASH_ALGO_NAME", cmd_hash_algo_name },
     { "PASSWD", cmd_passwd, hlp_passwd },
     { "IDENTIFY", cmd_identify, hlp_identify },
+    { "SPAWN", cmd_spawn, hlp_spawn },
     { NULL }
   };
   int idx;

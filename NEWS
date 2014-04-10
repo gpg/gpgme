@@ -9,9 +9,17 @@ Noteworthy changes in version 1.5.0 (unreleased)
    whatever gpgconf tells as name for the OpenPGP engine.  If gpgconf
    is not found, GPGME looks for an engine named "gpg".
 
+ * Add feature to use the gpgme I/O subsystem to run arbitrary
+   commands.
+
  * Interface changes relative to the 1.4.3 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_get_dirinfo              NEW.
+ gpgme_op_spawn_start           NEW.
+ gpgme_op_spawn                 NEW.
+ GPGME_PROTOCOL_SPAWN           NEW.
+ GPGME_SPAWN_DETACHED           NEW.
+ GPGME_SPAWN_ALLOW_SET_FG       NEW.
 
 
 Noteworthy changes in version 1.4.3 (2013-08-12)

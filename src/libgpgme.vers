@@ -89,6 +89,9 @@ GPGME_1.1 {
     gpgme_get_pinentry_mode;
 
     gpgme_get_dirinfo;
+
+    gpgme_op_spawn_start;
+    gpgme_op_spawn;
 };
 
 

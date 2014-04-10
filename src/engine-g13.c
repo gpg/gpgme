@@ -799,5 +799,6 @@ struct engine_ops _gpgme_engine_ops_g13 =
     g13_cancel,
     g13_cancel_op,
     NULL,               /* passwd */
-    NULL                /* set_pinentry_mode */
+    NULL,               /* set_pinentry_mode */
+    NULL                /* opspawn */
   };

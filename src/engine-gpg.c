@@ -2445,5 +2445,6 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_cancel,
     NULL,		/* cancel_op */
     gpg_passwd,
-    gpg_set_pinentry_mode
+    gpg_set_pinentry_mode,
+    NULL                /* opspawn */
   };

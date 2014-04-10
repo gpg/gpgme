@@ -215,5 +215,7 @@ EXPORTS
 
     gpgme_get_dirinfo                     @162
 
+    gpgme_op_spawn_start                  @163
+    gpgme_op_spawn                        @164
 ; END
 
