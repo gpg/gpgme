@@ -710,7 +710,10 @@ _gpgme_mkstemp (int *fd, char **name)
   strcpy (stpcpy (tmpname, tmp), "\\gpgme-XXXXXX");
   *fd = mkstemp (tmpname);
   if (fd < 0)
-    return -1;
+    {
+      free (tmpname);
+      return -1;
+    }
 
   *name = tmpname;
   return 0;

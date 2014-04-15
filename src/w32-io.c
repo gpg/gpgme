@@ -794,6 +794,7 @@ create_writer (int fd)
   if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
     {
       TRACE_SYSERR (EIO);
+      free (ctx);
       return NULL;
     }
   TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d",
