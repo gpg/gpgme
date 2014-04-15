@@ -340,10 +340,15 @@ int
 _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal)
 {
   int status;
+  pid_t ret;
 
   *r_status = 0;
   *r_signal = 0;
-  if (_gpgme_ath_waitpid (pid, &status, hang? 0 : WNOHANG) == pid)
+  do
+    ret = _gpgme_ath_waitpid (pid, &status, hang? 0 : WNOHANG);
+  while (ret == (pid_t)(-1) && errno == EINTR);
+
+  if (ret == pid)
     {
       if (WIFSIGNALED (status))
 	{
@@ -714,7 +719,11 @@ _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
 int
 _gpgme_io_dup (int fd)
 {
-  int new_fd = dup (fd);
+  int new_fd;
+
+  do
+    new_fd = dup (fd);
+  while (new_fd == -1 && errno == EINTR);
 
   TRACE1 (DEBUG_SYSIO, "_gpgme_io_dup", fd, "new fd==%i", new_fd);
 
@@ -744,7 +753,9 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_connect", fd,
 	      "addr=%p, addrlen=%i", addr, addrlen);
 
-  res = ath_connect (fd, addr, addrlen);
+  do
+    res = ath_connect (fd, addr, addrlen);
+  while (res == -1 && errno == EINTR);
 
   return TRACE_SYSRES (res);
 }
