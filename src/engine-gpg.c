@@ -896,6 +896,10 @@ build_argv (engine_gpg_t gpg)
 					       close_notify_handler,
 					       gpg))
 	      {
+                /* We leak fd_data_map and the fds.  This is not easy
+                   to avoid and given that we reach this here only
+                   after a malloc failure for a small object, it is
+                   probably better not to do anything.  */
 		return gpg_error (GPG_ERR_GENERAL);
 	      }
 	    /* If the data_type is FD, we have to do a dup2 here.  */
