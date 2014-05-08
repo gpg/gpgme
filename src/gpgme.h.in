@@ -629,6 +629,9 @@ struct _gpgme_subkey
 
   /* The serial number of a smart card holding this key or NULL.  */
   char *card_number;
+
+  /* The name of the curve for ECC algorithms or NULL.  */
+  char *curve;
 };
 typedef struct _gpgme_subkey *gpgme_subkey_t;
 

@@ -422,7 +422,7 @@ keylist_colon_handler (void *priv, char *line)
       RT_SSB, RT_SEC, RT_CRT, RT_CRS, RT_REV, RT_SPK
     }
   rectype = RT_NONE;
-#define NR_FIELDS 16
+#define NR_FIELDS 17
   char *field[NR_FIELDS];
   int fields = 0;
   void *hook;
@@ -584,6 +584,15 @@ keylist_colon_handler (void *priv, char *line)
           if (err)
             return err;
         }
+
+      /* Field 17 has the curve name for ECC.  */
+      if (fields >= 17 && *field[16])
+        {
+          subkey->curve = strdup (field[16]);
+          if (!subkey->curve)
+            return gpg_error_from_syserror ();
+        }
+
       break;
 
     case RT_SUB:
@@ -646,6 +655,15 @@ keylist_colon_handler (void *priv, char *line)
           if (err)
             return err;
         }
+
+      /* Field 17 has the curve name for ECC.  */
+      if (fields >= 17 && *field[16])
+        {
+          subkey->curve = strdup (field[16]);
+          if (!subkey->curve)
+            return gpg_error_from_syserror ();
+        }
+
       break;
 
     case RT_UID:

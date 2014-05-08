@@ -233,6 +233,7 @@ gpgme_release (gpgme_ctx_t ctx)
     return;
 
   _gpgme_engine_release (ctx->engine);
+  ctx->engine = NULL;
   _gpgme_fd_table_deinit (&ctx->fdt);
   _gpgme_release_result (ctx);
   _gpgme_signers_clear (ctx);
@@ -244,6 +245,7 @@ gpgme_release (gpgme_ctx_t ctx)
   if (ctx->lc_messages)
     free (ctx->lc_messages);
   _gpgme_engine_info_release (ctx->engine_info);
+  ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
   free (ctx);
 }

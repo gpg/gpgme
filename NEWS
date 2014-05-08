@@ -25,6 +25,7 @@ Noteworthy changes in version 1.5.0 (unreleased)
  GPGME_ENCRYPT_NO_COMPRESS      NEW.
  GPGME_PK_ECC                   NEW.
  GPGME_MD_SHA224                NEW.
+ gpgme_subkey_t                 EXTENDED: New field curve.
 
 
 Noteworthy changes in version 1.4.3 (2013-08-12)

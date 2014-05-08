@@ -331,6 +331,8 @@ gpgme_key_unref (gpgme_key_t key)
       gpgme_subkey_t next = subkey->next;
       if (subkey->fpr)
 	free (subkey->fpr);
+      if (subkey->curve)
+	free (subkey->curve);
       if (subkey->card_number)
 	free (subkey->card_number);
       free (subkey);

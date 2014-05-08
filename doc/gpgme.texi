@@ -2742,6 +2742,10 @@ True if the secret key is stored on a smart card.
 
 @item char *card_number
 The serial number of a smart card holding this key or @code{NULL}.
+
+@item char *curve
+For ECC algoritms the name of the curve.
+
 @end table
 @end deftp
 
