@@ -1662,6 +1662,9 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
   if (!err && use_armor)
     err = add_arg (gpg, "--armor");
 
+  if (!err && (flags & GPGME_ENCRYPT_NO_COMPRESS))
+    err = add_arg (gpg, "--compress-algo=none");
+
   if (!symmetric)
     {
       /* If we know that all recipients are valid (full or ultimate trust)
@@ -1718,6 +1721,9 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
     err = add_arg (gpg, "--sign");
   if (!err && use_armor)
     err = add_arg (gpg, "--armor");
+
+  if (!err && (flags & GPGME_ENCRYPT_NO_COMPRESS))
+    err = add_arg (gpg, "--compress-algo=none");
 
   if (!symmetric)
     {

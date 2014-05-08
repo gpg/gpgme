@@ -12,6 +12,8 @@ Noteworthy changes in version 1.5.0 (unreleased)
  * Add feature to use the gpgme I/O subsystem to run arbitrary
    commands.
 
+ * Add flag to force encryption without the default comprtession step.
+
  * Interface changes relative to the 1.4.3 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_get_dirinfo              NEW.
@@ -20,6 +22,7 @@ Noteworthy changes in version 1.5.0 (unreleased)
  GPGME_PROTOCOL_SPAWN           NEW.
  GPGME_SPAWN_DETACHED           NEW.
  GPGME_SPAWN_ALLOW_SET_FG       NEW.
+ GPGME_ENCRYPT_NO_COMPRESS      NEW.
 
 
 Noteworthy changes in version 1.4.3 (2013-08-12)

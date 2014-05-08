@@ -5141,6 +5141,21 @@ The @code{GPGME_ENCRYPT_NO_ENCRYPT_TO} symbol specifies that no
 default or hidden default recipients as configured in the crypto
 backend should be included.  This can be useful for managing different
 user profiles.
+
+@item GPGME_ENCRYPT_NO_COMPRESS
+The @code{GPGME_ENCRYPT_NO_COMPRESS} symbol specifies that the
+plaintext shall not be compressed before it is encrypted.  This is
+in some cases useful if the length of the encrypted message
+may reveal information about the plaintext.
+
+@item GPGME_ENCRYPT_PREPARE
+@itemx GPGME_ENCRYPT_EXPECT_SIGN
+The @code{GPGME_ENCRYPT_PREPARE} symbol is used with the UI Server
+protocol to prepare an encryption (i.e. sending the
+@code{PREP_ENCRYPT} command).  With the
+@code{GPGME_ENCRYPT_EXPECT_SIGN} symbol the UI Server is advised to
+also expect a sign command.
+
 @end table
 
 If @code{GPG_ERR_UNUSABLE_PUBKEY} is returned, some recipients in

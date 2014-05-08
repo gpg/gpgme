@@ -2806,6 +2806,8 @@ _cmd_sign_encrypt (assuan_context_t ctx, char *line, int sign)
     flags |= GPGME_ENCRYPT_PREPARE;
   if (strstr (line, "--expect-sign"))
     flags |= GPGME_ENCRYPT_EXPECT_SIGN;
+  if (strstr (line, "--no-compress"))
+    flags |= GPGME_ENCRYPT_NO_COMPRESS;
 
   inp_fd = server->input_fd;
   inp_fn = server->input_filename;
@@ -2842,7 +2844,7 @@ _cmd_sign_encrypt (assuan_context_t ctx, char *line, int sign)
 
 static const char hlp_encrypt[] =
   "ENCRYPT [--always-trust] [--no-encrypt-to]\n"
-  "  [--prepare] [--expect-sign]\n"
+  "  [--no-compress] [--prepare] [--expect-sign]\n"
   "\n"
   "Encrypt the object set by the last INPUT command to\n"
   "the keys specified by previous RECIPIENT commands.  \n"
@@ -2857,7 +2859,7 @@ cmd_encrypt (assuan_context_t ctx, char *line)
 
 static const char hlp_sign_encrypt[] =
   "SIGN_ENCRYPT [--always-trust] [--no-encrypt-to]\n"
-  "  [--prepare] [--expect-sign]\n"
+  "  [--no-compress] [--prepare] [--expect-sign]\n"
   "\n"
   "Sign the object set by the last INPUT command with the\n"
   "keys specified by previous SIGNER commands and encrypt\n"
