@@ -264,7 +264,8 @@ prepare_new_sig (op_data_t opd)
 }
 
 static gpgme_error_t
-parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
+parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args,
+               gpgme_protocol_t protocol)
 {
   gpgme_signature_t sig;
   char *end = strchr (args, ' ');
@@ -318,7 +319,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
       if (!end)
 	goto parse_err_sig_fail;
       gpg_err_set_errno (0);
-      sig->pubkey_algo = strtol (end, &tail, 0);
+      sig->pubkey_algo = _gpgme_map_pk_algo (strtol (end, &tail, 0), protocol);
       if (errno || end == tail || *tail != ' ')
 	goto parse_err_sig_fail;
       end = tail;
@@ -393,7 +394,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args)
 
 
 static gpgme_error_t
-parse_valid_sig (gpgme_signature_t sig, char *args)
+parse_valid_sig (gpgme_signature_t sig, char *args, gpgme_protocol_t protocol)
 {
   char *end = strchr (args, ' ');
   if (end)
@@ -443,7 +444,8 @@ parse_valid_sig (gpgme_signature_t sig, char *args)
 	    {
 	      /* Parse the pubkey algo.  */
 	      gpg_err_set_errno (0);
-	      sig->pubkey_algo = strtol (end, &tail, 0);
+	      sig->pubkey_algo = _gpgme_map_pk_algo (strtol (end, &tail, 0),
+                                                     protocol);
 	      if (errno || end == tail || *tail != ' ')
 		return trace_gpg_error (GPG_ERR_INV_ENGINE);
 	      end = tail;
@@ -703,11 +705,11 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
       if (sig && !opd->did_prepare_new_sig)
 	calc_sig_summary (sig);
       opd->only_newsig_seen = 0;
-      return parse_new_sig (opd, code, args);
+      return parse_new_sig (opd, code, args, ctx->protocol);
 
     case GPGME_STATUS_VALIDSIG:
       opd->only_newsig_seen = 0;
-      return sig ? parse_valid_sig (sig, args)
+      return sig ? parse_valid_sig (sig, args, ctx->protocol)
 	: trace_gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_NODATA:

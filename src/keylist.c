@@ -537,7 +537,7 @@ keylist_colon_handler (void *priv, char *line)
 	{
 	  int i = atoi (field[3]);
 	  if (i >= 1 && i < 128)
-	    subkey->pubkey_algo = i;
+	    subkey->pubkey_algo = _gpgme_map_pk_algo (i, ctx->protocol);
 	}
 
       /* Field 5 has the long keyid.  Allow short key IDs for the
@@ -614,7 +614,7 @@ keylist_colon_handler (void *priv, char *line)
 	{
 	  int i = atoi (field[3]);
 	  if (i >= 1 && i < 128)
-	    subkey->pubkey_algo = i;
+	    subkey->pubkey_algo = _gpgme_map_pk_algo (i, ctx->protocol);
 	}
 
       /* Field 5 has the long keyid.  */
@@ -728,7 +728,7 @@ keylist_colon_handler (void *priv, char *line)
 	{
 	  int i = atoi (field[3]);
 	  if (i >= 1 && i < 128)
-	    keysig->pubkey_algo = i;
+	    keysig->pubkey_algo = _gpgme_map_pk_algo (i, ctx->protocol);
 	}
 
       /* Field 5 has the long keyid.  */

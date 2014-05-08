@@ -135,6 +135,8 @@ time_t _gpgme_parse_timestamp (const char *timestamp, char **endp);
 
 gpgme_error_t _gpgme_map_gnupg_error (char *err);
 
+int _gpgme_map_pk_algo (int algo, gpgme_protocol_t protocol);
+
 
 /* Retrieve the environment variable NAME and return a copy of it in a
    malloc()'ed buffer in *VALUE.  If the environment variable is not

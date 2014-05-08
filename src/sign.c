@@ -142,7 +142,8 @@ gpgme_op_sign_result (gpgme_ctx_t ctx)
 
 
 static gpgme_error_t
-parse_sig_created (char *args, gpgme_new_signature_t *sigp)
+parse_sig_created (char *args, gpgme_new_signature_t *sigp,
+                   gpgme_protocol_t protocol)
 {
   gpgme_new_signature_t sig;
   char *tail;
@@ -180,7 +181,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp)
     }
 
   gpg_err_set_errno (0);
-  sig->pubkey_algo = strtol (args, &tail, 0);
+  sig->pubkey_algo = _gpgme_map_pk_algo (strtol (args, &tail, 0), protocol);
   if (errno || args == tail || *tail != ' ')
     {
       /* The crypto backend does not behave.  */
@@ -263,7 +264,7 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
     {
     case GPGME_STATUS_SIG_CREATED:
       opd->sig_created_seen = 1;
-      err = parse_sig_created (args, opd->last_sig_p);
+      err = parse_sig_created (args, opd->last_sig_p, ctx->protocol);
       if (err)
 	return err;
 

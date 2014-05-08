@@ -948,6 +948,9 @@ gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo)
     case GPGME_PK_DSA:
       return "DSA";
 
+    case GPGME_PK_ECC:
+      return "ECC";
+
     case GPGME_PK_ELG:
       return "ELG";
 
@@ -994,6 +997,9 @@ gpgme_hash_algo_name (gpgme_hash_algo_t algo)
 
     case GPGME_MD_SHA512:
       return "SHA512";
+
+    case GPGME_MD_SHA224:
+      return "SHA224";
 
     case GPGME_MD_MD4:
       return "MD4";

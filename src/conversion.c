@@ -412,3 +412,24 @@ _gpgme_parse_timestamp (const char *timestamp, char **endp)
   else
     return (time_t)strtoul (timestamp, endp, 10);
 }
+
+
+/* The GPG backend uses OpenPGP algorithm numbers which we need to map
+   to our algorithm numbers.  This function MUST not change ERRNO. */
+int
+_gpgme_map_pk_algo (int algo, gpgme_protocol_t protocol)
+{
+  if (protocol == GPGME_PROTOCOL_OPENPGP)
+    {
+      switch (algo)
+        {
+        case 1: case 2: case 3: case 16: case 17: break;
+        case 18: algo = GPGME_PK_ECDH; break;
+        case 19: algo = GPGME_PK_ECDSA; break;
+        case 20: break;
+        default: algo = 0; break; /* Unknown.  */
+        }
+    }
+
+  return algo;
+}

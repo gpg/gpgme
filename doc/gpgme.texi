@@ -1135,16 +1135,16 @@ This value indicates ElGamal.
 @item GPGME_PK_ELG_E
 This value also indicates ElGamal and is used specifically in GnuPG.
 
-@item GPGME_PK_ELG_E
-This value also indicates ElGamal and is used specifically in GnuPG.
+@item GPGME_PK_ECC
+This value is a generic indicator for ellipic curve algorithms.
 
 @item GPGME_PK_ECDSA
 This value indicates ECDSA, the Elliptic Curve Digital Signature
-Algorithm as defined by FIPS 186-2.
+Algorithm as defined by FIPS 186-2 and RFC-6637.
 
 @item GPGME_PK_ECDH
-This value indicates ECDH, the Eliptic Curve Diffie-Hellmann encryption
-algorithm as defined by the ECC in OpenPGP draft.
+This value indicates ECDH, the Eliptic Curve Diffie-Hellmann
+encryption algorithm as defined by RFC-6637.
 
 @end table
 @end deftp
@@ -1185,6 +1185,7 @@ that are supported by @acronym{GPGME}.  Possible values are:
 @item GPGME_MD_SHA256
 @item GPGME_MD_SHA384
 @item GPGME_MD_SHA512
+@item GPGME_MD_SHA224
 @item GPGME_MD_MD4
 @item GPGME_MD_CRC32
 @item GPGME_MD_CRC32_RFC1510

@@ -227,7 +227,7 @@ typedef enum
 gpgme_data_type_t;
 
 
-/* Public key algorithms from libgcrypt.  */
+/* Public key algorithms.  */
 typedef enum
   {
     GPGME_PK_RSA   = 1,
@@ -235,6 +235,7 @@ typedef enum
     GPGME_PK_RSA_S = 3,
     GPGME_PK_ELG_E = 16,
     GPGME_PK_DSA   = 17,
+    GPGME_PK_ECC   = 18,
     GPGME_PK_ELG   = 20,
     GPGME_PK_ECDSA = 301,
     GPGME_PK_ECDH  = 302
@@ -242,7 +243,7 @@ typedef enum
 gpgme_pubkey_algo_t;
 
 
-/* Hash algorithms from libgcrypt.  */
+/* Hash algorithms (the values match those from libgcrypt).  */
 typedef enum
   {
     GPGME_MD_NONE          = 0,
@@ -255,6 +256,7 @@ typedef enum
     GPGME_MD_SHA256        = 8,
     GPGME_MD_SHA384        = 9,
     GPGME_MD_SHA512        = 10,
+    GPGME_MD_SHA224        = 11,
     GPGME_MD_MD4           = 301,
     GPGME_MD_CRC32	   = 302,
     GPGME_MD_CRC32_RFC1510 = 303,

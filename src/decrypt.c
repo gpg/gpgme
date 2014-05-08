@@ -119,7 +119,7 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
 
 
 static gpgme_error_t
-parse_enc_to (char *args, gpgme_recipient_t *recp)
+parse_enc_to (char *args, gpgme_recipient_t *recp, gpgme_protocol_t protocol)
 {
   gpgme_recipient_t rec;
   char *tail;
@@ -155,7 +155,7 @@ parse_enc_to (char *args, gpgme_recipient_t *recp)
   if (*args)
     {
       gpg_err_set_errno (0);
-      rec->pubkey_algo = strtol (args, &tail, 0);
+      rec->pubkey_algo = _gpgme_map_pk_algo (strtol (args, &tail, 0), protocol);
       if (errno || args == tail || *tail != ' ')
 	{
 	  /* The crypto backend does not behave.  */
@@ -261,7 +261,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       break;
 
     case GPGME_STATUS_ENC_TO:
-      err = parse_enc_to (args, opd->last_recipient_p);
+      err = parse_enc_to (args, opd->last_recipient_p, ctx->protocol);
       if (err)
 	return err;
 
