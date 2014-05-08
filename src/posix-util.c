@@ -95,7 +95,7 @@ walk_path (const char *pgm)
     {
       for (s=path, p=fname; *s && *s != ':'; s++, p++)
         *p = *s;
-      if (*p != '/')
+      if (p != fname && p[-1] != '/')
         *p++ = '/';
       strcpy (p, pgm);
       if (!access (fname, X_OK))

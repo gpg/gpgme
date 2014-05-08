@@ -250,7 +250,7 @@ engspawn_start (engine_spawn_t esp, const char *file, const char *argv[],
   n = 0;
   for (i = 0; esp->fd_data_map[i].data; i++)
     n++;
-  fd_list = calloc (n, sizeof *fd_list);
+  fd_list = calloc (n+1, sizeof *fd_list);
   if (!fd_list)
     return gpg_error_from_syserror ();
 
