@@ -26,6 +26,12 @@ Noteworthy changes in version 1.5.0 (unreleased)
  GPGME_PK_ECC                   NEW.
  GPGME_MD_SHA224                NEW.
  gpgme_subkey_t                 EXTENDED: New field curve.
+ GPGME_STATUS_PLAINTEXT_LENGTH  NEW.
+ GPGME_STATUS_MOUNTPOINT        NEW.
+ GPGME_STATUS_PINENTRY_LAUNCHED NEW.
+ GPGME_STATUS_ATTRIBUTE         NEW.
+ GPGME_STATUS_BEGIN_SIGNING     NEW.
+ GPGME_STATUS_KEY_NOT_CREATED   NEW.
 
 
 Noteworthy changes in version 1.4.3 (2013-08-12)
