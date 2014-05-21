@@ -55,10 +55,10 @@ AC_INIT([gpgme],[mym4_full_version],[http://bugs.gnupg.org])
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed/changed:	AGE=0)
 #
-LIBGPGME_LT_CURRENT=22
+LIBGPGME_LT_CURRENT=23
 # Subtract 2 from this value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
-LIBGPGME_LT_AGE=11
+LIBGPGME_LT_AGE=12
 LIBGPGME_LT_REVISION=0
 
 # If the API is changed in an incompatible way: increment the next counter.

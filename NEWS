@@ -1,18 +1,24 @@
-Noteworthy changes in version 1.5.0 (unreleased)
-------------------------------------------------
+Noteworthy changes in version 1.5.0 (2014-05-21) [C23/A12/R0]
+-------------------------------------------------------------
 
  * On Unices the engine file names are not not anymore hardwired but
-   located via the envvar PATH.  All configuration options to set the
-   name of the engines for configure run are removed.
+   located via the envvar PATH.  All options to set the name of the
+   engines for the configure run are removed.
 
  * If GPGME finds the gpgconf binary it defaults to using gpg2 or
    whatever gpgconf tells as name for the OpenPGP engine.  If gpgconf
    is not found, GPGME looks for an engine named "gpg".
 
- * Add feature to use the gpgme I/O subsystem to run arbitrary
+ * New feature to use the gpgme I/O subsystem to run arbitrary
    commands.
 
- * Add flag to force encryption without the default compression step.
+ * New flag to use encryption without the default compression step.
+
+ * New function to access "gpg-conf --list-dirs"
+
+ * New configure option --enable-fixed-path for use by Android.
+
+ * Support ECC algorithms.
 
  * Interface changes relative to the 1.4.3 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,8 +40,8 @@ Noteworthy changes in version 1.5.0 (unreleased)
  GPGME_STATUS_KEY_NOT_CREATED   NEW.
 
 
-Noteworthy changes in version 1.4.3 (2013-08-12)
-------------------------------------------------
+Noteworthy changes in version 1.4.3 (2013-08-12) [C22/A11/R0]
+-------------------------------------------------------------
 
  * The default engine names are now taken from the output of gpgconf.
    If gpgconf is not found the use of gpg 1 is assumed.
@@ -52,8 +58,8 @@ Noteworthy changes in version 1.4.3 (2013-08-12)
  gpgme_data_identify            NEW.
 
 
-Noteworthy changes in version 1.4.2 (2013-05-28)
-------------------------------------------------
+Noteworthy changes in version 1.4.2 (2013-05-28) [C21/A10/R0]
+-------------------------------------------------------------
 
  * Allow symmetric encryption with gpgme_op_encrypt_sign.
 
@@ -66,8 +72,8 @@ Noteworthy changes in version 1.4.2 (2013-05-28)
  GPGME_PROTOCOL_OPENPGP         NEW alias.
 
 
-Noteworthy changes in version 1.4.1 (2013-05-01)
-------------------------------------------------
+Noteworthy changes in version 1.4.1 (2013-05-01) [C20/A9/R1]
+------------------------------------------------------------
 
  * Fixed reading of gpg.conf files with excessive use of the group
    option.
@@ -77,8 +83,8 @@ Noteworthy changes in version 1.4.1 (2013-05-01)
  * Disabled FD passing by default for Apple.
 
 
-Noteworthy changes in version 1.4.0 (2013-02-26)
-------------------------------------------------
+Noteworthy changes in version 1.4.0 (2013-02-26) [C20/A9/R0]
+------------------------------------------------------------
 
  * New function gpgme_set_global_flag to help debugging on Android.
 

@@ -1,7 +1,7 @@
                   GPGME - GnuPG Made Easy
                 ---------------------------
 
-         Copyright 2004, 2006, 2010, 2012, 2013 g10 Code GmbH
+         Copyright 2004, 2006, 2010, 2012, 2013, 2014 g10 Code GmbH
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
@@ -46,13 +46,9 @@ Libassuan (>= 2.0.2).
 
 For support of the OpenPGP protocol (default), you should use the
 latest version of GnuPG (>= 1.4) , available at:
-ftp://ftp.gnupg.org/gcrypt/gnupg/
-For support of the CMS (Cryptographic Message Syntax) protocol, you
+ftp://ftp.gnupg.org/gcrypt/gnupg/.  For support of the CMS
+(Cryptographic Message Syntax) protocol and lot of other features, you
 need a GnuPG version >= 2.0.
-
-On some platforms GPGME based applications might hang at certain
-operations when using GPGME_PROTOCOL_CMS.  A workaround for this
-problem is to build with the configure option --disable-fd-passing.
 
 For building the GIT version of GPGME please see the file README.GIT
 for more information.
