@@ -1,6 +1,12 @@
 Noteworthy changes in version 1.5.1 (unreleased) [C__/A__/R_]
 -------------------------------------------------------------
 
+ * Add support for GnuPG 2.1's --with-secret option.
+
+ * Interface changes relative to the 1.5.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPGME_KEYLIST_MODE_WITH_SECRET NEW.
+
 
 Noteworthy changes in version 1.5.0 (2014-05-21) [C23/A12/R0]
 -------------------------------------------------------------

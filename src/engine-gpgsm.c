@@ -1551,7 +1551,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
      the agent.  However on a fresh installation no public keys are
      available and thus there is no need for gpgsm to ask the agent
      whether a secret key exists for the public key.  */
-  if (secret_only)
+  if (secret_only || (mode & GPGME_KEYLIST_MODE_WITH_SECRET))
     gpgsm_assuan_simple_command (gpgsm->assuan_ctx, "GETINFO agent-check",
                                  NULL, NULL);
 
@@ -1579,6 +1579,11 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
                                (mode & GPGME_KEYLIST_MODE_EPHEMERAL)?
                                "OPTION with-ephemeral-keys=1":
                                "OPTION with-ephemeral-keys=0" ,
+                               NULL, NULL);
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx,
+                               (mode & GPGME_KEYLIST_MODE_WITH_SECRET)?
+                               "OPTION with-secret=1":
+                               "OPTION with-secret=0" ,
                                NULL, NULL);
 
 
@@ -1644,6 +1649,11 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
                                (mode & GPGME_KEYLIST_MODE_VALIDATE)?
                                "OPTION with-validation=1":
                                "OPTION with-validation=0" ,
+                               NULL, NULL);
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx,
+                               (mode & GPGME_KEYLIST_MODE_WITH_SECRET)?
+                               "OPTION with-secret=1":
+                               "OPTION with-secret=0" ,
                                NULL, NULL);
 
 

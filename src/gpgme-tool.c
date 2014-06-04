@@ -1861,6 +1861,8 @@ gt_get_keylist_mode (gpgme_tool_t gt)
     modes[idx++] = "sigs";
   if (mode & GPGME_KEYLIST_MODE_SIG_NOTATIONS)
     modes[idx++] = "sig_notations";
+  if (mode & GPGME_KEYLIST_MODE_WITH_SECRET)
+    modes[idx++] = "with_secret";
   if (mode & GPGME_KEYLIST_MODE_EPHEMERAL)
     modes[idx++] = "ephemeral";
   if (mode & GPGME_KEYLIST_MODE_VALIDATE)
@@ -2591,6 +2593,8 @@ cmd_keylist_mode (assuan_context_t ctx, char *line)
 	mode |= GPGME_KEYLIST_MODE_SIGS;
       if (strstr (line, "sig_notations"))
 	mode |= GPGME_KEYLIST_MODE_SIG_NOTATIONS;
+      if (strstr (line, "with_secret"))
+	mode |= GPGME_KEYLIST_MODE_WITH_SECRET;
       if (strstr (line, "ephemeral"))
 	mode |= GPGME_KEYLIST_MODE_EPHEMERAL;
       if (strstr (line, "validate"))
@@ -3299,6 +3303,12 @@ cmd_keylist (assuan_context_t ctx, char *line)
 	    result_xml_tag_start (&state, "subkey", NULL);
 	    /* FIXME: more data */
 	    result_add_fpr (&state, "fpr", subkey->fpr);
+            result_add_value (&state, "secret", subkey->secret);
+            result_add_value (&state, "is_cardkey", subkey->is_cardkey);
+            if (subkey->card_number)
+              result_add_string (&state, "card_number", subkey->card_number);
+            if (subkey->curve)
+              result_add_string (&state, "curve", subkey->curve);
 	    result_xml_tag_end (&state);  /* subkey */
 	    subkey = subkey->next;
 	  }

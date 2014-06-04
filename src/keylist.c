@@ -367,7 +367,7 @@ set_ownertrust (gpgme_key_t key, const char *src)
    reference to smartcards.  FIELD is the content of the field and we
    are allowed to modify it.  */
 static gpg_error_t
-parse_sec_field15 (gpgme_subkey_t subkey, char *field)
+parse_sec_field15 (gpgme_key_t key, gpgme_subkey_t subkey, char *field)
 {
   if (!*field)
     ; /* Empty.  */
@@ -375,16 +375,24 @@ parse_sec_field15 (gpgme_subkey_t subkey, char *field)
     {
       /* This is a stub for an offline key.  We reset the SECRET flag
          of the subkey here.  Note that the secret flag of the entire
-         key will be true even then.  */
+         key will be true even then.  We even explicitly set
+         key->secret to make it works for GPGME_KEYLIST_MODE_WITH_SECRET. */
       subkey->secret = 0;
+      key->secret = 1;
     }
   else if (strchr ("01234567890ABCDEFabcdef", *field))
     {
       /* Fields starts with a hex digit; thus it is a serial number.  */
+      key->secret = 1;
       subkey->is_cardkey = 1;
       subkey->card_number = strdup (field);
       if (!subkey->card_number)
         return gpg_error_from_syserror ();
+    }
+  else if (*field == '+')
+    {
+      key->secret = 1;
+      subkey->secret = 1;
     }
   else
     {
@@ -578,9 +586,11 @@ keylist_colon_handler (void *priv, char *line)
 	set_mainkey_capability (key, field[11]);
 
       /* Field 15 carries special flags of a secret key.  */
-      if (fields >= 15 && key->secret)
+      if (fields >= 15
+          && (key->secret
+              || (ctx->keylist_mode & GPGME_KEYLIST_MODE_WITH_SECRET)))
         {
-          err = parse_sec_field15 (subkey, field[14]);
+          err = parse_sec_field15 (key, subkey, field[14]);
           if (err)
             return err;
         }
@@ -649,9 +659,11 @@ keylist_colon_handler (void *priv, char *line)
 	set_subkey_capability (subkey, field[11]);
 
       /* Field 15 carries special flags of a secret key. */
-      if (fields >= 15 && key->secret)
+      if (fields >= 15
+          && (key->secret
+              || (ctx->keylist_mode & GPGME_KEYLIST_MODE_WITH_SECRET)))
         {
-          err = parse_sec_field15 (subkey, field[14]);
+          err = parse_sec_field15 (key, subkey, field[14]);
           if (err)
             return err;
         }

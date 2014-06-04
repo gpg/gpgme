@@ -2472,6 +2472,13 @@ signature notations on key signatures should be included in the listed
 keys.  This only works if @code{GPGME_KEYLIST_MODE_SIGS} is also
 enabled.
 
+@item GPGME_KEYLIST_MODE_WITH_SECRET
+The @code{GPGME_KEYLIST_MODE_WITH_SECRET} returns information about
+the presence of a corresponding secret key in a public key listing.  A
+public key listing with this mode is slower than a standard listing
+but can be used instead of a second run to list the secret keys.  This
+is only supported for GnuPG versions >= 2.1.
+
 @item GPGME_KEYLIST_MODE_EPHEMERAL
 The @code{GPGME_KEYLIST_MODE_EPHEMERAL} symbol specifies that keys
 flagged as ephemeral are included in the listing.
@@ -2712,9 +2719,11 @@ This is true if the subkey can be used for qualified signatures
 according to local government regulations.
 
 @item unsigned int secret : 1
-This is true if the subkey is a secret key.  Note that it will be false
-if the key is actually a stub key; i.e. a secret key operation is
-currently not possible (offline-key).
+This is true if the subkey is a secret key.  Note that it will be
+false if the key is actually a stub key; i.e. a secret key operation
+is currently not possible (offline-key).  This is only set if a
+listing of secret keys has been requested or if
+@code{GPGME_KEYLIST_MODE_WITH_SECRET} is active.
 
 @item gpgme_pubkey_algo_t pubkey_algo
 This is the public key algorithm supported by this subkey.
@@ -2905,9 +2914,10 @@ This is true if the key can be used for qualified signatures according
 to local government regulations.
 
 @item unsigned int secret : 1
-This is true if the key is a secret key.  Note, that this will always be
-true even if the corresponding subkey flag may be false (offline/stub
-keys).
+This is true if the key is a secret key.  Note, that this will always
+be true even if the corresponding subkey flag may be false
+(offline/stub keys).  This is only set if a listing of secret keys has
+been requested or if @code{GPGME_KEYLIST_MODE_WITH_SECRET} is active.
 
 @item gpgme_protocol_t protocol
 This is the protocol supported by this key.

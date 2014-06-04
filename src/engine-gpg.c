@@ -2194,6 +2194,8 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
     err = add_arg (gpg, "--with-fingerprint");
   if (!err)
     err = add_arg (gpg, "--with-fingerprint");
+  if (!err && (mode & GPGME_KEYLIST_MODE_WITH_SECRET))
+    err = add_arg (gpg, "--with-secret");
   if (!err
       && (mode & GPGME_KEYLIST_MODE_SIGS)
       && (mode & GPGME_KEYLIST_MODE_SIG_NOTATIONS))
