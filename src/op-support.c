@@ -266,6 +266,14 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
     case 12:
       inv_key->reason = gpg_error (GPG_ERR_MISSING_ISSUER_CERT);
       break;
+
+    case 13:
+      inv_key->reason = gpg_error (252); /*GPG_ERR_KEY_DISABLED*/
+      break;
+
+    case 14:
+      inv_key->reason = gpg_error (GPG_ERR_INV_USER_ID);
+      break;
     }
 
   while (*tail && *tail == ' ')
