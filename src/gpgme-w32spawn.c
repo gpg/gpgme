@@ -36,10 +36,8 @@
 #endif
 #include <stdint.h>
 #include <process.h>
-#include <windows.h>
 
-/* Flag values as used by gpgme.  */
-#define IOSPAWN_FLAG_ALLOW_SET_FG 1
+#include "priv-io.h"
 
 
 /* Name of this program.  */
@@ -47,15 +45,6 @@
 
 
 
-struct spawn_fd_item_s
-{
-  int handle;
-  int dup_to;
-  int peer_name;
-  int arg_loc;
-};
-
-
 static char *
 build_commandline (char **argv)
 {
@@ -160,7 +149,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
 
   fprintf (stderr, PGM": spawning: %s\n", arg_string);
 
-  for (i = 0; fd_list[i].handle != -1; i++)
+  for (i = 0; fd_list[i].fd != -1; i++)
     {
       /* The handle already is inheritable.  */
       if (fd_list[i].dup_to == 0)
@@ -240,8 +229,8 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
   if (hnul != INVALID_HANDLE_VALUE)
     CloseHandle (hnul);
 
-  for (i = 0; fd_list[i].handle != -1; i++)
-    CloseHandle ((HANDLE) fd_list[i].handle);
+  for (i = 0; fd_list[i].fd != -1; i++)
+    CloseHandle ((HANDLE) fd_list[i].fd);
 
   if (flags & IOSPAWN_FLAG_ALLOW_SET_FG)
     {
@@ -379,12 +368,12 @@ translate_get_from_file (const char *trans_file,
 	break;
       linep = tail;
 
-      fd_list[idx].handle = from;
+      fd_list[idx].fd = from;
       fd_list[idx].dup_to = dup_to;
       fd_list[idx].peer_name = to;
       fd_list[idx].arg_loc = loc;
     }
-  fd_list[idx].handle = -1;
+  fd_list[idx].fd = -1;
   fd_list[idx].dup_to = -1;
   fd_list[idx].peer_name = -1;
   fd_list[idx].arg_loc = 0;
@@ -420,7 +409,7 @@ translate_handles (const char *trans_file, const char * const *argv,
   args[idx] = NULL;
   n_args = idx;
 
-  for (idx = 0; fd_list[idx].handle != -1; idx++)
+  for (idx = 0; fd_list[idx].fd != -1; idx++)
     {
       char buf[25];
       int aidx;
