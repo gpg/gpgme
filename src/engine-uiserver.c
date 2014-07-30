@@ -698,7 +698,7 @@ status_handler (void *opaque, int fd)
 	      else
 		{
 		  *aline = newline;
-		  uiserver->colon.attic.linesize += linelen + 1;
+		  uiserver->colon.attic.linesize = *alinelen + linelen + 1;
 		}
 	    }
 	  if (!err)

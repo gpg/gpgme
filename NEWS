@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.5.1 (unreleased) [C__/A__/R_]
 -------------------------------------------------------------
 
+ * Fix possible overflow in gpgsm and uiserver engines.
+   [CVE-2014-35640]
+
  * Add support for GnuPG 2.1's --with-secret option.
 
  * Interface changes relative to the 1.5.0 release:
