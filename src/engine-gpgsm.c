@@ -837,7 +837,7 @@ status_handler (void *opaque, int fd)
 	      else
 		{
 		  *aline = newline;
-		  gpgsm->colon.attic.linesize += linelen + 1;
+		  gpgsm->colon.attic.linesize = *alinelen + linelen + 1;
 		}
 	    }
 	  if (!err)
