@@ -1,5 +1,20 @@
-Noteworthy changes in version 1.4.3 (2013-08-12)
-------------------------------------------------
+Noteworthy changes in version 1.4.4 (2014-07-30) [C22/A11/R1]
+-------------------------------------------------------------
+
+ Backported from 1.5.1:
+
+ * Fixed possible overflow in gpgsm and uiserver engines.
+   [CVE-2014-3564]
+
+ * Fixed possibled segv in gpgme_op_card_edit.
+
+ * Fixed minor memleaks and possible zombie processes.
+
+ * Fixed prototype inconsistencies and void pointer arithmetic.
+
+
+Noteworthy changes in version 1.4.3 (2013-08-12) [C22/A11/R0]
+-------------------------------------------------------------
 
  * The default engine names are now taken from the output of gpgconf.
    If gpgconf is not found the use of gpg 1 is assumed.
