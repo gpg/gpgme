@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-# Note: moc_kdpipeiodevice should actually be a dependcy below.
+# Note: moc_kdpipeiodevice should actually be a dependecy below.
 EXTRA_DIST = gpgme-config.in gpgme.m4 libgpgme.vers ChangeLog-2011 \
 	     gpgme.h.in versioninfo.rc.in gpgme.def moc_kdpipeiodevice.cpp
 
@@ -26,6 +26,8 @@ bin_SCRIPTS = gpgme-config
 m4datadir = $(datadir)/aclocal
 m4data_DATA = gpgme.m4
 nodist_include_HEADERS = gpgme.h
+
+bin_PROGRAMS = gpgme-tool
 
 if HAVE_PTHREAD
 ltlib_gpgme_pthread = libgpgme-pthread.la
@@ -126,6 +128,9 @@ endif
 AM_CPPFLAGS = @GPG_ERROR_CFLAGS@ @QT4_CORE_CFLAGS@
 AM_CFLAGS = @LIBASSUAN_CFLAGS@ @GLIB_CFLAGS@ @QT4_CORE_CFLAGS@
 
+gpgme_tool_LDADD = libgpgme.la @LIBASSUAN_LIBS@
+
+
 if HAVE_W32_SYSTEM
 # Windows provides us with an endless stream of Tough Love.  To spawn
 # processes with a controlled set of inherited handles, we need a
@@ -200,9 +205,6 @@ libgpgme_qt_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_qt_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@ @QT4_CORE_LIBS@
 endif
-
-noinst_PROGRAMS = gpgme-tool
-gpgme_tool_LDADD = libgpgme.la @LIBASSUAN_LIBS@
 
 install-data-local: install-def-file
 
