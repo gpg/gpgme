@@ -1242,10 +1242,26 @@ read_colon_line (engine_gpg_t gpg)
 		    }
 
 		  assert (gpg->colon.fnc);
-		  gpg->colon.fnc (gpg->colon.fnc_value, line ? line : buffer);
-		  if (line)
-		    free (line);
-		}
+                  if (line)
+                    {
+                      char *linep = line;
+                      char *endp;
+
+                      do
+                        {
+                          endp = strchr (linep, '\n');
+                          if (endp)
+                            *endp++ = 0;
+                          gpg->colon.fnc (gpg->colon.fnc_value, linep);
+                          linep = endp;
+                        }
+                      while (linep && *linep);
+
+                      free (line);
+                    }
+                  else
+                    gpg->colon.fnc (gpg->colon.fnc_value, buffer);
+                }
 
 	      /* To reuse the buffer for the next line we have to
 		 shift the remaining data to the buffer start and
@@ -2071,6 +2087,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
 #define NR_FIELDS 16
   char *field[NR_FIELDS];
   int fields = 0;
+  size_t n;
 
   *r_line = NULL;
 
@@ -2106,16 +2123,34 @@ gpg_keylist_preprocess (char *line, char **r_line)
 	 pub:<keyid>:<algo>:<keylen>:<creationdate>:<expirationdate>:<flags>
 
 	 as defined in 5.2. Machine Readable Indexes of the OpenPGP
-	 HTTP Keyserver Protocol (draft).
+	 HTTP Keyserver Protocol (draft).  Modern versions of the SKS
+	 keyserver return the fingerprint instead of the keyid.  We
+	 detect this here and use the v4 fingerprint format to convert
+	 it to a key id.
 
 	 We want:
 	 pub:o<flags>:<keylen>:<algo>:<keyid>:<creatdate>:<expdate>::::::::
       */
 
-      if (asprintf (r_line, "pub:o%s:%s:%s:%s:%s:%s::::::::",
-		    field[6], field[3], field[2], field[1],
-		    field[4], field[5]) < 0)
-	return gpg_error_from_syserror ();
+      n = strlen (field[1]);
+      if (n > 16)
+        {
+          if (asprintf (r_line,
+                        "pub:o%s:%s:%s:%s:%s:%s::::::::\n"
+                        "fpr:::::::::%s:",
+                        field[6], field[3], field[2], field[1] + n - 16,
+                        field[4], field[5], field[1]) < 0)
+            return gpg_error_from_syserror ();
+        }
+      else
+        {
+          if (asprintf (r_line,
+                        "pub:o%s:%s:%s:%s:%s:%s::::::::",
+                        field[6], field[3], field[2], field[1],
+                        field[4], field[5]) < 0)
+            return gpg_error_from_syserror ();
+        }
+
       return 0;
 
     case RT_UID:
