@@ -831,14 +831,17 @@ result_xml_escape (const char *data, char **buf)
   membuf_t mb;
 
   init_membuf (&mb, 128);
-  data_len = strlen (data);
-  for (i = 0; i < data_len; i++)
+  if (data)
     {
-      r = result_xml_escape_replacement (data[i]);
-      if (r)
-        put_membuf (&mb, r, strlen (r));
-      else
-        put_membuf (&mb, data+i, 1);
+      data_len = strlen (data);
+      for (i = 0; i < data_len; i++)
+        {
+          r = result_xml_escape_replacement (data[i]);
+          if (r)
+            put_membuf (&mb, r, strlen (r));
+          else
+            put_membuf (&mb, data+i, 1);
+        }
     }
   put_membuf (&mb, "", 1);
   *buf = get_membuf (&mb, NULL);
