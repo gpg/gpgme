@@ -3305,7 +3305,9 @@ cmd_keylist (assuan_context_t ctx, char *line)
 	  while (subkey) {
 	    result_xml_tag_start (&state, "subkey", NULL);
 	    /* FIXME: more data */
-	    result_add_fpr (&state, "fpr", subkey->fpr);
+	    result_add_keyid (&state, "keyid", subkey->keyid);
+            if (subkey->fpr)
+              result_add_fpr (&state, "fpr", subkey->fpr);
             result_add_value (&state, "secret", subkey->secret);
             result_add_value (&state, "is_cardkey", subkey->is_cardkey);
             if (subkey->card_number)
