@@ -1,5 +1,7 @@
 Package: gpgme
 Homepage: http://www.gnupg.org/related_software/gpgme/
+Download: ftp://ftp.gnupg.org/gcrypt/gpgme/
+Repository: git://git.gnupg.org/gpgme.git
 Maintainer: Werner Koch <wk@gnupg.org>
 Bug reports: http://bugs.gnupg.org (use category "gpgme")
 Security related bug reports: security@gnupg.org
