@@ -70,7 +70,7 @@ clean-local:
 	-$(srcdir)/start-stop-agent --stop
 	-rm -fR private-keys-v1.d
 
-all-local: ./gpg.conf ./gpg-agent.conf ./pubring.gpg \
+check-local: ./gpg.conf ./gpg-agent.conf ./pubring.gpg \
            ./private-keys-v1.d/gpg-sample.stamp
 
 export GNUPGHOME := $(abs_builddir)

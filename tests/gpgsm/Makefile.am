@@ -47,7 +47,8 @@ clean-local:
 	-gpg-connect-agent KILLAGENT /bye
 	-rm -fR private-keys-v1.d
 
-all-local: ./pubring.kbx ./gpgsm.conf ./private-keys-v1.d/$(key_id).key ./trustlist.txt
+check-local: ./pubring.kbx ./gpgsm.conf \
+             ./private-keys-v1.d/$(key_id).key ./trustlist.txt
 
 export GNUPGHOME := $(abs_builddir)
 
