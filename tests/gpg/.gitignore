@@ -1,4 +1,5 @@
 .deps
+.gpg-v21-migrated
 .libs
 gpg-agent.conf
 gpg.conf

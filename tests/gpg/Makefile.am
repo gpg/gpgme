@@ -43,7 +43,7 @@ TESTS = initial.test $(c_tests) final.test
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
-	random_seed S.gpg-agent
+	random_seed S.gpg-agent .gpg-v21-migrated
 
 private_keys = \
         13CD0F3BDF24BE53FE192D62F18737256FF6E4FD \
