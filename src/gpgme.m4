@@ -1,5 +1,5 @@
 # gpgme.m4 - autoconf macro to detect GPGME.
-# Copyright (C) 2002, 2003, 2004 g10 Code GmbH
+# Copyright (C) 2002, 2003, 2004, 2014 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -8,6 +8,8 @@
 # This file is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Last-changed: 2014-10-02
 
 
 AC_DEFUN([_AM_PATH_GPGME_CONFIG],
@@ -15,9 +17,25 @@ AC_DEFUN([_AM_PATH_GPGME_CONFIG],
             AC_HELP_STRING([--with-gpgme-prefix=PFX],
                            [prefix where GPGME is installed (optional)]),
      gpgme_config_prefix="$withval", gpgme_config_prefix="")
-  if test "x$gpgme_config_prefix" != x ; then
-      GPGME_CONFIG="$gpgme_config_prefix/bin/gpgme-config"
+  if test x"${GPGME_CONFIG}" = x ; then
+     if test x"${gpgme_config_prefix}" != x ; then
+        GPGME_CONFIG="${gpgme_config_prefix}/bin/gpgme-config"
+     else
+       case "${SYSROOT}" in
+         /*)
+           if test -x "${SYSROOT}/bin/gpgme-config" ; then
+             GPGME_CONFIG="${SYSROOT}/bin/gpgme-config"
+           fi
+           ;;
+         '')
+           ;;
+          *)
+           AC_MSG_WARN([Ignoring \$SYSROOT as it is not an absolute path.])
+           ;;
+       esac
+     fi
   fi
+
   AC_PATH_PROG(GPGME_CONFIG, gpgme-config, no)
 
   if test "$GPGME_CONFIG" != "no" ; then
@@ -31,9 +49,34 @@ AC_DEFUN([_AM_PATH_GPGME_CONFIG],
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
 ])
 
+
+AC_DEFUN([_AM_PATH_GPGME_CONFIG_HOST_CHECK],
+[
+    gpgme_config_host=`$GPGME_CONFIG --host 2>/dev/null || echo none`
+    if test x"$gpgme_config_host" != xnone ; then
+      if test x"$gpgme_config_host" != x"$host" ; then
+  AC_MSG_WARN([[
+***
+*** The config script $GPGME_CONFIG was
+*** built for $gpgme_config_host and thus may not match the
+*** used host $host.
+*** You may want to use the configure option --with-gpgme-prefix
+*** to specify a matching config script or use \$SYSROOT.
+***]])
+        gpg_config_script_warn="$gpg_config_script_warn gpgme"
+      fi
+    fi
+])
+
+
 dnl AM_PATH_GPGME([MINIMUM-VERSION,
 dnl               [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for libgpgme and define GPGME_CFLAGS and GPGME_LIBS.
+dnl
+dnl If a prefix option is not used, the config script is first
+dnl searched in $SYSROOT/bin and then along $PATH.  If the used
+dnl config script does not match the host specification the script
+dnl is added to the gpg_config_script_warn variable.
 dnl
 AC_DEFUN([AM_PATH_GPGME],
 [ AC_REQUIRE([_AM_PATH_GPGME_CONFIG])dnl
@@ -57,7 +100,7 @@ AC_DEFUN([AM_PATH_GPGME],
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
     if test "$gpgme_version_major" -gt "$req_major"; then
         ok=yes
-    else 
+    else
         if test "$gpgme_version_major" -eq "$req_major"; then
             if test "$gpgme_version_minor" -gt "$req_minor"; then
                ok=yes
@@ -88,6 +131,7 @@ AC_DEFUN([AM_PATH_GPGME],
     GPGME_LIBS=`$GPGME_CONFIG --libs`
     AC_MSG_RESULT(yes)
     ifelse([$2], , :, [$2])
+    _AM_PATH_GPGME_CONFIG_HOST_CHECK
   else
     GPGME_CFLAGS=""
     GPGME_LIBS=""
@@ -126,7 +170,7 @@ AC_DEFUN([AM_PATH_GPGME_PTHREAD],
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
       if test "$gpgme_version_major" -gt "$req_major"; then
         ok=yes
-      else 
+      else
         if test "$gpgme_version_major" -eq "$req_major"; then
           if test "$gpgme_version_minor" -gt "$req_minor"; then
             ok=yes
@@ -158,6 +202,7 @@ AC_DEFUN([AM_PATH_GPGME_PTHREAD],
     GPGME_PTHREAD_LIBS=`$GPGME_CONFIG --thread=pthread --libs`
     AC_MSG_RESULT(yes)
     ifelse([$2], , :, [$2])
+    _AM_PATH_GPGME_CONFIG_HOST_CHECK
   else
     GPGME_PTHREAD_CFLAGS=""
     GPGME_PTHREAD_LIBS=""
@@ -195,7 +240,7 @@ AC_DEFUN([AM_PATH_GPGME_GLIB],
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
     if test "$gpgme_version_major" -gt "$req_major"; then
         ok=yes
-    else 
+    else
         if test "$gpgme_version_major" -eq "$req_major"; then
             if test "$gpgme_version_minor" -gt "$req_minor"; then
                ok=yes
@@ -226,6 +271,7 @@ AC_DEFUN([AM_PATH_GPGME_GLIB],
     GPGME_GLIB_LIBS=`$GPGME_CONFIG --glib --libs`
     AC_MSG_RESULT(yes)
     ifelse([$2], , :, [$2])
+    _AM_PATH_GPGME_CONFIG_HOST_CHECK
   else
     GPGME_GLIB_CFLAGS=""
     GPGME_GLIB_LIBS=""
@@ -235,4 +281,3 @@ AC_DEFUN([AM_PATH_GPGME_GLIB],
   AC_SUBST(GPGME_GLIB_CFLAGS)
   AC_SUBST(GPGME_GLIB_LIBS)
 ])
-

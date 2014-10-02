@@ -391,8 +391,8 @@ to @acronym{GPGME} take the form @code{_gpgme_*} and @code{_GPGME_*}.
 
 Because @acronym{GPGME} makes use of the GPG Error library, using
 @acronym{GPGME} will also use the @code{GPG_ERR_*} name space
-directly, and the @code{gpg_err*} and @code{gpg_str*} name space
-indirectly.
+directly, and the @code{gpg_err*}, @code{gpg_str*}, and @code{gpgrt_*}
+name space indirectly.
 
 
 @node Building the Source
@@ -575,7 +575,10 @@ given.
 Additionally, the function defines @code{GPGME_CFLAGS} to the flags
 needed for compilation of the program to find the @file{gpgme.h}
 header file, and @code{GPGME_LIBS} to the linker flags needed to link
-the program to the @acronym{GPGME} library.
+the program to the @acronym{GPGME} library.  If the used helper script
+does not match the target type you are building for a warning is
+printed and the string @code{libgcrypt} is appended to the variable
+@code{gpg_config_script_warn}.
 
 @code{AM_PATH_GPGME_PTH} checks for the version of @acronym{GPGME}
 that can be used with GNU Pth, and defines @code{GPGME_PTH_CFLAGS} and
@@ -584,6 +587,16 @@ that can be used with GNU Pth, and defines @code{GPGME_PTH_CFLAGS} and
 @code{AM_PATH_GPGME_PTHREAD} checks for the version of @acronym{GPGME}
 that can be used with the native pthread implementation, and defines
 @code{GPGME_PTHREAD_CFLAGS} and @code{GPGME_PTHREAD_LIBS}.
+
+This macro searches for @command{gpgme-config} along the PATH.  If
+you are cross-compiling, it is useful to set the environment variable
+@code{SYSROOT} to the top directory of your target.  The macro will
+then first look for the helper program in the @file{bin} directory
+below that top directory.  An absolute directory name must be used for
+@code{SYSROOT}.  Finally, if the configure command line option
+@code{--with-gpgme-prefix} is used, only its value is used for the top
+directory below which the helper script is expected.
+
 @end defmac
 
 You can use the defined Autoconf variables like this in your

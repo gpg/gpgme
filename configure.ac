@@ -83,6 +83,7 @@ AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
 AM_SILENT_RULES
+AC_ARG_VAR(SYSROOT,[locate config scripts also below that directory])
 
 # Enable GNU extensions on systems that have them.
 AC_GNU_SOURCE
@@ -636,3 +637,12 @@ echo "
         FD Passing:      $use_descriptor_passing
         GPGME Pthread:   $have_pthread
 "
+if test "x${gpg_config_script_warn}" != x; then
+cat <<G10EOF
+        Mismatches between the target platform and the to
+        be used libraries have been been detected for:
+         ${gpg_config_script_warn}
+        Please check above for warning messages.
+
+G10EOF
+fi
