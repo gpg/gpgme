@@ -33,6 +33,7 @@
 #include "ops.h"
 #include "util.h"
 #include "debug.h"
+#include "mem.h"
 
 
 typedef struct
@@ -65,16 +66,16 @@ release_op_data (void *hook)
     {
       gpgme_invalid_key_t next = invalid_signer->next;
       if (invalid_signer->fpr)
-	free (invalid_signer->fpr);
-      free (invalid_signer);
+	_gpgme_free (invalid_signer->fpr);
+      _gpgme_free (invalid_signer);
       invalid_signer = next;
     }
 
   while (sig)
     {
       gpgme_new_signature_t next = sig->next;
-      free (sig->fpr);
-      free (sig);
+      _gpgme_free (sig->fpr);
+      _gpgme_free (sig);
       sig = next;
     }
 }
@@ -148,7 +149,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp,
   gpgme_new_signature_t sig;
   char *tail;
 
-  sig = malloc (sizeof (*sig));
+  sig = _gpgme_malloc (sizeof (*sig));
   if (!sig)
     return gpg_error_from_syserror ();
 
@@ -169,14 +170,14 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp,
 
     default:
       /* The backend engine is not behaving.  */
-      free (sig);
+      _gpgme_free (sig);
       return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
 
   args++;
   if (*args != ' ')
     {
-      free (sig);
+      _gpgme_free (sig);
       return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
 
@@ -185,7 +186,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp,
   if (errno || args == tail || *tail != ' ')
     {
       /* The crypto backend does not behave.  */
-      free (sig);
+      _gpgme_free (sig);
       return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
   args = tail;
@@ -194,7 +195,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp,
   if (errno || args == tail || *tail != ' ')
     {
       /* The crypto backend does not behave.  */
-      free (sig);
+      _gpgme_free (sig);
       return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
   args = tail;
@@ -205,7 +206,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp,
   if (errno || args == tail || *tail != ' ')
     {
       /* The crypto backend does not behave.  */
-      free (sig);
+      _gpgme_free (sig);
       return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
   args = tail;
@@ -214,7 +215,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp,
   if (sig->timestamp == -1 || args == tail || *tail != ' ')
     {
       /* The crypto backend does not behave.  */
-      free (sig);
+      _gpgme_free (sig);
       return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
   args = tail;
@@ -224,7 +225,7 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp,
   if (!*args)
     {
       /* The crypto backend does not behave.  */
-      free (sig);
+      _gpgme_free (sig);
       return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
 
@@ -232,10 +233,10 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp,
   if (tail)
     *tail = '\0';
 
-  sig->fpr = strdup (args);
+  sig->fpr = _gpgme_strdup (args);
   if (!sig->fpr)
     {
-      free (sig);
+      _gpgme_free (sig);
       return gpg_error_from_syserror ();
     }
   *sigp = sig;

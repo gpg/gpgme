@@ -32,6 +32,7 @@
 #include "util.h"
 #include "context.h"
 #include "ops.h"
+#include "mem.h"
 
 
 struct trust_queue_item_s
@@ -108,7 +109,7 @@ trustlist_colon_handler (void *priv, char *line)
 	  item->_validity[0] = *p;
 	  break;
 	case 9: /* user ID */
-	  item->name = strdup (p);
+	  item->name = _gpgme_strdup (p);
 	  if (!item->name)
 	    {
               int saved_err = gpg_error_from_syserror ();
@@ -143,7 +144,7 @@ _gpgme_op_trustlist_event_cb (void *data, gpgme_event_io_t type,
   if (err)
     return;
 
-  q = malloc (sizeof *q);
+  q = _gpgme_malloc (sizeof *q);
   if (!q)
     {
       gpgme_trust_item_unref (item);
@@ -239,7 +240,7 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
   opd->trust_queue = q->next;
 
   *r_item = q->item;
-  free (q);
+  _gpgme_free (q);
   if ((*r_item)->type == 1)
     {
       TRACE_SUC5 ("trust_item=%p: %s: owner trust %s with level %i "

@@ -23,10 +23,11 @@
 
 #include <time.h>
 #include <stdarg.h>
+#include "mem.h"
 
 #ifdef _MSC_VER
 typedef int pid_t;
-#define strdup _strdup
+#define strdup _gpgme_strdup
 #define strcasecmp _stricmp
 #endif
 

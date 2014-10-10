@@ -42,6 +42,7 @@
 #include "gpgme.h"
 
 #include "ath.h"
+#include "mem.h"
 
 
 /* The lock we take while checking for lazy lock initialization.  */
@@ -58,14 +59,14 @@ mutex_pthread_init (ath_mutex_t *priv, int just_check)
     pthread_mutex_lock (&check_init_lock);
   if (!*priv || !just_check)
     {
-      pthread_mutex_t *lock = malloc (sizeof (pthread_mutex_t));
+      pthread_mutex_t *lock = _gpgme_malloc (sizeof (pthread_mutex_t));
       if (!lock)
 	err = ENOMEM;
       if (!err)
 	{
 	  err = pthread_mutex_init (lock, NULL);
 	  if (err)
-	    free (lock);
+	    _gpgme_free (lock);
 	  else
 	    *priv = (ath_mutex_t) lock;
 	}
@@ -104,7 +105,7 @@ ath_mutex_destroy (ath_mutex_t *lock)
   if (!err)
     {
       err = pthread_mutex_destroy ((pthread_mutex_t *) *lock);
-      free (*lock);
+      _gpgme_free (*lock);
     }
   return err;
 }

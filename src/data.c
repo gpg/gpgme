@@ -35,6 +35,7 @@
 #include "ops.h"
 #include "priv-io.h"
 #include "debug.h"
+#include "mem.h"
 
 
 gpgme_error_t
@@ -46,7 +47,7 @@ _gpgme_data_new (gpgme_data_t *r_dh, struct _gpgme_data_cbs *cbs)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   *r_dh = NULL;
-  dh = calloc (1, sizeof (*dh));
+  dh = _gpgme_calloc (1, sizeof (*dh));
   if (!dh)
     return gpg_error_from_syserror ();
 
@@ -64,8 +65,8 @@ _gpgme_data_release (gpgme_data_t dh)
     return;
 
   if (dh->file_name)
-    free (dh->file_name);
-  free (dh);
+    _gpgme_free (dh->file_name);
+  _gpgme_free (dh);
 }
 
 
@@ -212,11 +213,11 @@ gpgme_data_set_file_name (gpgme_data_t dh, const char *file_name)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
   if (dh->file_name)
-    free (dh->file_name);
+    _gpgme_free (dh->file_name);
 
   if (file_name)
     {
-      dh->file_name = strdup (file_name);
+      dh->file_name = _gpgme_strdup (file_name);
       if (!dh->file_name)
 	return TRACE_ERR (gpg_error_from_syserror ());
     }

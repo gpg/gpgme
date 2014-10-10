@@ -33,6 +33,7 @@
 #include "ops.h"
 #include "util.h"
 #include "debug.h"
+#include "mem.h"
 
 
 typedef struct
@@ -50,9 +51,9 @@ release_op_data (void *hook)
   op_data_t opd = (op_data_t) hook;
 
   if (opd->passphrase_info)
-    free (opd->passphrase_info);
+    _gpgme_free (opd->passphrase_info);
   if (opd->uid_hint)
-    free (opd->uid_hint);
+    _gpgme_free (opd->uid_hint);
 }
 
 
@@ -75,8 +76,8 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
     {
     case GPGME_STATUS_USERID_HINT:
       if (opd->uid_hint)
-	free (opd->uid_hint);
-      if (!(opd->uid_hint = strdup (args)))
+	_gpgme_free (opd->uid_hint);
+      if (!(opd->uid_hint = _gpgme_strdup (args)))
         return gpg_error_from_syserror ();
       break;
 
@@ -94,8 +95,8 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
     case GPGME_STATUS_NEED_PASSPHRASE_SYM:
     case GPGME_STATUS_NEED_PASSPHRASE_PIN:
       if (opd->passphrase_info)
-	free (opd->passphrase_info);
-      opd->passphrase_info = strdup (args);
+	_gpgme_free (opd->passphrase_info);
+      opd->passphrase_info = _gpgme_strdup (args);
       if (!opd->passphrase_info)
 	return gpg_error_from_syserror ();
       break;

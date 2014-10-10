@@ -12,13 +12,32 @@
 #include "ath.h"
 #include "priv-io.h"
 #include "debug.h"
+#include "mem.h"
 
 
+static void *
+_gpgme_assuan_malloc (size_t size)
+{
+  return _gpgme_malloc (size);
+}
+
+static void *
+_gpgme_assuan_realloc (void *p, size_t size)
+{
+  return _gpgme_realloc (p, size);
+}
+
+static void
+_gpgme_assuan_free (void *p)
+{
+  _gpgme_free (p);
+}
+
 struct assuan_malloc_hooks _gpgme_assuan_malloc_hooks =
   {
-    malloc,
-    realloc,
-    free
+    _gpgme_assuan_malloc,
+    _gpgme_assuan_realloc,
+    _gpgme_assuan_free
   };
 
 
@@ -140,7 +159,7 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
     }
   /* fd_in, fd_out, terminator */
   i += 3;
-  fd_items = calloc (i, sizeof (struct spawn_fd_item_s));
+  fd_items = _gpgme_calloc (i, sizeof (struct spawn_fd_item_s));
   if (! fd_items)
     return -1;
   i = 0;
@@ -184,7 +203,7 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
 	    }
 	}
     }
-  free (fd_items);
+  _gpgme_free (fd_items);
   return err;
 }
 

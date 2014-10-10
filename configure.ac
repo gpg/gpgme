@@ -371,11 +371,7 @@ fi
 AC_MSG_NOTICE([checking for libraries])
 
 AC_FUNC_FSEEKO
-
-AC_REPLACE_FUNCS(vasprintf)
-if test "$ac_cv_func_vasprintf" != yes; then
-  GNUPG_CHECK_VA_COPY
-fi
+GNUPG_CHECK_VA_COPY
 
 # Try to find a thread-safe version of ttyname().
 gnupg_REPLACE_TTYNAME_R

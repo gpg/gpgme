@@ -26,13 +26,14 @@
 #include <string.h>
 
 #include "util.h"
+#include "mem.h"
 
 
 #if defined(HAVE_THREAD_SAFE_GETENV) || !defined (HAVE_GETENV_R)
 /* We prefer using getenv() if it is thread-safe.  */
 
 /* Retrieve the environment variable NAME and return a copy of it in a
-   malloc()'ed buffer in *VALUE.  If the environment variable is not
+   _gpgme_malloc()'ed buffer in *VALUE.  If the environment variable is not
    set, return NULL in *VALUE.  */
 gpgme_error_t
 _gpgme_getenv (const char *name, char **value)
@@ -44,7 +45,7 @@ _gpgme_getenv (const char *name, char **value)
     *value = NULL;
   else
     {
-      *value = strdup (env_value);
+      *value = _gpgme_strdup (env_value);
       if (!*value)
 	return gpg_error_from_syserror ();
     }

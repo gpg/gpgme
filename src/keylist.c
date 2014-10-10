@@ -41,6 +41,7 @@
 #include "context.h"
 #include "ops.h"
 #include "debug.h"
+#include "mem.h"
 
 
 struct key_queue_item_s
@@ -385,7 +386,7 @@ parse_sec_field15 (gpgme_key_t key, gpgme_subkey_t subkey, char *field)
       /* Fields starts with a hex digit; thus it is a serial number.  */
       key->secret = 1;
       subkey->is_cardkey = 1;
-      subkey->card_number = strdup (field);
+      subkey->card_number = _gpgme_strdup (field);
       if (!subkey->card_number)
         return gpg_error_from_syserror ();
     }
@@ -564,7 +565,7 @@ keylist_colon_handler (void *priv, char *line)
       /* Field 8 has the X.509 serial number.  */
       if (fields >= 8 && (rectype == RT_CRT || rectype == RT_CRS))
 	{
-	  key->issuer_serial = strdup (field[7]);
+	  key->issuer_serial = _gpgme_strdup (field[7]);
 	  if (!key->issuer_serial)
 	    return gpg_error_from_syserror ();
 	}
@@ -598,7 +599,7 @@ keylist_colon_handler (void *priv, char *line)
       /* Field 17 has the curve name for ECC.  */
       if (fields >= 17 && *field[16])
         {
-          subkey->curve = strdup (field[16]);
+          subkey->curve = _gpgme_strdup (field[16]);
           if (!subkey->curve)
             return gpg_error_from_syserror ();
         }
@@ -671,7 +672,7 @@ keylist_colon_handler (void *priv, char *line)
       /* Field 17 has the curve name for ECC.  */
       if (fields >= 17 && *field[16])
         {
-          subkey->curve = strdup (field[16]);
+          subkey->curve = _gpgme_strdup (field[16]);
           if (!subkey->curve)
             return gpg_error_from_syserror ();
         }
@@ -702,7 +703,7 @@ keylist_colon_handler (void *priv, char *line)
           subkey = key->_last_subkey;
           if (!subkey->fpr)
             {
-              subkey->fpr = strdup (field[9]);
+              subkey->fpr = _gpgme_strdup (field[9]);
               if (!subkey->fpr)
                 return gpg_error_from_syserror ();
             }
@@ -711,7 +712,7 @@ keylist_colon_handler (void *priv, char *line)
       /* Field 13 has the gpgsm chain ID (take only the first one).  */
       if (fields >= 13 && !key->chain_id && *field[12])
 	{
-	  key->chain_id = strdup (field[12]);
+	  key->chain_id = _gpgme_strdup (field[12]);
 	  if (!key->chain_id)
 	    return gpg_error_from_syserror ();
 	}
@@ -858,7 +859,7 @@ _gpgme_op_keylist_event_cb (void *data, gpgme_event_io_t type, void *type_data)
   if (err)
     return;
 
-  q = malloc (sizeof *q);
+  q = _gpgme_malloc (sizeof *q);
   if (!q)
     {
       gpgme_key_unref (key);
@@ -1000,7 +1001,7 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
     opd->key_cond = 0;
 
   *r_key = queue_item->key;
-  free (queue_item);
+  _gpgme_free (queue_item);
 
   return TRACE_SUC2 ("key=%p (%s)", *r_key,
 		     ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ?

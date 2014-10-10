@@ -99,7 +99,8 @@ main_sources =								\
 	engine-spawn.c 	                                                \
 	gpgconf.c							\
 	sema.h priv-io.h $(system_components) sys-util.h dirinfo.c	\
-	debug.c debug.h gpgme.c version.c error.c
+	debug.c debug.h gpgme.c version.c error.c mem.c mem.h           \
+	vasprintf.c
 
 libgpgme_la_SOURCES = $(main_sources)					\
 	ath.h ath.c $(system_components_not_extra)

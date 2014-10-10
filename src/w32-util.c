@@ -141,14 +141,14 @@ wchar_to_utf8 (const wchar_t *string)
       return NULL;
     }
 
-  result = malloc (n+1);
+  result = _gpgme_malloc (n+1);
   if (!result)
     return NULL;
 
   n = WideCharToMultiByte (CP_UTF8, 0, string, -1, result, n, NULL, NULL);
   if (n < 0)
     {
-      free (result);
+      _gpgme_free (result);
       gpg_err_set_errno (EINVAL);
       result = NULL;
     }
@@ -276,12 +276,12 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
         goto leave;
     }
   n1 = nbytes + 1;
-  result = malloc (n1);
+  result = _gpgme_malloc (n1);
   if (!result)
     goto leave;
   if (RegQueryValueExA (key_handle, name, 0, &type, (LPBYTE) result, &n1))
     {
-      free (result);
+      _gpgme_free (result);
       result = NULL;
       goto leave;
     }
@@ -294,42 +294,42 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
       char *tmp;
 
       n1 += 1000;
-      tmp = malloc (n1 + 1);
+      tmp = _gpgme_malloc (n1 + 1);
       if (!tmp)
         goto leave;
       nbytes = ExpandEnvironmentStrings (result, tmp, n1);
       if (nbytes && nbytes > n1)
         {
-          free (tmp);
+          _gpgme_free (tmp);
           n1 = nbytes;
-          tmp = malloc (n1 + 1);
+          tmp = _gpgme_malloc (n1 + 1);
           if (!tmp)
             goto leave;
           nbytes = ExpandEnvironmentStrings (result, tmp, n1);
           if (nbytes && nbytes > n1) {
-            free (tmp); /* Oops - truncated, better don't expand at all. */
+            _gpgme_free (tmp); /* Oops - truncated, better don't expand at all. */
             goto leave;
           }
           tmp[nbytes] = 0;
-          free (result);
+          _gpgme_free (result);
           result = tmp;
         }
       else if (nbytes)  /* Okay, reduce the length. */
         {
           tmp[nbytes] = 0;
-          free (result);
-          result = malloc (strlen (tmp)+1);
+          _gpgme_free (result);
+          result = _gpgme_malloc (strlen (tmp)+1);
           if (!result)
             result = tmp;
           else
             {
               strcpy (result, tmp);
-              free (tmp);
+              _gpgme_free (tmp);
             }
         }
       else  /* Error - don't expand. */
         {
-          free (tmp);
+          _gpgme_free (tmp);
         }
     }
 #endif
@@ -352,7 +352,7 @@ _gpgme_get_inst_dir (void)
     {
       wchar_t *moddir;
 
-      moddir = malloc ((MAX_PATH+5) * sizeof *moddir);
+      moddir = _gpgme_malloc ((MAX_PATH+5) * sizeof *moddir);
       if (moddir)
         {
           if (!GetModuleFileNameW (my_hmodule, moddir, MAX_PATH))
@@ -369,7 +369,7 @@ _gpgme_get_inst_dir (void)
                     *p = 0;
                 }
             }
-          free (moddir);
+          _gpgme_free (moddir);
         }
     }
   UNLOCK (get_path_lock);
@@ -382,14 +382,14 @@ find_program_in_dir (const char *dir, const char *name)
 {
   char *result;
 
-  result = malloc (strlen (dir) + 1 + strlen (name) + 1);
+  result = _gpgme_malloc (strlen (dir) + 1 + strlen (name) + 1);
   if (!result)
     return NULL;
 
   strcpy (stpcpy (stpcpy (result, dir), "\\"), name);
   if (access (result, F_OK))
     {
-      free (result);
+      _gpgme_free (result);
       return NULL;
     }
 
@@ -424,7 +424,7 @@ find_program_in_inst_dir (const char *inst_dir, const char *name)
   if (dir)
     {
       result = find_program_in_dir (dir, name);
-      free (dir);
+      _gpgme_free (dir);
       return result;
     }
   return NULL;
@@ -440,13 +440,13 @@ find_program_at_standard_place (const char *name)
   /* See http://wiki.tcl.tk/17492 for details on compatibility.  */
   if (SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILES, 0))
     {
-      result = malloc (strlen (path) + 1 + strlen (name) + 1);
+      result = _gpgme_malloc (strlen (path) + 1 + strlen (name) + 1);
       if (result)
         {
           strcpy (stpcpy (stpcpy (result, path), "\\"), name);
           if (access (result, F_OK))
             {
-              free (result);
+              _gpgme_free (result);
               result = NULL;
             }
         }
@@ -462,7 +462,7 @@ _gpgme_set_default_gpg_name (const char *name)
 {
   if (!default_gpg_name)
     {
-      default_gpg_name = malloc (strlen (name) + 5);
+      default_gpg_name = _gpgme_malloc (strlen (name) + 5);
       if (default_gpg_name)
         {
           strcpy (stpcpy (default_gpg_name, name), ".exe");
@@ -479,7 +479,7 @@ _gpgme_set_default_gpgconf_name (const char *name)
 {
   if (!default_gpgconf_name)
     {
-      default_gpgconf_name = malloc (strlen (name) + 5);
+      default_gpgconf_name = _gpgme_malloc (strlen (name) + 5);
       if (default_gpgconf_name)
         {
           strcpy (stpcpy (default_gpgconf_name, name), ".exe");
@@ -571,7 +571,7 @@ _gpgme_get_conf_int (const char *key, int *value)
   if (!tmp)
     return 0;
   *value = atoi (tmp);
-  free (tmp);
+  _gpgme_free (tmp);
   return 1;
 }
 
@@ -704,14 +704,14 @@ _gpgme_mkstemp (int *fd, char **name)
 	}
     }
 
-  tmpname = malloc (strlen (tmp) + 13 + 1);
+  tmpname = _gpgme_malloc (strlen (tmp) + 13 + 1);
   if (!tmpname)
     return -1;
   strcpy (stpcpy (tmpname, tmp), "\\gpgme-XXXXXX");
   *fd = mkstemp (tmpname);
   if (fd < 0)
     {
-      free (tmpname);
+      _gpgme_free (tmpname);
       return -1;
     }
 
@@ -734,7 +734,7 @@ _gpgme_w32ce_get_debug_envvar (void)
   tmp = read_w32_registry_string (NULL, "\\Software\\GNU\\gpgme", "debug");
   if (tmp && !*tmp)
     {
-      free (tmp);
+      _gpgme_free (tmp);
       tmp = NULL;
     }
   return tmp;

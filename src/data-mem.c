@@ -33,6 +33,7 @@
 #include "data.h"
 #include "util.h"
 #include "debug.h"
+#include "mem.h"
 
 
 static gpgme_ssize_t
@@ -67,7 +68,7 @@ mem_write (gpgme_data_t dh, const void *buffer, size_t size)
       if (new_size < dh->data.mem.offset + size)
 	new_size = dh->data.mem.offset + size;
 
-      new_buffer = malloc (new_size);
+      new_buffer = _gpgme_malloc (new_size);
       if (!new_buffer)
 	return -1;
       memcpy (new_buffer, dh->data.mem.orig_buffer, dh->data.mem.length);
@@ -88,12 +89,12 @@ mem_write (gpgme_data_t dh, const void *buffer, size_t size)
       if (new_size < dh->data.mem.offset + size)
 	new_size = dh->data.mem.offset + size;
 
-      new_buffer = realloc (dh->data.mem.buffer, new_size);
+      new_buffer = _gpgme_realloc (dh->data.mem.buffer, new_size);
       if (!new_buffer && new_size > dh->data.mem.offset + size)
 	{
 	  /* Maybe we were too greedy, try again.  */
 	  new_size = dh->data.mem.offset + size;
-	  new_buffer = realloc (dh->data.mem.buffer, new_size);
+	  new_buffer = _gpgme_realloc (dh->data.mem.buffer, new_size);
 	}
       if (!new_buffer)
 	return -1;
@@ -151,7 +152,7 @@ static void
 mem_release (gpgme_data_t dh)
 {
   if (dh->data.mem.buffer)
-    free (dh->data.mem.buffer);
+    _gpgme_free (dh->data.mem.buffer);
 }
 
 
@@ -199,7 +200,7 @@ gpgme_data_new_from_mem (gpgme_data_t *r_dh, const char *buffer,
 
   if (copy)
     {
-      char *bufcpy = malloc (size);
+      char *bufcpy = _gpgme_malloc (size);
       if (!bufcpy)
 	{
 	  int saved_err = gpg_error_from_syserror ();
@@ -239,7 +240,7 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
   str = dh->data.mem.buffer;
   if (!str && dh->data.mem.orig_buffer)
     {
-      str = malloc (dh->data.mem.length);
+      str = _gpgme_malloc (dh->data.mem.length);
       if (!str)
 	{
 	  int saved_err = gpg_error_from_syserror ();
@@ -278,5 +279,5 @@ gpgme_free (void *buffer)
   TRACE (DEBUG_DATA, "gpgme_free", buffer);
 
   if (buffer)
-    free (buffer);
+    _gpgme_free (buffer);
 }

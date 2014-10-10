@@ -565,7 +565,7 @@ build_commandline (char **argv)
   /* And a trailing zero.  */
   n++;
 
-  buf = p = malloc (n);
+  buf = p = _gpgme_malloc (n);
   if (!buf)
     return NULL;
   for (i = 0; argv[i]; i++)
@@ -634,7 +634,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
     }
   TRACE_LOG1 ("tmp_name = %s", tmp_name);
 
-  args = calloc (2 + i + 1, sizeof (*args));
+  args = _gpgme_calloc (2 + i + 1, sizeof (*args));
   args[0] = (char *) _gpgme_get_w32spawn_path ();
   args[1] = tmp_name;
   args[2] = path;
@@ -645,7 +645,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
   sec_attr.bInheritHandle = FALSE;
 
   arg_string = build_commandline (args);
-  free (args);
+  _gpgme_free (args);
   if (!arg_string)
     {
       close (tmp_fd);
@@ -676,7 +676,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
 		       &pi))          /* returns process information */
     {
       TRACE_LOG1 ("CreateProcess failed: ec=%d", (int) GetLastError ());
-      free (arg_string);
+      _gpgme_free (arg_string);
       close (tmp_fd);
       DeleteFile (tmp_name);
 
@@ -685,7 +685,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
       return TRACE_SYSRES (-1);
     }
 
-  free (arg_string);
+  _gpgme_free (arg_string);
 
   if (flags & IOSPAWN_FLAG_ALLOW_SET_FG)
     _gpgme_allow_set_foreground_window ((pid_t)pi.dwProcessId);
@@ -826,13 +826,13 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   if (nonblock)
     timeout = 0;
 
-  pollfds = calloc (nfds, sizeof *pollfds);
+  pollfds = _gpgme_calloc (nfds, sizeof *pollfds);
   if (!pollfds)
     return -1;
-  pollfds_map = calloc (nfds, sizeof *pollfds_map);
+  pollfds_map = _gpgme_calloc (nfds, sizeof *pollfds_map);
   if (!pollfds_map)
     {
-      free (pollfds);
+      _gpgme_free (pollfds);
       return -1;
     }
   npollfds = 0;
@@ -928,8 +928,8 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
     }
 
 leave:
-  free (pollfds);
-  free (pollfds_map);
+  _gpgme_free (pollfds);
+  _gpgme_free (pollfds_map);
   return TRACE_SYSRES (count);
 }
 

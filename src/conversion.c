@@ -35,6 +35,7 @@
 #include "gpgme.h"
 #include "util.h"
 #include "debug.h"
+#include "mem.h"
 
 #define atoi_1(p)   (*(p) - '0' )
 #define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
@@ -93,7 +94,7 @@ _gpgme_decode_c_string (const char *src, char **destp, size_t len)
     {
       /* The converted string will never be larger than the original
 	 string.  */
-      dest = malloc (strlen (src) + 1);
+      dest = _gpgme_malloc (strlen (src) + 1);
       if (!dest)
 	return gpg_error_from_syserror ();
 
@@ -198,7 +199,7 @@ _gpgme_decode_percent_string (const char *src, char **destp, size_t len,
     {
       /* The converted string will never be larger than the original
 	 string.  */
-      dest = malloc (strlen (src) + 1);
+      dest = _gpgme_malloc (strlen (src) + 1);
       if (!dest)
 	return gpg_error_from_syserror ();
 
@@ -291,7 +292,7 @@ _gpgme_encode_percent_string (const char *src, char **destp, size_t len)
     {
       /* The converted string will never be larger than the original
 	 string.  */
-      dest = malloc (destlen);
+      dest = _gpgme_malloc (destlen);
       if (!dest)
 	return gpg_error_from_syserror ();
 

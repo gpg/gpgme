@@ -52,6 +52,7 @@
 #include "debug.h"
 
 #include "engine-backend.h"
+#include "mem.h"
 
 
 typedef struct
@@ -121,7 +122,7 @@ static void uiserver_io_event (void *engine,
 static char *
 uiserver_get_version (const char *file_name)
 {
-  return strdup ("1.0");
+  return _gpgme_strdup ("1.0");
 }
 
 
@@ -158,7 +159,7 @@ close_notify_handler (int fd, void *opaque)
         }
       if (uiserver->input_helper_memory)
         {
-          free (uiserver->input_helper_memory);
+          _gpgme_free (uiserver->input_helper_memory);
           uiserver->input_helper_memory = NULL;
         }
     }
@@ -230,8 +231,8 @@ uiserver_release (void *engine)
 
   uiserver_cancel (engine);
 
-  free (uiserver->colon.attic.line);
-  free (uiserver);
+  _gpgme_free (uiserver->colon.attic.line);
+  _gpgme_free (uiserver);
 }
 
 
@@ -245,7 +246,7 @@ uiserver_new (void **engine, const char *file_name, const char *home_dir)
   char *dft_ttytype = NULL;
   char *optstr;
 
-  uiserver = calloc (1, sizeof *uiserver);
+  uiserver = _gpgme_calloc (1, sizeof *uiserver);
   if (!uiserver)
     return gpg_error_from_syserror ();
 
@@ -306,17 +307,17 @@ uiserver_new (void **engine, const char *file_name, const char *home_dir)
     goto leave;
   if (dft_display)
     {
-      if (asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
+      if (_gpgme_asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
         {
 	  err = gpg_error_from_syserror ();
-	  free (dft_display);
+	  _gpgme_free (dft_display);
 	  goto leave;
 	}
-      free (dft_display);
+      _gpgme_free (dft_display);
 
       err = assuan_transact (uiserver->assuan_ctx, optstr, NULL, NULL, NULL,
 			     NULL, NULL, NULL);
-      free (optstr);
+      _gpgme_free (optstr);
       if (err)
 	goto leave;
     }
@@ -333,14 +334,14 @@ uiserver_new (void **engine, const char *file_name, const char *home_dir)
 	}
       else
 	{
-	  if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
+	  if (_gpgme_asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
 	    {
 	      err = gpg_error_from_syserror ();
 	      goto leave;
 	    }
 	  err = assuan_transact (uiserver->assuan_ctx, optstr, NULL, NULL, NULL,
 				 NULL, NULL, NULL);
-	  free (optstr);
+	  _gpgme_free (optstr);
 	  if (err)
 	    goto leave;
 
@@ -349,17 +350,17 @@ uiserver_new (void **engine, const char *file_name, const char *home_dir)
 	    goto leave;
 	  if (dft_ttytype)
 	    {
-	      if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
+	      if (_gpgme_asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
 		{
 		  err = gpg_error_from_syserror ();
-		  free (dft_ttytype);
+		  _gpgme_free (dft_ttytype);
 		  goto leave;
 		}
-	      free (dft_ttytype);
+	      _gpgme_free (dft_ttytype);
 
 	      err = assuan_transact (uiserver->assuan_ctx, optstr, NULL, NULL,
 				     NULL, NULL, NULL, NULL);
-	      free (optstr);
+	      _gpgme_free (optstr);
 	      if (err)
 		goto leave;
 	    }
@@ -424,13 +425,13 @@ uiserver_set_locale (void *engine, int category, const char *value)
   if (!value)
     return 0;
 
-  if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
+  if (_gpgme_asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
     err = gpg_error_from_syserror ();
   else
     {
       err = assuan_transact (uiserver->assuan_ctx, optstr, NULL, NULL,
 			     NULL, NULL, NULL, NULL);
-      free (optstr);
+      _gpgme_free (optstr);
     }
 
   return err;
@@ -692,7 +693,7 @@ status_handler (void *opaque, int fd)
 
 	  if (uiserver->colon.attic.linesize < *alinelen + linelen + 1)
 	    {
-	      char *newline = realloc (*aline, *alinelen + linelen + 1);
+	      char *newline = _gpgme_realloc (*aline, *alinelen + linelen + 1);
 	      if (!newline)
 		err = gpg_error_from_syserror ();
 	      else
@@ -941,7 +942,7 @@ _uiserver_decrypt (void *engine, int verify,
   else
     return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
 
-  if (asprintf (&cmd, "DECRYPT%s%s", protocol,
+  if (_gpgme_asprintf (&cmd, "DECRYPT%s%s", protocol,
 		verify ? "" : " --no-verify") < 0)
     return gpg_error_from_syserror ();
 
@@ -950,20 +951,20 @@ _uiserver_decrypt (void *engine, int verify,
 			 map_data_enc (uiserver->input_cb.data));
   if (err)
     {
-      free (cmd);
+      _gpgme_free (cmd);
       return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
     }
   uiserver->output_cb.data = plain;
   err = uiserver_set_fd (uiserver, OUTPUT_FD, 0);
   if (err)
     {
-      free (cmd);
+      _gpgme_free (cmd);
       return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
     }
   uiserver->inline_data = NULL;
 
   err = start (engine, cmd);
-  free (cmd);
+  _gpgme_free (cmd);
   return err;
 }
 
@@ -993,7 +994,7 @@ set_recipients (engine_uiserver_t uiserver, gpgme_key_t recp[])
   int i;
 
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
-  line = malloc (10 + 40 + 1);
+  line = _gpgme_malloc (10 + 40 + 1);
   if (!line)
     return gpg_error_from_syserror ();
   strcpy (line, "RECIPIENT ");
@@ -1012,11 +1013,11 @@ set_recipients (engine_uiserver_t uiserver, gpgme_key_t recp[])
       newlen = 11 + strlen (uid);
       if (linelen < newlen)
 	{
-	  char *newline = realloc (line, newlen);
+	  char *newline = _gpgme_realloc (line, newlen);
 	  if (! newline)
 	    {
 	      int saved_err = gpg_error_from_syserror ();
-	      free (line);
+	      _gpgme_free (line);
 	      return saved_err;
 	    }
 	  line = newline;
@@ -1032,11 +1033,11 @@ set_recipients (engine_uiserver_t uiserver, gpgme_key_t recp[])
 	invalid_recipients++;
       else if (err)
 	{
-	  free (line);
+	  _gpgme_free (line);
 	  return err;
 	}
     }
-  free (line);
+  _gpgme_free (line);
   return gpg_error (invalid_recipients
 		    ? GPG_ERR_UNUSABLE_PUBKEY : GPG_ERR_NO_ERROR);
 }
@@ -1067,7 +1068,7 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
       if (!recp || plain || ciph)
 	return gpg_error (GPG_ERR_INV_VALUE);
 
-      if (asprintf (&cmd, "PREP_ENCRYPT%s%s", protocol,
+      if (_gpgme_asprintf (&cmd, "PREP_ENCRYPT%s%s", protocol,
 		    (flags & GPGME_ENCRYPT_EXPECT_SIGN)
 		    ? " --expect-sign" : "") < 0)
 	return gpg_error_from_syserror ();
@@ -1077,7 +1078,7 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
       if (!plain || !ciph)
 	return gpg_error (GPG_ERR_INV_VALUE);
 
-      if (asprintf (&cmd, "ENCRYPT%s", protocol) < 0)
+      if (_gpgme_asprintf (&cmd, "ENCRYPT%s", protocol) < 0)
 	return gpg_error_from_syserror ();
     }
 
@@ -1088,7 +1089,7 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 			     map_data_enc (uiserver->input_cb.data));
       if (err)
 	{
-	  free (cmd);
+	  _gpgme_free (cmd);
 	  return err;
 	}
     }
@@ -1100,7 +1101,7 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 			     : map_data_enc (uiserver->output_cb.data));
       if (err)
 	{
-	  free (cmd);
+	  _gpgme_free (cmd);
 	  return err;
 	}
     }
@@ -1112,13 +1113,13 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
       err = set_recipients (uiserver, recp);
       if (err)
 	{
-	  free (cmd);
+	  _gpgme_free (cmd);
 	  return err;
 	}
     }
 
   err = start (uiserver, cmd);
-  free (cmd);
+  _gpgme_free (cmd);
   return err;
 }
 
@@ -1145,7 +1146,7 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   else
     return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
 
-  if (asprintf (&cmd, "SIGN%s%s", protocol,
+  if (_gpgme_asprintf (&cmd, "SIGN%s%s", protocol,
 		(mode == GPGME_SIG_MODE_DETACH) ? " --detached" : "") < 0)
     return gpg_error_from_syserror ();
 
@@ -1171,7 +1172,7 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
       gpgme_key_unref (key);
       if (err)
       {
-	free (cmd);
+	_gpgme_free (cmd);
 	return err;
       }
   }
@@ -1181,7 +1182,7 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 			 map_data_enc (uiserver->input_cb.data));
   if (err)
     {
-      free (cmd);
+      _gpgme_free (cmd);
       return err;
     }
   uiserver->output_cb.data = out;
@@ -1189,13 +1190,13 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 			 : map_data_enc (uiserver->output_cb.data));
   if (err)
     {
-      free (cmd);
+      _gpgme_free (cmd);
       return err;
     }
   uiserver->inline_data = NULL;
 
   err = start (uiserver, cmd);
-  free (cmd);
+  _gpgme_free (cmd);
   return err;
 }
 
@@ -1221,7 +1222,7 @@ uiserver_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
   else
     return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
 
-  if (asprintf (&cmd, "VERIFY%s", protocol) < 0)
+  if (_gpgme_asprintf (&cmd, "VERIFY%s", protocol) < 0)
     return gpg_error_from_syserror ();
 
   uiserver->input_cb.data = sig;
@@ -1229,7 +1230,7 @@ uiserver_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 			 map_data_enc (uiserver->input_cb.data));
   if (err)
     {
-      free (cmd);
+      _gpgme_free (cmd);
       return err;
     }
   if (plaintext)
@@ -1249,7 +1250,7 @@ uiserver_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
   if (!err)
     err = start (uiserver, cmd);
 
-  free (cmd);
+  _gpgme_free (cmd);
   return err;
 }
 

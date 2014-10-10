@@ -34,6 +34,7 @@
 
 #include "engine.h"
 #include "engine-backend.h"
+#include "mem.h"
 
 
 struct engine
@@ -165,12 +166,12 @@ _gpgme_engine_info_release (gpgme_engine_info_t info)
       gpgme_engine_info_t next_info = info->next;
 
       assert (info->file_name);
-      free (info->file_name);
+      _gpgme_free (info->file_name);
       if (info->home_dir)
-	free (info->home_dir);
+	_gpgme_free (info->home_dir);
       if (info->version)
-	free (info->version);
-      free (info);
+	_gpgme_free (info->version);
+      _gpgme_free (info);
       info = next_info;
     }
 }
@@ -209,20 +210,20 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 	  if (!ofile_name)
 	    continue;
 
-	  file_name = strdup (ofile_name);
+	  file_name = _gpgme_strdup (ofile_name);
           if (!file_name)
             err = gpg_error_from_syserror ();
 
           if (ohome_dir)
             {
-              home_dir = strdup (ohome_dir);
+              home_dir = _gpgme_strdup (ohome_dir);
               if (!home_dir && !err)
                 err = gpg_error_from_syserror ();
             }
           else
             home_dir = NULL;
 
-	  *lastp = malloc (sizeof (*engine_info));
+	  *lastp = _gpgme_malloc (sizeof (*engine_info));
           if (!*lastp && !err)
             err = gpg_error_from_syserror ();
 
@@ -232,9 +233,9 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 	      engine_info = NULL;
 
 	      if (file_name)
-		free (file_name);
+		_gpgme_free (file_name);
 	      if (home_dir)
-		free (home_dir);
+		_gpgme_free (home_dir);
 
 	      UNLOCK (engine_info_lock);
 	      return err;
@@ -288,13 +289,13 @@ _gpgme_engine_info_copy (gpgme_engine_info_t *r_info)
       char *version;
 
       assert (info->file_name);
-      file_name = strdup (info->file_name);
+      file_name = _gpgme_strdup (info->file_name);
       if (!file_name)
         err = gpg_error_from_syserror ();
 
       if (info->home_dir)
 	{
-	  home_dir = strdup (info->home_dir);
+	  home_dir = _gpgme_strdup (info->home_dir);
 	  if (!home_dir && !err)
 	    err = gpg_error_from_syserror ();
 	}
@@ -303,14 +304,14 @@ _gpgme_engine_info_copy (gpgme_engine_info_t *r_info)
 
       if (info->version)
 	{
-	  version = strdup (info->version);
+	  version = _gpgme_strdup (info->version);
 	  if (!version && !err)
 	    err = gpg_error_from_syserror ();
 	}
       else
 	version = NULL;
 
-      *lastp = malloc (sizeof (*engine_info));
+      *lastp = _gpgme_malloc (sizeof (*engine_info));
       if (!*lastp && !err)
         err = gpg_error_from_syserror ();
 
@@ -318,11 +319,11 @@ _gpgme_engine_info_copy (gpgme_engine_info_t *r_info)
 	{
 	  _gpgme_engine_info_release (new_info);
 	  if (file_name)
-	    free (file_name);
+	    _gpgme_free (file_name);
 	  if (home_dir)
-	    free (home_dir);
+	    _gpgme_free (home_dir);
 	  if (version)
-	    free (version);
+	    _gpgme_free (version);
 
 	  UNLOCK (engine_info_lock);
 	  return err;
@@ -366,22 +367,22 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
 
   /* Prepare new members.  */
   if (file_name)
-    new_file_name = strdup (file_name);
+    new_file_name = _gpgme_strdup (file_name);
   else
     {
       const char *ofile_name = engine_get_file_name (proto);
       assert (ofile_name);
-      new_file_name = strdup (ofile_name);
+      new_file_name = _gpgme_strdup (ofile_name);
     }
   if (!new_file_name)
     return gpg_error_from_syserror ();
 
   if (home_dir)
     {
-      new_home_dir = strdup (home_dir);
+      new_home_dir = _gpgme_strdup (home_dir);
       if (!new_home_dir)
 	{
-	  free (new_file_name);
+	  _gpgme_free (new_file_name);
 	  return gpg_error_from_syserror ();
 	}
     }
@@ -390,10 +391,10 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
       const char *ohome_dir = engine_get_home_dir (proto);
       if (ohome_dir)
         {
-          new_home_dir = strdup (ohome_dir);
+          new_home_dir = _gpgme_strdup (ohome_dir);
           if (!new_home_dir)
             {
-              free (new_file_name);
+              _gpgme_free (new_file_name);
               return gpg_error_from_syserror ();
             }
         }
@@ -403,11 +404,11 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
 
   /* Remove the old members.  */
   assert (info->file_name);
-  free (info->file_name);
+  _gpgme_free (info->file_name);
   if (info->home_dir)
-    free (info->home_dir);
+    _gpgme_free (info->home_dir);
   if (info->version)
-    free (info->version);
+    _gpgme_free (info->version);
 
   /* Install the new members.  */
   info->file_name = new_file_name;
@@ -454,7 +455,7 @@ _gpgme_engine_new (gpgme_engine_info_t info, engine_t *r_engine)
   if (!info->file_name || !info->version)
     return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
-  engine = calloc (1, sizeof *engine);
+  engine = _gpgme_calloc (1, sizeof *engine);
   if (!engine)
     return gpg_error_from_syserror ();
 
@@ -466,7 +467,7 @@ _gpgme_engine_new (gpgme_engine_info_t info, engine_t *r_engine)
 				 info->file_name, info->home_dir);
       if (err)
 	{
-	  free (engine);
+	  _gpgme_free (engine);
 	  return err;
 	}
     }
@@ -499,7 +500,7 @@ _gpgme_engine_release (engine_t engine)
 
   if (engine->ops->release)
     (*engine->ops->release) (engine->engine);
-  free (engine);
+  _gpgme_free (engine);
 }
 
 

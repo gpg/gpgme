@@ -81,6 +81,7 @@ GPGME_1.1 {
     gpgme_op_passwd_start;
     gpgme_op_passwd;
 
+    gpgme_set_global_malloc_hooks;
     gpgme_set_global_flag;
 
     gpgme_io_writen;

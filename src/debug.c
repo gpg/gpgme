@@ -47,6 +47,7 @@
 #include "ath.h"
 #include "sema.h"
 #include "debug.h"
+#include "mem.h"
 
 
 /* Lock to serialize initialization of the debug output subsystem and
@@ -122,8 +123,8 @@ trim_spaces (char *str)
 int
 _gpgme_debug_set_debug_envvar (const char *value)
 {
-  free (envvar_override);
-  envvar_override = strdup (value);
+  _gpgme_free (envvar_override);
+  envvar_override = _gpgme_strdup (value);
   return !envvar_override;
 }
 
@@ -142,8 +143,8 @@ debug_init (void)
 
       if (envvar_override)
         {
-          e = strdup (envvar_override);
-          free (envvar_override);
+          e = _gpgme_strdup (envvar_override);
+          _gpgme_free (envvar_override);
           envvar_override = NULL;
         }
       else
@@ -182,7 +183,7 @@ debug_init (void)
 		  s1++;
 		  if (!(s2 = strchr (s1, PATHSEP_C)))
 		    s2 = s1 + strlen (s1);
-		  p = malloc (s2 - s1 + 1);
+		  p = _gpgme_malloc (s2 - s1 + 1);
 		  if (p)
 		    {
 		      memcpy (p, s1, s2 - s1);
@@ -194,13 +195,13 @@ debug_init (void)
 			  setvbuf (fp, NULL, _IOLBF, 0);
 			  errfp = fp;
 			}
-		      free (p);
+		      _gpgme_free (p);
 		    }
 #ifndef HAVE_DOSISH_SYSTEM
 		}
 #endif
 	    }
-	  free (e);
+	  _gpgme_free (e);
         }
     }
   UNLOCK (debug_lock);
@@ -292,7 +293,7 @@ _gpgme_debug_begin (void **line, int level, const char *format, ...)
     }
 
   va_start (arg_ptr, format);
-  res = vasprintf ((char **) line, format, arg_ptr);
+  res = _gpgme_vasprintf ((char **) line, format, arg_ptr);
   va_end (arg_ptr);
   if (res < 0)
     *line = NULL;
@@ -312,16 +313,16 @@ _gpgme_debug_add (void **line, const char *format, ...)
     return;
 
   va_start (arg_ptr, format);
-  res = vasprintf (&toadd, format, arg_ptr);
+  res = _gpgme_vasprintf (&toadd, format, arg_ptr);
   va_end (arg_ptr);
   if (res < 0)
     {
-      free (*line);
+      _gpgme_free (*line);
       *line = NULL;
     }
-  res = asprintf (&result, "%s%s", *(char **) line, toadd);
-  free (toadd);
-  free (*line);
+  res = _gpgme_asprintf (&result, "%s%s", *(char **) line, toadd);
+  _gpgme_free (toadd);
+  _gpgme_free (*line);
   if (res < 0)
     *line = NULL;
   else
@@ -340,7 +341,7 @@ _gpgme_debug_end (void **line)
   /* The smallest possible level is 1, so force logging here by
      using that.  */
   _gpgme_debug (1, "%s", *line);
-  free (*line);
+  _gpgme_free (*line);
   *line = NULL;
 }
 

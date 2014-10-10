@@ -31,6 +31,7 @@
 #include "ops.h"
 #include "sema.h"
 #include "debug.h"
+#include "mem.h"
 
 
 /* Protects all reference counters in keys.  All other accesses to a
@@ -44,7 +45,7 @@ _gpgme_key_new (gpgme_key_t *r_key)
 {
   gpgme_key_t key;
 
-  key = calloc (1, sizeof *key);
+  key = _gpgme_calloc (1, sizeof *key);
   if (!key)
     return gpg_error_from_syserror ();
   key->_refs = 1;
@@ -59,7 +60,7 @@ _gpgme_key_add_subkey (gpgme_key_t key, gpgme_subkey_t *r_subkey)
 {
   gpgme_subkey_t subkey;
 
-  subkey = calloc (1, sizeof *subkey);
+  subkey = _gpgme_calloc (1, sizeof *subkey);
   if (!subkey)
     return gpg_error_from_syserror ();
   subkey->keyid = subkey->_keyid;
@@ -213,7 +214,7 @@ _gpgme_key_append_name (gpgme_key_t key, const char *src, int convert)
   /* We can malloc a buffer of the same length, because the converted
      string will never be larger. Actually we allocate it twice the
      size, so that we are able to store the parsed stuff there too.  */
-  uid = malloc (sizeof (*uid) + 2 * src_len + 3);
+  uid = _gpgme_malloc (sizeof (*uid) + 2 * src_len + 3);
   if (!uid)
     return gpg_error_from_syserror ();
   memset (uid, 0, sizeof *uid);
@@ -258,7 +259,7 @@ _gpgme_key_add_sig (gpgme_key_t key, char *src)
   /* We can malloc a buffer of the same length, because the converted
      string will never be larger.  Actually we allocate it twice the
      size, so that we are able to store the parsed stuff there too.  */
-  sig = malloc (sizeof (*sig) + 2 * src_len + 3);
+  sig = _gpgme_malloc (sizeof (*sig) + 2 * src_len + 3);
   if (!sig)
     return NULL;
   memset (sig, 0, sizeof *sig);
@@ -330,12 +331,12 @@ gpgme_key_unref (gpgme_key_t key)
     {
       gpgme_subkey_t next = subkey->next;
       if (subkey->fpr)
-	free (subkey->fpr);
+	_gpgme_free (subkey->fpr);
       if (subkey->curve)
-	free (subkey->curve);
+	_gpgme_free (subkey->curve);
       if (subkey->card_number)
-	free (subkey->card_number);
-      free (subkey);
+	_gpgme_free (subkey->card_number);
+      _gpgme_free (subkey);
       subkey = next;
     }
 
@@ -358,22 +359,22 @@ gpgme_key_unref (gpgme_key_t key)
 	      notation = next_notation;
 	    }
 
-          free (keysig);
+          _gpgme_free (keysig);
 	  keysig = next_keysig;
         }
-      free (uid);
+      _gpgme_free (uid);
       uid = next_uid;
     }
 
   if (key->issuer_serial)
-    free (key->issuer_serial);
+    _gpgme_free (key->issuer_serial);
   if (key->issuer_name)
-    free (key->issuer_name);
+    _gpgme_free (key->issuer_name);
 
   if (key->chain_id)
-    free (key->chain_id);
+    _gpgme_free (key->chain_id);
 
-  free (key);
+  _gpgme_free (key);
 }
 
 

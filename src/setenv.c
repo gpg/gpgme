@@ -142,7 +142,7 @@ __add_to_environ (const char *name, const char *value, const char *combined,
       char **new_environ;
 
       /* We allocated this space; we can extend it.  */
-      new_environ = (char **) realloc (last_environ,
+      new_environ = (char **) _gpgme_realloc (last_environ,
 				       (size + 2) * sizeof (char *));
       if (new_environ == NULL)
 	{
@@ -177,7 +177,7 @@ __add_to_environ (const char *name, const char *value, const char *combined,
 	  if (__builtin_expect (new_environ[size] == NULL, 1))
 #endif
 	    {
-	      new_environ[size] = (char *) malloc (namelen + 1 + vallen);
+	      new_environ[size] = (char *) _gpgme_malloc (namelen + 1 + vallen);
 	      if (__builtin_expect (new_environ[size] == NULL, 0))
 		{
 		  __set_errno (ENOMEM);
@@ -235,7 +235,7 @@ __add_to_environ (const char *name, const char *value, const char *combined,
 	  if (__builtin_expect (np == NULL, 1))
 #endif
 	    {
-	      np = malloc (namelen + 1 + vallen);
+	      np = _gpgme_malloc (namelen + 1 + vallen);
 	      if (__builtin_expect (np == NULL, 0))
 		{
 		  UNLOCK;
@@ -321,7 +321,7 @@ clearenv (void)
   if (__environ == last_environ && __environ != NULL)
     {
       /* We allocated this environment so we can free it.  */
-      free (__environ);
+      _gpgme_free (__environ);
       last_environ = NULL;
     }
 

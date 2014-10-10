@@ -53,6 +53,7 @@
 #include "debug.h"
 
 #include "engine-backend.h"
+#include "mem.h"
 
 
 typedef struct
@@ -131,7 +132,7 @@ llass_get_home_dir (void)
 static char *
 llass_get_version (const char *file_name)
 {
-  return strdup ("1.0");
+  return _gpgme_strdup ("1.0");
 }
 
 
@@ -205,7 +206,7 @@ llass_release (void *engine)
 
   llass_cancel (engine);
 
-  free (llass);
+  _gpgme_free (llass);
 }
 
 
@@ -218,7 +219,7 @@ llass_new (void **engine, const char *file_name, const char *home_dir)
   engine_llass_t llass;
   char *optstr;
 
-  llass = calloc (1, sizeof *llass);
+  llass = _gpgme_calloc (1, sizeof *llass);
   if (!llass)
     return gpg_error_from_syserror ();
 
@@ -259,17 +260,17 @@ llass_new (void **engine, const char *file_name, const char *home_dir)
         goto leave;
       if (dft_display)
         {
-          if (asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
+          if (_gpgme_asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
             {
               err = gpg_error_from_syserror ();
-              free (dft_display);
+              _gpgme_free (dft_display);
               goto leave;
             }
-          free (dft_display);
+          _gpgme_free (dft_display);
 
           err = assuan_transact (llass->assuan_ctx, optstr, NULL, NULL, NULL,
                                  NULL, NULL, NULL);
-          free (optstr);
+          _gpgme_free (optstr);
           if (err)
             goto leave;
         }
@@ -289,14 +290,14 @@ llass_new (void **engine, const char *file_name, const char *home_dir)
 	}
       else
 	{
-	  if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
+	  if (_gpgme_asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
 	    {
 	      err = gpg_error_from_syserror ();
 	      goto leave;
 	    }
 	  err = assuan_transact (llass->assuan_ctx, optstr, NULL, NULL, NULL,
 				 NULL, NULL, NULL);
-	  free (optstr);
+	  _gpgme_free (optstr);
 	  if (err)
             goto leave;
 
@@ -305,17 +306,17 @@ llass_new (void **engine, const char *file_name, const char *home_dir)
 	    goto leave;
 	  if (dft_ttytype)
 	    {
-	      if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
+	      if (_gpgme_asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
 		{
 		  err = gpg_error_from_syserror ();
-		  free (dft_ttytype);
+		  _gpgme_free (dft_ttytype);
 		  goto leave;
 		}
-	      free (dft_ttytype);
+	      _gpgme_free (dft_ttytype);
 
 	      err = assuan_transact (llass->assuan_ctx, optstr, NULL, NULL,
 				     NULL, NULL, NULL, NULL);
-	      free (optstr);
+	      _gpgme_free (optstr);
 	      if (err)
                 goto leave;
 	    }
@@ -393,13 +394,13 @@ llass_set_locale (void *engine, int category, const char *value)
   if (!value)
     return 0;
 
-  if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
+  if (_gpgme_asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
     err = gpg_error_from_syserror ();
   else
     {
       err = assuan_transact (llass->assuan_ctx, optstr, NULL, NULL,
 			     NULL, NULL, NULL, NULL);
-      free (optstr);
+      _gpgme_free (optstr);
     }
   return err;
 }

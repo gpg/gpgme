@@ -217,5 +217,6 @@ EXPORTS
 
     gpgme_op_spawn_start                  @163
     gpgme_op_spawn                        @164
+    gpgme_set_global_malloc_hooks         @165
 ; END
 

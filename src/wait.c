@@ -38,6 +38,7 @@
 #include "priv-io.h"
 #include "engine.h"
 #include "debug.h"
+#include "mem.h"
 
 
 void
@@ -51,7 +52,7 @@ void
 _gpgme_fd_table_deinit (fd_table_t fdt)
 {
   if (fdt->fds)
-    free (fdt->fds);
+    _gpgme_free (fdt->fds);
 }
 
 
@@ -70,7 +71,7 @@ fd_table_put (fd_table_t fdt, int fd, int dir, void *opaque, int *idx)
   if (i == fdt->size)
     {
 #define FDT_ALLOCSIZE 10
-      new_fds = realloc (fdt->fds, (fdt->size + FDT_ALLOCSIZE)
+      new_fds = _gpgme_realloc (fdt->fds, (fdt->size + FDT_ALLOCSIZE)
 			 * sizeof (*new_fds));
       if (!new_fds)
 	return gpg_error_from_syserror ();
@@ -111,16 +112,16 @@ _gpgme_add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc,
   fdt = &ctx->fdt;
   assert (fdt);
 
-  tag = malloc (sizeof *tag);
+  tag = _gpgme_malloc (sizeof *tag);
   if (!tag)
     return gpg_error_from_syserror ();
   tag->ctx = ctx;
 
   /* Allocate a structure to hold information about the handler.  */
-  item = calloc (1, sizeof *item);
+  item = _gpgme_calloc (1, sizeof *item);
   if (!item)
     {
-      free (tag);
+      _gpgme_free (tag);
       return gpg_error_from_syserror ();
     }
   item->ctx = ctx;
@@ -131,8 +132,8 @@ _gpgme_add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc,
   err = fd_table_put (fdt, fd, dir, item, &tag->idx);
   if (err)
     {
-      free (tag);
-      free (item);
+      _gpgme_free (tag);
+      _gpgme_free (item);
       return err;
     }
 
@@ -163,8 +164,8 @@ _gpgme_remove_io_cb (void *data)
 	  "setting fd 0x%x (item=%p) done", fdt->fds[idx].fd,
 	  fdt->fds[idx].opaque);
 
-  free (fdt->fds[idx].opaque);
-  free (tag);
+  _gpgme_free (fdt->fds[idx].opaque);
+  _gpgme_free (tag);
 
   /* Free the table entry.  */
   fdt->fds[idx].fd = -1;

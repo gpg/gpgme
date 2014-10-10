@@ -38,6 +38,7 @@
 #include "debug.h"
 #include "priv-io.h"
 #include "sys-util.h"
+#include "mem.h"
 
 
 /* The default locale.  */
@@ -51,6 +52,14 @@ gpgme_error_t _gpgme_selftest = GPG_ERR_NOT_OPERATIONAL;
 /* Protects all reference counters in result structures.  All other
    accesses to a result structure are read only.  */
 DEFINE_STATIC_LOCK (result_ref_lock);
+
+
+/* Set the default malloc hooks.  */
+void
+gpgme_set_global_malloc_hooks (gpgme_malloc_hooks_t malloc_hooks)
+{
+  _gpgme_set_global_malloc_hooks (malloc_hooks);
+}
 
 
 /* Set the global flag NAME to VALUE.  Return 0 on success.  Note that
@@ -96,7 +105,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   if (!r_ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  ctx = calloc (1, sizeof *ctx);
+  ctx = _gpgme_calloc (1, sizeof *ctx);
   if (!ctx)
     return TRACE_ERR (gpg_error_from_syserror ());
 
@@ -107,7 +116,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
     err = gpg_error (GPG_ERR_NO_ENGINE);
   if (err)
     {
-      free (ctx);
+      _gpgme_free (ctx);
       return TRACE_ERR (err);
     }
 
@@ -120,13 +129,13 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   LOCK (def_lc_lock);
   if (def_lc_ctype)
     {
-      ctx->lc_ctype = strdup (def_lc_ctype);
+      ctx->lc_ctype = _gpgme_strdup (def_lc_ctype);
       if (!ctx->lc_ctype)
 	{
           int saved_err = gpg_error_from_syserror ();
 	  UNLOCK (def_lc_lock);
 	  _gpgme_engine_info_release (ctx->engine_info);
-	  free (ctx);
+	  _gpgme_free (ctx);
 	  return TRACE_ERR (saved_err);
 	}
     }
@@ -135,15 +144,15 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 
   if (def_lc_messages)
     {
-      ctx->lc_messages = strdup (def_lc_messages);
+      ctx->lc_messages = _gpgme_strdup (def_lc_messages);
       if (!ctx->lc_messages)
 	{
           int saved_err = gpg_error_from_syserror ();
 	  UNLOCK (def_lc_lock);
 	  if (ctx->lc_ctype)
-	    free (ctx->lc_ctype);
+	    _gpgme_free (ctx->lc_ctype);
 	  _gpgme_engine_info_release (ctx->engine_info);
-	  free (ctx);
+	  _gpgme_free (ctx);
 	  return TRACE_ERR (saved_err);
 	}
     }
@@ -239,15 +248,15 @@ gpgme_release (gpgme_ctx_t ctx)
   _gpgme_signers_clear (ctx);
   _gpgme_sig_notation_clear (ctx);
   if (ctx->signers)
-    free (ctx->signers);
+    _gpgme_free (ctx->signers);
   if (ctx->lc_ctype)
-    free (ctx->lc_ctype);
+    _gpgme_free (ctx->lc_ctype);
   if (ctx->lc_messages)
-    free (ctx->lc_messages);
+    _gpgme_free (ctx->lc_messages);
   _gpgme_engine_info_release (ctx->engine_info);
   ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
-  free (ctx);
+  _gpgme_free (ctx);
 }
 
 
@@ -291,7 +300,7 @@ gpgme_result_unref (void *result)
 
   if (data->cleanup)
     (*data->cleanup) (data->hook);
-  free (data);
+  _gpgme_free (data);
 }
 
 
@@ -745,7 +754,7 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
   if (!failed && value						\
       && (category == LC_ALL || category == LC_ ## ucat))	\
     {								\
-      new_lc_ ## lcat = strdup (value);				\
+      new_lc_ ## lcat = _gpgme_strdup (value);				\
       if (!new_lc_ ## lcat)					\
         failed = 1;						\
     }
@@ -762,9 +771,9 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
       int saved_err = gpg_error_from_syserror ();
 
       if (new_lc_ctype)
-	free (new_lc_ctype);
+	_gpgme_free (new_lc_ctype);
       if (new_lc_messages)
-	free (new_lc_messages);
+	_gpgme_free (new_lc_messages);
 
       return TRACE_ERR (saved_err);
     }
@@ -775,13 +784,13 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
       if (ctx)						\
 	{						\
 	  if (ctx->lc_ ## lcat)				\
-	    free (ctx->lc_ ## lcat);			\
+	    _gpgme_free (ctx->lc_ ## lcat);			\
 	  ctx->lc_ ## lcat = new_lc_ ## lcat;		\
 	}						\
       else						\
 	{						\
 	  if (def_lc_ ## lcat)				\
-	    free (def_lc_ ## lcat);			\
+	    _gpgme_free (def_lc_ ## lcat);			\
 	  def_lc_ ## lcat = new_lc_ ## lcat;		\
 	}						\
     }

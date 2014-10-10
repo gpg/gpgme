@@ -31,6 +31,7 @@
 #include "context.h"
 #include "ops.h"
 #include "util.h"
+#include "mem.h"
 
 
 typedef struct
@@ -53,8 +54,8 @@ release_op_data (void *hook)
   while (import)
     {
       gpgme_import_status_t next = import->next;
-      free (import->fpr);
-      free (import);
+      _gpgme_free (import->fpr);
+      _gpgme_free (import);
       import = next;
     }
 }
@@ -120,7 +121,7 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
   char *tail;
   long int nr;
 
-  import = malloc (sizeof (*import));
+  import = _gpgme_malloc (sizeof (*import));
   if (!import)
     return gpg_error_from_syserror ();
   import->next = NULL;
@@ -130,7 +131,7 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
   if (errno || args == tail || *tail != ' ')
     {
       /* The crypto backend does not behave.  */
-      free (import);
+      _gpgme_free (import);
       return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
   args = tail;
@@ -171,10 +172,10 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
   if (tail)
     *tail = '\0';
 
-  import->fpr = strdup (args);
+  import->fpr = _gpgme_strdup (args);
   if (!import->fpr)
     {
-      free (import);
+      _gpgme_free (import);
       return gpg_error_from_syserror ();
     }
 

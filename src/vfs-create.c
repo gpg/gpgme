@@ -30,6 +30,7 @@
 #include "context.h"
 #include "ops.h"
 #include "util.h"
+#include "mem.h"
 
 static gpgme_error_t
 vfs_start (gpgme_ctx_t ctx, int synchronous,
@@ -132,39 +133,39 @@ _gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
     {
       if (!recp[i]->subkeys || !recp[i]->subkeys->fpr)
 	{
-	  free (container_file_esc);
+	  _gpgme_free (container_file_esc);
 	  return gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
 	}
 
-      if (asprintf (&cmd, "RECIPIENT %s", recp[i]->subkeys->fpr) < 0)
+      if (_gpgme_asprintf (&cmd, "RECIPIENT %s", recp[i]->subkeys->fpr) < 0)
 	{
 	  err = gpg_error_from_syserror ();
-	  free (container_file_esc);
+	  _gpgme_free (container_file_esc);
 	  return err;
 	}
 
       err = gpgme_op_vfs_transact (ctx, cmd, NULL, NULL, NULL, NULL,
 				   NULL, NULL, op_err);
-      free (cmd);
+      _gpgme_free (cmd);
       if (err || *op_err)
 	{
-	  free (container_file_esc);
+	  _gpgme_free (container_file_esc);
 	  return err;
 	}
       recp++;
     }
 
-  if (asprintf (&cmd, "CREATE -- %s", container_file_esc) < 0)
+  if (_gpgme_asprintf (&cmd, "CREATE -- %s", container_file_esc) < 0)
     {
       err = gpg_error_from_syserror ();
-      free (container_file_esc);
+      _gpgme_free (container_file_esc);
       return err;
     }
-  free (container_file_esc);
+  _gpgme_free (container_file_esc);
 
   err = gpgme_op_vfs_transact (ctx, cmd, NULL, NULL, NULL, NULL,
 			       NULL, NULL, op_err);
-  free (cmd);
+  _gpgme_free (cmd);
 
   return err;
 }

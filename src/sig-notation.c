@@ -31,6 +31,7 @@
 #include "context.h"
 #include "ops.h"
 #include "debug.h"
+#include "mem.h"
 
 
 /* Free the signature notation object and all associated resources.
@@ -40,12 +41,12 @@ void
 _gpgme_sig_notation_free (gpgme_sig_notation_t notation)
 {
   if (notation->name)
-    free (notation->name);
+    _gpgme_free (notation->name);
 
   if (notation->value)
-    free (notation->value);
+    _gpgme_free (notation->value);
 
-  free (notation);
+  _gpgme_free (notation);
 }
 
 
@@ -77,7 +78,7 @@ _gpgme_sig_notation_create (gpgme_sig_notation_t *notationp,
   if (name && !(flags & GPGME_SIG_NOTATION_HUMAN_READABLE))
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  notation = calloc (1, sizeof (*notation));
+  notation = _gpgme_calloc (1, sizeof (*notation));
   if (!notation)
     return gpg_error_from_syserror ();
 
@@ -88,7 +89,7 @@ _gpgme_sig_notation_create (gpgme_sig_notation_t *notationp,
     {
       /* We add a trailing '\0' for stringification in the good
 	 case.  */
-      notation->name = malloc (name_len + 1);
+      notation->name = _gpgme_malloc (name_len + 1);
       if (!notation->name)
 	{
 	  err = gpg_error_from_syserror ();
@@ -104,7 +105,7 @@ _gpgme_sig_notation_create (gpgme_sig_notation_t *notationp,
     {
       /* We add a trailing '\0' for stringification in the good
 	 case.  */
-      notation->value = malloc (value_len + 1);
+      notation->value = _gpgme_malloc (value_len + 1);
       if (!notation->value)
 	{
 	  err = gpg_error_from_syserror ();
@@ -234,7 +235,7 @@ _gpgme_parse_notation (gpgme_sig_notation_t *notationp,
       /* Small sanity check.  */
       if (4 + 2 + 2 + name_len + value_len > len)
 	{
-	  free (decoded_data);
+	  _gpgme_free (decoded_data);
 	  return trace_gpg_error (GPG_ERR_INV_ENGINE);
 	}
 
@@ -256,6 +257,6 @@ _gpgme_parse_notation (gpgme_sig_notation_t *notationp,
   err = _gpgme_sig_notation_create (notationp, name, name_len,
 				    value, value_len, flags);
 
-  free (decoded_data);
+  _gpgme_free (decoded_data);
   return err;
 }

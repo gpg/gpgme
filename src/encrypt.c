@@ -30,6 +30,7 @@
 #include "debug.h"
 #include "context.h"
 #include "ops.h"
+#include "mem.h"
 
 
 typedef struct
@@ -53,8 +54,8 @@ release_op_data (void *hook)
     {
       gpgme_invalid_key_t next = invalid_recipient->next;
       if (invalid_recipient->fpr)
-	free (invalid_recipient->fpr);
-      free (invalid_recipient);
+	_gpgme_free (invalid_recipient->fpr);
+      _gpgme_free (invalid_recipient);
       invalid_recipient = next;
     }
 }

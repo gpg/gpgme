@@ -35,6 +35,7 @@
 #include "priv-io.h"
 #include "ops.h"
 #include "debug.h"
+#include "mem.h"
 
 /* The global event loop is used for all asynchronous operations
    (except key listing) for which no user I/O callbacks are specified.
@@ -95,7 +96,7 @@ static struct ctx_list_item *ctx_done_list;
 static gpgme_error_t
 ctx_active (gpgme_ctx_t ctx)
 {
-  struct ctx_list_item *li = malloc (sizeof (struct ctx_list_item));
+  struct ctx_list_item *li = _gpgme_malloc (sizeof (struct ctx_list_item));
   if (!li)
     return gpg_error_from_syserror ();
   li->ctx = ctx;
@@ -177,7 +178,7 @@ ctx_wait (gpgme_ctx_t ctx, gpgme_error_t *status, gpgme_error_t *op_err)
 	li->prev->next = li->next;
       else
 	ctx_done_list = li->next;
-      free (li);
+      _gpgme_free (li);
     }
   else
     ctx = NULL;
@@ -266,7 +267,7 @@ gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
       LOCK (ctx_list_lock);
       for (li = ctx_active_list; li; li = li->next)
 	i += li->ctx->fdt.size;
-      fdt.fds = malloc (i * sizeof (struct io_select_fd_s));
+      fdt.fds = _gpgme_malloc (i * sizeof (struct io_select_fd_s));
       if (!fdt.fds)
 	{
           int saved_err = gpg_error_from_syserror ();
@@ -291,7 +292,7 @@ gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
       if (nr < 0)
 	{
           int saved_err = gpg_error_from_syserror ();
-	  free (fdt.fds);
+	  _gpgme_free (fdt.fds);
 	  if (status)
 	    *status = saved_err;
 	  if (op_err)
@@ -336,7 +337,7 @@ gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
 		}
 	    }
 	}
-      free (fdt.fds);
+      _gpgme_free (fdt.fds);
 
       /* Now some contexts might have finished successfully.  */
       LOCK (ctx_list_lock);

@@ -49,6 +49,7 @@
 #include "sema.h"
 #include "ath.h"
 #include "debug.h"
+#include "mem.h"
 
 
 void
@@ -224,7 +225,7 @@ _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
       notify_table_item_t newtbl;
       size_t newsize = notify_table_size + 64;
 
-      newtbl = calloc (newsize, sizeof *newtbl);
+      newtbl = _gpgme_calloc (newsize, sizeof *newtbl);
       if (!newtbl)
         {
           res = -1;
@@ -238,7 +239,7 @@ _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
           newtbl[idx].handler = NULL;
           newtbl[idx].value = NULL;
         }
-      free (notify_table);
+      _gpgme_free (notify_table);
       notify_table = newtbl;
       idx = notify_table_size;
       notify_table_size = newsize;

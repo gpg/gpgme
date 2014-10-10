@@ -34,6 +34,7 @@
 #include "priv-io.h"
 #include "debug.h"
 #include "context.h"
+#include "mem.h"
 
 /* For _gpgme_sema_subsystem_init and _gpgme_status_init.  */
 #include "sema.h"
@@ -359,7 +360,7 @@ _gpgme_get_program_version (const char *const file_name)
       s = extract_version_string (line, &len);
       if (!len)
         return NULL;
-      mark = malloc (len + 1);
+      mark = _gpgme_malloc (len + 1);
       if (!mark)
 	return NULL;
       memcpy (mark, s, len);

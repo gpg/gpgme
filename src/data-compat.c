@@ -34,6 +34,7 @@
 #include "data.h"
 #include "util.h"
 #include "debug.h"
+#include "mem.h"
 
 
 /* Create a new data buffer filled with LENGTH bytes starting from
@@ -77,7 +78,7 @@ gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
       return TRACE_ERR (saved_err);
     }
 
-  buf = malloc (length);
+  buf = _gpgme_malloc (length);
   if (!buf)
     {
       int saved_err = gpg_error_from_syserror ();
@@ -92,7 +93,7 @@ gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
     {
       int saved_err = gpg_error_from_syserror ();
       if (buf)
-	free (buf);
+	_gpgme_free (buf);
       if (fname)
 	fclose (stream);
       return TRACE_ERR (saved_err);
@@ -105,7 +106,7 @@ gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
   if (err)
     {
       if (buf)
-	free (buf);
+	_gpgme_free (buf);
       return err;
     }
 

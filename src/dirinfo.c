@@ -30,6 +30,7 @@
 #include "debug.h"
 #include "sema.h"
 #include "sys-util.h"
+#include "mem.h"
 
 DEFINE_STATIC_LOCK (dirinfo_lock);
 
@@ -101,11 +102,11 @@ parse_output (char *line, int components)
   if (components)
     {
       if (!strcmp (line, "gpg") && !dirinfo.gpg_name)
-        dirinfo.gpg_name = strdup (value);
+        dirinfo.gpg_name = _gpgme_strdup (value);
       else if (!strcmp (line, "gpgsm") && !dirinfo.gpgsm_name)
-        dirinfo.gpgsm_name = strdup (value);
+        dirinfo.gpgsm_name = _gpgme_strdup (value);
       else if (!strcmp (line, "g13") && !dirinfo.g13_name)
-        dirinfo.g13_name = strdup (value);
+        dirinfo.g13_name = _gpgme_strdup (value);
     }
   else
     {
@@ -113,10 +114,10 @@ parse_output (char *line, int components)
         {
           const char name[] = "S.uiserver";
 
-          dirinfo.homedir = strdup (value);
+          dirinfo.homedir = _gpgme_strdup (value);
           if (dirinfo.homedir)
             {
-              dirinfo.uisrv_socket = malloc (strlen (dirinfo
+              dirinfo.uisrv_socket = _gpgme_malloc (strlen (dirinfo
                                                      .homedir)
                                              + 1 + strlen (name) + 1);
               if (dirinfo.uisrv_socket)
@@ -125,7 +126,7 @@ parse_output (char *line, int components)
             }
         }
       else if (!strcmp (line, "agent-socket") && !dirinfo.agent_socket)
-        dirinfo.agent_socket = strdup (value);
+        dirinfo.agent_socket = _gpgme_strdup (value);
     }
 }
 
@@ -216,7 +217,7 @@ get_gpgconf_item (int what)
         {
           _gpgme_debug (DEBUG_INIT,
                         "gpgme-dinfo: gpgconf='%s' [not installed]\n", pgmname);
-          free (pgmname);
+          _gpgme_free (pgmname);
           pgmname = NULL; /* Not available.  */
         }
       else

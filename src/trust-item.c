@@ -31,6 +31,7 @@
 #include "ops.h"
 #include "sema.h"
 #include "debug.h"
+#include "mem.h"
 
 
 /* Protects all reference counters in trust items.  All other accesses
@@ -45,7 +46,7 @@ _gpgme_trust_item_new (gpgme_trust_item_t *r_item)
 {
   gpgme_trust_item_t item;
 
-  item = calloc (1, sizeof *item);
+  item = _gpgme_calloc (1, sizeof *item);
   if (!item)
     return gpg_error_from_syserror ();
   item->_refs = 1;
@@ -88,8 +89,8 @@ gpgme_trust_item_unref (gpgme_trust_item_t item)
   UNLOCK (trust_item_ref_lock);
 
   if (item->name)
-    free (item->name);
-  free (item);
+    _gpgme_free (item->name);
+  _gpgme_free (item);
 }
 
 

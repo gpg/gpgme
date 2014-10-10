@@ -30,6 +30,7 @@
 #include "util.h"
 #include "sys-util.h"
 #include "debug.h"
+#include "mem.h"
 
 /* These variables store the malloced name of alternative default
    binaries.  The are set only once by gpgme_set_global_flag.  */
@@ -49,7 +50,7 @@ _gpgme_set_default_gpg_name (const char *name)
     name = s + 1;
 
   if (!default_gpg_name)
-    default_gpg_name = strdup (name);
+    default_gpg_name = _gpgme_strdup (name);
   return !default_gpg_name;
 }
 
@@ -66,7 +67,7 @@ _gpgme_set_default_gpgconf_name (const char *name)
     name = s + 1;
 
   if (!default_gpgconf_name)
-    default_gpgconf_name = strdup (name);
+    default_gpgconf_name = _gpgme_strdup (name);
   return !default_gpgconf_name;
 }
 
@@ -86,7 +87,7 @@ walk_path (const char *pgm)
     orig_path = "/bin:/usr/bin";
 #endif
 
-  fname = malloc (strlen (orig_path) + 1 + strlen (pgm) + 1);
+  fname = _gpgme_malloc (strlen (orig_path) + 1 + strlen (pgm) + 1);
   if (!fname)
     return NULL;
 
@@ -108,7 +109,7 @@ walk_path (const char *pgm)
   _gpgme_debug (DEBUG_ENGINE, "gpgme-walk_path: '%s' not found in '%s'",
                 pgm, orig_path);
 
-  free (fname);
+  _gpgme_free (fname);
   return NULL;
 }
 

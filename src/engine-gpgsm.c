@@ -51,6 +51,7 @@
 #include "debug.h"
 
 #include "engine-backend.h"
+#include "mem.h"
 
 
 typedef struct
@@ -157,7 +158,7 @@ close_notify_handler (int fd, void *opaque)
         }
       if (gpgsm->input_helper_memory)
         {
-          free (gpgsm->input_helper_memory);
+          _gpgme_free (gpgsm->input_helper_memory);
           gpgsm->input_helper_memory = NULL;
         }
     }
@@ -229,8 +230,8 @@ gpgsm_release (void *engine)
 
   gpgsm_cancel (engine);
 
-  free (gpgsm->colon.attic.line);
-  free (gpgsm);
+  _gpgme_free (gpgsm->colon.attic.line);
+  _gpgme_free (gpgsm);
 }
 
 
@@ -251,7 +252,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   char *dft_ttytype = NULL;
   char *optstr;
 
-  gpgsm = calloc (1, sizeof *gpgsm);
+  gpgsm = _gpgme_calloc (1, sizeof *gpgsm);
   if (!gpgsm)
     return gpg_error_from_syserror ();
 
@@ -388,17 +389,17 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
     goto leave;
   if (dft_display)
     {
-      if (asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
+      if (_gpgme_asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
         {
-	  free (dft_display);
+	  _gpgme_free (dft_display);
 	  err = gpg_error_from_syserror ();
 	  goto leave;
 	}
-      free (dft_display);
+      _gpgme_free (dft_display);
 
       err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
 			     NULL, NULL, NULL);
-      free (optstr);
+      _gpgme_free (optstr);
       if (err)
 	goto leave;
     }
@@ -415,14 +416,14 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 	}
       else
 	{
-	  if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
+	  if (_gpgme_asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
 	    {
 	      err = gpg_error_from_syserror ();
 	      goto leave;
 	    }
 	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
 				 NULL, NULL, NULL);
-	  free (optstr);
+	  _gpgme_free (optstr);
 	  if (err)
 	    goto leave;
 
@@ -431,17 +432,17 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
 	    goto leave;
 	  if (dft_ttytype)
 	    {
-	      if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
+	      if (_gpgme_asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
 		{
-		  free (dft_ttytype);
+		  _gpgme_free (dft_ttytype);
 		  err = gpg_error_from_syserror ();
 		  goto leave;
 		}
-	      free (dft_ttytype);
+	      _gpgme_free (dft_ttytype);
 
 	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
 				     NULL, NULL, NULL, NULL);
-	      free (optstr);
+	      _gpgme_free (optstr);
 	      if (err)
 		goto leave;
 	    }
@@ -546,13 +547,13 @@ gpgsm_set_locale (void *engine, int category, const char *value)
   if (!value)
     return 0;
 
-  if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
+  if (_gpgme_asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
     err = gpg_error_from_syserror ();
   else
     {
       err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
 			     NULL, NULL, NULL, NULL);
-      free (optstr);
+      _gpgme_free (optstr);
     }
 
   return err;
@@ -830,7 +831,7 @@ status_handler (void *opaque, int fd)
 
 	  if (gpgsm->colon.attic.linesize < *alinelen + linelen + 1)
 	    {
-	      char *newline = realloc (*aline, *alinelen + linelen + 1);
+	      char *newline = _gpgme_realloc (*aline, *alinelen + linelen + 1);
 	      if (!newline)
 		err = gpg_error_from_syserror ();
 	      else
@@ -1118,7 +1119,7 @@ gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
     }
   length++;
 
-  line = malloc (length);
+  line = _gpgme_malloc (length);
   if (!line)
     return gpg_error_from_syserror ();
 
@@ -1158,7 +1159,7 @@ gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
   gpgsm->inline_data = NULL;
 
   err = start (gpgsm, line);
-  free (line);
+  _gpgme_free (line);
 
   return err;
 }
@@ -1175,7 +1176,7 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
   int i;
 
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
-  line = malloc (10 + 40 + 1);
+  line = _gpgme_malloc (10 + 40 + 1);
   if (!line)
     return gpg_error_from_syserror ();
   strcpy (line, "RECIPIENT ");
@@ -1194,11 +1195,11 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
       newlen = 11 + strlen (fpr);
       if (linelen < newlen)
 	{
-	  char *newline = realloc (line, newlen);
+	  char *newline = _gpgme_realloc (line, newlen);
 	  if (! newline)
 	    {
 	      int saved_err = gpg_error_from_syserror ();
-	      free (line);
+	      _gpgme_free (line);
 	      return saved_err;
 	    }
 	  line = newline;
@@ -1213,11 +1214,11 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
 	invalid_recipients++;
       else if (err)
 	{
-	  free (line);
+	  _gpgme_free (line);
 	  return err;
 	}
     }
-  free (line);
+  _gpgme_free (line);
   return gpg_error (invalid_recipients
 		    ? GPG_ERR_UNUSABLE_PUBKEY : GPG_ERR_NO_ERROR);
 }
@@ -1281,7 +1282,7 @@ gpgsm_export (void *engine, const char *pattern, gpgme_export_mode_t mode,
   if (!pattern)
     pattern = "";
 
-  cmd = malloc (7 + strlen (pattern) + 1);
+  cmd = _gpgme_malloc (7 + strlen (pattern) + 1);
   if (!cmd)
     return gpg_error_from_syserror ();
   strcpy (cmd, "EXPORT ");
@@ -1297,7 +1298,7 @@ gpgsm_export (void *engine, const char *pattern, gpgme_export_mode_t mode,
   gpgsm->inline_data = NULL;
 
   err = start (gpgsm, cmd);
-  free (cmd);
+  _gpgme_free (cmd);
   return err;
 }
 
@@ -1338,7 +1339,7 @@ gpgsm_export_ext (void *engine, const char *pattern[], gpgme_export_mode_t mode,
 	  length++;
 	}
     }
-  line = malloc (length);
+  line = _gpgme_malloc (length);
   if (!line)
     return gpg_error_from_syserror ();
 
@@ -1393,7 +1394,7 @@ gpgsm_export_ext (void *engine, const char *pattern[], gpgme_export_mode_t mode,
   gpgsm->inline_data = NULL;
 
   err = start (gpgsm, line);
-  free (line);
+  _gpgme_free (line);
   return err;
 }
 
@@ -1468,7 +1469,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
         }
       /* Allocate a bufer with extra space for the trailing Nul
          introduced by the use of stpcpy.  */
-      buffer = malloc (buflen+1);
+      buffer = _gpgme_malloc (buflen+1);
       if (!buffer)
         return gpg_error_from_syserror ();
       for (idx=0, p = buffer; keyarray[idx]; idx++)
@@ -1484,7 +1485,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
                                      buffer, buflen, 0);
       if (err)
         {
-          free (buffer);
+          _gpgme_free (buffer);
           return err;
         }
       gpgsm->input_helper_memory = buffer;
@@ -1495,7 +1496,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
         {
           gpgme_data_release (gpgsm->input_helper_data);
           gpgsm->input_helper_data = NULL;
-          free (gpgsm->input_helper_memory);
+          _gpgme_free (gpgsm->input_helper_memory);
           gpgsm->input_helper_memory = NULL;
           return err;
         }
@@ -1556,10 +1557,10 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
                                  NULL, NULL);
 
   /* Always send list-mode option because RESET does not reset it.  */
-  if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
+  if (_gpgme_asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
     return gpg_error_from_syserror ();
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
-  free (line);
+  _gpgme_free (line);
   if (err)
     return err;
 
@@ -1588,7 +1589,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
 
 
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
-  line = malloc (15 + strlen (pattern) + 1);
+  line = _gpgme_malloc (15 + strlen (pattern) + 1);
   if (!line)
     return gpg_error_from_syserror ();
   if (secret_only)
@@ -1608,7 +1609,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
   gpgsm->inline_data = NULL;
 
   err = start (gpgsm, line);
-  free (line);
+  _gpgme_free (line);
   return err;
 }
 
@@ -1635,10 +1636,10 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
     list_mode |= 2;
 
   /* Always send list-mode option because RESET does not reset it.  */
-  if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
+  if (_gpgme_asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
     return gpg_error_from_syserror ();
   err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, line, NULL, NULL);
-  free (line);
+  _gpgme_free (line);
   if (err)
     return err;
 
@@ -1676,7 +1677,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
 	  length++;
 	}
     }
-  line = malloc (length);
+  line = _gpgme_malloc (length);
   if (!line)
     return gpg_error_from_syserror ();
   if (secret_only)
@@ -1736,7 +1737,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
   gpgsm->inline_data = NULL;
 
   err = start (gpgsm, line);
-  free (line);
+  _gpgme_free (line);
   return err;
 }
 
@@ -1763,11 +1764,11 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 	 can reset any previously set value in case the default is
 	 requested.  */
 
-      if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
+      if (_gpgme_asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
 	return gpg_error_from_syserror ();
       err = gpgsm_assuan_simple_command (gpgsm->assuan_ctx, assuan_cmd,
                                          NULL, NULL);
-      free (assuan_cmd);
+      _gpgme_free (assuan_cmd);
       if (err)
 	return err;
     }
@@ -1937,7 +1938,7 @@ gpgsm_passwd (void *engine, gpgme_key_t key, unsigned int flags)
   if (!key || !key->subkeys || !key->subkeys->fpr)
     return gpg_error (GPG_ERR_INV_CERT_OBJ);
 
-  if (asprintf (&line, "PASSWD -- %s", key->subkeys->fpr) < 0)
+  if (_gpgme_asprintf (&line, "PASSWD -- %s", key->subkeys->fpr) < 0)
     return gpg_error_from_syserror ();
 
   gpgsm_clear_fd (gpgsm, OUTPUT_FD);
@@ -1946,7 +1947,7 @@ gpgsm_passwd (void *engine, gpgme_key_t key, unsigned int flags)
   gpgsm->inline_data = NULL;
 
   err = start (gpgsm, line);
-  free (line);
+  _gpgme_free (line);
 
   return err;
 }

@@ -26,6 +26,8 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include "mem.h"
+
 
 #ifndef va_copy /* According to POSIX, va_copy is a macro. */
 #if defined (__GNUC__) && defined (__PPC__) \
@@ -54,7 +56,7 @@ int_vasprintf (result, format, args)
 #ifdef HAVE_W32CE_SYSTEM
   /* No va_copy and the replacement above doesn't work.  */
 #define MAX_STRLEN 256
-  *result = malloc (MAX_STRLEN);
+  *result = _gpgme_malloc (MAX_STRLEN);
   if (*result != NULL)
     {
       int res = _vsnprintf (*result, MAX_STRLEN, format, *args);
@@ -141,7 +143,7 @@ int_vasprintf (result, format, args)
 #ifdef TEST
   global_total_width = total_width;
 #endif
-  *result = malloc (total_width);
+  *result = _gpgme_malloc (total_width);
   if (*result != NULL)
     return vsprintf (*result, format, *args);
   else
@@ -150,7 +152,7 @@ int_vasprintf (result, format, args)
 }
 
 int
-vasprintf (result, format, args)
+_gpgme_vasprintf (result, format, args)
      char **result;
      const char *format;
 #if defined (_BSD_VA_LIST_) && defined (__FreeBSD__)
@@ -164,13 +166,13 @@ vasprintf (result, format, args)
 
 
 int
-asprintf (char **buf, const char *fmt, ...)
+_gpgme_asprintf (char **buf, const char *fmt, ...)
 {
   int status;
   va_list ap;
 
   va_start (ap, fmt);
-  status = vasprintf (buf, fmt, ap);
+  status = _gpgme_vasprintf (buf, fmt, ap);
   va_end (ap);
   return status;
 }
@@ -184,7 +186,7 @@ checkit (const char* format, ...)
   char *result;
 
   va_start (args, format);
-  vasprintf (&result, format, args);
+  _gpgme_vasprintf (&result, format, args);
   if (strlen (result) < global_total_width)
     printf ("PASS: ");
   else

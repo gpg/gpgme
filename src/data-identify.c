@@ -28,6 +28,7 @@
 #include "data.h"
 #include "util.h"
 #include "parsetlv.h"
+#include "mem.h"
 
 /* The size of the sample data we take for detection.  */
 #define SAMPLE_SIZE 2048
@@ -228,19 +229,19 @@ gpgme_data_identify (gpgme_data_t dh, int reserved)
     return GPGME_DATA_TYPE_INVALID;
 
   /* Allocate a buffer and read the data. */
-  sample = malloc (SAMPLE_SIZE);
+  sample = _gpgme_malloc (SAMPLE_SIZE);
   if (!sample)
     return GPGME_DATA_TYPE_INVALID; /* Ooops.  */
   n = gpgme_data_read (dh, sample, SAMPLE_SIZE - 1);
   if (n < 0)
     {
-      free (sample);
+      _gpgme_free (sample);
       return GPGME_DATA_TYPE_INVALID; /* Ooops.  */
     }
   sample[n] = 0;  /* (Required for our string functions.)  */
 
   result = basic_detection (sample, n);
-  free (sample);
+  _gpgme_free (sample);
   gpgme_data_seek (dh, off, SEEK_SET);
 
   return result;

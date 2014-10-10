@@ -77,7 +77,7 @@ build_commandline (char **argv)
   /* And a trailing zero.  */
   n++;
 
-  buf = p = malloc (n);
+  buf = p = _gpgme_malloc (n);
   if (!buf)
     return NULL;
   for (i = 0; argv[i]; i++)
@@ -188,7 +188,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
 			 NULL);
       if (hnul == INVALID_HANDLE_VALUE)
 	{
-	  free (arg_string);
+	  _gpgme_free (arg_string);
 	  /* FIXME: Should translate the error code.  */
 	  errno = EIO;
 	  return -1;
@@ -217,13 +217,13 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
 		       &si,           /* startup information */
 		       &pi))          /* returns process information */
     {
-      free (arg_string);
+      _gpgme_free (arg_string);
       /* FIXME: Should translate the error code.  */
       errno = EIO;
       return -1;
     }
 
-  free (arg_string);
+  _gpgme_free (arg_string);
 
   /* Close the /dev/nul handle if used.  */
   if (hnul != INVALID_HANDLE_VALUE)
@@ -399,10 +399,10 @@ translate_handles (const char *trans_file, const char * const *argv,
 
   for (idx = 0; argv[idx]; idx++)
     ;
-  args = malloc (sizeof (*args) * (idx + 1));
+  args = _gpgme_malloc (sizeof (*args) * (idx + 1));
   for (idx = 0; argv[idx]; idx++)
     {
-      args[idx] = strdup (argv[idx]);
+      args[idx] = _gpgme_strdup (argv[idx]);
       if (!args[idx])
 	return NULL;
     }
@@ -424,7 +424,7 @@ translate_handles (const char *trans_file, const char * const *argv,
           return NULL;
         }
 
-      args[aidx] = malloc (sizeof (buf));
+      args[aidx] = _gpgme_malloc (sizeof (buf));
       /* We currently disable translation for stdin/stdout/stderr.  We
 	 assume that the spawned program handles 0/1/2 specially
 	 already.  FIXME: Check if this is true.  */

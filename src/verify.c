@@ -32,6 +32,7 @@
 #include "util.h"
 #include "context.h"
 #include "ops.h"
+#include "mem.h"
 
 
 typedef struct
@@ -65,15 +66,15 @@ release_op_data (void *hook)
 	}
 
       if (sig->fpr)
-	free (sig->fpr);
+	_gpgme_free (sig->fpr);
       if (sig->pka_address)
-	free (sig->pka_address);
-      free (sig);
+	_gpgme_free (sig->pka_address);
+      _gpgme_free (sig);
       sig = next;
     }
 
   if (opd->result.file_name)
-    free (opd->result.file_name);
+    _gpgme_free (opd->result.file_name);
 }
 
 
@@ -249,7 +250,7 @@ prepare_new_sig (op_data_t opd)
     }
   else
     {
-      sig = calloc (1, sizeof (*sig));
+      sig = _gpgme_calloc (1, sizeof (*sig));
       if (!sig)
         return gpg_error_from_syserror ();
       if (!opd->result.signatures)
@@ -385,7 +386,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args,
 
   if (*args)
     {
-      sig->fpr = strdup (args);
+      sig->fpr = _gpgme_strdup (args);
       if (!sig->fpr)
 	return gpg_error_from_syserror ();
     }
@@ -408,8 +409,8 @@ parse_valid_sig (gpgme_signature_t sig, char *args, gpgme_protocol_t protocol)
     return gpg_error (GPG_ERR_GENERAL);
 
   if (sig->fpr)
-    free (sig->fpr);
-  sig->fpr = strdup (args);
+    _gpgme_free (sig->fpr);
+  sig->fpr = _gpgme_strdup (args);
   if (!sig->fpr)
     return gpg_error_from_syserror ();
 
@@ -550,14 +551,14 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 
       if (!notation->value)
 	{
-	  dest = notation->value = malloc (len);
+	  dest = notation->value = _gpgme_malloc (len);
 	  if (!dest)
 	    return gpg_error_from_syserror ();
 	}
       else
 	{
 	  int cur_len = strlen (notation->value);
-	  dest = realloc (notation->value, len + strlen (notation->value));
+	  dest = _gpgme_realloc (notation->value, len + strlen (notation->value));
 	  if (!dest)
 	    return gpg_error_from_syserror ();
 	  notation->value = dest;
@@ -753,7 +754,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
       end = strchr (args, ' ');
       if (end)
         *end = 0;
-      sig->pka_address = strdup (args);
+      sig->pka_address = _gpgme_strdup (args);
       break;
 
     case GPGME_STATUS_ERROR:
@@ -784,7 +785,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
             }
           /* Note that there is no need to release the members of SIG
              because we won't be here if they have been set. */
-          free (sig);
+          _gpgme_free (sig);
           opd->current_sig = NULL;
         }
       opd->only_newsig_seen = 0;

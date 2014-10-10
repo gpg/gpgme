@@ -31,6 +31,7 @@
 #include "context.h"
 #include "ops.h"
 #include "util.h"
+#include "mem.h"
 
 
 typedef struct
@@ -48,7 +49,7 @@ release_op_data (void *hook)
   op_data_t opd = (op_data_t) hook;
 
   if (opd->result.fpr)
-    free (opd->result.fpr);
+    _gpgme_free (opd->result.fpr);
   if (opd->key_parameter)
     gpgme_data_release (opd->key_parameter);
 }
@@ -110,8 +111,8 @@ genkey_status_handler (void *priv, gpgme_status_code_t code, char *args)
 	  if (args[1] == ' ')
 	    {
 	      if (opd->result.fpr)
-		free (opd->result.fpr);
-	      opd->result.fpr = strdup (&args[2]);
+		_gpgme_free (opd->result.fpr);
+	      opd->result.fpr = _gpgme_strdup (&args[2]);
 	      if (!opd->result.fpr)
 		return gpg_error_from_syserror ();
 	    }

@@ -29,6 +29,7 @@
 #include "util.h"
 #include "context.h"
 #include "debug.h"
+#include "mem.h"
 
 
 gpgme_error_t
@@ -45,7 +46,7 @@ _gpgme_progress_status_handler (void *priv, gpgme_status_code_t code,
   if (code != GPGME_STATUS_PROGRESS || !*args || !ctx->progress_cb)
     return 0;
 
-  args_cpy = strdup (args);
+  args_cpy = _gpgme_strdup (args);
   if (!args_cpy)
     return gpg_error_from_syserror ();
 
@@ -77,6 +78,6 @@ _gpgme_progress_status_handler (void *priv, gpgme_status_code_t code,
   if (type != 'X')
     ctx->progress_cb (ctx->progress_cb_value, args_cpy, type, current, total);
 
-  free (args_cpy);
+  _gpgme_free (args_cpy);
   return 0;
 }

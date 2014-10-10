@@ -58,14 +58,14 @@ wchar_to_utf8 (const wchar_t *string)
       return NULL;
     }
 
-  result = malloc (n+1);
+  result = _gpgme_malloc (n+1);
   if (!result)
     return NULL;
 
   n = WideCharToMultiByte (CP_UTF8, 0, string, -1, result, n, NULL, NULL);
   if (n < 0)
     {
-      free (result);
+      _gpgme_free (result);
       gpg_err_set_errno (EINVAL);
       result = NULL;
     }
@@ -97,14 +97,14 @@ utf8_to_wchar (const char *string)
       gpg_err_set_errno (ENOMEM);
       return NULL;
     }
-  result = malloc (nbytes);
+  result = _gpgme_malloc (nbytes);
   if (!result)
     return NULL;
 
   n = MultiByteToWideChar (CP_UTF8, 0, string, -1, result, n);
   if (n < 0)
     {
-      free (result);
+      _gpgme_free (result);
       gpg_err_set_errno (EINVAL);
       result = NULL;
     }
@@ -124,7 +124,7 @@ getenv (const char *name)
 
   if (past_result)
     {
-      free (past_result);
+      _gpgme_free (past_result);
       past_result = NULL;
     }
 
@@ -179,7 +179,7 @@ DeleteFileA (LPCSTR lpFileName)
   result = DeleteFileW (filename);
 
   err = GetLastError ();
-  free (filename);
+  _gpgme_free (filename);
   SetLastError (err);
   return result;
 }
@@ -204,7 +204,7 @@ CreateFileA (LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSharedMode,
 			dwFlagsAndAttributes, hTemplateFile);
 
   err = GetLastError ();
-  free (filename);
+  _gpgme_free (filename);
   SetLastError (err);
   return result;
 }
@@ -242,7 +242,7 @@ CreateProcessA (LPCSTR pszImageName, LPSTR pszCmdLine,
       if (!cmd_line)
         {
           if (image_name)
-            free (image_name);
+            _gpgme_free (image_name);
           return 0;
         }
     }
@@ -251,8 +251,8 @@ CreateProcessA (LPCSTR pszImageName, LPSTR pszCmdLine,
                            fdwCreate, NULL, NULL, NULL, pProcInfo);
 
   err = GetLastError ();
-  free (image_name);
-  free (cmd_line);
+  _gpgme_free (image_name);
+  _gpgme_free (cmd_line);
   SetLastError (err);
   return result;
 }
@@ -278,7 +278,7 @@ RegOpenKeyExA (HKEY hKey, LPCSTR lpSubKey, DWORD ulOptions,
   result = RegOpenKeyEx (hKey, subkey, ulOptions, samDesired, phkResult);
 
   err = GetLastError ();
-  free (subkey);
+  _gpgme_free (subkey);
   SetLastError (err);
   return result;
 }
@@ -307,21 +307,21 @@ RegQueryValueExA (HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
   err = RegQueryValueExW (hKey, name, lpReserved, lpType, NULL, &data_len);
   if (err || !lpcbData)
     {
-      free (name);
+      _gpgme_free (name);
       return err;
     }
 
-  data = malloc (data_len + sizeof (wchar_t));
+  data = _gpgme_malloc (data_len + sizeof (wchar_t));
   if (!data)
     {
-      free (name);
+      _gpgme_free (name);
       return ERROR_NOT_ENOUGH_MEMORY;
     }
 
   err = RegQueryValueExW (hKey, name, lpReserved, &type, data, &data_len);
   if (lpType)
     *lpType = type;
-  free (name);
+  _gpgme_free (name);
   /* If err is ERROR_MORE_DATA, there probably was a race condition.
      We can punt this to the caller just as well.  */
   if (err)
@@ -346,7 +346,7 @@ RegQueryValueExA (HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
       assert (data_c_len <= data_len + sizeof (wchar_t));
       memcpy (data, data_c, data_c_len);
       data_len = data_c_len;
-      free (data_c);
+      _gpgme_free (data_c);
     }
 
   /* DATA and DATA_LEN now contain the result.  */
@@ -384,7 +384,7 @@ GetTempPathA (DWORD nBufferLength, LPSTR lpBuffer)
     char *buffer_c;
     DWORD len_c;
 
-    buffer_w = malloc (sizeof (wchar_t) * len);
+    buffer_w = _gpgme_malloc (sizeof (wchar_t) * len);
     if (! buffer_w)
       return 0;
 
@@ -392,7 +392,7 @@ GetTempPathA (DWORD nBufferLength, LPSTR lpBuffer)
     /* Give up if we still can't get at it.  */
     if (len_w == 0 || len_w >= len)
       {
-        free (buffer_w);
+        _gpgme_free (buffer_w);
         return 0;
       }
 
@@ -400,7 +400,7 @@ GetTempPathA (DWORD nBufferLength, LPSTR lpBuffer)
     buffer_w[len_w] = '\0';
 
     buffer_c = wchar_to_utf8 (buffer_w);
-    free (buffer_w);
+    _gpgme_free (buffer_w);
     if (! buffer_c)
       return 0;
 
@@ -411,7 +411,7 @@ GetTempPathA (DWORD nBufferLength, LPSTR lpBuffer)
       return len_c;
 
     strcpy (lpBuffer, buffer_c);
-    free (buffer_c);
+    _gpgme_free (buffer_c);
     return len_c - 1;
   }
 }
@@ -441,7 +441,7 @@ SHGetSpecialFolderPathA (HWND hwndOwner, LPSTR lpszPath, int nFolder,
     return 0;
 
   strncpy (lpszPath, path_c, MAX_PATH);
-  free (path_c);
+  _gpgme_free (path_c);
   lpszPath[MAX_PATH - 1] = '\0';
   return result;
 }
@@ -465,7 +465,7 @@ _gpgme_wince_access (const char *fname, int mode)
     return -1;
 
   attr = GetFileAttributes (wfname);
-  free (wfname);
+  _gpgme_free (wfname);
   if (attr == (DWORD)(-1))
     {
       gpg_err_set_errno (ENOENT);

@@ -396,7 +396,7 @@ reader (void *arg)
   CloseHandle (ctx->have_space_ev);
   CloseHandle (ctx->thread_hd);
   DESTROY_LOCK (ctx->mutex);
-  free (ctx);
+  _gpgme_free (ctx);
 
   return TRACE_SUC ();
 }
@@ -415,7 +415,7 @@ create_reader (int fd)
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
 
-  ctx = calloc (1, sizeof *ctx);
+  ctx = _gpgme_calloc (1, sizeof *ctx);
   if (!ctx)
     {
       TRACE_SYSERR (errno);
@@ -425,7 +425,7 @@ create_reader (int fd)
   if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
     {
       TRACE_SYSERR (EIO);
-      free (ctx);
+      _gpgme_free (ctx);
       return NULL;
     }
   TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d",
@@ -449,7 +449,7 @@ create_reader (int fd)
 	CloseHandle (ctx->have_space_ev);
       if (ctx->close_ev)
 	CloseHandle (ctx->close_ev);
-      free (ctx);
+      _gpgme_free (ctx);
       /* FIXME: Translate the error code.  */
       TRACE_SYSERR (EIO);
       return NULL;
@@ -475,7 +475,7 @@ create_reader (int fd)
 	CloseHandle (ctx->have_space_ev);
       if (ctx->close_ev)
 	CloseHandle (ctx->close_ev);
-      free (ctx);
+      _gpgme_free (ctx);
       TRACE_SYSERR (EIO);
       return NULL;
     }
@@ -766,7 +766,7 @@ writer (void *arg)
   CloseHandle (ctx->is_empty);
   CloseHandle (ctx->thread_hd);
   DESTROY_LOCK (ctx->mutex);
-  free (ctx);
+  _gpgme_free (ctx);
 
   return TRACE_SUC ();
 }
@@ -785,7 +785,7 @@ create_writer (int fd)
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
 
-  ctx = calloc (1, sizeof *ctx);
+  ctx = _gpgme_calloc (1, sizeof *ctx);
   if (!ctx)
     {
       TRACE_SYSERR (errno);
@@ -795,7 +795,7 @@ create_writer (int fd)
   if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
     {
       TRACE_SYSERR (EIO);
-      free (ctx);
+      _gpgme_free (ctx);
       return NULL;
     }
   TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d",
@@ -819,7 +819,7 @@ create_writer (int fd)
 	CloseHandle (ctx->is_empty);
       if (ctx->close_ev)
 	CloseHandle (ctx->close_ev);
-      free (ctx);
+      _gpgme_free (ctx);
       /* FIXME: Translate the error code.  */
       TRACE_SYSERR (EIO);
       return NULL;
@@ -845,7 +845,7 @@ create_writer (int fd)
 	CloseHandle (ctx->is_empty);
       if (ctx->close_ev)
 	CloseHandle (ctx->close_ev);
-      free (ctx);
+      _gpgme_free (ctx);
       TRACE_SYSERR (EIO);
       return NULL;
     }
@@ -1323,7 +1323,7 @@ build_commandline (char **argv, int fd0, int fd0_isnull,
           n++;  /* Need to double inner quotes.  */
     }
   n++;
-  buf = p = malloc (n);
+  buf = p = _gpgme_malloc (n);
   if (! buf)
     return NULL;
 
@@ -1388,7 +1388,7 @@ build_commandline (char **argv)
   /* And a trailing zero.  */
   n++;
 
-  buf = p = malloc (n);
+  buf = p = _gpgme_malloc (n);
   if (!buf)
     return NULL;
   for (i = 0; argv[i]; i++)
@@ -1502,7 +1502,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		       ))
     {
       TRACE_LOG1 ("CreateProcess failed: ec=%d", (int) GetLastError ());
-      free (cmdline);
+      _gpgme_free (cmdline);
       gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }
@@ -1572,7 +1572,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
     }
   TRACE_LOG1 ("tmp_name = %s", tmp_name);
 
-  args = calloc (2 + i + 1, sizeof (*args));
+  args = _gpgme_calloc (2 + i + 1, sizeof (*args));
   args[0] = (char *) _gpgme_get_w32spawn_path ();
   args[1] = tmp_name;
   args[2] = (char *)path;
@@ -1583,7 +1583,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   sec_attr.bInheritHandle = FALSE;
 
   arg_string = build_commandline (args);
-  free (args);
+  _gpgme_free (args);
   if (!arg_string)
     {
       close (tmp_fd);
@@ -1615,7 +1615,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		       &pi))          /* returns process information */
     {
       TRACE_LOG1 ("CreateProcess failed: ec=%d", (int) GetLastError ());
-      free (arg_string);
+      _gpgme_free (arg_string);
       close (tmp_fd);
       DeleteFileA (tmp_name);
 
@@ -1624,7 +1624,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       return TRACE_SYSRES (-1);
     }
 
-  free (arg_string);
+  _gpgme_free (arg_string);
 
   if (flags & IOSPAWN_FLAG_ALLOW_SET_FG)
     _gpgme_allow_set_foreground_window ((pid_t)pi.dwProcessId);

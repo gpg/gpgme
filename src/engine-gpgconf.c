@@ -46,6 +46,7 @@
 #include "debug.h"
 
 #include "engine-backend.h"
+#include "mem.h"
 
 
 struct engine_gpgconf
@@ -81,11 +82,11 @@ gpgconf_release (void *engine)
     return;
 
   if (gpgconf->file_name)
-    free (gpgconf->file_name);
+    _gpgme_free (gpgconf->file_name);
   if (gpgconf->home_dir)
-    free (gpgconf->home_dir);
+    _gpgme_free (gpgconf->home_dir);
 
-  free (gpgconf);
+  _gpgme_free (gpgconf);
 }
 
 
@@ -95,18 +96,18 @@ gpgconf_new (void **engine, const char *file_name, const char *home_dir)
   gpgme_error_t err = 0;
   engine_gpgconf_t gpgconf;
 
-  gpgconf = calloc (1, sizeof *gpgconf);
+  gpgconf = _gpgme_calloc (1, sizeof *gpgconf);
   if (!gpgconf)
     return gpg_error_from_syserror ();
 
-  gpgconf->file_name = strdup (file_name ? file_name
+  gpgconf->file_name = _gpgme_strdup (file_name ? file_name
 			       : _gpgme_get_default_gpgconf_name ());
   if (!gpgconf->file_name)
     err = gpg_error_from_syserror ();
 
   if (!err && home_dir)
     {
-      gpgconf->home_dir = strdup (home_dir);
+      gpgconf->home_dir = _gpgme_strdup (home_dir);
       if (!gpgconf->home_dir)
 	err = gpg_error_from_syserror ();
     }
@@ -128,8 +129,8 @@ release_arg (gpgme_conf_arg_t arg, gpgme_conf_type_t alt_type)
       gpgme_conf_arg_t next = arg->next;
 
       if (alt_type == GPGME_CONF_STRING)
-	free (arg->value.string);
-      free (arg);
+	_gpgme_free (arg->value.string);
+      _gpgme_free (arg);
       arg = next;
     }
 }
@@ -139,21 +140,21 @@ static void
 release_opt (gpgme_conf_opt_t opt)
 {
   if (opt->name)
-    free (opt->name);
+    _gpgme_free (opt->name);
   if (opt->description)
-    free (opt->description);
+    _gpgme_free (opt->description);
   if (opt->argname)
-    free (opt->argname);
+    _gpgme_free (opt->argname);
 
   release_arg (opt->default_value, opt->alt_type);
   if (opt->default_description)
-    free (opt->default_description);
+    _gpgme_free (opt->default_description);
 
   release_arg (opt->no_arg_value, opt->alt_type);
   release_arg (opt->value, opt->alt_type);
   release_arg (opt->new_value, opt->alt_type);
 
-  free (opt);
+  _gpgme_free (opt);
 }
 
 
@@ -163,11 +164,11 @@ release_comp (gpgme_conf_comp_t comp)
   gpgme_conf_opt_t opt;
 
   if (comp->name)
-    free (comp->name);
+    _gpgme_free (comp->name);
   if (comp->description)
-    free (comp->description);
+    _gpgme_free (comp->description);
   if (comp->program_name)
-    free (comp->program_name);
+    _gpgme_free (comp->program_name);
 
   opt = comp->options;
   while (opt)
@@ -177,7 +178,7 @@ release_comp (gpgme_conf_comp_t comp)
       opt = next;
     }
 
-  free (comp);
+  _gpgme_free (comp);
 }
 
 
@@ -238,7 +239,7 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
     }
 
   linebufsize = 1024; /* Usually enough for conf lines.  */
-  linebuf = malloc (linebufsize);
+  linebuf = _gpgme_malloc (linebufsize);
   if (!linebuf)
     {
       err = gpg_error_from_syserror ();
@@ -298,7 +299,7 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
               goto leave;
             }
 
-          newlinebuf = realloc (linebuf, linebufsize);
+          newlinebuf = _gpgme_realloc (linebuf, linebufsize);
           if (!newlinebuf)
             {
               err = gpg_error_from_syserror ();
@@ -309,7 +310,7 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
     }
 
  leave:
-  free (linebuf);
+  _gpgme_free (linebuf);
   _gpgme_io_close (rp[0]);
   return err;
 }
@@ -342,24 +343,24 @@ gpgconf_config_load_cb (void *hook, char *line)
   if (comp)
     comp_p = &comp->next;
 
-  comp = calloc (1, sizeof (*comp));
+  comp = _gpgme_calloc (1, sizeof (*comp));
   if (!comp)
     return gpg_error_from_syserror ();
   /* Prepare return value.  */
   comp->_last_opt_p = &comp->options;
   *comp_p = comp;
 
-  comp->name = strdup (field[0]);
+  comp->name = _gpgme_strdup (field[0]);
   if (!comp->name)
     return gpg_error_from_syserror ();
 
-  comp->description = strdup (field[1]);
+  comp->description = _gpgme_strdup (field[1]);
   if (!comp->description)
     return gpg_error_from_syserror ();
 
   if (fields >= 3)
     {
-      comp->program_name = strdup (field[2]);
+      comp->program_name = _gpgme_strdup (field[2]);
       if (!comp->program_name)
 	return gpg_error_from_syserror ();
     }
@@ -386,7 +387,7 @@ gpgconf_parse_option (gpgme_conf_opt_t opt,
       if (mark)
 	*mark = '\0';
 
-      arg = calloc (1, sizeof (*arg));
+      arg = _gpgme_calloc (1, sizeof (*arg));
       if (!arg)
 	return gpg_error_from_syserror ();
       *arg_p = arg;
@@ -462,7 +463,7 @@ gpgconf_config_load_cb2 (void *hook, char *line)
   if (fields < 10)
     return trace_gpg_error (GPG_ERR_INV_ENGINE);
 
-  opt = calloc (1, sizeof (*opt));
+  opt = _gpgme_calloc (1, sizeof (*opt));
   if (!opt)
     return gpg_error_from_syserror ();
 
@@ -471,7 +472,7 @@ gpgconf_config_load_cb2 (void *hook, char *line)
 
   if (field[0][0])
     {
-      opt->name = strdup (field[0]);
+      opt->name = _gpgme_strdup (field[0]);
       if (!opt->name)
 	return gpg_error_from_syserror ();
     }
@@ -482,7 +483,7 @@ gpgconf_config_load_cb2 (void *hook, char *line)
 
   if (field[3][0])
     {
-      opt->description = strdup (field[3]);
+      opt->description = _gpgme_strdup (field[3]);
       if (!opt->description)
 	return gpg_error_from_syserror ();
     }
@@ -493,7 +494,7 @@ gpgconf_config_load_cb2 (void *hook, char *line)
 
   if (field[6][0])
     {
-      opt->argname = strdup (field[6]);
+      opt->argname = _gpgme_strdup (field[6]);
       if (!opt->argname)
 	return gpg_error_from_syserror ();
     }
@@ -506,14 +507,14 @@ gpgconf_config_load_cb2 (void *hook, char *line)
     }
   else if ((opt->flags & GPGME_CONF_DEFAULT_DESC) && field[7][0])
     {
-      opt->default_description = strdup (field[7]);
+      opt->default_description = _gpgme_strdup (field[7]);
       if (!opt->default_description)
 	return gpg_error_from_syserror ();
     }
 
   if (opt->flags & GPGME_CONF_NO_ARG_DESC)
     {
-      opt->no_arg_description = strdup (field[8]);
+      opt->no_arg_description = _gpgme_strdup (field[8]);
       if (!opt->no_arg_description)
 	return gpg_error_from_syserror ();
     }
@@ -575,7 +576,7 @@ _gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
 {
   gpgme_conf_arg_t arg;
 
-  arg = calloc (1, sizeof (*arg));
+  arg = _gpgme_calloc (1, sizeof (*arg));
   if (!arg)
     return gpg_error_from_syserror ();
 
@@ -603,16 +604,16 @@ _gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
         case GPGME_CONF_PUB_KEY:
         case GPGME_CONF_SEC_KEY:
         case GPGME_CONF_ALIAS_LIST:
-	  arg->value.string = strdup (value);
+	  arg->value.string = _gpgme_strdup (value);
 	  if (!arg->value.string)
 	    {
-	      free (arg);
+	      _gpgme_free (arg);
 	      return gpg_error_from_syserror ();
 	    }
 	  break;
 
 	default:
-	  free (arg);
+	  _gpgme_free (arg);
 	  return gpg_error (GPG_ERR_INV_VALUE);
 	}
     }

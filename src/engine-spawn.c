@@ -42,6 +42,7 @@
 #include "debug.h"
 
 #include "engine-backend.h"
+#include "mem.h"
 
 
 /* This type is used to build a list of data sources/sinks.  */
@@ -120,7 +121,7 @@ add_data (engine_spawn_t esp, gpgme_data_t data, int dup_to, int inbound)
   assert (esp);
   assert (data);
 
-  a = malloc (sizeof *a - 1);
+  a = _gpgme_malloc (sizeof *a - 1);
   if (!a)
     return gpg_error_from_syserror ();
   a->next = NULL;
@@ -149,7 +150,7 @@ free_fd_data_map (struct fd_data_map_s *fd_data_map)
 	_gpgme_io_close (fd_data_map[i].peer_fd);
       /* Don't release data because this is only a reference.  */
     }
-  free (fd_data_map);
+  _gpgme_free (fd_data_map);
 }
 
 
@@ -165,7 +166,7 @@ build_fd_data_map (engine_spawn_t esp)
       datac++;
 
   free_fd_data_map (esp->fd_data_map);
-  esp->fd_data_map = calloc (datac + 1, sizeof *esp->fd_data_map);
+  esp->fd_data_map = _gpgme_calloc (datac + 1, sizeof *esp->fd_data_map);
   if (!esp->fd_data_map)
     return gpg_error_from_syserror ();
 
@@ -175,7 +176,7 @@ build_fd_data_map (engine_spawn_t esp)
 
       if (_gpgme_io_pipe (fds, a->inbound ? 1 : 0) == -1)
         {
-          free (esp->fd_data_map);
+          _gpgme_free (esp->fd_data_map);
           esp->fd_data_map = NULL;
           return gpg_error_from_syserror ();
         }
@@ -250,7 +251,7 @@ engspawn_start (engine_spawn_t esp, const char *file, const char *argv[],
   n = 0;
   for (i = 0; esp->fd_data_map[i].data; i++)
     n++;
-  fd_list = calloc (n+1, sizeof *fd_list);
+  fd_list = _gpgme_calloc (n+1, sizeof *fd_list);
   if (!fd_list)
     return gpg_error_from_syserror ();
 
@@ -274,7 +275,7 @@ engspawn_start (engine_spawn_t esp, const char *file, const char *argv[],
                             fd_list, NULL, NULL, &pid);
   if (save_argv0)
     argv[0] = save_argv0;
-  free (fd_list);
+  _gpgme_free (fd_list);
   if (status == -1)
     return gpg_error_from_syserror ();
 
@@ -312,7 +313,7 @@ static char *
 engspawn_get_version (const char *file_name)
 {
   (void)file_name;
-  return strdup ("1.0");
+  return _gpgme_strdup ("1.0");
 }
 
 
@@ -331,7 +332,7 @@ engspawn_new (void **engine, const char *file_name, const char *home_dir)
   (void)file_name;
   (void)home_dir;
 
-  esp = calloc (1, sizeof *esp);
+  esp = _gpgme_calloc (1, sizeof *esp);
   if (!esp)
     return gpg_error_from_syserror ();
 
@@ -356,11 +357,11 @@ engspawn_release (void *engine)
       struct datalist_s *next = esp->arglist->next;
 
       if (esp->arglist)
-	free (esp->arglist);
+	_gpgme_free (esp->arglist);
       esp->arglist = next;
     }
 
-  free (esp);
+  _gpgme_free (esp);
 }
 
 

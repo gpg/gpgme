@@ -81,11 +81,9 @@ _gpgme_stpcpy (char *a, const char *b)
 #define stpcpy(a,b) _gpgme_stpcpy ((a), (b))
 #endif /*!HAVE_STPCPY*/
 
-#if !HAVE_VASPRINTF
 #include <stdarg.h>
-int vasprintf (char **result, const char *format, va_list args);
-int asprintf (char **result, const char *format, ...);
-#endif
+int _gpgme_vasprintf (char **result, const char *format, va_list args);
+int _gpgme_asprintf (char **result, const char *format, ...);
 
 #if REPLACE_TTYNAME_R
 int _gpgme_ttyname_r (int fd, char *buf, size_t buflen);

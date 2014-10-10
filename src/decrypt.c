@@ -31,6 +31,7 @@
 #include "util.h"
 #include "context.h"
 #include "ops.h"
+#include "mem.h"
 
 
 
@@ -55,15 +56,15 @@ release_op_data (void *hook)
   gpgme_recipient_t recipient = opd->result.recipients;
 
   if (opd->result.unsupported_algorithm)
-    free (opd->result.unsupported_algorithm);
+    _gpgme_free (opd->result.unsupported_algorithm);
 
   if (opd->result.file_name)
-    free (opd->result.file_name);
+    _gpgme_free (opd->result.file_name);
 
   while (recipient)
     {
       gpgme_recipient_t next = recipient->next;
-      free (recipient);
+      _gpgme_free (recipient);
       recipient = next;
     }
 }
@@ -125,7 +126,7 @@ parse_enc_to (char *args, gpgme_recipient_t *recp, gpgme_protocol_t protocol)
   char *tail;
   int i;
 
-  rec = malloc (sizeof (*rec));
+  rec = _gpgme_malloc (sizeof (*rec));
   if (!rec)
     return gpg_error_from_syserror ();
 
@@ -145,7 +146,7 @@ parse_enc_to (char *args, gpgme_recipient_t *recp, gpgme_protocol_t protocol)
   args = &args[i];
   if (*args != '\0' && *args != ' ')
     {
-      free (rec);
+      _gpgme_free (rec);
       return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
 
@@ -159,7 +160,7 @@ parse_enc_to (char *args, gpgme_recipient_t *recp, gpgme_protocol_t protocol)
       if (errno || args == tail || *tail != ' ')
 	{
 	  /* The crypto backend does not behave.  */
-	  free (rec);
+	  _gpgme_free (rec);
 	  return trace_gpg_error (GPG_ERR_INV_ENGINE);
 	}
     }
@@ -242,7 +243,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 
 		if (!(*args == '?' && *(args + 1) == '\0'))
 		  {
-		    opd->result.unsupported_algorithm = strdup (args);
+		    opd->result.unsupported_algorithm = _gpgme_strdup (args);
 		    if (!opd->result.unsupported_algorithm)
 		      return gpg_error_from_syserror ();
 		  }

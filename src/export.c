@@ -29,6 +29,7 @@
 #include "debug.h"
 #include "context.h"
 #include "ops.h"
+#include "mem.h"
 
 
 static gpgme_error_t
@@ -222,7 +223,7 @@ export_keys_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t keys[],
   if (!nkeys)
     return gpg_error (GPG_ERR_NO_DATA);
 
-  pattern = calloc (nkeys+1, sizeof *pattern);
+  pattern = _gpgme_calloc (nkeys+1, sizeof *pattern);
   if (!pattern)
     return gpg_error_from_syserror ();
 
@@ -232,7 +233,7 @@ export_keys_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t keys[],
         && keys[idx]->subkeys->fpr
         && *keys[idx]->subkeys->fpr)
       {
-        pattern[nkeys] = strdup (keys[idx]->subkeys->fpr);
+        pattern[nkeys] = _gpgme_strdup (keys[idx]->subkeys->fpr);
         if (!pattern[nkeys])
           {
             err = gpg_error_from_syserror ();
@@ -248,8 +249,8 @@ export_keys_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t keys[],
 
  leave:
   for (idx=0; pattern[idx]; idx++)
-    free (pattern[idx]);
-  free (pattern);
+    _gpgme_free (pattern[idx]);
+  _gpgme_free (pattern);
 
   return err;
 }

@@ -129,6 +129,7 @@ Preparation
 * Largefile Support (LFS)::       How to use @acronym{GPGME} with LFS.
 * Using Automake::                Compiler options to be used the easy way.
 * Using Libtool::                 Avoiding compiler options entirely.
+* Custom Memory Functions::       Using your own memory allocators.
 * Library Version Check::         Getting and verifying the library version.
 * Signal Handling::               How @acronym{GPGME} affects signal handling.
 * Multi Threading::               How @acronym{GPGME} can be used in an MT environment.
@@ -365,6 +366,7 @@ of the library are verified.
 * Largefile Support (LFS)::       How to use @acronym{GPGME} with LFS.
 * Using Automake::                Compiler options to be used the easy way.
 * Using Libtool::                 Avoiding compiler options entirely.
+* Custom Memory Functions::       Using your own memory allocators.
 * Library Version Check::         Getting and verifying the library version.
 * Signal Handling::               How @acronym{GPGME} affects signal handling.
 * Multi Threading::               How @acronym{GPGME} can be used in an MT environment.
@@ -617,6 +619,50 @@ link to @code{libgpgme.la}, @code{libgpgme-pth.la} or
 @code{libgpgme-pthread.la} respectively, everything will be done
 automatically by Libtool.
 
+
+@node Custom Memory Functions
+@section Custom Memory Functions
+@cindex Using your own memory allocators
+
+If your application uses its own memory allocation functions or wrappers
+it is good idea to tell @code{libgpgme} about it so it can make use of the
+same functions or wrappers:
+
+@deftp {Data type} {struct gpgme_malloc_hooks}
+This structure is used to store the memory allocation callback
+interface functions.  It has the following members, whose semantics
+are identical to the corresponding system functions:
+
+@table @code
+@item void *(*malloc) (size_t cnt)
+This is the function called by @acronym{GPGME} to allocate memory for a
+context.
+
+@item void *(*calloc) (size_t nmemb, size_t cnt)
+This is the function called by @acronym{GPGME} to allocate memory for a
+context and zero its contents.
+
+@item void *(*realloc) (void *ptr, size_t cnt)
+This is the function called by @acronym{GPGME} to reallocate memory for a
+context.
+
+@item void (*free) (void *ptr)
+This is the function called by @acronym{GPGME} to release memory for a
+context.
+@end table
+@end deftp
+
+@deftp {Data type} {gpgme_malloc_hooks_t}
+This is a pointer to a @code{struct gpgme_malloc_hooks}.
+@end deftp
+
+@deftypefun void gpgme_set_global_malloc_hooks (@w{gpgme_malloc_hooks_t @var{malloc_hooks}})
+This function sets the default allocation hooks for all memory operations.
+You need to provide all four functions.  Those functions need to behave
+exactly as their standard counterparts @code{malloc}, @code{calloc},
+@code{realloc} and @code{free}.  If you write your own functions, please take
+care to set @code{errno} whenever an error has occurred.
+@end deftypefun
 
 @node Library Version Check
 @section Library Version Check

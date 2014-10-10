@@ -32,6 +32,7 @@
 #include "util.h"
 #include "context.h"
 #include "debug.h"
+#include "mem.h"
 
 
 /* Delete all signers from CTX.  */
@@ -78,7 +79,7 @@ gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
       int n = ctx->signers_size + 5;
       int j;
 
-      newarr = realloc (ctx->signers, n * sizeof (*newarr));
+      newarr = _gpgme_realloc (ctx->signers, n * sizeof (*newarr));
       if (!newarr)
 	return TRACE_ERR (gpg_error_from_syserror ());
       for (j = ctx->signers_size; j < n; j++)

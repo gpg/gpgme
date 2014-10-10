@@ -92,6 +92,14 @@ extern "C" {
 #endif
 #endif
 
+struct gpgme_malloc_hooks
+{
+  void *(*malloc) (size_t cnt);
+  void *(*calloc) (size_t nmemb, size_t cnt);
+  void *(*realloc) (void *ptr, size_t cnt);
+  void (*free) (void *ptr);
+};
+typedef struct gpgme_malloc_hooks *gpgme_malloc_hooks_t;
 
 
 /* Some opaque data types used by GPGME.  */
@@ -195,6 +203,9 @@ gpgme_error_from_syserror (void)
 {
   return gpgme_error (gpgme_err_code_from_syserror ());
 }
+
+/* Set the default malloc hooks.  */
+void gpgme_set_global_malloc_hooks (gpgme_malloc_hooks_t malloc_hooks);
 
 
 /* The possible encoding mode of gpgme_data_t objects.  */

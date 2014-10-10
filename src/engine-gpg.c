@@ -44,6 +44,7 @@
 #include "debug.h"
 
 #include "engine-backend.h"
+#include "mem.h"
 
 
 /* This type is used to build a list of gpg arguments and data
@@ -209,7 +210,7 @@ _add_arg (engine_gpg_t gpg, const char *arg, int front, int *arg_locp)
   assert (gpg);
   assert (arg);
 
-  a = malloc (sizeof *a + strlen (arg));
+  a = _gpgme_malloc (sizeof *a + strlen (arg));
   if (!a)
     return gpg_error_from_syserror ();
 
@@ -268,7 +269,7 @@ add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
   assert (gpg);
   assert (data);
 
-  a = malloc (sizeof *a - 1);
+  a = _gpgme_malloc (sizeof *a - 1);
   if (!a)
     return gpg_error_from_syserror ();
   a->next = NULL;
@@ -313,8 +314,8 @@ free_argv (char **argv)
   int i;
 
   for (i = 0; argv[i]; i++)
-    free (argv[i]);
-  free (argv);
+    _gpgme_free (argv[i]);
+  _gpgme_free (argv);
 }
 
 
@@ -334,7 +335,7 @@ free_fd_data_map (struct fd_data_map_s *fd_data_map)
 	_gpgme_io_close (fd_data_map[i].peer_fd);
       /* Don't release data because this is only a reference.  */
     }
-  free (fd_data_map);
+  _gpgme_free (fd_data_map);
 }
 
 
@@ -385,32 +386,32 @@ gpg_release (void *engine)
   gpg_cancel (engine);
 
   if (gpg->file_name)
-    free (gpg->file_name);
+    _gpgme_free (gpg->file_name);
 
   if (gpg->lc_messages)
-    free (gpg->lc_messages);
+    _gpgme_free (gpg->lc_messages);
   if (gpg->lc_ctype)
-    free (gpg->lc_ctype);
+    _gpgme_free (gpg->lc_ctype);
 
   while (gpg->arglist)
     {
       struct arg_and_data_s *next = gpg->arglist->next;
 
       if (gpg->arglist)
-	free (gpg->arglist);
+	_gpgme_free (gpg->arglist);
       gpg->arglist = next;
     }
 
   if (gpg->status.buffer)
-    free (gpg->status.buffer);
+    _gpgme_free (gpg->status.buffer);
   if (gpg->colon.buffer)
-    free (gpg->colon.buffer);
+    _gpgme_free (gpg->colon.buffer);
   if (gpg->argv)
     free_argv (gpg->argv);
   if (gpg->cmd.keyword)
-    free (gpg->cmd.keyword);
+    _gpgme_free (gpg->cmd.keyword);
 
-  free (gpg);
+  _gpgme_free (gpg);
 }
 
 
@@ -423,13 +424,13 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
   char dft_ttyname[64];
   char *dft_ttytype = NULL;
 
-  gpg = calloc (1, sizeof *gpg);
+  gpg = _gpgme_calloc (1, sizeof *gpg);
   if (!gpg)
     return gpg_error_from_syserror ();
 
   if (file_name)
     {
-      gpg->file_name = strdup (file_name);
+      gpg->file_name = _gpgme_strdup (file_name);
       if (!gpg->file_name)
 	{
 	  rc = gpg_error_from_syserror ();
@@ -450,7 +451,7 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
   /* Allocate the read buffer for the status pipe.  */
   gpg->status.bufsize = 1024;
   gpg->status.readpos = 0;
-  gpg->status.buffer = malloc (gpg->status.bufsize);
+  gpg->status.buffer = _gpgme_malloc (gpg->status.bufsize);
   if (!gpg->status.buffer)
     {
       rc = gpg_error_from_syserror ();
@@ -513,7 +514,7 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
       if (!rc)
 	rc = add_arg (gpg, dft_display);
 
-      free (dft_display);
+      _gpgme_free (dft_display);
     }
 
   if (isatty (1))
@@ -546,7 +547,7 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
                     rc = add_arg (gpg, dft_ttytype);
                 }
 
-	      free (dft_ttytype);
+	      _gpgme_free (dft_ttytype);
 	    }
 	}
       if (rc)
@@ -574,12 +575,12 @@ gpg_set_locale (void *engine, int category, const char *value)
     {
       if (gpg->lc_ctype)
         {
-          free (gpg->lc_ctype);
+          _gpgme_free (gpg->lc_ctype);
           gpg->lc_ctype = NULL;
         }
       if (value)
 	{
-	  gpg->lc_ctype = strdup (value);
+	  gpg->lc_ctype = _gpgme_strdup (value);
 	  if (!gpg->lc_ctype)
 	    return gpg_error_from_syserror ();
 	}
@@ -590,12 +591,12 @@ gpg_set_locale (void *engine, int category, const char *value)
     {
       if (gpg->lc_messages)
         {
-          free (gpg->lc_messages);
+          _gpgme_free (gpg->lc_messages);
           gpg->lc_messages = NULL;
         }
       if (value)
 	{
-	  gpg->lc_messages = strdup (value);
+	  gpg->lc_messages = _gpgme_strdup (value);
 	  if (!gpg->lc_messages)
 	    return gpg_error_from_syserror ();
 	}
@@ -629,14 +630,14 @@ gpg_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
 
   gpg->colon.bufsize = 1024;
   gpg->colon.readpos = 0;
-  gpg->colon.buffer = malloc (gpg->colon.bufsize);
+  gpg->colon.buffer = _gpgme_malloc (gpg->colon.bufsize);
   if (!gpg->colon.buffer)
     return gpg_error_from_syserror ();
 
   if (_gpgme_io_pipe (gpg->colon.fd, 1) == -1)
     {
       int saved_err = gpg_error_from_syserror ();
-      free (gpg->colon.buffer);
+      _gpgme_free (gpg->colon.buffer);
       gpg->colon.buffer = NULL;
       return saved_err;
     }
@@ -741,7 +742,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
         return err;
       use_agent = (p && strchr (p, ':'));
       if (p)
-        free (p);
+        _gpgme_free (p);
     }
 
   if (gpg->argv)
@@ -781,10 +782,10 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
     argc++;	/* --batch */
   argc += 1;	/* --no-sk-comments */
 
-  argv = calloc (argc + 1, sizeof *argv);
+  argv = _gpgme_calloc (argc + 1, sizeof *argv);
   if (!argv)
     return gpg_error_from_syserror ();
-  fd_data_map = calloc (datac + 1, sizeof *fd_data_map);
+  fd_data_map = _gpgme_calloc (datac + 1, sizeof *fd_data_map);
   if (!fd_data_map)
     {
       int saved_err = gpg_error_from_syserror ();
@@ -793,22 +794,22 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
     }
 
   argc = datac = 0;
-  argv[argc] = strdup (_gpgme_get_basename (pgmname)); /* argv[0] */
+  argv[argc] = _gpgme_strdup (_gpgme_get_basename (pgmname)); /* argv[0] */
   if (!argv[argc])
     {
       int saved_err = gpg_error_from_syserror ();
-      free (fd_data_map);
+      _gpgme_free (fd_data_map);
       free_argv (argv);
       return saved_err;
     }
   argc++;
   if (need_special)
     {
-      argv[argc] = strdup ("--enable-special-filenames");
+      argv[argc] = _gpgme_strdup ("--enable-special-filenames");
       if (!argv[argc])
 	{
           int saved_err = gpg_error_from_syserror ();
-	  free (fd_data_map);
+	  _gpgme_free (fd_data_map);
 	  free_argv (argv);
 	  return saved_err;
         }
@@ -816,11 +817,11 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
     }
   if (use_agent)
     {
-      argv[argc] = strdup ("--use-agent");
+      argv[argc] = _gpgme_strdup ("--use-agent");
       if (!argv[argc])
 	{
           int saved_err = gpg_error_from_syserror ();
-	  free (fd_data_map);
+	  _gpgme_free (fd_data_map);
 	  free_argv (argv);
 	  return saved_err;
         }
@@ -840,11 +841,11 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
         }
       if (s)
         {
-          argv[argc] = strdup (s);
+          argv[argc] = _gpgme_strdup (s);
           if (!argv[argc])
             {
               int saved_err = gpg_error_from_syserror ();
-              free (fd_data_map);
+              _gpgme_free (fd_data_map);
               free_argv (argv);
               return saved_err;
             }
@@ -854,21 +855,21 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 
   if (!gpg->cmd.used)
     {
-      argv[argc] = strdup ("--batch");
+      argv[argc] = _gpgme_strdup ("--batch");
       if (!argv[argc])
 	{
           int saved_err = gpg_error_from_syserror ();
-	  free (fd_data_map);
+	  _gpgme_free (fd_data_map);
 	  free_argv (argv);
 	  return saved_err;
         }
       argc++;
     }
-  argv[argc] = strdup ("--no-sk-comments");
+  argv[argc] = _gpgme_strdup ("--no-sk-comments");
   if (!argv[argc])
     {
       int saved_err = gpg_error_from_syserror ();
-      free (fd_data_map);
+      _gpgme_free (fd_data_map);
       free_argv (argv);
       return saved_err;
     }
@@ -891,7 +892,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 		== -1)
 	      {
 		int saved_errno = errno;
-		free (fd_data_map);
+		_gpgme_free (fd_data_map);
 		free_argv (argv);
 		return gpg_error (saved_errno);
 	      }
@@ -943,11 +944,11 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 	      char *ptr;
 	      int buflen = 25;
 
-	      argv[argc] = malloc (buflen);
+	      argv[argc] = _gpgme_malloc (buflen);
 	      if (!argv[argc])
 		{
                   int saved_err = gpg_error_from_syserror ();
-		  free (fd_data_map);
+		  _gpgme_free (fd_data_map);
 		  free_argv (argv);
 		  return saved_err;
                 }
@@ -968,11 +969,11 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
         }
       else
 	{
-	  argv[argc] = strdup (a->arg);
+	  argv[argc] = _gpgme_strdup (a->arg);
 	  if (!argv[argc])
 	    {
               int saved_err = gpg_error_from_syserror ();
-	      free (fd_data_map);
+	      _gpgme_free (fd_data_map);
 	      free_argv (argv);
 	      return saved_err;
             }
@@ -1023,7 +1024,7 @@ read_status (engine_gpg_t gpg)
     {
       /* Need more room for the read.  */
       bufsize += 1024;
-      buffer = realloc (buffer, bufsize);
+      buffer = _gpgme_realloc (buffer, bufsize);
       if (!buffer)
 	return gpg_error_from_syserror ();
     }
@@ -1078,8 +1079,8 @@ read_status (engine_gpg_t gpg)
 			{
 			  gpg->cmd.code = r;
 			  if (gpg->cmd.keyword)
-			    free (gpg->cmd.keyword);
-			  gpg->cmd.keyword = strdup (rest);
+			    _gpgme_free (gpg->cmd.keyword);
+			  gpg->cmd.keyword = _gpgme_strdup (rest);
 			  if (!gpg->cmd.keyword)
 			    return gpg_error_from_syserror ();
 			  /* This should be the last thing we have
@@ -1199,7 +1200,7 @@ read_colon_line (engine_gpg_t gpg)
     {
       /* Need more room for the read.  */
       bufsize += 1024;
-      buffer = realloc (buffer, bufsize);
+      buffer = _gpgme_realloc (buffer, bufsize);
       if (!buffer)
 	return gpg_error_from_syserror ();
     }
@@ -1257,7 +1258,7 @@ read_colon_line (engine_gpg_t gpg)
                         }
                       while (linep && *linep);
 
-                      free (line);
+                      _gpgme_free (line);
                     }
                   else
                     gpg->colon.fnc (gpg->colon.fnc_value, buffer);
@@ -1352,7 +1353,7 @@ start (engine_gpg_t gpg)
   n = 3;
   for (i = 0; gpg->fd_data_map[i].data; i++)
     n++;
-  fd_list = calloc (n, sizeof *fd_list);
+  fd_list = _gpgme_calloc (n, sizeof *fd_list);
   if (! fd_list)
     return gpg_error_from_syserror ();
 
@@ -1383,7 +1384,7 @@ start (engine_gpg_t gpg)
                             fd_list, NULL, NULL, &pid);
   {
     int saved_err = gpg_error_from_syserror ();
-    free (fd_list);
+    _gpgme_free (fd_list);
     if (status == -1)
       return saved_err;
   }
@@ -1548,7 +1549,7 @@ append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 	     the name, one byte for '=', the value, and a terminating
 	     '\0'.  */
 
-	  arg = malloc (1 + notation->name_len + 1 + notation->value_len + 1);
+	  arg = _gpgme_malloc (1 + notation->name_len + 1 + notation->value_len + 1);
 	  if (!arg)
 	    err = gpg_error_from_syserror ();
 
@@ -1574,7 +1575,7 @@ append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 	    err = add_arg (gpg, arg);
 
 	  if (arg)
-	    free (arg);
+	    _gpgme_free (arg);
 	}
       else
 	{
@@ -1584,7 +1585,7 @@ append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 
 	  if (notation->critical)
 	    {
-	      value = malloc (1 + notation->value_len + 1);
+	      value = _gpgme_malloc (1 + notation->value_len + 1);
 	      if (!value)
 		err = gpg_error_from_syserror ();
 	      else
@@ -1603,7 +1604,7 @@ append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 	    err = add_arg (gpg, value);
 
 	  if (value != notation->value)
-	    free (value);
+	    _gpgme_free (value);
       	}
 
       notation = notation->next;
@@ -1921,7 +1922,7 @@ string_from_data (gpgme_data_t data, int delim,
     {
       if (*helpptr)
         {
-          free (*helpptr);
+          _gpgme_free (*helpptr);
           *helpptr = NULL;
         }
       return NULL;
@@ -1931,7 +1932,7 @@ string_from_data (gpgme_data_t data, int delim,
     self = *helpptr;
   else
     {
-      self = malloc (sizeof *self);
+      self = _gpgme_malloc (sizeof *self);
       if (!self)
         {
           *r_err = gpg_error_from_syserror ();
@@ -2135,7 +2136,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
       n = strlen (field[1]);
       if (n > 16)
         {
-          if (asprintf (r_line,
+          if (_gpgme_asprintf (r_line,
                         "pub:o%s:%s:%s:%s:%s:%s::::::::\n"
                         "fpr:::::::::%s:",
                         field[6], field[3], field[2], field[1] + n - 16,
@@ -2144,7 +2145,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
         }
       else
         {
-          if (asprintf (r_line,
+          if (_gpgme_asprintf (r_line,
                         "pub:o%s:%s:%s:%s:%s:%s::::::::",
                         field[6], field[3], field[2], field[1],
                         field[4], field[5]) < 0)
@@ -2170,7 +2171,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
 	   Because we have to replace each '%HL' by '\xHL', we need at
 	   most 4/3 th the number of bytes.  But because we also need
 	   to escape the backslashes we allocate twice as much.  */
-	char *uid = malloc (2 * strlen (field[1]) + 1);
+	char *uid = _gpgme_malloc (2 * strlen (field[1]) + 1);
 	char *src;
 	char *dst;
 
@@ -2201,7 +2202,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
 	  }
 	*dst = '\0';
 
-	if (asprintf (r_line, "uid:o%s::::%s:%s:::%s:",
+	if (_gpgme_asprintf (r_line, "uid:o%s::::%s:%s:::%s:",
 		      field[4], field[2], field[3], uid) < 0)
 	  return gpg_error_from_syserror ();
       }

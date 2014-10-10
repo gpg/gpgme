@@ -32,6 +32,7 @@
 #include "ops.h"
 #include "util.h"
 #include "debug.h"
+#include "mem.h"
 
 
 gpgme_error_t
@@ -54,7 +55,7 @@ _gpgme_op_data_lookup (gpgme_ctx_t ctx, ctx_op_data_id_t type, void **hook,
 	  return 0;
 	}
 
-      data = calloc (1, sizeof (struct ctx_op_data) + size);
+      data = _gpgme_calloc (1, sizeof (struct ctx_op_data) + size);
       if (!data)
 	return gpg_error_from_syserror ();
       data->magic = CTX_OP_DATA_MAGIC;
@@ -199,7 +200,7 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
   char *tail;
   long int reason;
 
-  inv_key = malloc (sizeof (*inv_key));
+  inv_key = _gpgme_malloc (sizeof (*inv_key));
   if (!inv_key)
     return gpg_error_from_syserror ();
   inv_key->next = NULL;
@@ -208,7 +209,7 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
   if (errno || args == tail || (*tail && *tail != ' '))
     {
       /* The crypto backend does not behave.  */
-      free (inv_key);
+      _gpgme_free (inv_key);
       return trace_gpg_error (GPG_ERR_INV_ENGINE);
     }
 
@@ -280,10 +281,10 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
     tail++;
   if (*tail)
     {
-      inv_key->fpr = strdup (tail);
+      inv_key->fpr = _gpgme_strdup (tail);
       if (!inv_key->fpr)
 	{
-	  free (inv_key);
+	  _gpgme_free (inv_key);
 	  return gpg_error_from_syserror ();
 	}
     }
@@ -329,7 +330,7 @@ _gpgme_parse_plaintext (char *args, char **filenamep)
   *tail = '\0';
   if (filenamep && *args != '\0')
     {
-      char *filename = strdup (args);
+      char *filename = _gpgme_strdup (args);
       if (!filename)
 	return gpg_error_from_syserror ();
 
