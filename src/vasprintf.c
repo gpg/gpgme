@@ -26,8 +26,6 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "mem.h"
-
 
 #ifndef va_copy /* According to POSIX, va_copy is a macro. */
 #if defined (__GNUC__) && defined (__PPC__) \
@@ -42,7 +40,14 @@ Boston, MA 02111-1307, USA.  */
 
 
 #ifdef TEST
+#define _gpgme_malloc  malloc
+#define _gpgme_calloc  calloc
+#define _gpgme_realloc realloc
+#define _gpgme_strdup  strdup
+#define _gpgme_free    free
 int global_total_width;
+#else
+#include "mem.h"
 #endif
 
 static int int_vasprintf (char **, const char *, va_list *);
@@ -161,7 +166,17 @@ _gpgme_vasprintf (result, format, args)
      va_list args;
 #endif
 {
-  return int_vasprintf (result, format, &args);
+#if defined (_BSD_VA_LIST_) && defined (__FreeBSD__)
+  _BSD_VA_LIST_ cp;
+#else
+  va_list cp;
+#endif
+  int ret;
+
+  va_copy(cp, args);
+  ret = int_vasprintf (result, format, &cp);
+  va_end(cp);
+  return ret;
 }
 
 
