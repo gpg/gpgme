@@ -187,8 +187,8 @@ _gpgme_trace_gpgme_error (gpgme_error_t err, const char *file, int line)
 
 #define TRACE_ERR(err)							\
   err == 0 ? (TRACE_SUC ()) :						\
-    (_gpgme_debug (_gpgme_trace_level, "%s: error: %s <%s>\n",		\
-		   _gpgme_trace_func, gpgme_strerror (err),		\
+    (_gpgme_debug (_gpgme_trace_level, "%s:%d: error: %s <%s>\n",	\
+		   _gpgme_trace_func, __LINE__,  gpgme_strerror (err),  \
 		   gpgme_strsource (err)), _gpgme_debug_frame_end (), (err))
 /* The cast to void suppresses GCC warnings.  */
 #define TRACE_SYSRES(res)						\
