@@ -54,12 +54,22 @@ typedef struct
 } *op_data_t;
 
 
+static void release_signatures (gpgme_new_signature_t sig)
+{
+  while (sig)
+    {
+      gpgme_new_signature_t next = sig->next;
+      free (sig->fpr);
+      free (sig);
+      sig = next;
+    }
+}
+
 static void
 release_op_data (void *hook)
 {
   op_data_t opd = (op_data_t) hook;
   gpgme_invalid_key_t invalid_signer = opd->result.invalid_signers;
-  gpgme_new_signature_t sig = opd->result.signatures;
 
   while (invalid_signer)
     {
@@ -70,13 +80,7 @@ release_op_data (void *hook)
       invalid_signer = next;
     }
 
-  while (sig)
-    {
-      gpgme_new_signature_t next = sig->next;
-      free (sig->fpr);
-      free (sig);
-      sig = next;
-    }
+  release_signatures (opd->result.signatures);
 }
 
 
@@ -114,6 +118,48 @@ gpgme_op_sign_result (gpgme_ctx_t ctx)
 	  signatures++;
 	  sig = sig->next;
 	}
+
+      if (gpgme_signers_count (ctx)
+          && signatures + inv_signers != gpgme_signers_count (ctx))
+        {
+          TRACE_LOG3 ("result: invalid signers: %i, signatures: %i, count: %i",
+                      inv_signers, signatures, gpgme_signers_count (ctx));
+
+          sig = opd->result.signatures;
+          while (sig)
+            {
+              gpgme_invalid_key_t key;
+
+              key = malloc (sizeof (*key));
+              key->fpr = strdup (sig->fpr);
+              key->reason = GPG_ERR_GENERAL;
+              key->next = NULL;
+
+              inv_key = opd->result.invalid_signers;
+              if (!inv_key)
+                {
+                  opd->result.invalid_signers = inv_key = key;
+                  sig = sig->next;
+                  continue;
+                }
+
+              while (inv_key)
+                {
+                  if (!inv_key->next)
+                    {
+                      inv_key->next = key;
+                      break;
+                    }
+
+                  inv_key = inv_key->next;
+                }
+
+              sig = sig->next;
+            }
+
+          release_signatures (opd->result.signatures);
+          opd->result.signatures = NULL;
+        }
 
       TRACE_LOG2 ("result: invalid signers: %i, signatures: %i",
 		  inv_signers, signatures);
