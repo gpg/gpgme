@@ -54,7 +54,8 @@ typedef struct
 } *op_data_t;
 
 
-static void release_signatures (gpgme_new_signature_t sig)
+static void
+release_signatures (gpgme_new_signature_t sig)
 {
   while (sig)
     {
@@ -64,6 +65,7 @@ static void release_signatures (gpgme_new_signature_t sig)
       sig = next;
     }
 }
+
 
 static void
 release_op_data (void *hook)
@@ -90,6 +92,10 @@ gpgme_op_sign_result (gpgme_ctx_t ctx)
   void *hook;
   op_data_t opd;
   gpgme_error_t err;
+  gpgme_invalid_key_t inv_key, key;
+  gpgme_new_signature_t sig;
+  unsigned int inv_signers = 0;
+  unsigned int signatures = 0;
 
   TRACE_BEG (DEBUG_CTX, "gpgme_op_sign_result", ctx);
 
@@ -101,90 +107,80 @@ gpgme_op_sign_result (gpgme_ctx_t ctx)
       return NULL;
     }
 
-  if (_gpgme_debug_trace ())
+  for (inv_key = opd->result.invalid_signers; inv_key; inv_key = inv_key->next)
+    inv_signers++;
+  for (sig = opd->result.signatures; sig; sig = sig->next)
+    signatures++;
+
+  if (gpgme_signers_count (ctx)
+      && signatures + inv_signers != gpgme_signers_count (ctx))
     {
-      gpgme_invalid_key_t inv_key = opd->result.invalid_signers;
-      gpgme_new_signature_t sig = opd->result.signatures;
-      int inv_signers = 0;
-      int signatures = 0;
+      /* In this case at least one signatures was not created perhaps
+         due to a bad passphrase etc.  Thus the entire message is
+         broken and should not be used.  We add the already created
+         signatures to the invalid signers list and thus this case can
+         be detected.  */
+      TRACE_LOG3 ("result: invalid signers: %u, signatures: %u, count: %u",
+                  inv_signers, signatures, gpgme_signers_count (ctx));
 
-      while (inv_key)
-	{
-	  inv_signers++;
-	  inv_key = inv_key->next;
-	}
-      while (sig)
-	{
-	  signatures++;
-	  sig = sig->next;
-	}
-
-      if (gpgme_signers_count (ctx)
-          && signatures + inv_signers != gpgme_signers_count (ctx))
+      for (sig = opd->result.signatures; sig; sig = sig->next)
         {
-          TRACE_LOG3 ("result: invalid signers: %i, signatures: %i, count: %i",
-                      inv_signers, signatures, gpgme_signers_count (ctx));
-
-          sig = opd->result.signatures;
-          while (sig)
+          key = calloc (1, sizeof *key);
+          if (!key)
             {
-              gpgme_invalid_key_t key;
-
-              key = malloc (sizeof (*key));
-              key->fpr = strdup (sig->fpr);
-              key->reason = GPG_ERR_GENERAL;
-              key->next = NULL;
-
-              inv_key = opd->result.invalid_signers;
-              if (!inv_key)
-                {
-                  opd->result.invalid_signers = inv_key = key;
-                  sig = sig->next;
-                  continue;
-                }
-
-              while (inv_key)
-                {
-                  if (!inv_key->next)
-                    {
-                      inv_key->next = key;
-                      break;
-                    }
-
-                  inv_key = inv_key->next;
-                }
-
-              sig = sig->next;
+              TRACE_SUC0 ("out of core; result=(null)");
+              return NULL;
             }
+          if (sig->fpr)
+            {
+              key->fpr = strdup (sig->fpr);
+              if (!key->fpr)
+                {
+                  free (key);
+                  TRACE_SUC0 ("out of core; result=(null)");
+                  return NULL;
+                }
+            }
+          key->reason = GPG_ERR_GENERAL;
 
-          release_signatures (opd->result.signatures);
-          opd->result.signatures = NULL;
+          inv_key = opd->result.invalid_signers;
+          if (inv_key)
+            {
+              for (; inv_key->next; inv_key = inv_key->next)
+                ;
+              inv_key->next = key;
+            }
+          else
+            opd->result.invalid_signers = key;
         }
 
+      release_signatures (opd->result.signatures);
+      opd->result.signatures = NULL;
+    }
+
+  if (_gpgme_debug_trace())
+    {
       TRACE_LOG2 ("result: invalid signers: %i, signatures: %i",
 		  inv_signers, signatures);
-      inv_key = opd->result.invalid_signers;
-      while (inv_key)
+      for (inv_key=opd->result.invalid_signers; inv_key; inv_key=inv_key->next)
 	{
 	  TRACE_LOG3 ("result: invalid signer: fpr=%s, reason=%s <%s>",
 		      inv_key->fpr, gpgme_strerror (inv_key->reason),
 		      gpgme_strsource (inv_key->reason));
-	  inv_key = inv_key->next;
 	}
-      sig = opd->result.signatures;
-      while (sig)
+      for (sig = opd->result.signatures; sig; sig = sig->next)
 	{
 	  TRACE_LOG6 ("result: signature: type=%i, pubkey_algo=%i, "
 		      "hash_algo=%i, timestamp=%li, fpr=%s, sig_class=%i",
 		      sig->type, sig->pubkey_algo, sig->hash_algo,
 		      sig->timestamp, sig->fpr, sig->sig_class);
-	  sig = sig->next;
 	}
-    }
+   }
 
   TRACE_SUC1 ("result=%p", &opd->result);
   return &opd->result;
 }
+
 
 
 static gpgme_error_t
