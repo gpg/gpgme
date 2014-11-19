@@ -226,7 +226,7 @@ before the final OK response:
 
 @deffn {Status line} MICALG @var{string}
 The @var{string} represents the hash algorithm used to create the
-signature. It is used with MOSS style signature messages and defined by
+signature. It is used with RFC-1847 style signature messages and defined by
 PGP/MIME (RFC-3156) and S/MIME (RFC-3851).  The GPGME library has a
 supporting function @code{gpgme_hash_algo_name} to return the algorithm
 name as a string.  This string needs to be lowercased and for OpenPGP
@@ -368,13 +368,18 @@ message.
 All file related UI server commands operate on a number of input files
 or directories, specified by one or more @code{FILE} commands:
 
-@deffn Command FILE @var{name} [--continued]
+@deffn Command FILE [--clear] @var{name}
 Add the file or directory @var{name} to the list of pathnames to be
 processed by the server.  The parameter @var{name} must be an absolute
 path name (including the drive letter) and is percent espaced (in
 particular, the characters %, = and white space characters are always
-escaped).  The option @code{--continued} is present for all but the
-last @code{FILE} command.
+escaped).  If the option @code{--clear} is given, the list of files is
+cleared before adding @var{name}.
+
+Historical note: The original spec did not define @code{--clear} but
+the keyword @code{--continued} after the file name to indicate that
+more files are to be expected.  However, this has never been used and
+thus removed from the specs.
 @end deffn
 
 
