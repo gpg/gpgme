@@ -1,7 +1,11 @@
-Noteworthy changes in version 1.5.2 (unreleased) [C__/A__/R_]
+Noteworthy changes in version 1.5.2 (2014-11-21) [C24/A13/R1]
 -------------------------------------------------------------
 
  * gpgme-tool is now installed.
+
+ * Fix external listing for modern keyservers.
+
+ * Minor other fixes.
 
 
 Noteworthy changes in version 1.5.1 (2014-07-30) [C24/A13/R0]
