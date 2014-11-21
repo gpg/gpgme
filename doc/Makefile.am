@@ -31,6 +31,6 @@ online: gpgme.html gpgme.pdf
 	echo "Uploading current manuals to www.gnupg.org ..."; \
         user=werner ; \
 	(cd gpgme.html && rsync -vr --exclude='.svn' .  \
-	  $${user}@cvs.gnupg.org:webspace/manuals/gpgme/ ); \
-        rsync -v gpgme.pdf $${user}@cvs.gnupg.org:webspace/manuals/
+	  $${user}@ftp.gnupg.org:webspace/manuals/gpgme/ ); \
+        rsync -v gpgme.pdf $${user}@ftp.gnupg.org:webspace/manuals/
 
