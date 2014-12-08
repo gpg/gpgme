@@ -1,6 +1,6 @@
 /* export.c - Export a key.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2010 g10 Code GmbH
+   Copyright (C) 2001-2004, 2010, 2014 g10 Code GmbH
 
    This file is part of GPGME.
 
@@ -31,9 +31,82 @@
 #include "ops.h"
 
 
+/* Local operation data.  */
+typedef struct
+{
+  gpg_error_t err;  /* Error encountred during the export.  */
+} *op_data_t;
+
+
+static void
+release_op_data (void *hook)
+{
+  op_data_t opd = (op_data_t) hook;
+
+  (void)opd;  /* Nothing to release here.  */
+}
+
+
+/* Parse an error status line.  Return the error location and the
+   error code.  The function may modify ARGS. */
+static char *
+parse_error (char *args, gpg_error_t *r_err)
+{
+  char *where = strchr (args, ' ');
+  char *which;
+
+  if (where)
+    {
+      *where = '\0';
+      which = where + 1;
+
+      where = strchr (which, ' ');
+      if (where)
+	*where = '\0';
+
+      where = args;
+    }
+  else
+    {
+      *r_err = trace_gpg_error (GPG_ERR_INV_ENGINE);
+      return NULL;
+    }
+
+  *r_err = atoi (which);
+
+  return where;
+}
+
+
 static gpgme_error_t
 export_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
+  gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
+  gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
+  const char *loc;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_EXPORT, &hook, -1, NULL);
+  opd = hook;
+  if (err)
+    return err;
+
+  switch (code)
+    {
+    case GPGME_STATUS_ERROR:
+      loc = parse_error (args, &err);
+      if (!loc)
+        return err;
+      else if (opd->err)
+        ; /* We only want to report the first error.  */
+      else if (!strcmp (loc, "keyserver_send"))
+        opd->err = err;
+      break;
+
+    default:
+      break;
+    }
   return 0;
 }
 
@@ -43,6 +116,8 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
 	      gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
   gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
 
   if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
                 |GPGME_EXPORT_MODE_MINIMAL)))
@@ -61,6 +136,12 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
     }
 
   err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_EXPORT, &hook,
+			       sizeof (*opd), release_op_data);
+  opd = hook;
   if (err)
     return err;
 
@@ -114,6 +195,8 @@ export_ext_start (gpgme_ctx_t ctx, int synchronous, const char *pattern[],
 		  gpgme_export_mode_t mode, gpgme_data_t keydata)
 {
   gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
 
   if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
                 |GPGME_EXPORT_MODE_MINIMAL)))
@@ -131,6 +214,12 @@ export_ext_start (gpgme_ctx_t ctx, int synchronous, const char *pattern[],
     }
 
   err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_EXPORT, &hook,
+			       sizeof (*opd), release_op_data);
+  opd = hook;
   if (err)
     return err;
 
@@ -196,7 +285,24 @@ gpgme_op_export_ext (gpgme_ctx_t ctx, const char *pattern[],
 
   err = export_ext_start (ctx, 1, pattern, mode, keydata);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    {
+      err = _gpgme_wait_one (ctx);
+      if (!err)
+        {
+          /* For this synchronous operation we check for operational
+             errors and return them.  For asynchronous operations
+             there is currently no way to do this - we need to add a
+             gpgme_op_export_result function to fix that.  */
+          void *hook;
+          op_data_t opd;
+
+          err = _gpgme_op_data_lookup (ctx, OPDATA_EXPORT, &hook, -1, NULL);
+          opd = hook;
+          if (!err)
+            err = opd->err;
+        }
+    }
+
   return TRACE_ERR (err);
 }
 
@@ -319,7 +425,24 @@ gpgme_op_export_keys (gpgme_ctx_t ctx,
 
   err = export_keys_start (ctx, 1, keys, mode, keydata);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    {
+      err = _gpgme_wait_one (ctx);
+      if (!err)
+        {
+          /* For this synchronous operation we check for operational
+             errors and return them.  For asynchronous operations
+             there is currently no way to do this - we need to add a
+             gpgme_op_export_result function to fix that.  */
+          void *hook;
+          op_data_t opd;
+
+          err = _gpgme_op_data_lookup (ctx, OPDATA_EXPORT, &hook, -1, NULL);
+          opd = hook;
+          if (!err)
+            err = opd->err;
+        }
+    }
+
   return TRACE_ERR (err);
 }
 
