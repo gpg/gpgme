@@ -1,5 +1,8 @@
-Noteworthy changes in version 1.5.3 (unreleased) [C24/A13/R_]
+Noteworthy changes in version 1.5.3 (2014-12-11) [C24/A13/R2]
 -------------------------------------------------------------
+
+ * The export key functions do now return an error if used with the
+   latest GnuPG version.
 
 
 Noteworthy changes in version 1.5.2 (2014-11-21) [C24/A13/R1]

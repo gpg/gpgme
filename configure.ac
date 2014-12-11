@@ -59,7 +59,7 @@ LIBGPGME_LT_CURRENT=24
 # Subtract 2 from this value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
 LIBGPGME_LT_AGE=13
-LIBGPGME_LT_REVISION=1
+LIBGPGME_LT_REVISION=2
 
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
