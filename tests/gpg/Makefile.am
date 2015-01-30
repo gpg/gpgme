@@ -57,9 +57,7 @@ EXTRA_DIST = start-stop-agent initial.test final.test \
         pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 	geheim.txt pubkey-1.asc seckey-1.asc pinentry $(private_keys)
 
-INCLUDES = -I$(top_builddir)/src
-
-AM_CPPFLAGS = @GPG_ERROR_CFLAGS@
+AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 LDADD = ../../src/libgpgme.la
 t_thread1_LDADD = ../../src/libgpgme-pthread.la -lpthread
 

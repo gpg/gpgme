@@ -29,9 +29,7 @@ TESTS = t-import t-keylist t-encrypt t-verify t-decrypt t-sign t-export
 EXTRA_DIST = cert_dfn_pca01.der cert_dfn_pca15.der cert_g10code_test1.der \
 	$(key_id)
 
-INCLUDES = -I$(top_builddir)/src
-
-AM_CPPFLAGS = @GPG_ERROR_CFLAGS@
+AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 LDADD = ../../src/libgpgme.la
 
 # We don't run t-genkey in the test suite, because it takes too long

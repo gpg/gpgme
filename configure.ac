@@ -20,7 +20,7 @@
 
 # (Process this file with autoconf to produce a configure script.)
 AC_PREREQ(2.59)
-min_automake_version="1.11"
+min_automake_version="1.14"
 
 # To build a release you need to create a tag with the version number
 # (git tag -s gpgme-n.m.k) and run "./autogen.sh --force".  Please
@@ -77,9 +77,7 @@ AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR(src/gpgme.h.in)
 AC_CONFIG_HEADER(config.h)
-# Note: For automake 1.13 add the option
-#          serial-tests
-AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip])
+AM_INIT_AUTOMAKE([serial-tests dist-bzip2 no-dist-gzip])
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
 AM_SILENT_RULES

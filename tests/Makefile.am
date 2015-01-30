@@ -25,9 +25,7 @@ TESTS = t-version t-data t-engine-info
 
 EXTRA_DIST = t-data-1.txt t-data-2.txt ChangeLog-2011
 
-INCLUDES = -I$(top_builddir)/src
-
-AM_CPPFLAGS = @GPG_ERROR_CFLAGS@
+AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 LDADD = ../src/libgpgme.la @GPG_ERROR_LIBS@
 
 noinst_HEADERS = run-support.h
