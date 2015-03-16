@@ -66,7 +66,7 @@ gpgme_error_t
 gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 {
   TRACE_BEG2 (DEBUG_CTX, "gpgme_signers_add", ctx,
-	      "key=%p (%s)", key, (key->subkeys && key->subkeys->fpr) ?
+	      "key=%p (%s)", key, (key && key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid");
 
   if (!ctx || !key)

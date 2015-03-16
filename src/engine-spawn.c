@@ -355,8 +355,7 @@ engspawn_release (void *engine)
     {
       struct datalist_s *next = esp->arglist->next;
 
-      if (esp->arglist)
-	free (esp->arglist);
+      free (esp->arglist);
       esp->arglist = next;
     }
 

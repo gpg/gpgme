@@ -396,8 +396,7 @@ gpg_release (void *engine)
     {
       struct arg_and_data_s *next = gpg->arglist->next;
 
-      if (gpg->arglist)
-	free (gpg->arglist);
+      free (gpg->arglist);
       gpg->arglist = next;
     }
 
