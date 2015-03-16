@@ -120,7 +120,7 @@ add_data (engine_spawn_t esp, gpgme_data_t data, int dup_to, int inbound)
   assert (esp);
   assert (data);
 
-  a = malloc (sizeof *a - 1);
+  a = malloc (sizeof *a);
   if (!a)
     return gpg_error_from_syserror ();
   a->next = NULL;
