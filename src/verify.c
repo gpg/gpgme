@@ -195,6 +195,10 @@ calc_sig_summary (gpgme_signature_t sig)
       sum |= GPGME_SIGSUM_KEY_MISSING;
       break;
 
+    case GPG_ERR_CERT_REVOKED:
+      sum |= GPGME_SIGSUM_KEY_REVOKED;
+      break;
+
     case GPG_ERR_BAD_SIGNATURE:
     case GPG_ERR_NO_ERROR:
       break;
@@ -213,6 +217,9 @@ calc_sig_summary (gpgme_signature_t sig)
       break;
 
     case GPG_ERR_CERT_REVOKED:
+      /* Note that this is a second way to set this flag.  It may also
+         have been set due to a sig->status of STATUS_REVKEYSIG from
+         parse_new_sig.  */
       sum |= GPGME_SIGSUM_KEY_REVOKED;
       break;
 
