@@ -153,6 +153,7 @@ SUFFIXES = .rc .lo
 gpgme_res = versioninfo.lo
 no_undefined = -no-undefined
 export_symbols = -export-symbols $(srcdir)/gpgme.def
+extra_ltoptions = -XCClinker -static-libgcc
 
 install-def-file:
 	-$(INSTALL) -d $(DESTDIR)$(libdir)
@@ -167,20 +168,22 @@ else
 gpgme_res =
 no_undefined =
 export_symbols =
+extra_ltoptions =
 install-def-file:
 uninstall-def-file:
 
 gpgme_deps =
 endif
 
-libgpgme_la_LDFLAGS = $(no_undefined) $(export_symbols) \
+libgpgme_la_LDFLAGS = $(no_undefined) $(export_symbols) $(extra_ltoptions) \
 	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	             @GPG_ERROR_LIBS@
 
-libgpgme_pthread_la_LDFLAGS = $(no_undefined) $(export_symbols) \
+libgpgme_pthread_la_LDFLAGS = \
+        $(no_undefined) $(export_symbols) $(extra_ltoptions) \
 	$(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_pthread_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers
@@ -188,8 +191,9 @@ libgpgme_pthread_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	-lpthread @GPG_ERROR_LIBS@
 
 if BUILD_W32_GLIB
-libgpgme_glib_la_LDFLAGS = $(no_undefined) \
-	$(export_symbols) $(libgpgme_version_script_cmd) -version-info \
+libgpgme_glib_la_LDFLAGS = \
+        $(no_undefined) $(export_symbols) $(extra_ltoptions) \
+        $(libgpgme_version_script_cmd) -version-info \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_glib_la_DEPENDENCIES =	@LTLIBOBJS@ \
 	$(srcdir)/libgpgme.vers $(gpgme_deps)
