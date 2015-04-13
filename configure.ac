@@ -28,8 +28,8 @@ min_automake_version="1.14"
 # commit and push so that the git magic is able to work.  See below
 # for the LT versions.
 m4_define(mym4_version_major, [1])
-m4_define(mym4_version_minor, [6])
-m4_define(mym4_version_micro, [0])
+m4_define(mym4_version_minor, [5])
+m4_define(mym4_version_micro, [4])
 
 # Below is m4 magic to extract and compute the revision number, the
 # decimalized short revision number, a beta version string, and a flag
@@ -59,7 +59,7 @@ LIBGPGME_LT_CURRENT=24
 # Subtract 2 from this value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
 LIBGPGME_LT_AGE=13
-LIBGPGME_LT_REVISION=2
+LIBGPGME_LT_REVISION=3
 
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
@@ -546,7 +546,7 @@ AH_BOTTOM([
 #define GPG_ERR_ENABLE_ERRNO_MACROS 1
 
 #define CRIGHTBLURB "Copyright (C) 2000 Werner Koch\n" \
-                    "Copyright (C) 2001--2013 g10 Code GmbH\n"
+                    "Copyright (C) 2001--2015 g10 Code GmbH\n"
 ])
 
 
