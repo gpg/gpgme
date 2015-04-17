@@ -338,6 +338,11 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 	err = gpg_error (GPG_ERR_GENERAL);
       break;
 
+    case GPGME_STATUS_INQUIRE_MAXLEN:
+      if (ctx->status_cb)
+        err = ctx->status_cb (ctx->status_cb_value, "INQUIRE_MAXLEN", args);
+      break;
+
     default:
       break;
     }

@@ -124,6 +124,15 @@ genkey_status_handler (void *priv, gpgme_status_code_t code, char *args)
 	return gpg_error (GPG_ERR_GENERAL);
       break;
 
+    case GPGME_STATUS_INQUIRE_MAXLEN:
+      if (ctx->status_cb)
+        {
+          err = ctx->status_cb (ctx->status_cb_value, "INQUIRE_MAXLEN", args);
+          if (err)
+            return err;
+        }
+      break;
+
     default:
       break;
     }
