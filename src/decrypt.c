@@ -291,6 +291,16 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       err = _gpgme_parse_plaintext (args, &opd->result.file_name);
       if (err)
 	return err;
+      break;
+
+    case GPGME_STATUS_INQUIRE_MAXLEN:
+      if (ctx->status_cb)
+        {
+          err = ctx->status_cb (ctx->status_cb_value, "INQUIRE_MAXLEN", args);
+          if (err)
+            return err;
+        }
+      break;
 
     default:
       break;
