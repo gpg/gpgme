@@ -217,5 +217,8 @@ EXPORTS
 
     gpgme_op_spawn_start                  @163
     gpgme_op_spawn                        @164
+
+    gpgme_set_status_cb                   @165
+    gpgme_get_status_cb                   @166
 ; END
 

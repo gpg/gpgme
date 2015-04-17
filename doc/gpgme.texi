@@ -193,6 +193,7 @@ Context Attributes
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
+* Status Message Callback::       Status messages received from gpg.
 * Locale::                        Setting the locale of a context.
 
 Key Management
@@ -2289,6 +2290,7 @@ started.  In fact, these references are accessed through the
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
+* Status Message Callback::       Status messages received from gpg.
 * Locale::                        Setting the locale of a context.
 @end menu
 
@@ -2638,6 +2640,48 @@ progress callback is set, or @var{ctx} is not a valid pointer,
 @code{NULL} is returned in both variables.
 
 @var{progfunc} or @var{hook_value} can be @code{NULL}.  In this case,
+the corresponding value will not be returned.
+@end deftypefun
+
+
+@node Status Message Callback
+@subsection Status Message Callback
+@cindex callback, status message
+@cindex status message callback
+
+@deftp {Data type} {gpgme_error_t (*gpgme_status_cb_t)(void *@var{hook}, const char *@var{keyword}, const char *@var{args})}
+@tindex gpgme_status_cb_t
+The @code{gpgme_status_cb_t} type is the type of function usable as
+a status message callback function.
+
+The argument @var{keyword} is the name of the status message while the
+@var{args} argument contains any arguments for the status message.
+
+The status message may have come from gpg or libgpgme.
+
+If an error occurs, return the corresponding @code{gpgme_error_t}
+value. Otherwise, return @code{0}.
+@end deftp
+
+@deftypefun void gpgme_set_status_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_status_cb_t @var{statusfunc}}, @w{void *@var{hook_value}})
+The function @code{gpgme_set_status_cb} sets the function that is used when a
+status message is received from gpg to @var{statusfunc}. The function
+@var{statusfunc} needs to implemented by the user, and whenever it is called,
+it is called with its first argument being @var{hook_value}.  By default, no
+status message callback function is set.
+
+The user can disable the use of a status message callback function by calling
+@code{gpgme_set_status_cb} with @var{statusfunc} being @code{NULL}.
+@end deftypefun
+
+@deftypefun void gpgme_get_status_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_status_cb_t *@var{statusfunc}}, @w{void **@var{hook_value}})
+The function @code{gpgme_get_status_cb} returns the function that is used to
+process status messages from gpg in @var{*statusfunc}, and the first argument
+for this function in @var{*hook_value}.  If no status message callback is set,
+or @var{ctx} is not a valid pointer, @code{NULL} is returned in both
+variables.
+
+@var{statusfunc} or @var{hook_value} can be @code{NULL}.  In this case,
 the corresponding value will not be returned.
 @end deftypefun
 

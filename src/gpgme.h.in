@@ -839,6 +839,11 @@ typedef gpgme_error_t (*gpgme_passphrase_cb_t) (void *hook,
 typedef void (*gpgme_progress_cb_t) (void *opaque, const char *what,
 				     int type, int current, int total);
 
+/* Status messages from gpg. */
+typedef gpgme_error_t (*gpgme_status_cb_t) (void *opaque, const char *keyword,
+                                            const char *args);
+
+
 /* Interact with the user about an edit operation.  */
 typedef gpgme_error_t (*gpgme_edit_cb_t) (void *opaque,
 					  gpgme_status_code_t status,
@@ -929,6 +934,16 @@ void gpgme_set_progress_cb (gpgme_ctx_t c, gpgme_progress_cb_t cb,
    hook value in *HOOK_VALUE.  */
 void gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *cb,
 			    void **hook_value);
+
+/* Set the status callback function in CTX to CB.  HOOK_VALUE is
+   passed as first argument to thes status callback function.  */
+void gpgme_set_status_cb (gpgme_ctx_t c, gpgme_status_cb_t cb,
+                          void *hook_value);
+
+/* Get the current status callback function in *CB and the current
+   hook value in *HOOK_VALUE.  */
+void gpgme_get_status_cb (gpgme_ctx_t ctx, gpgme_status_cb_t *cb,
+                          void **hook_value);
 
 /* This function sets the locale for the context CTX, or the default
    locale if CTX is a null pointer.  */
