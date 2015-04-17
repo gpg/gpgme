@@ -135,6 +135,10 @@ struct gpgme_context
   gpgme_progress_cb_t progress_cb;
   void *progress_cb_value;
 
+  /* The user provided status callback and its hook value.  */
+  gpgme_status_cb_t status_cb;
+  void *status_cb_value;
+
   /* A list of file descriptors in active use by the current
      operation.  */
   struct fd_table fdt;

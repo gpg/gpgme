@@ -656,6 +656,37 @@ gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *r_cb,
 }
 
 
+/* This function sets a callback function to be used as a status
+   message forwarder.  */
+void
+gpgme_set_status_cb (gpgme_ctx_t ctx, gpgme_status_cb_t cb, void *cb_value)
+{
+  TRACE2 (DEBUG_CTX, "gpgme_set_status_cb", ctx, "status_cb=%p/%p",
+	  cb, cb_value);
+
+  if (!ctx)
+    return;
+
+  ctx->status_cb = cb;
+  ctx->status_cb_value = cb_value;
+}
+
+
+/* This function returns the callback function to be used as a
+   status message forwarder.  */
+void
+gpgme_get_status_cb (gpgme_ctx_t ctx, gpgme_status_cb_t *r_cb,
+		       void **r_cb_value)
+{
+  TRACE2 (DEBUG_CTX, "gpgme_get_status_cb", ctx, "ctx->status_cb=%p/%p",
+	  ctx->status_cb, ctx->status_cb_value);
+  if (r_cb)
+    *r_cb = ctx->status_cb;
+  if (r_cb_value)
+    *r_cb_value = ctx->status_cb_value;
+}
+
+
 /* Set the I/O callback functions for CTX to IO_CBS.  */
 void
 gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
