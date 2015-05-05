@@ -1,0 +1,93 @@
+pyme (0.8.1) unstable; urgency=low
+
+  * Add issuing gpgme_key_unref() in __del__ method for keys return from
+    op_keylist_next() and get_key() calls to avoid memory leak in a long
+    living contexts.
+  * Add missing (get|set)_engine_info() methods for the Context class and
+    set_engine_info() and set_locale() for the core module.
+  * Remove support for python2.3 in debian packaging since neither testing
+    nor unstable dist contains packages for it now.
+  * Update verifydetails.py for the new way structure types are handled;
+    add testCMSgetkey.py example for CMS keys. Thanks to Bernhard Reiter.
+  * Fix hang on Windows caused by passphrase_cb.
+
+ -- Igor Belyi <belyi@users.sourceforge.net>  Mon, 24 Nov 2008 01:56:19 -0500
+
+pyme (0.8.0) unstable; urgency=low
+
+  * Make all structure types containing 'next' field to be return as lists.
+    This includes when they are return from a function and when they are
+    member of another structure. Update all examples to use that updated
+    API.
+  * Switch to using pycentral for debian packages.
+  * Add rules to update PY file location in generated doc files.
+
+ -- Igor Belyi <belyi@users.sourceforge.net>  Sat, 29 Mar 2008 18:43:27 -0400
+
+pyme (0.7.1) unstable; urgency=low
+
+  * Add rules to build Windows version of the package.
+  * Move all constants into pyme.constants package to avoid conflicts with
+    Python reserved words. Previous location are preserved for now for
+    compatibility purposes.
+  * Change name of the internal GPGME wrapper package from 'gpgme' to
+    'pygpgme' to avoid conflict with gpgme.dll library on Windows.
+  * Fix gpgme.i to work with SWIG version >= 1.3.28
+  * Add core.check_version(None) call to the examples to do the proper
+    startup initialization.
+  * Add verifydetails.py example provided by Bernhard Reiter.
+
+ -- Igor Belyi <belyi@users.sourceforge.net>  Sun, 09 Mar 2008 21:35:16 -0400
+
+pyme (0.7.0) unstable; urgency=low
+
+  * Removed workaround in Context.wait()
+  * Updated core.wait() to return Context() object instead of GPGME pointer.
+  * Made Context.wait() and Context.op_edit() throw exception on failure.
+  * Added exception handling for passphrase_cb and edit_cb
+  * Allowed using None to unset previous callback and made hook argument
+    optional
+  * Fixed passphrase_cb to pass previously missing prev_bad argument as well
+  * Got rid of "warning: function declaration isn't a prototype" in helpers.h
+  * License on PyMe is changed from GPL to LGPL. Examples keep GPL license.
+  * Added pygpa.py example to illustrate gpa functionality using python.
+
+ -- Igor Belyi <belyi@users.sourceforge.net>  Wed, 27 Apr 2005 17:22:11 -0400
+
+pyme (0.6.2) unstable; urgency=low
+
+  * Implemented Context.wait() method more sutable for asynch calls in Python.
+  * Implemented Context.op_edit() to support editing operations
+  * Fixed string representation of the errors.GPGMEError exception
+  * Added a nice example: PyGtkGpgKeys.py (requires Glade2 and PyGTK 2.4).
+    No match to gpa, seahorse, or kgpg of course. :)
+
+ -- Igor Belyi <belyi@users.sourceforge.net>  Sat, 26 Mar 2005 11:42:27 -0500
+
+pyme (0.6.1) unstable; urgency=low
+
+  * Added package building for python2.4
+  * Updated copyright notes to avoid confusion for John's sake.
+  * Cleanup deprecated functions and typedefs from gpgme.h before building.
+
+ -- Igor Belyi <belyi@users.sourceforge.net>  Fri, 18 Mar 2005 20:41:52 -0500
+
+pyme (0.6.0) unstable; urgency=low
+
+  * Added support for libgpgme11 revision of GPGME library.
+
+ -- Igor Belyi <belyi@katehok.homeip.net>  Sun, 14 Mar 2004 16:37:39 -0500
+	
+pyme (0.5.1) unstable; urgency=low
+
+  * Added support for read callbacks for data objects, and an 
+    example for such to callbacks module.
+
+ -- John Goerzen <jgoerzen@complete.org>  Thu, 21 Nov 2002 08:29:52 -0600
+
+pyme (0.5.0) unstable; urgency=low
+
+  * Initial Release.  Closes: #169807.
+
+ -- John Goerzen <jgoerzen@complete.org>  Tue, 19 Nov 2002 14:32:36 -0600
+

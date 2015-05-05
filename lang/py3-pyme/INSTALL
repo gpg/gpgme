@@ -1,0 +1,15 @@
+To build pyme module without installing it run 'make'.
+
+To install pyme module run 'make install'. The module will be installed in the
+site-packages subdirectory of the python library directory.
+
+To delete all files generated during build run 'make reallyclean'
+
+To build documentation run 'make docs'. HTML files will be generated in 'doc'
+subdirectory.
+
+To build distribution files including Debian packages run 'make dist'
+To build distribution archive without Debian packages and without debian
+    subdirectory run 'make nondeb-dist'
+Note, Debian packages and distribution archive will be generated in the parent
+    directory.
