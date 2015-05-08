@@ -25,7 +25,7 @@ core.check_version(None)
 
 # Set up our input and output buffers.
 
-plain = core.Data('This is my message.')
+plain = core.Data(b'This is my message.')
 cipher = core.Data()
 
 # Initialize our context.
