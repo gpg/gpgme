@@ -51,7 +51,7 @@ else:
     c = Context()
     c.set_passphrase_cb(lambda x,y,z: "abc")
     out = Data()
-    c.op_keylist_start("Alpha", 0)
+    c.op_keylist_start(b"Alpha", 0)
     key = c.op_keylist_next()
     c.op_edit(key, KeyEditor().edit_fnc, out, out)
     print("[-- Last response --]")

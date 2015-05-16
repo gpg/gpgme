@@ -86,13 +86,13 @@ def main():
         sys.exit(1)
 
     if argc == 2:
-        print("trying to verify file: " + sys.argv[1])
-        verifyprintdetails(sys.argv[1])
+        print("trying to verify file: " + sys.argv[1].encode('utf-8'))
+        verifyprintdetails(sys.argv[1].encode('utf-8'))
     if argc == 3:
         print("trying to verify signature %s for file %s" \
-                    % (sys.argv[1], sys.argv[2]))
+                    % (sys.argv[1].encode('utf-8'), sys.argv[2].encode('utf-8')))
 
-        verifyprintdetails(sys.argv[1], sys.argv[2])
+        verifyprintdetails(sys.argv[1].encode('utf-8'), sys.argv[2].encode('utf-8'))
 
 if __name__ == "__main__":
     main()

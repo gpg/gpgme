@@ -22,10 +22,10 @@ from pyme.constants.sig import mode
 
 core.check_version(None)
 
-plain = core.Data("Test message")
+plain = core.Data(b"Test message")
 sig = core.Data()
 c = core.Context()
-c.set_passphrase_cb(callbacks.passphrase_stdin, 'for signing')
+c.set_passphrase_cb(callbacks.passphrase_stdin, b'for signing')
 c.op_sign(plain, sig, mode.CLEAR)
 sig.seek(0,0)
 print(sig.read())

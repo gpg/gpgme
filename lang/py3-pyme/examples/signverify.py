@@ -25,10 +25,10 @@ from pyme.constants.sig import mode
 
 core.check_version(None)
 
-plain = core.Data("Test message")
+plain = core.Data(b"Test message")
 sig = core.Data()
 c = core.Context()
-user = "joe@example.org"
+user = b"joe@example.org"
 
 c.signers_clear()
 # Add joe@example.org's keys in the list of signers
@@ -41,7 +41,7 @@ if not c.signers_enum(0):
 
 # This is a map between signer e-mail and its password
 passlist = {
-    "<joe@example.org>": "Crypt0R0cks"
+    b"<joe@example.org>": b"Crypt0R0cks"
     }
     
 # callback will return password based on the e-mail listed in the hint.
