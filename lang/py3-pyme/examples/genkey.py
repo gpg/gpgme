@@ -35,7 +35,7 @@ Subkey-Type: RSA
 Subkey-Length: 2048
 Name-Real: Joe Tester
 Name-Comment: with stupid passphrase
-Name-Email: joe@foo.bar
+Name-Email: joe@example.org
 Passphrase: abcdabcdfs
 Expire-Date: 2020-12-31
 </GnupgKeyParms>
