@@ -3,6 +3,10 @@
 # 20080124-2: removed some superflous imports
 # 20080703: adapted for pyme-0.8.0
 # This script is Free Software under GNU GPL v>=2.
+#
+# No modification made for python3 port, Bernhard can field this one
+# if it is still required.  -- Ben McGinnes
+#
 """A test applicaton for gpg_get_key() protocol.CMS.
 
 Tested on Debian Etch with
