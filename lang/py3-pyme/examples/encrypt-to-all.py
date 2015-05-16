@@ -18,9 +18,9 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-This program will try to encrypt a simple message to each key on your keyring.
-If your keyring has any invalid keys on it, those keys will be removed
-and it will re-try the encryption."""
+This program will try to encrypt a simple message to each key on your
+keyring.  If your keyring has any invalid keys on it, those keys will
+be skipped and it will re-try the encryption."""
 
 from pyme import core
 from pyme.core import Data, Context
@@ -28,7 +28,7 @@ from pyme.constants import validity
 
 core.check_version(None)
 
-plain = Data('This is my message.')
+plain = Data(b'This is my message.')
 
 c = Context()
 c.set_armor(1)
@@ -41,16 +41,19 @@ def sendto(keylist):
 
 names = []
 for key in c.op_keylist_all(None, 0):
-    print(" *** Found key for %s" % key.uids[0].uid)
-    valid = 0
-    for subkey in key.subkeys:
-        keyid = subkey.keyid
-        if keyid == None:
-            break
-        can_encrypt = subkey.can_encrypt
-        valid += can_encrypt
-        print("     Subkey %s: encryption %s" % \
-              (keyid, can_encrypt and "enabled" or "disabled"))
+    try:
+        print(" *** Found key for %s" % key.uids[0].uid)
+        valid = 0
+        for subkey in key.subkeys:
+            keyid = subkey.keyid
+            if keyid == None:
+                break
+            can_encrypt = subkey.can_encrypt
+            valid += can_encrypt
+            print("     Subkey %s: encryption %s" % \
+                  (keyid, can_encrypt and "enabled" or "disabled"))
+    except UnicodeEncodeError as e:
+        print(e)
     
     if valid:
         names.append(key)
