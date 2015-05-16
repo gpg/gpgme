@@ -48,7 +48,7 @@ if len(sys.argv) != 2:
 else:
     c = Context()
     out = Data()
-    c.op_keylist_start(sys.argv[1], 0)
+    c.op_keylist_start(sys.argv[1].encode('utf-8'), 0)
     key = c.op_keylist_next()
     helper = {"skip": 0, "data": out}
     c.op_edit(key, edit_fnc, helper, out)
