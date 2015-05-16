@@ -28,16 +28,16 @@ c.set_progress_cb(callbacks.progress_stdout, None)
 
 # This example from the GPGME manual
 
-parms = """<GnupgKeyParms format="internal">
-Key-Type: DSA
-Key-Length: 1024
-Subkey-Type: ELG-E
-Subkey-Length: 1024
+parms = b"""<GnupgKeyParms format="internal">
+Key-Type: RSA
+Key-Length: 2048
+Subkey-Type: RSA
+Subkey-Length: 2048
 Name-Real: Joe Tester
 Name-Comment: with stupid passphrase
 Name-Email: joe@foo.bar
 Passphrase: abcdabcdfs
-Expire-Date: 2010-08-15
+Expire-Date: 2020-12-31
 </GnupgKeyParms>
 """
 
