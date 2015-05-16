@@ -41,7 +41,7 @@ if not c.signers_enum(0):
 
 # This is a map between signer e-mail and its password
 passlist = {
-    "<joe@example.org>": "abcdabcdfs"
+    "<joe@example.org>": "Crypt0-R0cks"
     }
     
 # callback will return password based on the e-mail listed in the hint.
