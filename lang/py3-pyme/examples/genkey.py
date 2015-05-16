@@ -36,7 +36,7 @@ Subkey-Length: 2048
 Name-Real: Joe Tester
 Name-Comment: with stupid passphrase
 Name-Email: joe@example.org
-Passphrase: Crypt0-R0cks
+Passphrase: Crypt0R0cks
 Expire-Date: 2020-12-31
 </GnupgKeyParms>
 """

@@ -27,7 +27,7 @@ core.check_version(None)
 expkey = core.Data()
 c = core.Context()
 c.set_armor(1)
-user = "joe@example.org"
+user = b"joe@example.org"
 
 print(" - Export %s's public keys - " % user)
 c.op_export(user, 0, expkey)
