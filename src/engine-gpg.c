@@ -2194,6 +2194,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
               {
                 *dst++ = '\\';
                 *dst++ = '\\';
+                src++;
               }
 	    else
 	      *(dst++) = *(src++);
