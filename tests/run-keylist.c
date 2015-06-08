@@ -45,6 +45,7 @@ show_usage (int ex)
          "  --verbose        run in verbose mode\n"
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
+         "  --secret         list only secret keys\n"
          "  --local          use GPGME_KEYLIST_MODE_LOCAL\n"
          "  --extern         use GPGME_KEYLIST_MODE_EXTERN\n"
          "  --sigs           use GPGME_KEYLIST_MODE_SIGS\n"
@@ -70,6 +71,7 @@ main (int argc, char **argv)
   gpgme_key_t keyarray[100];
   int keyidx = 0;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
+  int only_secret = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -97,6 +99,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--cms"))
         {
           protocol = GPGME_PROTOCOL_CMS;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--secret"))
+        {
+          only_secret = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--local"))
@@ -150,7 +157,7 @@ main (int argc, char **argv)
 
   gpgme_set_keylist_mode (ctx, mode);
 
-  err = gpgme_op_keylist_start (ctx, argc? argv[0]:NULL, 0);
+  err = gpgme_op_keylist_start (ctx, argc? argv[0]:NULL, only_secret);
   fail_if_err (err);
 
   while (!(err = gpgme_op_keylist_next (ctx, &key)))
