@@ -1,4 +1,5 @@
 #!/bin/sh
 
 ${top_srcdir}/tests/start-stop-agent --stop
+
 exit 0
