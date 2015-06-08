@@ -80,11 +80,12 @@ _gpgme_debug_frame_begin (void)
 #endif
 }
 
-void _gpgme_debug_frame_end (void)
+int _gpgme_debug_frame_end (void)
 {
 #ifdef FRAME_NR
   frame_nr--;
 #endif
+  return 0;
 }
 
 
@@ -223,8 +224,17 @@ _gpgme_debug_subsystem_init (void)
 
 
 
-/* Log the formatted string FORMAT at debug level LEVEL or higher.  */
-void
+/* Log the formatted string FORMAT at debug level LEVEL or higher.
+ *
+ * Returns: 0
+ *
+ * Note that we always return 0 because the old TRACE macro evaluated
+ * to 0 which issues a warning with newer gcc version about an unused
+ * values.  By using a return value of this function this can be
+ * avoided.  Fixme: It might be useful to check whether the return
+ * value from the TRACE macros are actually used somewhere.
+ */
+int
 _gpgme_debug (int level, const char *format, ...)
 {
   va_list arg_ptr;
@@ -232,7 +242,7 @@ _gpgme_debug (int level, const char *format, ...)
 
   saved_errno = errno;
   if (debug_level < level)
-    return;
+    return 0;
 
   va_start (arg_ptr, format);
   LOCK (debug_lock);
@@ -273,6 +283,7 @@ _gpgme_debug (int level, const char *format, ...)
   fflush (errfp);
 
   gpg_err_set_errno (saved_errno);
+  return 0;
 }
 
 
