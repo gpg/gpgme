@@ -1,0 +1,72 @@
+===========================
+Frequently Asked‡ Questions
+===========================
+
+‡ At this stage these are more like Frequently Anticipated Questions.
+
+-----------------
+Using the Project
+-----------------
+
+**1. Why implement an interactive codebase?**
+
+For good or ill, modern application development has turned to many web based technologies.  As a result there are many more developers who no longer use or know languages like C.  Consequently complete APIs like GPGME are not available to them when they may very well need it or benefit greatly from it.  Rather than continuing existing systems which utilise wrappers calling command line programs (e.g. `python-gnupg <https://bitbucket.org/vinay.sajip/python-gnupg>`_), it is best to provide access to GPGME in a manner which can be safely used by newer developers.
+
+**2. Won't that create bottlenecks or performance issues?**
+
+It might, but chances are these will be negligible for most implementations.  Projects which truly needs greater optimisation should consider utilising the GPGME C code directly.
+
+**3. I want (or need) to use a proprietary licence with my project, can I use this?**
+
+Yes, when interacting with GPyGME as a stand alone API it is much the same as using any external API.  That is, your code is simply communicating with another system and not integrating that system into your own code.  Only when implementing your project in Python and importing the API as a module or library would your code then become subject to the LGPL 2.1+ (which might be fine anyway, consult with a lawyer for issues pertaining to your specific situation).
+
+----------------------
+International Treaties
+----------------------
+
+**1. The current author/maintainer is in Australia, won't that cause problems with ITAR and the Wassenaar Arrangement?**
+
+I'm not developing a cryptosystem or any encryption algorithms, I'm developing an API.  So I should not be affected one way or the other by the provisions of the `Defence Trade Control Act 2012 <http://www.austlii.edu.au/au/legis/cth/num_act/dtca2012207/>`_ (DTCA), particularly with the 2015 amendments which have been passed by the Australian Parliament.
+
+**2. What if you're wrong about that?**
+
+That seems somewhat unlikely.  The DSGL explicitly cites cryptography and encryption software as being in Part 2 of the `Defence Trade Cooperation Munitions List <http://www.austlii.edu.au/au/legis/cth/num_act/dtca2012207/s4.html#defense_trade_cooperation_munitions_list>`_, but neither GPGME nor GPyGME are encryption software directly.  Even GPGME simply provides a means of accessing what it refers to as encryption engines; currently the engines it supports are GnuPG and GpgSM.  As long as I do not develop any of these encryption engines my work is not affected by the provisions of Australia's export controls, no matter how backward or useless I might consider those controls to be.
+
+**3. In April 2016 the enforcement provisions of the DTCA come into force, could that change anything here?**
+
+If the Minister of Defence makes a specific announcement in Parliament naming me and this work as falling under the purview of the DTCA, then yes; otherwise no.
+
+The only other way it could happen is if the Defence definition of "public domain" changes or if exemptions based on something being in the public domain are removed.
+
+**4. What if that happens?**
+
+This is getting a bit ridiculous, but alright ... should any of those incredibly unlikely events actually occur I will be faced with the following options:
+
+- Capitulate immediately and cease maintaining the software.
+- Capitulate immediately and apply for a permit to continue maintaining the software.
+- Ignore the decision and fight it in Court (which would be hideously expensive, but interesting).
+- Leave Australia.
+
+As far as I'm concerned the only really viable options in that scenario would be to either leave the project or to leave my country.  In all likelihood this would be a permanent departure in either case.
+
+**5. Which of those would you do?**
+
+I'm not a hundred percent sure, it would depend on whatever other factors were in play at such a time as it might occur.  If it were to happen now or I were in essentially the same position at such a time as I am now, then the most likely scenario is that I'd tell my government where to go; then emigrate to Europe somewhere.
+
+**6. Really?**
+
+Yes, really.  It wouldn't mean I'd never be able to visit Australia, it just means I'd never be able to work in Australia.  I would lose nothing and the Australian government would lose a tiny amount of income tax revenue.
+
+**7. What assurances can you give that questions 3 to 6 are just paranoia and everything will be fine?**
+
+The Department of Defence's `Defence Export Control Office <http://www.defence.gov.au/DECO/Default.asp>`_ (DECO) provides numerous resources to address concerns relating to this type of development.  Included in this is the `Defence and Strategic Goods List <https://dsgl.defence.gov.au/pages/home.aspx>`_ (DSGL) and its accompanying `Activity Questionnaire <https://dsgl.defence.gov.au/pages/questionnaire.aspx>`_ and `Online DSGL Search Tool <https://dsgl.defence.gov.au/pages/search.aspx>`_.
+
+I completed the questionaire using the following conservative assumptions: that this work is either or both of supply and publishing of software and technology; and that the entire project really is in the category of Part 2 of the DSGL as a dual-use technology.  Even though I am still pretty sure that only GPG itself and GpgSM would be placed in that category.  Maybe libassuan, dirmngr and pinentry would too.  Still, assuming that it all did, including GPGME and GPyGME, the results are clear that both supply and publication are fine.  The `definitions of supply and publishing <http://dfat.gov.au/international-relations/security/sanctions/sanctions-regimes/Pages/sanctions-regimes.aspx>`_, however, indicate that this work would likely only ever be considered publishing.
+
+The reason for this is that all the existing software on which this work is built is what Defence classifies as being in the public domain.  In this context that is not the same as the term is used for copyright and licensing, it means that the software and information is already freely available to anyone.  Thus it would be the same for all or almost all free (libre) and open source software.
+
+Only Australian cryptographers developing entirely new encryption algortithms are likely to be directly impacted by the provisions of the DCTA.  I am very much *not* in that category.  Furthermore, any algorithm added to the specifications for GPG would need to pass through an international selection process anyway, by which stage it would be exempt from these types of restrictions because it would already be in the public domain as far as Australia's Department of Defence is concerned.
+
+The results of my completed questionnaire are available `here <Australian_DCTA_export_DECO_Questionnaire_Results.pdf>`_ (PDF) and a GPG signature of the file is `here <Australian_DCTA_export_DECO_Questionnaire_Results.pdf.sig>`_.  The file is signed with my key (ID 0x321E4E2373590E5D).
+
+With regards to current sanctions by Australia against any entity as referenced in that document and available `here <http://dfat.gov.au/international-relations/security/sanctions/pages/sanctions.aspx>`_, my method of publication consists of uploading information to the GPG git server in Germany.  Germany is not currently a sanctioned country by Australia, nor are any of the involved companies sanctioned separately.  In fact, the only reference to Germany on Australia's list of sanctioned entities pertains to a number of individuals, mostly members of Al-Qaeda, currently serving time in German prisons or having been deported from Germany.  Additional details on those sanctions can be found `here <http://dfat.gov.au/international-relations/security/sanctions/Pages/consolidated-list.aspx>`_ and `here <http://dfat.gov.au/international-relations/security/sanctions/sanctions-regimes/Pages/sanctions-regimes.aspx>`_.
