@@ -23,6 +23,11 @@ Werner Koch <wk@gnupg.org>
 Wojciech Polak <polak@lodz.pdi.net>
  - gpgme.spec
 
+Ben McGinnes <ben@adversary.org>
+ - Python 3 port of SWIG generated wrappers; pyme 0.9: lang/pyme.
+ - Python 3 API for all non-C languages; GPyGME (pronounced "pig-me"):
+   lang/gpygme.
+
 
 Authors with a DCO
 ==================
