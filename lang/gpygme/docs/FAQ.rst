@@ -20,9 +20,9 @@ It might, but chances are these will be negligible for most implementations.  Pr
 
 Yes, when interacting with GPyGME as a stand alone API it is much the same as using any external API.  That is, your code is simply communicating with another system and not integrating that system into your own code.  Only when implementing your project in Python and importing the API as a module or library would your code then become subject to the LGPL 2.1+ (which might be fine anyway, consult with a lawyer for issues pertaining to your specific situation).
 
-----------------------
-International Treaties
-----------------------
+------------------------------
+Australian Developers and ITAR
+------------------------------
 
 **1. The current author/maintainer is in Australia, won't that cause problems with ITAR and the Wassenaar Arrangement?**
 
@@ -38,26 +38,7 @@ If the Minister of Defence makes a specific announcement in Parliament naming me
 
 The only other way it could happen is if the Defence definition of "public domain" changes or if exemptions based on something being in the public domain are removed.
 
-**4. What if that happens?**
-
-This is getting a bit ridiculous, but alright ... should any of those incredibly unlikely events actually occur I will be faced with the following options:
-
-- Capitulate immediately and cease maintaining the software.
-- Capitulate immediately and apply for a permit to continue maintaining the software.
-- Ignore the decision and fight it in Court (which would be hideously expensive, but interesting).
-- Leave Australia.
-
-As far as I'm concerned the only really viable options in that scenario would be to either leave the project or to leave my country.  In all likelihood this would be a permanent departure in either case.
-
-**5. Which of those would you do?**
-
-I'm not a hundred percent sure, it would depend on whatever other factors were in play at such a time as it might occur.  If it were to happen now or I were in essentially the same position at such a time as I am now, then the most likely scenario is that I'd tell my government where to go; then emigrate to Europe somewhere.
-
-**6. Really?**
-
-Yes, really.  It wouldn't mean I'd never be able to visit Australia, it just means I'd never be able to work in Australia.  I would lose nothing and the Australian government would lose a tiny amount of income tax revenue.
-
-**7. What assurances can you give that questions 3 to 6 are just paranoia and everything will be fine?**
+**4. What assurances can you give that this will remain the case and everything will be fine?**
 
 The Department of Defence's `Defence Export Control Office <http://www.defence.gov.au/DECO/Default.asp>`_ (DECO) provides numerous resources to address concerns relating to this type of development.  Included in this is the `Defence and Strategic Goods List <https://dsgl.defence.gov.au/pages/home.aspx>`_ (DSGL) and its accompanying `Activity Questionnaire <https://dsgl.defence.gov.au/pages/questionnaire.aspx>`_ and `Online DSGL Search Tool <https://dsgl.defence.gov.au/pages/search.aspx>`_.
 
