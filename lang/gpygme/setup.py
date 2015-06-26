@@ -43,7 +43,7 @@ setup(
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'License :: OSI Approved :: LGPL 2.1+',
-        'License :: OSI Approved :: GPL 3.0+',
+        'License :: OSI Approved :: GPL 2.0+',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
