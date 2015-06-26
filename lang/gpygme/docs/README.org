@@ -29,10 +29,27 @@ ability to unlock just as much power.
 
 ** Licensing
 
-GPyGME utilises the LGPL 2.1+ license, the same as GPGME itself.  As
-it is built on GPGME this is a requirement.  Documentation will be
-covered by both the GPLv3+ as with the GPGME documentation and a
-Creative Commons license.
+GPyGME utilises the LGPL 2.1+ license, the same as GPGME itself.  It
+may also include some tools or sample code licensed under the GPL 2.0
+or 3.0.  Any such code will be marked clearly as such.  Documentation
+will be covered by both the GPLv3+ as with the GPGME documentation and
+the [[http://creativecommons.org][Creative Commons]] [[http://creativecommons.org/licenses/by-sa/3.0/legalcode][Attribution-ShareAlike 3.0 Unported Public
+License]] (CC BY-SA 3.0) and the [[http://creativecommons.org/licenses/by-sa/4.0/legalcode][Attribution-ShareAlike 4.0
+International Public License]] (CC BY-SA 4.0).
+
+Contributions to GPyGME require the same licensing and assurances be
+granted the project as are presently required by GPGME.  Specifically
+that authors agree to license their contributions under both the LGPL
+version 2.1 and the GPL version 2.0; using the "or any later" clause
+in both cases.  Documentation authors are required to include the
+matching both the Creative Commons BY-SA 3.0 and 4.0 licenses in
+addition to the GPL and LGPL.
+
+While we do not request the copyright of these contributions be signed
+over to the Free Software Foundation, we do request developers and
+authors include a signed copy of the [[http://git.gnupg.org/cgi-bin/gitweb.cgi?p%3Dgpgme.git%3Ba%3Dblob_plain%3Bf%3Ddoc/DCO%3Bhb%3DHEAD][GPGME Developers' Certificate of
+Origin]] (DCO) as per the instructions provided with the GPGME
+documentation.  See the [[http://git.gnupg.org/cgi-bin/gitweb.cgi?p%3Dgpgme.git%3Ba%3Dblob_plain%3Bf%3Ddoc/HACKING%3Bhb%3DHEAD][hacking]] document for more details.
 
 Note that interacting with the GPyGME API as a stand alone interface
 (i.e.  sending and receiving JSON data to it via a socket, command or
