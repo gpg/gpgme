@@ -2279,7 +2279,7 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
 
 static gpgme_error_t
 gpg_keylist (void *engine, const char *pattern, int secret_only,
-	     gpgme_keylist_mode_t mode)
+	     gpgme_keylist_mode_t mode, int engine_flags)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -2298,7 +2298,7 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
 
 static gpgme_error_t
 gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
-		 int reserved, gpgme_keylist_mode_t mode)
+		 int reserved, gpgme_keylist_mode_t mode, int engine_flags)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;

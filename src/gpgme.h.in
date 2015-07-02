@@ -887,6 +887,12 @@ void gpgme_set_textmode (gpgme_ctx_t ctx, int yes);
 /* Return non-zero if text mode is set in CTX.  */
 int gpgme_get_textmode (gpgme_ctx_t ctx);
 
+/* If YES is non-zero, enable offline mode in CTX, disable it otherwise.  */
+void gpgme_set_offline (gpgme_ctx_t ctx, int yes);
+
+/* Return non-zero if offline mode is set in CTX.  */
+int gpgme_get_offline (gpgme_ctx_t ctx);
+
 /* Use whatever the default of the backend crypto engine is.  */
 #define GPGME_INCLUDE_CERTS_DEFAULT	-256
 

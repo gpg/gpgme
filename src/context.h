@@ -98,6 +98,9 @@ struct gpgme_context
   /* True if text mode should be used.  */
   unsigned int use_textmode : 1;
 
+  /* True if offline mode should be used.  */
+  unsigned int offline : 1;
+
   /* Flags for keylist mode.  */
   gpgme_keylist_mode_t keylist_mode;
 

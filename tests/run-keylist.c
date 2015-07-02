@@ -53,6 +53,7 @@ show_usage (int ex)
          "  --ephemeral      use GPGME_KEYLIST_MODE_EPHEMERAL\n"
          "  --validate       use GPGME_KEYLIST_MODE_VALIDATE\n"
          "  --import         import all keys\n"
+         "  --offline        use offline mode\n"
          , stderr);
   exit (ex);
 }
@@ -72,6 +73,7 @@ main (int argc, char **argv)
   int keyidx = 0;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
   int only_secret = 0;
+  int offline = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -141,6 +143,11 @@ main (int argc, char **argv)
           import = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--offline"))
+        {
+          offline = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -156,6 +163,8 @@ main (int argc, char **argv)
   gpgme_set_protocol (ctx, protocol);
 
   gpgme_set_keylist_mode (ctx, mode);
+
+  gpgme_set_offline (ctx, offline);
 
   err = gpgme_op_keylist_start (ctx, argc? argv[0]:NULL, only_secret);
   fail_if_err (err);

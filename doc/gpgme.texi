@@ -189,6 +189,7 @@ Context Attributes
 * Crypto Engine::                 Configuring the crypto engine.
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
+* Offline Mode::                  Choosing offline mode.
 * Included Certificates::         Including a number of certificates.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
@@ -2285,6 +2286,7 @@ started.  In fact, these references are accessed through the
 * Crypto Engine::                 Configuring the crypto engine.
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
+* Offline Mode::                  Choosing offline mode.
 * Included Certificates::         Including a number of certificates.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
@@ -2408,6 +2410,37 @@ otherwise.
 
 @deftypefun int gpgme_get_textmode (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_get_textmode} returns 1 if canonical text
+mode is enabled, and @code{0} if it is not, or if @var{ctx} is not a
+valid pointer.
+@end deftypefun
+
+
+@node Offline Mode
+@subsection Offline Mode
+@cindex context, offline mode
+@cindex offline mode
+
+@deftypefun void gpgme_set_offline (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{yes}})
+The function @code{gpgme_set_offline} specifies if offline mode
+should be used.  By default, offline mode is not used.
+
+The offline mode specifies if dirmngr should be used to do additional
+validation that might require connections to external services.
+(e.g. CRL / OCSP checks).
+
+Offline mode only affects the keylist mode @code{GPGME_KEYLIST_MODE_VALIDATE}
+and is only relevant to the CMS crypto engine. Offline mode
+is ignored otherwise.
+
+This option may be extended in the future to completely disable
+the use of dirmngr for any engine.
+
+Offline mode is disabled if @var{yes} is zero, and enabled
+otherwise.
+@end deftypefun
+
+@deftypefun int gpgme_get_offline (@w{gpgme_ctx_t @var{ctx}})
+The function @code{gpgme_get_offline} returns 1 if offline
 mode is enabled, and @code{0} if it is not, or if @var{ctx} is not a
 valid pointer.
 @end deftypefun

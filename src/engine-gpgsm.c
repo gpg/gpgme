@@ -1542,7 +1542,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
 
 static gpgme_error_t
 gpgsm_keylist (void *engine, const char *pattern, int secret_only,
-	       gpgme_keylist_mode_t mode)
+	       gpgme_keylist_mode_t mode, int engine_flags)
 {
   engine_gpgsm_t gpgsm = engine;
   char *line;
@@ -1599,6 +1599,11 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
                                "OPTION with-secret=1":
                                "OPTION with-secret=0" ,
                                NULL, NULL);
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx,
+                               (engine_flags & GPGME_ENGINE_FLAG_OFFLINE)?
+                               "OPTION offline=1":
+                               "OPTION offline=0" ,
+                               NULL, NULL);
 
 
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
@@ -1629,7 +1634,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
 
 static gpgme_error_t
 gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
-		   int reserved, gpgme_keylist_mode_t mode)
+		   int reserved, gpgme_keylist_mode_t mode, int engine_flags)
 {
   engine_gpgsm_t gpgsm = engine;
   char *line;
@@ -1669,7 +1674,11 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
                                "OPTION with-secret=1":
                                "OPTION with-secret=0" ,
                                NULL, NULL);
-
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx,
+                               (engine_flags & GPGME_ENGINE_FLAG_OFFLINE)?
+                               "OPTION offline=1":
+                               "OPTION offline=0" ,
+                               NULL, NULL);
 
   if (pattern && *pattern)
     {
