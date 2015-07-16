@@ -947,6 +947,15 @@ gpgme_error_t gpgme_ctx_set_engine_info (gpgme_ctx_t ctx,
 					 const char *file_name,
 					 const char *home_dir);
 
+/* Set custom command line options for the engine associated with a
+   context. */
+gpgme_error_t gpgme_ctx_set_engine_options (gpgme_ctx_t ctx,
+                                            const char *options);
+
+/* Return previously set custom engine command line options. */
+gpgme_error_t gpgme_ctx_get_engine_options (gpgme_ctx_t ctx,
+                                            const char **result);
+
 
 /* Return a statically allocated string with the name of the public
    key algorithm ALGO, or NULL if that name is not known.  */

@@ -1316,6 +1316,8 @@ struct engine_ops _gpgme_engine_ops_uiserver =
     uiserver_set_colon_line_handler,
     uiserver_set_locale,
     uiserver_set_protocol,
+    NULL,		/* set_options */
+    NULL,               /* get_options */
     uiserver_decrypt,
     uiserver_decrypt_verify,
     NULL,		/* delete */

@@ -445,6 +445,37 @@ gpgme_set_engine_info (gpgme_protocol_t proto,
   return err;
 }
 
+/* Set custom command line options for the engine associated with a
+   context. */
+gpgme_error_t
+gpgme_ctx_set_engine_options (gpgme_ctx_t ctx, const char *options)
+{
+  if (!ctx || !ctx->engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!ctx->engine->ops->set_options)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*ctx->engine->ops->set_options) (ctx->engine->engine, options);
+}
+
+/* Return previously set custom engine command line options. */
+gpgme_error_t
+gpgme_ctx_get_engine_options (gpgme_ctx_t ctx, const char **result)
+{
+  if (!ctx || !ctx->engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!result)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  if (!ctx->engine->ops->get_options)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  *result = (*ctx->engine->ops->get_options) (ctx->engine->engine);
+  return 0;
+}
+
 
 gpgme_error_t
 _gpgme_engine_new (gpgme_engine_info_t info, engine_t *r_engine)

@@ -83,8 +83,18 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
   struct gpgme_io_cbs io_cbs;
   int no_reset = (type & 256);
   int reuse_engine = 0;
+  char *options = NULL;
+  const char *tmp = NULL;
 
   type &= 255;
+
+  err = gpgme_ctx_get_engine_options (ctx, &tmp);
+  if (tmp)
+    {
+      options = strdup (tmp);
+      if (!options)
+        return GPG_ERR_ENOMEM;
+    }
 
   _gpgme_release_result (ctx);
   LOCK (ctx->lock);
@@ -119,7 +129,21 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
       err = _gpgme_engine_new (info, &ctx->engine);
       if (err)
 	return err;
+
+      if (options)
+        {
+          err = gpgme_ctx_set_engine_options (ctx, options);
+          if (err && gpg_err_code (err) != GPG_ERR_NOT_IMPLEMENTED)
+            {
+              free (options);
+              _gpgme_engine_release (ctx->engine);
+              ctx->engine = NULL;
+              return err;
+            }
+        }
     }
+
+  free (options);
 
   if (!reuse_engine)
     {

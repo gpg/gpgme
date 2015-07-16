@@ -939,6 +939,8 @@ struct engine_ops _gpgme_engine_ops_gpgconf =
     NULL,		/* set_colon_line_handler */
     NULL,		/* set_locale */
     NULL,		/* set_protocol */
+    NULL,		/* set_options */
+    NULL,               /* get_options */
     NULL,		/* decrypt */
     NULL,		/* decrypt_verify */
     NULL,		/* delete */

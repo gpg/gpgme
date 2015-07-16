@@ -115,6 +115,7 @@ struct engine_gpg
 
   char **argv;
   struct fd_data_map_s *fd_data_map;
+  char *options; /* gpgme_ctx_set_engine_options() */
 
   /* stuff needed for interactive (command) mode */
   struct
@@ -404,6 +405,7 @@ gpg_release (void *engine)
     free (gpg->status.buffer);
   if (gpg->colon.buffer)
     free (gpg->colon.buffer);
+  free (gpg->options);
   if (gpg->argv)
     free_argv (gpg->argv);
   if (gpg->cmd.keyword)
@@ -716,6 +718,43 @@ gpg_set_command_handler (void *engine, engine_command_handler_t fnc,
 }
 
 
+/* Custom command line options set with gpgme_ctx_set_engine_options() */
+static gpgme_error_t
+build_custom_argv (engine_gpg_t gpg, size_t *argc, char ***result)
+{
+  char *s, *options = gpg->options;
+  char **argv = NULL;
+  int total = 0;
+
+  if (!options)
+    return 0;
+
+  while ((s = strsep (&options, " ")))
+    {
+      char **tmp = realloc (argv, (total+2) * sizeof (char *));
+
+      if (!tmp)
+        {
+          free_argv (argv);
+          return GPG_ERR_ENOMEM;
+        }
+
+      argv = tmp;
+      argv[total] = strdup (s);
+      if (!argv[total++])
+        {
+          free_argv (argv);
+          return GPG_ERR_ENOMEM;
+        }
+
+      argv[total] = NULL;
+      (*argc)++;
+    }
+
+  *result = argv;
+  return 0;
+}
+
 static gpgme_error_t
 build_argv (engine_gpg_t gpg, const char *pgmname)
 {
@@ -723,7 +762,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
   struct arg_and_data_s *a;
   struct fd_data_map_s *fd_data_map;
   size_t datac=0, argc=0;
-  char **argv;
+  char **argv, **custom_argv = NULL, **pp;
   int need_special = 0;
   int use_agent = 0;
   char *p;
@@ -780,6 +819,10 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
     argc++;	/* --batch */
   argc += 1;	/* --no-sk-comments */
 
+  err = build_custom_argv (gpg, &argc, &custom_argv);
+  if (err)
+    return err;
+
   argv = calloc (argc + 1, sizeof *argv);
   if (!argv)
     return gpg_error_from_syserror ();
@@ -801,6 +844,14 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       return saved_err;
     }
   argc++;
+
+  if (custom_argv)
+    {
+      for (pp = custom_argv; pp && *pp; pp++)
+        argv[argc++] = *pp;
+      free (custom_argv);
+    }
+
   if (need_special)
     {
       argv[argc] = strdup ("--enable-special-filenames");
@@ -2449,6 +2500,30 @@ gpg_set_pinentry_mode (void *engine, gpgme_pinentry_mode_t mode)
   return 0;
 }
 
+static gpgme_error_t
+gpg_set_options (void *engine, const char *options)
+{
+  engine_gpg_t gpg = engine;
+
+  free (gpg->options);
+  gpg->options = NULL;
+  if (options)
+    {
+      gpg->options = strdup (options);
+      if (!gpg->options)
+        return GPG_ERR_ENOMEM;
+    }
+
+  return 0;
+}
+
+static const char *
+gpg_get_options (void *engine)
+{
+  engine_gpg_t gpg = engine;
+
+  return gpg->options;
+}
 
 
 struct engine_ops _gpgme_engine_ops_gpg =
@@ -2468,6 +2543,8 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_set_colon_line_handler,
     gpg_set_locale,
     NULL,				/* set_protocol */
+    gpg_set_options,
+    gpg_get_options,
     gpg_decrypt,
     gpg_decrypt,			/* decrypt_verify */
     gpg_delete,

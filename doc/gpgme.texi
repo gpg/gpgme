@@ -187,6 +187,7 @@ Context Attributes
 
 * Protocol Selection::            Selecting the protocol used by a context.
 * Crypto Engine::                 Configuring the crypto engine.
+* Custom Engine Options::         Adding command line options to an engine.
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
 * Included Certificates::         Including a number of certificates.
@@ -2283,6 +2284,7 @@ started.  In fact, these references are accessed through the
 @menu
 * Protocol Selection::            Selecting the protocol used by a context.
 * Crypto Engine::                 Configuring the crypto engine.
+* Custom Engine Options::         Adding command line options to an engine.
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
 * Included Certificates::         Including a number of certificates.
@@ -2359,6 +2361,29 @@ context @var{ctx}.
 
 This function returns the error code @code{GPG_ERR_NO_ERROR} if
 successful, or an eror code on failure.
+@end deftypefun
+
+
+@node Custom Engine Options
+@subsection Custom Engine Options
+@cindex context, configuring engine
+@cindex engine, configuration per context
+
+Since not all features of all engines may be exposed by @acronym{GPGME},
+additional command line arguments may be needed to allow the wanted
+functionality.
+
+@deftypefun gpgme_error_t gpgme_ctx_set_engine_options (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{options}})
+The function @code{gpgme_ctx_set_engine_options} sets command line options for
+the configured engine in context @var{ctx} to @var{options}. The options are
+passed upon each op call and may be reset by setting @var{options} to
+@code{NULL}. This function returns @code{0} on success or an error on failure.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_ctx_get_engine_options (@w{gpgme_ctx_t @var{ctx}}, @w{char ** @var{result}})
+The function @code{gpgme_ctx_get_engine_options} returns the previously set
+engine options in @var{result}.  This function returns @code{0} on success or
+an error on failure.
 @end deftypefun
 
 

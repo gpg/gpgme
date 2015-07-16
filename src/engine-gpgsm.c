@@ -1988,6 +1988,8 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_set_colon_line_handler,
     gpgsm_set_locale,
     NULL,		/* set_protocol */
+    NULL,		/* set_options */
+    NULL,               /* get_options */
     gpgsm_decrypt,
     gpgsm_decrypt,
     gpgsm_delete,	/* decrypt_verify */

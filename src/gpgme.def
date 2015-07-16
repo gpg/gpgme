@@ -217,5 +217,7 @@ EXPORTS
 
     gpgme_op_spawn_start                  @163
     gpgme_op_spawn                        @164
+    gpgme_ctx_set_engine_options          @165
+    gpgme_ctx_get_engine_options          @166
 ; END
 
