@@ -513,6 +513,8 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 	rc = add_arg (gpg, dft_display);
 
       free (dft_display);
+      if (rc)
+	goto leave;
     }
 
   if (isatty (1))
@@ -520,9 +522,10 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
       int err;
 
       err = ttyname_r (1, dft_ttyname, sizeof (dft_ttyname));
-      if (err)
-	rc = gpg_error_from_errno (err);
-      else
+
+      /* Even though isatty() returns 1, ttyname_r() may fail in many
+	 ways, e.g., when /dev/pts is not accessible under chroot.  */
+      if (!err)
 	{
           if (*dft_ttyname)
             {
@@ -547,9 +550,9 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 
 	      free (dft_ttytype);
 	    }
+	  if (rc)
+	    goto leave;
 	}
-      if (rc)
-	goto leave;
     }
 
  leave:
