@@ -1456,7 +1456,7 @@ gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
     err = add_data (gpg, ciph, -1, 0);
 
   if (!err)
-    start (gpg);
+    err = start (gpg);
   return err;
 }
 
@@ -1479,7 +1479,7 @@ gpg_delete (void *engine, gpgme_key_t key, int allow_secret)
     }
 
   if (!err)
-    start (gpg);
+    err = start (gpg);
   return err;
 }
 
@@ -1497,7 +1497,7 @@ gpg_passwd (void *engine, gpgme_key_t key, unsigned int flags)
   if (!err)
     err = add_arg (gpg, key->subkeys->fpr);
   if (!err)
-    start (gpg);
+    err = start (gpg);
   return err;
 }
 
