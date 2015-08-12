@@ -2364,7 +2364,7 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
     err = add_data (gpg, out, 1, 1);
 
   if (!err)
-    start (gpg);
+    err = start (gpg);
 
   return err;
 }
