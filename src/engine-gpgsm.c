@@ -564,7 +564,7 @@ gpgsm_assuan_simple_command (assuan_context_t ctx, char *cmd,
 			     engine_status_handler_t status_fnc,
 			     void *status_fnc_value)
 {
-  gpg_error_t err;
+  gpg_error_t err, cb_err;
   char *line;
   size_t linelen;
 
@@ -572,6 +572,7 @@ gpgsm_assuan_simple_command (assuan_context_t ctx, char *cmd,
   if (err)
     return err;
 
+  cb_err = 0;
   do
     {
       err = assuan_read_line (ctx, &line, &linelen);
@@ -584,32 +585,45 @@ gpgsm_assuan_simple_command (assuan_context_t ctx, char *cmd,
       if (linelen >= 2
 	  && line[0] == 'O' && line[1] == 'K'
 	  && (line[2] == '\0' || line[2] == ' '))
-	return 0;
+	return cb_err;
       else if (linelen >= 4
 	  && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
 	  && line[3] == ' ')
-	err = atoi (&line[4]);
+        {
+          /* We prefer a callback generated error because that one is
+             more related to gpgme and thus probably more important
+             than the error returned by the engine.  */
+          err = cb_err? cb_err : atoi (&line[4]);
+        }
       else if (linelen >= 2
 	       && line[0] == 'S' && line[1] == ' ')
 	{
-	  char *rest;
-	  gpgme_status_code_t r;
+          /* After an error from a status callback we skip all further
+             status lines.  */
+          if (!cb_err)
+            {
+              char *rest;
+              gpgme_status_code_t r;
 
-	  rest = strchr (line + 2, ' ');
-	  if (!rest)
-	    rest = line + linelen; /* set to an empty string */
-	  else
-	    *(rest++) = 0;
+              rest = strchr (line + 2, ' ');
+              if (!rest)
+                rest = line + linelen; /* set to an empty string */
+              else
+                *(rest++) = 0;
 
-	  r = _gpgme_parse_status (line + 2);
+              r = _gpgme_parse_status (line + 2);
 
-	  if (r >= 0 && status_fnc)
-	    err = status_fnc (status_fnc_value, r, rest);
-	  else
-	    err = gpg_error (GPG_ERR_GENERAL);
+              if (r >= 0 && status_fnc)
+                cb_err = status_fnc (status_fnc_value, r, rest);
+            }
 	}
       else
-	err = gpg_error (GPG_ERR_GENERAL);
+        {
+          /* Invalid line or INQUIRY.  We can't do anything else than
+             to stop.  As with ERR we prefer a status callback
+             generated error code, though.  */
+          err = cb_err ? cb_err : gpg_error (GPG_ERR_GENERAL);
+        }
     }
   while (!err);
 
@@ -1528,7 +1542,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
 
 static gpgme_error_t
 gpgsm_keylist (void *engine, const char *pattern, int secret_only,
-	       gpgme_keylist_mode_t mode)
+	       gpgme_keylist_mode_t mode, int engine_flags)
 {
   engine_gpgsm_t gpgsm = engine;
   char *line;
@@ -1585,6 +1599,11 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
                                "OPTION with-secret=1":
                                "OPTION with-secret=0" ,
                                NULL, NULL);
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx,
+                               (engine_flags & GPGME_ENGINE_FLAG_OFFLINE)?
+                               "OPTION offline=1":
+                               "OPTION offline=0" ,
+                               NULL, NULL);
 
 
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
@@ -1615,7 +1634,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
 
 static gpgme_error_t
 gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
-		   int reserved, gpgme_keylist_mode_t mode)
+		   int reserved, gpgme_keylist_mode_t mode, int engine_flags)
 {
   engine_gpgsm_t gpgsm = engine;
   char *line;
@@ -1655,7 +1674,11 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
                                "OPTION with-secret=1":
                                "OPTION with-secret=0" ,
                                NULL, NULL);
-
+  gpgsm_assuan_simple_command (gpgsm->assuan_ctx,
+                               (engine_flags & GPGME_ENGINE_FLAG_OFFLINE)?
+                               "OPTION offline=1":
+                               "OPTION offline=0" ,
+                               NULL, NULL);
 
   if (pattern && *pattern)
     {

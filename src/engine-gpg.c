@@ -1456,7 +1456,7 @@ gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
     err = add_data (gpg, ciph, -1, 0);
 
   if (!err)
-    start (gpg);
+    err = start (gpg);
   return err;
 }
 
@@ -1479,7 +1479,7 @@ gpg_delete (void *engine, gpgme_key_t key, int allow_secret)
     }
 
   if (!err)
-    start (gpg);
+    err = start (gpg);
   return err;
 }
 
@@ -1497,7 +1497,7 @@ gpg_passwd (void *engine, gpgme_key_t key, unsigned int flags)
   if (!err)
     err = add_arg (gpg, key->subkeys->fpr);
   if (!err)
-    start (gpg);
+    err = start (gpg);
   return err;
 }
 
@@ -2194,6 +2194,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
               {
                 *dst++ = '\\';
                 *dst++ = '\\';
+                src++;
               }
 	    else
 	      *(dst++) = *(src++);
@@ -2278,7 +2279,7 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
 
 static gpgme_error_t
 gpg_keylist (void *engine, const char *pattern, int secret_only,
-	     gpgme_keylist_mode_t mode)
+	     gpgme_keylist_mode_t mode, int engine_flags)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -2297,7 +2298,7 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
 
 static gpgme_error_t
 gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
-		 int reserved, gpgme_keylist_mode_t mode)
+		 int reserved, gpgme_keylist_mode_t mode, int engine_flags)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -2363,7 +2364,7 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
     err = add_data (gpg, out, 1, 1);
 
   if (!err)
-    start (gpg);
+    err = start (gpg);
 
   return err;
 }

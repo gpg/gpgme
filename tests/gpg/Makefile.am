@@ -22,7 +22,8 @@
 GPG = gpg
 GPG_AGENT = gpg-agent
 
-TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) LC_ALL=C GPG_AGENT_INFO=
+TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) LC_ALL=C GPG_AGENT_INFO= \
+                    top_srcdir=$(top_srcdir)
 
 # The keylist tests must come after the import and the edit test.
 noinst_HEADERS = t-support.h
@@ -43,7 +44,7 @@ TESTS = initial.test $(c_tests) final.test
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
-	random_seed S.gpg-agent .gpg-v21-migrated
+	random_seed S.gpg-agent .gpg-v21-migrated pubring-stamp
 
 private_keys = \
         13CD0F3BDF24BE53FE192D62F18737256FF6E4FD \
@@ -53,11 +54,12 @@ private_keys = \
         7A030357C0F253A5BBCD282FFC4E521B37558F5C
 
 
-EXTRA_DIST = start-stop-agent initial.test final.test \
+EXTRA_DIST = initial.test final.test \
         pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 	geheim.txt pubkey-1.asc seckey-1.asc pinentry $(private_keys)
 
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
+AM_LDFLAGS = -no-install
 LDADD = ../../src/libgpgme.la
 t_thread1_LDADD = ../../src/libgpgme-pthread.la -lpthread
 
@@ -65,11 +67,15 @@ t_thread1_LDADD = ../../src/libgpgme-pthread.la -lpthread
 noinst_PROGRAMS = $(c_tests) t-genkey
 
 clean-local:
-	-$(srcdir)/start-stop-agent --stop
+	-$(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR private-keys-v1.d
 
-check-local: ./gpg.conf ./gpg-agent.conf ./pubring.gpg \
+check-local: ./gpg.conf ./gpg-agent.conf ./pubring-stamp \
            ./private-keys-v1.d/gpg-sample.stamp
+
+# To guarantee that check-local is run before any tests we
+# add this dependency:
+initial.test : check-local
 
 export GNUPGHOME := $(abs_builddir)
 
@@ -82,11 +88,12 @@ export GPG_AGENT_INFO :=
         done
 	echo x > ./private-keys-v1.d/gpg-sample.stamp
 
-./pubring.gpg: $(srcdir)/pubdemo.asc
-	-$(GPG) --no-permission-warning \
-                --import $(srcdir)/pubdemo.asc
+./pubring-stamp: $(srcdir)/pubdemo.asc
+	$(GPG) --no-permission-warning \
+               --import $(srcdir)/pubdemo.asc
 	-$(GPG) --no-permission-warning \
 		--import $(srcdir)/secdemo.asc
+	touch ./pubring-stamp
 
 ./gpg.conf:
 # This is required for t-sig-notations.

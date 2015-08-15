@@ -1,5 +1,15 @@
-Noteworthy changes in version 1.6.0 (unreleased) [C__/A__/R_]
+Noteworthy changes in version 1.6.0 (unreleased) [C24/A13/R_]
 ------------------------------------------------
+
+
+Noteworthy changes in version 1.5.5 (2015-06-08) [C24/A13/R4]
+------------------------------------------------
+
+ * Fixed crash in key listings for user ids with a backslash.
+
+ * Fixed regression for GPGSM use with GnuPG < 2.1.
+
+ * Properly set signature summary for revoked OpenPGP keys.
 
 
 Noteworthy changes in version 1.5.4 (2015-04-13) [C24/A13/R3]

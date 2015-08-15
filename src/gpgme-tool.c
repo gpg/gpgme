@@ -3728,6 +3728,7 @@ static char args_doc[] = "COMMAND [OPTIONS...]";
 static struct argp_option options[] = {
   { "server", 's', 0, 0, "Server mode" },
   { "gpg-binary", 501, "FILE", 0, "Use FILE for the GPG backend" },
+  { "lib-version", 502, 0, 0, "Show library version" },
   { 0 }
 };
 
@@ -3736,7 +3737,7 @@ static struct argp argp = { options, parse_options, args_doc, doc };
 
 struct args
 {
-  enum { CMD_DEFAULT, CMD_SERVER } cmd;
+  enum { CMD_DEFAULT, CMD_SERVER, CMD_LIBVERSION } cmd;
   const char *gpg_binary;
 };
 
@@ -3762,6 +3763,11 @@ parse_options (int key, char *arg, struct argp_state *state)
     case 501:
       args->gpg_binary = arg;
       break;
+
+    case 502:
+      args->cmd = CMD_LIBVERSION;
+      break;
+
 #if 0
     case ARGP_KEY_ARG:
       if (state->arg_num >= 2)
@@ -3787,6 +3793,7 @@ main (int argc, char *argv[])
   struct args args;
   struct gpgme_tool gt;
   gpg_error_t err;
+  int needgt = 1;
 
 #ifdef HAVE_SETLOCALE
   setlocale (LC_ALL, "");
@@ -3804,7 +3811,10 @@ main (int argc, char *argv[])
   argp_parse (&argp, argc, argv, 0, 0, &args);
   log_init ();
 
-  if (args.gpg_binary)
+  if (args.cmd == CMD_LIBVERSION)
+    needgt = 0;
+
+  if (needgt && args.gpg_binary)
     {
       if (access (args.gpg_binary, X_OK))
         err = gpg_error_from_syserror ();
@@ -3816,7 +3826,8 @@ main (int argc, char *argv[])
                    args.gpg_binary);
     }
 
-  gt_init (&gt);
+  if (needgt)
+    gt_init (&gt);
 
   switch (args.cmd)
     {
@@ -3824,9 +3835,17 @@ main (int argc, char *argv[])
     case CMD_SERVER:
       gpgme_server (&gt);
       break;
+
+    case CMD_LIBVERSION:
+      printf ("Version from header: %s (0x%06x)\n",
+              GPGME_VERSION, GPGME_VERSION_NUMBER);
+      printf ("Version from binary: %s\n", gpgme_check_version (NULL));
+      printf ("Copyright blurb ...:%s\n", gpgme_check_version ("\x01\x01"));
+      break;
     }
 
-  gpgme_release (gt.ctx);
+  if (needgt)
+    gpgme_release (gt.ctx);
 
 #ifdef HAVE_W32CE_SYSTEM
   /* Give the buggy ssh server time to flush the output buffers.  */

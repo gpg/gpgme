@@ -21,20 +21,26 @@
 
 GPGSM = gpgsm
 
-TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO=
+TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) LC_ALL=C GPG_AGENT_INFO= \
+                    top_srcdir=$(top_srcdir)
 
 noinst_HEADERS = t-support.h
-TESTS = t-import t-keylist t-encrypt t-verify t-decrypt t-sign t-export
+
+c_tests = t-import t-keylist t-encrypt t-verify t-decrypt t-sign t-export
+
+
+TESTS = initial.test $(c_tests) final.test
 
 EXTRA_DIST = cert_dfn_pca01.der cert_dfn_pca15.der cert_g10code_test1.der \
-	$(key_id)
+	$(key_id) initial.test final.test
 
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
+AM_LDFLAGS = -no-install
 LDADD = ../../src/libgpgme.la
 
 # We don't run t-genkey in the test suite, because it takes too long
 # and needs a working pinentry.
-noinst_PROGRAMS = $(TESTS) t-genkey cms-keylist cms-decrypt
+noinst_PROGRAMS = $(c_tests) t-genkey cms-keylist cms-decrypt
 
 key_id = 32100C27173EF6E9C4E9A25D3D69F86D37A4F939
 
@@ -42,11 +48,15 @@ CLEANFILES = pubring.kbx pubring.kbx~ gpgsm.conf trustlist.txt \
 	random_seed S.gpg-agent
 
 clean-local:
-	-gpg-connect-agent KILLAGENT /bye
+	-$(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR private-keys-v1.d
 
 check-local: ./pubring.kbx ./gpgsm.conf \
              ./private-keys-v1.d/$(key_id).key ./trustlist.txt
+
+# To guarantee that check-local is run before any tests we add this
+# dependency:
+initial.test : check-local
 
 export GNUPGHOME := $(abs_builddir)
 
