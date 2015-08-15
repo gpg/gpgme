@@ -679,7 +679,17 @@ gpgme_get_status_cb (gpgme_ctx_t ctx, gpgme_status_cb_t *r_cb,
 		       void **r_cb_value)
 {
   TRACE2 (DEBUG_CTX, "gpgme_get_status_cb", ctx, "ctx->status_cb=%p/%p",
-	  ctx->status_cb, ctx->status_cb_value);
+	  ctx ? ctx->status_cb : NULL, ctx ? ctx->status_cb_value : NULL);
+
+  if (r_cb)
+    *r_cb = NULL;
+
+  if (r_cb_value)
+    *r_cb_value = NULL;
+
+  if (!ctx || !ctx->status_cb)
+    return;
+
   if (r_cb)
     *r_cb = ctx->status_cb;
   if (r_cb_value)
