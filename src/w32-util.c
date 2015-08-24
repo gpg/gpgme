@@ -522,7 +522,16 @@ _gpgme_get_gpgconf_path (void)
       gpgconf = find_program_in_dir (inst_dir, name);
     }
 
-  /* 2. Try to find gpgconf.exe using that ancient registry key.  */
+  /* 2. Try to find gpgconf.exe from GnuPG >= 2.1 below CSIDL_PROGRAM_FILES. */
+  if (!gpgconf)
+    {
+      const char *name2 = (default_gpgconf_name ? default_gpgconf_name
+                           /**/                 : "GnuPG\\bin\\gpgconf.exe");
+      gpgconf = find_program_at_standard_place (name2);
+    }
+
+  /* 3. Try to find gpgconf.exe using that ancient registry key.  This
+        should eventually be removed.  */
   if (!gpgconf)
     {
       char *dir;
@@ -537,15 +546,13 @@ _gpgme_get_gpgconf_path (void)
         }
     }
 
-  /* 3. Try to find gpgconf.exe below CSIDL_PROGRAM_FILES.  */
+  /* 4. Try to find gpgconf.exe from Gpg4win below CSIDL_PROGRAM_FILES.  */
   if (!gpgconf)
     {
-      name = (default_gpgconf_name ? default_gpgconf_name
-              /**/                 : "GNU\\GnuPG\\gpgconf.exe");
-      gpgconf = find_program_at_standard_place (name);
+      gpgconf = find_program_at_standard_place ("GNU\\GnuPG\\gpgconf.exe");
     }
 
-  /* 4. Print a debug message if not found.  */
+  /* 5. Print a debug message if not found.  */
   if (!gpgconf)
     _gpgme_debug (DEBUG_ENGINE, "_gpgme_get_gpgconf_path: '%s' not found",name);
 
