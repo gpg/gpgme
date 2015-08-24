@@ -116,6 +116,18 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 	return gpg_error (GPG_ERR_BAD_PASSPHRASE);
       break;
 
+    case GPGME_STATUS_ERROR:
+      /* We abuse this status handler to forward ERROR status codes to
+         the caller.  This should better be done in a generic handler,
+         but for now this is sufficient.  */
+      if (ctx->status_cb)
+        {
+          err = ctx->status_cb (ctx->status_cb_value, "ERROR", args);
+          if (err)
+            return err;
+        }
+      break;
+
     default:
       /* Ignore all other codes.  */
       break;
