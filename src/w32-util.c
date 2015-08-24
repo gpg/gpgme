@@ -398,40 +398,6 @@ find_program_in_dir (const char *dir, const char *name)
 
 
 static char *
-find_program_in_inst_dir (const char *inst_dir, const char *name)
-{
-  char *result;
-  char *dir;
-
-  /* If an installation directory has been passed, this overrides a
-     location given by the registry.  The idea here is that we prefer
-     a program installed alongside with gpgme.  We don't want the
-     registry to override this to have a better isolation of an gpgme
-     aware applications for other effects.  Note that the "Install
-     Directory" registry item has been used for ages in Gpg4win and
-     earlier GnuPG windows installers.  It is technically not anymore
-     required.  */
-  if (inst_dir)
-    {
-      result = find_program_in_dir (inst_dir, name);
-      if (result)
-        return result;
-    }
-
-  dir = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
-				  "Software\\GNU\\GnuPG",
-				  "Install Directory");
-  if (dir)
-    {
-      result = find_program_in_dir (dir, name);
-      free (dir);
-      return result;
-    }
-  return NULL;
-}
-
-
-static char *
 find_program_at_standard_place (const char *name)
 {
   char path[MAX_PATH];
@@ -491,28 +457,49 @@ _gpgme_set_default_gpgconf_name (const char *name)
 
 
 /* Return the full file name of the GPG binary.  This function is used
-   if gpgconf was not found and thus it can be assumed that gpg2 is
+   iff gpgconf was not found and thus it can be assumed that gpg2 is
    not installed.  This function is only called by get_gpgconf_item
    and may not be called concurrently. */
 char *
 _gpgme_get_gpg_path (void)
 {
-  char *gpg;
-  const char *inst_dir, *name;
+  char *gpg = NULL;
+  const char *name, *inst_dir;
 
+  name = default_gpg_name? get_basename (default_gpg_name) : "gpg.exe";
+
+  /* 1. Try to find gpg.exe in the installation directory of gpgme.  */
   inst_dir = _gpgme_get_inst_dir ();
-  gpg = find_program_in_inst_dir
-    (inst_dir,
-     default_gpg_name? get_basename (default_gpg_name) : "gpg.exe");
+  if (inst_dir)
+    {
+      gpg = find_program_in_dir (inst_dir, name);
+    }
+
+  /* 2. Try to find gpg.exe using that ancient registry key.  */
   if (!gpg)
     {
-      name = (default_gpg_name? default_gpg_name
-              /* */           : "GNU\\GnuPG\\gpg.exe");
-      gpg = find_program_at_standard_place (name);
-      if (!gpg)
-        _gpgme_debug (DEBUG_ENGINE, "_gpgme_get_gpg_path: '%s' not found",
-                      name);
+      char *dir;
+
+      dir = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
+                                      "Software\\GNU\\GnuPG",
+                                      "Install Directory");
+      if (dir)
+        {
+          gpg = find_program_in_dir (dir, name);
+          free (dir);
+        }
     }
+
+  /* 3. Try to find gpg.exe below CSIDL_PROGRAM_FILES.  */
+  if (!gpg)
+    {
+      name = default_gpg_name? default_gpg_name : "GNU\\GnuPG\\gpg.exe";
+      gpg = find_program_at_standard_place (name);
+    }
+
+  /* 4. Print a debug message if not found.  */
+  if (!gpg)
+    _gpgme_debug (DEBUG_ENGINE, "_gpgme_get_gpg_path: '%s' not found", name);
 
   return gpg;
 }
@@ -523,22 +510,45 @@ _gpgme_get_gpg_path (void)
 char *
 _gpgme_get_gpgconf_path (void)
 {
-  char *gpgconf;
+  char *gpgconf = NULL;
   const char *inst_dir, *name;
 
+  name = default_gpgconf_name? get_basename(default_gpgconf_name):"gpgconf.exe";
+
+  /* 1. Try to find gpgconf.exe in the installation directory of gpgme.  */
   inst_dir = _gpgme_get_inst_dir ();
-  gpgconf = find_program_in_inst_dir
-    (inst_dir,
-     default_gpgconf_name? get_basename (default_gpgconf_name) : "gpgconf.exe");
+  if (inst_dir)
+    {
+      gpgconf = find_program_in_dir (inst_dir, name);
+    }
+
+  /* 2. Try to find gpgconf.exe using that ancient registry key.  */
   if (!gpgconf)
     {
-      name = (default_gpgconf_name? default_gpgconf_name
-              /* */               : "GNU\\GnuPG\\gpgconf.exe");
-      gpgconf = find_program_at_standard_place (name);
-      if (!gpgconf)
-        _gpgme_debug (DEBUG_ENGINE, "_gpgme_get_gpgconf_path: '%s' not found",
-                      name);
+      char *dir;
+
+      dir = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
+                                      "Software\\GNU\\GnuPG",
+                                      "Install Directory");
+      if (dir)
+        {
+          gpgconf = find_program_in_dir (dir, name);
+          free (dir);
+        }
     }
+
+  /* 3. Try to find gpgconf.exe below CSIDL_PROGRAM_FILES.  */
+  if (!gpgconf)
+    {
+      name = (default_gpgconf_name ? default_gpgconf_name
+              /**/                 : "GNU\\GnuPG\\gpgconf.exe");
+      gpgconf = find_program_at_standard_place (name);
+    }
+
+  /* 4. Print a debug message if not found.  */
+  if (!gpgconf)
+    _gpgme_debug (DEBUG_ENGINE, "_gpgme_get_gpgconf_path: '%s' not found",name);
+
   return gpgconf;
 }
 
@@ -552,10 +562,7 @@ _gpgme_get_w32spawn_path (void)
   inst_dir = _gpgme_get_inst_dir ();
   LOCK (get_path_lock);
   if (!w32spawn_program)
-    w32spawn_program = find_program_in_inst_dir (inst_dir,"gpgme-w32spawn.exe");
-  if (!w32spawn_program)
-    w32spawn_program
-      = find_program_at_standard_place ("GNU\\GnuPG\\gpgme-w32spawn.exe");
+    w32spawn_program = find_program_in_dir (inst_dir, "gpgme-w32spawn.exe");
   UNLOCK (get_path_lock);
   return w32spawn_program;
 }
