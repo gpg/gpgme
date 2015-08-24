@@ -46,6 +46,7 @@
 #include "util.h"
 #include "ath.h"
 #include "sema.h"
+#include "sys-util.h"
 #include "debug.h"
 
 
@@ -207,7 +208,16 @@ debug_init (void)
   UNLOCK (debug_lock);
 
   if (debug_level > 0)
-    _gpgme_debug (DEBUG_INIT, "gpgme_debug: level=%d\n", debug_level);
+    {
+      _gpgme_debug (DEBUG_INIT, "gpgme_debug: level=%d\n", debug_level);
+#ifdef HAVE_W32_SYSTEM
+      {
+        const char *name = _gpgme_get_inst_dir ();
+        _gpgme_debug (DEBUG_INIT, "gpgme_debug: gpgme='%s'\n",
+                      name? name: "?");
+      }
+#endif
+    }
 }
 
 
