@@ -3054,7 +3054,7 @@ cmd_import (assuan_context_t ctx, char *line)
 
 
 static const char hlp_export[] =
-  "EXPORT [--extern] [--minimal] [<pattern>]\n"
+  "EXPORT [--extern] [--minimal] [--secret [--pkcs12] [--raw]] [<pattern>]\n"
   "\n"
   "Export the keys described by PATTERN.  Write the\n"
   "the output to the object set by the last OUTPUT command.";
@@ -3082,6 +3082,12 @@ cmd_export (assuan_context_t ctx, char *line)
     mode |= GPGME_EXPORT_MODE_EXTERN;
   if (has_option (line, "--minimal"))
     mode |= GPGME_EXPORT_MODE_MINIMAL;
+  if (has_option (line, "--secret"))
+    mode |= GPGME_EXPORT_MODE_SECRET;
+  if (has_option (line, "--raw"))
+    mode |= GPGME_EXPORT_MODE_RAW;
+  if (has_option (line, "--pkcs12"))
+    mode |= GPGME_EXPORT_MODE_PKCS12;
 
   line = skip_options (line);
 

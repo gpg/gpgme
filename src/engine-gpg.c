@@ -1793,7 +1793,8 @@ export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
   gpgme_error_t err = 0;
 
   if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
-                |GPGME_EXPORT_MODE_MINIMAL)))
+                |GPGME_EXPORT_MODE_MINIMAL
+                |GPGME_EXPORT_MODE_SECRET)))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if ((mode & GPGME_EXPORT_MODE_MINIMAL))
@@ -1807,7 +1808,10 @@ export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
     }
   else
     {
-      err = add_arg (gpg, "--export");
+      if ((mode & GPGME_EXPORT_MODE_SECRET))
+        err = add_arg (gpg, "--export-secret-keys");
+      else
+        err = add_arg (gpg, "--export");
       if (!err && use_armor)
         err = add_arg (gpg, "--armor");
       if (!err)

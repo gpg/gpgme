@@ -43,7 +43,12 @@ show_usage (int ex)
   fputs ("usage: " PGM " [options] USERIDS\n\n"
          "Options:\n"
          "  --verbose        run in verbose mode\n"
+         "  --openpgp        use OpenPGP protocol (default)\n"
+         "  --cms            use X.509 protocol\n"
          "  --extern         send keys to the keyserver (TAKE CARE!)\n"
+         "  --secret         export secret keys instead of public keys\n"
+         "  --raw            use PKCS#1 as secret key format\n"
+         "  --pkcs12         use PKCS#12 as secret key format\n"
          , stderr);
   exit (ex);
 }
@@ -59,6 +64,7 @@ main (int argc, char **argv)
   gpgme_key_t keyarray[100];
   int keyidx = 0;
   gpgme_data_t out;
+  gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
   gpgme_export_mode_t mode = 0;
 
   if (argc)
@@ -79,9 +85,34 @@ main (int argc, char **argv)
           verbose = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--openpgp"))
+        {
+          protocol = GPGME_PROTOCOL_OpenPGP;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--cms"))
+        {
+          protocol = GPGME_PROTOCOL_CMS;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--extern"))
         {
-          mode |= GPGME_KEYLIST_MODE_EXTERN;
+          mode |= GPGME_EXPORT_MODE_EXTERN;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--secret"))
+        {
+          mode |= GPGME_EXPORT_MODE_SECRET;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--raw"))
+        {
+          mode |= GPGME_EXPORT_MODE_RAW;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--pkcs12"))
+        {
+          mode |= GPGME_EXPORT_MODE_PKCS12;
           argc--; argv++;
         }
       else if (!strncmp (*argv, "--", 2))
@@ -92,11 +123,11 @@ main (int argc, char **argv)
   if (!argc)
     show_usage (1);
 
-  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+  init_gpgme (protocol);
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
-  gpgme_set_protocol (ctx, GPGME_PROTOCOL_OpenPGP);
+  gpgme_set_protocol (ctx, protocol);
 
   /* Lookup the keys.  */
   err = gpgme_op_keylist_ext_start (ctx, (const char**)argv, 0, 0);
@@ -131,8 +162,10 @@ main (int argc, char **argv)
     }
 
   /* Now for the actual export.  */
-  if ((mode & GPGME_KEYLIST_MODE_EXTERN))
+  if ((mode & GPGME_EXPORT_MODE_EXTERN))
     printf ("sending keys to keyserver\n");
+  if ((mode & GPGME_EXPORT_MODE_SECRET))
+    printf ("exporting secret keys!\n");
 
   err = gpgme_data_new (&out);
   fail_if_err (err);

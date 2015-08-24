@@ -392,6 +392,9 @@ gpgme_pinentry_mode_t;
 /* The available export mode flags.  */
 #define GPGME_EXPORT_MODE_EXTERN                2
 #define GPGME_EXPORT_MODE_MINIMAL               4
+#define GPGME_EXPORT_MODE_SECRET               16
+#define GPGME_EXPORT_MODE_RAW                  32
+#define GPGME_EXPORT_MODE_PKCS12               64
 
 typedef unsigned int gpgme_export_mode_t;
 

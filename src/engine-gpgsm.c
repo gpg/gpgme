@@ -1289,17 +1289,23 @@ gpgsm_export (void *engine, const char *pattern, gpgme_export_mode_t mode,
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (mode)
-    return gpg_error (GPG_ERR_NOT_SUPPORTED);
-
   if (!pattern)
     pattern = "";
 
-  cmd = malloc (7 + strlen (pattern) + 1);
+  cmd = malloc (7 + 9 + 9 + strlen (pattern) + 1);
   if (!cmd)
     return gpg_error_from_syserror ();
+
   strcpy (cmd, "EXPORT ");
-  strcpy (&cmd[7], pattern);
+  if ((mode & GPGME_EXPORT_MODE_SECRET))
+    {
+      strcat (cmd, "--secret ");
+      if ((mode & GPGME_EXPORT_MODE_RAW))
+        strcat (cmd, "--raw ");
+      else if ((mode & GPGME_EXPORT_MODE_PKCS12))
+        strcat (cmd, "--pkcs12 ");
+    }
+  strcat (cmd, pattern);
 
   gpgsm->output_cb.data = keydata;
   err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor"
@@ -1323,15 +1329,12 @@ gpgsm_export_ext (void *engine, const char *pattern[], gpgme_export_mode_t mode,
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err = 0;
   char *line;
-  /* Length is "EXPORT " + p + '\0'.  */
-  int length = 7 + 1;
+  /* Length is "EXPORT " + "--secret " + "--pkcs12 " + p + '\0'.  */
+  int length = 7 + 9 + 9 + 1;
   char *linep;
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
-
-  if (mode)
-    return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (pattern && *pattern)
     {
@@ -1357,7 +1360,15 @@ gpgsm_export_ext (void *engine, const char *pattern[], gpgme_export_mode_t mode,
     return gpg_error_from_syserror ();
 
   strcpy (line, "EXPORT ");
-  linep = &line[7];
+  if ((mode & GPGME_EXPORT_MODE_SECRET))
+    {
+      strcat (line, "--secret ");
+      if ((mode & GPGME_EXPORT_MODE_RAW))
+        strcat (line, "--raw ");
+      else if ((mode & GPGME_EXPORT_MODE_PKCS12))
+        strcat (line, "--pkcs12 ");
+    }
+  linep = &line[strlen (line)];
 
   if (pattern && *pattern)
     {

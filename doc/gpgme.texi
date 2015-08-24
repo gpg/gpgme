@@ -3700,6 +3700,21 @@ keys it removes all signatures except for the latest self-signatures.
 For X.509 keys it has no effect.
 
 
+@item GPGME_EXPORT_MODE_SECRET
+Instead of exporting the public key, the secret key is exported.  This
+may not be combined with @code{GPGME_EXPORT_MODE_EXTERN}.  For X.509
+the export format is PKCS#8.
+
+@item GPGME_EXPORT_MODE_RAW
+If this flag is used with @code{GPGME_EXPORT_MODE_SECRET} for an X.509
+key the export format will be changed to PKCS#1.  This flag may not be
+used with OpenPGP.
+
+@item GPGME_EXPORT_MODE_PKCS12
+If this flag is used with @code{GPGME_EXPORT_MODE_SECRET} for an X.509
+key the export format will be changed to PKCS#12 which also includes
+the certificate.  This flag may not be used with OpenPGP.
+
 @end table
 
 
