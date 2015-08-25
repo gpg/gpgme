@@ -1,24 +1,24 @@
 /* gpgme.h - Public interface to GnuPG Made Easy.                   -*- c -*-
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009
-                 2010, 2011, 2012, 2013, 2014 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, see <http://www.gnu.org/licenses/>.
-
-   Generated from gpgme.h.in for @GPGME_CONFIG_HOST@.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001-2015 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ *
+ * Generated from gpgme.h.in for @GPGME_CONFIG_HOST@.
+ */
 
 #ifndef GPGME_H
 #define GPGME_H
@@ -46,7 +46,10 @@ extern "C" {
 @INSERT__TYPEDEFS_FOR_GPGME_H@
 
 
-/* Check for compiler features.  */
+/*
+ * Check for compiler features.
+ */
+
 #if __GNUC__
 #define _GPGME_GCC_VERSION (__GNUC__ * 10000 \
                             + __GNUC_MINOR__ * 100 \
@@ -69,7 +72,7 @@ extern "C" {
 #define _GPGME_DEPRECATED_OUTSIDE_GPGME _GPGME_DEPRECATED
 #endif
 
-
+
 /* The version of this header should match the one of the library.  Do
    not use this symbol in your application, use gpgme_check_version
    instead.  The purpose of this macro is to let autoconf (using the
@@ -94,7 +97,9 @@ extern "C" {
 
 
 
-/* Some opaque data types used by GPGME.  */
+/*
+ * Some opaque data types used by GPGME.
+ */
 
 /* The context holds some global state and configuration options, as
    well as the results of a crypto operation.  */
@@ -105,8 +110,11 @@ typedef struct gpgme_context *gpgme_ctx_t;
 struct gpgme_data;
 typedef struct gpgme_data *gpgme_data_t;
 
+
 
-/* Wrappers for the libgpg-error library.  */
+/*
+ * Wrappers for the libgpg-error library.
+ */
 
 typedef gpg_error_t gpgme_error_t;
 typedef gpg_err_code_t gpgme_err_code_t;
@@ -196,7 +204,12 @@ gpgme_error_from_syserror (void)
   return gpgme_error (gpgme_err_code_from_syserror ());
 }
 
+
 
+/*
+ * Various constants and types
+ */
+
 /* The possible encoding mode of gpgme_data_t objects.  */
 typedef enum
   {
@@ -209,6 +222,7 @@ typedef enum
     GPGME_DATA_ENCODING_URL0   = 6      /* Nul delimited URL list.       */
   }
 gpgme_data_encoding_t;
+
 
 /* Known data types.  */
 typedef enum
@@ -226,7 +240,7 @@ typedef enum
   }
 gpgme_data_type_t;
 
-
+
 /* Public key algorithms.  */
 typedef enum
   {
@@ -264,7 +278,7 @@ typedef enum
   }
 gpgme_hash_algo_t;
 
-
+
 /* The possible signature stati.  Deprecated, use error value in sig
    status.  */
 typedef enum
@@ -292,7 +306,7 @@ typedef enum
   }
 gpgme_sig_mode_t;
 
-
+
 /* The available key and signature attributes.  Deprecated, use the
    individual result structures instead.  */
 typedef enum
@@ -333,7 +347,7 @@ typedef enum
 _gpgme_attr_t;
 typedef _gpgme_attr_t gpgme_attr_t _GPGME_DEPRECATED;
 
-
+
 /* The available validities for a trust item or key.  */
 typedef enum
   {
@@ -346,7 +360,7 @@ typedef enum
   }
 gpgme_validity_t;
 
-
+
 /* The available protocols.  */
 typedef enum
   {
@@ -364,7 +378,7 @@ gpgme_protocol_t;
 /* Convenience macro for the surprisingly mixed spelling.  */
 #define GPGME_PROTOCOL_OPENPGP GPGME_PROTOCOL_OpenPGP
 
-
+
 /* The available keylist mode flags.  */
 #define GPGME_KEYLIST_MODE_LOCAL		1
 #define GPGME_KEYLIST_MODE_EXTERN		2
@@ -376,7 +390,7 @@ gpgme_protocol_t;
 
 typedef unsigned int gpgme_keylist_mode_t;
 
-
+
 /* The pinentry modes. */
 typedef enum
   {
@@ -388,7 +402,7 @@ typedef enum
   }
 gpgme_pinentry_mode_t;
 
-
+
 /* The available export mode flags.  */
 #define GPGME_EXPORT_MODE_EXTERN                2
 #define GPGME_EXPORT_MODE_MINIMAL               4
@@ -398,52 +412,11 @@ gpgme_pinentry_mode_t;
 
 typedef unsigned int gpgme_export_mode_t;
 
-
+
 /* Flags for the audit log functions.  */
 #define GPGME_AUDITLOG_HTML      1
 #define GPGME_AUDITLOG_WITH_HELP 128
 
-
-/* Signature notations.  */
-
-/* The available signature notation flags.  */
-#define GPGME_SIG_NOTATION_HUMAN_READABLE	1
-#define GPGME_SIG_NOTATION_CRITICAL		2
-
-typedef unsigned int gpgme_sig_notation_flags_t;
-
-struct _gpgme_sig_notation
-{
-  struct _gpgme_sig_notation *next;
-
-  /* If NAME is a null pointer, then VALUE contains a policy URL
-     rather than a notation.  */
-  char *name;
-
-  /* The value of the notation data.  */
-  char *value;
-
-  /* The length of the name of the notation data.  */
-  int name_len;
-
-  /* The length of the value of the notation data.  */
-  int value_len;
-
-  /* The accumulated flags.  */
-  gpgme_sig_notation_flags_t flags;
-
-  /* Notation data is human-readable.  */
-  unsigned int human_readable : 1;
-
-  /* Notation data is critical.  */
-  unsigned int critical : 1;
-
-  /* Internal to GPGME, do not use.  */
-  int _unused : 30;
-};
-typedef struct _gpgme_sig_notation *gpgme_sig_notation_t;
-
-
 /* The possible stati for the edit operation.  */
 typedef enum
   {
@@ -553,7 +526,50 @@ typedef enum
   }
 gpgme_status_code_t;
 
+
+/* The available signature notation flags.  */
+#define GPGME_SIG_NOTATION_HUMAN_READABLE	1
+#define GPGME_SIG_NOTATION_CRITICAL		2
+
+typedef unsigned int gpgme_sig_notation_flags_t;
+
+struct _gpgme_sig_notation
+{
+  struct _gpgme_sig_notation *next;
+
+  /* If NAME is a null pointer, then VALUE contains a policy URL
+     rather than a notation.  */
+  char *name;
+
+  /* The value of the notation data.  */
+  char *value;
+
+  /* The length of the name of the notation data.  */
+  int name_len;
+
+  /* The length of the value of the notation data.  */
+  int value_len;
+
+  /* The accumulated flags.  */
+  gpgme_sig_notation_flags_t flags;
+
+  /* Notation data is human-readable.  */
+  unsigned int human_readable : 1;
+
+  /* Notation data is critical.  */
+  unsigned int critical : 1;
+
+  /* Internal to GPGME, do not use.  */
+  int _unused : 30;
+};
+typedef struct _gpgme_sig_notation *gpgme_sig_notation_t;
+
+
 
+/*
+ * Public structures.
+ */
+
 /* The engine information structure.  */
 struct _gpgme_engine_info
 {
@@ -576,7 +592,7 @@ struct _gpgme_engine_info
 };
 typedef struct _gpgme_engine_info *gpgme_engine_info_t;
 
-
+
 /* A subkey from a key.  */
 struct _gpgme_subkey
 {
@@ -831,8 +847,20 @@ struct _gpgme_key
 typedef struct _gpgme_key *gpgme_key_t;
 
 
+/* An invalid key object.  */
+struct _gpgme_invalid_key
+{
+  struct _gpgme_invalid_key *next;
+  char *fpr;
+  gpgme_error_t reason;
+};
+typedef struct _gpgme_invalid_key *gpgme_invalid_key_t;
+
+
 
-/* Types for callback functions.  */
+/*
+ * Types for callback functions.
+ */
 
 /* Request a passphrase from the user.  */
 typedef gpgme_error_t (*gpgme_passphrase_cb_t) (void *hook,
@@ -857,7 +885,9 @@ typedef gpgme_error_t (*gpgme_edit_cb_t) (void *opaque,
 
 
 
-/* Context management functions.  */
+/*
+ * Context management functions.
+ */
 
 /* Create a new context and return it in CTX.  */
 gpgme_error_t gpgme_new (gpgme_ctx_t *ctx);
@@ -973,16 +1003,6 @@ gpgme_error_t gpgme_ctx_set_engine_info (gpgme_ctx_t ctx,
 					 const char *file_name,
 					 const char *home_dir);
 
-
-/* Return a statically allocated string with the name of the public
-   key algorithm ALGO, or NULL if that name is not known.  */
-const char *gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo);
-
-/* Return a statically allocated string with the name of the hash
-   algorithm ALGO, or NULL if that name is not known.  */
-const char *gpgme_hash_algo_name (gpgme_hash_algo_t algo);
-
-
 /* Delete all signers from CTX.  */
 void gpgme_signers_clear (gpgme_ctx_t ctx);
 
@@ -1021,7 +1041,7 @@ const char *gpgme_get_sig_string_attr (gpgme_ctx_t c, int idx,
 gpgme_error_t gpgme_get_sig_key (gpgme_ctx_t ctx, int idx, gpgme_key_t *r_key)
      _GPGME_DEPRECATED;
 
-
+
 /* Clear all notation data from the context.  */
 void gpgme_sig_notation_clear (gpgme_ctx_t ctx);
 
@@ -1037,8 +1057,11 @@ gpgme_error_t gpgme_sig_notation_add (gpgme_ctx_t ctx, const char *name,
 /* Get the sig notations for this context.  */
 gpgme_sig_notation_t gpgme_sig_notation_get (gpgme_ctx_t ctx);
 
+
 
-/* Run control.  */
+/*
+ * Run control.
+ */
 
 /* The type of an I/O callback function.  */
 typedef gpgme_error_t (*gpgme_io_cb_t) (void *data, int fd);
@@ -1111,8 +1134,17 @@ gpgme_ctx_t gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang);
 gpgme_ctx_t gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
 			    gpgme_error_t *op_err, int hang);
 
+/* Cancel a pending asynchronous operation.  */
+gpgme_error_t gpgme_cancel (gpgme_ctx_t ctx);
+
+/* Cancel a pending operation asynchronously.  */
+gpgme_error_t gpgme_cancel_async (gpgme_ctx_t ctx);
+
+
 
-/* Functions to handle data objects.  */
+/*
+ * Functions to handle data objects.
+ */
 
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle HANDLE.  Return the number of characters read, 0 on EOF
@@ -1235,13 +1267,19 @@ gpgme_error_t gpgme_data_new_from_filepart (gpgme_data_t *r_dh,
    gpgme_data_seek instead.  */
 gpgme_error_t gpgme_data_rewind (gpgme_data_t dh) _GPGME_DEPRECATED;
 
+
 
-/* Key and trust functions.  */
+/*
+ * Key and trust functions.
+ */
 
 /* Get the key with the fingerprint FPR from the crypto backend.  If
    SECRET is true, get the secret key.  */
 gpgme_error_t gpgme_get_key (gpgme_ctx_t ctx, const char *fpr,
 			     gpgme_key_t *r_key, int secret);
+
+/* Create a dummy key to specify an email address.  */
+gpgme_error_t gpgme_key_from_uid (gpgme_key_t *key, const char *name);
 
 /* Acquire a reference to KEY.  */
 void gpgme_key_ref (gpgme_key_t key);
@@ -1285,26 +1323,12 @@ unsigned long gpgme_key_sig_get_ulong_attr (gpgme_key_t key, int uid_idx,
 					    const void *reserved, int idx)
      _GPGME_DEPRECATED;
 
-
-/* Crypto Operations.  */
-
-/* Cancel a pending asynchronous operation.  */
-gpgme_error_t gpgme_cancel (gpgme_ctx_t ctx);
-
-/* Cancel a pending operation asynchronously.  */
-gpgme_error_t gpgme_cancel_async (gpgme_ctx_t ctx);
 
 
-struct _gpgme_invalid_key
-{
-  struct _gpgme_invalid_key *next;
-  char *fpr;
-  gpgme_error_t reason;
-};
-typedef struct _gpgme_invalid_key *gpgme_invalid_key_t;
+/*
+ * Encryption.
+ */
 
-
-/* Encryption.  */
 struct _gpgme_op_encrypt_result
 {
   /* The list of invalid recipients.  */
@@ -1348,7 +1372,9 @@ gpgme_error_t gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_key_t recp[],
 				     gpgme_data_t plain, gpgme_data_t cipher);
 
 
-/* Decryption.  */
+/*
+ * Decryption.
+ */
 
 struct _gpgme_recipient
 {
@@ -1405,7 +1431,10 @@ gpgme_error_t gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher,
 				       gpgme_data_t plain);
 
 
-/* Signing.  */
+/*
+ * Signing.
+ */
+
 struct _gpgme_new_signature
 {
   struct _gpgme_new_signature *next;
@@ -1461,7 +1490,9 @@ gpgme_error_t gpgme_op_sign (gpgme_ctx_t ctx,
 			     gpgme_sig_mode_t mode);
 
 
-/* Verify.  */
+/*
+ * Verify.
+ */
 
 /* Flags used for the SUMMARY field in a gpgme_signature_t.  */
 typedef enum
@@ -1550,22 +1581,15 @@ gpgme_error_t gpgme_op_verify (gpgme_ctx_t ctx, gpgme_data_t sig,
 			       gpgme_data_t plaintext);
 
 
-/* Import.  */
+/*
+ * Import/Export
+ */
 
-/* The key was new.  */
-#define GPGME_IMPORT_NEW	1
-
-/* The key contained new user IDs.  */
-#define GPGME_IMPORT_UID	2
-
-/* The key contained new signatures.  */
-#define GPGME_IMPORT_SIG	4
-
-/* The key contained new sub keys.  */
-#define GPGME_IMPORT_SUBKEY	8
-
-/* The key contained a secret key.  */
-#define GPGME_IMPORT_SECRET	16
+#define GPGME_IMPORT_NEW	1  /* The key was new.  */
+#define GPGME_IMPORT_UID	2  /* The key contained new user IDs.  */
+#define GPGME_IMPORT_SIG	4  /* The key contained new signatures.  */
+#define GPGME_IMPORT_SUBKEY	8  /* The key contained new sub keys.  */
+#define GPGME_IMPORT_SECRET    16  /* The key contained a secret key.  */
 
 
 struct _gpgme_import_status
@@ -1586,7 +1610,7 @@ struct _gpgme_import_status
 };
 typedef struct _gpgme_import_status *gpgme_import_status_t;
 
-/* Import.  */
+/* Import result object.  */
 struct _gpgme_op_import_result
 {
   /* Number of considered keys.  */
@@ -1650,7 +1674,6 @@ gpgme_error_t gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t keys[]);
 gpgme_error_t gpgme_op_import_keys (gpgme_ctx_t ctx, gpgme_key_t keys[]);
 
 
-
 /* Export the keys found by PATTERN into KEYDATA.  */
 gpgme_error_t gpgme_op_export_start (gpgme_ctx_t ctx, const char *pattern,
 				     gpgme_export_mode_t mode,
@@ -1679,7 +1702,10 @@ gpgme_error_t gpgme_op_export_keys (gpgme_ctx_t ctx,
 
 
 
-/* Key generation.  */
+/*
+ * Key generation.
+ */
+
 struct _gpgme_op_genkey_result
 {
   /* A primary key was generated.  */
@@ -1707,7 +1733,7 @@ gpgme_error_t gpgme_op_genkey (gpgme_ctx_t ctx, const char *parms,
 /* Retrieve a pointer to the result of the genkey operation.  */
 gpgme_genkey_result_t gpgme_op_genkey_result (gpgme_ctx_t ctx);
 
-
+
 /* Delete KEY from the keyring.  If ALLOW_SECRET is non-zero, secret
    keys are also deleted.  */
 gpgme_error_t gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
@@ -1715,7 +1741,12 @@ gpgme_error_t gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 gpgme_error_t gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key,
 			       int allow_secret);
 
+
 
+/*
+ * Key Edit interface
+ */
+
 /* Edit the key KEY.  Send status and command requests to FNC and
    output of edit commands to OUT.  */
 gpgme_error_t gpgme_op_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
@@ -1735,27 +1766,11 @@ gpgme_error_t gpgme_op_card_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 				  gpgme_data_t out);
 
 
-/* Flags for the spawn operations.  */
-#define GPGME_SPAWN_DETACHED      1
-#define GPGME_SPAWN_ALLOW_SET_FG  2
-
-
-/* Run the command FILE with the arguments in ARGV.  Connect stdin to
-   DATAIN, stdout to DATAOUT, and STDERR to DATAERR.  If one the data
-   streams is NULL, connect to /dev/null instead.  */
-gpgme_error_t gpgme_op_spawn_start (gpgme_ctx_t ctx,
-                                    const char *file, const char *argv[],
-                                    gpgme_data_t datain,
-                                    gpgme_data_t dataout, gpgme_data_t dataerr,
-                                    unsigned int flags);
-gpgme_error_t gpgme_op_spawn (gpgme_ctx_t ctx,
-                              const char *file, const char *argv[],
-                              gpgme_data_t datain,
-                              gpgme_data_t dataout, gpgme_data_t dataerr,
-                              unsigned int flags);
-
 
-/* Key management functions.  */
+/*
+ * Key listing
+ */
+
 struct _gpgme_op_keylist_result
 {
   unsigned int truncated : 1;
@@ -1792,7 +1807,9 @@ gpgme_error_t gpgme_op_passwd (gpgme_ctx_t ctx, gpgme_key_t key,
 
 
 
-/* Trust items and operations.  */
+/*
+ * Trust items and operations.
+ */
 
 struct _gpgme_trust_item
 {
@@ -1867,7 +1884,12 @@ int gpgme_trust_item_get_int_attr (gpgme_trust_item_t item, _gpgme_attr_t what,
 				   const void *reserved, int idx)
      _GPGME_DEPRECATED;
 
+
 
+/*
+ * Audit log
+ */
+
 /* Return the auditlog for the current session.  This may be called
    after a successful or failed operation.  If no audit log is
    available GPG_ERR_NO_DATA is returned.  */
@@ -1878,7 +1900,33 @@ gpgme_error_t gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output,
 
 
 
-/* Low-level Assuan protocol access.  */
+/*
+ * Spawn interface
+ */
+
+/* Flags for the spawn operations.  */
+#define GPGME_SPAWN_DETACHED      1
+#define GPGME_SPAWN_ALLOW_SET_FG  2
+
+
+/* Run the command FILE with the arguments in ARGV.  Connect stdin to
+   DATAIN, stdout to DATAOUT, and STDERR to DATAERR.  If one the data
+   streams is NULL, connect to /dev/null instead.  */
+gpgme_error_t gpgme_op_spawn_start (gpgme_ctx_t ctx,
+                                    const char *file, const char *argv[],
+                                    gpgme_data_t datain,
+                                    gpgme_data_t dataout, gpgme_data_t dataerr,
+                                    unsigned int flags);
+gpgme_error_t gpgme_op_spawn (gpgme_ctx_t ctx,
+                              const char *file, const char *argv[],
+                              gpgme_data_t datain,
+                              gpgme_data_t dataout, gpgme_data_t dataerr,
+                              unsigned int flags);
+
+
+/*
+ * Low-level Assuan protocol access.
+ */
 typedef gpgme_error_t (*gpgme_assuan_data_cb_t)
      (void *opaque, const void *data, size_t datalen);
 
@@ -1937,7 +1985,10 @@ gpgme_op_assuan_transact (gpgme_ctx_t ctx,
 			      void *status_cb_value) _GPGME_DEPRECATED;
 
 
-/* Crypto container support.  */
+/*
+ * Crypto container support.
+ */
+
 struct _gpgme_op_vfs_mount_result
 {
   char *mount_dir;
@@ -1958,7 +2009,9 @@ gpgme_error_t gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
 				   unsigned int flags, gpgme_error_t *op_err);
 
 
-/* Interface to gpgconf(1).  */
+/*
+ * Interface to gpgconf(1).
+ */
 
 /* The expert level at which a configuration option or group of
    options should be displayed.  See the gpgconf(1) documentation for
@@ -2122,15 +2175,11 @@ gpgme_error_t gpgme_op_conf_load (gpgme_ctx_t ctx, gpgme_conf_comp_t *conf_p);
    follow chained components!  */
 gpgme_error_t gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp);
 
-
-/* UIServer support.  */
-
-/* Create a dummy key to specify an email address.  */
-gpgme_error_t gpgme_key_from_uid (gpgme_key_t *key, const char *name);
-
 
 
-/* Various functions.  */
+/*
+ * Various functions.
+ */
 
 /* Set special global flags; consult the manual before use.  */
 int gpgme_set_global_flag (const char *name, const char *value);
@@ -2165,19 +2214,28 @@ gpgme_error_t gpgme_set_engine_info (gpgme_protocol_t proto,
 				     const char *file_name,
 				     const char *home_dir);
 
-
-/* Engine support functions.  */
-
 /* Verify that the engine implementing PROTO is installed and
    available.  */
 gpgme_error_t gpgme_engine_check_version (gpgme_protocol_t proto);
 
-
+
+/* Reference counting for result objects.  */
 void gpgme_result_ref (void *result);
 void gpgme_result_unref (void *result);
 
+/* Return a statically allocated string with the name of the public
+   key algorithm ALGO, or NULL if that name is not known.  */
+const char *gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo);
+
+/* Return a statically allocated string with the name of the hash
+   algorithm ALGO, or NULL if that name is not known.  */
+const char *gpgme_hash_algo_name (gpgme_hash_algo_t algo);
+
+
 
-/* Deprecated types.  */
+/*
+ * Deprecated types.
+ */
 typedef gpgme_ctx_t GpgmeCtx _GPGME_DEPRECATED;
 typedef gpgme_data_t GpgmeData _GPGME_DEPRECATED;
 typedef gpgme_error_t GpgmeError _GPGME_DEPRECATED;
