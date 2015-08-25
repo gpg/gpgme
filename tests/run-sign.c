@@ -36,6 +36,14 @@
 
 static int verbose;
 
+static gpg_error_t
+status_cb (void *opaque, const char *keyword, const char *value)
+{
+  (void)opaque;
+  printf ("status_cb: %s %s\n", keyword, value);
+  return 0;
+}
+
 
 static void
 print_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
@@ -67,9 +75,11 @@ show_usage (int ex)
   fputs ("usage: " PGM " [options] FILE\n\n"
          "Options:\n"
          "  --verbose        run in verbose mode\n"
+         "  --status         print status lines from the backend\n"
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
          "  --uiserver       use the UI server\n"
+         "  --loopback       use a loopback pinentry\n"
          "  --key NAME       use key NAME for signing\n"
          , stderr);
   exit (ex);
@@ -87,6 +97,8 @@ main (int argc, char **argv)
   gpgme_sig_mode_t sigmode = GPGME_SIG_MODE_NORMAL;
   gpgme_data_t in, out;
   gpgme_sign_result_t result;
+  int print_status = 0;
+  int use_loopback = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -104,6 +116,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--verbose"))
         {
           verbose = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--status"))
+        {
+          print_status = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--openpgp"))
@@ -129,6 +146,11 @@ main (int argc, char **argv)
           key_string = *argv;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--loopback"))
+        {
+          use_loopback = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -149,6 +171,10 @@ main (int argc, char **argv)
   fail_if_err (err);
   gpgme_set_protocol (ctx, protocol);
   gpgme_set_armor (ctx, 1);
+  if (print_status)
+    gpgme_set_status_cb (ctx, status_cb, NULL);
+  if (use_loopback)
+    gpgme_set_pinentry_mode (ctx, GPGME_PINENTRY_MODE_LOOPBACK);
 
   if (key_string)
     {
