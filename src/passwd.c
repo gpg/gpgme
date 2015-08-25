@@ -30,6 +30,9 @@
 
 typedef struct
 {
+  /* The error code from a FAILURE status line or 0.  */
+  gpg_error_t failure_code;
+
   int success_seen;
   int error_seen;
 } *op_data_t;
@@ -92,6 +95,10 @@ passwd_status_handler (void *priv, gpgme_status_code_t code, char *args)
       opd->success_seen = 1;
       break;
 
+    case GPGME_STATUS_FAILURE:
+      opd->failure_code = _gpgme_parse_failure (args);
+      break;
+
     case GPGME_STATUS_EOF:
       /* In case the OpenPGP engine does not properly implement the
          passwd command we won't get a success status back and thus we
@@ -102,6 +109,8 @@ passwd_status_handler (void *priv, gpgme_status_code_t code, char *args)
       if (ctx->protocol == GPGME_PROTOCOL_OpenPGP
           && !opd->error_seen && !opd->success_seen)
         err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      else if (opd->failure_code)
+        err = opd->failure_code;
       break;
 
     default:

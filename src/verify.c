@@ -38,6 +38,9 @@ typedef struct
 {
   struct _gpgme_op_verify_result result;
 
+  /* The error code from a FAILURE status line or 0.  */
+  gpg_error_t failure_code;
+
   gpgme_signature_t current_sig;
   int did_prepare_new_sig;
   int only_newsig_seen;
@@ -769,6 +772,10 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
          error code if we are not ready to process this status.  */
       return parse_error (sig, args, !!sig );
 
+    case GPGME_STATUS_FAILURE:
+      opd->failure_code = _gpgme_parse_failure (args);
+      break;
+
     case GPGME_STATUS_EOF:
       if (sig && !opd->did_prepare_new_sig)
 	calc_sig_summary (sig);
@@ -795,6 +802,8 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
           opd->current_sig = NULL;
         }
       opd->only_newsig_seen = 0;
+      if (opd->failure_code)
+        return opd->failure_code;
       break;
 
     case GPGME_STATUS_PLAINTEXT:

@@ -128,6 +128,19 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
         }
       break;
 
+    case GPGME_STATUS_FAILURE:
+      /* We abuse this status handler to forward FAILURE status codes
+         to the caller.  This should better be done in a generic
+         handler, but for now this is sufficient.  */
+      if (ctx->status_cb)
+        {
+          err = ctx->status_cb (ctx->status_cb_value, "FAILURE", args);
+          if (err)
+            return err;
+        }
+      break;
+
+
     default:
       /* Ignore all other codes.  */
       break;

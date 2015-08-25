@@ -337,3 +337,27 @@ _gpgme_parse_plaintext (char *args, char **filenamep)
     }
   return 0;
 }
+
+
+/* Parse a FAILURE status line and return the error code.  ARGS is
+   modified to contain the location part.  */
+gpgme_error_t
+_gpgme_parse_failure (char *args)
+{
+  char *where, *which;
+
+  where = strchr (args, ' ');
+  if (!where)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+
+  *where = '\0';
+  which = where + 1;
+
+  where = strchr (which, ' ');
+  if (where)
+    *where = '\0';
+
+  where = args;
+
+  return atoi (which);
+}

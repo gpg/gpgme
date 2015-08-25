@@ -37,6 +37,9 @@ typedef struct
 {
   struct _gpgme_op_genkey_result result;
 
+  /* The error code from a FAILURE status line or 0.  */
+  gpg_error_t failure_code;
+
   /* The key parameters passed to the crypto engine.  */
   gpgme_data_t key_parameter;
 } *op_data_t;
@@ -118,10 +121,16 @@ genkey_status_handler (void *priv, gpgme_status_code_t code, char *args)
 	}
       break;
 
+    case GPGME_STATUS_FAILURE:
+      opd->failure_code = _gpgme_parse_failure (args);
+      break;
+
     case GPGME_STATUS_EOF:
       /* FIXME: Should return some more useful error value.  */
       if (!opd->result.primary && !opd->result.sub)
 	return gpg_error (GPG_ERR_GENERAL);
+      else if (opd->failure_code)
+        return opd->failure_code;
       break;
 
     case GPGME_STATUS_INQUIRE_MAXLEN:

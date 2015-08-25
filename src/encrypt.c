@@ -36,6 +36,9 @@ typedef struct
 {
   struct _gpgme_op_encrypt_result result;
 
+  /* The error code from a FAILURE status line or 0.  */
+  gpg_error_t failure_code;
+
   /* A pointer to the next pointer of the last invalid recipient in
      the list.  This makes appending new invalid recipients painless
      while preserving the order.  */
@@ -114,9 +117,15 @@ _gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
 
   switch (code)
     {
+    case GPGME_STATUS_FAILURE:
+      opd->failure_code = _gpgme_parse_failure (args);
+      break;
+
     case GPGME_STATUS_EOF:
       if (opd->result.invalid_recipients)
 	return gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
+      if (opd->failure_code)
+        return opd->failure_code;
       break;
 
     case GPGME_STATUS_INV_RECP:
