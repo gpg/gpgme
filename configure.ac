@@ -1,7 +1,7 @@
 # configure.ac for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-#               2009, 2010, 2011, 2012, 2013  g10 Code GmbH
+#               2009, 2010, 2011, 2012, 2013, 2014, 2015  g10 Code GmbH
 #
 # This file is part of GPGME.
 #
@@ -55,11 +55,11 @@ AC_INIT([gpgme],[mym4_full_version],[http://bugs.gnupg.org])
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed/changed:	AGE=0)
 #
-LIBGPGME_LT_CURRENT=24
+LIBGPGME_LT_CURRENT=25
 # Subtract 2 from this value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
-LIBGPGME_LT_AGE=13
-LIBGPGME_LT_REVISION=4
+LIBGPGME_LT_AGE=14
+LIBGPGME_LT_REVISION=0
 
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1

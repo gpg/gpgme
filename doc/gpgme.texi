@@ -6203,15 +6203,15 @@ you run your tests only with play data.
 
 @include gpl.texi
 
-@node Function and Data Index
-@unnumbered Function and Data Index
-
-@printindex fn
-
 @node Concept Index
 @unnumbered Concept Index
 
 @printindex cp
+
+@node Function and Data Index
+@unnumbered Function and Data Index
+
+@printindex fn
 
 
 @bye

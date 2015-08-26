@@ -1,5 +1,34 @@
-Noteworthy changes in version 1.6.0 (unreleased) [C24/A13/R_]
+Noteworthy changes in version 1.6.0 (2015-08-26) [C25/A14/R0]
 ------------------------------------------------
+
+ * Added gpgme_set_offline to do a key listinging w/o requiring CRL.
+
+ * Added gpgme_set_status_cb to allow a user to see some status
+   messages.
+
+ * Added an export mode for secret keys.
+
+ * More precise error codes are returned if GnuPG >= 2.1.8 is used.
+
+ * The passphrase handler for the loopback mode has been improved and may
+   also be used with genkey.
+
+ * [w32] The standard GnuPG 2.1 install directory is now seached for
+   gpgconf.exe before a registry specified directory and the Gpg4win
+   install directory.
+
+ * [w32] gpgme-w32spawn.exe will now only be searched in the gpgme DLL
+   directory.
+
+ * Interface changes relative to the 1.5.1 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_set_offline              NEW.
+ gpgme_get_offline              NEW.
+ gpgme_set_status_cb            NEW.
+ gpgme_get_status_cb            NEW.
+ GPGME_EXPORT_MODE_SECRET       NEW
+ GPGME_EXPORT_MODE_RAW          NEW.
+ GPGME_EXPORT_MODE_PKCS12       NEW.
 
 
 Noteworthy changes in version 1.5.5 (2015-06-08) [C24/A13/R4]
