@@ -56,28 +56,33 @@ extern "C" {
 /*
  * Check for compiler features.
  */
-#ifdef __GNUC__
+#ifdef GPGRT_INLINE
+# define _GPGME_INLINE GPGRT_INLINE
+#elif defined(__GNUC__)
 # define _GPGME_INLINE __inline__
-#elif __STDC_VERSION__ >= 199901L
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 # define _GPGME_INLINE inline
 #else
 # define _GPGME_INLINE
 #endif
 
 
-#if __GNUC__
-#define _GPGME_GCC_VERSION (__GNUC__ * 10000 \
-                            + __GNUC_MINOR__ * 100 \
-                            + __GNUC_PATCHLEVEL__)
+#ifdef GPGRT_ATTR_DEPRECATED
+# define _GPGME_DEPRECATED GPGRT_ATTR_DEPRECATED
+#elif defined(__GNUC__)
+# define _GPGME_GCC_VERSION (__GNUC__ * 10000 \
+                             + __GNUC_MINOR__ * 100 \
+                             + __GNUC_PATCHLEVEL__)
 
-#if _GPGME_GCC_VERSION > 30100
-#define _GPGME_DEPRECATED	__attribute__ ((__deprecated__))
-#endif
+# if _GPGME_GCC_VERSION > 30100
+#  define _GPGME_DEPRECATED  __attribute__ ((__deprecated__))
+# else
+#  define _GPGME_DEPRECATED
+# endif
+#else
+# define _GPGME_DEPRECATED
 #endif
 
-#ifndef _GPGME_DEPRECATED
-#define _GPGME_DEPRECATED
-#endif
 
 /* The macro _GPGME_DEPRECATED_OUTSIDE_GPGME suppresses warnings for
    fields we must access in GPGME for ABI compatibility.  */
