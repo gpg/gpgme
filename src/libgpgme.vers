@@ -98,6 +98,8 @@ GPGME_1.1 {
 
     gpgme_set_status_cb;
     gpgme_get_status_cb;
+
+    gpgme_pubkey_algo_string;
 };
 
 

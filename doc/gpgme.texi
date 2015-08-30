@@ -1161,6 +1161,9 @@ Algorithm as defined by FIPS 186-2 and RFC-6637.
 This value indicates ECDH, the Eliptic Curve Diffie-Hellmann
 encryption algorithm as defined by RFC-6637.
 
+@item GPGME_PK_EDDSA
+This value indicates the EdDSA algorithm.
+
 @end table
 @end deftp
 
@@ -1172,6 +1175,14 @@ the public key algorithm to the user.
 
 If @var{algo} is not a valid public key algorithm, @code{NULL} is
 returned.
+@end deftypefun
+
+@deftypefun {char *} gpgme_pubkey_algo_string (@w{gpgme_subkey_t @var{key}})
+The function @code{gpgme_pubkey_algo_string} is a convenience function
+to build and return an algorithm string in the same way GnuPG does
+(e.g. ``rsa2048'' or ``ed25519'').  The caller must free the result
+using @code{gpgme_free}.  On error (e.g. invalid argument or memory
+exhausted), the function returns NULL and sets @code{ERRNO}.
 @end deftypefun
 
 
@@ -1954,9 +1965,11 @@ case, the data object @var{dh} is destroyed.
 
 @deftypefun void gpgme_free (@w{void *@var{buffer}})
 The function @code{gpgme_free} releases the memory returned by
-@code{gpgme_data_release_and_get_mem}.  It should be used instead of
-the system libraries @code{free} function in case different allocators
-are used in a single program.
+@code{gpgme_data_release_and_get_mem} and
+@code{gpgme_pubkey_algo_string}.  It should be used instead of the
+system libraries @code{free} function in case different allocators are
+used by a program.  This is often the case if gpgme is used under
+Windows as a DLL.
 @end deftypefun
 
 
@@ -2838,7 +2851,7 @@ True if the secret key is stored on a smart card.
 The serial number of a smart card holding this key or @code{NULL}.
 
 @item char *curve
-For ECC algoritms the name of the curve.
+For ECC algorithms the name of the curve.
 
 @end table
 @end deftp

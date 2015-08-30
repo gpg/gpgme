@@ -271,7 +271,8 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
 }
 
 
-/* Release the memory returned by gpgme_data_release_and_get_mem().  */
+/* Release the memory returned by gpgme_data_release_and_get_mem() and
+   some other functions.  */
 void
 gpgme_free (void *buffer)
 {

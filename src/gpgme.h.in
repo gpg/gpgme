@@ -261,7 +261,8 @@ typedef enum
     GPGME_PK_ECC   = 18,
     GPGME_PK_ELG   = 20,
     GPGME_PK_ECDSA = 301,
-    GPGME_PK_ECDH  = 302
+    GPGME_PK_ECDH  = 302,
+    GPGME_PK_EDDSA = 303
   }
 gpgme_pubkey_algo_t;
 
@@ -1218,7 +1219,8 @@ gpgme_error_t gpgme_data_new_from_mem (gpgme_data_t *r_dh,
    size is returned in R_LEN.  */
 char *gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len);
 
-/* Release the memory returned by gpgme_data_release_and_get_mem().  */
+/* Release the memory returned by gpgme_data_release_and_get_mem() and
+   some other functions.  */
 void gpgme_free (void *buffer);
 
 gpgme_error_t gpgme_data_new_from_cbs (gpgme_data_t *dh,
@@ -2231,6 +2233,10 @@ gpgme_error_t gpgme_engine_check_version (gpgme_protocol_t proto);
 /* Reference counting for result objects.  */
 void gpgme_result_ref (void *result);
 void gpgme_result_unref (void *result);
+
+/* Return a public key algorithm string (e.g. "rsa2048").  Caller must
+   free using gpgme_free.  */
+char *gpgme_pubkey_algo_string (gpgme_subkey_t subkey);
 
 /* Return a statically allocated string with the name of the public
    key algorithm ALGO, or NULL if that name is not known.  */

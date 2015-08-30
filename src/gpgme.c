@@ -1,7 +1,7 @@
 /* gpgme.c - GnuPG Made Easy.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2012,
-                 2014 g10 Code GmbH
+                 2014, 2015 g10 Code GmbH
 
    This file is part of GPGME.
 
@@ -994,41 +994,70 @@ gpgme_sig_notation_get (gpgme_ctx_t ctx)
   return ctx->sig_notations;
 }
 
+
 
+/* Return a public key algorithm string made of the algorithm and size
+   or the curve name.  May return NULL on error.  Caller must free the
+   result using gpgme_free.  */
+char *
+gpgme_pubkey_algo_string (gpgme_subkey_t subkey)
+{
+  const char *prefix = NULL;
+  char *result;
+
+  if (!subkey)
+    {
+      gpg_err_set_errno (EINVAL);
+      return NULL;
+    }
+
+  switch (subkey->pubkey_algo)
+    {
+    case GPGME_PK_RSA:
+    case GPGME_PK_RSA_E:
+    case GPGME_PK_RSA_S: prefix = "rsa"; break;
+    case GPGME_PK_ELG_E: prefix = "elg"; break;
+    case GPGME_PK_DSA:	 prefix = "dsa"; break;
+    case GPGME_PK_ELG:   prefix = "xxx"; break;
+    case GPGME_PK_ECC:
+    case GPGME_PK_ECDH:
+    case GPGME_PK_ECDSA:
+    case GPGME_PK_EDDSA: prefix = "";    break;
+    }
+
+  if (prefix && *prefix)
+    {
+      char buffer[40];
+      snprintf (buffer, sizeof buffer, "%s%u", prefix, subkey->length);
+      result = strdup (buffer);
+    }
+  else if (prefix && subkey->curve && *subkey->curve)
+    result = strdup (subkey->curve);
+  else if (prefix)
+    result =  strdup ("E_error");
+  else
+    result = strdup  ("unknown");
+
+  return result;
+}
+
+
 const char *
 gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo)
 {
   switch (algo)
     {
-    case GPGME_PK_RSA:
-      return "RSA";
-
-    case GPGME_PK_RSA_E:
-      return "RSA-E";
-
-    case GPGME_PK_RSA_S:
-      return "RSA-S";
-
-    case GPGME_PK_ELG_E:
-      return "ELG-E";
-
-    case GPGME_PK_DSA:
-      return "DSA";
-
-    case GPGME_PK_ECC:
-      return "ECC";
-
-    case GPGME_PK_ELG:
-      return "ELG";
-
-    case GPGME_PK_ECDSA:
-      return "ECDSA";
-
-    case GPGME_PK_ECDH:
-      return "ECDH";
-
-    default:
-      return NULL;
+    case GPGME_PK_RSA:   return "RSA";
+    case GPGME_PK_RSA_E: return "RSA-E";
+    case GPGME_PK_RSA_S: return "RSA-S";
+    case GPGME_PK_ELG_E: return "ELG-E";
+    case GPGME_PK_DSA:   return "DSA";
+    case GPGME_PK_ECC:   return "ECC";
+    case GPGME_PK_ELG:   return "ELG";
+    case GPGME_PK_ECDSA: return "ECDSA";
+    case GPGME_PK_ECDH:  return "ECDH";
+    case GPGME_PK_EDDSA: return "EdDSA";
+    default:             return NULL;
     }
 }
 

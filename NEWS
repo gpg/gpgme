@@ -1,6 +1,13 @@
 Noteworthy changes in version 1.6.1 (unreleased) [C25/A14/R_]
 ------------------------------------------------
 
+ * New function to format a GnuPG style public key algorithm string.
+
+ * Interface changes relative to the 1.6.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_pubkey_algo_string       NEW.
+ GPGME_PK_EDDSA                 NEW.
+
 
 Noteworthy changes in version 1.6.0 (2015-08-26) [C25/A14/R0]
 ------------------------------------------------

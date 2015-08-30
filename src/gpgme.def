@@ -223,5 +223,7 @@ EXPORTS
 
     gpgme_set_status_cb                   @167
     gpgme_get_status_cb                   @168
+
+    gpgme_pubkey_algo_string              @169
 ; END
 
