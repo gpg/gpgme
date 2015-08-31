@@ -128,6 +128,7 @@ endif
 AM_CPPFLAGS = @GPG_ERROR_CFLAGS@ @QT4_CORE_CFLAGS@
 AM_CFLAGS = @LIBASSUAN_CFLAGS@ @GLIB_CFLAGS@ @QT4_CORE_CFLAGS@
 
+gpgme_tool_SOURCES = gpgme-tool.c argparse.c argparse.h
 gpgme_tool_LDADD = libgpgme.la @LIBASSUAN_LIBS@
 
 

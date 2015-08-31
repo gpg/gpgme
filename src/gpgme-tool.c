@@ -32,12 +32,10 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
-#ifdef HAVE_ARGP_H
-#include <argp.h>
-#endif
 
 #include <assuan.h>
 
+#include "argparse.h"
 #include "gpgme.h"
 
 /* GCC attributes.  */
@@ -58,421 +56,6 @@
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 
-
-
-#ifndef HAVE_ARGP_H
-/* Minimal argp implementation.  */
-
-/* Differences to ARGP:
-   argp_program_version: Required.
-   argp_program_bug_address: Required.
-   argp_program_version_hook: Not supported.
-   argp_err_exit_status: Required.
-   struct argp: Children and help_filter not supported.
-   argp_domain: Not supported.
-   struct argp_option: Group not supported.  Options are printed in
-   order given.  Flags OPTION_ALIAS, OPTION_DOC and OPTION_NO_USAGE
-   are not supported.
-   argp_parse: No flags are supported (ARGP_PARSE_ARGV0, ARGP_NO_ERRS,
-   ARGP_NO_ARGS, ARGP_IN_ORDER, ARGP_NO_HELP, ARGP_NO_EXIT,
-   ARGP_LONG_ONLY, ARGP_SILENT).  ARGP must not be NULL.
-   argp_help: Flag ARGP_HELP_LONG_ONLY not supported.
-   argp_state: argc, argv, next may not be modified and should not be used.  */
-
-extern const char *argp_program_version;
-extern const char *argp_program_bug_address;
-extern error_t argp_err_exit_status;
-
-struct argp_option
-{
-  const char *name;
-  int key;
-  const char *arg;
-#define OPTION_ARG_OPTIONAL 0x1
-#define OPTION_HIDDEN 0x2
-  int flags;
-  const char *doc;
-  int group;
-};
-
-struct argp;
-struct argp_state
-{
-  const struct argp *const root_argp;
-  int argc;
-  char **argv;
-  int next;
-  unsigned flags;
-  unsigned arg_num;
-  int quoted;
-  void *input;
-  void **child_inputs;
-  void *hook;
-  char *name;
-  FILE *err_stream;
-  FILE *out_stream;
-  void *pstate;
-};
-
-#ifdef EDEADLK
-# define ARGP_ERR_UNKNOWN EDEADLK /* POSIX */
-#else
-# define ARGP_ERR_UNKNOWN EDEADLOCK /* *GNU/kFreebsd does not define this) */
-#endif
-#define ARGP_KEY_ARG 0
-#define ARGP_KEY_ARGS 0x1000006
-#define ARGP_KEY_END 0x1000001
-#define ARGP_KEY_NO_ARGS 0x1000002
-#define ARGP_KEY_INIT 0x1000003
-#define ARGP_KEY_FINI 0x1000007
-#define ARGP_KEY_SUCCESS 0x1000004
-#define ARGP_KEY_ERROR 0x1000005
-typedef error_t (*argp_parser_t) (int key, char *arg, struct argp_state *state);
-
-struct argp
-{
-  const struct argp_option *options;
-  argp_parser_t parser;
-  const char *args_doc;
-  const char *doc;
-
-  const struct argp_child *children;
-  char *(*help_filter) (int key, const char *text, void *input);
-  const char *argp_domain;
-};
-
-#define ARGP_HELP_USAGE ARGP_HELP_SHORT_USAGE
-#define ARGP_HELP_SHORT_USAGE 0x02
-#define ARGP_HELP_SEE 0x04
-#define ARGP_HELP_LONG 0x08
-#define ARGP_HELP_PRE_DOC 0x10
-#define ARGP_HELP_POST_DOC 0x20
-#define ARGP_HELP_DOC (ARGP_HELP_PRE_DOC | ARGP_HELP_POST_DOC)
-#define ARGP_HELP_BUG_ADDR 0x40
-#define ARGP_HELP_EXIT_ERR 0x100
-#define ARGP_HELP_EXIT_OK 0x200
-#define ARGP_HELP_STD_ERR (ARGP_HELP_SEE | ARGP_HELP_EXIT_ERR)
-#define ARGP_HELP_STD_USAGE \
-  (ARGP_HELP_SHORT_USAGE | ARGP_HELP_SEE | ARGP_HELP_EXIT_ERR)
-#define ARGP_HELP_STD_HELP \
-  (ARGP_HELP_SHORT_USAGE | ARGP_HELP_LONG | ARGP_HELP_EXIT_OK	\
-   | ARGP_HELP_DOC | ARGP_HELP_BUG_ADDR)
-
-
-void argp_error (const struct argp_state *state,
-                 const char *fmt, ...) GT_GCC_A_PRINTF(2, 3);
-
-
-
-char *
-_argp_pname (char *name)
-{
-  char *pname = name;
-  char *bname = strrchr (pname, '/');
-  if (! bname)
-    bname = strrchr (pname, '\\');
-  if (bname)
-    pname = bname + 1;
-  return pname;
-}
-
-
-void
-_argp_state_help (const struct argp *argp, const struct argp_state *state,
-		  FILE *stream, unsigned flags, char *name)
-{
-  if (state)
-    name = state->name;
-
-  if (flags & ARGP_HELP_SHORT_USAGE)
-    fprintf (stream, "Usage: %s [OPTIONS...] %s\n", name, argp->args_doc);
-  if (flags & ARGP_HELP_SEE)
-    fprintf (stream, "Try `%s --help' or `%s --usage' for more information.\n",
-	     name, name);
-  if (flags & ARGP_HELP_PRE_DOC)
-    {
-      char buf[1024];
-      char *end;
-      strncpy (buf, argp->doc, sizeof (buf));
-      buf[sizeof (buf) - 1] = '\0';
-      end = strchr (buf, '\v');
-      if (end)
-	*end = '\0';
-      fprintf (stream, "%s\n%s", buf, buf[0] ? "\n" : "");
-    }
-  if (flags & ARGP_HELP_LONG)
-    {
-      const struct argp_option *opt = argp->options;
-      while (opt->key)
-	{
-	  #define NSPACES 29
-	  char spaces[NSPACES + 1] = "                              ";
-	  int len = 0;
-	  fprintf (stream, "  ");
-	  len += 2;
-	  if (isascii (opt->key))
-	    {
-	      fprintf (stream, "-%c", opt->key);
-	      len += 2;
-	      if (opt->name)
-		{
-		  fprintf (stream, ", ");
-		  len += 2;
-		}
-	    }
-	  if (opt->name)
-	    {
-	      fprintf (stream, "--%s", opt->name);
-	      len += 2 + strlen (opt->name);
-	    }
-	  if (opt->arg && (opt->flags & OPTION_ARG_OPTIONAL))
-	    {
-	      fprintf (stream, "[=%s]", opt->arg);
-	      len += 3 + strlen (opt->arg);
-	    }
-	  else if (opt->arg)
-	    {
-	      fprintf (stream, "=%s", opt->arg);
-	      len += 1 + strlen (opt->arg);
-	    }
-	  if (len >= NSPACES)
-	    len = NSPACES - 1;
-	  spaces[NSPACES - len] = '\0';
-	  fprintf (stream, "%s%s\n", spaces, opt->doc);
-	  opt++;
-	}
-      fprintf (stream, "  -?, --help                 Give this help list\n");
-      fprintf (stream, "      --usage                Give a short usage "
-	       "message\n");
-    }
-  if (flags & ARGP_HELP_POST_DOC)
-    {
-      char buf[1024];
-      char *end;
-      strncpy (buf, argp->doc, sizeof (buf));
-      buf[sizeof (buf) - 1] = '\0';
-      end = strchr (buf, '\v');
-      if (end)
-	{
-	  end++;
-	  if (*end)
-	    fprintf (stream, "\n%s\n", end);
-	}
-      fprintf (stream, "\nMandatory or optional arguments to long options are also mandatory or optional\n");
-      fprintf (stream, "for any corresponding short options.\n");
-    }
-  if (flags & ARGP_HELP_BUG_ADDR)
-    fprintf (stream, "\nReport bugs to %s.\n", argp_program_bug_address);
-
-  if (flags & ARGP_HELP_EXIT_ERR)
-    exit (argp_err_exit_status);
-  if (flags & ARGP_HELP_EXIT_OK)
-    exit (0);
-}
-
-
-void
-argp_usage (const struct argp_state *state)
-{
-  _argp_state_help (state->root_argp, state, state->err_stream,
-		    ARGP_HELP_STD_USAGE, state->name);
-}
-
-
-void
-argp_state_help (const struct argp_state *state, FILE *stream, unsigned flags)
-{
-  _argp_state_help (state->root_argp, state, stream, flags, state->name);
-}
-
-
-void
-argp_error (const struct argp_state *state, const char *fmt, ...)
-{
-  va_list ap;
-
-  fprintf (state->err_stream, "%s: ", state->name);
-  va_start (ap, fmt);
-  vfprintf (state->err_stream, fmt, ap);
-  va_end (ap);
-  fprintf (state->err_stream, "\n");
-  argp_state_help (state, state->err_stream, ARGP_HELP_STD_ERR);
-  exit (argp_err_exit_status);
-}
-
-
-void
-argp_help (const struct argp *argp, FILE *stream, unsigned flags, char *name)
-{
-  _argp_state_help (argp, NULL, stream, flags, name);
-}
-
-
-error_t
-argp_parse (const struct argp *argp, int argc,
-	    char **argv, unsigned flags, int *arg_index, void *input)
-{
-  int rc = 0;
-  struct argp_state state = { argp, argc, argv, 1, flags, 0, 0, input,
-			      NULL, NULL, _argp_pname (argv[0]),
-			      stderr, stdout, NULL };
-  /* All non-option arguments are collected at the beginning of
-     &argv[1] during processing.  This is a counter for their number.  */
-  int non_opt_args = 0;
-
-  rc = argp->parser (ARGP_KEY_INIT, NULL, &state);
-  if (rc && rc != ARGP_ERR_UNKNOWN)
-    goto argperror;
-
-  while (state.next < state.argc - non_opt_args)
-    {
-      int idx = state.next;
-      state.next++;
-
-      if (! strcasecmp (state.argv[idx], "--"))
-	{
-	  state.quoted = idx;
-	  continue;
-	}
-
-      if (state.quoted || state.argv[idx][0] != '-')
-	{
-	  char *arg_saved = state.argv[idx];
-	  non_opt_args++;
-	  memmove (&state.argv[idx], &state.argv[idx + 1],
-		   (state.argc - 1 - idx) * sizeof (char *));
-	  state.argv[argc - 1] = arg_saved;
-	  state.next--;
-	}
-      else if (! strcasecmp (state.argv[idx], "--help")
-	       || !strcmp (state.argv[idx], "-?"))
-	{
-	  argp_state_help (&state, state.out_stream, ARGP_HELP_STD_HELP);
-	}
-      else if (! strcasecmp (state.argv[idx], "--usage"))
-	{
-	  argp_state_help (&state, state.out_stream,
-			   ARGP_HELP_USAGE | ARGP_HELP_EXIT_OK);
-	}
-      else if (! strcasecmp (state.argv[idx], "--version")
-	       || !strcmp (state.argv[idx], "-V"))
-	{
-	  fprintf (state.out_stream, "%s\n", argp_program_version);
-	  exit (0);
-	}
-      else
-	{
-	  /* Search for option and call parser with its KEY.  */
-	  int key = ARGP_KEY_ARG; /* Just some dummy value.  */
-	  const struct argp_option *opt = argp->options;
-	  char *arg = NULL;
-	  int found = 0;
-
-	  /* Check for --opt=value syntax.  */
-	  arg = strchr (state.argv[idx], '=');
-	  if (arg)
-	    {
-	      *arg = '\0';
-	      arg++;
-	    }
-
-	  if (state.argv[idx][1] != '-')
-	    key = state.argv[idx][1];
-
-	  while (! found && opt->key)
-	    {
-	      if (key == opt->key
-		  || (key == ARGP_KEY_ARG
-		      && ! strcasecmp (&state.argv[idx][2], opt->name)))
-		{
-		  if (arg && !opt->arg)
-		    argp_error (&state, "Option %s does not take an argument",
-				state.argv[idx]);
-		  if (opt->arg && state.next < state.argc
-		      && state.argv[idx + 1][0] != '-')
-		    {
-		      arg = state.argv[idx + 1];
-		      state.next++;
-		    }
-		  if (opt->arg && !(opt->flags & OPTION_ARG_OPTIONAL))
-		    argp_error (&state, "Option %s requires an argument",
-				state.argv[idx]);
-
-		  rc = argp->parser (opt->key, arg, &state);
-		  if (rc == ARGP_ERR_UNKNOWN)
-		    break;
-		  else if (rc)
-		    goto argperror;
-		  found = 1;
-		}
-	      opt++;
-	    }
-	  if (! found)
-	    argp_error (&state, "Unknown option %s", state.argv[idx]);
-	}
-    }
-
-  while (state.next < state.argc)
-    {
-      /* Call parser for all non-option args.  */
-      int idx = state.next;
-      state.next++;
-      rc = argp->parser (ARGP_KEY_ARG, state.argv[idx], &state);
-      if (rc && rc != ARGP_ERR_UNKNOWN)
-	goto argperror;
-      if (rc == ARGP_ERR_UNKNOWN)
-	{
-	  int old_next = state.next;
-	  rc = argp->parser (ARGP_KEY_ARGS, NULL, &state);
-	  if (rc == ARGP_ERR_UNKNOWN)
-	    {
-	      argp_error (&state, "Too many arguments");
-	      goto argperror;
-	    }
-	  if (! rc && state.next == old_next)
-	    {
-	      state.arg_num += state.argc - state.next;
-	      state.next = state.argc;
-	    }
-	}
-      else
-	state.arg_num++;
-    }
-
-  if (state.arg_num == 0)
-    {
-      rc = argp->parser (ARGP_KEY_NO_ARGS, NULL, &state);
-      if (rc && rc != ARGP_ERR_UNKNOWN)
-	goto argperror;
-    }
-  if (state.next == state.argc)
-    {
-      rc = argp->parser (ARGP_KEY_END, NULL, &state);
-      if (rc && rc != ARGP_ERR_UNKNOWN)
-	goto argperror;
-    }
-  rc = argp->parser (ARGP_KEY_FINI, NULL, &state);
-  if (rc && rc != ARGP_ERR_UNKNOWN)
-    goto argperror;
-
-  rc = 0;
-  argp->parser (ARGP_KEY_SUCCESS, NULL, &state);
-
- argperror:
-  if (rc)
-    {
-      argp_error (&state, "unexpected error: %s", strerror (rc));
-      argp->parser (ARGP_KEY_ERROR, NULL, &state);
-    }
-
-  argp->parser (ARGP_KEY_FINI, NULL, &state);
-
-  if (arg_index)
-    *arg_index = state.next - 1;
-
-  return 0;
-}
-#endif
 
 
 /* MEMBUF */
@@ -3722,84 +3305,50 @@ gpgme_server (gpgme_tool_t gt)
 
 
 
-/* MAIN PROGRAM STARTS HERE.  */
-
-const char *argp_program_version = VERSION;
-const char *argp_program_bug_address = "bug-gpgme@gnupg.org";
-error_t argp_err_exit_status = 1;
-
-static char doc[] = "GPGME Tool -- Assuan server exposing GPGME operations";
-static char args_doc[] = "COMMAND [OPTIONS...]";
-
-static struct argp_option options[] = {
-  { "server", 's', 0, 0, "Server mode" },
-  { "gpg-binary", 501, "FILE", 0, "Use FILE for the GPG backend" },
-  { "lib-version", 502, 0, 0, "Show library version" },
-  { 0 }
-};
-
-static error_t parse_options (int key, char *arg, struct argp_state *state);
-static struct argp argp = { options, parse_options, args_doc, doc };
-
-struct args
+static const char *
+my_strusage( int level )
 {
-  enum { CMD_DEFAULT, CMD_SERVER, CMD_LIBVERSION } cmd;
-  const char *gpg_binary;
-};
+  const char *p;
 
-void
-args_init (struct args *args)
-{
-  memset (args, '\0', sizeof (*args));
-  args->cmd = CMD_DEFAULT;
-}
-
-
-static error_t
-parse_options (int key, char *arg, struct argp_state *state)
-{
-  struct args *args = state->input;
-
-  switch (key)
+  switch (level)
     {
-    case 's':
-      args->cmd = CMD_SERVER;
+    case 11: p = "gpgme-tool"; break;
+    case 13: p = PACKAGE_VERSION; break;
+    case 14: p = "Copyright (C) 2015 g10 Code GmbH"; break;
+    case 19: p = "Please report bugs to <" PACKAGE_BUGREPORT ">.\n"; break;
+    case 1:
+    case 40:
+      p = "Usage: gpgme-tool [OPTIONS] [COMMANDS]";
       break;
-
-    case 501:
-      args->gpg_binary = arg;
+    case 41:
+      p = "GPGME Tool -- Assuan server exposing GPGME operations\n";
       break;
-
-    case 502:
-      args->cmd = CMD_LIBVERSION;
+    case 42:
+      p = "1"; /* Flag print 40 as part of 41. */
       break;
-
-#if 0
-    case ARGP_KEY_ARG:
-      if (state->arg_num >= 2)
-	argp_usage (state);
-      printf ("Arg[%i] = %s\n", state->arg_num, arg);
-      break;
-    case ARGP_KEY_END:
-      if (state->arg_num < 2)
-	argp_usage (state);
-      break;
-#endif
-
-    default:
-      return ARGP_ERR_UNKNOWN;
+    default: p = NULL; break;
     }
-  return 0;
+  return p;
 }
 
-
+
 int
 main (int argc, char *argv[])
 {
-  struct args args;
+  static ARGPARSE_OPTS opts[] = {
+    ARGPARSE_c  ('s', "server",      "Server mode"),
+    ARGPARSE_s_s(501, "gpg-binary",  "|FILE|Use FILE for the GPG backend"),
+    ARGPARSE_c  (502, "lib-version", "Show library version"),
+    ARGPARSE_end()
+  };
+  ARGPARSE_ARGS pargs = { &argc, &argv, 0 };
+  enum { CMD_DEFAULT, CMD_SERVER, CMD_LIBVERSION } cmd = CMD_DEFAULT;
+  const char *gpg_binary = NULL;
   struct gpgme_tool gt;
   gpg_error_t err;
   int needgt = 1;
+
+  set_strusage (my_strusage);
 
 #ifdef HAVE_SETLOCALE
   setlocale (LC_ALL, "");
@@ -3812,30 +3361,40 @@ main (int argc, char *argv[])
   gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
 #endif
 
-  args_init (&args);
-
-  argp_parse (&argp, argc, argv, 0, 0, &args);
   log_init ();
 
-  if (args.cmd == CMD_LIBVERSION)
+  while (arg_parse  (&pargs, opts))
+    {
+      switch (pargs.r_opt)
+        {
+        case 's': cmd = CMD_SERVER; break;
+        case 501: gpg_binary = pargs.r.ret_str; break;
+        case 502: cmd = CMD_LIBVERSION; break;
+        default:
+          pargs.err = ARGPARSE_PRINT_WARNING;
+	  break;
+        }
+    }
+
+  if (cmd == CMD_LIBVERSION)
     needgt = 0;
 
-  if (needgt && args.gpg_binary)
+  if (needgt && gpg_binary)
     {
-      if (access (args.gpg_binary, X_OK))
+      if (access (gpg_binary, X_OK))
         err = gpg_error_from_syserror ();
       else
         err = gpgme_set_engine_info (GPGME_PROTOCOL_OpenPGP,
-                                     args.gpg_binary, NULL);
+                                     gpg_binary, NULL);
       if (err)
         log_error (1, err, "error witching OpenPGP engine to '%s'",
-                   args.gpg_binary);
+                   gpg_binary);
     }
 
   if (needgt)
     gt_init (&gt);
 
-  switch (args.cmd)
+  switch (cmd)
     {
     case CMD_DEFAULT:
     case CMD_SERVER:
@@ -3860,4 +3419,3 @@ main (int argc, char *argv[])
 
   return 0;
 }
-
