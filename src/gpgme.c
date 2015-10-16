@@ -91,7 +91,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   TRACE_BEG (DEBUG_CTX, "gpgme_new", r_ctx);
 
   if (_gpgme_selftest)
-    return TRACE_ERR (gpgme_error (_gpgme_selftest));
+    return TRACE_ERR (_gpgme_selftest);
 
   if (!r_ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
