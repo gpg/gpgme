@@ -409,8 +409,13 @@ find_program_at_standard_place (const char *name)
   char path[MAX_PATH];
   char *result = NULL;
 
-  /* See http://wiki.tcl.tk/17492 for details on compatibility.  */
-  if (SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILES, 0))
+  /* See http://wiki.tcl.tk/17492 for details on compatibility.
+
+     We First try the generic place and then fallback to the x86
+     (i.e. 32 bit) place.  This will prefer a 64 bit of the program
+     over a 32 bit version on 64 bit Windows if installed.  */
+  if (SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILES, 0)
+      || SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILESX86, 0))
     {
       result = malloc (strlen (path) + 1 + strlen (name) + 1);
       if (result)
