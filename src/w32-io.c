@@ -1550,6 +1550,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   int debug_me = 0;
   int tmp_fd;
   char *tmp_name;
+  const char *spawnhelper;
 
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
 	      "path=%s", path);
@@ -1603,7 +1604,8 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   if ((flags & IOSPAWN_FLAG_DETACHED))
     cr_flags |= DETACHED_PROCESS;
   cr_flags |= GetPriorityClass (GetCurrentProcess ());
-  if (!CreateProcessA (_gpgme_get_w32spawn_path (),
+  spawnhelper = _gpgme_get_w32spawn_path ();
+  if (!CreateProcessA (spawnhelper,
 		       arg_string,
 		       &sec_attr,     /* process security attributes */
 		       &sec_attr,     /* thread security attributes */
@@ -1614,7 +1616,10 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		       &si,           /* startup information */
 		       &pi))          /* returns process information */
     {
-      TRACE_LOG1 ("CreateProcess failed: ec=%d", (int) GetLastError ());
+      int lasterr = (int)GetLastError ();
+      TRACE_LOG1 ("CreateProcess failed: ec=%d", lasterr);
+      if (lasterr == ERROR_INVALID_PARAMETER)
+        TRACE_LOG1 ("(is '%s' correctly installed?)", spawnhelper);
       free (arg_string);
       close (tmp_fd);
       DeleteFileA (tmp_name);
