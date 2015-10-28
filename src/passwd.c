@@ -148,6 +148,14 @@ passwd_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
 
   _gpgme_engine_set_status_handler (ctx->engine, passwd_status_handler, ctx);
 
+  if (ctx->passphrase_cb)
+    {
+      err = _gpgme_engine_set_command_handler
+        (ctx->engine, _gpgme_passphrase_command_handler, ctx, NULL);
+      if (err)
+        return err;
+    }
+
   return _gpgme_engine_op_passwd (ctx->engine, key, flags);
 }
 
