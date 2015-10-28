@@ -85,7 +85,10 @@ static HMODULE my_hmodule;
    binaries.  The are set only once by gpgme_set_global_flag.  */
 static char *default_gpg_name;
 static char *default_gpgconf_name;
-
+/* If this variable is not NULL the value is assumed to be the
+   installation directory.  The variable may only be set once by
+   gpgme_set_global_flag and accessed by _gpgme_get_inst_dir.  */
+static char *override_inst_dir;
 
 #ifdef HAVE_ALLOW_SET_FOREGROUND_WINDOW
 
@@ -347,6 +350,9 @@ _gpgme_get_inst_dir (void)
 {
   static char *inst_dir;
 
+  if (override_inst_dir)
+    return override_inst_dir;
+
   LOCK (get_path_lock);
   if (!inst_dir)
     {
@@ -453,6 +459,28 @@ _gpgme_set_default_gpgconf_name (const char *name)
         }
     }
   return !default_gpgconf_name;
+}
+
+
+/* Set the override installation directory.  This function may only be
+   called by gpgme_set_global_flag.  Returns 0 on success.  */
+int
+_gpgme_set_override_inst_dir (const char *dir)
+{
+  if (!override_inst_dir)
+    {
+      override_inst_dir = malloc (strlen (dir) + 1);
+      if (override_inst_dir)
+        {
+          strcpy (override_inst_dir, dir);
+          replace_slashes (override_inst_dir);
+          /* Remove a trailing slash.  */
+          if (*override_inst_dir
+              && override_inst_dir[strlen (override_inst_dir)-1] == '\\')
+            override_inst_dir[strlen (override_inst_dir)-1] = 0;
+        }
+    }
+  return !override_inst_dir;
 }
 
 

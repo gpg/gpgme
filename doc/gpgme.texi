@@ -701,6 +701,16 @@ directory part is used as the default installation directory; the
 @code{.exe} suffix is added by GPGME.  Use forward slashed even under
 Windows.
 
+@item "w32-inst-dir"
+On Windows GPGME needs to know its installation directory to find its
+spawn helper.  This is in general no problem because a DLL has this
+information.  Some applications however link statically to GPGME and
+thus GPGME can only figure out the installation directory of this
+application which may be wrong in certain cases.  By supplying an
+installation directory as value to this flag, GPGME will assume that
+that directory is the installation directory.  This flag has no effect
+on non-Windows platforms.
+
 @end table
 
 This function returns @code{0} on success.  In contrast to other

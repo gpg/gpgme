@@ -71,6 +71,15 @@ _gpgme_set_default_gpgconf_name (const char *name)
 }
 
 
+/* Dummy function - see w32-util.c for the actual code.  */
+int
+_gpgme_set_override_inst_dir (const char *dir)
+{
+  (void)dir;
+  return 0;
+}
+
+
 /* Find an executable program PGM along the envvar PATH.  */
 static char *
 walk_path (const char *pgm)

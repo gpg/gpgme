@@ -75,6 +75,8 @@ gpgme_set_global_flag (const char *name, const char *value)
     return _gpgme_set_default_gpgconf_name (value);
   else if (!strcmp (name, "gpg-name"))
     return _gpgme_set_default_gpg_name (value);
+  else if (!strcmp (name, "w32-inst-dir"))
+    return _gpgme_set_override_inst_dir (value);
   else
     return -1;
 }
