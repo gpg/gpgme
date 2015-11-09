@@ -68,6 +68,38 @@ delete_status_handler (void *priv, gpgme_status_code_t code, char *args)
 	  return gpg_error (GPG_ERR_GENERAL);
 	}
     }
+  else if (code == GPGME_STATUS_ERROR)
+    {
+      /* Some error stati are informational, so we don't return an
+         error code if we are not ready to process this status.  */
+      gpgme_error_t err;
+      char *where = strchr (args, ' ');
+      char *which;
+
+      if (where)
+	{
+	  *where = '\0';
+	  which = where + 1;
+
+	  where = strchr (which, ' ');
+	  if (where)
+	    *where = '\0';
+
+	  where = args;
+	}
+      else
+	return trace_gpg_error (GPG_ERR_INV_ENGINE);
+
+      err = atoi (which);
+
+      if (!strcmp (where, "delete_key.secret")
+	  && (gpg_err_code (err) == GPG_ERR_CANCELED
+	      || gpg_err_code (err) == GPG_ERR_FULLY_CANCELED))
+	{
+	  /* This indicates a user cancellation on the confirmation dialog.  */
+	  return gpg_error (gpg_err_code (err));
+	}
+    }
   return 0;
 }
 
