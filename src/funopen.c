@@ -35,7 +35,7 @@
 
   The functions to provide my either be NULL if not required or
   similar to the unistd function with the exception of using the
-  cookie instead of the fiel descripor.
+  cookie instead of the file descriptor.
 */
 
 

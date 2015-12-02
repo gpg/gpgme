@@ -74,7 +74,7 @@ static struct
      that dup'ed file descriptors are closed before the file
      descriptors from which they are dup'ed are closed, ensures that
      the handle or socket is always valid, and shared among all file
-     descriptors refering to the same underlying object.
+     descriptors referring to the same underlying object.
 
      The logic behind this is that there is only one reason for us to
      dup file descriptors anyway: to allow simpler book-keeping of
@@ -978,7 +978,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
       return TRACE_SYSRES (-1);
     }
 
-  /* If no error occured, the number of bytes in the buffer must be
+  /* If no error occurred, the number of bytes in the buffer must be
      zero.  */
   assert (!ctx->nbytes);
 

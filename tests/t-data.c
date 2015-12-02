@@ -143,7 +143,7 @@ read_test (round_t round, gpgme_data_t data)
       read = gpgme_data_read (data, buffer, sizeof (buffer));
       if (read > 0)
 	{
-	  fprintf (stderr, "%s:%d: (%i) gpgme_data_read succeded unexpectedly\n",
+	  fprintf (stderr, "%s:%d: (%i) gpgme_data_read succeeded unexpectedly\n",
 		   __FILE__, __LINE__, round);
 	  exit (1);
 	}

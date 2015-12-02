@@ -1518,7 +1518,7 @@ typedef enum
     GPGME_SIGSUM_CRL_MISSING = 0x0100,  /* CRL not available.  */
     GPGME_SIGSUM_CRL_TOO_OLD = 0x0200,  /* Available CRL is too old.  */
     GPGME_SIGSUM_BAD_POLICY  = 0x0400,  /* A policy was not met.  */
-    GPGME_SIGSUM_SYS_ERROR   = 0x0800   /* A system error occured.  */
+    GPGME_SIGSUM_SYS_ERROR   = 0x0800   /* A system error occurred.  */
   }
 gpgme_sigsum_t;
 
@@ -1610,7 +1610,7 @@ struct _gpgme_import_status
   /* Fingerprint.  */
   char *fpr;
 
-  /* If a problem occured, the reason why the key could not be
+  /* If a problem occurred, the reason why the key could not be
      imported.  Otherwise GPGME_No_Error.  */
   gpgme_error_t result;
 
