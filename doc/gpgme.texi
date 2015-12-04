@@ -3810,7 +3810,7 @@ for the context @var{ctx}, or, if that is not set, by the encoding
 specified for @var{keydata}.
 
 The keys to export are taken form the @code{NULL} terminated array
-@var{keys}.  Only keys of the the currently selected protocol of
+@var{keys}.  Only keys of the currently selected protocol of
 @var{ctx} which do have a fingerprint set are considered for export.
 Other keys specified by the @var{keys} are ignored.  In particular
 OpenPGP keys retrieved via an external key listing are not included.
@@ -3883,7 +3883,7 @@ permanent which have been retrieved from an external source (i.e. using
 for the usual workaround of exporting and then importing a key to make
 an X.509 key permanent.}
 
-Only keys of the the currently selected protocol of @var{ctx} are
+Only keys of the currently selected protocol of @var{ctx} are
 considered for import.  Other keys specified by the @var{keys} are
 ignored.  As of now all considered keys must have been retrieved using
 the same method, that is the used key listing mode must be identical.
@@ -3970,34 +3970,34 @@ The number of keys without user ID.
 @item int imported
 The total number of imported keys.
 
-@item imported_rsa
+@item int imported_rsa
 The number of imported RSA keys.
 
-@item unchanged
+@item int unchanged
 The number of unchanged keys.
 
-@item new_user_ids
+@item int new_user_ids
 The number of new user IDs.
 
-@item new_sub_keys
+@item int new_sub_keys
 The number of new sub keys.
 
-@item new_signatures
+@item int new_signatures
 The number of new signatures.
 
-@item new_revocations
+@item int new_revocations
 The number of new revocations.
 
-@item secret_read
+@item int secret_read
 The total number of secret keys read.
 
-@item secret_imported
+@item int secret_imported
 The number of imported secret keys.
 
-@item secret_unchanged
+@item int secret_unchanged
 The number of unchanged secret keys.
 
-@item not_imported
+@item int not_imported
 The number of keys not imported.
 
 @item gpgme_import_status_t imports
@@ -6147,16 +6147,16 @@ operation in the context @var{ctx}.  This only works if you use the
 global event loop or your own event loop.
 
 If you use the global event loop, you must not call @code{gpgme_wait}
-or @code{gpgme_wait} during cancellation.  After successful
+during cancellation.  After successful
 cancellation, you can call @code{gpgme_wait} (optionally waiting on
 @var{ctx}), and the context @var{ctx} will appear as if it had
 finished with the error code @code{GPG_ERR_CANCEL}.
 
-If you use your an external event loop, you must ensure that no I/O
+If you use an external event loop, you must ensure that no I/O
 callbacks are invoked for this context (for example by halting the
 event loop).  On successful cancellation, all registered I/O callbacks
 for this context will be unregistered, and a @code{GPGME_EVENT_DONE}
-event with the error code @code{GPG_ERR_CANCEL} will be signaled.
+event with the error code @code{GPG_ERR_CANCEL} will be signalled.
 
 The function returns an error code if the cancellation failed (in this
 case the state of @var{ctx} is not modified).
