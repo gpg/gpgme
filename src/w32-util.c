@@ -647,7 +647,7 @@ static const char letters[] =
    does not exist at the time of the call to mkstemp.  TMPL is
    overwritten with the result.  */
 static int
-mkstemp (char *tmpl)
+my_mkstemp (char *tmpl)
 {
   int len;
   char *XXXXXX;
@@ -755,7 +755,7 @@ _gpgme_mkstemp (int *fd, char **name)
   if (!tmpname)
     return -1;
   strcpy (stpcpy (tmpname, tmp), "\\gpgme-XXXXXX");
-  *fd = mkstemp (tmpname);
+  *fd = my_mkstemp (tmpname);
   if (fd < 0)
     {
       free (tmpname);
