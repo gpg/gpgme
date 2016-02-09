@@ -544,6 +544,8 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
     rc = add_arg (gpg, "utf8");
   if (!rc)
     rc = add_arg (gpg, "--enable-progress-filter");
+  if (!rc && have_gpg_version (gpg, "2.1.11"))
+    rc = add_arg (gpg, "--exit-on-status-write-error");
   if (rc)
     goto leave;
 
