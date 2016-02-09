@@ -62,9 +62,17 @@ AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 AM_LDFLAGS = -no-install
 LDADD = ../../src/libgpgme.la
 t_thread1_LDADD = ../../src/libgpgme-pthread.la -lpthread
+t_cancel_LDADD = ../../src/libgpgme-pthread.la -lpthread
 
-# We don't run t-genkey in the test suite, because it takes too long
-noinst_PROGRAMS = $(c_tests) t-genkey
+# We don't run t-genkey and t-cancel in the test suite, because it
+# takes too long
+tests_skipped = t-genkey
+if !HAVE_W32_SYSTEM
+tests_skipped += t-cancel
+endif
+
+noinst_PROGRAMS = $(c_tests) $(tests_skipped)
+
 
 clean-local:
 	-$(top_srcdir)/tests/start-stop-agent --stop

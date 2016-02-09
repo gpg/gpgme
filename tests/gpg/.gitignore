@@ -6,6 +6,7 @@ gpg.conf
 pubring.gpg
 pubring.gpg~
 secring.gpg
+t-cancel
 t-decrypt
 t-decrypt-verify
 t-edit
