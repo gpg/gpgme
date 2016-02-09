@@ -111,6 +111,7 @@ do_select (void)
   fd_set wfds;
   int i, n;
   int any = 0;
+  struct timeval tv;
 
   FD_ZERO (&rfds);
   FD_ZERO (&wfds);
@@ -118,9 +119,12 @@ do_select (void)
     if (fdlist[i].fd != -1)
       FD_SET (fdlist[i].fd, fdlist[i].dir ? &rfds : &wfds);
 
+  tv.tv_sec = 0;
+  tv.tv_usec = 1000;
+
   do
     {
-      n = select (FD_SETSIZE, &rfds, &wfds, NULL, 0);
+      n = select (FD_SETSIZE, &rfds, &wfds, NULL, &tv);
     }
   while (n < 0 && errno == EINTR);
 
