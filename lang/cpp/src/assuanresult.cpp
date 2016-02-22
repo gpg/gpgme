@@ -20,8 +20,6 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include <config-gpgme++.h>
-
 #include <assuanresult.h>
 #include "result_p.h"
 
@@ -31,7 +29,6 @@
 
 using namespace GpgME;
 
-#ifdef HAVE_GPGME_ASSUAN_ENGINE
 class AssuanResult::Private
 {
 public:
@@ -45,7 +42,6 @@ public:
 
     gpgme_error_t error;
 };
-#endif
 
 AssuanResult::AssuanResult(gpgme_ctx_t ctx, int error)
     : Result(error), d()
@@ -62,7 +58,6 @@ AssuanResult::AssuanResult(gpgme_ctx_t ctx, const Error &error)
 void AssuanResult::init(gpgme_ctx_t ctx)
 {
     (void)ctx;
-#ifdef HAVE_GPGME_ASSUAN_ENGINE
     if (!ctx) {
         return;
     }
@@ -71,18 +66,15 @@ void AssuanResult::init(gpgme_ctx_t ctx)
         return;
     }
     d.reset(new Private(res));
-#endif
 }
 
 make_standard_stuff(AssuanResult)
 
 Error AssuanResult::assuanError() const
 {
-#ifdef HAVE_GPGME_ASSUAN_ENGINE
     if (d) {
         return Error(d->error);
     }
-#endif
     return Error();
 }
 

@@ -20,22 +20,13 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include <config-gpgme++.h>
-
 #include <global.h>
 
-#ifdef HAVE_GPGME_GET_FDPTR
 extern "C" GIOChannel *gpgme_get_fdptr(int);
-#endif
 
 GIOChannel *GpgME::getGIOChannel(int fd)
 {
-#ifdef HAVE_GPGME_GET_FDPTR
     return gpgme_get_fdptr(fd);
-#else
-    (void)fd;
-    return 0;
-#endif
 }
 
 QIODevice *GpgME::getQIODevice(int fd)

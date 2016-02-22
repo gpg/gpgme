@@ -20,8 +20,6 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include <config-gpgme++.h>
-
 #include "configuration.h"
 #include "error.h"
 #include "util.h"
@@ -58,7 +56,6 @@ struct nodelete {
 std::vector<Component> Component::load(Error &returnedError)
 {
 
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     //
     // 1. get a context:
     //
@@ -101,16 +98,11 @@ std::vector<Component> Component::load(Error &returnedError)
     }
 
     return result;
-#else
-    returnedError = Error(make_error(GPG_ERR_NOT_SUPPORTED));
-    return std::vector<Component>();
-#endif
 }
 
 Error Component::save() const
 {
 
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull()) {
         return Error(make_error(GPG_ERR_INV_ARG));
     }
@@ -128,41 +120,25 @@ Error Component::save() const
     // 2. save the config:
     //
     return Error(gpgme_op_conf_save(ctx.get(), comp.get()));
-#else
-    return Error(make_error(GPG_ERR_NOT_SUPPORTED));
-#endif
 }
 
 const char *Component::name() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return comp ? comp->name : 0 ;
-#else
-    return 0;
-#endif
 }
 
 const char *Component::description() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return comp ? comp->description : 0 ;
-#else
-    return 0;
-#endif
 }
 
 const char *Component::programName() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return comp ? comp->program_name : 0 ;
-#else
-    return 0;
-#endif
 }
 
 Option Component::option(unsigned int idx) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     gpgme_conf_opt_t opt = 0;
     if (comp) {
         opt = comp->options;
@@ -173,17 +149,12 @@ Option Component::option(unsigned int idx) const
     }
     if (opt) {
         return Option(comp, opt);
-    } else {
-#endif
-        return Option();
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     }
-#endif
+    return Option();
 }
 
 Option Component::option(const char *name) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     gpgme_conf_opt_t opt = 0;
     if (comp) {
         opt = comp->options;
@@ -194,37 +165,28 @@ Option Component::option(const char *name) const
     }
     if (opt) {
         return Option(comp, opt);
-    } else {
-#endif
-        return Option();
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     }
-#endif
+    return Option();
 }
 
 unsigned int Component::numOptions() const
 {
     unsigned int result = 0;
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     for (gpgme_conf_opt_t opt = comp ? comp->options : 0 ; opt ; opt = opt->next) {
         ++result;
     }
-#endif
     return result;
 }
 
 std::vector<Option> Component::options() const
 {
     std::vector<Option> result;
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     for (gpgme_conf_opt_t opt = comp ? comp->options : 0 ; opt ; opt = opt->next) {
         result.push_back(Option(comp, opt));
     }
-#endif
     return result;
 }
 
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
 static gpgme_conf_arg_t mygpgme_conf_arg_copy(gpgme_conf_arg_t other, gpgme_conf_type_t type)
 {
     gpgme_conf_arg_t result = 0, last = 0;
@@ -249,7 +211,6 @@ static gpgme_conf_arg_t mygpgme_conf_arg_copy(gpgme_conf_arg_t other, gpgme_conf
     }
     return result;
 }
-#endif
 
 Component Option::parent() const
 {
@@ -258,65 +219,37 @@ Component Option::parent() const
 
 unsigned int Option::flags() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return isNull() ? 0 : opt->flags;
-#else
-    return 0;
-#endif
 }
 
 Level Option::level() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return isNull() ? Internal : static_cast<Level>(opt->level) ;
-#else
-    return Internal;
-#endif
 }
 
 const char *Option::name() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return isNull() ? 0 : opt->name ;
-#else
-    return 0;
-#endif
 }
 
 const char *Option::description() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return isNull() ? 0 : opt->description ;
-#else
-    return 0;
-#endif
 }
 
 const char *Option::argumentName() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return isNull() ? 0 : opt->argname ;
-#else
-    return 0;
-#endif
 }
 
 Type Option::type() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return isNull() ? NoType : static_cast<Type>(opt->type) ;
-#else
-    return NoType;
-#endif
 }
 
 Type Option::alternateType() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return isNull() ? NoType : static_cast<Type>(opt->alt_type) ;
-#else
-    return NoType;
-#endif
 }
 
 #if 0
@@ -473,64 +406,43 @@ optional<Option::Variant> Option::defaultValue() const
 
 Argument Option::defaultValue() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull()) {
         return Argument();
     } else {
         return Argument(comp.lock(), opt, opt->default_value, false);
     }
-#else
-    return Argument();
-#endif
 }
 
 const char *Option::defaultDescription() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return isNull() ? 0 : opt->default_description ;
-#else
-    return 0;
-#endif
 }
 
 Argument Option::noArgumentValue() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull()) {
         return Argument();
     } else {
         return Argument(comp.lock(), opt, opt->no_arg_value, false);
     }
-#else
-    return Argument();
-#endif
 }
 
 const char *Option::noArgumentDescription() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return isNull() ? 0 : opt->no_arg_description ;
-#else
-    return 0;
-#endif
 }
 
 Argument Option::activeValue() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull()) {
         return Argument();
     } else {
         return Argument(comp.lock(), opt, opt->value, false);
     }
-#else
-    return Argument();
-#endif
 }
 
 Argument Option::currentValue() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull()) {
         return Argument();
     }
@@ -539,27 +451,19 @@ Argument Option::currentValue() const
         opt->value        ? opt->value :
         /* else */          opt->default_value ;
     return Argument(comp.lock(), opt, arg, false);
-#else
-    return Argument();
-#endif
 }
 
 Argument Option::newValue() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull()) {
         return Argument();
     } else {
         return Argument(comp.lock(), opt, opt->new_value, false);
     }
-#else
-    return Argument();
-#endif
 }
 
 bool Option::set() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull()) {
         return false;
     } else if (opt->change_value) {
@@ -567,23 +471,15 @@ bool Option::set() const
     } else {
         return opt->value;
     }
-#else
-    return false;
-#endif
 }
 
 bool Option::dirty() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return !isNull() && opt->change_value ;
-#else
-    return false;
-#endif
 }
 
 Error Option::setNewValue(const Argument &argument)
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull()) {
         return Error(make_error(GPG_ERR_INV_ARG));
     } else if (argument.isNull()) {
@@ -593,126 +489,84 @@ Error Option::setNewValue(const Argument &argument)
     } else {
         return Error(make_error(GPG_ERR_ENOMEM));
     }
-#else
-    return Error(make_error(GPG_ERR_NOT_SUPPORTED));
-#endif
 }
 
 Error Option::resetToActiveValue()
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull()) {
         return Error(make_error(GPG_ERR_INV_ARG));
     } else {
         return Error(gpgme_conf_opt_change(opt, 1, 0));
     }
-#else
-    return Error(make_error(GPG_ERR_NOT_SUPPORTED));
-#endif
 }
 
 Error Option::resetToDefaultValue()
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull()) {
         return Error(make_error(GPG_ERR_INV_ARG));
     } else {
         return Error(gpgme_conf_opt_change(opt, 0, 0));
     }
-#else
-    return Error(make_error(GPG_ERR_NOT_SUPPORTED));
-#endif
 }
 
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
 static gpgme_conf_arg_t make_argument(gpgme_conf_type_t type, const void *value)
 {
     gpgme_conf_arg_t arg = 0;
-#ifdef HAVE_GPGME_CONF_ARG_NEW_WITH_CONST_VALUE
     if (const gpgme_error_t err = gpgme_conf_arg_new(&arg, type, value)) {
         return 0;
-    }
-#else
-    if (const gpgme_error_t err = gpgme_conf_arg_new(&arg, type, const_cast<void *>(value))) {
-        return 0;
-    }
-#endif
-    else {
+    } else {
         return arg;
     }
 }
-#endif
 
 Argument Option::createNoneArgument(bool set) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull() || alternateType() != NoType) {
         return Argument();
     } else {
         if (set) {
             return createNoneListArgument(1);
-        } else {
-#endif
-            return Argument();
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
         }
     }
-#endif
+    return Argument();
 }
 
 Argument Option::createStringArgument(const char *value) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull() || alternateType() != StringType) {
         return Argument();
     } else {
         return Argument(comp.lock(), opt, make_argument(GPGME_CONF_STRING, value), true);
     }
-#else
-    return Argument();
-#endif
 }
 
 Argument Option::createStringArgument(const std::string &value) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull() || alternateType() != StringType) {
         return Argument();
     } else {
         return Argument(comp.lock(), opt, make_argument(GPGME_CONF_STRING, value.c_str()), true);
     }
-#else
-    return Argument();
-#endif
 }
 
 Argument Option::createIntArgument(int value) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull() || alternateType() != IntegerType) {
         return Argument();
     } else {
         return Argument(comp.lock(), opt, make_argument(GPGME_CONF_INT32, &value), true);
     }
-#else
-    return Argument();
-#endif
 }
 
 Argument Option::createUIntArgument(unsigned int value) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull() || alternateType() != UnsignedIntegerType) {
         return Argument();
     } else {
         return Argument(comp.lock(), opt, make_argument(GPGME_CONF_UINT32, &value), true);
     }
-#else
-    return Argument();
-#endif
 }
 
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
 namespace
 {
 const void *to_void_star(const char *s)
@@ -749,65 +603,39 @@ gpgme_conf_arg_t make_argument(gpgme_conf_type_t type, const std::vector<T> &val
     return result;
 }
 }
-#endif
 
 Argument Option::createNoneListArgument(unsigned int value) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (value) {
         return Argument(comp.lock(), opt, make_argument(GPGME_CONF_NONE, &value), true);
-    } else {
-#endif
-        return Argument();
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     }
-#endif
+    return Argument();
 }
 
 Argument Option::createStringListArgument(const std::vector<const char *> &value) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return Argument(comp.lock(), opt, make_argument(GPGME_CONF_STRING, value), true);
-#else
-    return Argument();
-#endif
 }
 
 Argument Option::createStringListArgument(const std::vector<std::string> &value) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return Argument(comp.lock(), opt, make_argument(GPGME_CONF_STRING, value), true);
-#else
-    return Argument();
-#endif
 }
 
 Argument Option::createIntListArgument(const std::vector<int> &value) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return Argument(comp.lock(), opt, make_argument(GPGME_CONF_INT32, value), true);
-#else
-    return Argument();
-#endif
 }
 
 Argument Option::createUIntListArgument(const std::vector<unsigned int> &value) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     return Argument(comp.lock(), opt, make_argument(GPGME_CONF_UINT32, value), true);
-#else
-    return Argument();
-#endif
 }
 
 Argument::Argument(const shared_gpgme_conf_comp_t &comp, gpgme_conf_opt_t opt, gpgme_conf_arg_t arg, bool owns)
     : comp(comp),
       opt(opt),
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
       arg(owns ? arg : mygpgme_conf_arg_copy(arg, opt ? opt->alt_type : GPGME_CONF_NONE))
-#else
-      arg(0)
-#endif
 {
 
 }
@@ -825,20 +653,14 @@ Argument::Argument(const shared_gpgme_conf_comp_t &comp, gpgme_conf_opt_t opt, g
 Argument::Argument(const Argument &other)
     : comp(other.comp),
       opt(other.opt),
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
       arg(mygpgme_conf_arg_copy(other.arg, opt ? opt->alt_type : GPGME_CONF_NONE))
-#else
-      arg(0)
-#endif
 {
 
 }
 
 Argument::~Argument()
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     gpgme_conf_arg_release(arg, opt ? opt->alt_type : GPGME_CONF_NONE);
-#endif
 }
 
 Option Argument::parent() const
@@ -857,17 +679,14 @@ unsigned int Argument::numElements() const
         return 0;
     }
     unsigned int result = 0;
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     for (gpgme_conf_arg_t a = arg ; a ; a = a->next) {
         ++result;
     }
-#endif
     return result;
 }
 
 const char *Argument::stringValue(unsigned int idx) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull() || opt->alt_type != GPGME_CONF_STRING) {
         return 0;
     }
@@ -877,14 +696,10 @@ const char *Argument::stringValue(unsigned int idx) const
         --idx;
     }
     return a ? a->value.string : 0 ;
-#else
-    return 0;
-#endif
 }
 
 int Argument::intValue(unsigned int idx) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull() || opt->alt_type != GPGME_CONF_INT32) {
         return 0;
     }
@@ -894,14 +709,10 @@ int Argument::intValue(unsigned int idx) const
         --idx;
     }
     return a ? a->value.int32 : 0 ;
-#else
-    return 0;
-#endif
 }
 
 unsigned int Argument::uintValue(unsigned int idx) const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull() || opt->alt_type != GPGME_CONF_UINT32) {
         return 0;
     }
@@ -911,21 +722,14 @@ unsigned int Argument::uintValue(unsigned int idx) const
         --idx;
     }
     return a ? a->value.uint32 : 0 ;
-#else
-    return 0;
-#endif
 }
 
 unsigned int Argument::numberOfTimesSet() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull() || opt->alt_type != GPGME_CONF_NONE) {
         return 0;
     }
     return arg->value.count;
-#else
-    return 0;
-#endif
 }
 
 std::vector<const char *> Argument::stringValues() const
@@ -942,33 +746,25 @@ std::vector<const char *> Argument::stringValues() const
 
 std::vector<int> Argument::intValues() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull() || opt->alt_type != GPGME_CONF_INT32) {
         return std::vector<int>();
     }
-#endif
     std::vector<int> result;
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     for (gpgme_conf_arg_t a = arg ; a ; a = a->next) {
         result.push_back(a->value.int32);
     }
-#endif
     return result;
 }
 
 std::vector<unsigned int> Argument::uintValues() const
 {
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     if (isNull() || opt->alt_type != GPGME_CONF_UINT32) {
         return std::vector<unsigned int>();
     }
-#endif
     std::vector<unsigned int> result;
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
     for (gpgme_conf_arg_t a = arg ; a ; a = a->next) {
         result.push_back(a->value.uint32);
     }
-#endif
     return result;
 }
 

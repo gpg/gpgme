@@ -20,8 +20,6 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include <config-gpgme++.h>
-
 #include "callbacks.h"
 #include "util.h"
 
@@ -39,21 +37,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#ifndef HAVE_GPGME_SSIZE_T
-# define gpgme_ssize_t ssize_t
-#endif
-
-#ifndef HAVE_GPGME_OFF_T
-# define gpgme_off_t off_t
-#endif
-
 static inline gpgme_error_t make_err_from_syserror()
 {
-#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
     return gpgme_error_from_syserror();
-#else
-    return gpg_error_from_syserror();
-#endif
 }
 
 using GpgME::ProgressProvider;
@@ -92,11 +78,7 @@ gpgme_error_t passphrase_callback(void *opaque, const char *uid_hint, const char
             size_t passphrase_length = std::strlen(passphrase);
             size_t written = 0;
             do {
-#ifdef HAVE_GPGME_IO_READWRITE
                 ssize_t now_written = gpgme_io_write(fd, passphrase + written, passphrase_length - written);
-#else
-                ssize_t now_written = write(fd, passphrase + written, passphrase_length - written);
-#endif
                 if (now_written < 0) {
                     err = make_err_from_syserror();
                     break;
@@ -110,11 +92,7 @@ gpgme_error_t passphrase_callback(void *opaque, const char *uid_hint, const char
         wipememory(passphrase, std::strlen(passphrase));
     }
     free(passphrase);
-#ifdef HAVE_GPGME_IO_READWRITE
     gpgme_io_write(fd, "\n", 1);
-#else
-    write(fd, "\n", 1);
-#endif
     return err;
 }
 
@@ -123,11 +101,7 @@ data_read_callback(void *opaque, void *buf, size_t buflen)
 {
     DataProvider *provider = static_cast<DataProvider *>(opaque);
     if (!provider) {
-#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
         gpgme_err_set_errno(gpgme_err_code_to_errno(GPG_ERR_EINVAL));
-#else
-        gpg_err_set_errno(gpgme_err_code_to_errno(GPG_ERR_EINVAL));
-#endif
         return -1;
     }
     return (gpgme_ssize_t)provider->read(buf, buflen);
@@ -138,11 +112,7 @@ data_write_callback(void *opaque, const void *buf, size_t buflen)
 {
     DataProvider *provider = static_cast<DataProvider *>(opaque);
     if (!provider) {
-#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
         gpgme_err_set_errno(gpgme_err_code_to_errno(GPG_ERR_EINVAL));
-#else
-        gpg_err_set_errno(gpgme_err_code_to_errno(GPG_ERR_EINVAL));
-#endif
         return -1;
     }
     return (gpgme_ssize_t)provider->write(buf, buflen);
@@ -153,19 +123,11 @@ data_seek_callback(void *opaque, gpgme_off_t offset, int whence)
 {
     DataProvider *provider = static_cast<DataProvider *>(opaque);
     if (!provider) {
-#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
         gpgme_err_set_errno(gpgme_err_code_to_errno(GPG_ERR_EINVAL));
-#else
-        gpg_err_set_errno(gpgme_err_code_to_errno(GPG_ERR_EINVAL));
-#endif
         return -1;
     }
     if (whence != SEEK_SET && whence != SEEK_CUR && whence != SEEK_END) {
-#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
         gpgme_err_set_errno(gpgme_err_code_to_errno(GPG_ERR_EINVAL));
-#else
-        gpg_err_set_errno(gpgme_err_code_to_errno(GPG_ERR_EINVAL));
-#endif
         return -1;
     }
     return provider->seek((off_t)offset, whence);

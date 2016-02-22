@@ -21,8 +21,6 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include <config-gpgme++.h>
-
 #include <vfsmountresult.h>
 #include "result_p.h"
 
@@ -33,7 +31,6 @@
 
 using namespace GpgME;
 
-#ifdef HAVE_GPGME_G13_VFS
 class VfsMountResult::Private
 {
 public:
@@ -51,7 +48,6 @@ public:
 
     char *mountDir;
 };
-#endif
 
 VfsMountResult::VfsMountResult(gpgme_ctx_t ctx, const Error &error, const Error &opError)
     : Result(error ? error : opError), d()
@@ -62,7 +58,6 @@ VfsMountResult::VfsMountResult(gpgme_ctx_t ctx, const Error &error, const Error 
 void VfsMountResult::init(gpgme_ctx_t ctx)
 {
     (void)ctx;
-#ifdef HAVE_GPGME_G13_VFS
     if (!ctx) {
         return;
     }
@@ -71,18 +66,15 @@ void VfsMountResult::init(gpgme_ctx_t ctx)
         return;
     }
     d.reset(new Private(res));
-#endif
 }
 
 make_standard_stuff(VfsMountResult)
 
 const char *VfsMountResult::mountDir() const
 {
-#ifdef HAVE_GPGME_G13_VFS
     if (d) {
         return d->mountDir;
     }
-#endif
     return 0;
 }
 

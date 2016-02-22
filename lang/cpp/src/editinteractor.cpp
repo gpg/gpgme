@@ -20,17 +20,11 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include <config-gpgme++.h>
-
 #include "editinteractor.h"
 #include "callbacks.h"
 #include "error.h"
 
-#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
 #include <gpgme.h>
-#else
-#include <gpg-error.h>
-#endif
 
 #ifdef _WIN32
 # include <io.h>
@@ -41,6 +35,10 @@
 
 #include <cerrno>
 #include <cstring>
+
+#ifndef GPG_ERR_ALREADY_SIGNED
+# define GPG_ERR_ALREADY_SIGNED GPG_ERR_USER_1
+#endif
 
 using namespace GpgME;
 
@@ -69,18 +67,7 @@ private:
     {
         size_t toWrite = count;
         while (toWrite > 0) {
-#ifdef HAVE_GPGME_IO_READWRITE
             const int n = gpgme_io_write(fd, buf, toWrite);
-#else
-# ifdef Q_OS_WIN
-            DWORD n;
-            if (!WriteFile((HANDLE)fd, buf, toWrite, &n, NULL)) {
-                return -1;
-            }
-# else
-            const int n = write(fd, buf, toWrite);
-# endif
-#endif
             if (n < 0) {
                 return n;
             }
@@ -124,11 +111,7 @@ public:
                     }
                     // if there's a result, write it:
                     if (*result) {
-#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
                         gpgme_err_set_errno(0);
-#else
-                        gpg_err_set_errno(0);
-#endif
                         const ssize_t len = std::strlen(result);
                         if (writeAll(fd, result, len) != len) {
                             err = Error::fromSystemError();
@@ -138,11 +121,7 @@ public:
                             goto error;
                         }
                     }
-#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
                     gpgme_err_set_errno(0);
-#else
-                    gpg_err_set_errno(0);
-#endif
                     if (writeAll(fd, "\n", 1) != 1) {
                         err = Error::fromSystemError();
                         if (ei->debug) {

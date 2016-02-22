@@ -20,8 +20,6 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include <config-gpgme++.h>
-
 #include "engineinfo.h"
 
 #include <gpgme.h>
@@ -81,9 +79,5 @@ const char *GpgME::EngineInfo::requiredVersion() const
 
 const char *GpgME::EngineInfo::homeDirectory() const
 {
-#ifdef HAVE_GPGME_ENGINE_INFO_T_HOME_DIR
     return isNull() ? 0 : d->info->home_dir;
-#else
-    return 0;
-#endif
 }

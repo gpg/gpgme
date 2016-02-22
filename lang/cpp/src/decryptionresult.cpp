@@ -20,8 +20,6 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include <config-gpgme++.h>
-
 #include <decryptionresult.h>
 #include "result_p.h"
 #include "util.h"
@@ -44,19 +42,15 @@ public:
         if (res.unsupported_algorithm) {
             res.unsupported_algorithm = strdup(res.unsupported_algorithm);
         }
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_FILE_NAME
         if (res.file_name) {
             res.file_name = strdup(res.file_name);
         }
-#endif
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
         //FIXME: copying gpgme_recipient_t objects invalidates the keyid member,
         //thus we use _keyid for now (internal API)
         for (gpgme_recipient_t r = res.recipients ; r ; r = r->next) {
             recipients.push_back(*r);
         }
         res.recipients = 0;
-#endif
     }
     ~Private()
     {
@@ -64,18 +58,14 @@ public:
             std::free(res.unsupported_algorithm);
         }
         res.unsupported_algorithm = 0;
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_FILE_NAME
         if (res.file_name) {
             std::free(res.file_name);
         }
         res.file_name = 0;
-#endif
     }
 
     _gpgme_op_decrypt_result res;
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
     std::vector<_gpgme_recipient> recipients;
-#endif
 };
 
 GpgME::DecryptionResult::DecryptionResult(gpgme_ctx_t ctx, int error)
@@ -116,29 +106,19 @@ bool GpgME::DecryptionResult::isWrongKeyUsage() const
 
 const char *GpgME::DecryptionResult::fileName() const
 {
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_FILE_NAME
     return d ? d->res.file_name : 0 ;
-#else
-    return 0;
-#endif
 }
 
 unsigned int GpgME::DecryptionResult::numRecipients() const
 {
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
     return d ? d->recipients.size() : 0 ;
-#else
-    return 0;
-#endif
 }
 
 GpgME::DecryptionResult::Recipient GpgME::DecryptionResult::recipient(unsigned int idx) const
 {
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
     if (d && idx < d->recipients.size()) {
         return Recipient(&d->recipients[idx]);
     }
-#endif
     return Recipient();
 }
 
@@ -155,24 +135,20 @@ struct make_recipient {
 std::vector<GpgME::DecryptionResult::Recipient> GpgME::DecryptionResult::recipients() const
 {
     std::vector<Recipient> result;
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
     if (d) {
         result.reserve(d->recipients.size());
         std::transform(d->recipients.begin(), d->recipients.end(),
                        std::back_inserter(result),
                        make_recipient());
     }
-#endif
     return result;
 }
 
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
 class GpgME::DecryptionResult::Recipient::Private : public _gpgme_recipient
 {
 public:
     Private(gpgme_recipient_t reci) : _gpgme_recipient(*reci) {}
 };
-#endif
 
 GpgME::DecryptionResult::Recipient::Recipient()
     : d()
@@ -183,11 +159,9 @@ GpgME::DecryptionResult::Recipient::Recipient()
 GpgME::DecryptionResult::Recipient::Recipient(gpgme_recipient_t r)
     : d()
 {
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
     if (r) {
         d.reset(new Private(r));
     }
-#endif
 }
 
 bool GpgME::DecryptionResult::Recipient::isNull() const
@@ -197,53 +171,43 @@ bool GpgME::DecryptionResult::Recipient::isNull() const
 
 const char *GpgME::DecryptionResult::Recipient::keyID() const
 {
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
     //_keyid is internal API, but the public keyid is invalid after copying (see above)
     if (d) {
         return d->_keyid;
     }
-#endif
     return 0;
 }
 
 const char *GpgME::DecryptionResult::Recipient::shortKeyID() const
 {
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
     //_keyid is internal API, but the public keyid is invalid after copying (see above)
     if (d) {
         return d->_keyid + 8;
     }
-#endif
     return 0;
 }
 
 unsigned int GpgME::DecryptionResult::Recipient::publicKeyAlgorithm() const
 {
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
     if (d) {
         return d->pubkey_algo;
     }
-#endif
     return 0;
 }
 
 const char *GpgME::DecryptionResult::Recipient::publicKeyAlgorithmAsString() const
 {
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
     if (d) {
         return gpgme_pubkey_algo_name(d->pubkey_algo);
     }
-#endif
     return 0;
 }
 
 GpgME::Error GpgME::DecryptionResult::Recipient::status() const
 {
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
     if (d) {
         return Error(d->status);
     }
-#endif
     return Error();
 }
 

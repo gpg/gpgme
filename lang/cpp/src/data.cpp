@@ -20,8 +20,6 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include <config-gpgme++.h>
-
 #include "data_p.h"
 #include <error.h>
 #include <interfaces/dataprovider.h>
@@ -166,21 +164,12 @@ GpgME::Error GpgME::Data::setEncoding(Encoding enc)
 
 char *GpgME::Data::fileName() const
 {
-#ifdef HAVE_GPGME_DATA_SET_FILE_NAME
     return gpgme_data_get_file_name(d->data);
-#else
-    return 0;
-#endif
 }
 
 GpgME::Error GpgME::Data::setFileName(const char *name)
 {
-#ifdef HAVE_GPGME_DATA_SET_FILE_NAME
     return Error(gpgme_data_set_file_name(d->data, name));
-#else
-    (void)name;
-    return Error();
-#endif
 }
 
 ssize_t GpgME::Data::read(void *buffer, size_t length)

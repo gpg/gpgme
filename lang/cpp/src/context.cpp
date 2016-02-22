@@ -20,8 +20,6 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include "config-gpgme++.h"
-
 #include <context.h>
 #include <eventloopinteractor.h>
 #include <trustitem.h>
@@ -58,8 +56,6 @@ using std::endl;
 
 #include <cassert>
 
-#include <qglobal.h>
-
 namespace GpgME
 {
 
@@ -77,7 +73,6 @@ static inline int xtoi_2(const char *str)
     return xtoi_1(str) * 16U + xtoi_1(str + 1);
 }
 
-#ifdef HAVE_GPGME_ASSUAN_ENGINE
 static void percent_unescape(std::string &s, bool plus2space)
 {
     std::string::iterator src = s.begin(), dest = s.begin(), end = s.end();
@@ -94,7 +89,6 @@ static void percent_unescape(std::string &s, bool plus2space)
     }
     s.erase(dest, end);
 }
-#endif
 
 void initializeLibrary()
 {
@@ -158,11 +152,7 @@ int Error::toErrno() const
 // static
 bool Error::hasSystemError()
 {
-#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
     return gpgme_err_code_from_syserror() == GPG_ERR_MISSING_ERRNO ;
-#else
-    return gpg_err_code_from_syserror() == GPG_ERR_MISSING_ERRNO ;
-#endif
 }
 
 // static
@@ -174,41 +164,25 @@ void Error::setSystemError(gpg_err_code_t err)
 // static
 void Error::setErrno(int err)
 {
-#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
     gpgme_err_set_errno(err);
-#else
-    gpg_err_set_errno(err);
-#endif
 }
 
 // static
 Error Error::fromSystemError(unsigned int src)
 {
-#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
     return Error(gpgme_err_make(static_cast<gpgme_err_source_t>(src), gpgme_err_code_from_syserror()));
-#else
-    return Error(gpg_err_make(static_cast<gpg_err_source_t>(src), gpg_err_code_from_syserror()));
-#endif
 }
 
 // static
 Error Error::fromErrno(int err, unsigned int src)
 {
-//#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
     return Error(gpgme_err_make(static_cast<gpgme_err_source_t>(src), gpgme_err_code_from_errno(err)));
-//#else
-//    return Error( gpg_err_make( static_cast<gpg_err_source_t>( src ), gpg_err_from_from_errno( err ) ) );
-//#endif
 }
 
 // static
 Error Error::fromCode(unsigned int err, unsigned int src)
 {
-//#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
     return Error(gpgme_err_make(static_cast<gpgme_err_source_t>(src), static_cast<gpgme_err_code_t>(err)));
-//#else
-//    return Error( gpg_err_make( static_cast<gpg_err_source_t>( src ), static_cast<gpgme_err_code_t>( err ) ) );
-//#endif
 }
 
 std::ostream &operator<<(std::ostream &os, const Error &err)
@@ -264,7 +238,6 @@ std::auto_ptr<Context> Context::createForEngine(Engine eng, Error *error)
 
     switch (eng) {
     case AssuanEngine:
-#ifdef HAVE_GPGME_ASSUAN_ENGINE
         if (const gpgme_error_t err = gpgme_set_protocol(ctx, GPGME_PROTOCOL_ASSUAN)) {
             gpgme_release(ctx);
             if (error) {
@@ -273,14 +246,7 @@ std::auto_ptr<Context> Context::createForEngine(Engine eng, Error *error)
             return std::auto_ptr<Context>();
         }
         break;
-#else
-        if (error) {
-            *error = Error::fromCode(GPG_ERR_NOT_SUPPORTED);
-        }
-        return std::auto_ptr<Context>();
-#endif
     case G13Engine:
-#ifdef HAVE_GPGME_G13_VFS
         if (const gpgme_error_t err = gpgme_set_protocol(ctx, GPGME_PROTOCOL_G13)) {
             gpgme_release(ctx);
             if (error) {
@@ -289,12 +255,6 @@ std::auto_ptr<Context> Context::createForEngine(Engine eng, Error *error)
             return std::auto_ptr<Context>();
         }
         break;
-#else
-        if (error) {
-            *error = Error::fromCode(GPG_ERR_NOT_SUPPORTED);
-        }
-        return std::auto_ptr<Context>();
-#endif
     default:
         if (error) {
             *error = Error::fromCode(GPG_ERR_INV_ARG);
@@ -373,29 +333,17 @@ bool Context::textMode() const
 
 void Context::setOffline(bool useOfflineMode)
 {
-#ifdef HAVE_GPGME_CTX_OFFLINE
     gpgme_set_offline(d->ctx, int(useOfflineMode));
-#else
-    Q_UNUSED(useOfflineMode);
-#endif
 }
 bool Context::offline() const
 {
-#ifdef HAVE_GPGME_CTX_OFFLINE
     return gpgme_get_offline(d->ctx);
-#else
-    return false;
-#endif
 }
 
 void Context::setIncludeCertificates(int which)
 {
     if (which == DefaultCertificates) {
-#ifdef HAVE_GPGME_INCLUDE_CERTS_DEFAULT
         which = GPGME_INCLUDE_CERTS_DEFAULT;
-#else
-        which = 1;
-#endif
     }
     gpgme_set_include_certs(d->ctx, which);
 }
@@ -492,31 +440,19 @@ Error Context::setLocale(int cat, const char *val)
 
 EngineInfo Context::engineInfo() const
 {
-#ifdef HAVE_GPGME_CTX_GETSET_ENGINE_INFO
     return EngineInfo(gpgme_ctx_get_engine_info(d->ctx));
-#else
-    return EngineInfo();
-#endif
 }
 
 Error Context::setEngineFileName(const char *filename)
 {
-#ifdef HAVE_GPGME_CTX_GETSET_ENGINE_INFO
     const char *const home_dir = engineInfo().homeDirectory();
     return Error(gpgme_ctx_set_engine_info(d->ctx, gpgme_get_protocol(d->ctx), filename, home_dir));
-#else
-    return Error::fromCode(GPG_ERR_NOT_IMPLEMENTED);
-#endif
 }
 
 Error Context::setEngineHomeDirectory(const char *home_dir)
 {
-#ifdef HAVE_GPGME_CTX_GETSET_ENGINE_INFO
     const char *const filename = engineInfo().fileName();
     return Error(gpgme_ctx_set_engine_info(d->ctx, gpgme_get_protocol(d->ctx), filename, home_dir));
-#else
-    return Error::fromCode(GPG_ERR_NOT_IMPLEMENTED);
-#endif
 }
 
 //
@@ -648,7 +584,6 @@ ImportResult Context::importKeys(const std::vector<Key> &kk)
     d->lasterr = make_error(GPG_ERR_NOT_IMPLEMENTED);
 
     bool shouldHaveResult = false;
-#ifdef HAVE_GPGME_OP_IMPORT_KEYS
     const boost::scoped_array<gpgme_key_t> keys(new gpgme_key_t[ kk.size() + 1 ]);
     gpgme_key_t *keys_it = &keys[0];
     for (std::vector<Key>::const_iterator it = kk.begin(), end = kk.end() ; it != end ; ++it) {
@@ -659,7 +594,6 @@ ImportResult Context::importKeys(const std::vector<Key> &kk)
     *keys_it++ = 0;
     d->lasterr = gpgme_op_import_keys(d->ctx, keys.get());
     shouldHaveResult = true;
-#endif
     if ((gpgme_err_code(d->lasterr) == GPG_ERR_NOT_IMPLEMENTED ||
             gpgme_err_code(d->lasterr) == GPG_ERR_NOT_SUPPORTED) &&
             protocol() == CMS) {
@@ -706,7 +640,6 @@ Error Context::startKeyImport(const Data &data)
 Error Context::startKeyImport(const std::vector<Key> &kk)
 {
     d->lastop = Private::Import;
-#ifdef HAVE_GPGME_OP_IMPORT_KEYS
     const boost::scoped_array<gpgme_key_t> keys(new gpgme_key_t[ kk.size() + 1 ]);
     gpgme_key_t *keys_it = &keys[0];
     for (std::vector<Key>::const_iterator it = kk.begin(), end = kk.end() ; it != end ; ++it) {
@@ -716,10 +649,6 @@ Error Context::startKeyImport(const std::vector<Key> &kk)
     }
     *keys_it++ = 0;
     return Error(d->lasterr = gpgme_op_import_keys_start(d->ctx, keys.get()));
-#else
-    (void)kk;
-    return Error(d->lasterr = make_error(GPG_ERR_NOT_IMPLEMENTED));
-#endif
 }
 
 ImportResult Context::importResult() const
@@ -746,23 +675,13 @@ Error Context::startKeyDeletion(const Key &key, bool allowSecretKeyDeletion)
 Error Context::passwd(const Key &key)
 {
     d->lastop = Private::Passwd;
-#ifdef HAVE_GPGME_OP_PASSWD
     return Error(d->lasterr = gpgme_op_passwd(d->ctx, key.impl(), 0U));
-#else
-    (void)key;
-    return Error(d->lasterr = make_error(GPG_ERR_NOT_IMPLEMENTED));
-#endif
 }
 
 Error Context::startPasswd(const Key &key)
 {
     d->lastop = Private::Passwd;
-#ifdef HAVE_GPGME_OP_PASSWD
     return Error(d->lasterr = gpgme_op_passwd_start(d->ctx, key.impl(), 0U));
-#else
-    (void)key;
-    return Error(d->lasterr = make_error(GPG_ERR_NOT_IMPLEMENTED));
-#endif
 }
 
 Error Context::edit(const Key &key, std::auto_ptr<EditInteractor> func, Data &data)
@@ -847,7 +766,6 @@ Error Context::endTrustItemListing()
     return Error(d->lasterr = gpgme_op_trustlist_end(d->ctx));
 }
 
-#ifdef HAVE_GPGME_ASSUAN_ENGINE
 static gpgme_error_t assuan_transaction_data_callback(void *opaque, const void *data, size_t datalen)
 {
     assert(opaque);
@@ -881,7 +799,6 @@ static gpgme_error_t assuan_transaction_status_callback(void *opaque, const char
     percent_unescape(a, true);   // ### why doesn't gpgme do this??
     return t->status(status, a.c_str()).encodedError();
 }
-#endif
 
 AssuanResult Context::assuanTransact(const char *command)
 {
@@ -895,7 +812,6 @@ AssuanResult Context::assuanTransact(const char *command, std::auto_ptr<AssuanTr
     if (!d->lastAssuanTransaction.get()) {
         return AssuanResult(Error(d->lasterr = make_error(GPG_ERR_INV_ARG)));
     }
-#ifdef HAVE_GPGME_ASSUAN_ENGINE
     d->lasterr = gpgme_op_assuan_transact(d->ctx, command,
                                           assuan_transaction_data_callback,
                                           d->lastAssuanTransaction.get(),
@@ -903,10 +819,6 @@ AssuanResult Context::assuanTransact(const char *command, std::auto_ptr<AssuanTr
                                           d, // sic!
                                           assuan_transaction_status_callback,
                                           d->lastAssuanTransaction.get());
-#else
-    (void)command;
-    d->lasterr = make_error(GPG_ERR_NOT_SUPPORTED);
-#endif
     return AssuanResult(d->ctx, d->lasterr);
 }
 
@@ -922,7 +834,6 @@ Error Context::startAssuanTransaction(const char *command, std::auto_ptr<AssuanT
     if (!d->lastAssuanTransaction.get()) {
         return Error(d->lasterr = make_error(GPG_ERR_INV_ARG));
     }
-#ifdef HAVE_GPGME_ASSUAN_ENGINE
     return Error(d->lasterr = gpgme_op_assuan_transact_start(d->ctx, command,
                               assuan_transaction_data_callback,
                               d->lastAssuanTransaction.get(),
@@ -930,10 +841,6 @@ Error Context::startAssuanTransaction(const char *command, std::auto_ptr<AssuanT
                               d, // sic!
                               assuan_transaction_status_callback,
                               d->lastAssuanTransaction.get()));
-#else
-    (void)command;
-    return Error(d->lasterr = make_error(GPG_ERR_NOT_SUPPORTED));
-#endif
 }
 
 AssuanResult Context::assuanResult() const
@@ -1042,7 +949,6 @@ Error Context::startCombinedDecryptionAndVerification(const Data &cipherText, Da
     return Error(d->lasterr = gpgme_op_decrypt_verify_start(d->ctx, cdp ? cdp->data : 0, pdp ? pdp->data : 0));
 }
 
-#ifdef HAVE_GPGME_OP_GETAUDITLOG
 unsigned int to_auditlog_flags(unsigned int flags)
 {
     unsigned int result = 0;
@@ -1054,30 +960,19 @@ unsigned int to_auditlog_flags(unsigned int flags)
     }
     return result;
 }
-#endif // HAVE_GPGME_OP_GETAUDITLOG
 
 Error Context::startGetAuditLog(Data &output, unsigned int flags)
 {
     d->lastop = Private::GetAuditLog;
-#ifdef HAVE_GPGME_OP_GETAUDITLOG
     Data::Private *const odp = output.impl();
     return Error(d->lasterr = gpgme_op_getauditlog_start(d->ctx, odp ? odp->data : 0, to_auditlog_flags(flags)));
-#else
-    (void)output; (void)flags;
-    return Error(d->lasterr = make_error(GPG_ERR_NOT_IMPLEMENTED));
-#endif
 }
 
 Error Context::getAuditLog(Data &output, unsigned int flags)
 {
     d->lastop = Private::GetAuditLog;
-#ifdef HAVE_GPGME_OP_GETAUDITLOG
     Data::Private *const odp = output.impl();
     return Error(d->lasterr = gpgme_op_getauditlog(d->ctx, odp ? odp->data : 0, to_auditlog_flags(flags)));
-#else
-    (void)output; (void)flags;
-    return Error(d->lasterr = make_error(GPG_ERR_NOT_IMPLEMENTED));
-#endif
 }
 
 void Context::clearSigningKeys()
@@ -1108,46 +1003,30 @@ std::vector<Key> Context::signingKeys() const
 
 void Context::clearSignatureNotations()
 {
-#ifdef HAVE_GPGME_SIG_NOTATION_CLEARADDGET
     gpgme_sig_notation_clear(d->ctx);
-#endif
 }
 
 GpgME::Error Context::addSignatureNotation(const char *name, const char *value, unsigned int flags)
 {
-#ifdef HAVE_GPGME_SIG_NOTATION_CLEARADDGET
     return Error(gpgme_sig_notation_add(d->ctx, name, value, add_to_gpgme_sig_notation_flags_t(0, flags)));
-#else
-    (void)name; (void)value; (void)flags;
-    return Error(make_error(GPG_ERR_NOT_IMPLEMENTED));
-#endif
 }
 
 GpgME::Error Context::addSignaturePolicyURL(const char *url, bool critical)
 {
-#ifdef HAVE_GPGME_SIG_NOTATION_CLEARADDGET
     return Error(gpgme_sig_notation_add(d->ctx, 0, url, critical ? GPGME_SIG_NOTATION_CRITICAL : 0));
-#else
-    (void)url; (void)critical;
-    return Error(make_error(GPG_ERR_NOT_IMPLEMENTED));
-#endif
 }
 
 const char *Context::signaturePolicyURL() const
 {
-#ifdef HAVE_GPGME_SIG_NOTATION_CLEARADDGET
     for (gpgme_sig_notation_t n = gpgme_sig_notation_get(d->ctx) ; n ; n = n->next) {
         if (!n->name) {
             return n->value;
         }
     }
-#endif
-    return 0;
 }
 
 Notation Context::signatureNotation(unsigned int idx) const
 {
-#ifdef HAVE_GPGME_SIG_NOTATION_CLEARADDGET
     for (gpgme_sig_notation_t n = gpgme_sig_notation_get(d->ctx) ; n ; n = n->next) {
         if (n->name) {
             if (idx-- == 0) {
@@ -1155,20 +1034,17 @@ Notation Context::signatureNotation(unsigned int idx) const
             }
         }
     }
-#endif
     return Notation();
 }
 
 std::vector<Notation> Context::signatureNotations() const
 {
     std::vector<Notation> result;
-#ifdef HAVE_GPGME_SIG_NOTATION_CLEARADDGET
     for (gpgme_sig_notation_t n = gpgme_sig_notation_get(d->ctx) ; n ; n = n->next) {
         if (n->name) {
             result.push_back(Notation(n));
         }
     }
-#endif
     return result;
 }
 
@@ -1214,22 +1090,18 @@ static gpgme_encrypt_flags_t encryptflags2encryptflags(Context::EncryptionFlags 
     if (flags & Context::AlwaysTrust) {
         result |= GPGME_ENCRYPT_ALWAYS_TRUST;
     }
-#ifdef HAVE_GPGME_ENCRYPT_NO_ENCRYPT_TO
     if (flags & Context::NoEncryptTo) {
         result |= GPGME_ENCRYPT_NO_ENCRYPT_TO;
     }
-#endif
     return static_cast<gpgme_encrypt_flags_t>(result);
 }
 
 EncryptionResult Context::encrypt(const std::vector<Key> &recipients, const Data &plainText, Data &cipherText, EncryptionFlags flags)
 {
     d->lastop = Private::Encrypt;
-#ifndef HAVE_GPGME_ENCRYPT_NO_ENCRYPT_TO
     if (flags & NoEncryptTo) {
         return EncryptionResult(Error(d->lasterr = make_error(GPG_ERR_NOT_IMPLEMENTED)));
     }
-#endif
     const Data::Private *const pdp = plainText.impl();
     Data::Private *const cdp = cipherText.impl();
     gpgme_key_t *const keys = new gpgme_key_t[ recipients.size() + 1 ];
@@ -1258,11 +1130,9 @@ Error Context::encryptSymmetrically(const Data &plainText, Data &cipherText)
 Error Context::startEncryption(const std::vector<Key> &recipients, const Data &plainText, Data &cipherText, EncryptionFlags flags)
 {
     d->lastop = Private::Encrypt;
-#ifndef HAVE_GPGME_ENCRYPT_NO_ENCRYPT_TO
     if (flags & NoEncryptTo) {
         return Error(d->lasterr = make_error(GPG_ERR_NOT_IMPLEMENTED));
     }
-#endif
     const Data::Private *const pdp = plainText.impl();
     Data::Private *const cdp = cipherText.impl();
     gpgme_key_t *const keys = new gpgme_key_t[ recipients.size() + 1 ];
@@ -1330,7 +1200,6 @@ Error Context::startCombinedSigningAndEncryption(const std::vector<Key> &recipie
 Error Context::createVFS(const char *containerFile, const std::vector< Key > &recipients)
 {
     d->lastop = Private::CreateVFS;
-#ifdef HAVE_GPGME_G13_VFS
     gpgme_key_t *const keys = new gpgme_key_t[ recipients.size() + 1 ];
     gpgme_key_t *keys_it = keys;
     for (std::vector<Key>::const_iterator it = recipients.begin() ; it != recipients.end() ; ++it) {
@@ -1348,34 +1217,19 @@ Error Context::createVFS(const char *containerFile, const std::vector< Key > &re
         return error;
     }
     return Error(d->lasterr = op_err);
-#else
-    Q_UNUSED(containerFile);
-    Q_UNUSED(recipients);
-    return Error(d->lasterr = make_error(GPG_ERR_NOT_SUPPORTED));
-#endif
 }
 
 VfsMountResult Context::mountVFS(const char *containerFile, const char *mountDir)
 {
     d->lastop = Private::MountVFS;
-#ifdef HAVE_GPGME_G13_VFS
     gpgme_error_t op_err;
     d->lasterr = gpgme_op_vfs_mount(d->ctx, containerFile, mountDir, 0, &op_err);
     return VfsMountResult(d->ctx, Error(d->lasterr), Error(op_err));
-#else
-    Q_UNUSED(containerFile);
-    Q_UNUSED(mountDir);
-    return VfsMountResult(d->ctx, Error(d->lasterr = make_error(GPG_ERR_NOT_SUPPORTED)), Error());
-#endif
 }
 
 Error Context::cancelPendingOperation()
 {
-#ifdef HAVE_GPGME_CANCEL_ASYNC
     return Error(gpgme_cancel_async(d->ctx));
-#else
-    return Error(gpgme_cancel(d->ctx));
-#endif
 }
 
 bool Context::poll()
@@ -1553,23 +1407,11 @@ static gpgme_protocol_t engine2protocol(const GpgME::Engine engine)
     case GpgME::GpgEngine:   return GPGME_PROTOCOL_OpenPGP;
     case GpgME::GpgSMEngine: return GPGME_PROTOCOL_CMS;
     case GpgME::GpgConfEngine:
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
         return GPGME_PROTOCOL_GPGCONF;
-#else
-        break;
-#endif
     case GpgME::AssuanEngine:
-#ifdef HAVE_GPGME_ASSUAN_ENGINE
         return GPGME_PROTOCOL_ASSUAN;
-#else
-        break;
-#endif
     case GpgME::G13Engine:
-#ifdef HAVE_GPGME_G13_VFS
         return GPGME_PROTOCOL_G13;
-#else
-        break;
-#endif
     case GpgME::UnknownEngine:
         ;
     }
@@ -1605,90 +1447,34 @@ static const unsigned long supported_features = 0
         | GpgME::ValidatingKeylistModeFeature
         | GpgME::CancelOperationFeature
         | GpgME::WrongKeyUsageFeature
-#ifdef HAVE_GPGME_INCLUDE_CERTS_DEFAULT
         | GpgME::DefaultCertificateInclusionFeature
-#endif
-#ifdef HAVE_GPGME_CTX_GETSET_ENGINE_INFO
         | GpgME::GetSetEngineInfoFeature
-#endif
-#ifdef HAVE_GPGME_SIG_NOTATION_CLEARADDGET
         | GpgME::ClearAddGetSignatureNotationsFeature
-#endif
-#ifdef HAVE_GPGME_DATA_SET_FILE_NAME
         | GpgME::SetDataFileNameFeeature
-#endif
-#ifdef HAVE_GPGME_KEYLIST_MODE_SIG_NOTATIONS
         | GpgME::SignatureNotationsKeylistModeFeature
-#endif
-#ifdef HAVE_GPGME_KEY_SIG_NOTATIONS
         | GpgME::KeySignatureNotationsFeature
-#endif
-#ifdef HAVE_GPGME_KEY_T_IS_QUALIFIED
         | GpgME::KeyIsQualifiedFeature
-#endif
-#ifdef HAVE_GPGME_SIG_NOTATION_CRITICAL
         | GpgME::SignatureNotationsCriticalFlagFeature
-#endif
-#ifdef HAVE_GPGME_SIG_NOTATION_FLAGS_T
         | GpgME::SignatureNotationsFlagsFeature
-#endif
-#ifdef HAVE_GPGME_SIG_NOTATION_HUMAN_READABLE
         | GpgME::SignatureNotationsHumanReadableFlagFeature
-#endif
-#ifdef HAVE_GPGME_SUBKEY_T_IS_QUALIFIED
         | GpgME::SubkeyIsQualifiedFeature
-#endif
-#ifdef HAVE_GPGME_ENGINE_INFO_T_HOME_DIR
         | GpgME::EngineInfoHomeDirFeature
-#endif
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_FILE_NAME
         | GpgME::DecryptionResultFileNameFeature
-#endif
-#ifdef HAVE_GPGME_DECRYPT_RESULT_T_RECIPIENTS
         | GpgME::DecryptionResultRecipientsFeature
-#endif
-#ifdef HAVE_GPGME_VERIFY_RESULT_T_FILE_NAME
         | GpgME::VerificationResultFileNameFeature
-#endif
-#ifdef HAVE_GPGME_SIGNATURE_T_PKA_FIELDS
         | GpgME::SignaturePkaFieldsFeature
-#endif
-#ifdef HAVE_GPGME_SIGNATURE_T_ALGORITHM_FIELDS
         | GpgME::SignatureAlgorithmFieldsFeature
-#endif
-#ifdef HAVE_GPGME_GET_FDPTR
         | GpgME::FdPointerFeature
-#endif
-#ifdef HAVE_GPGME_OP_GETAUDITLOG
         | GpgME::AuditLogFeature
-#endif
-#ifdef HAVE_GPGME_PROTOCOL_GPGCONF
         | GpgME::GpgConfEngineFeature
-#endif
-#ifdef HAVE_GPGME_CANCEL_ASYNC
         | GpgME::CancelOperationAsyncFeature
-#endif
-#ifdef HAVE_GPGME_ENCRYPT_NO_ENCRYPT_TO
         | GpgME::NoEncryptToEncryptionFlagFeature
-#endif
-#ifdef HAVE_GPGME_SUBKEY_T_IS_CARDKEY
         | GpgME::CardKeyFeature
-#endif
-#ifdef HAVE_GPGME_ASSUAN_ENGINE
         | GpgME::AssuanEngineFeature
-#endif
-#ifdef HAVE_GPGME_KEYLIST_MODE_EPHEMERAL
         | GpgME::EphemeralKeylistModeFeature
-#endif
-#ifdef HAVE_GPGME_OP_IMPORT_KEYS
         | GpgME::ImportFromKeyserverFeature
-#endif
-#ifdef HAVE_GPGME_G13_VFS
         | GpgME::G13VFSFeature
-#endif
-#ifdef HAVE_GPGME_OP_PASSWD
         | GpgME::PasswdFeature
-#endif
         ;
 
 static const unsigned long supported_features2 = 0

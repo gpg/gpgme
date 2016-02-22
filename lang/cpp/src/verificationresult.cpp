@@ -20,7 +20,6 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include <config-gpgme++.h>
 #include <verificationresult.h>
 #include <notation.h>
 #include "result_p.h"
@@ -45,11 +44,9 @@ public:
         if (!r) {
             return;
         }
-#ifdef HAVE_GPGME_VERIFY_RESULT_T_FILE_NAME
         if (r->file_name) {
             file_name = r->file_name;
         }
-#endif
         // copy recursively, using compiler-generated copy ctor.
         // We just need to handle the pointers in the structs:
         for (gpgme_signature_t is = r->signatures ; is ; is = is->next) {
@@ -57,7 +54,6 @@ public:
             if (is->fpr) {
                 scopy->fpr = strdup(is->fpr);
             }
-#ifdef HAVE_GPGME_SIGNATURE_T_PKA_FIELDS
 // PENDING(marc) why does this crash on Windows in strdup()?
 # ifndef _WIN32
             if (is->pka_address) {
@@ -66,7 +62,6 @@ public:
 # else
             scopy->pka_address = 0;
 # endif
-#endif
             scopy->next = 0;
             sigs.push_back(scopy);
             // copy notations:
@@ -79,11 +74,7 @@ public:
                     }
                     continue;
                 }
-#ifdef HAVE_GPGME_SIG_NOTATION_FLAGS_T
                 Nota n = { 0, 0, in->flags };
-#else
-                Nota n = { 0, 0 };
-#endif
                 n.name = strdup(in->name);
                 if (in->value) {
                     n.value = strdup(in->value);
@@ -96,9 +87,7 @@ public:
     {
         for (std::vector<gpgme_signature_t>::iterator it = sigs.begin() ; it != sigs.end() ; ++it) {
             std::free((*it)->fpr);
-#ifdef HAVE_GPGME_SIGNATURE_T_PKA_FIELDS
             std::free((*it)->pka_address);
-#endif
             delete *it; *it = 0;
         }
         for (std::vector< std::vector<Nota> >::iterator it = nota.begin() ; it != nota.end() ; ++it) {
@@ -113,9 +102,7 @@ public:
     struct Nota {
         char *name;
         char *value;
-#ifdef HAVE_GPGME_SIG_NOTATION_FLAGS_T
         gpgme_sig_notation_flags_t flags;
-#endif
     };
 
     std::vector<gpgme_signature_t> sigs;
@@ -265,30 +252,22 @@ bool GpgME::Signature::isWrongKeyUsage() const
 
 bool GpgME::Signature::isVerifiedUsingChainModel() const
 {
-#ifdef HAVE_GPGME_SIGNATURE_T_CHAIN_MODEL
     return !isNull() && d->sigs[idx]->chain_model;
-#else
-    return false;
-#endif
 }
 
 GpgME::Signature::PKAStatus GpgME::Signature::pkaStatus() const
 {
-#ifdef HAVE_GPGME_SIGNATURE_T_PKA_FIELDS
     if (!isNull()) {
         return static_cast<PKAStatus>(d->sigs[idx]->pka_trust);
     }
-#endif
     return UnknownPKAStatus;
 }
 
 const char *GpgME::Signature::pkaAddress() const
 {
-#ifdef HAVE_GPGME_SIGNATURE_T_PKA_FIELDS
     if (!isNull()) {
         return d->sigs[idx]->pka_address;
     }
-#endif
     return 0;
 }
 
@@ -331,41 +310,33 @@ GpgME::Error GpgME::Signature::nonValidityReason() const
 
 unsigned int GpgME::Signature::publicKeyAlgorithm() const
 {
-#ifdef HAVE_GPGME_SIGNATURE_T_ALGORITHM_FIELDS
     if (!isNull()) {
         return d->sigs[idx]->pubkey_algo;
     }
-#endif
     return 0;
 }
 
 const char *GpgME::Signature::publicKeyAlgorithmAsString() const
 {
-#ifdef HAVE_GPGME_SIGNATURE_T_ALGORITHM_FIELDS
     if (!isNull()) {
         return gpgme_pubkey_algo_name(d->sigs[idx]->pubkey_algo);
     }
-#endif
     return 0;
 }
 
 unsigned int GpgME::Signature::hashAlgorithm() const
 {
-#ifdef HAVE_GPGME_SIGNATURE_T_ALGORITHM_FIELDS
     if (!isNull()) {
         return d->sigs[idx]->hash_algo;
     }
-#endif
     return 0;
 }
 
 const char *GpgME::Signature::hashAlgorithmAsString() const
 {
-#ifdef HAVE_GPGME_SIGNATURE_T_ALGORITHM_FIELDS
     if (!isNull()) {
         return gpgme_hash_algo_name(d->sigs[idx]->hash_algo);
     }
-#endif
     return 0;
 }
 
@@ -478,13 +449,9 @@ GpgME::Notation::Flags GpgME::Notation::flags() const
 {
     return
         convert_from_gpgme_sig_notation_flags_t(
-#ifdef HAVE_GPGME_SIG_NOTATION_FLAGS_T
             isNull() ? 0 :
             d->d ? d->d->nota[d->sidx][d->nidx].flags :
             d->nota ? d->nota->flags : 0);
-#else
-            0);
-#endif
 }
 
 bool GpgME::Notation::isHumanReadable() const

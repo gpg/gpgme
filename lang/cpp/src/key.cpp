@@ -20,8 +20,6 @@
   Boston, MA 02110-1301, USA.
 */
 
-#include "config-gpgme++.h"
-
 #include <key.h>
 
 #include "util.h"
@@ -224,11 +222,7 @@ bool Key::canAuthenticate() const
 
 bool Key::isQualified() const
 {
-#ifdef HAVE_GPGME_KEY_T_IS_QUALIFIED
     return key && key->is_qualified;
-#else
-    return false;
-#endif
 }
 
 const char *Key::issuerSerial() const
@@ -304,12 +298,9 @@ const Key &Key::mergeWith(const Key &other)
     me->can_certify      |= him->can_certify;
     me->secret           |= him->secret;
     me->can_authenticate |= him->can_authenticate;
-#ifdef HAVE_GPGME_KEY_T_IS_QUALIFIED
     me->is_qualified     |= him->is_qualified;
-#endif
     me->keylist_mode     |= him->keylist_mode;
 
-#ifdef HAVE_GPGME_SUBKEY_T_IS_CARDKEY
     // make sure the gpgme_sub_key_t::is_cardkey flag isn't lost:
     for (gpgme_sub_key_t mysk = me->subkeys ; mysk ; mysk = mysk->next) {
         for (gpgme_sub_key_t hissk = him->subkeys ; hissk ; hissk = hissk->next) {
@@ -319,7 +310,6 @@ const Key &Key::mergeWith(const Key &other)
             }
         }
     }
-#endif
 
     return *this;
 }
@@ -415,29 +405,17 @@ bool Subkey::canAuthenticate() const
 
 bool Subkey::isQualified() const
 {
-#ifdef HAVE_GPGME_SUBKEY_T_IS_QUALIFIED
     return subkey && subkey->is_qualified;
-#else
-    return false;
-#endif
 }
 
 bool Subkey::isCardKey() const
 {
-#ifdef HAVE_GPGME_SUBKEY_T_IS_CARDKEY
     return subkey && subkey->is_cardkey;
-#else
-    return false;
-#endif
 }
 
 const char *Subkey::cardSerialNumber() const
 {
-#ifdef HAVE_GPGME_SUBKEY_T_IS_CARDKEY
     return subkey ? subkey->card_number : 0 ;
-#else
-    return 0;
-#endif
 }
 
 bool Subkey::isSecret() const
@@ -784,7 +762,6 @@ GpgME::Notation UserID::Signature::notation(unsigned int idx) const
     if (!sig) {
         return GpgME::Notation();
     }
-#ifdef HAVE_GPGME_KEY_SIG_NOTATIONS
     for (gpgme_sig_notation_t nota = sig->notations ; nota ; nota = nota->next) {
         if (nota->name) {
             if (idx-- == 0) {
@@ -792,7 +769,6 @@ GpgME::Notation UserID::Signature::notation(unsigned int idx) const
             }
         }
     }
-#endif
     return GpgME::Notation();
 }
 
@@ -802,13 +778,11 @@ unsigned int UserID::Signature::numNotations() const
         return 0;
     }
     unsigned int count = 0;
-#ifdef HAVE_GPGME_KEY_SIG_NOTATIONS
     for (gpgme_sig_notation_t nota = sig->notations ; nota ; nota = nota->next) {
         if (nota->name) {
             ++count; // others are policy URLs...
         }
     }
-#endif
     return count;
 }
 
@@ -818,20 +792,17 @@ std::vector<Notation> UserID::Signature::notations() const
         return std::vector<GpgME::Notation>();
     }
     std::vector<GpgME::Notation> v;
-#ifdef HAVE_GPGME_KEY_SIG_NOTATIONS
     v.reserve(numNotations());
     for (gpgme_sig_notation_t nota = sig->notations ; nota ; nota = nota->next) {
         if (nota->name) {
             v.push_back(GpgME::Notation(nota));
         }
     }
-#endif
     return v;
 }
 
 const char *UserID::Signature::policyURL() const
 {
-#ifdef HAVE_GPGME_KEY_SIG_NOTATIONS
     if (!sig) {
         return 0;
     }
@@ -840,7 +811,6 @@ const char *UserID::Signature::policyURL() const
             return nota->value;
         }
     }
-#endif
     return 0;
 }
 

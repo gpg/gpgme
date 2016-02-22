@@ -28,7 +28,6 @@
 #include "gpgmepp_export.h"
 
 #include <iosfwd>
-#include <QByteArray>
 
 namespace GpgME
 {
