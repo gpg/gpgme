@@ -632,6 +632,7 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 src/versioninfo.rc
                 src/gpgme.h)
 AC_CONFIG_FILES(src/gpgme-config, chmod +x src/gpgme-config)
+AC_CONFIG_FILES(lang/cpp/Makefile lang/cpp/src/Makefile)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AC_OUTPUT
 
