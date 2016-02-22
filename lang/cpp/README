@@ -1,0 +1,54 @@
+GpgMEpp - C++ bindings/wrapper for gpgme
+----------------------------------------
+Based on KF5gpgmepp
+
+GPGMEpp is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+
+GPGME++ is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Library General Public License for more details.
+
+You should have received a copy of the GNU Library General Public License
+along with GPGME++; see the file COPYING.LIB.  If not, write to the
+Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA 02110-1301, USA.
+
+Overview
+--------
+
+GpgMEpp is a C++ wrapper (or C++ bindings) for the GnuPG project's
+gpgme (GnuPG Made Easy) library, version 0.4.4 and later.
+
+It is fairly complete, with some minor things still missing (in
+particular, the key edit interface).
+
+The design principles of this library are as follows:
+
+1. A value-based interface (most clases are implicitly shared)
+2. Callbacks are replaced by C++ interfaces (classes with only
+   abstract methods).
+3. No exceptions are thrown
+4. There is (as yet) no explicit support for multi-threaded use
+   (other than what gpgme itself provides; most notably the
+   refcounting for implicit sharing is not thread-safe)
+5. To avoid binary incompatible interface changes, we make
+   extensive use of the d-pointer pattern and avoid virtual
+   methods; any polymorphism present is already provided by gpgme
+   itself, anyway (see e.g. Data). A notable exception of the
+   no-virtuals rule is the use of abstract classes to cover
+   C-callbacks.
+
+GpgME was originally developed as part of the KDEPIM community
+in KDE 4 it was part of kdepimlibs/gpgme++ for KF5 Gpgme++ was
+renamed to KF5GpgMEpp and moved into it's own repository.
+
+License
+-------
+
+This library is licensed under the GNU Library General Public
+License (LGPL), just as gpgme is. We feel that using a different
+license than the one gpgme itself uses doesn't make sense.
