@@ -563,15 +563,26 @@ _gpgme_get_gpgconf_path (void)
       gpgconf = find_program_at_standard_place (name2);
     }
 
-  /* 3. Try to find gpgconf.exe using that ancient registry key.  This
-        should eventually be removed.  */
+  /* 3. Try to find gpgconf.exe using the Windows registry. */
   if (!gpgconf)
     {
       char *dir;
 
-      dir = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
+      dir = read_w32_registry_string (NULL,
                                       "Software\\GNU\\GnuPG",
                                       "Install Directory");
+      if (!dir)
+        {
+          char *tmp = read_w32_registry_string (NULL,
+                                                "Software\\GnuPG",
+                                                "Install Directory");
+          if (tmp)
+            {
+              if (gpgrt_asprintf (&dir, "%s\\bin", tmp) == -1)
+                return NULL;
+              free (tmp);
+            }
+        }
       if (dir)
         {
           gpgconf = find_program_in_dir (dir, name);
