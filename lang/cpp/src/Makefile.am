@@ -32,8 +32,28 @@ main_sources = \
     scdgetinfoassuantransaction.cpp gpgagentgetinfoassuantransaction.cpp \
     vfsmountresult.cpp configuration.cpp
 
-libgpgmepp_la_SOURCES = $(main_sources) context_vanilla.cpp
+gpgmepp_headers = \
+    assuanresult.h configuration.h context.h data.h decryptionresult.h \
+    defaultassuantransaction.h editinteractor.h encryptionresult.h \
+    engineinfo.h error.h eventloopinteractor.h exception.h global.h \
+    gpgadduserideditinteractor.h gpgagentgetinfoassuantransaction.h \
+    gpgmefw.h gpgsetexpirytimeeditinteractor.h \
+    gpgsetownertrusteditinteractor.h gpgsignkeyeditinteractor.h \
+    importresult.h keygenerationresult.h key.h keylistresult.h \
+    notation.h result.h scdgetinfoassuantransaction.h signingresult.h \
+    trustitem.h verificationresult.h vfsmountresult.h gpgmepp_export.h
 
-AM_CPPFLAGS = @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@
+interface_headers= \
+    interfaces/assuantransaction.h interfaces/dataprovider.h \
+    interfaces/passphraseprovider.h interfaces/progressprovider.h
+
+gpgmeppincludedir = $(includedir)/gpgme++
+gpgmeppinclude_HEADERS = $(gpgmepp_headers)
+nobase_gpgmeppinclude_HEADERS = $(interface_headers)
+
+libgpgmepp_la_SOURCES = $(main_sources) $(gpgmepp_headers) context_vanilla.cpp \
+                        $(interface_headers)
+
+AM_CPPFLAGS = @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ -DBUILDING_GPGMEPP
 
 libgpgmepp_la_LIBADD = ../../../src/libgpgme.la @LIBASSUAN_LIBS@
