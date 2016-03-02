@@ -146,6 +146,8 @@ have_w32_system=no
 have_w64_system=no
 build_w32_glib=no
 build_w32_qt=no
+available_languages="cpp cl"
+default_languages="cpp cl"
 case "${host}" in
     x86_64-*mingw32*)
         have_w64_system=yes
@@ -245,6 +247,24 @@ if test x$fixed_search_path != x ; then
                     [Locate binaries only via this PATH])
 fi
 
+AC_ARG_ENABLE([languages],
+              AC_HELP_STRING([--enable-languages=languages],
+                             [enable only specific language bindings]),
+                             [enabled_languages=`echo $enableval | \
+                             tr ',:' '  ' | tr '[A-Z]' '[a-z]' | \
+                             sed 's/c++/cpp/'`],
+                             [enabled_languages="$default_languages"])
+if test "x$enabled_languages" = "x" \
+   -o "$enabled_languages" = "no"; then
+   enabled_languages=
+fi
+for language in $enabled_languages; do
+    LIST_MEMBER($language, $available_languages)
+    if test "$found" = "0"; then
+       AC_MSG_ERROR([unsupported language binding specified])
+    fi
+done
+AC_SUBST(ENABLED_LANGUAGES, $enabled_languages)
 
 #
 # Provide information about the build.
@@ -639,12 +659,14 @@ AC_OUTPUT
 echo "
         GPGME v${VERSION} has been configured as follows:
 
-        Revision:        mym4_revision  (mym4_revision_dec)
-        Platform:        $host
+        Revision:          mym4_revision  (mym4_revision_dec)
+        Platform:          $host
 
-        UI Server:       $uiserver
-        FD Passing:      $use_descriptor_passing
-        GPGME Pthread:   $have_pthread
+        UI Server:         $uiserver
+        FD Passing:        $use_descriptor_passing
+        GPGME Pthread:     $have_pthread
+
+        Language bindings: $enabled_languages
 "
 if test "x${gpg_config_script_warn}" != x; then
 cat <<G10EOF
