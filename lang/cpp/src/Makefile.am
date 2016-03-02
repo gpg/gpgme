@@ -18,6 +18,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA
 
+EXTRA_DIST = GpgmeppConfig.cmake.in.in GpgmeConfigVersion.cmake.in
+
 lib_LTLIBRARIES = libgpgmepp.la
 
 main_sources = \
@@ -57,3 +59,22 @@ libgpgmepp_la_SOURCES = $(main_sources) $(gpgmepp_headers) context_vanilla.cpp \
 AM_CPPFLAGS = @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ -DBUILDING_GPGMEPP
 
 libgpgmepp_la_LIBADD = ../../../src/libgpgme.la @LIBASSUAN_LIBS@
+
+GpgmeppConfig.cmake: GpgmeppConfig.cmake.in
+	sed -e 's|[@]resolved_libdir@|$(libdir)|g' < "$<" > "$@"
+
+install-cmake-files: GpgmeppConfig.cmake GpgmeppConfigVersion.cmake
+	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/Gpgmepp
+	$(INSTALL) GpgmeppConfig.cmake \
+        $(DESTDIR)$(libdir)/cmake/Gpgmepp/GpgmeppConfig.cmake
+	$(INSTALL) GpgmeppConfigVersion.cmake \
+        $(DESTDIR)$(libdir)/cmake/Gpgmepp/GpgmeppConfigVersion.cmake
+
+uninstall-cmake-files:
+	-rm $(DESTDIR)$(libdir)/cmake/Gpgmepp/GpgmeppConfigVersion.cmake
+	-rm $(DESTDIR)$(libdir)/cmake/Gpgmepp/GpgmeppConfig.cmake
+	-rmdir $(DESTDIR)$(libdir)/cmake/Gpgmepp/
+
+install-data-local: install-cmake-files
+
+uninstall-local: uninstall-cmake-files

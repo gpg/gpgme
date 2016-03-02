@@ -61,6 +61,10 @@ LIBGPGME_LT_CURRENT=25
 LIBGPGME_LT_AGE=14
 LIBGPGME_LT_REVISION=0
 
+LIBGPGMEPP_LT_CURRENT=3
+LIBGPGMEPP_LT_AGE=0
+LIBGPGMEPP_LT_REVISION=0
+
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
 ##############################################
@@ -104,6 +108,9 @@ AC_CHECK_PROGS(GITLOG_TO_CHANGELOG, gitlog-to-changelog, [gitlog-to-changelog])
 AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
 AC_SUBST(LIBGPGME_LT_REVISION)
+AC_SUBST(LIBGPGMEPP_LT_CURRENT)
+AC_SUBST(LIBGPGMEPP_LT_AGE)
+AC_SUBST(LIBGPGMEPP_LT_REVISION)
 
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
@@ -653,6 +660,8 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 src/gpgme.h)
 AC_CONFIG_FILES(src/gpgme-config, chmod +x src/gpgme-config)
 AC_CONFIG_FILES(lang/cpp/Makefile lang/cpp/src/Makefile)
+AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfig.cmake.in)
+AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfigVersion.cmake)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AC_OUTPUT
 
