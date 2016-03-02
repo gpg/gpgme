@@ -7,17 +7,29 @@
 #  define GPGMEPP_NO_EXPORT
 #else
 #  ifndef GPGMEPP_EXPORT
-#    ifdef KF5Gpgmepp_EXPORTS
+#    ifdef BUILDING_GPGMEPP
         /* We are building this library */
-#      define GPGMEPP_EXPORT __attribute__((visibility("default")))
+#      ifdef WIN32
+#       define GPGMEPP_EXPORT __declspec(dllexport)
+#      else
+#       define GPGMEPP_EXPORT __attribute__((visibility("default")))
+#      endif
 #    else
         /* We are using this library */
-#      define GPGMEPP_EXPORT __attribute__((visibility("default")))
+#      ifdef WIN32
+#       define GPGMEPP_EXPORT __declspec(dllimport)
+#      else
+#       define GPGMEPP_EXPORT __attribute__((visibility("default")))
+#      endif
 #    endif
 #  endif
 
 #  ifndef GPGMEPP_NO_EXPORT
-#    define GPGMEPP_NO_EXPORT __attribute__((visibility("hidden")))
+#    ifdef WIN32
+#     define GPGMEPP_NO_EXPORT
+#    else
+#     define GPGMEPP_NO_EXPORT __attribute__((visibility("hidden")))
+#    endif
 #  endif
 #endif
 
