@@ -180,20 +180,9 @@ case "${host}" in
 	AC_ARG_ENABLE(w32-glib,
 	    AC_HELP_STRING([--enable-w32-glib], [build GPGME Glib for W32]),
 	    		   build_w32_glib=$enableval)
-
-	# Check disabled, because the qt-dev packages in gpg4win do
-	# not provide any support for cross compilation.
-	# PKG_CHECK_MODULES(QT4_CORE, QtCore)
-
-	# Use it like this:
-	# ./configure --enable-w32-qt QT4_CORE_CFLAGS="..." QT4_CORE_LIBS="..."
-	AC_SUBST(QT4_CORE_CFLAGS)
-	AC_SUBST(QT4_CORE_LIBS)
-	AC_ARG_ENABLE(w32-qt,
-	    AC_HELP_STRING([--enable-w32-qt], [build GPGME Qt for W32]),
-	    		   build_w32_qt=$enableval)
-        ;;
+       ;;
     *)
+
 	AC_CHECK_LIB(pthread,pthread_create,have_pthread=yes)
 	if test "$have_pthread" = yes; then
 	  AC_DEFINE(HAVE_PTHREAD, ,[Define if we have pthread.])
@@ -239,7 +228,6 @@ fi
 AM_CONDITIONAL(HAVE_ANDROID_SYSTEM, test "$have_android_system" = yes)
 
 AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
-AM_CONDITIONAL(BUILD_W32_QT, test "$build_w32_qt" = yes)
 
 AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 
