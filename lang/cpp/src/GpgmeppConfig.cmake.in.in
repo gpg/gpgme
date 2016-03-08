@@ -68,8 +68,8 @@ get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 add_library(Gpgmepp SHARED IMPORTED)
 
 set_target_properties(Gpgmepp PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include/gpgme++"
-  INTERFACE_LINK_LIBRARIES "@resolved_libdir@/libgpgme@libsuffix@;@LIBASSUAN_LIBS@;@GPG_ERROR_LIBS@"
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include/gpgme++"
+  INTERFACE_LINK_LIBRARIES "pthread;@resolved_libdir@/libgpgme@libsuffix@;@LIBASSUAN_LIBS@"
   IMPORTED_LOCATION "@resolved_libdir@/libgpgmepp@libsuffix@"
 )
 
