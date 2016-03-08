@@ -1,7 +1,7 @@
-# CMake Config file for GPGMEPP.
+# CMake Config file for QGPGME.
 # Copyright (C) 2016 Intevation GmbH
 #
-# This file is part of GPGMEPP.
+# This file is part of GPGME.
 #
 # GPGME-CL is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_targetsDefined)
 set(_targetsNotDefined)
 set(_expectedTargets)
-foreach(_expectedTarget KF5::Gpgmepp Gpgmepp)
+foreach(_expectedTarget QGpgme KF5::QGpgme)
   list(APPEND _expectedTargets ${_expectedTarget})
   if(NOT TARGET ${_expectedTarget})
     list(APPEND _targetsNotDefined ${_expectedTarget})
@@ -64,13 +64,13 @@ get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 
-# Create imported target Gpgmepp
-add_library(Gpgmepp SHARED IMPORTED)
+# Create imported target QGpgme
+add_library(QGpgme SHARED IMPORTED)
 
-set_target_properties(Gpgmepp PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include/gpgme++"
-  INTERFACE_LINK_LIBRARIES "@resolved_libdir@/libgpgme@libsuffix@;@LIBASSUAN_LIBS@;@GPG_ERROR_LIBS@"
-  IMPORTED_LOCATION "@resolved_libdir@/libgpgmepp@libsuffix@"
+set_target_properties(QGpgme PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include/qgpgme"
+  INTERFACE_LINK_LIBRARIES "Gpgmepp;Qt5::Core"
+  IMPORTED_LOCATION "@resolved_libdir@/libqgpgme@libsuffix@"
 )
 
 if(CMAKE_VERSION VERSION_LESS 2.8.12)
@@ -99,10 +99,9 @@ but not all the files it references.
 endforeach()
 unset(_IMPORT_CHECK_TARGETS)
 
+# This file does not depend on other imported targets which have
+# been exported from the same project but in a separate export set.
+
 # Commands beyond this point should not need to know the version.
 set(CMAKE_IMPORT_FILE_VERSION)
 cmake_policy(POP)
-
-get_filename_component(QGpgme_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-# Pull in QGpgme for compatibility with KF5 variant.
-find_package(QGpgme CONFIG)

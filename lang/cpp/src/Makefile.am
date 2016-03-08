@@ -62,8 +62,16 @@ libgpgmepp_la_LIBADD = ../../../src/libgpgme.la @LIBASSUAN_LIBS@
 libgpgmepp_la_LDFLAGS = -version-info \
     @LIBGPGMEPP_LT_CURRENT@:@LIBGPGMEPP_LT_REVISION@:@LIBGPGMEPP_LT_AGE@
 
+if HAVE_W32_SYSTEM
+libsuffix=.dll.a
+else
+libsuffix=.so
+endif
+
 GpgmeppConfig.cmake: GpgmeppConfig.cmake.in
 	sed -e 's|[@]resolved_libdir@|$(libdir)|g' < "$<" > "$@"
+	sed -e 's|[@]libsuffix@|$(libsuffix)|g' < "$@" > "$@".2
+	mv "$@".2 "$@"
 
 install-cmake-files: GpgmeppConfig.cmake GpgmeppConfigVersion.cmake
 	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/Gpgmepp

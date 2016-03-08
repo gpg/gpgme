@@ -65,6 +65,10 @@ LIBGPGMEPP_LT_CURRENT=3
 LIBGPGMEPP_LT_AGE=0
 LIBGPGMEPP_LT_REVISION=0
 
+LIBQGPGME_LT_CURRENT=1
+LIBQGPGME_LT_AGE=0
+LIBQGPGME_LT_REVISION=0
+
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
 ##############################################
@@ -111,6 +115,9 @@ AC_SUBST(LIBGPGME_LT_REVISION)
 AC_SUBST(LIBGPGMEPP_LT_CURRENT)
 AC_SUBST(LIBGPGMEPP_LT_AGE)
 AC_SUBST(LIBGPGMEPP_LT_REVISION)
+AC_SUBST(LIBQGPGME_LT_CURRENT)
+AC_SUBST(LIBQGPGME_LT_AGE)
+AC_SUBST(LIBQGPGME_LT_REVISION)
 
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
@@ -153,8 +160,8 @@ have_w32_system=no
 have_w64_system=no
 build_w32_glib=no
 build_w32_qt=no
-available_languages="cpp cl"
-default_languages="cpp cl"
+available_languages="cpp cl qt"
+default_languages="cpp cl qt"
 case "${host}" in
     x86_64-*mingw32*)
         have_w64_system=yes
@@ -259,6 +266,24 @@ for language in $enabled_languages; do
        AC_MSG_ERROR([unsupported language binding specified])
     fi
 done
+# Check that if qt is enabled cpp also is enabled
+LIST_MEMBER("qt", $enabled_languages)
+if test "$found" = "1"; then
+   LIST_MEMBER("cpp", $enabled_languages)
+   if test "$found" = "0"; then
+      AC_MSG_ERROR([qt binding depends on cpp language binding])
+   fi
+   FIND_QT
+   if test "$have_qt5_libs" != "yes"; then
+       AC_MSG_ERROR([[
+   ***
+   *** Qt5 (Qt5Core) is required for qt binding.
+   ***]])
+   fi
+   # Make sure that qt comes after cpp
+   enabled_languages=`echo $enabled_languages | sed 's/qt//'`
+   enabled_languages=`echo $enabled_languages qt`
+fi
 AC_SUBST(ENABLED_LANGUAGES, $enabled_languages)
 
 #
@@ -650,6 +675,9 @@ AC_CONFIG_FILES(src/gpgme-config, chmod +x src/gpgme-config)
 AC_CONFIG_FILES(lang/cpp/Makefile lang/cpp/src/Makefile)
 AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfig.cmake.in)
 AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfigVersion.cmake)
+AC_CONFIG_FILES(lang/qt/Makefile lang/qt/src/Makefile)
+AC_CONFIG_FILES(lang/qt/src/QGpgmeConfig.cmake.in)
+AC_CONFIG_FILES(lang/qt/src/QGpgmeConfigVersion.cmake)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AC_OUTPUT
 
