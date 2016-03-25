@@ -1,0 +1,132 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT gpgme (keylist)>
+<!ATTLIST gpgme
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT keylist (key)+>
+<!ATTLIST keylist
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT key (revoked,expired,disabled,invalid,can-encrypt,can-sign,
+               can-certify,can-authenticate,is-qualified,secret,
+               protocol,issuer,chain-id,owner-trust,subkeys,uids)>
+<!ATTLIST key
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT revoked EMPTY>
+<!ATTLIST revoked
+  xmlns CDATA #FIXED ''
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT expired EMPTY>
+<!ATTLIST expired
+  xmlns CDATA #FIXED ''
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT disabled EMPTY>
+<!ATTLIST disabled
+  xmlns CDATA #FIXED ''
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT invalid EMPTY>
+<!ATTLIST invalid
+  xmlns CDATA #FIXED ''
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT can-encrypt EMPTY>
+<!ATTLIST can-encrypt
+  xmlns CDATA #FIXED ''
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT can-sign EMPTY>
+<!ATTLIST can-sign
+  xmlns CDATA #FIXED ''
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT can-certify EMPTY>
+<!ATTLIST can-certify
+  xmlns CDATA #FIXED ''
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT can-authenticate EMPTY>
+<!ATTLIST can-authenticate
+  xmlns CDATA #FIXED ''
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT is-qualified EMPTY>
+<!ATTLIST is-qualified
+  xmlns CDATA #FIXED ''
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT protocol (#PCDATA)>
+<!ATTLIST protocol
+  xmlns CDATA #FIXED ''
+  value CDATA #REQUIRED>
+
+<!ELEMENT issuer (serial,name)>
+<!ATTLIST issuer
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT chain-id EMPTY>
+<!ATTLIST chain-id
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT owner-trust (#PCDATA)>
+<!ATTLIST owner-trust
+  xmlns CDATA #FIXED ''
+  value CDATA #REQUIRED>
+
+<!ELEMENT subkeys (subkey)+>
+<!ATTLIST subkeys
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT uids (uid)+>
+<!ATTLIST uids
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT serial EMPTY>
+<!ATTLIST serial
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT subkey (keyid,fpr,secret,is_cardkey,curve?)>
+<!ATTLIST subkey
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT keyid (#PCDATA)>
+<!ATTLIST keyid
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT fpr (#PCDATA)>
+<!ATTLIST fpr
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT is_cardkey EMPTY>
+<!ATTLIST is_cardkey
+  xmlns CDATA #FIXED ''
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT curve (#PCDATA)>
+<!ATTLIST curve
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT secret EMPTY>
+<!ATTLIST secret
+  xmlns CDATA #FIXED ''
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT name (#PCDATA)>
+<!ATTLIST name
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT uid (#PCDATA|name|uid|comment|email)*>
+<!ATTLIST uid
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT comment (#PCDATA)>
+<!ATTLIST comment
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT email (#PCDATA)>
+<!ATTLIST email
+  xmlns CDATA #FIXED ''>

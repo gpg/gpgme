@@ -1,0 +1,75 @@
+default namespace = ""
+
+start =
+  element gpgme {
+    element keylist {
+      element key {
+        element revoked {
+          attribute value { xsd:NMTOKEN }
+        },
+        element expired {
+          attribute value { xsd:NMTOKEN }
+        },
+        element disabled {
+          attribute value { xsd:NMTOKEN }
+        },
+        element invalid {
+          attribute value { xsd:NMTOKEN }
+        },
+        element can-encrypt {
+          attribute value { xsd:NMTOKEN }
+        },
+        element can-sign {
+          attribute value { xsd:NMTOKEN }
+        },
+        element can-certify {
+          attribute value { xsd:NMTOKEN }
+        },
+        element can-authenticate {
+          attribute value { xsd:NMTOKEN }
+        },
+        element is-qualified {
+          attribute value { xsd:NMTOKEN }
+        },
+        secret,
+        element protocol {
+          attribute value { xsd:integer },
+          xsd:NCName
+        },
+        element issuer {
+          element serial { empty },
+          name
+        },
+        element chain-id { empty },
+        element owner-trust {
+          attribute value { xsd:integer },
+          xsd:NCName
+        },
+        element subkeys {
+          element subkey {
+            element keyid { xsd:NMTOKEN },
+            element fpr { text },
+            secret,
+            element is_cardkey {
+              attribute value { xsd:NMTOKEN }
+            },
+            element curve { xsd:NCName }?
+          }+
+        },
+        element uids { uid+ }
+      }+
+    }
+  }
+secret =
+  element secret {
+    attribute value { xsd:NMTOKEN }
+  }
+name = element name { text }
+uid =
+  element uid {
+    (text
+     | name
+     | uid
+     | element comment { text }
+     | element email { xsd:anyURI })+
+  }

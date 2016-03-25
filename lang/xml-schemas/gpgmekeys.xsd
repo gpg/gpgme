@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="gpgme">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="keylist"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="keylist">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="key"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="key">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="revoked"/>
+        <xs:element ref="expired"/>
+        <xs:element ref="disabled"/>
+        <xs:element ref="invalid"/>
+        <xs:element ref="can-encrypt"/>
+        <xs:element ref="can-sign"/>
+        <xs:element ref="can-certify"/>
+        <xs:element ref="can-authenticate"/>
+        <xs:element ref="is-qualified"/>
+        <xs:element ref="secret"/>
+        <xs:element ref="protocol"/>
+        <xs:element ref="issuer"/>
+        <xs:element ref="chain-id"/>
+        <xs:element ref="owner-trust"/>
+        <xs:element ref="subkeys"/>
+        <xs:element ref="uids"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="revoked">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="expired">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="disabled">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="invalid">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="can-encrypt">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="can-sign">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="can-certify">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="can-authenticate">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="is-qualified">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="protocol">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:NCName">
+          <xs:attribute name="value" use="required" type="xs:integer"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="issuer">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="serial"/>
+        <xs:element ref="name"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="serial">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="chain-id">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="owner-trust">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:NCName">
+          <xs:attribute name="value" use="required" type="xs:integer"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="subkeys">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="subkey"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="subkey">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="keyid"/>
+        <xs:element ref="fpr"/>
+        <xs:element ref="secret"/>
+        <xs:element ref="is_cardkey"/>
+        <xs:element minOccurs="0" ref="curve"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="keyid" type="xs:NMTOKEN"/>
+  <xs:element name="fpr" type="xs:string"/>
+  <xs:element name="is_cardkey">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="curve" type="xs:NCName"/>
+  <xs:element name="uids">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="uid"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="secret">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="name" type="xs:string"/>
+  <xs:element name="uid">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="name"/>
+        <xs:element ref="uid"/>
+        <xs:element ref="comment"/>
+        <xs:element ref="email"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="comment" type="xs:string"/>
+  <xs:element name="email" type="xs:anyURI"/>
+</xs:schema>

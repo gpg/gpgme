@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar ns="" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <start>
+    <element name="gpgme">
+      <element name="keylist">
+        <oneOrMore>
+          <element name="key">
+            <element name="revoked">
+              <attribute name="value">
+                <data type="NMTOKEN"/>
+              </attribute>
+            </element>
+            <element name="expired">
+              <attribute name="value">
+                <data type="NMTOKEN"/>
+              </attribute>
+            </element>
+            <element name="disabled">
+              <attribute name="value">
+                <data type="NMTOKEN"/>
+              </attribute>
+            </element>
+            <element name="invalid">
+              <attribute name="value">
+                <data type="NMTOKEN"/>
+              </attribute>
+            </element>
+            <element name="can-encrypt">
+              <attribute name="value">
+                <data type="NMTOKEN"/>
+              </attribute>
+            </element>
+            <element name="can-sign">
+              <attribute name="value">
+                <data type="NMTOKEN"/>
+              </attribute>
+            </element>
+            <element name="can-certify">
+              <attribute name="value">
+                <data type="NMTOKEN"/>
+              </attribute>
+            </element>
+            <element name="can-authenticate">
+              <attribute name="value">
+                <data type="NMTOKEN"/>
+              </attribute>
+            </element>
+            <element name="is-qualified">
+              <attribute name="value">
+                <data type="NMTOKEN"/>
+              </attribute>
+            </element>
+            <ref name="secret"/>
+            <element name="protocol">
+              <attribute name="value">
+                <data type="integer"/>
+              </attribute>
+              <data type="NCName"/>
+            </element>
+            <element name="issuer">
+              <element name="serial">
+                <empty/>
+              </element>
+              <ref name="name"/>
+            </element>
+            <element name="chain-id">
+              <empty/>
+            </element>
+            <element name="owner-trust">
+              <attribute name="value">
+                <data type="integer"/>
+              </attribute>
+              <data type="NCName"/>
+            </element>
+            <element name="subkeys">
+              <oneOrMore>
+                <element name="subkey">
+                  <element name="keyid">
+                    <data type="NMTOKEN"/>
+                  </element>
+                  <element name="fpr">
+                    <text/>
+                  </element>
+                  <ref name="secret"/>
+                  <element name="is_cardkey">
+                    <attribute name="value">
+                      <data type="NMTOKEN"/>
+                    </attribute>
+                  </element>
+                  <optional>
+                    <element name="curve">
+                      <data type="NCName"/>
+                    </element>
+                  </optional>
+                </element>
+              </oneOrMore>
+            </element>
+            <element name="uids">
+              <oneOrMore>
+                <ref name="uid"/>
+              </oneOrMore>
+            </element>
+          </element>
+        </oneOrMore>
+      </element>
+    </element>
+  </start>
+  <define name="secret">
+    <element name="secret">
+      <attribute name="value">
+        <data type="NMTOKEN"/>
+      </attribute>
+    </element>
+  </define>
+  <define name="name">
+    <element name="name">
+      <text/>
+    </element>
+  </define>
+  <define name="uid">
+    <element name="uid">
+      <oneOrMore>
+        <choice>
+          <text/>
+          <ref name="name"/>
+          <ref name="uid"/>
+          <element name="comment">
+            <text/>
+          </element>
+          <element name="email">
+            <data type="anyURI"/>
+          </element>
+        </choice>
+      </oneOrMore>
+    </element>
+  </define>
+</grammar>
