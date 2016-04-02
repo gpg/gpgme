@@ -185,7 +185,7 @@ BUILT_SOURCES = $(qgpgme_moc_sources)
 
 CLEANFILES = $(qgpgme_moc_sources)
 
-nodist_qgpgme_SOURCES = $(qgpgme_moc_sources)
+nodist_libqgpgme_la_SOURCES = $(qgpgme_moc_sources)
 
 .h.moc:
 	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
