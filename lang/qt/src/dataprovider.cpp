@@ -1,5 +1,6 @@
 /* dataprovider.cpp
    Copyright (C) 2004 Klar�vdalens Datakonsult AB
+    Copyright (c) 2016 Intevation GmbH
 
    This file is part of QGPGME.
 

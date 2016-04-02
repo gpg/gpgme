@@ -1,5 +1,6 @@
 /* dataprovider.h
    Copyright (C) 2004 Klarälvdalens Datakonsult AB
+    Copyright (c) 2016 Intevation GmbH
 
    This file is part of QGPGME.
 

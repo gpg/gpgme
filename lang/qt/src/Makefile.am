@@ -18,13 +18,128 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA
 lib_LTLIBRARIES = libqgpgme.la
-EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in
+EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
+             gpgme_backend_debug.h
 
 qgpgme_sources = \
-    dataprovider.cpp
+    dataprovider.cpp job.cpp qgpgmeadduseridjob.cpp \
+    qgpgmebackend.cpp qgpgmechangeexpiryjob.cpp qgpgmechangeownertrustjob.cpp \
+    qgpgmechangepasswdjob.cpp qgpgmedecryptjob.cpp \
+    qgpgmedecryptverifyjob.cpp qgpgmedeletejob.cpp qgpgmedownloadjob.cpp \
+    qgpgmeencryptjob.cpp qgpgmeexportjob.cpp qgpgmeimportfromkeyserverjob.cpp \
+    qgpgmeimportjob.cpp qgpgmekeygenerationjob.cpp qgpgmekeylistjob.cpp \
+    qgpgmelistallkeysjob.cpp qgpgmenewcryptoconfig.cpp \
+    qgpgmerefreshkeysjob.cpp \
+    qgpgmesecretkeyexportjob.cpp qgpgmesignencryptjob.cpp \
+    qgpgmesignjob.cpp qgpgmesignkeyjob.cpp qgpgmeverifydetachedjob.cpp \
+    qgpgmeverifyopaquejob.cpp threadedjobmixin.cpp \
+    gpgme_backend_debug.cpp
 
 qgpgme_headers = \
-    dataprovider.h qgpgme_export.h
+    qgpgme_export.h \
+    abstractimportjob.h \
+    adduseridjob.h \
+    changeexpiryjob.h \
+    changeownertrustjob.h \
+    changepasswdjob.h \
+    cryptoconfig.h \
+    dataprovider.h \
+    decryptjob.h \
+    decryptverifyjob.h \
+    deletejob.h \
+    downloadjob.h \
+    encryptjob.h \
+    exportjob.h \
+    hierarchicalkeylistjob.h \
+    importfromkeyserverjob.h \
+    importjob.h \
+    job.h \
+    keygenerationjob.h \
+    keylistjob.h \
+    listallkeysjob.h \
+    multideletejob.h \
+    qgpgmeadduseridjob.h \
+    qgpgmebackend.h \
+    qgpgmechangeexpiryjob.h \
+    qgpgmechangeownertrustjob.h \
+    qgpgmechangepasswdjob.h \
+    qgpgmedecryptjob.h \
+    qgpgmedecryptverifyjob.h \
+    qgpgmedeletejob.h \
+    qgpgmedownloadjob.h \
+    qgpgmeencryptjob.h \
+    qgpgmeexportjob.h \
+    qgpgmeimportfromkeyserverjob.h \
+    qgpgmeimportjob.h \
+    qgpgmekeygenerationjob.h \
+    qgpgmekeylistjob.h \
+    qgpgmelistallkeysjob.h \
+    qgpgmenewcryptoconfig.h \
+    qgpgmerefreshkeysjob.h \
+    qgpgmesecretkeyexportjob.h \
+    qgpgmesignencryptjob.h \
+    qgpgmesignjob.h \
+    qgpgmesignkeyjob.h \
+    qgpgmeverifydetachedjob.h \
+    qgpgmeverifyopaquejob.h \
+    refreshkeysjob.h \
+    signencryptjob.h \
+    signjob.h \
+    signkeyjob.h \
+    specialjob.h \
+    threadedjobmixin.h \
+    verifydetachedjob.h \
+    verifyopaquejob.h
+
+qgpgme_moc_sources = \
+    abstractimportjob.moc \
+    adduseridjob.moc \
+    changeexpiryjob.moc \
+    changeownertrustjob.moc \
+    changepasswdjob.moc \
+    decryptjob.moc \
+    decryptverifyjob.moc \
+    deletejob.moc \
+    downloadjob.moc \
+    encryptjob.moc \
+    exportjob.moc \
+    hierarchicalkeylistjob.moc \
+    importfromkeyserverjob.moc \
+    importjob.moc \
+    job.moc \
+    keygenerationjob.moc \
+    keylistjob.moc \
+    listallkeysjob.moc \
+    multideletejob.moc \
+    qgpgmeadduseridjob.moc \
+    qgpgmechangeexpiryjob.moc \
+    qgpgmechangeownertrustjob.moc \
+    qgpgmechangepasswdjob.moc \
+    qgpgmedecryptjob.moc \
+    qgpgmedecryptverifyjob.moc \
+    qgpgmedeletejob.moc \
+    qgpgmedownloadjob.moc \
+    qgpgmeencryptjob.moc \
+    qgpgmeexportjob.moc \
+    qgpgmeimportfromkeyserverjob.moc \
+    qgpgmeimportjob.moc \
+    qgpgmekeygenerationjob.moc \
+    qgpgmekeylistjob.moc \
+    qgpgmelistallkeysjob.moc \
+    qgpgmerefreshkeysjob.moc \
+    qgpgmesecretkeyexportjob.moc \
+    qgpgmesignencryptjob.moc \
+    qgpgmesignjob.moc \
+    qgpgmesignkeyjob.moc \
+    qgpgmeverifydetachedjob.moc \
+    qgpgmeverifyopaquejob.moc \
+    refreshkeysjob.moc \
+    signencryptjob.moc \
+    signjob.moc \
+    signkeyjob.moc \
+    specialjob.moc \
+    verifydetachedjob.moc \
+    verifyopaquejob.moc
 
 qgpgmeincludedir = $(includedir)/qgpgme
 qgpgmeinclude_HEADERS = $(qgpgme_headers)
@@ -65,3 +180,12 @@ uninstall-cmake-files:
 install-data-local: install-cmake-files
 
 uninstall-local: uninstall-cmake-files
+
+BUILT_SOURCES = $(qgpgme_moc_sources)
+
+CLEANFILES = $(qgpgme_moc_sources)
+
+nodist_qgpgme_SOURCES = $(qgpgme_moc_sources)
+
+.h.moc:
+	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
