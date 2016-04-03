@@ -51,7 +51,7 @@ class QGpgMEVerifyDetachedJob
 #ifdef Q_MOC_RUN
     : public VerifyDetachedJob
 #else
-    : public _detail::ThreadedJobMixin<VerifyDetachedJob, boost::tuple<GpgME::VerificationResult, QString, GpgME::Error> >
+    : public _detail::ThreadedJobMixin<VerifyDetachedJob, std::tuple<GpgME::VerificationResult, QString, GpgME::Error> >
 #endif
 {
     Q_OBJECT
@@ -67,7 +67,7 @@ public:
     GpgME::Error start(const QByteArray &signature, const QByteArray &signedData) Q_DECL_OVERRIDE;
 
     /*! \reimp from VerifyDetachedJob */
-    void start(const boost::shared_ptr<QIODevice> &signature, const boost::shared_ptr<QIODevice> &signedData) Q_DECL_OVERRIDE;
+    void start(const std::shared_ptr<QIODevice> &signature, const std::shared_ptr<QIODevice> &signedData) Q_DECL_OVERRIDE;
 
     /*! \reimp from VerifyDetachedJob */
     GpgME::VerificationResult exec(const QByteArray &signature,

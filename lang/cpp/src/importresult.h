@@ -27,7 +27,7 @@
 #include "result.h"
 #include "gpgmepp_export.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <vector>
 
@@ -83,13 +83,13 @@ public:
     class Private;
 private:
     void init(gpgme_ctx_t ctx);
-    boost::shared_ptr<Private> d;
+    std::shared_ptr<Private> d;
 };
 
 class GPGMEPP_EXPORT Import
 {
     friend class ::GpgME::ImportResult;
-    Import(const boost::shared_ptr<ImportResult::Private> &parent, unsigned int idx);
+    Import(const std::shared_ptr<ImportResult::Private> &parent, unsigned int idx);
 public:
     Import();
 
@@ -122,7 +122,7 @@ public:
     Status status() const;
 
 private:
-    boost::shared_ptr<ImportResult::Private> d;
+    std::shared_ptr<ImportResult::Private> d;
     unsigned int idx;
 };
 

@@ -61,7 +61,7 @@ static QGpgMEKeyGenerationJob::result_type generate_key(Context *ctx, const QStr
     const KeyGenerationResult res = ctx->generateKey(parameters.toUtf8().constData(), data);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
-    return make_tuple(res, dp.data(), log, ae);
+    return std::make_tuple(res, dp.data(), log, ae);
 }
 
 Error QGpgMEKeyGenerationJob::start(const QString &parameters)

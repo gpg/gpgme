@@ -29,9 +29,7 @@
 
 #include "gpgmefw.h"
 
-#include <boost/shared_ptr.hpp>
-#include <boost/type_traits/remove_pointer.hpp>
-
+#include <memory>
 #include <sys/time.h>
 
 #include <vector>
@@ -46,7 +44,7 @@ class Context;
 class Subkey;
 class UserID;
 
-typedef boost::shared_ptr< boost::remove_pointer<gpgme_key_t>::type > shared_gpgme_key_t;
+typedef std::shared_ptr< std::remove_pointer<gpgme_key_t>::type > shared_gpgme_key_t;
 
 //
 // class Key

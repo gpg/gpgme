@@ -56,7 +56,7 @@ class QGpgMEDecryptVerifyJob
 #ifdef Q_MOC_RUN
     : public DecryptVerifyJob
 #else
-    : public _detail::ThreadedJobMixin<DecryptVerifyJob, boost::tuple<GpgME::DecryptionResult, GpgME::VerificationResult, QByteArray, QString, GpgME::Error> >
+    : public _detail::ThreadedJobMixin<DecryptVerifyJob, std::tuple<GpgME::DecryptionResult, GpgME::VerificationResult, QByteArray, QString, GpgME::Error> >
 #endif
 {
     Q_OBJECT
@@ -72,7 +72,7 @@ public:
     GpgME::Error start(const QByteArray &cipherText) Q_DECL_OVERRIDE;
 
     /*! \reimp from DecryptVerifyJob */
-    void start(const boost::shared_ptr<QIODevice> &cipherText, const boost::shared_ptr<QIODevice> &plainText) Q_DECL_OVERRIDE;
+    void start(const std::shared_ptr<QIODevice> &cipherText, const std::shared_ptr<QIODevice> &plainText) Q_DECL_OVERRIDE;
 
     /*! \reimp from DecryptVerifyJob */
     std::pair<GpgME::DecryptionResult, GpgME::VerificationResult>

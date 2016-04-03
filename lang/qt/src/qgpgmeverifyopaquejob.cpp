@@ -57,11 +57,11 @@ QGpgMEVerifyOpaqueJob::QGpgMEVerifyOpaqueJob(Context *context)
 
 QGpgMEVerifyOpaqueJob::~QGpgMEVerifyOpaqueJob() {}
 
-static QGpgMEVerifyOpaqueJob::result_type verify_opaque(Context *ctx, QThread *thread, const weak_ptr<QIODevice> &signedData_, const weak_ptr<QIODevice> &plainText_)
+static QGpgMEVerifyOpaqueJob::result_type verify_opaque(Context *ctx, QThread *thread, const std::weak_ptr<QIODevice> &signedData_, const std::weak_ptr<QIODevice> &plainText_)
 {
 
-    const shared_ptr<QIODevice> plainText = plainText_.lock();
-    const shared_ptr<QIODevice> signedData = signedData_.lock();
+    const std::shared_ptr<QIODevice> plainText = plainText_.lock();
+    const std::shared_ptr<QIODevice> signedData = signedData_.lock();
 
     const _detail::ToThreadMover ptMover(plainText,  thread);
     const _detail::ToThreadMover sdMover(signedData, thread);
@@ -76,7 +76,7 @@ static QGpgMEVerifyOpaqueJob::result_type verify_opaque(Context *ctx, QThread *t
         const VerificationResult res = ctx->verifyOpaqueSignature(indata, outdata);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        return make_tuple(res, out.data(), log, ae);
+        return std::make_tuple(res, out.data(), log, ae);
     } else {
         QGpgME::QIODeviceDataProvider out(plainText);
         Data outdata(&out);
@@ -84,19 +84,19 @@ static QGpgMEVerifyOpaqueJob::result_type verify_opaque(Context *ctx, QThread *t
         const VerificationResult res = ctx->verifyOpaqueSignature(indata, outdata);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        return make_tuple(res, QByteArray(), log, ae);
+        return std::make_tuple(res, QByteArray(), log, ae);
     }
 
 }
 
 static QGpgMEVerifyOpaqueJob::result_type verify_opaque_qba(Context *ctx, const QByteArray &signedData)
 {
-    const shared_ptr<QBuffer> buffer(new QBuffer);
+    const std::shared_ptr<QBuffer> buffer(new QBuffer);
     buffer->setData(signedData);
     if (!buffer->open(QIODevice::ReadOnly)) {
         assert(!"This should never happen: QBuffer::open() failed");
     }
-    return verify_opaque(ctx, 0, buffer, shared_ptr<QIODevice>());
+    return verify_opaque(ctx, 0, buffer, std::shared_ptr<QIODevice>());
 }
 
 Error QGpgMEVerifyOpaqueJob::start(const QByteArray &signedData)
@@ -105,7 +105,7 @@ Error QGpgMEVerifyOpaqueJob::start(const QByteArray &signedData)
     return Error();
 }
 
-void QGpgMEVerifyOpaqueJob::start(const shared_ptr<QIODevice> &signedData, const shared_ptr<QIODevice> &plainText)
+void QGpgMEVerifyOpaqueJob::start(const std::shared_ptr<QIODevice> &signedData, const std::shared_ptr<QIODevice> &plainText)
 {
     run(bind(&verify_opaque, _1, _2, _3, _4), signedData, plainText);
 }

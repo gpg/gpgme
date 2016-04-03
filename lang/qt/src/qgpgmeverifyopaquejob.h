@@ -51,7 +51,7 @@ class QGpgMEVerifyOpaqueJob
 #ifdef Q_MOC_RUN
     : public VerifyOpaqueJob
 #else
-    : public _detail::ThreadedJobMixin<VerifyOpaqueJob, boost::tuple<GpgME::VerificationResult, QByteArray, QString, GpgME::Error> >
+    : public _detail::ThreadedJobMixin<VerifyOpaqueJob, std::tuple<GpgME::VerificationResult, QByteArray, QString, GpgME::Error> >
 #endif
 {
     Q_OBJECT
@@ -67,7 +67,7 @@ public:
     GpgME::Error start(const QByteArray &signedData) Q_DECL_OVERRIDE;
 
     /*! \reimp from VerifyOpaqueJob */
-    void start(const boost::shared_ptr<QIODevice> &signedData, const boost::shared_ptr<QIODevice> &plainText) Q_DECL_OVERRIDE;
+    void start(const std::shared_ptr<QIODevice> &signedData, const std::shared_ptr<QIODevice> &plainText) Q_DECL_OVERRIDE;
 
     /*! \reimp form VerifyOpaqueJob */
     GpgME::VerificationResult exec(const QByteArray &signedData, QByteArray &plainData) Q_DECL_OVERRIDE;

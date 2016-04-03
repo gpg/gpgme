@@ -51,7 +51,7 @@ class QGpgMEImportJob
 #ifdef Q_MOC_RUN
     : public ImportJob
 #else
-    : public _detail::ThreadedJobMixin<ImportJob, boost::tuple<GpgME::ImportResult, QString, GpgME::Error> >
+    : public _detail::ThreadedJobMixin<ImportJob, std::tuple<GpgME::ImportResult, QString, GpgME::Error> >
 #endif
 {
     Q_OBJECT

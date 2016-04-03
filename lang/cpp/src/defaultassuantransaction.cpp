@@ -27,7 +27,6 @@
 #include <sstream>
 
 using namespace GpgME;
-using namespace boost;
 
 DefaultAssuanTransaction::DefaultAssuanTransaction()
     : AssuanTransaction(),

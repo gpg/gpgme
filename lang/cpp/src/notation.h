@@ -27,7 +27,7 @@
 #include "verificationresult.h"
 #include "gpgmepp_export.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <iosfwd>
 
@@ -37,7 +37,7 @@ namespace GpgME
 class GPGMEPP_EXPORT Notation
 {
     friend class ::GpgME::Signature;
-    Notation(const boost::shared_ptr<VerificationResult::Private> &parent, unsigned int sindex, unsigned int nindex);
+    Notation(const std::shared_ptr<VerificationResult::Private> &parent, unsigned int sindex, unsigned int nindex);
 public:
     Notation();
     explicit Notation(gpgme_sig_notation_t nota);
@@ -71,7 +71,7 @@ public:
 
 private:
     class Private;
-    boost::shared_ptr<Private> d;
+    std::shared_ptr<Private> d;
 };
 
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const Notation &nota);

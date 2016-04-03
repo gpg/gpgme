@@ -56,7 +56,7 @@ class QGpgMEEncryptJob
 #ifdef Q_MOC_RUN
     : public EncryptJob
 #else
-    : public _detail::ThreadedJobMixin<EncryptJob, boost::tuple<GpgME::EncryptionResult, QByteArray, QString, GpgME::Error> >
+    : public _detail::ThreadedJobMixin<EncryptJob, std::tuple<GpgME::EncryptionResult, QByteArray, QString, GpgME::Error> >
 #endif
 {
     Q_OBJECT
@@ -74,17 +74,14 @@ public:
 
     /*! \reimp from EncryptJob */
     void start(const std::vector<GpgME::Key> &recipients,
-               const boost::shared_ptr<QIODevice> &plainText,
-               const boost::shared_ptr<QIODevice> &cipherText,
+               const std::shared_ptr<QIODevice> &plainText,
+               const std::shared_ptr<QIODevice> &cipherText,
                bool alwaysTrust) Q_DECL_OVERRIDE;
 
     /*! \reimp from EncryptJob */
     GpgME::EncryptionResult exec(const std::vector<GpgME::Key> &recipients,
                                  const QByteArray &plainText, bool alwaysTrust,
                                  QByteArray &cipherText) Q_DECL_OVERRIDE;
-
-    /*! \reimp from Job */
-    void showErrorDialog(QWidget *parent, const QString &caption) const Q_DECL_OVERRIDE;
 
     /*! \reimp from EncryptJob */
     void setOutputIsBase64Encoded(bool on) Q_DECL_OVERRIDE;

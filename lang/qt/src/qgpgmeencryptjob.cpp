@@ -65,14 +65,14 @@ void QGpgMEEncryptJob::setOutputIsBase64Encoded(bool on)
 
 static QGpgMEEncryptJob::result_type encrypt(Context *ctx, QThread *thread,
         const std::vector<Key> &recipients,
-        const weak_ptr<QIODevice> &plainText_,
-        const weak_ptr<QIODevice> &cipherText_,
+        const std::weak_ptr<QIODevice> &plainText_,
+        const std::weak_ptr<QIODevice> &cipherText_,
         bool alwaysTrust,
         bool outputIsBsse64Encoded)
 {
 
-    const shared_ptr<QIODevice> plainText = plainText_.lock();
-    const shared_ptr<QIODevice> cipherText = cipherText_.lock();
+    const std::shared_ptr<QIODevice> plainText = plainText_.lock();
+    const std::shared_ptr<QIODevice> cipherText = cipherText_.lock();
 
     const _detail::ToThreadMover ctMover(cipherText, thread);
     const _detail::ToThreadMover ptMover(plainText,  thread);
@@ -94,7 +94,7 @@ static QGpgMEEncryptJob::result_type encrypt(Context *ctx, QThread *thread,
         const EncryptionResult res = ctx->encrypt(recipients, indata, outdata, eflags);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        return make_tuple(res, out.data(), log, ae);
+        return std::make_tuple(res, out.data(), log, ae);
     } else {
         QGpgME::QIODeviceDataProvider out(cipherText);
         Data outdata(&out);
@@ -106,19 +106,19 @@ static QGpgMEEncryptJob::result_type encrypt(Context *ctx, QThread *thread,
         const EncryptionResult res = ctx->encrypt(recipients, indata, outdata, eflags);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        return make_tuple(res, QByteArray(), log, ae);
+        return std::make_tuple(res, QByteArray(), log, ae);
     }
 
 }
 
 static QGpgMEEncryptJob::result_type encrypt_qba(Context *ctx, const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust, bool outputIsBsse64Encoded)
 {
-    const shared_ptr<QBuffer> buffer(new QBuffer);
+    const std::shared_ptr<QBuffer> buffer(new QBuffer);
     buffer->setData(plainText);
     if (!buffer->open(QIODevice::ReadOnly)) {
         assert(!"This should never happen: QBuffer::open() failed");
     }
-    return encrypt(ctx, 0, recipients, buffer, shared_ptr<QIODevice>(), alwaysTrust, outputIsBsse64Encoded);
+    return encrypt(ctx, 0, recipients, buffer, std::shared_ptr<QIODevice>(), alwaysTrust, outputIsBsse64Encoded);
 }
 
 Error QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust)
@@ -127,7 +127,7 @@ Error QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const QByteArr
     return Error();
 }
 
-void QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const shared_ptr<QIODevice> &plainText, const shared_ptr<QIODevice> &cipherText, bool alwaysTrust)
+void QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const std::shared_ptr<QIODevice> &plainText, const std::shared_ptr<QIODevice> &cipherText, bool alwaysTrust)
 {
     run(boost::bind(&encrypt,
                     _1, _2,

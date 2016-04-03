@@ -29,7 +29,7 @@
 
 #include <time.h>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <vector>
 #include <iosfwd>
@@ -73,7 +73,7 @@ public:
     class Private;
 private:
     void init(gpgme_ctx_t ctx);
-    boost::shared_ptr<Private> d;
+    std::shared_ptr<Private> d;
 };
 
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const VerificationResult &result);
@@ -81,7 +81,7 @@ GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const VerificationResu
 class GPGMEPP_EXPORT Signature
 {
     friend class ::GpgME::VerificationResult;
-    Signature(const boost::shared_ptr<VerificationResult::Private> &parent, unsigned int index);
+    Signature(const std::shared_ptr<VerificationResult::Private> &parent, unsigned int index);
 public:
     typedef GPGMEPP_DEPRECATED GpgME::Notation Notation;
 
@@ -157,7 +157,7 @@ public:
     std::vector<GpgME::Notation> notations() const;
 
 private:
-    boost::shared_ptr<VerificationResult::Private> d;
+    std::shared_ptr<VerificationResult::Private> d;
     unsigned int idx;
 };
 

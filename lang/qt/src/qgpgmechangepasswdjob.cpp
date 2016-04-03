@@ -68,7 +68,7 @@ static QGpgMEChangePasswdJob::result_type change_passwd(Context *ctx, const Key 
 #endif
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
-    return make_tuple(err, log, ae);
+    return std::make_tuple(err, log, ae);
 }
 
 Error QGpgMEChangePasswdJob::start(const Key &key)

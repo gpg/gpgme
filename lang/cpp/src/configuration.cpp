@@ -32,18 +32,19 @@
 #include <algorithm>
 #include <ostream>
 #include <cstring>
+#include <assert.h>
 
 using namespace GpgME;
 using namespace GpgME::Configuration;
 
-typedef boost::shared_ptr< boost::remove_pointer<gpgme_conf_opt_t>::type > shared_gpgme_conf_opt_t;
-typedef boost::weak_ptr< boost::remove_pointer<gpgme_conf_opt_t>::type > weak_gpgme_conf_opt_t;
+typedef std::shared_ptr< boost::remove_pointer<gpgme_conf_opt_t>::type > shared_gpgme_conf_opt_t;
+typedef std::weak_ptr< boost::remove_pointer<gpgme_conf_opt_t>::type > weak_gpgme_conf_opt_t;
 
-typedef boost::shared_ptr< boost::remove_pointer<gpgme_conf_arg_t>::type > shared_gpgme_conf_arg_t;
-typedef boost::weak_ptr< boost::remove_pointer<gpgme_conf_arg_t>::type > weak_gpgme_conf_arg_t;
+typedef std::shared_ptr< boost::remove_pointer<gpgme_conf_arg_t>::type > shared_gpgme_conf_arg_t;
+typedef std::weak_ptr< boost::remove_pointer<gpgme_conf_arg_t>::type > weak_gpgme_conf_arg_t;
 
-typedef boost::shared_ptr< boost::remove_pointer<gpgme_ctx_t>::type > shared_gpgme_ctx_t;
-typedef boost::weak_ptr< boost::remove_pointer<gpgme_ctx_t>::type > weak_gpgme_ctx_t;
+typedef std::shared_ptr< boost::remove_pointer<gpgme_ctx_t>::type > shared_gpgme_ctx_t;
+typedef std::weak_ptr< boost::remove_pointer<gpgme_ctx_t>::type > weak_gpgme_ctx_t;
 
 namespace
 {

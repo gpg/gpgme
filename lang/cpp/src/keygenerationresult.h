@@ -27,7 +27,7 @@
 #include "result.h"
 #include "gpgmepp_export.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace GpgME
 {
@@ -72,7 +72,7 @@ public:
 private:
     class Private;
     void init(gpgme_ctx_t ctx);
-    boost::shared_ptr<Private> d;
+    std::shared_ptr<Private> d;
 };
 
 }

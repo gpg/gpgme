@@ -27,7 +27,7 @@
 #include "result.h"
 #include "gpgmepp_export.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <vector>
 #include <iosfwd>
@@ -69,7 +69,7 @@ public:
     class Private;
 private:
     void init(gpgme_ctx_t ctx);
-    boost::shared_ptr<Private> d;
+    std::shared_ptr<Private> d;
 };
 
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const EncryptionResult &result);
@@ -77,7 +77,7 @@ GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const EncryptionResult
 class GPGMEPP_EXPORT InvalidRecipient
 {
     friend class ::GpgME::EncryptionResult;
-    InvalidRecipient(const boost::shared_ptr<EncryptionResult::Private> &parent, unsigned int index);
+    InvalidRecipient(const std::shared_ptr<EncryptionResult::Private> &parent, unsigned int index);
 public:
     InvalidRecipient();
 
@@ -99,7 +99,7 @@ public:
     Error reason() const;
 
 private:
-    boost::shared_ptr<EncryptionResult::Private> d;
+    std::shared_ptr<EncryptionResult::Private> d;
     unsigned int idx;
 };
 

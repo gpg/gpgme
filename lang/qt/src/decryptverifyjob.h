@@ -87,7 +87,7 @@ public:
 
       \throws GpgME::Exception if starting fails
     */
-    virtual void start(const boost::shared_ptr<QIODevice> &cipherText, const boost::shared_ptr<QIODevice> &plainText = boost::shared_ptr<QIODevice>()) = 0;
+    virtual void start(const std::shared_ptr<QIODevice> &cipherText, const std::shared_ptr<QIODevice> &plainText = std::shared_ptr<QIODevice>()) = 0;
 
     /** Synchronous equivalent of start() */
     virtual std::pair<GpgME::DecryptionResult, GpgME::VerificationResult>

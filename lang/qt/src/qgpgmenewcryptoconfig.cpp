@@ -109,7 +109,7 @@ void QGpgMENewCryptoConfig::reloadConfiguration(bool showErrors)
     }
 #endif
     BOOST_FOREACH(const Component & c, components) {
-        const shared_ptr<QGpgMENewCryptoConfigComponent> comp(new QGpgMENewCryptoConfigComponent);
+        const std::shared_ptr<QGpgMENewCryptoConfigComponent> comp(new QGpgMENewCryptoConfigComponent);
         comp->setComponent(c);
         m_componentsByName[ comp->name() ] = comp;
     }
@@ -138,7 +138,7 @@ QGpgMENewCryptoConfigComponent *QGpgMENewCryptoConfig::component(const QString &
 
 void QGpgMENewCryptoConfig::sync(bool runtime)
 {
-    BOOST_FOREACH(const shared_ptr<QGpgMENewCryptoConfigComponent> &c, m_componentsByName)
+    BOOST_FOREACH(const std::shared_ptr<QGpgMENewCryptoConfigComponent> &c, m_componentsByName)
     c->sync(runtime);
 }
 
@@ -164,7 +164,7 @@ void QGpgMENewCryptoConfigComponent::setComponent(const Component &component)
     m_component = component;
     m_groupsByName.clear();
 
-    shared_ptr<QGpgMENewCryptoConfigGroup> group;
+    std::shared_ptr<QGpgMENewCryptoConfigGroup> group;
 
     const std::vector<Option> options = m_component.options();
     BOOST_FOREACH(const Option & o, options)
@@ -174,7 +174,7 @@ void QGpgMENewCryptoConfigComponent::setComponent(const Component &component)
         }
         group.reset(new QGpgMENewCryptoConfigGroup(shared_from_this(), o));
     } else if (group) {
-        const shared_ptr<QGpgMENewCryptoConfigEntry> entry(new QGpgMENewCryptoConfigEntry(group, o));
+        const std::shared_ptr<QGpgMENewCryptoConfigEntry> entry(new QGpgMENewCryptoConfigEntry(group, o));
         const QString name = entry->name();
         group->m_entryNames.push_back(name);
         group->m_entriesByName[name] = entry;
@@ -231,7 +231,7 @@ void QGpgMENewCryptoConfigComponent::sync(bool runtime)
 
 ////
 
-QGpgMENewCryptoConfigGroup::QGpgMENewCryptoConfigGroup(const shared_ptr<QGpgMENewCryptoConfigComponent> &comp, const Option &option)
+QGpgMENewCryptoConfigGroup::QGpgMENewCryptoConfigGroup(const std::shared_ptr<QGpgMENewCryptoConfigComponent> &comp, const Option &option)
     : CryptoConfigGroup(),
       m_component(comp),
       m_option(option)
@@ -252,7 +252,7 @@ QString QGpgMENewCryptoConfigGroup::description() const
 
 QString QGpgMENewCryptoConfigGroup::path() const
 {
-    if (const shared_ptr<QGpgMENewCryptoConfigComponent> c = m_component.lock()) {
+    if (const std::shared_ptr<QGpgMENewCryptoConfigComponent> c = m_component.lock()) {
         return c->name() + QLatin1Char('/') + name();
     } else {
         return QString();
@@ -312,7 +312,7 @@ static QGpgME::CryptoConfigEntry::ArgType knownArgType(int argType, bool &ok)
     }
 }
 
-QGpgMENewCryptoConfigEntry::QGpgMENewCryptoConfigEntry(const shared_ptr<QGpgMENewCryptoConfigGroup> &group, const Option &option)
+QGpgMENewCryptoConfigEntry::QGpgMENewCryptoConfigEntry(const std::shared_ptr<QGpgMENewCryptoConfigGroup> &group, const Option &option)
     : m_group(group), m_option(option)
 {
 }
@@ -387,7 +387,7 @@ QString QGpgMENewCryptoConfigEntry::description() const
 
 QString QGpgMENewCryptoConfigEntry::path() const
 {
-    if (const shared_ptr<QGpgMENewCryptoConfigGroup> g = m_group.lock()) {
+    if (const std::shared_ptr<QGpgMENewCryptoConfigGroup> g = m_group.lock()) {
         return g->path() + QLatin1Char('/') + name();
     } else {
         return QString();

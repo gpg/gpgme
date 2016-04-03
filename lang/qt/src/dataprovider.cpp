@@ -144,7 +144,7 @@ void QByteArrayDataProvider::release()
 //
 //
 
-QIODeviceDataProvider::QIODeviceDataProvider(const boost::shared_ptr<QIODevice> &io)
+QIODeviceDataProvider::QIODeviceDataProvider(const std::shared_ptr<QIODevice> &io)
     : GpgME::DataProvider(),
       mIO(io),
       mErrorOccurred(false),
@@ -172,7 +172,7 @@ bool QIODeviceDataProvider::isSupported(Operation op) const
     }
 }
 
-static qint64 blocking_read(const boost::shared_ptr<QIODevice> &io, char *buffer, qint64 maxSize)
+static qint64 blocking_read(const std::shared_ptr<QIODevice> &io, char *buffer, qint64 maxSize)
 {
     while (!io->bytesAvailable()) {
         if (!io->waitForReadyRead(-1)) {

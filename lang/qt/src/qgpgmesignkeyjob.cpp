@@ -74,12 +74,12 @@ static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, cons
 
     if (!signer.isNull())
         if (const Error err = ctx->addSigningKey(signer)) {
-            return make_tuple(err, QString(), Error());
+            return std::make_tuple(err, QString(), Error());
         }
     const Error err = ctx->edit(key, ei, data);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
-    return make_tuple(err, log, ae);
+    return std::make_tuple(err, log, ae);
 }
 
 Error QGpgMESignKeyJob::start(const Key &key)

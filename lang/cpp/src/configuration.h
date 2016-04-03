@@ -28,26 +28,19 @@
 
 #include "gpgmefw.h"
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/type_traits/remove_pointer.hpp>
-#if 0
-#include <boost/variant.hpp>
-#include <boost/optional.hpp>
-#endif
-
 #include <iosfwd>
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <memory>
 
 namespace GpgME
 {
 namespace Configuration
 {
 
-typedef boost::shared_ptr< boost::remove_pointer<gpgme_conf_comp_t>::type > shared_gpgme_conf_comp_t;
-typedef boost::weak_ptr< boost::remove_pointer<gpgme_conf_comp_t>::type > weak_gpgme_conf_comp_t;
+typedef std::shared_ptr< std::remove_pointer<gpgme_conf_comp_t>::type > shared_gpgme_conf_comp_t;
+typedef std::weak_ptr< std::remove_pointer<gpgme_conf_comp_t>::type > weak_gpgme_conf_comp_t;
 
 class Argument;
 class Option;

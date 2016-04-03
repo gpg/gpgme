@@ -26,9 +26,6 @@
 
 #include <gpgme.h>
 
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
-
 #include <map>
 #include <string>
 #include <sstream>
@@ -48,7 +45,6 @@ using std::strcmp;
 #define snprintf _snprintf
 #endif
 
-using namespace boost;
 using namespace GpgME;
 
 class GpgSignKeyEditInteractor::Private
@@ -161,7 +157,7 @@ enum SignKeyState {
     ERROR = EditInteractor::ErrorState
 };
 
-typedef std::map<tuple<SignKeyState, unsigned int, std::string>, SignKeyState> TransitionMap;
+typedef std::map<std::tuple<SignKeyState, unsigned int, std::string>, SignKeyState> TransitionMap;
 
 }
 
@@ -176,7 +172,7 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
     TransitionMap tab;
     const unsigned int GET_BOOL = GPGME_STATUS_GET_BOOL;
     const unsigned int GET_LINE = GPGME_STATUS_GET_LINE;
-#define addEntry( s1, status, str, s2 ) tab[make_tuple( s1, status, str)] = s2
+#define addEntry( s1, status, str, s2 ) tab[std::make_tuple( s1, status, str)] = s2
     addEntry(START, GET_LINE, "keyedit.prompt", COMMAND);
     addEntry(COMMAND, GET_BOOL, "keyedit.sign_all.okay", UIDS_ANSWER_SIGN_ALL);
     addEntry(COMMAND, GET_BOOL, "sign_uid.okay", CONFIRM);
@@ -265,7 +261,7 @@ unsigned int GpgSignKeyEditInteractor::nextState(unsigned int status, const char
     using namespace GpgSignKeyEditInteractor_Private;
 
     //lookup transition in map
-    const TransitionMap::const_iterator it = table.find(boost::make_tuple(static_cast<SignKeyState>(state()), status, std::string(args)));
+    const TransitionMap::const_iterator it = table.find(std::make_tuple(static_cast<SignKeyState>(state()), status, std::string(args)));
     if (it != table.end()) {
         return it->second;
     }

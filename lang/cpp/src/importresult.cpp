@@ -166,7 +166,7 @@ std::vector<GpgME::Import> GpgME::ImportResult::imports() const
     return result;
 }
 
-GpgME::Import::Import(const boost::shared_ptr<ImportResult::Private> &parent, unsigned int i)
+GpgME::Import::Import(const std::shared_ptr<ImportResult::Private> &parent, unsigned int i)
     : d(parent), idx(i)
 {
 

@@ -56,7 +56,7 @@ class QGpgMEListAllKeysJob
 #ifdef Q_MOC_RUN
     : public ListAllKeysJob
 #else
-    : public _detail::ThreadedJobMixin<ListAllKeysJob, boost::tuple<GpgME::KeyListResult, std::vector<GpgME::Key>, std::vector<GpgME::Key>, QString, GpgME::Error> >
+    : public _detail::ThreadedJobMixin<ListAllKeysJob, std::tuple<GpgME::KeyListResult, std::vector<GpgME::Key>, std::vector<GpgME::Key>, QString, GpgME::Error> >
 #endif
 {
     Q_OBJECT

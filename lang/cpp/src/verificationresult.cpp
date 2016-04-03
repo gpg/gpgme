@@ -165,7 +165,7 @@ std::vector<GpgME::Signature> GpgME::VerificationResult::signatures() const
     return result;
 }
 
-GpgME::Signature::Signature(const boost::shared_ptr<VerificationResult::Private> &parent, unsigned int i)
+GpgME::Signature::Signature(const std::shared_ptr<VerificationResult::Private> &parent, unsigned int i)
     : d(parent), idx(i)
 {
 }
@@ -367,7 +367,7 @@ class GpgME::Notation::Private
 {
 public:
     Private() : d(), sidx(0), nidx(0), nota(0) {}
-    Private(const boost::shared_ptr<VerificationResult::Private> &priv, unsigned int sindex, unsigned int nindex)
+    Private(const std::shared_ptr<VerificationResult::Private> &priv, unsigned int sindex, unsigned int nindex)
         : d(priv), sidx(sindex), nidx(nindex), nota(0)
     {
 
@@ -399,12 +399,12 @@ public:
         }
     }
 
-    boost::shared_ptr<VerificationResult::Private> d;
+    std::shared_ptr<VerificationResult::Private> d;
     unsigned int sidx, nidx;
     gpgme_sig_notation_t nota;
 };
 
-GpgME::Notation::Notation(const boost::shared_ptr<VerificationResult::Private> &parent, unsigned int sindex, unsigned int nindex)
+GpgME::Notation::Notation(const std::shared_ptr<VerificationResult::Private> &parent, unsigned int sindex, unsigned int nindex)
     : d(new Private(parent, sindex, nindex))
 {
 

@@ -137,7 +137,7 @@ std::vector<GpgME::InvalidSigningKey> GpgME::SigningResult::invalidSigningKeys()
     return result;
 }
 
-GpgME::InvalidSigningKey::InvalidSigningKey(const boost::shared_ptr<SigningResult::Private> &parent, unsigned int i)
+GpgME::InvalidSigningKey::InvalidSigningKey(const std::shared_ptr<SigningResult::Private> &parent, unsigned int i)
     : d(parent), idx(i)
 {
 
@@ -160,7 +160,7 @@ GpgME::Error GpgME::InvalidSigningKey::reason() const
     return Error(isNull() ? 0 : d->invalid[idx]->reason);
 }
 
-GpgME::CreatedSignature::CreatedSignature(const boost::shared_ptr<SigningResult::Private> &parent, unsigned int i)
+GpgME::CreatedSignature::CreatedSignature(const std::shared_ptr<SigningResult::Private> &parent, unsigned int i)
     : d(parent), idx(i)
 {
 

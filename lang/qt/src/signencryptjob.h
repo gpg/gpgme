@@ -108,8 +108,8 @@ public:
     */
     virtual void start(const std::vector<GpgME::Key> &signers,
                        const std::vector<GpgME::Key> &recipients,
-                       const boost::shared_ptr<QIODevice> &plainText,
-                       const boost::shared_ptr<QIODevice> &cipherText = boost::shared_ptr<QIODevice>(),
+                       const std::shared_ptr<QIODevice> &plainText,
+                       const std::shared_ptr<QIODevice> &cipherText = std::shared_ptr<QIODevice>(),
                        bool alwaysTrust = false) = 0;
 
     virtual std::pair<GpgME::SigningResult, GpgME::EncryptionResult>

@@ -97,8 +97,8 @@ public:
       \throws GpgME::Exception if starting fails
     */
     virtual void start(const std::vector<GpgME::Key> &recipients,
-                       const boost::shared_ptr<QIODevice> &plainText,
-                       const boost::shared_ptr<QIODevice> &cipherText = boost::shared_ptr<QIODevice>(),
+                       const std::shared_ptr<QIODevice> &plainText,
+                       const std::shared_ptr<QIODevice> &cipherText = std::shared_ptr<QIODevice>(),
                        bool alwaysTrust = false) = 0;
 
     virtual GpgME::EncryptionResult exec(const std::vector<GpgME::Key> &recipients,

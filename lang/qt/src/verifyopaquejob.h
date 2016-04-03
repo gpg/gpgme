@@ -87,7 +87,7 @@ public:
 
       \throws GpgME::Exception if starting fails
     */
-    virtual void start(const boost::shared_ptr<QIODevice> &signedData, const boost::shared_ptr<QIODevice> &plainText = boost::shared_ptr<QIODevice>()) = 0;
+    virtual void start(const std::shared_ptr<QIODevice> &signedData, const std::shared_ptr<QIODevice> &plainText = std::shared_ptr<QIODevice>()) = 0;
 
     /** Synchronous version of @ref start */
     virtual GpgME::VerificationResult exec(const QByteArray &signedData, QByteArray &plainText) = 0;

@@ -25,11 +25,10 @@
 
 #include "global.h"
 
-#include <boost/shared_ptr.hpp>
-
 #include <sys/types.h> // for size_t, off_t
 #include <cstdio> // FILE
 #include <algorithm>
+#include <memory>
 
 namespace GpgME
 {
@@ -100,7 +99,7 @@ public:
         return d.get();
     }
 private:
-    boost::shared_ptr<Private> d;
+    std::shared_ptr<Private> d;
 };
 
 }

@@ -98,8 +98,8 @@ public:
       \throws GpgME::Exception if starting fails
     */
     virtual void start(const std::vector<GpgME::Key> &signers,
-                       const boost::shared_ptr<QIODevice> &plainText,
-                       const boost::shared_ptr<QIODevice> &signature,
+                       const std::shared_ptr<QIODevice> &plainText,
+                       const std::shared_ptr<QIODevice> &signature,
                        GpgME::SignatureMode mode) = 0;
 
     virtual GpgME::SigningResult exec(const std::vector<GpgME::Key> &signers,

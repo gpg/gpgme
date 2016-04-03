@@ -62,7 +62,7 @@ class QGpgMENewCryptoConfigEntry;
 class QGpgMENewCryptoConfigEntry : public QGpgME::CryptoConfigEntry
 {
 public:
-    QGpgMENewCryptoConfigEntry(const boost::shared_ptr<QGpgMENewCryptoConfigGroup> &group, const GpgME::Configuration::Option &option);
+    QGpgMENewCryptoConfigEntry(const std::shared_ptr<QGpgMENewCryptoConfigGroup> &group, const GpgME::Configuration::Option &option);
     ~QGpgMENewCryptoConfigEntry();
 
     QString name() const Q_DECL_OVERRIDE;
@@ -106,14 +106,14 @@ protected:
     QString toString(bool escape) const;
 #endif
 private:
-    boost::weak_ptr<QGpgMENewCryptoConfigGroup> m_group;
+    std::weak_ptr<QGpgMENewCryptoConfigGroup> m_group;
     GpgME::Configuration::Option m_option;
 };
 
 class QGpgMENewCryptoConfigGroup : public QGpgME::CryptoConfigGroup
 {
 public:
-    QGpgMENewCryptoConfigGroup(const boost::shared_ptr<QGpgMENewCryptoConfigComponent> &parent, const GpgME::Configuration::Option &option);
+    QGpgMENewCryptoConfigGroup(const std::shared_ptr<QGpgMENewCryptoConfigComponent> &parent, const GpgME::Configuration::Option &option);
     ~QGpgMENewCryptoConfigGroup();
 
     QString name() const Q_DECL_OVERRIDE;
@@ -129,14 +129,14 @@ public:
 
 private:
     friend class QGpgMENewCryptoConfigComponent; // it adds the entries
-    boost::weak_ptr<QGpgMENewCryptoConfigComponent> m_component;
+    std::weak_ptr<QGpgMENewCryptoConfigComponent> m_component;
     GpgME::Configuration::Option m_option;
     QStringList m_entryNames;
-    QHash< QString, boost::shared_ptr<QGpgMENewCryptoConfigEntry> > m_entriesByName;
+    QHash< QString, std::shared_ptr<QGpgMENewCryptoConfigEntry> > m_entriesByName;
 };
 
 /// For docu, see kleo/cryptoconfig.h
-class QGpgMENewCryptoConfigComponent : public QGpgME::CryptoConfigComponent, public boost::enable_shared_from_this<QGpgMENewCryptoConfigComponent>
+class QGpgMENewCryptoConfigComponent : public QGpgME::CryptoConfigComponent, public std::enable_shared_from_this<QGpgMENewCryptoConfigComponent>
 {
 public:
     QGpgMENewCryptoConfigComponent();
@@ -157,7 +157,7 @@ public:
 
 private:
     GpgME::Configuration::Component m_component;
-    QHash< QString, boost::shared_ptr<QGpgMENewCryptoConfigGroup> > m_groupsByName;
+    QHash< QString, std::shared_ptr<QGpgMENewCryptoConfigGroup> > m_groupsByName;
 };
 
 /**
@@ -185,7 +185,7 @@ private:
     void reloadConfiguration(bool showErrors);
 
 private:
-    QHash< QString, boost::shared_ptr<QGpgMENewCryptoConfigComponent> > m_componentsByName;
+    QHash< QString, std::shared_ptr<QGpgMENewCryptoConfigComponent> > m_componentsByName;
     bool m_parsed;
 };
 

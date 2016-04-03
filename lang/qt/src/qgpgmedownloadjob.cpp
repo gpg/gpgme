@@ -40,13 +40,10 @@
 
 #include <QStringList>
 
-#include <boost/weak_ptr.hpp>
-
 #include <cassert>
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEDownloadJob::QGpgMEDownloadJob(Context *context)
     : mixin_type(context)
@@ -66,12 +63,12 @@ static QGpgMEDownloadJob::result_type download_qsl(Context *ctx, const QStringLi
     const Error err = ctx->exportPublicKeys(pc.patterns(), data);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
-    return make_tuple(err, dp.data(), log, ae);
+    return std::make_tuple(err, dp.data(), log, ae);
 }
 
-static QGpgMEDownloadJob::result_type download(Context *ctx, QThread *thread, const QByteArray &fpr, const weak_ptr<QIODevice> &keyData_)
+static QGpgMEDownloadJob::result_type download(Context *ctx, QThread *thread, const QByteArray &fpr, const std::weak_ptr<QIODevice> &keyData_)
 {
-    const shared_ptr<QIODevice> keyData = keyData_.lock();
+    const std::shared_ptr<QIODevice> keyData = keyData_.lock();
     if (!keyData) {
         return download_qsl(ctx, QStringList(QString::fromUtf8(fpr)));
     }
@@ -86,7 +83,7 @@ static QGpgMEDownloadJob::result_type download(Context *ctx, QThread *thread, co
     const Error err = ctx->exportPublicKeys(pc.patterns(), data);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
-    return make_tuple(err, QByteArray(), log, ae);
+    return std::make_tuple(err, QByteArray(), log, ae);
 }
 
 Error QGpgMEDownloadJob::start(const QStringList &pats)
@@ -95,7 +92,7 @@ Error QGpgMEDownloadJob::start(const QStringList &pats)
     return Error();
 }
 
-Error QGpgMEDownloadJob::start(const QByteArray &fpr, const boost::shared_ptr<QIODevice> &keyData)
+Error QGpgMEDownloadJob::start(const QByteArray &fpr, const std::shared_ptr<QIODevice> &keyData)
 {
     run(bind(&download, _1, _2, fpr, _3), keyData);
     return Error();

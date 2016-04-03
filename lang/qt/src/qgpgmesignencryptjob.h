@@ -63,7 +63,7 @@ class QGpgMESignEncryptJob
 #ifdef Q_MOC_RUN
     : public SignEncryptJob
 #else
-    : public _detail::ThreadedJobMixin<SignEncryptJob, boost::tuple<GpgME::SigningResult, GpgME::EncryptionResult, QByteArray, QString, GpgME::Error> >
+    : public _detail::ThreadedJobMixin<SignEncryptJob, std::tuple<GpgME::SigningResult, GpgME::EncryptionResult, QByteArray, QString, GpgME::Error> >
 #endif
 {
     Q_OBJECT
@@ -83,8 +83,8 @@ public:
     /*! \reimp from SignEncryptJob */
     void start(const std::vector<GpgME::Key> &signers,
                const std::vector<GpgME::Key> &recipients,
-               const boost::shared_ptr<QIODevice> &plainText,
-               const boost::shared_ptr<QIODevice> &cipherText,
+               const std::shared_ptr<QIODevice> &plainText,
+               const std::shared_ptr<QIODevice> &cipherText,
                bool alwaysTrust) Q_DECL_OVERRIDE;
 
     std::pair<GpgME::SigningResult, GpgME::EncryptionResult>

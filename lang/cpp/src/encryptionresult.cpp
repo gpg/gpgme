@@ -111,7 +111,7 @@ std::vector<GpgME::InvalidRecipient> GpgME::EncryptionResult::invalidEncryptionK
     return result;
 }
 
-GpgME::InvalidRecipient::InvalidRecipient(const boost::shared_ptr<EncryptionResult::Private> &parent, unsigned int i)
+GpgME::InvalidRecipient::InvalidRecipient(const std::shared_ptr<EncryptionResult::Private> &parent, unsigned int i)
     : d(parent), idx(i)
 {
 

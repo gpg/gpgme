@@ -56,7 +56,7 @@ class QGpgMESignJob
 #ifdef Q_MOC_RUN
     : public SignJob
 #else
-    : public _detail::ThreadedJobMixin<SignJob, boost::tuple<GpgME::SigningResult, QByteArray, QString, GpgME::Error> >
+    : public _detail::ThreadedJobMixin<SignJob, std::tuple<GpgME::SigningResult, QByteArray, QString, GpgME::Error> >
 #endif
 {
     Q_OBJECT
@@ -75,8 +75,8 @@ public:
 
     /*! \reimp from SignJob */
     void start(const std::vector<GpgME::Key> &signers,
-               const boost::shared_ptr<QIODevice> &plainText,
-               const boost::shared_ptr<QIODevice> &signature,
+               const std::shared_ptr<QIODevice> &plainText,
+               const std::shared_ptr<QIODevice> &signature,
                GpgME::SignatureMode mode) Q_DECL_OVERRIDE;
 
     /*! \reimp from SignJob */

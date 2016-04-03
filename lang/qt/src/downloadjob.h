@@ -38,14 +38,11 @@
 
 #include <QtCore/QByteArray>
 
+#include <memory>
+
 namespace GpgME
 {
 class Error;
-}
-
-namespace boost
-{
-template <typename T> class shared_ptr;
 }
 
 class QStringList;
@@ -86,7 +83,7 @@ public:
        passed as the second argument of result().
     */
     virtual GpgME::Error start(const QByteArray &fingerprint,
-                               const boost::shared_ptr<QIODevice> &keyData) = 0;
+                               const std::shared_ptr<QIODevice> &keyData) = 0;
 
     /**
        Starts the download operation. \a fingerprints is a list of

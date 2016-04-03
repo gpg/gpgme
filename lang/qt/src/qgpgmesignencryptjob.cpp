@@ -64,10 +64,10 @@ void QGpgMESignEncryptJob::setOutputIsBase64Encoded(bool on)
     mOutputIsBase64Encoded = on;
 }
 
-static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thread, const std::vector<Key> &signers, const std::vector<Key> &recipients, const weak_ptr<QIODevice> &plainText_, const weak_ptr<QIODevice> &cipherText_, bool alwaysTrust, bool outputIsBsse64Encoded)
+static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thread, const std::vector<Key> &signers, const std::vector<Key> &recipients, const std::weak_ptr<QIODevice> &plainText_, const std::weak_ptr<QIODevice> &cipherText_, bool alwaysTrust, bool outputIsBsse64Encoded)
 {
-    const shared_ptr<QIODevice> &plainText = plainText_.lock();
-    const shared_ptr<QIODevice> &cipherText = cipherText_.lock();
+    const std::shared_ptr<QIODevice> &plainText = plainText_.lock();
+    const std::shared_ptr<QIODevice> &cipherText = cipherText_.lock();
 
     const _detail::ToThreadMover ctMover(cipherText, thread);
     const _detail::ToThreadMover ptMover(plainText, thread);
@@ -82,7 +82,7 @@ static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thr
     Q_FOREACH (const Key &signer, signers)
         if (!signer.isNull())
             if (const Error err = ctx->addSigningKey(signer)) {
-                return make_tuple(SigningResult(err), EncryptionResult(), QByteArray(), QString(), Error());
+                return std::make_tuple(SigningResult(err), EncryptionResult(), QByteArray(), QString(), Error());
             }
 
     if (!cipherText) {
@@ -96,7 +96,7 @@ static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thr
         const std::pair<SigningResult, EncryptionResult> res = ctx->signAndEncrypt(recipients, indata, outdata, eflags);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        return make_tuple(res.first, res.second, out.data(), log, ae);
+        return std::make_tuple(res.first, res.second, out.data(), log, ae);
     } else {
         QGpgME::QIODeviceDataProvider out(cipherText);
         Data outdata(&out);
@@ -108,19 +108,19 @@ static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thr
         const std::pair<SigningResult, EncryptionResult> res = ctx->signAndEncrypt(recipients, indata, outdata, eflags);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        return make_tuple(res.first, res.second, QByteArray(), log, ae);
+        return std::make_tuple(res.first, res.second, QByteArray(), log, ae);
     }
 
 }
 
 static QGpgMESignEncryptJob::result_type sign_encrypt_qba(Context *ctx, const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust, bool outputIsBsse64Encoded)
 {
-    const shared_ptr<QBuffer> buffer(new QBuffer);
+    const std::shared_ptr<QBuffer> buffer(new QBuffer);
     buffer->setData(plainText);
     if (!buffer->open(QIODevice::ReadOnly)) {
         assert(!"This should never happen: QBuffer::open() failed");
     }
-    return sign_encrypt(ctx, 0, signers, recipients, buffer, shared_ptr<QIODevice>(), alwaysTrust, outputIsBsse64Encoded);
+    return sign_encrypt(ctx, 0, signers, recipients, buffer, std::shared_ptr<QIODevice>(), alwaysTrust, outputIsBsse64Encoded);
 }
 
 Error QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust)
@@ -129,7 +129,7 @@ Error QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::ve
     return Error();
 }
 
-void QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vector<Key> &recipients, const shared_ptr<QIODevice> &plainText, const shared_ptr<QIODevice> &cipherText, bool alwaysTrust)
+void QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vector<Key> &recipients, const std::shared_ptr<QIODevice> &plainText, const std::shared_ptr<QIODevice> &cipherText, bool alwaysTrust)
 {
     run(boost::bind(&sign_encrypt, _1, _2, signers, recipients, _3, _4, alwaysTrust, mOutputIsBase64Encoded), plainText, cipherText);
 }

@@ -25,7 +25,7 @@
 
 #include "global.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <algorithm>
 
@@ -60,7 +60,7 @@ public:
 
 private:
     class Private;
-    boost::shared_ptr<Private> d;
+    std::shared_ptr<Private> d;
 };
 
 }

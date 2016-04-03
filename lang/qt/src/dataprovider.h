@@ -72,10 +72,10 @@ private:
 class QGPGME_EXPORT QIODeviceDataProvider : public GpgME::DataProvider
 {
 public:
-    explicit QIODeviceDataProvider(const boost::shared_ptr<QIODevice> &initialData);
+    explicit QIODeviceDataProvider(const std::shared_ptr<QIODevice> &initialData);
     ~QIODeviceDataProvider();
 
-    const boost::shared_ptr<QIODevice> &ioDevice() const
+    const std::shared_ptr<QIODevice> &ioDevice() const
     {
         return mIO;
     }
@@ -95,7 +95,7 @@ private:
     void release();
 
 private:
-    const boost::shared_ptr<QIODevice> mIO;
+    const std::shared_ptr<QIODevice> mIO;
     bool mErrorOccurred : 1;
     bool mHaveQProcess  : 1;
 };

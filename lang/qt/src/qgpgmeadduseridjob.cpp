@@ -72,7 +72,7 @@ static QGpgMEAddUserIDJob::result_type add_user_id(Context *ctx, const Key &key,
     const Error err = ctx->edit(key, ei, data);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
-    return make_tuple(err, log, ae);
+    return std::make_tuple(err, log, ae);
 }
 
 Error QGpgMEAddUserIDJob::start(const Key &key, const QString &name, const QString &email, const QString &comment)

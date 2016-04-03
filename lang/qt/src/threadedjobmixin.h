@@ -86,7 +86,7 @@ class ToThreadMover
 public:
     ToThreadMover(QObject *o, QThread *t) : m_object(o), m_thread(t) {}
     ToThreadMover(QObject &o, QThread *t) : m_object(&o), m_thread(t) {}
-    ToThreadMover(const boost::shared_ptr<QObject> &o, QThread *t) : m_object(o.get()), m_thread(t) {}
+    ToThreadMover(const std::shared_ptr<QObject> &o, QThread *t) : m_object(o.get()), m_thread(t) {}
     ~ToThreadMover()
     {
         if (m_object && m_thread) {
@@ -124,7 +124,7 @@ private:
     T_result m_result;
 };
 
-template <typename T_base, typename T_result = boost::tuple<GpgME::Error, QString, GpgME::Error> >
+template <typename T_base, typename T_result = std::tuple<GpgME::Error, QString, GpgME::Error> >
 class ThreadedJobMixin : public T_base, public GpgME::ProgressProvider
 {
 public:
@@ -132,20 +132,20 @@ public:
     typedef T_result result_type;
 
 protected:
-    BOOST_STATIC_ASSERT((boost::tuples::length<T_result>::value > 2));
+    BOOST_STATIC_ASSERT((std::tuple_size<T_result>::value > 2));
     BOOST_STATIC_ASSERT((
-                            boost::is_same <
-                            typename boost::tuples::element <
-                            boost::tuples::length<T_result>::value - 2,
+                            std::is_same <
+                            typename std::tuple_element <
+                            std::tuple_size<T_result>::value - 2,
                             T_result
                             >::type,
                             QString
                             >::value
                         ));
     BOOST_STATIC_ASSERT((
-                            boost::is_same <
-                            typename boost::tuples::element <
-                            boost::tuples::length<T_result>::value - 1,
+                            std::is_same <
+                            typename std::tuple_element <
+                            std::tuple_size<T_result>::value - 1,
                             T_result
                             >::type,
                             GpgME::Error
@@ -172,7 +172,7 @@ protected:
         m_thread.start();
     }
     template <typename T_binder>
-    void run(const T_binder &func, const boost::shared_ptr<QIODevice> &io)
+    void run(const T_binder &func, const std::shared_ptr<QIODevice> &io)
     {
         if (io) {
             io->moveToThread(&m_thread);
@@ -180,12 +180,12 @@ protected:
         // the arguments passed here to the functor are stored in a QThread, and are not
         // necessarily destroyed (living outside the UI thread) at the time the result signal
         // is emitted and the signal receiver wants to clean up IO devices.
-        // To avoid such races, we pass weak_ptr's to the functor.
-        m_thread.setFunction(boost::bind(func, this->context(), this->thread(), boost::weak_ptr<QIODevice>(io)));
+        // To avoid such races, we pass std::weak_ptr's to the functor.
+        m_thread.setFunction(boost::bind(func, this->context(), this->thread(), std::weak_ptr<QIODevice>(io)));
         m_thread.start();
     }
     template <typename T_binder>
-    void run(const T_binder &func, const boost::shared_ptr<QIODevice> &io1, const boost::shared_ptr<QIODevice> &io2)
+    void run(const T_binder &func, const std::shared_ptr<QIODevice> &io1, const std::shared_ptr<QIODevice> &io2)
     {
         if (io1) {
             io1->moveToThread(&m_thread);
@@ -196,8 +196,8 @@ protected:
         // the arguments passed here to the functor are stored in a QThread, and are not
         // necessarily destroyed (living outside the UI thread) at the time the result signal
         // is emitted and the signal receiver wants to clean up IO devices.
-        // To avoid such races, we pass weak_ptr's to the functor.
-        m_thread.setFunction(boost::bind(func, this->context(), this->thread(), boost::weak_ptr<QIODevice>(io1), boost::weak_ptr<QIODevice>(io2)));
+        // To avoid such races, we pass std::weak_ptr's to the functor.
+        m_thread.setFunction(boost::bind(func, this->context(), this->thread(), std::weak_ptr<QIODevice>(io1), std::weak_ptr<QIODevice>(io2)));
         m_thread.start();
     }
     GpgME::Context *context() const
@@ -210,8 +210,8 @@ protected:
     void slotFinished()
     {
         const T_result r = m_thread.result();
-        m_auditLog = boost::get < boost::tuples::length<T_result>::value - 2 > (r);
-        m_auditLogError = boost::get < boost::tuples::length<T_result>::value - 1 > (r);
+        m_auditLog = std::get < std::tuple_size<T_result>::value - 2 > (r);
+        m_auditLogError = std::get < std::tuple_size<T_result>::value - 1 > (r);
         resultHook(r);
         Q_EMIT this->done();
         doEmitResult(r);
@@ -244,31 +244,31 @@ protected:
     }
 private:
     template <typename T1, typename T2>
-    void doEmitResult(const boost::tuple<T1, T2> &tuple)
+    void doEmitResult(const std::tuple<T1, T2> &tuple)
     {
-        Q_EMIT this->result(boost::get<0>(tuple), boost::get<1>(tuple));
+        Q_EMIT this->result(std::get<0>(tuple), std::get<1>(tuple));
     }
 
     template <typename T1, typename T2, typename T3>
-    void doEmitResult(const boost::tuple<T1, T2, T3> &tuple)
+    void doEmitResult(const std::tuple<T1, T2, T3> &tuple)
     {
-        Q_EMIT this->result(boost::get<0>(tuple), boost::get<1>(tuple), boost::get<2>(tuple));
+        Q_EMIT this->result(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple));
     }
 
     template <typename T1, typename T2, typename T3, typename T4>
-    void doEmitResult(const boost::tuple<T1, T2, T3, T4> &tuple)
+    void doEmitResult(const std::tuple<T1, T2, T3, T4> &tuple)
     {
-        Q_EMIT this->result(boost::get<0>(tuple), boost::get<1>(tuple), boost::get<2>(tuple), boost::get<3>(tuple));
+        Q_EMIT this->result(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple), std::get<3>(tuple));
     }
 
     template <typename T1, typename T2, typename T3, typename T4, typename T5>
-    void doEmitResult(const boost::tuple<T1, T2, T3, T4, T5> &tuple)
+    void doEmitResult(const std::tuple<T1, T2, T3, T4, T5> &tuple)
     {
-        Q_EMIT this->result(boost::get<0>(tuple), boost::get<1>(tuple), boost::get<2>(tuple), boost::get<3>(tuple), boost::get<4>(tuple));
+        Q_EMIT this->result(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple), std::get<3>(tuple), std::get<4>(tuple));
     }
 
 private:
-    boost::shared_ptr<GpgME::Context> m_ctx;
+    std::shared_ptr<GpgME::Context> m_ctx;
     Thread<T_result> m_thread;
     QString m_auditLog;
     GpgME::Error m_auditLogError;

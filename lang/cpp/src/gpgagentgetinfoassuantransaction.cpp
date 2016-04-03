@@ -25,12 +25,11 @@
 #include "data.h"
 #include "util.h"
 
-#include <boost/static_assert.hpp>
+#include <assert.h>
 
 #include <sstream>
 
 using namespace GpgME;
-using namespace boost;
 
 GpgAgentGetInfoAssuanTransaction::GpgAgentGetInfoAssuanTransaction(InfoItem item)
     : AssuanTransaction(),
@@ -86,7 +85,6 @@ static const char *const gpgagent_getinfo_tokens[] = {
     "ssh_socket_name",
     "scd_running",
 };
-BOOST_STATIC_ASSERT((sizeof gpgagent_getinfo_tokens / sizeof * gpgagent_getinfo_tokens == GpgAgentGetInfoAssuanTransaction::LastInfoItem));
 
 void GpgAgentGetInfoAssuanTransaction::makeCommand() const
 {

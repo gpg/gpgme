@@ -41,13 +41,10 @@
 
 #include <QBuffer>
 
-#include <boost/weak_ptr.hpp>
-
 #include <cassert>
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEDecryptJob::QGpgMEDecryptJob(Context *context)
     : mixin_type(context)
@@ -57,11 +54,13 @@ QGpgMEDecryptJob::QGpgMEDecryptJob(Context *context)
 
 QGpgMEDecryptJob::~QGpgMEDecryptJob() {}
 
-static QGpgMEDecryptJob::result_type decrypt(Context *ctx, QThread *thread, const weak_ptr<QIODevice> &cipherText_, const weak_ptr<QIODevice> &plainText_)
+static QGpgMEDecryptJob::result_type decrypt(Context *ctx, QThread *thread,
+                                             const std::weak_ptr<QIODevice> &cipherText_,
+                                             const std::weak_ptr<QIODevice> &plainText_)
 {
 
-    const shared_ptr<QIODevice> cipherText = cipherText_.lock();
-    const shared_ptr<QIODevice> plainText = plainText_.lock();
+    const std::shared_ptr<QIODevice> cipherText = cipherText_.lock();
+    const std::shared_ptr<QIODevice> plainText = plainText_.lock();
 
     const _detail::ToThreadMover ctMover(cipherText, thread);
     const _detail::ToThreadMover ptMover(plainText,  thread);
@@ -76,7 +75,7 @@ static QGpgMEDecryptJob::result_type decrypt(Context *ctx, QThread *thread, cons
         const DecryptionResult res = ctx->decrypt(indata, outdata);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        return make_tuple(res, out.data(), log, ae);
+        return std::make_tuple(res, out.data(), log, ae);
     } else {
         QGpgME::QIODeviceDataProvider out(plainText);
         Data outdata(&out);
@@ -84,19 +83,19 @@ static QGpgMEDecryptJob::result_type decrypt(Context *ctx, QThread *thread, cons
         const DecryptionResult res = ctx->decrypt(indata, outdata);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        return make_tuple(res, QByteArray(), log, ae);
+        return std::make_tuple(res, QByteArray(), log, ae);
     }
 
 }
 
 static QGpgMEDecryptJob::result_type decrypt_qba(Context *ctx, const QByteArray &cipherText)
 {
-    const shared_ptr<QBuffer> buffer(new QBuffer);
+    const std::shared_ptr<QBuffer> buffer(new QBuffer);
     buffer->setData(cipherText);
     if (!buffer->open(QIODevice::ReadOnly)) {
         assert(!"This should never happen: QBuffer::open() failed");
     }
-    return decrypt(ctx, 0, buffer, shared_ptr<QIODevice>());
+    return decrypt(ctx, 0, buffer, std::shared_ptr<QIODevice>());
 }
 
 Error QGpgMEDecryptJob::start(const QByteArray &cipherText)
@@ -105,7 +104,7 @@ Error QGpgMEDecryptJob::start(const QByteArray &cipherText)
     return Error();
 }
 
-void QGpgMEDecryptJob::start(const shared_ptr<QIODevice> &cipherText, const shared_ptr<QIODevice> &plainText)
+void QGpgMEDecryptJob::start(const std::shared_ptr<QIODevice> &cipherText, const std::shared_ptr<QIODevice> &plainText)
 {
     run(bind(&decrypt, _1, _2, _3, _4), cipherText, plainText);
 }
@@ -114,7 +113,7 @@ GpgME::DecryptionResult QGpgME::QGpgMEDecryptJob::exec(const QByteArray &cipherT
         QByteArray &plainText)
 {
     const result_type r = decrypt_qba(context(), cipherText);
-    plainText = get<1>(r);
+    plainText = std::get<1>(r);
     resultHook(r);
     return mResult;
 }
@@ -123,7 +122,7 @@ GpgME::DecryptionResult QGpgME::QGpgMEDecryptJob::exec(const QByteArray &cipherT
 
 void QGpgMEDecryptJob::resultHook(const result_type &tuple)
 {
-    mResult = get<0>(tuple);
+    mResult = std::get<0>(tuple);
 }
 
 #include "qgpgmedecryptjob.moc"

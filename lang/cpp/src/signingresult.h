@@ -28,7 +28,7 @@
 
 #include <time.h>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <vector>
 #include <iosfwd>
@@ -72,7 +72,7 @@ public:
     class Private;
 private:
     void init(gpgme_ctx_t ctx);
-    boost::shared_ptr<Private> d;
+    std::shared_ptr<Private> d;
 };
 
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const SigningResult &result);
@@ -80,7 +80,7 @@ GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const SigningResult &r
 class GPGMEPP_EXPORT InvalidSigningKey
 {
     friend class ::GpgME::SigningResult;
-    InvalidSigningKey(const boost::shared_ptr<SigningResult::Private> &parent, unsigned int index);
+    InvalidSigningKey(const std::shared_ptr<SigningResult::Private> &parent, unsigned int index);
 public:
     InvalidSigningKey();
 
@@ -103,7 +103,7 @@ public:
     Error reason() const;
 
 private:
-    boost::shared_ptr<SigningResult::Private> d;
+    std::shared_ptr<SigningResult::Private> d;
     unsigned int idx;
 };
 
@@ -112,7 +112,7 @@ GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const InvalidSigningKe
 class GPGMEPP_EXPORT CreatedSignature
 {
     friend class ::GpgME::SigningResult;
-    CreatedSignature(const boost::shared_ptr<SigningResult::Private> &parent, unsigned int index);
+    CreatedSignature(const std::shared_ptr<SigningResult::Private> &parent, unsigned int index);
 public:
 
     CreatedSignature();
@@ -147,7 +147,7 @@ public:
     unsigned int signatureClass() const;
 
 private:
-    boost::shared_ptr<SigningResult::Private> d;
+    std::shared_ptr<SigningResult::Private> d;
     unsigned int idx;
 };
 

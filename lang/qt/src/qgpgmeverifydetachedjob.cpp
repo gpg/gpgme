@@ -55,10 +55,10 @@ QGpgMEVerifyDetachedJob::QGpgMEVerifyDetachedJob(Context *context)
 
 QGpgMEVerifyDetachedJob::~QGpgMEVerifyDetachedJob() {}
 
-static QGpgMEVerifyDetachedJob::result_type verify_detached(Context *ctx, QThread *thread, const weak_ptr<QIODevice> &signature_, const weak_ptr<QIODevice> &signedData_)
+static QGpgMEVerifyDetachedJob::result_type verify_detached(Context *ctx, QThread *thread, const std::weak_ptr<QIODevice> &signature_, const std::weak_ptr<QIODevice> &signedData_)
 {
-    const shared_ptr<QIODevice> signature = signature_.lock();
-    const shared_ptr<QIODevice> signedData = signedData_.lock();
+    const std::shared_ptr<QIODevice> signature = signature_.lock();
+    const std::shared_ptr<QIODevice> signedData = signedData_.lock();
 
     const _detail::ToThreadMover sgMover(signature,  thread);
     const _detail::ToThreadMover sdMover(signedData, thread);
@@ -73,7 +73,7 @@ static QGpgMEVerifyDetachedJob::result_type verify_detached(Context *ctx, QThrea
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
 
-    return make_tuple(res, log, ae);
+    return std::make_tuple(res, log, ae);
 }
 
 static QGpgMEVerifyDetachedJob::result_type verify_detached_qba(Context *ctx, const QByteArray &signature, const QByteArray &signedData)
@@ -88,7 +88,7 @@ static QGpgMEVerifyDetachedJob::result_type verify_detached_qba(Context *ctx, co
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
 
-    return make_tuple(res, log, ae);
+    return std::make_tuple(res, log, ae);
 
 }
 
@@ -98,7 +98,7 @@ Error QGpgMEVerifyDetachedJob::start(const QByteArray &signature, const QByteArr
     return Error();
 }
 
-void QGpgMEVerifyDetachedJob::start(const shared_ptr<QIODevice> &signature, const shared_ptr<QIODevice> &signedData)
+void QGpgMEVerifyDetachedJob::start(const std::shared_ptr<QIODevice> &signature, const std::shared_ptr<QIODevice> &signedData)
 {
     run(bind(&verify_detached, _1, _2, _3, _4), signature, signedData);
 }

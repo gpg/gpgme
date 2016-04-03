@@ -58,7 +58,7 @@ static QGpgMEImportFromKeyserverJob::result_type importfromkeyserver(Context *ct
     const ImportResult res = ctx->importKeys(keys);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
-    return make_tuple(res, log, ae);
+    return std::make_tuple(res, log, ae);
 }
 
 Error QGpgMEImportFromKeyserverJob::start(const std::vector<Key> &keys)

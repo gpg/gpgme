@@ -56,7 +56,7 @@ class QGpgMEKeyListJob
 #ifdef Q_MOC_RUN
     : public KeyListJob
 #else
-    : public _detail::ThreadedJobMixin<KeyListJob, boost::tuple<GpgME::KeyListResult, std::vector<GpgME::Key>, QString, GpgME::Error> >
+    : public _detail::ThreadedJobMixin<KeyListJob, std::tuple<GpgME::KeyListResult, std::vector<GpgME::Key>, QString, GpgME::Error> >
 #endif
 {
     Q_OBJECT
@@ -73,9 +73,6 @@ public:
 
     /*! \reimp from KeyListJob */
     GpgME::KeyListResult exec(const QStringList &patterns, bool secretOnly, std::vector<GpgME::Key> &keys) Q_DECL_OVERRIDE;
-
-    /*! \reimp from Job */
-    void showErrorDialog(QWidget *parent, const QString &caption) const Q_DECL_OVERRIDE;
 
     /*! \reimp from ThreadedJobMixin */
     void resultHook(const result_type &result) Q_DECL_OVERRIDE;

@@ -45,7 +45,7 @@ class QGpgMEDownloadJob
 #ifdef Q_MOC_RUN
     : public DownloadJob
 #else
-    : public _detail::ThreadedJobMixin<DownloadJob, boost::tuple<GpgME::Error, QByteArray, QString, GpgME::Error> >
+    : public _detail::ThreadedJobMixin<DownloadJob, std::tuple<GpgME::Error, QByteArray, QString, GpgME::Error> >
 #endif
 {
     Q_OBJECT
@@ -61,7 +61,7 @@ public:
     GpgME::Error start(const QStringList &fingerprints) Q_DECL_OVERRIDE;
 
     /*! \reimp from DownloadJob */
-    GpgME::Error start(const QByteArray &fingerprint, const boost::shared_ptr<QIODevice> &keyData) Q_DECL_OVERRIDE;
+    GpgME::Error start(const QByteArray &fingerprint, const std::shared_ptr<QIODevice> &keyData) Q_DECL_OVERRIDE;
 };
 
 }
