@@ -266,6 +266,12 @@ for language in $enabled_languages; do
        AC_MSG_ERROR([unsupported language binding specified])
     fi
 done
+# Enable C++ 11 if cpp language is requested
+LIST_MEMBER("cpp", $enabled_languages)
+if test "$found" = "1"; then
+    AX_CXX_COMPILE_STDCXX(11, noext, optional)
+fi
+
 # Check that if qt is enabled cpp also is enabled
 LIST_MEMBER("qt", $enabled_languages)
 if test "$found" = "1"; then
