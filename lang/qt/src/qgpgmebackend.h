@@ -72,6 +72,20 @@ namespace QGpgME
 class CryptoConfig;
 class Protocol;
 
+/** Obtain a reference to the OpenPGP Protocol.
+ *
+ * The reference is to a static object.
+ * @returns Refrence to the OpenPGP Protocol.
+ */
+Protocol *openpgp();
+
+/** Obtain a reference to the smime Protocol.
+ *
+ * The reference is to a static object.
+ * @returns Refrence to the smime Protocol.
+ */
+Protocol *smime();
+
 class QGpgMEBackend
 {
 public:

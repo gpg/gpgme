@@ -14,8 +14,7 @@ private Q_SLOTS:
 
     void testSingleKeyListSync()
     {
-        QGpgMEBackend backend;
-        KeyListJob *job = backend.openpgp()->keyListJob(false, false, false);
+        KeyListJob *job = openpgp()->keyListJob(false, false, false);
         std::vector<GpgME::Key> keys;
         GpgME::KeyListResult result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),
                                                 false, keys);

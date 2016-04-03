@@ -507,3 +507,21 @@ const char *QGpgME::QGpgMEBackend::enumerateProtocols(int i) const
     default: return 0;
     }
 }
+
+static QGpgME::QGpgMEBackend *gpgmeBackend;
+
+QGpgME::Protocol *QGpgME::openpgp()
+{
+    if (!gpgmeBackend) {
+        gpgmeBackend = new QGpgME::QGpgMEBackend();
+    }
+    return gpgmeBackend->openpgp();
+}
+
+QGpgME::Protocol *QGpgME::smime()
+{
+    if (!gpgmeBackend) {
+        gpgmeBackend = new QGpgME::QGpgMEBackend();
+    }
+    return gpgmeBackend->smime();
+}
