@@ -18,6 +18,11 @@ AC_DEFUN([FIND_QT],
                     [have_qt5_libs="yes"],
                     [have_qt5_libs="no"])
 
+  PKG_CHECK_MODULES(GPGME_QTTEST,
+                    Qt5Test >= 5.0.0,
+                    [have_qt5test_libs="yes"],
+                    [have_qt5test_libs="no"])
+
   if "$PKG_CONFIG" --variable qt_config Qt5Core | grep -q "reduce_relocations"; then
     GPGME_QT_CFLAGS="$GPGME_QT_CFLAGS -fpic"
   fi

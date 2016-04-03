@@ -678,6 +678,7 @@ AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfigVersion.cmake)
 AC_CONFIG_FILES(lang/qt/Makefile lang/qt/src/Makefile)
 AC_CONFIG_FILES(lang/qt/src/QGpgmeConfig.cmake.in)
 AC_CONFIG_FILES(lang/qt/src/QGpgmeConfigVersion.cmake)
+AC_CONFIG_FILES(lang/qt/tests/Makefile)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AC_OUTPUT
 
