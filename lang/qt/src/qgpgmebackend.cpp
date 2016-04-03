@@ -33,7 +33,6 @@
 
 #include "qgpgmebackend.h"
 
-#include "qgpgmecryptoconfig.h"
 #include "qgpgmenewcryptoconfig.h"
 
 #include "qgpgmekeygenerationjob.h"
@@ -408,14 +407,9 @@ QString QGpgME::QGpgMEBackend::displayName() const
 QGpgME::CryptoConfig *QGpgME::QGpgMEBackend::config() const
 {
     if (!mCryptoConfig) {
-#ifdef _WIN32_WCE // for now...
         if (GpgME::hasFeature(GpgME::GpgConfEngineFeature, 0)) {
             mCryptoConfig = new QGpgMENewCryptoConfig;
-        } else
-#endif
-            if (!QGpgMECryptoConfig::gpgConfPath().isEmpty()) {
-                mCryptoConfig = new QGpgMECryptoConfig();
-            }
+        }
     }
     return mCryptoConfig;
 }
