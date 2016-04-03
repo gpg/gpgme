@@ -139,11 +139,11 @@ public:
     virtual SignEncryptJob       *signEncryptJob(bool armor = false, bool textMode = false) const = 0;
     virtual DecryptVerifyJob     *decryptVerifyJob(bool textmode = false) const = 0;
     virtual RefreshKeysJob       *refreshKeysJob() const = 0;
-    virtual ChangeExpiryJob      *changeExpiryJob() const;
-    virtual ChangeOwnerTrustJob *changeOwnerTrustJob() const;
-    virtual ChangePasswdJob      *changePasswdJob() const;
-    virtual SignKeyJob           *signKeyJob() const;
-    virtual AddUserIDJob         *addUserIDJob() const;
+    virtual ChangeExpiryJob      *changeExpiryJob() const = 0;
+    virtual SignKeyJob           *signKeyJob() const = 0;
+    virtual ChangePasswdJob      *changePasswdJob() const = 0;
+    virtual ChangeOwnerTrustJob  *changeOwnerTrustJob() const = 0;
+    virtual AddUserIDJob         *addUserIDJob() const = 0;
     virtual SpecialJob           *specialJob(const char *type, const QMap<QString, QVariant> &args) const = 0;
 };
 
