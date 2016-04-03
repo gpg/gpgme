@@ -74,3 +74,4 @@ Error QGpgMEExportJob::start(const QStringList &patterns)
     run(bind(&export_qba, _1, patterns));
     return Error();
 }
+#include "qgpgmeexportjob.moc"

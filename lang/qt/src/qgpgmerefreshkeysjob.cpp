@@ -222,3 +222,4 @@ void QGpgME::QGpgMERefreshKeysJob::slotProcessExited(int exitCode, QProcess::Exi
     Q_EMIT result(mError);
     deleteLater();
 }
+#include "qgpgmerefreshkeysjob.moc"

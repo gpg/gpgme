@@ -69,3 +69,4 @@ Error QGpgMEKeyGenerationJob::start(const QString &parameters)
     run(bind(&generate_key, _1, parameters));
     return Error();
 }
+#include "qgpgmekeygenerationjob.moc"

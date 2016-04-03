@@ -100,3 +100,4 @@ Error QGpgMEDownloadJob::start(const QByteArray &fpr, const boost::shared_ptr<QI
     run(bind(&download, _1, _2, fpr, _3), keyData);
     return Error();
 }
+#include "qgpgmedownloadjob.moc"

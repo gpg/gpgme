@@ -162,3 +162,4 @@ void QGpgMESignJob::showErrorDialog(QWidget *parent, const QString &caption) con
     }
 }
 #endif
+#include "qgpgmesignjob.moc"

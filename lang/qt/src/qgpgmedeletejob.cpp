@@ -63,3 +63,4 @@ Error QGpgMEDeleteJob::start(const Key &key, bool allowSecretKeyDeletion)
     run(bind(&delete_key, _1, key, allowSecretKeyDeletion));
     return Error();
 }
+#include "qgpgmedeletejob.moc"

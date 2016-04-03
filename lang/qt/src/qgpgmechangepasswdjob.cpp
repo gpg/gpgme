@@ -76,3 +76,5 @@ Error QGpgMEChangePasswdJob::start(const Key &key)
     run(bind(&change_passwd, _1, key));
     return Error();
 }
+
+#include "qgpgmechangepasswdjob.moc"

@@ -79,3 +79,4 @@ Error QGpgMEChangeExpiryJob::start(const Key &key, const QDateTime &expiry)
     run(bind(&change_expiry, _1, key, expiry));
     return Error();
 }
+#include "qgpgmechangeexpiryjob.moc"

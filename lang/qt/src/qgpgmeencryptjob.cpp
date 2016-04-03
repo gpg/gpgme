@@ -159,3 +159,4 @@ void QGpgMEEncryptJob::showErrorDialog(QWidget *parent, const QString &caption) 
     }
 }
 #endif
+#include "qgpgmeencryptjob.moc"

@@ -124,3 +124,4 @@ void QGpgME::QGpgMEVerifyOpaqueJob::resultHook(const result_type &tuple)
 {
     mResult = get<0>(tuple);
 }
+#include "qgpgmeverifyopaquejob.moc"

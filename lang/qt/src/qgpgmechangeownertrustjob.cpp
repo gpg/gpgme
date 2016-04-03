@@ -75,3 +75,4 @@ Error QGpgMEChangeOwnerTrustJob::start(const Key &key, Key::OwnerTrust trust)
     run(bind(&change_ownertrust, _1, key, trust));
     return Error();
 }
+#include "qgpgmechangeownertrustjob.moc"

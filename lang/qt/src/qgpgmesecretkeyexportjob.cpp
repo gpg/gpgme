@@ -139,3 +139,4 @@ void QGpgME::QGpgMESecretKeyExportJob::slotProcessExited(int exitCode, QProcess:
     Q_EMIT result(mError, mKeyData);
     deleteLater();
 }
+#include "qgpgmesecretkeyexportjob.moc"
