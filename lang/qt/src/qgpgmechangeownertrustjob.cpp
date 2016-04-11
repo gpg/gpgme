@@ -45,7 +45,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEChangeOwnerTrustJob::QGpgMEChangeOwnerTrustJob(Context *context)
     : mixin_type(context)
@@ -72,7 +71,7 @@ static QGpgMEChangeOwnerTrustJob::result_type change_ownertrust(Context *ctx, co
 
 Error QGpgMEChangeOwnerTrustJob::start(const Key &key, Key::OwnerTrust trust)
 {
-    run(bind(&change_ownertrust, _1, key, trust));
+    run(std::bind(&change_ownertrust, std::placeholders::_1, key, trust));
     return Error();
 }
 #include "qgpgmechangeownertrustjob.moc"

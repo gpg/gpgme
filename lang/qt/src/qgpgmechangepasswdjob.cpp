@@ -44,7 +44,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEChangePasswdJob::QGpgMEChangePasswdJob(Context *context)
     : mixin_type(context)
@@ -73,7 +72,7 @@ static QGpgMEChangePasswdJob::result_type change_passwd(Context *ctx, const Key 
 
 Error QGpgMEChangePasswdJob::start(const Key &key)
 {
-    run(bind(&change_passwd, _1, key));
+    run(std::bind(&change_passwd, std::placeholders::_1, key));
     return Error();
 }
 

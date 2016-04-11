@@ -43,7 +43,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEImportFromKeyserverJob::QGpgMEImportFromKeyserverJob(Context *context)
     : mixin_type(context)
@@ -63,7 +62,7 @@ static QGpgMEImportFromKeyserverJob::result_type importfromkeyserver(Context *ct
 
 Error QGpgMEImportFromKeyserverJob::start(const std::vector<Key> &keys)
 {
-    run(boost::bind(&importfromkeyserver, _1, keys));
+    run(std::bind(&importfromkeyserver, std::placeholders::_1, keys));
     return Error();
 }
 
@@ -78,6 +77,6 @@ GpgME::ImportResult QGpgME::QGpgMEImportFromKeyserverJob::exec(const std::vector
 
 void QGpgME::QGpgMEImportFromKeyserverJob::resultHook(const result_type &tuple)
 {
-    mResult = get<0>(tuple);
+    mResult = std::get<0>(tuple);
 }
 #include "qgpgmeimportfromkeyserverjob.moc"

@@ -88,13 +88,13 @@ static QGpgMEDownloadJob::result_type download(Context *ctx, QThread *thread, co
 
 Error QGpgMEDownloadJob::start(const QStringList &pats)
 {
-    run(bind(&download_qsl, _1, pats));
+    run(std::bind(&download_qsl, std::placeholders::_1, pats));
     return Error();
 }
 
 Error QGpgMEDownloadJob::start(const QByteArray &fpr, const std::shared_ptr<QIODevice> &keyData)
 {
-    run(bind(&download, _1, _2, fpr, _3), keyData);
+    run(std::bind(&download, std::placeholders::_1, std::placeholders::_2, fpr, std::placeholders::_3), keyData);
     return Error();
 }
 #include "qgpgmedownloadjob.moc"

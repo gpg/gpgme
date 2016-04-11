@@ -40,7 +40,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEDeleteJob::QGpgMEDeleteJob(Context *context)
     : mixin_type(context)
@@ -60,7 +59,7 @@ static QGpgMEDeleteJob::result_type delete_key(Context *ctx, const Key &key, boo
 
 Error QGpgMEDeleteJob::start(const Key &key, bool allowSecretKeyDeletion)
 {
-    run(bind(&delete_key, _1, key, allowSecretKeyDeletion));
+    run(std::bind(&delete_key, std::placeholders::_1, key, allowSecretKeyDeletion));
     return Error();
 }
 #include "qgpgmedeletejob.moc"

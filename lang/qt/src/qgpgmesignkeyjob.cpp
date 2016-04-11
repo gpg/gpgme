@@ -44,7 +44,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMESignKeyJob::QGpgMESignKeyJob(Context *context)
     : mixin_type(context),
@@ -91,7 +90,7 @@ Error QGpgMESignKeyJob::start(const Key &key)
     if (m_exportable) {
         opts |= GpgSignKeyEditInteractor::Exportable;
     }
-    run(boost::bind(&sign_key, _1, key, m_userIDsToSign, m_checkLevel, m_signingKey, opts));
+    run(std::bind(&sign_key, std::placeholders::_1, key, m_userIDsToSign, m_checkLevel, m_signingKey, opts));
     m_started = true;
     return Error();
 }

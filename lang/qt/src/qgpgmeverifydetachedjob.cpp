@@ -41,11 +41,9 @@
 
 #include <cassert>
 
-#include <boost/weak_ptr.hpp>
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEVerifyDetachedJob::QGpgMEVerifyDetachedJob(Context *context)
     : mixin_type(context)
@@ -94,13 +92,13 @@ static QGpgMEVerifyDetachedJob::result_type verify_detached_qba(Context *ctx, co
 
 Error QGpgMEVerifyDetachedJob::start(const QByteArray &signature, const QByteArray &signedData)
 {
-    run(bind(&verify_detached_qba, _1, signature, signedData));
+    run(std::bind(&verify_detached_qba, std::placeholders::_1, signature, signedData));
     return Error();
 }
 
 void QGpgMEVerifyDetachedJob::start(const std::shared_ptr<QIODevice> &signature, const std::shared_ptr<QIODevice> &signedData)
 {
-    run(bind(&verify_detached, _1, _2, _3, _4), signature, signedData);
+    run(std::bind(&verify_detached, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), signature, signedData);
 }
 
 GpgME::VerificationResult QGpgME::QGpgMEVerifyDetachedJob::exec(const QByteArray &signature,
@@ -115,6 +113,6 @@ GpgME::VerificationResult QGpgME::QGpgMEVerifyDetachedJob::exec(const QByteArray
 
 void QGpgME::QGpgMEVerifyDetachedJob::resultHook(const result_type &tuple)
 {
-    mResult = get<0>(tuple);
+    mResult = std::get<0>(tuple);
 }
 #include "qgpgmeverifydetachedjob.moc"

@@ -42,9 +42,9 @@
 # include <gpgme++/global.h>
 #endif
 
-#include <boost/shared_ptr.hpp>
 
 #include <vector>
+#include <memory>
 
 class QByteArray;
 class QIODevice;

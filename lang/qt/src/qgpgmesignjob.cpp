@@ -41,13 +41,11 @@
 
 #include <QBuffer>
 
-#include <boost/weak_ptr.hpp>
 
 #include <cassert>
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMESignJob::QGpgMESignJob(Context *context)
     : mixin_type(context),
@@ -131,26 +129,26 @@ static QGpgMESignJob::result_type sign_qba(Context *ctx,
 
 Error QGpgMESignJob::start(const std::vector<Key> &signers, const QByteArray &plainText, SignatureMode mode)
 {
-    run(boost::bind(&sign_qba, _1, signers, plainText, mode, mOutputIsBase64Encoded));
+    run(std::bind(&sign_qba, std::placeholders::_1, signers, plainText, mode, mOutputIsBase64Encoded));
     return Error();
 }
 
 void QGpgMESignJob::start(const std::vector<Key> &signers, const std::shared_ptr<QIODevice> &plainText, const std::shared_ptr<QIODevice> &signature, SignatureMode mode)
 {
-    run(boost::bind(&sign, _1, _2, signers, _3, _4, mode, mOutputIsBase64Encoded), plainText, signature);
+    run(std::bind(&sign, std::placeholders::_1, std::placeholders::_2, signers, std::placeholders::_3, std::placeholders::_4, mode, mOutputIsBase64Encoded), plainText, signature);
 }
 
 SigningResult QGpgMESignJob::exec(const std::vector<Key> &signers, const QByteArray &plainText, SignatureMode mode, QByteArray &signature)
 {
     const result_type r = sign_qba(context(), signers, plainText, mode, mOutputIsBase64Encoded);
-    signature = get<1>(r);
+    signature = std::get<1>(r);
     resultHook(r);
     return mResult;
 }
 
 void QGpgMESignJob::resultHook(const result_type &tuple)
 {
-    mResult = get<0>(tuple);
+    mResult = std::get<0>(tuple);
 }
 
 #if 0

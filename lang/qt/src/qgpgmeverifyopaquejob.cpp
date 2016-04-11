@@ -41,13 +41,11 @@
 
 #include <QBuffer>
 
-#include <boost/weak_ptr.hpp>
 
 #include <cassert>
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEVerifyOpaqueJob::QGpgMEVerifyOpaqueJob(Context *context)
     : mixin_type(context)
@@ -101,19 +99,19 @@ static QGpgMEVerifyOpaqueJob::result_type verify_opaque_qba(Context *ctx, const 
 
 Error QGpgMEVerifyOpaqueJob::start(const QByteArray &signedData)
 {
-    run(bind(&verify_opaque_qba, _1, signedData));
+    run(std::bind(&verify_opaque_qba, std::placeholders::_1, signedData));
     return Error();
 }
 
 void QGpgMEVerifyOpaqueJob::start(const std::shared_ptr<QIODevice> &signedData, const std::shared_ptr<QIODevice> &plainText)
 {
-    run(bind(&verify_opaque, _1, _2, _3, _4), signedData, plainText);
+    run(std::bind(&verify_opaque, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), signedData, plainText);
 }
 
 GpgME::VerificationResult QGpgME::QGpgMEVerifyOpaqueJob::exec(const QByteArray &signedData, QByteArray &plainText)
 {
     const result_type r = verify_opaque_qba(context(), signedData);
-    plainText = get<1>(r);
+    plainText = std::get<1>(r);
     resultHook(r);
     return mResult;
 }
@@ -122,6 +120,6 @@ GpgME::VerificationResult QGpgME::QGpgMEVerifyOpaqueJob::exec(const QByteArray &
 
 void QGpgME::QGpgMEVerifyOpaqueJob::resultHook(const result_type &tuple)
 {
-    mResult = get<0>(tuple);
+    mResult = std::get<0>(tuple);
 }
 #include "qgpgmeverifyopaquejob.moc"

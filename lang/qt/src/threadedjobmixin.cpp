@@ -41,14 +41,12 @@
 #include <QStringList>
 #include <QByteArray>
 
-#include <boost/mem_fn.hpp>
 
 #include <algorithm>
 #include <iterator>
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 static const unsigned int GetAuditLogFlags = Context::AuditLogWithHelp | Context::HtmlAuditLog;
 
@@ -100,7 +98,7 @@ const char **_detail::PatternConverter::patterns() const
     if (!m_patterns) {
         m_patterns = new const char *[ m_list.size() + 1 ];
         const char **end = std::transform(m_list.begin(), m_list.end(), m_patterns,
-                                          mem_fn(&QByteArray::constData));
+                                          std::mem_fn(&QByteArray::constData));
         *end = 0;
     }
     return m_patterns;

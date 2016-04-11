@@ -43,7 +43,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEImportJob::QGpgMEImportJob(Context *context)
     : mixin_type(context)
@@ -66,7 +65,7 @@ static QGpgMEImportJob::result_type import_qba(Context *ctx, const QByteArray &c
 
 Error QGpgMEImportJob::start(const QByteArray &certData)
 {
-    run(bind(&import_qba, _1, certData));
+    run(std::bind(&import_qba, std::placeholders::_1, certData));
     return Error();
 }
 
@@ -81,6 +80,6 @@ GpgME::ImportResult QGpgME::QGpgMEImportJob::exec(const QByteArray &keyData)
 
 void QGpgME::QGpgMEImportJob::resultHook(const result_type &tuple)
 {
-    mResult = get<0>(tuple);
+    mResult = std::get<0>(tuple);
 }
 #include "qgpgmeimportjob.moc"

@@ -42,13 +42,11 @@
 
 #include <QBuffer>
 
-#include <boost/weak_ptr.hpp>
 
 #include <cassert>
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMESignEncryptJob::QGpgMESignEncryptJob(Context *context)
     : mixin_type(context),
@@ -125,19 +123,19 @@ static QGpgMESignEncryptJob::result_type sign_encrypt_qba(Context *ctx, const st
 
 Error QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust)
 {
-    run(boost::bind(&sign_encrypt_qba, _1, signers, recipients, plainText, alwaysTrust, mOutputIsBase64Encoded));
+    run(std::bind(&sign_encrypt_qba, std::placeholders::_1, signers, recipients, plainText, alwaysTrust, mOutputIsBase64Encoded));
     return Error();
 }
 
 void QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vector<Key> &recipients, const std::shared_ptr<QIODevice> &plainText, const std::shared_ptr<QIODevice> &cipherText, bool alwaysTrust)
 {
-    run(boost::bind(&sign_encrypt, _1, _2, signers, recipients, _3, _4, alwaysTrust, mOutputIsBase64Encoded), plainText, cipherText);
+    run(std::bind(&sign_encrypt, std::placeholders::_1, std::placeholders::_2, signers, recipients, std::placeholders::_3, std::placeholders::_4, alwaysTrust, mOutputIsBase64Encoded), plainText, cipherText);
 }
 
 std::pair<SigningResult, EncryptionResult> QGpgMESignEncryptJob::exec(const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust, QByteArray &cipherText)
 {
     const result_type r = sign_encrypt_qba(context(), signers, recipients, plainText, alwaysTrust, mOutputIsBase64Encoded);
-    cipherText = get<2>(r);
+    cipherText = std::get<2>(r);
     resultHook(r);
     return mResult;
 }
@@ -156,6 +154,6 @@ void QGpgMESignEncryptJob::showErrorDialog(QWidget *parent, const QString &capti
 
 void QGpgMESignEncryptJob::resultHook(const result_type &tuple)
 {
-    mResult = std::make_pair(get<0>(tuple), get<1>(tuple));
+    mResult = std::make_pair(std::get<0>(tuple), std::get<1>(tuple));
 }
 #include "qgpgmesignencryptjob.moc"

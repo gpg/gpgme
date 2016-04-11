@@ -45,7 +45,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEAddUserIDJob::QGpgMEAddUserIDJob(Context *context)
     : mixin_type(context)
@@ -77,7 +76,7 @@ static QGpgMEAddUserIDJob::result_type add_user_id(Context *ctx, const Key &key,
 
 Error QGpgMEAddUserIDJob::start(const Key &key, const QString &name, const QString &email, const QString &comment)
 {
-    run(bind(&add_user_id, _1, key, name, email, comment));
+    run(std::bind(&add_user_id, std::placeholders::_1, key, name, email, comment));
     return Error();
 }
 #include "qgpgmeadduseridjob.moc"

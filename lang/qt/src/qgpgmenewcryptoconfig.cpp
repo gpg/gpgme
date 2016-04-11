@@ -41,15 +41,11 @@
 #include "global.h"
 #include "error.h"
 
-#include <boost/foreach.hpp>
-#include <boost/bind.hpp>
-#include <boost/mem_fn.hpp>
 
 #include <sstream>
 #include <string>
 #include <cassert>
 
-using namespace boost;
 using namespace QGpgME;
 using namespace GpgME;
 using namespace GpgME::Configuration;
@@ -108,7 +104,7 @@ void QGpgMENewCryptoConfig::reloadConfiguration(bool showErrors)
         KMessageBox::error(0, wmsg);
     }
 #endif
-    BOOST_FOREACH(const Component & c, components) {
+    Q_FOREACH(const Component & c, components) {
         const std::shared_ptr<QGpgMENewCryptoConfigComponent> comp(new QGpgMENewCryptoConfigComponent);
         comp->setComponent(c);
         m_componentsByName[ comp->name() ] = comp;
@@ -138,7 +134,7 @@ QGpgMENewCryptoConfigComponent *QGpgMENewCryptoConfig::component(const QString &
 
 void QGpgMENewCryptoConfig::sync(bool runtime)
 {
-    BOOST_FOREACH(const std::shared_ptr<QGpgMENewCryptoConfigComponent> &c, m_componentsByName)
+    Q_FOREACH(const std::shared_ptr<QGpgMENewCryptoConfigComponent> &c, m_componentsByName)
     c->sync(runtime);
 }
 
@@ -167,7 +163,7 @@ void QGpgMENewCryptoConfigComponent::setComponent(const Component &component)
     std::shared_ptr<QGpgMENewCryptoConfigGroup> group;
 
     const std::vector<Option> options = m_component.options();
-    BOOST_FOREACH(const Option & o, options)
+    Q_FOREACH(const Option & o, options)
     if (o.flags() & Group) {
         if (group) {
             m_groupsByName[group->name()] = group;
@@ -205,7 +201,7 @@ QStringList QGpgMENewCryptoConfigComponent::groupList() const
     result.reserve(m_groupsByName.size());
     std::transform(m_groupsByName.begin(), m_groupsByName.end(),
                    std::back_inserter(result),
-                   mem_fn(&QGpgMENewCryptoConfigGroup::name));
+                   std::mem_fn(&QGpgMENewCryptoConfigGroup::name));
     return result;
 }
 
@@ -559,7 +555,7 @@ QList<QUrl> QGpgMENewCryptoConfigEntry::urlValueList() const
     const Argument arg = m_option.currentValue();
     const std::vector<const char *> values = arg.stringValues();
     QList<QUrl> ret;
-    BOOST_FOREACH(const char *value, values)
+    Q_FOREACH(const char *value, values)
     if (type == FilenameType) {
         QUrl url;
         url.setPath(QFile::decodeName(value));

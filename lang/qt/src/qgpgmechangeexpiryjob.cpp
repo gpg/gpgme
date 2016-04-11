@@ -48,7 +48,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEChangeExpiryJob::QGpgMEChangeExpiryJob(Context *context)
     : mixin_type(context)
@@ -76,7 +75,7 @@ static QGpgMEChangeExpiryJob::result_type change_expiry(Context *ctx, const Key 
 
 Error QGpgMEChangeExpiryJob::start(const Key &key, const QDateTime &expiry)
 {
-    run(bind(&change_expiry, _1, key, expiry));
+    run(std::bind(&change_expiry, std::placeholders::_1, key, expiry));
     return Error();
 }
 #include "qgpgmechangeexpiryjob.moc"

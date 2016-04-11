@@ -45,7 +45,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEExportJob::QGpgMEExportJob(Context *context)
     : mixin_type(context)
@@ -71,7 +70,7 @@ static QGpgMEExportJob::result_type export_qba(Context *ctx, const QStringList &
 
 Error QGpgMEExportJob::start(const QStringList &patterns)
 {
-    run(bind(&export_qba, _1, patterns));
+    run(std::bind(&export_qba, std::placeholders::_1, patterns));
     return Error();
 }
 #include "qgpgmeexportjob.moc"

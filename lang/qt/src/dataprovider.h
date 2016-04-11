@@ -25,10 +25,10 @@
 
 #include "qgpgme_export.h"
 #include <interfaces/dataprovider.h>
+#include <memory>
 
 #include <QtCore/QByteArray>
 
-#include <boost/shared_ptr.hpp>
 
 class QIODevice;
 

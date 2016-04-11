@@ -42,7 +42,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEKeyGenerationJob::QGpgMEKeyGenerationJob(Context *context)
     : mixin_type(context)
@@ -66,7 +65,7 @@ static QGpgMEKeyGenerationJob::result_type generate_key(Context *ctx, const QStr
 
 Error QGpgMEKeyGenerationJob::start(const QString &parameters)
 {
-    run(bind(&generate_key, _1, parameters));
+    run(std::bind(&generate_key, std::placeholders::_1, parameters));
     return Error();
 }
 #include "qgpgmekeygenerationjob.moc"

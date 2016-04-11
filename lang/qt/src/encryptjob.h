@@ -36,8 +36,7 @@
 
 #include "job.h"
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <vector>
 
 class QByteArray;

@@ -42,8 +42,7 @@
 # include <gpgme++/global.h>
 #endif
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <vector>
 #include <utility>
 

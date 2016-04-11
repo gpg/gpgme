@@ -108,13 +108,13 @@ static QGpgMEDecryptVerifyJob::result_type decrypt_verify_qba(Context *ctx, cons
 
 Error QGpgMEDecryptVerifyJob::start(const QByteArray &cipherText)
 {
-    run(bind(&decrypt_verify_qba, _1, cipherText));
+    run(std::bind(&decrypt_verify_qba, std::placeholders::_1, cipherText));
     return Error();
 }
 
 void QGpgMEDecryptVerifyJob::start(const std::shared_ptr<QIODevice> &cipherText, const std::shared_ptr<QIODevice> &plainText)
 {
-    run(bind(&decrypt_verify, _1, _2, _3, _4), cipherText, plainText);
+    run(std::bind(&decrypt_verify, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), cipherText, plainText);
 }
 
 std::pair<GpgME::DecryptionResult, GpgME::VerificationResult>

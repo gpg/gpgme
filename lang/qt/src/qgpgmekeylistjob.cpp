@@ -48,7 +48,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEKeyListJob::QGpgMEKeyListJob(Context *context)
     : mixin_type(context),
@@ -132,7 +131,7 @@ retry:
 Error QGpgMEKeyListJob::start(const QStringList &patterns, bool secretOnly)
 {
     mSecretOnly = secretOnly;
-    run(boost::bind(&list_keys, _1, patterns, secretOnly));
+    run(std::bind(&list_keys, std::placeholders::_1, patterns, secretOnly));
     return Error();
 }
 
@@ -141,14 +140,14 @@ KeyListResult QGpgMEKeyListJob::exec(const QStringList &patterns, bool secretOnl
     mSecretOnly = secretOnly;
     const result_type r = list_keys(context(), patterns, secretOnly);
     resultHook(r);
-    keys = get<1>(r);
-    return get<0>(r);
+    keys = std::get<1>(r);
+    return std::get<0>(r);
 }
 
 void QGpgMEKeyListJob::resultHook(const result_type &tuple)
 {
-    mResult = get<0>(tuple);
-    Q_FOREACH (const Key &key, get<1>(tuple)) {
+    mResult = std::get<0>(tuple);
+    Q_FOREACH (const Key &key, std::get<1>(tuple)) {
         Q_EMIT nextKey(key);
     }
 }

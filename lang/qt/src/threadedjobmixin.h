@@ -48,13 +48,6 @@
 # include <gpgme++/interfaces/progressprovider.h>
 #endif
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/utility/enable_if.hpp>
-#include <boost/type_traits/is_same.hpp>
 
 #include <cassert>
 
@@ -101,7 +94,7 @@ class Thread : public QThread
 public:
     explicit Thread(QObject *parent = Q_NULLPTR) : QThread(parent) {}
 
-    void setFunction(const boost::function<T_result()> &function)
+    void setFunction(const std::function<T_result()> &function)
     {
         const QMutexLocker locker(&m_mutex);
         m_function = function;
@@ -120,7 +113,7 @@ private:
     }
 private:
     mutable QMutex m_mutex;
-    boost::function<T_result()> m_function;
+    std::function<T_result()> m_function;
     T_result m_result;
 };
 
@@ -132,25 +125,24 @@ public:
     typedef T_result result_type;
 
 protected:
-    BOOST_STATIC_ASSERT((std::tuple_size<T_result>::value > 2));
-    BOOST_STATIC_ASSERT((
-                            std::is_same <
-                            typename std::tuple_element <
-                            std::tuple_size<T_result>::value - 2,
-                            T_result
-                            >::type,
-                            QString
-                            >::value
-                        ));
-    BOOST_STATIC_ASSERT((
-                            std::is_same <
-                            typename std::tuple_element <
-                            std::tuple_size<T_result>::value - 1,
-                            T_result
-                            >::type,
-                            GpgME::Error
-                            >::value
-                        ));
+    static_assert(std::tuple_size<T_result>::value > 2,
+                  "Result tuple too small");
+    static_assert(std::is_same <
+                  typename std::tuple_element <
+                  std::tuple_size<T_result>::value - 2,
+                  T_result
+                  >::type,
+                  QString
+                  >::value,
+                  "Second to last result type not a QString");
+    static_assert(std::is_same <
+                  typename std::tuple_element <
+                  std::tuple_size<T_result>::value - 1,
+                  T_result
+                  >::type,
+                  GpgME::Error
+                  >::value,
+                  "Last result type not a GpgME::Error");
 
     explicit ThreadedJobMixin(GpgME::Context *ctx)
         : T_base(0), m_ctx(ctx), m_thread(), m_auditLog(), m_auditLogError()
@@ -168,7 +160,7 @@ protected:
     template <typename T_binder>
     void run(const T_binder &func)
     {
-        m_thread.setFunction(boost::bind(func, this->context()));
+        m_thread.setFunction(std::bind(func, this->context()));
         m_thread.start();
     }
     template <typename T_binder>
@@ -181,7 +173,7 @@ protected:
         // necessarily destroyed (living outside the UI thread) at the time the result signal
         // is emitted and the signal receiver wants to clean up IO devices.
         // To avoid such races, we pass std::weak_ptr's to the functor.
-        m_thread.setFunction(boost::bind(func, this->context(), this->thread(), std::weak_ptr<QIODevice>(io)));
+        m_thread.setFunction(std::bind(func, this->context(), this->thread(), std::weak_ptr<QIODevice>(io)));
         m_thread.start();
     }
     template <typename T_binder>
@@ -197,7 +189,7 @@ protected:
         // necessarily destroyed (living outside the UI thread) at the time the result signal
         // is emitted and the signal receiver wants to clean up IO devices.
         // To avoid such races, we pass std::weak_ptr's to the functor.
-        m_thread.setFunction(boost::bind(func, this->context(), this->thread(), std::weak_ptr<QIODevice>(io1), std::weak_ptr<QIODevice>(io2)));
+        m_thread.setFunction(std::bind(func, this->context(), this->thread(), std::weak_ptr<QIODevice>(io1), std::weak_ptr<QIODevice>(io2)));
         m_thread.start();
     }
     GpgME::Context *context() const

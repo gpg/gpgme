@@ -41,13 +41,11 @@
 
 #include <QBuffer>
 
-#include <boost/weak_ptr.hpp>
 
 #include <cassert>
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEEncryptJob::QGpgMEEncryptJob(Context *context)
     : mixin_type(context),
@@ -123,16 +121,16 @@ static QGpgMEEncryptJob::result_type encrypt_qba(Context *ctx, const std::vector
 
 Error QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust)
 {
-    run(boost::bind(&encrypt_qba, _1, recipients, plainText, alwaysTrust, mOutputIsBase64Encoded));
+    run(std::bind(&encrypt_qba, std::placeholders::_1, recipients, plainText, alwaysTrust, mOutputIsBase64Encoded));
     return Error();
 }
 
 void QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const std::shared_ptr<QIODevice> &plainText, const std::shared_ptr<QIODevice> &cipherText, bool alwaysTrust)
 {
-    run(boost::bind(&encrypt,
-                    _1, _2,
+    run(std::bind(&encrypt,
+                    std::placeholders::_1, std::placeholders::_2,
                     recipients,
-                    _3, _4,
+                    std::placeholders::_3, std::placeholders::_4,
                     alwaysTrust,
                     mOutputIsBase64Encoded),
         plainText, cipherText);
@@ -141,14 +139,14 @@ void QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const std::shar
 EncryptionResult QGpgMEEncryptJob::exec(const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust, QByteArray &cipherText)
 {
     const result_type r = encrypt_qba(context(), recipients, plainText, alwaysTrust, mOutputIsBase64Encoded);
-    cipherText = get<1>(r);
+    cipherText = std::get<1>(r);
     resultHook(r);
     return mResult;
 }
 
 void QGpgMEEncryptJob::resultHook(const result_type &tuple)
 {
-    mResult = get<0>(tuple);
+    mResult = std::get<0>(tuple);
 }
 
 #if 0
