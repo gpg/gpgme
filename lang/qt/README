@@ -1,6 +1,6 @@
 Qt API bindings/wrapper for gpgme
 ----------------------------------------
-Based on KF5gpgmepp QGpgme
+Based on KF5gpgmepp QGpgme and libkleo/backends/qgpgme
 
 QGpgme is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
@@ -21,7 +21,4 @@ Overview
 --------
 QGpgme provides Qt API bindings around Gpgmepp. It depends on Gpgmepp.
 
-Currently this is a very thin library that only provides a QByteArray
-and QIODevice dataprovider. But might be extended in the future with
-code that is currently part of KDE's libkleopatra. To provide an easy
-to use API for Qt Applications.
+See the generated documentation for more info

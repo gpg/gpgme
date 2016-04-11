@@ -286,6 +286,14 @@ if test "$found" = "1"; then
    *** Qt5 (Qt5Core) is required for qt binding.
    ***]])
    fi
+
+   AC_CHECK_PROGS([DOXYGEN], [doxygen])
+   if test -z "$DOXYGEN";
+       then AC_MSG_WARN([Doxygen not found - Qt binding doc will not be built.])
+   fi
+   AM_CONDITIONAL([HAVE_DOXYGEN],
+                  [test -n "$DOXYGEN"])
+
    # Make sure that qt comes after cpp
    enabled_languages=`echo $enabled_languages | sed 's/qt//'`
    enabled_languages=`echo $enabled_languages qt`
@@ -686,6 +694,8 @@ AC_CONFIG_FILES(lang/qt/src/QGpgmeConfig.cmake.in)
 AC_CONFIG_FILES(lang/qt/src/QGpgmeConfigVersion.cmake)
 AC_CONFIG_FILES(lang/qt/tests/Makefile)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
+AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([lang/qt/doc/Doxyfile])])
+AC_CONFIG_FILES(lang/qt/doc/Makefile)
 AC_OUTPUT
 
 echo "
