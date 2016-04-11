@@ -33,8 +33,6 @@
 
 #include "qgpgmelistallkeysjob.h"
 
-#include "predicates.h"
-
 #include "key.h"
 #include "context.h"
 #include "keylistresult.h"
@@ -48,7 +46,6 @@
 
 using namespace QGpgME;
 using namespace GpgME;
-using namespace boost;
 
 QGpgMEListAllKeysJob::QGpgMEListAllKeysJob(Context *context)
     : mixin_type(context),
@@ -110,9 +107,9 @@ static void merge_keys(std::vector<Key> &merged, std::vector<Key> &pub, std::vec
     std::merge(pub.begin(), pub.end(),
                sec.begin(), sec.end(),
                std::back_inserter(merged),
-               _detail::ByFingerprint<std::less>());
+               ByFingerprint<std::less>());
 
-    merged.erase(unique_by_merge(merged.begin(), merged.end(), _detail::ByFingerprint<std::equal_to>()),
+    merged.erase(unique_by_merge(merged.begin(), merged.end(), ByFingerprint<std::equal_to>()),
                  merged.end());
 }
 
@@ -122,10 +119,10 @@ static QGpgMEListAllKeysJob::result_type list_keys(Context *ctx, bool mergeKeys)
     KeyListResult r;
 
     r.mergeWith(do_list_keys(ctx, pub, false));
-    std::sort(pub.begin(), pub.end(), _detail::ByFingerprint<std::less>());
+    std::sort(pub.begin(), pub.end(), ByFingerprint<std::less>());
 
     r.mergeWith(do_list_keys(ctx, sec, true));
-    std::sort(sec.begin(), sec.end(), _detail::ByFingerprint<std::less>());
+    std::sort(sec.begin(), sec.end(), ByFingerprint<std::less>());
 
     if (mergeKeys) {
         merge_keys(merged, pub, sec);
@@ -137,7 +134,7 @@ static QGpgMEListAllKeysJob::result_type list_keys(Context *ctx, bool mergeKeys)
 
 Error QGpgMEListAllKeysJob::start(bool mergeKeys)
 {
-    run(boost::bind(&list_keys, _1, mergeKeys));
+    run(std::bind(&list_keys, std::placeholders::_1, mergeKeys));
     return Error();
 }
 
@@ -145,14 +142,14 @@ KeyListResult QGpgMEListAllKeysJob::exec(std::vector<Key> &pub, std::vector<Key>
 {
     const result_type r = list_keys(context(), mergeKeys);
     resultHook(r);
-    pub = get<1>(r);
-    sec = get<2>(r);
-    return get<0>(r);
+    pub = std::get<1>(r);
+    sec = std::get<2>(r);
+    return std::get<0>(r);
 }
 
 void QGpgMEListAllKeysJob::resultHook(const result_type &tuple)
 {
-    mResult = get<0>(tuple);
+    mResult = std::get<0>(tuple);
 }
 
 #if 0
