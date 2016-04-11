@@ -21,4 +21,10 @@ Overview
 --------
 QGpgme provides Qt API bindings around Gpgmepp. It depends on Gpgmepp.
 
-See the generated documentation for more info
+See the generated documentation for more info.
+
+Hacking
+-------
+QGpgME comes from a KDE background. As such it does not use
+GNU Coding styles but KDE Coding styles. See:
+https://techbase.kde.org/Policies/Frameworks_Coding_Style

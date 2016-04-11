@@ -7,7 +7,7 @@ modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
 
-GPGME++ is distributed in the hope that it will be useful,
+GPGMEpp is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Library General Public License for more details.
@@ -42,9 +42,15 @@ The design principles of this library are as follows:
    no-virtuals rule is the use of abstract classes to cover
    C-callbacks.
 
-GpgME was originally developed as part of the KDEPIM community
-in KDE 4 it was part of kdepimlibs/gpgme++ for KF5 Gpgme++ was
+GpgMEpp was originally developed as part of the KDEPIM community
+in KDE 4 it was part of kdepimlibs/gpgme++ for KF5 Gpgmepp was
 renamed to KF5GpgMEpp and moved into it's own repository.
+
+Hacking
+-------
+GpgMEpp follows KDE Coding styles. See:
+https://techbase.kde.org/Policies/Frameworks_Coding_Style
+for more info.
 
 License
 -------
