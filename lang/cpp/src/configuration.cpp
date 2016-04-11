@@ -26,8 +26,6 @@
 
 #include <gpgme.h>
 
-#include <boost/foreach.hpp>
-
 #include <iterator>
 #include <algorithm>
 #include <ostream>
@@ -37,14 +35,14 @@
 using namespace GpgME;
 using namespace GpgME::Configuration;
 
-typedef std::shared_ptr< boost::remove_pointer<gpgme_conf_opt_t>::type > shared_gpgme_conf_opt_t;
-typedef std::weak_ptr< boost::remove_pointer<gpgme_conf_opt_t>::type > weak_gpgme_conf_opt_t;
+typedef std::shared_ptr< std::remove_pointer<gpgme_conf_opt_t>::type > shared_gpgme_conf_opt_t;
+typedef std::weak_ptr< std::remove_pointer<gpgme_conf_opt_t>::type > weak_gpgme_conf_opt_t;
 
-typedef std::shared_ptr< boost::remove_pointer<gpgme_conf_arg_t>::type > shared_gpgme_conf_arg_t;
-typedef std::weak_ptr< boost::remove_pointer<gpgme_conf_arg_t>::type > weak_gpgme_conf_arg_t;
+typedef std::shared_ptr< std::remove_pointer<gpgme_conf_arg_t>::type > shared_gpgme_conf_arg_t;
+typedef std::weak_ptr< std::remove_pointer<gpgme_conf_arg_t>::type > weak_gpgme_conf_arg_t;
 
-typedef std::shared_ptr< boost::remove_pointer<gpgme_ctx_t>::type > shared_gpgme_ctx_t;
-typedef std::weak_ptr< boost::remove_pointer<gpgme_ctx_t>::type > weak_gpgme_ctx_t;
+typedef std::shared_ptr< std::remove_pointer<gpgme_ctx_t>::type > shared_gpgme_ctx_t;
+typedef std::weak_ptr< std::remove_pointer<gpgme_ctx_t>::type > weak_gpgme_ctx_t;
 
 namespace
 {
@@ -898,14 +896,14 @@ std::ostream &Configuration::operator<<(std::ostream &os, const Argument &a)
                 os << v.size() << ':';
                 // can't use std::copy + ostream_iterator here, since we need the protect() call
                 bool first = true;
-                BOOST_FOREACH(const char *s, v) {
+                std::for_each(v.begin(), v.end(), [&first, &os](const char *s) {
                     if (first) {
                         first = false;
                     } else {
                         os << ',';
                     }
                     os << protect(s);
-                }
+                });
             } else {
                 os << protect(a.stringValue());
             }

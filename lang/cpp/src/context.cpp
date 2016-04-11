@@ -45,8 +45,6 @@
 
 #include <gpgme.h>
 
-#include <boost/scoped_array.hpp>
-
 #include <istream>
 #ifndef NDEBUG
 #include <iostream>
@@ -584,7 +582,7 @@ ImportResult Context::importKeys(const std::vector<Key> &kk)
     d->lasterr = make_error(GPG_ERR_NOT_IMPLEMENTED);
 
     bool shouldHaveResult = false;
-    const boost::scoped_array<gpgme_key_t> keys(new gpgme_key_t[ kk.size() + 1 ]);
+    gpgme_key_t * const keys = new gpgme_key_t[ kk.size() + 1 ];
     gpgme_key_t *keys_it = &keys[0];
     for (std::vector<Key>::const_iterator it = kk.begin(), end = kk.end() ; it != end ; ++it) {
         if (it->impl()) {
@@ -592,7 +590,7 @@ ImportResult Context::importKeys(const std::vector<Key> &kk)
         }
     }
     *keys_it++ = 0;
-    d->lasterr = gpgme_op_import_keys(d->ctx, keys.get());
+    d->lasterr = gpgme_op_import_keys(d->ctx, keys);
     shouldHaveResult = true;
     if ((gpgme_err_code(d->lasterr) == GPG_ERR_NOT_IMPLEMENTED ||
             gpgme_err_code(d->lasterr) == GPG_ERR_NOT_SUPPORTED) &&
@@ -623,6 +621,7 @@ ImportResult Context::importKeys(const std::vector<Key> &kk)
             shouldHaveResult = true;
         }
     }
+    delete[] keys;
     if (shouldHaveResult) {
         return ImportResult(d->ctx, Error(d->lasterr));
     } else {
@@ -640,7 +639,7 @@ Error Context::startKeyImport(const Data &data)
 Error Context::startKeyImport(const std::vector<Key> &kk)
 {
     d->lastop = Private::Import;
-    const boost::scoped_array<gpgme_key_t> keys(new gpgme_key_t[ kk.size() + 1 ]);
+    gpgme_key_t * const keys = new gpgme_key_t[ kk.size() + 1 ];
     gpgme_key_t *keys_it = &keys[0];
     for (std::vector<Key>::const_iterator it = kk.begin(), end = kk.end() ; it != end ; ++it) {
         if (it->impl()) {
@@ -648,7 +647,9 @@ Error Context::startKeyImport(const std::vector<Key> &kk)
         }
     }
     *keys_it++ = 0;
-    return Error(d->lasterr = gpgme_op_import_keys_start(d->ctx, keys.get()));
+    Error err = Error(d->lasterr = gpgme_op_import_keys_start(d->ctx, keys));
+    delete[] keys;
+    return err;
 }
 
 ImportResult Context::importResult() const

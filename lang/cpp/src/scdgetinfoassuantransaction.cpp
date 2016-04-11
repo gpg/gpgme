@@ -25,14 +25,10 @@
 #include "data.h"
 #include "util.h"
 
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/static_assert.hpp>
-
 #include <sstream>
+#include <assert.h>
 
 using namespace GpgME;
-using namespace boost;
 
 ScdGetInfoAssuanTransaction::ScdGetInfoAssuanTransaction(InfoItem item)
     : AssuanTransaction(),
@@ -48,7 +44,12 @@ ScdGetInfoAssuanTransaction::~ScdGetInfoAssuanTransaction() {}
 static std::vector<std::string> to_reader_list(const std::string &s)
 {
     std::vector<std::string> result;
-    return split(result, s, is_any_of("\n"), token_compress_on);
+    std::stringstream ss(s);
+    std::string tok;
+    while (std::getline(ss, tok, '\n')) {
+        result.push_back(tok);
+    }
+    return result;
 }
 
 static std::vector<std::string> to_app_list(const std::string &s)
@@ -119,7 +120,8 @@ static const char *const scd_getinfo_tokens[] = {
     "deny_admin",
     "app_list",
 };
-BOOST_STATIC_ASSERT((sizeof scd_getinfo_tokens / sizeof * scd_getinfo_tokens == ScdGetInfoAssuanTransaction::LastInfoItem));
+static_assert((sizeof scd_getinfo_tokens / sizeof * scd_getinfo_tokens == ScdGetInfoAssuanTransaction::LastInfoItem),
+              "getinfo_tokens size mismatch");
 
 void ScdGetInfoAssuanTransaction::makeCommand() const
 {
