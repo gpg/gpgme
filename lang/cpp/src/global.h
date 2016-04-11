@@ -28,6 +28,7 @@
 #include "gpgmepp_export.h"
 
 #include <iosfwd>
+#include <cstring>
 
 namespace GpgME
 {
@@ -151,5 +152,55 @@ GPGMEPP_EXPORT bool hasFeature(unsigned long feature, unsigned long feature2);
     public: \
     operator unspecified_bool_type() const { return ( Cond ) ? &__safe_bool_dummy__::nonnull : 0 ; }
 # endif
+
+inline int _gpgmepp_strcmp(const char *s1, const char *s2)
+{
+    return s1 ? s2 ? std::strcmp(s1, s2) : 1 : s2 ? -1 : 0;
+}
+
+#define _GPGMEPP_MAKE_STRCMP( Name, expr, cmp )                     \
+    template <template <typename U> class Op>                           \
+    struct Name {                                                       \
+        typedef bool result_type;                                       \
+        \
+        bool operator()( const char * lhs, const char * rhs ) const {   \
+            return Op<int>()( cmp, 0 );                                 \
+        }                                                               \
+        \
+        bool operator()( const std::string & lhs, const std::string & rhs ) const { \
+            return operator()( lhs.c_str(), rhs.c_str() );              \
+        }                                                               \
+        bool operator()( const char * lhs, const std::string & rhs ) const { \
+            return operator()( lhs, rhs.c_str() );                      \
+        }                                                               \
+        bool operator()( const std::string & lhs, const char * rhs ) const { \
+            return operator()( lhs.c_str(), rhs );                      \
+        }                                                               \
+        \
+        template <typename T>                                           \
+        bool operator()( const T & lhs, const T & rhs ) const {         \
+            return operator()( (lhs expr), (rhs expr) );                \
+        }                                                               \
+        template <typename T>                                           \
+        bool operator()( const T & lhs, const char * rhs ) const {      \
+            return operator()( (lhs expr), rhs );                       \
+        }                                                               \
+        template <typename T>                                           \
+        bool operator()( const char * lhs, const T & rhs ) const {      \
+            return operator()( lhs, (rhs expr) );                       \
+        }                                                               \
+        template <typename T>                                           \
+        bool operator()( const T & lhs, const std::string & rhs ) const { \
+            return operator()( (lhs expr), rhs );                       \
+        }                                                               \
+        template <typename T>                                           \
+        bool operator()( const std::string & lhs, const T & rhs ) const {    \
+            return operator()( lhs, (rhs expr) );                       \
+        }                                                               \
+    }
+
+#define GPGMEPP_MAKE_STRCMP( Name, expr )                          \
+    _GPGMEPP_MAKE_STRCMP( Name, expr, _gpgmepp_strcmp( lhs, rhs ) )
+
 
 #endif // __GPGMEPP_GLOBAL_H__
