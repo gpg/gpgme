@@ -23,6 +23,12 @@ private Q_SLOTS:
         const QString kId = QLatin1String(keys.front().keyID());
         Q_ASSERT (kId == QStringLiteral("2D727CC768697734"));
     }
+
+    void initTestCase()
+    {
+        const QString gpgHome = qgetenv("GNUPGHOME");
+        QVERIFY2(!gpgHome.isEmpty(), "GNUPGHOME environment variable is not set.");
+    }
 };
 
 QTEST_MAIN(KeyListTest)

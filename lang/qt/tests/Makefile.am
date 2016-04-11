@@ -22,7 +22,9 @@ GPG = gpg
 
 TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir)
 
-TESTS = t-keylist
+EXTRA_DIST = initial.test
+
+TESTS = initial.test t-keylist
 
 moc_files = t-keylist.moc
 
@@ -38,7 +40,11 @@ AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@ \
               -I$(top_srcdir)/lang/cpp/src -I$(top_srcdir)/lang/qt/src \
               -DTOP_SRCDIR="$(top_srcdir)"
 
-check-local: ./t-keylist ./pubring-stamp
+check-local: ./pubring-stamp
+
+# To guarantee that check-local is run before any tests we
+# add this dependency:
+initial.test : check-local
 
 t_keylist_SOURCES = t-keylist.cpp t-keylist.h
 
@@ -58,8 +64,8 @@ export GNUPGHOME := $(abs_builddir)
 	             $(top_srcdir)/tests/gpg/secdemo.asc
 	$(GPG) --no-permission-warning \
            --import $(top_srcdir)/tests/gpg/pubdemo.asc
-	-$(GPG) --no-permission-warning \
-            --import $(top_srcdir)/tests/gpg/secdemo.asc
+	$(GPG) --no-permission-warning \
+           --import $(top_srcdir)/tests/gpg/secdemo.asc
 	touch ./pubring-stamp
 
 .cpp.moc:
