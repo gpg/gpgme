@@ -162,6 +162,26 @@ GpgME::Error GpgME::Data::setEncoding(Encoding enc)
     return Error(gpgme_data_set_encoding(d->data, ge));
 }
 
+GpgME::Data::Type GpgME::Data::type() const
+{
+    if (isNull()) {
+        return Invalid;
+    }
+    switch (gpgme_data_identify(d->data, 0)) {
+    case GPGME_DATA_TYPE_INVALID:       return Invalid;
+    case GPGME_DATA_TYPE_UNKNOWN:       return Unknown;
+    case GPGME_DATA_TYPE_PGP_SIGNED:    return PGPSigned;
+    case GPGME_DATA_TYPE_PGP_OTHER:     return PGPOther;
+    case GPGME_DATA_TYPE_PGP_KEY:       return PGPKey;
+    case GPGME_DATA_TYPE_CMS_SIGNED:    return CMSSigned;
+    case GPGME_DATA_TYPE_CMS_ENCRYPTED: return CMSEncrypted;
+    case GPGME_DATA_TYPE_CMS_OTHER:     return CMSOther;
+    case GPGME_DATA_TYPE_X509_CERT:     return X509Cert;
+    case GPGME_DATA_TYPE_PKCS12:        return PKCS12;
+    }
+    return Invalid;
+}
+
 char *GpgME::Data::fileName() const
 {
     return gpgme_data_get_file_name(d->data);

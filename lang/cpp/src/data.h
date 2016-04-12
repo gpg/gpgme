@@ -82,6 +82,20 @@ public:
     Encoding encoding() const;
     Error setEncoding(Encoding encoding);
 
+    enum Type {
+        Invalid,
+        Unknown,
+        PGPSigned,
+        PGPOther,
+        PGPKey,
+        CMSSigned,
+        CMSEncrypted,
+        CMSOther,
+        X509Cert,
+        PKCS12
+    };
+    Type type() const;
+
     char *fileName() const;
     Error setFileName(const char *name);
 
