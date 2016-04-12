@@ -291,13 +291,13 @@ if test "$found" = "1"; then
    if test -z "$DOXYGEN";
        then AC_MSG_WARN([Doxygen not found - Qt binding doc will not be built.])
    fi
-   AM_CONDITIONAL([HAVE_DOXYGEN],
-                  [test -n "$DOXYGEN"])
-
    # Make sure that qt comes after cpp
    enabled_languages=`echo $enabled_languages | sed 's/qt//'`
    enabled_languages=`echo $enabled_languages qt`
 fi
+AM_CONDITIONAL([HAVE_DOXYGEN],
+               [test -n "$DOXYGEN"])
+
 AC_SUBST(ENABLED_LANGUAGES, $enabled_languages)
 
 #
