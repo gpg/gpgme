@@ -206,7 +206,26 @@ public:
     bool isSecret() const;
 
     unsigned int publicKeyAlgorithm() const;
+
+    /**
+      @brief Get the public key algorithm name.
+
+      This only works for the pre 2.1 algorithms for ECC NULL is returned.
+
+      @returns a statically allocated string with the name of the public
+               key algorithm, or NULL if that name is not known.
+    */
     const char *publicKeyAlgorithmAsString() const;
+
+    /**
+       @brief Get the key algo string like GnuPG 2.1 prints it.
+
+       This returns combinations of size and algorithm. Like
+       bp512 or rsa2048
+
+       @returns the key algorithm as string. Empty string on error.
+    */
+    std::string algoName() const;
 
     unsigned int length() const;
 
