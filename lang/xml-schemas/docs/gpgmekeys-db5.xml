@@ -7,25 +7,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_gpgme">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_gpgme">
                                             <area linkends="keylist" units="other" otherunits="imagemap" coords="190,2,277,36" xml:id="gpgmekeys_xsd_Element_gpgme-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_gpgme.png" width="147.5pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                 Model
             </entry><entry><link linkend="keylist">keylist</link></entry></row><row><entry>
@@ -43,25 +37,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_keylist">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_keylist">
                                             <area linkends="key" units="other" otherunits="imagemap" coords="224,2,285,36" xml:id="gpgmekeys_xsd_Element_keylist-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_keylist.png" width="151.5pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="gpgme">gpgme</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -81,55 +69,34 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_key">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_key">
                                             <area linkends="revoked" units="other" otherunits="imagemap" coords="160,2,260,36" xml:id="gpgmekeys_xsd_Element_key-1"/>
-                                          
                                             <area linkends="expired" units="other" otherunits="imagemap" coords="160,46,256,80" xml:id="gpgmekeys_xsd_Element_key-2"/>
-                                          
                                             <area linkends="disabled" units="other" otherunits="imagemap" coords="160,90,263,124" xml:id="gpgmekeys_xsd_Element_key-3"/>
-                                          
                                             <area linkends="invalid" units="other" otherunits="imagemap" coords="160,134,247,168" xml:id="gpgmekeys_xsd_Element_key-4"/>
-                                          
                                             <area linkends="can-encrypt" units="other" otherunits="imagemap" coords="160,178,295,212" xml:id="gpgmekeys_xsd_Element_key-5"/>
-                                          
                                             <area linkends="can-sign" units="other" otherunits="imagemap" coords="160,222,267,256" xml:id="gpgmekeys_xsd_Element_key-6"/>
-                                          
                                             <area linkends="can-certify" units="other" otherunits="imagemap" coords="160,266,285,300" xml:id="gpgmekeys_xsd_Element_key-7"/>
-                                          
                                             <area linkends="can-authenticate" units="other" otherunits="imagemap" coords="160,310,339,344" xml:id="gpgmekeys_xsd_Element_key-8"/>
-                                          
                                             <area linkends="is-qualified" units="other" otherunits="imagemap" coords="160,354,290,388" xml:id="gpgmekeys_xsd_Element_key-9"/>
-                                          
                                             <area linkends="secret" units="other" otherunits="imagemap" coords="160,398,243,432" xml:id="gpgmekeys_xsd_Element_key-10"/>
-                                          
                                             <area linkends="protocol" units="other" otherunits="imagemap" coords="160,442,462,504" xml:id="gpgmekeys_xsd_Element_key-11"/>
-                                          
                                             <area linkends="issuer" units="other" otherunits="imagemap" coords="160,514,242,548" xml:id="gpgmekeys_xsd_Element_key-12"/>
-                                          
                                             <area linkends="chain-id" units="other" otherunits="imagemap" coords="160,558,252,592" xml:id="gpgmekeys_xsd_Element_key-13"/>
-                                          
                                             <area linkends="owner-trust" units="other" otherunits="imagemap" coords="160,602,462,664" xml:id="gpgmekeys_xsd_Element_key-14"/>
-                                          
                                             <area linkends="subkeys" units="other" otherunits="imagemap" coords="160,674,261,708" xml:id="gpgmekeys_xsd_Element_key-15"/>
-                                          
                                             <area linkends="uids" units="other" otherunits="imagemap" coords="160,718,227,752" xml:id="gpgmekeys_xsd_Element_key-16"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_key.png" width="240pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="keylist">keylist</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -179,25 +146,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_revoked">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_revoked">
                                             <area linkends="revoked_value" units="other" otherunits="imagemap" coords="142,50,337,112" xml:id="gpgmekeys_xsd_Element_revoked-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_revoked.png" width="181.5pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -211,25 +172,20 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_expired">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_expired">
                                             <area linkends="expired_value" units="other" otherunits="imagemap" coords="138,50,333,112" xml:id="gpgmekeys_xsd_Element_expired-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_expired.png" width="179.5pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
+
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -243,25 +199,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_disabled">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_disabled">
                                             <area linkends="disabled_value" units="other" otherunits="imagemap" coords="145,50,340,112" xml:id="gpgmekeys_xsd_Element_disabled-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_disabled.png" width="183pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -275,25 +225,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_invalid">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_invalid">
                                             <area linkends="invalid_value" units="other" otherunits="imagemap" coords="129,50,324,112" xml:id="gpgmekeys_xsd_Element_invalid-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_invalid.png" width="175pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -307,25 +251,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_can-encrypt">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_can-encrypt">
                                             <area linkends="can-encrypt_value" units="other" otherunits="imagemap" coords="177,50,372,112" xml:id="gpgmekeys_xsd_Element_can-encrypt-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_can-encrypt.png" width="199pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -339,25 +277,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_can-sign">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_can-sign">
                                             <area linkends="can-sign_value" units="other" otherunits="imagemap" coords="149,50,344,112" xml:id="gpgmekeys_xsd_Element_can-sign-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_can-sign.png" width="185pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -371,25 +303,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_can-certify">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_can-certify">
                                             <area linkends="can-certify_value" units="other" otherunits="imagemap" coords="167,50,362,112" xml:id="gpgmekeys_xsd_Element_can-certify-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_can-certify.png" width="194pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -403,25 +329,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_can-authenticate">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_can-authenticate">
                                             <area linkends="can-authenticate_value" units="other" otherunits="imagemap" coords="221,50,416,112" xml:id="gpgmekeys_xsd_Element_can-authenticate-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_can-authenticate.png" width="221pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -435,25 +355,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_is-qualified">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_is-qualified">
                                             <area linkends="is-qualified_value" units="other" otherunits="imagemap" coords="172,50,367,112" xml:id="gpgmekeys_xsd_Element_is-qualified-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_is-qualified.png" width="196.5pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -467,25 +381,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_secret">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_secret">
                                             <area linkends="secret_value" units="other" otherunits="imagemap" coords="125,50,320,112" xml:id="gpgmekeys_xsd_Element_secret-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_secret.png" width="173pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Elements </entry><entry><link linkend="key">key</link>, <link linkend="subkey">subkey</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -499,25 +407,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_protocol">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_protocol">
                                             <area linkends="protocol_value" units="other" otherunits="imagemap" coords="344,177,511,239" xml:id="gpgmekeys_xsd_Element_protocol-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_protocol.png" width="346.5pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry>
                 Type
             </entry><entry>extension of xs:NCName</entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -537,27 +439,20 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_issuer">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_issuer">
                                             <area linkends="serial" units="other" otherunits="imagemap" coords="181,2,247,36" xml:id="gpgmekeys_xsd_Element_issuer-1"/>
-                                          
                                             <area linkends="name" units="other" otherunits="imagemap" coords="181,46,337,108" xml:id="gpgmekeys_xsd_Element_issuer-2"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_issuer.png" width="177.5pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -603,25 +498,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_owner-trust">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_owner-trust">
                                             <area linkends="owner-trust_value" units="other" otherunits="imagemap" coords="344,177,511,239" xml:id="gpgmekeys_xsd_Element_owner-trust-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_owner-trust.png" width="346.5pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry>
                 Type
             </entry><entry>extension of xs:NCName</entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -641,25 +530,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_subkeys">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_subkeys">
                                             <area linkends="subkey" units="other" otherunits="imagemap" coords="238,2,330,36" xml:id="gpgmekeys_xsd_Element_subkeys-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_subkeys.png" width="174pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -679,33 +562,23 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_subkey">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_subkey">
                                             <area linkends="keyid" units="other" otherunits="imagemap" coords="191,2,386,64" xml:id="gpgmekeys_xsd_Element_subkey-1"/>
-                                          
                                             <area linkends="fpr" units="other" otherunits="imagemap" coords="191,74,347,136" xml:id="gpgmekeys_xsd_Element_subkey-2"/>
-                                          
                                             <area linkends="secret" units="other" otherunits="imagemap" coords="191,146,274,180" xml:id="gpgmekeys_xsd_Element_subkey-3"/>
-                                          
                                             <area linkends="is_cardkey" units="other" otherunits="imagemap" coords="191,190,312,224" xml:id="gpgmekeys_xsd_Element_subkey-4"/>
-                                          
                                             <area linkends="curve" units="other" otherunits="imagemap" coords="191,234,372,296" xml:id="gpgmekeys_xsd_Element_subkey-5"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_subkey.png" width="202pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="subkeys">subkeys</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -749,25 +622,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_is_cardkey">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_is_cardkey">
                                             <area linkends="is_cardkey_value" units="other" otherunits="imagemap" coords="163,50,358,112" xml:id="gpgmekeys_xsd_Element_is_cardkey-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_is_cardkey.png" width="192pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="subkey">subkey</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -789,25 +656,19 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_uids">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_uids">
                                             <area linkends="uid" units="other" otherunits="imagemap" coords="204,2,262,36" xml:id="gpgmekeys_xsd_Element_uids-1"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_uids.png" width="140pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Element </entry><entry><link linkend="key">key</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
@@ -827,31 +688,22 @@
             </entry><entry>No namespace</entry></row><row><entry>
                 Diagram
             </entry><entry><para>
-                            
-                            <mediaobject>  
-                                <imageobjectco>  
-                                    
-                                    <areaspec xml:id="gpgmekeys_xsd_Element_uid">  
-                                          
+                            <mediaobject>
+                                <imageobjectco>
+                                    <areaspec xml:id="gpgmekeys_xsd_Element_uid">
                                             <area linkends="name" units="other" otherunits="imagemap" coords="195,2,351,64" xml:id="gpgmekeys_xsd_Element_uid-1"/>
-                                          
                                             <area linkends="uid" units="other" otherunits="imagemap" coords="195,74,242,108" xml:id="gpgmekeys_xsd_Element_uid-2"/>
-                                          
                                             <area linkends="comment" units="other" otherunits="imagemap" coords="195,118,351,180" xml:id="gpgmekeys_xsd_Element_uid-3"/>
-                                          
                                             <area linkends="email" units="other" otherunits="imagemap" coords="195,190,359,252" xml:id="gpgmekeys_xsd_Element_uid-4"/>
-                                        
-                                        
                                     </areaspec>
-                                    <imageobject>                                        
+                                    <imageobject>
                                                 <imagedata fileref="img/gpgmekeys_xsd_Element_uid.png" width="188.5pt"/>
                                         <!--If you want to use this Docbook document to generate
                                             HTML output you will have to delete the "width" attributes in order for the imagemaps to function.
                                         -->
-                                    </imageobject>                                    
+                                    </imageobject>
                                 </imageobjectco>
                             </mediaobject>
-                            
                         </para></entry></row><row><entry> Properties </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>content: </entry><entry><literal>complex</literal></entry></row><row><entry>mixed: </entry><entry><literal>true</literal></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
                     Used by
             </entry><entry><informaltable frame="none" colsep="0"><tgroup cols="2"><colspec colwidth="2*" align="left"/><colspec colwidth="8*" align="left"/><tbody><row><entry>Elements </entry><entry><link linkend="uid">uid</link>, <link linkend="uids">uids</link></entry></row></tbody></tgroup></informaltable></entry></row><row><entry>
