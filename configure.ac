@@ -308,14 +308,17 @@ if test "$found" = "1"; then
     enabled_languages=$(echo $enabled_languages | sed 's/qt//')
     LIST_MEMBER("cpp", $enabled_languages)
     if test "$found" = "0"; then
-        AC_MSG_ERROR([qt binding depends on cpp language binding])
+        AC_MSG_ERROR([[
+***
+*** Qt language binding depends on cpp binding.
+***]])
     fi
     FIND_QT
     if test "$have_qt5_libs" != "yes"; then
         if test "$explicit_languages" = "1"; then
         AC_MSG_ERROR([[
 ***
-*** Qt5 (Qt5Core) is required for qt binding.
+*** Qt5 (Qt5Core) is required for Qt binding.
 ***]])
         else
            AC_MSG_WARN([[
