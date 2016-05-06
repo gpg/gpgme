@@ -255,45 +255,83 @@ AC_ARG_ENABLE([languages],
                              [enabled_languages=`echo $enableval | \
                              tr ',:' '  ' | tr '[A-Z]' '[a-z]' | \
                              sed 's/c++/cpp/'`],
-                             [enabled_languages="$default_languages"])
+                             [enabled_languages="maybe"])
 if test "x$enabled_languages" = "x" \
    -o "$enabled_languages" = "no"; then
    enabled_languages=
 fi
+
+# If languages are explicitly set missing requirements
+# for the languages are treated as errors otherwise
+# there will be a warning.
+explicit_languages=1
+if test "x$enabled_languages" = "xmaybe"; then
+    explicit_languages=0
+    enabled_languages="$default_languages"
+fi
+
 for language in $enabled_languages; do
     LIST_MEMBER($language, $available_languages)
     if test "$found" = "0"; then
        AC_MSG_ERROR([unsupported language binding specified])
     fi
 done
+
+
+
 # Enable C++ 11 if cpp language is requested
 LIST_MEMBER("cpp", $enabled_languages)
 if test "$found" = "1"; then
     AX_CXX_COMPILE_STDCXX(11, noext, optional)
+    if test "$HAVE_CXX11" != "1"; then
+        if test "$explicit_languages" = "1"; then
+            AC_MSG_ERROR([[
+***
+*** A compiler with c++11 support is required for the c++ binding.
+***]])
+        else
+            enabled_languages=$(echo $enabled_languages | sed 's/cpp//')
+            enabled_languages=$(echo $enabled_languages | sed 's/qt//')
+            AC_MSG_WARN([[
+***
+*** No c++11 support detected. C++ and Qt bindings will be disabled.
+***]])
+        fi
+    fi
 fi
 
 # Check that if qt is enabled cpp also is enabled
 LIST_MEMBER("qt", $enabled_languages)
 if test "$found" = "1"; then
-   LIST_MEMBER("cpp", $enabled_languages)
-   if test "$found" = "0"; then
-      AC_MSG_ERROR([qt binding depends on cpp language binding])
-   fi
-   FIND_QT
-   if test "$have_qt5_libs" != "yes"; then
-       AC_MSG_ERROR([[
-   ***
-   *** Qt5 (Qt5Core) is required for qt binding.
-   ***]])
-   fi
+    # We need to ensure that in the langauge order qt comes after cpp
+    # so we remove qt first and explicitly add it as last list member.
+    enabled_languages=$(echo $enabled_languages | sed 's/qt//')
+    LIST_MEMBER("cpp", $enabled_languages)
+    if test "$found" = "0"; then
+        AC_MSG_ERROR([qt binding depends on cpp language binding])
+    fi
+    FIND_QT
+    if test "$have_qt5_libs" != "yes"; then
+        if test "$explicit_languages" = "1"; then
+        AC_MSG_ERROR([[
+***
+*** Qt5 (Qt5Core) is required for qt binding.
+***]])
+        else
+           AC_MSG_WARN([[
+***
+*** Qt5 (Qt5Core) not found Qt Binding will be disabled.
+***]])
+        fi
+    else
+        enabled_languages=`echo $enabled_languages qt`
 
-   AC_CHECK_PROGS([DOXYGEN], [doxygen])
-   if test -z "$DOXYGEN";
-       then AC_MSG_WARN([Doxygen not found - Qt binding doc will not be built.])
-   fi
-   # Make sure that qt comes after cpp
-   enabled_languages=`echo $enabled_languages | sed 's/qt//'`
-   enabled_languages=`echo $enabled_languages qt`
+        AC_CHECK_PROGS([DOXYGEN], [doxygen])
+        if test -z "$DOXYGEN";
+            # This is not highlighted becase it's not really important.
+            then AC_MSG_WARN([Doxygen not found - Qt binding doc will not be built.])
+        fi
+    fi
 fi
 AM_CONDITIONAL([HAVE_DOXYGEN],
                [test -n "$DOXYGEN"])
