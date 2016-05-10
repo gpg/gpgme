@@ -35,29 +35,38 @@ qgpgme_sources = \
     qgpgmeverifyopaquejob.cpp threadedjobmixin.cpp \
     gpgme_backend_debug.cpp
 
-qgpgme_headers = \
-    qgpgme_export.h \
-    abstractimportjob.h \
+qgpgme_headers= \
     adduseridjob.h \
     changeexpiryjob.h \
     changeownertrustjob.h \
     changepasswdjob.h \
-    cryptoconfig.h \
     dataprovider.h \
     decryptjob.h \
     decryptverifyjob.h \
-    deletejob.h \
     downloadjob.h \
     encryptjob.h \
     exportjob.h \
     hierarchicalkeylistjob.h \
+    job.h \
+    multideletejob.h \
+    qgpgme_export.h \
+    qgpgmenewcryptoconfig.h \
+    signjob.h \
+    signkeyjob.h \
+    signencryptjob.h \
+    verifyopaquejob.h \
+    refreshkeysjob.h \
+    cryptoconfig.h \
+    deletejob.h \
     importfromkeyserverjob.h \
     importjob.h \
-    job.h \
     keygenerationjob.h \
     keylistjob.h \
-    listallkeysjob.h \
-    multideletejob.h \
+    listallkeysjob.h
+
+private_qgpgme_headers = \
+    qgpgme_export.h \
+    abstractimportjob.h \
     qgpgmeadduseridjob.h \
     qgpgmebackend.h \
     qgpgmechangeexpiryjob.h \
@@ -74,7 +83,6 @@ qgpgme_headers = \
     qgpgmekeygenerationjob.h \
     qgpgmekeylistjob.h \
     qgpgmelistallkeysjob.h \
-    qgpgmenewcryptoconfig.h \
     qgpgmerefreshkeysjob.h \
     qgpgmesecretkeyexportjob.h \
     qgpgmesignencryptjob.h \
@@ -82,14 +90,8 @@ qgpgme_headers = \
     qgpgmesignkeyjob.h \
     qgpgmeverifydetachedjob.h \
     qgpgmeverifyopaquejob.h \
-    refreshkeysjob.h \
-    signencryptjob.h \
-    signjob.h \
-    signkeyjob.h \
     specialjob.h \
-    threadedjobmixin.h \
-    verifydetachedjob.h \
-    verifyopaquejob.h
+    threadedjobmixin.h
 
 qgpgme_moc_sources = \
     abstractimportjob.moc \
@@ -144,7 +146,7 @@ qgpgme_moc_sources = \
 qgpgmeincludedir = $(includedir)/qgpgme
 qgpgmeinclude_HEADERS = $(qgpgme_headers)
 
-libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers)
+libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
 
 AM_CPPFLAGS = @GPGME_QT_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
               -DBUILDING_QGPGME -I$(top_srcdir)/lang/cpp/src
