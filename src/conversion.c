@@ -427,6 +427,7 @@ _gpgme_map_pk_algo (int algo, gpgme_protocol_t protocol)
         case 18: algo = GPGME_PK_ECDH; break;
         case 19: algo = GPGME_PK_ECDSA; break;
         case 20: break;
+        case 22: algo = GPGME_PK_EDDSA; break;
         default: algo = 0; break; /* Unknown.  */
         }
     }

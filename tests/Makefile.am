@@ -23,9 +23,10 @@ TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir)
 
 TESTS = t-version t-data t-engine-info
 
-EXTRA_DIST = t-data-1.txt t-data-2.txt ChangeLog-2011
+EXTRA_DIST = start-stop-agent t-data-1.txt t-data-2.txt ChangeLog-2011
 
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
+AM_LDFLAGS = -no-install
 LDADD = ../src/libgpgme.la @GPG_ERROR_LIBS@
 
 noinst_HEADERS = run-support.h

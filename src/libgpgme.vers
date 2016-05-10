@@ -92,6 +92,14 @@ GPGME_1.1 {
 
     gpgme_op_spawn_start;
     gpgme_op_spawn;
+
+    gpgme_set_offline;
+    gpgme_get_offline;
+
+    gpgme_set_status_cb;
+    gpgme_get_status_cb;
+
+    gpgme_pubkey_algo_string;
 };
 
 

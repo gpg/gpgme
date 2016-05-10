@@ -120,9 +120,24 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
   op_data_t opd;
 
   if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
-                |GPGME_EXPORT_MODE_MINIMAL)))
+                |GPGME_EXPORT_MODE_MINIMAL
+                |GPGME_EXPORT_MODE_SECRET
+                |GPGME_EXPORT_MODE_RAW
+                |GPGME_EXPORT_MODE_PKCS12)))
     return gpg_error (GPG_ERR_INV_VALUE); /* Invalid flags in MODE.  */
 
+  if ((mode & GPGME_EXPORT_MODE_SECRET))
+    {
+      if ((mode & GPGME_EXPORT_MODE_EXTERN))
+        return gpg_error (GPG_ERR_INV_FLAG);  /* Combination not allowed. */
+      if ((mode & GPGME_EXPORT_MODE_RAW)
+          && (mode & GPGME_EXPORT_MODE_PKCS12))
+        return gpg_error (GPG_ERR_INV_FLAG);  /* Combination not allowed. */
+
+      if (ctx->protocol != GPGME_PROTOCOL_CMS
+          && (mode & (GPGME_EXPORT_MODE_RAW|GPGME_EXPORT_MODE_PKCS12)))
+        return gpg_error (GPG_ERR_INV_FLAG);  /* Only supported for X.509.  */
+    }
 
   if ((mode & GPGME_EXPORT_MODE_EXTERN))
     {
@@ -199,8 +214,24 @@ export_ext_start (gpgme_ctx_t ctx, int synchronous, const char *pattern[],
   op_data_t opd;
 
   if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
-                |GPGME_EXPORT_MODE_MINIMAL)))
+                |GPGME_EXPORT_MODE_MINIMAL
+                |GPGME_EXPORT_MODE_SECRET
+                |GPGME_EXPORT_MODE_RAW
+                |GPGME_EXPORT_MODE_PKCS12)))
     return gpg_error (GPG_ERR_INV_VALUE); /* Invalid flags in MODE.  */
+
+  if ((mode & GPGME_EXPORT_MODE_SECRET))
+    {
+      if ((mode & GPGME_EXPORT_MODE_EXTERN))
+        return gpg_error (GPG_ERR_INV_FLAG);  /* Combination not allowed. */
+      if ((mode & GPGME_EXPORT_MODE_RAW)
+          && (mode & GPGME_EXPORT_MODE_PKCS12))
+        return gpg_error (GPG_ERR_INV_FLAG);  /* Combination not allowed. */
+
+      if (ctx->protocol != GPGME_PROTOCOL_CMS
+          && (mode & (GPGME_EXPORT_MODE_RAW|GPGME_EXPORT_MODE_PKCS12)))
+        return gpg_error (GPG_ERR_INV_FLAG);  /* Only supported for X.509.  */
+    }
 
   if ((mode & GPGME_EXPORT_MODE_EXTERN))
     {

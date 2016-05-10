@@ -98,6 +98,9 @@ struct gpgme_context
   /* True if text mode should be used.  */
   unsigned int use_textmode : 1;
 
+  /* True if offline mode should be used.  */
+  unsigned int offline : 1;
+
   /* Flags for keylist mode.  */
   gpgme_keylist_mode_t keylist_mode;
 
@@ -131,6 +134,10 @@ struct gpgme_context
   /* The user provided progress callback and its hook value.  */
   gpgme_progress_cb_t progress_cb;
   void *progress_cb_value;
+
+  /* The user provided status callback and its hook value.  */
+  gpgme_status_cb_t status_cb;
+  void *status_cb_value;
 
   /* A list of file descriptors in active use by the current
      operation.  */

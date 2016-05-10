@@ -23,6 +23,9 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
@@ -330,6 +333,16 @@ get_max_fds (void)
       /* Arbitrary limit.  */
       fds = 1024;
     }
+
+  /* AIX returns INT32_MAX instead of a proper value.  We assume that
+   * this is always an error and use a more reasonable limit.  */
+#ifdef INT32_MAX
+  if (fds == INT32_MAX)
+    {
+      source = "aix-fix";
+      fds = 1024;
+    }
+#endif
 
   TRACE2 (DEBUG_SYSIO, "gpgme:max_fds", 0, "max fds=%i (%s)", fds, source);
   return fds;

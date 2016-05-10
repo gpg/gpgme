@@ -113,12 +113,14 @@ gpgme_error_t _gpgme_engine_op_import (engine_t engine,
 gpgme_error_t _gpgme_engine_op_keylist (engine_t engine,
 					const char *pattern,
 					int secret_only,
-					gpgme_keylist_mode_t mode);
+					gpgme_keylist_mode_t mode,
+					int engine_flags);
 gpgme_error_t _gpgme_engine_op_keylist_ext (engine_t engine,
 					    const char *pattern[],
 					    int secret_only,
 					    int reserved,
-					    gpgme_keylist_mode_t mode);
+					    gpgme_keylist_mode_t mode,
+					    int engine_flags);
 gpgme_error_t _gpgme_engine_op_sign (engine_t engine, gpgme_data_t in,
 				     gpgme_data_t out, gpgme_sig_mode_t mode,
 				     int use_armor, int use_textmode,
@@ -169,6 +171,9 @@ gpgme_error_t _gpgme_engine_op_spawn (engine_t engine,
                                       gpgme_data_t dataout,
                                       gpgme_data_t dataerr,
                                       unsigned int flags);
+
+/* The available engine option flags.  */
+#define GPGME_ENGINE_FLAG_OFFLINE        1
 
 
 #endif /* ENGINE_H */

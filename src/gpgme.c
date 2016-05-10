@@ -1,7 +1,7 @@
 /* gpgme.c - GnuPG Made Easy.
    Copyright (C) 2000 Werner Koch (dd9jn)
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2012,
-                 2014 g10 Code GmbH
+                 2014, 2015 g10 Code GmbH
 
    This file is part of GPGME.
 
@@ -75,6 +75,8 @@ gpgme_set_global_flag (const char *name, const char *value)
     return _gpgme_set_default_gpgconf_name (value);
   else if (!strcmp (name, "gpg-name"))
     return _gpgme_set_default_gpg_name (value);
+  else if (!strcmp (name, "w32-inst-dir"))
+    return _gpgme_set_override_inst_dir (value);
   else
     return -1;
 }
@@ -91,7 +93,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   TRACE_BEG (DEBUG_CTX, "gpgme_new", r_ctx);
 
   if (_gpgme_selftest)
-    return TRACE_ERR (gpgme_error (_gpgme_selftest));
+    return TRACE_ERR (_gpgme_selftest);
 
   if (!r_ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
@@ -472,6 +474,30 @@ gpgme_get_textmode (gpgme_ctx_t ctx)
 }
 
 
+/* Enable offline mode for this context. In offline mode dirmngr
+  will be disabled. */
+void
+gpgme_set_offline (gpgme_ctx_t ctx, int offline)
+{
+  TRACE2 (DEBUG_CTX, "gpgme_set_offline", ctx, "offline=%i (%s)",
+          offline, offline ? "yes" : "no");
+
+  if (!ctx)
+    return;
+
+  ctx->offline = offline;
+}
+
+/* Return the state of the offline flag.  */
+int
+gpgme_get_offline (gpgme_ctx_t ctx)
+{
+  TRACE2 (DEBUG_CTX, "gpgme_get_offline", ctx, "ctx->offline=%i (%s)",
+          ctx->offline, ctx->offline ? "yes" : "no");
+  return ctx->offline;
+}
+
+
 /* Set the number of certifications to include in an S/MIME message.
    The default is GPGME_INCLUDE_CERTS_DEFAULT.  -1 means all certs,
    and -2 means all certs except the root cert.  */
@@ -629,6 +655,47 @@ gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *r_cb,
     *r_cb = ctx->progress_cb;
   if (r_cb_value)
     *r_cb_value = ctx->progress_cb_value;
+}
+
+
+/* This function sets a callback function to be used as a status
+   message forwarder.  */
+void
+gpgme_set_status_cb (gpgme_ctx_t ctx, gpgme_status_cb_t cb, void *cb_value)
+{
+  TRACE2 (DEBUG_CTX, "gpgme_set_status_cb", ctx, "status_cb=%p/%p",
+	  cb, cb_value);
+
+  if (!ctx)
+    return;
+
+  ctx->status_cb = cb;
+  ctx->status_cb_value = cb_value;
+}
+
+
+/* This function returns the callback function to be used as a
+   status message forwarder.  */
+void
+gpgme_get_status_cb (gpgme_ctx_t ctx, gpgme_status_cb_t *r_cb,
+		       void **r_cb_value)
+{
+  TRACE2 (DEBUG_CTX, "gpgme_get_status_cb", ctx, "ctx->status_cb=%p/%p",
+	  ctx ? ctx->status_cb : NULL, ctx ? ctx->status_cb_value : NULL);
+
+  if (r_cb)
+    *r_cb = NULL;
+
+  if (r_cb_value)
+    *r_cb_value = NULL;
+
+  if (!ctx || !ctx->status_cb)
+    return;
+
+  if (r_cb)
+    *r_cb = ctx->status_cb;
+  if (r_cb_value)
+    *r_cb_value = ctx->status_cb_value;
 }
 
 
@@ -929,41 +996,70 @@ gpgme_sig_notation_get (gpgme_ctx_t ctx)
   return ctx->sig_notations;
 }
 
+
 
+/* Return a public key algorithm string made of the algorithm and size
+   or the curve name.  May return NULL on error.  Caller must free the
+   result using gpgme_free.  */
+char *
+gpgme_pubkey_algo_string (gpgme_subkey_t subkey)
+{
+  const char *prefix = NULL;
+  char *result;
+
+  if (!subkey)
+    {
+      gpg_err_set_errno (EINVAL);
+      return NULL;
+    }
+
+  switch (subkey->pubkey_algo)
+    {
+    case GPGME_PK_RSA:
+    case GPGME_PK_RSA_E:
+    case GPGME_PK_RSA_S: prefix = "rsa"; break;
+    case GPGME_PK_ELG_E: prefix = "elg"; break;
+    case GPGME_PK_DSA:	 prefix = "dsa"; break;
+    case GPGME_PK_ELG:   prefix = "xxx"; break;
+    case GPGME_PK_ECC:
+    case GPGME_PK_ECDH:
+    case GPGME_PK_ECDSA:
+    case GPGME_PK_EDDSA: prefix = "";    break;
+    }
+
+  if (prefix && *prefix)
+    {
+      char buffer[40];
+      snprintf (buffer, sizeof buffer, "%s%u", prefix, subkey->length);
+      result = strdup (buffer);
+    }
+  else if (prefix && subkey->curve && *subkey->curve)
+    result = strdup (subkey->curve);
+  else if (prefix)
+    result =  strdup ("E_error");
+  else
+    result = strdup  ("unknown");
+
+  return result;
+}
+
+
 const char *
 gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo)
 {
   switch (algo)
     {
-    case GPGME_PK_RSA:
-      return "RSA";
-
-    case GPGME_PK_RSA_E:
-      return "RSA-E";
-
-    case GPGME_PK_RSA_S:
-      return "RSA-S";
-
-    case GPGME_PK_ELG_E:
-      return "ELG-E";
-
-    case GPGME_PK_DSA:
-      return "DSA";
-
-    case GPGME_PK_ECC:
-      return "ECC";
-
-    case GPGME_PK_ELG:
-      return "ELG";
-
-    case GPGME_PK_ECDSA:
-      return "ECDSA";
-
-    case GPGME_PK_ECDH:
-      return "ECDH";
-
-    default:
-      return NULL;
+    case GPGME_PK_RSA:   return "RSA";
+    case GPGME_PK_RSA_E: return "RSA-E";
+    case GPGME_PK_RSA_S: return "RSA-S";
+    case GPGME_PK_ELG_E: return "ELG-E";
+    case GPGME_PK_DSA:   return "DSA";
+    case GPGME_PK_ECC:   return "ECC";
+    case GPGME_PK_ELG:   return "ELG";
+    case GPGME_PK_ECDSA: return "ECDSA";
+    case GPGME_PK_ECDH:  return "ECDH";
+    case GPGME_PK_EDDSA: return "EdDSA";
+    default:             return NULL;
     }
 }
 

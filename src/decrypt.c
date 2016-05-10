@@ -38,6 +38,9 @@ typedef struct
 {
   struct _gpgme_op_decrypt_result result;
 
+  /* The error code from a FAILURE status line or 0.  */
+  gpg_error_t failure_code;
+
   int okay;
   int failed;
 
@@ -192,6 +195,10 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 
   switch (code)
     {
+    case GPGME_STATUS_FAILURE:
+      opd->failure_code = _gpgme_parse_failure (args);
+      break;
+
     case GPGME_STATUS_EOF:
       /* FIXME: These error values should probably be attributed to
 	 the underlying crypto engine (as error source).  */
@@ -199,6 +206,8 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 	return gpg_error (GPG_ERR_DECRYPT_FAILED);
       else if (!opd->okay)
 	return gpg_error (GPG_ERR_NO_DATA);
+      else if (opd->failure_code)
+        return opd->failure_code;
       break;
 
     case GPGME_STATUS_DECRYPTION_INFO:
@@ -291,6 +300,16 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       err = _gpgme_parse_plaintext (args, &opd->result.file_name);
       if (err)
 	return err;
+      break;
+
+    case GPGME_STATUS_INQUIRE_MAXLEN:
+      if (ctx->status_cb)
+        {
+          err = ctx->status_cb (ctx->status_cb_value, "INQUIRE_MAXLEN", args);
+          if (err)
+            return err;
+        }
+      break;
 
     default:
       break;

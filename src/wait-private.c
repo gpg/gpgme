@@ -89,7 +89,7 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
 
       if (nr < 0)
 	{
-	  /* An error occured.  Close all fds in this context, and
+	  /* An error occurred.  Close all fds in this context, and
 	     signal it.  */
 	  err = gpg_error_from_syserror ();
           _gpgme_cancel_with_err (ctx, err, 0);
@@ -116,7 +116,7 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
 		err = _gpgme_run_io_cb (&ctx->fdt.fds[i], 0, &op_err);
 	      if (err)
 		{
-		  /* An error occured.  Close all fds in this context,
+		  /* An error occurred.  Close all fds in this context,
 		     and signal it.  */
 		  _gpgme_cancel_with_err (ctx, err, 0);
 
@@ -124,7 +124,7 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
 		}
 	      else if (op_err)
 		{
-		  /* An operational error occured.  Cancel the current
+		  /* An operational error occurred.  Cancel the current
 		     operation but not the session, and signal it.  */
 		  _gpgme_cancel_with_err (ctx, 0, op_err);
 

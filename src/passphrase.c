@@ -41,6 +41,7 @@ typedef struct
   char *uid_hint;
   char *passphrase_info;
   int bad_passphrase;
+  char *maxlen;
 } *op_data_t;
 
 
@@ -53,6 +54,7 @@ release_op_data (void *hook)
     free (opd->passphrase_info);
   if (opd->uid_hint)
     free (opd->uid_hint);
+  free (opd->maxlen);
 }
 
 
@@ -73,6 +75,11 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 
   switch (code)
     {
+    case GPGME_STATUS_INQUIRE_MAXLEN:
+      free (opd->maxlen);
+      if (!(opd->maxlen = strdup (args)))
+        return gpg_error_from_syserror ();
+      break;
     case GPGME_STATUS_USERID_HINT:
       if (opd->uid_hint)
 	free (opd->uid_hint);
@@ -109,6 +116,31 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 	return gpg_error (GPG_ERR_BAD_PASSPHRASE);
       break;
 
+    case GPGME_STATUS_ERROR:
+      /* We abuse this status handler to forward ERROR status codes to
+         the caller.  This should better be done in a generic handler,
+         but for now this is sufficient.  */
+      if (ctx->status_cb)
+        {
+          err = ctx->status_cb (ctx->status_cb_value, "ERROR", args);
+          if (err)
+            return err;
+        }
+      break;
+
+    case GPGME_STATUS_FAILURE:
+      /* We abuse this status handler to forward FAILURE status codes
+         to the caller.  This should better be done in a generic
+         handler, but for now this is sufficient.  */
+      if (ctx->status_cb)
+        {
+          err = ctx->status_cb (ctx->status_cb_value, "FAILURE", args);
+          if (err)
+            return err;
+        }
+      break;
+
+
     default:
       /* Ignore all other codes.  */
       break;
@@ -141,9 +173,14 @@ _gpgme_passphrase_command_handler (void *priv, gpgme_status_code_t code,
       if (processed)
 	*processed = 1;
 
-      err = ctx->passphrase_cb (ctx->passphrase_cb_value,
-				opd->uid_hint, opd->passphrase_info,
-				opd->bad_passphrase, fd);
+      if (ctx->status_cb && opd->maxlen)
+        err = ctx->status_cb (ctx->status_cb_value, "INQUIRE_MAXLEN",
+                              opd->maxlen);
+
+      if (!err)
+        err = ctx->passphrase_cb (ctx->passphrase_cb_value,
+                                  opd->uid_hint, opd->passphrase_info,
+                                  opd->bad_passphrase, fd);
 
       /* Reset bad passphrase flag, in case it is correct now.  */
       opd->bad_passphrase = 0;

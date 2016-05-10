@@ -146,7 +146,7 @@ gpgme_data_new_from_file (gpgme_data_t *r_dh, const char *fname, int copy)
 static int
 gpgme_error_to_errno (gpgme_error_t err)
 {
-  int res = gpg_err_code_to_errno (err);
+  int res = gpg_err_code_to_errno (gpg_err_code (err));
 
   if (!err)
     {

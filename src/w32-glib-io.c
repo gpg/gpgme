@@ -98,7 +98,7 @@ static struct
      FD is closed.  This, together with the fact that dup'ed file
      descriptors are closed before the file descriptors from which
      they are dup'ed are closed, ensures that CHAN is always valid,
-     and shared among all file descriptors refering to the same
+     and shared among all file descriptors referring to the same
      underlying object.
 
      The logic behind this is that there is only one reason for us to

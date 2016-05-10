@@ -74,7 +74,7 @@ static struct
      that dup'ed file descriptors are closed before the file
      descriptors from which they are dup'ed are closed, ensures that
      the handle or socket is always valid, and shared among all file
-     descriptors refering to the same underlying object.
+     descriptors referring to the same underlying object.
 
      The logic behind this is that there is only one reason for us to
      dup file descriptors anyway: to allow simpler book-keeping of
@@ -978,7 +978,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
       return TRACE_SYSRES (-1);
     }
 
-  /* If no error occured, the number of bytes in the buffer must be
+  /* If no error occurred, the number of bytes in the buffer must be
      zero.  */
   assert (!ctx->nbytes);
 
@@ -1550,6 +1550,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   int debug_me = 0;
   int tmp_fd;
   char *tmp_name;
+  const char *spawnhelper;
 
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
 	      "path=%s", path);
@@ -1603,7 +1604,8 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   if ((flags & IOSPAWN_FLAG_DETACHED))
     cr_flags |= DETACHED_PROCESS;
   cr_flags |= GetPriorityClass (GetCurrentProcess ());
-  if (!CreateProcessA (_gpgme_get_w32spawn_path (),
+  spawnhelper = _gpgme_get_w32spawn_path ();
+  if (!CreateProcessA (spawnhelper,
 		       arg_string,
 		       &sec_attr,     /* process security attributes */
 		       &sec_attr,     /* thread security attributes */
@@ -1614,7 +1616,10 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		       &si,           /* startup information */
 		       &pi))          /* returns process information */
     {
-      TRACE_LOG1 ("CreateProcess failed: ec=%d", (int) GetLastError ());
+      int lasterr = (int)GetLastError ();
+      TRACE_LOG1 ("CreateProcess failed: ec=%d", lasterr);
+      if (lasterr == ERROR_INVALID_PARAMETER)
+        TRACE_LOG1 ("(is '%s' correctly installed?)", spawnhelper);
       free (arg_string);
       close (tmp_fd);
       DeleteFileA (tmp_name);

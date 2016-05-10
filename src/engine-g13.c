@@ -286,12 +286,10 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
       int rc;
 
       rc = ttyname_r (1, dft_ttyname, sizeof (dft_ttyname));
-      if (rc)
-	{
-	  err = gpg_error_from_errno (rc);
-	  goto leave;
-	}
-      else
+
+      /* Even though isatty() returns 1, ttyname_r() may fail in many
+	 ways, e.g., when /dev/pts is not accessible under chroot.  */
+      if (!rc)
 	{
 	  if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
 	    {

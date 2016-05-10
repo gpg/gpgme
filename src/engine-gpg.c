@@ -513,6 +513,8 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 	rc = add_arg (gpg, dft_display);
 
       free (dft_display);
+      if (rc)
+	goto leave;
     }
 
   if (isatty (1))
@@ -520,9 +522,10 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
       int err;
 
       err = ttyname_r (1, dft_ttyname, sizeof (dft_ttyname));
-      if (err)
-	rc = gpg_error_from_errno (err);
-      else
+
+      /* Even though isatty() returns 1, ttyname_r() may fail in many
+	 ways, e.g., when /dev/pts is not accessible under chroot.  */
+      if (!err)
 	{
           if (*dft_ttyname)
             {
@@ -547,9 +550,9 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
 
 	      free (dft_ttytype);
 	    }
+	  if (rc)
+	    goto leave;
 	}
-      if (rc)
-	goto leave;
     }
 
  leave:
@@ -1456,7 +1459,7 @@ gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
     err = add_data (gpg, ciph, -1, 0);
 
   if (!err)
-    start (gpg);
+    err = start (gpg);
   return err;
 }
 
@@ -1479,7 +1482,7 @@ gpg_delete (void *engine, gpgme_key_t key, int allow_secret)
     }
 
   if (!err)
-    start (gpg);
+    err = start (gpg);
   return err;
 }
 
@@ -1497,7 +1500,7 @@ gpg_passwd (void *engine, gpgme_key_t key, unsigned int flags)
   if (!err)
     err = add_arg (gpg, key->subkeys->fpr);
   if (!err)
-    start (gpg);
+    err = start (gpg);
   return err;
 }
 
@@ -1793,7 +1796,8 @@ export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
   gpgme_error_t err = 0;
 
   if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
-                |GPGME_EXPORT_MODE_MINIMAL)))
+                |GPGME_EXPORT_MODE_MINIMAL
+                |GPGME_EXPORT_MODE_SECRET)))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if ((mode & GPGME_EXPORT_MODE_MINIMAL))
@@ -1807,7 +1811,10 @@ export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
     }
   else
     {
-      err = add_arg (gpg, "--export");
+      if ((mode & GPGME_EXPORT_MODE_SECRET))
+        err = add_arg (gpg, "--export-secret-keys");
+      else
+        err = add_arg (gpg, "--export");
       if (!err && use_armor)
         err = add_arg (gpg, "--armor");
       if (!err)
@@ -2194,6 +2201,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
               {
                 *dst++ = '\\';
                 *dst++ = '\\';
+                src++;
               }
 	    else
 	      *(dst++) = *(src++);
@@ -2278,7 +2286,7 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
 
 static gpgme_error_t
 gpg_keylist (void *engine, const char *pattern, int secret_only,
-	     gpgme_keylist_mode_t mode)
+	     gpgme_keylist_mode_t mode, int engine_flags)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -2297,7 +2305,7 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
 
 static gpgme_error_t
 gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
-		 int reserved, gpgme_keylist_mode_t mode)
+		 int reserved, gpgme_keylist_mode_t mode, int engine_flags)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -2363,7 +2371,7 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
     err = add_data (gpg, out, 1, 1);
 
   if (!err)
-    start (gpg);
+    err = start (gpg);
 
   return err;
 }

@@ -189,10 +189,12 @@ Context Attributes
 * Crypto Engine::                 Configuring the crypto engine.
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
+* Offline Mode::                  Choosing offline mode.
 * Included Certificates::         Including a number of certificates.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
+* Status Message Callback::       Status messages received from gpg.
 * Locale::                        Setting the locale of a context.
 
 Key Management
@@ -699,6 +701,16 @@ directory part is used as the default installation directory; the
 @code{.exe} suffix is added by GPGME.  Use forward slashed even under
 Windows.
 
+@item "w32-inst-dir"
+On Windows GPGME needs to know its installation directory to find its
+spawn helper.  This is in general no problem because a DLL has this
+information.  Some applications however link statically to GPGME and
+thus GPGME can only figure out the installation directory of this
+application which may be wrong in certain cases.  By supplying an
+installation directory as value to this flag, GPGME will assume that
+that directory is the installation directory.  This flag has no effect
+on non-Windows platforms.
+
 @end table
 
 This function returns @code{0} on success.  In contrast to other
@@ -1159,6 +1171,9 @@ Algorithm as defined by FIPS 186-2 and RFC-6637.
 This value indicates ECDH, the Eliptic Curve Diffie-Hellmann
 encryption algorithm as defined by RFC-6637.
 
+@item GPGME_PK_EDDSA
+This value indicates the EdDSA algorithm.
+
 @end table
 @end deftp
 
@@ -1170,6 +1185,14 @@ the public key algorithm to the user.
 
 If @var{algo} is not a valid public key algorithm, @code{NULL} is
 returned.
+@end deftypefun
+
+@deftypefun {char *} gpgme_pubkey_algo_string (@w{gpgme_subkey_t @var{key}})
+The function @code{gpgme_pubkey_algo_string} is a convenience function
+to build and return an algorithm string in the same way GnuPG does
+(e.g. ``rsa2048'' or ``ed25519'').  The caller must free the result
+using @code{gpgme_free}.  On error (e.g. invalid argument or memory
+exhausted), the function returns NULL and sets @code{ERRNO}.
 @end deftypefun
 
 
@@ -1952,9 +1975,11 @@ case, the data object @var{dh} is destroyed.
 
 @deftypefun void gpgme_free (@w{void *@var{buffer}})
 The function @code{gpgme_free} releases the memory returned by
-@code{gpgme_data_release_and_get_mem}.  It should be used instead of
-the system libraries @code{free} function in case different allocators
-are used in a single program.
+@code{gpgme_data_release_and_get_mem} and
+@code{gpgme_pubkey_algo_string}.  It should be used instead of the
+system libraries @code{free} function in case different allocators are
+used by a program.  This is often the case if gpgme is used under
+Windows as a DLL.
 @end deftypefun
 
 
@@ -2285,10 +2310,12 @@ started.  In fact, these references are accessed through the
 * Crypto Engine::                 Configuring the crypto engine.
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
+* Offline Mode::                  Choosing offline mode.
 * Included Certificates::         Including a number of certificates.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
+* Status Message Callback::       Status messages received from gpg.
 * Locale::                        Setting the locale of a context.
 @end menu
 
@@ -2408,6 +2435,37 @@ otherwise.
 
 @deftypefun int gpgme_get_textmode (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_get_textmode} returns 1 if canonical text
+mode is enabled, and @code{0} if it is not, or if @var{ctx} is not a
+valid pointer.
+@end deftypefun
+
+
+@node Offline Mode
+@subsection Offline Mode
+@cindex context, offline mode
+@cindex offline mode
+
+@deftypefun void gpgme_set_offline (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{yes}})
+The function @code{gpgme_set_offline} specifies if offline mode
+should be used.  By default, offline mode is not used.
+
+The offline mode specifies if dirmngr should be used to do additional
+validation that might require connections to external services.
+(e.g. CRL / OCSP checks).
+
+Offline mode only affects the keylist mode @code{GPGME_KEYLIST_MODE_VALIDATE}
+and is only relevant to the CMS crypto engine. Offline mode
+is ignored otherwise.
+
+This option may be extended in the future to completely disable
+the use of dirmngr for any engine.
+
+Offline mode is disabled if @var{yes} is zero, and enabled
+otherwise.
+@end deftypefun
+
+@deftypefun int gpgme_get_offline (@w{gpgme_ctx_t @var{ctx}})
+The function @code{gpgme_get_offline} returns 1 if offline
 mode is enabled, and @code{0} if it is not, or if @var{ctx} is not a
 valid pointer.
 @end deftypefun
@@ -2642,6 +2700,43 @@ the corresponding value will not be returned.
 @end deftypefun
 
 
+@node Status Message Callback
+@subsection Status Message Callback
+@cindex callback, status message
+@cindex status message callback
+
+@deftp {Data type} {gpgme_error_t (*gpgme_status_cb_t)(void *@var{hook}, const char *@var{keyword}, const char *@var{args})}
+@tindex gpgme_status_cb_t
+The @code{gpgme_status_cb_t} type is the type of function usable as
+a status message callback function.
+
+The argument @var{keyword} is the name of the status message while the
+@var{args} argument contains any arguments for the status message.
+
+If an error occurs, return the corresponding @code{gpgme_error_t}
+value. Otherwise, return @code{0}.
+@end deftp
+
+@deftypefun void gpgme_set_status_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_status_cb_t @var{statusfunc}}, @w{void *@var{hook_value}})
+The function @code{gpgme_set_status_cb} sets the function that is used when a
+status message is received from gpg to @var{statusfunc}. The function
+@var{statusfunc} needs to be implemented by the user, and whenever it is
+called, it is called with its first argument being @var{hook_value}.  By
+default, no status message callback function is set.
+
+The user can disable the use of a status message callback function by calling
+@code{gpgme_set_status_cb} with @var{statusfunc} being @code{NULL}.
+@end deftypefun
+
+@deftypefun void gpgme_get_status_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_status_cb_t *@var{statusfunc}}, @w{void **@var{hook_value}})
+The function @code{gpgme_get_status_cb} returns the function that is used to
+process status messages from gpg in @var{*statusfunc}, and the first argument
+for this function in @var{*hook_value}.  If no status message callback is set,
+or @var{ctx} is not a valid pointer, @code{NULL} is returned in both
+variables.
+@end deftypefun
+
+
 @node Locale
 @subsection Locale
 @cindex locale, default
@@ -2766,7 +2861,7 @@ True if the secret key is stored on a smart card.
 The serial number of a smart card holding this key or @code{NULL}.
 
 @item char *curve
-For ECC algoritms the name of the curve.
+For ECC algorithms the name of the curve.
 
 @end table
 @end deftp
@@ -3628,6 +3723,21 @@ keys it removes all signatures except for the latest self-signatures.
 For X.509 keys it has no effect.
 
 
+@item GPGME_EXPORT_MODE_SECRET
+Instead of exporting the public key, the secret key is exported.  This
+may not be combined with @code{GPGME_EXPORT_MODE_EXTERN}.  For X.509
+the export format is PKCS#8.
+
+@item GPGME_EXPORT_MODE_RAW
+If this flag is used with @code{GPGME_EXPORT_MODE_SECRET} for an X.509
+key the export format will be changed to PKCS#1.  This flag may not be
+used with OpenPGP.
+
+@item GPGME_EXPORT_MODE_PKCS12
+If this flag is used with @code{GPGME_EXPORT_MODE_SECRET} for an X.509
+key the export format will be changed to PKCS#12 which also includes
+the certificate.  This flag may not be used with OpenPGP.
+
 @end table
 
 
@@ -3700,7 +3810,7 @@ for the context @var{ctx}, or, if that is not set, by the encoding
 specified for @var{keydata}.
 
 The keys to export are taken form the @code{NULL} terminated array
-@var{keys}.  Only keys of the the currently selected protocol of
+@var{keys}.  Only keys of the currently selected protocol of
 @var{ctx} which do have a fingerprint set are considered for export.
 Other keys specified by the @var{keys} are ignored.  In particular
 OpenPGP keys retrieved via an external key listing are not included.
@@ -3773,7 +3883,7 @@ permanent which have been retrieved from an external source (i.e. using
 for the usual workaround of exporting and then importing a key to make
 an X.509 key permanent.}
 
-Only keys of the the currently selected protocol of @var{ctx} are
+Only keys of the currently selected protocol of @var{ctx} are
 considered for import.  Other keys specified by the @var{keys} are
 ignored.  As of now all considered keys must have been retrieved using
 the same method, that is the used key listing mode must be identical.
@@ -3860,34 +3970,34 @@ The number of keys without user ID.
 @item int imported
 The total number of imported keys.
 
-@item imported_rsa
+@item int imported_rsa
 The number of imported RSA keys.
 
-@item unchanged
+@item int unchanged
 The number of unchanged keys.
 
-@item new_user_ids
+@item int new_user_ids
 The number of new user IDs.
 
-@item new_sub_keys
+@item int new_sub_keys
 The number of new sub keys.
 
-@item new_signatures
+@item int new_signatures
 The number of new signatures.
 
-@item new_revocations
+@item int new_revocations
 The number of new revocations.
 
-@item secret_read
+@item int secret_read
 The total number of secret keys read.
 
-@item secret_imported
+@item int secret_imported
 The number of imported secret keys.
 
-@item secret_unchanged
+@item int secret_unchanged
 The number of unchanged secret keys.
 
-@item not_imported
+@item int not_imported
 The number of keys not imported.
 
 @item gpgme_import_status_t imports
@@ -6037,16 +6147,16 @@ operation in the context @var{ctx}.  This only works if you use the
 global event loop or your own event loop.
 
 If you use the global event loop, you must not call @code{gpgme_wait}
-or @code{gpgme_wait} during cancellation.  After successful
+during cancellation.  After successful
 cancellation, you can call @code{gpgme_wait} (optionally waiting on
 @var{ctx}), and the context @var{ctx} will appear as if it had
 finished with the error code @code{GPG_ERR_CANCEL}.
 
-If you use your an external event loop, you must ensure that no I/O
+If you use an external event loop, you must ensure that no I/O
 callbacks are invoked for this context (for example by halting the
 event loop).  On successful cancellation, all registered I/O callbacks
 for this context will be unregistered, and a @code{GPGME_EVENT_DONE}
-event with the error code @code{GPG_ERR_CANCEL} will be signaled.
+event with the error code @code{GPG_ERR_CANCEL} will be signalled.
 
 The function returns an error code if the cancellation failed (in this
 case the state of @var{ctx} is not modified).
@@ -6116,15 +6226,15 @@ you run your tests only with play data.
 
 @include gpl.texi
 
-@node Function and Data Index
-@unnumbered Function and Data Index
-
-@printindex fn
-
 @node Concept Index
 @unnumbered Concept Index
 
 @printindex cp
+
+@node Function and Data Index
+@unnumbered Function and Data Index
+
+@printindex fn
 
 
 @bye

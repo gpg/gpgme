@@ -217,5 +217,13 @@ EXPORTS
 
     gpgme_op_spawn_start                  @163
     gpgme_op_spawn                        @164
+
+    gpgme_set_offline                     @165
+    gpgme_get_offline                     @166
+
+    gpgme_set_status_cb                   @167
+    gpgme_get_status_cb                   @168
+
+    gpgme_pubkey_algo_string              @169
 ; END
 

@@ -206,7 +206,7 @@ _gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type,
 	gpgme_error_t err = ctx_active (ctx);
 
 	if (err)
-	  /* An error occured.  Close all fds in this context, and
+	  /* An error occurred.  Close all fds in this context, and
 	     send the error in a done event.  */
 	  _gpgme_cancel_with_err (ctx, err, 0);
       }
@@ -325,7 +325,7 @@ gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
 		err = _gpgme_run_io_cb (&fdt.fds[i], 0, &local_op_err);
 	      if (err || local_op_err)
 		{
-		  /* An error occured.  Close all fds in this context,
+		  /* An error occurred.  Close all fds in this context,
 		     and signal it.  */
 		  _gpgme_cancel_with_err (ictx, err, local_op_err);
 

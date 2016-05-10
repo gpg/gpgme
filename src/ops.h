@@ -65,6 +65,10 @@ gpgme_error_t _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key);
    FILENAMEP.  */
 gpgme_error_t _gpgme_parse_plaintext (char *args, char **filenamep);
 
+/* Parse a FAILURE status line and return the error code.  ARGS is
+   modified to contain the location part.  */
+gpgme_error_t _gpgme_parse_failure (char *args);
+
 
 
 /* From verify.c.  */

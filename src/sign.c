@@ -39,6 +39,9 @@ typedef struct
 {
   struct _gpgme_op_sign_result result;
 
+  /* The error code from a FAILURE status line or 0.  */
+  gpg_error_t failure_code;
+
   /* A pointer to the next pointer of the last invalid signer in
      the list.  This makes appending new invalid signers painless
      while preserving the order.  */
@@ -327,6 +330,10 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
       opd->last_signer_p = &(*opd->last_signer_p)->next;
       break;
 
+    case GPGME_STATUS_FAILURE:
+      opd->failure_code = _gpgme_parse_failure (args);
+      break;
+
     case GPGME_STATUS_EOF:
       /* The UI server does not send information about the created
          signature.  This is irrelevant for this protocol and thus we
@@ -335,7 +342,12 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 	err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
       else if (!opd->sig_created_seen
                && ctx->protocol != GPGME_PROTOCOL_UISERVER)
-	err = gpg_error (GPG_ERR_GENERAL);
+	err = opd->failure_code? opd->failure_code:gpg_error (GPG_ERR_GENERAL);
+      break;
+
+    case GPGME_STATUS_INQUIRE_MAXLEN:
+      if (ctx->status_cb)
+        err = ctx->status_cb (ctx->status_cb_value, "INQUIRE_MAXLEN", args);
       break;
 
     default:
@@ -369,6 +381,7 @@ sign_init_result (gpgme_ctx_t ctx, int ignore_inv_recp)
   opd = hook;
   if (err)
     return err;
+  opd->failure_code = 0;
   opd->last_signer_p = &opd->result.invalid_signers;
   opd->last_sig_p = &opd->result.signatures;
   opd->ignore_inv_recp = !!ignore_inv_recp;
