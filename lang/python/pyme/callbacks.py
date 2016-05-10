@@ -33,7 +33,7 @@ def passphrase_stdin(hint, desc, prev_bad, hook=None):
 def progress_stdout(what, type, current, total, hook=None):
     print("PROGRESS UPDATE: what = %s, type = %d, current = %d, total = %d" %\
           (what, type, current, total))
-    
+
 def readcb_fh(count, hook):
     """A callback for data.  hook should be a Python file-like object."""
     if count:

@@ -43,7 +43,7 @@ if not c.signers_enum(0):
 passlist = {
     b"<joe@example.org>": b"Crypt0R0cks"
     }
-    
+
 # callback will return password based on the e-mail listed in the hint.
 c.set_passphrase_cb(lambda x,y,z: passlist[x[x.rindex("<"):]])
 

@@ -32,7 +32,7 @@ class KeyEditor:
         out.seek(0,0)
         print(out.read(), end=' ')
         print("[-- Code: %d, %s --]" % (status, args))
-    
+
         if args == "keyedit.prompt":
             result = self.steps[self.step]
             self.step += 1

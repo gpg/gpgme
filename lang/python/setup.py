@@ -60,7 +60,7 @@ for item in getconfig('cflags'):
 # Adjust include and library locations in case of win32
 uname_s = os.popen("uname -s").read()
 if uname_s.startswith("MINGW32"):
-   mnts = [x.split()[0:3:2] for x in os.popen("mount").read().split("\n") if x] 
+   mnts = [x.split()[0:3:2] for x in os.popen("mount").read().split("\n") if x]
    tmplist = sorted([(len(x[1]), x[1], x[0]) for x in mnts])
    tmplist.reverse()
    extra_dirs = []
@@ -89,9 +89,9 @@ except OSError as e:
         raise RuntimeError("Could not call swig, perhaps install swig.")
     else:
         raise
-    
+
 subprocess.call(["make swig"], shell=True)
-               
+
 swige = Extension("pyme._pygpgme", ["gpgme_wrap.c", "helpers.c"],
                   include_dirs = include_dirs,
                   define_macros = define_macros,
@@ -106,7 +106,7 @@ setup(name = "pyme",
       url = version.homepage,
       ext_modules=[swige],
       packages = ['pyme', 'pyme.constants', 'pyme.constants.data',
-                  'pyme.constants.keylist', 'pyme.constants.sig'], 
+                  'pyme.constants.keylist', 'pyme.constants.sig'],
       license = version.copyright + \
                 ", Licensed under the GPL version 2 and the LGPL version 2.1"
 )

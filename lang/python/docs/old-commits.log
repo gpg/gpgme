@@ -4,7 +4,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Wed May 6 03:04:19 2015 +1000
 
     Merge pull request #4 from Hasimir/master
-    
+
     history
 
 commit 2036f1a0a670a0561993e195c458059220b36114
@@ -19,7 +19,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Wed May 6 02:52:23 2015 +1000
 
     Added a short history
-    
+
     * A (very) brief summary of the project's history since 2002.
     * Deals with why the commit log in the GPGME repo does not include the
       history of PyME.
@@ -36,7 +36,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Wed May 6 02:21:34 2015 +1000
 
     Merge pull request #3 from Hasimir/master
-    
+
     Version release preparation
 
 commit 7c37a27a6845c58222d4d947c2efbe38e955b612
@@ -51,7 +51,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Wed May 6 02:09:44 2015 +1000
 
     TODO update
-    
+
     * Removed reference to GitHub, replaced with impending new home at gnupg.org.
 
  docs/TODO.rst | 4 ++--
@@ -62,7 +62,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Wed May 6 02:00:44 2015 +1000
 
     Version bump
-    
+
     * Bumped version number to 0.9.1 to keep it somewhat in line with the
       existing PyME project, even though there will be some divergence at
       some point (or even re-merging, depending on how many of the Python 3
@@ -80,7 +80,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Wed May 6 01:48:01 2015 +1000
 
     README preparation.
-    
+
     * Changes in preparation for impending move of code to the GnuPG git
       server as a part of GPGME.
 
@@ -92,7 +92,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Wed May 6 01:43:53 2015 +1000
 
     TODO moved to docs
-    
+
     * As it says.
 
  TODO.rst      | 25 -------------------------
@@ -114,7 +114,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 14:59:44 2015 +1000
 
     Merge pull request #2 from Hasimir/master
-    
+
     Minor editing.
 
 commit 44837f6e50fc539c86aef1f75a6a3538b02029ea
@@ -122,7 +122,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 14:56:55 2015 +1000
 
     Minor editing.
-    
+
     * Fixed another URL.
     * Changed Py3 version's version number to v0.9.1-beta0.
 
@@ -135,7 +135,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 14:26:11 2015 +1000
 
     Merge pull request #1 from Hasimir/master
-    
+
     Links
 
 commit 48eb1856cb0739cc9f0b9084da9d965e1fc7fddd
@@ -143,7 +143,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 14:22:30 2015 +1000
 
     Links
-    
+
     * Fixed URLs for authors.
     * Updated my entry to point to github location.
     ** I strongly suspect the result of this work will be concurrent
@@ -157,9 +157,9 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 11:29:00 2015 +1000
 
     Explicit over Implicit ...
-    
+
     ... isn't just for code.
-    
+
     * Removed the 2to3 working directory and its contents.
     * Made the README.rst file a little more clear that this branch is for
       Python 3 (set Python 3.2 as a fairly arbitrary requirement for the
@@ -176,7 +176,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 11:19:41 2015 +1000
 
     Added authors.
-    
+
     * In alphabetical order.
     * Mine will need updating once Martin and I have decided what to do
       regarding the two main branches.
@@ -189,7 +189,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 10:23:00 2015 +1000
 
     Docs and other things.
-    
+
     * Now able to import pyme.core without error, indicates port process is
       successful.
     * Code is *not* compatible with the Python 2 version.
@@ -227,7 +227,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 10:08:22 2015 +1000
 
     Bytes vs. Unicode
-    
+
     * Trying PyBytes instead of PyUnicode.
 
  gpgme.i   | 14 +++++++-------
@@ -239,7 +239,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 09:22:58 2015 +1000
 
     String to Unicode
-    
+
     * Replaced all instances of PyString with PyUnicode (and hoping there's
       no byte data in there).
 
@@ -252,7 +252,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 09:17:06 2015 +1000
 
     PyInt_AsLong
-    
+
     * Replaced all instances of PyInt with PyLong, as per C API docs.
 
  gpgme.i   | 4 ++--
@@ -264,7 +264,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 05:59:36 2015 +1000
 
     Import correction
-    
+
     * Once pygpgme.py is generated and moved, it will be in the right
       directory for the explicit "from . import pygpgme" to be correct.
 
@@ -303,10 +303,10 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 04:53:21 2015 +1000
 
     Pet Peeve
-    
+
     def pet_peeve(self):
         peeve = print("people who don't press return after a colon!")
-    
+
     FFS!
 
  pyme/core.py | 5 +++--
@@ -371,7 +371,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sun May 3 03:51:48 2015 +1000
 
     Linking swig to py3
-    
+
     * Changed the swig invocations to run with the -python -py3 flags explicitly.
 
  Makefile | 4 ++--
@@ -383,7 +383,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sat May 2 11:12:00 2015 +1000
 
     String fun
-    
+
     * streamlined confdata details, including decoding strom binary to string.
 
  setup.py | 4 +---
@@ -394,7 +394,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sat May 2 10:46:59 2015 +1000
 
     Open File
-    
+
     * Removed deprecated file() and replaced with open().
 
  examples/PyGtkGpgKeys.py | 2 +-
@@ -407,7 +407,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sat May 2 10:36:15 2015 +1000
 
     print() fix
-    
+
     * Makefile includes a python print, changed from statement to function.
 
  Makefile | 2 +-
@@ -418,7 +418,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sat May 2 10:28:42 2015 +1000
 
     Updated Makefile
-    
+
     * set make to use python3 instead.
     * This will mean a successful port may need to be maintained seperately
       from the original python2 code instead of merged, but ought to be able
@@ -434,7 +434,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sat May 2 10:15:20 2015 +1000
 
     Env and a little license issue
-    
+
     * Updated all the /usr/bin/env paths to point to python3.
     * Also fixed the hard coded /usr/bin/python paths.
     * Updated part of setup.py which gave the impression this package was
@@ -463,7 +463,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sat May 2 08:50:54 2015 +1000
 
     Removed extraneous files.
-    
+
     * The two .bak files.
 
  pyme/errors.py.bak |  46 ---------------------
@@ -475,7 +475,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sat May 2 08:19:37 2015 +1000
 
     Added TODO.org
-    
+
     * TODO list in Emacs org-mode.
     * Will eventually be removed along with this entire directory when the
       porting process is complete.
@@ -488,7 +488,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sat May 2 07:58:40 2015 +1000
 
     2to3 conversion of remaining files
-    
+
     * Ran the extended version against all the unmodified python files.
     * Only pyme/errors.py required additional work.
 
@@ -502,7 +502,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Sat May 2 07:50:39 2015 +1000
 
     2to3 conversion of setup.py
-    
+
     * Ran extended 2to3 command to produce python 3 code for setup.py.
     * Effectively testing for what to run against the other originally
       unmodified py2 files.
@@ -517,7 +517,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Fri May 1 21:50:07 2015 +1000
 
     Removing 2to3 generated .bak files.
-    
+
     * Not really needed with a real VCS, but couldn't hurt to have them for
       a couple of revisions.  ;)
 
@@ -548,7 +548,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Fri May 1 21:45:50 2015 +1000
 
     2to3 conversion log
-    
+
     * The output of the command to convert the code from Python 2 to 3.
     * Note: this contains the list of files which were not modified and
       which will or may need to be modified.
@@ -561,7 +561,7 @@ Author: Ben McGinnes <ben@adversary.org>
 Date:   Fri May 1 21:36:58 2015 +1000
 
     2to3 conversion of pyme master
-    
+
     * Branch from commit 459f3eca659b4949e394c4a032d9ce2053e6c721
     * Ran this: or x in `find . | egrep .py$` ; do 2to3 -w $x; done ;
     * Multiple files not modified, will record elsewhere (see next commit).
@@ -614,7 +614,7 @@ Author: Martin Albrecht <martinralbrecht@googlemail.com>
 Date:   Wed Jul 9 10:48:33 2014 +0100
 
     Merged in jerrykan/pyme/fix_setup_26 (pull request #1)
-    
+
     Provide support for using setup.py with Python v2.6
 
 commit dae7f14a54e6c2bde0ad4da7308cc7fc0d0c0469
@@ -622,7 +622,7 @@ Author: John Kristensen <john.kristensen@dpipwe.tas.gov.au>
 Date:   Wed Jul 9 15:54:39 2014 +1000
 
     Provide support for using setup.py with Python v2.6
-    
+
     The setup.py script uses subprocess.check_output() which was introduced
     in Python v2.7. The equivalent functionality can be achieved without
     adding much extra code and provide support for Python v2.6.
@@ -701,7 +701,7 @@ Author: Martin Albrecht <martinralbrecht@googlemail.com>
 Date:   Sat May 10 15:41:02 2014 +0100
 
     Merge branch 'master' of bitbucket.org:malb/pyme
-    
+
     Conflicts:
     	setup.py
 
@@ -1018,10 +1018,10 @@ Author: Martin Albrecht <martinralbrecht@googlemail.com>
 Date:   Mon Jan 6 17:44:20 2014 +0100
 
     fixing op_export_keys()
-    
+
     the conversion of gpgme_key_t [] was restricted to gpgme_key_t [] with the
     name recv, i.e. only the use-cases of encryption were covered.
-    
+
     see: http://sourceforge.net/mailarchive/forum.php?forum_name=pyme-help&max_rows=25&style=nested&viewmonth=201309
 
  pyme/gpgme.i | 6 +++---
@@ -1618,9 +1618,9 @@ Date:   Fri Jun 10 03:01:22 2005 +0000
     Update 'docs' rule in Makefile to build packages first to ensure that
     documentation is build for the current version of pyme and not for the
     installed one.
-    
+
     Added 'callbacks' into the list of visible pyme modules (__all__ var.)
-    
+
     Slightly updated INSTALL file.
 
  pyme/INSTALL          | 11 ++++++++---
@@ -2100,7 +2100,7 @@ Author: belyi <devnull@localhost>
 Date:   Fri Mar 18 19:09:33 2005 +0000
 
     Added package building for python2.4
-    
+
     Updated copyright notes to include myslef and avoid confusion who's the
     maintainer. In John's own words: "I'd prefer to just step out of the picture".
     Jonh's copyright notice left intact.

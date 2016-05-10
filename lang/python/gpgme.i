@@ -241,14 +241,14 @@ gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
     func = pyopaque;
     pyargs = PyTuple_New(2);
   }
-  
+
   PyTuple_SetItem(pyargs, 0, PyLong_FromLong((long) status));
   PyTuple_SetItem(pyargs, 1, PyBytes_FromString(args));
   if (dataarg) {
     Py_INCREF(dataarg);		/* Because GetItem doesn't give a ref but SetItem taketh away */
     PyTuple_SetItem(pyargs, 2, dataarg);
   }
-  
+
   retval = PyObject_CallObject(func, pyargs);
   Py_DECREF(pyargs);
   if (PyErr_Occurred()) {

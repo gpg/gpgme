@@ -28,7 +28,7 @@ def process_constants(starttext, dict):
             continue
         name = identifier[index:]
         dict[name] = getattr(pygpgme, identifier)
-        
+
 class GpgmeWrapper(object):
     """Base class all Pyme wrappers for GPGME functionality.  Not to be
     instantiated directly."""
@@ -51,7 +51,7 @@ class GpgmeWrapper(object):
 
     def _getctype(self):
         raise NotImplementedException
-    
+
     def __getattr__(self, name):
         """On-the-fly function generation."""
         if name[0] == '_' or self._getnameprepend() == None:

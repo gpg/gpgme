@@ -22,7 +22,7 @@ Authors
 * Martin Albrecht, `PyME 0.9+ <https://bitbucket.org/malb/pyme>`_, 2014 to present.
 * Ben McGinnes, `PyME Python 3 Port <https://git.gnupg.org/gpgme.git/lang/py3-pyme>`_, 2015 to present.
 
-  
+
 ------------
 Mailing List
 ------------

@@ -66,7 +66,7 @@ static gpgme_error_t pyPassphraseCb(void *hook,
   PyObject *args = NULL;
   PyObject *retval = NULL;
   PyObject *dataarg = NULL;
-  gpgme_error_t err_status = 0;  
+  gpgme_error_t err_status = 0;
 
   pygpgme_exception_init();
 
@@ -119,7 +119,7 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
 			 int total) {
   PyObject *func = NULL, *dataarg = NULL, *args = NULL, *retval = NULL;
   PyObject *pyhook = (PyObject *) hook;
-  
+
   if (PyTuple_Check(pyhook)) {
     func = PyTuple_GetItem(pyhook, 0);
     dataarg = PyTuple_GetItem(pyhook, 1);
@@ -137,7 +137,7 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
     Py_INCREF(dataarg);		/* Because GetItem doesn't give a ref but SetItem taketh away */
     PyTuple_SetItem(args, 4, dataarg);
   }
-  
+
   retval = PyObject_CallObject(func, args);
   Py_DECREF(args);
   Py_XDECREF(retval);

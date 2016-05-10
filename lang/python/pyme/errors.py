@@ -22,7 +22,7 @@ class GPGMEError(Exception):
     def __init__(self, error = None, message = None):
         self.error = error
         self.message = message
-    
+
     def getstring(self):
         message = "%s: %s" % (pygpgme.gpgme_strsource(self.error),
                               pygpgme.gpgme_strerror(self.error))
@@ -35,7 +35,7 @@ class GPGMEError(Exception):
 
     def getsource(self):
         return pygpgme.gpgme_err_source(self.error)
-    
+
     def __str__(self):
         return "%s (%d,%d)"%(self.getstring(), self.getsource(), self.getcode())
 

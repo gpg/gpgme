@@ -37,7 +37,7 @@ class Context(GpgmeWrapper):
 
     def _getctype(self):
         return 'gpgme_ctx_t'
-    
+
     def _getnameprepend(self):
         return 'gpgme_'
 
@@ -106,7 +106,7 @@ class Context(GpgmeWrapper):
         if key:
             key.__del__ = lambda self: pygpgme.gpgme_key_unref(self)
             return key
-    
+
     def get_key(self, fpr, secret):
         """Return the key corresponding to the fingerprint 'fpr'"""
         ptr = pygpgme.new_gpgme_key_t_p()
@@ -147,7 +147,7 @@ class Context(GpgmeWrapper):
         desc, a string describing the passphrase it needs;
         prev_bad, a boolean equal True if this is a call made after
         unsuccessful previous attempt.
-        
+
         If hook has a value other than None it will be passed into the func
         as a forth argument.
 
@@ -206,7 +206,7 @@ class Context(GpgmeWrapper):
         context = pygpgme.gpgme_wait(self.wrapped, ptr, hang)
         status = pygpgme.gpgme_error_t_p_value(ptr)
         pygpgme.delete_gpgme_error_t_p(ptr)
-        
+
         if context == None:
             errorcheck(status)
             return None
@@ -219,7 +219,7 @@ class Context(GpgmeWrapper):
             raise ValueError("op_edit: First argument cannot be None")
         opaquedata = (func, fnc_value)
         errorcheck(pygpgme.gpgme_op_edit(self.wrapped, key, opaquedata, out))
-    
+
 class Data(GpgmeWrapper):
     """From the GPGME C manual:
 
@@ -236,7 +236,7 @@ class Data(GpgmeWrapper):
 
     def _getctype(self):
         return 'gpgme_data_t'
-    
+
     def _getnameprepend(self):
         return 'gpgme_data_'
 
@@ -247,7 +247,7 @@ class Data(GpgmeWrapper):
                name == 'gpgme_data_seek':
             return 0
         return 1
-    
+
     def __init__(self, string = None, file = None, offset = None,
                  length = None, cbs = None):
         """Initialize a new gpgme_data_t object.
@@ -360,7 +360,7 @@ class Data(GpgmeWrapper):
         """This wraps the GPGME gpgme_data_new_from_fd() function.
         The argument "file" may be a file-like object, supporting the fileno()
         call and the mode attribute."""
-        
+
         tmp = pygpgme.new_gpgme_data_t_p()
         fp = pygpgme.fdopen(file.fileno(), file.mode)
         if fp == None:
@@ -375,18 +375,18 @@ class Data(GpgmeWrapper):
         new_from_fd() method since in python there's not difference
         between file stream and file descriptor"""
         self.new_from_fd(file)
-    
+
     def write(self, buffer):
         errorcheck(pygpgme.gpgme_data_write(self.wrapped, buffer, len(buffer)))
 
     def read(self, size = -1):
         """Read at most size bytes, returned as a string.
-        
+
         If the size argument is negative or omitted, read until EOF is reached.
 
         Returns the data read, or the empty string if there was no data
         to read before EOF was reached."""
-        
+
         if size == 0:
             return ''
 
@@ -445,11 +445,11 @@ def set_locale(category, value):
 def wait(hang):
     """Wait for asynchronous call on any Context  to finish.
     Wait forever if hang is True.
-    
+
     For finished anynch calls it returns a tuple (status, context):
         status  - status return by asnynchronous call.
         context - context which caused this call to return.
-        
+
     Please read the GPGME manual of more information."""
     ptr = pygpgme.new_gpgme_error_t_p()
     context = pygpgme.gpgme_wait(None, ptr, hang)

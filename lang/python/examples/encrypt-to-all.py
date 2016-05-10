@@ -54,7 +54,7 @@ for key in c.op_keylist_all(None, 0):
                   (keyid, can_encrypt and "enabled" or "disabled"))
     except UnicodeEncodeError as e:
         print(e)
-    
+
     if valid:
         names.append(key)
     else:

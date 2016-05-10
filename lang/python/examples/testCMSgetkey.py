@@ -22,7 +22,7 @@ from pyme.constants import protocol
 def printgetkeyresults(keyfpr):
     """Run gpgme_get_key()."""
 
-    # gpgme_check_version() necessary for initialisation according to 
+    # gpgme_check_version() necessary for initialisation according to
     # gogme 1.1.6 and this is not done automatically in pyme-0.7.0
     print("gpgme version:", core.check_version(None))
     c = core.Context()
@@ -45,5 +45,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
- 	  	 
