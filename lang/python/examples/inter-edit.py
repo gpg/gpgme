@@ -14,9 +14,11 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, write to the Free Software
-#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+#    02111-1307 USA
 
-import os, sys
+import os
+import sys
 from pyme import core
 from pyme.core import Data, Context
 from pyme.constants import status
@@ -29,12 +31,13 @@ for name in dir(status):
     if not name.startswith('__') and name != "util":
         stat2str[getattr(status, name)] = name
 
+
 # Print the output received since the last prompt before giving the new prompt
 def edit_fnc(stat, args, helper):
     global stat_strings
     try:
         while True:
-            helper["data"].seek(helper["skip"],0)
+            helper["data"].seek(helper["skip"], 0)
             data = helper["data"].read()
             helper["skip"] += len(data)
             print(data)
@@ -53,5 +56,5 @@ else:
     helper = {"skip": 0, "data": out}
     c.op_edit(key, edit_fnc, helper, out)
     print("[-- Final output --]")
-    out.seek(helper["skip"],0)
+    out.seek(helper["skip"], 0)
     print(out.read())
