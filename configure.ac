@@ -61,6 +61,14 @@ LIBGPGME_LT_CURRENT=25
 LIBGPGME_LT_AGE=14
 LIBGPGME_LT_REVISION=0
 
+LIBGPGMEPP_LT_CURRENT=6
+LIBGPGMEPP_LT_AGE=0
+LIBGPGMEPP_LT_REVISION=0
+
+LIBQGPGME_LT_CURRENT=6
+LIBQGPGME_LT_AGE=0
+LIBQGPGME_LT_REVISION=0
+
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
 ##############################################
@@ -104,6 +112,12 @@ AC_CHECK_PROGS(GITLOG_TO_CHANGELOG, gitlog-to-changelog, [gitlog-to-changelog])
 AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
 AC_SUBST(LIBGPGME_LT_REVISION)
+AC_SUBST(LIBGPGMEPP_LT_CURRENT)
+AC_SUBST(LIBGPGMEPP_LT_AGE)
+AC_SUBST(LIBGPGMEPP_LT_REVISION)
+AC_SUBST(LIBQGPGME_LT_CURRENT)
+AC_SUBST(LIBQGPGME_LT_AGE)
+AC_SUBST(LIBQGPGME_LT_REVISION)
 
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
@@ -146,6 +160,8 @@ have_w32_system=no
 have_w64_system=no
 build_w32_glib=no
 build_w32_qt=no
+available_languages="cpp cl qt"
+default_languages="cpp cl qt"
 case "${host}" in
     x86_64-*mingw32*)
         have_w64_system=yes
@@ -171,20 +187,9 @@ case "${host}" in
 	AC_ARG_ENABLE(w32-glib,
 	    AC_HELP_STRING([--enable-w32-glib], [build GPGME Glib for W32]),
 	    		   build_w32_glib=$enableval)
-
-	# Check disabled, because the qt-dev packages in gpg4win do
-	# not provide any support for cross compilation.
-	# PKG_CHECK_MODULES(QT4_CORE, QtCore)
-
-	# Use it like this:
-	# ./configure --enable-w32-qt QT4_CORE_CFLAGS="..." QT4_CORE_LIBS="..."
-	AC_SUBST(QT4_CORE_CFLAGS)
-	AC_SUBST(QT4_CORE_LIBS)
-	AC_ARG_ENABLE(w32-qt,
-	    AC_HELP_STRING([--enable-w32-qt], [build GPGME Qt for W32]),
-	    		   build_w32_qt=$enableval)
-        ;;
+       ;;
     *)
+
 	AC_CHECK_LIB(pthread,pthread_create,have_pthread=yes)
 	if test "$have_pthread" = yes; then
 	  AC_DEFINE(HAVE_PTHREAD, ,[Define if we have pthread.])
@@ -230,7 +235,6 @@ fi
 AM_CONDITIONAL(HAVE_ANDROID_SYSTEM, test "$have_android_system" = yes)
 
 AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
-AM_CONDITIONAL(BUILD_W32_QT, test "$build_w32_qt" = yes)
 
 AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 
@@ -245,6 +249,97 @@ if test x$fixed_search_path != x ; then
                     [Locate binaries only via this PATH])
 fi
 
+AC_ARG_ENABLE([languages],
+              AC_HELP_STRING([--enable-languages=languages],
+                             [enable only specific language bindings]),
+                             [enabled_languages=`echo $enableval | \
+                             tr ',:' '  ' | tr '[A-Z]' '[a-z]' | \
+                             sed 's/c++/cpp/'`],
+                             [enabled_languages="maybe"])
+if test "x$enabled_languages" = "x" \
+   -o "$enabled_languages" = "no"; then
+   enabled_languages=
+fi
+
+# If languages are explicitly set missing requirements
+# for the languages are treated as errors otherwise
+# there will be a warning.
+explicit_languages=1
+if test "x$enabled_languages" = "xmaybe"; then
+    explicit_languages=0
+    enabled_languages="$default_languages"
+fi
+
+for language in $enabled_languages; do
+    LIST_MEMBER($language, $available_languages)
+    if test "$found" = "0"; then
+       AC_MSG_ERROR([unsupported language binding specified])
+    fi
+done
+
+
+
+# Enable C++ 11 if cpp language is requested
+LIST_MEMBER("cpp", $enabled_languages)
+if test "$found" = "1"; then
+    AX_CXX_COMPILE_STDCXX(11, noext, optional)
+    if test "$HAVE_CXX11" != "1"; then
+        if test "$explicit_languages" = "1"; then
+            AC_MSG_ERROR([[
+***
+*** A compiler with c++11 support is required for the c++ binding.
+***]])
+        else
+            enabled_languages=$(echo $enabled_languages | sed 's/cpp//')
+            enabled_languages=$(echo $enabled_languages | sed 's/qt//')
+            AC_MSG_WARN([[
+***
+*** No c++11 support detected. C++ and Qt bindings will be disabled.
+***]])
+        fi
+    fi
+fi
+
+# Check that if qt is enabled cpp also is enabled
+LIST_MEMBER("qt", $enabled_languages)
+if test "$found" = "1"; then
+    # We need to ensure that in the langauge order qt comes after cpp
+    # so we remove qt first and explicitly add it as last list member.
+    enabled_languages=$(echo $enabled_languages | sed 's/qt//')
+    LIST_MEMBER("cpp", $enabled_languages)
+    if test "$found" = "0"; then
+        AC_MSG_ERROR([[
+***
+*** Qt language binding depends on cpp binding.
+***]])
+    fi
+    FIND_QT
+    if test "$have_qt5_libs" != "yes"; then
+        if test "$explicit_languages" = "1"; then
+        AC_MSG_ERROR([[
+***
+*** Qt5 (Qt5Core) is required for Qt binding.
+***]])
+        else
+           AC_MSG_WARN([[
+***
+*** Qt5 (Qt5Core) not found Qt Binding will be disabled.
+***]])
+        fi
+    else
+        enabled_languages=`echo $enabled_languages qt`
+
+        AC_CHECK_PROGS([DOXYGEN], [doxygen])
+        if test -z "$DOXYGEN";
+            # This is not highlighted becase it's not really important.
+            then AC_MSG_WARN([Doxygen not found - Qt binding doc will not be built.])
+        fi
+    fi
+fi
+AM_CONDITIONAL([HAVE_DOXYGEN],
+               [test -n "$DOXYGEN"])
+
+AC_SUBST(ENABLED_LANGUAGES, $enabled_languages)
 
 #
 # Provide information about the build.
@@ -632,18 +727,29 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 src/versioninfo.rc
                 src/gpgme.h)
 AC_CONFIG_FILES(src/gpgme-config, chmod +x src/gpgme-config)
+AC_CONFIG_FILES(lang/cpp/Makefile lang/cpp/src/Makefile)
+AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfig.cmake.in)
+AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfigVersion.cmake)
+AC_CONFIG_FILES(lang/qt/Makefile lang/qt/src/Makefile)
+AC_CONFIG_FILES(lang/qt/src/QGpgmeConfig.cmake.in)
+AC_CONFIG_FILES(lang/qt/src/QGpgmeConfigVersion.cmake)
+AC_CONFIG_FILES(lang/qt/tests/Makefile)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
+AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([lang/qt/doc/Doxyfile])])
+AC_CONFIG_FILES(lang/qt/doc/Makefile)
 AC_OUTPUT
 
 echo "
         GPGME v${VERSION} has been configured as follows:
 
-        Revision:        mym4_revision  (mym4_revision_dec)
-        Platform:        $host
+        Revision:          mym4_revision  (mym4_revision_dec)
+        Platform:          $host
 
-        UI Server:       $uiserver
-        FD Passing:      $use_descriptor_passing
-        GPGME Pthread:   $have_pthread
+        UI Server:         $uiserver
+        FD Passing:        $use_descriptor_passing
+        GPGME Pthread:     $have_pthread
+
+        Language bindings: $enabled_languages
 "
 if test "x${gpg_config_script_warn}" != x; then
 cat <<G10EOF

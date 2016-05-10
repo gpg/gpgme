@@ -41,12 +41,6 @@ else
 ltlib_gpgme_glib =
 endif
 
-if BUILD_W32_QT
-ltlib_gpgme_qt = libgpgme-qt.la
-else
-ltlib_gpgme_qt =
-endif
-
 lib_LTLIBRARIES = libgpgme.la $(ltlib_gpgme_glib) $(ltlib_gpgme_qt) \
 	$(ltlib_gpgme_pthread)
 
@@ -110,23 +104,9 @@ if BUILD_W32_GLIB
 libgpgme_glib_la_SOURCES = $(main_sources) ath.h ath.c w32-glib-io.c
 endif
 
-if BUILD_W32_QT
-libgpgme_qt_la_SOURCES = $(main_sources) ath.h ath.c w32-qt-io.cpp \
-	kdpipeiodevice.h kdpipeiodevice.cpp kdpipeiodevice.moc
-# FIXME: Add extra depedency: moc_kdpipeiodevice.cpp
-
-# These are built sources (normally).
-# moc_kdpipeiodevice.cpp: kdpipeiodevice.h
-#	$(MOC4) -o $@ $<
-#
-# kdpipeiodevice.moc: kdpipeiodevice.cpp
-#	$(MOC4) -o $@ $<
-endif
-
-# We use a global CFLAGS and CPPFLAGS setting for all library
+# We use a global CFLAGS setting for all library
 # versions, because then every object file is only compiled once.
-AM_CPPFLAGS = @GPG_ERROR_CFLAGS@ @QT4_CORE_CFLAGS@
-AM_CFLAGS = @LIBASSUAN_CFLAGS@ @GLIB_CFLAGS@ @QT4_CORE_CFLAGS@
+AM_CFLAGS = @LIBASSUAN_CFLAGS@ @GLIB_CFLAGS@
 
 gpgme_tool_SOURCES = gpgme-tool.c argparse.c argparse.h
 gpgme_tool_LDADD = libgpgme.la @LIBASSUAN_LIBS@
@@ -200,15 +180,6 @@ libgpgme_glib_la_DEPENDENCIES =	@LTLIBOBJS@ \
 	$(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_glib_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	@GPG_ERROR_LIBS@ @GLIB_LIBS@
-endif
-
-if BUILD_W32_QT
-libgpgme_qt_la_LDFLAGS = $(no_undefined) \
-	$(export_symbols) $(libgpgme_version_script_cmd) -version-info \
-	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_qt_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
-libgpgme_qt_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
-	@GPG_ERROR_LIBS@ @QT4_CORE_LIBS@
 endif
 
 install-data-local: install-def-file

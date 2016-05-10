@@ -1,5 +1,5 @@
-# Makefile.am for gpgme/lang.
-# Copyright (C) 2003, 2006 g10 Code GmbH
+# Makefile.am - Makefile for GPGME Qt docs.
+# Copyright (C) 2016 Intevation GmbH
 #
 # This file is part of GPGME.
 #
@@ -14,9 +14,18 @@
 # Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+# License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-SUBDIRS = $(ENABLED_LANGUAGES)
+## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = README
+if HAVE_DOXYGEN
+doxyfile.stamp:
+	$(DOXYGEN) Doxyfile
+	touch doxyfile.stamp
+
+CLEANFILES = doxyfile.stamp
+
+all-local: doxyfile.stamp
+clean-local:
+	rm -rf $(abs_builddir)/generated
+endif

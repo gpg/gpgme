@@ -58,3 +58,19 @@ AC_DEFUN([GNUPG_CHECK_VA_COPY],
     AC_MSG_RESULT($gnupg_cv_must_copy_va_byval)
   fi
 ])
+
+dnl LIST_MEMBER()
+dnl Check wether an element ist contained in a list.  Set `found' to
+dnl `1' if the element is found in the list, to `0' otherwise.
+AC_DEFUN([LIST_MEMBER],
+[
+name=$1
+list=$2
+found=0
+
+for n in $list; do
+  if test "x$name" = "x$n"; then
+    found=1
+  fi
+done
+])

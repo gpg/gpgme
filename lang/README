@@ -10,3 +10,5 @@ sub-directory.
 Directory	Language
 
 cl		Common Lisp
+cpp     C++
+qt      Qt-Framework API
