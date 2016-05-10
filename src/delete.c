@@ -64,9 +64,9 @@ delete_status_handler (void *priv, gpgme_status_code_t code, char *args)
 	case DELETE_Ambiguous_Specification:
 	  return gpg_error (GPG_ERR_AMBIGUOUS_NAME);
 
-	default:
-	  return gpg_error (GPG_ERR_GENERAL);
 	}
+
+      return gpg_error (GPG_ERR_GENERAL);
     }
   else if (code == GPGME_STATUS_ERROR)
     {
