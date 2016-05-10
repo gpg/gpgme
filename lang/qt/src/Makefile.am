@@ -49,6 +49,7 @@ qgpgme_headers= \
     hierarchicalkeylistjob.h \
     job.h \
     multideletejob.h \
+    protocol.h \
     qgpgme_export.h \
     qgpgmenewcryptoconfig.h \
     signjob.h \
@@ -67,6 +68,7 @@ qgpgme_headers= \
 private_qgpgme_headers = \
     qgpgme_export.h \
     abstractimportjob.h \
+    protocol_p.h \
     qgpgmeadduseridjob.h \
     qgpgmebackend.h \
     qgpgmechangeexpiryjob.h \
