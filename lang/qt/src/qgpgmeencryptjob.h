@@ -68,25 +68,25 @@ public:
     explicit QGpgMEEncryptJob(GpgME::Context *context);
     ~QGpgMEEncryptJob();
 
-    /*! \reimp from EncryptJob */
+    /* from EncryptJob */
     GpgME::Error start(const std::vector<GpgME::Key> &recipients,
                        const QByteArray &plainText, bool alwaysTrust) Q_DECL_OVERRIDE;
 
-    /*! \reimp from EncryptJob */
+    /* from EncryptJob */
     void start(const std::vector<GpgME::Key> &recipients,
                const std::shared_ptr<QIODevice> &plainText,
                const std::shared_ptr<QIODevice> &cipherText,
                bool alwaysTrust) Q_DECL_OVERRIDE;
 
-    /*! \reimp from EncryptJob */
+    /* from EncryptJob */
     GpgME::EncryptionResult exec(const std::vector<GpgME::Key> &recipients,
                                  const QByteArray &plainText, bool alwaysTrust,
                                  QByteArray &cipherText) Q_DECL_OVERRIDE;
 
-    /*! \reimp from EncryptJob */
+    /* from EncryptJob */
     void setOutputIsBase64Encoded(bool on) Q_DECL_OVERRIDE;
 
-    /*! \reimp from ThreadedJobMixin */
+    /* from ThreadedJobMixin */
     void resultHook(const result_type &r) Q_DECL_OVERRIDE;
 
 private:

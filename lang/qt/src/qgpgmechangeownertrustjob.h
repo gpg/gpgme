@@ -57,7 +57,7 @@ public:
     explicit QGpgMEChangeOwnerTrustJob(GpgME::Context *context);
     ~QGpgMEChangeOwnerTrustJob();
 
-    /*! \reimp from ChangeOwnerTrustJob */
+    /* from ChangeOwnerTrustJob */
     GpgME::Error start(const GpgME::Key &key, GpgME::Key::OwnerTrust trust) Q_DECL_OVERRIDE;
 };
 }

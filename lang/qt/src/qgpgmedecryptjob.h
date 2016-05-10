@@ -63,17 +63,17 @@ public:
     explicit QGpgMEDecryptJob(GpgME::Context *context);
     ~QGpgMEDecryptJob();
 
-    /*! \reimp from DecryptJob */
+    /* from DecryptJob */
     GpgME::Error start(const QByteArray &cipherText) Q_DECL_OVERRIDE;
 
-    /*! \reimp from DecryptJob */
+    /* from DecryptJob */
     void start(const std::shared_ptr<QIODevice> &cipherText, const std::shared_ptr<QIODevice> &plainText) Q_DECL_OVERRIDE;
 
-    /*! \reimp from DecryptJob */
+    /* from DecryptJob */
     GpgME::DecryptionResult exec(const QByteArray &cipherText,
                                  QByteArray &plainText) Q_DECL_OVERRIDE;
 
-    /*! \reimp from ThreadedJobMixin */
+    /* from ThreadedJobMixin */
     void resultHook(const result_type &r) Q_DECL_OVERRIDE;
 
 private:

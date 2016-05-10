@@ -57,7 +57,7 @@ public:
     explicit QGpgMEChangeExpiryJob(GpgME::Context *context);
     ~QGpgMEChangeExpiryJob();
 
-    /*! \reimp from ChangeExpiryJob */
+    /* from ChangeExpiryJob */
     GpgME::Error start(const GpgME::Key &key, const QDateTime &expiry) Q_DECL_OVERRIDE;
 };
 

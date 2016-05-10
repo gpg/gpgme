@@ -57,11 +57,11 @@ public:
     QGpgMESecretKeyExportJob(bool armour, const QString &charset);
     ~QGpgMESecretKeyExportJob();
 
-    /*! \reimp from ExportJob */
+    /* from ExportJob */
     GpgME::Error start(const QStringList &patterns) Q_DECL_OVERRIDE;
 
 private Q_SLOTS:
-    /*! \reimp from Job */
+    /* from Job */
     void slotCancel() Q_DECL_OVERRIDE;
 
     void slotStdout();

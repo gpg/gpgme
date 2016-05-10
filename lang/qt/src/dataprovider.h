@@ -50,18 +50,13 @@ public:
 private:
     // these shall only be accessed through the dataprovider
     // interface, where they're public:
-    /*! \reimp */
     bool isSupported(Operation) const
     {
         return true;
     }
-    /*! \reimp */
     ssize_t read(void *buffer, size_t bufSize);
-    /*! \reimp */
     ssize_t write(const void *buffer, size_t bufSize);
-    /*! \reimp */
     off_t seek(off_t offset, int whence);
-    /*! \reimp */
     void release();
 
 private:
@@ -83,15 +78,10 @@ public:
 private:
     // these shall only be accessed through the dataprovider
     // interface, where they're public:
-    /*! \reimp */
     bool isSupported(Operation) const;
-    /*! \reimp */
     ssize_t read(void *buffer, size_t bufSize);
-    /*! \reimp */
     ssize_t write(const void *buffer, size_t bufSize);
-    /*! \reimp */
     off_t seek(off_t offset, int whence);
-    /*! \reimp */
     void release();
 
 private:

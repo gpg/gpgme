@@ -57,10 +57,10 @@ public:
     explicit QGpgMEDownloadJob(GpgME::Context *context);
     ~QGpgMEDownloadJob();
 
-    /*! \reimp from DownloadJob */
+    /* from DownloadJob */
     GpgME::Error start(const QStringList &fingerprints) Q_DECL_OVERRIDE;
 
-    /*! \reimp from DownloadJob */
+    /* from DownloadJob */
     GpgME::Error start(const QByteArray &fingerprint, const std::shared_ptr<QIODevice> &keyData) Q_DECL_OVERRIDE;
 };
 

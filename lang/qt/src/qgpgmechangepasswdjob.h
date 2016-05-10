@@ -57,7 +57,7 @@ public:
     explicit QGpgMEChangePasswdJob(GpgME::Context *context);
     ~QGpgMEChangePasswdJob();
 
-    /*! \reimp from ChangePasswdJob */
+    /* from ChangePasswdJob */
     GpgME::Error start(const GpgME::Key &key) Q_DECL_OVERRIDE;
 };
 

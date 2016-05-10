@@ -63,22 +63,22 @@ public:
     explicit QGpgMESignKeyJob(GpgME::Context *context);
     ~QGpgMESignKeyJob();
 
-    /*! \reimp from SignKeyJob */
+    /* from SignKeyJob */
     GpgME::Error start(const GpgME::Key &key) Q_DECL_OVERRIDE;
 
-    /*! \reimp from SignKeyJob */
+    /* from SignKeyJob */
     void setUserIDsToSign(const std::vector<unsigned int> &idsToSign) Q_DECL_OVERRIDE;
 
-    /*! \reimp from SignKeyJob */
+    /* from SignKeyJob */
     void setCheckLevel(unsigned int checkLevel) Q_DECL_OVERRIDE;
 
-    /*! \reimp from SignKeyJob */
+    /* from SignKeyJob */
     void setExportable(bool exportable) Q_DECL_OVERRIDE;
 
-    /*! \reimp from SignKeyJob */
+    /* from SignKeyJob */
     void setSigningKey(const GpgME::Key &key) Q_DECL_OVERRIDE;
 
-    /*! \reimp from SignKeyJob */
+    /* from SignKeyJob */
     void setNonRevocable(bool nonRevocable) Q_DECL_OVERRIDE;
 
 private:

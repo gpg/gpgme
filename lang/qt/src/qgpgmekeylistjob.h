@@ -68,13 +68,13 @@ public:
     explicit QGpgMEKeyListJob(GpgME::Context *context);
     ~QGpgMEKeyListJob();
 
-    /*! \reimp from KeyListJob */
+    /* from KeyListJob */
     GpgME::Error start(const QStringList &patterns, bool secretOnly) Q_DECL_OVERRIDE;
 
-    /*! \reimp from KeyListJob */
+    /* from KeyListJob */
     GpgME::KeyListResult exec(const QStringList &patterns, bool secretOnly, std::vector<GpgME::Key> &keys) Q_DECL_OVERRIDE;
 
-    /*! \reimp from ThreadedJobMixin */
+    /* from ThreadedJobMixin */
     void resultHook(const result_type &result) Q_DECL_OVERRIDE;
 
 private:

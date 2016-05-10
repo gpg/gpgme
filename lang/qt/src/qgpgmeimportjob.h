@@ -63,13 +63,13 @@ public:
     explicit QGpgMEImportJob(GpgME::Context *context);
     ~QGpgMEImportJob();
 
-    /*! \reimp from ImportJob */
+    /* from ImportJob */
     GpgME::Error start(const QByteArray &keyData) Q_DECL_OVERRIDE;
 
-    /*! \reimp from ImportJob */
+    /* from ImportJob */
     GpgME::ImportResult exec(const QByteArray &keyData) Q_DECL_OVERRIDE;
 
-    /*! \reimp from ThreadedJobMixin */
+    /* from ThreadedJobMixin */
     void resultHook(const result_type &r) Q_DECL_OVERRIDE;
 
 private:

@@ -101,7 +101,7 @@ public:
 private Q_SLOTS:
     void slotResult(const GpgME::KeyListResult &);
     void slotNextKey(const GpgME::Key &key);
-    /*! \reimp from Job */
+    /* from Job */
     void slotCancel() Q_DECL_OVERRIDE;
 
 private:

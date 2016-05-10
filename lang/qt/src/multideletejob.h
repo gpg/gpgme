@@ -82,7 +82,7 @@ public:
     */
     GpgME::Error start(const std::vector<GpgME::Key> &keys, bool allowSecretKeyDeletion = false);
 
-    /*! \reimp from Job */
+    /* from Job */
     void slotCancel() Q_DECL_OVERRIDE;
 
 Q_SIGNALS:

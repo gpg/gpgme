@@ -57,7 +57,7 @@ public:
     explicit QGpgMEExportJob(GpgME::Context *context);
     ~QGpgMEExportJob();
 
-    /*! \reimp from ExportJob */
+    /* from ExportJob */
     GpgME::Error start(const QStringList &patterns) Q_DECL_OVERRIDE;
 };
 
