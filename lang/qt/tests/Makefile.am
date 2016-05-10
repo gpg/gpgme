@@ -46,7 +46,7 @@ check-local: ./pubring-stamp
 # add this dependency:
 initial.test : check-local
 
-t_keylist_SOURCES = t-keylist.cpp t-keylist.h
+t_keylist_SOURCES = t-keylist.cpp
 
 nodist_t_keylist_SOURCES = $(moc_files)
 

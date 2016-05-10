@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA
 
-EXTRA_DIST = GpgmeppConfig.cmake.in.in GpgmeConfigVersion.cmake.in
+EXTRA_DIST = GpgmeppConfig.cmake.in.in GpgmeppConfigVersion.cmake.in
 
 lib_LTLIBRARIES = libgpgmepp.la
 
@@ -45,6 +45,9 @@ gpgmepp_headers = \
     notation.h result.h scdgetinfoassuantransaction.h signingresult.h \
     trustitem.h verificationresult.h vfsmountresult.h gpgmepp_export.h
 
+private_gpgmepp_headers = \
+    result_p.h context_p.h util.h callbacks.h data_p.h
+
 interface_headers= \
     interfaces/assuantransaction.h interfaces/dataprovider.h \
     interfaces/passphraseprovider.h interfaces/progressprovider.h
@@ -54,7 +57,7 @@ gpgmeppinclude_HEADERS = $(gpgmepp_headers)
 nobase_gpgmeppinclude_HEADERS = $(interface_headers)
 
 libgpgmepp_la_SOURCES = $(main_sources) $(gpgmepp_headers) context_vanilla.cpp \
-                        $(interface_headers)
+                        $(interface_headers) $(private_gpgmepp_headers)
 
 AM_CPPFLAGS = @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ -DBUILDING_GPGMEPP
 
