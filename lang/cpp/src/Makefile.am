@@ -59,7 +59,8 @@ nobase_gpgmeppinclude_HEADERS = $(interface_headers)
 libgpgmepp_la_SOURCES = $(main_sources) $(gpgmepp_headers) context_vanilla.cpp \
                         $(interface_headers) $(private_gpgmepp_headers)
 
-AM_CPPFLAGS = @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ -DBUILDING_GPGMEPP
+AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
+              -DBUILDING_GPGMEPP
 
 libgpgmepp_la_LIBADD = ../../../src/libgpgme.la @LIBASSUAN_LIBS@
 libgpgmepp_la_LDFLAGS = -version-info \
