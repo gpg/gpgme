@@ -36,8 +36,9 @@ c.set_armor(1)
 # Set up the recipients.
 
 sys.stdout.write("Enter name of your recipient: ")
+sys.stdout.flush()
 name = sys.stdin.readline().strip()
-c.op_keylist_start(name, 0)
+c.op_keylist_start(name.encode(), 0)
 r = c.op_keylist_next()
 
 if r == None:
