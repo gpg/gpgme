@@ -22,31 +22,23 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 # END OF COPYRIGHT #
 
-
 from distutils.core import setup, Extension
-from distutils.command.build_ext import build_ext
 import os, os.path, sys
 import subprocess
 
-sys.path.append("pyme")
-import version
+sys.path.insert(0, os.path.dirname(__file__))
+import pyme.version
 
 def getconfig(what):
-    try:
-        process = subprocess.Popen(["gpgme-config", "--%s" % what],
-                                   stdout=subprocess.PIPE)
-        confdata = process.communicate()[0]
-    except OSError as e:
-         if e.errno == os.errno.ENOENT:
-             raise RuntimeError("Could not call gpgme-config, perhaps install libgpgme-dev")
-         else:
-             raise
+    confdata = subprocess.Popen(["../../src/gpgme-config", "--%s" % what],
+                                stdout=subprocess.PIPE).communicate()[0]
     return [x for x in confdata.decode('utf-8').split() if x != '']
 
 include_dirs = [os.getcwd()]
 define_macros = []
-library_dirs = []
+library_dirs = ["../../src/.libs"] # XXX uses libtool internals
 libs = getconfig('libs')
+
 for item in getconfig('cflags'):
     if item.startswith("-I"):
         include_dirs.append(item[2:])
@@ -82,16 +74,6 @@ if uname_s.startswith("MINGW32"):
                library_dirs.append(os.path.join(tgt, item))
                break
 
-try:
-    subprocess.call("swig")
-except OSError as e:
-    if e.errno == os.errno.ENOENT:
-        raise RuntimeError("Could not call swig, perhaps install swig.")
-    else:
-        raise
-
-subprocess.call(["make swig"], shell=True)
-
 swige = Extension("pyme._pygpgme", ["gpgme_wrap.c", "helpers.c"],
                   include_dirs = include_dirs,
                   define_macros = define_macros,
@@ -99,15 +81,15 @@ swige = Extension("pyme._pygpgme", ["gpgme_wrap.c", "helpers.c"],
                   extra_link_args = libs)
 
 setup(name = "pyme",
-      version = version.versionstr,
-      description = version.description,
-      author = version.author,
-      author_email = version.author_email,
-      url = version.homepage,
+      version=pyme.version.versionstr,
+      description=pyme.version.description,
+      author=pyme.version.author,
+      author_email=pyme.version.author_email,
+      url=pyme.version.homepage,
       ext_modules=[swige],
       packages = ['pyme', 'pyme.constants', 'pyme.constants.data',
                   'pyme.constants.keylist', 'pyme.constants.sig'],
-      license = version.copyright + \
+      license=pyme.version.copyright + \
                 ", Licensed under the GPL version 2 and the LGPL version 2.1"
 )
 

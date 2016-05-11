@@ -587,6 +587,32 @@ AC_SUBST(emacs_local_vars_begin, [['Local][ ][Variables:']])
 AC_SUBST(emacs_local_vars_read_only, ['buffer-read-only: t'])
 AC_SUBST(emacs_local_vars_end, ['End:'])
 
+# Bindings.
+AC_ARG_ENABLE([python],
+              AC_HELP_STRING([--enable-python],
+                             [build the Python3 bindings]),
+              [enable_python=$enableval],
+	      [enable_python=auto])
+AX_PKG_SWIG
+if test -z "$SWIG"; then
+  if test $enable_python = yes; then
+    die=yes
+    AC_MSG_NOTICE([[
+***
+*** You need SWIG to build the Python bindings.
+***]])
+  else
+    enable_python=no
+  fi
+else
+  if test $enable_python = auto; then
+    enable_python=yes
+  fi
+fi
+if test $enable_python = yes; then
+  AM_PATH_PYTHON([3.2])
+  AX_SWIG_PYTHON
+fi
 
 # Last check.
 die=no
@@ -632,7 +658,8 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 src/versioninfo.rc
                 src/gpgme.h)
 AC_CONFIG_FILES(src/gpgme-config, chmod +x src/gpgme-config)
-AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
+AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd
+                 lang/python/Makefile])
 AC_OUTPUT
 
 echo "
@@ -644,6 +671,8 @@ echo "
         UI Server:       $uiserver
         FD Passing:      $use_descriptor_passing
         GPGME Pthread:   $have_pthread
+
+        Python bindings: $enable_python
 "
 if test "x${gpg_config_script_warn}" != x; then
 cat <<G10EOF
