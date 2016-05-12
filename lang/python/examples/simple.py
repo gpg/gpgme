@@ -25,7 +25,7 @@ core.check_version(None)
 
 # Set up our input and output buffers.
 
-plain = core.Data(b'This is my message.')
+plain = core.Data('This is my message.')
 cipher = core.Data()
 
 # Initialize our context.
@@ -38,7 +38,7 @@ c.set_armor(1)
 sys.stdout.write("Enter name of your recipient: ")
 sys.stdout.flush()
 name = sys.stdin.readline().strip()
-c.op_keylist_start(name.encode(), 0)
+c.op_keylist_start(name, 0)
 r = c.op_keylist_next()
 
 if r == None:
@@ -48,6 +48,6 @@ else:
     try:
         c.op_encrypt([r], 1, plain, cipher)
         cipher.seek(0,0)
-        print(cipher.read())
+        sys.stdout.buffer.write(cipher.read())
     except errors.GPGMEError as ex:
         print(ex.getstring())

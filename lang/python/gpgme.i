@@ -24,16 +24,18 @@
 // Generate doc strings for all methods.
 %feature("autodoc", "0");
 
-// Allow use of None for strings.
+/* Allow use of Unicode objects, bytes, and None for strings.  */
 
 %typemap(in) const char * {
   if ($input == Py_None)
     $1 = NULL;
+  else if (PyUnicode_Check($input))
+    $1 = PyUnicode_AsUTF8($input);
   else if (PyBytes_Check($input))
     $1 = PyBytes_AsString($input);
   else {
     PyErr_Format(PyExc_TypeError,
-                 "arg %d: expected string or None, got %s",
+                 "arg %d: expected str, bytes, or None, got %s",
 		 $argnum, $input->ob_type->tp_name);
     return NULL;
   }
@@ -49,20 +51,27 @@
 PyObject* object_to_gpgme_t(PyObject* input, const char* objtype, int argnum) {
   PyObject *pyname = NULL, *pypointer = NULL;
   pyname = PyObject_CallMethod(input, "_getctype", NULL);
-  if (pyname == NULL) {
-    PyErr_Format(PyExc_TypeError,
-		 "arg %d: Expected an instance of type %s, but got %s",
-		 argnum, objtype,
-		 input == Py_None ? "None" : input->ob_type->tp_name);
-    return NULL;
-  }
-  if (strcmp(PyBytes_AsString(pyname), objtype) != 0) {
-    PyErr_Format(PyExc_TypeError,
-		 "arg %d: Expected value of type %s, but got %s",
-		 argnum, objtype, PyBytes_AsString(pyname));
-    Py_DECREF(pyname);
-    return NULL;
-  }
+  if (pyname && PyUnicode_Check(pyname))
+    {
+      if (strcmp(PyUnicode_AsUTF8(pyname), objtype) != 0)
+        {
+          PyErr_Format(PyExc_TypeError,
+                       "arg %d: Expected value of type %s, but got %s",
+                       argnum, objtype, PyUnicode_AsUTF8(pyname));
+          Py_DECREF(pyname);
+          return NULL;
+        }
+    }
+  else
+    {
+      PyErr_Format(PyExc_TypeError,
+                   "Protocol violation: Expected an instance of type str "
+                   "from _getctype, but got %s",
+                   pyname == NULL ? "NULL"
+                   : (pyname == Py_None ? "None" : pyname->ob_type->tp_name));
+      return NULL;
+    }
+
   Py_DECREF(pyname);
   pypointer = PyObject_GetAttrString(input, "wrapped");
   if (pypointer == NULL) {
@@ -243,7 +252,7 @@ gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
   }
 
   PyTuple_SetItem(pyargs, 0, PyLong_FromLong((long) status));
-  PyTuple_SetItem(pyargs, 1, PyBytes_FromString(args));
+  PyTuple_SetItem(pyargs, 1, PyUnicode_FromString(args));
   if (dataarg) {
     Py_INCREF(dataarg);		/* Because GetItem doesn't give a ref but SetItem taketh away */
     PyTuple_SetItem(pyargs, 2, dataarg);
@@ -254,8 +263,12 @@ gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
   if (PyErr_Occurred()) {
     err_status = pygpgme_exception2code();
   } else {
-    if (fd>=0 && retval) {
-      write(fd, PyBytes_AsString(retval), PyBytes_Size(retval));
+    if (fd>=0 && retval && PyUnicode_Check(retval)) {
+      const char *buffer;
+      Py_ssize_t size;
+
+      buffer = PyUnicode_AsUTF8AndSize(retval, &size);
+      write(fd, buffer, size);
       write(fd, "\n", 1);
     }
   }

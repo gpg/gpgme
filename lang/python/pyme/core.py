@@ -377,10 +377,11 @@ class Data(GpgmeWrapper):
         self.new_from_fd(file)
 
     def write(self, buffer):
+        """Write buffer given as bytes."""
         errorcheck(pygpgme.gpgme_data_write(self.wrapped, buffer, len(buffer)))
 
     def read(self, size = -1):
-        """Read at most size bytes, returned as a string.
+        """Read at most size bytes, returned as bytes.
 
         If the size argument is negative or omitted, read until EOF is reached.
 
@@ -393,13 +394,13 @@ class Data(GpgmeWrapper):
         if size > 0:
             return pygpgme.gpgme_data_read(self.wrapped, size)
         else:
-            retval = ''
+            chunks = []
             while 1:
-                result = pygpgme.gpgme_data_read(self.wrapped, 10240)
+                result = pygpgme.gpgme_data_read(self.wrapped, 4096)
                 if len(result) == 0:
                     break
-                retval += result
-            return retval
+                chunks.append(result)
+            return b''.join(chunks)
 
 def pubkey_algo_name(algo):
     return pygpgme.gpgme_pubkey_algo_name(algo)
