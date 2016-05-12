@@ -50,7 +50,24 @@ class GpgmeWrapper(object):
             return repr(self.wrapped) == repr(other.wrapped)
 
     def _getctype(self):
-        raise NotImplementedException
+        """Must be implemented by child classes.
+
+        Must return the name of the c type."""
+        raise NotImplementedError()
+
+    def _getnameprepend(self):
+        """Must be implemented by child classes.
+
+        Must return the prefix of all c functions mapped to methods of
+        this class."""
+        raise NotImplementedError()
+
+    def _errorcheck(self, name):
+        """Must be implemented by child classes.
+
+        This function must return a trueish value for all c functions
+        returning gpgme_error_t."""
+        raise NotImplementedError()
 
     def __getattr__(self, name):
         """On-the-fly function generation."""
