@@ -69,11 +69,11 @@ class GpgmeWrapper(object):
         returning gpgme_error_t."""
         raise NotImplementedError()
 
-    def __getattr__(self, name):
+    def __getattr__(self, key):
         """On-the-fly function generation."""
-        if name[0] == '_' or self._getnameprepend() == None:
+        if key[0] == '_' or self._getnameprepend() == None:
             return None
-        name = self._getnameprepend() + name
+        name = self._getnameprepend() + key
         if self._errorcheck(name):
             def _funcwrap(*args, **kwargs):
                 args = [self.wrapped] + list(args)
@@ -85,5 +85,8 @@ class GpgmeWrapper(object):
                 return getattr(pygpgme, name)(*args, **kwargs)
 
         _funcwrap.__doc__ = getattr(getattr(pygpgme, name), "__doc__")
+
+        # Cache the wrapper function.
+        setattr(self, key, _funcwrap)
         return _funcwrap
 
