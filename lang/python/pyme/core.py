@@ -66,21 +66,29 @@ class Context(GpgmeWrapper):
         self.last_progresscb = None
 
     def __del__(self):
+        if not pygpgme:
+            # At interpreter shutdown, pygpgme is set to NONE.
+            return
+
         self._free_passcb()
         self._free_progresscb()
-        if self.own:
+        if self.own and pygpgme.gpgme_release:
             pygpgme.gpgme_release(self.wrapped)
 
     def _free_passcb(self):
         if self.last_passcb != None:
-            pygpgme.pygpgme_clear_generic_cb(self.last_passcb)
-            pygpgme.delete_PyObject_p_p(self.last_passcb)
+            if pygpgme.pygpgme_clear_generic_cb:
+                pygpgme.pygpgme_clear_generic_cb(self.last_passcb)
+            if pygpgme.delete_PyObject_p_p:
+                pygpgme.delete_PyObject_p_p(self.last_passcb)
             self.last_passcb = None
 
     def _free_progresscb(self):
         if self.last_progresscb != None:
-            pygpgme.pygpgme_clear_generic_cb(self.last_progresscb)
-            pygpgme.delete_PyObject_p_p(self.last_progresscb)
+            if pygpgme.pygpgme_clear_generic_cb:
+                pygpgme.pygpgme_clear_generic_cb(self.last_progresscb)
+            if pygpgme.delete_PyObject_p_p:
+                pygpgme.delete_PyObject_p_p(self.last_progresscb)
             self.last_progresscb = None
 
     def op_keylist_all(self, *args, **kwargs):
@@ -292,14 +300,20 @@ class Data(GpgmeWrapper):
             self.new()
 
     def __del__(self):
-        if self.wrapped != None:
+        if not pygpgme:
+            # At interpreter shutdown, pygpgme is set to NONE.
+            return
+
+        if self.wrapped != None and pygpgme.gpgme_data_release:
             pygpgme.gpgme_data_release(self.wrapped)
         self._free_readcb()
 
     def _free_readcb(self):
         if self.last_readcb != None:
-            pygpgme.pygpgme_clear_generic_cb(self.last_readcb)
-            pygpgme.delete_PyObject_p_p(self.last_readcb)
+            if pygpgme.pygpgme_clear_generic_cb:
+                pygpgme.pygpgme_clear_generic_cb(self.last_readcb)
+            if pygpgme.delete_PyObject_p_p:
+                pygpgme.delete_PyObject_p_p(self.last_readcb)
             self.last_readcb = None
 
     def new(self):
