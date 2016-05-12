@@ -16,6 +16,7 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+import sys
 import os
 from pyme import core
 from pyme.core import Data, Context
@@ -53,6 +54,9 @@ else:
     out = Data()
     c.op_keylist_start(b"Alpha", 0)
     key = c.op_keylist_next()
+    if not key:
+        sys.exit("Key Alpha not found.  " +
+                 "Did you point GNUPGHOME to GPGME's tests/gpg dir?")
     c.op_edit(key, KeyEditor().edit_fnc, out, out)
     print("[-- Last response --]")
     out.seek(0,0)
