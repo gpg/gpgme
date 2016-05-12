@@ -20,4 +20,6 @@
 from pyme import core
 
 d0 = core.Data()
+d0.seek # trigger on-demand-wrapping
 assert d0.seek == d0.seek, "Generated wrapper functions are not cached"
+assert hasattr(core.Data, 'seek'), "Generated wrapper functions are not shared"

@@ -74,19 +74,25 @@ class GpgmeWrapper(object):
         if key[0] == '_' or self._getnameprepend() == None:
             return None
         name = self._getnameprepend() + key
+        func = getattr(pygpgme, name)
+
         if self._errorcheck(name):
-            def _funcwrap(*args, **kwargs):
-                args = [self.wrapped] + list(args)
-                return errorcheck(getattr(pygpgme, name)(*args, **kwargs),
+            def _funcwrap(slf, *args, **kwargs):
+                return errorcheck(func(slf.wrapped, *args, **kwargs),
                                   "Invocation of " + name)
         else:
-            def _funcwrap(*args, **kwargs):
-                args = [self.wrapped] + list(args)
-                return getattr(pygpgme, name)(*args, **kwargs)
+            def _funcwrap(slf, *args, **kwargs):
+                return func(slf.wrapped, *args, **kwargs)
 
-        _funcwrap.__doc__ = getattr(getattr(pygpgme, name), "__doc__")
+        _funcwrap.__doc__ = getattr(func, "__doc__")
 
-        # Cache the wrapper function.
-        setattr(self, key, _funcwrap)
-        return _funcwrap
+        # Monkey-patch the class.
+        setattr(self.__class__, key, _funcwrap)
+
+        # Bind the method to 'self'.
+        def wrapper(*args, **kwargs):
+            return _funcwrap(self, *args, **kwargs)
+        _funcwrap.__doc__ = getattr(func, "__doc__")
+
+        return wrapper
 
