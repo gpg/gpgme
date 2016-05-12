@@ -394,7 +394,10 @@ class Data(GpgmeWrapper):
         """Write buffer given as string or bytes.
 
         If a string is given, it is implicitly encoded using UTF-8."""
-        return pygpgme.gpgme_data_write(self.wrapped, buffer)
+        written = pygpgme.gpgme_data_write(self.wrapped, buffer)
+        if written < 0:
+            raise GPGMEError.fromSyserror()
+        return written
 
     def read(self, size = -1):
         """Read at most size bytes, returned as bytes.

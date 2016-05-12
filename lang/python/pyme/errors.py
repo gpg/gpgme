@@ -23,6 +23,10 @@ class GPGMEError(Exception):
         self.error = error
         self.message = message
 
+    @classmethod
+    def fromSyserror(cls):
+        return cls(pygpgme.gpgme_err_code_from_syserror())
+
     def getstring(self):
         message = "%s: %s" % (pygpgme.gpgme_strsource(self.error),
                               pygpgme.gpgme_strerror(self.error))
