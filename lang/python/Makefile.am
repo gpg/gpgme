@@ -17,6 +17,7 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 EXTRA_DIST = README.rst
+SUBDIRS = tests
 
 # Cleanup gpgme.h from deprecated functions and typedefs.
 gpgme.h: ../../src/gpgme.h

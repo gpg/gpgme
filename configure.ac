@@ -659,7 +659,7 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 src/gpgme.h)
 AC_CONFIG_FILES(src/gpgme-config, chmod +x src/gpgme-config)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd
-                 lang/python/Makefile])
+                 lang/python/Makefile lang/python/tests/Makefile])
 AC_OUTPUT
 
 echo "
