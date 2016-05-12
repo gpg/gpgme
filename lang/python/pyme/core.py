@@ -380,7 +380,7 @@ class Data(GpgmeWrapper):
         if fp == None:
             raise ValueError("Failed to open file from %s arg %s" % \
                   (str(type(file)), str(file)))
-        errorcheck(gpgme_data_new_from_fd(tmp, fp))
+        errorcheck(pygpgme.gpgme_data_new_from_fd(tmp, fp))
         self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
         pygpgme.delete_gpgme_data_t_p(tmp)
 
