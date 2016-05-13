@@ -365,6 +365,18 @@ public:
         return new QGpgME::QGpgMEAddUserIDJob(context);
     }
 
+    QGpgME::KeyListJob *locateKeysJob() const Q_DECL_OVERRIDE
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return Q_NULLPTR;
+        }
+        GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
+        if (!context) {
+            return Q_NULLPTR;
+        }
+        context->setKeyListMode(GpgME::Extern | GpgME::Local | GpgME::Signatures | GpgME::Validate);
+        return new QGpgME::QGpgMEKeyListJob(context);
+    }
 };
 
 }
