@@ -1,23 +1,22 @@
 /* t-decrypt-verify.c - Regression test.
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
-
-   This file is part of GPGME.
- 
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-   
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-   
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 /* We need to include config.h so that we know whether we are building
    with large file system (LFS) support. */
@@ -94,7 +93,7 @@ check_verify_result (gpgme_verify_result_t result, unsigned int summary,
 }
 
 
-int 
+int
 main (int argc, char *argv[])
 {
   gpgme_ctx_t ctx;
@@ -127,7 +126,7 @@ main (int argc, char *argv[])
       fprintf (stderr, "%s:%i: unsupported algorithm: %s\n",
 	       __FILE__, __LINE__, decrypt_result->unsupported_algorithm);
       exit (1);
-    }    
+    }
   print_data (out);
   verify_result = gpgme_op_verify_result (ctx);
   check_verify_result (verify_result, 0,
