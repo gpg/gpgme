@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.6.1 (unreleased) [C25/A14/R_]
+Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
 ------------------------------------------------
 
  * New function to format a GnuPG style public key algorithm string.
