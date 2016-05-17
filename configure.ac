@@ -160,8 +160,8 @@ have_w32_system=no
 have_w64_system=no
 build_w32_glib=no
 build_w32_qt=no
-available_languages="cpp cl qt"
-default_languages="cpp cl qt"
+available_languages="cl cpp python qt"
+default_languages="cl cpp python qt"
 case "${host}" in
     x86_64-*mingw32*)
         have_w64_system=yes
@@ -338,6 +338,26 @@ if test "$found" = "1"; then
 fi
 AM_CONDITIONAL([HAVE_DOXYGEN],
                [test -n "$DOXYGEN"])
+
+# Python bindings.
+LIST_MEMBER("python", $enabled_languages)
+if test "$found" = "1"; then
+    AX_PKG_SWIG
+    if test -z "$SWIG"; then
+        if test "$explicit_languages" = "1"; then
+            die=yes
+            AC_MSG_NOTICE([[
+***
+*** You need SWIG to build the Python bindings.
+***]])
+        else
+            enabled_languages=$(echo $enabled_languages | sed 's/qt//')
+        fi
+    else
+        AM_PATH_PYTHON([3.2])
+        AX_SWIG_PYTHON
+    fi
+fi
 
 AC_SUBST(ENABLED_LANGUAGES, $enabled_languages)
 
@@ -682,7 +702,6 @@ AC_SUBST(emacs_local_vars_begin, [['Local][ ][Variables:']])
 AC_SUBST(emacs_local_vars_read_only, ['buffer-read-only: t'])
 AC_SUBST(emacs_local_vars_end, ['End:'])
 
-
 # Last check.
 die=no
 if test "$have_gpg_error" = "no"; then
@@ -737,6 +756,7 @@ AC_CONFIG_FILES(lang/qt/tests/Makefile)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([lang/qt/doc/Doxyfile])])
 AC_CONFIG_FILES(lang/qt/doc/Makefile)
+AC_CONFIG_FILES([lang/python/Makefile lang/python/tests/Makefile])
 AC_OUTPUT
 
 echo "

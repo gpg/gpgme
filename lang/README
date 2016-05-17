@@ -10,5 +10,6 @@ sub-directory.
 Directory	Language
 
 cl		Common Lisp
-cpp     C++
-qt      Qt-Framework API
+cpp		C++
+qt		Qt-Framework API
+python		Python 3 (port of PyME 0.9.0)

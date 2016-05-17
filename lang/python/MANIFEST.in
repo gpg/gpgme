@@ -1,0 +1,5 @@
+recursive-include examples *.py *.glade *.gladep
+include gpgme-h-clean.py gpgme.i
+include helpers.c helpers.h
+include Makefile
+recursive-include pyme *.py
