@@ -59,15 +59,14 @@ QGpgMEChangeExpiryJob::~QGpgMEChangeExpiryJob() {}
 
 static QGpgMEChangeExpiryJob::result_type change_expiry(Context *ctx, const Key &key, const QDateTime &expiry)
 {
-    std::auto_ptr<EditInteractor>
-    ei(expiry.isValid()
+    EditInteractor *ei = expiry.isValid()
        ? new GpgSetExpiryTimeEditInteractor(expiry.date().toString(Qt::ISODate).toStdString())
-       : new GpgSetExpiryTimeEditInteractor());
+       : new GpgSetExpiryTimeEditInteractor();
 
     QGpgME::QByteArrayDataProvider dp;
     Data data(&dp);
     assert(!data.isNull());
-    const Error err = ctx->edit(key, ei, data);
+    const Error err = ctx->edit(key, std::unique_ptr<EditInteractor> (ei), data);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
     return std::make_tuple(err, log, ae);

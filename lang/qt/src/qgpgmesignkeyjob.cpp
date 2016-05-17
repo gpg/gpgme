@@ -64,18 +64,16 @@ static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, cons
     QGpgME::QByteArrayDataProvider dp;
     Data data(&dp);
 
-    std::auto_ptr<GpgSignKeyEditInteractor> skei(new GpgSignKeyEditInteractor);
+    GpgSignKeyEditInteractor *skei(new GpgSignKeyEditInteractor);
     skei->setUserIDsToSign(uids);
     skei->setCheckLevel(checkLevel);
     skei->setSigningOptions(opts);
-
-    std::auto_ptr<EditInteractor> ei(skei);
 
     if (!signer.isNull())
         if (const Error err = ctx->addSigningKey(signer)) {
             return std::make_tuple(err, QString(), Error());
         }
-    const Error err = ctx->edit(key, ei, data);
+    const Error err = ctx->edit(key, std::unique_ptr<EditInteractor> (skei), data);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
     return std::make_tuple(err, log, ae);

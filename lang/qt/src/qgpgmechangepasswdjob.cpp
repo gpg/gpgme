@@ -56,7 +56,7 @@ QGpgMEChangePasswdJob::~QGpgMEChangePasswdJob() {}
 static QGpgMEChangePasswdJob::result_type change_passwd(Context *ctx, const Key &key)
 {
 #if 0 // in case we want to fall back to edit interactor for gpg...
-    std::auto_ptr<EditInteractor> ei(new GpgChangePasswdEditInteractor);
+    std::unique_ptr<EditInteractor> ei(new GpgChangePasswdEditInteractor);
 
     QGpgME::QByteArrayDataProvider dp;
     Data data(&dp);

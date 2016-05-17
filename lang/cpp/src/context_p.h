@@ -75,8 +75,8 @@ public:
     Operation lastop;
     gpgme_error_t lasterr;
     Data lastAssuanInquireData;
-    std::auto_ptr<AssuanTransaction> lastAssuanTransaction;
-    std::auto_ptr<EditInteractor> lastEditInteractor, lastCardEditInteractor;
+    std::unique_ptr<AssuanTransaction> lastAssuanTransaction;
+    std::unique_ptr<EditInteractor> lastEditInteractor, lastCardEditInteractor;
 };
 
 } // namespace GpgME

@@ -56,14 +56,13 @@ QGpgMEChangeOwnerTrustJob::~QGpgMEChangeOwnerTrustJob() {}
 
 static QGpgMEChangeOwnerTrustJob::result_type change_ownertrust(Context *ctx, const Key &key, Key::OwnerTrust trust)
 {
-    std::auto_ptr<EditInteractor>
-    ei(new GpgSetOwnerTrustEditInteractor(trust));
+    EditInteractor *ei = new GpgSetOwnerTrustEditInteractor(trust);
 
     QGpgME::QByteArrayDataProvider dp;
     Data data(&dp);
     assert(!data.isNull());
 
-    const Error err = ctx->edit(key, ei, data);
+    const Error err = ctx->edit(key, std::unique_ptr<EditInteractor>(ei), data);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
     return std::make_tuple(err, log, ae);

@@ -57,18 +57,16 @@ QGpgMEAddUserIDJob::~QGpgMEAddUserIDJob() {}
 static QGpgMEAddUserIDJob::result_type add_user_id(Context *ctx, const Key &key, const QString &name, const QString &email, const QString &comment)
 {
 
-    std::auto_ptr<GpgAddUserIDEditInteractor> gau(new GpgAddUserIDEditInteractor);
+    GpgAddUserIDEditInteractor *gau = new GpgAddUserIDEditInteractor;
 
     gau->setNameUtf8(name.toUtf8().constData());
     gau->setEmailUtf8(email.toUtf8().constData());
     gau->setCommentUtf8(comment.toUtf8().constData());
 
-    std::auto_ptr<EditInteractor> ei(gau);
-
     QGpgME::QByteArrayDataProvider dp;
     Data data(&dp);
     assert(!data.isNull());
-    const Error err = ctx->edit(key, ei, data);
+    const Error err = ctx->edit(key, std::unique_ptr<EditInteractor> (gau), data);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
     return std::make_tuple(err, log, ae);

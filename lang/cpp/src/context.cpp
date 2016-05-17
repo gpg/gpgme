@@ -224,14 +224,14 @@ Context *Context::createForProtocol(Protocol proto)
     return new Context(ctx);
 }
 
-std::auto_ptr<Context> Context::createForEngine(Engine eng, Error *error)
+std::unique_ptr<Context> Context::createForEngine(Engine eng, Error *error)
 {
     gpgme_ctx_t ctx = 0;
     if (const gpgme_error_t err = gpgme_new(&ctx)) {
         if (error) {
             *error = Error(err);
         }
-        return std::auto_ptr<Context>();
+        return std::unique_ptr<Context>();
     }
 
     switch (eng) {
@@ -241,7 +241,7 @@ std::auto_ptr<Context> Context::createForEngine(Engine eng, Error *error)
             if (error) {
                 *error = Error(err);
             }
-            return std::auto_ptr<Context>();
+            return std::unique_ptr<Context>();
         }
         break;
     case G13Engine:
@@ -250,21 +250,21 @@ std::auto_ptr<Context> Context::createForEngine(Engine eng, Error *error)
             if (error) {
                 *error = Error(err);
             }
-            return std::auto_ptr<Context>();
+            return std::unique_ptr<Context>();
         }
         break;
     default:
         if (error) {
             *error = Error::fromCode(GPG_ERR_INV_ARG);
         }
-        return std::auto_ptr<Context>();
+        return std::unique_ptr<Context>();
     }
 
     if (error) {
         *error = Error();
     }
 
-    return std::auto_ptr<Context>(new Context(ctx));
+    return std::unique_ptr<Context>(new Context(ctx));
 }
 
 //
@@ -685,10 +685,10 @@ Error Context::startPasswd(const Key &key)
     return Error(d->lasterr = gpgme_op_passwd_start(d->ctx, key.impl(), 0U));
 }
 
-Error Context::edit(const Key &key, std::auto_ptr<EditInteractor> func, Data &data)
+Error Context::edit(const Key &key, std::unique_ptr<EditInteractor> func, Data &data)
 {
     d->lastop = Private::Edit;
-    d->lastEditInteractor = func;
+    d->lastEditInteractor = std::move(func);
     Data::Private *const dp = data.impl();
     return Error(d->lasterr = gpgme_op_edit(d->ctx, key.impl(),
                                             d->lastEditInteractor.get() ? edit_interactor_callback : 0,
@@ -696,10 +696,10 @@ Error Context::edit(const Key &key, std::auto_ptr<EditInteractor> func, Data &da
                                             dp ? dp->data : 0));
 }
 
-Error Context::startEditing(const Key &key, std::auto_ptr<EditInteractor> func, Data &data)
+Error Context::startEditing(const Key &key, std::unique_ptr<EditInteractor> func, Data &data)
 {
     d->lastop = Private::Edit;
-    d->lastEditInteractor = func;
+    d->lastEditInteractor = std::move(func);
     Data::Private *const dp = data.impl();
     return Error(d->lasterr = gpgme_op_edit_start(d->ctx, key.impl(),
                               d->lastEditInteractor.get() ? edit_interactor_callback : 0,
@@ -712,15 +712,15 @@ EditInteractor *Context::lastEditInteractor() const
     return d->lastEditInteractor.get();
 }
 
-std::auto_ptr<EditInteractor> Context::takeLastEditInteractor()
+std::unique_ptr<EditInteractor> Context::takeLastEditInteractor()
 {
-    return d->lastEditInteractor;
+    return std::move(d->lastEditInteractor);
 }
 
-Error Context::cardEdit(const Key &key, std::auto_ptr<EditInteractor> func, Data &data)
+Error Context::cardEdit(const Key &key, std::unique_ptr<EditInteractor> func, Data &data)
 {
     d->lastop = Private::CardEdit;
-    d->lastCardEditInteractor = func;
+    d->lastCardEditInteractor = std::move(func);
     Data::Private *const dp = data.impl();
     return Error(d->lasterr = gpgme_op_card_edit(d->ctx, key.impl(),
                               d->lastCardEditInteractor.get() ? edit_interactor_callback : 0,
@@ -728,10 +728,10 @@ Error Context::cardEdit(const Key &key, std::auto_ptr<EditInteractor> func, Data
                               dp ? dp->data : 0));
 }
 
-Error Context::startCardEditing(const Key &key, std::auto_ptr<EditInteractor> func, Data &data)
+Error Context::startCardEditing(const Key &key, std::unique_ptr<EditInteractor> func, Data &data)
 {
     d->lastop = Private::CardEdit;
-    d->lastCardEditInteractor = func;
+    d->lastCardEditInteractor = std::move(func);
     Data::Private *const dp = data.impl();
     return Error(d->lasterr = gpgme_op_card_edit_start(d->ctx, key.impl(),
                               d->lastCardEditInteractor.get() ? edit_interactor_callback : 0,
@@ -744,9 +744,9 @@ EditInteractor *Context::lastCardEditInteractor() const
     return d->lastCardEditInteractor.get();
 }
 
-std::auto_ptr<EditInteractor> Context::takeLastCardEditInteractor()
+std::unique_ptr<EditInteractor> Context::takeLastCardEditInteractor()
 {
-    return d->lastCardEditInteractor;
+    return std::move(d->lastCardEditInteractor);
 }
 
 Error Context::startTrustItemListing(const char *pattern, int maxLevel)
@@ -803,13 +803,13 @@ static gpgme_error_t assuan_transaction_status_callback(void *opaque, const char
 
 AssuanResult Context::assuanTransact(const char *command)
 {
-    return assuanTransact(command, std::auto_ptr<AssuanTransaction>(new DefaultAssuanTransaction));
+    return assuanTransact(command, std::unique_ptr<AssuanTransaction>(new DefaultAssuanTransaction));
 }
 
-AssuanResult Context::assuanTransact(const char *command, std::auto_ptr<AssuanTransaction> transaction)
+AssuanResult Context::assuanTransact(const char *command, std::unique_ptr<AssuanTransaction> transaction)
 {
     d->lastop = Private::AssuanTransact;
-    d->lastAssuanTransaction = transaction;
+    d->lastAssuanTransaction = std::move(transaction);
     if (!d->lastAssuanTransaction.get()) {
         return AssuanResult(Error(d->lasterr = make_error(GPG_ERR_INV_ARG)));
     }
@@ -825,13 +825,13 @@ AssuanResult Context::assuanTransact(const char *command, std::auto_ptr<AssuanTr
 
 Error Context::startAssuanTransaction(const char *command)
 {
-    return startAssuanTransaction(command, std::auto_ptr<AssuanTransaction>(new DefaultAssuanTransaction));
+    return startAssuanTransaction(command, std::unique_ptr<AssuanTransaction>(new DefaultAssuanTransaction));
 }
 
-Error Context::startAssuanTransaction(const char *command, std::auto_ptr<AssuanTransaction> transaction)
+Error Context::startAssuanTransaction(const char *command, std::unique_ptr<AssuanTransaction> transaction)
 {
     d->lastop = Private::AssuanTransact;
-    d->lastAssuanTransaction = transaction;
+    d->lastAssuanTransaction = std::move(transaction);
     if (!d->lastAssuanTransaction.get()) {
         return Error(d->lasterr = make_error(GPG_ERR_INV_ARG));
     }
@@ -858,9 +858,9 @@ AssuanTransaction *Context::lastAssuanTransaction() const
     return d->lastAssuanTransaction.get();
 }
 
-std::auto_ptr<AssuanTransaction> Context::takeLastAssuanTransaction()
+std::unique_ptr<AssuanTransaction> Context::takeLastAssuanTransaction()
 {
-    return d->lastAssuanTransaction;
+    return std::move(d->lastAssuanTransaction);
 }
 
 DecryptionResult Context::decrypt(const Data &cipherText, Data &plainText)

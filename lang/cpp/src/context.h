@@ -69,7 +69,7 @@ public:
     //
 
     static Context *createForProtocol(Protocol proto);
-    static std::auto_ptr<Context> createForEngine(Engine engine, Error *err = 0);
+    static std::unique_ptr<Context> createForEngine(Engine engine, Error *err = 0);
     virtual ~Context();
 
     //
@@ -188,21 +188,21 @@ public:
     // Key Editing
     //
 
-    GpgME::Error edit(const Key &key, std::auto_ptr<EditInteractor> function, Data &out);
-    GpgME::Error startEditing(const Key &key, std::auto_ptr<EditInteractor> function, Data &out);
+    GpgME::Error edit(const Key &key, std::unique_ptr<EditInteractor> function, Data &out);
+    GpgME::Error startEditing(const Key &key, std::unique_ptr<EditInteractor> function, Data &out);
 
     EditInteractor *lastEditInteractor() const;
-    std::auto_ptr<EditInteractor> takeLastEditInteractor();
+    std::unique_ptr<EditInteractor> takeLastEditInteractor();
 
     //
     // SmartCard Editing
     //
 
-    GpgME::Error cardEdit(const Key &key, std::auto_ptr<EditInteractor> function, Data &out);
-    GpgME::Error startCardEditing(const Key &key, std::auto_ptr<EditInteractor> function, Data &out);
+    GpgME::Error cardEdit(const Key &key, std::unique_ptr<EditInteractor> function, Data &out);
+    GpgME::Error startCardEditing(const Key &key, std::unique_ptr<EditInteractor> function, Data &out);
 
     EditInteractor *lastCardEditInteractor() const;
-    std::auto_ptr<EditInteractor> takeLastCardEditInteractor();
+    std::unique_ptr<EditInteractor> takeLastCardEditInteractor();
 
     //
     // Trust Item Management
@@ -216,14 +216,14 @@ public:
     // Assuan Transactions
     //
 
-    AssuanResult assuanTransact(const char *command, std::auto_ptr<AssuanTransaction> transaction);
+    AssuanResult assuanTransact(const char *command, std::unique_ptr<AssuanTransaction> transaction);
     AssuanResult assuanTransact(const char *command);
-    GpgME::Error startAssuanTransaction(const char *command, std::auto_ptr<AssuanTransaction> transaction);
+    GpgME::Error startAssuanTransaction(const char *command, std::unique_ptr<AssuanTransaction> transaction);
     GpgME::Error startAssuanTransaction(const char *command);
     AssuanResult assuanResult() const;
 
     AssuanTransaction *lastAssuanTransaction() const;
-    std::auto_ptr<AssuanTransaction> takeLastAssuanTransaction();
+    std::unique_ptr<AssuanTransaction> takeLastAssuanTransaction();
 
     //
     //
