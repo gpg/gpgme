@@ -20,7 +20,7 @@
 
 
 from . import pygpgme
-from .errors import errorcheck
+from .errors import errorcheck, GPGMEError
 from . import errors
 from .util import GpgmeWrapper
 
