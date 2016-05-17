@@ -33,6 +33,11 @@
 #include "util.h"
 #include "debug.h"
 
+#if GPG_ERROR_VERSION_NUMBER < 0x011700  /* 1.23 */
+# define GPG_ERR_SUBKEYS_EXP_REV 217
+#endif
+
+
 
 gpgme_error_t
 _gpgme_op_data_lookup (gpgme_ctx_t ctx, ctx_op_data_id_t type, void **hook,
@@ -190,16 +195,19 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
 }
 
 
-/* Parse the INV_RECP or INV-SNDR status line in ARGS and return the
-   result in KEY.  */
+/* Parse the INV_RECP or INV_SNDR status line in ARGS and return the
+   result in KEY.  If KC_FPR (from the KEY_CONSIDERED status line) is
+   not NULL take the KC_FLAGS in account. */
 gpgme_error_t
-_gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
+_gpgme_parse_inv_recp (char *args, int for_signing,
+                       const char *kc_fpr, unsigned int kc_flags,
+                       gpgme_invalid_key_t *key)
 {
   gpgme_invalid_key_t inv_key;
   char *tail;
   long int reason;
 
-  inv_key = malloc (sizeof (*inv_key));
+  inv_key = calloc (1, sizeof (*inv_key));
   if (!inv_key)
     return gpg_error_from_syserror ();
   inv_key->next = NULL;
@@ -214,9 +222,11 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
 
   switch (reason)
     {
-    default:
     case 0:
-      inv_key->reason = gpg_error (GPG_ERR_GENERAL);
+      if (kc_fpr && (kc_flags & 2))
+        inv_key->reason = gpg_error (GPG_ERR_SUBKEYS_EXP_OR_REV);
+      else
+        inv_key->reason = gpg_error (GPG_ERR_GENERAL);
       break;
 
     case 1:
@@ -274,6 +284,10 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
     case 14:
       inv_key->reason = gpg_error (GPG_ERR_INV_USER_ID);
       break;
+
+    default:
+      inv_key->reason = gpg_error (GPG_ERR_GENERAL);
+      break;
     }
 
   while (*tail && *tail == ' ')
@@ -287,10 +301,45 @@ _gpgme_parse_inv_recp (char *args, gpgme_invalid_key_t *key)
 	  return gpg_error_from_syserror ();
 	}
     }
-  else
-    inv_key->fpr = NULL;
 
   *key = inv_key;
+  return 0;
+}
+
+
+
+/* Parse a KEY_CONSIDERED status line in ARGS and store the
+ * fingerprint and the flags at R_FPR and R_FLAGS.  The caller must
+ * free the value at R_FPR on success.  */
+gpgme_error_t
+_gpgme_parse_key_considered (const char *args,
+                             char **r_fpr, unsigned int *r_flags)
+{
+  char *pend;
+  size_t n;
+
+  *r_fpr = NULL;
+
+  pend = strchr (args, ' ');
+  if (!pend || pend == args)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);  /* Bogus status line.  */
+  n = pend - args;
+  *r_fpr = malloc (n + 1);
+  if (!*r_fpr)
+    return gpg_error_from_syserror ();
+  memcpy (*r_fpr, args, n);
+  (*r_fpr)[n] = 0;
+  args = pend + 1;
+
+  gpg_err_set_errno (0);
+  *r_flags = strtoul (args, &pend, 0);
+  if (errno || args == pend || (*pend && *pend != ' '))
+    {
+      free (*r_fpr);
+      *r_fpr = NULL;
+      return trace_gpg_error (GPG_ERR_INV_ENGINE);
+    }
+
   return 0;
 }
 

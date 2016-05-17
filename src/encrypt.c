@@ -39,6 +39,12 @@ typedef struct
   /* The error code from a FAILURE status line or 0.  */
   gpg_error_t failure_code;
 
+  /* The fingerprint from the last KEY_CONSIDERED status line.  */
+  char *kc_fpr;
+
+  /* The flags from the last KEY_CONSIDERED status line.  */
+  unsigned int kc_flags;
+
   /* A pointer to the next pointer of the last invalid recipient in
      the list.  This makes appending new invalid recipients painless
      while preserving the order.  */
@@ -60,6 +66,8 @@ release_op_data (void *hook)
       free (invalid_recipient);
       invalid_recipient = next;
     }
+
+  free (opd->kc_fpr);
 }
 
 
@@ -128,12 +136,26 @@ _gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
         return opd->failure_code;
       break;
 
-    case GPGME_STATUS_INV_RECP:
-      err = _gpgme_parse_inv_recp (args, opd->lastp);
+    case GPGME_STATUS_KEY_CONSIDERED:
+      /* This is emitted during gpg's key lookup to give information
+       * about the lookup results.  We store the last one so it can be
+       * used in connection with INV_RECP.  */
+      free (opd->kc_fpr);
+      opd->kc_fpr = NULL;
+      err = _gpgme_parse_key_considered (args, &opd->kc_fpr, &opd->kc_flags);
       if (err)
-	return err;
+        return err;
+      break;
+
+    case GPGME_STATUS_INV_RECP:
+      err = _gpgme_parse_inv_recp (args, 0, opd->kc_fpr, opd->kc_flags,
+                                   opd->lastp);
+      if (err)
+        return err;
 
       opd->lastp = &(*opd->lastp)->next;
+      free (opd->kc_fpr);
+      opd->kc_fpr = NULL;
       break;
 
     case GPGME_STATUS_NO_RECP:

@@ -532,7 +532,8 @@ typedef enum
     GPGME_STATUS_BEGIN_SIGNING = 90,
     GPGME_STATUS_KEY_NOT_CREATED = 91,
     GPGME_STATUS_INQUIRE_MAXLEN = 92,
-    GPGME_STATUS_FAILURE = 93
+    GPGME_STATUS_FAILURE = 93,
+    GPGME_STATUS_KEY_CONSIDERED = 94
   }
 gpgme_status_code_t;
 
@@ -861,7 +862,12 @@ typedef struct _gpgme_key *gpgme_key_t;
 struct _gpgme_invalid_key
 {
   struct _gpgme_invalid_key *next;
+
+  /* The string used to request the key.  Despite the name this may
+   * not be a fingerprint.  */
   char *fpr;
+
+  /* The error code.  */
   gpgme_error_t reason;
 };
 typedef struct _gpgme_invalid_key *gpgme_invalid_key_t;
@@ -1518,7 +1524,8 @@ typedef enum
     GPGME_SIGSUM_CRL_MISSING = 0x0100,  /* CRL not available.  */
     GPGME_SIGSUM_CRL_TOO_OLD = 0x0200,  /* Available CRL is too old.  */
     GPGME_SIGSUM_BAD_POLICY  = 0x0400,  /* A policy was not met.  */
-    GPGME_SIGSUM_SYS_ERROR   = 0x0800   /* A system error occurred.  */
+    GPGME_SIGSUM_SYS_ERROR   = 0x0800,  /* A system error occurred.  */
+    GPGME_SIGSUM_TOFU_CONFLICT=0x1000   /* Tofu conflict detected.  */
   }
 gpgme_sigsum_t;
 
@@ -1541,7 +1548,7 @@ struct _gpgme_signature
   /* Signature creation time.  */
   unsigned long timestamp;
 
-  /* Signature exipration time or 0.  */
+  /* Signature expiration time or 0.  */
   unsigned long exp_timestamp;
 
   /* Key should not have been used for signing.  */

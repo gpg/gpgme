@@ -42,6 +42,12 @@ typedef struct
   /* The error code from a FAILURE status line or 0.  */
   gpg_error_t failure_code;
 
+  /* The fingerprint from the last KEY_CONSIDERED status line.  */
+  char *kc_fpr;
+
+  /* The flags from the last KEY_CONSIDERED status line.  */
+  unsigned int kc_flags;
+
   /* A pointer to the next pointer of the last invalid signer in
      the list.  This makes appending new invalid signers painless
      while preserving the order.  */
@@ -86,6 +92,7 @@ release_op_data (void *hook)
     }
 
   release_signatures (opd->result.signatures);
+  free (opd->kc_fpr);
 }
 
 
@@ -316,6 +323,17 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
       opd->last_sig_p = &(*opd->last_sig_p)->next;
       break;
 
+    case GPGME_STATUS_KEY_CONSIDERED:
+      /* This is emitted during gpg's key lookup to give information
+       * about the lookup results.  We store the last one so it can be
+       * used in connection with INV_RECP.  */
+      free (opd->kc_fpr);
+      opd->kc_fpr = NULL;
+      err = _gpgme_parse_key_considered (args, &opd->kc_fpr, &opd->kc_flags);
+      if (err)
+        return err;
+      break;
+
     case GPGME_STATUS_INV_RECP:
       if (opd->inv_sgnr_seen && opd->ignore_inv_recp)
         break;
@@ -323,11 +341,16 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_INV_SGNR:
       if (code == GPGME_STATUS_INV_SGNR)
         opd->inv_sgnr_seen = 1;
-      err = _gpgme_parse_inv_recp (args, opd->last_signer_p);
+      free (opd->kc_fpr);
+      opd->kc_fpr = NULL;
+      err = _gpgme_parse_inv_recp (args, 1, opd->kc_fpr, opd->kc_flags,
+                                   opd->last_signer_p);
       if (err)
 	return err;
 
       opd->last_signer_p = &(*opd->last_signer_p)->next;
+      free (opd->kc_fpr);
+      opd->kc_fpr = NULL;
       break;
 
     case GPGME_STATUS_FAILURE:
