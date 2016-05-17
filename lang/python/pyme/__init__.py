@@ -84,6 +84,7 @@ QUICK START SAMPLE PROGRAM
 This program is not for serious encryption, but for example purposes only!
 
 import sys
+import os
 from pyme import core, constants
 
 # Set up our input and output buffers.
@@ -99,6 +100,7 @@ c.set_armor(1)
 # Set up the recipients.
 
 sys.stdout.write("Enter name of your recipient: ")
+sys.stdout.flush()
 name = sys.stdin.readline().strip()
 c.op_keylist_start(name, 0)
 r = c.op_keylist_next()
@@ -106,8 +108,8 @@ r = c.op_keylist_next()
 # Do the encryption.
 
 c.op_encrypt([r], 1, plain, cipher)
-cipher.seek(0,0)
-print cipher.read()
+cipher.seek(0, os.SEEK_SET)
+sys.stdout.buffer.write(cipher.read())
 
 Note that although there is no explicit error checking done here, the
 Python GPGME library is automatically doing error-checking, and will

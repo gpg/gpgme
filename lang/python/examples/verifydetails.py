@@ -25,8 +25,8 @@
 #    along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-from pyme import core, callbacks, constants
-from pyme.constants.sig import mode
+import os
+from pyme import core
 from pyme.constants import protocol
 
 def print_engine_infos():
@@ -58,9 +58,7 @@ def verifyprintdetails(sigfilename, filefilename=None):
     result = c.op_verify_result()
 
     # List results for all signatures. Status equal 0 means "Ok".
-    index = 0
-    for sign in result.signatures:
-        index += 1
+    for index, sign in enumerate(result.signatures):
         print("signature", index, ":")
         print("  summary:     %#0x" % (sign.summary))
         print("  status:      %#0x" % (sign.status))
@@ -71,8 +69,9 @@ def verifyprintdetails(sigfilename, filefilename=None):
     # Print "unsigned" text if inline signature
     if plain2:
         #Rewind since verify put plain2 at EOF.
-        plain2.seek(0,0)
-        print("\n", plain2.read())
+        plain2.seek(0, os.SEEK_SET)
+        print("\n")
+        sys.stdout.buffer.write(plain2.read())
 
 def main():
     print_engine_infos()
@@ -86,13 +85,13 @@ def main():
         sys.exit(1)
 
     if argc == 2:
-        print("trying to verify file: " + sys.argv[1].encode('utf-8'))
-        verifyprintdetails(sys.argv[1].encode('utf-8'))
+        print("trying to verify file: " + sys.argv[1])
+        verifyprintdetails(sys.argv[1])
     if argc == 3:
         print("trying to verify signature %s for file %s" \
-                    % (sys.argv[1].encode('utf-8'), sys.argv[2].encode('utf-8')))
+                    % (sys.argv[1], sys.argv[2]))
 
-        verifyprintdetails(sys.argv[1].encode('utf-8'), sys.argv[2].encode('utf-8'))
+        verifyprintdetails(sys.argv[1], sys.argv[2])
 
 if __name__ == "__main__":
     main()

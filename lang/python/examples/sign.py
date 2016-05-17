@@ -17,6 +17,8 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+import sys
+import os
 from pyme import core, callbacks
 from pyme.constants.sig import mode
 
@@ -27,5 +29,5 @@ sig = core.Data()
 c = core.Context()
 c.set_passphrase_cb(callbacks.passphrase_stdin, b'for signing')
 c.op_sign(plain, sig, mode.CLEAR)
-sig.seek(0,0)
-print(sig.read())
+sig.seek(0, os.SEEK_SET)
+sys.stdout.buffer.write(sig.read())

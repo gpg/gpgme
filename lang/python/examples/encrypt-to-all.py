@@ -23,13 +23,14 @@ This program will try to encrypt a simple message to each key on your
 keyring.  If your keyring has any invalid keys on it, those keys will
 be skipped and it will re-try the encryption."""
 
+import sys
+import os
 from pyme import core
 from pyme.core import Data, Context
-from pyme.constants import validity
 
 core.check_version(None)
 
-plain = Data(b'This is my message.')
+plain = Data('This is my message.')
 
 c = Context()
 c.set_armor(1)
@@ -37,7 +38,7 @@ c.set_armor(1)
 def sendto(keylist):
     cipher = Data()
     c.op_encrypt(keylist, 1, plain, cipher)
-    cipher.seek(0,0)
+    cipher.seek(0, os.SEEK_SET)
     return cipher.read()
 
 names = []
@@ -64,4 +65,4 @@ for key in c.op_keylist_all(None, 0):
 passno = 0
 
 print("Encrypting to %d recipients" % len(names))
-print(sendto(names))
+sys.stdout.buffer.write(sendto(names))

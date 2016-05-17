@@ -18,8 +18,8 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import sys
-from pyme import core, constants, errors
-import pyme.constants.validity
+import os
+from pyme import core, errors
 
 core.check_version(None)
 
@@ -47,7 +47,7 @@ else:
     # Do the encryption.
     try:
         c.op_encrypt([r], 1, plain, cipher)
-        cipher.seek(0,0)
+        cipher.seek(0, os.SEEK_SET)
         sys.stdout.buffer.write(cipher.read())
     except errors.GPGMEError as ex:
         print(ex.getstring())

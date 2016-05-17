@@ -17,7 +17,6 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 #    02111-1307 USA
 
-import os
 import sys
 from pyme import core
 from pyme.core import Data, Context
@@ -40,21 +39,21 @@ def edit_fnc(stat, args, helper):
             helper["data"].seek(helper["skip"], 0)
             data = helper["data"].read()
             helper["skip"] += len(data)
-            print(data)
+            sys.stdout.buffer.write(data)
             return input("(%s) %s > " % (stat2str[stat], args))
     except EOFError:
         pass
 
 # Simple interactive editor to test editor scripts
 if len(sys.argv) != 2:
-    sys.stderr.write("Usage: %s <Gpg key patter>\n" % sys.argv[0])
+    sys.stderr.write("Usage: %s <Gpg key pattern>\n" % sys.argv[0])
 else:
     c = Context()
     out = Data()
-    c.op_keylist_start(sys.argv[1].encode('utf-8'), 0)
+    c.op_keylist_start(sys.argv[1], 0)
     key = c.op_keylist_next()
     helper = {"skip": 0, "data": out}
     c.op_edit(key, edit_fnc, helper, out)
     print("[-- Final output --]")
     out.seek(helper["skip"], 0)
-    print(out.read())
+    sys.stdout.buffer.write(out.read())

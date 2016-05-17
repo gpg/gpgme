@@ -31,6 +31,6 @@ core.check_version(None)
 
 c = core.Context()
 # 0 in keylist means to list not only public but secret keys as well.
-for thekey in [x for x in c.op_keylist_all(b"joe@example.org", 0)]:
+for thekey in [x for x in c.op_keylist_all("joe+pyme@example.org", 0)]:
     # 1 in delete means to delete not only public but secret keys as well.
     c.op_delete(thekey, 1)

@@ -30,8 +30,8 @@ class KeyEditor:
 
     def edit_fnc(self, status, args, out):
         print("[-- Response --]")
-        out.seek(0,0)
-        print(out.read(), end=' ')
+        out.seek(0, os.SEEK_SET)
+        sys.stdout.buffer.write(out.read())
         print("[-- Code: %d, %s --]" % (status, args))
 
         if args == "keyedit.prompt":
@@ -59,5 +59,5 @@ else:
                  "Did you point GNUPGHOME to GPGME's tests/gpg dir?")
     c.op_edit(key, KeyEditor().edit_fnc, out, out)
     print("[-- Last response --]")
-    out.seek(0,0)
-    print(out.read(), end=' ')
+    out.seek(0, os.SEEK_SET)
+    sys.stdout.buffer.write(out.read())
