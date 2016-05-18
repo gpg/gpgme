@@ -345,16 +345,15 @@ if test "$found" = "1"; then
     AX_PKG_SWIG
     if test -z "$SWIG"; then
         if test "$explicit_languages" = "1"; then
-            die=yes
-            AC_MSG_NOTICE([[
+            AC_MSG_ERROR([[
 ***
 *** You need SWIG to build the Python bindings.
 ***]])
         else
-            enabled_languages=$(echo $enabled_languages | sed 's/qt//')
+            enabled_languages=$(echo $enabled_languages | sed 's/python//')
         fi
     else
-        AM_PATH_PYTHON([3.2])
+        AM_PATH_PYTHON([3.3])
         AX_SWIG_PYTHON
     fi
 fi

@@ -26,7 +26,7 @@ gpgme.h: ../../src/gpgme.h
 # For VPATH builds we need to copy some files because Python's
 # distutils are not VPATH-aware.
 copystamp: $(srcdir)/pyme $(srcdir)/helpers.c $(srcdir)/helpers.h
-	if test "$(srcdir)" != "$(builddir)" ; then cp -a $^ . ; fi
+	if test "$(srcdir)" != "$(builddir)" ; then cp -r $^ . ; fi
 	touch $@
 
 gpgme_wrap.c pyme/pygpgme.py: gpgme.i gpgme.h copystamp
