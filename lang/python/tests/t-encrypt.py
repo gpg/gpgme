@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys
-import os
 from pyme import core, constants
 import support
 
@@ -38,5 +36,4 @@ result = c.op_encrypt_result()
 assert not result.invalid_recipients, \
     "Invalid recipient encountered: {}".format(result.invalid_recipients.fpr)
 
-sink.seek(0, os.SEEK_SET)
-sys.stdout.buffer.write(sink.read())
+support.print_data(sink)

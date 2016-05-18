@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys
-import os
 from pyme import core, constants
 import support
 
@@ -33,5 +31,4 @@ result = c.op_decrypt_result()
 assert not result.unsupported_algorithm, \
     "Unsupported algorithm: {}".format(result.unsupported_algorithm)
 
-sink.seek(0, os.SEEK_SET)
-sys.stdout.buffer.write(sink.read())
+support.print_data(sink)

@@ -31,6 +31,8 @@ TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) \
 py_tests = t-wrapper.py \
 	t-data.py \
 	t-encrypt.py \
+	t-encrypt-sym.py \
+	t-sign.py \
 	t-decrypt.py
 
 TESTS = $(top_srcdir)/tests/gpg/initial.test \

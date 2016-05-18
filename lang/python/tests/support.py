@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import sys
 import os
 from pyme import core
 
@@ -24,3 +25,8 @@ def make_filename(name):
 def init_gpgme(proto):
     core.check_version()
     core.engine_check_version(proto)
+
+def print_data(data):
+    if int(os.environ.get('verbose', 0)) > 1:
+        data.seek(0, os.SEEK_SET)
+        sys.stdout.buffer.write(data.read())
