@@ -82,7 +82,15 @@ static gpgme_error_t pyPassphraseCb(void *hook,
     args = PyTuple_New(3);
   }
 
-  PyTuple_SetItem(args, 0, PyBytes_FromString(uid_hint));
+  if (uid_hint == NULL)
+    {
+      Py_INCREF(Py_None);
+      PyTuple_SetItem(args, 0, Py_None);
+    }
+  else
+    PyTuple_SetItem(args, 0, PyUnicode_DecodeUTF8(uid_hint, strlen (uid_hint),
+                                                  "strict"));
+
   PyTuple_SetItem(args, 1, PyBytes_FromString(passphrase_info));
   PyTuple_SetItem(args, 2, PyBool_FromLong((long)prev_was_bad));
   if (dataarg) {
@@ -98,7 +106,21 @@ static gpgme_error_t pyPassphraseCb(void *hook,
     if (!retval) {
       write(fd, "\n", 1);
     } else {
-      write(fd, PyBytes_AsString(retval), PyBytes_Size(retval));
+      char *buf;
+      size_t len;
+      if (PyBytes_Check(retval))
+        buf = PyBytes_AsString(retval), len = PyBytes_Size(retval);
+      else if (PyUnicode_Check(retval))
+        buf = PyUnicode_AsUTF8AndSize(retval, &len);
+      else
+        {
+          PyErr_Format(PyExc_TypeError,
+                       "expected str or bytes from passphrase callback, got %s",
+                       retval->ob_type->tp_name);
+          return gpg_error(GPG_ERR_GENERAL);
+        }
+
+      write(fd, buf, len);
       write(fd, "\n", 1);
       Py_DECREF(retval);
     }
