@@ -334,10 +334,20 @@ if test "$found" = "1"; then
             # This is not highlighted becase it's not really important.
             then AC_MSG_WARN([Doxygen not found - Qt binding doc will not be built.])
         fi
+        AC_CHECK_PROGS([GRAPHVIZ], [dot])
+        if test -z "$GRAPHVIZ";
+            then AC_MSG_WARN([Graphviz not found - Qt binding doc will not have diagrams.])
+        fi
     fi
 fi
 AM_CONDITIONAL([HAVE_DOXYGEN],
                [test -n "$DOXYGEN"])
+if test -n "$GRAPHVIZ"; then
+    HAVE_DOT="YES"
+else
+    HAVE_DOT="NO"
+fi
+AC_SUBST(HAVE_DOT)
 
 # Python bindings.
 LIST_MEMBER("python", $enabled_languages)
