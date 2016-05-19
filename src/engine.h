@@ -62,6 +62,8 @@ gpgme_error_t _gpgme_engine_set_locale (engine_t engine, int category,
 gpgme_error_t _gpgme_engine_set_protocol (engine_t engine,
 					  gpgme_protocol_t protocol);
 void _gpgme_engine_release (engine_t engine);
+void _gpgme_engine_set_status_cb (engine_t engine,
+                                  gpgme_status_cb_t cb, void *cb_value);
 void _gpgme_engine_set_status_handler (engine_t engine,
 				       engine_status_handler_t fnc,
 				       void *fnc_value);

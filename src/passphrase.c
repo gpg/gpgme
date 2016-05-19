@@ -118,9 +118,8 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 
     case GPGME_STATUS_ERROR:
       /* We abuse this status handler to forward ERROR status codes to
-         the caller.  This should better be done in a generic handler,
-         but for now this is sufficient.  */
-      if (ctx->status_cb)
+         the caller.  */
+      if (ctx->status_cb && !ctx->full_status)
         {
           err = ctx->status_cb (ctx->status_cb_value, "ERROR", args);
           if (err)
@@ -130,9 +129,8 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 
     case GPGME_STATUS_FAILURE:
       /* We abuse this status handler to forward FAILURE status codes
-         to the caller.  This should better be done in a generic
-         handler, but for now this is sufficient.  */
-      if (ctx->status_cb)
+         to the caller.  */
+      if (ctx->status_cb && !ctx->full_status)
         {
           err = ctx->status_cb (ctx->status_cb_value, "FAILURE", args);
           if (err)
@@ -173,6 +171,7 @@ _gpgme_passphrase_command_handler (void *priv, gpgme_status_code_t code,
       if (processed)
 	*processed = 1;
 
+      /* Fake a status line to to convey the MAXLEN info.  */
       if (ctx->status_cb && opd->maxlen)
         err = ctx->status_cb (ctx->status_cb_value, "INQUIRE_MAXLEN",
                               opd->maxlen);

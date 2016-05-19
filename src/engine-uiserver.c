@@ -90,6 +90,8 @@ struct engine_uiserver
   {
     engine_status_handler_t fnc;
     void *fnc_value;
+    gpgme_status_cb_t mon_cb;
+    void *mon_cb_value;
   } status;
 
   struct
@@ -451,10 +453,11 @@ uiserver_set_protocol (void *engine, gpgme_protocol_t protocol)
 
 
 static gpgme_error_t
-uiserver_assuan_simple_command (assuan_context_t ctx, char *cmd,
-			     engine_status_handler_t status_fnc,
-			     void *status_fnc_value)
+uiserver_assuan_simple_command (engine_uiserver_t uiserver, char *cmd,
+                                engine_status_handler_t status_fnc,
+                                void *status_fnc_value)
 {
+  assuan_context_t ctx = uiserver->assuan_ctx;
   gpg_error_t err;
   char *line;
   size_t linelen;
@@ -493,8 +496,17 @@ uiserver_assuan_simple_command (assuan_context_t ctx, char *cmd,
 	    *(rest++) = 0;
 
 	  r = _gpgme_parse_status (line + 2);
+          if (uiserver->status.mon_cb && r != GPGME_STATUS_PROGRESS)
+            {
+              /* Note that we call the monitor even if we do
+               * not know the status code (r < 0).  */
+              err = uiserver->status.mon_cb (uiserver->status.mon_cb_value,
+                                             line + 2, rest);
+            }
 
-	  if (r >= 0 && status_fnc)
+          if (err)
+            ;
+	  else if (r >= 0 && status_fnc)
 	    err = status_fnc (status_fnc_value, r, rest);
 	  else
 	    err = gpg_error (GPG_ERR_GENERAL);
@@ -576,7 +588,7 @@ uiserver_set_fd (engine_uiserver_t uiserver, fd_type_t fd_type, const char *opt)
   else
     snprintf (line, COMMANDLINELEN, "%s FD", which);
 
-  err = uiserver_assuan_simple_command (uiserver->assuan_ctx, line, NULL, NULL);
+  err = uiserver_assuan_simple_command (uiserver, line, NULL, NULL);
 
  leave_set_fd:
   if (err)
@@ -915,7 +927,7 @@ uiserver_reset (void *engine)
 
   /* We must send a reset because we need to reset the list of
      signers.  Note that RESET does not reset OPTION commands. */
-  return uiserver_assuan_simple_command (uiserver->assuan_ctx, "RESET", NULL, NULL);
+  return uiserver_assuan_simple_command (uiserver, "RESET", NULL, NULL);
 }
 
 
@@ -984,7 +996,6 @@ static gpgme_error_t
 set_recipients (engine_uiserver_t uiserver, gpgme_key_t recp[])
 {
   gpgme_error_t err = 0;
-  assuan_context_t ctx = uiserver->assuan_ctx;
   char *line;
   int linelen;
   int invalid_recipients = 0;
@@ -1023,7 +1034,8 @@ set_recipients (engine_uiserver_t uiserver, gpgme_key_t recp[])
       /* FIXME: need to do proper escaping  */
       strcpy (&line[10], uid);
 
-      err = uiserver_assuan_simple_command (ctx, line, uiserver->status.fnc,
+      err = uiserver_assuan_simple_command (uiserver, line,
+                                            uiserver->status.fnc,
                                             uiserver->status.fnc_value);
       /* FIXME: This might requires more work.  */
       if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY)
@@ -1160,7 +1172,7 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
           char buf[100];
 
           strcpy (stpcpy (buf, "SENDER --info "), s);
-          err = uiserver_assuan_simple_command (uiserver->assuan_ctx, buf,
+          err = uiserver_assuan_simple_command (uiserver, buf,
                                                 uiserver->status.fnc,
                                                 uiserver->status.fnc_value);
         }
@@ -1252,6 +1264,18 @@ uiserver_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 }
 
 
+/* This sets a status callback for monitoring status lines before they
+ * are passed to a caller set handler.  */
+static void
+uiserver_set_status_cb (void *engine, gpgme_status_cb_t cb, void *cb_value)
+{
+  engine_uiserver_t uiserver = engine;
+
+  uiserver->status.mon_cb = cb;
+  uiserver->status.mon_cb_value = cb_value;
+}
+
+
 static void
 uiserver_set_status_handler (void *engine, engine_status_handler_t fnc,
 			  void *fnc_value)
@@ -1309,6 +1333,7 @@ struct engine_ops _gpgme_engine_ops_uiserver =
     /* Member functions.  */
     uiserver_release,
     uiserver_reset,
+    uiserver_set_status_cb,
     uiserver_set_status_handler,
     NULL,		/* set_command_handler */
     uiserver_set_colon_line_handler,

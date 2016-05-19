@@ -2736,6 +2736,27 @@ or @var{ctx} is not a valid pointer, @code{NULL} is returned in both
 variables.
 @end deftypefun
 
+@deftypefun {gpgme_error_t} gpgme_set_ctx_flag  @
+            (@w{gpgme_ctx_t @var{ctx}}, @
+            @w{const char *@var{name}}, @
+            @w{const char *@var{value}})
+
+Some minor properties of the context can be controlled with flags set
+by this function.  The properties are identified by the following
+values for @var{name}:
+
+@table @code
+@item "full-status"
+Using a @var{value} of "1" the status callback set by
+gpgme_set_status_cb returns all status lines with the exception of
+PROGRESS lines.  With the default of "0" the status callback is only
+called in certain situations.
+
+@end table
+
+This function returns @code{0} on success.
+@end deftypefun
+
 
 @node Locale
 @subsection Locale

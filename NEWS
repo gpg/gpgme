@@ -6,6 +6,7 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  * Interface changes relative to the 1.6.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_pubkey_algo_string       NEW.
+ gpgme_set_ctx_flag             NEW.
  GPGME_PK_EDDSA                 NEW.
 
 

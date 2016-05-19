@@ -303,7 +303,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       break;
 
     case GPGME_STATUS_INQUIRE_MAXLEN:
-      if (ctx->status_cb)
+      if (ctx->status_cb && !ctx->full_status)
         {
           err = ctx->status_cb (ctx->status_cb_value, "INQUIRE_MAXLEN", args);
           if (err)

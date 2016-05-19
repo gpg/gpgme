@@ -503,6 +503,21 @@ _gpgme_engine_release (engine_t engine)
 }
 
 
+/* Set a status callback which is used to monitor the status values
+ * before they are passed to a handler set with
+ * _gpgme_engine_set_status_handler.  */
+void
+_gpgme_engine_set_status_cb (engine_t engine,
+                             gpgme_status_cb_t cb, void *cb_value)
+{
+  if (!engine)
+    return;
+
+  if (engine->ops->set_status_cb)
+    (*engine->ops->set_status_cb) (engine->engine, cb, cb_value);
+}
+
+
 void
 _gpgme_engine_set_status_handler (engine_t engine,
 				  engine_status_handler_t fnc, void *fnc_value)

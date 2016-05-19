@@ -49,6 +49,7 @@ struct engine_ops
   /* Member functions.  */
   void (*release) (void *engine);
   gpgme_error_t (*reset) (void *engine);
+  void (*set_status_cb) (void *engine, gpgme_status_cb_t cb, void *cb_value);
   void (*set_status_handler) (void *engine, engine_status_handler_t fnc,
 			      void *fnc_value);
   gpgme_error_t (*set_command_handler) (void *engine,

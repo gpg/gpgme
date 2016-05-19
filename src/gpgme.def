@@ -225,5 +225,6 @@ EXPORTS
     gpgme_get_status_cb                   @168
 
     gpgme_pubkey_algo_string              @169
+    gpgme_set_ctx_flag                    @170
 ; END
 

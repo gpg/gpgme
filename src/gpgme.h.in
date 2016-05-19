@@ -911,6 +911,10 @@ gpgme_error_t gpgme_new (gpgme_ctx_t *ctx);
 /* Release the context CTX.  */
 void gpgme_release (gpgme_ctx_t ctx);
 
+/* Set the flag NAME for CTX to VALUE.  */
+gpgme_error_t gpgme_set_ctx_flag (gpgme_ctx_t ctx,
+                                  const char *name, const char *value);
+
 /* Set the protocol to be used by CTX to PROTO.  */
 gpgme_error_t gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t proto);
 
@@ -993,7 +997,7 @@ void gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *cb,
 			    void **hook_value);
 
 /* Set the status callback function in CTX to CB.  HOOK_VALUE is
-   passed as first argument to thes status callback function.  */
+   passed as first argument to the status callback function.  */
 void gpgme_set_status_cb (gpgme_ctx_t c, gpgme_status_cb_t cb,
                           void *hook_value);
 

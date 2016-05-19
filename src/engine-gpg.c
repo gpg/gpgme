@@ -95,6 +95,8 @@ struct engine_gpg
     int eof;
     engine_status_handler_t fnc;
     void *fnc_value;
+    gpgme_status_cb_t mon_cb;
+    void *mon_cb_value;
     void *tag;
   } status;
 
@@ -609,6 +611,17 @@ gpg_set_locale (void *engine, int category, const char *value)
   return 0;
 }
 
+/* This sets a status callback for monitoring status lines before they
+ * are passed to a caller set handler.  */
+static void
+gpg_set_status_cb (void *engine, gpgme_status_cb_t cb, void *cb_value)
+{
+  engine_gpg_t gpg = engine;
+
+  gpg->status.mon_cb = cb;
+  gpg->status.mon_cb_value = cb_value;
+}
+
 
 /* Note, that the status_handler is allowed to modifiy the args
    value.  */
@@ -1019,6 +1032,7 @@ read_status (engine_gpg_t gpg)
   size_t bufsize = gpg->status.bufsize;
   char *buffer = gpg->status.buffer;
   size_t readpos = gpg->status.readpos;
+  gpgme_error_t err;
 
   assert (buffer);
   if (bufsize - readpos < 256)
@@ -1037,15 +1051,15 @@ read_status (engine_gpg_t gpg)
 
   if (!nread)
     {
+      err = 0;
       gpg->status.eof = 1;
+      if (gpg->status.mon_cb)
+        err = gpg->status.mon_cb (gpg->status.mon_cb_value,
+                                  GPGME_STATUS_EOF, "");
       if (gpg->status.fnc)
-	{
-	  gpgme_error_t err;
-	  err = gpg->status.fnc (gpg->status.fnc_value, GPGME_STATUS_EOF, "");
-	  if (err)
-	    return err;
-	}
-      return 0;
+        err = gpg->status.fnc (gpg->status.fnc_value, GPGME_STATUS_EOF, "");
+
+      return err;
     }
 
   while (nread > 0)
@@ -1071,6 +1085,15 @@ read_status (engine_gpg_t gpg)
 		    *rest++ = 0;
 
 		  r = _gpgme_parse_status (buffer + 9);
+                  if (gpg->status.mon_cb && r != GPGME_STATUS_PROGRESS)
+                    {
+                      /* Note that we call the monitor even if we do
+                       * not know the status code (r < 0).  */
+                      err = gpg->status.mon_cb (gpg->status.mon_cb_value,
+                                                buffer + 9, rest);
+                      if (err)
+                        return err;
+                    }
 		  if (r >= 0)
 		    {
 		      if (gpg->cmd.used
@@ -1099,7 +1122,6 @@ read_status (engine_gpg_t gpg)
                         }
 		      else if (gpg->status.fnc)
 			{
-			  gpgme_error_t err;
 			  err = gpg->status.fnc (gpg->status.fnc_value,
 						 r, rest);
 			  if (err)
@@ -2470,6 +2492,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     /* Member functions.  */
     gpg_release,
     NULL,				/* reset */
+    gpg_set_status_cb,
     gpg_set_status_handler,
     gpg_set_command_handler,
     gpg_set_colon_line_handler,

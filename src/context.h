@@ -101,6 +101,10 @@ struct gpgme_context
   /* True if offline mode should be used.  */
   unsigned int offline : 1;
 
+  /* True if a status callback shall be called for nearly all status
+   * lines.  */
+  unsigned int full_status : 1;
+
   /* Flags for keylist mode.  */
   gpgme_keylist_mode_t keylist_mode;
 

@@ -768,6 +768,7 @@ struct engine_ops _gpgme_engine_ops_g13 =
 #else
     NULL,			/* reset */
 #endif
+    NULL,               /* set_status_cb */
     NULL,               /* set_status_handler */
     NULL,		/* set_command_handler */
     NULL,               /* set_colon_line_handler */

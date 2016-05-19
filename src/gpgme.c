@@ -82,6 +82,30 @@ gpgme_set_global_flag (const char *name, const char *value)
 }
 
 
+/* Set the flag NAME for CTX to VALUE.  The supported flags are:
+ *
+ * - full-status :: With a value of "1" the status callback set by
+ *                  gpgme_set_status_cb returns all status lines
+ *                  except for PROGRESS lines.  With the default of
+ *                  "0" the status callback is only called in certain
+ *                  situations.
+ */
+gpgme_error_t
+gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
+{
+  if (!ctx || !name || !value)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  else if (!strcmp (name, "full-status"))
+    {
+      ctx->full_status = *value? !!atoi (value) : 0;
+    }
+  else
+    return gpg_error (GPG_ERR_UNKNOWN_NAME);
+
+  return 0;
+}
+
+
 
 /* Create a new context as an environment for GPGME crypto
    operations.  */

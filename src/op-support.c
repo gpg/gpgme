@@ -148,6 +148,12 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
             err = 0;
         }
 
+      if (!err && ctx->status_cb && ctx->full_status)
+        {
+          _gpgme_engine_set_status_cb (ctx->engine,
+                                       ctx->status_cb, ctx->status_cb_value);
+        }
+
       if (err)
         {
           _gpgme_engine_release (ctx->engine);

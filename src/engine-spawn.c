@@ -440,6 +440,7 @@ struct engine_ops _gpgme_engine_ops_spawn =
     /* Member functions.  */
     engspawn_release,
     NULL,		/* reset */
+    NULL,               /* set_status_cb */
     NULL,		/* set_status_handler */
     NULL,		/* set_command_handler */
     NULL,		/* set_colon_line_handler */
