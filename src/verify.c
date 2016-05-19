@@ -861,8 +861,6 @@ verify_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t sig,
 
   if (!sig)
     return gpg_error (GPG_ERR_NO_DATA);
-  if (!signed_text && !plaintext)
-    return gpg_error (GPG_ERR_INV_VALUE);
 
   return _gpgme_engine_op_verify (ctx->engine, sig, signed_text, plaintext);
 }
