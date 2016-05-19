@@ -29,6 +29,7 @@ TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) \
 	PYTHONPATH=`echo $(abs_builddir)/../build/lib.*`
 
 py_tests = t-wrapper.py \
+	t-callbacks.py \
 	t-data.py \
 	t-encrypt.py \
 	t-encrypt-sym.py \

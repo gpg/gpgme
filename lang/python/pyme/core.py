@@ -54,14 +54,14 @@ class Context(GpgmeWrapper):
 
     def __init__(self, wrapped=None):
         if wrapped:
-            self.wrapped = wrapped
             self.own = False
         else:
             tmp = pygpgme.new_gpgme_ctx_t_p()
             errorcheck(pygpgme.gpgme_new(tmp))
-            self.wrapped = pygpgme.gpgme_ctx_t_p_value(tmp)
+            wrapped = pygpgme.gpgme_ctx_t_p_value(tmp)
             pygpgme.delete_gpgme_ctx_t_p(tmp)
             self.own = True
+        super().__init__(wrapped)
         self.last_passcb = None
         self.last_progresscb = None
 
@@ -167,9 +167,9 @@ class Context(GpgmeWrapper):
         else:
             self.last_passcb = pygpgme.new_PyObject_p_p()
             if hook == None:
-                hookdata = func
+                hookdata = (self, func)
             else:
-                hookdata = (func, hook)
+                hookdata = (self, func, hook)
         pygpgme.pygpgme_set_passphrase_cb(self.wrapped, hookdata, self.last_passcb)
 
     def set_progress_cb(self, func, hook=None):
@@ -282,7 +282,7 @@ class Data(GpgmeWrapper):
         that file.
 
         Any other use will result in undefined or erroneous behavior."""
-        self.wrapped = None
+        super().__init__(None)
         self.last_readcb = None
 
         if cbs != None:

@@ -32,6 +32,11 @@ def process_constants(starttext, dict):
 class GpgmeWrapper(object):
     """Base class all Pyme wrappers for GPGME functionality.  Not to be
     instantiated directly."""
+
+    def __init__(self, wrapped):
+        self._callback_excinfo = None
+        self.wrapped = wrapped
+
     def __repr__(self):
         return '<instance of %s.%s with GPG object at %s>' % \
                (__name__, self.__class__.__name__,
@@ -78,11 +83,16 @@ class GpgmeWrapper(object):
 
         if self._errorcheck(name):
             def _funcwrap(slf, *args, **kwargs):
-                return errorcheck(func(slf.wrapped, *args, **kwargs),
-                                  "Invocation of " + name)
+                result = func(slf.wrapped, *args, **kwargs)
+                if slf._callback_excinfo:
+                    pygpgme.pygpgme_raise_callback_exception(slf)
+                return errorcheck(result, "Invocation of " + name)
         else:
             def _funcwrap(slf, *args, **kwargs):
-                return func(slf.wrapped, *args, **kwargs)
+                result = func(slf.wrapped, *args, **kwargs)
+                if slf._callback_excinfo:
+                    pygpgme.pygpgme_raise_callback_exception(slf)
+                return result
 
         _funcwrap.__doc__ = getattr(func, "__doc__")
 

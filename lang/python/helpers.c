@@ -17,6 +17,8 @@
 #    License along with this library; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 */
+
+#include <assert.h>
 #include <stdio.h>
 #include <gpgme.h>
 #include <stdlib.h>
@@ -59,12 +61,84 @@ void pygpgme_clear_generic_cb(PyObject **cb) {
   Py_DECREF(*cb);
 }
 
+/* Exception support for callbacks.  */
+#define EXCINFO	"_callback_excinfo"
+
+static void pygpgme_stash_callback_exception(PyObject *self)
+{
+  PyObject *ptype, *pvalue, *ptraceback, *excinfo;
+
+  PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+  excinfo = PyTuple_New(3);
+  PyTuple_SetItem(excinfo, 0, ptype);
+
+  if (pvalue)
+    PyTuple_SetItem(excinfo, 1, pvalue);
+  else {
+    Py_INCREF(Py_None);
+    PyTuple_SetItem(excinfo, 1, Py_None);
+  }
+
+  if (ptraceback)
+    PyTuple_SetItem(excinfo, 2, ptraceback);
+  else {
+    Py_INCREF(Py_None);
+    PyTuple_SetItem(excinfo, 2, Py_None);
+  }
+
+  PyObject_SetAttrString(self, EXCINFO, excinfo);
+}
+
+PyObject *pygpgme_raise_callback_exception(PyObject *self)
+{
+  PyObject *ptype, *pvalue, *ptraceback, *excinfo;
+
+  if (! PyObject_HasAttrString(self, EXCINFO))
+    goto leave;
+
+  excinfo = PyObject_GetAttrString(self, EXCINFO);
+  if (! PyTuple_Check(excinfo))
+    {
+      Py_DECREF(excinfo);
+      goto leave;
+    }
+
+  ptype = PyTuple_GetItem(excinfo, 0);
+  Py_INCREF(excinfo);
+
+  pvalue = PyTuple_GetItem(excinfo, 1);
+  if (pvalue == Py_None)
+    pvalue = NULL;
+  else
+    Py_INCREF(pvalue);
+
+  ptraceback = PyTuple_GetItem(excinfo, 2);
+  if (ptraceback == Py_None)
+    ptraceback = NULL;
+  else
+    Py_INCREF(ptraceback);
+
+  Py_DECREF(excinfo);
+  PyErr_Restore(ptype, pvalue, ptraceback);
+
+  Py_INCREF(Py_None);
+  PyObject_SetAttrString(self, EXCINFO, Py_None);
+
+  return NULL; /* Raise exception.  */
+
+ leave:
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+#undef EXCINFO
+
 static gpgme_error_t pyPassphraseCb(void *hook,
 				    const char *uid_hint,
 				    const char *passphrase_info,
 				    int prev_was_bad,
 				    int fd) {
   PyObject *pyhook = (PyObject *) hook;
+  PyObject *self = NULL;
   PyObject *func = NULL;
   PyObject *args = NULL;
   PyObject *retval = NULL;
@@ -73,12 +147,13 @@ static gpgme_error_t pyPassphraseCb(void *hook,
 
   pygpgme_exception_init();
 
-  if (PyTuple_Check(pyhook)) {
-    func = PyTuple_GetItem(pyhook, 0);
-    dataarg = PyTuple_GetItem(pyhook, 1);
+  assert (PyTuple_Check(pyhook));
+  self = PyTuple_GetItem(pyhook, 0);
+  func = PyTuple_GetItem(pyhook, 1);
+  if (PyTuple_Size(pyhook) == 3) {
+    dataarg = PyTuple_GetItem(pyhook, 2);
     args = PyTuple_New(4);
   } else {
-    func = pyhook;
     args = PyTuple_New(3);
   }
 
@@ -90,6 +165,11 @@ static gpgme_error_t pyPassphraseCb(void *hook,
   else
     PyTuple_SetItem(args, 0, PyUnicode_DecodeUTF8(uid_hint, strlen (uid_hint),
                                                   "strict"));
+  if (PyErr_Occurred()) {
+    Py_DECREF(args);
+    err_status = gpg_error(GPG_ERR_GENERAL);
+    goto leave;
+  }
 
   PyTuple_SetItem(args, 1, PyBytes_FromString(passphrase_info));
   PyTuple_SetItem(args, 2, PyBool_FromLong((long)prev_was_bad));
@@ -117,7 +197,8 @@ static gpgme_error_t pyPassphraseCb(void *hook,
           PyErr_Format(PyExc_TypeError,
                        "expected str or bytes from passphrase callback, got %s",
                        retval->ob_type->tp_name);
-          return gpg_error(GPG_ERR_GENERAL);
+          err_status = gpg_error(GPG_ERR_GENERAL);
+          goto leave;
         }
 
       write(fd, buf, len);
@@ -125,6 +206,10 @@ static gpgme_error_t pyPassphraseCb(void *hook,
       Py_DECREF(retval);
     }
   }
+
+ leave:
+  if (err_status)
+    pygpgme_stash_callback_exception(self);
 
   return err_status;
 }
