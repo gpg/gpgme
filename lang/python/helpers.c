@@ -29,7 +29,10 @@ static PyObject *GPGMEError = NULL;
 void pygpgme_exception_init(void) {
   if (GPGMEError == NULL) {
     PyObject *errors;
-    errors = PyImport_ImportModule("errors");
+    PyObject *from_list = PyList_New(0);
+    errors = PyImport_ImportModuleLevel("errors", PyEval_GetGlobals(),
+                                        PyEval_GetLocals(), from_list, 1);
+    Py_XDECREF(from_list);
     if (errors) {
       GPGMEError=PyDict_GetItemString(PyModule_GetDict(errors), "GPGMEError");
       Py_XINCREF(GPGMEError);
