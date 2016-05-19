@@ -229,17 +229,25 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
 			 int total) {
   PyObject *func = NULL, *dataarg = NULL, *args = NULL, *retval = NULL;
   PyObject *pyhook = (PyObject *) hook;
+  PyObject *self = NULL;
 
-  if (PyTuple_Check(pyhook)) {
-    func = PyTuple_GetItem(pyhook, 0);
+  assert (PyTuple_Check(pyhook));
+  self = PyTuple_GetItem(pyhook, 0);
+  func = PyTuple_GetItem(pyhook, 1);
+  if (PyTuple_Size(pyhook) == 3) {
     dataarg = PyTuple_GetItem(pyhook, 1);
     args = PyTuple_New(5);
   } else {
-    func = pyhook;
     args = PyTuple_New(4);
   }
 
-  PyTuple_SetItem(args, 0, PyBytes_FromString(what));
+  PyTuple_SetItem(args, 0, PyUnicode_DecodeUTF8(what, strlen (what),
+                                                "strict"));
+  if (PyErr_Occurred()) {
+    pygpgme_stash_callback_exception(self);
+    Py_DECREF(args);
+    return;
+  }
   PyTuple_SetItem(args, 1, PyLong_FromLong((long) type));
   PyTuple_SetItem(args, 2, PyLong_FromLong((long) current));
   PyTuple_SetItem(args, 3, PyLong_FromLong((long) total));
@@ -249,6 +257,8 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
   }
 
   retval = PyObject_CallObject(func, args);
+  if (PyErr_Occurred())
+    pygpgme_stash_callback_exception(self);
   Py_DECREF(args);
   Py_XDECREF(retval);
 }

@@ -185,9 +185,9 @@ class Context(GpgmeWrapper):
         else:
             self.last_progresscb = pygpgme.new_PyObject_p_p()
             if hook == None:
-                hookdata = func
+                hookdata = (self, func)
             else:
-                hookdata = (func, hook)
+                hookdata = (self, func, hook)
         pygpgme.pygpgme_set_progress_cb(self.wrapped, hookdata, self.last_progresscb)
 
     def get_engine_info(self):

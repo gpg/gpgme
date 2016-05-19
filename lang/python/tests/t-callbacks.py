@@ -75,3 +75,41 @@ except Exception as e:
     assert type(e) == TypeError
 else:
     assert False, "Expected an error, got none"
+
+
+
+# Test the progress callback.
+parms = """<GnupgKeyParms format="internal">
+Key-Type: RSA
+Key-Length: 1024
+Name-Real: Joe Tester
+Name-Comment: with stupid passphrase
+Name-Email: joe+pyme@example.org
+Passphrase: Crypt0R0cks
+Expire-Date: 2020-12-31
+</GnupgKeyParms>
+"""
+
+messages = []
+def progress_cb(what, typ, current, total, hook=None):
+    messages.append(
+        "PROGRESS UPDATE: what = {}, type = {}, current = {}, total = {}"
+        .format(what, typ, current, total))
+
+c = core.Context()
+c.set_progress_cb(progress_cb, None)
+c.op_genkey(parms, None, None)
+assert len(messages) > 0
+
+# Test exception handling.
+def progress_cb(what, typ, current, total, hook=None):
+    raise myException
+
+c = core.Context()
+c.set_progress_cb(progress_cb, None)
+try:
+    c.op_genkey(parms, None, None)
+except Exception as e:
+    assert e == myException
+else:
+    assert False, "Expected an error, got none"
