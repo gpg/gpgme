@@ -211,6 +211,7 @@ bool EditInteractor::needsNoResponse(unsigned int status) const
     case GPGME_STATUS_SIGEXPIRED:
     case GPGME_STATUS_KEYEXPIRED:
     case GPGME_STATUS_PINENTRY_LAUNCHED:
+    case GPGME_STATUS_KEY_CONSIDERED:
         return true;
     default:
         return false;
