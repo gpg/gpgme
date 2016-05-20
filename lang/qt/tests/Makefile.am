@@ -24,9 +24,9 @@ TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir)
 
 EXTRA_DIST = initial.test
 
-TESTS = initial.test t-keylist t-keylocate
+TESTS = initial.test t-keylist t-keylocate t-ownertrust
 
-moc_files = t-keylist.moc t-keylocate.moc
+moc_files = t-keylist.moc t-keylocate.moc t-ownertrust.moc
 
 AM_LDFLAGS = -no-install
 
@@ -48,12 +48,13 @@ initial.test : check-local
 
 t_keylist_SOURCES = t-keylist.cpp
 t_keylocate_SOURCES = t-keylocate.cpp
+t_ownertrust_SOURCES = t-ownertrust.cpp
 
 nodist_t_keylist_SOURCES = $(moc_files)
 
 BUILT_SOURCES = $(moc_files)
 
-noinst_PROGRAMS = t-keylist t-keylocate
+noinst_PROGRAMS = t-keylist t-keylocate t-ownertrust
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
