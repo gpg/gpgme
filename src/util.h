@@ -124,6 +124,15 @@ gpgme_error_t _gpgme_decode_percent_string (const char *src, char **destp,
 gpgme_error_t _gpgme_encode_percent_string (const char *src, char **destp,
 					    size_t len);
 
+/* Split a string into space delimited fields and remove leading and
+ * trailing spaces from each field.  A pointer to the each field is
+ * stored in ARRAY.  Stop splitting at ARRAYSIZE fields.  The function
+ * modifies STRING.  The number of parsed fields is returned.  */
+int _gpgme_split_fields (char *string, char **array, int arraysize);
+
+/* Convert the field STRING into an unsigned long value.  Check for
+ * trailing garbage.  */
+gpgme_error_t _gpgme_strtoul_field (const char *string, unsigned long *result);
 
 /* Parse the string TIMESTAMP into a time_t.  The string may either be
    seconds since Epoch or in the ISO 8601 format like
