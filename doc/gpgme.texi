@@ -2752,6 +2752,12 @@ gpgme_set_status_cb returns all status lines with the exception of
 PROGRESS lines.  With the default of "0" the status callback is only
 called in certain situations.
 
+@item "raw-description"
+Setting the @var{value} to "1" returns human readable strings in a raw
+format.  For example the non breaking space characters ("~") will not
+be removed from the @code{description} field of the
+@code{gpgme_tofu_info_t} object.
+
 @end table
 
 This function returns @code{0} on success.

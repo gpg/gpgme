@@ -105,6 +105,11 @@ struct gpgme_context
    * lines.  */
   unsigned int full_status : 1;
 
+  /* The Tofu info has a human readable string which is presented to
+   * the user in a directly usable format.  By enabling this flag the
+   * unmodified string, as received form gpg, will be returned.  */
+  unsigned int raw_description : 1;
+
   /* Flags for keylist mode.  */
   gpgme_keylist_mode_t keylist_mode;
 

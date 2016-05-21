@@ -93,11 +93,20 @@ gpgme_set_global_flag (const char *name, const char *value)
 gpgme_error_t
 gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
 {
+  int abool;
+
   if (!ctx || !name || !value)
     return gpg_error (GPG_ERR_INV_VALUE);
-  else if (!strcmp (name, "full-status"))
+
+  abool = *value? !!atoi (value) : 0;
+
+  if (!strcmp (name, "full-status"))
     {
-      ctx->full_status = *value? !!atoi (value) : 0;
+      ctx->full_status = abool;
+    }
+  else if (!strcmp (name, "raw-description"))
+    {
+      ctx->raw_description = abool;
     }
   else
     return gpg_error (GPG_ERR_UNKNOWN_NAME);
