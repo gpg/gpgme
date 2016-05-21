@@ -94,9 +94,23 @@ print_validity (gpgme_validity_t val)
 
 
 static void
+print_description (const char *text, int indent)
+{
+  for (; *text; text++)
+    {
+      putchar (*text);
+      if (*text == '\n')
+        printf ("%*s", indent, "");
+    }
+  putchar ('\n');
+}
+
+
+static void
 print_result (gpgme_verify_result_t result)
 {
   gpgme_signature_t sig;
+  gpgme_tofu_info_t ti;
   int count = 0;
 
   printf ("Original file name: %s\n", nonnull(result->file_name));
@@ -126,6 +140,30 @@ print_result (gpgme_verify_result_t result)
               );
       printf ("  notations .: %s\n",
               sig->notations? "yes":"no");
+      for (ti = sig->tofu; ti; ti = ti->next)
+        {
+          printf ("  tofu addr .: %s\n", ti->address);
+          if (!sig->fpr || strcmp (sig->fpr, ti->fpr))
+            printf ("    WARNING .: fpr mismatch (%s)\n", ti->fpr);
+          printf ("    validity : %u (%s)\n", ti->validity,
+                  ti->validity == 0? "conflict" :
+                  ti->validity == 1? "no history" :
+                  ti->validity == 2? "little history" :
+                  ti->validity == 3? "enough history" :
+                  ti->validity == 4? "lot of history" : "?");
+          printf ("    policy ..: %u (%s)\n", ti->policy,
+                  ti->policy == GPGME_TOFU_POLICY_NONE? "none" :
+                  ti->policy == GPGME_TOFU_POLICY_AUTO? "auto" :
+                  ti->policy == GPGME_TOFU_POLICY_GOOD? "good" :
+                  ti->policy == GPGME_TOFU_POLICY_UNKNOWN? "unknown" :
+                  ti->policy == GPGME_TOFU_POLICY_BAD? "bad" :
+                  ti->policy == GPGME_TOFU_POLICY_ASK? "ask" : "?");
+          printf ("    sigcount : %hu\n", ti->signcount);
+          printf ("    firstseen: %u\n", ti->firstseen);
+          printf ("    lastseen : %u\n", ti->lastseen);
+          printf ("    desc ....: ");
+          print_description (nonnull (ti->description), 15);
+        }
     }
 }
 
@@ -230,6 +268,7 @@ main (int argc, char **argv)
       gpgme_set_status_cb (ctx, status_cb, NULL);
       gpgme_set_ctx_flag (ctx, "full-status", "1");
     }
+  /* gpgme_set_ctx_flag (ctx, "raw-description", "1"); */
 
   err = gpgme_data_new_from_stream (&sig, fp_sig);
   if (err)

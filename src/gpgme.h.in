@@ -371,6 +371,19 @@ typedef enum
 gpgme_validity_t;
 
 
+/* The TOFU policies. */
+typedef enum
+  {
+    GPGME_TOFU_POLICY_NONE    = 0,
+    GPGME_TOFU_POLICY_AUTO    = 1,
+    GPGME_TOFU_POLICY_GOOD    = 2,
+    GPGME_TOFU_POLICY_UNKNOWN = 3,
+    GPGME_TOFU_POLICY_BAD     = 4,
+    GPGME_TOFU_POLICY_ASK     = 5
+  }
+gpgme_tofu_policy_t;
+
+
 /* The available protocols.  */
 typedef enum
   {
@@ -533,7 +546,10 @@ typedef enum
     GPGME_STATUS_KEY_NOT_CREATED = 91,
     GPGME_STATUS_INQUIRE_MAXLEN = 92,
     GPGME_STATUS_FAILURE = 93,
-    GPGME_STATUS_KEY_CONSIDERED = 94
+    GPGME_STATUS_KEY_CONSIDERED = 94,
+    GPGME_STATUS_TOFU_USER = 95,
+    GPGME_STATUS_TOFU_STATS = 96,
+    GPGME_STATUS_TOFU_STATS_LONG = 97
   }
 gpgme_status_code_t;
 
@@ -1533,6 +1549,46 @@ typedef enum
   }
 gpgme_sigsum_t;
 
+
+struct _gpgme_tofu_info
+{
+  struct _gpgme_tofu_info *next;
+
+  /* The mail address (addr-spec from RFC5322) of the tofu binding.  */
+  char *address;
+
+  /* The fingerprint of the primary key.  */
+  char *fpr;
+
+  /* The TOFU validity:
+   *  0 := conflict
+   *  1 := key without history
+   *  2 := key with too little history
+   *  3 := key with enough history for basic trust
+   *  4 := key with a lot of history
+   */
+  unsigned int validity : 3;
+
+  /* The TOFU policy (gpgme_tofu_policy_t).  */
+  unsigned int policy : 4;
+
+  unsigned int _rfu : 25;
+
+  /* Number of signatures seen for this binding.  Capped at USHRT_MAX.  */
+  unsigned short signcount;
+  unsigned short reserved;
+
+  /* Number of seconds since the first and the most recently seen
+   * message was verified.  */
+  unsigned int firstseen;
+  unsigned int lastseen;
+
+  /* If non-NULL a human readable string summarizing the TOFU data. */
+  char *description;
+};
+typedef struct _gpgme_tofu_info *gpgme_tofu_info_t;
+
+
 struct _gpgme_signature
 {
   struct _gpgme_signature *next;
@@ -1578,6 +1634,9 @@ struct _gpgme_signature
 
   /* The mailbox from the PKA information or NULL. */
   char *pka_address;
+
+  /* If non-NULL, TOFU info for this signature are available.  */
+  gpgme_tofu_info_t tofu;
 };
 typedef struct _gpgme_signature *gpgme_signature_t;
 

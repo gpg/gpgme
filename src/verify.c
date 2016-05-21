@@ -26,6 +26,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <limits.h>
 
 #include "gpgme.h"
 #include "debug.h"
@@ -46,6 +47,22 @@ typedef struct
   int only_newsig_seen;
   int plaintext_seen;
 } *op_data_t;
+
+
+static void
+release_tofu_info (gpgme_tofu_info_t t)
+{
+  while (t)
+    {
+      gpgme_tofu_info_t t2 = t->next;
+
+      free (t->address);
+      free (t->fpr);
+      free (t->description);
+      free (t);
+      t = t2;
+    }
+}
 
 
 static void
@@ -71,6 +88,7 @@ release_op_data (void *hook)
 	free (sig->fpr);
       if (sig->pka_address)
 	free (sig->pka_address);
+      release_tofu_info (sig->tofu);
       free (sig);
       sig = next;
     }
@@ -635,6 +653,169 @@ parse_trust (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 }
 
 
+/* Parse a TOFU_USER line and put the info into SIG.  */
+static gpgme_error_t
+parse_tofu_user (gpgme_signature_t sig, char *args)
+{
+  gpg_error_t err;
+  char *tail;
+  gpgme_tofu_info_t ti, ti2;
+
+  tail = strchr (args, ' ');
+  if (!tail || tail == args)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);  /* No fingerprint.  */
+  *tail++ = 0;
+
+  ti = calloc (1, sizeof *ti);
+  if (!ti)
+    return gpg_error_from_syserror ();
+
+  ti->fpr = strdup (args);
+  if (!ti->fpr)
+    {
+      free (ti);
+      return gpg_error_from_syserror ();
+    }
+
+  args = tail;
+  tail = strchr (args, ' ');
+  if (tail == args)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);  /* No addr-spec.  */
+  if (tail)
+    *tail = 0;
+
+  err = _gpgme_decode_percent_string (args, &ti->address, 0, 0);
+  if (err)
+    {
+      free (ti);
+      return err;
+    }
+
+  /* Append to the tofu info list.  */
+  if (!sig->tofu)
+    sig->tofu = ti;
+  else
+    {
+      for (ti2 = sig->tofu; ti2->next; ti2 = ti2->next)
+        ;
+      ti2->next = ti;
+    }
+
+  return 0;
+}
+
+
+/* Parse a TOFU_STATS line and store it in the last tofu info of SIG.
+ *
+ *   TOFU_STATS <validity> <sign-count> 0 [<policy> [<tm1> <tm2>]]
+ */
+static gpgme_error_t
+parse_tofu_stats (gpgme_signature_t sig, char *args)
+{
+  gpgme_error_t err;
+  gpgme_tofu_info_t ti;
+  char *field[6];
+  int nfields;
+  unsigned long uval;
+
+  if (!sig->tofu)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* No TOFU_USER seen.  */
+  for (ti = sig->tofu; ti->next; ti = ti->next)
+    ;
+  if (ti->firstseen || ti->signcount || ti->validity || ti->policy)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Already seen.  */
+
+  nfields = _gpgme_split_fields (args, field, DIM (field));
+  if (nfields < 3)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Required args missing.  */
+
+  /* Note that we allow a value of up to 7 which is what we can store
+   * in the ti->validity.  */
+  err = _gpgme_strtoul_field (field[0], &uval);
+  if (err || uval > 7)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+  ti->validity = uval;
+
+  /* Parse the sign-count.  */
+  err = _gpgme_strtoul_field (field[1], &uval);
+  if (err)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+  if (uval > USHRT_MAX)
+    uval = USHRT_MAX;
+  ti->signcount = uval;
+
+  /* We skip the 0, which is RFU.  */
+
+  if (nfields == 3)
+    return 0; /* All mandatory fields parsed.  */
+
+  /* Parse the policy.  */
+  if (!strcmp (field[3], "none"))
+    ti->policy = GPGME_TOFU_POLICY_NONE;
+  else if (!strcmp (field[3], "auto"))
+    ti->policy = GPGME_TOFU_POLICY_AUTO;
+  else if (!strcmp (field[3], "good"))
+    ti->policy = GPGME_TOFU_POLICY_GOOD;
+  else if (!strcmp (field[3], "bad"))
+    ti->policy = GPGME_TOFU_POLICY_BAD;
+  else if (!strcmp (field[3], "ask"))
+    ti->policy = GPGME_TOFU_POLICY_ASK;
+  else /* "unknown" and invalid policy strings.  */
+    ti->policy = GPGME_TOFU_POLICY_UNKNOWN;
+
+  if (nfields == 4)
+    return 0; /* No more optional fields.  */
+
+  /* Parse first and last seen (none or both are required).  */
+  if (nfields < 6)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* "tm2" missing.  */
+  err = _gpgme_strtoul_field (field[4], &uval);
+  if (err)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+  if (uval > UINT_MAX)
+    uval = UINT_MAX;
+  ti->firstseen = uval;
+  err = _gpgme_strtoul_field (field[5], &uval);
+  if (err)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+  if (uval > UINT_MAX)
+    uval = UINT_MAX;
+  ti->lastseen = uval;
+
+  return 0;
+}
+
+
+/* Parse a TOFU_STATS_LONG line and store it in the last tofu info of SIG.  */
+static gpgme_error_t
+parse_tofu_stats_long (gpgme_signature_t sig, char *args, int raw)
+{
+  gpgme_error_t err;
+  gpgme_tofu_info_t ti;
+  char *p;
+
+  if (!sig->tofu)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* No TOFU_USER seen.  */
+  for (ti = sig->tofu; ti->next; ti = ti->next)
+    ;
+  if (ti->description)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Already seen.  */
+
+  err = _gpgme_decode_percent_string (args, &ti->description, 0, 0);
+  if (err)
+    return err;
+
+  /* Remove the non-breaking spaces.  */
+  if (!raw)
+    {
+      for (p = ti->description; *p; p++)
+        if (*p == '~')
+          *p = ' ';
+    }
+  return 0;
+}
+
+
 /* Parse an error status line and if SET_STATUS is true update the
    result status as appropriate.  With SET_STATUS being false, only
    check for an error.  */
@@ -765,6 +946,21 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
         *end = 0;
       sig->pka_address = strdup (args);
       break;
+
+    case GPGME_STATUS_TOFU_USER:
+      opd->only_newsig_seen = 0;
+      return sig ? parse_tofu_user (sig, args)
+        /*    */ : trace_gpg_error (GPG_ERR_INV_ENGINE);
+
+    case GPGME_STATUS_TOFU_STATS:
+      opd->only_newsig_seen = 0;
+      return sig ? parse_tofu_stats (sig, args)
+        /*    */ : trace_gpg_error (GPG_ERR_INV_ENGINE);
+
+    case GPGME_STATUS_TOFU_STATS_LONG:
+      opd->only_newsig_seen = 0;
+      return sig ? parse_tofu_stats_long (sig, args, ctx->raw_description)
+        /*    */ : trace_gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_ERROR:
       opd->only_newsig_seen = 0;

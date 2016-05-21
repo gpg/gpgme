@@ -6,8 +6,15 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  * Interface changes relative to the 1.6.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_pubkey_algo_string       NEW.
- gpgme_set_ctx_flag             NEW.
  GPGME_PK_EDDSA                 NEW.
+ gpgme_set_ctx_flag             NEW.
+ gpgme_signature_t              EXTENDED: New field tofu.
+ gpgme_tofu_policy_t            NEW.
+ gpgme_tofu_info_t              NEW.
+ GPGME_STATUS_KEY_CONSIDERED    NEW.
+ GPGME_STATUS_TOFU_USER         NEW.
+ GPGME_STATUS_TOFU_STATS        NEW.
+ GPGME_STATUS_TOFU_STATS_LONG   NEW.
 
 
 Noteworthy changes in version 1.6.0 (2015-08-26) [C25/A14/R0]
