@@ -42,6 +42,40 @@
 }
 %typemap(freearg) const char * "";
 
+/* Likewise for a list of strings.  */
+%typemap(in) const char *[] {
+  /* Check if is a list */
+  if (PyList_Check($input)) {
+    size_t i, size = PyList_Size($input);
+    $1 = (char **) malloc((size+1) * sizeof(char *));
+
+    for (i = 0; i < size; i++) {
+      PyObject *o = PyList_GetItem($input,i);
+      if (PyUnicode_Check(o))
+        $1[i] = PyUnicode_AsUTF8(o);
+      else if (PyString_Check(o))
+	$1[i] = PyString_AsString(o);
+      else {
+	PyErr_Format(PyExc_TypeError,
+                     "arg %d: list must contain only str or bytes, got %s "
+                     "at position %d",
+                     $argnum, o->ob_type->tp_name, i);
+	free($1);
+	return NULL;
+      }
+    }
+    $1[i] = NULL;
+  } else {
+    PyErr_Format(PyExc_TypeError,
+                 "arg %d: expected a list of str or bytes, got %s",
+                 $argnum, $input->ob_type->tp_name);
+    return NULL;
+  }
+}
+%typemap(freearg) const char *[] {
+  free((char *) $1);
+}
+
 // Release returned buffers as necessary.
 %typemap(newfree) char * "free($1);";
 %newobject gpgme_data_release_and_get_mem;
