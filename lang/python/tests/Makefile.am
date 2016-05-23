@@ -26,6 +26,7 @@ test_srcdir = $(top_srcdir)/tests/gpg
 TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) \
 	LC_ALL=C GPG_AGENT_INFO= \
 	top_srcdir=$(top_srcdir) \
+	LD_LIBRARY_PATH="../../../src/.libs" \
 	PYTHONPATH=`echo $(abs_builddir)/../build/lib.*`
 
 py_tests = t-wrapper.py \
@@ -33,8 +34,11 @@ py_tests = t-wrapper.py \
 	t-data.py \
 	t-encrypt.py \
 	t-encrypt-sym.py \
+	t-encrypt-sign.py \
 	t-sign.py \
-	t-decrypt.py
+	t-signers.py \
+	t-decrypt.py \
+	t-export.py
 
 TESTS = $(top_srcdir)/tests/gpg/initial.test \
 	$(py_tests) \
