@@ -91,12 +91,13 @@ Expire-Date: 2020-12-31
 
 messages = []
 def progress_cb(what, typ, current, total, hook=None):
+    assert hook == messages
     messages.append(
         "PROGRESS UPDATE: what = {}, type = {}, current = {}, total = {}"
         .format(what, typ, current, total))
 
 c = core.Context()
-c.set_progress_cb(progress_cb, None)
+c.set_progress_cb(progress_cb, messages)
 c.op_genkey(parms, None, None)
 assert len(messages) > 0
 

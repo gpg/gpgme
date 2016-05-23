@@ -235,7 +235,7 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
   self = PyTuple_GetItem(pyhook, 0);
   func = PyTuple_GetItem(pyhook, 1);
   if (PyTuple_Size(pyhook) == 3) {
-    dataarg = PyTuple_GetItem(pyhook, 1);
+    dataarg = PyTuple_GetItem(pyhook, 2);
     args = PyTuple_New(5);
   } else {
     args = PyTuple_New(4);
