@@ -35,3 +35,6 @@ PyObject *pygpgme_raise_callback_exception(PyObject *self);
 void pygpgme_set_passphrase_cb(gpgme_ctx_t ctx, PyObject *cb,
 			       PyObject **freelater);
 void pygpgme_set_progress_cb(gpgme_ctx_t ctx, PyObject *cb, PyObject **freelater);
+
+gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
+		       const char *args, int fd);

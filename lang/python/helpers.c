@@ -272,3 +272,48 @@ void pygpgme_set_progress_cb(gpgme_ctx_t ctx, PyObject *cb, PyObject **freelater
   *freelater = cb;
   gpgme_set_progress_cb(ctx, (gpgme_progress_cb_t) pyProgressCb, (void *) cb);
 }
+
+
+/* Edit callbacks.  */
+gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
+		       const char *args, int fd) {
+  PyObject *func = NULL, *dataarg = NULL, *pyargs = NULL, *retval = NULL;
+  PyObject *pyopaque = (PyObject *) opaque;
+  gpgme_error_t err_status = 0;
+
+  pygpgme_exception_init();
+
+  if (PyTuple_Check(pyopaque)) {
+    func = PyTuple_GetItem(pyopaque, 0);
+    dataarg = PyTuple_GetItem(pyopaque, 1);
+    pyargs = PyTuple_New(3);
+  } else {
+    func = pyopaque;
+    pyargs = PyTuple_New(2);
+  }
+
+  PyTuple_SetItem(pyargs, 0, PyLong_FromLong((long) status));
+  PyTuple_SetItem(pyargs, 1, PyUnicode_FromString(args));
+  if (dataarg) {
+    Py_INCREF(dataarg);		/* Because GetItem doesn't give a ref but SetItem taketh away */
+    PyTuple_SetItem(pyargs, 2, dataarg);
+  }
+
+  retval = PyObject_CallObject(func, pyargs);
+  Py_DECREF(pyargs);
+  if (PyErr_Occurred()) {
+    err_status = pygpgme_exception2code();
+  } else {
+    if (fd>=0 && retval && PyUnicode_Check(retval)) {
+      const char *buffer;
+      Py_ssize_t size;
+
+      buffer = PyUnicode_AsUTF8AndSize(retval, &size);
+      write(fd, buffer, size);
+      write(fd, "\n", 1);
+    }
+  }
+
+  Py_XDECREF(retval);
+  return err_status;
+}
