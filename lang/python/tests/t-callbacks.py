@@ -113,3 +113,36 @@ except Exception as e:
     assert e == myException
 else:
     assert False, "Expected an error, got none"
+
+
+# Test the edit callback.
+c = core.Context()
+c.set_pinentry_mode(constants.PINENTRY_MODE_LOOPBACK)
+c.set_passphrase_cb(lambda *args: "abc")
+sink = core.Data()
+alpha = c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False)
+
+cookie = object()
+edit_cb_called = False
+def edit_cb(status, args, hook):
+    global edit_cb_called
+    edit_cb_called = True
+    assert hook == cookie
+    return "quit" if args == "keyedit.prompt" else None
+c.op_edit(alpha, edit_cb, cookie, sink)
+assert edit_cb_called
+
+# Test exceptions.
+c = core.Context()
+c.set_pinentry_mode(constants.PINENTRY_MODE_LOOPBACK)
+c.set_passphrase_cb(lambda *args: "abc")
+sink = core.Data()
+
+def edit_cb(status, args):
+    raise myException
+try:
+    c.op_edit(alpha, edit_cb, None, sink)
+except Exception as e:
+    assert e == myException
+else:
+    assert False, "Expected an error, got none"

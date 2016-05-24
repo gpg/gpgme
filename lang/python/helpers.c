@@ -280,15 +280,18 @@ gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
   PyObject *func = NULL, *dataarg = NULL, *pyargs = NULL, *retval = NULL;
   PyObject *pyopaque = (PyObject *) opaque;
   gpgme_error_t err_status = 0;
+  PyObject *self = NULL;
 
   pygpgme_exception_init();
 
-  if (PyTuple_Check(pyopaque)) {
-    func = PyTuple_GetItem(pyopaque, 0);
-    dataarg = PyTuple_GetItem(pyopaque, 1);
+  assert (PyTuple_Check(pyopaque));
+  assert (PyTuple_Size(pyopaque) == 2 || PyTuple_Size(pyopaque) == 3);
+  self = PyTuple_GetItem(pyopaque, 0);
+  func = PyTuple_GetItem(pyopaque, 1);
+  if (PyTuple_Size(pyopaque) == 3) {
+    dataarg = PyTuple_GetItem(pyopaque, 2);
     pyargs = PyTuple_New(3);
   } else {
-    func = pyopaque;
     pyargs = PyTuple_New(2);
   }
 
@@ -303,6 +306,7 @@ gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
   Py_DECREF(pyargs);
   if (PyErr_Occurred()) {
     err_status = pygpgme_exception2code();
+    pygpgme_stash_callback_exception(self);
   } else {
     if (fd>=0 && retval && PyUnicode_Check(retval)) {
       const char *buffer;

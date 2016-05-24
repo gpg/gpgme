@@ -225,8 +225,15 @@ class Context(GpgmeWrapper):
         """Start key editing using supplied callback function"""
         if key == None:
             raise ValueError("op_edit: First argument cannot be None")
-        opaquedata = (func, fnc_value)
-        errorcheck(pygpgme.gpgme_op_edit(self.wrapped, key, opaquedata, out))
+        if fnc_value:
+            opaquedata = (self, func, fnc_value)
+        else:
+            opaquedata = (self, func)
+
+        result = pygpgme.gpgme_op_edit(self.wrapped, key, opaquedata, out)
+        if self._callback_excinfo:
+            pygpgme.pygpgme_raise_callback_exception(self)
+        errorcheck(result)
 
 class Data(GpgmeWrapper):
     """From the GPGME C manual:

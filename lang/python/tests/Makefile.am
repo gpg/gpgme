@@ -38,7 +38,8 @@ py_tests = t-wrapper.py \
 	t-sign.py \
 	t-signers.py \
 	t-decrypt.py \
-	t-export.py
+	t-export.py \
+	t-edit.py
 
 TESTS = $(top_srcdir)/tests/gpg/initial.test \
 	$(py_tests) \
