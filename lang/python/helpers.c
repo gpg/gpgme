@@ -272,7 +272,72 @@ void pygpgme_set_progress_cb(gpgme_ctx_t ctx, PyObject *cb, PyObject **freelater
   *freelater = cb;
   gpgme_set_progress_cb(ctx, (gpgme_progress_cb_t) pyProgressCb, (void *) cb);
 }
+
+/* Status callbacks.  */
+static gpgme_error_t pyStatusCb(void *hook, const char *keyword,
+                                const char *args) {
+  gpgme_error_t err = 0;
+  PyObject *pyhook = (PyObject *) hook;
+  PyObject *self = NULL;
+  PyObject *func = NULL;
+  PyObject *dataarg = NULL;
+  PyObject *pyargs = NULL;
+  PyObject *retval = NULL;
 
+  assert (PyTuple_Check(pyhook));
+  assert (PyTuple_Size(pyhook) == 2 || PyTuple_Size(pyhook) == 3);
+  self = PyTuple_GetItem(pyhook, 0);
+  func = PyTuple_GetItem(pyhook, 1);
+  if (PyTuple_Size(pyhook) == 3) {
+    dataarg = PyTuple_GetItem(pyhook, 2);
+    pyargs = PyTuple_New(3);
+  } else {
+    pyargs = PyTuple_New(2);
+  }
+
+  if (keyword)
+    PyTuple_SetItem(pyargs, 0, PyUnicode_DecodeUTF8(keyword, strlen (keyword),
+                                                    "strict"));
+  else
+    {
+      Py_INCREF(Py_None);
+      PyTuple_SetItem(pyargs, 0, Py_None);
+    }
+  PyTuple_SetItem(pyargs, 1, PyUnicode_DecodeUTF8(args, strlen (args),
+                                                "strict"));
+  if (PyErr_Occurred()) {
+    err = gpg_error(GPG_ERR_GENERAL);
+    Py_DECREF(pyargs);
+    goto leave;
+  }
+
+  if (dataarg) {
+    Py_INCREF(dataarg);
+    PyTuple_SetItem(pyargs, 2, dataarg);
+  }
+
+  retval = PyObject_CallObject(func, pyargs);
+  if (PyErr_Occurred())
+    err = pygpgme_exception2code();
+  Py_DECREF(pyargs);
+  Py_XDECREF(retval);
+
+ leave:
+  if (err)
+    pygpgme_stash_callback_exception(self);
+  return err;
+}
+
+void pygpgme_set_status_cb(gpgme_ctx_t ctx, PyObject *cb,
+                           PyObject **freelater) {
+  if (cb == Py_None) {
+    gpgme_set_status_cb(ctx, NULL, NULL);
+    return;
+  }
+  Py_INCREF(cb);
+  *freelater = cb;
+  gpgme_set_status_cb(ctx, (gpgme_status_cb_t) pyStatusCb, (void *) cb);
+}
 
 /* Edit callbacks.  */
 gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,

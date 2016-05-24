@@ -64,6 +64,7 @@ class Context(GpgmeWrapper):
         super().__init__(wrapped)
         self.last_passcb = None
         self.last_progresscb = None
+        self.last_statuscb = None
 
     def __del__(self):
         if not pygpgme:
@@ -90,6 +91,14 @@ class Context(GpgmeWrapper):
             if pygpgme.delete_PyObject_p_p:
                 pygpgme.delete_PyObject_p_p(self.last_progresscb)
             self.last_progresscb = None
+
+    def _free_statuscb(self):
+        if self.last_statuscb != None:
+            if pygpgme.pygpgme_clear_generic_cb:
+                pygpgme.pygpgme_clear_generic_cb(self.last_statuscb)
+            if pygpgme.delete_PyObject_p_p:
+                pygpgme.delete_PyObject_p_p(self.last_statuscb)
+            self.last_statuscb = None
 
     def op_keylist_all(self, *args, **kwargs):
         self.op_keylist_start(*args, **kwargs)
@@ -194,6 +203,29 @@ class Context(GpgmeWrapper):
             else:
                 hookdata = (self, func, hook)
         pygpgme.pygpgme_set_progress_cb(self.wrapped, hookdata, self.last_progresscb)
+
+    def set_status_cb(self, func, hook=None):
+        """Sets the status callback to the function specified by FUNC.  If
+        FUNC is None, the callback will be cleared.
+
+        The function will be called with two arguments, keyword and
+        args.  If HOOK is not None, it will be supplied as third
+        argument.
+
+        Please see the GPGME manual for more information.
+
+        """
+        self._free_statuscb()
+        if func == None:
+            hookdata = None
+        else:
+            self.last_statuscb = pygpgme.new_PyObject_p_p()
+            if hook == None:
+                hookdata = (self, func)
+            else:
+                hookdata = (self, func, hook)
+        pygpgme.pygpgme_set_status_cb(self.wrapped, hookdata,
+                                      self.last_statuscb)
 
     def get_engine_info(self):
         """Returns this context specific engine info"""

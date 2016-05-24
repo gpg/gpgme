@@ -146,3 +146,38 @@ except Exception as e:
     assert e == myException
 else:
     assert False, "Expected an error, got none"
+
+
+
+# Test the status callback.
+source = core.Data("Hallo Leute\n")
+sink = core.Data()
+
+status_cb_called = False
+def status_cb(keyword, args, hook=None):
+    global status_cb_called
+    status_cb_called = True
+    assert hook == cookie
+
+c = core.Context()
+c.set_status_cb(status_cb, cookie)
+c.set_ctx_flag("full-status", "1")
+c.op_encrypt([alpha], constants.ENCRYPT_ALWAYS_TRUST, source, sink)
+assert status_cb_called
+
+# Test exceptions.
+source = core.Data("Hallo Leute\n")
+sink = core.Data()
+
+def status_cb(keyword, args):
+    raise myException
+
+c = core.Context()
+c.set_status_cb(status_cb, None)
+c.set_ctx_flag("full-status", "1")
+try:
+    c.op_encrypt([alpha], constants.ENCRYPT_ALWAYS_TRUST, source, sink)
+except Exception as e:
+    assert e == myException
+else:
+    assert False, "Expected an error, got none"
