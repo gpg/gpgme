@@ -316,23 +316,17 @@ class Context(GpgmeWrapper):
         errorcheck(pygpgme.gpgme_ctx_set_engine_info(self.wrapped, proto, file_name, home_dir))
 
     def wait(self, hang):
-        """Wait for asynchronous call to finish. Wait forever if hang is True
+        """Wait for asynchronous call to finish. Wait forever if hang is True.
+        Raises an exception on errors.
 
-        Return:
-            On an async call completion its return status.
-            On timeout - None.
+        Please read the GPGME manual for more information.
 
-        Please read the GPGME manual for more information."""
+        """
         ptr = pygpgme.new_gpgme_error_t_p()
-        context = pygpgme.gpgme_wait(self.wrapped, ptr, hang)
+        pygpgme.gpgme_wait(self.wrapped, ptr, hang)
         status = pygpgme.gpgme_error_t_p_value(ptr)
         pygpgme.delete_gpgme_error_t_p(ptr)
-
-        if context == None:
-            errorcheck(status)
-            return None
-        else:
-            return status
+        errorcheck(status)
 
     def op_edit(self, key, func, fnc_value, out):
         """Start key editing using supplied callback function"""
