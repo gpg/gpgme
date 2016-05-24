@@ -259,7 +259,7 @@ PyObject* object_to_gpgme_t(PyObject* input, const char* objtype, int argnum) {
 %}
 %include "gpgme.h"
 
-%constant long EOF = GPG_ERR_EOF;
+%include "errors.i"
 
 // Generating and handling pointers-to-pointers.
 

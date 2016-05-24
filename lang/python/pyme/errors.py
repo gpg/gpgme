@@ -17,6 +17,9 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
 from . import pygpgme
+from . import util
+
+util.process_constants('GPG_ERR_', globals())
 
 class GPGMEError(Exception):
     def __init__(self, error = None, message = None):
@@ -42,8 +45,6 @@ class GPGMEError(Exception):
 
     def __str__(self):
         return "%s (%d,%d)"%(self.getstring(), self.getsource(), self.getcode())
-
-EOF = getattr(pygpgme, "EOF")
 
 def errorcheck(retval, extradata = None):
     if retval:

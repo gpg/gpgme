@@ -29,7 +29,12 @@ copystamp: $(srcdir)/pyme $(srcdir)/helpers.c $(srcdir)/helpers.h
 	if test "$(srcdir)" != "$(builddir)" ; then cp -r $^ . ; fi
 	touch $@
 
-gpgme_wrap.c pyme/pygpgme.py: gpgme.i gpgme.h copystamp
+errors.i:
+	sed -n -e \
+	  '/GPG_ERR_[^ ]* =/s/ *\(.*\) = .*/%constant long \1 = \1;/p' \
+	  `gpg-error-config --prefix`/include/gpg-error.h >$@
+
+gpgme_wrap.c pyme/pygpgme.py: gpgme.i errors.i gpgme.h copystamp
 	$(SWIG) -python -py3 $(SWIGOPT) \
 	  -o $(builddir)/gpgme_wrap.c -outdir $(builddir)/pyme \
 	  $<
@@ -38,7 +43,8 @@ all-local: gpgme_wrap.c pyme/pygpgme.py copystamp
 	$(PYTHON) $(srcdir)/setup.py build --verbose
 
 clean-local:
-	rm -rf -- build gpgme.h gpgme_wrap.c pyme/pygpgme.py copystamp
+	rm -rf -- build gpgme.h errors.i gpgme_wrap.c pyme/pygpgme.py \
+	  copystamp
 	if test "$(srcdir)" != "$(builddir)" ; then \
 	  rm -rf pyme helpers.c helpers.h ; \
 	fi
