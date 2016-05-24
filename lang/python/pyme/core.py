@@ -173,12 +173,17 @@ class Context(GpgmeWrapper):
         pygpgme.pygpgme_set_passphrase_cb(self.wrapped, hookdata, self.last_passcb)
 
     def set_progress_cb(self, func, hook=None):
-        """Sets the progress meter callback to the function specified by
+        """Sets the progress meter callback to the function specified by FUNC.
+        If FUNC is None, the callback will be cleared.
 
-        This function will be called to provide an interactive update of
-        the system's progress.
+        This function will be called to provide an interactive update
+        of the system's progress.  The function will be called with
+        three arguments, type, total, and current.  If HOOK is not
+        None, it will be supplied as fourth argument.
 
-        Please see the GPGME manual for more information."""
+        Please see the GPGME manual for more information.
+
+        """
         self._free_progresscb()
         if func == None:
             hookdata = None
