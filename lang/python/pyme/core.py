@@ -370,8 +370,8 @@ class Data(GpgmeWrapper):
             return 0
         return 1
 
-    def __init__(self, string = None, file = None, offset = None,
-                 length = None, cbs = None):
+    def __init__(self, string=None, file=None, offset=None,
+                 length=None, cbs=None, copy=True):
         """Initialize a new gpgme_data_t object.
 
         If no args are specified, make it an empty object.
@@ -402,12 +402,12 @@ class Data(GpgmeWrapper):
         if cbs != None:
             self.new_from_cbs(*cbs)
         elif string != None:
-            self.new_from_mem(string)
+            self.new_from_mem(string, copy)
         elif file != None and offset != None and length != None:
             self.new_from_filepart(file, offset, length)
         elif file != None:
             if type(file) == type("x"):
-                self.new_from_file(file)
+                self.new_from_file(file, copy)
             else:
                 self.new_from_fd(file)
         else:
@@ -436,15 +436,21 @@ class Data(GpgmeWrapper):
         self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
         pygpgme.delete_gpgme_data_t_p(tmp)
 
-    def new_from_mem(self, string, copy = 1):
+    def new_from_mem(self, string, copy=True):
         tmp = pygpgme.new_gpgme_data_t_p()
         errorcheck(pygpgme.gpgme_data_new_from_mem(tmp,string,len(string),copy))
         self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
         pygpgme.delete_gpgme_data_t_p(tmp)
 
-    def new_from_file(self, filename, copy = 1):
+    def new_from_file(self, filename, copy=True):
         tmp = pygpgme.new_gpgme_data_t_p()
-        errorcheck(pygpgme.gpgme_data_new_from_file(tmp, filename, copy))
+        try:
+            errorcheck(pygpgme.gpgme_data_new_from_file(tmp, filename, copy))
+        except errors.GPGMEError as e:
+            if e.getcode() == errors.INV_VALUE and not copy:
+                raise ValueError("delayed reads are not yet supported")
+            else:
+                raise e
         self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
         pygpgme.delete_gpgme_data_t_p(tmp)
 
@@ -485,16 +491,13 @@ class Data(GpgmeWrapper):
         pygpgme.delete_gpgme_data_t_p(tmp)
 
     def new_from_fd(self, file):
-        """This wraps the GPGME gpgme_data_new_from_fd() function.
-        The argument "file" may be a file-like object, supporting the fileno()
-        call and the mode attribute."""
+        """This wraps the GPGME gpgme_data_new_from_fd() function.  The
+        argument "file" must be a file-like object, supporting the
+        fileno() method.
 
+        """
         tmp = pygpgme.new_gpgme_data_t_p()
-        fp = pygpgme.fdopen(file.fileno(), file.mode)
-        if fp == None:
-            raise ValueError("Failed to open file from %s arg %s" % \
-                  (str(type(file)), str(file)))
-        errorcheck(pygpgme.gpgme_data_new_from_fd(tmp, fp))
+        errorcheck(pygpgme.gpgme_data_new_from_fd(tmp, file.fileno()))
         self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
         pygpgme.delete_gpgme_data_t_p(tmp)
 

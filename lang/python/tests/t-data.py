@@ -18,7 +18,7 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import os
-
+import tempfile
 from pyme import core
 
 data = core.Data('Hello world!')
@@ -30,6 +30,9 @@ assert data.read() == b'Hello world!'
 assert data.read() == b''
 
 data = core.Data(b'Hello world!')
+assert data.read() == b'Hello world!'
+
+data = core.Data(b'Hello world!', copy=False)
 assert data.read() == b'Hello world!'
 
 data = core.Data()
@@ -47,3 +50,32 @@ data = core.Data()
 data.write(binjunk)
 data.seek(0, os.SEEK_SET)
 assert data.read() == binjunk
+
+# Test reading from an existing file.
+with tempfile.NamedTemporaryFile() as tmp:
+    tmp.write(binjunk)
+    tmp.flush()
+    tmp.seek(0)
+
+    # Open using name.
+    data = core.Data(file=tmp.name)
+    assert data.read() == binjunk
+
+    # Open using name, without copying.
+    if False:
+        # delayed reads are not yet supported
+        data = core.Data(file=tmp.name, copy=False)
+        assert data.read() == binjunk
+
+    # Open using stream.
+    tmp.seek(0)
+    data = core.Data(file=tmp)
+    assert data.read() == binjunk
+
+    # Open using stream, offset, and length.
+    data = core.Data(file=tmp, offset=0, length=42)
+    assert data.read() == binjunk[:42]
+
+    # Open using name, offset, and length.
+    data = core.Data(file=tmp.name, offset=23, length=42)
+    assert data.read() == binjunk[23:23+42]
