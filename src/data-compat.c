@@ -128,7 +128,7 @@ gpgme_data_new_from_file (gpgme_data_t *r_dh, const char *fname, int copy)
 #else
   gpgme_error_t err;
   struct stat statbuf;
-  TRACE_BEG3 (DEBUG_DATA, "gpgme_data_new_from_filepart", r_dh,
+  TRACE_BEG3 (DEBUG_DATA, "gpgme_data_new_from_file", r_dh,
 	      "file_name=%s, copy=%i (%s)", fname, copy, copy ? "yes" : "no");
 
   if (!fname || !copy)
