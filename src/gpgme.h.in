@@ -1290,7 +1290,7 @@ gpgme_error_t gpgme_data_new_with_read_cb (gpgme_data_t *r_dh,
 
 /* Create a new data buffer filled with the content of file FNAME.
    COPY must be non-zero.  For delayed read, please use
-   gpgme_data_new_from_fd or gpgme_data_new_from stream instead.  */
+   gpgme_data_new_from_fd or gpgme_data_new_from_stream instead.  */
 gpgme_error_t gpgme_data_new_from_file (gpgme_data_t *r_dh,
 					const char *fname,
 					int copy);
