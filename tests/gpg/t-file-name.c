@@ -87,7 +87,7 @@ main (int argc, char *argv[])
     {
       fprintf (stderr, "%s:%i: Unexpected result file name: %s\n",
                __FILE__, __LINE__,
-	       result->file_name ? "(null)" : result->file_name);
+	       result->file_name ? result->file_name : "(null)");
       exit (1);
     }
 
