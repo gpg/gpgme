@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright (C) 2016 g10 Code GmbH
 #
 # This file is part of GPGME.
@@ -15,19 +17,26 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys
 import os
-from pyme import core
+from pyme import core, constants
+import support
 
-def make_filename(name):
-    return os.path.join(os.environ['top_srcdir'], 'tests', 'gpg', name)
+testname = "abcde12345"
 
-def init_gpgme(proto):
-    core.check_version()
-    core.engine_check_version(proto)
+support.init_gpgme(constants.PROTOCOL_OpenPGP)
+c = core.Context()
+c.set_armor(True)
 
-verbose = int(os.environ.get('verbose', 0)) > 1
-def print_data(data):
-    if verbose:
-        data.seek(0, os.SEEK_SET)
-        sys.stdout.buffer.write(data.read())
+source = core.Data("Hallo Leute\n")
+source.set_file_name(testname)
+cipher = core.Data()
+plain = core.Data()
+
+keys = []
+keys.append(c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False))
+
+c.op_encrypt(keys, constants.ENCRYPT_ALWAYS_TRUST, source, cipher)
+cipher.seek(0, os.SEEK_SET)
+c.op_decrypt(cipher, plain)
+result = c.op_decrypt_result()
+assert result.file_name == testname

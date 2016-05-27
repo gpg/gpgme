@@ -363,11 +363,12 @@ class Data(GpgmeWrapper):
 
     def _errorcheck(self, name):
         """This function should list all functions returning gpgme_error_t"""
-        if name == 'gpgme_data_release_and_get_mem' or \
-               name == 'gpgme_data_get_encoding' or \
-               name == 'gpgme_data_seek':
-            return 0
-        return 1
+        return name not in {
+            'gpgme_data_release_and_get_mem',
+            'gpgme_data_get_encoding',
+            'gpgme_data_seek',
+            'gpgme_data_get_file_name',
+        }
 
     def __init__(self, string=None, file=None, offset=None,
                  length=None, cbs=None, copy=True):

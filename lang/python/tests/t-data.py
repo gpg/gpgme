@@ -52,6 +52,10 @@ data.write(binjunk)
 data.seek(0, os.SEEK_SET)
 assert data.read() == binjunk
 
+data = core.Data()
+data.set_file_name("foobar")
+assert data.get_file_name() == "foobar"
+
 # Test reading from an existing file.
 with tempfile.NamedTemporaryFile() as tmp:
     tmp.write(binjunk)
