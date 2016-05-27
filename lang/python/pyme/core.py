@@ -16,9 +16,7 @@
 #    License along with this library; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
-# import generators for portability with python2.2
-
-
+import weakref
 from . import pygpgme
 from .errors import errorcheck, GPGMEError
 from . import errors
@@ -149,6 +147,7 @@ class Context(GpgmeWrapper):
 
         self._free_passcb()
         self._free_progresscb()
+        self._free_statuscb()
         if self.own and pygpgme.gpgme_release:
             pygpgme.gpgme_release(self.wrapped)
 
@@ -252,9 +251,9 @@ class Context(GpgmeWrapper):
         else:
             self.last_passcb = pygpgme.new_PyObject_p_p()
             if hook == None:
-                hookdata = (self, func)
+                hookdata = (weakref.ref(self), func)
             else:
-                hookdata = (self, func, hook)
+                hookdata = (weakref.ref(self), func, hook)
         pygpgme.pygpgme_set_passphrase_cb(self.wrapped, hookdata, self.last_passcb)
 
     def set_progress_cb(self, func, hook=None):
@@ -275,9 +274,9 @@ class Context(GpgmeWrapper):
         else:
             self.last_progresscb = pygpgme.new_PyObject_p_p()
             if hook == None:
-                hookdata = (self, func)
+                hookdata = (weakref.ref(self), func)
             else:
-                hookdata = (self, func, hook)
+                hookdata = (weakref.ref(self), func, hook)
         pygpgme.pygpgme_set_progress_cb(self.wrapped, hookdata, self.last_progresscb)
 
     def set_status_cb(self, func, hook=None):
@@ -297,9 +296,9 @@ class Context(GpgmeWrapper):
         else:
             self.last_statuscb = pygpgme.new_PyObject_p_p()
             if hook == None:
-                hookdata = (self, func)
+                hookdata = (weakref.ref(self), func)
             else:
-                hookdata = (self, func, hook)
+                hookdata = (weakref.ref(self), func, hook)
         pygpgme.pygpgme_set_status_cb(self.wrapped, hookdata,
                                       self.last_statuscb)
 
@@ -333,9 +332,9 @@ class Context(GpgmeWrapper):
         if key == None:
             raise ValueError("op_edit: First argument cannot be None")
         if fnc_value:
-            opaquedata = (self, func, fnc_value)
+            opaquedata = (weakref.ref(self), func, fnc_value)
         else:
-            opaquedata = (self, func)
+            opaquedata = (weakref.ref(self), func)
 
         result = pygpgme.gpgme_op_edit(self.wrapped, key, opaquedata, out)
         if self._callback_excinfo:

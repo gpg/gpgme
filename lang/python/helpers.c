@@ -64,9 +64,9 @@ void pygpgme_clear_generic_cb(PyObject **cb) {
 /* Exception support for callbacks.  */
 #define EXCINFO	"_callback_excinfo"
 
-static void pygpgme_stash_callback_exception(PyObject *self)
+static void pygpgme_stash_callback_exception(PyObject *weak_self)
 {
-  PyObject *ptype, *pvalue, *ptraceback, *excinfo;
+  PyObject *self, *ptype, *pvalue, *ptraceback, *excinfo;
 
   PyErr_Fetch(&ptype, &pvalue, &ptraceback);
   excinfo = PyTuple_New(3);
@@ -86,7 +86,23 @@ static void pygpgme_stash_callback_exception(PyObject *self)
     PyTuple_SetItem(excinfo, 2, Py_None);
   }
 
-  PyObject_SetAttrString(self, EXCINFO, excinfo);
+  self = PyWeakref_GetObject(weak_self);
+  /* self only has a borrowed reference.  */
+  if (self == Py_None) {
+    /* This should not happen, as even if we're called from the data
+       release callback triggered from the wrappers destructor, the
+       object is still alive and hence the weak reference still refers
+       to the object.  However, in case this ever changes, not seeing
+       any exceptions is worse than having a little extra code, so
+       here we go.  */
+      fprintf(stderr,
+              "Error occurred in callback, but the wrapper object "
+              "has been deallocated.\n");
+      PyErr_Restore(ptype, pvalue, ptraceback);
+      PyErr_Print();
+    }
+  else
+    PyObject_SetAttrString(self, EXCINFO, excinfo);
 }
 
 PyObject *pygpgme_raise_callback_exception(PyObject *self)
