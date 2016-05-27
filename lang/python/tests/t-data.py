@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import io
 import os
 import tempfile
 from pyme import core
@@ -79,3 +80,43 @@ with tempfile.NamedTemporaryFile() as tmp:
     # Open using name, offset, and length.
     data = core.Data(file=tmp.name, offset=23, length=42)
     assert data.read() == binjunk[23:23+42]
+
+# Test callbacks.
+class DataObject(object):
+    def __init__(self):
+        self.buffer = io.BytesIO()
+        self.released = False
+
+    def read(self, amount, hook=None):
+        assert not self.released
+        return self.buffer.read(amount)
+
+    def write(self, data, hook=None):
+        assert not self.released
+        return self.buffer.write(data)
+
+    def seek(self, offset, whence, hook=None):
+        assert not self.released
+        return self.buffer.seek(offset, whence)
+
+    def release(self, hook=None):
+        assert not self.released
+        self.released = True
+
+do = DataObject()
+cookie = object()
+data = core.Data(cbs=(do.read, do.write, do.seek, do.release, cookie))
+data.write('Hello world!')
+data.seek(0, os.SEEK_SET)
+assert data.read() == b'Hello world!'
+del data
+assert do.released
+
+# Again, without the cookie.
+do = DataObject()
+data = core.Data(cbs=(do.read, do.write, do.seek, do.release))
+data.write('Hello world!')
+data.seek(0, os.SEEK_SET)
+assert data.read() == b'Hello world!'
+del data
+assert do.released

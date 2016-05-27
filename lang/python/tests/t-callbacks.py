@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import os
 from pyme import core, constants
 import support
 
@@ -177,6 +178,76 @@ c.set_status_cb(status_cb, None)
 c.set_ctx_flag("full-status", "1")
 try:
     c.op_encrypt([alpha], constants.ENCRYPT_ALWAYS_TRUST, source, sink)
+except Exception as e:
+    assert e == myException
+else:
+    assert False, "Expected an error, got none"
+
+
+
+# Test the data callbacks.
+def read_cb(amount, hook=None):
+    assert hook == cookie
+    return 0
+def release_cb(hook=None):
+    assert hook == cookie
+data = core.Data(cbs=(read_cb, None, None, release_cb, cookie))
+try:
+    data.read()
+except Exception as e:
+    assert type(e) == TypeError
+else:
+    assert False, "Expected an error, got none"
+
+def read_cb(amount):
+    raise myException
+data = core.Data(cbs=(read_cb, None, None, lambda: None))
+try:
+    data.read()
+except Exception as e:
+    assert e == myException
+else:
+    assert False, "Expected an error, got none"
+
+
+def write_cb(what, hook=None):
+    assert hook == cookie
+    return "wrong type"
+data = core.Data(cbs=(None, write_cb, None, release_cb, cookie))
+try:
+    data.write(b'stuff')
+except Exception as e:
+    assert type(e) == TypeError
+else:
+    assert False, "Expected an error, got none"
+
+def write_cb(what):
+    raise myException
+data = core.Data(cbs=(None, write_cb, None, lambda: None))
+try:
+    data.write(b'stuff')
+except Exception as e:
+    assert e == myException
+else:
+    assert False, "Expected an error, got none"
+
+
+def seek_cb(offset, whence, hook=None):
+    assert hook == cookie
+    return "wrong type"
+data = core.Data(cbs=(None, None, seek_cb, release_cb, cookie))
+try:
+    data.seek(0, os.SEEK_SET)
+except Exception as e:
+    assert type(e) == TypeError
+else:
+    assert False, "Expected an error, got none"
+
+def seek_cb(offset, whence):
+    raise myException
+data = core.Data(cbs=(None, None, seek_cb, lambda: None))
+try:
+    data.seek(0, os.SEEK_SET)
 except Exception as e:
     assert e == myException
 else:

@@ -40,3 +40,7 @@ void pygpgme_set_status_cb(gpgme_ctx_t ctx, PyObject *cb,
 
 gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
 		       const char *args, int fd);
+
+gpgme_error_t pygpgme_data_new_from_cbs(gpgme_data_t *r_data,
+                                        PyObject *pycbs,
+                                        PyObject **freelater);

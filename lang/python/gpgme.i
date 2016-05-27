@@ -180,10 +180,13 @@ PyObject* object_to_gpgme_t(PyObject* input, const char* objtype, int argnum) {
 			gpgme_data_t pubkey, gpgme_data_t seckey,
 			gpgme_data_t out};
 
-// SWIG has problem interpreting ssize_t, off_t or gpgme_error_t in gpgme.h
+/* SWIG has problems interpreting ssize_t, off_t or gpgme_error_t in
+   gpgme.h.  */
+/* XXX: This is wrong at least for off_t if compiled with LFS.  */
 %typemap(out) ssize_t, off_t, gpgme_error_t, gpgme_err_code_t, gpgme_err_source_t, gpg_error_t {
   $result = PyLong_FromLong($1);
 }
+/* XXX: This is wrong at least for off_t if compiled with LFS.  */
 %typemap(in) ssize_t, off_t, gpgme_error_t, gpgme_err_code_t, gpgme_err_source_t, gpg_error_t {
   $1 = PyLong_AsLong($input);
 }
@@ -201,7 +204,7 @@ PyObject* object_to_gpgme_t(PyObject* input, const char* objtype, int argnum) {
   Py_XDECREF($result);   /* Blow away any previous result */
   if (result < 0) {      /* Check for I/O error */
     free($1);
-    return NULL;
+    return PyErr_SetFromErrno(PyExc_RuntimeError);
   }
   $result = PyBytes_FromStringAndSize($1,result);
   free($1);

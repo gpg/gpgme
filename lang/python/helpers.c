@@ -402,3 +402,245 @@ gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
   Py_XDECREF(retval);
   return err_status;
 }
+
+/* Data callbacks.  */
+
+/* Read up to SIZE bytes into buffer BUFFER from the data object with
+   the handle HOOK.  Return the number of characters read, 0 on EOF
+   and -1 on error.  If an error occurs, errno is set.  */
+static ssize_t pyDataReadCb(void *hook, void *buffer, size_t size)
+{
+  ssize_t result;
+  PyObject *pyhook = (PyObject *) hook;
+  PyObject *self = NULL;
+  PyObject *func = NULL;
+  PyObject *dataarg = NULL;
+  PyObject *pyargs = NULL;
+  PyObject *retval = NULL;
+
+  assert (PyTuple_Check(pyhook));
+  assert (PyTuple_Size(pyhook) == 5 || PyTuple_Size(pyhook) == 6);
+
+  self = PyTuple_GetItem(pyhook, 0);
+  func = PyTuple_GetItem(pyhook, 1);
+  if (PyTuple_Size(pyhook) == 6) {
+    dataarg = PyTuple_GetItem(pyhook, 5);
+    pyargs = PyTuple_New(2);
+  } else {
+    pyargs = PyTuple_New(1);
+  }
+
+  PyTuple_SetItem(pyargs, 0, PyLong_FromSize_t(size));
+  if (dataarg) {
+    Py_INCREF(dataarg);
+    PyTuple_SetItem(pyargs, 1, dataarg);
+  }
+
+  retval = PyObject_CallObject(func, pyargs);
+  Py_DECREF(pyargs);
+  if (PyErr_Occurred()) {
+    pygpgme_stash_callback_exception(self);
+    result = -1;
+    goto leave;
+  }
+
+  if (! PyBytes_Check(retval)) {
+    PyErr_Format(PyExc_TypeError,
+                 "expected bytes from read callback, got %s",
+                 retval->ob_type->tp_name);
+    pygpgme_stash_callback_exception(self);
+    result = -1;
+    goto leave;
+  }
+
+  if (PyBytes_Size(retval) > size) {
+    PyErr_Format(PyExc_TypeError,
+                 "expected %zu bytes from read callback, got %zu",
+                 size, PyBytes_Size(retval));
+    pygpgme_stash_callback_exception(self);
+    result = -1;
+    goto leave;
+  }
+
+  memcpy(buffer, PyBytes_AsString(retval), PyBytes_Size(retval));
+  result = PyBytes_Size(retval);
+
+ leave:
+  Py_XDECREF(retval);
+  return result;
+}
+
+/* Write up to SIZE bytes from buffer BUFFER to the data object with
+   the handle HOOK.  Return the number of characters written, or -1
+   on error.  If an error occurs, errno is set.  */
+static ssize_t pyDataWriteCb(void *hook, const void *buffer, size_t size)
+{
+  ssize_t result;
+  PyObject *pyhook = (PyObject *) hook;
+  PyObject *self = NULL;
+  PyObject *func = NULL;
+  PyObject *dataarg = NULL;
+  PyObject *pyargs = NULL;
+  PyObject *retval = NULL;
+
+  assert (PyTuple_Check(pyhook));
+  assert (PyTuple_Size(pyhook) == 5 || PyTuple_Size(pyhook) == 6);
+
+  self = PyTuple_GetItem(pyhook, 0);
+  func = PyTuple_GetItem(pyhook, 2);
+  if (PyTuple_Size(pyhook) == 6) {
+    dataarg = PyTuple_GetItem(pyhook, 5);
+    pyargs = PyTuple_New(2);
+  } else {
+    pyargs = PyTuple_New(1);
+  }
+
+  PyTuple_SetItem(pyargs, 0, PyBytes_FromStringAndSize(buffer, size));
+  if (dataarg) {
+    Py_INCREF(dataarg);
+    PyTuple_SetItem(pyargs, 1, dataarg);
+  }
+
+  retval = PyObject_CallObject(func, pyargs);
+  Py_DECREF(pyargs);
+  if (PyErr_Occurred()) {
+    pygpgme_stash_callback_exception(self);
+    result = -1;
+    goto leave;
+  }
+
+  if (! PyLong_Check(retval)) {
+    PyErr_Format(PyExc_TypeError,
+                 "expected int from read callback, got %s",
+                 retval->ob_type->tp_name);
+    pygpgme_stash_callback_exception(self);
+    result = -1;
+    goto leave;
+  }
+
+  result = PyLong_AsSsize_t(retval);
+
+ leave:
+  Py_XDECREF(retval);
+  return result;
+}
+
+/* Set the current position from where the next read or write starts
+   in the data object with the handle HOOK to OFFSET, relativ to
+   WHENCE.  Returns the new offset in bytes from the beginning of the
+   data object.  */
+static off_t pyDataSeekCb(void *hook, off_t offset, int whence)
+{
+  off_t result;
+  PyObject *pyhook = (PyObject *) hook;
+  PyObject *self = NULL;
+  PyObject *func = NULL;
+  PyObject *dataarg = NULL;
+  PyObject *pyargs = NULL;
+  PyObject *retval = NULL;
+
+  assert (PyTuple_Check(pyhook));
+  assert (PyTuple_Size(pyhook) == 5 || PyTuple_Size(pyhook) == 6);
+
+  self = PyTuple_GetItem(pyhook, 0);
+  func = PyTuple_GetItem(pyhook, 3);
+  if (PyTuple_Size(pyhook) == 6) {
+    dataarg = PyTuple_GetItem(pyhook, 5);
+    pyargs = PyTuple_New(3);
+  } else {
+    pyargs = PyTuple_New(2);
+  }
+
+#if defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS == 64
+  PyTuple_SetItem(pyargs, 0, PyLong_FromLongLong((long long) offset));
+#else
+  PyTuple_SetItem(pyargs, 0, PyLong_FromLong((long) offset));
+#endif
+  PyTuple_SetItem(pyargs, 1, PyLong_FromLong((long) whence));
+  if (dataarg) {
+    Py_INCREF(dataarg);
+    PyTuple_SetItem(pyargs, 2, dataarg);
+  }
+
+  retval = PyObject_CallObject(func, pyargs);
+  Py_DECREF(pyargs);
+  if (PyErr_Occurred()) {
+    pygpgme_stash_callback_exception(self);
+    result = -1;
+    goto leave;
+  }
+
+  if (! PyLong_Check(retval)) {
+    PyErr_Format(PyExc_TypeError,
+                 "expected int from read callback, got %s",
+                 retval->ob_type->tp_name);
+    pygpgme_stash_callback_exception(self);
+    result = -1;
+    goto leave;
+  }
+
+#if defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS == 64
+  result = PyLong_AsLongLong(retval);
+#else
+  result = PyLong_AsLong(retval);
+#endif
+
+ leave:
+  Py_XDECREF(retval);
+  return result;
+}
+
+/* Close the data object with the handle HOOK.  */
+static void pyDataReleaseCb(void *hook)
+{
+  PyObject *pyhook = (PyObject *) hook;
+  PyObject *self = NULL;
+  PyObject *func = NULL;
+  PyObject *dataarg = NULL;
+  PyObject *pyargs = NULL;
+  PyObject *retval = NULL;
+
+  assert (PyTuple_Check(pyhook));
+  assert (PyTuple_Size(pyhook) == 5 || PyTuple_Size(pyhook) == 6);
+
+  self = PyTuple_GetItem(pyhook, 0);
+  func = PyTuple_GetItem(pyhook, 4);
+  if (PyTuple_Size(pyhook) == 6) {
+    dataarg = PyTuple_GetItem(pyhook, 5);
+    pyargs = PyTuple_New(1);
+  } else {
+    pyargs = PyTuple_New(0);
+  }
+
+  if (dataarg) {
+    Py_INCREF(dataarg);
+    PyTuple_SetItem(pyargs, 0, dataarg);
+  }
+
+  retval = PyObject_CallObject(func, pyargs);
+  Py_XDECREF(retval);
+  Py_DECREF(pyargs);
+  if (PyErr_Occurred())
+    pygpgme_stash_callback_exception(self);
+}
+
+gpgme_error_t pygpgme_data_new_from_cbs(gpgme_data_t *r_data,
+                                        PyObject *pycbs,
+                                        PyObject **freelater)
+{
+  static struct gpgme_data_cbs cbs = {
+    pyDataReadCb,
+    pyDataWriteCb,
+    pyDataSeekCb,
+    pyDataReleaseCb,
+  };
+  PyObject *dataarg = NULL;
+
+  assert (PyTuple_Check(pycbs));
+  assert (PyTuple_Size(pycbs) == 5 || PyTuple_Size(pycbs) == 6);
+
+  Py_INCREF(pycbs);
+  *freelater = pycbs;
+
+  return gpgme_data_new_from_cbs(r_data, &cbs, (void *) pycbs);
+}

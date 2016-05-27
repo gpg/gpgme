@@ -384,7 +384,7 @@ class Data(GpgmeWrapper):
 
         If cbs is specified, it MUST be a tuple of the form:
 
-        ((read_cb, write_cb, seek_cb, release_cb), hook)
+        (read_cb, write_cb, seek_cb, release_cb[, hook])
 
         where func is a callback function taking two arguments (count,
         hook) and returning a string of read data, or None on EOF.
@@ -396,7 +396,7 @@ class Data(GpgmeWrapper):
 
         Any other use will result in undefined or erroneous behavior."""
         super().__init__(None)
-        self.last_readcb = None
+        self.data_cbs = None
 
         if cbs != None:
             self.new_from_cbs(*cbs)
@@ -419,15 +419,18 @@ class Data(GpgmeWrapper):
 
         if self.wrapped != None and pygpgme.gpgme_data_release:
             pygpgme.gpgme_data_release(self.wrapped)
-        self._free_readcb()
+            if self._callback_excinfo:
+                print(self._callback_excinfo)
+                pygpgme.pygpgme_raise_callback_exception(self)
+        self._free_datacbs()
 
-    def _free_readcb(self):
-        if self.last_readcb != None:
+    def _free_datacbs(self):
+        if self.data_cbs != None:
             if pygpgme.pygpgme_clear_generic_cb:
-                pygpgme.pygpgme_clear_generic_cb(self.last_readcb)
+                pygpgme.pygpgme_clear_generic_cb(self.data_cbs)
             if pygpgme.delete_PyObject_p_p:
-                pygpgme.delete_PyObject_p_p(self.last_readcb)
-            self.last_readcb = None
+                pygpgme.delete_PyObject_p_p(self.data_cbs)
+            self.data_cbs = None
 
     def new(self):
         tmp = pygpgme.new_gpgme_data_t_p()
@@ -453,14 +456,18 @@ class Data(GpgmeWrapper):
         self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
         pygpgme.delete_gpgme_data_t_p(tmp)
 
-    def new_from_cbs(self, funcs, hook):
-        """Argument funcs must be a 4 element tuple with callbacks:
-        (read_cb, write_cb, seek_cb, release_cb)"""
+    def new_from_cbs(self, read_cb, write_cb, seek_cb, release_cb, hook=None):
+        assert self.data_cbs == None
+        self.data_cbs = pygpgme.new_PyObject_p_p()
         tmp = pygpgme.new_gpgme_data_t_p()
-        self._free_readcb()
-        self.last_readcb = pygpgme.new_PyObject_p_p()
-        hookdata = (funcs, hook)
-        pygpgme.pygpgme_data_new_from_cbs(tmp, hookdata, self.last_readcb)
+        if hook != None:
+            hookdata = (weakref.ref(self),
+                        read_cb, write_cb, seek_cb, release_cb, hook)
+        else:
+            hookdata = (weakref.ref(self),
+                        read_cb, write_cb, seek_cb, release_cb)
+        errorcheck(
+            pygpgme.pygpgme_data_new_from_cbs(tmp, hookdata, self.data_cbs))
         self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
         pygpgme.delete_gpgme_data_t_p(tmp)
 
@@ -512,7 +519,10 @@ class Data(GpgmeWrapper):
         If a string is given, it is implicitly encoded using UTF-8."""
         written = pygpgme.gpgme_data_write(self.wrapped, buffer)
         if written < 0:
-            raise GPGMEError.fromSyserror()
+            if self._callback_excinfo:
+                pygpgme.pygpgme_raise_callback_exception(self)
+            else:
+                raise GPGMEError.fromSyserror()
         return written
 
     def read(self, size = -1):
@@ -527,11 +537,24 @@ class Data(GpgmeWrapper):
             return ''
 
         if size > 0:
-            return pygpgme.gpgme_data_read(self.wrapped, size)
+            try:
+                result = pygpgme.gpgme_data_read(self.wrapped, size)
+            except:
+                if self._callback_excinfo:
+                    pygpgme.pygpgme_raise_callback_exception(self)
+                else:
+                    raise
+            return result
         else:
             chunks = []
-            while 1:
-                result = pygpgme.gpgme_data_read(self.wrapped, 4096)
+            while True:
+                try:
+                    result = pygpgme.gpgme_data_read(self.wrapped, 4096)
+                except:
+                    if self._callback_excinfo:
+                        pygpgme.pygpgme_raise_callback_exception(self)
+                    else:
+                        raise
                 if len(result) == 0:
                     break
                 chunks.append(result)
