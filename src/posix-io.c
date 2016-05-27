@@ -47,6 +47,12 @@
 #include <ctype.h>
 #include <sys/resource.h>
 
+#if __linux__
+# include <sys/types.h>
+# include <dirent.h>
+#endif /*__linux__ */
+
+
 #include "util.h"
 #include "priv-io.h"
 #include "sema.h"
@@ -280,16 +286,50 @@ get_max_fds (void)
   long int fds = -1;
   int rc;
 
-#ifdef RLIMIT_NOFILE
+  /* Under Linux we can figure out the highest used file descriptor by
+   * reading /proc/self/fd.  This is in the common cases much fast than
+   * for example doing 4096 close calls where almost all of them will
+   * fail.  */
+#ifdef __linux__
   {
-    struct rlimit rl;
-    rc = getrlimit (RLIMIT_NOFILE, &rl);
-    if (rc == 0)
+    DIR *dir = NULL;
+    struct dirent *dir_entry;
+    const char *s;
+    int x;
+
+    dir = opendir ("/proc/self/fd");
+    if (dir)
       {
-	source = "RLIMIT_NOFILE";
-	fds = rl.rlim_max;
+        while ((dir_entry = readdir (dir)))
+          {
+            s = dir_entry->d_name;
+            if ( *s < '0' || *s > '9')
+              continue;
+            x = atoi (s);
+            if (x > fds)
+              fds = x;
+          }
+        closedir (dir);
       }
-  }
+    if (fds != -1)
+      {
+        fds++;
+        source = "/proc";
+      }
+    }
+#endif /* __linux__ */
+
+#ifdef RLIMIT_NOFILE
+  if (fds == -1)
+    {
+      struct rlimit rl;
+      rc = getrlimit (RLIMIT_NOFILE, &rl);
+      if (rc == 0)
+        {
+          source = "RLIMIT_NOFILE";
+          fds = rl.rlim_max;
+        }
+    }
 #endif
 #ifdef RLIMIT_OFILE
   if (fds == -1)
