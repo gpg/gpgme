@@ -1196,11 +1196,12 @@ typedef @API__SSIZE_T@ (*gpgme_data_write_cb_t) (void *handle, const void *buffe
 
 /* Set the current position from where the next read or write starts
    in the data object with the handle HANDLE to OFFSET, relativ to
-   WHENCE.  */
+   WHENCE.  Returns the new offset in bytes from the beginning of the
+   data object.  */
 typedef @API__OFF_T@ (*gpgme_data_seek_cb_t) (void *handle,
                                        @API__OFF_T@ offset, int whence);
 
-/* Close the data object with the handle DL.  */
+/* Close the data object with the handle HANDLE.  */
 typedef void (*gpgme_data_release_cb_t) (void *handle);
 
 struct gpgme_data_cbs
@@ -1223,8 +1224,9 @@ typedef struct gpgme_data_cbs *gpgme_data_cbs_t;
 @API__SSIZE_T@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size);
 
 /* Set the current position from where the next read or write starts
-   in the data object with the handle DH to OFFSET, relativ to
-   WHENCE.  */
+   in the data object with the handle DH to OFFSET, relativ to WHENCE.
+   Returns the new offset in bytes from the beginning of the data
+   object.  */
 @API__OFF_T@ gpgme_data_seek (gpgme_data_t dh, @API__OFF_T@ offset, int whence);
 
 /* Create a new data buffer and return it in R_DH.  */
