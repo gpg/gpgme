@@ -255,11 +255,37 @@ PyObject* object_to_gpgme_t(PyObject* input, const char* objtype, int argnum) {
     $2 = $input;
 }
 
-// Include the header file both for cc (first) and for swig (second)
-// Include for swig locally since we need to fix 'class' usage there.
-%{
-#include <gpgme.h>
-%}
+/* Include the unmodified <gpgme.h> for cc, and the cleaned-up local
+   version for SWIG.  We do, however, want to hide certain fields on
+   some structs, which we provide prior to including the version for
+   SWIG.  */
+ %{ #include <gpgme.h> %}
+
+/* This is for notations, where we want to hide the length fields, and
+   the unused bit field block.  */
+struct _gpgme_sig_notation
+{
+  struct _gpgme_sig_notation *next;
+
+  /* If NAME is a null pointer, then VALUE contains a policy URL
+     rather than a notation.  */
+  char *name;
+
+  /* The value of the notation data.  */
+  char *value;
+
+  /* The accumulated flags.  */
+  gpgme_sig_notation_flags_t flags;
+
+  /* Notation data is human-readable.  */
+  unsigned int human_readable : 1;
+
+  /* Notation data is critical.  */
+  unsigned int critical : 1;
+};
+
+/* Now include our local modified version.  Any structs defined above
+   are ignored.  */
 %include "gpgme.h"
 
 %include "errors.i"

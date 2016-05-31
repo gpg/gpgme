@@ -38,6 +38,9 @@ py_tests = t-wrapper.py \
 	t-sign.py \
 	t-signers.py \
 	t-decrypt.py \
+	t-verify.py \
+	t-decrypt-verify.py \
+	t-sig-notation.py \
 	t-export.py \
 	t-trustlist.py \
 	t-edit.py \
