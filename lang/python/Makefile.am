@@ -32,7 +32,7 @@ copystamp: $(srcdir)/pyme $(srcdir)/helpers.c $(srcdir)/helpers.h
 errors.i:
 	sed -n -e \
 	  '/GPG_ERR_[^ ]* =/s/ *\(.*\) = .*/%constant long \1 = \1;/p' \
-	  `gpg-error-config --prefix`/include/gpg-error.h >$@
+	  `$(GPG_ERROR_CONFIG) --prefix`/include/gpg-error.h >$@
 
 gpgme_wrap.c pyme/pygpgme.py: gpgme.i errors.i gpgme.h copystamp
 	$(SWIG) -python -py3 $(SWIGOPT) \
