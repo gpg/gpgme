@@ -110,6 +110,7 @@ static void
 print_result (gpgme_verify_result_t result)
 {
   gpgme_signature_t sig;
+  gpgme_sig_notation_t nt;
   gpgme_tofu_info_t ti;
   int count = 0;
 
@@ -138,8 +139,20 @@ print_result (gpgme_verify_result_t result)
               sig->wrong_key_usage? " wrong-key-usage":"",
               sig->chain_model? " chain-model":""
               );
-      printf ("  notations .: %s\n",
-              sig->notations? "yes":"no");
+      for (nt = sig->notations; nt; nt = nt->next)
+        {
+          printf ("  notation ..: '%s'\n", nt->name);
+          if (strlen (nt->name) != nt->name_len)
+            printf ("    warning : name larger (%d)\n", nt->name_len);
+          printf ("    flags ...:%s%s (0x%02x)\n",
+                  nt->critical? " critical":"",
+                  nt->human_readable? " human":"",
+                  nt->flags);
+          if (nt->value)
+            printf ("    value ...: '%s'\n", nt->value);
+          if ((nt->value?strlen (nt->value):0) != nt->value_len)
+            printf ("    warning : value larger (%d)\n", nt->value_len);
+        }
       for (ti = sig->tofu; ti; ti = ti->next)
         {
           printf ("  tofu addr .: %s\n", ti->address);

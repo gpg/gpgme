@@ -504,13 +504,14 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
   gpgme_error_t err;
   gpgme_sig_notation_t *lastp = &sig->notations;
   gpgme_sig_notation_t notation = sig->notations;
-  char *end = strchr (args, ' ');
-
-  if (end)
-    *end = '\0';
+  char *p;
 
   if (code == GPGME_STATUS_NOTATION_NAME || code == GPGME_STATUS_POLICY_URL)
     {
+      p = strchr (args, ' ');
+      if (p)
+        *p = '\0';
+
       /* FIXME: We could keep a pointer to the last notation in the list.  */
       while (notation && notation->value)
 	{
@@ -538,9 +539,8 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 
 	  notation->name_len = strlen (notation->name);
 
-	  /* FIXME: For now we fake the human-readable flag.  The
-	     critical flag can not be reported as it is not
-	     provided.  */
+	  /* Set default flags for use with older gpg versions which
+           * do not emit a NOTATIONS_FLAG line.  */
 	  notation->flags = GPGME_SIG_NOTATION_HUMAN_READABLE;
 	  notation->human_readable = 1;
 	}
@@ -558,6 +558,37 @@ parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 	  notation->value_len = strlen (notation->value);
 	}
       *lastp = notation;
+    }
+  else if (code == GPGME_STATUS_NOTATION_FLAGS)
+    {
+      char *field[2];
+
+      while (notation && notation->next)
+	{
+	  lastp = &notation->next;
+	  notation = notation->next;
+	}
+
+      if (!notation || !notation->name)
+        { /* There are notation flags without a previous notation name.
+           * The crypto backend misbehaves.  */
+          return trace_gpg_error (GPG_ERR_INV_ENGINE);
+        }
+      if (_gpgme_split_fields (args, field, DIM (field)) < 2)
+        { /* Required args missing.  */
+          return trace_gpg_error (GPG_ERR_INV_ENGINE);
+        }
+      notation->flags = 0;
+      if (atoi (field[0]))
+        {
+          notation->flags |= GPGME_SIG_NOTATION_CRITICAL;
+          notation->critical = 1;
+        }
+      if (atoi (field[1]))
+        {
+          notation->flags |= GPGME_SIG_NOTATION_HUMAN_READABLE;
+          notation->human_readable = 1;
+        }
     }
   else if (code == GPGME_STATUS_NOTATION_DATA)
     {
@@ -918,6 +949,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
       break;
 
     case GPGME_STATUS_NOTATION_NAME:
+    case GPGME_STATUS_NOTATION_FLAGS:
     case GPGME_STATUS_NOTATION_DATA:
     case GPGME_STATUS_POLICY_URL:
       opd->only_newsig_seen = 0;
