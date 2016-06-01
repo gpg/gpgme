@@ -83,11 +83,11 @@ check_result (gpgme_verify_result_t result)
 	       && r->value
 	       && !strcmp (r->value, expected_notations[i].value)
 	       && r->value_len == strlen (expected_notations[i].value)
-	       && r->flags
-	       == (expected_notations[i].flags & ~GPGME_SIG_NOTATION_CRITICAL)
+	       && r->flags == expected_notations[i].flags
 	       && r->human_readable
 	       == !!(r->flags & GPGME_SIG_NOTATION_HUMAN_READABLE)
-	       && r->critical == 0)
+	       && r->critical
+               == !!(r->flags & GPGME_SIG_NOTATION_CRITICAL))
 	    {
 	      expected_notations[i].seen++;
 	      any++;

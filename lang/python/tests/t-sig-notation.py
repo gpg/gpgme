@@ -44,9 +44,8 @@ def check_result(result):
             "Expected {!r}, got {!r}".format(value, r.value)
         assert r.human_readable \
             == bool(flags&constants.SIG_NOTATION_HUMAN_READABLE)
-        # xxx notyet
-        #assert r.human_readable \
-        #    == bool(flags&constants.SIG_NOTATION_CRITICAL)
+        assert r.critical \
+            == bool(flags&constants.SIG_NOTATION_CRITICAL)
 
     assert len(expected_notations) == 0
 
