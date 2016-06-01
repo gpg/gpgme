@@ -365,6 +365,16 @@ if test "$found" = "1"; then
     else
         AM_PATH_PYTHON([3.3])
         AX_SWIG_PYTHON
+	if test -z "$PYTHON_VERSION"; then
+           if test "$explicit_languages" = "1"; then
+              AC_MSG_ERROR([[
+***
+*** Please install the python development packages.
+***]])
+	    else
+                enabled_languages=$(echo $enabled_languages | sed 's/python//')
+            fi
+	fi
     fi
 fi
 

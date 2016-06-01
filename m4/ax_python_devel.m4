@@ -304,13 +304,12 @@ EOD`
 	AC_MSG_RESULT([$pythonexists])
 
         if test ! "x$pythonexists" = "xyes"; then
-	   AC_MSG_FAILURE([
+	   AC_MSG_WARN([
   Could not link test program to Python. Maybe the main Python library has been
   installed in some non-standard library path. If so, pass it to configure,
   via the LDFLAGS environment variable.
   Example: ./configure LDFLAGS="-L/usr/non-standard-path/python/lib"
   ============================================================================
-   ERROR!
    You probably have to install the development version of the Python package
    for your distribution.  The exact name of this package varies among them.
   ============================================================================
