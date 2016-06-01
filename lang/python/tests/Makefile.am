@@ -94,4 +94,5 @@ $(top_srcdir)/tests/gpg/initial.test: check-local
 
 ./gpg-agent.conf:
 # This is required for gpg2, which does not support command fd.
-	echo pinentry-program $(abs_top_srcdir)/tests/gpg/pinentry > ./gpg-agent.conf
+	echo pinentry-program $(abs_top_srcdir)/tests/gpg/pinentry >$@
+	echo allow-loopback-pinentry >>$@
