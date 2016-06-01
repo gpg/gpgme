@@ -58,12 +58,14 @@ private Q_SLOTS:
         Q_ASSERT (!result.error());
         Q_ASSERT (keys.size() == 1);
         Key key = keys.front();
-        qDebug() << "Trust is: " << key.ownerTrust();
         Q_ASSERT (key.ownerTrust() == Key::Unknown);
 
         ChangeOwnerTrustJob *job2 = openpgp()->changeOwnerTrustJob();
         connect(job2, &ChangeOwnerTrustJob::result, this, [this](Error e)
         {
+            if (e) {
+                qDebug() <<  "Error in result: " << e.asString();
+            }
             Q_ASSERT(!e);
             Q_EMIT asyncDone();
         });
