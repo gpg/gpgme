@@ -201,20 +201,16 @@ Error EditInteractor::lastError() const
 bool EditInteractor::needsNoResponse(unsigned int status) const
 {
     switch (status) {
-    case GPGME_STATUS_EOF:
-    case GPGME_STATUS_GOT_IT:
-    case GPGME_STATUS_NEED_PASSPHRASE:
+    case GPGME_STATUS_ALREADY_SIGNED:
+    case GPGME_STATUS_ERROR:
+    case GPGME_STATUS_GET_BOOL:
+    case GPGME_STATUS_GET_LINE:
+    case GPGME_STATUS_KEY_CREATED:
     case GPGME_STATUS_NEED_PASSPHRASE_SYM:
-    case GPGME_STATUS_GOOD_PASSPHRASE:
-    case GPGME_STATUS_BAD_PASSPHRASE:
-    case GPGME_STATUS_USERID_HINT:
-    case GPGME_STATUS_SIGEXPIRED:
-    case GPGME_STATUS_KEYEXPIRED:
-    case GPGME_STATUS_PINENTRY_LAUNCHED:
-    case GPGME_STATUS_KEY_CONSIDERED:
-        return true;
-    default:
+    case GPGME_STATUS_SC_OP_FAILURE:
         return false;
+    default:
+        return true;
     }
 }
 
