@@ -40,7 +40,7 @@ gpgme_wrap.c pyme/pygpgme.py: gpgme.i errors.i gpgme.h copystamp
 	  $<
 
 all-local: gpgme_wrap.c pyme/pygpgme.py copystamp
-	$(PYTHON) $(srcdir)/setup.py build --verbose
+	CFLAGS="$(CFLAGS)" $(PYTHON) $(srcdir)/setup.py build --verbose
 
 clean-local:
 	rm -rf -- build gpgme.h errors.i gpgme_wrap.c pyme/pygpgme.py \

@@ -207,7 +207,12 @@ static gpgme_error_t pyPassphraseCb(void *hook,
       if (PyBytes_Check(retval))
         buf = PyBytes_AsString(retval), len = PyBytes_Size(retval);
       else if (PyUnicode_Check(retval))
-        buf = PyUnicode_AsUTF8AndSize(retval, &len);
+        {
+          Py_ssize_t ssize;
+          buf = PyUnicode_AsUTF8AndSize(retval, &ssize);
+          assert (! buf || ssize >= 0);
+          len = (size_t) ssize;
+        }
       else
         {
           PyErr_Format(PyExc_TypeError,
@@ -634,7 +639,6 @@ gpgme_error_t pygpgme_data_new_from_cbs(gpgme_data_t *r_data,
     pyDataSeekCb,
     pyDataReleaseCb,
   };
-  PyObject *dataarg = NULL;
 
   assert (PyTuple_Check(pycbs));
   assert (PyTuple_Size(pycbs) == 5 || PyTuple_Size(pycbs) == 6);
