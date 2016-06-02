@@ -79,37 +79,6 @@
 %typemap(newfree) char * "free($1);";
 %newobject gpgme_data_release_and_get_mem;
 
-%{
-/* Convert object to a pointer to gpgme type */
-PyObject* object_to_gpgme_t(PyObject* input, const char* objtype, int argnum) {
-  PyObject *pyname = NULL, *pypointer = NULL;
-  pyname = PyObject_CallMethod(input, "_getctype", NULL);
-  if (pyname && PyUnicode_Check(pyname))
-    {
-      if (strcmp(PyUnicode_AsUTF8(pyname), objtype) != 0)
-        {
-          PyErr_Format(PyExc_TypeError,
-                       "arg %d: Expected value of type %s, but got %s",
-                       argnum, objtype, PyUnicode_AsUTF8(pyname));
-          Py_DECREF(pyname);
-          return NULL;
-        }
-    }
-  else
-    return NULL;
-
-  Py_DECREF(pyname);
-  pypointer = PyObject_GetAttrString(input, "wrapped");
-  if (pypointer == NULL) {
-    PyErr_Format(PyExc_TypeError,
-		 "arg %d: Use of uninitialized Python object %s",
-		 argnum, objtype);
-    return NULL;
-  }
-  return pypointer;
-}
-%}
-
 %typemap(arginit) gpgme_key_t [] {
   $1 = NULL;
 }

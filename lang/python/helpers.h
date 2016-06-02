@@ -28,6 +28,8 @@
 void pygpgme_exception_init(void);
 gpgme_error_t pygpgme_exception2code(void);
 
+PyObject *object_to_gpgme_t(PyObject *input, const char *objtype, int argnum);
+
 void pygpgme_clear_generic_cb(PyObject **cb);
 PyObject *pygpgme_raise_callback_exception(PyObject *self);
 
