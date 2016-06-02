@@ -96,14 +96,7 @@ PyObject* object_to_gpgme_t(PyObject* input, const char* objtype, int argnum) {
         }
     }
   else
-    {
-      PyErr_Format(PyExc_TypeError,
-                   "Protocol violation: Expected an instance of type str "
-                   "from _getctype, but got %s",
-                   pyname == NULL ? "NULL"
-                   : (pyname == Py_None ? "None" : pyname->ob_type->tp_name));
-      return NULL;
-    }
+    return NULL;
 
   Py_DECREF(pyname);
   pypointer = PyObject_GetAttrString(input, "wrapped");
