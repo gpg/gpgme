@@ -23,7 +23,6 @@ def make_filename(name):
     return os.path.join(os.environ['top_srcdir'], 'tests', 'gpg', name)
 
 def init_gpgme(proto):
-    core.check_version()
     core.engine_check_version(proto)
 
 verbose = int(os.environ.get('verbose', 0)) > 1

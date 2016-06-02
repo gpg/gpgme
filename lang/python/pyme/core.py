@@ -572,6 +572,12 @@ def get_protocol_name(proto):
 def check_version(version=None):
     return pygpgme.gpgme_check_version(version)
 
+# check_version also makes sure that several subsystems are properly
+# initialized, and it must be run at least once before invoking any
+# other function.  We do it here so that the user does not have to do
+# it unless she really wants to check for a certain version.
+check_version()
+
 def engine_check_version (proto):
     try:
         errorcheck(pygpgme.gpgme_engine_check_version(proto))
