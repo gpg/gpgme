@@ -113,13 +113,17 @@
 }
 
 // Special handling for references to our objects.
-%typemap(in) gpgme_data_t DATAIN {
+%typemap(in) gpgme_data_t DATAIN (PyObject *wrapper) {
+  /* If we create a temporary wrapper object, we will store it in
+     wrapperN, where N is $argnum.  Here in this fragment, SWIG will
+     automatically append $argnum.  */
+  wrapper = NULL;
   if ($input == Py_None)
     $1 = NULL;
   else {
     PyObject *pypointer = NULL;
 
-    if((pypointer=object_to_gpgme_t($input, "$1_ltype", $argnum)) == NULL)
+    if((pypointer=object_to_gpgme_data_t($input, $argnum, &wrapper)) == NULL)
       return NULL;
 
     /* input = $input, 1 = $1, 1_descriptor = $1_descriptor */
@@ -133,6 +137,11 @@
     }
     Py_DECREF(pypointer);
   }
+}
+
+%typemap(freearg) gpgme_data_t DATAIN {
+  /* Free the temporary wrapper, if any.  */
+  Py_XDECREF(wrapper$argnum);
 }
 
 %apply gpgme_data_t DATAIN {gpgme_data_t plain, gpgme_data_t cipher,

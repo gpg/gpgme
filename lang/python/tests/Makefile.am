@@ -46,7 +46,8 @@ py_tests = t-wrapper.py \
 	t-edit.py \
 	t-wait.py \
 	t-encrypt-large.py \
-	t-file-name.py
+	t-file-name.py \
+	t-idiomatic.py
 
 TESTS = $(top_srcdir)/tests/gpg/initial.test \
 	$(py_tests) \

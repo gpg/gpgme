@@ -180,6 +180,71 @@ object_to_gpgme_t(PyObject *input, const char *objtype, int argnum)
   return pypointer;
 }
 
+/* Convert object to a pointer to gpgme type, version for data
+   objects.  Constructs a wrapper Python on the fly e.g. for file-like
+   objects with a fileno method, returning it in WRAPPER.  This object
+   must be de-referenced when no longer needed.  */
+PyObject *
+object_to_gpgme_data_t(PyObject *input, int argnum, PyObject **wrapper)
+{
+  static PyObject *Data = NULL;
+  PyObject *data = input;
+  PyObject *fd;
+  PyObject *result;
+  *wrapper = NULL;
+
+  if (Data == NULL) {
+    PyObject *core;
+    PyObject *from_list = PyList_New(0);
+    core = PyImport_ImportModuleLevel("core", PyEval_GetGlobals(),
+                                      PyEval_GetLocals(), from_list, 1);
+    Py_XDECREF(from_list);
+    if (core) {
+      Data = PyDict_GetItemString(PyModule_GetDict(core), "Data");
+      Py_XINCREF(Data);
+    }
+    else
+      return NULL;
+  }
+
+  fd = PyObject_CallMethod(input, "fileno", NULL);
+  if (fd) {
+    /* File-like object with file number.  */
+    PyObject *args = NULL;
+    PyObject *kw = NULL;
+
+    /* We don't need the fd, as we have no constructor accepting file
+       descriptors directly.  */
+    Py_DECREF(fd);
+
+    args = PyTuple_New(0);
+    kw = PyDict_New();
+    if (args == NULL || kw == NULL)
+      {
+      fail:
+        Py_XDECREF(args);
+        Py_XDECREF(kw);
+        return NULL;
+      }
+
+    if (PyDict_SetItemString(kw, "file", input) < 0)
+      goto fail;
+
+    *wrapper = PyObject_Call(Data, args, kw);
+    if (*wrapper == NULL)
+      goto fail;
+
+    Py_DECREF(args);
+    Py_DECREF(kw);
+    data = *wrapper;
+  }
+  else
+    PyErr_Clear();
+
+  result = object_to_gpgme_t(data, "gpgme_data_t", argnum);
+  return result;
+}
+
 
 
 /* Callback support.  */
