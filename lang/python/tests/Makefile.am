@@ -42,8 +42,10 @@ py_tests = t-wrapper.py \
 	t-decrypt-verify.py \
 	t-sig-notation.py \
 	t-export.py \
+	t-import.py \
 	t-trustlist.py \
 	t-edit.py \
+	t-keylist.py \
 	t-wait.py \
 	t-encrypt-large.py \
 	t-file-name.py \

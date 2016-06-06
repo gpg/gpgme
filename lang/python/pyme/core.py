@@ -255,6 +255,7 @@ class Context(GpgmeWrapper):
         while key:
             yield key
             key = self.op_keylist_next()
+        self.op_keylist_end()
 
     def op_keylist_next(self):
         """Returns the next key in the list created
@@ -285,10 +286,11 @@ class Context(GpgmeWrapper):
 
     def op_trustlist_all(self, *args, **kwargs):
         self.op_trustlist_start(*args, **kwargs)
-        trust = self.ctx.op_trustlist_next()
+        trust = self.op_trustlist_next()
         while trust:
             yield trust
-            trust = self.ctx.op_trustlist_next()
+            trust = self.op_trustlist_next()
+        self.op_trustlist_end()
 
     def op_trustlist_next(self):
         """Returns the next trust item in the list created

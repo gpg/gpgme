@@ -22,13 +22,19 @@ import support
 
 support.init_gpgme(constants.PROTOCOL_OpenPGP)
 c = core.Context()
-c.op_trustlist_start("alice", 0)
 
+def dump_item(item):
+    print("l={} k={} t={} o={} v={} u={}".format(
+        item.level, item.keyid, item.type, item.owner_trust,
+        item.validity, item.name))
+
+c.op_trustlist_start("alice", 0)
 while True:
     item = c.op_trustlist_next()
     if not item:
         break
+    dump_item(item)
+c.op_trustlist_end()
 
-    print("l={} k={} t={} o={} v={} u={}".format(
-        item.level, item.keyid, item.type, item.owner_trust,
-        item.validity, item.name))
+for item in c.op_trustlist_all("alice", 0):
+    dump_item(item)
