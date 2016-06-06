@@ -1,4 +1,3 @@
-# $Id$
 
 from pyme import util
 util.process_constants('GPGME_', globals())

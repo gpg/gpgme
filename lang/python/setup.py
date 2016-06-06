@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-# $Id$
 
 # Module: installer
 # COPYRIGHT #

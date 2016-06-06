@@ -6,7 +6,6 @@
 #   added output of signature.summary (another bitfield)
 #   printing signature bitfield in hex format
 #
-# $Id$
 #
 # Copyright (C) 2004,2008 Igor Belyi <belyi@users.sourceforge.net>
 # Copyright (c) 2008 Bernhard Reiter <bernhard@intevation.de>

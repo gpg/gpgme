@@ -1,4 +1,3 @@
-# $Id$
 
 productname = 'pyme'
 versionstr = "0.9.1"

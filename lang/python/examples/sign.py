@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# $Id$
 # Copyright (C) 2002 John Goerzen
 # <jgoerzen@complete.org>
 #

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# $Id$
 # Copyright (C) 2004,2008 Igor Belyi <belyi@users.sourceforge.net>
 #
 #    This library is free software; you can redistribute it and/or
