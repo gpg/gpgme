@@ -1,0 +1,57 @@
+PyME - GPGME for Python          emacs, please switch to -*- org -*- mode
+=======================
+
+PyMe is a python interface to the GPGME library:
+https://www.gnupg.org/related_software/gpgme/
+
+PyMe uses SWIG to create wrapper functions with automatic type
+conversions.  This way most of the functions and types are converted
+from C into Python 3 automatically by SWIG, reducing the maintenance
+cost of the binginds.
+
+* Authors
+
+PyME has been created by John Goerzen, and maintained, developed, and
+cherished by Igor Belyi, Martin Albrecht, Ben McGinnes, and everyone
+who contributed to it in any way.
+
+In 2016 we merged a port of PyME to into the GPGME repository, and
+development will continue there.  Please see the VCS history for the
+list of contributors, and if you do find bugs, or want to contribute,
+please get in touch and help maintain PyME.
+
+Please see the section 'History' further down this document for
+references to previous versions.
+
+* Mailing List
+
+For general discussion and help see the gnupg-users mailing list:
+https://lists.gnupg.org/mailman/listinfo/gnupg-users
+
+For development see the gnupg-devel mailing list:
+https://lists.gnupg.org/mailman/listinfo/gnupg-devel
+
+* Bugs
+
+Please report bugs using our bug tracker using the category 'gpgme',
+and topic 'python':
+https://bugs.gnupg.org/gnupg/
+
+* History
+
+ - The bindings have been merged into the GPGME repository in 2016.
+
+ - The latest version of PyME for Python 3.2 and above (as of
+   May, 2015) is v0.9.1.
+   https://git.gnupg.org/gpgme.git/lang/py3-pyme
+
+ - The latest version of PyME for Python 2.6 and 2.7 (as of this
+   writing) is v0.9.0.  https://bitbucket.org/malb/pyme
+
+ - A previous version of PyME v0.8.0 can be found on sourceforge:
+   http://pyme.sourceforge.net/
+
+ - A previous version of PyME v0.5.1 which works with GPGME v0.3.15
+   can be found on John Goerzen's PyMe page:
+   http://quux.org/devel/pyme/
+   http://www.complete.org/JohnGoerzen

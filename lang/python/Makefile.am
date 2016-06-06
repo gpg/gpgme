@@ -16,8 +16,13 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-EXTRA_DIST = README.rst
+EXTRA_DIST = README
 SUBDIRS = tests
+
+COPY_FILES = \
+	$(srcdir)/README \
+	$(srcdir)/pyme \
+	$(srcdir)/helpers.c $(srcdir)/helpers.h
 
 # Cleanup gpgme.h from deprecated functions and typedefs.
 gpgme.h: ../../src/gpgme.h $(srcdir)/gpgme-h-clean.py
@@ -25,7 +30,7 @@ gpgme.h: ../../src/gpgme.h $(srcdir)/gpgme-h-clean.py
 
 # For VPATH builds we need to copy some files because Python's
 # distutils are not VPATH-aware.
-copystamp: $(srcdir)/pyme $(srcdir)/helpers.c $(srcdir)/helpers.h
+copystamp: $(COPY_FILES)
 	if test "$(srcdir)" != "$(builddir)" ; then cp -r $^ . ; fi
 	touch $@
 

@@ -1,3 +1,4 @@
+# Copyright (C) 2016 g10 Code GmbH
 # Copyright (C) 2004,2008 Igor Belyi <belyi@users.sourceforge.net>
 # Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
@@ -15,14 +16,25 @@
 #    License along with this library; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
+"""Core functionality
+
+Core functionality of GPGME wrapped in a object-oriented fashion.
+Provides the 'Context' class for performing cryptographic operations,
+and the 'Data' class describing buffers of data.
+
+"""
+
 import weakref
 from . import pygpgme
 from .errors import errorcheck, GPGMEError
 from . import errors
 
 class GpgmeWrapper(object):
-    """Base class all Pyme wrappers for GPGME functionality.  Not to be
-    instantiated directly."""
+    """Base wrapper class
+
+    Not to be instantiated directly.
+
+    """
 
     def __init__(self, wrapped):
         self._callback_excinfo = None
@@ -66,7 +78,7 @@ class GpgmeWrapper(object):
         raise NotImplementedError()
 
     def __getattr__(self, key):
-        """On-the-fly function generation."""
+        """On-the-fly generation of wrapper methods."""
         if key[0] == '_' or self._getnameprepend() == None:
             return None
         name = self._getnameprepend() + key
@@ -98,15 +110,17 @@ class GpgmeWrapper(object):
         return wrapper
 
 class Context(GpgmeWrapper):
-    """From the GPGME C documentation:
+    """Context for cryptographic operations
 
-    * All cryptographic operations in GPGME are performed within a
-    * context, which contains the internal state of the operation as well as
-    * configuration parameters.  By using several contexts you can run
-    * several cryptographic operations in parallel, with different
-    * configuration.
+    All cryptographic operations in GPGME are performed within a
+    context, which contains the internal state of the operation as
+    well as configuration parameters.  By using several contexts you
+    can run several cryptographic operations in parallel, with
+    different configuration.
 
-    Thus, this is the place that you will usually start."""
+    Access to a context must be synchronized.
+
+    """
 
     def _getctype(self):
         return 'gpgme_ctx_t'
@@ -348,18 +362,21 @@ class Context(GpgmeWrapper):
         errorcheck(result)
 
 class Data(GpgmeWrapper):
-    """From the GPGME C manual:
+    """Data buffer
 
-* A lot of data has to be exchanged between the user and the crypto
-* engine, like plaintext messages, ciphertext, signatures and information
-* about the keys.  The technical details about exchanging the data
-* information are completely abstracted by GPGME.  The user provides and
-* receives the data via `gpgme_data_t' objects, regardless of the
-* communication protocol between GPGME and the crypto engine in use.
+    A lot of data has to be exchanged between the user and the crypto
+    engine, like plaintext messages, ciphertext, signatures and
+    information about the keys.  The technical details about
+    exchanging the data information are completely abstracted by
+    GPGME.  The user provides and receives the data via `gpgme_data_t'
+    objects, regardless of the communication protocol between GPGME
+    and the crypto engine in use.
 
-        This Data class is the implementation of the GpgmeData objects.
+    This Data class is the implementation of the GpgmeData objects.
 
-        Please see the information about __init__ for instantiation."""
+    Please see the information about __init__ for instantiation.
+
+    """
 
     def _getctype(self):
         return 'gpgme_data_t'
@@ -393,15 +410,31 @@ class Data(GpgmeWrapper):
 
         (read_cb, write_cb, seek_cb, release_cb[, hook])
 
-        where func is a callback function taking two arguments (count,
-        hook) and returning a string of read data, or None on EOF.
-        This will supply the read() method for the system.
+        where the first four items are functions implementing reading,
+        writing, seeking the data, and releasing any resources once
+        the data object is deallocated.  The functions must match the
+        following prototypes:
+
+            def read(amount, hook=None):
+                return <a b"bytes" object>
+
+            def write(data, hook=None):
+                return <the number of bytes written>
+
+            def seek(offset, whence, hook=None):
+                return <the new file position>
+
+            def release(hook=None):
+                <return value and exceptions are ignored>
+
+        The functions may be bound methods.  In that case, you can
+        simply use the 'self' reference instead of using a hook.
 
         If file is specified without any other arguments, then
         it must be a filename, and the object will be initialized from
         that file.
 
-        Any other use will result in undefined or erroneous behavior."""
+        """
         super().__init__(None)
         self.data_cbs = None
 
@@ -488,9 +521,10 @@ class Data(GpgmeWrapper):
         """This wraps the GPGME gpgme_data_new_from_filepart() function.
         The argument "file" may be:
 
-        1. a string specifying a file name, or
-        3. a a file-like object. supporting the fileno() call and the mode
-           attribute."""
+        * a string specifying a file name, or
+        * a file-like object supporting the fileno() and the mode attribute.
+
+        """
 
         tmp = pygpgme.new_gpgme_data_t_p()
         filename = None

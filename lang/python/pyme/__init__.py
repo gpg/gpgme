@@ -1,36 +1,38 @@
-"""
-Pyme: GPGME Interface for Python
-Copyright (C) 2004 Igor Belyi <belyi@users.sourceforge.net>
-Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
+# Copyright (C) 2016 g10 Code GmbH
+# Copyright (C) 2004 Igor Belyi <belyi@users.sourceforge.net>
+# Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this library; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+"""Pyme: GPGME Interface for Python
 
 Welcome to PyME, the GPGME Interface for Python.  "Pyme", when prounced,
 rhymes with "Pine".
 
 The latest release of this package may be obtained from
+https://www.gnupg.org
+
+Previous releases of this package for Python 2 can be obtained from
 http://pyme.sourceforge.net
-Previous releases of this package can be obtained from
-http://quux.org/devel/pyme/
 
 FEATURES
 --------
 
  * Feature-rich, full implementation of the GPGME library.  Supports
-   all GPGME features except interactive editing (coming soon).
-   Callback functions may be written in pure Python.
+   all GPGME features.  Callback functions may be written in pure
+   Python.  Exceptions raised in callbacks are properly propagated.
 
  * Ability to sign, encrypt, decrypt, and verify data.
 
@@ -50,9 +52,7 @@ defined here -- they correspond directly to certain object types in GPGME
 for C.  For instance, the following C code:
 
 gpgme_ctx_t context;
-
 gpgme_new(&context);
-
 ...
 gpgme_op_encrypt(context, recp, 1, plain, cipher);
 
@@ -130,8 +130,6 @@ Version information: pyme.version
 Utilities: pyme.util
 
 Base classes are documented at pyme.core.
-Classes of pyme.util usually are not instantiated by users
-directly but return by methods of base classes.
 
 """
 
