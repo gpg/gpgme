@@ -147,8 +147,15 @@ class Context(GpgmeWrapper):
         self._free_passcb()
         self._free_progresscb()
         self._free_statuscb()
-        if self.own and pygpgme.gpgme_release:
+        if self.own and self.wrapped and pygpgme.gpgme_release:
             pygpgme.gpgme_release(self.wrapped)
+            self.wrapped = None
+
+    # Implement the context manager protocol.
+    def __enter__(self):
+        return self
+    def __exit__(self, type, value, tb):
+        self.__del__()
 
     def _free_passcb(self):
         if self.last_passcb != None:
@@ -420,9 +427,15 @@ class Data(GpgmeWrapper):
         if self.wrapped != None and pygpgme.gpgme_data_release:
             pygpgme.gpgme_data_release(self.wrapped)
             if self._callback_excinfo:
-                print(self._callback_excinfo)
                 pygpgme.pygpgme_raise_callback_exception(self)
+            self.wrapped = None
         self._free_datacbs()
+
+    # Implement the context manager protocol.
+    def __enter__(self):
+        return self
+    def __exit__(self, type, value, tb):
+        self.__del__()
 
     def _free_datacbs(self):
         if self.data_cbs != None:

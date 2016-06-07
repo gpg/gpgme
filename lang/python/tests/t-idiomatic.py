@@ -23,7 +23,15 @@ from pyme import core, constants, errors
 import support
 
 support.init_gpgme(constants.PROTOCOL_OpenPGP)
-c = core.Context()
+
+# Both Context and Data can be used as context manager:
+with core.Context() as c, core.Data() as d:
+    c.get_engine_info()
+    d.write(b"Halloechen")
+    leak_c = c
+    leak_d = d
+assert leak_c.wrapped == None
+assert leak_d.wrapped == None
 
 # Demonstrate automatic wrapping of file-like objects with 'fileno'
 # method.
@@ -33,10 +41,11 @@ with tempfile.TemporaryFile() as source, \
     source.write(b"Hallo Leute\n")
     source.seek(0, os.SEEK_SET)
 
-    c.op_sign(source, signed, constants.SIG_MODE_NORMAL)
-    signed.seek(0, os.SEEK_SET)
-    c.op_verify(signed, None, sink)
-    result = c.op_verify_result()
+    with core.Context() as c:
+        c.op_sign(source, signed, constants.SIG_MODE_NORMAL)
+        signed.seek(0, os.SEEK_SET)
+        c.op_verify(signed, None, sink)
+        result = c.op_verify_result()
 
     assert len(result.signatures) == 1, "Unexpected number of signatures"
     sig = result.signatures[0]
