@@ -1,4 +1,5 @@
 /*
+# Copyright (C) 2016 g10 Code GmbH
 # Copyright (C) 2004,2008 Igor Belyi <belyi@users.sourceforge.net>
 # Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
@@ -42,11 +43,11 @@
 %typemap(freearg) const char * "";
 
 /* Likewise for a list of strings.  */
-%typemap(in) const char *[] {
+%typemap(in) const char *[] (void *vector = NULL) {
   /* Check if is a list */
   if (PyList_Check($input)) {
     size_t i, size = PyList_Size($input);
-    $1 = (char **) malloc((size+1) * sizeof(char *));
+    $1 = (char **) (vector = malloc((size+1) * sizeof(char *)));
 
     for (i = 0; i < size; i++) {
       PyObject *o = PyList_GetItem($input,i);
@@ -72,7 +73,7 @@
   }
 }
 %typemap(freearg) const char *[] {
-  free((char *) $1);
+  free(vector$argnum);
 }
 
 // Release returned buffers as necessary.
