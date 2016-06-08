@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import pyme
 from pyme import core, constants
 import support
 
@@ -32,3 +33,10 @@ assert not result.unsupported_algorithm, \
     "Unsupported algorithm: {}".format(result.unsupported_algorithm)
 
 support.print_data(sink)
+
+# Idiomatic interface.
+with pyme.Context() as c:
+    plaintext, _, _ = c.decrypt(open(support.make_filename("cipher-1.asc")))
+    assert len(plaintext) > 0
+    assert plaintext.find(b'Wenn Sie dies lesen k') >= 0, \
+        'Plaintext not found'

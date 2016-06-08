@@ -19,34 +19,38 @@
 
 import sys
 import os
+import pyme
 from pyme import core, constants
 import support
 
+def fail(msg):
+    raise RuntimeError(msg)
+
 def check_result(r, typ):
     if r.invalid_signers:
-        sys.exit("Invalid signer found: {}".format(r.invalid_signers.fpr))
+        fail("Invalid signer found: {}".format(r.invalid_signers.fpr))
 
     if len(r.signatures) != 1:
-        sys.exit("Unexpected number of signatures created")
+        fail("Unexpected number of signatures created")
 
     signature = r.signatures[0]
     if signature.type != typ:
-        sys.exit("Wrong type of signature created")
+        fail("Wrong type of signature created")
 
     if signature.pubkey_algo != constants.PK_DSA:
-        sys.exit("Wrong pubkey algorithm reported: {}".format(
+        fail("Wrong pubkey algorithm reported: {}".format(
             signature.pubkey_algo))
 
     if signature.hash_algo != constants.MD_SHA1:
-        sys.exit("Wrong hash algorithm reported: {}".format(
+        fail("Wrong hash algorithm reported: {}".format(
             signature.hash_algo))
 
     if signature.sig_class != 1:
-        sys.exit("Wrong signature class reported: {}".format(
+        fail("Wrong signature class reported: {}".format(
             signature.sig_class))
 
     if signature.fpr != "A0FF4590BB6122EDEF6E3C542D727CC768697734":
-        sys.exit("Wrong fingerprint reported: {}".format(signature.fpr))
+        fail("Wrong fingerprint reported: {}".format(signature.fpr))
 
 
 support.init_gpgme(constants.PROTOCOL_OpenPGP)
@@ -82,3 +86,35 @@ c.op_sign(source, sink, constants.SIG_MODE_CLEAR)
 result = c.op_sign_result()
 check_result(result, constants.SIG_MODE_CLEAR)
 support.print_data(sink)
+
+# Idiomatic interface.
+with pyme.Context(armor=True, textmode=True) as c:
+    message = "Hallo Leute\n".encode()
+    signed, _ = c.sign(message)
+    assert len(signed) > 0
+    assert signed.find(b'BEGIN PGP MESSAGE') > 0, 'Message not found'
+
+    signed, _ = c.sign(message, mode=pyme.constants.SIG_MODE_DETACH)
+    assert len(signed) > 0
+    assert signed.find(b'BEGIN PGP SIGNATURE') > 0, 'Signature not found'
+
+    signed, _ = c.sign(message, mode=pyme.constants.SIG_MODE_CLEAR)
+    assert len(signed) > 0
+    assert signed.find(b'BEGIN PGP SIGNED MESSAGE') > 0, 'Message not found'
+    assert signed.find(message) > 0, 'Message content not found'
+    assert signed.find(b'BEGIN PGP SIGNATURE') > 0, 'Signature not found'
+
+with pyme.Context() as c:
+    message = "Hallo Leute\n".encode()
+
+    c.signers = [c.get_key(support.sign_only, True)]
+    c.sign(message)
+
+    c.signers = [c.get_key(support.encrypt_only, True)]
+    try:
+        c.sign(message)
+    except pyme.errors.InvalidSigners as e:
+        assert len(e.signers) == 1
+        assert support.encrypt_only.endswith(e.signers[0].fpr)
+    else:
+        assert False, "Expected an InvalidSigners error, got none"

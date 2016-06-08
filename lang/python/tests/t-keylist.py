@@ -115,8 +115,15 @@ def check_global(key, uids, n_subkeys):
         "Key unexpectedly carries issuer name: {}".format(key.issuer_name)
     assert not key.chain_id, \
         "Key unexpectedly carries chain ID: {}".format(key.chain_id)
-    assert key.owner_trust == constants.VALIDITY_UNKNOWN, \
+
+    # Only key Alfa is trusted
+    assert key.uids[0].name == 'Alfa Test' \
+      or key.owner_trust == constants.VALIDITY_UNKNOWN, \
         "Key has unexpected owner trust: {}".format(key.owner_trust)
+    assert key.uids[0].name != 'Alfa Test' \
+      or key.owner_trust == constants.VALIDITY_ULTIMATE, \
+        "Key has unexpected owner trust: {}".format(key.owner_trust)
+
     assert len(key.subkeys) - 1 == n_subkeys, \
         "Key `{}' has unexpected number of subkeys".format(uids[0][0])
 
@@ -161,7 +168,10 @@ def check_subkey(fpr, which, subkey):
 def check_uid(which, ref, uid):
     assert not uid.revoked, which + " user ID unexpectedly revoked"
     assert not uid.invalid, which + " user ID unexpectedly invalid"
-    assert uid.validity == constants.VALIDITY_UNKNOWN, \
+    assert uid.validity == (constants.VALIDITY_UNKNOWN
+                            if uid.name.split()[0]
+                            not in {'Alfa', 'Alpha', 'Alice'} else
+                            constants.VALIDITY_ULTIMATE), \
       which + " user ID has unexpectedly validity: {}".format(uid.validity)
     assert not uid.signatures, which + " user ID unexpectedly signed"
     assert uid.name == ref[0], \

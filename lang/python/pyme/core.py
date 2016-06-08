@@ -25,6 +25,7 @@ and the 'Data' class describing buffers of data.
 """
 
 import re
+import os
 import weakref
 from . import pygpgme
 from .errors import errorcheck, GPGMEError
@@ -166,6 +167,303 @@ class Context(GpgmeWrapper):
 
     """
 
+    def __init__(self, armor=False, textmode=False, offline=False,
+                 signers=[], pinentry_mode=constants.PINENTRY_MODE_DEFAULT,
+                 wrapped=None):
+        """Construct a context object
+
+        Keyword arguments:
+        armor		-- enable ASCII armoring (default False)
+        textmode	-- enable canonical text mode (default False)
+        offline		-- do not contact external key sources (default False)
+        signers		-- list of keys used for signing (default [])
+        pinentry_mode	-- pinentry mode (default PINENTRY_MODE_DEFAULT)
+
+        """
+        if wrapped:
+            self.own = False
+        else:
+            tmp = pygpgme.new_gpgme_ctx_t_p()
+            errorcheck(pygpgme.gpgme_new(tmp))
+            wrapped = pygpgme.gpgme_ctx_t_p_value(tmp)
+            pygpgme.delete_gpgme_ctx_t_p(tmp)
+            self.own = True
+        super().__init__(wrapped)
+        self.armor = armor
+        self.textmode = textmode
+        self.offline = offline
+        self.signers = signers
+        self.pinentry_mode = pinentry_mode
+
+    def encrypt(self, plaintext, recipients=[], sign=True, sink=None,
+                passphrase=None, always_trust=False, add_encrypt_to=False,
+                prepare=False, expect_sign=False, compress=True):
+        """Encrypt data
+
+        Encrypt the given plaintext for the given recipients.  If the
+        list of recipients is empty, the data is encrypted
+        symmetrically with a passphrase.
+
+        The passphrase can be given as parameter, using a callback
+        registered at the context, or out-of-band via pinentry.
+
+        Keyword arguments:
+        recipients	-- list of keys to encrypt to
+        sign		-- sign plaintext (default True)
+        sink		-- write result to sink instead of returning it
+        passphrase	-- for symmetric encryption
+        always_trust	-- always trust the keys (default False)
+        add_encrypt_to	-- encrypt to configured additional keys (default False)
+        prepare		-- (ui) prepare for encryption (default False)
+        expect_sign	-- (ui) prepare for signing (default False)
+        compress	-- compress plaintext (default True)
+
+        Returns:
+        ciphertext	-- the encrypted data (or None if sink is given)
+        result		-- additional information about the encryption
+        sign_result	-- additional information about the signature(s)
+
+        Raises:
+        InvalidRecipients -- if encryption using a particular key failed
+        InvalidSigners	-- if signing using a particular key failed
+        GPGMEError	-- as signaled by the underlying library
+
+        """
+        ciphertext = sink if sink else Data()
+        flags = 0
+        flags |= always_trust * constants.ENCRYPT_ALWAYS_TRUST
+        flags |= (not add_encrypt_to) * constants.ENCRYPT_NO_ENCRYPT_TO
+        flags |= prepare * constants.ENCRYPT_PREPARE
+        flags |= expect_sign * constants.ENCRYPT_EXPECT_SIGN
+        flags |= (not compress) * constants.ENCRYPT_NO_COMPRESS
+
+        if passphrase != None:
+            old_pinentry_mode = self.pinentry_mode
+            old_passphrase_cb = getattr(self, '_passphrase_cb', None)
+            self.pinentry_mode = constants.PINENTRY_MODE_LOOPBACK
+            def passphrase_cb(hint, desc, prev_bad, hook=None):
+                return passphrase
+            self.set_passphrase_cb(passphrase_cb)
+
+        try:
+            if sign:
+                self.op_encrypt_sign(recipients, flags, plaintext, ciphertext)
+            else:
+                self.op_encrypt(recipients, flags, plaintext, ciphertext)
+        except errors.GPGMEError as e:
+            if e.getcode() == errors.UNUSABLE_PUBKEY:
+                result = self.op_encrypt_result()
+                if result.invalid_recipients:
+                    raise errors.InvalidRecipients(result.invalid_recipients)
+            if e.getcode() == errors.UNUSABLE_SECKEY:
+                sig_result = self.op_sign_result()
+                if sig_result.invalid_signers:
+                    raise errors.InvalidSigners(sig_result.invalid_signers)
+            raise
+        finally:
+            if passphrase != None:
+                self.pinentry_mode = old_pinentry_mode
+                if old_passphrase_cb:
+                    self.set_passphrase_cb(*old_passphrase_cb[1:])
+
+        result = self.op_encrypt_result()
+        assert not result.invalid_recipients
+        sig_result = self.op_sign_result() if sign else None
+        assert not sig_result or not sig_result.invalid_signers
+
+        cipherbytes = None
+        if not sink:
+            ciphertext.seek(0, os.SEEK_SET)
+            cipherbytes = ciphertext.read()
+        return cipherbytes, result, sig_result
+
+    def decrypt(self, ciphertext, sink=None, passphrase=None, verify=True):
+        """Decrypt data
+
+        Decrypt the given ciphertext and verify any signatures.  If
+        VERIFY is an iterable of keys, the ciphertext must be signed
+        by all those keys, otherwise an error is raised.
+
+        If the ciphertext is symmetrically encrypted using a
+        passphrase, that passphrase can be given as parameter, using a
+        callback registered at the context, or out-of-band via
+        pinentry.
+
+        Keyword arguments:
+        sink		-- write result to sink instead of returning it
+        passphrase	-- for symmetric decryption
+        verify		-- check signatures (default True)
+
+        Returns:
+        plaintext	-- the decrypted data (or None if sink is given)
+        result		-- additional information about the decryption
+        verify_result	-- additional information about the signature(s)
+
+        Raises:
+        UnsupportedAlgorithm -- if an unsupported algorithm was used
+        BadSignatures	-- if a bad signature is encountered
+        MissingSignatures -- if expected signatures are missing or bad
+        GPGMEError	-- as signaled by the underlying library
+
+        """
+        plaintext = sink if sink else Data()
+
+        if passphrase != None:
+            old_pinentry_mode = self.pinentry_mode
+            old_passphrase_cb = getattr(self, '_passphrase_cb', None)
+            self.pinentry_mode = constants.PINENTRY_MODE_LOOPBACK
+            def passphrase_cb(hint, desc, prev_bad, hook=None):
+                return passphrase
+            self.set_passphrase_cb(passphrase_cb)
+
+        try:
+            if verify:
+                self.op_decrypt_verify(ciphertext, plaintext)
+            else:
+                self.op_decrypt(ciphertext, plaintext)
+        finally:
+            if passphrase != None:
+                self.pinentry_mode = old_pinentry_mode
+                if old_passphrase_cb:
+                    self.set_passphrase_cb(*old_passphrase_cb[1:])
+
+        result = self.op_decrypt_result()
+        verify_result = self.op_verify_result() if verify else None
+        if result.unsupported_algorithm:
+            raise errors.UnsupportedAlgorithm(result.unsupported_algorithm)
+
+        if verify:
+            if any(s.status != errors.NO_ERROR
+                   for s in verify_result.signatures):
+                raise errors.BadSignatures(verify_result)
+
+        if verify and verify != True:
+            missing = list()
+            for key in verify:
+                ok = False
+                for subkey in key.subkeys:
+                    for sig in verify_result.signatures:
+                        if sig.summary & constants.SIGSUM_VALID == 0:
+                            continue
+                        if subkey.can_sign and subkey.fpr == sig.fpr:
+                            ok = True
+                            break
+                    if ok:
+                        break
+                if not ok:
+                    missing.append(key)
+            if missing:
+                raise errors.MissingSignatures(verify_result, missing)
+
+        plainbytes = None
+        if not sink:
+            plaintext.seek(0, os.SEEK_SET)
+            plainbytes = plaintext.read()
+        return plainbytes, result, verify_result
+
+    def sign(self, data, sink=None, mode=constants.SIG_MODE_NORMAL):
+        """Sign data
+
+        Sign the given data with either the configured default local
+        key, or the 'signers' keys of this context.
+
+        Keyword arguments:
+        mode		-- signature mode (default: normal, see below)
+        sink		-- write result to sink instead of returning it
+
+        Returns:
+        either
+          signed_data	-- encoded data and signature (normal mode)
+          signature	-- only the signature data (detached mode)
+          cleartext	-- data and signature as text (cleartext mode)
+            (or None if sink is given)
+        result		-- additional information about the signature(s)
+
+        Raises:
+        InvalidSigners	-- if signing using a particular key failed
+        GPGMEError	-- as signaled by the underlying library
+
+        """
+        signeddata = sink if sink else Data()
+
+        try:
+            self.op_sign(data, signeddata, mode)
+        except errors.GPGMEError as e:
+            if e.getcode() == errors.UNUSABLE_SECKEY:
+                result = self.op_sign_result()
+                if result.invalid_signers:
+                    raise errors.InvalidSigners(result.invalid_signers)
+            raise
+
+        result = self.op_sign_result()
+        assert not result.invalid_signers
+
+        signedbytes = None
+        if not sink:
+            signeddata.seek(0, os.SEEK_SET)
+            signedbytes = signeddata.read()
+        return signedbytes, result
+
+    def verify(self, signed_data, signature=None, sink=None, verify=[]):
+        """Verify signatures
+
+        Verify signatures over data.  If VERIFY is an iterable of
+        keys, the ciphertext must be signed by all those keys,
+        otherwise an error is raised.
+
+        Keyword arguments:
+        signature	-- detached signature data
+        sink		-- write result to sink instead of returning it
+
+        Returns:
+        data		-- the plain data
+            (or None if sink is given, or we verified a detached signature)
+        result		-- additional information about the signature(s)
+
+        Raises:
+        BadSignatures	-- if a bad signature is encountered
+        MissingSignatures -- if expected signatures are missing or bad
+        GPGMEError	-- as signaled by the underlying library
+
+        """
+        if signature:
+            # Detached signature, we don't return the plain text.
+            data = None
+        else:
+            data = sink if sink else Data()
+
+        if signature:
+            self.op_verify(signature, signed_data, None)
+        else:
+            self.op_verify(signed_data, None, data)
+
+        result = self.op_verify_result()
+        if any(s.status != errors.NO_ERROR for s in result.signatures):
+            raise errors.BadSignatures(result)
+
+        missing = list()
+        for key in verify:
+            ok = False
+            for subkey in key.subkeys:
+                for sig in result.signatures:
+                    if sig.summary & constants.SIGSUM_VALID == 0:
+                        continue
+                    if subkey.can_sign and subkey.fpr == sig.fpr:
+                        ok = True
+                        break
+                if ok:
+                    break
+            if not ok:
+                missing.append(key)
+        if missing:
+            raise errors.MissingSignatures(result, missing)
+
+        plainbytes = None
+        if data and not sink:
+            data.seek(0, os.SEEK_SET)
+            plainbytes = data.read()
+        return plainbytes, result
+
     @property
     def signers(self):
         """Keys used for signing"""
@@ -204,32 +502,6 @@ class Context(GpgmeWrapper):
         return 0
 
     _boolean_properties = {'armor', 'textmode', 'offline'}
-    def __init__(self, armor=False, textmode=False, offline=False,
-                 signers=[], pinentry_mode=constants.PINENTRY_MODE_DEFAULT,
-                 wrapped=None):
-        """Construct a context object
-
-        Keyword arguments:
-        armor		-- enable ASCII armoring (default False)
-        textmode	-- enable canonical text mode (default False)
-        offline		-- do not contact external key sources (default False)
-        signers		-- list of keys used for signing (default [])
-        pinentry_mode	-- pinentry mode (default PINENTRY_MODE_DEFAULT)
-        """
-        if wrapped:
-            self.own = False
-        else:
-            tmp = pygpgme.new_gpgme_ctx_t_p()
-            errorcheck(pygpgme.gpgme_new(tmp))
-            wrapped = pygpgme.gpgme_ctx_t_p_value(tmp)
-            pygpgme.delete_gpgme_ctx_t_p(tmp)
-            self.own = True
-        super().__init__(wrapped)
-        self.armor = armor
-        self.textmode = textmode
-        self.offline = offline
-        self.signers = signers
-        self.pinentry_mode = pinentry_mode
 
     def __del__(self):
         if not pygpgme:

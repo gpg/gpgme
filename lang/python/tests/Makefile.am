@@ -52,7 +52,7 @@ py_tests = t-wrapper.py \
 	t-idiomatic.py
 
 TESTS = initial.py $(py_tests) final.py
-EXTRA_DIST = support.py $(TESTS)
+EXTRA_DIST = support.py $(TESTS) encrypt-only.asc sign-only.asc
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ gpg.conf pubring.gpg~ \

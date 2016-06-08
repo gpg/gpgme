@@ -40,6 +40,20 @@ FEATURES
 
  * Fully object-oriented with convenient classes and modules.
 
+QUICK EXAMPLE
+-------------
+
+    >>> import pyme
+    >>> with pyme.Context() as c:
+    >>> with pyme.Context() as c:
+    ...     cipher, _, _ = c.encrypt("Hello world :)".encode(),
+    ...                              passphrase="abc")
+    ...     c.decrypt(cipher, passphrase="abc")
+    ...
+    (b'Hello world :)',
+     <pyme.results.DecryptResult object at 0x7f5ab8121080>,
+     <pyme.results.VerifyResult object at 0x7f5ab81219b0>)
+
 GENERAL OVERVIEW
 ----------------
 
@@ -78,59 +92,14 @@ do not appear explicitly anywhere. You can use dir() python built-in command
 on an object to see what methods and fields it has but their meaning can
 be found only in GPGME documentation.
 
-QUICK START SAMPLE PROGRAM
---------------------------
-This program is not for serious encryption, but for example purposes only!
-
-import sys
-import os
-from pyme import core, constants
-
-# Set up our input and output buffers.
-
-plain = core.Data('This is my message.')
-cipher = core.Data()
-
-# Initialize our context.
-
-c = core.Context()
-c.set_armor(1)
-
-# Set up the recipients.
-
-sys.stdout.write("Enter name of your recipient: ")
-sys.stdout.flush()
-name = sys.stdin.readline().strip()
-c.op_keylist_start(name, 0)
-r = c.op_keylist_next()
-
-# Do the encryption.
-
-c.op_encrypt([r], 1, plain, cipher)
-cipher.seek(0, os.SEEK_SET)
-sys.stdout.buffer.write(cipher.read())
-
-Note that although there is no explicit error checking done here, the
-Python GPGME library is automatically doing error-checking, and will
-raise an exception if there is any problem.
-
-This program is in the Pyme distribution as examples/simple.py.  The examples
-directory contains more advanced samples as well.
-
 FOR MORE INFORMATION
 --------------------
-PYME homepage: http://pyme.sourceforge.net
-GPGME documentation: http://pyme.sourceforge.net/doc/gpgme/index.html
-GPGME homepage: http://www.gnupg.org/gpgme.html
-
-Base classes: pyme.core (START HERE!)
-Error classes: pyme.errors
-Constants: pyme.constants
-Version information: pyme.version
-Utilities: pyme.util
-
-Base classes are documented at pyme.core.
+PYME3 homepage: https://www.gnupg.org/
+GPGME documentation: https://www.gnupg.org/documentation/manuals/gpgme/
 
 """
 
 __all__ = ['core', 'errors', 'constants', 'util', 'callbacks', 'version']
+
+from .core import Context
+from .core import Data
