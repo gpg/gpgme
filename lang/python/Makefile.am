@@ -20,7 +20,7 @@ EXTRA_DIST = README.rst
 SUBDIRS = tests
 
 # Cleanup gpgme.h from deprecated functions and typedefs.
-gpgme.h: ../../src/gpgme.h
+gpgme.h: ../../src/gpgme.h $(srcdir)/gpgme-h-clean.py
 	$(PYTHON) $(srcdir)/gpgme-h-clean.py $< >$@
 
 # For VPATH builds we need to copy some files because Python's

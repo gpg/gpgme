@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+# Copyright (C) 2016 g10 Code GmbH
 # Copyright (C) 2004,2008 Igor Belyi <belyi@users.sourceforge.net>
 #
 #    This library is free software; you can redistribute it and/or
@@ -21,8 +23,11 @@ if len(sys.argv) < 2:
     sys.stderr.write("Usage: %s gpgme.h\n" % sys.argv[0])
     sys.exit(1)
 
-deprec_func=re.compile('^(.*typedef.*|.*\(.*\))\s*_GPGME_DEPRECATED;\s*',re.S)
-line_break=re.compile(';|\\$|\\x0c|^\s*#');
+deprec_func = re.compile(r'^(.*typedef.*|.*\(.*\)|[^#]+\s+.+)'
+                         + r'\s*_GPGME_DEPRECATED(_OUTSIDE_GPGME)?;\s*',
+                         re.S)
+line_break = re.compile(';|\\$|\\x0c|^\s*#|{');
+
 try:
     gpgme = open(sys.argv[1])
     tmp = gpgme.readline()
