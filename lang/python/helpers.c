@@ -320,7 +320,10 @@ static gpgme_error_t pyPassphraseCb(void *hook,
     err_status = pygpgme_exception2code();
   } else {
     if (!retval) {
-      write(fd, "\n", 1);
+      if (write(fd, "\n", 1) < 0) {
+        err_status = gpgme_error_from_syserror ();
+        pygpgme_raise_exception (err_status);
+      }
     } else {
       char *buf;
       size_t len;
@@ -342,8 +345,15 @@ static gpgme_error_t pyPassphraseCb(void *hook,
           goto leave;
         }
 
-      write(fd, buf, len);
-      write(fd, "\n", 1);
+      if (write(fd, buf, len) < 0) {
+        err_status = gpgme_error_from_syserror ();
+        pygpgme_raise_exception (err_status);
+      }
+      if (! err_status && write(fd, "\n", 1) < 0) {
+        err_status = gpgme_error_from_syserror ();
+        pygpgme_raise_exception (err_status);
+      }
+
       Py_DECREF(retval);
     }
   }
@@ -512,17 +522,24 @@ gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
   Py_DECREF(pyargs);
   if (PyErr_Occurred()) {
     err_status = pygpgme_exception2code();
-    pygpgme_stash_callback_exception(self);
   } else {
     if (fd>=0 && retval && PyUnicode_Check(retval)) {
       const char *buffer;
       Py_ssize_t size;
 
       buffer = PyUnicode_AsUTF8AndSize(retval, &size);
-      write(fd, buffer, size);
-      write(fd, "\n", 1);
+      if (write(fd, buffer, size) < 0) {
+        err_status = gpgme_error_from_syserror ();
+        pygpgme_raise_exception (err_status);
+      }
+      if (! err_status && write(fd, "\n", 1) < 0) {
+        err_status = gpgme_error_from_syserror ();
+        pygpgme_raise_exception (err_status);
+      }
     }
   }
+  if (err_status)
+    pygpgme_stash_callback_exception(self);
 
   Py_XDECREF(retval);
   return err_status;
