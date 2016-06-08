@@ -183,18 +183,28 @@
 
 /* For gpgme_data_write, but should be universal.  */
 %typemap(in) (const void *buffer, size_t size) {
+  Py_ssize_t ssize;
+
   if ($input == Py_None)
     $1 = NULL, $2 = 0;
   else if (PyUnicode_Check($input))
-    $1 = PyUnicode_AsUTF8AndSize($input, (size_t *) &$2);
+    $1 = PyUnicode_AsUTF8AndSize($input, &ssize);
   else if (PyBytes_Check($input))
-    PyBytes_AsStringAndSize($input, (char **) &$1, (size_t *) &$2);
+    PyBytes_AsStringAndSize($input, (char **) &$1, &ssize);
   else {
     PyErr_Format(PyExc_TypeError,
                  "arg %d: expected str, bytes, or None, got %s",
 		 $argnum, $input->ob_type->tp_name);
     return NULL;
   }
+
+  if (! $1)
+    $2 = 0;
+  else
+    {
+      assert (ssize >= 0);
+      $2 = (size_t) ssize;
+    }
 }
 %typemap(freearg) (const void *buffer, size_t size) "";
 
