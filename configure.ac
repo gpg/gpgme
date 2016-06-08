@@ -363,7 +363,7 @@ if test "$found" = "1"; then
             enabled_languages=$(echo $enabled_languages | sed 's/python//')
         fi
     else
-        AM_PATH_PYTHON([3.3])
+        AM_PATH_PYTHON([3.4])
         AX_SWIG_PYTHON
 	if test -z "$PYTHON_VERSION"; then
            if test "$explicit_languages" = "1"; then

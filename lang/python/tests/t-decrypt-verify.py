@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import pyme
 from pyme import core, constants, errors
 import support
 
@@ -28,7 +29,7 @@ def check_verify_result(result, summary, fpr, status):
     assert errors.GPGMEError(sig.status).getcode() == status
     assert len(sig.notations) == 0
     assert not sig.wrong_key_usage
-    assert sig.validity == constants.VALIDITY_UNKNOWN
+    assert sig.validity == constants.VALIDITY_FULL
     assert errors.GPGMEError(sig.validity_reason).getcode() == errors.NO_ERROR
 
 support.init_gpgme(constants.PROTOCOL_OpenPGP)
@@ -45,6 +46,29 @@ assert not result.unsupported_algorithm, \
 support.print_data(sink)
 
 verify_result = c.op_verify_result()
-check_verify_result(verify_result, 0,
+check_verify_result(verify_result,
+                    constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
                     "A0FF4590BB6122EDEF6E3C542D727CC768697734",
                     errors.NO_ERROR)
+
+# Idiomatic interface.
+with pyme.Context() as c:
+    alpha = c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False)
+    bob = c.get_key("D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2", False)
+    plaintext, _, verify_result = \
+        c.decrypt(open(support.make_filename("cipher-2.asc")), verify=[alpha])
+    assert plaintext.find(b'Wenn Sie dies lesen k') >= 0, \
+        'Plaintext not found'
+    check_verify_result(verify_result,
+                        constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
+                        "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+                        errors.NO_ERROR)
+
+    try:
+        c.decrypt(open(support.make_filename("cipher-2.asc")),
+                  verify=[alpha, bob])
+    except errors.MissingSignatures as e:
+        assert len(e.missing) == 1
+        assert e.missing[0] == bob
+    else:
+        assert False, "Expected an error, got none"

@@ -134,3 +134,7 @@ Base classes are documented at pyme.core.
 """
 
 __all__ = ['core', 'errors', 'constants', 'util', 'callbacks', 'version']
+
+from .core import Context
+from .core import Data
+from .errors import GPGMEError

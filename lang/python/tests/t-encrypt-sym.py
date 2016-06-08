@@ -18,6 +18,7 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import os
+import pyme
 from pyme import core, constants
 import support
 
@@ -61,3 +62,22 @@ for passphrase in ("abc", b"abc"):
     plaintext = plain.read()
     assert plaintext == b"Hallo Leute\n", \
         "Wrong plaintext {!r}".format(plaintext)
+
+# Idiomatic interface.
+for passphrase in ("abc", b"abc"):
+    with pyme.Context(armor=True) as c:
+        # Check that the passphrase callback is not altered.
+        def f(*args):
+            assert False
+        c.set_passphrase_cb(f)
+
+        message = "Hallo Leute\n".encode()
+        ciphertext, _, _ = c.encrypt(message,
+                                     passphrase=passphrase,
+                                     sign=False)
+        assert ciphertext.find(b'BEGIN PGP MESSAGE') > 0, 'Marker not found'
+
+        plaintext, _, _ = c.decrypt(ciphertext, passphrase=passphrase)
+        assert plaintext == message, 'Message body not recovered'
+
+        assert c._passphrase_cb[1] == f, "Passphrase callback not restored"

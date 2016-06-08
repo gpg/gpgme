@@ -18,6 +18,7 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import pyme
 from pyme import core, constants
 import support
 
@@ -69,3 +70,26 @@ for recipients in (keys, []):
     check_result(result, constants.SIG_MODE_NORMAL)
 
     support.print_data(sink)
+
+
+# Idiomatic interface.
+with pyme.Context(armor=True) as c:
+    message = "Hallo Leute\n".encode()
+    ciphertext, _, sig_result = c.encrypt(message,
+                                          recipients=keys,
+                                          always_trust=True)
+    assert len(ciphertext) > 0
+    assert ciphertext.find(b'BEGIN PGP MESSAGE') > 0, 'Marker not found'
+    check_result(sig_result, constants.SIG_MODE_NORMAL)
+
+    c.signers = [c.get_key(support.sign_only, True)]
+    c.encrypt(message, recipients=keys, always_trust=True)
+
+    c.signers = [c.get_key(support.encrypt_only, True)]
+    try:
+        c.encrypt(message, recipients=keys, always_trust=True)
+    except pyme.errors.InvalidSigners as e:
+        assert len(e.signers) == 1
+        assert support.encrypt_only.endswith(e.signers[0].fpr)
+    else:
+        assert False, "Expected an InvalidSigners error, got none"

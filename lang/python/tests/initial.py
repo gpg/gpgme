@@ -19,6 +19,20 @@
 
 import os
 import subprocess
+import pyme
+import support
+support.init_gpgme(pyme.constants.PROTOCOL_OpenPGP)
 
 subprocess.check_call([os.path.join(os.getenv('top_srcdir'),
                                     "tests", "start-stop-agent"), "--start"])
+
+with pyme.Context() as c:
+    alpha = c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False)
+    bob = c.get_key("D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2", False)
+
+    # Mark alpha as trusted.  The signature verification tests expect
+    # this.
+    support.mark_key_trusted(c, alpha)
+
+    c.op_import(open(support.in_srcdir("encrypt-only.asc")))
+    c.op_import(open(support.in_srcdir("sign-only.asc")))

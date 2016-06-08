@@ -1,3 +1,4 @@
+# Copyright (C) 2016 g10 Code GmbH
 # Copyright (C) 2004,2008 Igor Belyi <belyi@users.sourceforge.net>
 # Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
@@ -17,12 +18,16 @@
 
 from . import pygpgme
 
-def process_constants(starttext, dict):
-    """Called by the constant libraries to load up the appropriate constants
-    from the C library."""
-    index = len(starttext)
-    for identifier in dir(pygpgme):
-        if not identifier.startswith(starttext):
-            continue
-        name = identifier[index:]
-        dict[name] = getattr(pygpgme, identifier)
+def process_constants(prefix, scope):
+    """Called by the constant modules to load up the constants from the C
+    library starting with PREFIX.  Matching constants will be inserted
+    into SCOPE with PREFIX stripped from the names.  Returns the names
+    of inserted constants.
+
+    """
+    index = len(prefix)
+    constants = {identifier[index:]: getattr(pygpgme, identifier)
+                 for identifier in dir(pygpgme)
+                 if identifier.startswith(prefix)}
+    scope.update(constants)
+    return list(constants.keys())

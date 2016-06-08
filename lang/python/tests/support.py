@@ -19,8 +19,17 @@ import sys
 import os
 from pyme import core
 
+# known keys
+alpha = "A0FF4590BB6122EDEF6E3C542D727CC768697734"
+bob = "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2"
+encrypt_only = "F52770D5C4DB41408D918C9F920572769B9FE19C"
+sign_only = "7CCA20CCDE5394CEE71C9F0BFED153F12F18F45D"
+
 def make_filename(name):
     return os.path.join(os.environ['top_srcdir'], 'tests', 'gpg', name)
+
+def in_srcdir(name):
+    return os.path.join(os.environ['srcdir'], name)
 
 def init_gpgme(proto):
     core.engine_check_version(proto)
@@ -28,5 +37,30 @@ def init_gpgme(proto):
 verbose = int(os.environ.get('verbose', 0)) > 1
 def print_data(data):
     if verbose:
-        data.seek(0, os.SEEK_SET)
-        sys.stdout.buffer.write(data.read())
+        try:
+            # See if it is a file-like object.
+            data.seek(0, os.SEEK_SET)
+            data = data.read()
+        except:
+            # Hope for the best.
+            pass
+        sys.stdout.buffer.write(data)
+
+def mark_key_trusted(ctx, key):
+    class Editor(object):
+        def __init__(self):
+            self.steps = ["trust", "save"]
+        def edit(self, status, args, out):
+            if args == "keyedit.prompt":
+                result = self.steps.pop(0)
+            elif args == "edit_ownertrust.value":
+                result = "5"
+            elif args == "edit_ownertrust.set_ultimate.okay":
+                result = "Y"
+            elif args == "keyedit.save.okay":
+                result = "Y"
+            else:
+                result = None
+            return result
+    with core.Data() as sink:
+        ctx.op_edit(key, Editor().edit, sink, sink)

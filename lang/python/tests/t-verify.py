@@ -18,12 +18,13 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import os
+import pyme
 from pyme import core, constants, errors
 import support
 
-test_text1 = "Just GNU it!\n"
-test_text1f= "Just GNU it?\n"
-test_sig1 = """-----BEGIN PGP SIGNATURE-----
+test_text1 = b"Just GNU it!\n"
+test_text1f= b"Just GNU it?\n"
+test_sig1 = b"""-----BEGIN PGP SIGNATURE-----
 
 iN0EABECAJ0FAjoS+i9FFIAAAAAAAwA5YmFyw7bDpMO8w58gZGFzIHdhcmVuIFVt
 bGF1dGUgdW5kIGpldHp0IGVpbiBwcm96ZW50JS1aZWljaGVuNRSAAAAAAAgAJGZv
@@ -34,7 +35,7 @@ dADGKXF/Hcb+AKCJWPphZCphduxSvrzH0hgzHdeQaA==
 -----END PGP SIGNATURE-----
 """
 
-test_sig2 = """-----BEGIN PGP MESSAGE-----
+test_sig2 = b"""-----BEGIN PGP MESSAGE-----
 
 owGbwMvMwCSoW1RzPCOz3IRxjXQSR0lqcYleSUWJTZOvjVdpcYmCu1+oQmaJIleH
 GwuDIBMDGysTSIqBi1MApi+nlGGuwDeHao53HBr+FoVGP3xX+kvuu9fCMJvl6IOf
@@ -44,7 +45,7 @@ y1kvP4y+8D5a11ang0udywsA
 """
 
 # A message with a prepended but unsigned plaintext packet.
-double_plaintext_sig = """-----BEGIN PGP MESSAGE-----
+double_plaintext_sig = b"""-----BEGIN PGP MESSAGE-----
 
 rDRiCmZvb2Jhci50eHRF4pxNVGhpcyBpcyBteSBzbmVha3kgcGxhaW50ZXh0IG1l
 c3NhZ2UKowGbwMvMwCSoW1RzPCOz3IRxTWISa6JebnG666MFD1wzSzJSixQ81XMV
@@ -55,10 +56,12 @@ UqVooWlGXHwNw/xg/fVzt9VNbtjtJ/fhUqYo0/LyCGEA
 -----END PGP MESSAGE-----
 """
 
-def check_result(result, summary, fpr, status, notation):
+def check_result(result, summary, validity, fpr, status, notation):
     assert len(result.signatures) == 1, "Unexpected number of signatures"
     sig = result.signatures[0]
-    assert sig.summary == summary, "Unexpected signature summary"
+    assert sig.summary == summary, \
+        "Unexpected signature summary: {}, want: {}".format(sig.summary,
+                                                            summary)
     assert sig.fpr == fpr
     assert errors.GPGMEError(sig.status).getcode() == status
 
@@ -83,7 +86,9 @@ def check_result(result, summary, fpr, status, notation):
         assert len(expected_notations) == 0
 
     assert not sig.wrong_key_usage
-    assert sig.validity == constants.VALIDITY_UNKNOWN
+    assert sig.validity == validity, \
+        "Unexpected signature validity: {}, want: {}".format(
+            sig.validity, validity)
     assert errors.GPGMEError(sig.validity_reason).getcode() == errors.NO_ERROR
 
 
@@ -96,7 +101,9 @@ text = core.Data(test_text1)
 sig = core.Data(test_sig1)
 c.op_verify(sig, text, None)
 result = c.op_verify_result()
-check_result(result, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+check_result(result, constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
+             constants.VALIDITY_FULL,
+             "A0FF4590BB6122EDEF6E3C542D727CC768697734",
              errors.NO_ERROR, True)
 
 
@@ -105,15 +112,17 @@ text = core.Data(test_text1f)
 sig.seek(0, os.SEEK_SET)
 c.op_verify(sig, text, None)
 result = c.op_verify_result()
-check_result(result, constants.SIGSUM_RED, "2D727CC768697734",
-             errors.BAD_SIGNATURE, False)
+check_result(result, constants.SIGSUM_RED, constants.VALIDITY_UNKNOWN,
+             "2D727CC768697734", errors.BAD_SIGNATURE, False)
 
 # Checking a normal signature.
 text = core.Data()
 sig = core.Data(test_sig2)
 c.op_verify(sig, None, text)
 result = c.op_verify_result()
-check_result(result, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+check_result(result, constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
+             constants.VALIDITY_FULL,
+             "A0FF4590BB6122EDEF6E3C542D727CC768697734",
              errors.NO_ERROR, False)
 
 # Checking an invalid message.
@@ -126,3 +135,54 @@ except Exception as e:
     assert e.getcode() == errors.BAD_DATA
 else:
     assert False, "Expected an error but got none."
+
+
+# Idiomatic interface.
+with pyme.Context(armor=True) as c:
+    # Checking a valid message.
+    _, result = c.verify(test_text1, test_sig1)
+    check_result(result, constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
+                 constants.VALIDITY_FULL,
+                 "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+                 errors.NO_ERROR, True)
+
+    # Checking a manipulated message.
+    try:
+        c.verify(test_text1f, test_sig1)
+    except errors.BadSignatures as e:
+        check_result(e.result, constants.SIGSUM_RED,
+                     constants.VALIDITY_UNKNOWN,
+                     "2D727CC768697734", errors.BAD_SIGNATURE, False)
+    else:
+        assert False, "Expected an error but got none."
+
+    # Checking a normal signature.
+    sig = core.Data(test_sig2)
+    data, result = c.verify(test_sig2)
+    check_result(result, constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
+                 constants.VALIDITY_FULL,
+                 "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+                 errors.NO_ERROR, False)
+    assert data == test_text1
+
+    # Checking an invalid message.
+    try:
+        c.verify(double_plaintext_sig)
+    except errors.GPGMEError as e:
+        assert e.getcode() == errors.BAD_DATA
+    else:
+        assert False, "Expected an error but got none."
+
+    alpha = c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False)
+    bob = c.get_key("D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2", False)
+
+    # Checking a valid message.
+    c.verify(test_text1, test_sig1, verify=[alpha])
+
+    try:
+        c.verify(test_text1, test_sig1, verify=[alpha, bob])
+    except errors.MissingSignatures as e:
+        assert len(e.missing) == 1
+        assert e.missing[0] == bob
+    else:
+        assert False, "Expected an error, got none"
