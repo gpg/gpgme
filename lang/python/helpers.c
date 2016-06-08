@@ -1,4 +1,5 @@
 /*
+# Copyright (C) 2016 g10 Code GmbH
 # Copyright (C) 2004 Igor Belyi <belyi@users.sourceforge.net>
 # Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
@@ -39,6 +40,25 @@ void pygpgme_exception_init(void) {
       Py_XINCREF(GPGMEError);
     }
   }
+}
+
+static PyObject *
+pygpgme_raise_exception(gpgme_error_t err)
+{
+  PyObject *e;
+
+  pygpgme_exception_init();
+  if (GPGMEError == NULL)
+    return PyErr_Format(PyExc_RuntimeError, "Got gpgme_error_t %d", err);
+
+  e = PyObject_CallFunction(GPGMEError, "l", (long) err);
+  if (e == NULL)
+    return NULL;
+
+  PyErr_SetObject(GPGMEError, e);
+  Py_DECREF(e);
+
+  return NULL;	/* raise */
 }
 
 gpgme_error_t pygpgme_exception2code(void) {
