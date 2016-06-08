@@ -206,64 +206,72 @@ object_to_gpgme_t(PyObject *input, const char *objtype, int argnum)
    objects with a fileno method, returning it in WRAPPER.  This object
    must be de-referenced when no longer needed.  */
 PyObject *
-object_to_gpgme_data_t(PyObject *input, int argnum, PyObject **wrapper)
+object_to_gpgme_data_t(PyObject *input, int argnum, gpgme_data_t *wrapper,
+                       PyObject **bytesio, Py_buffer *view)
 {
-  static PyObject *Data = NULL;
-  PyObject *data = input;
+  gpgme_error_t err;
+  PyObject *data;
   PyObject *fd;
-  PyObject *result;
-  *wrapper = NULL;
 
-  if (Data == NULL) {
-    PyObject *core;
-    PyObject *from_list = PyList_New(0);
-    core = PyImport_ImportModuleLevel("core", PyEval_GetGlobals(),
-                                      PyEval_GetLocals(), from_list, 1);
-    Py_XDECREF(from_list);
-    if (core) {
-      Data = PyDict_GetItemString(PyModule_GetDict(core), "Data");
-      Py_XINCREF(Data);
-    }
-    else
-      return NULL;
-  }
-
+  /* See if it is a file-like object with file number.  */
   fd = PyObject_CallMethod(input, "fileno", NULL);
   if (fd) {
-    /* File-like object with file number.  */
-    PyObject *args = NULL;
-    PyObject *kw = NULL;
-
-    /* We don't need the fd, as we have no constructor accepting file
-       descriptors directly.  */
+    err = gpgme_data_new_from_fd(wrapper, (int) PyLong_AsLong(fd));
     Py_DECREF(fd);
+    if (err)
+      return pygpgme_raise_exception (err);
 
-    args = PyTuple_New(0);
-    kw = PyDict_New();
-    if (args == NULL || kw == NULL)
-      {
-      fail:
-        Py_XDECREF(args);
-        Py_XDECREF(kw);
-        return NULL;
-      }
-
-    if (PyDict_SetItemString(kw, "file", input) < 0)
-      goto fail;
-
-    *wrapper = PyObject_Call(Data, args, kw);
-    if (*wrapper == NULL)
-      goto fail;
-
-    Py_DECREF(args);
-    Py_DECREF(kw);
-    data = *wrapper;
+    return pygpgme_wrap_gpgme_data_t(*wrapper);
   }
   else
     PyErr_Clear();
 
-  result = object_to_gpgme_t(data, "gpgme_data_t", argnum);
-  return result;
+  /* No?  Maybe it implements the buffer protocol.  */
+  data = PyObject_CallMethod(input, "getbuffer", NULL);
+  if (data)
+    {
+      /* Save a reference to input, which seems to be a BytesIO
+         object.  */
+      Py_INCREF(input);
+      *bytesio = input;
+    }
+  else
+    {
+      PyErr_Clear();
+
+      /* No, but maybe the user supplied a buffer object?  */
+      data = input;
+    }
+
+  /* Do we have a buffer object?  */
+  if (PyObject_CheckBuffer(data))
+    {
+      if (PyObject_GetBuffer(data, view, PyBUF_SIMPLE) < 0)
+        return NULL;
+
+      if (data != input)
+        Py_DECREF(data);
+
+      assert (view->ndim == 1);
+      assert (view->shape == NULL);
+      assert (view->strides == NULL);
+      assert (view->suboffsets == NULL);
+
+      err = gpgme_data_new_from_mem(wrapper, view->buf, (size_t) view->len, 0);
+      if (err)
+        return pygpgme_raise_exception (err);
+
+      return pygpgme_wrap_gpgme_data_t(*wrapper);
+    }
+
+  /* As last resort we assume it is a wrapped data object.  */
+  if (PyObject_HasAttrString(data, "_getctype"))
+    return object_to_gpgme_t(data, "gpgme_data_t", argnum);
+
+  return PyErr_Format(PyExc_TypeError,
+                      "arg %d: expected pyme.Data, file, or an object "
+                      "implementing the buffer protocol, got %s",
+                      argnum, data->ob_type->tp_name);
 }
 
 

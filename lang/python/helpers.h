@@ -1,4 +1,5 @@
 /*
+# Copyright (C) 2016 g10 Code GmbH
 # Copyright (C) 2004 Igor Belyi <belyi@users.sourceforge.net>
 # Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
@@ -30,7 +31,8 @@ gpgme_error_t pygpgme_exception2code(void);
 
 PyObject *object_to_gpgme_t(PyObject *input, const char *objtype, int argnum);
 PyObject *object_to_gpgme_data_t(PyObject *input, int argnum,
-				 PyObject **wrapper);
+				 gpgme_data_t *wrapper,
+				 PyObject **bytesio, Py_buffer *view);
 
 void pygpgme_clear_generic_cb(PyObject **cb);
 PyObject *pygpgme_raise_callback_exception(PyObject *self);
@@ -47,3 +49,6 @@ gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
 gpgme_error_t pygpgme_data_new_from_cbs(gpgme_data_t *r_data,
                                         PyObject *pycbs,
                                         PyObject **freelater);
+
+/* SWIG support for helpers.c  */
+PyObject *pygpgme_wrap_gpgme_data_t(gpgme_data_t data);

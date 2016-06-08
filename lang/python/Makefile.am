@@ -45,7 +45,7 @@ gpgme_wrap.c pyme/pygpgme.py: gpgme.i errors.i gpgme.h copystamp
 	  $<
 
 all-local: gpgme_wrap.c pyme/pygpgme.py copystamp
-	CFLAGS="$(CFLAGS)" \
+	CFLAGS="$(CFLAGS) -I$(top_srcdir)" \
 	  $(PYTHON) setup.py build --verbose
 
 clean-local:

@@ -114,17 +114,19 @@
 }
 
 // Special handling for references to our objects.
-%typemap(in) gpgme_data_t DATAIN (PyObject *wrapper) {
+%typemap(in) gpgme_data_t DATAIN (gpgme_data_t wrapper = NULL,
+                                  PyObject *bytesio = NULL, Py_buffer view) {
   /* If we create a temporary wrapper object, we will store it in
      wrapperN, where N is $argnum.  Here in this fragment, SWIG will
      automatically append $argnum.  */
-  wrapper = NULL;
+  memset(&view, 0, sizeof view);
   if ($input == Py_None)
     $1 = NULL;
   else {
-    PyObject *pypointer = NULL;
-
-    if((pypointer=object_to_gpgme_data_t($input, $argnum, &wrapper)) == NULL)
+    PyObject *pypointer;
+    pypointer = object_to_gpgme_data_t($input, $argnum, &wrapper,
+                                       &bytesio, &view);
+    if (pypointer == NULL)
       return NULL;
 
     /* input = $input, 1 = $1, 1_descriptor = $1_descriptor */
@@ -141,8 +143,79 @@
 }
 
 %typemap(freearg) gpgme_data_t DATAIN {
+  /* See whether we need to update the Python buffer.  */
+  if (resultobj && wrapper$argnum && view$argnum.buf
+      && wrapper$argnum->data.mem.buffer != NULL)
+    {
+      /* The buffer is dirty.  */
+      if (view$argnum.readonly)
+        {
+          Py_XDECREF(resultobj);
+          resultobj = NULL;
+          PyErr_SetString(PyExc_ValueError, "cannot update read-only buffer");
+        }
+
+      /* See if we need to truncate the buffer.  */
+      if (resultobj && view$argnum.len != wrapper$argnum->data.mem.length)
+        {
+          if (bytesio$argnum == NULL)
+            {
+              Py_XDECREF(resultobj);
+              resultobj = NULL;
+              PyErr_SetString(PyExc_ValueError, "cannot resize buffer");
+            }
+          else
+            {
+              PyObject *retval;
+              PyBuffer_Release(&view$argnum);
+              retval = PyObject_CallMethod(bytesio$argnum, "truncate", "l",
+                                           (long)
+                                           wrapper$argnum->data.mem.length);
+              if (retval == NULL)
+                {
+                  Py_XDECREF(resultobj);
+                  resultobj = NULL;
+                }
+              else
+                {
+                  Py_DECREF(retval);
+
+                  retval = PyObject_CallMethod(bytesio$argnum, "getbuffer", NULL);
+                  if (retval == NULL
+                      || PyObject_GetBuffer(retval, &view$argnum,
+                                            PyBUF_SIMPLE|PyBUF_WRITABLE) < 0)
+                    {
+                      Py_XDECREF(resultobj);
+                      resultobj = NULL;
+                    }
+
+                  Py_XDECREF(retval);
+
+                  if (resultobj && view$argnum.len
+                      != wrapper$argnum->data.mem.length)
+                    {
+                      Py_XDECREF(resultobj);
+                      resultobj = NULL;
+                      PyErr_Format(PyExc_ValueError,
+                                   "Expected buffer of length %zu, got %zi",
+                                   wrapper$argnum->data.mem.length,
+                                   view$argnum.len);
+                    }
+                }
+            }
+        }
+
+      if (resultobj)
+        memcpy(view$argnum.buf, wrapper$argnum->data.mem.buffer,
+               wrapper$argnum->data.mem.length);
+    }
+
   /* Free the temporary wrapper, if any.  */
-  Py_XDECREF(wrapper$argnum);
+  if (wrapper$argnum)
+    gpgme_data_release(wrapper$argnum);
+  Py_XDECREF (bytesio$argnum);
+  if (wrapper$argnum && view$argnum.buf)
+    PyBuffer_Release(&view$argnum);
 }
 
 %apply gpgme_data_t DATAIN {gpgme_data_t plain, gpgme_data_t cipher,
@@ -240,7 +313,10 @@
    version for SWIG.  We do, however, want to hide certain fields on
    some structs, which we provide prior to including the version for
    SWIG.  */
- %{ #include <gpgme.h> %}
+%{
+#include <gpgme.h>
+#include "src/data.h"	/* For struct gpgme_data.  */
+%}
 
 /* This is for notations, where we want to hide the length fields, and
    the unused bit field block.  */
@@ -291,5 +367,13 @@ FILE *fdopen(int fildes, const char *mode);
 
 %{
 #include "helpers.h"
+
+/* SWIG support for helpers.c  */
+PyObject *
+pygpgme_wrap_gpgme_data_t(gpgme_data_t data)
+{
+  return SWIG_NewPointerObj(data, SWIGTYPE_p_gpgme_data, 0);
+}
 %}
+
 %include "helpers.h"
