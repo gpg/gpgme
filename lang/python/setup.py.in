@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-
-# Module: installer
-# COPYRIGHT #
+# Copyright (C) 2016 g10 Code GmbH
 # Copyright (C) 2004 Igor Belyi <belyi@users.sourceforge.net>
 # Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
@@ -19,14 +17,10 @@
 #    You should have received a copy of the GNU Lesser General Public
 #    License along with this library; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
-# END OF COPYRIGHT #
 
 from distutils.core import setup, Extension
 import os, os.path, sys
 import subprocess
-
-sys.path.insert(0, os.path.dirname(__file__))
-import pyme.version
 
 def getconfig(what):
     confdata = subprocess.Popen(["../../src/gpgme-config", "--%s" % what],
@@ -80,14 +74,13 @@ swige = Extension("pyme._pygpgme", ["gpgme_wrap.c", "helpers.c"],
                   extra_link_args = libs)
 
 setup(name = "pyme",
-      version=pyme.version.versionstr,
-      description=pyme.version.description,
-      author=pyme.version.author,
-      author_email=pyme.version.author_email,
-      url=pyme.version.homepage,
+      version="@VERSION@",
+      description='Python bindings for GPGME GnuPG cryptography library',
+      author='The GnuPG hackers',
+      author_email='gnupg-devel@gnupg.org',
+      url='https://www.gnupg.org',
       ext_modules=[swige],
       packages = ['pyme', 'pyme.constants', 'pyme.constants.data',
                   'pyme.constants.keylist', 'pyme.constants.sig'],
-      license=pyme.version.copyright + \
-                ", Licensed under the GPL version 2 and the LGPL version 2.1"
+      license="LGPL2.1+ (the library), GPL2+ (tests and examples)"
 )
