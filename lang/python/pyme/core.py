@@ -27,6 +27,7 @@ and the 'Data' class describing buffers of data.
 import weakref
 from . import pygpgme
 from .errors import errorcheck, GPGMEError
+from . import constants
 from . import errors
 
 class GpgmeWrapper(object):
@@ -41,12 +42,15 @@ class GpgmeWrapper(object):
         self.wrapped = wrapped
 
     def __repr__(self):
-        return '<instance of %s.%s with GPG object at %s>' % \
-               (__name__, self.__class__.__name__,
-                self.wrapped)
+        return '<{}/{!r}>'.format(super().__repr__(), self.wrapped)
 
     def __str__(self):
-        return repr(self)
+        acc = ['{}.{}'.format(__name__, self.__class__.__name__)]
+        flags = [f for f in self._boolean_properties if getattr(self, f)]
+        if flags:
+            acc.append('({})'.format(' '.join(flags)))
+
+        return '<{}>'.format(' '.join(acc))
 
     def __hash__(self):
         return hash(repr(self.wrapped))
@@ -77,10 +81,35 @@ class GpgmeWrapper(object):
         returning gpgme_error_t."""
         raise NotImplementedError()
 
+    """The set of all boolean properties"""
+    _boolean_properties = set()
+
+    def __wrap_boolean_property(self, key, do_set=False, value=None):
+        get_func = getattr(pygpgme,
+                           "{}get_{}".format(self._getnameprepend(), key))
+        set_func = getattr(pygpgme,
+                           "{}set_{}".format(self._getnameprepend(), key))
+        def get(slf):
+            return bool(get_func(slf.wrapped))
+        def set_(slf, value):
+            set_func(slf.wrapped, bool(value))
+
+        p = property(get, set_, doc="{} flag".format(key))
+        setattr(self.__class__, key, p)
+
+        if do_set:
+            set_(self, bool(value))
+        else:
+            return get(self)
+
     def __getattr__(self, key):
-        """On-the-fly generation of wrapper methods."""
+        """On-the-fly generation of wrapper methods and properties"""
         if key[0] == '_' or self._getnameprepend() == None:
             return None
+
+        if key in self._boolean_properties:
+            return self.__wrap_boolean_property(key)
+
         name = self._getnameprepend() + key
         func = getattr(pygpgme, name)
 
@@ -109,6 +138,13 @@ class GpgmeWrapper(object):
 
         return wrapper
 
+    def __setattr__(self, key, value):
+        """On-the-fly generation of properties"""
+        if key in self._boolean_properties:
+            self.__wrap_boolean_property(key, True, value)
+        else:
+            super().__setattr__(key, value)
+
 class Context(GpgmeWrapper):
     """Context for cryptographic operations
 
@@ -121,6 +157,29 @@ class Context(GpgmeWrapper):
     Access to a context must be synchronized.
 
     """
+
+    @property
+    def signers(self):
+        """Keys used for signing"""
+        return [self.signers_enum(i) for i in range(self.signers_count())]
+    @signers.setter
+    def signers(self, signers):
+        old = self.signers
+        self.signers_clear()
+        try:
+            for key in signers:
+                self.signers_add(key)
+        except:
+            self.signers = old
+            raise
+
+    @property
+    def pinentry_mode(self):
+        """Pinentry mode"""
+        return self.get_pinentry_mode()
+    @pinentry_mode.setter
+    def pinentry_mode(self, value):
+        self.set_pinentry_mode(value)
 
     def _getctype(self):
         return 'gpgme_ctx_t'
@@ -139,7 +198,19 @@ class Context(GpgmeWrapper):
             return 1
         return 0
 
-    def __init__(self, wrapped=None):
+    _boolean_properties = {'armor', 'textmode', 'offline'}
+    def __init__(self, armor=False, textmode=False, offline=False,
+                 signers=[], pinentry_mode=constants.PINENTRY_MODE_DEFAULT,
+                 wrapped=None):
+        """Construct a context object
+
+        Keyword arguments:
+        armor		-- enable ASCII armoring (default False)
+        textmode	-- enable canonical text mode (default False)
+        offline		-- do not contact external key sources (default False)
+        signers		-- list of keys used for signing (default [])
+        pinentry_mode	-- pinentry mode (default PINENTRY_MODE_DEFAULT)
+        """
         if wrapped:
             self.own = False
         else:
@@ -152,6 +223,11 @@ class Context(GpgmeWrapper):
         self.last_passcb = None
         self.last_progresscb = None
         self.last_statuscb = None
+        self.armor = armor
+        self.textmode = textmode
+        self.offline = offline
+        self.signers = signers
+        self.pinentry_mode = pinentry_mode
 
     def __del__(self):
         if not pygpgme:
