@@ -34,21 +34,18 @@ PyObject *object_to_gpgme_data_t(PyObject *input, int argnum,
 				 gpgme_data_t *wrapper,
 				 PyObject **bytesio, Py_buffer *view);
 
-void pygpgme_clear_generic_cb(PyObject **cb);
 PyObject *pygpgme_raise_callback_exception(PyObject *self);
 
-void pygpgme_set_passphrase_cb(gpgme_ctx_t ctx, PyObject *cb,
-			       PyObject **freelater);
-void pygpgme_set_progress_cb(gpgme_ctx_t ctx, PyObject *cb, PyObject **freelater);
-void pygpgme_set_status_cb(gpgme_ctx_t ctx, PyObject *cb,
-                           PyObject **freelater);
+PyObject *pygpgme_set_passphrase_cb(PyObject *self, PyObject *cb);
+PyObject *pygpgme_set_progress_cb(PyObject *self, PyObject *cb);
+PyObject *pygpgme_set_status_cb(PyObject *self, PyObject *cb);
 
 gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
 		       const char *args, int fd);
 
-gpgme_error_t pygpgme_data_new_from_cbs(gpgme_data_t *r_data,
-                                        PyObject *pycbs,
-                                        PyObject **freelater);
+PyObject *pygpgme_data_new_from_cbs(PyObject *self, PyObject *pycbs,
+				    gpgme_data_t *r_data);
 
 /* SWIG support for helpers.c  */
 PyObject *pygpgme_wrap_gpgme_data_t(gpgme_data_t data);
+gpgme_ctx_t pygpgme_unwrap_gpgme_ctx_t(PyObject *wrapped);

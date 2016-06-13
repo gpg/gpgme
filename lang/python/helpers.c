@@ -76,10 +76,6 @@ gpgme_error_t pygpgme_exception2code(void) {
   return err_status;
 }
 
-void pygpgme_clear_generic_cb(PyObject **cb) {
-  Py_DECREF(*cb);
-}
-
 /* Exception support for callbacks.  */
 #define EXCINFO	"_callback_excinfo"
 
@@ -293,6 +289,7 @@ static gpgme_error_t pyPassphraseCb(void *hook,
   pygpgme_exception_init();
 
   assert (PyTuple_Check(pyhook));
+  assert (PyTuple_Size(pyhook) == 2 || PyTuple_Size(pyhook) == 3);
   self = PyTuple_GetItem(pyhook, 0);
   func = PyTuple_GetItem(pyhook, 1);
   if (PyTuple_Size(pyhook) == 3) {
@@ -374,15 +371,47 @@ static gpgme_error_t pyPassphraseCb(void *hook,
   return err_status;
 }
 
-void pygpgme_set_passphrase_cb(gpgme_ctx_t ctx, PyObject *cb,
-			       PyObject **freelater) {
+PyObject *
+pygpgme_set_passphrase_cb(PyObject *self, PyObject *cb) {
+  PyObject *wrapped;
+  gpgme_ctx_t ctx;
+
+  wrapped = PyObject_GetAttrString(self, "wrapped");
+  if (wrapped == NULL)
+    {
+      assert (PyErr_Occurred ());
+      return NULL;
+    }
+
+  ctx = pygpgme_unwrap_gpgme_ctx_t(wrapped);
+  Py_DECREF(wrapped);
+  if (ctx == NULL)
+    {
+      if (cb == Py_None)
+        goto out;
+      else
+        return PyErr_Format(PyExc_RuntimeError, "wrapped is NULL");
+    }
+
   if (cb == Py_None) {
     gpgme_set_passphrase_cb(ctx, NULL, NULL);
-    return;
+    PyObject_SetAttrString(self, "_passphrase_cb", Py_None);
+    goto out;
   }
-  Py_INCREF(cb);
-  *freelater = cb;
-  gpgme_set_passphrase_cb(ctx, (gpgme_passphrase_cb_t)pyPassphraseCb, (void *) cb);
+
+  if (! PyTuple_Check(cb))
+    return PyErr_Format(PyExc_TypeError, "cb must be a tuple");
+  if (PyTuple_Size(cb) != 2 && PyTuple_Size(cb) != 3)
+    return PyErr_Format(PyExc_TypeError,
+                        "cb must be a tuple of size 2 or 3");
+
+  gpgme_set_passphrase_cb(ctx, (gpgme_passphrase_cb_t) pyPassphraseCb,
+                          (void *) cb);
+  PyObject_SetAttrString(self, "_passphrase_cb", cb);
+
+ out:
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 static void pyProgressCb(void *hook, const char *what, int type, int current,
@@ -392,6 +421,7 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
   PyObject *self = NULL;
 
   assert (PyTuple_Check(pyhook));
+  assert (PyTuple_Size(pyhook) == 2 || PyTuple_Size(pyhook) == 3);
   self = PyTuple_GetItem(pyhook, 0);
   func = PyTuple_GetItem(pyhook, 1);
   if (PyTuple_Size(pyhook) == 3) {
@@ -423,14 +453,46 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
   Py_XDECREF(retval);
 }
 
-void pygpgme_set_progress_cb(gpgme_ctx_t ctx, PyObject *cb, PyObject **freelater){
+PyObject *
+pygpgme_set_progress_cb(PyObject *self, PyObject *cb) {
+  PyObject *wrapped;
+  gpgme_ctx_t ctx;
+
+  wrapped = PyObject_GetAttrString(self, "wrapped");
+  if (wrapped == NULL)
+    {
+      assert (PyErr_Occurred ());
+      return NULL;
+    }
+
+  ctx = pygpgme_unwrap_gpgme_ctx_t(wrapped);
+  Py_DECREF(wrapped);
+  if (ctx == NULL)
+    {
+      if (cb == Py_None)
+        goto out;
+      else
+        return PyErr_Format(PyExc_RuntimeError, "wrapped is NULL");
+    }
+
   if (cb == Py_None) {
     gpgme_set_progress_cb(ctx, NULL, NULL);
-    return;
+    PyObject_SetAttrString(self, "_progress_cb", Py_None);
+    goto out;
   }
-  Py_INCREF(cb);
-  *freelater = cb;
+
+  if (! PyTuple_Check(cb))
+    return PyErr_Format(PyExc_TypeError, "cb must be a tuple");
+  if (PyTuple_Size(cb) != 2 && PyTuple_Size(cb) != 3)
+    return PyErr_Format(PyExc_TypeError,
+                        "cb must be a tuple of size 2 or 3");
+
   gpgme_set_progress_cb(ctx, (gpgme_progress_cb_t) pyProgressCb, (void *) cb);
+  PyObject_SetAttrString(self, "_progress_cb", cb);
+
+ out:
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 /* Status callbacks.  */
@@ -488,15 +550,46 @@ static gpgme_error_t pyStatusCb(void *hook, const char *keyword,
   return err;
 }
 
-void pygpgme_set_status_cb(gpgme_ctx_t ctx, PyObject *cb,
-                           PyObject **freelater) {
+PyObject *
+pygpgme_set_status_cb(PyObject *self, PyObject *cb) {
+  PyObject *wrapped;
+  gpgme_ctx_t ctx;
+
+  wrapped = PyObject_GetAttrString(self, "wrapped");
+  if (wrapped == NULL)
+    {
+      assert (PyErr_Occurred ());
+      return NULL;
+    }
+
+  ctx = pygpgme_unwrap_gpgme_ctx_t(wrapped);
+  Py_DECREF(wrapped);
+  if (ctx == NULL)
+    {
+      if (cb == Py_None)
+        goto out;
+      else
+        return PyErr_Format(PyExc_RuntimeError, "wrapped is NULL");
+    }
+
   if (cb == Py_None) {
     gpgme_set_status_cb(ctx, NULL, NULL);
-    return;
+    PyObject_SetAttrString(self, "_status_cb", Py_None);
+    goto out;
   }
-  Py_INCREF(cb);
-  *freelater = cb;
+
+  if (! PyTuple_Check(cb))
+    return PyErr_Format(PyExc_TypeError, "cb must be a tuple");
+  if (PyTuple_Size(cb) != 2 && PyTuple_Size(cb) != 3)
+    return PyErr_Format(PyExc_TypeError,
+                        "cb must be a tuple of size 2 or 3");
+
   gpgme_set_status_cb(ctx, (gpgme_status_cb_t) pyStatusCb, (void *) cb);
+  PyObject_SetAttrString(self, "_status_cb", cb);
+
+ out:
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 /* Edit callbacks.  */
@@ -775,9 +868,10 @@ static void pyDataReleaseCb(void *hook)
     pygpgme_stash_callback_exception(self);
 }
 
-gpgme_error_t pygpgme_data_new_from_cbs(gpgme_data_t *r_data,
-                                        PyObject *pycbs,
-                                        PyObject **freelater)
+PyObject *
+pygpgme_data_new_from_cbs(PyObject *self,
+                          PyObject *pycbs,
+                          gpgme_data_t *r_data)
 {
   static struct gpgme_data_cbs cbs = {
     pyDataReadCb,
@@ -785,12 +879,20 @@ gpgme_error_t pygpgme_data_new_from_cbs(gpgme_data_t *r_data,
     pyDataSeekCb,
     pyDataReleaseCb,
   };
+  gpgme_error_t err;
 
-  assert (PyTuple_Check(pycbs));
-  assert (PyTuple_Size(pycbs) == 5 || PyTuple_Size(pycbs) == 6);
+  if (! PyTuple_Check(pycbs))
+    return PyErr_Format(PyExc_TypeError, "pycbs must be a tuple");
+  if (PyTuple_Size(pycbs) != 5 && PyTuple_Size(pycbs) != 6)
+    return PyErr_Format(PyExc_TypeError,
+                        "pycbs must be a tuple of size 5 or 6");
 
-  Py_INCREF(pycbs);
-  *freelater = pycbs;
+  err = gpgme_data_new_from_cbs(r_data, &cbs, (void *) pycbs);
+  if (err)
+    return pygpgme_raise_exception(err);
 
-  return gpgme_data_new_from_cbs(r_data, &cbs, (void *) pycbs);
+  PyObject_SetAttrString(self, "_data_cbs", pycbs);
+
+  Py_INCREF(Py_None);
+  return Py_None;
 }

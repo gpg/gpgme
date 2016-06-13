@@ -220,9 +220,6 @@ class Context(GpgmeWrapper):
             pygpgme.delete_gpgme_ctx_t_p(tmp)
             self.own = True
         super().__init__(wrapped)
-        self.last_passcb = None
-        self.last_progresscb = None
-        self.last_statuscb = None
         self.armor = armor
         self.textmode = textmode
         self.offline = offline
@@ -246,30 +243,6 @@ class Context(GpgmeWrapper):
         return self
     def __exit__(self, type, value, tb):
         self.__del__()
-
-    def _free_passcb(self):
-        if self.last_passcb != None:
-            if pygpgme.pygpgme_clear_generic_cb:
-                pygpgme.pygpgme_clear_generic_cb(self.last_passcb)
-            if pygpgme.delete_PyObject_p_p:
-                pygpgme.delete_PyObject_p_p(self.last_passcb)
-            self.last_passcb = None
-
-    def _free_progresscb(self):
-        if self.last_progresscb != None:
-            if pygpgme.pygpgme_clear_generic_cb:
-                pygpgme.pygpgme_clear_generic_cb(self.last_progresscb)
-            if pygpgme.delete_PyObject_p_p:
-                pygpgme.delete_PyObject_p_p(self.last_progresscb)
-            self.last_progresscb = None
-
-    def _free_statuscb(self):
-        if self.last_statuscb != None:
-            if pygpgme.pygpgme_clear_generic_cb:
-                pygpgme.pygpgme_clear_generic_cb(self.last_statuscb)
-            if pygpgme.delete_PyObject_p_p:
-                pygpgme.delete_PyObject_p_p(self.last_statuscb)
-            self.last_statuscb = None
 
     def op_keylist_all(self, *args, **kwargs):
         self.op_keylist_start(*args, **kwargs)
@@ -341,16 +314,18 @@ class Context(GpgmeWrapper):
 
         Please see the GPGME manual for more information.
         """
-        self._free_passcb()
         if func == None:
             hookdata = None
         else:
-            self.last_passcb = pygpgme.new_PyObject_p_p()
             if hook == None:
                 hookdata = (weakref.ref(self), func)
             else:
                 hookdata = (weakref.ref(self), func, hook)
-        pygpgme.pygpgme_set_passphrase_cb(self.wrapped, hookdata, self.last_passcb)
+        pygpgme.pygpgme_set_passphrase_cb(self, hookdata)
+
+    def _free_passcb(self):
+        if pygpgme.pygpgme_set_passphrase_cb:
+            self.set_passphrase_cb(None)
 
     def set_progress_cb(self, func, hook=None):
         """Sets the progress meter callback to the function specified by FUNC.
@@ -364,16 +339,18 @@ class Context(GpgmeWrapper):
         Please see the GPGME manual for more information.
 
         """
-        self._free_progresscb()
         if func == None:
             hookdata = None
         else:
-            self.last_progresscb = pygpgme.new_PyObject_p_p()
             if hook == None:
                 hookdata = (weakref.ref(self), func)
             else:
                 hookdata = (weakref.ref(self), func, hook)
-        pygpgme.pygpgme_set_progress_cb(self.wrapped, hookdata, self.last_progresscb)
+        pygpgme.pygpgme_set_progress_cb(self, hookdata)
+
+    def _free_progresscb(self):
+        if pygpgme.pygpgme_set_progress_cb:
+            self.set_progress_cb(None)
 
     def set_status_cb(self, func, hook=None):
         """Sets the status callback to the function specified by FUNC.  If
@@ -386,17 +363,18 @@ class Context(GpgmeWrapper):
         Please see the GPGME manual for more information.
 
         """
-        self._free_statuscb()
         if func == None:
             hookdata = None
         else:
-            self.last_statuscb = pygpgme.new_PyObject_p_p()
             if hook == None:
                 hookdata = (weakref.ref(self), func)
             else:
                 hookdata = (weakref.ref(self), func, hook)
-        pygpgme.pygpgme_set_status_cb(self.wrapped, hookdata,
-                                      self.last_statuscb)
+        pygpgme.pygpgme_set_status_cb(self, hookdata)
+
+    def _free_statuscb(self):
+        if pygpgme.pygpgme_set_status_cb:
+            self.set_status_cb(None)
 
     def get_engine_info(self):
         """Returns this context specific engine info"""
@@ -547,12 +525,7 @@ class Data(GpgmeWrapper):
         self.__del__()
 
     def _free_datacbs(self):
-        if self.data_cbs != None:
-            if pygpgme.pygpgme_clear_generic_cb:
-                pygpgme.pygpgme_clear_generic_cb(self.data_cbs)
-            if pygpgme.delete_PyObject_p_p:
-                pygpgme.delete_PyObject_p_p(self.data_cbs)
-            self.data_cbs = None
+        self._data_cbs = None
 
     def new(self):
         tmp = pygpgme.new_gpgme_data_t_p()
@@ -579,8 +552,6 @@ class Data(GpgmeWrapper):
         pygpgme.delete_gpgme_data_t_p(tmp)
 
     def new_from_cbs(self, read_cb, write_cb, seek_cb, release_cb, hook=None):
-        assert self.data_cbs == None
-        self.data_cbs = pygpgme.new_PyObject_p_p()
         tmp = pygpgme.new_gpgme_data_t_p()
         if hook != None:
             hookdata = (weakref.ref(self),
@@ -588,8 +559,7 @@ class Data(GpgmeWrapper):
         else:
             hookdata = (weakref.ref(self),
                         read_cb, write_cb, seek_cb, release_cb)
-        errorcheck(
-            pygpgme.pygpgme_data_new_from_cbs(tmp, hookdata, self.data_cbs))
+        pygpgme.pygpgme_data_new_from_cbs(self, hookdata, tmp)
         self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
         pygpgme.delete_gpgme_data_t_p(tmp)
 

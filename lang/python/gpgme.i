@@ -302,11 +302,14 @@
 
 // Include mapper for edit callbacks
 %typemap(in) (gpgme_edit_cb_t fnc, void *fnc_value) {
+  if (! PyTuple_Check($input))
+    return PyErr_Format(PyExc_TypeError, "edit callback must be a tuple");
+  if (PyTuple_Size($input) != 2 && PyTuple_Size($input) != 3)
+    return PyErr_Format(PyExc_TypeError,
+                        "edit callback must be a tuple of size 2 or 3");
+
   $1 = (gpgme_edit_cb_t) pyEditCb;
-  if ($input == Py_None)
-    $2 = NULL;
-  else
-    $2 = $input;
+  $2 = $input;
 }
 
 /* Include the unmodified <gpgme.h> for cc, and the cleaned-up local
@@ -355,8 +358,6 @@ struct _gpgme_sig_notation
 %pointer_functions(gpgme_error_t, gpgme_error_t_p);
 %pointer_functions(gpgme_trust_item_t, gpgme_trust_item_t_p);
 %pointer_functions(gpgme_engine_info_t, gpgme_engine_info_t_p);
-%pointer_functions(PyObject *, PyObject_p_p);
-%pointer_functions(void *, void_p_p);
 
 // Helper functions.
 
@@ -373,6 +374,18 @@ PyObject *
 pygpgme_wrap_gpgme_data_t(gpgme_data_t data)
 {
   return SWIG_NewPointerObj(data, SWIGTYPE_p_gpgme_data, 0);
+}
+
+gpgme_ctx_t
+pygpgme_unwrap_gpgme_ctx_t(PyObject *wrapped)
+{
+  gpgme_ctx_t result;
+  if (SWIG_ConvertPtr(wrapped,
+                      (void **) &result,
+                      SWIGTYPE_p_gpgme_context,
+                      SWIG_POINTER_EXCEPTION) == -1)
+    return NULL;
+  return result;
 }
 %}
 
