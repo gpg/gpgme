@@ -122,6 +122,7 @@ static void pygpgme_stash_callback_exception(PyObject *weak_self)
     }
   else
     PyObject_SetAttrString(self, EXCINFO, excinfo);
+  Py_DECREF(excinfo);
 }
 
 PyObject *pygpgme_raise_callback_exception(PyObject *self)
