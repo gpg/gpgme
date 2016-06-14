@@ -272,6 +272,38 @@ object_to_gpgme_data_t(PyObject *input, int argnum, gpgme_data_t *wrapper,
 
 
 
+PyObject *
+pygpgme_wrap_fragile_result(PyObject *fragile, const char *classname)
+{
+  static PyObject *results;
+  PyObject *class;
+  PyObject *replacement;
+
+  if (results == NULL)
+    {
+      PyObject *from_list = PyList_New(0);
+      if (from_list == NULL)
+        return NULL;
+
+      results = PyImport_ImportModuleLevel("results", PyEval_GetGlobals(),
+                                           PyEval_GetLocals(), from_list, 1);
+      Py_DECREF(from_list);
+
+      if (results == NULL)
+        return NULL;
+    }
+
+  class = PyMapping_GetItemString(PyModule_GetDict(results), classname);
+  if (class == NULL)
+    return NULL;
+
+  replacement = PyObject_CallFunctionObjArgs(class, fragile, NULL);
+  Py_DECREF(class);
+  return replacement;
+}
+
+
+
 /* Callback support.  */
 static gpgme_error_t pyPassphraseCb(void *hook,
 				    const char *uid_hint,

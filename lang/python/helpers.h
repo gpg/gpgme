@@ -34,6 +34,8 @@ PyObject *object_to_gpgme_data_t(PyObject *input, int argnum,
 				 gpgme_data_t *wrapper,
 				 PyObject **bytesio, Py_buffer *view);
 
+PyObject *pygpgme_wrap_fragile_result(PyObject *fragile, const char *classname);
+
 PyObject *pygpgme_raise_callback_exception(PyObject *self);
 
 PyObject *pygpgme_set_passphrase_cb(PyObject *self, PyObject *cb);

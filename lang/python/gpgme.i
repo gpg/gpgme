@@ -283,10 +283,11 @@
 
 // Make types containing 'next' field to be lists
 %ignore next;
-%typemap(out) gpgme_sig_notation_t, gpgme_engine_info_t, gpgme_subkey_t, gpgme_key_sig_t,
-	gpgme_user_id_t, gpgme_invalid_key_t, gpgme_recipient_t, gpgme_new_signature_t,
-	gpgme_signature_t, gpgme_import_status_t, gpgme_conf_arg_t, gpgme_conf_opt_t,
-	gpgme_conf_comp_t {
+%typemap(out) gpgme_sig_notation_t, gpgme_engine_info_t, gpgme_subkey_t,
+   gpgme_key_sig_t, gpgme_user_id_t, gpgme_invalid_key_t,
+   gpgme_recipient_t, gpgme_new_signature_t, gpgme_signature_t,
+   gpgme_import_status_t, gpgme_conf_arg_t, gpgme_conf_opt_t,
+   gpgme_conf_comp_t, gpgme_tofu_info_t {
   int i;
   int size = 0;
   $1_ltype curr;
@@ -299,6 +300,75 @@
     PyList_SetItem($result, i, o);
   }
 }
+
+
+
+/* Wrap the fragile result objects into robust Python ones.  */
+%typemap(out) gpgme_encrypt_result_t {
+  PyObject *fragile;
+  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
+                               %newpointer_flags);
+  $result = pygpgme_wrap_fragile_result(fragile, "EncryptResult");
+  Py_DECREF(fragile);
+}
+
+%typemap(out) gpgme_decrypt_result_t {
+  PyObject *fragile;
+  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
+                               %newpointer_flags);
+  $result = pygpgme_wrap_fragile_result(fragile, "DecryptResult");
+  Py_DECREF(fragile);
+}
+
+%typemap(out) gpgme_sign_result_t {
+  PyObject *fragile;
+  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
+                               %newpointer_flags);
+  $result = pygpgme_wrap_fragile_result(fragile, "SignResult");
+  Py_DECREF(fragile);
+}
+
+%typemap(out) gpgme_verify_result_t {
+  PyObject *fragile;
+  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
+                               %newpointer_flags);
+  $result = pygpgme_wrap_fragile_result(fragile, "VerifyResult");
+  Py_DECREF(fragile);
+}
+
+%typemap(out) gpgme_import_result_t {
+  PyObject *fragile;
+  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
+                               %newpointer_flags);
+  $result = pygpgme_wrap_fragile_result(fragile, "ImportResult");
+  Py_DECREF(fragile);
+}
+
+%typemap(out) gpgme_genkey_result_t {
+  PyObject *fragile;
+  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
+                               %newpointer_flags);
+  $result = pygpgme_wrap_fragile_result(fragile, "GenkeyResult");
+  Py_DECREF(fragile);
+}
+
+%typemap(out) gpgme_keylist_result_t {
+  PyObject *fragile;
+  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
+                               %newpointer_flags);
+  $result = pygpgme_wrap_fragile_result(fragile, "KeylistResult");
+  Py_DECREF(fragile);
+}
+
+%typemap(out) gpgme_vfs_mount_result_t {
+  PyObject *fragile;
+  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
+                               %newpointer_flags);
+  $result = pygpgme_wrap_fragile_result(fragile, "VFSMountResult");
+  Py_DECREF(fragile);
+}
+
+
 
 // Include mapper for edit callbacks
 %typemap(in) (gpgme_edit_cb_t fnc, void *fnc_value) {
