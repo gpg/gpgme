@@ -171,7 +171,7 @@ PyObject *
 object_to_gpgme_t(PyObject *input, const char *objtype, int argnum)
 {
   PyObject *pyname = NULL, *pypointer = NULL;
-  pyname = PyObject_CallMethod(input, "_getctype", NULL);
+  pyname = PyObject_GetAttrString(input, "_ctype");
   if (pyname && PyUnicode_Check(pyname))
     {
       if (strcmp(PyUnicode_AsUTF8(pyname), objtype) != 0)
@@ -261,7 +261,7 @@ object_to_gpgme_data_t(PyObject *input, int argnum, gpgme_data_t *wrapper,
     }
 
   /* As last resort we assume it is a wrapped data object.  */
-  if (PyObject_HasAttrString(data, "_getctype"))
+  if (PyObject_HasAttrString(data, "_ctype"))
     return object_to_gpgme_t(data, "gpgme_data_t", argnum);
 
   return PyErr_Format(PyExc_TypeError,

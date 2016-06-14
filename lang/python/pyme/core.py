@@ -61,17 +61,22 @@ class GpgmeWrapper(object):
         else:
             return repr(self.wrapped) == repr(other.wrapped)
 
-    def _getctype(self):
-        """Must be implemented by child classes.
+    @property
+    def _ctype(self):
+        """The name of the c type wrapped by this class
 
-        Must return the name of the c type."""
+        Must be set by child classes.
+
+        """
         raise NotImplementedError()
 
-    def _getnameprepend(self):
-        """Must be implemented by child classes.
+    @property
+    def _cprefix(self):
+        """The common prefix of c functions wrapped by this class
 
-        Must return the prefix of all c functions mapped to methods of
-        this class."""
+        Must be set by child classes.
+
+        """
         raise NotImplementedError()
 
     def _errorcheck(self, name):
@@ -86,9 +91,9 @@ class GpgmeWrapper(object):
 
     def __wrap_boolean_property(self, key, do_set=False, value=None):
         get_func = getattr(pygpgme,
-                           "{}get_{}".format(self._getnameprepend(), key))
+                           "{}get_{}".format(self._cprefix, key))
         set_func = getattr(pygpgme,
-                           "{}set_{}".format(self._getnameprepend(), key))
+                           "{}set_{}".format(self._cprefix, key))
         def get(slf):
             return bool(get_func(slf.wrapped))
         def set_(slf, value):
@@ -104,13 +109,13 @@ class GpgmeWrapper(object):
 
     def __getattr__(self, key):
         """On-the-fly generation of wrapper methods and properties"""
-        if key[0] == '_' or self._getnameprepend() == None:
+        if key[0] == '_' or self._cprefix == None:
             return None
 
         if key in self._boolean_properties:
             return self.__wrap_boolean_property(key)
 
-        name = self._getnameprepend() + key
+        name = self._cprefix + key
         func = getattr(pygpgme, name)
 
         if self._errorcheck(name):
@@ -181,11 +186,8 @@ class Context(GpgmeWrapper):
     def pinentry_mode(self, value):
         self.set_pinentry_mode(value)
 
-    def _getctype(self):
-        return 'gpgme_ctx_t'
-
-    def _getnameprepend(self):
-        return 'gpgme_'
+    _ctype = 'gpgme_ctx_t'
+    _cprefix = 'gpgme_'
 
     def _errorcheck(self, name):
         """This function should list all functions returning gpgme_error_t"""
@@ -432,11 +434,8 @@ class Data(GpgmeWrapper):
 
     """
 
-    def _getctype(self):
-        return 'gpgme_data_t'
-
-    def _getnameprepend(self):
-        return 'gpgme_data_'
+    _ctype = 'gpgme_data_t'
+    _cprefix = 'gpgme_data_'
 
     def _errorcheck(self, name):
         """This function should list all functions returning gpgme_error_t"""
