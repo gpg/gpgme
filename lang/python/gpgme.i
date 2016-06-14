@@ -373,7 +373,7 @@ FILE *fdopen(int fildes, const char *mode);
 PyObject *
 pygpgme_wrap_gpgme_data_t(gpgme_data_t data)
 {
-  return SWIG_NewPointerObj(data, SWIGTYPE_p_gpgme_data, 0);
+  return SWIG_Python_NewPointerObj(NULL, data, SWIGTYPE_p_gpgme_data, 0);
 }
 
 gpgme_ctx_t

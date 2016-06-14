@@ -40,7 +40,7 @@ errors.i:
 	  `$(GPG_ERROR_CONFIG) --prefix`/include/gpg-error.h >$@
 
 gpgme_wrap.c pyme/pygpgme.py: gpgme.i errors.i gpgme.h copystamp
-	$(SWIG) -python -py3 $(SWIGOPT) \
+	$(SWIG) -python -py3 -builtin $(SWIGOPT) \
 	  -o $(builddir)/gpgme_wrap.c -outdir $(builddir)/pyme \
 	  $<
 
