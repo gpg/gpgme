@@ -21,11 +21,21 @@
 %include "cpointer.i"
 %include "cstring.i"
 
-// Generate doc strings for all methods.
+/* Generate doc strings for all methods.
+
+   This will generate docstrings of the form
+
+     gpgme_op_encrypt(ctx, recp, flags, plain, cipher) -> gpgme_error_t
+
+   which we transform into
+
+     ctx.op_encrypt(recp, flags, plain, cipher) -> gpgme_error_t
+
+   for automagically wrapped functions.  */
 %feature("autodoc", "0");
 
-/* Allow use of Unicode objects, bytes, and None for strings.  */
 
+/* Allow use of Unicode objects, bytes, and None for strings.  */
 %typemap(in) const char * {
   if ($input == Py_None)
     $1 = NULL;

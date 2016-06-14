@@ -24,6 +24,7 @@ and the 'Data' class describing buffers of data.
 
 """
 
+import re
 import weakref
 from . import pygpgme
 from .errors import errorcheck, GPGMEError
@@ -107,6 +108,7 @@ class GpgmeWrapper(object):
         else:
             return get(self)
 
+    _munge_docstring = re.compile(r'gpgme_([^(]*)\(([^,]*), (.*\) -> .*)')
     def __getattr__(self, key):
         """On-the-fly generation of wrapper methods and properties"""
         if key[0] == '_' or self._cprefix == None:
@@ -119,27 +121,28 @@ class GpgmeWrapper(object):
         func = getattr(pygpgme, name)
 
         if self._errorcheck(name):
-            def _funcwrap(slf, *args, **kwargs):
-                result = func(slf.wrapped, *args, **kwargs)
+            def _funcwrap(slf, *args):
+                result = func(slf.wrapped, *args)
                 if slf._callback_excinfo:
                     pygpgme.pygpgme_raise_callback_exception(slf)
                 return errorcheck(result, "Invocation of " + name)
         else:
-            def _funcwrap(slf, *args, **kwargs):
-                result = func(slf.wrapped, *args, **kwargs)
+            def _funcwrap(slf, *args):
+                result = func(slf.wrapped, *args)
                 if slf._callback_excinfo:
                     pygpgme.pygpgme_raise_callback_exception(slf)
                 return result
 
-        _funcwrap.__doc__ = getattr(func, "__doc__")
+        doc = self._munge_docstring.sub(r'\2.\1(\3', getattr(func, "__doc__"))
+        _funcwrap.__doc__ = doc
 
         # Monkey-patch the class.
         setattr(self.__class__, key, _funcwrap)
 
         # Bind the method to 'self'.
-        def wrapper(*args, **kwargs):
-            return _funcwrap(self, *args, **kwargs)
-        _funcwrap.__doc__ = getattr(func, "__doc__")
+        def wrapper(*args):
+            return _funcwrap(self, *args)
+        wrapper.__doc__ = doc
 
         return wrapper
 
