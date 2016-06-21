@@ -1683,6 +1683,8 @@ gt_identify (gpgme_tool_t gt, gpgme_data_t data)
     case GPGME_DATA_TYPE_INVALID: return gpg_error (GPG_ERR_GENERAL);
     case GPGME_DATA_TYPE_UNKNOWN      : s = "unknown"; break;
     case GPGME_DATA_TYPE_PGP_SIGNED   : s = "PGP-signed"; break;
+    case GPGME_DATA_TYPE_PGP_SIGNATURE: s = "PGP-signature"; break;
+    case GPGME_DATA_TYPE_PGP_ENCRYPTED: s = "PGP-encrypted"; break;
     case GPGME_DATA_TYPE_PGP_OTHER    : s = "PGP"; break;
     case GPGME_DATA_TYPE_PGP_KEY      : s = "PGP-key"; break;
     case GPGME_DATA_TYPE_CMS_SIGNED   : s = "CMS-signed"; break;
