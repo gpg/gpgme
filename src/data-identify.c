@@ -1,5 +1,5 @@
 /* data-identify.c - Try to identify the data
-   Copyright (C) 2013 g10 Code GmbH
+   Copyright (C) 2013, 2016 g10 Code GmbH
 
    This file is part of GPGME.
 
@@ -122,9 +122,11 @@ next_openpgp_packet (unsigned char const **bufptr, size_t *buflen,
           pktlen = buf32_to_ulong (buf);
           buf += 4;
           len -= 4;
-      }
-      else /* Partial length encoding is not allowed for key packets. */
-        return gpg_error (GPG_ERR_UNEXPECTED);
+        }
+      else /* Partial length encoding. */
+        {
+          pktlen = 0;
+        }
     }
   else /* Old style CTB.  */
     {
@@ -133,8 +135,6 @@ next_openpgp_packet (unsigned char const **bufptr, size_t *buflen,
       pktlen = 0;
       pkttype = (ctb>>2)&0xf;
       lenbytes = ((ctb&3)==3)? 0 : (1<<(ctb & 3));
-      if (!lenbytes) /* Not allowed in key packets.  */
-        return gpg_error (GPG_ERR_UNEXPECTED);
       if (len < lenbytes)
         return gpg_error (GPG_ERR_INV_PACKET); /* Not enough length bytes.  */
       for (; lenbytes; lenbytes--)
@@ -213,6 +213,10 @@ pgp_binary_detection (const void *image_arg, size_t imagelen)
       else if (err)
         break;
 
+      /* Skip all leading marker packets.  */
+      if (!anypacket && pkttype == PKT_MARKER)
+        continue;
+
       if (pkttype == PKT_SIGNATURE)
         {
           if (!anypacket)
@@ -220,7 +224,6 @@ pgp_binary_detection (const void *image_arg, size_t imagelen)
         }
       else
         allsignatures = 0;
-      anypacket = 1;
 
       switch (pkttype)
         {
@@ -247,12 +250,18 @@ pgp_binary_detection (const void *image_arg, size_t imagelen)
         case PKT_SYMKEY_ENC:
           return GPGME_DATA_TYPE_PGP_ENCRYPTED;
 
-        case PKT_MARKER:
-          break;  /* Skip this packet.  */
+        case PKT_COMPRESSED:
+          /* If this is the first packet we assume that that a signed
+           * packet follows.  We do not want to uncompress it here due
+           * to the need of a lot of code and the potentail DoS. */
+          if (!anypacket)
+            return GPGME_DATA_TYPE_PGP_SIGNED;
+          return GPGME_DATA_TYPE_PGP_OTHER;
 
         default:
           return GPGME_DATA_TYPE_PGP_OTHER;
         }
+      anypacket = 1;
     }
 
   if (allsignatures)
