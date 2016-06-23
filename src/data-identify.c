@@ -271,12 +271,36 @@ pgp_binary_detection (const void *image_arg, size_t imagelen)
 }
 
 
+/* This is probably an armored "PGP MESSAGE" which can encode
+ * different PGP data types.  STRING is modified after a call to this
+ * fucntion. */
+static gpgme_data_type_t
+inspect_pgp_message (char *string)
+{
+  struct b64state state;
+  size_t nbytes;
+
+  if (_gpgme_b64dec_start (&state, ""))
+    return GPGME_DATA_TYPE_INVALID; /* oops */
+
+  if (_gpgme_b64dec_proc (&state, string, strlen (string), &nbytes))
+    {
+      _gpgme_b64dec_finish (&state);
+      return GPGME_DATA_TYPE_UNKNOWN; /* bad encoding etc. */
+    }
+  _gpgme_b64dec_finish (&state);
+  string[nbytes] = 0; /* Better append a Nul. */
+
+  return pgp_binary_detection (string, nbytes);
+}
+
+
 /* Note that DATA may be binary but a final nul is required so that
    string operations will find a terminator.
 
    Returns: GPGME_DATA_TYPE_xxxx */
 static gpgme_data_type_t
-basic_detection (const char *data, size_t datalen)
+basic_detection (char *data, size_t datalen)
 {
   tlvinfo_t ti;
   const char *s;
@@ -430,7 +454,8 @@ basic_detection (const char *data, size_t datalen)
                 return GPGME_DATA_TYPE_PGP_KEY;
               if (!strncmp (s+15, "ARMORED FILE", 12))
                 return GPGME_DATA_TYPE_UNKNOWN;
-              return GPGME_DATA_TYPE_PGP_OTHER; /* PGP MESSAGE */
+
+              return inspect_pgp_message (data);
             }
           if (!strncmp (s+11, "CERTIFICATE", 11))
             return GPGME_DATA_TYPE_X509_CERT;
