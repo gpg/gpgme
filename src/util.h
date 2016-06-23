@@ -147,6 +147,26 @@ gpgme_error_t _gpgme_map_gnupg_error (char *err);
 int _gpgme_map_pk_algo (int algo, gpgme_protocol_t protocol);
 
 
+/*-- b64dec.c --*/
+
+struct b64state
+{
+  int idx;
+  int quad_count;
+  char *title;
+  unsigned char radbuf[4];
+  int stop_seen:1;
+  int invalid_encoding:1;
+  gpg_error_t lasterr;
+};
+
+gpg_error_t _gpgme_b64dec_start (struct b64state *state, const char *title);
+gpg_error_t _gpgme_b64dec_proc (struct b64state *state,
+                                void *buffer, size_t length, size_t *r_nbytes);
+gpg_error_t _gpgme_b64dec_finish (struct b64state *state);
+
+
+
 /* Retrieve the environment variable NAME and return a copy of it in a
    malloc()'ed buffer in *VALUE.  If the environment variable is not
    set, return NULL in *VALUE.  */

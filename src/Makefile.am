@@ -74,7 +74,7 @@ endif
 # right linking order with libtool, as the non-installed version has
 # unresolved symbols to the thread module.
 main_sources =								\
-	util.h conversion.c get-env.c context.h ops.h		        \
+	util.h conversion.c b64dec.c get-env.c context.h ops.h		\
 	parsetlv.c parsetlv.h                                           \
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
 	data-compat.c data-identify.c					\
