@@ -178,6 +178,8 @@ GpgME::Data::Type GpgME::Data::type() const
     case GPGME_DATA_TYPE_CMS_OTHER:     return CMSOther;
     case GPGME_DATA_TYPE_X509_CERT:     return X509Cert;
     case GPGME_DATA_TYPE_PKCS12:        return PKCS12;
+    case GPGME_DATA_TYPE_PGP_ENCRYPTED: return PGPEncrypted;
+    case GPGME_DATA_TYPE_PGP_SIGNATURE: return PGPSignature;
     }
     return Invalid;
 }

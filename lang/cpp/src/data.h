@@ -92,7 +92,9 @@ public:
         CMSEncrypted,
         CMSOther,
         X509Cert,
-        PKCS12
+        PKCS12,
+        PGPEncrypted,
+        PGPSignature,
     };
     Type type() const;
 
