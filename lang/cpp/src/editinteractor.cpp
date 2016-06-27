@@ -222,8 +222,6 @@ Error status_to_error(unsigned int status)
         return Error::fromCode(GPG_ERR_NO_PASSPHRASE);
     case GPGME_STATUS_ALREADY_SIGNED:
         return Error::fromCode(GPG_ERR_ALREADY_SIGNED);
-    case GPGME_STATUS_KEYEXPIRED:
-        return Error::fromCode(GPG_ERR_CERT_EXPIRED);
     case GPGME_STATUS_SIGEXPIRED:
         return Error::fromCode(GPG_ERR_SIG_EXPIRED);
     }
