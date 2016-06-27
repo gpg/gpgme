@@ -110,6 +110,7 @@ main (int argc, char **argv)
 	{
 	  fprintf (stderr, "Warning: Skipping unknown key %s\n",
 		   key->subkeys->fpr);
+	  gpgme_key_unref (key);
 	  continue;
 	}
       else

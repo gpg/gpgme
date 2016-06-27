@@ -94,7 +94,7 @@ void *
 thread_two (void *name)
 {
   int i;
-  const char *cipher_1_asc = make_filename ("cipher-1.asc");
+  char *cipher_1_asc = make_filename ("cipher-1.asc");
   char *agent_info;
 
   agent_info = getenv("GPG_AGENT_INFO");
@@ -135,6 +135,7 @@ thread_two (void *name)
       gpgme_data_release (out);
       gpgme_release (ctx);
     }
+  free (cipher_1_asc);
   return NULL;
 }
 

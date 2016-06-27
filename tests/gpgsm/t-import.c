@@ -142,8 +142,8 @@ main (int argc, char **argv)
   gpgme_error_t err;
   gpgme_data_t in;
   gpgme_import_result_t result;
-  const char *cert_1 = make_filename ("cert_dfn_pca01.der");
-  const char *cert_2 = make_filename ("cert_dfn_pca15.der");
+  char *cert_1 = make_filename ("cert_dfn_pca01.der");
+  char *cert_2 = make_filename ("cert_dfn_pca15.der");
 
   init_gpgme (GPGME_PROTOCOL_CMS);
 
@@ -153,6 +153,7 @@ main (int argc, char **argv)
   gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
 
   err = gpgme_data_new_from_file (&in, cert_1, 1);
+  free (cert_1);
   fail_if_err (err);
 
   err = gpgme_op_import (ctx, in);
@@ -162,6 +163,7 @@ main (int argc, char **argv)
   gpgme_data_release (in);
 
   err = gpgme_data_new_from_file (&in, cert_2, 1);
+  free (cert_2);
   fail_if_err (err);
 
   err = gpgme_op_import (ctx, in);

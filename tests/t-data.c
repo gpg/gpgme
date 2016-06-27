@@ -194,8 +194,8 @@ int
 main (int argc, char **argv)
 {
   round_t round = TEST_INITIALIZER;
-  const char *text_filename = make_filename ("t-data-1.txt");
-  const char *longer_text_filename = make_filename ("t-data-2.txt");
+  char *text_filename = make_filename ("t-data-1.txt");
+  char *longer_text_filename = make_filename ("t-data-2.txt");
   const char *missing_filename = "this-file-surely-does-not-exist";
   gpgme_error_t err = 0;
   gpgme_data_t data;
@@ -269,7 +269,7 @@ main (int argc, char **argv)
 	  }
 	  break;
 	case TEST_END:
-	  return 0;
+	  goto out;
 	case TEST_INITIALIZER:
 	  /* Shouldn't happen.  */
 	  fprintf (stderr, "%s:%d: impossible condition\n", __FILE__, __LINE__);
@@ -281,5 +281,8 @@ main (int argc, char **argv)
       write_test (round, data);
       gpgme_data_release (data);
     }
+ out:
+  free (text_filename);
+  free (longer_text_filename);
   return 0;
 }

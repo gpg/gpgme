@@ -214,8 +214,8 @@ main (int argc, char *argv[])
   gpgme_error_t err;
   gpgme_data_t in;
   gpgme_import_result_t result;
-  const char *pubkey_1_asc = make_filename ("pubkey-1.asc");
-  const char *seckey_1_asc = make_filename ("seckey-1.asc");
+  char *pubkey_1_asc = make_filename ("pubkey-1.asc");
+  char *seckey_1_asc = make_filename ("seckey-1.asc");
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
@@ -223,6 +223,7 @@ main (int argc, char *argv[])
   fail_if_err (err);
 
   err = gpgme_data_new_from_file (&in, pubkey_1_asc, 1);
+  free (pubkey_1_asc);
   fail_if_err (err);
 
   err = gpgme_op_import (ctx, in);
@@ -232,6 +233,7 @@ main (int argc, char *argv[])
   gpgme_data_release (in);
 
   err = gpgme_data_new_from_file (&in, seckey_1_asc, 1);
+  free (seckey_1_asc);
   fail_if_err (err);
 
   err = gpgme_op_import (ctx, in);

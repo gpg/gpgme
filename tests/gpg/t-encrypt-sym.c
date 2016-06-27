@@ -92,6 +92,7 @@ main (int argc, char *argv[])
     }
 
   gpgme_data_release (cipher);
+  free (text2);
   gpgme_release (ctx);
 
   return 0;

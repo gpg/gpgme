@@ -101,7 +101,7 @@ main (int argc, char *argv[])
   gpgme_data_t in, out;
   gpgme_decrypt_result_t decrypt_result;
   gpgme_verify_result_t verify_result;
-  const char *cipher_2_asc = make_filename ("cipher-2.asc");
+  char *cipher_2_asc = make_filename ("cipher-2.asc");
   char *agent_info;
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
@@ -114,6 +114,7 @@ main (int argc, char *argv[])
     gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
 
   err = gpgme_data_new_from_file (&in, cipher_2_asc, 1);
+  free (cipher_2_asc);
   fail_if_err (err);
   err = gpgme_data_new (&out);
   fail_if_err (err);
