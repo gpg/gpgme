@@ -443,7 +443,7 @@ basic_detection (char *data, size_t datalen)
           if (!strncmp (s+11, "PGP ", 4))
             {
               if (!strncmp (s+15, "SIGNATURE", 9))
-                return GPGME_DATA_TYPE_PGP_SIGNED;
+                return GPGME_DATA_TYPE_PGP_SIGNATURE;
               if (!strncmp (s+15, "SIGNED MESSAGE", 14))
                 return GPGME_DATA_TYPE_PGP_SIGNED;
               if (!strncmp (s+15, "PUBLIC KEY BLOCK", 16))
