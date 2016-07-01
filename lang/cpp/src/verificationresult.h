@@ -40,6 +40,7 @@ namespace GpgME
 class Error;
 class Signature;
 class Notation;
+class TofuInfo;
 
 class GPGMEPP_EXPORT VerificationResult : public Result
 {
@@ -155,6 +156,18 @@ public:
     const char *policyURL() const;
     GpgME::Notation notation(unsigned int index) const;
     std::vector<GpgME::Notation> notations() const;
+
+    /** List of TOFU stats for this signature.
+     *
+     * For each UserID of the key used to create this
+     * signature a tofu entry is returned.
+     *
+     * Warning: Addresses can be ambigous if there are multiple UserID's
+     * with the same mailbox in a key.
+     *
+     * @returns The list of TOFU stats.
+     */
+    std::vector<GpgME::TofuInfo> tofuInfo() const;
 
 private:
     std::shared_ptr<VerificationResult::Private> d;
