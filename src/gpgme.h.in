@@ -1559,7 +1559,12 @@ struct _gpgme_tofu_info
 {
   struct _gpgme_tofu_info *next;
 
-  /* The mail address (addr-spec from RFC5322) of the tofu binding.  */
+  /* The mail address (addr-spec from RFC5322) of the tofu binding.
+   *
+   * If no mail address is set for a User ID this is the name used
+   * for the user ID. Can be ambiguous when the same mail address or
+   * name is used in multiple user ids.
+   */
   char *address;
 
   /* The fingerprint of the primary key.  */
