@@ -35,6 +35,12 @@
 #include "tofuinfo.h"
 #include "verifyopaquejob.h"
 #include "verificationresult.h"
+#include "signingresult.h"
+#include "keylistjob.h"
+#include "keylistresult.h"
+#include "qgpgmesignjob.h"
+#include "key.h"
+#include "t-support.h"
 #include <iostream>
 
 using namespace QGpgME;
@@ -64,6 +70,40 @@ class TofuInfoTest: public QObject
         Q_ASSERT(orig.policy() == other.policy());
     }
 
+    void signAndVerify(const QString &what, const GpgME::Key &key, int expected)
+    {
+        Context *ctx = Context::createForProtocol(OpenPGP);
+        ctx->setPassphraseProvider(new TestPassphraseProvider);
+        ctx->setPinentryMode(Context::PinentryLoopback);
+        auto *job = new QGpgMESignJob(ctx);
+
+        std::vector<Key> keys;
+        keys.push_back(key);
+        QByteArray signedData;
+        auto sigResult = job->exec(keys, what.toUtf8(), NormalSignatureMode, signedData);
+
+        Q_ASSERT(!sigResult.error());
+
+        auto verifyJob = openpgp()->verifyOpaqueJob();
+        QByteArray verified;
+
+        auto result = verifyJob->exec(signedData, verified);
+
+        Q_ASSERT(!result.error());
+        Q_ASSERT(verified == what.toUtf8());
+
+        Q_ASSERT(result.numSignatures() == 1);
+        auto sig = result.signatures()[0];
+
+        Q_FOREACH(const TofuInfo stats, sig.tofuInfo()) {
+            Q_ASSERT(!stats.isNull());
+            Q_ASSERT(!strcmp(stats.fingerprint(), sig.fingerprint()));
+            Q_ASSERT(stats.signCount() == expected);
+        }
+        /* FIXME: GnuPG-Bug-Id 2405 makes the wait necessary. */
+        QTest::qWait(1000);
+    }
+
 private:
     QTemporaryDir mDir;
 
@@ -90,9 +130,9 @@ private Q_SLOTS:
 
         auto result = job->exec(data1, plaintext);
 
-        Q_ASSERT(!strcmp(plaintext.constData(), "Just GNU it!\n"));
         Q_ASSERT(!result.isNull());
         Q_ASSERT(!result.error());
+        Q_ASSERT(!strcmp(plaintext.constData(), "Just GNU it!\n"));
 
         Q_ASSERT(result.numSignatures() == 1);
         Signature sig = result.signatures()[0];
@@ -138,6 +178,44 @@ private Q_SLOTS:
             Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
             Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
         }
+
+        /* Verify that another call yields the same result */
+        job = openpgp()->verifyOpaqueJob(true);
+        result = job->exec(data1, plaintext);
+
+        Q_ASSERT(!result.isNull());
+        Q_ASSERT(!result.error());
+
+        Q_ASSERT(result.numSignatures() == 1);
+        sig = result.signatures()[0];
+        /* TOFU is always marginal */
+        Q_ASSERT(sig.validity() == Signature::Marginal);
+
+        Q_ASSERT(!sig.tofuInfo().empty());
+        Q_FOREACH(const TofuInfo stats, sig.tofuInfo()) {
+            Q_ASSERT(!stats.isNull());
+            Q_ASSERT(!strcmp(stats.fingerprint(), sig.fingerprint()));
+            Q_ASSERT(stats.signCount() == 1);
+            Q_ASSERT(stats.address());
+            Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
+            Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
+        }
+    }
+
+    void testTofuSignCount()
+    {
+        auto *job = openpgp()->keyListJob(false, false, false);
+        std::vector<GpgME::Key> keys;
+        GpgME::KeyListResult result = job->exec(QStringList() << QStringLiteral("zulu@example.net"),
+                                                true, keys);
+        Q_ASSERT(!keys.empty());
+        Key key = keys[0];
+        Q_ASSERT(!key.isNull());
+
+        signAndVerify(QStringLiteral("Hello"), key, 0);
+        signAndVerify(QStringLiteral("Hello2"), key, 1);
+        signAndVerify(QStringLiteral("Hello3"), key, 2);
+        signAndVerify(QStringLiteral("Hello4"), key, 3);
     }
 
     void initTestCase()
@@ -150,6 +228,10 @@ private Q_SLOTS:
         Q_ASSERT(conf.open(QIODevice::WriteOnly));
         conf.write("trust-model tofu+pgp");
         conf.close();
+        QFile agentConf(mDir.path() + QStringLiteral("/gpg-agent.conf"));
+        Q_ASSERT(agentConf.open(QIODevice::WriteOnly));
+        agentConf.write("allow-loopback-pinentry");
+        agentConf.close();
         Q_ASSERT(QFile::copy(gpgHome + QStringLiteral("/pubring.gpg"),
                  mDir.path() + QStringLiteral("/pubring.gpg")));
         Q_ASSERT(QFile::copy(gpgHome + QStringLiteral("/secring.gpg"),
