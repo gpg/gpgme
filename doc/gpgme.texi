@@ -2311,6 +2311,7 @@ started.  In fact, these references are accessed through the
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
 * Offline Mode::                  Choosing offline mode.
+* Pinentry Mode::                 Choosing the pinentry mode.
 * Included Certificates::         Including a number of certificates.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
@@ -2469,6 +2470,57 @@ The function @code{gpgme_get_offline} returns 1 if offline
 mode is enabled, and @code{0} if it is not, or if @var{ctx} is not a
 valid pointer.
 @end deftypefun
+
+
+@node Pinentry Mode
+@subsection Pinentry Mode
+@cindex context, pinentry mode
+@cindex pinentry mode
+
+@deftypefun gpgme_error_t gpgme_set_pinentry_mode (@w{gpgme_ctx_t @var{ctx}},
+@w{gpgme_pinentry_mode_t @var{mode}})
+The function @code{gpgme_set_pinentry_mode} specifies the pinentry mode
+to be used.
+
+For GnuPG >= 2.1 this option is required to be set to
+@code{GPGME_PINENTRY_MODE_LOOPBACK} to enable the passphrase callback
+mechanism in GPGME through @code{gpgme_set_passphrase_cb}.
+@end deftypefun
+
+@deftypefun gpgme_pinentry_mode_t gpgme_get_pinentry_mode (@w{gpgme_ctx_t @var{ctx}})
+The function @code{gpgme_get_pinenty_mode} returns the
+mode set for the context.
+@end deftypefun
+
+@deftp {Data type} {enum gpgme_pinentry_mode_t}
+@tindex gpgme_pinentry_mode_t
+The @code{gpgme_minentry_mode_t} type specifies the set of possible pinentry
+modes that are supported by @acronym{GPGME} if GnuPG >= 2.1 is used.
+The following modes are supported:
+
+@table @code
+@item GPGME_PINENTRY_MODE_DEFAULT
+Use the default of the agent, which is ask.
+
+@item GPGME_PINENTRY_MODE_ASK
+Force the use of the Pinentry.
+
+@item GPGME_PINENTRY_MODE_CANCEL
+Emulate use of Pinentry's cancel button.
+
+@item GPGME_PINENTRY_MODE_ERROR
+Return a Pinentry error @code{No Pinentry}.
+
+@item GPGME_PINENTRY_MODE_LOOPBACK
+Redirect Pinentry queries to the caller.
+This enables the use of @code{gpgme_set_passphrase_cb} whis pinentry
+queries redirected to gpgme.
+
+Note: This mode requires @code{allow-loopback-pinentry} to be enabled
+in the @file{gpg-agent.conf} or an agent started with that option.
+
+@end table
+@end deftp
 
 
 @node Included Certificates
@@ -2638,6 +2690,10 @@ a trusted agent (a daemon process), rather than having each user to
 implement their own passphrase query.  Some engines do not even
 support an external passphrase callback at all, in this case the error
 code @code{GPG_ERR_NOT_SUPPORTED} is returned.
+
+For GnuPG >= 2.1 the pinentry mode has to be set to
+@code{GPGME_PINENTRY_MODE_LOOPBACK} to enable the passphrase callback.
+See @code{gpgme_set_pinentry_mode}.
 
 The user can disable the use of a passphrase callback function by
 calling @code{gpgme_set_passphrase_cb} with @var{passfunc} being
