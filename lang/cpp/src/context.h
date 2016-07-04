@@ -117,6 +117,16 @@ public:
     GpgME::Error setEngineFileName(const char *filename);
     GpgME::Error setEngineHomeDirectory(const char *filename);
 
+    enum PinentryMode{
+        PinentryDefault = 0,
+        PinentryAsk = 1,
+        PinentryCancel = 2,
+        PinentryError = 3,
+        PinentryLoopback = 4
+    };
+    GpgME::Error setPinentryMode(PinentryMode which);
+    PinentryMode pinentryMode() const;
+
 private:
     friend class ::GpgME::EventLoopInteractor;
     void installIOCallbacks(gpgme_io_cbs *iocbs);

@@ -1255,6 +1255,46 @@ Error Context::lastError() const
     return Error(d->lasterr);
 }
 
+Context::PinentryMode Context::pinentryMode() const
+{
+    switch (gpgme_get_pinentry_mode (d->ctx)) {
+        case GPGME_PINENTRY_MODE_ASK:
+            return PinentryAsk;
+        case GPGME_PINENTRY_MODE_CANCEL:
+            return PinentryCancel;
+        case GPGME_PINENTRY_MODE_ERROR:
+            return PinentryError;
+        case GPGME_PINENTRY_MODE_LOOPBACK:
+            return PinentryLoopback;
+        case GPGME_PINENTRY_MODE_DEFAULT:
+        default:
+            return PinentryDefault;
+    }
+}
+
+Error Context::setPinentryMode(PinentryMode which)
+{
+    gpgme_pinentry_mode_t mode;
+    switch (which) {
+        case PinentryAsk:
+            mode = GPGME_PINENTRY_MODE_ASK;
+            break;
+        case PinentryCancel:
+            mode = GPGME_PINENTRY_MODE_CANCEL;
+            break;
+        case PinentryError:
+            mode = GPGME_PINENTRY_MODE_ERROR;
+            break;
+        case PinentryLoopback:
+            mode = GPGME_PINENTRY_MODE_LOOPBACK;
+            break;
+        case PinentryDefault:
+        default:
+            mode = GPGME_PINENTRY_MODE_DEFAULT;
+    }
+    return Error(d->lasterr = gpgme_set_pinentry_mode(d->ctx, mode));
+}
+
 std::ostream &operator<<(std::ostream &os, Protocol proto)
 {
     os << "GpgME::Protocol(";
