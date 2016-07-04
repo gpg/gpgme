@@ -224,6 +224,9 @@ GpgME::Signature::Summary GpgME::Signature::summary() const
     if (sigsum & GPGME_SIGSUM_SYS_ERROR) {
         result |= SysError;
     }
+    if (sigsum & GPGME_SIGSUM_TOFU_CONFLICT) {
+        result |= TofuConflict;
+    }
     return static_cast<Summary>(result);
 }
 
@@ -520,6 +523,7 @@ std::ostream &GpgME::operator<<(std::ostream &os, Signature::Summary summary)
     OUTPUT(CrlTooOld);
     OUTPUT(BadPolicy);
     OUTPUT(SysError);
+    OUTPUT(TofuConflict);
 #undef OUTPUT
     return os << ')';
 }

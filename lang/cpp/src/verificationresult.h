@@ -115,7 +115,8 @@ public:
         CrlMissing = 0x080,
         CrlTooOld  = 0x100,
         BadPolicy  = 0x200,
-        SysError   = 0x400
+        SysError   = 0x400,
+        TofuConflict= 0x800
     };
     Summary summary() const;
 
