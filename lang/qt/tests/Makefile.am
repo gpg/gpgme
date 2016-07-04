@@ -49,7 +49,7 @@ initial.test : check-local
 t_keylist_SOURCES = t-keylist.cpp
 t_keylocate_SOURCES = t-keylocate.cpp
 t_ownertrust_SOURCES = t-ownertrust.cpp
-t_tofuinfo_SOURCES = t-tofuinfo.cpp
+t_tofuinfo_SOURCES = t-tofuinfo.cpp t-support.h
 
 nodist_t_keylist_SOURCES = $(moc_files)
 
