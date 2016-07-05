@@ -41,7 +41,7 @@
 #include <QIODevice>
 
 #ifdef BUILDING_QGPGME
-# include "context.h"
+# include "lang/cpp/src/context.h"
 # include "interfaces/progressprovider.h"
 #else
 # include <gpgme++/context.h>
