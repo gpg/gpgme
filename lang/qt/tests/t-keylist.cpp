@@ -69,7 +69,7 @@ private Q_SLOTS:
             Q_EMIT asyncDone();
         });
         job->start(QStringList() << "alfa@example.net");
-        QSignalSpy spy (this, &KeyListTest::asyncDone);
+        QSignalSpy spy (this, SIGNAL(asyncDone()));
         Q_ASSERT(spy.wait());
     }
 

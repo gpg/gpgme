@@ -80,7 +80,7 @@ private Q_SLOTS:
             Q_EMIT asyncDone();
         });
         job->start(QStringList() << mTestpattern);
-        QSignalSpy spy (this, &KeyLocateTest::asyncDone);
+        QSignalSpy spy (this, SIGNAL(asyncDone()));
         Q_ASSERT(spy.wait());
         qputenv("GNUPGHOME", oldHome.toUtf8());
     }
@@ -111,7 +111,7 @@ private Q_SLOTS:
             Q_EMIT asyncDone();
         });
         job->start(QStringList() << mTestpattern);
-        QSignalSpy spy (this, &KeyLocateTest::asyncDone);
+        QSignalSpy spy (this, SIGNAL(asyncDone()));
         Q_ASSERT(spy.wait());
     }
 

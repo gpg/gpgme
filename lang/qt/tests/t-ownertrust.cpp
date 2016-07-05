@@ -70,7 +70,7 @@ private Q_SLOTS:
             Q_EMIT asyncDone();
         });
         job2->start(key, Key::Ultimate);
-        QSignalSpy spy (this, &ChangeOwnerTrustTest::asyncDone);
+        QSignalSpy spy (this, SIGNAL(asyncDone()));
         Q_ASSERT(spy.wait());
 
         job = openpgp()->keyListJob(false, true, true);
