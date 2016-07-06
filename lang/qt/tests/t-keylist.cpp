@@ -58,6 +58,10 @@ private Q_SLOTS:
         Q_ASSERT (keys.size() == 1);
         const QString kId = QLatin1String(keys.front().keyID());
         Q_ASSERT (kId == QStringLiteral("2D727CC768697734"));
+
+        Q_ASSERT (keys[0].subkeys().size() == 2);
+        Q_ASSERT (keys[0].subkeys()[0].publicKeyAlgorithm() == Subkey::AlgoDSA);
+        Q_ASSERT (keys[0].subkeys()[1].publicKeyAlgorithm() == Subkey::AlgoELG_E);
     }
 
     void testKeyListAsync()
