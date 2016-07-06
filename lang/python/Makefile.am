@@ -16,7 +16,13 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-EXTRA_DIST = README
+EXTRA_DIST = \
+	README \
+	gpgme.i \
+	helpers.c helpers.h \
+	gpgme-h-clean.py \
+	pyme
+
 SUBDIRS = tests
 
 COPY_FILES = \
@@ -48,11 +54,18 @@ all-local: gpgme_wrap.c pyme/pygpgme.py copystamp
 	CFLAGS="$(CFLAGS) -I$(top_srcdir)" \
 	  $(PYTHON) setup.py build --verbose
 
-clean-local:
-	rm -rf -- build gpgme.h errors.i gpgme_wrap.c pyme/pygpgme.py \
+CLEANFILES = gpgme.h errors.i gpgme_wrap.c pyme/pygpgme.py \
 	  copystamp
+
+# Remove the rest.
+#
+# 'make distclean' clears the write bit, breaking rm -rf.  Fix the
+# permissions.
+clean-local:
+	rm -rf -- build
 	if test "$(srcdir)" != "$(builddir)" ; then \
-	  rm -rf pyme helpers.c helpers.h ; \
+	  find . -type d ! -perm -200 -exec chmod u+w {} ';' ; \
+	  rm -rf README pyme helpers.c helpers.h ; \
 	fi
 
 install-exec-local:

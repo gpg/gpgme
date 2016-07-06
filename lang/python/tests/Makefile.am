@@ -49,9 +49,8 @@ py_tests = t-wrapper.py \
 	t-file-name.py \
 	t-idiomatic.py
 
-TESTS = $(top_srcdir)/tests/gpg/initial.test \
-	$(py_tests) \
-	$(top_srcdir)/tests/gpg/final.test
+TESTS = initial.py $(py_tests) final.py
+EXTRA_DIST = support.py $(TESTS)
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ gpg.conf pubring.gpg~ \
@@ -73,7 +72,7 @@ check-local: ./gpg.conf ./gpg-agent.conf ./pubring-stamp \
 
 # To guarantee that check-local is run before any tests we
 # add this dependency:
-$(top_srcdir)/tests/gpg/initial.test: check-local
+initial.py: check-local
 
 ./private-keys-v1.d/gpg-sample.stamp: $(private_keys)
 	test -d ./private-keys-v1.d || mkdir ./private-keys-v1.d
