@@ -373,9 +373,9 @@ const char *Subkey::fingerprint() const
     return subkey ? subkey->fpr : 0 ;
 }
 
-unsigned int Subkey::publicKeyAlgorithm() const
+Subkey::PubkeyAlgo Subkey::publicKeyAlgorithm() const
 {
-    return subkey ? subkey->pubkey_algo : 0 ;
+    return subkey ? static_cast<PubkeyAlgo>(subkey->pubkey_algo) : AlgoUnknown;
 }
 
 const char *Subkey::publicKeyAlgorithmAsString() const

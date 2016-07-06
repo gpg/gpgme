@@ -205,7 +205,23 @@ public:
 
     bool isSecret() const;
 
-    unsigned int publicKeyAlgorithm() const;
+    /** Same as gpgme_pubkey_algo_t */
+    enum PubkeyAlgo {
+        AlgoUnknown = 0,
+        AlgoRSA     = 1,
+        AlgoRSA_E   = 2,
+        AlgoRSA_S   = 3,
+        AlgoELG_E   = 16,
+        AlgoDSA     = 17,
+        AlgoECC     = 18,
+        AlgoELG     = 20,
+        AlgoECDSA   = 301,
+        AlgoECDH    = 302,
+        AlgoEDDSA   = 303,
+        AlgoMax     = 1 << 31
+    };
+
+    PubkeyAlgo publicKeyAlgorithm() const;
 
     /**
       @brief Get the public key algorithm name.
