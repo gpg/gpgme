@@ -61,6 +61,9 @@ CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
 	random_seed S.gpg-agent .gpg-v21-migrated pubring-stamp $(moc_files)
 
+clean-local:
+	-rm -fR -- private-keys-v1.d
+
 export GNUPGHOME := $(abs_builddir)
 
 ./pubring-stamp: $(top_srcdir)/tests/gpg/pubdemo.asc \

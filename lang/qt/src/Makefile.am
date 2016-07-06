@@ -63,7 +63,8 @@ qgpgme_headers= \
     importjob.h \
     keygenerationjob.h \
     keylistjob.h \
-    listallkeysjob.h
+    listallkeysjob.h \
+    verifydetachedjob.h
 
 private_qgpgme_headers = \
     qgpgme_export.h \
@@ -187,7 +188,7 @@ uninstall-local: uninstall-cmake-files
 
 BUILT_SOURCES = $(qgpgme_moc_sources)
 
-CLEANFILES = $(qgpgme_moc_sources)
+CLEANFILES = $(qgpgme_moc_sources) QGpgmeConfig.cmake
 
 nodist_libqgpgme_la_SOURCES = $(qgpgme_moc_sources)
 
