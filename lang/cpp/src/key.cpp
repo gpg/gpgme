@@ -383,6 +383,15 @@ const char *Subkey::publicKeyAlgorithmAsString() const
     return gpgme_pubkey_algo_name(subkey ? subkey->pubkey_algo : (gpgme_pubkey_algo_t)0);
 }
 
+/* static */
+const char *Subkey::publicKeyAlgorithmAsString(PubkeyAlgo algo)
+{
+    if (algo == AlgoUnknown) {
+        return NULL;
+    }
+    return gpgme_pubkey_algo_name(static_cast<gpgme_pubkey_algo_t>(algo));
+}
+
 std::string Subkey::algoName() const
 {
     char *gpgmeStr;

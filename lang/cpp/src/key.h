@@ -233,11 +233,16 @@ public:
     */
     const char *publicKeyAlgorithmAsString() const;
 
+    /** @brief Same as publicKeyAlgorithmAsString but static. */
+    static const char *publicKeyAlgorithmAsString(PubkeyAlgo algo);
+
     /**
        @brief Get the key algo string like GnuPG 2.1 prints it.
 
        This returns combinations of size and algorithm. Like
-       bp512 or rsa2048
+       bp512 or rsa2048. Misnamed because publicKeyAlgorithmAsString
+       already used the older pubkey_algo_name.
+       Actually uses gpgme_pubkey_algo_string.
 
        @returns the key algorithm as string. Empty string on error.
     */
