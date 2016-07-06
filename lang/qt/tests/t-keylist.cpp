@@ -32,6 +32,7 @@
 #include <QDebug>
 #include <QTest>
 #include <QSignalSpy>
+#include <QMap>
 #include "keylistjob.h"
 #include "qgpgmebackend.h"
 #include "keylistresult.h"
@@ -62,6 +63,27 @@ private Q_SLOTS:
         Q_ASSERT (keys[0].subkeys().size() == 2);
         Q_ASSERT (keys[0].subkeys()[0].publicKeyAlgorithm() == Subkey::AlgoDSA);
         Q_ASSERT (keys[0].subkeys()[1].publicKeyAlgorithm() == Subkey::AlgoELG_E);
+    }
+
+    void testPubkeyAlgoAsString()
+    {
+        static const QMap<Subkey::PubkeyAlgo, QString> expected {
+            { Subkey::AlgoRSA,    QStringLiteral("RSA") },
+            { Subkey::AlgoRSA_E,  QStringLiteral("RSA-E") },
+            { Subkey::AlgoRSA_S,  QStringLiteral("RSA-S") },
+            { Subkey::AlgoELG_E,  QStringLiteral("ELG-E") },
+            { Subkey::AlgoDSA,    QStringLiteral("DSA") },
+            { Subkey::AlgoECC,    QStringLiteral("ECC") },
+            { Subkey::AlgoELG,    QStringLiteral("ELG") },
+            { Subkey::AlgoECDSA,  QStringLiteral("ECDSA") },
+            { Subkey::AlgoECDH,   QStringLiteral("ECDH") },
+            { Subkey::AlgoEDDSA,  QStringLiteral("EdDSA") },
+            { Subkey::AlgoUnknown, QString() }
+        };
+        Q_FOREACH (Subkey::PubkeyAlgo algo, expected.keys()) {
+            Q_ASSERT(QString::fromUtf8(Subkey::publicKeyAlgorithmAsString(algo)) ==
+                     expected.value(algo));
+        }
     }
 
     void testKeyListAsync()
