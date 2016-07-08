@@ -150,12 +150,18 @@ PyObject *pygpgme_raise_callback_exception(PyObject *self)
   else
     Py_INCREF(ptraceback);
 
+  /* We now have references for the extracted items.  */
   Py_DECREF(excinfo);
-  PyErr_Restore(ptype, pvalue, ptraceback);
 
+  /* Clear the exception information.  It is important to do this
+     before setting the error, because setting the attribute may
+     execute python code, and the runtime system raises a SystemError
+     if an exception is set but values are returned.  */
   Py_INCREF(Py_None);
   PyObject_SetAttrString(self, EXCINFO, Py_None);
 
+  /* Restore exception.  */
+  PyErr_Restore(ptype, pvalue, ptraceback);
   return NULL; /* Raise exception.  */
 
  leave:
