@@ -55,6 +55,7 @@ private Q_SLOTS:
         std::vector<GpgME::Key> keys;
         GpgME::KeyListResult result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),
                                                 false, keys);
+        delete job;
         Q_ASSERT (!result.error());
         Q_ASSERT (keys.size() == 1);
         Key key = keys.front();
@@ -76,6 +77,7 @@ private Q_SLOTS:
         job = openpgp()->keyListJob(false, true, true);
         result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),
                            false, keys);
+        delete job;
         key = keys.front();
         Q_ASSERT (key.ownerTrust() == Key::Ultimate);
 
@@ -91,6 +93,8 @@ private Q_SLOTS:
         job = openpgp()->keyListJob(false, true, true);
         result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),
                            false, keys);
+        delete job;
+
         key = keys.front();
         Q_ASSERT (key.ownerTrust() == Key::Unknown);
     }
@@ -99,6 +103,11 @@ private Q_SLOTS:
     {
         const QString gpgHome = qgetenv("GNUPGHOME");
         QVERIFY2(!gpgHome.isEmpty(), "GNUPGHOME environment variable is not set.");
+    }
+
+    void cleanupTestCase()
+    {
+        QCoreApplication::sendPostedEvents();
     }
 };
 

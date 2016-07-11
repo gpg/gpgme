@@ -120,6 +120,11 @@ private Q_SLOTS:
         const QString gpgHome = qgetenv("GNUPGHOME");
         QVERIFY2(!gpgHome.isEmpty(), "GNUPGHOME environment variable is not set.");
     }
+
+    void cleanupTestCase()
+    {
+        QCoreApplication::sendPostedEvents();
+    }
 private:
     QString mTestpattern;
 };
