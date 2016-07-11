@@ -125,7 +125,8 @@
 
 // Special handling for references to our objects.
 %typemap(in) gpgme_data_t DATAIN (gpgme_data_t wrapper = NULL,
-                                  PyObject *bytesio = NULL, Py_buffer view) {
+                                  PyObject *bytesio = NULL,
+                                  Py_buffer view, int have_view = 0) {
   /* If we create a temporary wrapper object, we will store it in
      wrapperN, where N is $argnum.  Here in this fragment, SWIG will
      automatically append $argnum.  */
@@ -138,6 +139,7 @@
                                        &bytesio, &view);
     if (pypointer == NULL)
       return NULL;
+    have_view = !! view.obj;
 
     /* input = $input, 1 = $1, 1_descriptor = $1_descriptor */
 
@@ -152,79 +154,108 @@
   }
 }
 
+#if HAVE_DATA_H
+/* If we are doing an in-tree build, we can use the internal
+   representation of struct gpgme_data for an very efficient check if
+   the buffer has been modified.  */
+%{
+#include "src/data.h"	/* For struct gpgme_data.  */
+%}
+#endif
+
 %typemap(freearg) gpgme_data_t DATAIN {
   /* See whether we need to update the Python buffer.  */
-  if (resultobj && wrapper$argnum && view$argnum.buf
-      && wrapper$argnum->data.mem.buffer != NULL)
+  if (resultobj && wrapper$argnum && view$argnum.buf)
     {
-      /* The buffer is dirty.  */
-      if (view$argnum.readonly)
-        {
-          Py_XDECREF(resultobj);
-          resultobj = NULL;
-          PyErr_SetString(PyExc_ValueError, "cannot update read-only buffer");
-        }
+      int dirty;
+      char *new_data = NULL;
+      size_t new_size;
 
-      /* See if we need to truncate the buffer.  */
-      if (resultobj && view$argnum.len != wrapper$argnum->data.mem.length)
+#if HAVE_DATA_H
+      new_data = wrapper$argnum->data.mem.buffer;
+      new_size = wrapper$argnum->data.mem.length;
+      dirty = new_data != NULL;
+#else
+      new_data = gpgme_data_release_and_get_mem (wrapper$argnum, &new_size);
+      wrapper$argnum = NULL;
+      dirty = new_size != view$argnum.len
+        || memcmp (new_data, view$argnum.buf, view$argnum.len);
+#endif
+
+      if (dirty)
         {
-          if (bytesio$argnum == NULL)
+          /* The buffer is dirty.  */
+          if (view$argnum.readonly)
             {
               Py_XDECREF(resultobj);
               resultobj = NULL;
-              PyErr_SetString(PyExc_ValueError, "cannot resize buffer");
+              PyErr_SetString(PyExc_ValueError,
+                              "cannot update read-only buffer");
             }
-          else
+
+          /* See if we need to truncate the buffer.  */
+          if (resultobj && view$argnum.len != new_size)
             {
-              PyObject *retval;
-              PyBuffer_Release(&view$argnum);
-              retval = PyObject_CallMethod(bytesio$argnum, "truncate", "l",
-                                           (long)
-                                           wrapper$argnum->data.mem.length);
-              if (retval == NULL)
+              if (bytesio$argnum == NULL)
                 {
                   Py_XDECREF(resultobj);
                   resultobj = NULL;
+                  PyErr_SetString(PyExc_ValueError, "cannot resize buffer");
                 }
               else
                 {
-                  Py_DECREF(retval);
-
-                  retval = PyObject_CallMethod(bytesio$argnum, "getbuffer", NULL);
-                  if (retval == NULL
-                      || PyObject_GetBuffer(retval, &view$argnum,
-                                            PyBUF_SIMPLE|PyBUF_WRITABLE) < 0)
+                  PyObject *retval;
+                  PyBuffer_Release(&view$argnum);
+                  assert(view$argnum.obj == NULL);
+                  retval = PyObject_CallMethod(bytesio$argnum, "truncate",
+                                               "l", (long) new_size);
+                  if (retval == NULL)
                     {
                       Py_XDECREF(resultobj);
                       resultobj = NULL;
                     }
-
-                  Py_XDECREF(retval);
-
-                  if (resultobj && view$argnum.len
-                      != wrapper$argnum->data.mem.length)
+                  else
                     {
-                      Py_XDECREF(resultobj);
-                      resultobj = NULL;
-                      PyErr_Format(PyExc_ValueError,
-                                   "Expected buffer of length %zu, got %zi",
-                                   wrapper$argnum->data.mem.length,
-                                   view$argnum.len);
+                      Py_DECREF(retval);
+
+                      retval = PyObject_CallMethod(bytesio$argnum,
+                                                   "getbuffer", NULL);
+                      if (retval == NULL
+                          || PyObject_GetBuffer(retval, &view$argnum,
+                                           PyBUF_SIMPLE|PyBUF_WRITABLE) < 0)
+                        {
+                          Py_XDECREF(resultobj);
+                          resultobj = NULL;
+                        }
+
+                      Py_XDECREF(retval);
+
+                      if (resultobj && view$argnum.len
+                          != new_size)
+                        {
+                          Py_XDECREF(resultobj);
+                          resultobj = NULL;
+                          PyErr_Format(PyExc_ValueError,
+                                       "Expected buffer of length %zu, got %zi",
+                                       new_size,
+                                       view$argnum.len);
+                        }
                     }
                 }
             }
+          if (resultobj)
+            memcpy(view$argnum.buf, new_data, new_size);
         }
-
-      if (resultobj)
-        memcpy(view$argnum.buf, wrapper$argnum->data.mem.buffer,
-               wrapper$argnum->data.mem.length);
+#if ! HAVE_DATA_H
+      free (new_data);
+#endif
     }
 
   /* Free the temporary wrapper, if any.  */
   if (wrapper$argnum)
     gpgme_data_release(wrapper$argnum);
   Py_XDECREF (bytesio$argnum);
-  if (wrapper$argnum && view$argnum.buf)
+  if (have_view$argnum && view$argnum.buf)
     PyBuffer_Release(&view$argnum);
 }
 
@@ -398,7 +429,6 @@
    SWIG.  */
 %{
 #include <gpgme.h>
-#include "src/data.h"	/* For struct gpgme_data.  */
 %}
 
 /* This is for notations, where we want to hide the length fields, and

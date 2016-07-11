@@ -254,6 +254,7 @@ object_to_gpgme_data_t(PyObject *input, int argnum, gpgme_data_t *wrapper,
       if (data != input)
         Py_DECREF(data);
 
+      assert (view->obj);
       assert (view->ndim == 1);
       assert (view->shape == NULL);
       assert (view->strides == NULL);
