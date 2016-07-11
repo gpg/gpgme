@@ -46,13 +46,12 @@ class Result(object):
     }
     def __init__(self, fragile):
         for key, func in self._type.items():
-            setattr(self, key, func(getattr(fragile, key)))
+            if hasattr(fragile, key):
+                setattr(self, key, func(getattr(fragile, key)))
 
         for key, func in self._map.items():
-            setattr(self, key, list(map(func, getattr(fragile, key))))
-
-        for key, func in self._map.items():
-            setattr(self, key, list(map(func, getattr(fragile, key))))
+            if hasattr(fragile, key):
+                setattr(self, key, list(map(func, getattr(fragile, key))))
 
         for key in dir(fragile):
             if key.startswith('_') or key in self._blacklist:
