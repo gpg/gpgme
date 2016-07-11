@@ -52,5 +52,27 @@ AC_DEFUN([FIND_QT],
         MOC=$MOC2
       fi
     fi
+    AC_MSG_RESULT([$mocversion])
+    dnl Check that a binary can actually be build with this qt.
+    dnl pkg-config may be set up in a way that it looks also for libaries
+    dnl of the build system and not only for the host system. In that case
+    dnl we check here that we can actually compile / link a qt application
+    dnl for host.
+    OLDCPPFLAGS=$CPPFLAGS
+    CPPFLAGS=$GPGME_QT_CFLAGS
+    OLDLDFLAGS=$LDFLAGS
+    LDFLAGS=$GPGME_QT_LIBS
+    AC_LANG_PUSH(C++)
+    AC_MSG_CHECKING([whether a simple qt program can be built])
+    AC_LINK_IFELSE([AC_LANG_SOURCE([
+    #include <QCoreApplication>
+    int main (int argc, char **argv) {
+    QCoreApplication app(argc, argv);
+    app.exec();
+    }])], [have_qt5_libs='yes'], [have_qt5_libs='no'])
+    AC_MSG_RESULT([$have_qt5_libs])
+    AC_LANG_POP()
+    CPPFLAGS=$OLDCPPFLAGS
+    LDFLAGS=$OLDLDFLAGS
   fi
 ])
