@@ -63,6 +63,41 @@ class ChangePasswdJob;
 class AddUserIDJob;
 class SpecialJob;
 
+/** The main entry point for QGpgME Comes in OpenPGP and SMIME(CMS) flavors.
+ *
+ * Use the proctocol class to obtain an instance of a job. Jobs
+ * provide async API for GnuPG that can be connected to signals / slots.
+ *
+ * A job is usually started with start() and emits a result signal.
+ * The parameters of the result signal depend on the job but the last
+ * two are always a QString for the auditlog and an GpgME::Error for
+ * an eventual error.
+ *
+ * In case async API is used and the result signal is emited a
+ * job schedules its own deletion.
+ *
+ * Most jobs also provide a synchronous call exec in which case
+ * you have to explicitly delete the job if you don't need it anymore.
+ *
+ * \code
+ * // Async example:
+ * KeyListJob *job = openpgp()->keyListJob();
+ * connect(job, &KeyListJob::result, job, [this, job](KeyListResult, std::vector<Key> keys, QString, Error)
+ * {
+ *    // keys and resuls can now be used.
+ * });
+ * \endcode
+ *
+ * \code
+ * // Sync eaxmple:
+ * KeyListJob *job = openpgp()->keyListJob(false, false, false);
+ * std::vector<GpgME::Key> keys;
+ * GpgME::KeyListResult result = job->exec(QStringList() <<
+ *                                         QStringLiteral("alfa@example.net"),
+ *                                         false, keys);
+ * delete job;
+ * \endcode
+ */
 class QGPGME_EXPORT Protocol
 {
 public:
