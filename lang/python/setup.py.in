@@ -20,16 +20,71 @@
 
 from distutils.core import setup, Extension
 import os, os.path, sys
+import glob
 import subprocess
 
-def getconfig(what):
-    confdata = subprocess.Popen(["../../src/gpgme-config", "--%s" % what],
+# Out-of-tree build of the pyme3 bindings.
+gpg_error_config = "gpg-error-config"
+gpgme_config = "gpgme-config"
+gpgme_h = ""
+library_dirs = []
+extra_swig_opts = []
+
+if os.path.exists("../../src/gpgme-config"):
+    # In-tree build.
+    in_tree = True
+    gpgme_config = "../../src/gpgme-config"
+    gpgme_h = "../../src/gpgme.h"
+    library_dirs = ["../../src/.libs"] # XXX uses libtool internals
+    extra_swig_opts = ["-DHAVE_DATA_H=1"]
+
+try:
+    subprocess.check_call([gpg_error_config, '--version'],
+                          stdout=subprocess.DEVNULL)
+except:
+    sys.exit("Could not find gpg-error-config.  " +
+             "Please install the libgpg-error development package.")
+
+try:
+    subprocess.check_call([gpgme_config, '--version'],
+                          stdout=subprocess.DEVNULL)
+except:
+    sys.exit("Could not find gpgme-config.  " +
+             "Please install the libgpgme development package.")
+
+def getconfig(what, config=gpgme_config):
+    confdata = subprocess.Popen([config, "--%s" % what],
                                 stdout=subprocess.PIPE).communicate()[0]
     return [x for x in confdata.decode('utf-8').split() if x != '']
 
+version = version_raw = getconfig("version")[0]
+if '-' in version:
+    version = version.split('-')[0]
+major, minor, patch = map(int, version.split('.'))
+
+if not (major > 1 or (major == 1 and minor >= 6)):
+    sys.exit('Need at least GPGME version 1.6, found {}.'.format(version_raw))
+
+if not gpgme_h:
+    gpgme_h = os.path.join(getconfig("prefix")[0], "include", "gpgme.h")
+
+gpg_error_prefix = getconfig("prefix", config=gpg_error_config)[0]
+gpg_error_h = os.path.join(gpg_error_prefix, "include", "gpg-error.h")
+if not os.path.exists(gpg_error_h):
+    gpg_error_h = \
+        glob.glob(os.path.join(gpg_error_prefix, "include",
+                               "*", "gpg-error.h"))[0]
+
+print("Building pyme3 using {} and {}.".format(gpgme_h, gpg_error_h))
+
+# Cleanup gpgme.h from deprecated functions and typedefs.
+subprocess.check_call(["python3", "gpgme-h-clean.py", gpgme_h],
+                      stdout=open("gpgme.h", "w"))
+subprocess.check_call(["python3", "gpgme-h-clean.py", gpg_error_h],
+                      stdout=open("errors.i", "w"))
+
 include_dirs = [os.getcwd()]
 define_macros = []
-library_dirs = ["../../src/.libs"] # XXX uses libtool internals
 libs = getconfig('libs')
 
 for item in getconfig('cflags'):
@@ -67,13 +122,29 @@ if uname_s.startswith("MINGW32"):
                library_dirs.append(os.path.join(tgt, item))
                break
 
-swige = Extension("pyme._pygpgme", ["gpgme_wrap.c", "helpers.c"],
+# We build an Extension using SWIG, which generates a Python module.
+# By default, the 'build_py' step is run before 'build_ext', and
+# therefore the generated Python module is not copied into the build
+# directory.
+# Bug: http://bugs.python.org/issue1016626
+# Workaround:
+# http://stackoverflow.com/questions/12491328/python-distutils-not-include-the-swig-generated-module
+from distutils.command.build import build
+class BuildExtFirstHack(build):
+    def run(self):
+        self.run_command('build_ext')
+        build.run(self)
+
+swige = Extension("pyme._pygpgme", ["gpgme.i", "helpers.c"],
+                  swig_opts = ['-py3', '-builtin',
+                               '-outdir', 'pyme'] + extra_swig_opts,
                   include_dirs = include_dirs,
                   define_macros = define_macros,
                   library_dirs = library_dirs,
                   extra_link_args = libs)
 
-setup(name = "pyme",
+setup(name="pyme3",
+      cmdclass={'build': BuildExtFirstHack},
       version="@VERSION@",
       description='Python bindings for GPGME GnuPG cryptography library',
       author='The GnuPG hackers',

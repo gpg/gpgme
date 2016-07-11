@@ -26,13 +26,13 @@ EXTRA_DIST = \
 SUBDIRS = tests
 
 COPY_FILES = \
+	$(srcdir)/gpgme.i \
 	$(srcdir)/README \
+	$(srcdir)/MANIFEST.in \
+	$(srcdir)/gpgme-h-clean.py \
 	$(srcdir)/pyme \
+	$(srcdir)/examples \
 	$(srcdir)/helpers.c $(srcdir)/helpers.h
-
-# Cleanup gpgme.h from deprecated functions and typedefs.
-gpgme.h: ../../src/gpgme.h $(srcdir)/gpgme-h-clean.py
-	$(PYTHON) $(srcdir)/gpgme-h-clean.py $< >$@
 
 # For VPATH builds we need to copy some files because Python's
 # distutils are not VPATH-aware.
@@ -40,19 +40,15 @@ copystamp: $(COPY_FILES)
 	if test "$(srcdir)" != "$(builddir)" ; then cp -r $^ . ; fi
 	touch $@
 
-errors.i:
-	sed -n -e \
-	  '/GPG_ERR_[^ ]* =/s/ *\(.*\) = .*/%constant long \1 = \1;/p' \
-	  `$(GPG_ERROR_CONFIG) --prefix`/include/gpg-error.h >$@
-
-gpgme_wrap.c pyme/pygpgme.py: gpgme.i errors.i gpgme.h copystamp
-	$(SWIG) -python -py3 -builtin $(SWIGOPT) \
-	  -o $(builddir)/gpgme_wrap.c -outdir $(builddir)/pyme \
-	  $<
-
-all-local: gpgme_wrap.c pyme/pygpgme.py copystamp
+all-local: copystamp
 	CFLAGS="$(CFLAGS) -I$(top_srcdir)" \
 	  $(PYTHON) setup.py build --verbose
+
+dist/pyme3-$(VERSION).tar.gz: copystamp
+	CFLAGS="$(CFLAGS) -I$(top_srcdir)" \
+	  $(PYTHON) setup.py sdist --verbose
+
+sdist: dist/pyme3-$(VERSION).tar.gz
 
 CLEANFILES = gpgme.h errors.i gpgme_wrap.c pyme/pygpgme.py \
 	  copystamp
@@ -65,7 +61,7 @@ clean-local:
 	rm -rf -- build
 	if test "$(srcdir)" != "$(builddir)" ; then \
 	  find . -type d ! -perm -200 -exec chmod u+w {} ';' ; \
-	  rm -rf README pyme helpers.c helpers.h ; \
+	  for F in $(COPY_FILES); do rm -rf -- `basename $$F` ; done ; \
 	fi
 
 install-exec-local:

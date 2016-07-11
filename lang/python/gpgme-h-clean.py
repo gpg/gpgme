@@ -19,8 +19,8 @@
 
 import sys, re
 
-if len(sys.argv) < 2:
-    sys.stderr.write("Usage: %s gpgme.h\n" % sys.argv[0])
+if len(sys.argv) != 2:
+    sys.stderr.write("Usage: %s path/to/[gpgme|gpg-error].h\n" % sys.argv[0])
     sys.exit(1)
 
 deprec_func = re.compile(r'^(.*typedef.*|.*\(.*\)|[^#]+\s+.+)'
@@ -28,7 +28,7 @@ deprec_func = re.compile(r'^(.*typedef.*|.*\(.*\)|[^#]+\s+.+)'
                          re.S)
 line_break = re.compile(';|\\$|\\x0c|^\s*#|{');
 
-try:
+if 'gpgme.h' in sys.argv[1]:
     gpgme = open(sys.argv[1])
     tmp = gpgme.readline()
     text = ''
@@ -41,6 +41,10 @@ try:
         tmp = gpgme.readline()
     sys.stdout.write(text)
     gpgme.close()
-except IOError as errmsg:
-    sys.stderr.write("%s: %s\n" % (sys.argv[0], errmsg))
-    sys.exit(1)
+else:
+    filter_re = re.compile(r'GPG_ERR_[^ ]* =')
+    rewrite_re = re.compile(r' *(.*) = .*')
+    for line in open(sys.argv[1]):
+        if not filter_re.search(line):
+            continue
+        print(rewrite_re.sub(r'%constant long \1 = \1;', line.strip()))
