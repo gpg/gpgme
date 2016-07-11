@@ -18,9 +18,11 @@
 
 EXTRA_DIST = \
 	README \
+	MANIFEST.in \
 	gpgme.i \
 	helpers.c helpers.h \
 	gpgme-h-clean.py \
+	examples \
 	pyme
 
 SUBDIRS = tests
