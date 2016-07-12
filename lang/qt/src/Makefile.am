@@ -35,6 +35,7 @@ qgpgme_sources = \
     qgpgmeverifyopaquejob.cpp threadedjobmixin.cpp \
     gpgme_backend_debug.cpp
 
+# If you add one here make sure that you also add one in camelcase
 qgpgme_headers= \
     adduseridjob.h \
     changeexpiryjob.h \
@@ -65,6 +66,36 @@ qgpgme_headers= \
     keylistjob.h \
     listallkeysjob.h \
     verifydetachedjob.h
+
+camelcase_headers= \
+    AddUserIDJob \
+    ChangeExpiryJob \
+    ChangeOwnerTrustJob \
+    ChangePasswdJob \
+    DataProvider \
+    DecryptJob \
+    DecryptVerifyJob \
+    DownloadJob \
+    EncryptJob \
+    ExportJob \
+    HierarchicalKeyKistJob \
+    Job \
+    MultiDeleteJob \
+    Protocol \
+    QGpgMENewCryptoConfig \
+    SignJob \
+    SignKeyJob \
+    SignEncryptJob \
+    VerifyOpaqueJob \
+    RefreshKeysJob \
+    CryptoConfig \
+    DeleteJob \
+    ImportFromKeyserverJob \
+    ImportJob \
+    KeyGenerationJob \
+    KeyListJob \
+    ListAllKeysJob \
+    VerifyDetachedJob
 
 private_qgpgme_headers = \
     qgpgme_export.h \
@@ -148,6 +179,8 @@ qgpgme_moc_sources = \
 
 qgpgmeincludedir = $(includedir)/qgpgme
 qgpgmeinclude_HEADERS = $(qgpgme_headers)
+camelcaseincludedir = $(includedir)/QGpgME
+camelcaseinclude_HEADERS = $(camelcase_headers)
 nodist_include_HEADERS = qgpgme_version.h
 
 libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
@@ -171,6 +204,11 @@ QGpgmeConfig.cmake: QGpgmeConfig.cmake.in
 	sed -e 's|[@]libsuffix@|$(libsuffix)|g' < "$@" > "$@".2
 	mv "$@".2 "$@"
 
+$(camelcase_headers): Makefile.am
+	echo -n "#include \"qgpgme/" > "$@"
+	echo -n "$@" | tr '[:upper:]' '[:lower:]' >> "$@"
+	echo ".h\"" >> "$@"
+
 install-cmake-files: QGpgmeConfig.cmake QGpgmeConfigVersion.cmake
 	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/Gpgmepp
 	$(INSTALL) QGpgmeConfig.cmake \
@@ -187,9 +225,9 @@ install-data-local: install-cmake-files
 
 uninstall-local: uninstall-cmake-files
 
-BUILT_SOURCES = $(qgpgme_moc_sources)
+BUILT_SOURCES = $(qgpgme_moc_sources) $(camelcase_headers)
 
-CLEANFILES = $(qgpgme_moc_sources) QGpgmeConfig.cmake
+CLEANFILES = $(qgpgme_moc_sources) $(camelcase_headers) QGpgmeConfig.cmake
 
 nodist_libqgpgme_la_SOURCES = $(qgpgme_moc_sources)
 
