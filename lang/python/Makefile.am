@@ -46,11 +46,17 @@ all-local: copystamp
 	CFLAGS="$(CFLAGS) -I$(top_srcdir)" \
 	  $(PYTHON) setup.py build --verbose
 
-dist/pyme3-$(VERSION).tar.gz: copystamp
+dist/pyme3-$(VERSION).tar.gz dist/pyme3-$(VERSION).tar.gz.asc: copystamp
 	CFLAGS="$(CFLAGS) -I$(top_srcdir)" \
 	  $(PYTHON) setup.py sdist --verbose
+	gpg2 --detach-sign --armor dist/pyme3-$(VERSION).tar.gz
 
-sdist: dist/pyme3-$(VERSION).tar.gz
+.PHONY: sdist
+sdist: dist/pyme3-$(VERSION).tar.gz dist/pyme3-$(VERSION).tar.gz.asc
+
+.PHONY: upload
+upload: dist/pyme3-$(VERSION).tar.gz dist/pyme3-$(VERSION).tar.gz.asc
+	twine upload $^
 
 CLEANFILES = gpgme.h errors.i gpgme_wrap.c pyme/pygpgme.py \
 	  copystamp
