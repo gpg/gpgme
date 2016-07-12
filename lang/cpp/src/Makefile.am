@@ -18,7 +18,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA
 
-EXTRA_DIST = GpgmeppConfig.cmake.in.in GpgmeppConfigVersion.cmake.in
+EXTRA_DIST = GpgmeppConfig.cmake.in.in GpgmeppConfigVersion.cmake.in \
+             gpgmepp_version.h.in
 
 lib_LTLIBRARIES = libgpgmepp.la
 
@@ -56,6 +57,7 @@ interface_headers= \
 gpgmeppincludedir = $(includedir)/gpgme++
 gpgmeppinclude_HEADERS = $(gpgmepp_headers)
 nobase_gpgmeppinclude_HEADERS = $(interface_headers)
+nodist_include_HEADERS = gpgmepp_version.h
 
 libgpgmepp_la_SOURCES = $(main_sources) $(gpgmepp_headers) context_vanilla.cpp \
                         $(interface_headers) $(private_gpgmepp_headers)

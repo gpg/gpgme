@@ -19,7 +19,7 @@
 # 02111-1307, USA
 lib_LTLIBRARIES = libqgpgme.la
 EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
-             gpgme_backend_debug.h
+             gpgme_backend_debug.h qgpgme_version.h.in
 
 qgpgme_sources = \
     dataprovider.cpp job.cpp qgpgmeadduseridjob.cpp \
@@ -148,6 +148,7 @@ qgpgme_moc_sources = \
 
 qgpgmeincludedir = $(includedir)/qgpgme
 qgpgmeinclude_HEADERS = $(qgpgme_headers)
+nodist_include_HEADERS = qgpgme_version.h
 
 libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
 
