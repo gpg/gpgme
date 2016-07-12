@@ -60,8 +60,8 @@ AC_DEFUN([FIND_QT],
     dnl for host.
     OLDCPPFLAGS=$CPPFLAGS
     CPPFLAGS=$GPGME_QT_CFLAGS
-    OLDLDFLAGS=$LDFLAGS
-    LDFLAGS=$GPGME_QT_LIBS
+    OLDLIBS=$LIBS
+    LIBS=$GPGME_QT_LIBS
     AC_LANG_PUSH(C++)
     AC_MSG_CHECKING([whether a simple qt program can be built])
     AC_LINK_IFELSE([AC_LANG_SOURCE([
@@ -73,6 +73,6 @@ AC_DEFUN([FIND_QT],
     AC_MSG_RESULT([$have_qt5_libs])
     AC_LANG_POP()
     CPPFLAGS=$OLDCPPFLAGS
-    LDFLAGS=$OLDLDFLAGS
+    LIBS=$OLDLIBS
   fi
 ])
