@@ -23,8 +23,10 @@ AC_DEFUN([FIND_QT],
                     [have_qt5test_libs="yes"],
                     [have_qt5test_libs="no"])
 
-  if "$PKG_CONFIG" --variable qt_config Qt5Core | grep -q "reduce_relocations"; then
-    GPGME_QT_CFLAGS="$GPGME_QT_CFLAGS -fpic"
+  if ! test "$have_w32_system" = yes; then
+    if "$PKG_CONFIG" --variable qt_config Qt5Core | grep -q "reduce_relocations"; then
+      GPGME_QT_CFLAGS="$GPGME_QT_CFLAGS -fpic"
+    fi
   fi
   if test "$have_qt5_libs" = "yes"; then
     AC_CHECK_TOOL(MOC, moc)
