@@ -2130,6 +2130,9 @@ scheme as used by @acronym{MIME} and other protocols.
 This specifies that the data is encoded in an armored form as used by
 OpenPGP and PEM.
 
+@item GPGME_DATA_ENCODING_MIME
+This specifies that the data is encoded as a MIME part.
+
 @item GPGME_DATA_ENCODING_URL
 The data is a list of linefeed delimited URLs.  This is only useful with
 @code{gpgme_op_import}.

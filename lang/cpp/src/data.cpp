@@ -146,6 +146,7 @@ GpgME::Data::Encoding GpgME::Data::encoding() const
     case GPGME_DATA_ENCODING_BINARY: return BinaryEncoding;
     case GPGME_DATA_ENCODING_BASE64: return Base64Encoding;
     case GPGME_DATA_ENCODING_ARMOR:  return ArmorEncoding;
+    case GPGME_DATA_ENCODING_MIME:   return MimeEncoding;
     }
     return AutoEncoding;
 }
@@ -158,6 +159,7 @@ GpgME::Error GpgME::Data::setEncoding(Encoding enc)
     case BinaryEncoding: ge = GPGME_DATA_ENCODING_BINARY; break;
     case Base64Encoding: ge = GPGME_DATA_ENCODING_BASE64; break;
     case ArmorEncoding:  ge = GPGME_DATA_ENCODING_ARMOR;  break;
+    case MimeEncoding:   ge = GPGME_DATA_ENCODING_MIME;  break;
     }
     return Error(gpgme_data_set_encoding(d->data, ge));
 }

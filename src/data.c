@@ -193,7 +193,7 @@ gpgme_data_set_encoding (gpgme_data_t dh, gpgme_data_encoding_t enc)
 	      "encoding=%i", enc);
   if (!dh)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-  if (enc < 0 || enc > GPGME_DATA_ENCODING_URL0)
+  if (enc < 0 || enc > GPGME_DATA_ENCODING_MIME)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
   dh->encoding = enc;
   return TRACE_ERR (0);

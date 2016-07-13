@@ -294,6 +294,15 @@ add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
   return 0;
 }
 
+
+/* Return true if the engine's version is at least VERSION.  */
+static int
+have_gpg_version (engine_gpg_t gpg, const char *version)
+{
+  return _gpgme_compare_versions (gpg->version, version);
+}
+
+
 
 static char *
 gpg_get_version (const char *file_name)
@@ -1719,6 +1728,10 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
   if (!err && (flags & GPGME_ENCRYPT_NO_COMPRESS))
     err = add_arg (gpg, "--compress-algo=none");
 
+  if (gpgme_data_get_encoding (plain) == GPGME_DATA_ENCODING_MIME
+      && have_gpg_version (gpg, "2.1.14"))
+    err = add_arg (gpg, "--mimemode");
+
   if (!symmetric)
     {
       /* If we know that all recipients are valid (full or ultimate trust)
@@ -1778,6 +1791,10 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
 
   if (!err && (flags & GPGME_ENCRYPT_NO_COMPRESS))
     err = add_arg (gpg, "--compress-algo=none");
+
+  if (gpgme_data_get_encoding (plain) == GPGME_DATA_ENCODING_MIME
+      && have_gpg_version (gpg, "2.1.14"))
+    err = add_arg (gpg, "--mimemode");
 
   if (!symmetric)
     {
@@ -2381,8 +2398,14 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 	err = add_arg (gpg, "--detach");
       if (!err && use_armor)
 	err = add_arg (gpg, "--armor");
-      if (!err && use_textmode)
-	err = add_arg (gpg, "--textmode");
+      if (!err)
+        {
+          if (gpgme_data_get_encoding (in) == GPGME_DATA_ENCODING_MIME
+              && have_gpg_version (gpg, "2.1.14"))
+            err = add_arg (gpg, "--mimemode");
+          else if (use_textmode)
+            err = add_arg (gpg, "--textmode");
+        }
     }
 
   if (!err)

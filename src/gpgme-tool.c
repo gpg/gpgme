@@ -1876,6 +1876,8 @@ server_data_encoding (const char *line)
     return GPGME_DATA_ENCODING_URLESC;
   if (strstr (line, "--url0"))
     return GPGME_DATA_ENCODING_URL0;
+  if (strstr (line, "--mime"))
+    return GPGME_DATA_ENCODING_MIME;
   return GPGME_DATA_ENCODING_NONE;
 }
 

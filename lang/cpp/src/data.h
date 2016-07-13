@@ -77,7 +77,8 @@ public:
         AutoEncoding,
         BinaryEncoding,
         Base64Encoding,
-        ArmorEncoding
+        ArmorEncoding,
+        MimeEncoding
     };
     Encoding encoding() const;
     Error setEncoding(Encoding encoding);
