@@ -90,10 +90,13 @@ gpgconf_release (void *engine)
 
 
 static gpgme_error_t
-gpgconf_new (void **engine, const char *file_name, const char *home_dir)
+gpgconf_new (void **engine, const char *file_name, const char *home_dir,
+             const char *version)
 {
   gpgme_error_t err = 0;
   engine_gpgconf_t gpgconf;
+
+  (void)version; /* Not yet used.  */
 
   gpgconf = calloc (1, sizeof *gpgconf);
   if (!gpgconf)

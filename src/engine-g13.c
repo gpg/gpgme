@@ -212,7 +212,8 @@ g13_release (void *engine)
 
 
 static gpgme_error_t
-g13_new (void **engine, const char *file_name, const char *home_dir)
+g13_new (void **engine, const char *file_name, const char *home_dir,
+         const char *version)
 {
   gpgme_error_t err = 0;
   engine_g13_t g13;
@@ -223,6 +224,8 @@ g13_new (void **engine, const char *file_name, const char *home_dir)
   char dft_ttyname[64];
   char *dft_ttytype = NULL;
   char *optstr;
+
+  (void)version; /* Not yet used.  */
 
   g13 = calloc (1, sizeof *g13);
   if (!g13)

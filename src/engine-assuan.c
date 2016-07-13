@@ -212,11 +212,14 @@ llass_release (void *engine)
 /* Create a new instance. If HOME_DIR is NULL standard options for use
    with gpg-agent are issued.  */
 static gpgme_error_t
-llass_new (void **engine, const char *file_name, const char *home_dir)
+llass_new (void **engine, const char *file_name, const char *home_dir,
+           const char *version)
 {
   gpgme_error_t err = 0;
   engine_llass_t llass;
   char *optstr;
+
+  (void)version; /* Not yet used.  */
 
   llass = calloc (1, sizeof *llass);
   if (!llass)

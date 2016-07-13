@@ -238,7 +238,8 @@ uiserver_release (void *engine)
 
 
 static gpgme_error_t
-uiserver_new (void **engine, const char *file_name, const char *home_dir)
+uiserver_new (void **engine, const char *file_name, const char *home_dir,
+              const char *version)
 {
   gpgme_error_t err = 0;
   engine_uiserver_t uiserver;
@@ -246,6 +247,8 @@ uiserver_new (void **engine, const char *file_name, const char *home_dir)
   char dft_ttyname[64];
   char *dft_ttytype = NULL;
   char *optstr;
+
+  (void)version; /* Not yet used.  */
 
   uiserver = calloc (1, sizeof *uiserver);
   if (!uiserver)

@@ -463,7 +463,8 @@ _gpgme_engine_new (gpgme_engine_info_t info, engine_t *r_engine)
     {
       gpgme_error_t err;
       err = (*engine->ops->new) (&engine->engine,
-				 info->file_name, info->home_dir);
+				 info->file_name, info->home_dir,
+                                 info->version);
       if (err)
 	{
 	  free (engine);

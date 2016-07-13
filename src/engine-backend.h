@@ -44,7 +44,8 @@ struct engine_ops
   const char *(*get_req_version) (void);
 
   gpgme_error_t (*new) (void **r_engine,
-			const char *file_name, const char *home_dir);
+			const char *file_name, const char *home_dir,
+                        const char *version);
 
   /* Member functions.  */
   void (*release) (void *engine);

@@ -78,6 +78,7 @@ typedef gpgme_error_t (*colon_preprocessor_t) (char *line, char **rline);
 struct engine_gpg
 {
   char *file_name;
+  char *version;
 
   char *lc_messages;
   char *lc_ctype;
@@ -388,6 +389,8 @@ gpg_release (void *engine)
 
   if (gpg->file_name)
     free (gpg->file_name);
+  if (gpg->version)
+    free (gpg->version);
 
   if (gpg->lc_messages)
     free (gpg->lc_messages);
@@ -416,7 +419,8 @@ gpg_release (void *engine)
 
 
 static gpgme_error_t
-gpg_new (void **engine, const char *file_name, const char *home_dir)
+gpg_new (void **engine, const char *file_name, const char *home_dir,
+         const char *version)
 {
   engine_gpg_t gpg;
   gpgme_error_t rc = 0;
@@ -432,6 +436,16 @@ gpg_new (void **engine, const char *file_name, const char *home_dir)
     {
       gpg->file_name = strdup (file_name);
       if (!gpg->file_name)
+	{
+	  rc = gpg_error_from_syserror ();
+	  goto leave;
+	}
+    }
+
+  if (version)
+    {
+      gpg->version = strdup (version);
+      if (!gpg->version)
 	{
 	  rc = gpg_error_from_syserror ();
 	  goto leave;

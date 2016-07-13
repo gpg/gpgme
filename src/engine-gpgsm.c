@@ -237,7 +237,8 @@ gpgsm_release (void *engine)
 
 
 static gpgme_error_t
-gpgsm_new (void **engine, const char *file_name, const char *home_dir)
+gpgsm_new (void **engine, const char *file_name, const char *home_dir,
+           const char *version)
 {
   gpgme_error_t err = 0;
   engine_gpgsm_t gpgsm;
@@ -252,6 +253,8 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir)
   char dft_ttyname[64];
   char *dft_ttytype = NULL;
   char *optstr;
+
+  (void)version; /* Not yet used.  */
 
   gpgsm = calloc (1, sizeof *gpgsm);
   if (!gpgsm)

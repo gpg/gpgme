@@ -324,12 +324,14 @@ engspawn_get_req_version (void)
 
 
 static gpgme_error_t
-engspawn_new (void **engine, const char *file_name, const char *home_dir)
+engspawn_new (void **engine, const char *file_name, const char *home_dir,
+              const char *version)
 {
   engine_spawn_t esp;
 
   (void)file_name;
   (void)home_dir;
+  (void)version;
 
   esp = calloc (1, sizeof *esp);
   if (!esp)
