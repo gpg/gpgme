@@ -1519,6 +1519,7 @@ static const unsigned long supported_features = 0
         ;
 
 static const unsigned long supported_features2 = 0
+        | GpgME::BinaryAndFineGrainedIdentify
         ;
 
 bool GpgME::hasFeature(unsigned long features)

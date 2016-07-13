@@ -131,8 +131,10 @@ enum Feature {
     FeatureMaxValue                            = 0x80000000
 };
 enum Feature2 {
+    BinaryAndFineGrainedIdentify               = 0x00000001, // gpgme >= 1.7.0
     Feature2MaxValue                           = 0x80000000
 };
+
 // use hasFeature( unsigned long, unsigned long ) instead
 GPGMEPP_DEPRECATED_EXPORT bool hasFeature(unsigned long feature);
 GPGMEPP_EXPORT bool hasFeature(unsigned long feature, unsigned long feature2);
