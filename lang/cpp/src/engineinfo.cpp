@@ -72,6 +72,11 @@ const char *GpgME::EngineInfo::version() const
     return isNull() ? 0 : d->info->version;
 }
 
+GpgME::EngineInfo::Version GpgME::EngineInfo::engineVersion() const
+{
+    return Version(version());
+}
+
 const char *GpgME::EngineInfo::requiredVersion() const
 {
     return isNull() ? 0 : d->info->req_version;

@@ -28,6 +28,8 @@
 #include <memory>
 
 #include <algorithm>
+#include <string>
+#include <iostream>
 
 namespace GpgME
 {
@@ -35,6 +37,59 @@ namespace GpgME
 class GPGMEPP_EXPORT EngineInfo
 {
 public:
+    struct Version
+    {
+        int major, minor, patch;
+
+        Version(const std::string& version)
+        {
+            if (version.empty() ||
+                std::sscanf(version.c_str(), "%d.%d.%d", &major, &minor, &patch) != 3) {
+                major = 0;
+                minor = 0;
+                patch = 0;
+            }
+        }
+
+        bool operator < (const Version& other)
+        {
+            if (major < other.major)
+                return true;
+            if (minor < other.minor)
+                return true;
+            if (patch < other.patch)
+                return true;
+            return false;
+        }
+
+        bool operator < (const char* other)
+        {
+            return operator<(Version(other));
+        }
+
+        bool operator == (const Version& other)
+        {
+            return major == other.major
+                && minor == other.minor
+                && patch == other.patch;
+        }
+
+        bool operator == (const char* other)
+        {
+            return operator==(Version(other));
+        }
+
+        friend std::ostream& operator << (std::ostream& stream, const Version& ver)
+        {
+            stream << ver.major;
+            stream << '.';
+            stream << ver.minor;
+            stream << '.';
+            stream << ver.patch;
+            return stream;
+        }
+    };
+
     EngineInfo();
     explicit EngineInfo(gpgme_engine_info_t engine);
 
@@ -55,6 +110,7 @@ public:
     Protocol protocol() const;
     const char *fileName() const;
     const char *version() const;
+    Version engineVersion() const;
     const char *requiredVersion() const;
     const char *homeDirectory() const;
 
