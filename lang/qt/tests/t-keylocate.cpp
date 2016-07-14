@@ -35,6 +35,7 @@
 #include "keylistjob.h"
 #include "protocol.h"
 #include "keylistresult.h"
+#include "engineinfo.h"
 
 using namespace QGpgME;
 using namespace GpgME;
@@ -88,6 +89,9 @@ private Q_SLOTS:
 
     void testKeyLocateSingle()
     {
+        if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.0.10") {
+            return;
+        }
         auto *job = openpgp()->locateKeysJob();
         mTestpattern = QStringLiteral("alfa@example.net");
 
