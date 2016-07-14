@@ -69,10 +69,10 @@ export GNUPGHOME := $(abs_builddir)
 
 ./pubring-stamp: $(top_srcdir)/tests/gpg/pubdemo.asc \
 	             $(top_srcdir)/tests/gpg/secdemo.asc
-	echo "ignore-invalid-options" > gpg-agent.conf
-	echo "allow-loopback-pinentry" > gpg-agent.conf
-	echo "ignore-invalid-options" > gpg.conf
-	echo "pinentry-mode loopback" > gpg.conf
+	echo "ignore-invalid-option allow-loopback-pinentry" > $(abs_builddir)/gpg-agent.conf
+	echo "allow-loopback-pinentry" >> gpg-agent.conf
+	echo "ignore-invalid-option pinentry-mode" > gpg.conf
+	echo "pinentry-mode loopback" >> gpg.conf
 	$(GPG) --no-permission-warning \
            --import $(top_srcdir)/tests/gpg/pubdemo.asc
 	$(GPG) --no-permission-warning \
