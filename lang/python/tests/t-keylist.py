@@ -99,7 +99,7 @@ keys = [
       [ [ "Zulu Test", "demo key", "zulu@example.net" ] ], 1 ],
 ]
 
-def check_global(i, key, uids, n_subkeys):
+def check_global(key, uids, n_subkeys):
     assert not key.revoked, "Key unexpectedly revoked"
     assert not key.expired, "Key unexpectedly expired"
     assert not key.disabled, "Key unexpectedly disabled"
@@ -115,13 +115,8 @@ def check_global(i, key, uids, n_subkeys):
         "Key unexpectedly carries issuer name: {}".format(key.issuer_name)
     assert not key.chain_id, \
         "Key unexpectedly carries chain ID: {}".format(key.chain_id)
-
-    # Only key Alfa is trusted
-    assert i == 0 or key.owner_trust == constants.VALIDITY_UNKNOWN, \
+    assert key.owner_trust == constants.VALIDITY_UNKNOWN, \
         "Key has unexpected owner trust: {}".format(key.owner_trust)
-    assert i != 0 or key.owner_trust == constants.VALIDITY_ULTIMATE, \
-        "Key has unexpected owner trust: {}".format(key.owner_trust)
-
     assert len(key.subkeys) - 1 == n_subkeys, \
         "Key `{}' has unexpected number of subkeys".format(uids[0][0])
 
@@ -166,10 +161,7 @@ def check_subkey(fpr, which, subkey):
 def check_uid(which, ref, uid):
     assert not uid.revoked, which + " user ID unexpectedly revoked"
     assert not uid.invalid, which + " user ID unexpectedly invalid"
-    assert uid.validity == (constants.VALIDITY_UNKNOWN
-                            if uid.name.split()[0]
-                            not in {'Alfa', 'Alpha', 'Alice'} else
-                            constants.VALIDITY_ULTIMATE), \
+    assert uid.validity == constants.VALIDITY_UNKNOWN, \
       which + " user ID has unexpectedly validity: {}".format(uid.validity)
     assert not uid.signatures, which + " user ID unexpectedly signed"
     assert uid.name == ref[0], \
@@ -195,7 +187,7 @@ while key:
         break
 
     # Global key flags.
-    check_global(i, key, uids, n_subkeys)
+    check_global(key, uids, n_subkeys)
     check_subkey(fpr, "Primary", key.subkeys[0])
     check_subkey(sec_keyid, "Secondary", key.subkeys[1])
 
@@ -228,7 +220,7 @@ for i, key in enumerate(c.op_keylist_all(None, False)):
         break
 
     # Global key flags.
-    check_global(i, key, uids, n_subkeys)
+    check_global(key, uids, n_subkeys)
     check_subkey(fpr, "Primary", key.subkeys[0])
     check_subkey(sec_keyid, "Secondary", key.subkeys[1])
 
