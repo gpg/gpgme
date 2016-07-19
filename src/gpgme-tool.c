@@ -1725,9 +1725,9 @@ gt_result (gpgme_tool_t gt, unsigned int flags)
 {
   int indent = 2;
 
-  gt_write_data (gt, xml_preamble1, sizeof (xml_preamble1));
+  gt_write_data (gt, xml_preamble1, strlen (xml_preamble1));
   gt_write_data (gt, NULL, 0);
-  gt_write_data (gt, xml_preamble2, sizeof (xml_preamble2));
+  gt_write_data (gt, xml_preamble2, strlen (xml_preamble2));
   gt_write_data (gt, NULL, 0);
   if (flags & GT_RESULT_ENCRYPT)
     result_encrypt_to_xml (gt->ctx, indent,
@@ -1753,7 +1753,7 @@ gt_result (gpgme_tool_t gt, unsigned int flags)
   if (flags & GT_RESULT_VFS_MOUNT)
     result_vfs_mount_to_xml (gt->ctx, indent,
 			     (result_xml_write_cb_t) gt_write_data, gt);
-  gt_write_data (gt, xml_end, sizeof (xml_end));
+  gt_write_data (gt, xml_end, strlen (xml_end));
 
   return 0;
 }
@@ -2853,9 +2853,9 @@ cmd_keylist (assuan_context_t ctx, char *line)
     }
   pattern[idx] = NULL;
 
-  gt_write_data (gt, xml_preamble1, sizeof (xml_preamble1));
+  gt_write_data (gt, xml_preamble1, strlen (xml_preamble1));
   gt_write_data (gt, NULL, 0);
-  gt_write_data (gt, xml_preamble2, sizeof (xml_preamble2));
+  gt_write_data (gt, xml_preamble2, strlen (xml_preamble2));
   gt_write_data (gt, NULL, 0);
   result_init (&state, indent, (result_xml_write_cb_t) gt_write_data, gt);
   result_xml_tag_start (&state, "keylist", NULL);
@@ -2930,7 +2930,7 @@ cmd_keylist (assuan_context_t ctx, char *line)
     }
 
   result_xml_tag_end (&state);  /* keylist */
-  gt_write_data (gt, xml_end, sizeof (xml_end));
+  gt_write_data (gt, xml_end, strlen (xml_end));
 
   server_reset_fds (server);
 
