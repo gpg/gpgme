@@ -312,14 +312,14 @@ static char *
 engspawn_get_version (const char *file_name)
 {
   (void)file_name;
-  return strdup ("1.0");
+  return strdup ("1.0.0");
 }
 
 
 static const char *
 engspawn_get_req_version (void)
 {
-  return "1.0";
+  return "1.0.0";
 }
 
 
