@@ -123,7 +123,7 @@ static void _pyme_stash_callback_exception(PyObject *weak_self)
   Py_DECREF(excinfo);
 }
 
-PyObject *pygpgme_raise_callback_exception(PyObject *self)
+PyObject *pyme_raise_callback_exception(PyObject *self)
 {
   PyObject *ptype, *pvalue, *ptraceback, *excinfo;
 
@@ -413,7 +413,7 @@ static gpgme_error_t pyPassphraseCb(void *hook,
 }
 
 PyObject *
-pygpgme_set_passphrase_cb(PyObject *self, PyObject *cb) {
+pyme_set_passphrase_cb(PyObject *self, PyObject *cb) {
   PyObject *wrapped;
   gpgme_ctx_t ctx;
 
@@ -495,7 +495,7 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
 }
 
 PyObject *
-pygpgme_set_progress_cb(PyObject *self, PyObject *cb) {
+pyme_set_progress_cb(PyObject *self, PyObject *cb) {
   PyObject *wrapped;
   gpgme_ctx_t ctx;
 
@@ -592,7 +592,7 @@ static gpgme_error_t pyStatusCb(void *hook, const char *keyword,
 }
 
 PyObject *
-pygpgme_set_status_cb(PyObject *self, PyObject *cb) {
+pyme_set_status_cb(PyObject *self, PyObject *cb) {
   PyObject *wrapped;
   gpgme_ctx_t ctx;
 
@@ -910,9 +910,9 @@ static void pyDataReleaseCb(void *hook)
 }
 
 PyObject *
-pygpgme_data_new_from_cbs(PyObject *self,
-                          PyObject *pycbs,
-                          gpgme_data_t *r_data)
+pyme_data_new_from_cbs(PyObject *self,
+                       PyObject *pycbs,
+                       gpgme_data_t *r_data)
 {
   static struct gpgme_data_cbs cbs = {
     pyDataReadCb,

@@ -26,11 +26,11 @@
 #define write(fd, str, sz) {DWORD written; WriteFile((HANDLE) fd, str, sz, &written, 0);}
 #endif
 
-PyObject *pygpgme_raise_callback_exception(PyObject *self);
+PyObject *pyme_raise_callback_exception(PyObject *self);
 
-PyObject *pygpgme_set_passphrase_cb(PyObject *self, PyObject *cb);
-PyObject *pygpgme_set_progress_cb(PyObject *self, PyObject *cb);
-PyObject *pygpgme_set_status_cb(PyObject *self, PyObject *cb);
+PyObject *pyme_set_passphrase_cb(PyObject *self, PyObject *cb);
+PyObject *pyme_set_progress_cb(PyObject *self, PyObject *cb);
+PyObject *pyme_set_status_cb(PyObject *self, PyObject *cb);
 
-PyObject *pygpgme_data_new_from_cbs(PyObject *self, PyObject *pycbs,
-				    gpgme_data_t *r_data);
+PyObject *pyme_data_new_from_cbs(PyObject *self, PyObject *pycbs,
+				 gpgme_data_t *r_data);
