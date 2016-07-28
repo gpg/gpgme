@@ -16,8 +16,6 @@
 #    License along with this library; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
-from . import gpgme
-
 def process_constants(prefix, scope):
     """Called by the constant modules to load up the constants from the C
     library starting with PREFIX.  Matching constants will be inserted
@@ -25,6 +23,7 @@ def process_constants(prefix, scope):
     of inserted constants.
 
     """
+    from . import gpgme
     index = len(prefix)
     constants = {identifier[index:]: getattr(gpgme, identifier)
                  for identifier in dir(gpgme)

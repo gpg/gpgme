@@ -18,7 +18,7 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import os
-from pyme import core, constants, errors
+from pyme import core, constants
 import support
 
 expected_notations = {

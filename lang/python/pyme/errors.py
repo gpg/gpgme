@@ -20,6 +20,9 @@ from . import util
 
 util.process_constants('GPG_ERR_', globals())
 
+# To appease static analysis tools, we define some constants here:
+NO_ERROR = 0
+
 class PymeError(Exception):
     pass
 

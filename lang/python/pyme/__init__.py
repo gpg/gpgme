@@ -99,7 +99,24 @@ GPGME documentation: https://www.gnupg.org/documentation/manuals/gpgme/
 
 """
 
-__all__ = ['core', 'errors', 'constants', 'util', 'callbacks', 'version']
-
+from . import core
+from . import errors
+from . import constants
+from . import util
+from . import callbacks
+from . import version
 from .core import Context
 from .core import Data
+
+# Interface hygiene.
+
+# Drop the low-level gpgme that creeps in for some reason.
+gpgme = None
+del gpgme
+
+# This is a white-list of symbols.  Any other will alert pyflakes.
+_ = [Context, Data, core, errors, constants, util, callbacks, version]
+del _
+
+__all__ = ["Context", "Data",
+           "core", "errors", "constants", "util", "callbacks", "version"]
