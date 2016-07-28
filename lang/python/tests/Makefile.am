@@ -49,7 +49,8 @@ py_tests = t-wrapper.py \
 	t-wait.py \
 	t-encrypt-large.py \
 	t-file-name.py \
-	t-idiomatic.py
+	t-idiomatic.py \
+	t-protocol-assuan.py
 
 TESTS = initial.py $(py_tests) final.py
 EXTRA_DIST = support.py $(TESTS) encrypt-only.asc sign-only.asc

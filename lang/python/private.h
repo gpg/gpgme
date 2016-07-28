@@ -35,4 +35,12 @@ PyObject *pygpgme_wrap_fragile_result(PyObject *fragile, const char *classname);
 gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
 		       const char *args, int fd);
 
+gpgme_error_t _pyme_assuan_data_cb (void *hook,
+				    const void *data, size_t datalen);
+gpgme_error_t _pyme_assuan_inquire_cb (void *hook,
+				       const char *name, const char *args,
+				       gpgme_data_t *r_data);
+gpgme_error_t _pyme_assuan_status_cb (void *hook,
+				      const char *status, const char *args);
+
 #endif /* _PYME_PRIVATE_H_ */

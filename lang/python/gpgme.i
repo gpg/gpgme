@@ -443,6 +443,60 @@
   $2 = $input;
 }
 
+
+
+/* The assuan protocol callbacks.  */
+%typemap(in) (gpgme_assuan_data_cb_t data_cb, void *data_cb_value) {
+  if ($input == Py_None)
+    $1 = $2 = NULL;
+  else
+    {
+      if (! PyTuple_Check($input))
+        return PyErr_Format(PyExc_TypeError, "callback must be a tuple");
+      if (PyTuple_Size($input) != 2)
+        return PyErr_Format(PyExc_TypeError,
+                            "callback must be a tuple of size 2");
+      if (! PyCallable_Check(PyTuple_GetItem($input, 1)))
+        return PyErr_Format(PyExc_TypeError, "second item must be callable");
+      $1 = _pyme_assuan_data_cb;
+      $2 = $input;
+    }
+}
+
+%typemap(in) (gpgme_assuan_inquire_cb_t inq_cb, void *inq_cb_value) {
+  if ($input == Py_None)
+    $1 = $2 = NULL;
+  else
+    {
+      if (! PyTuple_Check($input))
+        return PyErr_Format(PyExc_TypeError, "callback must be a tuple");
+      if (PyTuple_Size($input) != 2)
+        return PyErr_Format(PyExc_TypeError,
+                            "callback must be a tuple of size 2");
+      if (! PyCallable_Check(PyTuple_GetItem($input, 1)))
+        return PyErr_Format(PyExc_TypeError, "second item must be callable");
+      $1 = _pyme_assuan_inquire_cb;
+      $2 = $input;
+    }
+}
+
+%typemap(in) (gpgme_assuan_status_cb_t stat_cb, void *stat_cb_value) {
+  if ($input == Py_None)
+    $1 = $2 = NULL;
+  else
+    {
+      if (! PyTuple_Check($input))
+        return PyErr_Format(PyExc_TypeError, "callback must be a tuple");
+      if (PyTuple_Size($input) != 2)
+        return PyErr_Format(PyExc_TypeError,
+                            "callback must be a tuple of size 2");
+      if (! PyCallable_Check(PyTuple_GetItem($input, 1)))
+        return PyErr_Format(PyExc_TypeError, "second item must be callable");
+      $1 = _pyme_assuan_status_cb;
+      $2 = $input;
+    }
+}
+
 /* Include the unmodified <gpgme.h> for cc, and the cleaned-up local
    version for SWIG.  We do, however, want to hide certain fields on
    some structs, which we provide prior to including the version for

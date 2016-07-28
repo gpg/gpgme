@@ -31,6 +31,7 @@ from . import pygpgme
 from .errors import errorcheck, GPGMEError
 from . import constants
 from . import errors
+from . import util
 
 class GpgmeWrapper(object):
     """Base wrapper class
@@ -466,6 +467,55 @@ class Context(GpgmeWrapper):
             data.seek(0, os.SEEK_SET)
             plainbytes = data.read()
         return plainbytes, result
+
+    def assuan_transact(self, command,
+                        data_cb=None, inquire_cb=None, status_cb=None):
+        """Issue a raw assuan command
+
+        This function can be used to issue a raw assuan command to the
+        engine.
+
+        If command is a string or bytes, it will be used as-is.  If it
+        is an iterable of strings, it will be properly escaped and
+        joined into an well-formed assuan command.
+
+        Keyword arguments:
+        data_cb		-- a callback receiving data lines
+        inquire_cb	-- a callback providing more information
+        status_cb	-- a callback receiving status lines
+
+        Returns:
+        result		-- the result of command as GPGMEError
+
+        Raises:
+        GPGMEError	-- as signaled by the underlying library
+
+        """
+
+        if isinstance(command, (str, bytes)):
+            cmd = command
+        else:
+            cmd = " ".join(util.percent_escape(f) for f in command)
+
+        errptr = pygpgme.new_gpgme_error_t_p()
+
+        err = pygpgme.gpgme_op_assuan_transact_ext(
+            self.wrapped,
+            cmd,
+            (weakref.ref(self), data_cb) if data_cb else None,
+            (weakref.ref(self), inquire_cb) if inquire_cb else None,
+            (weakref.ref(self), status_cb) if status_cb else None,
+            errptr)
+
+        if self._callback_excinfo:
+            pygpgme.pygpgme_raise_callback_exception(self)
+
+        errorcheck(err)
+
+        status = pygpgme.gpgme_error_t_p_value(errptr)
+        pygpgme.delete_gpgme_error_t_p(errptr)
+
+        return GPGMEError(status) if status != 0 else None
 
     @property
     def signers(self):

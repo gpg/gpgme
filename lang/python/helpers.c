@@ -937,3 +937,119 @@ pygpgme_data_new_from_cbs(PyObject *self,
   Py_INCREF(Py_None);
   return Py_None;
 }
+
+
+
+/* The assuan callbacks.  */
+
+gpgme_error_t
+_pyme_assuan_data_cb (void *hook, const void *data, size_t datalen)
+{
+  gpgme_error_t err = 0;
+  PyObject *pyhook = (PyObject *) hook;
+  PyObject *self = NULL;
+  PyObject *func = NULL;
+  PyObject *py_data = NULL;
+  PyObject *retval = NULL;
+
+  assert (PyTuple_Check(pyhook));
+  assert (PyTuple_Size(pyhook) == 2);
+  self = PyTuple_GetItem(pyhook, 0);
+  func = PyTuple_GetItem(pyhook, 1);
+  assert (PyCallable_Check(func));
+
+  py_data = PyBytes_FromStringAndSize(data, datalen);
+  if (py_data == NULL)
+    return NULL;	/* raise */
+
+  retval = PyObject_CallFunctionObjArgs(func, py_data, NULL);
+  if (PyErr_Occurred())
+    err = pygpgme_exception2code();
+  Py_DECREF(py_data);
+  Py_XDECREF(retval);
+
+ leave:
+  if (err)
+    pygpgme_stash_callback_exception(self);
+  return err;
+}
+
+gpgme_error_t
+_pyme_assuan_inquire_cb (void *hook, const char *name, const char *args,
+                         gpgme_data_t *r_data)
+{
+  gpgme_error_t err = 0;
+  PyObject *pyhook = (PyObject *) hook;
+  PyObject *self = NULL;
+  PyObject *func = NULL;
+  PyObject *py_name = NULL;
+  PyObject *py_args = NULL;
+  PyObject *retval = NULL;
+
+  assert (PyTuple_Check(pyhook));
+  assert (PyTuple_Size(pyhook) == 2);
+  self = PyTuple_GetItem(pyhook, 0);
+  func = PyTuple_GetItem(pyhook, 1);
+  assert (PyCallable_Check(func));
+
+  py_name = PyUnicode_FromString(name);
+  if (py_name == NULL)
+    return NULL;	/* raise */
+
+  py_args = PyUnicode_FromString(args);
+  if (py_args == NULL)
+    return NULL;	/* raise */
+
+  retval = PyObject_CallFunctionObjArgs(func, py_name, py_args, NULL);
+  if (PyErr_Occurred())
+    err = pygpgme_exception2code();
+  Py_DECREF(py_name);
+  Py_DECREF(py_args);
+  Py_XDECREF(retval);
+
+  /* FIXME: Returning data is not yet implemented.  */
+  r_data = NULL;
+
+ leave:
+  if (err)
+    pygpgme_stash_callback_exception(self);
+  return err;
+}
+
+gpgme_error_t
+_pyme_assuan_status_cb (void *hook, const char *status, const char *args)
+{
+  gpgme_error_t err = 0;
+  PyObject *pyhook = (PyObject *) hook;
+  PyObject *self = NULL;
+  PyObject *func = NULL;
+  PyObject *py_status = NULL;
+  PyObject *py_args = NULL;
+  PyObject *retval = NULL;
+
+  assert (PyTuple_Check(pyhook));
+  assert (PyTuple_Size(pyhook) == 2);
+  self = PyTuple_GetItem(pyhook, 0);
+  func = PyTuple_GetItem(pyhook, 1);
+  assert (PyCallable_Check(func));
+
+  py_status = PyUnicode_FromString(status);
+  if (py_status == NULL)
+    return NULL;	/* raise */
+
+  py_args = PyUnicode_FromString(args);
+  if (py_args == NULL)
+    return NULL;	/* raise */
+
+  retval = PyObject_CallFunctionObjArgs(func, py_status, py_args, NULL);
+  if (PyErr_Occurred())
+    err = pygpgme_exception2code();
+  Py_DECREF(py_status);
+  Py_DECREF(py_args);
+  Py_XDECREF(retval);
+
+ leave:
+  if (err)
+    pygpgme_stash_callback_exception(self);
+  return err;
+}

@@ -31,3 +31,9 @@ def process_constants(prefix, scope):
                  if identifier.startswith(prefix)}
     scope.update(constants)
     return list(constants.keys())
+
+def percent_escape(s):
+    return ''.join(
+        '%{0:2x}'.format(ord(c))
+        if c == '+' or c == '"' or c == '%' or ord(c) <= 0x20 else c
+        for c in s)
