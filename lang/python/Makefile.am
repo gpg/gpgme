@@ -20,7 +20,7 @@ EXTRA_DIST = \
 	README \
 	MANIFEST.in \
 	gpgme.i \
-	helpers.c helpers.h \
+	helpers.c helpers.h private.h \
 	gpgme-h-clean.py \
 	examples \
 	pyme
@@ -34,7 +34,7 @@ COPY_FILES = \
 	$(srcdir)/gpgme-h-clean.py \
 	$(srcdir)/pyme \
 	$(srcdir)/examples \
-	$(srcdir)/helpers.c $(srcdir)/helpers.h
+	$(srcdir)/helpers.c $(srcdir)/helpers.h $(srcdir)/private.h
 
 # For VPATH builds we need to copy some files because Python's
 # distutils are not VPATH-aware.

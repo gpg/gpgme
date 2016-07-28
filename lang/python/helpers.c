@@ -24,7 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Python.h"
+
 #include "helpers.h"
+#include "private.h"
 
 static PyObject *GPGMEError = NULL;
 

@@ -476,8 +476,10 @@ struct _gpgme_sig_notation
 %}
 FILE *fdopen(int fildes, const char *mode);
 
+/* We include both headers in the generated c code...  */
 %{
 #include "helpers.h"
+#include "private.h"
 
 /* SWIG support for helpers.c  */
 PyObject *
@@ -499,4 +501,6 @@ pygpgme_unwrap_gpgme_ctx_t(PyObject *wrapped)
 }
 %}
 
+/* ... but only the public definitions here.  They will be exposed to
+   the Python world, so let's be careful.  */
 %include "helpers.h"

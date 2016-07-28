@@ -26,24 +26,11 @@
 #define write(fd, str, sz) {DWORD written; WriteFile((HANDLE) fd, str, sz, &written, 0);}
 #endif
 
-void pygpgme_exception_init(void);
-gpgme_error_t pygpgme_exception2code(void);
-
-PyObject *object_to_gpgme_t(PyObject *input, const char *objtype, int argnum);
-PyObject *object_to_gpgme_data_t(PyObject *input, int argnum,
-				 gpgme_data_t *wrapper,
-				 PyObject **bytesio, Py_buffer *view);
-
-PyObject *pygpgme_wrap_fragile_result(PyObject *fragile, const char *classname);
-
 PyObject *pygpgme_raise_callback_exception(PyObject *self);
 
 PyObject *pygpgme_set_passphrase_cb(PyObject *self, PyObject *cb);
 PyObject *pygpgme_set_progress_cb(PyObject *self, PyObject *cb);
 PyObject *pygpgme_set_status_cb(PyObject *self, PyObject *cb);
-
-gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
-		       const char *args, int fd);
 
 PyObject *pygpgme_data_new_from_cbs(PyObject *self, PyObject *pycbs,
 				    gpgme_data_t *r_data);
