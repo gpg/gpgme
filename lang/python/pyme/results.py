@@ -113,3 +113,6 @@ class KeylistResult(Result):
 
 class VFSMountResult(Result):
     pass
+
+class EngineInfo(Result):
+    pass

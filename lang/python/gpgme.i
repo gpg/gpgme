@@ -324,7 +324,7 @@
 
 // Make types containing 'next' field to be lists
 %ignore next;
-%typemap(out) gpgme_sig_notation_t, gpgme_engine_info_t, gpgme_subkey_t,
+%typemap(out) gpgme_sig_notation_t, gpgme_subkey_t,
    gpgme_key_sig_t, gpgme_user_id_t, gpgme_invalid_key_t,
    gpgme_recipient_t, gpgme_new_signature_t, gpgme_signature_t,
    gpgme_import_status_t, gpgme_conf_arg_t, gpgme_conf_opt_t,
@@ -407,6 +407,26 @@
                                %newpointer_flags);
   $result = pygpgme_wrap_fragile_result(fragile, "VFSMountResult");
   Py_DECREF(fragile);
+}
+
+%typemap(out) gpgme_engine_info_t {
+  int i;
+  int size = 0;
+  $1_ltype curr;
+  for (curr = $1; curr != NULL; curr = curr->next) {
+    size++;
+  }
+  $result = PyList_New(size);
+  for (i=0,curr=$1; i<size; i++,curr=curr->next) {
+    PyObject *fragile, *o;
+    fragile = SWIG_NewPointerObj(SWIG_as_voidptr(curr), $1_descriptor,
+                                 %newpointer_flags);
+    o = pygpgme_wrap_fragile_result(fragile, "EngineInfo");
+    if (o == NULL)
+      return NULL;	/* raise */
+    Py_DECREF(fragile);
+    PyList_SetItem($result, i, o);
+  }
 }
 
 

@@ -666,17 +666,39 @@ class Context(GpgmeWrapper):
         if pygpgme.pygpgme_set_status_cb:
             self.set_status_cb(None)
 
+    @property
+    def engine_info(self):
+        """Configuration of the engine currently in use"""
+        p = self.protocol
+        infos = [i for i in self.get_engine_info() if i.protocol == p]
+        assert len(infos) == 1
+        return infos[0]
+
     def get_engine_info(self):
-        """Returns this context specific engine info"""
+        """Get engine configuration
+
+        Returns information about all configured and installed
+        engines.
+
+        Returns:
+        infos		-- a list of engine infos
+
+        """
         return pygpgme.gpgme_ctx_get_engine_info(self.wrapped)
 
-    def set_engine_info(self, proto, file_name, home_dir=None):
-        """Changes the configuration of the crypto engine implementing the
-    protocol 'proto' for the context. 'file_name' is the file name of
-    the executable program implementing this protocol. 'home_dir' is the
-    directory name of the configuration directory (engine's default is
-    used if omitted)."""
-        errorcheck(pygpgme.gpgme_ctx_set_engine_info(self.wrapped, proto, file_name, home_dir))
+    def set_engine_info(self, proto, file_name=None, home_dir=None):
+        """Change engine configuration
+
+        Changes the configuration of the crypto engine implementing
+        the protocol 'proto' for the context.
+
+        Keyword arguments:
+        file_name	-- engine program file name (unchanged if None)
+        home_dir	-- configuration directory (unchanged if None)
+
+        """
+        errorcheck(pygpgme.gpgme_ctx_set_engine_info(
+            self.wrapped, proto, file_name, home_dir))
 
     def wait(self, hang):
         """Wait for asynchronous call to finish. Wait forever if hang is True.
