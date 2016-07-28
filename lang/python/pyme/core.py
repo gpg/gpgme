@@ -546,6 +546,7 @@ class Context(GpgmeWrapper):
         return self.get_protocol()
     @protocol.setter
     def protocol(self, value):
+        errorcheck(gpgme.gpgme_engine_check_version(value))
         self.set_protocol(value)
 
     _ctype = 'gpgme_ctx_t'
@@ -553,14 +554,23 @@ class Context(GpgmeWrapper):
 
     def _errorcheck(self, name):
         """This function should list all functions returning gpgme_error_t"""
-        if (name.startswith('gpgme_op_') and \
-            not name.endswith('_result')) or \
-            name == 'gpgme_signers_add' or \
-            name == 'gpgme_set_locale' or \
-            name == 'gpgme_set_keylist_mode' or \
-            name == 'gpgme_set_protocol':
-            return 1
-        return 0
+        return ((name.startswith('gpgme_op_')
+                 and not name.endswith('_result'))
+                or name in {
+                    'gpgme_set_ctx_flag',
+                    'gpgme_set_protocol',
+                    'gpgme_set_sub_protocol',
+                    'gpgme_set_keylist_mode',
+                    'gpgme_set_pinentry_mode',
+                    'gpgme_set_locale',
+                    'gpgme_set_engine_info',
+                    'gpgme_signers_add',
+                    'gpgme_get_sig_key',
+                    'gpgme_sig_notation_add',
+                    'gpgme_cancel',
+                    'gpgme_cancel_async',
+                    'gpgme_cancel_get_key',
+                })
 
     _boolean_properties = {'armor', 'textmode', 'offline'}
 
