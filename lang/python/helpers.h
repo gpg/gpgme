@@ -34,7 +34,3 @@ PyObject *pygpgme_set_status_cb(PyObject *self, PyObject *cb);
 
 PyObject *pygpgme_data_new_from_cbs(PyObject *self, PyObject *pycbs,
 				    gpgme_data_t *r_data);
-
-/* SWIG support for helpers.c  */
-PyObject *pygpgme_wrap_gpgme_data_t(gpgme_data_t data);
-gpgme_ctx_t pygpgme_unwrap_gpgme_ctx_t(PyObject *wrapped);

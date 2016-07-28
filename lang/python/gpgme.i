@@ -135,7 +135,7 @@
     $1 = NULL;
   else {
     PyObject *pypointer;
-    pypointer = object_to_gpgme_data_t($input, $argnum, &wrapper,
+    pypointer = _pyme_obj2gpgme_data_t($input, $argnum, &wrapper,
                                        &bytesio, &view);
     if (pypointer == NULL)
       return NULL;
@@ -349,7 +349,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = pygpgme_wrap_fragile_result(fragile, "EncryptResult");
+  $result = _pyme_wrap_result(fragile, "EncryptResult");
   Py_DECREF(fragile);
 }
 
@@ -357,7 +357,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = pygpgme_wrap_fragile_result(fragile, "DecryptResult");
+  $result = _pyme_wrap_result(fragile, "DecryptResult");
   Py_DECREF(fragile);
 }
 
@@ -365,7 +365,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = pygpgme_wrap_fragile_result(fragile, "SignResult");
+  $result = _pyme_wrap_result(fragile, "SignResult");
   Py_DECREF(fragile);
 }
 
@@ -373,7 +373,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = pygpgme_wrap_fragile_result(fragile, "VerifyResult");
+  $result = _pyme_wrap_result(fragile, "VerifyResult");
   Py_DECREF(fragile);
 }
 
@@ -381,7 +381,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = pygpgme_wrap_fragile_result(fragile, "ImportResult");
+  $result = _pyme_wrap_result(fragile, "ImportResult");
   Py_DECREF(fragile);
 }
 
@@ -389,7 +389,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = pygpgme_wrap_fragile_result(fragile, "GenkeyResult");
+  $result = _pyme_wrap_result(fragile, "GenkeyResult");
   Py_DECREF(fragile);
 }
 
@@ -397,7 +397,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = pygpgme_wrap_fragile_result(fragile, "KeylistResult");
+  $result = _pyme_wrap_result(fragile, "KeylistResult");
   Py_DECREF(fragile);
 }
 
@@ -405,7 +405,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = pygpgme_wrap_fragile_result(fragile, "VFSMountResult");
+  $result = _pyme_wrap_result(fragile, "VFSMountResult");
   Py_DECREF(fragile);
 }
 
@@ -421,7 +421,7 @@
     PyObject *fragile, *o;
     fragile = SWIG_NewPointerObj(SWIG_as_voidptr(curr), $1_descriptor,
                                  %newpointer_flags);
-    o = pygpgme_wrap_fragile_result(fragile, "EngineInfo");
+    o = _pyme_wrap_result(fragile, "EngineInfo");
     if (o == NULL)
       return NULL;	/* raise */
     Py_DECREF(fragile);
@@ -439,7 +439,7 @@
     return PyErr_Format(PyExc_TypeError,
                         "edit callback must be a tuple of size 2 or 3");
 
-  $1 = (gpgme_edit_cb_t) pyEditCb;
+  $1 = (gpgme_edit_cb_t) _pyme_edit_cb;
   $2 = $input;
 }
 
@@ -555,15 +555,15 @@ FILE *fdopen(int fildes, const char *mode);
 #include "helpers.h"
 #include "private.h"
 
-/* SWIG support for helpers.c  */
+/* SWIG runtime support for helpers.c  */
 PyObject *
-pygpgme_wrap_gpgme_data_t(gpgme_data_t data)
+_pyme_wrap_gpgme_data_t(gpgme_data_t data)
 {
   return SWIG_Python_NewPointerObj(NULL, data, SWIGTYPE_p_gpgme_data, 0);
 }
 
 gpgme_ctx_t
-pygpgme_unwrap_gpgme_ctx_t(PyObject *wrapped)
+_pyme_unwrap_gpgme_ctx_t(PyObject *wrapped)
 {
   gpgme_ctx_t result;
   if (SWIG_ConvertPtr(wrapped,

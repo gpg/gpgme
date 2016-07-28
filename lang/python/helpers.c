@@ -30,7 +30,7 @@
 
 static PyObject *GPGMEError = NULL;
 
-void pygpgme_exception_init(void) {
+void _pyme_exception_init(void) {
   if (GPGMEError == NULL) {
     PyObject *errors;
     PyObject *from_list = PyList_New(0);
@@ -45,11 +45,11 @@ void pygpgme_exception_init(void) {
 }
 
 static PyObject *
-pygpgme_raise_exception(gpgme_error_t err)
+_pyme_raise_exception(gpgme_error_t err)
 {
   PyObject *e;
 
-  pygpgme_exception_init();
+  _pyme_exception_init();
   if (GPGMEError == NULL)
     return PyErr_Format(PyExc_RuntimeError, "Got gpgme_error_t %d", err);
 
@@ -63,7 +63,7 @@ pygpgme_raise_exception(gpgme_error_t err)
   return NULL;	/* raise */
 }
 
-gpgme_error_t pygpgme_exception2code(void) {
+gpgme_error_t _pyme_exception2code(void) {
   gpgme_error_t err_status = gpg_error(GPG_ERR_GENERAL);
   if (GPGMEError && PyErr_ExceptionMatches(GPGMEError)) {
     PyObject *type = 0, *value = 0, *traceback = 0;
@@ -81,7 +81,7 @@ gpgme_error_t pygpgme_exception2code(void) {
 /* Exception support for callbacks.  */
 #define EXCINFO	"_callback_excinfo"
 
-static void pygpgme_stash_callback_exception(PyObject *weak_self)
+static void _pyme_stash_callback_exception(PyObject *weak_self)
 {
   PyObject *self, *ptype, *pvalue, *ptraceback, *excinfo;
 
@@ -176,7 +176,7 @@ PyObject *pygpgme_raise_callback_exception(PyObject *self)
 
 /* Convert object to a pointer to gpgme type, generic version.  */
 PyObject *
-object_to_gpgme_t(PyObject *input, const char *objtype, int argnum)
+_pyme_obj2gpgme_t(PyObject *input, const char *objtype, int argnum)
 {
   PyObject *pyname = NULL, *pypointer = NULL;
   pyname = PyObject_GetAttrString(input, "_ctype");
@@ -210,7 +210,7 @@ object_to_gpgme_t(PyObject *input, const char *objtype, int argnum)
    objects with a fileno method, returning it in WRAPPER.  This object
    must be de-referenced when no longer needed.  */
 PyObject *
-object_to_gpgme_data_t(PyObject *input, int argnum, gpgme_data_t *wrapper,
+_pyme_obj2gpgme_data_t(PyObject *input, int argnum, gpgme_data_t *wrapper,
                        PyObject **bytesio, Py_buffer *view)
 {
   gpgme_error_t err;
@@ -223,9 +223,9 @@ object_to_gpgme_data_t(PyObject *input, int argnum, gpgme_data_t *wrapper,
     err = gpgme_data_new_from_fd(wrapper, (int) PyLong_AsLong(fd));
     Py_DECREF(fd);
     if (err)
-      return pygpgme_raise_exception (err);
+      return _pyme_raise_exception (err);
 
-    return pygpgme_wrap_gpgme_data_t(*wrapper);
+    return _pyme_wrap_gpgme_data_t(*wrapper);
   }
   else
     PyErr_Clear();
@@ -264,14 +264,14 @@ object_to_gpgme_data_t(PyObject *input, int argnum, gpgme_data_t *wrapper,
 
       err = gpgme_data_new_from_mem(wrapper, view->buf, (size_t) view->len, 0);
       if (err)
-        return pygpgme_raise_exception (err);
+        return _pyme_raise_exception (err);
 
-      return pygpgme_wrap_gpgme_data_t(*wrapper);
+      return _pyme_wrap_gpgme_data_t(*wrapper);
     }
 
   /* As last resort we assume it is a wrapped data object.  */
   if (PyObject_HasAttrString(data, "_ctype"))
-    return object_to_gpgme_t(data, "gpgme_data_t", argnum);
+    return _pyme_obj2gpgme_t(data, "gpgme_data_t", argnum);
 
   return PyErr_Format(PyExc_TypeError,
                       "arg %d: expected pyme.Data, file, or an object "
@@ -282,7 +282,7 @@ object_to_gpgme_data_t(PyObject *input, int argnum, gpgme_data_t *wrapper,
 
 
 PyObject *
-pygpgme_wrap_fragile_result(PyObject *fragile, const char *classname)
+_pyme_wrap_result(PyObject *fragile, const char *classname)
 {
   static PyObject *results;
   PyObject *class;
@@ -327,7 +327,7 @@ static gpgme_error_t pyPassphraseCb(void *hook,
   PyObject *dataarg = NULL;
   gpgme_error_t err_status = 0;
 
-  pygpgme_exception_init();
+  _pyme_exception_init();
 
   assert (PyTuple_Check(pyhook));
   assert (PyTuple_Size(pyhook) == 2 || PyTuple_Size(pyhook) == 3);
@@ -364,12 +364,12 @@ static gpgme_error_t pyPassphraseCb(void *hook,
   retval = PyObject_CallObject(func, args);
   Py_DECREF(args);
   if (PyErr_Occurred()) {
-    err_status = pygpgme_exception2code();
+    err_status = _pyme_exception2code();
   } else {
     if (!retval) {
       if (write(fd, "\n", 1) < 0) {
         err_status = gpgme_error_from_syserror ();
-        pygpgme_raise_exception (err_status);
+        _pyme_raise_exception (err_status);
       }
     } else {
       char *buf;
@@ -394,11 +394,11 @@ static gpgme_error_t pyPassphraseCb(void *hook,
 
       if (write(fd, buf, len) < 0) {
         err_status = gpgme_error_from_syserror ();
-        pygpgme_raise_exception (err_status);
+        _pyme_raise_exception (err_status);
       }
       if (! err_status && write(fd, "\n", 1) < 0) {
         err_status = gpgme_error_from_syserror ();
-        pygpgme_raise_exception (err_status);
+        _pyme_raise_exception (err_status);
       }
 
       Py_DECREF(retval);
@@ -407,7 +407,7 @@ static gpgme_error_t pyPassphraseCb(void *hook,
 
  leave:
   if (err_status)
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
 
   return err_status;
 }
@@ -424,7 +424,7 @@ pygpgme_set_passphrase_cb(PyObject *self, PyObject *cb) {
       return NULL;
     }
 
-  ctx = pygpgme_unwrap_gpgme_ctx_t(wrapped);
+  ctx = _pyme_unwrap_gpgme_ctx_t(wrapped);
   Py_DECREF(wrapped);
   if (ctx == NULL)
     {
@@ -475,7 +475,7 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
   PyTuple_SetItem(args, 0, PyUnicode_DecodeUTF8(what, strlen (what),
                                                 "strict"));
   if (PyErr_Occurred()) {
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
     Py_DECREF(args);
     return;
   }
@@ -489,7 +489,7 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
 
   retval = PyObject_CallObject(func, args);
   if (PyErr_Occurred())
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
   Py_DECREF(args);
   Py_XDECREF(retval);
 }
@@ -506,7 +506,7 @@ pygpgme_set_progress_cb(PyObject *self, PyObject *cb) {
       return NULL;
     }
 
-  ctx = pygpgme_unwrap_gpgme_ctx_t(wrapped);
+  ctx = _pyme_unwrap_gpgme_ctx_t(wrapped);
   Py_DECREF(wrapped);
   if (ctx == NULL)
     {
@@ -581,13 +581,13 @@ static gpgme_error_t pyStatusCb(void *hook, const char *keyword,
 
   retval = PyObject_CallObject(func, pyargs);
   if (PyErr_Occurred())
-    err = pygpgme_exception2code();
+    err = _pyme_exception2code();
   Py_DECREF(pyargs);
   Py_XDECREF(retval);
 
  leave:
   if (err)
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
   return err;
 }
 
@@ -603,7 +603,7 @@ pygpgme_set_status_cb(PyObject *self, PyObject *cb) {
       return NULL;
     }
 
-  ctx = pygpgme_unwrap_gpgme_ctx_t(wrapped);
+  ctx = _pyme_unwrap_gpgme_ctx_t(wrapped);
   Py_DECREF(wrapped);
   if (ctx == NULL)
     {
@@ -634,14 +634,14 @@ pygpgme_set_status_cb(PyObject *self, PyObject *cb) {
 }
 
 /* Edit callbacks.  */
-gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
+gpgme_error_t _pyme_edit_cb(void *opaque, gpgme_status_code_t status,
 		       const char *args, int fd) {
   PyObject *func = NULL, *dataarg = NULL, *pyargs = NULL, *retval = NULL;
   PyObject *pyopaque = (PyObject *) opaque;
   gpgme_error_t err_status = 0;
   PyObject *self = NULL;
 
-  pygpgme_exception_init();
+  _pyme_exception_init();
 
   assert (PyTuple_Check(pyopaque));
   assert (PyTuple_Size(pyopaque) == 2 || PyTuple_Size(pyopaque) == 3);
@@ -664,7 +664,7 @@ gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
   retval = PyObject_CallObject(func, pyargs);
   Py_DECREF(pyargs);
   if (PyErr_Occurred()) {
-    err_status = pygpgme_exception2code();
+    err_status = _pyme_exception2code();
   } else {
     if (fd>=0 && retval && PyUnicode_Check(retval)) {
       const char *buffer;
@@ -673,16 +673,16 @@ gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
       buffer = PyUnicode_AsUTF8AndSize(retval, &size);
       if (write(fd, buffer, size) < 0) {
         err_status = gpgme_error_from_syserror ();
-        pygpgme_raise_exception (err_status);
+        _pyme_raise_exception (err_status);
       }
       if (! err_status && write(fd, "\n", 1) < 0) {
         err_status = gpgme_error_from_syserror ();
-        pygpgme_raise_exception (err_status);
+        _pyme_raise_exception (err_status);
       }
     }
   }
   if (err_status)
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
 
   Py_XDECREF(retval);
   return err_status;
@@ -724,7 +724,7 @@ static ssize_t pyDataReadCb(void *hook, void *buffer, size_t size)
   retval = PyObject_CallObject(func, pyargs);
   Py_DECREF(pyargs);
   if (PyErr_Occurred()) {
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
     result = -1;
     goto leave;
   }
@@ -733,7 +733,7 @@ static ssize_t pyDataReadCb(void *hook, void *buffer, size_t size)
     PyErr_Format(PyExc_TypeError,
                  "expected bytes from read callback, got %s",
                  retval->ob_type->tp_name);
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
     result = -1;
     goto leave;
   }
@@ -742,7 +742,7 @@ static ssize_t pyDataReadCb(void *hook, void *buffer, size_t size)
     PyErr_Format(PyExc_TypeError,
                  "expected %zu bytes from read callback, got %zu",
                  size, PyBytes_Size(retval));
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
     result = -1;
     goto leave;
   }
@@ -789,7 +789,7 @@ static ssize_t pyDataWriteCb(void *hook, const void *buffer, size_t size)
   retval = PyObject_CallObject(func, pyargs);
   Py_DECREF(pyargs);
   if (PyErr_Occurred()) {
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
     result = -1;
     goto leave;
   }
@@ -798,7 +798,7 @@ static ssize_t pyDataWriteCb(void *hook, const void *buffer, size_t size)
     PyErr_Format(PyExc_TypeError,
                  "expected int from read callback, got %s",
                  retval->ob_type->tp_name);
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
     result = -1;
     goto leave;
   }
@@ -850,7 +850,7 @@ static off_t pyDataSeekCb(void *hook, off_t offset, int whence)
   retval = PyObject_CallObject(func, pyargs);
   Py_DECREF(pyargs);
   if (PyErr_Occurred()) {
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
     result = -1;
     goto leave;
   }
@@ -859,7 +859,7 @@ static off_t pyDataSeekCb(void *hook, off_t offset, int whence)
     PyErr_Format(PyExc_TypeError,
                  "expected int from read callback, got %s",
                  retval->ob_type->tp_name);
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
     result = -1;
     goto leave;
   }
@@ -906,7 +906,7 @@ static void pyDataReleaseCb(void *hook)
   Py_XDECREF(retval);
   Py_DECREF(pyargs);
   if (PyErr_Occurred())
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
 }
 
 PyObject *
@@ -930,7 +930,7 @@ pygpgme_data_new_from_cbs(PyObject *self,
 
   err = gpgme_data_new_from_cbs(r_data, &cbs, (void *) pycbs);
   if (err)
-    return pygpgme_raise_exception(err);
+    return _pyme_raise_exception(err);
 
   PyObject_SetAttrString(self, "_data_cbs", pycbs);
 
@@ -964,13 +964,13 @@ _pyme_assuan_data_cb (void *hook, const void *data, size_t datalen)
 
   retval = PyObject_CallFunctionObjArgs(func, py_data, NULL);
   if (PyErr_Occurred())
-    err = pygpgme_exception2code();
+    err = _pyme_exception2code();
   Py_DECREF(py_data);
   Py_XDECREF(retval);
 
  leave:
   if (err)
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
   return err;
 }
 
@@ -1002,7 +1002,7 @@ _pyme_assuan_inquire_cb (void *hook, const char *name, const char *args,
 
   retval = PyObject_CallFunctionObjArgs(func, py_name, py_args, NULL);
   if (PyErr_Occurred())
-    err = pygpgme_exception2code();
+    err = _pyme_exception2code();
   Py_DECREF(py_name);
   Py_DECREF(py_args);
   Py_XDECREF(retval);
@@ -1012,7 +1012,7 @@ _pyme_assuan_inquire_cb (void *hook, const char *name, const char *args,
 
  leave:
   if (err)
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
   return err;
 }
 
@@ -1043,13 +1043,13 @@ _pyme_assuan_status_cb (void *hook, const char *status, const char *args)
 
   retval = PyObject_CallFunctionObjArgs(func, py_status, py_args, NULL);
   if (PyErr_Occurred())
-    err = pygpgme_exception2code();
+    err = _pyme_exception2code();
   Py_DECREF(py_status);
   Py_DECREF(py_args);
   Py_XDECREF(retval);
 
  leave:
   if (err)
-    pygpgme_stash_callback_exception(self);
+    _pyme_stash_callback_exception(self);
   return err;
 }

@@ -22,18 +22,20 @@
 #ifndef _PYME_PRIVATE_H_
 #define _PYME_PRIVATE_H_
 
-void pygpgme_exception_init(void);
-gpgme_error_t pygpgme_exception2code(void);
+/* GPGME glue.  Implemented in helpers.c.  */
 
-PyObject *object_to_gpgme_t(PyObject *input, const char *objtype, int argnum);
-PyObject *object_to_gpgme_data_t(PyObject *input, int argnum,
+void _pyme_exception_init(void);
+gpgme_error_t _pyme_exception2code(void);
+
+PyObject *_pyme_obj2gpgme_t(PyObject *input, const char *objtype, int argnum);
+PyObject *_pyme_obj2gpgme_data_t(PyObject *input, int argnum,
 				 gpgme_data_t *wrapper,
 				 PyObject **bytesio, Py_buffer *view);
 
-PyObject *pygpgme_wrap_fragile_result(PyObject *fragile, const char *classname);
+PyObject *_pyme_wrap_result(PyObject *fragile, const char *classname);
 
-gpgme_error_t pyEditCb(void *opaque, gpgme_status_code_t status,
-		       const char *args, int fd);
+gpgme_error_t _pyme_edit_cb(void *opaque, gpgme_status_code_t status,
+			    const char *args, int fd);
 
 gpgme_error_t _pyme_assuan_data_cb (void *hook,
 				    const void *data, size_t datalen);
@@ -42,5 +44,12 @@ gpgme_error_t _pyme_assuan_inquire_cb (void *hook,
 				       gpgme_data_t *r_data);
 gpgme_error_t _pyme_assuan_status_cb (void *hook,
 				      const char *status, const char *args);
+
+
+
+/* SWIG runtime support.  Implemented in gpgme.i.  */
+
+PyObject *_pyme_wrap_gpgme_data_t(gpgme_data_t data);
+gpgme_ctx_t _pyme_unwrap_gpgme_ctx_t(PyObject *wrapped);
 
 #endif /* _PYME_PRIVATE_H_ */
