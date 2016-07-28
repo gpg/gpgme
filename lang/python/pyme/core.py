@@ -169,6 +169,7 @@ class Context(GpgmeWrapper):
 
     def __init__(self, armor=False, textmode=False, offline=False,
                  signers=[], pinentry_mode=constants.PINENTRY_MODE_DEFAULT,
+                 protocol=constants.PROTOCOL_OpenPGP,
                  wrapped=None):
         """Construct a context object
 
@@ -178,6 +179,7 @@ class Context(GpgmeWrapper):
         offline		-- do not contact external key sources (default False)
         signers		-- list of keys used for signing (default [])
         pinentry_mode	-- pinentry mode (default PINENTRY_MODE_DEFAULT)
+        protocol	-- protocol to use (default PROTOCOL_OpenPGP)
 
         """
         if wrapped:
@@ -194,6 +196,7 @@ class Context(GpgmeWrapper):
         self.offline = offline
         self.signers = signers
         self.pinentry_mode = pinentry_mode
+        self.protocol = protocol
 
     def encrypt(self, plaintext, recipients=[], sign=True, sink=None,
                 passphrase=None, always_trust=False, add_encrypt_to=False,
@@ -486,6 +489,14 @@ class Context(GpgmeWrapper):
     @pinentry_mode.setter
     def pinentry_mode(self, value):
         self.set_pinentry_mode(value)
+
+    @property
+    def protocol(self):
+        """Protocol to use"""
+        return self.get_protocol()
+    @protocol.setter
+    def protocol(self, value):
+        self.set_protocol(value)
 
     _ctype = 'gpgme_ctx_t'
     _cprefix = 'gpgme_'
