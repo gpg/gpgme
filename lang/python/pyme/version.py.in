@@ -16,11 +16,11 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
-from . import pygpgme
+from . import gpgme
 
 productname = 'pyme'
 versionstr = "@VERSION@"
-gpgme_versionstr = pygpgme.GPGME_VERSION
+gpgme_versionstr = gpgme.GPGME_VERSION
 
 versionlist = versionstr.split(".")
 major = versionlist[0]

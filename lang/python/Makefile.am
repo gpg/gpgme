@@ -58,7 +58,7 @@ sdist: dist/pyme3-$(VERSION).tar.gz dist/pyme3-$(VERSION).tar.gz.asc
 upload: dist/pyme3-$(VERSION).tar.gz dist/pyme3-$(VERSION).tar.gz.asc
 	twine upload $^
 
-CLEANFILES = gpgme.h errors.i gpgme_wrap.c pyme/pygpgme.py \
+CLEANFILES = gpgme.h errors.i gpgme_wrap.c pyme/gpgme.py \
 	  copystamp
 
 # Remove the rest.

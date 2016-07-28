@@ -27,7 +27,7 @@ and the 'Data' class describing buffers of data.
 import re
 import os
 import weakref
-from . import pygpgme
+from . import gpgme
 from .errors import errorcheck, GPGMEError
 from . import constants
 from . import errors
@@ -93,9 +93,9 @@ class GpgmeWrapper(object):
     _boolean_properties = set()
 
     def __wrap_boolean_property(self, key, do_set=False, value=None):
-        get_func = getattr(pygpgme,
+        get_func = getattr(gpgme,
                            "{}get_{}".format(self._cprefix, key))
-        set_func = getattr(pygpgme,
+        set_func = getattr(gpgme,
                            "{}set_{}".format(self._cprefix, key))
         def get(slf):
             return bool(get_func(slf.wrapped))
@@ -120,19 +120,19 @@ class GpgmeWrapper(object):
             return self.__wrap_boolean_property(key)
 
         name = self._cprefix + key
-        func = getattr(pygpgme, name)
+        func = getattr(gpgme, name)
 
         if self._errorcheck(name):
             def _funcwrap(slf, *args):
                 result = func(slf.wrapped, *args)
                 if slf._callback_excinfo:
-                    pygpgme.pyme_raise_callback_exception(slf)
+                    gpgme.pyme_raise_callback_exception(slf)
                 return errorcheck(result, "Invocation of " + name)
         else:
             def _funcwrap(slf, *args):
                 result = func(slf.wrapped, *args)
                 if slf._callback_excinfo:
-                    pygpgme.pyme_raise_callback_exception(slf)
+                    gpgme.pyme_raise_callback_exception(slf)
                 return result
 
         doc = self._munge_docstring.sub(r'\2.\1(\3', getattr(func, "__doc__"))
@@ -186,10 +186,10 @@ class Context(GpgmeWrapper):
         if wrapped:
             self.own = False
         else:
-            tmp = pygpgme.new_gpgme_ctx_t_p()
-            errorcheck(pygpgme.gpgme_new(tmp))
-            wrapped = pygpgme.gpgme_ctx_t_p_value(tmp)
-            pygpgme.delete_gpgme_ctx_t_p(tmp)
+            tmp = gpgme.new_gpgme_ctx_t_p()
+            errorcheck(gpgme.gpgme_new(tmp))
+            wrapped = gpgme.gpgme_ctx_t_p_value(tmp)
+            gpgme.delete_gpgme_ctx_t_p(tmp)
             self.own = True
         super().__init__(wrapped)
         self.armor = armor
@@ -497,9 +497,9 @@ class Context(GpgmeWrapper):
         else:
             cmd = " ".join(util.percent_escape(f) for f in command)
 
-        errptr = pygpgme.new_gpgme_error_t_p()
+        errptr = gpgme.new_gpgme_error_t_p()
 
-        err = pygpgme.gpgme_op_assuan_transact_ext(
+        err = gpgme.gpgme_op_assuan_transact_ext(
             self.wrapped,
             cmd,
             (weakref.ref(self), data_cb) if data_cb else None,
@@ -508,12 +508,12 @@ class Context(GpgmeWrapper):
             errptr)
 
         if self._callback_excinfo:
-            pygpgme.pyme_raise_callback_exception(self)
+            gpgme.pyme_raise_callback_exception(self)
 
         errorcheck(err)
 
-        status = pygpgme.gpgme_error_t_p_value(errptr)
-        pygpgme.delete_gpgme_error_t_p(errptr)
+        status = gpgme.gpgme_error_t_p_value(errptr)
+        gpgme.delete_gpgme_error_t_p(errptr)
 
         return GPGMEError(status) if status != 0 else None
 
@@ -565,15 +565,15 @@ class Context(GpgmeWrapper):
     _boolean_properties = {'armor', 'textmode', 'offline'}
 
     def __del__(self):
-        if not pygpgme:
-            # At interpreter shutdown, pygpgme is set to NONE.
+        if not gpgme:
+            # At interpreter shutdown, gpgme is set to NONE.
             return
 
         self._free_passcb()
         self._free_progresscb()
         self._free_statuscb()
-        if self.own and self.wrapped and pygpgme.gpgme_release:
-            pygpgme.gpgme_release(self.wrapped)
+        if self.own and self.wrapped and gpgme.gpgme_release:
+            gpgme.gpgme_release(self.wrapped)
             self.wrapped = None
 
     # Implement the context manager protocol.
@@ -594,27 +594,27 @@ class Context(GpgmeWrapper):
         """Returns the next key in the list created
         by a call to op_keylist_start().  The object returned
         is of type Key."""
-        ptr = pygpgme.new_gpgme_key_t_p()
+        ptr = gpgme.new_gpgme_key_t_p()
         try:
-            errorcheck(pygpgme.gpgme_op_keylist_next(self.wrapped, ptr))
-            key = pygpgme.gpgme_key_t_p_value(ptr)
+            errorcheck(gpgme.gpgme_op_keylist_next(self.wrapped, ptr))
+            key = gpgme.gpgme_key_t_p_value(ptr)
         except errors.GPGMEError as excp:
             key = None
             if excp.getcode() != errors.EOF:
                 raise excp
-        pygpgme.delete_gpgme_key_t_p(ptr)
+        gpgme.delete_gpgme_key_t_p(ptr)
         if key:
-            key.__del__ = lambda self: pygpgme.gpgme_key_unref(self)
+            key.__del__ = lambda self: gpgme.gpgme_key_unref(self)
             return key
 
     def get_key(self, fpr, secret):
         """Return the key corresponding to the fingerprint 'fpr'"""
-        ptr = pygpgme.new_gpgme_key_t_p()
-        errorcheck(pygpgme.gpgme_get_key(self.wrapped, fpr, ptr, secret))
-        key = pygpgme.gpgme_key_t_p_value(ptr)
-        pygpgme.delete_gpgme_key_t_p(ptr)
+        ptr = gpgme.new_gpgme_key_t_p()
+        errorcheck(gpgme.gpgme_get_key(self.wrapped, fpr, ptr, secret))
+        key = gpgme.gpgme_key_t_p_value(ptr)
+        gpgme.delete_gpgme_key_t_p(ptr)
         if key:
-            key.__del__ = lambda self: pygpgme.gpgme_key_unref(self)
+            key.__del__ = lambda self: gpgme.gpgme_key_unref(self)
             return key
 
     def op_trustlist_all(self, *args, **kwargs):
@@ -629,15 +629,15 @@ class Context(GpgmeWrapper):
         """Returns the next trust item in the list created
         by a call to op_trustlist_start().  The object returned
         is of type TrustItem."""
-        ptr = pygpgme.new_gpgme_trust_item_t_p()
+        ptr = gpgme.new_gpgme_trust_item_t_p()
         try:
-            errorcheck(pygpgme.gpgme_op_trustlist_next(self.wrapped, ptr))
-            trust = pygpgme.gpgme_trust_item_t_p_value(ptr)
+            errorcheck(gpgme.gpgme_op_trustlist_next(self.wrapped, ptr))
+            trust = gpgme.gpgme_trust_item_t_p_value(ptr)
         except errors.GPGMEError as excp:
             trust = None
             if excp.getcode() != errors.EOF:
                 raise
-        pygpgme.delete_gpgme_trust_item_t_p(ptr)
+        gpgme.delete_gpgme_trust_item_t_p(ptr)
         return trust
 
     def set_passphrase_cb(self, func, hook=None):
@@ -661,10 +661,10 @@ class Context(GpgmeWrapper):
                 hookdata = (weakref.ref(self), func)
             else:
                 hookdata = (weakref.ref(self), func, hook)
-        pygpgme.pyme_set_passphrase_cb(self, hookdata)
+        gpgme.pyme_set_passphrase_cb(self, hookdata)
 
     def _free_passcb(self):
-        if pygpgme.pyme_set_passphrase_cb:
+        if gpgme.pyme_set_passphrase_cb:
             self.set_passphrase_cb(None)
 
     def set_progress_cb(self, func, hook=None):
@@ -686,10 +686,10 @@ class Context(GpgmeWrapper):
                 hookdata = (weakref.ref(self), func)
             else:
                 hookdata = (weakref.ref(self), func, hook)
-        pygpgme.pyme_set_progress_cb(self, hookdata)
+        gpgme.pyme_set_progress_cb(self, hookdata)
 
     def _free_progresscb(self):
-        if pygpgme.pyme_set_progress_cb:
+        if gpgme.pyme_set_progress_cb:
             self.set_progress_cb(None)
 
     def set_status_cb(self, func, hook=None):
@@ -710,10 +710,10 @@ class Context(GpgmeWrapper):
                 hookdata = (weakref.ref(self), func)
             else:
                 hookdata = (weakref.ref(self), func, hook)
-        pygpgme.pyme_set_status_cb(self, hookdata)
+        gpgme.pyme_set_status_cb(self, hookdata)
 
     def _free_statuscb(self):
-        if pygpgme.pyme_set_status_cb:
+        if gpgme.pyme_set_status_cb:
             self.set_status_cb(None)
 
     @property
@@ -734,7 +734,7 @@ class Context(GpgmeWrapper):
         infos		-- a list of engine infos
 
         """
-        return pygpgme.gpgme_ctx_get_engine_info(self.wrapped)
+        return gpgme.gpgme_ctx_get_engine_info(self.wrapped)
 
     def set_engine_info(self, proto, file_name=None, home_dir=None):
         """Change engine configuration
@@ -747,7 +747,7 @@ class Context(GpgmeWrapper):
         home_dir	-- configuration directory (unchanged if None)
 
         """
-        errorcheck(pygpgme.gpgme_ctx_set_engine_info(
+        errorcheck(gpgme.gpgme_ctx_set_engine_info(
             self.wrapped, proto, file_name, home_dir))
 
     def wait(self, hang):
@@ -757,10 +757,10 @@ class Context(GpgmeWrapper):
         Please read the GPGME manual for more information.
 
         """
-        ptr = pygpgme.new_gpgme_error_t_p()
-        pygpgme.gpgme_wait(self.wrapped, ptr, hang)
-        status = pygpgme.gpgme_error_t_p_value(ptr)
-        pygpgme.delete_gpgme_error_t_p(ptr)
+        ptr = gpgme.new_gpgme_error_t_p()
+        gpgme.gpgme_wait(self.wrapped, ptr, hang)
+        status = gpgme.gpgme_error_t_p_value(ptr)
+        gpgme.delete_gpgme_error_t_p(ptr)
         errorcheck(status)
 
     def op_edit(self, key, func, fnc_value, out):
@@ -772,9 +772,9 @@ class Context(GpgmeWrapper):
         else:
             opaquedata = (weakref.ref(self), func)
 
-        result = pygpgme.gpgme_op_edit(self.wrapped, key, opaquedata, out)
+        result = gpgme.gpgme_op_edit(self.wrapped, key, opaquedata, out)
         if self._callback_excinfo:
-            pygpgme.pyme_raise_callback_exception(self)
+            gpgme.pyme_raise_callback_exception(self)
         errorcheck(result)
 
 class Data(GpgmeWrapper):
@@ -866,14 +866,14 @@ class Data(GpgmeWrapper):
             self.new()
 
     def __del__(self):
-        if not pygpgme:
-            # At interpreter shutdown, pygpgme is set to NONE.
+        if not gpgme:
+            # At interpreter shutdown, gpgme is set to NONE.
             return
 
-        if self.wrapped != None and pygpgme.gpgme_data_release:
-            pygpgme.gpgme_data_release(self.wrapped)
+        if self.wrapped != None and gpgme.gpgme_data_release:
+            gpgme.gpgme_data_release(self.wrapped)
             if self._callback_excinfo:
-                pygpgme.pyme_raise_callback_exception(self)
+                gpgme.pyme_raise_callback_exception(self)
             self.wrapped = None
         self._free_datacbs()
 
@@ -887,40 +887,40 @@ class Data(GpgmeWrapper):
         self._data_cbs = None
 
     def new(self):
-        tmp = pygpgme.new_gpgme_data_t_p()
-        errorcheck(pygpgme.gpgme_data_new(tmp))
-        self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
-        pygpgme.delete_gpgme_data_t_p(tmp)
+        tmp = gpgme.new_gpgme_data_t_p()
+        errorcheck(gpgme.gpgme_data_new(tmp))
+        self.wrapped = gpgme.gpgme_data_t_p_value(tmp)
+        gpgme.delete_gpgme_data_t_p(tmp)
 
     def new_from_mem(self, string, copy=True):
-        tmp = pygpgme.new_gpgme_data_t_p()
-        errorcheck(pygpgme.gpgme_data_new_from_mem(tmp,string,len(string),copy))
-        self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
-        pygpgme.delete_gpgme_data_t_p(tmp)
+        tmp = gpgme.new_gpgme_data_t_p()
+        errorcheck(gpgme.gpgme_data_new_from_mem(tmp,string,len(string),copy))
+        self.wrapped = gpgme.gpgme_data_t_p_value(tmp)
+        gpgme.delete_gpgme_data_t_p(tmp)
 
     def new_from_file(self, filename, copy=True):
-        tmp = pygpgme.new_gpgme_data_t_p()
+        tmp = gpgme.new_gpgme_data_t_p()
         try:
-            errorcheck(pygpgme.gpgme_data_new_from_file(tmp, filename, copy))
+            errorcheck(gpgme.gpgme_data_new_from_file(tmp, filename, copy))
         except errors.GPGMEError as e:
             if e.getcode() == errors.INV_VALUE and not copy:
                 raise ValueError("delayed reads are not yet supported")
             else:
                 raise e
-        self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
-        pygpgme.delete_gpgme_data_t_p(tmp)
+        self.wrapped = gpgme.gpgme_data_t_p_value(tmp)
+        gpgme.delete_gpgme_data_t_p(tmp)
 
     def new_from_cbs(self, read_cb, write_cb, seek_cb, release_cb, hook=None):
-        tmp = pygpgme.new_gpgme_data_t_p()
+        tmp = gpgme.new_gpgme_data_t_p()
         if hook != None:
             hookdata = (weakref.ref(self),
                         read_cb, write_cb, seek_cb, release_cb, hook)
         else:
             hookdata = (weakref.ref(self),
                         read_cb, write_cb, seek_cb, release_cb)
-        pygpgme.pyme_data_new_from_cbs(self, hookdata, tmp)
-        self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
-        pygpgme.delete_gpgme_data_t_p(tmp)
+        gpgme.pyme_data_new_from_cbs(self, hookdata, tmp)
+        self.wrapped = gpgme.gpgme_data_t_p_value(tmp)
+        gpgme.delete_gpgme_data_t_p(tmp)
 
     def new_from_filepart(self, file, offset, length):
         """This wraps the GPGME gpgme_data_new_from_filepart() function.
@@ -931,22 +931,22 @@ class Data(GpgmeWrapper):
 
         """
 
-        tmp = pygpgme.new_gpgme_data_t_p()
+        tmp = gpgme.new_gpgme_data_t_p()
         filename = None
         fp = None
 
         if type(file) == type("x"):
             filename = file
         else:
-            fp = pygpgme.fdopen(file.fileno(), file.mode)
+            fp = gpgme.fdopen(file.fileno(), file.mode)
             if fp == None:
                 raise ValueError("Failed to open file from %s arg %s" % \
                       (str(type(file)), str(file)))
 
-        errorcheck(pygpgme.gpgme_data_new_from_filepart(tmp, filename, fp,
+        errorcheck(gpgme.gpgme_data_new_from_filepart(tmp, filename, fp,
                                                       offset, length))
-        self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
-        pygpgme.delete_gpgme_data_t_p(tmp)
+        self.wrapped = gpgme.gpgme_data_t_p_value(tmp)
+        gpgme.delete_gpgme_data_t_p(tmp)
 
     def new_from_fd(self, file):
         """This wraps the GPGME gpgme_data_new_from_fd() function.  The
@@ -954,10 +954,10 @@ class Data(GpgmeWrapper):
         fileno() method.
 
         """
-        tmp = pygpgme.new_gpgme_data_t_p()
-        errorcheck(pygpgme.gpgme_data_new_from_fd(tmp, file.fileno()))
-        self.wrapped = pygpgme.gpgme_data_t_p_value(tmp)
-        pygpgme.delete_gpgme_data_t_p(tmp)
+        tmp = gpgme.new_gpgme_data_t_p()
+        errorcheck(gpgme.gpgme_data_new_from_fd(tmp, file.fileno()))
+        self.wrapped = gpgme.gpgme_data_t_p_value(tmp)
+        gpgme.delete_gpgme_data_t_p(tmp)
 
     def new_from_stream(self, file):
         """This wrap around gpgme_data_new_from_stream is an alias for
@@ -969,10 +969,10 @@ class Data(GpgmeWrapper):
         """Write buffer given as string or bytes.
 
         If a string is given, it is implicitly encoded using UTF-8."""
-        written = pygpgme.gpgme_data_write(self.wrapped, buffer)
+        written = gpgme.gpgme_data_write(self.wrapped, buffer)
         if written < 0:
             if self._callback_excinfo:
-                pygpgme.pyme_raise_callback_exception(self)
+                gpgme.pyme_raise_callback_exception(self)
             else:
                 raise GPGMEError.fromSyserror()
         return written
@@ -990,10 +990,10 @@ class Data(GpgmeWrapper):
 
         if size > 0:
             try:
-                result = pygpgme.gpgme_data_read(self.wrapped, size)
+                result = gpgme.gpgme_data_read(self.wrapped, size)
             except:
                 if self._callback_excinfo:
-                    pygpgme.pyme_raise_callback_exception(self)
+                    gpgme.pyme_raise_callback_exception(self)
                 else:
                     raise
             return result
@@ -1001,10 +1001,10 @@ class Data(GpgmeWrapper):
             chunks = []
             while True:
                 try:
-                    result = pygpgme.gpgme_data_read(self.wrapped, 4096)
+                    result = gpgme.gpgme_data_read(self.wrapped, 4096)
                 except:
                     if self._callback_excinfo:
-                        pygpgme.pyme_raise_callback_exception(self)
+                        gpgme.pyme_raise_callback_exception(self)
                     else:
                         raise
                 if len(result) == 0:
@@ -1013,16 +1013,16 @@ class Data(GpgmeWrapper):
             return b''.join(chunks)
 
 def pubkey_algo_name(algo):
-    return pygpgme.gpgme_pubkey_algo_name(algo)
+    return gpgme.gpgme_pubkey_algo_name(algo)
 
 def hash_algo_name(algo):
-    return pygpgme.gpgme_hash_algo_name(algo)
+    return gpgme.gpgme_hash_algo_name(algo)
 
 def get_protocol_name(proto):
-    return pygpgme.gpgme_get_protocol_name(proto)
+    return gpgme.gpgme_get_protocol_name(proto)
 
 def check_version(version=None):
-    return pygpgme.gpgme_check_version(version)
+    return gpgme.gpgme_check_version(version)
 
 # check_version also makes sure that several subsystems are properly
 # initialized, and it must be run at least once before invoking any
@@ -1032,19 +1032,19 @@ check_version()
 
 def engine_check_version (proto):
     try:
-        errorcheck(pygpgme.gpgme_engine_check_version(proto))
+        errorcheck(gpgme.gpgme_engine_check_version(proto))
         return True
     except errors.GPGMEError:
         return False
 
 def get_engine_info():
-    ptr = pygpgme.new_gpgme_engine_info_t_p()
+    ptr = gpgme.new_gpgme_engine_info_t_p()
     try:
-        errorcheck(pygpgme.gpgme_get_engine_info(ptr))
-        info = pygpgme.gpgme_engine_info_t_p_value(ptr)
+        errorcheck(gpgme.gpgme_get_engine_info(ptr))
+        info = gpgme.gpgme_engine_info_t_p_value(ptr)
     except errors.GPGMEError:
         info = None
-    pygpgme.delete_gpgme_engine_info_t_p(ptr)
+    gpgme.delete_gpgme_engine_info_t_p(ptr)
     return info
 
 def set_engine_info(proto, file_name, home_dir=None):
@@ -1053,11 +1053,11 @@ def set_engine_info(proto, file_name, home_dir=None):
     the executable program implementing this protocol. 'home_dir' is the
     directory name of the configuration directory (engine's default is
     used if omitted)."""
-    errorcheck(pygpgme.gpgme_set_engine_info(proto, file_name, home_dir))
+    errorcheck(gpgme.gpgme_set_engine_info(proto, file_name, home_dir))
 
 def set_locale(category, value):
     """Sets the default locale used by contexts"""
-    errorcheck(pygpgme.gpgme_set_locale(None, category, value))
+    errorcheck(gpgme.gpgme_set_locale(None, category, value))
 
 def wait(hang):
     """Wait for asynchronous call on any Context  to finish.
@@ -1068,10 +1068,10 @@ def wait(hang):
         context - context which caused this call to return.
 
     Please read the GPGME manual of more information."""
-    ptr = pygpgme.new_gpgme_error_t_p()
-    context = pygpgme.gpgme_wait(None, ptr, hang)
-    status = pygpgme.gpgme_error_t_p_value(ptr)
-    pygpgme.delete_gpgme_error_t_p(ptr)
+    ptr = gpgme.new_gpgme_error_t_p()
+    context = gpgme.gpgme_wait(None, ptr, hang)
+    status = gpgme.gpgme_error_t_p_value(ptr)
+    gpgme.delete_gpgme_error_t_p(ptr)
     if context == None:
         errorcheck(status)
     else:

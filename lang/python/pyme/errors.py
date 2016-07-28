@@ -15,7 +15,7 @@
 #    License along with this library; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
-from . import pygpgme
+from . import gpgme
 from . import util
 
 util.process_constants('GPG_ERR_', globals())
@@ -30,20 +30,20 @@ class GPGMEError(PymeError):
 
     @classmethod
     def fromSyserror(cls):
-        return cls(pygpgme.gpgme_err_code_from_syserror())
+        return cls(gpgme.gpgme_err_code_from_syserror())
 
     def getstring(self):
-        message = "%s: %s" % (pygpgme.gpgme_strsource(self.error),
-                              pygpgme.gpgme_strerror(self.error))
+        message = "%s: %s" % (gpgme.gpgme_strsource(self.error),
+                              gpgme.gpgme_strerror(self.error))
         if self.message != None:
             message = "%s: %s" % (self.message, message)
         return message
 
     def getcode(self):
-        return pygpgme.gpgme_err_code(self.error)
+        return gpgme.gpgme_err_code(self.error)
 
     def getsource(self):
-        return pygpgme.gpgme_err_source(self.error)
+        return gpgme.gpgme_err_source(self.error)
 
     def __str__(self):
         return self.getstring()
@@ -62,7 +62,7 @@ class InvalidRecipients(EncryptionError):
         self.recipients = recipients
     def __str__(self):
         return ", ".join("{}: {}".format(r.fpr,
-                                         pygpgme.gpgme_strerror(r.reason))
+                                         gpgme.gpgme_strerror(r.reason))
                          for r in self.recipients)
 
 class DeryptionError(PymeError):
@@ -82,7 +82,7 @@ class InvalidSigners(SigningError):
         self.signers = signers
     def __str__(self):
         return ", ".join("{}: {}".format(s.fpr,
-                                         pygpgme.gpgme_strerror(s.reason))
+                                         gpgme.gpgme_strerror(s.reason))
                          for s in self.signers)
 
 class VerificationError(PymeError):
@@ -93,7 +93,7 @@ class BadSignatures(VerificationError):
         self.result = result
     def __str__(self):
         return ", ".join("{}: {}".format(s.fpr,
-                                         pygpgme.gpgme_strerror(s.status))
+                                         gpgme.gpgme_strerror(s.status))
                          for s in self.result.signatures
                          if s.status != NO_ERROR)
 

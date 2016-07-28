@@ -135,7 +135,7 @@ class BuildExtFirstHack(build):
         self.run_command('build_ext')
         build.run(self)
 
-swige = Extension("pyme._pygpgme", ["gpgme.i", "helpers.c"],
+swige = Extension("pyme._gpgme", ["gpgme.i", "helpers.c"],
                   swig_opts = ['-py3', '-builtin',
                                '-outdir', 'pyme'] + extra_swig_opts,
                   include_dirs = include_dirs,
