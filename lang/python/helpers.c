@@ -28,6 +28,15 @@
 #include "helpers.h"
 #include "private.h"
 
+/* Flag specifying whether this is an in-tree build.  */
+int pyme_in_tree_build =
+#if IN_TREE_BUILD
+  1
+#else
+  0
+#endif
+  ;
+
 static PyObject *GPGMEError = NULL;
 
 void _pyme_exception_init(void) {

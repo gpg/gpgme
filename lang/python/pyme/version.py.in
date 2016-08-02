@@ -21,6 +21,7 @@ from . import gpgme
 productname = 'pyme'
 versionstr = "@VERSION@"
 gpgme_versionstr = gpgme.GPGME_VERSION
+in_tree_build = bool(gpgme.cvar.pyme_in_tree_build)
 
 versionlist = versionstr.split(".")
 major = versionlist[0]

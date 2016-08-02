@@ -28,7 +28,9 @@ gpg_error_config = "gpg-error-config"
 gpgme_config = "gpgme-config"
 gpgme_h = ""
 library_dirs = []
+in_tree = False
 extra_swig_opts = []
+extra_macros = dict()
 
 if os.path.exists("../../src/gpgme-config"):
     # In-tree build.
@@ -36,7 +38,10 @@ if os.path.exists("../../src/gpgme-config"):
     gpgme_config = "../../src/gpgme-config"
     gpgme_h = "../../src/gpgme.h"
     library_dirs = ["../../src/.libs"] # XXX uses libtool internals
-    extra_swig_opts = ["-DHAVE_DATA_H=1"]
+    extra_macros.update(
+        HAVE_DATA_H=1,
+        IN_TREE_BUILD=1,
+    )
 
 try:
     subprocess.check_call([gpg_error_config, '--version'],
@@ -86,6 +91,11 @@ subprocess.check_call(["python3", "gpgme-h-clean.py", gpg_error_h],
 include_dirs = [os.getcwd()]
 define_macros = []
 libs = getconfig('libs')
+
+# Define extra_macros for both the SWIG and C code
+for k, v in extra_macros.items():
+    extra_swig_opts.append("-D{0}={1}".format(k, v))
+    define_macros.append((k, str(v)))
 
 for item in getconfig('cflags'):
     if item.startswith("-I"):

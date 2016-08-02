@@ -26,6 +26,9 @@
 #define write(fd, str, sz) {DWORD written; WriteFile((HANDLE) fd, str, sz, &written, 0);}
 #endif
 
+/* Flag specifying whether this is an in-tree build.  */
+extern int pyme_in_tree_build;
+
 PyObject *pyme_raise_callback_exception(PyObject *self);
 
 PyObject *pyme_set_passphrase_cb(PyObject *self, PyObject *cb);
