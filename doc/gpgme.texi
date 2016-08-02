@@ -5492,7 +5492,7 @@ which are part of the GnuPG system but are not directly accessible
 with the GPGME API.
 
 
-@deftypefun gpgme_error_t gpgme_op_spawn
+@deftypefun gpgme_error_t gpgme_op_spawn @
             (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{file}}, @
              @w{const char *@var{argv}[]}, @w{gpgme_data_t @var{datain}}, @
              @w{gpgme_data_t @var{dataout}}, @w{gpgme_data_t @var{dataerr}}, @
@@ -5522,7 +5522,7 @@ the foreground.
 @end table
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_spawn_start
+@deftypefun gpgme_error_t gpgme_op_spawn_start @
             (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{file}}, @
              @w{const char *@var{argv}[]}, @w{gpgme_data_t @var{datain}}, @
              @w{gpgme_data_t @var{dataout}}, @w{gpgme_data_t @var{dataerr}}, @
