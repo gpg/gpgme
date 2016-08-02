@@ -872,8 +872,11 @@ This specifies the OpenPGP protocol.
 @item GPGME_PROTOCOL_CMS
 This specifies the Cryptographic Message Syntax.
 
-@item GPGME_PROTOCOL_ASSUAN
+@item GPGME_PROTOCOL_GPGCONF
 Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
+
+@item GPGME_PROTOCOL_ASSUAN
+This specifies the raw Assuan protocol.
 
 @item GPGME_PROTOCOL_G13
 Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
@@ -905,6 +908,7 @@ allocated string describing the protocol @var{protocol}, or
 * Engine Configuration::          Changing the engine configuration.
 * OpenPGP::                       Support for the OpenPGP protocol.
 * Cryptographic Message Syntax::  Support for the CMS.
+* Assuan::                        Support for the raw Assuan protocol.
 @end menu
 
 
@@ -1107,6 +1111,20 @@ The OpenPGP protocol is specified by @code{GPGME_PROTOCOL_OpenPGP}.
 GnuPG.
 
 The @acronym{CMS} protocol is specified by @code{GPGME_PROTOCOL_CMS}.
+
+
+@node Assuan
+@section Assuan
+@cindex ASSUAN
+@cindex protocol, ASSUAN
+@cindex engine, ASSUAN
+
+Assuan is the RPC library used by the various @acronym{GnuPG}
+components.  The Assuan protocol allows one to talk to arbitrary
+Assuan servers using @acronym{GPGME}.  @xref{Using the Assuan
+protocol}.
+
+The ASSUAN protocol is specified by @code{GPGME_PROTOCOL_ASSUAN}.
 
 
 @node Algorithms
@@ -5478,6 +5496,7 @@ Here are some support functions which are sometimes useful.
 
 @menu
 * Running other Programs::      Running other Programs
+* Using the Assuan protocol::   Using the Assuan protocol
 @end menu
 
 
@@ -5529,6 +5548,83 @@ the foreground.
              @w{unsigned int @var{flags}})
 
 This is the asynchronous variant of @code{gpgme_op_spawn}.
+@end deftypefun
+
+
+@node Using the Assuan protocol
+@subsection Using the Assuan protocol
+
+The Assuan protocol can be used to talk to arbitrary Assuan servers.
+By default it is connected to the GnuPG agent, but it may be connected
+to arbitrary servers by using @code{gpgme_ctx_set_engine_info},
+passing the location of the servers socket as @var{file_name}
+argument, and an empty string as @var{home_dir} argument.
+
+The Assuan protocol functions use three kinds of callbacks to transfer
+data:
+
+@deftp {Data type} {gpgme_error_t (*gpgme_assuan_data_cb_t) @
+       (@w{void *@var{opaque}}, @w{const void *@var{data}}, @
+        @w{size_t @var{datalen}})}
+
+This callback receives any data sent by the server.  @var{opaque} is
+the pointer passed to @code{gpgme_op_assuan_transact_start},
+@var{data} of length @var{datalen} refers to the data sent.
+@end deftp
+
+@deftp {Data type} {gpgme_error_t (*gpgme_assuan_inquire_cb_t) @
+       (@w{void *@var{opaque}}, @w{const char *@var{name}}, @
+        @w{const char *@var{args}}, @w{gpgme_data_t *@var{r_data}})}
+
+This callback is used to provide additional data to the Assuan server.
+@var{opaque} is the pointer passed to
+@code{gpgme_op_assuan_transact_start}, @var{name} and @var{args}
+specify what kind of data the server requested, and @var{r_data} is
+used to return the actual data.
+
+Note: Returning data is currently not implemented in @acronym{GPGME}.
+@end deftp
+
+@deftp {Data type} {gpgme_error_t (*gpgme_assuan_status_cb_t) @
+       (@w{void *@var{opaque}}, @w{const char *@var{status}}, @
+        @w{const char *@var{args}})}
+
+This callback receives any status lines sent by the server.
+@var{opaque} is the pointer passed to
+@code{gpgme_op_assuan_transact_start}, @var{status} and @var{args}
+denote the status update sent.
+@end deftp
+
+@deftypefun gpgme_error_t gpgme_op_assuan_transact_start @
+            (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{command}}, @
+             @w{gpgme_assuan_data_cb_t @var{data_cb}}, @
+             @w{void * @var{data_cb_value}}, @
+             @w{gpgme_assuan_inquire_cb_t @var{inquire_cb}}, @
+             @w{void * @var{inquire_cb_value}}, @
+             @w{gpgme_assuan_status_cb_t @var{status_cb}}, @
+             @w{void * @var{status_cb_value}})
+
+Send the Assuan @var{command} and return results via the callbacks.
+Any callback may be @code{NULL}.  The result of the operation may be
+retrieved using @code{gpgme_wait_ext}.
+
+Asynchronous variant.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_assuan_transact_ext @
+            (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{command}}, @
+             @w{gpgme_assuan_data_cb_t @var{data_cb}}, @
+             @w{void * @var{data_cb_value}}, @
+             @w{gpgme_assuan_inquire_cb_t @var{inquire_cb}}, @
+             @w{void * @var{inquire_cb_value}}, @
+             @w{gpgme_assuan_status_cb_t @var{status_cb}}, @
+             @w{void * @var{status_cb_value}}, @
+             @w{gpgme_error_t *@var{op_err}})
+
+Send the Assuan @var{command} and return results via the callbacks.
+The result of the operation is returned in @var{op_err}.
+
+Synchronous variant.
 @end deftypefun
 
 
