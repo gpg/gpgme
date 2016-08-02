@@ -32,14 +32,25 @@ COPY_FILES = \
 	$(srcdir)/README \
 	$(srcdir)/MANIFEST.in \
 	$(srcdir)/gpgme-h-clean.py \
-	$(srcdir)/pyme \
 	$(srcdir)/examples \
 	$(srcdir)/helpers.c $(srcdir)/helpers.h $(srcdir)/private.h
 
+COPY_FILES_PYME = \
+	$(srcdir)/pyme/callbacks.py \
+	$(srcdir)/pyme/constants \
+	$(srcdir)/pyme/core.py \
+	$(srcdir)/pyme/errors.py \
+	$(srcdir)/pyme/__init__.py \
+	$(srcdir)/pyme/results.py \
+	$(srcdir)/pyme/util.py
+
 # For VPATH builds we need to copy some files because Python's
 # distutils are not VPATH-aware.
-copystamp: $(COPY_FILES)
-	if test "$(srcdir)" != "$(builddir)" ; then cp -r $^ . ; fi
+copystamp: $(COPY_FILES) $(COPY_FILES_PYME)
+	if test "$(srcdir)" != "$(builddir)" ; then \
+	  cp -r $(COPY_FILES) . ; \
+	  cp -r $(COPY_FILES_PYME) pyme ; \
+	fi
 	touch $@
 
 all-local: copystamp
@@ -70,6 +81,9 @@ clean-local:
 	if test "$(srcdir)" != "$(builddir)" ; then \
 	  find . -type d ! -perm -200 -exec chmod u+w {} ';' ; \
 	  for F in $(COPY_FILES); do rm -rf -- `basename $$F` ; done ; \
+	  for F in $(COPY_FILES_PYME); do \
+	      rm -rf -- pyme/`basename $$F` ; \
+	  done ; \
 	fi
 
 install-exec-local:
