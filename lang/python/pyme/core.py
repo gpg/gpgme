@@ -468,6 +468,21 @@ class Context(GpgmeWrapper):
             plainbytes = data.read()
         return plainbytes, result
 
+    def keylist(self, pattern=None, secret=False):
+        """List keys
+
+        Keyword arguments:
+        pattern	-- return keys matching pattern (default: all keys)
+        secret	-- return only secret keys
+
+        Returns:
+                -- an iterator returning key objects
+
+        Raises:
+        GPGMEError	-- as signaled by the underlying library
+        """
+        return self.op_keylist_all(pattern, secret)
+
     def assuan_transact(self, command,
                         data_cb=None, inquire_cb=None, status_cb=None):
         """Issue a raw assuan command

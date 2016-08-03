@@ -216,7 +216,7 @@ result = c.op_keylist_result()
 assert not result.truncated, "Key listing unexpectedly truncated"
 
 
-for i, key in enumerate(c.op_keylist_all(None, False)):
+for i, key in enumerate(c.keylist()):
     try:
         if len(keys[i]) == 4:
             fpr, sec_keyid, uids, n_subkeys = keys[i]
