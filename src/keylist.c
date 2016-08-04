@@ -426,7 +426,7 @@ keylist_colon_handler (void *priv, char *line)
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   enum
     {
-      RT_NONE, RT_SIG, RT_UID, RT_SUB, RT_PUB, RT_FPR,
+      RT_NONE, RT_SIG, RT_UID, RT_SUB, RT_PUB, RT_FPR, RT_GRP,
       RT_SSB, RT_SEC, RT_CRT, RT_CRS, RT_REV, RT_SPK
     }
   rectype = RT_NONE;
@@ -479,6 +479,8 @@ keylist_colon_handler (void *priv, char *line)
     rectype = RT_CRS;
   else if (!strcmp (field[0], "fpr") && key)
     rectype = RT_FPR;
+  else if (!strcmp (field[0], "grp") && key)
+    rectype = RT_GRP;
   else if (!strcmp (field[0], "uid") && key)
     rectype = RT_UID;
   else if (!strcmp (field[0], "sub") && key)
@@ -714,6 +716,22 @@ keylist_colon_handler (void *priv, char *line)
 	  key->chain_id = strdup (field[12]);
 	  if (!key->chain_id)
 	    return gpg_error_from_syserror ();
+	}
+      break;
+
+    case RT_GRP:
+      /* Field 10 has the keygrip.  */
+      if (fields >= 10 && field[9] && *field[9])
+	{
+          /* Need to apply it to the last subkey because all subkeys
+             have a keygrip. */
+          subkey = key->_last_subkey;
+          if (!subkey->keygrip)
+            {
+              subkey->keygrip = strdup (field[9]);
+              if (!subkey->keygrip)
+                return gpg_error_from_syserror ();
+            }
 	}
       break;
 

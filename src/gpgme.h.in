@@ -691,6 +691,9 @@ struct _gpgme_subkey
 
   /* The name of the curve for ECC algorithms or NULL.  */
   char *curve;
+
+  /* The keygrip of the subkey in hex digit form or NULL if not availabale.  */
+  char *keygrip;
 };
 typedef struct _gpgme_subkey *gpgme_subkey_t;
 

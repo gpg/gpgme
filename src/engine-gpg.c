@@ -2283,12 +2283,19 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
   gpg_error_t err;
 
   err = add_arg (gpg, "--with-colons");
-  if (!err)
-    err = add_arg (gpg, "--fixed-list-mode");
-  if (!err)
-    err = add_arg (gpg, "--with-fingerprint");
-  if (!err)
-    err = add_arg (gpg, "--with-fingerprint");
+
+  /* Since gpg 2.1.15 fingerprints are always printed, thus there is
+   * no more need to explictly reqeust them.  */
+  if (!have_gpg_version (gpg, "2.1.15"))
+    {
+      if (!err)
+        err = add_arg (gpg, "--fixed-list-mode");
+      if (!err)
+        err = add_arg (gpg, "--with-fingerprint");
+      if (!err)
+        err = add_arg (gpg, "--with-fingerprint");
+    }
+
   if (!err && (mode & GPGME_KEYLIST_MODE_WITH_SECRET))
     err = add_arg (gpg, "--with-secret");
   if (!err

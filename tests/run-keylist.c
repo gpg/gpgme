@@ -67,6 +67,7 @@ main (int argc, char **argv)
   gpgme_ctx_t ctx;
   gpgme_keylist_mode_t mode = 0;
   gpgme_key_t key;
+  gpgme_subkey_t subkey;
   gpgme_keylist_result_t result;
   int import = 0;
   gpgme_key_t keyarray[100];
@@ -173,22 +174,54 @@ main (int argc, char **argv)
     {
       gpgme_user_id_t uid;
       int nuids;
-
+      int nsub;
 
       printf ("keyid   : %s\n", key->subkeys?nonnull (key->subkeys->keyid):"?");
       printf ("fpr     : %s\n", key->subkeys?nonnull (key->subkeys->fpr):"?");
+      if (key->subkeys && key->subkeys->keygrip)
+        printf ("grip    : %s\n", key->subkeys->keygrip);
+      if (key->subkeys && key->subkeys->curve)
+            printf ("curve   : %s\n", key->subkeys->curve);
       printf ("caps    : %s%s%s%s\n",
               key->can_encrypt? "e":"",
               key->can_sign? "s":"",
               key->can_certify? "c":"",
               key->can_authenticate? "a":"");
-      printf ("flags   :%s%s%s%s%s%s\n",
+      printf ("flags   :%s%s%s%s%s%s%s\n",
               key->secret? " secret":"",
               key->revoked? " revoked":"",
               key->expired? " expired":"",
               key->disabled? " disabled":"",
               key->invalid? " invalid":"",
-              key->is_qualified? " qualifid":"");
+              key->is_qualified? " qualifid":"",
+              key->subkeys && key->subkeys->is_cardkey? " cardkey":"");
+
+      subkey = key->subkeys;
+      if (subkey)
+        subkey = subkey->next;
+      for (nsub=1; subkey; subkey = subkey->next, nsub++)
+        {
+          printf ("fpr   %2d: %s\n", nsub, nonnull (subkey->fpr));
+          if (subkey->keygrip)
+            printf ("grip  %2d: %s\n", nsub, subkey->keygrip);
+          if (subkey->curve)
+            printf ("curve %2d: %s\n", nsub, subkey->curve);
+          printf ("caps  %2d: %s%s%s%s\n",
+                  nsub,
+                  subkey->can_encrypt? "e":"",
+                  subkey->can_sign? "s":"",
+                  subkey->can_certify? "c":"",
+                  subkey->can_authenticate? "a":"");
+          printf ("flags %2d:%s%s%s%s%s%s%s\n",
+                  nsub,
+                  subkey->secret? " secret":"",
+                  subkey->revoked? " revoked":"",
+                  subkey->expired? " expired":"",
+                  subkey->disabled? " disabled":"",
+                  subkey->invalid? " invalid":"",
+                  subkey->is_qualified? " qualifid":"",
+                  subkey->is_cardkey? " cardkey":"");
+        }
       for (nuids=0, uid=key->uids; uid; uid = uid->next, nuids++)
         {
           printf ("userid %d: %s\n", nuids, nonnull(uid->uid));
@@ -200,6 +233,8 @@ main (int argc, char **argv)
                   uid->validity == GPGME_VALIDITY_FULL? "full":
                   uid->validity == GPGME_VALIDITY_ULTIMATE? "ultimate": "[?]");
         }
+
+
 
       putchar ('\n');
 
