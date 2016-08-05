@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #
 # Copyright (C) 2016 g10 Code GmbH
-# Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,10 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+"""A decryption filter
+
+This demonstrates decryption using pyme3 in three lines of code.  To
+be used like this:
+
+./decryption-filter.py <message.gpg >message.plain
+
+"""
+
 import sys
 import pyme
-from pyme.constants.sig import mode
-
-with pyme.Context() as c:
-    signed, _ = c.sign(b"Test message", mode=mode.CLEAR)
-    sys.stdout.buffer.write(signed)
+pyme.Context().decrypt(sys.stdin, sink=sys.stdout)

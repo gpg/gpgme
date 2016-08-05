@@ -1,31 +1,25 @@
 #!/usr/bin/env python3
+#
+# Copyright (C) 2016 g10 Code GmbH
 # Copyright (C) 2004 Igor Belyi <belyi@users.sourceforge.net>
 # Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; either version 2 of the License, or
-#    (at your option) any later version.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program; if not, write to the Free Software
-#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from pyme import core, callbacks
+import pyme
 
-# Initialize our context.
-core.check_version(None)
-
-c = core.Context()
-c.set_armor(1)
-c.set_progress_cb(callbacks.progress_stdout, None)
-
-# This example from the GPGME manual
+# This is the example from the GPGME manual.
 
 parms = """<GnupgKeyParms format="internal">
 Key-Type: RSA
@@ -40,5 +34,8 @@ Expire-Date: 2020-12-31
 </GnupgKeyParms>
 """
 
-c.op_genkey(parms, None, None)
-print(c.op_genkey_result().fpr)
+with pyme.Context() as c:
+    c.set_progress_cb(pyme.callbacks.progress_stdout)
+    c.op_genkey(parms, None, None)
+    print("Generated key with fingerprint {0}.".format(
+        c.op_genkey_result().fpr))

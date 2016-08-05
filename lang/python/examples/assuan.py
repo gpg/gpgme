@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #
 # Copyright (C) 2016 g10 Code GmbH
-# Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys
-import pyme
-from pyme.constants.sig import mode
+"""Demonstrate the use of the Assuan protocol engine"""
 
-with pyme.Context() as c:
-    signed, _ = c.sign(b"Test message", mode=mode.CLEAR)
-    sys.stdout.buffer.write(signed)
+import pyme
+
+with pyme.Context(protocol=pyme.constants.PROTOCOL_ASSUAN) as c:
+    # Invoke the pinentry to get a confirmation.
+    err = c.assuan_transact(['GET_CONFIRMATION', 'Hello there'])
+    print("You chose {}.".format("cancel" if err else "ok"))
