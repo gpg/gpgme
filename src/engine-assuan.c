@@ -248,6 +248,7 @@ llass_new (void **engine, const char *file_name, const char *home_dir,
   if (err)
     goto leave;
   assuan_ctx_set_system_hooks (llass->assuan_ctx, &_gpgme_assuan_system_hooks);
+  assuan_set_flag (llass->assuan_ctx, ASSUAN_CONVEY_COMMENTS, 1);
 
   err = assuan_socket_connect (llass->assuan_ctx, file_name, 0, 0);
   if (err)
