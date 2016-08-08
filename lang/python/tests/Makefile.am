@@ -26,7 +26,7 @@ test_srcdir = $(top_srcdir)/tests/gpg
 TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) \
 	LC_ALL=C GPG_AGENT_INFO= \
 	top_srcdir=$(top_srcdir) \
-	LD_LIBRARY_PATH="../../../src/.libs" \
+	LD_LIBRARY_PATH="../../../src/.libs:$(LD_LIBRARY_PATH)" \
 	PYTHONPATH=`echo $(abs_builddir)/../build/lib.*`
 
 py_tests = t-wrapper.py \
