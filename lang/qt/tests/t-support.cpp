@@ -43,9 +43,8 @@ void QGpgMETest::cleanupTestCase()
 {
     QCoreApplication::sendPostedEvents();
     killAgent();
-    printf("Killed agent\n");
 }
-#include <QDebug>
+
 void killAgent(const QString& dir)
 {
     QProcess proc;
