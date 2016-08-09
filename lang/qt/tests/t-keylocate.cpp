@@ -37,10 +37,12 @@
 #include "keylistresult.h"
 #include "engineinfo.h"
 
+#include "t-support.h"
+
 using namespace QGpgME;
 using namespace GpgME;
 
-class KeyLocateTest : public QObject
+class KeyLocateTest : public QGpgMETest
 {
     Q_OBJECT
 
@@ -119,16 +121,6 @@ private Q_SLOTS:
         Q_ASSERT(spy.wait());
     }
 
-    void initTestCase()
-    {
-        const QString gpgHome = qgetenv("GNUPGHOME");
-        QVERIFY2(!gpgHome.isEmpty(), "GNUPGHOME environment variable is not set.");
-    }
-
-    void cleanupTestCase()
-    {
-        QCoreApplication::sendPostedEvents();
-    }
 private:
     QString mTestpattern;
 };

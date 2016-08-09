@@ -37,10 +37,12 @@
 #include "qgpgmebackend.h"
 #include "keylistresult.h"
 
+#include "t-support.h"
+
 using namespace QGpgME;
 using namespace GpgME;
 
-class KeyListTest : public QObject
+class KeyListTest : public QGpgMETest
 {
     Q_OBJECT
 
@@ -48,7 +50,6 @@ Q_SIGNALS:
     void asyncDone();
 
 private Q_SLOTS:
-
     void testSingleKeyListSync()
     {
         KeyListJob *job = openpgp()->keyListJob(false, false, false);
@@ -99,19 +100,9 @@ private Q_SLOTS:
         QSignalSpy spy (this, SIGNAL(asyncDone()));
         Q_ASSERT(spy.wait());
     }
-
-    void initTestCase()
-    {
-        const QString gpgHome = qgetenv("GNUPGHOME");
-        QVERIFY2(!gpgHome.isEmpty(), "GNUPGHOME environment variable is not set.");
-    }
-
-    void cleanupTestCase()
-    {
-        QCoreApplication::sendPostedEvents();
-    }
 };
 
 QTEST_MAIN(KeyListTest)
 
 #include "t-keylist.moc"
+#include "t-support.moc"

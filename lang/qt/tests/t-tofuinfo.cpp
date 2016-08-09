@@ -55,7 +55,7 @@ static const char testMsg1[] =
 "=Crq6\n"
 "-----END PGP MESSAGE-----\n";
 
-class TofuInfoTest: public QObject
+class TofuInfoTest: public QGpgMETest
 {
     Q_OBJECT
 
@@ -216,8 +216,8 @@ private /* FIXME Disabled until GnuPG-Bug-Id 2405 is fixed Q_SLOTS */:
 
     void initTestCase()
     {
+        QGpgMETest::initTestCase();
         const QString gpgHome = qgetenv("GNUPGHOME");
-        QVERIFY2(!gpgHome.isEmpty(), "GNUPGHOME environment variable is not set.");
         qputenv("GNUPGHOME", mDir.path().toUtf8());
         Q_ASSERT(mDir.isValid());
         QFile conf(mDir.path() + QStringLiteral("/gpg.conf"));

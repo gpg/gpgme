@@ -1,4 +1,4 @@
-/* t-support.h
+/* t-support.cpp
 
     This file is part of qgpgme, the Qt API binding for gpgme
     Copyright (c) 2016 Intevation GmbH
@@ -28,37 +28,36 @@
     you do not wish to do so, delete this exception statement from
     your version.
 */
-#ifndef T_SUPPORT_H
-#define T_SUPPORT_H
 
-#include "interfaces/passphraseprovider.h"
-#include <QtGlobal>
-#include <QProcess>
-#include <QCoreApplication>
-#include <QObject>
+#include "t-support.h"
 
-namespace GpgME
+#include <QTest>
+
+void QGpgMETest::initTestCase()
 {
-class TestPassphraseProvider : public PassphraseProvider
+    const QString gpgHome = qgetenv("GNUPGHOME");
+    QVERIFY2(!gpgHome.isEmpty(), "GNUPGHOME environment variable is not set.");
+}
+
+void QGpgMETest::cleanupTestCase()
 {
-public:
-    char *getPassphrase(const char *useridHint, const char *description,
-                        bool previousWasBad, bool &canceled) Q_DECL_OVERRIDE
-    {
-        return strdup("abc");
-    }
-};
-} // namespace GpgME
-
-void killAgent(const QString &dir = qgetenv("GNUPGHOME"));
-
-class QGpgMETest : public QObject
+    QCoreApplication::sendPostedEvents();
+    killAgent();
+    printf("Killed agent\n");
+}
+#include <QDebug>
+void killAgent(const QString& dir)
 {
-    Q_OBJECT
+    QProcess proc;
+    proc.setProgram(QStringLiteral("gpg-connect-agent"));
+    QStringList arguments;
+    arguments << "-S " << dir + "/S.gpg-agent";
+    proc.start();
+    proc.waitForStarted();
+    proc.write("KILLAGENT\n");
+    proc.write("BYE\n");
+    proc.closeWriteChannel();
+    proc.waitForFinished();
+}
 
-public Q_SLOTS:
-    void initTestCase();
-    void cleanupTestCase();
-};
-
-#endif // T_SUPPORT_H
+#include "t-support.hmoc"

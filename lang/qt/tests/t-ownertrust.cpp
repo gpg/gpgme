@@ -37,10 +37,12 @@
 #include "keylistresult.h"
 #include "changeownertrustjob.h"
 
+#include "t-support.h"
+
 using namespace QGpgME;
 using namespace GpgME;
 
-class ChangeOwnerTrustTest: public QObject
+class ChangeOwnerTrustTest: public QGpgMETest
 {
     Q_OBJECT
 
@@ -97,17 +99,6 @@ private Q_SLOTS:
 
         key = keys.front();
         Q_ASSERT (key.ownerTrust() == Key::Unknown);
-    }
-
-    void initTestCase()
-    {
-        const QString gpgHome = qgetenv("GNUPGHOME");
-        QVERIFY2(!gpgHome.isEmpty(), "GNUPGHOME environment variable is not set.");
-    }
-
-    void cleanupTestCase()
-    {
-        QCoreApplication::sendPostedEvents();
     }
 };
 

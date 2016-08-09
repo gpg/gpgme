@@ -24,9 +24,11 @@ TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir)
 
 EXTRA_DIST = initial.test
 
-TESTS = initial.test t-keylist t-keylocate t-ownertrust t-tofuinfo
+TESTS = initial.test t-keylist t-keylocate t-ownertrust t-tofuinfo \
+        t-encrypt
 
-moc_files = t-keylist.moc t-keylocate.moc t-ownertrust.moc t-tofuinfo.moc
+moc_files = t-keylist.moc t-keylocate.moc t-ownertrust.moc t-tofuinfo.moc \
+            t-encrypt.moc t-support.hmoc
 
 AM_LDFLAGS = -no-install
 
@@ -46,16 +48,19 @@ check-local: ./pubring-stamp
 # add this dependency:
 initial.test : check-local
 
-t_keylist_SOURCES = t-keylist.cpp
-t_keylocate_SOURCES = t-keylocate.cpp
-t_ownertrust_SOURCES = t-ownertrust.cpp
-t_tofuinfo_SOURCES = t-tofuinfo.cpp t-support.h
+support_src = t-support.h t-support.cpp
+
+t_keylist_SOURCES = t-keylist.cpp $(support_src)
+t_keylocate_SOURCES = t-keylocate.cpp $(support_src)
+t_ownertrust_SOURCES = t-ownertrust.cpp $(support_src)
+t_tofuinfo_SOURCES = t-tofuinfo.cpp $(support_src)
+t_encrypt_SOURCES = t-encrypt.cpp $(support_src)
 
 nodist_t_keylist_SOURCES = $(moc_files)
 
 BUILT_SOURCES = $(moc_files)
 
-noinst_PROGRAMS = t-keylist t-keylocate t-ownertrust t-tofuinfo
+noinst_PROGRAMS = t-keylist t-keylocate t-ownertrust t-tofuinfo t-encrypt
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
@@ -81,4 +86,7 @@ export GNUPGHOME := $(abs_builddir)
 	touch ./pubring-stamp
 
 .cpp.moc:
+	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
+
+.h.hmoc:
 	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
