@@ -1113,7 +1113,8 @@ EncryptionResult Context::encrypt(const std::vector<Key> &recipients, const Data
         }
     }
     *keys_it++ = 0;
-    d->lasterr = gpgme_op_encrypt(d->ctx, keys, encryptflags2encryptflags(flags),
+    d->lasterr = gpgme_op_encrypt(d->ctx, recipients.empty() ? nullptr : keys,
+                                  encryptflags2encryptflags(flags),
                                   pdp ? pdp->data : 0, cdp ? cdp->data : 0);
     delete[] keys;
     return EncryptionResult(d->ctx, Error(d->lasterr));
