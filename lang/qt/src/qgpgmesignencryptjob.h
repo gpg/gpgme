@@ -87,10 +87,22 @@ public:
                const std::shared_ptr<QIODevice> &cipherText,
                bool alwaysTrust) Q_DECL_OVERRIDE;
 
+    void start(const std::vector<GpgME::Key> &signers,
+               const std::vector<GpgME::Key> &recipients,
+               const std::shared_ptr<QIODevice> &plainText,
+               const std::shared_ptr<QIODevice> &cipherText,
+               const GpgME::Context::EncryptionFlags flags) Q_DECL_OVERRIDE;
+
     std::pair<GpgME::SigningResult, GpgME::EncryptionResult>
     exec(const std::vector<GpgME::Key> &signers,
          const std::vector<GpgME::Key> &recipients,
          const QByteArray &plainText, bool alwaysTrust,
+         QByteArray &cipherText) Q_DECL_OVERRIDE;
+
+    std::pair<GpgME::SigningResult, GpgME::EncryptionResult>
+    exec(const std::vector<GpgME::Key> &signers,
+         const std::vector<GpgME::Key> &recipients,
+         const QByteArray &plainText, const GpgME::Context::EncryptionFlags flags,
          QByteArray &cipherText) Q_DECL_OVERRIDE;
 
     /* from SignEncryptJob */

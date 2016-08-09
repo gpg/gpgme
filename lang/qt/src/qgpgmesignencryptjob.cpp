@@ -62,7 +62,9 @@ void QGpgMESignEncryptJob::setOutputIsBase64Encoded(bool on)
     mOutputIsBase64Encoded = on;
 }
 
-static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thread, const std::vector<Key> &signers, const std::vector<Key> &recipients, const std::weak_ptr<QIODevice> &plainText_, const std::weak_ptr<QIODevice> &cipherText_, bool alwaysTrust, bool outputIsBsse64Encoded)
+static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thread, const std::vector<Key> &signers,
+                                                      const std::vector<Key> &recipients, const std::weak_ptr<QIODevice> &plainText_,
+                                                      const std::weak_ptr<QIODevice> &cipherText_, const Context::EncryptionFlags eflags, bool outputIsBsse64Encoded)
 {
     const std::shared_ptr<QIODevice> &plainText = plainText_.lock();
     const std::shared_ptr<QIODevice> &cipherText = cipherText_.lock();
@@ -72,9 +74,6 @@ static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thr
 
     QGpgME::QIODeviceDataProvider in(plainText);
     const Data indata(&in);
-
-    const Context::EncryptionFlags eflags =
-        alwaysTrust ? Context::AlwaysTrust : Context::None;
 
     ctx->clearSigningKeys();
     Q_FOREACH (const Key &signer, signers)
@@ -111,34 +110,47 @@ static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thr
 
 }
 
-static QGpgMESignEncryptJob::result_type sign_encrypt_qba(Context *ctx, const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust, bool outputIsBsse64Encoded)
+static QGpgMESignEncryptJob::result_type sign_encrypt_qba(Context *ctx, const std::vector<Key> &signers,
+                                                          const std::vector<Key> &recipients, const QByteArray &plainText, const Context::EncryptionFlags eflags, bool outputIsBsse64Encoded)
 {
     const std::shared_ptr<QBuffer> buffer(new QBuffer);
     buffer->setData(plainText);
     if (!buffer->open(QIODevice::ReadOnly)) {
         assert(!"This should never happen: QBuffer::open() failed");
     }
-    return sign_encrypt(ctx, 0, signers, recipients, buffer, std::shared_ptr<QIODevice>(), alwaysTrust, outputIsBsse64Encoded);
+    return sign_encrypt(ctx, 0, signers, recipients, buffer, std::shared_ptr<QIODevice>(), eflags, outputIsBsse64Encoded);
 }
 
 Error QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust)
 {
-    run(std::bind(&sign_encrypt_qba, std::placeholders::_1, signers, recipients, plainText, alwaysTrust, mOutputIsBase64Encoded));
+    run(std::bind(&sign_encrypt_qba, std::placeholders::_1, signers, recipients, plainText, alwaysTrust ? Context::AlwaysTrust : Context::None, mOutputIsBase64Encoded));
     return Error();
+}
+
+void QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vector<Key> &recipients,
+                                 const std::shared_ptr<QIODevice> &plainText, const std::shared_ptr<QIODevice> &cipherText, const Context::EncryptionFlags eflags)
+{
+    run(std::bind(&sign_encrypt, std::placeholders::_1, std::placeholders::_2, signers, recipients, std::placeholders::_3, std::placeholders::_4, eflags, mOutputIsBase64Encoded), plainText, cipherText);
 }
 
 void QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vector<Key> &recipients, const std::shared_ptr<QIODevice> &plainText, const std::shared_ptr<QIODevice> &cipherText, bool alwaysTrust)
 {
-    run(std::bind(&sign_encrypt, std::placeholders::_1, std::placeholders::_2, signers, recipients, std::placeholders::_3, std::placeholders::_4, alwaysTrust, mOutputIsBase64Encoded), plainText, cipherText);
+    return start(signers, recipients, plainText, cipherText, alwaysTrust ? Context::AlwaysTrust : Context::None);
 }
 
-std::pair<SigningResult, EncryptionResult> QGpgMESignEncryptJob::exec(const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust, QByteArray &cipherText)
+std::pair<SigningResult, EncryptionResult> QGpgMESignEncryptJob::exec(const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, const Context::EncryptionFlags eflags, QByteArray &cipherText)
 {
-    const result_type r = sign_encrypt_qba(context(), signers, recipients, plainText, alwaysTrust, mOutputIsBase64Encoded);
+    const result_type r = sign_encrypt_qba(context(), signers, recipients, plainText, eflags, mOutputIsBase64Encoded);
     cipherText = std::get<2>(r);
     resultHook(r);
     return mResult;
 }
+
+std::pair<SigningResult, EncryptionResult> QGpgMESignEncryptJob::exec(const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust, QByteArray &cipherText)
+{
+    return exec(signers, recipients, plainText, alwaysTrust ? Context::AlwaysTrust : Context::None, cipherText);
+}
+
 
 #if 0
 

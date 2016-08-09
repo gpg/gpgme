@@ -82,6 +82,16 @@ public:
     GpgME::EncryptionResult exec(const std::vector<GpgME::Key> &recipients,
                                  const QByteArray &plainText, bool alwaysTrust,
                                  QByteArray &cipherText) Q_DECL_OVERRIDE;
+    /* from EncryptJob */
+    void start(const std::vector<GpgME::Key> &recipients,
+               const std::shared_ptr<QIODevice> &plainText,
+               const std::shared_ptr<QIODevice> &cipherText,
+               const GpgME::Context::EncryptionFlags flags) Q_DECL_OVERRIDE;
+
+    /* from EncryptJob */
+    GpgME::EncryptionResult exec(const std::vector<GpgME::Key> &recipients,
+                                 const QByteArray &plainText, const GpgME::Context::EncryptionFlags flags,
+                                 QByteArray &cipherText) Q_DECL_OVERRIDE;
 
     /* from EncryptJob */
     void setOutputIsBase64Encoded(bool on) Q_DECL_OVERRIDE;

@@ -39,6 +39,12 @@
 #include <memory>
 #include <vector>
 
+#ifdef BUILDING_QGPGME
+# include "context.h"
+#else
+# include <gpgme++/context.h>
+#endif
+
 class QByteArray;
 class QIODevice;
 
@@ -103,13 +109,24 @@ public:
     virtual GpgME::EncryptionResult exec(const std::vector<GpgME::Key> &recipients,
                                          const QByteArray &plainText,
                                          bool alwaysTrust, QByteArray &cipherText) = 0;
-
     /*!
       This is a hack to request BASE64 output (instead of whatever
       comes out normally).
     */
     virtual void setOutputIsBase64Encoded(bool) = 0;
 
+    /** Like start but with an additional argument for EncryptionFlags for
+     * more flexibility. */
+    virtual void start(const std::vector<GpgME::Key> &recipients,
+                       const std::shared_ptr<QIODevice> &plainText,
+                       const std::shared_ptr<QIODevice> &cipherText = std::shared_ptr<QIODevice>(),
+                       const GpgME::Context::EncryptionFlags flags = GpgME::Context::None) = 0;
+
+    /** Like exec but with an additional argument for EncryptionFlags for
+     * more flexibility. */
+    virtual GpgME::EncryptionResult exec(const std::vector<GpgME::Key> &recipients,
+                                         const QByteArray &plainText,
+                                         const GpgME::Context::EncryptionFlags flags, QByteArray &cipherText) = 0;
 Q_SIGNALS:
     void result(const GpgME::EncryptionResult &result, const QByteArray &cipherText, const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());
 };

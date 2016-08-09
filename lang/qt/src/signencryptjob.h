@@ -38,8 +38,10 @@
 
 #ifdef BUILDING_QGPGME
 # include "global.h"
+# include "context.h"
 #else
 # include <gpgme++/global.h>
+# include <gpgme++/context.h>
 #endif
 
 #include <memory>
@@ -123,6 +125,21 @@ public:
     */
     virtual void setOutputIsBase64Encoded(bool) = 0;
 
+    /** Like start but with an additional argument for EncryptionFlags for
+     * more flexibility. */
+    virtual void start(const std::vector<GpgME::Key> &signers,
+                       const std::vector<GpgME::Key> &recipients,
+                       const std::shared_ptr<QIODevice> &plainText,
+                       const std::shared_ptr<QIODevice> &cipherText = std::shared_ptr<QIODevice>(),
+                       const GpgME::Context::EncryptionFlags flags = GpgME::Context::None) = 0;
+
+    /** Like exec but with an additional argument for EncryptionFlags for
+     * more flexibility. */
+    virtual std::pair<GpgME::SigningResult, GpgME::EncryptionResult>
+    exec(const std::vector<GpgME::Key> &signers,
+         const std::vector<GpgME::Key> &recipients,
+         const QByteArray &plainText,
+         const GpgME::Context::EncryptionFlags flags, QByteArray &cipherText) = 0;
 Q_SIGNALS:
     void result(const GpgME::SigningResult &signingresult,
                 const GpgME::EncryptionResult &encryptionresult,
