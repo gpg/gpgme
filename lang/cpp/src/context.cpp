@@ -1094,6 +1094,18 @@ static gpgme_encrypt_flags_t encryptflags2encryptflags(Context::EncryptionFlags 
     if (flags & Context::NoEncryptTo) {
         result |= GPGME_ENCRYPT_NO_ENCRYPT_TO;
     }
+    if (flags & Context::Prepare) {
+        result |= GPGME_ENCRYPT_PREPARE;
+    }
+    if (flags & Context::ExpectSign) {
+        result |= GPGME_ENCRYPT_EXPECT_SIGN;
+    }
+    if (flags & Context::NoCompress) {
+        result |= GPGME_ENCRYPT_NO_COMPRESS;
+    }
+    if (flags & Context::Symmetric) {
+        result |= GPGME_ENCRYPT_SYMMETRIC;
+    }
     return static_cast<gpgme_encrypt_flags_t>(result);
 }
 
@@ -1395,6 +1407,11 @@ std::ostream &operator<<(std::ostream &os, Context::EncryptionFlags flags)
     os << "GpgME::Context::EncryptionFlags(";
 #define CHECK( x ) if ( !(flags & (Context::x)) ) {} else do { os << #x " "; } while (0)
     CHECK(AlwaysTrust);
+    CHECK(NoEncryptTo);
+    CHECK(Prepare);
+    CHECK(ExpectSign);
+    CHECK(NoCompress);
+    CHECK(Symmetric);
 #undef CHECK
     return os << ')';
 }

@@ -292,7 +292,15 @@ public:
     // Encryption
     //
 
-    enum EncryptionFlags { None = 0, AlwaysTrust = 1, NoEncryptTo = 2 };
+    enum EncryptionFlags {
+        None = 0,
+        AlwaysTrust = 1,
+        NoEncryptTo = 2,
+        Prepare = 4,
+        ExpectSign = 8,
+        NoCompress = 16,
+        Symmetric = 32
+    };
     EncryptionResult encrypt(const std::vector<Key> &recipients, const Data &plainText, Data &cipherText, EncryptionFlags flags);
     GpgME::Error encryptSymmetrically(const Data &plainText, Data &cipherText);
     GpgME::Error startEncryption(const std::vector<Key> &recipients, const Data &plainText, Data &cipherText, EncryptionFlags flags);
