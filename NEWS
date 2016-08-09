@@ -22,6 +22,7 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  GPGME_DATA_TYPE_PGP_ENCRYPTED  NEW.
  GPGME_DATA_TYPE_PGP_SIGNATURE  NEW.
  GPGME_DATA_ENCODING_MIME       NEW.
+ GPGME_ENCRYPT_SYMMETRIC        NEW.
 
 
 Noteworthy changes in version 1.6.0 (2015-08-26) [C25/A14/R0]

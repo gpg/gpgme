@@ -5398,6 +5398,12 @@ protocol to prepare an encryption (i.e. sending the
 @code{GPGME_ENCRYPT_EXPECT_SIGN} symbol the UI Server is advised to
 also expect a sign command.
 
+@item GPGME_ENCRYPT_SYMMETRIC
+The @code{GPGME_ENCRYPT_SYMMETRIC} symbol specifies that the
+output should be additionally encrypted symmetically even
+if recipients are provided. This feature is only supported for
+for the OpenPGP crypto engine.
+
 @end table
 
 If @code{GPG_ERR_UNUSABLE_PUBKEY} is returned, some recipients in

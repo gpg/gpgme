@@ -70,6 +70,7 @@ show_usage (int ex)
          "  --uiserver       use the UI server\n"
          "  --loopback       use a loopback pinentry\n"
          "  --key NAME       encrypt to key NAME\n"
+         "  --symmetric      encrypt symmetric (OpenPGP only)\n"
          , stderr);
   exit (ex);
 }
@@ -91,6 +92,7 @@ main (int argc, char **argv)
   gpgme_key_t keys[10+1];
   int keycount = 0;
   int i;
+  gpgme_encrypt_flags_t flags = GPGME_ENCRYPT_ALWAYS_TRUST;
 
   if (argc)
     { argc--; argv++; }
@@ -148,6 +150,11 @@ main (int argc, char **argv)
           use_loopback = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--symmetric"))
+        {
+          flags |= GPGME_ENCRYPT_SYMMETRIC;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -174,7 +181,10 @@ main (int argc, char **argv)
   if (print_status)
     gpgme_set_status_cb (ctx, status_cb, NULL);
   if (use_loopback)
-    gpgme_set_pinentry_mode (ctx, GPGME_PINENTRY_MODE_LOOPBACK);
+    {
+      gpgme_set_pinentry_mode (ctx, GPGME_PINENTRY_MODE_LOOPBACK);
+      gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
+    }
 
   for (i=0; i < keycount; i++)
     {
@@ -194,7 +204,7 @@ main (int argc, char **argv)
   err = gpgme_data_new (&out);
   fail_if_err (err);
 
-  err = gpgme_op_encrypt (ctx, keys, GPGME_ENCRYPT_ALWAYS_TRUST, in, out);
+  err = gpgme_op_encrypt (ctx, keycount ? keys : NULL, flags, in, out);
   result = gpgme_op_encrypt_result (ctx);
   if (result)
     print_result (result);

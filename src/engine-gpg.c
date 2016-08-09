@@ -1718,9 +1718,12 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
-  int symmetric = !recp;
 
-  err = add_arg (gpg, symmetric ? "--symmetric" : "--encrypt");
+  if (recp)
+    err = add_arg (gpg, "--encrypt");
+
+  if (!err && ((flags & GPGME_ENCRYPT_SYMMETRIC) || !recp))
+    err = add_arg (gpg, "--symmetric");
 
   if (!err && use_armor)
     err = add_arg (gpg, "--armor");
@@ -1732,7 +1735,7 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
       && have_gpg_version (gpg, "2.1.14"))
     err = add_arg (gpg, "--mimemode");
 
-  if (!symmetric)
+  if (recp)
     {
       /* If we know that all recipients are valid (full or ultimate trust)
 	 we can suppress further checks.  */
