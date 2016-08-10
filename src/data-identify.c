@@ -95,6 +95,11 @@ next_openpgp_packet (unsigned char const **bufptr, size_t *buflen,
   if (!len)
     return gpg_error (GPG_ERR_NO_DATA);
 
+  /* First some blacklisting.  */
+  if (len >= 4 && !memcmp (buf, "\x89PNG", 4))
+    return gpg_error (GPG_ERR_INV_PACKET); /* This is a PNG file.  */
+
+  /* Start parsing.  */
   ctb = *buf++; len--;
   if ( !(ctb & 0x80) )
     return gpg_error (GPG_ERR_INV_PACKET); /* Invalid CTB. */
