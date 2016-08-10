@@ -249,6 +249,9 @@ if test x$fixed_search_path != x ; then
                     [Locate binaries only via this PATH])
 fi
 
+
+# Note: You need to declare all possible langauges also in
+#       lang/Makefile.am's DIST_SUBDIRS.
 AC_ARG_ENABLE([languages],
               AC_HELP_STRING([--enable-languages=languages],
                              [enable only specific language bindings]),
