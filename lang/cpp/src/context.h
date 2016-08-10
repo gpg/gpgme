@@ -102,9 +102,23 @@ public:
     void addKeyListMode(unsigned int keyListMode);
     unsigned int keyListMode() const;
 
+    /** Set the passphrase provider
+     *
+     * To avoid problems where a class using a context registers
+     * itself as the provider the Context does not take ownership
+     * of the provider and the caller must ensure that the provider
+     * is deleted if it is no longer needed.
+     */
     void setPassphraseProvider(PassphraseProvider *provider);
     PassphraseProvider *passphraseProvider() const;
 
+    /** Set the progress provider
+     *
+     * To avoid problems where a class using a context registers
+     * itself as the provider the Context does not take ownership
+     * of the provider and the caller must ensure that the provider
+     * is deleted if it is no longer needed.
+     */
     void setProgressProvider(ProgressProvider *provider);
     ProgressProvider *progressProvider() const;
 
