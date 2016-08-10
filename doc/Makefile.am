@@ -20,11 +20,37 @@
 ## Process this file with automake to produce Makefile.in
 
 DISTCLEANFILES = gpgme.tmp
+CLEANFILES = mkdefsinc defs.inc
 
-EXTRA_DIST = module-overview.sk HACKING DCO ChangeLog-2011
+EXTRA_DIST = module-overview.sk HACKING DCO ChangeLog-2011 \
+             mkdefsinc.c defsincdate
+
+BUILT_SOURCES = defsincdate defs.inc
+
 
 info_TEXINFOS = gpgme.texi
 gpgme_TEXINFOS = uiserver.texi lesser.texi gpl.texi
+
+gpgme.texi : defs.inc
+
+mkdefsinc: mkdefsinc.c Makefile ../config.h
+	$(CC_FOR_BUILD) -I. -I.. -I$(srcdir) $(AM_CPPFLAGS) \
+	   -o $@ $(srcdir)/mkdefsinc.c
+
+dist-hook: defsincdate
+
+defsincdate: $(gpgme_TEXINFOS)
+	: >defsincdate ; \
+	if test -e $(top_srcdir)/.git; then \
+	  (cd $(srcdir) && git log -1 --format='%ct' -- \
+             $(info_TEXINFOS) $(gpgme_TEXINFOS) 2>/dev/null) >>defsincdate; \
+	fi
+
+defs.inc: defsincdate Makefile mkdefsinc
+	incd="`test -f defsincdate || echo '$(srcdir)/'`defsincdate"; \
+	./mkdefsinc -C $(srcdir) --date "`cat $$incd 2>/dev/null`" \
+	    $(info_TEXINFOS) $(gpgme_TEXINFOS) >$@
+
 
 online: gpgme.html gpgme.pdf
 	set -e; \

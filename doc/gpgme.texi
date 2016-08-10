@@ -1,6 +1,7 @@
 \input texinfo                   @c -*- mode: texinfo; coding: utf-8; -*-
 @documentencoding UTF-8
 @setfilename gpgme.info
+@include defs.inc
 @settitle The `GnuPG Made Easy' Reference Manual
 
 @dircategory GNU Libraries
@@ -29,8 +30,6 @@ WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 General Public License for more details.
 @end copying
-
-@include version.texi
 
 @c Macros used by the description of the UI server protocol
 @macro clnt
