@@ -120,6 +120,7 @@ main (int argc, char *argv[])
     }
 
   gpgme_key_unref (key[0]);
+  free (text2);
   gpgme_data_release (out);
   gpgme_release (ctx);
   return 0;
