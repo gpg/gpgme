@@ -71,7 +71,8 @@ private Q_SLOTS:
 
         /* Now decrypt */
         auto ctx = Context::createForProtocol(OpenPGP);
-        ctx->setPassphraseProvider(new TestPassphraseProvider);
+        TestPassphraseProvider provider;
+        ctx->setPassphraseProvider(&provider);
         ctx->setPinentryMode(Context::PinentryLoopback);
         auto decJob = new QGpgMEDecryptJob(ctx);
         QByteArray plainText;
@@ -84,7 +85,8 @@ private Q_SLOTS:
     void testSymmetricEncryptDecrypt()
     {
         auto ctx = Context::createForProtocol(OpenPGP);
-        ctx->setPassphraseProvider(new TestPassphraseProvider);
+        TestPassphraseProvider provider;
+        ctx->setPassphraseProvider(&provider);
         ctx->setPinentryMode(Context::PinentryLoopback);
         ctx->setArmor(true);
         ctx->setTextMode(true);
@@ -99,7 +101,7 @@ private Q_SLOTS:
         killAgent(mDir.path());
 
         auto ctx2 = Context::createForProtocol(OpenPGP);
-        ctx2->setPassphraseProvider(new TestPassphraseProvider);
+        ctx2->setPassphraseProvider(&provider);
         ctx2->setPinentryMode(Context::PinentryLoopback);
         auto decJob = new QGpgMEDecryptJob(ctx2);
         QByteArray plainText;

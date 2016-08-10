@@ -73,7 +73,8 @@ class TofuInfoTest: public QGpgMETest
     void signAndVerify(const QString &what, const GpgME::Key &key, int expected)
     {
         Context *ctx = Context::createForProtocol(OpenPGP);
-        ctx->setPassphraseProvider(new TestPassphraseProvider);
+        TestPassphraseProvider provider;
+        ctx->setPassphraseProvider(&provider);
         ctx->setPinentryMode(Context::PinentryLoopback);
         auto *job = new QGpgMESignJob(ctx);
 
