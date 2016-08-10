@@ -105,4 +105,3 @@ private Q_SLOTS:
 QTEST_MAIN(KeyListTest)
 
 #include "t-keylist.moc"
-#include "t-support.moc"
