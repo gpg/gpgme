@@ -176,7 +176,7 @@ void QGpgME::QGpgMERefreshKeysJob::slotStatus(QProcess *proc, const QString &typ
         }
         const QString what = *++it;
         ok = false;
-        const int typ = (*++it).toInt(&ok);
+        (*++it).toInt(&ok);
         if (!ok) {
             qCDebug(GPGPME_BACKEND_LOG) << "expected number for \"type\", got something else";
             return;
