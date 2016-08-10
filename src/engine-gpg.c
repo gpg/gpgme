@@ -1717,7 +1717,7 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 	     gpgme_data_t plain, gpgme_data_t ciph, int use_armor)
 {
   engine_gpg_t gpg = engine;
-  gpgme_error_t err;
+  gpgme_error_t err = 0;
 
   if (recp)
     err = add_arg (gpg, "--encrypt");
