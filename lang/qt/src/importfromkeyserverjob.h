@@ -35,6 +35,7 @@
 #define __KLEO_IMPORTFROMKEYSERVERJOB_H__
 
 #include "abstractimportjob.h"
+#include "qgpgme_export.h"
 
 namespace GpgME
 {
@@ -61,7 +62,7 @@ namespace QGpgME
    After result() is emitted, the ImportJob will schedule it's own
    destruction by calling QObject::deleteLater().
 */
-class ImportFromKeyserverJob : public AbstractImportJob
+class QGPGME_EXPORT ImportFromKeyserverJob : public AbstractImportJob
 {
     Q_OBJECT
 protected:

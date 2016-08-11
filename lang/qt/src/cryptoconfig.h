@@ -34,6 +34,7 @@
 #ifndef CRYPTOCONFIG_H
 #define CRYPTOCONFIG_H
 
+#include "qgpgme_export.h"
 #ifdef __cplusplus
 /* we read this file from a C compiler, and are only interested in the
  * enums... */
@@ -50,7 +51,7 @@ namespace QGpgME
 /**
  * Description of a single option
  */
-class CryptoConfigEntry
+class QGPGME_EXPORT CryptoConfigEntry
 {
 
 public:
@@ -252,7 +253,7 @@ public:
 /**
  * Group containing a set of config options
  */
-class CryptoConfigGroup
+class QGPGME_EXPORT CryptoConfigGroup
 {
 
 public:
@@ -301,7 +302,7 @@ public:
 /**
  * Crypto config for one component (e.g. gpg-agent, dirmngr etc.)
  */
-class CryptoConfigComponent
+class QGPGME_EXPORT CryptoConfigComponent
 {
 
 public:
@@ -341,7 +342,7 @@ public:
 /**
  * Main interface to crypto configuration.
  */
-class CryptoConfig
+class QGPGME_EXPORT CryptoConfig
 {
 
 public:

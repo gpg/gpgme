@@ -34,6 +34,7 @@
 #ifndef __KLEO_DELETEJOB_H__
 #define __KLEO_DELETEJOB_H__
 
+#include "qgpgme_export.h"
 #include "job.h"
 
 namespace GpgME
@@ -58,7 +59,7 @@ namespace QGpgME
    After result() is emitted, the DeleteJob will schedule it's own
    destruction by calling QObject::deleteLater().
 */
-class DeleteJob : public Job
+class QGPGME_EXPORT DeleteJob : public Job
 {
     Q_OBJECT
 protected:

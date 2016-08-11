@@ -36,6 +36,8 @@
 
 #include "job.h"
 
+#include "qgpgme_export.h"
+
 namespace GpgME
 {
 class Error;
@@ -45,7 +47,7 @@ class ImportResult;
 namespace QGpgME
 {
 
-class AbstractImportJob : public Job
+class QGPGME_EXPORT AbstractImportJob : public Job
 {
     Q_OBJECT
 protected:

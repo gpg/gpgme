@@ -34,6 +34,7 @@
 #ifndef __QGPGME_EXPORTJOB_H__
 #define __QGPGME_EXPORTJOB_H__
 
+#include "qgpgme_export.h"
 #include "job.h"
 
 #include <QtCore/QByteArray>
@@ -61,7 +62,7 @@ namespace QGpgME
    After result() is emitted, the ExportJob will schedule it's own
    destruction by calling QObject::deleteLater().
 */
-class ExportJob : public Job
+class QGPGME_EXPORT ExportJob : public Job
 {
     Q_OBJECT
 protected:

@@ -35,6 +35,7 @@
 #define __KLEO_VERIFYDETACHEDJOB_H__
 
 #include "job.h"
+#include "qgpgme_export.h"
 
 #include <memory>
 

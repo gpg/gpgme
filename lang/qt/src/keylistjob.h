@@ -35,6 +35,7 @@
 #define __KLEO_KEYLISTJOB_H__
 
 #include "job.h"
+#include "qgpgme_export.h"
 
 #ifdef BUILDING_QGPGME
 # include "key.h"
@@ -70,7 +71,7 @@ namespace QGpgME
    KeyListJob will schedule it's own destruction by calling
    QObject::deleteLater().
 */
-class KeyListJob : public Job
+class QGPGME_EXPORT KeyListJob : public Job
 {
     Q_OBJECT
 protected:

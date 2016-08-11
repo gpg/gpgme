@@ -35,6 +35,7 @@
 #define __KLEO_SPECIALJOB_H__
 
 #include "job.h"
+#include "qgpgme_export.h"
 
 namespace GpgME
 {
@@ -65,7 +66,7 @@ namespace QGpgME
    through the read-only result property, the latter of which needs
    to be defined in each SpecialJob subclass.
 */
-class SpecialJob : public Job
+class QGPGME_EXPORT SpecialJob : public Job
 {
     Q_OBJECT
 protected:

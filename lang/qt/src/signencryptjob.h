@@ -35,6 +35,7 @@
 #define __KLEO_SIGNENCRYPTJOB_H__
 
 #include "job.h"
+#include "qgpgme_export.h"
 
 #ifdef BUILDING_QGPGME
 # include "global.h"
@@ -75,7 +76,7 @@ namespace QGpgME
    After result() is emitted, the SignEncryptJob will schedule it's
    own destruction by calling QObject::deleteLater().
 */
-class SignEncryptJob : public Job
+class QGPGME_EXPORT SignEncryptJob : public Job
 {
     Q_OBJECT
 protected:

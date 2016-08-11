@@ -35,6 +35,7 @@
 #define __KLEO_KEYGENERATIONJOB_H__
 
 #include "job.h"
+#include "qgpgme_export.h"
 
 #include <QtCore/QByteArray>
 
@@ -60,7 +61,7 @@ namespace QGpgME
    After result() is emitted, the KeyGenerationJob will schedule it's own
    destruction by calling QObject::deleteLater().
 */
-class KeyGenerationJob : public Job
+class QGPGME_EXPORT KeyGenerationJob : public Job
 {
     Q_OBJECT
 protected:

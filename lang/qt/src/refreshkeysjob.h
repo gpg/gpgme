@@ -35,6 +35,7 @@
 #define __KLEO_REFRESHKEYSJOB_H__
 
 #include "job.h"
+#include "qgpgme_export.h"
 
 #include <vector>
 
@@ -62,7 +63,7 @@ namespace QGpgME
    After result() is emitted, the KeyListJob will schedule it's own
    destruction by calling QObject::deleteLater().
 */
-class RefreshKeysJob : public Job
+class QGPGME_EXPORT RefreshKeysJob : public Job
 {
     Q_OBJECT
 protected:
