@@ -56,6 +56,7 @@
 #include "qgpgmechangeownertrustjob.h"
 #include "qgpgmechangepasswdjob.h"
 #include "qgpgmeadduseridjob.h"
+#include "qgpgmekeyformailboxjob.h"
 
 namespace
 {
@@ -376,6 +377,15 @@ public:
         }
         context->setKeyListMode(GpgME::Extern | GpgME::Local | GpgME::Signatures | GpgME::Validate);
         return new QGpgME::QGpgMEKeyListJob(context);
+    }
+
+    QGpgME::KeyForMailboxJob *keyForMailboxJob() const Q_DECL_OVERRIDE
+    {
+        GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
+        if (!context) {
+            return Q_NULLPTR;
+        }
+        return new QGpgME::QGpgMEKeyForMailboxJob(context);
     }
 };
 

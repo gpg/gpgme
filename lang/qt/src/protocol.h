@@ -62,6 +62,7 @@ class ChangeOwnerTrustJob;
 class ChangePasswdJob;
 class AddUserIDJob;
 class SpecialJob;
+class KeyForMailboxJob;
 
 /** The main entry point for QGpgME Comes in OpenPGP and SMIME(CMS) flavors.
  *
@@ -145,6 +146,8 @@ public:
      * with both includeSigs and validate options.
      */
     virtual KeyListJob *locateKeysJob() const = 0;
+    /** Find the best key to use for a mailbox. */
+    virtual KeyForMailboxJob *keyForMailboxJob() const = 0;
 };
 
 /** Obtain a reference to the OpenPGP Protocol.

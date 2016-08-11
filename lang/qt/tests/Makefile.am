@@ -55,12 +55,14 @@ t_keylocate_SOURCES = t-keylocate.cpp $(support_src)
 t_ownertrust_SOURCES = t-ownertrust.cpp $(support_src)
 t_tofuinfo_SOURCES = t-tofuinfo.cpp $(support_src)
 t_encrypt_SOURCES = t-encrypt.cpp $(support_src)
+run_keyformailboxjob_SOURCES = run-keyformailboxjob.cpp
 
 nodist_t_keylist_SOURCES = $(moc_files)
 
 BUILT_SOURCES = $(moc_files)
 
-noinst_PROGRAMS = t-keylist t-keylocate t-ownertrust t-tofuinfo t-encrypt
+noinst_PROGRAMS = t-keylist t-keylocate t-ownertrust t-tofuinfo t-encrypt \
+    run-keyformailboxjob
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
