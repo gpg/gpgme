@@ -33,7 +33,8 @@ qgpgme_sources = \
     qgpgmesecretkeyexportjob.cpp qgpgmesignencryptjob.cpp \
     qgpgmesignjob.cpp qgpgmesignkeyjob.cpp qgpgmeverifydetachedjob.cpp \
     qgpgmeverifyopaquejob.cpp threadedjobmixin.cpp \
-    qgpgmekeyformailboxjob.cpp gpgme_backend_debug.cpp
+    qgpgmekeyformailboxjob.cpp gpgme_backend_debug.cpp \
+    defaultkeygenerationjob.cpp
 
 # If you add one here make sure that you also add one in camelcase
 qgpgme_headers= \
@@ -66,7 +67,8 @@ qgpgme_headers= \
     keygenerationjob.h \
     keylistjob.h \
     listallkeysjob.h \
-    verifydetachedjob.h
+    verifydetachedjob.h \
+    defaultkeygenerationjob.h
 
 camelcase_headers= \
     AddUserIDJob \
@@ -97,7 +99,8 @@ camelcase_headers= \
     KeyListJob \
     ListAllKeysJob \
     VerifyDetachedJob \
-    KeyForMailboxJob
+    KeyForMailboxJob \
+    DefaultKeyGenerationJob
 
 private_qgpgme_headers = \
     qgpgme_export.h \
@@ -180,7 +183,8 @@ qgpgme_moc_sources = \
     verifydetachedjob.moc \
     verifyopaquejob.moc \
     keyformailboxjob.moc \
-    qgpgmekeyformailboxjob.moc
+    qgpgmekeyformailboxjob.moc \
+    defaultkeygenerationjob.moc
 
 qgpgmeincludedir = $(includedir)/qgpgme
 qgpgmeinclude_HEADERS = $(qgpgme_headers)
