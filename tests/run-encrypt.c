@@ -36,12 +36,29 @@
 
 static int verbose;
 
+
 static gpg_error_t
 status_cb (void *opaque, const char *keyword, const char *value)
 {
   (void)opaque;
-  printf ("status_cb: %s %s\n", keyword, value);
+  fprintf (stderr, "status_cb: %s %s\n", nonnull(keyword), nonnull(value));
   return 0;
+}
+
+
+static void
+progress_cb (void *opaque, const char *what, int type, int current, int total)
+{
+  (void)opaque;
+  (void)type;
+
+  if (total)
+    fprintf (stderr, "progress for '%s' %u%% (%d of %d)\n",
+             nonnull (what),
+             (unsigned)(((double)current / total) * 100), current, total);
+  else
+    fprintf (stderr, "progress for '%s' %d\n", nonnull(what), current);
+  fflush (stderr);
 }
 
 
@@ -65,6 +82,7 @@ show_usage (int ex)
          "Options:\n"
          "  --verbose        run in verbose mode\n"
          "  --status         print status lines from the backend\n"
+         "  --progress       print progress info\n"
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
          "  --uiserver       use the UI server\n"
@@ -87,12 +105,14 @@ main (int argc, char **argv)
   gpgme_data_t in, out;
   gpgme_encrypt_result_t result;
   int print_status = 0;
+  int print_progress = 0;
   int use_loopback = 0;
   char *keyargs[10];
   gpgme_key_t keys[10+1];
   int keycount = 0;
   int i;
   gpgme_encrypt_flags_t flags = GPGME_ENCRYPT_ALWAYS_TRUST;
+  gpgme_off_t offset;
 
   if (argc)
     { argc--; argv++; }
@@ -118,6 +138,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--status"))
         {
           print_status = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--progress"))
+        {
+          print_progress = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--openpgp"))
@@ -179,7 +204,12 @@ main (int argc, char **argv)
   gpgme_set_protocol (ctx, protocol);
   gpgme_set_armor (ctx, 1);
   if (print_status)
-    gpgme_set_status_cb (ctx, status_cb, NULL);
+    {
+      gpgme_set_status_cb (ctx, status_cb, NULL);
+      gpgme_set_ctx_flag (ctx, "full-status", "1");
+    }
+  if (print_progress)
+    gpgme_set_progress_cb (ctx, progress_cb, NULL);
   if (use_loopback)
     {
       gpgme_set_pinentry_mode (ctx, GPGME_PINENTRY_MODE_LOOPBACK);
@@ -200,6 +230,41 @@ main (int argc, char **argv)
                *argv, gpg_strerror (err));
       exit (1);
     }
+  offset = gpgme_data_seek (in, 0, SEEK_END);
+  if (offset == (gpgme_off_t)(-1))
+    {
+      err = gpg_error_from_syserror ();
+      fprintf (stderr, PGM ": error seeking `%s': %s\n",
+               *argv, gpg_strerror (err));
+      exit (1);
+    }
+  if (gpgme_data_seek (in, 0, SEEK_SET) == (gpgme_off_t)(-1))
+    {
+      err = gpg_error_from_syserror ();
+      fprintf (stderr, PGM ": error seeking `%s': %s\n",
+               *argv, gpg_strerror (err));
+      exit (1);
+    }
+  {
+    char numbuf[50];
+    char *p;
+
+    p = numbuf + sizeof numbuf;
+    *--p = 0;
+    do
+      {
+        *--p = '0' + (offset % 10);
+        offset /= 10;
+      }
+    while (offset);
+    err = gpgme_data_set_flag (in, "size-hint", p);
+    if (err)
+      {
+        fprintf (stderr, PGM ": error setting size-hint for `%s': %s\n",
+                 *argv, gpg_strerror (err));
+        exit (1);
+      }
+  }
 
   err = gpgme_data_new (&out);
   fail_if_err (err);

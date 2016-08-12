@@ -42,6 +42,7 @@
 #include "priv-io.h"
 #include "sema.h"
 #include "debug.h"
+#include "data.h"
 
 #include "engine-backend.h"
 
@@ -1483,6 +1484,35 @@ start (engine_gpg_t gpg)
 }
 
 
+/* Add the --input-size-hint option if requested.  */
+static gpgme_error_t
+add_input_size_hint (engine_gpg_t gpg, gpgme_data_t data)
+{
+  gpgme_error_t err;
+  gpgme_off_t value = _gpgme_data_get_size_hint (data);
+  char numbuf[50];  /* Large enough for even 2^128 in base-10.  */
+  char *p;
+
+  if (!value || !have_gpg_version (gpg, "2.1.15"))
+    return 0;
+
+  err = add_arg (gpg, "--input-size-hint");
+  if (!err)
+    {
+      p = numbuf + sizeof numbuf;
+      *--p = 0;
+      do
+        {
+          *--p = '0' + (value % 10);
+          value /= 10;
+        }
+      while (value);
+      err = add_arg (gpg, p);
+    }
+  return err;
+}
+
+
 static gpgme_error_t
 gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
 {
@@ -1498,6 +1528,8 @@ gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
     err = add_arg (gpg, "-");
   if (!err)
     err = add_data (gpg, plain, 1, 1);
+  if (!err)
+    err = add_input_size_hint (gpg, ciph);
   if (!err)
     err = add_arg (gpg, "--");
   if (!err)
@@ -1764,6 +1796,8 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 	err = add_arg (gpg, gpgme_data_get_file_name (plain));
     }
   if (!err)
+    err = add_input_size_hint (gpg, plain);
+  if (!err)
     err = add_arg (gpg, "--");
   if (!err)
     err = add_data (gpg, plain, -1, 0);
@@ -1836,6 +1870,8 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
       if (!err)
 	err = add_arg (gpg, gpgme_data_get_file_name (plain));
     }
+  if (!err)
+    err = add_input_size_hint (gpg, plain);
   if (!err)
     err = add_arg (gpg, "--");
   if (!err)
@@ -2291,7 +2327,7 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
   err = add_arg (gpg, "--with-colons");
 
   /* Since gpg 2.1.15 fingerprints are always printed, thus there is
-   * no more need to explictly reqeust them.  */
+   * no more need to explictly request them.  */
   if (!have_gpg_version (gpg, "2.1.15"))
     {
       if (!err)
@@ -2436,6 +2472,8 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
   /* Tell the gpg object about the data.  */
   if (!err)
+    err = add_input_size_hint (gpg, in);
+  if (!err)
     err = add_arg (gpg, "--");
   if (!err)
     err = add_data (gpg, in, -1, 0);
@@ -2481,10 +2519,11 @@ gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
   if (plaintext)
     {
       /* Normal or cleartext signature.  */
-
       err = add_arg (gpg, "--output");
       if (!err)
 	err = add_arg (gpg, "-");
+      if (!err)
+        err = add_input_size_hint (gpg, sig);
       if (!err)
 	err = add_arg (gpg, "--");
       if (!err)
@@ -2495,6 +2534,8 @@ gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
   else
     {
       err = add_arg (gpg, "--verify");
+      if (!err)
+        err = add_input_size_hint (gpg, signed_text);
       if (!err)
 	err = add_arg (gpg, "--");
       if (!err)

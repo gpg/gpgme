@@ -2177,6 +2177,30 @@ The function @code{gpgme_data_set_encoding} changes the encoding of
 the data object with the handle @var{dh} to @var{enc}.
 @end deftypefun
 
+@deftypefun {gpgme_error_t} gpgme_data_set_flag  @
+            (@w{gpgme_data_t @var{dh}}, @
+            @w{const char *@var{name}}, @
+            @w{const char *@var{value}})
+
+Some minor properties of the data object can be controlled with flags
+set by this function.  The properties are identified by the following
+values for @var{name}:
+
+@table @code
+@item size-hint
+The value is a decimal number with the length gpgme shall assume for
+this data object.  This is useful if the data is provided by callbacks
+or via file descriptors but the applications knows the total size of
+the data.  If this is set the OpenPGP engine may use this to decide on
+buffer allocation strategies and to provide a total value for its
+progress information.
+
+@end table
+
+This function returns @code{0} on success.
+@end deftypefun
+
+
 @node Data Buffer Convenience
 @subsection Data Buffer Convenience Functions
 @cindex data buffer, convenience
