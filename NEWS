@@ -5,6 +5,8 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
 
  * Notation flags are now correctly set on verify.
 
+ * Bindings for Python 3 are now included.
+
  * Interface changes relative to the 1.6.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_pubkey_algo_string       NEW.
