@@ -62,6 +62,9 @@ GpgME::Data::Data(const char *buffer, size_t size, bool copy)
 {
     gpgme_data_t data;
     const gpgme_error_t e = gpgme_data_new_from_mem(&data, buffer, size, int(copy));
+    std::string sizestr = std::to_string(size);
+    // Ignore errors as this is optional
+    gpgme_data_set_flag(data, "size-hint", sizestr.c_str());
     d.reset(new Private(e ? 0 : data));
 }
 
@@ -124,6 +127,13 @@ GpgME::Data::Data(DataProvider *dp)
     const gpgme_error_t e = gpgme_data_new_from_cbs(&d->data, &d->cbs, dp);
     if (e) {
         d->data = 0;
+    }
+    if (dp->isSupported(DataProvider::Seek)) {
+        off_t size = seek(0, SEEK_END);
+        seek(0, SEEK_SET);
+        std::string sizestr = std::to_string(size);
+        // Ignore errors as this is optional
+        gpgme_data_set_flag(d->data, "size-hint", sizestr.c_str());
     }
 #ifndef NDEBUG
     //std::cerr << "GpgME::Data(): DataProvider supports: "
