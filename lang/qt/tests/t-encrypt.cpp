@@ -31,6 +31,8 @@
 #include <QDebug>
 #include <QTest>
 #include <QTemporaryDir>
+#include <QSignalSpy>
+#include <QBuffer>
 #include "keylistjob.h"
 #include "encryptjob.h"
 #include "qgpgmeencryptjob.h"
@@ -39,7 +41,10 @@
 #include "qgpgmedecryptjob.h"
 #include "qgpgmebackend.h"
 #include "keylistresult.h"
+#include "engineinfo.h"
 #include "t-support.h"
+
+#define PROGRESS_TEST_SIZE 1 * 1024 * 1024
 
 using namespace QGpgME;
 using namespace GpgME;
@@ -47,6 +52,9 @@ using namespace GpgME;
 class EncryptionTest : public QGpgMETest
 {
     Q_OBJECT
+
+Q_SIGNALS:
+    void asyncDone();
 
 private Q_SLOTS:
 
@@ -80,6 +88,60 @@ private Q_SLOTS:
         Q_ASSERT(!result.error());
         Q_ASSERT(QString::fromUtf8(plainText) == QStringLiteral("Hello World"));
         delete decJob;
+    }
+
+    void testProgress()
+    {
+        if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.15") {
+            // We can only test the progress with 2.1.15 as this started to
+            // have total progress for memory callbacks
+            return;
+        }
+        auto listjob = openpgp()->keyListJob(false, false, false);
+        std::vector<Key> keys;
+        auto keylistresult = listjob->exec(QStringList() << QStringLiteral("alfa@example.net"),
+                                          false, keys);
+        Q_ASSERT(!keylistresult.error());
+        Q_ASSERT(keys.size() == 1);
+        delete listjob;
+
+        auto job = openpgp()->encryptJob(/*ASCII Armor */false, /* Textmode */ false);
+        Q_ASSERT(job);
+        QByteArray plainBa;
+        plainBa.fill('X', PROGRESS_TEST_SIZE);
+        QByteArray cipherText;
+
+        bool initSeen = false;
+        bool finishSeen = false;
+        connect(job, &Job::progress, this, [this, &initSeen, &finishSeen] (const QString& what, int current, int total) {
+                // We only check for progress 0 and max progress as the other progress
+                // lines depend on the system speed and are as such unreliable to test.
+                Q_ASSERT(total == PROGRESS_TEST_SIZE);
+                if (current == 0) {
+                    initSeen = true;
+                }
+                if (current == total) {
+                    finishSeen = true;
+                }
+                Q_ASSERT(current >= 0 && current <= total);
+            });
+        connect(job, &EncryptJob::result, this, [this, &initSeen, &finishSeen] (const GpgME::EncryptionResult &result,
+                                                                                const QByteArray &cipherText,
+                                                                                const QString,
+                                                                                const GpgME::Error) {
+                Q_ASSERT(initSeen);
+                Q_ASSERT(finishSeen);
+                Q_EMIT asyncDone();
+            });
+
+        auto inptr  = std::shared_ptr<QIODevice>(new QBuffer(&plainBa));
+        inptr->open(QIODevice::ReadOnly);
+        auto outptr = std::shared_ptr<QIODevice>(new QBuffer(&cipherText));
+        outptr->open(QIODevice::WriteOnly);
+
+        job->start(keys, inptr, outptr, Context::AlwaysTrust);
+        QSignalSpy spy (this, SIGNAL(asyncDone()));
+        Q_ASSERT(spy.wait());
     }
 
     void testSymmetricEncryptDecrypt()
