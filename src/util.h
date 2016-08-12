@@ -134,6 +134,9 @@ int _gpgme_split_fields (char *string, char **array, int arraysize);
  * trailing garbage.  */
 gpgme_error_t _gpgme_strtoul_field (const char *string, unsigned long *result);
 
+/* Convert STRING into an offset value similar to atoi().  */
+gpgme_off_t _gpgme_string_to_off (const char *string);
+
 /* Parse the string TIMESTAMP into a time_t.  The string may either be
    seconds since Epoch or in the ISO 8601 format like
    "20390815T143012".  Returns 0 for an empty string or seconds since

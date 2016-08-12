@@ -226,5 +226,8 @@ EXPORTS
 
     gpgme_pubkey_algo_string              @169
     gpgme_set_ctx_flag                    @170
+
+    gpgme_data_set_flag                   @171
+
 ; END
 

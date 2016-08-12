@@ -1282,6 +1282,10 @@ char *gpgme_data_get_file_name (gpgme_data_t dh);
 gpgme_error_t gpgme_data_set_file_name (gpgme_data_t dh,
 					const char *file_name);
 
+/* Set a flag for the data object DH.  See the manual for details.  */
+gpg_error_t gpgme_data_set_flag (gpgme_data_t dh,
+                                 const char *name, const char *value);
+
 /* Try to identify the type of the data in DH.  */
 gpgme_data_type_t gpgme_data_identify (gpgme_data_t dh, int reserved);
 

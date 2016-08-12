@@ -230,6 +230,8 @@ GPGME_1.0 {
     gpgme_err_code_from_syserror;
     gpgme_err_set_errno;
 
+    gpgme_data_set_flag;
+
   local:
     *;
 

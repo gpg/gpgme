@@ -364,6 +364,25 @@ _gpgme_strtoul_field (const char *string, unsigned long *result)
 }
 
 
+/* Convert STRING into an offset value.  Note that this functions only
+ * allows for a base-10 length.  This function is similar to atoi()
+ * and thus there is no error checking.  */
+gpgme_off_t
+_gpgme_string_to_off (const char *string)
+{
+  gpgme_off_t value = 0;
+
+  while (*string == ' ' || *string == '\t')
+    string++;
+  for (; *string >= '0' && *string <= '9'; string++)
+    {
+      value *= 10;
+      value += atoi_1 (string);
+    }
+  return value;
+}
+
+
 #ifdef HAVE_W32_SYSTEM
 static time_t
 _gpgme_timegm (struct tm *tm)
