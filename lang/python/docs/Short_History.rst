@@ -27,14 +27,20 @@ decision to fold the Python 3 port back into the original GPGME
 release in the languages subdirectory for non-C bindings.  Ben is the
 maintainer of the Python 3 port within GPGME.
 
+In 2016 Justus Winter updated a number of the Python 3 PyME SWIG
+bindings during the course of GnuPG 2.1 development.  During the
+course of this process the port was added to PyPI under the
+alternative name of pyme3 (so as not to clash with the original
+package for Python 2.6 and 2.7).
+
 
 ---------------------
 The Annoyances of Git
 ---------------------
 
-As anyone who has ever worked with git knows, submodules are horrible
+As anyone who has ever worked with git knows, submodules are a horrible
 way to deal with pretty much anything.  In the interests of avoiding
-migraines, that is being skipped with addition of PyME to GPGME.
+migraines, that is being skipped with the addition of PyME to GPGME.
 Instead the files will be added to the subdirectory, along with a copy
 of the entire git log up to that point as a separate file within the
 docs directory (old-commits.log).  As the log for PyME is nearly 100KB
@@ -49,7 +55,21 @@ possible to implement this better in the future.
 The Perils of PyPI
 ------------------
 
-At the current time the Python 3 fork is not available via PyPI and
-the pip installer.  The recommended installation method is to follow
-the instructions in lang/py3-pyme/INSTALL.  This will build the
-necessary SWIG portions against the installed version of GPGME.
+This port is currently available in PyPI as pyme3 and uses the GPGME
+version number from build time.  
+
+Alternatively compiling GPGME and installing it from source will also
+install the current version of PyME if Python 3 is detected.  If
+multiple versions of Python 3 are installed then it will install in
+the site-packages directory of the first installation located.
+
+The version installed through either method can be checked like this:
+
+::
+   >>> from pyme import core
+   >>> print(core.check_version())
+   1.7.0-beta257
+   >>>
+
+Installing from PyPI should still result in the module being named
+pyme when importing.
