@@ -124,7 +124,7 @@ parse_version_number (const char *str, int *number)
 /* Parse the version string STR in the format MAJOR.MINOR.MICRO (for
    example, 9.3.2) and return the components in MAJOR, MINOR and MICRO
    as integers.  The function returns the tail of the string that
-   follows the version number.  This might be te empty string if there
+   follows the version number.  This might be the empty string if there
    is nothing following the version number, or a patchlevel.  The
    function returns NULL if the version string is not valid.  */
 static const char *

@@ -93,7 +93,8 @@ engine_get_home_dir (gpgme_protocol_t proto)
 
 
 /* Get a malloced string containing the version number of the engine
-   for PROTOCOL.  */
+ * for PROTOCOL.  If this function returns NULL for a valid protocol,
+ * it should be assumed that the engine is a pseudo engine. */
 static char *
 engine_get_version (gpgme_protocol_t proto, const char *file_name)
 {
@@ -107,7 +108,8 @@ engine_get_version (gpgme_protocol_t proto, const char *file_name)
 }
 
 
-/* Get the required version number of the engine for PROTOCOL.  */
+/* Get the required version number of the engine for PROTOCOL.  This
+ * may be NULL. */
 static const char *
 engine_get_req_version (gpgme_protocol_t proto)
 {
@@ -164,8 +166,8 @@ _gpgme_engine_info_release (gpgme_engine_info_t info)
     {
       gpgme_engine_info_t next_info = info->next;
 
-      assert (info->file_name);
-      free (info->file_name);
+      if (info->file_name)
+        free (info->file_name);
       if (info->home_dir)
 	free (info->home_dir);
       if (info->version)
@@ -203,6 +205,7 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 	{
 	  const char *ofile_name = engine_get_file_name (proto_list[proto]);
 	  const char *ohome_dir  = engine_get_home_dir (proto_list[proto]);
+          char *version = engine_get_version (proto_list[proto], NULL);
 	  char *file_name;
 	  char *home_dir;
 
@@ -222,9 +225,17 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
           else
             home_dir = NULL;
 
-	  *lastp = malloc (sizeof (*engine_info));
+	  *lastp = calloc (1, sizeof (*engine_info));
           if (!*lastp && !err)
             err = gpg_error_from_syserror ();
+
+          /* Now set the dummy version for pseudo engines.  */
+          if (!err && !version)
+            {
+              version = strdup ("1.0.0");
+              if (!version)
+                err = gpg_error_from_syserror ();
+            }
 
 	  if (err)
 	    {
@@ -235,6 +246,8 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 		free (file_name);
 	      if (home_dir)
 		free (home_dir);
+	      if (version)
+		free (version);
 
 	      UNLOCK (engine_info_lock);
 	      return err;
@@ -243,8 +256,10 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 	  (*lastp)->protocol = proto_list[proto];
 	  (*lastp)->file_name = file_name;
 	  (*lastp)->home_dir = home_dir;
-	  (*lastp)->version = engine_get_version (proto_list[proto], NULL);
+	  (*lastp)->version = version;
 	  (*lastp)->req_version = engine_get_req_version (proto_list[proto]);
+	  if (!(*lastp)->req_version)
+            (*lastp)->req_version = "1.0.0"; /* Dummy for pseudo engines. */
 	  (*lastp)->next = NULL;
 	  lastp = &(*lastp)->next;
 	}
@@ -353,6 +368,7 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
 {
   char *new_file_name;
   char *new_home_dir;
+  char *new_version;
 
   /* FIXME: Use some PROTO_MAX definition.  */
   if (proto > DIM (engine_ops))
@@ -401,6 +417,17 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
         new_home_dir = NULL;
     }
 
+  new_version = engine_get_version (proto, new_file_name);
+  if (!new_version)
+    {
+      new_version = strdup ("1.0.0"); /* Fake one for dummy entries.  */
+      if (!new_version)
+        {
+          free (new_file_name);
+          free (new_home_dir);
+        }
+    }
+
   /* Remove the old members.  */
   assert (info->file_name);
   free (info->file_name);
@@ -412,7 +439,7 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
   /* Install the new members.  */
   info->file_name = new_file_name;
   info->home_dir = new_home_dir;
-  info->version = engine_get_version (proto, new_file_name);
+  info->version = new_version;
 
   return 0;
 }
