@@ -71,6 +71,8 @@ gpgme_set_global_flag (const char *name, const char *value)
       _gpgme_dirinfo_disable_gpgconf ();
       return 0;
     }
+  else if (!strcmp (name, "require-gnupg"))
+    return _gpgme_set_engine_minimal_version (value);
   else if (!strcmp (name, "gpgconf-name"))
     return _gpgme_set_default_gpgconf_name (value);
   else if (!strcmp (name, "gpg-name"))

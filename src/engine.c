@@ -63,6 +63,10 @@ static struct engine_ops *engine_ops[] =
 static gpgme_engine_info_t engine_info;
 DEFINE_STATIC_LOCK (engine_info_lock);
 
+/* If non-NULL, the minimal version required for all engines.  */
+static char *engine_minimal_version;
+
+
 
 /* Get the file name of the engine for PROTOCOL.  */
 static const char *
@@ -178,6 +182,26 @@ _gpgme_engine_info_release (gpgme_engine_info_t info)
 }
 
 
+/* This is an internal function to set a mimimal required version.
+ * This function must only be called by gpgme_set_global_flag.
+ * Returns 0 on success.  */
+int
+_gpgme_set_engine_minimal_version (const char *value)
+{
+  free (engine_minimal_version);
+  if (value)
+    {
+      engine_minimal_version = strdup (value);
+      return !engine_minimal_version;
+    }
+  else
+    {
+      engine_minimal_version = NULL;
+      return 0;
+    }
+}
+
+
 /* Get the information about the configured and installed engines.  A
    pointer to the first engine in the statically allocated linked list
    is returned in *INFO.  If an error occurs, it is returned.  The
@@ -228,6 +252,17 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
 	  *lastp = calloc (1, sizeof (*engine_info));
           if (!*lastp && !err)
             err = gpg_error_from_syserror ();
+
+          /* Check against the optional minimal engine version.  */
+          if (!err && version && engine_minimal_version
+              && !_gpgme_compare_versions (version, engine_minimal_version))
+            {
+#if GPG_ERROR_VERSION_NUMBER < 0x011900 /* 1.25 */
+              err = gpg_error (GPG_ERR_NO_ENGINE);
+#else
+              err = gpg_error (GPG_ERR_ENGINE_TOO_OLD);
+#endif
+            }
 
           /* Now set the dummy version for pseudo engines.  */
           if (!err && !version)

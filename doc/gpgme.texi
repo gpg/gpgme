@@ -678,12 +678,12 @@ as early as possible --- even before @code{gpgme_check_version}.  The
 features are identified by the following values for @var{name}:
 
 @table @code
-@item "debug"
+@item debug
 To enable debugging use the string ``debug'' for @var{name} and
 @var{value} identical to the value used with the environment variable
 @code{GPGME_DEBUG}.
 
-@item "disable-gpgconf"
+@item disable-gpgconf
 Using this feature with any @var{value} disables the detection of the
 gpgconf program and thus forces GPGME to fallback into the simple
 OpenPGP only mode.  It may be used to force the use of GnuPG-1 on
@@ -691,8 +691,8 @@ systems which have both GPG versions installed.  Note that in general
 the use of @code{gpgme_set_engine_info} is a better way to select a
 specific engine version.
 
-@item "gpgconf-name"
-@itemx "gpg-name"
+@item gpgconf-name
+@itemx gpg-name
 Set the name of the gpgconf respective gpg binary.  The defaults are
 @code{GNU/GnuPG/gpgconf} and @code{GNU/GnuPG/gpg}.  Under Unix the
 leading directory part is ignored.  Under Windows the leading
@@ -700,7 +700,13 @@ directory part is used as the default installation directory; the
 @code{.exe} suffix is added by GPGME.  Use forward slashed even under
 Windows.
 
-@item "w32-inst-dir"
+@item require-gnupg
+Set the mimimum version of the required GnuPG engine.  If that version
+is not met, GPGME fails early instead of trying to use the existant
+version.  The given version must be a string with major, minor, and
+micro number.  Example: "2.1.0".
+
+@item w32-inst-dir
 On Windows GPGME needs to know its installation directory to find its
 spawn helper.  This is in general no problem because a DLL has this
 information.  Some applications however link statically to GPGME and

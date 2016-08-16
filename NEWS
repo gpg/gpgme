@@ -7,6 +7,8 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
 
  * Bindings for Python 3 are now included.
 
+ * New global flag "require-gnupg" to set a minimal gnupg version.
+
  * Interface changes relative to the 1.6.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_pubkey_algo_string       NEW.

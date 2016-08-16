@@ -54,6 +54,7 @@ show_usage (int ex)
          "  --validate       use GPGME_KEYLIST_MODE_VALIDATE\n"
          "  --import         import all keys\n"
          "  --offline        use offline mode\n"
+         "  --require-gnupg  required at least the given GnuPG version\n"
          , stderr);
   exit (ex);
 }
@@ -149,9 +150,16 @@ main (int argc, char **argv)
           offline = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--require-gnupg"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          gpgme_set_global_flag ("require-gnupg", *argv);
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
-
     }
 
   if (argc > 1)
