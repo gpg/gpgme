@@ -131,14 +131,14 @@ llass_get_home_dir (void)
 static char *
 llass_get_version (const char *file_name)
 {
-  return strdup ("1.0.0");
+  return NULL;
 }
 
 
 static const char *
 llass_get_req_version (void)
 {
-  return "1.0.0";
+  return NULL;
 }
 
 

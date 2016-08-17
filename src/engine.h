@@ -38,6 +38,8 @@ typedef gpgme_error_t (*engine_command_handler_t) (void *priv,
 typedef gpgme_error_t (*engine_assuan_result_cb_t) (void *priv,
                                                     gpgme_error_t result);
 
+/* Helper for gpgme_set_global_flag.  */
+int _gpgme_set_engine_minimal_version (const char *value);
 
 /* Get a deep copy of the engine info and return it in INFO.  */
 gpgme_error_t _gpgme_engine_info_copy (gpgme_engine_info_t *r_info);
