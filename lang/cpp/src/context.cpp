@@ -1109,7 +1109,7 @@ static gpgme_encrypt_flags_t encryptflags2encryptflags(Context::EncryptionFlags 
     return static_cast<gpgme_encrypt_flags_t>(result);
 }
 
-gpgme_key_t *const Context::getKeysFromRecipients(const std::vector<Key> &recipients)
+gpgme_key_t *Context::getKeysFromRecipients(const std::vector<Key> &recipients)
 {
     if (recipients.empty()) {
         return nullptr;

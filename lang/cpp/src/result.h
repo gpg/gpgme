@@ -35,8 +35,8 @@ class GPGMEPP_EXPORT Result
 {
 protected:
     explicit Result() : mError() {}
-    explicit Result(int error) : mError(error) {}
-    explicit Result(const Error &error) : mError(error) {}
+    explicit Result(int err) : mError(err) {}
+    explicit Result(const Error &err) : mError(err) {}
 
     void swap(Result &other)
     {

@@ -371,7 +371,7 @@ public:
 private:
     // Helper functions that need to be context because they rely
     // on the "Friendlyness" of context to access the gpgme types.
-    gpgme_key_t *const getKeysFromRecipients(const std::vector<Key> &recipients);
+    gpgme_key_t *getKeysFromRecipients(const std::vector<Key> &recipients);
 
 private:
     Private *const d;
