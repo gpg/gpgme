@@ -1644,8 +1644,6 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
     {
       int lasterr = (int)GetLastError ();
       TRACE_LOG1 ("CreateProcess failed: ec=%d", lasterr);
-      if (lasterr == ERROR_INVALID_PARAMETER)
-        TRACE_LOG1 ("(is '%s' correctly installed?)", spawnhelper);
       free (arg_string);
       close (tmp_fd);
       DeleteFileA (tmp_name);
