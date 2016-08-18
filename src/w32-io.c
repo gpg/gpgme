@@ -50,6 +50,7 @@
 #include "sema.h"
 #include "priv-io.h"
 #include "debug.h"
+#include "sys-util.h"
 
 
 /* FIXME: Optimize.  */
@@ -1605,6 +1606,31 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
     cr_flags |= DETACHED_PROCESS;
   cr_flags |= GetPriorityClass (GetCurrentProcess ());
   spawnhelper = _gpgme_get_w32spawn_path ();
+  if (!spawnhelper)
+    {
+      /* This is a common mistake for new users of gpgme not to include
+         gpgme-w32spawn.exe with their binary. So we want to make
+         this transparent to developers. If users have somehow messed
+         up their installation this should also be properly communicated
+         as otherwise calls to gnupg will result in unsupported protocol
+         errors that do not explain a lot. */
+      char *msg;
+      gpgrt_asprintf (&msg, "gpgme-w32spawn.exe was not found in the "
+                            "detected installation directory of GpgME"
+                            "\n\t\"%s\"\n\n"
+                            "Crypto operations will not work.\n\n"
+                            "If you see this it indicates a problem "
+                            "with your installation.\n"
+                            "Please report the problem to your "
+                            "distributor of GpgME.\n\n"
+                            "Developers Note: The install dir can be "
+                            "manually set with: gpgme_set_global_flag",
+                            _gpgme_get_inst_dir ());
+      MessageBoxA (NULL, msg, "GpgME not installed correctly", MB_OK);
+      free (msg);
+      gpg_err_set_errno (EIO);
+      return TRACE_SYSRES (-1);
+    }
   if (!CreateProcessA (spawnhelper,
 		       arg_string,
 		       &sec_attr,     /* process security attributes */
