@@ -450,6 +450,19 @@ any other option to select the thread package you want to link with.
 Supported thread packages are @option{--thread=pth} and
 @option{--thread=pthread}.
 
+If you need to detect the installed language bindings you can use list
+them using:
+
+@example
+gpgme-config --print-lang
+@end example
+
+or test for the availability using
+
+@example
+gpgme-config --have-lang=python && echo 'Bindings for Pythons available'
+@end example
+
 
 @node Largefile Support (LFS)
 @section Largefile Support (LFS)

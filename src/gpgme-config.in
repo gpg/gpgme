@@ -36,6 +36,8 @@ thread_modules=""
 libs_pthread="-lpthread"
 cflags_pthread=""
 
+avail_lang='c @GPGME_CONFIG_AVAIL_LANG@'
+
 # Configure glib.
 libs_glib="@GLIB_LIBS@"
 cflags_glib="@GLIB_CFLAGS@"
@@ -48,16 +50,16 @@ usage()
     cat <<EOF
 Usage: gpgme-config [OPTIONS]
 Options:
-	[--thread={${thread_modules}}]
-	[--prefix]
-	[--exec-prefix]
-	[--version]
-        [--api-version]
-        [--host]
-	[--libs]
-	[--cflags]
-        [--get-gpg]
-        [--get-gpgsm]
+	--thread={${thread_modules}}]
+	--prefix
+	--exec-prefix
+	--version
+        --api-version
+        --host
+	--libs
+	--cflags
+        --print-lang           Print available language bindings
+        --have-lang=LANG       Return success if LANG is available
 EOF
     exit $1
 }
@@ -178,10 +180,23 @@ while test $# -gt 0; do
 		usage 1 1>&2
 	    fi
 	    ;;
+	--print-lang)
+            output="$avail_lang"
+	    ;;
+	--have-lang=*)
+            for lang in $avail_lang; do
+                if test x"$lang" = x"$optarg"; then
+                    exit 0
+                fi
+            done
+            exit 1
+	    ;;
         --get-gpg)
+            # Deprecated
             output="$output @GPG@"
             ;;
         --get-gpgsm)
+            # Deprecated
             output="$output @GPGSM@"
             ;;
 	*)
