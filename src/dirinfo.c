@@ -70,6 +70,15 @@ _gpgme_dirinfo_disable_gpgconf (void)
 }
 
 
+/* Return the length of the directory part including the trailing
+ * slash of NAME.  */
+static size_t
+dirname_len (const char *name)
+{
+  return _gpgme_get_basename (name) - name;
+}
+
+
 /* Parse the output of "gpgconf --list-dirs".  This function expects
    that DIRINFO_LOCK is held by the caller.  If COMPONENTS is set, the
    output of --list-components is expected. */
@@ -77,6 +86,7 @@ static void
 parse_output (char *line, int components)
 {
   char *value, *p;
+  size_t n;
 
   value = strchr (line, ':');
   if (!value)
@@ -110,22 +120,25 @@ parse_output (char *line, int components)
   else
     {
       if (!strcmp (line, "homedir") && !dirinfo.homedir)
+        dirinfo.homedir = strdup (value);
+      else if (!strcmp (line, "agent-socket") && !dirinfo.agent_socket)
         {
           const char name[] = "S.uiserver";
+          char *buffer;
 
-          dirinfo.homedir = strdup (value);
-          if (dirinfo.homedir)
+          dirinfo.agent_socket = strdup (value);
+          if (dirinfo.agent_socket)
             {
-              dirinfo.uisrv_socket = malloc (strlen (dirinfo
-                                                     .homedir)
-                                             + 1 + strlen (name) + 1);
-              if (dirinfo.uisrv_socket)
-                strcpy (stpcpy (stpcpy (dirinfo.uisrv_socket, dirinfo.homedir),
-                                DIRSEP_S), name);
+              n = dirname_len (dirinfo.agent_socket);
+              buffer = malloc (n + strlen (name) + 1);
+              if (buffer)
+                {
+                  strncpy (buffer, dirinfo.agent_socket, n);
+                  strcpy (buffer + n, name);
+                  dirinfo.uisrv_socket = buffer;
+                }
             }
         }
-      else if (!strcmp (line, "agent-socket") && !dirinfo.agent_socket)
-        dirinfo.agent_socket = strdup (value);
     }
 }
 
