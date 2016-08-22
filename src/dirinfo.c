@@ -37,12 +37,20 @@ DEFINE_STATIC_LOCK (dirinfo_lock);
 enum
   {
     WANT_HOMEDIR,
+    WANT_SYSCONFDIR,
+    WANT_BINDIR,
+    WANT_LIBEXECDIR,
+    WANT_LIBDIR,
+    WANT_DATADIR,
+    WANT_LOCALEDIR,
     WANT_AGENT_SOCKET,
+    WANT_AGENT_SSH_SOCKET,
+    WANT_DIRMNGR_SOCKET,
+    WANT_UISRV_SOCKET,
     WANT_GPGCONF_NAME,
     WANT_GPG_NAME,
     WANT_GPGSM_NAME,
     WANT_G13_NAME,
-    WANT_UISRV_SOCKET,
     WANT_GPG_ONE_MODE
   };
 
@@ -51,12 +59,20 @@ static struct {
   int  valid;         /* Cached information is valid.  */
   int  disable_gpgconf;
   char *homedir;
+  char *sysconfdir;
+  char *bindir;
+  char *libexecdir;
+  char *libdir;
+  char *datadir;
+  char *localedir;
   char *agent_socket;
+  char *agent_ssh_socket;
+  char *dirmngr_socket;
+  char *uisrv_socket;
   char *gpgconf_name;
   char *gpg_name;
   char *gpgsm_name;
   char *g13_name;
-  char *uisrv_socket;
   int  gpg_one_mode;  /* System is in gpg1 mode.  */
 } dirinfo;
 
@@ -121,6 +137,18 @@ parse_output (char *line, int components)
     {
       if (!strcmp (line, "homedir") && !dirinfo.homedir)
         dirinfo.homedir = strdup (value);
+      else if (!strcmp (line, "sysconfdir") && !dirinfo.sysconfdir)
+        dirinfo.sysconfdir = strdup (value);
+      else if (!strcmp (line, "bindir") && !dirinfo.bindir)
+        dirinfo.bindir = strdup (value);
+      else if (!strcmp (line, "libexecdir") && !dirinfo.libexecdir)
+        dirinfo.libexecdir = strdup (value);
+      else if (!strcmp (line, "libdir") && !dirinfo.libdir)
+        dirinfo.libdir = strdup (value);
+      else if (!strcmp (line, "datadir") && !dirinfo.datadir)
+        dirinfo.datadir = strdup (value);
+      else if (!strcmp (line, "localedir") && !dirinfo.localedir)
+        dirinfo.localedir = strdup (value);
       else if (!strcmp (line, "agent-socket") && !dirinfo.agent_socket)
         {
           const char name[] = "S.uiserver";
@@ -139,6 +167,10 @@ parse_output (char *line, int components)
                 }
             }
         }
+      else if (!strcmp (line, "dirmngr-socket") && !dirinfo.dirmngr_socket)
+        dirinfo.dirmngr_socket = strdup (value);
+      else if (!strcmp (line, "agent-ssh-socket") && !dirinfo.agent_ssh_socket)
+        dirinfo.agent_ssh_socket = strdup (value);
     }
 }
 
@@ -273,14 +305,28 @@ get_gpgconf_item (int what)
       if (dirinfo.agent_socket)
         _gpgme_debug (DEBUG_INIT, "gpgme-dinfo:   agent='%s'\n",
                       dirinfo.agent_socket);
+      if (dirinfo.agent_ssh_socket)
+        _gpgme_debug (DEBUG_INIT, "gpgme-dinfo:     ssh='%s'\n",
+                      dirinfo.agent_ssh_socket);
+      if (dirinfo.dirmngr_socket)
+        _gpgme_debug (DEBUG_INIT, "gpgme-dinfo: dirmngr='%s'\n",
+                      dirinfo.dirmngr_socket);
       if (dirinfo.uisrv_socket)
         _gpgme_debug (DEBUG_INIT, "gpgme-dinfo:   uisrv='%s'\n",
                       dirinfo.uisrv_socket);
     }
   switch (what)
     {
-    case WANT_HOMEDIR: result = dirinfo.homedir; break;
+    case WANT_HOMEDIR:    result = dirinfo.homedir; break;
+    case WANT_SYSCONFDIR: result = dirinfo.sysconfdir; break;
+    case WANT_BINDIR:     result = dirinfo.bindir; break;
+    case WANT_LIBEXECDIR: result = dirinfo.libexecdir; break;
+    case WANT_LIBDIR:     result = dirinfo.libdir; break;
+    case WANT_DATADIR:    result = dirinfo.datadir; break;
+    case WANT_LOCALEDIR:  result = dirinfo.localedir; break;
     case WANT_AGENT_SOCKET: result = dirinfo.agent_socket; break;
+    case WANT_AGENT_SSH_SOCKET: result = dirinfo.agent_ssh_socket; break;
+    case WANT_DIRMNGR_SOCKET: result = dirinfo.dirmngr_socket; break;
     case WANT_GPGCONF_NAME: result = dirinfo.gpgconf_name; break;
     case WANT_GPG_NAME:   result = dirinfo.gpg_name; break;
     case WANT_GPGSM_NAME: result = dirinfo.gpgsm_name; break;
@@ -392,6 +438,22 @@ gpgme_get_dirinfo (const char *what)
     return get_gpgconf_item (WANT_GPGSM_NAME);
   else if (!strcmp (what, "g13-name"))
     return get_gpgconf_item (WANT_G13_NAME);
+  else if (!strcmp (what, "agent-ssh-socket"))
+    return get_gpgconf_item (WANT_AGENT_SSH_SOCKET);
+  else if (!strcmp (what, "dirmngr-socket"))
+    return get_gpgconf_item (WANT_DIRMNGR_SOCKET);
+  else if (!strcmp (what, "sysconfdir"))
+    return get_gpgconf_item (WANT_SYSCONFDIR);
+  else if (!strcmp (what, "bindir"))
+    return get_gpgconf_item (WANT_BINDIR);
+  else if (!strcmp (what, "libexecdir"))
+    return get_gpgconf_item (WANT_LIBEXECDIR);
+  else if (!strcmp (what, "libdir"))
+    return get_gpgconf_item (WANT_LIBDIR);
+  else if (!strcmp (what, "datadir"))
+    return get_gpgconf_item (WANT_DATADIR);
+  else if (!strcmp (what, "localedir"))
+    return get_gpgconf_item (WANT_LOCALEDIR);
   else
     return NULL;
 }

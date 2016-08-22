@@ -111,8 +111,20 @@ main (int argc, char **argv )
   gpgme_check_version (NULL);
 
   {
-    const char *keys[] = {"homedir", "agent-socket", "uiserver-socket",
-                          "gpgconf-name", "gpg-name", "gpgsm-name",
+    const char *keys[] = {"homedir",
+                          "sysconfdir",
+                          "bindir",
+                          "libexecdir",
+                          "libdir",
+                          "datadir",
+                          "localedir",
+                          "agent-socket",
+                          "agent-ssh-socket",
+                          "dirmngr-socket",
+                          "uiserver-socket",
+                          "gpgconf-name",
+                          "gpg-name",
+                          "gpgsm-name",
                           "g13-name", NULL };
     const char *s;
     int i;

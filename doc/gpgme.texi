@@ -946,8 +946,33 @@ supported values for @var{what} are:
 @item homedir
 Return the default home directory.
 
+@item sysconfdir
+Return the name of the system configuration directory
+
+@item bindir
+Return the name of the directory with GnuPG program files.
+
+@item libdir
+Return the name of the directory with GnuPG related library files.
+
+@item libexecdir
+Return the name of the directory with GnuPG helper program files.
+
+@item datadir
+Return the name of the directory with GnuPG shared data.
+
+@item localedir
+Return the name of the directory with GnuPG locale data.
+
 @item agent-socket
 Return the name of the socket to connect to the gpg-agent.
+
+@item agent-ssh-socket
+Return the name of the socket to connect to the ssh-agent component of
+gpg-agent.
+
+@item dirmngr-socket
+Return the name of the socket to connect to the dirmngr.
 
 @item uiserver-socket
 Return the name of the socket to connect to the user interface server.
