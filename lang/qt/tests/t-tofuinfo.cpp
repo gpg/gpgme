@@ -57,6 +57,7 @@ static const char testMsg1[] =
 
 class TofuInfoTest: public QGpgMETest
 {
+#if 0
     Q_OBJECT
 
     void testTofuCopy(TofuInfo other, const TofuInfo &orig)
@@ -235,6 +236,7 @@ private /* FIXME Disabled until GnuPG-Bug-Id 2405 is fixed Q_SLOTS */:
                  mDir.path() + QStringLiteral("/secring.gpg")));
 
     }
+#endif
 };
 
 QTEST_MAIN(TofuInfoTest)

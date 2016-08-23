@@ -31,12 +31,6 @@ public:
     Private(gpgme_tofu_info_t info)
         : mInfo(info ? new _gpgme_tofu_info(*info) : nullptr)
     {
-        if (mInfo && mInfo->fpr) {
-            mInfo->fpr = strdup(mInfo->fpr);
-        }
-        if (mInfo && mInfo->address) {
-            mInfo->address = strdup(mInfo->address);
-        }
         if (mInfo && mInfo->description) {
             mInfo->description = strdup(mInfo->description);
         }
@@ -45,12 +39,6 @@ public:
     Private(const Private &other)
         : mInfo(other.mInfo)
     {
-        if (mInfo && mInfo->fpr) {
-            mInfo->fpr = strdup(mInfo->fpr);
-        }
-        if (mInfo && mInfo->address) {
-            mInfo->address = strdup(mInfo->address);
-        }
         if (mInfo && mInfo->description) {
             mInfo->description = strdup(mInfo->description);
         }
@@ -59,10 +47,6 @@ public:
     ~Private()
     {
         if (mInfo) {
-            std::free(mInfo->fpr);
-            mInfo->fpr = nullptr;
-            std::free(mInfo->address);
-            mInfo->address = nullptr;
             std::free(mInfo->description);
             mInfo->description = nullptr;
 
@@ -129,16 +113,6 @@ GpgME::TofuInfo::Policy GpgME::TofuInfo::policy() const
     }
 }
 
-const char *GpgME::TofuInfo::fingerprint() const
-{
-    return isNull() ? nullptr : d->mInfo->fpr;
-}
-
-const char *GpgME::TofuInfo::address() const
-{
-    return isNull() ? nullptr : d->mInfo->address;
-}
-
 const char *GpgME::TofuInfo::description() const
 {
     return isNull() ? nullptr : d->mInfo->description;
@@ -163,9 +137,7 @@ std::ostream &GpgME::operator<<(std::ostream &os, const GpgME::TofuInfo &info)
 {
     os << "GpgME::Signature::TofuInfo(";
     if (!info.isNull()) {
-        os << "\n address:  " << protect(info.address())
-           << "\n fpr: "      << protect(info.fingerprint())
-           << "\n desc: "     << protect(info.description())
+        os << "\n desc: "     << protect(info.description())
            << "\n validity: " << info.validity()
            << "\n policy: "   << info.policy()
            << "\n signcount: "<< info.signCount()

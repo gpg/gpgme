@@ -23,6 +23,7 @@
 #include <key.h>
 
 #include "util.h"
+#include "tofuinfo.h"
 
 #include <gpgme.h>
 
@@ -623,6 +624,14 @@ bool UserID::isRevoked() const
 bool UserID::isInvalid() const
 {
     return uid && uid->invalid;
+}
+
+TofuInfo UserID::tofuInfo() const
+{
+    if (!uid) {
+        return TofuInfo();
+    }
+    return TofuInfo(uid->tofu);
 }
 
 //

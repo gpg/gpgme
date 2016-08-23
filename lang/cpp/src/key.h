@@ -43,6 +43,7 @@ class Context;
 
 class Subkey;
 class UserID;
+class TofuInfo;
 
 typedef std::shared_ptr< std::remove_pointer<gpgme_key_t>::type > shared_gpgme_key_t;
 
@@ -309,6 +310,10 @@ public:
     bool isRevoked() const;
     bool isInvalid() const;
 
+    /** TOFU info for this userid.
+     * @returns The TOFU stats or a null TofuInfo.
+     */
+    GpgME::TofuInfo tofuInfo() const;
 private:
     shared_gpgme_key_t key;
     gpgme_user_id_t uid;

@@ -24,7 +24,6 @@
 #include <notation.h>
 #include "result_p.h"
 #include "util.h"
-#include "tofuinfo.h"
 
 #include <gpgme.h>
 
@@ -82,11 +81,6 @@ public:
                 }
                 nota.back().push_back(n);
             }
-            // copy tofu info:
-            tinfos.push_back(std::vector<TofuInfo>());
-            for (gpgme_tofu_info_t in = is->tofu; in ; in = in->next) {
-                tinfos.back().push_back(TofuInfo(in));
-            }
         }
     }
     ~Private()
@@ -113,7 +107,6 @@ public:
 
     std::vector<gpgme_signature_t> sigs;
     std::vector< std::vector<Nota> > nota;
-    std::vector< std::vector<TofuInfo> > tinfos;
     std::vector<char *> purls;
     std::string file_name;
 };
@@ -373,15 +366,6 @@ std::vector<GpgME::Notation> GpgME::Signature::notations() const
     return result;
 }
 
-std::vector<GpgME::TofuInfo> GpgME::Signature::tofuInfo() const
-{
-    if (isNull()) {
-        return std::vector<GpgME::TofuInfo>();
-    }
-
-    return d->tinfos[idx];
-}
-
 class GpgME::Notation::Private
 {
 public:
@@ -550,9 +534,6 @@ std::ostream &GpgME::operator<<(std::ostream &os, const Signature &sig)
         const std::vector<Notation> nota = sig.notations();
         std::copy(nota.begin(), nota.end(),
                   std::ostream_iterator<Notation>(os, "\n"));
-        const std::vector<TofuInfo> tinfos = sig.tofuInfo();
-        std::copy(tinfos.begin(), tinfos.end(),
-                  std::ostream_iterator<TofuInfo>(os, "\n"));
     }
     return os << ')';
 }

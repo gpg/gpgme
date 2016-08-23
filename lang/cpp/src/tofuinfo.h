@@ -99,19 +99,8 @@ public:
     /* Number of seconds since the last message was verified. */
     unsigned int lastSeen() const;
 
-    /* Finterprint of the key for this entry. */
-    const char *fingerprint() const;
-
     /* If non-NULL a human readable string summarizing the TOFU data. */
     const char *description() const;
-
-    /* The address of the tofu binding.
-     *
-     * If no mail address is set for a User ID this is the name used
-     * for the user ID. Can be ambiguous when the same mail address or
-     * name is used in multiple user ids.
-     */
-    const char *address() const;
 
 private:
     class Private;
