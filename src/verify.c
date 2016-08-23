@@ -671,7 +671,7 @@ parse_trust (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 
 /* Parse a TOFU_USER line and put the info into SIG.  */
 static gpgme_error_t
-parse_tofu_user (gpgme_signature_t sig, char *args)
+parse_tofu_user (gpgme_signature_t sig, char *args, gpgme_protocol_t protocol)
 {
   gpg_error_t err;
   char *tail;
@@ -715,6 +715,7 @@ parse_tofu_user (gpgme_signature_t sig, char *args)
       if (err)
         goto leave;
       sig->key->fpr = fpr;
+      sig->key->protocol = protocol;
       fpr = NULL;
     }
   else if (!sig->key->fpr)
@@ -993,7 +994,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
     case GPGME_STATUS_TOFU_USER:
       opd->only_newsig_seen = 0;
-      return sig ? parse_tofu_user (sig, args)
+      return sig ? parse_tofu_user (sig, args, ctx->protocol)
         /*    */ : trace_gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_TOFU_STATS:
