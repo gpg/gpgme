@@ -15,8 +15,10 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  GPGME_PK_EDDSA                 NEW.
  gpgme_set_ctx_flag             NEW.
  gpgme_data_set_flag            NEW.
- gpgme_signature_t              EXTENDED: New field tofu.
+ gpgme_signature_t              EXTENDED: New field key.
+ gpgme_key_t                    EXTENDED: New field fpr.
  gpgme_subkey_t                 EXTENDED: New field keygrip.
+ gpgme_user_id_t                EXTENDED: New field tofu.
  gpgme_tofu_policy_t            NEW.
  gpgme_tofu_info_t              NEW.
  GPGME_STATUS_KEY_CONSIDERED    NEW.

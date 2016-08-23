@@ -50,22 +50,6 @@ typedef struct
 
 
 static void
-release_tofu_info (gpgme_tofu_info_t t)
-{
-  while (t)
-    {
-      gpgme_tofu_info_t t2 = t->next;
-
-      free (t->address);
-      free (t->fpr);
-      free (t->description);
-      free (t);
-      t = t2;
-    }
-}
-
-
-static void
 release_op_data (void *hook)
 {
   op_data_t opd = (op_data_t) hook;
@@ -88,7 +72,8 @@ release_op_data (void *hook)
 	free (sig->fpr);
       if (sig->pka_address)
 	free (sig->pka_address);
-      release_tofu_info (sig->tofu);
+      if (sig->key)
+        gpgme_key_unref (sig->key);
       free (sig);
       sig = next;
     }
@@ -690,49 +675,80 @@ parse_tofu_user (gpgme_signature_t sig, char *args)
 {
   gpg_error_t err;
   char *tail;
-  gpgme_tofu_info_t ti, ti2;
+  gpgme_user_id_t uid;
+  gpgme_tofu_info_t ti;
+  char *fpr = NULL;
+  char *address = NULL;
 
   tail = strchr (args, ' ');
   if (!tail || tail == args)
-    return trace_gpg_error (GPG_ERR_INV_ENGINE);  /* No fingerprint.  */
+    {
+      err = trace_gpg_error (GPG_ERR_INV_ENGINE);  /* No fingerprint.  */
+      goto leave;
+    }
   *tail++ = 0;
 
-  ti = calloc (1, sizeof *ti);
-  if (!ti)
-    return gpg_error_from_syserror ();
-
-  ti->fpr = strdup (args);
-  if (!ti->fpr)
+  fpr = strdup (args);
+  if (!fpr)
     {
-      free (ti);
-      return gpg_error_from_syserror ();
+      err = gpg_error_from_syserror ();
+      goto leave;
     }
 
   args = tail;
   tail = strchr (args, ' ');
   if (tail == args)
-    return trace_gpg_error (GPG_ERR_INV_ENGINE);  /* No addr-spec.  */
+    {
+      err = trace_gpg_error (GPG_ERR_INV_ENGINE);  /* No addr-spec.  */
+      goto leave;
+    }
   if (tail)
     *tail = 0;
 
-  err = _gpgme_decode_percent_string (args, &ti->address, 0, 0);
+  err = _gpgme_decode_percent_string (args, &address, 0, 0);
   if (err)
+    goto leave;
+
+  if (!sig->key)
     {
-      free (ti);
-      return err;
+      err = _gpgme_key_new (&sig->key);
+      if (err)
+        goto leave;
+      sig->key->fpr = fpr;
+      fpr = NULL;
+    }
+  else if (!sig->key->fpr)
+    {
+      err = trace_gpg_error (GPG_ERR_INTERNAL);
+      goto leave;
+    }
+  else if (strcmp (sig->key->fpr, fpr))
+    {
+      /* The engine did not emit NEWSIG before a new key.  */
+      err = trace_gpg_error (GPG_ERR_INV_ENGINE);
+      goto leave;
     }
 
-  /* Append to the tofu info list.  */
-  if (!sig->tofu)
-    sig->tofu = ti;
-  else
-    {
-      for (ti2 = sig->tofu; ti2->next; ti2 = ti2->next)
-        ;
-      ti2->next = ti;
-    }
+  err = _gpgme_key_append_name (sig->key, address, 0);
+  if (err)
+    goto leave;
 
-  return 0;
+  uid = sig->key->_last_uid;
+  assert (uid);
+
+  ti = calloc (1, sizeof *ti);
+  if (!ti)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  uid->tofu = ti;
+
+
+ leave:
+  free (fpr);
+  free (address);
+  return err;
 }
 
 
@@ -749,12 +765,10 @@ parse_tofu_stats (gpgme_signature_t sig, char *args)
   int nfields;
   unsigned long uval;
 
-  if (!sig->tofu)
+  if (!sig->key || !sig->key->_last_uid || !(ti = sig->key->_last_uid->tofu))
     return trace_gpg_error (GPG_ERR_INV_ENGINE); /* No TOFU_USER seen.  */
-  for (ti = sig->tofu; ti->next; ti = ti->next)
-    ;
   if (ti->firstseen || ti->signcount || ti->validity || ti->policy)
-    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Already seen.  */
+    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Already set.  */
 
   nfields = _gpgme_split_fields (args, field, DIM (field));
   if (nfields < 3)
@@ -825,12 +839,10 @@ parse_tofu_stats_long (gpgme_signature_t sig, char *args, int raw)
   gpgme_tofu_info_t ti;
   char *p;
 
-  if (!sig->tofu)
+  if (!sig->key || !sig->key->_last_uid || !(ti = sig->key->_last_uid->tofu))
     return trace_gpg_error (GPG_ERR_INV_ENGINE); /* No TOFU_USER seen.  */
-  for (ti = sig->tofu; ti->next; ti = ti->next)
-    ;
   if (ti->description)
-    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Already seen.  */
+    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Already set.  */
 
   err = _gpgme_decode_percent_string (args, &ti->description, 0, 0);
   if (err)

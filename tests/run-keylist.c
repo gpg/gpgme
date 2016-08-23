@@ -233,7 +233,14 @@ main (int argc, char **argv)
       for (nuids=0, uid=key->uids; uid; uid = uid->next, nuids++)
         {
           printf ("userid %d: %s\n", nuids, nonnull(uid->uid));
-          printf ("valid  %d: %s\n", nuids,
+          printf ("  mbox %d: %s\n", nuids, nonnull(uid->address));
+          if (uid->email && uid->email != uid->address)
+            printf (" email %d: %s\n", nuids, uid->email);
+          if (uid->name)
+            printf ("  name %d: %s\n", nuids, uid->name);
+          if (uid->comment)
+            printf (" cmmnt %d: %s\n", nuids, uid->comment);
+          printf (" valid %d: %s\n", nuids,
                   uid->validity == GPGME_VALIDITY_UNKNOWN? "unknown":
                   uid->validity == GPGME_VALIDITY_UNDEFINED? "undefined":
                   uid->validity == GPGME_VALIDITY_NEVER? "never":

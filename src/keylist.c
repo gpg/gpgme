@@ -708,6 +708,22 @@ keylist_colon_handler (void *priv, char *line)
               if (!subkey->fpr)
                 return gpg_error_from_syserror ();
             }
+          /* If this is the first subkey, store the fingerprint also
+             in the KEY object.  */
+          if (subkey == key->subkeys)
+            {
+              if (key->fpr && strcmp (key->fpr, subkey->fpr))
+                {
+                  /* FPR already set but mismatch: Should never happen.  */
+                  return trace_gpg_error (GPG_ERR_INTERNAL);
+                }
+              if (!key->fpr)
+                {
+                  key->fpr = strdup (subkey->fpr);
+                  if (!key->fpr)
+                    return gpg_error_from_syserror ();
+                }
+            }
 	}
 
       /* Field 13 has the gpgsm chain ID (take only the first one).  */

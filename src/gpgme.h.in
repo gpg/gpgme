@@ -624,6 +624,41 @@ struct _gpgme_engine_info
 typedef struct _gpgme_engine_info *gpgme_engine_info_t;
 
 
+/* An object with TOFU information.  */
+struct _gpgme_tofu_info
+{
+  struct _gpgme_tofu_info *next;
+
+  /* The TOFU validity:
+   *  0 := conflict
+   *  1 := key without history
+   *  2 := key with too little history
+   *  3 := key with enough history for basic trust
+   *  4 := key with a lot of history
+   */
+  unsigned int validity : 3;
+
+  /* The TOFU policy (gpgme_tofu_policy_t).  */
+  unsigned int policy : 4;
+
+  unsigned int _rfu : 25;
+
+  /* Number of signatures seen for this binding.  Capped at USHRT_MAX.  */
+  unsigned short signcount;
+  /* Number of encryptions done with this binding.  Capped at USHRT_MAX.  */
+  unsigned short encrcount;
+
+  /* Number of seconds since the first and the most recently seen
+   * message was verified.  */
+  unsigned int firstseen;
+  unsigned int lastseen;
+
+  /* If non-NULL a human readable string summarizing the TOFU data. */
+  char *description;
+};
+typedef struct _gpgme_tofu_info *gpgme_tofu_info_t;
+
+
 /* A subkey from a key.  */
 struct _gpgme_subkey
 {
@@ -807,6 +842,9 @@ struct _gpgme_user_id
    * might be slightly different.  IF no mail address is available
    * NULL is stored.  */
   char *address;
+
+  /* The malloced tofo information or NULL.  */
+  gpgme_tofu_info_t tofu;
 };
 typedef struct _gpgme_user_id *gpgme_user_id_t;
 
@@ -883,6 +921,11 @@ struct _gpgme_key
 
   /* The keylist mode that was active when listing the key.  */
   gpgme_keylist_mode_t keylist_mode;
+
+  /* This field gives the fingerprint of the primary key.  Note that
+   * this is a copy of the FPR of the first subkey.  We need it here
+   * to allow for an incomplete key object.  */
+  char *fpr;
 };
 typedef struct _gpgme_key *gpgme_key_t;
 
@@ -1570,50 +1613,6 @@ typedef enum
 gpgme_sigsum_t;
 
 
-struct _gpgme_tofu_info
-{
-  struct _gpgme_tofu_info *next;
-
-  /* The mail address (addr-spec from RFC5322) of the tofu binding.
-   *
-   * If no mail address is set for a User ID this is the name used
-   * for the user ID. Can be ambiguous when the same mail address or
-   * name is used in multiple user ids.
-   */
-  char *address;
-
-  /* The fingerprint of the primary key.  */
-  char *fpr;
-
-  /* The TOFU validity:
-   *  0 := conflict
-   *  1 := key without history
-   *  2 := key with too little history
-   *  3 := key with enough history for basic trust
-   *  4 := key with a lot of history
-   */
-  unsigned int validity : 3;
-
-  /* The TOFU policy (gpgme_tofu_policy_t).  */
-  unsigned int policy : 4;
-
-  unsigned int _rfu : 25;
-
-  /* Number of signatures seen for this binding.  Capped at USHRT_MAX.  */
-  unsigned short signcount;
-  unsigned short reserved;
-
-  /* Number of seconds since the first and the most recently seen
-   * message was verified.  */
-  unsigned int firstseen;
-  unsigned int lastseen;
-
-  /* If non-NULL a human readable string summarizing the TOFU data. */
-  char *description;
-};
-typedef struct _gpgme_tofu_info *gpgme_tofu_info_t;
-
-
 struct _gpgme_signature
 {
   struct _gpgme_signature *next;
@@ -1621,7 +1620,7 @@ struct _gpgme_signature
   /* A summary of the signature status.  */
   gpgme_sigsum_t summary;
 
-  /* The fingerprint or key ID of the signature.  */
+  /* The fingerprint of the signature.  This can be a subkey.  */
   char *fpr;
 
   /* The status of the signature.  */
@@ -1660,8 +1659,9 @@ struct _gpgme_signature
   /* The mailbox from the PKA information or NULL. */
   char *pka_address;
 
-  /* If non-NULL, TOFU info for this signature are available.  */
-  gpgme_tofu_info_t tofu;
+  /* If non-NULL, a possible incomplete key object with the data
+   * available for the signature.  */
+  gpgme_key_t key;
 };
 typedef struct _gpgme_signature *gpgme_signature_t;
 

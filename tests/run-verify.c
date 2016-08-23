@@ -111,6 +111,7 @@ print_result (gpgme_verify_result_t result)
 {
   gpgme_signature_t sig;
   gpgme_sig_notation_t nt;
+  gpgme_user_id_t uid;
   gpgme_tofu_info_t ti;
   int count = 0;
 
@@ -153,29 +154,34 @@ print_result (gpgme_verify_result_t result)
           if ((nt->value?strlen (nt->value):0) != nt->value_len)
             printf ("    warning : value larger (%d)\n", nt->value_len);
         }
-      for (ti = sig->tofu; ti; ti = ti->next)
+      if (sig->key)
         {
-          printf ("  tofu addr .: %s\n", ti->address);
-          if (!sig->fpr || strcmp (sig->fpr, ti->fpr))
-            printf ("    WARNING .: fpr mismatch (%s)\n", ti->fpr);
-          printf ("    validity : %u (%s)\n", ti->validity,
-                  ti->validity == 0? "conflict" :
-                  ti->validity == 1? "no history" :
-                  ti->validity == 2? "little history" :
-                  ti->validity == 3? "enough history" :
-                  ti->validity == 4? "lot of history" : "?");
-          printf ("    policy ..: %u (%s)\n", ti->policy,
-                  ti->policy == GPGME_TOFU_POLICY_NONE? "none" :
-                  ti->policy == GPGME_TOFU_POLICY_AUTO? "auto" :
-                  ti->policy == GPGME_TOFU_POLICY_GOOD? "good" :
-                  ti->policy == GPGME_TOFU_POLICY_UNKNOWN? "unknown" :
-                  ti->policy == GPGME_TOFU_POLICY_BAD? "bad" :
-                  ti->policy == GPGME_TOFU_POLICY_ASK? "ask" : "?");
-          printf ("    sigcount : %hu\n", ti->signcount);
-          printf ("    firstseen: %u\n", ti->firstseen);
-          printf ("    lastseen : %u\n", ti->lastseen);
-          printf ("    desc ....: ");
-          print_description (nonnull (ti->description), 15);
+          printf ("  primary fpr: %s\n", nonnull (sig->key->fpr));
+          for (uid = sig->key->uids; uid; uid = uid->next)
+            {
+              printf ("  tofu addr .: %s\n", nonnull (uid->address));
+              ti = uid->tofu;
+              if (!ti)
+                continue;
+              printf ("    validity : %u (%s)\n", ti->validity,
+                      ti->validity == 0? "conflict" :
+                      ti->validity == 1? "no history" :
+                      ti->validity == 2? "little history" :
+                      ti->validity == 3? "enough history" :
+                      ti->validity == 4? "lot of history" : "?");
+              printf ("    policy ..: %u (%s)\n", ti->policy,
+                      ti->policy == GPGME_TOFU_POLICY_NONE? "none" :
+                      ti->policy == GPGME_TOFU_POLICY_AUTO? "auto" :
+                      ti->policy == GPGME_TOFU_POLICY_GOOD? "good" :
+                      ti->policy == GPGME_TOFU_POLICY_UNKNOWN? "unknown" :
+                      ti->policy == GPGME_TOFU_POLICY_BAD? "bad" :
+                      ti->policy == GPGME_TOFU_POLICY_ASK? "ask" : "?");
+              printf ("    sigcount : %hu\n", ti->signcount);
+              printf ("    firstseen: %u\n", ti->firstseen);
+              printf ("    lastseen : %u\n", ti->lastseen);
+              printf ("    desc ....: ");
+              print_description (nonnull (ti->description), 15);
+            }
         }
     }
 }

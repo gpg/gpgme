@@ -356,6 +356,7 @@ gpgme_key_unref (gpgme_key_t key)
     {
       gpgme_user_id_t next_uid = uid->next;
       gpgme_key_sig_t keysig = uid->signatures;
+      gpgme_tofu_info_t tofu = uid->tofu;
 
       while (keysig)
 	{
@@ -373,8 +374,21 @@ gpgme_key_unref (gpgme_key_t key)
           free (keysig);
 	  keysig = next_keysig;
         }
+
+      while (tofu)
+        {
+          /* NB: The ->next is currently not used but we are prepared
+           * for it.  */
+          gpgme_tofu_info_t tofu_next = tofu->next;
+
+          free (tofu->description);
+          free (tofu);
+          tofu = tofu_next;
+        }
+
       if (uid->address && uid->address != uid->email)
         free (uid->address);
+
       free (uid);
       uid = next_uid;
     }
@@ -386,9 +400,12 @@ gpgme_key_unref (gpgme_key_t key)
 
   if (key->chain_id)
     free (key->chain_id);
+  if (key->fpr)
+    free (key->fpr);
 
   free (key);
 }
+
 
 
 /* Support functions.  */
