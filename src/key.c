@@ -31,6 +31,8 @@
 #include "ops.h"
 #include "sema.h"
 #include "debug.h"
+#include "mbox-util.h"
+
 
 
 /* Protects all reference counters in keys.  All other accesses to a
@@ -233,6 +235,14 @@ _gpgme_key_append_name (gpgme_key_t key, const char *src, int convert)
     parse_user_id (uid->uid, &uid->name, &uid->email,
 		   &uid->comment, dst);
 
+  uid->address = _gpgme_mailbox_from_userid (uid->uid);
+  if (uid->address && uid->email && !strcmp (uid->address, uid->email))
+    {
+      /* The ADDRESS is the same as EMAIL: Save some space.  */
+      free (uid->address);
+      uid->address = uid->email;
+    }
+
   if (!key->uids)
     key->uids = uid;
   if (key->_last_uid)
@@ -363,6 +373,8 @@ gpgme_key_unref (gpgme_key_t key)
           free (keysig);
 	  keysig = next_keysig;
         }
+      if (uid->address && uid->address != uid->email)
+        free (uid->address);
       free (uid);
       uid = next_uid;
     }

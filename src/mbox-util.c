@@ -18,15 +18,33 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
+/* NB: This code has been taken from GnuPG.  Please keep it in sync
+ * with GnuPG.  */
+
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
 
-#include "util.h"
 #include "mbox-util.h"
+
+/* Lowercase all ASCII characters in STRING.  */
+static char *
+ascii_strlwr (char *string)
+{
+  char *p;
+
+  for (p = string; *p; p++ )
+    if (!(*p & ~0x7f) && *p >= 'A' && *p <= 'Z')
+      *p |= 0x20;
+
+  return string;
+}
 
 
 static int
@@ -117,7 +135,7 @@ has_dotdot_after_at (const char *string)
    Note that we can't do an utf-8 encoding checking here because in
    keygen.c this function is called with the native encoding and
    native to utf-8 encoding is only done later.  */
-int
+static int
 has_invalid_email_chars (const void *buffer, size_t length)
 {
   const unsigned char *s = buffer;
@@ -143,7 +161,7 @@ has_invalid_email_chars (const void *buffer, size_t length)
 
 /* Same as is_valid_mailbox (see below) but operates on non-nul
    terminated buffer.  */
-int
+static int
 is_valid_mailbox_mem (const void *name_arg, size_t namelen)
 {
   const char *name = name_arg;
@@ -162,7 +180,7 @@ is_valid_mailbox_mem (const void *name_arg, size_t namelen)
 /* Check whether NAME represents a valid mailbox according to
    RFC822. Returns true if so. */
 int
-is_valid_mailbox (const char *name)
+_gpgme_is_valid_mailbox (const char *name)
 {
   return name? is_valid_mailbox_mem (name, strlen (name)) : 0;
 }
@@ -173,7 +191,7 @@ is_valid_mailbox (const char *name)
    lowercase.  Caller must free the result.  Returns NULL if no valid
    mailbox was found (or we are out of memory). */
 char *
-mailbox_from_userid (const char *userid)
+_gpgme_mailbox_from_userid (const char *userid)
 {
   const char *s, *s_end;
   size_t len;
@@ -188,7 +206,7 @@ mailbox_from_userid (const char *userid)
       if (s_end && s_end > s)
         {
           len = s_end - s;
-          result = xtrymalloc (len + 1);
+          result = malloc (len + 1);
           if (!result)
             return NULL; /* Ooops - out of core.  */
           strncpy (result, s, len);
@@ -202,7 +220,7 @@ mailbox_from_userid (const char *userid)
               || string_has_ctrl_or_space (result)
               || has_dotdot_after_at (result))
             {
-              xfree (result);
+              free (result);
               result = NULL;
               errno = EINVAL;
             }
@@ -210,14 +228,14 @@ mailbox_from_userid (const char *userid)
       else
         errno = EINVAL;
     }
-  else if (is_valid_mailbox (userid))
+  else if (_gpgme_is_valid_mailbox (userid))
     {
       /* The entire user id is a mailbox.  Return that one.  Note that
          this fallback method has some restrictions on the valid
          syntax of the mailbox.  However, those who want weird
          addresses should know about it and use the regular <...>
          syntax.  */
-      result = xtrystrdup (userid);
+      result = strdup (userid);
     }
   else
     errno = EINVAL;
@@ -226,14 +244,14 @@ mailbox_from_userid (const char *userid)
 }
 
 
-/* Check whether UID is a valid standard user id of the form
-     "Heinrich Heine <heinrichh@duesseldorf.de>"
-   and return true if this is the case. */
-int
-is_valid_user_id (const char *uid)
-{
-  if (!uid || !*uid)
-    return 0;
+/* /\* Check whether UID is a valid standard user id of the form */
+/*      "Heinrich Heine <heinrichh@duesseldorf.de>" */
+/*    and return true if this is the case. *\/ */
+/* int */
+/* is_valid_user_id (const char *uid) */
+/* { */
+/*   if (!uid || !*uid) */
+/*     return 0; */
 
-  return 1;
-}
+/*   return 1; */
+/* } */

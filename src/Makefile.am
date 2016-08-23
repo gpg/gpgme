@@ -76,6 +76,7 @@ endif
 main_sources =								\
 	util.h conversion.c b64dec.c get-env.c context.h ops.h		\
 	parsetlv.c parsetlv.h                                           \
+	mbox-util.c mbox-util.h                                         \
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
 	data-compat.c data-identify.c					\
 	signers.c sig-notation.c					\

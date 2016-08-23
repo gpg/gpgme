@@ -801,6 +801,12 @@ struct _gpgme_user_id
 
   /* Internal to GPGME, do not use.  */
   gpgme_key_sig_t _last_keysig;
+
+  /* The mail address (addr-spec from RFC5322) of the UID string.
+   * This is general the same as the EMAIL part of this struct but
+   * might be slightly different.  IF no mail address is available
+   * NULL is stored.  */
+  char *address;
 };
 typedef struct _gpgme_user_id *gpgme_user_id_t;
 
