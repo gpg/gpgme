@@ -25,7 +25,7 @@ lib_LTLIBRARIES = libgpgmepp.la
 
 main_sources = \
     exception.cpp context.cpp key.cpp trustitem.cpp data.cpp callbacks.cpp \
-    eventloopinteractor.cpp editinteractor.cpp assuanresult.cpp \
+    eventloopinteractor.cpp editinteractor.cpp \
     keylistresult.cpp keygenerationresult.cpp importresult.cpp \
     decryptionresult.cpp verificationresult.cpp \
     signingresult.cpp encryptionresult.cpp \
@@ -36,7 +36,7 @@ main_sources = \
     vfsmountresult.cpp configuration.cpp tofuinfo.cpp
 
 gpgmepp_headers = \
-    assuanresult.h configuration.h context.h data.h decryptionresult.h \
+    configuration.h context.h data.h decryptionresult.h \
     defaultassuantransaction.h editinteractor.h encryptionresult.h \
     engineinfo.h error.h eventloopinteractor.h exception.h global.h \
     gpgadduserideditinteractor.h gpgagentgetinfoassuantransaction.h \

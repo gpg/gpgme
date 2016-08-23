@@ -23,7 +23,6 @@
 #include <context.h>
 #include <eventloopinteractor.h>
 #include <trustitem.h>
-#include <assuanresult.h>
 #include <keylistresult.h>
 #include <keygenerationresult.h>
 #include <importresult.h>
@@ -801,26 +800,36 @@ static gpgme_error_t assuan_transaction_status_callback(void *opaque, const char
     return t->status(status, a.c_str()).encodedError();
 }
 
-AssuanResult Context::assuanTransact(const char *command)
+Error Context::assuanTransact(const char *command)
 {
     return assuanTransact(command, std::unique_ptr<AssuanTransaction>(new DefaultAssuanTransaction));
 }
 
-AssuanResult Context::assuanTransact(const char *command, std::unique_ptr<AssuanTransaction> transaction)
+Error Context::assuanTransact(const char *command, std::unique_ptr<AssuanTransaction> transaction)
 {
+    gpgme_error_t err, operr;
+
     d->lastop = Private::AssuanTransact;
     d->lastAssuanTransaction = std::move(transaction);
     if (!d->lastAssuanTransaction.get()) {
-        return AssuanResult(Error(d->lasterr = make_error(GPG_ERR_INV_ARG)));
+        return Error(d->lasterr = make_error(GPG_ERR_INV_ARG));
     }
-    d->lasterr = gpgme_op_assuan_transact(d->ctx, command,
-                                          assuan_transaction_data_callback,
-                                          d->lastAssuanTransaction.get(),
-                                          assuan_transaction_inquire_callback,
-                                          d, // sic!
-                                          assuan_transaction_status_callback,
-                                          d->lastAssuanTransaction.get());
-    return AssuanResult(d->ctx, d->lasterr);
+    err = gpgme_op_assuan_transact_ext
+      (d->ctx,
+       command,
+       assuan_transaction_data_callback,
+       d->lastAssuanTransaction.get(),
+       assuan_transaction_inquire_callback,
+       d,
+       assuan_transaction_status_callback,
+       d->lastAssuanTransaction.get(),
+       &operr);
+
+    if (!err)
+      err = operr;
+    d->lasterr = err;
+
+    return Error(d->lasterr);
 }
 
 Error Context::startAssuanTransaction(const char *command)
@@ -830,27 +839,26 @@ Error Context::startAssuanTransaction(const char *command)
 
 Error Context::startAssuanTransaction(const char *command, std::unique_ptr<AssuanTransaction> transaction)
 {
+    gpgme_error_t err;
+
     d->lastop = Private::AssuanTransact;
     d->lastAssuanTransaction = std::move(transaction);
     if (!d->lastAssuanTransaction.get()) {
         return Error(d->lasterr = make_error(GPG_ERR_INV_ARG));
     }
-    return Error(d->lasterr = gpgme_op_assuan_transact_start(d->ctx, command,
-                              assuan_transaction_data_callback,
-                              d->lastAssuanTransaction.get(),
-                              assuan_transaction_inquire_callback,
-                              d, // sic!
-                              assuan_transaction_status_callback,
-                              d->lastAssuanTransaction.get()));
-}
+    err = gpgme_op_assuan_transact_start
+      (d->ctx,
+       command,
+       assuan_transaction_data_callback,
+       d->lastAssuanTransaction.get(),
+       assuan_transaction_inquire_callback,
+       d,
+       assuan_transaction_status_callback,
+       d->lastAssuanTransaction.get());
 
-AssuanResult Context::assuanResult() const
-{
-    if (d->lastop & Private::AssuanTransact) {
-        return AssuanResult(d->ctx, d->lasterr);
-    } else {
-        return AssuanResult();
-    }
+    d->lasterr = err;
+
+    return Error(d->lasterr);
 }
 
 AssuanTransaction *Context::lastAssuanTransaction() const

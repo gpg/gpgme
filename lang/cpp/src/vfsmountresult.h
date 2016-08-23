@@ -73,4 +73,4 @@ GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const VfsMountResult &
 
 GPGMEPP_MAKE_STD_SWAP_SPECIALIZATION(VfsMountResult)
 
-#endif // __GPGMEPP_ASSUANRESULT_H__
+#endif // __GPGMEPP_VFSMOUNTRESULT_H__

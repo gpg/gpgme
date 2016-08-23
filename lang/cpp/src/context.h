@@ -46,7 +46,6 @@ class EventLoopInteractor;
 class EditInteractor;
 class AssuanTransaction;
 
-class AssuanResult;
 class KeyListResult;
 class KeyGenerationResult;
 class ImportResult;
@@ -240,11 +239,10 @@ public:
     // Assuan Transactions
     //
 
-    AssuanResult assuanTransact(const char *command, std::unique_ptr<AssuanTransaction> transaction);
-    AssuanResult assuanTransact(const char *command);
+    GpgME::Error assuanTransact(const char *command, std::unique_ptr<AssuanTransaction> transaction);
+    GpgME::Error assuanTransact(const char *command);
     GpgME::Error startAssuanTransaction(const char *command, std::unique_ptr<AssuanTransaction> transaction);
     GpgME::Error startAssuanTransaction(const char *command);
-    AssuanResult assuanResult() const;
 
     AssuanTransaction *lastAssuanTransaction() const;
     std::unique_ptr<AssuanTransaction> takeLastAssuanTransaction();
