@@ -24,6 +24,7 @@
 #include <notation.h>
 #include "result_p.h"
 #include "util.h"
+#include "key.h"
 
 #include <gpgme.h>
 
@@ -64,6 +65,10 @@ public:
 # endif
             scopy->next = 0;
             sigs.push_back(scopy);
+            // copy keys
+            if (scopy->key) {
+                keys.push_back(Key(scopy->key, true));
+            }
             // copy notations:
             nota.push_back(std::vector<Nota>());
             purls.push_back(0);
@@ -107,6 +112,7 @@ public:
 
     std::vector<gpgme_signature_t> sigs;
     std::vector< std::vector<Nota> > nota;
+    std::vector<GpgME::Key> keys;
     std::vector<char *> purls;
     std::string file_name;
 };
@@ -364,6 +370,14 @@ std::vector<GpgME::Notation> GpgME::Signature::notations() const
         result.push_back(GpgME::Notation(d, idx, i));
     }
     return result;
+}
+
+GpgME::Key GpgME::Signature::key() const
+{
+    if (isNull()) {
+        return Key();
+    }
+    return d->keys[idx];
 }
 
 class GpgME::Notation::Private

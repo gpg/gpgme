@@ -40,6 +40,7 @@ namespace GpgME
 class Error;
 class Signature;
 class Notation;
+class Key;
 
 class GPGMEPP_EXPORT VerificationResult : public Result
 {
@@ -156,6 +157,11 @@ public:
     const char *policyURL() const;
     GpgME::Notation notation(unsigned int index) const;
     std::vector<GpgME::Notation> notations() const;
+
+    /** Returns the key object associated with this signature.
+     * May be incomplete but will have at least the fingerprint
+     * set or the associated TOFU Information if applicable. */
+    GpgME::Key key() const;
 
 private:
     std::shared_ptr<VerificationResult::Private> d;
