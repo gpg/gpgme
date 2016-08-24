@@ -41,6 +41,7 @@
 #include "qgpgmesignjob.h"
 #include "key.h"
 #include "t-support.h"
+#include "engineinfo.h"
 #include <iostream>
 
 using namespace QGpgME;
@@ -57,14 +58,20 @@ static const char testMsg1[] =
 
 class TofuInfoTest: public QGpgMETest
 {
-#if 0
     Q_OBJECT
+
+    bool testSupported()
+    {
+        /* GnuPG currently returns different values for different uid's
+         * on the first verify. This breaks this test. so its disabled
+         * for now. See GnuPG-Bug 2405 */
+        return !(GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "3.0.0");
+    }
 
     void testTofuCopy(TofuInfo other, const TofuInfo &orig)
     {
         Q_ASSERT(!orig.isNull());
         Q_ASSERT(!other.isNull());
-        Q_ASSERT(!strcmp(orig.fingerprint(), other.fingerprint()));
         Q_ASSERT(orig.lastSeen() == other.lastSeen());
         Q_ASSERT(orig.signCount() == other.signCount());
         Q_ASSERT(orig.validity() == other.validity());
@@ -84,6 +91,9 @@ class TofuInfoTest: public QGpgMETest
         QByteArray signedData;
         auto sigResult = job->exec(keys, what.toUtf8(), NormalSignatureMode, signedData);
 
+        auto info = keys[0].userID(0).tofuInfo();
+        Q_ASSERT(info.signCount() == expected - 1);
+
         Q_ASSERT(!sigResult.error());
 
         auto verifyJob = openpgp()->verifyOpaqueJob();
@@ -97,23 +107,23 @@ class TofuInfoTest: public QGpgMETest
         Q_ASSERT(result.numSignatures() == 1);
         auto sig = result.signatures()[0];
 
-        Q_FOREACH(const TofuInfo stats, sig.tofuInfo()) {
-            Q_ASSERT(!stats.isNull());
-            Q_ASSERT(!strcmp(stats.fingerprint(), sig.fingerprint()));
-            Q_ASSERT(stats.signCount() == expected);
-        }
+        auto key2 = sig.key();
+        Q_ASSERT(!key.isNull());
+        Q_ASSERT(!strcmp (key2.primaryFingerprint(), key.primaryFingerprint()));
+        Q_ASSERT(!strcmp (key.primaryFingerprint(), sig.fingerprint()));
+        auto stats = key2.userID(0).tofuInfo();
+        Q_ASSERT(!stats.isNull());
+        Q_ASSERT(stats.signCount() == expected);
     }
 
-private:
-    QTemporaryDir mDir;
-
-private /* FIXME Disabled until GnuPG-Bug-Id 2405 is fixed Q_SLOTS */:
+private Q_SLOTS:
     void testTofuNull()
     {
+        if (!testSupported()) {
+            return;
+        }
         TofuInfo tofu;
         Q_ASSERT(tofu.isNull());
-        Q_ASSERT(!tofu.fingerprint());
-        Q_ASSERT(!tofu.address());
         Q_ASSERT(!tofu.description());
         Q_ASSERT(!tofu.signCount());
         Q_ASSERT(!tofu.lastSeen());
@@ -124,6 +134,9 @@ private /* FIXME Disabled until GnuPG-Bug-Id 2405 is fixed Q_SLOTS */:
 
     void testTofuInfo()
     {
+        if (!testSupported()) {
+            return;
+        }
         auto *job = openpgp()->verifyOpaqueJob(true);
         const QByteArray data1(testMsg1);
         QByteArray plaintext;
@@ -139,20 +152,17 @@ private /* FIXME Disabled until GnuPG-Bug-Id 2405 is fixed Q_SLOTS */:
         /* TOFU is always marginal */
         Q_ASSERT(sig.validity() == Signature::Marginal);
 
-        Q_ASSERT(!sig.tofuInfo().empty());
-        Q_FOREACH(const TofuInfo stats, sig.tofuInfo()) {
-            Q_ASSERT(!stats.isNull());
-            Q_ASSERT(!strcmp(stats.fingerprint(), sig.fingerprint()));
-            Q_ASSERT(stats.firstSeen() == stats.lastSeen());
-            Q_ASSERT(!stats.signCount());
-            Q_ASSERT(stats.address());
-          /* See issue2405 Comment back in when resolved
-            Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto); */
-            Q_ASSERT(stats.validity() == TofuInfo::NoHistory);
-        }
+        auto stats = sig.key().userID(0).tofuInfo();
+        Q_ASSERT(!stats.isNull());
+        Q_ASSERT(sig.key().primaryFingerprint());
+        Q_ASSERT(sig.fingerprint());
+        Q_ASSERT(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
+        Q_ASSERT(stats.firstSeen() == stats.lastSeen());
+        Q_ASSERT(stats.signCount() == 1);
+        Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
+        Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
 
-        const TofuInfo first = sig.tofuInfo()[0];
-        testTofuCopy(first, first);
+        testTofuCopy(stats, stats);
 
         /* Another verify */
 
@@ -167,15 +177,13 @@ private /* FIXME Disabled until GnuPG-Bug-Id 2405 is fixed Q_SLOTS */:
         /* TOFU is always marginal */
         Q_ASSERT(sig.validity() == Signature::Marginal);
 
-        Q_ASSERT(!sig.tofuInfo().empty());
-        Q_FOREACH(const TofuInfo stats, sig.tofuInfo()) {
-            Q_ASSERT(!stats.isNull());
-            Q_ASSERT(!strcmp(stats.fingerprint(), sig.fingerprint()));
-            Q_ASSERT(stats.signCount() == 1);
-            Q_ASSERT(stats.address());
-            Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
-            Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
-        }
+        stats = sig.key().userID(0).tofuInfo();
+        Q_ASSERT(!stats.isNull());
+        Q_ASSERT(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
+        Q_ASSERT(stats.firstSeen() == stats.lastSeen());
+        Q_ASSERT(stats.signCount() == 1);
+        Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
+        Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
 
         /* Verify that another call yields the same result */
         job = openpgp()->verifyOpaqueJob(true);
@@ -189,19 +197,20 @@ private /* FIXME Disabled until GnuPG-Bug-Id 2405 is fixed Q_SLOTS */:
         /* TOFU is always marginal */
         Q_ASSERT(sig.validity() == Signature::Marginal);
 
-        Q_ASSERT(!sig.tofuInfo().empty());
-        Q_FOREACH(const TofuInfo stats, sig.tofuInfo()) {
-            Q_ASSERT(!stats.isNull());
-            Q_ASSERT(!strcmp(stats.fingerprint(), sig.fingerprint()));
-            Q_ASSERT(stats.signCount() == 1);
-            Q_ASSERT(stats.address());
-            Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
-            Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
-        }
+        stats = sig.key().userID(0).tofuInfo();
+        Q_ASSERT(!stats.isNull());
+        Q_ASSERT(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
+        Q_ASSERT(stats.firstSeen() == stats.lastSeen());
+        Q_ASSERT(stats.signCount() == 1);
+        Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
+        Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
     }
 
     void testTofuSignCount()
     {
+        if (!testSupported()) {
+            return;
+        }
         auto *job = openpgp()->keyListJob(false, false, false);
         std::vector<GpgME::Key> keys;
         GpgME::KeyListResult result = job->exec(QStringList() << QStringLiteral("zulu@example.net"),
@@ -210,10 +219,10 @@ private /* FIXME Disabled until GnuPG-Bug-Id 2405 is fixed Q_SLOTS */:
         Key key = keys[0];
         Q_ASSERT(!key.isNull());
 
-        signAndVerify(QStringLiteral("Hello"), key, 0);
-        signAndVerify(QStringLiteral("Hello2"), key, 1);
-        signAndVerify(QStringLiteral("Hello3"), key, 2);
-        signAndVerify(QStringLiteral("Hello4"), key, 3);
+        signAndVerify(QStringLiteral("Hello"), key, 1);
+        signAndVerify(QStringLiteral("Hello2"), key, 2);
+        signAndVerify(QStringLiteral("Hello3"), key, 3);
+        signAndVerify(QStringLiteral("Hello4"), key, 4);
     }
 
     void initTestCase()
@@ -236,7 +245,9 @@ private /* FIXME Disabled until GnuPG-Bug-Id 2405 is fixed Q_SLOTS */:
                  mDir.path() + QStringLiteral("/secring.gpg")));
 
     }
-#endif
+private:
+    QTemporaryDir mDir;
+
 };
 
 QTEST_MAIN(TofuInfoTest)
