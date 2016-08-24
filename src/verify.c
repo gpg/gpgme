@@ -755,7 +755,7 @@ parse_tofu_user (gpgme_signature_t sig, char *args, gpgme_protocol_t protocol)
 
 /* Parse a TOFU_STATS line and store it in the last tofu info of SIG.
  *
- *   TOFU_STATS <validity> <sign-count> 0 [<policy> [<tm1> <tm2>]]
+ *   TOFU_STATS <validity> <sign-count> <encr-count> [<policy> [<tm1> <tm2>]]
  */
 static gpgme_error_t
 parse_tofu_stats (gpgme_signature_t sig, char *args)
@@ -790,7 +790,13 @@ parse_tofu_stats (gpgme_signature_t sig, char *args)
     uval = USHRT_MAX;
   ti->signcount = uval;
 
-  /* We skip the 0, which is RFU.  */
+  /* Parse the encr-count.  */
+  err = _gpgme_strtoul_field (field[2], &uval);
+  if (err)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+  if (uval > USHRT_MAX)
+    uval = USHRT_MAX;
+  ti->encrcount = uval;
 
   if (nfields == 3)
     return 0; /* All mandatory fields parsed.  */
