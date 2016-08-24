@@ -648,10 +648,10 @@ struct _gpgme_tofu_info
   /* Number of encryptions done with this binding.  Capped at USHRT_MAX.  */
   unsigned short encrcount;
 
-  /* Number of seconds since the first and the most recently seen
-   * message was verified.  */
-  unsigned int firstseen;
-  unsigned int lastseen;
+  /* Number of seconds since Epoch when the first and the most
+   * recently seen message were verified.  0 means unknown. */
+  unsigned long firstseen;
+  unsigned long lastseen;
 
   /* If non-NULL a human readable string summarizing the TOFU data. */
   char *description;

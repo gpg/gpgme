@@ -818,20 +818,16 @@ parse_tofu_stats (gpgme_signature_t sig, char *args)
   if (nfields == 4)
     return 0; /* No more optional fields.  */
 
-  /* Parse first and last seen (none or both are required).  */
+  /* Parse first and last seen timestamps (none or both are required).  */
   if (nfields < 6)
     return trace_gpg_error (GPG_ERR_INV_ENGINE); /* "tm2" missing.  */
   err = _gpgme_strtoul_field (field[4], &uval);
   if (err)
     return trace_gpg_error (GPG_ERR_INV_ENGINE);
-  if (uval > UINT_MAX)
-    uval = UINT_MAX;
   ti->firstseen = uval;
   err = _gpgme_strtoul_field (field[5], &uval);
   if (err)
     return trace_gpg_error (GPG_ERR_INV_ENGINE);
-  if (uval > UINT_MAX)
-    uval = UINT_MAX;
   ti->lastseen = uval;
 
   return 0;
