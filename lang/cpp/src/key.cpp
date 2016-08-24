@@ -259,11 +259,16 @@ const char *Key::shortKeyID() const
 
 const char *Key::primaryFingerprint() const
 {
-    const char *fpr = key && key->subkeys ? key->subkeys->fpr : 0 ;
-    if (fpr) {
-        return fpr;
-    } else {
-        return keyID();
+    if (!key) {
+        return nullptr;
+    }
+    if (key->fpr) {
+        /* Return what gpgme thinks is the primary fingerprint */
+        return key->fpr;
+    }
+    if (key->subkeys) {
+        /* Return the first subkeys fingerprint */
+        return key->subkeys->fpr;
     }
 }
 
