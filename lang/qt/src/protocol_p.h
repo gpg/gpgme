@@ -57,6 +57,7 @@
 #include "qgpgmechangepasswdjob.h"
 #include "qgpgmeadduseridjob.h"
 #include "qgpgmekeyformailboxjob.h"
+#include "qgpgmewkspublishjob.h"
 
 namespace
 {
@@ -386,6 +387,18 @@ public:
             return Q_NULLPTR;
         }
         return new QGpgME::QGpgMEKeyForMailboxJob(context);
+    }
+
+    QGpgME::WKSPublishJob *wksPublishJob() const Q_DECL_OVERRIDE
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return Q_NULLPTR;
+        }
+        auto context = GpgME::Context::createForEngine(GpgME::SpawnEngine);
+        if (!context) {
+            return Q_NULLPTR;
+        }
+        return new QGpgME::QGpgMEWKSPublishJob(context.release());
     }
 };
 

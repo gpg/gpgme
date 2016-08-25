@@ -56,6 +56,7 @@
 #include "adduseridjob.h"
 #include "specialjob.h"
 #include "keyformailboxjob.h"
+#include "wkspublishjob.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -122,6 +123,7 @@ make_job_subclass(RefreshKeysJob)
 make_job_subclass(AddUserIDJob)
 make_job_subclass(SpecialJob)
 make_job_subclass(KeyForMailboxJob)
+make_job_subclass(WKSPublishJob)
 
 #undef make_job_subclass
 
@@ -151,3 +153,4 @@ make_job_subclass(KeyForMailboxJob)
 #include "adduseridjob.moc"
 #include "specialjob.moc"
 #include "keyformailboxjob.moc"
+#include "wkspublishjob.moc"
