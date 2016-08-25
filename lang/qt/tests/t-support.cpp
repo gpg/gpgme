@@ -50,7 +50,7 @@ bool QGpgMETest::copyKeyrings(const QString &src, const QString &dest)
     bool is21dir = QFileInfo(src + QDir::separator() + QStringLiteral("pubring.kbx")).exists();
     const QString name = is21dir ? QStringLiteral("pubring.kbx") :
                                   QStringLiteral("pubring.gpg");
-    if (!QFile::copy(src + name, dest + QDir::separator() + name)) {
+    if (!QFile::copy(src + QDir::separator() + name, dest + QDir::separator() + name)) {
         return false;
     }
     if (!is21dir) {
