@@ -63,7 +63,9 @@ bool QGpgMETest::copyKeyrings(const QString &src, const QString &dest)
         return false;
     }
     foreach (QString f, dir.entryList(QDir::Files)) {
-        if (!QFile::copy(src + QDir::separator() + f, dest + QDir::separator() + f)) {
+        if (!QFile::copy(dir.path() + QDir::separator() + f,
+                         dest + QDir::separator() +
+                         QStringLiteral("private-keys-v1.d") + QDir::separator() + f)) {
             return false;
         }
     }
