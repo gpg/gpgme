@@ -62,10 +62,7 @@ class TofuInfoTest: public QGpgMETest
 
     bool testSupported()
     {
-        /* GnuPG currently returns different values for different uid's
-         * on the first verify. This breaks this test. so its disabled
-         * for now. See GnuPG-Bug 2405 */
-        return !(GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "3.0.0");
+        return !(GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.16");
     }
 
     void testTofuCopy(TofuInfo other, const TofuInfo &orig)
@@ -90,9 +87,12 @@ class TofuInfoTest: public QGpgMETest
         keys.push_back(key);
         QByteArray signedData;
         auto sigResult = job->exec(keys, what.toUtf8(), NormalSignatureMode, signedData);
+        delete job;
 
         auto info = keys[0].userID(0).tofuInfo();
-        Q_ASSERT(info.signCount() == expected - 1);
+        if (expected != -1) {
+            Q_ASSERT(info.signCount() == expected - 1);
+        }
 
         Q_ASSERT(!sigResult.error());
 
@@ -100,6 +100,7 @@ class TofuInfoTest: public QGpgMETest
         QByteArray verified;
 
         auto result = verifyJob->exec(signedData, verified);
+        delete verifyJob;
 
         Q_ASSERT(!result.error());
         Q_ASSERT(verified == what.toUtf8());
@@ -113,7 +114,9 @@ class TofuInfoTest: public QGpgMETest
         Q_ASSERT(!strcmp (key.primaryFingerprint(), sig.fingerprint()));
         auto stats = key2.userID(0).tofuInfo();
         Q_ASSERT(!stats.isNull());
-        Q_ASSERT(stats.signCount() == expected);
+        if (expected != -1) {
+            Q_ASSERT(stats.signCount() == expected);
+        }
     }
 
 private Q_SLOTS:
@@ -142,6 +145,7 @@ private Q_SLOTS:
         QByteArray plaintext;
 
         auto result = job->exec(data1, plaintext);
+        delete job;
 
         Q_ASSERT(!result.isNull());
         Q_ASSERT(!result.error());
@@ -168,6 +172,7 @@ private Q_SLOTS:
 
         job = openpgp()->verifyOpaqueJob(true);
         result = job->exec(data1, plaintext);
+        delete job;
 
         Q_ASSERT(!result.isNull());
         Q_ASSERT(!result.error());
@@ -188,6 +193,7 @@ private Q_SLOTS:
         /* Verify that another call yields the same result */
         job = openpgp()->verifyOpaqueJob(true);
         result = job->exec(data1, plaintext);
+        delete job;
 
         Q_ASSERT(!result.isNull());
         Q_ASSERT(!result.error());
@@ -215,14 +221,49 @@ private Q_SLOTS:
         std::vector<GpgME::Key> keys;
         GpgME::KeyListResult result = job->exec(QStringList() << QStringLiteral("zulu@example.net"),
                                                 true, keys);
+        delete job;
         Q_ASSERT(!keys.empty());
         Key key = keys[0];
         Q_ASSERT(!key.isNull());
 
-        signAndVerify(QStringLiteral("Hello"), key, 1);
-        signAndVerify(QStringLiteral("Hello2"), key, 2);
-        signAndVerify(QStringLiteral("Hello3"), key, 3);
-        signAndVerify(QStringLiteral("Hello4"), key, 4);
+        signAndVerify(QStringLiteral("Hello"), key, -1);
+        signAndVerify(QStringLiteral("Hello2"), key, -1);
+        signAndVerify(QStringLiteral("Hello3"), key, -1);
+        signAndVerify(QStringLiteral("Hello4"), key, -1);
+    }
+
+    void testTofuKeyList()
+    {
+        if (!testSupported()) {
+            return;
+        }
+
+        /* First check that the key has no tofu info. */
+        auto *job = openpgp()->keyListJob(false, false, false);
+        std::vector<GpgME::Key> keys;
+        auto result = job->exec(QStringList() << QStringLiteral("zulu@example.net"),
+                                                 true, keys);
+        delete job;
+        Q_ASSERT(!keys.empty());
+        auto key = keys[0];
+        Q_ASSERT(!key.isNull());
+        Q_ASSERT(key.userID(0).tofuInfo().isNull());
+        signAndVerify(QStringLiteral("Hello"), key, -1);
+        signAndVerify(QStringLiteral("Hello"), key, -1);
+
+        /* Now another one but with tofu */
+        job = openpgp()->keyListJob(false, false, false);
+        job->addMode(GpgME::WithTofu);
+        result = job->exec(QStringList() << QStringLiteral("zulu@example.net"),
+                           true, keys);
+        delete job;
+        Q_ASSERT(!result.error());
+        Q_ASSERT(!keys.empty());
+        auto key2 = keys[0];
+        Q_ASSERT(!key2.isNull());
+        auto info = key2.userID(0).tofuInfo();
+        Q_ASSERT(!info.isNull());
+        Q_ASSERT(info.signCount());
     }
 
     void initTestCase()
