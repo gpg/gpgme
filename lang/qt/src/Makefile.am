@@ -199,8 +199,9 @@ nodist_include_HEADERS = qgpgme_version.h
 
 libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
 
-AM_CPPFLAGS = @GPGME_QT_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
-              -DBUILDING_QGPGME -I$(top_srcdir)/lang/cpp/src
+AM_CPPFLAGS = -I$(top_builddir)/src -I$(top_srcdir)/lang/cpp/src \
+              @GPGME_QT_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
+              -DBUILDING_QGPGME
 
 libqgpgme_la_LIBADD = ../../cpp/src/libgpgmepp.la ../../../src/libgpgme.la \
                        @LIBASSUAN_LIBS@ @GPGME_QT_LIBS@
