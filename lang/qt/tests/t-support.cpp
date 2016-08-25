@@ -45,6 +45,31 @@ void QGpgMETest::cleanupTestCase()
     killAgent();
 }
 
+bool QGpgMETest::copyKeyrings(const QString &src, const QString &dest)
+{
+    bool is21dir = QFileInfo(src + QDir::separator() + QStringLiteral("pubring.kbx")).exists();
+    const QString name = is21dir ? QStringLiteral("pubring.kbx") :
+                                  QStringLiteral("pubring.gpg");
+    if (!QFile::copy(src + name, dest + QDir::separator() + name)) {
+        return false;
+    }
+    if (!is21dir) {
+        return (QFile::copy(src + QDir::separator() + QStringLiteral("secring.gpg"),
+                 dest + QDir::separator() + QStringLiteral("secring.gpg")));
+    }
+    QDir dir (src + QDir::separator() + QStringLiteral("private-keys-v1.d"));
+    QDir target(dest);
+    if (!target.mkdir("private-keys-v1.d")) {
+        return false;
+    }
+    foreach (QString f, dir.entryList(QDir::Files)) {
+        if (!QFile::copy(src + QDir::separator() + f, dest + QDir::separator() + f)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void killAgent(const QString& dir)
 {
     QProcess proc;
@@ -58,5 +83,6 @@ void killAgent(const QString& dir)
     proc.closeWriteChannel();
     proc.waitForFinished();
 }
+
 
 #include "t-support.hmoc"

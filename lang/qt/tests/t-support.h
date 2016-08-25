@@ -55,6 +55,8 @@ void killAgent(const QString &dir = qgetenv("GNUPGHOME"));
 class QGpgMETest : public QObject
 {
     Q_OBJECT
+protected:
+    bool copyKeyrings(const QString &from, const QString& to);
 
 public Q_SLOTS:
     void initTestCase();

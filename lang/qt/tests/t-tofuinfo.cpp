@@ -239,11 +239,7 @@ private Q_SLOTS:
         Q_ASSERT(agentConf.open(QIODevice::WriteOnly));
         agentConf.write("allow-loopback-pinentry");
         agentConf.close();
-        Q_ASSERT(QFile::copy(gpgHome + QStringLiteral("/pubring.gpg"),
-                 mDir.path() + QStringLiteral("/pubring.gpg")));
-        Q_ASSERT(QFile::copy(gpgHome + QStringLiteral("/secring.gpg"),
-                 mDir.path() + QStringLiteral("/secring.gpg")));
-
+        copyKeyrings(gpgHome, mDir.path());
     }
 private:
     QTemporaryDir mDir;
