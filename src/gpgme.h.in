@@ -411,6 +411,7 @@ gpgme_protocol_t;
 #define GPGME_KEYLIST_MODE_SIGS			4
 #define GPGME_KEYLIST_MODE_SIG_NOTATIONS	8
 #define GPGME_KEYLIST_MODE_WITH_SECRET       	16
+#define GPGME_KEYLIST_MODE_WITH_TOFU       	32
 #define GPGME_KEYLIST_MODE_EPHEMERAL            128
 #define GPGME_KEYLIST_MODE_VALIDATE		256
 
@@ -843,7 +844,7 @@ struct _gpgme_user_id
    * NULL is stored.  */
   char *address;
 
-  /* The malloced tofo information or NULL.  */
+  /* The malloced TOFU information or NULL.  */
   gpgme_tofu_info_t tofu;
 };
 typedef struct _gpgme_user_id *gpgme_user_id_t;

@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include <gpgme.h>
 
@@ -49,6 +50,7 @@ show_usage (int ex)
          "  --local          use GPGME_KEYLIST_MODE_LOCAL\n"
          "  --extern         use GPGME_KEYLIST_MODE_EXTERN\n"
          "  --sigs           use GPGME_KEYLIST_MODE_SIGS\n"
+         "  --tofu           use GPGME_KEYLIST_MODE_TOFU\n"
          "  --sig-notations  use GPGME_KEYLIST_MODE_SIG_NOTATIONS\n"
          "  --ephemeral      use GPGME_KEYLIST_MODE_EPHEMERAL\n"
          "  --validate       use GPGME_KEYLIST_MODE_VALIDATE\n"
@@ -58,6 +60,26 @@ show_usage (int ex)
          , stderr);
   exit (ex);
 }
+
+
+static const char *
+isotimestr (unsigned long value)
+{
+  time_t t;
+  static char buffer[25+5];
+  struct tm *tp;
+
+  if (!value)
+    return "none";
+  t = value;
+
+  tp = gmtime (&t);
+  snprintf (buffer, sizeof buffer, "%04d-%02d-%02d %02d:%02d:%02d",
+            1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+            tp->tm_hour, tp->tm_min, tp->tm_sec);
+  return buffer;
+}
+
 
 
 int
@@ -118,6 +140,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--extern"))
         {
           mode |= GPGME_KEYLIST_MODE_EXTERN;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--tofu"))
+        {
+          mode |= GPGME_KEYLIST_MODE_WITH_TOFU;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--sigs"))
@@ -181,6 +208,7 @@ main (int argc, char **argv)
   while (!(err = gpgme_op_keylist_next (ctx, &key)))
     {
       gpgme_user_id_t uid;
+      gpgme_tofu_info_t ti;
       int nuids;
       int nsub;
 
@@ -233,23 +261,41 @@ main (int argc, char **argv)
       for (nuids=0, uid=key->uids; uid; uid = uid->next, nuids++)
         {
           printf ("userid %d: %s\n", nuids, nonnull(uid->uid));
-          printf ("  mbox %d: %s\n", nuids, nonnull(uid->address));
+          printf ("    mbox: %s\n", nonnull(uid->address));
           if (uid->email && uid->email != uid->address)
-            printf (" email %d: %s\n", nuids, uid->email);
+            printf ("   email: %s\n", uid->email);
           if (uid->name)
-            printf ("  name %d: %s\n", nuids, uid->name);
+            printf ("    name: %s\n", uid->name);
           if (uid->comment)
-            printf (" cmmnt %d: %s\n", nuids, uid->comment);
-          printf (" valid %d: %s\n", nuids,
+            printf ("   cmmnt: %s\n", uid->comment);
+          printf ("   valid: %s\n",
                   uid->validity == GPGME_VALIDITY_UNKNOWN? "unknown":
                   uid->validity == GPGME_VALIDITY_UNDEFINED? "undefined":
                   uid->validity == GPGME_VALIDITY_NEVER? "never":
                   uid->validity == GPGME_VALIDITY_MARGINAL? "marginal":
                   uid->validity == GPGME_VALIDITY_FULL? "full":
                   uid->validity == GPGME_VALIDITY_ULTIMATE? "ultimate": "[?]");
+          if ((ti = uid->tofu))
+            {
+              printf ("    tofu: %u (%s)\n", ti->validity,
+                      ti->validity == 0? "conflict" :
+                      ti->validity == 1? "no history" :
+                      ti->validity == 2? "little history" :
+                      ti->validity == 3? "enough history" :
+                      ti->validity == 4? "lot of history" : "?");
+              printf ("  policy: %u (%s)\n", ti->policy,
+                      ti->policy == GPGME_TOFU_POLICY_NONE? "none" :
+                      ti->policy == GPGME_TOFU_POLICY_AUTO? "auto" :
+                      ti->policy == GPGME_TOFU_POLICY_GOOD? "good" :
+                      ti->policy == GPGME_TOFU_POLICY_UNKNOWN? "unknown" :
+                      ti->policy == GPGME_TOFU_POLICY_BAD? "bad" :
+                      ti->policy == GPGME_TOFU_POLICY_ASK? "ask" : "?");
+              printf ("   nsigs: %hu\n", ti->signcount);
+              printf ("   nencr: %hu\n", ti->encrcount);
+              printf ("   first: %s\n", isotimestr (ti->firstseen));
+              printf ("    last: %s\n", isotimestr (ti->lastseen));
+            }
         }
-
-
 
       putchar ('\n');
 

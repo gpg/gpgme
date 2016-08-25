@@ -2683,6 +2683,11 @@ signature notations on key signatures should be included in the listed
 keys.  This only works if @code{GPGME_KEYLIST_MODE_SIGS} is also
 enabled.
 
+@item GPGME_KEYLIST_MODE_WITH_TOFU
+The @code{GPGME_KEYLIST_MODE_WITH_TOFU} symbol specifies that
+information pertaining to the TOFU trust model should be included in
+the listed keys.
+
 @item GPGME_KEYLIST_MODE_WITH_SECRET
 The @code{GPGME_KEYLIST_MODE_WITH_SECRET} returns information about
 the presence of a corresponding secret key in a public key listing.  A

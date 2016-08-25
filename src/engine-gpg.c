@@ -2338,8 +2338,13 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
         err = add_arg (gpg, "--with-fingerprint");
     }
 
+  if (!err && (mode & GPGME_KEYLIST_MODE_WITH_TOFU)
+      && have_gpg_version (gpg, "2.1.16"))
+    err = add_arg (gpg, "--with-tofu-info");
+
   if (!err && (mode & GPGME_KEYLIST_MODE_WITH_SECRET))
     err = add_arg (gpg, "--with-secret");
+
   if (!err
       && (mode & GPGME_KEYLIST_MODE_SIGS)
       && (mode & GPGME_KEYLIST_MODE_SIG_NOTATIONS))
@@ -2348,6 +2353,7 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
       if (!err)
 	err = add_arg (gpg, "show-sig-subpackets=\"20,26\"");
     }
+
   if (!err)
     {
       if ( (mode & GPGME_KEYLIST_MODE_EXTERN) )
@@ -2379,6 +2385,7 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
                             ? "--check-sigs" : "--list-keys"));
         }
     }
+
   if (!err)
     err = add_arg (gpg, "--");
 

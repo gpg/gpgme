@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include <gpgme.h>
 
@@ -35,6 +36,26 @@
 
 
 static int verbose;
+
+
+static const char *
+isotimestr (unsigned long value)
+{
+  time_t t;
+  static char buffer[25+5];
+  struct tm *tp;
+
+  if (!value)
+    return "none";
+  t = value;
+
+  tp = gmtime (&t);
+  snprintf (buffer, sizeof buffer, "%04d-%02d-%02d %02d:%02d:%02d",
+            1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+            tp->tm_hour, tp->tm_min, tp->tm_sec);
+  return buffer;
+}
+
 
 static gpg_error_t
 status_cb (void *opaque, const char *keyword, const char *value)
@@ -177,8 +198,8 @@ print_result (gpgme_verify_result_t result)
                       ti->policy == GPGME_TOFU_POLICY_BAD? "bad" :
                       ti->policy == GPGME_TOFU_POLICY_ASK? "ask" : "?");
               printf ("    sigcount : %hu\n", ti->signcount);
-              printf ("    firstseen: %u\n", ti->firstseen);
-              printf ("    lastseen : %u\n", ti->lastseen);
+              printf ("    firstseen: %s\n", isotimestr (ti->firstseen));
+              printf ("    lastseen : %s\n", isotimestr (ti->lastseen));
               printf ("    desc ....: ");
               print_description (nonnull (ti->description), 15);
             }
