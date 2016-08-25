@@ -53,7 +53,7 @@ GPGMEPP_EXPORT Error initializeLibrary(int);
 
 enum Protocol { OpenPGP, CMS, UnknownProtocol };
 
-enum Engine { GpgEngine, GpgSMEngine, GpgConfEngine, UnknownEngine, AssuanEngine, G13Engine };
+enum Engine { GpgEngine, GpgSMEngine, GpgConfEngine, UnknownEngine, AssuanEngine, G13Engine, SpawnEngine };
 
 enum KeyListMode {
     Local = 0x1,

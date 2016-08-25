@@ -252,6 +252,15 @@ std::unique_ptr<Context> Context::createForEngine(Engine eng, Error *error)
             return std::unique_ptr<Context>();
         }
         break;
+    case SpawnEngine:
+        if (const gpgme_error_t err = gpgme_set_protocol(ctx, GPGME_PROTOCOL_SPAWN)) {
+            gpgme_release(ctx);
+            if (error) {
+                *error = Error(err);
+            }
+            return std::unique_ptr<Context>();
+        }
+        break;
     default:
         if (error) {
             *error = Error::fromCode(GPG_ERR_INV_ARG);
@@ -1311,6 +1320,29 @@ Error Context::setPinentryMode(PinentryMode which)
     return Error(d->lasterr = gpgme_set_pinentry_mode(d->ctx, mode));
 }
 
+// Engine Spawn stuff
+Error Context::spawn(const char *file, const char *argv[],
+                     Data &input, Data &output, Data &err,
+                     SpawnFlags flags)
+{
+    return Error(d->lasterr = gpgme_op_spawn (d->ctx, file, argv,
+        input.impl() ? input.impl()->data : nullptr,
+        output.impl() ? output.impl()->data : nullptr,
+        err.impl() ? err.impl()->data : nullptr,
+        static_cast<int>(flags)));
+}
+
+Error Context::spawnAsync(const char *file, const char *argv[],
+                          Data &input, Data &output, Data &err,
+                          SpawnFlags flags)
+{
+    return Error(d->lasterr = gpgme_op_spawn_start (d->ctx, file, argv,
+        input.impl() ? input.impl()->data : nullptr,
+        output.impl() ? output.impl()->data : nullptr,
+        err.impl() ? err.impl()->data : nullptr,
+        static_cast<int>(flags)));
+}
+
 std::ostream &operator<<(std::ostream &os, Protocol proto)
 {
     os << "GpgME::Protocol(";
@@ -1344,6 +1376,9 @@ std::ostream &operator<<(std::ostream &os, Engine eng)
         break;
     case AssuanEngine:
         os << "AssuanEngine";
+        break;
+    case SpawnEngine:
+        os << "SpawnEngine";
         break;
     default:
     case UnknownEngine:
@@ -1474,6 +1509,8 @@ static gpgme_protocol_t engine2protocol(const GpgME::Engine engine)
         return GPGME_PROTOCOL_ASSUAN;
     case GpgME::G13Engine:
         return GPGME_PROTOCOL_G13;
+    case GpgME::SpawnEngine:
+        return GPGME_PROTOCOL_SPAWN;
     case GpgME::UnknownEngine:
         ;
     }

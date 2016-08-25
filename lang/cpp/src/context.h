@@ -346,6 +346,34 @@ public:
     GpgME::Error createVFS(const char *containerFile, const std::vector<Key> &recipients);
     VfsMountResult mountVFS(const char *containerFile, const char *mountDir);
 
+    // Spawn Engine
+    enum SpawnFlags {
+        SpawnNone = 0,
+        SpawnDetached = 1,
+        SpawnAllowSetFg = 2
+    };
+    /** Spwan the process \a file with arguments \a argv.
+     *
+     *  If a data parameter is null the /dev/null will be
+     *  used. (Or other platform stuff).
+     *
+     * @param file The executable to start.
+     * @param argv list of arguments file should be argv[0].
+     * @param input The data to be sent through stdin.
+     * @param output The data to be recieve the stdout.
+     * @param err The data to recieve stderr.
+     * @param flags Additional flags.
+     *
+     * @returns An error or empty error.
+     */
+    GpgME::Error spawn(const char *file, const char *argv[],
+                       Data &input, Data &output, Data &err,
+                       SpawnFlags flags);
+    /** Async variant of spawn. Immediately returns after starting the
+     * process. */
+    GpgME::Error spawnAsync(const char *file, const char *argv[],
+                            Data &input, Data &output,
+                            Data &err, SpawnFlags flags);
     //
     //
     // Run Control
