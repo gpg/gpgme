@@ -93,11 +93,11 @@ public:
     /* Number of signatures seen for this binding.  Capped at USHRT_MAX.  */
     unsigned short signCount() const;
 
-    /* Number of seconds since the first message was verified. */
-    unsigned int firstSeen() const;
+    /** Number of seconds since epoch when the first message was verified */
+    unsigned long firstSeen() const;
 
-    /* Number of seconds since the last message was verified. */
-    unsigned int lastSeen() const;
+    /** Number of seconds since epoch when the last message was verified */
+    unsigned long lastSeen() const;
 
     /* If non-NULL a human readable string summarizing the TOFU data. */
     const char *description() const;

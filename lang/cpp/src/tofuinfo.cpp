@@ -123,12 +123,12 @@ unsigned short GpgME::TofuInfo::signCount() const
     return isNull() ? 0 : d->mInfo->signcount;
 }
 
-unsigned int GpgME::TofuInfo::firstSeen() const
+unsigned long GpgME::TofuInfo::firstSeen() const
 {
     return isNull() ? 0 : d->mInfo->firstseen;
 }
 
-unsigned int GpgME::TofuInfo::lastSeen() const
+unsigned long GpgME::TofuInfo::lastSeen() const
 {
     return isNull() ? 0 : d->mInfo->lastseen;
 }
