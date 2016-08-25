@@ -81,6 +81,15 @@ typedef void (*IOCallback)(void *data, int fd);
 
 GPGMEPP_EXPORT EngineInfo engineInfo(Protocol proto);
 GPGMEPP_EXPORT EngineInfo engineInfo(Engine engine);
+/** Wrapper around gpgme_get_dirinfo. What can be:
+homedir, sysconfdir, bindir, libexecdir, libdir,
+datadir, localedir, agent-socket, agent-ssh-socket,
+dirmngr-socket, uiserver-socket, gpgconf-name, gpg-name,
+gpgsm-name, g13-name
+
+This may be extended in the future.
+*/
+GPGMEPP_EXPORT const char *dirInfo(const char *what);
 
 GPGMEPP_EXPORT Error checkEngine(Protocol proto);
 GPGMEPP_EXPORT Error checkEngine(Engine engine);

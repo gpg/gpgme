@@ -1489,6 +1489,11 @@ GpgME::EngineInfo GpgME::engineInfo(GpgME::Protocol proto)
     return EngineInfo();
 }
 
+const char *GpgME::dirInfo(const char *what)
+{
+    return gpgme_get_dirinfo(what);
+}
+
 GpgME::Error GpgME::checkEngine(GpgME::Protocol proto)
 {
     const gpgme_protocol_t p = proto == CMS ? GPGME_PROTOCOL_CMS : GPGME_PROTOCOL_OpenPGP ;
