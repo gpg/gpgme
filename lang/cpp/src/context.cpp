@@ -1420,6 +1420,7 @@ std::ostream &operator<<(std::ostream &os, KeyListMode mode)
     CHECK(Signatures);
     CHECK(Validate);
     CHECK(Ephemeral);
+    CHECK(WithTofu);
 #undef CHECK
     return os << ')';
 }

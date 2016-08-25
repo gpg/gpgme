@@ -76,6 +76,9 @@ static inline gpgme_keylist_mode_t add_to_gpgme_keylist_mode_t(unsigned int oldm
     if (newmodes & GpgME::Validate) {
         oldmode |= GPGME_KEYLIST_MODE_VALIDATE;
     }
+    if (newmodes & GpgME::WithTofu) {
+        oldmode |= GPGME_KEYLIST_MODE_WITH_TOFU;
+    }
 #ifndef NDEBUG
     if (newmodes & ~(GpgME::Local | GpgME::Extern | GpgME::Signatures | GpgME::SignatureNotations | GpgME::Ephemeral | GpgME::Validate)) {
         //std::cerr << "GpgME::Context: keylist mode must be one of Local, "
