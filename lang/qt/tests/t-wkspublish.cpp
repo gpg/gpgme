@@ -39,7 +39,6 @@
 #include "importresult.h"
 #include "protocol.h"
 #include "engineinfo.h"
-#include "context.h"
 
 #include "t-support.h"
 
@@ -177,7 +176,6 @@ private:
             /* Not supported */
             return;
         }
-        auto ctx = Context::createForProtocol(OpenPGP);
         /* First generate a test key */
         const QString args = QStringLiteral("<GnupgKeyParms format=\"internal\">\n"
                                         "%no-protection\n"
