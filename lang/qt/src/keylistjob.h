@@ -96,6 +96,9 @@ public:
 
     virtual GpgME::KeyListResult exec(const QStringList &patterns, bool secretOnly, std::vector<GpgME::Key> &keys) = 0;
 
+    /** Add a flag to the keylistmode used. */
+    virtual void addMode(GpgME::KeyListMode mode) = 0;
+
 Q_SIGNALS:
     void nextKey(const GpgME::Key &key);
     void result(const GpgME::KeyListResult &result, const std::vector<GpgME::Key> &keys = std::vector<GpgME::Key>(), const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());

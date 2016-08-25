@@ -74,9 +74,10 @@ public:
     /* from KeyListJob */
     GpgME::KeyListResult exec(const QStringList &patterns, bool secretOnly, std::vector<GpgME::Key> &keys) Q_DECL_OVERRIDE;
 
+    void addMode(GpgME::KeyListMode mode) Q_DECL_OVERRIDE;
+
     /* from ThreadedJobMixin */
     void resultHook(const result_type &result) Q_DECL_OVERRIDE;
-
 private:
     GpgME::KeyListResult mResult;
     bool mSecretOnly;

@@ -151,6 +151,11 @@ void QGpgMEKeyListJob::resultHook(const result_type &tuple)
         Q_EMIT nextKey(key);
     }
 }
+
+void QGpgMEKeyListJob::addMode(KeyListMode mode)
+{
+    context()->addKeyListMode(mode);
+}
 #if 0
 void QGpgMEKeyListJob::showErrorDialog(QWidget *parent, const QString &caption) const
 {
