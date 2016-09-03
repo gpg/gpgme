@@ -454,6 +454,7 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
   char *dft_display = NULL;
   char dft_ttyname[64];
   char *dft_ttytype = NULL;
+  char *env_tty = NULL;
 
   gpg = calloc (1, sizeof *gpg);
   if (!gpg)
@@ -560,11 +561,20 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
 	goto leave;
     }
 
-  if (isatty (1))
+  rc = _gpgme_getenv ("GPG_TTY", &env_tty);
+  if (isatty (1) || env_tty || rc)
     {
-      int err;
+      int err = 0;
 
-      err = ttyname_r (1, dft_ttyname, sizeof (dft_ttyname));
+      if (rc)
+        goto leave;
+      else if (env_tty)
+        {
+          snprintf (dft_ttyname, sizeof (dft_ttyname), "%s", env_tty);
+          free (env_tty);
+        }
+      else
+        err = ttyname_r (1, dft_ttyname, sizeof (dft_ttyname));
 
       /* Even though isatty() returns 1, ttyname_r() may fail in many
 	 ways, e.g., when /dev/pts is not accessible under chroot.  */

@@ -219,6 +219,7 @@ llass_new (void **engine, const char *file_name, const char *home_dir,
   gpgme_error_t err = 0;
   engine_llass_t llass;
   char *optstr;
+  char *env_tty = NULL;
 
   (void)version; /* Not yet used.  */
 
@@ -280,13 +281,24 @@ llass_new (void **engine, const char *file_name, const char *home_dir,
         }
     }
 
-  if (llass->opt.gpg_agent && isatty (1))
+  if (llass->opt.gpg_agent)
+    err = _gpgme_getenv ("GPG_TTY", &env_tty);
+
+  if (llass->opt.gpg_agent && (isatty (1) || env_tty || err))
     {
-      int rc;
+      int rc = 0;
       char dft_ttyname[64];
       char *dft_ttytype = NULL;
 
-      rc = ttyname_r (1, dft_ttyname, sizeof (dft_ttyname));
+      if (err)
+        goto leave;
+      else if (env_tty)
+        {
+          snprintf (dft_ttyname, sizeof (dft_ttyname), "%s", env_tty);
+          free (env_tty);
+        }
+      else
+        rc = ttyname_r (1, dft_ttyname, sizeof (dft_ttyname));
 
       /* Even though isatty() returns 1, ttyname_r() may fail in many
 	 ways, e.g., when /dev/pts is not accessible under chroot.  */
