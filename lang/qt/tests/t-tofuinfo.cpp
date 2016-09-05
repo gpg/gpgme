@@ -89,12 +89,11 @@ class TofuInfoTest: public QGpgMETest
         auto sigResult = job->exec(keys, what.toUtf8(), NormalSignatureMode, signedData);
         delete job;
 
-        auto info = keys[0].userID(0).tofuInfo();
-        if (expected != -1) {
+        Q_ASSERT(!sigResult.error());
+        foreach (const auto uid, keys[0].userIDs()) {
+            auto info = uid.tofuInfo();
             Q_ASSERT(info.signCount() == expected - 1);
         }
-
-        Q_ASSERT(!sigResult.error());
 
         auto verifyJob = openpgp()->verifyOpaqueJob();
         QByteArray verified;
@@ -114,9 +113,13 @@ class TofuInfoTest: public QGpgMETest
         Q_ASSERT(!strcmp (key.primaryFingerprint(), sig.fingerprint()));
         auto stats = key2.userID(0).tofuInfo();
         Q_ASSERT(!stats.isNull());
-        if (expected != -1) {
-            Q_ASSERT(stats.signCount() == expected);
+        if (stats.signCount() != expected) {
+            std::cout << "################ Key before verify: "
+                      << key
+                      << "################ Key after verify: "
+                      << key2;
         }
+        Q_ASSERT(stats.signCount() == expected);
     }
 
 private Q_SLOTS:
@@ -218,6 +221,7 @@ private Q_SLOTS:
             return;
         }
         auto *job = openpgp()->keyListJob(false, false, false);
+        job->addMode(GpgME::WithTofu);
         std::vector<GpgME::Key> keys;
         GpgME::KeyListResult result = job->exec(QStringList() << QStringLiteral("zulu@example.net"),
                                                 true, keys);
@@ -226,10 +230,13 @@ private Q_SLOTS:
         Key key = keys[0];
         Q_ASSERT(!key.isNull());
 
-        signAndVerify(QStringLiteral("Hello"), key, -1);
-        signAndVerify(QStringLiteral("Hello2"), key, -1);
-        signAndVerify(QStringLiteral("Hello3"), key, -1);
-        signAndVerify(QStringLiteral("Hello4"), key, -1);
+        signAndVerify(QStringLiteral("Hello"), key, 1);
+        key.update();
+        signAndVerify(QStringLiteral("Hello2"), key, 2);
+        key.update();
+        signAndVerify(QStringLiteral("Hello3"), key, 3);
+        key.update();
+        signAndVerify(QStringLiteral("Hello4"), key, 4);
     }
 
     void testTofuKeyList()
@@ -248,8 +255,16 @@ private Q_SLOTS:
         auto key = keys[0];
         Q_ASSERT(!key.isNull());
         Q_ASSERT(key.userID(0).tofuInfo().isNull());
-        signAndVerify(QStringLiteral("Hello"), key, -1);
-        signAndVerify(QStringLiteral("Hello"), key, -1);
+        auto keyCopy = key;
+        keyCopy.update();
+        auto sigCnt = keyCopy.userID(0).tofuInfo().signCount();
+        signAndVerify(QStringLiteral("Hello"), keyCopy,
+                      sigCnt + 1);
+        keyCopy.update();
+        /* For some reason if you remove the " World" part of
+         * the next message the test fails. */
+        signAndVerify(QStringLiteral("Hello World"), keyCopy,
+                      sigCnt + 2);
 
         /* Now another one but with tofu */
         job = openpgp()->keyListJob(false, false, false);
