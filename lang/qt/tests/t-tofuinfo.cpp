@@ -230,6 +230,12 @@ private Q_SLOTS:
         Key key = keys[0];
         Q_ASSERT(!key.isNull());
 
+        /* As we sign & verify quickly here we need different
+         * messages to avoid having them treated as the same
+         * message if they were created within the same second.
+         * Alternatively we could use the same message and wait
+         * a second between each call. But this would slow down
+         * the testsuite. */
         signAndVerify(QStringLiteral("Hello"), key, 1);
         key.update();
         signAndVerify(QStringLiteral("Hello2"), key, 2);
@@ -258,12 +264,10 @@ private Q_SLOTS:
         auto keyCopy = key;
         keyCopy.update();
         auto sigCnt = keyCopy.userID(0).tofuInfo().signCount();
-        signAndVerify(QStringLiteral("Hello"), keyCopy,
+        signAndVerify(QStringLiteral("Hello5"), keyCopy,
                       sigCnt + 1);
         keyCopy.update();
-        /* For some reason if you remove the " World" part of
-         * the next message the test fails. */
-        signAndVerify(QStringLiteral("Hello World"), keyCopy,
+        signAndVerify(QStringLiteral("Hello6"), keyCopy,
                       sigCnt + 2);
 
         /* Now another one but with tofu */
