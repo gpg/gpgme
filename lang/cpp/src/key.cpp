@@ -28,6 +28,8 @@
 #include <gpgme.h>
 
 #include <string.h>
+#include <istream>
+#include <iterator>
 
 const GpgME::Key::Null GpgME::Key::null;
 
@@ -846,6 +848,43 @@ const char *UserID::Signature::policyURL() const
         }
     }
     return 0;
+}
+
+std::ostream &operator<<(std::ostream &os, const UserID &uid)
+{
+    os << "GpgME::UserID(";
+    if (!uid.isNull()) {
+        os << "\n name:      " << protect(uid.name())
+           << "\n email:     " << protect(uid.email())
+           << "\n comment:   " << protect(uid.comment())
+           << "\n validity:  " << uid.validityAsString()
+           << "\n revoked:   " << uid.isRevoked()
+           << "\n invalid:   " << uid.isInvalid()
+           << "\n numsigs:   " << uid.numSignatures()
+           << "\n tofuinfo:\n" << uid.tofuInfo();
+    }
+    return os << ')';
+}
+
+std::ostream &operator<<(std::ostream &os, const Key &key)
+{
+    os << "GpgME::Key(";
+    if (!key.isNull()) {
+        os << "\n protocol:   " << protect(key.protocolAsString())
+           << "\n ownertrust: " << key.ownerTrustAsString()
+           << "\n issuer:     " << protect(key.issuerName())
+           << "\n fingerprint:" << protect(key.primaryFingerprint())
+           << "\n listmode:   " << key.keyListMode()
+           << "\n canSign:    " << key.canReallySign()
+           << "\n canEncrypt: " << key.canEncrypt()
+           << "\n canCertify: " << key.canCertify()
+           << "\n canAuth:    " << key.canAuthenticate()
+           << "\n uids:\n";
+        const std::vector<UserID> uids = key.userIDs();
+        std::copy(uids.begin(), uids.end(),
+                  std::ostream_iterator<UserID>(os, "\n"));
+    }
+    return os << ')';
 }
 
 } // namespace GpgME

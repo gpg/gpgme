@@ -391,6 +391,9 @@ private:
     gpgme_key_sig_t sig;
 };
 
+GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const UserID &uid);
+GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const Key &key);
+
 } // namespace GpgME
 
 GPGMEPP_MAKE_STD_SWAP_SPECIALIZATION(Key)
