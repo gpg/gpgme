@@ -38,8 +38,13 @@
 
 #include "threadedjobmixin.h"
 
-#include <gpgme++/keylistresult.h>
-#include <gpgme++/key.h>
+#ifdef BUILDING_QGPGME
+# include "keylistresult.h"
+# include "key.h"
+#else
+# include <gpgme++/keylistresult.h>
+# include <gpgme++/key.h>
+#endif
 
 namespace QGpgME
 {
