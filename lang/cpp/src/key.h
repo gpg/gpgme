@@ -146,6 +146,12 @@ public:
 
     unsigned int keyListMode() const;
 
+    /*! Update information about this key.
+     * Starts a keylisting for this key with validity
+     * and tofu information gathering. Blocks for
+     * how long the keylisting takes.*/
+    void update();
+
 private:
     gpgme_key_t impl() const
     {

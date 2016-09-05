@@ -24,6 +24,7 @@
 
 #include "util.h"
 #include "tofuinfo.h"
+#include "context.h"
 
 #include <gpgme.h>
 
@@ -320,6 +321,27 @@ const Key &Key::mergeWith(const Key &other)
     }
 
     return *this;
+}
+
+void Key::update()
+{
+    auto ctx = Context::createForProtocol(protocol());
+    if (!ctx) {
+        return;
+    }
+    ctx->setKeyListMode(KeyListMode::Local |
+                        KeyListMode::Signatures |
+                        KeyListMode::SignatureNotations |
+                        KeyListMode::Validate |
+                        KeyListMode::WithTofu);
+    Error err;
+    auto newKey = ctx->key(primaryFingerprint(), err, hasSecret());
+    delete ctx;
+    if (err) {
+        return;
+    }
+    swap(newKey);
+    return;
 }
 
 //
