@@ -59,6 +59,8 @@ main (int argc, char *argv[])
   err = gpgme_data_new (&out);
   fail_if_err (err);
 
+  gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
+
   /* A recipient for which we don't have a secret key */
   err = gpgme_get_key (ctx, "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2",
                        &key[0], 0);
