@@ -228,8 +228,7 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
   if (err)
     return err;
 
-  if (!recp)
-    symmetric = 1;
+  symmetric = !recp || (flags & GPGME_ENCRYPT_SYMMETRIC);
 
   if (!plain)
     return gpg_error (GPG_ERR_NO_DATA);
