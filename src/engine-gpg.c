@@ -866,7 +866,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       argc++;
     }
 
-  if (gpg->pinentry_mode)
+  if (gpg->pinentry_mode && have_gpg_version (gpg, "2.1.0"))
     {
       const char *s = NULL;
       switch (gpg->pinentry_mode)
