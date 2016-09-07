@@ -197,9 +197,12 @@ print_result (gpgme_verify_result_t result)
                       ti->policy == GPGME_TOFU_POLICY_UNKNOWN? "unknown" :
                       ti->policy == GPGME_TOFU_POLICY_BAD? "bad" :
                       ti->policy == GPGME_TOFU_POLICY_ASK? "ask" : "?");
-              printf ("    sigcount : %hu\n", ti->signcount);
-              printf ("    firstseen: %s\n", isotimestr (ti->firstseen));
-              printf ("    lastseen : %s\n", isotimestr (ti->lastseen));
+              printf ("    signcount: %hu\n", ti->signcount);
+              printf ("      first..: %s\n", isotimestr (ti->signfirst));
+              printf ("      last ..: %s\n", isotimestr (ti->signlast));
+              printf ("    encrcount: %hu\n", ti->encrcount);
+              printf ("      first..: %s\n", isotimestr (ti->encrfirst));
+              printf ("      last ..: %s\n", isotimestr (ti->encrlast));
               printf ("    desc ....: ");
               print_description (nonnull (ti->description), 15);
             }

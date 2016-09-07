@@ -93,11 +93,20 @@ public:
     /* Number of signatures seen for this binding.  Capped at USHRT_MAX.  */
     unsigned short signCount() const;
 
+    /* Number of encryption done to this binding.  Capped at USHRT_MAX.  */
+    unsigned short encrCount() const;
+
     /** Number of seconds since epoch when the first message was verified */
-    unsigned long firstSeen() const;
+    unsigned long signFirst() const;
 
     /** Number of seconds since epoch when the last message was verified */
-    unsigned long lastSeen() const;
+    unsigned long signLast() const;
+
+    /** Number of seconds since epoch when the first message was encrypted */
+    unsigned long encrFirst() const;
+
+    /** Number of seconds since epoch when the last message was encrypted */
+    unsigned long encrLast() const;
 
     /* If non-NULL a human readable string summarizing the TOFU data. */
     const char *description() const;

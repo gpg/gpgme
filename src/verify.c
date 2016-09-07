@@ -755,20 +755,21 @@ parse_tofu_user (gpgme_signature_t sig, char *args, gpgme_protocol_t protocol)
 
 /* Parse a TOFU_STATS line and store it in the last tofu info of SIG.
  *
- *   TOFU_STATS <validity> <sign-count> <encr-count> [<policy> [<tm1> <tm2>]]
+ *   TOFU_STATS <validity> <sign-count> <encr-count> \
+ *                         [<policy> [<tm1> <tm2> <tm3> <tm4>]]
  */
 static gpgme_error_t
 parse_tofu_stats (gpgme_signature_t sig, char *args)
 {
   gpgme_error_t err;
   gpgme_tofu_info_t ti;
-  char *field[6];
+  char *field[8];
   int nfields;
   unsigned long uval;
 
   if (!sig->key || !sig->key->_last_uid || !(ti = sig->key->_last_uid->tofu))
     return trace_gpg_error (GPG_ERR_INV_ENGINE); /* No TOFU_USER seen.  */
-  if (ti->firstseen || ti->signcount || ti->validity || ti->policy)
+  if (ti->signfirst || ti->signcount || ti->validity || ti->policy)
     return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Already set.  */
 
   nfields = _gpgme_split_fields (args, field, DIM (field));
@@ -824,11 +825,24 @@ parse_tofu_stats (gpgme_signature_t sig, char *args)
   err = _gpgme_strtoul_field (field[4], &uval);
   if (err)
     return trace_gpg_error (GPG_ERR_INV_ENGINE);
-  ti->firstseen = uval;
+  ti->signfirst = uval;
   err = _gpgme_strtoul_field (field[5], &uval);
   if (err)
     return trace_gpg_error (GPG_ERR_INV_ENGINE);
-  ti->lastseen = uval;
+  ti->signlast = uval;
+  if (nfields > 7)
+    {
+      /* This condition is only to allow for gpg 2.1.15 - can
+       * eventually be removed.  */
+      err = _gpgme_strtoul_field (field[6], &uval);
+      if (err)
+        return trace_gpg_error (GPG_ERR_INV_ENGINE);
+      ti->encrfirst = uval;
+      err = _gpgme_strtoul_field (field[7], &uval);
+      if (err)
+        return trace_gpg_error (GPG_ERR_INV_ENGINE);
+      ti->encrlast = uval;
+    }
 
   return 0;
 }

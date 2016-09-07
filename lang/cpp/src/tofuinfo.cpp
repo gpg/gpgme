@@ -123,14 +123,29 @@ unsigned short GpgME::TofuInfo::signCount() const
     return isNull() ? 0 : d->mInfo->signcount;
 }
 
-unsigned long GpgME::TofuInfo::firstSeen() const
+unsigned short GpgME::TofuInfo::encrCount() const
 {
-    return isNull() ? 0 : d->mInfo->firstseen;
+    return isNull() ? 0 : d->mInfo->encrcount;
 }
 
-unsigned long GpgME::TofuInfo::lastSeen() const
+unsigned long GpgME::TofuInfo::signFirst() const
 {
-    return isNull() ? 0 : d->mInfo->lastseen;
+    return isNull() ? 0 : d->mInfo->signfirst;
+}
+
+unsigned long GpgME::TofuInfo::signLast() const
+{
+    return isNull() ? 0 : d->mInfo->signlast;
+}
+
+unsigned long GpgME::TofuInfo::encrFirst() const
+{
+    return isNull() ? 0 : d->mInfo->encrfirst;
+}
+
+unsigned long GpgME::TofuInfo::encrLast() const
+{
+    return isNull() ? 0 : d->mInfo->encrlast;
 }
 
 std::ostream &GpgME::operator<<(std::ostream &os, const GpgME::TofuInfo &info)
@@ -141,8 +156,11 @@ std::ostream &GpgME::operator<<(std::ostream &os, const GpgME::TofuInfo &info)
            << "\n validity: " << info.validity()
            << "\n policy: "   << info.policy()
            << "\n signcount: "<< info.signCount()
-           << "\n firstseen: "<< info.firstSeen()
-           << "\n lastseen: " << info.lastSeen()
+           << "\n signfirst: "<< info.signFirst()
+           << "\n signlast: " << info.signLast()
+           << "\n encrcount: "<< info.encrCount()
+           << "\n encrfirst: "<< info.encrFirst()
+           << "\n encrlast: " << info.encrLast()
            << '\n';
     }
     return os << ")";

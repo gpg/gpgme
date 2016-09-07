@@ -650,9 +650,11 @@ struct _gpgme_tofu_info
   unsigned short encrcount;
 
   /* Number of seconds since Epoch when the first and the most
-   * recently seen message were verified.  0 means unknown. */
-  unsigned long firstseen;
-  unsigned long lastseen;
+   * recently seen message were verified/decrypted.  0 means unknown. */
+  unsigned long signfirst;
+  unsigned long signlast;
+  unsigned long encrfirst;
+  unsigned long encrlast;
 
   /* If non-NULL a human readable string summarizing the TOFU data. */
   char *description;

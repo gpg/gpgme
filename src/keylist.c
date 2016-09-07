@@ -466,11 +466,25 @@ parse_tfs_record (gpgme_user_id_t uid, char **field, int nfield)
   err = _gpgme_strtoul_field (field[6], &uval);
   if (err)
     goto inv_engine;
-  ti->firstseen = uval;
+  ti->signfirst = uval;
   err = _gpgme_strtoul_field (field[7], &uval);
   if (err)
     goto inv_engine;
-  ti->lastseen = uval;
+  ti->signlast = uval;
+
+  if (nfield > 9)
+    {
+      /* This condition is only to allow for gpg 2.1.15 - can
+       * eventually be removed.  */
+      err = _gpgme_strtoul_field (field[8], &uval);
+      if (err)
+        goto inv_engine;
+      ti->encrfirst = uval;
+      err = _gpgme_strtoul_field (field[9], &uval);
+      if (err)
+        goto inv_engine;
+      ti->encrlast = uval;
+    }
 
   /* Ready.  */
   uid->tofu = ti;

@@ -291,9 +291,11 @@ main (int argc, char **argv)
                       ti->policy == GPGME_TOFU_POLICY_BAD? "bad" :
                       ti->policy == GPGME_TOFU_POLICY_ASK? "ask" : "?");
               printf ("   nsigs: %hu\n", ti->signcount);
+              printf ("   first: %s\n", isotimestr (ti->signfirst));
+              printf ("    last: %s\n", isotimestr (ti->signlast));
               printf ("   nencr: %hu\n", ti->encrcount);
-              printf ("   first: %s\n", isotimestr (ti->firstseen));
-              printf ("    last: %s\n", isotimestr (ti->lastseen));
+              printf ("   first: %s\n", isotimestr (ti->encrfirst));
+              printf ("    last: %s\n", isotimestr (ti->encrlast));
             }
         }
 
