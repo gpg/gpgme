@@ -88,9 +88,9 @@ if not os.path.exists(gpg_error_h):
 print("Building pyme3 using {} and {}.".format(gpgme_h, gpg_error_h))
 
 # Cleanup gpgme.h from deprecated functions and typedefs.
-subprocess.check_call(["python3", "gpgme-h-clean.py", gpgme_h],
+subprocess.check_call([sys.executable, "gpgme-h-clean.py", gpgme_h],
                       stdout=open("gpgme.h", "w"))
-subprocess.check_call(["python3", "gpgme-h-clean.py", gpg_error_h],
+subprocess.check_call([sys.executable, "gpgme-h-clean.py", gpg_error_h],
                       stdout=open("errors.i", "w"))
 
 include_dirs = [os.getcwd()]
