@@ -69,7 +69,7 @@ class TofuInfoTest: public QGpgMETest
     {
         Q_ASSERT(!orig.isNull());
         Q_ASSERT(!other.isNull());
-        Q_ASSERT(orig.lastSeen() == other.lastSeen());
+        Q_ASSERT(orig.signLast() == other.signLast());
         Q_ASSERT(orig.signCount() == other.signCount());
         Q_ASSERT(orig.validity() == other.validity());
         Q_ASSERT(orig.policy() == other.policy());
@@ -132,8 +132,8 @@ private Q_SLOTS:
         Q_ASSERT(tofu.isNull());
         Q_ASSERT(!tofu.description());
         Q_ASSERT(!tofu.signCount());
-        Q_ASSERT(!tofu.lastSeen());
-        Q_ASSERT(!tofu.firstSeen());
+        Q_ASSERT(!tofu.signLast());
+        Q_ASSERT(!tofu.signFirst());
         Q_ASSERT(tofu.validity() == TofuInfo::ValidityUnknown);
         Q_ASSERT(tofu.policy() == TofuInfo::PolicyUnknown);
     }
@@ -164,7 +164,7 @@ private Q_SLOTS:
         Q_ASSERT(sig.key().primaryFingerprint());
         Q_ASSERT(sig.fingerprint());
         Q_ASSERT(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
-        Q_ASSERT(stats.firstSeen() == stats.lastSeen());
+        Q_ASSERT(stats.signFirst() == stats.signLast());
         Q_ASSERT(stats.signCount() == 1);
         Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
         Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
@@ -188,7 +188,7 @@ private Q_SLOTS:
         stats = sig.key().userID(0).tofuInfo();
         Q_ASSERT(!stats.isNull());
         Q_ASSERT(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
-        Q_ASSERT(stats.firstSeen() == stats.lastSeen());
+        Q_ASSERT(stats.signFirst() == stats.signLast());
         Q_ASSERT(stats.signCount() == 1);
         Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
         Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
@@ -209,7 +209,7 @@ private Q_SLOTS:
         stats = sig.key().userID(0).tofuInfo();
         Q_ASSERT(!stats.isNull());
         Q_ASSERT(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
-        Q_ASSERT(stats.firstSeen() == stats.lastSeen());
+        Q_ASSERT(stats.signFirst() == stats.signLast());
         Q_ASSERT(stats.signCount() == 1);
         Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
         Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
