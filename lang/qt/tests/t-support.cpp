@@ -33,6 +33,11 @@
 
 #include <QTest>
 
+#include <QProcess>
+#include <QCoreApplication>
+#include <QObject>
+#include <QDir>
+
 void QGpgMETest::initTestCase()
 {
     const QString gpgHome = qgetenv("GNUPGHOME");

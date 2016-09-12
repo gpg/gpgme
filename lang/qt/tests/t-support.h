@@ -32,9 +32,6 @@
 #define T_SUPPORT_H
 
 #include "interfaces/passphraseprovider.h"
-#include <QtGlobal>
-#include <QProcess>
-#include <QCoreApplication>
 #include <QObject>
 
 namespace GpgME

@@ -33,6 +33,8 @@
 #include "qgpgmekeyformailboxjob.h"
 #include "qgpgmekeylistjob.h"
 
+#include <QStringList>
+
 #include <tuple>
 
 using namespace GpgME;
