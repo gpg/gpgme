@@ -191,14 +191,17 @@ _pyme_obj2gpgme_t(PyObject *input, const char *objtype, int argnum)
   pyname = PyObject_GetAttrString(input, "_ctype");
   if (pyname && PyUnicode_Check(pyname))
     {
-      if (strcmp(PyUnicode_AsUTF8(pyname), objtype) != 0)
+      PyObject *encoded = PyUnicode_AsUTF8String(pyname);
+      if (strcmp(PyBytes_AsString(encoded), objtype) != 0)
         {
           PyErr_Format(PyExc_TypeError,
                        "arg %d: Expected value of type %s, but got %s",
-                       argnum, objtype, PyUnicode_AsUTF8(pyname));
+                       argnum, objtype, PyBytes_AsString(encoded));
+          Py_DECREF(encoded);
           Py_DECREF(pyname);
           return NULL;
         }
+      Py_DECREF(encoded);
     }
   else
     return NULL;
@@ -334,6 +337,7 @@ static gpgme_error_t pyPassphraseCb(void *hook,
   PyObject *args = NULL;
   PyObject *retval = NULL;
   PyObject *dataarg = NULL;
+  PyObject *encoded = NULL;
   gpgme_error_t err_status = 0;
 
   _pyme_exception_init();
@@ -388,7 +392,17 @@ static gpgme_error_t pyPassphraseCb(void *hook,
       else if (PyUnicode_Check(retval))
         {
           Py_ssize_t ssize;
-          buf = PyUnicode_AsUTF8AndSize(retval, &ssize);
+          encoded = PyUnicode_AsUTF8String(retval);
+          if (encoded == NULL)
+            {
+              err_status = gpg_error(GPG_ERR_GENERAL);
+              goto leave;
+            }
+          if (PyBytes_AsStringAndSize(encoded, &buf, &ssize) == -1)
+            {
+              err_status = gpg_error(GPG_ERR_GENERAL);
+              goto leave;
+            }
           assert (! buf || ssize >= 0);
           len = (size_t) ssize;
         }
@@ -418,6 +432,7 @@ static gpgme_error_t pyPassphraseCb(void *hook,
   if (err_status)
     _pyme_stash_callback_exception(self);
 
+  Py_XDECREF(encoded);
   return err_status;
 }
 
@@ -676,10 +691,23 @@ gpgme_error_t _pyme_edit_cb(void *opaque, gpgme_status_code_t status,
     err_status = _pyme_exception2code();
   } else {
     if (fd>=0 && retval && PyUnicode_Check(retval)) {
+      PyObject *encoded = NULL;
       const char *buffer;
       Py_ssize_t size;
 
-      buffer = PyUnicode_AsUTF8AndSize(retval, &size);
+      encoded = PyUnicode_AsUTF8String(retval);
+      if (encoded == NULL)
+        {
+          err_status = gpg_error(GPG_ERR_GENERAL);
+          goto leave;
+        }
+      if (PyBytes_AsStringAndSize(encoded, &buffer, &size) == -1)
+        {
+          Py_DECREF(encoded);
+          err_status = gpg_error(GPG_ERR_GENERAL);
+          goto leave;
+        }
+
       if (write(fd, buffer, size) < 0) {
         err_status = gpgme_error_from_syserror ();
         _pyme_raise_exception (err_status);
@@ -688,8 +716,10 @@ gpgme_error_t _pyme_edit_cb(void *opaque, gpgme_status_code_t status,
         err_status = gpgme_error_from_syserror ();
         _pyme_raise_exception (err_status);
       }
+      Py_DECREF(encoded);
     }
   }
+ leave:
   if (err_status)
     _pyme_stash_callback_exception(self);
 

@@ -36,11 +36,16 @@
 
 
 /* Allow use of Unicode objects, bytes, and None for strings.  */
-%typemap(in) const char * {
+%typemap(in) const char *(PyObject *encodedInput = NULL) {
   if ($input == Py_None)
     $1 = NULL;
   else if (PyUnicode_Check($input))
-    $1 = PyUnicode_AsUTF8($input);
+    {
+      encodedInput = PyUnicode_AsUTF8String($input);
+      if (encodedInput == NULL)
+        return NULL;
+      $1 = PyBytes_AsString(encodedInput);
+    }
   else if (PyBytes_Check($input))
     $1 = PyBytes_AsString($input);
   else {
@@ -50,19 +55,35 @@
     return NULL;
   }
 }
-%typemap(freearg) const char * "";
+%typemap(freearg) const char * {
+  Py_XDECREF(encodedInput$argnum);
+}
 
 /* Likewise for a list of strings.  */
-%typemap(in) const char *[] (void *vector = NULL) {
+%typemap(in) const char *[] (void *vector = NULL,
+                             size_t size,
+                             PyObject **pyVector = NULL) {
   /* Check if is a list */
   if (PyList_Check($input)) {
-    size_t i, size = PyList_Size($input);
+    size_t i, j;
+    size = PyList_Size($input);
     $1 = (char **) (vector = malloc((size+1) * sizeof(char *)));
+    pyVector = calloc(sizeof *pyVector, size);
 
     for (i = 0; i < size; i++) {
       PyObject *o = PyList_GetItem($input,i);
       if (PyUnicode_Check(o))
-        $1[i] = PyUnicode_AsUTF8(o);
+        {
+          pyVector[i] = PyUnicode_AsUTF8String(o);
+          if (pyVector[i] == NULL)
+            {
+              free(vector);
+              for (j = 0; j < i; j++)
+                Py_XDECREF(pyVector[j]);
+              return NULL;
+            }
+          $1[i] = PyBytes_AsString(pyVector[i]);
+        }
       else if (PyString_Check(o))
 	$1[i] = PyString_AsString(o);
       else {
@@ -83,7 +104,10 @@
   }
 }
 %typemap(freearg) const char *[] {
+  size_t i;
   free(vector$argnum);
+  for (i = 0; i < size$argnum; i++)
+    Py_XDECREF(pyVector$argnum[i]);
 }
 
 // Release returned buffers as necessary.
@@ -296,13 +320,22 @@
 }
 
 /* For gpgme_data_write, but should be universal.  */
-%typemap(in) (const void *buffer, size_t size) {
+%typemap(in) (const void *buffer, size_t size)(PyObject *encodedInput = NULL) {
   Py_ssize_t ssize;
 
   if ($input == Py_None)
     $1 = NULL, $2 = 0;
   else if (PyUnicode_Check($input))
-    $1 = PyUnicode_AsUTF8AndSize($input, &ssize);
+    {
+      encodedInput = PyUnicode_AsUTF8String($input);
+      if (encodedInput == NULL)
+        return NULL;
+      if (PyBytes_AsStringAndSize(encodedInput, (char **) &$1, &ssize) == -1)
+        {
+          Py_DECREF(encodedInput);
+          return NULL;
+        }
+    }
   else if (PyBytes_Check($input))
     PyBytes_AsStringAndSize($input, (char **) &$1, &ssize);
   else {
@@ -320,7 +353,9 @@
       $2 = (size_t) ssize;
     }
 }
-%typemap(freearg) (const void *buffer, size_t size) "";
+%typemap(freearg) (const void *buffer, size_t size) {
+  Py_XDECREF(encodedInput$argnum);
+}
 
 // Make types containing 'next' field to be lists
 %ignore next;
