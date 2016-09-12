@@ -24,6 +24,7 @@
 #include <config.h>
 #endif
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,6 +34,11 @@
 #include "t-support.h"
 
 
+
+/* GnuPG prior to 2.1.13 did not report the critical flag
+   correctly.  */
+int have_correct_sig_data;
+
 static struct {
   const char *name;
   const char *value;
@@ -83,11 +89,17 @@ check_result (gpgme_verify_result_t result)
 	       && r->value
 	       && !strcmp (r->value, expected_notations[i].value)
 	       && r->value_len == strlen (expected_notations[i].value)
-	       && r->flags == expected_notations[i].flags
+	       && r->flags
+                  == (have_correct_sig_data
+                      ? expected_notations[i].flags
+                      : expected_notations[i].flags
+                        & ~GPGME_SIG_NOTATION_CRITICAL)
 	       && r->human_readable
 	       == !!(r->flags & GPGME_SIG_NOTATION_HUMAN_READABLE)
 	       && r->critical
-               == !!(r->flags & GPGME_SIG_NOTATION_CRITICAL))
+                  == (have_correct_sig_data
+                      ? !!(r->flags & GPGME_SIG_NOTATION_CRITICAL)
+                      : 0))
 	    {
 	      expected_notations[i].seen++;
 	      any++;
@@ -121,8 +133,24 @@ main (int argc, char *argv[])
   gpgme_verify_result_t result;
   char *agent_info;
   int i;
+  gpgme_engine_info_t engine_info;
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
+  err = gpgme_get_engine_info (&engine_info);
+  fail_if_err (err);
+  for (; engine_info; engine_info = engine_info->next)
+    if (engine_info->protocol == GPGME_PROTOCOL_OpenPGP)
+      break;
+  assert (engine_info);
+
+  /* GnuPG prior to 2.1.13 did not report the critical flag
+     correctly.  */
+  have_correct_sig_data =
+    ! (strncmp ("1.", engine_info->version, 2)
+       || (strncmp ("2.1.1", engine_info->version, 5)
+           && (engine_info->version[5] == 0
+               || engine_info->version[5] < '3')));
 
   err = gpgme_new (&ctx);
   fail_if_err (err);

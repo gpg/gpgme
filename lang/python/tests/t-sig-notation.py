@@ -29,6 +29,14 @@ expected_notations = {
     None: ("http://www.gnu.org/policy/", 0),
 }
 
+# GnuPG prior to 2.1.13 did not report the critical flag correctly.
+with core.Context() as c:
+    version = c.engine_info.version
+    have_correct_sig_data = not (version.startswith("1.")
+                                 or version == "2.1.1"
+                                 or (version.startswith("2.1.1")
+                                     and version[5] < '3'))
+
 def check_result(result):
     assert len(result.signatures) == 1, "Unexpected number of signatures"
     sig = result.signatures[0]
@@ -45,7 +53,8 @@ def check_result(result):
         assert r.human_readable \
             == bool(flags&constants.SIG_NOTATION_HUMAN_READABLE)
         assert r.critical \
-            == bool(flags&constants.SIG_NOTATION_CRITICAL)
+            == (bool(flags&constants.SIG_NOTATION_CRITICAL)
+                if have_correct_sig_data else False)
 
     assert len(expected_notations) == 0
 
