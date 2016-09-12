@@ -45,7 +45,8 @@ class GpgmeWrapper(object):
         self.wrapped = wrapped
 
     def __repr__(self):
-        return '<{}/{!r}>'.format(super().__repr__(), self.wrapped)
+        return '<{}/{!r}>'.format(super(GpgmeWrapper, self).__repr__(),
+                                  self.wrapped)
 
     def __str__(self):
         acc = ['{}.{}'.format(__name__, self.__class__.__name__)]
@@ -153,7 +154,7 @@ class GpgmeWrapper(object):
         if key in self._boolean_properties:
             self.__wrap_boolean_property(key, True, value)
         else:
-            super().__setattr__(key, value)
+            super(GpgmeWrapper, self).__setattr__(key, value)
 
 class Context(GpgmeWrapper):
     """Context for cryptographic operations
@@ -191,7 +192,7 @@ class Context(GpgmeWrapper):
             wrapped = gpgme.gpgme_ctx_t_p_value(tmp)
             gpgme.delete_gpgme_ctx_t_p(tmp)
             self.own = True
-        super().__init__(wrapped)
+        super(Context, self).__init__(wrapped)
         self.armor = armor
         self.textmode = textmode
         self.offline = offline
@@ -873,7 +874,7 @@ class Data(GpgmeWrapper):
         that file.
 
         """
-        super().__init__(None)
+        super(Data, self).__init__(None)
         self.data_cbs = None
 
         if cbs != None:
