@@ -43,16 +43,21 @@ if os.path.exists("../../src/gpgme-config"):
         IN_TREE_BUILD=1,
     )
 
+if hasattr(subprocess, "DEVNULL"):
+    devnull = subprocess.DEVNULL
+else:
+    devnull = open(os.devnull, "w")
+
 try:
     subprocess.check_call([gpg_error_config, '--version'],
-                          stdout=subprocess.DEVNULL)
+                          stdout=devnull)
 except:
     sys.exit("Could not find gpg-error-config.  " +
              "Please install the libgpg-error development package.")
 
 try:
     subprocess.check_call([gpgme_config, '--version'],
-                          stdout=subprocess.DEVNULL)
+                          stdout=devnull)
 except:
     sys.exit("Could not find gpgme-config.  " +
              "Please install the libgpgme development package.")
