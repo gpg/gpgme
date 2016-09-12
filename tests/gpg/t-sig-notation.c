@@ -147,8 +147,8 @@ main (int argc, char *argv[])
   /* GnuPG prior to 2.1.13 did not report the critical flag
      correctly.  */
   have_correct_sig_data =
-    ! (strncmp ("1.", engine_info->version, 2)
-       || (strncmp ("2.1.1", engine_info->version, 5)
+    ! (strncmp ("1.", engine_info->version, 2) == 0
+       || (strncmp ("2.1.1", engine_info->version, 5) == 0
            && (engine_info->version[5] == 0
                || engine_info->version[5] < '3')));
 
