@@ -187,7 +187,7 @@ old_user_read (gpgme_data_t dh, void *buffer, size_t size)
 				 buffer, size, &amt);
   if (err)
     return TRACE_SYSRES (gpgme_error_to_errno (err));
-  return TRACE_SYSRES (amt);
+  return TRACE_SYSRES ((gpgme_ssize_t)amt);
 }
 
 
