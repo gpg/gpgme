@@ -7,12 +7,12 @@
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -172,8 +172,8 @@ dump_opt (gpgme_conf_opt_t opt)
     {
       if (opt->argname)
 	{
-	  char *more = (opt->flags & GPGME_CONF_LIST) ? "..." : "";
-      
+	  const char *more = (opt->flags & GPGME_CONF_LIST) ? "..." : "";
+
 	  if (opt->flags & GPGME_CONF_OPTIONAL)
 	    {
 	      printf ("%c%c --%s [%s%s] %s", level, runtime, opt->name, opt->argname, more,
@@ -187,7 +187,7 @@ dump_opt (gpgme_conf_opt_t opt)
 	}
       else
 	printf ("%c%c --%s%s", level, runtime, opt->name, spaces (opt->name, 5));
-      
+
       if (opt->description)
 	printf ("%s", opt->description);
       printf ("\n");
@@ -250,8 +250,8 @@ dump_comp (gpgme_conf_comp_t comp)
 }
 
 
-int 
-main (int argc, char **argv)
+int
+main (void)
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;
@@ -302,13 +302,13 @@ main (int argc, char **argv)
 	opt = comp->options;
 	while (opt && strcmp (opt->name, "verbose"))
 	  opt = opt->next;
-	
+
 	/* Allow for the verbose option not to be there.  */
 	if (opt)
 	  {
 	    err = gpgme_conf_opt_change (opt, 0, arg);
 	    fail_if_err (err);
-	    
+
 	    err = gpgme_op_conf_save (ctx, comp);
 	    fail_if_err (err);
 	  }

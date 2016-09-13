@@ -43,6 +43,9 @@ main (int argc, char *argv[])
   gpgme_key_t key[3] = { NULL, NULL, NULL };
   gpgme_encrypt_result_t result;
 
+  (void)argc;
+  (void)argv;
+
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
   err = gpgme_new (&ctx);

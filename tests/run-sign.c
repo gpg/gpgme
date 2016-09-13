@@ -51,6 +51,8 @@ print_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
   gpgme_invalid_key_t invkey;
   gpgme_new_signature_t sig;
 
+  (void)type;
+
   for (invkey = result->invalid_signers; invkey; invkey = invkey->next)
     printf ("Signing key `%s' not used: %s <%s>\n",
             nonnull (invkey->fpr),

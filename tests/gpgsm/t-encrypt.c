@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -33,8 +33,8 @@
 
 #include "t-support.h"
 
-int 
-main (int argc, char **argv)
+int
+main (void)
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;
@@ -54,7 +54,7 @@ main (int argc, char **argv)
 
   err = gpgme_data_new (&out);
   fail_if_err (err);
-    
+
   err = gpgme_get_key (ctx, "3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E",
 		       &key[0], 0);
   fail_if_err (err);

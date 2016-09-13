@@ -86,6 +86,8 @@ read_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
   unsigned int amount = strlen (text) - off;
   /*  round_t round = *((round_t *) cb_value);  */
 
+  (void)cb_value;
+
   if (!buffer && !count && !nread)
     {
       /* Rewind requested.  */
@@ -190,8 +192,9 @@ write_test (round_t round, gpgme_data_t data)
     }
 }
 
+
 int
-main (int argc, char **argv)
+main (void)
 {
   round_t round = TEST_INITIALIZER;
   char *text_filename = make_filename ("t-data-1.txt");

@@ -36,20 +36,20 @@
 
 struct
 {
-  char *fpr;
-  char *sec_keyid;
+  const char *fpr;
+  const char *sec_keyid;
   struct
   {
-    char *name;
-    char *comment;
-    char *email;
+    const char *name;
+    const char *comment;
+    const char *email;
     struct
     {
       gpgme_pubkey_algo_t algo;
-      char *keyid;
-      char *name;
-      char *comment;
-      char *email;
+      const char *keyid;
+      const char *name;
+      const char *comment;
+      const char *email;
       unsigned int sig_class;
       int exportable;
     } sig;
@@ -72,7 +72,7 @@ keys[] =
 
 
 int
-main (int argc, char **argv)
+main (void)
 {
   gpgme_error_t err;
   gpgme_ctx_t ctx;

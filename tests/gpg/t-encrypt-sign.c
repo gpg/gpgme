@@ -94,6 +94,9 @@ main (int argc, char **argv)
   gpgme_sign_result_t sign_result;
   char *agent_info;
 
+  (void)argc;
+  (void)argv;
+
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
   err = gpgme_new (&ctx);

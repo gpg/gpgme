@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -36,13 +36,13 @@
 
 struct key_info_s
 {
-  char *fpr;
-  char *sec_keyid;
+  const char *fpr;
+  const char *sec_keyid;
   struct
   {
-    char *name;
-    char *comment;
-    char *email;
+    const char *name;
+    const char *comment;
+    const char *email;
   } uid[3];
   int n_subkeys;
   void (*misc_check)(struct key_info_s *keyinfo, gpgme_key_t key);
@@ -121,7 +121,7 @@ struct key_info_s keys[] =
   };
 
 
-int 
+int
 main (int argc, char **argv)
 {
   gpgme_error_t err;
@@ -132,6 +132,9 @@ main (int argc, char **argv)
   int n;
   gpgme_subkey_t subkey;
 
+  (void)argc;
+  (void)argv;
+
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
   err = gpgme_new (&ctx);
@@ -139,7 +142,7 @@ main (int argc, char **argv)
 
   err = gpgme_op_keylist_start (ctx, NULL, 0);
   fail_if_err (err);
-    
+
   while (!(err = gpgme_op_keylist_next (ctx, &key)))
     {
       if (!keys[i].fpr)
@@ -223,7 +226,7 @@ main (int argc, char **argv)
 	  exit (1);
 	}
 
-      for (n=0, subkey = key->subkeys; subkey; subkey = subkey->next) 
+      for (n=0, subkey = key->subkeys; subkey; subkey = subkey->next)
         n++;
       if (!n || n-1 != keys[i].n_subkeys)
 	{
@@ -583,7 +586,7 @@ check_whisky (struct key_info_s *keyinfo, gpgme_key_t key)
 {
   const char *name = keyinfo->uid[0].name;
   gpgme_subkey_t sub1, sub2;
-  
+
   sub1 = key->subkeys->next->next;
   sub2 = sub1->next;
 

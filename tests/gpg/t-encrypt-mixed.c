@@ -34,7 +34,7 @@
    that an encrypted message can be decrypted without the
    secret key but that the recipient is also set correctly. */
 int
-main (int argc, char *argv[])
+main (void)
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;

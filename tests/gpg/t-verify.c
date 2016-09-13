@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -77,7 +77,7 @@ static const char test_sig2[] =
 "-----END PGP MESSAGE-----\n";
 
 /* A message with a prepended but unsigned plaintext packet. */
-static const char double_plaintext_sig[] = 
+static const char double_plaintext_sig[] =
 "-----BEGIN PGP MESSAGE-----\n"
 "\n"
 "rDRiCmZvb2Jhci50eHRF4pxNVGhpcyBpcyBteSBzbmVha3kgcGxhaW50ZXh0IG1l\n"
@@ -92,7 +92,8 @@ static const char double_plaintext_sig[] =
 
 
 static void
-check_result (gpgme_verify_result_t result, unsigned int summary, char *fpr,
+check_result (gpgme_verify_result_t result, unsigned int summary,
+              const char *fpr,
 	      gpgme_error_t status, int notation)
 {
   gpgme_signature_t sig;
@@ -135,7 +136,7 @@ check_result (gpgme_verify_result_t result, unsigned int summary, char *fpr,
           " das waren Umlaute und jetzt ein prozent%-Zeichen" },
         { "foobar.1",
 	  "this is a notation data with 2 lines" },
-        { NULL, 
+        { NULL,
 	  "http://www.gu.org/policy/" }
       };
       int i;
@@ -201,13 +202,16 @@ check_result (gpgme_verify_result_t result, unsigned int summary, char *fpr,
 }
 
 
-int 
+int
 main (int argc, char *argv[])
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;
   gpgme_data_t sig, text;
   gpgme_verify_result_t result;
+
+  (void)argc;
+  (void)argv;
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 

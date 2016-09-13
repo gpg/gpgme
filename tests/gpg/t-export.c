@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -35,7 +35,7 @@
 #include "t-support.h"
 
 
-int 
+int
 main (int argc, char **argv)
 {
   gpgme_ctx_t ctx;
@@ -43,6 +43,9 @@ main (int argc, char **argv)
   gpgme_data_t  out;
   const char *pattern[] = { "Alpha", "Bob", NULL };
   gpgme_key_t keyarray[3];
+
+  (void)argc;
+  (void)argv;
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
@@ -60,7 +63,7 @@ main (int argc, char **argv)
   fputs ("Begin Result:\n", stdout);
   print_data (out);
   fputs ("End Result.\n", stdout);
-   
+
   gpgme_data_release (out);
 
   /* Again. Now using a key array.  */
@@ -84,11 +87,11 @@ main (int argc, char **argv)
   fputs ("Begin Result:\n", stdout);
   print_data (out);
   fputs ("End Result.\n", stdout);
-   
+
   gpgme_data_release (out);
 
 
   gpgme_release (ctx);
-   
+
   return 0;
 }

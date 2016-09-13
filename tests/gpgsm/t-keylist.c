@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -36,15 +36,15 @@
 
 struct
 {
-  char *fpr;
+  const char *fpr;
   int secret;
   long timestamp;
   long expires;
-  char *issuer_serial;
-  char *issuer_name;
-  char *chain_id;
-  char *uid;
-  char *email;
+  const char *issuer_serial;
+  const char *issuer_name;
+  const char *chain_id;
+  const char *uid;
+  const char *email;
   gpgme_validity_t validity;
   unsigned int key_length;
 }
@@ -80,8 +80,8 @@ keys[] =
   };
 
 
-int 
-main (int argc, char **argv)
+int
+main (void)
 {
   gpgme_error_t err;
   gpgme_ctx_t ctx;
@@ -97,7 +97,7 @@ main (int argc, char **argv)
 
   err = gpgme_op_keylist_start (ctx, NULL, 0);
   fail_if_err (err);
-    
+
   while (!(err = gpgme_op_keylist_next (ctx, &key)))
     {
       if (!keys[i].fpr)

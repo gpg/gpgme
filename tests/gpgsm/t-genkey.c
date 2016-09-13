@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -40,6 +40,8 @@ static int progress_called;
 static void
 progress (void *self, const char *what, int type, int current, int total)
 {
+  (void)self;
+
   if (!strcmp (what, "primegen") && !current && !total
       && (type == '.' || type == '+' || type == '!'
 	  || type == '^' || type == '<' || type == '>'))
@@ -57,8 +59,8 @@ progress (void *self, const char *what, int type, int current, int total)
 }
 
 
-int 
-main (int argc, char *argv[])
+int
+main (void)
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;
@@ -83,7 +85,7 @@ main (int argc, char *argv[])
   gpgme_set_armor (ctx, 1);
 
   gpgme_set_progress_cb (ctx, progress, NULL);
-  
+
   err = gpgme_op_genkey (ctx, parms, certreq, NULL);
   fail_if_err (err);
 

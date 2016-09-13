@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -36,9 +36,11 @@
 
 
 void
-check_result (gpgme_import_result_t result, char *fpr, int total,
+check_result (gpgme_import_result_t result, const char *fpr, int total,
 	      int total_stat)
 {
+  (void)fpr;
+
   if (result->considered != total)
     {
       fprintf (stderr, "Unexpected number of considered keys %i\n",
@@ -118,14 +120,14 @@ check_result (gpgme_import_result_t result, char *fpr, int total,
 	       result->not_imported);
       exit (1);
     }
-  
+
   {
     int n;
     gpgme_import_status_t r;
 
     for (n=0, r=result->imports; r; r=r->next)
       n++;
-      
+
     if (n != total_stat)
     {
       fprintf (stderr, "Unexpected number of status reports\n");
@@ -135,8 +137,8 @@ check_result (gpgme_import_result_t result, char *fpr, int total,
 }
 
 
-int 
-main (int argc, char **argv)
+int
+main (void)
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;
@@ -149,7 +151,7 @@ main (int argc, char **argv)
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
-  
+
   gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
 
   err = gpgme_data_new_from_file (&in, cert_1, 1);

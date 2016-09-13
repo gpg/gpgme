@@ -3,17 +3,17 @@
    Copyright (C) 2001, 2003, 2004 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -68,7 +68,7 @@ thread_one (void *name)
       err = gpgme_get_key (ctx, "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2",
 			   &key[1], 0);
       fail_if_err (err);
-      
+
       err = gpgme_op_encrypt (ctx, key, GPGME_ENCRYPT_ALWAYS_TRUST, in, out);
       fail_if_err (err);
       result = gpgme_op_encrypt_result (ctx);
@@ -119,7 +119,7 @@ thread_two (void *name)
 
       err = gpgme_data_new (&out);
       fail_if_err (err);
-      
+
       err = gpgme_op_decrypt (ctx, in, out);
       fail_if_err (err);
       result = gpgme_op_decrypt_result (ctx);
@@ -130,7 +130,7 @@ thread_two (void *name)
 	  exit (1);
 	}
       printf ("Decrypt %s %i\n", (char *) name, i);
-   
+
       gpgme_data_release (in);
       gpgme_data_release (out);
       gpgme_release (ctx);
@@ -139,16 +139,18 @@ thread_two (void *name)
   return NULL;
 }
 
-int 
-main (int argc, char *argv[])
+int
+main (void)
 {
   pthread_t tone;
   pthread_t ttwo;
+  char arg_A[] = "A";
+  char arg_B[] = "B";
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
-  pthread_create (&tone, NULL, thread_one, "A");
-  pthread_create (&ttwo, NULL, thread_two, "B");
+  pthread_create (&tone, NULL, thread_one, arg_A);
+  pthread_create (&ttwo, NULL, thread_two, arg_B);
 
   pthread_join (tone, NULL);
   pthread_join (ttwo, NULL);

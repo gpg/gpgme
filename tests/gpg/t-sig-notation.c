@@ -2,17 +2,17 @@
    Copyright (C) 2005 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -44,14 +44,14 @@ static struct {
   const char *value;
   gpgme_sig_notation_flags_t flags;
   int seen;
-} expected_notations[] = { 
+} expected_notations[] = {
   { "laughing@me",
     "Just Squeeze Me",
     GPGME_SIG_NOTATION_HUMAN_READABLE },
   { "preferred-email-encoding@pgp.com",
     "pgpmime",
     GPGME_SIG_NOTATION_HUMAN_READABLE | GPGME_SIG_NOTATION_CRITICAL },
-  { NULL, 
+  { NULL,
     "http://www.gnu.org/policy/",
     0 }
 };
@@ -61,7 +61,7 @@ check_result (gpgme_verify_result_t result)
 {
   int i;
   gpgme_sig_notation_t r;
-  
+
   gpgme_signature_t sig;
 
   sig = result->signatures;
@@ -74,7 +74,7 @@ check_result (gpgme_verify_result_t result)
 
   for (i=0; i < DIM(expected_notations); i++ )
     expected_notations[i].seen = 0;
-  
+
   for (r = result->signatures->notations; r; r = r->next)
     {
       int any = 0;
@@ -124,7 +124,7 @@ check_result (gpgme_verify_result_t result)
 }
 
 
-int 
+int
 main (int argc, char *argv[])
 {
   gpgme_ctx_t ctx;
@@ -134,6 +134,9 @@ main (int argc, char *argv[])
   char *agent_info;
   int i;
   gpgme_engine_info_t engine_info;
+
+  (void)argc;
+  (void)argv;
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
@@ -172,7 +175,7 @@ main (int argc, char *argv[])
 				    expected_notations[i].flags);
       fail_if_err (err);
     }
-  
+
   err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_NORMAL);
   fail_if_err (err);
 

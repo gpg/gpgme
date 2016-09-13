@@ -7,12 +7,12 @@
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -46,9 +46,12 @@
 static gpgme_error_t
 data_cb (void *opaque, const void *data, size_t datalen)
 {
+  (void)opaque;
+  (void)data;
+
   printf ("DATA_CB: datalen=%d\n", (int)datalen);
   return 0;
-}     
+}
 
 
 static gpgme_error_t
@@ -58,12 +61,14 @@ inq_cb (void *opaque, const char *name, const char *args,
   gpgme_data_t data;
   gpgme_error_t err;
 
+  (void)opaque;
+
   if (name)
     {
       printf ("INQ_CB: name=`%s' args=`%s'\n", name, args);
       /* There shall be no data object.  */
       assert (!*r_data);
-      
+
       err = gpgme_data_new (&data);
       fail_if_err (err);
       *r_data = data;
@@ -85,19 +90,21 @@ inq_cb (void *opaque, const char *name, const char *args,
 
 
   return 0;
-}     
+}
 
 
 static gpgme_error_t
 status_cb (void *opaque, const char *status, const char *args)
 {
+  (void)opaque;
+
   printf ("STATUS_CB: status=`%s'  args=`%s'\n", status, args);
   return 0;
-}     
+}
 
 
 
-int 
+int
 main (int argc, char **argv)
 {
   gpgme_error_t err;
@@ -118,7 +125,7 @@ main (int argc, char **argv)
       argv++;
     }
   command = argc? *argv : "NOP";
-  
+
 
   err = gpgme_new (&ctx);
   fail_if_err (err);

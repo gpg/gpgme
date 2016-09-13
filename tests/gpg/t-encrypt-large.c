@@ -2,17 +2,17 @@
    Copyright (C) 2005 g10 Code GmbH
 
    This file is part of GPGME.
- 
+
    GPGME is free software; you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as
    published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
-   
+
    GPGME is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -50,7 +50,7 @@ read_cb (void *handle, void *buffer, size_t size)
 
   for (; size && parms->bytes_to_send; size--, parms->bytes_to_send--)
     *p++ = rand ();
-      
+
   return (p - (char*)buffer);
 }
 
@@ -59,6 +59,8 @@ static ssize_t
 write_cb (void *handle, const void *buffer, size_t size)
 {
   struct cb_parms *parms = handle;
+
+  (void)buffer;
 
   parms->bytes_received += size;
 
@@ -70,13 +72,18 @@ static void
 progress_cb (void *opaque, const char *what, int type, int current, int total)
 {
   /* This is just a dummy. */
+  (void)opaque;
+  (void)what;
+  (void)type;
+  (void)current;
+  (void)total;
 }
 
 
 
 
 
-int 
+int
 main (int argc, char *argv[])
 {
   gpgme_ctx_t ctx;
@@ -94,7 +101,7 @@ main (int argc, char *argv[])
     nbytes = 100000;
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
-    
+
   memset (&cbs, 0, sizeof cbs);
   cbs.read = read_cb;
   cbs.write = write_cb;
@@ -131,7 +138,7 @@ main (int argc, char *argv[])
 	       result->invalid_recipients->fpr);
       exit (1);
     }
-  printf ("plaintext=%u bytes, ciphertext=%u bytes\n", 
+  printf ("plaintext=%u bytes, ciphertext=%u bytes\n",
           (unsigned int)nbytes, (unsigned int)parms.bytes_received);
 
   gpgme_key_unref (key[0]);

@@ -37,7 +37,7 @@
 
 static void
 check_verify_result (gpgme_verify_result_t result, unsigned int summary,
-		     char *fpr, gpgme_error_t status)
+		     const char *fpr, gpgme_error_t status)
 {
   gpgme_signature_t sig;
 
@@ -103,6 +103,9 @@ main (int argc, char *argv[])
   gpgme_verify_result_t verify_result;
   char *cipher_2_asc = make_filename ("cipher-2.asc");
   char *agent_info;
+
+  (void)argc;
+  (void)argv;
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
