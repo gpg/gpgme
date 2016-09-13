@@ -229,5 +229,8 @@ EXPORTS
 
     gpgme_data_set_flag                   @171
 
+    gpgme_op_createkey_start              @172
+    gpgme_op_createkey                    @173
+
 ; END
 

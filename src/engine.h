@@ -108,6 +108,10 @@ gpgme_error_t _gpgme_engine_op_export_ext (engine_t engine,
 					   gpgme_data_t keydata,
 					   int use_armor);
 gpgme_error_t _gpgme_engine_op_genkey (engine_t engine,
+                                       const char *userid, const char *algo,
+                                       unsigned long reserved,
+                                       unsigned long expires,
+                                       gpgme_key_t key, unsigned int flags,
 				       gpgme_data_t help_data,
 				       int use_armor, gpgme_data_t pubkey,
 				       gpgme_data_t seckey);

@@ -773,7 +773,11 @@ _gpgme_engine_op_export_ext (engine_t engine, const char *pattern[],
 
 
 gpgme_error_t
-_gpgme_engine_op_genkey (engine_t engine, gpgme_data_t help_data,
+_gpgme_engine_op_genkey (engine_t engine,
+                         const char *userid, const char *algo,
+                         unsigned long reserved, unsigned long expires,
+                         gpgme_key_t key, unsigned int flags,
+                         gpgme_data_t help_data,
 			 int use_armor, gpgme_data_t pubkey,
 			 gpgme_data_t seckey)
 {
@@ -783,7 +787,9 @@ _gpgme_engine_op_genkey (engine_t engine, gpgme_data_t help_data,
   if (!engine->ops->genkey)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->genkey) (engine->engine, help_data, use_armor,
+  return (*engine->ops->genkey) (engine->engine,
+                                 userid, algo, reserved, expires, key, flags,
+                                 help_data, use_armor,
 				 pubkey, seckey);
 }
 

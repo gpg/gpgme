@@ -1815,6 +1815,18 @@ gpgme_error_t gpgme_op_export_keys (gpgme_ctx_t ctx,
  * Key generation.
  */
 
+/* Flags for the key creation functions.  */
+#define GPGME_CREATE_SIGN       (1 << 0)  /* Allow usage: signing.     */
+#define GPGME_CREATE_ENCR       (1 << 1)  /* Allow usage: encryption.  */
+#define GPGME_CREATE_CERT       (1 << 2)  /* Allow usage: certification.  */
+#define GPGME_CREATE_AUTH       (1 << 3)  /* Allow usage: authentication.  */
+#define GPGME_CREATE_NOPASSWD   (1 << 7)  /* Create w/o passphrase.    */
+#define GPGME_CREATE_SELFSIGNED (1 << 8)  /* Create self-signed cert.  */
+#define GPGME_CREATE_NOSTORE    (1 << 9)  /* Do not store the key.     */
+#define GPGME_CREATE_WANTPUB    (1 << 10) /* Return the public key.    */
+#define GPGME_CREATE_WANTSEC    (1 << 11) /* Return the secret key.    */
+#define GPGME_CREATE_FORCE      (1 << 12) /* Force creation.           */
+
 struct _gpgme_op_genkey_result
 {
   /* A primary key was generated.  */
@@ -1828,6 +1840,14 @@ struct _gpgme_op_genkey_result
 
   /* The fingerprint of the generated key.  */
   char *fpr;
+
+  /* A memory data object with the created public key.  Only set when
+   * GPGME_CREATE_WANTPUB has been used. */
+  gpgme_data_t pubkey;
+
+  /* A memory data object with the created secret key.  Only set when
+   * GPGME_CREATE_WANTSEC has been used. */
+  gpgme_data_t seckey;
 };
 typedef struct _gpgme_op_genkey_result *gpgme_genkey_result_t;
 
@@ -1839,7 +1859,39 @@ gpgme_error_t gpgme_op_genkey_start (gpgme_ctx_t ctx, const char *parms,
 gpgme_error_t gpgme_op_genkey (gpgme_ctx_t ctx, const char *parms,
 			       gpgme_data_t pubkey, gpgme_data_t seckey);
 
-/* Retrieve a pointer to the result of the genkey operation.  */
+/* Generate a key pair using the modern interface.  */
+gpgme_error_t gpgme_op_createkey_start (gpgme_ctx_t ctx,
+                                        const char *userid,
+                                        const char *algo,
+                                        unsigned long reserved,
+                                        unsigned long expires,
+                                        gpgme_key_t certkey,
+                                        unsigned int flags);
+gpgme_error_t gpgme_op_createkey       (gpgme_ctx_t ctx,
+                                        const char *userid,
+                                        const char *algo,
+                                        unsigned long reserved,
+                                        unsigned long expires,
+                                        gpgme_key_t certkey,
+                                        unsigned int flags);
+/* Add a new subkey to KEY.  */
+gpgme_error_t gpgme_op_createsubkey_start (gpgme_ctx_t ctx,
+                                           gpgme_key_t key,
+                                           const char *algo,
+                                           unsigned long reserved,
+                                           unsigned long expires,
+                                           unsigned int flags);
+gpgme_error_t gpgme_op_createsubkey       (gpgme_ctx_t ctx,
+                                           gpgme_key_t key,
+                                           const char *algo,
+                                           unsigned long reserved,
+                                           unsigned long expires,
+                                           unsigned int flags);
+
+
+
+/* Retrieve a pointer to the result of a genkey, createkey, or
+ * createsubkey operation.  */
 gpgme_genkey_result_t gpgme_op_genkey_result (gpgme_ctx_t ctx);
 
 
@@ -2177,7 +2229,7 @@ typedef struct gpgme_conf_arg
 } *gpgme_conf_arg_t;
 
 
-/* The flags of a configuration option.  See the gpg-conf
+/* The flags of a configuration option.  See the gpgconf
    documentation for details.  */
 #define GPGME_CONF_GROUP	(1 << 0)
 #define GPGME_CONF_OPTIONAL	(1 << 1)

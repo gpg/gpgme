@@ -15,6 +15,9 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  GPGME_PK_EDDSA                 NEW.
  gpgme_set_ctx_flag             NEW.
  gpgme_data_set_flag            NEW.
+ gpgme_op_createkey             NEW.
+ gpgme_op_createkey_start       NEW.
+ gpgme_genkey_result_t          EXTENDED: New fields pubkey and seckey.
  gpgme_signature_t              EXTENDED: New field key.
  gpgme_key_t                    EXTENDED: New field fpr.
  gpgme_subkey_t                 EXTENDED: New field keygrip.
@@ -31,6 +34,16 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  GPGME_DATA_TYPE_PGP_SIGNATURE  NEW.
  GPGME_DATA_ENCODING_MIME       NEW.
  GPGME_ENCRYPT_SYMMETRIC        NEW.
+ GPGME_CREATE_SIGN              NEW.
+ GPGME_CREATE_ENCR              NEW.
+ GPGME_CREATE_CERT              NEW.
+ GPGME_CREATE_AUTH              NEW.
+ GPGME_CREATE_NOPASSWD          NEW.
+ GPGME_CREATE_SELFSIGNED        NEW.
+ GPGME_CREATE_NOSTORE           NEW.
+ GPGME_CREATE_WANTPUB           NEW.
+ GPGME_CREATE_WANTSEC           NEW.
+ GPGME_CREATE_FORCE             NEW.
 
 
 Noteworthy changes in version 1.6.0 (2015-08-26) [C25/A14/R0]

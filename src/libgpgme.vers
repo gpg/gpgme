@@ -101,6 +101,10 @@ GPGME_1.1 {
 
     gpgme_pubkey_algo_string;
     gpgme_set_ctx_flag;
+    gpgme_data_set_flag;
+
+    gpgme_op_createkey_start;
+    gpgme_op_createkey;
 };
 
 
@@ -229,8 +233,6 @@ GPGME_1.0 {
 
     gpgme_err_code_from_syserror;
     gpgme_err_set_errno;
-
-    gpgme_data_set_flag;
 
   local:
     *;

@@ -34,7 +34,7 @@
 /* Local operation data.  */
 typedef struct
 {
-  gpg_error_t err;  /* Error encountred during the export.  */
+  gpg_error_t err;  /* Error encountered during the export.  */
 } *op_data_t;
 
 

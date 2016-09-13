@@ -1964,21 +1964,10 @@ gpg_export_ext (void *engine, const char *pattern[], gpgme_export_mode_t mode,
 
 
 static gpgme_error_t
-gpg_genkey (void *engine, gpgme_data_t help_data, int use_armor,
-	    gpgme_data_t pubkey, gpgme_data_t seckey)
+gpg_createkey_from_param (engine_gpg_t gpg,
+                          gpgme_data_t help_data, int use_armor)
 {
-  engine_gpg_t gpg = engine;
   gpgme_error_t err;
-
-  if (!gpg)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  /* We need a special mechanism to get the fd of a pipe here, so that
-     we can use this for the %pubring and %secring parameters.  We
-     don't have this yet, so we implement only the adding to the
-     standard keyrings.  */
-  if (pubkey || seckey)
-    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   err = add_arg (gpg, "--gen-key");
   if (!err && use_armor)
@@ -1987,9 +1976,156 @@ gpg_genkey (void *engine, gpgme_data_t help_data, int use_armor,
     err = add_arg (gpg, "--");
   if (!err)
     err = add_data (gpg, help_data, -1, 0);
+  if (!err)
+    err = start (gpg);
+  return err;
+}
+
+
+/* This is used for gpg versions which do not support the quick-genkey
+ * command to emulate the gpgme_op_createkey API.  */
+static gpgme_error_t
+gpg_createkey_legacy (engine_gpg_t gpg,
+               const char *userid, const char *algo,
+               unsigned long expires,
+               unsigned int flags,
+               int use_armor)
+{
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
+
+
+static gpgme_error_t
+gpg_createkey (engine_gpg_t gpg,
+               const char *userid, const char *algo,
+               unsigned long expires,
+               unsigned int flags,
+               int use_armor)
+{
+  gpgme_error_t err;
+
+  err = add_arg (gpg, "--quick-gen-key");
+  if (!err && use_armor)
+    err = add_arg (gpg, "--armor");
+  if (!err && (flags & GPGME_CREATE_NOPASSWD))
+    {
+      err = add_arg (gpg, "--passphrase");
+      if (!err)
+        err = add_arg (gpg, "");
+    }
+  if (!err && (flags & GPGME_CREATE_FORCE))
+    err = add_arg (gpg, "--yes");
+  if (!err)
+    err = add_arg (gpg, "--");
+  if (!err)
+    err = add_arg (gpg, userid);
+
+  /* This condition is only required to allow the use of gpg < 2.1.16 */
+  if (algo
+      || (flags & (GPGME_CREATE_SIGN | GPGME_CREATE_ENCR
+                   | GPGME_CREATE_CERT | GPGME_CREATE_AUTH))
+      || expires)
+    {
+
+      if (!err)
+        err = add_arg (gpg, algo? algo : "default");
+      if (!err)
+        {
+          char tmpbuf[5*4+1];
+          snprintf (tmpbuf, sizeof tmpbuf, "%s%s%s%s",
+                    (flags & GPGME_CREATE_SIGN)? " sign":"",
+                    (flags & GPGME_CREATE_ENCR)? " encr":"",
+                    (flags & GPGME_CREATE_CERT)? " cert":"",
+                    (flags & GPGME_CREATE_AUTH)? " auth":"");
+          err = add_arg (gpg, *tmpbuf? tmpbuf : "default");
+        }
+      if (!err && expires)
+        {
+          char tmpbuf[8+20];
+          snprintf (tmpbuf, sizeof tmpbuf, "seconds=%lu", expires);
+          err = add_arg (gpg, tmpbuf);
+        }
+    }
 
   if (!err)
     err = start (gpg);
+  return err;
+}
+
+
+static gpgme_error_t
+gpg_addkey (engine_gpg_t gpg,
+            const char *algo,
+            unsigned long expires,
+            gpgme_key_t key,
+            unsigned int flags,
+            int use_armor)
+{
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
+
+
+static gpgme_error_t
+gpg_adduid (engine_gpg_t gpg,
+            const char *userid,
+            unsigned int flags,
+            int use_armor)
+{
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
+
+
+static gpgme_error_t
+gpg_genkey (void *engine,
+            const char *userid, const char *algo,
+            unsigned long reserved, unsigned long expires,
+            gpgme_key_t key, unsigned int flags,
+            gpgme_data_t help_data, int use_armor,
+	    gpgme_data_t pubkey, gpgme_data_t seckey)
+{
+  engine_gpg_t gpg = engine;
+  gpgme_error_t err;
+
+  (void)reserved;
+
+  if (!gpg)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* If HELP_DATA is given the use of the old interface
+   * (gpgme_op_genkey) has been requested.  The other modes are:
+   *
+   *  USERID && !KEY          - Create a new keyblock.
+   * !USERID &&  KEY          - Add a new subkey to KEY (gpg >= 2.1.14)
+   *  USERID &&  KEY && !ALGO - Add a new user id to KEY (gpg >= 2.1.14).
+   *
+   */
+  if (help_data)
+    {
+      /* We need a special mechanism to get the fd of a pipe here, so
+         that we can use this for the %pubring and %secring
+         parameters.  We don't have this yet, so we implement only the
+         adding to the standard keyrings.  */
+      if (pubkey || seckey)
+        err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      else
+        err = gpg_createkey_from_param (gpg, help_data, use_armor);
+    }
+  else if (userid && !key)
+    {
+      if (!have_gpg_version (gpg, "2.1.13"))
+        err = gpg_createkey_legacy (gpg, userid, algo, expires, flags,
+                                    use_armor);
+      else
+        err = gpg_createkey (gpg, userid, algo, expires, flags, use_armor);
+    }
+  else if (!have_gpg_version (gpg, "2.1.13"))
+    err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+  else if (!userid && key)
+    err = gpg_addkey (gpg, algo, expires, key, flags, use_armor);
+  else if (userid && key && !algo)
+    err = gpg_adduid (gpg, userid, flags, use_armor);
+  else
+    err = gpg_error (GPG_ERR_INV_VALUE);
 
   return err;
 }
