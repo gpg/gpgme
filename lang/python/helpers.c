@@ -692,7 +692,7 @@ gpgme_error_t _pyme_edit_cb(void *opaque, gpgme_status_code_t status,
   } else {
     if (fd>=0 && retval && PyUnicode_Check(retval)) {
       PyObject *encoded = NULL;
-      const char *buffer;
+      char *buffer;
       Py_ssize_t size;
 
       encoded = PyUnicode_AsUTF8String(retval);
@@ -999,7 +999,10 @@ _pyme_assuan_data_cb (void *hook, const void *data, size_t datalen)
 
   py_data = PyBytes_FromStringAndSize(data, datalen);
   if (py_data == NULL)
-    return NULL;	/* raise */
+    {
+      err = _pyme_exception2code();
+      goto leave;
+    }
 
   retval = PyObject_CallFunctionObjArgs(func, py_data, NULL);
   if (PyErr_Occurred())
@@ -1033,23 +1036,29 @@ _pyme_assuan_inquire_cb (void *hook, const char *name, const char *args,
 
   py_name = PyUnicode_FromString(name);
   if (py_name == NULL)
-    return NULL;	/* raise */
+    {
+      err = _pyme_exception2code();
+      goto leave;
+    }
 
   py_args = PyUnicode_FromString(args);
   if (py_args == NULL)
-    return NULL;	/* raise */
+    {
+      err = _pyme_exception2code();
+      goto leave;
+    }
 
   retval = PyObject_CallFunctionObjArgs(func, py_name, py_args, NULL);
   if (PyErr_Occurred())
     err = _pyme_exception2code();
-  Py_DECREF(py_name);
-  Py_DECREF(py_args);
   Py_XDECREF(retval);
 
   /* FIXME: Returning data is not yet implemented.  */
-  r_data = NULL;
+  *r_data = NULL;
 
  leave:
+  Py_XDECREF(py_name);
+  Py_XDECREF(py_args);
   if (err)
     _pyme_stash_callback_exception(self);
   return err;
@@ -1074,20 +1083,26 @@ _pyme_assuan_status_cb (void *hook, const char *status, const char *args)
 
   py_status = PyUnicode_FromString(status);
   if (py_status == NULL)
-    return NULL;	/* raise */
+    {
+      err = _pyme_exception2code();
+      goto leave;
+    }
 
   py_args = PyUnicode_FromString(args);
   if (py_args == NULL)
-    return NULL;	/* raise */
+    {
+      err = _pyme_exception2code();
+      goto leave;
+    }
 
   retval = PyObject_CallFunctionObjArgs(func, py_status, py_args, NULL);
   if (PyErr_Occurred())
     err = _pyme_exception2code();
-  Py_DECREF(py_status);
-  Py_DECREF(py_args);
   Py_XDECREF(retval);
 
  leave:
+  Py_XDECREF(py_status);
+  Py_XDECREF(py_args);
   if (err)
     _pyme_stash_callback_exception(self);
   return err;
