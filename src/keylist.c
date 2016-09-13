@@ -122,6 +122,8 @@ keylist_status_handler (void *priv, gpgme_status_code_t code, char *args)
   void *hook;
   op_data_t opd;
 
+  (void)args;
+
   err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
   opd = hook;
   if (err)

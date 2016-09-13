@@ -912,6 +912,8 @@ gpgconf_conf_save (void *engine, gpgme_conf_comp_t comp)
 static void
 gpgconf_set_io_cbs (void *engine, gpgme_io_cbs_t io_cbs)
 {
+  (void)engine;
+  (void)io_cbs;
   /* Nothing to do.  */
 }
 

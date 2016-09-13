@@ -145,6 +145,8 @@ _gpgme_get_gpgconf_path (void)
 int
 _gpgme_get_conf_int (const char *key, int *value)
 {
+  (void)key;
+  (void)value;
   return 0;
 }
 

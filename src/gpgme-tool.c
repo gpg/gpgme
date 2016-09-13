@@ -1809,6 +1809,8 @@ server_passphrase_cb (void *opaque, const char *uid_hint, const char *info,
   unsigned char *buf = NULL;
   size_t buflen = 0;
 
+  (void)was_bad;
+
   if (server && server->assuan_ctx)
     {
       if (uid_hint)
@@ -1983,6 +1985,9 @@ static gpg_error_t
 reset_notify (assuan_context_t ctx, char *line)
 {
   struct server *server = assuan_get_pointer (ctx);
+
+  (void)line;
+
   server_reset_fds (server);
   gt_reset (server->gt);
   return 0;
@@ -2306,6 +2311,8 @@ cmd_signers_clear (assuan_context_t ctx, char *line)
 {
   struct server *server = assuan_get_pointer (ctx);
 
+  (void)line;
+
   return gt_signers_clear (server->gt);
 }
 
@@ -2321,6 +2328,8 @@ _cmd_decrypt_verify (assuan_context_t ctx, char *line, int verify)
   char *out_fn;
   gpgme_data_t inp_data;
   gpgme_data_t out_data;
+
+  (void)line;
 
   inp_fd = server->input_fd;
   inp_fn = server->input_filename;
@@ -2548,6 +2557,8 @@ cmd_verify (assuan_context_t ctx, char *line)
   gpgme_data_t msg_data = NULL;
   gpgme_data_t out_data = NULL;
 
+  (void)line;
+
   inp_fd = server->input_fd;
   inp_fn = server->input_filename;
   if (inp_fd == ASSUAN_INVALID_FD && !inp_fn)
@@ -2722,6 +2733,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
   gpgme_data_t out_data = NULL;
   gpgme_data_t parms_data = NULL;
   const char *parms;
+
+  (void)line;
 
   inp_fd = server->input_fd;
   inp_fn = server->input_filename;
@@ -3038,6 +3051,9 @@ static gpg_error_t
 cmd_result (assuan_context_t ctx, char *line)
 {
   struct server *server = assuan_get_pointer (ctx);
+
+  (void)line;
+
   return gt_result (server->gt, GT_RESULT_ALL);
 }
 
@@ -3092,6 +3108,8 @@ cmd_identify (assuan_context_t ctx, char *line)
   assuan_fd_t inp_fd;
   char *inp_fn;
   gpgme_data_t inp_data;
+
+  (void)line;
 
   inp_fd = server->input_fd;
   inp_fn = server->input_filename;

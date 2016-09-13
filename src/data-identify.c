@@ -489,6 +489,8 @@ gpgme_data_identify (gpgme_data_t dh, int reserved)
   int n;
   gpgme_off_t off;
 
+  (void)reserved;
+
   /* Check whether we can seek the data object.  */
   off = gpgme_data_seek (dh, 0, SEEK_CUR);
   if (off == (gpgme_off_t)(-1))

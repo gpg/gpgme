@@ -213,6 +213,8 @@ _gpgme_parse_inv_recp (char *args, int for_signing,
   char *tail;
   long int reason;
 
+  (void)for_signing;
+
   inv_key = calloc (1, sizeof (*inv_key));
   if (!inv_key)
     return gpg_error_from_syserror ();

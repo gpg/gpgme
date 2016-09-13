@@ -2540,6 +2540,8 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
+  (void)engine_flags;
+
   err = gpg_keylist_build_options (gpg, secret_only, mode);
 
   if (!err && pattern && *pattern)
@@ -2558,6 +2560,8 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
+
+  (void)engine_flags;
 
   if (reserved)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -2584,6 +2588,8 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
+
+  (void)include_certs;
 
   if (mode == GPGME_SIG_MODE_CLEAR)
     err = add_arg (gpg, "--clearsign");

@@ -131,6 +131,7 @@ llass_get_home_dir (void)
 static char *
 llass_get_version (const char *file_name)
 {
+  (void)file_name;
   return NULL;
 }
 

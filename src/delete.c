@@ -33,6 +33,8 @@
 static gpgme_error_t
 delete_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
+  (void)priv;
+
   if (code == GPGME_STATUS_DELETE_PROBLEM)
     {
       enum delete_problem

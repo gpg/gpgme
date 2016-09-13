@@ -185,6 +185,8 @@ close_notify_handler (int fd, void *opaque)
 static gpgme_error_t
 default_inq_cb (engine_gpgsm_t gpgsm, const char *line)
 {
+  (void)gpgsm;
+
   if (!strncmp (line, "PINENTRY_LAUNCHED", 17) && (line[17]==' '||!line[17]))
     {
       _gpgme_allow_set_foreground_window ((pid_t)strtoul (line+17, NULL, 10));
@@ -660,6 +662,9 @@ gpgsm_clear_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type)
       _gpgme_io_close (gpgsm->message_cb.fd);
       break;
     }
+#else
+  (void)gpgsm;
+  (void)fd_type;
 #endif
 }
 
@@ -1132,6 +1137,8 @@ gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
   char *linep = fpr;
   char *line;
   int length = 8;	/* "DELKEYS " */
+
+  (void)allow_secret;
 
   if (!fpr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1815,6 +1822,8 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   char *assuan_cmd;
   int i;
   gpgme_key_t key;
+
+  (void)use_textmode;
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);

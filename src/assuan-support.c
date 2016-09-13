@@ -26,6 +26,10 @@ int
 _gpgme_assuan_log_cb (assuan_context_t ctx, void *hook,
 		      unsigned int cat, const char *msg)
 {
+  (void)ctx;
+  (void)hook;
+  (void)cat;
+
   if (msg == NULL)
     return 1;
 
@@ -49,6 +53,8 @@ my_pipe (assuan_context_t ctx, assuan_fd_t fds[2], int inherit_idx)
   int res;
   int gfds[2];
 
+  (void)ctx;
+
   res = _gpgme_io_pipe (gfds, inherit_idx);
 
   /* For now... */
@@ -64,6 +70,7 @@ my_pipe (assuan_context_t ctx, assuan_fd_t fds[2], int inherit_idx)
 static int
 my_close (assuan_context_t ctx, assuan_fd_t fd)
 {
+  (void)ctx;
   return _gpgme_io_close ((int) fd);
 }
 
@@ -71,6 +78,7 @@ my_close (assuan_context_t ctx, assuan_fd_t fd)
 static gpgme_ssize_t
 my_read (assuan_context_t ctx, assuan_fd_t fd, void *buffer, size_t size)
 {
+  (void)ctx;
   return _gpgme_io_read ((int) fd, buffer, size);
 }
 
@@ -78,6 +86,7 @@ my_read (assuan_context_t ctx, assuan_fd_t fd, void *buffer, size_t size)
 static gpgme_ssize_t
 my_write (assuan_context_t ctx, assuan_fd_t fd, const void *buffer, size_t size)
 {
+  (void)ctx;
   return _gpgme_io_write ((int) fd, buffer, size);
 }
 
@@ -86,6 +95,7 @@ static int
 my_recvmsg (assuan_context_t ctx, assuan_fd_t fd, assuan_msghdr_t msg,
 	    int flags)
 {
+  (void)ctx;
 #ifdef HAVE_W32_SYSTEM
   gpg_err_set_errno (ENOSYS);
   return -1;
@@ -100,6 +110,7 @@ static int
 my_sendmsg (assuan_context_t ctx, assuan_fd_t fd, const assuan_msghdr_t msg,
 	    int flags)
 {
+  (void)ctx;
 #ifdef HAVE_W32_SYSTEM
   gpg_err_set_errno (ENOSYS);
   return -1;
@@ -123,6 +134,9 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
   int err;
   struct spawn_fd_item_s *fd_items;
   int i;
+
+  (void)ctx;
+  (void)flags;
 
   assert (name);
 
@@ -194,6 +208,7 @@ static pid_t
 my_waitpid (assuan_context_t ctx, pid_t pid,
 	    int nowait, int *status, int options)
 {
+  (void)ctx;
 #ifdef HAVE_W32_SYSTEM
   CloseHandle ((HANDLE) pid);
 #else
@@ -226,6 +241,7 @@ my_socketpair (assuan_context_t ctx, int namespace, int style,
 static int
 my_socket (assuan_context_t ctx, int namespace, int style, int protocol)
 {
+  (void)ctx;
   return _gpgme_io_socket (namespace, style, protocol);
 }
 
@@ -234,6 +250,7 @@ static int
 my_connect (assuan_context_t ctx, int sock, struct sockaddr *addr,
 	    socklen_t length)
 {
+  (void)ctx;
   return _gpgme_io_connect (sock, addr, length);
 }
 

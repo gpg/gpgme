@@ -46,6 +46,8 @@ _gpgme_user_io_cb_handler (void *data, int fd)
   struct tag *tag = (struct tag *) data;
   gpgme_ctx_t ctx;
 
+  (void)fd;
+
   assert (data);
   ctx = tag->ctx;
   assert (ctx);

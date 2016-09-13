@@ -187,6 +187,8 @@ close_notify_handler (int fd, void *opaque)
 static gpgme_error_t
 default_inq_cb (engine_uiserver_t uiserver, const char *line)
 {
+  (void)uiserver;
+
   if (!strncmp (line, "PINENTRY_LAUNCHED", 17) && (line[17]==' '||!line[17]))
     {
       _gpgme_allow_set_foreground_window ((pid_t)strtoul (line+17, NULL, 10));
@@ -1150,6 +1152,9 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   const char *protocol;
   char *cmd;
   gpgme_key_t key;
+
+  (void)use_textmode;
+  (void)include_certs;
 
   if (!uiserver || !in || !out)
     return gpg_error (GPG_ERR_INV_VALUE);

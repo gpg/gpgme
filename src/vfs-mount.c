@@ -173,6 +173,8 @@ _gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
   char *cmd;
   char *container_file_esc = NULL;
 
+  (void)flags;
+
   /* We want to encourage people to check error values, so not getting
      them is discouraged here.  Also makes our code easier.  */
   if (! op_err)

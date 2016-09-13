@@ -413,6 +413,9 @@ g13_assuan_simple_command (assuan_context_t ctx, char *cmd,
   char *line;
   size_t linelen;
 
+  (void)status_fnc;
+  (void)status_fnc_value;
+
   err = assuan_write_line (ctx, cmd);
   if (err)
     return err;

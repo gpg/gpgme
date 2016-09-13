@@ -31,6 +31,9 @@
 static gpgme_error_t
 getauditlog_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
+  (void)priv;
+  (void)code;
+  (void)args;
   return 0;
 }
 

@@ -118,6 +118,8 @@ _gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
   char *container_file_esc = NULL;
   int i;
 
+  (void)flags;
+
   /* We want to encourage people to check error values, so not getting
      them is discouraged here.  Also makes our code easier.  */
   if (! op_err)

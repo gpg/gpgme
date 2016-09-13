@@ -1264,6 +1264,8 @@ gpgme_get_sig_ulong_attr (gpgme_ctx_t ctx, int idx,
   gpgme_verify_result_t result;
   gpgme_signature_t sig;
 
+  (void)whatidx;
+
   result = gpgme_op_verify_result (ctx);
   sig = result->signatures;
 
