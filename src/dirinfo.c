@@ -193,7 +193,7 @@ read_gpgconf_dirs (const char *pgmname, int components)
   char *mark = NULL;
 
   argv[0] = (char *)pgmname;
-  argv[1] = components? "--list-components" : "--list-dirs";
+  argv[1] = (char*)(components? "--list-components" : "--list-dirs");
   argv[2] = NULL;
 
   if (_gpgme_io_pipe (rp, 1) < 0)

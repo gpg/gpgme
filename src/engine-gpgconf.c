@@ -200,7 +200,7 @@ gpgconf_config_release (gpgme_conf_comp_t conf)
    allow for quite a long "group" line, which is usually the longest
    line (mine is currently ~3k).  */
 static gpgme_error_t
-gpgconf_read (void *engine, char *arg1, char *arg2,
+gpgconf_read (void *engine, const char *arg1, char *arg2,
 	      gpgme_error_t (*cb) (void *hook, char *line),
 	      void *hook)
 {
@@ -217,7 +217,7 @@ gpgconf_read (void *engine, char *arg1, char *arg2,
   int nread;
   char *mark = NULL;
 
-  argv[1] = arg1;
+  argv[1] = (char*)arg1;
   argv[2] = arg2;
 
 
@@ -678,14 +678,14 @@ _gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset, gpgme_conf_arg_t arg)
 /* FIXME: Major problem: We don't get errors from gpgconf.  */
 
 static gpgme_error_t
-gpgconf_write (void *engine, char *arg1, char *arg2, gpgme_data_t conf)
+gpgconf_write (void *engine, const char *arg1, char *arg2, gpgme_data_t conf)
 {
   struct engine_gpgconf *gpgconf = engine;
   gpgme_error_t err = 0;
 #define BUFLEN 1024
   char buf[BUFLEN];
   int buflen = 0;
-  char *argv[] = { NULL /* file_name */, arg1, arg2, 0 };
+  char *argv[] = { NULL /* file_name */, (char*)arg1, arg2, 0 };
   int rp[2];
   struct spawn_fd_item_s cfd[] = { {-1, 0 /* STDIN_FILENO */}, {-1, -1} };
   int status;
