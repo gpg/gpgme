@@ -202,7 +202,7 @@ peek_membuf (membuf_t *mb, size_t *len)
 
 /* SUPPORT.  */
 FILE *log_stream;
-char *program_name = "gpgme-tool";
+char program_name[] = "gpgme-tool";
 
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 
@@ -308,7 +308,7 @@ struct result_xml_state
 
 #define MAX_TAGS 20
   int next_tag;
-  char *tag[MAX_TAGS];
+  const char *tag[MAX_TAGS];
   int had_data[MAX_TAGS];
 };
 
@@ -492,7 +492,8 @@ result_xml_tag_end (struct result_xml_state *state)
 
 
 gpg_error_t
-result_add_error (struct result_xml_state *state, char *name, gpg_error_t err)
+result_add_error (struct result_xml_state *state,
+                  const char *name, gpg_error_t err)
 {
   char code[20];
   char msg[1024];
@@ -508,7 +509,7 @@ result_add_error (struct result_xml_state *state, char *name, gpg_error_t err)
 
 gpg_error_t
 result_add_pubkey_algo (struct result_xml_state *state,
-			char *name, gpgme_pubkey_algo_t algo)
+			const char *name, gpgme_pubkey_algo_t algo)
 {
   char code[20];
   char msg[80];
@@ -524,10 +525,11 @@ result_add_pubkey_algo (struct result_xml_state *state,
 
 gpg_error_t
 result_add_hash_algo (struct result_xml_state *state,
-			 char *name, gpgme_hash_algo_t algo)
+                      const char *name, gpgme_hash_algo_t algo)
 {
   char code[20];
   char msg[80];
+
   snprintf (code, sizeof (code) - 1, "0x%x", algo);
   snprintf (msg, sizeof (msg) - 1, "%s",
 	    gpgme_hash_algo_name (algo));
@@ -539,7 +541,8 @@ result_add_hash_algo (struct result_xml_state *state,
 
 
 gpg_error_t
-result_add_keyid (struct result_xml_state *state, char *name, char *keyid)
+result_add_keyid (struct result_xml_state *state,
+                  const char *name, const char *keyid)
 {
   result_xml_tag_start (state, name, NULL);
   result_xml_tag_data (state, keyid);
@@ -549,7 +552,8 @@ result_add_keyid (struct result_xml_state *state, char *name, char *keyid)
 
 
 gpg_error_t
-result_add_fpr (struct result_xml_state *state, char *name, char *fpr)
+result_add_fpr (struct result_xml_state *state,
+                const char *name, const char *fpr)
 {
   result_xml_tag_start (state, name, NULL);
   result_xml_tag_data (state, fpr);
@@ -559,7 +563,7 @@ result_add_fpr (struct result_xml_state *state, char *name, char *fpr)
 
 
 gpg_error_t
-result_add_timestamp (struct result_xml_state *state, char *name,
+result_add_timestamp (struct result_xml_state *state, const char *name,
 		      unsigned int timestamp)
 {
   char code[20];
@@ -572,10 +576,10 @@ result_add_timestamp (struct result_xml_state *state, char *name,
 
 
 gpg_error_t
-result_add_sig_mode (struct result_xml_state *state, char *name,
+result_add_sig_mode (struct result_xml_state *state, const char *name,
 		     gpgme_sig_mode_t sig_mode)
 {
-  char *mode;
+  const char *mode;
   char code[20];
 
   snprintf (code, sizeof (code) - 1, "%i", sig_mode);
@@ -602,7 +606,7 @@ result_add_sig_mode (struct result_xml_state *state, char *name,
 
 
 gpg_error_t
-result_add_protocol (struct result_xml_state *state, char *name,
+result_add_protocol (struct result_xml_state *state, const char *name,
 		     gpgme_protocol_t protocol)
 {
   const char *str;
@@ -620,7 +624,7 @@ result_add_protocol (struct result_xml_state *state, char *name,
 
 
 gpg_error_t
-result_add_validity (struct result_xml_state *state, char *name,
+result_add_validity (struct result_xml_state *state, const char *name,
 		     gpgme_validity_t validity)
 {
   const char *str;
@@ -657,7 +661,7 @@ result_add_validity (struct result_xml_state *state, char *name,
 
 gpg_error_t
 result_add_value (struct result_xml_state *state,
-		  char *name, unsigned int val)
+		  const char *name, unsigned int val)
 {
   char code[20];
 
@@ -670,7 +674,7 @@ result_add_value (struct result_xml_state *state,
 
 gpg_error_t
 result_add_string (struct result_xml_state *state,
-		   char *name, char *str)
+		   const char *name, const char *str)
 {
   if (!str)
     str = "";

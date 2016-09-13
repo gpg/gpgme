@@ -356,7 +356,7 @@ g13_set_locale (void *engine, int category, const char *value)
   engine_g13_t g13 = engine;
   gpgme_error_t err;
   char *optstr;
-  char *catstr;
+  const char *catstr;
 
   /* FIXME: If value is NULL, we need to reset the option to default.
      But we can't do this.  So we error out here.  G13 needs support
@@ -405,7 +405,7 @@ g13_set_locale (void *engine, int category, const char *value)
 
 #if USE_DESCRIPTOR_PASSING
 static gpgme_error_t
-g13_assuan_simple_command (assuan_context_t ctx, char *cmd,
+g13_assuan_simple_command (assuan_context_t ctx, const char *cmd,
 			   engine_status_handler_t status_fnc,
 			   void *status_fnc_value)
 {

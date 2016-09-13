@@ -251,6 +251,7 @@ uiserver_new (void **engine, const char *file_name, const char *home_dir,
   char *dft_ttytype = NULL;
   char *optstr;
 
+  (void)home_dir;
   (void)version; /* Not yet used.  */
 
   uiserver = calloc (1, sizeof *uiserver);
@@ -400,7 +401,7 @@ uiserver_set_locale (void *engine, int category, const char *value)
   engine_uiserver_t uiserver = engine;
   gpgme_error_t err;
   char *optstr;
-  char *catstr;
+  const char *catstr;
 
   /* FIXME: If value is NULL, we need to reset the option to default.
      But we can't do this.  So we error out here.  UISERVER needs support
@@ -459,7 +460,7 @@ uiserver_set_protocol (void *engine, gpgme_protocol_t protocol)
 
 
 static gpgme_error_t
-uiserver_assuan_simple_command (engine_uiserver_t uiserver, char *cmd,
+uiserver_assuan_simple_command (engine_uiserver_t uiserver, const char *cmd,
                                 engine_status_handler_t status_fnc,
                                 void *status_fnc_value)
 {
@@ -534,7 +535,7 @@ uiserver_set_fd (engine_uiserver_t uiserver, fd_type_t fd_type, const char *opt)
 {
   gpg_error_t err = 0;
   char line[COMMANDLINELEN];
-  char *which;
+  const char *which;
   iocb_data_t *iocb_data;
   int dir;
 

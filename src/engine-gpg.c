@@ -1574,6 +1574,8 @@ gpg_passwd (void *engine, gpgme_key_t key, unsigned int flags)
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
+  (void)flags;
+
   if (!key || !key->subkeys || !key->subkeys->fpr)
     return gpg_error (GPG_ERR_INV_CERT_OBJ);
 

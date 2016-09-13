@@ -359,7 +359,7 @@ llass_set_locale (void *engine, int category, const char *value)
   gpgme_error_t err;
   engine_llass_t llass = engine;
   char *optstr;
-  char *catstr;
+  const char *catstr;
 
   if (!llass->opt.gpg_agent)
     return 0;

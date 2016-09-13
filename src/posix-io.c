@@ -282,7 +282,7 @@ _gpgme_io_set_nonblocking (int fd)
 static long int
 get_max_fds (void)
 {
-  char *source = NULL;
+  const char *source = NULL;
   long int fds = -1;
   int rc;
 

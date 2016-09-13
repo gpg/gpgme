@@ -517,7 +517,7 @@ gpgsm_set_locale (void *engine, int category, const char *value)
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
   char *optstr;
-  char *catstr;
+  const char *catstr;
 
   /* FIXME: If value is NULL, we need to reset the option to default.
      But we can't do this.  So we error out here.  GPGSM needs support
@@ -565,7 +565,7 @@ gpgsm_set_locale (void *engine, int category, const char *value)
 
 
 static gpgme_error_t
-gpgsm_assuan_simple_command (engine_gpgsm_t gpgsm, char *cmd,
+gpgsm_assuan_simple_command (engine_gpgsm_t gpgsm, const char *cmd,
 			     engine_status_handler_t status_fnc,
 			     void *status_fnc_value)
 {
@@ -674,7 +674,7 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
 {
   gpg_error_t err = 0;
   char line[COMMANDLINELEN];
-  char *which;
+  const char *which;
   iocb_data_t *iocb_data;
 #if USE_DESCRIPTOR_PASSING
   int dir;
@@ -1480,6 +1480,7 @@ gpgsm_genkey (void *engine,
     }
 
   (void)userid;
+  (void)algo;
   (void)expires;
   (void)key;
   (void)flags;
@@ -2016,6 +2017,8 @@ gpgsm_passwd (void *engine, gpgme_key_t key, unsigned int flags)
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
   char *line;
+
+  (void)flags;
 
   if (!key || !key->subkeys || !key->subkeys->fpr)
     return gpg_error (GPG_ERR_INV_CERT_OBJ);

@@ -196,7 +196,7 @@ _gpgme_compare_versions (const char *my_version,
 const char *
 gpgme_check_version (const char *req_version)
 {
-  char *result;
+  const char *result;
   do_subsystem_inits ();
 
   /* Catch-22: We need to get at least the debug subsystem ready
