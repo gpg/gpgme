@@ -75,27 +75,25 @@ gpgme_error_t
 passphrase_cb (void *opaque, const char *uid_hint, const char *passphrase_info,
 	       int last_was_bad, int fd)
 {
-#ifdef HAVE_W32_SYSTEM
-  DWORD written;
-  WriteFile ((HANDLE) fd, "abc\n", 4, &written, 0);
-#else
   int res;
-  char *pass = "abc\n";
+  char pass[] = "abc\n";
   int passlen = strlen (pass);
   int off = 0;
 
+  (void)opaque;
+  (void)uid_hint;
+  (void)passphrase_info;
+  (void)last_was_bad;
+
   do
     {
-      res = write (fd, &pass[off], passlen - off);
+      res = gpgme_io_write (fd, &pass[off], passlen - off);
       if (res > 0)
 	off += res;
     }
   while (res > 0 && off != passlen);
 
   return off == passlen ? 0 : gpgme_error_from_errno (errno);
-#endif
-
-  return 0;
 }
 
 
