@@ -512,6 +512,35 @@ AM_SUBST_NOTMAKE(API__SSIZE_T)
 # Checks for compiler features.
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+    if test "$USE_MAINTAINER_MODE" = "yes"; then
+        CFLAGS="$CFLAGS -Wformat -Wno-format-y2k -Wformat-security"
+
+        # If -Wno-missing-field-initializers is supported we can enable a
+        # a bunch of really useful warnings.
+        AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
+        _gcc_cflags_save=$CFLAGS
+        CFLAGS="-Wno-missing-field-initializers"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
+        AC_MSG_RESULT($_gcc_wopt)
+        CFLAGS=$_gcc_cflags_save;
+        if test x"$_gcc_wopt" = xyes ; then
+          CFLAGS="$CFLAGS -W -Wextra -Wbad-function-cast"
+          CFLAGS="$CFLAGS -Wwrite-strings"
+          CFLAGS="$CFLAGS -Wdeclaration-after-statement"
+          CFLAGS="$CFLAGS -Wno-missing-field-initializers"
+          CFLAGS="$CFLAGS -Wno-sign-compare"
+        fi
+
+        AC_MSG_CHECKING([if gcc supports -Wpointer-arith])
+        _gcc_cflags_save=$CFLAGS
+        CFLAGS="-Wpointer-arith"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
+        AC_MSG_RESULT($_gcc_wopt)
+        CFLAGS=$_gcc_cflags_save;
+        if test x"$_gcc_wopt" = xyes ; then
+          CFLAGS="$CFLAGS -Wpointer-arith"
+        fi
+    fi
     if test "$have_w32_system" = yes; then
        CFLAGS="$CFLAGS -mms-bitfields"
     fi
