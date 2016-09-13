@@ -37,7 +37,7 @@ def read_cb(amount):
     ntoread -= chunk
     assert ntoread >= 0
     assert chunk >= 0
-    return bytes(random.randrange(256) for i in range(chunk))
+    return bytes(bytearray(random.randrange(256) for i in range(chunk)))
 
 nwritten = 0
 def write_cb(data):

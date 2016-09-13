@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import sys
 import os
 import pyme
 from pyme import core, constants, errors
@@ -67,8 +68,11 @@ def check_result(result, summary, validity, fpr, status, notation):
 
     if notation:
         expected_notations = {
-            "bar": b"\xc3\xb6\xc3\xa4\xc3\xbc\xc3\x9f".decode() +
-            " das waren Umlaute und jetzt ein prozent%-Zeichen",
+            "bar": (b"\xc3\xb6\xc3\xa4\xc3\xbc\xc3\x9f" +
+                    b" das waren Umlaute und jetzt ein prozent%-Zeichen"
+                    if sys.version_info[0] < 3 else
+                    b"\xc3\xb6\xc3\xa4\xc3\xbc\xc3\x9f".decode() +
+                    " das waren Umlaute und jetzt ein prozent%-Zeichen"),
             "foobar.1":  "this is a notation data with 2 lines",
             None: "http://www.gu.org/policy/",
         }

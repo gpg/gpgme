@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import sys
 import io
 import os
 import tempfile
@@ -60,17 +61,21 @@ with tempfile.TemporaryFile() as source, \
 
     sign_and_verify(source, signed, sink)
 
-# XXX: Python's io.BytesIo.truncate does not work as advertised.
-# http://bugs.python.org/issue27261
-bio = io.BytesIO()
-bio.truncate(1)
-if len(bio.getvalue()) != 1:
-    # This version of Python is affected, preallocate buffer.
-    preallocate = 128*b'\x00'
-else:
-    preallocate = b''
+if sys.version_info[0] == 3:
+    # Python2's io.BytesIO does not implement the buffer interface,
+    # hence we cannot use it as sink.
 
-# Demonstrate automatic wrapping of objects implementing the buffer
-# interface, and the use of data objects with the 'with' statement.
-with io.BytesIO(preallocate) as signed, pyme.Data() as sink:
-    sign_and_verify(b"Hallo Leute\n", signed, sink)
+    # XXX: Python's io.BytesIo.truncate does not work as advertised.
+    # http://bugs.python.org/issue27261
+    bio = io.BytesIO()
+    bio.truncate(1)
+    if len(bio.getvalue()) != 1:
+        # This version of Python is affected, preallocate buffer.
+        preallocate = 128*b'\x00'
+    else:
+        preallocate = b''
+
+    # Demonstrate automatic wrapping of objects implementing the buffer
+    # interface, and the use of data objects with the 'with' statement.
+    with io.BytesIO(preallocate) as signed, pyme.Data() as sink:
+        sign_and_verify(b"Hallo Leute\n", signed, sink)

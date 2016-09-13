@@ -884,7 +884,7 @@ class Data(GpgmeWrapper):
         elif file != None and offset != None and length != None:
             self.new_from_filepart(file, offset, length)
         elif file != None:
-            if type(file) == type("x"):
+            if util.is_a_string(file):
                 self.new_from_file(file, copy)
             else:
                 self.new_from_fd(file)
@@ -961,7 +961,7 @@ class Data(GpgmeWrapper):
         filename = None
         fp = None
 
-        if type(file) == type("x"):
+        if util.is_a_string(file):
             filename = file
         else:
             fp = gpgme.fdopen(file.fileno(), file.mode)

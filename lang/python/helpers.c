@@ -833,16 +833,20 @@ static ssize_t pyDataWriteCb(void *hook, const void *buffer, size_t size)
     goto leave;
   }
 
-  if (! PyLong_Check(retval)) {
+#if PY_MAJOR_VERSION < 3
+  if (PyInt_Check(retval))
+    result = PyInt_AsSsize_t(retval);
+  else
+#endif
+  if (PyLong_Check(retval))
+    result = PyLong_AsSsize_t(retval);
+  else {
     PyErr_Format(PyExc_TypeError,
-                 "expected int from read callback, got %s",
+                 "expected int from write callback, got %s",
                  retval->ob_type->tp_name);
     _pyme_stash_callback_exception(self);
     result = -1;
-    goto leave;
   }
-
-  result = PyLong_AsSsize_t(retval);
 
  leave:
   Py_XDECREF(retval);
@@ -894,20 +898,24 @@ static off_t pyDataSeekCb(void *hook, off_t offset, int whence)
     goto leave;
   }
 
-  if (! PyLong_Check(retval)) {
+#if PY_MAJOR_VERSION < 3
+  if (PyInt_Check(retval))
+    result = PyInt_AsLong(retval);
+  else
+#endif
+  if (PyLong_Check(retval))
+#if defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS == 64
+    result = PyLong_AsLongLong(retval);
+#else
+    result = PyLong_AsLong(retval);
+#endif
+  else {
     PyErr_Format(PyExc_TypeError,
-                 "expected int from read callback, got %s",
+                 "expected int from seek callback, got %s",
                  retval->ob_type->tp_name);
     _pyme_stash_callback_exception(self);
     result = -1;
-    goto leave;
   }
-
-#if defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS == 64
-  result = PyLong_AsLongLong(retval);
-#else
-  result = PyLong_AsLong(retval);
-#endif
 
  leave:
   Py_XDECREF(retval);

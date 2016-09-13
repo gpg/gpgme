@@ -16,6 +16,8 @@
 #    License along with this library; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
+import sys
+
 def process_constants(prefix, scope):
     """Called by the constant modules to load up the constants from the C
     library starting with PREFIX.  Matching constants will be inserted
@@ -36,3 +38,13 @@ def percent_escape(s):
         '%{0:2x}'.format(ord(c))
         if c == '+' or c == '"' or c == '%' or ord(c) <= 0x20 else c
         for c in s)
+
+# Python2/3 compatibility
+if sys.version_info[0] == 3:
+    # Python3
+    def is_a_string(x):
+        return isinstance(x, str)
+else:
+    # Python2
+    def is_a_string(x):
+        return isinstance(x, basestring)
