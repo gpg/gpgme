@@ -818,8 +818,11 @@ status_handler (void *opaque, int fd)
 	       && (line[2] == '\0' || line[2] == ' '))
 	{
 	  if (gpgsm->status.fnc)
-	    err = gpgsm->status.fnc (gpgsm->status.fnc_value,
-				     GPGME_STATUS_EOF, "");
+            {
+              char emptystring[1] = {0};
+              err = gpgsm->status.fnc (gpgsm->status.fnc_value,
+                                       GPGME_STATUS_EOF, emptystring);
+            }
 
 	  if (!err && gpgsm->colon.fnc && gpgsm->colon.any)
             {

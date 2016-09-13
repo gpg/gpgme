@@ -337,13 +337,14 @@ result_xml_indent (struct result_xml_state *state)
 
 
 gpg_error_t
-result_xml_tag_start (struct result_xml_state *state, char *name, ...)
+result_xml_tag_start (struct result_xml_state *state, const char *name, ...)
 {
   result_xml_write_cb_t cb = state->cb;
   void *hook = state->hook;
   va_list ap;
   char *attr;
   char *attr_val;
+  char string_null[] = "(null)";
 
   va_start (ap, name);
 
@@ -374,7 +375,7 @@ result_xml_tag_start (struct result_xml_state *state, char *name, ...)
 
       attr_val = va_arg (ap, char *);
       if (attr_val == NULL)
-	attr_val = "(null)";
+	attr_val = string_null;
 
       (*cb) (hook, " ", 1);
       (*cb) (hook, attr, strlen (attr));

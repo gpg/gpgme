@@ -669,8 +669,11 @@ status_handler (void *opaque, int fd)
 	       && (line[2] == '\0' || line[2] == ' '))
 	{
 	  if (uiserver->status.fnc)
-	    err = uiserver->status.fnc (uiserver->status.fnc_value,
-				     GPGME_STATUS_EOF, "");
+            {
+              char emptystring[1] = {0};
+              err = uiserver->status.fnc (uiserver->status.fnc_value,
+                                          GPGME_STATUS_EOF, emptystring);
+            }
 
 	  if (!err && uiserver->colon.fnc && uiserver->colon.any)
             {

@@ -1081,7 +1081,11 @@ read_status (engine_gpg_t gpg)
         err = gpg->status.mon_cb (gpg->status.mon_cb_value,
                                   GPGME_STATUS_EOF, "");
       if (gpg->status.fnc)
-        err = gpg->status.fnc (gpg->status.fnc_value, GPGME_STATUS_EOF, "");
+        {
+          char emptystring[1] = {0};
+          err = gpg->status.fnc (gpg->status.fnc_value,
+                                 GPGME_STATUS_EOF, emptystring);
+        }
 
       return err;
     }

@@ -895,6 +895,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
   char **argv;
   char *s, *s2;
   int i;
+  char string_with_x[] = "x";
 
   initialize( arg, NULL, NULL );
   argc = *arg->argc;
@@ -1106,7 +1107,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 		    argc--; argv++; idx++; /* Skip one.  */
                   }
               }
-	    s = "x"; /* This is so that !s[1] yields false.  */
+	    s = string_with_x; /* This is so that !s[1] yields false.  */
           }
 	else
           {
