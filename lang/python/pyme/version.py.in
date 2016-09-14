@@ -41,7 +41,7 @@ Copyright (C) 2002 John Goerzen"""
 author = "The GnuPG hackers"
 author_email = "gnupg-devel@gnupg.org"
 
-description = "Python 3 support for GPGME GnuPG cryptography library"
+description = "Python support for GPGME GnuPG cryptography library"
 homepage = "https://gnupg.org"
 
 license = """Copyright (C) 2016 g10 Code GmbH

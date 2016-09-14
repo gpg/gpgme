@@ -6,7 +6,7 @@ https://www.gnupg.org/related_software/gpgme/
 
 PyMe uses SWIG to create wrapper functions with automatic type
 conversions.  This way most of the functions and types are converted
-from C into Python 3 automatically by SWIG, reducing the maintenance
+from C into Python automatically by SWIG, reducing the maintenance
 cost of the binginds.
 
 * Authors
