@@ -2056,6 +2056,12 @@ gpg_createkey_legacy (engine_gpg_t gpg,
                unsigned int flags,
                unsigned int extraflags)
 {
+  (void)gpg;
+  (void)userid;
+  (void)algo;
+  (void)expires;
+  (void)flags;
+  (void)extraflags;
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
 
