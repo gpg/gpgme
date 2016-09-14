@@ -452,14 +452,24 @@
     size++;
   }
   $result = PyList_New(size);
+  if ($result == NULL)
+    return NULL;	/* raise */
   for (i=0,curr=$1; i<size; i++,curr=curr->next) {
     PyObject *fragile, *o;
     fragile = SWIG_NewPointerObj(SWIG_as_voidptr(curr), $1_descriptor,
                                  %newpointer_flags);
+    if (fragile == NULL)
+      {
+        Py_DECREF($result);
+        return NULL;	/* raise */
+      }
     o = _pyme_wrap_result(fragile, "EngineInfo");
-    if (o == NULL)
-      return NULL;	/* raise */
     Py_DECREF(fragile);
+    if (o == NULL)
+      {
+        Py_DECREF($result);
+        return NULL;	/* raise */
+      }
     PyList_SetItem($result, i, o);
   }
 }
