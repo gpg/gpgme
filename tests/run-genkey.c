@@ -203,9 +203,11 @@ show_usage (int ex)
          "         args: USERID [ALGO [USAGE [EXPIRESECONDS]]]\n"
          "   for addkey: FPR    [ALGO [USAGE [EXPIRESECONDS]]]\n"
          "   for adduid: FPR    USERID\n"
+         "   for revuid: FPR    USERID\n"
          "Options:\n"
          "  --addkey         add a subkey to the key with FPR\n"
          "  --adduid         add a user id to the key with FPR\n"
+         "  --revuid         Revoke a user id from the key with FPR\n"
          "  --verbose        run in verbose mode\n"
          "  --status         print status lines from the backend\n"
          "  --progress       print progress info\n"
@@ -231,6 +233,7 @@ main (int argc, char **argv)
   int use_loopback = 0;
   int addkey = 0;
   int adduid = 0;
+  int revuid = 0;
   const char *userid;
   const char *algo = NULL;
   const char *newuserid = NULL;
@@ -255,12 +258,21 @@ main (int argc, char **argv)
         {
           addkey = 1;
           adduid = 0;
+          revuid = 0;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--adduid"))
         {
           addkey = 0;
           adduid = 1;
+          revuid = 0;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--revuid"))
+        {
+          addkey = 0;
+          adduid = 0;
+          revuid = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--verbose"))
@@ -307,7 +319,7 @@ main (int argc, char **argv)
         show_usage (1);
     }
 
-  if (adduid)
+  if (adduid || revuid)
     {
       if (argc != 2)
         show_usage (1);
@@ -346,7 +358,7 @@ main (int argc, char **argv)
       gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
     }
 
-  if (addkey || adduid)
+  if (addkey || adduid || revuid)
     {
       gpgme_key_t akey;
 
@@ -374,6 +386,16 @@ main (int argc, char **argv)
           if (err)
             {
               fprintf (stderr, PGM ": gpgme_op_adduid failed: %s\n",
+                       gpg_strerror (err));
+              exit (1);
+            }
+        }
+      else if (revuid)
+        {
+          err = gpgme_op_revuid (ctx, akey, newuserid, flags);
+          if (err)
+            {
+              fprintf (stderr, PGM ": gpgme_op_revuid failed: %s\n",
                        gpg_strerror (err));
               exit (1);
             }

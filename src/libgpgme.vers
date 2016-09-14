@@ -109,6 +109,8 @@ GPGME_1.1 {
     gpgme_op_createsubkey;
     gpgme_op_adduid_start;
     gpgme_op_adduid;
+    gpgme_op_revuid_start;
+    gpgme_op_revuid;
 };
 
 

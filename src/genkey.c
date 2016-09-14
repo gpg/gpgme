@@ -181,7 +181,7 @@ genkey_status_handler (void *priv, gpgme_status_code_t code, char *args)
 	return gpg_error (GPG_ERR_GENERAL);
       else if (opd->failure_code)
         return opd->failure_code;
-      else if (opd->uidmode)
+      else if (opd->uidmode == 1)
         opd->result.uid = 1;  /* We have no status line, thus this hack.  */
       break;
 
@@ -489,8 +489,8 @@ gpgme_op_createsubkey (gpgme_ctx_t ctx, gpgme_key_t key, const char *algo,
 
 
 static gpgme_error_t
-adduid_start (gpgme_ctx_t ctx, int synchronous,
-              gpgme_key_t key, const char *userid, unsigned int flags)
+addrevuid_start (gpgme_ctx_t ctx, int synchronous, int revoke,
+                 gpgme_key_t key, const char *userid, unsigned int flags)
 {
   gpgme_error_t err;
   void *hook;
@@ -512,7 +512,7 @@ adduid_start (gpgme_ctx_t ctx, int synchronous,
   if (err)
     return err;
 
-  opd->uidmode = 1;
+  opd->uidmode = revoke? 2 : 1;
 
   _gpgme_engine_set_status_handler (ctx->engine, genkey_status_handler, ctx);
 
@@ -528,7 +528,7 @@ adduid_start (gpgme_ctx_t ctx, int synchronous,
                                   userid, NULL, 0, 0,
                                   key, flags,
                                   NULL,
-				  ctx->use_armor? GENKEY_EXTRAFLAG_ARMOR:0,
+				  revoke? GENKEY_EXTRAFLAG_REVOKE : 0,
                                   NULL, NULL);
 
 }
@@ -547,7 +547,7 @@ gpgme_op_adduid_start (gpgme_ctx_t ctx,
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_ARG));
 
-  err = adduid_start (ctx, 0, key, userid, flags);
+  err = addrevuid_start (ctx, 0, 0, key, userid, flags);
   return TRACE_ERR (err);
 }
 
@@ -564,7 +564,44 @@ gpgme_op_adduid (gpgme_ctx_t ctx,
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_ARG));
 
-  err = adduid_start (ctx, 1, key, userid, flags);
+  err = addrevuid_start (ctx, 1, 0, key, userid, flags);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  return TRACE_ERR (err);
+}
+
+
+/* Revoke USERID from KEY.  */
+gpgme_error_t
+gpgme_op_revuid_start (gpgme_ctx_t ctx,
+                       gpgme_key_t key, const char *userid, unsigned int flags)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_revuid_start", ctx,
+	      "uid='%s' flags=0x%x", userid, flags);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_ARG));
+
+  err = addrevuid_start (ctx, 0, 1, key, userid, flags);
+  return TRACE_ERR (err);
+}
+
+
+gpgme_error_t
+gpgme_op_revuid (gpgme_ctx_t ctx,
+                 gpgme_key_t key, const char *userid, unsigned int flags)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_revuid", ctx,
+	      "uid='%s' flags=0x%x", userid, flags);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_ARG));
+
+  err = addrevuid_start (ctx, 1, 1, key, userid, flags);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return TRACE_ERR (err);

@@ -235,6 +235,8 @@ EXPORTS
     gpgme_op_createsubkey                 @175
     gpgme_op_adduid_start                 @176
     gpgme_op_adduid                       @177
+    gpgme_op_revuid_start                 @178
+    gpgme_op_revuid                       @179
 
 ; END
 

@@ -2115,14 +2115,19 @@ gpg_addkey (engine_gpg_t gpg,
 static gpgme_error_t
 gpg_adduid (engine_gpg_t gpg,
             gpgme_key_t key,
-            const char *userid)
+            const char *userid,
+            unsigned int extraflags)
 {
   gpgme_error_t err;
 
   if (!key || !key->fpr || !userid)
     return gpg_error (GPG_ERR_INV_ARG);
 
-  err = add_arg (gpg, "--quick-adduid");
+  if ((extraflags & GENKEY_EXTRAFLAG_REVOKE))
+    err = add_arg (gpg, "--quick-revuid");
+  else
+    err = add_arg (gpg, "--quick-adduid");
+
   if (!err)
     err = add_arg (gpg, "--");
   if (!err)
@@ -2184,7 +2189,7 @@ gpg_genkey (void *engine,
   else if (!userid && key)
     err = gpg_addkey (gpg, algo, expires, key, flags, extraflags);
   else if (userid && key && !algo)
-    err = gpg_adduid (gpg, key, userid);
+    err = gpg_adduid (gpg, key, userid, extraflags);
   else
     err = gpg_error (GPG_ERR_INV_VALUE);
 
