@@ -1365,6 +1365,7 @@ struct engine_ops _gpgme_engine_ops_uiserver =
     NULL,		/* keylist */
     NULL,		/* keylist_ext */
     NULL,               /* keysign */
+    NULL,               /* tofu_policy */
     uiserver_sign,
     NULL,		/* trustlist */
     uiserver_verify,

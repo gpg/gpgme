@@ -239,6 +239,8 @@ EXPORTS
     gpgme_op_revuid                       @179
     gpgme_op_keysign_start                @180
     gpgme_op_keysign                      @181
+    gpgme_op_tofu_policy_start            @182
+    gpgme_op_tofu_policy                  @183
 
 ; END
 

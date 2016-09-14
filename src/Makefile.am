@@ -84,7 +84,7 @@ main_sources =								\
 	op-support.c							\
 	encrypt.c encrypt-sign.c decrypt.c decrypt-verify.c verify.c	\
 	sign.c passphrase.c progress.c					\
-	key.c keylist.c keysign.c trust-item.c trustlist.c		\
+	key.c keylist.c keysign.c trust-item.c trustlist.c tofupolicy.c	\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
 	opassuan.c passwd.c spawn.c assuan-support.c                    \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.c	\

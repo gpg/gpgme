@@ -2733,6 +2733,46 @@ gpg_keysign (void *engine, gpgme_key_t key, const char *userid,
 
 
 static gpgme_error_t
+gpg_tofu_policy (void *engine, gpgme_key_t key, gpgme_tofu_policy_t policy)
+{
+  engine_gpg_t gpg = engine;
+  gpgme_error_t err;
+  const char *policystr = NULL;
+
+  if (!key || !key->fpr)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  switch (policy)
+    {
+    case GPGME_TOFU_POLICY_NONE:                           break;
+    case GPGME_TOFU_POLICY_AUTO:    policystr = "auto";    break;
+    case GPGME_TOFU_POLICY_GOOD:    policystr = "good";    break;
+    case GPGME_TOFU_POLICY_BAD:     policystr = "bad";     break;
+    case GPGME_TOFU_POLICY_ASK:     policystr = "ask";     break;
+    case GPGME_TOFU_POLICY_UNKNOWN: policystr = "unknown"; break;
+    }
+  if (!policystr)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!have_gpg_version (gpg, "2.1.10"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  err = add_arg (gpg, "--tofu-policy");
+  if (!err)
+    err = add_arg (gpg, "--");
+  if (!err)
+    err = add_arg (gpg, policystr);
+  if (!err)
+    err = add_arg (gpg, key->fpr);
+
+  if (!err)
+    err = start (gpg);
+
+  return err;
+}
+
+
+static gpgme_error_t
 gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 	  gpgme_sig_mode_t mode, int use_armor, int use_textmode,
 	  int include_certs, gpgme_ctx_t ctx /* FIXME */)
@@ -2906,6 +2946,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_keylist,
     gpg_keylist_ext,
     gpg_keysign,
+    gpg_tofu_policy,    /* tofu_policy */
     gpg_sign,
     gpg_trustlist,
     gpg_verify,

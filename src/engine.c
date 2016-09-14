@@ -811,6 +811,20 @@ _gpgme_engine_op_keysign (engine_t engine, gpgme_key_t key, const char *userid,
 
 
 gpgme_error_t
+_gpgme_engine_op_tofu_policy (engine_t engine,
+                              gpgme_key_t key,  gpgme_tofu_policy_t policy)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->tofu_policy)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->tofu_policy) (engine->engine, key, policy);
+}
+
+
+gpgme_error_t
 _gpgme_engine_op_import (engine_t engine, gpgme_data_t keydata,
                          gpgme_key_t *keyarray)
 {
