@@ -460,6 +460,7 @@ struct engine_ops _gpgme_engine_ops_spawn =
     NULL,		/* import */
     NULL,		/* keylist */
     NULL,		/* keylist_ext */
+    NULL,               /* keysign */
     NULL,		/* sign */
     NULL,		/* trustlist */
     NULL,		/* verify */

@@ -206,14 +206,16 @@ close_notify_handler (int fd, void *opaque)
 /* If FRONT is true, push at the front of the list.  Use this for
    options added late in the process.  */
 static gpgme_error_t
-_add_arg (engine_gpg_t gpg, const char *arg, int front, int *arg_locp)
+_add_arg (engine_gpg_t gpg, const char *prefix, const char *arg, size_t arglen,
+          int front, int *arg_locp)
 {
   struct arg_and_data_s *a;
+  size_t prefixlen = prefix? strlen (prefix) : 0;
 
   assert (gpg);
   assert (arg);
 
-  a = malloc (sizeof *a + strlen (arg));
+  a = malloc (sizeof *a + prefixlen + arglen);
   if (!a)
     return gpg_error_from_syserror ();
 
@@ -221,7 +223,10 @@ _add_arg (engine_gpg_t gpg, const char *arg, int front, int *arg_locp)
   a->dup_to = -1;
   a->arg_locp = arg_locp;
 
-  strcpy (a->arg, arg);
+  if (prefixlen)
+    memcpy (a->arg, prefix, prefixlen);
+  memcpy (a->arg + prefixlen, arg, arglen);
+  a->arg[prefixlen + arglen] = 0;
   if (front)
     {
       a->next = gpg->arglist;
@@ -243,24 +248,36 @@ _add_arg (engine_gpg_t gpg, const char *arg, int front, int *arg_locp)
   return 0;
 }
 
+
 static gpgme_error_t
 add_arg_ext (engine_gpg_t gpg, const char *arg, int front)
 {
-  return _add_arg (gpg, arg, front, NULL);
+  return _add_arg (gpg, NULL, arg, strlen (arg), front, NULL);
 }
-
 
 static gpgme_error_t
 add_arg_with_locp (engine_gpg_t gpg, const char *arg, int *locp)
 {
-  return _add_arg (gpg, arg, 0, locp);
+  return _add_arg (gpg, NULL, arg, strlen (arg), 0, locp);
 }
-
 
 static gpgme_error_t
 add_arg (engine_gpg_t gpg, const char *arg)
 {
-  return add_arg_ext (gpg, arg, 0);
+  return _add_arg (gpg, NULL, arg, strlen (arg), 0, NULL);
+}
+
+static gpgme_error_t
+add_arg_pfx (engine_gpg_t gpg, const char *prefix, const char *arg)
+{
+  return _add_arg (gpg, prefix, arg, strlen (arg), 0, NULL);
+}
+
+static gpgme_error_t
+add_arg_len (engine_gpg_t gpg, const char *prefix,
+             const char *arg, size_t arglen)
+{
+  return _add_arg (gpg, prefix, arg, arglen, 0, NULL);
 }
 
 
@@ -1606,7 +1623,8 @@ append_args_from_signers (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 	    err = add_arg (gpg, s);
 	}
       gpgme_key_unref (key);
-      if (err) break;
+      if (err)
+        break;
     }
   return err;
 }
@@ -2644,6 +2662,71 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
 
 
 static gpgme_error_t
+gpg_keysign (void *engine, gpgme_key_t key, const char *userid,
+             unsigned long expire, unsigned int flags,
+             gpgme_ctx_t ctx)
+{
+  engine_gpg_t gpg = engine;
+  gpgme_error_t err;
+  const char *s;
+
+  if (!key || !key->fpr)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  if (!have_gpg_version (gpg, "2.1.12"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  if ((flags & GPGME_KEYSIGN_LOCAL))
+    err = add_arg (gpg, "--quick-lsign-key");
+  else
+    err = add_arg (gpg, "--quick-sign-key");
+
+  if (!err)
+    err = append_args_from_signers (gpg, ctx);
+
+  /* If an expiration time has been given use that.  If none has been
+   * given the default from gpg.conf is used.  To make sure not to set
+   * an expiration time at all the flag GPGME_KEYSIGN_NOEXPIRE can be
+   * used.  */
+  if (!err && (expire || (flags & GPGME_KEYSIGN_NOEXPIRE)))
+    {
+      char tmpbuf[8+20];
+
+      if ((flags & GPGME_KEYSIGN_NOEXPIRE))
+        expire = 0;
+      snprintf (tmpbuf, sizeof tmpbuf, "seconds=%lu", expire);
+      err = add_arg (gpg, "--default-cert-expire");
+      if (!err)
+        err = add_arg (gpg, tmpbuf);
+    }
+
+  if (!err)
+    err = add_arg (gpg, "--");
+
+  if (!err)
+    err = add_arg (gpg, key->fpr);
+  if (!err && userid)
+    {
+      if ((flags & GPGME_KEYSIGN_LFSEP))
+        {
+          for (; !err && (s = strchr (userid, '\n')); userid = s + 1)
+            if ((s - userid))
+              err = add_arg_len (gpg, "=", userid, s - userid);
+          if (!err && *userid)
+            err = add_arg_pfx (gpg, "=", userid);
+        }
+      else
+        err = add_arg_pfx (gpg, "=", userid);
+    }
+
+  if (!err)
+    err = start (gpg);
+
+  return err;
+}
+
+
+static gpgme_error_t
 gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 	  gpgme_sig_mode_t mode, int use_armor, int use_textmode,
 	  int include_certs, gpgme_ctx_t ctx /* FIXME */)
@@ -2816,6 +2899,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_import,
     gpg_keylist,
     gpg_keylist_ext,
+    gpg_keysign,
     gpg_sign,
     gpg_trustlist,
     gpg_verify,

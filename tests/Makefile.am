@@ -32,7 +32,8 @@ LDADD = ../src/libgpgme.la @GPG_ERROR_LIBS@
 noinst_HEADERS = run-support.h
 
 noinst_PROGRAMS = $(TESTS) run-keylist run-export run-import run-sign \
-		  run-verify run-encrypt run-identify run-decrypt run-genkey
+		  run-verify run-encrypt run-identify run-decrypt run-genkey \
+		  run-keysign
 
 
 if RUN_GPG_TESTS

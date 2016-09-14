@@ -121,6 +121,11 @@ gpgme_error_t _gpgme_engine_op_genkey (engine_t engine,
 				       unsigned int extraflags,
                                        gpgme_data_t pubkey,
 				       gpgme_data_t seckey);
+gpgme_error_t _gpgme_engine_op_keysign (engine_t engine,
+                                        gpgme_key_t key, const char *userid,
+                                        unsigned long expires,
+                                        unsigned int flags,
+                                        gpgme_ctx_t ctx);
 gpgme_error_t _gpgme_engine_op_import (engine_t engine,
 				       gpgme_data_t keydata,
                                        gpgme_key_t *keyarray);

@@ -111,6 +111,8 @@ GPGME_1.1 {
     gpgme_op_adduid;
     gpgme_op_revuid_start;
     gpgme_op_revuid;
+    gpgme_op_keysign_start;
+    gpgme_op_keysign;
 };
 
 

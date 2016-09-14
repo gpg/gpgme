@@ -23,6 +23,8 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  gpgme_op_adduid                NEW.
  gpgme_op_revuid_start          NEW.
  gpgme_op_revuid                NEW.
+ gpgme_op_keysign_start         NEW.
+ gpgme_op_keysign               NEW.
  gpgme_genkey_result_t          EXTENDED: New fields pubkey and seckey.
  gpgme_signature_t              EXTENDED: New field key.
  gpgme_key_t                    EXTENDED: New field fpr.
@@ -50,6 +52,8 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  GPGME_CREATE_WANTPUB           NEW.
  GPGME_CREATE_WANTSEC           NEW.
  GPGME_CREATE_FORCE             NEW.
+ GPGME_KEYSIGN_LOCAL            NEW.
+ GPGME_KEYSIGN_LFSEP            NEW.
 
 
 Noteworthy changes in version 1.6.0 (2015-08-26) [C25/A14/R0]

@@ -2074,6 +2074,7 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_import,
     gpgsm_keylist,
     gpgsm_keylist_ext,
+    NULL,               /* keysign */
     gpgsm_sign,
     NULL,		/* trustlist */
     gpgsm_verify,

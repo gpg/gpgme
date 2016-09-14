@@ -237,6 +237,8 @@ EXPORTS
     gpgme_op_adduid                       @177
     gpgme_op_revuid_start                 @178
     gpgme_op_revuid                       @179
+    gpgme_op_keysign_start                @180
+    gpgme_op_keysign                      @181
 
 ; END
 

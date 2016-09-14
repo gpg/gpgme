@@ -98,6 +98,10 @@ struct engine_ops
 				int secret_only, int reserved,
 				gpgme_keylist_mode_t mode,
 				int engine_flags);
+  gpgme_error_t (*keysign) (void *engine,
+                            gpgme_key_t key, const char *userid,
+                            unsigned long expires, unsigned int flags,
+                            gpgme_ctx_t ctx);
   gpgme_error_t (*sign) (void *engine, gpgme_data_t in, gpgme_data_t out,
 			 gpgme_sig_mode_t mode, int use_armor,
 			 int use_textmode, int include_certs,

@@ -1921,10 +1921,32 @@ gpgme_error_t gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 gpgme_error_t gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key,
 			       int allow_secret);
 
+
+/*
+ * Key signing interface
+ */
+
+/* Flags for the key signing functions.  */
+#define GPGME_KEYSIGN_LOCAL     (1 << 7)  /* Create a local signature.  */
+#define GPGME_KEYSIGN_LFSEP     (1 << 8)  /* Indicate LF separated user ids. */
+#define GPGME_KEYSIGN_NOEXPIRE  (1 << 9)  /* Force no expiration.  */
+
+
+/* Sign the USERID of KEY using the current set of signers.  */
+gpgme_error_t gpgme_op_keysign_start (gpgme_ctx_t ctx,
+                                      gpgme_key_t key, const char *userid,
+                                      unsigned long expires,
+                                      unsigned int flags);
+gpgme_error_t gpgme_op_keysign       (gpgme_ctx_t ctx,
+                                      gpgme_key_t key, const char *userid,
+                                      unsigned long expires,
+                                      unsigned int flags);
+
+
 
 
 /*
- * Key Edit interface
+ * Key edit interface
  */
 
 /* Edit the key KEY.  Send status and command requests to FNC and
