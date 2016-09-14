@@ -54,8 +54,10 @@ copystamp: $(COPY_FILES) $(COPY_FILES_PYME)
 	touch $@
 
 all-local: copystamp
-	CFLAGS="$(CFLAGS) -I$(top_srcdir)" \
-	  $(PYTHON) setup.py build --verbose
+	for PYTHON in $(PYTHONS); do \
+	  CFLAGS="$(CFLAGS) -I$(top_srcdir)" \
+	    $$PYTHON setup.py build --verbose ; \
+	done
 
 dist/pyme3-$(VERSION).tar.gz dist/pyme3-$(VERSION).tar.gz.asc: copystamp
 	CFLAGS="$(CFLAGS) -I$(top_srcdir)" \
@@ -87,10 +89,16 @@ clean-local:
 	fi
 
 install-exec-local:
-	$(PYTHON) setup.py install \
+	rm -f install_files.txt
+	for PYTHON in $(PYTHONS); do \
+	  $$PYTHON setup.py install \
 	  --prefix $(DESTDIR)$(prefix) \
-	  --record $(DESTDIR)$(pythondir)/pyme/install_files.txt \
-	  --verbose
+	  --record files.txt \
+	  --verbose ; \
+	  cat files.txt >> install_files.txt ; \
+	  rm files.txt ; \
+	done
+	mv install_files.txt $(DESTDIR)$(pythondir)/pyme
 
 uninstall-local:
 	xargs <$(DESTDIR)$(pythondir)/pyme/install_files.txt -- rm -rf --

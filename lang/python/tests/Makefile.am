@@ -26,8 +26,8 @@ test_srcdir = $(top_srcdir)/tests/gpg
 TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) \
 	LC_ALL=C GPG_AGENT_INFO= \
 	top_srcdir=$(top_srcdir) \
-	LD_LIBRARY_PATH="../../../src/.libs:$(LD_LIBRARY_PATH)" \
-	PYTHONPATH=`echo $(abs_builddir)/../build/lib.*`
+	srcdir=$(srcdir) \
+	LD_LIBRARY_PATH="../../../src/.libs:$(LD_LIBRARY_PATH)"
 
 py_tests = t-wrapper.py \
 	t-callbacks.py \
@@ -52,8 +52,23 @@ py_tests = t-wrapper.py \
 	t-idiomatic.py \
 	t-protocol-assuan.py
 
-TESTS = initial.py $(py_tests) final.py
-EXTRA_DIST = support.py $(TESTS) encrypt-only.asc sign-only.asc
+XTESTS = initial.py $(py_tests) final.py
+EXTRA_DIST = support.py $(XTESTS) encrypt-only.asc sign-only.asc \
+             run-tests.py
+
+# XXX: Currently, one cannot override automake's 'check' target.  As a
+# workaround, we avoid defining 'TESTS', thus automake will not emit
+# the 'check' target.  For extra robustness, we merely define a
+# dependency on 'xcheck', so this hack should also work even if
+# automake would emit the 'check' target, as adding dependencies to
+# targets is okay.
+check: xcheck
+
+.PHONY: xcheck
+xcheck:
+	$(TESTS_ENVIRONMENT) $(PYTHON) $(srcdir)/run-tests.py \
+	  --interpreters="$(PYTHONS)" --srcdir=$(srcdir) $(TESTFLAGS) \
+	  $(XTESTS)
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ gpg.conf pubring.gpg~ \
