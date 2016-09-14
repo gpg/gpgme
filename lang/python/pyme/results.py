@@ -92,12 +92,9 @@ class SignResult(Result):
 class Notation(Result):
     pass
 
-class TofuInfo(Result):
-    pass
-
 class Signature(Result):
     _type = dict(wrong_key_usage=bool, chain_model=bool)
-    _map = dict(notations=Notation, tofu=TofuInfo)
+    _map = dict(notations=Notation)
 
 class VerifyResult(Result):
     _map = dict(signatures=Signature)
