@@ -18,6 +18,9 @@
 
 """Simple interactive editor to test editor scripts"""
 
+from __future__ import absolute_import, print_function, unicode_literals
+del absolute_import, print_function, unicode_literals
+
 import sys
 import pyme
 import pyme.constants.status

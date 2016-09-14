@@ -24,6 +24,9 @@ be used like this:
 
 """
 
+from __future__ import absolute_import, print_function, unicode_literals
+del absolute_import, print_function, unicode_literals
+
 import sys
 import pyme
 pyme.Context().decrypt(sys.stdin, sink=sys.stdout)

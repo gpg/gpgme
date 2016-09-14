@@ -22,6 +22,9 @@ This program will try to encrypt a simple message to each key on your
 keyring.  If your keyring has any invalid keys on it, those keys will
 be skipped and it will re-try the encryption."""
 
+from __future__ import absolute_import, print_function, unicode_literals
+del absolute_import, print_function, unicode_literals
+
 import sys
 import os
 import pyme

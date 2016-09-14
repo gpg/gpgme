@@ -17,6 +17,9 @@
 
 """Demonstrate the use of the Assuan protocol engine"""
 
+from __future__ import absolute_import, print_function, unicode_literals
+del absolute_import, print_function, unicode_literals
+
 import pyme
 
 with pyme.Context(protocol=pyme.constants.PROTOCOL_ASSUAN) as c:

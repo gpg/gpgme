@@ -24,6 +24,9 @@ and the 'Data' class describing buffers of data.
 
 """
 
+from __future__ import absolute_import, print_function, unicode_literals
+del absolute_import, print_function, unicode_literals
+
 import re
 import os
 import weakref

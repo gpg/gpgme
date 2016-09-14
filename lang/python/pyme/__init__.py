@@ -99,6 +99,9 @@ GPGME documentation: https://www.gnupg.org/documentation/manuals/gpgme/
 
 """
 
+from __future__ import absolute_import, print_function, unicode_literals
+del absolute_import, print_function, unicode_literals
+
 from . import core
 from . import errors
 from . import constants
