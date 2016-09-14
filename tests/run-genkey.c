@@ -199,9 +199,13 @@ parse_usage_string (const char *string)
 static int
 show_usage (int ex)
 {
-  fputs ("usage: " PGM " [options] USERID [ALGO [USAGE [EXPIRESECONDS]]]\n\n"
+  fputs ("usage: " PGM " [options] ARGS\n"
+         "         args: USERID [ALGO [USAGE [EXPIRESECONDS]]]\n"
+         "   for addkey: FPR    [ALGO [USAGE [EXPIRESECONDS]]]\n"
+         "   for adduid: FPR    USERID\n"
          "Options:\n"
-         "  --addkey         add a subkey to the key with USERID\n"
+         "  --addkey         add a subkey to the key with FPR\n"
+         "  --adduid         add a user id to the key with FPR\n"
          "  --verbose        run in verbose mode\n"
          "  --status         print status lines from the backend\n"
          "  --progress       print progress info\n"
@@ -226,8 +230,10 @@ main (int argc, char **argv)
   int print_progress = 0;
   int use_loopback = 0;
   int addkey = 0;
+  int adduid = 0;
   const char *userid;
   const char *algo = NULL;
+  const char *newuserid = NULL;
   unsigned int flags = 0;
   unsigned long expire = 0;
   gpgme_genkey_result_t result;
@@ -248,6 +254,13 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--addkey"))
         {
           addkey = 1;
+          adduid = 0;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--adduid"))
+        {
+          addkey = 0;
+          adduid = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--verbose"))
@@ -294,15 +307,25 @@ main (int argc, char **argv)
         show_usage (1);
     }
 
-  if (!argc || argc > 4)
-    show_usage (1);
-  userid = argv[0];
-  if (argc > 1)
-    algo = argv[1];
-  if (argc > 2)
-    flags |= parse_usage_string (argv[2]);
-  if (argc > 3)
-    expire = parse_expire_string (argv[3]);
+  if (adduid)
+    {
+      if (argc != 2)
+        show_usage (1);
+      userid = argv[0];
+      newuserid = argv[1];
+    }
+  else
+    {
+      if (!argc || argc > 4)
+        show_usage (1);
+      userid = argv[0];
+      if (argc > 1)
+        algo = argv[1];
+      if (argc > 2)
+        flags |= parse_usage_string (argv[2]);
+      if (argc > 3)
+        expire = parse_expire_string (argv[3]);
+    }
 
   init_gpgme (protocol);
 
@@ -323,7 +346,7 @@ main (int argc, char **argv)
       gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
     }
 
-  if (addkey)
+  if (addkey || adduid)
     {
       gpgme_key_t akey;
 
@@ -335,12 +358,25 @@ main (int argc, char **argv)
           exit (1);
         }
 
-      err = gpgme_op_createsubkey (ctx, akey, algo, 0, expire, flags);
-      if (err)
+      if (addkey)
         {
-          fprintf (stderr, PGM ": gpgme_op_createsubkey failed: %s\n",
-                   gpg_strerror (err));
-          exit (1);
+          err = gpgme_op_createsubkey (ctx, akey, algo, 0, expire, flags);
+          if (err)
+            {
+              fprintf (stderr, PGM ": gpgme_op_createsubkey failed: %s\n",
+                       gpg_strerror (err));
+              exit (1);
+            }
+        }
+      else if (adduid)
+        {
+          err = gpgme_op_adduid (ctx, akey, newuserid, flags);
+          if (err)
+            {
+              fprintf (stderr, PGM ": gpgme_op_adduid failed: %s\n",
+                       gpg_strerror (err));
+              exit (1);
+            }
         }
       gpgme_key_unref (akey);
     }
@@ -373,6 +409,8 @@ main (int argc, char **argv)
     fprintf (stderr, PGM": primary key was not generated\n");
   if (!result->sub)
     fprintf (stderr, PGM": sub key was not generated\n");
+  if (!result->uid)
+    fprintf (stderr, PGM": uid was not generated\n");
 
   gpgme_release (ctx);
   return 0;

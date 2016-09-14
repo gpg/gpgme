@@ -19,6 +19,8 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  gpgme_op_createkey_start       NEW.
  gpgme_op_createsubkey          NEW.
  gpgme_op_createsubkey_start    NEW.
+ gpgme_op_adduid_start          NEW.
+ gpgme_op_adduid                NEW.
  gpgme_genkey_result_t          EXTENDED: New fields pubkey and seckey.
  gpgme_signature_t              EXTENDED: New field key.
  gpgme_key_t                    EXTENDED: New field fpr.

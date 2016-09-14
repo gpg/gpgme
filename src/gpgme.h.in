@@ -1835,8 +1835,11 @@ struct _gpgme_op_genkey_result
   /* A sub key was generated.  */
   unsigned int sub : 1;
 
+  /* A user id was generated.  */
+  unsigned int uid : 1;
+
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 30;
+  unsigned int _unused : 29;
 
   /* The fingerprint of the generated key.  */
   char *fpr;
@@ -1887,6 +1890,14 @@ gpgme_error_t gpgme_op_createsubkey       (gpgme_ctx_t ctx,
                                            unsigned long reserved,
                                            unsigned long expires,
                                            unsigned int flags);
+
+/* Add USERID to an existing KEY.  */
+gpgme_error_t gpgme_op_adduid_start (gpgme_ctx_t ctx,
+                                     gpgme_key_t key, const char *userid,
+                                     unsigned int flags);
+gpgme_error_t gpgme_op_adduid       (gpgme_ctx_t ctx,
+                                     gpgme_key_t key, const char *userid,
+                                     unsigned int flags);
 
 
 

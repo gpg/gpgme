@@ -2114,11 +2114,25 @@ gpg_addkey (engine_gpg_t gpg,
 
 static gpgme_error_t
 gpg_adduid (engine_gpg_t gpg,
-            const char *userid,
-            unsigned int flags,
-            int use_armor)
+            gpgme_key_t key,
+            const char *userid)
 {
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  gpgme_error_t err;
+
+  if (!key || !key->fpr || !userid)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  err = add_arg (gpg, "--quick-adduid");
+  if (!err)
+    err = add_arg (gpg, "--");
+  if (!err)
+    err = add_arg (gpg, key->fpr);
+  if (!err)
+    err = add_arg (gpg, userid);
+
+  if (!err)
+    err = start (gpg);
+  return err;
 }
 
 
@@ -2170,7 +2184,7 @@ gpg_genkey (void *engine,
   else if (!userid && key)
     err = gpg_addkey (gpg, algo, expires, key, flags, use_armor);
   else if (userid && key && !algo)
-    err = gpg_adduid (gpg, userid, flags, use_armor);
+    err = gpg_adduid (gpg, key, userid);
   else
     err = gpg_error (GPG_ERR_INV_VALUE);
 
