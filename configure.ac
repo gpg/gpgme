@@ -392,6 +392,11 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
 	PYTHON_VERSIONS=
 	unset PYTHON
 	unset PYTHON_VERSION
+	unset PYTHON_CPPFLAGS
+	unset PYTHON_LDFLAGS
+	unset PYTHON_SITE_PKG
+	unset PYTHON_EXTRA_LIBS
+	unset PYTHON_EXTRA_LDFLAGS
 	unset ac_cv_path_PYTHON
 	unset am_cv_pathless_PYTHON
 	unset am_cv_python_version
@@ -401,6 +406,7 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
 
 	if test "$found_py" = "1" -o "$found_py2" = "1"; then
 	    AM_PATH_PYTHON([2.7])
+	    AX_PYTHON_DEVEL
 	    if test "$PYTHON"; then
 		PYTHONS="$(echo $PYTHONS $PYTHON)"
 		PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
@@ -411,6 +417,11 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
 	    # Reset everything, so that we can look for another Python.
 	    unset PYTHON
 	    unset PYTHON_VERSION
+	    unset PYTHON_CPPFLAGS
+	    unset PYTHON_LDFLAGS
+	    unset PYTHON_SITE_PKG
+	    unset PYTHON_EXTRA_LIBS
+	    unset PYTHON_EXTRA_LDFLAGS
 	    unset ac_cv_path_PYTHON
 	    unset am_cv_pathless_PYTHON
 	    unset am_cv_python_version
@@ -418,6 +429,7 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
 	    unset am_cv_python_pythondir
 	    unset am_cv_python_pyexecdir
 	    AM_PATH_PYTHON([3.4])
+	    AX_PYTHON_DEVEL
 	    if test "$PYTHON"; then
 		PYTHONS="$(echo $PYTHONS $PYTHON)"
 		PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
