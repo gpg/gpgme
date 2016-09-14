@@ -387,3 +387,88 @@ gpgme_op_createkey (gpgme_ctx_t ctx, const char *userid, const char *algo,
     err = _gpgme_wait_one (ctx);
   return TRACE_ERR (err);
 }
+
+
+
+static gpgme_error_t
+createsubkey_start (gpgme_ctx_t ctx, int synchronous,
+                    gpgme_key_t key,
+                    const char *algo,
+                    unsigned long reserved, unsigned long expires,
+                    unsigned int flags)
+{
+  gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
+
+  if (ctx->protocol != GPGME_PROTOCOL_OPENPGP)
+    return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
+
+  err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  if (reserved || !key)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, &hook,
+			       sizeof (*opd), release_op_data);
+  opd = hook;
+  if (err)
+    return err;
+
+  _gpgme_engine_set_status_handler (ctx->engine, genkey_status_handler, ctx);
+
+  if (ctx->passphrase_cb)
+    {
+      err = _gpgme_engine_set_command_handler
+        (ctx->engine, _gpgme_passphrase_command_handler, ctx, NULL);
+      if (err)
+        return err;
+    }
+
+  return _gpgme_engine_op_genkey (ctx->engine,
+                                  NULL, algo, reserved, expires,
+                                  key, flags,
+                                  NULL, ctx->use_armor, NULL, NULL);
+
+}
+
+
+/* Add a subkey to an existing KEY.  */
+gpgme_error_t
+gpgme_op_createsubkey_start (gpgme_ctx_t ctx, gpgme_key_t key, const char *algo,
+                             unsigned long reserved, unsigned long expires,
+                             unsigned int flags)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_createsubkey_start", ctx,
+	      "key=%p, algo='%s' flags=0x%x", key, algo, flags);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  err = createsubkey_start (ctx, 0, key, algo, reserved, expires, flags);
+  return TRACE_ERR (err);
+}
+
+
+gpgme_error_t
+gpgme_op_createsubkey (gpgme_ctx_t ctx, gpgme_key_t key, const char *algo,
+                       unsigned long reserved, unsigned long expires,
+                       unsigned int flags)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_createsubkey", ctx,
+	      "key=%p, algo='%s' flags=0x%x", key, algo, flags);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  err = createsubkey_start (ctx, 1, key, algo, reserved, expires, flags);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  return TRACE_ERR (err);
+}

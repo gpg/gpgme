@@ -1969,6 +1969,47 @@ gpg_export_ext (void *engine, const char *pattern[], gpgme_export_mode_t mode,
 }
 
 
+
+/* Helper to add algo, usage, and expire to the list of args.  */
+static gpgme_error_t
+gpg_add_algo_usage_expire (engine_gpg_t gpg,
+                           const char *algo,
+                           unsigned long expires,
+                           unsigned int flags)
+{
+  gpg_error_t err;
+
+  /* This condition is only required to allow the use of gpg < 2.1.16 */
+  if (algo
+      || (flags & (GPGME_CREATE_SIGN | GPGME_CREATE_ENCR
+                   | GPGME_CREATE_CERT | GPGME_CREATE_AUTH))
+      || expires)
+    {
+      err = add_arg (gpg, algo? algo : "default");
+      if (!err)
+        {
+          char tmpbuf[5*4+1];
+          snprintf (tmpbuf, sizeof tmpbuf, "%s%s%s%s",
+                    (flags & GPGME_CREATE_SIGN)? " sign":"",
+                    (flags & GPGME_CREATE_ENCR)? " encr":"",
+                    (flags & GPGME_CREATE_CERT)? " cert":"",
+                    (flags & GPGME_CREATE_AUTH)? " auth":"");
+          err = add_arg (gpg, *tmpbuf? tmpbuf : "default");
+        }
+      if (!err && expires)
+        {
+          char tmpbuf[8+20];
+          snprintf (tmpbuf, sizeof tmpbuf, "seconds=%lu", expires);
+          err = add_arg (gpg, tmpbuf);
+        }
+    }
+  else
+    err = 0;
+
+  return err;
+}
+
+
 static gpgme_error_t
 gpg_createkey_from_param (engine_gpg_t gpg,
                           gpgme_data_t help_data, int use_armor)
@@ -2026,32 +2067,8 @@ gpg_createkey (engine_gpg_t gpg,
   if (!err)
     err = add_arg (gpg, userid);
 
-  /* This condition is only required to allow the use of gpg < 2.1.16 */
-  if (algo
-      || (flags & (GPGME_CREATE_SIGN | GPGME_CREATE_ENCR
-                   | GPGME_CREATE_CERT | GPGME_CREATE_AUTH))
-      || expires)
-    {
-
-      if (!err)
-        err = add_arg (gpg, algo? algo : "default");
-      if (!err)
-        {
-          char tmpbuf[5*4+1];
-          snprintf (tmpbuf, sizeof tmpbuf, "%s%s%s%s",
-                    (flags & GPGME_CREATE_SIGN)? " sign":"",
-                    (flags & GPGME_CREATE_ENCR)? " encr":"",
-                    (flags & GPGME_CREATE_CERT)? " cert":"",
-                    (flags & GPGME_CREATE_AUTH)? " auth":"");
-          err = add_arg (gpg, *tmpbuf? tmpbuf : "default");
-        }
-      if (!err && expires)
-        {
-          char tmpbuf[8+20];
-          snprintf (tmpbuf, sizeof tmpbuf, "seconds=%lu", expires);
-          err = add_arg (gpg, tmpbuf);
-        }
-    }
+  if (!err)
+    err = gpg_add_algo_usage_expire (gpg, algo, expires, flags);
 
   if (!err)
     err = start (gpg);
@@ -2067,7 +2084,31 @@ gpg_addkey (engine_gpg_t gpg,
             unsigned int flags,
             int use_armor)
 {
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  gpgme_error_t err;
+
+  if (!key || !key->fpr)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  err = add_arg (gpg, "--quick-addkey");
+  if (!err && use_armor)
+    err = add_arg (gpg, "--armor");
+  if (!err && (flags & GPGME_CREATE_NOPASSWD))
+    {
+      err = add_arg (gpg, "--passphrase");
+      if (!err)
+        err = add_arg (gpg, "");
+    }
+  if (!err)
+    err = add_arg (gpg, "--");
+  if (!err)
+    err = add_arg (gpg, key->fpr);
+
+  if (!err)
+    err = gpg_add_algo_usage_expire (gpg, algo, expires, flags);
+
+  if (!err)
+    err = start (gpg);
+  return err;
 }
 
 

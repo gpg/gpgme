@@ -105,6 +105,8 @@ GPGME_1.1 {
 
     gpgme_op_createkey_start;
     gpgme_op_createkey;
+    gpgme_op_createsubkey_start;
+    gpgme_op_createsubkey;
 };
 
 

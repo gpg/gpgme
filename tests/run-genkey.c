@@ -201,6 +201,7 @@ show_usage (int ex)
 {
   fputs ("usage: " PGM " [options] USERID [ALGO [USAGE [EXPIRESECONDS]]]\n\n"
          "Options:\n"
+         "  --addkey         add a subkey to the key with USERID\n"
          "  --verbose        run in verbose mode\n"
          "  --status         print status lines from the backend\n"
          "  --progress       print progress info\n"
@@ -224,6 +225,7 @@ main (int argc, char **argv)
   int print_status = 0;
   int print_progress = 0;
   int use_loopback = 0;
+  int addkey = 0;
   const char *userid;
   const char *algo = NULL;
   unsigned int flags = 0;
@@ -243,6 +245,11 @@ main (int argc, char **argv)
         }
       else if (!strcmp (*argv, "--help"))
         show_usage (0);
+      else if (!strcmp (*argv, "--addkey"))
+        {
+          addkey = 1;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--verbose"))
         {
           verbose = 1;
@@ -316,12 +323,36 @@ main (int argc, char **argv)
       gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
     }
 
-  err = gpgme_op_createkey (ctx, userid, algo, 0, expire, NULL, flags);
-  if (err)
+  if (addkey)
     {
-      fprintf (stderr, PGM ": gpgme_op_createkey failed: %s\n",
-               gpg_strerror (err));
-      exit (1);
+      gpgme_key_t akey;
+
+      err = gpgme_get_key (ctx, userid, &akey, 1);
+      if (err)
+        {
+          fprintf (stderr, PGM ": error getting secret key for '%s': %s\n",
+                   userid, gpg_strerror (err));
+          exit (1);
+        }
+
+      err = gpgme_op_createsubkey (ctx, akey, algo, 0, expire, flags);
+      if (err)
+        {
+          fprintf (stderr, PGM ": gpgme_op_createsubkey failed: %s\n",
+                   gpg_strerror (err));
+          exit (1);
+        }
+      gpgme_key_unref (akey);
+    }
+  else
+    {
+      err = gpgme_op_createkey (ctx, userid, algo, 0, expire, NULL, flags);
+      if (err)
+        {
+          fprintf (stderr, PGM ": gpgme_op_createkey failed: %s\n",
+                   gpg_strerror (err));
+          exit (1);
+        }
     }
 
   result = gpgme_op_genkey_result (ctx);

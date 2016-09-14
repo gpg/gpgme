@@ -231,6 +231,8 @@ EXPORTS
 
     gpgme_op_createkey_start              @172
     gpgme_op_createkey                    @173
+    gpgme_op_createsubkey_start           @174
+    gpgme_op_createsubkey                 @175
 
 ; END
 

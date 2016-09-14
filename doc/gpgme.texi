@@ -3792,7 +3792,7 @@ The function @code{gpgme_op_genkey} generates a new key pair in the
 context @var{ctx}.  The meaning of @var{public} and @var{secret}
 depends on the crypto backend.
 
-GnuPG does not support @var{public} and @var{secret}, they should be
+GPG does not support @var{public} and @var{secret}, they should be
 @code{NULL}.  GnuPG will generate a key pair and add it to the
 standard key ring.  The fingerprint of the generated key is available
 with @code{gpgme_op_genkey_result}.
