@@ -778,8 +778,8 @@ _gpgme_engine_op_genkey (engine_t engine,
                          unsigned long reserved, unsigned long expires,
                          gpgme_key_t key, unsigned int flags,
                          gpgme_data_t help_data,
-			 int use_armor, gpgme_data_t pubkey,
-			 gpgme_data_t seckey)
+			 unsigned int extraflags,
+                         gpgme_data_t pubkey, gpgme_data_t seckey)
 {
   if (!engine)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -789,7 +789,7 @@ _gpgme_engine_op_genkey (engine_t engine,
 
   return (*engine->ops->genkey) (engine->engine,
                                  userid, algo, reserved, expires, key, flags,
-                                 help_data, use_armor,
+                                 help_data, extraflags,
 				 pubkey, seckey);
 }
 

@@ -86,7 +86,8 @@ struct engine_ops
                            const char *userid, const char *algo,
                            unsigned long reserved, unsigned long expires,
                            gpgme_key_t key, unsigned int flags,
-                           gpgme_data_t help_data, int use_armor,
+                           gpgme_data_t help_data,
+                           unsigned int extraflags,
 			   gpgme_data_t pubkey, gpgme_data_t seckey);
   gpgme_error_t (*import) (void *engine, gpgme_data_t keydata,
                            gpgme_key_t *keyarray);

@@ -24,6 +24,10 @@
 
 #include "gpgme.h"
 
+/* Flags used by the EXTRAFLAGS arg of _gpgme_engine_op_genkey.  */
+#define GENKEY_EXTRAFLAG_ARMOR 1
+
+
 struct engine;
 typedef struct engine *engine_t;
 
@@ -113,7 +117,8 @@ gpgme_error_t _gpgme_engine_op_genkey (engine_t engine,
                                        unsigned long expires,
                                        gpgme_key_t key, unsigned int flags,
 				       gpgme_data_t help_data,
-				       int use_armor, gpgme_data_t pubkey,
+				       unsigned int extraflags,
+                                       gpgme_data_t pubkey,
 				       gpgme_data_t seckey);
 gpgme_error_t _gpgme_engine_op_import (engine_t engine,
 				       gpgme_data_t keydata,

@@ -267,7 +267,8 @@ genkey_start (gpgme_ctx_t ctx, int synchronous, const char *parms,
   return _gpgme_engine_op_genkey (ctx->engine,
                                   NULL, NULL, 0, 0, NULL, 0,
                                   opd->key_parameter,
-				  ctx->use_armor, pubkey, seckey);
+				  ctx->use_armor? GENKEY_EXTRAFLAG_ARMOR:0,
+                                  pubkey, seckey);
 }
 
 
@@ -352,7 +353,9 @@ createkey_start (gpgme_ctx_t ctx, int synchronous,
   return _gpgme_engine_op_genkey (ctx->engine,
                                   userid, algo, reserved, expires,
                                   anchorkey, flags,
-                                  NULL, ctx->use_armor, NULL, NULL);
+                                  NULL,
+				  ctx->use_armor? GENKEY_EXTRAFLAG_ARMOR:0,
+                                  NULL, NULL);
 
 }
 
@@ -438,7 +441,9 @@ createsubkey_start (gpgme_ctx_t ctx, int synchronous,
   return _gpgme_engine_op_genkey (ctx->engine,
                                   NULL, algo, reserved, expires,
                                   key, flags,
-                                  NULL, ctx->use_armor, NULL, NULL);
+                                  NULL,
+				  ctx->use_armor? GENKEY_EXTRAFLAG_ARMOR:0,
+                                  NULL, NULL);
 
 }
 
@@ -522,7 +527,9 @@ adduid_start (gpgme_ctx_t ctx, int synchronous,
   return _gpgme_engine_op_genkey (ctx->engine,
                                   userid, NULL, 0, 0,
                                   key, flags,
-                                  NULL, ctx->use_armor, NULL, NULL);
+                                  NULL,
+				  ctx->use_armor? GENKEY_EXTRAFLAG_ARMOR:0,
+                                  NULL, NULL);
 
 }
 

@@ -1447,7 +1447,7 @@ gpgsm_genkey (void *engine,
               const char *userid, const char *algo,
               unsigned long reserved, unsigned long expires,
               gpgme_key_t key, unsigned int flags,
-              gpgme_data_t help_data, int use_armor,
+              gpgme_data_t help_data, unsigned int extraflags,
 	      gpgme_data_t pubkey, gpgme_data_t seckey)
 {
   engine_gpgsm_t gpgsm = engine;
@@ -1468,7 +1468,8 @@ gpgsm_genkey (void *engine,
       if (err)
         return err;
       gpgsm->output_cb.data = pubkey;
-      err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor"
+      err = gpgsm_set_fd (gpgsm, OUTPUT_FD,
+                          (extraflags & GENKEY_EXTRAFLAG_ARMOR)? "--armor"
                           : map_data_enc (gpgsm->output_cb.data));
       if (err)
         return err;

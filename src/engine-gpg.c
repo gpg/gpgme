@@ -2012,12 +2012,12 @@ gpg_add_algo_usage_expire (engine_gpg_t gpg,
 
 static gpgme_error_t
 gpg_createkey_from_param (engine_gpg_t gpg,
-                          gpgme_data_t help_data, int use_armor)
+                          gpgme_data_t help_data, unsigned int extraflags)
 {
   gpgme_error_t err;
 
   err = add_arg (gpg, "--gen-key");
-  if (!err && use_armor)
+  if (!err && (extraflags & GENKEY_EXTRAFLAG_ARMOR))
     err = add_arg (gpg, "--armor");
   if (!err)
     err = add_arg (gpg, "--");
@@ -2036,7 +2036,7 @@ gpg_createkey_legacy (engine_gpg_t gpg,
                const char *userid, const char *algo,
                unsigned long expires,
                unsigned int flags,
-               int use_armor)
+               unsigned int extraflags)
 {
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
@@ -2047,12 +2047,12 @@ gpg_createkey (engine_gpg_t gpg,
                const char *userid, const char *algo,
                unsigned long expires,
                unsigned int flags,
-               int use_armor)
+               unsigned int extraflags)
 {
   gpgme_error_t err;
 
   err = add_arg (gpg, "--quick-gen-key");
-  if (!err && use_armor)
+  if (!err && (extraflags & GENKEY_EXTRAFLAG_ARMOR))
     err = add_arg (gpg, "--armor");
   if (!err && (flags & GPGME_CREATE_NOPASSWD))
     {
@@ -2082,7 +2082,7 @@ gpg_addkey (engine_gpg_t gpg,
             unsigned long expires,
             gpgme_key_t key,
             unsigned int flags,
-            int use_armor)
+            unsigned int extraflags)
 {
   gpgme_error_t err;
 
@@ -2090,7 +2090,7 @@ gpg_addkey (engine_gpg_t gpg,
     return gpg_error (GPG_ERR_INV_ARG);
 
   err = add_arg (gpg, "--quick-addkey");
-  if (!err && use_armor)
+  if (!err && (extraflags & GENKEY_EXTRAFLAG_ARMOR))
     err = add_arg (gpg, "--armor");
   if (!err && (flags & GPGME_CREATE_NOPASSWD))
     {
@@ -2141,7 +2141,7 @@ gpg_genkey (void *engine,
             const char *userid, const char *algo,
             unsigned long reserved, unsigned long expires,
             gpgme_key_t key, unsigned int flags,
-            gpgme_data_t help_data, int use_armor,
+            gpgme_data_t help_data, unsigned int extraflags,
 	    gpgme_data_t pubkey, gpgme_data_t seckey)
 {
   engine_gpg_t gpg = engine;
@@ -2169,20 +2169,20 @@ gpg_genkey (void *engine,
       if (pubkey || seckey)
         err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
       else
-        err = gpg_createkey_from_param (gpg, help_data, use_armor);
+        err = gpg_createkey_from_param (gpg, help_data, extraflags);
     }
   else if (userid && !key)
     {
       if (!have_gpg_version (gpg, "2.1.13"))
         err = gpg_createkey_legacy (gpg, userid, algo, expires, flags,
-                                    use_armor);
+                                    extraflags);
       else
-        err = gpg_createkey (gpg, userid, algo, expires, flags, use_armor);
+        err = gpg_createkey (gpg, userid, algo, expires, flags, extraflags);
     }
   else if (!have_gpg_version (gpg, "2.1.13"))
     err = gpg_error (GPG_ERR_NOT_SUPPORTED);
   else if (!userid && key)
-    err = gpg_addkey (gpg, algo, expires, key, flags, use_armor);
+    err = gpg_addkey (gpg, algo, expires, key, flags, extraflags);
   else if (userid && key && !algo)
     err = gpg_adduid (gpg, key, userid);
   else
