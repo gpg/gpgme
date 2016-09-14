@@ -26,7 +26,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import sys
-import os
 import pyme
 
 with pyme.Context(armor=True) as c:
