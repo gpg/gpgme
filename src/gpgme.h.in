@@ -444,7 +444,9 @@ typedef unsigned int gpgme_export_mode_t;
 #define GPGME_AUDITLOG_HTML      1
 #define GPGME_AUDITLOG_WITH_HELP 128
 
-/* The possible stati for the edit operation.  */
+
+/* The possible stati for gpgme_op_edit.  The use of that function and
+ * these status codes are deprecated in favor of gpgme_op_interact. */
 typedef enum
   {
     GPGME_STATUS_EOF = 0,
@@ -967,8 +969,13 @@ typedef void (*gpgme_progress_cb_t) (void *opaque, const char *what,
 typedef gpgme_error_t (*gpgme_status_cb_t) (void *opaque, const char *keyword,
                                             const char *args);
 
-
 /* Interact with the user about an edit operation.  */
+typedef gpgme_error_t (*gpgme_interact_cb_t) (void *opaque,
+                                              const char *keyword,
+                                              const char *args, int fd);
+
+/* The callback type used by the deprecated functions gpgme_op_card
+ * and gpgme_of_card_edit.  */
 typedef gpgme_error_t (*gpgme_edit_cb_t) (void *opaque,
 					  gpgme_status_code_t status,
 					  const char *args, int fd);
@@ -1217,7 +1224,7 @@ void gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs);
 void gpgme_get_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs);
 
 /* Wrappers around the internal I/O functions for use with
-   gpgme_passphrase_cb_t and gpgme_edit_cb_t.  */
+   gpgme_passphrase_cb_t and gpgme_interact_cb_t.  */
 @API__SSIZE_T@ gpgme_io_read (int fd, void *buffer, size_t count);
 @API__SSIZE_T@ gpgme_io_write (int fd, const void *buffer, size_t count);
 int     gpgme_io_writen (int fd, const void *buffer, size_t count);
@@ -1949,23 +1956,36 @@ gpgme_error_t gpgme_op_keysign       (gpgme_ctx_t ctx,
  * Key edit interface
  */
 
-/* Edit the key KEY.  Send status and command requests to FNC and
+/* Flags to select the mode of the interact.  */
+#define GPGME_INTERACT_CARD   (1 << 0)  /* Use --card-edit mode. */
+
+
+/* Edit the KEY.  Send status and command requests to FNC and
    output of edit commands to OUT.  */
+gpgme_error_t gpgme_op_interact_start (gpgme_ctx_t ctx,
+                                       gpgme_key_t key,
+                                       unsigned int flags,
+                                       gpgme_interact_cb_t fnc,
+                                       void *fnc_value,
+                                       gpgme_data_t out);
+gpgme_error_t gpgme_op_interact (gpgme_ctx_t ctx, gpgme_key_t key,
+                                 unsigned int flags,
+                                 gpgme_interact_cb_t fnc,
+                                 void *fnc_value,
+                                 gpgme_data_t out);
+
 gpgme_error_t gpgme_op_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 				   gpgme_edit_cb_t fnc, void *fnc_value,
-				   gpgme_data_t out);
+				   gpgme_data_t out) _GPGME_DEPRECATED;
 gpgme_error_t gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 			     gpgme_edit_cb_t fnc, void *fnc_value,
-			     gpgme_data_t out);
-
-/* Edit the card for the key KEY.  Send status and command requests to
-   FNC and output of edit commands to OUT.  */
+			     gpgme_data_t out) _GPGME_DEPRECATED;
 gpgme_error_t gpgme_op_card_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 					gpgme_edit_cb_t fnc, void *fnc_value,
-					gpgme_data_t out);
+					gpgme_data_t out) _GPGME_DEPRECATED;
 gpgme_error_t gpgme_op_card_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 				  gpgme_edit_cb_t fnc, void *fnc_value,
-				  gpgme_data_t out);
+				  gpgme_data_t out) _GPGME_DEPRECATED;
 
 
 /* Set the Tofu policy of KEY to POLCIY.  */

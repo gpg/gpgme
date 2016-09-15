@@ -9,6 +9,9 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
 
  * New global flag "require-gnupg" to set a minimal gnupg version.
 
+ * New function gpgme_op_interact to replace the deprecated functions
+   gpgme_op_edit and gpgme_op_card_edit.
+
  * Interface changes relative to the 1.6.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_pubkey_algo_string       NEW.
@@ -27,6 +30,15 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  gpgme_op_keysign               NEW.
  gpgme_op_tofu_policy_start     NEW.
  gpgme_op_tofu_policy           NEW.
+ gpgme_op_interact_start        NEW.
+ gpgme_op_interact              NEW.
+ gpgme_interact_cb_t            NEW.
+ gpgme_op_edit_start            DEPRECATED.
+ gpgme_op_edit                  DEPRECATED.
+ gpgme_op_card_edit_start       DEPRECATED.
+ gpgme_op_card_edit             DEPRECATED.
+ gpgme_edit_cb_t                DEPRECATED.
+ gpgme_status_code_t            DEPRECATED.
  gpgme_genkey_result_t          EXTENDED: New fields pubkey and seckey.
  gpgme_signature_t              EXTENDED: New field key.
  gpgme_key_t                    EXTENDED: New field fpr.
@@ -56,6 +68,7 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  GPGME_CREATE_FORCE             NEW.
  GPGME_KEYSIGN_LOCAL            NEW.
  GPGME_KEYSIGN_LFSEP            NEW.
+ GPGME_INTERACT_CARD            NEW.
 
 
 Noteworthy changes in version 1.6.0 (2015-08-26) [C25/A14/R0]

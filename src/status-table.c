@@ -169,3 +169,15 @@ _gpgme_parse_status (const char *name)
 	       sizeof t, status_cmp);
   return r ? r->code : -1;
 }
+
+
+const char *
+_gpgme_status_to_string (gpgme_status_code_t code)
+{
+  int i;
+
+  for (i=0; i < DIM(status_table); i++)
+    if (status_table[i].code == code)
+      return status_table[i].name;
+  return "status_code_lost";
+}

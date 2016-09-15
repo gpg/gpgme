@@ -27,12 +27,15 @@
 #include "debug.h"
 #include "context.h"
 #include "ops.h"
+#include "util.h"
+
 
 
 typedef struct
 {
   /* The user callback function and its hook value.  */
-  gpgme_edit_cb_t fnc;
+  gpgme_interact_cb_t fnc;
+  gpgme_edit_cb_t fnc_old;
   void *fnc_value;
 } *op_data_t;
 
@@ -58,7 +61,11 @@ edit_status_handler (void *priv, gpgme_status_code_t status, char *args)
   if (err)
     return err;
 
-  return (*opd->fnc) (opd->fnc_value, status, args, -1);
+  if (opd->fnc_old)
+    return (*opd->fnc_old) (opd->fnc_value, status, args, -1);
+
+  return (*opd->fnc) (opd->fnc_value, _gpgme_status_to_string (status),
+                      args, -1);
 }
 
 
@@ -90,7 +97,12 @@ command_handler (void *priv, gpgme_status_code_t status, const char *args,
       if (err)
 	return err;
 
-      err = (*opd->fnc) (opd->fnc_value, status, args, fd);
+      if (opd->fnc_old)
+        err = (*opd->fnc_old) (opd->fnc_value, status, args, fd);
+      else
+        err = (*opd->fnc) (opd->fnc_value, _gpgme_status_to_string (status),
+                           args, fd);
+
       if (gpg_err_code (err) == GPG_ERR_FALSE)
         err = 0;
       else
@@ -102,6 +114,87 @@ command_handler (void *priv, gpgme_status_code_t status, const char *args,
 }
 
 
+static gpgme_error_t
+interact_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
+                unsigned int flags,
+                gpgme_interact_cb_t fnc, void *fnc_value, gpgme_data_t out)
+{
+  gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
+
+  err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  if (!fnc || !out)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, &hook, sizeof (*opd), NULL);
+  opd = hook;
+  if (err)
+    return err;
+
+  opd->fnc = fnc;
+  opd->fnc_old = NULL;
+  opd->fnc_value = fnc_value;
+
+  err = _gpgme_engine_set_command_handler (ctx->engine, command_handler,
+					   ctx, out);
+  if (err)
+    return err;
+
+  _gpgme_engine_set_status_handler (ctx->engine, edit_status_handler, ctx);
+
+  return _gpgme_engine_op_edit (ctx->engine,
+                                (flags & GPGME_INTERACT_CARD)? 1: 0,
+                                key, out, ctx);
+}
+
+
+gpgme_error_t
+gpgme_op_interact_start (gpgme_ctx_t ctx, gpgme_key_t key, unsigned int flags,
+                         gpgme_interact_cb_t fnc, void *fnc_value,
+                         gpgme_data_t out)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG5 (DEBUG_CTX, "gpgme_op_interact_start", ctx,
+	      "key=%p flags=0x%x fnc=%p fnc_value=%p, out=%p",
+	      key, flags,fnc, fnc_value, out);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  err = interact_start (ctx, 0, key, flags, fnc, fnc_value, out);
+  return err;
+}
+
+
+gpgme_error_t
+gpgme_op_interact (gpgme_ctx_t ctx, gpgme_key_t key, unsigned int flags,
+                   gpgme_interact_cb_t fnc, void *fnc_value,
+                   gpgme_data_t out)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG5 (DEBUG_CTX, "gpgme_op_interact", ctx,
+	      "key=%p flags=0x%x fnc=%p fnc_value=%p, out=%p",
+	      key, flags,fnc, fnc_value, out);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  err = interact_start (ctx, 1, key, flags, fnc, fnc_value, out);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  return err;
+}
+
+
+
+
+/* The deprectated interface.  */
 static gpgme_error_t
 edit_start (gpgme_ctx_t ctx, int synchronous, int type, gpgme_key_t key,
 	    gpgme_edit_cb_t fnc, void *fnc_value, gpgme_data_t out)
@@ -122,7 +215,8 @@ edit_start (gpgme_ctx_t ctx, int synchronous, int type, gpgme_key_t key,
   if (err)
     return err;
 
-  opd->fnc = fnc;
+  opd->fnc = NULL;
+  opd->fnc_old = fnc;
   opd->fnc_value = fnc_value;
 
   err = _gpgme_engine_set_command_handler (ctx->engine, command_handler,

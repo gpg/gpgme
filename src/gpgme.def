@@ -241,6 +241,8 @@ EXPORTS
     gpgme_op_keysign                      @181
     gpgme_op_tofu_policy_start            @182
     gpgme_op_tofu_policy                  @183
+    gpgme_op_interact_start               @184
+    gpgme_op_interact                     @185
 
 ; END
 

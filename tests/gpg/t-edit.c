@@ -55,7 +55,7 @@ flush_data (gpgme_data_t dh)
 
 
 gpgme_error_t
-edit_fnc (void *opaque, gpgme_status_code_t status, const char *args, int fd)
+interact_fnc (void *opaque, const char *status, const char *args, int fd)
 {
   const char *result = NULL;
   gpgme_data_t out = (gpgme_data_t) opaque;
@@ -63,7 +63,7 @@ edit_fnc (void *opaque, gpgme_status_code_t status, const char *args, int fd)
   fputs ("[-- Response --]\n", stdout);
   flush_data (out);
 
-  fprintf (stdout, "[-- Code: %i, %s --]\n", status, args);
+  fprintf (stdout, "[-- Code: %s, %s --]\n", status, args);
 
   if (fd >= 0)
     {
@@ -103,8 +103,8 @@ edit_fnc (void *opaque, gpgme_status_code_t status, const char *args, int fd)
 
   if (result)
     {
-      gpgme_io_write (fd, result, strlen (result));
-      gpgme_io_write (fd, "\n", 1);
+      gpgme_io_writen (fd, result, strlen (result));
+      gpgme_io_writen (fd, "\n", 1);
     }
   return 0;
 }
@@ -141,7 +141,7 @@ main (int argc, char **argv)
   err = gpgme_op_keylist_end (ctx);
   fail_if_err (err);
 
-  err = gpgme_op_edit (ctx, key, edit_fnc, out, out);
+  err = gpgme_op_interact (ctx, key, 0, interact_fnc, out, out);
   fail_if_err (err);
 
   fputs ("[-- Last response --]\n", stdout);

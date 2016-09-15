@@ -15,7 +15,7 @@
 
 @copying
 Copyright @copyright{} 2002, 2003, 2004, 2005, 2006, 2007,
-2008, 2010, 2012, 2013, 2014 g10 Code GmbH.
+2008, 2010, 2012, 2013, 2014, 2016 g10 Code GmbH.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -71,7 +71,7 @@ This is Edition @value{EDITION}, last updated @value{UPDATED}, of
 @center for version @value{VERSION}
 @page
 @vskip 0pt plus 1filll
-Published by g10 Code GmbH@* HÃ¼ttenstr. 61@* 40699 Erkrath, Germany
+Published by g10 Code GmbH@* Hüttenstr. 61@* 40699 Erkrath, Germany
 
 @insertcopying
 @end titlepage
@@ -4301,7 +4301,79 @@ could not be started.
 @subsection Advanced Key Editing
 @cindex key, edit
 
-@deftp {Data type} {gpgme_error_t (*gpgme_edit_cb_t) (@w{void *@var{handle}}, @w{gpgme_status_code_t @var{status}}, @w{const char *@var{args}}, @w{int @var{fd}})}
+@deftp {Data type} {gpgme_error_t (*gpgme_interact_cb_t) @
+   (@w{void *@var{handle}}, @
+    @w{const char *@var{status}}, @
+    @w{const char *@var{args}}, @
+    @w{int @var{fd}})}
+@tindex gpgme_interact_cb_t
+The @code{gpgme_interact_cb_t} type is the type of functions which
+@acronym{GPGME} calls if it a key interact operation is on-going.  The
+status keyword @var{status} and the argument line @var{args} are passed
+through by @acronym{GPGME} from the crypto engine.  The file
+descriptor @var{fd} is -1 for normal status messages.  If @var{status}
+indicates a command rather than a status message, the response to the
+command should be written to @var{fd}.  The @var{handle} is provided
+by the user at start of operation.
+
+The function should return @code{GPG_ERR_FALSE} if it did not handle
+the status code, @code{0} for success, or any other error value.
+@end deftp
+
+@deftypefun gpgme_error_t gpgme_op_interact (@w{gpgme_ctx_t @var{ctx}}, @
+   @w{gpgme_key_t @var{key}}, @
+   @w{unsigned int @var{flags}}, @
+   @w{gpgme_interact_cb_t @var{fnc}}, @
+   @w{void *@var{handle}}, @
+   @w{gpgme_data_t @var{out}})
+The function @code{gpgme_op_interact} processes the key @var{KEY}
+interactively, using the interact callback function @var{FNC} with the
+handle @var{HANDLE}.  The callback is invoked for every status and
+command request from the crypto engine.  The output of the crypto
+engine is written to the data object @var{out}.
+
+Note that the protocol between the callback function and the crypto
+engine is specific to the crypto engine and no further support in
+implementing this protocol correctly is provided by @acronym{GPGME}.
+
+@var{flags} modifies the behaviour of the function; the only defined
+bit value is:
+
+@table @code
+@item GPGME_INTERACT_CARD
+This is used for smartcard based keys and uses gpg’s
+@code{--card-edit} command.
+
+@end table
+
+The function returns @code{0} if the edit operation completes
+successfully, @code{GPG_ERR_INV_VALUE} if @var{ctx} or @var{key} is
+not a valid pointer, and any error returned by the crypto engine or
+the edit callback handler.
+@end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_interact_start (@w{gpgme_ctx_t @var{ctx}}, @
+   @w{gpgme_key_t @var{key}}, @
+   @w{unsigned int @var{flags}}, @
+   @w{gpgme_interact_cb_t @var{fnc}}, @
+   @w{void *@var{handle}}, @
+   @w{gpgme_data_t @var{out}})
+The function @code{gpgme_op_interact_start} initiates a
+@code{gpgme_op_interact} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns @code{0} if the operation was started
+successfully, and @code{GPG_ERR_INV_VALUE} if @var{ctx} or @var{key}
+is not a valid pointer.
+@end deftypefun
+
+
+@deftp {Data type} {gpgme_error_t (*gpgme_edit_cb_t) @
+   (@w{void *@var{handle}}, @
+    @w{gpgme_status_code_t @var{status}}, @
+    @w{const char *@var{args}}, @
+    @w{int @var{fd}})}
 @tindex gpgme_edit_cb_t
 The @code{gpgme_edit_cb_t} type is the type of functions which
 @acronym{GPGME} calls if it a key edit operation is on-going.  The
@@ -4317,6 +4389,9 @@ the status code, @code{0} for success, or any other error value.
 @end deftp
 
 @deftypefun gpgme_error_t gpgme_op_edit (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{key}}, @w{gpgme_edit_cb_t @var{fnc}}, @w{void *@var{handle}}, @w{gpgme_data_t @var{out}})
+Note: This function is deprecated, please use
+@code{gpgme_op_interact} instead.
+
 The function @code{gpgme_op_edit} processes the key @var{KEY}
 interactively, using the edit callback function @var{FNC} with the
 handle @var{HANDLE}.  The callback is invoked for every status and
@@ -4334,6 +4409,9 @@ by the crypto engine or the edit callback handler.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_edit_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{key}}, @w{gpgme_edit_cb_t @var{fnc}}, @w{void *@var{handle}}, @w{gpgme_data_t @var{out}})
+Note: This function is deprecated, please use
+@code{gpgme_op_interact_start} instead.
+
 The function @code{gpgme_op_edit_start} initiates a
 @code{gpgme_op_edit} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -4345,11 +4423,17 @@ operation was started successfully, and @code{GPG_ERR_INV_VALUE} if
 
 
 @deftypefun gpgme_error_t gpgme_op_card_edit (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{key}}, @w{gpgme_edit_cb_t @var{fnc}}, @w{void *@var{handle}}, @w{gpgme_data_t @var{out}})
+Note: This function is deprecated, please use @code{gpgme_op_interact}
+with the flag @code{GPGME_INTERACT_CARD} instead.
+
 The function @code{gpgme_op_card_edit} is analogous to
 @code{gpgme_op_edit}, but should be used to process the smart card corresponding to the key @var{key}.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_card_edit_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{key}}, @w{gpgme_edit_cb_t @var{fnc}}, @w{void *@var{handle}}, @w{gpgme_data_t @var{out}})
+Note: This function is deprecated, please use @code{gpgme_op_interact_start}
+with the flag @code{GPGME_INTERACT_CARD} instead.
+
 The function @code{gpgme_op_card_edit_start} initiates a
 @code{gpgme_op_card_edit} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.

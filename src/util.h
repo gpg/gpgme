@@ -185,6 +185,7 @@ gpgme_error_t _gpgme_getenv (const char *name, char **value);
 /* Convert a status string to a status code.  */
 void _gpgme_status_init (void);
 gpgme_status_code_t _gpgme_parse_status (const char *name);
+const char *_gpgme_status_to_string (gpgme_status_code_t code);
 
 
 #ifdef HAVE_W32_SYSTEM
