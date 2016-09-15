@@ -676,6 +676,8 @@ status_handler (void *opaque, int fd)
               char emptystring[1] = {0};
               err = uiserver->status.fnc (uiserver->status.fnc_value,
                                           GPGME_STATUS_EOF, emptystring);
+              if (gpg_err_code (err) == GPG_ERR_FALSE)
+                err = 0; /* Drop special error code.  */
             }
 
 	  if (!err && uiserver->colon.fnc && uiserver->colon.any)
@@ -827,7 +829,12 @@ status_handler (void *opaque, int fd)
 	  if (r >= 0)
 	    {
 	      if (uiserver->status.fnc)
-		err = uiserver->status.fnc (uiserver->status.fnc_value, r, rest);
+                {
+                  err = uiserver->status.fnc (uiserver->status.fnc_value,
+                                              r, rest);
+                  if (gpg_err_code (err) == GPG_ERR_FALSE)
+                    err = 0; /* Drop special error code.  */
+                }
 	    }
 	  else
 	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", line + 2, rest);

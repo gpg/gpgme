@@ -827,6 +827,8 @@ status_handler (void *opaque, int fd)
               char emptystring[1] = {0};
               err = gpgsm->status.fnc (gpgsm->status.fnc_value,
                                        GPGME_STATUS_EOF, emptystring);
+              if (gpg_err_code (err) == GPG_ERR_FALSE)
+                err = 0; /* Drop special error code.  */
             }
 
 	  if (!err && gpgsm->colon.fnc && gpgsm->colon.any)
@@ -978,7 +980,11 @@ status_handler (void *opaque, int fd)
 	  if (r >= 0)
 	    {
 	      if (gpgsm->status.fnc)
-		err = gpgsm->status.fnc (gpgsm->status.fnc_value, r, rest);
+                {
+                  err = gpgsm->status.fnc (gpgsm->status.fnc_value, r, rest);
+                  if (gpg_err_code (err) == GPG_ERR_FALSE)
+                    err = 0; /* Drop special error code.  */
+                }
 	    }
 	  else
 	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", line + 2, rest);

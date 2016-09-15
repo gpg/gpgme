@@ -77,6 +77,8 @@ command_handler (void *priv, gpgme_status_code_t status, const char *args,
       if (err)
 	return err;
     }
+  else
+    err = 0;
 
   if (!processed)
     {
@@ -88,16 +90,15 @@ command_handler (void *priv, gpgme_status_code_t status, const char *args,
       if (err)
 	return err;
 
-      /* FIXME: We expect the user to handle _all_ status codes.
-	 Later, we may fix the callback interface to allow the user
-	 indicate if it processed the status code or not.  */
-      *processed_r = 1;
-
-      return (*opd->fnc) (opd->fnc_value, status, args, fd);
+      err = (*opd->fnc) (opd->fnc_value, status, args, fd);
+      if (gpg_err_code (err) == GPG_ERR_FALSE)
+        err = 0;
+      else
+        processed = 1;
     }
 
   *processed_r = processed;
-  return 0;
+  return err;
 }
 
 

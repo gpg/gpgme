@@ -4312,7 +4312,8 @@ indicates a command rather than a status message, the response to the
 command should be written to @var{fd}.  The @var{handle} is provided
 by the user at start of operation.
 
-The function should return @code{GPG_ERR_NO_ERROR} or an error value.
+The function should return @code{GPG_ERR_FALSE} if it did not handle
+the status code, @code{0} for success, or any other error value.
 @end deftp
 
 @deftypefun gpgme_error_t gpgme_op_edit (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{key}}, @w{gpgme_edit_cb_t @var{fnc}}, @w{void *@var{handle}}, @w{gpgme_data_t @var{out}})

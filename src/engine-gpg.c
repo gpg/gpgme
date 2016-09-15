@@ -1102,6 +1102,8 @@ read_status (engine_gpg_t gpg)
           char emptystring[1] = {0};
           err = gpg->status.fnc (gpg->status.fnc_value,
                                  GPGME_STATUS_EOF, emptystring);
+          if (gpg_err_code (err) == GPG_ERR_FALSE)
+            err = 0; /* Drop special error code.  */
         }
 
       return err;
@@ -1169,6 +1171,8 @@ read_status (engine_gpg_t gpg)
 			{
 			  err = gpg->status.fnc (gpg->status.fnc_value,
 						 r, rest);
+                          if (gpg_err_code (err) == GPG_ERR_FALSE)
+                            err = 0; /* Drop special error code.  */
 			  if (err)
 			    return err;
                         }

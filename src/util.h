@@ -45,6 +45,11 @@
 
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))
 
+#if GPG_ERROR_VERSION_NUMBER < 0x011500 /* 1.21 */
+# define GPG_ERR_FALSE 256
+#endif
+
+
 
 /*-- {posix,w32}-util.c --*/
 int _gpgme_get_conf_int (const char *key, int *value);
