@@ -974,8 +974,8 @@ typedef gpgme_error_t (*gpgme_interact_cb_t) (void *opaque,
                                               const char *keyword,
                                               const char *args, int fd);
 
-/* The callback type used by the deprecated functions gpgme_op_card
- * and gpgme_of_card_edit.  */
+/* The callback type used by the deprecated functions gpgme_op_edit
+ * and gpgme_op_card_edit.  */
 typedef gpgme_error_t (*gpgme_edit_cb_t) (void *opaque,
 					  gpgme_status_code_t status,
 					  const char *args, int fd);
