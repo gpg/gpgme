@@ -67,29 +67,31 @@ extern "C" {
 #endif
 
 
+/* The deprecated macro takes the version number of GPGME which
+ * introduced the deprecation as parameter for documentation.  */
 #ifdef GPGRT_ATTR_DEPRECATED
-# define _GPGME_DEPRECATED GPGRT_ATTR_DEPRECATED
+# define _GPGME_DEPRECATED(a,b) GPGRT_ATTR_DEPRECATED
 #elif defined(__GNUC__)
 # define _GPGME_GCC_VERSION (__GNUC__ * 10000 \
                              + __GNUC_MINOR__ * 100 \
                              + __GNUC_PATCHLEVEL__)
 
 # if _GPGME_GCC_VERSION > 30100
-#  define _GPGME_DEPRECATED  __attribute__ ((__deprecated__))
+#  define _GPGME_DEPRECATED(a,b)  __attribute__ ((__deprecated__))
 # else
-#  define _GPGME_DEPRECATED
+#  define _GPGME_DEPRECATED(a,b)
 # endif
 #else
-# define _GPGME_DEPRECATED
+# define _GPGME_DEPRECATED(a,b)
 #endif
 
 
 /* The macro _GPGME_DEPRECATED_OUTSIDE_GPGME suppresses warnings for
    fields we must access in GPGME for ABI compatibility.  */
 #ifdef _GPGME_IN_GPGME
-#define _GPGME_DEPRECATED_OUTSIDE_GPGME
+#define _GPGME_DEPRECATED_OUTSIDE_GPGME(a,b)
 #else
-#define _GPGME_DEPRECATED_OUTSIDE_GPGME _GPGME_DEPRECATED
+#define _GPGME_DEPRECATED_OUTSIDE_GPGME(a,b) _GPGME_DEPRECATED(a,b)
 #endif
 
 
@@ -307,7 +309,7 @@ typedef enum
     GPGME_SIG_STAT_GOOD_EXPKEY = 8
   }
 _gpgme_sig_stat_t;
-typedef _gpgme_sig_stat_t gpgme_sig_stat_t _GPGME_DEPRECATED;
+typedef _gpgme_sig_stat_t gpgme_sig_stat_t _GPGME_DEPRECATED(0,4);
 
 
 /* The available signature modes.  */
@@ -358,7 +360,7 @@ typedef enum
     GPGME_ATTR_SIG_CLASS    = 32
   }
 _gpgme_attr_t;
-typedef _gpgme_attr_t gpgme_attr_t _GPGME_DEPRECATED;
+typedef _gpgme_attr_t gpgme_attr_t _GPGME_DEPRECATED(0,4);
 
 
 /* The available validities for a trust item or key.  */
@@ -777,10 +779,10 @@ struct _gpgme_key_sig
   gpgme_error_t status;
 
 #ifdef __cplusplus
-  unsigned int _obsolete_class _GPGME_DEPRECATED;
+  unsigned int _obsolete_class _GPGME_DEPRECATED(0,4);
 #else
   /* Must be set to SIG_CLASS below.  */
-  unsigned int class _GPGME_DEPRECATED_OUTSIDE_GPGME;
+  unsigned int class _GPGME_DEPRECATED_OUTSIDE_GPGME(0,4);
 #endif
 
   /* The user ID string.  */
@@ -1124,7 +1126,7 @@ gpgme_key_t gpgme_signers_enum (const gpgme_ctx_t ctx, int seq);
    Deprecated, use verify result directly.  */
 const char *gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
                                   _gpgme_sig_stat_t *r_stat,
-				  time_t *r_created) _GPGME_DEPRECATED;
+				  time_t *r_created) _GPGME_DEPRECATED(0,4);
 
 /* Retrieve certain attributes of a signature.  IDX is the index
    number of the signature after a successful verify operation.  WHAT
@@ -1132,16 +1134,16 @@ const char *gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
    one.  WHATIDX is to be passed as 0 for most attributes . */
 unsigned long gpgme_get_sig_ulong_attr (gpgme_ctx_t c, int idx,
                                         _gpgme_attr_t what, int whatidx)
-     _GPGME_DEPRECATED;
+     _GPGME_DEPRECATED(0,4);
 const char *gpgme_get_sig_string_attr (gpgme_ctx_t c, int idx,
 				       _gpgme_attr_t what, int whatidx)
-     _GPGME_DEPRECATED;
+     _GPGME_DEPRECATED(0,4);
 
 
 /* Get the key used to create signature IDX in CTX and return it in
    R_KEY.  */
 gpgme_error_t gpgme_get_sig_key (gpgme_ctx_t ctx, int idx, gpgme_key_t *r_key)
-     _GPGME_DEPRECATED;
+     _GPGME_DEPRECATED(0,4);
 
 
 /* Clear all notation data from the context.  */
@@ -1356,7 +1358,7 @@ gpgme_error_t gpgme_data_new_with_read_cb (gpgme_data_t *r_dh,
 					   int (*read_cb) (void*,char *,
 							   size_t,size_t*),
 					   void *read_cb_value)
-     _GPGME_DEPRECATED;
+     _GPGME_DEPRECATED(0,4);
 
 /* Create a new data buffer filled with the content of file FNAME.
    COPY must be non-zero.  For delayed read, please use
@@ -1374,7 +1376,7 @@ gpgme_error_t gpgme_data_new_from_filepart (gpgme_data_t *r_dh,
 
 /* Reset the read pointer in DH.  Deprecated, please use
    gpgme_data_seek instead.  */
-gpgme_error_t gpgme_data_rewind (gpgme_data_t dh) _GPGME_DEPRECATED;
+gpgme_error_t gpgme_data_rewind (gpgme_data_t dh) _GPGME_DEPRECATED(0,4);
 
 
 
@@ -1404,7 +1406,7 @@ void gpgme_key_release (gpgme_key_t key);
    key structure directly instead. */
 const char *gpgme_key_get_string_attr (gpgme_key_t key, _gpgme_attr_t what,
 				       const void *reserved, int idx)
-     _GPGME_DEPRECATED;
+     _GPGME_DEPRECATED(0,4);
 
 /* Return the value of the attribute WHAT of KEY, which has to be
    representable by an unsigned integer.  IDX specifies the sub key or
@@ -1412,7 +1414,7 @@ const char *gpgme_key_get_string_attr (gpgme_key_t key, _gpgme_attr_t what,
    Deprecated, use key structure directly instead.  */
 unsigned long gpgme_key_get_ulong_attr (gpgme_key_t key, _gpgme_attr_t what,
 					const void *reserved, int idx)
-     _GPGME_DEPRECATED;
+     _GPGME_DEPRECATED(0,4);
 
 /* Return the value of the attribute WHAT of a signature on user ID
    UID_IDX in KEY, which has to be representable by a string.  IDX
@@ -1421,7 +1423,7 @@ unsigned long gpgme_key_get_ulong_attr (gpgme_key_t key, _gpgme_attr_t what,
 const char *gpgme_key_sig_get_string_attr (gpgme_key_t key, int uid_idx,
 					   _gpgme_attr_t what,
 					   const void *reserved, int idx)
-     _GPGME_DEPRECATED;
+     _GPGME_DEPRECATED(0,4);
 
 /* Return the value of the attribute WHAT of a signature on user ID
    UID_IDX in KEY, which has to be representable by an unsigned
@@ -1430,7 +1432,7 @@ const char *gpgme_key_sig_get_string_attr (gpgme_key_t key, int uid_idx,
 unsigned long gpgme_key_sig_get_ulong_attr (gpgme_key_t key, int uid_idx,
 					    _gpgme_attr_t what,
 					    const void *reserved, int idx)
-     _GPGME_DEPRECATED;
+     _GPGME_DEPRECATED(0,4);
 
 
 
@@ -1572,7 +1574,7 @@ struct _gpgme_new_signature
   unsigned int _obsolete_class_2;
 #else
   /* Must be set to SIG_CLASS below.  */
-  unsigned int class _GPGME_DEPRECATED_OUTSIDE_GPGME;
+  unsigned int class _GPGME_DEPRECATED_OUTSIDE_GPGME(0,4);
 #endif
 
   /* Crypto backend specific signature class.  */
@@ -1783,7 +1785,7 @@ gpgme_import_result_t gpgme_op_import_result (gpgme_ctx_t ctx);
 gpgme_error_t gpgme_op_import_start (gpgme_ctx_t ctx, gpgme_data_t keydata);
 gpgme_error_t gpgme_op_import (gpgme_ctx_t ctx, gpgme_data_t keydata);
 gpgme_error_t gpgme_op_import_ext (gpgme_ctx_t ctx, gpgme_data_t keydata,
-				   int *nr) _GPGME_DEPRECATED;
+				   int *nr) _GPGME_DEPRECATED(0,4);
 
 /* Import the keys from the array KEYS into the keyring.  */
 gpgme_error_t gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t keys[]);
@@ -1976,16 +1978,18 @@ gpgme_error_t gpgme_op_interact (gpgme_ctx_t ctx, gpgme_key_t key,
 
 gpgme_error_t gpgme_op_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 				   gpgme_edit_cb_t fnc, void *fnc_value,
-				   gpgme_data_t out) _GPGME_DEPRECATED;
-gpgme_error_t gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
-			     gpgme_edit_cb_t fnc, void *fnc_value,
-			     gpgme_data_t out) _GPGME_DEPRECATED;
+				   gpgme_data_t out) _GPGME_DEPRECATED(1,7);
+gpgme_error_t gpgme_op_edit       (gpgme_ctx_t ctx, gpgme_key_t key,
+			           gpgme_edit_cb_t fnc, void *fnc_value,
+			           gpgme_data_t out) _GPGME_DEPRECATED(1,7);
 gpgme_error_t gpgme_op_card_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 					gpgme_edit_cb_t fnc, void *fnc_value,
-					gpgme_data_t out) _GPGME_DEPRECATED;
-gpgme_error_t gpgme_op_card_edit (gpgme_ctx_t ctx, gpgme_key_t key,
-				  gpgme_edit_cb_t fnc, void *fnc_value,
-				  gpgme_data_t out) _GPGME_DEPRECATED;
+					gpgme_data_t out)
+                                        _GPGME_DEPRECATED(1,7);
+gpgme_error_t gpgme_op_card_edit       (gpgme_ctx_t ctx, gpgme_key_t key,
+				        gpgme_edit_cb_t fnc, void *fnc_value,
+				        gpgme_data_t out)
+                                        _GPGME_DEPRECATED(1,7);
 
 
 /* Set the Tofu policy of KEY to POLCIY.  */
@@ -2098,7 +2102,7 @@ void gpgme_trust_item_unref (gpgme_trust_item_t item);
 
 /* Release the trust item ITEM.  Deprecated, use
    gpgme_trust_item_unref.  */
-void gpgme_trust_item_release (gpgme_trust_item_t item) _GPGME_DEPRECATED;
+void gpgme_trust_item_release (gpgme_trust_item_t item) _GPGME_DEPRECATED(0,4);
 
 /* Return the value of the attribute WHAT of ITEM, which has to be
    representable by a string.  Deprecated, use trust item structure
@@ -2106,7 +2110,7 @@ void gpgme_trust_item_release (gpgme_trust_item_t item) _GPGME_DEPRECATED;
 const char *gpgme_trust_item_get_string_attr (gpgme_trust_item_t item,
 					      _gpgme_attr_t what,
 					      const void *reserved, int idx)
-     _GPGME_DEPRECATED;
+     _GPGME_DEPRECATED(0,4);
 
 /* Return the value of the attribute WHAT of KEY, which has to be
    representable by an integer.  IDX specifies a running index if the
@@ -2114,7 +2118,7 @@ const char *gpgme_trust_item_get_string_attr (gpgme_trust_item_t item,
    item structure directly.  */
 int gpgme_trust_item_get_int_attr (gpgme_trust_item_t item, _gpgme_attr_t what,
 				   const void *reserved, int idx)
-     _GPGME_DEPRECATED;
+     _GPGME_DEPRECATED(0,4);
 
 
 
@@ -2197,14 +2201,14 @@ struct _gpgme_op_assuan_result
 {
   /* Deprecated.  Use the second value in a DONE event or the
      synchronous variant gpgme_op_assuan_transact_ext.  */
-  gpgme_error_t err _GPGME_DEPRECATED_OUTSIDE_GPGME;
+  gpgme_error_t err _GPGME_DEPRECATED_OUTSIDE_GPGME(1,2);
 };
 typedef struct _gpgme_op_assuan_result *gpgme_assuan_result_t;
 
 
 /* Return the result of the last Assuan command. */
 gpgme_assuan_result_t gpgme_op_assuan_result (gpgme_ctx_t ctx)
-  _GPGME_DEPRECATED;
+  _GPGME_DEPRECATED(1,2);
 
 gpgme_error_t
 gpgme_op_assuan_transact (gpgme_ctx_t ctx,
@@ -2214,7 +2218,7 @@ gpgme_op_assuan_transact (gpgme_ctx_t ctx,
 			      gpgme_assuan_inquire_cb_t inq_cb,
 			      void *inq_cb_value,
 			      gpgme_assuan_status_cb_t status_cb,
-			      void *status_cb_value) _GPGME_DEPRECATED;
+                          void *status_cb_value) _GPGME_DEPRECATED(1,2);
 
 
 /*
@@ -2472,44 +2476,44 @@ const char *gpgme_hash_algo_name (gpgme_hash_algo_t algo);
 /*
  * Deprecated types.
  */
-typedef gpgme_ctx_t GpgmeCtx _GPGME_DEPRECATED;
-typedef gpgme_data_t GpgmeData _GPGME_DEPRECATED;
-typedef gpgme_error_t GpgmeError _GPGME_DEPRECATED;
-typedef gpgme_data_encoding_t GpgmeDataEncoding _GPGME_DEPRECATED;
-typedef gpgme_pubkey_algo_t GpgmePubKeyAlgo _GPGME_DEPRECATED;
-typedef gpgme_hash_algo_t GpgmeHashAlgo _GPGME_DEPRECATED;
-typedef gpgme_sig_stat_t GpgmeSigStat _GPGME_DEPRECATED;
-typedef gpgme_sig_mode_t GpgmeSigMode _GPGME_DEPRECATED;
-typedef gpgme_attr_t GpgmeAttr _GPGME_DEPRECATED;
-typedef gpgme_validity_t GpgmeValidity _GPGME_DEPRECATED;
-typedef gpgme_protocol_t GpgmeProtocol _GPGME_DEPRECATED;
-typedef gpgme_engine_info_t GpgmeEngineInfo _GPGME_DEPRECATED;
-typedef gpgme_subkey_t GpgmeSubkey _GPGME_DEPRECATED;
-typedef gpgme_key_sig_t GpgmeKeySig _GPGME_DEPRECATED;
-typedef gpgme_user_id_t GpgmeUserID _GPGME_DEPRECATED;
-typedef gpgme_key_t GpgmeKey _GPGME_DEPRECATED;
-typedef gpgme_passphrase_cb_t GpgmePassphraseCb _GPGME_DEPRECATED;
-typedef gpgme_progress_cb_t GpgmeProgressCb _GPGME_DEPRECATED;
-typedef gpgme_io_cb_t GpgmeIOCb _GPGME_DEPRECATED;
-typedef gpgme_register_io_cb_t GpgmeRegisterIOCb _GPGME_DEPRECATED;
-typedef gpgme_remove_io_cb_t GpgmeRemoveIOCb _GPGME_DEPRECATED;
-typedef gpgme_event_io_t GpgmeEventIO _GPGME_DEPRECATED;
-typedef gpgme_event_io_cb_t GpgmeEventIOCb _GPGME_DEPRECATED;
+typedef gpgme_ctx_t GpgmeCtx _GPGME_DEPRECATED(0,4);
+typedef gpgme_data_t GpgmeData _GPGME_DEPRECATED(0,4);
+typedef gpgme_error_t GpgmeError _GPGME_DEPRECATED(0,4);
+typedef gpgme_data_encoding_t GpgmeDataEncoding _GPGME_DEPRECATED(0,4);
+typedef gpgme_pubkey_algo_t GpgmePubKeyAlgo _GPGME_DEPRECATED(0,4);
+typedef gpgme_hash_algo_t GpgmeHashAlgo _GPGME_DEPRECATED(0,4);
+typedef gpgme_sig_stat_t GpgmeSigStat _GPGME_DEPRECATED(0,4);
+typedef gpgme_sig_mode_t GpgmeSigMode _GPGME_DEPRECATED(0,4);
+typedef gpgme_attr_t GpgmeAttr _GPGME_DEPRECATED(0,4);
+typedef gpgme_validity_t GpgmeValidity _GPGME_DEPRECATED(0,4);
+typedef gpgme_protocol_t GpgmeProtocol _GPGME_DEPRECATED(0,4);
+typedef gpgme_engine_info_t GpgmeEngineInfo _GPGME_DEPRECATED(0,4);
+typedef gpgme_subkey_t GpgmeSubkey _GPGME_DEPRECATED(0,4);
+typedef gpgme_key_sig_t GpgmeKeySig _GPGME_DEPRECATED(0,4);
+typedef gpgme_user_id_t GpgmeUserID _GPGME_DEPRECATED(0,4);
+typedef gpgme_key_t GpgmeKey _GPGME_DEPRECATED(0,4);
+typedef gpgme_passphrase_cb_t GpgmePassphraseCb _GPGME_DEPRECATED(0,4);
+typedef gpgme_progress_cb_t GpgmeProgressCb _GPGME_DEPRECATED(0,4);
+typedef gpgme_io_cb_t GpgmeIOCb _GPGME_DEPRECATED(0,4);
+typedef gpgme_register_io_cb_t GpgmeRegisterIOCb _GPGME_DEPRECATED(0,4);
+typedef gpgme_remove_io_cb_t GpgmeRemoveIOCb _GPGME_DEPRECATED(0,4);
+typedef gpgme_event_io_t GpgmeEventIO _GPGME_DEPRECATED(0,4);
+typedef gpgme_event_io_cb_t GpgmeEventIOCb _GPGME_DEPRECATED(0,4);
 #define GpgmeIOCbs gpgme_io_cbs
-typedef gpgme_data_read_cb_t GpgmeDataReadCb _GPGME_DEPRECATED;
-typedef gpgme_data_write_cb_t GpgmeDataWriteCb _GPGME_DEPRECATED;
-typedef gpgme_data_seek_cb_t GpgmeDataSeekCb _GPGME_DEPRECATED;
-typedef gpgme_data_release_cb_t GpgmeDataReleaseCb _GPGME_DEPRECATED;
+typedef gpgme_data_read_cb_t GpgmeDataReadCb _GPGME_DEPRECATED(0,4);
+typedef gpgme_data_write_cb_t GpgmeDataWriteCb _GPGME_DEPRECATED(0,4);
+typedef gpgme_data_seek_cb_t GpgmeDataSeekCb _GPGME_DEPRECATED(0,4);
+typedef gpgme_data_release_cb_t GpgmeDataReleaseCb _GPGME_DEPRECATED(0,4);
 #define GpgmeDataCbs gpgme_data_cbs
-typedef gpgme_encrypt_result_t GpgmeEncryptResult _GPGME_DEPRECATED;
-typedef gpgme_sig_notation_t GpgmeSigNotation _GPGME_DEPRECATED;
-typedef	gpgme_signature_t GpgmeSignature _GPGME_DEPRECATED;
-typedef gpgme_verify_result_t GpgmeVerifyResult _GPGME_DEPRECATED;
-typedef gpgme_import_status_t GpgmeImportStatus _GPGME_DEPRECATED;
-typedef gpgme_import_result_t GpgmeImportResult _GPGME_DEPRECATED;
-typedef gpgme_genkey_result_t GpgmeGenKeyResult _GPGME_DEPRECATED;
-typedef	gpgme_trust_item_t GpgmeTrustItem _GPGME_DEPRECATED;
-typedef gpgme_status_code_t GpgmeStatusCode _GPGME_DEPRECATED;
+typedef gpgme_encrypt_result_t GpgmeEncryptResult _GPGME_DEPRECATED(0,4);
+typedef gpgme_sig_notation_t GpgmeSigNotation _GPGME_DEPRECATED(0,4);
+typedef	gpgme_signature_t GpgmeSignature _GPGME_DEPRECATED(0,4);
+typedef gpgme_verify_result_t GpgmeVerifyResult _GPGME_DEPRECATED(0,4);
+typedef gpgme_import_status_t GpgmeImportStatus _GPGME_DEPRECATED(0,4);
+typedef gpgme_import_result_t GpgmeImportResult _GPGME_DEPRECATED(0,4);
+typedef gpgme_genkey_result_t GpgmeGenKeyResult _GPGME_DEPRECATED(0,4);
+typedef	gpgme_trust_item_t GpgmeTrustItem _GPGME_DEPRECATED(0,4);
+typedef gpgme_status_code_t GpgmeStatusCode _GPGME_DEPRECATED(0,4);
 
 #ifdef __cplusplus
 }

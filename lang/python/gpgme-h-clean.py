@@ -27,7 +27,7 @@ if len(sys.argv) != 2:
     sys.exit(1)
 
 deprec_func = re.compile(r'^(.*typedef.*|.*\(.*\)|[^#]+\s+.+)'
-                         + r'\s*_GPGME_DEPRECATED(_OUTSIDE_GPGME)?;\s*',
+                         + r'\s*_GPGME_DEPRECATED(_OUTSIDE_GPGME)?\(.*\);\s*',
                          re.S)
 line_break = re.compile(';|\\$|\\x0c|^\s*#|{');
 
