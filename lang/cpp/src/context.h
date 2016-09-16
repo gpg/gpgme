@@ -214,6 +214,10 @@ public:
     GpgME::Error edit(const Key &key, std::unique_ptr<EditInteractor> function, Data &out);
     GpgME::Error startEditing(const Key &key, std::unique_ptr<EditInteractor> function, Data &out);
 
+    // using TofuInfo::Policy
+    Error setTofuPolicy(const Key &k, unsigned int policy);
+    Error setTofuPolicyStart(const Key &k, unsigned int policy);
+
     EditInteractor *lastEditInteractor() const;
     std::unique_ptr<EditInteractor> takeLastEditInteractor();
 

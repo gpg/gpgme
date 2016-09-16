@@ -41,6 +41,7 @@
 #include "data_p.h"
 #include "context_p.h"
 #include "util.h"
+#include "tofuinfo.h"
 
 #include <gpgme.h>
 
@@ -1327,6 +1328,36 @@ Error Context::setPinentryMode(PinentryMode which)
             mode = GPGME_PINENTRY_MODE_DEFAULT;
     }
     return Error(d->lasterr = gpgme_set_pinentry_mode(d->ctx, mode));
+}
+
+static gpgme_tofu_policy_t to_tofu_policy_t(unsigned int policy)
+{
+    switch (policy) {
+        case TofuInfo::PolicyNone:
+            return GPGME_TOFU_POLICY_NONE;
+        case TofuInfo::PolicyAuto:
+            return GPGME_TOFU_POLICY_AUTO;
+        case TofuInfo::PolicyGood:
+            return GPGME_TOFU_POLICY_GOOD;
+        case TofuInfo::PolicyBad:
+            return GPGME_TOFU_POLICY_BAD;
+        case TofuInfo::PolicyAsk:
+            return GPGME_TOFU_POLICY_ASK;
+        case TofuInfo::PolicyUnknown:
+            return GPGME_TOFU_POLICY_UNKNOWN;
+    }
+}
+
+Error Context::setTofuPolicy(const Key &k, unsigned int policy)
+{
+    return Error(d->lasterr = gpgme_op_tofu_policy(d->ctx,
+                 k.impl(), to_tofu_policy_t(policy)));
+}
+
+Error Context::setTofuPolicyStart(const Key &k, unsigned int policy)
+{
+    return Error(d->lasterr = gpgme_op_tofu_policy_start(d->ctx,
+                 k.impl(), to_tofu_policy_t(policy)));
 }
 
 // Engine Spawn stuff
