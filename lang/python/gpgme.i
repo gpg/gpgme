@@ -476,15 +476,15 @@
 
 
 
-// Include mapper for edit callbacks
-%typemap(in) (gpgme_edit_cb_t fnc, void *fnc_value) {
+/* Include mapper for interact callbacks.  */
+%typemap(in) (gpgme_interact_cb_t fnc, void *fnc_value) {
   if (! PyTuple_Check($input))
-    return PyErr_Format(PyExc_TypeError, "edit callback must be a tuple");
+    return PyErr_Format(PyExc_TypeError, "interact callback must be a tuple");
   if (PyTuple_Size($input) != 2 && PyTuple_Size($input) != 3)
     return PyErr_Format(PyExc_TypeError,
-                        "edit callback must be a tuple of size 2 or 3");
+                        "interact callback must be a tuple of size 2 or 3");
 
-  $1 = (gpgme_edit_cb_t) _pyme_edit_cb;
+  $1 = (gpgme_interact_cb_t) _pyme_interact_cb;
   $2 = $input;
 }
 

@@ -34,9 +34,8 @@ PyObject *_pyme_obj2gpgme_data_t(PyObject *input, int argnum,
 
 PyObject *_pyme_wrap_result(PyObject *fragile, const char *classname);
 
-gpgme_error_t _pyme_edit_cb(void *opaque, gpgme_status_code_t status,
-			    const char *args, int fd);
-
+gpgme_error_t _pyme_interact_cb(void *opaque, const char *keyword,
+				const char *args, int fd);
 gpgme_error_t _pyme_assuan_data_cb (void *hook,
 				    const void *data, size_t datalen);
 gpgme_error_t _pyme_assuan_inquire_cb (void *hook,

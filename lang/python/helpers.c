@@ -656,11 +656,16 @@ pyme_set_status_cb(PyObject *self, PyObject *cb) {
   Py_INCREF(Py_None);
   return Py_None;
 }
+
 
-/* Edit callbacks.  */
-gpgme_error_t _pyme_edit_cb(void *opaque, gpgme_status_code_t status,
-		       const char *args, int fd) {
+
+/* Interact callbacks.  */
+gpgme_error_t
+_pyme_interact_cb(void *opaque, const char *keyword,
+                  const char *args, int fd)
+{
   PyObject *func = NULL, *dataarg = NULL, *pyargs = NULL, *retval = NULL;
+  PyObject *py_keyword;
   PyObject *pyopaque = (PyObject *) opaque;
   gpgme_error_t err_status = 0;
   PyObject *self = NULL;
@@ -678,7 +683,15 @@ gpgme_error_t _pyme_edit_cb(void *opaque, gpgme_status_code_t status,
     pyargs = PyTuple_New(2);
   }
 
-  PyTuple_SetItem(pyargs, 0, PyLong_FromLong((long) status));
+  if (keyword)
+    py_keyword = PyUnicode_FromString(keyword);
+  else
+    {
+      Py_INCREF(Py_None);
+      py_keyword = Py_None;
+    }
+
+  PyTuple_SetItem(pyargs, 0, py_keyword);
   PyTuple_SetItem(pyargs, 1, PyUnicode_FromString(args));
   if (dataarg) {
     Py_INCREF(dataarg);		/* Because GetItem doesn't give a ref but SetItem taketh away */
@@ -726,7 +739,9 @@ gpgme_error_t _pyme_edit_cb(void *opaque, gpgme_status_code_t status,
   Py_XDECREF(retval);
   return err_status;
 }
+
 
+
 /* Data callbacks.  */
 
 /* Read up to SIZE bytes into buffer BUFFER from the data object with

@@ -33,7 +33,7 @@ class KeyEditor(object):
         self.done = False
         self.verbose = int(os.environ.get('verbose', 0)) > 1
 
-    def edit_fnc(self, status, args, out):
+    def edit_fnc(self, status, args, out=None):
         if args == "keyedit.prompt":
             result = self.steps[self.step]
             self.step += 1
@@ -57,8 +57,15 @@ c = core.Context()
 c.set_pinentry_mode(constants.PINENTRY_MODE_LOOPBACK)
 c.set_passphrase_cb(lambda *args: "abc")
 c.set_armor(True)
-sink = core.Data()
 
+# The deprecated interface.
+editor = KeyEditor()
+c.interact(c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False),
+           editor.edit_fnc)
+assert editor.done
+
+# The deprecated interface.
+sink = core.Data()
 editor = KeyEditor()
 c.op_edit(c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False),
           editor.edit_fnc, sink, sink)

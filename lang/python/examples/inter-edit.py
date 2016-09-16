@@ -23,13 +23,6 @@ del absolute_import, print_function, unicode_literals
 
 import sys
 import pyme
-import pyme.constants.status
-
-# Get names for the status codes
-status2str = {}
-for name in dir(pyme.constants.status):
-    if not name.startswith('__') and name != "util":
-        status2str[getattr(pyme.constants.status, name)] = name
 
 if len(sys.argv) != 2:
     sys.exit("Usage: %s <Gpg key pattern>\n" % sys.argv[0])
@@ -46,11 +39,11 @@ with pyme.Context() as c:
     key = keys[0]
     print("Editing key {} ({}):".format(key.uids[0].uid, key.subkeys[0].fpr))
 
-    def edit_fnc(status, args):
+    def edit_fnc(keyword, args):
         print("Status: {} ({}), args: {} > ".format(
-            status2str[status], status, args), end='', flush=True)
+            keyword, status, args), end='', flush=True)
 
-        if not 'GET' in status2str[status]:
+        if not 'GET' in keyword:
             # no prompt
             print()
             return None
@@ -60,4 +53,4 @@ with pyme.Context() as c:
         except EOFError:
             return "quit"
 
-    c.op_edit(key, edit_fnc, None, sys.stdout)
+    c.interact(key, edit_fnc, sink=sys.stdout)

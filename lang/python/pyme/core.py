@@ -29,6 +29,7 @@ del absolute_import, print_function, unicode_literals
 
 import re
 import os
+import warnings
 import weakref
 from . import gpgme
 from .errors import errorcheck, GPGMEError
@@ -536,6 +537,39 @@ class Context(GpgmeWrapper):
 
         return GPGMEError(status) if status != 0 else None
 
+    def interact(self, key, func, sink=None, flags=0, fnc_value=None):
+        """Interact with the engine
+
+        This method can be used to edit keys and cards interactively.
+        KEY is the key to edit, FUNC is called repeatedly with two
+        unicode arguments, 'keyword' and 'args'.  See the GPGME manual
+        for details.
+
+        Keyword arguments:
+        sink		-- if given, additional output is written here
+        flags		-- use constants.INTERACT_CARD to edit a card
+
+        Raises:
+        GPGMEError	-- as signaled by the underlying library
+
+        """
+        if key == None:
+            raise ValueError("First argument cannot be None")
+
+        if sink == None:
+            sink = Data()
+
+        if fnc_value:
+            opaquedata = (weakref.ref(self), func, fnc_value)
+        else:
+            opaquedata = (weakref.ref(self), func)
+
+        result = gpgme.gpgme_op_interact(self.wrapped, key, flags,
+                                         opaquedata, sink)
+        if self._callback_excinfo:
+            gpgme.pyme_raise_callback_exception(self)
+        errorcheck(result)
+
     @property
     def signers(self):
         """Keys used for signing"""
@@ -793,18 +827,21 @@ class Context(GpgmeWrapper):
         errorcheck(status)
 
     def op_edit(self, key, func, fnc_value, out):
-        """Start key editing using supplied callback function"""
-        if key == None:
-            raise ValueError("op_edit: First argument cannot be None")
-        if fnc_value:
-            opaquedata = (weakref.ref(self), func, fnc_value)
-        else:
-            opaquedata = (weakref.ref(self), func)
+        """Start key editing using supplied callback function
 
-        result = gpgme.gpgme_op_edit(self.wrapped, key, opaquedata, out)
-        if self._callback_excinfo:
-            gpgme.pyme_raise_callback_exception(self)
-        errorcheck(result)
+        Note: This interface is deprecated and will be removed with
+        GPGME 1.8.  Please use .interact instead.  Furthermore, we
+        implement this using gpgme_op_interact, so callbacks will get
+        called with string keywords instead of numeric status
+        messages.  Code that is using constants.STATUS_X or
+        constants.status.X will continue to work, whereas code using
+        magic numbers will break as a result.
+
+        """
+        warnings.warn("Call to deprecated method op_edit.",
+                      category=DeprecationWarning)
+        return self.interact(key, func, sink=out, fnc_value=fnc_value)
+
 
 class Data(GpgmeWrapper):
     """Data buffer
