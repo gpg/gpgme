@@ -24,8 +24,9 @@ import glob
 import subprocess
 
 # Out-of-tree build of the pyme3 bindings.
-gpg_error_config = "gpg-error-config"
-gpgme_config = "gpgme-config"
+gpg_error_config = ["gpg-error-config"]
+gpgme_config_flags = ["--thread=pthread"]
+gpgme_config = ["gpgme-config"] + gpgme_config_flags
 gpgme_h = ""
 library_dirs = []
 in_tree = False
@@ -35,7 +36,7 @@ extra_macros = dict()
 if os.path.exists("../../src/gpgme-config"):
     # In-tree build.
     in_tree = True
-    gpgme_config = "../../src/gpgme-config"
+    gpgme_config = ["../../src/gpgme-config"] + gpgme_config_flags
     gpgme_h = "../../src/gpgme.h"
     library_dirs = ["../../src/.libs"] # XXX uses libtool internals
     extra_macros.update(
@@ -49,21 +50,21 @@ else:
     devnull = open(os.devnull, "w")
 
 try:
-    subprocess.check_call([gpg_error_config, '--version'],
+    subprocess.check_call(gpg_error_config + ['--version'],
                           stdout=devnull)
 except:
     sys.exit("Could not find gpg-error-config.  " +
              "Please install the libgpg-error development package.")
 
 try:
-    subprocess.check_call([gpgme_config, '--version'],
+    subprocess.check_call(gpgme_config + ['--version'],
                           stdout=devnull)
 except:
     sys.exit("Could not find gpgme-config.  " +
              "Please install the libgpgme development package.")
 
 def getconfig(what, config=gpgme_config):
-    confdata = subprocess.Popen([config, "--%s" % what],
+    confdata = subprocess.Popen(config + ["--%s" % what],
                                 stdout=subprocess.PIPE).communicate()[0]
     return [x for x in confdata.decode('utf-8').split() if x != '']
 
@@ -151,7 +152,7 @@ class BuildExtFirstHack(build):
         build.run(self)
 
 swige = Extension("pyme._gpgme", ["gpgme.i", "helpers.c"],
-                  swig_opts = ['-py3', '-builtin',
+                  swig_opts = ['-py3', '-builtin', '-threads',
                                '-outdir', 'pyme'] + extra_swig_opts,
                   include_dirs = include_dirs,
                   define_macros = define_macros,

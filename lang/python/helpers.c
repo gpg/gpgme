@@ -134,6 +134,7 @@ static void _pyme_stash_callback_exception(PyObject *weak_self)
 
 PyObject *pyme_raise_callback_exception(PyObject *self)
 {
+  PyGILState_STATE state = PyGILState_Ensure();
   PyObject *ptype, *pvalue, *ptraceback, *excinfo;
 
   if (! PyObject_HasAttrString(self, EXCINFO))
@@ -173,10 +174,12 @@ PyObject *pyme_raise_callback_exception(PyObject *self)
 
   /* Restore exception.  */
   PyErr_Restore(ptype, pvalue, ptraceback);
+  PyGILState_Release(state);
   return NULL; /* Raise exception.  */
 
  leave:
   Py_INCREF(Py_None);
+  PyGILState_Release(state);
   return Py_None;
 }
 #undef EXCINFO
@@ -331,6 +334,7 @@ static gpgme_error_t pyPassphraseCb(void *hook,
 				    const char *passphrase_info,
 				    int prev_was_bad,
 				    int fd) {
+  PyGILState_STATE state = PyGILState_Ensure();
   PyObject *pyhook = (PyObject *) hook;
   PyObject *self = NULL;
   PyObject *func = NULL;
@@ -433,11 +437,13 @@ static gpgme_error_t pyPassphraseCb(void *hook,
     _pyme_stash_callback_exception(self);
 
   Py_XDECREF(encoded);
+  PyGILState_Release(state);
   return err_status;
 }
 
 PyObject *
 pyme_set_passphrase_cb(PyObject *self, PyObject *cb) {
+  PyGILState_STATE state = PyGILState_Ensure();
   PyObject *wrapped;
   gpgme_ctx_t ctx;
 
@@ -445,6 +451,7 @@ pyme_set_passphrase_cb(PyObject *self, PyObject *cb) {
   if (wrapped == NULL)
     {
       assert (PyErr_Occurred ());
+      PyGILState_Release(state);
       return NULL;
     }
 
@@ -476,11 +483,13 @@ pyme_set_passphrase_cb(PyObject *self, PyObject *cb) {
 
  out:
   Py_INCREF(Py_None);
+  PyGILState_Release(state);
   return Py_None;
 }
 
 static void pyProgressCb(void *hook, const char *what, int type, int current,
 			 int total) {
+  PyGILState_STATE state = PyGILState_Ensure();
   PyObject *func = NULL, *dataarg = NULL, *args = NULL, *retval = NULL;
   PyObject *pyhook = (PyObject *) hook;
   PyObject *self = NULL;
@@ -501,6 +510,7 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
   if (PyErr_Occurred()) {
     _pyme_stash_callback_exception(self);
     Py_DECREF(args);
+    PyGILState_Release(state);
     return;
   }
   PyTuple_SetItem(args, 1, PyLong_FromLong((long) type));
@@ -516,10 +526,12 @@ static void pyProgressCb(void *hook, const char *what, int type, int current,
     _pyme_stash_callback_exception(self);
   Py_DECREF(args);
   Py_XDECREF(retval);
+  PyGILState_Release(state);
 }
 
 PyObject *
 pyme_set_progress_cb(PyObject *self, PyObject *cb) {
+  PyGILState_STATE state = PyGILState_Ensure();
   PyObject *wrapped;
   gpgme_ctx_t ctx;
 
@@ -527,6 +539,7 @@ pyme_set_progress_cb(PyObject *self, PyObject *cb) {
   if (wrapped == NULL)
     {
       assert (PyErr_Occurred ());
+      PyGILState_Release(state);
       return NULL;
     }
 
@@ -557,12 +570,14 @@ pyme_set_progress_cb(PyObject *self, PyObject *cb) {
 
  out:
   Py_INCREF(Py_None);
+  PyGILState_Release(state);
   return Py_None;
 }
 
 /* Status callbacks.  */
 static gpgme_error_t pyStatusCb(void *hook, const char *keyword,
                                 const char *args) {
+  PyGILState_STATE state = PyGILState_Ensure();
   gpgme_error_t err = 0;
   PyObject *pyhook = (PyObject *) hook;
   PyObject *self = NULL;
@@ -612,11 +627,13 @@ static gpgme_error_t pyStatusCb(void *hook, const char *keyword,
  leave:
   if (err)
     _pyme_stash_callback_exception(self);
+  PyGILState_Release(state);
   return err;
 }
 
 PyObject *
 pyme_set_status_cb(PyObject *self, PyObject *cb) {
+  PyGILState_STATE state = PyGILState_Ensure();
   PyObject *wrapped;
   gpgme_ctx_t ctx;
 
@@ -624,6 +641,7 @@ pyme_set_status_cb(PyObject *self, PyObject *cb) {
   if (wrapped == NULL)
     {
       assert (PyErr_Occurred ());
+      PyGILState_Release(state);
       return NULL;
     }
 
@@ -654,6 +672,7 @@ pyme_set_status_cb(PyObject *self, PyObject *cb) {
 
  out:
   Py_INCREF(Py_None);
+  PyGILState_Release(state);
   return Py_None;
 }
 
@@ -664,6 +683,7 @@ gpgme_error_t
 _pyme_interact_cb(void *opaque, const char *keyword,
                   const char *args, int fd)
 {
+  PyGILState_STATE state = PyGILState_Ensure();
   PyObject *func = NULL, *dataarg = NULL, *pyargs = NULL, *retval = NULL;
   PyObject *py_keyword;
   PyObject *pyopaque = (PyObject *) opaque;
@@ -737,6 +757,7 @@ _pyme_interact_cb(void *opaque, const char *keyword,
     _pyme_stash_callback_exception(self);
 
   Py_XDECREF(retval);
+  PyGILState_Release(state);
   return err_status;
 }
 
@@ -749,6 +770,7 @@ _pyme_interact_cb(void *opaque, const char *keyword,
    and -1 on error.  If an error occurs, errno is set.  */
 static ssize_t pyDataReadCb(void *hook, void *buffer, size_t size)
 {
+  PyGILState_STATE state = PyGILState_Ensure();
   ssize_t result;
   PyObject *pyhook = (PyObject *) hook;
   PyObject *self = NULL;
@@ -806,6 +828,7 @@ static ssize_t pyDataReadCb(void *hook, void *buffer, size_t size)
 
  leave:
   Py_XDECREF(retval);
+  PyGILState_Release(state);
   return result;
 }
 
@@ -814,6 +837,7 @@ static ssize_t pyDataReadCb(void *hook, void *buffer, size_t size)
    on error.  If an error occurs, errno is set.  */
 static ssize_t pyDataWriteCb(void *hook, const void *buffer, size_t size)
 {
+  PyGILState_STATE state = PyGILState_Ensure();
   ssize_t result;
   PyObject *pyhook = (PyObject *) hook;
   PyObject *self = NULL;
@@ -865,6 +889,7 @@ static ssize_t pyDataWriteCb(void *hook, const void *buffer, size_t size)
 
  leave:
   Py_XDECREF(retval);
+  PyGILState_Release(state);
   return result;
 }
 
@@ -874,6 +899,7 @@ static ssize_t pyDataWriteCb(void *hook, const void *buffer, size_t size)
    data object.  */
 static off_t pyDataSeekCb(void *hook, off_t offset, int whence)
 {
+  PyGILState_STATE state = PyGILState_Ensure();
   off_t result;
   PyObject *pyhook = (PyObject *) hook;
   PyObject *self = NULL;
@@ -934,12 +960,14 @@ static off_t pyDataSeekCb(void *hook, off_t offset, int whence)
 
  leave:
   Py_XDECREF(retval);
+  PyGILState_Release(state);
   return result;
 }
 
 /* Close the data object with the handle HOOK.  */
 static void pyDataReleaseCb(void *hook)
 {
+  PyGILState_STATE state = PyGILState_Ensure();
   PyObject *pyhook = (PyObject *) hook;
   PyObject *self = NULL;
   PyObject *func = NULL;
@@ -969,6 +997,7 @@ static void pyDataReleaseCb(void *hook)
   Py_DECREF(pyargs);
   if (PyErr_Occurred())
     _pyme_stash_callback_exception(self);
+  PyGILState_Release(state);
 }
 
 PyObject *
@@ -976,6 +1005,7 @@ pyme_data_new_from_cbs(PyObject *self,
                        PyObject *pycbs,
                        gpgme_data_t *r_data)
 {
+  PyGILState_STATE state = PyGILState_Ensure();
   static struct gpgme_data_cbs cbs = {
     pyDataReadCb,
     pyDataWriteCb,
@@ -997,6 +1027,7 @@ pyme_data_new_from_cbs(PyObject *self,
   PyObject_SetAttrString(self, "_data_cbs", pycbs);
 
   Py_INCREF(Py_None);
+  PyGILState_Release(state);
   return Py_None;
 }
 
@@ -1007,6 +1038,7 @@ pyme_data_new_from_cbs(PyObject *self,
 gpgme_error_t
 _pyme_assuan_data_cb (void *hook, const void *data, size_t datalen)
 {
+  PyGILState_STATE state = PyGILState_Ensure();
   gpgme_error_t err = 0;
   PyObject *pyhook = (PyObject *) hook;
   PyObject *self = NULL;
@@ -1036,6 +1068,7 @@ _pyme_assuan_data_cb (void *hook, const void *data, size_t datalen)
  leave:
   if (err)
     _pyme_stash_callback_exception(self);
+  PyGILState_Release(state);
   return err;
 }
 
@@ -1043,6 +1076,7 @@ gpgme_error_t
 _pyme_assuan_inquire_cb (void *hook, const char *name, const char *args,
                          gpgme_data_t *r_data)
 {
+  PyGILState_STATE state = PyGILState_Ensure();
   gpgme_error_t err = 0;
   PyObject *pyhook = (PyObject *) hook;
   PyObject *self = NULL;
@@ -1084,12 +1118,14 @@ _pyme_assuan_inquire_cb (void *hook, const char *name, const char *args,
   Py_XDECREF(py_args);
   if (err)
     _pyme_stash_callback_exception(self);
+  PyGILState_Release(state);
   return err;
 }
 
 gpgme_error_t
 _pyme_assuan_status_cb (void *hook, const char *status, const char *args)
 {
+  PyGILState_STATE state = PyGILState_Ensure();
   gpgme_error_t err = 0;
   PyObject *pyhook = (PyObject *) hook;
   PyObject *self = NULL;
@@ -1128,5 +1164,6 @@ _pyme_assuan_status_cb (void *hook, const char *status, const char *args)
   Py_XDECREF(py_args);
   if (err)
     _pyme_stash_callback_exception(self);
+  PyGILState_Release(state);
   return err;
 }
