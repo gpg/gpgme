@@ -33,6 +33,7 @@
 #include <QTemporaryDir>
 #include "protocol.h"
 #include "tofuinfo.h"
+#include "tofupolicyjob.h"
 #include "verifyopaquejob.h"
 #include "verificationresult.h"
 #include "signingresult.h"
@@ -283,6 +284,41 @@ private Q_SLOTS:
         auto info = key2.userID(0).tofuInfo();
         Q_ASSERT(!info.isNull());
         Q_ASSERT(info.signCount());
+    }
+
+    void testTofuPolicy()
+    {
+        if (!testSupported()) {
+            return;
+        }
+
+        /* First check that the key has no tofu info. */
+        auto *job = openpgp()->keyListJob(false, false, false);
+        std::vector<GpgME::Key> keys;
+        job->addMode(GpgME::WithTofu);
+        auto result = job->exec(QStringList() << QStringLiteral("bravo@example.net"),
+                                                 false, keys);
+
+        Q_ASSERT(!keys.empty());
+        auto key = keys[0];
+        Q_ASSERT(!key.isNull());
+        Q_ASSERT(key.userID(0).tofuInfo().policy() != TofuInfo::PolicyBad);
+        auto *tofuJob = openpgp()->tofuPolicyJob();
+        auto err = tofuJob->exec(key, TofuInfo::PolicyBad);
+        Q_ASSERT(!err);
+        result = job->exec(QStringList() << QStringLiteral("bravo@example.net"),
+                                            false, keys);
+        Q_ASSERT(!keys.empty());
+        key = keys[0];
+        Q_ASSERT(key.userID(0).tofuInfo().policy() == TofuInfo::PolicyBad);
+        err = tofuJob->exec(key, TofuInfo::PolicyGood);
+
+        result = job->exec(QStringList() << QStringLiteral("bravo@example.net"),
+                                            false, keys);
+        key = keys[0];
+        Q_ASSERT(key.userID(0).tofuInfo().policy() == TofuInfo::PolicyGood);
+        delete tofuJob;
+        delete job;
     }
 
     void initTestCase()
