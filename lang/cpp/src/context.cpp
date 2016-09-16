@@ -693,6 +693,10 @@ Error Context::startPasswd(const Key &key)
     return Error(d->lasterr = gpgme_op_passwd_start(d->ctx, key.impl(), 0U));
 }
 
+
+#pragma GCC push_diagnostics
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 Error Context::edit(const Key &key, std::unique_ptr<EditInteractor> func, Data &data)
 {
     d->lastop = Private::Edit;
@@ -703,6 +707,7 @@ Error Context::edit(const Key &key, std::unique_ptr<EditInteractor> func, Data &
                                             d->lastEditInteractor.get() ? d->lastEditInteractor->d : 0,
                                             dp ? dp->data : 0));
 }
+
 
 Error Context::startEditing(const Key &key, std::unique_ptr<EditInteractor> func, Data &data)
 {
@@ -715,6 +720,7 @@ Error Context::startEditing(const Key &key, std::unique_ptr<EditInteractor> func
                               dp ? dp->data : 0));
 }
 
+
 EditInteractor *Context::lastEditInteractor() const
 {
     return d->lastEditInteractor.get();
@@ -724,6 +730,7 @@ std::unique_ptr<EditInteractor> Context::takeLastEditInteractor()
 {
     return std::move(d->lastEditInteractor);
 }
+
 
 Error Context::cardEdit(const Key &key, std::unique_ptr<EditInteractor> func, Data &data)
 {
@@ -746,6 +753,8 @@ Error Context::startCardEditing(const Key &key, std::unique_ptr<EditInteractor> 
                               d->lastCardEditInteractor.get() ? d->lastCardEditInteractor->d : 0,
                               dp ? dp->data : 0));
 }
+
+#pragma GCC pop_diagnostics
 
 EditInteractor *Context::lastCardEditInteractor() const
 {
