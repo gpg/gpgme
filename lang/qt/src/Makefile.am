@@ -34,6 +34,7 @@ qgpgme_sources = \
     qgpgmesignjob.cpp qgpgmesignkeyjob.cpp qgpgmeverifydetachedjob.cpp \
     qgpgmeverifyopaquejob.cpp threadedjobmixin.cpp \
     qgpgmekeyformailboxjob.cpp gpgme_backend_debug.cpp \
+    qgpgmetofupolicyjob.cpp \
     defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp
 
 # If you add one here make sure that you also add one in camelcase
@@ -69,6 +70,7 @@ qgpgme_headers= \
     listallkeysjob.h \
     verifydetachedjob.h \
     defaultkeygenerationjob.h \
+    tofupolicyjob.h \
     wkspublishjob.h
 
 camelcase_headers= \
@@ -102,7 +104,8 @@ camelcase_headers= \
     VerifyDetachedJob \
     KeyForMailboxJob \
     DefaultKeyGenerationJob \
-    WKSPublishJob
+    WKSPublishJob \
+    TofuPolicyJob
 
 private_qgpgme_headers = \
     qgpgme_export.h \
@@ -133,6 +136,7 @@ private_qgpgme_headers = \
     qgpgmeverifyopaquejob.h \
     qgpgmekeyformailboxjob.h \
     qgpgmewkspublishjob.h \
+    qgpgmetofupolicyjob.h \
     specialjob.h \
     threadedjobmixin.h
 
@@ -179,6 +183,8 @@ qgpgme_moc_sources = \
     qgpgmeverifydetachedjob.moc \
     qgpgmeverifyopaquejob.moc \
     qgpgmewkspublishjob.moc \
+    tofupolicyjob.moc \
+    qgpgmetofupolicyjob.moc \
     refreshkeysjob.moc \
     signencryptjob.moc \
     signjob.moc \

@@ -64,6 +64,7 @@ class AddUserIDJob;
 class SpecialJob;
 class KeyForMailboxJob;
 class WKSPublishJob;
+class TofuPolicyJob;
 
 /** The main entry point for QGpgME Comes in OpenPGP and SMIME(CMS) flavors.
  *
@@ -152,6 +153,9 @@ public:
 
     /** A Job for interacting with gnupg's wks tools. */
     virtual WKSPublishJob *wksPublishJob() const = 0;
+
+    /** A Job to set tofu policy */
+    virtual TofuPolicyJob *tofuPolicyJob() const = 0;
 };
 
 /** Obtain a reference to the OpenPGP Protocol.

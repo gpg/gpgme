@@ -57,6 +57,7 @@
 #include "specialjob.h"
 #include "keyformailboxjob.h"
 #include "wkspublishjob.h"
+#include "tofupolicyjob.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -124,6 +125,7 @@ make_job_subclass(AddUserIDJob)
 make_job_subclass(SpecialJob)
 make_job_subclass(KeyForMailboxJob)
 make_job_subclass(WKSPublishJob)
+make_job_subclass(TofuPolicyJob)
 
 #undef make_job_subclass
 
@@ -154,3 +156,4 @@ make_job_subclass(WKSPublishJob)
 #include "specialjob.moc"
 #include "keyformailboxjob.moc"
 #include "wkspublishjob.moc"
+#include "tofupolicyjob.moc"
