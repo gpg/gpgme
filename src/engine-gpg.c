@@ -2051,25 +2051,6 @@ gpg_createkey_from_param (engine_gpg_t gpg,
 }
 
 
-/* This is used for gpg versions which do not support the quick-genkey
- * command to emulate the gpgme_op_createkey API.  */
-static gpgme_error_t
-gpg_createkey_legacy (engine_gpg_t gpg,
-               const char *userid, const char *algo,
-               unsigned long expires,
-               unsigned int flags,
-               unsigned int extraflags)
-{
-  (void)gpg;
-  (void)userid;
-  (void)algo;
-  (void)expires;
-  (void)flags;
-  (void)extraflags;
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-}
-
-
 static gpgme_error_t
 gpg_createkey (engine_gpg_t gpg,
                const char *userid, const char *algo,
@@ -2204,16 +2185,10 @@ gpg_genkey (void *engine,
       else
         err = gpg_createkey_from_param (gpg, help_data, extraflags);
     }
-  else if (userid && !key)
-    {
-      if (!have_gpg_version (gpg, "2.1.13"))
-        err = gpg_createkey_legacy (gpg, userid, algo, expires, flags,
-                                    extraflags);
-      else
-        err = gpg_createkey (gpg, userid, algo, expires, flags, extraflags);
-    }
   else if (!have_gpg_version (gpg, "2.1.13"))
     err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+  else if (userid && !key)
+    err = gpg_createkey (gpg, userid, algo, expires, flags, extraflags);
   else if (!userid && key)
     err = gpg_addkey (gpg, algo, expires, key, flags, extraflags);
   else if (userid && key && !algo)
