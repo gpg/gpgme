@@ -56,7 +56,7 @@ public:
 
     /* @enum Validity
      * @brief The TOFU Validity. */
-    enum Validity {
+    enum Validity : unsigned int {
         /*! Unknown (uninitialized).*/
         ValidityUnknown,
         /*! TOFU Conflict.*/
@@ -74,7 +74,7 @@ public:
 
     /* @enum Policy
      * @brief The TOFU Validity. */
-    enum Policy {
+    enum Policy : unsigned int {
         /*! GPGME_TOFU_POLICY_NONE */
         PolicyNone,
         /*! GPGME_TOFU_POLICY_AUTO */
