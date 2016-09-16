@@ -4464,12 +4464,13 @@ could not be started.
 @tindex gpgme_interact_cb_t
 The @code{gpgme_interact_cb_t} type is the type of functions which
 @acronym{GPGME} calls if it a key interact operation is on-going.  The
-status keyword @var{status} and the argument line @var{args} are passed
-through by @acronym{GPGME} from the crypto engine.  The file
-descriptor @var{fd} is -1 for normal status messages.  If @var{status}
-indicates a command rather than a status message, the response to the
-command should be written to @var{fd}.  The @var{handle} is provided
-by the user at start of operation.
+status keyword @var{status} and the argument line @var{args} are
+passed through by @acronym{GPGME} from the crypto engine.  An empty
+string represents EOF.  The file descriptor @var{fd} is -1 for normal
+status messages.  If @var{status} indicates a command rather than a
+status message, the response to the command should be written to
+@var{fd}.  The @var{handle} is provided by the user at start of
+operation.
 
 The function should return @code{GPG_ERR_FALSE} if it did not handle
 the status code, @code{0} for success, or any other error value.

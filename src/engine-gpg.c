@@ -1095,8 +1095,7 @@ read_status (engine_gpg_t gpg)
       err = 0;
       gpg->status.eof = 1;
       if (gpg->status.mon_cb)
-        err = gpg->status.mon_cb (gpg->status.mon_cb_value,
-                                  GPGME_STATUS_EOF, "");
+        err = gpg->status.mon_cb (gpg->status.mon_cb_value, "", "");
       if (gpg->status.fnc)
         {
           char emptystring[1] = {0};

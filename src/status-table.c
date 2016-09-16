@@ -178,6 +178,6 @@ _gpgme_status_to_string (gpgme_status_code_t code)
 
   for (i=0; i < DIM(status_table); i++)
     if (status_table[i].code == code)
-      return status_table[i].name;
+      return status_table[i].name? status_table[i].name : "";
   return "status_code_lost";
 }
