@@ -366,25 +366,10 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args,
 	end++;
 
       /* Parse the return code.  */
-      if (end[0] && (!end[1] || end[1] == ' '))
-	{
-	  switch (end[0])
-	    {
-	    case '4':
-	      sig->status = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-	      break;
-
-	    case '9':
-	      sig->status = gpg_error (GPG_ERR_NO_PUBKEY);
-	      break;
-
-	    default:
-	      sig->status = gpg_error (GPG_ERR_GENERAL);
-	    }
-	}
-      else
+      if (!*end)
 	goto parse_err_sig_fail;
 
+      sig->status = strtoul (end, NULL, 10);
       goto parse_err_sig_ok;
 
     parse_err_sig_fail:
