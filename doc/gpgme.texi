@@ -198,15 +198,18 @@ Context Attributes
 
 Key Management
 
+* Key objects::                   Description of the key structures.
 * Listing Keys::                  Browsing the list of available keys.
 * Information About Keys::        Requesting detailed information about keys.
 * Key Signatures::                Listing the signatures on a key.
 * Manipulating Keys::             Operations on keys.
 * Generating Keys::               Creating new key pairs.
+* Signing Keys::                  Adding key signatures to public keys.
 * Exporting Keys::                Retrieving key data from the key ring.
 * Importing Keys::                Adding keys to the key ring.
 * Deleting Keys::                 Removing keys from the key ring.
 * Changing Passphrases::          Change the passphrase of a key.
+* Changing TOFU Data::            Changing data pertaining to TOFU.
 * Advanced Key Editing::          Advanced key edit operation.
 
 Trust Item Management
@@ -2959,216 +2962,32 @@ signers are specified.  This is always done by specifying the
 respective keys that should be used for the operation.  The following
 section describes how such keys can be selected and manipulated.
 
-@deftp {Data type} gpgme_subkey_t
-The @code{gpgme_subkey_t} type is a pointer to a subkey structure.
-Sub keys are one component of a @code{gpgme_key_t} object.  In fact,
-subkeys are those parts that contains the real information about the
-individual cryptographic keys that belong to the same key object.  One
-@code{gpgme_key_t} can contain several subkeys.  The first subkey in
-the linked list is also called the primary key.
 
-The subkey structure has the following members:
+@menu
+* Key objects::                   Description of the key structures.
+* Listing Keys::                  Browsing the list of available keys.
+* Information About Keys::        Requesting detailed information about keys.
+* Key Signatures::                Listing the signatures on a key.
+* Manipulating Keys::             Operations on keys.
+* Generating Keys::               Creating new key pairs.
+* Signing Keys::                  Adding key signatures to public keys.
+* Exporting Keys::                Retrieving key data from the key ring.
+* Importing Keys::                Adding keys to the key ring.
+* Deleting Keys::                 Removing keys from the key ring.
+* Changing Passphrases::          Change the passphrase of a key.
+* Changing TOFU Data::            Changing data pertaining to TOFU.
+* Advanced Key Editing::          Advanced key edit operation.
+@end menu
 
-@table @code
-@item gpgme_subkey_t next
-This is a pointer to the next subkey structure in the linked list, or
-@code{NULL} if this is the last element.
+@node Key objects
+@subsection Key objects
 
-@item unsigned int revoked : 1
-This is true if the subkey is revoked.
-
-@item unsigned int expired : 1
-This is true if the subkey is expired.
-
-@item unsigned int disabled : 1
-This is true if the subkey is disabled.
-
-@item unsigned int invalid : 1
-This is true if the subkey is invalid.
-
-@item unsigned int can_encrypt : 1
-This is true if the subkey can be used for encryption.
-
-@item unsigned int can_sign : 1
-This is true if the subkey can be used to create data signatures.
-
-@item unsigned int can_certify : 1
-This is true if the subkey can be used to create key certificates.
-
-@item unsigned int can_authenticate : 1
-This is true if the subkey can be used for authentication.
-
-@item unsigned int is_qualified : 1
-This is true if the subkey can be used for qualified signatures
-according to local government regulations.
-
-@item unsigned int secret : 1
-This is true if the subkey is a secret key.  Note that it will be
-false if the key is actually a stub key; i.e. a secret key operation
-is currently not possible (offline-key).  This is only set if a
-listing of secret keys has been requested or if
-@code{GPGME_KEYLIST_MODE_WITH_SECRET} is active.
-
-@item gpgme_pubkey_algo_t pubkey_algo
-This is the public key algorithm supported by this subkey.
-
-@item unsigned int length
-This is the length of the subkey (in bits).
-
-@item char *keyid
-This is the key ID of the subkey in hexadecimal digits.
-
-@item char *fpr
-This is the fingerprint of the subkey in hexadecimal digits, if
-available.
-
-@item char *keygrip
-The keygrip of the subkey in hex digit form or @code{NULL} if not
-availabale.
-
-@item long int timestamp
-This is the creation timestamp of the subkey.  This is -1 if the
-timestamp is invalid, and 0 if it is not available.
-
-@item long int expires
-This is the expiration timestamp of the subkey, or 0 if the subkey
-does not expire.
-
-@item unsigned int is_cardkey : 1
-True if the secret key is stored on a smart card.
-
-@item char *card_number
-The serial number of a smart card holding this key or @code{NULL}.
-
-@item char *curve
-For ECC algorithms the name of the curve.
-
-@end table
-@end deftp
-
-@deftp {Data type} gpgme_key_sig_t
-The @code{gpgme_key_sig_t} type is a pointer to a key signature structure.
-Key signatures are one component of a @code{gpgme_key_t} object, and
-validate user IDs on the key.
-
-The signatures on a key are only available if the key was retrieved
-via a listing operation with the @code{GPGME_KEYLIST_MODE_SIGS} mode
-enabled, because it can be expensive to retrieve all signatures of a
-key.
-
-The signature notations on a key signature are only available if the
-key was retrieved via a listing operation with the
-@code{GPGME_KEYLIST_MODE_SIG_NOTATIONS} mode enabled, because it can
-be expensive to retrieve all signature notations.
-
-The key signature structure has the following members:
-
-@table @code
-@item gpgme_key_sig_t next
-This is a pointer to the next key signature structure in the linked
-list, or @code{NULL} if this is the last element.
-
-@item unsigned int revoked : 1
-This is true if the key signature is a revocation signature.
-
-@item unsigned int expired : 1
-This is true if the key signature is expired.
-
-@item unsigned int invalid : 1
-This is true if the key signature is invalid.
-
-@item unsigned int exportable : 1
-This is true if the key signature is exportable.
-
-@item gpgme_pubkey_algo_t pubkey_algo
-This is the public key algorithm used to create the signature.
-
-@item char *keyid
-This is the key ID of the key (in hexadecimal digits) used to create
-the signature.
-
-@item long int timestamp
-This is the creation timestamp of the key signature.  This is -1 if
-the timestamp is invalid, and 0 if it is not available.
-
-@item long int expires
-This is the expiration timestamp of the key signature, or 0 if the key
-signature does not expire.
-
-@item gpgme_error_t status
-This is the status of the signature and has the same meaning as the
-member of the same name in a @code{gpgme_signature_t} object.
-
-@item unsigned int sig_class
-This specifies the signature class of the key signature.  The meaning
-is specific to the crypto engine.
-
-@item char *uid
-This is the main user ID of the key used to create the signature.
-
-@item char *name
-This is the name component of @code{uid}, if available.
-
-@item char *comment
-This is the comment component of @code{uid}, if available.
-
-@item char *email
-This is the email component of @code{uid}, if available.
-
-@item gpgme_sig_notation_t notations
-This is a linked list with the notation data and policy URLs.
-@end table
-@end deftp
-
-@deftp {Data type} gpgme_user_id_t
-A user ID is a component of a @code{gpgme_key_t} object.  One key can
-have many user IDs.  The first one in the list is the main (or
-primary) user ID.
-
-The user ID structure has the following members.
-
-@table @code
-@item gpgme_user_id_t next
-This is a pointer to the next user ID structure in the linked list, or
-@code{NULL} if this is the last element.
-
-@item unsigned int revoked : 1
-This is true if the user ID is revoked.
-
-@item unsigned int invalid : 1
-This is true if the user ID is invalid.
-
-@item gpgme_validity_t validity
-This specifies the validity of the user ID.
-
-@item char *uid
-This is the user ID string.
-
-@item char *name
-This is the name component of @code{uid}, if available.
-
-@item char *comment
-This is the comment component of @code{uid}, if available.
-
-@item char *email
-This is the email component of @code{uid}, if available.
-
-@item char *address;
-The mail address (addr-spec from RFC-5322) of the user ID string.
-This is general the same as the @code{email} part of this structure
-but might be slightly different.  If no mail address is available
-@code{NULL} is stored.
-
-@item gpgme_tofu_info_t tofu
-If not @code{NULL} information from the TOFU database pertaining to
-this user id.
-
-@item gpgme_key_sig_t signatures
-This is a linked list with the signatures on this user ID.
-@end table
-@end deftp
+The keys are represented in GPGME by structures which may only be read
+by the application but never be allocated or changed.  They are valid
+as long as the key object itself is valid.
 
 @deftp {Data type} gpgme_key_t
+
 The @code{gpgme_key_t} type is a pointer to a key object.  It has the
 following members:
 
@@ -3253,18 +3072,220 @@ be missing but this field may be set nevertheless.
 @end table
 @end deftp
 
-@menu
-* Listing Keys::                  Browsing the list of available keys.
-* Information About Keys::        Requesting detailed information about keys.
-* Key Signatures::                Listing the signatures on a key.
-* Manipulating Keys::             Operations on keys.
-* Generating Keys::               Creating new key pairs.
-* Exporting Keys::                Retrieving key data from the key ring.
-* Importing Keys::                Adding keys to the key ring.
-* Deleting Keys::                 Removing keys from the key ring.
-* Changing Passphrases::          Change the passphrase of a key.
-* Advanced Key Editing::          Advanced key edit operation.
-@end menu
+
+@deftp {Data type} gpgme_subkey_t
+
+The @code{gpgme_subkey_t} type is a pointer to a subkey structure.
+Subkeys are one component of a @code{gpgme_key_t} object.  In fact,
+subkeys are those parts that contains the real information about the
+individual cryptographic keys that belong to the same key object.  One
+@code{gpgme_key_t} can contain several subkeys.  The first subkey in
+the linked list is also called the primary key.
+
+The subkey structure has the following members:
+
+@table @code
+@item gpgme_subkey_t next
+This is a pointer to the next subkey structure in the linked list, or
+@code{NULL} if this is the last element.
+
+@item unsigned int revoked : 1
+This is true if the subkey is revoked.
+
+@item unsigned int expired : 1
+This is true if the subkey is expired.
+
+@item unsigned int disabled : 1
+This is true if the subkey is disabled.
+
+@item unsigned int invalid : 1
+This is true if the subkey is invalid.
+
+@item unsigned int can_encrypt : 1
+This is true if the subkey can be used for encryption.
+
+@item unsigned int can_sign : 1
+This is true if the subkey can be used to create data signatures.
+
+@item unsigned int can_certify : 1
+This is true if the subkey can be used to create key certificates.
+
+@item unsigned int can_authenticate : 1
+This is true if the subkey can be used for authentication.
+
+@item unsigned int is_qualified : 1
+This is true if the subkey can be used for qualified signatures
+according to local government regulations.
+
+@item unsigned int secret : 1
+This is true if the subkey is a secret key.  Note that it will be
+false if the key is actually a stub key; i.e. a secret key operation
+is currently not possible (offline-key).  This is only set if a
+listing of secret keys has been requested or if
+@code{GPGME_KEYLIST_MODE_WITH_SECRET} is active.
+
+@item gpgme_pubkey_algo_t pubkey_algo
+This is the public key algorithm supported by this subkey.
+
+@item unsigned int length
+This is the length of the subkey (in bits).
+
+@item char *keyid
+This is the key ID of the subkey in hexadecimal digits.
+
+@item char *fpr
+This is the fingerprint of the subkey in hexadecimal digits, if
+available.
+
+@item char *keygrip
+The keygrip of the subkey in hex digit form or @code{NULL} if not
+availabale.
+
+@item long int timestamp
+This is the creation timestamp of the subkey.  This is -1 if the
+timestamp is invalid, and 0 if it is not available.
+
+@item long int expires
+This is the expiration timestamp of the subkey, or 0 if the subkey
+does not expire.
+
+@item unsigned int is_cardkey : 1
+True if the secret key is stored on a smart card.
+
+@item char *card_number
+The serial number of a smart card holding this key or @code{NULL}.
+
+@item char *curve
+For ECC algorithms the name of the curve.
+
+@end table
+@end deftp
+
+@deftp {Data type} gpgme_user_id_t
+
+A user ID is a component of a @code{gpgme_key_t} object.  One key can
+have many user IDs.  The first one in the list is the main (or
+primary) user ID.
+
+The user ID structure has the following members.
+
+@table @code
+@item gpgme_user_id_t next
+This is a pointer to the next user ID structure in the linked list, or
+@code{NULL} if this is the last element.
+
+@item unsigned int revoked : 1
+This is true if the user ID is revoked.
+
+@item unsigned int invalid : 1
+This is true if the user ID is invalid.
+
+@item gpgme_validity_t validity
+This specifies the validity of the user ID.
+
+@item char *uid
+This is the user ID string.
+
+@item char *name
+This is the name component of @code{uid}, if available.
+
+@item char *comment
+This is the comment component of @code{uid}, if available.
+
+@item char *email
+This is the email component of @code{uid}, if available.
+
+@item char *address;
+The mail address (addr-spec from RFC-5322) of the user ID string.
+This is general the same as the @code{email} part of this structure
+but might be slightly different.  If no mail address is available
+@code{NULL} is stored.
+
+@item gpgme_tofu_info_t tofu
+If not @code{NULL} information from the TOFU database pertaining to
+this user id.
+
+@item gpgme_key_sig_t signatures
+This is a linked list with the signatures on this user ID.
+@end table
+@end deftp
+
+
+@deftp {Data type} gpgme_key_sig_t
+
+The @code{gpgme_key_sig_t} type is a pointer to a key signature structure.
+Key signatures are one component of a @code{gpgme_key_t} object, and
+validate user IDs on the key in the OpenPGP protocol.
+
+The signatures on a key are only available if the key was retrieved
+via a listing operation with the @code{GPGME_KEYLIST_MODE_SIGS} mode
+enabled, because it can be expensive to retrieve all signatures of a
+key.
+
+The signature notations on a key signature are only available if the
+key was retrieved via a listing operation with the
+@code{GPGME_KEYLIST_MODE_SIG_NOTATIONS} mode enabled, because it can
+be expensive to retrieve all signature notations.
+
+The key signature structure has the following members:
+
+@table @code
+@item gpgme_key_sig_t next
+This is a pointer to the next key signature structure in the linked
+list, or @code{NULL} if this is the last element.
+
+@item unsigned int revoked : 1
+This is true if the key signature is a revocation signature.
+
+@item unsigned int expired : 1
+This is true if the key signature is expired.
+
+@item unsigned int invalid : 1
+This is true if the key signature is invalid.
+
+@item unsigned int exportable : 1
+This is true if the key signature is exportable.
+
+@item gpgme_pubkey_algo_t pubkey_algo
+This is the public key algorithm used to create the signature.
+
+@item char *keyid
+This is the key ID of the key (in hexadecimal digits) used to create
+the signature.
+
+@item long int timestamp
+This is the creation timestamp of the key signature.  This is -1 if
+the timestamp is invalid, and 0 if it is not available.
+
+@item long int expires
+This is the expiration timestamp of the key signature, or 0 if the key
+signature does not expire.
+
+@item gpgme_error_t status
+This is the status of the signature and has the same meaning as the
+member of the same name in a @code{gpgme_signature_t} object.
+
+@item unsigned int sig_class
+This specifies the signature class of the key signature.  The meaning
+is specific to the crypto engine.
+
+@item char *uid
+This is the main user ID of the key used to create the signature.
+
+@item char *name
+This is the name component of @code{uid}, if available.
+
+@item char *comment
+This is the comment component of @code{uid}, if available.
+
+@item char *email
+This is the email component of @code{uid}, if available.
+
+@item gpgme_sig_notation_t notations
+This is a linked list with the notation data and policy URLs.
+@end table
+@end deftp
+
 
 
 @node Listing Keys
@@ -3787,7 +3808,298 @@ The function @code{gpgme_key_release} is equivalent to
 @cindex key, creation
 @cindex key ring, add
 
-@deftypefun gpgme_error_t gpgme_op_genkey (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{parms}}, @w{gpgme_data_t @var{public}}, @w{gpgme_data_t @var{secret}})
+GPGME provides a set of functions to create public key pairs.  Most of
+these functions require the use of GnuPG 2.1 and later; for older
+GnuPG versions the @code{gpgme_op_genkey} function can be used.
+Existing code which wants to update to the new functions or new code
+which shall supports older GnuPG versions may try the new functions
+first and provide a fallback to the old function if the error code
+@code{GPG_ERR_NOT_SUPPORTED} is received.
+
+@c
+@c  gpgme_op_createkey
+@c
+@deftypefun gpgme_error_t gpgme_op_createkey @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{const char *@var{userid}}, @
+       @w{const char *@var{algo}}, @
+       @w{unsigned long @var{reserved}}, @
+       @w{unsigned long @var{expires}}, @
+       @w{gpgme_key_t @var{extrakey}}, @
+       @w{unsigned int @var{flags}});
+
+The function @code{gpgme_op_createkey} generates a new key for the
+procotol active in the context @var{ctx}.  As of now this function
+does only work for OpenPGP and requires at least version 2.1.13 of
+GnuPG.
+
+@var{userid} is commonly the mail address associated with the key.
+GPGME does not require a specificy syntax but if more than a mail
+address is given, RFC-822 style format is suggested.  The value is
+expected to be in UTF-8 encoding (i.e. no IDN encoding for mail
+addresses).  This is a required parameter.
+
+@var{algo} specifies the algorithm for the new key (actually a keypair
+of public and private key).  For a list of supported algorithms, see
+the GnuPG manual.  If @var{algo} is @code{NULL} or the string
+"default", the key is generated using the default algorithm of the
+engine.  If the string "future-default" is used the engine may use an
+algorithm which is planned to be the default in a future release of
+the engine; however existing implementation of the protocol may not be
+able to already handle such future algorithms.  For the OpenPGP
+protocol, the specification of a default algorithm, without requesting
+a non-default usage via @var{flags}, triggers the creation of a
+primary key plus a secondary key (subkey).
+
+@var{reserved} must be set to zero.
+
+@var{expires} can be set to the number of seconds since Epoch of the
+desired expiration date in UTC for the new key.   Using 0 does not
+set an expiration date.  Note that this parameter takes an unsigned long
+value and not a @code{time_t} to avoid problems on systems which use a
+signed 32 bit @code{time_t}.  Note further that the OpenPGP protocol
+uses 32 bit values for timestamps and thus can only encode dates up to
+the year 2106.
+
+@var{extrakey} is currently not used and must be set to @code{NULL}.
+A future version of GPGME may use this parameter to create X.509 keys.
+
+@var{flags} can be set to the bit-wise OR of the following flags:
+
+@table @code
+@item GPGME_CREATE_SIGN
+@itemx GPGME_CREATE_ENCR
+@itemx GPGME_CREATE_CERT
+@itemx GPGME_CREATE_AUTH
+Do not create the key with the default capabilities (key usage) of the
+requested algorithm but use those explicitly given by these flags:
+``signing'', ``encryption'', ``certification'', or ``authentication''.
+The allowed combinations depend on the algorithm.
+
+If any of these flags are set and a default algorithm has been
+selected only one key is created in the case of the OpenPGP
+protocol.
+
+@item GPGME_CREATE_NOPASSWD
+Request generation of the key without password protection.
+
+@item GPGME_CREATE_SELFSIGNED
+For an X.509 key do not create a CSR but a self-signed certificate.
+This has not yet been implemented.
+
+@item GPGME_CREATE_NOSTORE
+Do not store the created key in the local key database.
+This has not yet been implemented.
+
+@item GPGME_CREATE_WANTPUB
+@itemx GPGME_CREATE_WANTSEC
+Return the public or secret key as part of the result structure.
+This has not yet been implemented.
+
+@item GPGME_CREATE_FORCE
+The engine does not allow the creation of a key with a user ID
+already existing in the local key database.  This flag can be used to
+override this check.
+
+@end table
+
+After the operation completed successfully, information about the
+created key can be retrieved with @code{gpgme_op_genkey_result}.
+
+The function returns zero on success, @code{GPG_ERR_NOT_SUPPORTED} if
+the engine does not support the command, or a bunch of other error
+codes.
+
+@end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_createkey_start @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{const char *@var{userid}}, @
+       @w{const char *@var{algo}}, @
+       @w{unsigned long @var{reserved}}, @
+       @w{unsigned long @var{expires}}, @
+       @w{gpgme_key_t @var{extrakey}}, @
+       @w{unsigned int @var{flags}});
+
+The function @code{gpgme_op_createkey_start} initiates a
+@code{gpgme_op_createkey} operation; see there for details.  It must
+be completed by calling @code{gpgme_wait} on the context.
+@xref{Waiting For Completion}.
+
+@end deftypefun
+
+@c
+@c  gpgme_op_createsubkey
+@c
+@deftypefun gpgme_error_t gpgme_op_createsubkey @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{algo}}, @
+       @w{unsigned long @var{reserved}}, @
+       @w{unsigned long @var{expires}}, @
+       @w{unsigned int @var{flags}});
+
+The function @code{gpgme_op_createsubkey} creates and adds a new
+subkey to the primary OpenPGP key given by @var{KEY}.  The only
+allowed protocol in @var{ctx} is @code{GPGME_PROTOCOL_OPENPGP}.
+Subkeys (aka secondary keys) are a concept in the OpenPGP protocol to
+bind several keys to a primary key.  As of now this function requires
+at least version 2.1.13 of GnuPG.
+
+@var{key} specifies the key to operate on.
+
+@var{algo} specifies the algorithm for the new subkey.  For a list of
+supported algorithms, see the GnuPG manual.  If @var{algo} is
+@code{NULL} or the string "default", the subkey is generated using the
+default algorithm for an encryption subkey of the engine.  If the
+string "future-default" is used the engine may use an encryption
+algorithm which is planned to be the default in a future release of
+the engine; however existing implementation of the protocol may not be
+able to already handle such future algorithms.
+
+@var{reserved} must be set to zero.
+
+@var{expires} can be set to the number of seconds since Epoch of the
+desired expiration date in UTC for the new subkey.   Using 0 does not
+set an expiration date.  Note that this parameter takes an unsigned long
+value and not a @code{time_t} to avoid problems on systems which use a
+signed 32 bit @code{time_t}.  Note further that the OpenPGP protocol
+uses 32 bit values for timestamps and thus can only encode dates up to
+the year 2106.
+
+@var{flags} takes the same values as described above for
+@code{gpgme_op_createkey}.
+
+After the operation completed successfully, information about the
+created key can be retrieved with @code{gpgme_op_genkey_result}.
+
+The function returns zero on success, @code{GPG_ERR_NOT_SUPPORTED} if
+the engine does not support the command, or a bunch of other error
+codes.
+
+
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_createsubkey_start @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{algo}}, @
+       @w{unsigned long @var{reserved}}, @
+       @w{unsigned long @var{expires}}, @
+       @w{unsigned int @var{flags}});
+
+The function @code{gpgme_op_createsubkey_start} initiates a
+@code{gpgme_op_createsubkey} operation; see there for details.  It must
+be completed by calling @code{gpgme_wait} on the context.
+@xref{Waiting For Completion}.
+
+@end deftypefun
+
+
+@c
+@c  gpgme_op_adduid
+@c
+@deftypefun gpgme_error_t gpgme_op_adduid @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{userid}}, @
+       @w{unsigned int @var{flags}});
+
+The function @code{gpgme_op_adduid} adds a new user ID to the OpenPGP
+key given by @var{KEY}.  Adding additional user IDs after key creation
+is a feature of the OpenPGP protocol and thus the protocol for the
+context @var{ctx} must be set to OpenPGP.  As of now this function
+requires at least version 2.1.13 of GnuPG.
+
+@var{key} specifies the key to operate on.
+
+@var{userid} is the user ID to add to the key.  A user ID is commonly
+the mail address to be associated with the key.  GPGME does not
+require a specificy syntax but if more than a mail address is given,
+RFC-822 style format is suggested.  The value is expected to be in
+UTF-8 encoding (i.e. no IDN encoding for mail addresses).  This is a
+required parameter.
+
+@var{flags} are currently not used and must be set to zero.
+
+The function returns zero on success, @code{GPG_ERR_NOT_SUPPORTED} if
+the engine does not support the command, or a bunch of other error
+codes.
+
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_adduid_start @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{userid}}, @
+       @w{unsigned int @var{flags}});
+
+The function @code{gpgme_op_adduid_start} initiates a
+@code{gpgme_op_adduid} operation; see there for details.  It must
+be completed by calling @code{gpgme_wait} on the context.
+@xref{Waiting For Completion}.
+
+@end deftypefun
+
+
+@c
+@c  gpgme_op_revuid
+@c
+@deftypefun gpgme_error_t gpgme_op_revuid @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{userid}}, @
+       @w{unsigned int @var{flags}});
+
+The function @code{gpgme_op_revuid} revokes a user ID from the OpenPGP
+key given by @var{KEY}.  Revoking user IDs after key creation is a
+feature of the OpenPGP protocol and thus the protocol for the context
+@var{ctx} must be set to OpenPGP.  As of now this function requires at
+least version 2.1.13 of GnuPG.
+
+@var{key} specifies the key to operate on.
+
+@var{userid} is the user ID to be revoked from the key.  The user ID
+must be given verbatim because the engine does an exact and case
+sensitive match.  Thus the @code{uid} field from the user ID object
+(@code{gpgme_user_id_t}) is to be used.  This is a required parameter.
+
+@var{flags} are currently not used and must be set to zero.
+
+Note that the engine won't allow to revoke the last valid user ID.  To
+change a user ID is better to first add the new user ID, then revoke
+the old one, and finally publish the key.
+
+The function returns zero on success, @code{GPG_ERR_NOT_SUPPORTED} if
+the engine does not support the command, or a bunch of other error
+codes.
+
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_revuid_start @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{userid}}, @
+       @w{unsigned int @var{flags}});
+
+The function @code{gpgme_op_revuid_start} initiates a
+@code{gpgme_op_revuid} operation; see there for details.  It must
+be completed by calling @code{gpgme_wait} on the context.
+@xref{Waiting For Completion}.
+
+@end deftypefun
+
+
+@c
+@c  gpgme_op_genkey
+@c
+@deftypefun gpgme_error_t gpgme_op_genkey @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{const char *@var{parms}}, @
+       @w{gpgme_data_t @var{public}}, @
+       @w{gpgme_data_t @var{secret}})
+
 The function @code{gpgme_op_genkey} generates a new key pair in the
 context @var{ctx}.  The meaning of @var{public} and @var{secret}
 depends on the crypto backend.
@@ -3849,6 +4161,7 @@ if no key was created by the backend.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_genkey_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{parms}}, @w{gpgme_data_t @var{public}}, @w{gpgme_data_t @var{secret}})
+
 The function @code{gpgme_op_genkey_start} initiates a
 @code{gpgme_op_genkey} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -3860,7 +4173,12 @@ operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
 @code{NULL}.
 @end deftypefun
 
+
+@c
+@c  gpgme_op_genkey_result
+@c
 @deftp {Data type} {gpgme_genkey_result_t}
+
 This is a pointer to a structure used to store the result of a
 @code{gpgme_op_genkey} operation.  After successfully generating a
 key, you can retrieve the pointer to the result with
@@ -3869,22 +4187,34 @@ members:
 
 @table @code
 @item unsigned int primary : 1
-This is a flag that is set to 1 if a primary key was created and to 0
+This flag is set to 1 if a primary key was created and to 0
 if not.
 
 @item unsigned int sub : 1
-This is a flag that is set to 1 if a subkey was created and to 0
-if not.
+This flag is set to 1 if a subkey was created and to 0 if not.
+
+@item unsigned int uid : 1
+This flag is set to 1 if a user ID was created and to 0 if not.
 
 @item char *fpr
 This is the fingerprint of the key that was created.  If both a
-primary and a sub key were generated, the fingerprint of the primary
+primary and a subkey were generated, the fingerprint of the primary
 key will be returned.  If the crypto engine does not provide the
 fingerprint, @code{fpr} will be a null pointer.
+
+@item gpgme_data_t pubkey
+This will eventually be used to return the public key.  It is
+currently not used.
+
+@item gpgme_data_t seckey
+This will eventually be used to return the secret key.  It is
+currently not used.
+
 @end table
 @end deftp
 
 @deftypefun gpgme_genkey_result_t gpgme_op_genkey_result (@w{gpgme_ctx_t @var{ctx}})
+
 The function @code{gpgme_op_genkey_result} returns a
 @code{gpgme_genkey_result_t} pointer to a structure holding the result of
 a @code{gpgme_op_genkey} operation.  The pointer is only valid if the
@@ -3892,9 +4222,110 @@ last operation on the context was a @code{gpgme_op_genkey} or
 @code{gpgme_op_genkey_start} operation, and if this operation finished
 successfully.  The returned pointer is only valid until the next
 operation is started on the context.
+
 @end deftypefun
 
 
+@c
+@c  SIGNING KEYS
+@c
+@node Signing Keys
+@subsection Signing Keys
+@cindex key, signing
+
+Key signatures are a unique concept of the OpenPGP protocol.  They can
+be used to certify the validity of a key and are used to create the
+Web-of-Trust (WoT).  Instead of using the @code{gpgme_op_interact}
+function along with a finite state machine, GPGME provides a
+convenient function to create key signatures when using modern GnuPG
+versions.
+
+
+@c
+@c  gpgme_op_keysign
+@c
+@deftypefun gpgme_error_t gpgme_op_keysign @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{userid}}, @
+       @w{unsigned long @var{expires}}, @
+       @w{unsigned int @var{flags}});
+
+The function @code{gpgme_op_keysign} adds a new key signature to the
+public key @var{KEY}.   This function requires at least version 2.1.12 of
+GnuPG.
+
+@var{CTX} is the usual context which describes the protocol to use
+(which must be OpenPGP) and has also the list of signer keys to be
+used for the signature.  The common case is to use the default key for
+signing other keys.  If another key or more than one key shall be used
+for a key signature, @code{gpgme_signers_add} can be used.
+@xref{Selecting Signers}.
+
+@var{key} specifies the key to operate on.
+
+@var{userid} selects the user ID or user IDs to be signed.  If
+@var{userid} is set to @code{NULL} all valid user IDs are signed.  The
+user ID must be given verbatim because the engine does an exact and
+case sensitive match.  Thus the @code{uid} field from the user ID
+object (@code{gpgme_user_id_t}) is to be used.  To select more than
+one user ID put them all into one string separated by linefeeds
+characters (@code{\n}) and set the flag @code{GPGME_KEYSIGN_LFSEP}.
+
+@var{expires} can be set to the number of seconds since Epoch of the
+desired expiration date in UTC for the new signature.  The common case
+is to use 0 to not set an expiration date.  However, if the
+configuration of the engine defines a default expiration for key
+signatures, that is still used unless the flag
+@code{GPGME_KEYSIGN_NOEXPIRE} is used.  Note that this parameter takes
+an unsigned long value and not a @code{time_t} to avoid problems on
+systems which use a signed 32 bit @code{time_t}.  Note further that
+the OpenPGP protocol uses 32 bit values for timestamps and thus can
+only encode dates up to the year 2106.
+
+@var{flags} can be set to the bit-wise OR of the following flags:
+
+@table @code
+@item GPGME_KEYSIGN_LOCAL
+Instead of creating an exportable key signature, create a key
+signature which is is marked as non-exportable.
+
+@item GPGME_KEYSIGN_LFSEP
+Although linefeeds are uncommon in user IDs this flag is required to
+explicitly declare that @var{userid} may contain several linefeed
+separated user IDs.
+
+@item GPGME_KEYSIGN_NOEXPIRE
+Force the creation of a key signature without an expiration date.  This
+overrides @var{expire} and any local configuration of the engine.
+
+@end table
+
+The function returns zero on success, @code{GPG_ERR_NOT_SUPPORTED} if
+the engine does not support the command, or a bunch of other error
+codes.
+
+@end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_keysign_start @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{userid}}, @
+       @w{unsigned long @var{expires}}, @
+       @w{unsigned int @var{flags}});
+
+The function @code{gpgme_op_keysign_start} initiates a
+@code{gpgme_op_keysign} operation; see there for details.  It must
+be completed by calling @code{gpgme_wait} on the context.
+@xref{Waiting For Completion}.
+
+@end deftypefun
+
+
+@c
+@c  EXPORTING KEYS
+@c
 @node Exporting Keys
 @subsection Exporting Keys
 @cindex key, export
@@ -4263,7 +4694,7 @@ operation was started successfully, and @code{GPG_ERR_INV_VALUE} if
 
 
 @node Changing Passphrases
-@subsection  Changing Passphrases
+@subsection Changing Passphrases
 @cindex passphrase, change
 
 @deftypefun gpgme_error_t gpgme_op_passwd      @
@@ -4294,6 +4725,72 @@ The function @code{gpgme_op_passwd_start} initiates a
 The function returns @code{0} if the operation was started successfully,
 and an error code if one of the arguments is not valid or the oepration
 could not be started.
+@end deftypefun
+
+
+@c
+@c  CHANGING TOFU DATA
+@c
+@node Changing TOFU Data
+@subsection Changing TOFU Data
+@cindex validity, TOFU
+
+The OpenPGP engine features a Trust-On-First-Use (TOFU) key validation
+model.  For resolving clonflics it is necessary to declare the policy
+for a key.  See the GnuPG manual for details on the TOFU
+implementation.
+
+@deftp {Data type} {enum gpgme_tofu_policy_t}
+@tindex gpgme_tofu_policy_t
+The @code{gpgme_tofu_policy_t} type specifies the set of possible
+policy values that are supported by @acronym{GPGME}:
+
+@table @code
+@item GPGME_TOFU_POLICY_AUTO
+Set the policy to ``auto''.
+@item GPGME_TOFU_POLICY_GOOD
+Set the policy to ``goog''.
+@item GPGME_TOFU_POLICY_BAD
+Set the policy to ``bad''.
+@item GPGME_TOFU_POLICY_ASK
+Set the policy to ``ask''.
+@item GPGME_TOFU_POLICY_UNKNOWN
+Set the policy to ``unknown''.
+@end table
+
+@end deftp
+
+To change the policy for a key the following functions can be used:
+
+@deftypefun gpgme_error_t gpgme_op_tofu_policy @
+             (@w{gpgme_ctx_t @var{ctx}},       @
+              @w{const gpgme_key_t @var{key}}, @
+              @w{gpgme_tofu_policy_t @var{policy}})
+
+The function @code{gpgme_op_tofu_policy} changes the TOFU policy of
+@var{key}.  The valid values for @var{policy} are listed above.  As of
+now this function does only work for OpenPGP and requires at least
+version 2.1.10 of GnuPG.
+
+The function returns zero on success, @code{GPG_ERR_NOT_SUPPORTED} if
+the engine does not support the command, or a bunch of other error
+codes.
+
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_tofu_policy_start @
+             (@w{gpgme_ctx_t @var{ctx}},       @
+              @w{const gpgme_key_t @var{key}}, @
+              @w{gpgme_tofu_policy_t @var{policy}})
+
+The function @code{gpgme_op_tofu_policy_start} initiates a
+@code{gpgme_op_tofu_policy} operation.    It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns @code{0} if the operation was started successfully,
+and an error code if one of the arguments is not valid or the oepration
+could not be started.
+
 @end deftypefun
 
 
@@ -5324,6 +5821,11 @@ set is changed).
 @subsubsection Selecting Signers
 @cindex signature, selecting signers
 @cindex signers, selecting
+
+The key or the keys used to create a signature are stored in the
+context.  The following functions can be used to manipulate this list.
+If no signer has been set into the context a default key is used for
+signing.
 
 @deftypefun void gpgme_signers_clear (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_signers_clear} releases a reference for each
