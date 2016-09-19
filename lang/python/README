@@ -1,27 +1,15 @@
-PyME - GPGME for Python          emacs, please switch to -*- org -*- mode
+PyME - GPGME for Python                                      -*- org -*-
 =======================
 
-PyMe is a python interface to the GPGME library:
+PyME is a python interface to the GPGME library:
 https://www.gnupg.org/related_software/gpgme/
 
-PyMe uses SWIG to create wrapper functions with automatic type
-conversions.  This way most of the functions and types are converted
-from C into Python automatically by SWIG, reducing the maintenance
-cost of the binginds.
+PyME offers two interfaces, one is a high-level, curated, and
+idiomatic interface that is implemented as a shim on top of the
+low-level interface automatically created using SWIG.
 
-* Authors
-
-PyME has been created by John Goerzen, and maintained, developed, and
-cherished by Igor Belyi, Martin Albrecht, Ben McGinnes, and everyone
-who contributed to it in any way.
-
-In 2016 we merged a port of PyME to into the GPGME repository, and
-development will continue there.  Please see the VCS history for the
-list of contributors, and if you do find bugs, or want to contribute,
-please get in touch and help maintain PyME.
-
-Please see the section 'History' further down this document for
-references to previous versions.
+This way we make simple things easy, while still providing the entire
+functionality of the underlying library.
 
 * Mailing List
 
@@ -36,6 +24,20 @@ https://lists.gnupg.org/mailman/listinfo/gnupg-devel
 Please report bugs using our bug tracker using the category 'gpgme',
 and topic 'python':
 https://bugs.gnupg.org/gnupg/
+
+* Authors
+
+PyME has been created by John Goerzen, and maintained, developed, and
+cherished by Igor Belyi, Martin Albrecht, Ben McGinnes, and everyone
+who contributed to it in any way.
+
+In 2016 we merged a port of PyME to into the GPGME repository, and
+development will continue there.  Please see the VCS history for the
+list of contributors, and if you do find bugs, or want to contribute,
+please get in touch and help maintain PyME.
+
+Please see the section 'History' further down this document for
+references to previous versions.
 
 * History
 
@@ -52,6 +54,6 @@ https://bugs.gnupg.org/gnupg/
    http://pyme.sourceforge.net/
 
  - A previous version of PyME v0.5.1 which works with GPGME v0.3.15
-   can be found on John Goerzen's PyMe page:
+   can be found on John Goerzen's PyME page:
    http://quux.org/devel/pyme/
    http://www.complete.org/JohnGoerzen
