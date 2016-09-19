@@ -18,9 +18,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
-# Note: moc_kdpipeiodevice should actually be a dependecy below.
 EXTRA_DIST = gpgme-config.in gpgme.m4 libgpgme.vers ChangeLog-2011 \
-	     gpgme.h.in versioninfo.rc.in gpgme.def moc_kdpipeiodevice.cpp
+	     gpgme.h.in versioninfo.rc.in gpgme.def
 
 bin_SCRIPTS = gpgme-config
 m4datadir = $(datadir)/aclocal
