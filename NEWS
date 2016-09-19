@@ -12,6 +12,8 @@ Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
  * New function gpgme_op_interact to replace the deprecated functions
    gpgme_op_edit and gpgme_op_card_edit.
 
+ * Bindings for C++ and Qt-Framework API are now included.
+
  * Interface changes relative to the 1.6.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_pubkey_algo_string       NEW.
