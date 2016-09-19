@@ -298,6 +298,13 @@ library.  Experienced programmers might want to start looking at the
 examples at the end of the manual, and then only read up those parts
 of the interface which are unclear.
 
+The documentation for the language bindings is currently not included
+in this manual.  Those languages bindings follow the general
+programming model of @acronym{GPGME} but may provide some extra high
+level abstraction on top of the @acronym{GPGME} style API.  For now
+please see the README files in the @file{lang/} directory of the
+source distribution.
+
 
 @node Features
 @section Features
@@ -324,8 +331,11 @@ the programmer can focus on the other parts of the program, and still
 integrate strong cryptography in his application.  Once support for
 @acronym{GPGME} has been added to a program, it is easy to add support
 for other crypto protocols once @acronym{GPGME} backends provide them.
-@end table
 
+@item it's language friendly
+@acronym{GPGME} comes with languages bindings for several common
+programming languages: Common Lisp, C++, Python 2, and Python 3.
+@end table
 
 @node Overview
 @section Overview
