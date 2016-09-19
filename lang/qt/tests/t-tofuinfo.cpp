@@ -299,6 +299,26 @@ private Q_SLOTS:
         auto result = job->exec(QStringList() << QStringLiteral("bravo@example.net"),
                                                  false, keys);
 
+        if (keys.empty()) {
+            qDebug() << "bravo@example.net not found";
+            qDebug() << "Error: " << result.error().asString();
+            const auto homedir = QString::fromLocal8Bit(qgetenv("GNUPGHOME"));
+            qDebug() << "Homedir is: " << homedir;
+            QFileInfo fi(homedir + "/pubring.gpg");
+            qDebug () << "pubring exists: " << fi.exists() << " readable? "
+                      << fi.isReadable() << " size: " << fi.size();
+            QFileInfo fi2(homedir + "/pubring.kbx");
+            qDebug () << "keybox exists: " << fi2.exists() << " readable? "
+                      << fi2.isReadable() << " size: " << fi2.size();
+
+            result = job->exec(QStringList(), false, keys);
+            foreach (const auto key, keys) {
+                qDebug() << "Key: " << key.userID(0).name() << " <"
+                         << key.userID(0).email()
+                         << ">\n fpr: " << key.primaryFingerprint();
+            }
+        }
+        Q_ASSERT(!result.error());
         Q_ASSERT(!keys.empty());
         auto key = keys[0];
         Q_ASSERT(!key.isNull());
