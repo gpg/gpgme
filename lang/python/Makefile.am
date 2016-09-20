@@ -25,7 +25,7 @@ EXTRA_DIST = \
 	examples \
 	pyme
 
-SUBDIRS = tests
+SUBDIRS = . tests
 
 COPY_FILES = \
 	$(srcdir)/gpgme.i \

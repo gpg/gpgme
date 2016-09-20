@@ -65,14 +65,16 @@ EXTRA_DIST = support.py $(XTESTS) encrypt-only.asc sign-only.asc \
 check: xcheck
 
 .PHONY: xcheck
-xcheck:
+
+xcheck: ./pubring-stamp
 	$(TESTS_ENVIRONMENT) $(PYTHON) $(srcdir)/run-tests.py \
 	  --interpreters="$(PYTHONS)" --srcdir=$(srcdir) $(TESTFLAGS) \
 	  $(XTESTS)
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ gpg.conf pubring.gpg~ \
-	random_seed .gpg-v21-migrated pubring-stamp
+	random_seed .gpg-v21-migrated \
+        pubring-stamp private-keys-v1.d/gpg-sample.stamp
 
 private_keys = \
         $(test_srcdir)/13CD0F3BDF24BE53FE192D62F18737256FF6E4FD \
@@ -85,21 +87,17 @@ clean-local:
 	-$(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR -- private-keys-v1.d openpgp-revocs.d S.gpg-agent sshcontrol
 
-check-local: ./gpg.conf ./gpg-agent.conf ./pubring-stamp \
-           ./private-keys-v1.d/gpg-sample.stamp
-
-# To guarantee that check-local is run before any tests we
-# add this dependency:
-initial.py: check-local
 
 ./private-keys-v1.d/gpg-sample.stamp: $(private_keys)
 	test -d ./private-keys-v1.d || mkdir ./private-keys-v1.d
 	for k in $(private_keys); do \
-          cp $$k private-keys-v1.d/`basename $$k`.key; \
+          cp $$k private-keys-v1.d/$${k#$(test_srcdir)/}.key; \
         done
 	echo x > ./private-keys-v1.d/gpg-sample.stamp
 
-./pubring-stamp: $(test_srcdir)/pubdemo.asc
+./pubring-stamp: $(test_srcdir)/pubdemo.asc           \
+                 ./gpg.conf ./gpg-agent.conf          \
+                 ./private-keys-v1.d/gpg-sample.stamp
 	$(GPG) --batch --no-permission-warning \
                --import $(test_srcdir)/pubdemo.asc
 	-$(GPG) --batch --no-permission-warning \
