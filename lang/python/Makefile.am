@@ -48,8 +48,8 @@ COPY_FILES_PYME = \
 # distutils are not VPATH-aware.
 copystamp: $(COPY_FILES) $(COPY_FILES_PYME)
 	if test "$(srcdir)" != "$(builddir)" ; then \
-	  cp -r $(COPY_FILES) . ; \
-	  cp -r $(COPY_FILES_PYME) pyme ; \
+	  cp -R $(COPY_FILES) . ; \
+	  cp -R $(COPY_FILES_PYME) pyme ; \
 	fi
 	touch $@
 

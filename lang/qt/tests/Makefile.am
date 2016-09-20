@@ -71,7 +71,7 @@ CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg.conf
 
 clean-local:
-	-rm -fR -- private-keys-v1.d
+	-rm -fR  private-keys-v1.d crls.d
 
 export GNUPGHOME := $(abs_builddir)
 
