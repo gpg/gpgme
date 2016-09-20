@@ -39,9 +39,23 @@ SUBDIRS = src ${tests} doc lang
 # to be used for patch's Prereq: feature.
 dist-hook: gen-ChangeLog
 	@set -e; \
-	sed -e 's/@pkg_version@/$(VERSION)/g' \
+	sed -e 's/@pkg_version@/$(PACKAGE_VERSION)/g' \
 	    $(top_srcdir)/gpgme.spec.in  > $(distdir)/gpgme.spec
-	echo "$(VERSION)" > $(distdir)/VERSION
+	echo "$(PACKAGE_VERSION)" > $(distdir)/VERSION
+
+distcheck-hook:
+	set -e; ( \
+	pref="#+macro: gpgme_" ;\
+	reldate="$$(date -u +%Y-%m-%d)" ;\
+        echo "$${pref}ver  $(PACKAGE_VERSION)"  ;\
+        echo "$${pref}date $${reldate}" ;\
+        list='$(DIST_ARCHIVES)'; for i in $$list; do \
+	  case "$$i" in *.tar.bz2) \
+            echo "$${pref}size $$(wc -c <$$i|awk '{print int($$1/1024)}')k" ;\
+	    echo "$${pref}sha1 $$(sha1sum <$$i|cut -d' ' -f1)" ;\
+	    echo "$${pref}sha2 $$(sha256sum <$$i|cut -d' ' -f1)" ;;\
+	  esac;\
+	done ) | tee $(distdir).swdb
 
 
 gen_start_date = 2011-12-01T00:00:00
