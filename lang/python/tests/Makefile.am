@@ -100,11 +100,11 @@ initial.py: check-local
 	echo x > ./private-keys-v1.d/gpg-sample.stamp
 
 ./pubring-stamp: $(test_srcdir)/pubdemo.asc
-	$(GPG) --no-permission-warning \
+	$(GPG) --batch --no-permission-warning \
                --import $(test_srcdir)/pubdemo.asc
-	-$(GPG) --no-permission-warning \
+	-$(GPG) --batch --no-permission-warning \
 		--import $(test_srcdir)/secdemo.asc
-	touch ./pubring-stamp
+	echo x > ./pubring-stamp
 
 ./gpg.conf:
 # This is required for t-sig-notations.
