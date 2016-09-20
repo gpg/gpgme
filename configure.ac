@@ -407,7 +407,7 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
 	if test "$found_py" = "1" -o "$found_py2" = "1"; then
 	    AM_PATH_PYTHON([2.7])
 	    AX_PYTHON_DEVEL
-	    if test "$PYTHON"; then
+	    if test "$PYTHON_VERSION"; then
 		PYTHONS="$(echo $PYTHONS $PYTHON)"
 		PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
 	    fi
@@ -430,7 +430,7 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
 	    unset am_cv_python_pyexecdir
 	    AM_PATH_PYTHON([3.4])
 	    AX_PYTHON_DEVEL
-	    if test "$PYTHON"; then
+	    if test "$PYTHON_VERSION"; then
 		PYTHONS="$(echo $PYTHONS $PYTHON)"
 		PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
 	    fi
