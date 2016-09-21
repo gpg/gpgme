@@ -98,6 +98,7 @@ install-exec-local:
 	  cat files.txt >> install_files.txt ; \
 	  rm files.txt ; \
 	done
+	$(MKDIR_P) $(DESTDIR)$(pythondir)/pyme
 	mv install_files.txt $(DESTDIR)$(pythondir)/pyme
 
 uninstall-local:
