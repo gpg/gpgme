@@ -1,18 +1,48 @@
-Noteworthy changes in version 1.7.0 (unreleased) [C25/A14/R_]
+Noteworthy changes in version 1.7.0 (2016-09-21) [C26/A15/R0]
 ------------------------------------------------
 
- * New function to format a GnuPG style public key algorithm string.
+ * New language bindings for Python 2 and 3.
+
+ * New language Bindings for C++ and the Qt-Framework API.
+
+ * New functions gpgme_op_createkey and gpgme_op_createsubkey to make
+   key creation easier (requires GnuPG 2.1).
+
+ * New functions gpgme_op_adduid and gpgme_op_revuid to make user id
+   management easier (requires GnuPG 2.1).
+
+ * New function gpgme_op_keysign to make key signing easier (requires
+   GnuPG 2.1).
+
+ * New function gpgme_op_interact to replace the now deprecated
+   functions gpgme_op_edit and gpgme_op_card_edit.
+
+ * New function gpgme_pubkey_algo_string to convert a public key
+   algorithm into a GnuPG 2.1 style string.
+
+ * Support for GnuPG 2.1's TOFU trust model.
 
  * Notation flags are now correctly set on verify.
 
- * Bindings for Python 2 and 3 are now included.
-
  * New global flag "require-gnupg" to set a minimal gnupg version.
 
- * New function gpgme_op_interact to replace the deprecated functions
-   gpgme_op_edit and gpgme_op_card_edit.
+ * More supported items in gpgme_get_dirinfo.
 
- * Bindings for C++ and Qt-Framework API are now included.
+ * New function gpgme_data_set_flag and flag "size-hint".
+
+ * New function gpgme_set_ctx_flag and flags "full-status" and
+   "raw-description".
+
+ * Improved gpgme_data_identify to distinguish more file types.
+
+ * New flag GPGME_ENCRYPT_SYMMETRIC for gpgme_op_encrypt to allow
+   mixed public key and symmetric encryption.
+
+ * New field KEYGRIP in gpgme_subkey_t.  New fields FPR in gpgme_key_t.
+
+ * New flag GPGME_DATA_ENCODING_MIME to declare that the encrypted or
+   signed data is a valid MIME part.  This is to support future GnuPG
+   versions.
 
  * Interface changes relative to the 1.6.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -55,10 +55,10 @@ AC_INIT([gpgme],[mym4_full_version],[http://bugs.gnupg.org])
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed/changed:	AGE=0)
 #
-LIBGPGME_LT_CURRENT=25
+LIBGPGME_LT_CURRENT=26
 # Subtract 2 from this value if you want to make the LFS transition an
 # ABI break.  [Note to self: Remove this comment with the next regular break.]
-LIBGPGME_LT_AGE=14
+LIBGPGME_LT_AGE=15
 LIBGPGME_LT_REVISION=0
 
 LIBGPGMEPP_LT_CURRENT=6
@@ -796,7 +796,7 @@ AH_BOTTOM([
 #define GPG_ERR_ENABLE_ERRNO_MACROS 1
 
 #define CRIGHTBLURB "Copyright (C) 2000 Werner Koch\n" \
-                    "Copyright (C) 2001--2015 g10 Code GmbH\n"
+                    "Copyright (C) 2001--2016 g10 Code GmbH\n"
 ])
 
 

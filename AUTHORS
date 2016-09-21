@@ -1,5 +1,5 @@
 Package: gpgme
-Homepage: http://www.gnupg.org/related_software/gpgme/
+Homepage: https://gnupg.org/related_software/gpgme/
 Download: ftp://ftp.gnupg.org/gcrypt/gpgme/
 Repository: git://git.gnupg.org/gpgme.git
 Maintainer: Werner Koch <wk@gnupg.org>

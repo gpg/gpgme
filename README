@@ -1,7 +1,7 @@
-                  GPGME - GnuPG Made Easy
-                ---------------------------
+                       GPGME - GnuPG Made Easy
+                     ---------------------------
 
-         Copyright 2004, 2006, 2010, 2012, 2013, 2014, 2015 g10 Code GmbH
+                  Copyright 2001-2016 g10 Code GmbH
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
@@ -22,11 +22,11 @@ to public key crypto engines like GnuPG or GpgSM easier for
 applications.  GPGME provides a high-level crypto API for encryption,
 decryption, signing, signature verification and key management.
 
+GPGME comes with language bindings for Common Lisp, C++, QT, Python2
+and Python 3.
+
 GPGME uses GnuPG and GpgSM as its backends to support OpenPGP and the
 Cryptographic Message Syntax (CMS).
-
-GPGME runs best on GNU/Linux or *BSD systems.  Other Unices may
-require small portability fixes, please send us your patches.
 
 See the files COPYING, COPYING.LESSER, and each file for copyright and
 warranty information.  The file AUTHORS has a list of authors and
@@ -70,18 +70,32 @@ a) If you have a trusted Version of GnuPG installed, you can simply check
    indeed a a signature of gpgme-x.y.z.tar.gz.  The key used to create
    this signature is either of:
 
-   "pub  2048R/4F25E3B6 2011-01-12 Werner Koch (dist sig)"
-   "pub  1024D/87978569 1999-05-13
-                        Marcus Brinkmann <Marcus.Brinkmann@ruhr-uni-bochum.de>
-                        Marcus Brinkmann <mb@g10code.com>"
+     2048R/4F25E3B6 2011-01-12 [expires: 2019-12-31]
+     Key fingerprint = D869 2123 C406 5DEA 5E0F  3AB5 249B 39D2 4F25 E3B6
+     Werner Koch (dist sig)
 
-   If you do not have this key, you can get it from any keyserver.  You
-   have to make sure that this is really the key and not a faked one.
-   You can do this by comparing the output of:
+     rsa2048/E0856959 2014-10-29 [expires: 2019-12-31]
+     Key fingerprint = 46CC 7308 65BB 5C78 EBAB  ADCF 0437 6F3E E085 6959
+     David Shaw (GnuPG Release Signing Key) <dshaw 'at' jabberwocky.com>
 
-	$ gpg --fingerprint 0x4F25E3B6
+     rsa2048/33BD3F06 2014-10-29 [expires: 2016-10-28]
+     Key fingerprint = 031E C253 6E58 0D8E A286  A9F2 2071 B08A 33BD 3F06
+     NIIBE Yutaka (GnuPG Release Key) <gniibe 'at' fsij.org>
 
-   with the fingerprint published elsewhere.
+     rsa2048/7EFD60D9 2014-10-19 [expires: 2020-12-31]
+     Key fingerprint = D238 EA65 D64C 67ED 4C30  73F2 8A86 1B1C 7EFD 60D9
+     Werner Koch (Release Signing Key)
+
+   You may retrieve these files from the keyservers using this command
+
+     gpg --recv-keys 249B39D24F25E3B6 04376F3EE0856959 \
+                     2071B08A33BD3F06 8A861B1C7EFD60D9
+
+   The keys are also available at https://gnupg.org/signature_key.html
+   and in released GnuPG tarballs in the file g10/distsigkey.gpg .
+   You have to make sure that these are really the desired keys and
+   not faked one.  You should do this by comparing the fingerprints
+   with the fingerprints published elsewhere.
 
 b) If you don't have any of the above programs, you have to verify
    the SHA1 checksum:
@@ -101,7 +115,7 @@ Documentation
 
 For information how to use the library you can read the info manual,
 which is also a reference book, in the doc/ directory.  The programs
-in the tests/gpg/ directory may also prove useful.
+in the tests/ directory may also prove useful.
 
 Please subscribe to the gnupg-devel@gnupg.org mailing list if you want
 to do serious work.
