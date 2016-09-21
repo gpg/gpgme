@@ -1051,6 +1051,7 @@ const char *Context::signaturePolicyURL() const
             return n->value;
         }
     }
+    return nullptr;
 }
 
 Notation Context::signatureNotation(unsigned int idx) const
@@ -1344,6 +1345,7 @@ static gpgme_tofu_policy_t to_tofu_policy_t(unsigned int policy)
         case TofuInfo::PolicyAsk:
             return GPGME_TOFU_POLICY_ASK;
         case TofuInfo::PolicyUnknown:
+        default:
             return GPGME_TOFU_POLICY_UNKNOWN;
     }
 }

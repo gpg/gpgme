@@ -273,6 +273,7 @@ const char *Key::primaryFingerprint() const
         /* Return the first subkeys fingerprint */
         return key->subkeys->fpr;
     }
+    return nullptr;
 }
 
 unsigned int Key::keyListMode() const
