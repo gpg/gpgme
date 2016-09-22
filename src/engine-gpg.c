@@ -2543,7 +2543,7 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
   err = add_arg (gpg, "--with-colons");
 
   /* Since gpg 2.1.15 fingerprints are always printed, thus there is
-   * no more need to explictly request them.  */
+   * no more need to explicitly request them.  */
   if (!have_gpg_version (gpg, "2.1.15"))
     {
       if (!err)

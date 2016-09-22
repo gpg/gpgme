@@ -278,7 +278,7 @@ pgp_binary_detection (const void *image_arg, size_t imagelen)
 
 /* This is probably an armored "PGP MESSAGE" which can encode
  * different PGP data types.  STRING is modified after a call to this
- * fucntion. */
+ * function. */
 static gpgme_data_type_t
 inspect_pgp_message (char *string)
 {

@@ -364,8 +364,8 @@ public:
      * @param file The executable to start.
      * @param argv list of arguments file should be argv[0].
      * @param input The data to be sent through stdin.
-     * @param output The data to be recieve the stdout.
-     * @param err The data to recieve stderr.
+     * @param output The data to be receive the stdout.
+     * @param err The data to receive stderr.
      * @param flags Additional flags.
      *
      * @returns An error or empty error.

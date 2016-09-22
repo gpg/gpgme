@@ -45,7 +45,7 @@ namespace QGpgME {
  * Handles Web Key Service Publishing. Needs WKS tools installed and
  * server support.
  *
- * Remember that after a result is emited the job is auto deleted
+ * Remember that after a result is emitted the job is auto deleted
  * so you can only use it for a single action.
  */
 class QGPGME_EXPORT WKSPublishJob: public Job

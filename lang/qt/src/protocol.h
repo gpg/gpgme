@@ -76,7 +76,7 @@ class TofuPolicyJob;
  * two are always a QString for the auditlog and an GpgME::Error for
  * an eventual error.
  *
- * In case async API is used and the result signal is emited a
+ * In case async API is used and the result signal is emitted a
  * job schedules its own deletion.
  *
  * Most jobs also provide a synchronous call exec in which case
@@ -161,14 +161,14 @@ public:
 /** Obtain a reference to the OpenPGP Protocol.
  *
  * The reference is to a static object.
- * @returns Refrence to the OpenPGP Protocol.
+ * @returns Reference to the OpenPGP Protocol.
  */
 QGPGME_EXPORT Protocol *openpgp();
 
 /** Obtain a reference to the smime Protocol.
  *
  * The reference is to a static object.
- * @returns Refrence to the smime Protocol.
+ * @returns Reference to the smime Protocol.
  */
 QGPGME_EXPORT Protocol *smime();
 
