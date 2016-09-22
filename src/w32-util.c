@@ -388,11 +388,10 @@ find_program_in_dir (const char *dir, const char *name)
 {
   char *result;
 
-  result = malloc (strlen (dir) + 1 + strlen (name) + 1);
+  result = _gpgme_strconcat (dir, "\\", strlen (name), NULL);
   if (!result)
     return NULL;
 
-  strcpy (stpcpy (stpcpy (result, dir), "\\"), name);
   if (access (result, F_OK))
     {
       free (result);
@@ -417,15 +416,11 @@ find_program_at_standard_place (const char *name)
   if (SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILES, 0)
       || SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILESX86, 0))
     {
-      result = malloc (strlen (path) + 1 + strlen (name) + 1);
-      if (result)
+      result = _gpgme_strconcat (path, "\\", name, NULL);
+      if (result && access (result, F_OK))
         {
-          strcpy (stpcpy (stpcpy (result, path), "\\"), name);
-          if (access (result, F_OK))
-            {
-              free (result);
-              result = NULL;
-            }
+          free (result);
+          result = NULL;
         }
     }
   return result;
@@ -439,12 +434,9 @@ _gpgme_set_default_gpg_name (const char *name)
 {
   if (!default_gpg_name)
     {
-      default_gpg_name = malloc (strlen (name) + 5);
+      default_gpg_name = _gpgme_strconcat (name, ".exe", NULL);
       if (default_gpg_name)
-        {
-          strcpy (stpcpy (default_gpg_name, name), ".exe");
-          replace_slashes (default_gpg_name);
-        }
+        replace_slashes (default_gpg_name);
     }
   return !default_gpg_name;
 }
@@ -456,12 +448,9 @@ _gpgme_set_default_gpgconf_name (const char *name)
 {
   if (!default_gpgconf_name)
     {
-      default_gpgconf_name = malloc (strlen (name) + 5);
+      default_gpgconf_name = _gpgme_strconcat (name, ".exe", NULL);
       if (default_gpgconf_name)
-        {
-          strcpy (stpcpy (default_gpgconf_name, name), ".exe");
-          replace_slashes (default_gpgconf_name);
-        }
+        replace_slashes (default_gpgconf_name);
     }
   return !default_gpgconf_name;
 }
@@ -474,10 +463,9 @@ _gpgme_set_override_inst_dir (const char *dir)
 {
   if (!override_inst_dir)
     {
-      override_inst_dir = malloc (strlen (dir) + 1);
+      override_inst_dir = strdup (dir);
       if (override_inst_dir)
         {
-          strcpy (override_inst_dir, dir);
           replace_slashes (override_inst_dir);
           /* Remove a trailing slash.  */
           if (*override_inst_dir
@@ -762,10 +750,9 @@ _gpgme_mkstemp (int *fd, char **name)
 	}
     }
 
-  tmpname = malloc (strlen (tmp) + 13 + 1);
+  tmpname = _gpgme_strconcat (tmp, "\\gpgme-XXXXXX", NULL);
   if (!tmpname)
     return -1;
-  strcpy (stpcpy (tmpname, tmp), "\\gpgme-XXXXXX");
   *fd = my_mkstemp (tmpname);
   if (fd < 0)
     {

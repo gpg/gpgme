@@ -31,6 +31,7 @@
 #endif
 #include <time.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -39,6 +40,61 @@
 #define atoi_1(p)   (*(p) - '0' )
 #define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
 #define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
+
+
+
+static char *
+do_strconcat (const char *s1, va_list arg_ptr)
+{
+  const char *argv[16];
+  size_t argc;
+  size_t needed;
+  char *buffer, *p;
+
+  argc = 0;
+  argv[argc++] = s1;
+  needed = strlen (s1);
+  while (((argv[argc] = va_arg (arg_ptr, const char *))))
+    {
+      needed += strlen (argv[argc]);
+      if (argc >= DIM (argv)-1)
+        {
+          gpg_err_set_errno (EINVAL);
+          return NULL;
+        }
+      argc++;
+    }
+  needed++;
+  buffer = malloc (needed);
+  if (buffer)
+    {
+      for (p = buffer, argc=0; argv[argc]; argc++)
+        p = stpcpy (p, argv[argc]);
+    }
+  return buffer;
+}
+
+
+/* Concatenate the string S1 with all the following strings up to a
+ * NULL.  Returns a malloced buffer with the new string or NULL on a
+   malloc error or if too many arguments are given.  */
+char *
+_gpgme_strconcat (const char *s1, ...)
+{
+  va_list arg_ptr;
+  char *result;
+
+  if (!s1)
+    result = strdup ("");
+  else
+    {
+      va_start (arg_ptr, s1);
+      result = do_strconcat (s1, arg_ptr);
+      va_end (arg_ptr);
+    }
+  return result;
+}
+
 
 
 

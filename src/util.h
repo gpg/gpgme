@@ -49,6 +49,10 @@
 # define GPG_ERR_FALSE 256
 #endif
 
+#ifndef GPGRT_ATTR_SENTINEL
+# define GPGRT_ATTR_SENTINEL(a)  /* */
+#endif
+
 
 
 /*-- {posix,w32}-util.c --*/
@@ -102,6 +106,12 @@ int _gpgme_ttyname_r (int fd, char *buf, size_t buflen);
 
 
 /*-- conversion.c --*/
+
+/* Concatenate the string S1 with all the following strings up to a
+   NULL.  Returns a malloced buffer with the new string or NULL on a
+   malloc error or if too many arguments are given.  */
+char *_gpgme_strconcat (const char *s1, ...) GPGRT_ATTR_SENTINEL(0);
+
 /* Convert two hexadecimal digits from STR to the value they
    represent.  Returns -1 if one of the characters is not a
    hexadecimal digit.  */
