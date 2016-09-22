@@ -98,6 +98,8 @@ static GPG_ERR_INLINE void *
 dlopen (const char * name, int flag)
 {
   void * hd = LoadLibrary (name);
+
+  (void)flag;
   return hd;
 }
 
@@ -754,7 +756,7 @@ _gpgme_mkstemp (int *fd, char **name)
   if (!tmpname)
     return -1;
   *fd = my_mkstemp (tmpname);
-  if (fd < 0)
+  if (*fd < 0)
     {
       free (tmpname);
       return -1;
