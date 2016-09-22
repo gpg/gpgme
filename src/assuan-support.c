@@ -97,6 +97,9 @@ my_recvmsg (assuan_context_t ctx, assuan_fd_t fd, assuan_msghdr_t msg,
 {
   (void)ctx;
 #ifdef HAVE_W32_SYSTEM
+  (void)fd;
+  (void)msg;
+  (void)flags;
   gpg_err_set_errno (ENOSYS);
   return -1;
 #else
@@ -112,6 +115,9 @@ my_sendmsg (assuan_context_t ctx, assuan_fd_t fd, const assuan_msghdr_t msg,
 {
   (void)ctx;
 #ifdef HAVE_W32_SYSTEM
+  (void)fd;
+  (void)msg;
+  (void)flags;
   gpg_err_set_errno (ENOSYS);
   return -1;
 #else
@@ -210,6 +216,9 @@ my_waitpid (assuan_context_t ctx, pid_t pid,
 {
   (void)ctx;
 #ifdef HAVE_W32_SYSTEM
+  (void)nowait;
+  (void)status;
+  (void)options;
   CloseHandle ((HANDLE) pid);
 #else
   /* We can't just release the PID, a waitpid is mandatory.  But
@@ -229,6 +238,11 @@ my_socketpair (assuan_context_t ctx, int namespace, int style,
 	       int protocol, assuan_fd_t filedes[2])
 {
 #ifdef HAVE_W32_SYSTEM
+  (void)ctx;
+  (void)namespace;
+  (void)style;
+  (void)protocol;
+  (void)filedes;
   gpg_err_set_errno (ENOSYS);
   return -1;
 #else
