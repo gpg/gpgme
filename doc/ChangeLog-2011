@@ -397,7 +397,7 @@
 	(Listing Keys): Update examples.
 	(Decrypt): Result might also be available when operation failed.
 	(Verify): Result might also be available when operation failed.
-	All spotted by Stéphane Corthésy.
+	All spotted by StÃ©phane CorthÃ©sy.
 
 2003-07-22  Marcus Brinkmann  <marcus@g10code.de>
 

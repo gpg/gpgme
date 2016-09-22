@@ -603,7 +603,7 @@
 
 2002-09-28  Marcus Brinkmann  <marcus@g10code.de>
 
-	* t-version.c: Include <string.h>.  Reported by Stéphane Corthésy.
+	* t-version.c: Include <string.h>.  Reported by StÃ©phane CorthÃ©sy.
 
 2002-09-02  Marcus Brinkmann  <marcus@g10code.de>
 
@@ -624,8 +624,8 @@
 
 	* gpg/t-encrypt-sym.c (main): Change type of I to size_t and
 	rename to LEN.
-	* gpg/t-verify.c (main): Likewise.  Submitted by Stéphane
-	Corthésy.
+	* gpg/t-verify.c (main): Likewise.  Submitted by StÃ©phane
+	CorthÃ©sy.
 
 2002-07-03  Marcus Brinkmann  <marcus@g10code.de>
 
@@ -772,7 +772,7 @@
 2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg/t-decrypt-verify.c: Don't include `mcheck.h'.  Reported by
-	Stéphane Corthésy.
+	StÃ©phane CorthÃ©sy.
 
 2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
 

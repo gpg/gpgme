@@ -2,7 +2,7 @@
     qgpgmerefreshkeysjob.cpp
 
     This file is part of qgpgme, the Qt API binding for gpgme
-    Copyright (c) 2004 Klar�vdalens Datakonsult AB
+    Copyright (c) 2004 Klarävdalens Datakonsult AB
     Copyright (c) 2016 Intevation GmbH
 
     QGpgME is free software; you can redistribute it and/or
