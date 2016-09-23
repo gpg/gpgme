@@ -54,6 +54,8 @@ main (void)
   gpgme_ctx_t ctx;
   gpgme_error_t err;
   gpgme_data_t in, out;
+  size_t len;
+  char *test_text2;
   gpgme_decrypt_result_t result;
 
   init_gpgme (GPGME_PROTOCOL_CMS);
@@ -77,10 +79,18 @@ main (void)
 	       __FILE__, __LINE__, result->unsupported_algorithm);
       exit (1);
     }
-  print_data (out);
+  test_text2 = gpgme_data_release_and_get_mem (out, &len);
+  test_text2[len] = '\0';
+  if (strcmp (test_text1, test_text2))
+    {
+      fprintf (stderr, "%s:%i: data mismatch: expected: \n\"%s\"\n"
+               "got:\n\"%s\"",
+               __FILE__, __LINE__, test_text1, test_text2);
+      exit (1);
+    }
 
+  free (test_text2);
   gpgme_data_release (in);
-  gpgme_data_release (out);
   gpgme_release (ctx);
   return 0;
 }
