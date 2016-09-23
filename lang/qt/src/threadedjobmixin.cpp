@@ -31,6 +31,10 @@
     your version.
 */
 
+#ifdef HAVE_CONFIG_H
+ #include "config.h"
+#endif
+
 #include "threadedjobmixin.h"
 
 #include "dataprovider.h"
