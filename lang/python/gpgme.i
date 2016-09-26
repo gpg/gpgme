@@ -547,6 +547,10 @@
    some structs, which we provide prior to including the version for
    SWIG.  */
 %{
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gpgme.h>
 %}
 
@@ -575,6 +579,10 @@ struct _gpgme_sig_notation
 
 /* Now include our local modified version.  Any structs defined above
    are ignored.  */
+#ifdef HAVE_CONFIG_H
+%include "config.h"
+#endif
+
 %include "gpgme.h"
 
 %include "errors.i"

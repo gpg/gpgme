@@ -28,6 +28,7 @@ gpg_error_config = ["gpg-error-config"]
 gpgme_config_flags = ["--thread=pthread"]
 gpgme_config = ["gpgme-config"] + gpgme_config_flags
 gpgme_h = ""
+include_dirs = [os.getcwd()]
 library_dirs = []
 in_tree = False
 extra_swig_opts = []
@@ -38,8 +39,13 @@ if os.path.exists("../../src/gpgme-config"):
     in_tree = True
     gpgme_config = ["../../src/gpgme-config"] + gpgme_config_flags
     gpgme_h = "../../src/gpgme.h"
+    if 'top_builddir' in os.environ:
+        include_dirs.append(os.environ['top_builddir'])
+        # Make sure that SWIG finds config.h when processing gpgme.i.
+        extra_swig_opts.append("-I{0}".format(os.environ['top_builddir']))
     library_dirs = ["../../src/.libs"] # XXX uses libtool internals
     extra_macros.update(
+        HAVE_CONFIG_H=1,
         HAVE_DATA_H=1,
         IN_TREE_BUILD=1,
     )
@@ -94,7 +100,6 @@ subprocess.check_call([sys.executable, "gpgme-h-clean.py", gpgme_h],
 subprocess.check_call([sys.executable, "gpgme-h-clean.py", gpg_error_h],
                       stdout=open("errors.i", "w"))
 
-include_dirs = [os.getcwd()]
 define_macros = []
 libs = getconfig('libs')
 

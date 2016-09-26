@@ -56,6 +56,7 @@ copystamp: $(COPY_FILES) $(COPY_FILES_PYME)
 all-local: copystamp
 	for PYTHON in $(PYTHONS); do \
 	  CFLAGS="$(CFLAGS) -I$(top_srcdir)" \
+	  top_builddir="$(top_builddir)" \
 	    $$PYTHON setup.py build --verbose ; \
 	done
 
