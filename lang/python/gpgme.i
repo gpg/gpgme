@@ -110,7 +110,7 @@
     Py_XDECREF(pyVector$argnum[i]);
 }
 
-// Release returned buffers as necessary.
+/* Release returned buffers as necessary.  */
 %typemap(newfree) char * "free($1);";
 %newobject gpgme_data_release_and_get_mem;
 
@@ -133,7 +133,7 @@
       /* input = $input, 1 = $1, 1_descriptor = $1_descriptor */
       /* &1_descriptor = $&1_descriptor *1_descriptor = $*1_descriptor */
 
-      // Following code is from swig's python.swg
+      /* Following code is from swig's python.swg.  */
       if ((SWIG_ConvertPtr(pypointer,(void **) &$1[i], $*1_descriptor,SWIG_POINTER_EXCEPTION | $disown )) == -1) {
 	Py_DECREF(pypointer);
 	return NULL;
@@ -147,7 +147,7 @@
   if ($1) free($1);
 }
 
-// Special handling for references to our objects.
+/* Special handling for references to our objects.  */
 %typemap(in) gpgme_data_t DATAIN (gpgme_data_t wrapper = NULL,
                                   PyObject *bytesio = NULL,
                                   Py_buffer view, int have_view = 0) {
@@ -167,7 +167,7 @@
 
     /* input = $input, 1 = $1, 1_descriptor = $1_descriptor */
 
-    // Following code is from swig's python.swg
+    /* Following code is from swig's python.swg.  */
 
     if ((SWIG_ConvertPtr(pypointer,(void **) &$1, $1_descriptor,
          SWIG_POINTER_EXCEPTION | $disown )) == -1) {
@@ -401,7 +401,7 @@
   Py_XDECREF(encodedInput$argnum);
 }
 
-// Make types containing 'next' field to be lists
+/* Make types containing 'next' field to be lists.  */
 %ignore next;
 %typemap(out) gpgme_sig_notation_t, gpgme_subkey_t,
    gpgme_key_sig_t, gpgme_user_id_t, gpgme_invalid_key_t,
@@ -631,7 +631,7 @@ struct _gpgme_sig_notation
 
 %include "errors.i"
 
-// Generating and handling pointers-to-pointers.
+/* Generating and handling pointers-to-pointers.  */
 
 %pointer_functions(gpgme_ctx_t, gpgme_ctx_t_p);
 %pointer_functions(gpgme_data_t, gpgme_data_t_p);
@@ -640,7 +640,7 @@ struct _gpgme_sig_notation
 %pointer_functions(gpgme_trust_item_t, gpgme_trust_item_t_p);
 %pointer_functions(gpgme_engine_info_t, gpgme_engine_info_t_p);
 
-// Helper functions.
+/* Helper functions.  */
 
 %{
 #include <stdio.h>
