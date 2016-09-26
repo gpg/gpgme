@@ -291,13 +291,42 @@
 
 /* SWIG has problems interpreting ssize_t, off_t or gpgme_error_t in
    gpgme.h.  */
-/* XXX: This is wrong at least for off_t if compiled with LFS.  */
-%typemap(out) ssize_t, off_t, gpgme_error_t, gpgme_err_code_t, gpgme_err_source_t, gpg_error_t {
+%typemap(out) ssize_t, gpgme_error_t, gpgme_err_code_t, gpgme_err_source_t, gpg_error_t {
   $result = PyLong_FromLong($1);
 }
-/* XXX: This is wrong at least for off_t if compiled with LFS.  */
-%typemap(in) ssize_t, off_t, gpgme_error_t, gpgme_err_code_t, gpgme_err_source_t, gpg_error_t {
-  $1 = PyLong_AsLong($input);
+
+%typemap(in) ssize_t, gpgme_error_t, gpgme_err_code_t, gpgme_err_source_t, gpg_error_t {
+  if (PyLong_Check($input))
+    $1 = PyLong_AsLong($input);
+#if PY_MAJOR_VERSION < 3
+  else if (PyInt_Check($input))
+    $1 = PyInt_AsLong($input);
+#endif
+  else
+    PyErr_SetString(PyExc_TypeError, "Numeric argument expected");
+}
+
+%typemap(out) off_t {
+#if _FILE_OFFSET_BITS == 64
+  $result = PyLong_FromLongLong($1);
+#else
+  $result = PyLong_FromLong($1);
+#endif
+}
+
+%typemap(in) off_t {
+  if (PyLong_Check($input))
+#if _FILE_OFFSET_BITS == 64
+    $1 = PyLong_AsLongLong($input);
+#else
+    $1 = PyLong_AsLong($input);
+#endif
+#if PY_MAJOR_VERSION < 3
+  else if (PyInt_Check($input))
+    $1 = PyInt_AsLong($input);
+#endif
+  else
+    PyErr_SetString(PyExc_TypeError, "Numeric argument expected");
 }
 
 // Those are for gpgme_data_read() and gpgme_strerror_r()
