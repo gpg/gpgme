@@ -329,14 +329,29 @@
     PyErr_SetString(PyExc_TypeError, "Numeric argument expected");
 }
 
-// Those are for gpgme_data_read() and gpgme_strerror_r()
+/* Those are for gpgme_data_read() and gpgme_strerror_r().  */
 %typemap(in) (void *buffer, size_t size), (char *buf, size_t buflen) {
-   $2 = PyLong_AsLong($input);
-   if ($2 < 0) {
-     PyErr_SetString(PyExc_ValueError, "Positive integer expected");
-     return NULL;
-   }
-   $1 = ($1_ltype) malloc($2+1);
+  {
+    long tmp$argnum;
+    if (PyLong_Check($input))
+      tmp$argnum = PyLong_AsLong($input);
+#if PY_MAJOR_VERSION < 3
+    else if (PyInt_Check($input))
+      tmp$argnum = PyInt_AsLong($input);
+#endif
+    else
+      {
+        PyErr_SetString(PyExc_TypeError, "Numeric argument expected");
+        return NULL;
+      }
+
+    if (tmp$argnum < 0) {
+      PyErr_SetString(PyExc_ValueError, "Positive integer expected");
+      return NULL;
+    }
+    $2 = (size_t) tmp$argnum;
+    $1 = ($1_ltype) malloc($2+1);
+  }
 }
 %typemap(argout) (void *buffer, size_t size), (char *buf, size_t buflen) {
   Py_XDECREF($result);   /* Blow away any previous result */
