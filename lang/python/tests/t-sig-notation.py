@@ -36,7 +36,7 @@ expected_notations = {
 with core.Context() as c:
     version = c.engine_info.version
     have_correct_sig_data = not (version.startswith("1.")
-                                 version.startswith("2.0.")
+                                 or version.startswith("2.0.")
                                  or version == "2.1.1"
                                  or (version.startswith("2.1.1")
                                      and version[5] < '3'))
