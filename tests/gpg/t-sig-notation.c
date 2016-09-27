@@ -151,6 +151,7 @@ main (int argc, char *argv[])
      correctly.  */
   have_correct_sig_data =
     ! (strncmp ("1.", engine_info->version, 2) == 0
+       || strncmp ("2.0.", version, 4) == 0
        || (strncmp ("2.1.1", engine_info->version, 5) == 0
            && (engine_info->version[5] == 0
                || engine_info->version[5] < '3')));
