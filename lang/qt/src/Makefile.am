@@ -221,9 +221,9 @@ libsuffix=.so
 endif
 
 QGpgmeConfig.cmake: QGpgmeConfig.cmake.in
-	sed -e 's|[@]resolved_libdir@|$(libdir)|g' < "$<" > "$@"
-	sed -e 's|[@]libsuffix@|$(libsuffix)|g' < "$@" > "$@".2
-	mv "$@".2 "$@"
+	sed -e 's|[@]resolved_libdir@|$(libdir)|g' < "$<" | \
+	sed -e 's|[@]libsuffix@|$(libsuffix)|g' | \
+	sed -e 's|[@]resolved_includedir@|$(includedir)|g' > $@
 
 $(camelcase_headers): Makefile.am
 	echo -n "#include \"qgpgme/" > "$@"

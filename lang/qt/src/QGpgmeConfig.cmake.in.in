@@ -58,17 +58,11 @@ unset(_targetsDefined)
 unset(_targetsNotDefined)
 unset(_expectedTargets)
 
-# Compute the installation prefix relative to this file.
-get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
-get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-
 # Create imported target QGpgme
 add_library(QGpgme SHARED IMPORTED)
 
 set_target_properties(QGpgme PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include/qgpgme"
+  INTERFACE_INCLUDE_DIRECTORIES "@resolved_includedir@/qgpgme;@resolved_includedir@"
   INTERFACE_LINK_LIBRARIES "Gpgmepp;Qt5::Core"
   IMPORTED_LOCATION "@resolved_libdir@/libqgpgme@libsuffix@"
 )
@@ -76,9 +70,6 @@ set_target_properties(QGpgme PROPERTIES
 if(CMAKE_VERSION VERSION_LESS 2.8.12)
   message(FATAL_ERROR "This file relies on consumers using CMake 2.8.12 or greater.")
 endif()
-
-# Cleanup temporary variables.
-set(_IMPORT_PREFIX)
 
 # Loop over all imported files and verify that they actually exist
 foreach(target ${_IMPORT_CHECK_TARGETS} )
