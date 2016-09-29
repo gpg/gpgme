@@ -39,10 +39,6 @@ if os.path.exists("../../src/gpgme-config"):
     in_tree = True
     gpgme_config = ["../../src/gpgme-config"] + gpgme_config_flags
     gpgme_h = "../../src/gpgme.h"
-    if 'top_builddir' in os.environ:
-        include_dirs.append(os.environ['top_builddir'])
-        # Make sure that SWIG finds config.h when processing gpgme.i.
-        extra_swig_opts.append("-I{0}".format(os.environ['top_builddir']))
     library_dirs = ["../../src/.libs"] # XXX uses libtool internals
     extra_macros.update(
         HAVE_CONFIG_H=1,

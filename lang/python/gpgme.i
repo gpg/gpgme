@@ -183,7 +183,7 @@
    representation of struct gpgme_data for an very efficient check if
    the buffer has been modified.  */
 %{
-#include "src/data.h"	/* For struct gpgme_data.  */
+#include "data.h"	/* For struct gpgme_data.  */
 %}
 #endif
 
