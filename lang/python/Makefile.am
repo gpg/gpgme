@@ -65,6 +65,9 @@ dist/pyme3-$(VERSION).tar.gz dist/pyme3-$(VERSION).tar.gz.asc: copystamp
 	  $(PYTHON) setup.py sdist --verbose
 	gpg2 --detach-sign --armor dist/pyme3-$(VERSION).tar.gz
 
+.PHONY: prepare
+prepare: copystamp
+
 .PHONY: sdist
 sdist: dist/pyme3-$(VERSION).tar.gz dist/pyme3-$(VERSION).tar.gz.asc
 
