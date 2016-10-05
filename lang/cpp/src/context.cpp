@@ -699,7 +699,7 @@ Error Context::startPasswd(const Key &key)
 }
 
 
-#pragma GCC push_diagnostics
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 Error Context::edit(const Key &key, std::unique_ptr<EditInteractor> func, Data &data)
@@ -759,7 +759,7 @@ Error Context::startCardEditing(const Key &key, std::unique_ptr<EditInteractor> 
                               dp ? dp->data : 0));
 }
 
-#pragma GCC pop_diagnostics
+#pragma GCC diagnostic pop
 
 EditInteractor *Context::lastCardEditInteractor() const
 {
