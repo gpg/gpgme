@@ -53,6 +53,23 @@
 using namespace QGpgME;
 using namespace GpgME;
 
+static bool decryptSupported()
+{
+    /* With GnuPG 2.0.x (at least 2.0.26 by default on jessie)
+     * the passphrase_cb does not work. So the test popped up
+     * a pinentry. So tests requiring decryption don't work. */
+    static auto version = GpgME::engineInfo(GpgME::GpgEngine).engineVersion();
+    if (version < "2.0.0") {
+        /* With 1.4 it just works */
+        return true;
+    }
+    if (version < "2.1.0") {
+        /* With 2.1 it works with loopback mode */
+        return false;
+    }
+    return true;
+}
+
 class EncryptionTest : public QGpgMETest
 {
     Q_OBJECT
@@ -82,6 +99,9 @@ private Q_SLOTS:
         Q_ASSERT(cipherString.startsWith("-----BEGIN PGP MESSAGE-----"));
 
         /* Now decrypt */
+        if (!decryptSupported()) {
+            return;
+        }
         auto ctx = Context::createForProtocol(OpenPGP);
         TestPassphraseProvider provider;
         ctx->setPassphraseProvider(&provider);
@@ -150,6 +170,9 @@ private Q_SLOTS:
 
     void testSymmetricEncryptDecrypt()
     {
+        if (!decryptSupported()) {
+            return;
+        }
         auto ctx = Context::createForProtocol(OpenPGP);
         TestPassphraseProvider provider;
         ctx->setPassphraseProvider(&provider);
@@ -182,6 +205,9 @@ private:
      * So this test is disabled until gnupg(?) is fixed for this. */
     void testMixedEncryptDecrypt()
     {
+        if (!decryptSupported()) {
+            return;
+        }
         auto listjob = openpgp()->keyListJob(false, false, false);
         std::vector<Key> keys;
         auto keylistresult = listjob->exec(QStringList() << QStringLiteral("alfa@example.net"),
