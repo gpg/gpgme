@@ -226,7 +226,7 @@ private:
         Q_ASSERT(spy.wait());
     }
 
-    void testWKSPublishRecieve() {
+    void testWKSPublishReceive() {
         if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.0.16") {
             /* Not supported */
             return;
@@ -258,7 +258,7 @@ private:
             Q_ASSERT(outstr.contains(
                      QStringLiteral("From: " TEST_ADDRESS)));
         });
-        job->startRecieve(QByteArray(testResponse));
+        job->startReceive(QByteArray(testResponse));
         Q_ASSERT(spy.wait());
     }
 

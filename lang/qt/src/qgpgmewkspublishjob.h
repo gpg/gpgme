@@ -62,7 +62,7 @@ public:
 
     void startCheck(const QString &mailbox) Q_DECL_OVERRIDE;
     void startCreate(const char *fpr, const QString &mailbox) Q_DECL_OVERRIDE;
-    void startRecieve(const QByteArray &response) Q_DECL_OVERRIDE;
+    void startReceive(const QByteArray &response) Q_DECL_OVERRIDE;
 };
 
 }

@@ -82,7 +82,7 @@ public:
      *
      * @param response The response of the server.
      **/
-    virtual void startRecieve(const QByteArray &response) = 0;
+    virtual void startReceive(const QByteArray &response) = 0;
 
 Q_SIGNALS:
     /* Result of the operation returned Data and returned Error are

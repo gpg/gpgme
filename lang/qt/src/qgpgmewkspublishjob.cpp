@@ -141,7 +141,7 @@ static QGpgMEWKSPublishJob::result_type create_worker(const char *fpr, const QSt
                             proc.readAllStandardOutput(), proc.readAllStandardError(), QString(), Error());
 }
 
-static QGpgMEWKSPublishJob::result_type recieve_worker(const QByteArray &response)
+static QGpgMEWKSPublishJob::result_type receive_worker(const QByteArray &response)
 {
     if (response.isEmpty()) {
         return std::make_tuple (Error(make_error(GPG_ERR_INV_ARG)),
@@ -185,9 +185,9 @@ void QGpgMEWKSPublishJob::startCreate(const char *fpr, const QString &mailbox) {
     run(std::bind(&create_worker, fpr, mailbox));
 }
 
-void QGpgMEWKSPublishJob::startRecieve(const QByteArray &response)
+void QGpgMEWKSPublishJob::startReceive(const QByteArray &response)
 {
-    run(std::bind(&recieve_worker, response));
+    run(std::bind(&receive_worker, response));
 }
 
 #include "qgpgmewkspublishjob.moc"
