@@ -25,7 +25,7 @@ TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir)
 EXTRA_DIST = initial.test
 
 TESTS = initial.test t-keylist t-keylocate t-ownertrust t-tofuinfo \
-        t-encrypt t-wkspublish
+        t-encrypt
 
 moc_files = t-keylist.moc t-keylocate.moc t-ownertrust.moc t-tofuinfo.moc \
             t-encrypt.moc t-support.hmoc t-wkspublish.moc
