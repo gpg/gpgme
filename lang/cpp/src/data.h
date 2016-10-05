@@ -78,7 +78,10 @@ public:
         BinaryEncoding,
         Base64Encoding,
         ArmorEncoding,
-        MimeEncoding
+        MimeEncoding,
+        UrlEncoding,
+        UrlEscEncoding,
+        Url0Encoding,
     };
     Encoding encoding() const;
     Error setEncoding(Encoding encoding);
