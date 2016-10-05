@@ -588,6 +588,7 @@ if test "$GCC" = yes; then
           CFLAGS="$CFLAGS -Wno-missing-field-initializers"
           CFLAGS="$CFLAGS -Wno-sign-compare"
         fi
+        CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wno-shadow"
 
         AC_MSG_CHECKING([if gcc supports -Wpointer-arith])
         _gcc_cflags_save=$CFLAGS
