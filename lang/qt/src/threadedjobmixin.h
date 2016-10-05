@@ -223,7 +223,8 @@ protected:
     {
         return m_auditLogError;
     }
-    void showProgress(const char *what, int type, int current, int total) Q_DECL_OVERRIDE {
+    void showProgress(const char * /*what*/,
+                      int /*type*/, int current, int total) Q_DECL_OVERRIDE {
         // will be called from the thread exec'ing the operation, so
         // just bounce everything to the owning thread:
         // ### hope this is thread-safe (meta obj is const, and

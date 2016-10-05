@@ -117,7 +117,7 @@ private Q_SLOTS:
 
         bool initSeen = false;
         bool finishSeen = false;
-        connect(job, &Job::progress, this, [this, &initSeen, &finishSeen] (const QString& what, int current, int total) {
+        connect(job, &Job::progress, this, [this, &initSeen, &finishSeen] (const QString&, int current, int total) {
                 // We only check for progress 0 and max progress as the other progress
                 // lines depend on the system speed and are as such unreliable to test.
                 Q_ASSERT(total == PROGRESS_TEST_SIZE);
@@ -129,8 +129,8 @@ private Q_SLOTS:
                 }
                 Q_ASSERT(current >= 0 && current <= total);
             });
-        connect(job, &EncryptJob::result, this, [this, &initSeen, &finishSeen] (const GpgME::EncryptionResult &result,
-                                                                                const QByteArray &cipherText,
+        connect(job, &EncryptJob::result, this, [this, &initSeen, &finishSeen] (const GpgME::EncryptionResult &,
+                                                                                const QByteArray &,
                                                                                 const QString,
                                                                                 const GpgME::Error) {
                 Q_ASSERT(initSeen);

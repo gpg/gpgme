@@ -39,8 +39,8 @@ namespace GpgME
 class TestPassphraseProvider : public PassphraseProvider
 {
 public:
-    char *getPassphrase(const char *useridHint, const char *description,
-                        bool previousWasBad, bool &canceled) Q_DECL_OVERRIDE
+    char *getPassphrase(const char * /*useridHint*/, const char * /*description*/,
+                        bool /*previousWasBad*/, bool &/*canceled*/) Q_DECL_OVERRIDE
     {
         return strdup("abc");
     }

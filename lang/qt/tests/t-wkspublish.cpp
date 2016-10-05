@@ -126,7 +126,7 @@ private Q_SLOTS:
         // First check if it is supported
         auto job = openpgp()->wksPublishJob();
         connect(job, &WKSPublishJob::result, this,
-                [this] (Error err, QByteArray out, QByteArray errout, QString, Error) {
+                [this] (Error err, QByteArray, QByteArray, QString, Error) {
             Q_ASSERT(err);
             Q_EMIT asyncDone();
         });
@@ -144,7 +144,7 @@ private:
         // First check if it is supported
         auto job = openpgp()->wksPublishJob();
         connect(job, &WKSPublishJob::result, this,
-                [this] (Error err, QByteArray out, QByteArray errout, QString, Error) {
+                [this] (Error err, QByteArray, QByteArray, QString, Error) {
             if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.0.16") {
                 std::cout << err;
                 Q_ASSERT(err);
@@ -165,7 +165,7 @@ private:
         }
         auto job = openpgp()->wksPublishJob();
         connect(job, &WKSPublishJob::result, this,
-                [this] (Error err, QByteArray out, QByteArray errout, QString, Error) {
+                [this] (Error err, QByteArray, QByteArray, QString, Error) {
             Q_ASSERT(err);
             Q_EMIT asyncDone();
         });
@@ -197,7 +197,7 @@ private:
         auto keygenjob = openpgp()->keyGenerationJob();
         QByteArray fpr;
         connect(keygenjob, &KeyGenerationJob::result, this,
-                [this, &fpr](KeyGenerationResult result, QByteArray pubkeyData, QString, Error)
+                [this, &fpr](KeyGenerationResult result, QByteArray, QString, Error)
         {
             Q_ASSERT(!result.error());
             fpr = QByteArray(result.fingerprint());
@@ -211,7 +211,7 @@ private:
         /* Then try to create a request. */
         auto job = openpgp()->wksPublishJob();
         connect(job, &WKSPublishJob::result, this,
-                [this] (Error err, QByteArray out, QByteArray errout, QString, Error) {
+                [this] (Error err, QByteArray out, QByteArray, QString, Error) {
             Q_ASSERT(!err);
             Q_EMIT asyncDone();
             const QString outstr = QString(out);
@@ -247,7 +247,7 @@ private:
         /* Get a response. */
         auto job = openpgp()->wksPublishJob();
         connect(job, &WKSPublishJob::result, this,
-                [this] (Error err, QByteArray out, QByteArray errout, QString, Error) {
+                [this] (Error err, QByteArray out, QByteArray, QString, Error) {
             Q_ASSERT(!err);
             Q_EMIT asyncDone();
             const QString outstr = QString(out);

@@ -84,7 +84,7 @@ QGpgMENewCryptoConfig::~QGpgMENewCryptoConfig()
     clear();
 }
 
-void QGpgMENewCryptoConfig::reloadConfiguration(bool showErrors)
+void QGpgMENewCryptoConfig::reloadConfiguration(bool)
 {
     clear();
 
