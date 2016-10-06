@@ -33,6 +33,7 @@
 #include <gpgme.h>
 
 #include <string.h>
+#include <strings.h>
 #include <istream>
 #include <iterator>
 
