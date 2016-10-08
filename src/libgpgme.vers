@@ -117,6 +117,8 @@ GPGME_1.1 {
     gpgme_op_tofu_policy;
     gpgme_op_interact_start;
     gpgme_op_interact;
+
+    gpgme_addrspec_from_uid;
 };
 
 

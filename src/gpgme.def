@@ -244,5 +244,7 @@ EXPORTS
     gpgme_op_interact_start               @184
     gpgme_op_interact                     @185
 
+    gpgme_addrspec_from_uid               @186
+
 ; END
 

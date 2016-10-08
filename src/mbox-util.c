@@ -255,3 +255,21 @@ _gpgme_mailbox_from_userid (const char *userid)
 
 /*   return 1; */
 /* } */
+
+
+/*
+ * Exported public API
+ */
+
+
+/* Return the mail address ("addr-spec" as per RFC-5322) from a string
+ * which is assumed to be an user id ("address" in RFC-5322).  All
+ * plain ASCII characters (those with bit 7 cleared) in the result
+ * are converted to lowercase.  Caller must free the result using
+ * gpgme_free.  Returns NULL if no valid address was found (in which
+ * case ERRNO is set to EINVAL) or for other errors.  */
+char *
+gpgme_addrspec_from_uid (const char *uid)
+{
+  return _gpgme_mailbox_from_userid (uid);
+}

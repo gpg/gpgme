@@ -846,7 +846,7 @@ struct _gpgme_user_id
 
   /* The mail address (addr-spec from RFC5322) of the UID string.
    * This is general the same as the EMAIL part of this struct but
-   * might be slightly different.  IF no mail address is available
+   * might be slightly different.  If no mail address is available
    * NULL is stored.  */
   char *address;
 
@@ -2470,6 +2470,10 @@ const char *gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo);
 /* Return a statically allocated string with the name of the hash
    algorithm ALGO, or NULL if that name is not known.  */
 const char *gpgme_hash_algo_name (gpgme_hash_algo_t algo);
+
+/* Return the addr-spec from a user id.  Caller must free the result
+ * with gpgme_free. */
+char *gpgme_addrspec_from_uid (const char *uid);
 
 
 

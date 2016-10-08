@@ -1,6 +1,12 @@
 Noteworthy changes in version 1.7.1 (unreleased) [C26/A15/R_]
 ------------------------------------------------
 
+
+ * Interface changes relative to the 1.7.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_addrspec_from_uid         NEW.
+
+
 Noteworthy changes in version 1.7.0 (2016-09-21) [C26/A15/R0]
 ------------------------------------------------
 
