@@ -6,6 +6,14 @@ Noteworthy changes in version 1.7.1 (unreleased) [C26/A15/R_]
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_addrspec_from_uid         NEW.
 
+ * qt Interface changes relative to the 1.7.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ WksPublishJob::startReceive     NEW.
+ WksPublishJob::startRecieve     REMOVED.
+
+ * cpp Interface changes relative to the 1.7.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ Signature::key(bool, bool)      NEW.
 
 Noteworthy changes in version 1.7.0 (2016-09-21) [C26/A15/R0]
 ------------------------------------------------
