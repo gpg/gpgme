@@ -72,6 +72,8 @@ public:
             // copy keys
             if (scopy->key) {
                 keys.push_back(Key(scopy->key, true));
+            } else {
+                keys.push_back(Key());
             }
             // copy notations:
             nota.push_back(std::vector<Nota>());
