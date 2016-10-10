@@ -163,6 +163,27 @@ public:
      * set or the associated TOFU Information if applicable. */
     GpgME::Key key() const;
 
+    /* Search / Update the key of this signature.
+     *
+     * Same as above but if search is set to true this will
+     * either update the key provided by the engine or search
+     * the key in the engine. The key is cached.
+     *
+     * As this involves an engine call it might take some time
+     * to finish so it should be avoided to do this in a UI
+     * thread. The result will be cached and no engine call
+     * will be done if update is set to false and a key is
+     * already cached.
+     *
+     * If no key was provided by the engine this will look
+     * up the key so this call might block while the engine
+     * is called to obtain the key.
+     *
+     * If both search and update are false this is the same
+     * as calling key()
+     */
+    GpgME::Key key(bool search, bool update) const;
+
 private:
     std::shared_ptr<VerificationResult::Private> d;
     unsigned int idx;
