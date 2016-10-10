@@ -390,7 +390,7 @@ find_program_in_dir (const char *dir, const char *name)
 {
   char *result;
 
-  result = _gpgme_strconcat (dir, "\\", strlen (name), NULL);
+  result = _gpgme_strconcat (dir, "\\", name, NULL);
   if (!result)
     return NULL;
 
