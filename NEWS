@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.7.1 (unreleased) [C26/A15/R_]
 ------------------------------------------------
 
+ * qt: Missed API from the Qt Binding inclusion has
+   been added again.
+
+ * qt: abstractimportjob.h is now installed to that
+   ImportJobs can be used again.
 
  * Interface changes relative to the 1.7.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -10,6 +15,8 @@ Noteworthy changes in version 1.7.1 (unreleased) [C26/A15/R_]
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  WksPublishJob::startReceive     NEW.
  WksPublishJob::startRecieve     REMOVED.
+ MultiDeleteJob                  NEW.
+ AbstractImportJob               NEW.
 
  * cpp Interface changes relative to the 1.7.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
