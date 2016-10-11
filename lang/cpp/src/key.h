@@ -320,6 +320,21 @@ public:
      * @returns The TOFU stats or a null TofuInfo.
      */
     GpgME::TofuInfo tofuInfo() const;
+
+    /*! Wrapper around gpgme_addrspec_from_uid.
+     *
+     * The input string should match the format of
+     * a user id string.
+     *
+     * @returns a normalized mail address if found
+     * or an empty string. */
+    static std::string addrSpecFromString(const char *uid);
+
+    /*! Wrapper around gpgme_addrspec_from_uid.
+     *
+     * @returns a normalized mail address for this userid
+     * or an empty string. */
+    std::string addrSpec() const;
 private:
     shared_gpgme_key_t key;
     gpgme_user_id_t uid;

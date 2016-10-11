@@ -878,6 +878,22 @@ const char *UserID::Signature::policyURL() const
     return 0;
 }
 
+std::string UserID::addrSpecFromString(const char *userid)
+{
+    if (!userid) {
+        return std::string();
+    }
+    char *normalized = gpgme_addrspec_from_uid (userid);
+    std::string ret(normalized);
+    gpgme_free(normalized);
+    return ret;
+}
+
+std::string UserID::addrSpec() const
+{
+    return addrSpecFromString(email());
+}
+
 std::ostream &operator<<(std::ostream &os, const UserID &uid)
 {
     os << "GpgME::UserID(";

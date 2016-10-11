@@ -13,7 +13,9 @@ Noteworthy changes in version 1.7.1 (unreleased) [C26/A15/R_]
 
  * cpp Interface changes relative to the 1.7.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- Signature::key(bool, bool)      NEW.
+ Signature::key(bool, bool)              NEW.
+ UserID::addrSpecFromString(const char*) NEW.
+ UserID::addrSpec()                      NEW.
 
 Noteworthy changes in version 1.7.0 (2016-09-21) [C26/A15/R0]
 ------------------------------------------------
