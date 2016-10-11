@@ -36,7 +36,7 @@
 
 #include "qgpgme_export.h"
 #include "job.h"
-#include "cryptobackend.h"
+#include "protocol.h"
 
 #include <QPointer>
 
