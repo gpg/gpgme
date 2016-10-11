@@ -39,6 +39,7 @@ qgpgme_sources = \
 
 # If you add one here make sure that you also add one in camelcase
 qgpgme_headers= \
+    abstractimportjob.h \
     adduseridjob.h \
     changeexpiryjob.h \
     changeownertrustjob.h \
@@ -109,7 +110,6 @@ camelcase_headers= \
 
 private_qgpgme_headers = \
     qgpgme_export.h \
-    abstractimportjob.h \
     protocol_p.h \
     qgpgmeadduseridjob.h \
     qgpgmebackend.h \
