@@ -21,10 +21,12 @@ del absolute_import, print_function, unicode_literals
 from . import gpgme
 from . import util
 
-util.process_constants('GPG_ERR_', globals())
+# To appease static analysis tools, we define some constants here.
+# They are overwritten with the proper values by process_constants.
+NO_ERROR = None
+EOF = None
 
-# To appease static analysis tools, we define some constants here:
-NO_ERROR = 0
+util.process_constants('GPG_ERR_', globals())
 
 class PymeError(Exception):
     pass
@@ -57,6 +59,20 @@ class GPGMEError(PymeError):
 def errorcheck(retval, extradata = None):
     if retval:
         raise GPGMEError(retval, extradata)
+
+class KeyNotFound(GPGMEError, KeyError):
+    """Raised if a key was not found
+
+    GPGME indicates this condition with EOF, which is not very
+    idiomatic.  We raise this error that is both a GPGMEError
+    indicating EOF, and a KeyError.
+
+    """
+    def __init__(self, keystr):
+        self.keystr = keystr
+        GPGMEError.__init__(self, EOF)
+    def __str__(self):
+        return self.keystr
 
 # These errors are raised in the idiomatic interface code.
 

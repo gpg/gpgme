@@ -20,6 +20,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
+import pyme
 from pyme import core, constants
 import support
 
@@ -244,3 +245,25 @@ for i, key in enumerate(c.keylist()):
 
     if misc_check:
         misc_check (uids[0][0], key)
+
+
+# check get_key()
+with pyme.Context() as c:
+  c.get_key(support.alpha)
+  c.get_key(support.alpha, secret=True)
+
+  c.get_key(support.bob)
+  try:
+    c.get_key(support.bob, secret=True)
+  except KeyError:
+    pass
+  else:
+    assert False, "Expected KeyError"
+
+  # Legacy error
+  try:
+    c.get_key(support.no_such_key)
+  except pyme.errors.GPGMEError:
+    pass
+  else:
+    assert False, "Expected GPGMEError"

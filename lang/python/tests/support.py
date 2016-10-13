@@ -27,6 +27,7 @@ alpha = "A0FF4590BB6122EDEF6E3C542D727CC768697734"
 bob = "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2"
 encrypt_only = "F52770D5C4DB41408D918C9F920572769B9FE19C"
 sign_only = "7CCA20CCDE5394CEE71C9F0BFED153F12F18F45D"
+no_such_key = "A" * 40
 
 def make_filename(name):
     return os.path.join(os.environ['top_srcdir'], 'tests', 'gpg', name)

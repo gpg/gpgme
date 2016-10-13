@@ -680,11 +680,19 @@ class Context(GpgmeWrapper):
                         -- the matching key
 
         Raises:
+        KeyError	-- if the key was not found
         GPGMEError	-- as signaled by the underlying library
 
         """
         ptr = gpgme.new_gpgme_key_t_p()
-        errorcheck(gpgme.gpgme_get_key(self.wrapped, fpr, ptr, secret))
+
+        try:
+            errorcheck(gpgme.gpgme_get_key(self.wrapped, fpr, ptr, secret))
+        except errors.GPGMEError as e:
+            if e.getcode() == errors.EOF:
+                raise errors.KeyNotFound(fpr)
+            raise e
+
         key = gpgme.gpgme_key_t_p_value(ptr)
         gpgme.delete_gpgme_key_t_p(ptr)
         assert key
