@@ -234,9 +234,9 @@ $(camelcase_headers): Makefile.am
 
 install-cmake-files: QGpgmeConfig.cmake QGpgmeConfigVersion.cmake
 	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/Gpgmepp
-	$(INSTALL) QGpgmeConfig.cmake \
+	$(INSTALL) -m 644 QGpgmeConfig.cmake \
         $(DESTDIR)$(libdir)/cmake/Gpgmepp/QGpgmeConfig.cmake
-	$(INSTALL) QGpgmeConfigVersion.cmake \
+	$(INSTALL) -m 644 QGpgmeConfigVersion.cmake \
         $(DESTDIR)$(libdir)/cmake/Gpgmepp/QGpgmeConfigVersion.cmake
 
 uninstall-cmake-files:

@@ -82,9 +82,9 @@ GpgmeppConfig.cmake: GpgmeppConfig.cmake.in
 
 install-cmake-files: GpgmeppConfig.cmake GpgmeppConfigVersion.cmake
 	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/Gpgmepp
-	$(INSTALL) GpgmeppConfig.cmake \
+	$(INSTALL) -m 644 GpgmeppConfig.cmake \
         $(DESTDIR)$(libdir)/cmake/Gpgmepp/GpgmeppConfig.cmake
-	$(INSTALL) GpgmeppConfigVersion.cmake \
+	$(INSTALL) -m 644 GpgmeppConfigVersion.cmake \
         $(DESTDIR)$(libdir)/cmake/Gpgmepp/GpgmeppConfigVersion.cmake
 
 uninstall-cmake-files:
