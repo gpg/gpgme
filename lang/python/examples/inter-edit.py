@@ -40,8 +40,8 @@ with pyme.Context() as c:
     print("Editing key {} ({}):".format(key.uids[0].uid, key.subkeys[0].fpr))
 
     def edit_fnc(keyword, args):
-        print("Status: {} ({}), args: {} > ".format(
-            keyword, status, args), end='', flush=True)
+        print("Status: {}, args: {} > ".format(
+            keyword, args), end='', flush=True)
 
         if not 'GET' in keyword:
             # no prompt
