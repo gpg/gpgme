@@ -57,6 +57,7 @@ qgpgme_headers= \
     protocol.h \
     qgpgme_export.h \
     qgpgmenewcryptoconfig.h \
+    specialjob.h \
     signjob.h \
     signkeyjob.h \
     signencryptjob.h \
@@ -91,6 +92,7 @@ camelcase_headers= \
     MultiDeleteJob \
     Protocol \
     QGpgMENewCryptoConfig \
+    SpecialJob \
     SignJob \
     SignKeyJob \
     SignEncryptJob \
@@ -138,7 +140,6 @@ private_qgpgme_headers = \
     qgpgmekeyformailboxjob.h \
     qgpgmewkspublishjob.h \
     qgpgmetofupolicyjob.h \
-    specialjob.h \
     threadedjobmixin.h
 
 qgpgme_moc_sources = \

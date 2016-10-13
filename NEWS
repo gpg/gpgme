@@ -17,6 +17,7 @@ Noteworthy changes in version 1.7.1 (unreleased) [C26/A15/R_]
  WksPublishJob::startRecieve     REMOVED.
  MultiDeleteJob                  NEW.
  AbstractImportJob               NEW.
+ SpecialJob                      NEW.
 
  * cpp Interface changes relative to the 1.7.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
