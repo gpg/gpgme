@@ -28,7 +28,7 @@ if len(sys.argv) != 2:
     sys.exit("fingerprint or unique key ID for gpgme_get_key()")
 
 with pyme.Context(protocol=pyme.constants.PROTOCOL_CMS) as c:
-    key = c.get_key(sys.argv[1], False)
+    key = c.get_key(sys.argv[1])
 
     print("got key: ", key.subkeys[0].fpr)
     for uid in key.uids:

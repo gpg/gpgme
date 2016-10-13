@@ -670,15 +670,26 @@ class Context(GpgmeWrapper):
             key.__del__ = lambda self: gpgme.gpgme_key_unref(self)
             return key
 
-    def get_key(self, fpr, secret):
-        """Return the key corresponding to the fingerprint 'fpr'"""
+    def get_key(self, fpr, secret=False):
+        """Get a key given a fingerprint
+
+        Keyword arguments:
+        secret		-- to request a secret key
+
+        Returns:
+                        -- the matching key
+
+        Raises:
+        GPGMEError	-- as signaled by the underlying library
+
+        """
         ptr = gpgme.new_gpgme_key_t_p()
         errorcheck(gpgme.gpgme_get_key(self.wrapped, fpr, ptr, secret))
         key = gpgme.gpgme_key_t_p_value(ptr)
         gpgme.delete_gpgme_key_t_p(ptr)
-        if key:
-            key.__del__ = lambda self: gpgme.gpgme_key_unref(self)
-            return key
+        assert key
+        key.__del__ = lambda self: gpgme.gpgme_key_unref(self)
+        return key
 
     def op_trustlist_all(self, *args, **kwargs):
         self.op_trustlist_start(*args, **kwargs)

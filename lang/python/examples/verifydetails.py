@@ -52,7 +52,7 @@ def verifyprintdetails(filename, detached_sig_filename=None):
             print("  status:      %#0x" % (sign.status))
             print("  timestamp:  ", sign.timestamp)
             print("  fingerprint:", sign.fpr)
-            print("  uid:        ", c.get_key(sign.fpr, 0).uids[0].uid)
+            print("  uid:        ", c.get_key(sign.fpr).uids[0].uid)
 
     # Print "unsigned" text if inline signature
     if data:
