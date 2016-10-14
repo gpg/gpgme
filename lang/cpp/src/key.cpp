@@ -884,9 +884,12 @@ std::string UserID::addrSpecFromString(const char *userid)
         return std::string();
     }
     char *normalized = gpgme_addrspec_from_uid (userid);
-    std::string ret(normalized);
-    gpgme_free(normalized);
-    return ret;
+    if (normalized) {
+        std::string ret(normalized);
+        gpgme_free(normalized);
+        return ret;
+    }
+    return std::string();
 }
 
 std::string UserID::addrSpec() const
