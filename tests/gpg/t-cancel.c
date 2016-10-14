@@ -32,9 +32,15 @@
 #include <limits.h>
 #include <ctype.h>
 #include <errno.h>
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <sys/types.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <sys/select.h>
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
 
 #include <gpgme.h>
 
