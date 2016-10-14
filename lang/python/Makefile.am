@@ -54,10 +54,10 @@ copystamp: $(COPY_FILES) $(COPY_FILES_PYME) data.h config.h
 	touch $@
 
 data.h:
-	ln -s "$(top_srcdir)/src/data.h"
+	ln -s "$(top_srcdir)/src/data.h" .
 
 config.h:
-	ln -s "$(top_builddir)/config.h"
+	ln -s "$(top_builddir)/config.h" .
 
 all-local: copystamp
 	for PYTHON in $(PYTHONS); do \
