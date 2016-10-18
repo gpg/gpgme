@@ -1,5 +1,11 @@
-Noteworthy changes in version 1.7.1 (unreleased) [C26/A15/R_]
+Noteworthy changes in version 1.7.1 (2016-10-18)
 ------------------------------------------------
+
+ * Fixed problems with the new language bindings.
+
+ * New helper function gpgme_addrspec_from_uid.
+
+ * Use option --exit-on-status-write-error with newer gpg versions.
 
  * qt: Missed API from the Qt Binding inclusion has
    been added again.
@@ -7,25 +13,23 @@ Noteworthy changes in version 1.7.1 (unreleased) [C26/A15/R_]
  * qt: abstractimportjob.h is now installed to that
    ImportJobs can be used again.
 
+ * qt: Fixed spelling error in API (startReceive).
+
  * Interface changes relative to the 1.7.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_addrspec_from_uid         NEW.
+ qt: WksPublishJob::startRecieve RENAMED to ::startReceive.
+ qt: MultiDeleteJob              NEW.
+ qt: AbstractImportJob           NEW.
+ qt: SpecialJob                  NEW.
+ cpp: Signature::key(bool, bool)              NEW.
+ cpp: UserID::addrSpecFromString(const char*) NEW.
+ cpp: UserID::addrSpec()                      NEW.
 
- * qt Interface changes relative to the 1.7.0 release:
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- WksPublishJob::startReceive     NEW.
- WksPublishJob::startRecieve     REMOVED.
- MultiDeleteJob                  NEW.
- AbstractImportJob               NEW.
- SpecialJob                      NEW.
+ [c=C27/A16/R0 cpp=C8/A2/R0 qt=C7/A0/R0]
 
- * cpp Interface changes relative to the 1.7.0 release:
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- Signature::key(bool, bool)              NEW.
- UserID::addrSpecFromString(const char*) NEW.
- UserID::addrSpec()                      NEW.
 
-Noteworthy changes in version 1.7.0 (2016-09-21) [C26/A15/R0]
+Noteworthy changes in version 1.7.0 (2016-09-21)
 ------------------------------------------------
 
  * New language bindings for Python 2 and 3.
@@ -128,6 +132,8 @@ Noteworthy changes in version 1.7.0 (2016-09-21) [C26/A15/R0]
  GPGME_KEYSIGN_LOCAL            NEW.
  GPGME_KEYSIGN_LFSEP            NEW.
  GPGME_INTERACT_CARD            NEW.
+
+ [c=C26/A15/R0 cpp=C6/A0/R1 qt=C6/A0/R1]
 
 
 Noteworthy changes in version 1.6.0 (2015-08-26) [C25/A14/R0]
