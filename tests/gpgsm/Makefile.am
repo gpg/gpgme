@@ -70,7 +70,7 @@ export GPG_AGENT_INFO :=
 	echo faked-system-time 1008241200 >> ./gpgsm.conf
 
 ./private-keys-v1.d/$(key_id).key: $(srcdir)/$(key_id)
-	test -d ./private-keys-v1.d || mkdir ./private-keys-v1.d
+	$(MKDIR_P) ./private-keys-v1.d
 	cp $(srcdir)/$(key_id) private-keys-v1.d/$(key_id).key
 
 ./trustlist.txt:

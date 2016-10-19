@@ -89,7 +89,7 @@ clean-local:
 
 
 ./private-keys-v1.d/gpg-sample.stamp: $(private_keys)
-	test -d ./private-keys-v1.d || mkdir ./private-keys-v1.d
+	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
           cp $$k private-keys-v1.d/$${k#$(test_srcdir)/}.key; \
         done

@@ -93,7 +93,7 @@ export GNUPGHOME := $(abs_builddir)
 export GPG_AGENT_INFO :=
 
 ./private-keys-v1.d/gpg-sample.stamp: $(srcdir)/$(private_keys)
-	test -d ./private-keys-v1.d || mkdir ./private-keys-v1.d
+	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
           cp $(srcdir)/$$k private-keys-v1.d/$$k.key; \
         done
