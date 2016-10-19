@@ -47,6 +47,15 @@ namespace QGpgME {
  *
  * Remember that after a result is emitted the job is auto deleted
  * so you can only use it for a single action.
+ *
+ * The workflow is to call startCreate, check for errors and then
+ * send the RFC822 mail returned in returnedData.
+ *
+ * When the response is received start a startRecieve with the
+ * RFC822 mail received as paramater response. Check for errors
+ * and then send again send the result from returnedData back to
+ * the server.
+ *
  */
 class QGPGME_EXPORT WKSPublishJob: public Job
 {
@@ -69,16 +78,16 @@ public:
     virtual void startCheck(const QString &mailbox) = 0;
 
     /** Create a publish request.
-     * The returned Data from the result will contain
-     * the full Mail as returned by gpg-wks-client --create
+     * The returnedData from the result signal will contain
+     * the full Request as returned by gpg-wks-client --create
      *
      * @param fpr the fingerprint of the key to create the request for.
      * @param mailbox A simple mail address without a Name.
      */
     virtual void startCreate(const char *fpr, const QString &mailbox) = 0;
 
-    /** Handle a submisson response. The returned Data will contain
-     * the full Mail as returned by gpg-wks-client --create
+    /** Handle a submisson response. The returnedData in the result singnal
+     * will contain the confirmation response as returned by gpg-wks-client --receive
      *
      * @param response The response of the server.
      **/
