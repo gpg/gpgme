@@ -209,6 +209,7 @@ main (int argc, char *argv[])
   gpgme_error_t err;
   gpgme_data_t sig, text;
   gpgme_verify_result_t result;
+  const char *s;
 
   (void)argc;
   (void)argv;
@@ -269,6 +270,54 @@ main (int argc, char *argv[])
 	       __FILE__, __LINE__);
       exit (1);
     }
+
+  /* Checking that set/get_sernder works.  */
+  err = gpgme_set_sender (ctx, "foo@example.org");
+  fail_if_err (err);
+  s = gpgme_get_sender (ctx);
+  if (!s || strcmp (s, "foo@example.org"))
+    {
+      fprintf (stderr, "%s:%i: gpgme_{set,get}_sender mismatch\n",
+               __FILE__, __LINE__);
+      exit (1);
+    }
+
+  err = gpgme_set_sender (ctx, "<bar@example.org>");
+  fail_if_err (err);
+  s = gpgme_get_sender (ctx);
+  if (!s || strcmp (s, "bar@example.org"))
+    {
+      fprintf (stderr, "%s:%i: gpgme_{set,get}_sender mismatch\n",
+               __FILE__, __LINE__);
+      exit (1);
+    }
+
+  err = gpgme_set_sender (ctx, "Foo bar (comment) <foo@example.org>");
+  fail_if_err (err);
+  s = gpgme_get_sender (ctx);
+  if (!s || strcmp (s, "foo@example.org"))
+    {
+      fprintf (stderr, "%s:%i: gpgme_{set,get}_sender mismatch\n",
+               __FILE__, __LINE__);
+      exit (1);
+    }
+
+  err = gpgme_set_sender (ctx, "foo");
+  if (gpgme_err_code (err) != GPG_ERR_INV_VALUE)
+    {
+      fprintf (stderr, "%s:%i: gpgme_set_sender didn't detect bogus address\n",
+               __FILE__, __LINE__);
+      exit (1);
+    }
+  /* (the former address should still be there.)  */
+  s = gpgme_get_sender (ctx);
+  if (!s || strcmp (s, "foo@example.org"))
+    {
+      fprintf (stderr, "%s:%i: gpgme_{set,get}_sender mismatch\n",
+               __FILE__, __LINE__);
+      exit (1);
+    }
+
 
   gpgme_data_release (sig);
   gpgme_data_release (text);

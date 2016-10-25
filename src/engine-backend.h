@@ -111,7 +111,8 @@ struct engine_ops
 			 gpgme_ctx_t ctx /* FIXME */);
   gpgme_error_t (*trustlist) (void *engine, const char *pattern);
   gpgme_error_t (*verify) (void *engine, gpgme_data_t sig,
-			   gpgme_data_t signed_text, gpgme_data_t plaintext);
+			   gpgme_data_t signed_text, gpgme_data_t plaintext,
+                           gpgme_ctx_t ctx);
   gpgme_error_t  (*getauditlog) (void *engine, gpgme_data_t output,
                                  unsigned int flags);
   gpgme_error_t  (*opassuan_transact) (void *engine,

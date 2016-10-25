@@ -1646,6 +1646,23 @@ append_args_from_signers (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 
 
 static gpgme_error_t
+append_args_from_sender (engine_gpg_t gpg, gpgme_ctx_t ctx)
+{
+  gpgme_error_t err;
+
+  if (ctx->sender && have_gpg_version (gpg, "2.1.15"))
+    {
+      err = add_arg (gpg, "--sender");
+      if (!err)
+        err = add_arg (gpg, ctx->sender);
+    }
+  else
+    err = 0;
+  return err;
+}
+
+
+static gpgme_error_t
 append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 {
   gpgme_error_t err = 0;
@@ -1891,6 +1908,9 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
 
   if (!err)
     err = append_args_from_signers (gpg, ctx);
+
+  if (!err)
+    err = append_args_from_sender (gpg, ctx);
 
   if (!err)
     err = append_args_from_sig_notations (gpg, ctx);
@@ -2794,6 +2814,8 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   if (!err)
     err = append_args_from_signers (gpg, ctx);
   if (!err)
+    err = append_args_from_sender (gpg, ctx);
+  if (!err)
     err = append_args_from_sig_notations (gpg, ctx);
 
   if (gpgme_data_get_file_name (in))
@@ -2845,12 +2867,15 @@ gpg_trustlist (void *engine, const char *pattern)
 
 static gpgme_error_t
 gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
-	    gpgme_data_t plaintext)
+	    gpgme_data_t plaintext, gpgme_ctx_t ctx)
 {
   engine_gpg_t gpg = engine;
-  gpgme_error_t err = 0;
+  gpgme_error_t err;
 
-  if (plaintext)
+  err = append_args_from_sender (gpg, ctx);
+  if (err)
+    ;
+  else if (plaintext)
     {
       /* Normal or cleartext signature.  */
       err = add_arg (gpg, "--output");

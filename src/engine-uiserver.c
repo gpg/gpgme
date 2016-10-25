@@ -1243,12 +1243,15 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 /* FIXME: Missing a way to specify --silent.  */
 static gpgme_error_t
 uiserver_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
-	      gpgme_data_t plaintext)
+                 gpgme_data_t plaintext, gpgme_ctx_t ctx)
 {
   engine_uiserver_t uiserver = engine;
   gpgme_error_t err;
   const char *protocol;
   char *cmd;
+
+  (void)ctx; /* FIXME: We should to add a --sender option to the
+              * UISever protocol.  */
 
   if (!uiserver)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1395,6 +1398,6 @@ struct engine_ops _gpgme_engine_ops_uiserver =
     uiserver_cancel,
     NULL,		/* cancel_op */
     NULL,               /* passwd */
-    NULL,                /* set_pinentry_mode */
+    NULL,               /* set_pinentry_mode */
     NULL                /* opspawn */
   };

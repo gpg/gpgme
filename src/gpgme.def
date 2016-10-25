@@ -246,5 +246,8 @@ EXPORTS
 
     gpgme_addrspec_from_uid               @186
 
+    gpgme_set_sender                      @187
+    gpgme_get_sender                      @188
+
 ; END
 

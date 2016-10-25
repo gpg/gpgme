@@ -2,6 +2,12 @@ Noteworthy changes in version 1.7.2 (unreleased)
 ------------------------------------------------
 
 
+ * Interface changes relative to the 1.7.1 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_set_sender                NEW.
+ gpgme_get_sender                NEW.
+
+
 Noteworthy changes in version 1.7.1 (2016-10-18)
 ------------------------------------------------
 

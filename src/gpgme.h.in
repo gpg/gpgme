@@ -1161,6 +1161,12 @@ gpgme_error_t gpgme_sig_notation_add (gpgme_ctx_t ctx, const char *name,
 /* Get the sig notations for this context.  */
 gpgme_sig_notation_t gpgme_sig_notation_get (gpgme_ctx_t ctx);
 
+/* Store a sender address in the context.  */
+gpgme_error_t gpgme_set_sender (gpgme_ctx_t ctx, const char *address);
+
+/* Get the sender address from the context.  */
+const char *gpgme_get_sender (gpgme_ctx_t ctx);
+
 
 
 /*

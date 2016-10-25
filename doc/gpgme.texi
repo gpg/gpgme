@@ -186,6 +186,7 @@ Context Attributes
 
 * Protocol Selection::            Selecting the protocol used by a context.
 * Crypto Engine::                 Configuring the crypto engine.
+* Setting the Sender::            How to tell the engine the sender.
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
 * Offline Mode::                  Choosing offline mode.
@@ -2366,6 +2367,7 @@ started.  In fact, these references are accessed through the
 @menu
 * Protocol Selection::            Selecting the protocol used by a context.
 * Crypto Engine::                 Configuring the crypto engine.
+* Setting the Sender::            How to tell the engine the sender.
 * ASCII Armor::                   Requesting @acronym{ASCII} armored output.
 * Text Mode::                     Choosing canonical text mode.
 * Offline Mode::                  Choosing offline mode.
@@ -2446,6 +2448,47 @@ context @var{ctx}.
 This function returns the error code @code{GPG_ERR_NO_ERROR} if
 successful, or an eror code on failure.
 @end deftypefun
+
+
+@node Setting the Sender
+@subsection How to tell the engine the sender.
+@cindex context, sender
+@cindex sender
+@cindex From:
+
+Some engines can make use of the sender’s address, for example to
+figure out the best user id in certain trust models.  For verification
+and signing of mails, it is thus suggested to let the engine know the
+sender ("From:") address.  @acronym{GPGME} provides two functions to
+accomplish that.  Note that the esoteric use of multiple "From:"
+addresses is not supported.
+
+@deftypefun gpgme_error_t gpgme_set_sender @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{int @var{address}})
+
+The function @code{gpgme_set_sender} specifies the sender address for
+use in sign and verify operations.  @var{address} is expected to be
+the ``addr-spec'' part of an address but my also be a complete mailbox
+address, in which case this function extracts the ``addr-spec'' from
+it.  Using @code{NULL} for @var{address} clears the sender address.
+
+The function returns 0 on success or an error code on failure.  The
+most likely failure is that no valid ``addr-spec'' was found in
+@var{address}.
+
+@end deftypefun
+
+@deftypefun @w{const char *} gpgme_get_sender @
+      (@w{gpgme_ctx_t @var{ctx}})
+
+The function @code{gpgme_get_sender} returns the current sender
+address from the context, or NULL if none was set.  The returned
+value is valid as long as the @var{ctx} is valid and
+@code{gpgme_set_sender} has not been called again.
+
+@end deftypefun
+
 
 
 @c FIXME: Unfortunately, using @acronym here breaks texi2dvi.

@@ -38,6 +38,7 @@
 #include "debug.h"
 #include "priv-io.h"
 #include "sys-util.h"
+#include "mbox-util.h"
 
 
 /* The default locale.  */
@@ -275,12 +276,10 @@ gpgme_release (gpgme_ctx_t ctx)
   _gpgme_release_result (ctx);
   _gpgme_signers_clear (ctx);
   _gpgme_sig_notation_clear (ctx);
-  if (ctx->signers)
-    free (ctx->signers);
-  if (ctx->lc_ctype)
-    free (ctx->lc_ctype);
-  if (ctx->lc_messages)
-    free (ctx->lc_messages);
+  free (ctx->sender);
+  free (ctx->signers);
+  free (ctx->lc_ctype);
+  free (ctx->lc_messages);
   _gpgme_engine_info_release (ctx->engine_info);
   ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
@@ -458,6 +457,42 @@ gpgme_get_protocol_name (gpgme_protocol_t protocol)
       return NULL;
     }
 }
+
+
+/* Store the sender's address in the context.  ADDRESS is addr-spec of
+ * mailbox but my also be a complete mailbox, in which case this
+ * function extracts the addr-spec from it.  Returns 0 on success or
+ * an error code if no valid addr-spec could be extracted from
+ * ADDRESS.  */
+gpgme_error_t
+gpgme_set_sender (gpgme_ctx_t ctx, const char *address)
+{
+  char *p = NULL;
+
+  TRACE_BEG1 (DEBUG_CTX, "gpgme_set_sender", ctx, "sender='%s'",
+              address?address:"(null)");
+
+  if (!ctx || (address && !(p = _gpgme_mailbox_from_userid (address))))
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  free (ctx->sender);
+  ctx->sender = p;
+  return TRACE_ERR (0);
+}
+
+
+/* Return the sender's address (addr-spec part) from the context or
+ * NULL if none was set.  The returned value is valid as long as the
+ * CTX is valid and gpgme_set_sender has not been used.  */
+const char *
+gpgme_get_sender (gpgme_ctx_t ctx)
+{
+  TRACE1 (DEBUG_CTX, "gpgme_get_sender", ctx, "sender='%s'",
+          ctx?ctx->sender:"");
+
+  return ctx->sender;
+}
+
 
 /* Enable or disable the use of an ascii armor for all output.  */
 void

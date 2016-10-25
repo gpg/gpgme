@@ -119,15 +119,17 @@ struct gpgme_context
   /* Number of certs to be included.  */
   unsigned int include_certs;
 
-  /* The number of keys in signers.  */
+  /* The actual number of keys in SIGNERS, the allocated size of the
+   * array, and the array with the signing keys.  */
   unsigned int signers_len;
-
-  /* Size of the following array.  */
   unsigned int signers_size;
   gpgme_key_t *signers;
 
   /* The signature notations for this context.  */
   gpgme_sig_notation_t sig_notations;
+
+  /* The sender's addr-spec or NULL.  */
+  char *sender;
 
   /* The locale for the pinentry.  */
   char *lc_ctype;

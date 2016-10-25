@@ -1901,10 +1901,12 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
 static gpgme_error_t
 gpgsm_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
-	      gpgme_data_t plaintext)
+	      gpgme_data_t plaintext, gpgme_ctx_t ctx)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
+
+  (void)ctx;
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);

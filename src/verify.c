@@ -1104,7 +1104,8 @@ verify_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t sig,
   if (!sig)
     return gpg_error (GPG_ERR_NO_DATA);
 
-  return _gpgme_engine_op_verify (ctx->engine, sig, signed_text, plaintext);
+  return _gpgme_engine_op_verify (ctx->engine, sig, signed_text, plaintext,
+                                  ctx);
 }
 
 
