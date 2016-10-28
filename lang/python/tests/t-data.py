@@ -23,7 +23,7 @@ del absolute_import, print_function, unicode_literals
 import io
 import os
 import tempfile
-from pyme import core
+from gpg import core
 
 data = core.Data('Hello world!')
 assert data.read() == b'Hello world!'

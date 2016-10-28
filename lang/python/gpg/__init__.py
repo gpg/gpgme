@@ -16,16 +16,12 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
-"""Pyme: GPGME Interface for Python
+"""gpg: GnuPG Interface for Python (GPGME bindings)
 
-Welcome to PyME, the GPGME Interface for Python.  "Pyme", when prounced,
-rhymes with "Pine".
+Welcome to gpg, the GnuPG Interface for Python.
 
 The latest release of this package may be obtained from
 https://www.gnupg.org
-
-Previous releases of this package for Python 2 can be obtained from
-http://pyme.sourceforge.net
 
 FEATURES
 --------
@@ -43,23 +39,23 @@ FEATURES
 QUICK EXAMPLE
 -------------
 
-    >>> import pyme
-    >>> with pyme.Context() as c:
-    >>> with pyme.Context() as c:
+    >>> import gpg
+    >>> with gpg.Context() as c:
+    >>> with gpg.Context() as c:
     ...     cipher, _, _ = c.encrypt("Hello world :)".encode(),
     ...                              passphrase="abc")
     ...     c.decrypt(cipher, passphrase="abc")
     ...
     (b'Hello world :)',
-     <pyme.results.DecryptResult object at 0x7f5ab8121080>,
-     <pyme.results.VerifyResult object at 0x7f5ab81219b0>)
+     <gpg.results.DecryptResult object at 0x7f5ab8121080>,
+     <gpg.results.VerifyResult object at 0x7f5ab81219b0>)
 
 GENERAL OVERVIEW
 ----------------
 
 For those of you familiar with GPGME, you will be right at home here.
 
-Pyme is, for the most part, a direct interface to the C GPGME
+The python gpg module is, for the most part, a direct interface to the C GPGME
 library.  However, it is re-packaged in a more Pythonic way --
 object-oriented with classes and modules.  Take a look at the classes
 defined here -- they correspond directly to certain object types in GPGME
@@ -77,7 +73,7 @@ context = core.Context()
 context.op_encrypt(recp, 1, plain, cipher)
 
 The Python module automatically does error-checking and raises Python
-exception pyme.errors.GPGMEError when GPGME signals an error. getcode()
+exception gpg.errors.GPGMEError when GPGME signals an error. getcode()
 and getsource() of this exception return code and source of the error.
 
 IMPORTANT NOTE
@@ -94,7 +90,7 @@ be found only in GPGME documentation.
 
 FOR MORE INFORMATION
 --------------------
-PYME3 homepage: https://www.gnupg.org/
+GnuPG homepage: https://www.gnupg.org/
 GPGME documentation: https://www.gnupg.org/documentation/manuals/gpgme/
 
 """

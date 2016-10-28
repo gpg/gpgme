@@ -21,8 +21,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import sys
-import pyme
-from pyme import core, constants
+import gpg
+from gpg import core, constants
 import support
 
 support.init_gpgme(constants.PROTOCOL_OpenPGP)
@@ -76,7 +76,7 @@ for recipients in (keys, []):
 
 
 # Idiomatic interface.
-with pyme.Context(armor=True) as c:
+with gpg.Context(armor=True) as c:
     message = "Hallo Leute\n".encode()
     ciphertext, _, sig_result = c.encrypt(message,
                                           recipients=keys,
@@ -91,7 +91,7 @@ with pyme.Context(armor=True) as c:
     c.signers = [c.get_key(support.encrypt_only, True)]
     try:
         c.encrypt(message, recipients=keys, always_trust=True)
-    except pyme.errors.InvalidSigners as e:
+    except gpg.errors.InvalidSigners as e:
         assert len(e.signers) == 1
         assert support.encrypt_only.endswith(e.signers[0].fpr)
     else:

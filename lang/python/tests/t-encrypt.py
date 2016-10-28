@@ -20,8 +20,8 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-import pyme
-from pyme import core, constants
+import gpg
+from gpg import core, constants
 import support
 
 support.init_gpgme(constants.PROTOCOL_OpenPGP)
@@ -42,7 +42,7 @@ assert not result.invalid_recipients, \
 support.print_data(sink)
 
 # Idiomatic interface.
-with pyme.Context(armor=True) as c:
+with gpg.Context(armor=True) as c:
     ciphertext, _, _ = c.encrypt("Hallo Leute\n".encode(),
                                  recipients=keys,
                                  sign=False,
@@ -58,7 +58,7 @@ with pyme.Context(armor=True) as c:
         c.encrypt("Hallo Leute\n".encode(),
                   recipients=[c.get_key(support.sign_only, False)],
                   sign=False, always_trust=True)
-    except pyme.errors.InvalidRecipients as e:
+    except gpg.errors.InvalidRecipients as e:
         assert len(e.recipients) == 1
         assert support.sign_only.endswith(e.recipients[0].fpr)
     else:

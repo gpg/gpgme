@@ -17,7 +17,7 @@
 
 """A decryption filter
 
-This demonstrates decryption using pyme3 in three lines of code.  To
+This demonstrates decryption using gpg3 in three lines of code.  To
 be used like this:
 
 ./decryption-filter.py <message.gpg >message.plain
@@ -28,5 +28,5 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import sys
-import pyme
-pyme.Context().decrypt(sys.stdin, sink=sys.stdout)
+import gpg
+gpg.Context().decrypt(sys.stdin, sink=sys.stdout)

@@ -22,12 +22,12 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-import pyme
+import gpg
 
-with pyme.Context() as c:
+with gpg.Context() as c:
     # Note: We must not modify the key store during iteration,
     # therefore, we explicitly make a list.
-    keys = list(c.keylist("joe+pyme@example.org"))
+    keys = list(c.keylist("joe+gpg@example.org"))
 
     for k in keys:
         c.op_delete(k, True)

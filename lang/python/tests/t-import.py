@@ -20,7 +20,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-from pyme import core, constants
+from gpg import core, constants
 import support
 
 def check_result(result, fpr, secret):

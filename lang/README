@@ -12,4 +12,4 @@ Directory	Language
 cl		Common Lisp
 cpp		C++
 qt		Qt-Framework API
-python		Python 2 and 3 (port of PyME 0.9.0)
+python		Python 2 and 3 (module name: gpg)

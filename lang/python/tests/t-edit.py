@@ -23,7 +23,7 @@ del absolute_import, print_function, unicode_literals
 
 import sys
 import os
-from pyme import core, constants
+from gpg import core, constants
 import support
 
 class KeyEditor(object):

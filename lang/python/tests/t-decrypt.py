@@ -20,8 +20,8 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-import pyme
-from pyme import core, constants
+import gpg
+from gpg import core, constants
 import support
 
 support.init_gpgme(constants.PROTOCOL_OpenPGP)
@@ -38,7 +38,7 @@ assert not result.unsupported_algorithm, \
 support.print_data(sink)
 
 # Idiomatic interface.
-with pyme.Context() as c:
+with gpg.Context() as c:
     plaintext, _, _ = c.decrypt(open(support.make_filename("cipher-1.asc")))
     assert len(plaintext) > 0
     assert plaintext.find(b'Wenn Sie dies lesen k') >= 0, \

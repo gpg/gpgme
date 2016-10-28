@@ -18,5 +18,5 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-from pyme import util
-util.process_constants('GPGME_PK_', globals())
+from gpg import util
+util.process_constants('GPGME_VALIDITY_', globals())

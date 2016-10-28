@@ -20,9 +20,9 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import sys
-import pyme
-from pyme.constants.sig import mode
+import gpg
+from gpg.constants.sig import mode
 
-with pyme.Context() as c:
+with gpg.Context() as c:
     signed, _ = c.sign(b"Test message", mode=mode.CLEAR)
     sys.stdout.buffer.write(signed)

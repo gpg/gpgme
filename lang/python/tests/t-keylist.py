@@ -20,8 +20,8 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-import pyme
-from pyme import core, constants
+import gpg
+from gpg import core, constants
 import support
 
 support.init_gpgme(constants.PROTOCOL_OpenPGP)
@@ -248,7 +248,7 @@ for i, key in enumerate(c.keylist()):
 
 
 # check get_key()
-with pyme.Context() as c:
+with gpg.Context() as c:
   c.get_key(support.alpha)
   c.get_key(support.alpha, secret=True)
 
@@ -263,7 +263,7 @@ with pyme.Context() as c:
   # Legacy error
   try:
     c.get_key(support.no_such_key)
-  except pyme.errors.GPGMEError:
+  except gpg.errors.GPGMEError:
     pass
   else:
     assert False, "Expected GPGMEError"

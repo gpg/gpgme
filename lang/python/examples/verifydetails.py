@@ -21,8 +21,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import sys
-from pyme import core
-from pyme.constants import protocol
+from gpg import core
+from gpg.constants import protocol
 
 def print_engine_infos():
     print("gpgme version:", core.check_version(None))

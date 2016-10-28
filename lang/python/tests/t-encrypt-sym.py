@@ -21,8 +21,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import os
-import pyme
-from pyme import core, constants
+import gpg
+from gpg import core, constants
 import support
 
 support.init_gpgme(constants.PROTOCOL_OpenPGP)
@@ -68,7 +68,7 @@ for passphrase in ("abc", b"abc"):
 
 # Idiomatic interface.
 for passphrase in ("abc", b"abc"):
-    with pyme.Context(armor=True) as c:
+    with gpg.Context(armor=True) as c:
         # Check that the passphrase callback is not altered.
         def f(*args):
             assert False

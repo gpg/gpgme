@@ -21,9 +21,9 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import sys
-import pyme
+import gpg
 
-with pyme.Context(armor=True) as c:
+with gpg.Context(armor=True) as c:
     recipients = []
     print("Enter name of your recipient(s), end with a blank line.")
     while True:

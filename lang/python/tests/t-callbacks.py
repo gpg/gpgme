@@ -21,7 +21,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import os
-from pyme import core, constants
+from gpg import core, constants
 import support
 
 support.init_gpgme(constants.PROTOCOL_OpenPGP)
@@ -87,7 +87,7 @@ Key-Type: RSA
 Key-Length: 1024
 Name-Real: Joe Tester
 Name-Comment: with stupid passphrase
-Name-Email: joe+pyme@example.org
+Name-Email: joe+gpg@example.org
 Passphrase: Crypt0R0cks
 Expire-Date: 2020-12-31
 </GnupgKeyParms>

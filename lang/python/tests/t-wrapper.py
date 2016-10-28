@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from pyme import core
+from gpg import core
 
 d0 = core.Data()
 d0.seek # trigger on-demand-wrapping

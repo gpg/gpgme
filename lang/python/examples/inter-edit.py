@@ -22,14 +22,14 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import sys
-import pyme
+import gpg
 
 if len(sys.argv) != 2:
     sys.exit("Usage: %s <Gpg key pattern>\n" % sys.argv[0])
 
 name = sys.argv[1]
 
-with pyme.Context() as c:
+with gpg.Context() as c:
     keys = list(c.keylist(name))
     if len(keys) == 0:
         sys.exit("No key matching {}.".format(name))

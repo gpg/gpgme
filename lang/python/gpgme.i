@@ -159,7 +159,7 @@
     $1 = NULL;
   else {
     PyObject *pypointer;
-    pypointer = _pyme_obj2gpgme_data_t($input, $argnum, &wrapper,
+    pypointer = _gpg_obj2gpgme_data_t($input, $argnum, &wrapper,
                                        &bytesio, &view);
     if (pypointer == NULL)
       return NULL;
@@ -428,7 +428,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = _pyme_wrap_result(fragile, "EncryptResult");
+  $result = _gpg_wrap_result(fragile, "EncryptResult");
   Py_DECREF(fragile);
 }
 
@@ -436,7 +436,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = _pyme_wrap_result(fragile, "DecryptResult");
+  $result = _gpg_wrap_result(fragile, "DecryptResult");
   Py_DECREF(fragile);
 }
 
@@ -444,7 +444,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = _pyme_wrap_result(fragile, "SignResult");
+  $result = _gpg_wrap_result(fragile, "SignResult");
   Py_DECREF(fragile);
 }
 
@@ -452,7 +452,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = _pyme_wrap_result(fragile, "VerifyResult");
+  $result = _gpg_wrap_result(fragile, "VerifyResult");
   Py_DECREF(fragile);
 }
 
@@ -460,7 +460,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = _pyme_wrap_result(fragile, "ImportResult");
+  $result = _gpg_wrap_result(fragile, "ImportResult");
   Py_DECREF(fragile);
 }
 
@@ -468,7 +468,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = _pyme_wrap_result(fragile, "GenkeyResult");
+  $result = _gpg_wrap_result(fragile, "GenkeyResult");
   Py_DECREF(fragile);
 }
 
@@ -476,7 +476,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = _pyme_wrap_result(fragile, "KeylistResult");
+  $result = _gpg_wrap_result(fragile, "KeylistResult");
   Py_DECREF(fragile);
 }
 
@@ -484,7 +484,7 @@
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = _pyme_wrap_result(fragile, "VFSMountResult");
+  $result = _gpg_wrap_result(fragile, "VFSMountResult");
   Py_DECREF(fragile);
 }
 
@@ -507,7 +507,7 @@
         Py_DECREF($result);
         return NULL;	/* raise */
       }
-    o = _pyme_wrap_result(fragile, "EngineInfo");
+    o = _gpg_wrap_result(fragile, "EngineInfo");
     Py_DECREF(fragile);
     if (o == NULL)
       {
@@ -528,7 +528,7 @@
     return PyErr_Format(PyExc_TypeError,
                         "interact callback must be a tuple of size 2 or 3");
 
-  $1 = (gpgme_interact_cb_t) _pyme_interact_cb;
+  $1 = (gpgme_interact_cb_t) _gpg_interact_cb;
   $2 = $input;
 }
 
@@ -547,7 +547,7 @@
                             "callback must be a tuple of size 2");
       if (! PyCallable_Check(PyTuple_GetItem($input, 1)))
         return PyErr_Format(PyExc_TypeError, "second item must be callable");
-      $1 = _pyme_assuan_data_cb;
+      $1 = _gpg_assuan_data_cb;
       $2 = $input;
     }
 }
@@ -564,7 +564,7 @@
                             "callback must be a tuple of size 2");
       if (! PyCallable_Check(PyTuple_GetItem($input, 1)))
         return PyErr_Format(PyExc_TypeError, "second item must be callable");
-      $1 = _pyme_assuan_inquire_cb;
+      $1 = _gpg_assuan_inquire_cb;
       $2 = $input;
     }
 }
@@ -581,7 +581,7 @@
                             "callback must be a tuple of size 2");
       if (! PyCallable_Check(PyTuple_GetItem($input, 1)))
         return PyErr_Format(PyExc_TypeError, "second item must be callable");
-      $1 = _pyme_assuan_status_cb;
+      $1 = _gpg_assuan_status_cb;
       $2 = $input;
     }
 }
@@ -654,13 +654,13 @@ FILE *fdopen(int fildes, const char *mode);
 
 /* SWIG runtime support for helpers.c  */
 PyObject *
-_pyme_wrap_gpgme_data_t(gpgme_data_t data)
+_gpg_wrap_gpgme_data_t(gpgme_data_t data)
 {
   return SWIG_Python_NewPointerObj(NULL, data, SWIGTYPE_p_gpgme_data, 0);
 }
 
 gpgme_ctx_t
-_pyme_unwrap_gpgme_ctx_t(PyObject *wrapped)
+_gpg_unwrap_gpgme_ctx_t(PyObject *wrapped)
 {
   gpgme_ctx_t result;
   if (SWIG_ConvertPtr(wrapped,

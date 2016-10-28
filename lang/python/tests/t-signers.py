@@ -20,8 +20,8 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-import pyme
-from pyme import core, constants
+import gpg
+from gpg import core, constants
 import support
 
 def fail(msg):
@@ -81,7 +81,7 @@ for mode in (constants.SIG_MODE_NORMAL, constants.SIG_MODE_DETACH,
     support.print_data(sink)
 
 # Idiomatic interface.
-with pyme.Context(armor=True, textmode=True, signers=keys) as c:
+with gpg.Context(armor=True, textmode=True, signers=keys) as c:
     message = "Hallo Leute\n".encode()
     signed, result = c.sign(message)
     check_result(result, constants.SIG_MODE_NORMAL)

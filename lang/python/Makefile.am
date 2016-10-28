@@ -23,7 +23,7 @@ EXTRA_DIST = \
 	helpers.c helpers.h private.h \
 	gpgme-h-clean.py \
 	examples \
-	pyme
+	gpg
 
 SUBDIRS = . tests
 
@@ -35,21 +35,21 @@ COPY_FILES = \
 	$(srcdir)/examples \
 	$(srcdir)/helpers.c $(srcdir)/helpers.h $(srcdir)/private.h
 
-COPY_FILES_PYME = \
-	$(srcdir)/pyme/callbacks.py \
-	$(srcdir)/pyme/constants \
-	$(srcdir)/pyme/core.py \
-	$(srcdir)/pyme/errors.py \
-	$(srcdir)/pyme/__init__.py \
-	$(srcdir)/pyme/results.py \
-	$(srcdir)/pyme/util.py
+COPY_FILES_GPG = \
+	$(srcdir)/gpg/callbacks.py \
+	$(srcdir)/gpg/constants \
+	$(srcdir)/gpg/core.py \
+	$(srcdir)/gpg/errors.py \
+	$(srcdir)/gpg/__init__.py \
+	$(srcdir)/gpg/results.py \
+	$(srcdir)/gpg/util.py
 
 # For VPATH builds we need to copy some files because Python's
 # distutils are not VPATH-aware.
-copystamp: $(COPY_FILES) $(COPY_FILES_PYME) data.h config.h
+copystamp: $(COPY_FILES) $(COPY_FILES_GPG) data.h config.h
 	if test "$(srcdir)" != "$(builddir)" ; then \
 	  cp -R $(COPY_FILES) . ; \
-	  cp -R $(COPY_FILES_PYME) pyme ; \
+	  cp -R $(COPY_FILES_GPG) gpg ; \
 	fi
 	touch $@
 
@@ -65,22 +65,22 @@ all-local: copystamp
 	    $$PYTHON setup.py build --verbose ; \
 	done
 
-dist/pyme3-$(VERSION).tar.gz dist/pyme3-$(VERSION).tar.gz.asc: copystamp
+dist/gpg-$(VERSION).tar.gz dist/gpg-$(VERSION).tar.gz.asc: copystamp
 	CFLAGS="$(CFLAGS)" \
 	  $(PYTHON) setup.py sdist --verbose
-	gpg2 --detach-sign --armor dist/pyme3-$(VERSION).tar.gz
+	gpg2 --detach-sign --armor dist/gpg-$(VERSION).tar.gz
 
 .PHONY: prepare
 prepare: copystamp
 
 .PHONY: sdist
-sdist: dist/pyme3-$(VERSION).tar.gz dist/pyme3-$(VERSION).tar.gz.asc
+sdist: dist/gpg-$(VERSION).tar.gz dist/gpg-$(VERSION).tar.gz.asc
 
 .PHONY: upload
-upload: dist/pyme3-$(VERSION).tar.gz dist/pyme3-$(VERSION).tar.gz.asc
+upload: dist/gpg-$(VERSION).tar.gz dist/gpg-$(VERSION).tar.gz.asc
 	twine upload $^
 
-CLEANFILES = gpgme.h errors.i gpgme_wrap.c pyme/gpgme.py \
+CLEANFILES = gpgme.h errors.i gpgme_wrap.c gpg/gpgme.py \
 	  data.h config.h copystamp
 
 # Remove the rest.
@@ -92,8 +92,8 @@ clean-local:
 	if test "$(srcdir)" != "$(builddir)" ; then \
 	  find . -type d ! -perm -200 -exec chmod u+w {} ';' ; \
 	  for F in $(COPY_FILES); do rm -rf -- `basename $$F` ; done ; \
-	  for F in $(COPY_FILES_PYME); do \
-	      rm -rf -- pyme/`basename $$F` ; \
+	  for F in $(COPY_FILES_GPG); do \
+	      rm -rf -- gpg/`basename $$F` ; \
 	  done ; \
 	fi
 
@@ -107,9 +107,9 @@ install-exec-local:
 	  cat files.txt >> install_files.txt ; \
 	  rm files.txt ; \
 	done
-	$(MKDIR_P) $(DESTDIR)$(pythondir)/pyme
-	mv install_files.txt $(DESTDIR)$(pythondir)/pyme
+	$(MKDIR_P) $(DESTDIR)$(pythondir)/gpg
+	mv install_files.txt $(DESTDIR)$(pythondir)/gpg
 
 uninstall-local:
-	xargs <$(DESTDIR)$(pythondir)/pyme/install_files.txt -- rm -rf --
-	rm -rf -- $(DESTDIR)$(pythondir)/pyme
+	xargs <$(DESTDIR)$(pythondir)/gpg/install_files.txt -- rm -rf --
+	rm -rf -- $(DESTDIR)$(pythondir)/gpg

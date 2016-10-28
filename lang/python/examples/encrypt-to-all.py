@@ -26,9 +26,9 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import sys
-import pyme
+import gpg
 
-with pyme.Context(armor=True) as c:
+with gpg.Context(armor=True) as c:
     recipients = list()
     for key in c.keylist():
         valid = 0
@@ -42,7 +42,7 @@ with pyme.Context(armor=True) as c:
         try:
             ciphertext, _, _ = c.encrypt(b'This is my message.',
                                          recipients=recipients)
-        except pyme.errors.InvalidRecipients as e:
+        except gpg.errors.InvalidRecipients as e:
             print("Encryption failed for these keys:\n{0!s}".format(e))
 
             # filter out the bad keys

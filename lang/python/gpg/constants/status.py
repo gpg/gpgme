@@ -19,7 +19,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 # GPGME 1.7 replaced gpgme_op_edit with gpgme_op_interact.  We
-# implement pyme.Context.op_edit using gpgme_op_interact, so the
+# implement gpg.Context.op_edit using gpgme_op_interact, so the
 # callbacks will be called with string keywords instead of numeric
 # status messages.  Code that is using these constants will continue
 # to work.

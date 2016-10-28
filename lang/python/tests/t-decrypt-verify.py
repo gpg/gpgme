@@ -20,8 +20,8 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-import pyme
-from pyme import core, constants, errors
+import gpg
+from gpg import core, constants, errors
 import support
 
 def check_verify_result(result, summary, fpr, status):
@@ -55,7 +55,7 @@ check_verify_result(verify_result,
                     errors.NO_ERROR)
 
 # Idiomatic interface.
-with pyme.Context() as c:
+with gpg.Context() as c:
     alpha = c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False)
     bob = c.get_key("D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2", False)
     plaintext, _, verify_result = \

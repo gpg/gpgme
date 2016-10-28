@@ -20,7 +20,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-import pyme
+import gpg
 
 # This is the example from the GPGME manual.
 
@@ -31,14 +31,14 @@ Subkey-Type: RSA
 Subkey-Length: 2048
 Name-Real: Joe Tester
 Name-Comment: with stupid passphrase
-Name-Email: joe+pyme@example.org
+Name-Email: joe+gpg@example.org
 Passphrase: Crypt0R0cks
 Expire-Date: 2020-12-31
 </GnupgKeyParms>
 """
 
-with pyme.Context() as c:
-    c.set_progress_cb(pyme.callbacks.progress_stdout)
+with gpg.Context() as c:
+    c.set_progress_cb(gpg.callbacks.progress_stdout)
     c.op_genkey(parms, None, None)
     print("Generated key with fingerprint {0}.".format(
         c.op_genkey_result().fpr))

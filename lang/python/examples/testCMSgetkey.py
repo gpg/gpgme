@@ -22,12 +22,12 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import sys
-import pyme
+import gpg
 
 if len(sys.argv) != 2:
     sys.exit("fingerprint or unique key ID for gpgme_get_key()")
 
-with pyme.Context(protocol=pyme.constants.PROTOCOL_CMS) as c:
+with gpg.Context(protocol=gpg.constants.PROTOCOL_CMS) as c:
     key = c.get_key(sys.argv[1])
 
     print("got key: ", key.subkeys[0].fpr)

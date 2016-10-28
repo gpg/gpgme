@@ -20,9 +20,9 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-import pyme
+import gpg
 
-with pyme.Context(protocol=pyme.constants.PROTOCOL_ASSUAN) as c:
+with gpg.Context(protocol=gpg.constants.PROTOCOL_ASSUAN) as c:
     # Invoke the pinentry to get a confirmation.
     err = c.assuan_transact(['GET_CONFIRMATION', 'Hello there'])
     print("You chose {}.".format("cancel" if err else "ok"))

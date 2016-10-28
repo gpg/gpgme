@@ -22,7 +22,7 @@ del absolute_import, print_function, unicode_literals
 
 import sys
 import random
-from pyme import core, constants
+from gpg import core, constants
 import support
 
 if len(sys.argv) == 2:

@@ -24,13 +24,13 @@ import sys
 import io
 import os
 import tempfile
-import pyme
+import gpg
 import support
 
-support.init_gpgme(pyme.constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
 
 # Both Context and Data can be used as context manager:
-with pyme.Context() as c, pyme.Data() as d:
+with gpg.Context() as c, gpg.Data() as d:
     c.get_engine_info()
     d.write(b"Halloechen")
     leak_c = c
@@ -39,17 +39,17 @@ assert leak_c.wrapped == None
 assert leak_d.wrapped == None
 
 def sign_and_verify(source, signed, sink):
-    with pyme.Context() as c:
-        c.op_sign(source, signed, pyme.constants.SIG_MODE_NORMAL)
+    with gpg.Context() as c:
+        c.op_sign(source, signed, gpg.constants.SIG_MODE_NORMAL)
         signed.seek(0, os.SEEK_SET)
         c.op_verify(signed, None, sink)
         result = c.op_verify_result()
 
     assert len(result.signatures) == 1, "Unexpected number of signatures"
     sig = result.signatures[0]
-    assert sig.summary == (pyme.constants.SIGSUM_VALID |
-                           pyme.constants.SIGSUM_GREEN)
-    assert pyme.errors.GPGMEError(sig.status).getcode() == pyme.errors.NO_ERROR
+    assert sig.summary == (gpg.constants.SIGSUM_VALID |
+                           gpg.constants.SIGSUM_GREEN)
+    assert gpg.errors.GPGMEError(sig.status).getcode() == gpg.errors.NO_ERROR
 
     sink.seek(0, os.SEEK_SET)
     assert sink.read() == b"Hallo Leute\n"
@@ -80,5 +80,5 @@ if sys.version_info[0] == 3:
 
     # Demonstrate automatic wrapping of objects implementing the buffer
     # interface, and the use of data objects with the 'with' statement.
-    with io.BytesIO(preallocate) as signed, pyme.Data() as sink:
+    with io.BytesIO(preallocate) as signed, gpg.Data() as sink:
         sign_and_verify(b"Hallo Leute\n", signed, sink)

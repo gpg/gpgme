@@ -1,6 +1,6 @@
-=======================
-A Short History of PyME
-=======================
+==========================================
+A Short History of gpg bindings for Python
+==========================================
 
 In 2002 John Goerzen released PyME; Python bindings for the GPGME
 module which utilised the current release of Python of the time
@@ -27,6 +27,8 @@ decision to fold the Python 3 port back into the original GPGME
 release in the languages subdirectory for non-C bindings.  Ben is the
 maintainer of the Python 3 port within GPGME.
 
+In 2016 PyME was renamed to "gpg" and adopted by the upstream GnuPG
+team.
 
 ---------------------
 The Annoyances of Git

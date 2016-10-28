@@ -22,8 +22,8 @@ del absolute_import, print_function, unicode_literals
 
 import sys
 import os
-import pyme
-from pyme import core, constants, errors
+import gpg
+from gpg import core, constants, errors
 import support
 
 test_text1 = b"Just GNU it!\n"
@@ -145,7 +145,7 @@ else:
 
 
 # Idiomatic interface.
-with pyme.Context(armor=True) as c:
+with gpg.Context(armor=True) as c:
     # Checking a valid message.
     _, result = c.verify(test_text1, test_sig1)
     check_result(result, constants.SIGSUM_VALID | constants.SIGSUM_GREEN,

@@ -19,36 +19,36 @@
 
 #include <gpgme.h>
 
-#ifndef _PYME_PRIVATE_H_
-#define _PYME_PRIVATE_H_
+#ifndef _GPG_PRIVATE_H_
+#define _GPG_PRIVATE_H_
 
 /* GPGME glue.  Implemented in helpers.c.  */
 
-void _pyme_exception_init(void);
-gpgme_error_t _pyme_exception2code(void);
+void _gpg_exception_init(void);
+gpgme_error_t _gpg_exception2code(void);
 
-PyObject *_pyme_obj2gpgme_t(PyObject *input, const char *objtype, int argnum);
-PyObject *_pyme_obj2gpgme_data_t(PyObject *input, int argnum,
+PyObject *_gpg_obj2gpgme_t(PyObject *input, const char *objtype, int argnum);
+PyObject *_gpg_obj2gpgme_data_t(PyObject *input, int argnum,
 				 gpgme_data_t *wrapper,
 				 PyObject **bytesio, Py_buffer *view);
 
-PyObject *_pyme_wrap_result(PyObject *fragile, const char *classname);
+PyObject *_gpg_wrap_result(PyObject *fragile, const char *classname);
 
-gpgme_error_t _pyme_interact_cb(void *opaque, const char *keyword,
+gpgme_error_t _gpg_interact_cb(void *opaque, const char *keyword,
 				const char *args, int fd);
-gpgme_error_t _pyme_assuan_data_cb (void *hook,
+gpgme_error_t _gpg_assuan_data_cb (void *hook,
 				    const void *data, size_t datalen);
-gpgme_error_t _pyme_assuan_inquire_cb (void *hook,
+gpgme_error_t _gpg_assuan_inquire_cb (void *hook,
 				       const char *name, const char *args,
 				       gpgme_data_t *r_data);
-gpgme_error_t _pyme_assuan_status_cb (void *hook,
+gpgme_error_t _gpg_assuan_status_cb (void *hook,
 				      const char *status, const char *args);
 
 
 
 /* SWIG runtime support.  Implemented in gpgme.i.  */
 
-PyObject *_pyme_wrap_gpgme_data_t(gpgme_data_t data);
-gpgme_ctx_t _pyme_unwrap_gpgme_ctx_t(PyObject *wrapped);
+PyObject *_gpg_wrap_gpgme_data_t(gpgme_data_t data);
+gpgme_ctx_t _gpg_unwrap_gpgme_ctx_t(PyObject *wrapped);
 
-#endif /* _PYME_PRIVATE_H_ */
+#endif /* _GPG_PRIVATE_H_ */

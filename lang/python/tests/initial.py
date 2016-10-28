@@ -22,14 +22,14 @@ del absolute_import, print_function, unicode_literals
 
 import os
 import subprocess
-import pyme
+import gpg
 import support
-support.init_gpgme(pyme.constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
 
 subprocess.check_call([os.path.join(os.getenv('top_srcdir'),
                                     "tests", "start-stop-agent"), "--start"])
 
-with pyme.Context() as c:
+with gpg.Context() as c:
     alpha = c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False)
     bob = c.get_key("D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2", False)
 

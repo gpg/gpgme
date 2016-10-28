@@ -131,13 +131,13 @@ class GpgmeWrapper(object):
             def _funcwrap(slf, *args):
                 result = func(slf.wrapped, *args)
                 if slf._callback_excinfo:
-                    gpgme.pyme_raise_callback_exception(slf)
+                    gpgme.gpg_raise_callback_exception(slf)
                 return errorcheck(result, "Invocation of " + name)
         else:
             def _funcwrap(slf, *args):
                 result = func(slf.wrapped, *args)
                 if slf._callback_excinfo:
-                    gpgme.pyme_raise_callback_exception(slf)
+                    gpgme.gpg_raise_callback_exception(slf)
                 return result
 
         doc = self._munge_docstring.sub(r'\2.\1(\3', getattr(func, "__doc__"))
@@ -528,7 +528,7 @@ class Context(GpgmeWrapper):
             errptr)
 
         if self._callback_excinfo:
-            gpgme.pyme_raise_callback_exception(self)
+            gpgme.gpg_raise_callback_exception(self)
 
         errorcheck(err)
 
@@ -567,7 +567,7 @@ class Context(GpgmeWrapper):
         result = gpgme.gpgme_op_interact(self.wrapped, key, flags,
                                          opaquedata, sink)
         if self._callback_excinfo:
-            gpgme.pyme_raise_callback_exception(self)
+            gpgme.gpg_raise_callback_exception(self)
         errorcheck(result)
 
     @property
@@ -743,10 +743,10 @@ class Context(GpgmeWrapper):
                 hookdata = (weakref.ref(self), func)
             else:
                 hookdata = (weakref.ref(self), func, hook)
-        gpgme.pyme_set_passphrase_cb(self, hookdata)
+        gpgme.gpg_set_passphrase_cb(self, hookdata)
 
     def _free_passcb(self):
-        if gpgme.pyme_set_passphrase_cb:
+        if gpgme.gpg_set_passphrase_cb:
             self.set_passphrase_cb(None)
 
     def set_progress_cb(self, func, hook=None):
@@ -768,10 +768,10 @@ class Context(GpgmeWrapper):
                 hookdata = (weakref.ref(self), func)
             else:
                 hookdata = (weakref.ref(self), func, hook)
-        gpgme.pyme_set_progress_cb(self, hookdata)
+        gpgme.gpg_set_progress_cb(self, hookdata)
 
     def _free_progresscb(self):
-        if gpgme.pyme_set_progress_cb:
+        if gpgme.gpg_set_progress_cb:
             self.set_progress_cb(None)
 
     def set_status_cb(self, func, hook=None):
@@ -792,10 +792,10 @@ class Context(GpgmeWrapper):
                 hookdata = (weakref.ref(self), func)
             else:
                 hookdata = (weakref.ref(self), func, hook)
-        gpgme.pyme_set_status_cb(self, hookdata)
+        gpgme.gpg_set_status_cb(self, hookdata)
 
     def _free_statuscb(self):
-        if gpgme.pyme_set_status_cb:
+        if gpgme.gpg_set_status_cb:
             self.set_status_cb(None)
 
     @property
@@ -958,7 +958,7 @@ class Data(GpgmeWrapper):
         if self.wrapped != None and gpgme.gpgme_data_release:
             gpgme.gpgme_data_release(self.wrapped)
             if self._callback_excinfo:
-                gpgme.pyme_raise_callback_exception(self)
+                gpgme.gpg_raise_callback_exception(self)
             self.wrapped = None
         self._free_datacbs()
 
@@ -1003,7 +1003,7 @@ class Data(GpgmeWrapper):
         else:
             hookdata = (weakref.ref(self),
                         read_cb, write_cb, seek_cb, release_cb)
-        gpgme.pyme_data_new_from_cbs(self, hookdata, tmp)
+        gpgme.gpg_data_new_from_cbs(self, hookdata, tmp)
         self.wrapped = gpgme.gpgme_data_t_p_value(tmp)
         gpgme.delete_gpgme_data_t_p(tmp)
 
@@ -1057,7 +1057,7 @@ class Data(GpgmeWrapper):
         written = gpgme.gpgme_data_write(self.wrapped, buffer)
         if written < 0:
             if self._callback_excinfo:
-                gpgme.pyme_raise_callback_exception(self)
+                gpgme.gpg_raise_callback_exception(self)
             else:
                 raise GPGMEError.fromSyserror()
         return written
@@ -1078,7 +1078,7 @@ class Data(GpgmeWrapper):
                 result = gpgme.gpgme_data_read(self.wrapped, size)
             except:
                 if self._callback_excinfo:
-                    gpgme.pyme_raise_callback_exception(self)
+                    gpgme.gpg_raise_callback_exception(self)
                 else:
                     raise
             return result
@@ -1089,7 +1089,7 @@ class Data(GpgmeWrapper):
                     result = gpgme.gpgme_data_read(self.wrapped, 4096)
                 except:
                     if self._callback_excinfo:
-                        gpgme.pyme_raise_callback_exception(self)
+                        gpgme.gpg_raise_callback_exception(self)
                     else:
                         raise
                 if len(result) == 0:

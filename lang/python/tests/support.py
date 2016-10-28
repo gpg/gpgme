@@ -20,7 +20,7 @@ del absolute_import, print_function, unicode_literals
 
 import sys
 import os
-from pyme import core
+from gpg import core
 
 # known keys
 alpha = "A0FF4590BB6122EDEF6E3C542D727CC768697734"

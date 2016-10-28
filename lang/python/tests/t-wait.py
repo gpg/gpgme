@@ -21,7 +21,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import time
-from pyme import core, constants, errors
+from gpg import core, constants, errors
 import support
 
 support.init_gpgme(constants.PROTOCOL_OpenPGP)

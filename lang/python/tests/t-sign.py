@@ -21,8 +21,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import os
-import pyme
-from pyme import core, constants
+import gpg
+from gpg import core, constants
 import support
 
 def fail(msg):
@@ -90,23 +90,23 @@ check_result(result, constants.SIG_MODE_CLEAR)
 support.print_data(sink)
 
 # Idiomatic interface.
-with pyme.Context(armor=True, textmode=True) as c:
+with gpg.Context(armor=True, textmode=True) as c:
     message = "Hallo Leute\n".encode()
     signed, _ = c.sign(message)
     assert len(signed) > 0
     assert signed.find(b'BEGIN PGP MESSAGE') > 0, 'Message not found'
 
-    signed, _ = c.sign(message, mode=pyme.constants.SIG_MODE_DETACH)
+    signed, _ = c.sign(message, mode=gpg.constants.SIG_MODE_DETACH)
     assert len(signed) > 0
     assert signed.find(b'BEGIN PGP SIGNATURE') > 0, 'Signature not found'
 
-    signed, _ = c.sign(message, mode=pyme.constants.SIG_MODE_CLEAR)
+    signed, _ = c.sign(message, mode=gpg.constants.SIG_MODE_CLEAR)
     assert len(signed) > 0
     assert signed.find(b'BEGIN PGP SIGNED MESSAGE') > 0, 'Message not found'
     assert signed.find(message) > 0, 'Message content not found'
     assert signed.find(b'BEGIN PGP SIGNATURE') > 0, 'Signature not found'
 
-with pyme.Context() as c:
+with gpg.Context() as c:
     message = "Hallo Leute\n".encode()
 
     c.signers = [c.get_key(support.sign_only, True)]
@@ -115,7 +115,7 @@ with pyme.Context() as c:
     c.signers = [c.get_key(support.encrypt_only, True)]
     try:
         c.sign(message)
-    except pyme.errors.InvalidSigners as e:
+    except gpg.errors.InvalidSigners as e:
         assert len(e.signers) == 1
         assert support.encrypt_only.endswith(e.signers[0].fpr)
     else:

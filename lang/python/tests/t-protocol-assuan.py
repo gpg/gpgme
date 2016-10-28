@@ -20,17 +20,17 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-import pyme
+import gpg
 
-with pyme.Context(protocol=pyme.constants.PROTOCOL_ASSUAN) as c:
+with gpg.Context(protocol=gpg.constants.PROTOCOL_ASSUAN) as c:
     # Do nothing.
     c.assuan_transact('nop')
     c.assuan_transact('NOP')
     c.assuan_transact(['NOP'])
 
     err = c.assuan_transact('idontexist')
-    assert err.getsource() == pyme.errors.SOURCE_GPGAGENT
-    assert err.getcode() == pyme.errors.ASS_UNKNOWN_CMD
+    assert err.getsource() == gpg.errors.SOURCE_GPGAGENT
+    assert err.getcode() == gpg.errors.ASS_UNKNOWN_CMD
 
     # Invoke the pinentry to get a confirmation.
     c.assuan_transact(['GET_CONFIRMATION', 'Hello there'])

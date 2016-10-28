@@ -31,13 +31,13 @@
 #endif
 
 /* Flag specifying whether this is an in-tree build.  */
-extern int pyme_in_tree_build;
+extern int gpg_in_tree_build;
 
-PyObject *pyme_raise_callback_exception(PyObject *self);
+PyObject *gpg_raise_callback_exception(PyObject *self);
 
-PyObject *pyme_set_passphrase_cb(PyObject *self, PyObject *cb);
-PyObject *pyme_set_progress_cb(PyObject *self, PyObject *cb);
-PyObject *pyme_set_status_cb(PyObject *self, PyObject *cb);
+PyObject *gpg_set_passphrase_cb(PyObject *self, PyObject *cb);
+PyObject *gpg_set_progress_cb(PyObject *self, PyObject *cb);
+PyObject *gpg_set_status_cb(PyObject *self, PyObject *cb);
 
-PyObject *pyme_data_new_from_cbs(PyObject *self, PyObject *pycbs,
+PyObject *gpg_data_new_from_cbs(PyObject *self, PyObject *pycbs,
 				 gpgme_data_t *r_data);

@@ -1,6 +1,7 @@
 Noteworthy changes in version 1.7.2 (unreleased)
 ------------------------------------------------
 
+ * The module of the Python bindings has been renamed to 'gpg'.
 
  * Interface changes relative to the 1.7.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
