@@ -20,3 +20,4 @@ del absolute_import, print_function, unicode_literals
 
 from gpg import util
 util.process_constants('GPGME_SIGSUM_', globals())
+del util

@@ -27,6 +27,7 @@ NO_ERROR = None
 EOF = None
 
 util.process_constants('GPG_ERR_', globals())
+del util
 
 class GpgError(Exception):
     pass
