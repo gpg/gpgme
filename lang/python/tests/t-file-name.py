@@ -21,24 +21,24 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import os
-from gpg import core, constants
+import gpg
 import support
 
 testname = "abcde12345"
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
-c = core.Context()
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+c = gpg.Context()
 c.set_armor(True)
 
-source = core.Data("Hallo Leute\n")
+source = gpg.Data("Hallo Leute\n")
 source.set_file_name(testname)
-cipher = core.Data()
-plain = core.Data()
+cipher = gpg.Data()
+plain = gpg.Data()
 
 keys = []
 keys.append(c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False))
 
-c.op_encrypt(keys, constants.ENCRYPT_ALWAYS_TRUST, source, cipher)
+c.op_encrypt(keys, gpg.constants.ENCRYPT_ALWAYS_TRUST, source, cipher)
 cipher.seek(0, os.SEEK_SET)
 c.op_decrypt(cipher, plain)
 result = c.op_decrypt_result()

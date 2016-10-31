@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from gpg import core
+import gpg
 
-d0 = core.Data()
+d0 = gpg.Data()
 d0.seek # trigger on-demand-wrapping
 assert d0.seek == d0.seek, "Generated wrapper functions are not cached"
-assert hasattr(core.Data, 'seek'), "Generated wrapper functions are not shared"
+assert hasattr(gpg.Data, 'seek'), "Generated wrapper functions are not shared"

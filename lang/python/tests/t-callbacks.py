@@ -21,16 +21,16 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import os
-from gpg import core, constants
+import gpg
 import support
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
 
-c = core.Context()
-c.set_pinentry_mode(constants.PINENTRY_MODE_LOOPBACK)
+c = gpg.Context()
+c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
 
-source = core.Data("Hallo Leute\n")
-sink = core.Data()
+source = gpg.Data("Hallo Leute\n")
+sink = gpg.Data()
 
 # Valid passphrases, both as string and bytes.
 for passphrase in ('foo', b'foo'):
@@ -100,7 +100,7 @@ def progress_cb(what, typ, current, total, hook=None):
         "PROGRESS UPDATE: what = {}, type = {}, current = {}, total = {}"
         .format(what, typ, current, total))
 
-c = core.Context()
+c = gpg.Context()
 c.set_progress_cb(progress_cb, messages)
 c.op_genkey(parms, None, None)
 assert len(messages) > 0
@@ -109,7 +109,7 @@ assert len(messages) > 0
 def progress_cb(what, typ, current, total, hook=None):
     raise myException
 
-c = core.Context()
+c = gpg.Context()
 c.set_progress_cb(progress_cb, None)
 try:
     c.op_genkey(parms, None, None)
@@ -120,10 +120,10 @@ else:
 
 
 # Test the edit callback.
-c = core.Context()
-c.set_pinentry_mode(constants.PINENTRY_MODE_LOOPBACK)
+c = gpg.Context()
+c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
 c.set_passphrase_cb(lambda *args: "abc")
-sink = core.Data()
+sink = gpg.Data()
 alpha = c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False)
 
 cookie = object()
@@ -137,10 +137,10 @@ c.op_edit(alpha, edit_cb, cookie, sink)
 assert edit_cb_called
 
 # Test exceptions.
-c = core.Context()
-c.set_pinentry_mode(constants.PINENTRY_MODE_LOOPBACK)
+c = gpg.Context()
+c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
 c.set_passphrase_cb(lambda *args: "abc")
-sink = core.Data()
+sink = gpg.Data()
 
 def edit_cb(status, args):
     raise myException
@@ -154,8 +154,8 @@ else:
 
 
 # Test the status callback.
-source = core.Data("Hallo Leute\n")
-sink = core.Data()
+source = gpg.Data("Hallo Leute\n")
+sink = gpg.Data()
 
 status_cb_called = False
 def status_cb(keyword, args, hook=None):
@@ -163,24 +163,24 @@ def status_cb(keyword, args, hook=None):
     status_cb_called = True
     assert hook == cookie
 
-c = core.Context()
+c = gpg.Context()
 c.set_status_cb(status_cb, cookie)
 c.set_ctx_flag("full-status", "1")
-c.op_encrypt([alpha], constants.ENCRYPT_ALWAYS_TRUST, source, sink)
+c.op_encrypt([alpha], gpg.constants.ENCRYPT_ALWAYS_TRUST, source, sink)
 assert status_cb_called
 
 # Test exceptions.
-source = core.Data("Hallo Leute\n")
-sink = core.Data()
+source = gpg.Data("Hallo Leute\n")
+sink = gpg.Data()
 
 def status_cb(keyword, args):
     raise myException
 
-c = core.Context()
+c = gpg.Context()
 c.set_status_cb(status_cb, None)
 c.set_ctx_flag("full-status", "1")
 try:
-    c.op_encrypt([alpha], constants.ENCRYPT_ALWAYS_TRUST, source, sink)
+    c.op_encrypt([alpha], gpg.constants.ENCRYPT_ALWAYS_TRUST, source, sink)
 except Exception as e:
     assert e == myException
 else:
@@ -194,7 +194,7 @@ def read_cb(amount, hook=None):
     return 0
 def release_cb(hook=None):
     assert hook == cookie
-data = core.Data(cbs=(read_cb, None, None, release_cb, cookie))
+data = gpg.Data(cbs=(read_cb, None, None, release_cb, cookie))
 try:
     data.read()
 except Exception as e:
@@ -204,7 +204,7 @@ else:
 
 def read_cb(amount):
     raise myException
-data = core.Data(cbs=(read_cb, None, None, lambda: None))
+data = gpg.Data(cbs=(read_cb, None, None, lambda: None))
 try:
     data.read()
 except Exception as e:
@@ -216,7 +216,7 @@ else:
 def write_cb(what, hook=None):
     assert hook == cookie
     return "wrong type"
-data = core.Data(cbs=(None, write_cb, None, release_cb, cookie))
+data = gpg.Data(cbs=(None, write_cb, None, release_cb, cookie))
 try:
     data.write(b'stuff')
 except Exception as e:
@@ -226,7 +226,7 @@ else:
 
 def write_cb(what):
     raise myException
-data = core.Data(cbs=(None, write_cb, None, lambda: None))
+data = gpg.Data(cbs=(None, write_cb, None, lambda: None))
 try:
     data.write(b'stuff')
 except Exception as e:
@@ -238,7 +238,7 @@ else:
 def seek_cb(offset, whence, hook=None):
     assert hook == cookie
     return "wrong type"
-data = core.Data(cbs=(None, None, seek_cb, release_cb, cookie))
+data = gpg.Data(cbs=(None, None, seek_cb, release_cb, cookie))
 try:
     data.seek(0, os.SEEK_SET)
 except Exception as e:
@@ -248,7 +248,7 @@ else:
 
 def seek_cb(offset, whence):
     raise myException
-data = core.Data(cbs=(None, None, seek_cb, lambda: None))
+data = gpg.Data(cbs=(None, None, seek_cb, lambda: None))
 try:
     data.seek(0, os.SEEK_SET)
 except Exception as e:

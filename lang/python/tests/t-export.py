@@ -20,14 +20,14 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-from gpg import core, constants
+import gpg
 import support
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
-c = core.Context()
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+c = gpg.Context()
 c.set_armor(True)
 
-sink = core.Data()
+sink = gpg.Data()
 c.op_export_ext(['Alpha', 'Bob'], 0, sink)
 support.print_data(sink)
 
@@ -35,6 +35,6 @@ support.print_data(sink)
 keys = []
 keys.append(c.get_key("0x68697734", False)) # Alpha
 keys.append(c.get_key("0xA9E3B0B2", False)) # Bob
-sink = core.Data()
+sink = gpg.Data()
 c.op_export_keys(keys, 0, sink)
 support.print_data(sink)

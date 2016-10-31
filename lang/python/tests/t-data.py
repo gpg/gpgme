@@ -23,9 +23,9 @@ del absolute_import, print_function, unicode_literals
 import io
 import os
 import tempfile
-from gpg import core
+import gpg
 
-data = core.Data('Hello world!')
+data = gpg.Data('Hello world!')
 assert data.read() == b'Hello world!'
 assert data.read() == b''
 
@@ -33,29 +33,29 @@ data.seek(0, os.SEEK_SET)
 assert data.read() == b'Hello world!'
 assert data.read() == b''
 
-data = core.Data(b'Hello world!')
+data = gpg.Data(b'Hello world!')
 assert data.read() == b'Hello world!'
 
-data = core.Data(b'Hello world!', copy=False)
+data = gpg.Data(b'Hello world!', copy=False)
 assert data.read() == b'Hello world!'
 
-data = core.Data()
+data = gpg.Data()
 data.write('Hello world!')
 data.seek(0, os.SEEK_SET)
 assert data.read() == b'Hello world!'
 
-data = core.Data()
+data = gpg.Data()
 data.write(b'Hello world!')
 data.seek(0, os.SEEK_SET)
 assert data.read() == b'Hello world!'
 
 binjunk = bytes(range(256))
-data = core.Data()
+data = gpg.Data()
 data.write(binjunk)
 data.seek(0, os.SEEK_SET)
 assert data.read() == binjunk
 
-data = core.Data()
+data = gpg.Data()
 data.set_file_name("foobar")
 assert data.get_file_name() == "foobar"
 
@@ -66,26 +66,26 @@ with tempfile.NamedTemporaryFile() as tmp:
     tmp.seek(0)
 
     # Open using name.
-    data = core.Data(file=tmp.name)
+    data = gpg.Data(file=tmp.name)
     assert data.read() == binjunk
 
     # Open using name, without copying.
     if False:
         # delayed reads are not yet supported
-        data = core.Data(file=tmp.name, copy=False)
+        data = gpg.Data(file=tmp.name, copy=False)
         assert data.read() == binjunk
 
     # Open using stream.
     tmp.seek(0)
-    data = core.Data(file=tmp)
+    data = gpg.Data(file=tmp)
     assert data.read() == binjunk
 
     # Open using stream, offset, and length.
-    data = core.Data(file=tmp, offset=0, length=42)
+    data = gpg.Data(file=tmp, offset=0, length=42)
     assert data.read() == binjunk[:42]
 
     # Open using name, offset, and length.
-    data = core.Data(file=tmp.name, offset=23, length=42)
+    data = gpg.Data(file=tmp.name, offset=23, length=42)
     assert data.read() == binjunk[23:23+42]
 
 # Test callbacks.
@@ -112,7 +112,7 @@ class DataObject(object):
 
 do = DataObject()
 cookie = object()
-data = core.Data(cbs=(do.read, do.write, do.seek, do.release, cookie))
+data = gpg.Data(cbs=(do.read, do.write, do.seek, do.release, cookie))
 data.write('Hello world!')
 data.seek(0, os.SEEK_SET)
 assert data.read() == b'Hello world!'
@@ -121,7 +121,7 @@ assert do.released
 
 # Again, without the cookie.
 do = DataObject()
-data = core.Data(cbs=(do.read, do.write, do.seek, do.release))
+data = gpg.Data(cbs=(do.read, do.write, do.seek, do.release))
 data.write('Hello world!')
 data.seek(0, os.SEEK_SET)
 assert data.read() == b'Hello world!'

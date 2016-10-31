@@ -20,7 +20,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-from gpg import core, constants
+import gpg
 import support
 
 def check_result(result, fpr, secret):
@@ -67,13 +67,13 @@ def check_result(result, fpr, secret):
     assert len(result.imports) == 1 or fpr == result.imports[1].fpr
     assert result.imports[0].result == 0
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
-c = core.Context()
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+c = gpg.Context()
 
-c.op_import(core.Data(file=support.make_filename("pubkey-1.asc")))
+c.op_import(gpg.Data(file=support.make_filename("pubkey-1.asc")))
 result = c.op_import_result()
 check_result(result, "ADAB7FCC1F4DE2616ECFA402AF82244F9CD9FD55", False)
 
-c.op_import(core.Data(file=support.make_filename("seckey-1.asc")))
+c.op_import(gpg.Data(file=support.make_filename("seckey-1.asc")))
 result = c.op_import_result()
 check_result(result, "ADAB7FCC1F4DE2616ECFA402AF82244F9CD9FD55", True)

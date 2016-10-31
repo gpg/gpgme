@@ -21,16 +21,16 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import time
-from gpg import core, constants, errors
+import gpg
 import support
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
-c = core.Context()
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+c = gpg.Context()
 c.set_armor(True)
 
 # Checking a message without a signature.
-sig = core.Data("foo\n")
-text = core.Data()
+sig = gpg.Data("foo\n")
+text = gpg.Data()
 c.op_verify_start(sig, None, text)
 
 try:
@@ -40,6 +40,6 @@ try:
             break
         time.sleep(0.1)
 except Exception as e:
-    assert e.getcode() == errors.NO_DATA
+    assert e.getcode() == gpg.errors.NO_DATA
 else:
     assert False, "Expected an error, got none"

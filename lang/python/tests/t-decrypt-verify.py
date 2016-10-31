@@ -21,7 +21,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import gpg
-from gpg import core, constants, errors
 import support
 
 def check_verify_result(result, summary, fpr, status):
@@ -29,17 +28,17 @@ def check_verify_result(result, summary, fpr, status):
     sig = result.signatures[0]
     assert sig.summary == summary, "Unexpected signature summary"
     assert sig.fpr == fpr
-    assert errors.GPGMEError(sig.status).getcode() == status
+    assert gpg.errors.GPGMEError(sig.status).getcode() == status
     assert len(sig.notations) == 0
     assert not sig.wrong_key_usage
-    assert sig.validity == constants.VALIDITY_FULL
-    assert errors.GPGMEError(sig.validity_reason).getcode() == errors.NO_ERROR
+    assert sig.validity == gpg.constants.VALIDITY_FULL
+    assert gpg.errors.GPGMEError(sig.validity_reason).getcode() == gpg.errors.NO_ERROR
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
-c = core.Context()
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+c = gpg.Context()
 
-source = core.Data(file=support.make_filename("cipher-2.asc"))
-sink = core.Data()
+source = gpg.Data(file=support.make_filename("cipher-2.asc"))
+sink = gpg.Data()
 
 c.op_decrypt_verify(source, sink)
 result = c.op_decrypt_result()
@@ -50,9 +49,9 @@ support.print_data(sink)
 
 verify_result = c.op_verify_result()
 check_verify_result(verify_result,
-                    constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
+                    gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
                     "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-                    errors.NO_ERROR)
+                    gpg.errors.NO_ERROR)
 
 # Idiomatic interface.
 with gpg.Context() as c:
@@ -63,14 +62,14 @@ with gpg.Context() as c:
     assert plaintext.find(b'Wenn Sie dies lesen k') >= 0, \
         'Plaintext not found'
     check_verify_result(verify_result,
-                        constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
+                        gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
                         "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-                        errors.NO_ERROR)
+                        gpg.errors.NO_ERROR)
 
     try:
         c.decrypt(open(support.make_filename("cipher-2.asc")),
                   verify=[alpha, bob])
-    except errors.MissingSignatures as e:
+    except gpg.errors.MissingSignatures as e:
         assert len(e.missing) == 1
         assert e.missing[0] == bob
     else:

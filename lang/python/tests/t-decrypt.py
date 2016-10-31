@@ -21,14 +21,13 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import gpg
-from gpg import core, constants
 import support
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
-c = core.Context()
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+c = gpg.Context()
 
-source = core.Data(file=support.make_filename("cipher-1.asc"))
-sink = core.Data()
+source = gpg.Data(file=support.make_filename("cipher-1.asc"))
+sink = gpg.Data()
 
 c.op_decrypt(source, sink)
 result = c.op_decrypt_result()

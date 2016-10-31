@@ -23,7 +23,7 @@ del absolute_import, print_function, unicode_literals
 
 import sys
 import os
-from gpg import core, constants
+import gpg
 import support
 
 class KeyEditor(object):
@@ -51,10 +51,10 @@ class KeyEditor(object):
 
         return result
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
 
-c = core.Context()
-c.set_pinentry_mode(constants.PINENTRY_MODE_LOOPBACK)
+c = gpg.Context()
+c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
 c.set_passphrase_cb(lambda *args: "abc")
 c.set_armor(True)
 
@@ -65,7 +65,7 @@ c.interact(c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False),
 assert editor.done
 
 # The deprecated interface.
-sink = core.Data()
+sink = gpg.Data()
 editor = KeyEditor()
 c.op_edit(c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False),
           editor.edit_fnc, sink, sink)

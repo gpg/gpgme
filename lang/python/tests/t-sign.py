@@ -22,7 +22,6 @@ del absolute_import, print_function, unicode_literals
 
 import os
 import gpg
-from gpg import core, constants
 import support
 
 def fail(msg):
@@ -39,11 +38,11 @@ def check_result(r, typ):
     if signature.type != typ:
         fail("Wrong type of signature created")
 
-    if signature.pubkey_algo != constants.PK_DSA:
+    if signature.pubkey_algo != gpg.constants.PK_DSA:
         fail("Wrong pubkey algorithm reported: {}".format(
             signature.pubkey_algo))
 
-    if signature.hash_algo != constants.MD_SHA1:
+    if signature.hash_algo != gpg.constants.MD_SHA1:
         fail("Wrong hash algorithm reported: {}".format(
             signature.hash_algo))
 
@@ -55,38 +54,38 @@ def check_result(r, typ):
         fail("Wrong fingerprint reported: {}".format(signature.fpr))
 
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
-c = core.Context()
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+c = gpg.Context()
 c.set_textmode(True)
 c.set_armor(True)
 
-source = core.Data("Hallo Leute\n")
-sink = core.Data()
+source = gpg.Data("Hallo Leute\n")
+sink = gpg.Data()
 
-c.op_sign(source, sink, constants.SIG_MODE_NORMAL)
+c.op_sign(source, sink, gpg.constants.SIG_MODE_NORMAL)
 
 result = c.op_sign_result()
-check_result(result, constants.SIG_MODE_NORMAL)
+check_result(result, gpg.constants.SIG_MODE_NORMAL)
 support.print_data(sink)
 
 # Now a detached signature.
 source.seek(0, os.SEEK_SET)
-sink = core.Data()
+sink = gpg.Data()
 
-c.op_sign(source, sink, constants.SIG_MODE_DETACH)
+c.op_sign(source, sink, gpg.constants.SIG_MODE_DETACH)
 
 result = c.op_sign_result()
-check_result(result, constants.SIG_MODE_DETACH)
+check_result(result, gpg.constants.SIG_MODE_DETACH)
 support.print_data(sink)
 
 # And finally a cleartext signature.  */
 source.seek(0, os.SEEK_SET)
-sink = core.Data()
+sink = gpg.Data()
 
-c.op_sign(source, sink, constants.SIG_MODE_CLEAR)
+c.op_sign(source, sink, gpg.constants.SIG_MODE_CLEAR)
 
 result = c.op_sign_result()
-check_result(result, constants.SIG_MODE_CLEAR)
+check_result(result, gpg.constants.SIG_MODE_CLEAR)
 support.print_data(sink)
 
 # Idiomatic interface.

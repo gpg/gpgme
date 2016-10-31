@@ -20,11 +20,11 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
-from gpg import core, constants
+import gpg
 import support
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
-c = core.Context()
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+c = gpg.Context()
 
 def dump_item(item):
     print("l={} k={} t={} o={} v={} u={}".format(

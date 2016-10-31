@@ -21,19 +21,19 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import os
-from gpg import core, constants
+import gpg
 import support
 
 expected_notations = {
-    "laughing@me": ("Just Squeeze Me", constants.SIG_NOTATION_HUMAN_READABLE),
+    "laughing@me": ("Just Squeeze Me", gpg.constants.SIG_NOTATION_HUMAN_READABLE),
     "preferred-email-encoding@pgp.com": ("pgpmime",
-                                         constants.SIG_NOTATION_HUMAN_READABLE
-                                         | constants.SIG_NOTATION_CRITICAL),
+                                         gpg.constants.SIG_NOTATION_HUMAN_READABLE
+                                         | gpg.constants.SIG_NOTATION_CRITICAL),
     None: ("http://www.gnu.org/policy/", 0),
 }
 
 # GnuPG prior to 2.1.13 did not report the critical flag correctly.
-with core.Context() as c:
+with gpg.Context() as c:
     version = c.engine_info.version
     have_correct_sig_data = not (version.startswith("1.")
                                  or version.startswith("2.0.")
@@ -55,26 +55,26 @@ def check_result(result):
         assert r.value == value, \
             "Expected {!r}, got {!r}".format(value, r.value)
         assert r.human_readable \
-            == bool(flags&constants.SIG_NOTATION_HUMAN_READABLE)
+            == bool(flags & gpg.constants.SIG_NOTATION_HUMAN_READABLE)
         assert r.critical \
-            == (bool(flags&constants.SIG_NOTATION_CRITICAL)
+            == (bool(flags & gpg.constants.SIG_NOTATION_CRITICAL)
                 if have_correct_sig_data else False)
 
     assert len(expected_notations) == 0
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
 
-source = core.Data("Hallo Leute\n")
-signed = core.Data()
+source = gpg.Data("Hallo Leute\n")
+signed = gpg.Data()
 
-c = core.Context()
+c = gpg.Context()
 for name, (value, flags) in expected_notations.items():
     c.sig_notation_add(name, value, flags)
 
-c.op_sign(source, signed, constants.SIG_MODE_NORMAL)
+c.op_sign(source, signed, gpg.constants.SIG_MODE_NORMAL)
 
 signed.seek(0, os.SEEK_SET)
-sink = core.Data()
+sink = gpg.Data()
 c.op_verify(signed, None, sink)
 result = c.op_verify_result()
 check_result(result)

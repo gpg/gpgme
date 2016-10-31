@@ -23,7 +23,6 @@ del absolute_import, print_function, unicode_literals
 import sys
 import os
 import gpg
-from gpg import core, constants, errors
 import support
 
 test_text1 = b"Just GNU it!\n"
@@ -67,7 +66,7 @@ def check_result(result, summary, validity, fpr, status, notation):
         "Unexpected signature summary: {}, want: {}".format(sig.summary,
                                                             summary)
     assert sig.fpr == fpr
-    assert errors.GPGMEError(sig.status).getcode() == status
+    assert gpg.errors.GPGMEError(sig.status).getcode() == status
 
     if notation:
         expected_notations = {
@@ -96,50 +95,50 @@ def check_result(result, summary, validity, fpr, status, notation):
     assert sig.validity == validity, \
         "Unexpected signature validity: {}, want: {}".format(
             sig.validity, validity)
-    assert errors.GPGMEError(sig.validity_reason).getcode() == errors.NO_ERROR
+    assert gpg.errors.GPGMEError(sig.validity_reason).getcode() == gpg.errors.NO_ERROR
 
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
-c = core.Context()
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+c = gpg.Context()
 c.set_armor(True)
 
 # Checking a valid message.
-text = core.Data(test_text1)
-sig = core.Data(test_sig1)
+text = gpg.Data(test_text1)
+sig = gpg.Data(test_sig1)
 c.op_verify(sig, text, None)
 result = c.op_verify_result()
-check_result(result, constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
-             constants.VALIDITY_FULL,
+check_result(result, gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
+             gpg.constants.VALIDITY_FULL,
              "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-             errors.NO_ERROR, True)
+             gpg.errors.NO_ERROR, True)
 
 
 # Checking a manipulated message.
-text = core.Data(test_text1f)
+text = gpg.Data(test_text1f)
 sig.seek(0, os.SEEK_SET)
 c.op_verify(sig, text, None)
 result = c.op_verify_result()
-check_result(result, constants.SIGSUM_RED, constants.VALIDITY_UNKNOWN,
-             "2D727CC768697734", errors.BAD_SIGNATURE, False)
+check_result(result, gpg.constants.SIGSUM_RED, gpg.constants.VALIDITY_UNKNOWN,
+             "2D727CC768697734", gpg.errors.BAD_SIGNATURE, False)
 
 # Checking a normal signature.
-text = core.Data()
-sig = core.Data(test_sig2)
+text = gpg.Data()
+sig = gpg.Data(test_sig2)
 c.op_verify(sig, None, text)
 result = c.op_verify_result()
-check_result(result, constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
-             constants.VALIDITY_FULL,
+check_result(result, gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
+             gpg.constants.VALIDITY_FULL,
              "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-             errors.NO_ERROR, False)
+             gpg.errors.NO_ERROR, False)
 
 # Checking an invalid message.
-text = core.Data()
-sig = core.Data(double_plaintext_sig)
+text = gpg.Data()
+sig = gpg.Data(double_plaintext_sig)
 try:
     c.op_verify(sig, None, text)
 except Exception as e:
-    assert type(e) == errors.GPGMEError
-    assert e.getcode() == errors.BAD_DATA
+    assert type(e) == gpg.errors.GPGMEError
+    assert e.getcode() == gpg.errors.BAD_DATA
 else:
     assert False, "Expected an error but got none."
 
@@ -148,35 +147,35 @@ else:
 with gpg.Context(armor=True) as c:
     # Checking a valid message.
     _, result = c.verify(test_text1, test_sig1)
-    check_result(result, constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
-                 constants.VALIDITY_FULL,
+    check_result(result, gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
+                 gpg.constants.VALIDITY_FULL,
                  "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-                 errors.NO_ERROR, True)
+                 gpg.errors.NO_ERROR, True)
 
     # Checking a manipulated message.
     try:
         c.verify(test_text1f, test_sig1)
-    except errors.BadSignatures as e:
-        check_result(e.result, constants.SIGSUM_RED,
-                     constants.VALIDITY_UNKNOWN,
-                     "2D727CC768697734", errors.BAD_SIGNATURE, False)
+    except gpg.errors.BadSignatures as e:
+        check_result(e.result, gpg.constants.SIGSUM_RED,
+                     gpg.constants.VALIDITY_UNKNOWN,
+                     "2D727CC768697734", gpg.errors.BAD_SIGNATURE, False)
     else:
         assert False, "Expected an error but got none."
 
     # Checking a normal signature.
-    sig = core.Data(test_sig2)
+    sig = gpg.Data(test_sig2)
     data, result = c.verify(test_sig2)
-    check_result(result, constants.SIGSUM_VALID | constants.SIGSUM_GREEN,
-                 constants.VALIDITY_FULL,
+    check_result(result, gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
+                 gpg.constants.VALIDITY_FULL,
                  "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-                 errors.NO_ERROR, False)
+                 gpg.errors.NO_ERROR, False)
     assert data == test_text1
 
     # Checking an invalid message.
     try:
         c.verify(double_plaintext_sig)
-    except errors.GPGMEError as e:
-        assert e.getcode() == errors.BAD_DATA
+    except gpg.errors.GPGMEError as e:
+        assert e.getcode() == gpg.errors.BAD_DATA
     else:
         assert False, "Expected an error but got none."
 
@@ -188,7 +187,7 @@ with gpg.Context(armor=True) as c:
 
     try:
         c.verify(test_text1, test_sig1, verify=[alpha, bob])
-    except errors.MissingSignatures as e:
+    except gpg.errors.MissingSignatures as e:
         assert len(e.missing) == 1
         assert e.missing[0] == bob
     else:

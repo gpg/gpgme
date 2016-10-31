@@ -22,7 +22,7 @@ del absolute_import, print_function, unicode_literals
 
 import sys
 import random
-from gpg import core, constants
+import gpg
 import support
 
 if len(sys.argv) == 2:
@@ -30,8 +30,8 @@ if len(sys.argv) == 2:
 else:
     nbytes = 100000
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
-c = core.Context()
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+c = gpg.Context()
 
 ntoread = nbytes
 def read_cb(amount):
@@ -48,14 +48,14 @@ def write_cb(data):
     nwritten += len(data)
     return len(data)
 
-source = core.Data(cbs=(read_cb, None, None, lambda: None))
-sink = core.Data(cbs=(None, write_cb, None, lambda: None))
+source = gpg.Data(cbs=(read_cb, None, None, lambda: None))
+sink = gpg.Data(cbs=(None, write_cb, None, lambda: None))
 
 keys = []
 keys.append(c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False))
 keys.append(c.get_key("D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2", False))
 
-c.op_encrypt(keys, constants.ENCRYPT_ALWAYS_TRUST, source, sink)
+c.op_encrypt(keys, gpg.constants.ENCRYPT_ALWAYS_TRUST, source, sink)
 result = c.op_encrypt_result()
 assert not result.invalid_recipients, \
     "Invalid recipient encountered: {}".format(result.invalid_recipients.fpr)

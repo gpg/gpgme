@@ -21,24 +21,23 @@ from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
 import sys
-from gpg import core
-from gpg.constants import protocol
+import gpg
 
 def print_engine_infos():
-    print("gpgme version:", core.check_version(None))
+    print("gpgme version:", gpg.core.check_version(None))
     print("engines:")
 
-    for engine in core.get_engine_info():
+    for engine in gpg.core.get_engine_info():
         print(engine.file_name, engine.version)
 
-    for proto in [protocol.OpenPGP, protocol.CMS]:
-        print("Have {}? {}".format(core.get_protocol_name(proto),
-                                   core.engine_check_version(proto)))
+    for proto in [gpg.constants.protocol.OpenPGP, gpg.constants.protocol.CMS]:
+        print("Have {}? {}".format(gpg.core.get_protocol_name(proto),
+                                   gpg.core.engine_check_version(proto)))
 
 
 def verifyprintdetails(filename, detached_sig_filename=None):
     """Verify a signature, print a lot of details."""
-    with core.Context() as c:
+    with gpg.Context() as c:
 
         # Verify.
         data, result = c.verify(open(filename),

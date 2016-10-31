@@ -20,7 +20,7 @@ del absolute_import, print_function, unicode_literals
 
 import sys
 import os
-from gpg import core
+import gpg
 
 # known keys
 alpha = "A0FF4590BB6122EDEF6E3C542D727CC768697734"
@@ -36,7 +36,7 @@ def in_srcdir(name):
     return os.path.join(os.environ['srcdir'], name)
 
 def init_gpgme(proto):
-    core.engine_check_version(proto)
+    gpg.core.engine_check_version(proto)
 
 verbose = int(os.environ.get('verbose', 0)) > 1
 def print_data(data):
@@ -66,5 +66,5 @@ def mark_key_trusted(ctx, key):
             else:
                 result = None
             return result
-    with core.Data() as sink:
+    with gpg.Data() as sink:
         ctx.op_edit(key, Editor().edit, sink, sink)

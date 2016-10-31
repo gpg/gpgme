@@ -22,18 +22,17 @@ del absolute_import, print_function, unicode_literals
 
 import os
 import gpg
-from gpg import core, constants
 import support
 
-support.init_gpgme(constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
 
 for passphrase in ("abc", b"abc"):
-    c = core.Context()
+    c = gpg.Context()
     c.set_armor(True)
-    c.set_pinentry_mode(constants.PINENTRY_MODE_LOOPBACK)
+    c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
 
-    source = core.Data("Hallo Leute\n")
-    cipher = core.Data()
+    source = gpg.Data("Hallo Leute\n")
+    cipher = gpg.Data()
 
     passphrase_cb_called = 0
     def passphrase_cb(hint, desc, prev_bad, hook=None):
@@ -48,11 +47,11 @@ for passphrase in ("abc", b"abc"):
         "Callback called {} times".format(passphrase_cb_called)
     support.print_data(cipher)
 
-    c = core.Context()
+    c = gpg.Context()
     c.set_armor(True)
-    c.set_pinentry_mode(constants.PINENTRY_MODE_LOOPBACK)
+    c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
     c.set_passphrase_cb(passphrase_cb, None)
-    plain = core.Data()
+    plain = gpg.Data()
     cipher.seek(0, os.SEEK_SET)
 
     c.op_decrypt(cipher, plain)
