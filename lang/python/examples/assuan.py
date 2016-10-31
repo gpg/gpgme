@@ -22,7 +22,7 @@ del absolute_import, print_function, unicode_literals
 
 import gpg
 
-with gpg.Context(protocol=gpg.constants.PROTOCOL_ASSUAN) as c:
+with gpg.Context(protocol=gpg.constants.protocol.ASSUAN) as c:
     # Invoke the pinentry to get a confirmation.
     err = c.assuan_transact(['GET_CONFIRMATION', 'Hello there'])
     print("You chose {}.".format("cancel" if err else "ok"))

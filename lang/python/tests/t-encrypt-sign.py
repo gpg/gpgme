@@ -24,7 +24,7 @@ import sys
 import gpg
 import support
 
-support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 c.set_armor(True)
 
@@ -39,11 +39,11 @@ def check_result(r, typ):
     if signature.type != typ:
         sys.exit("Wrong type of signature created")
 
-    if signature.pubkey_algo != gpg.constants.PK_DSA:
+    if signature.pubkey_algo != gpg.constants.pk.DSA:
         sys.exit("Wrong pubkey algorithm reported: {}".format(
             signature.pubkey_algo))
 
-    if signature.hash_algo not in (gpg.constants.MD_SHA1, gpg.constants.MD_RMD160):
+    if signature.hash_algo not in (gpg.constants.md.SHA1, gpg.constants.md.RMD160):
         sys.exit("Wrong hash algorithm reported: {}".format(
             signature.hash_algo))
 
@@ -69,7 +69,7 @@ for recipients in (keys, []):
             result.invalid_recipients.fpr)
 
     result = c.op_sign_result()
-    check_result(result, gpg.constants.SIG_MODE_NORMAL)
+    check_result(result, gpg.constants.sig.mode.NORMAL)
 
     support.print_data(sink)
 
@@ -82,7 +82,7 @@ with gpg.Context(armor=True) as c:
                                           always_trust=True)
     assert len(ciphertext) > 0
     assert ciphertext.find(b'BEGIN PGP MESSAGE') > 0, 'Marker not found'
-    check_result(sig_result, gpg.constants.SIG_MODE_NORMAL)
+    check_result(sig_result, gpg.constants.sig.mode.NORMAL)
 
     c.signers = [c.get_key(support.sign_only, True)]
     c.encrypt(message, recipients=keys, always_trust=True)

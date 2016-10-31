@@ -27,7 +27,7 @@ import gpg
 if len(sys.argv) != 2:
     sys.exit("fingerprint or unique key ID for gpgme_get_key()")
 
-with gpg.Context(protocol=gpg.constants.PROTOCOL_CMS) as c:
+with gpg.Context(protocol=gpg.constants.protocol.CMS) as c:
     key = c.get_key(sys.argv[1])
 
     print("got key: ", key.subkeys[0].fpr)

@@ -27,7 +27,7 @@ import tempfile
 import gpg
 import support
 
-support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.protocol.OpenPGP)
 
 # Both Context and Data can be used as context manager:
 with gpg.Context() as c, gpg.Data() as d:
@@ -40,15 +40,15 @@ assert leak_d.wrapped == None
 
 def sign_and_verify(source, signed, sink):
     with gpg.Context() as c:
-        c.op_sign(source, signed, gpg.constants.SIG_MODE_NORMAL)
+        c.op_sign(source, signed, gpg.constants.sig.mode.NORMAL)
         signed.seek(0, os.SEEK_SET)
         c.op_verify(signed, None, sink)
         result = c.op_verify_result()
 
     assert len(result.signatures) == 1, "Unexpected number of signatures"
     sig = result.signatures[0]
-    assert sig.summary == (gpg.constants.SIGSUM_VALID |
-                           gpg.constants.SIGSUM_GREEN)
+    assert sig.summary == (gpg.constants.sigsum.VALID |
+                           gpg.constants.sigsum.GREEN)
     assert gpg.errors.GPGMEError(sig.status).getcode() == gpg.errors.NO_ERROR
 
     sink.seek(0, os.SEEK_SET)

@@ -23,7 +23,7 @@ del absolute_import, print_function, unicode_literals
 import gpg
 import support
 
-support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 
 # Check expration of keys.  This test assumes three subkeys of which
@@ -108,7 +108,7 @@ def check_global(key, uids, n_subkeys):
     assert key.can_sign, "Key unexpectedly unusable for signing"
     assert key.can_certify, "Key unexpectedly unusable for certifications"
     assert not key.secret, "Key unexpectedly secret"
-    assert not key.protocol != gpg.constants.PROTOCOL_OpenPGP, \
+    assert not key.protocol != gpg.constants.protocol.OpenPGP, \
         "Key has unexpected protocol: {}".format(key.protocol)
     assert not key.issuer_serial, \
         "Key unexpectedly carries issuer serial: {}".format(key.issuer_serial)
@@ -119,10 +119,10 @@ def check_global(key, uids, n_subkeys):
 
     # Only key Alfa is trusted
     assert key.uids[0].name == 'Alfa Test' \
-      or key.owner_trust == gpg.constants.VALIDITY_UNKNOWN, \
+      or key.owner_trust == gpg.constants.validity.UNKNOWN, \
         "Key has unexpected owner trust: {}".format(key.owner_trust)
     assert key.uids[0].name != 'Alfa Test' \
-      or key.owner_trust == gpg.constants.VALIDITY_ULTIMATE, \
+      or key.owner_trust == gpg.constants.validity.ULTIMATE, \
         "Key has unexpected owner trust: {}".format(key.owner_trust)
 
     assert len(key.subkeys) - 1 == n_subkeys, \
@@ -153,8 +153,8 @@ def check_subkey(fpr, which, subkey):
     assert not subkey.secret, which + " key unexpectedly secret"
     assert not subkey.is_cardkey, "Public key marked as card key"
     assert not subkey.card_number, "Public key with card number set"
-    assert not subkey.pubkey_algo != (gpg.constants.PK_DSA if which == "Primary"
-                                      else gpg.constants.PK_ELG_E), \
+    assert not subkey.pubkey_algo != (gpg.constants.pk.DSA if which == "Primary"
+                                      else gpg.constants.pk.ELG_E), \
         which + " key has unexpected public key algo: {}".\
             format(subkey.pubkey_algo)
     assert subkey.length == 1024, \
@@ -169,10 +169,10 @@ def check_subkey(fpr, which, subkey):
 def check_uid(which, ref, uid):
     assert not uid.revoked, which + " user ID unexpectedly revoked"
     assert not uid.invalid, which + " user ID unexpectedly invalid"
-    assert uid.validity == (gpg.constants.VALIDITY_UNKNOWN
+    assert uid.validity == (gpg.constants.validity.UNKNOWN
                             if uid.name.split()[0]
                             not in {'Alfa', 'Alpha', 'Alice'} else
-                            gpg.constants.VALIDITY_ULTIMATE), \
+                            gpg.constants.validity.ULTIMATE), \
       which + " user ID has unexpectedly validity: {}".format(uid.validity)
     assert not uid.signatures, which + " user ID unexpectedly signed"
     assert uid.name == ref[0], \

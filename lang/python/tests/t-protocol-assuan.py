@@ -22,7 +22,7 @@ del absolute_import, print_function, unicode_literals
 
 import gpg
 
-with gpg.Context(protocol=gpg.constants.PROTOCOL_ASSUAN) as c:
+with gpg.Context(protocol=gpg.constants.protocol.ASSUAN) as c:
     # Do nothing.
     c.assuan_transact('nop')
     c.assuan_transact('NOP')

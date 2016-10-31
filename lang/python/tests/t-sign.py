@@ -38,11 +38,11 @@ def check_result(r, typ):
     if signature.type != typ:
         fail("Wrong type of signature created")
 
-    if signature.pubkey_algo != gpg.constants.PK_DSA:
+    if signature.pubkey_algo != gpg.constants.pk.DSA:
         fail("Wrong pubkey algorithm reported: {}".format(
             signature.pubkey_algo))
 
-    if signature.hash_algo != gpg.constants.MD_SHA1:
+    if signature.hash_algo != gpg.constants.md.SHA1:
         fail("Wrong hash algorithm reported: {}".format(
             signature.hash_algo))
 
@@ -54,7 +54,7 @@ def check_result(r, typ):
         fail("Wrong fingerprint reported: {}".format(signature.fpr))
 
 
-support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 c.set_textmode(True)
 c.set_armor(True)
@@ -62,30 +62,30 @@ c.set_armor(True)
 source = gpg.Data("Hallo Leute\n")
 sink = gpg.Data()
 
-c.op_sign(source, sink, gpg.constants.SIG_MODE_NORMAL)
+c.op_sign(source, sink, gpg.constants.sig.mode.NORMAL)
 
 result = c.op_sign_result()
-check_result(result, gpg.constants.SIG_MODE_NORMAL)
+check_result(result, gpg.constants.sig.mode.NORMAL)
 support.print_data(sink)
 
 # Now a detached signature.
 source.seek(0, os.SEEK_SET)
 sink = gpg.Data()
 
-c.op_sign(source, sink, gpg.constants.SIG_MODE_DETACH)
+c.op_sign(source, sink, gpg.constants.sig.mode.DETACH)
 
 result = c.op_sign_result()
-check_result(result, gpg.constants.SIG_MODE_DETACH)
+check_result(result, gpg.constants.sig.mode.DETACH)
 support.print_data(sink)
 
 # And finally a cleartext signature.  */
 source.seek(0, os.SEEK_SET)
 sink = gpg.Data()
 
-c.op_sign(source, sink, gpg.constants.SIG_MODE_CLEAR)
+c.op_sign(source, sink, gpg.constants.sig.mode.CLEAR)
 
 result = c.op_sign_result()
-check_result(result, gpg.constants.SIG_MODE_CLEAR)
+check_result(result, gpg.constants.sig.mode.CLEAR)
 support.print_data(sink)
 
 # Idiomatic interface.
@@ -95,11 +95,11 @@ with gpg.Context(armor=True, textmode=True) as c:
     assert len(signed) > 0
     assert signed.find(b'BEGIN PGP MESSAGE') > 0, 'Message not found'
 
-    signed, _ = c.sign(message, mode=gpg.constants.SIG_MODE_DETACH)
+    signed, _ = c.sign(message, mode=gpg.constants.sig.mode.DETACH)
     assert len(signed) > 0
     assert signed.find(b'BEGIN PGP SIGNATURE') > 0, 'Signature not found'
 
-    signed, _ = c.sign(message, mode=gpg.constants.SIG_MODE_CLEAR)
+    signed, _ = c.sign(message, mode=gpg.constants.sig.mode.CLEAR)
     assert len(signed) > 0
     assert signed.find(b'BEGIN PGP SIGNED MESSAGE') > 0, 'Message not found'
     assert signed.find(message) > 0, 'Message content not found'

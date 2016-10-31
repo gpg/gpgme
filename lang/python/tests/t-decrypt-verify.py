@@ -31,10 +31,10 @@ def check_verify_result(result, summary, fpr, status):
     assert gpg.errors.GPGMEError(sig.status).getcode() == status
     assert len(sig.notations) == 0
     assert not sig.wrong_key_usage
-    assert sig.validity == gpg.constants.VALIDITY_FULL
+    assert sig.validity == gpg.constants.validity.FULL
     assert gpg.errors.GPGMEError(sig.validity_reason).getcode() == gpg.errors.NO_ERROR
 
-support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 
 source = gpg.Data(file=support.make_filename("cipher-2.asc"))
@@ -49,7 +49,7 @@ support.print_data(sink)
 
 verify_result = c.op_verify_result()
 check_verify_result(verify_result,
-                    gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
+                    gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
                     "A0FF4590BB6122EDEF6E3C542D727CC768697734",
                     gpg.errors.NO_ERROR)
 
@@ -62,7 +62,7 @@ with gpg.Context() as c:
     assert plaintext.find(b'Wenn Sie dies lesen k') >= 0, \
         'Plaintext not found'
     check_verify_result(verify_result,
-                        gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
+                        gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
                         "A0FF4590BB6122EDEF6E3C542D727CC768697734",
                         gpg.errors.NO_ERROR)
 

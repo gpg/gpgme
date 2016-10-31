@@ -98,7 +98,7 @@ def check_result(result, summary, validity, fpr, status, notation):
     assert gpg.errors.GPGMEError(sig.validity_reason).getcode() == gpg.errors.NO_ERROR
 
 
-support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 c.set_armor(True)
 
@@ -107,8 +107,8 @@ text = gpg.Data(test_text1)
 sig = gpg.Data(test_sig1)
 c.op_verify(sig, text, None)
 result = c.op_verify_result()
-check_result(result, gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
-             gpg.constants.VALIDITY_FULL,
+check_result(result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
+             gpg.constants.validity.FULL,
              "A0FF4590BB6122EDEF6E3C542D727CC768697734",
              gpg.errors.NO_ERROR, True)
 
@@ -118,7 +118,7 @@ text = gpg.Data(test_text1f)
 sig.seek(0, os.SEEK_SET)
 c.op_verify(sig, text, None)
 result = c.op_verify_result()
-check_result(result, gpg.constants.SIGSUM_RED, gpg.constants.VALIDITY_UNKNOWN,
+check_result(result, gpg.constants.sigsum.RED, gpg.constants.validity.UNKNOWN,
              "2D727CC768697734", gpg.errors.BAD_SIGNATURE, False)
 
 # Checking a normal signature.
@@ -126,8 +126,8 @@ text = gpg.Data()
 sig = gpg.Data(test_sig2)
 c.op_verify(sig, None, text)
 result = c.op_verify_result()
-check_result(result, gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
-             gpg.constants.VALIDITY_FULL,
+check_result(result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
+             gpg.constants.validity.FULL,
              "A0FF4590BB6122EDEF6E3C542D727CC768697734",
              gpg.errors.NO_ERROR, False)
 
@@ -147,8 +147,8 @@ else:
 with gpg.Context(armor=True) as c:
     # Checking a valid message.
     _, result = c.verify(test_text1, test_sig1)
-    check_result(result, gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
-                 gpg.constants.VALIDITY_FULL,
+    check_result(result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
+                 gpg.constants.validity.FULL,
                  "A0FF4590BB6122EDEF6E3C542D727CC768697734",
                  gpg.errors.NO_ERROR, True)
 
@@ -156,8 +156,8 @@ with gpg.Context(armor=True) as c:
     try:
         c.verify(test_text1f, test_sig1)
     except gpg.errors.BadSignatures as e:
-        check_result(e.result, gpg.constants.SIGSUM_RED,
-                     gpg.constants.VALIDITY_UNKNOWN,
+        check_result(e.result, gpg.constants.sigsum.RED,
+                     gpg.constants.validity.UNKNOWN,
                      "2D727CC768697734", gpg.errors.BAD_SIGNATURE, False)
     else:
         assert False, "Expected an error but got none."
@@ -165,8 +165,8 @@ with gpg.Context(armor=True) as c:
     # Checking a normal signature.
     sig = gpg.Data(test_sig2)
     data, result = c.verify(test_sig2)
-    check_result(result, gpg.constants.SIGSUM_VALID | gpg.constants.SIGSUM_GREEN,
-                 gpg.constants.VALIDITY_FULL,
+    check_result(result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
+                 gpg.constants.validity.FULL,
                  "A0FF4590BB6122EDEF6E3C542D727CC768697734",
                  gpg.errors.NO_ERROR, False)
     assert data == test_text1

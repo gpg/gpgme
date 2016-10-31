@@ -25,10 +25,10 @@ import gpg
 import support
 
 expected_notations = {
-    "laughing@me": ("Just Squeeze Me", gpg.constants.SIG_NOTATION_HUMAN_READABLE),
+    "laughing@me": ("Just Squeeze Me", gpg.constants.sig.notation.HUMAN_READABLE),
     "preferred-email-encoding@pgp.com": ("pgpmime",
-                                         gpg.constants.SIG_NOTATION_HUMAN_READABLE
-                                         | gpg.constants.SIG_NOTATION_CRITICAL),
+                                         gpg.constants.sig.notation.HUMAN_READABLE
+                                         | gpg.constants.sig.notation.CRITICAL),
     None: ("http://www.gnu.org/policy/", 0),
 }
 
@@ -55,14 +55,14 @@ def check_result(result):
         assert r.value == value, \
             "Expected {!r}, got {!r}".format(value, r.value)
         assert r.human_readable \
-            == bool(flags & gpg.constants.SIG_NOTATION_HUMAN_READABLE)
+            == bool(flags & gpg.constants.sig.notation.HUMAN_READABLE)
         assert r.critical \
-            == (bool(flags & gpg.constants.SIG_NOTATION_CRITICAL)
+            == (bool(flags & gpg.constants.sig.notation.CRITICAL)
                 if have_correct_sig_data else False)
 
     assert len(expected_notations) == 0
 
-support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.protocol.OpenPGP)
 
 source = gpg.Data("Hallo Leute\n")
 signed = gpg.Data()
@@ -71,7 +71,7 @@ c = gpg.Context()
 for name, (value, flags) in expected_notations.items():
     c.sig_notation_add(name, value, flags)
 
-c.op_sign(source, signed, gpg.constants.SIG_MODE_NORMAL)
+c.op_sign(source, signed, gpg.constants.sig.mode.NORMAL)
 
 signed.seek(0, os.SEEK_SET)
 sink = gpg.Data()

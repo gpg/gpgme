@@ -24,7 +24,7 @@ import os
 import subprocess
 import gpg
 import support
-support.init_gpgme(gpg.constants.PROTOCOL_OpenPGP)
+support.init_gpgme(gpg.constants.protocol.OpenPGP)
 
 subprocess.check_call([os.path.join(os.getenv('top_srcdir'),
                                     "tests", "start-stop-agent"), "--start"])
