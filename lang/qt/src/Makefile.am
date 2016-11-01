@@ -35,7 +35,8 @@ qgpgme_sources = \
     qgpgmeverifyopaquejob.cpp threadedjobmixin.cpp \
     qgpgmekeyformailboxjob.cpp gpgme_backend_debug.cpp \
     qgpgmetofupolicyjob.cpp \
-    defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp
+    defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp \
+    dn.cpp
 
 # If you add one here make sure that you also add one in camelcase
 qgpgme_headers= \
@@ -73,7 +74,8 @@ qgpgme_headers= \
     verifydetachedjob.h \
     defaultkeygenerationjob.h \
     tofupolicyjob.h \
-    wkspublishjob.h
+    wkspublishjob.h \
+    dn.h
 
 camelcase_headers= \
     AddUserIDJob \
@@ -84,6 +86,7 @@ camelcase_headers= \
     DataProvider \
     DecryptJob \
     DecryptVerifyJob \
+    DN \
     DownloadJob \
     EncryptJob \
     ExportJob \

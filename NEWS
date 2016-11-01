@@ -3,10 +3,14 @@ Noteworthy changes in version 1.7.2 (unreleased)
 
  * The module of the Python bindings has been renamed to 'gpg'.
 
+ * qt: Added Distinguished Name parser from libkleo
+
  * Interface changes relative to the 1.7.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_set_sender                NEW.
  gpgme_get_sender                NEW.
+ qt: DN                          NEW.
+ qt: DN::Attribute               NEW.
 
 
 Noteworthy changes in version 1.7.1 (2016-10-18)
