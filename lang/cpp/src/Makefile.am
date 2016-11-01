@@ -57,7 +57,7 @@ interface_headers= \
 gpgmeppincludedir = $(includedir)/gpgme++
 gpgmeppinclude_HEADERS = $(gpgmepp_headers)
 nobase_gpgmeppinclude_HEADERS = $(interface_headers)
-nodist_include_HEADERS = gpgmepp_version.h
+nodist_gpgmeppinclude_HEADERS = gpgmepp_version.h
 
 libgpgmepp_la_SOURCES = $(main_sources) $(gpgmepp_headers) context_vanilla.cpp \
                         $(interface_headers) $(private_gpgmepp_headers)

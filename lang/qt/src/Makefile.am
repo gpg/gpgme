@@ -203,7 +203,7 @@ qgpgmeincludedir = $(includedir)/qgpgme
 qgpgmeinclude_HEADERS = $(qgpgme_headers)
 camelcaseincludedir = $(includedir)/QGpgME
 camelcaseinclude_HEADERS = $(camelcase_headers)
-nodist_include_HEADERS = qgpgme_version.h
+nodist_qgpgmeinclude_HEADERS = qgpgme_version.h
 
 libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
 
