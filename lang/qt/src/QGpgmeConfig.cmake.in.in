@@ -96,3 +96,6 @@ unset(_IMPORT_CHECK_TARGETS)
 # Commands beyond this point should not need to know the version.
 set(CMAKE_IMPORT_FILE_VERSION)
 cmake_policy(POP)
+
+# Gpgmepp is a requirement for qgpgme
+find_package(Gpgmepp CONFIG REQUIRED)
