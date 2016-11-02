@@ -236,16 +236,16 @@ $(camelcase_headers): Makefile.am
 	echo ".h\"" >> "$@"
 
 install-cmake-files: QGpgmeConfig.cmake QGpgmeConfigVersion.cmake
-	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/Gpgmepp
+	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/QGpgme
 	$(INSTALL) -m 644 QGpgmeConfig.cmake \
-        $(DESTDIR)$(libdir)/cmake/Gpgmepp/QGpgmeConfig.cmake
+        $(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfig.cmake
 	$(INSTALL) -m 644 QGpgmeConfigVersion.cmake \
-        $(DESTDIR)$(libdir)/cmake/Gpgmepp/QGpgmeConfigVersion.cmake
+        $(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfigVersion.cmake
 
 uninstall-cmake-files:
-	-rm $(DESTDIR)$(libdir)/cmake/Gpgmepp/QGpgmeConfigVersion.cmake
-	-rm $(DESTDIR)$(libdir)/cmake/Gpgmepp/QGpgmeConfig.cmake
-	-rmdir $(DESTDIR)$(libdir)/cmake/Gpgmepp/
+	-rm $(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfigVersion.cmake
+	-rm $(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfig.cmake
+	-rmdir $(DESTDIR)$(libdir)/cmake/QGpgme/
 
 install-data-local: install-cmake-files
 
