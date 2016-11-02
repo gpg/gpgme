@@ -96,4 +96,5 @@ install-data-local: install-cmake-files
 
 uninstall-local: uninstall-cmake-files
 
-CLEANFILES = GpgmeppConfig.cmake
+CLEANFILES = GpgmeppConfig.cmake GpgmeppConfigVersion.cmake \
+             gpgmepp_version.h GpgmeppConfig.cmake.in

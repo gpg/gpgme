@@ -253,7 +253,9 @@ uninstall-local: uninstall-cmake-files
 
 BUILT_SOURCES = $(qgpgme_moc_sources) $(camelcase_headers)
 
-CLEANFILES = $(qgpgme_moc_sources) $(camelcase_headers) QGpgmeConfig.cmake
+CLEANFILES = $(qgpgme_moc_sources) $(camelcase_headers) QGpgmeConfig.cmake \
+             qgpgme_version.h QGpgmeConfig.cmake.in \
+             QGpgmeConfigVersion.cmake
 
 nodist_libqgpgme_la_SOURCES = $(qgpgme_moc_sources)
 
