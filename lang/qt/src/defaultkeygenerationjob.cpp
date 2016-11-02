@@ -105,11 +105,11 @@ GpgME::Error DefaultKeyGenerationJob::start(const QString &email, const QString 
 
     d->job = openpgp()->keyGenerationJob();
     d->job->installEventFilter(this);
-    connect(d->job, &KeyGenerationJob::result,
+    connect(d->job.data(), &KeyGenerationJob::result,
             this, &DefaultKeyGenerationJob::result);
-    connect(d->job, &KeyGenerationJob::done,
+    connect(d->job.data(), &KeyGenerationJob::done,
             this, &DefaultKeyGenerationJob::done);
-    connect(d->job, &KeyGenerationJob::done,
+    connect(d->job.data(), &KeyGenerationJob::done,
             this, &QObject::deleteLater);
     return d->job->start(args);
 }
