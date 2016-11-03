@@ -52,11 +52,20 @@ struct engine_gpgconf
 {
   char *file_name;
   char *home_dir;
+  char *version;
 };
 
 typedef struct engine_gpgconf *engine_gpgconf_t;
 
 
+/* Return true if the engine's version is at least VERSION.  */
+static int
+have_gpgconf_version (engine_gpgconf_t gpgconf, const char *version)
+{
+  return _gpgme_compare_versions (gpgconf->version, version);
+}
+
+
 static char *
 gpgconf_get_version (const char *file_name)
 {
@@ -84,6 +93,8 @@ gpgconf_release (void *engine)
     free (gpgconf->file_name);
   if (gpgconf->home_dir)
     free (gpgconf->home_dir);
+  if (gpgconf->version)
+    free (gpgconf->version);
 
   free (gpgconf);
 }
@@ -95,8 +106,6 @@ gpgconf_new (void **engine, const char *file_name, const char *home_dir,
 {
   gpgme_error_t err = 0;
   engine_gpgconf_t gpgconf;
-
-  (void)version; /* Not yet used.  */
 
   gpgconf = calloc (1, sizeof *gpgconf);
   if (!gpgconf)
@@ -112,6 +121,13 @@ gpgconf_new (void **engine, const char *file_name, const char *home_dir,
       gpgconf->home_dir = strdup (home_dir);
       if (!gpgconf->home_dir)
 	err = gpg_error_from_syserror ();
+    }
+
+  if (!err && version)
+    {
+      gpgconf->version = strdup (version);
+      if (!gpgconf->version)
+        err = gpg_error_from_syserror ();
     }
 
   if (err)
@@ -209,7 +225,8 @@ gpgconf_read (void *engine, const char *arg1, char *arg2,
   char *linebuf;
   size_t linebufsize;
   int linelen;
-  char *argv[4] = { NULL /* file_name */, NULL, NULL, NULL };
+  char *argv[6];
+  int argc = 0;
   int rp[2];
   struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */, -1, 0},
 				   {-1, -1} };
@@ -217,14 +234,19 @@ gpgconf_read (void *engine, const char *arg1, char *arg2,
   int nread;
   char *mark = NULL;
 
-  argv[1] = (char*)arg1;
-  argv[2] = arg2;
-
-
-  /* FIXME: Deal with engine->home_dir.  */
-
   /* _gpgme_engine_new guarantees that this is not NULL.  */
-  argv[0] = gpgconf->file_name;
+  argv[argc++] = gpgconf->file_name;
+
+  if (gpgconf->home_dir && have_gpgconf_version (gpgconf, "2.1.13"))
+    {
+      argv[argc++] = (char*)"--homedir";
+      argv[argc++] = gpgconf->home_dir;
+    }
+
+  argv[argc++] = (char*)arg1;
+  argv[argc++] = arg2;
+  argv[argc] = NULL;
+  assert (argc < DIM (argv));
 
   if (_gpgme_io_pipe (rp, 1) < 0)
     return gpg_error_from_syserror ();
@@ -685,16 +707,26 @@ gpgconf_write (void *engine, const char *arg1, char *arg2, gpgme_data_t conf)
 #define BUFLEN 1024
   char buf[BUFLEN];
   int buflen = 0;
-  char *argv[] = { NULL /* file_name */, (char*)arg1, arg2, 0 };
+  char *argv[6];
+  int argc = 0;
   int rp[2];
   struct spawn_fd_item_s cfd[] = { {-1, 0 /* STDIN_FILENO */}, {-1, -1} };
   int status;
   int nwrite;
 
-  /* FIXME: Deal with engine->home_dir.  */
-
   /* _gpgme_engine_new guarantees that this is not NULL.  */
-  argv[0] = gpgconf->file_name;
+  argv[argc++] = gpgconf->file_name;
+
+  if (gpgconf->home_dir && have_gpgconf_version (gpgconf, "2.1.13"))
+    {
+      argv[argc++] = (char*)"--homedir";
+      argv[argc++] = gpgconf->home_dir;
+    }
+
+  argv[argc++] = (char*)arg1;
+  argv[argc++] = arg2;
+  argv[argc] = NULL;
+  assert (argc < DIM (argv));
 
   if (_gpgme_io_pipe (rp, 0) < 0)
     return gpg_error_from_syserror ();
