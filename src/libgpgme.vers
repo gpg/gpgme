@@ -122,6 +122,9 @@ GPGME_1.1 {
 
     gpgme_set_sender;
     gpgme_get_sender;
+
+    gpgme_op_query_swdb;
+    gpgme_op_query_swdb_result;
 };
 
 

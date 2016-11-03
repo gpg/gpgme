@@ -237,7 +237,9 @@ Encrypt
 
 Miscellaneous
 
-* Running other Programs::        Running other Programs
+* Running other Programs::        Running other Programs.
+* Using the Assuan protocol::     Using the Assuan protocol.
+* Checking for updates::          How to check for software updates.
 
 Run Control
 
@@ -5561,6 +5563,7 @@ Here are some support functions which are sometimes useful.
 @menu
 * Running other Programs::      Running other Programs
 * Using the Assuan protocol::   Using the Assuan protocol
+* Checking for updates::        How to check for software updates
 @end menu
 
 
@@ -5690,6 +5693,142 @@ The result of the operation is returned in @var{op_err}.
 
 Synchronous variant.
 @end deftypefun
+
+
+@node Checking for updates
+@subsection How to check for software updates
+
+The GnuPG Project operates a server to query the current versions of
+software packages related to GnuPG.  GPGME can be used to
+access this online database and check whether a new version of a
+software package is available.
+
+@deftp {Data type} {gpgme_query_swdb_result_t}
+This is a pointer to a structure used to store the result of a
+@code{gpgme_op_query_swdb} operation.  After success full call to that
+function, you can retrieve the pointer to the result with
+@code{gpgme_op_query_swdb_result}.  The structure contains the
+following member:
+
+@table @code
+@item name
+This is the name of the package.
+
+@item iversion
+The currently installed version or an empty string.  This value is
+either a copy of the argument given to @code{gpgme_op_query_swdb} or
+the version of the installed software as figured out by GPGME or GnuPG.
+
+@item created
+This gives the date the file with the list of version numbers has
+originally be created by the GnuPG project.
+
+@item retrieved
+This gives the date the file was downloaded.
+
+@item warning
+If this flag is set either an error has occurred or some of the
+information in this structure are not properly set.  For example if
+the version number of the installed software could not be figured out,
+the @code{update} flag may not reflect a required update status.
+
+@item update
+If this flag is set an update of the software is available.
+
+@item urgent
+If this flag is set an available update is important.
+
+@item noinfo
+If this flag is set, no valid information could be retrieved.
+
+@item unknown
+If this flag is set the given @code{name} is not known.
+
+@item tooold
+If this flag is set the available information is not fresh enough.
+
+@item error
+If this flag is set some other error has occured.
+
+@item version
+The version string of the latest released version.
+
+@item reldate
+The release date of the latest released version.
+
+@end table
+@end deftp
+
+@deftypefun gpgme_error_t gpgme_op_query_swdb @
+            (@w{gpgme_ctx_t @var{ctx}},       @
+             @w{const char *@var{name}},      @
+             @w{const char *@var{iversion}},  @
+             @w{gpgme_data_t @var{reserved}})
+
+Query the software version database for software package @var{name}
+and check against the installed version given by @var{iversion}.  If
+@var{iversion} is given as @code{NULL} a check is only done if GPGME
+can figure out the version by itself (for example when using
+"gpgme" or "gnupg").  If @code{NULL} is used for @var{name} the
+current gpgme version is checked.  @var{reserved} must be set to 0.
+
+@end deftypefun
+
+@deftypefun gpgme_query_swdb_result_t gpgme_op_query_swdb_result @
+            (@w{gpgme_ctx_t @var{ctx}})
+
+The function @code{gpgme_op_query_swdb_result} returns a
+@code{gpgme_query_swdb_result_t} pointer to a structure holding the
+result of a @code{gpgme_op_query_swdb} operation.  The pointer is only
+valid if the last operation on the context was a sucessful call to
+@code{gpgme_op_query_swdb}.  If that call failed, the result might
+be a @code{NULL} pointer.  The returned pointer is only valid until
+the next operation is started on the context @var{ctx}.
+@end deftypefun
+
+@noindent
+Here is an example on how to check whether GnuPG is current:
+
+@example
+#include <gpgme.h>
+
+int
+main (void)
+@{
+  gpg_error_t err;
+  gpgme_ctx_t ctx;
+  gpgme_query_swdb_result_t result;
+
+  gpgme_check_version (NULL);
+  err = gpgme_new (&ctx);
+  if (err)
+    fprintf (stderr, "error creating context: %s\n", gpg_strerror (err));
+  else
+    @{
+      gpgme_set_protocol (ctx, GPGME_PROTOCOL_GPGCONF);
+
+      err = gpgme_op_query_swdb (ctx, "gnupg", NULL, 0);
+      if (err)
+        fprintf (stderr, "error querying swdb: %s\n", gpg_strerror (err));
+      else
+        @{
+          result = gpgme_op_query_swdb_result (ctx);
+          if (!result)
+            fprintf (stderr, "error querying swdb\n");
+          if (!result->warning && !result->update)
+            printf ("GnuPG version %s is current\n",
+                    result->iversion);
+          else if (!result->warning && result->update)
+            printf ("GnuPG version %s can be updated to %s\n",
+                    result->iversion, result->version);
+          else
+            fprintf (stderr, "error finding the update status\n");
+        @}
+      gpgme_release (ctx);
+    @}
+  return 0;
+@}
+@end example
 
 
 @node Run Control

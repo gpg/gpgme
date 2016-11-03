@@ -91,7 +91,7 @@ main_sources =								\
 	$(uiserver_components)						\
 	engine-g13.c vfs-mount.c vfs-create.c			        \
 	engine-spawn.c 	                                                \
-	gpgconf.c							\
+	gpgconf.c queryswdb.c						\
 	sema.h priv-io.h $(system_components) sys-util.h dirinfo.c	\
 	debug.c debug.h gpgme.c version.c error.c
 

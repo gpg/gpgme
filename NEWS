@@ -9,6 +9,9 @@ Noteworthy changes in version 1.7.2 (unreleased)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_set_sender                NEW.
  gpgme_get_sender                NEW.
+ gpgme_op_query_swdb             NEW.
+ gpgme_op_query_swdb_result      NEW.
+ gpgme_query_swdb_result_t       NEW.
  qt: DN                          NEW.
  qt: DN::Attribute               NEW.
 

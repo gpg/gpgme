@@ -65,7 +65,7 @@ gpgme_conf_release (gpgme_conf_comp_t conf)
 }
 
 
-/* Public function to release load a configuration list.  No
+/* Public function to load a configuration list.  No
    asynchronous interface for now.  */
 gpgme_error_t
 gpgme_op_conf_load (gpgme_ctx_t ctx, gpgme_conf_comp_t *conf_p)
@@ -108,5 +108,3 @@ gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp)
   ctx->protocol = proto;
   return err;
 }
-
-

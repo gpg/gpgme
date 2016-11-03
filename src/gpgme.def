@@ -249,5 +249,8 @@ EXPORTS
     gpgme_set_sender                      @187
     gpgme_get_sender                      @188
 
+    gpgme_op_query_swdb                   @189
+    gpgme_op_query_swdb_result            @190
+
 ; END
 

@@ -980,6 +980,21 @@ _gpgme_engine_op_conf_save (engine_t engine, gpgme_conf_comp_t conf)
 }
 
 
+gpgme_error_t
+_gpgme_engine_op_query_swdb (engine_t engine,
+                             const char *name, const char *iversion,
+                             gpgme_query_swdb_result_t result)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->query_swdb)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->query_swdb) (engine->engine, name, iversion, result);
+}
+
+
 void
 _gpgme_engine_set_io_cbs (engine_t engine, gpgme_io_cbs_t io_cbs)
 {
