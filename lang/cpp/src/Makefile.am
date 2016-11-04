@@ -33,7 +33,7 @@ main_sources = \
     gpgsetownertrusteditinteractor.cpp gpgsignkeyeditinteractor.cpp \
     gpgadduserideditinteractor.cpp defaultassuantransaction.cpp \
     scdgetinfoassuantransaction.cpp gpgagentgetinfoassuantransaction.cpp \
-    vfsmountresult.cpp configuration.cpp tofuinfo.cpp
+    vfsmountresult.cpp configuration.cpp tofuinfo.cpp swdbresult.cpp
 
 gpgmepp_headers = \
     configuration.h context.h data.h decryptionresult.h \
@@ -45,7 +45,7 @@ gpgmepp_headers = \
     importresult.h keygenerationresult.h key.h keylistresult.h \
     notation.h result.h scdgetinfoassuantransaction.h signingresult.h \
     trustitem.h verificationresult.h vfsmountresult.h gpgmepp_export.h \
-    tofuinfo.h
+    tofuinfo.h swdbresult.h
 
 private_gpgmepp_headers = \
     result_p.h context_p.h util.h callbacks.h data_p.h

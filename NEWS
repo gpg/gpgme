@@ -16,6 +16,7 @@ Noteworthy changes in version 1.7.2 (unreleased)
  qt: DN::Attribute               NEW.
  cpp: EngineInfo::Version::Version(const char*) NEW.
  cpp: EngineInfo::Version::Version()            NEW.
+ cpp: SwdbResult                                NEW.
 
 
 Noteworthy changes in version 1.7.1 (2016-10-18)
