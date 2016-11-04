@@ -67,4 +67,10 @@ typedef struct gpgme_conf_comp *gpgme_conf_comp_t;
 struct gpgme_conf_arg;
 typedef struct gpgme_conf_arg *gpgme_conf_arg_t;
 
+struct _gpgme_tofu_info;
+typedef struct _gpgme_tofu_info *gpgme_tofu_info_t;
+
+struct _gpgme_op_query_swdb_result;
+typedef struct _gpgme_op_query_swdb_result *gpgme_query_swdb_result_t;
+
 #endif // __GPGMEPP_GPGMEFW_H__
