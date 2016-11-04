@@ -415,8 +415,17 @@ find_program_at_standard_place (const char *name)
      We First try the generic place and then fallback to the x86
      (i.e. 32 bit) place.  This will prefer a 64 bit of the program
      over a 32 bit version on 64 bit Windows if installed.  */
-  if (SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILES, 0)
-      || SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILESX86, 0))
+  if (SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILES, 0))
+    {
+      result = _gpgme_strconcat (path, "\\", name, NULL);
+      if (result && access (result, F_OK))
+        {
+          free (result);
+          result = NULL;
+        }
+    }
+  if (!result
+      && SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILESX86, 0))
     {
       result = _gpgme_strconcat (path, "\\", name, NULL);
       if (result && access (result, F_OK))
