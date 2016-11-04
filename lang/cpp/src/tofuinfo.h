@@ -25,8 +25,6 @@
 
 #include "gpgmepp_export.h"
 
-#include "gpgme.h"
-
 #include "global.h"
 
 #include <memory>
