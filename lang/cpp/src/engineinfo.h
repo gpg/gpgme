@@ -40,11 +40,27 @@ public:
     struct Version
     {
         int major, minor, patch;
+        Version()
+        {
+          major = 0;
+          minor = 0;
+          patch = 0;
+        }
 
         Version(const std::string& version)
         {
             if (version.empty() ||
                 std::sscanf(version.c_str(), "%d.%d.%d", &major, &minor, &patch) != 3) {
+                major = 0;
+                minor = 0;
+                patch = 0;
+            }
+        }
+
+        Version(const char *version)
+        {
+            if (!version ||
+                std::sscanf(version, "%d.%d.%d", &major, &minor, &patch) != 3) {
                 major = 0;
                 minor = 0;
                 patch = 0;
