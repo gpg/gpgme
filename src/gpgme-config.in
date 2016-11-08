@@ -32,7 +32,9 @@ gpg_error_libs="@GPG_ERROR_LIBS@"
 # Configure thread packages.
 thread_modules=""
 
-@HAVE_PTHREAD_TRUE@thread_modules="$thread_modules pthread"
+# For compatibility we keep proving the
+# thread modules variable.
+thread_modules="$thread_modules pthread"
 libs_pthread="-lpthread"
 cflags_pthread=""
 
@@ -50,7 +52,6 @@ usage()
     cat <<EOF
 Usage: gpgme-config [OPTIONS]
 Options:
-	--thread={${thread_modules}}]
 	--prefix
 	--exec-prefix
 	--version
@@ -139,7 +140,8 @@ while test $# -gt 0; do
             result=
             tmp_x=
 	    case "$thread_module" in
-	        pthread) tmp_l="-lgpgme-pthread"; tmp_x="$libs_pthread" ;;
+            # deprecated
+	        pthread) tmp_l="-lgpgme" ;;
 		*)
 		    if test "x$with_glib" = "xyes" ; then
 		         tmp_l="-lgpgme-glib"

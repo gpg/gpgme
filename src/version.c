@@ -74,7 +74,6 @@ do_subsystem_inits (void)
   }
 #endif
 
-  _gpgme_sema_subsystem_init ();
   _gpgme_debug_subsystem_init ();
   _gpgme_io_subsystem_init ();
   _gpgme_status_init ();

@@ -22,46 +22,23 @@
 #ifndef SEMA_H
 #define SEMA_H
 
-struct critsect_s
-{
-  const char *name;
-  void *priv;
-};
+#include <gpg-error.h>
 
 #define DEFINE_GLOBAL_LOCK(name) \
-  struct critsect_s name = { #name, NULL }
+  gpgrt_lock_t name  = GPGRT_LOCK_INITIALIZER
+
 #define DEFINE_STATIC_LOCK(name) \
-  static struct critsect_s name  = { #name, NULL }
+  static gpgrt_lock_t name = GPGRT_LOCK_INITIALIZER
 
-#define DECLARE_LOCK(name) \
-  struct critsect_s name
-#define INIT_LOCK(a)			\
-  do					\
-    {					\
-      (a).name = #a;			\
-      (a).priv = NULL;			\
-    }					\
-  while (0)
-#define DESTROY_LOCK(name) _gpgme_sema_cs_destroy (&(name))
+#define INIT_LOCK(name) \
+  name = (gpgrt_lock_t) GPGRT_LOCK_INITIALIZER
 
+#define DECLARE_LOCK(name) gpgrt_lock_t name
 
-#define LOCK(name)			\
-  do					\
-    {					\
-      _gpgme_sema_cs_enter (&(name));	\
-    }					\
-  while (0)
+#define DESTROY_LOCK(name) gpgrt_lock_destroy(&name)
 
-#define UNLOCK(name)			\
-  do					\
-    {					\
-      _gpgme_sema_cs_leave (&(name));	\
-    }					\
-  while (0)
+#define LOCK(name) gpgrt_lock_lock(&name)
 
-void _gpgme_sema_subsystem_init (void);
-void _gpgme_sema_cs_enter (struct critsect_s *s);
-void _gpgme_sema_cs_leave (struct critsect_s *s);
-void _gpgme_sema_cs_destroy (struct critsect_s *s);
+#define UNLOCK(name) gpgrt_lock_unlock(&name)
 
 #endif /* SEMA_H */

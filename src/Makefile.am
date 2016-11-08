@@ -28,20 +28,13 @@ nodist_include_HEADERS = gpgme.h
 
 bin_PROGRAMS = gpgme-tool
 
-if HAVE_PTHREAD
-ltlib_gpgme_pthread = libgpgme-pthread.la
-else
-ltlib_gpgme_pthread =
-endif
-
 if BUILD_W32_GLIB
 ltlib_gpgme_glib = libgpgme-glib.la
 else
 ltlib_gpgme_glib =
 endif
 
-lib_LTLIBRARIES = libgpgme.la $(ltlib_gpgme_glib) $(ltlib_gpgme_qt) \
-	$(ltlib_gpgme_pthread)
+lib_LTLIBRARIES = libgpgme.la $(ltlib_gpgme_glib)
 
 if HAVE_LD_VERSION_SCRIPT
 libgpgme_version_script_cmd = -Wl,--version-script=$(srcdir)/libgpgme.vers
@@ -50,10 +43,10 @@ libgpgme_version_script_cmd =
 endif
 
 if HAVE_DOSISH_SYSTEM
-system_components = w32-util.c w32-sema.c
+system_components = w32-util.c
 system_components_not_extra = w32-io.c
 else
-system_components = ath.h posix-util.c posix-sema.c posix-io.c
+system_components = ath.h posix-util.c posix-io.c
 system_components_not_extra =
 endif
 
@@ -93,12 +86,10 @@ main_sources =								\
 	engine-spawn.c 	                                                \
 	gpgconf.c queryswdb.c						\
 	sema.h priv-io.h $(system_components) sys-util.h dirinfo.c	\
-	debug.c debug.h gpgme.c version.c error.c
-
-libgpgme_la_SOURCES = $(main_sources)					\
+	debug.c debug.h gpgme.c version.c error.c \
 	ath.h ath.c $(system_components_not_extra)
-libgpgme_pthread_la_SOURCES = $(main_sources)				\
-	ath.h ath-pthread.c $(system_components_not_extra)
+
+libgpgme_la_SOURCES = $(main_sources)
 
 if BUILD_W32_GLIB
 libgpgme_glib_la_SOURCES = $(main_sources) ath.h ath.c w32-glib-io.c
@@ -162,14 +153,6 @@ libgpgme_la_LDFLAGS = $(no_undefined) $(export_symbols) $(extra_ltoptions) \
 libgpgme_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
 	             @GPG_ERROR_LIBS@
-
-libgpgme_pthread_la_LDFLAGS = \
-        $(no_undefined) $(export_symbols) $(extra_ltoptions) \
-	$(libgpgme_version_script_cmd) -version-info \
-	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
-libgpgme_pthread_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers
-libgpgme_pthread_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
-	-lpthread @GPG_ERROR_LIBS@
 
 if BUILD_W32_GLIB
 libgpgme_glib_la_LDFLAGS = \

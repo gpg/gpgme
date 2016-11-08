@@ -71,7 +71,7 @@ LIBQGPGME_LT_REVISION=0
 GPGME_CONFIG_API_VERSION=1
 ##############################################
 
-NEED_GPG_ERROR_VERSION=1.11
+NEED_GPG_ERROR_VERSION=1.17
 NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.0.2
 
@@ -211,11 +211,6 @@ case "${host}" in
        ;;
     *)
 
-	AC_CHECK_LIB(pthread,pthread_create,have_pthread=yes)
-	if test "$have_pthread" = yes; then
-	  AC_DEFINE(HAVE_PTHREAD, ,[Define if we have pthread.])
-	fi
-
 	# XXX: Probably use exec-prefix here?
 #	GPG_DEFAULT='/usr/bin/gpg'
 #	GPGSM_DEFAULT='/usr/bin/gpgsm'
@@ -256,8 +251,6 @@ fi
 AM_CONDITIONAL(HAVE_ANDROID_SYSTEM, test "$have_android_system" = yes)
 
 AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
-
-AM_CONDITIONAL(HAVE_PTHREAD, test "$have_pthread" = "yes")
 
 
 AC_ARG_ENABLE([fixed-path],
@@ -905,7 +898,6 @@ echo "
 
         UI Server:         $uiserver
         FD Passing:        $use_descriptor_passing
-        GPGME Pthread:     $have_pthread
 
         Language bindings: ${enabled_languages_v:-$enabled_languages}
 "

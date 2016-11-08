@@ -38,7 +38,8 @@ c_tests = \
         t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers		\
 	t-decrypt t-verify t-decrypt-verify t-sig-notation t-export	\
 	t-import t-trustlist t-edit t-keylist t-keylist-sig t-wait	\
-	t-encrypt-large t-file-name t-gpgconf t-encrypt-mixed $(tests_unix)
+	t-encrypt-large t-file-name t-gpgconf t-encrypt-mixed $(tests_unix) \
+	t-thread-keylist t-thread-keylist-verify
 
 TESTS = initial.test $(c_tests) final.test
 
@@ -61,8 +62,10 @@ EXTRA_DIST = initial.test final.test \
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 AM_LDFLAGS = -no-install
 LDADD = ../../src/libgpgme.la
-t_thread1_LDADD = ../../src/libgpgme-pthread.la -lpthread
-t_cancel_LDADD = ../../src/libgpgme-pthread.la -lpthread
+t_thread1_LDADD = ../../src/libgpgme.la -lpthread
+t_thread_keylist_LDADD = ../../src/libgpgme.la -lpthread
+t_thread_keylist_verify_LDADD = ../../src/libgpgme.la -lpthread
+t_cancel_LDADD = ../../src/libgpgme.la -lpthread
 
 # We don't run t-genkey and t-cancel in the test suite, because it
 # takes too long

@@ -49,11 +49,6 @@
 #include "ath.h"
 
 
-#define MUTEX_UNLOCKED	((ath_mutex_t) 0)
-#define MUTEX_LOCKED	((ath_mutex_t) 1)
-#define MUTEX_DESTROYED	((ath_mutex_t) 2)
-
-
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>
 uintptr_t
@@ -78,52 +73,6 @@ ath_self (void)
 }
 # endif
 #endif
-
-
-int
-ath_mutex_init (ath_mutex_t *lock)
-{
-#ifndef NDEBUG
-  *lock = MUTEX_UNLOCKED;
-#endif
-  return 0;
-}
-
-
-int
-ath_mutex_destroy (ath_mutex_t *lock)
-{
-#ifndef NDEBUG
-  assert (*lock == MUTEX_UNLOCKED);
-
-  *lock = MUTEX_DESTROYED;
-#endif
-  return 0;
-}
-
-
-int
-ath_mutex_lock (ath_mutex_t *lock)
-{
-#ifndef NDEBUG
-  assert (*lock == MUTEX_UNLOCKED);
-
-  *lock = MUTEX_LOCKED;
-#endif
-  return 0;
-}
-
-
-int
-ath_mutex_unlock (ath_mutex_t *lock)
-{
-#ifndef NDEBUG
-  assert (*lock == MUTEX_LOCKED);
-
-  *lock = MUTEX_UNLOCKED;
-#endif
-  return 0;
-}
 
 
 gpgme_ssize_t

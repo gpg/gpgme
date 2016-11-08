@@ -458,12 +458,6 @@ specifying both options to @command{gpgme-config}:
 gcc -o foo foo.c `gpgme-config --cflags --libs`
 @end example
 
-If you want to link to one of the thread-safe versions of
-@acronym{GPGME}, you must specify the @option{--thread} option before
-any other option to select the thread package you want to link with.
-Supported thread packages are @option{--thread=pth} and
-@option{--thread=pthread}.
-
 If you need to detect the installed language bindings you can use list
 them using:
 
@@ -614,7 +608,9 @@ that can be used with GNU Pth, and defines @code{GPGME_PTH_CFLAGS} and
 
 @code{AM_PATH_GPGME_PTHREAD} checks for the version of @acronym{GPGME}
 that can be used with the native pthread implementation, and defines
-@code{GPGME_PTHREAD_CFLAGS} and @code{GPGME_PTHREAD_LIBS}.
+@code{GPGME_PTHREAD_CFLAGS} and @code{GPGME_PTHREAD_LIBS}. Since
+version 1.8.0 this is no longer required to GPGME_PTHREAD as
+@acronym{GPGME} itself is thread safe.
 
 This macro searches for @command{gpgme-config} along the PATH.  If
 you are cross-compiling, it is useful to set the environment variable
@@ -814,31 +810,11 @@ application is multi-threaded, and you install a signal action for
 @cindex thread-safeness
 @cindex multi-threading
 
-The @acronym{GPGME} library is not entirely thread-safe, but it can
-still be used in a multi-threaded environment if some care is taken.
-If the following requirements are met, there should be no race
-conditions to worry about:
+The @acronym{GPGME} library is mostly thread-safe, an can be used
+in a mulithreaded environment but there are some requirements
+for mutlithreaded use:
 
 @itemize @bullet
-@item
-@acronym{GPGME} supports the thread libraries pthread and GNU Pth.
-The support for this has to be enabled at compile time.
-@acronym{GPGME} will automatically detect the location in which the
-thread libraries are installed and activate the support for them at
-build time.
-
-Support for other thread libraries is very easy to add.  Please
-contact us if you have the need.
-
-@item
-If you want to use @acronym{GPGME} with threads, you must link to the
-right version of the library.  The name of the right library is
-@code{libgpgme-} followed by the name of the thread package you use.
-For example, if you use GNU Pth, the right name is
-@code{libgpgme-pth}.  Use the Automake macros or
-@command{gpgme-config} program for simplicity.
-
-
 @item
 The function @code{gpgme_check_version} must be called before any
 other function in the library, because it initializes the thread
