@@ -75,8 +75,8 @@ if '-' in version:
     version = version.split('-')[0]
 major, minor, patch = map(int, version.split('.'))
 
-if not (major > 1 or (major == 1 and minor >= 6)):
-    sys.exit('Need at least GPGME version 1.6, found {}.'.format(version_raw))
+if not (major > 1 or (major == 1 and minor >= 7)):
+    sys.exit('Need at least GPGME version 1.7, found {}.'.format(version_raw))
 
 if not gpgme_h:
     gpgme_h = os.path.join(getconfig("prefix")[0], "include", "gpgme.h")
