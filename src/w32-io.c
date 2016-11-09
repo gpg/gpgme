@@ -84,6 +84,7 @@ static struct
      duplicates works just fine.  */
   int dup_from;
 } fd_table[MAX_SLAFD];
+DEFINE_STATIC_LOCK (fd_table_lock);
 
 
 /* Returns the FD or -1 on resource limit.  */
@@ -92,6 +93,8 @@ new_fd (void)
 {
   int idx;
 
+  LOCK (fd_table_lock);
+
   for (idx = 0; idx < MAX_SLAFD; idx++)
     if (! fd_table[idx].used)
       break;
@@ -99,14 +102,18 @@ new_fd (void)
   if (idx == MAX_SLAFD)
     {
       gpg_err_set_errno (EIO);
-      return -1;
+      idx = -1;
+    }
+  else
+    {
+      fd_table[idx].used = 1;
+      fd_table[idx].handle = INVALID_HANDLE_VALUE;
+      fd_table[idx].socket = INVALID_SOCKET;
+      fd_table[idx].rvid = 0;
+      fd_table[idx].dup_from = -1;
     }
 
-  fd_table[idx].used = 1;
-  fd_table[idx].handle = INVALID_HANDLE_VALUE;
-  fd_table[idx].socket = INVALID_SOCKET;
-  fd_table[idx].rvid = 0;
-  fd_table[idx].dup_from = -1;
+  UNLOCK (fd_table_lock);
 
   return idx;
 }
@@ -115,14 +122,21 @@ new_fd (void)
 void
 release_fd (int fd)
 {
-  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
+  if (fd < 0 || fd >= MAX_SLAFD)
     return;
 
-  fd_table[fd].used = 0;
-  fd_table[fd].handle = INVALID_HANDLE_VALUE;
-  fd_table[fd].socket = INVALID_SOCKET;
-  fd_table[fd].rvid = 0;
-  fd_table[fd].dup_from = -1;
+  LOCK (fd_table_lock);
+
+  if (fd_table[fd].used)
+    {
+      fd_table[fd].used = 0;
+      fd_table[fd].handle = INVALID_HANDLE_VALUE;
+      fd_table[fd].socket = INVALID_SOCKET;
+      fd_table[fd].rvid = 0;
+      fd_table[fd].dup_from = -1;
+    }
+
+  UNLOCK (fd_table_lock);
 }
 
 
