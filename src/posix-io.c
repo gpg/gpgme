@@ -607,7 +607,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
           if (fds[i].fd >= FD_SETSIZE)
             {
               TRACE_END (dbg_help, " -BAD- ]");
-              gpg_err_set_errno (EBADF);
+              gpg_err_set_errno (EMFILE);
               return TRACE_SYSRES (-1);
             }
 	  assert (!FD_ISSET (fds[i].fd, &readfds));
@@ -622,7 +622,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
           if (fds[i].fd >= FD_SETSIZE)
             {
               TRACE_END (dbg_help, " -BAD- ]");
-              gpg_err_set_errno (EBADF);
+              gpg_err_set_errno (EMFILE);
               return TRACE_SYSRES (-1);
             }
 	  assert (!FD_ISSET (fds[i].fd, &writefds));
