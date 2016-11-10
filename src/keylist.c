@@ -54,6 +54,9 @@ typedef struct
 {
   struct _gpgme_op_keylist_result result;
 
+  /* The error code from ERROR keydb_search. */
+  gpgme_error_t keydb_search_err;
+
   gpgme_key_t tmp_key;
 
   /* This points to the last uid in tmp_key.  */
@@ -135,10 +138,17 @@ keylist_status_handler (void *priv, gpgme_status_code_t code, char *args)
       opd->result.truncated = 1;
       break;
 
+    case GPGME_STATUS_ERROR:
+      err = _gpgme_parse_failure (args);
+      if (!opd->keydb_search_err && !strcmp (args, "keydb_search"))
+        opd->keydb_search_err = err;
+      err = 0;
+      break;
+
     default:
       break;
     }
-  return 0;
+  return err;
 }
 
 
@@ -1138,7 +1148,8 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
 	return TRACE_ERR (err);
 
       if (!opd->key_cond)
-	return TRACE_ERR (gpg_error (GPG_ERR_EOF));
+	return TRACE_ERR (opd->keydb_search_err? opd->keydb_search_err
+                          /**/                 : gpg_error (GPG_ERR_EOF));
 
       opd->key_cond = 0;
       assert (opd->key_queue);
