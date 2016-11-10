@@ -53,6 +53,7 @@ start_keylist (void *arg)
   gpgme_ctx_t ctx;
   gpgme_key_t key;
 
+  (void)arg;
   err = gpgme_new (&ctx);
   fail_if_err (err);
 
@@ -61,6 +62,7 @@ start_keylist (void *arg)
 
   while (!(err = gpgme_op_keylist_next (ctx, &key)));
 
+  gpgme_release (ctx);
   return NULL;
 }
 
@@ -72,6 +74,8 @@ start_verify (void *arg)
   gpgme_data_t sig, text;
   gpgme_verify_result_t result;
   gpgme_signature_t signature;
+
+  (void)arg;
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
@@ -99,6 +103,7 @@ start_verify (void *arg)
                __FILE__, __LINE__, gpgme_strerror (signature->status));
       exit (1);
     }
+  gpgme_release (ctx);
   return NULL;
 }
 
@@ -109,6 +114,9 @@ main (int argc, char *argv[])
   pthread_t verify_threads[THREAD_COUNT];
   pthread_t keylist_threads[THREAD_COUNT];
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
+  (void)argc;
+  (void)argv;
 
   for (i = 0; i < THREAD_COUNT; i++)
     {

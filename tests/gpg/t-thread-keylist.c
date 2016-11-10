@@ -41,6 +41,7 @@ start_keylist (void *arg)
   gpgme_ctx_t ctx;
   gpgme_key_t key;
 
+  (void) arg;
   err = gpgme_new (&ctx);
   fail_if_err (err);
 
@@ -48,6 +49,8 @@ start_keylist (void *arg)
   fail_if_err (err);
 
   while (!(err = gpgme_op_keylist_next (ctx, &key)));
+
+  gpgme_release (ctx);
 
   return NULL;
 }
@@ -58,6 +61,9 @@ main (int argc, char *argv[])
   int i;
   pthread_t keylist_threads[THREAD_COUNT];
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
+  (void)argc;
+  (void)argv;
 
   for (i = 0; i < THREAD_COUNT; i++)
     {
