@@ -60,7 +60,10 @@ start_keylist (void *arg)
   err = gpgme_op_keylist_start (ctx, NULL, 0);
   fail_if_err (err);
 
-  while (!(err = gpgme_op_keylist_next (ctx, &key)));
+  while (!(err = gpgme_op_keylist_next (ctx, &key)))
+    {
+      gpgme_key_unref (key);
+    }
 
   gpgme_release (ctx);
   return NULL;
@@ -103,6 +106,8 @@ start_verify (void *arg)
                __FILE__, __LINE__, gpgme_strerror (signature->status));
       exit (1);
     }
+  gpgme_free (text);
+  gpgme_free (sig);
   gpgme_release (ctx);
   return NULL;
 }
