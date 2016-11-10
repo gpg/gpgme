@@ -130,7 +130,7 @@ Preparation
 * Using Libtool::                 Avoiding compiler options entirely.
 * Library Version Check::         Getting and verifying the library version.
 * Signal Handling::               How @acronym{GPGME} affects signal handling.
-* Multi Threading::               How @acronym{GPGME} can be used in an MT environment.
+* Multi-Threading::               How @acronym{GPGME} can be used in an MT environment.
 
 Protocols and Engines
 
@@ -382,7 +382,7 @@ of the library are verified.
 * Using Libtool::                 Avoiding compiler options entirely.
 * Library Version Check::         Getting and verifying the library version.
 * Signal Handling::               How @acronym{GPGME} affects signal handling.
-* Multi Threading::               How @acronym{GPGME} can be used in an MT environment.
+* Multi-Threading::               How @acronym{GPGME} can be used in an MT environment.
 @end menu
 
 
@@ -805,14 +805,14 @@ application is multi-threaded, and you install a signal action for
 @code{gpgme_check_version} is called or afterwards.
 
 
-@node Multi Threading
-@section Multi Threading
+@node Multi-Threading
+@section Multi-Threading
 @cindex thread-safeness
 @cindex multi-threading
 
-The @acronym{GPGME} library is mostly thread-safe, an can be used
-in a mulithreaded environment but there are some requirements
-for mutlithreaded use:
+The @acronym{GPGME} library is mostly thread-safe, and can be used
+in a multi-threaded environment but there are some requirements
+for multi-threaded use:
 
 @itemize @bullet
 @item
