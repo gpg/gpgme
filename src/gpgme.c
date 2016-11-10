@@ -504,7 +504,7 @@ gpgme_set_armor (gpgme_ctx_t ctx, int use_armor)
   if (!ctx)
     return;
 
-  ctx->use_armor = use_armor;
+  ctx->use_armor = !!use_armor;
 }
 
 
@@ -531,7 +531,7 @@ gpgme_set_textmode (gpgme_ctx_t ctx, int use_textmode)
   if (!ctx)
     return;
 
-  ctx->use_textmode = use_textmode;
+  ctx->use_textmode = !!use_textmode;
 }
 
 /* Return the state of the textmode flag.  */
@@ -555,7 +555,7 @@ gpgme_set_offline (gpgme_ctx_t ctx, int offline)
   if (!ctx)
     return;
 
-  ctx->offline = offline;
+  ctx->offline = !!offline;
 }
 
 /* Return the state of the offline flag.  */
