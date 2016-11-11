@@ -158,21 +158,21 @@ indicated by a @sc{c:}, server responses by @sc{c:}:
 
 @smallexample
 @group
-  @clnt RESET
-  @srvr OK
-  @clnt RECIPIENT foo@@example.net
-  @srvr OK
-  @clnt RECIPIENT bar@@example.com
-  @srvr OK
-  @clnt PREP_ENCRYPT
-  @srvr S PROTOCOL OpenPGP
-  @srvr OK
-  @clnt INPUT FD=17
-  @srvr OK
-  @clnt OUTPUT FD=18
-  @srvr OK
-  @clnt ENCRYPT
-  @srvr OK
+  @clnt{RESET}
+  @srvr{OK}
+  @clnt{RECIPIENT foo@@example.net}
+  @srvr{OK}
+  @clnt{RECIPIENT bar@@example.com}
+  @srvr{OK}
+  @clnt{PREP_ENCRYPT}
+  @srvr{S PROTOCOL OpenPGP}
+  @srvr{OK}
+  @clnt{INPUT FD=17}
+  @srvr{OK}
+  @clnt{OUTPUT FD=18}
+  @srvr{OK}
+  @clnt{ENCRYPT}
+  @srvr{OK}
 @end group
 @end smallexample
 

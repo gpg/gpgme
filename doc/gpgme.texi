@@ -31,11 +31,11 @@ General Public License for more details.
 @end copying
 
 @c Macros used by the description of the UI server protocol
-@macro clnt
-  @sc{c:} @c
+@macro clnt{string}
+  @sc{c:} \string\
 @end macro
-@macro srvr
-  @sc{s:} @c
+@macro srvr{string}
+  @sc{s:} \string\
 @end macro
 
 
