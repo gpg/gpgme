@@ -5117,7 +5117,7 @@ secret key could not be retrieved, and passes through any errors that
 are reported by the crypto engine support routines.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_decrypt_verify (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{cipher}}, @w{gpgme_data_t @var{plain}})
+@deftypefun gpgme_error_t gpgme_op_decrypt_verify_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{cipher}}, @w{gpgme_data_t @var{plain}})
 The function @code{gpgme_op_decrypt_verify_start} initiates a
 @code{gpgme_op_decrypt_verify} operation.  It can be completed by
 calling @code{gpgme_wait} on the context.  @xref{Waiting For
