@@ -518,6 +518,30 @@ gpgme_get_armor (gpgme_ctx_t ctx)
 }
 
 
+/* Enable or disable the exporting session keys upon decryption.  */
+void
+gpgme_set_export_session_keys (gpgme_ctx_t ctx, int export_session_keys)
+{
+  TRACE2 (DEBUG_CTX, "gpgme_set_export_session_keys", ctx, "export_session_keys=%i (%s)",
+	  export_session_keys, export_session_keys ? "yes" : "no");
+
+  if (!ctx)
+    return;
+
+  ctx->export_session_keys = !!export_session_keys;
+}
+
+
+/* Return whether this context will export session keys upon decryption.  */
+int
+gpgme_get_export_session_keys (gpgme_ctx_t ctx)
+{
+  TRACE2 (DEBUG_CTX, "gpgme_get_export_session_keys", ctx, "ctx->export_session_keys=%i (%s)",
+	  ctx->export_session_keys, ctx->export_session_keys ? "yes" : "no");
+  return ctx->export_session_keys;
+}
+
+
 /* Enable or disable the use of the special textmode.  Textmode is for
   example used for the RFC2015 signatures; note that the updated RFC
   3156 mandates that the MUA does some preparations so that textmode

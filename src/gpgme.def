@@ -252,5 +252,7 @@ EXPORTS
     gpgme_op_query_swdb                   @189
     gpgme_op_query_swdb_result            @190
 
+    gpgme_set_export_session_keys         @191
+    gpgme_get_export_session_keys         @192
 ; END
 

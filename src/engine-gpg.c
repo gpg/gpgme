@@ -1550,12 +1550,15 @@ add_input_size_hint (engine_gpg_t gpg, gpgme_data_t data)
 
 
 static gpgme_error_t
-gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
+gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain, int export_session_key)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   err = add_arg (gpg, "--decrypt");
+
+  if (!err && export_session_key)
+    err = add_arg (gpg, "--show-session-key");
 
   /* Tell the gpg object about the data.  */
   if (!err)

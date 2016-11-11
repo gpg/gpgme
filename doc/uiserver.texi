@@ -260,12 +260,14 @@ encoded. For details on the file descriptor, see the description of
 @noindent
 The decryption is started with the command:
 
-@deffn Command DECRYPT -@w{}-protocol=@var{name} [-@w{}-no-verify]
+@deffn Command DECRYPT -@w{}-protocol=@var{name} [-@w{}-no-verify] [-@w{}-export-session-key]
 @var{name} is the encryption protocol used for the message. For a
 description of the allowed protocols see the @code{ENCRYPT} command.
-This argument is mandatory.  If the option @option{--no-verify} is given,
-the server should not try to verify a signature, in case the input data
-is an OpenPGP combined message.
+This argument is mandatory.  If the option @option{--no-verify} is
+given, the server should not try to verify a signature, in case the
+input data is an OpenPGP combined message. If the option
+@option{--export-session-key} is given and the underlying engine knows
+how to export the session key, it will appear on a status line
 @end deffn
 
 

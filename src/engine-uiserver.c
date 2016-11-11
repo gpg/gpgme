@@ -960,7 +960,8 @@ uiserver_reset (void *engine)
 
 static gpgme_error_t
 _uiserver_decrypt (void *engine, int verify,
-		   gpgme_data_t ciph, gpgme_data_t plain)
+		   gpgme_data_t ciph, gpgme_data_t plain,
+                   int export_session_key)
 {
   engine_uiserver_t uiserver = engine;
   gpgme_error_t err;
@@ -978,8 +979,9 @@ _uiserver_decrypt (void *engine, int verify,
   else
     return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
 
-  if (asprintf (&cmd, "DECRYPT%s%s", protocol,
-		verify ? "" : " --no-verify") < 0)
+  if (asprintf (&cmd, "DECRYPT%s%s%s", protocol,
+		verify ? "" : " --no-verify",
+                export_session_key ? " --export-session-key" : "") < 0)
     return gpg_error_from_syserror ();
 
   uiserver->input_cb.data = ciph;
@@ -1006,16 +1008,16 @@ _uiserver_decrypt (void *engine, int verify,
 
 
 static gpgme_error_t
-uiserver_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
+uiserver_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain, int export_session_key)
 {
-  return _uiserver_decrypt (engine, 0, ciph, plain);
+  return _uiserver_decrypt (engine, 0, ciph, plain, export_session_key);
 }
 
 
 static gpgme_error_t
-uiserver_decrypt_verify (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
+uiserver_decrypt_verify (void *engine, gpgme_data_t ciph, gpgme_data_t plain, int export_session_key)
 {
-  return _uiserver_decrypt (engine, 1, ciph, plain);
+  return _uiserver_decrypt (engine, 1, ciph, plain, export_session_key);
 }
 
 

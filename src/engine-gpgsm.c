@@ -1120,10 +1120,13 @@ gpgsm_reset (void *engine)
 
 
 static gpgme_error_t
-gpgsm_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain)
+gpgsm_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain, int export_session_key)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
+  /* gpgsm is not capable of exporting session keys right now, so we
+   * will ignore this if requested. */
+  (void)export_session_key;
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);

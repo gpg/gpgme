@@ -111,6 +111,9 @@ struct gpgme_context
    * unmodified string, as received form gpg, will be returned.  */
   unsigned int raw_description : 1;
 
+  /* True if session keys should be exported upon decryption.  */
+  unsigned int export_session_keys : 1;
+
   /* Flags for keylist mode.  */
   gpgme_keylist_mode_t keylist_mode;
 

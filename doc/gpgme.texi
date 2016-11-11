@@ -191,6 +191,7 @@ Context Attributes
 * Text Mode::                     Choosing canonical text mode.
 * Offline Mode::                  Choosing offline mode.
 * Included Certificates::         Including a number of certificates.
+* Exporting Session Keys::        Requesting session keys upon decryption.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
@@ -2351,6 +2352,7 @@ started.  In fact, these references are accessed through the
 * Offline Mode::                  Choosing offline mode.
 * Pinentry Mode::                 Choosing the pinentry mode.
 * Included Certificates::         Including a number of certificates.
+* Exporting Session Keys::        Requesting session keys upon decryption.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
@@ -2638,6 +2640,29 @@ all other engines.
 @deftypefun int gpgme_get_include_certs (@w{gpgme_ctx_t @var{ctx}})
 The function @code{gpgme_get_include_certs} returns the number of
 certificates to include into an S/MIME signed message.
+@end deftypefun
+
+
+@node Exporting Session Keys
+@subsection Exporting Session Keys
+@cindex context, exporting session keys
+@cindex Exporting Session Keys
+@cindex exporting session keys
+
+@deftypefun void gpgme_set_export_session_keys (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{yes}})
+The function @code{gpgme_set_export_session_keys} specifies whether
+the context should try to export the symmetric session key when
+decrypting data.  By default, session keys are not exported.
+
+Session keys are not exported if @var{yes} is zero, and
+enabled otherwise.
+@end deftypefun
+
+@deftypefun int gpgme_get_export_session_keys (@w{gpgme_ctx_t @var{ctx}})
+The function @code{gpgme_get_export_session_keys} returns @code{1} if
+the context will try to export the symmetric session key when
+decrypting, and @code{0} if not, or if @var{ctx} is not a valid
+pointer.
 @end deftypefun
 
 
@@ -4777,6 +4802,19 @@ This is a linked list of recipients to which this message was encrypted.
 @item char *file_name
 This is the filename of the original plaintext message file if it is
 known, otherwise this is a null pointer.
+
+@item char *session_key
+A textual representation (null-terminated string) of the session key
+used in symmetric encryption of the message, if the context has been
+set to export session keys (see @code{gpgme_get_export_session_keys}
+and @code{gpgme_set_export_session_keys}), and a session key was
+available for the most recent decryption operation.  Otherwise, this
+is a null pointer.
+
+You should never access this member of a
+@code{gpgme_op_decrypt_result_t} without first ensuring that
+@code{gpgme_get_export_session_keys} returns non-zero for the
+reporting context.
 @end table
 @end deftp
 

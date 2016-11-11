@@ -63,6 +63,9 @@ release_op_data (void *hook)
   if (opd->result.file_name)
     free (opd->result.file_name);
 
+  if (opd->result.session_key)
+    free (opd->result.session_key);
+
   while (recipient)
     {
       gpgme_recipient_t next = recipient->next;
@@ -277,6 +280,12 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       opd->last_recipient_p = &(*opd->last_recipient_p)->next;
       break;
 
+    case GPGME_STATUS_SESSION_KEY:
+      if (opd->result.session_key)
+        free (opd->result.session_key);
+      opd->result.session_key = strdup(args);
+      break;
+
     case GPGME_STATUS_NO_SECKEY:
       {
 	gpgme_recipient_t rec = opd->result.recipients;
@@ -381,7 +390,7 @@ decrypt_start (gpgme_ctx_t ctx, int synchronous,
 
   _gpgme_engine_set_status_handler (ctx->engine, decrypt_status_handler, ctx);
 
-  return _gpgme_engine_op_decrypt (ctx->engine, cipher, plain);
+  return _gpgme_engine_op_decrypt (ctx->engine, cipher, plain, ctx->export_session_keys);
 }
 
 
