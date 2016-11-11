@@ -6537,7 +6537,7 @@ case the state of @var{ctx} is not modified).
 
 
 @deftypefun gpgme_ctx_t gpgme_cancel_async (@w{gpgme_ctx_t @var{ctx}})
-The function @code{gpgme_cancel} attempts to cancel a pending
+The function @code{gpgme_cancel_async} attempts to cancel a pending
 operation in the context @var{ctx}.  This can be called by any thread
 at any time after starting an operation on the context, but will not
 take effect immediately.  The actual cancellation happens at the next
