@@ -304,6 +304,10 @@ public:
     GpgME::Error startSigning(const Data &plainText, Data &signature, SignatureMode mode);
     SigningResult signingResult() const;
 
+    // wrapper for gpgme_set_sender
+    const char *getSender();
+    GpgME::Error setSender(const char *sender);
+
     //
     // Encryption
     //

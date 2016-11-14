@@ -466,6 +466,16 @@ Error Context::setEngineHomeDirectory(const char *home_dir)
     return Error(gpgme_ctx_set_engine_info(d->ctx, gpgme_get_protocol(d->ctx), filename, home_dir));
 }
 
+Error Context::setSender (const char *sender)
+{
+    return Error(gpgme_set_sender(d->ctx, sender));
+}
+
+const char *Context::getSender ()
+{
+    return gpgme_get_sender(d->ctx);
+}
+
 //
 //
 // Key Management
