@@ -66,7 +66,7 @@ AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
               -DBUILDING_GPGMEPP
 
 libgpgmepp_la_LIBADD = ../../../src/libgpgme.la @LIBASSUAN_LIBS@
-libgpgmepp_la_LDFLAGS = -version-info \
+libgpgmepp_la_LDFLAGS = -no-undefined -version-info \
     @LIBGPGMEPP_LT_CURRENT@:@LIBGPGMEPP_LT_REVISION@:@LIBGPGMEPP_LT_AGE@
 
 if HAVE_W32_SYSTEM
