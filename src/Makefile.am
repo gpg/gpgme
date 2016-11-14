@@ -87,12 +87,12 @@ main_sources =								\
 	gpgconf.c queryswdb.c						\
 	sema.h priv-io.h $(system_components) sys-util.h dirinfo.c	\
 	debug.c debug.h gpgme.c version.c error.c \
-	ath.h ath.c $(system_components_not_extra)
+	ath.h ath.c
 
-libgpgme_la_SOURCES = $(main_sources)
+libgpgme_la_SOURCES = $(main_sources) $(system_components_not_extra)
 
 if BUILD_W32_GLIB
-libgpgme_glib_la_SOURCES = $(main_sources) ath.h ath.c w32-glib-io.c
+libgpgme_glib_la_SOURCES = $(main_sources) w32-glib-io.c
 endif
 
 # We use a global CFLAGS setting for all library
