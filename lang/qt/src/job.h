@@ -38,6 +38,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QMap>
 
 #ifdef BUILDING_QGPGME
 # include "error.h"
@@ -79,6 +80,20 @@ public:
     virtual GpgME::Error auditLogError() const;
     bool isAuditLogSupported() const;
 
+    /** Get the underlying context to set some additional options for a job.
+     *
+     * This is intended to provide more flexibility on configuring jobs before
+     * they are started.
+     * The context is still owned by the thread, do not delete it.
+     *
+     * This is a static method that takes the job as argument.
+     *
+     * This function may not be called for running jobs.
+     *
+     * @returns the context used by the job job or null.
+     */
+    static GpgME::Context *context(Job *job);
+
 public Q_SLOTS:
     virtual void slotCancel() = 0;
 
@@ -87,6 +102,7 @@ Q_SIGNALS:
     void done();
 };
 
+extern QMap <Job *, GpgME::Context *> g_context_map;
 }
 
 #endif // __KLEO_JOB_H__

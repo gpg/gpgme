@@ -62,6 +62,7 @@
 #include "keyformailboxjob.h"
 #include "wkspublishjob.h"
 #include "tofupolicyjob.h"
+#include "threadedjobmixin.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -78,7 +79,6 @@ QGpgME::Job::Job(QObject *parent)
 
 QGpgME::Job::~Job()
 {
-
 }
 
 QString QGpgME::Job::auditLogAsHtml() const
@@ -96,6 +96,14 @@ GpgME::Error QGpgME::Job::auditLogError() const
 bool QGpgME::Job::isAuditLogSupported() const
 {
     return auditLogError().code() != GPG_ERR_NOT_IMPLEMENTED;
+}
+
+QMap <QGpgME::Job *, GpgME::Context *> QGpgME::g_context_map;
+
+/* static */
+GpgME::Context *QGpgME::Job::context(QGpgME::Job *job)
+{
+    return QGpgME::g_context_map.value (job, nullptr);
 }
 
 #define make_job_subclass_ext(x,y)                \

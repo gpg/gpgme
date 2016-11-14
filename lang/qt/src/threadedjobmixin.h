@@ -48,6 +48,7 @@
 # include <gpgme++/interfaces/progressprovider.h>
 #endif
 
+#include "job.h"
 
 #include <cassert>
 
@@ -147,7 +148,6 @@ protected:
     explicit ThreadedJobMixin(GpgME::Context *ctx)
         : T_base(0), m_ctx(ctx), m_thread(), m_auditLog(), m_auditLogError()
     {
-
     }
 
     void lateInitialization()
@@ -155,6 +155,12 @@ protected:
         assert(m_ctx);
         QObject::connect(&m_thread, SIGNAL(finished()), this, SLOT(slotFinished()));
         m_ctx->setProgressProvider(this);
+        QGpgME::g_context_map.insert(this, m_ctx.get());
+    }
+
+    ~ThreadedJobMixin()
+    {
+        QGpgME::g_context_map.remove(this);
     }
 
     template <typename T_binder>

@@ -14,9 +14,12 @@ Noteworthy changes in version 1.7.2 (unreleased)
  gpgme_query_swdb_result_t       NEW.
  qt: DN                          NEW.
  qt: DN::Attribute               NEW.
+ qt: Job::context(Job*)          NEW.
  cpp: EngineInfo::Version::Version(const char*) NEW.
  cpp: EngineInfo::Version::Version()            NEW.
  cpp: SwdbResult                                NEW.
+ cpp: Context::setSender(const char*)           NEW.
+ cpp: Context::getSender()                      NEW.
 
 
 Noteworthy changes in version 1.7.1 (2016-10-18)

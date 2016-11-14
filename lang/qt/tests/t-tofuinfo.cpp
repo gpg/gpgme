@@ -152,6 +152,10 @@ private Q_SLOTS:
         const QByteArray data1(testMsg1);
         QByteArray plaintext;
 
+        auto ctx = Job::context(job);
+        Q_ASSERT(ctx);
+        ctx->setSender("alfa@example.net");
+
         auto result = job->exec(data1, plaintext);
         delete job;
 
