@@ -961,12 +961,15 @@ uiserver_reset (void *engine)
 static gpgme_error_t
 _uiserver_decrypt (void *engine, int verify,
 		   gpgme_data_t ciph, gpgme_data_t plain,
-                   int export_session_key)
+                   int export_session_key, const char *override_session_key)
 {
   engine_uiserver_t uiserver = engine;
   gpgme_error_t err;
   const char *protocol;
   char *cmd;
+
+  (void)override_session_key; /* Fixme: We need to see now to add this
+                               * to the UI server protocol  */
 
   if (!uiserver)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1008,16 +1011,21 @@ _uiserver_decrypt (void *engine, int verify,
 
 
 static gpgme_error_t
-uiserver_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain, int export_session_key)
+uiserver_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain,
+                  int export_session_key, const char *override_session_key)
 {
-  return _uiserver_decrypt (engine, 0, ciph, plain, export_session_key);
+  return _uiserver_decrypt (engine, 0, ciph, plain,
+                            export_session_key, override_session_key);
 }
 
 
 static gpgme_error_t
-uiserver_decrypt_verify (void *engine, gpgme_data_t ciph, gpgme_data_t plain, int export_session_key)
+uiserver_decrypt_verify (void *engine, gpgme_data_t ciph, gpgme_data_t plain,
+                         int export_session_key,
+                         const char *override_session_key)
 {
-  return _uiserver_decrypt (engine, 1, ciph, plain, export_session_key);
+  return _uiserver_decrypt (engine, 1, ciph, plain,
+                            export_session_key, override_session_key);
 }
 
 

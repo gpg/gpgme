@@ -77,7 +77,9 @@ decrypt_verify_start (gpgme_ctx_t ctx, int synchronous,
   _gpgme_engine_set_status_handler (ctx->engine,
 				    decrypt_verify_status_handler, ctx);
 
-  return _gpgme_engine_op_decrypt_verify (ctx->engine, cipher, plain, ctx->export_session_keys);
+  return _gpgme_engine_op_decrypt_verify (ctx->engine, cipher, plain,
+                                          ctx->export_session_keys,
+                                          ctx->override_session_key);
 }
 
 

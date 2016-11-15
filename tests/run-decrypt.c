@@ -51,9 +51,13 @@ print_result (gpgme_decrypt_result_t result)
 {
   gpgme_recipient_t recp;
   int count = 0;
+
   printf ("Original file name: %s\n", nonnull(result->file_name));
   printf ("Wrong key usage: %i\n", result->wrong_key_usage);
-  printf ("Unsupported algorithm: %s\n ", nonnull(result->unsupported_algorithm));
+  printf ("Unsupported algorithm: %s\n",
+          nonnull(result->unsupported_algorithm));
+  if (result->session_key)
+    printf ("Session key: %s\n", result->session_key);
 
   for (recp = result->recipients; recp->next; recp = recp->next)
     {
@@ -74,6 +78,8 @@ show_usage (int ex)
          "  --status         print status lines from the backend\n"
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
+         "  --export-session-key            show the session key\n"
+         "  --override-session-key STRING   use STRING as session key\n"
          , stderr);
   exit (ex);
 }
@@ -91,6 +97,8 @@ main (int argc, char **argv)
   gpgme_data_t out = NULL;
   gpgme_decrypt_result_t result;
   int print_status = 0;
+  int export_session_key = 0;
+  const char *override_session_key = NULL;
 
   if (argc)
     { argc--; argv++; }
@@ -125,6 +133,19 @@ main (int argc, char **argv)
           protocol = GPGME_PROTOCOL_CMS;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--export-session-key"))
+        {
+          export_session_key = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--override-session-key"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          override_session_key = *argv;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -152,6 +173,10 @@ main (int argc, char **argv)
       gpgme_set_status_cb (ctx, status_cb, NULL);
       gpgme_set_ctx_flag (ctx, "full-status", "1");
     }
+  if (export_session_key)
+    gpgme_set_ctx_flag (ctx, "export-session-key", "1");
+  if (override_session_key)
+    gpgme_set_ctx_flag (ctx, "override-session-key", override_session_key);
 
   err = gpgme_data_new_from_stream (&in, fp_in);
   if (err)

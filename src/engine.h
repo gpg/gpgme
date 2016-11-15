@@ -84,11 +84,14 @@ _gpgme_engine_set_colon_line_handler (engine_t engine,
 				      void *fnc_value);
 gpgme_error_t _gpgme_engine_op_decrypt (engine_t engine, gpgme_data_t ciph,
 					gpgme_data_t plain,
-                                        int export_session_key);
+                                        int export_session_key,
+                                        const char *override_session_key);
 gpgme_error_t _gpgme_engine_op_decrypt_verify (engine_t engine,
 					       gpgme_data_t ciph,
 					       gpgme_data_t plain,
-                                               int export_session_key);
+                                               int export_session_key,
+                                               const char *override_session_key
+                                               );
 gpgme_error_t _gpgme_engine_op_delete (engine_t engine, gpgme_key_t key,
 				       int allow_secret);
 gpgme_error_t _gpgme_engine_op_edit (engine_t engine, int type,

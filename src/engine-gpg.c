@@ -1550,7 +1550,8 @@ add_input_size_hint (engine_gpg_t gpg, gpgme_data_t data)
 
 
 static gpgme_error_t
-gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain, int export_session_key)
+gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain,
+             int export_session_key, const char *override_session_key)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -1559,6 +1560,13 @@ gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain, int export_ses
 
   if (!err && export_session_key)
     err = add_arg (gpg, "--show-session-key");
+
+  if (!err && override_session_key && *override_session_key)
+    {
+      err = add_arg (gpg, "--override-session-key");
+      if (!err)
+        err = add_arg (gpg, override_session_key);
+    }
 
   /* Tell the gpg object about the data.  */
   if (!err)

@@ -360,7 +360,7 @@ _gpgme_op_decrypt_init_result (gpgme_ctx_t ctx)
 
 static gpgme_error_t
 decrypt_start (gpgme_ctx_t ctx, int synchronous,
-		      gpgme_data_t cipher, gpgme_data_t plain)
+               gpgme_data_t cipher, gpgme_data_t plain)
 {
   gpgme_error_t err;
 
@@ -390,7 +390,9 @@ decrypt_start (gpgme_ctx_t ctx, int synchronous,
 
   _gpgme_engine_set_status_handler (ctx->engine, decrypt_status_handler, ctx);
 
-  return _gpgme_engine_op_decrypt (ctx->engine, cipher, plain, ctx->export_session_keys);
+  return _gpgme_engine_op_decrypt (ctx->engine, cipher, plain,
+                                   ctx->export_session_keys,
+                                   ctx->override_session_key);
 }
 
 

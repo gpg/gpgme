@@ -191,7 +191,6 @@ Context Attributes
 * Text Mode::                     Choosing canonical text mode.
 * Offline Mode::                  Choosing offline mode.
 * Included Certificates::         Including a number of certificates.
-* Exporting Session Keys::        Requesting session keys upon decryption.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
@@ -2314,10 +2313,12 @@ The function @code{gpgme_release} destroys the context with the handle
 The detailed result of an operation is returned in operation-specific
 structures such as @code{gpgme_decrypt_result_t}.  The corresponding
 retrieval functions such as @code{gpgme_op_decrypt_result} provide
-static access to the results after an operation completes.  The
-following interfaces make it possible to detach a result structure
-from its associated context and give it a lifetime beyond that of the
-current operation or context.
+static access to the results after an operation completes.  Those
+structures shall be considered read-only and an application must not
+allocated such a strucure on its own.  The following interfaces make
+it possible to detach a result structure from its associated context
+and give it a lifetime beyond that of the current operation or
+context.
 
 @deftypefun void gpgme_result_ref (@w{void *@var{result}})
 The function @code{gpgme_result_ref} acquires an additional reference
@@ -2352,7 +2353,6 @@ started.  In fact, these references are accessed through the
 * Offline Mode::                  Choosing offline mode.
 * Pinentry Mode::                 Choosing the pinentry mode.
 * Included Certificates::         Including a number of certificates.
-* Exporting Session Keys::        Requesting session keys upon decryption.
 * Key Listing Mode::              Selecting key listing mode.
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
@@ -2643,29 +2643,6 @@ certificates to include into an S/MIME signed message.
 @end deftypefun
 
 
-@node Exporting Session Keys
-@subsection Exporting Session Keys
-@cindex context, exporting session keys
-@cindex Exporting Session Keys
-@cindex exporting session keys
-
-@deftypefun void gpgme_set_export_session_keys (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{yes}})
-The function @code{gpgme_set_export_session_keys} specifies whether
-the context should try to export the symmetric session key when
-decrypting data.  By default, session keys are not exported.
-
-Session keys are not exported if @var{yes} is zero, and
-enabled otherwise.
-@end deftypefun
-
-@deftypefun int gpgme_get_export_session_keys (@w{gpgme_ctx_t @var{ctx}})
-The function @code{gpgme_get_export_session_keys} returns @code{1} if
-the context will try to export the symmetric session key when
-decrypting, and @code{0} if not, or if @var{ctx} is not a valid
-pointer.
-@end deftypefun
-
-
 @node Key Listing Mode
 @subsection Key Listing Mode
 @cindex key listing mode
@@ -2922,6 +2899,18 @@ Setting the @var{value} to "1" returns human readable strings in a raw
 format.  For example the non breaking space characters ("~") will not
 be removed from the @code{description} field of the
 @code{gpgme_tofu_info_t} object.
+
+@item "export-session-key"
+Using a @var{value} of "1" specifies that the context should try to
+export the symmetric session key when decrypting data.  By default, or
+when using an empty string or "0" for @var{value}, session keys are
+not exported.
+
+@item "override-session-key"
+The string given in @var{value} is passed to the GnuPG engine to override
+the session key for decryption.  The format of that session key is
+specific to GnuPG and can be retrieved during a decrypt operation when
+the context flag "export-session-key" is enabled.
 
 @end table
 
@@ -4798,8 +4787,10 @@ secret key for this recipient is not available, and 0 otherwise.
 This is a pointer to a structure used to store the result of a
 @code{gpgme_op_decrypt} operation.  After successfully decrypting
 data, you can retrieve the pointer to the result with
-@code{gpgme_op_decrypt_result}.  The structure contains the following
-members:
+@code{gpgme_op_decrypt_result}.  As with all result structures, it
+this structure shall be considered read-only and an application must
+not allocated such a strucure on its own.  The structure contains the
+following members:
 
 @table @code
 @item char *unsupported_algorithm
@@ -4817,17 +4808,12 @@ This is the filename of the original plaintext message file if it is
 known, otherwise this is a null pointer.
 
 @item char *session_key
-A textual representation (null-terminated string) of the session key
+A textual representation (nul-terminated string) of the session key
 used in symmetric encryption of the message, if the context has been
-set to export session keys (see @code{gpgme_get_export_session_keys}
-and @code{gpgme_set_export_session_keys}), and a session key was
-available for the most recent decryption operation.  Otherwise, this
-is a null pointer.
+set to export session keys (see @code{gpgme_set_ctx_flag,
+"export-session-key"}), and a session key was available for the most
+recent decryption operation.  Otherwise, this is a null pointer.
 
-You should never access this member of a
-@code{gpgme_op_decrypt_result_t} without first ensuring that
-@code{gpgme_get_export_session_keys} returns non-zero for the
-reporting context.
 @end table
 @end deftp
 

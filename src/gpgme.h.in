@@ -1040,13 +1040,6 @@ void gpgme_set_offline (gpgme_ctx_t ctx, int yes);
 /* Return non-zero if offline mode is set in CTX.  */
 int gpgme_get_offline (gpgme_ctx_t ctx);
 
-/* If YES is non-zero, try to return session keys during decryption,
-   do not otherwise.  */
-void gpgme_set_export_session_keys (gpgme_ctx_t ctx, int yes);
-
-/* Return non-zero if export_session_keys is set in CTX.  */
-int gpgme_get_export_session_keys (gpgme_ctx_t ctx);
-
 /* Use whatever the default of the backend crypto engine is.  */
 #define GPGME_INCLUDE_CERTS_DEFAULT	-256
 

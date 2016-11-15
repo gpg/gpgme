@@ -126,9 +126,6 @@ GPGME_1.1 {
 
     gpgme_op_query_swdb;
     gpgme_op_query_swdb_result;
-
-    gpgme_set_export_session_keys;
-    gpgme_get_export_session_keys;
 };
 
 

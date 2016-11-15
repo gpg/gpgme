@@ -247,6 +247,7 @@ gpgme_release (gpgme_ctx_t ctx)
   free (ctx->signers);
   free (ctx->lc_ctype);
   free (ctx->lc_messages);
+  free (ctx->override_session_key);
   _gpgme_engine_info_release (ctx->engine_info);
   ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
@@ -515,6 +516,17 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
     {
       ctx->raw_description = abool;
     }
+  else if (!strcmp (name, "export-session-key"))
+    {
+      ctx->export_session_keys = abool;
+    }
+  else if (!strcmp (name, "override-session-key"))
+    {
+      free (ctx->override_session_key);
+      ctx->override_session_key = strdup (value);
+      if (!ctx->override_session_key)
+        err = gpg_error_from_syserror ();
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -526,7 +538,7 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
  * of valid names.  If the NAME is unknown NULL is returned.  For a
  * boolean flag an empty string is returned for False and the string
  * "1" for True; thus either atoi or a simple string test can be
- * used. */
+ * used.  */
 const char *
 gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
 {
@@ -540,32 +552,16 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
     {
       return ctx->raw_description? "1":"";
     }
+  else if (!strcmp (name, "export-session-key"))
+    {
+      return ctx->export_session_keys? "1":"";
+    }
+  else if (!strcmp (name, "override-session-key"))
+    {
+      return ctx->override_session_key? ctx->override_session_key : "";
+    }
   else
     return NULL;
-}
-
-
-/* Enable or disable the exporting session keys upon decryption.  */
-void
-gpgme_set_export_session_keys (gpgme_ctx_t ctx, int export_session_keys)
-{
-  TRACE2 (DEBUG_CTX, "gpgme_set_export_session_keys", ctx, "export_session_keys=%i (%s)",
-	  export_session_keys, export_session_keys ? "yes" : "no");
-
-  if (!ctx)
-    return;
-
-  ctx->export_session_keys = !!export_session_keys;
-}
-
-
-/* Return whether this context will export session keys upon decryption.  */
-int
-gpgme_get_export_session_keys (gpgme_ctx_t ctx)
-{
-  TRACE2 (DEBUG_CTX, "gpgme_get_export_session_keys", ctx, "ctx->export_session_keys=%i (%s)",
-	  ctx->export_session_keys, ctx->export_session_keys ? "yes" : "no");
-  return ctx->export_session_keys;
 }
 
 
