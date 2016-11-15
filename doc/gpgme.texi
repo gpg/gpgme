@@ -2315,7 +2315,7 @@ structures such as @code{gpgme_decrypt_result_t}.  The corresponding
 retrieval functions such as @code{gpgme_op_decrypt_result} provide
 static access to the results after an operation completes.  Those
 structures shall be considered read-only and an application must not
-allocated such a strucure on its own.  The following interfaces make
+allocate such a structure on its own.  The following interfaces make
 it possible to detach a result structure from its associated context
 and give it a lifetime beyond that of the current operation or
 context.
