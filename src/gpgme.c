@@ -85,39 +85,6 @@ gpgme_set_global_flag (const char *name, const char *value)
 }
 
 
-/* Set the flag NAME for CTX to VALUE.  The supported flags are:
- *
- * - full-status :: With a value of "1" the status callback set by
- *                  gpgme_set_status_cb returns all status lines
- *                  except for PROGRESS lines.  With the default of
- *                  "0" the status callback is only called in certain
- *                  situations.
- */
-gpgme_error_t
-gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
-{
-  int abool;
-
-  if (!ctx || !name || !value)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  abool = *value? !!atoi (value) : 0;
-
-  if (!strcmp (name, "full-status"))
-    {
-      ctx->full_status = abool;
-    }
-  else if (!strcmp (name, "raw-description"))
-    {
-      ctx->raw_description = abool;
-    }
-  else
-    return gpg_error (GPG_ERR_UNKNOWN_NAME);
-
-  return 0;
-}
-
-
 
 /* Create a new context as an environment for GPGME crypto
    operations.  */
@@ -515,6 +482,66 @@ gpgme_get_armor (gpgme_ctx_t ctx)
   TRACE2 (DEBUG_CTX, "gpgme_get_armor", ctx, "ctx->use_armor=%i (%s)",
 	  ctx->use_armor, ctx->use_armor ? "yes" : "no");
   return ctx->use_armor;
+}
+
+
+/* Set the flag NAME for CTX to VALUE.  The supported flags are:
+ *
+ * - full-status :: With a value of "1" the status callback set by
+ *                  gpgme_set_status_cb returns all status lines
+ *                  except for PROGRESS lines.  With the default of
+ *                  "0" the status callback is only called in certain
+ *                  situations.
+ */
+gpgme_error_t
+gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
+{
+  gpgme_error_t err = 0;
+  int abool;
+
+  TRACE2 (DEBUG_CTX, "gpgme_set_ctx_flag", ctx,
+          "name='%s' value='%s'",
+	  name? name:"(null)", value?value:"(null)");
+
+  abool = (value && *value)? !!atoi (value) : 0;
+
+  if (!ctx || !name || !value)
+    err = gpg_error (GPG_ERR_INV_VALUE);
+  else if (!strcmp (name, "full-status"))
+    {
+      ctx->full_status = abool;
+    }
+  else if (!strcmp (name, "raw-description"))
+    {
+      ctx->raw_description = abool;
+    }
+  else
+    err = gpg_error (GPG_ERR_UNKNOWN_NAME);
+
+  return err;
+}
+
+
+/* Get the context flag named NAME.  See gpgme_set_ctx_flag for a list
+ * of valid names.  If the NAME is unknown NULL is returned.  For a
+ * boolean flag an empty string is returned for False and the string
+ * "1" for True; thus either atoi or a simple string test can be
+ * used. */
+const char *
+gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
+{
+  if (!ctx || !name)
+    return NULL;
+  else if (!strcmp (name, "full-status"))
+    {
+      return ctx->full_status? "1":"";
+    }
+  else if (!strcmp (name, "raw-description"))
+    {
+      return ctx->raw_description? "1":"";
+    }
+  else
+    return NULL;
 }
 
 

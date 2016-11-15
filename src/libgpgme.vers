@@ -101,6 +101,7 @@ GPGME_1.1 {
 
     gpgme_pubkey_algo_string;
     gpgme_set_ctx_flag;
+    gpgme_get_ctx_flag;
     gpgme_data_set_flag;
 
     gpgme_op_createkey_start;

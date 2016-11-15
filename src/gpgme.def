@@ -254,5 +254,6 @@ EXPORTS
 
     gpgme_set_export_session_keys         @191
     gpgme_get_export_session_keys         @192
+    gpgme_get_ctx_flag                    @193
 ; END
 

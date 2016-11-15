@@ -2929,6 +2929,19 @@ This function returns @code{0} on success.
 @end deftypefun
 
 
+@deftypefun {const char *} gpgme_get_ctx_flag  @
+            (@w{gpgme_ctx_t @var{ctx}}, @
+            @w{const char *@var{name}})
+
+The value of flags settable by @code{gpgme_set_ctx_flag} can be
+retrieved by this function.  If @var{name} is unknown the function
+returns @code{NULL}.  For boolean flags an empty string is returned
+for False and the string "1" is returned for True; either atoi(3) or a
+test for an empty string can be used to get the boolean value.
+
+@end deftypefun
+
+
 @node Locale
 @subsection Locale
 @cindex locale, default

@@ -99,6 +99,7 @@ main (int argc, char **argv)
   const char *fpr;
   const char *policystr = NULL;
   gpgme_tofu_policy_t policy;
+  const char *s;
 
   if (argc)
     { argc--; argv++; }
@@ -145,10 +146,31 @@ main (int argc, char **argv)
   fail_if_err (err);
   gpgme_set_protocol (ctx, protocol);
   gpgme_set_armor (ctx, 1);
+
+
+  s = gpgme_get_ctx_flag (ctx, "no_such-flag");
+  if (s)
+    {
+      fprintf (stderr, PGM ": gpgme_get_ctx_flag failed "
+               "(bad name not detected)\n");
+      exit (1);
+    }
+  s = gpgme_get_ctx_flag (ctx, "full-status");
+  if (!s || *s)
+    {
+      fprintf (stderr, PGM ": gpgme_get_ctx_flag failed (wrong false)\n");
+      exit (1);
+    }
   if (print_status)
     {
       gpgme_set_status_cb (ctx, status_cb, NULL);
       gpgme_set_ctx_flag (ctx, "full-status", "1");
+      s = gpgme_get_ctx_flag (ctx, "full-status");
+      if (!s || strcmp (s, "1"))
+        {
+          fprintf (stderr, PGM ": gpgme_get_ctx_flag fauled (wrong true)\n");
+          exit (1);
+        }
     }
 
   err = gpgme_get_key (ctx, fpr, &thekey, 0);

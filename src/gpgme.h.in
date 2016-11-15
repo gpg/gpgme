@@ -999,6 +999,9 @@ void gpgme_release (gpgme_ctx_t ctx);
 gpgme_error_t gpgme_set_ctx_flag (gpgme_ctx_t ctx,
                                   const char *name, const char *value);
 
+/* Get the value of the flag NAME from CTX.  */
+const char *gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name);
+
 /* Set the protocol to be used by CTX to PROTO.  */
 gpgme_error_t gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t proto);
 
