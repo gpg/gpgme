@@ -153,7 +153,8 @@ protected:
     void lateInitialization()
     {
         assert(m_ctx);
-        QObject::connect(&m_thread, SIGNAL(finished()), this, SLOT(slotFinished()));
+        QObject::connect(&m_thread, &QThread::finished, this,
+                         &mixin_type::slotFinished);
         m_ctx->setProgressProvider(this);
         QGpgME::g_context_map.insert(this, m_ctx.get());
     }
