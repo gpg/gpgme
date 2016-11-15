@@ -19,7 +19,7 @@
 # 02111-1307, USA
 
 EXTRA_DIST = GpgmeppConfig.cmake.in.in GpgmeppConfigVersion.cmake.in \
-             gpgmepp_version.h.in
+             gpgmepp_version.h.in GpgmeppConfig-w32.cmake.in.in
 
 lib_LTLIBRARIES = libgpgmepp.la
 
@@ -70,16 +70,15 @@ libgpgmepp_la_LDFLAGS = -no-undefined -version-info \
     @LIBGPGMEPP_LT_CURRENT@:@LIBGPGMEPP_LT_REVISION@:@LIBGPGMEPP_LT_AGE@
 
 if HAVE_W32_SYSTEM
-libsuffix=.dll.a
+GpgmeppConfig.cmake: GpgmeppConfig-w32.cmake.in
+	sed -e 's|[@]resolved_bindir@|$(bindir)|g' < "$<" | \
+	sed -e 's|[@]resolved_libdir@|$(libdir)|g' | \
+	sed -e 's|[@]resolved_includedir@|$(includedir)|g' > $@
 else
-libsuffix=.so
-endif
-
 GpgmeppConfig.cmake: GpgmeppConfig.cmake.in
 	sed -e 's|[@]resolved_libdir@|$(libdir)|g' < "$<" | \
-	sed -e 's|[@]libsuffix@|$(libsuffix)|g' | \
 	sed -e 's|[@]resolved_includedir@|$(includedir)|g' > $@
-
+endif
 install-cmake-files: GpgmeppConfig.cmake GpgmeppConfigVersion.cmake
 	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/Gpgmepp
 	$(INSTALL) -m 644 GpgmeppConfig.cmake \

@@ -19,7 +19,8 @@
 # 02111-1307, USA
 lib_LTLIBRARIES = libqgpgme.la
 EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
-             gpgme_backend_debug.h qgpgme_version.h.in
+             gpgme_backend_debug.h qgpgme_version.h.in \
+             QGpgmeConfig.cmake.in.in
 
 qgpgme_sources = \
     dataprovider.cpp job.cpp multideletejob.cpp qgpgmeadduseridjob.cpp \
@@ -220,15 +221,15 @@ libqgpgme_la_LDFLAGS = -no-undefined -version-info \
     @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
 
 if HAVE_W32_SYSTEM
-libsuffix=.dll.a
+QGpgmeConfig.cmake: QGpgmeConfig-w32.cmake.in
+	sed -e 's|[@]resolved_bindir@|$(bindir)|g' < "$<" | \
+	sed -e 's|[@]resolved_libdir@|$(libdir)|g' | \
+	sed -e 's|[@]resolved_includedir@|$(includedir)|g' > $@
 else
-libsuffix=.so
-endif
-
 QGpgmeConfig.cmake: QGpgmeConfig.cmake.in
 	sed -e 's|[@]resolved_libdir@|$(libdir)|g' < "$<" | \
-	sed -e 's|[@]libsuffix@|$(libsuffix)|g' | \
 	sed -e 's|[@]resolved_includedir@|$(includedir)|g' > $@
+endif
 
 $(camelcase_headers): Makefile.am
 	echo -n "#include \"qgpgme/" > "$@"

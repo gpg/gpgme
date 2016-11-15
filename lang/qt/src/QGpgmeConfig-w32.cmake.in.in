@@ -62,10 +62,14 @@ unset(_expectedTargets)
 add_library(QGpgme SHARED IMPORTED)
 
 set_target_properties(QGpgme PROPERTIES
+  IMPORTED_IMPLIB_RELEASE "@resolved_libdir@/libqgpgme.dll.a"
   INTERFACE_INCLUDE_DIRECTORIES "@resolved_includedir@/qgpgme;@resolved_includedir@"
   INTERFACE_LINK_LIBRARIES "Gpgmepp;Qt5::Core"
-  IMPORTED_LOCATION "@resolved_libdir@/libqgpgme.so"
+  IMPORTED_LOCATION "@resolved_libdir@/libqgpgme-7.dll"
 )
+
+list(APPEND _IMPORT_CHECK_TARGETS QGgpme )
+list(APPEND _IMPORT_CHECK_FILES_FOR_Qgpgme "@resolved_libdir@/libqgpgme.dll.a" "@resolved_bindir@/libqgpgme-7.dll" )
 
 if(CMAKE_VERSION VERSION_LESS 2.8.12)
   message(FATAL_ERROR "This file relies on consumers using CMake 2.8.12 or greater.")

@@ -59,6 +59,9 @@ LIBGPGME_LT_CURRENT=27
 LIBGPGME_LT_AGE=16
 LIBGPGME_LT_REVISION=0
 
+# If there is an ABI break in gpgmepp or qgpgme also bump the
+# version in IMPORTED_LOCATION in the GpgmeppConfig-w32.cmake.in.in
+
 LIBGPGMEPP_LT_CURRENT=8
 LIBGPGMEPP_LT_AGE=2
 LIBGPGMEPP_LT_REVISION=0
@@ -873,10 +876,12 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 src/gpgme.h)
 AC_CONFIG_FILES(src/gpgme-config, chmod +x src/gpgme-config)
 AC_CONFIG_FILES(lang/cpp/Makefile lang/cpp/src/Makefile)
+AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfig-w32.cmake.in)
 AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfig.cmake.in)
 AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfigVersion.cmake)
 AC_CONFIG_FILES(lang/cpp/src/gpgmepp_version.h)
 AC_CONFIG_FILES(lang/qt/Makefile lang/qt/src/Makefile)
+AC_CONFIG_FILES(lang/qt/src/QGpgmeConfig-w32.cmake.in)
 AC_CONFIG_FILES(lang/qt/src/QGpgmeConfig.cmake.in)
 AC_CONFIG_FILES(lang/qt/src/QGpgmeConfigVersion.cmake)
 AC_CONFIG_FILES(lang/qt/tests/Makefile)
