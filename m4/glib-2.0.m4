@@ -2,11 +2,11 @@
 # Owen Taylor     1997-2001
 
 dnl AM_PATH_GLIB_2_0([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND [, MODULES]]]])
-dnl Test for GLIB, and define GLIB_CFLAGS and GLIB_LIBS, if gmodule, gobject or 
+dnl Test for GLIB, and define GLIB_CFLAGS and GLIB_LIBS, if gmodule, gobject or
 dnl gthread is specified in MODULES, pass to pkg-config
 dnl
 AC_DEFUN([AM_PATH_GLIB_2_0],
-[dnl 
+[dnl
 dnl Get the cflags and libraries from pkg-config
 dnl
 AC_ARG_ENABLE(glibtest, [  --disable-glibtest      do not try to compile and run a test GLIB program],
@@ -16,16 +16,16 @@ AC_ARG_ENABLE(glibtest, [  --disable-glibtest      do not try to compile and run
   for module in . $4
   do
       case "$module" in
-         gmodule) 
+         gmodule)
              pkg_config_args="$pkg_config_args gmodule-2.0"
          ;;
-         gmodule-no-export) 
+         gmodule-no-export)
              pkg_config_args="$pkg_config_args gmodule-no-export-2.0"
          ;;
-         gobject) 
+         gobject)
              pkg_config_args="$pkg_config_args gobject-2.0"
          ;;
-         gthread) 
+         gthread)
              pkg_config_args="$pkg_config_args gthread-2.0"
          ;;
       esac
@@ -92,7 +92,7 @@ dnl
 #include <stdio.h>
 #include <stdlib.h>
 
-int 
+int
 main ()
 {
   int major, minor, micro;
@@ -111,7 +111,7 @@ main ()
       (glib_minor_version != $glib_config_minor_version) ||
       (glib_micro_version != $glib_config_micro_version))
     {
-      printf("\n*** 'pkg-config --modversion glib-2.0' returned %d.%d.%d, but GLIB (%d.%d.%d)\n", 
+      printf("\n*** 'pkg-config --modversion glib-2.0' returned %d.%d.%d, but GLIB (%d.%d.%d)\n",
              $glib_config_major_version, $glib_config_minor_version, $glib_config_micro_version,
              glib_major_version, glib_minor_version, glib_micro_version);
       printf ("*** was found! If pkg-config was correct, then it is best\n");
@@ -121,7 +121,7 @@ main ()
       printf("*** required on your system.\n");
       printf("*** If pkg-config was wrong, set the environment variable PKG_CONFIG_PATH\n");
       printf("*** to point to the correct configuration files\n");
-    } 
+    }
   else if ((glib_major_version != GLIB_MAJOR_VERSION) ||
 	   (glib_minor_version != GLIB_MINOR_VERSION) ||
            (glib_micro_version != GLIB_MICRO_VERSION))
@@ -165,12 +165,12 @@ main ()
   fi
   if test "x$no_glib" = x ; then
      AC_MSG_RESULT(yes (version $glib_config_major_version.$glib_config_minor_version.$glib_config_micro_version))
-     ifelse([$2], , :, [$2])     
+     ifelse([$2], , :, [$2])
   else
      AC_MSG_RESULT(no)
      if test "$PKG_CONFIG" = "no" ; then
        echo "*** A new enough version of pkg-config was not found."
-       echo "*** See http://www.freedesktop.org/software/pkgconfig/"
+       echo "*** See https://www.freedesktop.org/software/pkgconfig/"
      else
        if test -f conf.glibtest ; then
         :

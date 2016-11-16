@@ -26,7 +26,7 @@
  *
  * You should have received a copies of the GNU General Public License
  * and the GNU Lesser General Public License along with this program;
- * if not, see <http://www.gnu.org/licenses/>.
+ * if not, see <https://www.gnu.org/licenses/>.
  */
 
 /* This file may be used as part of GnuPG or standalone.  A GnuPG
@@ -1518,7 +1518,7 @@ ARGPARSE_STR2(ARGPARSE_GPL_VERSION)
 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
 "GNU General Public License for more details.\n\n"
 "You should have received a copy of the GNU General Public License\n"
-"along with this software.  If not, see <http://www.gnu.org/licenses/>.\n";
+"along with this software.  If not, see <https://www.gnu.org/licenses/>.\n";
       break;
     case 40: /* short and long usage */
     case 41: p = ""; break;
