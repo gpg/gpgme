@@ -64,7 +64,7 @@ following ways:
 a) If you have a trusted Version of GnuPG installed, you can simply check
    the supplied signature:
 
-	$ gpg --verify gpgme-x.y.z.tar.gz.sig
+	$ gpg --verify gpgme-x.y.z.tar.gz.sig gpgme-x.y.z.tar.gz
 
    This checks that the detached signature gpgme-x.y.z.tar.gz.sig is
    indeed a a signature of gpgme-x.y.z.tar.gz.  The key used to create

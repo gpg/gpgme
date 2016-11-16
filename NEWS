@@ -1,9 +1,22 @@
-Noteworthy changes in version 1.7.2 (unreleased)
+Noteworthy changes in version 1.8.0 (2016-11-16)
 ------------------------------------------------
 
  * The module of the Python bindings has been renamed to 'gpg'.
 
+ * New interface to query current software versions.
+
+ * New feature to use gpg's --{show,override}session-key options.
+
+ * New interface to set the sender of a mail.
+
  * qt: Added Distinguished Name parser from libkleo
+
+ * The --homedir option is now used with recent gpgconf versions.
+
+ * On 64 bit Windows systems gpgconf is now properly located.
+
+ * The internal locking functions have been replaced by libgpg-error
+   locking functions.
 
  * Interface changes relative to the 1.7.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -13,6 +26,7 @@ Noteworthy changes in version 1.7.2 (unreleased)
  gpgme_op_query_swdb_result      NEW.
  gpgme_query_swdb_result_t       NEW.
  gpgme_get_ctx_flag              NEW.
+ gpgme_decrypt_result_t          EXTENDED: New field session_key.
  qt: DN                          NEW.
  qt: DN::Attribute               NEW.
  qt: Job::context(Job*)          NEW.
@@ -21,6 +35,8 @@ Noteworthy changes in version 1.7.2 (unreleased)
  cpp: SwdbResult                                NEW.
  cpp: Context::setSender(const char*)           NEW.
  cpp: Context::getSender()                      NEW.
+
+ [c=C28/A17/R0 cpp=C9/A3/R0 qt=C8/A1/R0]
 
 
 Noteworthy changes in version 1.7.1 (2016-10-18)
