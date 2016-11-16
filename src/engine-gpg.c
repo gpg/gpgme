@@ -139,6 +139,9 @@ struct engine_gpg
 
   struct gpgme_io_cbs io_cbs;
   gpgme_pinentry_mode_t pinentry_mode;
+
+  /* NULL or the data object fed to --override_session_key-fd.  */
+  gpgme_data_t override_session_key;
 };
 
 typedef struct engine_gpg *engine_gpg_t;
@@ -440,6 +443,8 @@ gpg_release (void *engine)
     free_argv (gpg->argv);
   if (gpg->cmd.keyword)
     free (gpg->cmd.keyword);
+
+  gpgme_data_release (gpg->override_session_key);
 
   free (gpg);
 }
@@ -1563,9 +1568,30 @@ gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain,
 
   if (!err && override_session_key && *override_session_key)
     {
-      err = add_arg (gpg, "--override-session-key");
-      if (!err)
-        err = add_arg (gpg, override_session_key);
+      if (have_gpg_version (gpg, "2.1.16"))
+        {
+          gpgme_data_release (gpg->override_session_key);
+          TRACE2 (DEBUG_ENGINE, "override", gpg, "seskey='%s' len=%zu\n",
+                  override_session_key,
+                  strlen (override_session_key));
+
+          err = gpgme_data_new_from_mem (&gpg->override_session_key,
+                                         override_session_key,
+                                         strlen (override_session_key), 1);
+          if (!err)
+            {
+              err = add_arg (gpg, "--override-session-key-fd");
+              if (!err)
+                err = add_data (gpg, gpg->override_session_key, -2, 0);
+            }
+        }
+      else
+        {
+          /* Using that option may leak the session key via ps(1).  */
+          err = add_arg (gpg, "--override-session-key");
+          if (!err)
+            err = add_arg (gpg, override_session_key);
+        }
     }
 
   /* Tell the gpg object about the data.  */

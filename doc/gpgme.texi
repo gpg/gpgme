@@ -2910,7 +2910,9 @@ not exported.
 The string given in @var{value} is passed to the GnuPG engine to override
 the session key for decryption.  The format of that session key is
 specific to GnuPG and can be retrieved during a decrypt operation when
-the context flag "export-session-key" is enabled.
+the context flag "export-session-key" is enabled.  Please be aware that
+using this feature with GnuPG < 2.1.16 will leak the session key on
+many platforms via ps(1).
 
 @end table
 

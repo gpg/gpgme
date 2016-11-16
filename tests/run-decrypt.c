@@ -185,7 +185,8 @@ main (int argc, char **argv)
     }
   if (override_session_key)
     {
-      err = gpgme_set_ctx_flag (ctx, "overrride-session-key", "1");
+      err = gpgme_set_ctx_flag (ctx, "override-session-key",
+                                override_session_key);
       if (err)
         {
           fprintf (stderr, PGM ": error overriding session key: %s\n",
