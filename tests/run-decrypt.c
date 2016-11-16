@@ -174,9 +174,25 @@ main (int argc, char **argv)
       gpgme_set_ctx_flag (ctx, "full-status", "1");
     }
   if (export_session_key)
-    gpgme_set_ctx_flag (ctx, "export-session-key", "1");
+    {
+      err = gpgme_set_ctx_flag (ctx, "export-session-key", "1");
+      if (err)
+        {
+          fprintf (stderr, PGM ": error requesting exported session key: %s\n",
+                   gpgme_strerror (err));
+          exit (1);
+        }
+    }
   if (override_session_key)
-    gpgme_set_ctx_flag (ctx, "override-session-key", override_session_key);
+    {
+      err = gpgme_set_ctx_flag (ctx, "overrride-session-key", "1");
+      if (err)
+        {
+          fprintf (stderr, PGM ": error overriding session key: %s\n",
+                   gpgme_strerror (err));
+          exit (1);
+        }
+    }
 
   err = gpgme_data_new_from_stream (&in, fp_in);
   if (err)
@@ -201,10 +217,11 @@ main (int argc, char **argv)
       fprintf (stderr, PGM ": decrypt failed: %s\n", gpgme_strerror (err));
       exit (1);
     }
-  if (result) {
-    print_result (result);
-    print_data (out);
-  }
+  if (result)
+    {
+      print_result (result);
+      print_data (out);
+    }
 
   gpgme_data_release (out);
   gpgme_data_release (in);

@@ -4814,6 +4814,11 @@ set to export session keys (see @code{gpgme_set_ctx_flag,
 "export-session-key"}), and a session key was available for the most
 recent decryption operation.  Otherwise, this is a null pointer.
 
+You must not try to access this member of the struct unless
+@code{gpgme_set_ctx_flag (ctx, "export-session-key")} returns success
+or @code{gpgme_get_ctx_flag (ctx, "export-session-key")} returns true
+(non-empty string).
+
 @end table
 @end deftp
 
