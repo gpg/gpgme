@@ -81,7 +81,7 @@ upload: dist/gpg-$(VERSION).tar.gz dist/gpg-$(VERSION).tar.gz.asc
 	twine upload $^
 
 CLEANFILES = gpgme.h errors.i gpgme_wrap.c gpg/gpgme.py \
-	  data.h config.h copystamp tofu.db
+	  data.h config.h copystamp
 
 # Remove the rest.
 #

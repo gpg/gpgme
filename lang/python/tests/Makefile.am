@@ -73,7 +73,7 @@ xcheck: ./pubring-stamp
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ gpg.conf pubring.gpg~ \
-	random_seed .gpg-v21-migrated \
+	random_seed .gpg-v21-migrated tofu.db \
         pubring-stamp private-keys-v1.d/gpg-sample.stamp
 
 private_keys = \
