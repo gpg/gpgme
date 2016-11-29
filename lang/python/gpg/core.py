@@ -204,6 +204,14 @@ class Context(GpgmeWrapper):
         self.pinentry_mode = pinentry_mode
         self.protocol = protocol
 
+    def __repr__(self):
+        return (
+            "Context(armor={0.armor}, "
+            "textmode={0.textmode}, offline={0.offline}, "
+            "signers={0.signers}, pinentry_mode={0.pinentry_mode}, "
+            "protocol={0.protocol}"
+            ")").format(self)
+
     def encrypt(self, plaintext, recipients=[], sign=True, sink=None,
                 passphrase=None, always_trust=False, add_encrypt_to=False,
                 prepare=False, expect_sign=False, compress=True):
