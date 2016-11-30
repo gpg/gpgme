@@ -64,10 +64,10 @@ class Result(object):
 
             setattr(self, key, getattr(fragile, key))
 
-    def __str__(self):
-        return '<{} {}>'.format(
+    def __repr__(self):
+        return '{}({})'.format(
             self.__class__.__name__,
-            ', '.join('{}: {}'.format(k, getattr(self, k))
+            ', '.join('{}={!r}'.format(k, getattr(self, k))
                       for k in dir(self) if not k.startswith('_')))
 
 class InvalidKey(Result):
