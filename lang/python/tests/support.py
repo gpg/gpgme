@@ -48,7 +48,11 @@ def print_data(data):
         except:
             # Hope for the best.
             pass
-        sys.stdout.buffer.write(data)
+
+        if hasattr(sys.stdout, "buffer"):
+            sys.stdout.buffer.write(data)
+        else:
+            sys.stdout.write(data)
 
 def mark_key_trusted(ctx, key):
     class Editor(object):
