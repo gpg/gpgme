@@ -39,6 +39,8 @@ parser.add_argument('tests', metavar='TEST', type=str, nargs='+',
                     help='A test to run')
 parser.add_argument('-v', '--verbose', action="store_true", default=False,
                     help='Be verbose.')
+parser.add_argument('-q', '--quiet', action="store_true", default=False,
+                    help='Be quiet.')
 parser.add_argument('--interpreters', metavar='PYTHON', type=str,
                     default=[], action=SplitAndAccumulate,
                     help='Use these interpreters to run the tests, ' +
@@ -72,12 +74,15 @@ for interpreter in args.interpreters:
     env = dict(os.environ)
     env["PYTHONPATH"] = builddirs[0]
 
-    print("Running tests using {0} ({1})...".format(interpreter, version))
+    if not args.quiet:
+        print("Running tests using {0} ({1})...".format(interpreter, version))
+
     for test in args.tests:
         status = subprocess.call(
             [interpreter, os.path.join(args.srcdir, test)],
             env=env, stdout=out, stderr=err)
-        print("{0}: {1}".format(status_to_str(status), test))
+        if not args.quiet:
+            print("{0}: {1}".format(status_to_str(status), test))
         results.append(status)
 
 def count(status):
@@ -85,6 +90,8 @@ def count(status):
 def failed():
     return len(list(filter(lambda x: x not in (0, 77, 99), results)))
 
-print("{0} tests run, {1} succeeded, {2} failed, {3} skipped.".format(
-    len(results), count(0), failed(), count(77)))
-sys.exit(len(results) - count(0))
+if not args.quiet:
+    print("{0} tests run, {1} succeeded, {2} failed, {3} skipped.".format(
+        len(results), count(0), failed(), count(77)))
+    sys.exit(len(results) - count(0))
+sys.exit(results[0])
