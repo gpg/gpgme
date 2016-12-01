@@ -424,69 +424,24 @@
 
 
 /* Wrap the fragile result objects into robust Python ones.  */
-%typemap(out) gpgme_encrypt_result_t {
+%define wrapresult(cls, name)
+%typemap(out) cls {
   PyObject *fragile;
   fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
                                %newpointer_flags);
-  $result = _gpg_wrap_result(fragile, "EncryptResult");
+  $result = _gpg_wrap_result(fragile, name);
   Py_DECREF(fragile);
 }
+%enddef
 
-%typemap(out) gpgme_decrypt_result_t {
-  PyObject *fragile;
-  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
-                               %newpointer_flags);
-  $result = _gpg_wrap_result(fragile, "DecryptResult");
-  Py_DECREF(fragile);
-}
-
-%typemap(out) gpgme_sign_result_t {
-  PyObject *fragile;
-  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
-                               %newpointer_flags);
-  $result = _gpg_wrap_result(fragile, "SignResult");
-  Py_DECREF(fragile);
-}
-
-%typemap(out) gpgme_verify_result_t {
-  PyObject *fragile;
-  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
-                               %newpointer_flags);
-  $result = _gpg_wrap_result(fragile, "VerifyResult");
-  Py_DECREF(fragile);
-}
-
-%typemap(out) gpgme_import_result_t {
-  PyObject *fragile;
-  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
-                               %newpointer_flags);
-  $result = _gpg_wrap_result(fragile, "ImportResult");
-  Py_DECREF(fragile);
-}
-
-%typemap(out) gpgme_genkey_result_t {
-  PyObject *fragile;
-  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
-                               %newpointer_flags);
-  $result = _gpg_wrap_result(fragile, "GenkeyResult");
-  Py_DECREF(fragile);
-}
-
-%typemap(out) gpgme_keylist_result_t {
-  PyObject *fragile;
-  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
-                               %newpointer_flags);
-  $result = _gpg_wrap_result(fragile, "KeylistResult");
-  Py_DECREF(fragile);
-}
-
-%typemap(out) gpgme_vfs_mount_result_t {
-  PyObject *fragile;
-  fragile = SWIG_NewPointerObj(SWIG_as_voidptr($1), $1_descriptor,
-                               %newpointer_flags);
-  $result = _gpg_wrap_result(fragile, "VFSMountResult");
-  Py_DECREF(fragile);
-}
+wrapresult(gpgme_encrypt_result_t, "EncryptResult")
+wrapresult(gpgme_decrypt_result_t, "DecryptResult")
+wrapresult(gpgme_sign_result_t, "SignResult")
+wrapresult(gpgme_verify_result_t, "VerifyResult")
+wrapresult(gpgme_import_result_t, "ImportResult")
+wrapresult(gpgme_genkey_result_t, "GenkeyResult")
+wrapresult(gpgme_keylist_result_t, "KeylistResult")
+wrapresult(gpgme_vfs_mount_result_t, "VFSMountResult")
 
 %typemap(out) gpgme_engine_info_t {
   int i;
