@@ -293,8 +293,10 @@ _gpg_obj2gpgme_data_t(PyObject *input, int argnum, gpgme_data_t *wrapper,
     return _gpg_obj2gpgme_t(data, "gpgme_data_t", argnum);
 
   return PyErr_Format(PyExc_TypeError,
-                      "arg %d: expected gpg.Data, file, or an object "
-                      "implementing the buffer protocol, got %s",
+                      "arg %d: expected gpg.Data, file, "
+                      "bytes (not string!), or an object "
+                      "implementing the buffer protocol. Got: %s. "
+                      "If you provided a string, try to encode() it.",
                       argnum, data->ob_type->tp_name);
 }
 

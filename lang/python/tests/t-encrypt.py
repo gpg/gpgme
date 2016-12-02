@@ -62,3 +62,18 @@ with gpg.Context(armor=True) as c:
         assert support.sign_only.endswith(e.recipients[0].fpr)
     else:
         assert False, "Expected an InvalidRecipients error, got none"
+
+
+
+    try:
+        # People might be tempted to provide strings.
+        # We should raise something useful.
+        ciphertext, _, _ = c.encrypt("Hallo Leute\n",
+                                     recipients=keys,
+                                     sign=False,
+                                     always_trust=True)
+    except TypeError as e:
+        # This test is a bit fragile, because the message
+        # may very well change. So if the behaviour will change
+        # this test can easily be deleted.
+        assert "encode" in str(e)
