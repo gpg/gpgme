@@ -541,6 +541,15 @@ wrapresult(gpgme_vfs_mount_result_t, "VFSMountResult")
     }
 }
 
+
+/* With SWIG, you can define default arguments for parameters.
+ * While it's legal in C++ it is not in C, so we cannot change the
+ * already existing gpgme.h. We need, however, to declare the function
+ * *before* SWIG loads it from gpgme.h. Hence, we define it here.     */
+gpgme_error_t gpgme_op_keylist_start (gpgme_ctx_t ctx,
+                      const char *pattern="",
+                      int secret_only=0);
+
 /* Include the unmodified <gpgme.h> for cc, and the cleaned-up local
    version for SWIG.  We do, however, want to hide certain fields on
    some structs, which we provide prior to including the version for
