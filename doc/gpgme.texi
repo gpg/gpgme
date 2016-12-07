@@ -4948,7 +4948,19 @@ list, or @code{NULL} if this is the last element.
 This is a bit vector giving a summary of the signature status.  It
 provides an easy interface to a defined semantic of the signature
 status.  Checking just one bit is sufficient to see whether a
-signature is valid without any restrictions.
+signature is valid without any restrictions. This means that
+you can check for GPGME_SIGSUM_VALID like this:
+
+@example
+if (sig.summary & GPGME_SIGSUM_VALID)
+@{
+   ..do stuff if valid..
+@}
+else
+@{
+   ..do stuff if not fully valid..
+@}
+@end example
 
 The defined bits are:
   @table @code
