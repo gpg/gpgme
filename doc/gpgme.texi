@@ -4952,7 +4952,7 @@ signature is valid without any restrictions. This means that
 you can check for GPGME_SIGSUM_VALID like this:
 
 @example
-if (sig.summary & GPGME_SIGSUM_VALID)
+if ((sig.summary & GPGME_SIGSUM_VALID))
 @{
    ..do stuff if valid..
 @}
