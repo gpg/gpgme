@@ -413,7 +413,8 @@ GpgME::Key GpgME::Signature::key(bool search, bool update) const
         }
     }
     if (update) {
-        ret.update();
+        d->keys[idx].update();
+        ret = d->keys[idx];
     }
     return ret;
 }
