@@ -894,7 +894,11 @@ std::string UserID::addrSpecFromString(const char *userid)
 
 std::string UserID::addrSpec() const
 {
-    return addrSpecFromString(email());
+    if (!uid || !uid->address) {
+        return std::string();
+    }
+
+    return uid->address;
 }
 
 std::ostream &operator<<(std::ostream &os, const UserID &uid)
@@ -903,6 +907,7 @@ std::ostream &operator<<(std::ostream &os, const UserID &uid)
     if (!uid.isNull()) {
         os << "\n name:      " << protect(uid.name())
            << "\n email:     " << protect(uid.email())
+           << "\n mbox:      " << uid.addrSpec()
            << "\n comment:   " << protect(uid.comment())
            << "\n validity:  " << uid.validityAsString()
            << "\n revoked:   " << uid.isRevoked()
