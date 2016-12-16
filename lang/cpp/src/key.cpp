@@ -341,7 +341,12 @@ void Key::update()
                         KeyListMode::Validate |
                         KeyListMode::WithTofu);
     Error err;
-    auto newKey = ctx->key(primaryFingerprint(), err, hasSecret());
+    auto newKey = ctx->key(primaryFingerprint(), err, true);
+    // Not secret so we get the information from the pubring.
+    if (newKey.isNull())
+      {
+        newKey = ctx->key(primaryFingerprint(), err, false);
+      }
     delete ctx;
     if (err) {
         return;
