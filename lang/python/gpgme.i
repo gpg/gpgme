@@ -620,7 +620,17 @@ FILE *fdopen(int fildes, const char *mode);
 PyObject *
 _gpg_wrap_gpgme_data_t(gpgme_data_t data)
 {
-  return SWIG_Python_NewPointerObj(NULL, data, SWIGTYPE_p_gpgme_data, 0);
+  /*
+   * If SWIG is invoked without -builtin, the macro SWIG_NewPointerObj
+   * expects a variable named "self".
+   *
+   * XXX: It is not quite clear why passing NULL as self is okay, but
+   * it works with -builtin, and it seems to work just fine without
+   * it too.
+   */
+  PyObject* self = NULL;
+  (void) self;
+  return SWIG_NewPointerObj(data, SWIGTYPE_p_gpgme_data, 0);
 }
 
 gpgme_ctx_t
