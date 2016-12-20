@@ -154,7 +154,7 @@ class BuildExtFirstHack(build):
 
 py3 = [] if sys.version_info.major < 3 else ['-py3']
 swige = Extension("gpg._gpgme", ["gpgme.i", "helpers.c"],
-                  swig_opts = ['-threads', '-builtin',
+                  swig_opts = ['-threads',
                                '-outdir', 'gpg'] + py3 + extra_swig_opts,
                   include_dirs = include_dirs,
                   define_macros = define_macros,
