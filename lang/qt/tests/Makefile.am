@@ -25,11 +25,11 @@ TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir)
 EXTRA_DIST = initial.test
 
 TESTS = initial.test t-keylist t-keylocate t-ownertrust t-tofuinfo \
-        t-encrypt t-verify t-various
+        t-encrypt t-verify t-various t-config
 
 moc_files = t-keylist.moc t-keylocate.moc t-ownertrust.moc t-tofuinfo.moc \
             t-encrypt.moc t-support.hmoc t-wkspublish.moc t-verify.moc \
-            t-various.moc
+            t-various.moc t-config.moc
 
 AM_LDFLAGS = -no-install
 
@@ -59,6 +59,7 @@ t_encrypt_SOURCES = t-encrypt.cpp $(support_src)
 t_wkspublish_SOURCES = t-wkspublish.cpp $(support_src)
 t_verify_SOURCES = t-verify.cpp $(support_src)
 t_various_SOURCES = t-various.cpp $(support_src)
+t_config_SOURCES = t-config.cpp $(support_src)
 run_keyformailboxjob_SOURCES = run-keyformailboxjob.cpp
 
 nodist_t_keylist_SOURCES = $(moc_files)
@@ -66,7 +67,7 @@ nodist_t_keylist_SOURCES = $(moc_files)
 BUILT_SOURCES = $(moc_files)
 
 noinst_PROGRAMS = t-keylist t-keylocate t-ownertrust t-tofuinfo t-encrypt \
-    run-keyformailboxjob t-wkspublish t-verify t-various
+    run-keyformailboxjob t-wkspublish t-verify t-various t-config
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
