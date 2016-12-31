@@ -2176,6 +2176,8 @@ gpg_addkey (engine_gpg_t gpg,
       err = add_arg (gpg, "--passphrase");
       if (!err)
         err = add_arg (gpg, "");
+      if (!err)
+        err = add_arg (gpg, "--batch");
     }
   if (!err)
     err = add_arg (gpg, "--");
