@@ -216,17 +216,12 @@ QGpgMENewCryptoConfigGroup *QGpgMENewCryptoConfigComponent::group(const QString 
 
 void QGpgMENewCryptoConfigComponent::sync(bool runtime)
 {
-    Q_UNUSED(runtime)
-    // ### how to pass --runtime to gpgconf? -> marcus: not yet supported (2010-11-20)
+    Q_UNUSED(runtime) // runtime is always set by engine_gpgconf
     if (const Error err = m_component.save()) {
-#if 0
-        TODO port
-        const QString wmsg = i18n("Error from gpgconf while saving configuration: %1", QString::fromLocal8Bit(err.asString()));
-        qCWarning(GPGPME_BACKEND_LOG) << ":" << wmsg;
-        KMessageBox::error(0, wmsg);
-#endif
+        qCWarning(GPGPME_BACKEND_LOG) << ":"
+            << "Error from gpgconf while saving configuration: %1"
+            << QString::fromLocal8Bit(err.asString());
     }
-    // ### unset dirty state again
 }
 
 ////

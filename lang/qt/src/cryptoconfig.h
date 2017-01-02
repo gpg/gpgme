@@ -379,9 +379,8 @@ public:
     /**
      * Write back changes
      *
-     * @param runtime If this option is set, the changes will take effect at run-time, as
-     * far as this is possible.  Otherwise, they will take effect at the next
-     * start of the respective backend programs.
+     * @param runtime this parameter is ignored. Changes will always
+     * be made with --runtime set.
      */
     virtual void sync(bool runtime) = 0;
 
