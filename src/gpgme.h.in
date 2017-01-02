@@ -2410,7 +2410,8 @@ void gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type);
 /* Register a change for the value of OPT to ARG.  If RESET is 1 (do
    not use any values but 0 or 1), ARG is ignored and the option is
    not changed (reverting a previous change).  Otherwise, if ARG is
-   NULL, the option is cleared or reset to its default.  */
+   NULL, the option is cleared or reset to its default. The change
+   is done with gpgconf's --runtime option to immediately take effect. */
 gpgme_error_t gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset,
 				     gpgme_conf_arg_t arg);
 
