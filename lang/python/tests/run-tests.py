@@ -51,6 +51,8 @@ parser.add_argument('--srcdir', type=str,
 parser.add_argument('--builddir', type=str,
                     default=os.environ.get("abs_builddir", ""),
                     help='Location of the tests.')
+parser.add_argument('--parallel', action="store_true", default=False,
+                    help='Ignored.  For compatibility with run-tests.scm.')
 
 args = parser.parse_args()
 if not args.interpreters:
