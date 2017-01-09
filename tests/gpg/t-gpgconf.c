@@ -259,10 +259,6 @@ main (void)
   gpgme_conf_comp_t comp;
   int first;
 
-#ifndef ENABLE_GPGCONF
-  return 0;
-#endif
-
   init_gpgme (GPGME_PROTOCOL_GPGCONF);
 
   err = gpgme_new (&ctx);
