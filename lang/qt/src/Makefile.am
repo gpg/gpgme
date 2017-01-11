@@ -220,6 +220,12 @@ libqgpgme_la_LIBADD = ../../cpp/src/libgpgmepp.la ../../../src/libgpgme.la \
 libqgpgme_la_LDFLAGS = -no-undefined -version-info \
     @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
 
+if HAVE_MACOS_SYSTEM
+libsuffix=.dylib
+else
+libsuffix=.so
+endif
+
 if HAVE_W32_SYSTEM
 QGpgmeConfig.cmake: QGpgmeConfig-w32.cmake.in
 	sed -e 's|[@]resolved_bindir@|$(bindir)|g' < "$<" | \
@@ -228,6 +234,7 @@ QGpgmeConfig.cmake: QGpgmeConfig-w32.cmake.in
 else
 QGpgmeConfig.cmake: QGpgmeConfig.cmake.in
 	sed -e 's|[@]resolved_libdir@|$(libdir)|g' < "$<" | \
+	sed -e 's|[@]libsuffix@|$(libsuffix)|g' | \
 	sed -e 's|[@]resolved_includedir@|$(includedir)|g' > $@
 endif
 

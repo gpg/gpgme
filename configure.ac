@@ -182,6 +182,7 @@ have_dosish_system=no
 have_android_system=no
 have_w32_system=no
 have_w64_system=no
+have_macos_system=no
 build_w32_glib=no
 build_w32_qt=no
 available_languages="cl cpp python python2 python3 qt"
@@ -195,6 +196,9 @@ case "${host}" in
 	;;
     *-linux-androideabi)
         have_android_system=yes
+        ;;
+    *-apple-darwin*)
+        have_macos_system=yes
         ;;
 esac
 case "${host}" in
@@ -252,6 +256,12 @@ if test "$have_android_system" = yes; then
    AC_DEFINE(HAVE_ANDROID_SYSTEM,1, [Defined if we build for an Android system])
 fi
 AM_CONDITIONAL(HAVE_ANDROID_SYSTEM, test "$have_android_system" = yes)
+
+if test "$have_macos_system" = yes; then
+   AC_DEFINE(HAVE_MACOS_SYSTEM,1,
+             [Defined if we build for an MacOS system])
+fi
+AM_CONDITIONAL(HAVE_MACOS_SYSTEM, test "$have_macos_system" = yes)
 
 AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
 

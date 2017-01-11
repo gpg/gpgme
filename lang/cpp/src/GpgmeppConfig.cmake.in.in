@@ -64,7 +64,7 @@ add_library(Gpgmepp SHARED IMPORTED)
 set_target_properties(Gpgmepp PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "@resolved_includedir@/gpgme++;@resolved_includedir@"
   INTERFACE_LINK_LIBRARIES "pthread;@resolved_libdir@/libgpgme.so;@LIBASSUAN_LIBS@"
-  IMPORTED_LOCATION "@resolved_libdir@/libgpgmepp.so"
+  IMPORTED_LOCATION "@resolved_libdir@/libgpgmepp@libsuffix@"
 )
 
 if(CMAKE_VERSION VERSION_LESS 2.8.12)

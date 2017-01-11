@@ -69,6 +69,12 @@ libgpgmepp_la_LIBADD = ../../../src/libgpgme.la @LIBASSUAN_LIBS@
 libgpgmepp_la_LDFLAGS = -no-undefined -version-info \
     @LIBGPGMEPP_LT_CURRENT@:@LIBGPGMEPP_LT_REVISION@:@LIBGPGMEPP_LT_AGE@
 
+if HAVE_MACOS_SYSTEM
+libsuffix=.dylib
+else
+libsuffix=.so
+endif
+
 if HAVE_W32_SYSTEM
 GpgmeppConfig.cmake: GpgmeppConfig-w32.cmake.in
 	sed -e 's|[@]resolved_bindir@|$(bindir)|g' < "$<" | \
@@ -77,6 +83,7 @@ GpgmeppConfig.cmake: GpgmeppConfig-w32.cmake.in
 else
 GpgmeppConfig.cmake: GpgmeppConfig.cmake.in
 	sed -e 's|[@]resolved_libdir@|$(libdir)|g' < "$<" | \
+	sed -e 's|[@]libsuffix@|$(libsuffix)|g' | \
 	sed -e 's|[@]resolved_includedir@|$(includedir)|g' > $@
 endif
 install-cmake-files: GpgmeppConfig.cmake GpgmeppConfigVersion.cmake
