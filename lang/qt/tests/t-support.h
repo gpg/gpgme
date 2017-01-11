@@ -42,7 +42,7 @@ public:
     char *getPassphrase(const char * /*useridHint*/, const char * /*description*/,
                         bool /*previousWasBad*/, bool &/*canceled*/) Q_DECL_OVERRIDE
     {
-        return strdup("abc");
+        return qstrdup("abc");
     }
 };
 } // namespace GpgME
