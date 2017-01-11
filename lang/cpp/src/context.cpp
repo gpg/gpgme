@@ -1376,6 +1376,30 @@ Error Context::setTofuPolicyStart(const Key &k, unsigned int policy)
                  k.impl(), to_tofu_policy_t(policy)));
 }
 
+Error Context::addUid(const Key &k, const char *userid)
+{
+    return Error(d->lasterr = gpgme_op_adduid(d->ctx,
+                 k.impl(), userid, 0));
+}
+
+Error Context::startAddUid(const Key &k, const char *userid)
+{
+    return Error(d->lasterr = gpgme_op_adduid_start(d->ctx,
+                 k.impl(), userid, 0));
+}
+
+Error Context::revUid(const Key &k, const char *userid)
+{
+    return Error(d->lasterr = gpgme_op_revuid(d->ctx,
+                 k.impl(), userid, 0));
+}
+
+Error Context::startRevUid(const Key &k, const char *userid)
+{
+    return Error(d->lasterr = gpgme_op_revuid_start(d->ctx,
+                 k.impl(), userid, 0));
+}
+
 // Engine Spawn stuff
 Error Context::spawn(const char *file, const char *argv[],
                      Data &input, Data &output, Data &err,

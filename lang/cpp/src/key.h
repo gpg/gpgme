@@ -152,6 +152,17 @@ public:
      * how long the keylisting takes.*/
     void update();
 
+    /**
+     * @brief Add a user id to this key.
+     *
+     * Needs gnupg 2.1.13 and the key needs to be updated
+     * afterwards to see the new uid.
+     *
+     * @param uid should be fully formated and UTF-8 encoded.
+     *
+     * @returns a possible error.
+     **/
+    Error addUid(const char *uid);
 private:
     gpgme_key_t impl() const
     {
@@ -335,6 +346,13 @@ public:
      * @returns a normalized mail address for this userid
      * or an empty string. */
     std::string addrSpec() const;
+
+    /*! Revoke the user id.
+     *
+     * Key needs update afterwards.
+     *
+     * @returns an error on error.*/
+    Error revoke();
 private:
     shared_gpgme_key_t key;
     gpgme_user_id_t uid;

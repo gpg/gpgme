@@ -214,6 +214,12 @@ public:
     GpgME::Error edit(const Key &key, std::unique_ptr<EditInteractor> function, Data &out);
     GpgME::Error startEditing(const Key &key, std::unique_ptr<EditInteractor> function, Data &out);
 
+    Error addUid(const Key &key, const char *userid);
+    Error startAddUid(const Key &key, const char *userid);
+
+    Error revUid(const Key &key, const char *userid);
+    Error startRevUid(const Key &key, const char *userid);
+
     // using TofuInfo::Policy
     Error setTofuPolicy(const Key &k, unsigned int policy);
     Error setTofuPolicyStart(const Key &k, unsigned int policy);

@@ -1,6 +1,17 @@
 Noteworthy changes in version 1.8.1 (unreleased)
 ------------------------------------------------
 
+ * cpp: Support for adduid and revuid operations.
+
+ * Interface changes relative to the 1.8.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ cpp: Context::revUid(const Key&, const char*)      NEW.
+ cpp: Context::startRevUid(const Key&, const char*) NEW.
+ cpp: Context::addUid(const Key&, const char*)      NEW.
+ cpp: Context::startAddUid(const Key&, const char*) NEW.
+ cpp: Key::UserID::revoke()                         NEW.
+ cpp: Key::addUid()                                 NEW.
+
 
 Noteworthy changes in version 1.8.0 (2016-11-16)
 ------------------------------------------------

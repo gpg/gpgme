@@ -906,6 +906,34 @@ std::string UserID::addrSpec() const
     return uid->address;
 }
 
+Error UserID::revoke()
+{
+    if (isNull()) {
+        return Error::fromCode(GPG_ERR_GENERAL);
+    }
+    auto ctx = Context::createForProtocol(parent().protocol());
+    if (!ctx) {
+        return Error::fromCode(GPG_ERR_INV_ENGINE);
+    }
+    Error ret = ctx->revUid(key, id());
+    delete ctx;
+    return ret;
+}
+
+Error Key::addUid(const char *uid)
+{
+    if (isNull()) {
+        return Error::fromCode(GPG_ERR_GENERAL);
+    }
+    auto ctx = Context::createForProtocol(protocol());
+    if (!ctx) {
+        return Error::fromCode(GPG_ERR_INV_ENGINE);
+    }
+    Error ret = ctx->addUid(key, uid);
+    delete ctx;
+    return ret;
+}
+
 std::ostream &operator<<(std::ostream &os, const UserID &uid)
 {
     os << "GpgME::UserID(";
