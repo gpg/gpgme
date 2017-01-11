@@ -70,14 +70,14 @@ private Q_SLOTS:
         QByteArray verified;
 
         auto result = verifyJob->exec(signedData, verified);
-        Q_ASSERT(!result.error());
+        QVERIFY(!result.error());
         delete verifyJob;
 
-        Q_ASSERT(result.numSignatures() == 1);
+        QVERIFY(result.numSignatures() == 1);
         auto sig = result.signatures()[0];
 
         const auto key = sig.key(true, false);
-        Q_ASSERT(!key.isNull());
+        QVERIFY(!key.isNull());
 
         bool found = false;
         for (const auto subkey: key.subkeys()) {
@@ -85,7 +85,7 @@ private Q_SLOTS:
                 found = true;
             }
         }
-        Q_ASSERT(found);
+        QVERIFY(found);
     }
 };
 

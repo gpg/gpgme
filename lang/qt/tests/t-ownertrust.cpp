@@ -62,10 +62,10 @@ private Q_SLOTS:
         GpgME::KeyListResult result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),
                                                 false, keys);
         delete job;
-        Q_ASSERT (!result.error());
-        Q_ASSERT (keys.size() == 1);
+        QVERIFY (!result.error());
+        QVERIFY (keys.size() == 1);
         Key key = keys.front();
-        Q_ASSERT (key.ownerTrust() == Key::Unknown);
+        QVERIFY (key.ownerTrust() == Key::Unknown);
 
         ChangeOwnerTrustJob *job2 = openpgp()->changeOwnerTrustJob();
         connect(job2, &ChangeOwnerTrustJob::result, this, [this](Error e)
@@ -73,28 +73,28 @@ private Q_SLOTS:
             if (e) {
                 qDebug() <<  "Error in result: " << e.asString();
             }
-            Q_ASSERT(!e);
+            QVERIFY(!e);
             Q_EMIT asyncDone();
         });
         job2->start(key, Key::Ultimate);
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
 
         job = openpgp()->keyListJob(false, true, true);
         result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),
                            false, keys);
         delete job;
         key = keys.front();
-        Q_ASSERT (key.ownerTrust() == Key::Ultimate);
+        QVERIFY (key.ownerTrust() == Key::Ultimate);
 
         ChangeOwnerTrustJob *job3 = openpgp()->changeOwnerTrustJob();
         connect(job3, &ChangeOwnerTrustJob::result, this, [this](Error e)
         {
-            Q_ASSERT(!e);
+            QVERIFY(!e);
             Q_EMIT asyncDone();
         });
         job3->start(key, Key::Unknown);
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
 
         job = openpgp()->keyListJob(false, true, true);
         result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),
@@ -102,7 +102,7 @@ private Q_SLOTS:
         delete job;
 
         key = keys.front();
-        Q_ASSERT (key.ownerTrust() == Key::Unknown);
+        QVERIFY (key.ownerTrust() == Key::Unknown);
     }
 };
 

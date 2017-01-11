@@ -63,7 +63,7 @@ private Q_SLOTS:
         qputenv("GNUPGHOME", dir.path().toUtf8());
         /* Could do this with gpgconf but this is not a gpgconf test ;-) */
         QFile conf(dir.path() + QStringLiteral("/gpg.conf"));
-        Q_ASSERT(conf.open(QIODevice::WriteOnly));
+        QVERIFY(conf.open(QIODevice::WriteOnly));
         conf.write("auto-key-locate dane");
         conf.close();
 
@@ -71,11 +71,11 @@ private Q_SLOTS:
         mTestpattern = QStringLiteral("wk@gnupg.org");
         connect(job, &KeyListJob::result, job, [this, job](KeyListResult result, std::vector<Key> keys, QString, Error)
         {
-            Q_ASSERT(!result.error());
-            Q_ASSERT(keys.size() == 1);
+            QVERIFY(!result.error());
+            QVERIFY(keys.size() == 1);
 
             Key k = keys.front();
-            Q_ASSERT(k.numUserIDs());
+            QVERIFY(k.numUserIDs());
             bool found = false;
             Q_FOREACH (const UserID uid, k.userIDs()) {
                 const QString mailBox = QString::fromUtf8(uid.email());
@@ -83,12 +83,12 @@ private Q_SLOTS:
                     found = true;
                 }
             }
-            Q_ASSERT(found);
+            QVERIFY(found);
             Q_EMIT asyncDone();
         });
         job->start(QStringList() << mTestpattern);
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
         qputenv("GNUPGHOME", oldHome.toUtf8());
     }
 #endif
@@ -103,13 +103,13 @@ private Q_SLOTS:
 
         connect(job, &KeyListJob::result, job, [this, job](KeyListResult result, std::vector<Key> keys, QString, Error)
         {
-            Q_ASSERT(!result.isNull());
-            Q_ASSERT(!result.isTruncated());
-            Q_ASSERT(!result.error());
-            Q_ASSERT(keys.size() == 1);
+            QVERIFY(!result.isNull());
+            QVERIFY(!result.isTruncated());
+            QVERIFY(!result.error());
+            QVERIFY(keys.size() == 1);
 
             Key k = keys.front();
-            Q_ASSERT(k.numUserIDs());
+            QVERIFY(k.numUserIDs());
             bool found = false;
             Q_FOREACH (const UserID uid, k.userIDs()) {
                 const QString mailBox = QString::fromUtf8(uid.email());
@@ -117,12 +117,12 @@ private Q_SLOTS:
                     found = true;
                 }
             }
-            Q_ASSERT(found);
+            QVERIFY(found);
             Q_EMIT asyncDone();
         });
         job->start(QStringList() << mTestpattern);
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
     }
 
 private:

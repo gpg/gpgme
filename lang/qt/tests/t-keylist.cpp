@@ -61,14 +61,14 @@ private Q_SLOTS:
         GpgME::KeyListResult result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),
                                                 false, keys);
         delete job;
-        Q_ASSERT (!result.error());
-        Q_ASSERT (keys.size() == 1);
+        QVERIFY (!result.error());
+        QVERIFY (keys.size() == 1);
         const QString kId = QLatin1String(keys.front().keyID());
-        Q_ASSERT (kId == QStringLiteral("2D727CC768697734"));
+        QVERIFY (kId == QStringLiteral("2D727CC768697734"));
 
-        Q_ASSERT (keys[0].subkeys().size() == 2);
-        Q_ASSERT (keys[0].subkeys()[0].publicKeyAlgorithm() == Subkey::AlgoDSA);
-        Q_ASSERT (keys[0].subkeys()[1].publicKeyAlgorithm() == Subkey::AlgoELG_E);
+        QVERIFY (keys[0].subkeys().size() == 2);
+        QVERIFY (keys[0].subkeys()[0].publicKeyAlgorithm() == Subkey::AlgoDSA);
+        QVERIFY (keys[0].subkeys()[1].publicKeyAlgorithm() == Subkey::AlgoELG_E);
     }
 
     void testPubkeyAlgoAsString()
@@ -87,7 +87,7 @@ private Q_SLOTS:
             { Subkey::AlgoUnknown, QString() }
         };
         Q_FOREACH (Subkey::PubkeyAlgo algo, expected.keys()) {
-            Q_ASSERT(QString::fromUtf8(Subkey::publicKeyAlgorithmAsString(algo)) ==
+            QVERIFY(QString::fromUtf8(Subkey::publicKeyAlgorithmAsString(algo)) ==
                      expected.value(algo));
         }
     }
@@ -97,12 +97,12 @@ private Q_SLOTS:
         KeyListJob *job = openpgp()->keyListJob();
         connect(job, &KeyListJob::result, job, [this, job](KeyListResult, std::vector<Key> keys, QString, Error)
         {
-            Q_ASSERT(keys.size() == 1);
+            QVERIFY(keys.size() == 1);
             Q_EMIT asyncDone();
         });
         job->start(QStringList() << "alfa@example.net");
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
     }
 };
 

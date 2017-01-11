@@ -72,12 +72,12 @@ class TofuInfoTest: public QGpgMETest
 
     void testTofuCopy(TofuInfo other, const TofuInfo &orig)
     {
-        Q_ASSERT(!orig.isNull());
-        Q_ASSERT(!other.isNull());
-        Q_ASSERT(orig.signLast() == other.signLast());
-        Q_ASSERT(orig.signCount() == other.signCount());
-        Q_ASSERT(orig.validity() == other.validity());
-        Q_ASSERT(orig.policy() == other.policy());
+        QVERIFY(!orig.isNull());
+        QVERIFY(!other.isNull());
+        QVERIFY(orig.signLast() == other.signLast());
+        QVERIFY(orig.signCount() == other.signCount());
+        QVERIFY(orig.validity() == other.validity());
+        QVERIFY(orig.policy() == other.policy());
     }
 
     void signAndVerify(const QString &what, const GpgME::Key &key, int expected)
@@ -94,10 +94,10 @@ class TofuInfoTest: public QGpgMETest
         auto sigResult = job->exec(keys, what.toUtf8(), NormalSignatureMode, signedData);
         delete job;
 
-        Q_ASSERT(!sigResult.error());
+        QVERIFY(!sigResult.error());
         foreach (const auto uid, keys[0].userIDs()) {
             auto info = uid.tofuInfo();
-            Q_ASSERT(info.signCount() == expected - 1);
+            QVERIFY(info.signCount() == expected - 1);
         }
 
         auto verifyJob = openpgp()->verifyOpaqueJob();
@@ -106,25 +106,25 @@ class TofuInfoTest: public QGpgMETest
         auto result = verifyJob->exec(signedData, verified);
         delete verifyJob;
 
-        Q_ASSERT(!result.error());
-        Q_ASSERT(verified == what.toUtf8());
+        QVERIFY(!result.error());
+        QVERIFY(verified == what.toUtf8());
 
-        Q_ASSERT(result.numSignatures() == 1);
+        QVERIFY(result.numSignatures() == 1);
         auto sig = result.signatures()[0];
 
         auto key2 = sig.key();
-        Q_ASSERT(!key.isNull());
-        Q_ASSERT(!strcmp (key2.primaryFingerprint(), key.primaryFingerprint()));
-        Q_ASSERT(!strcmp (key.primaryFingerprint(), sig.fingerprint()));
+        QVERIFY(!key.isNull());
+        QVERIFY(!strcmp (key2.primaryFingerprint(), key.primaryFingerprint()));
+        QVERIFY(!strcmp (key.primaryFingerprint(), sig.fingerprint()));
         auto stats = key2.userID(0).tofuInfo();
-        Q_ASSERT(!stats.isNull());
+        QVERIFY(!stats.isNull());
         if (stats.signCount() != expected) {
             std::cout << "################ Key before verify: "
                       << key
                       << "################ Key after verify: "
                       << key2;
         }
-        Q_ASSERT(stats.signCount() == expected);
+        QVERIFY(stats.signCount() == expected);
     }
 
 private Q_SLOTS:
@@ -134,13 +134,13 @@ private Q_SLOTS:
             return;
         }
         TofuInfo tofu;
-        Q_ASSERT(tofu.isNull());
-        Q_ASSERT(!tofu.description());
-        Q_ASSERT(!tofu.signCount());
-        Q_ASSERT(!tofu.signLast());
-        Q_ASSERT(!tofu.signFirst());
-        Q_ASSERT(tofu.validity() == TofuInfo::ValidityUnknown);
-        Q_ASSERT(tofu.policy() == TofuInfo::PolicyUnknown);
+        QVERIFY(tofu.isNull());
+        QVERIFY(!tofu.description());
+        QVERIFY(!tofu.signCount());
+        QVERIFY(!tofu.signLast());
+        QVERIFY(!tofu.signFirst());
+        QVERIFY(tofu.validity() == TofuInfo::ValidityUnknown);
+        QVERIFY(tofu.policy() == TofuInfo::PolicyUnknown);
     }
 
     void testTofuInfo()
@@ -153,30 +153,30 @@ private Q_SLOTS:
         QByteArray plaintext;
 
         auto ctx = Job::context(job);
-        Q_ASSERT(ctx);
+        QVERIFY(ctx);
         ctx->setSender("alfa@example.net");
 
         auto result = job->exec(data1, plaintext);
         delete job;
 
-        Q_ASSERT(!result.isNull());
-        Q_ASSERT(!result.error());
-        Q_ASSERT(!strcmp(plaintext.constData(), "Just GNU it!\n"));
+        QVERIFY(!result.isNull());
+        QVERIFY(!result.error());
+        QVERIFY(!strcmp(plaintext.constData(), "Just GNU it!\n"));
 
-        Q_ASSERT(result.numSignatures() == 1);
+        QVERIFY(result.numSignatures() == 1);
         Signature sig = result.signatures()[0];
         /* TOFU is always marginal */
-        Q_ASSERT(sig.validity() == Signature::Marginal);
+        QVERIFY(sig.validity() == Signature::Marginal);
 
         auto stats = sig.key().userID(0).tofuInfo();
-        Q_ASSERT(!stats.isNull());
-        Q_ASSERT(sig.key().primaryFingerprint());
-        Q_ASSERT(sig.fingerprint());
-        Q_ASSERT(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
-        Q_ASSERT(stats.signFirst() == stats.signLast());
-        Q_ASSERT(stats.signCount() == 1);
-        Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
-        Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
+        QVERIFY(!stats.isNull());
+        QVERIFY(sig.key().primaryFingerprint());
+        QVERIFY(sig.fingerprint());
+        QVERIFY(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
+        QVERIFY(stats.signFirst() == stats.signLast());
+        QVERIFY(stats.signCount() == 1);
+        QVERIFY(stats.policy() == TofuInfo::PolicyAuto);
+        QVERIFY(stats.validity() == TofuInfo::LittleHistory);
 
         testTofuCopy(stats, stats);
 
@@ -186,42 +186,42 @@ private Q_SLOTS:
         result = job->exec(data1, plaintext);
         delete job;
 
-        Q_ASSERT(!result.isNull());
-        Q_ASSERT(!result.error());
+        QVERIFY(!result.isNull());
+        QVERIFY(!result.error());
 
-        Q_ASSERT(result.numSignatures() == 1);
+        QVERIFY(result.numSignatures() == 1);
         sig = result.signatures()[0];
         /* TOFU is always marginal */
-        Q_ASSERT(sig.validity() == Signature::Marginal);
+        QVERIFY(sig.validity() == Signature::Marginal);
 
         stats = sig.key().userID(0).tofuInfo();
-        Q_ASSERT(!stats.isNull());
-        Q_ASSERT(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
-        Q_ASSERT(stats.signFirst() == stats.signLast());
-        Q_ASSERT(stats.signCount() == 1);
-        Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
-        Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
+        QVERIFY(!stats.isNull());
+        QVERIFY(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
+        QVERIFY(stats.signFirst() == stats.signLast());
+        QVERIFY(stats.signCount() == 1);
+        QVERIFY(stats.policy() == TofuInfo::PolicyAuto);
+        QVERIFY(stats.validity() == TofuInfo::LittleHistory);
 
         /* Verify that another call yields the same result */
         job = openpgp()->verifyOpaqueJob(true);
         result = job->exec(data1, plaintext);
         delete job;
 
-        Q_ASSERT(!result.isNull());
-        Q_ASSERT(!result.error());
+        QVERIFY(!result.isNull());
+        QVERIFY(!result.error());
 
-        Q_ASSERT(result.numSignatures() == 1);
+        QVERIFY(result.numSignatures() == 1);
         sig = result.signatures()[0];
         /* TOFU is always marginal */
-        Q_ASSERT(sig.validity() == Signature::Marginal);
+        QVERIFY(sig.validity() == Signature::Marginal);
 
         stats = sig.key().userID(0).tofuInfo();
-        Q_ASSERT(!stats.isNull());
-        Q_ASSERT(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
-        Q_ASSERT(stats.signFirst() == stats.signLast());
-        Q_ASSERT(stats.signCount() == 1);
-        Q_ASSERT(stats.policy() == TofuInfo::PolicyAuto);
-        Q_ASSERT(stats.validity() == TofuInfo::LittleHistory);
+        QVERIFY(!stats.isNull());
+        QVERIFY(!strcmp(sig.key().primaryFingerprint(), sig.fingerprint()));
+        QVERIFY(stats.signFirst() == stats.signLast());
+        QVERIFY(stats.signCount() == 1);
+        QVERIFY(stats.policy() == TofuInfo::PolicyAuto);
+        QVERIFY(stats.validity() == TofuInfo::LittleHistory);
     }
 
     void testTofuSignCount()
@@ -235,9 +235,9 @@ private Q_SLOTS:
         GpgME::KeyListResult result = job->exec(QStringList() << QStringLiteral("zulu@example.net"),
                                                 true, keys);
         delete job;
-        Q_ASSERT(!keys.empty());
+        QVERIFY(!keys.empty());
         Key key = keys[0];
-        Q_ASSERT(!key.isNull());
+        QVERIFY(!key.isNull());
 
         /* As we sign & verify quickly here we need different
          * messages to avoid having them treated as the same
@@ -266,10 +266,10 @@ private Q_SLOTS:
         auto result = job->exec(QStringList() << QStringLiteral("zulu@example.net"),
                                                  true, keys);
         delete job;
-        Q_ASSERT(!keys.empty());
+        QVERIFY(!keys.empty());
         auto key = keys[0];
-        Q_ASSERT(!key.isNull());
-        Q_ASSERT(key.userID(0).tofuInfo().isNull());
+        QVERIFY(!key.isNull());
+        QVERIFY(key.userID(0).tofuInfo().isNull());
         auto keyCopy = key;
         keyCopy.update();
         auto sigCnt = keyCopy.userID(0).tofuInfo().signCount();
@@ -285,13 +285,13 @@ private Q_SLOTS:
         result = job->exec(QStringList() << QStringLiteral("zulu@example.net"),
                            true, keys);
         delete job;
-        Q_ASSERT(!result.error());
-        Q_ASSERT(!keys.empty());
+        QVERIFY(!result.error());
+        QVERIFY(!keys.empty());
         auto key2 = keys[0];
-        Q_ASSERT(!key2.isNull());
+        QVERIFY(!key2.isNull());
         auto info = key2.userID(0).tofuInfo();
-        Q_ASSERT(!info.isNull());
-        Q_ASSERT(info.signCount());
+        QVERIFY(!info.isNull());
+        QVERIFY(info.signCount());
     }
 
     void testTofuPolicy()
@@ -326,25 +326,25 @@ private Q_SLOTS:
                          << ">\n fpr: " << key.primaryFingerprint();
             }
         }
-        Q_ASSERT(!result.error());
-        Q_ASSERT(!keys.empty());
+        QVERIFY(!result.error());
+        QVERIFY(!keys.empty());
         auto key = keys[0];
-        Q_ASSERT(!key.isNull());
-        Q_ASSERT(key.userID(0).tofuInfo().policy() != TofuInfo::PolicyBad);
+        QVERIFY(!key.isNull());
+        QVERIFY(key.userID(0).tofuInfo().policy() != TofuInfo::PolicyBad);
         auto *tofuJob = openpgp()->tofuPolicyJob();
         auto err = tofuJob->exec(key, TofuInfo::PolicyBad);
-        Q_ASSERT(!err);
+        QVERIFY(!err);
         result = job->exec(QStringList() << QStringLiteral("bravo@example.net"),
                                             false, keys);
-        Q_ASSERT(!keys.empty());
+        QVERIFY(!keys.empty());
         key = keys[0];
-        Q_ASSERT(key.userID(0).tofuInfo().policy() == TofuInfo::PolicyBad);
+        QVERIFY(key.userID(0).tofuInfo().policy() == TofuInfo::PolicyBad);
         err = tofuJob->exec(key, TofuInfo::PolicyGood);
 
         result = job->exec(QStringList() << QStringLiteral("bravo@example.net"),
                                             false, keys);
         key = keys[0];
-        Q_ASSERT(key.userID(0).tofuInfo().policy() == TofuInfo::PolicyGood);
+        QVERIFY(key.userID(0).tofuInfo().policy() == TofuInfo::PolicyGood);
         delete tofuJob;
         delete job;
     }
@@ -354,16 +354,16 @@ private Q_SLOTS:
         QGpgMETest::initTestCase();
         const QString gpgHome = qgetenv("GNUPGHOME");
         qputenv("GNUPGHOME", mDir.path().toUtf8());
-        Q_ASSERT(mDir.isValid());
+        QVERIFY(mDir.isValid());
         QFile conf(mDir.path() + QStringLiteral("/gpg.conf"));
-        Q_ASSERT(conf.open(QIODevice::WriteOnly));
+        QVERIFY(conf.open(QIODevice::WriteOnly));
         conf.write("trust-model tofu+pgp");
         conf.close();
         QFile agentConf(mDir.path() + QStringLiteral("/gpg-agent.conf"));
-        Q_ASSERT(agentConf.open(QIODevice::WriteOnly));
+        QVERIFY(agentConf.open(QIODevice::WriteOnly));
         agentConf.write("allow-loopback-pinentry");
         agentConf.close();
-        Q_ASSERT(copyKeyrings(gpgHome, mDir.path()));
+        QVERIFY(copyKeyrings(gpgHome, mDir.path()));
     }
 private:
     QTemporaryDir mDir;

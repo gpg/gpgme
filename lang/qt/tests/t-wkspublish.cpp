@@ -127,12 +127,12 @@ private Q_SLOTS:
         auto job = openpgp()->wksPublishJob();
         connect(job, &WKSPublishJob::result, this,
                 [this] (Error err, QByteArray, QByteArray, QString, Error) {
-            Q_ASSERT(err);
+            QVERIFY(err);
             Q_EMIT asyncDone();
         });
         job->startCheck ("testuser1@localhost");
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
     }
 #ifdef DO_ONLINE_TESTS
 private Q_SLOTS:
@@ -147,15 +147,15 @@ private:
                 [this] (Error err, QByteArray, QByteArray, QString, Error) {
             if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.0.16") {
                 std::cout << err;
-                Q_ASSERT(err);
+                QVERIFY(err);
             } else {
-                Q_ASSERT(!err);
+                QVERIFY(!err);
             }
             Q_EMIT asyncDone();
         });
         job->startCheck ("testuser1@test.gnupg.org");
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
     }
 
     void testWKSPublishErrors() {
@@ -166,13 +166,13 @@ private:
         auto job = openpgp()->wksPublishJob();
         connect(job, &WKSPublishJob::result, this,
                 [this] (Error err, QByteArray, QByteArray, QString, Error) {
-            Q_ASSERT(err);
+            QVERIFY(err);
             Q_EMIT asyncDone();
         });
         job->startCreate("AB874F24E98EBB8487EE7B170F8E3D97FE7011B7",
                          QStringLiteral("Foo@bar.baz"));
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
     }
 
     void testWKSPublishCreate() {
@@ -199,31 +199,31 @@ private:
         connect(keygenjob, &KeyGenerationJob::result, this,
                 [this, &fpr](KeyGenerationResult result, QByteArray, QString, Error)
         {
-            Q_ASSERT(!result.error());
+            QVERIFY(!result.error());
             fpr = QByteArray(result.fingerprint());
-            Q_ASSERT(!fpr.isEmpty());
+            QVERIFY(!fpr.isEmpty());
             Q_EMIT asyncDone();
         });
         keygenjob->start(args);
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
 
         /* Then try to create a request. */
         auto job = openpgp()->wksPublishJob();
         connect(job, &WKSPublishJob::result, this,
                 [this] (Error err, QByteArray out, QByteArray, QString, Error) {
-            Q_ASSERT(!err);
+            QVERIFY(!err);
             Q_EMIT asyncDone();
             const QString outstr = QString(out);
-            Q_ASSERT(outstr.contains(
+            QVERIFY(outstr.contains(
                      QStringLiteral("-----BEGIN PGP PUBLIC KEY BLOCK-----")));
-            Q_ASSERT(outstr.contains(
+            QVERIFY(outstr.contains(
                      QStringLiteral("Content-Type: application/pgp-keys")));
-            Q_ASSERT(outstr.contains(
+            QVERIFY(outstr.contains(
                      QStringLiteral("From: " TEST_ADDRESS)));
         });
         job->startCreate(fpr.constData(), QLatin1String(TEST_ADDRESS));
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
     }
 
     void testWKSPublishReceive() {
@@ -235,31 +235,31 @@ private:
         connect(importjob, &ImportJob::result, this,
                 [this](ImportResult result, QString, Error)
         {
-            Q_ASSERT(!result.error());
-            Q_ASSERT(!result.imports().empty());
-            Q_ASSERT(result.numSecretKeysImported());
+            QVERIFY(!result.error());
+            QVERIFY(!result.imports().empty());
+            QVERIFY(result.numSecretKeysImported());
             Q_EMIT asyncDone();
         });
         importjob->start(QByteArray(testSecKey));
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
 
         /* Get a response. */
         auto job = openpgp()->wksPublishJob();
         connect(job, &WKSPublishJob::result, this,
                 [this] (Error err, QByteArray out, QByteArray, QString, Error) {
-            Q_ASSERT(!err);
+            QVERIFY(!err);
             Q_EMIT asyncDone();
             const QString outstr = QString(out);
-            Q_ASSERT(outstr.contains(
+            QVERIFY(outstr.contains(
                      QStringLiteral("-----BEGIN PGP MESSAGE-----")));
-            Q_ASSERT(outstr.contains(
+            QVERIFY(outstr.contains(
                      QStringLiteral("Content-Type: multipart/encrypted;")));
-            Q_ASSERT(outstr.contains(
+            QVERIFY(outstr.contains(
                      QStringLiteral("From: " TEST_ADDRESS)));
         });
         job->startReceive(QByteArray(testResponse));
-        Q_ASSERT(spy.wait());
+        QVERIFY(spy.wait());
     }
 
     void initTestCase()
@@ -267,9 +267,9 @@ private:
         QGpgMETest::initTestCase();
         const QString gpgHome = qgetenv("GNUPGHOME");
         qputenv("GNUPGHOME", mDir.path().toUtf8());
-        Q_ASSERT(mDir.isValid());
+        QVERIFY(mDir.isValid());
         QFile agentConf(mDir.path() + QStringLiteral("/gpg-agent.conf"));
-        Q_ASSERT(agentConf.open(QIODevice::WriteOnly));
+        QVERIFY(agentConf.open(QIODevice::WriteOnly));
         agentConf.write("allow-loopback-pinentry");
         agentConf.close();
     }

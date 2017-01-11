@@ -66,15 +66,15 @@ private Q_SLOTS:
         GpgME::KeyListResult result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),
                                                 false, keys);
         delete job;
-        Q_ASSERT (!result.error());
-        Q_ASSERT (keys.size() == 1);
+        QVERIFY (!result.error());
+        QVERIFY (keys.size() == 1);
         Key key = keys.front();
 
         QVERIFY (key.numUserIDs() == 3);
         const char uid[] = "Foo Bar (with comment) <foo@bar.baz>";
 
         auto ctx = Context::createForProtocol(key.protocol());
-        Q_ASSERT (ctx);
+        QVERIFY (ctx);
         TestPassphraseProvider provider;
         ctx->setPassphraseProvider(&provider);
         ctx->setPinentryMode(Context::PinentryLoopback);
@@ -106,14 +106,14 @@ private Q_SLOTS:
                 break;
             }
         }
-        Q_ASSERT(id_revoked);
+        QVERIFY(id_revoked);
     }
 
     void initTestCase()
     {
         QGpgMETest::initTestCase();
         const QString gpgHome = qgetenv("GNUPGHOME");
-        Q_ASSERT(copyKeyrings(gpgHome, mDir.path()));
+        QVERIFY(copyKeyrings(gpgHome, mDir.path()));
         qputenv("GNUPGHOME", mDir.path().toUtf8());
     }
 
