@@ -546,6 +546,18 @@ std::vector<unsigned int> QGpgMENewCryptoConfigEntry::uintValueList() const
     return m_option.currentValue().uintValues();
 }
 
+QStringList QGpgMENewCryptoConfigEntry::stringValueList() const
+{
+    Q_ASSERT(isList());
+    const Argument arg = m_option.currentValue();
+    const std::vector<const char *> values = arg.stringValues();
+    QStringList ret;
+    for(const char *value: values) {
+        ret << QString::fromUtf8(value);
+    }
+    return ret;
+}
+
 QList<QUrl> QGpgMENewCryptoConfigEntry::urlValueList() const
 {
     const Type type = m_option.type();

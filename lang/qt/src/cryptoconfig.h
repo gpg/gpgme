@@ -248,6 +248,15 @@ public:
      * @return true if the value was changed
      */
     virtual bool isDirty() const = 0;
+
+    // Design change from here on we are closely bound to one implementation
+    // of cryptoconfig. To avoid ABI breaks with every new function we
+    // add real functions from now on.
+
+    /**
+     * @return a stringValueList.
+     */
+    QStringList stringValueList() const;
 };
 
 /**

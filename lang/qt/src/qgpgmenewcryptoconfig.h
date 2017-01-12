@@ -93,6 +93,8 @@ public:
     void setURLValueList(const QList<QUrl> &) Q_DECL_OVERRIDE;
     bool isDirty() const Q_DECL_OVERRIDE;
 
+    QStringList stringValueList() const;
+
 #if 0
     void setDirty(bool b);
     QString outputString() const;

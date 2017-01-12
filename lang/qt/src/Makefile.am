@@ -37,7 +37,7 @@ qgpgme_sources = \
     qgpgmekeyformailboxjob.cpp gpgme_backend_debug.cpp \
     qgpgmetofupolicyjob.cpp \
     defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp \
-    dn.cpp
+    dn.cpp cryptoconfig.cpp
 
 # If you add one here make sure that you also add one in camelcase
 qgpgme_headers= \

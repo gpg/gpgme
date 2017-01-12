@@ -11,6 +11,7 @@ Noteworthy changes in version 1.8.1 (unreleased)
  cpp: Context::startAddUid(const Key&, const char*) NEW.
  cpp: Key::UserID::revoke()                         NEW.
  cpp: Key::addUid()                                 NEW.
+ qt: CryptoConfig::stringValueList()                NEW.
 
 
 Noteworthy changes in version 1.8.0 (2016-11-16)
