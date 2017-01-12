@@ -34,37 +34,7 @@
 
 #include <gpgme.h>
 
-
-#define fail_if_err(err)					\
-  do								\
-    {								\
-      if (err)							\
-        {							\
-          fprintf (stderr, "%s:%d: %s: %s\n",			\
-                   __FILE__, __LINE__, gpgme_strsource (err),	\
-		   gpgme_strerror (err));			\
-          exit (1);						\
-        }							\
-    }								\
-  while (0)
-
-
-void
-init_gpgme (gpgme_protocol_t proto)
-{
-  gpgme_error_t err;
-
-  gpgme_check_version (NULL);
-  setlocale (LC_ALL, "");
-  gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
-#ifndef HAVE_W32_SYSTEM
-  gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
-#endif
-
-  err = gpgme_engine_check_version (proto);
-  fail_if_err (err);
-}
-
+#include "t-support.h"
 
 static char *
 spaces (char *str, int extra)
@@ -251,6 +221,34 @@ dump_comp (gpgme_conf_comp_t comp)
 
 
 int
+lookup (gpgme_conf_comp_t conf,
+	const char *component,
+	const char *option,
+	gpgme_conf_comp_t *comp,
+	gpgme_conf_opt_t *opt)
+{
+  *comp = conf;
+  while (*comp && strcmp ((*comp)->name, component))
+    *comp = (*comp)->next;
+
+  if (*comp)
+    {
+      *opt = (*comp)->options;
+      while (*opt && strcmp ((*opt)->name, option))
+	*opt = (*opt)->next;
+
+      /* Allow for the option not to be there.  */
+      if (*opt)
+	return 1;	/* Found.  */
+    }
+
+  return 0;		/* Not found.  */
+}
+
+#include <assert.h>
+
+
+int
 main (void)
 {
   gpgme_ctx_t ctx;
@@ -258,6 +256,7 @@ main (void)
   gpgme_conf_comp_t conf;
   gpgme_conf_comp_t comp;
   int first;
+  int i, N = 100;
 
   init_gpgme (GPGME_PROTOCOL_GPGCONF);
 
@@ -279,40 +278,89 @@ main (void)
       comp = comp->next;
     }
 
-#if 1
   /* Now change something.  */
-  {
-    unsigned int count = 1;
+  fprintf (stderr, " dirmngr.verbose ");
+  for (i = 0; i < N; i++) {
+    unsigned int count = i % 4 + 1; /* counts must not be zero */
     gpgme_conf_arg_t arg;
     gpgme_conf_opt_t opt;
 
     err = gpgme_conf_arg_new (&arg, GPGME_CONF_NONE, &count);
     fail_if_err (err);
 
-    comp = conf;
-    while (comp && strcmp (comp->name, "dirmngr"))
-      comp = comp->next;
-
-    if (comp)
+    if (lookup (conf, "dirmngr", "verbose", &comp, &opt))
       {
-	opt = comp->options;
-	while (opt && strcmp (opt->name, "verbose"))
-	  opt = opt->next;
+	/* Found.  */
+	err = gpgme_conf_opt_change (opt, 0, arg);
+	fail_if_err (err);
 
-	/* Allow for the verbose option not to be there.  */
-	if (opt)
-	  {
-	    err = gpgme_conf_opt_change (opt, 0, arg);
-	    fail_if_err (err);
-
-	    err = gpgme_op_conf_save (ctx, comp);
-	    fail_if_err (err);
-	  }
+	err = gpgme_op_conf_save (ctx, comp);
+	fail_if_err (err);
       }
+    else
+      {
+	fprintf (stderr, "Skipping test, option dirmngr.verbose not found.\n");
+	break;
+      }
+
+    /* Reload config and verify that the value was updated.  */
+    gpgme_conf_release (conf);
+    err = gpgme_op_conf_load (ctx, &conf);
+    fail_if_err (err);
+    if (lookup (conf, "dirmngr", "verbose", &comp, &opt))
+      {
+	/* Found.  */
+	test (opt->alt_type == GPGME_CONF_NONE);
+	test ((unsigned long) opt->value->value.count == count);
+      }
+
+    fprintf (stderr, ".");
+    fflush (stderr);
   }
-#endif
+
+  /* Now change something else.  */
+  fprintf (stderr, " gpg.keyserver ");
+  for (i = 0; i < N; i++) {
+    const char *values[2] = { "hkp://foo.bar", "hkps://bar.foo" };
+    gpgme_conf_arg_t arg;
+    gpgme_conf_opt_t opt;
+
+    err = gpgme_conf_arg_new (&arg, GPGME_CONF_STRING, values[i%2]);
+    fail_if_err (err);
+
+    if (lookup (conf, "gpg", "keyserver", &comp, &opt))
+      {
+	/* Found.  */
+	test (opt->alt_type == GPGME_CONF_STRING);
+	err = gpgme_conf_opt_change (opt, 0, arg);
+	fail_if_err (err);
+
+	err = gpgme_op_conf_save (ctx, comp);
+	fail_if_err (err);
+      }
+    else
+      {
+	fprintf (stderr, "Skipping test, option gpg.keyserver not found.\n");
+	break;
+      }
+
+    /* Reload config and verify that the value was updated.  */
+    gpgme_conf_release (conf);
+    err = gpgme_op_conf_load (ctx, &conf);
+    fail_if_err (err);
+    if (lookup (conf, "gpg", "keyserver", &comp, &opt))
+      {
+	/* Found.  */
+	test (opt->alt_type == GPGME_CONF_STRING);
+	test (strcmp (opt->value->value.string, values[i%2]) == 0);
+      }
+
+    fprintf (stderr, ".");
+    fflush (stderr);
+  }
+  fprintf (stderr, "\n");
 
   gpgme_conf_release (conf);
-
+  gpgme_release (ctx);
   return 0;
 }

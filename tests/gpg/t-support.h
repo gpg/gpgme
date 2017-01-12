@@ -48,6 +48,34 @@
   while (0)
 
 
+#ifdef GPGRT_HAVE_MACRO_FUNCTION
+void GPGRT_ATTR_NORETURN
+_test (const char *expr, const char *file, int line,
+       const char *func)
+{
+  fprintf (stderr, "Test \"%s\" in %s failed (%s:%d)\n",
+           expr, func, file, line);
+  exit (1);
+}
+# define test(expr)                                             \
+  ((expr)                                                       \
+   ? (void) 0                                                   \
+   : _test (#expr, __FILE__, __LINE__, __FUNCTION__))
+#else /*!GPGRT_HAVE_MACRO_FUNCTION*/
+void
+_test (const char *expr, const char *file, int line)
+{
+  fprintf (stderr, "Test \"%s\" failed (%s:%d)\n",
+           expr, file, line);
+  exit (1);
+}
+# define test(expr)                                             \
+  ((expr)                                                       \
+   ? (void) 0                                                   \
+   : _test (#expr, __FILE__, __LINE__))
+#endif /*!GPGRT_HAVE_MACRO_FUNCTION*/
+
+
 static const char *
 nonnull (const char *s)
 {
