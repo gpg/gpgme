@@ -54,11 +54,11 @@ private Q_SLOTS:
         // unit test.
         for (int i = 0; i < 10; i++) {
             auto conf = cryptoConfig();
-            Q_ASSERT (conf);
+            QVERIFY(conf);
             auto entry = conf->entry(QStringLiteral("gpg"),
                     QStringLiteral("Keyserver"),
                     QStringLiteral("keyserver"));
-            Q_ASSERT(entry);
+            QVERIFY(entry);
             const QString url(QStringLiteral("hkp://foo.bar.baz"));
             entry->setStringValue(url);
             conf->sync(false);
@@ -82,7 +82,7 @@ private Q_SLOTS:
         QGpgMETest::initTestCase();
         const QString gpgHome = qgetenv("GNUPGHOME");
         qputenv("GNUPGHOME", mDir.path().toUtf8());
-        Q_ASSERT(mDir.isValid());
+        QVERIFY(mDir.isValid());
     }
 private:
     QTemporaryDir mDir;
