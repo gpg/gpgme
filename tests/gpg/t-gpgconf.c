@@ -309,9 +309,10 @@ main (void)
     fail_if_err (err);
     if (lookup (conf, "dirmngr", "verbose", &comp, &opt))
       {
-	/* Found.  */
-	test (opt->alt_type == GPGME_CONF_NONE);
-	test ((unsigned long) opt->value->value.count == count);
+        /* Found.  */
+        test (opt->alt_type == GPGME_CONF_NONE);
+        test (opt->value);
+        test ((unsigned long) opt->value->value.count == count);
       }
 
     fprintf (stderr, ".");
@@ -350,9 +351,11 @@ main (void)
     fail_if_err (err);
     if (lookup (conf, "gpg", "keyserver", &comp, &opt))
       {
-	/* Found.  */
-	test (opt->alt_type == GPGME_CONF_STRING);
-	test (strcmp (opt->value->value.string, values[i%2]) == 0);
+        /* Found.  */
+        test (opt->alt_type == GPGME_CONF_STRING);
+        test (opt->value);
+        test (opt->value->value.string);
+        test (strcmp (opt->value->value.string, values[i%2]) == 0);
       }
 
     fprintf (stderr, ".");
