@@ -107,6 +107,8 @@ clean-local:
 ./gpg.conf:
 # This is required for t-sig-notations.
 	echo no-force-v3-sigs > ./gpg.conf
+	echo ignore-invalid-option agent-program >> ./gpg.conf
+	echo "agent-program `which $(GPG_AGENT)`|--debug-quick-random" >> ./gpg.conf
 
 ./gpg-agent.conf:
 # This is required for gpg2, which does not support command fd.
