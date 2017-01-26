@@ -3874,11 +3874,18 @@ and return a certificate request in @var{public}, which then needs to
 be signed by the certification authority and imported before it can be
 used.  GpgSM does not make the fingerprint available.
 
-The argument @var{parms} specifies parameters for the key in an XML
-string.  The details about the format of @var{parms} are specific to
-the crypto engine used by @var{ctx}.  Here is an example for GnuPG as
-the crypto engine (all parameters of OpenPGP key generation are
-documented in the GPG manual):
+The argument @var{parms} specifies parameters for the key in an string
+that looks something like XML.  The details about the format of
+@var{parms} are specific to the crypto engine used by @var{ctx}.  The
+first line of the parameters must be @code{<GnupgKeyParams
+format="internal">} and the last line must be
+@code{</GnupgKeyParams>}.  Every line in between the first and last
+lines is treated as a Header: Value pair.  In particular, no XML
+escaping is necessary if you need to include the characters @code{<},
+@code{>}, or @code{&}.
+
+Here is an example for GnuPG as the crypto engine (all parameters of
+OpenPGP key generation are documented in the GPG manual):
 
 @example
 <GnupgKeyParms format="internal">
@@ -3914,9 +3921,10 @@ retrieved with @code{gpgme_op_genkey_result}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
-@var{parms} is not a valid XML string, @code{GPG_ERR_NOT_SUPPORTED} if
-@var{public} or @var{secret} is not valid, and @code{GPG_ERR_GENERAL}
-if no key was created by the backend.
+@var{parms} is not a well-formed string (e.g. does not have the
+expected tag-like headers and footers), @code{GPG_ERR_NOT_SUPPORTED}
+if @var{public} or @var{secret} is not valid, and
+@code{GPG_ERR_GENERAL} if no key was created by the backend.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_genkey_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{parms}}, @w{gpgme_data_t @var{public}}, @w{gpgme_data_t @var{secret}})
