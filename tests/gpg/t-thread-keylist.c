@@ -32,7 +32,7 @@
 
 #include "t-support.h"
 
-#define THREAD_COUNT 100
+#define THREAD_COUNT 10
 
 void *
 start_keylist (void *arg)

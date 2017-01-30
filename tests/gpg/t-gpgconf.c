@@ -256,7 +256,7 @@ main (void)
   gpgme_conf_comp_t conf;
   gpgme_conf_comp_t comp;
   int first;
-  int i, N = 100;
+  int i, N = 10;
 
   init_gpgme (GPGME_PROTOCOL_GPGCONF);
 

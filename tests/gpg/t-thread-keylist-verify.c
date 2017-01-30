@@ -32,7 +32,7 @@
 
 #include "t-support.h"
 
-#define THREAD_COUNT 100
+#define THREAD_COUNT 10
 
 static const char test_text1[] = "Just GNU it!\n";
 static const char test_sig1[] =
