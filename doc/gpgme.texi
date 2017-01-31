@@ -2888,6 +2888,29 @@ by this function.  The properties are identified by the following
 values for @var{name}:
 
 @table @code
+@item "redraw"
+This flag is normally not changed by the caller because GPGME sets and
+clears it automatically: The flag is cleared before an operation and
+set if an operation noticed that the engine has launched a Pinentry.
+A Curses based application may use this information to redraw the
+screen; for example:
+
+@example
+    err = gpgme_op_keylist_start (ctx, "foo@@example.org", 0);
+    while (!err)
+      @{
+        err = gpgme_op_keylist_next (ctx, &key);
+        if (err)
+          break;
+        show_key (key);
+        gpgme_key_release (key);
+      @}
+    if ((s = gpgme_get_ctx_flag (ctx, "redraw")) && *s)
+      redraw_screen ();
+    gpgme_release (ctx);
+@end example
+
+
 @item "full-status"
 Using a @var{value} of "1" the status callback set by
 gpgme_set_status_cb returns all status lines with the exception of

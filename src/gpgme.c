@@ -508,6 +508,10 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
 
   if (!ctx || !name || !value)
     err = gpg_error (GPG_ERR_INV_VALUE);
+  else if (!strcmp (name, "redraw"))
+    {
+      ctx->redraw_suggested = abool;
+    }
   else if (!strcmp (name, "full-status"))
     {
       ctx->full_status = abool;
@@ -544,6 +548,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
 {
   if (!ctx || !name)
     return NULL;
+  else if (!strcmp (name, "redraw"))
+    {
+      return ctx->redraw_suggested? "1":"";
+    }
   else if (!strcmp (name, "full-status"))
     {
       return ctx->full_status? "1":"";

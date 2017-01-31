@@ -103,6 +103,7 @@ main (int argc, char **argv)
   int print_status = 0;
   int use_loopback = 0;
   const char *sender = NULL;
+  const char *s;
 
   if (argc)
     { argc--; argv++; }
@@ -228,6 +229,9 @@ main (int argc, char **argv)
       fprintf (stderr, PGM ": signing failed: %s\n", gpg_strerror (err));
       exit (1);
     }
+
+  if ((s = gpgme_get_ctx_flag (ctx, "redraw")) && *s)
+    fputs ("Screen redraw suggested\n", stdout);
 
   fputs ("Begin Output:\n", stdout);
   print_data (out);

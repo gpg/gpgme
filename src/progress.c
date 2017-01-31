@@ -31,6 +31,8 @@
 #include "debug.h"
 
 
+/* The status handler for progress status lines which also monitors
+ * the PINENTRY_LAUNCHED status.  */
 gpgme_error_t
 _gpgme_progress_status_handler (void *priv, gpgme_status_code_t code,
 				char *args)
@@ -41,6 +43,12 @@ _gpgme_progress_status_handler (void *priv, gpgme_status_code_t code,
   int type = 0;
   int current = 0;
   int total = 0;
+
+  if (code == GPGME_STATUS_PINENTRY_LAUNCHED)
+    {
+      ctx->redraw_suggested = 1;
+      return 0;
+    }
 
   if (code != GPGME_STATUS_PROGRESS || !*args || !ctx->progress_cb)
     return 0;

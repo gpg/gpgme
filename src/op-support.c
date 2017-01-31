@@ -94,6 +94,7 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
   _gpgme_release_result (ctx);
   LOCK (ctx->lock);
   ctx->canceled = 0;
+  ctx->redraw_suggested = 0;
   UNLOCK (ctx->lock);
 
   if (ctx->engine && no_reset)

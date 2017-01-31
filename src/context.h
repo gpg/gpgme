@@ -114,10 +114,14 @@ struct gpgme_context
   /* True if session keys should be exported upon decryption.  */
   unsigned int export_session_keys : 1;
 
+  /* True if a Pinentry was launched during the last operation.  This
+   * flag is cleared with each operation.  */
+  unsigned int redraw_suggested : 1;
+
   /* Flags for keylist mode.  */
   gpgme_keylist_mode_t keylist_mode;
 
-  /* The current pinnetry mode.  */
+  /* The current pinentry mode.  */
   gpgme_pinentry_mode_t pinentry_mode;
 
   /* Number of certs to be included.  */
