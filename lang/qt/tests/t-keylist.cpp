@@ -102,7 +102,7 @@ private Q_SLOTS:
         });
         job->start(QStringList() << "alfa@example.net");
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
     }
 };
 

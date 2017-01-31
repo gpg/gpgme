@@ -88,7 +88,7 @@ private Q_SLOTS:
         });
         job->start(QStringList() << mTestpattern);
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
         qputenv("GNUPGHOME", oldHome.toUtf8());
     }
 #endif
@@ -122,7 +122,7 @@ private Q_SLOTS:
         });
         job->start(QStringList() << mTestpattern);
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
     }
 
 private:

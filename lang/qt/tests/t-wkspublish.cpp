@@ -132,7 +132,7 @@ private Q_SLOTS:
         });
         job->startCheck ("testuser1@localhost");
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
     }
 #ifdef DO_ONLINE_TESTS
 private Q_SLOTS:
@@ -155,7 +155,7 @@ private:
         });
         job->startCheck ("testuser1@test.gnupg.org");
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
     }
 
     void testWKSPublishErrors() {
@@ -172,7 +172,7 @@ private:
         job->startCreate("AB874F24E98EBB8487EE7B170F8E3D97FE7011B7",
                          QStringLiteral("Foo@bar.baz"));
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
     }
 
     void testWKSPublishCreate() {
@@ -206,7 +206,7 @@ private:
         });
         keygenjob->start(args);
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
 
         /* Then try to create a request. */
         auto job = openpgp()->wksPublishJob();
@@ -223,7 +223,7 @@ private:
                      QStringLiteral("From: " TEST_ADDRESS)));
         });
         job->startCreate(fpr.constData(), QLatin1String(TEST_ADDRESS));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
     }
 
     void testWKSPublishReceive() {
@@ -242,7 +242,7 @@ private:
         });
         importjob->start(QByteArray(testSecKey));
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
 
         /* Get a response. */
         auto job = openpgp()->wksPublishJob();
@@ -259,7 +259,7 @@ private:
                      QStringLiteral("From: " TEST_ADDRESS)));
         });
         job->startReceive(QByteArray(testResponse));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
     }
 
     void initTestCase()

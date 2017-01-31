@@ -165,7 +165,7 @@ private Q_SLOTS:
 
         job->start(keys, inptr, outptr, Context::AlwaysTrust);
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
     }
 
     void testSymmetricEncryptDecrypt()

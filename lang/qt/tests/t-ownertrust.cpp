@@ -78,7 +78,7 @@ private Q_SLOTS:
         });
         job2->start(key, Key::Ultimate);
         QSignalSpy spy (this, SIGNAL(asyncDone()));
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
 
         job = openpgp()->keyListJob(false, true, true);
         result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),
@@ -94,7 +94,7 @@ private Q_SLOTS:
             Q_EMIT asyncDone();
         });
         job3->start(key, Key::Unknown);
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
 
         job = openpgp()->keyListJob(false, true, true);
         result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),

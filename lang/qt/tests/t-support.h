@@ -64,4 +64,8 @@ public Q_SLOTS:
     void cleanupTestCase();
 };
 
+/* Timeout, in milliseconds, for use with QSignalSpy to wait on
+   signals.  */
+#define QSIGNALSPY_TIMEOUT	60000
+
 #endif // T_SUPPORT_H
