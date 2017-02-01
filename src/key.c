@@ -236,12 +236,6 @@ _gpgme_key_append_name (gpgme_key_t key, const char *src, int convert)
 		   &uid->comment, dst);
 
   uid->address = _gpgme_mailbox_from_userid (uid->uid);
-  if (uid->address && uid->email && !strcmp (uid->address, uid->email))
-    {
-      /* The ADDRESS is the same as EMAIL: Save some space.  */
-      free (uid->address);
-      uid->address = uid->email;
-    }
   if ((!uid->email || !*uid->email) && uid->address && uid->name
       && !strcmp (uid->name, uid->address))
     {
@@ -394,9 +388,7 @@ gpgme_key_unref (gpgme_key_t key)
           tofu = tofu_next;
         }
 
-      if (uid->address && uid->address != uid->email)
-        free (uid->address);
-
+      free (uid->address);
       free (uid);
       uid = next_uid;
     }
