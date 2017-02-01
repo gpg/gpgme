@@ -242,6 +242,14 @@ _gpgme_key_append_name (gpgme_key_t key, const char *src, int convert)
       free (uid->address);
       uid->address = uid->email;
     }
+  if ((!uid->email || !*uid->email) && uid->address && uid->name
+      && !strcmp (uid->name, uid->address))
+    {
+      /* Name and address are the same. This is a mailbox only key.
+         Use address as email and remove name. */
+      *uid->name = '\0';
+      uid->email = uid->address;
+    }
 
   if (!key->uids)
     key->uids = uid;
