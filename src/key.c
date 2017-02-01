@@ -341,14 +341,10 @@ gpgme_key_unref (gpgme_key_t key)
   while (subkey)
     {
       gpgme_subkey_t next = subkey->next;
-      if (subkey->fpr)
-	free (subkey->fpr);
-      if (subkey->curve)
-	free (subkey->curve);
-      if (subkey->keygrip)
-	free (subkey->keygrip);
-      if (subkey->card_number)
-	free (subkey->card_number);
+      free (subkey->fpr);
+      free (subkey->curve);
+      free (subkey->keygrip);
+      free (subkey->card_number);
       free (subkey);
       subkey = next;
     }
@@ -393,15 +389,10 @@ gpgme_key_unref (gpgme_key_t key)
       uid = next_uid;
     }
 
-  if (key->issuer_serial)
-    free (key->issuer_serial);
-  if (key->issuer_name)
-    free (key->issuer_name);
-
-  if (key->chain_id)
-    free (key->chain_id);
-  if (key->fpr)
-    free (key->fpr);
+  free (key->issuer_serial);
+  free (key->issuer_name);
+  free (key->chain_id);
+  free (key->fpr);
 
   free (key);
 }
