@@ -158,6 +158,20 @@ gpgme_data_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
 }
 
 
+/* Convenience function to do a gpgme_data_seek (dh, 0, SEEK_SET).  */
+gpgme_error_t
+gpgme_data_rewind (gpgme_data_t dh)
+{
+  gpgme_error_t err;
+  TRACE_BEG (DEBUG_DATA, "gpgme_data_rewind", dh);
+
+  err = ((gpgme_data_seek (dh, 0, SEEK_SET) == -1)
+         ? gpg_error_from_syserror () : 0);
+
+  return TRACE_ERR (err);
+}
+
+
 /* Release the data object with the handle DH.  */
 void
 gpgme_data_release (gpgme_data_t dh)

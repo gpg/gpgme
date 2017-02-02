@@ -1165,9 +1165,8 @@ gpgme_error_t gpgme_data_new_from_filepart (gpgme_data_t *r_dh,
 					    const char *fname, FILE *fp,
 					    @API__OFF_T@ offset, size_t length);
 
-/* Reset the read pointer in DH.  Deprecated, please use
-   gpgme_data_seek instead.  */
-gpgme_error_t gpgme_data_rewind (gpgme_data_t dh) _GPGME_DEPRECATED(0,4);
+/* Convenience function to do a gpgme_data_seek (dh, 0, SEEK_SET).  */
+gpgme_error_t gpgme_data_rewind (gpgme_data_t dh);
 
 
 
