@@ -46,6 +46,7 @@ typedef struct
   int did_prepare_new_sig;
   int only_newsig_seen;
   int plaintext_seen;
+  int conflict_user_seen;
 } *op_data_t;
 
 
@@ -680,6 +681,14 @@ parse_tofu_user (gpgme_signature_t sig, char *args, gpgme_protocol_t protocol)
       goto leave;
     }
 
+  if (sig->key && sig->key->fpr && strcmp (sig->key->fpr, fpr))
+    {
+      /* GnuPG since 2.1.17 emits multiple TOFU_USER lines with
+         different fingerprints in case of conflicts for a signature. */
+      err = GPG_ERR_DUP_VALUE;
+      goto leave;
+    }
+
   args = tail;
   tail = strchr (args, ' ');
   if (tail == args)
@@ -706,12 +715,6 @@ parse_tofu_user (gpgme_signature_t sig, char *args, gpgme_protocol_t protocol)
   else if (!sig->key->fpr)
     {
       err = trace_gpg_error (GPG_ERR_INTERNAL);
-      goto leave;
-    }
-  else if (strcmp (sig->key->fpr, fpr))
-    {
-      /* The engine did not emit NEWSIG before a new key.  */
-      err = trace_gpg_error (GPG_ERR_INV_ENGINE);
       goto leave;
     }
 
@@ -930,6 +933,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
         calc_sig_summary (sig);
       err = prepare_new_sig (opd);
       opd->only_newsig_seen = 1;
+      opd->conflict_user_seen = 0;
       return err;
 
     case GPGME_STATUS_GOODSIG:
@@ -995,16 +999,35 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
     case GPGME_STATUS_TOFU_USER:
       opd->only_newsig_seen = 0;
-      return sig ? parse_tofu_user (sig, args, ctx->protocol)
-        /*    */ : trace_gpg_error (GPG_ERR_INV_ENGINE);
+      if (!sig)
+        return trace_gpg_error (GPG_ERR_INV_ENGINE);
+      err = parse_tofu_user (sig, args, ctx->protocol);
+      /* gpg emits TOFU User lines for each conflicting key.
+         GPGME does not expose this to have a clean API and
+         a GPGME user can do a keylisting with the address
+         normalisation.
+         So when a duplicated TOFU_USER line is encountered
+         we ignore the conflicting tofu stats emited afterwards.
+      */
+      if (err == GPG_ERR_DUP_VALUE)
+        {
+          opd->conflict_user_seen = 1;
+          break;
+        }
+      opd->conflict_user_seen = 0;
+      return trace_gpg_error (err);
 
     case GPGME_STATUS_TOFU_STATS:
       opd->only_newsig_seen = 0;
+      if (opd->conflict_user_seen)
+        break;
       return sig ? parse_tofu_stats (sig, args)
         /*    */ : trace_gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_TOFU_STATS_LONG:
       opd->only_newsig_seen = 0;
+      if (opd->conflict_user_seen)
+        break;
       return sig ? parse_tofu_stats_long (sig, args, ctx->raw_description)
         /*    */ : trace_gpg_error (GPG_ERR_INV_ENGINE);
 
