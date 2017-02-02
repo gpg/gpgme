@@ -313,7 +313,7 @@ _gpgme_debug_begin (void **line, int level, const char *format, ...)
     }
 
   va_start (arg_ptr, format);
-  res = vasprintf ((char **) line, format, arg_ptr);
+  res = gpgrt_vasprintf ((char **) line, format, arg_ptr);
   va_end (arg_ptr);
   if (res < 0)
     *line = NULL;
@@ -333,16 +333,16 @@ _gpgme_debug_add (void **line, const char *format, ...)
     return;
 
   va_start (arg_ptr, format);
-  res = vasprintf (&toadd, format, arg_ptr);
+  res = gpgrt_vasprintf (&toadd, format, arg_ptr);
   va_end (arg_ptr);
   if (res < 0)
     {
-      free (*line);
+      gpgrt_free (*line);
       *line = NULL;
     }
-  res = asprintf (&result, "%s%s", *(char **) line, toadd);
-  free (toadd);
-  free (*line);
+  res = gpgrt_asprintf (&result, "%s%s", *(char **) line, toadd);
+  gpgrt_free (toadd);
+  gpgrt_free (*line);
   if (res < 0)
     *line = NULL;
   else
@@ -361,7 +361,7 @@ _gpgme_debug_end (void **line)
   /* The smallest possible level is 1, so force logging here by
      using that.  */
   _gpgme_debug (1, "%s", *line);
-  free (*line);
+  gpgrt_free (*line);
   *line = NULL;
 }
 

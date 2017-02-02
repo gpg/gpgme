@@ -270,7 +270,7 @@ g13_new (void **engine, const char *file_name, const char *home_dir,
     goto leave;
   if (dft_display)
     {
-      if (asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
+      if (gpgrt_asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
         {
 	  free (dft_display);
 	  err = gpg_error_from_syserror ();
@@ -280,7 +280,7 @@ g13_new (void **engine, const char *file_name, const char *home_dir,
 
       err = assuan_transact (g13->assuan_ctx, optstr, NULL, NULL, NULL,
 			     NULL, NULL, NULL);
-      free (optstr);
+      gpgrt_free (optstr);
       if (err)
 	goto leave;
     }
@@ -304,14 +304,14 @@ g13_new (void **engine, const char *file_name, const char *home_dir,
 	 ways, e.g., when /dev/pts is not accessible under chroot.  */
       if (!rc)
 	{
-	  if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
+	  if (gpgrt_asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
 	    {
 	      err = gpg_error_from_syserror ();
 	      goto leave;
 	    }
 	  err = assuan_transact (g13->assuan_ctx, optstr, NULL, NULL, NULL,
 				 NULL, NULL, NULL);
-	  free (optstr);
+	  gpgrt_free (optstr);
 	  if (err)
 	    goto leave;
 
@@ -320,7 +320,7 @@ g13_new (void **engine, const char *file_name, const char *home_dir,
 	    goto leave;
 	  if (dft_ttytype)
 	    {
-	      if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
+	      if (gpgrt_asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype)< 0)
 		{
 		  free (dft_ttytype);
 		  err = gpg_error_from_syserror ();
@@ -330,7 +330,7 @@ g13_new (void **engine, const char *file_name, const char *home_dir,
 
 	      err = assuan_transact (g13->assuan_ctx, optstr, NULL, NULL,
 				     NULL, NULL, NULL, NULL);
-	      free (optstr);
+	      gpgrt_free (optstr);
 	      if (err)
 		goto leave;
 	    }
@@ -400,13 +400,13 @@ g13_set_locale (void *engine, int category, const char *value)
   if (!value)
     return 0;
 
-  if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
+  if (gpgrt_asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
     err = gpg_error_from_syserror ();
   else
     {
       err = assuan_transact (g13->assuan_ctx, optstr, NULL, NULL,
 			     NULL, NULL, NULL, NULL);
-      free (optstr);
+      gpgrt_free (optstr);
     }
 
   return err;

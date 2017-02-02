@@ -396,7 +396,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
     goto leave;
   if (dft_display)
     {
-      if (asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
+      if (gpgrt_asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
         {
 	  free (dft_display);
 	  err = gpg_error_from_syserror ();
@@ -406,7 +406,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 
       err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
 			     NULL, NULL, NULL);
-      free (optstr);
+      gpgrt_free (optstr);
       if (err)
 	goto leave;
     }
@@ -430,14 +430,14 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 	 ways, e.g., when /dev/pts is not accessible under chroot.  */
       if (!rc)
 	{
-	  if (asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
+	  if (gpgrt_asprintf (&optstr, "OPTION ttyname=%s", dft_ttyname) < 0)
 	    {
 	      err = gpg_error_from_syserror ();
 	      goto leave;
 	    }
 	  err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL, NULL,
 				 NULL, NULL, NULL);
-	  free (optstr);
+	  gpgrt_free (optstr);
 	  if (err)
 	    goto leave;
 
@@ -446,7 +446,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 	    goto leave;
 	  if (dft_ttytype)
 	    {
-	      if (asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype) < 0)
+	      if (gpgrt_asprintf (&optstr, "OPTION ttytype=%s", dft_ttytype)< 0)
 		{
 		  free (dft_ttytype);
 		  err = gpg_error_from_syserror ();
@@ -456,7 +456,7 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 
 	      err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
 				     NULL, NULL, NULL, NULL);
-	      free (optstr);
+	      gpgrt_free (optstr);
 	      if (err)
 		goto leave;
 	    }
@@ -561,13 +561,13 @@ gpgsm_set_locale (void *engine, int category, const char *value)
   if (!value)
     return 0;
 
-  if (asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
+  if (gpgrt_asprintf (&optstr, "OPTION %s=%s", catstr, value) < 0)
     err = gpg_error_from_syserror ();
   else
     {
       err = assuan_transact (gpgsm->assuan_ctx, optstr, NULL, NULL,
 			     NULL, NULL, NULL, NULL);
-      free (optstr);
+      gpgrt_free (optstr);
     }
 
   return err;
@@ -1642,10 +1642,10 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
     gpgsm_assuan_simple_command (gpgsm, "GETINFO agent-check", NULL, NULL);
 
   /* Always send list-mode option because RESET does not reset it.  */
-  if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
+  if (gpgrt_asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
     return gpg_error_from_syserror ();
   err = gpgsm_assuan_simple_command (gpgsm, line, NULL, NULL);
-  free (line);
+  gpgrt_free (line);
   if (err)
     return err;
 
@@ -1726,10 +1726,10 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
     list_mode |= 2;
 
   /* Always send list-mode option because RESET does not reset it.  */
-  if (asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
+  if (gpgrt_asprintf (&line, "OPTION list-mode=%d", (list_mode & 3)) < 0)
     return gpg_error_from_syserror ();
   err = gpgsm_assuan_simple_command (gpgsm, line, NULL, NULL);
-  free (line);
+  gpgrt_free (line);
   if (err)
     return err;
 
@@ -1860,10 +1860,11 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 	 can reset any previously set value in case the default is
 	 requested.  */
 
-      if (asprintf (&assuan_cmd, "OPTION include-certs %i", include_certs) < 0)
+      if (gpgrt_asprintf (&assuan_cmd,
+                          "OPTION include-certs %i", include_certs) < 0)
 	return gpg_error_from_syserror ();
       err = gpgsm_assuan_simple_command (gpgsm, assuan_cmd, NULL, NULL);
-      free (assuan_cmd);
+      gpgrt_free (assuan_cmd);
       if (err)
 	return err;
     }
@@ -2048,7 +2049,7 @@ gpgsm_passwd (void *engine, gpgme_key_t key, unsigned int flags)
   if (!key || !key->subkeys || !key->subkeys->fpr)
     return gpg_error (GPG_ERR_INV_CERT_OBJ);
 
-  if (asprintf (&line, "PASSWD -- %s", key->subkeys->fpr) < 0)
+  if (gpgrt_asprintf (&line, "PASSWD -- %s", key->subkeys->fpr) < 0)
     return gpg_error_from_syserror ();
 
   gpgsm_clear_fd (gpgsm, OUTPUT_FD);
@@ -2057,7 +2058,7 @@ gpgsm_passwd (void *engine, gpgme_key_t key, unsigned int flags)
   gpgsm->inline_data = NULL;
 
   err = start (gpgsm, line);
-  free (line);
+  gpgrt_free (line);
 
   return err;
 }

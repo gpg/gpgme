@@ -138,7 +138,7 @@ _gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
 	  return gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
 	}
 
-      if (asprintf (&cmd, "RECIPIENT %s", recp[i]->subkeys->fpr) < 0)
+      if (gpgrt_asprintf (&cmd, "RECIPIENT %s", recp[i]->subkeys->fpr) < 0)
 	{
 	  err = gpg_error_from_syserror ();
 	  free (container_file_esc);
@@ -147,7 +147,7 @@ _gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
 
       err = gpgme_op_vfs_transact (ctx, cmd, NULL, NULL, NULL, NULL,
 				   NULL, NULL, op_err);
-      free (cmd);
+      gpgrt_free (cmd);
       if (err || *op_err)
 	{
 	  free (container_file_esc);
@@ -156,7 +156,7 @@ _gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
       recp++;
     }
 
-  if (asprintf (&cmd, "CREATE -- %s", container_file_esc) < 0)
+  if (gpgrt_asprintf (&cmd, "CREATE -- %s", container_file_esc) < 0)
     {
       err = gpg_error_from_syserror ();
       free (container_file_esc);
@@ -166,7 +166,7 @@ _gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
 
   err = gpgme_op_vfs_transact (ctx, cmd, NULL, NULL, NULL, NULL,
 			       NULL, NULL, op_err);
-  free (cmd);
+  gpgrt_free (cmd);
 
   return err;
 }

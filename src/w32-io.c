@@ -1643,11 +1643,11 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
                             "with your installation.\n"
                             "Please report the problem to your "
                             "distributor of GpgME.\n\n"
-                            "Developers Note: The install dir can be "
+                            "Developer's Note: The install dir can be "
                             "manually set with: gpgme_set_global_flag",
                             _gpgme_get_inst_dir ());
       MessageBoxA (NULL, msg, "GpgME not installed correctly", MB_OK);
-      free (msg);
+      gpgrt_free (msg);
       gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }

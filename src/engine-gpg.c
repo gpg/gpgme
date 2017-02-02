@@ -74,6 +74,10 @@ struct fd_data_map_s
 };
 
 
+/* NB.: R_LINE is allocated an gpgrt function and thus gpgrt_free
+ * shall be used to release it.  This takes care of custom memory
+ * allocators and avoids problems on Windows with different runtimes
+ * used for libgpg-error/gpgrt and gpgme.  */
 typedef gpgme_error_t (*colon_preprocessor_t) (char *line, char **rline);
 
 struct engine_gpg
@@ -1346,7 +1350,7 @@ read_colon_line (engine_gpg_t gpg)
                         }
                       while (linep && *linep);
 
-                      free (line);
+                      gpgrt_free (line);
                     }
                   else
                     gpg->colon.fnc (gpg->colon.fnc_value, buffer);
@@ -2513,7 +2517,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
       n = strlen (field[1]);
       if (n > 16)
         {
-          if (asprintf (r_line,
+          if (gpgrt_asprintf (r_line,
                         "pub:o%s:%s:%s:%s:%s:%s::::::::\n"
                         "fpr:::::::::%s:",
                         field[6], field[3], field[2], field[1] + n - 16,
@@ -2522,7 +2526,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
         }
       else
         {
-          if (asprintf (r_line,
+          if (gpgrt_asprintf (r_line,
                         "pub:o%s:%s:%s:%s:%s:%s::::::::",
                         field[6], field[3], field[2], field[1],
                         field[4], field[5]) < 0)
@@ -2580,7 +2584,7 @@ gpg_keylist_preprocess (char *line, char **r_line)
 	  }
 	*dst = '\0';
 
-	if (asprintf (r_line, "uid:o%s::::%s:%s:::%s:",
+	if (gpgrt_asprintf (r_line, "uid:o%s::::%s:%s:::%s:",
 		      field[4], field[2], field[3], uid) < 0)
 	  return gpg_error_from_syserror ();
       }

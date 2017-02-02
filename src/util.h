@@ -95,11 +95,12 @@ _gpgme_stpcpy (char *a, const char *b)
 #define stpcpy(a,b) _gpgme_stpcpy ((a), (b))
 #endif /*!HAVE_STPCPY*/
 
-#if !HAVE_VASPRINTF
-#include <stdarg.h>
-int vasprintf (char **result, const char *format, va_list args);
-int asprintf (char **result, const char *format, ...);
-#endif
+
+/* Due to a bug in mingw32's snprintf related to the 'l' modifier and
+   for increased portability we use our snprintf on all systems. */
+#undef snprintf
+#define snprintf gpgrt_snprintf
+
 
 #if REPLACE_TTYNAME_R
 int _gpgme_ttyname_r (int fd, char *buf, size_t buflen);

@@ -184,7 +184,7 @@ _gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
   if (err)
     return err;
 
-  if (asprintf (&cmd, "OPEN -- %s", container_file_esc) < 0)
+  if (gpgrt_asprintf (&cmd, "OPEN -- %s", container_file_esc) < 0)
     {
       err = gpg_error_from_syserror ();
       free (container_file_esc);
@@ -194,7 +194,7 @@ _gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
 
   err = gpgme_op_vfs_transact (ctx, cmd, NULL, NULL, NULL, NULL,
 			       NULL, NULL, op_err);
-  free (cmd);
+  gpgrt_free (cmd);
   if (err || *op_err)
     return err;
 
@@ -206,7 +206,7 @@ _gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
       if (err)
 	return err;
 
-      if (asprintf (&cmd, "MOUNT -- %s", mount_dir_esc) < 0)
+      if (gpgrt_asprintf (&cmd, "MOUNT -- %s", mount_dir_esc) < 0)
 	{
 	  err = gpg_error_from_syserror ();
 	  free (mount_dir_esc);
@@ -216,13 +216,13 @@ _gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
     }
   else
     {
-      if (asprintf (&cmd, "MOUNT") < 0)
+      if (gpgrt_asprintf (&cmd, "MOUNT") < 0)
 	return gpg_error_from_syserror ();
     }
 
   err = gpgme_op_vfs_transact (ctx, cmd, NULL, NULL, NULL, NULL,
 			       _gpgme_vfs_mount_status_handler, ctx, op_err);
-  free (cmd);
+  gpgrt_free (cmd);
 
   return err;
 }

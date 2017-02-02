@@ -577,9 +577,10 @@ _gpgme_get_gpgconf_path (void)
                                                 "Install Directory");
           if (tmp)
             {
-              if (gpgrt_asprintf (&dir, "%s\\bin", tmp) == -1)
-                return NULL;
+              dir = _gpgme_strconcat (tmp, "\\bin", NULL);
               free (tmp);
+              if (!dir)
+                return NULL;
             }
         }
       if (dir)
