@@ -698,21 +698,6 @@ fi
 # Other checks
 #
 
-# Check for funopen
-AC_CHECK_FUNCS(funopen)
-if test $ac_cv_func_funopen != yes; then
-    # No funopen but we can implement that in terms of fopencookie.
-    AC_CHECK_FUNCS(fopencookie)
-    if test $ac_cv_func_fopencookie = yes; then
-        AC_REPLACE_FUNCS(funopen)
-    else
-        AC_MSG_WARN([
-***
-*** No implementation of fopencookie or funopen available
-***])
-    fi
-fi
-
 # Check for getgid etc
 AC_CHECK_FUNCS(getgid getegid)
 
