@@ -685,7 +685,7 @@ parse_tofu_user (gpgme_signature_t sig, char *args, gpgme_protocol_t protocol)
     {
       /* GnuPG since 2.1.17 emits multiple TOFU_USER lines with
          different fingerprints in case of conflicts for a signature. */
-      err = GPG_ERR_DUP_VALUE;
+      err = gpg_error (GPG_ERR_DUP_VALUE);
       goto leave;
     }
 
@@ -1003,13 +1003,13 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
         return trace_gpg_error (GPG_ERR_INV_ENGINE);
       err = parse_tofu_user (sig, args, ctx->protocol);
       /* gpg emits TOFU User lines for each conflicting key.
-         GPGME does not expose this to have a clean API and
-         a GPGME user can do a keylisting with the address
-         normalisation.
-         So when a duplicated TOFU_USER line is encountered
-         we ignore the conflicting tofu stats emited afterwards.
-      */
-      if (err == GPG_ERR_DUP_VALUE)
+       * GPGME does not expose this to have a clean API and
+       * a GPGME user can do a keylisting with the address
+       * normalisation.
+       * So when a duplicated TOFU_USER line is encountered
+       * we ignore the conflicting tofu stats emited afterwards.
+       */
+      if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
         {
           opd->conflict_user_seen = 1;
           break;
