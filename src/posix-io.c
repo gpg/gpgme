@@ -287,37 +287,43 @@ get_max_fds (void)
   int rc;
 
   /* Under Linux we can figure out the highest used file descriptor by
-   * reading /proc/self/fd.  This is in the common cases much fast than
-   * for example doing 4096 close calls where almost all of them will
-   * fail.  */
-#ifdef __linux__
-  {
-    DIR *dir = NULL;
-    struct dirent *dir_entry;
-    const char *s;
-    int x;
+   * reading /proc/self/fd.  This is in the common cases much faster
+   * than for example doing 4096 close calls where almost all of them
+   * will fail.
+   *
+   * Unfortunately we can't call opendir between fork and exec in a
+   * multi-threaded process because opendir uses malloc and thus a
+   * mutex which may deadlock with a malloc in another thread.  Thus
+   * the code is not used until we can have a opendir variant which
+   * does not use malloc.  */
+/* #ifdef __linux__ */
+/*   { */
+/*     DIR *dir = NULL; */
+/*     struct dirent *dir_entry; */
+/*     const char *s; */
+/*     int x; */
 
-    dir = opendir ("/proc/self/fd");
-    if (dir)
-      {
-        while ((dir_entry = readdir (dir)))
-          {
-            s = dir_entry->d_name;
-            if ( *s < '0' || *s > '9')
-              continue;
-            x = atoi (s);
-            if (x > fds)
-              fds = x;
-          }
-        closedir (dir);
-      }
-    if (fds != -1)
-      {
-        fds++;
-        source = "/proc";
-      }
-    }
-#endif /* __linux__ */
+/*     dir = opendir ("/proc/self/fd"); */
+/*     if (dir) */
+/*       { */
+/*         while ((dir_entry = readdir (dir))) */
+/*           { */
+/*             s = dir_entry->d_name; */
+/*             if ( *s < '0' || *s > '9') */
+/*               continue; */
+/*             x = atoi (s); */
+/*             if (x > fds) */
+/*               fds = x; */
+/*           } */
+/*         closedir (dir); */
+/*       } */
+/*     if (fds != -1) */
+/*       { */
+/*         fds++; */
+/*         source = "/proc"; */
+/*       } */
+/*     } */
+/* #endif /\* __linux__ *\/ */
 
 #ifdef RLIMIT_NOFILE
   if (fds == -1)
