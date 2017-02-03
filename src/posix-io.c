@@ -459,10 +459,9 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       /* Intermediate child to prevent zombie processes.  */
       if ((pid = fork ()) == 0)
 	{
-	  int max_fds = get_max_fds ();
-	  int fd;
-
 	  /* Child.  */
+          int max_fds = -1;
+          int fd;
 	  int seen_stdin = 0;
 	  int seen_stdout = 0;
 	  int seen_stderr = 0;
@@ -470,15 +469,40 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	  if (atfork)
 	    atfork (atforkvalue, 0);
 
-	  /* First close all fds which will not be inherited.  */
-	  for (fd = 0; fd < max_fds; fd++)
-	    {
-	      for (i = 0; fd_list[i].fd != -1; i++)
-		if (fd_list[i].fd == fd)
-		  break;
-	      if (fd_list[i].fd == -1)
-		close (fd);
-	    }
+          /* First close all fds which will not be inherited.  If we
+           * have closefrom(2) we first figure out the highest fd we
+           * do not want to close, then call closefrom, and on success
+           * use the regular code to close all fds up to the start
+           * point of closefrom.  Note that Solaris' closefrom does
+           * not return errors.  */
+#ifdef HAVE_CLOSEFROM
+          {
+            fd = -1;
+            for (i = 0; fd_list[i].fd != -1; i++)
+              if (fd_list[i].fd > fd)
+                fd = fd_list[i].fd;
+            fd++;
+#ifdef __sun
+            closefrom (fd);
+            max_fds = fd;
+#else /*!__sun */
+            while ((i = closefrom (fd)) && errno == EINTR)
+              ;
+            if (!i || errno == EBADF)
+              max_fds = fd;
+#endif /*!__sun*/
+          }
+#endif /*HAVE_CLOSEFROM*/
+          if (max_fds == -1)
+            max_fds = get_max_fds ();
+          for (fd = 0; fd < max_fds; fd++)
+            {
+              for (i = 0; fd_list[i].fd != -1; i++)
+                if (fd_list[i].fd == fd)
+                  break;
+              if (fd_list[i].fd == -1)
+                close (fd);
+            }
 
 	  /* And now dup and close those to be duplicated.  */
 	  for (i = 0; fd_list[i].fd != -1; i++)

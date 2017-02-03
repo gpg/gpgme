@@ -694,7 +694,7 @@ fi
 #
 
 # Check for getgid etc
-AC_CHECK_FUNCS(getgid getegid)
+AC_CHECK_FUNCS(getgid getegid closefrom)
 
 
 # Replacement functions.
