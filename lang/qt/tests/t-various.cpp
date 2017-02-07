@@ -36,6 +36,7 @@
 #include <QDebug>
 #include <QTest>
 #include <QSignalSpy>
+#include <QTemporaryDir>
 #include "keylistjob.h"
 #include "protocol.h"
 #include "keylistresult.h"
