@@ -51,6 +51,7 @@
 #include "job.h"
 
 #include <cassert>
+#include <functional>
 
 namespace QGpgME
 {

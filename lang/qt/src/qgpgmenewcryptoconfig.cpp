@@ -49,6 +49,7 @@
 #include <sstream>
 #include <string>
 #include <cassert>
+#include <functional>
 
 using namespace QGpgME;
 using namespace GpgME;
