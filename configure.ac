@@ -167,6 +167,8 @@ case "${host}" in
 	have_ld_version_script=yes
         ;;
     *-apple-darwin*)
+        AC_DEFINE(_DARWIN_C_SOURCE, 900000L,
+                  Expose all libc features (__DARWIN_C_FULL).)
         AC_DEFINE(_XOPEN_SOURCE, 500, Activate POSIX interface on MacOS X)
         ;;
 esac
