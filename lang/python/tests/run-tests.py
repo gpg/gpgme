@@ -69,7 +69,9 @@ for interpreter in args.interpreters:
     version = subprocess.check_output(
         [interpreter, "-c", "import sys; print('{0}.{1}'.format(sys.version_info[0], sys.version_info[1]))"]).strip().decode()
 
-    builddirs = glob.glob(os.path.join(args.builddir, "..", "build",
+    builddirs = glob.glob(os.path.join(args.builddir, "..",
+                                       "python{0}-gpg".format(version),
+                                       "build",
                                        "lib*"+version))
     assert len(builddirs) == 1, \
         "Expected one build directory, got {0}".format(builddirs)
