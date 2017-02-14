@@ -72,7 +72,7 @@ noinst_PROGRAMS = t-keylist t-keylocate t-ownertrust t-tofuinfo t-encrypt \
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
 	random_seed S.gpg-agent .gpg-v21-migrated pubring-stamp $(moc_files) \
-	gpg.conf
+	gpg.conf tofu.db
 
 clean-local:
 	-rm -fR  private-keys-v1.d crls.d
