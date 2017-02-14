@@ -111,7 +111,7 @@
 }
 
 /* Release returned buffers as necessary.  */
-%typemap(newfree) char * "free($1);";
+%typemap(newfree) char * "gpgme_free($1);";
 %newobject gpgme_data_release_and_get_mem;
 
 %typemap(arginit) gpgme_key_t [] {
