@@ -15,6 +15,7 @@ Noteworthy changes in version 1.8.1 (unreleased)
  gpgme_data_rewind                                  UN-DEPRECATE.
  py: Context.__init__  EXTENDED: New keyword argument home_dir.
  py: Context.home_dir  NEW.
+ py: Context.keylist   EXTENDED: New keyword argument mode.
 
 
 Noteworthy changes in version 1.8.0 (2016-11-16)

@@ -483,12 +483,14 @@ class Context(GpgmeWrapper):
             plainbytes = data.read()
         return plainbytes, result
 
-    def keylist(self, pattern=None, secret=False):
+    def keylist(self, pattern=None, secret=False,
+                mode=constants.keylist.mode.LOCAL):
         """List keys
 
         Keyword arguments:
         pattern	-- return keys matching pattern (default: all keys)
-        secret	-- return only secret keys
+        secret	-- return only secret keys (default: False)
+        mode    -- keylist mode (default: list local keys)
 
         Returns:
                 -- an iterator returning key objects
@@ -496,6 +498,7 @@ class Context(GpgmeWrapper):
         Raises:
         GPGMEError	-- as signaled by the underlying library
         """
+        self.set_keylist_mode(mode)
         return self.op_keylist_all(pattern, secret)
 
     def assuan_transact(self, command,
