@@ -13,9 +13,11 @@ Noteworthy changes in version 1.8.1 (unreleased)
  cpp: Key::addUid()                                 NEW.
  qt: CryptoConfig::stringValueList()                NEW.
  gpgme_data_rewind                                  UN-DEPRECATE.
- py: Context.__init__  EXTENDED: New keyword argument home_dir.
- py: Context.home_dir  NEW.
- py: Context.keylist   EXTENDED: New keyword argument mode.
+ py: Context.__init__        EXTENDED: New keyword arg home_dir.
+ py: Context.home_dir        NEW.
+ py: Context.keylist         EXTENDED: New keyword arg mode.
+ py: core.pubkey_algo_string NEW.
+ py: core.addrspec_from_uid  NEW.
 
 
 Noteworthy changes in version 1.8.0 (2016-11-16)

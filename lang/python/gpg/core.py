@@ -1118,14 +1118,63 @@ class Data(GpgmeWrapper):
                 chunks.append(result)
             return b''.join(chunks)
 
+def pubkey_algo_string(subkey):
+    """Return short algorithm string
+
+    Return a public key algorithm string (e.g. "rsa2048") for a given
+    SUBKEY.
+
+    Returns:
+    algo      - a string
+
+    """
+    return gpgme.gpgme_pubkey_algo_string(subkey)
+
 def pubkey_algo_name(algo):
+    """Return name of public key algorithm
+
+    Return the name of the public key algorithm for a given numeric
+    algorithm id ALGO (cf. RFC4880).
+
+    Returns:
+    algo      - a string
+
+    """
     return gpgme.gpgme_pubkey_algo_name(algo)
 
 def hash_algo_name(algo):
+    """Return name of hash algorithm
+
+    Return the name of the hash algorithm for a given numeric
+    algorithm id ALGO (cf. RFC4880).
+
+    Returns:
+    algo      - a string
+
+    """
     return gpgme.gpgme_hash_algo_name(algo)
 
 def get_protocol_name(proto):
+    """Get protocol description
+
+    Get the string describing protocol PROTO.
+
+    Returns:
+    proto     - a string
+
+    """
     return gpgme.gpgme_get_protocol_name(proto)
+
+def addrspec_from_uid(uid):
+    """Return the address spec
+
+    Return the addr-spec (cf. RFC2822 section 4.3) from a user id UID.
+
+    Returns:
+    addr_spec - a string
+
+    """
+    return gpgme.gpgme_addrspec_from_uid(uid)
 
 def check_version(version=None):
     return gpgme.gpgme_check_version(version)

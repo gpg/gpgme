@@ -113,6 +113,8 @@
 /* Release returned buffers as necessary.  */
 %typemap(newfree) char * "gpgme_free($1);";
 %newobject gpgme_data_release_and_get_mem;
+%newobject gpgme_pubkey_algo_string;
+%newobject gpgme_addrspec_from_uid;
 
 %typemap(arginit) gpgme_key_t [] {
   $1 = NULL;
