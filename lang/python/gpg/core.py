@@ -176,7 +176,7 @@ class Context(GpgmeWrapper):
     def __init__(self, armor=False, textmode=False, offline=False,
                  signers=[], pinentry_mode=constants.PINENTRY_MODE_DEFAULT,
                  protocol=constants.PROTOCOL_OpenPGP,
-                 wrapped=None):
+                 wrapped=None, home_dir=None):
         """Construct a context object
 
         Keyword arguments:
@@ -186,6 +186,7 @@ class Context(GpgmeWrapper):
         signers		-- list of keys used for signing (default [])
         pinentry_mode	-- pinentry mode (default PINENTRY_MODE_DEFAULT)
         protocol	-- protocol to use (default PROTOCOL_OpenPGP)
+        home_dir        -- state directory (default is the engine default)
 
         """
         if wrapped:
@@ -203,13 +204,14 @@ class Context(GpgmeWrapper):
         self.signers = signers
         self.pinentry_mode = pinentry_mode
         self.protocol = protocol
+        self.home_dir = home_dir
 
     def __repr__(self):
         return (
             "Context(armor={0.armor}, "
             "textmode={0.textmode}, offline={0.offline}, "
             "signers={0.signers}, pinentry_mode={0.pinentry_mode}, "
-            "protocol={0.protocol}"
+            "protocol={0.protocol}, home_dir={0.home_dir}"
             ")").format(self)
 
     def encrypt(self, plaintext, recipients=[], sign=True, sink=None,
@@ -609,6 +611,14 @@ class Context(GpgmeWrapper):
     def protocol(self, value):
         errorcheck(gpgme.gpgme_engine_check_version(value))
         self.set_protocol(value)
+
+    @property
+    def home_dir(self):
+        """Engine's home directory"""
+        return self.engine_info.home_dir
+    @home_dir.setter
+    def home_dir(self, value):
+        self.set_engine_info(self.protocol, home_dir=value)
 
     _ctype = 'gpgme_ctx_t'
     _cprefix = 'gpgme_'
