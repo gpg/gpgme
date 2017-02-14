@@ -676,3 +676,7 @@ _gpg_unwrap_gpgme_ctx_t(PyObject *wrapped)
 %extend _gpgme_key_sig {
   genericrepr(KeySig)
 };
+
+%extend _gpgme_user_id {
+  genericrepr(UID)
+};
