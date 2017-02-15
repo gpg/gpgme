@@ -46,47 +46,48 @@ COPY_FILES_GPG = \
 
 # For VPATH builds we need to copy some files because Python's
 # distutils are not VPATH-aware.
-copystamp: $(COPY_FILES) $(COPY_FILES_GPG) data.h config.h
+copystamp: $(COPY_FILES) $(COPY_FILES_GPG)
+	for F in $(COPY_FILES) $(COPY_FILES_GPG) ; do if [ $$F -nt $@ ]; then echo $F ; fi ; done
 	for VERSION in $(PYTHON_VERSIONS); do \
 	  $(MKDIR_P)              python$${VERSION}-gpg/gpg && \
 	  cp -R $(COPY_FILES)     python$${VERSION}-gpg && \
+	  cp setup.py             python$${VERSION}-gpg && \
 	  cp gpg/version.py       python$${VERSION}-gpg/gpg && \
+	  ln -sf "$(abs_top_srcdir)/src/data.h" python$${VERSION}-gpg && \
+	  ln -sf "$(abs_top_builddir)/config.h" python$${VERSION}-gpg && \
 	  cp -R $(COPY_FILES_GPG) python$${VERSION}-gpg/gpg ; \
 	done
 	touch $@
-
-data.h:
-	ln -s "$(top_srcdir)/src/data.h" .
-
-config.h:
-	ln -s "$(top_builddir)/config.h" .
 
 all-local: copystamp
 	set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
 	  PYTHON="$$1" ; shift ; \
 	  cd python$${VERSION}-gpg && \
 	  CFLAGS="$(CFLAGS)" \
-	    $$PYTHON ../setup.py build --verbose ; \
+	    $$PYTHON setup.py build --verbose ; \
 	  cd .. ; \
 	done
 
-dist/gpg-$(VERSION).tar.gz dist/gpg-$(VERSION).tar.gz.asc: copystamp
+python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz \
+python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc: copystamp
+	cd python$(PYTHON_VERSION)-gpg && \
 	CFLAGS="$(CFLAGS)" \
 	  $(PYTHON) setup.py sdist --verbose
-	gpg2 --detach-sign --armor dist/gpg-$(VERSION).tar.gz
+	gpg2 --detach-sign --armor python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz
 
 .PHONY: prepare
 prepare: copystamp
 
 .PHONY: sdist
-sdist: dist/gpg-$(VERSION).tar.gz dist/gpg-$(VERSION).tar.gz.asc
+sdist: python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz \
+       python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc
 
 .PHONY: upload
-upload: dist/gpg-$(VERSION).tar.gz dist/gpg-$(VERSION).tar.gz.asc
+upload: python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz \
+        python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc
 	twine upload $^
 
-CLEANFILES = gpgme.h errors.i gpgme_wrap.c gpg/gpgme.py \
-	  data.h config.h copystamp
+CLEANFILES = copystamp
 
 # Remove the rest.
 #
@@ -104,7 +105,7 @@ install-exec-local:
 	set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
 	  PYTHON="$$1" ; shift ; \
 	  cd python$${VERSION}-gpg && \
-	  $$PYTHON ../setup.py install \
+	  $$PYTHON setup.py install \
 	  --prefix $(DESTDIR)$(prefix) \
 	  --record files.txt \
 	  --verbose ; \

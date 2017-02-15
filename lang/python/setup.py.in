@@ -34,12 +34,12 @@ in_tree = False
 extra_swig_opts = []
 extra_macros = dict()
 
-if os.path.exists("../../src/gpgme-config"):
+if os.path.exists("../../../src/gpgme-config"):
     # In-tree build.
     in_tree = True
-    gpgme_config = ["../../src/gpgme-config"] + gpgme_config_flags
-    gpgme_h = "../../src/gpgme.h"
-    library_dirs = ["../../src/.libs"] # XXX uses libtool internals
+    gpgme_config = ["../../../src/gpgme-config"] + gpgme_config_flags
+    gpgme_h = "../../../src/gpgme.h"
+    library_dirs = ["../../../src/.libs"] # XXX uses libtool internals
     extra_macros.update(
         HAVE_CONFIG_H=1,
         HAVE_DATA_H=1,
