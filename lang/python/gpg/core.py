@@ -628,22 +628,27 @@ class Context(GpgmeWrapper):
 
     def _errorcheck(self, name):
         """This function should list all functions returning gpgme_error_t"""
+        # The list of functions is created using:
+        #
+        # $ grep '^gpgme_error_t ' obj/lang/python/python3.5-gpg/gpgme.h \
+        #   | grep -v _op_ | awk "/\(gpgme_ctx/ { printf (\"'%s',\\n\", \$2) } "
         return ((name.startswith('gpgme_op_')
                  and not name.endswith('_result'))
                 or name in {
+                    'gpgme_new',
                     'gpgme_set_ctx_flag',
                     'gpgme_set_protocol',
                     'gpgme_set_sub_protocol',
                     'gpgme_set_keylist_mode',
                     'gpgme_set_pinentry_mode',
                     'gpgme_set_locale',
-                    'gpgme_set_engine_info',
+                    'gpgme_ctx_set_engine_info',
                     'gpgme_signers_add',
-                    'gpgme_get_sig_key',
                     'gpgme_sig_notation_add',
+                    'gpgme_set_sender',
                     'gpgme_cancel',
                     'gpgme_cancel_async',
-                    'gpgme_cancel_get_key',
+                    'gpgme_get_key',
                 })
 
     _boolean_properties = {'armor', 'textmode', 'offline'}
@@ -850,8 +855,7 @@ class Context(GpgmeWrapper):
         home_dir	-- configuration directory (unchanged if None)
 
         """
-        errorcheck(gpgme.gpgme_ctx_set_engine_info(
-            self.wrapped, proto, file_name, home_dir))
+        self.ctx_set_engine_info(proto, file_name, home_dir)
 
     def wait(self, hang):
         """Wait for asynchronous call to finish. Wait forever if hang is True.
@@ -905,11 +909,19 @@ class Data(GpgmeWrapper):
 
     def _errorcheck(self, name):
         """This function should list all functions returning gpgme_error_t"""
+        # This list is compiled using
+        #
+        # $ grep -v '^gpgme_error_t ' obj/lang/python/python3.5-gpg/gpgme.h \
+        #   | awk "/\(gpgme_data_t/ { printf (\"'%s',\\n\", \$2) } " | sed "s/'\\*/'/"
         return name not in {
+            'gpgme_data_read',
+            'gpgme_data_write',
+            'gpgme_data_seek',
+            'gpgme_data_release',
             'gpgme_data_release_and_get_mem',
             'gpgme_data_get_encoding',
-            'gpgme_data_seek',
             'gpgme_data_get_file_name',
+            'gpgme_data_identify',
         }
 
     def __init__(self, string=None, file=None, offset=None,
