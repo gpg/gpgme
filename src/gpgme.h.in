@@ -177,7 +177,7 @@ const char *gpgme_strerror (gpgme_error_t err);
    contains the string describing the error.  If the buffer was not
    large enough, ERANGE is returned and BUF contains as much of the
    beginning of the error string as fits into the buffer.  */
-int gpgme_strerror_r (gpg_error_t err, char *buf, size_t buflen);
+int gpgme_strerror_r (gpgme_error_t err, char *buf, size_t buflen);
 
 /* Return a pointer to a string containing a description of the error
    source in the error value ERR.  */
@@ -1161,8 +1161,8 @@ gpgme_error_t gpgme_data_set_file_name (gpgme_data_t dh,
 					const char *file_name);
 
 /* Set a flag for the data object DH.  See the manual for details.  */
-gpg_error_t gpgme_data_set_flag (gpgme_data_t dh,
-                                 const char *name, const char *value);
+gpgme_error_t gpgme_data_set_flag (gpgme_data_t dh,
+                                   const char *name, const char *value);
 
 /* Try to identify the type of the data in DH.  */
 gpgme_data_type_t gpgme_data_identify (gpgme_data_t dh, int reserved);
