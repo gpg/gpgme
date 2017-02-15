@@ -2076,7 +2076,8 @@ gpg_add_algo_usage_expire (engine_gpg_t gpg,
   /* This condition is only required to allow the use of gpg < 2.1.16 */
   if (algo
       || (flags & (GPGME_CREATE_SIGN | GPGME_CREATE_ENCR
-                   | GPGME_CREATE_CERT | GPGME_CREATE_AUTH))
+                   | GPGME_CREATE_CERT | GPGME_CREATE_AUTH
+                   | GPGME_CREATE_NOEXPIRE))
       || expires)
     {
       err = add_arg (gpg, algo? algo : "default");
@@ -2090,11 +2091,18 @@ gpg_add_algo_usage_expire (engine_gpg_t gpg,
                     (flags & GPGME_CREATE_AUTH)? " auth":"");
           err = add_arg (gpg, *tmpbuf? tmpbuf : "default");
         }
-      if (!err && expires)
+      if (!err)
         {
-          char tmpbuf[8+20];
-          snprintf (tmpbuf, sizeof tmpbuf, "seconds=%lu", expires);
-          err = add_arg (gpg, tmpbuf);
+          if (flags & GPGME_CREATE_NOEXPIRE)
+            err = add_arg (gpg, "never");
+          else if (expires == 0)
+            err = add_arg (gpg, "-");
+          else
+            {
+              char tmpbuf[8+20];
+              snprintf (tmpbuf, sizeof tmpbuf, "seconds=%lu", expires);
+              err = add_arg (gpg, tmpbuf);
+            }
         }
     }
   else

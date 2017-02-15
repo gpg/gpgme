@@ -1637,6 +1637,7 @@ gpgme_error_t gpgme_op_export_keys (gpgme_ctx_t ctx,
 #define GPGME_CREATE_WANTPUB    (1 << 10) /* Return the public key.    */
 #define GPGME_CREATE_WANTSEC    (1 << 11) /* Return the secret key.    */
 #define GPGME_CREATE_FORCE      (1 << 12) /* Force creation.           */
+#define GPGME_CREATE_NOEXPIRE   (1 << 13) /* Create w/o expiration.    */
 
 /* An object to return result from a key generation.
  * This structure shall be considered read-only and an application

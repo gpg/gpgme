@@ -3612,13 +3612,14 @@ primary key plus a secondary key (subkey).
 
 @var{reserved} must be set to zero.
 
-@var{expires} can be set to the number of seconds since Epoch of the
-desired expiration date in UTC for the new key.   Using 0 does not
-set an expiration date.  Note that this parameter takes an unsigned long
-value and not a @code{time_t} to avoid problems on systems which use a
-signed 32 bit @code{time_t}.  Note further that the OpenPGP protocol
-uses 32 bit values for timestamps and thus can only encode dates up to
-the year 2106.
+@var{expires} specifies the expiration time in seconds.  If you supply
+0, a reasonable expiration time is chosen.  Use the flag
+@code{GPGME_CREATE_NOEXPIRE} to create keys that do not expire.  Note
+that this parameter takes an unsigned long value and not a
+@code{time_t} to avoid problems on systems which use a signed 32 bit
+@code{time_t}.  Note further that the OpenPGP protocol uses 32 bit
+values for timestamps and thus can only encode dates up to the year
+2106.
 
 @var{extrakey} is currently not used and must be set to @code{NULL}.
 A future version of GPGME may use this parameter to create X.509 keys.
@@ -3659,6 +3660,9 @@ This has not yet been implemented.
 The engine does not allow the creation of a key with a user ID
 already existing in the local key database.  This flag can be used to
 override this check.
+
+@item GPGME_CREATE_NOEXPIRE
+Request generation of keys that do not expire.
 
 @end table
 
@@ -3719,13 +3723,14 @@ able to already handle such future algorithms.
 
 @var{reserved} must be set to zero.
 
-@var{expires} can be set to the number of seconds since Epoch of the
-desired expiration date in UTC for the new subkey.   Using 0 does not
-set an expiration date.  Note that this parameter takes an unsigned long
-value and not a @code{time_t} to avoid problems on systems which use a
-signed 32 bit @code{time_t}.  Note further that the OpenPGP protocol
-uses 32 bit values for timestamps and thus can only encode dates up to
-the year 2106.
+@var{expires} specifies the expiration time in seconds.  If you supply
+0, a reasonable expiration time is chosen.  Use the flag
+@code{GPGME_CREATE_NOEXPIRE} to create keys that do not expire.  Note
+that this parameter takes an unsigned long value and not a
+@code{time_t} to avoid problems on systems which use a signed 32 bit
+@code{time_t}.  Note further that the OpenPGP protocol uses 32 bit
+values for timestamps and thus can only encode dates up to the year
+2106.
 
 @var{flags} takes the same values as described above for
 @code{gpgme_op_createkey}.
