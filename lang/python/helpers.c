@@ -377,7 +377,21 @@ static gpgme_error_t pyPassphraseCb(void *hook,
     goto leave;
   }
 
-  PyTuple_SetItem(args, 1, PyBytes_FromString(passphrase_info));
+  if (passphrase_info == NULL)
+    {
+      Py_INCREF(Py_None);
+      PyTuple_SetItem(args, 1, Py_None);
+    }
+  else
+    PyTuple_SetItem(args, 1, PyUnicode_DecodeUTF8(passphrase_info,
+                                                  strlen (passphrase_info),
+                                                  "strict"));
+  if (PyErr_Occurred()) {
+    Py_DECREF(args);
+    err_status = gpg_error(GPG_ERR_GENERAL);
+    goto leave;
+  }
+
   PyTuple_SetItem(args, 2, PyBool_FromLong((long)prev_was_bad));
   if (dataarg) {
     Py_INCREF(dataarg);		/* Because GetItem doesn't give a ref but SetItem taketh away */
