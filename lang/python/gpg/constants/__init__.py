@@ -25,8 +25,8 @@ util.process_constants('GPGME_', globals())
 del util
 
 # For convenience, we import the modules here.
-from . import data, event, keylist, md, pk
-from . import protocol, sig, sigsum, status, validity
+from . import data, keylist, sig # The subdirs.
+from . import create, event, md, pk, protocol, sigsum, status, validity
 
 # A complication arises because 'import' is a reserved keyword.
 # Import it as 'Import' instead.
@@ -34,7 +34,7 @@ globals()['Import'] = getattr(__import__('', globals(), locals(),
                                          [str('import')], 1), "import")
 
 __all__ = ['data', 'event', 'import', 'keylist', 'md', 'pk',
-           'protocol', 'sig', 'sigsum', 'status', 'validity']
+           'protocol', 'sig', 'sigsum', 'status', 'validity', 'create']
 
 # GPGME 1.7 replaced gpgme_op_edit with gpgme_op_interact.  We
 # implement gpg.Context.op_edit using gpgme_op_interact, so the

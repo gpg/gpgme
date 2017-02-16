@@ -20,6 +20,7 @@ del absolute_import, print_function, unicode_literals
 
 import sys
 import os
+import tempfile
 import gpg
 
 # known keys
@@ -72,3 +73,17 @@ def mark_key_trusted(ctx, key):
             return result
     with gpg.Data() as sink:
         ctx.op_edit(key, Editor().edit, sink, sink)
+
+
+# Python2/3 compatibility
+if hasattr(tempfile, "TemporaryDirectory"):
+    # Python3.2 and up
+    TemporaryDirectory = tempfile.TemporaryDirectory
+else:
+    class TemporaryDirectory(object):
+        def __enter__(self):
+            self.path = tempfile.mkdtemp()
+            return self.path
+        def __exit__(self, *args):
+            import shutil
+            shutil.rmtree(self.path)

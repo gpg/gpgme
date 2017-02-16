@@ -21,6 +21,7 @@ Noteworthy changes in version 1.8.1 (unreleased)
  py: Context.__init__        EXTENDED: New keyword arg home_dir.
  py: Context.home_dir        NEW.
  py: Context.keylist         EXTENDED: New keyword arg mode.
+ py: Context.create_key      NEW.
  py: core.pubkey_algo_string NEW.
  py: core.addrspec_from_uid  NEW.
 

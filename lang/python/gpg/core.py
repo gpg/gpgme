@@ -1,4 +1,4 @@
-# Copyright (C) 2016 g10 Code GmbH
+# Copyright (C) 2016-2017 g10 Code GmbH
 # Copyright (C) 2004,2008 Igor Belyi <belyi@users.sourceforge.net>
 # Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
@@ -500,6 +500,84 @@ class Context(GpgmeWrapper):
         """
         self.set_keylist_mode(mode)
         return self.op_keylist_all(pattern, secret)
+
+    def create_key(self, userid, algorithm=None, expires_in=0, expires=True,
+                   sign=False, encrypt=False, certify=False, authenticate=False,
+                   passphrase=None, force=False):
+        """Create a primary key
+
+        Create a primary key for the user id USERID.
+
+        ALGORITHM may be used to specify the public key encryption
+        algorithm for the new key.  By default, a reasonable default
+        is chosen.  You may use "future-default" to select an
+        algorithm that will be the default in a future implementation
+        of the engine.  ALGORITHM may be a string like "rsa", or
+        "rsa2048" to explicitly request an algorithm and a key size.
+
+        EXPIRES_IN specifies the expiration time of the key in number
+        of seconds since the keys creation.  By default, a reasonable
+        expiration time is chosen.  If you want to create a key that
+        does not expire, use the keyword argument EXPIRES.
+
+        SIGN, ENCRYPT, CERTIFY, and AUTHENTICATE can be used to
+        request the capabilities of the new key.  If you don't request
+        any, a reasonable set of capabilities is selected, and in case
+        of OpenPGP, a subkey with a reasonable set of capabilities is
+        created.
+
+        If PASSPHRASE is None (the default), then the key will not be
+        protected with a passphrase.  If PASSPHRASE is a string, it
+        will be used to protect the key.  If PASSPHRASE is True, the
+        passphrase must be supplied using a passphrase callback or
+        out-of-band with a pinentry.
+
+        Keyword arguments:
+        algorithm    -- public key algorithm, see above (default: reasonable)
+        expires_in   -- expiration time in seconds (default: reasonable)
+        expires      -- whether or not the key should expire (default: True)
+        sign         -- request the signing capability (see above)
+        encrypt      -- request the encryption capability (see above)
+        certify      -- request the certification capability (see above)
+        authenticate -- request the authentication capability (see above)
+        passphrase   -- protect the key with a passphrase (default: no passphrase)
+        force        -- force key creation even if a key with the same userid exists
+                                                          (default: False)
+
+        Returns:
+                     -- an object describing the result of the key creation
+
+        Raises:
+        GPGMEError   -- as signaled by the underlying library
+
+        """
+        if util.is_a_string(passphrase):
+            old_pinentry_mode = self.pinentry_mode
+            old_passphrase_cb = getattr(self, '_passphrase_cb', None)
+            self.pinentry_mode = constants.PINENTRY_MODE_LOOPBACK
+            def passphrase_cb(hint, desc, prev_bad, hook=None):
+                return passphrase
+            self.set_passphrase_cb(passphrase_cb)
+
+        try:
+            self.op_createkey(userid, algorithm,
+                              0, # reserved
+                              expires_in,
+                              None, # extrakey
+                              ((constants.create.SIGN if sign else 0)
+                               | (constants.create.ENCR if encrypt else 0)
+                               | (constants.create.CERT if certify else 0)
+                               | (constants.create.AUTH if authenticate else 0)
+                               | (constants.create.NOPASSWD if passphrase == None else 0)
+                               | (0 if expires else constants.create.NOEXPIRE)
+                               | (constants.create.FORCE if force else 0)))
+        finally:
+            if util.is_a_string(passphrase):
+                self.pinentry_mode = old_pinentry_mode
+                if old_passphrase_cb:
+                    self.set_passphrase_cb(*old_passphrase_cb[1:])
+
+        return self.op_genkey_result()
 
     def assuan_transact(self, command,
                         data_cb=None, inquire_cb=None, status_cb=None):
