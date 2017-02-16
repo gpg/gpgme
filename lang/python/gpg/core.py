@@ -579,6 +579,78 @@ class Context(GpgmeWrapper):
 
         return self.op_genkey_result()
 
+    def create_subkey(self, key, algorithm=None, expires_in=0, expires=True,
+                      sign=False, encrypt=False, authenticate=False, passphrase=None):
+        """Create a subkey
+
+        Create a subkey for the given KEY.  As subkeys are a concept
+        of OpenPGP, calling this is only valid for the OpenPGP
+        protocol.
+
+        ALGORITHM may be used to specify the public key encryption
+        algorithm for the new subkey.  By default, a reasonable
+        default is chosen.  You may use "future-default" to select an
+        algorithm that will be the default in a future implementation
+        of the engine.  ALGORITHM may be a string like "rsa", or
+        "rsa2048" to explicitly request an algorithm and a key size.
+
+        EXPIRES_IN specifies the expiration time of the subkey in
+        number of seconds since the subkeys creation.  By default, a
+        reasonable expiration time is chosen.  If you want to create a
+        subkey that does not expire, use the keyword argument EXPIRES.
+
+        SIGN, ENCRYPT, and AUTHENTICATE can be used to request the
+        capabilities of the new subkey.  If you don't request any, an
+        encryption subkey is generated.
+
+        If PASSPHRASE is None (the default), then the subkey will not
+        be protected with a passphrase.  If PASSPHRASE is a string, it
+        will be used to protect the subkey.  If PASSPHRASE is True,
+        the passphrase must be supplied using a passphrase callback or
+        out-of-band with a pinentry.
+
+        Keyword arguments:
+        algorithm    -- public key algorithm, see above (default: reasonable)
+        expires_in   -- expiration time in seconds (default: reasonable)
+        expires      -- whether or not the subkey should expire (default: True)
+        sign         -- request the signing capability (see above)
+        encrypt      -- request the encryption capability (see above)
+        authenticate -- request the authentication capability (see above)
+        passphrase   -- protect the subkey with a passphrase (default: no passphrase)
+
+        Returns:
+                     -- an object describing the result of the subkey creation
+
+        Raises:
+        GPGMEError   -- as signaled by the underlying library
+
+        """
+        if util.is_a_string(passphrase):
+            old_pinentry_mode = self.pinentry_mode
+            old_passphrase_cb = getattr(self, '_passphrase_cb', None)
+            self.pinentry_mode = constants.PINENTRY_MODE_LOOPBACK
+            def passphrase_cb(hint, desc, prev_bad, hook=None):
+                return passphrase
+            self.set_passphrase_cb(passphrase_cb)
+
+        try:
+            self.op_createsubkey(key, algorithm,
+                                 0, # reserved
+                                 expires_in,
+                                 ((constants.create.SIGN if sign else 0)
+                                  | (constants.create.ENCR if encrypt else 0)
+                                  | (constants.create.AUTH if authenticate else 0)
+                                  | (constants.create.NOPASSWD
+                                     if passphrase == None else 0)
+                                  | (0 if expires else constants.create.NOEXPIRE)))
+        finally:
+            if util.is_a_string(passphrase):
+                self.pinentry_mode = old_pinentry_mode
+                if old_passphrase_cb:
+                    self.set_passphrase_cb(*old_passphrase_cb[1:])
+
+        return self.op_genkey_result()
+
     def assuan_transact(self, command,
                         data_cb=None, inquire_cb=None, status_cb=None):
         """Issue a raw assuan command
