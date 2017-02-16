@@ -137,7 +137,12 @@
 
       /* Following code is from swig's python.swg.  */
       if ((SWIG_ConvertPtr(pypointer,(void **) &$1[i], $*1_descriptor,SWIG_POINTER_EXCEPTION | $disown )) == -1) {
-	Py_DECREF(pypointer);
+        Py_DECREF(pypointer);
+	PyErr_Format(PyExc_TypeError,
+                     "arg %d: list must contain only gpgme_key_ts, got %s "
+                     "at position %d",
+                     $argnum, pypointer->ob_type->tp_name, i);
+        free($1);
 	return NULL;
       }
       Py_DECREF(pypointer);
