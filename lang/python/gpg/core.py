@@ -651,6 +651,30 @@ class Context(GpgmeWrapper):
 
         return self.op_genkey_result()
 
+    def key_add_uid(self, key, uid):
+        """Add a UID
+
+        Add the uid UID to the given KEY.  Calling this function is
+        only valid for the OpenPGP protocol.
+
+        Raises:
+        GPGMEError   -- as signaled by the underlying library
+
+        """
+        self.op_adduid(key, uid, 0)
+
+    def key_revoke_uid(self, key, uid):
+        """Revoke a UID
+
+        Revoke the uid UID from the given KEY.  Calling this function
+        is only valid for the OpenPGP protocol.
+
+        Raises:
+        GPGMEError   -- as signaled by the underlying library
+
+        """
+        self.op_revuid(key, uid, 0)
+
     def assuan_transact(self, command,
                         data_cb=None, inquire_cb=None, status_cb=None):
         """Issue a raw assuan command
