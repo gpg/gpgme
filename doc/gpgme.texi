@@ -4044,11 +4044,10 @@ object (@code{gpgme_user_id_t}) is to be used.  To select more than
 one user ID put them all into one string separated by linefeeds
 characters (@code{\n}) and set the flag @code{GPGME_KEYSIGN_LFSEP}.
 
-@var{expires} can be set to the number of seconds since Epoch of the
-desired expiration date in UTC for the new signature.  The common case
-is to use 0 to not set an expiration date.  However, if the
-configuration of the engine defines a default expiration for key
-signatures, that is still used unless the flag
+@var{expires} specifies the expiration time of the new signature in
+seconds.  The common case is to use 0 to not set an expiration date.
+However, if the configuration of the engine defines a default
+expiration for key signatures, that is still used unless the flag
 @code{GPGME_KEYSIGN_NOEXPIRE} is used.  Note that this parameter takes
 an unsigned long value and not a @code{time_t} to avoid problems on
 systems which use a signed 32 bit @code{time_t}.  Note further that

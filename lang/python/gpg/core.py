@@ -675,6 +675,47 @@ class Context(GpgmeWrapper):
         """
         self.op_revuid(key, uid, 0)
 
+    def key_sign(self, key, uids=None, expires_in=False, local=False):
+        """Sign a key
+
+        Sign a key with the current set of signing keys.  Calling this
+        function is only valid for the OpenPGP protocol.
+
+        If UIDS is None (the default), then all UIDs are signed.  If
+        it is a string, then only the matching UID is signed.  If it
+        is a list of strings, then all matching UIDs are signed.  Note
+        that a case-sensitive exact string comparison is done.
+
+        EXPIRES_IN specifies the expiration time of the signature in
+        seconds.  If EXPIRES_IN is False, the signature does not
+        expire.
+
+        Keyword arguments:
+        uids         -- user ids to sign, see above (default: sign all)
+        expires_in   -- validity period of the signature in seconds
+                                               (default: do not expire)
+        local        -- create a local, non-exportable signature
+                                               (default: False)
+
+        Raises:
+        GPGMEError   -- as signaled by the underlying library
+
+        """
+        flags = 0
+        if uids == None or util.is_a_string(uids):
+            pass#through unchanged
+        else:
+            flags |= constants.keysign.LFSEP
+            uids = "\n".join(uids)
+
+        if not expires_in:
+            flags |= constants.keysign.NOEXPIRE
+
+        if local:
+            flags |= constants.keysign.LOCAL
+
+        self.op_keysign(key, uids, expires_in, flags)
+
     def assuan_transact(self, command,
                         data_cb=None, inquire_cb=None, status_cb=None):
         """Issue a raw assuan command

@@ -53,7 +53,8 @@ py_tests = t-wrapper.py \
 	t-protocol-assuan.py \
 	t-quick-key-creation.py \
 	t-quick-subkey-creation.py \
-	t-quick-key-manipulation.py
+	t-quick-key-manipulation.py \
+	t-quick-key-signing.py
 
 XTESTS = initial.py $(py_tests) final.py
 EXTRA_DIST = support.py $(XTESTS) encrypt-only.asc sign-only.asc \

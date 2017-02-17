@@ -26,14 +26,14 @@ del util
 
 # For convenience, we import the modules here.
 from . import data, keylist, sig # The subdirs.
-from . import create, event, md, pk, protocol, sigsum, status, validity
+from . import create, event, keysign, md, pk, protocol, sigsum, status, validity
 
 # A complication arises because 'import' is a reserved keyword.
 # Import it as 'Import' instead.
 globals()['Import'] = getattr(__import__('', globals(), locals(),
                                          [str('import')], 1), "import")
 
-__all__ = ['data', 'event', 'import', 'keylist', 'md', 'pk',
+__all__ = ['data', 'event', 'import', 'keysign', 'keylist', 'md', 'pk',
            'protocol', 'sig', 'sigsum', 'status', 'validity', 'create']
 
 # GPGME 1.7 replaced gpgme_op_edit with gpgme_op_interact.  We
