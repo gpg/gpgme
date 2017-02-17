@@ -18,9 +18,12 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
+import contextlib
+import shutil
 import sys
 import os
 import tempfile
+import time
 import gpg
 
 # known keys
@@ -85,5 +88,24 @@ else:
             self.path = tempfile.mkdtemp()
             return self.path
         def __exit__(self, *args):
-            import shutil
             shutil.rmtree(self.path)
+
+@contextlib.contextmanager
+def EphemeralContext():
+    with TemporaryDirectory() as tmp:
+        home = os.environ['GNUPGHOME']
+        shutil.copy(os.path.join(home, "gpg.conf"), tmp)
+        shutil.copy(os.path.join(home, "gpg-agent.conf"), tmp)
+
+        with gpg.Context(home_dir=tmp) as ctx:
+            yield ctx
+
+            # Ask the agent to quit.
+            agent_socket = os.path.join(tmp, "S.gpg-agent")
+            ctx.protocol = gpg.constants.protocol.ASSUAN
+            ctx.set_engine_info(ctx.protocol, file_name=agent_socket)
+            ctx.assuan_transact(["KILLAGENT"])
+
+            # Block until it is really gone.
+            while os.path.exists(agent_socket):
+                time.sleep(.01)
