@@ -4489,7 +4489,7 @@ could not be started.
 @cindex validity, TOFU
 
 The OpenPGP engine features a Trust-On-First-Use (TOFU) key validation
-model.  For resolving clonflics it is necessary to declare the policy
+model.  For resolving conflicts it is necessary to declare the policy
 for a key.  See the GnuPG manual for details on the TOFU
 implementation.
 
@@ -4502,7 +4502,7 @@ policy values that are supported by @acronym{GPGME}:
 @item GPGME_TOFU_POLICY_AUTO
 Set the policy to ``auto''.
 @item GPGME_TOFU_POLICY_GOOD
-Set the policy to ``goog''.
+Set the policy to ``good''.
 @item GPGME_TOFU_POLICY_BAD
 Set the policy to ``bad''.
 @item GPGME_TOFU_POLICY_ASK

@@ -90,3 +90,34 @@ with support.EphemeralContext() as ctx:
         assert False, "Expected an error but got none"
     except gpg.errors.GpgError:
         pass
+
+    # Check setting the TOFU policy.
+    with open("gpg.conf", "a") as handle:
+        handle.write("trust-model tofu+pgp\n")
+
+    for name, policy in [(name, getattr(gpg.constants.tofu.policy, name))
+                         for name in filter(lambda x: not x.startswith('__'),
+                                            dir(gpg.constants.tofu.policy))]:
+        if policy == gpg.constants.tofu.policy.NONE:
+            # We must not set the policy to NONE.
+            continue
+
+        ctx.key_tofu_policy(key, policy)
+
+        keys = list(ctx.keylist(key.uids[0].uid,
+                                mode=(gpg.constants.keylist.mode.LOCAL
+                                      |gpg.constants.keylist.mode.WITH_TOFU)))
+        assert len(keys) == 1
+
+        if policy == gpg.constants.tofu.policy.AUTO:
+            # We cannot check that it is set to AUTO.
+            continue
+
+        for uid in keys[0].uids:
+            if uid.uid == alpha:
+                # TOFU information of revoked UIDs is not updated.
+                # XXX: Is that expected?
+                continue
+            assert uid.tofu[0].policy == policy, \
+                "Expected policy {0} ({1}), got {2}".format(policy, name,
+                                                            uid.tofu[0].policy)

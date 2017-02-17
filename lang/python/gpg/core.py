@@ -716,6 +716,18 @@ class Context(GpgmeWrapper):
 
         self.op_keysign(key, uids, expires_in, flags)
 
+    def key_tofu_policy(self, key, policy):
+        """Set a keys' TOFU policy
+
+        Set the TOFU policy associated with KEY to POLICY.  Calling
+        this function is only valid for the OpenPGP protocol.
+
+        Raises:
+        GPGMEError   -- as signaled by the underlying library
+
+        """
+        self.op_tofu_policy(key, policy)
+
     def assuan_transact(self, command,
                         data_cb=None, inquire_cb=None, status_cb=None):
         """Issue a raw assuan command

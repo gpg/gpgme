@@ -26,6 +26,7 @@ Noteworthy changes in version 1.8.1 (unreleased)
  py: Context.key_add_uid     NEW.
  py: Context.key_revoke_uid  NEW.
  py: Context.key_sign        NEW.
+ py: Context.key_tofu_policy NEW.
  py: core.pubkey_algo_string NEW.
  py: core.addrspec_from_uid  NEW.
 
