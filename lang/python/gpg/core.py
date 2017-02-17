@@ -699,7 +699,7 @@ class Context(GpgmeWrapper):
 
         """
 
-        if isinstance(command, (str, bytes)):
+        if util.is_a_string(command) or isinstance(command, bytes):
             cmd = command
         else:
             cmd = " ".join(util.percent_escape(f) for f in command)

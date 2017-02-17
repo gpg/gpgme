@@ -24,9 +24,12 @@ import gpg
 
 with gpg.Context(protocol=gpg.constants.protocol.ASSUAN) as c:
     # Do nothing.
-    c.assuan_transact('nop')
-    c.assuan_transact('NOP')
-    c.assuan_transact(['NOP'])
+    err = c.assuan_transact('nop')
+    assert err == None
+    err = c.assuan_transact(b'NOP')
+    assert err == None
+    err = c.assuan_transact(['NOP'])
+    assert err == None
 
     err = c.assuan_transact('idontexist')
     assert err.getsource() == gpg.errors.SOURCE_GPGAGENT
