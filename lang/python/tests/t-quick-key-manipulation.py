@@ -20,6 +20,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 del absolute_import, print_function, unicode_literals
 
+import os
 import gpg
 
 import support
@@ -92,7 +93,7 @@ with support.EphemeralContext() as ctx:
         pass
 
     # Check setting the TOFU policy.
-    with open("gpg.conf", "a") as handle:
+    with open(os.path.join(ctx.home_dir, "gpg.conf"), "a") as handle:
         handle.write("trust-model tofu+pgp\n")
 
     for name, policy in [(name, getattr(gpg.constants.tofu.policy, name))
