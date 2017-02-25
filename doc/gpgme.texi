@@ -5609,7 +5609,7 @@ The combined encrypt and sign operation is currently only available
 for the OpenPGP crypto engine.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_encrypt_sign_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{recp}}, @w{gpgme_encrypt_flags_t @var{flags}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+@deftypefun gpgme_error_t gpgme_op_encrypt_sign_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{recp}[]}, @w{gpgme_encrypt_flags_t @var{flags}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt_sign_start} initiates a
 @code{gpgme_op_encrypt_sign} operation.  It can be completed by
 calling @code{gpgme_wait} on the context.  @xref{Waiting For
