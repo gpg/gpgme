@@ -3,6 +3,8 @@ Noteworthy changes in version 1.8.1 (unreleased)
 
  * cpp: Support for adduid and revuid operations.
 
+ * cpp: Support for smartcard key generation.
+
  * Interface changes relative to the 1.8.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_strerror_r            CHANGED: Use gpgme_error_t (compatible type).
@@ -16,6 +18,7 @@ Noteworthy changes in version 1.8.1 (unreleased)
  cpp: Context::startAddUid(const Key&, const char*) NEW.
  cpp: Key::UserID::revoke()                         NEW.
  cpp: Key::addUid()                                 NEW.
+ cpp: GpgGenCardKeyInteractor                       NEW.
  qt: CryptoConfig::stringValueList()                NEW.
  gpgme_data_rewind                                  UN-DEPRECATE.
  py: Context.__init__        EXTENDED: New keyword arg home_dir.

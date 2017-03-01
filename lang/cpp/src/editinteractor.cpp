@@ -212,6 +212,8 @@ bool EditInteractor::needsNoResponse(unsigned int status) const
     case GPGME_STATUS_KEY_CREATED:
     case GPGME_STATUS_NEED_PASSPHRASE_SYM:
     case GPGME_STATUS_SC_OP_FAILURE:
+    case GPGME_STATUS_CARDCTRL:
+    case GPGME_STATUS_BACKUP_KEY_CREATED:
         return false;
     default:
         return true;
