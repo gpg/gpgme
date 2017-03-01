@@ -91,6 +91,11 @@ void DefaultKeyGenerationJob::slotCancel()
 
 GpgME::Error DefaultKeyGenerationJob::start(const QString &email, const QString &name)
 {
+    const QString namePart = name.isEmpty() ? QString() :
+                                QStringLiteral("name-real:     %1\n").arg(name);
+    const QString mailPart = email.isEmpty() ? QString() :
+                                QStringLiteral("name-email:    %1\n").arg(email);
+
     const QString args = QStringLiteral("<GnupgKeyParms format=\"internal\">\n"
                                         "%ask-passphrase\n"
                                         "key-type:      RSA\n"
@@ -99,9 +104,9 @@ GpgME::Error DefaultKeyGenerationJob::start(const QString &email, const QString 
                                         "subkey-type:   RSA\n"
                                         "subkey-length: 2048\n"
                                         "subkey-usage:  encrypt\n"
-                                        "name-email:    %1\n"
-                                        "name-real:     %2\n"
-                                        "</GnupgKeyParms>").arg(email, name);
+                                        "%1"
+                                        "%2"
+                                        "</GnupgKeyParms>").arg(mailPart, namePart);
 
     d->job = openpgp()->keyGenerationJob();
     d->job->installEventFilter(this);
