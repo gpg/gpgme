@@ -259,7 +259,7 @@ gpgme_data_get_file_name (gpgme_data_t dh)
 
 
 /* Set a flag for the data object DH.  See the manual for details.  */
-gpgme_error_t
+gpg_error_t
 gpgme_data_set_flag (gpgme_data_t dh, const char *name, const char *value)
 {
   TRACE_BEG2 (DEBUG_DATA, "gpgme_data_set_flag", dh,

@@ -41,7 +41,7 @@ gpgme_strerror (gpgme_error_t err)
    large enough, ERANGE is returned and BUF contains as much of the
    beginning of the error string as fits into the buffer.  */
 int
-gpgme_strerror_r (gpgme_error_t err, char *buf, size_t buflen)
+gpgme_strerror_r (gpg_error_t err, char *buf, size_t buflen)
 {
   return gpg_strerror_r (err, buf, buflen);
 }

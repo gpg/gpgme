@@ -7,8 +7,6 @@ Noteworthy changes in version 1.8.1 (unreleased)
 
  * Interface changes relative to the 1.8.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- gpgme_strerror_r            CHANGED: Use gpgme_error_t (compatible type).
- gpgme_data_set_flag         CHANGED: Return gpgme_error_t (compatible type).
  gpgme_op_createkey          CHANGED: Meaning of 'expire' parameter.
  gpgme_op_createsubkey       CHANGED: Meaning of 'expire' parameter.
  GPGME_CREATE_NOEXPIRE       NEW.
