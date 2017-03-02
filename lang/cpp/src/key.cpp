@@ -476,7 +476,12 @@ bool Subkey::isCardKey() const
 
 const char *Subkey::cardSerialNumber() const
 {
-    return subkey ? subkey->card_number : 0 ;
+    return subkey ? subkey->card_number : nullptr;
+}
+
+const char *Subkey::keyGrip() const
+{
+    return subkey ? subkey->keygrip : nullptr;
 }
 
 bool Subkey::isSecret() const

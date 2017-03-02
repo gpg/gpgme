@@ -19,6 +19,7 @@ Noteworthy changes in version 1.8.1 (unreleased)
  cpp: Key::UserID::revoke()                         NEW.
  cpp: Key::addUid()                                 NEW.
  cpp: GpgGenCardKeyInteractor                       NEW.
+ cpp: Subkey::keyGrip                               NEW.
  qt: CryptoConfig::stringValueList()                NEW.
  gpgme_data_rewind                                  UN-DEPRECATE.
  py: Context.__init__        EXTENDED: New keyword arg home_dir.

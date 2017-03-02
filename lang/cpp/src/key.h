@@ -270,6 +270,8 @@ public:
 
     const char *cardSerialNumber() const;
 
+    const char *keyGrip() const;
+
 private:
     shared_gpgme_key_t key;
     gpgme_sub_key_t subkey;
