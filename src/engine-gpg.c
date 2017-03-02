@@ -2093,7 +2093,7 @@ gpg_add_algo_usage_expire (engine_gpg_t gpg,
         }
       if (!err)
         {
-          if (flags & GPGME_CREATE_NOEXPIRE)
+          if ((flags & GPGME_CREATE_NOEXPIRE))
             err = add_arg (gpg, "never");
           else if (expires == 0)
             err = add_arg (gpg, "-");
