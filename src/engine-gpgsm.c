@@ -593,7 +593,7 @@ gpgsm_assuan_simple_command (engine_gpgsm_t gpgsm, const char *cmd,
     {
       err = assuan_read_line (ctx, &line, &linelen);
       if (err)
-	return err;
+	break;
 
       if (*line == '#' || !linelen)
 	continue;
@@ -601,7 +601,7 @@ gpgsm_assuan_simple_command (engine_gpgsm_t gpgsm, const char *cmd,
       if (linelen >= 2
 	  && line[0] == 'O' && line[1] == 'K'
 	  && (line[2] == '\0' || line[2] == ' '))
-	return cb_err;
+	break;
       else if (linelen >= 4
 	  && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
 	  && line[3] == ' ')
@@ -610,6 +610,7 @@ gpgsm_assuan_simple_command (engine_gpgsm_t gpgsm, const char *cmd,
              more related to gpgme and thus probably more important
              than the error returned by the engine.  */
           err = cb_err? cb_err : atoi (&line[4]);
+          cb_err = 0;
         }
       else if (linelen >= 2
 	       && line[0] == 'S' && line[1] == ' ')
@@ -646,9 +647,15 @@ gpgsm_assuan_simple_command (engine_gpgsm_t gpgsm, const char *cmd,
              to stop.  As with ERR we prefer a status callback
              generated error code, though.  */
           err = cb_err ? cb_err : gpg_error (GPG_ERR_GENERAL);
+          cb_err = 0;
         }
     }
   while (!err);
+
+  /* We only want the first error from the status handler, thus we
+   * take the one saved in CB_ERR. */
+  if (!err && cb_err)
+    err = cb_err;
 
   return err;
 }

@@ -193,7 +193,7 @@ parse_import_res (char *args, gpgme_import_result_t result)
 
 #define PARSE_NEXT(x)					\
   (x) = strtol (args, &tail, 0);			\
-  if (errno || args == tail || *tail != ' ')		\
+  if (errno || args == tail || !(*tail == ' ' || !*tail))   \
     /* The crypto backend does not behave.  */		\
     return trace_gpg_error (GPG_ERR_INV_ENGINE);        \
   args = tail;
@@ -249,7 +249,7 @@ import_status_handler (void *priv, gpgme_status_code_t code, char *args)
     default:
       break;
     }
-  return 0;
+  return err;
 }
 
 
