@@ -418,12 +418,13 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
 	unset am_cv_python_pyexecdir
 
 	if test "$found_py" = "1" -o "$found_py2" = "1"; then
-	    AM_PATH_PYTHON([2.7])
-	    AX_PYTHON_DEVEL
-	    if test "$PYTHON_VERSION"; then
-		PYTHONS="$(echo $PYTHONS $PYTHON)"
-		PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
-	    fi
+	    AM_PATH_PYTHON([2.7], [
+		AX_PYTHON_DEVEL
+		if test "$PYTHON_VERSION"; then
+			PYTHONS="$(echo $PYTHONS $PYTHON)"
+			PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
+		fi
+	    ], :)
 	fi
 
 	if test "$found_py" = "1" -o "$found_py3" = "1"; then
@@ -441,17 +442,26 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
 	    unset am_cv_python_platform
 	    unset am_cv_python_pythondir
 	    unset am_cv_python_pyexecdir
-	    AM_PATH_PYTHON([3.4])
-	    AX_PYTHON_DEVEL
-	    if test "$PYTHON_VERSION"; then
-		PYTHONS="$(echo $PYTHONS $PYTHON)"
-		PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
-	    fi
+	    AM_PATH_PYTHON([3.4], [
+		AX_PYTHON_DEVEL
+		if test "$PYTHON_VERSION"; then
+			PYTHONS="$(echo $PYTHONS $PYTHON)"
+			PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
+		fi
+	    ], :)
 	fi
 
+	# Recover some values lost in the second attempt to find Python.
+	PYTHON="$(echo $PYTHONS | cut -d ' ' -f 1)"
+	PYTHON_VERSION="$(echo $PYTHON_VERSIONS | cut -d ' ' -f 1)"
+
+	# Remove duplicates.
+	PYTHONS="$(echo $PYTHONS | tr '[[:space:]]' '\n' | sort | uniq | tr '\n' ' ' | sed -e 's/ $//')"
+	PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS | tr '[[:space:]]' '\n' | sort | uniq | tr '\n' ' ' | sed -e 's/ $//')"
+
 	if test "$PYTHON_VERSIONS"; then
-	   enabled_languages_v=$(echo $enabled_languages | sed "s/python\([[23]]\)\?/python ($PYTHON_VERSIONS)/")
-	   enabled_languages=$(echo $enabled_languages | sed "s/python\([[23]]\)\?/python/")
+	   enabled_languages_v=$(echo $enabled_languages | sed -Ee "s/python[[23]]?/python ($PYTHON_VERSIONS)/")
+	   enabled_languages=$(echo $enabled_languages | sed -Ee "s/python[[23]]?/python/")
 	else
             if test "$explicit_languages" = "1"; then
                 AC_MSG_ERROR([[
