@@ -42,6 +42,7 @@
 #include "keylistresult.h"
 #include "context.h"
 #include "engineinfo.h"
+#include "dn.h"
 
 #include "t-support.h"
 
@@ -56,6 +57,15 @@ Q_SIGNALS:
     void asyncDone();
 
 private Q_SLOTS:
+    void testDN()
+    {
+        DN dn(QStringLiteral("CN=Before\\0DAfter,OU=Test,DC=North America,DC=Fabrikam,DC=COM"));
+        QVERIFY(dn.dn() == QStringLiteral("CN=Before\rAfter,OU=Test,DC=North America,DC=Fabrikam,DC=COM"));
+        QStringList attrOrder;
+        attrOrder << QStringLiteral("DC") << QStringLiteral("OU") << QStringLiteral("CN");
+        dn.setAttributeOrder(attrOrder);
+        QVERIFY(dn.prettyDN() == QStringLiteral("DC=North America,DC=Fabrikam,DC=COM,OU=Test,CN=Before\rAfter"));
+    }
 
     void testQuickUid()
     {
