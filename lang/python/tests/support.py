@@ -78,17 +78,16 @@ def mark_key_trusted(ctx, key):
         ctx.op_edit(key, Editor().edit, sink, sink)
 
 
-# Python2/3 compatibility
-if hasattr(tempfile, "TemporaryDirectory"):
-    # Python3.2 and up
-    TemporaryDirectory = tempfile.TemporaryDirectory
-else:
-    class TemporaryDirectory(object):
-        def __enter__(self):
-            self.path = tempfile.mkdtemp()
-            return self.path
-        def __exit__(self, *args):
-            shutil.rmtree(self.path)
+# Python3.2 and up has tempfile.TemporaryDirectory, but we cannot use
+# that, because there shutil.rmtree is used without
+# ignore_errors=True, and that races against gpg-agent deleting its
+# sockets.
+class TemporaryDirectory(object):
+    def __enter__(self):
+        self.path = tempfile.mkdtemp()
+        return self.path
+    def __exit__(self, *args):
+        shutil.rmtree(self.path, ignore_errors=True)
 
 @contextlib.contextmanager
 def EphemeralContext():
