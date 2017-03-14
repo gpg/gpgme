@@ -47,20 +47,19 @@ COPY_FILES_GPG = \
 # For VPATH builds we need to copy some files because Python's
 # distutils are not VPATH-aware.
 copystamp: $(COPY_FILES) $(COPY_FILES_GPG)
-	for F in $(COPY_FILES) $(COPY_FILES_GPG) ; do if [ $$F -nt $@ ]; then echo $F ; fi ; done
-	for VERSION in $(PYTHON_VERSIONS); do \
-	  $(MKDIR_P)              python$${VERSION}-gpg/gpg && \
-	  cp -R $(COPY_FILES)     python$${VERSION}-gpg && \
-	  cp setup.py             python$${VERSION}-gpg && \
-	  cp gpg/version.py       python$${VERSION}-gpg/gpg && \
-	  ln -sf "$(abs_top_srcdir)/src/data.h" python$${VERSION}-gpg && \
-	  ln -sf "$(abs_top_builddir)/config.h" python$${VERSION}-gpg && \
+	set -e ; for VERSION in $(PYTHON_VERSIONS); do \
+	  $(MKDIR_P)              python$${VERSION}-gpg/gpg ; \
+	  cp -R $(COPY_FILES)     python$${VERSION}-gpg ; \
+	  cp setup.py             python$${VERSION}-gpg ; \
+	  cp gpg/version.py       python$${VERSION}-gpg/gpg ; \
+	  ln -sf "$(abs_top_srcdir)/src/data.h" python$${VERSION}-gpg ; \
+	  ln -sf "$(abs_top_builddir)/config.h" python$${VERSION}-gpg ; \
 	  cp -R $(COPY_FILES_GPG) python$${VERSION}-gpg/gpg ; \
 	done
 	touch $@
 
 all-local: copystamp
-	set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
+	set -e ; set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
 	  PYTHON="$$1" ; shift ; \
 	  cd python$${VERSION}-gpg && \
 	  CFLAGS="$(CFLAGS)" \
@@ -102,9 +101,9 @@ clean-local:
 
 install-exec-local:
 	rm -f install_files.txt
-	set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
+	set -e ; set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
 	  PYTHON="$$1" ; shift ; \
-	  cd python$${VERSION}-gpg && \
+	  cd python$${VERSION}-gpg ; \
 	  $$PYTHON setup.py install \
 	  --prefix $(DESTDIR)$(prefix) \
 	  --record files.txt \
