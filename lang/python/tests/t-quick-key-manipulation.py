@@ -24,6 +24,7 @@ import os
 import gpg
 
 import support
+support.assert_gpg_version((2, 1, 14))
 
 alpha = "Alpha <alpha@invalid.example.net>"
 bravo = "Bravo <bravo@invalid.example.net>"

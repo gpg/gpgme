@@ -24,6 +24,8 @@ import os
 import gpg
 import support
 
+support.assert_gpg_version()
+
 for passphrase in ("abc", b"abc"):
     c = gpg.Context()
     c.set_armor(True)

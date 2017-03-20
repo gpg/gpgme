@@ -25,6 +25,7 @@ import itertools
 import time
 
 import support
+support.assert_gpg_version((2, 1, 2))
 
 alpha = "Alpha <alpha@invalid.example.net>"
 

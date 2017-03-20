@@ -26,6 +26,8 @@ import os
 import gpg
 import support
 
+support.assert_gpg_version()
+
 class KeyEditor(object):
     def __init__(self):
         self.steps = ["fpr", "expire", "1", "primary", "quit"]

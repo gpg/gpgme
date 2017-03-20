@@ -26,6 +26,13 @@ import tempfile
 import time
 import gpg
 
+def assert_gpg_version(version=(2, 1, 0)):
+    with gpg.Context() as c:
+        if tuple(map(int, c.engine_info.version.split('.'))) < version:
+            print("GnuPG too old: have {0}, need {1}.".format(
+                c.engine_info.version, '.'.join(version)))
+            sys.exit(77)
+
 # known keys
 alpha = "A0FF4590BB6122EDEF6E3C542D727CC768697734"
 bob = "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2"

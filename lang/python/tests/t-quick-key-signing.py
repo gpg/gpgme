@@ -25,6 +25,7 @@ import itertools
 import time
 
 import support
+support.assert_gpg_version((2, 1, 1))
 
 with support.EphemeralContext() as ctx:
     uid_counter = 0
