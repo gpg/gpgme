@@ -22,13 +22,15 @@ import contextlib
 import shutil
 import sys
 import os
+import re
 import tempfile
 import time
 import gpg
 
 def assert_gpg_version(version=(2, 1, 0)):
     with gpg.Context() as c:
-        if tuple(map(int, c.engine_info.version.split('.'))) < version:
+        clean_version = re.match(r'\d+\.\d+\.\d+', c.engine_info.version).group(0)
+        if tuple(map(int, clean_version.split('.'))) < version:
             print("GnuPG too old: have {0}, need {1}.".format(
                 c.engine_info.version, '.'.join(version)))
             sys.exit(77)
