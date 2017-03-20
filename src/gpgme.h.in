@@ -538,8 +538,11 @@ struct _gpgme_subkey
   /* True if the secret key is stored on a smart card.  */
   unsigned int is_cardkey : 1;
 
+  /* True if the key is compliant to the de-vs mode.  */
+  unsigned int is_de_vs : 1;
+
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 21;
+  unsigned int _unused : 20;
 
   /* Public key algorithm supported by this subkey.  */
   gpgme_pubkey_algo_t pubkey_algo;

@@ -10,14 +10,17 @@ Noteworthy changes in version 1.8.1 (unreleased)
  gpgme_op_createkey          CHANGED: Meaning of 'expire' parameter.
  gpgme_op_createsubkey       CHANGED: Meaning of 'expire' parameter.
  GPGME_CREATE_NOEXPIRE       NEW.
+ gpgme_subkey_t              EXTENDED: New field is_de_vs.
  cpp: Context::revUid(const Key&, const char*)      NEW.
  cpp: Context::startRevUid(const Key&, const char*) NEW.
  cpp: Context::addUid(const Key&, const char*)      NEW.
  cpp: Context::startAddUid(const Key&, const char*) NEW.
  cpp: Key::UserID::revoke()                         NEW.
  cpp: Key::addUid()                                 NEW.
+ cpp: Key::isDeVs                                   NEW.
  cpp: GpgGenCardKeyInteractor                       NEW.
  cpp: Subkey::keyGrip                               NEW.
+ cpp: Subkey::isDeVs                                NEW.
  qt: CryptoConfig::stringValueList()                NEW.
  gpgme_data_rewind                                  UN-DEPRECATE.
  py: Context.__init__        EXTENDED: New keyword arg home_dir.

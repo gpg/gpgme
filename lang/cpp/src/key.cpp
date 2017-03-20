@@ -234,6 +234,11 @@ bool Key::isQualified() const
     return key && key->is_qualified;
 }
 
+bool Key::isDeVs() const
+{
+    return key && key->subkeys && key->subkeys->is_de_vs;
+}
+
 const char *Key::issuerSerial() const
 {
     return key ? key->issuer_serial : 0 ;
@@ -467,6 +472,11 @@ bool Subkey::canAuthenticate() const
 bool Subkey::isQualified() const
 {
     return subkey && subkey->is_qualified;
+}
+
+bool Subkey::isDeVs() const
+{
+    return subkey && subkey->is_de_vs;
 }
 
 bool Subkey::isCardKey() const

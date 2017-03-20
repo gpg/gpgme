@@ -416,6 +416,23 @@ parse_sec_field15 (gpgme_key_t key, gpgme_subkey_t subkey, char *field)
 }
 
 
+/* Parse the compliance field.  */
+static void
+parse_pub_field18 (gpgme_subkey_t subkey, char *field)
+{
+  char *p, *endp;
+  unsigned long ul;
+
+  for (p = field; p && (ul = strtoul (p, &endp, 10)) && p != endp; p = endp)
+    {
+      switch (ul)
+        {
+        case 23: subkey->is_de_vs = 1; break;
+        }
+    }
+}
+
+
 /* Parse a tfs record.  */
 static gpg_error_t
 parse_tfs_record (gpgme_user_id_t uid, char **field, int nfield)
@@ -535,7 +552,7 @@ keylist_colon_handler (void *priv, char *line)
       RT_SSB, RT_SEC, RT_CRT, RT_CRS, RT_REV, RT_SPK
     }
   rectype = RT_NONE;
-#define NR_FIELDS 17
+#define NR_FIELDS 18
   char *field[NR_FIELDS];
   int fields = 0;
   void *hook;
@@ -712,6 +729,10 @@ keylist_colon_handler (void *priv, char *line)
             return gpg_error_from_syserror ();
         }
 
+      /* Field 18 has the compliance flags.  */
+      if (fields >= 17 && *field[17])
+        parse_pub_field18 (subkey, field[17]);
+
       break;
 
     case RT_SUB:
@@ -784,6 +805,10 @@ keylist_colon_handler (void *priv, char *line)
           if (!subkey->curve)
             return gpg_error_from_syserror ();
         }
+
+      /* Field 18 has the compliance flags.  */
+      if (fields >= 17 && *field[17])
+        parse_pub_field18 (subkey, field[17]);
 
       break;
 

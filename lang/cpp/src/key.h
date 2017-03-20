@@ -112,6 +112,7 @@ public:
     bool canCertify() const;
     bool canAuthenticate() const;
     bool isQualified() const;
+    bool isDeVs() const;
 
     bool hasSecret() const;
     GPGMEPP_DEPRECATED bool isSecret() const
@@ -219,6 +220,7 @@ public:
     bool canCertify() const;
     bool canAuthenticate() const;
     bool isQualified() const;
+    bool isDeVs() const;
     bool isCardKey() const;
 
     bool isSecret() const;

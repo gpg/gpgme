@@ -223,13 +223,14 @@ main (int argc, char **argv)
               key->can_sign? "s":"",
               key->can_certify? "c":"",
               key->can_authenticate? "a":"");
-      printf ("flags   :%s%s%s%s%s%s%s\n",
+      printf ("flags   :%s%s%s%s%s%s%s%s\n",
               key->secret? " secret":"",
               key->revoked? " revoked":"",
               key->expired? " expired":"",
               key->disabled? " disabled":"",
               key->invalid? " invalid":"",
-              key->is_qualified? " qualifid":"",
+              key->is_qualified? " qualified":"",
+              key->subkeys && key->subkeys->is_de_vs? " de-vs":"",
               key->subkeys && key->subkeys->is_cardkey? " cardkey":"");
 
       subkey = key->subkeys;
@@ -248,14 +249,15 @@ main (int argc, char **argv)
                   subkey->can_sign? "s":"",
                   subkey->can_certify? "c":"",
                   subkey->can_authenticate? "a":"");
-          printf ("flags %2d:%s%s%s%s%s%s%s\n",
+          printf ("flags %2d:%s%s%s%s%s%s%s%s\n",
                   nsub,
                   subkey->secret? " secret":"",
                   subkey->revoked? " revoked":"",
                   subkey->expired? " expired":"",
                   subkey->disabled? " disabled":"",
                   subkey->invalid? " invalid":"",
-                  subkey->is_qualified? " qualifid":"",
+                  subkey->is_qualified? " qualified":"",
+                  subkey->is_de_vs? " de-vs":"",
                   subkey->is_cardkey? " cardkey":"");
         }
       for (nuids=0, uid=key->uids; uid; uid = uid->next, nuids++)

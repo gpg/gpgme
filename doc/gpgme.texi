@@ -3156,6 +3156,12 @@ This is true if the subkey can be used for authentication.
 This is true if the subkey can be used for qualified signatures
 according to local government regulations.
 
+@item unsigned int is_de_vs : 1
+This is true if the subkey complies with the rules for classified
+information in Germany at the restricted level (VS-NfD).  This are
+currently RSA keys of at least 2048 bits or ECDH/ECDSA keys using a
+Brainpool curve.
+
 @item unsigned int secret : 1
 This is true if the subkey is a secret key.  Note that it will be
 false if the key is actually a stub key; i.e. a secret key operation
