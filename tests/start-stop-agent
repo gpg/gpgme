@@ -38,6 +38,14 @@ fi
 
 echo "starting gpg-agent.." >&2
 
+# GnuPG prior to 2.1.12 needs --allow-loopback-pinentry for the
+# loopback entry to work.  Old versions do not understand this though,
+# so we need to be careful.
+if "$GPG_AGENT" --gpgconf-test --allow-loopback-pinentry &&
+   ! grep -q allow-loopback-pinentry "$GNUPGHOME/gpg-agent.conf"; then
+    echo allow-loopback-pinentry >> "$GNUPGHOME/gpg-agent.conf"
+fi
+
 gpg-connect-agent --agent-program="${GPG_AGENT}|--debug-quick-random" putval\ $token\ set /bye
 if [ $? -ne 0 -o "$(gpg-connect-agent getval\ $token /bye 2>/dev/null | head -1)" \
       != "D set" ]; then
