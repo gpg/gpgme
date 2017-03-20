@@ -42,7 +42,8 @@ echo "starting gpg-agent.." >&2
 # loopback entry to work.  Old versions do not understand this though,
 # so we need to be careful.
 if "$GPG_AGENT" --gpgconf-test --allow-loopback-pinentry &&
-   ! grep -q allow-loopback-pinentry "$GNUPGHOME/gpg-agent.conf"; then
+      test -f "$GNUPGHOME/gpg-agent.conf" &&
+      ! grep -q allow-loopback-pinentry "$GNUPGHOME/gpg-agent.conf"; then
     echo allow-loopback-pinentry >> "$GNUPGHOME/gpg-agent.conf"
 fi
 
