@@ -67,7 +67,6 @@ def check_result(result, fpr, secret):
     assert len(result.imports) == 1 or fpr == result.imports[1].fpr
     assert result.imports[0].result == 0
 
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 
 c.op_import(gpg.Data(file=support.make_filename("pubkey-1.asc")))

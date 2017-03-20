@@ -26,7 +26,6 @@ import support
 
 testname = "abcde12345"
 
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 c.set_armor(True)
 

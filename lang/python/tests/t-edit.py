@@ -51,8 +51,6 @@ class KeyEditor(object):
 
         return result
 
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
-
 c = gpg.Context()
 c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
 c.set_passphrase_cb(lambda *args: "abc")

@@ -62,8 +62,6 @@ def check_result(result):
 
     assert len(expected_notations) == 0
 
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
-
 source = gpg.Data("Hallo Leute\n")
 signed = gpg.Data()
 

@@ -39,9 +39,6 @@ def make_filename(name):
 def in_srcdir(name):
     return os.path.join(os.environ['srcdir'], name)
 
-def init_gpgme(proto):
-    gpg.core.engine_check_version(proto)
-
 verbose = int(os.environ.get('verbose', 0)) > 1
 def print_data(data):
     if verbose:

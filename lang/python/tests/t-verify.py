@@ -97,8 +97,6 @@ def check_result(result, summary, validity, fpr, status, notation):
             sig.validity, validity)
     assert gpg.errors.GPGMEError(sig.validity_reason).getcode() == gpg.errors.NO_ERROR
 
-
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 c.set_armor(True)
 

@@ -27,8 +27,6 @@ import tempfile
 import gpg
 import support
 
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
-
 # Both Context and Data can be used as context manager:
 with gpg.Context() as c, gpg.Data() as d:
     c.get_engine_info()

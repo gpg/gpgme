@@ -34,7 +34,6 @@ def check_verify_result(result, summary, fpr, status):
     assert sig.validity == gpg.constants.validity.FULL
     assert gpg.errors.GPGMEError(sig.validity_reason).getcode() == gpg.errors.NO_ERROR
 
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 
 source = gpg.Data(file=support.make_filename("cipher-2.asc"))

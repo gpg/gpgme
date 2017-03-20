@@ -53,8 +53,6 @@ def check_result(r, typ):
                                  "23FD347A419429BACCD5E72D6BC4778054ACD246"):
             fail("Wrong fingerprint reported: {}".format(signature.fpr))
 
-
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 c.set_textmode(True)
 c.set_armor(True)

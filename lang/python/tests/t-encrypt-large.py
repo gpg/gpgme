@@ -30,7 +30,6 @@ if len(sys.argv) == 2:
 else:
     nbytes = 100000
 
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 
 ntoread = nbytes

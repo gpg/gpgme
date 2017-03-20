@@ -27,8 +27,6 @@ import support
 
 print("Using gpg module from {0!r}.".format(os.path.dirname(gpg.__file__)))
 
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
-
 subprocess.check_call([os.path.join(os.getenv('top_srcdir'),
                                     "tests", "start-stop-agent"), "--start"])
 

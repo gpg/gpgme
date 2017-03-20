@@ -23,7 +23,6 @@ del absolute_import, print_function, unicode_literals
 import gpg
 import support
 
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 
 source = gpg.Data(file=support.make_filename("cipher-1.asc"))

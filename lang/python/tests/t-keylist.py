@@ -23,7 +23,6 @@ del absolute_import, print_function, unicode_literals
 import gpg
 import support
 
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
 c = gpg.Context()
 
 # Check expration of keys.  This test assumes three subkeys of which

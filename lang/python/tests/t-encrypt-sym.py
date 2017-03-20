@@ -24,8 +24,6 @@ import os
 import gpg
 import support
 
-support.init_gpgme(gpg.constants.protocol.OpenPGP)
-
 for passphrase in ("abc", b"abc"):
     c = gpg.Context()
     c.set_armor(True)
