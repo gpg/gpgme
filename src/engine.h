@@ -148,6 +148,8 @@ gpgme_error_t _gpgme_engine_op_keylist_ext (engine_t engine,
 					    int reserved,
 					    gpgme_keylist_mode_t mode,
 					    int engine_flags);
+gpgme_error_t _gpgme_engine_op_keylist_data (engine_t engine,
+					     gpgme_data_t data);
 gpgme_error_t _gpgme_engine_op_sign (engine_t engine, gpgme_data_t in,
 				     gpgme_data_t out, gpgme_sig_mode_t mode,
 				     int use_armor, int use_textmode,

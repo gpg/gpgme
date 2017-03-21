@@ -41,7 +41,7 @@ static int verbose;
 static int
 show_usage (int ex)
 {
-  fputs ("usage: " PGM " [options] [USERID]\n\n"
+  fputs ("usage: " PGM " [options] [USERID_or_FILE]\n\n"
          "Options:\n"
          "  --verbose        run in verbose mode\n"
          "  --openpgp        use the OpenPGP protocol (default)\n"
@@ -56,6 +56,7 @@ show_usage (int ex)
          "  --validate       use GPGME_KEYLIST_MODE_VALIDATE\n"
          "  --import         import all keys\n"
          "  --offline        use offline mode\n"
+         "  --from-file      list all keys in the given file\n"
          "  --require-gnupg  required at least the given GnuPG version\n"
          , stderr);
   exit (ex);
@@ -98,6 +99,9 @@ main (int argc, char **argv)
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
   int only_secret = 0;
   int offline = 0;
+  int from_file = 0;
+  gpgme_data_t data = NULL;
+
 
   if (argc)
     { argc--; argv++; }
@@ -177,6 +181,11 @@ main (int argc, char **argv)
           offline = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--from-file"))
+        {
+          from_file = 1;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--require-gnupg"))
         {
           argc--; argv++;
@@ -191,6 +200,8 @@ main (int argc, char **argv)
 
   if (argc > 1)
     show_usage (1);
+  else if (from_file && !argc)
+    show_usage (1);
 
   init_gpgme (protocol);
 
@@ -202,7 +213,15 @@ main (int argc, char **argv)
 
   gpgme_set_offline (ctx, offline);
 
-  err = gpgme_op_keylist_start (ctx, argc? argv[0]:NULL, only_secret);
+  if (from_file)
+    {
+      err = gpgme_data_new_from_file (&data, *argv, 1);
+      fail_if_err (err);
+
+      err = gpgme_op_keylist_from_data_start (ctx, data, 0);
+    }
+  else
+    err = gpgme_op_keylist_start (ctx, argc? argv[0]:NULL, only_secret);
   fail_if_err (err);
 
   while (!(err = gpgme_op_keylist_next (ctx, &key)))
@@ -322,6 +341,7 @@ main (int argc, char **argv)
   err = gpgme_op_keylist_end (ctx);
   fail_if_err (err);
   keyarray[keyidx] = NULL;
+  gpgme_data_release (data);
 
   result = gpgme_op_keylist_result (ctx);
   if (result->truncated)

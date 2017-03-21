@@ -177,8 +177,8 @@ EXPORTS
     gpgme_io_read                         @136
     gpgme_io_write                        @137
 
-    gpgme_result_ref                     @138
-    gpgme_result_unref                   @139
+    gpgme_result_ref                      @138
+    gpgme_result_unref                    @139
 
     gpgme_op_import_keys                  @140
     gpgme_op_import_keys_start            @141
@@ -253,5 +253,8 @@ EXPORTS
     gpgme_op_query_swdb_result            @190
 
     gpgme_get_ctx_flag                    @191
+
+    gpgme_op_keylist_from_data_start      @192
+
 ; END
 

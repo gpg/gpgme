@@ -2731,6 +2731,38 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
 
 
 static gpgme_error_t
+gpg_keylist_data (void *engine, gpgme_data_t data)
+{
+  engine_gpg_t gpg = engine;
+  gpgme_error_t err;
+
+  if (!have_gpg_version (gpg, "2.1.14"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  err = add_arg (gpg, "--with-colons");
+  if (!err)
+    err = add_arg (gpg, "--with-fingerprint");
+  if (!err)
+    err = add_arg (gpg, "--import-options");
+  if (!err)
+    err = add_arg (gpg, "import-show");
+  if (!err)
+    err = add_arg (gpg, "--dry-run");
+  if (!err)
+    err = add_arg (gpg, "--import");
+  if (!err)
+    err = add_arg (gpg, "--");
+  if (!err)
+    err = add_data (gpg, data, -1, 0);
+
+  if (!err)
+    err = start (gpg);
+
+  return err;
+}
+
+
+static gpgme_error_t
 gpg_keysign (void *engine, gpgme_key_t key, const char *userid,
              unsigned long expire, unsigned int flags,
              gpgme_ctx_t ctx)
@@ -3013,6 +3045,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_import,
     gpg_keylist,
     gpg_keylist_ext,
+    gpg_keylist_data,
     gpg_keysign,
     gpg_tofu_policy,    /* tofu_policy */
     gpg_sign,

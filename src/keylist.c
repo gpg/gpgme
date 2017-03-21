@@ -1142,6 +1142,42 @@ gpgme_op_keylist_ext_start (gpgme_ctx_t ctx, const char *pattern[],
 }
 
 
+/* Start a keylist operation within CTX to show keys contained
+ * in DATA.  */
+gpgme_error_t
+gpgme_op_keylist_from_data_start (gpgme_ctx_t ctx, gpgme_data_t data,
+                                  int reserved)
+{
+  gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
+
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_keylist_from_data_start", ctx);
+
+  if (!ctx || !data || reserved)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  err = _gpgme_op_reset (ctx, 2);
+  if (err)
+    return TRACE_ERR (err);
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook,
+                               sizeof (*opd), release_op_data);
+  opd = hook;
+  if (err)
+    return TRACE_ERR (err);
+
+  _gpgme_engine_set_status_handler (ctx->engine, keylist_status_handler, ctx);
+  err = _gpgme_engine_set_colon_line_handler (ctx->engine,
+                                              keylist_colon_handler, ctx);
+  if (err)
+    return TRACE_ERR (err);
+
+  err = _gpgme_engine_op_keylist_data (ctx->engine, data);
+  return TRACE_ERR (err);
+}
+
+
 /* Return the next key from the keylist in R_KEY.  */
 gpgme_error_t
 gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)

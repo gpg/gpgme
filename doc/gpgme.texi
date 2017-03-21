@@ -3342,6 +3342,7 @@ This is a linked list with the notation data and policy URLs.
 @cindex key ring, search
 
 @deftypefun gpgme_error_t gpgme_op_keylist_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}}, @w{int @var{secret_only}})
+
 The function @code{gpgme_op_keylist_start} initiates a key listing
 operation inside the context @var{ctx}.  It sets everything up so that
 subsequent invocations of @code{gpgme_op_keylist_next} return the keys
@@ -3369,6 +3370,7 @@ are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_keylist_ext_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}[]}, @w{int @var{secret_only}}, @w{int @var{reserved}})
+
 The function @code{gpgme_op_keylist_ext_start} initiates an extended
 key listing operation inside the context @var{ctx}.  It sets
 everything up so that subsequent invocations of
@@ -3399,7 +3401,36 @@ The function returns the error code @code{GPG_ERR_INV_VALUE} if
 are reported by the crypto engine support routines.
 @end deftypefun
 
+@deftypefun gpgme_error_t gpgme_op_keylist_from_data @
+            (@w{gpgme_ctx_t @var{ctx}}, @
+             @w{gpgme_data_t @var{data}}, @
+             @w{int @var{reserved}})
+
+The function @code{gpgme_op_keylist_from_data_start} initiates a key
+listing operation inside the context @var{ctx}.  In contrast to the
+other key listing operation the keys are read from the supplied
+@var{data} and not from the local key database.  The keys are also not
+imported into the local ley database. The function sets everything up
+so that subsequent invocations of @code{gpgme_op_keylist_next} return
+the keys from @var{data}.
+
+The value of @var{reserved} must be @code{0}.
+
+This function requires at least GnuPG version 2.1.14 and currently
+works only with OpenPGP keys.
+
+The context will be busy until either all keys are received (and
+@code{gpgme_op_keylist_next} returns @code{GPG_ERR_EOF}), or
+@code{gpgme_op_keylist_end} is called to finish the operation.
+While the context is busy @var{data} may not be released.
+
+The function returns the error code @code{GPG_ERR_INV_VALUE} if
+@var{ctx} is not a valid pointer, and passes through any errors that
+are reported by the crypto engine support routines.
+@end deftypefun
+
 @deftypefun gpgme_error_t gpgme_op_keylist_next (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t *@var{r_key}})
+
 The function @code{gpgme_op_keylist_next} returns the next key in the
 list created by a previous @code{gpgme_op_keylist_start} operation in
 the context @var{ctx}.  The key will have one reference for the user.
@@ -3417,6 +3448,7 @@ The function returns the error code @code{GPG_ERR_INV_VALUE} if
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_keylist_end (@w{gpgme_ctx_t @var{ctx}})
+
 The function @code{gpgme_op_keylist_end} ends a pending key list
 operation in the context @var{ctx}.
 
@@ -3431,7 +3463,7 @@ time during the operation there was not enough memory available.
 
 The following example illustrates how all keys containing a certain
 string (@code{g10code}) can be listed with their key ID and the name
-and e-mail address of the main user ID:
+and email address of the main user ID:
 
 @example
 gpgme_ctx_t ctx;

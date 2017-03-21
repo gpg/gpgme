@@ -876,6 +876,19 @@ _gpgme_engine_op_keylist_ext (engine_t engine, const char *pattern[],
 
 
 gpgme_error_t
+_gpgme_engine_op_keylist_data (engine_t engine, gpgme_data_t data)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->keylist_data)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->keylist_data) (engine->engine, data);
+}
+
+
+gpgme_error_t
 _gpgme_engine_op_sign (engine_t engine, gpgme_data_t in, gpgme_data_t out,
 		       gpgme_sig_mode_t mode, int use_armor,
 		       int use_textmode, int include_certs,

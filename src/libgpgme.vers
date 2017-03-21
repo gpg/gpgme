@@ -223,6 +223,7 @@ GPGME_1.0 {
     gpgme_op_import_start;
     gpgme_op_keylist_end;
     gpgme_op_keylist_ext_start;
+    gpgme_op_keylist_from_data_start;
     gpgme_op_keylist_next;
     gpgme_op_keylist_result;
     gpgme_op_keylist_start;

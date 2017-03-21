@@ -1817,19 +1817,30 @@ typedef struct _gpgme_op_keylist_result *gpgme_keylist_result_t;
 gpgme_keylist_result_t gpgme_op_keylist_result (gpgme_ctx_t ctx);
 
 /* Start a keylist operation within CTX, searching for keys which
-   match PATTERN.  If SECRET_ONLY is true, only secret keys are
-   returned.  */
+ * match PATTERN.  If SECRET_ONLY is true, only secret keys are
+ * returned.  */
 gpgme_error_t gpgme_op_keylist_start (gpgme_ctx_t ctx, const char *pattern,
 				      int secret_only);
 gpgme_error_t gpgme_op_keylist_ext_start (gpgme_ctx_t ctx,
 					  const char *pattern[],
 					  int secret_only, int reserved);
 
+/* List the keys contained in DATA.  */
+gpgme_error_t gpgme_op_keylist_from_data_start (gpgme_ctx_t ctx,
+                                                gpgme_data_t data,
+                                                int reserved);
+
 /* Return the next key from the keylist in R_KEY.  */
 gpgme_error_t gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key);
 
 /* Terminate a pending keylist operation within CTX.  */
 gpgme_error_t gpgme_op_keylist_end (gpgme_ctx_t ctx);
+
+
+
+/*
+ * Protecting keys
+ */
 
 /* Change the passphrase for KEY.  FLAGS is reserved for future use
    and must be passed as 0.  */
