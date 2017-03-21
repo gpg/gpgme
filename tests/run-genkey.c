@@ -204,10 +204,12 @@ show_usage (int ex)
          "   for addkey: FPR    [ALGO [USAGE [EXPIRESECONDS]]]\n"
          "   for adduid: FPR    USERID\n"
          "   for revuid: FPR    USERID\n"
+         "   for set-primary: FPR    USERID\n"
          "Options:\n"
          "  --addkey         add a subkey to the key with FPR\n"
          "  --adduid         add a user id to the key with FPR\n"
-         "  --revuid         Revoke a user id from the key with FPR\n"
+         "  --revuid         revoke a user id from the key with FPR\n"
+         "  --set-primary    set the primary key flag on USERID\n"
          "  --verbose        run in verbose mode\n"
          "  --status         print status lines from the backend\n"
          "  --progress       print progress info\n"
@@ -234,6 +236,7 @@ main (int argc, char **argv)
   int addkey = 0;
   int adduid = 0;
   int revuid = 0;
+  int setpri = 0;
   const char *userid;
   const char *algo = NULL;
   const char *newuserid = NULL;
@@ -259,6 +262,7 @@ main (int argc, char **argv)
           addkey = 1;
           adduid = 0;
           revuid = 0;
+          setpri = 0;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--adduid"))
@@ -266,6 +270,7 @@ main (int argc, char **argv)
           addkey = 0;
           adduid = 1;
           revuid = 0;
+          setpri = 0;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--revuid"))
@@ -273,6 +278,15 @@ main (int argc, char **argv)
           addkey = 0;
           adduid = 0;
           revuid = 1;
+          setpri = 0;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--set-primary"))
+        {
+          addkey = 0;
+          adduid = 0;
+          revuid = 0;
+          setpri = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--verbose"))
@@ -319,7 +333,7 @@ main (int argc, char **argv)
         show_usage (1);
     }
 
-  if (adduid || revuid)
+  if (adduid || revuid || setpri)
     {
       if (argc != 2)
         show_usage (1);
@@ -358,7 +372,7 @@ main (int argc, char **argv)
       gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
     }
 
-  if (addkey || adduid || revuid)
+  if (addkey || adduid || revuid || setpri)
     {
       gpgme_key_t akey;
 
@@ -400,6 +414,16 @@ main (int argc, char **argv)
               exit (1);
             }
         }
+      else if (setpri)
+        {
+          err = gpgme_op_set_uid_flag (ctx, akey, newuserid, "primary", NULL);
+          if (err)
+            {
+              fprintf (stderr, PGM ": gpgme_op_set_uid_flag failed: %s\n",
+                       gpg_strerror (err));
+              exit (1);
+            }
+        }
       gpgme_key_unref (akey);
     }
   else
@@ -413,26 +437,29 @@ main (int argc, char **argv)
         }
     }
 
-  result = gpgme_op_genkey_result (ctx);
-  if (!result)
+  if (!setpri)
     {
-      fprintf (stderr, PGM": gpgme_op_genkey_result returned NULL\n");
-      exit (1);
+      result = gpgme_op_genkey_result (ctx);
+      if (!result)
+        {
+          fprintf (stderr, PGM": gpgme_op_genkey_result returned NULL\n");
+          exit (1);
+        }
+
+      printf ("Generated key: %s (%s)\n",
+              result->fpr ? result->fpr : "none",
+              result->primary ? (result->sub ? "primary, sub" : "primary")
+              /**/            : (result->sub ? "sub" : "none"));
+
+      if (result->fpr && strlen (result->fpr) < 40)
+        fprintf (stderr, PGM": generated key has unexpected fingerprint\n");
+      if (!result->primary)
+        fprintf (stderr, PGM": primary key was not generated\n");
+      if (!result->sub)
+        fprintf (stderr, PGM": sub key was not generated\n");
+      if (!result->uid)
+        fprintf (stderr, PGM": uid was not generated\n");
     }
-
-  printf ("Generated key: %s (%s)\n",
-          result->fpr ? result->fpr : "none",
-	  result->primary ? (result->sub ? "primary, sub" : "primary")
-          /**/     	  : (result->sub ? "sub" : "none"));
-
-  if (result->fpr && strlen (result->fpr) < 40)
-    fprintf (stderr, PGM": generated key has unexpected fingerprint\n");
-  if (!result->primary)
-    fprintf (stderr, PGM": primary key was not generated\n");
-  if (!result->sub)
-    fprintf (stderr, PGM": sub key was not generated\n");
-  if (!result->uid)
-    fprintf (stderr, PGM": uid was not generated\n");
 
   gpgme_release (ctx);
   return 0;

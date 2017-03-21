@@ -2222,7 +2222,14 @@ gpg_adduid (engine_gpg_t gpg,
   if (!key || !key->fpr || !userid)
     return gpg_error (GPG_ERR_INV_ARG);
 
-  if ((extraflags & GENKEY_EXTRAFLAG_REVOKE))
+  if ((extraflags & GENKEY_EXTRAFLAG_SETPRIMARY))
+    {
+      if (!have_gpg_version (gpg, "2.1.20"))
+        err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      else
+        err = add_arg (gpg, "--quick-set-primary-uid");
+    }
+  else if ((extraflags & GENKEY_EXTRAFLAG_REVOKE))
     err = add_arg (gpg, "--quick-revuid");
   else
     err = add_arg (gpg, "--quick-adduid");
@@ -2262,7 +2269,7 @@ gpg_genkey (void *engine,
    *  USERID && !KEY          - Create a new keyblock.
    * !USERID &&  KEY          - Add a new subkey to KEY (gpg >= 2.1.14)
    *  USERID &&  KEY && !ALGO - Add a new user id to KEY (gpg >= 2.1.14).
-   *
+   *                            or set a flag on a user id.
    */
   if (help_data)
     {

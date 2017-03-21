@@ -3897,6 +3897,61 @@ be completed by calling @code{gpgme_wait} on the context.
 
 
 @c
+@c  gpgme_op_set_uid_flag
+@c
+@deftypefun gpgme_error_t gpgme_op_set_ui_flag @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{userid}}, @
+       @w{cons char * @var{name}}, @
+       @w{cons char * @var{value}});
+
+The function @code{gpgme_op_set_uid_flag} is used to set flags on a
+user ID from the OpenPGP key given by @var{KEY}.  Setting flags on
+user IDs after key creation is a feature of the OpenPGP protocol and
+thus the protocol for the context @var{ctx} must be set to OpenPGP.
+
+@var{key} specifies the key to operate on.  This parameters is required.
+
+@var{userid} is the user ID of the key to be manipulated.  This user ID
+must be given verbatim because the engine does an exact and case
+sensitive match.  Thus the @code{uid} field from the user ID object
+(@code{gpgme_user_id_t}) is to be used.  This is a required parameter.
+
+@var{name} names the flag which is to be changed.  The only currently
+supported flag is:
+
+@table @code
+@item primary
+This sets the primary key flag on the given user ID.  All other
+primary key flag on other user IDs are removed.  @var{value} must be
+given as NULL.  For technical reasons this functions bumps the
+creation timestamp of all affected self-signatures up by one second.
+At least GnuPG version 2.1.20 is required.
+
+@end table
+
+The function returns zero on success, @code{GPG_ERR_NOT_SUPPORTED} if
+the engine does not support the command, or a bunch of other error
+codes.
+
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_set_uid_flag_start @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{userid}}, @
+       @w{cons char * @var{name}}, @
+       @w{cons char * @var{value}});
+
+The function @code{gpgme_op_set_uid_flag_start} initiates a
+@code{gpgme_op_set_uid_flag} operation; see there for details.  It must
+be completed by calling @code{gpgme_wait} on the context.
+@xref{Waiting For Completion}.
+
+@end deftypefun
+
+@c
 @c  gpgme_op_genkey
 @c
 @deftypefun gpgme_error_t gpgme_op_genkey @

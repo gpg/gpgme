@@ -1726,6 +1726,13 @@ gpgme_error_t gpgme_op_revuid       (gpgme_ctx_t ctx,
                                      gpgme_key_t key, const char *userid,
                                      unsigned int reserved);
 
+/* Set a flag on the USERID of KEY.  See the manual for supported flags.  */
+gpgme_error_t gpgme_op_set_uid_flag_start (gpgme_ctx_t ctx,
+                                           gpgme_key_t key, const char *userid,
+                                           const char *name, const char *value);
+gpgme_error_t gpgme_op_set_uid_flag       (gpgme_ctx_t ctx,
+                                           gpgme_key_t key, const char *userid,
+                                           const char *name, const char *value);
 
 
 /* Retrieve a pointer to the result of a genkey, createkey, or

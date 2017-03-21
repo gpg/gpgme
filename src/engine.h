@@ -25,8 +25,9 @@
 #include "gpgme.h"
 
 /* Flags used by the EXTRAFLAGS arg of _gpgme_engine_op_genkey.  */
-#define GENKEY_EXTRAFLAG_ARMOR   1
-#define GENKEY_EXTRAFLAG_REVOKE  2
+#define GENKEY_EXTRAFLAG_ARMOR      1
+#define GENKEY_EXTRAFLAG_REVOKE     2
+#define GENKEY_EXTRAFLAG_SETPRIMARY 4
 
 
 struct engine;

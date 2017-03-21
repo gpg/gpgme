@@ -489,7 +489,7 @@ gpgme_op_createsubkey (gpgme_ctx_t ctx, gpgme_key_t key, const char *algo,
 
 
 static gpgme_error_t
-addrevuid_start (gpgme_ctx_t ctx, int synchronous, int revoke,
+addrevuid_start (gpgme_ctx_t ctx, int synchronous, int extraflags,
                  gpgme_key_t key, const char *userid, unsigned int flags)
 {
   gpgme_error_t err;
@@ -512,7 +512,7 @@ addrevuid_start (gpgme_ctx_t ctx, int synchronous, int revoke,
   if (err)
     return err;
 
-  opd->uidmode = revoke? 2 : 1;
+  opd->uidmode = extraflags? 2 : 1;
 
   _gpgme_engine_set_status_handler (ctx->engine, genkey_status_handler, ctx);
 
@@ -528,7 +528,7 @@ addrevuid_start (gpgme_ctx_t ctx, int synchronous, int revoke,
                                   userid, NULL, 0, 0,
                                   key, flags,
                                   NULL,
-				  revoke? GENKEY_EXTRAFLAG_REVOKE : 0,
+				  extraflags,
                                   NULL, NULL);
 
 }
@@ -584,7 +584,7 @@ gpgme_op_revuid_start (gpgme_ctx_t ctx,
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_ARG));
 
-  err = addrevuid_start (ctx, 0, 1, key, userid, flags);
+  err = addrevuid_start (ctx, 0, GENKEY_EXTRAFLAG_REVOKE, key, userid, flags);
   return TRACE_ERR (err);
 }
 
@@ -601,8 +601,60 @@ gpgme_op_revuid (gpgme_ctx_t ctx,
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_ARG));
 
-  err = addrevuid_start (ctx, 1, 1, key, userid, flags);
+  err = addrevuid_start (ctx, 1, GENKEY_EXTRAFLAG_REVOKE, key, userid, flags);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return TRACE_ERR (err);
+}
+
+
+/* Set a flag on the USERID of KEY.  The only supported flag right now
+ * is "primary" to mark the primary key.  */
+static gpg_error_t
+set_uid_flag (gpgme_ctx_t ctx, int synchronous,
+              gpgme_key_t key, const char *userid,
+              const char *name, const char *value)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG4 (DEBUG_CTX, "gpgme_op_set_uid_flag", ctx,
+	      "%d uid='%s' '%s'='%s'", synchronous, userid, name, value);
+
+  if (!ctx || !name || !key || !userid)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_ARG));
+
+  if (!strcmp (name, "primary"))
+    {
+      if (value)
+        err = gpg_error (GPG_ERR_INV_ARG);
+      else
+        err = addrevuid_start (ctx, synchronous,
+                               GENKEY_EXTRAFLAG_SETPRIMARY, key, userid, 0);
+    }
+  else
+    return err = gpg_error (GPG_ERR_UNKNOWN_NAME);
+
+  if (synchronous && !err)
+    err = _gpgme_wait_one (ctx);
+  return TRACE_ERR (err);
+}
+
+
+/* See set_uid_flag. */
+gpgme_error_t
+gpgme_op_set_uid_flag_start (gpgme_ctx_t ctx,
+                             gpgme_key_t key, const char *userid,
+                             const char *name, const char *value)
+{
+  return set_uid_flag (ctx, 0, key, userid, name, value);
+}
+
+
+/* See set_uid_flag.  Thsi is the synchronous variant.  */
+gpgme_error_t
+gpgme_op_set_uid_flag (gpgme_ctx_t ctx,
+                       gpgme_key_t key, const char *userid,
+                       const char *name, const char *value)
+{
+  return set_uid_flag (ctx, 1, key, userid, name, value);
 }

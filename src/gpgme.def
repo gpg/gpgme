@@ -256,5 +256,8 @@ EXPORTS
 
     gpgme_op_keylist_from_data_start      @192
 
+    gpgme_op_set_uid_flag_start           @193
+    gpgme_op_set_uid_flag                 @194
+
 ; END
 
