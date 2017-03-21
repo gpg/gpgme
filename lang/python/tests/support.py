@@ -109,7 +109,13 @@ def EphemeralContext():
             agent_socket = os.path.join(tmp, "S.gpg-agent")
             ctx.protocol = gpg.constants.protocol.ASSUAN
             ctx.set_engine_info(ctx.protocol, file_name=agent_socket)
-            ctx.assuan_transact(["KILLAGENT"])
+            try:
+                ctx.assuan_transact(["KILLAGENT"])
+            except gpg.errors.GPGMEError as e:
+                if e.getcode() == gpg.errors.ASS_CONNECT_FAILED:
+                    pass # the agent was not running
+                else:
+                    raise
 
             # Block until it is really gone.
             while os.path.exists(agent_socket):

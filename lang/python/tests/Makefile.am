@@ -46,6 +46,7 @@ py_tests = t-wrapper.py \
 	t-trustlist.py \
 	t-edit.py \
 	t-keylist.py \
+	t-keylist-from-data.py \
 	t-wait.py \
 	t-encrypt-large.py \
 	t-file-name.py \

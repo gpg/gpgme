@@ -484,13 +484,16 @@ class Context(GpgmeWrapper):
         return plainbytes, result
 
     def keylist(self, pattern=None, secret=False,
-                mode=constants.keylist.mode.LOCAL):
+                mode=constants.keylist.mode.LOCAL,
+                source=None):
         """List keys
 
         Keyword arguments:
         pattern	-- return keys matching pattern (default: all keys)
         secret	-- return only secret keys (default: False)
         mode    -- keylist mode (default: list local keys)
+        source  -- read keys from source instead from the keyring
+                       (all other options are ignored in this case)
 
         Returns:
                 -- an iterator returning key objects
@@ -498,8 +501,22 @@ class Context(GpgmeWrapper):
         Raises:
         GPGMEError	-- as signaled by the underlying library
         """
-        self.set_keylist_mode(mode)
-        return self.op_keylist_all(pattern, secret)
+        if not source:
+            self.set_keylist_mode(mode)
+            self.op_keylist_start(pattern, secret)
+        else:
+            # Automatic wrapping of SOURCE is not possible here,
+            # because the object must not be deallocated until the
+            # iteration over the results ends.
+            if not isinstance(source, Data):
+                source = Data(file=source)
+            self.op_keylist_from_data_start(source, 0)
+
+        key = self.op_keylist_next()
+        while key:
+            yield key
+            key = self.op_keylist_next()
+        self.op_keylist_end()
 
     def create_key(self, userid, algorithm=None, expires_in=0, expires=True,
                    sign=False, encrypt=False, certify=False, authenticate=False,

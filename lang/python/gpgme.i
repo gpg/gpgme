@@ -294,7 +294,7 @@
 			gpgme_data_t sig, gpgme_data_t signed_text,
 			gpgme_data_t plaintext, gpgme_data_t keydata,
 			gpgme_data_t pubkey, gpgme_data_t seckey,
-			gpgme_data_t out};
+			gpgme_data_t out, gpgme_data_t data};
 
 /* SWIG has problems interpreting ssize_t, off_t or gpgme_error_t in
    gpgme.h.  */
