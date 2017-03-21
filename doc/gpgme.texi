@@ -5565,9 +5565,16 @@ also expect a sign command.
 
 @item GPGME_ENCRYPT_SYMMETRIC
 The @code{GPGME_ENCRYPT_SYMMETRIC} symbol specifies that the
-output should be additionally encrypted symmetically even
+output should be additionally encrypted symmetrically even
 if recipients are provided. This feature is only supported for
 for the OpenPGP crypto engine.
+
+@item GPGME_ENCRYPT_THROW_KEYIDS
+The @code{GPGME_ENCRYPT_THROW_KEYIDS} symbols requests that the
+identifiers for the decrption keys are not included in the ciphertext.
+On the receiving side, the use of this flag may slow down the
+decryption process because all available secret keys must be tried.
+This flag is only honored for OpenPGP encryption.
 
 @end table
 

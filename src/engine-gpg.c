@@ -1860,6 +1860,9 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
   if (!err && (flags & GPGME_ENCRYPT_NO_COMPRESS))
     err = add_arg (gpg, "--compress-algo=none");
 
+  if (!err && (flags & GPGME_ENCRYPT_THROW_KEYIDS))
+    err = add_arg (gpg, "--throw-keyids");
+
   if (gpgme_data_get_encoding (plain) == GPGME_DATA_ENCODING_MIME
       && have_gpg_version (gpg, "2.1.14"))
     err = add_arg (gpg, "--mimemode");
@@ -1928,6 +1931,9 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
 
   if (!err && (flags & GPGME_ENCRYPT_NO_COMPRESS))
     err = add_arg (gpg, "--compress-algo=none");
+
+  if (!err && (flags & GPGME_ENCRYPT_THROW_KEYIDS))
+    err = add_arg (gpg, "--throw-keyids");
 
   if (gpgme_data_get_encoding (plain) == GPGME_DATA_ENCODING_MIME
       && have_gpg_version (gpg, "2.1.14"))

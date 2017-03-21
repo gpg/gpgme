@@ -12,7 +12,8 @@ Noteworthy changes in version 1.8.1 (unreleased)
  GPGME_CREATE_NOEXPIRE       NEW.
  gpgme_subkey_t              EXTENDED: New field is_de_vs.
  gpgme_op_keylist_from_data_start NEW.
- gpgme_data_rewind                UN-DEPRECATE.
+ GPGME_ENCRYPT_THROW_KEYIDS       NEW.
+ gpgme_data_rewind                UN-DEPRECATE
  cpp: Context::revUid(const Key&, const char*)      NEW.
  cpp: Context::startRevUid(const Key&, const char*) NEW.
  cpp: Context::addUid(const Key&, const char*)      NEW.
