@@ -51,6 +51,7 @@ enum
     WANT_GPG_NAME,
     WANT_GPGSM_NAME,
     WANT_G13_NAME,
+    WANT_GPG_WKS_CLIENT_NAME,
     WANT_GPG_ONE_MODE
   };
 
@@ -73,6 +74,7 @@ static struct {
   char *gpg_name;
   char *gpgsm_name;
   char *g13_name;
+  char *gpg_wks_client_name;
   int  gpg_one_mode;  /* System is in gpg1 mode.  */
 } dirinfo;
 
@@ -333,6 +335,14 @@ get_gpgconf_item (int what)
     case WANT_G13_NAME:   result = dirinfo.g13_name; break;
     case WANT_UISRV_SOCKET:  result = dirinfo.uisrv_socket; break;
     case WANT_GPG_ONE_MODE: result = dirinfo.gpg_one_mode? "1":NULL; break;
+    case WANT_GPG_WKS_CLIENT_NAME:
+      if (!dirinfo.gpg_wks_client_name && dirinfo.libexecdir)
+        dirinfo.gpg_wks_client_name = _gpgme_strconcat (dirinfo.libexecdir,
+                                                        "/",
+                                                        "gpg-wks-client",
+                                                        NULL);
+      result = dirinfo.gpg_wks_client_name;
+      break;
     }
   UNLOCK (dirinfo_lock);
   return result;
@@ -438,6 +448,8 @@ gpgme_get_dirinfo (const char *what)
     return get_gpgconf_item (WANT_GPGSM_NAME);
   else if (!strcmp (what, "g13-name"))
     return get_gpgconf_item (WANT_G13_NAME);
+  else if (!strcmp (what, "gpg-wks-client-name"))
+    return get_gpgconf_item (WANT_GPG_WKS_CLIENT_NAME);
   else if (!strcmp (what, "agent-ssh-socket"))
     return get_gpgconf_item (WANT_AGENT_SSH_SOCKET);
   else if (!strcmp (what, "dirmngr-socket"))

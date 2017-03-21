@@ -979,6 +979,9 @@ Return the file name of the CMS engine.
 @item g13-name
 Return the name of the file container encryption engine.
 
+@item gpg-wks-client-name
+Return the name of the Web Key Service tool.
+
 @end table
 
 @end deftypefun

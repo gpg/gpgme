@@ -125,7 +125,9 @@ main (int argc, char **argv )
                           "gpgconf-name",
                           "gpg-name",
                           "gpgsm-name",
-                          "g13-name", NULL };
+                          "g13-name",
+                          "gpg-wks-client-name",
+                          NULL };
     const char *s;
     int i;
 
