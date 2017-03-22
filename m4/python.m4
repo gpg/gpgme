@@ -37,8 +37,10 @@ AC_DEFUN([AM_PATH_PYTHON],
   dnl Find a Python interpreter.  Python versions prior to 2.0 are not
   dnl supported. (2.0 was released on October 16, 2000).
   m4_define_default([_AM_PYTHON_INTERPRETER_LIST],
-[python2.7 python2 python3.0 python3.1 python3.2 python3.3 python3.4 dnl
- python3.5 python3.6 python3.7 python3.8 python3 python])
+[python2 python2.7 dnl
+ python dnl
+ python3 python3.0 python3.1 python3.2 python3.3  dnl
+ python3.4 python3.5 python3.6 python3.7 python3.8])
 
   AC_ARG_VAR([PYTHON], [the Python interpreter])
 
