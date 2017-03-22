@@ -24,6 +24,7 @@
 #define __GPGMEPP_DATA_H__
 
 #include "global.h"
+#include "key.h"
 
 #include <sys/types.h> // for size_t, off_t
 #include <cstdio> // FILE
@@ -108,6 +109,10 @@ public:
     ssize_t read(void *buffer, size_t length);
     ssize_t write(const void *buffer, size_t length);
     off_t seek(off_t offset, int whence);
+
+    /** Try to parse the data to a key object using the
+     * Protocol proto. Returns an empty list on error.*/
+    std::vector<Key> toKeys(const Protocol proto = Protocol::OpenPGP) const;
 
     class Private;
     Private *impl()

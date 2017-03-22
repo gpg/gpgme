@@ -26,6 +26,7 @@ Noteworthy changes in version 1.8.1 (unreleased)
  cpp: GpgGenCardKeyInteractor                       NEW.
  cpp: Subkey::keyGrip                               NEW.
  cpp: Subkey::isDeVs                                NEW.
+ cpp: Data::toKeys                                  NEW.
  qt: CryptoConfig::stringValueList()                NEW.
  py: Context.__init__        EXTENDED: New keyword arg home_dir.
  py: Context.home_dir        NEW.

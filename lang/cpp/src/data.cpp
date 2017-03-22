@@ -25,6 +25,7 @@
 #endif
 
 #include "data_p.h"
+#include "context_p.h"
 #include <error.h>
 #include <interfaces/dataprovider.h>
 
@@ -229,4 +230,27 @@ ssize_t GpgME::Data::write(const void *buffer, size_t length)
 off_t GpgME::Data::seek(off_t offset, int whence)
 {
     return gpgme_data_seek(d->data, offset, whence);
+}
+
+std::vector<GpgME::Key> GpgME::Data::toKeys(Protocol proto) const
+{
+    std::vector<GpgME::Key> ret;
+    if (isNull()) {
+        return ret;
+    }
+    auto ctx = GpgME::Context::createForProtocol(proto);
+    if (!ctx) {
+        return ret;
+    }
+
+    if (gpgme_op_keylist_from_data_start (ctx->impl()->ctx, d->data, 0)) {
+        return ret;
+    }
+
+    gpgme_key_t key;
+    while (!gpgme_op_keylist_next (ctx->impl()->ctx, &key)) {
+        ret.push_back(GpgME::Key(key, false));
+    }
+    delete ctx;
+    return ret;
 }
