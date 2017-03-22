@@ -34,6 +34,7 @@
 #endif
 
 #include "t-support.h"
+#include "context.h"
 
 #include <QTest>
 
@@ -44,6 +45,7 @@
 
 void QGpgMETest::initTestCase()
 {
+    GpgME::initializeLibrary();
     const QString gpgHome = qgetenv("GNUPGHOME");
     QVERIFY2(!gpgHome.isEmpty(), "GNUPGHOME environment variable is not set.");
 }
