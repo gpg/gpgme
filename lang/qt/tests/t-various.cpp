@@ -43,11 +43,27 @@
 #include "context.h"
 #include "engineinfo.h"
 #include "dn.h"
+#include "data.h"
+#include "dataprovider.h"
 
 #include "t-support.h"
 
 using namespace QGpgME;
 using namespace GpgME;
+
+static const char aKey[] = "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
+"\n"
+"mDMEWG+w/hYJKwYBBAHaRw8BAQdAiq1oStvDYg8ZfFs5DgisYJo8dJxD+C/AA21O\n"
+"K/aif0O0GXRvZnVfY29uZmxpY3RAZXhhbXBsZS5jb22IlgQTFggAPhYhBHoJBLaV\n"
+"DamYAgoa1L5BwMOl/x88BQJYb7D+AhsDBQkDwmcABQsJCAcCBhUICQoLAgQWAgMB\n"
+"Ah4BAheAAAoJEL5BwMOl/x88GvwA/0SxkbLyAcshGm2PRrPsFQsSVAfwaSYFVmS2\n"
+"cMVIw1PfAQDclRH1Z4MpufK07ju4qI33o4s0UFpVRBuSxt7A4P2ZD7g4BFhvsP4S\n"
+"CisGAQQBl1UBBQEBB0AmVrgaDNJ7K2BSalsRo2EkRJjHGqnp5bBB0tapnF81CQMB\n"
+"CAeIeAQYFggAIBYhBHoJBLaVDamYAgoa1L5BwMOl/x88BQJYb7D+AhsMAAoJEL5B\n"
+"wMOl/x88OR0BAMq4/vmJUORRTmzjHcv/DDrQB030DSq666rlckGIKTShAPoDXM9N\n"
+"0gZK+YzvrinSKZXHmn0aSwmC1/hyPybJPEljBw==\n"
+"=p2Oj\n"
+"-----END PGP PUBLIC KEY BLOCK-----\n";
 
 class TestVarious: public QGpgMETest
 {
@@ -65,6 +81,20 @@ private Q_SLOTS:
         attrOrder << QStringLiteral("DC") << QStringLiteral("OU") << QStringLiteral("CN");
         dn.setAttributeOrder(attrOrder);
         QVERIFY(dn.prettyDN() == QStringLiteral("DC=North America,DC=Fabrikam,DC=COM,OU=Test,CN=Before\rAfter"));
+    }
+
+    void testKeyFromFile()
+    {
+        if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.14") {
+            return;
+        }
+        QGpgME::QByteArrayDataProvider dp(aKey);
+        Data data(&dp);
+        const auto keys = data.toKeys();
+        QVERIFY(keys.size() == 1);
+        const auto key = keys[0];
+        QVERIFY(!key.isNull());
+        QVERIFY(key.primaryFingerprint() == QStringLiteral("7A0904B6950DA998020A1AD4BE41C0C3A5FF1F3C"));
     }
 
     void testQuickUid()
