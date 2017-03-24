@@ -915,7 +915,7 @@ DecryptionResult Context::decrypt(const Data &cipherText, Data &plainText, const
     d->lastop = Private::Decrypt;
     const Data::Private *const cdp = cipherText.impl();
     Data::Private *const pdp = plainText.impl();
-    d->lasterr = gpgme_op_decrypt_ext(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags), cdp ? cdp->data : 0, pdp ? pdp->data : 0);
+    d->lasterr = gpgme_op_decrypt_ext(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags | flags), cdp ? cdp->data : 0, pdp ? pdp->data : 0);
     return DecryptionResult(d->ctx, Error(d->lasterr));
 }
 
@@ -929,7 +929,7 @@ Error Context::startDecryption(const Data &cipherText, Data &plainText, const De
     d->lastop = Private::Decrypt;
     const Data::Private *const cdp = cipherText.impl();
     Data::Private *const pdp = plainText.impl();
-    return Error(d->lasterr = gpgme_op_decrypt_ext_start(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags),
+    return Error(d->lasterr = gpgme_op_decrypt_ext_start(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags | flags),
                  cdp ? cdp->data : 0, pdp ? pdp->data : 0));
 }
 
@@ -995,7 +995,7 @@ std::pair<DecryptionResult, VerificationResult> Context::decryptAndVerify(const 
     d->lastop = Private::DecryptAndVerify;
     const Data::Private *const cdp = cipherText.impl();
     Data::Private *const pdp = plainText.impl();
-    d->lasterr = gpgme_op_decrypt_ext(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags | DecryptVerify),
+    d->lasterr = gpgme_op_decrypt_ext(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags | flags | DecryptVerify),
                                       cdp ? cdp->data : 0, pdp ? pdp->data : 0);
     return std::make_pair(DecryptionResult(d->ctx, Error(d->lasterr)),
                           VerificationResult(d->ctx, Error(d->lasterr)));
@@ -1011,7 +1011,7 @@ Error Context::startCombinedDecryptionAndVerification(const Data &cipherText, Da
     d->lastop = Private::DecryptAndVerify;
     const Data::Private *const cdp = cipherText.impl();
     Data::Private *const pdp = plainText.impl();
-    return Error(d->lasterr = gpgme_op_decrypt_ext_start(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags | DecryptVerify), cdp ? cdp->data : 0, pdp ? pdp->data : 0));
+    return Error(d->lasterr = gpgme_op_decrypt_ext_start(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags | flags | DecryptVerify), cdp ? cdp->data : 0, pdp ? pdp->data : 0));
 }
 
 Error Context::startCombinedDecryptionAndVerification(const Data &cipherText, Data &plainText)
