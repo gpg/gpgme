@@ -32,6 +32,12 @@ Noteworthy changes in version 1.8.1 (unreleased)
  cpp: Subkey::keyGrip                               NEW.
  cpp: Subkey::isDeVs                                NEW.
  cpp: Data::toKeys                                  NEW.
+ cpp: Context::setDecryptFlags                      NEW.
+ cpp: Context::decrypt                         EXTENDED: Flags added.
+ cpp: Context::startDecrypt                    EXTENDED: Flags added.
+ cpp: Context::decryptAndVerify                EXTENDED: Flags added.
+ cpp: Context::startCombinedDecryptionAndVerification EXTENDED: Flags.
+ cpp: Context::encryptFlags                    EXTENDED: New flags.
  qt: CryptoConfig::stringValueList()                NEW.
  py: Context.__init__        EXTENDED: New keyword arg home_dir.
  py: Context.home_dir        NEW.
