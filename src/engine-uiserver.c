@@ -959,14 +959,16 @@ uiserver_reset (void *engine)
 
 
 static gpgme_error_t
-_uiserver_decrypt (void *engine, int verify,
-		   gpgme_data_t ciph, gpgme_data_t plain,
-                   int export_session_key, const char *override_session_key)
+uiserver_decrypt (void *engine,
+                  gpgme_decrypt_flags_t flags,
+                  gpgme_data_t ciph, gpgme_data_t plain,
+                  int export_session_key, const char *override_session_key)
 {
   engine_uiserver_t uiserver = engine;
   gpgme_error_t err;
   const char *protocol;
   char *cmd;
+  int verify = !!(flags & GPGME_DECRYPT_VERIFY);
 
   (void)override_session_key; /* Fixme: We need to see now to add this
                                * to the UI server protocol  */
@@ -1007,25 +1009,6 @@ _uiserver_decrypt (void *engine, int verify,
   err = start (engine, cmd);
   gpgrt_free (cmd);
   return err;
-}
-
-
-static gpgme_error_t
-uiserver_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain,
-                  int export_session_key, const char *override_session_key)
-{
-  return _uiserver_decrypt (engine, 0, ciph, plain,
-                            export_session_key, override_session_key);
-}
-
-
-static gpgme_error_t
-uiserver_decrypt_verify (void *engine, gpgme_data_t ciph, gpgme_data_t plain,
-                         int export_session_key,
-                         const char *override_session_key)
-{
-  return _uiserver_decrypt (engine, 1, ciph, plain,
-                            export_session_key, override_session_key);
 }
 
 
@@ -1383,7 +1366,6 @@ struct engine_ops _gpgme_engine_ops_uiserver =
     uiserver_set_locale,
     uiserver_set_protocol,
     uiserver_decrypt,
-    uiserver_decrypt_verify,
     NULL,		/* delete */
     NULL,		/* edit */
     uiserver_encrypt,

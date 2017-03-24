@@ -776,7 +776,6 @@ struct engine_ops _gpgme_engine_ops_assuan =
     llass_set_locale,
     NULL,		/* set_protocol */
     NULL,               /* decrypt */
-    NULL,               /* decrypt_verify */
     NULL,               /* delete */
     NULL,		/* edit */
     NULL,               /* encrypt */

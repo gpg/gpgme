@@ -14,7 +14,12 @@ Noteworthy changes in version 1.8.1 (unreleased)
  gpgme_op_keylist_from_data_start NEW.
  gpgme_op_set_uid_flag_start      NEW.
  gpgme_op_set_uid_flag            NEW.
+ gpgme_op_decrypt_ext_start       NEW.
+ gpgme_op_decrypt_ext             NEW.
  GPGME_ENCRYPT_THROW_KEYIDS       NEW.
+ GPGME_ENCRYPT_WRAP               NEW.
+ GPGME_DECRYPT_VERIFY             NEW.
+ GPGME_DECRYPT_UNWRAP             NEW.
  gpgme_data_rewind                UN-DEPRECATE.
  cpp: Context::revUid(const Key&, const char*)      NEW.
  cpp: Context::startRevUid(const Key&, const char*) NEW.

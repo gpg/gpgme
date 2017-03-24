@@ -80,6 +80,7 @@ show_usage (int ex)
          "  --cms            use the CMS protocol\n"
          "  --export-session-key            show the session key\n"
          "  --override-session-key STRING   use STRING as session key\n"
+         "  --unwrap         remove only the encryption layer\n"
          , stderr);
   exit (ex);
 }
@@ -92,6 +93,7 @@ main (int argc, char **argv)
   gpgme_error_t err;
   gpgme_ctx_t ctx;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
+  gpgme_decrypt_flags_t flags = 0;
   FILE *fp_in = NULL;
   gpgme_data_t in = NULL;
   gpgme_data_t out = NULL;
@@ -99,6 +101,7 @@ main (int argc, char **argv)
   int print_status = 0;
   int export_session_key = 0;
   const char *override_session_key = NULL;
+  int raw_output = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -144,6 +147,12 @@ main (int argc, char **argv)
           if (!argc)
             show_usage (1);
           override_session_key = *argv;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--unwrap"))
+        {
+          flags |= GPGME_DECRYPT_UNWRAP;
+          raw_output = 1;
           argc--; argv++;
         }
       else if (!strncmp (*argv, "--", 2))
@@ -211,7 +220,7 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  err = gpgme_op_decrypt (ctx, in, out);
+  err = gpgme_op_decrypt_ext (ctx, flags, in, out);
   result = gpgme_op_decrypt_result (ctx);
   if (err)
     {
@@ -220,8 +229,13 @@ main (int argc, char **argv)
     }
   if (result)
     {
-      print_result (result);
+      if (!raw_output)
+        print_result (result);
+      if (!raw_output)
+        fputs ("Begin Output:\n", stdout);
       print_data (out);
+      if (!raw_output)
+        fputs ("End Output.\n", stdout);
     }
 
   gpgme_data_release (out);

@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "debug.h"
 #include "gpgme.h"
@@ -358,11 +359,14 @@ _gpgme_op_decrypt_init_result (gpgme_ctx_t ctx)
 }
 
 
-static gpgme_error_t
-decrypt_start (gpgme_ctx_t ctx, int synchronous,
-               gpgme_data_t cipher, gpgme_data_t plain)
+gpgme_error_t
+_gpgme_decrypt_start (gpgme_ctx_t ctx, int synchronous,
+                      gpgme_decrypt_flags_t flags,
+                      gpgme_data_t cipher, gpgme_data_t plain)
 {
   gpgme_error_t err;
+
+  assert (!(flags & GPGME_DECRYPT_VERIFY));
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -390,7 +394,9 @@ decrypt_start (gpgme_ctx_t ctx, int synchronous,
 
   _gpgme_engine_set_status_handler (ctx->engine, decrypt_status_handler, ctx);
 
-  return _gpgme_engine_op_decrypt (ctx->engine, cipher, plain,
+  return _gpgme_engine_op_decrypt (ctx->engine,
+                                   flags,
+                                   cipher, plain,
                                    ctx->export_session_keys,
                                    ctx->override_session_key);
 }
@@ -408,7 +414,7 @@ gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = decrypt_start (ctx, 0, cipher, plain);
+  err = _gpgme_decrypt_start (ctx, 0, 0, cipher, plain);
   return TRACE_ERR (err);
 }
 
@@ -426,7 +432,7 @@ gpgme_op_decrypt (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = decrypt_start (ctx, 1, cipher, plain);
+  err = _gpgme_decrypt_start (ctx, 1, 0, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return TRACE_ERR (err);

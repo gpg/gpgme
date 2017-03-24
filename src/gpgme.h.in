@@ -1238,7 +1238,8 @@ typedef enum
     GPGME_ENCRYPT_EXPECT_SIGN = 8,
     GPGME_ENCRYPT_NO_COMPRESS = 16,
     GPGME_ENCRYPT_SYMMETRIC = 32,
-    GPGME_ENCRYPT_THROW_KEYIDS = 64
+    GPGME_ENCRYPT_THROW_KEYIDS = 64,
+    GPGME_ENCRYPT_WRAP = 128
   }
 gpgme_encrypt_flags_t;
 
@@ -1317,6 +1318,14 @@ typedef struct _gpgme_op_decrypt_result *gpgme_decrypt_result_t;
 /* Retrieve a pointer to the result of the decrypt operation.  */
 gpgme_decrypt_result_t gpgme_op_decrypt_result (gpgme_ctx_t ctx);
 
+/* The valid decryption flags.  */
+typedef enum
+  {
+    GPGME_DECRYPT_VERIFY = 1,
+    GPGME_DECRYPT_UNWRAP = 128
+  }
+gpgme_decrypt_flags_t;
+
 /* Decrypt ciphertext CIPHER within CTX and store the resulting
    plaintext in PLAIN.  */
 gpgme_error_t gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
@@ -1331,6 +1340,19 @@ gpgme_error_t gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx,
 					     gpgme_data_t plain);
 gpgme_error_t gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher,
 				       gpgme_data_t plain);
+
+/* Decrypt ciphertext CIPHER within CTX and store the resulting
+ * plaintext in PLAIN.  With the flag GPGME_DECRYPT_VERIFY also do a
+ * signature verification pn the plaintext.  */
+gpgme_error_t gpgme_op_decrypt_ext_start (gpgme_ctx_t ctx,
+                                          gpgme_decrypt_flags_t flags,
+                                          gpgme_data_t cipher,
+                                          gpgme_data_t plain);
+gpgme_error_t gpgme_op_decrypt_ext (gpgme_ctx_t ctx,
+                                    gpgme_decrypt_flags_t flags,
+                                    gpgme_data_t cipher,
+                                    gpgme_data_t plain);
+
 
 
 /*

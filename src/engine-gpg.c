@@ -1559,13 +1559,23 @@ add_input_size_hint (engine_gpg_t gpg, gpgme_data_t data)
 
 
 static gpgme_error_t
-gpg_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain,
+gpg_decrypt (void *engine,
+             gpgme_decrypt_flags_t flags,
+             gpgme_data_t ciph, gpgme_data_t plain,
              int export_session_key, const char *override_session_key)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
   err = add_arg (gpg, "--decrypt");
+
+  if (!err && (flags & GPGME_DECRYPT_UNWRAP))
+    {
+      if (!have_gpg_version (gpg, "2.1.12"))
+        err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      else
+        err = add_arg (gpg, "--unwrap");
+    }
 
   if (!err && export_session_key)
     err = add_arg (gpg, "--show-session-key");
@@ -1856,6 +1866,17 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 
   if (!err && use_armor)
     err = add_arg (gpg, "--armor");
+
+  if (!err && (flags & GPGME_ENCRYPT_WRAP))
+    {
+      /* gpg is current not abale to detect already compressed
+       * packets.  Thus when using
+       *   gpg --unwrap -d | gpg --no-literal -e
+       * the encryption would add an additional compression layer.
+       * We better suppress that.  */
+      flags |= GPGME_ENCRYPT_NO_COMPRESS;
+      err = add_arg (gpg, "--no-literal");
+    }
 
   if (!err && (flags & GPGME_ENCRYPT_NO_COMPRESS))
     err = add_arg (gpg, "--compress-algo=none");
@@ -3047,7 +3068,6 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_set_locale,
     NULL,				/* set_protocol */
     gpg_decrypt,
-    gpg_decrypt,			/* decrypt_verify */
     gpg_delete,
     gpg_edit,
     gpg_encrypt,

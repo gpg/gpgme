@@ -61,12 +61,11 @@ struct engine_ops
 					   void *fnc_value);
   gpgme_error_t (*set_locale) (void *engine, int category, const char *value);
   gpgme_error_t (*set_protocol) (void *engine, gpgme_protocol_t protocol);
-  gpgme_error_t (*decrypt) (void *engine, gpgme_data_t ciph,
+  gpgme_error_t (*decrypt) (void *engine,
+                            gpgme_decrypt_flags_t flags,
+                            gpgme_data_t ciph,
 			    gpgme_data_t plain, int export_session_key,
                             const char *override_session_key);
-  gpgme_error_t (*decrypt_verify) (void *engine, gpgme_data_t ciph,
-				   gpgme_data_t plain, int export_session_key,
-                                   const char *override_session_key);
   gpgme_error_t (*delete) (void *engine, gpgme_key_t key, int allow_secret);
   gpgme_error_t (*edit) (void *engine, int type, gpgme_key_t key,
 			 gpgme_data_t out, gpgme_ctx_t ctx /* FIXME */);

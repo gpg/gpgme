@@ -129,6 +129,9 @@ GPGME_1.1 {
 
     gpgme_op_set_uid_flag_start;
     gpgme_op_set_uid_flag;
+
+    gpgme_op_decrypt_ext;
+    gpgme_op_decrypt_ext_start;
 };
 
 

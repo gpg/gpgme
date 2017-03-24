@@ -23,6 +23,8 @@
 #include <config.h>
 #endif
 
+#include <assert.h>
+
 #include "debug.h"
 #include "gpgme.h"
 #include "ops.h"
@@ -45,9 +47,12 @@ decrypt_verify_status_handler (void *priv, gpgme_status_code_t code,
 
 static gpgme_error_t
 decrypt_verify_start (gpgme_ctx_t ctx, int synchronous,
+                      gpgme_decrypt_flags_t flags,
 		      gpgme_data_t cipher, gpgme_data_t plain)
 {
   gpgme_error_t err;
+
+  assert ((flags & GPGME_DECRYPT_VERIFY));
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -77,9 +82,11 @@ decrypt_verify_start (gpgme_ctx_t ctx, int synchronous,
   _gpgme_engine_set_status_handler (ctx->engine,
 				    decrypt_verify_status_handler, ctx);
 
-  return _gpgme_engine_op_decrypt_verify (ctx->engine, cipher, plain,
-                                          ctx->export_session_keys,
-                                          ctx->override_session_key);
+  return _gpgme_engine_op_decrypt (ctx->engine,
+                                   flags,
+                                   cipher, plain,
+                                   ctx->export_session_keys,
+                                   ctx->override_session_key);
 }
 
 
@@ -97,7 +104,7 @@ gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = decrypt_verify_start (ctx, 0, cipher, plain);
+  err = decrypt_verify_start (ctx, 0, GPGME_DECRYPT_VERIFY, cipher, plain);
   return TRACE_ERR (err);
 }
 
@@ -116,7 +123,57 @@ gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher,
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = decrypt_verify_start (ctx, 1, cipher, plain);
+  err = decrypt_verify_start (ctx, 1, GPGME_DECRYPT_VERIFY, cipher, plain);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  return TRACE_ERR (err);
+}
+
+
+/* Decrypt ciphertext CIPHER within CTX and store the resulting
+   plaintext in PLAIN.  */
+gpgme_error_t
+gpgme_op_decrypt_ext_start (gpgme_ctx_t ctx,
+                            gpgme_decrypt_flags_t flags,
+                            gpgme_data_t cipher,
+                            gpgme_data_t plain)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_ext_start", ctx,
+	      "cipher=%p, plain=%p", cipher, plain);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  if ((flags & GPGME_DECRYPT_VERIFY))
+    err = decrypt_verify_start (ctx, 0, flags, cipher, plain);
+  else
+    err = _gpgme_decrypt_start (ctx, 0, flags, cipher, plain);
+  return TRACE_ERR (err);
+}
+
+
+/* Decrypt ciphertext CIPHER within CTX and store the resulting
+   plaintext in PLAIN.  */
+gpgme_error_t
+gpgme_op_decrypt_ext (gpgme_ctx_t ctx,
+                      gpgme_decrypt_flags_t flags,
+                      gpgme_data_t cipher,
+                      gpgme_data_t plain)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_ext", ctx,
+	      "cipher=%p, plain=%p", cipher, plain);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  if ((flags & GPGME_DECRYPT_VERIFY))
+    err = decrypt_verify_start (ctx, 1, flags, cipher, plain);
+  else
+    err = _gpgme_decrypt_start (ctx, 1, flags, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return TRACE_ERR (err);

@@ -1127,11 +1127,15 @@ gpgsm_reset (void *engine)
 
 
 static gpgme_error_t
-gpgsm_decrypt (void *engine, gpgme_data_t ciph, gpgme_data_t plain,
+gpgsm_decrypt (void *engine,
+               gpgme_decrypt_flags_t flags,
+               gpgme_data_t ciph, gpgme_data_t plain,
                int export_session_key, const char *override_session_key)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
+
+  (void)flags;
 
   /* gpgsm is not capable of exporting session keys right now, so we
    * will ignore this if requested. */
@@ -2094,7 +2098,6 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_set_colon_line_handler,
     gpgsm_set_locale,
     NULL,		/* set_protocol */
-    gpgsm_decrypt,
     gpgsm_decrypt,
     gpgsm_delete,	/* decrypt_verify */
     NULL,		/* edit */

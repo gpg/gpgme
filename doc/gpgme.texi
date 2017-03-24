@@ -4890,6 +4890,53 @@ operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
 if @var{cipher} or @var{plain} is not a valid pointer.
 @end deftypefun
 
+
+@deftypefun gpgme_error_t gpgme_op_decrypt_ext ( @
+            @w{gpgme_ctx_t @var{ctx}}, @
+            @w{gpgme_decrypt_flags_t @var{flags}}, @
+            @w{gpgme_data_t @var{cipher}}, @
+            @w{gpgme_data_t @var{plain}})
+
+The function @code{gpgme_op_decrypt_ext} is the same as
+@code{gpgme_op_decrypt_ext} but has an additional argument
+@var{flags}.  If @var{flags} is 0 both function behave identically.
+
+The value in @var{flags} is a bitwise-or combination of one or
+multiple of the following bit values:
+
+@table @code
+@item GPGME_DECRYPT_VERIFY
+The @code{GPGME_DECRYPT_VERIFY} symbol specifies that this function
+shall exacty act as @code{gpgme_op_decrypt_verify}.
+
+@item GPGME_DECRYPT_UNWRAP
+The @code{GPGME_DECRYPT_UNWRAP} symbol specifies that the output shall
+be an OpenPGP message with only the encryption layer removed.  This
+requires GnuPG 2.1.12 and works only for OpenPGP.  This is the
+counterpart to @code{GPGME_ENCRYPT_WRAP}.
+
+@end table
+
+The function returns the error codes as descriped for
+@code{gpgme_op_decrypt} respective @code{gpgme_op_encrypt}.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_decrypt_ext_start ( @
+            @w{gpgme_ctx_t @var{ctx}}, @
+            @w{gpgme_decrypt_flags_t @var{flags}}, @
+            @w{gpgme_data_t @var{cipher}}, @
+            @w{gpgme_data_t @var{plain}})
+
+The function @code{gpgme_op_decrypt_ext_start} initiates a
+@code{gpgme_op_decrypt_ext} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
+if @var{cipher} or @var{plain} is not a valid pointer.
+@end deftypefun
+
+
 @deftp {Data type} {gpgme_recipient_t}
 This is a pointer to a structure used to store information about the
 recipient of an encrypted text which is decrypted in a
@@ -5633,6 +5680,11 @@ identifiers for the decrption keys are not included in the ciphertext.
 On the receiving side, the use of this flag may slow down the
 decryption process because all available secret keys must be tried.
 This flag is only honored for OpenPGP encryption.
+
+@item GPGME_ENCRYPT_WRAP
+The @code{GPGME_ENCRYPT_WRAP} symbol specifies that the input is an
+OpenPGP message and not a plain data.  This is the counterpart to
+@code{GPGME_DECRYPT_UNWRAP}.
 
 @end table
 

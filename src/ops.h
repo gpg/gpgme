@@ -89,6 +89,9 @@ gpgme_error_t _gpgme_op_decrypt_init_result (gpgme_ctx_t ctx);
 gpgme_error_t _gpgme_decrypt_status_handler (void *priv,
 					     gpgme_status_code_t code,
 					     char *args);
+gpgme_error_t _gpgme_decrypt_start (gpgme_ctx_t ctx, int synchronous,
+                                    gpgme_decrypt_flags_t flags,
+                                    gpgme_data_t cipher, gpgme_data_t plain);
 
 
 /* From signers.c.  */

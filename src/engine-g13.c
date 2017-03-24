@@ -791,7 +791,6 @@ struct engine_ops _gpgme_engine_ops_g13 =
     g13_set_locale,
     NULL,		/* set_protocol */
     NULL,               /* decrypt */
-    NULL,               /* decrypt_verify */
     NULL,               /* delete */
     NULL,		/* edit */
     NULL,               /* encrypt */

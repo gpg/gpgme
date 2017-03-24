@@ -652,7 +652,9 @@ _gpgme_engine_set_protocol (engine_t engine, gpgme_protocol_t protocol)
 
 
 gpgme_error_t
-_gpgme_engine_op_decrypt (engine_t engine, gpgme_data_t ciph,
+_gpgme_engine_op_decrypt (engine_t engine,
+                          gpgme_decrypt_flags_t flags,
+                          gpgme_data_t ciph,
 			  gpgme_data_t plain, int export_session_key,
                           const char *override_session_key)
 {
@@ -662,25 +664,8 @@ _gpgme_engine_op_decrypt (engine_t engine, gpgme_data_t ciph,
   if (!engine->ops->decrypt)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->decrypt) (engine->engine, ciph, plain,
+  return (*engine->ops->decrypt) (engine->engine, flags, ciph, plain,
                                   export_session_key, override_session_key);
-}
-
-
-gpgme_error_t
-_gpgme_engine_op_decrypt_verify (engine_t engine, gpgme_data_t ciph,
-				 gpgme_data_t plain, int export_session_key,
-                                 const char *override_session_key)
-{
-  if (!engine)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  if (!engine->ops->decrypt_verify)
-    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-
-  return (*engine->ops->decrypt_verify) (engine->engine, ciph, plain,
-                                         export_session_key,
-                                         override_session_key);
 }
 
 

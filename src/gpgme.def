@@ -259,5 +259,8 @@ EXPORTS
     gpgme_op_set_uid_flag_start           @193
     gpgme_op_set_uid_flag                 @194
 
+    gpgme_op_decrypt_ext                  @195
+    gpgme_op_decrypt_ext_start            @196
+
 ; END
 
