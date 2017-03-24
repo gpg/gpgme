@@ -39,6 +39,8 @@
 #include <QBuffer>
 #include "keylistjob.h"
 #include "encryptjob.h"
+#include "signencryptjob.h"
+#include "signingresult.h"
 #include "qgpgmeencryptjob.h"
 #include "encryptionresult.h"
 #include "decryptionresult.h"
@@ -46,6 +48,7 @@
 #include "qgpgmebackend.h"
 #include "keylistresult.h"
 #include "engineinfo.h"
+#include "verifyopaquejob.h"
 #include "t-support.h"
 
 #define PROGRESS_TEST_SIZE 1 * 1024 * 1024
@@ -109,7 +112,7 @@ private Q_SLOTS:
         auto decJob = new QGpgMEDecryptJob(ctx);
         QByteArray plainText;
         auto decResult = decJob->exec(cipherText, plainText);
-        QVERIFY(!result.error());
+        QVERIFY(!decResult.error());
         QVERIFY(QString::fromUtf8(plainText) == QStringLiteral("Hello World"));
         delete decJob;
     }
@@ -198,6 +201,68 @@ private Q_SLOTS:
         QVERIFY(!result.error());
         QVERIFY(QString::fromUtf8(plainText) == QStringLiteral("Hello symmetric World"));
         delete decJob;
+    }
+
+    void testEncryptDecryptNowrap()
+    {
+        /* Now decrypt */
+        if (!decryptSupported()) {
+            return;
+        }
+        auto listjob = openpgp()->keyListJob(false, false, false);
+        std::vector<Key> keys;
+        auto keylistresult = listjob->exec(QStringList() << QStringLiteral("alfa@example.net"),
+                                          false, keys);
+        QVERIFY(!keylistresult.error());
+        QVERIFY(keys.size() == 1);
+        delete listjob;
+
+        auto job = openpgp()->signEncryptJob(/*ASCII Armor */true, /* Textmode */ true);
+
+        auto encSignCtx = Job::context(job);
+        TestPassphraseProvider provider1;
+        encSignCtx->setPassphraseProvider(&provider1);
+        encSignCtx->setPinentryMode(Context::PinentryLoopback);
+
+        QVERIFY(job);
+        QByteArray cipherText;
+        auto result = job->exec(keys, keys, QStringLiteral("Hello World").toUtf8(), Context::AlwaysTrust, cipherText);
+        delete job;
+        QVERIFY(!result.first.error());
+        QVERIFY(!result.second.error());
+        const auto cipherString = QString::fromUtf8(cipherText);
+        QVERIFY(cipherString.startsWith("-----BEGIN PGP MESSAGE-----"));
+
+        /* Now decrypt */
+        if (!decryptSupported()) {
+            return;
+        }
+        auto ctx = Context::createForProtocol(OpenPGP);
+        TestPassphraseProvider provider;
+        ctx->setPassphraseProvider(&provider);
+        ctx->setPinentryMode(Context::PinentryLoopback);
+        ctx->setDecryptionFlags(Context::DecryptUnwrap);
+
+        auto decJob = new QGpgMEDecryptJob(ctx);
+        QByteArray plainText;
+        auto decResult = decJob->exec(cipherText, plainText);
+
+        QVERIFY(!decResult.error());
+
+        delete decJob;
+
+        // Now verify the unwrapeped data.
+        auto verifyJob = openpgp()->verifyOpaqueJob(true);
+        QByteArray verified;
+
+        auto verResult = verifyJob->exec(plainText, verified);
+        QVERIFY(!verResult.error());
+        delete verifyJob;
+
+        QVERIFY(verResult.numSignatures() == 1);
+        auto sig = verResult.signatures()[0];
+
+        QVERIFY(verified == QStringLiteral("Hello World"));
     }
 
 private:
