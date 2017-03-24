@@ -261,14 +261,28 @@ public:
     //
     // Crypto Operations
     //
-    //
+
+    enum DecryptionFlags {
+        // Keep in line with core's flags
+        DecryptNone = 0,
+        DecryptVerify = 1,
+        DecryptUnwrap = 128,
+        DecryptMaxValue = 0x80000000
+    };
 
     //
     // Decryption
     //
 
+    // Alternative way to set decryption flags as they were added only in
+    // 1.9.0 and so other API can still be used but with 1.9.0 additionally
+    // flags can be set.
+    void setDecryptionFlags (const DecryptionFlags flags);
+
     DecryptionResult decrypt(const Data &cipherText, Data &plainText);
     GpgME::Error startDecryption(const Data &cipherText, Data &plainText);
+    DecryptionResult decrypt(const Data &cipherText, Data &plainText, const DecryptionFlags flags);
+    GpgME::Error startDecryption(const Data &cipherText, Data &plainText, const DecryptionFlags flags);
     DecryptionResult decryptionResult() const;
 
     //
@@ -286,7 +300,9 @@ public:
     //
 
     std::pair<DecryptionResult, VerificationResult> decryptAndVerify(const Data &cipherText, Data &plainText);
+    std::pair<DecryptionResult, VerificationResult> decryptAndVerify(const Data &cipherText, Data &plainText, const DecryptionFlags flags);
     GpgME::Error startCombinedDecryptionAndVerification(const Data &cipherText, Data &plainText);
+    GpgME::Error startCombinedDecryptionAndVerification(const Data &cipherText, Data &plainText, const DecryptionFlags flags);
     // use verificationResult() and decryptionResult() to retrieve the result objects...
 
     //
@@ -325,7 +341,9 @@ public:
         Prepare = 4,
         ExpectSign = 8,
         NoCompress = 16,
-        Symmetric = 32
+        Symmetric = 32,
+        ThrowKeyIds = 64,
+        EncryptWrap = 128
     };
     EncryptionResult encrypt(const std::vector<Key> &recipients, const Data &plainText, Data &cipherText, EncryptionFlags flags);
     GpgME::Error encryptSymmetrically(const Data &plainText, Data &cipherText);

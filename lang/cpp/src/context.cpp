@@ -280,6 +280,11 @@ std::unique_ptr<Context> Context::createForEngine(Engine eng, Error *error)
     return std::unique_ptr<Context>(new Context(ctx));
 }
 
+void Context::setDecryptionFlags(DecryptionFlags flags)
+{
+    d->decryptFlags = flags;
+}
+
 //
 //
 // Context::Private
@@ -294,7 +299,8 @@ Context::Private::Private(gpgme_ctx_t c)
       lastAssuanInquireData(Data::null),
       lastAssuanTransaction(),
       lastEditInteractor(),
-      lastCardEditInteractor()
+      lastCardEditInteractor(),
+      decryptFlags(DecryptNone)
 {
 
 }
@@ -904,21 +910,32 @@ std::unique_ptr<AssuanTransaction> Context::takeLastAssuanTransaction()
     return std::move(d->lastAssuanTransaction);
 }
 
-DecryptionResult Context::decrypt(const Data &cipherText, Data &plainText)
+DecryptionResult Context::decrypt(const Data &cipherText, Data &plainText, const DecryptionFlags flags)
 {
     d->lastop = Private::Decrypt;
     const Data::Private *const cdp = cipherText.impl();
     Data::Private *const pdp = plainText.impl();
-    d->lasterr = gpgme_op_decrypt(d->ctx, cdp ? cdp->data : 0, pdp ? pdp->data : 0);
+    d->lasterr = gpgme_op_decrypt_ext(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags), cdp ? cdp->data : 0, pdp ? pdp->data : 0);
     return DecryptionResult(d->ctx, Error(d->lasterr));
+}
+
+DecryptionResult Context::decrypt(const Data &cipherText, Data &plainText)
+{
+    return decrypt(cipherText, plainText, DecryptNone);
+}
+
+Error Context::startDecryption(const Data &cipherText, Data &plainText, const DecryptionFlags flags)
+{
+    d->lastop = Private::Decrypt;
+    const Data::Private *const cdp = cipherText.impl();
+    Data::Private *const pdp = plainText.impl();
+    return Error(d->lasterr = gpgme_op_decrypt_ext_start(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags),
+                 cdp ? cdp->data : 0, pdp ? pdp->data : 0));
 }
 
 Error Context::startDecryption(const Data &cipherText, Data &plainText)
 {
-    d->lastop = Private::Decrypt;
-    const Data::Private *const cdp = cipherText.impl();
-    Data::Private *const pdp = plainText.impl();
-    return Error(d->lasterr = gpgme_op_decrypt_start(d->ctx, cdp ? cdp->data : 0, pdp ? pdp->data : 0));
+    return startDecryption(cipherText, plainText, DecryptNone);
 }
 
 DecryptionResult Context::decryptionResult() const
@@ -973,22 +990,33 @@ VerificationResult Context::verificationResult() const
     }
 }
 
-std::pair<DecryptionResult, VerificationResult> Context::decryptAndVerify(const Data &cipherText, Data &plainText)
+std::pair<DecryptionResult, VerificationResult> Context::decryptAndVerify(const Data &cipherText, Data &plainText, DecryptionFlags flags)
 {
     d->lastop = Private::DecryptAndVerify;
     const Data::Private *const cdp = cipherText.impl();
     Data::Private *const pdp = plainText.impl();
-    d->lasterr = gpgme_op_decrypt_verify(d->ctx, cdp ? cdp->data : 0, pdp ? pdp->data : 0);
+    d->lasterr = gpgme_op_decrypt_ext(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags | DecryptVerify),
+                                      cdp ? cdp->data : 0, pdp ? pdp->data : 0);
     return std::make_pair(DecryptionResult(d->ctx, Error(d->lasterr)),
                           VerificationResult(d->ctx, Error(d->lasterr)));
 }
 
-Error Context::startCombinedDecryptionAndVerification(const Data &cipherText, Data &plainText)
+std::pair<DecryptionResult, VerificationResult> Context::decryptAndVerify(const Data &cipherText, Data &plainText)
+{
+    return decryptAndVerify(cipherText, plainText, DecryptNone);
+}
+
+Error Context::startCombinedDecryptionAndVerification(const Data &cipherText, Data &plainText, DecryptionFlags flags)
 {
     d->lastop = Private::DecryptAndVerify;
     const Data::Private *const cdp = cipherText.impl();
     Data::Private *const pdp = plainText.impl();
-    return Error(d->lasterr = gpgme_op_decrypt_verify_start(d->ctx, cdp ? cdp->data : 0, pdp ? pdp->data : 0));
+    return Error(d->lasterr = gpgme_op_decrypt_ext_start(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags | DecryptVerify), cdp ? cdp->data : 0, pdp ? pdp->data : 0));
+}
+
+Error Context::startCombinedDecryptionAndVerification(const Data &cipherText, Data &plainText)
+{
+    return startCombinedDecryptionAndVerification(cipherText, plainText, DecryptNone);
 }
 
 unsigned int to_auditlog_flags(unsigned int flags)

@@ -77,6 +77,7 @@ public:
     Data lastAssuanInquireData;
     std::unique_ptr<AssuanTransaction> lastAssuanTransaction;
     std::unique_ptr<EditInteractor> lastEditInteractor, lastCardEditInteractor;
+    DecryptionFlags decryptFlags;
 };
 
 } // namespace GpgME
