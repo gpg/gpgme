@@ -32,8 +32,13 @@ def assert_gpg_version(version=(2, 1, 0)):
         clean_version = re.match(r'\d+\.\d+\.\d+', c.engine_info.version).group(0)
         if tuple(map(int, clean_version.split('.'))) < version:
             print("GnuPG too old: have {0}, need {1}.".format(
-                c.engine_info.version, '.'.join(version)))
+                c.engine_info.version, '.'.join(map(str, version))))
             sys.exit(77)
+
+# Skip the Python tests for GnuPG < 2.1.12.  Prior versions do not
+# understand the command line flags that we assume exist.  C.f. issue
+# 3008.
+assert_gpg_version((2, 1, 12))
 
 # known keys
 alpha = "A0FF4590BB6122EDEF6E3C542D727CC768697734"
