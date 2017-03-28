@@ -1,7 +1,7 @@
                        GPGME - GnuPG Made Easy
                      ---------------------------
 
-                  Copyright 2001-2016 g10 Code GmbH
+Copyright 2001-2017 g10 Code GmbH
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
@@ -70,7 +70,7 @@ a) If you have a trusted Version of GnuPG installed, you can simply check
    indeed a a signature of gpgme-x.y.z.tar.gz.  The key used to create
    this signature is either of:
 
-     2048R/4F25E3B6 2011-01-12 [expires: 2019-12-31]
+     rsa2048/4F25E3B6 2011-01-12 [expires: 2019-12-31]
      Key fingerprint = D869 2123 C406 5DEA 5E0F  3AB5 249B 39D2 4F25 E3B6
      Werner Koch (dist sig)
 
@@ -86,10 +86,14 @@ a) If you have a trusted Version of GnuPG installed, you can simply check
      Key fingerprint = D238 EA65 D64C 67ED 4C30  73F2 8A86 1B1C 7EFD 60D9
      Werner Koch (Release Signing Key)
 
+     rsa3072/4B092E28 2017-03-17 [expires: 2027-03-15]
+     Key fingerprint = 5B80 C575 4298 F0CB 55D8  ED6A BCEF 7E29 4B09 2E28
+     Andre Heinecke (Release Signing Key)
+
    You may retrieve these files from the keyservers using this command
 
      gpg --recv-keys 249B39D24F25E3B6 04376F3EE0856959 \
-                     2071B08A33BD3F06 8A861B1C7EFD60D9
+                     2071B08A33BD3F06 8A861B1C7EFD60D9 BCEF7E294B092E28
 
    The keys are also available at https://gnupg.org/signature_key.html
    and in released GnuPG tarballs in the file g10/distsigkey.gpg .
