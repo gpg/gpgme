@@ -44,17 +44,22 @@ COPY_FILES_GPG = \
 	$(srcdir)/gpg/results.py \
 	$(srcdir)/gpg/util.py
 
+.PHONY: prepare
+prepare:
+	test -n "$(PREPAREDIR)"
+	$(MKDIR_P)              "$(PREPAREDIR)/gpg"
+	cp -R $(COPY_FILES)     "$(PREPAREDIR)"
+	cp setup.py             "$(PREPAREDIR)"
+	cp gpg/version.py       "$(PREPAREDIR)/gpg"
+	ln -sf "$(abs_top_srcdir)/src/data.h" "$(PREPAREDIR)"
+	ln -sf "$(abs_top_builddir)/config.h" "$(PREPAREDIR)"
+	cp -R $(COPY_FILES_GPG) "$(PREPAREDIR)/gpg"
+
 # For VPATH builds we need to copy some files because Python's
 # distutils are not VPATH-aware.
 copystamp: $(COPY_FILES) $(COPY_FILES_GPG)
 	set -e ; for VERSION in $(PYTHON_VERSIONS); do \
-	  $(MKDIR_P)              python$${VERSION}-gpg/gpg ; \
-	  cp -R $(COPY_FILES)     python$${VERSION}-gpg ; \
-	  cp setup.py             python$${VERSION}-gpg ; \
-	  cp gpg/version.py       python$${VERSION}-gpg/gpg ; \
-	  ln -sf "$(abs_top_srcdir)/src/data.h" python$${VERSION}-gpg ; \
-	  ln -sf "$(abs_top_builddir)/config.h" python$${VERSION}-gpg ; \
-	  cp -R $(COPY_FILES_GPG) python$${VERSION}-gpg/gpg ; \
+	  $(MAKE) PREPAREDIR=python$${VERSION}-gpg prepare; \
 	done
 	touch $@
 
@@ -63,6 +68,7 @@ all-local: copystamp
 	  PYTHON="$$1" ; shift ; \
 	  cd python$${VERSION}-gpg && \
 	  CFLAGS="$(CFLAGS)" \
+	  abs_top_builddir="$(abs_top_builddir)" \
 	    $$PYTHON setup.py build --verbose ; \
 	  cd .. ; \
 	done
@@ -71,11 +77,9 @@ python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz \
 python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc: copystamp
 	cd python$(PYTHON_VERSION)-gpg && \
 	CFLAGS="$(CFLAGS)" \
+	abs_top_builddir="$(abs_top_builddir)" \
 	  $(PYTHON) setup.py sdist --verbose
 	gpg2 --detach-sign --armor python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz
-
-.PHONY: prepare
-prepare: copystamp
 
 .PHONY: sdist
 sdist: python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz \
@@ -104,6 +108,7 @@ install-exec-local:
 	set -e ; set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
 	  PYTHON="$$1" ; shift ; \
 	  cd python$${VERSION}-gpg ; \
+	  abs_top_builddir="$(abs_top_builddir)" \
 	  $$PYTHON setup.py install \
 	  --prefix $(DESTDIR)$(prefix) \
 	  --record files.txt \
