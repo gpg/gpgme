@@ -31,15 +31,15 @@ noinst_HEADERS = t-support.h
 if HAVE_W32_SYSTEM
 tests_unix =
 else
-tests_unix = t-eventloop t-thread1
+tests_unix = t-eventloop t-thread1 t-thread-keylist t-thread-keylist-verify
 endif
 
 c_tests = \
         t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers		\
 	t-decrypt t-verify t-decrypt-verify t-sig-notation t-export	\
 	t-import t-trustlist t-edit t-keylist t-keylist-sig t-wait	\
-	t-encrypt-large t-file-name t-gpgconf t-encrypt-mixed $(tests_unix) \
-	t-thread-keylist t-thread-keylist-verify
+	t-encrypt-large t-file-name t-gpgconf t-encrypt-mixed \
+	$(tests_unix)
 
 TESTS = initial.test $(c_tests) final.test
 
