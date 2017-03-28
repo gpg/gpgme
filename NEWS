@@ -1,3 +1,7 @@
+Noteworthy changes in version 1.9.1 (unreleased)
+------------------------------------------------
+
+
 Noteworthy changes in version 1.9.0 (2017-03-28)
 ------------------------------------------------
 
@@ -45,7 +49,7 @@ Noteworthy changes in version 1.9.0 (2017-03-28)
  GPGME_ENCRYPT_WRAP               NEW.
  GPGME_DECRYPT_VERIFY             NEW.
  GPGME_DECRYPT_UNWRAP             NEW.
- gpgme_data_rewind                UN-DEPRECATE.
+o gpgme_data_rewind                UN-DEPRECATE.
  cpp: Context::revUid(const Key&, const char*)      NEW.
  cpp: Context::startRevUid(const Key&, const char*) NEW.
  cpp: Context::addUid(const Key&, const char*)      NEW.
