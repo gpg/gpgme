@@ -3078,6 +3078,9 @@ be true even if the corresponding subkey flag may be false
 (offline/stub keys).  This is only set if a listing of secret keys has
 been requested or if @code{GPGME_KEYLIST_MODE_WITH_SECRET} is active.
 
+@item unsigned int origin : 5
+Reserved for the origin of this key.
+
 @item gpgme_protocol_t protocol
 This is the protocol supported by this key.
 
@@ -3110,6 +3113,9 @@ This field gives the fingerprint of the primary key.  Note that
 this is a copy of the fingerprint of the first subkey.  For an
 incomplete key (for example from a verification result) a subkey may
 be missing but this field may be set nevertheless.
+
+@item unsigned long last_update
+Reserved for the time of the last update of this key.
 
 @end table
 @end deftp
@@ -3255,6 +3261,13 @@ this user id.
 
 @item gpgme_key_sig_t signatures
 This is a linked list with the signatures on this user ID.
+
+@item unsigned int origin : 5
+Reserved for the origin of this user ID.
+
+@item unsigned long last_update
+Reserved for the time of the last update of this user ID.
+
 @end table
 @end deftp
 

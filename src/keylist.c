@@ -552,7 +552,7 @@ keylist_colon_handler (void *priv, char *line)
       RT_SSB, RT_SEC, RT_CRT, RT_CRS, RT_REV, RT_SPK
     }
   rectype = RT_NONE;
-#define NR_FIELDS 18
+#define NR_FIELDS 20
   char *field[NR_FIELDS];
   int fields = 0;
   void *hook;
@@ -733,6 +733,12 @@ keylist_colon_handler (void *priv, char *line)
       if (fields >= 17 && *field[17])
         parse_pub_field18 (subkey, field[17]);
 
+      if (fields >= 20)
+        {
+          key->last_update = _gpgme_parse_timestamp_ul (field[18]);
+          key->origin = 0; /* Fixme: Not yet defined in gpg.  */
+        }
+
       break;
 
     case RT_SUB:
@@ -818,12 +824,15 @@ keylist_colon_handler (void *priv, char *line)
 	{
 	  if (_gpgme_key_append_name (key, field[9], 1))
 	    return gpg_error (GPG_ERR_ENOMEM);	/* FIXME */
-	  else
-	    {
-	      if (field[1])
-		set_userid_flags (key, field[1]);
-	      opd->tmp_uid = key->_last_uid;
-	    }
+
+          if (field[1])
+            set_userid_flags (key, field[1]);
+          opd->tmp_uid = key->_last_uid;
+          if (fields >= 20)
+            {
+              opd->tmp_uid->last_update = _gpgme_parse_timestamp_ul (field[18]);
+              opd->tmp_uid->origin = 0; /* Fixme: Not yet defined in gpg.  */
+            }
 	}
       break;
 

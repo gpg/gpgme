@@ -536,6 +536,25 @@ _gpgme_parse_timestamp (const char *timestamp, char **endp)
 }
 
 
+/* This function is similar to _gpgme_parse_timestamp but returns an
+ * unsigned long and 0 on error.  */
+unsigned long
+_gpgme_parse_timestamp_ul (const char *timestamp)
+{
+  time_t tim;
+  char *tail;
+
+  if (!*timestamp)
+    return 0; /* Shortcut empty strings.  */
+
+  tim = _gpgme_parse_timestamp (timestamp, &tail);
+  if (tim == -1 || timestamp == tail || (*tail && *tail != ' '))
+    tim = 0; /* No time given or invalid engine.  */
+
+  return (unsigned long)tim;
+}
+
+
 /* The GPG backend uses OpenPGP algorithm numbers which we need to map
    to our algorithm numbers.  This function MUST not change ERRNO. */
 int

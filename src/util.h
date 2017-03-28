@@ -165,6 +165,9 @@ gpgme_off_t _gpgme_string_to_off (const char *string);
    point to the next non-parsed character in TIMESTRING. */
 time_t _gpgme_parse_timestamp (const char *timestamp, char **endp);
 
+/* Variant of _gpgme_parse_timestamp to return an unsigned long or 0
+ * on error or missing timestamp.  */
+unsigned long _gpgme_parse_timestamp_ul (const char *timestamp);
 
 gpgme_error_t _gpgme_map_gnupg_error (char *err);
 

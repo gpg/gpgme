@@ -251,6 +251,7 @@ main (int argc, char **argv)
               key->is_qualified? " qualified":"",
               key->subkeys && key->subkeys->is_de_vs? " de-vs":"",
               key->subkeys && key->subkeys->is_cardkey? " cardkey":"");
+      printf ("upd     : %lu (%u)\n", key->last_update, key->origin);
 
       subkey = key->subkeys;
       if (subkey)
@@ -289,6 +290,7 @@ main (int argc, char **argv)
             printf ("    name: %s\n", uid->name);
           if (uid->comment)
             printf ("   cmmnt: %s\n", uid->comment);
+          printf ("     upd: %lu (%u)\n", uid->last_update, uid->origin);
           printf ("   valid: %s\n",
                   uid->validity == GPGME_VALIDITY_UNKNOWN? "unknown":
                   uid->validity == GPGME_VALIDITY_UNDEFINED? "undefined":

@@ -10,7 +10,11 @@ Noteworthy changes in version 1.8.1 (unreleased)
  gpgme_op_createkey          CHANGED: Meaning of 'expire' parameter.
  gpgme_op_createsubkey       CHANGED: Meaning of 'expire' parameter.
  GPGME_CREATE_NOEXPIRE       NEW.
+ gpgme_key_t                 EXTENDED: New field 'origin'.
+ gpgme_key_t                 EXTENDED: New field 'last_update'.
  gpgme_subkey_t              EXTENDED: New field 'is_de_vs'.
+ gpgme_user_id_t             EXTENDED: New field 'origin'.
+ gpgme_user_id_t             EXTENDED: New field 'last_update'.
  gpgme_op_keylist_from_data_start NEW.
  gpgme_op_set_uid_flag_start      NEW.
  gpgme_op_set_uid_flag            NEW.

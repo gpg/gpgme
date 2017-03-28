@@ -662,7 +662,10 @@ struct _gpgme_user_id
   unsigned int invalid : 1;
 
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 30;
+  unsigned int _unused : 25;
+
+  /* Origin of this user ID.  */
+  unsigned int origin : 5;
 
   /* The validity of the user ID.  */
   gpgme_validity_t validity;
@@ -693,6 +696,9 @@ struct _gpgme_user_id
 
   /* The malloced TOFU information or NULL.  */
   gpgme_tofu_info_t tofu;
+
+  /* Time of the last refresh of thsi user id.  0 if unknown.  */
+  unsigned long last_update;
 };
 typedef struct _gpgme_user_id *gpgme_user_id_t;
 
@@ -736,7 +742,10 @@ struct _gpgme_key
   unsigned int is_qualified : 1;
 
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 22;
+  unsigned int _unused : 17;
+
+  /* Origin of this key.  */
+  unsigned int origin : 5;
 
   /* This is the protocol supported by this key.  */
   gpgme_protocol_t protocol;
@@ -776,6 +785,9 @@ struct _gpgme_key
    * this is a copy of the FPR of the first subkey.  We need it here
    * to allow for an incomplete key object.  */
   char *fpr;
+
+  /* Time of the last refresh of the entire key.  0 if unknown.  */
+  unsigned long last_update;
 };
 typedef struct _gpgme_key *gpgme_key_t;
 
