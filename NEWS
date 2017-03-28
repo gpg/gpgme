@@ -1,9 +1,34 @@
-Noteworthy changes in version 1.8.1 (unreleased)
+Noteworthy changes in version 1.9.1 (unreleased)
 ------------------------------------------------
 
- * cpp: Support for adduid and revuid operations.
 
- * cpp: Support for smartcard key generation.
+Noteworthy changes in version 1.9.0 (2017-03-28)
+------------------------------------------------
+
+ * Clarified meaning of the 'expire' parameter of gpgme_op_createkey
+   and gpgme_op_createsubkey.  New flag to force a key without an
+   expiration date.
+
+ * New function gpgme_op_keylist_from_data_start to list keys from
+   data objects without importing them.
+
+ * New function gpgme_op_set_uid_flag to flag a key as primary.
+
+ * New function gpgme_op_decrypt_ext to run decryption with special
+   flags.  This can for example be used to unwrap keys (remove only
+   the encryption layer).
+
+ * New encryption flags to wrap a key (adding an encryption layer to
+   an OpenPGP message) or to create anonymously encrypted messages.
+
+ * Support for adduid and revuid operations in the C++ bindings.
+
+ * Support for smartcard key generation in the C++ bindings.
+
+ * Several new functions for the Python binding.
+
+ * Many smaller bug fixes.
+
 
  * Interface changes relative to the 1.8.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,7 +49,7 @@ Noteworthy changes in version 1.8.1 (unreleased)
  GPGME_ENCRYPT_WRAP               NEW.
  GPGME_DECRYPT_VERIFY             NEW.
  GPGME_DECRYPT_UNWRAP             NEW.
- gpgme_data_rewind                UN-DEPRECATE.
+o gpgme_data_rewind                UN-DEPRECATE.
  cpp: Context::revUid(const Key&, const char*)      NEW.
  cpp: Context::startRevUid(const Key&, const char*) NEW.
  cpp: Context::addUid(const Key&, const char*)      NEW.
@@ -55,6 +80,8 @@ Noteworthy changes in version 1.8.1 (unreleased)
  py: Context.key_tofu_policy NEW.
  py: core.pubkey_algo_string NEW.
  py: core.addrspec_from_uid  NEW.
+
+ [c=C29/A18/R0 cpp=C10/A4/R0 qt=C9/A2/R0]
 
 
 Noteworthy changes in version 1.8.0 (2016-11-16)

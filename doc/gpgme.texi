@@ -14,7 +14,7 @@
 @syncodeindex pg fn
 
 @copying
-Copyright @copyright{} 2002--2008, 2010, 2012--2016 g10 Code GmbH.
+Copyright @copyright{} 2002--2008, 2010, 2012--2017 g10 Code GmbH.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -3426,7 +3426,7 @@ The function @code{gpgme_op_keylist_from_data_start} initiates a key
 listing operation inside the context @var{ctx}.  In contrast to the
 other key listing operation the keys are read from the supplied
 @var{data} and not from the local key database.  The keys are also not
-imported into the local ley database. The function sets everything up
+imported into the local key database.  The function sets everything up
 so that subsequent invocations of @code{gpgme_op_keylist_next} return
 the keys from @var{data}.
 
