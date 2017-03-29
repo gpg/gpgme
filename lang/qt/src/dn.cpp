@@ -167,7 +167,7 @@ parse_dn_part(DnPair *array, const unsigned char *string)
     for (unsigned int i = 0; i < numOidMaps; ++i)
         if (!strcasecmp((char *)p, oidmap[i].oid)) {
             free(p);
-            gpgrt_asprintf(&p, oidmap[i].name);
+            gpgrt_asprintf(&p, "%s", oidmap[i].name);
             break;
         }
     array->key = p;
