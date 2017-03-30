@@ -118,7 +118,24 @@ Q_SIGNALS:
 private:
     bool testSupported()
     {
-        return !(GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.16");
+        static bool initialized, supported;
+        if (initialized) {
+            return supported;
+        }
+        initialized = true;
+        if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.16") {
+            return false;
+        }
+        // If the keylist fails here this means that gnupg does not
+        // support tofu at all. It can be disabled at compile time. So no
+        // tests.
+        auto *job = openpgp()->keyListJob(false, false, false);
+        job->addMode(GpgME::WithTofu);
+        std::vector<GpgME::Key> keys;
+        job->exec(QStringList() << QStringLiteral("zulu@example.net"), true, keys);
+        delete job;
+        supported = !keys.empty();
+        return supported;
     }
 
     void testTofuCopy(TofuInfo other, const TofuInfo &orig)
@@ -402,6 +419,10 @@ private Q_SLOTS:
 
     void testTofuConflict()
     {
+        if (!testSupported()) {
+            return;
+        }
+
         if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.19") {
             return;
         }
