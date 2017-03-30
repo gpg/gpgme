@@ -26,6 +26,7 @@ import os
 import tempfile
 import gpg
 import support
+_ = support # to appease pyflakes.
 
 # Both Context and Data can be used as context manager:
 with gpg.Context() as c, gpg.Data() as d:

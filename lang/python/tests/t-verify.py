@@ -24,6 +24,7 @@ import sys
 import os
 import gpg
 import support
+_ = support # to appease pyflakes.
 
 test_text1 = b"Just GNU it!\n"
 test_text1f= b"Just GNU it?\n"

@@ -22,6 +22,8 @@ del absolute_import, print_function, unicode_literals
 
 import os
 import subprocess
+import support
+_ = support # to appease pyflakes.
 
 subprocess.check_call([os.path.join(os.getenv('top_srcdir'),
                                     "tests", "start-stop-agent"), "--stop"])

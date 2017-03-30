@@ -22,6 +22,7 @@ del absolute_import, print_function, unicode_literals
 
 import gpg
 import support
+_ = support # to appease pyflakes.
 
 c = gpg.Context()
 

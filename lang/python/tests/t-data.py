@@ -24,6 +24,8 @@ import io
 import os
 import tempfile
 import gpg
+import support
+_ = support # to appease pyflakes.
 
 data = gpg.Data('Hello world!')
 assert data.read() == b'Hello world!'

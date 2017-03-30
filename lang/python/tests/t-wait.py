@@ -23,6 +23,7 @@ del absolute_import, print_function, unicode_literals
 import time
 import gpg
 import support
+_ = support # to appease pyflakes.
 
 c = gpg.Context()
 c.set_armor(True)

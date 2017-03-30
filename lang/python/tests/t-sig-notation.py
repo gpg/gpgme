@@ -23,6 +23,7 @@ del absolute_import, print_function, unicode_literals
 import os
 import gpg
 import support
+_ = support # to appease pyflakes.
 
 expected_notations = {
     "laughing@me": ("Just Squeeze Me", gpg.constants.sig.notation.HUMAN_READABLE),

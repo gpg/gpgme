@@ -23,8 +23,7 @@ del absolute_import, print_function, unicode_literals
 import os
 import gpg
 import support
-
-support.assert_gpg_version()
+_ = support # to appease pyflakes.
 
 c = gpg.Context()
 c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)

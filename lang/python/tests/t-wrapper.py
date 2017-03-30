@@ -18,6 +18,8 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import gpg
+import support
+_ = support # to appease pyflakes.
 
 d0 = gpg.Data()
 d0.seek # trigger on-demand-wrapping
