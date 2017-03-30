@@ -102,5 +102,5 @@ def failed():
 if not args.quiet:
     print("{0} tests run, {1} succeeded, {2} failed, {3} skipped.".format(
         len(results), count(0), failed(), count(77)))
-    sys.exit(len(results) - count(0))
+    sys.exit(len(results) - count(0) - count(77))
 sys.exit(results[0])
