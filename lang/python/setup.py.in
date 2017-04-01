@@ -21,6 +21,7 @@
 from distutils.core import setup, Extension
 import os, os.path, sys
 import glob
+import shutil
 import subprocess
 
 # Out-of-tree build of the gpg bindings.
@@ -89,14 +90,6 @@ if not os.path.exists(gpg_error_h):
         glob.glob(os.path.join(gpg_error_prefix, "include",
                                "*", "gpg-error.h"))[0]
 
-print("Building python gpg module using {} and {}.".format(gpgme_h, gpg_error_h))
-
-# Cleanup gpgme.h from deprecated functions and typedefs.
-subprocess.check_call([sys.executable, "gpgme-h-clean.py", gpgme_h],
-                      stdout=open("gpgme.h", "w"))
-subprocess.check_call([sys.executable, "gpgme-h-clean.py", gpg_error_h],
-                      stdout=open("errors.i", "w"))
-
 define_macros = []
 libs = getconfig('libs')
 
@@ -149,14 +142,47 @@ if uname_s.startswith("MINGW32"):
 # http://stackoverflow.com/questions/12491328/python-distutils-not-include-the-swig-generated-module
 from distutils.command.build import build
 class BuildExtFirstHack(build):
+
+    def _generate(self):
+        print("Building python gpg module using {} and {}.".format(gpgme_h, gpg_error_h))
+
+        # Cleanup gpgme.h from deprecated functions and typedefs.
+        # Keep timestamp to avoid rebuild
+        if not os.path.exists(self.build_base):
+            os.makedirs(self.build_base)
+
+        for src, dst in (
+            (gpgme_h, os.path.join(self.build_base, "gpgme.h")),
+            (gpg_error_h, os.path.join(self.build_base, "errors.i"))
+        ):
+            subprocess.check_call([sys.executable, "gpgme-h-clean.py", src],
+                                  stdout=open(dst, "w"))
+            shutil.copystat(src, dst)
+
+        # Copy due to http://bugs.python.org/issue2624
+        # Avoid creating in srcdir
+        shutil.copy2("gpgme.i", self.build_base)
+
     def run(self):
+        self._generate()
+
+        # Append generated files via build_base
+        if not os.path.exists(os.path.join(self.build_lib, "gpg")):
+            os.makedirs(os.path.join(self.build_lib, "gpg"))
+
+        swig_sources.append(os.path.join(self.build_base, 'gpgme.i'))
+        swig_opts.extend(['-I' + self.build_base, '-outdir', os.path.join(self.build_lib, 'gpg')])
+        include_dirs.append(self.build_base)
+
         self.run_command('build_ext')
         build.run(self)
 
 py3 = [] if sys.version_info.major < 3 else ['-py3']
-swige = Extension("gpg._gpgme", ["gpgme.i", "helpers.c"],
-                  swig_opts = ['-threads',
-                               '-outdir', 'gpg'] + py3 + extra_swig_opts,
+swig_sources = ['helpers.c']
+swig_opts = ['-threads'] + py3 + extra_swig_opts
+swige = Extension("gpg._gpgme",
+                  sources = swig_sources,
+                  swig_opts = swig_opts,
                   include_dirs = include_dirs,
                   define_macros = define_macros,
                   library_dirs = library_dirs,

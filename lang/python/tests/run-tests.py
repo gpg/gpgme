@@ -71,7 +71,6 @@ for interpreter in args.interpreters:
 
     pattern = os.path.join(args.builddir, "..",
                            "python{0}-gpg".format(version),
-                           "build",
                            "lib*"+version)
     builddirs = glob.glob(pattern)
     if len(builddirs) == 0:

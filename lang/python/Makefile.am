@@ -27,70 +27,45 @@ EXTRA_DIST = \
 
 SUBDIRS = . tests
 
-COPY_FILES = \
-	$(srcdir)/gpgme.i \
-	$(srcdir)/README \
-	$(srcdir)/MANIFEST.in \
-	$(srcdir)/gpgme-h-clean.py \
-	$(srcdir)/examples \
-	$(srcdir)/helpers.c $(srcdir)/helpers.h $(srcdir)/private.h
-
-COPY_FILES_GPG = \
-	$(srcdir)/gpg/callbacks.py \
-	$(srcdir)/gpg/constants \
-	$(srcdir)/gpg/core.py \
-	$(srcdir)/gpg/errors.py \
-	$(srcdir)/gpg/__init__.py \
-	$(srcdir)/gpg/results.py \
-	$(srcdir)/gpg/util.py
-
 .PHONY: prepare
-prepare:
-	test -n "$(PREPAREDIR)"
-	$(MKDIR_P)              "$(PREPAREDIR)/gpg"
-	cp -R $(COPY_FILES)     "$(PREPAREDIR)"
-	cp setup.py             "$(PREPAREDIR)"
-	cp gpg/version.py       "$(PREPAREDIR)/gpg"
-	ln -sf "$(abs_top_srcdir)/src/data.h" "$(PREPAREDIR)"
-	ln -sf "$(abs_top_builddir)/config.h" "$(PREPAREDIR)"
-	cp -R $(COPY_FILES_GPG) "$(PREPAREDIR)/gpg"
+prepare: copystamp
 
 # For VPATH builds we need to copy some files because Python's
 # distutils are not VPATH-aware.
-copystamp: $(COPY_FILES) $(COPY_FILES_GPG)
-	set -e ; for VERSION in $(PYTHON_VERSIONS); do \
-	  $(MAKE) PREPAREDIR=python$${VERSION}-gpg prepare; \
-	done
+copystamp:
+	ln -sf "$(abs_top_srcdir)/src/data.h" .
+	ln -sf "$(abs_top_builddir)/config.h" .
 	touch $@
 
 all-local: copystamp
 	set -e ; set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
 	  PYTHON="$$1" ; shift ; \
-	  cd python$${VERSION}-gpg && \
 	  CFLAGS="$(CFLAGS)" \
 	  abs_top_builddir="$(abs_top_builddir)" \
-	    $$PYTHON setup.py build --verbose ; \
-	  cd .. ; \
+	    $$PYTHON setup.py build --verbose --build-base=python$${VERSION}-gpg ; \
 	done
 
-python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz \
 python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc: copystamp
-	cd python$(PYTHON_VERSION)-gpg && \
+	$(MKDIR_P) python$(PYTHON_VERSION)-gpg-dist
 	CFLAGS="$(CFLAGS)" \
 	abs_top_builddir="$(abs_top_builddir)" \
-	  $(PYTHON) setup.py sdist --verbose
-	gpg2 --detach-sign --armor python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz
+	  $(PYTHON) setup.py sdist --verbose --dist-dir=python$(PYTHON_VERSION)-gpg-dist \
+		--manifest=python$(PYTHON_VERSION)-gpg-dist/MANIFEST
+	gpg2 --detach-sign --armor python$(PYTHON_VERSION)-gpg-dist/gpg-$(VERSION).tar.gz
 
 .PHONY: sdist
-sdist: python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz \
-       python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc
+sdist:	python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc
 
 .PHONY: upload
-upload: python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz \
-        python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc
+upload: python$(PYTHON_VERSION)-gpg-dist/gpg-$(VERSION).tar.gz \
+        python$(PYTHON_VERSION)-gpg-dist/gpg-$(VERSION).tar.gz.asc
 	twine upload $^
 
-CLEANFILES = copystamp
+CLEANFILES = copystamp \
+	config.h \
+	data.h \
+	files.txt \
+	install_files.txt
 
 # Remove the rest.
 #
@@ -104,22 +79,22 @@ clean-local:
 	done
 
 install-exec-local:
-	rm -f install_files.txt
 	set -e ; set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
 	  PYTHON="$$1" ; shift ; \
-	  cd python$${VERSION}-gpg ; \
 	  abs_top_builddir="$(abs_top_builddir)" \
-	  $$PYTHON setup.py install \
-	  --prefix $(DESTDIR)$(prefix) \
+	  $$PYTHON setup.py \
+	  build \
+	  --build-base=python$${VERSION}-gpg \
+	  install \
+	  --prefix "$(DESTDIR)$(prefix)" \
 	  --record files.txt \
 	  --verbose ; \
-	  cat files.txt >> ../install_files.txt ; \
+	  cat files.txt >> install_files.txt ; \
 	  rm files.txt ; \
-	  cd .. ; \
 	done
-	$(MKDIR_P) $(DESTDIR)$(pythondir)/gpg
-	mv install_files.txt $(DESTDIR)$(pythondir)/gpg
+	$(MKDIR_P) "$(DESTDIR)$(pythondir)/gpg"
+	mv install_files.txt "$(DESTDIR)$(pythondir)/gpg"
 
 uninstall-local:
-	xargs <$(DESTDIR)$(pythondir)/gpg/install_files.txt -- rm -rf --
-	rm -rf -- $(DESTDIR)$(pythondir)/gpg
+	xargs < "$(DESTDIR)$(pythondir)/gpg/install_files.txt" -- rm -rf --
+	rm -rf -- "$(DESTDIR)$(pythondir)/gpg"
