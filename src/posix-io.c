@@ -473,7 +473,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
            * have closefrom(2) we first figure out the highest fd we
            * do not want to close, then call closefrom, and on success
            * use the regular code to close all fds up to the start
-           * point of closefrom.  Note that Solaris' closefrom does
+           * point of closefrom.  Note that Solaris' and FreeBSD's closefrom do
            * not return errors.  */
 #ifdef HAVE_CLOSEFROM
           {
@@ -482,7 +482,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
               if (fd_list[i].fd > fd)
                 fd = fd_list[i].fd;
             fd++;
-#ifdef __sun
+#if defined(__sun) || defined(__FreeBSD__)
             closefrom (fd);
             max_fds = fd;
 #else /*!__sun */
