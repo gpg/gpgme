@@ -21,11 +21,19 @@ EXTRA_DIST = \
 	MANIFEST.in \
 	gpgme.i \
 	helpers.c helpers.h private.h \
-	gpgme-h-clean.py \
 	examples \
 	gpg
 
 SUBDIRS = . tests
+
+COPY_FILES_GPG = \
+	$(srcdir)/gpg/callbacks.py \
+	$(srcdir)/gpg/constants \
+	$(srcdir)/gpg/core.py \
+	$(srcdir)/gpg/errors.py \
+	$(srcdir)/gpg/__init__.py \
+	$(srcdir)/gpg/results.py \
+	$(srcdir)/gpg/util.py
 
 .PHONY: prepare
 prepare: copystamp
@@ -35,12 +43,14 @@ prepare: copystamp
 copystamp:
 	ln -sf "$(abs_top_srcdir)/src/data.h" .
 	ln -sf "$(abs_top_builddir)/config.h" .
+	if test $(srcdir) != . ; then cp -R $(COPY_FILES_GPG) gpg ; fi
 	touch $@
 
 all-local: copystamp
 	set -e ; set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
 	  PYTHON="$$1" ; shift ; \
 	  CFLAGS="$(CFLAGS)" \
+	  srcdir="$(srcdir)" \
 	  abs_top_builddir="$(abs_top_builddir)" \
 	    $$PYTHON setup.py build --verbose --build-base=python$${VERSION}-gpg ; \
 	done
@@ -48,6 +58,7 @@ all-local: copystamp
 python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc: copystamp
 	$(MKDIR_P) python$(PYTHON_VERSION)-gpg-dist
 	CFLAGS="$(CFLAGS)" \
+	srcdir="$(srcdir)" \
 	abs_top_builddir="$(abs_top_builddir)" \
 	  $(PYTHON) setup.py sdist --verbose --dist-dir=python$(PYTHON_VERSION)-gpg-dist \
 		--manifest=python$(PYTHON_VERSION)-gpg-dist/MANIFEST
@@ -73,6 +84,12 @@ CLEANFILES = copystamp \
 # permissions.
 clean-local:
 	rm -rf -- build
+	if test $(srcdir) != . ; then \
+	  find gpg -type d ! -perm -200 -exec chmod u+w {} ';' ; \
+	  for FILE in $(COPY_FILES_GPG); do \
+	    rm -rf -- gpg/$$(basename $$FILE) ; \
+	  done \
+	fi
 	for VERSION in $(PYTHON_VERSIONS); do \
 	  find python$${VERSION}-gpg -type d ! -perm -200 -exec chmod u+w {} ';' ; \
 	  rm -rf -- python$${VERSION}-gpg ; \
@@ -81,20 +98,18 @@ clean-local:
 install-exec-local:
 	set -e ; set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
 	  PYTHON="$$1" ; shift ; \
+	  srcdir="$(srcdir)" \
 	  abs_top_builddir="$(abs_top_builddir)" \
 	  $$PYTHON setup.py \
 	  build \
 	  --build-base=python$${VERSION}-gpg \
 	  install \
 	  --prefix "$(DESTDIR)$(prefix)" \
-	  --record files.txt \
 	  --verbose ; \
-	  cat files.txt >> install_files.txt ; \
-	  rm files.txt ; \
 	done
-	$(MKDIR_P) "$(DESTDIR)$(pythondir)/gpg"
-	mv install_files.txt "$(DESTDIR)$(pythondir)/gpg"
 
 uninstall-local:
-	xargs < "$(DESTDIR)$(pythondir)/gpg/install_files.txt" -- rm -rf --
-	rm -rf -- "$(DESTDIR)$(pythondir)/gpg"
+	GV=$$(echo $(VERSION) | tr - _); for PV in $(PYTHON_VERSIONS); do \
+	  rm -rf -- "$(DESTDIR)$(prefix)/lib/python$$PV/site-packages/gpg" \
+"$(DESTDIR)$(prefix)/lib/python$$PV/site-packages/gpg-$$GV-py$$PV.egg-info" ; \
+	done
