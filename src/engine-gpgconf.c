@@ -399,7 +399,7 @@ gpgconf_parse_option (gpgme_conf_opt_t opt,
 		      gpgme_conf_arg_t *arg_p, char *line)
 {
   gpgme_error_t err;
-  char *mark;
+  char *mark = NULL;
 
   if (!line[0])
     return 0;
@@ -408,7 +408,8 @@ gpgconf_parse_option (gpgme_conf_opt_t opt,
     {
       gpgme_conf_arg_t arg;
 
-      mark = strchr (line, ',');
+      if (opt->type != GPGME_CONF_STRING)
+        mark = strchr (line, ',');
       if (mark)
 	*mark = '\0';
 
