@@ -881,7 +881,7 @@ AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([lang/qt/doc/Doxyfile])])
 AC_CONFIG_FILES(lang/qt/doc/Makefile)
 AC_CONFIG_FILES([lang/python/Makefile
-		 lang/python/gpg/version.py
+		 lang/python/version.py
 		 lang/python/tests/Makefile])
 AC_CONFIG_FILES([lang/python/setup.py], [chmod a+x lang/python/setup.py])
 AC_OUTPUT

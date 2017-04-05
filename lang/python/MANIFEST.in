@@ -1,4 +1,5 @@
 recursive-include examples *.py
 include gpgme.i
 include helpers.c helpers.h private.h
+include version.py
 recursive-include gpg *.py

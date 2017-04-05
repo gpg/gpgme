@@ -22,18 +22,9 @@ EXTRA_DIST = \
 	gpgme.i \
 	helpers.c helpers.h private.h \
 	examples \
-	gpg
+	src
 
 SUBDIRS = . tests
-
-COPY_FILES_GPG = \
-	$(srcdir)/gpg/callbacks.py \
-	$(srcdir)/gpg/constants \
-	$(srcdir)/gpg/core.py \
-	$(srcdir)/gpg/errors.py \
-	$(srcdir)/gpg/__init__.py \
-	$(srcdir)/gpg/results.py \
-	$(srcdir)/gpg/util.py
 
 .PHONY: prepare
 prepare: copystamp
@@ -41,9 +32,9 @@ prepare: copystamp
 # For VPATH builds we need to copy some files because Python's
 # distutils are not VPATH-aware.
 copystamp:
-	ln -sf "$(abs_top_srcdir)/src/data.h" .
-	ln -sf "$(abs_top_builddir)/config.h" .
-	if test $(srcdir) != . ; then cp -R $(COPY_FILES_GPG) gpg ; fi
+	ln -sf "$(top_srcdir)/src/data.h" .
+	ln -sf "$(top_builddir)/config.h" .
+	ln -sf "$(srcdir)/src" gpg
 	touch $@
 
 all-local: copystamp
@@ -51,7 +42,7 @@ all-local: copystamp
 	  PYTHON="$$1" ; shift ; \
 	  CFLAGS="$(CFLAGS)" \
 	  srcdir="$(srcdir)" \
-	  abs_top_builddir="$(abs_top_builddir)" \
+	  top_builddir="$(top_builddir)" \
 	    $$PYTHON setup.py build --verbose --build-base=python$${VERSION}-gpg ; \
 	done
 
@@ -59,7 +50,7 @@ python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc: copystamp
 	$(MKDIR_P) python$(PYTHON_VERSION)-gpg-dist
 	CFLAGS="$(CFLAGS)" \
 	srcdir="$(srcdir)" \
-	abs_top_builddir="$(abs_top_builddir)" \
+	top_builddir="$(top_builddir)" \
 	  $(PYTHON) setup.py sdist --verbose --dist-dir=python$(PYTHON_VERSION)-gpg-dist \
 		--manifest=python$(PYTHON_VERSION)-gpg-dist/MANIFEST
 	gpg2 --detach-sign --armor python$(PYTHON_VERSION)-gpg-dist/gpg-$(VERSION).tar.gz
@@ -75,6 +66,7 @@ upload: python$(PYTHON_VERSION)-gpg-dist/gpg-$(VERSION).tar.gz \
 CLEANFILES = copystamp \
 	config.h \
 	data.h \
+	gpg \
 	files.txt \
 	install_files.txt
 
@@ -84,22 +76,16 @@ CLEANFILES = copystamp \
 # permissions.
 clean-local:
 	rm -rf -- build
-	if test $(srcdir) != . ; then \
-	  find gpg -type d ! -perm -200 -exec chmod u+w {} ';' ; \
-	  for FILE in $(COPY_FILES_GPG); do \
-	    rm -rf -- gpg/$$(basename $$FILE) ; \
-	  done \
-	fi
 	for VERSION in $(PYTHON_VERSIONS); do \
-	  find python$${VERSION}-gpg -type d ! -perm -200 -exec chmod u+w {} ';' ; \
-	  rm -rf -- python$${VERSION}-gpg ; \
+	  find python$${VERSION}-gpg* -type d ! -perm -200 -exec chmod u+w {} ';' ; \
+	  rm -rf -- python$${VERSION}-gpg* ; \
 	done
 
 install-exec-local:
 	set -e ; set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
 	  PYTHON="$$1" ; shift ; \
 	  srcdir="$(srcdir)" \
-	  abs_top_builddir="$(abs_top_builddir)" \
+	  top_builddir="$(top_builddir)" \
 	  $$PYTHON setup.py \
 	  build \
 	  --build-base=python$${VERSION}-gpg \
@@ -110,6 +96,6 @@ install-exec-local:
 
 uninstall-local:
 	GV=$$(echo $(VERSION) | tr - _); for PV in $(PYTHON_VERSIONS); do \
-	  rm -rf -- "$(DESTDIR)$(prefix)/lib/python$$PV/site-packages/gpg" \
-"$(DESTDIR)$(prefix)/lib/python$$PV/site-packages/gpg-$$GV-py$$PV.egg-info" ; \
+	  rm -rf -- "$(DESTDIR)$(prefix)"/lib*/python$$PV/site-packages/gpg \
+"$(DESTDIR)$(prefix)"/lib*/python$$PV/site-packages/gpg-$$GV-py$$PV.egg-info ; \
 	done

@@ -38,18 +38,17 @@ gpgme_config = ["gpgme-config"] + gpgme_config_flags
 gpgme_h = ""
 include_dirs = [os.getcwd()]
 library_dirs = []
-vpath_build = os.environ.get('srcdir', '.') != '.'
 in_tree = False
 extra_swig_opts = []
 extra_macros = dict()
 
-abs_top_builddir = os.environ.get("abs_top_builddir")
-if abs_top_builddir:
+top_builddir = os.environ.get("top_builddir")
+if top_builddir:
     # In-tree build.
     in_tree = True
-    gpgme_config = [os.path.join(abs_top_builddir, "src/gpgme-config")] + gpgme_config_flags
-    gpgme_h = os.path.join(abs_top_builddir, "src/gpgme.h")
-    library_dirs = [os.path.join(abs_top_builddir, "src/.libs")] # XXX uses libtool internals
+    gpgme_config = [os.path.join(top_builddir, "src/gpgme-config")] + gpgme_config_flags
+    gpgme_h = os.path.join(top_builddir, "src/gpgme.h")
+    library_dirs = [os.path.join(top_builddir, "src/.libs")] # XXX uses libtool internals
     extra_macros.update(
         HAVE_CONFIG_H=1,
         HAVE_DATA_H=1,
@@ -210,23 +209,21 @@ class BuildExtFirstHack(build):
         # Copy due to http://bugs.python.org/issue2624
         # Avoid creating in srcdir
         for source, target in ((in_srcdir(n), in_build_base(n))
-                               for n in ('gpgme.i', 'helpers.c')):
+                               for n in ('gpgme.i', 'helpers.c', 'private.h', 'helpers.h')):
             if not up_to_date(source, target):
                 shutil.copy2(source, target)
-
-    def run(self):
-        self._generate()
 
         # Append generated files via build_base
         if not os.path.exists(os.path.join(self.build_lib, "gpg")):
             os.makedirs(os.path.join(self.build_lib, "gpg"))
+        shutil.copy2("version.py", os.path.join(self.build_lib, "gpg"))
+
+    def run(self):
+        self._generate()
 
         swig_sources.append(os.path.join(self.build_base, 'gpgme.i'))
         swig_opts.extend(['-I' + self.build_base,
-                          '-I' + in_srcdir('.'),
                           '-outdir', os.path.join(self.build_lib, 'gpg')])
-        if vpath_build:
-            include_dirs.append(in_srcdir('.'))
         include_dirs.append(self.build_base)
 
         self.run_command('build_ext')
