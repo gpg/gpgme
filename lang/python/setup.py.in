@@ -19,17 +19,11 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
 from distutils.core import setup, Extension
-import argparse
 import os, os.path, sys
 import glob
 import re
 import shutil
 import subprocess
-
-# We parse a subset of the arguments.
-parser = argparse.ArgumentParser(add_help=False)
-parser.add_argument('--build-base', default='')
-options, _ = parser.parse_known_args()
 
 # Out-of-tree build of the gpg bindings.
 gpg_error_config = ["gpg-error-config"]
@@ -142,8 +136,6 @@ if uname_s.startswith("MINGW32"):
 
 def in_srcdir(name):
     return os.path.join(os.environ.get("srcdir", ""), name)
-def in_build_base(name):
-    return os.path.join(options.build_base, name)
 def up_to_date(source, target):
     return (os.path.exists(target)
             and os.path.getmtime(source) <= os.path.getmtime(target))
@@ -190,6 +182,9 @@ class BuildExtFirstHack(build):
                     continue
                 sink.write(rewrite_re.sub(r'%constant long \1 = \1;'+'\n', line.strip()))
 
+    def _in_build_base(self, name):
+        return os.path.join(self.build_base, name)
+
     def _generate(self):
         print("Building python gpg module using {} and {}.".format(gpgme_h, gpg_error_h))
 
@@ -197,18 +192,18 @@ class BuildExtFirstHack(build):
         if not os.path.exists(self.build_base):
             os.makedirs(self.build_base)
 
-        self._generate_gpgme_h(gpgme_h, in_build_base("gpgme.h"))
-        self._generate_errors_i(gpg_error_h, in_build_base("errors.i"))
+        self._generate_gpgme_h(gpgme_h, self._in_build_base("gpgme.h"))
+        self._generate_errors_i(gpg_error_h, self._in_build_base("errors.i"))
 
         # Keep timestamp to avoid rebuild
-        for source, target in ((gpgme_h, in_build_base("gpgme.h")),
-                               (gpg_error_h, in_build_base("errors.i"))):
+        for source, target in ((gpgme_h, self._in_build_base("gpgme.h")),
+                               (gpg_error_h, self._in_build_base("errors.i"))):
             if not up_to_date(source, target):
                 shutil.copystat(source, target)
 
         # Copy due to http://bugs.python.org/issue2624
         # Avoid creating in srcdir
-        for source, target in ((in_srcdir(n), in_build_base(n))
+        for source, target in ((in_srcdir(n), self._in_build_base(n))
                                for n in ('gpgme.i', 'helpers.c', 'private.h', 'helpers.h')):
             if not up_to_date(source, target):
                 shutil.copy2(source, target)
@@ -221,7 +216,7 @@ class BuildExtFirstHack(build):
     def run(self):
         self._generate()
 
-        swig_sources.append(os.path.join(self.build_base, 'gpgme.i'))
+        swig_sources.extend((self._in_build_base('gpgme.i'), self._in_build_base('helpers.c')))
         swig_opts.extend(['-I' + self.build_base,
                           '-outdir', os.path.join(self.build_lib, 'gpg')])
         include_dirs.append(self.build_base)
@@ -230,7 +225,7 @@ class BuildExtFirstHack(build):
         build.run(self)
 
 py3 = [] if sys.version_info.major < 3 else ['-py3']
-swig_sources = [in_build_base('helpers.c')]
+swig_sources = []
 swig_opts = ['-threads'] + py3 + extra_swig_opts
 swige = Extension("gpg._gpgme",
                   sources = swig_sources,
