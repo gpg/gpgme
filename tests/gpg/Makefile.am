@@ -60,6 +60,8 @@ EXTRA_DIST = initial.test final.test \
         pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 	geheim.txt pubkey-1.asc seckey-1.asc pinentry $(private_keys)
 
+BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
+           private-keys-v1.d/gpg-sample.stamp
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 AM_LDFLAGS = -no-install
 LDADD = ../../src/libgpgme.la
@@ -81,13 +83,6 @@ noinst_PROGRAMS = $(c_tests) $(tests_skipped)
 clean-local:
 	-$(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR private-keys-v1.d
-
-check-local: ./gpg.conf ./gpg-agent.conf ./pubring-stamp \
-           ./private-keys-v1.d/gpg-sample.stamp
-
-# To guarantee that check-local is run before any tests we
-# add this dependency:
-initial.test : check-local
 
 export GNUPGHOME := $(abs_builddir)
 

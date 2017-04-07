@@ -43,12 +43,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
               -I$(top_srcdir)/lang/qt/src \
               -DTOP_SRCDIR="$(top_srcdir)"
 
-check-local: ./pubring-stamp
-
-# To guarantee that check-local is run before any tests we
-# add this dependency:
-initial.test : check-local
-
 support_src = t-support.h t-support.cpp
 
 t_keylist_SOURCES = t-keylist.cpp $(support_src)
@@ -64,7 +58,7 @@ run_keyformailboxjob_SOURCES = run-keyformailboxjob.cpp
 
 nodist_t_keylist_SOURCES = $(moc_files)
 
-BUILT_SOURCES = $(moc_files)
+BUILT_SOURCES = $(moc_files) pubring-stamp
 
 noinst_PROGRAMS = t-keylist t-keylocate t-ownertrust t-tofuinfo t-encrypt \
     run-keyformailboxjob t-wkspublish t-verify t-various t-config
@@ -79,7 +73,7 @@ clean-local:
 
 export GNUPGHOME := $(abs_builddir)
 
-./pubring-stamp: $(top_srcdir)/tests/gpg/pubdemo.asc \
+pubring-stamp: $(top_srcdir)/tests/gpg/pubdemo.asc \
 	             $(top_srcdir)/tests/gpg/secdemo.asc
 	echo "ignore-invalid-option allow-loopback-pinentry" > $(abs_builddir)/gpg-agent.conf
 	echo "allow-loopback-pinentry" >> gpg-agent.conf
@@ -90,7 +84,7 @@ export GNUPGHOME := $(abs_builddir)
 	$(GPG) --no-permission-warning \
 		   --passphrase "abc" \
            --import $(top_srcdir)/tests/gpg/secdemo.asc
-	touch ./pubring-stamp
+	touch pubring-stamp
 
 .cpp.moc:
 	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
