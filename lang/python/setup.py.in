@@ -55,13 +55,6 @@ else:
     devnull = open(os.devnull, "w")
 
 try:
-    subprocess.check_call(gpg_error_config + ['--version'],
-                          stdout=devnull)
-except:
-    sys.exit("Could not find gpg-error-config.  " +
-             "Please install the libgpg-error development package.")
-
-try:
     subprocess.check_call(gpgme_config + ['--version'],
                           stdout=devnull)
 except:
@@ -83,13 +76,6 @@ if not (major > 1 or (major == 1 and minor >= 7)):
 
 if not gpgme_h:
     gpgme_h = os.path.join(getconfig("prefix")[0], "include", "gpgme.h")
-
-gpg_error_prefix = getconfig("prefix", config=gpg_error_config)[0]
-gpg_error_h = os.path.join(gpg_error_prefix, "include", "gpg-error.h")
-if not os.path.exists(gpg_error_h):
-    gpg_error_h = \
-        glob.glob(os.path.join(gpg_error_prefix, "include",
-                               "*", "gpg-error.h"))[0]
 
 define_macros = []
 libs = getconfig('libs')
@@ -150,9 +136,26 @@ def up_to_date(source, target):
 from distutils.command.build import build
 class BuildExtFirstHack(build):
 
+    def _read_header(self, header, cflags):
+        tmp_include = self._in_build_base("include1.h")
+        with open(tmp_include, 'w') as f:
+            f.write("#include <%s>" % header)
+        return subprocess.check_output(os.environ.get('CPP', 'cc -E').split() + cflags + [tmp_include]).decode('utf-8')
+
+    def _write_if_unchanged(self, target, content):
+        if os.path.exists(target):
+            with open(target) as f:
+                if f.read() == content:
+                    return
+
+        with open(target, "w") as sink:
+            sink.write(content)
+
     def _generate_gpgme_h(self, source_name, sink_name):
         if up_to_date(source_name, sink_name):
             return
+
+        print("Using gpgme.h from {}".format(source_name))
 
         deprec_func = re.compile(r'^(.*typedef.*|.*\(.*\)|[^#]+\s+.+)'
                                  + r'\s*_GPGME_DEPRECATED(_OUTSIDE_GPGME)?\(.*\);\s*',
@@ -169,31 +172,38 @@ class BuildExtFirstHack(build):
                     text = ''
             sink.write(text)
 
-    def _generate_errors_i(self, source_name, sink_name):
-        if up_to_date(source_name, sink_name):
-            return
+    def _generate_errors_i(self):
+
+        try:
+            subprocess.check_call(gpg_error_config + ['--version'],
+                                  stdout=devnull)
+        except:
+            sys.exit("Could not find gpg-error-config.  " +
+                     "Please install the libgpg-error development package.")
+
+        gpg_error_content = self._read_header("gpg-error.h", getconfig("cflags", config=gpg_error_config))
 
         filter_re = re.compile(r'GPG_ERR_[^ ]* =')
         rewrite_re = re.compile(r' *(.*) = .*')
 
-        with open(sink_name, "w") as sink, open(source_name) as source:
-            for line in source:
-                if not filter_re.search(line):
-                    continue
-                sink.write(rewrite_re.sub(r'%constant long \1 = \1;'+'\n', line.strip()))
+        errors_i_content = ''
+        for line in gpg_error_content.splitlines():
+            if not filter_re.search(line):
+                continue
+            errors_i_content += rewrite_re.sub(r'%constant long \1 = \1;'+'\n', line.strip())
+
+        self._write_if_unchanged(self._in_build_base("errors.i"), errors_i_content)
 
     def _in_build_base(self, name):
         return os.path.join(self.build_base, name)
 
     def _generate(self):
-        print("Building python gpg module using {} and {}.".format(gpgme_h, gpg_error_h))
-
         # Cleanup gpgme.h from deprecated functions and typedefs.
         if not os.path.exists(self.build_base):
             os.makedirs(self.build_base)
 
         self._generate_gpgme_h(gpgme_h, self._in_build_base("gpgme.h"))
-        self._generate_errors_i(gpg_error_h, self._in_build_base("errors.i"))
+        self._generate_errors_i()
 
         # Copy due to http://bugs.python.org/issue2624
         # Avoid creating in srcdir
