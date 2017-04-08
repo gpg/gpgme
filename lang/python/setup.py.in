@@ -195,12 +195,6 @@ class BuildExtFirstHack(build):
         self._generate_gpgme_h(gpgme_h, self._in_build_base("gpgme.h"))
         self._generate_errors_i(gpg_error_h, self._in_build_base("errors.i"))
 
-        # Keep timestamp to avoid rebuild
-        for source, target in ((gpgme_h, self._in_build_base("gpgme.h")),
-                               (gpg_error_h, self._in_build_base("errors.i"))):
-            if not up_to_date(source, target):
-                shutil.copystat(source, target)
-
         # Copy due to http://bugs.python.org/issue2624
         # Avoid creating in srcdir
         for source, target in ((in_srcdir(n), self._in_build_base(n))
