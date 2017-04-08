@@ -38,12 +38,11 @@ copystamp:
 	touch $@
 
 all-local: copystamp
-	set -e ; set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
-	  PYTHON="$$1" ; shift ; \
+	set -e ; for PYTHON in $(PYTHONS); do \
 	  CFLAGS="$(CFLAGS)" \
 	  srcdir="$(srcdir)" \
 	  top_builddir="$(top_builddir)" \
-	    $$PYTHON setup.py build --verbose --build-base=python$${VERSION}-gpg ; \
+	    $$PYTHON setup.py build --verbose --build-base="$$(basename "$${PYTHON}")-gpg" ; \
 	done
 
 python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc: copystamp
@@ -76,26 +75,26 @@ CLEANFILES = copystamp \
 # permissions.
 clean-local:
 	rm -rf -- build
-	for VERSION in $(PYTHON_VERSIONS); do \
-	  find python$${VERSION}-gpg* -type d ! -perm -200 -exec chmod u+w {} ';' ; \
-	  rm -rf -- python$${VERSION}-gpg* ; \
+	for PYTHON in $(PYTHONS); do \
+	  find "$$(basename "$${PYTHON}")-gpg" -type d ! -perm -200 -exec chmod u+w {} ';' ; \
+	  rm -rf -- "$$(basename "$${PYTHON}")-gpg" ; \
 	done
 
 install-exec-local:
-	set -e ; set $(PYTHONS); for VERSION in $(PYTHON_VERSIONS); do \
-	  PYTHON="$$1" ; shift ; \
+	set -e ; for PYTHON in $(PYTHONS); do \
 	  srcdir="$(srcdir)" \
 	  top_builddir="$(top_builddir)" \
 	  $$PYTHON setup.py \
 	  build \
-	  --build-base=python$${VERSION}-gpg \
+	  --build-base="$$(basename "$${PYTHON}")-gpg" \
 	  install \
 	  --prefix "$(DESTDIR)$(prefix)" \
 	  --verbose ; \
 	done
 
 uninstall-local:
-	GV=$$(echo $(VERSION) | tr - _); for PV in $(PYTHON_VERSIONS); do \
-	  rm -rf -- "$(DESTDIR)$(prefix)"/lib*/python$$PV/site-packages/gpg \
-"$(DESTDIR)$(prefix)"/lib*/python$$PV/site-packages/gpg-$$GV-py$$PV.egg-info ; \
+	GV=$$(echo $(VERSION) | tr - _); for PYTHON in $(PYTHONS); do \
+	  PLATLIB="$(prefix)/$$("$${PYTHON}" -c 'import sysconfig, os; print(os.path.relpath(sysconfig.get_path("platlib"), sysconfig.get_config_var("prefix")))')" ; \
+	  rm -rf -- "$(DESTDIR)$${PLATLIB}/gpg" \
+		"$(DESTDIR)$${PLATLIB}"/gpg-$$GV-py*.egg-info ; \
 	done

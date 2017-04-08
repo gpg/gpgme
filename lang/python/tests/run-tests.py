@@ -70,8 +70,8 @@ for interpreter in args.interpreters:
         [interpreter, "-c", "import sys; print('{0}.{1}'.format(sys.version_info[0], sys.version_info[1]))"]).strip().decode()
 
     pattern = os.path.join(args.builddir, "..",
-                           "python{0}-gpg".format(version),
-                           "lib*"+version)
+                           "{0}-gpg".format(os.path.basename(interpreter)),
+                           "lib*")
     builddirs = glob.glob(pattern)
     if len(builddirs) == 0:
         sys.exit("Build directory matching {0!r} not found.".format(pattern))

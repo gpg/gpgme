@@ -474,7 +474,6 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
 	fi
 
 	AC_SUBST(PYTHONS, $PYTHONS)
-	AC_SUBST(PYTHON_VERSIONS, $PYTHON_VERSIONS)
     fi
 fi
 
