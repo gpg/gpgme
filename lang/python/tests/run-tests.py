@@ -51,6 +51,9 @@ parser.add_argument('--srcdir', type=str,
 parser.add_argument('--builddir', type=str,
                     default=os.environ.get("abs_builddir", ""),
                     help='Location of the tests.')
+parser.add_argument('--python-libdir', type=str,
+                    default=None,
+                    help='Optional location of the in-tree module lib directory.')
 parser.add_argument('--parallel', action="store_true", default=False,
                     help='Ignored.  For compatibility with run-tests.scm.')
 
@@ -69,18 +72,20 @@ for interpreter in args.interpreters:
     version = subprocess.check_output(
         [interpreter, "-c", "import sys; print('{0}.{1}'.format(sys.version_info[0], sys.version_info[1]))"]).strip().decode()
 
-    pattern = os.path.join(args.builddir, "..",
-                           "{0}-gpg".format(os.path.basename(interpreter)),
-                           "lib*")
-    builddirs = glob.glob(pattern)
-    if len(builddirs) == 0:
-        sys.exit("Build directory matching {0!r} not found.".format(pattern))
-    elif len(builddirs) > 1:
-        sys.exit("Multiple build directories matching {0!r} found: {1}".format(
-            pattern, builddirs))
+    if not args.python_libdir:
+        pattern = os.path.join(args.builddir, "..",
+                               "{0}-gpg".format(os.path.basename(interpreter)),
+                               "lib*")
+        libdirs = glob.glob(pattern)
+        if len(libdirs) == 0:
+            sys.exit("Build directory matching {0!r} not found.".format(pattern))
+        elif len(libdirs) > 1:
+            sys.exit("Multiple build directories matching {0!r} found: {1}".format(
+                pattern, libdirs))
+        python_libdir = libdirs[0]
 
     env = dict(os.environ)
-    env["PYTHONPATH"] = builddirs[0]
+    env["PYTHONPATH"] = python_libdir
 
     if not args.quiet:
         print("Running tests using {0} ({1})...".format(interpreter, version))
