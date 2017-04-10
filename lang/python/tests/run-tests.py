@@ -72,7 +72,9 @@ for interpreter in args.interpreters:
     version = subprocess.check_output(
         [interpreter, "-c", "import sys; print('{0}.{1}'.format(sys.version_info[0], sys.version_info[1]))"]).strip().decode()
 
-    if not args.python_libdir:
+    if args.python_libdir:
+        python_libdir = args.python_libdir
+    else:
         pattern = os.path.join(args.builddir, "..",
                                "{0}-gpg".format(os.path.basename(interpreter)),
                                "lib*")
