@@ -65,9 +65,7 @@ upload: python$(PYTHON_VERSION)-gpg-dist/gpg-$(VERSION).tar.gz \
 CLEANFILES = copystamp \
 	config.h \
 	data.h \
-	gpg \
-	files.txt \
-	install_files.txt
+	gpg
 
 # Remove the rest.
 #
