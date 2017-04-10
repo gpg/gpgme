@@ -93,8 +93,8 @@ install-exec-local:
 	done
 
 uninstall-local:
-	GV=$$(echo $(VERSION) | tr - _); for PYTHON in $(PYTHONS); do \
-	  PLATLIB="$(prefix)/$$("$${PYTHON}" -c 'import sysconfig, os; print(os.path.relpath(sysconfig.get_path("platlib"), sysconfig.get_config_var("prefix")))')" ; \
+	set -x; GV=$$(echo $(VERSION) | tr - _); for PYTHON in $(PYTHONS); do \
+	  PLATLIB="$(prefix)/$$("$${PYTHON}" -c 'import sysconfig, os; print(os.path.relpath(sysconfig.get_path("platlib", scheme="posix_prefix"), sysconfig.get_config_var("prefix")))')" ; \
 	  rm -rf -- "$(DESTDIR)$${PLATLIB}/gpg" \
 		"$(DESTDIR)$${PLATLIB}"/gpg-$$GV-py*.egg-info ; \
 	done
