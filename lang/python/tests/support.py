@@ -35,6 +35,12 @@ def assert_gpg_version(version=(2, 1, 0)):
                 c.engine_info.version, '.'.join(map(str, version))))
             sys.exit(77)
 
+def have_tofu_support(ctx, some_uid):
+    keys = list(ctx.keylist(some_uid,
+                            mode=(gpg.constants.keylist.mode.LOCAL
+                                  |gpg.constants.keylist.mode.WITH_TOFU)))
+    return len(keys) > 0
+
 # Skip the Python tests for GnuPG < 2.1.12.  Prior versions do not
 # understand the command line flags that we assume exist.  C.f. issue
 # 3008.

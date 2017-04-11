@@ -22,6 +22,7 @@ del absolute_import, print_function, unicode_literals
 
 import os
 import gpg
+import sys
 
 import support
 support.assert_gpg_version((2, 1, 14))
@@ -96,6 +97,10 @@ with support.EphemeralContext() as ctx:
     # Check setting the TOFU policy.
     with open(os.path.join(ctx.home_dir, "gpg.conf"), "a") as handle:
         handle.write("trust-model tofu+pgp\n")
+
+    if not support.have_tofu_support(ctx, bravo):
+        print("GnuPG does not support TOFU, skipping TOFU tests.")
+        sys.exit()
 
     for name, policy in [(name, getattr(gpg.constants.tofu.policy, name))
                          for name in filter(lambda x: not x.startswith('__'),
