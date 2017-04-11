@@ -109,6 +109,7 @@ AH_VERBATIM([_REENTRANT],
 #endif])
 
 AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_CXX
 
 # Note: A suitable gitlog-to-changelog script can be found in GnuPG master.

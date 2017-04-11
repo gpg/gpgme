@@ -39,6 +39,7 @@ copystamp:
 
 all-local: copystamp
 	set -e ; for PYTHON in $(PYTHONS); do \
+	  CPP="$(CPP)" \
 	  CFLAGS="$(CFLAGS)" \
 	  srcdir="$(srcdir)" \
 	  top_builddir="$(top_builddir)" \
@@ -47,6 +48,7 @@ all-local: copystamp
 
 python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc: copystamp
 	$(MKDIR_P) python$(PYTHON_VERSION)-gpg-dist
+	CPP="$(CPP)" \
 	CFLAGS="$(CFLAGS)" \
 	srcdir="$(srcdir)" \
 	top_builddir="$(top_builddir)" \
@@ -80,6 +82,8 @@ clean-local:
 
 install-exec-local:
 	set -e ; for PYTHON in $(PYTHONS); do \
+	  CPP="$(CPP)" \
+	  CFLAGS="$(CFLAGS)" \
 	  srcdir="$(srcdir)" \
 	  top_builddir="$(top_builddir)" \
 	  $$PYTHON setup.py \
