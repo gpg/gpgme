@@ -2597,11 +2597,11 @@ Return a Pinentry error @code{No Pinentry}.
 
 @item GPGME_PINENTRY_MODE_LOOPBACK
 Redirect Pinentry queries to the caller.
-This enables the use of @code{gpgme_set_passphrase_cb} whis pinentry
-queries redirected to gpgme.
+This enables the use of @code{gpgme_set_passphrase_cb} because pinentry
+queries are redirected to gpgme.
 
-Note: This mode requires @code{allow-loopback-pinentry} to be enabled
-in the @file{gpg-agent.conf} or an agent started with that option.
+Note: For 2.1.0 - 2.1.12 this mode requires @code{allow-loopback-pinentry}
+to be enabled in the @file{gpg-agent.conf} or an agent started with that option.
 
 @end table
 @end deftp
@@ -2763,6 +2763,10 @@ character before returning from the callback.
 If an error occurs, return the corresponding @code{gpgme_error_t}
 value.  You can use the error code @code{GPG_ERR_CANCELED} to abort
 the operation.  Otherwise, return @code{0}.
+
+Note: The passphrase_cb only works with GnuPG 1.x and 2.1.x and not
+with the 2.0.x series. See @code{gpgme_set_pinentry_mode} for more
+details on 2.1.x usage.
 @end deftp
 
 @deftypefun void gpgme_set_passphrase_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_passphrase_cb_t @var{passfunc}}, @w{void *@var{hook_value}})
