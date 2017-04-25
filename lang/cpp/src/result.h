@@ -1,6 +1,8 @@
 /*
   result.h - base class for results
   Copyright (C) 2004 Klarälvdalens Datakonsult AB
+  2016 Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH
 
   This file is part of GPGME++.
 

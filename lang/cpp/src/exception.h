@@ -1,6 +1,8 @@
 /*
   exception.h - exception wrapping a gpgme error
   Copyright (C) 2007 Klarälvdalens Datakonsult AB
+  2016 Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH
 
   This file is part of GPGME++.
 

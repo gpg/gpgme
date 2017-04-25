@@ -1,6 +1,8 @@
 /* defaultkeygenerationjob.h
 
     Copyright (c) 2016 Klarälvdalens Datakonsult AB
+    2016 Bundesamt für Sicherheit in der Informationstechnik
+    Software engineering by Intevation GmbH
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as

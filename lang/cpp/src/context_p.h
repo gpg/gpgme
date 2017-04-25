@@ -1,6 +1,8 @@
 /*
   context_p.h - wraps a gpgme context (private part)
   Copyright (C) 2003, 2007 Klarälvdalens Datakonsult AB
+  2016 Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH
 
   This file is part of GPGME++.
 

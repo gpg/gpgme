@@ -1,6 +1,8 @@
 /*
   gpgadduserideditinteractor.h - Edit Interactor to add a new UID to an OpenPGP key
   Copyright (C) 2008 Klarälvdalens Datakonsult AB
+  2016 Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH
 
   This file is part of GPGME++.
 

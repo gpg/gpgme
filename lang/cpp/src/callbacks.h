@@ -1,6 +1,8 @@
 /*
   callbacks.h - callback targets for internal use:
   Copyright (C) 2003 Klarälvdalens Datakonsult AB
+  2016 Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH
 
   This file is part of GPGME++.
 

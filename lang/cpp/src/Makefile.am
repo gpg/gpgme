@@ -1,5 +1,6 @@
 # Makefile.am for GPGMEPP.
-# Copyright (C) 2016 Intevation GmbH
+# Copyright (C) 2016 Bundesamt für Sicherheit in der Informationstechnik
+# Software engineering by Intevation GmbH
 #
 # This file is part of GPGMEPP.
 #

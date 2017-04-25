@@ -1,6 +1,8 @@
 /*
   vfsmountresult.cpp - wraps a gpgme vfs mount result
-  Copyright (C) 2009 Klarälvdalens Datakonsult AB <info@kdab.com>
+  Copyright (C) 2009 Klarälvdalens Datakonsult AB
+  2016 Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH <info@kdab.com>
   Author: Marc Mutz <marc@kdab.com>, Volker Krause <volker@kdab.com>
 
   This file is part of GPGME++.

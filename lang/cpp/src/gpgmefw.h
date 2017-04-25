@@ -1,6 +1,8 @@
 /*
   gpgmefw.h - Forwards declarations for gpgme (0.3 and 0.4)
   Copyright (C) 2004 Klarälvdalens Datakonsult AB
+  2016 Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH
 
   This file is part of GPGME++.
 

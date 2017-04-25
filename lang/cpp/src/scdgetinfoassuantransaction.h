@@ -1,6 +1,8 @@
 /*
   scdgetinfoassuantransaction.h - Assuan Transaction to get information from scdaemon
   Copyright (C) 2009 Klarälvdalens Datakonsult AB
+  2016 Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH
 
   This file is part of GPGME++.
 

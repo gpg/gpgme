@@ -1,6 +1,8 @@
 /*
   defaultassuantransaction.h - default Assuan Transaction that just stores data and status lines
   Copyright (C) 2009 Klarälvdalens Datakonsult AB
+  2016 Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH
 
   This file is part of GPGME++.
 

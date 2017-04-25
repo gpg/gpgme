@@ -1,6 +1,8 @@
 /*
   context_glib.cpp - wraps a gpgme key context, gpgme-glib-specific functions
   Copyright (C) 2007 Klarälvdalens Datakonsult AB
+  2016 Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH
 
   This file is part of GPGME++.
 

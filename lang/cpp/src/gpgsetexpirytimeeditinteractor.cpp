@@ -1,6 +1,8 @@
 /*
   gpgsetexpirytimeeditinteractor.cpp - Edit Interactor to change the expiry time of an OpenPGP key
   Copyright (C) 2007 Klarälvdalens Datakonsult AB
+  2016 Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH
 
   This file is part of GPGME++.
 
