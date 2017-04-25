@@ -1,6 +1,7 @@
 /* dataprovider.h
    Copyright (C) 2004 Klarälvdalens Datakonsult AB
-    Copyright (c) 2016 Intevation GmbH
+    Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
+    Software engineering by Intevation GmbH
 
    This file is part of QGPGME.
 

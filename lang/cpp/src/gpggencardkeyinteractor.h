@@ -1,6 +1,7 @@
 /*
   gpggencardkeyinteractor.h - Edit Interactor to generate a key on a card
-  Copyright (C) 2017 Intevation GmbH
+  Copyright (C) 2017 by Bundesamt für Sicherheit in der Informationstechnik
+  Software engineering by Intevation GmbH
 
   This file is part of GPGME++.
 

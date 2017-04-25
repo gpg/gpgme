@@ -3,7 +3,8 @@
 
     This file is part of qgpgme, the Qt API binding for gpgme
     Copyright (c) 2010 Klarälvdalens Datakonsult AB
-    Copyright (c) 2016 Intevation GmbH
+    Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
+    Software engineering by Intevation GmbH
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as

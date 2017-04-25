@@ -1,6 +1,7 @@
 /* run-decrypt.c  - Helper to perform a verify operation
    Copyright (C) 2009 g10 Code GmbH
-                 2016 Intevation GmbH
+                 2016 by Bundesamt für Sicherheit in der Informationstechnik
+                 Software engineering by Intevation GmbH
 
    This file is part of GPGME.
 
