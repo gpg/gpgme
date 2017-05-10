@@ -77,7 +77,7 @@ public:
        signature data, while \a signedData contains the data over
        which the signature was made.
     */
-    virtual QGPGME_DEPRECATED_EXPORT GpgME::Error start(const QByteArray &signedData) = 0;
+    virtual GpgME::Error start(const QByteArray &signedData) = 0;
 
     /*!
       \overload

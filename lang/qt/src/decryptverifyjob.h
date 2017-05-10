@@ -77,7 +77,7 @@ public:
        Starts the combined decryption and verification operation.
        \a cipherText is the data to decrypt and later verify.
     */
-    virtual QGPGME_DEPRECATED_EXPORT GpgME::Error start(const QByteArray &cipherText) = 0;
+    virtual GpgME::Error start(const QByteArray &cipherText) = 0;
 
     /*!
       \overload
