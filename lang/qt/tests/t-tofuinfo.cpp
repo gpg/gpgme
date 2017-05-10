@@ -48,10 +48,11 @@
 #include "importresult.h"
 #include "keylistjob.h"
 #include "keylistresult.h"
-#include "qgpgmesignjob.h"
+#include "signjob.h"
 #include "key.h"
 #include "t-support.h"
 #include "engineinfo.h"
+#include "context.h"
 #include <iostream>
 
 using namespace QGpgME;
@@ -151,11 +152,11 @@ private:
 
     void signAndVerify(const QString &what, const GpgME::Key &key, int expected)
     {
-        Context *ctx = Context::createForProtocol(OpenPGP);
+        auto job = openpgp()->signJob();
+        auto ctx = Job::context(job);
         TestPassphraseProvider provider;
         ctx->setPassphraseProvider(&provider);
         ctx->setPinentryMode(Context::PinentryLoopback);
-        auto *job = new QGpgMESignJob(ctx);
 
         std::vector<Key> keys;
         keys.push_back(key);

@@ -42,10 +42,10 @@
 #include "encryptjob.h"
 #include "signencryptjob.h"
 #include "signingresult.h"
-#include "qgpgmeencryptjob.h"
+#include "encryptjob.h"
 #include "encryptionresult.h"
 #include "decryptionresult.h"
-#include "qgpgmedecryptjob.h"
+#include "decryptjob.h"
 #include "qgpgmebackend.h"
 #include "keylistresult.h"
 #include "engineinfo.h"
@@ -106,11 +106,11 @@ private Q_SLOTS:
         if (!decryptSupported()) {
             return;
         }
-        auto ctx = Context::createForProtocol(OpenPGP);
+        auto decJob = openpgp()->decryptJob();
+        auto ctx = Job::context(decJob);
         TestPassphraseProvider provider;
         ctx->setPassphraseProvider(&provider);
         ctx->setPinentryMode(Context::PinentryLoopback);
-        auto decJob = new QGpgMEDecryptJob(ctx);
         QByteArray plainText;
         auto decResult = decJob->exec(cipherText, plainText);
         QVERIFY(!decResult.error());
@@ -177,13 +177,13 @@ private Q_SLOTS:
         if (!decryptSupported()) {
             return;
         }
-        auto ctx = Context::createForProtocol(OpenPGP);
+        auto job = openpgp()->encryptJob();
+        auto ctx = Job::context(job);
         TestPassphraseProvider provider;
         ctx->setPassphraseProvider(&provider);
         ctx->setPinentryMode(Context::PinentryLoopback);
         ctx->setArmor(true);
         ctx->setTextMode(true);
-        auto job = new QGpgMEEncryptJob(ctx);
         QByteArray cipherText;
         auto result = job->exec(std::vector<Key>(), QStringLiteral("Hello symmetric World").toUtf8(), Context::AlwaysTrust, cipherText);
         delete job;
@@ -193,10 +193,10 @@ private Q_SLOTS:
 
         killAgent(mDir.path());
 
-        auto ctx2 = Context::createForProtocol(OpenPGP);
+        auto decJob = openpgp()->decryptJob();
+        auto ctx2 = Job::context(decJob);
         ctx2->setPassphraseProvider(&provider);
         ctx2->setPinentryMode(Context::PinentryLoopback);
-        auto decJob = new QGpgMEDecryptJob(ctx2);
         QByteArray plainText;
         auto decResult = decJob->exec(cipherText, plainText);
         QVERIFY(!result.error());
@@ -238,13 +238,14 @@ private Q_SLOTS:
         if (!decryptSupported()) {
             return;
         }
-        auto ctx = Context::createForProtocol(OpenPGP);
+
+        auto decJob = openpgp()->decryptJob();
+        auto ctx = Job::context(decJob);
         TestPassphraseProvider provider;
         ctx->setPassphraseProvider(&provider);
         ctx->setPinentryMode(Context::PinentryLoopback);
         ctx->setDecryptionFlags(Context::DecryptUnwrap);
 
-        auto decJob = new QGpgMEDecryptJob(ctx);
         QByteArray plainText;
         auto decResult = decJob->exec(cipherText, plainText);
 
@@ -282,12 +283,12 @@ private:
         QVERIFY(keys.size() == 1);
         delete listjob;
 
-        auto ctx = Context::createForProtocol(OpenPGP);
+        auto job = openpgp()->encryptJob();
+        auto ctx = Job::context(job);
         ctx->setPassphraseProvider(new TestPassphraseProvider);
         ctx->setPinentryMode(Context::PinentryLoopback);
         ctx->setArmor(true);
         ctx->setTextMode(true);
-        auto job = new QGpgMEEncryptJob(ctx);
         QByteArray cipherText;
         printf("Before exec, flags: %x\n", Context::Symmetric | Context::AlwaysTrust);
         auto result = job->exec(keys, QStringLiteral("Hello symmetric World").toUtf8(),
@@ -310,11 +311,11 @@ private:
         agentConf.write("allow-loopback-pinentry");
         agentConf.close();
 
-        auto ctx2 = Context::createForProtocol(OpenPGP);
+        auto decJob = openpgp()->decryptJob();
+        auto ctx2 = Job::context(decJob);
         ctx2->setPassphraseProvider(new TestPassphraseProvider);
         ctx2->setPinentryMode(Context::PinentryLoopback);
         ctx2->setTextMode(true);
-        auto decJob = new QGpgMEDecryptJob(ctx2);
         QByteArray plainText;
         auto decResult = decJob->exec(cipherText, plainText);
         QVERIFY(!decResult.error());
