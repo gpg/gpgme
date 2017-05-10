@@ -51,13 +51,6 @@ clean-local:
 	-$(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR private-keys-v1.d
 
-check-local: ./pubring.kbx ./gpgsm.conf \
-             ./private-keys-v1.d/$(key_id).key ./trustlist.txt
-
-# To guarantee that check-local is run before any tests we add this
-# dependency:
-initial.test : check-local
-
 export GNUPGHOME := $(abs_builddir)
 
 export GPG_AGENT_INFO :=
