@@ -77,6 +77,7 @@ export GNUPGHOME := $(abs_builddir)
 
 pubring-stamp: $(top_srcdir)/tests/gpg/pubdemo.asc \
 	             $(top_srcdir)/tests/gpg/secdemo.asc
+	-gpgconf --kill all
 	echo "ignore-invalid-option allow-loopback-pinentry" > $(abs_builddir)/gpg-agent.conf
 	echo "allow-loopback-pinentry" >> gpg-agent.conf
 	echo "ignore-invalid-option pinentry-mode" > gpg.conf

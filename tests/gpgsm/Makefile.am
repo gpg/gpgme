@@ -74,6 +74,7 @@ BUILT_SOURCES = gpgsm.conf trustlist.txt pubring-stamp \
 	echo faked-system-time 1008241200 >> ./gpgsm.conf
 
 ./private-keys-v1.d/gpg-sample.stamp: $(srcdir)/$(key_id)
+	-gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	cp $(srcdir)/$(key_id) private-keys-v1.d/$(key_id).key
 	echo x > ./private-keys-v1.d/gpg-sample.stamp

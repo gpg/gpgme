@@ -97,6 +97,7 @@ BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
            private-keys-v1.d/gpg-sample.stamp
 
 ./private-keys-v1.d/gpg-sample.stamp: $(private_keys)
+	-gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
           cp $$k private-keys-v1.d/$${k#$(test_srcdir)/}.key; \
