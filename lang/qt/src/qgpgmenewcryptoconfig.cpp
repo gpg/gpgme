@@ -49,6 +49,7 @@
 
 #include <sstream>
 #include <string>
+#include <functional>
 #include <cassert>
 #include <functional>
 
