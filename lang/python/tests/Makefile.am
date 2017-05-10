@@ -71,7 +71,7 @@ check: xcheck
 
 .PHONY: xcheck
 
-xcheck: ./pubring-stamp
+xcheck:
 	$(TESTS_ENVIRONMENT) $(PYTHON) $(srcdir)/run-tests.py \
 	  --interpreters="$(PYTHONS)" --srcdir=$(srcdir) $(TESTFLAGS) \
 	  $(XTESTS)
@@ -92,6 +92,9 @@ clean-local:
 	-$(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR -- private-keys-v1.d openpgp-revocs.d S.gpg-agent sshcontrol
 
+
+BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
+           private-keys-v1.d/gpg-sample.stamp
 
 ./private-keys-v1.d/gpg-sample.stamp: $(private_keys)
 	$(MKDIR_P) ./private-keys-v1.d
