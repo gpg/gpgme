@@ -70,6 +70,7 @@ CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg.conf tofu.db
 
 clean-local:
+	-$(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR  private-keys-v1.d crls.d
 
 export GNUPGHOME := $(abs_builddir)
