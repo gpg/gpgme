@@ -105,7 +105,6 @@ BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
 	echo x > ./private-keys-v1.d/gpg-sample.stamp
 
 ./pubring-stamp: $(test_srcdir)/pubdemo.asc           \
-                 ./gpg.conf ./gpg-agent.conf          \
                  ./private-keys-v1.d/gpg-sample.stamp
 	$(GPG) --batch --no-permission-warning \
                --import $(test_srcdir)/pubdemo.asc
