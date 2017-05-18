@@ -223,7 +223,7 @@ class BuildExtFirstHack(build):
         swig_sources.extend((self._in_build_base('gpgme.i'), self._in_build_base('helpers.c')))
         swig_opts.extend(['-I' + self.build_base,
                           '-outdir', os.path.join(self.build_lib, 'gpg')])
-        include_dirs.append(self.build_base)
+        include_dirs.insert(0, self.build_base)
 
         self.run_command('build_ext')
         build.run(self)
