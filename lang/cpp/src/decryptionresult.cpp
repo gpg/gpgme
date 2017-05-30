@@ -110,6 +110,11 @@ bool GpgME::DecryptionResult::isWrongKeyUsage() const
     return d && d->res.wrong_key_usage;
 }
 
+bool GpgME::DecryptionResult::isDeVs() const
+{
+    return d && d->res.is_de_vs;
+}
+
 const char *GpgME::DecryptionResult::fileName() const
 {
     return d ? d->res.file_name : 0 ;

@@ -416,23 +416,6 @@ parse_sec_field15 (gpgme_key_t key, gpgme_subkey_t subkey, char *field)
 }
 
 
-/* Parse the compliance field.  */
-static void
-parse_pub_field18 (gpgme_subkey_t subkey, char *field)
-{
-  char *p, *endp;
-  unsigned long ul;
-
-  for (p = field; p && (ul = strtoul (p, &endp, 10)) && p != endp; p = endp)
-    {
-      switch (ul)
-        {
-        case 23: subkey->is_de_vs = 1; break;
-        }
-    }
-}
-
-
 /* Parse a tfs record.  */
 static gpg_error_t
 parse_tfs_record (gpgme_user_id_t uid, char **field, int nfield)
@@ -731,7 +714,7 @@ keylist_colon_handler (void *priv, char *line)
 
       /* Field 18 has the compliance flags.  */
       if (fields >= 17 && *field[17])
-        parse_pub_field18 (subkey, field[17]);
+        PARSE_COMPLIANCE_FLAGS (field[17], subkey);
 
       if (fields >= 20)
         {
@@ -814,7 +797,7 @@ keylist_colon_handler (void *priv, char *line)
 
       /* Field 18 has the compliance flags.  */
       if (fields >= 17 && *field[17])
-        parse_pub_field18 (subkey, field[17]);
+        PARSE_COMPLIANCE_FLAGS (field[17], subkey);
 
       break;
 

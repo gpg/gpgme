@@ -136,6 +136,7 @@ public:
     }
     bool isWrongKeyUsage() const;
     bool isVerifiedUsingChainModel() const;
+    bool isDeVs() const;
 
     enum PKAStatus {
         UnknownPKAStatus, PKAVerificationFailed, PKAVerificationSucceeded

@@ -1078,6 +1078,10 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
       if (err)
 	return err;
 
+    case GPGME_STATUS_VERIFICATION_COMPLIANCE_MODE:
+      PARSE_COMPLIANCE_FLAGS (args, opd->current_sig);
+      break;
+
     default:
       break;
     }

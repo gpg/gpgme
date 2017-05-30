@@ -73,6 +73,7 @@ public:
         return isWrongKeyUsage();
     }
     bool isWrongKeyUsage() const;
+    bool isDeVs() const;
 
     const char *fileName() const;
 

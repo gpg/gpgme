@@ -278,6 +278,11 @@ bool GpgME::Signature::isVerifiedUsingChainModel() const
     return !isNull() && d->sigs[idx]->chain_model;
 }
 
+bool GpgME::Signature::isDeVs() const
+{
+    return !isNull() && d->sigs[idx]->is_de_vs;
+}
+
 GpgME::Signature::PKAStatus GpgME::Signature::pkaStatus() const
 {
     if (!isNull()) {

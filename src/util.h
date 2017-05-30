@@ -224,4 +224,26 @@ extern struct assuan_malloc_hooks _gpgme_assuan_malloc_hooks;
 int _gpgme_assuan_log_cb (assuan_context_t ctx, void *hook,
 			  unsigned int cat, const char *msg);
 
+
+
+/* Parse the compliance field.  */
+#define PARSE_COMPLIANCE_FLAGS(flags, result)				\
+  do {									\
+    char *comp_p, *comp_endp;						\
+    unsigned long comp_ul;						\
+									\
+    for (comp_p = (flags);						\
+	 comp_p								\
+	   && (comp_ul = strtoul (comp_p, &comp_endp, 10))		\
+	   && comp_p != comp_endp;					\
+	 comp_p = comp_endp)						\
+      {									\
+	switch (comp_ul)						\
+	  {								\
+	  case 23: (result)->is_de_vs = 1; break;			\
+	  }								\
+      }									\
+  } while (0)
+
+
 #endif /* UTIL_H */

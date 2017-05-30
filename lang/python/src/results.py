@@ -80,7 +80,7 @@ class Recipient(Result):
     pass
 
 class DecryptResult(Result):
-    _type = dict(wrong_key_usage=bool)
+    _type = dict(wrong_key_usage=bool, is_de_vs=bool)
     _map = dict(recipients=Recipient)
 
 class NewSignature(Result):
@@ -93,7 +93,7 @@ class Notation(Result):
     pass
 
 class Signature(Result):
-    _type = dict(wrong_key_usage=bool, chain_model=bool)
+    _type = dict(wrong_key_usage=bool, chain_model=bool, is_de_vs=bool)
     _map = dict(notations=Notation)
 
 class VerifyResult(Result):

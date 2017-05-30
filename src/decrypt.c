@@ -321,6 +321,10 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
         }
       break;
 
+    case GPGME_STATUS_DECRYPTION_COMPLIANCE_MODE:
+      PARSE_COMPLIANCE_FLAGS (args, &opd->result);
+      break;
+
     default:
       break;
     }

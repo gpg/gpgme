@@ -1312,8 +1312,12 @@ struct _gpgme_op_decrypt_result
   /* Key should not have been used for encryption.  */
   unsigned int wrong_key_usage : 1;
 
+  /* True if the message was encrypted in compliance to the de-vs
+   * mode.  */
+  unsigned int is_de_vs : 1;
+
   /* Internal to GPGME, do not use.  */
-  int _unused : 31;
+  int _unused : 30;
 
   gpgme_recipient_t recipients;
 
@@ -1490,8 +1494,11 @@ struct _gpgme_signature
   /* Validity has been verified using the chain model. */
   unsigned int chain_model : 1;
 
+  /* True if the signature is in compliance to the de-vs mode.  */
+  unsigned int is_de_vs : 1;
+
   /* Internal to GPGME, do not use.  */
-  int _unused : 28;
+  int _unused : 27;
 
   gpgme_validity_t validity;
   gpgme_error_t validity_reason;
@@ -2468,7 +2475,9 @@ typedef enum
     GPGME_STATUS_TOFU_USER = 95,
     GPGME_STATUS_TOFU_STATS = 96,
     GPGME_STATUS_TOFU_STATS_LONG = 97,
-    GPGME_STATUS_NOTATION_FLAGS = 98
+    GPGME_STATUS_NOTATION_FLAGS = 98,
+    GPGME_STATUS_DECRYPTION_COMPLIANCE_MODE = 99,
+    GPGME_STATUS_VERIFICATION_COMPLIANCE_MODE = 100
   }
 gpgme_status_code_t;
 

@@ -1,6 +1,15 @@
 Noteworthy changes in version 1.9.1 (unreleased)
 ------------------------------------------------
 
+ * Interface changes relative to the 1.9.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ gpgme_decrypt_result_t EXTENDED: New field 'is_de_vs'.
+ gpgme_signature_t      EXTENDED: New field 'is_de_vs'.
+ cpp: DecryptionResult::isDeVs NEW.
+ cpp: Signature::isDeVs        NEW.
+ py: DecryptResult EXTENDED: New boolean field 'is_de_vs'.
+ py: Signature     EXTENDED: New boolean field 'is_de_vs'.
 
 Noteworthy changes in version 1.9.0 (2017-03-28)
 ------------------------------------------------
