@@ -95,8 +95,8 @@ class GPGMEPP_EXPORT Component
 {
 public:
     Component() : comp() {}
-    explicit Component(const shared_gpgme_conf_comp_t &comp)
-        : comp(comp) {}
+    explicit Component(const shared_gpgme_conf_comp_t &gpgme_comp)
+        : comp(gpgme_comp) {}
 
     // copy ctor is ok
 
@@ -146,8 +146,8 @@ class GPGMEPP_EXPORT Option
 {
 public:
     Option() : comp(), opt(0) {}
-    Option(const shared_gpgme_conf_comp_t &comp, gpgme_conf_opt_t opt)
-        : comp(comp), opt(opt) {}
+    Option(const shared_gpgme_conf_comp_t &gpgme_comp, gpgme_conf_opt_t gpgme_opt)
+        : comp(gpgme_comp), opt(gpgme_opt) {}
 
     const Option &operator=(const Option &other)
     {
