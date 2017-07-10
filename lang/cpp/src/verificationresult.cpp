@@ -590,6 +590,7 @@ std::ostream &GpgME::operator<<(std::ostream &os, const Signature &sig)
            << "\n publicKeyAlgorithm:        " << protect(sig.publicKeyAlgorithmAsString())
            << "\n hashAlgorithm:             " << protect(sig.hashAlgorithmAsString())
            << "\n policyURL:                 " << protect(sig.policyURL())
+           << "\n isDeVs                     " << sig.isDeVs()
            << "\n notations:\n";
         const std::vector<Notation> nota = sig.notations();
         std::copy(nota.begin(), nota.end(),

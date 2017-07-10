@@ -230,6 +230,7 @@ std::ostream &GpgME::operator<<(std::ostream &os, const DecryptionResult &result
            << "\n fileName:             " << protect(result.fileName())
            << "\n unsupportedAlgorithm: " << protect(result.unsupportedAlgorithm())
            << "\n isWrongKeyUsage:      " << result.isWrongKeyUsage()
+           << "\n isDeVs                " << result.isDeVs()
            << "\n recipients:\n";
         const std::vector<DecryptionResult::Recipient> recipients = result.recipients();
         std::copy(recipients.begin(), recipients.end(),
