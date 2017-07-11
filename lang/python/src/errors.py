@@ -1,3 +1,4 @@
+# Copyright (C) 2016-2017 g10 Code GmbH
 # Copyright (C) 2004 Igor Belyi <belyi@users.sourceforge.net>
 # Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
@@ -30,32 +31,89 @@ util.process_constants('GPG_ERR_', globals())
 del util
 
 class GpgError(Exception):
-    pass
+    """A GPG Error
+
+    This is the base of all errors thrown by this library.
+
+    If the error originated from GPGME, then additional information
+    can be found by looking at 'code' for the error code, and 'source'
+    for the errors origin.  Suitable constants for comparison are
+    defined in this module.  'code_str' and 'source_str' are
+    human-readable versions of the former two properties.
+
+    If 'context' is not None, then it contains a human-readable hint
+    as to where the error originated from.
+
+    If 'results' is not None, it is a tuple containing results of the
+    operation that failed.  The tuples elements are the results of the
+    function that raised the error.  Some operations return results
+    even though they signal an error.  Of course this information must
+    be taken with a grain of salt.  But often, this information is
+    useful for diagnostic uses or to give the user feedback.  Since
+    the normal control flow is disrupted by the exception, the callee
+    can no longer return results, hence we attach them to the
+    exception objects.
+
+    """
+    def __init__(self, error=None, context=None, results=None):
+        self.error = error
+        self.context = context
+        self.results = results
+
+    @property
+    def code(self):
+        if self.error == None:
+            return None
+        return gpgme.gpgme_err_code(self.error)
+
+    @property
+    def code_str(self):
+        if self.error == None:
+            return None
+        return gpgme.gpgme_strerror(self.error)
+
+    @property
+    def source(self):
+        if self.error == None:
+            return None
+        return gpgme.gpgme_err_source(self.error)
+
+    @property
+    def source_str(self):
+        if self.error == None:
+            return None
+        return gpgme.gpgme_strsource(self.error)
+
+    def __str__(self):
+        msgs = []
+        if self.context != None:
+            msgs.append(self.context)
+        if self.error != None:
+            msgs.append(self.source_str)
+            msgs.append(self.code_str)
+        return ': '.join(msgs)
 
 class GPGMEError(GpgError):
-    def __init__(self, error = None, message = None):
-        self.error = error
-        self.message = message
+    '''Generic error
 
+    This is a generic error that wraps the underlying libraries native
+    error type.  It is thrown when the low-level API is invoked and
+    returns an error.  This is the error that was used in PyME.
+
+    '''
     @classmethod
     def fromSyserror(cls):
         return cls(gpgme.gpgme_err_code_from_syserror())
-
+    @property
+    def message(self):
+        return self.context
     def getstring(self):
-        message = "%s: %s" % (gpgme.gpgme_strsource(self.error),
-                              gpgme.gpgme_strerror(self.error))
-        if self.message != None:
-            message = "%s: %s" % (self.message, message)
-        return message
-
+        return str(self)
     def getcode(self):
-        return gpgme.gpgme_err_code(self.error)
-
+        return self.code
     def getsource(self):
-        return gpgme.gpgme_err_source(self.error)
+        return self.source
 
-    def __str__(self):
-        return self.getstring()
 
 def errorcheck(retval, extradata = None):
     if retval:
@@ -81,7 +139,8 @@ class EncryptionError(GpgError):
     pass
 
 class InvalidRecipients(EncryptionError):
-    def __init__(self, recipients):
+    def __init__(self, recipients, **kwargs):
+        EncryptionError.__init__(self, **kwargs)
         self.recipients = recipients
     def __str__(self):
         return ", ".join("{}: {}".format(r.fpr,
@@ -92,7 +151,8 @@ class DeryptionError(GpgError):
     pass
 
 class UnsupportedAlgorithm(DeryptionError):
-    def __init__(self, algorithm):
+    def __init__(self, algorithm, **kwargs):
+        DeryptionError.__init__(self, **kwargs)
         self.algorithm = algorithm
     def __str__(self):
         return self.algorithm
@@ -101,7 +161,8 @@ class SigningError(GpgError):
     pass
 
 class InvalidSigners(SigningError):
-    def __init__(self, signers):
+    def __init__(self, signers, **kwargs):
+        SigningError.__init__(self, **kwargs)
         self.signers = signers
     def __str__(self):
         return ", ".join("{}: {}".format(s.fpr,
@@ -109,11 +170,11 @@ class InvalidSigners(SigningError):
                          for s in self.signers)
 
 class VerificationError(GpgError):
-    pass
+    def __init__(self, result, **kwargs):
+        GpgError.__init__(self, **kwargs)
+        self.result = result
 
 class BadSignatures(VerificationError):
-    def __init__(self, result):
-        self.result = result
     def __str__(self):
         return ", ".join("{}: {}".format(s.fpr,
                                          gpgme.gpgme_strerror(s.status))
@@ -121,8 +182,8 @@ class BadSignatures(VerificationError):
                          if s.status != NO_ERROR)
 
 class MissingSignatures(VerificationError):
-    def __init__(self, result, missing):
-        self.result = result
+    def __init__(self, result, missing, **kwargs):
+        VerificationError.__init__(self, result, **kwargs)
         self.missing = missing
     def __str__(self):
         return ", ".join(k.subkeys[0].fpr for k in self.missing)

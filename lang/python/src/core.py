@@ -132,7 +132,7 @@ class GpgmeWrapper(object):
                 result = func(slf.wrapped, *args)
                 if slf._callback_excinfo:
                     gpgme.gpg_raise_callback_exception(slf)
-                return errorcheck(result, "Invocation of " + name)
+                return errorcheck(result, name)
         else:
             def _funcwrap(slf, *args):
                 result = func(slf.wrapped, *args)
@@ -206,6 +206,17 @@ class Context(GpgmeWrapper):
         self.protocol = protocol
         self.home_dir = home_dir
 
+    def __read__(self, sink, data):
+        """Read helper
+
+        Helper function to retrieve the results of an operation, or
+        None if SINK is given.
+        """
+        if sink or data == None:
+            return None
+        data.seek(0, os.SEEK_SET)
+        return data.read()
+
     def __repr__(self):
         return (
             "Context(armor={0.armor}, "
@@ -270,15 +281,25 @@ class Context(GpgmeWrapper):
             else:
                 self.op_encrypt(recipients, flags, plaintext, ciphertext)
         except errors.GPGMEError as e:
+            result = self.op_encrypt_result()
+            sig_result = self.op_sign_result() if sign else None
+            results = (self.__read__(sink, ciphertext),
+                       result, sig_result)
             if e.getcode() == errors.UNUSABLE_PUBKEY:
-                result = self.op_encrypt_result()
                 if result.invalid_recipients:
-                    raise errors.InvalidRecipients(result.invalid_recipients)
+                    raise errors.InvalidRecipients(result.invalid_recipients,
+                                                   error=e.error,
+                                                   results=results)
             if e.getcode() == errors.UNUSABLE_SECKEY:
                 sig_result = self.op_sign_result()
                 if sig_result.invalid_signers:
-                    raise errors.InvalidSigners(sig_result.invalid_signers)
-            raise
+                    raise errors.InvalidSigners(sig_result.invalid_signers,
+                                                error=e.error,
+                                                results=results)
+            # Otherwise, just raise the error, but attach the results
+            # first.
+            e.results = results
+            raise e
         finally:
             if passphrase != None:
                 self.pinentry_mode = old_pinentry_mode
@@ -290,11 +311,7 @@ class Context(GpgmeWrapper):
         sig_result = self.op_sign_result() if sign else None
         assert not sig_result or not sig_result.invalid_signers
 
-        cipherbytes = None
-        if not sink:
-            ciphertext.seek(0, os.SEEK_SET)
-            cipherbytes = ciphertext.read()
-        return cipherbytes, result, sig_result
+        return self.__read__(sink, ciphertext), result, sig_result
 
     def decrypt(self, ciphertext, sink=None, passphrase=None, verify=True):
         """Decrypt data
@@ -340,6 +357,13 @@ class Context(GpgmeWrapper):
                 self.op_decrypt_verify(ciphertext, plaintext)
             else:
                 self.op_decrypt(ciphertext, plaintext)
+        except errors.GPGMEError as e:
+            result = self.op_decrypt_result()
+            verify_result = self.op_verify_result() if verify else None
+            # Just raise the error, but attach the results first.
+            e.results = (self.__read__(sink, plaintext),
+                         result, verify_result)
+            raise e
         finally:
             if passphrase != None:
                 self.pinentry_mode = old_pinentry_mode
@@ -348,13 +372,15 @@ class Context(GpgmeWrapper):
 
         result = self.op_decrypt_result()
         verify_result = self.op_verify_result() if verify else None
+        results = (self.__read__(sink, plaintext), result, verify_result)
         if result.unsupported_algorithm:
-            raise errors.UnsupportedAlgorithm(result.unsupported_algorithm)
+            raise errors.UnsupportedAlgorithm(result.unsupported_algorithm,
+                                              results=results)
 
         if verify:
             if any(s.status != errors.NO_ERROR
                    for s in verify_result.signatures):
-                raise errors.BadSignatures(verify_result)
+                raise errors.BadSignatures(verify_result, results=results)
 
         if verify and verify != True:
             missing = list()
@@ -372,13 +398,10 @@ class Context(GpgmeWrapper):
                 if not ok:
                     missing.append(key)
             if missing:
-                raise errors.MissingSignatures(verify_result, missing)
+                raise errors.MissingSignatures(verify_result, missing,
+                                               results=results)
 
-        plainbytes = None
-        if not sink:
-            plaintext.seek(0, os.SEEK_SET)
-            plainbytes = plaintext.read()
-        return plainbytes, result, verify_result
+        return results
 
     def sign(self, data, sink=None, mode=constants.SIG_MODE_NORMAL):
         """Sign data
@@ -408,20 +431,20 @@ class Context(GpgmeWrapper):
         try:
             self.op_sign(data, signeddata, mode)
         except errors.GPGMEError as e:
+            results = (self.__read__(sink, signeddata),
+                       self.op_sign_result())
             if e.getcode() == errors.UNUSABLE_SECKEY:
-                result = self.op_sign_result()
-                if result.invalid_signers:
-                    raise errors.InvalidSigners(result.invalid_signers)
-            raise
+                if results[1].invalid_signers:
+                    raise errors.InvalidSigners(results[1].invalid_signers,
+                                                error=e.error,
+                                                results=results)
+            e.results = results
+            raise e
 
         result = self.op_sign_result()
         assert not result.invalid_signers
 
-        signedbytes = None
-        if not sink:
-            signeddata.seek(0, os.SEEK_SET)
-            signedbytes = signeddata.read()
-        return signedbytes, result
+        return self.__read__(sink, signeddata), result
 
     def verify(self, signed_data, signature=None, sink=None, verify=[]):
         """Verify signatures
@@ -451,20 +474,26 @@ class Context(GpgmeWrapper):
         else:
             data = sink if sink else Data()
 
-        if signature:
-            self.op_verify(signature, signed_data, None)
-        else:
-            self.op_verify(signed_data, None, data)
+        try:
+            if signature:
+                self.op_verify(signature, signed_data, None)
+            else:
+                self.op_verify(signed_data, None, data)
+        except errors.GPGMEError as e:
+            # Just raise the error, but attach the results first.
+            e.results = (self.__read__(sink, data),
+                         self.op_verify_result())
+            raise e
 
-        result = self.op_verify_result()
-        if any(s.status != errors.NO_ERROR for s in result.signatures):
-            raise errors.BadSignatures(result)
+        results = (self.__read__(sink, data), self.op_verify_result())
+        if any(s.status != errors.NO_ERROR for s in results[1].signatures):
+            raise errors.BadSignatures(results[1], results=results)
 
         missing = list()
         for key in verify:
             ok = False
             for subkey in key.subkeys:
-                for sig in result.signatures:
+                for sig in results[1].signatures:
                     if sig.summary & constants.SIGSUM_VALID == 0:
                         continue
                     if subkey.can_sign and subkey.fpr == sig.fpr:
@@ -475,13 +504,10 @@ class Context(GpgmeWrapper):
             if not ok:
                 missing.append(key)
         if missing:
-            raise errors.MissingSignatures(result, missing)
+            raise errors.MissingSignatures(results[1], missing,
+                                           results=results)
 
-        plainbytes = None
-        if data and not sink:
-            data.seek(0, os.SEEK_SET)
-            plainbytes = data.read()
-        return plainbytes, result
+        return results
 
     def keylist(self, pattern=None, secret=False,
                 mode=constants.keylist.mode.LOCAL,
