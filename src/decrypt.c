@@ -43,7 +43,11 @@ typedef struct
   gpg_error_t failure_code;
 
   int okay;
+
+  /* A flag telling that the a decryption failed and an optional error
+   * code to further specify the failure.  */
   int failed;
+  gpg_error_t pkdecrypt_failed;
 
   /* A pointer to the next pointer of the last recipient in the list.
      This makes appending new invalid signers painless while
@@ -156,6 +160,31 @@ parse_status_error (char *args, op_data_t opd)
       if (gpg_err_code (err) == GPG_ERR_WRONG_KEY_USAGE)
         opd->result.wrong_key_usage = 1;
     }
+  else if (!strcmp (field[0], "pkdecrypt_failed"))
+    {
+      switch (gpg_err_code (err))
+        {
+        case GPG_ERR_CANCELED:
+        case GPG_ERR_FULLY_CANCELED:
+          /* It is better to return with a cancel error code than the
+           * general decryption failed error code.  */
+          opd->pkdecrypt_failed = gpg_err_make (gpg_err_source (err),
+                                                GPG_ERR_CANCELED);
+          break;
+
+        case GPG_ERR_BAD_PASSPHRASE:
+          /* A bad passphrase is severe enough that we return this
+           * error code.  */
+          opd->pkdecrypt_failed = err;
+          break;
+
+        default:
+          /* For now all other error codes are ignored and the
+           * standard DECRYPT_FAILED is returned.  */
+          break;
+        }
+    }
+
 
   return 0;
 }
@@ -242,7 +271,9 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
     case GPGME_STATUS_EOF:
       /* FIXME: These error values should probably be attributed to
 	 the underlying crypto engine (as error source).  */
-      if (opd->failed)
+      if (opd->failed && opd->pkdecrypt_failed)
+        return opd->pkdecrypt_failed;
+      else if (opd->failed)
 	return gpg_error (GPG_ERR_DECRYPT_FAILED);
       else if (!opd->okay)
 	return gpg_error (GPG_ERR_NO_DATA);
