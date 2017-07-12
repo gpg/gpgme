@@ -4893,7 +4893,7 @@ if @var{ctx}, @var{cipher} or @var{plain} is not a valid pointer,
 @code{GPG_ERR_NO_DATA} if @var{cipher} does not contain any data to
 decrypt, @code{GPG_ERR_DECRYPT_FAILED} if @var{cipher} is not a valid
 cipher text, @code{GPG_ERR_BAD_PASSPHRASE} if the passphrase for the
-secret key could not be retrieved, and passes through any errors that
+secret key could not be retrieved, and passes through some errors that
 are reported by the crypto engine support routines.
 @end deftypefun
 

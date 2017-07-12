@@ -1,6 +1,6 @@
 /* decrypt.c - Decrypt function.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004, 2017 g10 Code GmbH
 
    This file is part of GPGME.
 
@@ -48,6 +48,13 @@ typedef struct
    * code to further specify the failure.  */
   int failed;
   gpg_error_t pkdecrypt_failed;
+
+  /* At least one secret key is not available.  gpg issues NO_SECKEY
+   * status lines for each key the message has been encrypted to but
+   * that secret key is not available.  This can't be done for hidden
+   * recipients, though.  We track it here to allow for a better error
+   * message that the general DECRYPTION_FAILED. */
+  int any_no_seckey;
 
   /* A pointer to the next pointer of the last recipient in the list.
      This makes appending new invalid signers painless while
@@ -273,6 +280,8 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 	 the underlying crypto engine (as error source).  */
       if (opd->failed && opd->pkdecrypt_failed)
         return opd->pkdecrypt_failed;
+      else if (opd->failed && opd->any_no_seckey)
+	return gpg_error (GPG_ERR_NO_SECKEY);
       else if (opd->failed)
 	return gpg_error (GPG_ERR_DECRYPT_FAILED);
       else if (!opd->okay)
@@ -319,7 +328,6 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
     case GPGME_STATUS_NO_SECKEY:
       {
 	gpgme_recipient_t rec = opd->result.recipients;
-
 	while (rec)
 	  {
 	    if (!strcmp (rec->keyid, args))
@@ -332,6 +340,7 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 	/* FIXME: Is this ok?  */
 	if (!rec)
 	  return trace_gpg_error (GPG_ERR_INV_ENGINE);
+        opd->any_no_seckey = 1;
       }
       break;
 
