@@ -124,7 +124,43 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
   return &opd->result;
 }
 
+
 
+/* Parse the ARGS of an error status line and record some error
+ * conditions at OPD.  Returns 0 on success.  */
+static gpgme_error_t
+parse_status_error (char *args, op_data_t opd)
+{
+  gpgme_error_t err;
+  char *field[3];
+  int nfields;
+
+  nfields = _gpgme_split_fields (args, field, DIM (field));
+  if (nfields < 1)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Required arg missing.  */
+  err = nfields < 2 ? 0 : atoi (field[1]);
+
+  if (!strcmp (field[0], "decrypt.algorithm"))
+    {
+      if (gpg_err_code (err) == GPG_ERR_UNSUPPORTED_ALGORITHM
+          && nfields > 2
+          && strcmp (field[2], "?"))
+        {
+          opd->result.unsupported_algorithm = strdup (field[2]);
+          if (!opd->result.unsupported_algorithm)
+            return gpg_error_from_syserror ();
+        }
+    }
+  else if (!strcmp (field[0], "decrypt.keyusage"))
+    {
+      if (gpg_err_code (err) == GPG_ERR_WRONG_KEY_USAGE)
+        opd->result.wrong_key_usage = 1;
+    }
+
+  return 0;
+}
+
+
 static gpgme_error_t
 parse_enc_to (char *args, gpgme_recipient_t *recp, gpgme_protocol_t protocol)
 {
@@ -230,47 +266,9 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       /* Note that this is an informational status code which should
          not lead to an error return unless it is something not
          related to the backend.  */
-      {
-	const char d_alg[] = "decrypt.algorithm";
-	const char k_alg[] = "decrypt.keyusage";
-
-	if (!strncmp (args, d_alg, sizeof (d_alg) - 1))
-	  {
-	    args += sizeof (d_alg) - 1;
-	    while (*args == ' ')
-	      args++;
-
-	    if (gpg_err_code (atoi (args)) == GPG_ERR_UNSUPPORTED_ALGORITHM)
-	      {
-		char *end;
-
-		while (*args && *args != ' ')
-		  args++;
-		while (*args == ' ')
-		  args++;
-
-		end = strchr (args, ' ');
-		if (end)
-		  *end = '\0';
-
-		if (!(*args == '?' && *(args + 1) == '\0'))
-		  {
-		    opd->result.unsupported_algorithm = strdup (args);
-		    if (!opd->result.unsupported_algorithm)
-		      return gpg_error_from_syserror ();
-		  }
-	      }
-	  }
-	else if (!strncmp (args, k_alg, sizeof (k_alg) - 1))
-	  {
-	    args += sizeof (k_alg) - 1;
-	    while (*args == ' ')
-	      args++;
-
-	    if (gpg_err_code (atoi (args)) == GPG_ERR_WRONG_KEY_USAGE)
-	      opd->result.wrong_key_usage = 1;
-	  }
-      }
+      err = parse_status_error (args, opd);
+      if (err)
+        return err;
       break;
 
     case GPGME_STATUS_ENC_TO:

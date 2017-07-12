@@ -374,7 +374,7 @@ _gpgme_encode_percent_string (const char *src, char **destp, size_t len)
 
 
 /* Split a string into space delimited fields and remove leading and
- * trailing spaces from each field.  A pointer to the each field is
+ * trailing spaces from each field.  A pointer to each field is
  * stored in ARRAY.  Stop splitting at ARRAYSIZE fields.  The function
  * modifies STRING.  The number of parsed fields is returned.
  */
