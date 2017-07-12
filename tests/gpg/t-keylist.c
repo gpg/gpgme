@@ -569,7 +569,7 @@ main (int argc, char **argv)
   if (keys[i].fpr)
     {
       fprintf (stderr, "Less keys (%d) returned than expected (%d)\n",
-	       i, DIM (keys) - 1);
+	       i, (int)(DIM (keys) - 1));
       exit (1);
     }
 
