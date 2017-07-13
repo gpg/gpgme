@@ -39,6 +39,7 @@ do
       mv "$GNUPGHOME/$F" "$GNUPGHOME/$F~"
       sed -e "s#^agent-program.*#agent-program ${GPG_AGENT}|--debug-quick-random#" \
           >"$GNUPGHOME/$F" <"$GNUPGHOME/$F~"
+      rm "$GNUPGHOME/$F~"
   fi
 done
 
