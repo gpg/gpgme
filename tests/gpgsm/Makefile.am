@@ -65,6 +65,7 @@ BUILT_SOURCES = gpgsm.conf trustlist.txt pubring-stamp \
 ./gpgsm.conf:
 	echo disable-crl-checks > ./gpgsm.conf
 	echo faked-system-time 1008241200 >> ./gpgsm.conf
+	echo "agent-program `which $(GPG_AGENT)`|--debug-quick-random" >> ./gpg.conf
 
 ./private-keys-v1.d/gpg-sample.stamp: $(srcdir)/$(key_id)
 	-gpgconf --kill all
