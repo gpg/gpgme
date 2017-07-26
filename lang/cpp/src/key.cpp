@@ -236,7 +236,18 @@ bool Key::isQualified() const
 
 bool Key::isDeVs() const
 {
-    return key && key->subkeys && key->subkeys->is_de_vs;
+    if (!key) {
+        return false;
+    }
+    if (!key->subkeys || !key->subkeys->is_de_vs) {
+        return false;
+    }
+    for (gpgme_sub_key_t subkey = key->subkeys ; subkey ; subkey = subkey->next) {
+        if (!subkey->is_de_vs) {
+            return false;
+        }
+    }
+    return true;
 }
 
 const char *Key::issuerSerial() const
