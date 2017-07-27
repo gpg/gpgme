@@ -145,10 +145,18 @@ parse_status_error (char *args, op_data_t opd)
   gpgme_error_t err;
   char *field[3];
   int nfields;
+  char *args2;
 
-  nfields = _gpgme_split_fields (args, field, DIM (field));
+  if (!args)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+
+  args2 = strdup (args); /* Split modifies the input string. */
+  nfields = _gpgme_split_fields (args2, field, DIM (field));
   if (nfields < 1)
-    return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Required arg missing.  */
+    {
+      free (args2);
+      return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Required arg missing.  */
+    }
   err = nfields < 2 ? 0 : atoi (field[1]);
 
   if (!strcmp (field[0], "decrypt.algorithm"))
@@ -159,7 +167,10 @@ parse_status_error (char *args, op_data_t opd)
         {
           opd->result.unsupported_algorithm = strdup (field[2]);
           if (!opd->result.unsupported_algorithm)
-            return gpg_error_from_syserror ();
+            {
+              free (args2);
+              return gpg_error_from_syserror ();
+            }
         }
     }
   else if (!strcmp (field[0], "decrypt.keyusage"))
@@ -193,6 +204,7 @@ parse_status_error (char *args, op_data_t opd)
     }
 
 
+  free (args2);
   return 0;
 }
 
