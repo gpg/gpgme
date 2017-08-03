@@ -71,7 +71,7 @@ check: xcheck
 
 .PHONY: xcheck
 
-xcheck:
+xcheck:	all
 	$(TESTS_ENVIRONMENT) $(PYTHON) $(srcdir)/run-tests.py \
 	  --interpreters="$(PYTHONS)" --srcdir=$(srcdir) $(TESTFLAGS) \
 	  $(XTESTS)
