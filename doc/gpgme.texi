@@ -3276,6 +3276,75 @@ Reserved for the time of the last update of this user ID.
 @end deftp
 
 
+@deftp {Data type} gpgme_tofu_info_t
+
+The @code{gpgme_tofu_info_t} type is a pointer to a tofu info
+structure.  Tofu info structures are one component of a
+@code{gpgme_user_id_t} object, and provide information from the TOFU
+database pertaining to the user ID.
+
+The tofu info structure has the following members:
+
+@table @code
+@item gpgme_key_sig_t next
+This is a pointer to the next tofu info structure in the linked
+list, or @code{NULL} if this is the last element.
+
+@item unsigned int validity : 3
+This is the TOFU validity.  It can have the following values:
+
+@table @code
+@item 0
+The value @code{0} indicates a conflict.
+
+@item 1
+The value @code{1} indicates a key without history.
+
+@item 2
+The value @code{2} indicates a key with too little history.
+
+@item 3
+The value @code{3} indicates a key with enough history for basic trust.
+
+@item 4
+The value @code{4} indicates a key with a lot of history.
+
+@end table
+
+@item unsigned int policy : 4
+This is the TOFU policy, see @code{gpgme_tofu_policy_t}.
+
+@item unsigned short signcount
+This is the number of signatures seen for this binding (or
+@code{USHRT_MAX} if there are more than that).
+
+@item unsigned short encrcount
+This is the number of encryptions done with this binding (or
+@code{USHRT_MAX} if there are more than that).
+
+@item unsigned long signfirst
+Number of seconds since Epoch when the first signature was seen with
+this binding.
+
+@item unsigned long signlast
+Number of seconds since Epoch when the last signature was seen with
+this binding.
+
+@item unsigned long encrfirst
+Number of seconds since Epoch when the first encryption was done with
+this binding.
+
+@item unsigned long encrlast
+Number of seconds since Epoch when the last encryption was done with
+this binding.
+
+@item char *description
+A human-readable string summarizing the TOFU data (or NULL).
+
+@end table
+@end deftp
+
+
 @deftp {Data type} gpgme_key_sig_t
 
 The @code{gpgme_key_sig_t} type is a pointer to a key signature structure.
@@ -5196,6 +5265,9 @@ The defined bits are:
 
   @item GPGME_SIGSUM_SYS_ERROR
   A system error occured.
+
+  @item GPGME_SIGSUM_TOFU_CONFLICT
+  A TOFU conflict was detected.
   @end table
 
 @item char *fpr
