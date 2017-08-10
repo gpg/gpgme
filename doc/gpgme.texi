@@ -4449,34 +4449,32 @@ The function @code{gpgme_op_import_start} initiates a
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 import could be started successfully, @code{GPG_ERR_INV_VALUE} if
-@var{keydata} if @var{ctx} or @var{keydata} is not a valid pointer,
-and @code{GPG_ERR_NO_DATA} if @var{keydata} is an empty data buffer.
+@var{ctx} or @var{keydata} is not a valid pointer, and
+@code{GPG_ERR_NO_DATA} if @var{keydata} is an empty data buffer.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_import_keys (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t *@var{keys}})
-The function @code{gpgme_op_import_keys} adds the keys described by the
-@code{NULL} terminated array @var{keys} to the key ring of the crypto
-engine used by @var{ctx}.  This function is the general interface to
-move a key from one crypto engine to another as long as they are
-compatible.  In particular it is used to actually import and make keys
-permanent which have been retrieved from an external source (i.e. using
-@code{GPGME_KEYLIST_MODE_EXTERN}).  @footnote{Thus it is a replacement
-for the usual workaround of exporting and then importing a key to make
-an X.509 key permanent.}
+The function @code{gpgme_op_import_keys} adds the keys described by
+the @code{NULL} terminated array @var{keys} to the key ring of the
+crypto engine used by @var{ctx}.  It is used to actually import and
+make keys permanent which have been retrieved from an external source
+(i.e. using @code{GPGME_KEYLIST_MODE_EXTERN}).  @footnote{Thus it is a
+replacement for the usual workaround of exporting and then importing a
+key to make an X.509 key permanent.}
 
 Only keys of the currently selected protocol of @var{ctx} are
 considered for import.  Other keys specified by the @var{keys} are
 ignored.  As of now all considered keys must have been retrieved using
-the same method, that is the used key listing mode must be identical.
+the same method, i.e. the used key listing mode must be identical.
 
 After the operation completed successfully, the result can be
 retrieved with @code{gpgme_op_import_result}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 import was completed successfully, @code{GPG_ERR_INV_VALUE} if
-@var{keydata} if @var{ctx} or @var{keydata} is not a valid pointer,
-@code{GPG_ERR_CONFLICT} if the key listing mode does not match, and
-@code{GPG_ERR_NO_DATA} if no keys are considered for export.
+@var{ctx} is not a valid pointer, @code{GPG_ERR_CONFLICT} if the key
+listing mode does not match, and @code{GPG_ERR_NO_DATA} if no keys are
+considered for export.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_import_keys_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t *@var{keys}})

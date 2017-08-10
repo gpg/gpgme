@@ -392,13 +392,12 @@ gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t *keys)
 }
 
 
-/* Import the keys from the array KEYS into the keyring.  This
-   function allows to move a key from one engine to another as long as
-   they are compatible.  In particular it is used to actually import
-   keys retrieved from an external source (i.e. using
-   GPGME_KEYLIST_MODE_EXTERN).  It replaces the old workaround of
-   exporting and then importing a key as used to make an X.509 key
-   permanent.  This function automagically does the right thing.
+/* Import the keys from the array KEYS into the keyring.  In
+   particular it is used to actually import keys retrieved from an
+   external source (i.e. using GPGME_KEYLIST_MODE_EXTERN).  It
+   replaces the old workaround of exporting and then importing a key
+   as used to make an X.509 key permanent.  This function
+   automagically does the right thing.
 
    KEYS is a NULL terminated array of gpgme key objects.  The result
    is the usual import result structure.  Only keys matching the
