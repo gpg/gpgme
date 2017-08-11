@@ -108,7 +108,7 @@ delete_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 static gpgme_error_t
 delete_start (gpgme_ctx_t ctx, int synchronous, const gpgme_key_t key,
-	      int allow_secret)
+	      unsigned int flags)
 {
   gpgme_error_t err;
 
@@ -118,7 +118,7 @@ delete_start (gpgme_ctx_t ctx, int synchronous, const gpgme_key_t key,
 
   _gpgme_engine_set_status_handler (ctx->engine, delete_status_handler, ctx);
 
-  return _gpgme_engine_op_delete (ctx->engine, key, allow_secret);
+  return _gpgme_engine_op_delete (ctx->engine, key, flags);
 }
 
 
@@ -130,7 +130,7 @@ gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete", ctx,
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete_start", ctx,
 	      "key=%p (%s), allow_secret=%i", key,
 	      (key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", allow_secret);
@@ -138,7 +138,8 @@ gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = delete_start (ctx, 0, key, allow_secret);
+  err = delete_start (ctx, 0, key,
+		      allow_secret ? GPGME_DELETE_ALLOW_SECRET : 0);
   return TRACE_ERR (err);
 }
 
@@ -158,7 +159,50 @@ gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key, int allow_secret)
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = delete_start (ctx, 1, key, allow_secret);
+  err = delete_start (ctx, 1, key,
+		      allow_secret ? GPGME_DELETE_ALLOW_SECRET : 0);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  return err;
+}
+
+
+/* Delete KEY from the keyring.  */
+gpgme_error_t
+gpgme_op_delete_ext_start (gpgme_ctx_t ctx, const gpgme_key_t key,
+			   unsigned int flags)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete_ext_start", ctx,
+	      "key=%p (%s), flags=0x%x", key,
+	      (key->subkeys && key->subkeys->fpr) ?
+	      key->subkeys->fpr : "invalid", flags);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  err = delete_start (ctx, 0, key, flags);
+  return TRACE_ERR (err);
+}
+
+
+/* Delete KEY from the keyring.  */
+gpgme_error_t
+gpgme_op_delete_ext (gpgme_ctx_t ctx, const gpgme_key_t key,
+		     unsigned int flags)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete_ext", ctx,
+	      "key=%p (%s), flags=0x%x", key,
+	      (key->subkeys && key->subkeys->fpr) ?
+	      key->subkeys->fpr : "invalid", flags);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  err = delete_start (ctx, 1, key, flags);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return err;

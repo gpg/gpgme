@@ -209,6 +209,8 @@ GPGME_1.0 {
     gpgme_op_decrypt_verify_start;
     gpgme_op_delete;
     gpgme_op_delete_start;
+    gpgme_op_delete_ext;
+    gpgme_op_delete_ext_start;
     gpgme_op_edit;
     gpgme_op_edit_start;
     gpgme_op_encrypt;

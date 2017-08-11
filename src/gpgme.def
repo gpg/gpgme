@@ -262,5 +262,8 @@ EXPORTS
     gpgme_op_decrypt_ext                  @195
     gpgme_op_decrypt_ext_start            @196
 
+    gpgme_op_delete_ext                   @197
+    gpgme_op_delete_ext_start             @198
+
 ; END
 

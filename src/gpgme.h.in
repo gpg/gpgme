@@ -1788,6 +1788,15 @@ gpgme_error_t gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 gpgme_error_t gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key,
 			       int allow_secret);
 
+/* Flags for the key delete functions.  */
+#define GPGME_DELETE_ALLOW_SECRET (1 << 0)  /* Also delete secret key.     */
+#define GPGME_DELETE_FORCE        (1 << 1)  /* Do not ask user to confirm.  */
+
+gpgme_error_t gpgme_op_delete_ext_start (gpgme_ctx_t ctx, const gpgme_key_t key,
+					 unsigned int flags);
+gpgme_error_t gpgme_op_delete_ext (gpgme_ctx_t ctx, const gpgme_key_t key,
+				   unsigned int flags);
+
 
 /*
  * Key signing interface

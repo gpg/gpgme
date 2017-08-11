@@ -1162,7 +1162,7 @@ gpgsm_decrypt (void *engine,
 
 
 static gpgme_error_t
-gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
+gpgsm_delete (void *engine, gpgme_key_t key, unsigned int flags)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
@@ -1171,7 +1171,7 @@ gpgsm_delete (void *engine, gpgme_key_t key, int allow_secret)
   char *line;
   int length = 8;	/* "DELKEYS " */
 
-  (void)allow_secret;
+  (void)flags;
 
   if (!fpr)
     return gpg_error (GPG_ERR_INV_VALUE);

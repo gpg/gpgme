@@ -90,7 +90,7 @@ gpgme_error_t _gpgme_engine_op_decrypt (engine_t engine,
                                         int export_session_key,
                                         const char *override_session_key);
 gpgme_error_t _gpgme_engine_op_delete (engine_t engine, gpgme_key_t key,
-				       int allow_secret);
+				       unsigned int flags);
 gpgme_error_t _gpgme_engine_op_edit (engine_t engine, int type,
 				     gpgme_key_t key, gpgme_data_t out,
 				     gpgme_ctx_t ctx /* FIXME */);

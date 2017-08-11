@@ -4600,11 +4600,20 @@ operation is started on the context.
 @cindex key, delete
 @cindex key ring, delete from
 
-@deftypefun gpgme_error_t gpgme_op_delete (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{int @var{allow_secret}})
-The function @code{gpgme_op_delete} deletes the key @var{key} from the
-key ring of the crypto engine used by @var{ctx}.  If
-@var{allow_secret} is @code{0}, only public keys are deleted,
-otherwise secret keys are deleted as well, if that is supported.
+@deftypefun gpgme_error_t gpgme_op_delete_ext (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{unsigned int @var{flags}})
+The function @code{gpgme_op_delete_ext} deletes the key @var{key} from
+the key ring of the crypto engine used by @var{ctx}.
+
+@var{flags} can be set to the bit-wise OR of the following flags:
+
+@table @code
+@item GPGME_DELETE_ALLOW_SECRET
+If not set, only public keys are deleted. If set, secret keys are
+deleted as well, if that is supported.
+
+@item GPGME_DELETE_FORCE
+If set, the user is not asked to confirm the deletion.
+@end table
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the key
 was deleted successfully, @code{GPG_ERR_INV_VALUE} if @var{ctx} or
@@ -4615,14 +4624,26 @@ unambiguously, and @code{GPG_ERR_CONFLICT} if the secret key for
 @var{key} is available, but @var{allow_secret} is zero.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_delete_start (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{int @var{allow_secret}})
-The function @code{gpgme_op_delete_start} initiates a
+@deftypefun gpgme_error_t gpgme_op_delete_ext_start (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{unsigned int @var{flags}})
+The function @code{gpgme_op_delete_ext_start} initiates a
 @code{gpgme_op_delete} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 operation was started successfully, and @code{GPG_ERR_INV_VALUE} if
 @var{ctx} or @var{key} is not a valid pointer.
+@end deftypefun
+
+The following functions allow only to use one particular flag.
+
+@deftypefun gpgme_error_t gpgme_op_delete (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{int @var{allow_secret}})
+Similar to @code{gpgme_op_delete_ext}, but only the flag
+@code{GPGME_DELETE_ALLOW_SECRET} can be provided.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_delete_start (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{int @var{allow_secret}})
+Similar to @code{gpgme_op_delete_ext_start}, but only the flag
+@code{GPGME_DELETE_ALLOW_SECRET} can be provided.
 @end deftypefun
 
 

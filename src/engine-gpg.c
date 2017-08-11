@@ -1628,13 +1628,18 @@ gpg_decrypt (void *engine,
 }
 
 static gpgme_error_t
-gpg_delete (void *engine, gpgme_key_t key, int allow_secret)
+gpg_delete (void *engine, gpgme_key_t key, unsigned int flags)
 {
   engine_gpg_t gpg = engine;
-  gpgme_error_t err;
+  gpgme_error_t err = 0;
+  int allow_secret = flags & GPGME_DELETE_ALLOW_SECRET;
+  int force = flags & GPGME_DELETE_FORCE;
 
-  err = add_arg (gpg, allow_secret ? "--delete-secret-and-public-key"
-		 : "--delete-key");
+  if (force)
+    err = add_arg (gpg, "--yes");
+  if (!err)
+    err = add_arg (gpg, allow_secret ? "--delete-secret-and-public-key"
+		   : "--delete-key");
   if (!err)
     err = add_arg (gpg, "--");
   if (!err)

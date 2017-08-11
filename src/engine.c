@@ -671,7 +671,7 @@ _gpgme_engine_op_decrypt (engine_t engine,
 
 gpgme_error_t
 _gpgme_engine_op_delete (engine_t engine, gpgme_key_t key,
-			 int allow_secret)
+			 unsigned int flags)
 {
   if (!engine)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -679,7 +679,7 @@ _gpgme_engine_op_delete (engine_t engine, gpgme_key_t key,
   if (!engine->ops->delete)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->delete) (engine->engine, key, allow_secret);
+  return (*engine->ops->delete) (engine->engine, key, flags);
 }
 
 

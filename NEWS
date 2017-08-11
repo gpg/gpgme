@@ -6,6 +6,10 @@ Noteworthy changes in version 1.9.1 (unreleased)
 
  gpgme_decrypt_result_t EXTENDED: New field 'is_de_vs'.
  gpgme_signature_t      EXTENDED: New field 'is_de_vs'.
+ gpgme_op_delete_ext    NEW
+ gpgme_op_delete_ext_start NEW
+ GPGME_DELETE_ALLOW_SECRET NEW
+ GPGME_DELETE_FORCE     NEW
  cpp: DecryptionResult::isDeVs NEW.
  cpp: Signature::isDeVs        NEW.
  py: DecryptResult EXTENDED: New boolean field 'is_de_vs'.
