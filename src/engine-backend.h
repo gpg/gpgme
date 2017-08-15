@@ -128,6 +128,7 @@ struct engine_ops
 
   gpgme_error_t  (*conf_load) (void *engine, gpgme_conf_comp_t *conf_p);
   gpgme_error_t  (*conf_save) (void *engine, gpgme_conf_comp_t conf);
+  gpgme_error_t  (*conf_dir) (void *engine, const char *what, char **result);
 
   gpgme_error_t  (*query_swdb) (void *engine,
                                 const char *name, const char *iversion,

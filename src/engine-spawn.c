@@ -469,6 +469,7 @@ struct engine_ops _gpgme_engine_ops_spawn =
     NULL,               /* opassuan_transact */
     NULL,		/* conf_load */
     NULL,		/* conf_save */
+    NULL,		/* conf_dir */
     NULL,               /* query_swdb */
     engspawn_set_io_cbs,
     engspawn_io_event,	/* io_event */

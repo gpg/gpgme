@@ -1386,6 +1386,7 @@ struct engine_ops _gpgme_engine_ops_uiserver =
     NULL,               /* opassuan_transact */
     NULL,		/* conf_load */
     NULL,		/* conf_save */
+    NULL,		/* conf_dir */
     NULL,               /* query_swdb */
     uiserver_set_io_cbs,
     uiserver_io_event,

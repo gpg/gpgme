@@ -176,6 +176,9 @@ gpgme_error_t _gpgme_engine_op_conf_load (engine_t engine,
 					  gpgme_conf_comp_t *conf_p);
 gpgme_error_t _gpgme_engine_op_conf_save (engine_t engine,
 					  gpgme_conf_comp_t conf);
+gpgme_error_t _gpgme_engine_op_conf_dir (engine_t engine,
+					 const char *what,
+					 char **result);
 
 gpgme_error_t _gpgme_engine_op_query_swdb (engine_t engine,
                                            const char *name,

@@ -108,3 +108,24 @@ gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp)
   ctx->protocol = proto;
   return err;
 }
+
+
+gpgme_error_t
+gpgme_op_conf_dir (gpgme_ctx_t ctx, const char *what, char **result)
+{
+  gpgme_error_t err;
+  gpgme_protocol_t proto;
+
+  if (!ctx)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  proto = ctx->protocol;
+  ctx->protocol = GPGME_PROTOCOL_GPGCONF;
+  err = _gpgme_op_reset (ctx, 1);
+  if (err)
+    return err;
+
+  err = _gpgme_engine_op_conf_dir (ctx->engine, what, result);
+  ctx->protocol = proto;
+  return err;
+}

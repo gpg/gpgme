@@ -811,6 +811,7 @@ struct engine_ops _gpgme_engine_ops_g13 =
     g13_transact,
     NULL,		/* conf_load */
     NULL,		/* conf_save */
+    NULL,		/* conf_dir */
     NULL,               /* query_swdb */
     g13_set_io_cbs,
     g13_io_event,

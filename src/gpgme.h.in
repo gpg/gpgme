@@ -2240,6 +2240,10 @@ gpgme_error_t gpgme_op_conf_load (gpgme_ctx_t ctx, gpgme_conf_comp_t *conf_p);
    follow chained components!  */
 gpgme_error_t gpgme_op_conf_save (gpgme_ctx_t ctx, gpgme_conf_comp_t comp);
 
+/* Retrieve the configured directory.  */
+gpgme_error_t gpgme_op_conf_dir(gpgme_ctx_t ctx, const char *what,
+				char **result);
+
 
 /* Information about software versions.
  * This structure shall be considered read-only and an application

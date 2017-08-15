@@ -986,6 +986,48 @@ gpgconf_conf_save (void *engine, gpgme_conf_comp_t comp)
 }
 
 
+static gpgme_error_t
+gpgconf_config_dir_cb (void *hook, char *line)
+{
+  /* This is an input- and output-parameter.  */
+  char **str_p = (char **) hook;
+  char *what = *str_p;
+  int len = strlen(what);
+
+  if (!strncmp(line, what, len) && line[len] == ':')
+    {
+      char *result = strdup(&line[len + 1]);
+      if (!result)
+	return gpg_error_from_syserror ();
+      *str_p = result;
+      return gpg_error(GPG_ERR_USER_1);
+    }
+  return 0;
+}
+
+
+static gpgme_error_t
+gpgconf_conf_dir (void *engine, const char *what, char **result)
+{
+  gpgme_error_t err;
+  char *res = what;
+
+  *result = NULL;
+  err = gpgconf_read (engine, "--list-dirs", NULL,
+		      gpgconf_config_dir_cb, &res);
+  if (gpg_err_code (err) == GPG_ERR_USER_1)
+    {
+      /* This signals to use that a result was found.  */
+      *result = res;
+      return 0;
+    }
+
+  if (!err)
+    err = gpg_error(GPG_ERR_NOT_FOUND);
+  return 0;
+}
+
+
 /* Parse a line received from gpgconf --query-swdb.  This function may
  * modify LINE.  The result is stored at RESUL.  */
 static gpg_error_t
@@ -1254,6 +1296,7 @@ struct engine_ops _gpgme_engine_ops_gpgconf =
     NULL,               /* opassuan_transact */
     gpgconf_conf_load,
     gpgconf_conf_save,
+    gpgconf_conf_dir,
     gpgconf_query_swdb,
     gpgconf_set_io_cbs,
     NULL,		/* io_event */

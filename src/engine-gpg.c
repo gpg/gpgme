@@ -3093,6 +3093,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     NULL,               /* opassuan_transact */
     NULL,		/* conf_load */
     NULL,		/* conf_save */
+    NULL,		/* conf_dir */
     NULL,               /* query_swdb */
     gpg_set_io_cbs,
     gpg_io_event,

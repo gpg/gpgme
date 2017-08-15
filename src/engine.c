@@ -984,6 +984,19 @@ _gpgme_engine_op_conf_save (engine_t engine, gpgme_conf_comp_t conf)
 
 
 gpgme_error_t
+_gpgme_engine_op_conf_dir (engine_t engine, const char *what, char **result)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->conf_dir)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->conf_dir) (engine->engine, what, result);
+}
+
+
+gpgme_error_t
 _gpgme_engine_op_query_swdb (engine_t engine,
                              const char *name, const char *iversion,
                              gpgme_query_swdb_result_t result)
