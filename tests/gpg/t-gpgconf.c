@@ -263,22 +263,25 @@ main (void)
   err = gpgme_new (&ctx);
   fail_if_err (err);
 
-  /* Let's check getting the agent-socket directory for different homedirs.  */
-  char *result1 = NULL;
-  err = gpgme_ctx_set_engine_info (ctx, GPGME_PROTOCOL_GPGCONF, NULL, "/tmp/foo");
-  fail_if_err (err);
-  err = gpgme_op_conf_dir (ctx, "agent-socket", &result1);
-  fail_if_err (err);
+  {
+    /* Let's check getting the agent-socket directory for different homedirs.  */
+    char *result1 = NULL;
+    char *result2 = NULL;
+    err = gpgme_ctx_set_engine_info (ctx, GPGME_PROTOCOL_GPGCONF, NULL, "/tmp/foo");
+    fail_if_err (err);
+    err = gpgme_op_conf_dir (ctx, "agent-socket", &result1);
+    fail_if_err (err);
 
-  char *result2 = NULL;
-  err = gpgme_ctx_set_engine_info (ctx, GPGME_PROTOCOL_GPGCONF, NULL, NULL);
-  fail_if_err (err);
-  err = gpgme_op_conf_dir (ctx, "agent-socket", &result2);
-  fail_if_err (err);
+    err = gpgme_ctx_set_engine_info (ctx, GPGME_PROTOCOL_GPGCONF, NULL, NULL);
+    fail_if_err (err);
+    err = gpgme_op_conf_dir (ctx, "agent-socket", &result2);
+    fail_if_err (err);
 
-  /* They have to be different.  */
-  test (strcmp(result1, result2));
-
+    /* They have to be different.  */
+    test (strcmp(result1, result2));
+    gpgme_free (result1);
+    gpgme_free (result2);
+  }
 
   err = gpgme_op_conf_load (ctx, &conf);
   fail_if_err (err);

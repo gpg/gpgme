@@ -986,20 +986,25 @@ gpgconf_conf_save (void *engine, gpgme_conf_comp_t comp)
 }
 
 
+struct gpgconf_config_dir_s
+{
+  const char *what;
+  char *result;
+};
+
 static gpgme_error_t
 gpgconf_config_dir_cb (void *hook, char *line)
 {
   /* This is an input- and output-parameter.  */
-  char **str_p = (char **) hook;
-  char *what = *str_p;
-  int len = strlen(what);
+  struct gpgconf_config_dir_s *data = (char **) hook;
+  int len = strlen(data->what);
 
-  if (!strncmp(line, what, len) && line[len] == ':')
+  if (!strncmp(line, data->what, len) && line[len] == ':')
     {
       char *result = strdup(&line[len + 1]);
       if (!result)
 	return gpg_error_from_syserror ();
-      *str_p = result;
+      data->result = result;
       return gpg_error(GPG_ERR_USER_1);
     }
   return 0;
@@ -1010,15 +1015,16 @@ static gpgme_error_t
 gpgconf_conf_dir (void *engine, const char *what, char **result)
 {
   gpgme_error_t err;
-  char *res = what;
+  struct gpgconf_config_dir_s data;
 
-  *result = NULL;
+  data.what = what;
+  data.result = NULL;
   err = gpgconf_read (engine, "--list-dirs", NULL,
-		      gpgconf_config_dir_cb, &res);
+		      gpgconf_config_dir_cb, &data);
   if (gpg_err_code (err) == GPG_ERR_USER_1)
     {
       /* This signals to use that a result was found.  */
-      *result = res;
+      *result = data.result;
       return 0;
     }
 
