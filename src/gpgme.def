@@ -265,7 +265,7 @@ EXPORTS
     gpgme_op_delete_ext                   @197
     gpgme_op_delete_ext_start             @198
 
-    gpgme_op_conf_save			  @199
+    gpgme_op_conf_dir			  @199
 
 ; END
 
