@@ -4458,9 +4458,12 @@ The function @code{gpgme_op_import_keys} adds the keys described by
 the @code{NULL} terminated array @var{keys} to the key ring of the
 crypto engine used by @var{ctx}.  It is used to actually import and
 make keys permanent which have been retrieved from an external source
-(i.e. using @code{GPGME_KEYLIST_MODE_EXTERN}).  @footnote{Thus it is a
+(i.e. using @code{GPGME_KEYLIST_MODE_EXTERN}) earlier.  The external
+keylisting must have been made with the same context configuration (in
+particular the same home directory).  @footnote{Thus it is a
 replacement for the usual workaround of exporting and then importing a
-key to make an X.509 key permanent.}
+key to make an X.509 key permanent.}  Note that for OpenPGP this may
+require another access to the keyserver over the network.
 
 Only keys of the currently selected protocol of @var{ctx} are
 considered for import.  Other keys specified by the @var{keys} are
@@ -4469,6 +4472,9 @@ the same method, i.e. the used key listing mode must be identical.
 
 After the operation completed successfully, the result can be
 retrieved with @code{gpgme_op_import_result}.
+
+To move keys from one home directory to another, export and import the
+keydata using @code{gpgme_op_export} and @code{gpgme_op_import}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 import was completed successfully, @code{GPG_ERR_INV_VALUE} if
