@@ -38,6 +38,11 @@ General Public License for more details.
   @sc{s:} \string\
 @end macro
 
+@c API version.
+@macro since{string}
+  @sc{Since:} \string\
+@end macro
+
 
 @c
 @c  T I T L E  P A G E
@@ -688,6 +693,8 @@ does not return a detailed error code).
             (@w{const char *@var{name}}, @
             @w{const char *@var{value}})
 
+@since{1.4.0}
+
 On some systems it is not easy to set environment variables and thus
 hard to use @acronym{GPGME}'s internal trace facility for debugging.
 This function has been introduced as an alternative way to enable
@@ -875,6 +882,7 @@ are supported:
 
 @table @code
 @item GPGME_PROTOCOL_OpenPGP
+@itemx GPGME_PROTOCOL_OPENPGP
 This specifies the OpenPGP protocol.
 
 @item GPGME_PROTOCOL_CMS
@@ -884,15 +892,21 @@ This specifies the Cryptographic Message Syntax.
 Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
 
 @item GPGME_PROTOCOL_ASSUAN
+@since{1.2.0}
+
 This specifies the raw Assuan protocol.
 
 @item GPGME_PROTOCOL_G13
+@since{1.3.0}
+
 Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
 
 @item GPGME_PROTOCOL_UISERVER
 Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
 
 @item GPGME_PROTOCOL_SPAWN
+@since{1.5.0}
+
 Special protocol for use with @code{gpgme_op_spawn}.
 
 @item GPGME_PROTOCOL_UNKNOWN
@@ -925,6 +939,8 @@ allocated string describing the protocol @var{protocol}, or
 @cindex version check, of the engines
 
 @deftypefun @w{const char *} gpgme_get_dirinfo (@w{cons char *@var{what}})
+@since{1.5.0}
+
 The function @code{gpgme_get_dirinfo} returns a statically allocated
 string with the value associated to @var{what}.  The returned values
 are the defaults and won't change even after
@@ -1100,6 +1116,8 @@ can make these changes the default or set them for some contexts
 individually.
 
 @deftypefun gpgme_error_t gpgme_set_engine_info (@w{gpgme_protocol_t @var{proto}}, @w{const char *@var{file_name}}, @w{const char *@var{home_dir}})
+@since{1.1.0}
+
 The function @code{gpgme_set_engine_info} changes the default
 configuration of the crypto engine implementing the protocol
 @var{proto}.
@@ -1215,17 +1233,25 @@ This value indicates ElGamal.
 This value also indicates ElGamal and is used specifically in GnuPG.
 
 @item GPGME_PK_ECC
+@since{1.5.0}
+
 This value is a generic indicator for ellipic curve algorithms.
 
 @item GPGME_PK_ECDSA
+@since{1.3.0}
+
 This value indicates ECDSA, the Elliptic Curve Digital Signature
 Algorithm as defined by FIPS 186-2 and RFC-6637.
 
 @item GPGME_PK_ECDH
+@since{1.3.0}
+
 This value indicates ECDH, the Eliptic Curve Diffie-Hellmann
 encryption algorithm as defined by RFC-6637.
 
 @item GPGME_PK_EDDSA
+@since{1.7.0}
+
 This value indicates the EdDSA algorithm.
 
 @end table
@@ -1242,6 +1268,8 @@ returned.
 @end deftypefun
 
 @deftypefun {char *} gpgme_pubkey_algo_string (@w{gpgme_subkey_t @var{key}})
+@since{1.7.0}
+
 The function @code{gpgme_pubkey_algo_string} is a convenience function
 to build and return an algorithm string in the same way GnuPG does
 (e.g. ``rsa2048'' or ``ed25519'').  The caller must free the result
@@ -1276,6 +1304,8 @@ that are supported by @acronym{GPGME}.  Possible values are:
 @item GPGME_MD_SHA384
 @item GPGME_MD_SHA512
 @item GPGME_MD_SHA224
+@since{1.5.0}
+
 @item GPGME_MD_MD4
 @item GPGME_MD_CRC32
 @item GPGME_MD_CRC32_RFC1510
@@ -1724,6 +1754,8 @@ might be relevant, for example, if the external event loop mechanism
 is used.
 
 @deftp {Data type} {gpgme_off_t}
+@since{1.4.1}
+
 On POSIX platforms the @code{gpgme_off_t} type is an alias for
 @code{off_t}; it may be used interchangeable.  On Windows platforms
 @code{gpgme_off_t} is defined as a long (i.e. 32 bit) for 32 bit
@@ -2001,6 +2033,8 @@ case, the data object @var{dh} is destroyed.
 
 
 @deftypefun void gpgme_free (@w{void *@var{buffer}})
+@since{1.1.1}
+
 The function @code{gpgme_free} releases the memory returned by
 @code{gpgme_data_release_and_get_mem} and
 @code{gpgme_pubkey_algo_string}.  It should be used instead of the
@@ -2093,6 +2127,8 @@ If the function fails, -1 is returned and @var{errno} is set.
 @cindex data buffer, encoding
 
 @deftypefun {char *} gpgme_data_get_file_name (@w{gpgme_data_t @var{dh}})
+@since{1.1.0}
+
 The function @code{gpgme_data_get_file_name} returns a pointer to a
 string containing the file name associated with the data object.  The
 file name will be stored in the output when encrypting or signing the
@@ -2105,6 +2141,8 @@ Otherwise, @code{NULL} will be returned.
 
 
 @deftypefun gpgme_error_t gpgme_data_set_file_name (@w{gpgme_data_t @var{dh}}, @w{const char *@var{file_name}})
+@since{1.1.0}
+
 The function @code{gpgme_data_set_file_name} sets the file name
 associated with the data object.  The file name will be stored in the
 output when encrypting or signing the data and will be returned to the
@@ -2144,17 +2182,25 @@ This specifies that the data is encoded in an armored form as used by
 OpenPGP and PEM.
 
 @item GPGME_DATA_ENCODING_MIME
+@since{1.7.0}
+
 This specifies that the data is encoded as a MIME part.
 
 @item GPGME_DATA_ENCODING_URL
+@since{1.2.0}
+
 The data is a list of linefeed delimited URLs.  This is only useful with
 @code{gpgme_op_import}.
 
 @item GPGME_DATA_ENCODING_URL0
+@since{1.2.0}
+
 The data is a list of binary zero delimited URLs.  This is only useful
 with @code{gpgme_op_import}.
 
 @item GPGME_DATA_ENCODING_URLESC
+@since{1.2.0}
+
 The data is a list of linefeed delimited URLs with all control and space
 characters percent escaped.  This mode is is not yet implemented.
 
@@ -2177,6 +2223,8 @@ the data object with the handle @var{dh} to @var{enc}.
             (@w{gpgme_data_t @var{dh}}, @
             @w{const char *@var{name}}, @
             @w{const char *@var{value}})
+
+@since{1.7.0}
 
 Some minor properties of the data object can be controlled with flags
 set by this function.  The properties are identified by the following
@@ -2205,6 +2253,8 @@ This function returns @code{0} on success.
 
 @deftp {Data type} {enum gpgme_data_type_t}
 @tindex gpgme_data_type_t
+@since{1.4.3}
+
 The @code{gpgme_data_type_t} type is used to return the detected type
 of the content of a data buffer.
 @end deftp
@@ -2219,6 +2269,14 @@ The type of the data is not known.
 @item GPGME_DATA_TYPE_PGP_SIGNED
 The data is an OpenPGP signed message.  This may be a binary
 signature, a detached one or a cleartext signature.
+@item GPGME_DATA_TYPE_PGP_ENCRYPTED
+@since{1.7.0}
+
+The data is an OpenPGP encrypted message.
+@item GPGME_DATA_TYPE_PGP_SIGNATURE
+@since{1.7.0}
+
+The data is an OpenPGP detached signature.
 @item GPGME_DATA_TYPE_PGP_OTHER
 This is a generic OpenPGP message.  In most cases this will be
 encrypted data.
@@ -2238,6 +2296,8 @@ private keys for X.509.
 @end table
 
 @deftypefun gpgme_data_type_t gpgme_data_identify (@w{gpgme_data_t @var{dh}})
+@since{1.4.3}
+
 The function @code{gpgme_data_identify} returns the type of the data
 with the handle @var{dh}.  If it is not possible to perform the
 identification, the function returns zero
@@ -2324,6 +2384,8 @@ and give it a lifetime beyond that of the current operation or
 context.
 
 @deftypefun void gpgme_result_ref (@w{void *@var{result}})
+@since{1.2.0}
+
 The function @code{gpgme_result_ref} acquires an additional reference
 for the result @var{result}, which may be of any type
 @code{gpgme_*_result_t}.  As long as the user holds a reference, the
@@ -2331,6 +2393,8 @@ result structure is guaranteed to be valid and unmodified.
 @end deftypefun
 
 @deftypefun void gpgme_result_unref (@w{void *@var{result}})
+@since{1.2.0}
+
 The function @code{gpgme_result_unref} releases a reference for the
 result @var{result}.  If this was the last reference, the result
 structure will be destroyed and all resources associated to it will be
@@ -2402,6 +2466,8 @@ default can also be retrieved without any particular context.
 @xref{Engine Configuration}.
 
 @deftypefun gpgme_engine_info_t gpgme_ctx_get_engine_info (@w{gpgme_ctx_t @var{ctx}})
+@since{1.1.0}
+
 The function @code{gpgme_ctx_get_engine_info} returns a linked list of
 engine info structures.  Each info structure describes the
 configuration of one configured backend, as used by the context
@@ -2414,6 +2480,8 @@ This function can not fail.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_ctx_set_engine_info (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_protocol_t @var{proto}}, @w{const char *@var{file_name}}, @w{const char *@var{home_dir}})
+@since{1.1.0}
+
 The function @code{gpgme_ctx_set_engine_info} changes the
 configuration of the crypto engine implementing the protocol
 @var{proto} for the context @var{ctx}.
@@ -2450,6 +2518,8 @@ addresses is not supported.
       (@w{gpgme_ctx_t @var{ctx}}, @
        @w{int @var{address}})
 
+@since{1.8.0}
+
 The function @code{gpgme_set_sender} specifies the sender address for
 use in sign and verify operations.  @var{address} is expected to be
 the ``addr-spec'' part of an address but my also be a complete mailbox
@@ -2464,6 +2534,8 @@ most likely failure is that no valid ``addr-spec'' was found in
 
 @deftypefun @w{const char *} gpgme_get_sender @
       (@w{gpgme_ctx_t @var{ctx}})
+
+@since{1.8.0}
 
 The function @code{gpgme_get_sender} returns the current sender
 address from the context, or NULL if none was set.  The returned
@@ -2531,6 +2603,8 @@ valid pointer.
 @cindex offline mode
 
 @deftypefun void gpgme_set_offline (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{yes}})
+@since{1.6.0}
+
 The function @code{gpgme_set_offline} specifies if offline mode
 should be used.  By default, offline mode is not used.
 
@@ -2550,6 +2624,8 @@ otherwise.
 @end deftypefun
 
 @deftypefun int gpgme_get_offline (@w{gpgme_ctx_t @var{ctx}})
+@since{1.6.0}
+
 The function @code{gpgme_get_offline} returns 1 if offline
 mode is enabled, and @code{0} if it is not, or if @var{ctx} is not a
 valid pointer.
@@ -2563,6 +2639,9 @@ valid pointer.
 
 @deftypefun gpgme_error_t gpgme_set_pinentry_mode (@w{gpgme_ctx_t @var{ctx}},
 @w{gpgme_pinentry_mode_t @var{mode}})
+
+@since{1.4.0}
+
 The function @code{gpgme_set_pinentry_mode} specifies the pinentry mode
 to be used.
 
@@ -2572,30 +2651,44 @@ mechanism in GPGME through @code{gpgme_set_passphrase_cb}.
 @end deftypefun
 
 @deftypefun gpgme_pinentry_mode_t gpgme_get_pinentry_mode (@w{gpgme_ctx_t @var{ctx}})
+@since{1.4.0}
+
 The function @code{gpgme_get_pinenty_mode} returns the
 mode set for the context.
 @end deftypefun
 
 @deftp {Data type} {enum gpgme_pinentry_mode_t}
 @tindex gpgme_pinentry_mode_t
+@since{1.4.0}
+
 The @code{gpgme_minentry_mode_t} type specifies the set of possible pinentry
 modes that are supported by @acronym{GPGME} if GnuPG >= 2.1 is used.
 The following modes are supported:
 
 @table @code
 @item GPGME_PINENTRY_MODE_DEFAULT
+@since{1.4.0}
+
 Use the default of the agent, which is ask.
 
 @item GPGME_PINENTRY_MODE_ASK
+@since{1.4.0}
+
 Force the use of the Pinentry.
 
 @item GPGME_PINENTRY_MODE_CANCEL
+@since{1.4.0}
+
 Emulate use of Pinentry's cancel button.
 
 @item GPGME_PINENTRY_MODE_ERROR
+@since{1.4.0}
+
 Return a Pinentry error @code{No Pinentry}.
 
 @item GPGME_PINENTRY_MODE_LOOPBACK
+@since{1.4.0}
+
 Redirect Pinentry queries to the caller.
 This enables the use of @code{gpgme_set_passphrase_cb} because pinentry
 queries are redirected to gpgme.
@@ -2619,6 +2712,8 @@ values of @var{nr_of_certs} are:
 
 @table @code
 @item GPGME_INCLUDE_CERTS_DEFAULT
+@since{1.0.3}
+
 Fall back to the default of the crypto backend.  This is the default
 for GPGME.
 @item -2
@@ -2674,17 +2769,23 @@ The @code{GPGME_KEYLIST_MODE_SIGS} symbol specifies that the key
 signatures should be included in the listed keys.
 
 @item GPGME_KEYLIST_MODE_SIG_NOTATIONS
+@since{1.1.1}
+
 The @code{GPGME_KEYLIST_MODE_SIG_NOTATIONS} symbol specifies that the
 signature notations on key signatures should be included in the listed
 keys.  This only works if @code{GPGME_KEYLIST_MODE_SIGS} is also
 enabled.
 
 @item GPGME_KEYLIST_MODE_WITH_TOFU
+@since{1.7.0}
+
 The @code{GPGME_KEYLIST_MODE_WITH_TOFU} symbol specifies that
 information pertaining to the TOFU trust model should be included in
 the listed keys.
 
 @item GPGME_KEYLIST_MODE_WITH_SECRET
+@since{1.5.1}
+
 The @code{GPGME_KEYLIST_MODE_WITH_SECRET} returns information about
 the presence of a corresponding secret key in a public key listing.  A
 public key listing with this mode is slower than a standard listing
@@ -2692,10 +2793,14 @@ but can be used instead of a second run to list the secret keys.  This
 is only supported for GnuPG versions >= 2.1.
 
 @item GPGME_KEYLIST_MODE_EPHEMERAL
+@since{1.2.0}
+
 The @code{GPGME_KEYLIST_MODE_EPHEMERAL} symbol specifies that keys
 flagged as ephemeral are included in the listing.
 
 @item GPGME_KEYLIST_MODE_VALIDATE
+@since{0.4.5}
+
 The @code{GPGME_KEYLIST_MODE_VALIDATE} symbol specifies that the
 backend should do key or certificate validation and not just get the
 validity information from an internal cache.  This might be an
@@ -2867,6 +2972,8 @@ value. Otherwise, return @code{0}.
 @end deftp
 
 @deftypefun void gpgme_set_status_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_status_cb_t @var{statusfunc}}, @w{void *@var{hook_value}})
+@since{1.6.0}
+
 The function @code{gpgme_set_status_cb} sets the function that is used when a
 status message is received from gpg to @var{statusfunc}. The function
 @var{statusfunc} needs to be implemented by the user, and whenever it is
@@ -2878,6 +2985,8 @@ The user can disable the use of a status message callback function by calling
 @end deftypefun
 
 @deftypefun void gpgme_get_status_cb (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_status_cb_t *@var{statusfunc}}, @w{void **@var{hook_value}})
+@since{1.6.0}
+
 The function @code{gpgme_get_status_cb} returns the function that is used to
 process status messages from gpg in @var{*statusfunc}, and the first argument
 for this function in @var{*hook_value}.  If no status message callback is set,
@@ -2889,6 +2998,8 @@ variables.
             (@w{gpgme_ctx_t @var{ctx}}, @
             @w{const char *@var{name}}, @
             @w{const char *@var{value}})
+
+@since{1.7.0}
 
 Some minor properties of the context can be controlled with flags set
 by this function.  The properties are identified by the following
@@ -2954,6 +3065,8 @@ This function returns @code{0} on success.
             (@w{gpgme_ctx_t @var{ctx}}, @
             @w{const char *@var{name}})
 
+@since{1.8.0}
+
 The value of flags settable by @code{gpgme_set_ctx_flag} can be
 retrieved by this function.  If @var{name} is unknown the function
 returns @code{NULL}.  For boolean flags an empty string is returned
@@ -2977,6 +3090,8 @@ The default locale is used to initialize the locale setting of all
 contexts created afterwards.
 
 @deftypefun gpgme_error_t gpgme_set_locale (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{category}}, @w{const char *@var{value}})
+@since{0.4.3}
+
 The function @code{gpgme_set_locale} sets the locale of the context
 @var{ctx}, or the default locale if @var{ctx} is a null pointer.
 
@@ -3039,6 +3154,8 @@ following members:
 
 @table @code
 @item gpgme_keylist_mode_t keylist_mode
+@since{0.9.0}
+
 The keylist mode that was active when the key was retrieved.
 
 @item unsigned int revoked : 1
@@ -3069,10 +3186,14 @@ This is true if the key (ie one of its subkeys) can be used to create
 key certificates.
 
 @item unsigned int can_authenticate : 1
+@since{0.4.5}
+
 This is true if the key (ie one of its subkeys) can be used for
 authentication.
 
 @item unsigned int is_qualified : 1
+@since{1.1.0}
+
 This is true if the key can be used for qualified signatures according
 to local government regulations.
 
@@ -3083,6 +3204,8 @@ be true even if the corresponding subkey flag may be false
 been requested or if @code{GPGME_KEYLIST_MODE_WITH_SECRET} is active.
 
 @item unsigned int origin : 5
+@since{1.8.0}
+
 Reserved for the origin of this key.
 
 @item gpgme_protocol_t protocol
@@ -3113,12 +3236,16 @@ This is a linked list with the user IDs of the key.  The first user ID
 in the list is the main (or primary) user ID.
 
 @item char *fpr
+@since{1.7.0}
+
 This field gives the fingerprint of the primary key.  Note that
 this is a copy of the fingerprint of the first subkey.  For an
 incomplete key (for example from a verification result) a subkey may
 be missing but this field may be set nevertheless.
 
 @item unsigned long last_update
+@since{1.8.0}
+
 Reserved for the time of the last update of this key.
 
 @end table
@@ -3126,6 +3253,7 @@ Reserved for the time of the last update of this key.
 
 
 @deftp {Data type} gpgme_subkey_t
+@since{1.5.0}
 
 The @code{gpgme_subkey_t} type is a pointer to a subkey structure.
 Subkeys are one component of a @code{gpgme_key_t} object.  In fact,
@@ -3163,13 +3291,19 @@ This is true if the subkey can be used to create data signatures.
 This is true if the subkey can be used to create key certificates.
 
 @item unsigned int can_authenticate : 1
+@since{0.4.5}
+
 This is true if the subkey can be used for authentication.
 
 @item unsigned int is_qualified : 1
+@since{1.1.0}
+
 This is true if the subkey can be used for qualified signatures
 according to local government regulations.
 
 @item unsigned int is_de_vs : 1
+@since{1.8.0}
+
 This is true if the subkey complies with the rules for classified
 information in Germany at the restricted level (VS-NfD).  This are
 currently RSA keys of at least 2048 bits or ECDH/ECDSA keys using a
@@ -3196,6 +3330,8 @@ This is the fingerprint of the subkey in hexadecimal digits, if
 available.
 
 @item char *keygrip
+@since{1.7.0}
+
 The keygrip of the subkey in hex digit form or @code{NULL} if not
 availabale.
 
@@ -3208,9 +3344,13 @@ This is the expiration timestamp of the subkey, or 0 if the subkey
 does not expire.
 
 @item unsigned int is_cardkey : 1
+@since{1.2.0}
+
 True if the secret key is stored on a smart card.
 
 @item char *card_number
+@since{1.2.0}
+
 The serial number of a smart card holding this key or @code{NULL}.
 
 @item char *curve
@@ -3260,6 +3400,8 @@ but might be slightly different.  If no mail address is available
 @code{NULL} is stored.
 
 @item gpgme_tofu_info_t tofu
+@since{1.7.0}
+
 If not @code{NULL} information from the TOFU database pertaining to
 this user id.
 
@@ -3267,9 +3409,13 @@ this user id.
 This is a linked list with the signatures on this user ID.
 
 @item unsigned int origin : 5
+@since{1.8.0}
+
 Reserved for the origin of this user ID.
 
 @item unsigned long last_update
+@since{1.8.0}
+
 Reserved for the time of the last update of this user ID.
 
 @end table
@@ -3277,6 +3423,8 @@ Reserved for the time of the last update of this user ID.
 
 
 @deftp {Data type} gpgme_tofu_info_t
+
+@since{1.7.0}
 
 The @code{gpgme_tofu_info_t} type is a pointer to a tofu info
 structure.  Tofu info structures are one component of a
@@ -3490,10 +3638,12 @@ The function returns the error code @code{GPG_ERR_INV_VALUE} if
 are reported by the crypto engine support routines.
 @end deftypefun
 
-@deftypefun gpgme_error_t gpgme_op_keylist_from_data @
+@deftypefun gpgme_error_t gpgme_op_keylist_from_data_start @
             (@w{gpgme_ctx_t @var{ctx}}, @
              @w{gpgme_data_t @var{data}}, @
              @w{int @var{reserved}})
+
+@since{1.8.0}
 
 The function @code{gpgme_op_keylist_from_data_start} initiates a key
 listing operation inside the context @var{ctx}.  In contrast to the
@@ -3714,6 +3864,8 @@ first and provide a fallback to the old function if the error code
        @w{gpgme_key_t @var{extrakey}}, @
        @w{unsigned int @var{flags}});
 
+@since{1.7.0}
+
 The function @code{gpgme_op_createkey} generates a new key for the
 procotol active in the context @var{ctx}.  As of now this function
 does only work for OpenPGP and requires at least version 2.1.13 of
@@ -3758,6 +3910,8 @@ A future version of GPGME may use this parameter to create X.509 keys.
 @itemx GPGME_CREATE_ENCR
 @itemx GPGME_CREATE_CERT
 @itemx GPGME_CREATE_AUTH
+@since{1.7.0}
+
 Do not create the key with the default capabilities (key usage) of the
 requested algorithm but use those explicitly given by these flags:
 ``signing'', ``encryption'', ``certification'', or ``authentication''.
@@ -3768,27 +3922,39 @@ selected only one key is created in the case of the OpenPGP
 protocol.
 
 @item GPGME_CREATE_NOPASSWD
+@since{1.7.0}
+
 Request generation of the key without password protection.
 
 @item GPGME_CREATE_SELFSIGNED
+@since{1.7.0}
+
 For an X.509 key do not create a CSR but a self-signed certificate.
 This has not yet been implemented.
 
 @item GPGME_CREATE_NOSTORE
+@since{1.7.0}
+
 Do not store the created key in the local key database.
 This has not yet been implemented.
 
 @item GPGME_CREATE_WANTPUB
 @itemx GPGME_CREATE_WANTSEC
+@since{1.7.0}
+
 Return the public or secret key as part of the result structure.
 This has not yet been implemented.
 
 @item GPGME_CREATE_FORCE
+@since{1.7.0}
+
 The engine does not allow the creation of a key with a user ID
 already existing in the local key database.  This flag can be used to
 override this check.
 
 @item GPGME_CREATE_NOEXPIRE
+@since{1.8.0}
+
 Request generation of keys that do not expire.
 
 @end table
@@ -3812,6 +3978,8 @@ codes.
        @w{gpgme_key_t @var{extrakey}}, @
        @w{unsigned int @var{flags}});
 
+@since{1.7.0}
+
 The function @code{gpgme_op_createkey_start} initiates a
 @code{gpgme_op_createkey} operation; see there for details.  It must
 be completed by calling @code{gpgme_wait} on the context.
@@ -3829,6 +3997,8 @@ be completed by calling @code{gpgme_wait} on the context.
        @w{unsigned long @var{reserved}}, @
        @w{unsigned long @var{expires}}, @
        @w{unsigned int @var{flags}});
+
+@since{1.7.0}
 
 The function @code{gpgme_op_createsubkey} creates and adds a new
 subkey to the primary OpenPGP key given by @var{KEY}.  The only
@@ -3880,6 +4050,8 @@ codes.
        @w{unsigned long @var{expires}}, @
        @w{unsigned int @var{flags}});
 
+@since{1.7.0}
+
 The function @code{gpgme_op_createsubkey_start} initiates a
 @code{gpgme_op_createsubkey} operation; see there for details.  It must
 be completed by calling @code{gpgme_wait} on the context.
@@ -3896,6 +4068,8 @@ be completed by calling @code{gpgme_wait} on the context.
        @w{gpgme_key_t @var{key}}, @
        @w{const char *@var{userid}}, @
        @w{unsigned int @var{flags}});
+
+@since{1.7.0}
 
 The function @code{gpgme_op_adduid} adds a new user ID to the OpenPGP
 key given by @var{KEY}.  Adding additional user IDs after key creation
@@ -3926,6 +4100,8 @@ codes.
        @w{const char *@var{userid}}, @
        @w{unsigned int @var{flags}});
 
+@since{1.7.0}
+
 The function @code{gpgme_op_adduid_start} initiates a
 @code{gpgme_op_adduid} operation; see there for details.  It must
 be completed by calling @code{gpgme_wait} on the context.
@@ -3942,6 +4118,8 @@ be completed by calling @code{gpgme_wait} on the context.
        @w{gpgme_key_t @var{key}}, @
        @w{const char *@var{userid}}, @
        @w{unsigned int @var{flags}});
+
+@since{1.7.0}
 
 The function @code{gpgme_op_revuid} revokes a user ID from the OpenPGP
 key given by @var{KEY}.  Revoking user IDs after key creation is a
@@ -3974,6 +4152,8 @@ codes.
        @w{const char *@var{userid}}, @
        @w{unsigned int @var{flags}});
 
+@since{1.7.0}
+
 The function @code{gpgme_op_revuid_start} initiates a
 @code{gpgme_op_revuid} operation; see there for details.  It must
 be completed by calling @code{gpgme_wait} on the context.
@@ -3991,6 +4171,8 @@ be completed by calling @code{gpgme_wait} on the context.
        @w{const char *@var{userid}}, @
        @w{cons char * @var{name}}, @
        @w{cons char * @var{value}});
+
+@since{1.8.0}
 
 The function @code{gpgme_op_set_uid_flag} is used to set flags on a
 user ID from the OpenPGP key given by @var{KEY}.  Setting flags on
@@ -4029,6 +4211,8 @@ codes.
        @w{const char *@var{userid}}, @
        @w{cons char * @var{name}}, @
        @w{cons char * @var{value}});
+
+@since{1.8.0}
 
 The function @code{gpgme_op_set_uid_flag_start} initiates a
 @code{gpgme_op_set_uid_flag} operation; see there for details.  It must
@@ -4157,10 +4341,14 @@ key will be returned.  If the crypto engine does not provide the
 fingerprint, @code{fpr} will be a null pointer.
 
 @item gpgme_data_t pubkey
+@since{1.7.0}
+
 This will eventually be used to return the public key.  It is
 currently not used.
 
 @item gpgme_data_t seckey
+@since{1.7.0}
+
 This will eventually be used to return the secret key.  It is
 currently not used.
 
@@ -4205,6 +4393,8 @@ versions.
        @w{unsigned long @var{expires}}, @
        @w{unsigned int @var{flags}});
 
+@since{1.7.0}
+
 The function @code{gpgme_op_keysign} adds a new key signature to the
 public key @var{KEY}.   This function requires at least version 2.1.12 of
 GnuPG.
@@ -4240,10 +4430,14 @@ only encode dates up to the year 2106.
 
 @table @code
 @item GPGME_KEYSIGN_LOCAL
+@since{1.7.0}
+
 Instead of creating an exportable key signature, create a key
 signature which is is marked as non-exportable.
 
 @item GPGME_KEYSIGN_LFSEP
+@since{1.7.0}
+
 Although linefeeds are uncommon in user IDs this flag is required to
 explicitly declare that @var{userid} may contain several linefeed
 separated user IDs.
@@ -4267,6 +4461,8 @@ codes.
        @w{const char *@var{userid}}, @
        @w{unsigned long @var{expires}}, @
        @w{unsigned int @var{flags}});
+
+@since{1.7.0}
 
 The function @code{gpgme_op_keysign_start} initiates a
 @code{gpgme_op_keysign} operation; see there for details.  It must
@@ -4299,22 +4495,30 @@ time.  Using this flag requires that the @var{keydata} argument of the
 export function is set to @code{NULL}.
 
 @item GPGME_EXPORT_MODE_MINIMAL
+@since{1.3.1}
+
 If this bit is set, the smallest possible key is exported.  For OpenPGP
 keys it removes all signatures except for the latest self-signatures.
 For X.509 keys it has no effect.
 
 
 @item GPGME_EXPORT_MODE_SECRET
+@since{1.6.0}
+
 Instead of exporting the public key, the secret key is exported.  This
 may not be combined with @code{GPGME_EXPORT_MODE_EXTERN}.  For X.509
 the export format is PKCS#8.
 
 @item GPGME_EXPORT_MODE_RAW
+@since{1.6.0}
+
 If this flag is used with @code{GPGME_EXPORT_MODE_SECRET} for an X.509
 key the export format will be changed to PKCS#1.  This flag may not be
 used with OpenPGP.
 
 @item GPGME_EXPORT_MODE_PKCS12
+@since{1.6.0}
+
 If this flag is used with @code{GPGME_EXPORT_MODE_SECRET} for an X.509
 key the export format will be changed to PKCS#12 which also includes
 the certificate.  This flag may not be used with OpenPGP.
@@ -4384,6 +4588,8 @@ if @var{keydata} is not a valid empty data buffer.
 
 
 @deftypefun gpgme_error_t gpgme_op_export_keys (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t keys[]}, @w{gpgme_export_mode_t @var{mode}}, @w{gpgme_data_t @var{keydata}})
+@since{1.2.0}
+
 The function @code{gpgme_op_export_keys} extracts public keys and returns
 them in the data buffer @var{keydata}.  The output format of the key
 data returned is determined by the @acronym{ASCII} armor attribute set
@@ -4406,6 +4612,8 @@ are reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_export_keys_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{keys}[]}, @w{gpgme_export_mode_t @var{mode}}, @w{gpgme_data_t @var{keydata}})
+@since{1.2.0}
+
 The function @code{gpgme_op_export_keys_start} initiates a
 @code{gpgme_op_export_ext} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -4454,6 +4662,8 @@ import could be started successfully, @code{GPG_ERR_INV_VALUE} if
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_import_keys (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t *@var{keys}})
+@since{1.2.0}
+
 The function @code{gpgme_op_import_keys} adds the keys described by
 the @code{NULL} terminated array @var{keys} to the key ring of the
 crypto engine used by @var{ctx}.  It is used to actually import and
@@ -4484,6 +4694,8 @@ considered for export.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_import_keys_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t *@var{keys}})
+@since{1.2.0}
+
 The function @code{gpgme_op_import_keys_start} initiates a
 @code{gpgme_op_import_keys} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -4607,6 +4819,8 @@ operation is started on the context.
 @cindex key ring, delete from
 
 @deftypefun gpgme_error_t gpgme_op_delete_ext (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{unsigned int @var{flags}})
+@since{1.9.1}
+
 The function @code{gpgme_op_delete_ext} deletes the key @var{key} from
 the key ring of the crypto engine used by @var{ctx}.
 
@@ -4614,10 +4828,14 @@ the key ring of the crypto engine used by @var{ctx}.
 
 @table @code
 @item GPGME_DELETE_ALLOW_SECRET
+@since{1.9.1}
+
 If not set, only public keys are deleted. If set, secret keys are
 deleted as well, if that is supported.
 
 @item GPGME_DELETE_FORCE
+@since{1.9.1}
+
 If set, the user is not asked to confirm the deletion.
 @end table
 
@@ -4631,6 +4849,8 @@ unambiguously, and @code{GPG_ERR_CONFLICT} if the secret key for
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_delete_ext_start (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}}, @w{unsigned int @var{flags}})
+@since{1.9.1}
+
 The function @code{gpgme_op_delete_ext_start} initiates a
 @code{gpgme_op_delete} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -4662,6 +4882,8 @@ Similar to @code{gpgme_op_delete_ext_start}, but only the flag
               @w{const gpgme_key_t @var{key}}, @
               @w{unsigned int @var{flags}})
 
+@since{1.3.0}
+
 The function @code{gpgme_op_passwd} changes the passphrase of the
 private key associated with @var{key}.  The only allowed value for
 @var{flags} is @code{0}.  The backend engine will usually popup a window
@@ -4677,6 +4899,8 @@ this command and will silently ignore it.
              (@w{gpgme_ctx_t @var{ctx}},       @
               @w{const gpgme_key_t @var{key}}, @
               @w{unsigned int @var{flags}})
+
+@since{1.3.0}
 
 The function @code{gpgme_op_passwd_start} initiates a
 @code{gpgme_op_passwd} operation.    It can be completed by calling
@@ -4701,6 +4925,8 @@ for a key.  See the GnuPG manual for details on the TOFU
 implementation.
 
 @deftp {Data type} {enum gpgme_tofu_policy_t}
+@since{1.7.0}
+
 @tindex gpgme_tofu_policy_t
 The @code{gpgme_tofu_policy_t} type specifies the set of possible
 policy values that are supported by @acronym{GPGME}:
@@ -4727,6 +4953,8 @@ To change the policy for a key the following functions can be used:
               @w{const gpgme_key_t @var{key}}, @
               @w{gpgme_tofu_policy_t @var{policy}})
 
+@since{1.7.0}
+
 The function @code{gpgme_op_tofu_policy} changes the TOFU policy of
 @var{key}.  The valid values for @var{policy} are listed above.  As of
 now this function does only work for OpenPGP and requires at least
@@ -4742,6 +4970,8 @@ codes.
              (@w{gpgme_ctx_t @var{ctx}},       @
               @w{const gpgme_key_t @var{key}}, @
               @w{gpgme_tofu_policy_t @var{policy}})
+
+@since{1.7.0}
 
 The function @code{gpgme_op_tofu_policy_start} initiates a
 @code{gpgme_op_tofu_policy} operation.    It can be completed by calling
@@ -4763,6 +4993,9 @@ could not be started.
     @w{const char *@var{status}}, @
     @w{const char *@var{args}}, @
     @w{int @var{fd}})}
+
+@since{1.7.0}
+
 @tindex gpgme_interact_cb_t
 The @code{gpgme_interact_cb_t} type is the type of functions which
 @acronym{GPGME} calls if it a key interact operation is on-going.  The
@@ -4784,6 +5017,9 @@ the status code, @code{0} for success, or any other error value.
    @w{gpgme_interact_cb_t @var{fnc}}, @
    @w{void *@var{handle}}, @
    @w{gpgme_data_t @var{out}})
+
+@since{1.7.0}
+
 The function @code{gpgme_op_interact} processes the key @var{KEY}
 interactively, using the interact callback function @var{FNC} with the
 handle @var{HANDLE}.  The callback is invoked for every status and
@@ -4799,6 +5035,8 @@ bit value is:
 
 @table @code
 @item GPGME_INTERACT_CARD
+@since{1.7.0}
+
 This is used for smartcard based keys and uses gpg’s
 @code{--card-edit} command.
 
@@ -4817,6 +5055,9 @@ the edit callback handler.
    @w{gpgme_interact_cb_t @var{fnc}}, @
    @w{void *@var{handle}}, @
    @w{gpgme_data_t @var{out}})
+
+@since{1.7.0}
+
 The function @code{gpgme_op_interact_start} initiates a
 @code{gpgme_op_interact} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -5008,6 +5249,8 @@ if @var{cipher} or @var{plain} is not a valid pointer.
             @w{gpgme_data_t @var{cipher}}, @
             @w{gpgme_data_t @var{plain}})
 
+@since{1.8.0}
+
 The function @code{gpgme_op_decrypt_ext} is the same as
 @code{gpgme_op_decrypt_ext} but has an additional argument
 @var{flags}.  If @var{flags} is 0 both function behave identically.
@@ -5017,10 +5260,14 @@ multiple of the following bit values:
 
 @table @code
 @item GPGME_DECRYPT_VERIFY
+@since{1.8.0}
+
 The @code{GPGME_DECRYPT_VERIFY} symbol specifies that this function
 shall exacty act as @code{gpgme_op_decrypt_verify}.
 
 @item GPGME_DECRYPT_UNWRAP
+@since{1.8.0}
+
 The @code{GPGME_DECRYPT_UNWRAP} symbol specifies that the output shall
 be an OpenPGP message with only the encryption layer removed.  This
 requires GnuPG 2.1.12 and works only for OpenPGP.  This is the
@@ -5038,6 +5285,8 @@ The function returns the error codes as descriped for
             @w{gpgme_data_t @var{cipher}}, @
             @w{gpgme_data_t @var{plain}})
 
+@since{1.8.0}
+
 The function @code{gpgme_op_decrypt_ext_start} initiates a
 @code{gpgme_op_decrypt_ext} operation.  It can be completed by calling
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
@@ -5049,6 +5298,8 @@ if @var{cipher} or @var{plain} is not a valid pointer.
 
 
 @deftp {Data type} {gpgme_recipient_t}
+@since{1.1.0}
+
 This is a pointer to a structure used to store information about the
 recipient of an encrypted text which is decrypted in a
 @code{gpgme_op_decrypt} operation.  This information (except for the
@@ -5089,9 +5340,13 @@ If an unsupported algorithm was encountered, this string describes the
 algorithm that is not supported.
 
 @item unsigned int wrong_key_usage : 1
+@since{0.9.0}
+
 This is true if the key was not used according to its policy.
 
 @item gpgme_recipient_t recipients
+@since{1.1.0}
+
 This is a linked list of recipients to which this message was encrypted.
 
 @item char *file_name
@@ -5099,6 +5354,8 @@ This is the filename of the original plaintext message file if it is
 known, otherwise this is a null pointer.
 
 @item char *session_key
+@since{1.8.0}
+
 A textual representation (nul-terminated string) of the session key
 used in symmetric encryption of the message, if the context has been
 set to export session keys (see @code{gpgme_set_ctx_flag,
@@ -5202,10 +5459,14 @@ following bit values:
 
 @table @code
 @item GPGME_SIG_NOTATION_HUMAN_READABLE
+@since{1.1.0}
+
 The @code{GPGME_SIG_NOTATION_HUMAN_READABLE} symbol specifies that the
 notation data is in human readable form
 
 @item GPGME_SIG_NOTATION_CRITICAL
+@since{1.1.0}
+
 The @code{GPGME_SIG_NOTATION_CRITICAL} symbol specifies that the
 notation data is critical.
 
@@ -5367,6 +5628,8 @@ Depending on the configuration of the engine, this metric may also be
 reflected by the validity of the signature.
 
 @item unsigned int chain_model : 1
+@since{1.1.6}
+
 This is true if the validity of the signature has been checked using the
 chain model.  In the chain model the time the signature has been created
 must be within the validity period of the certificate and the time the
@@ -5392,6 +5655,8 @@ The hash algorithm used to create this signature.
 The mailbox from the PKA information or @code{NULL}.
 
 @item gpgme_key_t key
+@since{1.7.0}
+
 An object describing the key used to create the signature.  This key
 object may be incomplete in that it only conveys information
 availabale directly with a signature.  It may also be @code{NULL} if
@@ -5485,6 +5750,8 @@ functions in GPGME and GnuPG:
 
 @deftypefun @w{char *} gpgme_addrspec_from_uid (@w{const char *@var{uid}})
 
+@since{1.7.1}
+
 Return the mail address (called ``addr-spec'' in RFC-5322) from the
 string @var{uid} which is assumed to be a user id (called ``address''
 in RFC-5322).  All plain ASCII characters (i.e. those with bit 7
@@ -5540,6 +5807,8 @@ Calling this function acquires an additional reference for the key.
 @end deftypefun
 
 @deftypefun @w{unsigned int} gpgme_signers_count (@w{const gpgme_ctx_t @var{ctx}})
+@since{1.4.3}
+
 The function @code{gpgme_signers_count} returns the number of signer keys in
 the context @var{ctx}.
 @end deftypefun
@@ -5681,6 +5950,8 @@ to a signature.  This information is then available to the user when
 the signature is verified.
 
 @deftypefun void gpgme_sig_notation_clear (@w{gpgme_ctx_t @var{ctx}})
+@since{1.1.0}
+
 The function @code{gpgme_sig_notation_clear} removes the notation data
 from the context @var{ctx}.  Subsequent signing operations from this
 context will not include any notation data.
@@ -5689,6 +5960,8 @@ Every context starts with an empty notation data list.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_sig_notation_add (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{name}}, @w{const char *@var{value}}, @w{gpgme_sig_notation_flags_t @var{flags}})
+@since{1.1.0}
+
 The function @code{gpgme_sig_notation_add} adds the notation data with
 the name @var{name} and the value @var{value} to the context
 @var{ctx}.
@@ -5714,6 +5987,8 @@ reported by the crypto engine support routines.
 @end deftypefun
 
 @deftypefun gpgme_sig_notation_t gpgme_sig_notation_get (@w{const gpgme_ctx_t @var{ctx}})
+@since{1.1.0}
+
 The function @code{gpgme_sig_notation_get} returns the linked list of
 notation data structures that are contained in the context @var{ctx}.
 
@@ -5763,12 +6038,16 @@ have a high enough validity in the keyring.  This flag should be used
 with care; in general it is not a good idea to use any untrusted keys.
 
 @item GPGME_ENCRYPT_NO_ENCRYPT_TO
+@since{1.2.0}
+
 The @code{GPGME_ENCRYPT_NO_ENCRYPT_TO} symbol specifies that no
 default or hidden default recipients as configured in the crypto
 backend should be included.  This can be useful for managing different
 user profiles.
 
 @item GPGME_ENCRYPT_NO_COMPRESS
+@since{1.5.0}
+
 The @code{GPGME_ENCRYPT_NO_COMPRESS} symbol specifies that the
 plaintext shall not be compressed before it is encrypted.  This is
 in some cases useful if the length of the encrypted message
@@ -5783,12 +6062,16 @@ protocol to prepare an encryption (i.e. sending the
 also expect a sign command.
 
 @item GPGME_ENCRYPT_SYMMETRIC
+@since{1.7.0}
+
 The @code{GPGME_ENCRYPT_SYMMETRIC} symbol specifies that the
 output should be additionally encrypted symmetrically even
 if recipients are provided. This feature is only supported for
 for the OpenPGP crypto engine.
 
 @item GPGME_ENCRYPT_THROW_KEYIDS
+@since{1.8.0}
+
 The @code{GPGME_ENCRYPT_THROW_KEYIDS} symbols requests that the
 identifiers for the decrption keys are not included in the ciphertext.
 On the receiving side, the use of this flag may slow down the
@@ -5796,6 +6079,8 @@ decryption process because all available secret keys must be tried.
 This flag is only honored for OpenPGP encryption.
 
 @item GPGME_ENCRYPT_WRAP
+@since{1.8.0}
+
 The @code{GPGME_ENCRYPT_WRAP} symbol specifies that the input is an
 OpenPGP message and not a plain data.  This is the counterpart to
 @code{GPGME_DECRYPT_UNWRAP}.
@@ -5920,6 +6205,8 @@ with the GPGME API.
              @w{gpgme_data_t @var{dataout}}, @w{gpgme_data_t @var{dataerr}}, @
              @w{unsigned int @var{flags}})
 
+@since{1.5.0}
+
 The function @code{gpgme_op_spawn} runs the program @var{file} with
 the arguments taken from the NULL terminated array @var{argv}.  If no
 arguments are required @var{argv} may be given as @code{NULL}.  In the
@@ -5935,10 +6222,15 @@ multiple of the following bit values:
 
 @table @code
 @item GPGME_SPAWN_DETACHED
+@since{1.5.0}
+
 Under Windows this flag inhibits the allocation of a new console for
 the program.  This is useful for a GUI application which needs to call
 a command line helper tool.
+
 @item GPGME_SPAWN_ALLOW_SET_FG
+@since{1.5.0}
+
 Under Windows this flag allows the called program to put itself into
 the foreground.
 @end table
@@ -5949,6 +6241,8 @@ the foreground.
              @w{const char *@var{argv}[]}, @w{gpgme_data_t @var{datain}}, @
              @w{gpgme_data_t @var{dataout}}, @w{gpgme_data_t @var{dataerr}}, @
              @w{unsigned int @var{flags}})
+
+@since{1.5.0}
 
 This is the asynchronous variant of @code{gpgme_op_spawn}.
 @end deftypefun
@@ -5970,6 +6264,8 @@ data:
        (@w{void *@var{opaque}}, @w{const void *@var{data}}, @
         @w{size_t @var{datalen}})}
 
+@since{1.2.0}
+
 This callback receives any data sent by the server.  @var{opaque} is
 the pointer passed to @code{gpgme_op_assuan_transact_start},
 @var{data} of length @var{datalen} refers to the data sent.
@@ -5978,6 +6274,8 @@ the pointer passed to @code{gpgme_op_assuan_transact_start},
 @deftp {Data type} {gpgme_error_t (*gpgme_assuan_inquire_cb_t) @
        (@w{void *@var{opaque}}, @w{const char *@var{name}}, @
         @w{const char *@var{args}}, @w{gpgme_data_t *@var{r_data}})}
+
+@since{1.2.0}
 
 This callback is used to provide additional data to the Assuan server.
 @var{opaque} is the pointer passed to
@@ -5991,6 +6289,8 @@ Note: Returning data is currently not implemented in @acronym{GPGME}.
 @deftp {Data type} {gpgme_error_t (*gpgme_assuan_status_cb_t) @
        (@w{void *@var{opaque}}, @w{const char *@var{status}}, @
         @w{const char *@var{args}})}
+
+@since{1.2.0}
 
 This callback receives any status lines sent by the server.
 @var{opaque} is the pointer passed to
@@ -6006,6 +6306,8 @@ denote the status update sent.
              @w{void * @var{inquire_cb_value}}, @
              @w{gpgme_assuan_status_cb_t @var{status_cb}}, @
              @w{void * @var{status_cb_value}})
+
+@since{1.2.0}
 
 Send the Assuan @var{command} and return results via the callbacks.
 Any callback may be @code{NULL}.  The result of the operation may be
@@ -6040,6 +6342,8 @@ access this online database and check whether a new version of a
 software package is available.
 
 @deftp {Data type} {gpgme_query_swdb_result_t}
+@since{1.8.0}
+
 This is a pointer to a structure used to store the result of a
 @code{gpgme_op_query_swdb} operation.  After success full call to that
 function, you can retrieve the pointer to the result with
@@ -6101,6 +6405,8 @@ The release date of the latest released version.
              @w{const char *@var{iversion}},  @
              @w{gpgme_data_t @var{reserved}})
 
+@since{1.8.0}
+
 Query the software version database for software package @var{name}
 and check against the installed version given by @var{iversion}.  If
 @var{iversion} is given as @code{NULL} a check is only done if GPGME
@@ -6112,6 +6418,8 @@ current gpgme version is checked.  @var{reserved} must be set to 0.
 
 @deftypefun gpgme_query_swdb_result_t gpgme_op_query_swdb_result @
             (@w{gpgme_ctx_t @var{ctx}})
+
+@since{1.8.0}
 
 The function @code{gpgme_op_query_swdb_result} returns a
 @code{gpgme_query_swdb_result_t} pointer to a structure holding the
@@ -6875,6 +7183,8 @@ immediately.  Instead, cancellation occurs at the next possible time
 (typically the next time I/O occurs in the target context).
 
 @deftypefun gpgme_ctx_t gpgme_cancel (@w{gpgme_ctx_t @var{ctx}})
+@since{0.4.5}
+
 The function @code{gpgme_cancel} attempts to cancel a pending
 operation in the context @var{ctx}.  This only works if you use the
 global event loop or your own event loop.
@@ -6897,6 +7207,8 @@ case the state of @var{ctx} is not modified).
 
 
 @deftypefun gpgme_ctx_t gpgme_cancel_async (@w{gpgme_ctx_t @var{ctx}})
+@since{1.1.7}
+
 The function @code{gpgme_cancel_async} attempts to cancel a pending
 operation in the context @var{ctx}.  This can be called by any thread
 at any time after starting an operation on the context, but will not
@@ -6979,6 +7291,8 @@ The function @code{gpgme_trust_item_release} is an alias for
 
 
 @deftypefun gpgme_error_t gpgme_op_import_ext (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{keydata}}, @w{int *@var{nr}})
+@since{0.3.9}
+
 The function @code{gpgme_op_import_ext} is equivalent to:
 
 @example
@@ -7012,6 +7326,8 @@ the status code, @code{0} for success, or any other error value.
 @end deftp
 
 @deftypefun gpgme_error_t gpgme_op_edit (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{key}}, @w{gpgme_edit_cb_t @var{fnc}}, @w{void *@var{handle}}, @w{gpgme_data_t @var{out}})
+@since{0.3.9}
+
 Note: This function is deprecated, please use
 @code{gpgme_op_interact} instead.
 
@@ -7032,6 +7348,9 @@ by the crypto engine or the edit callback handler.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_edit_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{key}}, @w{gpgme_edit_cb_t @var{fnc}}, @w{void *@var{handle}}, @w{gpgme_data_t @var{out}})
+
+@since{0.3.9}
+
 Note: This function is deprecated, please use
 @code{gpgme_op_interact_start} instead.
 
