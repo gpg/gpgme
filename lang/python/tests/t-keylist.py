@@ -229,6 +229,9 @@ alpha_keys = list(c.op_keylist_all(b"Alpha"))
 assert len(alpha_keys) == 1, "Expected only one key for 'Alpha', got %r" % len(alpha_keys)
 
 
+# Check negative result.
+assert len(list(c.keylist("no such key in sight"))) == 0
+
 
 for i, key in enumerate(c.keylist()):
     try:
