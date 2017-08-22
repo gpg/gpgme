@@ -51,6 +51,12 @@ data.write(b'Hello world!')
 data.seek(0, os.SEEK_SET)
 assert data.read() == b'Hello world!'
 
+data = gpg.Data()
+data.write(b'Hello world!')
+# We expect the second argument to default to SEEK_SET
+data.seek(0)
+assert data.read() == b'Hello world!'
+
 binjunk = bytes(range(256))
 data = gpg.Data()
 data.write(binjunk)

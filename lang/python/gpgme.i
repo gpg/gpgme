@@ -557,6 +557,11 @@ gpgme_error_t gpgme_op_keylist_start (gpgme_ctx_t ctx,
                       const char *pattern="",
                       int secret_only=0);
 
+/* The whence argument is surprising in Python-land,
+   because BytesIO or StringIO objects do not require it.
+   It defaults to SEEK_SET. Let's do that for Data objects, too */
+off_t gpgme_data_seek (gpgme_data_t dh, off_t offset, int whence=SEEK_SET);
+
 /* Include the unmodified <gpgme.h> for cc, and the cleaned-up local
    version for SWIG.  We do, however, want to hide certain fields on
    some structs, which we provide prior to including the version for
