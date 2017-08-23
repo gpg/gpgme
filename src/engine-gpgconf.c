@@ -996,7 +996,7 @@ static gpgme_error_t
 gpgconf_config_dir_cb (void *hook, char *line)
 {
   /* This is an input- and output-parameter.  */
-  struct gpgconf_config_dir_s *data = (char **) hook;
+  struct gpgconf_config_dir_s *data = (struct gpgconf_config_dir_s *) hook;
   int len = strlen(data->what);
 
   if (!strncmp(line, data->what, len) && line[len] == ':')

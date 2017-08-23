@@ -292,7 +292,7 @@ _gpgme_key_add_sig (gpgme_key_t key, char *src)
 		       &sig->comment, dst);
     }
   else
-    sig->uid = '\0';
+    sig->uid[0] = '\0';
 
   if (!uid->signatures)
     uid->signatures = sig;
