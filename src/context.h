@@ -118,6 +118,9 @@ struct gpgme_context
    * flag is cleared with each operation.  */
   unsigned int redraw_suggested : 1;
 
+  /* True if the option --auto-key-retrieve shall be passed to gpg.  */
+  unsigned int auto_key_retrieve : 1;
+
   /* Flags for keylist mode.  */
   gpgme_keylist_mode_t keylist_mode;
 

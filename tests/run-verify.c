@@ -222,6 +222,7 @@ show_usage (int ex)
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
          "  --sender MBOX    use MBOX as sender address\n"
+         "  --auto-key-retrieve\n"
          , stderr);
   exit (ex);
 }
@@ -231,6 +232,7 @@ int
 main (int argc, char **argv)
 {
   int last_argc = -1;
+  const char *s;
   gpgme_error_t err;
   gpgme_ctx_t ctx;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
@@ -241,6 +243,7 @@ main (int argc, char **argv)
   gpgme_verify_result_t result;
   int print_status = 0;
   const char *sender = NULL;
+  int auto_key_retrieve = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -283,6 +286,12 @@ main (int argc, char **argv)
           sender = *argv;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--auto-key-retrieve"))
+        {
+          auto_key_retrieve = 1;
+          argc--; argv++;
+        }
+
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -322,6 +331,18 @@ main (int argc, char **argv)
       gpgme_set_ctx_flag (ctx, "full-status", "1");
     }
   /* gpgme_set_ctx_flag (ctx, "raw-description", "1"); */
+
+  if (auto_key_retrieve)
+    {
+      gpgme_set_ctx_flag (ctx, "auto-key-retrieve", "1");
+      s = gpgme_get_ctx_flag (ctx, "auto-key-retrieve");
+      if (!s || strcmp (s, "1"))
+        {
+          fprintf (stderr, PGM ": gpgme_get_ctx_flag failed for '%s'\n",
+                   "auto-key-retrieve");
+          exit (1);
+        }
+    }
 
   if (sender)
     {

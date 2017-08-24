@@ -452,7 +452,8 @@ _gpgme_decrypt_start (gpgme_ctx_t ctx, int synchronous,
                                    flags,
                                    cipher, plain,
                                    ctx->export_session_keys,
-                                   ctx->override_session_key);
+                                   ctx->override_session_key,
+                                   ctx->auto_key_retrieve);
 }
 
 

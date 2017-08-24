@@ -962,7 +962,8 @@ static gpgme_error_t
 uiserver_decrypt (void *engine,
                   gpgme_decrypt_flags_t flags,
                   gpgme_data_t ciph, gpgme_data_t plain,
-                  int export_session_key, const char *override_session_key)
+                  int export_session_key, const char *override_session_key,
+                  int auto_key_retrieve)
 {
   engine_uiserver_t uiserver = engine;
   gpgme_error_t err;
@@ -972,6 +973,8 @@ uiserver_decrypt (void *engine,
 
   (void)override_session_key; /* Fixme: We need to see now to add this
                                * to the UI server protocol  */
+  (void)auto_key_retrieve;    /* Not yet supported.  */
+
 
   if (!uiserver)
     return gpg_error (GPG_ERR_INV_VALUE);

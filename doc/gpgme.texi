@@ -3055,6 +3055,16 @@ the context flag "export-session-key" is enabled.  Please be aware that
 using this feature with GnuPG < 2.1.16 will leak the session key on
 many platforms via ps(1).
 
+@item "auto-key-retrieve"
+Setting the @var{value} to "1" asks the backend to automatically
+retrieve a key for signature verification if possible.  Note that this
+option makes a "web bug" like behavior possible.  Keyserver or Web Key
+Directory operators can see which keys you request, so by sending you
+a message signed by a brand new key (which you naturally will not have
+on your local keyring), the operator can tell both your IP address and
+the time when you verified the signature.
+
+
 @end table
 
 This function returns @code{0} on success.

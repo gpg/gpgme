@@ -531,6 +531,10 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
       if (!ctx->override_session_key)
         err = gpg_error_from_syserror ();
     }
+  else if (!strcmp (name, "auto-key-retrieve"))
+    {
+      ctx->auto_key_retrieve = abool;
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -567,6 +571,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "override-session-key"))
     {
       return ctx->override_session_key? ctx->override_session_key : "";
+    }
+  else if (!strcmp (name, "auto-key-retrieve"))
+    {
+      return ctx->auto_key_retrieve? "1":"";
     }
   else
     return NULL;

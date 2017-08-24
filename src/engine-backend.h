@@ -65,7 +65,8 @@ struct engine_ops
                             gpgme_decrypt_flags_t flags,
                             gpgme_data_t ciph,
 			    gpgme_data_t plain, int export_session_key,
-                            const char *override_session_key);
+                            const char *override_session_key,
+                            int auto_key_retrieve);
   gpgme_error_t (*delete) (void *engine, gpgme_key_t key, unsigned int flags);
   gpgme_error_t (*edit) (void *engine, int type, gpgme_key_t key,
 			 gpgme_data_t out, gpgme_ctx_t ctx /* FIXME */);

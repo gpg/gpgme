@@ -1562,7 +1562,8 @@ static gpgme_error_t
 gpg_decrypt (void *engine,
              gpgme_decrypt_flags_t flags,
              gpgme_data_t ciph, gpgme_data_t plain,
-             int export_session_key, const char *override_session_key)
+             int export_session_key, const char *override_session_key,
+             int auto_key_retrieve)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -1579,6 +1580,9 @@ gpg_decrypt (void *engine,
 
   if (!err && export_session_key)
     err = add_arg (gpg, "--show-session-key");
+
+  if (!err && auto_key_retrieve)
+    err = add_arg (gpg, "--auto-key-retrieve");
 
   if (!err && override_session_key && *override_session_key)
     {
@@ -2997,6 +3001,9 @@ gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
   gpgme_error_t err;
 
   err = append_args_from_sender (gpg, ctx);
+  if (!err && ctx->auto_key_retrieve)
+    err = add_arg (gpg, "--auto-key-retrieve");
+
   if (err)
     ;
   else if (plaintext)

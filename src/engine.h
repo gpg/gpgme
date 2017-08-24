@@ -88,7 +88,8 @@ gpgme_error_t _gpgme_engine_op_decrypt (engine_t engine,
                                         gpgme_data_t ciph,
 					gpgme_data_t plain,
                                         int export_session_key,
-                                        const char *override_session_key);
+                                        const char *override_session_key,
+                                        int auto_key_retrieve);
 gpgme_error_t _gpgme_engine_op_delete (engine_t engine, gpgme_key_t key,
 				       unsigned int flags);
 gpgme_error_t _gpgme_engine_op_edit (engine_t engine, int type,

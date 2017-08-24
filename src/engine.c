@@ -656,7 +656,8 @@ _gpgme_engine_op_decrypt (engine_t engine,
                           gpgme_decrypt_flags_t flags,
                           gpgme_data_t ciph,
 			  gpgme_data_t plain, int export_session_key,
-                          const char *override_session_key)
+                          const char *override_session_key,
+                          int auto_key_retrieve)
 {
   if (!engine)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -665,7 +666,8 @@ _gpgme_engine_op_decrypt (engine_t engine,
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   return (*engine->ops->decrypt) (engine->engine, flags, ciph, plain,
-                                  export_session_key, override_session_key);
+                                  export_session_key, override_session_key,
+                                  auto_key_retrieve);
 }
 
 
