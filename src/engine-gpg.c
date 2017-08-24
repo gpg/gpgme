@@ -1874,7 +1874,7 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 
   if (!err && (flags & GPGME_ENCRYPT_WRAP))
     {
-      /* gpg is current not abale to detect already compressed
+      /* gpg is current not able to detect already compressed
        * packets.  Thus when using
        *   gpg --unwrap -d | gpg --no-literal -e
        * the encryption would add an additional compression layer.
