@@ -992,6 +992,10 @@ struct gpgconf_config_dir_s
   char *result;
 };
 
+/* Called for each line in the gpgconf --list-dirs output.  Searches
+   for the desired line and returns the result, indicating success by
+   a special error value GPG_ERR_USER_1 (which terminates the
+   operation immediately).  */
 static gpgme_error_t
 gpgconf_config_dir_cb (void *hook, char *line)
 {
@@ -1011,6 +1015,8 @@ gpgconf_config_dir_cb (void *hook, char *line)
 }
 
 
+/* Like gpgme_get_dirinfo, but uses the home directory of ENGINE and
+   does not cache the result.  */
 static gpgme_error_t
 gpgconf_conf_dir (void *engine, const char *what, char **result)
 {
@@ -1023,7 +1029,7 @@ gpgconf_conf_dir (void *engine, const char *what, char **result)
 		      gpgconf_config_dir_cb, &data);
   if (gpg_err_code (err) == GPG_ERR_USER_1)
     {
-      /* This signals to use that a result was found.  */
+      /* This signals to us that a result was found.  */
       *result = data.result;
       return 0;
     }
