@@ -330,6 +330,21 @@ typedef enum
 gpgme_tofu_policy_t;
 
 
+/* The key origin values. */
+typedef enum
+  {
+    GPGME_KEYORG_UNKNOWN      = 0,
+    GPGME_KEYORG_KS           = 1,
+    GPGME_KEYORG_DANE         = 3,
+    GPGME_KEYORG_WKD          = 4,
+    GPGME_KEYORG_URL          = 5,
+    GPGME_KEYORG_FILE         = 6,
+    GPGME_KEYORG_SELF         = 7,
+    GPGME_KEYORG_OTHER        = 31
+  }
+gpgme_keyorg_t;
+
+
 /* The available protocols.  */
 typedef enum
   {
@@ -697,7 +712,7 @@ struct _gpgme_user_id
   /* The malloced TOFU information or NULL.  */
   gpgme_tofu_info_t tofu;
 
-  /* Time of the last refresh of thsi user id.  0 if unknown.  */
+  /* Time of the last refresh of this user id.  0 if unknown.  */
   unsigned long last_update;
 };
 typedef struct _gpgme_user_id *gpgme_user_id_t;

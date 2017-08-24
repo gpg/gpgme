@@ -376,6 +376,25 @@ set_ownertrust (gpgme_key_t key, const char *src)
 }
 
 
+static gpgme_keyorg_t
+parse_keyorg (const char *string)
+{
+  switch (atoi (string))
+    {
+    case 0: return GPGME_KEYORG_UNKNOWN;
+    case 1:
+    case 2:
+      return GPGME_KEYORG_KS;
+    case 3: return GPGME_KEYORG_DANE;
+    case 4: return GPGME_KEYORG_WKD;
+    case 5: return GPGME_KEYORG_URL;
+    case 6: return GPGME_KEYORG_FILE;
+    case 7: return GPGME_KEYORG_SELF;
+    default: return GPGME_KEYORG_OTHER;
+    }
+}
+
+
 /* Parse field 15 of a secret key or subkey.  This fields holds a
    reference to smartcards.  FIELD is the content of the field and we
    are allowed to modify it.  */
@@ -719,7 +738,7 @@ keylist_colon_handler (void *priv, char *line)
       if (fields >= 20)
         {
           key->last_update = _gpgme_parse_timestamp_ul (field[18]);
-          key->origin = 0; /* Fixme: Not yet defined in gpg.  */
+          key->origin = parse_keyorg (field[19]);
         }
 
       break;
@@ -814,7 +833,7 @@ keylist_colon_handler (void *priv, char *line)
           if (fields >= 20)
             {
               opd->tmp_uid->last_update = _gpgme_parse_timestamp_ul (field[18]);
-              opd->tmp_uid->origin = 0; /* Fixme: Not yet defined in gpg.  */
+              opd->tmp_uid->origin = parse_keyorg (field[19]);
             }
 	}
       break;
