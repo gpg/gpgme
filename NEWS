@@ -12,8 +12,9 @@ Noteworthy changes in version 1.10.0 (unreleased)
  GPGME_DELETE_FORCE          NEW.
  gpgme_op_conf_dir           NEW.
  gpgme_set_ctx_flag          EXTENDED: New flag 'auto-key-retrieve'.
- cpp: DecryptionResult::isDeVs NEW.
- cpp: Signature::isDeVs        NEW.
+ cpp: DecryptionResult::isDeVs         NEW.
+ cpp: Signature::isDeVs                NEW.
+ cpp: EngineInfo::Version::operator>   NEW.
  py: DecryptResult           EXTENDED: New boolean field 'is_de_vs'.
  py: Signature               EXTENDED: New boolean field 'is_de_vs'.
  py: GpgError                EXTENDED: Partial results in 'results'.

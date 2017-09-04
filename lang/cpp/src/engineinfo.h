@@ -71,13 +71,13 @@ public:
 
         bool operator < (const Version& other)
         {
-            if (major < other.major)
-                return true;
-            if (minor < other.minor)
-                return true;
-            if (patch < other.patch)
-                return true;
-            return false;
+            if (major > other.major ||
+                (major == other.major && minor > other.minor) ||
+                (major == other.major && minor == other.minor && patch > other.patch) ||
+                (major >= other.major && minor >= other.minor && patch >= other.patch)) {
+                return false;
+            }
+            return true;
         }
 
         bool operator < (const char* other)
@@ -85,6 +85,15 @@ public:
             return operator<(Version(other));
         }
 
+        bool operator > (const char* other)
+        {
+            return !operator<(Version(other));
+        }
+
+        bool operator > (const Version & other)
+        {
+            return !operator<(other);
+        }
         bool operator == (const Version& other)
         {
             return major == other.major
