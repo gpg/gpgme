@@ -48,6 +48,7 @@
 #include <sys/resource.h>
 
 #if __linux__
+# include <sys/syscall.h>
 # include <sys/types.h>
 # include <dirent.h>
 #endif /*__linux__ */
@@ -279,6 +280,20 @@ _gpgme_io_set_nonblocking (int fd)
 }
 
 
+#ifdef __linux__
+/* This is not declared in public headers; getdents(2) says that we must
+ * define it ourselves.  */
+struct linux_dirent
+{
+  unsigned long d_ino;
+  unsigned long d_off;
+  unsigned short d_reclen;
+  char d_name[];
+};
+
+# define DIR_BUF_SIZE 1024
+#endif /* __linux__ */
+
 static long int
 get_max_fds (void)
 {
@@ -291,39 +306,57 @@ get_max_fds (void)
    * than for example doing 4096 close calls where almost all of them
    * will fail.
    *
-   * Unfortunately we can't call opendir between fork and exec in a
-   * multi-threaded process because opendir uses malloc and thus a
-   * mutex which may deadlock with a malloc in another thread.  Thus
-   * the code is not used until we can have a opendir variant which
-   * does not use malloc.  */
-/* #ifdef __linux__ */
-/*   { */
-/*     DIR *dir = NULL; */
-/*     struct dirent *dir_entry; */
-/*     const char *s; */
-/*     int x; */
+   * We can't use the normal opendir/readdir/closedir interface between
+   * fork and exec in a multi-threaded process because opendir uses
+   * malloc and thus a mutex which may deadlock with a malloc in another
+   * thread.  However, the underlying getdents system call is safe.  */
+#ifdef __linux__
+  {
+    int dir_fd;
+    char dir_buf[DIR_BUF_SIZE];
+    struct linux_dirent *dir_entry;
+    int r, pos;
+    const char *s;
+    int x;
 
-/*     dir = opendir ("/proc/self/fd"); */
-/*     if (dir) */
-/*       { */
-/*         while ((dir_entry = readdir (dir))) */
-/*           { */
-/*             s = dir_entry->d_name; */
-/*             if ( *s < '0' || *s > '9') */
-/*               continue; */
-/*             x = atoi (s); */
-/*             if (x > fds) */
-/*               fds = x; */
-/*           } */
-/*         closedir (dir); */
-/*       } */
-/*     if (fds != -1) */
-/*       { */
-/*         fds++; */
-/*         source = "/proc"; */
-/*       } */
-/*     } */
-/* #endif /\* __linux__ *\/ */
+    dir_fd = open ("/proc/self/fd", O_RDONLY | O_DIRECTORY);
+    if (dir_fd != -1)
+      {
+        for (;;)
+          {
+            r = syscall(SYS_getdents, dir_fd, dir_buf, DIR_BUF_SIZE);
+            if (r == -1)
+              {
+                /* Fall back to other methods.  */
+                fds = -1;
+                break;
+              }
+            if (r == 0)
+              break;
+
+            for (pos = 0; pos < r; pos += dir_entry->d_reclen)
+              {
+                dir_entry = (struct linux_dirent *) (dir_buf + pos);
+                s = dir_entry->d_name;
+                if (*s < '0' || *s > '9')
+                  continue;
+                /* atoi is not guaranteed to be async-signal-safe.  */
+                for (x = 0; *s >= '0' && *s <= '9'; s++)
+                  x = x * 10 + (*s - '0');
+                if (!*s && x > fds && x != dir_fd)
+                  fds = x;
+              }
+          }
+
+        close (dir_fd);
+      }
+    if (fds != -1)
+      {
+        fds++;
+        source = "/proc";
+      }
+    }
+#endif /* __linux__ */
 
 #ifdef RLIMIT_NOFILE
   if (fds == -1)
