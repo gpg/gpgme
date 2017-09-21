@@ -1,26 +1,23 @@
-==========================
-XML Schemas and Name Space
-==========================
+* XML Schemas and Name Space
 
-The XML schemas in this directory are available under the same terms
-as GPGME (i.e. the GPL 2 or later or the LGPL 2.1 or later), or
+
+The XML schemas in this directory are available under the same terms as
+GPGME (i.e. the GPL 2 or later or the LGPL 2.1 or later), or
 alternatively the Apache 2.0 license.
 
 The schemas were generated with oXygenXML Editor 17.1 (mentioning that
 isn't necessary, but might be helpful).
 
 
---------------
-Apache license
---------------
+*  Apache license
 
 Copyright © Benjamin D. McGinnes, 2016
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License"); you may
+not use this file except in compliance with the License. You may obtain
+a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+    [[http://www.apache.org/licenses/LICENSE-2.0]]
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,13 +26,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-----------------------------
-Documentation and Deployment
-----------------------------
+* Documentation and Deployment
 
 Documentation generated from the schema as Docbook 5 XML output is in
-the docs/ directly.  this Docbook file was subsequently used to
-generate XHTML documentation.
+the docs/ directly. this Docbook file was subsequently used to generate
+XHTML documentation.
 
 Deployment ought to be in a new directory on the web server somewhere,
 once a decision is made and bearing in mind that it must bepermanent.
