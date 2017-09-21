@@ -1,6 +1,6 @@
-===========
-XML Schemas
-===========
+==========================
+XML Schemas and Name Space
+==========================
 
 The XML schemas in this directory are available under the same terms
 as GPGME (i.e. the GPL 2 or later or the LGPL 2.1 or later), or
@@ -27,3 +27,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+
+----------------------------
+Documentation and Deployment
+----------------------------
+
+Documentation generated from the schema as Docbook 5 XML output is in
+the docs/ directly.  this Docbook file was subsequently used to
+generate XHTML documentation.
+
+Deployment ought to be in a new directory on the web server somewhere,
+once a decision is made and bearing in mind that it must bepermanent.
