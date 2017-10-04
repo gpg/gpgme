@@ -762,7 +762,28 @@ fi
 AM_CONDITIONAL(HAVE_UISERVER, test "$uiserver" != "no")
 
 
+# Option --disable-linux-getdents
+#
+# By default we use SYS_getdents on Linux to optimize fd closing
+# before an exec.  This option allows to switch this optimization off.
+use_linux_getdents=yes
+AC_ARG_ENABLE(linux-getdents,
+              AC_HELP_STRING([--disable-linux-getdents],
+                             [do not use SYS_getdents on Linux]),
+              use_linux_getdents=$enableval)
+if test "$use_linux_getdents" = "yes"; then
+    case "${host}" in
+        *-*-linux*)
+           AC_DEFINE(USE_LINUX_GETDENTS,1,
+                     [Defined if SYS_getdents can be used on Linux])
+           ;;
+    esac
+fi
+
+
+#
 # Add a few constants to help porting to W32
+#
 AH_VERBATIM([SEPCONSTANTS],
 [
 /* Separators as used in $PATH and file name.  */

@@ -47,11 +47,11 @@
 #include <ctype.h>
 #include <sys/resource.h>
 
-#if __linux__
+#ifdef USE_LINUX_GETDENTS
 # include <sys/syscall.h>
 # include <sys/types.h>
 # include <dirent.h>
-#endif /*__linux__ */
+#endif /*USE_LINUX_GETDENTS*/
 
 
 #include "util.h"
@@ -59,6 +59,7 @@
 #include "sema.h"
 #include "ath.h"
 #include "debug.h"
+
 
 
 void
@@ -280,7 +281,7 @@ _gpgme_io_set_nonblocking (int fd)
 }
 
 
-#ifdef __linux__
+#ifdef USE_LINUX_GETDENTS
 /* This is not declared in public headers; getdents(2) says that we must
  * define it ourselves.  */
 struct linux_dirent
@@ -292,7 +293,8 @@ struct linux_dirent
 };
 
 # define DIR_BUF_SIZE 1024
-#endif /* __linux__ */
+#endif /*USE_LINUX_GETDENTS*/
+
 
 static long int
 get_max_fds (void)
@@ -310,7 +312,7 @@ get_max_fds (void)
    * fork and exec in a multi-threaded process because opendir uses
    * malloc and thus a mutex which may deadlock with a malloc in another
    * thread.  However, the underlying getdents system call is safe.  */
-#ifdef __linux__
+#ifdef USE_LINUX_GETDENTS
   {
     int dir_fd;
     char dir_buf[DIR_BUF_SIZE];
@@ -356,7 +358,7 @@ get_max_fds (void)
         source = "/proc";
       }
     }
-#endif /* __linux__ */
+#endif /*USE_LINUX_GETDENTS*/
 
 #ifdef RLIMIT_NOFILE
   if (fds == -1)
