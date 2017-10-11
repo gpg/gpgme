@@ -282,13 +282,14 @@ _gpgme_io_set_nonblocking (int fd)
 
 
 #ifdef USE_LINUX_GETDENTS
-/* This is not declared in public headers; getdents(2) says that we must
+/* This is not declared in public headers; getdents64(2) says that we must
  * define it ourselves.  */
-struct linux_dirent
+struct linux_dirent64
 {
-  unsigned long d_ino;
-  unsigned long d_off;
+  ino64_t d_ino;
+  off64_t d_off;
   unsigned short d_reclen;
+  unsigned char d_type;
   char d_name[];
 };
 
@@ -316,7 +317,7 @@ get_max_fds (void)
   {
     int dir_fd;
     char dir_buf[DIR_BUF_SIZE];
-    struct linux_dirent *dir_entry;
+    struct linux_dirent64 *dir_entry;
     int r, pos;
     const char *s;
     int x;
@@ -326,7 +327,7 @@ get_max_fds (void)
       {
         for (;;)
           {
-            r = syscall(SYS_getdents, dir_fd, dir_buf, DIR_BUF_SIZE);
+            r = syscall(SYS_getdents64, dir_fd, dir_buf, DIR_BUF_SIZE);
             if (r == -1)
               {
                 /* Fall back to other methods.  */
@@ -338,7 +339,7 @@ get_max_fds (void)
 
             for (pos = 0; pos < r; pos += dir_entry->d_reclen)
               {
-                dir_entry = (struct linux_dirent *) (dir_buf + pos);
+                dir_entry = (struct linux_dirent64 *) (dir_buf + pos);
                 s = dir_entry->d_name;
                 if (*s < '0' || *s > '9')
                   continue;
