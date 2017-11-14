@@ -185,7 +185,11 @@ static qint64 blocking_read(const std::shared_ptr<QIODevice> &io, char *buffer, 
                 if (p->error() == QProcess::UnknownError &&
                         p->exitStatus() == QProcess::NormalExit &&
                         p->exitCode() == 0) {
-                    return 0;
+                    if (io->atEnd()) {
+                        // EOF
+                        return 0;
+                    } // continue reading even if process ended to ensure
+                      // everything is read.
                 } else {
                     Error::setSystemError(GPG_ERR_EIO);
                     return -1;
