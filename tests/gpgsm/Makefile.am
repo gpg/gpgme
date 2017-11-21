@@ -58,22 +58,22 @@ export GPG_AGENT_INFO :=
 BUILT_SOURCES = gpgsm.conf trustlist.txt pubring-stamp \
            private-keys-v1.d/gpg-sample.stamp
 
-./pubring-stamp: $(srcdir)/cert_g10code_test1.der ./private-keys-v1.d/gpg-sample.stamp
+pubring-stamp: $(srcdir)/cert_g10code_test1.der ./private-keys-v1.d/gpg-sample.stamp
 	$(GPGSM) --import $(srcdir)/cert_g10code_test1.der
 	touch pubring-stamp
 
-./gpgsm.conf:
+gpgsm.conf:
 	echo disable-crl-checks > ./gpgsm.conf
 	echo faked-system-time 1008241200 >> ./gpgsm.conf
 	echo "agent-program `which $(GPG_AGENT)`|--debug-quick-random" >> ./gpgsm.conf
 
-./private-keys-v1.d/gpg-sample.stamp: $(srcdir)/$(key_id)
+private-keys-v1.d/gpg-sample.stamp: $(srcdir)/$(key_id)
 	-gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	cp $(srcdir)/$(key_id) private-keys-v1.d/$(key_id).key
 	echo x > ./private-keys-v1.d/gpg-sample.stamp
 
-./trustlist.txt:
+trustlist.txt:
 	echo $(key_id) > ./trustlist.txt
 	echo >> ./trustlist.txt
 	echo "# CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE" >> ./trustlist.txt

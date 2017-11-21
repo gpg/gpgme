@@ -96,7 +96,7 @@ clean-local:
 BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
            private-keys-v1.d/gpg-sample.stamp
 
-./private-keys-v1.d/gpg-sample.stamp: $(private_keys)
+private-keys-v1.d/gpg-sample.stamp: $(private_keys)
 	-gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
@@ -104,7 +104,7 @@ BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
         done
 	echo x > ./private-keys-v1.d/gpg-sample.stamp
 
-./pubring-stamp: $(test_srcdir)/pubdemo.asc           \
+pubring-stamp: $(test_srcdir)/pubdemo.asc           \
                  ./private-keys-v1.d/gpg-sample.stamp
 	$(GPG) --batch --no-permission-warning \
                --import $(test_srcdir)/pubdemo.asc
@@ -112,12 +112,12 @@ BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
 		--import $(test_srcdir)/secdemo.asc
 	echo x > ./pubring-stamp
 
-./gpg.conf:
+gpg.conf:
 # This is required for t-sig-notations.
 	echo no-force-v3-sigs > ./gpg.conf
 	echo ignore-invalid-option agent-program >> ./gpg.conf
 	echo "agent-program `which $(GPG_AGENT)`|--debug-quick-random" >> ./gpg.conf
 
-./gpg-agent.conf:
+gpg-agent.conf:
 # This is required for gpg2, which does not support command fd.
 	echo pinentry-program $(abs_top_srcdir)/tests/gpg/pinentry >$@

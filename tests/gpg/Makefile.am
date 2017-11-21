@@ -88,7 +88,7 @@ export GNUPGHOME := $(abs_builddir)
 
 export GPG_AGENT_INFO :=
 
-./private-keys-v1.d/gpg-sample.stamp: $(srcdir)/$(private_keys)
+private-keys-v1.d/gpg-sample.stamp: $(srcdir)/$(private_keys)
 	-gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
@@ -96,17 +96,17 @@ export GPG_AGENT_INFO :=
         done
 	echo x > ./private-keys-v1.d/gpg-sample.stamp
 
-./pubring-stamp: $(srcdir)/pubdemo.asc ./private-keys-v1.d/gpg-sample.stamp
+pubring-stamp: $(srcdir)/pubdemo.asc ./private-keys-v1.d/gpg-sample.stamp
 	$(GPG) --batch --no-permission-warning \
                --import $(srcdir)/pubdemo.asc
 	-$(GPG) --batch --no-permission-warning \
 		--import $(srcdir)/secdemo.asc
 	echo x > ./pubring-stamp
 
-./gpg.conf:
+gpg.conf:
 # This is required for t-sig-notations.
 	echo no-force-v3-sigs > ./gpg.conf
 
-./gpg-agent.conf:
+gpg-agent.conf:
 # This is required for gpg2, which does not support command fd.
 	echo pinentry-program $(abs_srcdir)/pinentry > ./gpg-agent.conf
