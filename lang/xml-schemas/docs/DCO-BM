@@ -1,0 +1,46 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+GnuPG Developer's Certificate of Origin.  Version 1.0
+=====================================================
+
+By making a contribution to the GnuPG project, I certify that:
+
+(a) The contribution was created in whole or in part by me and I
+    have the right to submit it under the free software license
+    indicated in the file; or
+
+(b) The contribution is based upon previous work that, to the
+    best of my knowledge, is covered under an appropriate free
+    software license and I have the right under that license to
+    submit that work with modifications, whether created in whole
+    or in part by me, under the same free software license
+    (unless I am permitted to submit under a different license),
+    as indicated in the file; or
+
+(c) The contribution was provided directly to me by some other
+    person who certified (a), (b) or (c) and I have not modified
+    it.
+
+(d) I understand and agree that this project and the contribution
+    are public and that a record of the contribution (including
+    all personal information I submit with it, including my
+    sign-off) is maintained indefinitely and may be redistributed
+    consistent with this project or the free software license(s)
+    involved.
+
+Signed-off-by: Ben McGinnes <ben@adversary.org>
+-----BEGIN PGP SIGNATURE-----
+
+iQGzBAEBCgAdFiEEt/D+dZOHQw3QxYvbf/LTcTXHVTwFAloeL4UACgkQf/LTcTXH
+VTwYGwwAoVqjVw3eQf/wzG657YdWK7+g988JvE3aTydM85qR45mG8asfgdsOmluE
+aG21VdTcazVDGzRPK4QLJ/xbTXlEmxiQcMQxuyarGiiC0WCP1sINhbUX5SCBOUDr
+lGaR9F0CFkwN15HjE1/Q+dE5iGN8DLkmeSwHU1r4kp2aR2otFHJ9wbUSHndjNE0j
+mR0Nct+zJSw5MprQ4BMuXhX/clNN7kAZ56SEQL9KoN+c+qecUjY104ZoInOW7pq4
+18v+M2EK57S8cX0cep3PoyrS5QM07T+Oe8SytMSOEZzACFrrCNNTPVqpEnZc3ypT
+sTiI8G3C9RDuBqxt9EyprYIb5JbMQgiSvUXA6cYtUm2rGf3l9q1HZ8fMvkUpYV9/
+FYy2KEqPtrLr6tJdg7YBn5ntsKej8vZZBCUqrnWb67siPEwWR31hhgXtSBUaaMJU
+pfcM/k2PunQLw1s6lgZGwaZRRZzT/OvJbGUi7abJuxO7wpX8l/8neMw7279mc8We
+T1qdtYK8
+=Mqdk
+-----END PGP SIGNATURE-----
