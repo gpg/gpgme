@@ -20,6 +20,7 @@
 ## Process this file with automake to produce Makefile.in
 
 GPGSM = gpgsm
+GPG_AGENT = gpg-agent
 
 TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) LC_ALL=C GPG_AGENT_INFO= \
                     top_srcdir=$(top_srcdir)
