@@ -2594,6 +2594,9 @@ gpg_keylist_preprocess (char *line, char **r_line)
 	 as defined in 5.2. Machine Readable Indexes of the OpenPGP
 	 HTTP Keyserver Protocol (draft).
 
+         For an ldap keyserver the format is:
+         uid:<escaped uid string>
+
 	 We want:
 	 uid:o<flags>::::<creatdate>:<expdate>:::<c-coded uid>:
       */
@@ -2635,9 +2638,17 @@ gpg_keylist_preprocess (char *line, char **r_line)
 	  }
 	*dst = '\0';
 
-	if (gpgrt_asprintf (r_line, "uid:o%s::::%s:%s:::%s:",
-		      field[4], field[2], field[3], uid) < 0)
-	  return gpg_error_from_syserror ();
+        if (fields < 4)
+          {
+            if (gpgrt_asprintf (r_line, "uid:o::::::::%s:", uid) < 0)
+              return gpg_error_from_syserror ();
+          }
+        else
+          {
+            if (gpgrt_asprintf (r_line, "uid:o%s::::%s:%s:::%s:",
+                                field[4], field[2], field[3], uid) < 0)
+              return gpg_error_from_syserror ();
+          }
       }
       return 0;
 
