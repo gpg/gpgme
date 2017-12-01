@@ -1404,6 +1404,38 @@ Error Context::setTofuPolicyStart(const Key &k, unsigned int policy)
                  k.impl(), to_tofu_policy_t(policy)));
 }
 
+Error Context::startCreateKey (const char *userid,
+                               const char *algo,
+                               unsigned long reserved,
+                               unsigned long expires,
+                               const Key &certkey,
+                               unsigned int flags)
+{
+    return Error(d->lasterr = gpgme_op_createkey_start(d->ctx,
+                 userid,
+                 algo,
+                 reserved,
+                 expires,
+                 certkey.impl(),
+                 flags));
+}
+
+Error Context::createKey (const char *userid,
+                          const char *algo,
+                          unsigned long reserved,
+                          unsigned long expires,
+                          const Key &certkey,
+                          unsigned int flags)
+{
+    return Error(d->lasterr = gpgme_op_createkey(d->ctx,
+                 userid,
+                 algo,
+                 reserved,
+                 expires,
+                 certkey.impl(),
+                 flags));
+}
+
 Error Context::addUid(const Key &k, const char *userid)
 {
     return Error(d->lasterr = gpgme_op_adduid(d->ctx,
@@ -1426,6 +1458,24 @@ Error Context::startRevUid(const Key &k, const char *userid)
 {
     return Error(d->lasterr = gpgme_op_revuid_start(d->ctx,
                  k.impl(), userid, 0));
+}
+
+Error Context::createSubkey(const Key &k, const char *algo,
+                            unsigned long reserved,
+                            unsigned long expires,
+                            unsigned int flags)
+{
+    return Error(d->lasterr = gpgme_op_createsubkey(d->ctx,
+                 k.impl(), algo, reserved, expires, flags));
+}
+
+Error Context::startCreateSubkey(const Key &k, const char *algo,
+                                 unsigned long reserved,
+                                 unsigned long expires,
+                                 unsigned int flags)
+{
+    return Error(d->lasterr = gpgme_op_createsubkey_start(d->ctx,
+                 k.impl(), algo, reserved, expires, flags));
 }
 
 // Engine Spawn stuff

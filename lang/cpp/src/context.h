@@ -214,11 +214,37 @@ public:
     GpgME::Error edit(const Key &key, std::unique_ptr<EditInteractor> function, Data &out);
     GpgME::Error startEditing(const Key &key, std::unique_ptr<EditInteractor> function, Data &out);
 
+
+    //
+    // Modern Interface actions. Require 2.1.x
+    //
+    Error startCreateKey (const char *userid,
+                          const char *algo,
+                          unsigned long reserved,
+                          unsigned long expires,
+                          const Key &certkey,
+                          unsigned int flags);
+    Error createKey (const char *userid,
+                     const char *algo,
+                     unsigned long reserved,
+                     unsigned long expires,
+                     const Key &certkey,
+                     unsigned int flags);
+
     Error addUid(const Key &key, const char *userid);
     Error startAddUid(const Key &key, const char *userid);
 
     Error revUid(const Key &key, const char *userid);
     Error startRevUid(const Key &key, const char *userid);
+
+    Error createSubkey(const Key &key, const char *algo,
+                       unsigned long reserved = 0,
+                       unsigned long expires = 0,
+                       unsigned int flags = 0);
+    Error startCreateSubkey(const Key &key, const char *algo,
+                            unsigned long reserved = 0,
+                            unsigned long expires = 0,
+                            unsigned int flags = 0);
 
     // using TofuInfo::Policy
     Error setTofuPolicy(const Key &k, unsigned int policy);
