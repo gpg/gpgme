@@ -36,7 +36,7 @@ qgpgme_sources = \
     qgpgmesignjob.cpp qgpgmesignkeyjob.cpp qgpgmeverifydetachedjob.cpp \
     qgpgmeverifyopaquejob.cpp threadedjobmixin.cpp \
     qgpgmekeyformailboxjob.cpp gpgme_backend_debug.cpp \
-    qgpgmetofupolicyjob.cpp \
+    qgpgmetofupolicyjob.cpp qgpgmequickjob.cpp \
     defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp \
     dn.cpp cryptoconfig.cpp
 
@@ -60,6 +60,7 @@ qgpgme_headers= \
     protocol.h \
     qgpgme_export.h \
     qgpgmenewcryptoconfig.h \
+    quickjob.h \
     specialjob.h \
     signjob.h \
     signkeyjob.h \
@@ -97,6 +98,7 @@ camelcase_headers= \
     MultiDeleteJob \
     Protocol \
     QGpgMENewCryptoConfig \
+    QuickJob \
     SpecialJob \
     SignJob \
     SignKeyJob \
@@ -145,6 +147,7 @@ private_qgpgme_headers = \
     qgpgmekeyformailboxjob.h \
     qgpgmewkspublishjob.h \
     qgpgmetofupolicyjob.h \
+    qgpgmequickjob.h \
     threadedjobmixin.h
 
 qgpgme_moc_sources = \
@@ -202,7 +205,9 @@ qgpgme_moc_sources = \
     keyformailboxjob.moc \
     wkspublishjob.moc \
     qgpgmekeyformailboxjob.moc \
-    defaultkeygenerationjob.moc
+    defaultkeygenerationjob.moc \
+    quickjob.moc \
+    qgpgmequickjob.moc
 
 qgpgmeincludedir = $(includedir)/qgpgme
 qgpgmeinclude_HEADERS = $(qgpgme_headers)

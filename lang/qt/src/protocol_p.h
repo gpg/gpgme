@@ -60,6 +60,7 @@
 #include "qgpgmekeyformailboxjob.h"
 #include "qgpgmewkspublishjob.h"
 #include "qgpgmetofupolicyjob.h"
+#include "qgpgmequickjob.h"
 
 namespace
 {
@@ -413,6 +414,18 @@ public:
             return Q_NULLPTR;
         }
         return new QGpgME::QGpgMETofuPolicyJob(context);
+    }
+
+    QGpgME::QuickJob *quickJob() const Q_DECL_OVERRIDE
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return Q_NULLPTR;
+        }
+        GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
+        if (!context) {
+            return Q_NULLPTR;
+        }
+        return new QGpgME::QGpgMEQuickJob(context);
     }
 };
 

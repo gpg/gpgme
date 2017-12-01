@@ -19,6 +19,7 @@ Noteworthy changes in version 1.10.0 (unreleased)
  cpp: Context::startCreateKey          NEW.
  cpp: Context::createSubkey            NEW.
  cpp: Context::startCreateSubkey       NEW.
+ qt: QuickJob                          NEW.
  py: DecryptResult           EXTENDED: New boolean field 'is_de_vs'.
  py: Signature               EXTENDED: New boolean field 'is_de_vs'.
  py: GpgError                EXTENDED: Partial results in 'results'.

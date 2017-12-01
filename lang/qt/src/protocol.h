@@ -66,6 +66,7 @@ class SpecialJob;
 class KeyForMailboxJob;
 class WKSPublishJob;
 class TofuPolicyJob;
+class QuickJob;
 
 /** The main entry point for QGpgME Comes in OpenPGP and SMIME(CMS) flavors.
  *
@@ -157,6 +158,9 @@ public:
 
     /** A Job to set tofu policy */
     virtual TofuPolicyJob *tofuPolicyJob() const = 0;
+
+    /** A Job for the quick commands */
+    virtual QuickJob *quickJob() const = 0;
 };
 
 /** Obtain a reference to the OpenPGP Protocol.
