@@ -30,35 +30,16 @@
 #include <string.h>
 #include <errno.h>
 
-#include <gpgme.h>
+#define PGM "t-data"
+#include "run-support.h"
 
+#undef fail_if_err
 #define fail_if_err(a) do { if(a) {                                          \
                                fprintf (stderr, "%s:%d: (%i) gpgme_error_t " \
                                 "%s\n", __FILE__, __LINE__, round,           \
                                 gpgme_strerror(a));                          \
                                 exit (1); }                                  \
                              } while(0)
-
-static char *
-make_filename (const char *fname)
-{
-  const char *srcdir = getenv ("srcdir");
-  char *buf;
-
-  if (!srcdir)
-    srcdir = ".";
-  buf = malloc (strlen(srcdir) + strlen(fname) + 2 );
-  if (!buf)
-    {
-      fprintf (stderr, "%s:%d: could not allocate string: %s\n",
-	       __FILE__, __LINE__, strerror (errno));
-      exit (1);
-    }
-  strcpy (buf, srcdir);
-  strcat (buf, "/");
-  strcat (buf, fname);
-  return buf;
-}
 
 typedef enum
   {
@@ -202,6 +183,8 @@ main (void)
   const char *missing_filename = "this-file-surely-does-not-exist";
   gpgme_error_t err = 0;
   gpgme_data_t data;
+
+  init_gpgme_basic ();
 
   while (++round)
     {

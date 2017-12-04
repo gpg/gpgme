@@ -102,7 +102,7 @@ main (int argc, char **argv)
 
     }
 
-  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+  init_gpgme_basic ();
 
   for (; argc; argc--, argv++)
     {

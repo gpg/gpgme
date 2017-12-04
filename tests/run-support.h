@@ -107,7 +107,11 @@ make_filename (const char *fname)
     srcdir = ".";
   buf = malloc (strlen(srcdir) + strlen(fname) + 2);
   if (!buf)
-    exit (8);
+    {
+      fprintf (stderr, "%s:%d: could not allocate string: %s\n",
+	       __FILE__, __LINE__, strerror (errno));
+      exit (8);
+    }
   strcpy (buf, srcdir);
   strcat (buf, "/");
   strcat (buf, fname);
@@ -116,17 +120,23 @@ make_filename (const char *fname)
 
 
 void
-init_gpgme (gpgme_protocol_t proto)
+init_gpgme_basic (void)
 {
-  gpgme_error_t err;
-
   gpgme_check_version (NULL);
   setlocale (LC_ALL, "");
   gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
 #ifndef HAVE_W32_SYSTEM
   gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
 #endif
+}
 
+
+void
+init_gpgme (gpgme_protocol_t proto)
+{
+  gpg_error_t err;
+
+  init_gpgme_basic ();
   err = gpgme_engine_check_version (proto);
   fail_if_err (err);
 }

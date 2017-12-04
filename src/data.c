@@ -46,6 +46,10 @@ _gpgme_data_new (gpgme_data_t *r_dh, struct _gpgme_data_cbs *cbs)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   *r_dh = NULL;
+
+  if (_gpgme_selftest)
+    return _gpgme_selftest;
+
   dh = calloc (1, sizeof (*dh));
   if (!dh)
     return gpg_error_from_syserror ();

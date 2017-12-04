@@ -683,9 +683,10 @@ uses, this function provides a run-time check if the necessary
 features are provided by the installed version of the library.
 
 If a selftest fails, the function may still succeed.  Selftest errors
-are returned later when invoking @code{gpgme_new}, so that a detailed
-error code can be returned (historically, @code{gpgme_check_version}
-does not return a detailed error code).
+are returned later when invoking @code{gpgme_new} or
+@code{gpgme-data_new}, so that a detailed error code can be returned
+(historically, @code{gpgme_check_version} does not return a detailed
+error code).
 @end deftypefun
 
 
