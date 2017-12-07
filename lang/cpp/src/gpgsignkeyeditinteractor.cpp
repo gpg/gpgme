@@ -158,6 +158,7 @@ enum SignKeyState {
     SET_TRUST_DEPTH,
     SET_TRUST_REGEXP,
     CONFIRM,
+    CONFIRM2,
     QUIT,
     SAVE,
     ERROR = EditInteractor::ErrorState
@@ -182,6 +183,7 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
     addEntry(START, GET_LINE, "keyedit.prompt", COMMAND);
     addEntry(COMMAND, GET_BOOL, "keyedit.sign_all.okay", UIDS_ANSWER_SIGN_ALL);
     addEntry(COMMAND, GET_BOOL, "sign_uid.okay", CONFIRM);
+    addEntry(COMMAND, GET_BOOL, "sign_uid.local_promote_okay", CONFIRM2);
     addEntry(UIDS_ANSWER_SIGN_ALL, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(UIDS_ANSWER_SIGN_ALL, GET_LINE, "sign_uid.expire", SET_EXPIRE);
     addEntry(UIDS_ANSWER_SIGN_ALL, GET_LINE, "sign_uid.class", SET_CHECK_LEVEL);
@@ -192,6 +194,7 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
     addEntry(SET_EXPIRE, GET_BOOL, "sign_uid.class", SET_CHECK_LEVEL);
     addEntry(CONFIRM, GET_BOOL, "sign_uid.local_promote_okay", CONFIRM);
     addEntry(CONFIRM, GET_BOOL, "sign_uid.okay", CONFIRM);
+    addEntry(CONFIRM2, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(CONFIRM, GET_LINE, "keyedit.prompt", COMMAND);
     addEntry(CONFIRM, GET_LINE, "trustsign_prompt.trust_value", SET_TRUST_VALUE);
     addEntry(CONFIRM, GET_LINE, "sign_uid.expire", SET_EXPIRE);
@@ -233,6 +236,7 @@ const char *GpgSignKeyEditInteractor::action(Error &err) const
         return 0;
     case SET_CHECK_LEVEL:
         return check_level_strings[d->checkLevel];
+    case CONFIRM2:
     case CONFIRM:
         return answer(true);
     case QUIT:
