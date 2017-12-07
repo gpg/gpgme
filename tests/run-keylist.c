@@ -228,8 +228,10 @@ main (int argc, char **argv)
     {
       gpgme_user_id_t uid;
       gpgme_tofu_info_t ti;
+      gpgme_key_sig_t ks;
       int nuids;
       int nsub;
+      int nsigs;
 
       printf ("keyid   : %s\n", key->subkeys?nonnull (key->subkeys->keyid):"?");
       printf ("fpr     : %s\n", key->subkeys?nonnull (key->subkeys->fpr):"?");
@@ -319,6 +321,14 @@ main (int argc, char **argv)
               printf ("   nencr: %hu\n", ti->encrcount);
               printf ("   first: %s\n", isotimestr (ti->encrfirst));
               printf ("    last: %s\n", isotimestr (ti->encrlast));
+            }
+          for (nsigs=0, ks=uid->signatures; ks; ks = ks->next, nsigs++)
+            {
+              printf ("signature %d: %s\n", nsigs, nonnull (ks->uid));
+              printf ("       keyid: %s\n", nonnull (ks->keyid));
+              printf ("     created: %s\n", isotimestr(ks->timestamp));
+              printf ("     expires: %s\n", isotimestr(ks->expires));
+              printf ("       class: %x\n", ks->sig_class);
             }
         }
 
