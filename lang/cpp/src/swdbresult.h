@@ -87,7 +87,7 @@ public:
     /* The time the online info was retrieved.  */
     unsigned long retrieved() const;
 
-    /* This bit is set if an error occured or some of the information
+    /* This bit is set if an error occurred or some of the information
      * in this structure may not be set.  */
     bool warning() const;
 

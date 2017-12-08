@@ -60,7 +60,7 @@ AC_DEFUN([GNUPG_CHECK_VA_COPY],
 ])
 
 dnl LIST_MEMBER()
-dnl Check wether an element ist contained in a list.  Set `found' to
+dnl Check whether an element ist contained in a list.  Set `found' to
 dnl `1' if the element is found in the list, to `0' otherwise.
 AC_DEFUN([LIST_MEMBER],
 [

@@ -502,13 +502,13 @@ systems.  To address offsets in large files, you can either enable
 largefile support add-on.  Then a new data type @code{off64_t} is
 provided, which is 64 bit wide.  Or you can replace the existing
 @code{off_t} data type with its 64 bit wide counterpart.  All
-occurences of @code{off_t} are then automagically replaced.
+occurrences of @code{off_t} are then automagically replaced.
 
 As if matters were not complex enough, there are also two different
 types of file descriptors in such systems.  This is important because
 if file descriptors are exchanged between programs that use a
 different maximum file size, certain errors must be produced on some
-file descriptors to prevent subtle overflow bugs from occuring.
+file descriptors to prevent subtle overflow bugs from occurring.
 
 As you can see, supporting two different maximum file sizes at the
 same time is not at all an easy task.  However, the maximum file size
@@ -733,7 +733,7 @@ Windows.
 
 @item require-gnupg
 Set the mimimum version of the required GnuPG engine.  If that version
-is not met, GPGME fails early instead of trying to use the existant
+is not met, GPGME fails early instead of trying to use the existent
 version.  The given version must be a string with major, minor, and
 micro number.  Example: "2.1.0".
 
@@ -1131,7 +1131,7 @@ of the configuration directory for this crypto engine.  If
 The new defaults are not applied to already created GPGME contexts.
 
 This function returns the error code @code{GPG_ERR_NO_ERROR} if
-successful, or an eror code on failure.
+successful, or an error code on failure.
 @end deftypefun
 
 The functions @code{gpgme_ctx_get_engine_info} and
@@ -1568,7 +1568,7 @@ This value indicates success.  The value of this error code is
 @code{0}.  Also, it is guaranteed that an error value made from the
 error code @code{0} will be @code{0} itself (as a whole).  This means
 that the error source information is lost for this error code,
-however, as this error code indicates that no error occured, this is
+however, as this error code indicates that no error occurred, this is
 generally not a problem.
 
 @item GPG_ERR_GENERAL
@@ -1642,7 +1642,7 @@ This value indicates that no certificate revocation list is known for
 the certificate.
 
 @item GPG_ERR_NO_POLICY_MATCH
-This value indicates that a policy issue occured.
+This value indicates that a policy issue occurred.
 
 @item GPG_ERR_NO_SECKEY
 This value indicates that no secret key for the user ID is available.
@@ -2498,7 +2498,7 @@ if the function is called after starting the first operation on the
 context @var{ctx}.
 
 This function returns the error code @code{GPG_ERR_NO_ERROR} if
-successful, or an eror code on failure.
+successful, or an error code on failure.
 @end deftypefun
 
 
@@ -2761,7 +2761,7 @@ is the default.
 @item GPGME_KEYLIST_MODE_EXTERN
 The @code{GPGME_KEYLIST_MODE_EXTERN} symbol specifies that an external
 source should be searched for keys in the keylisting operation.  The
-type of external source is dependant on the crypto engine used and
+type of external source is dependent on the crypto engine used and
 whether it is combined with @code{GPGME_KEYLIST_MODE_LOCAL}.  For
 example, it can be a remote keyserver or LDAP certificate server.
 
@@ -6399,7 +6399,7 @@ If this flag is set the given @code{name} is not known.
 If this flag is set the available information is not fresh enough.
 
 @item error
-If this flag is set some other error has occured.
+If this flag is set some other error has occurred.
 
 @item version
 The version string of the latest released version.
@@ -6435,7 +6435,7 @@ current gpgme version is checked.  @var{reserved} must be set to 0.
 The function @code{gpgme_op_query_swdb_result} returns a
 @code{gpgme_query_swdb_result_t} pointer to a structure holding the
 result of a @code{gpgme_op_query_swdb} operation.  The pointer is only
-valid if the last operation on the context was a sucessful call to
+valid if the last operation on the context was a successful call to
 @code{gpgme_op_query_swdb}.  If that call failed, the result might
 be a @code{NULL} pointer.  The returned pointer is only valid until
 the next operation is started on the context @var{ctx}.
@@ -6693,9 +6693,9 @@ in a context which has I/O callback functions registered by the user.
 @code{gpgme_event_io_cb_t} function with @acronym{GPGME} and will always be
 passed as the first argument when registering a callback function.
 For example, the user can use this to determine the context in which
-this event has occured.
+this event has occurred.
 
-@var{type} will specify the type of event that has occured.
+@var{type} will specify the type of event that has occurred.
 @var{type_data} specifies the event further, as described in the above
 list of possible @code{gpgme_event_io_t} types.
 
@@ -6733,7 +6733,7 @@ must be processed.
 @item void *event_priv
 This is passed as the first argument to the @code{event} function when
 it is called by @acronym{GPGME}.  For example, it can be used to
-determine the context in which the event has occured.
+determine the context in which the event has occurred.
 @end table
 @end deftp
 

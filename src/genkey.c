@@ -650,7 +650,7 @@ gpgme_op_set_uid_flag_start (gpgme_ctx_t ctx,
 }
 
 
-/* See set_uid_flag.  Thsi is the synchronous variant.  */
+/* See set_uid_flag.  This is the synchronous variant.  */
 gpgme_error_t
 gpgme_op_set_uid_flag (gpgme_ctx_t ctx,
                        gpgme_key_t key, const char *userid,

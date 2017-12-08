@@ -194,7 +194,7 @@ gpgme_op_interact (gpgme_ctx_t ctx, gpgme_key_t key, unsigned int flags,
 
 
 
-/* The deprectated interface.  */
+/* The deprecated interface.  */
 static gpgme_error_t
 edit_start (gpgme_ctx_t ctx, int synchronous, int type, gpgme_key_t key,
 	    gpgme_edit_cb_t fnc, void *fnc_value, gpgme_data_t out)

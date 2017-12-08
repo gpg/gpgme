@@ -237,7 +237,7 @@
 	* gpg/t-keylist.c: Reordered list to match new demo keyring.  Add
 	arg for number of subkeys and for extra checking function.
 	(main): Enhanced a few error outputs.  Changed subkey
-	counting. Call extra checking fucntion.
+	counting. Call extra checking function.
 	(check_whisky): New.
 
 2005-10-07  Marcus Brinkmann  <marcus@g10code.de>

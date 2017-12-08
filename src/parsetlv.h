@@ -1,4 +1,4 @@
-/* parsetlv.h -  TLV functions defintions
+/* parsetlv.h -  TLV functions definitions
  * Copyright (C) 2012 g10 Code GmbH
  *
  * This file is free software; you can redistribute it and/or modify

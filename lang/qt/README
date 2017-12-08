@@ -38,7 +38,7 @@ with QObject::deleteLater so they can be started without
 result handlers.
 
 The result signal provides a tuple of objects with the
-appropiate result information for this job. For historic
+appropriate result information for this job. For historic
 reasons each result signal also includes an AuditLog
 and an AuditLog Error. These are only useful for
 S/MIME signature validation but are part of other jobs
@@ -72,7 +72,7 @@ Async usage:
     job->start(keys, inptr, outptr, Context::AlwaysTrust);
     /* Do not delete the job as it is autodeleted. */
 
-Syncronus usage:
+Synchronous usage:
 
     /* Create a job */
     KeyListJob *listjob = openpgp()->keyListJob(false, false, false);

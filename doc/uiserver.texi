@@ -484,7 +484,7 @@ First, the input files need to be specified by one or more
 @code{FILE} commands.  Afterwards, the actual operation is requested:
 
 @deffn Command CHECKSUM_CREATE_FILES --nohup
-Request that checksums are created for the files specifed by
+Request that checksums are created for the files specified by
 @code{FILE}.  The choice of checksum algorithm and the destination
 storage and format for the created checksums depend on the preferences
 of the user and the functionality provided by the UI server.  For
@@ -499,7 +499,7 @@ promptly, and completes the operation asynchronously.
 
 
 @deffn Command CHECKSUM_VERIFY_FILES --nohup
-Request that checksums are created for the files specifed by
+Request that checksums are created for the files specified by
 @code{FILE} and verified against previously created and stored
 checksums.  The choice of checksum algorithm and the source storage
 and format for previously created checksums depend on the preferences

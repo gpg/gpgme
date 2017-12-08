@@ -280,7 +280,7 @@ if test x$fixed_search_path != x ; then
 fi
 
 
-# Note: You need to declare all possible langauges also in
+# Note: You need to declare all possible languages also in
 #       lang/Makefile.am's DIST_SUBDIRS.
 AC_ARG_ENABLE([languages],
               AC_HELP_STRING([--enable-languages=languages],
@@ -336,7 +336,7 @@ fi
 # Check that if qt is enabled cpp also is enabled
 LIST_MEMBER("qt", $enabled_languages)
 if test "$found" = "1"; then
-    # We need to ensure that in the langauge order qt comes after cpp
+    # We need to ensure that in the language order qt comes after cpp
     # so we remove qt first and explicitly add it as last list member.
     enabled_languages=$(echo $enabled_languages | sed 's/qt//')
     LIST_MEMBER("cpp", $enabled_languages)

@@ -62,7 +62,7 @@ Example to set the ownertrust of a key:
     Data data;
     /* Start the edit on some key previously obtained. */
     Error e = ctx->edit(key, std::unique_ptr<EditInteractor>(ei), data);
-    /* Errors provide boolean comparision */
+    /* Errors provide boolean comparison */
     if (!e)
         ...
     /* Delete the context */

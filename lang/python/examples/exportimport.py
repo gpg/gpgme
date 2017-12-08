@@ -45,7 +45,7 @@ with gpg.Context(armor=True) as c, gpg.Data() as expkey:
 # of them.
 with gpg.Context() as c:
     # Note: We must not modify the key store during iteration,
-    # therfore, we explicitly make a list.
+    # therefore, we explicitly make a list.
     keys = list(c.keylist(user))
 
     for k in keys:

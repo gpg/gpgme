@@ -222,7 +222,7 @@ debug_init (void)
 
 
 
-/* This should be called as soon as the locks are intialized.  It is
+/* This should be called as soon as the locks are initialized.  It is
    required so that the assuan logging gets conncted to the gpgme log
    stream as early as possible.  */
 void
