@@ -205,7 +205,6 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
     }
 
   cr_flags |= CREATE_SUSPENDED;
-  cr_flags |= DETACHED_PROCESS;
   if (!CreateProcessA (argv[0],
 		       arg_string,
 		       &sec_attr,     /* process security attributes */
