@@ -1,5 +1,27 @@
-Noteworthy changes in version 1.10.0 (unreleased)
+Noteworthy changes in version 1.10.0 (2017-12-12)
 -------------------------------------------------
+
+ * Now returns more specific error codes for decryption to distinguish
+   between bad passphrase, user canceled, and no secret key.
+
+ * Now returns key origin information if available.
+
+ * Added context flag "auto-key-retrieve" to selectively enable the
+   corresponding gpg option.
+
+ * Added flag is_de_vs to decryption and verify results.
+
+ * py: Use SEEK_SET as default for data.seek.
+
+ * cpp: Various new APIs.
+
+ * Reduced spawn overhead on Linux again.  Added new configure option
+   --disable-linux-getdents to disable this feature for very old
+   Linux versions.
+
+ * Improved the Python bindings build system.
+
+ * Made the test suite less fragile.
 
  * Interface changes relative to the 1.9.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,6 +45,8 @@ Noteworthy changes in version 1.10.0 (unreleased)
  py: DecryptResult           EXTENDED: New boolean field 'is_de_vs'.
  py: Signature               EXTENDED: New boolean field 'is_de_vs'.
  py: GpgError                EXTENDED: Partial results in 'results'.
+
+ [c=C30/A19/R0 cpp=C11/A5/R0 qt=C10/A3/R0]
 
 
 Noteworthy changes in version 1.9.0 (2017-03-28)

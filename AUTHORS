@@ -1,9 +1,9 @@
 Package: gpgme
 Homepage: https://gnupg.org/related_software/gpgme/
-Download: ftp://ftp.gnupg.org/gcrypt/gpgme/
+Download: https://gnupg.org/ftp/gcrypt/gpgme/
 Repository: git://git.gnupg.org/gpgme.git
 Maintainer: Werner Koch <wk@gnupg.org>
-Bug reports: https://bugs.gnupg.org (use category "gpgme")
+Bug reports: https://bugs.gnupg.org
 Security related bug reports: security@gnupg.org
 License (software): LGPLv2.1+
 License (manual+tools): GPLv3+
