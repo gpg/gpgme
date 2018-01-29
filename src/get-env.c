@@ -92,7 +92,6 @@ _gpgme_getenv (const char *name, char **value)
 }
 #else
 
-/* FIXME: Implement this when we have the specification for it.  */
-#error Use of getenv_r not implemented.
+#error No thread-safe getenv nor getenv_r
 
 #endif
