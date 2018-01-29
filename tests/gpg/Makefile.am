@@ -96,7 +96,7 @@ private-keys-v1.d/gpg-sample.stamp: $(srcdir)/$(private_keys)
         done
 	echo x > ./private-keys-v1.d/gpg-sample.stamp
 
-pubring-stamp: $(srcdir)/pubdemo.asc ./private-keys-v1.d/gpg-sample.stamp
+pubring-stamp: $(srcdir)/pubdemo.asc private-keys-v1.d/gpg-sample.stamp
 	$(GPG) --batch --no-permission-warning \
                --import $(srcdir)/pubdemo.asc
 	-$(GPG) --batch --no-permission-warning \

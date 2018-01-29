@@ -59,7 +59,7 @@ export GPG_AGENT_INFO :=
 BUILT_SOURCES = gpgsm.conf trustlist.txt pubring-stamp \
            private-keys-v1.d/gpg-sample.stamp
 
-pubring-stamp: $(srcdir)/cert_g10code_test1.der ./private-keys-v1.d/gpg-sample.stamp
+pubring-stamp: $(srcdir)/cert_g10code_test1.der private-keys-v1.d/gpg-sample.stamp
 	$(GPGSM) --import $(srcdir)/cert_g10code_test1.der
 	touch pubring-stamp
 
