@@ -28,7 +28,7 @@
 #include "util.h"
 
 
-#if defined(HAVE_THREAD_SAFE_GETENV) || !defined (HAVE_GETENV_R)
+#if defined(HAVE_THREAD_SAFE_GETENV)
 /* We prefer using getenv() if it is thread-safe.  */
 
 /* Retrieve the environment variable NAME and return a copy of it in a
@@ -50,7 +50,46 @@ _gpgme_getenv (const char *name, char **value)
     }
   return 0;
 }
+#elif defined (HAVE_GETENV_R)
+#define INITIAL_GETENV_SIZE 32
 
+gpgme_error_t
+_gpgme_getenv (const char *name, char **value)
+{
+  size_t len = INITIAL_GETENV_SIZE;
+  char *env_value;
+
+  env_value = malloc (len);
+
+  while (1)
+    {
+      *value = env_value;
+      if (!env_value)
+        return gpg_error_from_syserror ();
+
+      if (getenv_r (name, env_value, len) == 0)
+        break;
+
+      if (errno == ERANGE)
+        {
+          len *= 2;
+          env_value = realloc (env_value, len);
+        }
+      else
+        {
+          int saved = errno;
+
+          free (env_value);
+          *value = NULL;
+          if (errno == ENOENT)
+            return 0;
+          else
+          return gpg_error_from_errno (saved);
+        }
+    }
+
+  return 0;
+}
 #else
 
 /* FIXME: Implement this when we have the specification for it.  */
