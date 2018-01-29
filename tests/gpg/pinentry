@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 # Dummy pinentry
 # 
 # Copyright 2008 g10 Code GmbH
