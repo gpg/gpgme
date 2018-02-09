@@ -1724,8 +1724,8 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
     int written;
     size_t len;
 
-    if ((flags & IOSPAWN_FLAG_ALLOW_SET_FG))
-      strcpy (line, "~1 \n");
+    if (flags)
+      snprintf (line, BUFFER_MAX, "~%i \n", flags);
     else
       strcpy (line, "\n");
     for (i = 0; fd_list[i].fd != -1; i++)
