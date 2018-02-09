@@ -2007,6 +2007,7 @@ gpgme_error_t gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output,
 /* Flags for the spawn operations.  */
 #define GPGME_SPAWN_DETACHED      1
 #define GPGME_SPAWN_ALLOW_SET_FG  2
+#define GPGME_SPAWN_SHOW_WINDOW   4
 
 
 /* Run the command FILE with the arguments in ARGV.  Connect stdin to

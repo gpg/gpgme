@@ -241,7 +241,8 @@ engspawn_start (engine_spawn_t esp, const char *file, const char *argv[],
     spflags |= IOSPAWN_FLAG_DETACHED;
   if ((flags & GPGME_SPAWN_ALLOW_SET_FG))
     spflags |= IOSPAWN_FLAG_ALLOW_SET_FG;
-
+  if ((flags & GPGME_SPAWN_SHOW_WINDOW))
+    spflags |= IOSPAWN_FLAG_SHOW_WINDOW;
 
   err = build_fd_data_map (esp);
   if (err)

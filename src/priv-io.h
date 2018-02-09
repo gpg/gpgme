@@ -83,6 +83,8 @@ int _gpgme_io_set_nonblocking (int fd);
 #define IOSPAWN_FLAG_ALLOW_SET_FG 2
 /* Don't close any child FDs.  */
 #define IOSPAWN_FLAG_NOCLOSE 4
+/* Set show window to true for windows */
+#define IOSPAWN_FLAG_SHOW_WINDOW 8
 
 /* Spawn the executable PATH with ARGV as arguments.  After forking
    close all fds except for those in FD_LIST in the child, then

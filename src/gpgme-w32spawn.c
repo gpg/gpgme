@@ -121,8 +121,6 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
   int duped_stdout = 0;
   int duped_stderr = 0;
   HANDLE hnul = INVALID_HANDLE_VALUE;
-  /* FIXME.  */
-  int debug_me = 0;
 
   i = 0;
   while (argv[i])
@@ -142,7 +140,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
   memset (&si, 0, sizeof si);
   si.cb = sizeof (si);
   si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-  si.wShowWindow = debug_me ? SW_SHOW : SW_HIDE;
+  si.wShowWindow = (flags & IOSPAWN_FLAG_SHOW_WINDOW) ? SW_SHOW : SW_HIDE;
   si.hStdInput = GetStdHandle (STD_INPUT_HANDLE);
   si.hStdOutput = GetStdHandle (STD_OUTPUT_HANDLE);
   si.hStdError = GetStdHandle (STD_ERROR_HANDLE);
