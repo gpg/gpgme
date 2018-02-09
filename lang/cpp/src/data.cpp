@@ -254,3 +254,17 @@ std::vector<GpgME::Key> GpgME::Data::toKeys(Protocol proto) const
     delete ctx;
     return ret;
 }
+
+std::string GpgME::Data::toString()
+{
+  std::string ret;
+  char buf[4096];
+  size_t nread;
+  seek (0, SEEK_SET);
+  while ((nread = read (buf, 4096)) > 0)
+    {
+      ret += std::string (buf, nread);
+    }
+  seek (0, SEEK_SET);
+  return ret;
+}

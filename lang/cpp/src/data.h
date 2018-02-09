@@ -114,6 +114,9 @@ public:
      * Protocol proto. Returns an empty list on error.*/
     std::vector<Key> toKeys(const Protocol proto = Protocol::OpenPGP) const;
 
+    /** Return a copy of the data as std::string. Sets seek pos to 0 */
+    std::string toString();
+
     class Private;
     Private *impl()
     {
