@@ -408,7 +408,8 @@ public:
     enum SpawnFlags {
         SpawnNone = 0,
         SpawnDetached = 1,
-        SpawnAllowSetFg = 2
+        SpawnAllowSetFg = 2,
+        SpawnShowWindow = 4
     };
     /** Spwan the process \a file with arguments \a argv.
      *
