@@ -656,7 +656,7 @@ fi
 # Try to find a thread-safe version of getenv().
 have_thread_safe_getenv=no
 jm_GLIBC21
-if test $GLIBC21 = yes; then
+if test $GLIBC21 = yes -o have_w64_system = yes; then
   have_thread_safe_getenv=yes
 fi
 if test $have_thread_safe_getenv = yes; then
