@@ -20,11 +20,21 @@ return to the source.  This is a short explanation of that journey.
    ensuring it worked he stopped supporting it, though he left his
    work available on his Gopher site.
 
+** Keeping the flame alive
+   :PROPERTIES:
+   :CUSTOM_ID: keeping-the-flame-alive
+   :END:
+
    A couple of years later the project was picked up by Igor Belyi and
    actively developed and maintained by him from 2004 to 2008.  Igor's
    whereabouts at the time of this document's creation are unknown,
    but the current authors do hope he is well.  We're assuming (or
    hoping) that life did what life does and made continuing untenable.
+
+** Passing the torch
+   :PROPERTIES:
+   :CUSTOM_ID: passing-the-torch
+   :END:
 
    In 2014 Martin Albrecht wanted to patch a bug in the PyME code and
    discovered the absence of Igor.  Following a discussion on the PyME
@@ -32,6 +42,11 @@ return to the source.  This is a short explanation of that journey.
    version 0.9.0 in May of that year.  He remains the maintainer of
    the original PyME release in Python 2.6 and 2.7 (available via
    PyPI).
+
+** Coming full circle
+   :PROPERTIES:
+   :CUSTOM_ID: ouroboros 
+   :END:
 
    In 2015 Ben McGinnes approached Martin about a Python 3 version,
    while investigating how complex a task this would be the task ended
