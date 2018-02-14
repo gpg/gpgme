@@ -46,7 +46,7 @@ noinst_PROGRAMS = $(c_tests) t-genkey cms-keylist cms-decrypt
 key_id = 32100C27173EF6E9C4E9A25D3D69F86D37A4F939
 
 CLEANFILES = pubring-stamp pubring.kbx pubring.kbx~ gpgsm.conf trustlist.txt \
-	random_seed S.gpg-agent
+	random_seed S.gpg-agent gpg-sample.stamp
 
 clean-local:
 	-$(top_srcdir)/tests/start-stop-agent --stop
@@ -57,9 +57,9 @@ export GNUPGHOME := $(abs_builddir)
 export GPG_AGENT_INFO :=
 
 BUILT_SOURCES = gpgsm.conf trustlist.txt pubring-stamp \
-           private-keys-v1.d/gpg-sample.stamp
+           gpg-sample.stamp
 
-pubring-stamp: $(srcdir)/cert_g10code_test1.der private-keys-v1.d/gpg-sample.stamp
+pubring-stamp: $(srcdir)/cert_g10code_test1.der gpg-sample.stamp
 	$(GPGSM) --import $(srcdir)/cert_g10code_test1.der
 	touch pubring-stamp
 
@@ -68,11 +68,11 @@ gpgsm.conf:
 	echo faked-system-time 1008241200 >> ./gpgsm.conf
 	echo "agent-program `which $(GPG_AGENT)`|--debug-quick-random" >> ./gpgsm.conf
 
-private-keys-v1.d/gpg-sample.stamp: $(srcdir)/$(key_id)
+gpg-sample.stamp: $(srcdir)/$(key_id)
 	-gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	cp $(srcdir)/$(key_id) private-keys-v1.d/$(key_id).key
-	echo x > ./private-keys-v1.d/gpg-sample.stamp
+	echo x > ./gpg-sample.stamp
 
 trustlist.txt:
 	echo $(key_id) > ./trustlist.txt

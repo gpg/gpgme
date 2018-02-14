@@ -46,7 +46,7 @@ TESTS = initial.test $(c_tests) final.test
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
 	random_seed S.gpg-agent .gpg-v21-migrated pubring-stamp \
-	tofu.db *.conf.gpgconf.bak
+	gpg-sample.stamp tofu.db *.conf.gpgconf.bak
 
 private_keys = \
         13CD0F3BDF24BE53FE192D62F18737256FF6E4FD \
@@ -61,7 +61,7 @@ EXTRA_DIST = initial.test final.test \
 	geheim.txt pubkey-1.asc seckey-1.asc pinentry $(private_keys)
 
 BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
-           private-keys-v1.d/gpg-sample.stamp
+           gpg-sample.stamp
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 AM_LDFLAGS = -no-install
 LDADD = ../../src/libgpgme.la
@@ -88,15 +88,15 @@ export GNUPGHOME := $(abs_builddir)
 
 export GPG_AGENT_INFO :=
 
-private-keys-v1.d/gpg-sample.stamp: $(srcdir)/$(private_keys)
+gpg-sample.stamp: $(srcdir)/$(private_keys)
 	-gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
           cp $(srcdir)/$$k private-keys-v1.d/$$k.key; \
         done
-	echo x > ./private-keys-v1.d/gpg-sample.stamp
+	echo x > ./gpg-sample.stamp
 
-pubring-stamp: $(srcdir)/pubdemo.asc private-keys-v1.d/gpg-sample.stamp
+pubring-stamp: $(srcdir)/pubdemo.asc gpg-sample.stamp
 	$(GPG) --batch --no-permission-warning \
                --import $(srcdir)/pubdemo.asc
 	-$(GPG) --batch --no-permission-warning \
