@@ -1,22 +1,47 @@
 #+TITLE: Stuff To Do
 
-* Working examples
-  :PROPERTIES:
-  :CUSTOM_ID: working-examples
-  :END:
+* TODO
 
-The examples from the Python 2 code base do not work and it appears that
-they don't under Python 2 either. These ought to be replaced or updated
-with examples from the GPGME documentation.
+** Working examples
+   :PROPERTIES:
+   :CUSTOM_ID: working-examples
+   :END:
 
-* Documentation
-  :PROPERTIES:
-  :CUSTOM_ID: documentation
-  :END:
+   The old GUI examples were unable to be retained since they depended
+   on GTK2 and Python 2's integration with GTK2.
 
-Currently this appears to be buried in the debian/ directory for some
-unknown reason, probably pertaining to one of the other developers.
-Documentation is to be moved to a more appropriate docs/ directory and
-produced using reST in preparation for inevitable publication by way of
-Sphinx and the existing infrastructure at readthedocs.org or the
-projects new home at gnupg.org.
+   Current GPGME examples so far only include command line tools or
+   basic Python code for use with either Python 2.7 or Python 3.4 and
+   above.
+
+   Future GUI examples ought to utilise available GUI modules and
+   libraries supported by Python 3.  This may include Qt frameworks,
+   Tkinter, GTK3 or something else entirely.
+
+** Documentation
+   :PROPERTIES:
+   :CUSTOM_ID: documentation
+   :END:
+
+   The legacy documentation which no longer applies to the Python
+   bindings has been removed.
+
+   Current and future documentation will adhere to the GnuPG standard
+   of using Org Mode and not use the reST more commonly associated
+   with Python documentation.  The reasons for this are that this
+   project is best served as shipping with the rest of GPGME and the
+   documentation ought to match that.  Furthermore, there are aspects
+   of Org Mode's publishing features which are superior to the
+   defaults of reST, including the capacity to generate fully
+   validating strict XHTML output.
+
+   If reST files are required at a later point for future inclusion
+   with other Python packages, then that format can be generated from
+   the .org files with Pandoc before being leveraged by either
+   Docutils, Sphinx or something else.
+
+   While there are some advanced typesetting features of reST which
+   are not directly available to Org Mode, more often than not those
+   features are best implemented with either HTML and CSS, with LaTeX
+   to produce a PDF or via a number of XML solutions.  Both reST and
+   Org Mode have multiple paths by which to achieve all of these.
