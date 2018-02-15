@@ -2,7 +2,8 @@
 
 * Project Task List
 
-** TODO Documentation default format
+** DONE Documentation default format
+   CLOSED: [2018-02-15 Thu 21:29]
    :PROPERTIES:
    :CUSTOM_ID: todo-docs-default
    :END:
