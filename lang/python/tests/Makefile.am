@@ -79,7 +79,7 @@ xcheck:	all
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ gpg.conf pubring.gpg~ \
 	random_seed .gpg-v21-migrated tofu.db \
-        pubring-stamp private-keys-v1.d/gpg-sample.stamp
+        pubring-stamp gpg-sample.stamp
 
 private_keys = \
         $(test_srcdir)/13CD0F3BDF24BE53FE192D62F18737256FF6E4FD \
@@ -94,18 +94,17 @@ clean-local:
 
 
 BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
-           private-keys-v1.d/gpg-sample.stamp
+           gpg-sample.stamp
 
-private-keys-v1.d/gpg-sample.stamp: $(private_keys)
+gpg-sample.stamp: $(private_keys)
 	-gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
           cp $$k private-keys-v1.d/$${k#$(test_srcdir)/}.key; \
         done
-	echo x > ./private-keys-v1.d/gpg-sample.stamp
+	echo x > ./gpg-sample.stamp
 
-pubring-stamp: $(test_srcdir)/pubdemo.asc           \
-                 ./private-keys-v1.d/gpg-sample.stamp
+pubring-stamp: $(test_srcdir)/pubdemo.asc gpg-sample.stamp
 	$(GPG) --batch --no-permission-warning \
                --import $(test_srcdir)/pubdemo.asc
 	-$(GPG) --batch --no-permission-warning \
