@@ -49,18 +49,14 @@ CLEANFILES = pubring-stamp pubring.kbx pubring.kbx~ gpgsm.conf trustlist.txt \
 	random_seed S.gpg-agent gpg-sample.stamp
 
 clean-local:
-	-$(top_srcdir)/tests/start-stop-agent --stop
+	-$(TESTS_ENVIRONMENT) $(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR private-keys-v1.d
-
-export GNUPGHOME := $(abs_builddir)
-
-export GPG_AGENT_INFO :=
 
 BUILT_SOURCES = gpgsm.conf trustlist.txt pubring-stamp \
            gpg-sample.stamp
 
 pubring-stamp: $(srcdir)/cert_g10code_test1.der gpg-sample.stamp
-	$(GPGSM) --import $(srcdir)/cert_g10code_test1.der
+	$(TESTS_ENVIRONMENT) $(GPGSM) --import $(srcdir)/cert_g10code_test1.der
 	touch pubring-stamp
 
 gpgsm.conf:
@@ -69,7 +65,7 @@ gpgsm.conf:
 	echo "agent-program `which $(GPG_AGENT)`|--debug-quick-random" >> ./gpgsm.conf
 
 gpg-sample.stamp: $(srcdir)/$(key_id)
-	-gpgconf --kill all
+	-$(TESTS_ENVIRONMENT) gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	cp $(srcdir)/$(key_id) private-keys-v1.d/$(key_id).key
 	echo x > ./gpg-sample.stamp
