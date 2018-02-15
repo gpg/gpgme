@@ -1,4 +1,6 @@
 #+TITLE: A Short History of the GPGME bindings for Python
+#+LATEX_CLASS: article
+#+LATEX_HEADER: \usepackage[margin=1in]{geometry}
 
 * Overview
   :PROPERTIES:

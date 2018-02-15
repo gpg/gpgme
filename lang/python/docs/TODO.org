@@ -1,6 +1,11 @@
 #+TITLE: Stuff To Do
+#+LATEX_CLASS: article
+#+LATEX_HEADER: \usepackage[margin=1in]{geometry}
 
 * Project Task List
+  :PROPERTIES:
+  :CUSTOM_ID: task-list
+  :END:
 
 ** DONE Documentation default format
    CLOSED: [2018-02-15 Thu 21:29]
@@ -19,6 +24,25 @@
    to produce reST versions via Pandoc and DITA XML can be reached
    through converting to either Markdown or XHTML first.
 
+** TODO Documentation HOWTO
+   :PROPERTIES:
+   :CUSTOM_ID: todo-docs-howto
+   :END:
+
+   Write a HOWTO style guide for the current Python bindings.
+
+** TODO Documentation SWIG
+   :PROPERTIES:
+   :CUSTOM_ID: todo-docs-swig
+   :END:
+
+   Write documentation for the complete SWIG bindings demonstrating
+   the correspondence with GPGME itself.
+
+   Note: it is likely that this will be more in the nature of
+   something to be used in conjunction with the existing GPGME
+   documentation which makes it easier for Python developers to use.
+
 ** TODO GUI examples
    :PROPERTIES:
    :CUSTOM_ID: todo-gui-examples
@@ -28,7 +52,48 @@
    to either match or be similar to the old GTK2 examples available
    with PyME.
 
+** TODO Replace SWIG
+   :PROPERTIES:
+   :CUSTOM_ID: todo-replace-swig
+   :END:
+
+   Selecting SWIG for this project in 2002 was understandable and
+   effectively the only viable option.  The options available now,
+   however, are significantly improved and some of those would resolve
+   a number of existing problems with using SWIG, particularly when
+   running code on both POSIX compliant and Windows platforms.
+
+   The long term goal is to replace SWIG by reimplementing the Python
+   bindings using a more suitable means of interfacing with the GPGME
+   C source code.
+
+*** TODO Replacement for SWIG
+    :PROPERTIES:
+    :CUSTOM_ID: todo-replace-swig-replacement
+    :END:
+
+    Decide on a replacement for SWIG.  Currently CFFI is looking like
+    the most viable candidate, but some additional testing and checks
+    are yet to be completed.
+
+** TODO API for an API
+   :PROPERTIES:
+   :CUSTOM_ID: todo-api-squared
+   :END:
+
+   A C API like GPGME is not what most modern developers think of when
+   they hear the term API. Normally they think of something they can
+   interact with like a RESTful web API.  Though RESTful is unlikely
+   given the nature of GPGME and the process of encryption, it may be
+   possible to provide a more familiar interface which can be utilised
+   by developers of other languages for which bindings are not
+   available or for which it is too difficult to create proper
+   bindings.
+
 * Project Task Details
+  :PROPERTIES:
+  :CUSTOM_ID: detailed-tasks
+  :END:
 
 ** Working examples
    :PROPERTIES:
