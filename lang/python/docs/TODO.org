@@ -1,6 +1,33 @@
 #+TITLE: Stuff To Do
 
-* TODO
+* Project Task List
+
+** TODO Documentation default format
+   :PROPERTIES:
+   :CUSTOM_ID: todo-docs-default
+   :END:
+
+   Decide on a default file format for documentation.  The two main
+   contenders being Org Mode, the default for the GnuPG Project and
+   reStructuredText, the default for Python projects.  A third option
+   of DITA XML was considered due to a number of beneficial features
+   it provides.
+
+   The decision was made to use Org Mode in order to fully integrate
+   with the rest of the GPGME and GnuPG documentation.  It is possible
+   to produce reST versions via Pandoc and DITA XML can be reached
+   through converting to either Markdown or XHTML first.
+
+** TODO GUI examples
+   :PROPERTIES:
+   :CUSTOM_ID: todo-gui-examples
+   :END:
+
+   Create some examples of using Python bindings in a GUI application
+   to either match or be similar to the old GTK2 examples available
+   with PyME.
+
+* Project Task Details
 
 ** Working examples
    :PROPERTIES:
@@ -27,12 +54,12 @@
    bindings has been removed.
 
    Current and future documentation will adhere to the GnuPG standard
-   of using Org Mode and not use the reST more commonly associated
-   with Python documentation.  The reasons for this are that this
-   project is best served as shipping with the rest of GPGME and the
-   documentation ought to match that.  Furthermore, there are aspects
-   of Org Mode's publishing features which are superior to the
-   defaults of reST, including the capacity to generate fully
+   of using Org Mode and not use the reStructuredText (reST) format
+   more commonly associated with Python documentation.  The reasons
+   for this are that this project is best served as shipping with the
+   rest of GPGME and the documentation ought to match that.  There are
+   also aspects of Org Mode's publishing features which are superior
+   to the defaults of reST, including the capacity to generate fully
    validating strict XHTML output.
 
    If reST files are required at a later point for future inclusion
