@@ -93,9 +93,9 @@ gpg-sample.stamp: $(srcdir)/$(private_keys)
 	echo x > ./gpg-sample.stamp
 
 pubring-stamp: $(srcdir)/pubdemo.asc gpg-sample.stamp
-	$(GPG) --batch --no-permission-warning \
+	$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
                --import $(srcdir)/pubdemo.asc
-	-$(GPG) --batch --no-permission-warning \
+	$(TESTS_ENVIRONMENT) -$(GPG) --batch --no-permission-warning \
 		--import $(srcdir)/secdemo.asc
 	echo x > ./pubring-stamp
 
