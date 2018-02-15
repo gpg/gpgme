@@ -70,21 +70,19 @@ CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg.conf tofu.db
 
 clean-local:
-	-$(top_srcdir)/tests/start-stop-agent --stop
+	-$(TESTS_ENVIRONMENT) $(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR  private-keys-v1.d crls.d
-
-export GNUPGHOME := $(abs_builddir)
 
 pubring-stamp: $(top_srcdir)/tests/gpg/pubdemo.asc \
 	             $(top_srcdir)/tests/gpg/secdemo.asc
-	-gpgconf --kill all
+	-$(TESTS_ENVIRONMENT) gpgconf --kill all
 	echo "ignore-invalid-option allow-loopback-pinentry" > $(abs_builddir)/gpg-agent.conf
 	echo "allow-loopback-pinentry" >> gpg-agent.conf
 	echo "ignore-invalid-option pinentry-mode" > gpg.conf
 	echo "pinentry-mode loopback" >> gpg.conf
-	$(GPG) --no-permission-warning \
+	$(TESTS_ENVIRONMENT) $(GPG) --no-permission-warning \
            --import $(top_srcdir)/tests/gpg/pubdemo.asc
-	$(GPG) --no-permission-warning \
+	$(TESTS_ENVIRONMENT) $(GPG) --no-permission-warning \
 		   --passphrase "abc" \
            --import $(top_srcdir)/tests/gpg/secdemo.asc
 	touch pubring-stamp

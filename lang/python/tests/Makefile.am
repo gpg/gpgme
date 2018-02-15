@@ -18,8 +18,6 @@
 
 GPG = gpg
 GPG_AGENT = gpg-agent
-export GNUPGHOME := $(abs_builddir)
-export GPG_AGENT_INFO :=
 
 test_srcdir = $(top_srcdir)/tests/gpg
 
@@ -89,7 +87,7 @@ private_keys = \
         $(test_srcdir)/7A030357C0F253A5BBCD282FFC4E521B37558F5C
 
 clean-local:
-	-$(top_srcdir)/tests/start-stop-agent --stop
+	-$(TESTS_ENVIRONMENT) $(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR -- private-keys-v1.d openpgp-revocs.d S.gpg-agent sshcontrol
 
 
@@ -97,7 +95,7 @@ BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
            gpg-sample.stamp
 
 gpg-sample.stamp: $(private_keys)
-	-gpgconf --kill all
+	-$(TESTS_ENVIRONMENT) gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
           cp $$k private-keys-v1.d/$${k#$(test_srcdir)/}.key; \
@@ -105,9 +103,9 @@ gpg-sample.stamp: $(private_keys)
 	echo x > ./gpg-sample.stamp
 
 pubring-stamp: $(test_srcdir)/pubdemo.asc gpg-sample.stamp
-	$(GPG) --batch --no-permission-warning \
+	$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
                --import $(test_srcdir)/pubdemo.asc
-	-$(GPG) --batch --no-permission-warning \
+	-$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
 		--import $(test_srcdir)/secdemo.asc
 	echo x > ./pubring-stamp
 

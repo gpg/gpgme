@@ -81,15 +81,11 @@ noinst_PROGRAMS = $(c_tests) $(tests_skipped)
 
 
 clean-local:
-	-$(top_srcdir)/tests/start-stop-agent --stop
+	-$(TESTS_ENVIRONMENT) $(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR private-keys-v1.d
 
-export GNUPGHOME := $(abs_builddir)
-
-export GPG_AGENT_INFO :=
-
 gpg-sample.stamp: $(srcdir)/$(private_keys)
-	-gpgconf --kill all
+	-$(TESTS_ENVIRONMENT) gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
           cp $(srcdir)/$$k private-keys-v1.d/$$k.key; \
