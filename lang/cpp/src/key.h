@@ -164,6 +164,20 @@ public:
      * @returns a possible error.
      **/
     Error addUid(const char *uid);
+
+    /**
+     * @brief try to locate the best pgp key for a given mailbox.
+     *
+     * Boils down to gpg --locate-key <mbox>
+     * This may take some time if remote sources are also
+     * used.
+     *
+     * @param mbox should be a mail address does not need to be normalized.
+     *
+     * @returns The best key for a mailbox or a null key.
+     */
+    static Key locate(const char *mbox);
+
 private:
     gpgme_key_t impl() const
     {

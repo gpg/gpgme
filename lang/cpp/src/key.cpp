@@ -371,6 +371,27 @@ void Key::update()
     return;
 }
 
+// static
+Key Key::locate(const char *mbox)
+{
+    if (!mbox) {
+        return Key();
+    }
+
+    auto ctx = Context::createForProtocol(OpenPGP);
+    if (!ctx) {
+        return Key();
+    }
+
+    ctx->setKeyListMode (Extern | Local);
+
+    Error e = ctx->startKeyListing (mbox);
+    auto ret = ctx->nextKey (e);
+    delete ctx;
+
+    return ret;
+}
+
 //
 //
 // class Subkey
