@@ -17,10 +17,10 @@ return to the source.  This is a short explanation of that journey.
    :END:
 
    In 2002 John Goerzen released PyME; Python bindings for the GPGME
-   module which utilised the current release of Python of the time
-   (Python 2.2 or 2.3) and SWIG.  Shortly after creating it and
-   ensuring it worked he stopped supporting it, though he left his
-   work available on his Gopher site.
+   module which utilised the current release of Python of the time and
+   SWIG.[fn:1]  Shortly after creating it and ensuring it worked he stopped
+   supporting it, though he left his work available on his Gopher
+   site.
 
 ** Keeping the flame alive
    :PROPERTIES:
@@ -89,7 +89,7 @@ SWIG itself, which are worth noting here.
 
    Instead the files were added to a subdirectory of the =lang/=
    directory, along with a copy of the entire git log up to that point
-   as a separate file within the =lang/python/docs/= directory.[fn:1]
+   as a separate file within the =lang/python/docs/= directory.[fn:2]
    As the log for PyME is nearly 100KB and the log for GPGME is
    approximately 1MB, this would cause considerable bloat, as well as
    some confusion, should the two be merged.
@@ -161,5 +161,8 @@ SWIG itself, which are worth noting here.
 
 * Footnotes
 
-[fn:1] The entire PyME git log and other preceding VCS logs are
-located in the =gpgme/lanf/python/docs/old-commits.log= file.
+[fn:1] In all likelihood thos would have been Python 2.2 or possibly
+Python 2.3.
+
+[fn:2] The entire PyME git log and other preceding VCS logs are
+located in the =gpgme/lang/python/docs/old-commits.log= file.
