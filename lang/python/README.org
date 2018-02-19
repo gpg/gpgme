@@ -1,4 +1,4 @@
-#+TITLE gpg - GPGME bindings for Python
+#+TITLE: gpg - GPGME bindings for Python
 
 
 The "gpg" module is a python interface to the GPGME library:
