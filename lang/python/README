@@ -1,5 +1,5 @@
-gpg - GPGME bindings for Python                                      -*- org -*-
-=======================
+#+TITLE gpg - GPGME bindings for Python
+
 
 The "gpg" module is a python interface to the GPGME library:
 https://www.gnupg.org/related_software/gpgme/
