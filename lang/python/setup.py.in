@@ -152,25 +152,8 @@ class BuildExtFirstHack(build):
             sink.write(content)
 
     def _generate_gpgme_h(self, source_name, sink_name):
-        if up_to_date(source_name, sink_name):
-            return
-
         print("Using gpgme.h from {}".format(source_name))
-
-        deprec_func = re.compile(r'^(.*typedef.*|.*\(.*\)|[^#]+\s+.+)'
-                                 + r'\s*_GPGME_DEPRECATED(_OUTSIDE_GPGME)?\(.*\);\s*',
-                                 re.S)
-        line_break = re.compile(';|\\$|\\x0c|^\s*#|{')
-
-        with open(sink_name, "w") as sink, open(source_name) as source:
-            text = ''
-            for line in source:
-                text += re.sub(' class ', ' _py_obsolete_class ', line)
-                if line_break.search(line):
-                    if not deprec_func.search(text):
-                        sink.write(text)
-                    text = ''
-            sink.write(text)
+        shutil.copy2(source_name, sink_name)
 
     def _generate_errors_i(self):
 
