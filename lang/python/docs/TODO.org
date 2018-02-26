@@ -1,6 +1,10 @@
 #+TITLE: Stuff To Do
+#+LATEX_COMPILER: xelatex
 #+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [12pt]
+#+LATEX_HEADER: \usepackage{xltxtra}
 #+LATEX_HEADER: \usepackage[margin=1in]{geometry}
+#+LATEX_HEADER: \setmainfont[Ligatures={Common}]{Latin Modern Roman}
 
 * Project Task List
   :PROPERTIES:
