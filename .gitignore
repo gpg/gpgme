@@ -1,3 +1,4 @@
+# GnuPG exclusions
 /aclocal.m4
 /autom4te.cache
 /config.h.in
@@ -11,3 +12,44 @@ Makefile
 stamp-h1
 *.o
 *.lo
+
+# Hidden files
+*~
+
+# Byte compiled Python
+*.py[cod]
+__pycache__
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+build
+eggs
+parts
+develop-eggs
+.installed.cfg
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Assorted Apple crap
+default.profraw
+.DS_Store
+._.DS_Store
+default.profraw
