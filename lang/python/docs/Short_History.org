@@ -51,7 +51,7 @@ return to the source.  This is a short explanation of that journey.
 
 ** Coming full circle
    :PROPERTIES:
-   :CUSTOM_ID: ouroboros 
+   :CUSTOM_ID: ouroboros
    :END:
 
    In 2015 Ben McGinnes approached Martin about a Python 3 version,
