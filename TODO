@@ -4,6 +4,17 @@ Hey Emacs, this is -*- org -*- mode!
   :PROPERTIES:
   :CUSTOM_ID: more-docs-is-better
   :END:
+** TODO Fix this TODO list.
+   :PROPERTIES:
+   :CUSTOM_ID: fix-todo
+   :END:
+   Clean up the current TODO list.  Include properties as relevant (so
+   if someone does make a PDF or HTML version the TOC will work).
+
+   Also check ans see if some of these ancient things can be removed
+   (e.g. do we really need to fix things that were broken in GPG
+   1.3.x?  I'm thinking not so much).
+
 
 
 * Fix the remaining UI Server problems:
