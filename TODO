@@ -539,6 +539,26 @@ Hey Emacs, this is -*- org -*- mode!
   :CUSTOM_ID: language-bindings-and-related-stuff
   :END:
 
+** TODO Emacs and elisp binding
+   :PROPERTIES:
+   :CUSTOM_ID: emacs-and-elisp
+   :END:
+
+   Currently GNU Emacs uses EPA and EPG to provide GnuPG support.  EPG
+   does this by calling the GPG executable and wrapping the commands
+   with elisp functions.  A more preferable solution would be to
+   implement an epgme.el which integrated with GPGME, then if it could
+   not to attempt calling the gpgme-tool and only if those failed to
+   fall back to the current epg.el and calling the command line
+   binaries.
+
+** TODO API of an API
+   :PROPERTIES:
+   :CUSTOM_ID: api-squared
+   :END:
+
+   See the more detailed notes on this in the [[lang/python/docs/TODO.org][python TODO]].
+
 
 Copyright 2004, 2005, 2018 g10 Code GmbH
 
