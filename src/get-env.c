@@ -28,29 +28,11 @@
 #include "util.h"
 
 
-#if defined(HAVE_THREAD_SAFE_GETENV)
-/* We prefer using getenv() if it is thread-safe.  */
-
 /* Retrieve the environment variable NAME and return a copy of it in a
    malloc()'ed buffer in *VALUE.  If the environment variable is not
    set, return NULL in *VALUE.  */
-gpgme_error_t
-_gpgme_getenv (const char *name, char **value)
-{
-  char *env_value;
 
-  env_value = getenv (name);
-  if (!env_value)
-    *value = NULL;
-  else
-    {
-      *value = strdup (env_value);
-      if (!*value)
-	return gpg_error_from_syserror ();
-    }
-  return 0;
-}
-#elif defined (HAVE_GETENV_R)
+#ifdef HAVE_GETENV_R
 #define INITIAL_GETENV_SIZE 32
 
 gpgme_error_t
@@ -91,7 +73,41 @@ _gpgme_getenv (const char *name, char **value)
   return 0;
 }
 #else
+#ifndef HAVE_THREAD_SAFE_GETENV
+GPGRT_LOCK_DEFINE (environ_lock);
+#endif
 
-#error No thread-safe getenv nor getenv_r
+gpgme_error_t
+_gpgme_getenv (const char *name, char **value)
+{
+  char *env_value;
+  gpgme_error_t err = 0;
 
+#ifndef HAVE_THREAD_SAFE_GETENV
+  gpg_err_code_t rc;
+
+  rc= gpgrt_lock_lock (&environ_lock);
+  if (rc)
+    {
+      err = gpg_error (rc);
+      goto leave;
+    }
+#endif
+  env_value = getenv (name);
+  if (!env_value)
+    *value = NULL;
+  else
+    {
+      *value = strdup (env_value);
+      if (!*value)
+	err = gpg_error_from_syserror ();
+    }
+#ifndef HAVE_THREAD_SAFE_GETENV
+  rc = gpgrt_lock_unlock (&environ_lock);
+  if (rc)
+    err = gpg_error (rc);
+ leave:
+#endif
+  return err;
+}
 #endif
