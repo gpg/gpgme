@@ -495,7 +495,7 @@ Hey Emacs, this is -*- org -*- mode!
 
 * Debug
   :PROPERTIES:
-  :CUSTOM_ID: 
+  :CUSTOM_ID: debug
   :END:
 ** Tracepoints should be added at: Every public interface enter/leave,
    :PROPERTIES:
@@ -522,7 +522,7 @@ Hey Emacs, this is -*- org -*- mode!
 
 * Build suite
   :PROPERTIES:
-  :CUSTOM_ID: 
+  :CUSTOM_ID: build-suite
   :END:
 ** TODO Make sure everything is cleaned correctly (esp. test area).
    :PROPERTIES:
