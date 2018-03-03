@@ -272,7 +272,19 @@ Hey Emacs, this is -*- org -*- mode!
    :PROPERTIES:
    :CUSTOM_ID: gpgme-texi
    :END:
+** TODO Update TODO file
+   :PROPERTIES:
+   :CUSTOM_ID: todo-update
+   :END:
 
+*** DONE fix TODO items
+    CLOSED: [2018-03-04 Sun 08:55]
+    :PROPERTIES:
+    :CUSTOM_ID: fix-todo-items
+    :END:
+
+    Adjust todo items so each can now be referenced by custom-id and
+    checked off as necessary.
 
 * Engines
   :PROPERTIES:
