@@ -504,7 +504,7 @@ Hey Emacs, this is -*- org -*- mode!
    :PROPERTIES:
    :CUSTOM_ID: malloc-vasprintf
    :END:
-   
+
    ignored (and logged with 255?!), or really be assertions. !
 
 
