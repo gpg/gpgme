@@ -3101,7 +3101,7 @@ cmd_hash_algo_name (assuan_context_t ctx, char *line)
 
 
 static const char hlp_identify[] =
-  "IDENTIY\n"
+  "IDENTIFY\n"
   "\n"
   "Identify the type of data set with the INPUT command.";
 static gpg_error_t
