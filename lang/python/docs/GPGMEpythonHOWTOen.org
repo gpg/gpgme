@@ -1,0 +1,221 @@
+#+TITLE: GNU Privacy Guard (GnuPG)  Made Easy Python Bindings HOWTO (English)
+
+#+LATEX_COMPILER: xelatex
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [12pt]
+#+LATEX_HEADER: \usepackage{xltxtra}
+#+LATEX_HEADER: \usepackage[margin=1in]{geometry}
+#+LATEX_HEADER: \setmainfont[Ligatures={Common}]{Times New Roman}
+#+LATEX_HEADER: \author{Ben McGinnes <ben@gnupg.org>}
+
+
+* Introduction
+  :PROPERTIES:
+  :CUSTOM_ID: intro
+  :END:
+
+Version: 0.0.1-alpha [2018-03-07 Wed] 
+Author: Ben McGinnes <ben@gnupg.org>
+Author GPG Key: DB4724E6FA4286C92B4E55C4321E4E2373590E5D
+
+This document provides basic instruction in how to use the GPGME
+Python bindings to programmatically leverage the GPGME library.
+
+
+* GPGME Concepts
+  :PROPERTIES:
+  :CUSTOM_ID: gpgme-concepts
+  :END:
+
+** A C API
+   :PROPERTIES:
+   :CUSTOM_ID: gpgme-c-api
+   :END:
+
+   Unlike many modern APIs with which programmers will be more
+   familiar with these days, the GPGME API is a C API.  The API is
+   intended for use by C coders who would be able to access its
+   features by including the gpgme.h header file eith their own C
+   source code and then access its functions just as they would any
+   other C headers.
+
+   This is a very effective method of gaining complete access to the
+   API and in the most efficient manner possible.  It does, however,
+   have the drawback that it cannot be directly used by other
+   languages without some means of providing an interface to those
+   languages.  This is where the need for bindings in various
+   languages stems.
+
+** Python bindings
+   :PROPERTIES:
+   :CUSTOM_ID: gpgme-python-bindings
+   :END:
+
+   The Python bindings for GPGME provide a higher level means of
+   accessing the complete feature set of GPGME itself.  It also
+   provides a more pythonic means of calling these API functions.
+
+   The bindings are generated dynamically with SWIG and the copy of
+   gpgme.h gemerated when GPGME is compiled.
+
+   This means that a version of the Python bindings is fundamentally
+   tied to the exact same version of GPGME used to gemerate that copy
+   of gpgme.h.
+
+** Difference between the Python bindings and other GnuPG Python packages
+   :PROPERTIES:
+   :CUSTOM_ID: gpgme-python-bindings-diffs
+   :END:
+
+   There have been numerous attempts to add GnuPG support to Python
+   over the years.  Some of the most well known are listed here, along
+   with what differentiates them.
+
+*** The python-gnupg package maintained by Vinay Sajip
+    :PROPERTIES:
+    :CUSTOM_ID: diffs-python-gnupg
+    :END:
+
+    This is arguably the most popular means of integrating GPG with
+    Python.  The package utilises the =subprocess= module to implement
+    wrappers for the =gpg= and =gpg2= executables normally invoked on
+    the command line (=gpg.exe= and =gpg2.exe= on Windows).
+
+    The popularity of this package stemmed from its ease of use and
+    capability in providing the most commonly required features.
+
+    Unfortunately it has been beset by a number of security issues,
+    most of which stemmed from using unsafe methods of accessing the
+    command line via the =subprocess= calls.
+
+    The python-gnupg package is available under the MIT license.
+
+*** The gnupg package created and maintained by Isis Lovecruft
+    :PROPERTIES:
+    :CUSTOM_ID: diffs-isis-gnupg
+    :END:
+
+    In 2015 Isis Lovecruft from the Tor Project forked and then
+    re-implemented the python-gnupg package as just gnupg.  This new
+    package also relied on subprocess to call the =gpg= or =gpg2=
+    binaries, but did so somewhat more securely.
+
+    However the naming and version numbering selected for this package
+    resulted in conflicts with the original python-gnupg and since its
+    functions were called in a different manner, the release of this
+    package also resulted in a great deal of consternation when people
+    installed what they thought was an upgrade that subsequently broke
+    the code relying on it.
+
+    The gnupg package is available under the GNU General Public
+    License version 3.0 (or later).
+
+*** The PyME package maintained by Martin Albrecht
+    :PROPERTIES:
+    :CUSTOM_ID: diffs-pyme
+    :END:
+
+    This package is the origin of these bindings, though they are
+    somewhat different now.  For details of when and how the PyME
+    package was folded back into GPGME itself see the [[Short_History.org][Short History]]
+    document in this Python bindings =docs= directory.
+
+    The PyME package was first released in 2002 and was also the first
+    attempt to implement a low level binding to GPGME.  In doing so it
+    provided access to considerably more functionality than either the
+    =python-gnupg= or =gnupg= packages.
+
+    The PyME package is only available for Python 2.6 and 2.7.
+
+    Porting the PyME package to Python 3.4 in 2015 is what resulted in
+    it being folded into the GPGME project and the current bindings
+    are the end result of that effort.
+
+    The PyME package is available under the same dual licensing as
+    GPGME itself: the GNU General Public License version 2.0 (or any
+    later version) and the GNU Lesser Public License version 2.1 (or
+    any later version).
+
+
+* GPGME Python bindings installation
+  :PROPERTIES:
+  :CUSTOM_ID: gpgme-python-install
+  :END:
+
+** No PyPI
+   :PROPERTIES:
+   :CUSTOM_ID: do-not-use-pypi
+   :END:
+
+   Most third-party Python packages and modules are available and
+   distributed through the Python Package Installer, known as PyPI.
+
+   Due to the nature of what these bindings are and how they work, it
+   is infeasible to install the GPGME Python bindings in the same way.
+
+** Requirements
+   :PROPERTIES:
+   :CUSTOM_ID: gpgme-python-requirements
+   :END:
+
+   The GPGME Python bindings only have three requirements:
+
+   1. A suitable version of Python 2 or Python 3.  With Python 2 that
+      means Python 2.7 and with Python 3 that means Python 3.4 or
+      higher.
+   2. SWIG.
+   3. GPGME itself.  Which also means that all of GPGME's dependencies
+      must be installed too.
+
+** Installation
+   :PROPERTIES:
+   :CUSTOM_ID: installation
+   :END:
+
+   Installing the Python bindings is effectively achieved by compiling
+   and installing GPGME itself.
+
+   Once SWIG is installed with Python and all the dependencies for
+   GPGME are installed you only need to confirm that the version(s) of
+   Python you want the bindings installed for are in your =$PATH=.
+
+   By default GPGME will attempt to install the bindings for the most
+   recent or highest version number of Python 2 and Python 3 it
+   detects in =$PATH=.  It specifically checks for the =python= and
+   =python3= executabled first and then checks for specific version
+   numbers.
+
+   For Python 2 it checks for these executables in this order:
+   =python=, =python2=, =python2.7= and =python2.6=.
+
+   For Python 3 it checks for these executables in this order:
+   =python3=, =python3.6=, =python3.5= and =python3.4=.
+
+*** Installing GPGME
+    :PROPERTIES:
+    :CUSTOM_ID: install-gpgme
+    :END:
+
+    See the [[../../../README][GPGME README file]] for details of how to install GPGME from
+    source.
+
+
+* Copyright and Licensing
+  :PROPERTIES:
+  :CUSTOM_ID: copyright-and-license
+  :END:
+
+** Copyright (C) The GnuPG Project, 2018
+   :PROPERTIES:
+   :CUSTOM_ID: copyright
+   :END:
+
+   Copyright © The GnuPG Project, 2018.
+
+** License TBA
+   :PROPERTIES:
+   :CUSTOM_ID: license
+   :END:
+
+   Which license shall we use for these docs, hmm?  Gotta be free, so
+   that rules the GFDL out.  I'll pick a CC or something later ...
