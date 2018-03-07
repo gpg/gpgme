@@ -14,7 +14,7 @@
   :CUSTOM_ID: intro
   :END:
 
-Version: 0.0.1-alpha [2018-03-07 Wed] 
+Version: 0.0.1-alpha [2018-03-07 Wed]
 Author: Ben McGinnes <ben@gnupg.org>
 Author GPG Key: DB4724E6FA4286C92B4E55C4321E4E2373590E5D
 
@@ -35,7 +35,7 @@ Python bindings to programmatically leverage the GPGME library.
    Unlike many modern APIs with which programmers will be more
    familiar with these days, the GPGME API is a C API.  The API is
    intended for use by C coders who would be able to access its
-   features by including the gpgme.h header file eith their own C
+   features by including the =gpgme.h= header file eith their own C
    source code and then access its functions just as they would any
    other C headers.
 
@@ -56,11 +56,11 @@ Python bindings to programmatically leverage the GPGME library.
    provides a more pythonic means of calling these API functions.
 
    The bindings are generated dynamically with SWIG and the copy of
-   gpgme.h gemerated when GPGME is compiled.
+   =gpgme.h= generated when GPGME is compiled.
 
    This means that a version of the Python bindings is fundamentally
    tied to the exact same version of GPGME used to gemerate that copy
-   of gpgme.h.
+   of =gpgme.h=.
 
 ** Difference between the Python bindings and other GnuPG Python packages
    :PROPERTIES:
@@ -186,7 +186,7 @@ Python bindings to programmatically leverage the GPGME library.
    numbers.
 
    For Python 2 it checks for these executables in this order:
-   =python=, =python2=, =python2.7= and =python2.6=.
+   =python=, =python2= and =python2.7=.
 
    For Python 3 it checks for these executables in this order:
    =python3=, =python3.6=, =python3.5= and =python3.4=.
