@@ -212,10 +212,16 @@ Python bindings to programmatically leverage the GPGME library.
 
    Copyright © The GnuPG Project, 2018.
 
-** License TBA
+** License GPL compatible
    :PROPERTIES:
    :CUSTOM_ID: license
    :END:
 
-   Which license shall we use for these docs, hmm?  Gotta be free, so
-   that rules the GFDL out.  I'll pick a CC or something later ...
+   This file is free software; as a special exception the author gives
+   unlimited permission to copy and/or distribute it, with or without
+   modifications, as long as this notice is preserved.
+
+   This file is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY, to the extent permitted by law; without even
+   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+   PURPOSE.
