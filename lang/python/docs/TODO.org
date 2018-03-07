@@ -35,6 +35,11 @@
 
    Write a HOWTO style guide for the current Python bindings.
 
+*** TODO Start python bindings HOWTO
+    :PROPERTIES:
+    :CUSTOM_ID: howto-start
+    :END:
+
 ** TODO Documentation SWIG
    :PROPERTIES:
    :CUSTOM_ID: todo-docs-swig
@@ -93,6 +98,7 @@
    by developers of other languages for which bindings are not
    available or for which it is too difficult to create proper
    bindings.
+
 
 * Project Task Details
   :PROPERTIES:
