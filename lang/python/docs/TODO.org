@@ -35,7 +35,8 @@
 
    Write a HOWTO style guide for the current Python bindings.
 
-*** TODO Start python bindings HOWTO
+*** DONE Start python bindings HOWTO
+    CLOSED: [2018-03-07 Wed 18:14]
     :PROPERTIES:
     :CUSTOM_ID: howto-start
     :END:
