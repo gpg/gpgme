@@ -578,7 +578,11 @@ Hey Emacs, this is -*- org -*- mode!
    Write a guide/best practices for maintainers of GPGME packages with
    third party package management systems.
 
-Copyright 2004, 2005, 2018 g10 Code GmbH
+
+* Copyright 2004, 2005, 2018 g10 Code GmbH
+  :PROPERTIES:
+  :CUSTOM_ID: copyright-and-license
+  :END:
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
