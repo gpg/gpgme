@@ -389,7 +389,7 @@ Hey Emacs, this is -*- org -*- mode!
    :END:
    - State "CANCELLED"  from "TODO"       [2018-03-09 Fri 08:24] \\
      WON'T FIX.
-     
+
      Also, there is no rungpg.c file in GPGME (or in GPG or most, if not
      all of the rest of the libs and packages; I suspect there hasn't been
      for a very long time).
