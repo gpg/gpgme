@@ -254,6 +254,57 @@ Python bindings to programmatically leverage the GPGME library.
    operation type has one.
 
 
+* Basic Functions
+  :PROPERTIES:
+  :CUSTOM_ID: howto-the-basics
+  :END:
+
+** Encryption
+   :PROPERTIES:
+   :CUSTOM_ID: howto-basic-encryption
+   :END:
+
+   Encrypting to one key:
+
+   #+begin_src python
+     import gpg
+     import os
+     import os.path
+
+     rkey = "0x12345678DEADBEEF"
+     text = """
+     Some plain text to test with.  Obtained from any input source Python can read.
+
+     It makes no difference whether it is string or bytes, but the bindings always
+     produce byte output data.  Which is useful to know when writing out either the
+     encrypted or decrypted results.
+
+     """
+
+     plain = gpg.core.Data(text)
+     cipher = gpg.core.Data()
+     c = gpg.core.Context()
+     c.set_armor(1)
+
+     c.op_keylist_start(rkey, 0)
+     r = c.op_keylist_next()
+
+     if r == None:
+	 print("""The key for user "{0}" was not found""".format(rkey))
+     else:
+	 try:
+	     c.op_encrypt([r], 1, plain, cipher)
+	     cipher.seek(0, os.SEEK_SET)
+	     del(text)
+	     del(plain)
+	     afile = open("secret_plans.txt.asc", "wb")
+	     afile.write(cipher.read())
+	     afile.close()
+	 except gpg.errors.GPGMEError as ex:
+	     print(ex.getstring())
+   #+end_src
+
+
 * Copyright and Licensing
   :PROPERTIES:
   :CUSTOM_ID: copyright-and-license
