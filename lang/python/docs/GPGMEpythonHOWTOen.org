@@ -338,6 +338,96 @@ Python bindings to programmatically leverage the GPGME library.
 	 pass
    #+end_src
 
+** Signing text
+   :PROPERTIES:
+   :CUSTOM_ID: howto-basic-signing
+   :END:
+
+   Need to determine whether or not to include clearsigning and
+   detached signing here or give them separate sections.
+
+   #+begin_src python
+     import gpg
+
+     text = """Declaration of ... something.
+
+     """
+
+     c = gpg.Context()
+     c.armor = True
+     signed = c.sign(text, mode=mode.NORMAL)
+
+     afile = open("/path/to/statement.txt.asc", "w")
+     for i in range(len(signed[0].splitlines())):
+	 afile.write("{0}\n".format(signed[0].splitlines()[i].decode('utf-8')))
+     afile.close()
+   #+end_src
+
+   Clearsigning:
+
+   #+begin_src python
+     import gpg
+
+     text = """Declaration of ... something.
+
+     """
+
+     c = gpg.Context()
+     c.armor = True
+     signed = c.sign(text, mode=mode.CLEAR)
+
+     afile = open("/path/to/statement.txt.asc", "w")
+     for i in range(len(signed[0].splitlines())):
+	 afile.write("{0}\n".format(signed[0].splitlines()[i].decode('utf-8')))
+     afile.close()
+   #+end_src
+
+   Detached ASCII Armoured signing:
+
+   #+begin_src python
+     import gpg
+
+     text = """Declaration of ... something.
+
+     """
+
+     c = gpg.Context()
+     c.armor = True
+     signed = c.sign(text, mode=mode.DETACH)
+
+     afile = open("/path/to/statement.txt.asc", "w")
+     for i in range(len(signed[0].splitlines())):
+	 afile.write("{0}\n".format(signed[0].splitlines()[i].decode('utf-8')))
+     afile.close()
+   #+end_src
+
+   Detached binary signing (maybe change text to be reading a file's
+   content):
+
+   #+begin_src python
+import gpg
+
+text = """Declaration of ... something.
+
+"""
+
+c = gpg.Context()
+c.armor = True
+signed = c.sign(text, mode=mode.DETACH)
+
+afile = open("/path/to/statement.txt.sig", "wb")
+afile.write(signed[0])
+afile.close()
+   #+end_src
+
+
+** Signature verification
+   :PROPERTIES:
+   :CUSTOM_ID: howto-basic-verification
+   :END:
+
+x
+
 
 * Copyright and Licensing
   :PROPERTIES:
