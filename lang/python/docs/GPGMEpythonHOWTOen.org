@@ -269,7 +269,6 @@ Python bindings to programmatically leverage the GPGME library.
    #+begin_src python
      import gpg
      import os
-     import os.path
 
      rkey = "0x12345678DEADBEEF"
      text = """
@@ -297,11 +296,46 @@ Python bindings to programmatically leverage the GPGME library.
 	     cipher.seek(0, os.SEEK_SET)
 	     del(text)
 	     del(plain)
-	     afile = open("secret_plans.txt.asc", "wb")
+	     afile = open("secret_plans.org.asc", "wb")
 	     afile.write(cipher.read())
 	     afile.close()
 	 except gpg.errors.GPGMEError as ex:
 	     print(ex.getstring())
+   #+end_src
+
+** Decryption
+   :PROPERTIES:
+   :CUSTOM_ID: howto-basic-encryption
+   :END:
+
+   Decrypting something encrypted to a key in one's secret keyring
+   (will display some extra data you normally wouldn't show, but which
+   may be of use):
+
+   #+begin_src python
+     import os.path
+     import gpg
+
+     if os.path.exists("/path/to/secret_plans.org.asc") is True:
+	 ciphertext = "/path/to/secret_plans.org.asc"
+     elif os.path.exists("/path/to/secret_plans.org.gpg") is True:
+	 ciphertext = "/path/to/secret_plans.org.gpg"
+     else:
+	 ciphertext = None
+
+     if ciphertext is not None:
+	 afile = open(ciphertext, "rb")
+	 plaintext = gpg.Context().decrypt(afile)
+	 afile.close()
+	 newfile = open("/path/to/secret_plans.org", "wb")
+	 newfile.write(plaintext[0])
+	 newfile.close()
+	 print(plaintext[0])
+	 plaintext[1]
+	 plaintext[2]
+	 del(plaintext)
+     else:
+	 pass
    #+end_src
 
 
