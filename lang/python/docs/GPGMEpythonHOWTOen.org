@@ -1,5 +1,4 @@
 #+TITLE: GNU Privacy Guard (GnuPG)  Made Easy Python Bindings HOWTO (English)
-
 #+LATEX_COMPILER: xelatex
 #+LATEX_CLASS: article
 #+LATEX_CLASS_OPTIONS: [12pt]
@@ -198,6 +197,61 @@ Python bindings to programmatically leverage the GPGME library.
 
     See the [[../../../README][GPGME README file]] for details of how to install GPGME from
     source.
+
+
+* Fundamentals
+  :PROPERTIES:
+  :CUSTOM_ID: howto-fund-a-mental
+  :END:
+
+  Before we can get to the fun stuff, there are a few matters
+  regarding GPGME's design which hold true whether you're dealing with
+  the C code directly or these Python bindings.
+
+** No REST
+   :PROPERTIES:
+   :CUSTOM_ID: no-rest-for-the-wicked
+   :END:
+
+   The first part of which is or will be fairly blatantly obvious upon
+   viewing the first example, but it's worth reiterating anyway.  That
+   being that this API is /*not*/ a REST API.  Nor indeed could it
+   ever be one.
+
+   Most, if not all, Python programmers (and not just Python
+   programmers) know how easy it is to work with a RESTful API.  In
+   fact they've become so popular that many other APIs attempt to
+   emulate REST-like behaviour as much as they are able.  Right down
+   to the use of JSON formatted output to facilitate the use of their
+   API without having to retrain developers.
+
+   This API does not do that.  It would not be able to do that and
+   also provide access to the entire C API on which it's built.  It
+   does, however, provide a very pythonic interface on top of the
+   direct bindings and it's this pythonic layer with which this HOWTO
+   deals with.
+
+** Context
+   :PROPERTIES:
+   :CUSTOM_ID: howto-get-context
+   :END:
+
+   One of the reasons which prevents this API from being RESTful is
+   that most operations require more than one instruction to the API
+   to perform the task.  Sure, there are certain functions which can
+   be performed simultaneously, particularly if the result known or
+   strongly anticipated (e.g selecting and encrypting to a key known
+   to be in the public keybox).
+
+   There are many more, however, which cannot be manipulated so
+   readily: they must be performed in a specific sequence and the
+   result of one operation has a direct bearing on the outcome of
+   subsequent operations.  Not merely by generating an error either.
+
+   When dealing with this type of persistant state on the web, full of
+   both the RESTful and REST-like, it's most commonly referred to as a
+   session.  In GPGME, however, it is called a context and every
+   operation type has one.
 
 
 * Copyright and Licensing
