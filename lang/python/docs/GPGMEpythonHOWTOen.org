@@ -13,12 +13,12 @@
   :CUSTOM_ID: intro
   :END:
 
-Version: 0.0.1-alpha [2018-03-07 Wed]
-Author: Ben McGinnes <ben@gnupg.org>
-Author GPG Key: DB4724E6FA4286C92B4E55C4321E4E2373590E5D
+  Version: 0.0.1-alpha [2018-03-07 Wed]
+  Author: Ben McGinnes <ben@gnupg.org>
+  Author GPG Key: DB4724E6FA4286C92B4E55C4321E4E2373590E5D
 
-This document provides basic instruction in how to use the GPGME
-Python bindings to programmatically leverage the GPGME library.
+  This document provides basic instruction in how to use the GPGME
+  Python bindings to programmatically leverage the GPGME library.
 
 
 * GPGME Concepts
@@ -401,23 +401,22 @@ Python bindings to programmatically leverage the GPGME library.
      afile.close()
    #+end_src
 
-   Detached binary signing (maybe change text to be reading a file's
-   content):
+   Detached binary signing of a file.
 
    #+begin_src python
-import gpg
+     import gpg
 
-text = """Declaration of ... something.
+     tfile = open("/path/to/statement.txt", "r")
+     text = tfile.read()
+     tfile.close()
 
-"""
+     c = gpg.Context()
+     c.armor = True
+     signed = c.sign(text, mode=mode.DETACH)
 
-c = gpg.Context()
-c.armor = True
-signed = c.sign(text, mode=mode.DETACH)
-
-afile = open("/path/to/statement.txt.sig", "wb")
-afile.write(signed[0])
-afile.close()
+     afile = open("/path/to/statement.txt.sig", "wb")
+     afile.write(signed[0])
+     afile.close()
    #+end_src
 
 
@@ -426,7 +425,31 @@ afile.close()
    :CUSTOM_ID: howto-basic-verification
    :END:
 
-x
+   Verify a signed file, both detached and not:
+
+   #+begin_src python
+     import gpg
+     import sys
+     import time
+
+     c = gpg.Context()
+
+     data, result = c.verify(open(filename),
+			     open(detached_sig_filename)
+			     if detached_sig_filename else None)
+
+     for index, sign in enumerate(result.signatures):
+	 print("signature", index, ":")
+	 print("  summary:     %#0x" % (sign.summary))
+	 print("  status:      %#0x" % (sign.status))
+	 print("  timestamp:  ", sign.timestamp)
+	 print("  timestamp:  ", time.ctime(sign.timestamp))
+	 print("  fingerprint:", sign.fpr)
+	 print("  uid:        ", c.get_key(sign.fpr).uids[0].uid)
+
+     if data:
+	 sys.stdout.buffer.write(data)
+   #+end_src
 
 
 * Copyright and Licensing
