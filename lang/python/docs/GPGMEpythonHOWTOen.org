@@ -259,12 +259,51 @@
   :CUSTOM_ID: howto-the-basics
   :END:
 
+  The most frequently called features of any cryptographic library
+  will be the most fundamental tasks for enxryption software.  In this
+  section we will look at how to programmatically encrypt data,
+  decrypt it, sign it and verify signatures.
+
 ** Encryption
    :PROPERTIES:
    :CUSTOM_ID: howto-basic-encryption
    :END:
 
-   Encrypting to one key:
+   Encrypting is very straight forward.  In the first example below
+   the message, =text=, is encrypted to a single recipient's key.  In
+   the second example the message will be encrypted to multiple
+   recipients.
+
+*** Encrypting to one key
+    :PROPERTIES:
+    :CUSTOM_ID: howto-basic-encryption-single
+    :END:
+
+   The text is then encapsulated in a GPGME Data object as =plain= and
+   the =cipher= object is created with another Data object.  Then we
+   create the Context as =c= and set it to use the ASCII armoured
+   OpenPGP format.  In later examples there will be alternative
+   methods of setting the OpenPGP output to be ASCII armoured.
+
+   Next we prepare a keylist object in our Context and follow it with
+   specifying the recipients as =r=.  Note that the configuration in
+   one's =gpg.conf= file is honoured, so if you have the options set
+   to encrypt to one key or to a default key, that will be included
+   with this operation.
+
+   This is followed by a quick check to be sure that the recipient is
+   actually selected and that the key is available.  Assuming it is,
+   the encryption can proceed, but if not a message will print stating
+   the key was not found.
+
+   The encryption operation is invoked within the Context with the
+   =c.op_encrypt= function, loading the recipien (=r=), the message
+   (=plain=) and the =cipher=.  The =cipher.seek= uses =os.SEEK_SET=
+   to set the data to the correct byte format for GPGME to use it.
+
+   At this point we no longer need the plaintext material, so we
+   delete both the =text= and the =plain= objects.  Then we write the
+   encrypted data out to a file, =secret_plans.txt.asc=.
 
    #+begin_src python
      import gpg
@@ -296,12 +335,18 @@
 	     cipher.seek(0, os.SEEK_SET)
 	     del(text)
 	     del(plain)
-	     afile = open("secret_plans.org.asc", "wb")
+	     afile = open("secret_plans.txt.asc", "wb")
 	     afile.write(cipher.read())
 	     afile.close()
 	 except gpg.errors.GPGMEError as ex:
 	     print(ex.getstring())
    #+end_src
+
+*** Encrypting to multiple keys
+    :PROPERTIES:
+    :CUSTOM_ID: howto-basic-encryption-multiple
+    :END:
+
 
 ** Decryption
    :PROPERTIES:
@@ -316,10 +361,10 @@
      import os.path
      import gpg
 
-     if os.path.exists("/path/to/secret_plans.org.asc") is True:
-	 ciphertext = "/path/to/secret_plans.org.asc"
-     elif os.path.exists("/path/to/secret_plans.org.gpg") is True:
-	 ciphertext = "/path/to/secret_plans.org.gpg"
+     if os.path.exists("/path/to/secret_plans.txt.asc") is True:
+	 ciphertext = "/path/to/secret_plans.txt.asc"
+     elif os.path.exists("/path/to/secret_plans.txt.gpg") is True:
+	 ciphertext = "/path/to/secret_plans.txt.gpg"
      else:
 	 ciphertext = None
 
@@ -327,7 +372,7 @@
 	 afile = open(ciphertext, "rb")
 	 plaintext = gpg.Context().decrypt(afile)
 	 afile.close()
-	 newfile = open("/path/to/secret_plans.org", "wb")
+	 newfile = open("/path/to/secret_plans.txt", "wb")
 	 newfile.write(plaintext[0])
 	 newfile.close()
 	 print(plaintext[0])
@@ -337,6 +382,7 @@
      else:
 	 pass
    #+end_src
+
 
 ** Signing text
    :PROPERTIES:
