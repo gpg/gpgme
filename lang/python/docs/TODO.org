@@ -70,7 +70,7 @@
      Generating keys, adding subkeys, revoking subkeys (and keeping
      the cert key), adding and revoking UIDs, signing/certifying keys.
 
-**** TODO Key control
+**** TODO More key control
      :PROPERTIES:
      :CUSTOM_ID: howto-key-selection
      :END:
