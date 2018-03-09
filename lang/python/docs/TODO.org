@@ -43,20 +43,23 @@
     :CUSTOM_ID: howto-start
     :END:
 
-*** TODO Include certain specific instructions in the HOWTO
+*** STARTED Include certain specific instructions in the HOWTO
     :PROPERTIES:
     :CUSTOM_ID: howto-requests
     :END:
 
+    - State "STARTED"    from "TODO"       [2018-03-09 Fri 15:27]
     Some functions can be worked out from the handful of examples
     available, but many more can't and I've already begun receiving
     requests for certain functions to be explained.
 
-**** TODO Standard scenarios
+**** STARTED Standard scenarios
      :PROPERTIES:
      :CUSTOM_ID: howto-the-basics
      :END:
 
+     - State "STARTED"    from "TODO"       [2018-03-09 Fri 15:26] \\
+       Began with the example code, now to add the text.
      What everyone expects: encryption, decryption, signing and verifying.
 
 **** TODO Key control
