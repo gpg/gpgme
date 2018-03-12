@@ -116,8 +116,8 @@
 
     This package is the origin of these bindings, though they are
     somewhat different now.  For details of when and how the PyME
-    package was folded back into GPGME itself see the [[Short_History.org][Short History]]
-    document in this Python bindings =docs= directory.
+    package was folded back into GPGME itself see the /Short History/
+    document[fn:1] in this Python bindings =docs= directory.[fn:2]
 
     The PyME package was first released in 2002 and was also the first
     attempt to implement a low level binding to GPGME.  In doing so it
@@ -195,7 +195,7 @@
     :CUSTOM_ID: install-gpgme
     :END:
 
-    See the [[../../../README][GPGME README file]] for details of how to install GPGME from
+    See the GPGME =README= file for details of how to install GPGME from
     source.
 
 
@@ -556,3 +556,13 @@
    WITHOUT ANY WARRANTY, to the extent permitted by law; without even
    the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
    PURPOSE.
+
+
+* Footnotes
+  :PROPERTIES:
+  :CUSTOM_ID: footnotes
+  :END:
+
+[fn:1] Short_History.org and/or Short_History.html.
+
+[fn:2] The =lang/python/docs/= directory in the GPGME source.
