@@ -631,6 +631,56 @@
    #+end_src
 
 
+* Miscellaneous work-arounds
+  :PROPERTIES:
+  :CUSTOM_ID: cheats-and-hacks
+  :END:
+
+** Group lines
+   :PROPERTIES:
+   :CUSTOM_ID: group-lines
+   :END:
+
+   There is not yet an easy way to access groups configured in the
+   gpg.conf file from within GPGME.  As a consequence these central
+   groupings of keys cannot be shared amongst multiple programs, such
+   as MUAs readily.
+
+   The following code, however, provides a work-around for obtaining
+   this information in Python.
+
+   #+begin_src python
+     import subprocess
+
+     lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
+
+     for i in range(len(lines)):
+	 if lines[i].startswith("group") is True:
+	     line = lines[i]
+	 else:
+	     pass
+
+     groups = line.split(":")[-1].replace('"', '').split(',')
+
+     group_lines = groups
+     for i in range(len(group_lines)):
+	 group_lines[i] = group_lines[i].split("=")
+
+     group_lists = group_lines
+     for i in range(len(group_lists)):
+	 group_lists[i][1] = group_lists[i][1].split()
+   #+end_src
+
+   The result of that code is that =group_lines= is a list of lists
+   where =group_lines[i][0]= is the name of the group and
+   =group_lines[i][1]= is the key IDs of the group as a string.
+
+   The =group_lists= result is very similar in that it is a list of
+   lists.  The first part, =group_lists[i][0]= matches
+   =group_lines[i][0]= as the name of the group, but
+   =group_lists[i][1]= is the key IDs of the group as a string.
+
+
 * Copyright and Licensing
   :PROPERTIES:
   :CUSTOM_ID: copyright-and-license
