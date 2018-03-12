@@ -384,7 +384,7 @@
 
       cipher = c.encrypt(text, recipients=rlogrus, sign=False, always_trust=True)
 
-      afile = open("encrypted_file.txt.asc", "wb")
+      afile = open("secret_plans.txt.asc", "wb")
       afile.write(cipher[0])
       afile.close()
     #+end_src
@@ -409,6 +409,20 @@
     somewhat with something more like this:
 
     #+begin_src python
+      import gpg
+
+      afile = open("secret_plans.txt", "rb")
+      text = afile.read()
+      afile.close()
+
+      c = gpg.Context(armor=True)
+      rpattern = list(c.keylist(pattern="@gnupg.org", secret=False))
+      rlogrus = []
+
+      for i in range(len(rpattern)):
+	  if rpattern[i].can_encrypt == 1:
+	      rlogrus.append(rpattern[i])
+
       try:
 	  cipher = c.encrypt(text, recipients=rlogrus, add_encrypt_to=True)
       except gpg.errors.InvalidRecipients as e:
@@ -422,6 +436,10 @@
 	      cipher = c.encrypt(text, recipients=rlogrus, add_encrypt_to=True)
 	  except:
 	      pass
+
+      afile = open("secret_plans.txt.asc", "wb")
+      afile.write(cipher[0])
+      afile.close()
     #+end_src
 
     This will attempt to encrypt to all the keys searched for, then
