@@ -414,7 +414,9 @@
 	  for i in range(len(e.recipients)):
 	      for n in range(len(rlogrus)):
 		  if rlogrus[n].fpr == e.recipients[i].fpr:
-		      rlogrus.remove(e.recipients[i])
+		      rlogrus.remove(rlogrus[n])
+                  else:
+                      pass
 	  try:
 	      cipher = c.encrypt(text, recipients=rlogrus, add_encrypt_to=True)
 	  except:
