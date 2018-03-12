@@ -347,6 +347,83 @@
     :CUSTOM_ID: howto-basic-encryption-multiple
     :END:
 
+    Encrypting to multiple keys, in addition to a default key or a key
+    configured to always encrypt to, is a little different and uses a
+    slightly different call to the op_encrypt call demonstrated in the
+    previous section.
+
+    The following example encrypts a message (=text=) to everyone with
+    an email address on the =gnupg.org= domain,[fn:3] but does /not/ encrypt
+    to a default key or other key which is configured to normally
+    encrypt to.
+
+    #+begin_src python
+      import gpg
+
+      text=b"""Oh look, another test message.
+
+      The same rules apply as with the previous example and more likely
+      than not, the message will actually be drawn from reading the
+      contents of a file or, maybe, from entering data at an input()
+      prompt.
+
+      Since the text in this case must be bytes, it is most likely that
+      the input form will be a separate file which is opened with "rb"
+      as this is the simplest method of obtaining the correct data
+      format.
+      """
+
+      c = gpg.Context(armor=True)
+      rpattern = list(c.keylist(pattern="@gnupg.org", secret=False))
+      rlogrus = []
+
+      for i in range(len(rpattern)):
+	  if rpattern[i].can_encrypt == 1:
+	      rlogrus.append(rpattern[i])
+
+      cipher = c.encrypt(text, recipients=rlogrus, sign=False, always_trust=True)
+
+      afile = open("encrypted_file.txt.asc", "wb")
+      afile.write(cipher[0])
+      afile.close()
+    #+end_src
+
+    All it would take to change the above example to sign the message
+    and also encrypt the message to any configured default keys would
+    be to change the =c.encrypt= line to this:
+
+    #+begin_src python
+      cipher = c.encrypt(text, recipients=rlogrus, always_trust=True,
+			 add_encrypt_to=True)
+    #+end_src
+
+    The only keyword arguments requiring modification are those for
+    which the default values are changing.  The default value of
+    =sign= is =True=, the default of =always_trust= is =False=, the
+    default of =add_encrypt_to= is =False=.
+
+    If =always_trust= is not set to =True= and any of the recipient
+    keys are not trusted (e.g. not signed or locally signed) then the
+    encryption will raise an error.  It is possible to mitigate this
+    somewhat with something more like this:
+
+    #+begin_src python
+      try:
+	  cipher = c.encrypt(text, recipients=rlogrus, add_encrypt_to=True)
+      except gpg.errors.InvalidRecipients as e:
+	  for i in range(len(e.recipients)):
+	      for n in range(len(rlogrus)):
+		  if rlogrus[n].fpr == e.recipients[i].fpr:
+		      rlogrus.remove(e.recipients[i])
+	  try:
+	      cipher = c.encrypt(text, recipients=rlogrus, add_encrypt_to=True)
+	  except:
+	      pass
+    #+end_src
+
+    This will attempt to encrypt to all the keys searched for, then
+    remove invalid recipients if it fails and try again.
+
 
 ** Decryption
    :PROPERTIES:
@@ -531,6 +608,7 @@
      """.format(secnum, pubnum)
    #+end_src
 
+
 * Copyright and Licensing
   :PROPERTIES:
   :CUSTOM_ID: copyright-and-license
@@ -559,10 +637,12 @@
 
 
 * Footnotes
-  :PROPERTIES:
-  :CUSTOM_ID: footnotes
-  :END:
 
 [fn:1] Short_History.org and/or Short_History.html.
 
 [fn:2] The =lang/python/docs/= directory in the GPGME source.
+
+[fn:3] You probably don't really want to do this.  Searching the
+keyservers for "gnupg.org" produces over 400 results, the majority of
+which aren't actually at the gnupg.org domain, but just included a
+comment regarding the project in their key somewhere.
