@@ -13,9 +13,10 @@
   :CUSTOM_ID: intro
   :END:
 
-  Version: 0.0.1-alpha [2018-03-07 Wed]
-  Author: Ben McGinnes <ben@gnupg.org>
-  Author GPG Key: DB4724E6FA4286C92B4E55C4321E4E2373590E5D
+  | Version:        | 0.0.1-alpha                              |
+  | Author:         | Ben McGinnes <ben@gnupg.org>             |
+  | Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
+  | Language:       | English                                  |
 
   This document provides basic instruction in how to use the GPGME
   Python bindings to programmatically leverage the GPGME library.
@@ -349,7 +350,7 @@
 
     Encrypting to multiple keys, in addition to a default key or a key
     configured to always encrypt to, is a little different and uses a
-    slightly different call to the op_encrypt call demonstrated in the
+    slightly different call to the =op_encrypt call= demonstrated in the
     previous section.
 
     The following example encrypts a message (=text=) to everyone with
@@ -360,7 +361,7 @@
     #+begin_src python
       import gpg
 
-      text=b"""Oh look, another test message.
+      text = b"""Oh look, another test message.
 
       The same rules apply as with the previous example and more likely
       than not, the message will actually be drawn from reading the
@@ -640,7 +641,7 @@
 
 * Footnotes
 
-[fn:1] Short_History.org and/or Short_History.html.
+[fn:1] =Short_History.org= and/or =Short_History.html=.
 
 [fn:2] The =lang/python/docs/= directory in the GPGME source.
 
