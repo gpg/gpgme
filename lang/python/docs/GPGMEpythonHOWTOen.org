@@ -607,8 +607,9 @@
    :END:
 
    Counting the number of keys in your public keybox (=pubring.kbx=),
-   the format shich has superceded the old keyring format
-   (=pubring.gpg= and =secring.gpg=) is a very simple task.
+   the format which has superceded the old keyring format
+   (=pubring.gpg= and =secring.gpg=), or the number of secret keys is
+   a very simple task.
 
    #+begin_src python
      import gpg
