@@ -16,7 +16,8 @@
   | Version:        | 0.0.1-alpha                              |
   | Author:         | Ben McGinnes <ben@gnupg.org>             |
   | Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
-  | Language:       | English                                  |
+  | Language:       | Australian English, British English      |
+  | xml:lang:       | en-AU, en-GB, en                         |
 
   This document provides basic instruction in how to use the GPGME
   Python bindings to programmatically leverage the GPGME library.
@@ -652,6 +653,16 @@
     :PROPERTIES:
     :CUSTOM_ID: howto-basic-signing-normal
     :END:
+
+    The normal or default signing process is essentially the same as
+    is most often invoked when also encrypting a message or file.  So
+    when the encryption component is not utilised, the result is to
+    produce an encoded and signed output which may or may not be ASCII
+    armoured and which may or may not also be compressed.
+
+    By default compression will be used unless GnuPG detects that the
+    plaintext is already compressed.  ASCII armouring will be
+    determined according to the value of =gpg.Context().armor=.
 
    #+begin_src python
      import gpg
