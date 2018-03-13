@@ -451,9 +451,14 @@
    :CUSTOM_ID: howto-basic-encryption
    :END:
 
-   Decrypting something encrypted to a key in one's secret keyring
-   (will display some extra data you normally wouldn't show, but which
-   may be of use):
+   Decrypting something encrypted to a key in one's secret keyring is
+   fairly straight forward.
+
+   In this example code, however, preconfiguring either
+   =gpg.Context()= or =gpg.core.Context()= as =c= is unnecessary
+   because there is no need to modify the Context prior to conducting
+   the decryption and since the Context is only used once, setting it
+   to =c= simply adds lines for no gain.
 
    #+begin_src python
      import os.path
@@ -480,6 +485,11 @@
      else:
 	 pass
    #+end_src
+
+   The data available in plaintext in this example is the decrypted
+   content as a byte object in =plaintext[0]=, the recipient key IDs
+   and algorithms in =plaintext[1]= and the results of verifying any
+   signatures of the data in =plaintext[0]=.
 
 
 ** Signing text
@@ -550,7 +560,7 @@
    #+begin_src python
      import gpg
 
-     tfile = open("/path/to/statement.txt", "r")
+     tfile = open("/path/to/statement.txt", "rb")
      text = tfile.read()
      tfile.close()
 
