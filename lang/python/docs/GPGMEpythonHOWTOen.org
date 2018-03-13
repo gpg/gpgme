@@ -532,9 +532,7 @@
    :CUSTOM_ID: howto-basic-signing
    :END:
 
-   Need to determine whether or not to include clearsigning and
-   detached signing here or give them separate sections.  Yes, section
-   them.
+   X
 
 *** Signing key selection
     :PROPERTIES:
@@ -546,6 +544,19 @@
     default key specified and there is more than one secret key
     available it may be necessary to specify the key or keys with
     which to sign messages and files.
+
+    #+begin_src python
+      import gpg
+
+      logrus = input("Enter the email address or string to match signing keys to: ")
+      hancock = gpg.Context().keylist(pattern=logrus, secret=True)
+      sig_src = list(hancock)
+    #+end_src
+
+    The signing examples in the following sections include the
+    explicitly designated =signers= parameter in two of the five
+    examples; once where the resulting signature would be ASCII
+    armoured and once where it would not be armoured.
 
 *** Normal or default signing messages or files
     :PROPERTIES:
@@ -559,8 +570,7 @@
 
      """
 
-     c = gpg.Context()
-     c.armor = True
+     c = gpg.Context(armor=True, signers=sig_src)
      signed = c.sign(text, mode=0)
 
      afile = open("/path/to/statement.txt.asc", "wb")
@@ -598,8 +608,7 @@
 
      """
 
-     c = gpg.Context()
-     c.armor = True
+     c = gpg.Context(armor=True)
      signed = c.sign(text, mode=1)
 
      afile = open("/path/to/statement.txt.asc", "wb")
@@ -617,7 +626,7 @@
      text = tfile.read()
      tfile.close()
 
-     c = gpg.Context()
+     c = gpg.Context(signers=sig_src)
      signed = c.sign(text, mode=1)
 
      afile = open("/path/to/statement.txt.sig", "wb")
