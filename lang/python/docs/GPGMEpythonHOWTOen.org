@@ -285,9 +285,68 @@
   :CUSTOM_ID: howto-keys
   :END:
 
+** Key selection
+   :PROPERTIES:
+   :CUSTOM_ID: howto-keys-selection
+   :END:
+
+   Selecting keys to encrypt to or to sign with will be a common
+   occurrence when working with GPGMe and the means available for
+   doing so are quite simple.
+
+   They do depend on utilising a Context; however once the data is
+   recorded in another variable, that Context does not need to be the
+   same one which subsequent operations are performed.
+
+   The easiest way to select a specific key is by searching for that
+   key's key ID or fingerprint, preferably the full fingerprint
+   without any spaces in it.  A long key ID will probably be okay, but
+   is not advised and short key IDs are already a problem with some
+   being generated to match specific patterns.  It does not matter
+   whether the pattern is upper or lower case.
+
+   So this is the best method:
+
+   #+begin_src python
+     import gpg
+
+     k = gpg.Context().keylist(pattern="258E88DCBD3CD44D8E7AB43F6ECB6AF0DEADBEEF")
+     keys = list(k)
+   #+end_src
+
+   This is passable and very likely to be common:
+
+   #+begin_src python
+     import gpg
+
+     k = gpg.Context().keylist(pattern="0x6ECB6AF0DEADBEEF")
+     keys = list(k)
+   #+end_src
+
+   And this is a really bad idea:
+
+   #+begin_src python
+     import gpg
+
+     k = gpg.Context().keylist(pattern="0xDEADBEEF")
+     keys = list(k)
+   #+end_src
+
+   Alternatively it may be that the intention is to create a list of
+   keys which all match a particular search string.  For instance all
+   the addresses at a particular domain, like this:
+
+   #+begin_src python
+     import gpg
+
+     ncsc = gpg.Context().keylist(pattern="ncsc.mil")
+     nsa = list(ncsc)
+   #+end_src
+
+
 ** Counting keys
    :PROPERTIES:
-   :CUSTOM_ID: howto-basic-verification
+   :CUSTOM_ID: howto-keys-counting
    :END:
 
    Counting the number of keys in your public keybox (=pubring.kbx=),
