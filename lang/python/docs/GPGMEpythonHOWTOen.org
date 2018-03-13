@@ -255,6 +255,41 @@
    operation type has one.
 
 
+* Working with keys
+  :PROPERTIES:
+  :CUSTOM_ID: howto-keys
+  :END:
+
+** Counting keys
+   :PROPERTIES:
+   :CUSTOM_ID: howto-basic-verification
+   :END:
+
+   Counting the number of keys in your public keybox (=pubring.kbx=),
+   the format which has superceded the old keyring format
+   (=pubring.gpg= and =secring.gpg=), or the number of secret keys is
+   a very simple task.
+
+   #+begin_src python
+     import gpg
+
+     c = gpg.Context()
+     seckeys = c.keylist(pattern=None, secret=True)
+     pubkeys = c.keylist(pattern=None, secret=False)
+
+     seclist = list(seckeys)
+     secnum = len(seclist)
+
+     publist = list(pubkeys)
+     pubnum = len(publist)
+
+     print("""
+     Number of secret keys:  {0}
+     Number of public keys:  {1}
+     """.format(secnum, pubnum)
+   #+end_src
+
+
 * Basic Functions
   :PROPERTIES:
   :CUSTOM_ID: howto-the-basics
@@ -492,13 +527,30 @@
    signatures of the data in =plaintext[0]=.
 
 
-** Signing text
+** Signing text and files
    :PROPERTIES:
    :CUSTOM_ID: howto-basic-signing
    :END:
 
    Need to determine whether or not to include clearsigning and
-   detached signing here or give them separate sections.
+   detached signing here or give them separate sections.  Yes, section
+   them.
+
+*** Signing key selection
+    :PROPERTIES:
+    :CUSTOM_ID: howto-basic-signing-signers
+    :END:
+
+    By default GPGME and the Python bindings will use the default key
+    configured for the user invoking the GPGME API.  If there is no
+    default key specified and there is more than one secret key
+    available it may be necessary to specify the key or keys with
+    which to sign messages and files.
+
+*** Normal or default signing messages or files
+    :PROPERTIES:
+    :CUSTOM_ID: howto-basic-signing-normal
+    :END:
 
    #+begin_src python
      import gpg
@@ -511,13 +563,72 @@
      c.armor = True
      signed = c.sign(text, mode=0)
 
-     afile = open("/path/to/statement.txt.asc", "w")
+     afile = open("/path/to/statement.txt.asc", "wb")
      for i in range(len(signed[0].splitlines())):
-	 afile.write("{0}\n".format(signed[0].splitlines()[i].decode('utf-8')))
+	 afile.write("{0}\n".format(signed[0].splitlines()[i]))
      afile.close()
    #+end_src
 
-   Clearsigning:
+   #+begin_src python
+     import gpg
+
+     tfile = open("/path/to/statement.txt", "rb")
+     text = tfile.read()
+     tfile.close()
+
+     c = gpg.Context()
+     signed = c.sign(text, mode=0)
+
+     afile = open("/path/to/statement.txt.sig", "wb")
+     afile.write(signed[0])
+     afile.close()
+   #+end_src
+
+*** Detached signing messages and files
+    :PROPERTIES:
+    :CUSTOM_ID: howto-basic-signing-detached
+    :END:
+
+   Detached ASCII Armoured signing:
+
+   #+begin_src python
+     import gpg
+
+     text = b"""Declaration of ... something.
+
+     """
+
+     c = gpg.Context()
+     c.armor = True
+     signed = c.sign(text, mode=1)
+
+     afile = open("/path/to/statement.txt.asc", "wb")
+     for i in range(len(signed[0].splitlines())):
+	 afile.write("{0}\n".format(signed[0].splitlines()[i]))
+     afile.close()
+   #+end_src
+
+   Detached binary signing of a file.
+
+   #+begin_src python
+     import gpg
+
+     tfile = open("/path/to/statement.txt", "rb")
+     text = tfile.read()
+     tfile.close()
+
+     c = gpg.Context()
+     signed = c.sign(text, mode=1)
+
+     afile = open("/path/to/statement.txt.sig", "wb")
+     afile.write(signed[0])
+     afile.close()
+   #+end_src
+
+*** Clearsigning messages or text
+    :PROPERTIES:
+    :CUSTOM_ID: howto-basic-signing-clear
+    :END:
 
    #+begin_src python
      import gpg
@@ -532,43 +643,6 @@
      afile = open("/path/to/statement.txt.asc", "w")
      for i in range(len(signed[0].splitlines())):
 	 afile.write("{0}\n".format(signed[0].splitlines()[i].decode('utf-8')))
-     afile.close()
-   #+end_src
-
-   Detached ASCII Armoured signing:
-
-   #+begin_src python
-     import gpg
-
-     text = """Declaration of ... something.
-
-     """
-
-     c = gpg.Context()
-     c.armor = True
-     signed = c.sign(text, mode=1)
-
-     afile = open("/path/to/statement.txt.asc", "w")
-     for i in range(len(signed[0].splitlines())):
-	 afile.write("{0}\n".format(signed[0].splitlines()[i].decode('utf-8')))
-     afile.close()
-   #+end_src
-
-   Detached binary signing of a file.
-
-   #+begin_src python
-     import gpg
-
-     tfile = open("/path/to/statement.txt", "rb")
-     text = tfile.read()
-     tfile.close()
-
-     c = gpg.Context()
-     c.armor = True
-     signed = c.sign(text, mode=1)
-
-     afile = open("/path/to/statement.txt.sig", "wb")
-     afile.write(signed[0])
      afile.close()
    #+end_src
 
@@ -602,41 +676,6 @@
 
      if data:
 	 sys.stdout.buffer.write(data)
-   #+end_src
-
-
-* Working with keys
-  :PROPERTIES:
-  :CUSTOM_ID: howto-keys
-  :END:
-
-** Counting keys
-   :PROPERTIES:
-   :CUSTOM_ID: howto-basic-verification
-   :END:
-
-   Counting the number of keys in your public keybox (=pubring.kbx=),
-   the format which has superceded the old keyring format
-   (=pubring.gpg= and =secring.gpg=), or the number of secret keys is
-   a very simple task.
-
-   #+begin_src python
-     import gpg
-
-     c = gpg.Context()
-     seckeys = c.keylist(pattern=None, secret=True)
-     pubkeys = c.keylist(pattern=None, secret=False)
-
-     seclist = list(seckeys)
-     secnum = len(seclist)
-
-     publist = list(pubkeys)
-     pubnum = len(publist)
-
-     print("""
-     Number of secret keys:  {0}
-     Number of public keys:  {1}
-     """.format(secnum, pubnum)
    #+end_src
 
 
