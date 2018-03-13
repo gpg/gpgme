@@ -503,13 +503,13 @@
    #+begin_src python
      import gpg
 
-     text = """Declaration of ... something.
+     text = b"""Declaration of ... something.
 
      """
 
      c = gpg.Context()
      c.armor = True
-     signed = c.sign(text, mode=mode.NORMAL)
+     signed = c.sign(text, mode=0)
 
      afile = open("/path/to/statement.txt.asc", "w")
      for i in range(len(signed[0].splitlines())):
@@ -527,8 +527,7 @@
      """
 
      c = gpg.Context()
-     c.armor = True
-     signed = c.sign(text, mode=mode.CLEAR)
+     signed = c.sign(text, mode=2)
 
      afile = open("/path/to/statement.txt.asc", "w")
      for i in range(len(signed[0].splitlines())):
@@ -547,7 +546,7 @@
 
      c = gpg.Context()
      c.armor = True
-     signed = c.sign(text, mode=mode.DETACH)
+     signed = c.sign(text, mode=1)
 
      afile = open("/path/to/statement.txt.asc", "w")
      for i in range(len(signed[0].splitlines())):
@@ -566,7 +565,7 @@
 
      c = gpg.Context()
      c.armor = True
-     signed = c.sign(text, mode=mode.DETACH)
+     signed = c.sign(text, mode=1)
 
      afile = open("/path/to/statement.txt.sig", "wb")
      afile.write(signed[0])
