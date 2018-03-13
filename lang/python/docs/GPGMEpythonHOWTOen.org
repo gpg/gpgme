@@ -21,6 +21,31 @@
   This document provides basic instruction in how to use the GPGME
   Python bindings to programmatically leverage the GPGME library.
 
+** Python 2 versus Python 3
+   :PROPERTIES:
+   :CUSTOM_ID: py2-vs-py3
+   :END:
+
+   Though the GPGME Python bindings themselves provide support for
+   both Python 2 and 3, the focus is unequivocally on Python 3 and
+   specifically from Python 3.4 and above.  As a consequence all the
+   examples and instructions in this guide use Python 3 code.
+
+   Much of it will work with Python 2, but much of it also deals with
+   Python 3 byte literals, particularly when reading and writing data.
+   Developers concentrating on Python 2.7, and possibly even 2.6, will
+   need to make the approprate modifications to support the older
+   string and unicode types as opposted to bytes.
+
+   There are multiple reasons for concentrating on Python 3; some of
+   which relate to the immediate integration of these bindings, some
+   of which relate to longer term plans for both GPGME and the python
+   bindings and some of which relate to the impending EOL period for
+   Python 2.7.  Essentially, though, there is little value in tying
+   the bindings to a version of the language which is a dead end and
+   the advantages offered by Python 3 over Python 2 make handling the
+   data types with which GPGME deals considerably easier.
+
 
 * GPGME Concepts
   :PROPERTIES:
@@ -59,7 +84,7 @@
    =gpgme.h= generated when GPGME is compiled.
 
    This means that a version of the Python bindings is fundamentally
-   tied to the exact same version of GPGME used to gemerate that copy
+   tied to the exact same version of GPGME used to generate that copy
    of =gpgme.h=.
 
 ** Difference between the Python bindings and other GnuPG Python packages
@@ -411,13 +436,13 @@
 
       c = gpg.Context(armor=True)
       rpattern = list(c.keylist(pattern="@gnupg.org", secret=False))
-      rlogrus = []
+      logrus = []
 
       for i in range(len(rpattern)):
 	  if rpattern[i].can_encrypt == 1:
-	      rlogrus.append(rpattern[i])
+	      logrus.append(rpattern[i])
 
-      cipher = c.encrypt(text, recipients=rlogrus, sign=False, always_trust=True)
+      cipher = c.encrypt(text, recipients=logrus, sign=False, always_trust=True)
 
       afile = open("secret_plans.txt.asc", "wb")
       afile.write(cipher[0])
@@ -429,7 +454,7 @@
     be to change the =c.encrypt= line to this:
 
     #+begin_src python
-      cipher = c.encrypt(text, recipients=rlogrus, always_trust=True,
+      cipher = c.encrypt(text, recipients=logrus, always_trust=True,
 			 add_encrypt_to=True)
     #+end_src
 
@@ -452,23 +477,23 @@
 
       c = gpg.Context(armor=True)
       rpattern = list(c.keylist(pattern="@gnupg.org", secret=False))
-      rlogrus = []
+      logrus = []
 
       for i in range(len(rpattern)):
 	  if rpattern[i].can_encrypt == 1:
-	      rlogrus.append(rpattern[i])
+	      logrus.append(rpattern[i])
 
       try:
-	  cipher = c.encrypt(text, recipients=rlogrus, add_encrypt_to=True)
+	  cipher = c.encrypt(text, recipients=logrus, add_encrypt_to=True)
       except gpg.errors.InvalidRecipients as e:
 	  for i in range(len(e.recipients)):
-	      for n in range(len(rlogrus)):
-		  if rlogrus[n].fpr == e.recipients[i].fpr:
-		      rlogrus.remove(rlogrus[n])
+	      for n in range(len(logrus)):
+		  if logrus[n].fpr == e.recipients[i].fpr:
+		      logrus.remove(logrus[n])
                   else:
                       pass
 	  try:
-	      cipher = c.encrypt(text, recipients=rlogrus, add_encrypt_to=True)
+	      cipher = c.encrypt(text, recipients=logrus, add_encrypt_to=True)
 	  except:
 	      pass
 
@@ -532,7 +557,7 @@
    :CUSTOM_ID: howto-basic-signing
    :END:
 
-   X
+   The following sections demonstrate how to specify
 
 *** Signing key selection
     :PROPERTIES:
@@ -557,6 +582,12 @@
     explicitly designated =signers= parameter in two of the five
     examples; once where the resulting signature would be ASCII
     armoured and once where it would not be armoured.
+
+    While it would be possible to enter a key ID or fingerprint here
+    to match a specific key, it is not possible to enter two
+    fingerprints and match two keys since the patten expects a string,
+    bytes or None and not a list.  A string with two fingerprints
+    won't match any single key.
 
 *** Normal or default signing messages or files
     :PROPERTIES:
