@@ -825,7 +825,7 @@
 
     Though PGP/in-line messages are no longer encouraged in favour of
     PGP/MIME, there is still sometimes value in utilising in-line
-    signatures.  This is where clearsigned messages or text is of
+    signatures.  This is where clear-signed messages or text is of
     value.
 
     #+begin_src python
@@ -845,7 +845,7 @@
       afile.close()
     #+end_src
 
-    In spite of the appearance of a clearsigned message, the data
+    In spite of the appearance of a clear-signed message, the data
     handled by GPGME in signing it must still be byte literals.
 
     #+begin_src python
@@ -869,30 +869,127 @@
    :CUSTOM_ID: howto-basic-verification
    :END:
 
-   Verify a signed file, both detached and not:
+   Essentially there are two principal methods of verification of a
+   signature.  The first of these is for use with the normal or
+   default signing method and for clear-signed messages.  The second is
+   for use with files and data with detached signatures.
+
+   The following example is intended for use with the default signing
+   method where the file was not ASCII armoured:
 
    #+begin_src python
      import gpg
-     import sys
      import time
+
+     filename = "statement.txt"
+     gpg_file = "statement.txt.gpg"
 
      c = gpg.Context()
 
-     data, result = c.verify(open(filename),
-			     open(detached_sig_filename)
-			     if detached_sig_filename else None)
+     try:
+	 verified = c.verify(open(gpg_file))
+     except gpg.errors.BadSignatures as e:
+	 verified = None
+	 print(e)
 
-     for index, sign in enumerate(result.signatures):
-	 print("signature", index, ":")
-	 print("  summary:     %#0x" % (sign.summary))
-	 print("  status:      %#0x" % (sign.status))
-	 print("  timestamp:  ", sign.timestamp)
-	 print("  timestamp:  ", time.ctime(sign.timestamp))
-	 print("  fingerprint:", sign.fpr)
-	 print("  uid:        ", c.get_key(sign.fpr).uids[0].uid)
+     if verified is not None:
+	 for i in range(len(verified[1].signatures)):
+	     sign = verified[1].signatures[i]
+	     print("""Good signature from:
+     {0}
+     with key {1}
+     made at {2}
+     """.format(c.get_key(sign.fpr).uids[0].uid,
+		sign.fpr, time.ctime(sign.timestamp)))
+     else:
+	 pass(e)
+   #+end_src
 
-     if data:
-	 sys.stdout.buffer.write(data)
+   Whereas this next example, which is almost identical would work
+   with normal ASCII armoured files and with clear-signed files:
+
+   #+begin_src python
+     import gpg
+     import time
+
+     filename = "statement.txt"
+     asc_file = "statement.txt.asc"
+
+     c = gpg.Context()
+
+     try:
+	 verified = c.verify(open(asc_file))
+     except gpg.errors.BadSignatures as e:
+	 verified = None
+	 print(e)
+
+     if verified is not None:
+	 for i in range(len(verified[1].signatures)):
+	     sign = verified[1].signatures[i]
+	     print("""Good signature from:
+     {0}
+     with key {1}
+     made at {2}
+     """.format(c.get_key(sign.fpr).uids[0].uid,
+		sign.fpr, time.ctime(sign.timestamp)))
+     else:
+	 pass
+   #+end_src
+
+   #+begin_src python
+     import gpg
+     import time
+
+     filename = "statement.txt"
+     sig_file = "statement.txt.sig"
+
+     c = gpg.Context()
+
+     try:
+	 verified = c.verify(open(filename), open(sig_file))
+     except gpg.errors.BadSignatures as e:
+	 verified = None
+	 print(e)
+
+     if verified is not None:
+	 for i in range(len(verified[1].signatures)):
+	     sign = verified[1].signatures[i]
+	     print("""Good signature from:
+     {0}
+     with key {1}
+     made at {2}
+     """.format(c.get_key(sign.fpr).uids[0].uid,
+		sign.fpr, time.ctime(sign.timestamp)))
+     else:
+	 pass
+   #+end_src
+
+   #+begin_src python
+     import gpg
+     import time
+
+     filename = "statement.txt"
+     asc_file = "statement.txt.asc"
+
+     c = gpg.Context()
+
+     try:
+	 verified = c.verify(open(filename), open(asc_file))
+     except gpg.errors.BadSignatures as e:
+	 verified = None
+	 print(e)
+
+     if verified is not None:
+	 for i in range(len(verified[1].signatures)):
+	     sign = verified[1].signatures[i]
+	     print("""Good signature from:
+     {0}
+     with key {1}
+     made at {2}
+     """.format(c.get_key(sign.fpr).uids[0].uid,
+		sign.fpr, time.ctime(sign.timestamp)))
+     else:
+	 pass
    #+end_src
 
 
