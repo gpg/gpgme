@@ -83,8 +83,8 @@
      :CUSTOM_ID: howto-s-mime
      :END:
 
-     Eventually add some of this, but it the OpenPGP details are far
-     more important at the moment.
+     Eventually add some of this, but the OpenPGP details are far more
+     important at the moment.
 
 ** TODO Documentation SWIG
    :PROPERTIES:
