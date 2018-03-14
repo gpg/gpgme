@@ -823,21 +823,45 @@
     :CUSTOM_ID: howto-basic-signing-clear
     :END:
 
-   #+begin_src python
-     import gpg
+    Though PGP/in-line messages are no longer encouraged in favour of
+    PGP/MIME, there is still sometimes value in utilising in-line
+    signatures.  This is where clearsigned messages or text is of
+    value.
 
-     text = """Declaration of ... something.
+    #+begin_src python
+      import gpg
 
-     """
+      text0 = """Declaration of ... something.
 
-     c = gpg.Context()
-     signed = c.sign(text, mode=2)
+      """
+      text = text0.encode("utf-8")
 
-     afile = open("/path/to/statement.txt.asc", "w")
-     for i in range(len(signed[0].splitlines())):
-	 afile.write("{0}\n".format(signed[0].splitlines()[i].decode('utf-8')))
-     afile.close()
-   #+end_src
+      c = gpg.Context()
+      signed = c.sign(text, mode=2)
+
+      afile = open("/path/to/statement.txt.asc", "w")
+      for line in signed[0].splitlines():
+	  afile.write("{0}\n".format(line.decode("utf-8")))
+      afile.close()
+    #+end_src
+
+    In spite of the appearance of a clearsigned message, the data
+    handled by GPGME in signing it must still be byte literals.
+
+    #+begin_src python
+      import gpg
+
+      tfile = open("/path/to/statement.txt", "rb")
+      text = tfile.read()
+      tfile.close()
+
+      c = gpg.Context()
+      signed = c.sign(text, mode=2)
+
+      afile = open("/path/to/statement.txt.asc", "wb")
+      afile.write(signed[0])
+      afile.close()
+    #+end_src
 
 
 ** Signature verification
