@@ -565,6 +565,72 @@
     This will attempt to encrypt to all the keys searched for, then
     remove invalid recipients if it fails and try again.
 
+**** Encrypting to one key using the second method
+     :PROPERTIES:
+     :CUSTOM_ID: howto-basic-encryption-monogamous
+     :END:
+
+     This example re-creates the first encryption example except it
+     uses the same =encrypt= method used in the subsequent examples
+     instead of the =op_encrypt= method.  This means that, unlike the
+     =op_encrypt= method, it /must/ use byte literal input data.
+
+     #+begin_src python
+       import gpg
+
+       rkey = "0x12345678DEADBEEF"
+       text = b"""Some text to test with.
+
+       Since the text in this case must be bytes, it is most likely that
+       the input form will be a separate file which is opened with "rb"
+       as this is the simplest method of obtaining the correct data
+       format.
+       """
+
+       c = gpg.Context(armor=True)
+       rpattern = list(c.keylist(pattern=rkey, secret=False))
+       logrus = []
+
+       for i in range(len(rpattern)):
+	   if rpattern[i].can_encrypt == 1:
+	       logrus.append(rpattern[i])
+
+       cipher = c.encrypt(text, recipients=logrus, sign=False, always_trust=True)
+
+       afile = open("secret_plans.txt.asc", "wb")
+       afile.write(cipher[0])
+       afile.close()
+     #+end_src
+
+     With one or two exceptions, this method will probably prove to be
+     easier to implement than the first method and thus it is the
+     recommended encryption method.  Though it is even more likely to
+     be used like this:
+
+     #+begin_src python
+       import gpg
+
+       rkey = "0x12345678DEADBEEF"
+
+       afile = open("secret_plans.txt", "rb")
+       text = afile.read()
+       afile.close()
+
+       c = gpg.Context(armor=True)
+       rpattern = list(c.keylist(pattern=rkey, secret=False))
+       logrus = []
+
+       for i in range(len(rpattern)):
+	   if rpattern[i].can_encrypt == 1:
+	       logrus.append(rpattern[i])
+
+       cipher = c.encrypt(text, recipients=logrus, sign=False, always_trust=True)
+
+       afile = open("secret_plans.txt.asc", "wb")
+       afile.write(cipher[0])
+       afile.close()
+     #+end_src
+
 
 ** Decryption
    :PROPERTIES:
