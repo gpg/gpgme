@@ -20,6 +20,9 @@
  * THE SOFTWARE.
  *
  * SPDX-License-Identifier: MIT
+ *
+ * Note that this code has been modified from the original code taken
+ * from cjson-code-58.zip.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -35,8 +38,22 @@
 #include <ctype.h>
 #include <errno.h>
 
-#include "util.h"     /* (Payproc specific.)  */
 #include "cJSON.h"
+
+/* We use malloc function wrappers from gpgrt (aka libgpg-error).  */
+#if 1
+# include <gpgrt.h>
+# define xtrymalloc(a)   gpgrt_malloc ((a))
+# define xtrycalloc(a,b) gpgrt_calloc ((a), (b))
+# define xtrystrdup(a)   gpgrt_strdup ((a))
+# define xfree(a)        gpgrt_free ((a))
+#else
+# define xtrymalloc(a)   malloc ((a))
+# define xtrycalloc(a,b) calloc ((a), (b))
+# define xtrystrdup(a)   strdup ((a))
+# define xfree(a)        free ((a))
+#endif
+
 
 static int
 cJSON_strcasecmp (const char *s1, const char *s2)
@@ -60,11 +77,17 @@ cJSON_New_Item (void)
   return xtrycalloc (1, sizeof (cJSON));
 }
 
-/* Delete a cJSON structure. */
+/* Delete a cJSON structure.  (Does not clobber ERRNO). */
 void
 cJSON_Delete (cJSON * c)
 {
   cJSON *next;
+  int save_errno;
+
+  if (!c)
+    return;
+
+  save_errno = errno;
   while (c)
     {
       next = c->next;
@@ -77,6 +100,7 @@ cJSON_Delete (cJSON * c)
       xfree (c);
       c = next;
     }
+  errno = save_errno;
 }
 
 /* Parse the input text to generate a number, and populate the result
@@ -132,13 +156,13 @@ print_number (cJSON * item)
       && d >= INT_MIN)
     {
       /* 2^64+1 can be represented in 21 chars. */
-      str = (char *) xtrymalloc (21);
+      str = xtrymalloc (21);
       if (str)
 	sprintf (str, "%d", item->valueint);
     }
   else
     {
-      str = (char *) xtrymalloc (64);	/* This is a nice tradeoff. */
+      str = xtrymalloc (64);	/* This is a nice tradeoff. */
       if (str)
 	{
 	  if (fabs (floor (d) - d) <= DBL_EPSILON && fabs (d) < 1.0e60)
@@ -328,7 +352,7 @@ print_string_ptr (const char *str)
       ptr++;
     }
 
-  out = (char *) xtrymalloc (len + 3);
+  out = xtrymalloc (len + 3);
   if (!out)
     return 0;
 
@@ -606,13 +630,13 @@ print_array (cJSON * item, int depth, int fmt)
   /* Explicitly handle numentries==0 */
   if (!numentries)
     {
-      out = (char *) xtrymalloc (3);
+      out = xtrymalloc (3);
       if (out)
 	strcpy (out, "[]");
       return out;
     }
   /* Allocate an array to hold the values for each */
-  entries = (char **) xtrymalloc (numentries * sizeof (char *));
+  entries = xtrymalloc (numentries * sizeof (char *));
   if (!entries)
     return 0;
   memset (entries, 0, numentries * sizeof (char *));
@@ -629,9 +653,9 @@ print_array (cJSON * item, int depth, int fmt)
       child = child->next;
     }
 
-  /* If we didn't fail, try to malloc the output string */
+  /* If we didn't fail, try to xtrymalloc the output string */
   if (!fail)
-    out = (char *) xtrymalloc (len);
+    out = xtrymalloc (len);
   /* If that fails, we fail. */
   if (!out)
     fail = 1;
@@ -748,7 +772,7 @@ print_object (cJSON * item, int depth, int fmt)
   /* Explicitly handle empty object case */
   if (!numentries)
     {
-      out = (char *) xtrymalloc (fmt ? depth + 4 : 3);
+      out = xtrymalloc (fmt ? depth + 4 : 3);
       if (!out)
 	return 0;
       ptr = out;
@@ -764,10 +788,10 @@ print_object (cJSON * item, int depth, int fmt)
       return out;
     }
   /* Allocate space for the names and the objects */
-  entries = (char **) xtrymalloc (numentries * sizeof (char *));
+  entries = xtrymalloc (numentries * sizeof (char *));
   if (!entries)
     return 0;
-  names = (char **) xtrymalloc (numentries * sizeof (char *));
+  names = xtrymalloc (numentries * sizeof (char *));
   if (!names)
     {
       xfree (entries);
@@ -794,7 +818,7 @@ print_object (cJSON * item, int depth, int fmt)
 
   /* Try to allocate the output string */
   if (!fail)
-    out = (char *) xtrymalloc (len);
+    out = xtrymalloc (len);
   if (!out)
     fail = 1;
 
@@ -920,15 +944,106 @@ cJSON_AddItemToArray (cJSON * array, cJSON * item)
     }
 }
 
-void
+cJSON *
 cJSON_AddItemToObject (cJSON * object, const char *string, cJSON * item)
 {
+  char *tmp;
+
   if (!item)
-    return;
+    return 0;
+  tmp = xtrystrdup (string);
+  if (!tmp)
+    return NULL;
+
   if (item->string)
     xfree (item->string);
-  item->string = xtrystrdup (string);
+  item->string = tmp;
   cJSON_AddItemToArray (object, item);
+  return object;
+}
+
+cJSON *
+cJSON_AddNullToObject (cJSON *object, const char *name)
+{
+  cJSON *obj, *tmp;
+
+  tmp = cJSON_CreateNull ();
+  if (!tmp)
+    return NULL;
+  obj = cJSON_AddItemToObject(object, name, tmp);
+  if (!obj)
+    cJSON_Delete (tmp);
+  return obj;
+}
+
+cJSON *
+cJSON_AddTrueToObject (cJSON *object, const char *name)
+{
+  cJSON *obj, *tmp;
+
+  tmp = cJSON_CreateTrue ();
+  if (!tmp)
+    return NULL;
+  obj = cJSON_AddItemToObject(object, name, tmp);
+  if (!obj)
+    cJSON_Delete (tmp);
+  return obj;
+}
+
+cJSON *
+cJSON_AddFalseToObject (cJSON *object, const char *name)
+{
+  cJSON *obj, *tmp;
+
+  tmp = cJSON_CreateFalse ();
+  if (!tmp)
+    return NULL;
+  obj = cJSON_AddItemToObject(object, name, tmp);
+  if (!obj)
+    cJSON_Delete (tmp);
+  return obj;
+}
+
+cJSON *
+cJSON_AddBoolToObject (cJSON *object, const char *name, int b)
+{
+  cJSON *obj, *tmp;
+
+  tmp = cJSON_CreateBool (b);
+  if (!tmp)
+    return NULL;
+  obj = cJSON_AddItemToObject(object, name, tmp);
+  if (!obj)
+    cJSON_Delete (tmp);
+  return obj;
+}
+
+cJSON *
+cJSON_AddNumberToObject (cJSON *object, const char *name, double num)
+{
+  cJSON *obj, *tmp;
+
+  tmp = cJSON_CreateNumber (num);
+  if (!tmp)
+    return NULL;
+  obj = cJSON_AddItemToObject(object, name, tmp);
+  if (!obj)
+    cJSON_Delete (tmp);
+  return obj;
+}
+
+cJSON *
+cJSON_AddStringToObject (cJSON *object, const char *name, const char *string)
+{
+  cJSON *obj, *tmp;
+
+  tmp = cJSON_CreateString (string);
+  if (!tmp)
+    return NULL;
+  obj = cJSON_AddItemToObject(object, name, tmp);
+  if (!obj)
+    cJSON_Delete (tmp);
+  return obj;
 }
 
 void

@@ -20,10 +20,13 @@
  * THE SOFTWARE.
  *
  * SPDX-License-Identifier: MIT
+ *
+ * Note that this code has been modified from the original code taken
+ * from cjson-code-58.zip.
  */
 
-#ifndef cJSON__h
-#define cJSON__h
+#ifndef cJSON_h
+#define cJSON_h
 
 #ifdef __cplusplus
 extern "C"
@@ -119,10 +122,20 @@ extern cJSON *cJSON_CreateFloatArray(const float *numbers,int count);
 extern cJSON *cJSON_CreateDoubleArray(const double *numbers,int count);
 extern cJSON *cJSON_CreateStringArray(const char **strings,int count);
 
-/* Append item to the specified array/object. */
+/* Append item to the specified array. */
 extern void cJSON_AddItemToArray(cJSON *array, cJSON *item);
-extern void cJSON_AddItemToObject(cJSON *object,
-                                  const char *string, cJSON *item);
+
+/* Append item to the specified object. */
+extern cJSON *cJSON_AddItemToObject(cJSON *object, const char *name,
+                                    cJSON *item);
+extern cJSON *cJSON_AddNullToObject (cJSON *object, const char *name);
+extern cJSON *cJSON_AddTrueToObject (cJSON *object, const char *name);
+extern cJSON *cJSON_AddFalseToObject (cJSON *object, const char *name);
+extern cJSON *cJSON_AddBoolToObject (cJSON *object, const char *name, int b);
+extern cJSON *cJSON_AddNumberToObject (cJSON *object, const char *name,
+                                       double num);
+extern cJSON *cJSON_AddStringToObject (cJSON *object, const char *name,
+                                       const char *string);
 
 /* Append reference to item to the specified array/object. Use this
    when you want to add an existing cJSON to a new cJSON, but don't
@@ -161,20 +174,6 @@ extern cJSON *cJSON_ParseWithOpts(const char *value,
 
 extern void cJSON_Minify(char *json);
 
-/* Macros for creating things quickly. */
-#define cJSON_AddNullToObject(object,name) \
-  cJSON_AddItemToObject(object, name, cJSON_CreateNull())
-#define cJSON_AddTrueToObject(object,name) \
-  cJSON_AddItemToObject(object, name, cJSON_CreateTrue())
-#define cJSON_AddFalseToObject(object,name) \
-  cJSON_AddItemToObject(object, name, cJSON_CreateFalse())
-#define cJSON_AddBoolToObject(object,name,b) \
-  cJSON_AddItemToObject(object, name, cJSON_CreateBool(b))
-#define cJSON_AddNumberToObject(object,name,n) \
-  cJSON_AddItemToObject(object, name, cJSON_CreateNumber(n))
-#define cJSON_AddStringToObject(object,name,s) \
-  cJSON_AddItemToObject(object, name, cJSON_CreateString(s))
-
 /* When assigning an integer value, it needs to be propagated to
    valuedouble too. */
 #define cJSON_SetIntValue(object,val) \
@@ -184,4 +183,4 @@ extern void cJSON_Minify(char *json);
 }
 #endif
 
-#endif /* cJSON__h */
+#endif /* cJSON_h */
