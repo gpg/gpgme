@@ -730,21 +730,33 @@
     plaintext is already compressed.  ASCII armouring will be
     determined according to the value of =gpg.Context().armor=.
 
+    The compression algorithm is selected in much the same way as the
+    symmetric encryption algorithm or the hash digest algorithm is
+    when multiple keys are involved; from the preferences saved into
+    the key itself or by comparison with the preferences with all
+    other keys involved.
+
    #+begin_src python
      import gpg
 
-     text = b"""Declaration of ... something.
+     text0 = """Declaration of ... something.
 
      """
+     text = text0.encode("utf-8")
 
      c = gpg.Context(armor=True, signers=sig_src)
      signed = c.sign(text, mode=0)
 
-     afile = open("/path/to/statement.txt.asc", "wb")
-     for i in range(len(signed[0].splitlines())):
-	 afile.write("{0}\n".format(signed[0].splitlines()[i]))
+     afile = open("/path/to/statement.txt.asc", "w")
+     for line in signed[0]:
+	 afile.write("{0}\n".format(line.decode("utf-8")))
      afile.close()
    #+end_src
+
+   Though everything in this example is accurate, it is more likely
+   that reading the input data from another file and writing the
+   result to a new file will be perfprmed more like the way it is done
+   in the next example.  Even if the output format is ASCII armoured.
 
    #+begin_src python
      import gpg
@@ -766,40 +778,45 @@
     :CUSTOM_ID: howto-basic-signing-detached
     :END:
 
-   Detached ASCII Armoured signing:
+    Detached signatures will often be needed in programmatic uses of
+    GPGME, either for signing files (e.g. tarballs of code releases)
+    or as a component of message signing (e.g. PGP/MIME encoded
+    email).
 
-   #+begin_src python
-     import gpg
+    #+begin_src python
+      import gpg
 
-     text = b"""Declaration of ... something.
+      text0 = """Declaration of ... something.
 
-     """
+      """
+      text = text0.encode("utf-8")
 
-     c = gpg.Context(armor=True)
-     signed = c.sign(text, mode=1)
+      c = gpg.Context(armor=True)
+      signed = c.sign(text, mode=1)
 
-     afile = open("/path/to/statement.txt.asc", "wb")
-     for i in range(len(signed[0].splitlines())):
-	 afile.write("{0}\n".format(signed[0].splitlines()[i]))
-     afile.close()
-   #+end_src
+      afile = open("/path/to/statement.txt.asc", "w")
+      for line in signed[0].splitlines()L
+	  afile.write("{0}\n".format(line.decode("utf-8")))
+      afile.close()
+    #+end_src
 
-   Detached binary signing of a file.
+    As with normal signatures, detached signatures are best handled as
+    byte literals, even when the output is ASCII armoured.
 
-   #+begin_src python
-     import gpg
+    #+begin_src python
+      import gpg
 
-     tfile = open("/path/to/statement.txt", "rb")
-     text = tfile.read()
-     tfile.close()
+      tfile = open("/path/to/statement.txt", "rb")
+      text = tfile.read()
+      tfile.close()
 
-     c = gpg.Context(signers=sig_src)
-     signed = c.sign(text, mode=1)
+      c = gpg.Context(signers=sig_src)
+      signed = c.sign(text, mode=1)
 
-     afile = open("/path/to/statement.txt.sig", "wb")
-     afile.write(signed[0])
-     afile.close()
-   #+end_src
+      afile = open("/path/to/statement.txt.sig", "wb")
+      afile.write(signed[0])
+      afile.close()
+    #+end_src
 
 *** Clearsigning messages or text
     :PROPERTIES:
