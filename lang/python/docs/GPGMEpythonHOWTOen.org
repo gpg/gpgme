@@ -13,7 +13,7 @@
   :CUSTOM_ID: intro
   :END:
 
-  | Version:        | 0.0.1-alpha                              |
+  | Version:        | 0.1.0                                    |
   | Author:         | Ben McGinnes <ben@gnupg.org>             |
   | Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
   | Language:       | Australian English, British English      |
@@ -513,7 +513,7 @@
 
     Encrypting to multiple keys, in addition to a default key or a key
     configured to always encrypt to, is a little different and uses a
-    slightly different call to the =op_encrypt call= demonstrated in the
+    slightly different call to the =op_encrypt= call demonstrated in the
     previous section.
 
     The following example encrypts a message (=text=) to everyone with
