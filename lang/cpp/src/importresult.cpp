@@ -154,6 +154,11 @@ int GpgME::ImportResult::notImported() const
     return d ? d->res.not_imported : 0 ;
 }
 
+int GpgME::ImportResult::numV3KeysSkipped() const
+{
+    return d ? d->res.skipped_v3_keys : 0 ;
+}
+
 GpgME::Import GpgME::ImportResult::import(unsigned int idx) const
 {
     return Import(d, idx);
