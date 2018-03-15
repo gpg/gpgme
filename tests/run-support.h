@@ -177,7 +177,8 @@ print_import_result (gpgme_import_result_t r)
           "   secret imported: %d\n"
           "  secret unchanged: %d\n"
           "  skipped new keys: %d\n"
-          "      not imported: %d\n",
+          "      not imported: %d\n"
+          "   skipped v3 keys: %d\n",
           r->considered,
           r->no_user_id,
           r->imported,
@@ -191,6 +192,7 @@ print_import_result (gpgme_import_result_t r)
           r->secret_imported,
           r->secret_unchanged,
           r->skipped_new_keys,
-          r->not_imported);
+          r->not_imported,
+          r->skipped_v3_keys);
 }
 

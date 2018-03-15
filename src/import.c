@@ -94,8 +94,9 @@ gpgme_op_import_result (gpgme_ctx_t ctx)
       TRACE_LOG3 ("%i secret keys, %i imported, %i unchanged",
 		  opd->result.secret_read, opd->result.secret_imported,
 		  opd->result.secret_unchanged);
-      TRACE_LOG2 ("%i skipped new keys, %i not imported",
-		  opd->result.skipped_new_keys, opd->result.not_imported);
+      TRACE_LOG3 ("%i skipped new keys, %i not imported, %i v3 skipped",
+		  opd->result.skipped_new_keys, opd->result.not_imported,
+                  opd->result.skipped_v3_keys);
 
       impstat = opd->result.imports;
       i = 0;
@@ -212,6 +213,10 @@ parse_import_res (char *args, gpgme_import_result_t result)
   PARSE_NEXT (result->secret_unchanged);
   PARSE_NEXT (result->skipped_new_keys);
   PARSE_NEXT (result->not_imported);
+  if (args && *args)
+    {
+      PARSE_NEXT (result->skipped_v3_keys);
+    }
 
   return 0;
 }

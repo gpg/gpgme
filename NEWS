@@ -3,9 +3,9 @@ Noteworthy changes in version 1.10.1 (unreleased)
 
  * Interface changes relative to the 1.10.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_import_result_t       EXTENDED: New field 'skipped_v3_keys'
  cpp: Key::locate                     NEW.
  cpp: Data::toString                  NEW.
-
 
 Noteworthy changes in version 1.10.0 (2017-12-12)
 -------------------------------------------------
