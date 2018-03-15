@@ -1057,6 +1057,48 @@
    #+end_src
 
 
+* Creating keys and subkeys
+  :PROPERTIES:
+  :CUSTOM_ID: key-generation
+  :END:
+
+  The one thing, aside from GnuPG itself, that GPGME depends on, of
+  course, is the keys themselves.  So it is necessary to be able to
+  generate them and modify them by adding subkeys, revoking or
+  disabling them, sometimes deleting them and doing the same for user
+  IDs.
+
+
+** Primary key
+   :PROPERTIES:
+   :CUSTOM_ID: keygen-primary
+   :END:
+
+
+** Subkeys
+   :PROPERTIES:
+   :CUSTOM_ID: keygen-subkeys
+   :END:
+
+
+** User IDs
+   :PROPERTIES:
+   :CUSTOM_ID: keygen-uids
+   :END:
+
+
+** Key preferences
+   :PROPERTIES:
+   :CUSTOM_ID: keygen-prefs
+   :END:
+
+
+** Key certification
+   :PROPERTIES:
+   :CUSTOM_ID: keygen-certify
+   :END:
+
+
 * Miscellaneous work-arounds
   :PROPERTIES:
   :CUSTOM_ID: cheats-and-hacks
