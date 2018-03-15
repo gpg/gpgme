@@ -1068,11 +1068,104 @@
   disabling them, sometimes deleting them and doing the same for user
   IDs.
 
+  In the following examples a key will be created for the world's
+  greatest secret agent, Danger Mouse.  Since Danger Mouse is a secret
+  agent he needs to be able to protect information to =SECRET= level
+  clearance, so his keys will be 3072-bit keys.
+
 
 ** Primary key
    :PROPERTIES:
    :CUSTOM_ID: keygen-primary
    :END:
+
+   Generating a primary key uses the =create_key= method in a Context.
+   It contains multiple arguments and keyword arguments, including:
+   =userid=, =algorithm=, =expires_in=, =expires=, =sign=, =encrypt=,
+   =certify=, =authenticate=, =passphrase= and =force=.  The defaults
+   for all of those except =userid=, =algorithm=, =expires_in=,
+   =expires= and =passphrase= is =False=.  The defaults for
+   =algorithm= and =passphrase= is =None=.  The default for
+   =expires_in= is =0=.  The default for =expires= is =True=.  There
+   is no default for =userid=.
+
+   If =passphrase= is left as =None= then the key will not be
+   generated with a passphrase, if =passphrase= is set to a string
+   then that will be the passphrase and if =passphrase= is set to
+   =True= then gpg-agent will launch pinentry to prompt for a
+   passphrase.  For the sake of convenience, these examples will keep
+   =passphrase= set to =None=.
+
+   #+begin_src python
+     import gpg
+
+     c = gpg.Context()
+
+     c.home_dir = "/tmp/dmgpg"
+     userid = "Danger Mouse <dm@secret.example.net>"
+
+     dmkey = c.create_key(userid, algorithm = "rsa3072", expires_in = 31536000,
+			  sign = True, certify = True)
+   #+end_src
+
+   One thing to note here is the use of setting the =c.home_dir=
+   parameter.  This enables generating the key or keys in a different
+   location.  In this case to keep the new key data created for this
+   example in a separate location rather than adding it to existing
+   and active key store data.
+
+   The successful generation of the key can be confirmed via the
+   returned =GenkeyResult= object, which includes the following data:
+
+   #+begin_src python
+     print("""
+     Fingerprint:  {0}
+     Primary Key:  {1}
+      Public Key:  {2}
+      Secret Key:  {3}
+	 Sub Key:  {4}
+	User IDs:  {5}
+     """.format(dmkey.fpr, dmkey.primary, dmkey.pubkey, dmkey.seckey, dmkey.sub,
+		dmkey.uid))
+   #+end_src
+
+   Alternatively the information can be confirmed using the command
+   line program:
+
+   #+begin_src shell
+     bash-4.4$ gpg --homedir /tmp/dmgpg -K
+     /tmp/dmgpg/pubring.kbx
+     ----------------------
+     sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
+	   177B7C25DB99745EE2EE13ED026D2F19E99E63AA
+     uid           [ultimate] Danger Mouse <dm@secret.example.net>
+
+     bash-4.4$
+   #+end_src
+
+   As with generating keys manually, to preconfigure expanded
+   preferences for the cipher, digest and compression algorithms, the
+   =gpg.conf= file must contain those details in the home directory in
+   which the new key is being generated.  I used a cut down version of
+   my own =gpg.conf= file in order to be able to generate this:
+
+   #+begin_src shell
+     bash-4.4$ gpg --homedir /tmp/dmgpg --edit-key 177B7C25DB99745EE2EE13ED026D2F19E99E63AA showpref quit
+     Secret key is available.
+
+     sec  rsa3072/026D2F19E99E63AA
+	  created: 2018-03-15  expires: 2019-03-15  usage: SC
+	  trust: ultimate      validity: ultimate
+     [ultimate] (1). Danger Mouse <dm@secret.example.net>
+
+     [ultimate] (1). Danger Mouse <dm@secret.example.net>
+	  Cipher: TWOFISH, CAMELLIA256, AES256, CAMELLIA192, AES192, CAMELLIA128, AES, BLOWFISH, IDEA, CAST5, 3DES
+	  Digest: SHA512, SHA384, SHA256, SHA224, RIPEMD160, SHA1
+	  Compression: ZLIB, BZIP2, ZIP, Uncompressed
+	  Features: MDC, Keyserver no-modify
+
+     bash-4.4$
+   #+end_src
 
 
 ** Subkeys
