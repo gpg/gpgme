@@ -936,6 +936,27 @@
 	 pass
    #+end_src
 
+   In both of the previous examples it is also possible to compare the
+   original data that was signed against the signed data in
+   =verified[0]= to see if it matches with something like this:
+
+   #+begin_src python
+     afile = open(filename, "rb")
+     text = afile.read()
+     afile.close()
+
+     if text == verified[0]:
+	 print("Good signature.")
+     else:
+	 pass
+   #+end_src
+
+   The following two examples, however, deal with detached signatures.
+   With his method of verification the data that was signed does not
+   get returned since it is already being explicitly referenced in the
+   first argument of =c.verify=.  So =verified[0]= is None and only
+   the data in =verified[1]= is available.
+
    #+begin_src python
      import gpg
      import time
