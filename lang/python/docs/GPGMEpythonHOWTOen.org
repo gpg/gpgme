@@ -1073,6 +1073,28 @@
   agent he needs to be able to protect information to =SECRET= level
   clearance, so his keys will be 3072-bit keys.
 
+  The pre-configured =gpg.conf= file which sets cipher, digest and
+  other preferences contains the following configuration parameters:
+
+  #+begin_src conf
+    expert
+    allow-freeform-uid
+    allow-secret-key-import
+    trust-model tofu+pgp
+    tofu-default-policy unknown
+    # no-auto-check-trustdb
+    enable-large-rsa
+    enable-dsa2
+    # no-emit-version
+    # no-comments
+    # cert-digest-algo SHA256
+    cert-digest-algo SHA512
+    default-preference-list TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1 ZLIB BZIP2 ZIP Uncompressed
+    personal-cipher-preferences TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES
+    personal-digest-preferences SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1
+    personal-compress-preferences ZLIB BZIP2 ZIP Uncompressed
+  #+end_src
+
 
 ** Primary key
    :PROPERTIES:
@@ -1172,6 +1194,56 @@
    :PROPERTIES:
    :CUSTOM_ID: keygen-subkeys
    :END:
+
+   Adding subkeys to a primary key is fairly similar to creating the
+   primary key with the =create_subkey= method.  Most of the arguments
+   are the same, but not quite all.  Instead of the =userid= argument
+   there is now a =key= argument for selecting which primary key to
+   add the subkey to.
+
+   In the following example an encryption subkey will be added to the
+   primary key.  Since Danger Mouse is a security conscious secret
+   agent, this subkey will only be valid for about six months, half
+   the length of the primary key.
+
+   #+begin_src python
+     import gpg
+
+     c = gpg.Context()
+     c.home_dir = "/tmp/dmgpg"
+
+     key = c.get_key(dmkey.fpr, secret = True)
+     dmsub = c.create_subkey(key, algorithm = "rsa3072", expires_in = 15768000,
+			     encrypt = True)
+   #+end_src
+
+   As with the primary key, the results here can be checked with:
+
+   #+begin_src python
+     print("""
+     Fingerprint:  {0}
+     Primary Key:  {1}
+      Public Key:  {2}
+      Secret Key:  {3}
+	 Sub Key:  {4}
+	User IDs:  {5}
+     """.format(dmsub.fpr, dmsub.primary, dmsub.pubkey, dmsub.seckey, dmsub.sub,
+		dmsub.uid))
+   #+end_src
+
+   As well as on the command line with:
+
+   #+begin_src shell
+     bash-4.4$ gpg --homedir /tmp/dmgpg -K
+     /tmp/dmgpg/pubring.kbx
+     ----------------------
+     sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
+	   177B7C25DB99745EE2EE13ED026D2F19E99E63AA
+     uid           [ultimate] Danger Mouse <dm@secret.example.net>
+     ssb   rsa3072 2018-03-15 [E] [expires: 2018-09-13]
+
+     bash-4.4$
+   #+end_src
 
 
 ** User IDs
