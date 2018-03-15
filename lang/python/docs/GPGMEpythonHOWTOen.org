@@ -345,34 +345,77 @@
    #+end_src
 
 
-** Counting keys
+*** Counting keys
+    :PROPERTIES:
+    :CUSTOM_ID: howto-keys-counting
+    :END:
+
+    Counting the number of keys in your public keybox (=pubring.kbx=),
+    the format which has superceded the old keyring format
+    (=pubring.gpg= and =secring.gpg=), or the number of secret keys is
+    a very simple task.
+
+    #+begin_src python
+      import gpg
+
+      c = gpg.Context()
+      seckeys = c.keylist(pattern=None, secret=True)
+      pubkeys = c.keylist(pattern=None, secret=False)
+
+      seclist = list(seckeys)
+      secnum = len(seclist)
+
+      publist = list(pubkeys)
+      pubnum = len(publist)
+
+      print("""
+      Number of secret keys:  {0}
+      Number of public keys:  {1}
+      """.format(secnum, pubnum)
+    #+end_src
+
+
+** Get key
    :PROPERTIES:
-   :CUSTOM_ID: howto-keys-counting
+   :CUSTOM_ID: howto-get-key
    :END:
 
-   Counting the number of keys in your public keybox (=pubring.kbx=),
-   the format which has superceded the old keyring format
-   (=pubring.gpg= and =secring.gpg=), or the number of secret keys is
-   a very simple task.
+   An alternative method of getting a single key via its fingerprint
+   is available directly within a Context with =Context().get_key=.
+   This is the preferred method of selecting a key in order to modify
+   it, sign or certify it and for obtaining relevant data about a
+   single key as a part of other functions; when verifying a signature
+   made by that key, for instance.
+
+   By default this method will select public keys, but it can select
+   secret keys as well.
+
+   This first example demonstrates selecting the current key of Werner
+   Koch, which is due to expire at the end of 2018:
 
    #+begin_src python
      import gpg
 
-     c = gpg.Context()
-     seckeys = c.keylist(pattern=None, secret=True)
-     pubkeys = c.keylist(pattern=None, secret=False)
-
-     seclist = list(seckeys)
-     secnum = len(seclist)
-
-     publist = list(pubkeys)
-     pubnum = len(publist)
-
-     print("""
-     Number of secret keys:  {0}
-     Number of public keys:  {1}
-     """.format(secnum, pubnum)
+     fingerprint = "80615870F5BAD690333686D0F2AD85AC1E42B367"
+     key = gpg.Context().get_key(fingerprint)
    #+end_src
+
+   Whereas this example demonstrates selecting the author's current
+   key with the =secret= key word argument set to =True=:
+
+   #+begin_src python
+     import gpg
+
+     fingerprint = "DB4724E6FA4286C92B4E55C4321E4E2373590E5D"
+     key = gpg.Context().get_key(fingerprint, secret=True)
+   #+end_src
+
+   It is, of course, quite possible to select expired, disabled and
+   revoked keys with this function, but only to effectively display
+   information about those keys.
+
+   It is also possible to use both unicode or string literals and byte
+   literals with the fingerprint when getting a key in this way.
 
 
 * Basic Functions
