@@ -35,8 +35,8 @@
    Much of it will work with Python 2, but much of it also deals with
    Python 3 byte literals, particularly when reading and writing data.
    Developers concentrating on Python 2.7, and possibly even 2.6, will
-   need to make the approprate modifications to support the older
-   string and unicode types as opposted to bytes.
+   need to make the appropriate modifications to support the older
+   string and unicode types as opposed to bytes.
 
    There are multiple reasons for concentrating on Python 3; some of
    which relate to the immediate integration of these bindings, some
@@ -61,7 +61,7 @@
    Unlike many modern APIs with which programmers will be more
    familiar with these days, the GPGME API is a C API.  The API is
    intended for use by C coders who would be able to access its
-   features by including the =gpgme.h= header file eith their own C
+   features by including the =gpgme.h= header file with their own C
    source code and then access its functions just as they would any
    other C headers.
 
@@ -208,7 +208,7 @@
    By default GPGME will attempt to install the bindings for the most
    recent or highest version number of Python 2 and Python 3 it
    detects in =$PATH=.  It specifically checks for the =python= and
-   =python3= executabled first and then checks for specific version
+   =python3= executables first and then checks for specific version
    numbers.
 
    For Python 2 it checks for these executables in this order:
@@ -275,7 +275,7 @@
    result of one operation has a direct bearing on the outcome of
    subsequent operations.  Not merely by generating an error either.
 
-   When dealing with this type of persistant state on the web, full of
+   When dealing with this type of persistent state on the web, full of
    both the RESTful and REST-like, it's most commonly referred to as a
    session.  In GPGME, however, it is called a context and every
    operation type has one.
@@ -351,7 +351,7 @@
     :END:
 
     Counting the number of keys in your public keybox (=pubring.kbx=),
-    the format which has superceded the old keyring format
+    the format which has superseded the old keyring format
     (=pubring.gpg= and =secring.gpg=), or the number of secret keys is
     a very simple task.
 
@@ -424,7 +424,7 @@
   :END:
 
   The most frequently called features of any cryptographic library
-  will be the most fundamental tasks for enxryption software.  In this
+  will be the most fundamental tasks for encryption software.  In this
   section we will look at how to programmatically encrypt data,
   decrypt it, sign it and verify signatures.
 
@@ -461,7 +461,7 @@
    the key was not found.
 
    The encryption operation is invoked within the Context with the
-   =c.op_encrypt= function, loading the recipien (=r=), the message
+   =c.op_encrypt= function, loading the recipients (=r=), the message
    (=plain=) and the =cipher=.  The =cipher.seek= uses =os.SEEK_SET=
    to set the data to the correct byte format for GPGME to use it.
 
@@ -798,7 +798,7 @@
 
    Though everything in this example is accurate, it is more likely
    that reading the input data from another file and writing the
-   result to a new file will be perfprmed more like the way it is done
+   result to a new file will be performed more like the way it is done
    in the next example.  Even if the output format is ASCII armoured.
 
    #+begin_src python
@@ -838,7 +838,7 @@
       signed = c.sign(text, mode=1)
 
       afile = open("/path/to/statement.txt.asc", "w")
-      for line in signed[0].splitlines()L
+      for line in signed[0].splitlines():
 	  afile.write("{0}\n".format(line.decode("utf-8")))
       afile.close()
     #+end_src
