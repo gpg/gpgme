@@ -677,7 +677,7 @@
 
 ** Decryption
    :PROPERTIES:
-   :CUSTOM_ID: howto-basic-encryption
+   :CUSTOM_ID: howto-basic-decryption
    :END:
 
    Decrypting something encrypted to a key in one's secret keyring is
