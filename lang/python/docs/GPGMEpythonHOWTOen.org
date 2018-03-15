@@ -1290,6 +1290,38 @@
    :CUSTOM_ID: key-sign
    :END:
 
+   Since key certification is more frequently referred to as key
+   signing, the method used to perform this function is =key_sign=.
+
+   The =key_sign= method takes four arguments: =key=, =uids=,
+   =expires_in= and =local=.  The default value of =uids= is =None=
+   and which results in all user IDs being selected.  The default
+   values of =expires_in= snd =local= is =False=; which result in the
+   signature never expiring and being able to be exported.
+
+   The =key= is the key being signed rather than the key doing the
+   signing.  To change the key doing the signing refer to the signing
+   key selection above for signing messages and files.
+
+   If the =uids= value is not =None= then it must either be a string
+   to match a single user ID or a list of strings to match multiple
+   user IDs.  In this case the matching of those strings must be
+   precise and it is case sensitive.
+
+   To sign Danger Mouse's key for just the initial user ID with a
+   signature which will last a little over a month, do this:
+
+   #+begin_src python
+     import gpg
+
+     c = gpg.Context()
+     uid = "Danger Mouse <dm@secret.example.net>"
+
+     dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+     key = c.get_key(dmfpr, secret = True)
+     c.key_sign(key, uids = uid, expires_in = 2764800)
+   #+end_src
+
 
 * Miscellaneous work-arounds
   :PROPERTIES:
