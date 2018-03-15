@@ -179,6 +179,14 @@
    Due to the nature of what these bindings are and how they work, it
    is infeasible to install the GPGME Python bindings in the same way.
 
+   This is because the bindings use SWIG to dynamically generate C
+   bindings against =gpgme.h= and =gpgme.h= is generated from
+   =gpgme.h.in= at compile time when GPGME is built from source.  Thus
+   to include a package in PyPI which actually built correctly would
+   require either statically built libraries for every architecture
+   bundled with it or a full implementation of C for each
+   architecture.
+
 ** Requirements
    :PROPERTIES:
    :CUSTOM_ID: gpgme-python-requirements
