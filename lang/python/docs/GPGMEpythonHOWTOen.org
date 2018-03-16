@@ -13,7 +13,7 @@
   :CUSTOM_ID: intro
   :END:
 
-  | Version:        | 0.1.0                                    |
+  | Version:        | 0.1.0-draft                              |
   | Author:         | Ben McGinnes <ben@gnupg.org>             |
   | Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
   | Language:       | Australian English, British English      |
@@ -159,8 +159,8 @@
 
     The PyME package is available under the same dual licensing as
     GPGME itself: the GNU General Public License version 2.0 (or any
-    later version) and the GNU Lesser Public License version 2.1 (or
-    any later version).
+    later version) and the GNU Lesser General Public License version
+    2.1 (or any later version).
 
 
 * GPGME Python bindings installation
@@ -275,7 +275,7 @@
    that most operations require more than one instruction to the API
    to perform the task.  Sure, there are certain functions which can
    be performed simultaneously, particularly if the result known or
-   strongly anticipated (e.g selecting and encrypting to a key known
+   strongly anticipated (e.g. selecting and encrypting to a key known
    to be in the public keybox).
 
    There are many more, however, which cannot be manipulated so
@@ -505,11 +505,8 @@
 	 try:
 	     c.op_encrypt([r], 1, plain, cipher)
 	     cipher.seek(0, os.SEEK_SET)
-	     del(text)
-	     del(plain)
-	     afile = open("secret_plans.txt.asc", "wb")
-	     afile.write(cipher.read())
-	     afile.close()
+	     with open("secret_plans.txt.asc", "wb") as afile:
+	         afile.write(cipher.read())
 	 except gpg.errors.GPGMEError as ex:
 	     print(ex.getstring())
    #+end_src
@@ -555,9 +552,8 @@
 
       cipher = c.encrypt(text, recipients=logrus, sign=False, always_trust=True)
 
-      afile = open("secret_plans.txt.asc", "wb")
-      afile.write(cipher[0])
-      afile.close()
+      with open("secret_plans.txt.asc", "wb") as afile:
+          afile.write(cipher[0])
     #+end_src
 
     All it would take to change the above example to sign the message
@@ -582,9 +578,8 @@
     #+begin_src python
       import gpg
 
-      afile = open("secret_plans.txt", "rb")
-      text = afile.read()
-      afile.close()
+      with open("secret_plans.txt.asc", "rb") as afile:
+          text = afile.read()
 
       c = gpg.Context(armor=True)
       rpattern = list(c.keylist(pattern="@gnupg.org", secret=False))
@@ -608,9 +603,8 @@
 	  except:
 	      pass
 
-      afile = open("secret_plans.txt.asc", "wb")
-      afile.write(cipher[0])
-      afile.close()
+      with open("secret_plans.txt.asc", "wb") as afile:
+          afile.write(cipher[0])
     #+end_src
 
     This will attempt to encrypt to all the keys searched for, then
@@ -648,9 +642,8 @@
 
       cipher = c.encrypt(text, recipients=logrus, sign=False, always_trust=True)
 
-      afile = open("secret_plans.txt.asc", "wb")
-      afile.write(cipher[0])
-      afile.close()
+      with open("secret_plans.txt.asc", "wb") as afile:
+          afile.write(cipher[0])
     #+end_src
 
     With one or two exceptions, this method will probably prove to be
@@ -677,9 +670,8 @@
 
       cipher = c.encrypt(text, recipients=logrus, sign=False, always_trust=True)
 
-      afile = open("secret_plans.txt.asc", "wb")
-      afile.write(cipher[0])
-      afile.close()
+      with open("secret_plans.txt.asc", "wb") as afile:
+          afile.write(cipher[0])
     #+end_src
 
 
@@ -718,7 +710,6 @@
 	 print(plaintext[0])
 	 plaintext[1]
 	 plaintext[2]
-	 del(plaintext)
      else:
 	 pass
    #+end_src
@@ -793,15 +784,14 @@
      text0 = """Declaration of ... something.
 
      """
-     text = text0.encode("utf-8")
+     text = text0.encode()
 
      c = gpg.Context(armor=True, signers=sig_src)
      signed = c.sign(text, mode=0)
 
-     afile = open("/path/to/statement.txt.asc", "w")
-     for line in signed[0]:
-	 afile.write("{0}\n".format(line.decode("utf-8")))
-     afile.close()
+     with open("/path/to/statement.txt.asc", "w") as afile:
+         for line in signed[0]:
+	     afile.write("{0}\n".format(line.decode()))
    #+end_src
 
    Though everything in this example is accurate, it is more likely
@@ -812,16 +802,14 @@
    #+begin_src python
      import gpg
 
-     tfile = open("/path/to/statement.txt", "rb")
-     text = tfile.read()
-     tfile.close()
+     with open("/path/to/statement.txt", "rb") as tfile:
+         text = tfile.read()
 
      c = gpg.Context()
      signed = c.sign(text, mode=0)
 
-     afile = open("/path/to/statement.txt.sig", "wb")
-     afile.write(signed[0])
-     afile.close()
+     with open("/path/to/statement.txt.sig", "wb") as afile:
+         afile.write(signed[0])
    #+end_src
 
 *** Detached signing messages and files
@@ -840,15 +828,14 @@
       text0 = """Declaration of ... something.
 
       """
-      text = text0.encode("utf-8")
+      text = text0.encode()
 
       c = gpg.Context(armor=True)
       signed = c.sign(text, mode=1)
 
-      afile = open("/path/to/statement.txt.asc", "w")
-      for line in signed[0].splitlines():
-	  afile.write("{0}\n".format(line.decode("utf-8")))
-      afile.close()
+      with open("/path/to/statement.txt.asc", "w") as afile:
+          for line in signed[0].splitlines():
+	      afile.write("{0}\n".format(line.decode()))
     #+end_src
 
     As with normal signatures, detached signatures are best handled as
@@ -857,16 +844,14 @@
     #+begin_src python
       import gpg
 
-      tfile = open("/path/to/statement.txt", "rb")
-      text = tfile.read()
-      tfile.close()
+      with open("/path/to/statement.txt", "rb") as tfile:
+          text = tfile.read()
 
       c = gpg.Context(signers=sig_src)
       signed = c.sign(text, mode=1)
 
-      afile = open("/path/to/statement.txt.sig", "wb")
-      afile.write(signed[0])
-      afile.close()
+      with open("/path/to/statement.txt.sig", "wb") as afile:
+          afile.write(signed[0])
     #+end_src
 
 *** Clearsigning messages or text
@@ -885,15 +870,14 @@
       text0 = """Declaration of ... something.
 
       """
-      text = text0.encode("utf-8")
+      text = text0.encode()
 
       c = gpg.Context()
       signed = c.sign(text, mode=2)
 
-      afile = open("/path/to/statement.txt.asc", "w")
-      for line in signed[0].splitlines():
-	  afile.write("{0}\n".format(line.decode("utf-8")))
-      afile.close()
+      with open("/path/to/statement.txt.asc", "w") as afile:
+          for line in signed[0].splitlines():
+	      afile.write("{0}\n".format(line.decode()))
     #+end_src
 
     In spite of the appearance of a clear-signed message, the data
@@ -902,16 +886,14 @@
     #+begin_src python
       import gpg
 
-      tfile = open("/path/to/statement.txt", "rb")
-      text = tfile.read()
-      tfile.close()
+      with open("/path/to/statement.txt", "rb") as tfile:
+          text = tfile.read()
 
       c = gpg.Context()
       signed = c.sign(text, mode=2)
 
-      afile = open("/path/to/statement.txt.asc", "wb")
-      afile.write(signed[0])
-      afile.close()
+      with open("/path/to/statement.txt.asc", "wb") as afile:
+          afile.write(signed[0])
     #+end_src
 
 
@@ -1131,7 +1113,7 @@
 
      c = gpg.Context()
 
-     c.home_dir = "/tmp/dmgpg"
+     c.home_dir = "~/.gnupg-dm"
      userid = "Danger Mouse <dm@secret.example.net>"
 
      dmkey = c.create_key(userid, algorithm = "rsa3072", expires_in = 31536000,
@@ -1142,7 +1124,10 @@
    parameter.  This enables generating the key or keys in a different
    location.  In this case to keep the new key data created for this
    example in a separate location rather than adding it to existing
-   and active key store data.
+   and active key store data.  As with the default directory,
+   =~/.gnupg=, any temporary or separate directory needs the
+   permissions set to only permit access by the directory owner.  On
+   posix systems this means setting the directory permissions to 700.
 
    The successful generation of the key can be confirmed via the
    returned =GenkeyResult= object, which includes the following data:
@@ -1163,8 +1148,8 @@
    line program:
 
    #+begin_src shell
-     bash-4.4$ gpg --homedir /tmp/dmgpg -K
-     /tmp/dmgpg/pubring.kbx
+     bash-4.4$ gpg --homedir ~/.gnupg-dm -K
+     ~/.gnupg-dm/pubring.kbx
      ----------------------
      sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
 	   177B7C25DB99745EE2EE13ED026D2F19E99E63AA
@@ -1180,7 +1165,7 @@
    my own =gpg.conf= file in order to be able to generate this:
 
    #+begin_src shell
-     bash-4.4$ gpg --homedir /tmp/dmgpg --edit-key 177B7C25DB99745EE2EE13ED026D2F19E99E63AA showpref quit
+     bash-4.4$ gpg --homedir ~/.gnupg-dm --edit-key 177B7C25DB99745EE2EE13ED026D2F19E99E63AA showpref quit
      Secret key is available.
 
      sec  rsa3072/026D2F19E99E63AA
@@ -1218,7 +1203,7 @@
      import gpg
 
      c = gpg.Context()
-     c.home_dir = "/tmp/dmgpg"
+     c.home_dir = "~/.gnupg-dm"
 
      key = c.get_key(dmkey.fpr, secret = True)
      dmsub = c.create_subkey(key, algorithm = "rsa3072", expires_in = 15768000,
@@ -1242,8 +1227,8 @@
    As well as on the command line with:
 
    #+begin_src shell
-     bash-4.4$ gpg --homedir /tmp/dmgpg -K
-     /tmp/dmgpg/pubring.kbx
+     bash-4.4$ gpg --homedir ~/.gnupg-dm -K
+     ~/.gnupg-dm/pubring.kbx
      ----------------------
      sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
 	   177B7C25DB99745EE2EE13ED026D2F19E99E63AA
@@ -1268,7 +1253,7 @@
      import gpg
 
      c = gpg.Context()
-     c.home_dir = "/tmp/dmgpg"
+     c.home_dir = "~/.gnupg-dm"
 
      dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
      key = c.get_key(dmfpr, secret = True)
@@ -1280,8 +1265,8 @@
    Unsurprisingly the result of this is:
 
    #+begin_src shell
-     bash-4.4$ gpg --homedir /tmp/dmgpg -K
-     /tmp/dmgpg/pubring.kbx
+     bash-4.4$ gpg --homedir ~/.gnupg-dm -K
+     ~/.gnupg-dm/pubring.kbx
      ----------------------
      sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
 	   177B7C25DB99745EE2EE13ED026D2F19E99E63AA
