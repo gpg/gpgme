@@ -436,6 +436,7 @@
   section we will look at how to programmatically encrypt data,
   decrypt it, sign it and verify signatures.
 
+
 ** Encryption
    :PROPERTIES:
    :CUSTOM_ID: howto-basic-encryption
@@ -446,85 +447,35 @@
    the second example the message will be encrypted to multiple
    recipients.
 
+
 *** Encrypting to one key
     :PROPERTIES:
     :CUSTOM_ID: howto-basic-encryption-single
     :END:
 
-   The text is then encapsulated in a GPGME Data object as =plain= and
-   the =cipher= object is created with another Data object.  Then we
-   create the Context as =c= and set it to use the ASCII armoured
-   OpenPGP format.  In later examples there will be alternative
-   methods of setting the OpenPGP output to be ASCII armoured.
+    Once the the Context is set the main issues with encrypting data
+    is essentially reduced to key selection and the keyword arguments
+    specified in the =gpg.Context().encrypt()= method.
 
-   Next we prepare a keylist object in our Context and follow it with
-   specifying the recipients as =r=.  Note that the configuration in
-   one's =gpg.conf= file is honoured, so if you have the options set
-   to encrypt to one key or to a default key, that will be included
-   with this operation.
-
-   This is followed by a quick check to be sure that the recipient is
-   actually selected and that the key is available.  Assuming it is,
-   the encryption can proceed, but if not a message will print stating
-   the key was not found.
-
-   The encryption operation is invoked within the Context with the
-   =c.op_encrypt= function, loading the recipients (=r=), the message
-   (=plain=) and the =cipher=.  The =cipher.seek= uses =os.SEEK_SET=
-   to set the data to the correct byte format for GPGME to use it.
-
-   At this point we no longer need the plaintext material, so we
-   delete both the =text= and the =plain= objects.  Then we write the
-   encrypted data out to a file, =secret_plans.txt.asc=.
-
-   #+begin_src python
-     import gpg
-     import os
-
-     rkey = "0x12345678DEADBEEF"
-     text = """
-     Some plain text to test with.  Obtained from any input source Python can read.
-
-     It makes no difference whether it is string or bytes, but the bindings always
-     produce byte output data.  Which is useful to know when writing out either the
-     encrypted or decrypted results.
-
-     """
-
-     plain = gpg.core.Data(text)
-     cipher = gpg.core.Data()
-     c = gpg.core.Context()
-     c.set_armor(1)
-
-     c.op_keylist_start(rkey, 0)
-     r = c.op_keylist_next()
-
-     if r == None:
-	 print("""The key for user "{0}" was not found""".format(rkey))
-     else:
-	 try:
-	     c.op_encrypt([r], 1, plain, cipher)
-	     cipher.seek(0, os.SEEK_SET)
-	     with open("secret_plans.txt.asc", "wb") as afile:
-	         afile.write(cipher.read())
-	 except gpg.errors.GPGMEError as ex:
-	     print(ex.getstring())
-   #+end_src
-
-*** Encrypting to one key using the second method
-    :PROPERTIES:
-    :CUSTOM_ID: howto-basic-encryption-monogamous
-    :END:
-
-    This example re-creates the first encryption example except it
-    uses the same =encrypt= method used in the subsequent examples
-    instead of the =op_encrypt= method.  This means that, unlike the
-    =op_encrypt= method, it /must/ use byte literal input data.
+    Those keyword arguments are: =recipients=, a list of keys
+    encrypted to (covered in greater detail in the following section);
+    =sign=, whether or not to sign the plaintext data, see subsequent
+    sections on signing and verifying signatures below (defaults to
+    =True=); =sink=, to write results or partial results to a secure
+    sink instead of returning it (defaults to =None=); =passphrase=,
+    only used when utilising symmetric encryption (defaults to
+    =None=); =always_trust=, used to override the trust model settings
+    for recipient keys (defaults to =False=); =add_encrypt_to=,
+    utilises any preconfigured =encrypt-to= or =default-key= settings
+    in the user's =gpg.conf= file (defaults to =False=); =prepare=,
+    prepare for encryption (defaults to =False=); =expect_sign=,
+    prepare for signing (defaults to =False=); =compress=, compresses
+    the plaintext prior to encryption (defaults to =True=).
 
     #+begin_src python
       import gpg
 
-      rkey = "0x12345678DEADBEEF"
+      a_key = "0x12345678DEADBEEF"
       text = b"""Some text to test with.
 
       Since the text in this case must be bytes, it is most likely that
@@ -534,56 +485,51 @@
       """
 
       c = gpg.Context(armor=True)
-      rpattern = list(c.keylist(pattern=rkey, secret=False))
-      logrus = []
-
-      for i in range(len(rpattern)):
-	  if rpattern[i].can_encrypt == 1:
-	      logrus.append(rpattern[i])
-
-      cipher = c.encrypt(text, recipients=logrus, sign=False, always_trust=True)
+      rkey = list(c.keylist(pattern=a_key, secret=False))
+      ciphertext, result, sign_result = c.encrypt(text, recipients=rkey, sign=False)
 
       with open("secret_plans.txt.asc", "wb") as afile:
-          afile.write(cipher[0])
+	  afile.write(ciphertext)
     #+end_src
 
-    With one or two exceptions, this method will probably prove to be
-    easier to implement than the first method and thus it is the
-    recommended encryption method.  Though it is even more likely to
-    be used like this:
+    Though this is even more likely to be used like this; with the
+    plaintext input read from a file, the recipient keys used for
+    encryption regardless of key trust status and the encrypted output
+    also encrypted to any preconfigured keys set in the =gpg.conf=
+    file:
 
     #+begin_src python
       import gpg
 
-      rkey = "0x12345678DEADBEEF"
+      a_key = "0x12345678DEADBEEF"
 
-      afile = open("secret_plans.txt", "rb")
-      text = afile.read()
-      afile.close()
+      with open("secret_plans.txt", "rb") as afile:
+	  text = afile.read()
 
       c = gpg.Context(armor=True)
-      rpattern = list(c.keylist(pattern=rkey, secret=False))
-      logrus = []
-
-      for i in range(len(rpattern)):
-	  if rpattern[i].can_encrypt == 1:
-	      logrus.append(rpattern[i])
-
-      cipher = c.encrypt(text, recipients=logrus, sign=False, always_trust=True)
+      rkey = list(c.keylist(pattern=a_key, secret=False))
+      ciphertext, result, sign_result = c.encrypt(text, recipients=rkey,
+						  sign=True, always_trust=True,
+                                                  add_encrypt_to=True)
 
       with open("secret_plans.txt.asc", "wb") as afile:
-          afile.write(cipher[0])
+	  afile.write(ciphertext)
     #+end_src
+
+    If the =recipients= paramater is empty then the plaintext is
+    encrypted symmetrically.  If no =passphrase= is supplied as a
+    parameter or via a callback registered with the =Context()= then
+    an out-of-band prompt for the passphrase via pinentry will be
+    invoked.
+
 
 *** Encrypting to multiple keys
     :PROPERTIES:
     :CUSTOM_ID: howto-basic-encryption-multiple
     :END:
 
-    Encrypting to multiple keys, in addition to a default key or a key
-    configured to always encrypt to, is a little different and uses a
-    slightly different call to the =op_encrypt= call demonstrated in the
-    previous section.
+    Encrypting to multiple keys essentially just expands upon the key
+    selection process and the recipients from the previous examples.
 
     The following example encrypts a message (=text=) to everyone with
     an email address on the =gnupg.org= domain,[fn:3] but does /not/ encrypt
@@ -711,7 +657,8 @@
    :CUSTOM_ID: howto-basic-signing
    :END:
 
-   The following sections demonstrate how to specify
+   The following sections demonstrate how to specify keys to sign with.
+
 
 *** Signing key selection
     :PROPERTIES:
@@ -742,6 +689,7 @@
     fingerprints and match two keys since the patten expects a string,
     bytes or None and not a list.  A string with two fingerprints
     won't match any single key.
+
 
 *** Normal or default signing messages or files
     :PROPERTIES:
@@ -798,6 +746,7 @@
          afile.write(signed[0])
    #+end_src
 
+
 *** Detached signing messages and files
     :PROPERTIES:
     :CUSTOM_ID: howto-basic-signing-detached
@@ -839,6 +788,7 @@
       with open("/path/to/statement.txt.sig", "wb") as afile:
           afile.write(signed[0])
     #+end_src
+
 
 *** Clearsigning messages or text
     :PROPERTIES:
@@ -1307,6 +1257,7 @@
   :CUSTOM_ID: cheats-and-hacks
   :END:
 
+
 ** Group lines
    :PROPERTIES:
    :CUSTOM_ID: group-lines
@@ -1357,12 +1308,14 @@
   :CUSTOM_ID: copyright-and-license
   :END:
 
+
 ** Copyright (C) The GnuPG Project, 2018
    :PROPERTIES:
    :CUSTOM_ID: copyright
    :END:
 
    Copyright © The GnuPG Project, 2018.
+
 
 ** License GPL compatible
    :PROPERTIES:
