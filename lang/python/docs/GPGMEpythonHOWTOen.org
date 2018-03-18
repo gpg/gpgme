@@ -690,28 +690,14 @@
    to =c= simply adds lines for no gain.
 
    #+begin_src python
-     import os.path
      import gpg
 
-     if os.path.exists("/path/to/secret_plans.txt.asc") is True:
-	 ciphertext = "/path/to/secret_plans.txt.asc"
-     elif os.path.exists("/path/to/secret_plans.txt.gpg") is True:
-	 ciphertext = "/path/to/secret_plans.txt.gpg"
-     else:
-	 ciphertext = None
-
-     if ciphertext is not None:
-	 afile = open(ciphertext, "rb")
-	 plaintext = gpg.Context().decrypt(afile)
-	 afile.close()
-	 newfile = open("/path/to/secret_plans.txt", "wb")
-	 newfile.write(plaintext[0])
-	 newfile.close()
-	 print(plaintext[0])
-	 plaintext[1]
-	 plaintext[2]
-     else:
-	 pass
+     ciphertext = input("Enter path and filename of encrypted file: ")
+     newfile = input("Enter path and filename of file to save decrypted data to: ")
+     with open(ciphertext, "rb") as cfile:
+         plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+     with open(newfile, "wb" as nfile:
+         nfile.write(plaintext)
    #+end_src
 
    The data available in plaintext in this example is the decrypted
