@@ -22,6 +22,7 @@
   This document provides basic instruction in how to use the GPGME
   Python bindings to programmatically leverage the GPGME library.
 
+
 ** Python 2 versus Python 3
    :PROPERTIES:
    :CUSTOM_ID: py2-vs-py3
@@ -53,6 +54,7 @@
   :CUSTOM_ID: gpgme-concepts
   :END:
 
+
 ** A C API
    :PROPERTIES:
    :CUSTOM_ID: gpgme-c-api
@@ -72,6 +74,7 @@
    languages.  This is where the need for bindings in various
    languages stems.
 
+
 ** Python bindings
    :PROPERTIES:
    :CUSTOM_ID: gpgme-python-bindings
@@ -88,6 +91,7 @@
    tied to the exact same version of GPGME used to generate that copy
    of =gpgme.h=.
 
+
 ** Difference between the Python bindings and other GnuPG Python packages
    :PROPERTIES:
    :CUSTOM_ID: gpgme-python-bindings-diffs
@@ -96,6 +100,7 @@
    There have been numerous attempts to add GnuPG support to Python
    over the years.  Some of the most well known are listed here, along
    with what differentiates them.
+
 
 *** The python-gnupg package maintained by Vinay Sajip
     :PROPERTIES:
@@ -116,6 +121,7 @@
 
     The python-gnupg package is available under the MIT license.
 
+
 *** The gnupg package created and maintained by Isis Lovecruft
     :PROPERTIES:
     :CUSTOM_ID: diffs-isis-gnupg
@@ -135,6 +141,7 @@
 
     The gnupg package is available under the GNU General Public
     License version 3.0 (or later).
+
 
 *** The PyME package maintained by Martin Albrecht
     :PROPERTIES:
@@ -168,6 +175,7 @@
   :CUSTOM_ID: gpgme-python-install
   :END:
 
+
 ** No PyPI
    :PROPERTIES:
    :CUSTOM_ID: do-not-use-pypi
@@ -187,6 +195,7 @@
    bundled with it or a full implementation of C for each
    architecture.
 
+
 ** Requirements
    :PROPERTIES:
    :CUSTOM_ID: gpgme-python-requirements
@@ -200,6 +209,7 @@
    2. SWIG.
    3. GPGME itself.  Which also means that all of GPGME's dependencies
       must be installed too.
+
 
 ** Installation
    :PROPERTIES:
@@ -225,6 +235,7 @@
    For Python 3 it checks for these executables in this order:
    =python3=, =python3.6=, =python3.5= and =python3.4=.
 
+
 *** Installing GPGME
     :PROPERTIES:
     :CUSTOM_ID: install-gpgme
@@ -242,6 +253,7 @@
   Before we can get to the fun stuff, there are a few matters
   regarding GPGME's design which hold true whether you're dealing with
   the C code directly or these Python bindings.
+
 
 ** No REST
    :PROPERTIES:
@@ -265,6 +277,7 @@
    does, however, provide a very pythonic interface on top of the
    direct bindings and it's this pythonic layer with which this HOWTO
    deals with.
+
 
 ** Context
    :PROPERTIES:
@@ -293,6 +306,7 @@
   :PROPERTIES:
   :CUSTOM_ID: howto-keys
   :END:
+
 
 ** Key selection
    :PROPERTIES:
@@ -560,10 +574,11 @@
 	  if rpattern[i].can_encrypt == 1:
 	      logrus.append(rpattern[i])
 
-      cipher = c.encrypt(text, recipients=logrus, sign=False, always_trust=True)
+      ciphertext, result, sign_result = c.encrypt(text, recipients=logrus, sign=False,
+                                                  always_trust=True)
 
       with open("secret_plans.txt.asc", "wb") as afile:
-          afile.write(cipher[0])
+          afile.write(ciphertext)
     #+end_src
 
     All it would take to change the above example to sign the message
@@ -571,8 +586,9 @@
     be to change the =c.encrypt= line to this:
 
     #+begin_src python
-      cipher = c.encrypt(text, recipients=logrus, always_trust=True,
-			 add_encrypt_to=True)
+      ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+			                          always_trust=True,
+						  add_encrypt_to=True)
     #+end_src
 
     The only keyword arguments requiring modification are those for
@@ -600,7 +616,7 @@
 	      logrus.append(rpattern[i])
 
       try:
-	  cipher = c.encrypt(text, recipients=logrus, add_encrypt_to=True)
+	  ciphertext, result, sign_result = c.encrypt(text, recipients=logrus, add_encrypt_to=True)
       except gpg.errors.InvalidRecipients as e:
 	  for i in range(len(e.recipients)):
 	      for n in range(len(logrus)):
@@ -609,12 +625,12 @@
                   else:
                       pass
 	  try:
-	      cipher = c.encrypt(text, recipients=logrus, add_encrypt_to=True)
+	      ciphertext, result, sign_result = c.encrypt(text, recipients=logrus, add_encrypt_to=True)
 	  except:
 	      pass
 
       with open("secret_plans.txt.asc", "wb") as afile:
-          afile.write(cipher[0])
+          afile.write(ciphertext)
     #+end_src
 
     This will attempt to encrypt to all the keys searched for, then
@@ -721,7 +737,7 @@
      text = text0.encode()
 
      c = gpg.Context(armor=True, signers=sig_src)
-     signed = c.sign(text, mode=0)
+     signed = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
 
      with open("/path/to/statement.txt.asc", "w") as afile:
          for line in signed[0]:
@@ -740,7 +756,7 @@
          text = tfile.read()
 
      c = gpg.Context()
-     signed = c.sign(text, mode=0)
+     signed = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
 
      with open("/path/to/statement.txt.sig", "wb") as afile:
          afile.write(signed[0])
@@ -766,7 +782,7 @@
       text = text0.encode()
 
       c = gpg.Context(armor=True)
-      signed = c.sign(text, mode=1)
+      signed = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
 
       with open("/path/to/statement.txt.asc", "w") as afile:
           for line in signed[0].splitlines():
@@ -783,7 +799,7 @@
           text = tfile.read()
 
       c = gpg.Context(signers=sig_src)
-      signed = c.sign(text, mode=1)
+      signed = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
 
       with open("/path/to/statement.txt.sig", "wb") as afile:
           afile.write(signed[0])
@@ -809,7 +825,7 @@
       text = text0.encode()
 
       c = gpg.Context()
-      signed = c.sign(text, mode=2)
+      signed = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
 
       with open("/path/to/statement.txt.asc", "w") as afile:
           for line in signed[0].splitlines():
@@ -826,7 +842,7 @@
           text = tfile.read()
 
       c = gpg.Context()
-      signed = c.sign(text, mode=2)
+      signed = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
 
       with open("/path/to/statement.txt.asc", "wb") as afile:
           afile.write(signed[0])
@@ -856,14 +872,15 @@
      c = gpg.Context()
 
      try:
-	 verified = c.verify(open(gpg_file))
+	 data, result = c.verify(open(gpg_file))
+	 verified = True
      except gpg.errors.BadSignatures as e:
-	 verified = None
+	 verified = False
 	 print(e)
 
-     if verified is not None:
-	 for i in range(len(verified[1].signatures)):
-	     sign = verified[1].signatures[i]
+     if verified is True:
+	 for i in range(len(result.signatures)):
+	     sign = result.signatures[i]
 	     print("""Good signature from:
      {0}
      with key {1}
@@ -887,14 +904,15 @@
      c = gpg.Context()
 
      try:
-	 verified = c.verify(open(asc_file))
+	 data, result = c.verify(open(asc_file))
+	 verified = True
      except gpg.errors.BadSignatures as e:
-	 verified = None
+	 verified = False
 	 print(e)
 
-     if verified is not None:
-	 for i in range(len(verified[1].signatures)):
-	     sign = verified[1].signatures[i]
+     if verified is True:
+	 for i in range(len(result.signatures)):
+	     sign = result.signatures[i]
 	     print("""Good signature from:
      {0}
      with key {1}
@@ -906,15 +924,14 @@
    #+end_src
 
    In both of the previous examples it is also possible to compare the
-   original data that was signed against the signed data in
-   =verified[0]= to see if it matches with something like this:
+   original data that was signed against the signed data in =data= to
+   see if it matches with something like this:
 
    #+begin_src python
-     afile = open(filename, "rb")
-     text = afile.read()
-     afile.close()
+     with open(filename, "rb") as afile:
+         text = afile.read()
 
-     if text == verified[0]:
+     if text == data:
 	 print("Good signature.")
      else:
 	 pass
@@ -923,8 +940,8 @@
    The following two examples, however, deal with detached signatures.
    With his method of verification the data that was signed does not
    get returned since it is already being explicitly referenced in the
-   first argument of =c.verify=.  So =verified[0]= is None and only
-   the data in =verified[1]= is available.
+   first argument of =c.verify=.  So =data= is =None= and only the
+   information in =result= is available.
 
    #+begin_src python
      import gpg
@@ -936,14 +953,15 @@
      c = gpg.Context()
 
      try:
-	 verified = c.verify(open(filename), open(sig_file))
+	 data, result = c.verify(open(filename), open(sig_file))
+	 verified = True
      except gpg.errors.BadSignatures as e:
-	 verified = None
+	 verified = False
 	 print(e)
 
-     if verified is not None:
-	 for i in range(len(verified[1].signatures)):
-	     sign = verified[1].signatures[i]
+     if verified is True:
+	 for i in range(len(result.signatures)):
+	     sign = result.signatures[i]
 	     print("""Good signature from:
      {0}
      with key {1}
@@ -964,14 +982,15 @@
      c = gpg.Context()
 
      try:
-	 verified = c.verify(open(filename), open(asc_file))
+	 data, result = c.verify(open(filename), open(asc_file))
+	 verified = True
      except gpg.errors.BadSignatures as e:
-	 verified = None
+	 verified = False
 	 print(e)
 
      if verified is not None:
-	 for i in range(len(verified[1].signatures)):
-	     sign = verified[1].signatures[i]
+	 for i in range(len(result.signatures)):
+	     sign = result.signatures[i]
 	     print("""Good signature from:
      {0}
      with key {1}
@@ -1008,11 +1027,8 @@
     allow-secret-key-import
     trust-model tofu+pgp
     tofu-default-policy unknown
-    # no-auto-check-trustdb
     enable-large-rsa
     enable-dsa2
-    # no-emit-version
-    # no-comments
     # cert-digest-algo SHA256
     cert-digest-algo SHA512
     default-preference-list TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1 ZLIB BZIP2 ZIP Uncompressed
