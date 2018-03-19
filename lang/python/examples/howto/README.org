@@ -22,3 +22,31 @@
   guarantees.  They will include the relevant imports from the
   =__future__= module to facilitate that if possible.
 
+
+* Copyright and Licensing
+  :PROPERTIES:
+  :CUSTOM_ID: copyright-and-license
+  :END:
+
+
+** Copyright (C) The GnuPG Project, 2018
+   :PROPERTIES:
+   :CUSTOM_ID: copyright
+   :END:
+
+   Copyright © The GnuPG Project, 2018.
+
+
+** License GPL compatible
+   :PROPERTIES:
+   :CUSTOM_ID: license
+   :END:
+
+   This file is free software; as a special exception the author gives
+   unlimited permission to copy and/or distribute it, with or without
+   modifications, as long as this notice is preserved.
+
+   This file is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY, to the extent permitted by law; without even
+   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+   PURPOSE.
