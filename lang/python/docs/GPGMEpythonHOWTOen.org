@@ -115,11 +115,11 @@
     The popularity of this package stemmed from its ease of use and
     capability in providing the most commonly required features.
 
-    Unfortunately it has been beset by a number of security issues,
-    most of which stemmed from using unsafe methods of accessing the
-    command line via the =subprocess= calls.  While some effort has
-    been made over the last two to three years (as of 2018) to
-    mitigate this, particularly by no longer providing shell access
+    Unfortunately it has been beset by a number of security issues in
+    the past; most of which stemmed from using unsafe methods of
+    accessing the command line via the =subprocess= calls.  While some
+    effort has been made over the last two to three years (as of 2018)
+    to mitigate this, particularly by no longer providing shell access
     through those subprocess calls, the wrapper is still somewhat
     limited in the scope of its GnuPG features coverage.
 
