@@ -28,6 +28,7 @@
    to produce reST versions via Pandoc and DITA XML can be reached
    through converting to either Markdown or XHTML first.
 
+
 ** STARTED Documentation HOWTO
    :PROPERTIES:
    :CUSTOM_ID: todo-docs-howto
@@ -43,48 +44,57 @@
     :CUSTOM_ID: howto-start
     :END:
 
+
 *** STARTED Include certain specific instructions in the HOWTO
     :PROPERTIES:
     :CUSTOM_ID: howto-requests
     :END:
+
+    Note: moved the S/MIME bits out to their own section of the TODO
+    list and may be served better by separate HOWTO documentation
+    anyway.
 
     - State "STARTED"    from "TODO"       [2018-03-09 Fri 15:27]
     Some functions can be worked out from the handful of examples
     available, but many more can't and I've already begun receiving
     requests for certain functions to be explained.
 
-**** STARTED Standard scenarios
+
+**** DONE Standard scenarios
+     CLOSED: [2018-03-19 Mon 12:34]
      :PROPERTIES:
      :CUSTOM_ID: howto-the-basics
      :END:
 
+     - State "DONE"       from "STARTED"    [2018-03-19 Mon 12:34] \\
+       All four of those are done.
      - State "STARTED"    from "TODO"       [2018-03-09 Fri 15:26] \\
        Began with the example code, now to add the text.
      What everyone expects: encryption, decryption, signing and verifying.
 
-**** TODO Key control
+
+**** STARTED Key control
      :PROPERTIES:
      :CUSTOM_ID: howto-key-control
      :END:
 
+     - State "STARTED"    from "TODO"       [2018-03-19 Mon 12:35] \\
+       Generating keys and subkeys are done, but revocation is still to be done.
      Generating keys, adding subkeys, revoking subkeys (and keeping
      the cert key), adding and revoking UIDs, signing/certifying keys.
 
-**** TODO More key control
+
+**** DONE More key control
+     CLOSED: [2018-03-19 Mon 12:36]
      :PROPERTIES:
      :CUSTOM_ID: howto-key-selection
      :END:
 
+     - State "DONE"       from "TODO"       [2018-03-19 Mon 12:36] \\
+       Key selection, searching, matching and counting is done.
      Selecting keys to encrypt to or manipulate in other ways (e.g. as
      with key control or the basics).
 
-**** TODO S/MIME
-     :PROPERTIES:
-     :CUSTOM_ID: howto-s-mime
-     :END:
-
-     Eventually add some of this, but the OpenPGP details are far more
-     important at the moment.
 
 ** TODO Documentation SWIG
    :PROPERTIES:
@@ -98,6 +108,7 @@
    something to be used in conjunction with the existing GPGME
    documentation which makes it easier for Python developers to use.
 
+
 ** TODO GUI examples
    :PROPERTIES:
    :CUSTOM_ID: todo-gui-examples
@@ -106,6 +117,7 @@
    Create some examples of using Python bindings in a GUI application
    to either match or be similar to the old GTK2 examples available
    with PyME.
+
 
 ** TODO Replace SWIG
    :PROPERTIES:
@@ -122,6 +134,7 @@
    bindings using a more suitable means of interfacing with the GPGME
    C source code.
 
+
 *** TODO Replacement for SWIG
     :PROPERTIES:
     :CUSTOM_ID: todo-replace-swig-replacement
@@ -130,6 +143,7 @@
     Decide on a replacement for SWIG.  Currently CFFI is looking like
     the most viable candidate, but some additional testing and checks
     are yet to be completed.
+
 
 ** TODO API for an API
    :PROPERTIES:
@@ -144,6 +158,15 @@
    by developers of other languages for which bindings are not
    available or for which it is too difficult to create proper
    bindings.
+
+
+** TODO S/MIME
+   :PROPERTIES:
+   :CUSTOM_ID: s-mime
+   :END:
+
+   Eventually add some of this, but the OpenPGP details are far more
+   important at the moment.
 
 
 * Project Task Details
