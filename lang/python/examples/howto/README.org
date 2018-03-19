@@ -28,6 +28,12 @@
   :CUSTOM_ID: copyright-and-license
   :END:
 
+  Unless otherwise stated, all the examples in this directory are
+  released under the same terms as GPGME itself; that is they are dual
+  licensed under the terms of both the GNU General Public License
+  version 2.0 (or any later version) *and* the GNU Lesser General
+  Public License version 2.1 (or any later version).
+
 
 ** Copyright (C) The GnuPG Project, 2018
    :PROPERTIES:
