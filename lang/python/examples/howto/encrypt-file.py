@@ -58,7 +58,7 @@ with gpg.Context(armor=True) as ca:
         fa.write(ciphertext)
 
 with gpg.Context() as cg:
-    ciphertext, result, sign_result = ca.encrypt(text, recipients=rkey,
+    ciphertext, result, sign_result = cg.encrypt(text, recipients=rkey,
                                                  sign=False)
     with open("{0}.gpg".format(filename), "wb") as fg:
         fg.write(ciphertext)
