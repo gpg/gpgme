@@ -117,7 +117,11 @@
 
     Unfortunately it has been beset by a number of security issues,
     most of which stemmed from using unsafe methods of accessing the
-    command line via the =subprocess= calls.
+    command line via the =subprocess= calls.  While some effort has
+    been made over the last two to three years (as of 2018) to
+    mitigate this, particularly by no longer providing shell access
+    through those subprocess calls, the wrapper is still somewhat
+    limited in the scope of its GnuPG features coverage.
 
     The python-gnupg package is available under the MIT license.
 
@@ -132,15 +136,15 @@
     package also relied on subprocess to call the =gpg= or =gpg2=
     binaries, but did so somewhat more securely.
 
-    However the naming and version numbering selected for this package
-    resulted in conflicts with the original python-gnupg and since its
-    functions were called in a different manner, the release of this
-    package also resulted in a great deal of consternation when people
-    installed what they thought was an upgrade that subsequently broke
-    the code relying on it.
+    The naming and version numbering selected for this package,
+    however, resulted in conflicts with the original python-gnupg and
+    since its functions were called in a different manner to
+    python-gnupg, the release of this package also resulted in a great
+    deal of consternation when people installed what they thought was
+    an upgrade that subsequently broke the code relying on it.
 
     The gnupg package is available under the GNU General Public
-    License version 3.0 (or later).
+    License version 3.0 (or any later version).
 
 
 *** The PyME package maintained by Martin Albrecht
