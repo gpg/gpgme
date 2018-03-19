@@ -52,13 +52,19 @@ with open(filename, "rb") as f:
     text = f.read()
 
 with gpg.Context(armor=True) as ca:
-    ciphertext, result, sign_result = ca.encrypt(text, recipients=rkey,
-                                                 sign=False)
-    with open("{0}.asc".format(filename), "wb") as fa:
-        fa.write(ciphertext)
+    try:
+        ciphertext, result, sign_result = ca.encrypt(text, recipients=rkey,
+                                                    sign=False)
+        with open("{0}.asc".format(filename), "wb") as fa:
+            fa.write(ciphertext)
+    except gpg.errors.InvalidRecipients as e:
+        print(e)
 
 with gpg.Context() as cg:
-    ciphertext, result, sign_result = cg.encrypt(text, recipients=rkey,
-                                                 sign=False)
-    with open("{0}.gpg".format(filename), "wb") as fg:
-        fg.write(ciphertext)
+    try:
+        ciphertext, result, sign_result = cg.encrypt(text, recipients=rkey,
+                                                    sign=False)
+        with open("{0}.gpg".format(filename), "wb") as fg:
+            fg.write(ciphertext)
+    except gpg.errors.InvalidRecipients as e:
+        print(e)
