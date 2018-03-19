@@ -1,4 +1,4 @@
-#+TITLE: GNU Privacy Guard (GnuPG)  Made Easy Python Bindings HOWTO (English)
+#+TITLE: GNU Privacy Guard (GnuPG) Made Easy Python Bindings HOWTO (English)
 #+LATEX_COMPILER: xelatex
 #+LATEX_CLASS: article
 #+LATEX_CLASS_OPTIONS: [12pt]
@@ -47,6 +47,15 @@
    the bindings to a version of the language which is a dead end and
    the advantages offered by Python 3 over Python 2 make handling the
    data types with which GPGME deals considerably easier.
+
+
+** Examples
+   :PROPERTIES:
+   :CUSTOM_ID: howto-python3-examples
+   :END:
+
+   All of the examples found in this document can be found as Python 3
+   scripts in the =lang/python/examples/howto= directory.
 
 
 * GPGME Concepts

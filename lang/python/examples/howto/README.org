@@ -1,0 +1,24 @@
+#+TITLE: GPGME Python Bindings HOWTO Examples
+#+LATEX_COMPILER: xelatex
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [12pt]
+#+LATEX_HEADER: \usepackage{xltxtra}
+#+LATEX_HEADER: \usepackage[margin=1in]{geometry}
+#+LATEX_HEADER: \setmainfont[Ligatures={Common}]{Times New Roman}
+#+LATEX_HEADER: \author{Ben McGinnes <ben@gnupg.org>}
+
+
+* Examples
+  :PROPERTIES:
+  :CUSTOM_ID: gpgme-python3-examples
+  :END:
+
+  The contents of this directory are the examples included in the /GNU
+  Privacy Guard (GnuPG) Made Easy Python Bindings HOWTO/ file.  Each
+  script is explicitly for Python 3 and specifically for Python 3.4 or
+  later.
+
+  Some of these scripts may work with Python 2.7, but there are no
+  guarantees.  They will include the relevant imports from the
+  =__future__= module to facilitate that if possible.
+
