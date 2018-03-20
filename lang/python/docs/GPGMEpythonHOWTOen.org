@@ -406,7 +406,7 @@
       print("""
       Number of secret keys:  {0}
       Number of public keys:  {1}
-      """.format(secnum, pubnum)
+      """.format(secnum, pubnum))
     #+end_src
 
 
@@ -671,7 +671,7 @@
      newfile = input("Enter path and filename of file to save decrypted data to: ")
      with open(ciphertext, "rb") as cfile:
          plaintext, result, verify_result = gpg.Context().decrypt(cfile)
-     with open(newfile, "wb" as nfile:
+     with open(newfile, "wb") as nfile:
          nfile.write(plaintext)
    #+end_src
 
