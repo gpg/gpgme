@@ -78,6 +78,7 @@ public:
     int numSecretKeysUnchanged() const;
 
     int notImported() const;
+    int numV3KeysSkipped() const;
 
     Import import(unsigned int idx) const;
     std::vector<Import> imports() const;
