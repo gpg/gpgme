@@ -39,4 +39,4 @@ pubnum = len(publist)
 print("""
 Number of secret keys:  {0}
 Number of public keys:  {1}
-""".format(secnum, pubnum)
+""".format(secnum, pubnum))
