@@ -1261,7 +1261,7 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
 {
   gpgme_ctx_t listctx;
   gpgme_error_t err;
-  gpgme_key_t key;
+  gpgme_key_t result, key;
 
   TRACE_BEG2 (DEBUG_CTX, "gpgme_get_key", ctx,
 	      "fpr=%s, secret=%i", fpr, secret);
@@ -1295,7 +1295,7 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
 
   err = gpgme_op_keylist_start (listctx, fpr, secret);
   if (!err)
-    err = gpgme_op_keylist_next (listctx, r_key);
+    err = gpgme_op_keylist_next (listctx, &result);
   if (!err)
     {
     try_next_key:
@@ -1305,9 +1305,9 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
       else
 	{
           if (!err
-              && *r_key && (*r_key)->subkeys && (*r_key)->subkeys->fpr
+              && result && result->subkeys && result->subkeys->fpr
               && key && key->subkeys && key->subkeys->fpr
-              && !strcmp ((*r_key)->subkeys->fpr, key->subkeys->fpr))
+              && !strcmp (result->subkeys->fpr, key->subkeys->fpr))
             {
               /* The fingerprint is identical.  We assume that this is
                  the same key and don't mark it as an ambiguous.  This
@@ -1323,12 +1323,14 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
 	      gpgme_key_unref (key);
 	      err = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
 	    }
-	  gpgme_key_unref (*r_key);
+	  gpgme_key_unref (result);
+          result = NULL;
 	}
     }
   gpgme_release (listctx);
   if (! err)
     {
+      *r_key = result;
       TRACE_LOG2 ("key=%p (%s)", *r_key,
 		  ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ?
 		  (*r_key)->subkeys->fpr : "invalid");
