@@ -46,10 +46,10 @@
 
 
 static void xoutofcore (const char *type) GPGRT_ATTR_NORETURN;
-static cjson_t error_object_v (const char *message,
-                              va_list arg_ptr) GPGRT_ATTR_PRINTF(1,0);
-static cjson_t error_object (const char *message,
-                            ...) GPGRT_ATTR_PRINTF(1,2);
+static cjson_t error_object_v (cjson_t json, const char *message,
+                              va_list arg_ptr) GPGRT_ATTR_PRINTF(2,0);
+static cjson_t error_object (cjson_t json, const char *message,
+                            ...) GPGRT_ATTR_PRINTF(2,3);
 static char *error_object_string (const char *message,
                                   ...) GPGRT_ATTR_PRINTF(1,2);
 
@@ -64,6 +64,16 @@ static int opt_interactive;
  */
 
 #define xtrymalloc(a)  gpgrt_malloc ((a))
+#define xmalloc(a) ({                           \
+      void *_r = gpgrt_malloc ((a));            \
+      if (!_r)                                  \
+        xoutofcore ("malloc");                  \
+      _r; })
+#define xcalloc(a,b) ({                         \
+      void *_r = gpgrt_calloc ((a), (b));       \
+      if (!_r)                                  \
+        xoutofcore ("calloc");                  \
+      _r; })
 #define xstrdup(a) ({                           \
       char *_r = gpgrt_strdup ((a));            \
       if (!_r)                                  \
@@ -100,7 +110,7 @@ xjson_CreateObject (void)
 
 
 /* Wrapper around cJSON_AddStringToObject which returns an gpg-error
- * code instead of the NULL or the object.  */
+ * code instead of the NULL or the new object.  */
 static gpg_error_t
 cjson_AddStringToObject (cjson_t object, const char *name, const char *string)
 {
@@ -111,7 +121,7 @@ cjson_AddStringToObject (cjson_t object, const char *name, const char *string)
 
 
 /* Same as cjson_AddStringToObject but prints an error message and
- * terminates. the process.  */
+ * terminates the process.  */
 static void
 xjson_AddStringToObject (cjson_t object, const char *name, const char *string)
 {
@@ -120,19 +130,40 @@ xjson_AddStringToObject (cjson_t object, const char *name, const char *string)
 }
 
 
-/* Create a JSON error object.  */
-static cjson_t
-error_object_v (const char *message, va_list arg_ptr)
+/* Wrapper around cJSON_AddBoolToObject which terminates the process
+ * in case of an error.  */
+static void
+xjson_AddBoolToObject (cjson_t object, const char *name, int abool)
 {
-  cjson_t response;
+  if (!cJSON_AddBoolToObject (object, name, abool))
+    xoutofcore ("cJSON_AddStringToObject");
+  return ;
+}
+
+
+/* Create a JSON error object.  If JSON is not NULL the error message
+ * is appended to that object.  An existing "type" item will be replaced. */
+static cjson_t
+error_object_v (cjson_t json, const char *message, va_list arg_ptr)
+{
+  cjson_t response, j_tmp;
   char *msg;
 
   msg = gpgrt_vbsprintf (message, arg_ptr);
   if (!msg)
     xoutofcore ("error_object");
 
-  response = xjson_CreateObject ();
-  xjson_AddStringToObject (response, "type", "error");
+  response = json? json : xjson_CreateObject ();
+
+  if (!(j_tmp = cJSON_GetObjectItem (response, "type")))
+    xjson_AddStringToObject (response, "type", "error");
+  else /* Replace existing "type".  */
+    {
+      j_tmp = cJSON_CreateString ("error");
+      if (!j_tmp)
+        xoutofcore ("cJSON_CreateString");
+      cJSON_ReplaceItemInObject (response, "type", j_tmp);
+     }
   xjson_AddStringToObject (response, "msg", msg);
 
   xfree (msg);
@@ -153,13 +184,13 @@ xjson_Print (cjson_t object)
 
 
 static cjson_t
-error_object (const char *message, ...)
+error_object (cjson_t json, const char *message, ...)
 {
   cjson_t response;
   va_list arg_ptr;
 
   va_start (arg_ptr, message);
-  response = error_object_v (message, arg_ptr);
+  response = error_object_v (json, message, arg_ptr);
   va_end (arg_ptr);
   return response;
 }
@@ -173,12 +204,185 @@ error_object_string (const char *message, ...)
   char *msg;
 
   va_start (arg_ptr, message);
-  response = error_object_v (message, arg_ptr);
+  response = error_object_v (NULL, message, arg_ptr);
   va_end (arg_ptr);
 
   msg = xjson_Print (response);
   cJSON_Delete (response);
   return msg;
+}
+
+
+/* Get the boolean property NAME from the JSON object and store true
+ * or valse at R_VALUE.  If the name is unknown the value of DEF_VALUE
+ * is returned.  If the type of the value is not boolean,
+ * GPG_ERR_INV_VALUE is returned and R_VALUE set to DEF_VALUE.  */
+static gpg_error_t
+get_boolean_flag (cjson_t json, const char *name, int def_value, int *r_value)
+{
+  cjson_t j_item;
+
+  j_item = cJSON_GetObjectItem (json, name);
+  if (!j_item)
+    *r_value = def_value;
+  else if (cjson_is_true (j_item))
+    *r_value = 1;
+  else if (cjson_is_false (j_item))
+    *r_value = 0;
+  else
+    {
+      *r_value = def_value;
+      return gpg_error (GPG_ERR_INV_VALUE);
+    }
+
+  return 0;
+}
+
+
+/* Get the boolean property PROTOCOL from the JSON object and store
+ * its value at R_PROTOCOL.  The default is OpenPGP.  */
+static gpg_error_t
+get_protocol (cjson_t json, gpgme_protocol_t *r_protocol)
+{
+  cjson_t j_item;
+
+  *r_protocol = GPGME_PROTOCOL_OpenPGP;
+  j_item = cJSON_GetObjectItem (json, "protocol");
+  if (!j_item)
+    ;
+  else if (!cjson_is_string (j_item))
+    return gpg_error (GPG_ERR_INV_VALUE);
+  else if (!strcmp(j_item->valuestring, "openpgp"))
+    ;
+  else if (!strcmp(j_item->valuestring, "cms"))
+    *r_protocol = GPGME_PROTOCOL_CMS;
+  else
+    return gpg_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
+
+  return 0;
+}
+
+
+/* Extract the keys from the KEYS array in the JSON object.  CTX is a
+ * GPGME context object.  On success an array with the keys is stored
+ * at R_KEYS.  In failure an error code is returned.  */
+static gpg_error_t
+get_keys (gpgme_ctx_t ctx, cjson_t json, gpgme_key_t **r_keys)
+{
+  gpg_error_t err;
+  cjson_t j_keys, j_item;
+  int i, nkeys;
+  gpgme_key_t *keys;
+
+  *r_keys = NULL;
+
+  j_keys = cJSON_GetObjectItem (json, "keys");
+  if (!j_keys)
+    return gpg_error (GPG_ERR_NO_KEY);
+  if (!cjson_is_array (j_keys) && !cjson_is_string (j_keys))
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (cjson_is_string (j_keys))
+    nkeys = 1;
+  else
+    {
+      nkeys = cJSON_GetArraySize (j_keys);
+      if (!nkeys)
+        return gpg_error (GPG_ERR_NO_KEY);
+      for (i=0; i < nkeys; i++)
+        {
+          j_item = cJSON_GetArrayItem (j_keys, i);
+          if (!j_item || !cjson_is_string (j_item))
+            return gpg_error (GPG_ERR_INV_VALUE);
+        }
+    }
+
+  /* Now allocate an array to store the gpgme key objects.  */
+  keys = xcalloc (nkeys + 1, sizeof *keys);
+
+  if (cjson_is_string (j_keys))
+    {
+      err = gpgme_get_key (ctx, j_keys->valuestring, &keys[0], 0);
+      if (err)
+        goto leave;
+    }
+  else
+    {
+      for (i=0; i < nkeys; i++)
+        {
+          j_item = cJSON_GetArrayItem (j_keys, i);
+          err = gpgme_get_key (ctx, j_item->valuestring, &keys[i], 0);
+          if (err)
+            goto leave;
+        }
+    }
+  err = 0;
+  *r_keys = keys;
+  keys = NULL;
+
+ leave:
+  if (keys)
+    {
+      for (i=0; keys[i]; i++)
+        gpgme_key_unref (keys[i]);
+      xfree (keys);
+    }
+  return err;
+}
+
+
+
+/*
+ *  GPGME support functions.
+ */
+
+/* Helper for get_context.  */
+static gpgme_ctx_t
+_create_new_context (gpgme_protocol_t proto)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx;
+
+  err = gpgme_new (&ctx);
+  if (err)
+    log_fatal ("error creating GPGME context: %s\n", gpg_strerror (err));
+  gpgme_set_protocol (ctx, proto);
+  return ctx;
+}
+
+
+/* Return a context object for protocol PROTO.  This is currently a
+ * statuically allocated context initialized for PROTO.  Termnates
+ * process on failure.  */
+static gpgme_ctx_t
+get_context (gpgme_protocol_t proto)
+{
+  static gpgme_ctx_t ctx_openpgp, ctx_cms;
+
+  if (proto == GPGME_PROTOCOL_OpenPGP)
+    {
+      if (!ctx_openpgp)
+        ctx_openpgp = _create_new_context (proto);
+      return ctx_openpgp;
+    }
+  else if (proto == GPGME_PROTOCOL_CMS)
+    {
+      if (!ctx_cms)
+        ctx_cms = _create_new_context (proto);
+      return ctx_cms;
+    }
+  else
+    log_bug ("invalid protocol %d requested\n", proto);
+}
+
+
+
+/* Free context object retrieved by get_context.  */
+static void
+release_context (gpgme_ctx_t ctx)
+{
+  /* Nothing to do right now.  */
+  (void)ctx;
 }
 
 
@@ -193,12 +397,13 @@ static const char hlp_encrypt[] =
   "keys:   Array of strings with the fingerprints or user-ids\n"
   "        of the keys to encrypt the data.  For a single key\n"
   "        a String may be used instead of an array.\n"
-  "data:   Base64 encoded input data.\n"
+  "data:   Input data. \n"
   "\n"
   "Optional parameters:\n"
   "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
   "\n"
   "Optional boolean flags (default is false):\n"
+  "base64:        Input data is base64 encoded.\n"
   "armor:         Request output in armored format.\n"
   "always-trust:  Request --always-trust option.\n"
   "no-encrypt-to: Do not use a default recipient.\n"
@@ -213,11 +418,144 @@ static const char hlp_encrypt[] =
   "        OpenPGP or a PEM message.\n"
   "base64: Boolean indicating whether data is base64 encoded.";
 static gpg_error_t
-op_encrypt (cjson_t request, cjson_t *r_result)
+op_encrypt (cjson_t request, cjson_t result)
 {
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  gpgme_protocol_t protocol;
+  int opt_base64;
+  gpgme_key_t *keys = NULL;
+  cjson_t j_input;
+  gpgme_data_t input = NULL;
+  gpgme_data_t output = NULL;
+  int abool, i;
+  gpgme_encrypt_flags_t encrypt_flags = 0;
+
+  if ((err = get_protocol (request, &protocol)))
+    goto leave;
+  ctx = get_context (protocol);
+
+  if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
+    goto leave;
+
+  if ((err = get_boolean_flag (request, "armor", 0, &abool)))
+    goto leave;
+  gpgme_set_armor (ctx, abool);
+  if ((err = get_boolean_flag (request, "always-trust", 0, &abool)))
+    goto leave;
+  if (abool)
+    encrypt_flags |= GPGME_ENCRYPT_ALWAYS_TRUST;
+  if ((err = get_boolean_flag (request, "no-encrypt-to", 0,&abool)))
+    goto leave;
+  if (abool)
+    encrypt_flags |= GPGME_ENCRYPT_NO_ENCRYPT_TO;
+  if ((err = get_boolean_flag (request, "no-compress", 0, &abool)))
+    goto leave;
+  if (abool)
+    encrypt_flags |= GPGME_ENCRYPT_NO_COMPRESS;
+  if ((err = get_boolean_flag (request, "throw-keyids", 0, &abool)))
+    goto leave;
+  if (abool)
+    encrypt_flags |= GPGME_ENCRYPT_THROW_KEYIDS;
+  if ((err = get_boolean_flag (request, "wrap", 0, &abool)))
+    goto leave;
+  if (abool)
+    encrypt_flags |= GPGME_ENCRYPT_WRAP;
 
 
-  return 0;
+  /* Get the keys.  */
+  err = get_keys (ctx, request, &keys);
+  if (err)
+    {
+      /* Provide a custom error response.  */
+      error_object (result, "Error getting keys: %s", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Get the data.  Note that INPUT is a shallow data object with the
+   * storage hold in REQUEST.  */
+  j_input = cJSON_GetObjectItem (request, "data");
+  if (!j_input)
+    {
+      err = gpg_error (GPG_ERR_NO_DATA);
+      goto leave;
+    }
+  if (!cjson_is_string (j_input))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  if (opt_base64)
+    {
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      goto leave;
+    }
+  err = gpgme_data_new_from_mem (&input, j_input->valuestring,
+                                 strlen (j_input->valuestring), 0);
+  if (err)
+    {
+      error_object (result, "Error creating input data object: %s",
+                    gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Create an output data object.  */
+  err = gpgme_data_new (&output);
+  if (err)
+    {
+      error_object (result, "Error creating output data object: %s",
+                    gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Encrypt.  */
+  err = gpgme_op_encrypt (ctx, keys, encrypt_flags, input, output);
+  /* encrypt_result = gpgme_op_encrypt_result (ctx); */
+  if (err)
+    {
+      error_object (result, "Encryption failed: %s", gpg_strerror (err));
+      goto leave;
+    }
+  gpgme_data_release (input);
+  input = NULL;
+
+  xjson_AddStringToObject (result, "type", "ciphertext");
+  /* If armoring is used we do not need to base64 the output.  */
+  xjson_AddBoolToObject (result, "base64", !gpgme_get_armor (ctx));
+  if (gpgme_get_armor (ctx))
+    {
+      char *buffer;
+
+      /* Make sure that we really have a string.  */
+      gpgme_data_write (output, "", 1);
+      buffer = gpgme_data_release_and_get_mem (output, NULL);
+      if (!buffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      err = cjson_AddStringToObject (result, "data", buffer);
+      gpgme_free (buffer);
+      if (err)
+        goto leave;
+    }
+  else
+    {
+      error_object (result, "Binary output is not yet supported");
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      goto leave;
+    }
+
+ leave:
+  if (keys)
+    {
+      for (i=0; keys[i]; i++)
+        gpgme_key_unref (keys[i]);
+      xfree (keys);
+    }
+  release_context (ctx);
+  gpgme_data_release (input);
+  return err;
 }
 
 
@@ -233,10 +571,8 @@ static const char hlp_help[] =
   "  encrypt     Encrypt data.\n"
   "  help        Help overview.";
 static gpg_error_t
-op_help (cjson_t request, cjson_t *r_result)
+op_help (cjson_t request, cjson_t result)
 {
-  gpg_error_t err = 0;
-  cjson_t result = NULL;
   cjson_t j_tmp;
   char *buffer = NULL;
   const char *msg;
@@ -247,20 +583,11 @@ op_help (cjson_t request, cjson_t *r_result)
   else
     msg = hlp_help;
 
-  result = cJSON_CreateObject ();
-  if (!result)
-    err = gpg_error_from_syserror ();
-  if (!err)
-    err = cjson_AddStringToObject (result, "type", "help");
-  if (!err)
-    err = cjson_AddStringToObject (result, "msg", msg);
+  xjson_AddStringToObject (result, "type", "help");
+  xjson_AddStringToObject (result, "msg", msg);
 
   xfree (buffer);
-  if (err)
-    xfree (result);
-  else
-    *r_result = result;
-  return err;
+  return 0;
 }
 
 
@@ -272,7 +599,7 @@ process_request (const char *request)
 {
   static struct {
     const char *op;
-    gpg_error_t (*handler)(cjson_t request, cjson_t *r_result);
+    gpg_error_t (*handler)(cjson_t request, cjson_t result);
     const char * const helpstr;
   } optbl[] = {
     { "encrypt", op_encrypt, hlp_encrypt },
@@ -281,22 +608,23 @@ process_request (const char *request)
     { "help",    op_help,    hlp_help },
     { NULL }
   };
-  gpg_error_t err = 0;
   size_t erroff;
   cjson_t json;
   cjson_t j_tmp, j_op;
-  cjson_t response = NULL;
+  cjson_t response;
   int helpmode;
   const char *op;
   char *res;
   int idx;
+
+  response = xjson_CreateObject ();
 
   json = cJSON_Parse (request, &erroff);
   if (!json)
     {
       log_string (GPGRT_LOGLVL_INFO, request);
       log_info ("invalid JSON object at offset %zu\n", erroff);
-      response = error_object ("invalid JSON object at offset %zu\n", erroff);
+      error_object (response, "invalid JSON object at offset %zu\n", erroff);
       goto leave;
     }
 
@@ -308,7 +636,7 @@ process_request (const char *request)
     {
       if (!helpmode)
         {
-          response = error_object ("Property \"op\" missing");
+          error_object (response, "Property \"op\" missing");
           goto leave;
         }
       op = "help";  /* Help summary.  */
@@ -323,40 +651,44 @@ process_request (const char *request)
     {
       if (helpmode && strcmp (op, "help"))
         {
-          response = cJSON_CreateObject ();
-          if (!response)
-            err = gpg_error_from_syserror ();
-          if (!err)
-            err = cjson_AddStringToObject (response, "type", "help");
-          if (!err)
-            err = cjson_AddStringToObject (response, "op", op);
-          if (!err)
-            err = cjson_AddStringToObject (response, "msg", optbl[idx].helpstr);
+          xjson_AddStringToObject (response, "type", "help");
+          xjson_AddStringToObject (response, "op", op);
+          xjson_AddStringToObject (response, "msg", optbl[idx].helpstr);
         }
       else
-        err = optbl[idx].handler (json, &response);
+        {
+          gpg_error_t err;
+
+          err = optbl[idx].handler (json, response);
+          if (err)
+            {
+              if (!(j_tmp = cJSON_GetObjectItem (response, "type"))
+                  || !cjson_is_string (j_tmp)
+                  || strcmp (j_tmp->valuestring, "error"))
+                {
+                  /* No error type response - provide a generic one.  */
+                  error_object (response, "Operation failed: %s",
+                                gpg_strerror (err));
+                }
+
+              xjson_AddStringToObject (response, "op", op);
+            }
+
+        }
     }
   else  /* Operation not supported.  */
     {
-      response = error_object ("Unknown operation '%s'", op);
-      err = cjson_AddStringToObject (response, "op", op);
+      error_object (response, "Unknown operation '%s'", op);
+      xjson_AddStringToObject (response, "op", op);
     }
 
  leave:
   cJSON_Delete (json);
   json = NULL;
-  if (err)
-    log_error ("failed to create the response: %s\n", gpg_strerror (err));
-  if (response)
-    {
-      res = cJSON_Print (response);
-      if (!res)
-        log_error ("Printing JSON data failed\n");
-      cJSON_Delete (response);
-    }
-  else
-    res = NULL;
-
+  res = cJSON_Print (response);
+  if (!res)
+    log_error ("Printing JSON data failed\n");
+  cJSON_Delete (response);
   return res;
 }
 
