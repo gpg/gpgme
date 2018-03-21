@@ -48,7 +48,7 @@ else:
     a_key = input("Enter the fingerprint or key ID to encrypt to: ")
     filename = input("Enter the path and filename to encrypt: ")
 
-rkey = list(c.keylist(pattern=a_key, secret=False))
+rkey = list(gpg.Context().keylist(pattern=a_key, secret=False))
 with open(filename, "rb") as f:
     text = f.read()
 
