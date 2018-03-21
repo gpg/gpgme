@@ -14,23 +14,46 @@ Hey Emacs, this is -*- org -*- mode!
   tracked through the [[https://dev.gnupg.org/][dev.gnupg.org]] site.
 
 
-* TODO Document all the new stuff.
+* Documentation
   :PROPERTIES:
-  :CUSTOM_ID: more-docs-is-better
+  :CUSTOM_ID: documentation
   :END:
 
-** STARTED Fix this TODO list.
+** Document all the new stuff.
    :PROPERTIES:
-   :CUSTOM_ID: fix-todo
+   :CUSTOM_ID: more-docs-is-better
    :END:
-   - State "STARTED"    from "TODO"       [2018-03-09 Fri 08:31]
-   Clean up the current TODO list.  Include properties as relevant (so
-   if someone does make a PDF or HTML version the TOC will work).
 
-   Also check ans see if some of these ancient things can be removed
-   (e.g. do we really need to fix things that were broken in GPG
-   1.3.x?  I'm thinking not so much).
+*** TODO Fix this TODO list.
+    :PROPERTIES:
+    :CUSTOM_ID: fix-todo
+    :END:
 
+    Clean up the current TODO list.  Include properties as relevant (so
+    if someone does make a PDF or HTML version the TOC will work).
+
+    Also check ans see if some of these ancient things can be removed
+    (e.g. do we really need to fix things that were broken in GPG
+    1.3.x?  I'm thinking not so much).
+
+**** DONE fix TODO items
+     CLOSED: [2018-03-04 Sun 08:55]
+     :PROPERTIES:
+     :CUSTOM_ID: fix-todo-items
+     :END:
+
+     Adjust todo items so each can now be referenced by custom-id and
+     checked off as necessary.
+
+** TODO Document validity and trust issues.
+   :PROPERTIES:
+   :CUSTOM_ID: valid-trust-issues
+   :END:
+
+** In gpgme.texi: Register callbacks under the right letter in the index.
+   :PROPERTIES:
+   :CUSTOM_ID: gpgme-texi
+   :END:
 
 
 * Fix the remaining UI Server problems:
@@ -63,10 +86,12 @@ Hey Emacs, this is -*- org -*- mode!
    :END:
    Right now we block reading the next line with assuan.
 
+
 * Before release:
   :PROPERTIES:
   :CUSTOM_ID: pre-release
   :END:
+
 ** CANCELLED Some gpg tests fail with gpg 1.3.4-cvs (gpg/t-keylist-sig)
    CLOSED: [2018-03-09 Fri 08:16]
    :PROPERTIES:
@@ -75,100 +100,123 @@ Hey Emacs, this is -*- org -*- mode!
    - State "CANCELLED"  from "TODO"       [2018-03-09 Fri 08:16] \\
      WON'T FIX — too old or no longer applies.
    The test is currently disabled there and in gpg/t-import.
+
 ** When gpg supports it, write binary subpackets directly,
    :PROPERTIES:
    :CUSTOM_ID: binary-subpackets
    :END:
    and parse SUBPACKET status lines.
 
+
 * ABI's to break:
   :PROPERTIES:
   :CUSTOM_ID: abi-breakage-apparently-on-purpose
   :END:
+
 ** Old opassuan interface.
    :PROPERTIES:
    :CUSTOM_ID: old-opassuan
    :END:
+
 ** Implementation: Remove support for old style error codes in
    :PROPERTIES:
    :CUSTOM_ID: remove-old-error-codes
    :END:
    conversion.c::_gpgme_map_gnupg_error.
+
 ** gpgme_edit_cb_t: Add "processed" return argument
    :PROPERTIES:
    :CUSTOM_ID: add-processed-return
    :END:
    (see edit.c::command_handler).
+
 ** I/O and User Data could be made extensible.  But this can be done
    :PROPERTIES:
    :CUSTOM_ID: add-io-user-data
    :END:
    without breaking the ABI hopefully.
+
 ** All enums should be replaced by ints and simple macros for
    :PROPERTIES:
    :CUSTOM_ID: enums-should-be-ints
    :END:
    maximum compatibility.
+
 ** Compatibility interfaces that can be removed in future versions:
    :PROPERTIES:
    :CUSTOM_ID: compat-interfaces-to-go
    :END:
+
 *** gpgme_data_new_from_filepart
     :PROPERTIES:
     :CUSTOM_ID: gpgme-data-new-from-filepart
     :END:
+
 *** gpgme_data_new_from_file
     :PROPERTIES:
     :CUSTOM_ID: gpgme-data-new-from-file
     :END:
+
 *** gpgme_data_new_with_read_cb
     :PROPERTIES:
     :CUSTOM_ID: gpgme-data-new-with-read-cb
     :END:
+
 *** gpgme_data_rewind
     :PROPERTIES:
     :CUSTOM_ID: gpgme-data-rewind
     :END:
+
 *** gpgme_op_import_ext
     :PROPERTIES:
     :CUSTOM_ID: gpgme-op-import-ext
     :END:
+
 *** gpgme_get_sig_key
     :PROPERTIES:
     :CUSTOM_ID: gpgme-get-sig-key
     :END:
+
 *** gpgme_get_sig_ulong_attr
     :PROPERTIES:
     :CUSTOM_ID: gpgme-get-sig-ulong-attr
     :END:
+
 *** gpgme_get_sig_string_attr
     :PROPERTIES:
     :CUSTOM_ID: gpgme-get-sig-string-attr
     :END:
+
 *** GPGME_SIG_STAT_*
     :PROPERTIES:
     :CUSTOM_ID: gpgme-sig-stat
     :END:
+
 *** gpgme_get_sig_status
     :PROPERTIES:
     :CUSTOM_ID: gpgme-get-sig-status
     :END:
+
 *** gpgme_trust_item_release
     :PROPERTIES:
     :CUSTOM_ID: gpgme-trust-item-release
     :END:
+
 *** gpgme_trust_item_get_string_attr
     :PROPERTIES:
     :CUSTOM_ID: gpgme-trust-item-get-string-attr
     :END:
+
 *** gpgme_trust_item_get_ulong_attr
     :PROPERTIES:
     :CUSTOM_ID: gpgme-trust-item-get-ulong-attr
     :END:
+
 *** gpgme_attr_t
     :PROPERTIES:
     :CUSTOM_ID: gpgme-attr-t
     :END:
+
 *** All Gpgme* typedefs.
     :PROPERTIES:
     :CUSTOM_ID: all-gpgme-typedefs
@@ -179,20 +227,24 @@ Hey Emacs, this is -*- org -*- mode!
   :PROPERTIES:
   :CUSTOM_ID: threads
   :END:
+
 ** When GNU Pth supports sendmsg/recvmsg, wrap them properly.
    :PROPERTIES:
    :CUSTOM_ID: wrap-oth
    :END:
+
 ** Without timegm (3) support our ISO time parser is not thread safe.
    :PROPERTIES:
    :CUSTOM_ID: time-threads
    :END:
    There is a configure time warning, though.
 
+
 * New features:
   :PROPERTIES:
   :CUSTOM_ID: new-features
   :END:
+
 ** Flow control for data objects.
    :PROPERTIES:
    :CUSTOM_ID: flow-control-is-not-a-euphemism-for-an-s-bend
@@ -205,11 +257,13 @@ Hey Emacs, this is -*- org -*- mode!
    respective event loop.  or (B) a way for gpgme data objects to be
    associated with a waitable object, that can be registered with the
    user event loop.  Neither is particularly simple.
+
 ** Extended notation support.  When gpg supports arbitrary binary
    :PROPERTIES:
    :CUSTOM_ID: extended-notation
    :END:
    notation data, provide a user interface for that.
+
 ** notification system
    :PROPERTIES:
    :CUSTOM_ID: notification-system
@@ -236,25 +290,30 @@ Hey Emacs, this is -*- org -*- mode!
    :PROPERTIES:
    :CUSTOM_ID: stat-data
    :END:
+
 ** Implement support for photo ids.
    :PROPERTIES:
    :CUSTOM_ID: photo-id
    :END:
+
 ** Allow selection of subkeys
    :PROPERTIES:
    :CUSTOM_ID: subkey-selection
    :END:
+
 ** Allow to return time stamps in ISO format
    :PROPERTIES:
    :CUSTOM_ID: iso-format-datetime
    :END:
-  This allows us to handle years later than 2037 properly.  With the
-  time_t interface they are all mapped to 2037-12-31
+   This allows us to handle years later than 2037 properly.  With the
+   time_t interface they are all mapped to 2037-12-31
+
 ** New features requested by our dear users, but rejected or left for
    :PROPERTIES:
    :CUSTOM_ID: feature-requests
    :END:
    later consideration:
+
 *** Allow to export secret keys.
     :PROPERTIES:
     :CUSTOM_ID: export-secret-keys
@@ -262,6 +321,7 @@ Hey Emacs, this is -*- org -*- mode!
     Rejected because this is conceptually flawed.  Secret keys on a
     smart card can not be exported, for example.
     May eventually e supproted with a keywrapping system.
+
 *** Selecting the key ring, setting the version or comment in output.
     :PROPERTIES:
     :CUSTOM_ID: select-keyring-version
@@ -269,46 +329,23 @@ Hey Emacs, this is -*- org -*- mode!
     Rejected because the naive implementation is engine specific, the
     configuration is part of the engine's configuration or readily
     worked around in a different way
+
 *** Selecting the symmetric cipher.
     :PROPERTIES:
     :CUSTOM_ID: symmetric-cipher-selection
     :END:
+
 *** Exchanging keys with key servers.
     :PROPERTIES:
     :CUSTOM_ID: key-server-exchange
     :END:
 
 
-* Documentation
-  :PROPERTIES:
-  :CUSTOM_ID: documentation
-  :END:
-** TODO Document validity and trust issues.
-   :PROPERTIES:
-   :CUSTOM_ID: valid-trust-issues
-   :END:
-** In gpgme.texi: Register callbacks under the right letter in the index.
-   :PROPERTIES:
-   :CUSTOM_ID: gpgme-texi
-   :END:
-** TODO Update TODO file
-   :PROPERTIES:
-   :CUSTOM_ID: todo-update
-   :END:
-
-*** DONE fix TODO items
-    CLOSED: [2018-03-04 Sun 08:55]
-    :PROPERTIES:
-    :CUSTOM_ID: fix-todo-items
-    :END:
-
-    Adjust todo items so each can now be referenced by custom-id and
-    checked off as necessary.
-
 * Engines
   :PROPERTIES:
   :CUSTOM_ID: engines
   :END:
+
 ** Do not create/destroy engines, but create engine and then reset it.
    :PROPERTIES:
    :CUSTOM_ID: reset-engine-is-not-quite-just-ignition
@@ -321,26 +358,31 @@ Hey Emacs, this is -*- org -*- mode!
    Note that we need support in gpgsm to set include-certs to default
    as RESET does not reset it, also for no_encrypt_to and probably
    other options.
+
 ** Optimize the case where a data object has an underlying fd we can pass
    :PROPERTIES:
    :CUSTOM_ID: optimus-data-cousin-of-optimus-prime
    :END:
    directly to the engine.  This will be automatic with socket I/O and
    descriptor passing.
+
 ** Move code common to all engines up from gpg to engine.
    :PROPERTIES:
    :CUSTOM_ID: move-code-common-to-engines-out-of-gpg
    :END:
+
 ** engine operations can return General Error on unknown protocol
    :PROPERTIES:
    :CUSTOM_ID: general-error-looking-to-be-court-martialled
    :END:
    (it's an internal error, as select_protocol checks already).
+
 ** When server mode is implemented properly, more care has to be taken to
    :PROPERTIES:
    :CUSTOM_ID: server-mode
    :END:
    release all resources on error (for example to free assuan_cmd).
+
 ** op_import_keys and op_export_keys have a limit in the number of keys.
    :PROPERTIES:
    :CUSTOM_ID: import-export-problems
@@ -354,6 +396,7 @@ Hey Emacs, this is -*- org -*- mode!
   :PROPERTIES:
   :CUSTOM_ID: gpg-breakage
   :END:
+
 ** CANCELLED gpg 1.4.2 lacks error reporting if sign/encrypt with revoked key.
    CLOSED: [2018-03-09 Fri 08:19]
    :PROPERTIES:
@@ -361,6 +404,7 @@ Hey Emacs, this is -*- org -*- mode!
    :END:
    - State "CANCELLED"  from "TODO"       [2018-03-09 Fri 08:19] \\
      WON'T FIX.
+
 ** CANCELLED gpg 1.4.2 does crappy error reporting (namely none at all) when
    CLOSED: [2018-03-09 Fri 08:20]
    :PROPERTIES:
@@ -374,6 +418,7 @@ Hey Emacs, this is -*- org -*- mode!
     gpg: signing failed: general error
     [GNUPG:] BEGIN_ENCRYPTION 2 10
     gpg: test: sign+encrypt failed: general error
+
 ** DONE Without agent and with wrong passphrase, gpg 1.4.2 enters into an
    CLOSED: [2018-03-09 Fri 08:20]
    :PROPERTIES:
@@ -382,6 +427,7 @@ Hey Emacs, this is -*- org -*- mode!
    - State "DONE"       from "TODO"       [2018-03-09 Fri 08:20] \\
      Must have been fixed in a subsequent release.
    infinite loop.
+
 ** CANCELLED Use correct argv[0]
    CLOSED: [2018-03-09 Fri 08:24]
    :PROPERTIES:
@@ -402,71 +448,86 @@ Hey Emacs, this is -*- org -*- mode!
   :PROPERTIES:
   :CUSTOM_ID: operations-are-not-surgical
   :END:
+
 ** Include cert values -2, -1, 0 and 1 should be defined as macros.
    :PROPERTIES:
    :CUSTOM_ID: certified-macros
    :END:
+
 ** If an operation failed, make sure that the result functions don't return
    :PROPERTIES:
    :CUSTOM_ID: operation-failure
    :END:
    corrupt partial information. !!!
    NOTE: The EOF status handler is not called in this case !!!
+
 ** Verify must not fail on NODATA premature if auto-key-retrieval failed.
    :PROPERTIES:
    :CUSTOM_ID: autobot-key-retrieval
    :END:
    It should not fail silently if it knows there is an error. !!!
+
 ** All operations: Better error reporting. !!
    :PROPERTIES:
    :CUSTOM_ID: better-reporting-not-like-fox-news
    :END:
+
 ** Export status handler need much more work. !!!
    :PROPERTIES:
    :CUSTOM_ID: export-status-handler
    :END:
+
 ** Import should return a useful error when one happened.
    :PROPERTIES:
    :CUSTOM_ID: import-useful-stuff-even-wrong-stuff
    :END:
+
 *** Import does not take notice of NODATA status report.
     :PROPERTIES:
     :CUSTOM_ID: import-no-data
     :END:
+
 *** When GPGSM does issue IMPORT_OK status reports, make sure to check for
     :PROPERTIES:
     :CUSTOM_ID: gpgsm-import-ok
     :END:
     them in tests/gpgs m/t-import.c.
+
 ** Verify can include info about version/algo/class, but currently
    :PROPERTIES:
    :CUSTOM_ID: verify-class
    :END:
    this is only available for gpg, not gpgsm.
+
 ** Return ENC_TO output in verify result.  Again, this is not available
    :PROPERTIES:
    :CUSTOM_ID: return-to-enc
    :END:
    for gpgsm.
+
 ** Genkey should return something more useful than General_Error.
    :PROPERTIES:
    :CUSTOM_ID: general-key-assumed-command-from-general-error
    :END:
+
 ** If possible, use --file-setsize to set the file size for proper progress
    :PROPERTIES:
    :CUSTOM_ID: file-setsize
    :END:
    callback handling.  Write data interface for file size.
+
 ** Optimize the file descriptor list, so the number of open fds is
    :PROPERTIES:
    :CUSTOM_ID: optimus-descriptus-younger-brother-of-optimus-prime
    :END:
    always known easily.
+
 ** Encryption: It should be verified that the behaviour for partially untrusted
    :PROPERTIES:
    :CUSTOM_ID: only-mostly-dead-means-partially-alive
    :END:
    recipients is correct.
+
 ** When GPG issues INV_something for invalid signers, catch them.
    :PROPERTIES:
    :CUSTOM_ID: invalid-sig
@@ -477,15 +538,18 @@ Hey Emacs, this is -*- org -*- mode!
   :PROPERTIES:
   :CUSTOM_ID: error-value
   :END:
+
 ** Map ASSUAN/GpgSM ERR error values in a better way than is done now. !!
    :PROPERTIES:
    :CUSTOM_ID: map-ass-error
    :END:
+
 ** Some error values should identify the source more correctly (mostly error
    :PROPERTIES:
    :CUSTOM_ID: source-errors
    :END:
    values derived from status messages).
+
 ** In rungpg.c we need to check the version of the engine
    :PROPERTIES:
    :CUSTOM_ID: rungpg-c-engine-ver
@@ -498,6 +562,7 @@ Hey Emacs, this is -*- org -*- mode!
   :PROPERTIES:
   :CUSTOM_ID: tests
   :END:
+
 ** TODO Write a fake gpg-agent so that we can supply known passphrases to
    :PROPERTIES:
    :CUSTOM_ID: test-fake-gpg-agent
@@ -505,23 +570,28 @@ Hey Emacs, this is -*- org -*- mode!
    gpgsm and setup the configuration files to use the agent.  Without
    this we are testing a currently running gpg-agent which is not a
    clever idea. !
+
 ** t-data
    :PROPERTIES:
    :CUSTOM_ID: test-data
    :END:
+
 *** Test gpgme_data_release_and_get_mem.
     :PROPERTIES:
     :CUSTOM_ID: test-gpgme-data-release-mem
     :END:
+
 *** Test gpgme_data_seek for invalid types.
     :PROPERTIES:
     :CUSTOM_ID: test-gpgme-data-seek
     :END:
+
 ** t-keylist
    :PROPERTIES:
    :CUSTOM_ID: test-keylist
    :END:
    Write a test for ext_keylist.
+
 ** Test reading key signatures.
    :PROPERTIES:
    :CUSTOM_ID: test-key-sig
@@ -532,6 +602,7 @@ Hey Emacs, this is -*- org -*- mode!
   :PROPERTIES:
   :CUSTOM_ID: debug
   :END:
+
 ** Tracepoints should be added at: Every public interface enter/leave,
    :PROPERTIES:
    :CUSTOM_ID: tracepoint-pub-int
@@ -547,6 +618,7 @@ Hey Emacs, this is -*- org -*- mode!
    decrypt-verify.c delete.c edit.c encrypt.c encrypt-sign.c export.c
    genkey.c import.c key.c keylist.c passphrase.c progress.c signers.c
    sig-notation.c trust-item.c trustlist.c verify.c
+
 ** TODO Handle malloc and vasprintf errors.  But decide first if they should be
    :PROPERTIES:
    :CUSTOM_ID: malloc-vasprintf
@@ -559,10 +631,12 @@ Hey Emacs, this is -*- org -*- mode!
   :PROPERTIES:
   :CUSTOM_ID: build-suite
   :END:
+
 ** TODO Make sure everything is cleaned correctly (esp. test area).
    :PROPERTIES:
    :CUSTOM_ID: clean-tests
    :END:
+
 ** TODO Enable AC_CONFIG_MACRO_DIR and bump up autoconf version requirement.
    :PROPERTIES:
    :CUSTOM_ID: autoconf-macros
@@ -575,6 +649,7 @@ Hey Emacs, this is -*- org -*- mode!
   :PROPERTIES:
   :CUSTOM_ID: error-checking
   :END:
+
 ** TODO engine-gpgsm, with-validation
    :PROPERTIES:
    :CUSTOM_ID: gpgsm-validation
@@ -615,7 +690,11 @@ Hey Emacs, this is -*- org -*- mode!
    Write a guide/best practices for maintainers of GPGME packages with
    third party package management systems.
 
-Copyright 2004, 2005, 2018 g10 Code GmbH
+
+* Copyright 2004, 2005, 2018 g10 Code GmbH
+  :PROPERTIES:
+  :CUSTOM_ID: copyright-and-license
+  :END:
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
