@@ -898,7 +898,7 @@
      """.format(c.get_key(sign.fpr).uids[0].uid,
 		sign.fpr, time.ctime(sign.timestamp)))
      else:
-	 pass(e)
+	 pass
    #+end_src
 
    Whereas this next example, which is almost identical would work
