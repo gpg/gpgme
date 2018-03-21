@@ -36,8 +36,8 @@
 
 #define GPGRT_ENABLE_ES_MACROS 1
 #define GPGRT_ENABLE_LOG_MACROS 1
+#define GPGRT_ENABLE_ARGPARSE_MACROS 1
 #include "gpgme.h"
-#include "argparse.h"
 #include "cJSON.h"
 
 
@@ -828,8 +828,10 @@ interactive_repl (void)
   int first;
 
   es_setvbuf (es_stdin, NULL, _IONBF, 0);
+#if GPGRT_VERSION_NUMBER >= 0x011d00 /* 1.29 */
   es_fprintf (es_stderr, "%s %s ready (enter \",help\" for help)\n",
-              strusage (11), strusage (13));
+              gpgrt_strusage (11), gpgrt_strusage (13));
+#endif
   do
     {
       es_fputs ("> ", es_stderr);
@@ -1064,6 +1066,7 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "LGPL-2.1-or-later"; break;
     case 11: p = "gpgme-json"; break;
     case 13: p = PACKAGE_VERSION; break;
     case 14: p = "Copyright (C) 2018 g10 Code GmbH"; break;
@@ -1083,24 +1086,30 @@ my_strusage( int level )
   return p;
 }
 
-
 int
 main (int argc, char *argv[])
 {
+#if GPGRT_VERSION_NUMBER < 0x011d00 /* 1.29 */
+
+  fprintf (stderr, "WARNING: Old libgpg-error - using limited mode\n");
+  native_messaging_repl ();
+
+#else /* This is a modern libgp-error.  */
+
   enum { CMD_DEFAULT     = 0,
          CMD_INTERACTIVE = 'i',
          CMD_SINGLE      = 's',
          CMD_LIBVERSION  = 501
   } cmd = CMD_DEFAULT;
-  static ARGPARSE_OPTS opts[] = {
+  static gpgrt_opt_t opts[] = {
     ARGPARSE_c  (CMD_INTERACTIVE, "interactive", "Interactive REPL"),
     ARGPARSE_c  (CMD_SINGLE,      "single",      "Single request mode"),
     ARGPARSE_c  (CMD_LIBVERSION,  "lib-version", "Show library version"),
     ARGPARSE_end()
   };
-  ARGPARSE_ARGS pargs = { &argc, &argv, 0 };
+  gpgrt_argparse_t pargs = { &argc, &argv};
 
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
 
 #ifdef HAVE_SETLOCALE
   setlocale (LC_ALL, "");
@@ -1113,7 +1122,7 @@ main (int argc, char *argv[])
   gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
 #endif
 
-  while (arg_parse  (&pargs, opts))
+  while (gpgrt_argparse (NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -1130,6 +1139,7 @@ main (int argc, char *argv[])
 	  break;
         }
     }
+  gpgrt_argparse (NULL, &pargs, NULL);
 
   switch (cmd)
     {
@@ -1153,5 +1163,6 @@ main (int argc, char *argv[])
       break;
     }
 
+#endif /* This is a modern libgp-error.  */
   return 0;
 }
