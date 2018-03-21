@@ -750,11 +750,10 @@
      text = text0.encode()
 
      c = gpg.Context(armor=True, signers=sig_src)
-     signed = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
+     signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
 
      with open("/path/to/statement.txt.asc", "w") as afile:
-         for line in signed[0]:
-	     afile.write("{0}\n".format(line.decode()))
+	 afile.write(signed_data.decode())
    #+end_src
 
    Though everything in this example is accurate, it is more likely
@@ -769,10 +768,10 @@
          text = tfile.read()
 
      c = gpg.Context()
-     signed = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
+     signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
 
      with open("/path/to/statement.txt.sig", "wb") as afile:
-         afile.write(signed[0])
+         afile.write(signed_data)
    #+end_src
 
 
@@ -795,11 +794,10 @@
       text = text0.encode()
 
       c = gpg.Context(armor=True)
-      signed = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
+      signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
 
       with open("/path/to/statement.txt.asc", "w") as afile:
-          for line in signed[0].splitlines():
-	      afile.write("{0}\n".format(line.decode()))
+          afile.write(signed_data.decode())
     #+end_src
 
     As with normal signatures, detached signatures are best handled as
@@ -812,10 +810,10 @@
           text = tfile.read()
 
       c = gpg.Context(signers=sig_src)
-      signed = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
+      signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
 
       with open("/path/to/statement.txt.sig", "wb") as afile:
-          afile.write(signed[0])
+          afile.write(signed_data)
     #+end_src
 
 
@@ -838,11 +836,10 @@
       text = text0.encode()
 
       c = gpg.Context()
-      signed = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
+      signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
 
       with open("/path/to/statement.txt.asc", "w") as afile:
-          for line in signed[0].splitlines():
-	      afile.write("{0}\n".format(line.decode()))
+	  afile.write(signed_data.decode())
     #+end_src
 
     In spite of the appearance of a clear-signed message, the data
@@ -855,10 +852,10 @@
           text = tfile.read()
 
       c = gpg.Context()
-      signed = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
+      signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
 
       with open("/path/to/statement.txt.asc", "wb") as afile:
-          afile.write(signed[0])
+          afile.write(signed_data)
     #+end_src
 
 
