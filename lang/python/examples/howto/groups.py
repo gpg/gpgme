@@ -28,7 +28,7 @@ import subprocess
 """
 Intended for use with other scripts.
 
-Usage: from groups import group_lines, group_lists
+Usage: from groups import group_lists
 """
 
 lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
