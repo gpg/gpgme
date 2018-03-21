@@ -13,7 +13,7 @@
   :CUSTOM_ID: intro
   :END:
 
-  | Version:        | 0.1.0                              |
+  | Version:        | 0.1.0                                    |
   | Author:         | Ben McGinnes <ben@gnupg.org>             |
   | Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
   | Language:       | Australian English, British English      |
