@@ -63,7 +63,7 @@ b = a.index(group)
 
 for i in range(len(group_lists[b][1])):
     logrus = group_lists[b][1][i]
-    keys.append(gpg.Context().keylist(pattern=logrus))
+    keys.append(list(gpg.Context().keylist(pattern=logrus)))
 
 with open(filename, "rb") as f:
     text = f.read()
