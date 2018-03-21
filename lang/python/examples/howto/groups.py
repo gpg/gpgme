@@ -25,6 +25,12 @@ from __future__ import absolute_import, division, unicode_literals
 
 import subprocess
 
+"""
+Intended for use with other scripts.
+
+Usage: from groups import group_lines, group_lists
+"""
+
 lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
 
 for i in range(len(lines)):
