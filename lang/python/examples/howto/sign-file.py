@@ -31,7 +31,8 @@ import sys
 Signs a file with a specified key.  If entering both the key and the filename
 on the command line, the key must be entered first.
 
-Will produce both an ASCII armoured and GPG binary format copy of the encrypted file.
+Will produce both an ASCII armoured and GPG binary format copy of the signed
+file.
 """
 
 if len(sys.argv) > 3:
