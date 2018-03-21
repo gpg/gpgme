@@ -49,4 +49,3 @@ keys = []
 for i in range(len(key_ids)):
     logrus = key_ids[i]
     keys.append(gpg.Context().keylist(pattern=logrus))
-
