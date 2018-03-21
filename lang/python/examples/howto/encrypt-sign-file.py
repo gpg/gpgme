@@ -34,8 +34,8 @@ filename on the command line, the key must be entered first.
 Signs with and also encrypts to the default key of the user invoking the
 script.  Will treat all recipients as trusted to permit encryption.
 
-Will produce both an ASCII armoured and GPG binary format copy of the encrypted
-file.
+Will produce both an ASCII armoured and GPG binary format copy of the signed
+and encrypted file.
 """
 
 if len(sys.argv) > 3:
