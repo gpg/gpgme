@@ -147,6 +147,9 @@ xjson_AddBoolToObject (cjson_t object, const char *name, int abool)
 static gpg_error_t
 add_base64_to_object (cjson_t object, const char *name, gpgme_data_t data)
 {
+#if GPGRT_VERSION_NUMBER < 0x011d00 /* 1.29 */
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+#else
   gpg_err_code_t err;
   estream_t fp = NULL;
   gpgrt_b64state_t state = NULL;
@@ -220,6 +223,7 @@ add_base64_to_object (cjson_t object, const char *name, gpgme_data_t data)
   es_fclose (fp);
   gpgme_data_release (data);
   return err;
+#endif
 }
 
 
