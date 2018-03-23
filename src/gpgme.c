@@ -248,6 +248,7 @@ gpgme_release (gpgme_ctx_t ctx)
   free (ctx->lc_ctype);
   free (ctx->lc_messages);
   free (ctx->override_session_key);
+  free (ctx->request_origin);
   _gpgme_engine_info_release (ctx->engine_info);
   ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
@@ -486,13 +487,8 @@ gpgme_get_armor (gpgme_ctx_t ctx)
 }
 
 
-/* Set the flag NAME for CTX to VALUE.  The supported flags are:
- *
- * - full-status :: With a value of "1" the status callback set by
- *                  gpgme_set_status_cb returns all status lines
- *                  except for PROGRESS lines.  With the default of
- *                  "0" the status callback is only called in certain
- *                  situations.
+/* Set the flag NAME for CTX to VALUE.  Please consult the manual for
+ * a description of the flags.
  */
 gpgme_error_t
 gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
@@ -535,6 +531,13 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
     {
       ctx->auto_key_retrieve = abool;
     }
+  else if (!strcmp (name, "request-origin"))
+    {
+      free (ctx->request_origin);
+      ctx->request_origin = strdup (value);
+      if (!ctx->request_origin)
+        err = gpg_error_from_syserror ();
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -575,6 +578,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "auto-key-retrieve"))
     {
       return ctx->auto_key_retrieve? "1":"";
+    }
+  else if (!strcmp (name, "request-origin"))
+    {
+      return ctx->request_origin? ctx->request_origin : "";
     }
   else
     return NULL;

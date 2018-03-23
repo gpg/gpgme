@@ -61,6 +61,7 @@ struct engine_ops
 					   void *fnc_value);
   gpgme_error_t (*set_locale) (void *engine, int category, const char *value);
   gpgme_error_t (*set_protocol) (void *engine, gpgme_protocol_t protocol);
+  void (*set_engine_flags) (void *engine, gpgme_ctx_t ctx);
   gpgme_error_t (*decrypt) (void *engine,
                             gpgme_decrypt_flags_t flags,
                             gpgme_data_t ciph,

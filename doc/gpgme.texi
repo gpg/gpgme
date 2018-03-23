@@ -3065,6 +3065,11 @@ a message signed by a brand new key (which you naturally will not have
 on your local keyring), the operator can tell both your IP address and
 the time when you verified the signature.
 
+@item "request-origin"
+The string given in @var{value} is passed to the GnuPG engines to
+request restrictions based on the origin of the request.  Valid values
+are documented in the GnuPG manual and the gpg man page under the
+option ``--request-origin''.
 
 @end table
 

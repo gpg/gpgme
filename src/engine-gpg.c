@@ -143,6 +143,7 @@ struct engine_gpg
 
   struct gpgme_io_cbs io_cbs;
   gpgme_pinentry_mode_t pinentry_mode;
+  char request_origin[10];
 
   /* NULL or the data object fed to --override_session_key-fd.  */
   gpgme_data_t override_session_key;
@@ -628,6 +629,24 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
 }
 
 
+/* Copy flags from CTX into the engine object.  */
+static void
+gpg_set_engine_flags (void *engine, const gpgme_ctx_t ctx)
+{
+  engine_gpg_t gpg = engine;
+
+  if (ctx->request_origin && have_gpg_version (gpg, "2.2.6"))
+    {
+      if (strlen (ctx->request_origin) + 1 > sizeof gpg->request_origin)
+        strcpy (gpg->request_origin, "xxx"); /* Too long  - force error */
+      else
+        strcpy (gpg->request_origin, ctx->request_origin);
+    }
+  else
+    *gpg->request_origin = 0;
+}
+
+
 static gpgme_error_t
 gpg_set_locale (void *engine, int category, const char *value)
 {
@@ -894,6 +913,20 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
   if (use_agent)
     {
       argv[argc] = strdup ("--use-agent");
+      if (!argv[argc])
+	{
+          int saved_err = gpg_error_from_syserror ();
+	  free (fd_data_map);
+	  free_argv (argv);
+	  return saved_err;
+        }
+      argc++;
+    }
+
+  if (*gpg->request_origin)
+    {
+      argv[argc] = _gpgme_strconcat ("--request-origin=",
+                                     gpg->request_origin, NULL);
       if (!argv[argc])
 	{
           int saved_err = gpg_error_from_syserror ();
@@ -3090,6 +3123,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_set_colon_line_handler,
     gpg_set_locale,
     NULL,				/* set_protocol */
+    gpg_set_engine_flags,               /* set_engine_flags */
     gpg_decrypt,
     gpg_delete,
     gpg_edit,

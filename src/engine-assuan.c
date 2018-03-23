@@ -96,6 +96,7 @@ struct engine_llass
     int gpg_agent:1;  /* Assume this is a gpg-agent connection.  */
   } opt;
 
+  char request_origin[10];  /* Copy from the CTX.  */
 };
 typedef struct engine_llass *engine_llass_t;
 
@@ -362,6 +363,24 @@ llass_new (void **engine, const char *file_name, const char *home_dir,
     *engine = llass;
 
   return err;
+}
+
+
+/* Copy flags from CTX into the engine object.  */
+static void
+llass_set_engine_flags (void *engine, const gpgme_ctx_t ctx)
+{
+  engine_llass_t llass = engine;
+
+  if (ctx->request_origin)
+    {
+      if (strlen (ctx->request_origin) + 1 > sizeof llass->request_origin)
+        strcpy (llass->request_origin, "xxx"); /* Too long  - force error */
+      else
+        strcpy (llass->request_origin, ctx->request_origin);
+    }
+  else
+    *llass->request_origin = 0;
 }
 
 
@@ -660,6 +679,21 @@ start (engine_llass_t llass, const char *command)
   int nfds;
   int i;
 
+  if (*llass->request_origin && llass->opt.gpg_agent)
+    {
+      char *cmd;
+
+      cmd = _gpgme_strconcat ("OPTION pretend-request-origin=",
+                              llass->request_origin, NULL);
+      if (!cmd)
+        return gpg_error_from_syserror ();
+      err = assuan_transact (llass->assuan_ctx, cmd, NULL, NULL, NULL,
+                             NULL, NULL, NULL);
+      free (cmd);
+      if (err && gpg_err_code (err) != GPG_ERR_UNKNOWN_OPTION)
+        return err;
+    }
+
   /* We need to know the fd used by assuan for reads.  We do this by
      using the assumption that the first returned fd from
      assuan_get_active_fds() is always this one.  */
@@ -775,6 +809,7 @@ struct engine_ops _gpgme_engine_ops_assuan =
     NULL,               /* set_colon_line_handler */
     llass_set_locale,
     NULL,		/* set_protocol */
+    llass_set_engine_flags,
     NULL,               /* decrypt */
     NULL,               /* delete */
     NULL,		/* edit */
