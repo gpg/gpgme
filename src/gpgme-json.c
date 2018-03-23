@@ -433,6 +433,7 @@ _create_new_context (gpgme_protocol_t proto)
   if (err)
     log_fatal ("error creating GPGME context: %s\n", gpg_strerror (err));
   gpgme_set_protocol (ctx, proto);
+  gpgme_set_ctx_flag (ctx, "request-origin", "browser");
   return ctx;
 }
 
