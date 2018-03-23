@@ -26,7 +26,7 @@ m4datadir = $(datadir)/aclocal
 m4data_DATA = gpgme.m4
 nodist_include_HEADERS = gpgme.h
 
-bin_PROGRAMS = gpgme-tool
+bin_PROGRAMS = gpgme-tool gpgme-json
 
 if BUILD_W32_GLIB
 ltlib_gpgme_glib = libgpgme-glib.la
@@ -95,12 +95,17 @@ if BUILD_W32_GLIB
 libgpgme_glib_la_SOURCES = $(main_sources) w32-glib-io.c
 endif
 
-# We use a global CFLAGS setting for all library
+# We use a global CFLAGS setting for all libraries
 # versions, because then every object file is only compiled once.
 AM_CFLAGS = @LIBASSUAN_CFLAGS@ @GLIB_CFLAGS@
 
 gpgme_tool_SOURCES = gpgme-tool.c argparse.c argparse.h
 gpgme_tool_LDADD = libgpgme.la @LIBASSUAN_LIBS@
+
+gpgme_json_SOURCES = gpgme-json.c cJSON.c cJSON.h
+gpgme_json_LDADD = -lm libgpgme.la $(GPG_ERROR_LIBS)
+# We use -no-install temporary during development.
+gpgme_json_LDFLAGS = -no-install
 
 
 if HAVE_W32_SYSTEM
