@@ -1200,6 +1200,18 @@ cJSON_CreateString (const char *string)
 }
 
 cJSON *
+cJSON_CreateStringConvey (char *string)
+{
+  cJSON *item = cJSON_New_Item ();
+  if (item)
+    {
+      item->type = cJSON_String;
+      item->valuestring = string;
+    }
+  return item;
+}
+
+cJSON *
 cJSON_CreateArray (void)
 {
   cJSON *item = cJSON_New_Item ();
