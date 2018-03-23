@@ -64,6 +64,7 @@ static int opt_interactive;
  */
 
 #define xtrymalloc(a)  gpgrt_malloc ((a))
+#define xtrystrdup(a)  gpgrt_strdup ((a))
 #define xmalloc(a) ({                           \
       void *_r = gpgrt_malloc ((a));            \
       if (!_r)                                  \
@@ -138,6 +139,87 @@ xjson_AddBoolToObject (cjson_t object, const char *name, int abool)
   if (!cJSON_AddBoolToObject (object, name, abool))
     xoutofcore ("cJSON_AddStringToObject");
   return ;
+}
+
+/* This is similar to cJSON_AddStringToObject but takes a gpgme DATA
+ * object and adds it under NAME as a base 64 encoded string to
+ * OBJECT.  Ownership of DATA is transferred to this function.  */
+static gpg_error_t
+add_base64_to_object (cjson_t object, const char *name, gpgme_data_t data)
+{
+  gpg_err_code_t err;
+  estream_t fp = NULL;
+  gpgrt_b64state_t state = NULL;
+  cjson_t j_str = NULL;
+  void *buffer = NULL;
+  size_t buflen;
+
+  fp = es_fopenmem (0, "rwb");
+  if (!fp)
+    {
+      err = gpg_err_code_from_syserror ();
+      goto leave;
+    }
+  state = gpgrt_b64enc_start (fp, "");
+  if (!state)
+    {
+      err = gpg_err_code_from_syserror ();
+      goto leave;
+    }
+
+  gpgme_data_write (data, "", 1); /* Make sure we have  a string.  */
+  buffer = gpgme_data_release_and_get_mem (data, &buflen);
+  data = NULL;
+  if (!buffer)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gpgrt_b64enc_write (state, buffer, buflen);
+  if (err)
+    goto leave;
+  xfree (buffer);
+  buffer = NULL;
+
+  err = gpgrt_b64enc_finish (state);
+  state = NULL;
+  if (err)
+    return err;
+
+  es_fputc (0, fp);
+  if (es_fclose_snatch (fp, &buffer, NULL))
+    {
+      fp = NULL;
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  fp = NULL;
+
+  j_str = cJSON_CreateStringConvey (buffer);
+  if (!j_str)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  buffer = NULL;
+
+  if (!cJSON_AddItemToObject (object, name, j_str))
+    {
+      err = gpg_error_from_syserror ();
+      cJSON_Delete (j_str);
+      j_str = NULL;
+      goto leave;
+    }
+  j_str = NULL;
+
+ leave:
+  xfree (buffer);
+  cJSON_Delete (j_str);
+  gpgrt_b64enc_finish (state);
+  es_fclose (fp);
+  gpgme_data_release (data);
+  return err;
 }
 
 
@@ -386,6 +468,72 @@ release_context (gpgme_ctx_t ctx)
 }
 
 
+
+/* Given a Base-64 encoded string object in JSON return a gpgme data
+ * object at R_DATA.  */
+static gpg_error_t
+data_from_base64_string (gpgme_data_t *r_data, cjson_t json)
+{
+#if GPGRT_VERSION_NUMBER < 0x011d00 /* 1.29 */
+  *r_data = NULL;
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+#else
+  gpg_error_t err;
+  size_t len;
+  char *buf = NULL;
+  gpgrt_b64state_t state = NULL;
+  gpgme_data_t data = NULL;
+
+  *r_data = NULL;
+
+  /* A quick check on the JSON.  */
+  if (!cjson_is_string (json))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+
+  state = gpgrt_b64dec_start (NULL);
+  if (!state)
+    {
+      err = gpg_err_code_from_syserror ();
+      goto leave;
+    }
+
+  /* Fixme: Data duplication - we should see how to snatch the memory
+   * from the json object.  */
+  len = strlen (json->valuestring);
+  buf = xtrystrdup (json->valuestring);
+  if (!buf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gpgrt_b64dec_proc (state, buf, len, &len);
+  if (err)
+    goto leave;
+
+  err = gpgrt_b64dec_finish (state);
+  state = NULL;
+  if (err)
+    goto leave;
+
+  err = gpgme_data_new_from_mem (&data, buf, len, 1);
+  if (err)
+    goto leave;
+  *r_data = data;
+  data = NULL;
+
+ leave:
+  xfree (data);
+  xfree (buf);
+  gpgrt_b64dec_finish (state);
+  return err;
+#endif
+}
+
+
 
 /*
  * Implementaion of the commands.
@@ -487,16 +635,23 @@ op_encrypt (cjson_t request, cjson_t result)
     }
   if (opt_base64)
     {
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-      goto leave;
+      err = data_from_base64_string (&input, j_input);
+      if (err)
+        {
+          error_object (result, "Error decoding Base-64 encoded 'data': %s",
+                        gpg_strerror (err));
+          goto leave;
+        }
     }
-  err = gpgme_data_new_from_mem (&input, j_input->valuestring,
-                                 strlen (j_input->valuestring), 0);
-  if (err)
+  else
     {
-      error_object (result, "Error creating input data object: %s",
-                    gpg_strerror (err));
-      goto leave;
+      err = gpgme_data_new_from_mem (&input, j_input->valuestring,
+                                     strlen (j_input->valuestring), 0);
+      if (err)
+        {
+          error_object (result, "Error getting 'data': %s", gpg_strerror (err));
+          goto leave;
+        }
     }
 
   /* Create an output data object.  */
@@ -541,9 +696,10 @@ op_encrypt (cjson_t request, cjson_t result)
     }
   else
     {
-      error_object (result, "Binary output is not yet supported");
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-      goto leave;
+      err = add_base64_to_object (result, "data", output);
+      output = NULL;
+      if (err)
+        goto leave;
     }
 
  leave:
@@ -685,7 +841,10 @@ process_request (const char *request)
  leave:
   cJSON_Delete (json);
   json = NULL;
-  res = cJSON_Print (response);
+  if (opt_interactive)
+    res = cJSON_Print (response);
+  else
+    res = cJSON_PrintUnformatted (response);
   if (!res)
     log_error ("Printing JSON data failed\n");
   cJSON_Delete (response);
