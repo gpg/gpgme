@@ -875,7 +875,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
     argc++;
   if (!gpg->cmd.used)
     argc++;	/* --batch */
-  argc += 1;	/* --no-sk-comments */
+  argc += 2;	/* --no-sk-comments, --request-origin */
 
   argv = calloc (argc + 1, sizeof *argv);
   if (!argv)
