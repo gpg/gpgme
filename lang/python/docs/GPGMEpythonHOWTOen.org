@@ -675,10 +675,10 @@
          nfile.write(plaintext)
    #+end_src
 
-   The data available in plaintext in this example is the decrypted
-   content as a byte object in =plaintext[0]=, the recipient key IDs
-   and algorithms in =plaintext[1]= and the results of verifying any
-   signatures of the data in =plaintext[0]=.
+   The data available in =plaintext= in this example is the decrypted
+   content as a byte object, the recipient key IDs and algorithms in
+   =result= and the results of verifying any signatures of the data in
+   =verify_result=.
 
 
 ** Signing text and files
