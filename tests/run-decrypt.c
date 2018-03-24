@@ -81,6 +81,7 @@ show_usage (int ex)
          "  --cms            use the CMS protocol\n"
          "  --export-session-key            show the session key\n"
          "  --override-session-key STRING   use STRING as session key\n"
+         "  --request-origin STRING         use STRING as request origin\n"
          "  --unwrap         remove only the encryption layer\n"
          , stderr);
   exit (ex);
@@ -102,6 +103,7 @@ main (int argc, char **argv)
   int print_status = 0;
   int export_session_key = 0;
   const char *override_session_key = NULL;
+  const char *request_origin = NULL;
   int raw_output = 0;
 
   if (argc)
@@ -148,6 +150,14 @@ main (int argc, char **argv)
           if (!argc)
             show_usage (1);
           override_session_key = *argv;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--request-origin"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          request_origin = *argv;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--unwrap"))
@@ -199,7 +209,18 @@ main (int argc, char **argv)
                                 override_session_key);
       if (err)
         {
-          fprintf (stderr, PGM ": error overriding session key: %s\n",
+          fprintf (stderr, PGM ": error setting overriding session key: %s\n",
+                   gpgme_strerror (err));
+          exit (1);
+        }
+    }
+
+  if (request_origin)
+    {
+      err = gpgme_set_ctx_flag (ctx, "request-origin", request_origin);
+      if (err)
+        {
+          fprintf (stderr, PGM ": error setting request_origin: %s\n",
                    gpgme_strerror (err));
           exit (1);
         }

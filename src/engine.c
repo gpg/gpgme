@@ -651,6 +651,26 @@ _gpgme_engine_set_protocol (engine_t engine, gpgme_protocol_t protocol)
 }
 
 
+/* Pass information about the current context to the engine.  The
+ * engine may use this context to retrieve context specific flags.
+ * Important: The engine is required to immediately copy the required
+ * flags to its own context!
+ *
+ * This function will eventually be used to reduce the number of
+ * explicit passed flags.  */
+void
+_gpgme_engine_set_engine_flags (engine_t engine, gpgme_ctx_t ctx)
+{
+  if (!engine)
+    return;
+
+  if (!engine->ops->set_engine_flags)
+    return;
+
+  (*engine->ops->set_engine_flags) (engine->engine, ctx);
+}
+
+
 gpgme_error_t
 _gpgme_engine_op_decrypt (engine_t engine,
                           gpgme_decrypt_flags_t flags,

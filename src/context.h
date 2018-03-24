@@ -145,6 +145,9 @@ struct gpgme_context
   /* The gpg specific override session key or NULL. */
   char *override_session_key;
 
+  /* The optional request origin.  */
+  char *request_origin;
+
   /* The locale for the pinentry.  */
   char *lc_ctype;
   char *lc_messages;

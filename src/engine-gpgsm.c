@@ -107,6 +107,8 @@ struct engine_gpgsm
 
   gpgme_data_t inline_data;  /* Used to collect D lines.  */
 
+  char request_origin[10];
+
   struct gpgme_io_cbs io_cbs;
 };
 
@@ -518,6 +520,24 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
     *engine = gpgsm;
 
   return err;
+}
+
+
+/* Copy flags from CTX into the engine object.  */
+static void
+gpgsm_set_engine_flags (void *engine, const gpgme_ctx_t ctx)
+{
+  engine_gpgsm_t gpgsm = engine;
+
+  if (ctx->request_origin)
+    {
+      if (strlen (ctx->request_origin) + 1 > sizeof gpgsm->request_origin)
+        strcpy (gpgsm->request_origin, "xxx"); /* Too long  - force error */
+      else
+        strcpy (gpgsm->request_origin, ctx->request_origin);
+    }
+  else
+    *gpgsm->request_origin = 0;
 }
 
 
@@ -1057,6 +1077,20 @@ start (engine_gpgsm_t gpgsm, const char *command)
   int fdlist[5];
   int nfds;
   int i;
+
+  if (*gpgsm->request_origin)
+    {
+      char *cmd;
+
+      cmd = _gpgme_strconcat ("OPTION request-origin=",
+                              gpgsm->request_origin, NULL);
+      if (!cmd)
+        return gpg_error_from_syserror ();
+      err = gpgsm_assuan_simple_command (gpgsm, cmd, NULL, NULL);
+      free (cmd);
+      if (err && gpg_err_code (err) != GPG_ERR_UNKNOWN_OPTION)
+        return err;
+    }
 
   /* We need to know the fd used by assuan for reads.  We do this by
      using the assumption that the first returned fd from
@@ -2102,6 +2136,7 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_set_colon_line_handler,
     gpgsm_set_locale,
     NULL,		/* set_protocol */
+    gpgsm_set_engine_flags,
     gpgsm_decrypt,
     gpgsm_delete,	/* decrypt_verify */
     NULL,		/* edit */
