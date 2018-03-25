@@ -51,7 +51,7 @@ existing data.
 
 If the directory already exists, the script will terminate with a
 message telling you to specify a new directory name.  There is no
-default directory name.  
+default directory name.
 """
 
 gpgconf = """# gpg.conf settings for key generation:
