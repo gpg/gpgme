@@ -1091,6 +1091,10 @@
    permissions set to only permit access by the directory owner.  On
    posix systems this means setting the directory permissions to 700.
 
+   The =temp-homedir-config.py= script in the HOWTO examples directory
+   will create an alternative homedir with these configuration options
+   already set and the correct directory and file permissions.
+
    The successful generation of the key can be confirmed via the
    returned =GenkeyResult= object, which includes the following data:
 
