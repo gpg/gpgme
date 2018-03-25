@@ -6,6 +6,7 @@
 #+LATEX_HEADER: \usepackage[margin=1in]{geometry}
 #+LATEX_HEADER: \setmainfont[Ligatures={Common}]{Times New Roman}
 #+LATEX_HEADER: \author{Ben McGinnes <ben@gnupg.org>}
+#+HTML_HEAD_EXTRA: <link type="application/rss+xml" href="https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gpgme.git;a=rss;f=lang/python/docs/GPGMEpythonHOWTOen.org"/>
 
 
 * Introduction
