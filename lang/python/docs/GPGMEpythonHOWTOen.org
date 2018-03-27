@@ -1079,8 +1079,8 @@
      c.home_dir = "~/.gnupg-dm"
      userid = "Danger Mouse <dm@secret.example.net>"
 
-     dmkey = c.create_key(userid, algorithm = "rsa3072", expires_in = 31536000,
-			  sign = True, certify = True)
+     dmkey = c.create_key(userid, algorithm="rsa3072", expires_in=31536000,
+			  sign=True, certify=True)
    #+end_src
 
    One thing to note here is the use of setting the =c.home_dir=
@@ -1173,8 +1173,8 @@
      c.home_dir = "~/.gnupg-dm"
 
      key = c.get_key(dmkey.fpr, secret = True)
-     dmsub = c.create_subkey(key, algorithm = "rsa3072", expires_in = 15768000,
-			     encrypt = True)
+     dmsub = c.create_subkey(key, algorithm="rsa3072", expires_in=15768000,
+			     encrypt=True)
    #+end_src
 
    As with the primary key, the results here can be checked with:
@@ -1278,8 +1278,8 @@
      uid = "Danger Mouse <dm@secret.example.net>"
 
      dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
-     key = c.get_key(dmfpr, secret = True)
-     c.key_sign(key, uids = uid, expires_in = 2764800)
+     key = c.get_key(dmfpr, secret=True)
+     c.key_sign(key, uids=uid, expires_in=2764800)
    #+end_src
 
 
