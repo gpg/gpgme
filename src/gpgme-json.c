@@ -755,10 +755,9 @@ op_help (cjson_t request, cjson_t result)
 
 
 /* Process a request and return the response.  The response is a newly
- * allocated staring or NULL in case of an error.  With NM_MODE set
- * the actual request is taken from a "message" object.  */
+ * allocated string or NULL in case of an error.  */
 static char *
-process_request (const char *request, int nm_mode)
+process_request (const char *request)
 {
   static struct {
     const char *op;
@@ -772,7 +771,6 @@ process_request (const char *request, int nm_mode)
     { NULL }
   };
   size_t erroff;
-  cjson_t json_orig;
   cjson_t json;
   cjson_t j_tmp, j_op;
   cjson_t response;
@@ -783,23 +781,13 @@ process_request (const char *request, int nm_mode)
 
   response = xjson_CreateObject ();
 
-  json = json_orig = cJSON_Parse (request, &erroff);
+  json = cJSON_Parse (request, &erroff);
   if (!json)
     {
       log_string (GPGRT_LOGLVL_INFO, request);
       log_info ("invalid JSON object at offset %zu\n", erroff);
       error_object (response, "invalid JSON object at offset %zu\n", erroff);
       goto leave;
-    }
-  if (nm_mode)
-    {
-      json = cJSON_GetObjectItem (json, "message");
-      if (!json)
-        {
-          log_info ("no \"message\" object in request\n");
-          error_object (response, "no \"message\" object in request\n");
-          goto leave;
-        }
     }
 
   j_tmp = cJSON_GetObjectItem (json, "help");
@@ -857,7 +845,7 @@ process_request (const char *request, int nm_mode)
     }
 
  leave:
-  cJSON_Delete (json_orig);
+  cJSON_Delete (json);
   if (opt_interactive)
     res = cJSON_Print (response);
   else
@@ -942,7 +930,7 @@ process_meta_commands (const char *request)
                               "\"\\nMeta commands:\\n"
                               "  ,help       This help\\n"
                               "  ,quit       Terminate process\""
-                              "}", 0);
+                              "}");
   else if (!strncmp (request, "quit", 4) && (spacep (request+4) || !request[4]))
     exit (0);
   else
@@ -1041,7 +1029,7 @@ interactive_repl (void)
             }
           else if (request)
             {
-              response = process_request (request, 0);
+              response = process_request (request);
             }
           xfree (request);
           request = NULL;
@@ -1105,7 +1093,7 @@ read_and_process_single_request (void)
           if (request)
             {
               xfree (response);
-              response = process_request (request, 0);
+              response = process_request (request);
               if (response)
                 {
                   es_fputs (response, es_stdout);
@@ -1138,7 +1126,7 @@ native_messaging_repl (void)
    * binary mode.  */
   es_set_binary (es_stdin);
   es_set_binary (es_stdout);
-  es_setbuf (es_stdin, NULL);
+  es_setbuf (es_stdin, NULL);  /* stdin needs to be unbuffered! */
 
   for (;;)
     {
@@ -1197,7 +1185,7 @@ native_messaging_repl (void)
           if (opt_debug)
             log_debug ("request='%s'\n", request);
           xfree (response);
-          response = process_request (request, 1);
+          response = process_request (request);
           if (opt_debug)
             log_debug ("response='%s'\n", response);
         }
