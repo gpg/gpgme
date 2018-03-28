@@ -1259,7 +1259,7 @@
    The =key_sign= method takes four arguments: =key=, =uids=,
    =expires_in= and =local=.  The default value of =uids= is =None=
    and which results in all user IDs being selected.  The default
-   values of =expires_in= snd =local= is =False=; which result in the
+   values of =expires_in= and =local= is =False=; which result in the
    signature never expiring and being able to be exported.
 
    The =key= is the key being signed rather than the key doing the
