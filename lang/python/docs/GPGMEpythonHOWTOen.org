@@ -165,7 +165,7 @@
     This package is the origin of these bindings, though they are
     somewhat different now.  For details of when and how the PyME
     package was folded back into GPGME itself see the /Short History/
-    document[fn:1] in this Python bindings =docs= directory.[fn:2]
+    document[fn:1] in the Python bindings =docs= directory.[fn:2]
 
     The PyME package was first released in 2002 and was also the first
     attempt to implement a low level binding to GPGME.  In doing so it
@@ -537,8 +537,7 @@
       c = gpg.Context(armor=True)
       rkey = list(c.keylist(pattern=a_key, secret=False))
       ciphertext, result, sign_result = c.encrypt(text, recipients=rkey,
-						  sign=True, always_trust=True,
-                                                  add_encrypt_to=True)
+			      sign=True, always_trust=True, add_encrypt_to=True)
 
       with open("secret_plans.txt.asc", "wb") as afile:
 	  afile.write(ciphertext)
@@ -589,10 +588,10 @@
 	      logrus.append(rpattern[i])
 
       ciphertext, result, sign_result = c.encrypt(text, recipients=logrus, sign=False,
-                                                  always_trust=True)
+						  always_trust=True)
 
       with open("secret_plans.txt.asc", "wb") as afile:
-          afile.write(ciphertext)
+	  afile.write(ciphertext)
     #+end_src
 
     All it would take to change the above example to sign the message
@@ -601,7 +600,7 @@
 
     #+begin_src python
       ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
-			                          always_trust=True,
+						  always_trust=True,
 						  add_encrypt_to=True)
     #+end_src
 
@@ -619,7 +618,7 @@
       import gpg
 
       with open("secret_plans.txt.asc", "rb") as afile:
-          text = afile.read()
+	  text = afile.read()
 
       c = gpg.Context(armor=True)
       rpattern = list(c.keylist(pattern="@gnupg.org", secret=False))
@@ -630,21 +629,23 @@
 	      logrus.append(rpattern[i])
 
       try:
-	  ciphertext, result, sign_result = c.encrypt(text, recipients=logrus, add_encrypt_to=True)
+	  ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+						      add_encrypt_to=True)
       except gpg.errors.InvalidRecipients as e:
 	  for i in range(len(e.recipients)):
 	      for n in range(len(logrus)):
 		  if logrus[n].fpr == e.recipients[i].fpr:
 		      logrus.remove(logrus[n])
-                  else:
-                      pass
+		  else:
+		      pass
 	  try:
-	      ciphertext, result, sign_result = c.encrypt(text, recipients=logrus, add_encrypt_to=True)
+	      ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+							  add_encrypt_to=True)
 	  except:
 	      pass
 
       with open("secret_plans.txt.asc", "wb") as afile:
-          afile.write(ciphertext)
+	  afile.write(ciphertext)
     #+end_src
 
     This will attempt to encrypt to all the keys searched for, then
@@ -670,10 +671,12 @@
 
      ciphertext = input("Enter path and filename of encrypted file: ")
      newfile = input("Enter path and filename of file to save decrypted data to: ")
+
      with open(ciphertext, "rb") as cfile:
-         plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+	 plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+
      with open(newfile, "wb") as nfile:
-         nfile.write(plaintext)
+	 nfile.write(plaintext)
    #+end_src
 
    The data available in =plaintext= in this example is the decrypted
@@ -1172,7 +1175,7 @@
      c = gpg.Context()
      c.home_dir = "~/.gnupg-dm"
 
-     key = c.get_key(dmkey.fpr, secret = True)
+     key = c.get_key(dmkey.fpr, secret=True)
      dmsub = c.create_subkey(key, algorithm="rsa3072", expires_in=15768000,
 			     encrypt=True)
    #+end_src
@@ -1223,7 +1226,7 @@
      c.home_dir = "~/.gnupg-dm"
 
      dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
-     key = c.get_key(dmfpr, secret = True)
+     key = c.get_key(dmfpr, secret=True)
      uid = "Danger Mouse <danger.mouse@secret.example.net>"
 
      c.key_add_uid(key, uid)
