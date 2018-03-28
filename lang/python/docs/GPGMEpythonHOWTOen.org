@@ -1214,38 +1214,66 @@
    :CUSTOM_ID: keygen-uids
    :END:
 
-   By comparison to creating primary keys and subkeys, adding a new
-   user ID to an existing key is much simpler.  The method used to do
-   this is =key_add_uid= and the only arguments it takes are for the
-   =key= and the new =uid=.
 
-   #+begin_src python
-     import gpg
+*** Adding User IDs
+    :PROPERTIES:
+    :CUSTOM_ID: keygen-uids-add
+    :END:
 
-     c = gpg.Context()
-     c.home_dir = "~/.gnupg-dm"
+    By comparison to creating primary keys and subkeys, adding a new
+    user ID to an existing key is much simpler.  The method used to do
+    this is =key_add_uid= and the only arguments it takes are for the
+    =key= and the new =uid=.
 
-     dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
-     key = c.get_key(dmfpr, secret=True)
-     uid = "Danger Mouse <danger.mouse@secret.example.net>"
+    #+begin_src python
+      import gpg
 
-     c.key_add_uid(key, uid)
-   #+end_src
+      c = gpg.Context()
+      c.home_dir = "~/.gnupg-dm"
 
-   Unsurprisingly the result of this is:
+      dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+      key = c.get_key(dmfpr, secret=True)
+      uid = "Danger Mouse <danger.mouse@secret.example.net>"
 
-   #+begin_src shell
-     bash-4.4$ gpg --homedir ~/.gnupg-dm -K
-     ~/.gnupg-dm/pubring.kbx
-     ----------------------
-     sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
-	   177B7C25DB99745EE2EE13ED026D2F19E99E63AA
-     uid           [ultimate] Danger Mouse <danger.mouse@secret.example.net>
-     uid           [ultimate] Danger Mouse <dm@secret.example.net>
-     ssb   rsa3072 2018-03-15 [E] [expires: 2018-09-13]
+      c.key_add_uid(key, uid)
+    #+end_src
 
-     bash-4.4$
-   #+end_src
+    Unsurprisingly the result of this is:
+
+    #+begin_src shell
+      bash-4.4$ gpg --homedir ~/.gnupg-dm -K
+      ~/.gnupg-dm/pubring.kbx
+      ----------------------
+      sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
+	    177B7C25DB99745EE2EE13ED026D2F19E99E63AA
+      uid           [ultimate] Danger Mouse <danger.mouse@secret.example.net>
+      uid           [ultimate] Danger Mouse <dm@secret.example.net>
+      ssb   rsa3072 2018-03-15 [E] [expires: 2018-09-13]
+
+      bash-4.4$
+    #+end_src
+
+
+*** Revokinging User IDs
+    :PROPERTIES:
+    :CUSTOM_ID: keygen-uids-revoke
+    :END:
+
+    Revoking a user ID is a fairly similar process, except that it
+    uses the =key_revoke_uid= method.
+
+    #+begin_src python
+      import gpg
+
+      c = gpg.Context()
+      c.home_dir = "~/.gnupg-dm"
+
+      dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+      key = c.get_key(dmfpr, secret=True)
+      uid = "Danger Mouse <danger.mouse@secret.example.net>"
+
+      c.key_revoke_uid(key, uid)
+    #+end_src
 
 
 ** Key certification
