@@ -41,6 +41,10 @@
 #include "cJSON.h"
 
 
+#if GPGRT_VERSION_NUMBER < 0x011c00 /* 1.28 */
+int main (void){fputs ("Build with Libgpg-error >= 1.28!\n", stderr);return 1;}
+#else /* libgpg-error >= 1.28 */
+
 /* We don't allow a request with more than 64 MiB.  */
 #define MAX_REQUEST_SIZE (64 * 1024 * 1024)
 
@@ -56,7 +60,8 @@ static char *error_object_string (const char *message,
 
 /* True if interactive mode is active.  */
 static int opt_interactive;
-
+/* True is debug mode is active.  */
+static int opt_debug;
 
 
 /*
@@ -754,7 +759,7 @@ op_help (cjson_t request, cjson_t result)
 
 
 /* Process a request and return the response.  The response is a newly
- * allocated staring or NULL in case of an error.  */
+ * allocated string or NULL in case of an error.  */
 static char *
 process_request (const char *request)
 {
@@ -845,7 +850,6 @@ process_request (const char *request)
 
  leave:
   cJSON_Delete (json);
-  json = NULL;
   if (opt_interactive)
     res = cJSON_Print (response);
   else
@@ -1072,7 +1076,7 @@ interactive_repl (void)
 }
 
 
-/* Read and process  asingle request.  */
+/* Read and process a single request.  */
 static void
 read_and_process_single_request (void)
 {
@@ -1126,6 +1130,7 @@ native_messaging_repl (void)
    * binary mode.  */
   es_set_binary (es_stdin);
   es_set_binary (es_stdout);
+  es_setbuf (es_stdin, NULL);  /* stdin needs to be unbuffered! */
 
   for (;;)
     {
@@ -1149,7 +1154,7 @@ native_messaging_repl (void)
         {
           log_error ("error reading request: request too long (%zu MiB)\n",
                      (size_t)nrequest / (1024*1024));
-          /* Fixme: Shall we read the request t the bit bucket and
+          /* Fixme: Shall we read the request to the bit bucket and
            * return an error reponse or just return an error reponse
            * and terminate?  Needs some testing.  */
           break;
@@ -1181,8 +1186,12 @@ native_messaging_repl (void)
         }
       else /* Process request  */
         {
+          if (opt_debug)
+            log_debug ("request='%s'\n", request);
           xfree (response);
           response = process_request (request);
+          if (opt_debug)
+            log_debug ("response='%s'\n", response);
         }
       nresponse = strlen (response);
 
@@ -1263,12 +1272,18 @@ main (int argc, char *argv[])
   enum { CMD_DEFAULT     = 0,
          CMD_INTERACTIVE = 'i',
          CMD_SINGLE      = 's',
-         CMD_LIBVERSION  = 501
+         CMD_LIBVERSION  = 501,
   } cmd = CMD_DEFAULT;
+  enum {
+    OPT_DEBUG = 600
+  };
+
   static gpgrt_opt_t opts[] = {
     ARGPARSE_c  (CMD_INTERACTIVE, "interactive", "Interactive REPL"),
     ARGPARSE_c  (CMD_SINGLE,      "single",      "Single request mode"),
     ARGPARSE_c  (CMD_LIBVERSION,  "lib-version", "Show library version"),
+    ARGPARSE_s_n(OPT_DEBUG,       "debug",       "Flyswatter"),
+
     ARGPARSE_end()
   };
   gpgrt_argparse_t pargs = { &argc, &argv};
@@ -1298,12 +1313,37 @@ main (int argc, char *argv[])
           cmd = pargs.r_opt;
           break;
 
+        case OPT_DEBUG: opt_debug = 1; break;
+
         default:
           pargs.err = ARGPARSE_PRINT_WARNING;
 	  break;
         }
     }
   gpgrt_argparse (NULL, &pargs, NULL);
+
+  if (!opt_debug)
+    {
+      const char *s = getenv ("GPGME_JSON_DEBUG");
+      if (s && atoi (s) > 0)
+        opt_debug = 1;
+    }
+
+  if (opt_debug)
+    {
+      const char *home = getenv ("HOME");
+      char *file = xstrconcat ("socket://",
+                               home? home:"/tmp",
+                               "/.gnupg/S.gpgme-json.log", NULL);
+      log_set_file (file);
+      xfree (file);
+    }
+
+  if (opt_debug)
+    { int i;
+      for (i=0; argv[i]; i++)
+        log_debug ("argv[%d]='%s'\n", i, argv[i]);
+    }
 
   switch (cmd)
     {
@@ -1327,6 +1367,10 @@ main (int argc, char *argv[])
       break;
     }
 
+  if (opt_debug)
+    log_debug ("ready");
+
 #endif /* This is a modern libgp-error.  */
   return 0;
 }
+#endif /* libgpg-error >= 1.28 */

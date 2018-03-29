@@ -6,6 +6,7 @@
 #+LATEX_HEADER: \usepackage[margin=1in]{geometry}
 #+LATEX_HEADER: \setmainfont[Ligatures={Common}]{Times New Roman}
 #+LATEX_HEADER: \author{Ben McGinnes <ben@gnupg.org>}
+#+HTML_HEAD_EXTRA: <link type="application/rss+xml" href="https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gpgme.git;a=rss;f=lang/python/docs/GPGMEpythonHOWTOen.org"/>
 
 
 * Introduction
@@ -164,7 +165,7 @@
     This package is the origin of these bindings, though they are
     somewhat different now.  For details of when and how the PyME
     package was folded back into GPGME itself see the /Short History/
-    document[fn:1] in this Python bindings =docs= directory.[fn:2]
+    document[fn:1] in the Python bindings =docs= directory.[fn:2]
 
     The PyME package was first released in 2002 and was also the first
     attempt to implement a low level binding to GPGME.  In doing so it
@@ -536,8 +537,7 @@
       c = gpg.Context(armor=True)
       rkey = list(c.keylist(pattern=a_key, secret=False))
       ciphertext, result, sign_result = c.encrypt(text, recipients=rkey,
-						  sign=True, always_trust=True,
-                                                  add_encrypt_to=True)
+			      sign=True, always_trust=True, add_encrypt_to=True)
 
       with open("secret_plans.txt.asc", "wb") as afile:
 	  afile.write(ciphertext)
@@ -588,10 +588,10 @@
 	      logrus.append(rpattern[i])
 
       ciphertext, result, sign_result = c.encrypt(text, recipients=logrus, sign=False,
-                                                  always_trust=True)
+						  always_trust=True)
 
       with open("secret_plans.txt.asc", "wb") as afile:
-          afile.write(ciphertext)
+	  afile.write(ciphertext)
     #+end_src
 
     All it would take to change the above example to sign the message
@@ -600,7 +600,7 @@
 
     #+begin_src python
       ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
-			                          always_trust=True,
+						  always_trust=True,
 						  add_encrypt_to=True)
     #+end_src
 
@@ -618,7 +618,7 @@
       import gpg
 
       with open("secret_plans.txt.asc", "rb") as afile:
-          text = afile.read()
+	  text = afile.read()
 
       c = gpg.Context(armor=True)
       rpattern = list(c.keylist(pattern="@gnupg.org", secret=False))
@@ -629,21 +629,23 @@
 	      logrus.append(rpattern[i])
 
       try:
-	  ciphertext, result, sign_result = c.encrypt(text, recipients=logrus, add_encrypt_to=True)
+	  ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+						      add_encrypt_to=True)
       except gpg.errors.InvalidRecipients as e:
 	  for i in range(len(e.recipients)):
 	      for n in range(len(logrus)):
 		  if logrus[n].fpr == e.recipients[i].fpr:
 		      logrus.remove(logrus[n])
-                  else:
-                      pass
+		  else:
+		      pass
 	  try:
-	      ciphertext, result, sign_result = c.encrypt(text, recipients=logrus, add_encrypt_to=True)
+	      ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+							  add_encrypt_to=True)
 	  except:
 	      pass
 
       with open("secret_plans.txt.asc", "wb") as afile:
-          afile.write(ciphertext)
+	  afile.write(ciphertext)
     #+end_src
 
     This will attempt to encrypt to all the keys searched for, then
@@ -669,16 +671,18 @@
 
      ciphertext = input("Enter path and filename of encrypted file: ")
      newfile = input("Enter path and filename of file to save decrypted data to: ")
+
      with open(ciphertext, "rb") as cfile:
-         plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+	 plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+
      with open(newfile, "wb") as nfile:
-         nfile.write(plaintext)
+	 nfile.write(plaintext)
    #+end_src
 
-   The data available in plaintext in this example is the decrypted
-   content as a byte object in =plaintext[0]=, the recipient key IDs
-   and algorithms in =plaintext[1]= and the results of verifying any
-   signatures of the data in =plaintext[0]=.
+   The data available in =plaintext= in this example is the decrypted
+   content as a byte object, the recipient key IDs and algorithms in
+   =result= and the results of verifying any signatures of the data in
+   =verify_result=.
 
 
 ** Signing text and files
@@ -1078,8 +1082,8 @@
      c.home_dir = "~/.gnupg-dm"
      userid = "Danger Mouse <dm@secret.example.net>"
 
-     dmkey = c.create_key(userid, algorithm = "rsa3072", expires_in = 31536000,
-			  sign = True, certify = True)
+     dmkey = c.create_key(userid, algorithm="rsa3072", expires_in=31536000,
+			  sign=True, certify=True)
    #+end_src
 
    One thing to note here is the use of setting the =c.home_dir=
@@ -1090,6 +1094,10 @@
    =~/.gnupg=, any temporary or separate directory needs the
    permissions set to only permit access by the directory owner.  On
    posix systems this means setting the directory permissions to 700.
+
+   The =temp-homedir-config.py= script in the HOWTO examples directory
+   will create an alternative homedir with these configuration options
+   already set and the correct directory and file permissions.
 
    The successful generation of the key can be confirmed via the
    returned =GenkeyResult= object, which includes the following data:
@@ -1167,9 +1175,9 @@
      c = gpg.Context()
      c.home_dir = "~/.gnupg-dm"
 
-     key = c.get_key(dmkey.fpr, secret = True)
-     dmsub = c.create_subkey(key, algorithm = "rsa3072", expires_in = 15768000,
-			     encrypt = True)
+     key = c.get_key(dmkey.fpr, secret=True)
+     dmsub = c.create_subkey(key, algorithm="rsa3072", expires_in=15768000,
+			     encrypt=True)
    #+end_src
 
    As with the primary key, the results here can be checked with:
@@ -1206,38 +1214,66 @@
    :CUSTOM_ID: keygen-uids
    :END:
 
-   By comparison to creating primary keys and subkeys, adding a new
-   user ID to an existing key is much simpler.  The method used to do
-   this is =key_add_uid= and the only arguments it takes are for the
-   =key= and the new =uid=.
 
-   #+begin_src python
-     import gpg
+*** Adding User IDs
+    :PROPERTIES:
+    :CUSTOM_ID: keygen-uids-add
+    :END:
 
-     c = gpg.Context()
-     c.home_dir = "~/.gnupg-dm"
+    By comparison to creating primary keys and subkeys, adding a new
+    user ID to an existing key is much simpler.  The method used to do
+    this is =key_add_uid= and the only arguments it takes are for the
+    =key= and the new =uid=.
 
-     dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
-     key = c.get_key(dmfpr, secret = True)
-     uid = "Danger Mouse <danger.mouse@secret.example.net>"
+    #+begin_src python
+      import gpg
 
-     c.key_add_uid(key, uid)
-   #+end_src
+      c = gpg.Context()
+      c.home_dir = "~/.gnupg-dm"
 
-   Unsurprisingly the result of this is:
+      dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+      key = c.get_key(dmfpr, secret=True)
+      uid = "Danger Mouse <danger.mouse@secret.example.net>"
 
-   #+begin_src shell
-     bash-4.4$ gpg --homedir ~/.gnupg-dm -K
-     ~/.gnupg-dm/pubring.kbx
-     ----------------------
-     sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
-	   177B7C25DB99745EE2EE13ED026D2F19E99E63AA
-     uid           [ultimate] Danger Mouse <danger.mouse@secret.example.net>
-     uid           [ultimate] Danger Mouse <dm@secret.example.net>
-     ssb   rsa3072 2018-03-15 [E] [expires: 2018-09-13]
+      c.key_add_uid(key, uid)
+    #+end_src
 
-     bash-4.4$
-   #+end_src
+    Unsurprisingly the result of this is:
+
+    #+begin_src shell
+      bash-4.4$ gpg --homedir ~/.gnupg-dm -K
+      ~/.gnupg-dm/pubring.kbx
+      ----------------------
+      sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
+	    177B7C25DB99745EE2EE13ED026D2F19E99E63AA
+      uid           [ultimate] Danger Mouse <danger.mouse@secret.example.net>
+      uid           [ultimate] Danger Mouse <dm@secret.example.net>
+      ssb   rsa3072 2018-03-15 [E] [expires: 2018-09-13]
+
+      bash-4.4$
+    #+end_src
+
+
+*** Revokinging User IDs
+    :PROPERTIES:
+    :CUSTOM_ID: keygen-uids-revoke
+    :END:
+
+    Revoking a user ID is a fairly similar process, except that it
+    uses the =key_revoke_uid= method.
+
+    #+begin_src python
+      import gpg
+
+      c = gpg.Context()
+      c.home_dir = "~/.gnupg-dm"
+
+      dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+      key = c.get_key(dmfpr, secret=True)
+      uid = "Danger Mouse <danger.mouse@secret.example.net>"
+
+      c.key_revoke_uid(key, uid)
+    #+end_src
 
 
 ** Key certification
@@ -1251,8 +1287,8 @@
    The =key_sign= method takes four arguments: =key=, =uids=,
    =expires_in= and =local=.  The default value of =uids= is =None=
    and which results in all user IDs being selected.  The default
-   values of =expires_in= and =local= is =False=; which results in the
-   signature never expiring and being able to be exported.
+   value of both =expires_in= and =local= is =False=; which results in
+   the signature never expiring and being able to be exported.
 
    The =key= is the key being signed rather than the key doing the
    signing.  To change the key doing the signing refer to the signing
@@ -1273,8 +1309,8 @@
      uid = "Danger Mouse <dm@secret.example.net>"
 
      dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
-     key = c.get_key(dmfpr, secret = True)
-     c.key_sign(key, uids = uid, expires_in = 2764800)
+     key = c.get_key(dmfpr, secret=True)
+     c.key_sign(key, uids=uid, expires_in=2764800)
    #+end_src
 
 
