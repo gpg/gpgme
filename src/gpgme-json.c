@@ -41,6 +41,10 @@
 #include "cJSON.h"
 
 
+#if GPGRT_VERSION_NUMBER < 0x011c00 /* 1.28 */
+int main (void){fputs ("Build with Libgpg-error >= 1.28!\n", stderr);return 1;}
+#else /* libgpg-error >= 1.28 */
+
 /* We don't allow a request with more than 64 MiB.  */
 #define MAX_REQUEST_SIZE (64 * 1024 * 1024)
 
@@ -1369,3 +1373,4 @@ main (int argc, char *argv[])
 #endif /* This is a modern libgp-error.  */
   return 0;
 }
+#endif /* libgpg-error >= 1.28 */
