@@ -316,6 +316,46 @@
    operation type has one.
 
 
+** GPGME and Python Bindings Versions
+   :PROPERTIES:
+   :CUSTOM_ID: howto-get-version-info
+   :END:
+
+   Essentially there are two methods for checking useful version
+   information.
+
+   The first, =gpg.core.check_version=, returns the version of GPGME
+   installed.  This should match the version of the Python bindings
+   themselves, but if the bindings have been installed separately from
+   GPGME (e.g. via PyPI, in spite of the current recommendations) then
+   a mismatch is possible and the effects may be unpredictable.
+
+   #+begin_src python
+     import gpg
+
+     print(gpg.core.check_version(version=None))
+   #+end_src
+
+   The quick way to see whether the output of =gpg.core.check_version()=
+   matches the GPGME library installed is to see if the version number
+   reported matches the first header produced by the =gpgme-tool=
+   installed with the library.
+
+   The second method, =gpg.core.get_engine_info=, returns version
+   information for the underlying engines, libraries and relevant
+   components.  It also returns the full paths of certain important
+   executables, particularly =gpg= or =gpg.exe= for the OpenPGP engine
+   and =gpgsm= or =gpgsm.exe= for the S/MIME engine.
+
+   #+begin_src python
+     import gpg
+
+     for i in range(len(gpg.core.get_engine_info())):
+	 print("{0}: version {1}".format(gpg.core.get_engine_info()[i].file_name,
+					 gpg.core.get_engine_info()[i].version))
+   #+end_src
+
+
 * Working with keys
   :PROPERTIES:
   :CUSTOM_ID: howto-keys
