@@ -23,6 +23,7 @@ from __future__ import absolute_import, division, unicode_literals
 # Lesser General Public along with this program; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import gpg
 import subprocess
 
 """
@@ -31,7 +32,9 @@ Intended for use with other scripts.
 Usage: from groups import group_lists
 """
 
-lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
+gpgconf = gpg.core.get_engine_info()[2].file_name
+gpgconf_cmd "{0} --list-options gpg".format(gpgconf)
+lines = subprocess.getoutput(gpgconf_cmd).splitlines()
 
 for i in range(len(lines)):
     if lines[i].startswith("group") is True:
