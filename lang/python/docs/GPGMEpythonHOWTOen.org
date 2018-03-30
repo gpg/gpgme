@@ -1334,9 +1334,12 @@
    this information in Python.
 
    #+begin_src python
+     import gpg
      import subprocess
 
-     lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
+     gpgconf = gpg.core.get_engine_info()[2].file_name
+     gpgconf_cmd "{0} --list-options gpg".format(gpgconf)
+     lines = subprocess.getoutput(gpgconf_cmd).splitlines()
 
      for i in range(len(lines)):
 	 if lines[i].startswith("group") is True:
