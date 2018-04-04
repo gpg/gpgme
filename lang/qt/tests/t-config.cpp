@@ -39,6 +39,8 @@
 #include "t-support.h"
 #include "protocol.h"
 #include "cryptoconfig.h"
+#include "engineinfo.h"
+
 #include <unistd.h>
 
 using namespace QGpgME;
@@ -51,7 +53,7 @@ private Q_SLOTS:
     void testKeyserver()
     {
         // Repeatedly set a config value and clear it
-        // this war broken at some point so it gets a
+        // this was broken at some point so it gets a
         // unit test.
         for (int i = 0; i < 10; i++) {
             auto conf = cryptoConfig();
@@ -76,6 +78,36 @@ private Q_SLOTS:
                     QStringLiteral("keyserver"));
             QCOMPARE (entry->stringValue(), QString());
         }
+    }
+
+    void testDefault()
+    {
+        if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.2.0") {
+            // We are using compliance here and other options might also
+            // be unsupported in older versions.
+            return;
+        }
+        // First set compliance to de-vs
+        auto conf = cryptoConfig();
+        QVERIFY(conf);
+        auto entry = conf->entry(QStringLiteral("gpg"),
+                QStringLiteral("Configuration"),
+                QStringLiteral("compliance"));
+        QVERIFY(entry);
+        entry->setStringValue("de-vs");
+        conf->sync(true);
+        conf->clear();
+        entry = conf->entry(QStringLiteral("gpg"),
+                QStringLiteral("Configuration"),
+                QStringLiteral("compliance"));
+        QCOMPARE(entry->stringValue(), QStringLiteral("de-vs"));
+        entry->resetToDefault();
+        conf->sync(true);
+        conf->clear();
+        entry = conf->entry(QStringLiteral("gpg"),
+                QStringLiteral("Configuration"),
+                QStringLiteral("compliance"));
+        QCOMPARE(entry->stringValue(), QStringLiteral("gnupg"));
     }
 
     void initTestCase()
