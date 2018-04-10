@@ -1,0 +1,52 @@
+This is an example app for gpgme-json.
+As of now, it only encrypts a given text.
+
+Installation
+-------------
+
+gpgmejs uses webpack, the builds can be found in dist/
+(the testapplication uses that script at that location). To create a new
+package, the command is npx webpack --config webpack.conf.js.
+If you want a more debuggable (i.e. not minified) build, just change the mode
+in webpack.conf.js.
+
+Demo WebExtension:
+As soon as a bundled webpack is in dist/ (TODO: .gitignore or not?),
+the gpgmejs folder can just be included in the extensions tab of the browser in
+questions (extension debug mode needs to be active). For chrome, selecting the
+folder is sufficient, for firefox, the manifest.json needs to be selected.
+
+In the browsers' nativeMessaging configuration folder a file 'gpgmejs.json'
+is needed, with the following content:
+
+(The path to the native app gpgme-json may need adaption)
+
+Chromium:
+~/.config/chromium/NativeMessagingHosts/gpgmejson.json
+
+{
+  "name": "gpgmejson",
+  "description": "This is a test application for gpgmejs",
+  "path": "/usr/bin/gpgme-json",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://ExtensionIdentifier/"]
+}
+The ExtensionIdentifier can be seen on the chrome://extensions page, and
+changes on each reinstallation. Note the slashes in allowed_origins.
+
+
+Firefox:
+~/.mozilla/native-messaging-hosts/gpgmejson.json
+{
+  "name": "gpgmejson",
+  "description": "This is a test application for gpgmejs",
+  "path": "/usr/bin/gpgme-json",
+  "type": "stdio",
+  "allowed_extensions": ["ExtensionIdentifier@temporary-addon"]
+}
+The ExtensionIdentifier can be seen as Extension ID on the about:addons page if
+addon-debugging is active. In firefox, the temporary addon is removed once
+firefox exits, and the identifier will need to be changed more often.
+
+For testing purposes, it could be a good idea to change the keyID in the
+ui.html, to not having to type it every time.

@@ -13,4 +13,4 @@ cl		Common Lisp
 cpp		C++
 qt		Qt-Framework API
 python		Python 2 and 3 (module name: gpg)
-javascript      Native messaging client for the gpgme-json server.
+js              Native messaging client for the gpgme-json server.

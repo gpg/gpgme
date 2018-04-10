@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+
+  "name": "gpgme-json with native Messaging",
+  "description": "This should be able to encrypt a text using gpgme-json",
+  "version": "0.1",
+  "content_security_policy": "default-src 'self' 'unsafe-eval' filesystem",
+  "browser_action": {
+    "default_icon": "testicon.png",
+    "default_title": "gpgme.js",
+    "default_popup": "ui.html"
+  },
+  "permissions": ["nativeMessaging", "activeTab"],
+
+  "background": {
+    "scripts": [ "dist/gpgmejs.bundle.js"]
+  }
+}

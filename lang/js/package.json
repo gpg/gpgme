@@ -1,0 +1,17 @@
+{
+  "name": "gpgmejs",
+  "version": "0.0.1",
+  "description": "javascript part of a nativeMessaging gnupg integration",
+  "main": "src/gpgmejs.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "webpack": "^4.3.0",
+    "webpack-cli": "^2.0.13"
+  }
+}
