@@ -267,10 +267,12 @@ main (int argc, char *argv[])
   err = gpgme_op_verify (ctx, sig, text, NULL);
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);
-  check_result (result, 2, 0, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+  check_result (result, 2, 0, 0,
+                "A0FF4590BB6122EDEF6E3C542D727CC768697734",
 		GPG_ERR_NO_ERROR, 1);
-  check_result (result, 2, 1, 0, "36EC2A70C6426EB0FCE5BB4DF91C98F049D4204C",
-		GPG_ERR_NO_ERROR, 0);
+  check_result (result, 2, 1, GPGME_SIGSUM_KEY_MISSING,
+                "36EC2A70C6426EB0FCE5BB4DF91C98F049D4204C",
+		GPG_ERR_NO_PUBKEY, 0);
 
 
   /* Checking a normal signature.  */
