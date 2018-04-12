@@ -398,7 +398,13 @@ _gpgme_parse_plaintext (char *args, char **filenamep)
 
 
 /* Parse a FAILURE status line and return the error code.  ARGS is
-   modified to contain the location part.  */
+ * modified to contain the location part.  Note that for now we ignore
+ * failure codes with a location of gpg-exit; they are too trouble
+ * some.  Instead we should eventually record that error in the
+ * context and provide a function to return a fuller error
+ * description; this could then also show the location of the error
+ * (e.g. "option- parser") to make it easier for the user to detect
+ * the actual error. */
 gpgme_error_t
 _gpgme_parse_failure (char *args)
 {
@@ -416,6 +422,8 @@ _gpgme_parse_failure (char *args)
     *where = '\0';
 
   where = args;
+  if (!strcmp (where, "gpg-exit"))
+    return 0;
 
   return atoi (which);
 }
