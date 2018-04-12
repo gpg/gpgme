@@ -284,6 +284,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args,
   gpgme_signature_t sig;
   char *end = strchr (args, ' ');
   char *tail;
+  int got_fpr = 0;
 
   if (end)
     {
@@ -370,7 +371,23 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args,
       if (!*end)
 	goto parse_err_sig_fail;
 
-      sig->status = strtoul (end, NULL, 10);
+      gpg_err_set_errno (0);
+      sig->status = strtoul (end, &tail, 10);
+      if (errno || end == tail || (*tail && *tail != ' '))
+	goto parse_err_sig_fail;
+      if (!*tail)
+        goto parse_err_sig_ok;
+      end = tail;
+      while (*end == ' ')
+	end++;
+
+      /* Parse the new fingerprint (from the ISSUER_FPR subpacket).  */
+      if (!*end || (*end == '-' && (end[1] == ' ' || !end[1])))
+        goto parse_err_sig_ok;  /* Okay (just trailing spaces).  */
+      sig->fpr = strdup (end);
+      if (!sig->fpr)
+	return gpg_error_from_syserror ();
+      got_fpr = 1;
       goto parse_err_sig_ok;
 
     parse_err_sig_fail:
@@ -382,7 +399,7 @@ parse_new_sig (op_data_t opd, gpgme_status_code_t code, char *args,
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  if (*args)
+  if (*args && !got_fpr)
     {
       sig->fpr = strdup (args);
       if (!sig->fpr)
