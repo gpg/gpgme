@@ -163,15 +163,22 @@ print_result (gpgme_verify_result_t result)
               );
       for (nt = sig->notations; nt; nt = nt->next)
         {
-          printf ("  notation ..: '%s'\n", nt->name);
-          if (strlen (nt->name) != nt->name_len)
-            printf ("    warning : name larger (%d)\n", nt->name_len);
-          printf ("    flags ...:%s%s (0x%02x)\n",
-                  nt->critical? " critical":"",
-                  nt->human_readable? " human":"",
-                  nt->flags);
-          if (nt->value)
-            printf ("    value ...: '%s'\n", nt->value);
+          if (nt->name)
+            {
+              printf ("  notation ..: '%s'\n", nt->name);
+              if (strlen (nt->name) != nt->name_len)
+                printf ("    warning : name larger (%d)\n", nt->name_len);
+              printf ("    flags ...:%s%s (0x%02x)\n",
+                      nt->critical? " critical":"",
+                      nt->human_readable? " human":"",
+                      nt->flags);
+              if (nt->value)
+                printf ("    value ...: '%s'\n", nt->value);
+            }
+          else
+            {
+              printf ("  policy ....: '%s'\n", nt->value);
+            }
           if ((nt->value?strlen (nt->value):0) != nt->value_len)
             printf ("    warning : value larger (%d)\n", nt->value_len);
         }
