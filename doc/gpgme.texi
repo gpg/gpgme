@@ -3069,7 +3069,13 @@ the time when you verified the signature.
 The string given in @var{value} is passed to the GnuPG engines to
 request restrictions based on the origin of the request.  Valid values
 are documented in the GnuPG manual and the gpg man page under the
-option ``--request-origin''.
+option ``--request-origin''.  Requires at least GnuPG 2.2.6 to have an
+effect.
+
+@item "no-symkey-cache"
+For OpenPGP disable the passphrase cache used for symmetrical en- and
+decryption.  This cache is based on the message specific salt value.
+Requires at least GnuPG 2.2.7 to have an effect.
 
 @end table
 

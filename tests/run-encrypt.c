@@ -80,17 +80,18 @@ show_usage (int ex)
 {
   fputs ("usage: " PGM " [options] FILE\n\n"
          "Options:\n"
-         "  --verbose        run in verbose mode\n"
-         "  --status         print status lines from the backend\n"
-         "  --progress       print progress info\n"
-         "  --openpgp        use the OpenPGP protocol (default)\n"
-         "  --cms            use the CMS protocol\n"
-         "  --uiserver       use the UI server\n"
-         "  --loopback       use a loopback pinentry\n"
-         "  --key NAME       encrypt to key NAME\n"
-         "  --throw-keyids   use this option\n"
-         "  --wrap           assume input is valid OpenPGP message\n"
-         "  --symmetric      encrypt symmetric (OpenPGP only)\n"
+         "  --verbose          run in verbose mode\n"
+         "  --status           print status lines from the backend\n"
+         "  --progress         print progress info\n"
+         "  --openpgp          use the OpenPGP protocol (default)\n"
+         "  --cms              use the CMS protocol\n"
+         "  --uiserver         use the UI server\n"
+         "  --loopback         use a loopback pinentry\n"
+         "  --key NAME         encrypt to key NAME\n"
+         "  --throw-keyids     use this option\n"
+         "  --no-symkey-cache  disable the use of that cache\n"
+         "  --wrap             assume input is valid OpenPGP message\n"
+         "  --symmetric        encrypt symmetric (OpenPGP only)\n"
          , stderr);
   exit (ex);
 }
@@ -115,6 +116,7 @@ main (int argc, char **argv)
   int i;
   gpgme_encrypt_flags_t flags = GPGME_ENCRYPT_ALWAYS_TRUST;
   gpgme_off_t offset;
+  int no_symkey_cache = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -192,6 +194,11 @@ main (int argc, char **argv)
           flags |= GPGME_ENCRYPT_SYMMETRIC;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--no-symkey-cache"))
+        {
+          no_symkey_cache = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -226,6 +233,16 @@ main (int argc, char **argv)
     {
       gpgme_set_pinentry_mode (ctx, GPGME_PINENTRY_MODE_LOOPBACK);
       gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
+    }
+  if (no_symkey_cache)
+    {
+      err = gpgme_set_ctx_flag (ctx, "no-symkey-cache", "1");
+      if (err)
+        {
+          fprintf (stderr, PGM ": error setting no-symkey-cache:  %s\n",
+                   gpgme_strerror (err));
+          exit (1);
+        }
     }
 
   for (i=0; i < keycount; i++)

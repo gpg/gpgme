@@ -121,6 +121,9 @@ struct gpgme_context
   /* True if the option --auto-key-retrieve shall be passed to gpg.  */
   unsigned int auto_key_retrieve : 1;
 
+  /* Do not use the symmtric encryption passphrase cache.  */
+  unsigned int no_symkey_cache : 1;
+
   /* Flags for keylist mode.  */
   gpgme_keylist_mode_t keylist_mode;
 

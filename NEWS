@@ -1,6 +1,8 @@
 Noteworthy changes in version 1.10.1 (unreleased)
 -------------------------------------------------
 
+ * New context flag "no-symkey-cache".
+
  * Interface changes relative to the 1.10.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_import_result_t       EXTENDED: New field 'skipped_v3_keys'

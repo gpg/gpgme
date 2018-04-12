@@ -60,7 +60,7 @@ print_result (gpgme_decrypt_result_t result)
   if (result->session_key)
     printf ("Session key: %s\n", result->session_key);
 
-  for (recp = result->recipients; recp->next; recp = recp->next)
+  for (recp = result->recipients; recp && recp->next; recp = recp->next)
     {
       printf ("recipient %d\n", count++);
       printf ("  status ....: %s\n", gpgme_strerror (recp->status));
@@ -82,6 +82,7 @@ show_usage (int ex)
          "  --export-session-key            show the session key\n"
          "  --override-session-key STRING   use STRING as session key\n"
          "  --request-origin STRING         use STRING as request origin\n"
+         "  --no-symkey-cache               disable the use of that cache\n"
          "  --unwrap         remove only the encryption layer\n"
          , stderr);
   exit (ex);
@@ -104,6 +105,7 @@ main (int argc, char **argv)
   int export_session_key = 0;
   const char *override_session_key = NULL;
   const char *request_origin = NULL;
+  int no_symkey_cache = 0;
   int raw_output = 0;
 
   if (argc)
@@ -158,6 +160,11 @@ main (int argc, char **argv)
           if (!argc)
             show_usage (1);
           request_origin = *argv;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--no-symkey-cache"))
+        {
+          no_symkey_cache = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--unwrap"))
@@ -221,6 +228,17 @@ main (int argc, char **argv)
       if (err)
         {
           fprintf (stderr, PGM ": error setting request_origin: %s\n",
+                   gpgme_strerror (err));
+          exit (1);
+        }
+    }
+
+  if (no_symkey_cache)
+    {
+      err = gpgme_set_ctx_flag (ctx, "no-symkey-cache", "1");
+      if (err)
+        {
+          fprintf (stderr, PGM ": error setting no-symkey-cache:  %s\n",
                    gpgme_strerror (err));
           exit (1);
         }
