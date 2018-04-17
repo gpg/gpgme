@@ -148,6 +148,7 @@ struct engine_gpg
 
   struct {
     unsigned int no_symkey_cache : 1;
+    unsigned int offline : 1;
   } flags;
 
   /* NULL or the data object fed to --override_session_key-fd.  */
@@ -647,12 +648,14 @@ gpg_set_engine_flags (void *engine, const gpgme_ctx_t ctx)
       else
         strcpy (gpg->request_origin, ctx->request_origin);
     }
-  else if (ctx->no_symkey_cache && have_gpg_version (gpg, "2.2.7"))
-    {
-      gpg->flags.no_symkey_cache = 1;
-    }
   else
     *gpg->request_origin = 0;
+
+  gpg->flags.no_symkey_cache = (ctx->no_symkey_cache
+                                && have_gpg_version (gpg, "2.2.7"));
+
+  gpg->flags.offline = (ctx->offline && have_gpg_version (gpg, "2.1.23"));
+
 }
 
 
@@ -884,7 +887,8 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
     argc++;
   if (!gpg->cmd.used)
     argc++;	/* --batch */
-  argc += 3;	/* --no-sk-comments, --request-origin, --no-symkey-cache */
+  argc += 4;	/* --no-sk-comments, --request-origin, --no-symkey-cache */
+                /* --disable-dirmngr  */
 
   argv = calloc (argc + 1, sizeof *argv);
   if (!argv)
@@ -949,6 +953,19 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
   if (gpg->flags.no_symkey_cache)
     {
       argv[argc] = strdup ("--no-symkey-cache");
+      if (!argv[argc])
+	{
+          int saved_err = gpg_error_from_syserror ();
+	  free (fd_data_map);
+	  free_argv (argv);
+	  return saved_err;
+        }
+      argc++;
+    }
+
+  if (gpg->flags.offline)
+    {
+      argv[argc] = strdup ("--disable-dirmngr");
       if (!argv[argc])
 	{
           int saved_err = gpg_error_from_syserror ();

@@ -2606,22 +2606,26 @@ valid pointer.
 @deftypefun void gpgme_set_offline (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{yes}})
 @since{1.6.0}
 
-The function @code{gpgme_set_offline} specifies if offline mode
-should be used.  By default, offline mode is not used.
+The function @code{gpgme_set_offline} specifies if offline mode should
+be used.  Offline mode is disabled if @var{yes} is zero, and enabled
+otherwise.  By default, offline mode is disabled.
 
-The offline mode specifies if dirmngr should be used to do additional
-validation that might require connections to external services.
-(e.g. CRL / OCSP checks).
+The details of the offline mode depend on the used protocol and its
+backend engine.  It may eventually be extended to be more stricter and
+for example completely disable the use of Dirmngr for any engine.
 
-Offline mode only affects the keylist mode @code{GPGME_KEYLIST_MODE_VALIDATE}
-and is only relevant to the CMS crypto engine. Offline mode
-is ignored otherwise.
+For the CMS protocol the offline mode specifies whether Dirmngr shall
+be used to do additional validation that might require connecting
+external services (e.g. CRL / OCSP checks).  Here the offline mode
+only affects the keylist mode @code{GPGME_KEYLIST_MODE_VALIDATE}.
 
-This option may be extended in the future to completely disable
-the use of dirmngr for any engine.
+For the OpenPGP protocol offline mode entirely disables the use of the
+Dirmngr and will thus guarantee that no network connections are done
+as part of an operation on this context.  It has only an effect with
+GnuPG versions 2.1.23 or later.
 
-Offline mode is disabled if @var{yes} is zero, and enabled
-otherwise.
+For all other protocols the offline mode is currently ignored.
+
 @end deftypefun
 
 @deftypefun int gpgme_get_offline (@w{gpgme_ctx_t @var{ctx}})
