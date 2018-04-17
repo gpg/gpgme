@@ -1368,6 +1368,10 @@ struct _gpgme_op_decrypt_result
   /* A textual representation of the session key used to decrypt the
    * message, if available */
   char *session_key;
+
+   /* A string with the symmetric encryption algorithm and mode using
+    * the format "<algo>.<mode>".  */
+  char *symkey_algo;
 };
 typedef struct _gpgme_op_decrypt_result *gpgme_decrypt_result_t;
 

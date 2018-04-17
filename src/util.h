@@ -165,9 +165,10 @@ time_t _gpgme_parse_timestamp (const char *timestamp, char **endp);
  * on error or missing timestamp.  */
 unsigned long _gpgme_parse_timestamp_ul (const char *timestamp);
 
-gpgme_error_t _gpgme_map_gnupg_error (char *err);
-
 int _gpgme_map_pk_algo (int algo, gpgme_protocol_t protocol);
+
+const char *_gpgme_cipher_algo_name (int algo, gpgme_protocol_t protocol);
+const char *_gpgme_cipher_mode_name (int algo, gpgme_protocol_t protocol);
 
 
 /*-- b64dec.c --*/

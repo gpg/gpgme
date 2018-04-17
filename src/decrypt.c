@@ -69,14 +69,10 @@ release_op_data (void *hook)
   op_data_t opd = (op_data_t) hook;
   gpgme_recipient_t recipient = opd->result.recipients;
 
-  if (opd->result.unsupported_algorithm)
-    free (opd->result.unsupported_algorithm);
-
-  if (opd->result.file_name)
-    free (opd->result.file_name);
-
-  if (opd->result.session_key)
-    free (opd->result.session_key);
+  free (opd->result.unsupported_algorithm);
+  free (opd->result.file_name);
+  free (opd->result.session_key);
+  free (opd->result.symkey_algo);
 
   while (recipient)
     {
@@ -102,6 +98,17 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
     {
       TRACE_SUC0 ("result=(null)");
       return NULL;
+    }
+
+  /* Make sure that SYMKEY_ALGO has a value.  */
+  if (!opd->result.symkey_algo)
+    {
+      opd->result.symkey_algo = strdup ("?.?");
+      if (!opd->result.symkey_algo)
+        {
+          TRACE_SUC0 ("result=(null)");
+          return NULL;
+        }
     }
 
   if (_gpgme_debug_trace ())
@@ -263,6 +270,49 @@ parse_enc_to (char *args, gpgme_recipient_t *recp, gpgme_protocol_t protocol)
 }
 
 
+/* Parse the ARGS of a
+ *   DECRYPTION_INFO <mdc_method> <sym_algo> [<aead_algo>]
+ * status.  Returns 0 on success and updates the OPD.
+ */
+static gpgme_error_t
+parse_decryption_info (char *args, op_data_t opd, gpgme_protocol_t protocol)
+{
+  char *field[3];
+  int nfields;
+  char *args2;
+  int mdc, mode;
+  const char *algostr, *modestr;
+
+  if (!args)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+
+  args2 = strdup (args); /* Split modifies the input string. */
+  nfields = _gpgme_split_fields (args2, field, DIM (field));
+  if (nfields < 2)
+    {
+      free (args2);
+      return trace_gpg_error (GPG_ERR_INV_ENGINE); /* Required arg missing.  */
+    }
+
+  mdc     = atoi (field[0]);
+  algostr = _gpgme_cipher_algo_name (atoi (field[1]), protocol);
+  mode    = nfields < 3? 0 : atoi (field[2]);
+  modestr = _gpgme_cipher_mode_name (mode, protocol);
+
+  free (args2);
+
+  free (opd->result.symkey_algo);
+  if (!mode && mdc != 2)
+    opd->result.symkey_algo = _gpgme_strconcat (algostr, ".PGPCFB", NULL);
+  else
+    opd->result.symkey_algo = _gpgme_strconcat (algostr, ".", modestr, NULL);
+  if (!opd->result.symkey_algo)
+    return gpg_error_from_syserror ();
+
+  return 0;
+}
+
+
 gpgme_error_t
 _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 			       char *args)
@@ -303,7 +353,9 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       break;
 
     case GPGME_STATUS_DECRYPTION_INFO:
-      /* Fixme: Provide a way to return the used symmetric algorithm. */
+      err = parse_decryption_info (args, opd, ctx->protocol);
+      if (err)
+	return err;
       break;
 
     case GPGME_STATUS_DECRYPTION_OKAY:

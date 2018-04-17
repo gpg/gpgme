@@ -5399,6 +5399,13 @@ You must not try to access this member of the struct unless
 or @code{gpgme_get_ctx_flag (ctx, "export-session-key")} returns true
 (non-empty string).
 
+@item char *symkey_algo
+@since{1.11.0}
+
+A string with the symmetric encryption algorithm and mode using the
+format "<algo>.<mode>".  Note that old non-MDC encryption mode of
+OpenPGP is given as "PGPCFB".
+
 @end table
 @end deftp
 

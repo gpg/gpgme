@@ -59,6 +59,7 @@ print_result (gpgme_decrypt_result_t result)
           nonnull(result->unsupported_algorithm));
   if (result->session_key)
     printf ("Session key: %s\n", result->session_key);
+  printf ("Symmetric algorithm: %s\n", result->symkey_algo);
 
   for (recp = result->recipients; recp && recp->next; recp = recp->next)
     {
