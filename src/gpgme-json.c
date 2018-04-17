@@ -569,6 +569,7 @@ static const char hlp_encrypt[] =
   "no-encrypt-to: Do not use a default recipient.\n"
   "no-compress:   Do not compress the plaintext first.\n"
   "throw-keyids:  Request the --throw-keyids option.\n"
+  "want-address:  Require that the keys include a mail address.\n"
   "wrap:          Assume the input is an OpenPGP message.\n"
   "\n"
   "Response on success:\n"
@@ -621,6 +622,10 @@ op_encrypt (cjson_t request, cjson_t result)
     goto leave;
   if (abool)
     encrypt_flags |= GPGME_ENCRYPT_WRAP;
+  if ((err = get_boolean_flag (request, "want-address", 0, &abool)))
+    goto leave;
+  if (abool)
+    encrypt_flags |= GPGME_ENCRYPT_WANT_ADDRESS;
 
 
   /* Get the keys.  */

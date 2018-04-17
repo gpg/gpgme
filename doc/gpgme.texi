@@ -6094,7 +6094,7 @@ also expect a sign command.
 
 The @code{GPGME_ENCRYPT_SYMMETRIC} symbol specifies that the
 output should be additionally encrypted symmetrically even
-if recipients are provided. This feature is only supported for
+if recipients are provided. This feature is only supported
 for the OpenPGP crypto engine.
 
 @item GPGME_ENCRYPT_THROW_KEYIDS
@@ -6112,6 +6112,18 @@ This flag is only honored for OpenPGP encryption.
 The @code{GPGME_ENCRYPT_WRAP} symbol specifies that the input is an
 OpenPGP message and not a plain data.  This is the counterpart to
 @code{GPGME_DECRYPT_UNWRAP}.
+
+@item GPGME_ENCRYPT_WANT_ADDRESS
+@since{1.11.0}
+
+The @code{GPGME_ENCRYPT_WANT_ADDRESS} symbol requests that all
+supplied keys or key specifications include a syntactically valid mail
+address.  If this is not the case the operation is not even tried and
+the error code @code{GPG_ERR_INV_USER_ID} is returned.  Only the
+address part of the key specification is conveyed to the backend.  As
+of now the key must be specified using the @var{recpstring} argument
+of the extended encrypt functions.  This feature is currently only
+supported for the OpenPGP crypto engine.
 
 @end table
 

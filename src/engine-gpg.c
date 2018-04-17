@@ -43,6 +43,7 @@
 #include "sema.h"
 #include "debug.h"
 #include "data.h"
+#include "mbox-util.h"
 
 #include "engine-backend.h"
 
@@ -1892,8 +1893,70 @@ gpg_edit (void *engine, int type, gpgme_key_t key, gpgme_data_t out,
 }
 
 
+/* Add a single argument from a key to an -r option.  */
+static gpg_error_t
+add_arg_recipient (engine_gpg_t gpg, gpgme_encrypt_flags_t flags,
+                   gpgme_key_t key)
+{
+  gpg_error_t err;
+
+  if ((flags & GPGME_ENCRYPT_WANT_ADDRESS))
+    {
+      /* We have no way to figure out which mail address was
+       * requested.  FIXME: It would be possible to figure this out by
+       * consulting the SENDER property of the context.  */
+      err = gpg_error (GPG_ERR_INV_USER_ID);
+    }
+  else
+    err = add_arg (gpg, key->subkeys->fpr);
+
+  return err;
+}
+
+
+/* Add a single argument from a USERID string to an -r option.  */
+static gpg_error_t
+add_arg_recipient_string (engine_gpg_t gpg, gpgme_encrypt_flags_t flags,
+                          const char *userid, int useridlen)
+{
+  gpg_error_t err;
+
+  if ((flags & GPGME_ENCRYPT_WANT_ADDRESS))
+    {
+      char *tmpstr, *mbox;
+
+      tmpstr = malloc (useridlen + 1);
+      if (!tmpstr)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          memcpy (tmpstr, userid, useridlen);
+          tmpstr[useridlen] = 0;
+
+          mbox = _gpgme_mailbox_from_userid (tmpstr);
+          if (!mbox)
+            {
+              err = gpg_error_from_syserror ();
+              if (gpg_err_code (err) == GPG_ERR_EINVAL)
+                err = gpg_error (GPG_ERR_INV_USER_ID);
+            }
+          else
+            err = add_arg (gpg, mbox);
+
+          free (mbox);
+          free (tmpstr);
+        }
+    }
+  else
+    err = add_arg_len (gpg, NULL, userid, useridlen);
+
+  return err;
+}
+
+
 static gpgme_error_t
-append_args_from_recipients (engine_gpg_t gpg, gpgme_key_t recp[])
+append_args_from_recipients (engine_gpg_t gpg, gpgme_encrypt_flags_t flags,
+                             gpgme_key_t recp[])
 {
   gpgme_error_t err = 0;
   int i = 0;
@@ -1905,7 +1968,7 @@ append_args_from_recipients (engine_gpg_t gpg, gpgme_key_t recp[])
       if (!err)
 	err = add_arg (gpg, "-r");
       if (!err)
-	err = add_arg (gpg, recp[i]->subkeys->fpr);
+	err = add_arg_recipient (gpg, flags, recp[i]);
       if (err)
 	break;
       i++;
@@ -1916,7 +1979,9 @@ append_args_from_recipients (engine_gpg_t gpg, gpgme_key_t recp[])
 
 /* Take recipients from the LF delimited STRING and add -r args.  */
 static gpg_error_t
-append_args_from_recipients_string (engine_gpg_t gpg, const char *string)
+append_args_from_recipients_string (engine_gpg_t gpg,
+                                    gpgme_encrypt_flags_t flags,
+                                    const char *string)
 {
   gpg_error_t err = 0;
   int any = 0;
@@ -1945,7 +2010,7 @@ append_args_from_recipients_string (engine_gpg_t gpg, const char *string)
         {
           err = add_arg (gpg, "-r");
           if (!err)
-            err = add_arg_len (gpg, NULL, string, n);
+            err = add_arg_recipient_string (gpg, flags, string, n);
           if (!err)
             any = 1;
         }
@@ -2009,9 +2074,9 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
 	err = add_arg (gpg, "--no-encrypt-to");
 
       if (!err && !recp && recpstring)
-	err = append_args_from_recipients_string (gpg, recpstring);
+	err = append_args_from_recipients_string (gpg, flags, recpstring);
       else if (!err)
-	err = append_args_from_recipients (gpg, recp);
+	err = append_args_from_recipients (gpg, flags, recp);
     }
 
   /* Tell the gpg object about the data.  */
@@ -2084,9 +2149,9 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
 	err = add_arg (gpg, "--no-encrypt-to");
 
       if (!err && !recp && recpstring)
-	err = append_args_from_recipients_string (gpg, recpstring);
+	err = append_args_from_recipients_string (gpg, flags, recpstring);
       else if (!err)
-	err = append_args_from_recipients (gpg, recp);
+	err = append_args_from_recipients (gpg, flags, recp);
     }
 
   if (!err)

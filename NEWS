@@ -9,6 +9,7 @@ Noteworthy changes in version 1.10.1 (unreleased)
  gpgme_op_encrypt_ext_start       NEW.
  gpgme_op_encrypt_sign_ext        NEW.
  gpgme_op_encrypt_sign_ext_start  NEW.
+ GPGME_ENCRYPT_WANT_ADDRESS       NEW.
  gpgme_import_result_t            EXTENDED: New field 'skipped_v3_keys'.
  cpp: Key::locate                 NEW.
  cpp: Data::toString              NEW.
