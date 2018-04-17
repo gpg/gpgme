@@ -1985,6 +1985,8 @@ append_args_from_recipients_string (engine_gpg_t gpg,
 {
   gpg_error_t err = 0;
   int any = 0;
+  int ignore = 0;
+  int hidden = 0;
   const char *s;
   int n;
 
@@ -2005,10 +2007,14 @@ append_args_from_recipients_string (engine_gpg_t gpg,
       while (n && (string[n-1] == ' ' || string[n-1] == '\t'))
         n--;
 
-      /* Add arg if it is not empty.  */
-      if (n)
+      if (!ignore && n == 2 && !memcmp (string, "--", 2))
+        ignore = 1;
+      else if (!ignore && n == 8 && !memcmp (string, "--hidden", 8))
+        hidden = 1;
+      else if (n)
         {
-          err = add_arg (gpg, "-r");
+          /* Add arg if it is not empty.  */
+          err = add_arg (gpg, hidden? "-R":"-r");
           if (!err)
             err = add_arg_recipient_string (gpg, flags, string, n);
           if (!err)

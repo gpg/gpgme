@@ -6180,8 +6180,16 @@ This is an extended version of @code{gpgme_op_encrypt} with
 @var{recpstring} is not NULL, the latter is expected to be a linefeed
 delimited string with the set of key specifications.  In contrast to
 @var{recp} the keys are given directly as strings and there is no need
-to first create key objects.  The keys are passed verbatim to the
-backend engine.
+to first create key objects.  Leading and trailing white space is
+remove from each line in @var{recpstring}.  The keys are then passed
+verbatim to the backend engine.
+
+For the OpenPGP backend two special keywords are supported to modify
+the operation: If the keyword "--hidden" is given as a recipient, it
+is skipped but will trun all following key specifications to be hidden
+recipients.  If the keyword "--" is given as a recipient, it will be
+skipped but no keywords will be detected in all following key
+specifications.
 
 @end deftypefun
 
