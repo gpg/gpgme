@@ -37,6 +37,19 @@
 static int verbose;
 
 
+static char *
+xstrdup (const char *string)
+{
+  char *p = strdup (string);
+  if (!p)
+    {
+      fprintf (stderr, "strdup failed\n");
+      exit (2);
+    }
+  return p;
+}
+
+
 static gpg_error_t
 status_cb (void *opaque, const char *keyword, const char *value)
 {
@@ -88,6 +101,7 @@ show_usage (int ex)
          "  --uiserver         use the UI server\n"
          "  --loopback         use a loopback pinentry\n"
          "  --key NAME         encrypt to key NAME\n"
+         "  --keystring NAMES  encrypt to ';' delimited NAMES\n"
          "  --throw-keyids     use this option\n"
          "  --no-symkey-cache  disable the use of that cache\n"
          "  --wrap             assume input is valid OpenPGP message\n"
@@ -103,7 +117,6 @@ main (int argc, char **argv)
   int last_argc = -1;
   gpgme_error_t err;
   gpgme_ctx_t ctx;
-  const char *key_string = NULL;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
   gpgme_data_t in, out;
   gpgme_encrypt_result_t result;
@@ -113,6 +126,7 @@ main (int argc, char **argv)
   char *keyargs[10];
   gpgme_key_t keys[10+1];
   int keycount = 0;
+  char *keystring = NULL;
   int i;
   gpgme_encrypt_flags_t flags = GPGME_ENCRYPT_ALWAYS_TRUST;
   gpgme_off_t offset;
@@ -174,6 +188,17 @@ main (int argc, char **argv)
           keyargs[keycount++] = *argv;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--keystring"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          keystring = xstrdup (*argv);
+          for (i=0; keystring[i]; i++)
+            if (keystring[i] == ';')
+              keystring[i] = '\n';
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--throw-keyids"))
         {
           flags |= GPGME_ENCRYPT_THROW_KEYIDS;
@@ -206,15 +231,6 @@ main (int argc, char **argv)
 
   if (argc != 1)
     show_usage (1);
-
-  if (key_string && protocol == GPGME_PROTOCOL_UISERVER)
-    {
-      fprintf (stderr, PGM ": ignoring --key in UI-server mode\n");
-      key_string = NULL;
-    }
-
-  if (!key_string)
-    key_string = "test";
 
   init_gpgme (protocol);
 
@@ -298,7 +314,8 @@ main (int argc, char **argv)
   err = gpgme_data_new (&out);
   fail_if_err (err);
 
-  err = gpgme_op_encrypt (ctx, keycount ? keys : NULL, flags, in, out);
+  err = gpgme_op_encrypt_ext (ctx, keycount ? keys : NULL, keystring,
+                              flags, in, out);
   result = gpgme_op_encrypt_result (ctx);
   if (result)
     print_result (result);
@@ -318,5 +335,6 @@ main (int argc, char **argv)
   for (i=0; i < keycount; i++)
     gpgme_key_unref (keys[i]);
   gpgme_release (ctx);
+  free (keystring);
   return 0;
 }

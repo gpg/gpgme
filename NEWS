@@ -5,10 +5,15 @@ Noteworthy changes in version 1.10.1 (unreleased)
 
  * Interface changes relative to the 1.10.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- gpgme_import_result_t       EXTENDED: New field 'skipped_v3_keys'
- cpp: Key::locate                     NEW.
- cpp: Data::toString                  NEW.
+ gpgme_op_encrypt_ext             NEW.
+ gpgme_op_encrypt_ext_start       NEW.
+ gpgme_op_encrypt_sign_ext        NEW.
+ gpgme_op_encrypt_sign_ext_start  NEW.
+ gpgme_import_result_t            EXTENDED: New field 'skipped_v3_keys'.
+ cpp: Key::locate                 NEW.
+ cpp: Data::toString              NEW.
  cpp: ImportResult::numV3KeysSkipped  NEW.
+
 
 Noteworthy changes in version 1.10.0 (2017-12-12)
 -------------------------------------------------

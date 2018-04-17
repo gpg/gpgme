@@ -214,6 +214,7 @@ _gpgme_op_encrypt_init_result (gpgme_ctx_t ctx)
 
 static gpgme_error_t
 encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
+               const char *recpstring,
 	       gpgme_encrypt_flags_t flags,
 	       gpgme_data_t plain, gpgme_data_t cipher)
 {
@@ -228,13 +229,13 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
   if (err)
     return err;
 
-  symmetric = !recp || (flags & GPGME_ENCRYPT_SYMMETRIC);
+  symmetric = (!recp && !recpstring) || (flags & GPGME_ENCRYPT_SYMMETRIC);
 
   if (!plain)
     return gpg_error (GPG_ERR_NO_DATA);
   if (!cipher)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (recp && ! *recp)
+  if (recp && !*recp)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if (symmetric && ctx->passphrase_cb)
@@ -252,48 +253,41 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
 				    : encrypt_status_handler,
 				    ctx);
 
-  return _gpgme_engine_op_encrypt (ctx->engine, recp, flags, plain, cipher,
-				   ctx->use_armor);
+  return _gpgme_engine_op_encrypt (ctx->engine, recp, recpstring,
+                                   flags, plain, cipher, ctx->use_armor);
 }
 
 
+/* Old version of gpgme_op_encrypt_ext without RECPSTRING.  */
+gpgme_error_t
+gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_key_t recp[],
+		  gpgme_encrypt_flags_t flags,
+		  gpgme_data_t plain, gpgme_data_t cipher)
+{
+  return gpgme_op_encrypt_ext (ctx, recp, NULL, flags, plain, cipher);
+}
+
+
+/* Old version of gpgme_op_encrypt_ext_start without RECPSTRING.  */
 gpgme_error_t
 gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
 			gpgme_encrypt_flags_t flags,
 			gpgme_data_t plain, gpgme_data_t cipher)
 {
-  gpgme_error_t err;
-
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_encrypt_start", ctx,
-	      "flags=0x%x, plain=%p, cipher=%p", flags, plain, cipher);
-
-  if (!ctx)
-    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-
-  if (_gpgme_debug_trace () && recp)
-    {
-      int i = 0;
-
-      while (recp[i])
-	{
-	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
-		      (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
-		      recp[i]->subkeys->fpr : "invalid");
-	  i++;
-	}
-    }
-
-  err = encrypt_start (ctx, 0, recp, flags, plain, cipher);
-  return TRACE_ERR (err);
+  return gpgme_op_encrypt_ext_start (ctx, recp, NULL, flags, plain, cipher);
 }
 
 
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
-   store the resulting ciphertext in CIPHER.  */
+ * store the resulting ciphertext in CIPHER.  RECPSTRING can be used
+ * instead of the RECP array to directly specify recipients as LF
+ * delimited strings; these may be any kind of recipient specification
+ * patterns as supported by the backend.  */
 gpgme_error_t
-gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_key_t recp[],
-		  gpgme_encrypt_flags_t flags,
-		  gpgme_data_t plain, gpgme_data_t cipher)
+gpgme_op_encrypt_ext (gpgme_ctx_t ctx, gpgme_key_t recp[],
+                      const char *recpstring,
+                      gpgme_encrypt_flags_t flags,
+                      gpgme_data_t plain, gpgme_data_t cipher)
 {
   gpgme_error_t err;
 
@@ -303,21 +297,67 @@ gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_key_t recp[],
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  if (_gpgme_debug_trace () && recp)
+  if (_gpgme_debug_trace () && (recp || recpstring))
     {
-      int i = 0;
+      if (recp)
+        {
+          int i = 0;
 
-      while (recp[i])
-	{
-	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
+          while (recp[i])
+            {
+              TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
 		      (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
-		      recp[i]->subkeys->fpr : "invalid");
-	  i++;
-	}
+                          recp[i]->subkeys->fpr : "invalid");
+              i++;
+            }
+        }
+      else
+        {
+          TRACE_LOG1 ("recipients = '%s'", recpstring);
+        }
     }
 
-  err = encrypt_start (ctx, 1, recp, flags, plain, cipher);
+  err = encrypt_start (ctx, 1, recp, recpstring, flags, plain, cipher);
   if (!err)
     err = _gpgme_wait_one (ctx);
+  return TRACE_ERR (err);
+}
+
+
+gpgme_error_t
+gpgme_op_encrypt_ext_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
+                            const char *recpstring,
+                            gpgme_encrypt_flags_t flags,
+                            gpgme_data_t plain, gpgme_data_t cipher)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_encrypt_start", ctx,
+	      "flags=0x%x, plain=%p, cipher=%p", flags, plain, cipher);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  if (_gpgme_debug_trace () && (recp || recpstring))
+    {
+      if (recp)
+        {
+          int i = 0;
+
+          while (recp[i])
+            {
+              TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
+                          (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
+                          recp[i]->subkeys->fpr : "invalid");
+              i++;
+            }
+        }
+      else
+        {
+          TRACE_LOG1 ("recipients = '%s'", recpstring);
+        }
+    }
+
+  err = encrypt_start (ctx, 0, recp, recpstring, flags, plain, cipher);
   return TRACE_ERR (err);
 }

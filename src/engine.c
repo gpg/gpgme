@@ -721,6 +721,7 @@ _gpgme_engine_op_edit (engine_t engine, int type, gpgme_key_t key,
 
 gpgme_error_t
 _gpgme_engine_op_encrypt (engine_t engine, gpgme_key_t recp[],
+                          const char *recpstring,
 			  gpgme_encrypt_flags_t flags,
 			  gpgme_data_t plain, gpgme_data_t ciph, int use_armor)
 {
@@ -730,13 +731,14 @@ _gpgme_engine_op_encrypt (engine_t engine, gpgme_key_t recp[],
   if (!engine->ops->encrypt)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->encrypt) (engine->engine, recp, flags, plain, ciph,
-				  use_armor);
+  return (*engine->ops->encrypt) (engine->engine, recp, recpstring,
+                                  flags, plain, ciph, use_armor);
 }
 
 
 gpgme_error_t
 _gpgme_engine_op_encrypt_sign (engine_t engine, gpgme_key_t recp[],
+                               const char *recpstring,
 			       gpgme_encrypt_flags_t flags,
 			       gpgme_data_t plain, gpgme_data_t ciph,
 			       int use_armor, gpgme_ctx_t ctx /* FIXME */)
@@ -747,8 +749,8 @@ _gpgme_engine_op_encrypt_sign (engine_t engine, gpgme_key_t recp[],
   if (!engine->ops->encrypt_sign)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->encrypt_sign) (engine->engine, recp, flags,
-				       plain, ciph, use_armor, ctx);
+  return (*engine->ops->encrypt_sign) (engine->engine, recp, recpstring,
+                                       flags, plain, ciph, use_armor, ctx);
 }
 
 

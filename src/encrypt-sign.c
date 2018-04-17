@@ -62,6 +62,7 @@ encrypt_sym_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 static gpgme_error_t
 encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
+                    const char *recpstring,
 		    gpgme_encrypt_flags_t flags,
 		    gpgme_data_t plain, gpgme_data_t cipher)
 {
@@ -72,7 +73,7 @@ encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
   if (err)
     return err;
 
-  symmetric = !recp || (flags & GPGME_ENCRYPT_SYMMETRIC);
+  symmetric = (!recp && !recpstring) || (flags & GPGME_ENCRYPT_SYMMETRIC);
 
   if (!plain)
     return gpg_error (GPG_ERR_NO_DATA);
@@ -103,53 +104,42 @@ encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
                                     : encrypt_sign_status_handler,
 				    ctx);
 
-  return _gpgme_engine_op_encrypt_sign (ctx->engine, recp, flags, plain,
+  return _gpgme_engine_op_encrypt_sign (ctx->engine, recp, recpstring,
+                                        flags, plain,
 					cipher, ctx->use_armor,
 					ctx /* FIXME */);
 }
 
 
-/* Encrypt plaintext PLAIN within CTX for the recipients RECP and
-   store the resulting ciphertext in CIPHER.  Also sign the ciphertext
-   with the signers in CTX.  */
+/* Old version of gpgme_op_encrypt_sign_ext_start w/o RECPSTRING.  */
 gpgme_error_t
 gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
 			     gpgme_encrypt_flags_t flags,
 			     gpgme_data_t plain, gpgme_data_t cipher)
 {
-  gpgme_error_t err;
-
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_encrypt_sign_start", ctx,
-	      "flags=0x%x, plain=%p, cipher=%p", flags, plain, cipher);
-
-  if (!ctx)
-    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-
-  if (_gpgme_debug_trace () && recp)
-    {
-      int i = 0;
-
-      while (recp[i])
-	{
-	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
-		      (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
-		      recp[i]->subkeys->fpr : "invalid");
-	  i++;
-	}
-    }
-
-  err = encrypt_sign_start (ctx, 0, recp, flags, plain, cipher);
-  return err;
+  return gpgme_op_encrypt_sign_ext_start (ctx, recp, NULL,
+                                          flags, plain, cipher);
 }
 
 
-/* Encrypt plaintext PLAIN within CTX for the recipients RECP and
-   store the resulting ciphertext in CIPHER.  Also sign the ciphertext
-   with the signers in CTX.  */
+/* Old version of gpgme_op_encrypt_sign_ext w/o RECPSTRING.  */
 gpgme_error_t
 gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_key_t recp[],
 		       gpgme_encrypt_flags_t flags,
 		       gpgme_data_t plain, gpgme_data_t cipher)
+{
+  return gpgme_op_encrypt_sign_ext (ctx, recp, NULL, flags, plain, cipher);
+}
+
+
+/* Encrypt plaintext PLAIN within CTX for the recipients RECP and
+ * store the resulting ciphertext in CIPHER.  Also sign the ciphertext
+ * with the signers in CTX.  */
+gpgme_error_t
+gpgme_op_encrypt_sign_ext (gpgme_ctx_t ctx, gpgme_key_t recp[],
+                           const char *recpstring,
+                           gpgme_encrypt_flags_t flags,
+                           gpgme_data_t plain, gpgme_data_t cipher)
 {
   gpgme_error_t err;
 
@@ -159,21 +149,70 @@ gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_key_t recp[],
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  if (_gpgme_debug_trace () && recp)
+  if (_gpgme_debug_trace () && (recp || recpstring))
     {
-      int i = 0;
+      if (recp)
+        {
+          int i = 0;
 
-      while (recp[i])
-	{
-	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
-		      (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
-		      recp[i]->subkeys->fpr : "invalid");
-	  i++;
-	}
+          while (recp[i])
+            {
+              TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
+                          (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
+                          recp[i]->subkeys->fpr : "invalid");
+              i++;
+            }
+        }
+      else
+        {
+          TRACE_LOG1 ("recipients = '%s'", recpstring);
+        }
     }
 
-  err = encrypt_sign_start (ctx, 1, recp, flags, plain, cipher);
+  err = encrypt_sign_start (ctx, 1, recp, recpstring, flags, plain, cipher);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return TRACE_ERR (err);
+}
+
+
+/* Encrypt plaintext PLAIN within CTX for the recipients RECP and
+   store the resulting ciphertext in CIPHER.  Also sign the ciphertext
+   with the signers in CTX.  */
+gpgme_error_t
+gpgme_op_encrypt_sign_ext_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
+                                 const char *recpstring,
+                                 gpgme_encrypt_flags_t flags,
+                                 gpgme_data_t plain, gpgme_data_t cipher)
+{
+  gpgme_error_t err;
+
+  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_encrypt_sign_start", ctx,
+	      "flags=0x%x, plain=%p, cipher=%p", flags, plain, cipher);
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  if (_gpgme_debug_trace () && (recp || recpstring))
+    {
+      if (recp)
+        {
+          int i = 0;
+
+          while (recp[i])
+            {
+              TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
+                          (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
+                          recp[i]->subkeys->fpr : "invalid");
+              i++;
+            }
+        }
+      else
+        {
+          TRACE_LOG1 ("recipients = '%s'", recpstring);
+        }
+    }
+
+  err = encrypt_sign_start (ctx, 0, recp, recpstring, flags, plain, cipher);
+  return err;
 }

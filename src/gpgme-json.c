@@ -354,18 +354,19 @@ get_protocol (cjson_t json, gpgme_protocol_t *r_protocol)
 }
 
 
-/* Extract the keys from the KEYS array in the JSON object.  CTX is a
- * GPGME context object.  On success an array with the keys is stored
- * at R_KEYS.  In failure an error code is returned.  */
+/* Extract the keys from the "keys" array in the JSON object.  On
+ * success a string with the keys identifiers is stored at R_KEYS.
+ * The keys in that string are LF delimited.  On failure an error code
+ * is returned.  */
 static gpg_error_t
-get_keys (gpgme_ctx_t ctx, cjson_t json, gpgme_key_t **r_keys)
+get_keys (cjson_t json, char **r_keystring)
 {
-  gpg_error_t err;
   cjson_t j_keys, j_item;
   int i, nkeys;
-  gpgme_key_t *keys;
+  char *p;
+  size_t length;
 
-  *r_keys = NULL;
+  *r_keystring = NULL;
 
   j_keys = cJSON_GetObjectItem (json, "keys");
   if (!j_keys)
@@ -373,8 +374,15 @@ get_keys (gpgme_ctx_t ctx, cjson_t json, gpgme_key_t **r_keys)
   if (!cjson_is_array (j_keys) && !cjson_is_string (j_keys))
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  /* Fixme: We should better use a membuf like thing.  */
+  length = 1; /* For the EOS.  */
   if (cjson_is_string (j_keys))
-    nkeys = 1;
+    {
+      nkeys = 1;
+      length += strlen (j_keys->valuestring);
+      if (strchr (j_keys->valuestring, '\n'))
+        return gpg_error (GPG_ERR_INV_USER_ID);
+    }
   else
     {
       nkeys = cJSON_GetArraySize (j_keys);
@@ -385,41 +393,35 @@ get_keys (gpgme_ctx_t ctx, cjson_t json, gpgme_key_t **r_keys)
           j_item = cJSON_GetArrayItem (j_keys, i);
           if (!j_item || !cjson_is_string (j_item))
             return gpg_error (GPG_ERR_INV_VALUE);
+          if (i)
+            length++; /* Space for delimiter. */
+          length += strlen (j_item->valuestring);
+          if (strchr (j_item->valuestring, '\n'))
+            return gpg_error (GPG_ERR_INV_USER_ID);
         }
     }
 
-  /* Now allocate an array to store the gpgme key objects.  */
-  keys = xcalloc (nkeys + 1, sizeof *keys);
+  p = *r_keystring = xtrymalloc (length);
+  if (!p)
+    return gpg_error_from_syserror ();
 
   if (cjson_is_string (j_keys))
     {
-      err = gpgme_get_key (ctx, j_keys->valuestring, &keys[0], 0);
-      if (err)
-        goto leave;
+      strcpy (p, j_keys->valuestring);
     }
   else
     {
       for (i=0; i < nkeys; i++)
         {
           j_item = cJSON_GetArrayItem (j_keys, i);
-          err = gpgme_get_key (ctx, j_item->valuestring, &keys[i], 0);
-          if (err)
-            goto leave;
+          if (i)
+            *p++ = '\n'; /* Add delimiter.  */
+          p = stpcpy (p, j_item->valuestring);
         }
     }
-  err = 0;
-  *r_keys = keys;
-  keys = NULL;
-
- leave:
-  if (keys)
-    {
-      for (i=0; keys[i]; i++)
-        gpgme_key_unref (keys[i]);
-      xfree (keys);
-    }
-  return err;
+  return 0;
 }
+
 
 
 
@@ -582,11 +584,11 @@ op_encrypt (cjson_t request, cjson_t result)
   gpgme_ctx_t ctx = NULL;
   gpgme_protocol_t protocol;
   int opt_base64;
-  gpgme_key_t *keys = NULL;
+  char *keystring = NULL;
   cjson_t j_input;
   gpgme_data_t input = NULL;
   gpgme_data_t output = NULL;
-  int abool, i;
+  int abool;
   gpgme_encrypt_flags_t encrypt_flags = 0;
 
   if ((err = get_protocol (request, &protocol)))
@@ -622,7 +624,7 @@ op_encrypt (cjson_t request, cjson_t result)
 
 
   /* Get the keys.  */
-  err = get_keys (ctx, request, &keys);
+  err = get_keys (request, &keystring);
   if (err)
     {
       /* Provide a custom error response.  */
@@ -674,7 +676,8 @@ op_encrypt (cjson_t request, cjson_t result)
     }
 
   /* Encrypt.  */
-  err = gpgme_op_encrypt (ctx, keys, encrypt_flags, input, output);
+  err = gpgme_op_encrypt_ext (ctx, NULL, keystring, encrypt_flags,
+                              input, output);
   /* encrypt_result = gpgme_op_encrypt_result (ctx); */
   if (err)
     {
@@ -713,12 +716,7 @@ op_encrypt (cjson_t request, cjson_t result)
     }
 
  leave:
-  if (keys)
-    {
-      for (i=0; keys[i]; i++)
-        gpgme_key_unref (keys[i]);
-      xfree (keys);
-    }
+  xfree (keystring);
   release_context (ctx);
   gpgme_data_release (input);
   return err;

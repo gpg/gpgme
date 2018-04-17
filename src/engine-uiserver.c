@@ -1075,8 +1075,58 @@ set_recipients (engine_uiserver_t uiserver, gpgme_key_t recp[])
 }
 
 
+/* Take recipients from the LF delimited STRING and send RECIPIENT
+ * commands to gpgsm.  */
 static gpgme_error_t
-uiserver_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
+set_recipients_from_string (engine_uiserver_t uiserver, const char *string)
+{
+  gpg_error_t err = 0;
+  char *line = NULL;
+  int no_pubkey = 0;
+  const char *s;
+  int n;
+
+  for (;;)
+    {
+      while (*string == ' ' || *string == '\t')
+        string++;
+      if (!*string)
+        break;
+
+      s = strchr (string, '\n');
+      if (s)
+        n = s - string;
+      else
+        n = strlen (string);
+      while (n && (string[n-1] == ' ' || string[n-1] == '\t'))
+        n--;
+
+      gpgrt_free (line);
+      if (gpgrt_asprintf (&line, "RECIPIENT %.*s", n, string) < 0)
+        {
+          err = gpg_error_from_syserror ();
+          break;
+        }
+      string += n + !!s;
+
+      err = uiserver_assuan_simple_command (uiserver, line,
+                                            uiserver->status.fnc,
+                                            uiserver->status.fnc_value);
+
+      /* Fixme: Improve error reporting.  */
+      if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY)
+	no_pubkey++;
+      else if (err)
+        break;
+    }
+  gpgrt_free (line);
+  return err? err : no_pubkey? gpg_error (GPG_ERR_NO_PUBKEY) : 0;
+}
+
+
+static gpgme_error_t
+uiserver_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
+                  gpgme_encrypt_flags_t flags,
 		  gpgme_data_t plain, gpgme_data_t ciph, int use_armor)
 {
   engine_uiserver_t uiserver = engine;
@@ -1140,9 +1190,12 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 
   uiserver->inline_data = NULL;
 
-  if (recp)
+  if (recp || recpstring)
     {
-      err = set_recipients (uiserver, recp);
+      if (recp)
+        err = set_recipients (uiserver, recp);
+      else
+        err = set_recipients_from_string (uiserver, recpstring);
       if (err)
 	{
 	  gpgrt_free (cmd);

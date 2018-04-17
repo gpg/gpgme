@@ -215,10 +215,15 @@ GPGME_1.0 {
     gpgme_op_edit;
     gpgme_op_edit_start;
     gpgme_op_encrypt;
-    gpgme_op_encrypt_result;
-    gpgme_op_encrypt_sign;
-    gpgme_op_encrypt_sign_start;
     gpgme_op_encrypt_start;
+    gpgme_op_encrypt_ext;
+    gpgme_op_encrypt_ext_start;
+    gpgme_op_encrypt_sign;
+    gpgme_op_encrypt_sign_ext;
+    gpgme_op_encrypt_sign_start;
+    gpgme_op_encrypt_sign_ext_start;
+    gpgme_op_encrypt_result;
+
     gpgme_op_export;
     gpgme_op_export_ext;
     gpgme_op_export_ext_start;

@@ -6154,6 +6154,45 @@ pointer, and @code{GPG_ERR_UNUSABLE_PUBKEY} if @var{rset} does not
 contain any valid recipients.
 @end deftypefun
 
+@deftypefun gpgme_error_t gpgme_op_encrypt_ext @
+            (@w{gpgme_ctx_t @var{ctx}}, @
+             @w{gpgme_key_t @var{recp}[]}, @
+             @w{const char *@var{recpstring}}, @
+             @w{gpgme_encrypt_flags_t @var{flags}}, @
+             @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+
+@since{1.11.0}
+
+This is an extended version of @code{gpgme_op_encrypt} with
+@var{recpstring} as additional parameter.  If @var{recp} is NULL and
+@var{recpstring} is not NULL, the latter is expected to be a linefeed
+delimited string with the set of key specifications.  In contrast to
+@var{recp} the keys are given directly as strings and there is no need
+to first create key objects.  The keys are passed verbatim to the
+backend engine.
+
+@end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_encrypt_ext_start @
+            (@w{gpgme_ctx_t @var{ctx}}, @
+             @w{gpgme_key_t @var{recp}[]}, @
+             @w{const char *@var{recpstring}}, @
+             @w{gpgme_encrypt_flags_t @var{flags}}, @
+             @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+
+@since{1.11.0}
+
+This is an extended version of @code{gpgme_op_encrypt_start} with
+@var{recpstring} as additional parameter.  If @var{recp} is NULL and
+@var{recpstring} is not NULL, the latter is expected to be a linefeed
+delimited string with the set of key specifications.  In contrast to
+@var{recp} the keys are given directly as strings and there is no need
+to first create key objects.  The keys are passed verbatim to the
+backend engine.
+
+@end deftypefun
+
 @deftp {Data type} {gpgme_encrypt_result_t}
 This is a pointer to a structure used to store the result of a
 @code{gpgme_op_encrypt} operation.  After successfully encrypting
@@ -6201,6 +6240,44 @@ The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
 if @var{ctx}, @var{rset}, @var{plain} or @var{cipher} is not a valid
 pointer.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_encrypt_sign_ext @
+            (@w{gpgme_ctx_t @var{ctx}}, @
+             @w{gpgme_key_t @var{recp}[]}, @
+             @w{const char *@var{recpstring}}, @
+             @w{gpgme_encrypt_flags_t @var{flags}}, @
+             @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+
+@since{1.11.0}
+
+This is an extended version of @code{gpgme_op_encrypt_sign} with
+@var{recpstring} as additional parameter.  If @var{recp} is NULL and
+@var{recpstring} is not NULL, the latter is expected to be a linefeed
+delimited string with the set of key specifications.  In contrast to
+@var{recp} the keys are given directly as strings and there is no need
+to first create the key objects.  The keys are passed verbatim to the
+backend engine.
+
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_encrypt_sign_ext_start @
+            (@w{gpgme_ctx_t @var{ctx}}, @
+             @w{gpgme_key_t @var{recp}[]}, @
+             @w{const char *@var{recpstring}}, @
+             @w{gpgme_encrypt_flags_t @var{flags}}, @
+             @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+
+@since{1.11.0}
+
+This is an extended version of @code{gpgme_op_encrypt_sign_start} with
+@var{recpstring} as additional parameter.  If @var{recp} is NULL and
+@var{recpstring} is not NULL, the latter is expected to be a linefeed
+delimited string with the set of key specifications.  In contrast to
+@var{recp} the keys are given directly as strings and there is no need
+to first create the key objects.  The keys are passed verbatim to the
+backend engine.
+
 @end deftypefun
 
 

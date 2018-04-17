@@ -267,5 +267,10 @@ EXPORTS
 
     gpgme_op_conf_dir			  @199
 
+    gpgme_op_encrypt_ext                  @200
+    gpgme_op_encrypt_ext_start            @201
+    gpgme_op_encrypt_sign_ext             @202
+    gpgme_op_encrypt_sign_ext_start       @203
+
 ; END
 
