@@ -2001,9 +2001,11 @@ append_args_from_recipients_string (engine_gpg_t gpg,
                                     const char *string)
 {
   gpg_error_t err = 0;
+  gpgme_encrypt_flags_t orig_flags = flags;
   int any = 0;
   int ignore = 0;
   int hidden = 0;
+  int file = 0;
   const char *s;
   int n;
 
@@ -2028,10 +2030,22 @@ append_args_from_recipients_string (engine_gpg_t gpg,
         ignore = 1;
       else if (!ignore && n == 8 && !memcmp (string, "--hidden", 8))
         hidden = 1;
-      else if (n)
+      else if (!ignore && n == 11 && !memcmp (string, "--no-hidden", 11))
+        hidden = 0;
+      else if (!ignore && n == 6 && !memcmp (string, "--file", 6))
         {
-          /* Add arg if it is not empty.  */
-          err = add_arg (gpg, hidden? "-R":"-r");
+          file = 1;
+          /* Because the key is used as is we need to ignore this flag:  */
+          flags &= ~GPGME_ENCRYPT_WANT_ADDRESS;
+        }
+      else if (!ignore && n == 9 && !memcmp (string, "--no-file", 9))
+        {
+          file = 0;
+          flags = orig_flags;
+        }
+      else if (n) /* Not empty - use it.  */
+        {
+          err = add_arg (gpg, file? (hidden? "-F":"-f") : (hidden? "-R":"-r"));
           if (!err)
             err = add_arg_recipient_string (gpg, flags, string, n);
           if (!err)

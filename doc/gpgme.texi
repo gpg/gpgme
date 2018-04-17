@@ -6188,12 +6188,32 @@ to first create key objects.  Leading and trailing white space is
 remove from each line in @var{recpstring}.  The keys are then passed
 verbatim to the backend engine.
 
-For the OpenPGP backend two special keywords are supported to modify
-the operation: If the keyword "--hidden" is given as a recipient, it
-is skipped but will trun all following key specifications to be hidden
-recipients.  If the keyword "--" is given as a recipient, it will be
-skipped but no keywords will be detected in all following key
-specifications.
+For the OpenPGP backend several special keywords are supported to
+modify the operation.  These keywords are given instead of a key
+specification.  The currently supported keywords are:
+
+@table @code
+@item --hidden
+@itemx --no-hidden
+These keywords toggle between normal and hidden recipients for all
+following key specifications.  When a hidden recipient is requested
+the gpg option @option{-R} (or @option{-F} in file mode) is used
+instead of @option{-r} (@option{-f} in file mode).
+
+@item --file
+@itemx --no-file
+These keywords toggle between regular and file mode for all following
+key specification.  In file mode the option @option{-f} or @option{-F}
+is passed to gpg.  At least GnuPG version 2.1.14 is required to handle
+these options.  The @code{GPGME_ENCRYPT_WANT_ADDRESS} flag is ignored
+in file mode.
+
+@item --
+This keyword disables all keyword detection up to the end of the
+string.  All keywords are treated as verbatim arguments.
+
+@end table
+
 
 @end deftypefun
 
