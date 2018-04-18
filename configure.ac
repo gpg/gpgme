@@ -810,7 +810,7 @@ AH_BOTTOM([
 #define GPG_ERR_ENABLE_ERRNO_MACROS 1
 
 #define CRIGHTBLURB "Copyright (C) 2000 Werner Koch\n" \
-                    "Copyright (C) 2001--2017 g10 Code GmbH\n"
+                    "Copyright (C) 2001--2018 g10 Code GmbH\n"
 ])
 
 

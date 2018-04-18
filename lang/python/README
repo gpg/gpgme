@@ -1,6 +1,6 @@
-		   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-		    GPG - GPGME BINDINGS FOR PYTHON
-		   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    GPG - GPGME BINDINGS FOR PYTHON
+                   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
 Table of Contents
@@ -13,7 +13,7 @@ Table of Contents
 
 
 The "gpg" module is a python interface to the GPGME library:
-[https://www.gnupg.org/related_software/gpgme/]
+[https://www.gnupg.org/software/gpgme/]
 
 "gpg" offers two interfaces, one is a high-level, curated, and idiomatic
 interface that is implemented as a shim on top of the low-level
@@ -36,8 +36,8 @@ functionality of the underlying library.
 2 Bugs
 ══════
 
-  Please report bugs using our bug tracker using the category 'gpgme',
-  and topic 'python': [https://bugs.gnupg.org/gnupg/]
+  Please report bugs using our bug tracker [https://bugs.gnupg.org] with
+  tag (aka project) 'gpgme'.
 
 
 3 Authors
