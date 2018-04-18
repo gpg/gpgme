@@ -587,7 +587,9 @@ data_from_base64_string (gpgme_data_t *r_data, cjson_t json)
 /* Create a "data" object and the "type", "base64" and "more" flags
  * from DATA and append them to RESULT.  Ownership if DATA is
  * transferred to this function.  TYPE must be a fixed string.
- * CHUNKSIZE is the chunksize requested from the caller.  Note that
+ * CHUNKSIZE is the chunksize requested from the caller.  If BASE64 is
+ * -1 the need for base64 encoding is determined by the content of
+ * DATA, all other values are take as rtue or false.  Note that
  * op_getmore has similar code but works on PENDING_DATA which is set
  * here.  */
 static gpg_error_t
@@ -599,11 +601,7 @@ make_data_object (cjson_t result, gpgme_data_t data, size_t chunksize,
   size_t buflen;
   int c;
 
-  /* Adjust the chunksize if we need to do base64 conversion.  */
-  if (base64)
-    chunksize = (chunksize / 4) * 3;
-
-  if (!base64) /* Make sure that we really have a string.  */
+  if (!base64 || base64 == -1) /* Make sure that we really have a string.  */
     gpgme_data_write (data, "", 1);
 
   buffer = gpgme_data_release_and_get_mem (data, &buflen);
@@ -614,6 +612,23 @@ make_data_object (cjson_t result, gpgme_data_t data, size_t chunksize,
       goto leave;
     }
 
+  if (base64 == -1)
+    {
+      base64 = 0;
+      if (!buflen)
+        log_fatal ("Appended Nul byte got lost\n");
+      if (memchr (buffer, 0, buflen-1))
+        {
+          buflen--; /* Adjust for the extra nul byte.  */
+          base64 = 1;
+        }
+      /* Fixme: We might want to do more advanced heuristics than to
+       * only look for a Nul.  */
+    }
+
+  /* Adjust the chunksize if we need to do base64 conversion.  */
+  if (base64)
+    chunksize = (chunksize / 4) * 3;
 
   xjson_AddStringToObject (result, "type", type);
   xjson_AddBoolToObject (result, "base64", base64);
@@ -667,6 +682,7 @@ static const char hlp_encrypt[] =
   "\n"
   "Optional boolean flags (default is false):\n"
   "base64:        Input data is base64 encoded.\n"
+  "mime:          Indicate that data is a MIME object.\n"
   "armor:         Request output in armored format.\n"
   "always-trust:  Request --always-trust option.\n"
   "no-encrypt-to: Do not use a default recipient.\n"
@@ -690,6 +706,7 @@ op_encrypt (cjson_t request, cjson_t result)
   gpgme_protocol_t protocol;
   size_t chunksize;
   int opt_base64;
+  int opt_mime;
   char *keystring = NULL;
   cjson_t j_input;
   gpgme_data_t input = NULL;
@@ -704,6 +721,8 @@ op_encrypt (cjson_t request, cjson_t result)
     goto leave;
 
   if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
+    goto leave;
+  if ((err = get_boolean_flag (request, "mime", 0, &opt_mime)))
     goto leave;
 
   if ((err = get_boolean_flag (request, "armor", 0, &abool)))
@@ -777,6 +796,9 @@ op_encrypt (cjson_t request, cjson_t result)
           goto leave;
         }
     }
+  if (opt_mime)
+    gpgme_data_set_encoding (input, GPGME_DATA_ENCODING_MIME);
+
 
   /* Create an output data object.  */
   err = gpgme_data_new (&output);
@@ -806,6 +828,116 @@ op_encrypt (cjson_t request, cjson_t result)
 
  leave:
   xfree (keystring);
+  release_context (ctx);
+  gpgme_data_release (input);
+  gpgme_data_release (output);
+  return err;
+}
+
+
+
+static const char hlp_decrypt[] =
+  "op:     \"decrypt\"\n"
+  "data:   The encrypted data.\n"
+  "\n"
+  "Optional parameters:\n"
+  "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
+  "chunksize:     Max number of bytes in the resulting \"data\".\n"
+  "\n"
+  "Optional boolean flags (default is false):\n"
+  "base64:        Input data is base64 encoded.\n"
+  "\n"
+  "Response on success:\n"
+  "type:   \"plaintext\"\n"
+  "data:   The decrypted data.  This may be base64 encoded.\n"
+  "base64: Boolean indicating whether data is base64 encoded.\n"
+  "mime:   A Boolean indicating whether the data is a MIME object.\n"
+  "info:   An optional object with extra information.\n"
+  "more:   Optional boolean indicating that \"getmore\" is required.";
+static gpg_error_t
+op_decrypt (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  gpgme_protocol_t protocol;
+  size_t chunksize;
+  int opt_base64;
+  cjson_t j_input;
+  gpgme_data_t input = NULL;
+  gpgme_data_t output = NULL;
+  gpgme_decrypt_result_t decrypt_result;
+
+  if ((err = get_protocol (request, &protocol)))
+    goto leave;
+  ctx = get_context (protocol);
+  if ((err = get_chunksize (request, &chunksize)))
+    goto leave;
+
+  if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
+    goto leave;
+
+  /* Get the data.  Note that INPUT is a shallow data object with the
+   * storage hold in REQUEST.  */
+  j_input = cJSON_GetObjectItem (request, "data");
+  if (!j_input)
+    {
+      err = gpg_error (GPG_ERR_NO_DATA);
+      goto leave;
+    }
+  if (!cjson_is_string (j_input))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  if (opt_base64)
+    {
+      err = data_from_base64_string (&input, j_input);
+      if (err)
+        {
+          error_object (result, "Error decoding Base-64 encoded 'data': %s",
+                        gpg_strerror (err));
+          goto leave;
+        }
+    }
+  else
+    {
+      err = gpgme_data_new_from_mem (&input, j_input->valuestring,
+                                     strlen (j_input->valuestring), 0);
+      if (err)
+        {
+          error_object (result, "Error getting 'data': %s", gpg_strerror (err));
+          goto leave;
+        }
+    }
+
+  /* Create an output data object.  */
+  err = gpgme_data_new (&output);
+  if (err)
+    {
+      error_object (result, "Error creating output data object: %s",
+                    gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Decrypt.  */
+  err = gpgme_op_decrypt_ext (ctx, GPGME_DECRYPT_VERIFY,
+                              input, output);
+  decrypt_result = gpgme_op_decrypt_result (ctx);
+  if (err)
+    {
+      error_object (result, "Decryption failed: %s", gpg_strerror (err));
+      goto leave;
+    }
+  gpgme_data_release (input);
+  input = NULL;
+
+  if (decrypt_result->is_mime)
+    xjson_AddBoolToObject (result, "mime", 1);
+
+  err = make_data_object (result, output, chunksize, "plaintext", -1);
+  output = NULL;
+
+ leave:
   release_context (ctx);
   gpgme_data_release (input);
   gpgme_data_release (output);
@@ -947,7 +1079,7 @@ process_request (const char *request)
     const char * const helpstr;
   } optbl[] = {
     { "encrypt", op_encrypt, hlp_encrypt },
-
+    { "decrypt", op_decrypt, hlp_decrypt },
     { "getmore", op_getmore, hlp_getmore },
     { "help",    op_help,    hlp_help },
     { NULL }
