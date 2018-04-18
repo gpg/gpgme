@@ -33,6 +33,7 @@
 #include <locale.h>
 #endif
 #include <stdint.h>
+#include <sys/stat.h>
 
 #define GPGRT_ENABLE_ES_MACROS 1
 #define GPGRT_ENABLE_LOG_MACROS 1
@@ -842,7 +843,6 @@ process_request (const char *request)
 
               xjson_AddStringToObject (response, "op", op);
             }
-
         }
     }
   else  /* Operation not supported.  */
@@ -868,6 +868,48 @@ process_request (const char *request)
 /*
  *  Driver code
  */
+
+static char *
+get_file (const char *fname)
+{
+  gpg_error_t err;
+  estream_t fp;
+  struct stat st;
+  char *buf;
+  size_t buflen;
+
+  fp = es_fopen (fname, "r");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("can't open '%s': %s\n", fname, gpg_strerror (err));
+      return NULL;
+    }
+
+  if (fstat (es_fileno(fp), &st))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("can't stat '%s': %s\n", fname, gpg_strerror (err));
+      es_fclose (fp);
+      return NULL;
+    }
+
+  buflen = st.st_size;
+  buf = xmalloc (buflen+1);
+  if (es_fread (buf, buflen, 1, fp) != 1)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+      es_fclose (fp);
+      xfree (buf);
+      return NULL;
+    }
+  buf[buflen] = 0;
+  es_fclose (fp);
+
+  return buf;
+}
+
 
 /* Return a malloced line or NULL on EOF.  Terminate on read
  * error.  */
@@ -935,11 +977,26 @@ process_meta_commands (const char *request)
     result = process_request ("{ \"op\": \"help\","
                               " \"interactive_help\": "
                               "\"\\nMeta commands:\\n"
+                              "  ,read FNAME Process data from FILE\\n"
                               "  ,help       This help\\n"
                               "  ,quit       Terminate process\""
                               "}");
   else if (!strncmp (request, "quit", 4) && (spacep (request+4) || !request[4]))
     exit (0);
+  else if (!strncmp (request, "read", 4) && (spacep (request+4) || !request[4]))
+    {
+      if (!request[4])
+        log_info ("usage: ,read FILENAME\n");
+      else
+        {
+          char *buffer = get_file (request + 5);
+          if (buffer)
+            {
+              result = process_request (buffer);
+              xfree (buffer);
+            }
+        }
+    }
   else
     log_info ("invalid meta command\n");
 
