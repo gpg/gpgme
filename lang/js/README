@@ -1,20 +1,28 @@
-This is an example app for gpgme-json.
-As of now, it only encrypts a given text.
+gpgmejs, as contained in this directory, is a javascript library for direct use
+of gnupg in browsers, with the help of nativeMessaging.
 
 Installation
 -------------
+gpgmejs uses webpack, and thus depends on nodejs for building. Webpack can be
+installed by running
+`npm install webpack webpack-cli --save-dev`.
 
-gpgmejs uses webpack, the builds can be found in dist/
-(the testapplication uses that script at that location). To create a new
-package, the command is npx webpack --config webpack.conf.js.
+To create a current version of the package, the command is
+`npx webpack --config webpack.conf.js`.
 If you want a more debuggable (i.e. not minified) build, just change the mode
 in webpack.conf.js.
 
+TODO: gpgme_openpgpjs aims to offer an API similar to openpgpjs, throwing errors
+if some part of the API is not implemented, 'translating' objects if possible.
+This will be incorporated into the build process later, for now it is a line to
+uncomment in src/index.js
+
 Demo WebExtension:
-As soon as a bundled webpack is in dist/ (TODO: .gitignore or not?),
+As soon as a bundled webpack is in dist/
 the gpgmejs folder can just be included in the extensions tab of the browser in
 questions (extension debug mode needs to be active). For chrome, selecting the
 folder is sufficient, for firefox, the manifest.json needs to be selected.
+Please note that it is just for demonstration/debug purposes!
 
 In the browsers' nativeMessaging configuration folder a file 'gpgmejs.json'
 is needed, with the following content:
@@ -47,6 +55,3 @@ Firefox:
 The ExtensionIdentifier can be seen as Extension ID on the about:addons page if
 addon-debugging is active. In firefox, the temporary addon is removed once
 firefox exits, and the identifier will need to be changed more often.
-
-For testing purposes, it could be a good idea to change the keyID in the
-ui.html, to not having to type it every time.

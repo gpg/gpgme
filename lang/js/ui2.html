@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="ui.css"/>
+        <script src="dist/gpgmejs.bundle.js"></script>
+        <script src="testapplication.js"></script>
+    </head>
+    <body>
+	<ul>
+            <li>
+                <span class="label">Text: </span>
+	        <input type="text" id='cleartext' />
+            </li>
+            <li>
+                <span class="label">Public key ID: </span>
+                <input type="text" id="pubkey" value="" />
+            </li>
+    </ul>
+        <button id="buttonencrypt">Encrypt</button><br>
+    <hr>
+    <ul>
+        <li>
+            <span class="label">Encrypted armored Text: </span>
+            <textarea rows="5" cols="65" id="ciphertext" wrap="hard"></textarea>
+        </li>
+    </ul>
+        <button id="buttondecrypt">Decrypt</button><br>
+    <hr>
+    <h3>Result data:</h3>
+    <textarea id="answer" rows="5" cols="65" wrap="hard"></textarea>
+    </body>
+</html>

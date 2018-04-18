@@ -4,6 +4,6 @@ browsers'  manifests (see README) need allowedextension added, and the path set
 
 manifest.json/ csp needs adaption
 
-/dist contains a current build which is used by example app.
-We may either want to update it on every commit, or never at all, but not
-inconsistently.
+/dist should be built which is used by the example app.
+
+csp in manifest.json MUST NOT contain "unsafe-eval" in production!

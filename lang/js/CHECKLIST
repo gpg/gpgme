@@ -3,16 +3,19 @@ NativeConnection:
     [X] nativeConnection: successfully sending an encrypt request,
 receiving an answer
     [X] nativeConnection successfull on Chromium, chrome and firefox
-    [ ] nativeConnection successfull on Windows, macOS, Linux
-    [ ] nativeConnection with delayed, multipart (> 1MB) answer
+    [*] nativeConnection successfull on Windows, macOS, Linux
+    [*] nativeConnection with delayed, multipart (> 1MB) answer
 
 replicating Openpgpjs API:
 
     [*] Message handling (encrypt, verify, sign)
-    [ ] Key handling (import/export, modifying, status queries)
+        [x] encrypt
+        [ ] verify
+        [ ] sign
+    [*] Key handling (import/export, modifying, status queries)
     [ ] Configuration handling
     [ ] check for completeness
-    [ ] handling of differences to openpgpjs
+    [*] handling of differences to openpgpjs
 
 Communication with other implementations
 
@@ -21,10 +24,5 @@ Communication with other implementations
 Management:
     [*] Define the gpgme interface
     [ ] check Permissions (e.g. csp) for the different envs
-    [ ] agree on license
+    [X] agree on license
     [ ] tests
-
-
-Problems:
-    [X] gpgme-json: interactive mode vs. bytelength; filename
-    [X] nativeApp chokes on arrays. We will get rid of that bnativeapp anyhow
