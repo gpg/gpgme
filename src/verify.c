@@ -1094,6 +1094,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
       err = _gpgme_parse_plaintext (args, &opd->result.file_name);
       if (err)
 	return err;
+      break;
 
     case GPGME_STATUS_VERIFICATION_COMPLIANCE_MODE:
       PARSE_COMPLIANCE_FLAGS (args, opd->current_sig);
