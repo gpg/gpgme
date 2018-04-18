@@ -1,7 +1,6 @@
 # configure.ac for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-#               2009, 2010, 2011, 2012, 2013, 2014, 2015  g10 Code GmbH
+# Copyright (C) 2001-2018 g10 Code GmbH
 #
 # This file is part of GPGME.
 #
@@ -29,7 +28,7 @@ min_automake_version="1.14"
 # for the LT versions.
 m4_define(mym4_version_major, [1])
 m4_define(mym4_version_minor, [11])
-m4_define(mym4_version_micro, [0])
+m4_define(mym4_version_micro, [1])
 
 # Below is m4 magic to extract and compute the revision number, the
 # decimalized short revision number, a beta version string, and a flag
