@@ -1156,13 +1156,23 @@ process_meta_commands (const char *request)
     request++;
 
   if (!strncmp (request, "help", 4) && (spacep (request+4) || !request[4]))
-    result = process_request ("{ \"op\": \"help\","
-                              " \"interactive_help\": "
-                              "\"\\nMeta commands:\\n"
-                              "  ,read FNAME Process data from FILE\\n"
-                              "  ,help       This help\\n"
-                              "  ,quit       Terminate process\""
-                              "}");
+    {
+      if (request[4])
+        {
+          char *buf = xstrconcat ("{ \"help\":true, \"op\":\"", request+5,
+                                  "\" }", NULL);
+          result = process_request (buf);
+          xfree (buf);
+        }
+      else
+        result = process_request ("{ \"op\": \"help\","
+                                  " \"interactive_help\": "
+                                  "\"\\nMeta commands:\\n"
+                                  "  ,read FNAME Process data from FILE\\n"
+                                  "  ,help CMD   Print help for a command\\n"
+                                  "  ,quit       Terminate process\""
+                                  "}");
+    }
   else if (!strncmp (request, "quit", 4) && (spacep (request+4) || !request[4]))
     exit (0);
   else if (!strncmp (request, "read", 4) && (spacep (request+4) || !request[4]))
