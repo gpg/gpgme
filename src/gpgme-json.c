@@ -114,6 +114,19 @@ static struct
 
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 
+#ifndef HAVE_STPCPY
+static GPGRT_INLINE char *
+_my_stpcpy (char *a, const char *b)
+{
+  while (*b)
+    *a++ = *b++;
+  *a = 0;
+  return a;
+}
+#define stpcpy(a,b) _my_stpcpy ((a), (b))
+#endif /*!HAVE_STPCPY*/
+
+
 
 static void
 xoutofcore (const char *type)
