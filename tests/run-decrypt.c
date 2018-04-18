@@ -53,20 +53,21 @@ print_result (gpgme_decrypt_result_t result)
   gpgme_recipient_t recp;
   int count = 0;
 
-  printf ("Original file name: %s\n", nonnull(result->file_name));
-  printf ("Wrong key usage: %i\n", result->wrong_key_usage);
-  printf ("Unsupported algorithm: %s\n",
-          nonnull(result->unsupported_algorithm));
-  if (result->session_key)
-    printf ("Session key: %s\n", result->session_key);
-  printf ("Symmetric algorithm: %s\n", result->symkey_algo);
+  printf ("Original file name .: %s\n", nonnull(result->file_name));
+  printf ("Wrong key usage ....: %s\n", result->wrong_key_usage? "yes":"no");
+  printf ("Compliance de-vs ...: %s\n", result->is_de_vs? "yes":"no");
+  printf ("MIME flag ..........: %s\n", result->is_mime? "yes":"no");
+  printf ("Unsupported algo ...: %s\n", nonnull(result->unsupported_algorithm));
+  printf ("Session key ........: %s\n", nonnull (result->session_key));
+  printf ("Symmetric algorithm : %s\n", result->symkey_algo);
 
   for (recp = result->recipients; recp && recp->next; recp = recp->next)
     {
-      printf ("recipient %d\n", count++);
+      printf ("Recipient ...: %d\n", count++);
       printf ("  status ....: %s\n", gpgme_strerror (recp->status));
-      printf ("  keyid: %s\n", nonnull (recp->keyid));
-      printf ("  algo ...: %s\n", gpgme_pubkey_algo_name (recp->pubkey_algo));
+      printf ("  keyid .....: %s\n", nonnull (recp->keyid));
+      printf ("  algo ......: %s\n",
+              gpgme_pubkey_algo_name (recp->pubkey_algo));
     }
 }
 

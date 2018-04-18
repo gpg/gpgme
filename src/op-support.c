@@ -358,7 +358,7 @@ _gpgme_parse_key_considered (const char *args,
 /* Parse the PLAINTEXT status line in ARGS and return the result in
    FILENAMEP.  */
 gpgme_error_t
-_gpgme_parse_plaintext (char *args, char **filenamep)
+_gpgme_parse_plaintext (char *args, char **filenamep, int *r_mime)
 {
   char *tail;
 
@@ -367,7 +367,9 @@ _gpgme_parse_plaintext (char *args, char **filenamep)
   if (*args == '\0')
     return 0;
 
-  /* First argument is file type.  */
+  /* First argument is file type (a one byte uppercase hex value).  */
+  if (args[0] == '6' && args[1] == 'D')
+    *r_mime = 1;
   while (*args != ' ' && *args != '\0')
     args++;
   while (*args == ' ')

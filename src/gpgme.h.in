@@ -1356,8 +1356,11 @@ struct _gpgme_op_decrypt_result
    * mode.  */
   unsigned int is_de_vs : 1;
 
+  /* The message claims that the content is a MIME object.  */
+  unsigned int is_mime : 1;
+
   /* Internal to GPGME, do not use.  */
-  int _unused : 30;
+  int _unused : 29;
 
   gpgme_recipient_t recipients;
 
@@ -1572,6 +1575,12 @@ struct _gpgme_op_verify_result
   /* The original file name of the plaintext message, if
      available.  */
   char *file_name;
+
+  /* The message claims that the content is a MIME object.  */
+  unsigned int is_mime : 1;
+
+  /* Internal to GPGME; do not use.  */
+  unsigned int _unused : 31;
 };
 typedef struct _gpgme_op_verify_result *gpgme_verify_result_t;
 

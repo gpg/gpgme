@@ -136,10 +136,11 @@ print_result (gpgme_verify_result_t result)
   gpgme_tofu_info_t ti;
   int count = 0;
 
-  printf ("Original file name: %s\n", nonnull(result->file_name));
+  printf ("Original file name .: %s\n", nonnull(result->file_name));
+  printf ("MIME flag ..........: %s\n", result->is_mime? "yes":"no");
   for (sig = result->signatures; sig; sig = sig->next)
     {
-      printf ("Signature %d\n", count++);
+      printf ("Signature ...: %d\n", count++);
       printf ("  status ....: %s\n", gpgme_strerror (sig->status));
       printf ("  summary ...:"); print_summary (sig->summary); putchar ('\n');
       printf ("  fingerprint: %s\n", nonnull (sig->fpr));
@@ -167,7 +168,7 @@ print_result (gpgme_verify_result_t result)
             {
               printf ("  notation ..: '%s'\n", nt->name);
               if (strlen (nt->name) != nt->name_len)
-                printf ("    warning : name larger (%d)\n", nt->name_len);
+                printf ("    warning .: name larger (%d)\n", nt->name_len);
               printf ("    flags ...:%s%s (0x%02x)\n",
                       nt->critical? " critical":"",
                       nt->human_readable? " human":"",
@@ -180,7 +181,7 @@ print_result (gpgme_verify_result_t result)
               printf ("  policy ....: '%s'\n", nt->value);
             }
           if ((nt->value?strlen (nt->value):0) != nt->value_len)
-            printf ("    warning : value larger (%d)\n", nt->value_len);
+            printf ("    warning .: value larger (%d)\n", nt->value_len);
         }
       if (sig->key)
         {

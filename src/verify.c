@@ -1091,9 +1091,14 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_PLAINTEXT:
       if (++opd->plaintext_seen > 1)
         return gpg_error (GPG_ERR_BAD_DATA);
-      err = _gpgme_parse_plaintext (args, &opd->result.file_name);
-      if (err)
-	return err;
+      {
+        int mime = 0;
+        err = _gpgme_parse_plaintext (args, &opd->result.file_name, &mime);
+        if (err)
+          return err;
+        gpgrt_log_debug ("verify.c: setting mime to %d\n", mime);
+        opd->result.is_mime = !!mime;
+      }
       break;
 
     case GPGME_STATUS_VERIFICATION_COMPLIANCE_MODE:
