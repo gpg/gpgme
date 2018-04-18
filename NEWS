@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.10.1 (unreleased)
+Noteworthy changes in version 1.11.0 (2018-04-18)
 -------------------------------------------------
 
  * New encryption API to support direct key specification including
@@ -6,7 +6,7 @@ Noteworthy changes in version 1.10.1 (unreleased)
    allows to enforce the use of a subkey.
 
  * New encryption flag for the new API to enforce the use of plain
-   mail address (addr-spec).
+   mail addresses (addr-spec).
 
  * The import API can now tell whether v3 keys are skipped.  These old
    and basically broken keys are not anymore supported by GnuPG 2.1.
@@ -56,6 +56,8 @@ Noteworthy changes in version 1.10.1 (unreleased)
  cpp: Key::locate                 NEW.
  cpp: Data::toString              NEW.
  cpp: ImportResult::numV3KeysSkipped  NEW.
+
+ [c=C31/A20/R0 cpp=C12/A6/R0 qt=C10/A3/R1]
 
 
 Noteworthy changes in version 1.10.0 (2017-12-12)
