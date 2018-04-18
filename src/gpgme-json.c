@@ -20,8 +20,7 @@
 
 /* This is tool implements the Native Messaging protocol of web
  * browsers and provides the server part of it.  A Javascript based
- * client can be found in lang/javascript.  The used data format is
- * similar to the API of openpgpjs.
+ * client can be found in lang/javascript.
  */
 
 #include <config.h>

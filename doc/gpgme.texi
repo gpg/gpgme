@@ -2769,6 +2769,11 @@ type of external source is dependent on the crypto engine used and
 whether it is combined with @code{GPGME_KEYLIST_MODE_LOCAL}.  For
 example, it can be a remote keyserver or LDAP certificate server.
 
+@item GPGME_KEYLIST_MODE_LOCATE
+This is a shortcut for the combination of
+@code{GPGME_KEYLIST_MODE_LOCAL} and @code{GPGME_KEYLIST_MODE_EXTERN}
+and convenient when the --locate-key feature of OpenPGP is desired.
+
 @item GPGME_KEYLIST_MODE_SIGS
 The @code{GPGME_KEYLIST_MODE_SIGS} symbol specifies that the key
 signatures should be included in the listed keys.

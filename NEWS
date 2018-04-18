@@ -1,7 +1,45 @@
 Noteworthy changes in version 1.10.1 (unreleased)
 -------------------------------------------------
 
- * New context flag "no-symkey-cache".
+ * New encryption API to support direct key specification including
+   hidden recipients option and taking keys from a file.  This also
+   allows to enforce the use of a subkey.
+
+ * New encryption flag for the new API to enforce the use of plain
+   mail address (addr-spec).
+
+ * The import API can now tell whether v3 keys are skipped.  These old
+   and basically broken keys are not anymore supported by GnuPG 2.1.
+
+ * The decrypt and verify API will now return the MIME flag as
+   specified by RFC-4880bis.
+
+ * The offline mode now has an effect on gpg by disabling all network
+   access.  [#3831]
+
+ * A failed OpenPGP verification how returns the fingerprint of the
+   intended key if a recent gpg version was used for signature
+   creation.
+
+ * New tool gpgme-json as native messaging server for web browsers.
+   As of now public key encryption and decryption is supported.
+   Requires Libgpg-error 1.29.
+
+ * New context flag "request-origin" which has an effect when used
+   with GnuPG 2.2.6 or later.
+
+ * New context flag "no-symkey-cache" which has an effect when used
+   with GnuPG 2.2.7 or later.
+
+ * New convenience constant GPGME_KEYLIST_MODE_LOCATE.
+
+ * Improved the Python documentation.
+
+ * Fixed a potential regression with GnuPG 2.2.6 or later.
+
+ * Fixed a crash in the Python bindings on 32 bit platforms.  [#3892]
+
+ * Various minor fixes.
 
  * Interface changes relative to the 1.10.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -10,6 +48,7 @@ Noteworthy changes in version 1.10.1 (unreleased)
  gpgme_op_encrypt_sign_ext        NEW.
  gpgme_op_encrypt_sign_ext_start  NEW.
  GPGME_ENCRYPT_WANT_ADDRESS       NEW.
+ GPGME_KEYLIST_MODE_LOCATE        NEW.
  gpgme_import_result_t            EXTENDED: New field 'skipped_v3_keys'.
  gpgme_decrypt_result_t           EXTENDED: New field 'symkey_algo'.
  gpgme_decrypt_result_t           EXTENDED: New field 'is_mime'.
