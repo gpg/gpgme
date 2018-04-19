@@ -104,8 +104,6 @@ gpgme_tool_LDADD = libgpgme.la @LIBASSUAN_LIBS@
 
 gpgme_json_SOURCES = gpgme-json.c cJSON.c cJSON.h
 gpgme_json_LDADD = -lm libgpgme.la $(GPG_ERROR_LIBS)
-# We use -no-install temporary during development.
-gpgme_json_LDFLAGS = -no-install
 
 
 if HAVE_W32_SYSTEM
