@@ -1096,7 +1096,6 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
         err = _gpgme_parse_plaintext (args, &opd->result.file_name, &mime);
         if (err)
           return err;
-        gpgrt_log_debug ("verify.c: setting mime to %d\n", mime);
         opd->result.is_mime = !!mime;
       }
       break;
