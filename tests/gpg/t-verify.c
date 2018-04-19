@@ -126,9 +126,15 @@ check_result (gpgme_verify_result_t result, int no_of_sigs, int skip_sigs,
     }
   if (strcmp (sig->fpr, fpr))
     {
-      fprintf (stderr, "%s:%i:sig-%d: Unexpected fingerprint: %s\n",
-	       PGM, __LINE__, skip_sigs, sig->fpr);
-      exit (1);
+      if (strlen (sig->fpr) == 16 && strlen (fpr) == 40
+          && !strncmp (sig->fpr, fpr + 24, 16))
+        ; /* okay because gnupg < 2.2.6 only shows the keyid.  */
+      else
+        {
+          fprintf (stderr, "%s:%i:sig-%d: Unexpected fingerprint: %s\n",
+                   PGM, __LINE__, skip_sigs, sig->fpr);
+          exit (1);
+        }
     }
   if (gpgme_err_code (sig->status) != status)
     {
