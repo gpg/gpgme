@@ -392,6 +392,16 @@ public:
      *
      * @returns an error on error.*/
     Error revoke();
+
+    /*! Get the origin of the key.
+     *
+     * @returns the Origin. */
+    Key::Origin origin() const;
+
+    /*! Get the last update time.
+     *
+     * @returns the last update time. */
+    time_t lastUpdate() const;
 private:
     shared_gpgme_key_t key;
     gpgme_user_id_t uid;
