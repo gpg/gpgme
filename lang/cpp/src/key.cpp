@@ -981,6 +981,37 @@ Error Key::addUid(const char *uid)
     return ret;
 }
 
+Key::Origin Key::origin() const
+{
+    if (isNull()) {
+        return OriginUnknown;
+    }
+    switch (key->origin) {
+        case GPGME_KEYORG_KS:
+            return OriginKS;
+        case GPGME_KEYORG_DANE:
+            return OriginDane;
+        case GPGME_KEYORG_WKD:
+            return OriginWKD;
+        case GPGME_KEYORG_URL:
+            return OriginURL;
+        case GPGME_KEYORG_FILE:
+            return OriginFile;
+        case GPGME_KEYORG_SELF:
+            return OriginSelf;
+        case GPGME_KEYORG_OTHER:
+            return OriginOther;
+        case GPGME_KEYORG_UNKNOWN:
+        default:
+            return OriginUnknown;
+    }
+}
+
+time_t Key::lastUpdate() const
+{
+    return static_cast<time_t>(key ? key->last_update : 0);
+}
+
 std::ostream &operator<<(std::ostream &os, const UserID &uid)
 {
     os << "GpgME::UserID(";

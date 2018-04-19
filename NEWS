@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.11.1 (unreleased)
 -------------------------------------------------
 
+ * Interface changes relative to the 1.10.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ cpp: Key::origin                     NEW.
+ cpp: Key::lastUpdate                 NEW.
 
 Noteworthy changes in version 1.11.0 (2018-04-18)
 -------------------------------------------------

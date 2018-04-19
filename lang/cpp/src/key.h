@@ -178,6 +178,27 @@ public:
      */
     static Key locate(const char *mbox);
 
+    /* @enum Origin
+     * @brief The Origin of the key. */
+    enum Origin : unsigned int {
+        OriginUnknown = 0,
+        OriginKS = 1,
+        OriginDane = 3,
+        OriginWKD = 4,
+        OriginURL = 5,
+        OriginFile = 6,
+        OriginSelf = 7,
+        OriginOther = 31,
+    };
+    /*! Get the origin of the key.
+     *
+     * @returns the Origin. */
+    Origin origin() const;
+
+    /*! Get the last update time.
+     *
+     * @returns the last update time. */
+    time_t lastUpdate() const;
 private:
     gpgme_key_t impl() const
     {
