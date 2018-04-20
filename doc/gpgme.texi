@@ -6226,7 +6226,62 @@ string.  All keywords are treated as verbatim arguments.
 
 @end table
 
+To create a @var{recpstring} it is often useful to employ a strconcat
+style function.  For example this function creates a string to encrypt
+to two keys:
 
+@example
+char *
+xbuild_recpstring (const char *key1, const char *key2)
+@{
+  char *result = gpgrt_strconcat ("--\n", key1, "\n", key2, NULL);
+  if (!result)
+    @{ perror ("strconcat failed"); exit (2); @}
+  return result;
+@}
+@end example
+
+Note the use of the double dash here; unless you want to specify a
+keyword, it is a good idea to avoid any possible trouble with key
+specifications starting with a double dash.  The used strconcat
+function is available in Libgpg-error 1.28 and later; Libgpg-error
+(aka Gpgrt) is a dependency of GPGME.  The number of arguments to
+@code{gpgrt_strconcat} is limited to 47 but that should always be
+sufficient.  In case a larger and non-fixed number of keys are to be
+supplied the following code can be used:
+
+@example
+char *
+xbuild_long_recpstring (void)
+@{
+  gpgrt_stream_t memfp;
+  const char *s;
+  void *result;
+
+  memfp = gpgrt_fopenmem (0, "w+b");
+  if (!memfp)
+    @{ perror ("fopenmem failed"); exit (2); @}
+  gpgrt_fputs ("--", memfp);
+  while ((s = get_next_keyspec ()))
+    @{
+      gpgrt_fputc ('\n', memfp);
+      gpgrt_fputs (s, memfp);
+    @}
+  gpgrt_fputc (0, memfp);
+  if (gpgrt_ferror (memfp))
+    @{ perror ("writing to memstream failed"); exit (2); @}
+  if (gpgrt_fclose_snatch (memfp, &result, NULL))
+    @{ perror ("fclose_snatch failed"); exit (2); @}
+  return result;
+@}
+@end example
+
+In this example @code{get_next_keyspec} is expected to return the next
+key to be added to the string.  Please take care: Encrypting to a
+large number of recipients is often questionable due to security
+reasons and also for the technicality that all keys are currently
+passed on the command line to @command{gpg} which has as a platform
+specific length limitation.
 @end deftypefun
 
 
