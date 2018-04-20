@@ -56,18 +56,18 @@ AC_INIT([gpgme],[mym4_full_version],[http://bugs.gnupg.org])
 #
 LIBGPGME_LT_CURRENT=31
 LIBGPGME_LT_AGE=20
-LIBGPGME_LT_REVISION=0
+LIBGPGME_LT_REVISION=1
 
 # If there is an ABI break in gpgmepp or qgpgme also bump the
 # version in IMPORTED_LOCATION in the GpgmeppConfig-w32.cmake.in.in
 
-LIBGPGMEPP_LT_CURRENT=12
-LIBGPGMEPP_LT_AGE=6
+LIBGPGMEPP_LT_CURRENT=13
+LIBGPGMEPP_LT_AGE=7
 LIBGPGMEPP_LT_REVISION=0
 
 LIBQGPGME_LT_CURRENT=10
 LIBQGPGME_LT_AGE=3
-LIBQGPGME_LT_REVISION=1
+LIBQGPGME_LT_REVISION=2
 
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1

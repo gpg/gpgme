@@ -1,5 +1,9 @@
-Noteworthy changes in version 1.11.1 (unreleased)
+Noteworthy changes in version 1.11.1 (2018-04-20)
 -------------------------------------------------
+
+ * Fixed build problems in the 1.11.0 release.
+
+ * Added C++ interfaces which were planned for 1.11.0.
 
  * Interface changes relative to the 1.10.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7,6 +11,9 @@ Noteworthy changes in version 1.11.1 (unreleased)
  cpp: Key::lastUpdate                 NEW.
  cpp: UserID::origin                  NEW.
  cpp: UserID::lastUpdate              NEW.
+
+ [c=C31/A20/R1 cpp=C13/A7/R0 qt=C10/A3/R2]
+
 
 Noteworthy changes in version 1.11.0 (2018-04-18)
 -------------------------------------------------
