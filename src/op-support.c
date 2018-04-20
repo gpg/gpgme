@@ -414,6 +414,9 @@ _gpgme_parse_failure (char *args)
 {
   char *where, *which;
 
+  if (!strncmp (args, "gpg-exit", 8))
+    return 0;
+
   where = strchr (args, ' ');
   if (!where)
     return trace_gpg_error (GPG_ERR_INV_ENGINE);
@@ -424,10 +427,6 @@ _gpgme_parse_failure (char *args)
   where = strchr (which, ' ');
   if (where)
     *where = '\0';
-
-  where = args;
-  if (!strcmp (where, "gpg-exit"))
-    return 0;
 
   return atoi (which);
 }
