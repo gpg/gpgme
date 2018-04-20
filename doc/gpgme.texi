@@ -2606,22 +2606,26 @@ valid pointer.
 @deftypefun void gpgme_set_offline (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{yes}})
 @since{1.6.0}
 
-The function @code{gpgme_set_offline} specifies if offline mode
-should be used.  By default, offline mode is not used.
+The function @code{gpgme_set_offline} specifies if offline mode should
+be used.  Offline mode is disabled if @var{yes} is zero, and enabled
+otherwise.  By default, offline mode is disabled.
 
-The offline mode specifies if dirmngr should be used to do additional
-validation that might require connections to external services.
-(e.g. CRL / OCSP checks).
+The details of the offline mode depend on the used protocol and its
+backend engine.  It may eventually be extended to be more stricter and
+for example completely disable the use of Dirmngr for any engine.
 
-Offline mode only affects the keylist mode @code{GPGME_KEYLIST_MODE_VALIDATE}
-and is only relevant to the CMS crypto engine. Offline mode
-is ignored otherwise.
+For the CMS protocol the offline mode specifies whether Dirmngr shall
+be used to do additional validation that might require connecting
+external services (e.g. CRL / OCSP checks).  Here the offline mode
+only affects the keylist mode @code{GPGME_KEYLIST_MODE_VALIDATE}.
 
-This option may be extended in the future to completely disable
-the use of dirmngr for any engine.
+For the OpenPGP protocol offline mode entirely disables the use of the
+Dirmngr and will thus guarantee that no network connections are done
+as part of an operation on this context.  It has only an effect with
+GnuPG versions 2.1.23 or later.
 
-Offline mode is disabled if @var{yes} is zero, and enabled
-otherwise.
+For all other protocols the offline mode is currently ignored.
+
 @end deftypefun
 
 @deftypefun int gpgme_get_offline (@w{gpgme_ctx_t @var{ctx}})
@@ -2764,6 +2768,11 @@ source should be searched for keys in the keylisting operation.  The
 type of external source is dependent on the crypto engine used and
 whether it is combined with @code{GPGME_KEYLIST_MODE_LOCAL}.  For
 example, it can be a remote keyserver or LDAP certificate server.
+
+@item GPGME_KEYLIST_MODE_LOCATE
+This is a shortcut for the combination of
+@code{GPGME_KEYLIST_MODE_LOCAL} and @code{GPGME_KEYLIST_MODE_EXTERN}
+and convenient when the --locate-key feature of OpenPGP is desired.
 
 @item GPGME_KEYLIST_MODE_SIGS
 The @code{GPGME_KEYLIST_MODE_SIGS} symbol specifies that the key
@@ -3069,7 +3078,13 @@ the time when you verified the signature.
 The string given in @var{value} is passed to the GnuPG engines to
 request restrictions based on the origin of the request.  Valid values
 are documented in the GnuPG manual and the gpg man page under the
-option ``--request-origin''.
+option ``--request-origin''.  Requires at least GnuPG 2.2.6 to have an
+effect.
+
+@item "no-symkey-cache"
+For OpenPGP disable the passphrase cache used for symmetrical en- and
+decryption.  This cache is based on the message specific salt value.
+Requires at least GnuPG 2.2.7 to have an effect.
 
 @end table
 
@@ -5274,7 +5289,7 @@ if @var{cipher} or @var{plain} is not a valid pointer.
 @since{1.8.0}
 
 The function @code{gpgme_op_decrypt_ext} is the same as
-@code{gpgme_op_decrypt_ext} but has an additional argument
+@code{gpgme_op_decrypt} but has an additional argument
 @var{flags}.  If @var{flags} is 0 both function behave identically.
 
 The value in @var{flags} is a bitwise-or combination of one or
@@ -5388,6 +5403,13 @@ You must not try to access this member of the struct unless
 @code{gpgme_set_ctx_flag (ctx, "export-session-key")} returns success
 or @code{gpgme_get_ctx_flag (ctx, "export-session-key")} returns true
 (non-empty string).
+
+@item char *symkey_algo
+@since{1.11.0}
+
+A string with the symmetric encryption algorithm and mode using the
+format "<algo>.<mode>".  Note that old non-MDC encryption mode of
+OpenPGP is given as "PGPCFB".
 
 @end table
 @end deftp
@@ -6088,7 +6110,7 @@ also expect a sign command.
 
 The @code{GPGME_ENCRYPT_SYMMETRIC} symbol specifies that the
 output should be additionally encrypted symmetrically even
-if recipients are provided. This feature is only supported for
+if recipients are provided. This feature is only supported
 for the OpenPGP crypto engine.
 
 @item GPGME_ENCRYPT_THROW_KEYIDS
@@ -6106,6 +6128,18 @@ This flag is only honored for OpenPGP encryption.
 The @code{GPGME_ENCRYPT_WRAP} symbol specifies that the input is an
 OpenPGP message and not a plain data.  This is the counterpart to
 @code{GPGME_DECRYPT_UNWRAP}.
+
+@item GPGME_ENCRYPT_WANT_ADDRESS
+@since{1.11.0}
+
+The @code{GPGME_ENCRYPT_WANT_ADDRESS} symbol requests that all
+supplied keys or key specifications include a syntactically valid mail
+address.  If this is not the case the operation is not even tried and
+the error code @code{GPG_ERR_INV_USER_ID} is returned.  Only the
+address part of the key specification is conveyed to the backend.  As
+of now the key must be specified using the @var{recpstring} argument
+of the extended encrypt functions.  This feature is currently only
+supported for the OpenPGP crypto engine.
 
 @end table
 
@@ -6146,6 +6180,128 @@ operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
 @var{ctx}, @var{rset}, @var{plain} or @var{cipher} is not a valid
 pointer, and @code{GPG_ERR_UNUSABLE_PUBKEY} if @var{rset} does not
 contain any valid recipients.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_encrypt_ext @
+            (@w{gpgme_ctx_t @var{ctx}}, @
+             @w{gpgme_key_t @var{recp}[]}, @
+             @w{const char *@var{recpstring}}, @
+             @w{gpgme_encrypt_flags_t @var{flags}}, @
+             @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+
+@since{1.11.0}
+
+This is an extended version of @code{gpgme_op_encrypt} with
+@var{recpstring} as additional parameter.  If @var{recp} is NULL and
+@var{recpstring} is not NULL, the latter is expected to be a linefeed
+delimited string with the set of key specifications.  In contrast to
+@var{recp} the keys are given directly as strings and there is no need
+to first create key objects.  Leading and trailing white space is
+remove from each line in @var{recpstring}.  The keys are then passed
+verbatim to the backend engine.
+
+For the OpenPGP backend several special keywords are supported to
+modify the operation.  These keywords are given instead of a key
+specification.  The currently supported keywords are:
+
+@table @code
+@item --hidden
+@itemx --no-hidden
+These keywords toggle between normal and hidden recipients for all
+following key specifications.  When a hidden recipient is requested
+the gpg option @option{-R} (or @option{-F} in file mode) is used
+instead of @option{-r} (@option{-f} in file mode).
+
+@item --file
+@itemx --no-file
+These keywords toggle between regular and file mode for all following
+key specification.  In file mode the option @option{-f} or @option{-F}
+is passed to gpg.  At least GnuPG version 2.1.14 is required to handle
+these options.  The @code{GPGME_ENCRYPT_WANT_ADDRESS} flag is ignored
+in file mode.
+
+@item --
+This keyword disables all keyword detection up to the end of the
+string.  All keywords are treated as verbatim arguments.
+
+@end table
+
+To create a @var{recpstring} it is often useful to employ a strconcat
+style function.  For example this function creates a string to encrypt
+to two keys:
+
+@example
+char *
+xbuild_recpstring (const char *key1, const char *key2)
+@{
+  char *result = gpgrt_strconcat ("--\n", key1, "\n", key2, NULL);
+  if (!result)
+    @{ perror ("strconcat failed"); exit (2); @}
+  return result;
+@}
+@end example
+
+Note the use of the double dash here; unless you want to specify a
+keyword, it is a good idea to avoid any possible trouble with key
+specifications starting with a double dash.  The used strconcat
+function is available in Libgpg-error 1.28 and later; Libgpg-error
+(aka Gpgrt) is a dependency of GPGME.  The number of arguments to
+@code{gpgrt_strconcat} is limited to 47 but that should always be
+sufficient.  In case a larger and non-fixed number of keys are to be
+supplied the following code can be used:
+
+@example
+char *
+xbuild_long_recpstring (void)
+@{
+  gpgrt_stream_t memfp;
+  const char *s;
+  void *result;
+
+  memfp = gpgrt_fopenmem (0, "w+b");
+  if (!memfp)
+    @{ perror ("fopenmem failed"); exit (2); @}
+  gpgrt_fputs ("--", memfp);
+  while ((s = get_next_keyspec ()))
+    @{
+      gpgrt_fputc ('\n', memfp);
+      gpgrt_fputs (s, memfp);
+    @}
+  gpgrt_fputc (0, memfp);
+  if (gpgrt_ferror (memfp))
+    @{ perror ("writing to memstream failed"); exit (2); @}
+  if (gpgrt_fclose_snatch (memfp, &result, NULL))
+    @{ perror ("fclose_snatch failed"); exit (2); @}
+  return result;
+@}
+@end example
+
+In this example @code{get_next_keyspec} is expected to return the next
+key to be added to the string.  Please take care: Encrypting to a
+large number of recipients is often questionable due to security
+reasons and also for the technicality that all keys are currently
+passed on the command line to @command{gpg} which has as a platform
+specific length limitation.
+@end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_encrypt_ext_start @
+            (@w{gpgme_ctx_t @var{ctx}}, @
+             @w{gpgme_key_t @var{recp}[]}, @
+             @w{const char *@var{recpstring}}, @
+             @w{gpgme_encrypt_flags_t @var{flags}}, @
+             @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+
+@since{1.11.0}
+
+This is an extended version of @code{gpgme_op_encrypt_start} with
+@var{recpstring} as additional parameter.  If @var{recp} is NULL and
+@var{recpstring} is not NULL, the latter is expected to be a linefeed
+delimited string with the set of key specifications.  In contrast to
+@var{recp} the keys are given directly as strings and there is no need
+to first create key objects.  The keys are passed verbatim to the
+backend engine.
+
 @end deftypefun
 
 @deftp {Data type} {gpgme_encrypt_result_t}
@@ -6195,6 +6351,44 @@ The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 operation could be started successfully, and @code{GPG_ERR_INV_VALUE}
 if @var{ctx}, @var{rset}, @var{plain} or @var{cipher} is not a valid
 pointer.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_encrypt_sign_ext @
+            (@w{gpgme_ctx_t @var{ctx}}, @
+             @w{gpgme_key_t @var{recp}[]}, @
+             @w{const char *@var{recpstring}}, @
+             @w{gpgme_encrypt_flags_t @var{flags}}, @
+             @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+
+@since{1.11.0}
+
+This is an extended version of @code{gpgme_op_encrypt_sign} with
+@var{recpstring} as additional parameter.  If @var{recp} is NULL and
+@var{recpstring} is not NULL, the latter is expected to be a linefeed
+delimited string with the set of key specifications.  In contrast to
+@var{recp} the keys are given directly as strings and there is no need
+to first create the key objects.  The keys are passed verbatim to the
+backend engine.
+
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_encrypt_sign_ext_start @
+            (@w{gpgme_ctx_t @var{ctx}}, @
+             @w{gpgme_key_t @var{recp}[]}, @
+             @w{const char *@var{recpstring}}, @
+             @w{gpgme_encrypt_flags_t @var{flags}}, @
+             @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
+
+@since{1.11.0}
+
+This is an extended version of @code{gpgme_op_encrypt_sign_start} with
+@var{recpstring} as additional parameter.  If @var{recp} is NULL and
+@var{recpstring} is not NULL, the latter is expected to be a linefeed
+delimited string with the set of key specifications.  In contrast to
+@var{recp} the keys are given directly as strings and there is no need
+to first create the key objects.  The keys are passed verbatim to the
+backend engine.
+
 @end deftypefun
 
 

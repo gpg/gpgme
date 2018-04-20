@@ -967,6 +967,42 @@ Error UserID::revoke()
     return ret;
 }
 
+static Key::Origin gpgme_origin_to_pp_origin (const unsigned int origin)
+{
+    switch (origin) {
+        case GPGME_KEYORG_KS:
+            return Key::OriginKS;
+        case GPGME_KEYORG_DANE:
+            return Key::OriginDane;
+        case GPGME_KEYORG_WKD:
+            return Key::OriginWKD;
+        case GPGME_KEYORG_URL:
+            return Key::OriginURL;
+        case GPGME_KEYORG_FILE:
+            return Key::OriginFile;
+        case GPGME_KEYORG_SELF:
+            return Key::OriginSelf;
+        case GPGME_KEYORG_OTHER:
+            return Key::OriginOther;
+        case GPGME_KEYORG_UNKNOWN:
+        default:
+            return Key::OriginUnknown;
+    }
+}
+
+Key::Origin UserID::origin() const
+{
+    if (isNull()) {
+        return Key::OriginUnknown;
+    }
+    return gpgme_origin_to_pp_origin(uid->origin);
+}
+
+time_t UserID::lastUpdate() const
+{
+    return static_cast<time_t>(uid ? uid->last_update : 0);
+}
+
 Error Key::addUid(const char *uid)
 {
     if (isNull()) {
@@ -979,6 +1015,19 @@ Error Key::addUid(const char *uid)
     Error ret = ctx->addUid(key, uid);
     delete ctx;
     return ret;
+}
+
+Key::Origin Key::origin() const
+{
+    if (isNull()) {
+        return OriginUnknown;
+    }
+    return gpgme_origin_to_pp_origin(key->origin);
+}
+
+time_t Key::lastUpdate() const
+{
+    return static_cast<time_t>(key ? key->last_update : 0);
 }
 
 std::ostream &operator<<(std::ostream &os, const UserID &uid)

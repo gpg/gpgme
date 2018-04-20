@@ -98,11 +98,13 @@ gpgme_error_t _gpgme_engine_op_edit (engine_t engine, int type,
 				     gpgme_ctx_t ctx /* FIXME */);
 gpgme_error_t _gpgme_engine_op_encrypt (engine_t engine,
 					gpgme_key_t recp[],
+                                        const char *recpstring,
 					gpgme_encrypt_flags_t flags,
 					gpgme_data_t plain, gpgme_data_t ciph,
 					int use_armor);
 gpgme_error_t _gpgme_engine_op_encrypt_sign (engine_t engine,
 					     gpgme_key_t recp[],
+                                             const char *recpstring,
 					     gpgme_encrypt_flags_t flags,
 					     gpgme_data_t plain,
 					     gpgme_data_t ciph,

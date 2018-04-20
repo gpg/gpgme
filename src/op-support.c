@@ -358,7 +358,7 @@ _gpgme_parse_key_considered (const char *args,
 /* Parse the PLAINTEXT status line in ARGS and return the result in
    FILENAMEP.  */
 gpgme_error_t
-_gpgme_parse_plaintext (char *args, char **filenamep)
+_gpgme_parse_plaintext (char *args, char **filenamep, int *r_mime)
 {
   char *tail;
 
@@ -367,7 +367,9 @@ _gpgme_parse_plaintext (char *args, char **filenamep)
   if (*args == '\0')
     return 0;
 
-  /* First argument is file type.  */
+  /* First argument is file type (a one byte uppercase hex value).  */
+  if (args[0] == '6' && args[1] == 'D')
+    *r_mime = 1;
   while (*args != ' ' && *args != '\0')
     args++;
   while (*args == ' ')
@@ -400,11 +402,20 @@ _gpgme_parse_plaintext (char *args, char **filenamep)
 
 
 /* Parse a FAILURE status line and return the error code.  ARGS is
-   modified to contain the location part.  */
+ * modified to contain the location part.  Note that for now we ignore
+ * failure codes with a location of gpg-exit; they are too trouble
+ * some.  Instead we should eventually record that error in the
+ * context and provide a function to return a fuller error
+ * description; this could then also show the location of the error
+ * (e.g. "option- parser") to make it easier for the user to detect
+ * the actual error. */
 gpgme_error_t
 _gpgme_parse_failure (char *args)
 {
   char *where, *which;
+
+  if (!strncmp (args, "gpg-exit", 8))
+    return 0;
 
   where = strchr (args, ' ');
   if (!where)
@@ -416,8 +427,6 @@ _gpgme_parse_failure (char *args)
   where = strchr (which, ' ');
   if (where)
     *where = '\0';
-
-  where = args;
 
   return atoi (which);
 }

@@ -68,8 +68,8 @@ gpgme_error_t _gpgme_parse_inv_recp (char *args, int for_signing,
                                      gpgme_invalid_key_t *key);
 
 /* Parse the PLAINTEXT status line in ARGS and return the result in
-   FILENAMEP.  */
-gpgme_error_t _gpgme_parse_plaintext (char *args, char **filenamep);
+   FILENAMEP and R_MIME.  */
+gpgme_error_t _gpgme_parse_plaintext (char *args, char **filenamep,int *r_mime);
 
 /* Parse a FAILURE status line and return the error code.  ARGS is
    modified to contain the location part.  */

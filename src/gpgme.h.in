@@ -1,6 +1,6 @@
 /* gpgme.h - Public interface to GnuPG Made Easy.                   -*- c -*-
  * Copyright (C) 2000 Werner Koch (dd9jn)
- * Copyright (C) 2001-2017 g10 Code GmbH
+ * Copyright (C) 2001-2018 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -16,6 +16,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1+
  *
  * Generated from gpgme.h.in for @GPGME_CONFIG_HOST@.
  */
@@ -37,14 +38,14 @@ extern "C" {
 
 
 /* The version of this header should match the one of the library.  Do
-   not use this symbol in your application, use gpgme_check_version
-   instead.  The purpose of this macro is to let autoconf (using the
-   AM_PATH_GPGME macro) check that this header matches the installed
-   library.  */
+ * not use this symbol in your application, use gpgme_check_version
+ * instead.  The purpose of this macro is to let autoconf (using the
+ * AM_PATH_GPGME macro) check that this header matches the installed
+ * library.  */
 #define GPGME_VERSION "@PACKAGE_VERSION@"
 
 /* The version number of this header.  It may be used to handle minor
-   API incompatibilities.  */
+ * API incompatibilities.  */
 #define GPGME_VERSION_NUMBER @VERSION_NUMBER@
 
 
@@ -87,7 +88,7 @@ extern "C" {
 
 
 /* The macro _GPGME_DEPRECATED_OUTSIDE_GPGME suppresses warnings for
-   fields we must access in GPGME for ABI compatibility.  */
+ * fields we must access in GPGME for ABI compatibility.  */
 #ifdef _GPGME_IN_GPGME
 #define _GPGME_DEPRECATED_OUTSIDE_GPGME(a,b)
 #else
@@ -113,7 +114,7 @@ extern "C" {
  */
 
 /* The context holds some global state and configuration options, as
-   well as the results of a crypto operation.  */
+ * well as the results of a crypto operation.  */
 struct gpgme_context;
 typedef struct gpgme_context *gpgme_ctx_t;
 
@@ -124,7 +125,8 @@ typedef struct gpgme_data *gpgme_data_t;
 
 
 /*
- * Wrappers for the libgpg-error library.
+ * Wrappers for the libgpg-error library.  They are generally not
+ * needed and the gpg-error versions may be used instead.
  */
 
 typedef gpg_error_t gpgme_error_t;
@@ -140,7 +142,7 @@ gpgme_err_make (gpgme_err_source_t source, gpgme_err_code_t code)
 
 
 /* The user can define GPGME_ERR_SOURCE_DEFAULT before including this
-   file to specify a default source for gpgme_error.  */
+ * file to specify a default source for gpgme_error.  */
 #ifndef GPGME_ERR_SOURCE_DEFAULT
 #define GPGME_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_USER_1
 #endif
@@ -167,45 +169,46 @@ gpgme_err_source (gpgme_error_t err)
 
 
 /* Return a pointer to a string containing a description of the error
-   code in the error value ERR.  This function is not thread safe.  */
+ * code in the error value ERR.  This function is not thread safe.  */
 const char *gpgme_strerror (gpgme_error_t err);
 
 /* Return the error string for ERR in the user-supplied buffer BUF of
-   size BUFLEN.  This function is, in contrast to gpg_strerror,
-   thread-safe if a thread-safe strerror_r() function is provided by
-   the system.  If the function succeeds, 0 is returned and BUF
-   contains the string describing the error.  If the buffer was not
-   large enough, ERANGE is returned and BUF contains as much of the
-   beginning of the error string as fits into the buffer.  */
+ * size BUFLEN.  This function is, in contrast to gpg_strerror,
+ * thread-safe if a thread-safe strerror_r() function is provided by
+ * the system.  If the function succeeds, 0 is returned and BUF
+ * contains the string describing the error.  If the buffer was not
+ * large enough, ERANGE is returned and BUF contains as much of the
+ * beginning of the error string as fits into the buffer.  */
 int gpgme_strerror_r (gpg_error_t err, char *buf, size_t buflen);
 
 /* Return a pointer to a string containing a description of the error
-   source in the error value ERR.  */
+ * source in the error value ERR.  */
 const char *gpgme_strsource (gpgme_error_t err);
 
 /* Retrieve the error code for the system error ERR.  This returns
-   GPG_ERR_UNKNOWN_ERRNO if the system error is not mapped (report
-   this).  */
+ * GPG_ERR_UNKNOWN_ERRNO if the system error is not mapped (report
+ * this).  */
 gpgme_err_code_t gpgme_err_code_from_errno (int err);
 
 /* Retrieve the system error for the error code CODE.  This returns 0
-   if CODE is not a system error code.  */
+ * if CODE is not a system error code.  */
 int gpgme_err_code_to_errno (gpgme_err_code_t code);
 
 /* Retrieve the error code directly from the ERRNO variable.  This
-   returns GPG_ERR_UNKNOWN_ERRNO if the system error is not mapped
-   (report this) and GPG_ERR_MISSING_ERRNO if ERRNO has the value 0. */
+ * returns GPG_ERR_UNKNOWN_ERRNO if the system error is not mapped
+ * (report this) and GPG_ERR_MISSING_ERRNO if ERRNO has the value 0. */
 gpgme_err_code_t gpgme_err_code_from_syserror (void);
 
 /* Set the ERRNO variable.  This function is the preferred way to set
-   ERRNO due to peculiarities on WindowsCE.  */
+ * ERRNO due to peculiarities on WindowsCE.  */
 void gpgme_err_set_errno (int err);
 
 /* Return an error value with the error source SOURCE and the system
-   error ERR.  FIXME: Should be inline.  */
+ *  error ERR.  FIXME: Should be inline.  */
 gpgme_error_t gpgme_err_make_from_errno (gpgme_err_source_t source, int err);
 
-/* Return an error value with the system error ERR.  FIXME: Should be inline.  */
+/* Return an error value with the system error ERR.
+ * inline.  */
 gpgme_error_t gpgme_error_from_errno (int err);
 
 
@@ -373,6 +376,8 @@ gpgme_protocol_t;
 #define GPGME_KEYLIST_MODE_EPHEMERAL            128
 #define GPGME_KEYLIST_MODE_VALIDATE		256
 
+#define GPGME_KEYLIST_MODE_LOCATE		(1|2)
+
 typedef unsigned int gpgme_keylist_mode_t;
 
 
@@ -417,7 +422,7 @@ struct _gpgme_sig_notation
   struct _gpgme_sig_notation *next;
 
   /* If NAME is a null pointer, then VALUE contains a policy URL
-     rather than a notation.  */
+   * rather than a notation.  */
   char *name;
 
   /* The value of the notation data.  */
@@ -632,10 +637,10 @@ struct _gpgme_key_sig
   /* Same as in gpgme_signature_t.  */
   gpgme_error_t status;
 
+  /* Deprecated; use SIG_CLASS instead.  */
 #ifdef __cplusplus
   unsigned int _obsolete_class _GPGME_DEPRECATED(0,4);
 #else
-  /* Must be set to SIG_CLASS below.  */
   unsigned int class _GPGME_DEPRECATED_OUTSIDE_GPGME(0,4);
 #endif
 
@@ -874,10 +879,10 @@ gpgme_error_t gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t proto);
 gpgme_protocol_t gpgme_get_protocol (gpgme_ctx_t ctx);
 
 /* Set the crypto protocol to be used by CTX to PROTO.
-   gpgme_set_protocol actually sets the backend engine.  This sets the
-   crypto protocol used in engines that support more than one crypto
-   prococol (for example, an UISERVER can support OpenPGP and CMS).
-   This is reset to the default with gpgme_set_protocol.  */
+ * gpgme_set_protocol actually sets the backend engine.  This sets the
+ * crypto protocol used in engines that support more than one crypto
+ * prococol (for example, an UISERVER can support OpenPGP and CMS).
+ * This is reset to the default with gpgme_set_protocol.  */
 gpgme_error_t gpgme_set_sub_protocol (gpgme_ctx_t ctx,
 				      gpgme_protocol_t proto);
 
@@ -929,47 +934,47 @@ gpgme_error_t gpgme_set_pinentry_mode (gpgme_ctx_t ctx,
 gpgme_pinentry_mode_t gpgme_get_pinentry_mode (gpgme_ctx_t ctx);
 
 /* Set the passphrase callback function in CTX to CB.  HOOK_VALUE is
-   passed as first argument to the passphrase callback function.  */
+ * passed as first argument to the passphrase callback function.  */
 void gpgme_set_passphrase_cb (gpgme_ctx_t ctx,
                               gpgme_passphrase_cb_t cb, void *hook_value);
 
 /* Get the current passphrase callback function in *CB and the current
-   hook value in *HOOK_VALUE.  */
+ * hook value in *HOOK_VALUE.  */
 void gpgme_get_passphrase_cb (gpgme_ctx_t ctx, gpgme_passphrase_cb_t *cb,
 			      void **hook_value);
 
 /* Set the progress callback function in CTX to CB.  HOOK_VALUE is
-   passed as first argument to the progress callback function.  */
+ * passed as first argument to the progress callback function.  */
 void gpgme_set_progress_cb (gpgme_ctx_t c, gpgme_progress_cb_t cb,
 			    void *hook_value);
 
 /* Get the current progress callback function in *CB and the current
-   hook value in *HOOK_VALUE.  */
+ * hook value in *HOOK_VALUE.  */
 void gpgme_get_progress_cb (gpgme_ctx_t ctx, gpgme_progress_cb_t *cb,
 			    void **hook_value);
 
 /* Set the status callback function in CTX to CB.  HOOK_VALUE is
-   passed as first argument to the status callback function.  */
+ * passed as first argument to the status callback function.  */
 void gpgme_set_status_cb (gpgme_ctx_t c, gpgme_status_cb_t cb,
                           void *hook_value);
 
 /* Get the current status callback function in *CB and the current
-   hook value in *HOOK_VALUE.  */
+ * hook value in *HOOK_VALUE.  */
 void gpgme_get_status_cb (gpgme_ctx_t ctx, gpgme_status_cb_t *cb,
                           void **hook_value);
 
 /* This function sets the locale for the context CTX, or the default
-   locale if CTX is a null pointer.  */
+ * locale if CTX is a null pointer.  */
 gpgme_error_t gpgme_set_locale (gpgme_ctx_t ctx, int category,
 				const char *value);
 
 /* Get the information about the configured engines.  A pointer to the
-   first engine in the statically allocated linked list is returned.
-   The returned data is valid until the next gpgme_ctx_set_engine_info.  */
+ * first engine in the statically allocated linked list is returned.
+ * The returned data is valid until the next gpgme_ctx_set_engine_info.  */
 gpgme_engine_info_t gpgme_ctx_get_engine_info (gpgme_ctx_t ctx);
 
 /* Set the engine info for the context CTX, protocol PROTO, to the
-   file name FILE_NAME and the home directory HOME_DIR.  */
+ * file name FILE_NAME and the home directory HOME_DIR.  */
 gpgme_error_t gpgme_ctx_set_engine_info (gpgme_ctx_t ctx,
 					 gpgme_protocol_t proto,
 					 const char *file_name,
@@ -991,10 +996,10 @@ gpgme_key_t gpgme_signers_enum (const gpgme_ctx_t ctx, int seq);
 void gpgme_sig_notation_clear (gpgme_ctx_t ctx);
 
 /* Add the human-readable notation data with name NAME and value VALUE
-   to the context CTX, using the flags FLAGS.  If NAME is NULL, then
-   VALUE should be a policy URL.  The flag
-   GPGME_SIG_NOTATION_HUMAN_READABLE is forced to be true for notation
-   data, and false for policy URLs.  */
+ * to the context CTX, using the flags FLAGS.  If NAME is NULL, then
+ * VALUE should be a policy URL.  The flag
+ * GPGME_SIG_NOTATION_HUMAN_READABLE is forced to be true for notation
+ * data, and false for policy URLs.  */
 gpgme_error_t gpgme_sig_notation_add (gpgme_ctx_t ctx, const char *name,
 				      const char *value,
 				      gpgme_sig_notation_flags_t flags);
@@ -1018,17 +1023,17 @@ const char *gpgme_get_sender (gpgme_ctx_t ctx);
 typedef gpgme_error_t (*gpgme_io_cb_t) (void *data, int fd);
 
 /* The type of a function that can register FNC as the I/O callback
-   function for the file descriptor FD with direction dir (0: for writing,
-   1: for reading).  FNC_DATA should be passed as DATA to FNC.  The
-   function should return a TAG suitable for the corresponding
-   gpgme_remove_io_cb_t, and an error value.  */
+ * function for the file descriptor FD with direction dir (0: for writing,
+ * 1: for reading).  FNC_DATA should be passed as DATA to FNC.  The
+ * function should return a TAG suitable for the corresponding
+ * gpgme_remove_io_cb_t, and an error value.  */
 typedef gpgme_error_t (*gpgme_register_io_cb_t) (void *data, int fd, int dir,
 						 gpgme_io_cb_t fnc,
 						 void *fnc_data, void **tag);
 
 /* The type of a function that can remove a previously registered I/O
-   callback function given TAG as returned by the register
-   function.  */
+ * callback function given TAG as returned by the register
+ * function.  */
 typedef void (*gpgme_remove_io_cb_t) (void *tag);
 
 typedef enum
@@ -1043,7 +1048,7 @@ gpgme_event_io_t;
 struct gpgme_io_event_done_data
 {
   /* A fatal IPC error or an operational error in state-less
-     protocols.  */
+   * protocols.  */
   gpgme_error_t err;
 
   /* An operational errors in session-based protocols.  */
@@ -1052,7 +1057,7 @@ struct gpgme_io_event_done_data
 typedef struct gpgme_io_event_done_data *gpgme_io_event_done_data_t;
 
 /* The type of a function that is called when a context finished an
-   operation.  */
+ * operation.  */
 typedef void (*gpgme_event_io_cb_t) (void *data, gpgme_event_io_t type,
 				     void *type_data);
 
@@ -1073,13 +1078,13 @@ void gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs);
 void gpgme_get_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs);
 
 /* Wrappers around the internal I/O functions for use with
-   gpgme_passphrase_cb_t and gpgme_interact_cb_t.  */
+ * gpgme_passphrase_cb_t and gpgme_interact_cb_t.  */
 @API__SSIZE_T@ gpgme_io_read (int fd, void *buffer, size_t count);
 @API__SSIZE_T@ gpgme_io_write (int fd, const void *buffer, size_t count);
 int     gpgme_io_writen (int fd, const void *buffer, size_t count);
 
 /* Process the pending operation and, if HANG is non-zero, wait for
-   the pending operation to finish.  */
+ * the pending operation to finish.  */
 gpgme_ctx_t gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang);
 
 gpgme_ctx_t gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
@@ -1098,21 +1103,21 @@ gpgme_error_t gpgme_cancel_async (gpgme_ctx_t ctx);
  */
 
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
-   the handle HANDLE.  Return the number of characters read, 0 on EOF
-   and -1 on error.  If an error occurs, errno is set.  */
+ * the handle HANDLE.  Return the number of characters read, 0 on EOF
+ * and -1 on error.  If an error occurs, errno is set.  */
 typedef @API__SSIZE_T@ (*gpgme_data_read_cb_t) (void *handle, void *buffer,
 					 size_t size);
 
 /* Write up to SIZE bytes from buffer BUFFER to the data object with
-   the handle HANDLE.  Return the number of characters written, or -1
-   on error.  If an error occurs, errno is set.  */
+ * the handle HANDLE.  Return the number of characters written, or -1
+ * on error.  If an error occurs, errno is set.  */
 typedef @API__SSIZE_T@ (*gpgme_data_write_cb_t) (void *handle, const void *buffer,
 					  size_t size);
 
 /* Set the current position from where the next read or write starts
-   in the data object with the handle HANDLE to OFFSET, relativ to
-   WHENCE.  Returns the new offset in bytes from the beginning of the
-   data object.  */
+ * in the data object with the handle HANDLE to OFFSET, relativ to
+ * WHENCE.  Returns the new offset in bytes from the beginning of the
+ * data object.  */
 typedef @API__OFF_T@ (*gpgme_data_seek_cb_t) (void *handle,
                                        @API__OFF_T@ offset, int whence);
 
@@ -1129,19 +1134,19 @@ struct gpgme_data_cbs
 typedef struct gpgme_data_cbs *gpgme_data_cbs_t;
 
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
-   the handle DH.  Return the number of characters read, 0 on EOF and
-   -1 on error.  If an error occurs, errno is set.  */
+ * the handle DH.  Return the number of characters read, 0 on EOF and
+ * -1 on error.  If an error occurs, errno is set.  */
 @API__SSIZE_T@ gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size);
 
 /* Write up to SIZE bytes from buffer BUFFER to the data object with
-   the handle DH.  Return the number of characters written, or -1 on
-   error.  If an error occurs, errno is set.  */
+ * the handle DH.  Return the number of characters written, or -1 on
+ * error.  If an error occurs, errno is set.  */
 @API__SSIZE_T@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size);
 
 /* Set the current position from where the next read or write starts
-   in the data object with the handle DH to OFFSET, relativ to WHENCE.
-   Returns the new offset in bytes from the beginning of the data
-   object.  */
+ * in the data object with the handle DH to OFFSET, relativ to WHENCE.
+ * Returns the new offset in bytes from the beginning of the data
+ * object.  */
 @API__OFF_T@ gpgme_data_seek (gpgme_data_t dh, @API__OFF_T@ offset, int whence);
 
 /* Create a new data buffer and return it in R_DH.  */
@@ -1151,19 +1156,19 @@ gpgme_error_t gpgme_data_new (gpgme_data_t *r_dh);
 void gpgme_data_release (gpgme_data_t dh);
 
 /* Create a new data buffer filled with SIZE bytes starting from
-   BUFFER.  If COPY is zero, copying is delayed until necessary, and
-   the data is taken from the original location when needed.  */
+ * BUFFER.  If COPY is zero, copying is delayed until necessary, and
+ * the data is taken from the original location when needed.  */
 gpgme_error_t gpgme_data_new_from_mem (gpgme_data_t *r_dh,
 				       const char *buffer, size_t size,
 				       int copy);
 
 /* Destroy the data buffer DH and return a pointer to its content.
-   The memory has be to released with gpgme_free() by the user.  It's
-   size is returned in R_LEN.  */
+ * The memory has be to released with gpgme_free() by the user.  It's
+ * size is returned in R_LEN.  */
 char *gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len);
 
 /* Release the memory returned by gpgme_data_release_and_get_mem() and
-   some other functions.  */
+ * some other functions.  */
 void gpgme_free (void *buffer);
 
 gpgme_error_t gpgme_data_new_from_cbs (gpgme_data_t *dh,
@@ -1182,11 +1187,11 @@ gpgme_error_t gpgme_data_set_encoding (gpgme_data_t dh,
 				       gpgme_data_encoding_t enc);
 
 /* Get the file name associated with the data object with handle DH, or
-   NULL if there is none.  */
+ * NULL if there is none.  */
 char *gpgme_data_get_file_name (gpgme_data_t dh);
 
 /* Set the file name associated with the data object with handle DH to
-   FILE_NAME.  */
+ * FILE_NAME.  */
 gpgme_error_t gpgme_data_set_file_name (gpgme_data_t dh,
 					const char *file_name);
 
@@ -1199,15 +1204,15 @@ gpgme_data_type_t gpgme_data_identify (gpgme_data_t dh, int reserved);
 
 
 /* Create a new data buffer filled with the content of file FNAME.
-   COPY must be non-zero.  For delayed read, please use
-   gpgme_data_new_from_fd or gpgme_data_new_from_stream instead.  */
+ * COPY must be non-zero.  For delayed read, please use
+ * gpgme_data_new_from_fd or gpgme_data_new_from_stream instead.  */
 gpgme_error_t gpgme_data_new_from_file (gpgme_data_t *r_dh,
 					const char *fname,
 					int copy);
 
 /* Create a new data buffer filled with LENGTH bytes starting from
-   OFFSET within the file FNAME or stream FP (exactly one must be
-   non-zero).  */
+ * OFFSET within the file FNAME or stream FP (exactly one must be
+ * non-zero).  */
 gpgme_error_t gpgme_data_new_from_filepart (gpgme_data_t *r_dh,
 					    const char *fname, FILE *fp,
 					    @API__OFF_T@ offset, size_t length);
@@ -1222,7 +1227,7 @@ gpgme_error_t gpgme_data_rewind (gpgme_data_t dh);
  */
 
 /* Get the key with the fingerprint FPR from the crypto backend.  If
-   SECRET is true, get the secret key.  */
+ * SECRET is true, get the secret key.  */
 gpgme_error_t gpgme_get_key (gpgme_ctx_t ctx, const char *fpr,
 			     gpgme_key_t *r_key, int secret);
 
@@ -1233,7 +1238,7 @@ gpgme_error_t gpgme_key_from_uid (gpgme_key_t *key, const char *name);
 void gpgme_key_ref (gpgme_key_t key);
 
 /* Release a reference to KEY.  If this was the last one the key is
-   destroyed.  */
+ * destroyed.  */
 void gpgme_key_unref (gpgme_key_t key);
 void gpgme_key_release (gpgme_key_t key);
 
@@ -1266,22 +1271,35 @@ typedef enum
     GPGME_ENCRYPT_NO_COMPRESS = 16,
     GPGME_ENCRYPT_SYMMETRIC = 32,
     GPGME_ENCRYPT_THROW_KEYIDS = 64,
-    GPGME_ENCRYPT_WRAP = 128
+    GPGME_ENCRYPT_WRAP = 128,
+    GPGME_ENCRYPT_WANT_ADDRESS = 256
   }
 gpgme_encrypt_flags_t;
 
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
-   store the resulting ciphertext in CIPHER.  */
+ * store the resulting ciphertext in CIPHER.  */
 gpgme_error_t gpgme_op_encrypt_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
 				      gpgme_encrypt_flags_t flags,
-				      gpgme_data_t plain, gpgme_data_t cipher);
+				      gpgme_data_t plain,
+                                      gpgme_data_t cipher);
 gpgme_error_t gpgme_op_encrypt (gpgme_ctx_t ctx, gpgme_key_t recp[],
 				gpgme_encrypt_flags_t flags,
-				gpgme_data_t plain, gpgme_data_t cipher);
+				gpgme_data_t plain,
+                                gpgme_data_t cipher);
+gpgme_error_t gpgme_op_encrypt_ext_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
+                                          const char *recpstring,
+                                          gpgme_encrypt_flags_t flags,
+                                          gpgme_data_t plain,
+                                          gpgme_data_t cipher);
+gpgme_error_t gpgme_op_encrypt_ext (gpgme_ctx_t ctx, gpgme_key_t recp[],
+                                    const char *recpstring,
+                                    gpgme_encrypt_flags_t flags,
+                                    gpgme_data_t plain,
+                                    gpgme_data_t cipher);
 
 /* Encrypt plaintext PLAIN within CTX for the recipients RECP and
-   store the resulting ciphertext in CIPHER.  Also sign the ciphertext
-   with the signers in CTX.  */
+ * store the resulting ciphertext in CIPHER.  Also sign the ciphertext
+ * with the signers in CTX.  */
 gpgme_error_t gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx,
 					   gpgme_key_t recp[],
 					   gpgme_encrypt_flags_t flags,
@@ -1289,7 +1307,19 @@ gpgme_error_t gpgme_op_encrypt_sign_start (gpgme_ctx_t ctx,
 					   gpgme_data_t cipher);
 gpgme_error_t gpgme_op_encrypt_sign (gpgme_ctx_t ctx, gpgme_key_t recp[],
 				     gpgme_encrypt_flags_t flags,
-				     gpgme_data_t plain, gpgme_data_t cipher);
+				     gpgme_data_t plain,
+                                     gpgme_data_t cipher);
+gpgme_error_t gpgme_op_encrypt_sign_ext_start (gpgme_ctx_t ctx,
+                                               gpgme_key_t recp[],
+                                               const char *recpstring,
+                                               gpgme_encrypt_flags_t flags,
+                                               gpgme_data_t plain,
+                                               gpgme_data_t cipher);
+gpgme_error_t gpgme_op_encrypt_sign_ext (gpgme_ctx_t ctx, gpgme_key_t recp[],
+                                         const char *recpstring,
+                                         gpgme_encrypt_flags_t flags,
+                                         gpgme_data_t plain,
+                                         gpgme_data_t cipher);
 
 
 /*
@@ -1317,6 +1347,7 @@ struct _gpgme_recipient
 };
 typedef struct _gpgme_recipient *gpgme_recipient_t;
 
+
 /* An object to return results from a decryption operation.
  * This structure shall be considered read-only and an application
  * must not allocate such a structure on its own.  */
@@ -1331,23 +1362,32 @@ struct _gpgme_op_decrypt_result
    * mode.  */
   unsigned int is_de_vs : 1;
 
+  /* The message claims that the content is a MIME object.  */
+  unsigned int is_mime : 1;
+
   /* Internal to GPGME, do not use.  */
-  int _unused : 30;
+  int _unused : 29;
 
   gpgme_recipient_t recipients;
 
   /* The original file name of the plaintext message, if
-     available.  */
+   * available.  */
   char *file_name;
 
   /* A textual representation of the session key used to decrypt the
    * message, if available */
   char *session_key;
+
+  /* A string with the symmetric encryption algorithm and mode using
+   * the format "<algo>.<mode>".  */
+  char *symkey_algo;
 };
 typedef struct _gpgme_op_decrypt_result *gpgme_decrypt_result_t;
 
+
 /* Retrieve a pointer to the result of the decrypt operation.  */
 gpgme_decrypt_result_t gpgme_op_decrypt_result (gpgme_ctx_t ctx);
+
 
 /* The valid decryption flags.  */
 typedef enum
@@ -1357,15 +1397,16 @@ typedef enum
   }
 gpgme_decrypt_flags_t;
 
+
 /* Decrypt ciphertext CIPHER within CTX and store the resulting
-   plaintext in PLAIN.  */
+ * plaintext in PLAIN.  */
 gpgme_error_t gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
 				      gpgme_data_t plain);
 gpgme_error_t gpgme_op_decrypt (gpgme_ctx_t ctx,
 				gpgme_data_t cipher, gpgme_data_t plain);
 
 /* Decrypt ciphertext CIPHER and make a signature verification within
-   CTX and store the resulting plaintext in PLAIN.  */
+ * CTX and store the resulting plaintext in PLAIN.  */
 gpgme_error_t gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx,
 					     gpgme_data_t cipher,
 					     gpgme_data_t plain);
@@ -1407,7 +1448,7 @@ struct _gpgme_new_signature
   gpgme_hash_algo_t hash_algo;
 
   /* Internal to GPGME, do not use.  Must be set to the same value as
-     CLASS below.  */
+   * CLASS below.  */
   unsigned long _obsolete_class;
 
   /* Signature creation time.  */
@@ -1416,10 +1457,10 @@ struct _gpgme_new_signature
   /* The fingerprint of the signature.  */
   char *fpr;
 
+  /* Deprecated; use SIG_CLASS instead.  */
 #ifdef __cplusplus
   unsigned int _obsolete_class_2;
 #else
-  /* Must be set to SIG_CLASS below.  */
   unsigned int class _GPGME_DEPRECATED_OUTSIDE_GPGME(0,4);
 #endif
 
@@ -1439,6 +1480,7 @@ struct _gpgme_op_sign_result
   gpgme_new_signature_t signatures;
 };
 typedef struct _gpgme_op_sign_result *gpgme_sign_result_t;
+
 
 /* Retrieve a pointer to the result of the signing operation.  */
 gpgme_sign_result_t gpgme_op_sign_result (gpgme_ctx_t ctx);
@@ -1533,6 +1575,7 @@ struct _gpgme_signature
 };
 typedef struct _gpgme_signature *gpgme_signature_t;
 
+
 /* An object to return the results of a verify operation.
  * This structure shall be considered read-only and an application
  * must not allocate such a structure on its own.  */
@@ -1543,8 +1586,15 @@ struct _gpgme_op_verify_result
   /* The original file name of the plaintext message, if
      available.  */
   char *file_name;
+
+  /* The message claims that the content is a MIME object.  */
+  unsigned int is_mime : 1;
+
+  /* Internal to GPGME; do not use.  */
+  unsigned int _unused : 31;
 };
 typedef struct _gpgme_op_verify_result *gpgme_verify_result_t;
+
 
 /* Retrieve a pointer to the result of the verify operation.  */
 gpgme_verify_result_t gpgme_op_verify_result (gpgme_ctx_t ctx);
@@ -1589,6 +1639,7 @@ struct _gpgme_import_status
   unsigned int status;
 };
 typedef struct _gpgme_import_status *gpgme_import_status_t;
+
 
 /* Import result object.
  * This structure shall be considered read-only and an application
@@ -1644,6 +1695,7 @@ struct _gpgme_op_import_result
   int skipped_v3_keys;
 };
 typedef struct _gpgme_op_import_result *gpgme_import_result_t;
+
 
 /* Retrieve a pointer to the result of the import operation.  */
 gpgme_import_result_t gpgme_op_import_result (gpgme_ctx_t ctx);
@@ -1702,6 +1754,7 @@ gpgme_error_t gpgme_op_export_keys (gpgme_ctx_t ctx,
 #define GPGME_CREATE_FORCE      (1 << 12) /* Force creation.           */
 #define GPGME_CREATE_NOEXPIRE   (1 << 13) /* Create w/o expiration.    */
 
+
 /* An object to return result from a key generation.
  * This structure shall be considered read-only and an application
  * must not allocate such a structure on its own.  */
@@ -1732,9 +1785,10 @@ struct _gpgme_op_genkey_result
 };
 typedef struct _gpgme_op_genkey_result *gpgme_genkey_result_t;
 
+
 /* Generate a new keypair and add it to the keyring.  PUBKEY and
-   SECKEY should be null for now.  PARMS specifies what keys should be
-   generated.  */
+ * SECKEY should be null for now.  PARMS specifies what keys should be
+ * generated.  */
 gpgme_error_t gpgme_op_genkey_start (gpgme_ctx_t ctx, const char *parms,
 				     gpgme_data_t pubkey, gpgme_data_t seckey);
 gpgme_error_t gpgme_op_genkey (gpgme_ctx_t ctx, const char *parms,
@@ -1800,7 +1854,7 @@ gpgme_genkey_result_t gpgme_op_genkey_result (gpgme_ctx_t ctx);
 
 
 /* Delete KEY from the keyring.  If ALLOW_SECRET is non-zero, secret
-   keys are also deleted.  */
+ * keys are also deleted.  */
 gpgme_error_t gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 				     int allow_secret);
 gpgme_error_t gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key,
@@ -1919,7 +1973,7 @@ gpgme_error_t gpgme_op_keylist_end (gpgme_ctx_t ctx);
  */
 
 /* Change the passphrase for KEY.  FLAGS is reserved for future use
-   and must be passed as 0.  */
+ * and must be passed as 0.  */
 gpgme_error_t gpgme_op_passwd_start (gpgme_ctx_t ctx, gpgme_key_t key,
                                      unsigned int flags);
 gpgme_error_t gpgme_op_passwd (gpgme_ctx_t ctx, gpgme_key_t key,
@@ -1984,7 +2038,7 @@ gpgme_error_t gpgme_op_trustlist_end (gpgme_ctx_t ctx);
 void gpgme_trust_item_ref (gpgme_trust_item_t item);
 
 /* Release a reference to ITEM.  If this was the last one the trust
-   item is destroyed.  */
+ * item is destroyed.  */
 void gpgme_trust_item_unref (gpgme_trust_item_t item);
 
 
@@ -2014,8 +2068,8 @@ gpgme_error_t gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output,
 
 
 /* Run the command FILE with the arguments in ARGV.  Connect stdin to
-   DATAIN, stdout to DATAOUT, and STDERR to DATAERR.  If one the data
-   streams is NULL, connect to /dev/null instead.  */
+ * DATAIN, stdout to DATAOUT, and STDERR to DATAERR.  If one the data
+ * streams is NULL, connect to /dev/null instead.  */
 gpgme_error_t gpgme_op_spawn_start (gpgme_ctx_t ctx,
                                     const char *file, const char *argv[],
                                     gpgme_data_t datain,
@@ -2031,6 +2085,7 @@ gpgme_error_t gpgme_op_spawn (gpgme_ctx_t ctx,
 /*
  * Low-level Assuan protocol access.
  */
+
 typedef gpgme_error_t (*gpgme_assuan_data_cb_t)
      (void *opaque, const void *data, size_t datalen);
 
@@ -2042,7 +2097,7 @@ typedef gpgme_error_t (*gpgme_assuan_status_cb_t)
      (void *opaque, const char *status, const char *args);
 
 /* Send the Assuan COMMAND and return results via the callbacks.
-   Asynchronous variant. */
+ * Asynchronous variant. */
 gpgme_error_t gpgme_op_assuan_transact_start (gpgme_ctx_t ctx,
                                               const char *command,
                                               gpgme_assuan_data_cb_t data_cb,
@@ -2053,7 +2108,7 @@ gpgme_error_t gpgme_op_assuan_transact_start (gpgme_ctx_t ctx,
                                               void *stat_cb_value);
 
 /* Send the Assuan COMMAND and return results via the callbacks.
-   Synchronous variant. */
+ * Synchronous variant. */
 gpgme_error_t gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
 					    const char *command,
 					    gpgme_assuan_data_cb_t data_cb,
@@ -2081,8 +2136,8 @@ typedef struct _gpgme_op_vfs_mount_result *gpgme_vfs_mount_result_t;
 gpgme_vfs_mount_result_t gpgme_op_vfs_mount_result (gpgme_ctx_t ctx);
 
 /* The container is automatically unmounted when the context is reset
-   or destroyed.  Transmission errors are returned directly,
-   operational errors are returned in OP_ERR.  */
+ * or destroyed.  Transmission errors are returned directly,
+ * operational errors are returned in OP_ERR.  */
 gpgme_error_t gpgme_op_vfs_mount (gpgme_ctx_t ctx, const char *container_file,
 				  const char *mount_dir, unsigned int flags,
 				  gpgme_error_t *op_err);
@@ -2097,8 +2152,8 @@ gpgme_error_t gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
  */
 
 /* The expert level at which a configuration option or group of
-   options should be displayed.  See the gpgconf(1) documentation for
-   more details.  */
+ * options should be displayed.  See the gpgconf(1) documentation for
+ * more details.  */
 typedef enum
   {
     GPGME_CONF_BASIC = 0,
@@ -2111,7 +2166,7 @@ gpgme_conf_level_t;
 
 
 /* The data type of a configuration option argument.  See the gpgconf(1)
-   documentation for more details.  */
+ * documentation for more details.  */
 typedef enum
   {
     /* Basic types.  */
@@ -2135,7 +2190,7 @@ gpgme_conf_type_t;
 
 
 /* This represents a single argument for a configuration option.
-   Which of the members of value is used depends on the ALT_TYPE.  */
+ * Which of the members of value is used depends on the ALT_TYPE.  */
 typedef struct gpgme_conf_arg
 {
   struct gpgme_conf_arg *next;
@@ -2152,7 +2207,7 @@ typedef struct gpgme_conf_arg
 
 
 /* The flags of a configuration option.  See the gpgconf
-   documentation for details.  */
+ * documentation for details.  */
 #define GPGME_CONF_GROUP	(1 << 0)
 #define GPGME_CONF_OPTIONAL	(1 << 1)
 #define GPGME_CONF_LIST		(1 << 2)
@@ -2164,7 +2219,7 @@ typedef struct gpgme_conf_arg
 
 
 /* The representation of a single configuration option.  See the
-   gpg-conf documentation for details.  */
+ * gpg-conf documentation for details.  */
 typedef struct gpgme_conf_opt
 {
   struct gpgme_conf_opt *next;
@@ -2209,7 +2264,7 @@ typedef struct gpgme_conf_opt
 
 
 /* The representation of a component that can be configured.  See the
-   gpg-conf documentation for details.  */
+ * gpg-conf documentation for details.  */
 typedef struct gpgme_conf_comp
 {
   struct gpgme_conf_comp *next;
@@ -2232,9 +2287,9 @@ typedef struct gpgme_conf_comp
 
 
 /* Allocate a new gpgme_conf_arg_t.  If VALUE is NULL, a "no arg
-   default" is prepared.  If type is a string type, VALUE should point
-   to the string.  Else, it should point to an unsigned or signed
-   integer respectively.  */
+ * default" is prepared.  If type is a string type, VALUE should point
+ * to the string.  Else, it should point to an unsigned or signed
+ * integer respectively.  */
 gpgme_error_t gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
 				  gpgme_conf_type_t type, const void *value);
 
@@ -2242,10 +2297,10 @@ gpgme_error_t gpgme_conf_arg_new (gpgme_conf_arg_t *arg_p,
 void gpgme_conf_arg_release (gpgme_conf_arg_t arg, gpgme_conf_type_t type);
 
 /* Register a change for the value of OPT to ARG.  If RESET is 1 (do
-   not use any values but 0 or 1), ARG is ignored and the option is
-   not changed (reverting a previous change).  Otherwise, if ARG is
-   NULL, the option is cleared or reset to its default. The change
-   is done with gpgconf's --runtime option to immediately take effect. */
+ * not use any values but 0 or 1), ARG is ignored and the option is
+ * not changed (reverting a previous change).  Otherwise, if ARG is
+ * NULL, the option is cleared or reset to its default. The change
+ * is done with gpgconf's --runtime option to immediately take effect. */
 gpgme_error_t gpgme_conf_opt_change (gpgme_conf_opt_t opt, int reset,
 				     gpgme_conf_arg_t arg);
 
@@ -2336,16 +2391,17 @@ gpgme_query_swdb_result_t gpgme_op_query_swdb_result (gpgme_ctx_t ctx);
 int gpgme_set_global_flag (const char *name, const char *value);
 
 /* Check that the library fulfills the version requirement.  Note:
-   This is here only for the case where a user takes a pointer from
-   the old version of this function.  The new version and macro for
-   run-time checks are below.  */
+ * This is here only for the case where a user takes a pointer from
+ * the old version of this function.  The new version and macro for
+ * run-time checks are below.  */
 const char *gpgme_check_version (const char *req_version);
 
-/* Check that the library fulfills the version requirement and check
-   for struct layout mismatch involving bitfields.  */
+/* Do not call this directly; use the macro below.  */
 const char *gpgme_check_version_internal (const char *req_version,
 					  size_t offset_sig_validity);
 
+/* Check that the library fulfills the version requirement and check
+ * for struct layout mismatch involving bitfields.  */
 #define gpgme_check_version(req_version)				\
   gpgme_check_version_internal (req_version,				\
 				offsetof (struct _gpgme_signature, validity))
@@ -2354,19 +2410,19 @@ const char *gpgme_check_version_internal (const char *req_version,
 const char *gpgme_get_dirinfo (const char *what);
 
 /* Get the information about the configured and installed engines.  A
-   pointer to the first engine in the statically allocated linked list
-   is returned in *INFO.  If an error occurs, it is returned.  The
-   returned data is valid until the next gpgme_set_engine_info.  */
+ * pointer to the first engine in the statically allocated linked list
+ * is returned in *INFO.  If an error occurs, it is returned.  The
+ * returned data is valid until the next gpgme_set_engine_info.  */
 gpgme_error_t gpgme_get_engine_info (gpgme_engine_info_t *engine_info);
 
 /* Set the default engine info for the protocol PROTO to the file name
-   FILE_NAME and the home directory HOME_DIR.  */
+ * FILE_NAME and the home directory HOME_DIR.  */
 gpgme_error_t gpgme_set_engine_info (gpgme_protocol_t proto,
 				     const char *file_name,
 				     const char *home_dir);
 
 /* Verify that the engine implementing PROTO is installed and
-   available.  */
+ * available.  */
 gpgme_error_t gpgme_engine_check_version (gpgme_protocol_t proto);
 
 
@@ -2375,15 +2431,15 @@ void gpgme_result_ref (void *result);
 void gpgme_result_unref (void *result);
 
 /* Return a public key algorithm string (e.g. "rsa2048").  Caller must
-   free using gpgme_free.  */
+ * free using gpgme_free.  */
 char *gpgme_pubkey_algo_string (gpgme_subkey_t subkey);
 
 /* Return a statically allocated string with the name of the public
-   key algorithm ALGO, or NULL if that name is not known.  */
+ * key algorithm ALGO, or NULL if that name is not known.  */
 const char *gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo);
 
 /* Return a statically allocated string with the name of the hash
-   algorithm ALGO, or NULL if that name is not known.  */
+ * algorithm ALGO, or NULL if that name is not known.  */
 const char *gpgme_hash_algo_name (gpgme_hash_algo_t algo);
 
 /* Return the addr-spec from a user id.  Caller must free the result
@@ -2535,7 +2591,7 @@ gpgme_error_t gpgme_op_card_edit       (gpgme_ctx_t ctx, gpgme_key_t key,
                                         _GPGME_DEPRECATED(1,7);
 
 /* The possible signature stati.  Deprecated, use error value in sig
-   status.  */
+ * status.  */
 typedef enum
   {
     GPGME_SIG_STAT_NONE  = 0,
@@ -2552,7 +2608,7 @@ _gpgme_sig_stat_t;
 typedef _gpgme_sig_stat_t gpgme_sig_stat_t _GPGME_DEPRECATED(0,4);
 
 /* The available key and signature attributes.  Deprecated, use the
-   individual result structures instead.  */
+ * individual result structures instead.  */
 typedef enum
   {
     GPGME_ATTR_KEYID        = 1,
@@ -2592,18 +2648,18 @@ _gpgme_attr_t;
 typedef _gpgme_attr_t gpgme_attr_t _GPGME_DEPRECATED(0,4);
 
 /* Retrieve the signature status of signature IDX in CTX after a
-   successful verify operation in R_STAT (if non-null).  The creation
-   time stamp of the signature is returned in R_CREATED (if non-null).
-   The function returns a string containing the fingerprint.
-   Deprecated, use verify result directly.  */
+ * successful verify operation in R_STAT (if non-null).  The creation
+ * time stamp of the signature is returned in R_CREATED (if non-null).
+ * The function returns a string containing the fingerprint.
+ * Deprecated, use verify result directly.  */
 const char *gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
                                   _gpgme_sig_stat_t *r_stat,
 				  time_t *r_created) _GPGME_DEPRECATED(0,4);
 
 /* Retrieve certain attributes of a signature.  IDX is the index
-   number of the signature after a successful verify operation.  WHAT
-   is an attribute where GPGME_ATTR_EXPIRE is probably the most useful
-   one.  WHATIDX is to be passed as 0 for most attributes . */
+ * number of the signature after a successful verify operation.  WHAT
+ * is an attribute where GPGME_ATTR_EXPIRE is probably the most useful
+ * one.  WHATIDX is to be passed as 0 for most attributes . */
 unsigned long gpgme_get_sig_ulong_attr (gpgme_ctx_t c, int idx,
                                         _gpgme_attr_t what, int whatidx)
      _GPGME_DEPRECATED(0,4);
@@ -2613,13 +2669,13 @@ const char *gpgme_get_sig_string_attr (gpgme_ctx_t c, int idx,
 
 
 /* Get the key used to create signature IDX in CTX and return it in
-   R_KEY.  */
+ * R_KEY.  */
 gpgme_error_t gpgme_get_sig_key (gpgme_ctx_t ctx, int idx, gpgme_key_t *r_key)
      _GPGME_DEPRECATED(0,4);
 
 /* Create a new data buffer which retrieves the data from the callback
-   function READ_CB.  Deprecated, please use gpgme_data_new_from_cbs
-   instead.  */
+ * function READ_CB.  Deprecated, please use gpgme_data_new_from_cbs
+ * instead.  */
 gpgme_error_t gpgme_data_new_with_read_cb (gpgme_data_t *r_dh,
 					   int (*read_cb) (void*,char *,
 							   size_t,size_t*),
@@ -2627,34 +2683,34 @@ gpgme_error_t gpgme_data_new_with_read_cb (gpgme_data_t *r_dh,
      _GPGME_DEPRECATED(0,4);
 
 /* Return the value of the attribute WHAT of KEY, which has to be
-   representable by a string.  IDX specifies the sub key or user ID
-   for attributes related to sub keys or user IDs.  Deprecated, use
-   key structure directly instead. */
+ * representable by a string.  IDX specifies the sub key or user ID
+ * for attributes related to sub keys or user IDs.  Deprecated, use
+ * key structure directly instead. */
 const char *gpgme_key_get_string_attr (gpgme_key_t key, _gpgme_attr_t what,
 				       const void *reserved, int idx)
      _GPGME_DEPRECATED(0,4);
 
 /* Return the value of the attribute WHAT of KEY, which has to be
-   representable by an unsigned integer.  IDX specifies the sub key or
-   user ID for attributes related to sub keys or user IDs.
-   Deprecated, use key structure directly instead.  */
+ * representable by an unsigned integer.  IDX specifies the sub key or
+ * user ID for attributes related to sub keys or user IDs.
+ * Deprecated, use key structure directly instead.  */
 unsigned long gpgme_key_get_ulong_attr (gpgme_key_t key, _gpgme_attr_t what,
 					const void *reserved, int idx)
      _GPGME_DEPRECATED(0,4);
 
 /* Return the value of the attribute WHAT of a signature on user ID
-   UID_IDX in KEY, which has to be representable by a string.  IDX
-   specifies the signature.  Deprecated, use key structure directly
-   instead.  */
+ * UID_IDX in KEY, which has to be representable by a string.  IDX
+ * specifies the signature.  Deprecated, use key structure directly
+ * instead.  */
 const char *gpgme_key_sig_get_string_attr (gpgme_key_t key, int uid_idx,
 					   _gpgme_attr_t what,
 					   const void *reserved, int idx)
      _GPGME_DEPRECATED(0,4);
 
 /* Return the value of the attribute WHAT of a signature on user ID
-   UID_IDX in KEY, which has to be representable by an unsigned
-   integer string.  IDX specifies the signature.  Deprecated, use key
-   structure directly instead.  */
+ * UID_IDX in KEY, which has to be representable by an unsigned
+ * integer string.  IDX specifies the signature.  Deprecated, use key
+ * structure directly instead.  */
 unsigned long gpgme_key_sig_get_ulong_attr (gpgme_key_t key, int uid_idx,
 					    _gpgme_attr_t what,
 					    const void *reserved, int idx)
@@ -2665,21 +2721,21 @@ gpgme_error_t gpgme_op_import_ext (gpgme_ctx_t ctx, gpgme_data_t keydata,
 				   int *nr) _GPGME_DEPRECATED(0,4);
 
 /* Release the trust item ITEM.  Deprecated, use
-   gpgme_trust_item_unref.  */
+ * gpgme_trust_item_unref.  */
 void gpgme_trust_item_release (gpgme_trust_item_t item) _GPGME_DEPRECATED(0,4);
 
 /* Return the value of the attribute WHAT of ITEM, which has to be
-   representable by a string.  Deprecated, use trust item structure
-   directly.  */
+ * representable by a string.  Deprecated, use trust item structure
+ * directly.  */
 const char *gpgme_trust_item_get_string_attr (gpgme_trust_item_t item,
 					      _gpgme_attr_t what,
 					      const void *reserved, int idx)
      _GPGME_DEPRECATED(0,4);
 
 /* Return the value of the attribute WHAT of KEY, which has to be
-   representable by an integer.  IDX specifies a running index if the
-   attribute appears more than once in the key.  Deprecated, use trust
-   item structure directly.  */
+ * representable by an integer.  IDX specifies a running index if the
+ * attribute appears more than once in the key.  Deprecated, use trust
+ * item structure directly.  */
 int gpgme_trust_item_get_int_attr (gpgme_trust_item_t item, _gpgme_attr_t what,
 				   const void *reserved, int idx)
      _GPGME_DEPRECATED(0,4);

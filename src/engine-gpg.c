@@ -43,6 +43,7 @@
 #include "sema.h"
 #include "debug.h"
 #include "data.h"
+#include "mbox-util.h"
 
 #include "engine-backend.h"
 
@@ -144,6 +145,11 @@ struct engine_gpg
   struct gpgme_io_cbs io_cbs;
   gpgme_pinentry_mode_t pinentry_mode;
   char request_origin[10];
+
+  struct {
+    unsigned int no_symkey_cache : 1;
+    unsigned int offline : 1;
+  } flags;
 
   /* NULL or the data object fed to --override_session_key-fd.  */
   gpgme_data_t override_session_key;
@@ -644,6 +650,12 @@ gpg_set_engine_flags (void *engine, const gpgme_ctx_t ctx)
     }
   else
     *gpg->request_origin = 0;
+
+  gpg->flags.no_symkey_cache = (ctx->no_symkey_cache
+                                && have_gpg_version (gpg, "2.2.7"));
+
+  gpg->flags.offline = (ctx->offline && have_gpg_version (gpg, "2.1.23"));
+
 }
 
 
@@ -875,7 +887,8 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
     argc++;
   if (!gpg->cmd.used)
     argc++;	/* --batch */
-  argc += 2;	/* --no-sk-comments, --request-origin */
+  argc += 4;	/* --no-sk-comments, --request-origin, --no-symkey-cache */
+                /* --disable-dirmngr  */
 
   argv = calloc (argc + 1, sizeof *argv);
   if (!argv)
@@ -927,6 +940,32 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
     {
       argv[argc] = _gpgme_strconcat ("--request-origin=",
                                      gpg->request_origin, NULL);
+      if (!argv[argc])
+	{
+          int saved_err = gpg_error_from_syserror ();
+	  free (fd_data_map);
+	  free_argv (argv);
+	  return saved_err;
+        }
+      argc++;
+    }
+
+  if (gpg->flags.no_symkey_cache)
+    {
+      argv[argc] = strdup ("--no-symkey-cache");
+      if (!argv[argc])
+	{
+          int saved_err = gpg_error_from_syserror ();
+	  free (fd_data_map);
+	  free_argv (argv);
+	  return saved_err;
+        }
+      argc++;
+    }
+
+  if (gpg->flags.offline)
+    {
+      argv[argc] = strdup ("--disable-dirmngr");
       if (!argv[argc])
 	{
           int saved_err = gpg_error_from_syserror ();
@@ -1871,8 +1910,70 @@ gpg_edit (void *engine, int type, gpgme_key_t key, gpgme_data_t out,
 }
 
 
+/* Add a single argument from a key to an -r option.  */
+static gpg_error_t
+add_arg_recipient (engine_gpg_t gpg, gpgme_encrypt_flags_t flags,
+                   gpgme_key_t key)
+{
+  gpg_error_t err;
+
+  if ((flags & GPGME_ENCRYPT_WANT_ADDRESS))
+    {
+      /* We have no way to figure out which mail address was
+       * requested.  FIXME: It would be possible to figure this out by
+       * consulting the SENDER property of the context.  */
+      err = gpg_error (GPG_ERR_INV_USER_ID);
+    }
+  else
+    err = add_arg (gpg, key->subkeys->fpr);
+
+  return err;
+}
+
+
+/* Add a single argument from a USERID string to an -r option.  */
+static gpg_error_t
+add_arg_recipient_string (engine_gpg_t gpg, gpgme_encrypt_flags_t flags,
+                          const char *userid, int useridlen)
+{
+  gpg_error_t err;
+
+  if ((flags & GPGME_ENCRYPT_WANT_ADDRESS))
+    {
+      char *tmpstr, *mbox;
+
+      tmpstr = malloc (useridlen + 1);
+      if (!tmpstr)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          memcpy (tmpstr, userid, useridlen);
+          tmpstr[useridlen] = 0;
+
+          mbox = _gpgme_mailbox_from_userid (tmpstr);
+          if (!mbox)
+            {
+              err = gpg_error_from_syserror ();
+              if (gpg_err_code (err) == GPG_ERR_EINVAL)
+                err = gpg_error (GPG_ERR_INV_USER_ID);
+            }
+          else
+            err = add_arg (gpg, mbox);
+
+          free (mbox);
+          free (tmpstr);
+        }
+    }
+  else
+    err = add_arg_len (gpg, NULL, userid, useridlen);
+
+  return err;
+}
+
+
 static gpgme_error_t
-append_args_from_recipients (engine_gpg_t gpg, gpgme_key_t recp[])
+append_args_from_recipients (engine_gpg_t gpg, gpgme_encrypt_flags_t flags,
+                             gpgme_key_t recp[])
 {
   gpgme_error_t err = 0;
   int i = 0;
@@ -1884,7 +1985,7 @@ append_args_from_recipients (engine_gpg_t gpg, gpgme_key_t recp[])
       if (!err)
 	err = add_arg (gpg, "-r");
       if (!err)
-	err = add_arg (gpg, recp[i]->subkeys->fpr);
+	err = add_arg_recipient (gpg, flags, recp[i]);
       if (err)
 	break;
       i++;
@@ -1893,17 +1994,86 @@ append_args_from_recipients (engine_gpg_t gpg, gpgme_key_t recp[])
 }
 
 
+/* Take recipients from the LF delimited STRING and add -r args.  */
+static gpg_error_t
+append_args_from_recipients_string (engine_gpg_t gpg,
+                                    gpgme_encrypt_flags_t flags,
+                                    const char *string)
+{
+  gpg_error_t err = 0;
+  gpgme_encrypt_flags_t orig_flags = flags;
+  int any = 0;
+  int ignore = 0;
+  int hidden = 0;
+  int file = 0;
+  const char *s;
+  int n;
+
+  do
+    {
+      /* Skip leading white space */
+      while (*string == ' ' || *string == '\t')
+        string++;
+      if (!*string)
+        break;
+
+      /* Look for the LF. */
+      s = strchr (string, '\n');
+      if (s)
+        n = s - string;
+      else
+        n = strlen (string);
+      while (n && (string[n-1] == ' ' || string[n-1] == '\t'))
+        n--;
+
+      if (!ignore && n == 2 && !memcmp (string, "--", 2))
+        ignore = 1;
+      else if (!ignore && n == 8 && !memcmp (string, "--hidden", 8))
+        hidden = 1;
+      else if (!ignore && n == 11 && !memcmp (string, "--no-hidden", 11))
+        hidden = 0;
+      else if (!ignore && n == 6 && !memcmp (string, "--file", 6))
+        {
+          file = 1;
+          /* Because the key is used as is we need to ignore this flag:  */
+          flags &= ~GPGME_ENCRYPT_WANT_ADDRESS;
+        }
+      else if (!ignore && n == 9 && !memcmp (string, "--no-file", 9))
+        {
+          file = 0;
+          flags = orig_flags;
+        }
+      else if (n) /* Not empty - use it.  */
+        {
+          err = add_arg (gpg, file? (hidden? "-F":"-f") : (hidden? "-R":"-r"));
+          if (!err)
+            err = add_arg_recipient_string (gpg, flags, string, n);
+          if (!err)
+            any = 1;
+        }
+
+      string += n + !!s;
+    }
+  while (!err);
+
+  if (!err && !any)
+    err = gpg_error (GPG_ERR_MISSING_KEY);
+  return err;
+}
+
+
 static gpgme_error_t
-gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
+gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
+             gpgme_encrypt_flags_t flags,
 	     gpgme_data_t plain, gpgme_data_t ciph, int use_armor)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err = 0;
 
-  if (recp)
+  if (recp || recpstring)
     err = add_arg (gpg, "--encrypt");
 
-  if (!err && ((flags & GPGME_ENCRYPT_SYMMETRIC) || !recp))
+  if (!err && ((flags & GPGME_ENCRYPT_SYMMETRIC) || (!recp && !recpstring)))
     err = add_arg (gpg, "--symmetric");
 
   if (!err && use_armor)
@@ -1930,7 +2100,7 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
       && have_gpg_version (gpg, "2.1.14"))
     err = add_arg (gpg, "--mimemode");
 
-  if (recp)
+  if (recp || recpstring)
     {
       /* If we know that all recipients are valid (full or ultimate trust)
 	 we can suppress further checks.  */
@@ -1940,8 +2110,10 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
       if (!err && (flags & GPGME_ENCRYPT_NO_ENCRYPT_TO))
 	err = add_arg (gpg, "--no-encrypt-to");
 
-      if (!err)
-	err = append_args_from_recipients (gpg, recp);
+      if (!err && !recp && recpstring)
+	err = append_args_from_recipients_string (gpg, flags, recpstring);
+      else if (!err)
+	err = append_args_from_recipients (gpg, flags, recp);
     }
 
   /* Tell the gpg object about the data.  */
@@ -1974,6 +2146,7 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
 
 static gpgme_error_t
 gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
+                  const char *recpstring,
 		  gpgme_encrypt_flags_t flags, gpgme_data_t plain,
 		  gpgme_data_t ciph, int use_armor,
 		  gpgme_ctx_t ctx /* FIXME */)
@@ -1981,10 +2154,10 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
   engine_gpg_t gpg = engine;
   gpgme_error_t err = 0;
 
-  if (recp)
+  if (recp || recpstring)
     err = add_arg (gpg, "--encrypt");
 
-  if (!err && ((flags & GPGME_ENCRYPT_SYMMETRIC) || !recp))
+  if (!err && ((flags & GPGME_ENCRYPT_SYMMETRIC) || (!recp && !recpstring)))
     err = add_arg (gpg, "--symmetric");
 
   if (!err)
@@ -2002,7 +2175,7 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
       && have_gpg_version (gpg, "2.1.14"))
     err = add_arg (gpg, "--mimemode");
 
-  if (recp)
+  if (recp || recpstring)
     {
       /* If we know that all recipients are valid (full or ultimate trust)
 	 we can suppress further checks.  */
@@ -2012,8 +2185,10 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
       if (!err && (flags & GPGME_ENCRYPT_NO_ENCRYPT_TO))
 	err = add_arg (gpg, "--no-encrypt-to");
 
-      if (!err)
-	err = append_args_from_recipients (gpg, recp);
+      if (!err && !recp && recpstring)
+	err = append_args_from_recipients_string (gpg, flags, recpstring);
+      else if (!err)
+	err = append_args_from_recipients (gpg, flags, recp);
     }
 
   if (!err)

@@ -538,6 +538,10 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
       if (!ctx->request_origin)
         err = gpg_error_from_syserror ();
     }
+  else if (!strcmp (name, "no-symkey-cache"))
+    {
+      ctx->no_symkey_cache = abool;
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -582,6 +586,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "request-origin"))
     {
       return ctx->request_origin? ctx->request_origin : "";
+    }
+  else if (!strcmp (name, "no-symkey-cache"))
+    {
+      return ctx->no_symkey_cache? "1":"";
     }
   else
     return NULL;

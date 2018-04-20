@@ -1327,8 +1327,57 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
 }
 
 
+/* Take recipients from the LF delimited STRING and send RECIPIENT
+ * commands to gpgsm.  */
 static gpgme_error_t
-gpgsm_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
+set_recipients_from_string (engine_gpgsm_t gpgsm, const char *string)
+{
+  gpg_error_t err = 0;
+  char *line = NULL;
+  int no_pubkey = 0;
+  const char *s;
+  int n;
+
+  for (;;)
+    {
+      while (*string == ' ' || *string == '\t')
+        string++;
+      if (!*string)
+        break;
+
+      s = strchr (string, '\n');
+      if (s)
+        n = s - string;
+      else
+        n = strlen (string);
+      while (n && (string[n-1] == ' ' || string[n-1] == '\t'))
+        n--;
+
+      gpgrt_free (line);
+      if (gpgrt_asprintf (&line, "RECIPIENT %.*s", n, string) < 0)
+        {
+          err = gpg_error_from_syserror ();
+          break;
+        }
+      string += n + !!s;
+
+      err = gpgsm_assuan_simple_command (gpgsm, line, gpgsm->status.fnc,
+					 gpgsm->status.fnc_value);
+
+      /* Fixme: Improve error reporting.  */
+      if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY)
+	no_pubkey++;
+      else if (err)
+        break;
+    }
+  gpgrt_free (line);
+  return err? err : no_pubkey? gpg_error (GPG_ERR_NO_PUBKEY) : 0;
+}
+
+
+static gpgme_error_t
+gpgsm_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
+               gpgme_encrypt_flags_t flags,
 	       gpgme_data_t plain, gpgme_data_t ciph, int use_armor)
 {
   engine_gpgsm_t gpgsm = engine;
@@ -1339,7 +1388,7 @@ gpgsm_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
   if (!recp)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  if (flags & GPGME_ENCRYPT_NO_ENCRYPT_TO)
+  if ((flags & GPGME_ENCRYPT_NO_ENCRYPT_TO))
     {
       err = gpgsm_assuan_simple_command (gpgsm,
 					 "OPTION no-encrypt-to", NULL, NULL);
@@ -1359,7 +1408,10 @@ gpgsm_encrypt (void *engine, gpgme_key_t recp[], gpgme_encrypt_flags_t flags,
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
   gpgsm->inline_data = NULL;
 
-  err = set_recipients (gpgsm, recp);
+  if (!recp && recpstring)
+    err = set_recipients_from_string (gpgsm, recpstring);
+  else
+    err = set_recipients (gpgsm, recp);
 
   if (!err)
     err = start (gpgsm, "ENCRYPT");

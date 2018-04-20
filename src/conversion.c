@@ -575,3 +575,49 @@ _gpgme_map_pk_algo (int algo, gpgme_protocol_t protocol)
 
   return algo;
 }
+
+
+/* Return a string with a cipher algorithm.  */
+const char *
+_gpgme_cipher_algo_name (int algo, gpgme_protocol_t protocol)
+{
+  if (protocol == GPGME_PROTOCOL_OPENPGP)
+    {
+      /* The algo is given according to OpenPGP specs.  */
+      switch (algo)
+        {
+        case 1:  return "IDEA";
+        case 2:	 return "3DES";
+        case 3:	 return "CAST5";
+        case 4:  return "BLOWFISH";
+        case 7:  return "AES";
+        case 8:  return "AES192";
+        case 9:  return "AES256";
+        case 10: return "TWOFISH";
+        case 11: return "CAMELLIA128";
+        case 12: return "CAMELLIA192";
+        case 13: return "CAMELLIA256";
+        }
+    }
+
+  return "Unknown";
+}
+
+
+/* Return a string with the cipher mode.  */
+const char *
+_gpgme_cipher_mode_name (int algo, gpgme_protocol_t protocol)
+{
+  if (protocol == GPGME_PROTOCOL_OPENPGP)
+    {
+      /* The algo is given according to OpenPGP specs.  */
+      switch (algo)
+        {
+        case 0:  return "CFB";
+        case 1:  return "EAX";
+        case 2:	 return "OCB";
+        }
+    }
+
+  return "Unknown";
+}

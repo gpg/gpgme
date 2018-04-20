@@ -31,31 +31,14 @@
 
 #include <gpgme.h>
 
+#define PGM "t-verify"
 #include "t-support.h"
+
 
 
 static const char test_text1[] = "Just GNU it!\n";
 static const char test_text1f[]= "Just GNU it?\n";
 static const char test_sig1[] =
-#if 0
-"-----BEGIN PGP SIGNATURE-----\n"
-"\n"
-"iEYEABECAAYFAjoKgjIACgkQLXJ8x2hpdzQMSwCeO/xUrhysZ7zJKPf/FyXA//u1\n"
-"ZgIAn0204PBR7yxSdQx6CFxugstNqmRv\n"
-"=yku6\n"
-"-----END PGP SIGNATURE-----\n"
-#elif 0
-"-----BEGIN PGP SIGNATURE-----\n"
-"Version: GnuPG v1.0.4-2 (GNU/Linux)\n"
-"Comment: For info see http://www.gnupg.org\n"
-"\n"
-"iJcEABECAFcFAjoS8/E1FIAAAAAACAAkZm9vYmFyLjF0aGlzIGlzIGEgbm90YXRp\n"
-"b24gZGF0YSB3aXRoIDIgbGluZXMaGmh0dHA6Ly93d3cuZ3Uub3JnL3BvbGljeS8A\n"
-"CgkQLXJ8x2hpdzQLyQCbBW/fgU8ZeWSlWPM1F8umHX17bAAAoIfSNDSp5zM85XcG\n"
-"iwxMrf+u8v4r\n"
-"=88Zo\n"
-"-----END PGP SIGNATURE-----\n"
-#elif 1
 "-----BEGIN PGP SIGNATURE-----\n"
 "\n"
 "iN0EABECAJ0FAjoS+i9FFIAAAAAAAwA5YmFyw7bDpMO8w58gZGFzIHdhcmVuIFVt\n"
@@ -64,9 +47,24 @@ static const char test_sig1[] =
 "Oi8vd3d3Lmd1Lm9yZy9wb2xpY3kvAAoJEC1yfMdoaXc0JBIAoIiLlUsvpMDOyGEc\n"
 "dADGKXF/Hcb+AKCJWPphZCphduxSvrzH0hgzHdeQaA==\n"
 "=nts1\n"
-"-----END PGP SIGNATURE-----\n"
-#endif
-;
+"-----END PGP SIGNATURE-----\n";
+
+/* The same as test_sig1 but with a second signature for which we do
+ * not have the public key (deleted after signature creation).  */
+static const char test_sig1_plus_unknown_key[] =
+"-----BEGIN PGP SIGNATURE-----\n"
+"\n"
+"iN0EABECAJ0FAjoS+i9FFIAAAAAAAwA5YmFyw7bDpMO8w58gZGFzIHdhcmVuIFVt\n"
+"bGF1dGUgdW5kIGpldHp0IGVpbiBwcm96ZW50JS1aZWljaGVuNRSAAAAAAAgAJGZv\n"
+"b2Jhci4xdGhpcyBpcyBhIG5vdGF0aW9uIGRhdGEgd2l0aCAyIGxpbmVzGhpodHRw\n"
+"Oi8vd3d3Lmd1Lm9yZy9wb2xpY3kvAAoJEC1yfMdoaXc0JBIAoIiLlUsvpMDOyGEc\n"
+"dADGKXF/Hcb+AKCJWPphZCphduxSvrzH0hgzHdeQaIh1BAAWCAAdFiEENuwqcMZC\n"
+"brD85btN+RyY8EnUIEwFAlrPR4cACgkQ+RyY8EnUIEyiuAEAm41LJTGUFDzhavRm\n"
+"jNwqUZxGGOySduW+u/X1lEfV+MYA/2lJOo75rHtD1EG+tkFVWt4Ukj0rjhR132vZ\n"
+"IOtrYAcG\n"
+"=yYwZ\n"
+"-----END PGP SIGNATURE-----\n";
+
 static const char test_sig2[] =
 "-----BEGIN PGP MESSAGE-----\n"
 "\n"
@@ -91,37 +89,57 @@ static const char double_plaintext_sig[] =
 
 
 
+/* NO_OF_SIGS is the expected number of signatures.  SKIP_SKIPS is
+ * which of these signatures to check (0 based).  */
 static void
-check_result (gpgme_verify_result_t result, unsigned int summary,
-              const char *fpr,
+check_result (gpgme_verify_result_t result, int no_of_sigs, int skip_sigs,
+              unsigned int summary, const char *fpr,
 	      gpgme_error_t status, int notation)
 {
   gpgme_signature_t sig;
+  int n;
 
   sig = result->signatures;
-  if (!sig || sig->next)
+  for (n=0; sig; sig = sig->next)
+    n++;
+  if (n != no_of_sigs)
     {
-      fprintf (stderr, "%s:%i: Unexpected number of signatures\n",
-	       __FILE__, __LINE__);
+      fprintf (stderr, "%s:%i: Unexpected number of signatures"
+               " (got %d expected  %d)\n", PGM, __LINE__, n, no_of_sigs);
       exit (1);
     }
+  if (skip_sigs >= n)
+    {
+      fprintf (stderr, "%s:%i: oops SKIPP_SIGS to high\n", PGM, __LINE__);
+      exit (1);
+    }
+
+  for (n=0, sig = result->signatures; n < skip_sigs; sig = sig->next, n++)
+    ;
+
   if (sig->summary != summary)
     {
-      fprintf (stderr, "%s:%i: Unexpected signature summary: "
+      fprintf (stderr, "%s:%i:sig-%d: Unexpected signature summary: "
                "want=0x%x have=0x%x\n",
-	       __FILE__, __LINE__, summary, sig->summary);
+	       PGM, __LINE__, skip_sigs, summary, sig->summary);
       exit (1);
     }
   if (strcmp (sig->fpr, fpr))
     {
-      fprintf (stderr, "%s:%i: Unexpected fingerprint: %s\n",
-	       __FILE__, __LINE__, sig->fpr);
-      exit (1);
+      if (strlen (sig->fpr) == 16 && strlen (fpr) == 40
+          && !strncmp (sig->fpr, fpr + 24, 16))
+        ; /* okay because gnupg < 2.2.6 only shows the keyid.  */
+      else
+        {
+          fprintf (stderr, "%s:%i:sig-%d: Unexpected fingerprint: %s\n",
+                   PGM, __LINE__, skip_sigs, sig->fpr);
+          exit (1);
+        }
     }
   if (gpgme_err_code (sig->status) != status)
     {
-      fprintf (stderr, "%s:%i: Unexpected signature status: %s\n",
-	       __FILE__, __LINE__, gpgme_strerror (sig->status));
+      fprintf (stderr, "%s:%i:sig-%d: Unexpected signature status: %s\n",
+	       PGM, __LINE__, skip_sigs, gpgme_strerror (sig->status));
       exit (1);
     }
   if (notation)
@@ -166,8 +184,8 @@ check_result (gpgme_verify_result_t result, unsigned int summary,
             }
           if (!any)
             {
-              fprintf (stderr, "%s:%i: Unexpected notation data\n",
-                       __FILE__, __LINE__);
+              fprintf (stderr, "%s:%i:sig-%d: Unexpected notation data\n",
+                       PGM, __LINE__, skip_sigs);
               exit (1);
             }
         }
@@ -175,28 +193,30 @@ check_result (gpgme_verify_result_t result, unsigned int summary,
         {
           if (expected_notations[i].seen != 1)
             {
-              fprintf (stderr, "%s:%i: Missing or duplicate notation data\n",
-                       __FILE__, __LINE__);
+              fprintf (stderr, "%s:%i:sig-%d: "
+                       "Missing or duplicate notation data\n",
+                       PGM, __LINE__, skip_sigs);
               exit (1);
             }
         }
     }
   if (sig->wrong_key_usage)
     {
-      fprintf (stderr, "%s:%i: Unexpectedly wrong key usage\n",
-	       __FILE__, __LINE__);
+      fprintf (stderr, "%s:%i:sig-%d: Unexpectedly wrong key usage\n",
+	       PGM, __LINE__, skip_sigs);
       exit (1);
     }
   if (sig->validity != GPGME_VALIDITY_UNKNOWN)
     {
-      fprintf (stderr, "%s:%i: Unexpected validity: %i\n",
-	       __FILE__, __LINE__, sig->validity);
+      fprintf (stderr, "%s:%i:sig-%d: Unexpected validity: %i\n",
+	       PGM, __LINE__, skip_sigs, sig->validity);
       exit (1);
     }
   if (gpgme_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
     {
-      fprintf (stderr, "%s:%i: Unexpected validity reason: %s\n",
-	       __FILE__, __LINE__, gpgme_strerror (sig->validity_reason));
+      fprintf (stderr, "%s:%i:sig-%d: Unexpected validity reason: %s\n",
+	       PGM, __LINE__, skip_sigs,
+               gpgme_strerror (sig->validity_reason));
       exit (1);
     }
 }
@@ -227,7 +247,7 @@ main (int argc, char *argv[])
   err = gpgme_op_verify (ctx, sig, text, NULL);
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);
-  check_result (result, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+  check_result (result, 1, 0, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
 		GPG_ERR_NO_ERROR, 1);
 
   /* Checking a manipulated message.  */
@@ -238,8 +258,28 @@ main (int argc, char *argv[])
   err = gpgme_op_verify (ctx, sig, text, NULL);
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);
-  check_result (result, GPGME_SIGSUM_RED, "2D727CC768697734",
+  check_result (result, 1, 0, GPGME_SIGSUM_RED, "2D727CC768697734",
 		GPG_ERR_BAD_SIGNATURE, 0);
+
+  /* Checking a valid message.  Bu that one has a second signature
+   * made by an unknown key.  */
+  gpgme_data_release (text);
+  gpgme_data_release (sig);
+  err = gpgme_data_new_from_mem (&text, test_text1, strlen (test_text1), 0);
+  fail_if_err (err);
+  err = gpgme_data_new_from_mem (&sig, test_sig1_plus_unknown_key,
+                                 strlen (test_sig1_plus_unknown_key), 0);
+  fail_if_err (err);
+  err = gpgme_op_verify (ctx, sig, text, NULL);
+  fail_if_err (err);
+  result = gpgme_op_verify_result (ctx);
+  check_result (result, 2, 0, 0,
+                "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+		GPG_ERR_NO_ERROR, 1);
+  check_result (result, 2, 1, GPGME_SIGSUM_KEY_MISSING,
+                "36EC2A70C6426EB0FCE5BB4DF91C98F049D4204C",
+		GPG_ERR_NO_PUBKEY, 0);
+
 
   /* Checking a normal signature.  */
   gpgme_data_release (sig);
@@ -251,7 +291,7 @@ main (int argc, char *argv[])
   err = gpgme_op_verify (ctx, sig, NULL, text);
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);
-  check_result (result, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+  check_result (result, 1, 0, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
 		GPG_ERR_NO_ERROR, 0);
 
 
@@ -267,7 +307,7 @@ main (int argc, char *argv[])
   if (gpgme_err_code (err) != GPG_ERR_BAD_DATA)
     {
       fprintf (stderr, "%s:%i: Double plaintext message not detected\n",
-	       __FILE__, __LINE__);
+	       PGM, __LINE__);
       exit (1);
     }
 
@@ -278,7 +318,7 @@ main (int argc, char *argv[])
   if (!s || strcmp (s, "foo@example.org"))
     {
       fprintf (stderr, "%s:%i: gpgme_{set,get}_sender mismatch\n",
-               __FILE__, __LINE__);
+               PGM, __LINE__);
       exit (1);
     }
 
@@ -288,7 +328,7 @@ main (int argc, char *argv[])
   if (!s || strcmp (s, "bar@example.org"))
     {
       fprintf (stderr, "%s:%i: gpgme_{set,get}_sender mismatch\n",
-               __FILE__, __LINE__);
+               PGM, __LINE__);
       exit (1);
     }
 
@@ -298,7 +338,7 @@ main (int argc, char *argv[])
   if (!s || strcmp (s, "foo@example.org"))
     {
       fprintf (stderr, "%s:%i: gpgme_{set,get}_sender mismatch\n",
-               __FILE__, __LINE__);
+               PGM, __LINE__);
       exit (1);
     }
 
@@ -306,7 +346,7 @@ main (int argc, char *argv[])
   if (gpgme_err_code (err) != GPG_ERR_INV_VALUE)
     {
       fprintf (stderr, "%s:%i: gpgme_set_sender didn't detect bogus address\n",
-               __FILE__, __LINE__);
+               PGM, __LINE__);
       exit (1);
     }
   /* (the former address should still be there.)  */
@@ -314,7 +354,7 @@ main (int argc, char *argv[])
   if (!s || strcmp (s, "foo@example.org"))
     {
       fprintf (stderr, "%s:%i: gpgme_{set,get}_sender mismatch\n",
-               __FILE__, __LINE__);
+               PGM, __LINE__);
       exit (1);
     }
 

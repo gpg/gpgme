@@ -20,8 +20,7 @@
 
 /* This is tool implements the Native Messaging protocol of web
  * browsers and provides the server part of it.  A Javascript based
- * client can be found in lang/javascript.  The used data format is
- * similar to the API of openpgpjs.
+ * client can be found in lang/javascript.
  */
 
 #include <config.h>
@@ -33,6 +32,7 @@
 #include <locale.h>
 #endif
 #include <stdint.h>
+#include <sys/stat.h>
 
 #define GPGRT_ENABLE_ES_MACROS 1
 #define GPGRT_ENABLE_LOG_MACROS 1
@@ -48,6 +48,16 @@ int main (void){fputs ("Build with Libgpg-error >= 1.28!\n", stderr);return 1;}
 /* We don't allow a request with more than 64 MiB.  */
 #define MAX_REQUEST_SIZE (64 * 1024 * 1024)
 
+/* Minimal, default and maximum chunk size for returned data. The
+ * first chunk is returned directly.  If the "more" flag is also
+ * returned, a "getmore" command needs to be used to get the next
+ * chunk.  Right now this value covers just the value of the "data"
+ * element; so to cover for the other returned objects this values
+ * needs to be lower than the maximum allowed size of the browser. */
+#define MIN_REPLY_CHUNK_SIZE  512
+#define DEF_REPLY_CHUNK_SIZE (512 * 1024)
+#define MAX_REPLY_CHUNK_SIZE (10 * 1024 * 1024)
+
 
 static void xoutofcore (const char *type) GPGRT_ATTR_NORETURN;
 static cjson_t error_object_v (cjson_t json, const char *message,
@@ -62,6 +72,16 @@ static char *error_object_string (const char *message,
 static int opt_interactive;
 /* True is debug mode is active.  */
 static int opt_debug;
+
+/* Pending data to be returned by a getmore command.  */
+static struct
+{
+  char  *buffer;   /* Malloced data or NULL if not used.  */
+  size_t length;   /* Length of that data.  */
+  size_t written;  /* # of already written bytes from BUFFER.  */
+  const char *type;/* The "type" of the data.  */
+  int base64;      /* The "base64" flag of the data.  */
+} pending_data;
 
 
 /*
@@ -93,6 +113,19 @@ static int opt_debug;
 #define xfree(a) gpgrt_free ((a))
 
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')
+
+#ifndef HAVE_STPCPY
+static GPGRT_INLINE char *
+_my_stpcpy (char *a, const char *b)
+{
+  while (*b)
+    *a++ = *b++;
+  *a = 0;
+  return a;
+}
+#define stpcpy(a,b) _my_stpcpy ((a), (b))
+#endif /*!HAVE_STPCPY*/
+
 
 
 static void
@@ -146,11 +179,12 @@ xjson_AddBoolToObject (cjson_t object, const char *name, int abool)
   return ;
 }
 
-/* This is similar to cJSON_AddStringToObject but takes a gpgme DATA
- * object and adds it under NAME as a base 64 encoded string to
- * OBJECT.  Ownership of DATA is transferred to this function.  */
+/* This is similar to cJSON_AddStringToObject but takes (DATA,
+ * DATALEN) and adds it under NAME as a base 64 encoded string to
+ * OBJECT.  */
 static gpg_error_t
-add_base64_to_object (cjson_t object, const char *name, gpgme_data_t data)
+add_base64_to_object (cjson_t object, const char *name,
+                      const void *data, size_t datalen)
 {
 #if GPGRT_VERSION_NUMBER < 0x011d00 /* 1.29 */
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
@@ -160,7 +194,6 @@ add_base64_to_object (cjson_t object, const char *name, gpgme_data_t data)
   gpgrt_b64state_t state = NULL;
   cjson_t j_str = NULL;
   void *buffer = NULL;
-  size_t buflen;
 
   fp = es_fopenmem (0, "rwb");
   if (!fp)
@@ -175,20 +208,9 @@ add_base64_to_object (cjson_t object, const char *name, gpgme_data_t data)
       goto leave;
     }
 
-  gpgme_data_write (data, "", 1); /* Make sure we have  a string.  */
-  buffer = gpgme_data_release_and_get_mem (data, &buflen);
-  data = NULL;
-  if (!buffer)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-
-  err = gpgrt_b64enc_write (state, buffer, buflen);
+  err = gpgrt_b64enc_write (state, data, datalen);
   if (err)
     goto leave;
-  xfree (buffer);
-  buffer = NULL;
 
   err = gpgrt_b64enc_finish (state);
   state = NULL;
@@ -226,7 +248,6 @@ add_base64_to_object (cjson_t object, const char *name, gpgme_data_t data)
   cJSON_Delete (j_str);
   gpgrt_b64enc_finish (state);
   es_fclose (fp);
-  gpgme_data_release (data);
   return err;
 #endif
 }
@@ -354,18 +375,42 @@ get_protocol (cjson_t json, gpgme_protocol_t *r_protocol)
 }
 
 
-/* Extract the keys from the KEYS array in the JSON object.  CTX is a
- * GPGME context object.  On success an array with the keys is stored
- * at R_KEYS.  In failure an error code is returned.  */
+/* Get the chunksize from JSON and store it at R_CHUNKSIZE.  */
 static gpg_error_t
-get_keys (gpgme_ctx_t ctx, cjson_t json, gpgme_key_t **r_keys)
+get_chunksize (cjson_t json, size_t *r_chunksize)
 {
-  gpg_error_t err;
+  cjson_t j_item;
+
+  *r_chunksize = DEF_REPLY_CHUNK_SIZE;
+  j_item = cJSON_GetObjectItem (json, "chunksize");
+  if (!j_item)
+    ;
+  else if (!cjson_is_number (j_item))
+    return gpg_error (GPG_ERR_INV_VALUE);
+  else if ((size_t)j_item->valueint < MIN_REPLY_CHUNK_SIZE)
+    *r_chunksize = MIN_REPLY_CHUNK_SIZE;
+  else if ((size_t)j_item->valueint > MAX_REPLY_CHUNK_SIZE)
+    *r_chunksize = MAX_REPLY_CHUNK_SIZE;
+  else
+    *r_chunksize = (size_t)j_item->valueint;
+
+  return 0;
+}
+
+
+/* Extract the keys from the "keys" array in the JSON object.  On
+ * success a string with the keys identifiers is stored at R_KEYS.
+ * The keys in that string are LF delimited.  On failure an error code
+ * is returned.  */
+static gpg_error_t
+get_keys (cjson_t json, char **r_keystring)
+{
   cjson_t j_keys, j_item;
   int i, nkeys;
-  gpgme_key_t *keys;
+  char *p;
+  size_t length;
 
-  *r_keys = NULL;
+  *r_keystring = NULL;
 
   j_keys = cJSON_GetObjectItem (json, "keys");
   if (!j_keys)
@@ -373,8 +418,15 @@ get_keys (gpgme_ctx_t ctx, cjson_t json, gpgme_key_t **r_keys)
   if (!cjson_is_array (j_keys) && !cjson_is_string (j_keys))
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  /* Fixme: We should better use a membuf like thing.  */
+  length = 1; /* For the EOS.  */
   if (cjson_is_string (j_keys))
-    nkeys = 1;
+    {
+      nkeys = 1;
+      length += strlen (j_keys->valuestring);
+      if (strchr (j_keys->valuestring, '\n'))
+        return gpg_error (GPG_ERR_INV_USER_ID);
+    }
   else
     {
       nkeys = cJSON_GetArraySize (j_keys);
@@ -385,41 +437,35 @@ get_keys (gpgme_ctx_t ctx, cjson_t json, gpgme_key_t **r_keys)
           j_item = cJSON_GetArrayItem (j_keys, i);
           if (!j_item || !cjson_is_string (j_item))
             return gpg_error (GPG_ERR_INV_VALUE);
+          if (i)
+            length++; /* Space for delimiter. */
+          length += strlen (j_item->valuestring);
+          if (strchr (j_item->valuestring, '\n'))
+            return gpg_error (GPG_ERR_INV_USER_ID);
         }
     }
 
-  /* Now allocate an array to store the gpgme key objects.  */
-  keys = xcalloc (nkeys + 1, sizeof *keys);
+  p = *r_keystring = xtrymalloc (length);
+  if (!p)
+    return gpg_error_from_syserror ();
 
   if (cjson_is_string (j_keys))
     {
-      err = gpgme_get_key (ctx, j_keys->valuestring, &keys[0], 0);
-      if (err)
-        goto leave;
+      strcpy (p, j_keys->valuestring);
     }
   else
     {
       for (i=0; i < nkeys; i++)
         {
           j_item = cJSON_GetArrayItem (j_keys, i);
-          err = gpgme_get_key (ctx, j_item->valuestring, &keys[i], 0);
-          if (err)
-            goto leave;
+          if (i)
+            *p++ = '\n'; /* Add delimiter.  */
+          p = stpcpy (p, j_item->valuestring);
         }
     }
-  err = 0;
-  *r_keys = keys;
-  keys = NULL;
-
- leave:
-  if (keys)
-    {
-      for (i=0; keys[i]; i++)
-        gpgme_key_unref (keys[i]);
-      xfree (keys);
-    }
-  return err;
+  return 0;
 }
+
 
 
 
@@ -546,10 +592,95 @@ data_from_base64_string (gpgme_data_t *r_data, cjson_t json)
 
 
 /*
- * Implementaion of the commands.
+ * Implementation of the commands.
  */
 
 
+/* Create a "data" object and the "type", "base64" and "more" flags
+ * from DATA and append them to RESULT.  Ownership if DATA is
+ * transferred to this function.  TYPE must be a fixed string.
+ * CHUNKSIZE is the chunksize requested from the caller.  If BASE64 is
+ * -1 the need for base64 encoding is determined by the content of
+ * DATA, all other values are take as rtue or false.  Note that
+ * op_getmore has similar code but works on PENDING_DATA which is set
+ * here.  */
+static gpg_error_t
+make_data_object (cjson_t result, gpgme_data_t data, size_t chunksize,
+                  const char *type, int base64)
+{
+  gpg_error_t err;
+  char *buffer;
+  size_t buflen;
+  int c;
+
+  if (!base64 || base64 == -1) /* Make sure that we really have a string.  */
+    gpgme_data_write (data, "", 1);
+
+  buffer = gpgme_data_release_and_get_mem (data, &buflen);
+  data = NULL;
+  if (!buffer)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  if (base64 == -1)
+    {
+      base64 = 0;
+      if (!buflen)
+        log_fatal ("Appended Nul byte got lost\n");
+      if (memchr (buffer, 0, buflen-1))
+        {
+          buflen--; /* Adjust for the extra nul byte.  */
+          base64 = 1;
+        }
+      /* Fixme: We might want to do more advanced heuristics than to
+       * only look for a Nul.  */
+    }
+
+  /* Adjust the chunksize if we need to do base64 conversion.  */
+  if (base64)
+    chunksize = (chunksize / 4) * 3;
+
+  xjson_AddStringToObject (result, "type", type);
+  xjson_AddBoolToObject (result, "base64", base64);
+
+  if (buflen > chunksize)
+    {
+      xjson_AddBoolToObject (result, "more", 1);
+
+      c = buffer[chunksize];
+      buffer[chunksize] = 0;
+      if (base64)
+        err = add_base64_to_object (result, "data", buffer, chunksize);
+      else
+        err = cjson_AddStringToObject (result, "data", buffer);
+      buffer[chunksize] = c;
+      if (err)
+        goto leave;
+
+      pending_data.buffer = buffer;
+      buffer = NULL;
+      pending_data.length = buflen;
+      pending_data.written = chunksize;
+      pending_data.type = type;
+      pending_data.base64 = base64;
+    }
+  else
+    {
+      if (base64)
+        err = add_base64_to_object (result, "data", buffer, buflen);
+      else
+        err = cjson_AddStringToObject (result, "data", buffer);
+    }
+
+ leave:
+  gpgme_free (buffer);
+  return err;
+}
+
+
+
 static const char hlp_encrypt[] =
   "op:     \"encrypt\"\n"
   "keys:   Array of strings with the fingerprints or user-ids\n"
@@ -559,14 +690,17 @@ static const char hlp_encrypt[] =
   "\n"
   "Optional parameters:\n"
   "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
+  "chunksize:     Max number of bytes in the resulting \"data\".\n"
   "\n"
   "Optional boolean flags (default is false):\n"
   "base64:        Input data is base64 encoded.\n"
+  "mime:          Indicate that data is a MIME object.\n"
   "armor:         Request output in armored format.\n"
   "always-trust:  Request --always-trust option.\n"
   "no-encrypt-to: Do not use a default recipient.\n"
   "no-compress:   Do not compress the plaintext first.\n"
   "throw-keyids:  Request the --throw-keyids option.\n"
+  "want-address:  Require that the keys include a mail address.\n"
   "wrap:          Assume the input is an OpenPGP message.\n"
   "\n"
   "Response on success:\n"
@@ -574,26 +708,33 @@ static const char hlp_encrypt[] =
   "data:   Unless armor mode is used a Base64 encoded binary\n"
   "        ciphertext.  In armor mode a string with an armored\n"
   "        OpenPGP or a PEM message.\n"
-  "base64: Boolean indicating whether data is base64 encoded.";
+  "base64: Boolean indicating whether data is base64 encoded.\n"
+  "more:   Optional boolean indicating that \"getmore\" is required.";
 static gpg_error_t
 op_encrypt (cjson_t request, cjson_t result)
 {
   gpg_error_t err;
   gpgme_ctx_t ctx = NULL;
   gpgme_protocol_t protocol;
+  size_t chunksize;
   int opt_base64;
-  gpgme_key_t *keys = NULL;
+  int opt_mime;
+  char *keystring = NULL;
   cjson_t j_input;
   gpgme_data_t input = NULL;
   gpgme_data_t output = NULL;
-  int abool, i;
+  int abool;
   gpgme_encrypt_flags_t encrypt_flags = 0;
 
   if ((err = get_protocol (request, &protocol)))
     goto leave;
   ctx = get_context (protocol);
+  if ((err = get_chunksize (request, &chunksize)))
+    goto leave;
 
   if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
+    goto leave;
+  if ((err = get_boolean_flag (request, "mime", 0, &opt_mime)))
     goto leave;
 
   if ((err = get_boolean_flag (request, "armor", 0, &abool)))
@@ -619,16 +760,133 @@ op_encrypt (cjson_t request, cjson_t result)
     goto leave;
   if (abool)
     encrypt_flags |= GPGME_ENCRYPT_WRAP;
+  if ((err = get_boolean_flag (request, "want-address", 0, &abool)))
+    goto leave;
+  if (abool)
+    encrypt_flags |= GPGME_ENCRYPT_WANT_ADDRESS;
 
 
   /* Get the keys.  */
-  err = get_keys (ctx, request, &keys);
+  err = get_keys (request, &keystring);
   if (err)
     {
       /* Provide a custom error response.  */
       error_object (result, "Error getting keys: %s", gpg_strerror (err));
       goto leave;
     }
+
+  /* Get the data.  Note that INPUT is a shallow data object with the
+   * storage hold in REQUEST.  */
+  j_input = cJSON_GetObjectItem (request, "data");
+  if (!j_input)
+    {
+      err = gpg_error (GPG_ERR_NO_DATA);
+      goto leave;
+    }
+  if (!cjson_is_string (j_input))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  if (opt_base64)
+    {
+      err = data_from_base64_string (&input, j_input);
+      if (err)
+        {
+          error_object (result, "Error decoding Base-64 encoded 'data': %s",
+                        gpg_strerror (err));
+          goto leave;
+        }
+    }
+  else
+    {
+      err = gpgme_data_new_from_mem (&input, j_input->valuestring,
+                                     strlen (j_input->valuestring), 0);
+      if (err)
+        {
+          error_object (result, "Error getting 'data': %s", gpg_strerror (err));
+          goto leave;
+        }
+    }
+  if (opt_mime)
+    gpgme_data_set_encoding (input, GPGME_DATA_ENCODING_MIME);
+
+
+  /* Create an output data object.  */
+  err = gpgme_data_new (&output);
+  if (err)
+    {
+      error_object (result, "Error creating output data object: %s",
+                    gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Encrypt.  */
+  err = gpgme_op_encrypt_ext (ctx, NULL, keystring, encrypt_flags,
+                              input, output);
+  /* encrypt_result = gpgme_op_encrypt_result (ctx); */
+  if (err)
+    {
+      error_object (result, "Encryption failed: %s", gpg_strerror (err));
+      goto leave;
+    }
+  gpgme_data_release (input);
+  input = NULL;
+
+  /* We need to base64 if armoring has not been requested.  */
+  err = make_data_object (result, output, chunksize,
+                          "ciphertext", !gpgme_get_armor (ctx));
+  output = NULL;
+
+ leave:
+  xfree (keystring);
+  release_context (ctx);
+  gpgme_data_release (input);
+  gpgme_data_release (output);
+  return err;
+}
+
+
+
+static const char hlp_decrypt[] =
+  "op:     \"decrypt\"\n"
+  "data:   The encrypted data.\n"
+  "\n"
+  "Optional parameters:\n"
+  "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
+  "chunksize:     Max number of bytes in the resulting \"data\".\n"
+  "\n"
+  "Optional boolean flags (default is false):\n"
+  "base64:        Input data is base64 encoded.\n"
+  "\n"
+  "Response on success:\n"
+  "type:   \"plaintext\"\n"
+  "data:   The decrypted data.  This may be base64 encoded.\n"
+  "base64: Boolean indicating whether data is base64 encoded.\n"
+  "mime:   A Boolean indicating whether the data is a MIME object.\n"
+  "info:   An optional object with extra information.\n"
+  "more:   Optional boolean indicating that \"getmore\" is required.";
+static gpg_error_t
+op_decrypt (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  gpgme_protocol_t protocol;
+  size_t chunksize;
+  int opt_base64;
+  cjson_t j_input;
+  gpgme_data_t input = NULL;
+  gpgme_data_t output = NULL;
+  gpgme_decrypt_result_t decrypt_result;
+
+  if ((err = get_protocol (request, &protocol)))
+    goto leave;
+  ctx = get_context (protocol);
+  if ((err = get_chunksize (request, &chunksize)))
+    goto leave;
+
+  if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
+    goto leave;
 
   /* Get the data.  Note that INPUT is a shallow data object with the
    * storage hold in REQUEST.  */
@@ -673,59 +931,118 @@ op_encrypt (cjson_t request, cjson_t result)
       goto leave;
     }
 
-  /* Encrypt.  */
-  err = gpgme_op_encrypt (ctx, keys, encrypt_flags, input, output);
-  /* encrypt_result = gpgme_op_encrypt_result (ctx); */
+  /* Decrypt.  */
+  err = gpgme_op_decrypt_ext (ctx, GPGME_DECRYPT_VERIFY,
+                              input, output);
+  decrypt_result = gpgme_op_decrypt_result (ctx);
   if (err)
     {
-      error_object (result, "Encryption failed: %s", gpg_strerror (err));
+      error_object (result, "Decryption failed: %s", gpg_strerror (err));
       goto leave;
     }
   gpgme_data_release (input);
   input = NULL;
 
-  xjson_AddStringToObject (result, "type", "ciphertext");
-  /* If armoring is used we do not need to base64 the output.  */
-  xjson_AddBoolToObject (result, "base64", !gpgme_get_armor (ctx));
-  if (gpgme_get_armor (ctx))
-    {
-      char *buffer;
+  if (decrypt_result->is_mime)
+    xjson_AddBoolToObject (result, "mime", 1);
 
-      /* Make sure that we really have a string.  */
-      gpgme_data_write (output, "", 1);
-      buffer = gpgme_data_release_and_get_mem (output, NULL);
-      if (!buffer)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-      err = cjson_AddStringToObject (result, "data", buffer);
-      gpgme_free (buffer);
-      if (err)
-        goto leave;
-    }
-  else
-    {
-      err = add_base64_to_object (result, "data", output);
-      output = NULL;
-      if (err)
-        goto leave;
-    }
+  err = make_data_object (result, output, chunksize, "plaintext", -1);
+  output = NULL;
 
  leave:
-  if (keys)
-    {
-      for (i=0; keys[i]; i++)
-        gpgme_key_unref (keys[i]);
-      xfree (keys);
-    }
   release_context (ctx);
   gpgme_data_release (input);
+  gpgme_data_release (output);
   return err;
 }
 
 
+
+static const char hlp_getmore[] =
+  "op:     \"getmore\"\n"
+  "\n"
+  "Optional parameters:\n"
+  "chunksize:  Max number of bytes in the \"data\" object.\n"
+  "\n"
+  "Response on success:\n"
+  "type:       Type of the pending data\n"
+  "data:       The next chunk of data\n"
+  "base64:     Boolean indicating whether data is base64 encoded\n"
+  "more:       Optional boolean requesting another \"getmore\".";
+static gpg_error_t
+op_getmore (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  int c;
+  size_t n;
+  size_t chunksize;
 
+  if ((err = get_chunksize (request, &chunksize)))
+    goto leave;
+
+  /* Adjust the chunksize if we need to do base64 conversion.  */
+  if (pending_data.base64)
+    chunksize = (chunksize / 4) * 3;
+
+  /* Do we have anything pending?  */
+  if (!pending_data.buffer)
+    {
+      err = gpg_error (GPG_ERR_NO_DATA);
+      error_object (result, "Operation not possible: %s", gpg_strerror (err));
+      goto leave;
+    }
+
+  xjson_AddStringToObject (result, "type", pending_data.type);
+  xjson_AddBoolToObject (result, "base64", pending_data.base64);
+
+  if (pending_data.written >= pending_data.length)
+    {
+      /* EOF reached.  This should not happen but we return an empty
+       * string once in case of client errors.  */
+      gpgme_free (pending_data.buffer);
+      pending_data.buffer = NULL;
+      xjson_AddBoolToObject (result, "more", 0);
+      err = cjson_AddStringToObject (result, "data", "");
+    }
+  else
+    {
+      n = pending_data.length - pending_data.written;
+      if (n > chunksize)
+        {
+          n = chunksize;
+          xjson_AddBoolToObject (result, "more", 1);
+        }
+      else
+        xjson_AddBoolToObject (result, "more", 0);
+
+      c = pending_data.buffer[pending_data.written + n];
+      pending_data.buffer[pending_data.written + n] = 0;
+      if (pending_data.base64)
+        err = add_base64_to_object (result, "data",
+                                    (pending_data.buffer
+                                     + pending_data.written), n);
+      else
+        err = cjson_AddStringToObject (result, "data",
+                                       (pending_data.buffer
+                                        + pending_data.written));
+      pending_data.buffer[pending_data.written + n] = c;
+      if (!err)
+        {
+          pending_data.written += n;
+          if (pending_data.written >= pending_data.length)
+            {
+              gpgme_free (pending_data.buffer);
+              pending_data.buffer = NULL;
+            }
+        }
+    }
+
+ leave:
+  return err;
+}
+
+
+
 static const char hlp_help[] =
   "The tool expects a JSON object with the request and responds with\n"
   "another JSON object.  Even on error a JSON object is returned.  The\n"
@@ -735,6 +1052,7 @@ static const char hlp_help[] =
   "returned.  To list all operations it is allowed to leave out \"op\" in\n"
   "help mode.  Supported values for \"op\" are:\n\n"
   "  encrypt     Encrypt data.\n"
+  "  getmore     Retrieve remaining data.\n"
   "  help        Help overview.";
 static gpg_error_t
 op_help (cjson_t request, cjson_t result)
@@ -757,6 +1075,10 @@ op_help (cjson_t request, cjson_t result)
 }
 
 
+
+/*
+ * Dispatcher
+ */
 
 /* Process a request and return the response.  The response is a newly
  * allocated string or NULL in case of an error.  */
@@ -769,8 +1091,8 @@ process_request (const char *request)
     const char * const helpstr;
   } optbl[] = {
     { "encrypt", op_encrypt, hlp_encrypt },
-
-
+    { "decrypt", op_decrypt, hlp_decrypt },
+    { "getmore", op_getmore, hlp_getmore },
     { "help",    op_help,    hlp_help },
     { NULL }
   };
@@ -825,6 +1147,14 @@ process_request (const char *request)
         {
           gpg_error_t err;
 
+          /* If this is not the "getmore" command and we have any
+           * pending data release that data.  */
+          if (pending_data.buffer && optbl[idx].handler != op_getmore)
+            {
+              gpgme_free (pending_data.buffer);
+              pending_data.buffer = NULL;
+            }
+
           err = optbl[idx].handler (json, response);
           if (err)
             {
@@ -839,7 +1169,6 @@ process_request (const char *request)
 
               xjson_AddStringToObject (response, "op", op);
             }
-
         }
     }
   else  /* Operation not supported.  */
@@ -865,6 +1194,48 @@ process_request (const char *request)
 /*
  *  Driver code
  */
+
+static char *
+get_file (const char *fname)
+{
+  gpg_error_t err;
+  estream_t fp;
+  struct stat st;
+  char *buf;
+  size_t buflen;
+
+  fp = es_fopen (fname, "r");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("can't open '%s': %s\n", fname, gpg_strerror (err));
+      return NULL;
+    }
+
+  if (fstat (es_fileno(fp), &st))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("can't stat '%s': %s\n", fname, gpg_strerror (err));
+      es_fclose (fp);
+      return NULL;
+    }
+
+  buflen = st.st_size;
+  buf = xmalloc (buflen+1);
+  if (es_fread (buf, buflen, 1, fp) != 1)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+      es_fclose (fp);
+      xfree (buf);
+      return NULL;
+    }
+  buf[buflen] = 0;
+  es_fclose (fp);
+
+  return buf;
+}
+
 
 /* Return a malloced line or NULL on EOF.  Terminate on read
  * error.  */
@@ -929,14 +1300,39 @@ process_meta_commands (const char *request)
     request++;
 
   if (!strncmp (request, "help", 4) && (spacep (request+4) || !request[4]))
-    result = process_request ("{ \"op\": \"help\","
-                              " \"interactive_help\": "
-                              "\"\\nMeta commands:\\n"
-                              "  ,help       This help\\n"
-                              "  ,quit       Terminate process\""
-                              "}");
+    {
+      if (request[4])
+        {
+          char *buf = xstrconcat ("{ \"help\":true, \"op\":\"", request+5,
+                                  "\" }", NULL);
+          result = process_request (buf);
+          xfree (buf);
+        }
+      else
+        result = process_request ("{ \"op\": \"help\","
+                                  " \"interactive_help\": "
+                                  "\"\\nMeta commands:\\n"
+                                  "  ,read FNAME Process data from FILE\\n"
+                                  "  ,help CMD   Print help for a command\\n"
+                                  "  ,quit       Terminate process\""
+                                  "}");
+    }
   else if (!strncmp (request, "quit", 4) && (spacep (request+4) || !request[4]))
     exit (0);
+  else if (!strncmp (request, "read", 4) && (spacep (request+4) || !request[4]))
+    {
+      if (!request[4])
+        log_info ("usage: ,read FILENAME\n");
+      else
+        {
+          char *buffer = get_file (request + 5);
+          if (buffer)
+            {
+              result = process_request (buffer);
+              xfree (buffer);
+            }
+        }
+    }
   else
     log_info ("invalid meta command\n");
 
