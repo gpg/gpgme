@@ -18,21 +18,24 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 import { permittedOperations } from './permittedOperations'
-
+import { GPGMEJS_Error } from './Errors'
 export class GPGME_Message {
     //TODO getter
 
-    constructor(){
+    constructor(operation){
+        if (operation){
+            this.operation(operation);
+        }
     }
 
     /**
      * Defines the operation this message will have
-     * @param {String} operation Mus be defined in permittedOperations
+     * @param {String} operation Must be defined in permittedOperations
      *  TODO: move to constructor?
      */
     set operation (operation){
         if (!operation || typeof(operation) !== 'string'){
-            throw('ERR_WRONG_PARAM');
+            return new GPGMEJS_Error('WRONGPARAM');
         }
         if (operation in permittedOperations){
             if (!this._msg){
@@ -40,8 +43,12 @@ export class GPGME_Message {
             }
             this._msg.op = operation;
         } else {
-            throw('ERR_NOT_IMPLEMENTED');
+            return new GPGMEJS_Error('WRONG_OP');
         }
+    }
+
+    get operation(){
+        return this._msg.op;
     }
 
     /**
@@ -53,25 +60,20 @@ export class GPGME_Message {
      */
     setParameter(param,value){
         if (!param || typeof(param) !== 'string'){
-            throw('ERR_WRONG_PARAM');
+            return new GPGMEJS_Error('WRONGPARAM', 'type check failed');
         }
         if (!this._msg || !this._msg.op){
-            console.log('There is no operation specified yet. '+
-                'The parameter cannot be set');
-            return false;
+            return new GPGMEJS_Error('MSG_OP_PENDING');
         }
         let po = permittedOperations[this._msg.op];
         if (!po){
-            throw('LAZY_PROGRAMMER');
-            //TODO
-            return false;
+            return new GPGMEJS_Error('WRONG_OP', param);
         }
         if (po.required.indexOf(param) >= 0 || po.optional.indexOf(param) >= 0){
             this._msg[param] = value;
             return true;
         }
-        console.log('' + param + ' is invalid and could not be set');
-        return false;
+        return new GPGMEJS_Error('WRONGPARAM', param);
     }
 
     /**
@@ -85,7 +87,9 @@ export class GPGME_Message {
         }
         let reqParams = permittedOperations[this._msg.op].required;
         for (let i=0; i < reqParams.length; i++){
-            if (!reqParams[i] in this._msg){
+
+            if (!this._msg.hasOwnProperty(reqParams[i])){
+                console.log(reqParams[i] + 'missing');
                 return false;
             }
         }

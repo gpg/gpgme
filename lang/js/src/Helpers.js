@@ -1,3 +1,5 @@
+import { GPGMEJS_Error } from "./Errors";
+
 /* gpgme.js - Javascript integration for gpgme
  * Copyright (C) 2018 Bundesamt für Sicherheit in der Informationstechnik
  *
@@ -21,33 +23,46 @@
 /**
  * Tries to return an array of fingerprints, either from input fingerprints or
  * from Key objects
- * @param {String|Array<String>} input Input value.
+ * @param {Key |Array<Key>| GPGME_Key | Array<GPGME_Key>|String|Array<String>} input
+ * @param {Boolean} nocheck if set, an empty result is acceptable
  * @returns {Array<String>} Array of fingerprints.
  */
-export function toKeyIdArray(input){
+
+export function toKeyIdArray(input, nocheck){
     if (!input){
-        return [];
-        // TODO: Warning or error here? Did we expect something or is "nothing" okay?
+        return (nocheck ===true)? [] : new GPGMEJS_Error('NO_KEYS');
     }
-    if (input instanceof Array){
-        let result = [];
-        for (let i=0; i < input.length; i++){
+    if (!Array.isArray(input)){
+        input = [input];
+    }
+    let result = [];
+    for (let i=0; i < input.length; i++){
+        if (typeof(input[i]) === 'string'){
             if (isFingerprint(input[i]) === true){
                 result.push(input[i]);
             } else {
-                //TODO error?
-                console.log('gpgmejs/Helpers.js Warning: '+
-                    input[i] +
-                    ' is not a valid key fingerprint and will not be used');
+                GPGMEJS_Error
             }
+        } else if (typeof(input[i]) === 'object'){
+            let fpr = '';
+            if (input[i] instanceof GPGME_Key){
+                fpr = input[i].fingerprint;
+            } else if (input[i].hasOwnProperty(primaryKey) &&
+                input[i].primaryKey.hasOwnProperty(getFingerprint)){
+                    fpr = input[i].primaryKey.getFingerprint();
+            }
+            if (isFingerprint(fpr) === true){
+                result.push(fpr);
+            }
+        } else {
+            return new GPGMEJS_Error('WRONGTYPE');
         }
-        return result;
-    } else if (isFingerprint(input) === true) {
-        return [input];
     }
-    console.log('gpgmejs/Helpers.js Warning: ' + input +
-                    ' is not a valid key fingerprint and will not be used');
-    return [];
+    if (result.length === 0){
+        return (nocheck===true)? [] : new GPGMEJS_Error('NO_KEYS');
+    } else {
+        return result;
+    }
 };
 
 /**
@@ -72,13 +87,14 @@ function hextest(key, len){
 export function isFingerprint(string){
     return hextest(string, 40);
 };
-
-//TODO needed anywhere?
+/**
+ * check if the input is a valid Hex string with a length of 16
+ */
 function isLongId(string){
     return hextest(string, 16);
 };
 
-//TODO needed anywhere?
+// TODO still not needed anywhere
 function isShortId(string){
     return hextest(string, 8);
 };

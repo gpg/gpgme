@@ -21,25 +21,53 @@
 import {Connection} from "./Connection"
 import {GPGME_Message} from './Message'
 import {toKeyIdArray} from "./Helpers"
+import {GPGMEJS_Error as Error, GPGMEJS_Error} from "./Errors"
 
 export class GpgME {
     /**
-     * initial check if connection si successfull. Will throw ERR_NO_CONNECT or
-     * ERR_NO_CONNECT_RLE (if chrome.runtime.lastError is available) if the
-     * connection fails.
-     * TODO The connection to the nativeMessaging host will, for now, be closed
-     * after each interaction. Session management with gpg_agent is TBD.
+     * initializes GpgME by opening a nativeMessaging port
      * TODO: add configuration
      */
-    constructor(){
-        let conn = new Connection();
-        // this.keyring = new Keyring(); TBD
-        // TODO config, e.g.
-        this.configuration = {
-            null_expire_is_never: true
-        };
-        conn.disconnect();
+    constructor(configuration = {
+        null_expire_is_never: false
+    }){
+        this._connection = new Connection;
     }
+
+    /**
+     * refreshes the nativeApp connection
+     */
+    reconnect(){
+        if (!this._connection || ! this._connection instanceof Connection){
+            this._connection = new Connection;
+        } else {
+            this._connection.disconnect();
+            this._connection.connect();
+        }
+    }
+
+    /**
+     * inmediately tries to destroy the nativeMessaging connection.
+     * TODO: may not be included in final API, as it is redundant.
+     * For now, it just serves paranoia
+     */
+    disconnect(){
+        if (this._connection){
+            this._connection.disconnect();
+            this._connection = null;
+        }
+    }
+
+    /**
+     * tests the nativeApp connection
+     */
+    get connected(){
+        if (!this._connection || ! this._connection instanceof Connection){
+            return false;
+        }
+        return this._connection.connected;
+    }
+
 
     /**
      * @param {String|Uint8Array} data text/data to be encrypted as String/Uint8Array
@@ -62,14 +90,7 @@ export class GpgME {
         if (wildcard === true){msg.setParameter('throw-keyids', true);
         };
 
-        if (msg.isComplete === true) {
-            let conn = new Connection();
-            return (conn.post(msg.message));
-        }
-        else {
-            return Promise.reject('NO_CONNECT');
-            //TODO
-        }
+        return (this._connection.post(msg));
     }
 
     /**
@@ -85,22 +106,47 @@ export class GpgME {
     decrypt(data){
 
         if (data === undefined){
-            throw('ERR_EMPTY_MSG');
+            return Promise.reject(new GPGMEJS_Error ('EMPTY_MSG'));
         }
         let msg = new GPGME_Message;
         msg.operation = 'decrypt';
         putData(msg, data);
-        // TODO: needs proper EOL to be decrypted.
+        return this._connection.post(msg);
 
-        if (msg.isComplete === true){
-            let conn = new Connection();
-            return conn.post(msg.message);
-        }
-        else {
-            return Promise.reject('NO_CONNECT');
-            //TODO
-        }
     }
+
+    deleteKey(key, delete_secret = false, no_confirm = false){
+        return Promise.reject(new GPGMEJS_Error ('NOT_YET_IMPLEMENTED'));
+        let msg = new GPGME_Message;
+        msg.operation = 'deletekey';
+        let key_arr = toKeyIdArray(key);
+        if (key_arr.length !== 1){
+            throw('TODO');
+            //should always be ONE key
+        }
+        msg.setParameter('key', key_arr[0]);
+        if (delete_secret === true){
+            msg.setParameter('allow_secret', true); //TBD
+        }
+        if (no_confirm === true){ //TODO: Do we want this hidden deep in the code?
+            msg.setParameter('delete_force', true); //TBD
+        }
+        this._connection.post(msg).then(function(success){
+            //TODO: it seems that there is always errors coming back:
+        }, function(error){
+            switch (error.msg){
+            case 'ERR_NO_ERROR':
+                return Promise.resolve('okay'); //TBD
+            default:
+                return Promise.reject(new GPGMEJS_Error);
+                // INV_VALUE,
+                // GPG_ERR_NO_PUBKEY,
+                // GPG_ERR_AMBIGUOUS_NAME,
+                // GPG_ERR_CONFLICT
+            }
+        });
+    }
+
 }
 
 /**
@@ -112,7 +158,7 @@ export class GpgME {
  */
 function putData(message, data){
     if (!message || !message instanceof GPGME_Message ) {
-        throw('NO_MESSAGE_OBJECT');
+        return new GPGMEJS_Error('WRONGPARAM');
     }
     if (!data){
         //TODO Debug only! No data is legitimate
@@ -126,6 +172,6 @@ function putData(message, data){
         message.setParameter('base64', false);
         message.setParameter('data', data);
     } else {
-        throw('ERR_WRONG_TYPE');
+        return new GPGMEJS_Error('WRONGPARAM');
     }
 }

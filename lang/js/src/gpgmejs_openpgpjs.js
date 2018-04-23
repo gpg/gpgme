@@ -25,13 +25,18 @@
  */
 
  import { GpgME } from "./gpgmejs";
-// import {Keyring}  from "./Keyring" TODO
-
+ import {GPGME_Keyring}  from "./Keyring"
+ import { GPGME_Key } from "./Key";
+ import { isFingerprint } from "./Helpers"
+ import { GPGMEJS_Error } from './Errors'
 
 export class GpgME_openPGPCompatibility {
 
     constructor(){
-        this._gpgme =  new GpgME;
+        this._gpgme =  new GpgME({
+            null_expire_is_never: false
+        });
+        this.Keyring = this.initKeyring();
     }
 
     /**
@@ -67,15 +72,14 @@ export class GpgME_openPGPCompatibility {
             || signature !== null
             || returnSessionKey !== null
             || date !== null){
-            throw('NOT_IMPLEMENTED');
+            return Promise.reject(new GPMGEJS_Error('NOT_IMPLEMENTED'));
         }
         if ( privateKeys
             || filename
             || compression
             || armor === false
             || detached == true){
-                console.log('may be implemented later');
-                throw('NOT_YET_IMPLEMENTED');
+                return Promise.reject(new GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
         }
         return this.GpgME.encrypt(data, translateKeyInput(publicKeys), wildcard);
     }
@@ -103,16 +107,14 @@ export class GpgME_openPGPCompatibility {
         if (passwords !== undefined
             || sessionKeys
             || date){
-
-            throw('NOT_IMPLEMENTED');
+            return Promise.reject(new GPGMEJS_Error('NOT_IMPLEMENTED'));
         }
         if ( privateKeys
             || publicKeys
             || format !== 'utf8'
             || signature
         ){
-            console.log('may be implemented later');
-            throw('NOT_YET_IMPLEMENTED');
+            return Promise.reject(new GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
         }
         return this.GpgME.decrypt(message);
         // TODO: translate between:
@@ -126,31 +128,74 @@ export class GpgME_openPGPCompatibility {
         // mime:   A Boolean indicating whether the data is a MIME object.
         // info:   An optional object with extra information.
     }
+    initKeyring(){
+        return new GPGME_Keyring_openPGPCompatibility;
+    }
 }
 
 /**
- *
- * @param {Object | String} Key Either a (presumably openpgp Key) Object with a
- *      primaryKeyproperty and a method getFingerprint, or a string.
- * @returns {String} Unchecked string value claiming to be a fingerprint
- *      TODO: gpgmejs checks again, so it's okay here.
+ * Translation layer offering basic Keyring API to be used in Mailvelope.
+ * It may still be changed/expanded/merged with GPGME_Keyring
  */
-function translateKeyInput(Key){
-    if (!Key){
-        return [];
+class GPGME_Keyring_openPGPCompatibility {
+    constructor(){
+        this._gpgme_keyring = new GPGME_Keyring;
     }
-    if (!Array.isArray(Key)){
-        Key = [Key];
+
+    /**
+     * Returns a GPGME_Key Object for each Key in the gnupg Keyring. This
+     * includes keys openpgpjs considers 'private' (usable for signing), with
+     * the difference that Key.armored will NOT contain any secret information.
+     * Please also note that a GPGME_Key does not offer full openpgpjs- Key
+     * compatibility.
+     * @returns {Array<GPGME_Key>} with the objects offering at least:
+     *  @property {String} armored The armored key block (does not include secret blocks)
+     *  @property {Boolean} hasSecret  Indicator if a private/secret key exists
+     *  @property {Boolean} isDefault  Indicator if private key exists and is the default key in this keyring
+     *  @property {String} fingerprint  The fingerprint identifying this key
+     * //TODO: Check if IsDefault is also always hasSecret
+     */
+    getPublicKeys(){
+        return this._gpgme_keyring.getKeys(null, true);
     }
-    let resultslist = [];
-    for (let i=0; i < Key.length; i++){
-        if (typeof(Key[i]) === 'string'){
-            resultslist.push(Key);
-        } else if (
-            Key[i].hasOwnProperty(primaryKey) &&
-            Key[i].primaryKey.hasOwnProperty(getFingerprint)){
-                resultslist.push(Key[i].primaryKey.getFingerprint());
+
+    /**
+     * Returns the Default Key used for crypto operation in gnupg.
+     * Please note that the armored property does not contained secret key blocks,
+     * despite secret blocks being part of the key itself.
+     * @returns {Promise <GPGME_Key>}
+     */
+    getDefaultKey(){
+        this._gpgme_keyring.getSubset({defaultKey: true}).then(function(result){
+            if (result.length === 1){
+                return Promise.resolve(result[0]);
+            }
+            else {
+                // TODO: Can there be "no default key"?
+                // TODO: Can there be several default keys?
+                return new GPGMEJS_Error; //TODO
+            }
+        });
+    }
+
+    /**
+     * Deletes a Key
+     * @param {Object} Object identifying key
+     * @param {String} key.fingerprint - fingerprint of the to be deleted key
+     * @param {Boolean} key.secret - indicator if private key should be deleted as well
+
+     * @returns {Promise.<Array.<undefined>, Error>} TBD: Not sure what is wanted
+     TODO @throws {Error} error.code = ‘KEY_NOT_EXIST’ - there is no key for the given fingerprint
+     TODO @throws {Error} error.code = ‘NO_SECRET_KEY’ - secret indicator set, but no secret key exists
+     */
+    deleteKey(key){
+        if (typeof(key) !== "object"){
+            return Promise.reject(new GPGMEJS_Error('WRONGPARAM'));
         }
+        if ( !key.fingerprint || ! isFingerprint(key.fingerprint)){
+            return Promise.reject(new GPGMEJS_Error('WRONGPARAM'));
+        }
+        let key_to_delete = new GPGME_Key(key.fingerprint);
+        return key_to_delete.deleteKey(key.secret);
     }
-    return resultslist;
 }

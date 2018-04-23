@@ -26,31 +26,19 @@ import { GPGME_Message } from "./Message";
  * expected.
  */
 import { permittedOperations } from './permittedOperations'
+import { GPGMEJS_Error} from "./Errors"
 
+/**
+ * A Connection handles the nativeMessaging interaction.
+ */
 export class Connection{
 
-    /**
-     * Opens and closes a port. Thus, it is made sure that the connection can
-     * be used.
-     * THIS BEHAVIOUR MAY CHANGE!
-     * discussion is to keep a port alive as long as the context stays the same
-     *
-     * TODO returns nothing, but triggers exceptions if not successfull
-     */
     constructor(){
-        this._connection = chrome.runtime.connectNative('gpgmejson');
-        if (!this._connection){
-            if (chrome.runtime.lastError){
-                throw('NO_CONNECT_RLE');
-            } else {
-                throw('NO_CONNECT');
-            }
-        }
-        this._flags = {}; // TODO general config
+        this.connect();
     }
 
     /**
-     * Immediately closes the open port
+     * Immediately closes the open port.
      */
     disconnect() {
         if (this._connection){
@@ -59,26 +47,55 @@ export class Connection{
     }
 
     /**
+     * Opens a nativeMessaging port.
+     * returns nothing, but triggers errors if not successfull:
+     * NO_CONNECT: connection not successfull, chrome.runtime.lastError may be
+     * available
+     * ALREADY_CONNECTED: There is already a connection present.
+     */
+    connect(){
+        if (this._connection){
+            return new GPGMEJS_Error('ALREADY_CONNECTED');
+        }
+        this._connection = chrome.runtime.connectNative('gpgmejson');
+        if (!this._connection){
+            return new GPGMEJS_Error('NO_CONNECT');
+        }
+    }
+
+    /**
+     * checks if the connection is established
+     * TODO: some kind of ping to see if the other side responds as expected?
+     * @returns {Boolean}
+     */
+    get connected(){
+        return this._connection ? true: false;
+    }
+
+    /**
      * Sends a message and resolves with the answer.
      * @param {GPGME_Message} message
      * @returns {Promise<Object>} the gnupg answer, or rejection with error
-     * information
-     * TODO: better/more consistent error information
+     * information.
      */
     post(message){
         if (!message || !message instanceof GPGME_Message){
-            return Promise.reject('ERR_NO_MSG');
+            return Promise.reject(new GPGMEJS_Error('WRONGPARAM'));
+        }
+        if (message.isComplete !== true){
+            return Promise.reject(new GPGMEJS_Error('MSG_INCOMPLETE'));
         }
         // let timeout = 5000; //TODO config
         let me = this;
         return new Promise(function(resolve, reject){
-            let answer = new Answer(message.op);
+            let answer = new Answer(message.operation);
             let listener = function(msg) {
                 if (!msg){
                     me._connection.onMessage.removeListener(listener)
-                    reject('EMPTY_ANSWER');
+                    reject(new GPGMEJS_Error('EMPTY_GPG_ANSWER'));
                 } else if (msg.type === "error"){
                     me._connection.onMessage.removeListener(listener)
+                    //TODO: GPGMEJS_Error?
                     reject(msg.msg);
                 } else {
                     answer.add(msg);
@@ -92,12 +109,12 @@ export class Connection{
             };
 
             me._connection.onMessage.addListener(listener);
-            me._connection.postMessage(message);
+            me._connection.postMessage(message.message);
             //TBD: needs to be aware if there is a pinentry pending
             // setTimeout(
             //     function(){
             //         me.disconnect();
-            //         reject('TIMEOUT');
+            //         reject(new GPGMEJS_Error('TIMEOUT', 5000));
             //     }, timeout);
         });
      }
@@ -105,8 +122,8 @@ export class Connection{
 
 /**
  * A class for answer objects, checking and processing the return messages of
- * the nativeMessaging communication
- * @param {String} operation The operation, to look up validity of return keys
+ * the nativeMessaging communication.
+ * @param {String} operation The operation, to look up validity of returning messages
  */
 class Answer{
 
@@ -115,9 +132,8 @@ class Answer{
     }
 
     /**
-     *
+     * Add the information to the answer
      * @param {Object} msg The message as received with nativeMessaging
-     * TODO: "error" and "more" handling are not in here, but in post()
      */
     add(msg){
         if (this._response === undefined){
@@ -130,9 +146,7 @@ class Answer{
             switch (key) {
                 case 'type':
                     if ( msg.type !== 'error' && poa.type.indexOf(msg.type) < 0){
-                        console.log( 'unexpected answer type: ' + msg.type);
-                        throw('UNEXPECTED_TYPE');
-
+                        return new GPGMEJS_Error('UNEXPECTED_ANSWER');
                     }
                     break;
                 case 'more':
@@ -151,7 +165,7 @@ class Answer{
                             this._response[key] = msg[key];
                         }
                         else if (this._response[key] !== msg[key]){
-                                throw('UNEXPECTED_TYPE');
+                                return new GPGMEJS_Error('UNEXPECTED_ANSWER',msg[key]);
                         }
                     }
                     //infos may be json objects etc. Not yet defined.
@@ -163,8 +177,7 @@ class Answer{
                         this._response.push(msg[key]);
                     }
                     else {
-                        console.log('unexpected answer parameter: ' + key);
-                        throw('UNEXPECTED_PARAM');
+                        return new GPGMEJS_Error('UNEXPECTED_ANSWER', key);
                     }
                     break;
             }
@@ -172,7 +185,8 @@ class Answer{
     }
 
     /**
-     * Returns the assembled message. TODO: does not care yet if completed.
+     * @returns {Object} the assembled message.
+     * TODO: does not care yet if completed.
      */
     get message(){
         return this._response;
