@@ -76,8 +76,7 @@ export class GpgME {
      */
     encrypt (data, publicKeys, wildcard=false){
 
-        let msg = new GPGME_Message;
-        msg.operation = 'encrypt';
+        let msg = new GPGME_Message('encrypt');
 
         // TODO temporary
         msg.setParameter('armor', true);
@@ -108,8 +107,7 @@ export class GpgME {
         if (data === undefined){
             return Promise.reject(new GPGMEJS_Error ('EMPTY_MSG'));
         }
-        let msg = new GPGME_Message;
-        msg.operation = 'decrypt';
+        let msg = new GPGME_Message('decrypt');
         putData(msg, data);
         return this._connection.post(msg);
 
@@ -117,8 +115,7 @@ export class GpgME {
 
     deleteKey(key, delete_secret = false, no_confirm = false){
         return Promise.reject(new GPGMEJS_Error ('NOT_YET_IMPLEMENTED'));
-        let msg = new GPGME_Message;
-        msg.operation = 'deletekey';
+        let msg = new GPGME_Message('deletekey');
         let key_arr = toKeyIdArray(key);
         if (key_arr.length !== 1){
             throw('TODO');

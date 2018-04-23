@@ -49,8 +49,7 @@ export class GPGME_Keyring {
      *
      */
     getKeys(pattern, include_secret){
-        let msg = new GPGME_Message;
-        msg.operation = 'listkeys';
+        let msg = new GPGME_Message('listkeys');
         if (pattern && typeof(pattern) === 'string'){
             msg.setParameter('pattern', pattern);
         }

@@ -23,28 +23,7 @@ export class GPGME_Message {
     //TODO getter
 
     constructor(operation){
-        if (operation){
-            this.operation(operation);
-        }
-    }
-
-    /**
-     * Defines the operation this message will have
-     * @param {String} operation Must be defined in permittedOperations
-     *  TODO: move to constructor?
-     */
-    set operation (operation){
-        if (!operation || typeof(operation) !== 'string'){
-            return new GPGMEJS_Error('WRONGPARAM');
-        }
-        if (operation in permittedOperations){
-            if (!this._msg){
-                this._msg = {};
-            }
-            this._msg.op = operation;
-        } else {
-            return new GPGMEJS_Error('WRONG_OP');
-        }
+        setOperation(this, operation);
     }
 
     get operation(){
@@ -109,5 +88,24 @@ export class GPGME_Message {
             return null;
         }
 
+    }
+}
+
+/**
+ * Defines the operation this message will have
+ * @param {String} operation Must be defined in permittedOperations
+ *  TODO: move to constructor?
+ */
+function setOperation (scope, operation){
+    if (!operation || typeof(operation) !== 'string'){
+        return new GPGMEJS_Error('WRONGTYPE');
+    }
+    if (permittedOperations.hasOwnProperty(operation)){
+        if (!scope._msg){
+            scope._msg = {};
+        }
+        scope._msg.op = operation;
+    } else {
+        return new GPGMEJS_Error('WRONG_OP');
     }
 }
