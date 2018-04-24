@@ -19,7 +19,7 @@
  */
 
 import { GpgME } from "./gpgmejs";
-import { GpgME_openPGPCompatibility } from "./gpgmejs_openpgpjs";
+import { GpgME_openpgpmode } from "./gpgmejs_openpgpjs";
 import { Connection } from "./Connection";
 
 /**
@@ -40,7 +40,7 @@ function init( config = {
                     let gpgme = null;
                     if (config.api_style && config.api_style === 'gpgme_openpgpjs'){
                         resolve(
-                            new GpgME_openPGPCompatibility(connection));
+                            new GpgME_openpgpmode(connection));
                     } else {
                         resolve(new GpgME(connection));
                     }

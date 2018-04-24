@@ -32,10 +32,12 @@ import {GPGMEJS_Error} from './Errors'
 export class GPGME_Key {
 
     constructor(fingerprint){
-        if (isFingerprint(fingerprint) === true){
+        this.fingerprint = fingerprint;
+    }
+
+    set fingerprint(fpr){
+        if (isFingerprint(fpr) === true && !this._fingerprint){
             this._fingerprint = fingerprint;
-        } else {
-            return new GPGMEJS_Error('WRONGPARAM', 'Key.js: invalid fingerprint');
         }
     }
 

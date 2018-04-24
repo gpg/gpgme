@@ -31,7 +31,7 @@
  import { GPGMEJS_Error } from './Errors'
 
 
-export class GpgME_openPGPCompatibility {
+ export class GpgME_openpgpmode {
 
     constructor(connection){
         this.initGpgME(connection);
@@ -46,7 +46,7 @@ export class GpgME_openPGPCompatibility {
 
     initGpgME(connection){
         this._GpgME = new GpgME(connection);
-        this._Keyring = new GPGME_Keyring_openPGPCompatibility(connection);
+        this._Keyring = new GPGME_Keyring_openpgpmode(connection);
     }
 
     get GpgME(){
@@ -150,7 +150,7 @@ export class GpgME_openPGPCompatibility {
  * Translation layer offering basic Keyring API to be used in Mailvelope.
  * It may still be changed/expanded/merged with GPGME_Keyring
  */
-class GPGME_Keyring_openPGPCompatibility {
+class GPGME_Keyring_openpgpmode {
     constructor(connection){
         this._gpgme_keyring = new GPGME_Keyring(connection);
     }
@@ -161,15 +161,13 @@ class GPGME_Keyring_openPGPCompatibility {
      * the difference that Key.armored will NOT contain any secret information.
      * Please also note that a GPGME_Key does not offer full openpgpjs- Key
      * compatibility.
-     * @returns {Array<GPGME_Key>} with the objects offering at least:
-     *  @property {String} armored The armored key block (does not include secret blocks)
-     *  @property {Boolean} hasSecret  Indicator if a private/secret key exists
-     *  @property {Boolean} isDefault  Indicator if private key exists and is the default key in this keyring
-     *  @property {String} fingerprint  The fingerprint identifying this key
+     * @returns {Array<GPGME_Key_openpgpmode>}
      * //TODO: Check if IsDefault is also always hasSecret
+     * TODO Check if async is required
      */
     getPublicKeys(){
-        return this._gpgme_keyring.getKeys(null, true);
+        return translateKeys(
+            this._gpgme_keyring.getKeys(null, true));
     }
 
     /**
@@ -181,7 +179,8 @@ class GPGME_Keyring_openPGPCompatibility {
     getDefaultKey(){
         this._gpgme_keyring.getSubset({defaultKey: true}).then(function(result){
             if (result.length === 1){
-                return Promise.resolve(result[0]);
+                return Promise.resolve(
+                    translateKeys(result)[0]);
             }
             else {
                 // TODO: Can there be "no default key"?
@@ -211,4 +210,52 @@ class GPGME_Keyring_openPGPCompatibility {
         let key_to_delete = new GPGME_Key(key.fingerprint);
         return key_to_delete.deleteKey(key.secret);
     }
+}
+
+/**
+ * TODO error handling.
+ * Offers the Key information as the openpgpmode wants
+ */
+class GPGME_Key_openpgpmode {
+    constructor(value){
+        this.init = value;
+    }
+
+    set init (value){
+        if (!this._GPGME_Key && value instanceof GPGME_Key){
+            this._GPGME_Key = value;
+        } else if (!this._GPGME_Key && isFingerprint(fpr)){
+            this._GPGME_Key = new GPGME_Key;
+        }
+    }
+
+    get fingerprint(){
+        return this._GPGME_Key.fingerprint;
+    }
+
+    get armor(){
+        return this._GPGME_Key.armored;
+    }
+
+    get secret(){
+        return this._GPGME_Key.hasSecret;
+    }
+
+    get default(){
+        return this._GPGME_Key.isDefault;
+    }
+}
+
+/**
+ * creates GPGME_Key_openpgpmode from GPGME_Keys
+ */
+function translateKeys(input){
+    if (!Array.isArray(input)){
+        input = [input];
+    }
+    let resultset;
+    for (let i=0; i< input.length; i++){
+        resultset.push(new GPGME_Key_openpgpmode(input[i]));
+    }
+    return resultset;
 }
