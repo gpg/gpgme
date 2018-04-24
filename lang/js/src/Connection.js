@@ -35,6 +35,18 @@ export class Connection{
 
     constructor(){
         this.connect();
+        let me = this;
+    }
+
+    /**
+     * (Simple) Connection check.
+     * @returns {Boolean} true if the onDisconnect event has not been fired.
+     * Please note that the event listener of the port takes some time
+     * (5 ms seems enough) to react after the port is created. Then this will
+     * return undefined
+     */
+    get isConnected(){
+        return this._isConnected;
     }
 
     /**
@@ -48,28 +60,20 @@ export class Connection{
 
     /**
      * Opens a nativeMessaging port.
-     * returns nothing, but triggers errors if not successfull:
-     * NO_CONNECT: connection not successfull, chrome.runtime.lastError may be
-     * available
-     * ALREADY_CONNECTED: There is already a connection present.
+     * TODO: Error handling ALREADY_CONNECTED
      */
     connect(){
-        if (this._connection){
+        if (this._isConnected === true){
             return new GPGMEJS_Error('ALREADY_CONNECTED');
         }
+        this._isConnected = true;
         this._connection = chrome.runtime.connectNative('gpgmejson');
-        if (!this._connection){
-            return new GPGMEJS_Error('NO_CONNECT');
-        }
-    }
-
-    /**
-     * checks if the connection is established
-     * TODO: some kind of ping to see if the other side responds as expected?
-     * @returns {Boolean}
-     */
-    get connected(){
-        return this._connection ? true: false;
+        let me = this;
+        this._connection.onDisconnect.addListener(
+            function(){
+                me._isConnected = false;
+            }
+        );
     }
 
     /**
@@ -79,6 +83,9 @@ export class Connection{
      * information.
      */
     post(message){
+        if (!this.isConnected){
+            return Promise.reject(new GPGMEJS_Error('NO_CONNECT'));
+        }
         if (!message || !message instanceof GPGME_Message){
             return Promise.reject(new GPGMEJS_Error('WRONGPARAM'));
         }

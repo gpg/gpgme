@@ -30,13 +30,29 @@
  import { isFingerprint } from "./Helpers"
  import { GPGMEJS_Error } from './Errors'
 
+
 export class GpgME_openPGPCompatibility {
 
-    constructor(){
-        this._gpgme =  new GpgME({
-            null_expire_is_never: false
-        });
-        this.Keyring = this.initKeyring();
+    constructor(connection){
+        this.initGpgME(connection);
+    }
+
+    get Keyring(){
+        if (this._keyring){
+            return this._keyring;
+        }
+        return undefined;
+    }
+
+    initGpgME(connection){
+        this._GpgME = new GpgME(connection);
+        this._Keyring = new GPGME_Keyring_openPGPCompatibility(connection);
+    }
+
+    get GpgME(){
+        if (this._GpGME){
+            return this._GpGME;
+        }
     }
 
     /**
@@ -128,9 +144,6 @@ export class GpgME_openPGPCompatibility {
         // mime:   A Boolean indicating whether the data is a MIME object.
         // info:   An optional object with extra information.
     }
-    initKeyring(){
-        return new GPGME_Keyring_openPGPCompatibility;
-    }
 }
 
 /**
@@ -138,8 +151,8 @@ export class GpgME_openPGPCompatibility {
  * It may still be changed/expanded/merged with GPGME_Keyring
  */
 class GPGME_Keyring_openPGPCompatibility {
-    constructor(){
-        this._gpgme_keyring = new GPGME_Keyring;
+    constructor(connection){
+        this._gpgme_keyring = new GPGME_Keyring(connection);
     }
 
     /**

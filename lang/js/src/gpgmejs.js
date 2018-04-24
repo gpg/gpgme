@@ -22,59 +22,51 @@ import {Connection} from "./Connection"
 import {GPGME_Message} from './Message'
 import {toKeyIdArray} from "./Helpers"
 import {GPGMEJS_Error as Error, GPGMEJS_Error} from "./Errors"
+import { GPGME_Keyring } from "./Keyring";
 
 export class GpgME {
     /**
      * initializes GpgME by opening a nativeMessaging port
      * TODO: add configuration
      */
-    constructor(configuration = {
-        null_expire_is_never: false
-    }){
-        this._connection = new Connection;
+    constructor(connection){
+        this.connection = connection;
     }
 
-    /**
-     * refreshes the nativeApp connection
-     */
-    reconnect(){
-        if (!this._connection || ! this._connection instanceof Connection){
-            this._connection = new Connection;
-        } else {
-            this._connection.disconnect();
-            this._connection.connect();
+    set connection(connection){
+        if (this._connection instanceof Connection){
+            //TODO Warning: Connection already established
+        }
+        if (connection instanceof Connection){
+            this._connection = connection;
         }
     }
 
-    /**
-     * inmediately tries to destroy the nativeMessaging connection.
-     * TODO: may not be included in final API, as it is redundant.
-     * For now, it just serves paranoia
-     */
-    disconnect(){
-        if (this._connection){
-            this._connection.disconnect();
-            this._connection = null;
+    get connection(){
+        if (this._connection instanceof Connection){
+            if (this._connection.isConnected){
+                return this._connection;
+            }
+            return undefined; //TODO: connection was lost!
+        }
+        return undefined; //TODO: no connection there
+    }
+
+    set Keyring(keyring){
+        if (ring && ring instanceof GPGME_Keyring){
+            this.Keyring = ring;
         }
     }
 
-    /**
-     * tests the nativeApp connection
-     */
-    get connected(){
-        if (!this._connection || ! this._connection instanceof Connection){
-            return false;
-        }
-        return this._connection.connected;
+    get Keyring(){
     }
-
 
     /**
      * @param {String|Uint8Array} data text/data to be encrypted as String/Uint8Array
      * @param  {GPGME_Key|String|Array<String>|Array<GPGME_Key>} publicKeys Keys used to encrypt the message
      * @param {Boolean} wildcard (optional) If true, recipient information will not be added to the message
      */
-    encrypt (data, publicKeys, wildcard=false){
+    encrypt(data, publicKeys, wildcard=false){
 
         let msg = new GPGME_Message('encrypt');
 
@@ -89,7 +81,7 @@ export class GpgME {
         if (wildcard === true){msg.setParameter('throw-keyids', true);
         };
 
-        return (this._connection.post(msg));
+        return (this.connection.post(msg));
     }
 
     /**
@@ -109,7 +101,7 @@ export class GpgME {
         }
         let msg = new GPGME_Message('decrypt');
         putData(msg, data);
-        return this._connection.post(msg);
+        return this.connection.post(msg);
 
     }
 
@@ -128,7 +120,7 @@ export class GpgME {
         if (no_confirm === true){ //TODO: Do we want this hidden deep in the code?
             msg.setParameter('delete_force', true); //TBD
         }
-        this._connection.post(msg).then(function(success){
+        this.connection.post(msg).then(function(success){
             //TODO: it seems that there is always errors coming back:
         }, function(error){
             switch (error.msg){
@@ -143,7 +135,6 @@ export class GpgME {
             }
         });
     }
-
 }
 
 /**

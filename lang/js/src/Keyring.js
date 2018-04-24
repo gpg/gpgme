@@ -19,27 +19,27 @@
  */
 
 import {GPGME_Message} from './Message'
-import {Connection} from './Connection'
 import {GPGME_Key} from './Key'
 import { isFingerprint, isLongId } from './Helpers';
 
 export class GPGME_Keyring {
-    constructor(){
-        this.reconnect();
+    constructor(connection){
+        this.connection = connection;
     }
 
-    /**
-     * (Re)-establishes the connection
-     * TODO TEMP: should we better use the connection of our parent,
-     * which we do not control?
-     */
-    reconnect(){
-        if (!this._connection || ! this._connection instanceof Connection){
-            this._connection = new Connection;
-        } else {
-            this._connection.disconnect();
-            this._connection.connect();
+    set connection(connection){
+        if (!this._connection && connection instanceof Connection){
+            this._connection = connection;
         }
+    }
+    get connection(){
+        if (this._connection instanceof Connection){
+            if (this._connection.isConnected){
+                return this._connection;
+            }
+            return undefined; //TODO: connection was lost!
+        }
+        return undefined; //TODO: no connection there
     }
 
     /**
@@ -57,7 +57,7 @@ export class GPGME_Keyring {
             msg.setParameter('with-secret', true);
         }
 
-        this._connection.post(msg).then(function(result){
+        this.connection.post(msg).then(function(result){
             let fpr_list = [];
             let resultset = [];
             if (!Array.isArray(result.keys)){

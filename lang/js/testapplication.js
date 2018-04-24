@@ -19,39 +19,37 @@
  *
  */
 
-function encryptbuttonclicked(event){
-    let data = document.getElementById('cleartext').value;
-    let keyId = document.getElementById('pubkey').value;
-    let communication = new Gpgmejs;
-    let enc = communication.encrypt(data, keyId).then(
-        function(answer){
-            console.log(answer);
-            if (answer.data){
-                console.log(answer.data);
-                document.getElementById('answer').value = answer.data;
-            }
-        }, function(errormsg){
-            alert('Error: '+ errormsg);
-    });
-};
-
-function decryptbuttonclicked(event){
-    let data = document.getElementById("ciphertext").value;
-    let communication = new Gpgmejs;
-    let enc = communication.decrypt(data).then(
-        function(answer){
-            console.log(answer);
-            if (answer.data){
-                document.getElementById('answer').value = answer.data;
-            }
-        }, function(errormsg){
-            alert('Error: '+ errormsg);
-    });
-};
-
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById("buttonencrypt").addEventListener("click",
-            encryptbuttonclicked);
-    document.getElementById("buttondecrypt").addEventListener("click",
-        decryptbuttonclicked);
+    Gpgmejs.init().then(function(gpgmejs){
+        document.getElementById("buttonencrypt").addEventListener("click",
+            function(){
+                let data = document.getElementById('cleartext').value;
+                let keyId = document.getElementById('pubkey').value;
+                gpgmejs.encrypt(data, keyId).then(
+                    function(answer){
+                        console.log(answer);
+                        if (answer.data){
+                            console.log(answer.data);
+                        document.getElementById('answer').value = answer.data;
+                        }
+                    }, function(errormsg){
+                        alert('Error: '+ errormsg);
+                });
+            });
+
+        document.getElementById("buttondecrypt").addEventListener("click",
+        function(){
+            let data = document.getElementById("ciphertext").value;
+            gpgmejs.decrypt(data).then(
+                function(answer){
+                    console.log(answer);
+                    if (answer.data){
+                        document.getElementById('answer').value = answer.data;
+                    }
+                }, function(errormsg){
+                    alert('Error: '+ errormsg);
+            });
+        });
+    },
+    function(error){console.log(error)});
 });

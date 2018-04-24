@@ -18,6 +18,40 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 
-import { GpgME as gpgmejs } from "./gpgmejs";
-// import { GpgME_openPGPCompatibility as gpgmejs } from "./gpgmejs_openpgpjs";
-export default gpgmejs;
+import { GpgME } from "./gpgmejs";
+import { GpgME_openPGPCompatibility } from "./gpgmejs_openpgpjs";
+import { Connection } from "./Connection";
+
+/**
+ * Initializes a nativeMessaging Connection and returns a GPGMEjs object
+ * @param {*} conf Configuration. TBD
+ */
+function init( config = {
+    api_style: 'gpgme', //  | gpgme_openpgpjs
+    null_expire_is_never: true // Boolean
+    }){
+        return new Promise(function(resolve, reject){
+            let connection = new Connection;
+            // TODO: Delayed reaction is ugly. We need to listen to the port's
+            // event listener in isConnected, but this takes some time (<5ms) to
+            // disconnect if there is no successfull connection.
+            let delayedreaction = function(){
+                if (connection.isConnected === true){
+                    let gpgme = null;
+                    if (config.api_style && config.api_style === 'gpgme_openpgpjs'){
+                        resolve(
+                            new GpgME_openPGPCompatibility(connection));
+                    } else {
+                        resolve(new GpgME(connection));
+                    }
+                } else {
+                    reject('NO_CONNECT');
+                }
+            };
+            setTimeout(delayedreaction, 5);
+    });
+};
+
+export default {
+    init: init
+}
