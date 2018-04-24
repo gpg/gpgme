@@ -159,6 +159,13 @@ function putData(message, data){
     } else if (typeof(data) === 'string') {
         message.setParameter('base64', false);
         message.setParameter('data', data);
+    } else if ( typeof(data) === 'object' && data.hasOwnProperty(getText)){
+        let txt = data.getText();
+        if (txt instanceof Uint8Array){
+            let decoder = new TextDecoder('utf8');
+            message.setParameter('base64', true);
+            message.setParameter ('data', decoder.decode(txt));
+        }
     } else {
         return new GPGMEJS_Error('WRONGPARAM');
     }
