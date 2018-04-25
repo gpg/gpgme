@@ -83,7 +83,7 @@ export class Connection{
      */
     post(message){
         if (!this.isConnected){
-            return Promise.reject(gpgme_error('CONN_NO_CONNECT'));
+            return Promise.reject(gpgme_error('CONN_DISCONNECTED'));
         }
         if (!message || !message instanceof GPGME_Message){
             return Promise.reject(gpgme_error('PARAM_WRONG'), message);

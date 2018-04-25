@@ -19,13 +19,34 @@
  */
 import { permittedOperations } from './permittedOperations'
 import { gpgme_error } from './Errors'
-export class GPGME_Message {
+
+export function createMessage(operation){
+    if (typeof(operation) !== 'string'){
+        return gpgme_error('PARAM_WRONG');
+    }
+    if (permittedOperations.hasOwnProperty(operation)){
+        return new GPGME_Message(operation);
+    } else {
+        return gpgme_error('MSG_WRONG_OP');
+    }
+}
+
+/**
+ * Prepares a communication request. It checks operations and parameters in
+ * ./permittedOperations.
+ * @param {String} operation
+ */
+class GPGME_Message {
     //TODO getter
 
     constructor(operation){
-        setOperation(this, operation);
+        this.operation = operation;
     }
 
+    set operation (op){
+
+
+    }
     get operation(){
         return this._msg.op;
     }
@@ -40,9 +61,6 @@ export class GPGME_Message {
     setParameter(param,value){
         if (!param || typeof(param) !== 'string'){
             return gpgme_error('PARAM_WRONG');
-        }
-        if (!this._msg || !this._msg.op){
-            return gpgme_error('MSG_OP_PENDING');
         }
         let po = permittedOperations[this._msg.op];
         if (!po){
@@ -88,24 +106,5 @@ export class GPGME_Message {
             return null;
         }
 
-    }
-}
-
-/**
- * Defines the operation this message will have
- * @param {String} operation Must be defined in permittedOperations
- *  TODO: move to constructor?
- */
-function setOperation (scope, operation){
-    if (!operation || typeof(operation) !== 'string'){
-        return gpgme_error('PARAM_WRONG');
-    }
-    if (permittedOperations.hasOwnProperty(operation)){
-        if (!scope._msg){
-            scope._msg = {};
-        }
-        scope._msg.op = operation;
-    } else {
-        return gpgme_error('MSG_WRONG_OP');
     }
 }

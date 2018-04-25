@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 import { gpgme_error } from "./Errors";
+import { GPGME_Key } from "./Key";
 
 /**
  * Tries to return an array of fingerprints, either from input fingerprints or
@@ -26,7 +27,7 @@ import { gpgme_error } from "./Errors";
  * @returns {Array<String>} Array of fingerprints.
  */
 
-export function toKeyIdArray(input, nocheck){
+export function toKeyIdArray(input){
     if (!input){
         gpgme_error('MSG_NO_KEYS');
         return [];
@@ -46,7 +47,7 @@ export function toKeyIdArray(input, nocheck){
             let fpr = '';
             if (input[i] instanceof GPGME_Key){
                 fpr = input[i].fingerprint;
-            } else if (input[i].hasOwnProperty(primaryKey) &&
+            } else if (input[i].hasOwnProperty('primaryKey') &&
                 input[i].primaryKey.hasOwnProperty(getFingerprint)){
                     fpr = input[i].primaryKey.getFingerprint();
             }
@@ -92,7 +93,7 @@ export function isFingerprint(string){
 /**
  * check if the input is a valid Hex string with a length of 16
  */
-function isLongId(string){
+export function isLongId(string){
     return hextest(string, 16);
 };
 

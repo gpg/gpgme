@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 
-import {GPGME_Message} from './Message'
+import {createMessage} from './Message'
 import {GPGME_Key} from './Key'
 import { isFingerprint, isLongId } from './Helpers';
 import { gpgme_error } from './Errors';
@@ -50,7 +50,10 @@ export class GPGME_Keyring {
      *
      */
     getKeys(pattern, include_secret){
-        let msg = new GPGME_Message('listkeys');
+        let msg = createMessage('listkeys');
+        if (msg instanceof Error){
+            return Promise.reject(msg);
+        }
         if (pattern && typeof(pattern) === 'string'){
             msg.setParameter('pattern', pattern);
         }

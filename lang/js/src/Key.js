@@ -26,9 +26,9 @@
  *
  */
 
-import {isFingerprint} from './Helpers'
-import {gpgme_error} from './Errors'
-import { GPGME_Message } from './Message';
+import { isFingerprint } from './Helpers'
+import { gpgme_error } from './Errors'
+import { createMessage } from './Message';
 import { permittedOperations } from './permittedOperations';
 
 export class GPGME_Key {
@@ -39,7 +39,7 @@ export class GPGME_Key {
 
     set fingerprint(fpr){
         if (isFingerprint(fpr) === true && !this._fingerprint){
-            this._fingerprint = fingerprint;
+            this._fingerprint = fpr;
         }
     }
 
@@ -181,9 +181,12 @@ function checkKey(fingerprint, property){
     }
     return new Promise(function(resolve, reject){
         if (!isFingerprint(fingerprint)){
-            reject('KEY_INVALID');
+            reject(gpgme_error('KEY_INVALID'));
         }
-        let msg = new GPGME_Message('keyinfo');
+        let msg = createMessage ('keyinfo');
+        if (msg instanceof Error){
+            reject(gpgme_error('PARAM_WRONG'));
+        }
         msg.setParameter('fingerprint', this.fingerprint);
         return (this.connection.post(msg)).then(function(result){
             if (result.hasOwnProperty(property)){

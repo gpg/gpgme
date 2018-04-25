@@ -19,7 +19,7 @@
  */
 
 import {Connection} from "./Connection"
-import {GPGME_Message} from './Message'
+import {GPGME_Message, createMessage} from './Message'
 import {toKeyIdArray} from "./Helpers"
 import { gpgme_error } from "./Errors"
 import { GPGME_Keyring } from "./Keyring";
@@ -71,8 +71,10 @@ export class GpgME {
      */
     encrypt(data, publicKeys, wildcard=false){
 
-        let msg = new GPGME_Message('encrypt');
-
+        let msg = createMessage('encrypt');
+        if (msg instanceof Error){
+            return Promise.reject(msg)
+        }
         // TODO temporary
         msg.setParameter('armor', true);
         msg.setParameter('always-trust', true);
@@ -101,7 +103,10 @@ export class GpgME {
         if (data === undefined){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
-        let msg = new GPGME_Message('decrypt');
+        let msg = createMessage('decrypt');
+        if (msg instanceof Error){
+            return Promise.reject(msg);
+        }
         putData(msg, data);
         return this.connection.post(msg);
 
@@ -109,21 +114,27 @@ export class GpgME {
 
     deleteKey(key, delete_secret = false, no_confirm = false){
         return Promise.reject(gpgme_error('NOT_YET_IMPLEMENTED'));
-        let msg = new GPGME_Message('deletekey');
+        let msg = createMessage('deletekey');
+        if (msg instanceof Error){
+            return Promise.reject(msg);
+        }
         let key_arr = toKeyIdArray(key);
         if (key_arr.length !== 1){
-            throw('TODO');
-            //should always be ONE key
+            return Promise.reject(
+                gpgme_error('GENERIC_ERROR'));
+            // TBD should always be ONE key?
         }
         msg.setParameter('key', key_arr[0]);
         if (delete_secret === true){
-            msg.setParameter('allow_secret', true); //TBD
+            msg.setParameter('allow_secret', true);
+            // TBD
         }
         if (no_confirm === true){ //TODO: Do we want this hidden deep in the code?
-            msg.setParameter('delete_force', true); //TBD
+            msg.setParameter('delete_force', true);
+            // TBD
         }
         this.connection.post(msg).then(function(success){
-            //TODO: it seems that there is always errors coming back:
+            // TODO: it seems that there is always errors coming back:
         }, function(error){
             switch (error.msg){
             case 'ERR_NO_ERROR':

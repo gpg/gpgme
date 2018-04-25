@@ -55,14 +55,9 @@ const err_list = {
         msg: 'The Message is empty.',
         type: 'error'
     },
-    'MSG_OP_PENDING': {
-        msg: 'There is no operation specified yet. The parameter cannot'
-            + ' be set',
-        type: 'warning'
-    },
     'MSG_WRONG_OP': {
         msg: 'The operation requested could not be found',
-        type: 'warning'
+        type: 'error'
     },
     'MSG_NO_KEYS' : {
         msg: 'There were no valid keys provided.',
@@ -78,7 +73,7 @@ const err_list = {
     },
     // generic
     'PARAM_WRONG':{
-        msg: 'invalid parameter was found',
+        msg: 'Invalid parameter was found',
         type: 'error'
     },
     'PARAM_IGNORED': {
@@ -111,7 +106,7 @@ export function gpgme_error(code = 'GENERIC_ERROR', info){
             return new GPGME_Error(code);
         }
         if (err_list[code].type === 'warning'){
-            console.log(new GPGME_Error(code));
+            console.warn(code + ': ' + err_list[code].msg);
         }
         return null;
     } else if (code === 'GNUPG_ERROR'){
