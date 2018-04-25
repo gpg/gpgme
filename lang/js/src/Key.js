@@ -172,7 +172,7 @@ export class GPGME_Key {
  *
  */
 function checkKey(fingerprint, property){
-    return Promise.reject(new GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
+    return Promise.reject(GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
 
     return new Promise(function(resolve, reject){
         if (!isFingerprint(fingerprint)){

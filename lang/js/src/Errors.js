@@ -18,131 +18,99 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 
-// This is a preliminary collection of erors and warnings to be thrown and implemented.
-
-// general idea: if throw , throw the NAME
-// return false || 'return' property
-
-//TODO: Connection.NOCONNECT promise
-//connection.timeout: Be aware of pinentry
-
-export class GPGMEJS_Error {
-
-    constructor(code = 'GENERIC_ERROR', details){
-        let config = { //TODO TEMP
-            debug: 'console', // |'alert'
-            throw: 'default'  // | 'always' | 'never'
-        };
+/**
+ * Checks the given error code and returns some information about it's meaning
+ * @param {String} code The error code
+ * @returns {Object} An object containing string properties code and msg
+ * TODO: error-like objects with the code 'GNUPG_ERROR' are errors sent
+ * directly by gnupg as answer in Connection.post()
+ */
+export function GPGMEJS_Error(code = 'GENERIC_ERROR'){
+        if (!typeof(code) === 'string'){
+            code = 'GENERIC_ERROR';
+        }
         let errors = { //TODO: someplace else
-            //Connection errors
-            'ALREADY_CONNECTED':{
-                msg: 'The connection was already established. The action would overwrite the context',
-                throw: true
+            // Connection
+            'CONN_NO_CONNECT': {
+                msg:'Connection with the nativeMessaging host could not be'
+                    + ' established.',
+                type: 'error'
             },
-            'NO_CONNECT': {
-                msg:'Connection with the nativeMessaging host could not be established.',
-                throw: true
+            'CONN_EMPTY_GPG_ANSWER':{
+                msg: 'The nativeMessaging answer was empty.',
+                type: 'error'
             },
-            'EMPTY_GPG_ANSWER':{
-                msg: 'The nativeMesaging answer was empty',
-                throw: true
+            'CONN_TIMEOUT': {
+                msg: 'A connection timeout was exceeded.',
+                type: 'error'
             },
-            'TIMEOUT': {
-                msg: 'A timeout was exceeded.',
-                throw: false
+            'CONN_UNEXPECTED_ANSWER': {
+                msg: 'The answer from gnupg was not as expected.',
+                type: 'error'
             },
-
-            'UNEXPECTED_ANSWER': {
-                msg: 'The answer from gnupg was not as expected',
-                throw: true
+            'CONN_ALREADY_CONNECTED':{
+                msg: 'A connection was already established.',
+                type: 'warn'
             },
-
-            // Message/Data Errors
-
-            'NO_KEYS' : {
-                msg: 'There were no valid keys provided.',
-                throw: true
-            },
-            'NOT_A_FPR': {
-                msg: 'The String is not an accepted fingerprint',
-                throw: false
-            },
+            // Message/Data
             'MSG_INCOMPLETE': {
-                msg: 'The Message did not match the minimum requirements for the interaction',
-                throw: true
+                msg: 'The Message did not match the minimum requirements for'
+                    + ' the interaction.',
+                type: 'error'
             },
-            'EMPTY_MSG' : {
-                msg: 'The Message has no data.',
-                throw: true
-            },
-            'MSG_NODATA':{
-                msg: 'The data sent is empty. This may be unintentional.',
-                throw: false
+            'MSG_EMPTY' : {
+                msg: 'The Message is empty.',
+                type: 'error'
             },
             'MSG_OP_PENDING': {
-                msg: 'There is no operation specified yet. The parameter cannot be set',
-                throw: false
+                msg: 'There is no operation specified yet. The parameter cannot'
+                    + ' be set',
+                type: 'warning'
             },
-            'WRONG_OP': {
-                msg: "The operation requested could not be found",
-                throw: true
+            'MSG_WRONG_OP': {
+                msg: 'The operation requested could not be found',
+                type: 'warning'
+            },
+            'MSG_NO_KEYS' : {
+                msg: 'There were no valid keys provided.',
+                type: 'warn'
+            },
+            'MSG_NOT_A_FPR': {
+                msg: 'The String is not an accepted fingerprint',
+                type: 'warn'
             },
 
-            //generic errors
-
-            'WRONGPARAM':{
+            // generic
+            'PARAM_WRONG':{
                 msg: 'invalid parameter was found',
-                throw: true
-            },
-            'WRONGTYPE':{
-                msg: 'invalid parameter type was found',
-                throw: true
+                type: 'error'
             },
             'NOT_IMPLEMENTED': {
                 msg: 'A openpgpjs parameter was submitted that is not implemented',
-                throw: true
+                type: 'error'
+            },
+            'NOT_YET_IMPLEMENTED': {
+                msg: 'Support of this is probable, but it is not implemented yet',
+                type: 'error'
             },
             'GENERIC_ERROR': {
                 msg: 'Unspecified error',
-                throw: true
+                type: 'error'
             },
-
-            // hopefully temporary errors
-
-            'NOT_YET_IMPLEMENTED': {
-                msg: 'Support of this is probable, but it is not implemented yet',
-                throw: false
-            }
         }
-        if (!errors.hasOwnProperty(code)){
-            throw('GENERIC_ERROR');
+        if (code === 'TODO'){
+            alert('TODO_Error!');
         }
-        let msg = code;
-        if (errors[code].msg !== undefined){
-            msg = msg + ': ' + errors[code].msg;
+        if (errors.hasOwnProperty(code)){
+            code = 'GENERIC_ERROR';
         }
-        if (details){
-            msg = msg + ' ' + details;
+        if (error.type === 'error'){
+            return {code: 'code',
+                    msg: errors[code].msg
+                };
         }
-        if (config.debug === 'console'){
-            console.log(msg);
-        } else if (config.debug === 'alert'){
-            alert(msg);
+        if (error.type === 'warning'){
+            console.log(code + ': ' + error[code].msg);
         }
-        switch (config.throw) {
-            case 'default':
-                if (errors[code].throw === true){
-                    throw(code);
-                }
-                break;
-            case 'always':
-                throw(code);
-                break;
-
-            case 'never':
-                break;
-            default:
-                throw('GENERIC_ERROR');
-        }
-    }
+        return undefined;
 }

@@ -1,5 +1,3 @@
-import { GPGME_Message } from "./Message";
-
 /* gpgme.js - Javascript integration for gpgme
  * Copyright (C) 2018 Bundesamt für Sicherheit in der Informationstechnik
  *
@@ -26,7 +24,8 @@ import { GPGME_Message } from "./Message";
  * expected.
  */
 import { permittedOperations } from './permittedOperations'
-import { GPGMEJS_Error} from "./Errors"
+import { GPGMEJS_Error } from "./Errors"
+import { GPGME_Message } from "./Message";
 
 /**
  * A Connection handles the nativeMessaging interaction.
@@ -60,20 +59,20 @@ export class Connection{
 
     /**
      * Opens a nativeMessaging port.
-     * TODO: Error handling ALREADY_CONNECTED
      */
     connect(){
         if (this._isConnected === true){
-            return new GPGMEJS_Error('ALREADY_CONNECTED');
+            GPGMEJS_Error('CONN_ALREADY_CONNECTED');
+        } else {
+            this._isConnected = true;
+            this._connection = chrome.runtime.connectNative('gpgmejson');
+            let me = this;
+            this._connection.onDisconnect.addListener(
+                function(){
+                    me._isConnected = false;
+                }
+            );
         }
-        this._isConnected = true;
-        this._connection = chrome.runtime.connectNative('gpgmejson');
-        let me = this;
-        this._connection.onDisconnect.addListener(
-            function(){
-                me._isConnected = false;
-            }
-        );
     }
 
     /**
@@ -84,28 +83,31 @@ export class Connection{
      */
     post(message){
         if (!this.isConnected){
-            return Promise.reject(new GPGMEJS_Error('NO_CONNECT'));
+            return Promise.reject(GPGMEJS_Error('CONN_NO_CONNECT'));
         }
         if (!message || !message instanceof GPGME_Message){
-            return Promise.reject(new GPGMEJS_Error('WRONGPARAM'));
+            return Promise.reject(GPGMEJS_Error('PARAM_WRONG'), message);
         }
         if (message.isComplete !== true){
-            return Promise.reject(new GPGMEJS_Error('MSG_INCOMPLETE'));
+            return Promise.reject(GPGMEJS_Error('MSG_INCOMPLETE'));
         }
-        // let timeout = 5000; //TODO config
         let me = this;
         return new Promise(function(resolve, reject){
             let answer = new Answer(message.operation);
             let listener = function(msg) {
                 if (!msg){
                     me._connection.onMessage.removeListener(listener)
-                    reject(new GPGMEJS_Error('EMPTY_GPG_ANSWER'));
+                    reject(GPGMEJS_Error('CONN_EMPTY_GPG_ANSWER'));
                 } else if (msg.type === "error"){
                     me._connection.onMessage.removeListener(listener)
-                    //TODO: GPGMEJS_Error?
-                    reject(msg.msg);
+                    reject(
+                        {code: 'GNUPG_ERROR',
+                         msg: msg.msg} );
                 } else {
-                    answer.add(msg);
+                    let answer_result = answer.add(msg);
+                    if (answer_result !== true){
+                        reject(answer_result);
+                    }
                     if (msg.more === true){
                         me._connection.postMessage({'op': 'getmore'});
                     } else {
@@ -117,11 +119,12 @@ export class Connection{
 
             me._connection.onMessage.addListener(listener);
             me._connection.postMessage(message.message);
+
             //TBD: needs to be aware if there is a pinentry pending
             // setTimeout(
             //     function(){
             //         me.disconnect();
-            //         reject(new GPGMEJS_Error('TIMEOUT', 5000));
+            //         reject(GPGMEJS_Error('CONN_TIMEOUT'));
             //     }, timeout);
         });
      }
@@ -141,6 +144,7 @@ class Answer{
     /**
      * Add the information to the answer
      * @param {Object} msg The message as received with nativeMessaging
+     * returns true if successfull, GPGMEJS_Error otherwise
      */
     add(msg){
         if (this._response === undefined){
@@ -148,12 +152,15 @@ class Answer{
         }
         let messageKeys = Object.keys(msg);
         let poa = permittedOperations[this.operation].answer;
+        if (messageKeys.length === 0){
+            return GPGMEJS_Error('CONN_UNEXPECTED_ANSWER');
+        }
         for (let i= 0; i < messageKeys.length; i++){
             let key = messageKeys[i];
             switch (key) {
                 case 'type':
                     if ( msg.type !== 'error' && poa.type.indexOf(msg.type) < 0){
-                        return new GPGMEJS_Error('UNEXPECTED_ANSWER');
+                        return GPGMEJS_Error('CONN_UNEXPECTED_ANSWER');
                     }
                     break;
                 case 'more':
@@ -172,7 +179,7 @@ class Answer{
                             this._response[key] = msg[key];
                         }
                         else if (this._response[key] !== msg[key]){
-                                return new GPGMEJS_Error('UNEXPECTED_ANSWER',msg[key]);
+                                return GPGMEJS_Error('CONN_UNEXPECTED_ANSWER',msg[key]);
                         }
                     }
                     //infos may be json objects etc. Not yet defined.
@@ -184,11 +191,12 @@ class Answer{
                         this._response.push(msg[key]);
                     }
                     else {
-                        return new GPGMEJS_Error('UNEXPECTED_ANSWER', key);
+                        return GPGMEJS_Error('CONN_UNEXPECTED_ANSWER', key);
                     }
                     break;
             }
         }
+        return true;
     }
 
     /**

@@ -1,5 +1,3 @@
-import { GPGMEJS_Error } from "./Errors";
-
 /* gpgme.js - Javascript integration for gpgme
  * Copyright (C) 2018 Bundesamt für Sicherheit in der Informationstechnik
  *
@@ -19,18 +17,19 @@ import { GPGMEJS_Error } from "./Errors";
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
  */
+import { GPGMEJS_Error } from "./Errors";
 
 /**
  * Tries to return an array of fingerprints, either from input fingerprints or
  * from Key objects
  * @param {Key |Array<Key>| GPGME_Key | Array<GPGME_Key>|String|Array<String>} input
- * @param {Boolean} nocheck if set, an empty result is acceptable
  * @returns {Array<String>} Array of fingerprints.
  */
 
 export function toKeyIdArray(input, nocheck){
     if (!input){
-        return (nocheck ===true)? [] : new GPGMEJS_Error('NO_KEYS');
+        GPGMEJS_Error('MSG_NO_KEYS');
+        return [];
     }
     if (!Array.isArray(input)){
         input = [input];
@@ -41,7 +40,7 @@ export function toKeyIdArray(input, nocheck){
             if (isFingerprint(input[i]) === true){
                 result.push(input[i]);
             } else {
-                GPGMEJS_Error
+                GPGMEJS_Error('MSG_NOT_A_FPR');
             }
         } else if (typeof(input[i]) === 'object'){
             let fpr = '';
@@ -53,13 +52,16 @@ export function toKeyIdArray(input, nocheck){
             }
             if (isFingerprint(fpr) === true){
                 result.push(fpr);
+            } else {
+                GPGMEJS_Error('MSG_NOT_A_FPR');
             }
         } else {
-            return new GPGMEJS_Error('WRONGTYPE');
+            return GPGMEJS_Error('PARAM_WRONG');
         }
     }
     if (result.length === 0){
-        return (nocheck===true)? [] : new GPGMEJS_Error('NO_KEYS');
+        GPGMEJS_Error('MSG_NO_KEYS');
+        return [];
     } else {
         return result;
     }

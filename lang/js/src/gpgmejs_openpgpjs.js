@@ -88,14 +88,14 @@
             || signature !== null
             || returnSessionKey !== null
             || date !== null){
-            return Promise.reject(new GPMGEJS_Error('NOT_IMPLEMENTED'));
+            return Promise.reject(GPMGEJS_Error('NOT_IMPLEMENTED'));
         }
         if ( privateKeys
             || filename
             || compression
             || armor === false
             || detached == true){
-                return Promise.reject(new GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
+                return Promise.reject(GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
         }
         return this.GpgME.encrypt(data, translateKeyInput(publicKeys), wildcard);
     }
@@ -123,14 +123,14 @@
         if (passwords !== undefined
             || sessionKeys
             || date){
-            return Promise.reject(new GPGMEJS_Error('NOT_IMPLEMENTED'));
+            return Promise.reject(GPGMEJS_Error('NOT_IMPLEMENTED'));
         }
         if ( privateKeys
             || publicKeys
             || format !== 'utf8'
             || signature
         ){
-            return Promise.reject(new GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
+            return Promise.reject(GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
         }
         return this.GpgME.decrypt(message);
         // TODO: translate between:
@@ -185,7 +185,7 @@ class GPGME_Keyring_openpgpmode {
             else {
                 // TODO: Can there be "no default key"?
                 // TODO: Can there be several default keys?
-                return new GPGMEJS_Error; //TODO
+                return GPGMEJS_Error('TODO');
             }
         });
     }
@@ -202,10 +202,10 @@ class GPGME_Keyring_openpgpmode {
      */
     deleteKey(key){
         if (typeof(key) !== "object"){
-            return Promise.reject(new GPGMEJS_Error('WRONGPARAM'));
+            return Promise.reject(GPGMEJS_Error('PARAM_WRONG'));
         }
         if ( !key.fingerprint || ! isFingerprint(key.fingerprint)){
-            return Promise.reject(new GPGMEJS_Error('WRONGPARAM'));
+            return Promise.reject(GPGMEJS_Error('PARAM_WRONG'));
         }
         let key_to_delete = new GPGME_Key(key.fingerprint);
         return key_to_delete.deleteKey(key.secret);

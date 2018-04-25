@@ -95,9 +95,8 @@ export class GpgME {
     */
 
     decrypt(data){
-
         if (data === undefined){
-            return Promise.reject(new GPGMEJS_Error ('EMPTY_MSG'));
+            return Promise.reject(GPGMEJS_Error('MSG_EMPTY'));
         }
         let msg = new GPGME_Message('decrypt');
         putData(msg, data);
@@ -106,7 +105,7 @@ export class GpgME {
     }
 
     deleteKey(key, delete_secret = false, no_confirm = false){
-        return Promise.reject(new GPGMEJS_Error ('NOT_YET_IMPLEMENTED'));
+        return Promise.reject(GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
         let msg = new GPGME_Message('deletekey');
         let key_arr = toKeyIdArray(key);
         if (key_arr.length !== 1){
@@ -127,7 +126,7 @@ export class GpgME {
             case 'ERR_NO_ERROR':
                 return Promise.resolve('okay'); //TBD
             default:
-                return Promise.reject(new GPGMEJS_Error);
+                return Promise.reject(GPGMEJS_Error('TODO') ); //
                 // INV_VALUE,
                 // GPG_ERR_NO_PUBKEY,
                 // GPG_ERR_AMBIGUOUS_NAME,
@@ -146,11 +145,9 @@ export class GpgME {
  */
 function putData(message, data){
     if (!message || !message instanceof GPGME_Message ) {
-        return new GPGMEJS_Error('WRONGPARAM');
+        return GPGMEJS_Error('PARAM_WRONG');
     }
     if (!data){
-        //TODO Debug only! No data is legitimate
-        console.log('Warning. no data in message');
         message.setParameter('data', '');
     } else if (data instanceof Uint8Array){
         let decoder = new TextDecoder('utf8');
@@ -167,6 +164,6 @@ function putData(message, data){
             message.setParameter ('data', decoder.decode(txt));
         }
     } else {
-        return new GPGMEJS_Error('WRONGPARAM');
+        return GPGMEJS_Error('PARAM_WRONG');
     }
 }

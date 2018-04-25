@@ -39,20 +39,20 @@ export class GPGME_Message {
      */
     setParameter(param,value){
         if (!param || typeof(param) !== 'string'){
-            return new GPGMEJS_Error('WRONGPARAM', 'type check failed');
+            return GPGMEJS_Error('PARAM_WRONG');
         }
         if (!this._msg || !this._msg.op){
-            return new GPGMEJS_Error('MSG_OP_PENDING');
+            return GPGMEJS_Error('MSG_OP_PENDING');
         }
         let po = permittedOperations[this._msg.op];
         if (!po){
-            return new GPGMEJS_Error('WRONG_OP', param);
+            return GPGMEJS_Error('MSG_WRONG_OP');
         }
         if (po.required.indexOf(param) >= 0 || po.optional.indexOf(param) >= 0){
             this._msg[param] = value;
             return true;
         }
-        return new GPGMEJS_Error('WRONGPARAM', param);
+        return GPGMEJS_Error('PARAM_WRONG');
     }
 
     /**
@@ -98,7 +98,7 @@ export class GPGME_Message {
  */
 function setOperation (scope, operation){
     if (!operation || typeof(operation) !== 'string'){
-        return new GPGMEJS_Error('WRONGTYPE');
+        return GPGMEJS_Error('PARAM_WRONG');
     }
     if (permittedOperations.hasOwnProperty(operation)){
         if (!scope._msg){
@@ -106,6 +106,6 @@ function setOperation (scope, operation){
         }
         scope._msg.op = operation;
     } else {
-        return new GPGMEJS_Error('WRONG_OP');
+        return GPGMEJS_Error('MSG_WRONG_OP');
     }
 }

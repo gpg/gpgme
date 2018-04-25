@@ -19,6 +19,7 @@
  */
 
 import { GpgME } from "./gpgmejs";
+import { GPGMEJS_Error } from "./Errors";
 import { GpgME_openpgpmode } from "./gpgmejs_openpgpjs";
 import { Connection } from "./Connection";
 
@@ -45,7 +46,7 @@ function init( config = {
                         resolve(new GpgME(connection));
                     }
                 } else {
-                    reject('NO_CONNECT');
+                    reject(GPGMEJS_Error('CONN_NO_CONNECT'));
                 }
             };
             setTimeout(delayedreaction, 5);
