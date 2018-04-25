@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 import { permittedOperations } from './permittedOperations'
-import { GPGMEJS_Error } from './Errors'
+import { gpgme_error } from './Errors'
 export class GPGME_Message {
     //TODO getter
 
@@ -39,20 +39,20 @@ export class GPGME_Message {
      */
     setParameter(param,value){
         if (!param || typeof(param) !== 'string'){
-            return GPGMEJS_Error('PARAM_WRONG');
+            return gpgme_error('PARAM_WRONG');
         }
         if (!this._msg || !this._msg.op){
-            return GPGMEJS_Error('MSG_OP_PENDING');
+            return gpgme_error('MSG_OP_PENDING');
         }
         let po = permittedOperations[this._msg.op];
         if (!po){
-            return GPGMEJS_Error('MSG_WRONG_OP');
+            return gpgme_error('MSG_WRONG_OP');
         }
         if (po.required.indexOf(param) >= 0 || po.optional.indexOf(param) >= 0){
             this._msg[param] = value;
             return true;
         }
-        return GPGMEJS_Error('PARAM_WRONG');
+        return gpgme_error('PARAM_WRONG');
     }
 
     /**
@@ -98,7 +98,7 @@ export class GPGME_Message {
  */
 function setOperation (scope, operation){
     if (!operation || typeof(operation) !== 'string'){
-        return GPGMEJS_Error('PARAM_WRONG');
+        return gpgme_error('PARAM_WRONG');
     }
     if (permittedOperations.hasOwnProperty(operation)){
         if (!scope._msg){
@@ -106,6 +106,6 @@ function setOperation (scope, operation){
         }
         scope._msg.op = operation;
     } else {
-        return GPGMEJS_Error('MSG_WRONG_OP');
+        return gpgme_error('MSG_WRONG_OP');
     }
 }

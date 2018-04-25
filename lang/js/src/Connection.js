@@ -24,7 +24,7 @@
  * expected.
  */
 import { permittedOperations } from './permittedOperations'
-import { GPGMEJS_Error } from "./Errors"
+import { gpgme_error } from "./Errors"
 import { GPGME_Message } from "./Message";
 
 /**
@@ -62,7 +62,7 @@ export class Connection{
      */
     connect(){
         if (this._isConnected === true){
-            GPGMEJS_Error('CONN_ALREADY_CONNECTED');
+            gpgme_error('CONN_ALREADY_CONNECTED');
         } else {
             this._isConnected = true;
             this._connection = chrome.runtime.connectNative('gpgmejson');
@@ -83,13 +83,13 @@ export class Connection{
      */
     post(message){
         if (!this.isConnected){
-            return Promise.reject(GPGMEJS_Error('CONN_NO_CONNECT'));
+            return Promise.reject(gpgme_error('CONN_NO_CONNECT'));
         }
         if (!message || !message instanceof GPGME_Message){
-            return Promise.reject(GPGMEJS_Error('PARAM_WRONG'), message);
+            return Promise.reject(gpgme_error('PARAM_WRONG'), message);
         }
         if (message.isComplete !== true){
-            return Promise.reject(GPGMEJS_Error('MSG_INCOMPLETE'));
+            return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
         }
         let me = this;
         return new Promise(function(resolve, reject){
@@ -97,7 +97,7 @@ export class Connection{
             let listener = function(msg) {
                 if (!msg){
                     me._connection.onMessage.removeListener(listener)
-                    reject(GPGMEJS_Error('CONN_EMPTY_GPG_ANSWER'));
+                    reject(gpgme_error('CONN_EMPTY_GPG_ANSWER'));
                 } else if (msg.type === "error"){
                     me._connection.onMessage.removeListener(listener)
                     reject(
@@ -118,17 +118,18 @@ export class Connection{
             };
 
             me._connection.onMessage.addListener(listener);
-            let timeout = new Promise(function(resolve, reject){
-                setTimeout(function(){
-                    reject(GPGMEJS_Error('CONN_TIMEOUT'));
-                }, 5000);
-            });
             if (permittedOperations[message.operation].pinentry){
                 return me._connection.postMessage(message.message);
             } else {
-                return Promise.race([timeout,
-                    me._connection.postMessage(message.message)
-                ]);
+                return Promise.race([
+                    me._connection.postMessage(message.message),
+                    function(resolve, reject){
+                        setTimeout(function(){
+                            reject(gpgme_error('CONN_TIMEOUT'));
+                        }, 5000);
+                    }]).then(function(result){
+                    return result;
+                });
             }
         });
      }
@@ -148,7 +149,7 @@ class Answer{
     /**
      * Add the information to the answer
      * @param {Object} msg The message as received with nativeMessaging
-     * returns true if successfull, GPGMEJS_Error otherwise
+     * returns true if successfull, gpgme_error otherwise
      */
     add(msg){
         if (this._response === undefined){
@@ -157,14 +158,14 @@ class Answer{
         let messageKeys = Object.keys(msg);
         let poa = permittedOperations[this.operation].answer;
         if (messageKeys.length === 0){
-            return GPGMEJS_Error('CONN_UNEXPECTED_ANSWER');
+            return gpgme_error('CONN_UNEXPECTED_ANSWER');
         }
         for (let i= 0; i < messageKeys.length; i++){
             let key = messageKeys[i];
             switch (key) {
                 case 'type':
                     if ( msg.type !== 'error' && poa.type.indexOf(msg.type) < 0){
-                        return GPGMEJS_Error('CONN_UNEXPECTED_ANSWER');
+                        return gpgme_error('CONN_UNEXPECTED_ANSWER');
                     }
                     break;
                 case 'more':
@@ -183,7 +184,7 @@ class Answer{
                             this._response[key] = msg[key];
                         }
                         else if (this._response[key] !== msg[key]){
-                                return GPGMEJS_Error('CONN_UNEXPECTED_ANSWER',msg[key]);
+                                return gpgme_error('CONN_UNEXPECTED_ANSWER',msg[key]);
                         }
                     }
                     //infos may be json objects etc. Not yet defined.
@@ -195,7 +196,7 @@ class Answer{
                         this._response.push(msg[key]);
                     }
                     else {
-                        return GPGMEJS_Error('CONN_UNEXPECTED_ANSWER', key);
+                        return gpgme_error('CONN_UNEXPECTED_ANSWER', key);
                     }
                     break;
             }

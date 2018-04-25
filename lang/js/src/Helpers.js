@@ -17,7 +17,7 @@
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
  */
-import { GPGMEJS_Error } from "./Errors";
+import { gpgme_error } from "./Errors";
 
 /**
  * Tries to return an array of fingerprints, either from input fingerprints or
@@ -28,7 +28,7 @@ import { GPGMEJS_Error } from "./Errors";
 
 export function toKeyIdArray(input, nocheck){
     if (!input){
-        GPGMEJS_Error('MSG_NO_KEYS');
+        gpgme_error('MSG_NO_KEYS');
         return [];
     }
     if (!Array.isArray(input)){
@@ -40,7 +40,7 @@ export function toKeyIdArray(input, nocheck){
             if (isFingerprint(input[i]) === true){
                 result.push(input[i]);
             } else {
-                GPGMEJS_Error('MSG_NOT_A_FPR');
+                gpgme_error('MSG_NOT_A_FPR');
             }
         } else if (typeof(input[i]) === 'object'){
             let fpr = '';
@@ -53,14 +53,14 @@ export function toKeyIdArray(input, nocheck){
             if (isFingerprint(fpr) === true){
                 result.push(fpr);
             } else {
-                GPGMEJS_Error('MSG_NOT_A_FPR');
+                gpgme_error('MSG_NOT_A_FPR');
             }
         } else {
-            return GPGMEJS_Error('PARAM_WRONG');
+            return gpgme_error('PARAM_WRONG');
         }
     }
     if (result.length === 0){
-        GPGMEJS_Error('MSG_NO_KEYS');
+        gpgme_error('MSG_NO_KEYS');
         return [];
     } else {
         return result;

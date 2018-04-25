@@ -27,7 +27,9 @@
  */
 
 import {isFingerprint} from './Helpers'
-import {GPGMEJS_Error} from './Errors'
+import {gpgme_error} from './Errors'
+import { GPGME_Message } from './Message';
+import { permittedOperations } from './permittedOperations';
 
 export class GPGME_Key {
 
@@ -172,32 +174,30 @@ export class GPGME_Key {
  *
  */
 function checkKey(fingerprint, property){
-    return Promise.reject(GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
-
+    return Promise.reject(gpgme_error('NOT_YET_IMPLEMENTED'));
+    if (!property ||
+        permittedOperations[keyinfo].indexOf(property) < 0){
+            return Promise.reject(gpgme_error('PARAM_WRONG'));
+    }
     return new Promise(function(resolve, reject){
         if (!isFingerprint(fingerprint)){
-            reject('not a fingerprint'); //TBD
+            reject('KEY_INVALID');
         }
-        let conn = new Connection();
-        conn.post('getkey',{ // TODO not yet implemented in gpgme
-            'fingerprint': this.fingerprint})
-        .then(function(result){
-            if (property !== undefined){
-                if (result.hasOwnProperty(key)){
-                    resolve(result[property]);
-                }
-                else if (property == 'secret'){
-                    // property undefined means "not true" in case of secret
-                    resolve(false);
-                } else {
-                    reject('ERR_INVALID_PROPERTY') //TBD
-                }
+        let msg = new GPGME_Message('keyinfo');
+        msg.setParameter('fingerprint', this.fingerprint);
+        return (this.connection.post(msg)).then(function(result){
+            if (result.hasOwnProperty(property)){
+                resolve(result[property]);
             }
-
-
-            resolve(result);
+            else if (property == 'secret'){
+                // TBD property undefined means "not true" in case of secret?
+                resolve(false);
+            } else {
+                reject(gpgme_error('CONN_UNEXPECTED_ANSWER'));
+            }
         }, function(error){
-            reject(error);
+            reject({code: 'GNUPG_ERROR',
+                         msg: error.msg});
         });
     });
 };

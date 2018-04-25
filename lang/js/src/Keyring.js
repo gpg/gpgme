@@ -21,6 +21,7 @@
 import {GPGME_Message} from './Message'
 import {GPGME_Key} from './Key'
 import { isFingerprint, isLongId } from './Helpers';
+import { gpgme_error } from './Errors';
 
 export class GPGME_Keyring {
     constructor(connection){
@@ -37,9 +38,9 @@ export class GPGME_Keyring {
             if (this._connection.isConnected){
                 return this._connection;
             }
-            return undefined; //TODO: connection was lost!
+            return gpgme_error('CONN_DISCONNECTED');
         }
-        return undefined; //TODO: no connection there
+        return gpgme_error('CONN_NO_CONNECT');
     }
 
     /**
@@ -81,9 +82,7 @@ export class GPGME_Keyring {
      * filters described below. True will filter on the condition, False will
      * reverse the filter, if not present or undefined, the filter will not be
      * considered. Please note that some combination may not make sense
-     * @param {Boolean} flags.defaultKey Only Keys marked as Default Keys
      * @param {Boolean} flags.secret Only Keys containing a secret part.
-     * @param {Boolean} flags.valid Valid Keys only
      * @param {Boolean} flags.revoked revoked Keys only
      * @param {Boolean} flags.expired Expired Keys only
      * @param {String} (optional) pattern A pattern to search for, in userIds or KeyIds
@@ -108,16 +107,20 @@ export class GPGME_Keyring {
                 } else if (secretflag === false){
                     anticonditions.push('hasSecret');
                 }
+                /**
                 if (flags.defaultKey === true){
                     conditions.push('isDefault');
                 } else if (flags.defaultKey === false){
                     anticonditions.push('isDefault');
                 }
-                if (flags.valid === true){
+                */
+                /**
+                 * if (flags.valid === true){
                     anticonditions.push('isInvalid');
                 } else if (flags.valid === false){
                     conditions.push('isInvalid');
                 }
+                */
                 if (flags.revoked === true){
                     conditions.push('isRevoked');
                 } else if (flags.revoked === false){

@@ -31,7 +31,7 @@
                 partial and in need of concatenation
           params: Array<String> Information that do not change throughout
                 the message
-          infos: Array<String> arbitrary information that may change
+          infos: Array<*> arbitrary information that may result in a list
       }
   }
   */
@@ -72,7 +72,55 @@ export const permittedOperations = {
             type: ['plaintext'],
             data: ['data'],
             params: ['base64', 'mime'],
-            infos: ['info']
+            infos: [] // pending. Info about signatures and validity
+                    //signature: [{Key Fingerprint, valid Boolean}]
+        }
+    },
+    /**
+    keyinfo: { // querying the Key's information.
+        required: ['fingerprint'],
+        anser: {
+            type: ['TBD'],
+            data: [],
+            params: ['hasSecret', 'isRevoked', 'isExpired', 'armored',
+                'timestamp', 'expires', 'pubkey_algo'],
+            infos: ['subkeys', 'userIds']
+    }*/
+
+    /**
+    listkeys:{
+        optional: ['with-secret', 'pattern'],
+    answer: {
+        type: ['TBD'], //Array of fingerprints?
+        infos: ['TBD'] //the property with infos
+    },
+    */
+
+    /**
+    importkey: {
+        required: ['keyarmored'],
+        answer: {
+            type: ['TBD'],
+            infos: [''], // for each key if import was a success, if it was an update
+        }
+    },
+    */
+
+    /**
+    deletekey:  {
+        required: ['fingerprint'],
+        answer: {
+            type ['TBD'],
+            infos: [''] //success:true? in gpgme, an error NO_ERROR is returned
         }
     }
+    */
+
+    /**
+     *get armored secret different treatment from keyinfo!
+     */
+
+    /**
+     * TBD key modification requests?
+     */
 }

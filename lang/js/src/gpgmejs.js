@@ -21,7 +21,7 @@
 import {Connection} from "./Connection"
 import {GPGME_Message} from './Message'
 import {toKeyIdArray} from "./Helpers"
-import {GPGMEJS_Error as Error, GPGMEJS_Error} from "./Errors"
+import { gpgme_error } from "./Errors"
 import { GPGME_Keyring } from "./Keyring";
 
 export class GpgME {
@@ -35,10 +35,12 @@ export class GpgME {
 
     set connection(connection){
         if (this._connection instanceof Connection){
-            //TODO Warning: Connection already established
+            gpgme_error('CONN_ALREADY_CONNECTED');
         }
         if (connection instanceof Connection){
             this._connection = connection;
+        } else {
+            gpgme_error('PARAM_WRONG');
         }
     }
 
@@ -54,11 +56,12 @@ export class GpgME {
 
     set Keyring(keyring){
         if (ring && ring instanceof GPGME_Keyring){
-            this.Keyring = ring;
+            this._Keyring = ring;
         }
     }
 
     get Keyring(){
+        return this._Keyring;
     }
 
     /**
@@ -96,7 +99,7 @@ export class GpgME {
 
     decrypt(data){
         if (data === undefined){
-            return Promise.reject(GPGMEJS_Error('MSG_EMPTY'));
+            return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
         let msg = new GPGME_Message('decrypt');
         putData(msg, data);
@@ -105,7 +108,7 @@ export class GpgME {
     }
 
     deleteKey(key, delete_secret = false, no_confirm = false){
-        return Promise.reject(GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
+        return Promise.reject(gpgme_error('NOT_YET_IMPLEMENTED'));
         let msg = new GPGME_Message('deletekey');
         let key_arr = toKeyIdArray(key);
         if (key_arr.length !== 1){
@@ -126,7 +129,7 @@ export class GpgME {
             case 'ERR_NO_ERROR':
                 return Promise.resolve('okay'); //TBD
             default:
-                return Promise.reject(GPGMEJS_Error('TODO') ); //
+                return Promise.reject(gpgme_error('TODO') ); //
                 // INV_VALUE,
                 // GPG_ERR_NO_PUBKEY,
                 // GPG_ERR_AMBIGUOUS_NAME,
@@ -145,7 +148,7 @@ export class GpgME {
  */
 function putData(message, data){
     if (!message || !message instanceof GPGME_Message ) {
-        return GPGMEJS_Error('PARAM_WRONG');
+        return gpgme_error('PARAM_WRONG');
     }
     if (!data){
         message.setParameter('data', '');
@@ -164,6 +167,6 @@ function putData(message, data){
             message.setParameter ('data', decoder.decode(txt));
         }
     } else {
-        return GPGMEJS_Error('PARAM_WRONG');
+        return gpgme_error('PARAM_WRONG');
     }
 }

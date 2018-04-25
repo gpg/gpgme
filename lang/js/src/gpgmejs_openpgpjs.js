@@ -28,13 +28,13 @@
  import {GPGME_Keyring}  from "./Keyring"
  import { GPGME_Key } from "./Key";
  import { isFingerprint } from "./Helpers"
- import { GPGMEJS_Error } from './Errors'
+ import { gpgme_error } from "./Errors"
 
 
  export class GpgME_openpgpmode {
 
-    constructor(connection){
-        this.initGpgME(connection);
+    constructor(connection, config = {}){
+        this.initGpgME(connection, config);
     }
 
     get Keyring(){
@@ -44,9 +44,16 @@
         return undefined;
     }
 
-    initGpgME(connection){
-        this._GpgME = new GpgME(connection);
-        this._Keyring = new GPGME_Keyring_openpgpmode(connection);
+    initGpgME(connection, config = {}){
+        if (connection && typeof(config) ==='object'){
+            this._config = config;
+            if (!this._GPGME){
+                this._GpgME = new GpgME(connection, config);
+            }
+            if (!this._Keyring){
+                this._Keyring = new GPGME_Keyring_openpgpmode(connection);
+            }
+        }
     }
 
     get GpgME(){
@@ -59,19 +66,23 @@
      * Encrypt Message
      * Supported:
      * @param  {String|Uint8Array} data
+     * //an openpgp Message also accepted here. TODO: is this wanted?
      * @param  {Key|Array<Key>} publicKeys
+     * //Strings of Fingerprints
      * @param  {Boolean} wildcard
      * TODO:
-     * @param  {Key|Array<Key>} privateKeys
-     * @param  {String} filename
-     * @param  {module:enums.compression} compression
-     * @param  {Boolean} armor
-     * @param  {Boolean} detached
+     * @param  {Key|Array<Key>} privateKeys // -> encryptsign
+     * @param  {module:enums.compression} compression //TODO accepts integer, if 0 (no compression) it won't compress
+     * @param  {Boolean} armor // TODO base64 switch
+     * @param  {Boolean} detached // --> encryptsign
      * unsupported:
      * @param  {String|Array<String>} passwords
      * @param  {Object} sessionKey
      * @param  {Signature} signature
      * @param  {Boolean} returnSessionKey
+     * @param  {String} filename
+     *
+     * Can be set, but will be ignored:
      *
      * @returns {Promise<Object>}
      *      {data: ASCII armored message,
@@ -80,57 +91,66 @@
     * @async
     * @static
     */
-    encrypt({data = '', publicKeys = '', privateKeys, passwords, sessionKey,
-        filename, compression, armor=true, detached=false, signature=null,
-        returnSessionKey=null, wildcard=false, date=null}) {
-        if (passwords !== undefined
-            || sessionKey !== undefined
+    encrypt({data = '', publicKeys = '', privateKeys, passwords=null,
+        sessionKey = null, filename, compression, armor=true, detached=false,
+        signature=null, returnSessionKey=null, wildcard=false, date=null}) {
+        if (passwords !== null
+            || sessionKey !== null
             || signature !== null
             || returnSessionKey !== null
-            || date !== null){
+            || date !== null
+            ){
             return Promise.reject(GPMGEJS_Error('NOT_IMPLEMENTED'));
         }
         if ( privateKeys
-            || filename
             || compression
             || armor === false
             || detached == true){
-                return Promise.reject(GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
+                return Promise.reject(gpgme_error('NOT_YET_IMPLEMENTED'));
+        }
+        if (filename){
+            if (this._config.unconsidered_params === 'warn'){
+                GPMGEJS_Error('PARAM_IGNORED');
+            } else if (this._config.unconsidered_params === 'error'){
+                return Promise.reject(GPMGEJS_Error('NOT_IMPLEMENTED'));
+            }
         }
         return this.GpgME.encrypt(data, translateKeyInput(publicKeys), wildcard);
     }
 
     /** Decrypt Message
-    * supported
-    * TODO: @param {Message} message TODO: for now it accepts an armored string only
+    * supported openpgpjs parameters:
+    * @param {Message|Uint8Array|String} message Message object from openpgpjs
     * Unsupported:
     * @param  {String|Array<String>} passwords
+    * @param  {Key|Array<Key>} privateKeys
     * @param  {Object|Array<Object>} sessionKeys
-    * @param  {Date} date
-
-    * TODO
-    * @param  {Key|Array<Key>} privateKey
-    * @param  {Key|Array<Key>} publicKeys
+    * Not yet supported, but planned
     * @param  {String} format                    (optional) return data format either as 'utf8' or 'binary'
     * @param  {Signature} signature              (optional) detached signature for verification
-
+    * Ignored values: can be safely set, but have no effect
+    * @param  {Date} date
+    * @param  {Key|Array<Key>} publicKeys
+    *
     * @returns {Promise<Object>}             decrypted and verified message in the form:
     *                                         { data:Uint8Array|String, filename:String, signatures:[{ keyid:String, valid:Boolean }] }
     * @async
     * @static
     */
-    decrypt({ message, privateKeys, passwords, sessionKeys, publicKeys, format='utf8', signature=null, date}) {
-        if (passwords !== undefined
-            || sessionKeys
-            || date){
-            return Promise.reject(GPGMEJS_Error('NOT_IMPLEMENTED'));
+    decrypt({ message, privateKeys, passwords=null, sessionKeys,
+        publicKeys, format='utf8', signature=null, date= null}) {
+        if (passwords !== null || sessionKeys || privateKeys){
+            return Promise.reject(gpgme_error('NOT_IMPLEMENTED'));
         }
-        if ( privateKeys
-            || publicKeys
-            || format !== 'utf8'
-            || signature
-        ){
-            return Promise.reject(GPGMEJS_Error('NOT_YET_IMPLEMENTED'));
+        if ( format !== 'utf8' || signature){
+            return Promise.reject(gpgme_error('NOT_YET_IMPLEMENTED'));
+        }
+        if (date !== null || publicKeys){
+            if (this._config.unconsidered_params === 'warn'){
+                GPMGEJS_Error('PARAM_IGNORED');
+            } else if (this._config.unconsidered_params === 'reject'){
+                return Promise.reject(GPMGEJS_Error('NOT_IMPLEMENTED'));
+            }
         }
         return this.GpgME.decrypt(message);
         // TODO: translate between:
@@ -185,7 +205,7 @@ class GPGME_Keyring_openpgpmode {
             else {
                 // TODO: Can there be "no default key"?
                 // TODO: Can there be several default keys?
-                return GPGMEJS_Error('TODO');
+                return gpgme_error('TODO');
             }
         });
     }
@@ -202,10 +222,10 @@ class GPGME_Keyring_openpgpmode {
      */
     deleteKey(key){
         if (typeof(key) !== "object"){
-            return Promise.reject(GPGMEJS_Error('PARAM_WRONG'));
+            return Promise.reject(gpgme_error('PARAM_WRONG'));
         }
         if ( !key.fingerprint || ! isFingerprint(key.fingerprint)){
-            return Promise.reject(GPGMEJS_Error('PARAM_WRONG'));
+            return Promise.reject(gpgme_error('PARAM_WRONG'));
         }
         let key_to_delete = new GPGME_Key(key.fingerprint);
         return key_to_delete.deleteKey(key.secret);
@@ -224,8 +244,8 @@ class GPGME_Key_openpgpmode {
     set init (value){
         if (!this._GPGME_Key && value instanceof GPGME_Key){
             this._GPGME_Key = value;
-        } else if (!this._GPGME_Key && isFingerprint(fpr)){
-            this._GPGME_Key = new GPGME_Key;
+        } else if (!this._GPGME_Key && isFingerprint(value)){
+            this._GPGME_Key = new GPGME_Key(value);
         }
     }
 

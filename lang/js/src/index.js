@@ -19,7 +19,7 @@
  */
 
 import { GpgME } from "./gpgmejs";
-import { GPGMEJS_Error } from "./Errors";
+import { gpgme_error } from "./Errors";
 import { GpgME_openpgpmode } from "./gpgmejs_openpgpjs";
 import { Connection } from "./Connection";
 
@@ -29,7 +29,8 @@ import { Connection } from "./Connection";
  */
 function init( config = {
     api_style: 'gpgme', //  | gpgme_openpgpjs
-    null_expire_is_never: true // Boolean
+    null_expire_is_never: true, // Boolean
+    unconsidered_params: 'warn'//'warn' || 'reject'
     }){
         return new Promise(function(resolve, reject){
             let connection = new Connection;
@@ -41,12 +42,12 @@ function init( config = {
                     let gpgme = null;
                     if (config.api_style && config.api_style === 'gpgme_openpgpjs'){
                         resolve(
-                            new GpgME_openpgpmode(connection));
+                            new GpgME_openpgpmode(connection, config));
                     } else {
                         resolve(new GpgME(connection));
                     }
                 } else {
-                    reject(GPGMEJS_Error('CONN_NO_CONNECT'));
+                    reject(gpgme_error('CONN_NO_CONNECT'));
                 }
             };
             setTimeout(delayedreaction, 5);
