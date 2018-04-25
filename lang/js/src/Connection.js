@@ -118,14 +118,18 @@ export class Connection{
             };
 
             me._connection.onMessage.addListener(listener);
-            me._connection.postMessage(message.message);
-
-            //TBD: needs to be aware if there is a pinentry pending
-            // setTimeout(
-            //     function(){
-            //         me.disconnect();
-            //         reject(GPGMEJS_Error('CONN_TIMEOUT'));
-            //     }, timeout);
+            let timeout = new Promise(function(resolve, reject){
+                setTimeout(function(){
+                    reject(GPGMEJS_Error('CONN_TIMEOUT'));
+                }, 5000);
+            });
+            if (permittedOperations[message.operation].pinentry){
+                return me._connection.postMessage(message.message);
+            } else {
+                return Promise.race([timeout,
+                    me._connection.postMessage(message.message)
+                ]);
+            }
         });
      }
 };

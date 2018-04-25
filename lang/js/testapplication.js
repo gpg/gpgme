@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('answer').value = answer.data;
                         }
                     }, function(errormsg){
-                        alert('Error: '+ errormsg);
+                        alert( errormsg.code + ' ' + errormsg.msg);
                 });
             });
 
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('answer').value = answer.data;
                     }
                 }, function(errormsg){
-                    alert('Error: '+ errormsg);
+                    alert( errormsg.code + ' ' + errormsg.msg);
             });
         });
     },

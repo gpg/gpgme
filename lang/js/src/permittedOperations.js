@@ -23,6 +23,8 @@
   * operation: <Object>
       required: Array<String>
       optional: Array<String>
+      pinentry: Boolean If a pinentry dialog is expected, and a timeout of
+                5000 ms would be too short
       answer: <Object>
           type: <String< The content type of answer expected
           data: Array<String> The payload property of the answer. May be
@@ -59,6 +61,7 @@ export const permittedOperations = {
     },
 
     decrypt: {
+        pinentry: true,
         required: ['data'],
         optional: [
             'protocol',

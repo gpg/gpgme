@@ -104,12 +104,12 @@ export function GPGMEJS_Error(code = 'GENERIC_ERROR'){
         if (errors.hasOwnProperty(code)){
             code = 'GENERIC_ERROR';
         }
-        if (error.type === 'error'){
+        if (errors.type === 'error'){
             return {code: 'code',
                     msg: errors[code].msg
                 };
         }
-        if (error.type === 'warning'){
+        if (errors.type === 'warning'){
             console.log(code + ': ' + error[code].msg);
         }
         return undefined;
