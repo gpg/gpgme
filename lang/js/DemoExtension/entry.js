@@ -20,6 +20,6 @@
  */
 document.addEventListener('DOMContentLoaded', function() {
     chrome.tabs.create({
-        url: './uimainui.html'
+        url: './mainui.html'
     });
 });
