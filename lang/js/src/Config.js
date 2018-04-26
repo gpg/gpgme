@@ -16,20 +16,16 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
- *
- * This is the configuration file for building the gpgmejs-Library with webpack
  */
-const path = require('path');
 
-module.exports = {
-  entry: './src/index.js',
-  // mode: 'development',
-  mode: 'production',
-  output: {
-    path: path.resolve(__dirname, 'build'),
-    filename: 'gpgmejs.bundle.js',
-    libraryTarget: 'var',
-    libraryExport: 'default',
-    library: 'Gpgmejs'
-  }
+export const availableConf = {
+    api_style: ['gpgme', 'gpgme_openpgpjs'],
+    null_expire_is_never: [true, false],
+    unconsidered_params: ['warn','reject', 'ignore'],
+};
+
+export const defaultConf = {
+    api_style: 'gpgme',
+    null_expire_is_never: false,
+    unconsidered_params: 'reject',
 };

@@ -22,6 +22,7 @@ import {createMessage} from './Message'
 import {GPGME_Key} from './Key'
 import { isFingerprint, isLongId } from './Helpers';
 import { gpgme_error } from './Errors';
+import { Connection } from './Connection';
 
 export class GPGME_Keyring {
     constructor(connection){

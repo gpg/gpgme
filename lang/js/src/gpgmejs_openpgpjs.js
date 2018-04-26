@@ -50,15 +50,9 @@
             if (!this._GPGME){
                 this._GpgME = new GpgME(connection, config);
             }
-            if (!this._Keyring){
-                this._Keyring = new GPGME_Keyring_openpgpmode(connection);
+            if (!this._keyring){
+                this._keyring = new GPGME_Keyring_openpgpmode(connection);
             }
-        }
-    }
-
-    get GpgME(){
-        if (this._GpGME){
-            return this._GpGME;
         }
     }
 
@@ -115,7 +109,7 @@
                 return Promise.reject(GPMGEJS_Error('NOT_IMPLEMENTED'));
             }
         }
-        return this.GpgME.encrypt(data, translateKeyInput(publicKeys), wildcard);
+        return this._GpgME.encrypt(data, translateKeyInput(publicKeys), wildcard);
     }
 
     /** Decrypt Message
@@ -152,7 +146,7 @@
                 return Promise.reject(GPMGEJS_Error('NOT_IMPLEMENTED'));
             }
         }
-        return this.GpgME.decrypt(message);
+        return this._GpgME.decrypt(message);
         // TODO: translate between:
         // openpgp:
         // { data:Uint8Array|String,

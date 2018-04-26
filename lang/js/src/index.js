@@ -22,36 +22,60 @@ import { GpgME } from "./gpgmejs";
 import { gpgme_error } from "./Errors";
 import { GpgME_openpgpmode } from "./gpgmejs_openpgpjs";
 import { Connection } from "./Connection";
+import { defaultConf, availableConf } from "./Config";
 
 /**
  * Initializes a nativeMessaging Connection and returns a GPGMEjs object
- * @param {*} conf Configuration. TBD
+ * @param {Object} config Configuration. See Config.js for available parameters. Still TODO
  */
-function init( config = {
-    api_style: 'gpgme', //  | gpgme_openpgpjs
-    null_expire_is_never: true, // Boolean
-    unconsidered_params: 'warn'//'warn' || 'reject'
-    }){
-        return new Promise(function(resolve, reject){
-            let connection = new Connection;
-            // TODO: Delayed reaction is ugly. We need to listen to the port's
-            // event listener in isConnected, but this takes some time (<5ms) to
-            // disconnect if there is no successfull connection.
-            let delayedreaction = function(){
-                if (connection.isConnected === true){
-                    let gpgme = null;
-                    if (config.api_style && config.api_style === 'gpgme_openpgpjs'){
-                        resolve(
-                            new GpgME_openpgpmode(connection, config));
-                    } else {
-                        resolve(new GpgME(connection));
-                    }
+function init(config){
+    let _conf = parseconfiguration(config);
+    if (_conf instanceof Error){
+        return Promise.reject(_conf);
+    }
+    return new Promise(function(resolve, reject){
+        let connection = new Connection;
+        // TODO: Delayed reaction is ugly. We need to listen to the port's
+        // event listener in isConnected, but this takes some time (<5ms) to
+        // disconnect if there is no successfull connection.
+        let delayedreaction = function(){
+            if (connection.isConnected === true){
+                if (_conf.api_style && _conf.api_style === 'gpgme_openpgpjs'){
+                    resolve(new GpgME_openpgpmode(connection, _conf));
                 } else {
-                    reject(gpgme_error('CONN_NO_CONNECT'));
+                    resolve(new GpgME(connection));
                 }
-            };
-            setTimeout(delayedreaction, 5);
+            } else {
+                reject(gpgme_error('CONN_NO_CONNECT'));
+            }
+        };
+        setTimeout(delayedreaction, 5);
     });
+}
+
+function parseconfiguration(config){
+    if (!config){
+        return defaultConf;
+    }
+    if ( typeof(config) !== 'object'){
+        return gpgme_error('PARAM_WRONG');
+    };
+    let result_config = defaultConf;
+    let conf_keys = Object.keys(config);
+    for (let i=0; i < conf_keys; i++){
+        if (availableConf.hasOwnProperty(conf_keys[i])){
+            let value = config[conf_keys[i]];
+            if (availableConf[conf_keys[i]].indexOf(value) < 0){
+                return gpgme_error('PARAM_WRONG');
+            } else {
+                result_config[conf_keys[i]] = value;
+            }
+        }
+        else {
+            return gpgme_error('PARAM_WRONG');
+        }
+    }
+    return result_config;
 };
 
 export default {

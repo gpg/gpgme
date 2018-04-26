@@ -8,8 +8,8 @@ receiving an answer
 
 replicating Openpgpjs API:
 
-    [*] Message handling (encrypt, verify, sign)
-        [x] encrypt
+    [*] Message handling (encrypt, decrypt verify, sign)
+        [x] encrypt, decrypt
         [ ] verify
         [ ] sign
     [*] Key handling (import/export, modifying, status queries)
@@ -23,6 +23,6 @@ Communication with other implementations
 
 Management:
     [*] Define the gpgme interface
-    [ ] check Permissions (e.g. csp) for the different envs
+    [x] check Permissions (e.g. csp) for the different envs
     [X] agree on license
-    [ ] tests
+    [*] tests

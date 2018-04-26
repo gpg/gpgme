@@ -1,0 +1,13 @@
+{
+    "manifest_version": 2,
+
+    "name": "Browsertests for gpgmejs",
+    "description": "Run the browsertests.",
+    "version": "0.1",
+    "content_security_policy": "default-src 'self' filesystem:",
+    "browser_action": {
+      "default_icon": "testicon.png",
+      "default_popup": "popup.html"
+    },
+    "permissions": ["nativeMessaging", "activeTab"]
+  }

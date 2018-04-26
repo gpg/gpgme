@@ -21,22 +21,23 @@
 import { expect } from "../node_modules/chai/chai";
 import { GPGME_Message, createMessage } from "../src/Message";
 
-const message_params = {
-    invalid_op_action : 'dance',
-    invalid_op_type : [234, 34, '<>'],
-}
+import { message_params } from "./inputvalues";
 
-describe('Message Object', function(){
-    describe('incorrect initialization', function(){
-        it('non-allowed operation', function(){
-            let test0 = createMessage(message_params.invalid_op_action);
-            expect(test0).to.be.an.instanceof(Error);
-            expect(test0.code).to.equal('MSG_WRONG_OP');
-        });
-        it('wrong parameter type in constructor', function(){
-            let test0 = createMessage(message_params.invalid_op_type);
-            expect(test0).to.be.an.instanceof(Error);
-            expect(test0.code).to.equal('PARAM_WRONG');
+function Messagetest(){
+
+    describe('Message Object', function(){
+        describe('incorrect initialization', function(){
+            it('non-allowed operation', function(){
+                let test0 = createMessage(message_params.invalid_op_action);
+                expect(test0).to.be.an.instanceof(Error);
+                expect(test0.code).to.equal('MSG_WRONG_OP');
+            });
+            it('wrong parameter type in constructor', function(){
+                let test0 = createMessage(message_params.invalid_op_type);
+                expect(test0).to.be.an.instanceof(Error);
+                expect(test0.code).to.equal('PARAM_WRONG');
+            });
         });
     });
-});
+};
+export default Messagetest;

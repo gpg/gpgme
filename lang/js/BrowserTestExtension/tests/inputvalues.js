@@ -16,20 +16,13 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
- *
- * This is the configuration file for building the gpgmejs-Library with webpack
  */
-const path = require('path');
 
-module.exports = {
-  entry: './src/index.js',
-  // mode: 'development',
-  mode: 'production',
-  output: {
-    path: path.resolve(__dirname, 'build'),
-    filename: 'gpgmejs.bundle.js',
-    libraryTarget: 'var',
-    libraryExport: 'default',
-    library: 'Gpgmejs'
-  }
+var inputvalues = {
+    encrypt: {
+        good:{
+            data : 'Hello World.',
+            keyid : 'CDC3A2B2860625CCBFC5A5A9FC6D1B604967FC40'
+        }
+    }
 };

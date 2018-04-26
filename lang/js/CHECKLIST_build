@@ -1,9 +1,3 @@
 - Checklist for build/install:
 
 browsers'  manifests (see README) need allowedextension added, and the path set
-
-manifest.json/ csp needs adaption
-
-/dist should be built which is used by the example app.
-
-csp in manifest.json MUST NOT contain "unsafe-eval" in production!

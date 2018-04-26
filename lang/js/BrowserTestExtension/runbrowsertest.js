@@ -16,10 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
- *
  */
-document.addEventListener('DOMContentLoaded', function() {
-    chrome.tabs.create({
-        url: './ui2.html'
-    });
-});
+
+mocha.run();

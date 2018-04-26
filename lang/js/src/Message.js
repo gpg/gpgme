@@ -36,7 +36,7 @@ export function createMessage(operation){
  * ./permittedOperations.
  * @param {String} operation
  */
-class GPGME_Message {
+export class GPGME_Message {
     //TODO getter
 
     constructor(operation){
