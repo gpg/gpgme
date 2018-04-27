@@ -44,9 +44,16 @@ export class GPGME_Message {
     }
 
     set operation (op){
-
-
+        if (typeof(op) === "string"){
+            if (!this._msg){
+                this._msg = {};
+            }
+            if (!this._msg.op & permittedOperations.hasOwnProperty(op)){
+                this._msg.op = op;
+            }
+        }
     }
+
     get operation(){
         return this._msg.op;
     }
