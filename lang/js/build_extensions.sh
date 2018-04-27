@@ -6,6 +6,7 @@ cp node_modules/chai/chai.js \
     node_modules/mocha/mocha.css \
     node_modules/mocha/mocha.js \
     build/gpgmejs.bundle.js BrowserTestExtension/libs
+rm -rf build/extensions
 mkdir -p build/extensions
 zip -r build/extensions/browsertest.zip BrowserTestExtension
 

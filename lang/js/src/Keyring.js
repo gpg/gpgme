@@ -78,6 +78,8 @@ export class GPGME_Keyring {
                 }
             }
             return Promise.resolve(resultset);
+        }, function(error){
+            //TODO error handling
         });
     }
 
@@ -151,6 +153,8 @@ export class GPGME_Keyring {
                 }
             }
             return Promise.resolve(resultset);
+        }, function(error){
+            //TODO error handling
         });
     }
 

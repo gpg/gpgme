@@ -100,9 +100,7 @@ export class Connection{
                     reject(gpgme_error('CONN_EMPTY_GPG_ANSWER'));
                 } else if (msg.type === "error"){
                     me._connection.onMessage.removeListener(listener)
-                    reject(
-                        {code: 'GNUPG_ERROR',
-                         msg: msg.msg} );
+                    reject(gpgme_error('GNUPG_ERROR', msg.msg));
                 } else {
                     let answer_result = answer.add(msg);
                     if (answer_result !== true){
@@ -129,6 +127,8 @@ export class Connection{
                         }, 5000);
                     }]).then(function(result){
                     return result;
+                }, function(error){
+                    return error;
                 });
             }
         });

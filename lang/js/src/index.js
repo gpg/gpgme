@@ -53,18 +53,17 @@ function init(config){
     });
 }
 
-function parseconfiguration(config){
-    if (!config){
-        return defaultConf;
-    }
-    if ( typeof(config) !== 'object'){
+function parseconfiguration(rawconfig = {}){
+    if ( typeof(rawconfig) !== 'object'){
         return gpgme_error('PARAM_WRONG');
     };
-    let result_config = defaultConf;
-    let conf_keys = Object.keys(config);
-    for (let i=0; i < conf_keys; i++){
+    let result_config = {};
+    let conf_keys = Object.keys(rawconfig);
+
+    for (let i=0; i < conf_keys.length; i++){
+
         if (availableConf.hasOwnProperty(conf_keys[i])){
-            let value = config[conf_keys[i]];
+            let value = rawconfig[conf_keys[i]];
             if (availableConf[conf_keys[i]].indexOf(value) < 0){
                 return gpgme_error('PARAM_WRONG');
             } else {
@@ -73,6 +72,12 @@ function parseconfiguration(config){
         }
         else {
             return gpgme_error('PARAM_WRONG');
+        }
+    }
+    let default_keys = Object.keys(defaultConf);
+    for (let j=0; j < default_keys.length; j++){
+        if (!result_config.hasOwnProperty(default_keys[j])){
+            result_config[default_keys[j]] = defaultConf[default_keys[j]];
         }
     }
     return result_config;

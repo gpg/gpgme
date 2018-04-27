@@ -17,16 +17,12 @@
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
  */
+import { Helpertest } from "./Helpers";
+import { Messagetest } from "./Message";
 
-var inputvalues = {
-    encrypt: {
-        good:{
-            data : 'Hello World.',
-            fingerprint : 'CDC3A2B2860625CCBFC5A5A9FC6D1B604967FC40'
-        }
-    },
-    init: {
-        invalid_startups: [{all_passwords: true}, 'openpgpmode', {api_style:"frankenstein"}]
-    }
+/**
+ * Unit tests.
+ */
 
-};
+Helpertest();
+Messagetest();

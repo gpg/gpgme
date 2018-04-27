@@ -109,7 +109,7 @@
                 return Promise.reject(GPMGEJS_Error('NOT_IMPLEMENTED'));
             }
         }
-        return this._GpgME.encrypt(data, translateKeyInput(publicKeys), wildcard);
+        return this._GpgME.encrypt(data, translateKeys(publicKeys), wildcard);
     }
 
     /** Decrypt Message
@@ -201,6 +201,8 @@ class GPGME_Keyring_openpgpmode {
                 // TODO: Can there be several default keys?
                 return gpgme_error('TODO');
             }
+        }, function(error){
+            //TODO
         });
     }
 
@@ -264,6 +266,9 @@ class GPGME_Key_openpgpmode {
  * creates GPGME_Key_openpgpmode from GPGME_Keys
  */
 function translateKeys(input){
+    if (!input){
+        return null;
+    }
     if (!Array.isArray(input)){
         input = [input];
     }

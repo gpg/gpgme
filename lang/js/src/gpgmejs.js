@@ -33,25 +33,24 @@ export class GpgME {
         this.connection = connection;
     }
 
-    set connection(connection){
+    set connection(conn){
         if (this._connection instanceof Connection){
             gpgme_error('CONN_ALREADY_CONNECTED');
-        }
-        if (connection instanceof Connection){
-            this._connection = connection;
+        } else if (conn instanceof Connection){
+            this._connection = conn;
         } else {
             gpgme_error('PARAM_WRONG');
         }
     }
 
     get connection(){
-        if (this._connection instanceof Connection){
-            if (this._connection.isConnected){
+        if (this._connection){
+            if (this._connection.isConnected === true){
                 return this._connection;
             }
-            return undefined; //TODO: connection was lost!
+            return undefined;
         }
-        return undefined; //TODO: no connection there
+        return undefined;
     }
 
     set Keyring(keyring){
@@ -85,8 +84,11 @@ export class GpgME {
         putData(msg, data);
         if (wildcard === true){msg.setParameter('throw-keyids', true);
         };
-
-        return (this.connection.post(msg));
+        if (msg.isComplete === true){
+            return this.connection.post(msg);
+        } else {
+            return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
+        }
     }
 
     /**
@@ -133,20 +135,24 @@ export class GpgME {
             msg.setParameter('delete_force', true);
             // TBD
         }
-        this.connection.post(msg).then(function(success){
-            // TODO: it seems that there is always errors coming back:
-        }, function(error){
-            switch (error.msg){
-            case 'ERR_NO_ERROR':
-                return Promise.resolve('okay'); //TBD
-            default:
-                return Promise.reject(gpgme_error('TODO') ); //
-                // INV_VALUE,
-                // GPG_ERR_NO_PUBKEY,
-                // GPG_ERR_AMBIGUOUS_NAME,
-                // GPG_ERR_CONFLICT
-            }
-        });
+        if (msg.isComplete === true){
+            this.connection.post(msg).then(function(success){
+                // TODO: it seems that there is always errors coming back:
+            }, function(error){
+                switch (error.msg){
+                case 'ERR_NO_ERROR':
+                    return Promise.resolve('okay'); //TBD
+                default:
+                    return Promise.reject(gpgme_error('TODO') ); //
+                    // INV_VALUE,
+                    // GPG_ERR_NO_PUBKEY,
+                    // GPG_ERR_AMBIGUOUS_NAME,
+                    // GPG_ERR_CONFLICT
+                }
+            });
+        } else {
+            return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
+        }
     }
 }
 
@@ -162,7 +168,7 @@ function putData(message, data){
         return gpgme_error('PARAM_WRONG');
     }
     if (!data){
-        message.setParameter('data', '');
+        return gpgme_error('PARAM_WRONG');
     } else if (data instanceof Uint8Array){
         let decoder = new TextDecoder('utf8');
         message.setParameter('base64', true);

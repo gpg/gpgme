@@ -51,10 +51,7 @@ export class GPGME_Key {
      * hasSecret returns true if a secret subkey is included in this Key
      */
     get hasSecret(){
-        checkKey(this._fingerprint, 'secret').then( function(result){
-            return Promise.resolve(result);
-        });
-
+        return checkKey(this._fingerprint, 'secret');
     }
 
     get isRevoked(){
@@ -130,6 +127,8 @@ export class GPGME_Key {
                 }
             }
             return Promise.resolve(resultset);
+        }, function(error){
+            //TODO checkKey fails
         });
     }
 
@@ -175,8 +174,7 @@ export class GPGME_Key {
  */
 function checkKey(fingerprint, property){
     return Promise.reject(gpgme_error('NOT_YET_IMPLEMENTED'));
-    if (!property ||
-        permittedOperations[keyinfo].indexOf(property) < 0){
+    if (!property || !permittedOperations[keyinfo].hasOwnProperty(property)){
             return Promise.reject(gpgme_error('PARAM_WRONG'));
     }
     return new Promise(function(resolve, reject){
@@ -188,19 +186,20 @@ function checkKey(fingerprint, property){
             reject(gpgme_error('PARAM_WRONG'));
         }
         msg.setParameter('fingerprint', this.fingerprint);
-        return (this.connection.post(msg)).then(function(result){
-            if (result.hasOwnProperty(property)){
+        return (this.connection.post(msg)).then(function(result, error){
+            if (error){
+                reject(gpgme_error('GNUPG_ERROR',error.msg));
+            } else if (result.hasOwnProperty(property)){
                 resolve(result[property]);
             }
             else if (property == 'secret'){
-                // TBD property undefined means "not true" in case of secret?
-                resolve(false);
+                    // TBD property undefined means "not true" in case of secret?
+                    resolve(false);
             } else {
                 reject(gpgme_error('CONN_UNEXPECTED_ANSWER'));
             }
         }, function(error){
-            reject({code: 'GNUPG_ERROR',
-                         msg: error.msg});
+            //TODO error handling
         });
     });
 };

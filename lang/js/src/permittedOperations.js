@@ -21,9 +21,16 @@
  /**
   * Definition of the possible interactions with gpgme-json.
   * operation: <Object>
-      required: Array<String>
-      optional: Array<String>
-      pinentry: Boolean If a pinentry dialog is expected, and a timeout of
+      required: Array<Object>
+            <String> name The name of the property
+            allowed: Array of allowed types. Currently accepted values:
+                ['number', 'string', 'boolean', 'Uint8Array']
+            array_allowed: Boolean. If the value can be an array of the above
+            allowed_data: <Array> If present, restricts to the given value
+      optional: Array<Object>
+            see 'required', with these parameters not being mandatory for a
+            complete message
+      pinentry: boolean If a pinentry dialog is expected, and a timeout of
                 5000 ms would be too short
       answer: <Object>
           type: <String< The content type of answer expected
@@ -38,20 +45,52 @@
 
 export const permittedOperations = {
     encrypt: {
-        required: ['keys', 'data'],
-        optional: [
-            'protocol',
-            'chunksize',
-            'base64',
-            'mime',
-            'armor',
-            'always-trust',
-            'no-encrypt-to',
-            'no-compress',
-            'throw-keyids',
-            'want-address',
-            'wrap'
-        ],
+        required: {
+            'keys': {
+                allowed: ['string'],
+                array_allowed: true
+            },
+            'data': {
+                allowed: ['string', 'Uint8Array']
+            }
+        },
+        optional: {
+            'protocol': {
+                allowed: ['string'],
+                allowed_data: ['cms', 'openpgp']
+            },
+                'chunksize': {
+                    allowed: ['number']
+                },
+                'base64': {
+                    allowed: ['boolean']
+                },
+                'mime': {
+                    allowed: ['boolean']
+                },
+                'armor': {
+                    allowed: ['boolean']
+                },
+                'always-trust': {
+                    allowed: ['boolean']
+                },
+                'no-encrypt-to': {
+                    allowed: ['string'],
+                    array_allowed: true
+                },
+                'no-compress': {
+                    allowed: ['boolean']
+                },
+                'throw-keyids': {
+                    allowed: ['boolean']
+                },
+                'want-address': {
+                    allowed: ['boolean']
+                },
+                'wrap': {
+                    allowed: ['boolean']
+                },
+            },
         answer: {
             type: ['ciphertext'],
             data: ['data'],
@@ -62,18 +101,29 @@ export const permittedOperations = {
 
     decrypt: {
         pinentry: true,
-        required: ['data'],
-        optional: [
-            'protocol',
-            'chunksize',
-            'base64'
-        ],
+        required: {
+            'data': {
+                allowed: ['string', 'Uint8Array']
+            }
+        },
+        optional: {
+            'protocol': {
+                allowed: ['string'],
+                allowed_data: ['cms', 'openpgp']
+            },
+            'chunksize': {
+                allowed: ['number'],
+            },
+            'base64': {
+                allowed: ['boolean']
+            }
+        },
         answer: {
             type: ['plaintext'],
             data: ['data'],
             params: ['base64', 'mime'],
             infos: [] // pending. Info about signatures and validity
-                    //signature: [{Key Fingerprint, valid Boolean}]
+                    //signature: [{Key Fingerprint, valid boolean}]
         }
     },
     /**

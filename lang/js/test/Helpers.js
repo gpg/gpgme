@@ -24,7 +24,7 @@ import { GPGME_Key } from "../src/Key";
 import { isLongId, isFingerprint, toKeyIdArray } from "../src/Helpers"
 import { helper_params } from "./inputvalues";
 
-function Helpertest(){
+export function Helpertest(){
     describe('Error Object handling', function(){
         it('check the Timeout error', function(){
             let test0 = gpgme_error('CONN_TIMEOUT');

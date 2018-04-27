@@ -20,32 +20,51 @@
 
  describe('GPGME context', function(){
     it('Starting a GpgME instance', function(done){
-        Gpgmejs.init().then(
+        let prm = Gpgmejs.init();
+        prm.then(
          function(context){
-             expect(context.connection).to.not.be.undefined;
-             expect(context).to.be.an('object');
-             expect(context.connection).to.be.an('object');
-             expect(context.Keyring).to.be.undefined;
-             expect(context.encrypt).to.be.a('function');
-             expect(context.decrypt).to.be.a('function');
-         done();
-        }, function(err){
-        done(err);
-        });
-    });
-    it('Starting an openpgp mode GPGME instance', function(done){
-        Gpgmejs.init({api_style:"gpgme_openpgpjs"}).then(
-         function(context){
-             console.log(context);
+            expect(context.connection).to.not.be.undefined;
+            expect(context).to.be.an('object');
+            expect(context.connection).to.be.an('object');
+            expect(context.Keyring).to.be.undefined;
+            expect(context.encrypt).to.be.a('function');
+            expect(context.decrypt).to.be.a('function');
+            done();
+        }, function(errorr){
+             expect(error).to.be.undefined;
              done();
-        //      expect(context).to.be.an('object');
-        //      expect(context.connection).to.be.undefined;
-        //      expect(context.Keyring).to.be.an('object');
-        //      expect(context.encrypt).to.be.a('function');
-        //      expect(context.decrypt).to.be.a('function');
-        //  done();
-        }, function(err){
-        done(err);
         });
     });
- });
+});
+describe('openpgp mode', function(){
+    it('startup of openpgp mode returns the correct parameters', function(done){
+        let prm = Gpgmejs.init({api_style:"gpgme_openpgpjs"});
+        prm.then(function(context){
+            expect(context).to.be.an('object');
+            expect(context.connection).to.be.undefined;
+            expect(context.Keyring).to.be.an('object');
+            expect(context.encrypt).to.be.a('function');
+            expect(context.decrypt).to.be.a('function');
+            done();
+        }, function(error){
+            expect(error).to.be.undefined;
+            done();
+        });
+    });
+});
+
+describe('GPGME does not start with invalid parameters', function(){
+    for (let i=0; i < inputvalues.init.invalid_startups.length; i++){
+        it('Parameter '+ i, function(done){
+        let prm = Gpgmejs.init(inputvalues.init.invalid_startups[i]);
+            prm.then(function(context){
+                expect(context).to.be.undefined;
+                done();
+            }, function(error){
+                expect(error).to.be.an.instanceof(Error);
+                expect(error.code).to.equal('PARAM_WRONG');
+                done();
+            });
+        })
+    }
+});

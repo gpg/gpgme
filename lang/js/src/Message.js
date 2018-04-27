@@ -73,11 +73,60 @@ export class GPGME_Message {
         if (!po){
             return gpgme_error('MSG_WRONG_OP');
         }
-        if (po.required.indexOf(param) >= 0 || po.optional.indexOf(param) >= 0){
-            this._msg[param] = value;
-            return true;
+        let poparam = null;
+        if (po.required.hasOwnProperty(param)){
+            poparam = po.required[param];
+        } else if (po.optional.hasOwnProperty(param)){
+            poparam = po.optional[param];
+        } else {
+            return gpgme_error('PARAM_WRONG');
         }
-        return gpgme_error('PARAM_WRONG');
+        let checktype = function(val){
+            switch(typeof(val)){
+                case 'string':
+                case 'number':
+                case 'boolean':
+                    if (poparam.allowed.indexOf(typeof(val)) >= 0){
+                        return true;
+                    }
+                    return gpgme_error('PARAM_WRONG');
+                    break;
+                case 'object':
+                    if (Array.isArray(val)){
+                        if (poparam.array_allowed !== true){
+                            return gpgme_error('PARAM_WRONG');
+                        }
+                        for (let i=0; i < val.length; i++){
+                            let res = checktype(val[i]);
+                            if (res !== true){
+                                return res;
+                            }
+                        }
+                        return true;
+                    } else if (val instanceof Uint8Array){
+                        if (poparam.allowed.indexOf('Uint8Array') >= 0){
+                            return true;
+                        }
+                        return gpgme_error('PARAM_WRONG');
+                    } else {
+                        return gpgme_error('PARAM_WRONG');
+                    }
+                    break;
+                default:
+                    return gpgme_error('PARAM_WRONG');
+            }
+        };
+        let typechecked = checktype(value);
+        if (typechecked !== true){
+            return typechecked;
+        }
+        if (poparam.hasOwnProperty('allowed_data')){
+            if (poparam.allowed_data.indexOf(value) < 0){
+                return gpgme_error('PARAM_WRONG');
+            }
+        }
+        this._msg[param] = value;
+        return true;
     }
 
     /**
@@ -89,11 +138,12 @@ export class GPGME_Message {
         if (!this._msg.op){
             return false;
         }
-        let reqParams = permittedOperations[this._msg.op].required;
+        let reqParams = Object.keys(
+            permittedOperations[this._msg.op].required);
+        let msg_params = Object.keys(this._msg);
         for (let i=0; i < reqParams.length; i++){
-
-            if (!this._msg.hasOwnProperty(reqParams[i])){
-                console.log(reqParams[i] + 'missing');
+            if (msg_params.indexOf(reqParams[i]) < 0){
+                console.log(reqParams[i] + ' missing');
                 return false;
             }
         }

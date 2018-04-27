@@ -8,6 +8,8 @@ export const helper_params = {
         'ADDBC303B6D31026F5EB4591A27EABDF283121BB',
         new GPGME_Key('EE17AEE730F88F1DE7713C54BBE0A4FF7851650A')],
     validFingerprint: '9A9A7A7A8A9A9A7A7A8A9A9A7A7A8A9A9A7A7A8A',
+    validFingerprints: ['9A9A7A7A8A9A9A7A7A8A9A9A7A7A8A9A9A7A7A8A',
+        '9AAE7A338A9A9A7A7A8A9A9A7A7A8A9A9A7A7DDA'],
     invalidLongId: '9A9A7A7A8A9A9A7A7A8A',
     invalidFingerprint: [{hello:'World'}],
     invalidKeyArray: {curiosity:'uncat'},
@@ -21,7 +23,15 @@ export const helper_params = {
 export const message_params = {
     invalid_op_action : 'dance',
     invalid_op_type : [234, 34, '<>'],
+    valid_encrypt_data: "مرحبا بالعالم",
+    invalid_param_test: {
+        valid_op: 'encrypt',
+        invalid_param_names: [22,'dance', {}],
+        validparam_name_0: 'mime',
+        invalid_values_0: [2134, 'All your passwords', new GPGME_Key('12AE9F3E41B33BF77DF52B6BE8EE1992D7909B08'), null]
+    }
 }
+
 
 export default {
     helper_params: helper_params,
