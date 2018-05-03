@@ -1,0 +1,14 @@
+Test extension:
+
+The test extension contains tests with mocha and chai. It will be packed as an
+extra extension (see build_extension.sh).
+
+Tests from BrowserTestExtension/tests will be run against the gpgmejs.bundle.js
+itself. They aim to test the outward facing functionality and API.
+
+Unittests as defined in ./unittests.js will be bundled in
+gpgmejs_unittests.bundle.js, and test the separate components of gpgmejs,
+which mostly are not exported.
+
+The BrowserExtension can be installed the same way as the DemoExtension
+(see README).

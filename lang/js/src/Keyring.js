@@ -20,7 +20,7 @@
 
 import {createMessage} from './Message'
 import {GPGME_Key} from './Key'
-import { isFingerprint, isLongId } from './Helpers';
+import { isFingerprint } from './Helpers';
 import { gpgme_error } from './Errors';
 import { Connection } from './Connection';
 

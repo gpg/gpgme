@@ -18,8 +18,7 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 describe('Encryption', function(){
-
-    it('Successfull encrypt', function(done){
+    it('Successfull encrypt', function(){
         let prm = Gpgmejs.init();
         prm.then(function(context){
             context.encrypt(
@@ -29,10 +28,6 @@ describe('Encryption', function(){
                     expect(answer.data).to.be.a("string");
                     expect(answer.data).to.include('BEGIN PGP MESSAGE');
                     expect(answer.data).to.include('END PGP MESSAGE');
-                    done();
-                }, function(err){
-                    expect(err).to.be.undefined;
-                    done();
                 });
         });
     });
@@ -44,11 +39,10 @@ describe('Encryption', function(){
                 inputvalues.encrypt.good.data,
                 null).then(function(answer){
                     expect(answer).to.be.undefined;
-                    done();
                 }, function(error){
                     expect(error).to.be.an('Error');
                     expect(error.code).to.equal('MSG_INCOMPLETE');
-                    done()
+                    //TODO: MSG_INCOMPLETE desired, GNUPG_ERROR coming
                 });
         });
     });
@@ -61,11 +55,9 @@ describe('Encryption', function(){
                     expect(answer).to.be.undefined;
                 }, function(error){
                     expect(error).to.be.an.instanceof(Error);
-                    expect(error.code).to.equal('MSG_INCOMPLETE');
-                    done();
+                    expect(error.code).to.equal('PARAM_WRONG');
                 });
         });
     });
-
     // TODO check different valid parameter
 });

@@ -16,7 +16,19 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * This is the configuration file for building the gpgmejs-Library with webpack
  */
+const path = require('path');
 
-mocha.run();
-Gpgmejs_test.unittests();
+module.exports = {
+  entry: './unittests.js',
+  mode: 'production',
+  output: {
+    path: path.resolve(__dirname, 'build'),
+    filename: 'gpgmejs_unittests.bundle.js',
+    libraryTarget: 'var',
+    libraryExport: 'default',
+    library: 'Gpgmejs_test'
+  }
+};

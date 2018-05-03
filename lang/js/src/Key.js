@@ -61,6 +61,9 @@ export class GPGME_Key {
     }
 
     get connection(){
+        if (!this._fingerprint){
+            return gpgme_error('KEY_INVALID');
+        }
         if (!this._connection instanceof Connection){
             return gpgme_error('CONN_NO_CONNECT');
         } else {
@@ -75,6 +78,9 @@ export class GPGME_Key {
     }
 
     get fingerprint(){
+        if (!this._fingerprint){
+            return gpgme_error('KEY_INVALID');
+        }
         return this._fingerprint;
     }
 
@@ -125,7 +131,7 @@ export class GPGME_Key {
         let msg = createMessage ('export_key');
         msg.setParameter('armor', true);
         if (msg instanceof Error){
-            return gpgme_error('INVALID_KEY');
+            return gpgme_error('KEY_INVALID');
         }
         this.connection.post(msg).then(function(result){
             return result.data;
@@ -203,6 +209,9 @@ export class GPGME_Key {
     * TODO: check if Promise.then(return)
     */
     checkKey(property){
+        if (!this._fingerprint){
+            return gpgme_error('KEY_INVALID');
+        }
         return gpgme_error('NOT_YET_IMPLEMENTED');
         // TODO: async is not what is to be ecpected from Key information :(
         if (!property || typeof(property) !== 'string' ||
