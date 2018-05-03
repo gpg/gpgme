@@ -61,6 +61,7 @@ export class GPGME_Keyring {
         if (include_secret){
             msg.setParameter('with-secret', true);
         }
+        let me = this;
 
         this.connection.post(msg).then(function(result){
             let fpr_list = [];
@@ -72,7 +73,7 @@ export class GPGME_Keyring {
                 fpr_list = result.keys;
             }
             for (let i=0; i < fpr_list.length; i++){
-                let newKey = new GPGME_Key(fpr_list[i]);
+                let newKey = new GPGME_Key(fpr_list[i], me._connection);
                 if (newKey instanceof GPGME_Key){
                     resultset.push(newKey);
                 }

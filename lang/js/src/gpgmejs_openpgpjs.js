@@ -26,9 +26,10 @@
 
  import { GpgME } from "./gpgmejs";
  import {GPGME_Keyring}  from "./Keyring"
- import { GPGME_Key } from "./Key";
+ import { GPGME_Key, createKey } from "./Key";
  import { isFingerprint } from "./Helpers"
  import { gpgme_error } from "./Errors"
+import { Connection } from "./Connection";
 
 
  export class GpgME_openpgpmode {
@@ -47,7 +48,7 @@
     initGpgME(connection, config = {}){
         if (connection && typeof(config) ==='object'){
             this._config = config;
-            if (!this._GPGME){
+            if (!this._GpgME){
                 this._GpgME = new GpgME(connection, config);
             }
             if (!this._keyring){
@@ -223,7 +224,7 @@ class GPGME_Keyring_openpgpmode {
         if ( !key.fingerprint || ! isFingerprint(key.fingerprint)){
             return Promise.reject(gpgme_error('PARAM_WRONG'));
         }
-        let key_to_delete = new GPGME_Key(key.fingerprint);
+        let key_to_delete = createKey(key.fingerprint, this._gpgme_keyring_GpgME);
         return key_to_delete.deleteKey(key.secret);
     }
 }
@@ -233,15 +234,22 @@ class GPGME_Keyring_openpgpmode {
  * Offers the Key information as the openpgpmode wants
  */
 class GPGME_Key_openpgpmode {
-    constructor(value){
-        this.init = value;
+    constructor(value, connection){
+        this.init(value, connection);
     }
 
-    set init (value){
+    /**
+     * Can be either constructed using an existing GPGME_Key, or a fingerprint
+     * and a connection
+     * @param {String|GPGME_Key} value
+     * @param {Connection} connection
+     */
+    init (value, connection){
         if (!this._GPGME_Key && value instanceof GPGME_Key){
             this._GPGME_Key = value;
-        } else if (!this._GPGME_Key && isFingerprint(value)){
-            this._GPGME_Key = new GPGME_Key(value);
+        } else if (!this._GPGME_Key && isFingerprint(value) &&
+            connection instanceof Connection){
+            this._GPGME_Key = createKey(value, connection);
         }
     }
 
@@ -264,6 +272,8 @@ class GPGME_Key_openpgpmode {
 
 /**
  * creates GPGME_Key_openpgpmode from GPGME_Keys
+ * @param {GPGME_Key|Array<GPGME_Key>} input keys
+ * @returns {Array<GPGME_Key_openpgpmode>}
  */
 function translateKeys(input){
     if (!input){

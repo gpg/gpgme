@@ -36,9 +36,12 @@ function init(config){
     return new Promise(function(resolve, reject){
         let connection = new Connection;
         // TODO: Delayed reaction is ugly. We need to listen to the port's
-        // event listener in isConnected, but this takes some time (<5ms) to
-        // disconnect if there is no successfull connection.
+        // event listener in isConnected, but in some cases this takes some
+        // time (<5ms) to disconnect if there is no successfull connection.
         let delayedreaction = function(){
+            if (connection === undefined) {
+                reject(gpgme_error('CONN_NO_CONNECT'));
+            }
             if (connection.isConnected === true){
                 if (_conf.api_style && _conf.api_style === 'gpgme_openpgpjs'){
                     resolve(new GpgME_openpgpmode(connection, _conf));

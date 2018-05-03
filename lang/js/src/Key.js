@@ -30,11 +30,42 @@ import { isFingerprint } from './Helpers'
 import { gpgme_error } from './Errors'
 import { createMessage } from './Message';
 import { permittedOperations } from './permittedOperations';
+import { Connection } from './Connection';
+
+
+export function createKey(fingerprint, parent){
+    if (!isFingerprint(fingerprint)){
+        return gpgme_error('KEY_INVALID');
+    }
+    if ( parent instanceof Connection){
+        return new GPGME_Key(fingerprint, parent);
+    } else if ( parent.hasOwnProperty('connection') &&
+        parent.connection instanceof Connection){
+            return new GPGME_Key(fingerprint, parent.connection);
+    }
+}
 
 export class GPGME_Key {
 
-    constructor(fingerprint){
+    constructor(fingerprint, connection){
         this.fingerprint = fingerprint;
+        this.connection = connection;
+    }
+
+    set connection(conn){
+        if (this._connection instanceof Connection) {
+            gpgme_error('CONN_ALREADY_CONNECTED');
+        } else if (conn instanceof Connection ) {
+            this._connection = conn;
+        }
+    }
+
+    get connection(){
+        if (!this._connection instanceof Connection){
+            return gpgme_error('CONN_NO_CONNECT');
+        } else {
+            return this._connection;
+        }
     }
 
     set fingerprint(fpr){
@@ -51,55 +82,56 @@ export class GPGME_Key {
      * hasSecret returns true if a secret subkey is included in this Key
      */
     get hasSecret(){
-        return checkKey(this._fingerprint, 'secret');
+        return this.checkKey('secret');
     }
 
     get isRevoked(){
-        return checkKey(this._fingerprint, 'revoked');
+        return this.checkKey('revoked');
     }
 
     get isExpired(){
-        return checkKey(this._fingerprint, 'expired');
+        return this.checkKey('expired');
     }
 
     get isDisabled(){
-        return checkKey(this._fingerprint, 'disabled');
+        return this.checkKey('disabled');
     }
 
     get isInvalid(){
-        return checkKey(this._fingerprint, 'invalid');
+        return this.checkKey('invalid');
     }
 
     get canEncrypt(){
-        return checkKey(this._fingerprint, 'can_encrypt');
+        return this.checkKey('can_encrypt');
     }
 
     get canSign(){
-        return checkKey(this._fingerprint, 'can_sign');
+        return this.checkKey('can_sign');
     }
 
     get canCertify(){
-        return checkKey(this._fingerprint, 'can_certify');
+        return this.checkKey('can_certify');
     }
 
     get canAuthenticate(){
-        return checkKey(this._fingerprint, 'can_authenticate');
+        return this.checkKey('can_authenticate');
     }
 
     get isQualified(){
-        return checkKey(this._fingerprint, 'is_qualified');
+        return this.checkKey('is_qualified');
     }
 
     get armored(){
-        let me = this;
-        return new Promise(function(resolve, reject){
-            let conn = new Connection();
-            conn.setFlag('armor', true);
-            conn.post('export',{'fpr': me._fingerprint});
+        let msg = createMessage ('export_key');
+        msg.setParameter('armor', true);
+        if (msg instanceof Error){
+            return gpgme_error('INVALID_KEY');
+        }
+        this.connection.post(msg).then(function(result){
+            return result.data;
         });
         // TODO return value not yet checked. Should result in an armored block
         // in correct encoding
-        // TODO openpgpjs also returns secKey if private = true?
     }
 
     /**
@@ -114,21 +146,21 @@ export class GPGME_Key {
      * @returns {Array<GPGME_Key>}
      */
     get subkeys(){
-        return checkKey(this._fingerprint, 'subkeys').then(function(result){
+        return this.checkKey('subkeys').then(function(result){
             // TBD expecting a list of fingerprints
             if (!Array.isArray(result)){
                 result = [result];
             }
             let resultset = [];
             for (let i=0; i < result.length; i++){
-                let subkey = new GPGME_Key(result[i]);
+                let subkey = new GPGME_Key(result[i], this.connection);
                 if (subkey instanceof GPGME_Key){
                     resultset.push(subkey);
                 }
             }
             return Promise.resolve(resultset);
         }, function(error){
-            //TODO checkKey fails
+            //TODO this.checkKey fails
         });
     }
 
@@ -137,7 +169,7 @@ export class GPGME_Key {
      * @returns {Date|null} TBD
      */
     get timestamp(){
-        return checkKey(this._fingerprint, 'timestamp');
+        return this.checkKey('timestamp');
         //TODO GPGME: -1 if the timestamp is invalid, and 0 if it is not available.
     }
 
@@ -146,7 +178,7 @@ export class GPGME_Key {
      *  @returns {Date|null} TBD
      */
     get expires(){
-        return checkKey(this._fingerprint, 'expires');
+        return this.checkKey('expires');
         // TODO convert to Date; check for 0
     }
 
@@ -155,51 +187,47 @@ export class GPGME_Key {
      * @returns {String|Array<String>} The user ids associated with this key
      */
     get userIds(){
-        return checkKey(this._fingerprint, 'uids');
+        return this.checkKey('uids');
     }
 
     /**
      * @returns {String} The public key algorithm supported by this subkey
      */
     get pubkey_algo(){
-        return checkKey(this._fingerprint, 'pubkey_algo');
+        return this.checkKey('pubkey_algo');
     }
-};
 
-/**
- * generic function to query gnupg information on a key.
- * @param {*} fingerprint The identifier of the Keyring
- * @param {*} property The gpgme-json property to check
- *
- */
-function checkKey(fingerprint, property){
-    return Promise.reject(gpgme_error('NOT_YET_IMPLEMENTED'));
-    if (!property || !permittedOperations[keyinfo].hasOwnProperty(property)){
-            return Promise.reject(gpgme_error('PARAM_WRONG'));
-    }
-    return new Promise(function(resolve, reject){
-        if (!isFingerprint(fingerprint)){
-            reject(gpgme_error('KEY_INVALID'));
+    /**
+    * generic function to query gnupg information on a key.
+    * @param {*} property The gpgme-json property to check.
+    * TODO: check if Promise.then(return)
+    */
+    checkKey(property){
+        return gpgme_error('NOT_YET_IMPLEMENTED');
+        // TODO: async is not what is to be ecpected from Key information :(
+        if (!property || typeof(property) !== 'string' ||
+            !permittedOperations['keyinfo'].hasOwnProperty(property)){
+            return gpgme_error('PARAM_WRONG');
         }
         let msg = createMessage ('keyinfo');
         if (msg instanceof Error){
-            reject(gpgme_error('PARAM_WRONG'));
+            return gpgme_error('PARAM_WRONG');
         }
         msg.setParameter('fingerprint', this.fingerprint);
-        return (this.connection.post(msg)).then(function(result, error){
+        this.connection.post(msg).then(function(result, error){
             if (error){
-                reject(gpgme_error('GNUPG_ERROR',error.msg));
+                return gpgme_error('GNUPG_ERROR',error.msg);
             } else if (result.hasOwnProperty(property)){
-                resolve(result[property]);
+                return result[property];
             }
             else if (property == 'secret'){
-                    // TBD property undefined means "not true" in case of secret?
-                    resolve(false);
+                // TBD property undefined means "not true" in case of secret?
+                return false;
             } else {
-                reject(gpgme_error('CONN_UNEXPECTED_ANSWER'));
+                return gpgme_error('CONN_UNEXPECTED_ANSWER');
             }
         }, function(error){
-            //TODO error handling
+            return gpgme_error('GENERIC_ERROR');
         });
-    });
+    }
 };
