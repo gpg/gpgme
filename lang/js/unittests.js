@@ -109,7 +109,7 @@ function unittests (){
         });
     });
 
-    describe('toKeyIdArray() (converting input to fingerprint', function(){
+    describe('toKeyIdArray() (converting input to fingerprint)', function(){
 
         it('Correct fingerprint string', function(){
             let test0 = toKeyIdArray(hp.validFingerprint);

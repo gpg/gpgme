@@ -35,13 +35,15 @@ import { Connection } from './Connection';
 
 export function createKey(fingerprint, parent){
     if (!isFingerprint(fingerprint)){
-        return gpgme_error('KEY_INVALID');
+        return gpgme_error('PARAM_WRONG');
     }
     if ( parent instanceof Connection){
         return new GPGME_Key(fingerprint, parent);
     } else if ( parent.hasOwnProperty('connection') &&
         parent.connection instanceof Connection){
             return new GPGME_Key(fingerprint, parent.connection);
+    } else {
+        return gpgme_error('PARAM_WRONG');
     }
 }
 

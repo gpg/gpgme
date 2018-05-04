@@ -48,7 +48,7 @@ export function toKeyIdArray(input){
             if (input[i] instanceof GPGME_Key){
                 fpr = input[i].fingerprint;
             } else if (input[i].hasOwnProperty('primaryKey') &&
-                input[i].primaryKey.hasOwnProperty(getFingerprint)){
+                input[i].primaryKey.hasOwnProperty('getFingerprint')){
                     fpr = input[i].primaryKey.getFingerprint();
             }
             if (isFingerprint(fpr) === true){

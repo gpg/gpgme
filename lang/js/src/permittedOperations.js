@@ -122,55 +122,96 @@ export const permittedOperations = {
             type: ['plaintext'],
             data: ['data'],
             params: ['base64', 'mime'],
-            infos: [] // pending. Info about signatures and validity
-                    //signature: [{Key Fingerprint, valid boolean}]
+            infos: [] // TODO pending. Info about signatures and validity
+                    //{
+                        //signatures: [{
+                            //Key : <String>Fingerprint,
+                            //valid: <Boolean>
+                        // }]
         }
     },
-    /**
-    keyinfo: { // querying the Key's information.
-        required: ['fingerprint'],
-        anser: {
+    /** TBD: querying the Key's information (keyinfo)
+    TBD name: {
+        required: {
+            'fingerprint': {
+                allowed: ['string']
+            },
+        },
+        answer: {
             type: ['TBD'],
             data: [],
-            params: ['hasSecret', 'isRevoked', 'isExpired', 'armored',
-                'timestamp', 'expires', 'pubkey_algo'],
+            params: ['hasSecret','isRevoked','isExpired','armored',
+                'timestamp','expires','pubkey_algo'],
             infos: ['subkeys', 'userIds']
+            // {'hasSecret': <Boolean>,
+            //  'isRevoked': <Boolean>,
+            //  'isExpired': <Boolean>,
+            //  'armored': <String>, // armored public Key block
+            //  'timestamp': <Number>, //
+            //  'expires': <Number>,
+            //  'pubkey_algo': TBD // TBD (optional?),
+            //  'userIds': Array<String>,
+            //  'subkeys': Array<String> Fingerprints of Subkeys
+            // }
     }*/
 
     /**
     listkeys:{
-        optional: ['with-secret', 'pattern'],
+        required: {};
+        optional: {
+            'with-secret':{
+                allowed: ['boolean']
+            },{
+            'pattern': {
+                allowed: ['string']
+            }
+        },
     answer: {
-        type: ['TBD'], //Array of fingerprints?
-        infos: ['TBD'] //the property with infos
+        type: ['TBD'],
+        infos: ['TBD']
+    // keys: Array<String> Fingerprints representing the results
     },
     */
 
     /**
     importkey: {
-        required: ['keyarmored'],
+        required: {
+            'keyarmored': {
+                allowed: ['string']
+            }
+        },
         answer: {
             type: ['TBD'],
-            infos: [''], // for each key if import was a success, if it was an update
+            infos: ['TBD'],
+            // for each key if import was a success,
+            // and if it was an update of preexisting key
         }
     },
     */
 
     /**
     deletekey:  {
-        required: ['fingerprint'],
+        pinentry: true,
+        required: {
+            'fingerprint': {
+                allowed: ['string'],
+                // array_allowed: TBD Allow several Keys to be deleted at once?
+            },
+        optional: {
+            'TBD' //Flag to delete secret Key ?
+        }
         answer: {
             type ['TBD'],
-            infos: [''] //success:true? in gpgme, an error NO_ERROR is returned
+            infos: ['']
+                // TBD (optional) Some kind of 'ok' if delete was successful.
         }
     }
     */
 
     /**
-     *get armored secret different treatment from keyinfo!
-     */
-
-    /**
-     * TBD key modification requests?
+     *TBD get armored secret different treatment from keyinfo!
+     * TBD key modification?
+     * encryptsign: TBD
+     * verify: TBD
      */
 }
