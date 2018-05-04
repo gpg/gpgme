@@ -19,6 +19,12 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA
 
-SUBDIRS = src tests doc
+if RUN_GPG_TESTS
+tests = tests
+else
+tests =
+endif
+
+SUBDIRS = src ${tests} doc
 
 EXTRA_DIST = README
