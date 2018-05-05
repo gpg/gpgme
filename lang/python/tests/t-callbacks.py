@@ -88,7 +88,7 @@ Name-Real: Joe Tester
 Name-Comment: with stupid passphrase
 Name-Email: joe+gpg@example.org
 Passphrase: Crypt0R0cks
-Expire-Date: 2020-12-31
+Expire-Date: 2099-12-31
 </GnupgKeyParms>
 """
 
