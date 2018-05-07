@@ -17,47 +17,133 @@
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
  */
-describe('Encryption', function(){
-    it('Successfull encrypt', function(){
+describe('Encryption', function () {
+    it('Successful encrypt', function (done) {
         let prm = Gpgmejs.init();
-        prm.then(function(context){
+        prm.then(function (context) {
             context.encrypt(
-            inputvalues.encrypt.good.data,
-            inputvalues.encrypt.good.fingerprint).then(function(answer){
+                inputvalues.encrypt.good.data,
+                inputvalues.encrypt.good.fingerprint).then(function (answer) {
                     expect(answer).to.not.be.empty;
                     expect(answer.data).to.be.a("string");
                     expect(answer.data).to.include('BEGIN PGP MESSAGE');
                     expect(answer.data).to.include('END PGP MESSAGE');
+                    done();
                 });
         });
     });
 
-    it('Sending encryption without keys fails', function(){
+    it('Successful encrypt 5 MB', function (done) {
         let prm = Gpgmejs.init();
-        prm.then(function(context){
+        let data = bigString(5);
+        prm.then(function (context) {
+            context.encrypt(
+                data,
+                inputvalues.encrypt.good.fingerprint).then(function (answer) {
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a("string");
+                    expect(answer.data).to.include('BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include('END PGP MESSAGE');
+                    done();
+                });
+        });
+    }).timeout(5000);
+
+    it('Successful encrypt 20 MB', function (done) {
+        let prm = Gpgmejs.init();
+        let data = bigString(20);
+        prm.then(function (context) {
+            context.encrypt(
+                data,
+                inputvalues.encrypt.good.fingerprint).then(function (answer) {
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a("string");
+                    expect(answer.data).to.include('BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include('END PGP MESSAGE');
+                    done();
+                });
+        });
+    }).timeout(20000);
+
+/**
+    it('Successful encrypt 30 MB', function (done) {
+        // TODO: There seems to be a limit imposed at least by chrome at about 21 MB
+        let prm = Gpgmejs.init();
+        let data = bigString(30);
+        prm.then(function (context) {
+            context.encrypt(
+                data,
+                inputvalues.encrypt.good.fingerprint).then(function (answer) {
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a("string");
+                    expect(answer.data).to.include('BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include('END PGP MESSAGE');
+                    done();
+                });
+        });
+    }).timeout(20000);
+*/
+
+    it('Sending encryption without keys fails', function (done) {
+        let prm = Gpgmejs.init();
+        prm.then(function (context) {
             context.encrypt(
                 inputvalues.encrypt.good.data,
-                null).then(function(answer){
+                null).then(function (answer) {
                     expect(answer).to.be.undefined;
                 }, function(error){
                     expect(error).to.be.an('Error');
                     expect(error.code).to.equal('MSG_INCOMPLETE');
-                    //TODO: MSG_INCOMPLETE desired, GNUPG_ERROR coming
+                    done();
                 });
         });
     });
 
-    it('Sending encryption without data fails', function(){
+    it('Sending encryption without data fails', function (done) {
         let prm = Gpgmejs.init();
-        prm.then(function(context){
+        prm.then(function (context) {
             context.encrypt(
-                null,inputvalues.encrypt.good.keyid).then(function(answer){
+                null, inputvalues.encrypt.good.keyid).then(function (answer) {
                     expect(answer).to.be.undefined;
-                }, function(error){
+                }, function (error) {
                     expect(error).to.be.an.instanceof(Error);
-                    expect(error.code).to.equal('PARAM_WRONG');
+                    expect(error.code).to.equal('MSG_INCOMPLETE');
+                    done();
                 });
         });
     });
+
+
+    it('Sending encryption with non existing keys fails', function (done) {
+        let prm = Gpgmejs.init();
+        prm.then(function (context) {
+            context.encrypt(
+                inputvalues.encrypt.good.data,
+                inputvalues.encrypt.bad.fingerprint).then(function (answer) {
+                    expect(answer).to.be.undefined;
+                }, function(error){
+                    expect(error).to.be.an('Error');
+                    expect(error.code).to.not.be.undefined;
+                    expect(error.code).to.equal('GNUPG_ERROR');
+                    done();
+                });
+        });
+    });
+
+    it('Overly large message ( >= 48MB) is rejected', function (done) {
+        let prm = Gpgmejs.init();
+        prm.then(function (context) {
+            context.encrypt(
+                bigString(48),
+                inputvalues.encrypt.good.fingerprint).then(function (answer) {
+                    expect(answer).to.be.undefined;
+                }, function(error){
+                    expect(error).to.be.an.instanceof(Error);
+                    // TODO who is throwing the error here?
+                    // It is not a GPGME_Error!
+                    done();
+                });
+        });
+    }).timeout(8000);
     // TODO check different valid parameter
 });

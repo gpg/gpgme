@@ -130,7 +130,6 @@ function unittests (){
             let test0 = toKeyIdArray(hp.valid_openpgplike);
 
             expect(test0).to.be.an('array').with.lengthOf(1);
-            console.log(test0);
             expect(test0).to.include(
                 hp.valid_openpgplike.primaryKey.getFingerprint());
         });
@@ -255,12 +254,19 @@ function unittests (){
             expect(test0.isComplete).to.be.false;
         });
 
-        it('Message is complete after setting mandatoy data', function(){
+        it('Message is complete after setting mandatory data', function(){
             let test0 = createMessage('encrypt');
             test0.setParameter('data', mp.valid_encrypt_data);
             test0.setParameter('keys', hp.validFingerprints);
 
             expect(test0.isComplete).to.be.true;
+        });
+
+        it('Message is not complete after mandatory data is empty', function(){
+            let test0 = createMessage('encrypt');
+            test0.setParameter('data', '');
+            test0.setParameter('keys', hp.validFingerprints);
+            expect(test0.isComplete).to.be.false;
         });
 
         it('Complete Message contains the data that was set', function(){
@@ -315,7 +321,6 @@ function unittests (){
         });
     });
 
-    mocha.run();
 }
 
 export default {unittests};

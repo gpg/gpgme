@@ -23,6 +23,9 @@ var inputvalues = {
         good:{
             data : 'Hello World.',
             fingerprint : 'CDC3A2B2860625CCBFC5A5A9FC6D1B604967FC40'
+        },
+        bad: {
+            fingerprint: 'CDC3A2B2860625CCBFC5AAAAAC6D1B604967FC4A'
         }
     },
     init: {
@@ -30,3 +33,12 @@ var inputvalues = {
     }
 
 };
+
+function bigString(megabytes){
+    let maxlength = 1024 * 1024 * megabytes;
+    let uint = new Uint8Array(maxlength);
+    for (let i= 0; i < maxlength; i++){
+        uint[i] = Math.random() * Math.floor(256);
+    }
+    return new TextDecoder('utf-8').decode(uint);
+}

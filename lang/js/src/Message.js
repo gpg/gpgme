@@ -84,9 +84,22 @@ export class GPGME_Message {
         let checktype = function(val){
             switch(typeof(val)){
                 case 'string':
+                    if (poparam.allowed.indexOf(typeof(val)) >= 0
+                        && val.length > 0) {
+                        return true;
+                    }
+                    return gpgme_error('PARAM_WRONG');
+                    break;
                 case 'number':
+                    if (
+                        poparam.allowed.indexOf('number') >= 0
+                        && isNaN(value) === false){
+                            return true;
+                    }
+                    return gpgme_error('PARAM_WRONG');
+                    break;
                 case 'boolean':
-                    if (poparam.allowed.indexOf(typeof(val)) >= 0){
+                    if (poparam.allowed.indexOf('boolean') >= 0){
                         return true;
                     }
                     return gpgme_error('PARAM_WRONG');
@@ -102,7 +115,9 @@ export class GPGME_Message {
                                 return res;
                             }
                         }
-                        return true;
+                        if (val.length > 0) {
+                            return true;
+                        }
                     } else if (val instanceof Uint8Array){
                         if (poparam.allowed.indexOf('Uint8Array') >= 0){
                             return true;

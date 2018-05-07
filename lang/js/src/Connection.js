@@ -99,11 +99,12 @@ export class Connection{
                     me._connection.onMessage.removeListener(listener)
                     reject(gpgme_error('CONN_EMPTY_GPG_ANSWER'));
                 } else if (msg.type === "error"){
-                    me._connection.onMessage.removeListener(listener)
+                    me._connection.onMessage.removeListener(listener);
                     reject(gpgme_error('GNUPG_ERROR', msg.msg));
                 } else {
                     let answer_result = answer.add(msg);
                     if (answer_result !== true){
+                        me._connection.onMessage.removeListener(listener);
                         reject(answer_result);
                     }
                     if (msg.more === true){
@@ -127,8 +128,12 @@ export class Connection{
                         }, 5000);
                     }]).then(function(result){
                     return result;
-                }, function(error){
-                    return error;
+                }, function(reject){
+                    if(!reject instanceof Error) {
+                        return gpgme_error('GNUPG_ERROR', reject);
+                    } else {
+                        return reject;
+                    }
                 });
             }
         });
@@ -196,7 +201,7 @@ class Answer{
                         this._response.push(msg[key]);
                     }
                     else {
-                        return gpgme_error('CONN_UNEXPECTED_ANSWER', key);
+                        return gpgme_error('CONN_UNEXPECTED_ANSWER');
                     }
                     break;
             }
