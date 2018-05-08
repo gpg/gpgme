@@ -170,18 +170,19 @@ function putData(message, data){
     if (!data){
         return gpgme_error('PARAM_WRONG');
     } else if (data instanceof Uint8Array){
-        let decoder = new TextDecoder('utf8');
         message.setParameter('base64', true);
-        message.setParameter ('data', decoder.decode(data));
+        message.setParameter ('data', btoa(data));
     } else if (typeof(data) === 'string') {
         message.setParameter('base64', false);
         message.setParameter('data', data);
-    } else if ( typeof(data) === 'object' && data.hasOwnProperty(getText)){
+    } else if ( typeof(data) === 'object' && data.hasOwnProperty('getText')){
         let txt = data.getText();
         if (txt instanceof Uint8Array){
-            let decoder = new TextDecoder('utf8');
             message.setParameter('base64', true);
-            message.setParameter ('data', decoder.decode(txt));
+            message.setParameter ('data', btoa(txt));
+        }
+        else {
+            return gpgme_error('PARAM_WRONG');
         }
     } else {
         return gpgme_error('PARAM_WRONG');

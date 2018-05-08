@@ -28,6 +28,7 @@ describe('Encryption', function () {
                     expect(answer.data).to.be.a("string");
                     expect(answer.data).to.include('BEGIN PGP MESSAGE');
                     expect(answer.data).to.include('END PGP MESSAGE');
+                    context.connection.disconnect();
                     done();
                 });
         });
@@ -44,11 +45,13 @@ describe('Encryption', function () {
                     expect(answer.data).to.be.a("string");
                     expect(answer.data).to.include('BEGIN PGP MESSAGE');
                     expect(answer.data).to.include('END PGP MESSAGE');
+                    context.connection.disconnect();
                     done();
                 });
         });
     }).timeout(5000);
 
+/**
     it('Successful encrypt 20 MB', function (done) {
         let prm = Gpgmejs.init();
         let data = bigString(20);
@@ -60,11 +63,12 @@ describe('Encryption', function () {
                     expect(answer.data).to.be.a("string");
                     expect(answer.data).to.include('BEGIN PGP MESSAGE');
                     expect(answer.data).to.include('END PGP MESSAGE');
+                    context.connection.disconnect();
                     done();
                 });
         });
     }).timeout(20000);
-
+*/
 /**
     it('Successful encrypt 30 MB', function (done) {
         // TODO: There seems to be a limit imposed at least by chrome at about 21 MB
@@ -78,6 +82,7 @@ describe('Encryption', function () {
                     expect(answer.data).to.be.a("string");
                     expect(answer.data).to.include('BEGIN PGP MESSAGE');
                     expect(answer.data).to.include('END PGP MESSAGE');
+                    context.connection.disconnect();
                     done();
                 });
         });
@@ -94,6 +99,7 @@ describe('Encryption', function () {
                 }, function(error){
                     expect(error).to.be.an('Error');
                     expect(error.code).to.equal('MSG_INCOMPLETE');
+                    context.connection.disconnect();
                     done();
                 });
         });
@@ -108,6 +114,7 @@ describe('Encryption', function () {
                 }, function (error) {
                     expect(error).to.be.an.instanceof(Error);
                     expect(error.code).to.equal('MSG_INCOMPLETE');
+                    context.connection.disconnect();
                     done();
                 });
         });
@@ -125,10 +132,11 @@ describe('Encryption', function () {
                     expect(error).to.be.an('Error');
                     expect(error.code).to.not.be.undefined;
                     expect(error.code).to.equal('GNUPG_ERROR');
+                    context.connection.disconnect();
                     done();
                 });
         });
-    });
+    }).timeout(5000);;
 
     it('Overly large message ( >= 48MB) is rejected', function (done) {
         let prm = Gpgmejs.init();
@@ -141,6 +149,7 @@ describe('Encryption', function () {
                     expect(error).to.be.an.instanceof(Error);
                     // TODO who is throwing the error here?
                     // It is not a GPGME_Error!
+                    context.connection.disconnect();
                     done();
                 });
         });

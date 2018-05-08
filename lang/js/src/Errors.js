@@ -110,7 +110,7 @@ export function gpgme_error(code = 'GENERIC_ERROR', info){
         }
         return null;
     } else if (code === 'GNUPG_ERROR'){
-        return new GPGME_Error(code, info.msg);
+        return new GPGME_Error(code, info);
     }
     else {
         return new GPGME_Error('GENERIC_ERROR');
