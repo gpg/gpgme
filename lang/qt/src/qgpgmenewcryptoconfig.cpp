@@ -42,6 +42,7 @@
 #include "gpgme_backend_debug.h"
 
 #include <QFile>
+#include <QDir>
 
 #include "global.h"
 #include "error.h"
@@ -521,8 +522,7 @@ QUrl QGpgMENewCryptoConfigEntry::urlValue() const
     Q_ASSERT(type == FilenameType || type == LdapServerType);
     Q_ASSERT(!isList());
     if (type == FilenameType) {
-        QUrl url;
-        url.setPath(QFile::decodeName(m_option.currentValue().stringValue()));
+        QUrl url = QUrl::fromLocalFile(m_option.currentValue().stringValue());
         return url;
     }
     return parseURL(type, stringValue());
@@ -635,7 +635,7 @@ void QGpgMENewCryptoConfigEntry::setURLValue(const QUrl &url)
     if (str.isEmpty() && !isOptional()) {
         m_option.resetToDefaultValue();
     } else if (type == FilenameType) {
-        m_option.setNewValue(m_option.createStringArgument(QFile::encodeName(str).constData()));
+        m_option.setNewValue(m_option.createStringArgument(QDir::toNativeSeparators(url.toLocalFile()).toUtf8().constData()));
     } else {
         m_option.setNewValue(m_option.createStringArgument(str.toUtf8().constData()));
     }
