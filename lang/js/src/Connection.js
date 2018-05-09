@@ -181,7 +181,8 @@ class Answer{
                         if (!this._response.hasOwnProperty(key)){
                             this._response[key] = '';
                         }
-                        this._response[key] = this._response[key].concat(msg[key]);
+                        // console.log(msg[key]);
+                        this._response[key] += msg[key];
                     }
                     //params should not change through the message
                     else if (poa.params.indexOf(key) >= 0){
@@ -214,6 +215,22 @@ class Answer{
      * TODO: does not care yet if completed.
      */
     get message(){
+        let keys = Object.keys(this._response);
+        let poa = permittedOperations[this.operation].answer;
+        for (let i=0; i < keys.length; i++) {
+            if (poa.data.indexOf(keys[i]) >= 0){
+                if (this._response.base64 == true){
+                    let respatob =  atob(this._response[keys[i]]);
+
+                    let result = decodeURIComponent(
+                        respatob.split('').map(function(c) {
+                            return '%' +
+                            ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                        }).join(''));
+                    this._response[keys[i]] = result;
+                }
+            }
+        }
         return this._response;
     }
 }

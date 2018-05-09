@@ -49,7 +49,7 @@ describe('Encryption', function () {
                     done();
                 });
         });
-    }).timeout(5000);
+    }).timeout(10000);
 
 /**
     it('Successful encrypt 20 MB', function (done) {

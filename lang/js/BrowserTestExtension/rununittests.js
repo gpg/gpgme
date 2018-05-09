@@ -17,5 +17,5 @@
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
  */
-
+Gpgmejs_test.unittests();
 mocha.run();

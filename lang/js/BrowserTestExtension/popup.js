@@ -39,6 +39,6 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     chrome.tabs.create({
-        url: './browsertest.html'
+        url: './index.html'
     });
 });
