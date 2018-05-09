@@ -1013,8 +1013,17 @@ status_handler (void *opaque, int fd)
 	    *(rest++) = 0;
 
 	  r = _gpgme_parse_status (line + 2);
+          if (gpgsm->status.mon_cb && r != GPGME_STATUS_PROGRESS)
+            {
+              /* Note that we call the monitor even if we do
+               * not know the status code (r < 0).  */
+              err = gpgsm->status.mon_cb (gpgsm->status.mon_cb_value,
+                                          line + 2, rest);
+            }
+          else
+            err = 0;
 
-	  if (r >= 0)
+	  if (r >= 0 && !err)
 	    {
 	      if (gpgsm->status.fnc)
                 {
