@@ -610,7 +610,8 @@ make_data_object (cjson_t result, gpgme_data_t data, size_t chunksize,
 {
   gpg_error_t err;
   char *buffer;
-  size_t buflen;
+  const char *s;
+  size_t buflen, n;
   int c;
 
   if (!base64 || base64 == -1) /* Make sure that we really have a string.  */
@@ -629,13 +630,18 @@ make_data_object (cjson_t result, gpgme_data_t data, size_t chunksize,
       base64 = 0;
       if (!buflen)
         log_fatal ("Appended Nul byte got lost\n");
-      if (memchr (buffer, 0, buflen-1))
-        {
-          buflen--; /* Adjust for the extra nul byte.  */
-          base64 = 1;
-        }
-      /* Fixme: We might want to do more advanced heuristics than to
-       * only look for a Nul.  */
+      /* Figure out if there is any Nul octet in the buffer.  In that
+       * case we need to Base-64 the buffer.  Due to problems with the
+       * browser's Javascript we use Base-64 also in case an UTF-8
+       * character is in the buffer.  This is because the chunking may
+       * split an UTF-8 characters and JS can't handle this.  */
+      for (s=buffer, n=0; n < buflen -1; s++, n++)
+        if (!*s || (*s & 0x80))
+          {
+            buflen--; /* Adjust for the extra nul byte.  */
+            base64 = 1;
+            break;
+          }
     }
 
   /* Adjust the chunksize if we need to do base64 conversion.  */
