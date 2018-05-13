@@ -588,7 +588,7 @@
 	      logrus.append(rpattern[i])
 
       ciphertext, result, sign_result = c.encrypt(text, recipients=logrus, sign=False,
-						  always_trust=True)
+				  always_trust=True)
 
       with open("secret_plans.txt.asc", "wb") as afile:
 	  afile.write(ciphertext)
@@ -950,7 +950,7 @@
 
    #+begin_src python
      with open(filename, "rb") as afile:
-         text = afile.read()
+	 text = afile.read()
 
      if text == data:
 	 print("Good signature.")
@@ -1050,7 +1050,6 @@
     tofu-default-policy unknown
     enable-large-rsa
     enable-dsa2
-    # cert-digest-algo SHA256
     cert-digest-algo SHA512
     default-preference-list TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1 ZLIB BZIP2 ZIP Uncompressed
     personal-cipher-preferences TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES
