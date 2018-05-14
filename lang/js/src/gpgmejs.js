@@ -80,7 +80,6 @@ export class GpgME {
 
         let pubkeys = toKeyIdArray(publicKeys);
         msg.setParameter('keys', pubkeys);
-
         putData(msg, data);
         if (wildcard === true){msg.setParameter('throw-keyids', true);
         };
@@ -171,19 +170,32 @@ function putData(message, data){
         return gpgme_error('PARAM_WRONG');
     } else if (data instanceof Uint8Array){
         message.setParameter('base64', true);
+        // TODO: btoa turns the array into a string
+        // of comma separated  of numbers
+        // atob(data).split(',') would result in a "normal" array of numbers
+        // atob(btoa(data)).split(',') would result in a "normal" array of numbers
+        // would result in a "normal" array of numbers
         message.setParameter ('data', btoa(data));
+
     } else if (typeof(data) === 'string') {
         message.setParameter('base64', false);
         message.setParameter('data', data);
-    } else if ( typeof(data) === 'object' && data.hasOwnProperty('getText')){
+    } else if (
+        typeof(data) === 'object' &&
+        typeof(data.getText) === 'function'
+    ){
         let txt = data.getText();
         if (txt instanceof Uint8Array){
             message.setParameter('base64', true);
             message.setParameter ('data', btoa(txt));
         }
-        else {
+        else if (typeof(txt) === 'string'){
+            message.setParameter('base64', false);
+            message.setParameter ('data', txt);
+        } else {
             return gpgme_error('PARAM_WRONG');
         }
+
     } else {
         return gpgme_error('PARAM_WRONG');
     }

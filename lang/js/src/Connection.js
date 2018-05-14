@@ -181,7 +181,6 @@ class Answer{
                         if (!this._response.hasOwnProperty(key)){
                             this._response[key] = '';
                         }
-                        // console.log(msg[key]);
                         this._response[key] += msg[key];
                     }
                     //params should not change through the message

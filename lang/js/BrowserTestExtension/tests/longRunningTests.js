@@ -27,6 +27,7 @@ describe('Long running Encryption/Decryption', function () {
     };
 
     it('Successful encrypt 1 MB Uint8Array', function (done) {
+        //TODO: this succeeds, but result may be bogus (String with byte values as numbers)
         let prm = Gpgmejs.init();
         let data = bigUint8(1);
         prm.then(function (context) {
