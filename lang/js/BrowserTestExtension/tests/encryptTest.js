@@ -36,7 +36,7 @@ describe('Encryption', function () {
 
     it('Successful encrypt 5 MB', function (done) {
         let prm = Gpgmejs.init();
-        let data = bigString(5);
+        let data = fixedLengthString(5);
         prm.then(function (context) {
             context.encrypt(
                 data,
@@ -51,10 +51,9 @@ describe('Encryption', function () {
         });
     }).timeout(10000);
 
-/**
     it('Successful encrypt 20 MB', function (done) {
         let prm = Gpgmejs.init();
-        let data = bigString(20);
+        let data = fixedLengthString(20);
         prm.then(function (context) {
             context.encrypt(
                 data,
@@ -68,12 +67,10 @@ describe('Encryption', function () {
                 });
         });
     }).timeout(20000);
-*/
-/**
-    it('Successful encrypt 30 MB', function (done) {
-        // TODO: There seems to be a limit imposed at least by chrome at about 21 MB
+
+    it('Successful encrypt 50 MB', function (done) {
         let prm = Gpgmejs.init();
-        let data = bigString(30);
+        let data = fixedLengthString(50);
         prm.then(function (context) {
             context.encrypt(
                 data,
@@ -87,7 +84,6 @@ describe('Encryption', function () {
                 });
         });
     }).timeout(20000);
-*/
 
     it('Sending encryption without keys fails', function (done) {
         let prm = Gpgmejs.init();
@@ -120,7 +116,6 @@ describe('Encryption', function () {
         });
     });
 
-
     it('Sending encryption with non existing keys fails', function (done) {
         let prm = Gpgmejs.init();
         prm.then(function (context) {
@@ -138,21 +133,24 @@ describe('Encryption', function () {
         });
     }).timeout(5000);;
 
-    it('Overly large message ( >= 48MB) is rejected', function (done) {
+    it('Overly large message ( > 65MB) is rejected', function (done) {
         let prm = Gpgmejs.init();
         prm.then(function (context) {
             context.encrypt(
-                bigString(48),
+                fixedLengthString(65),
                 inputvalues.encrypt.good.fingerprint).then(function (answer) {
                     expect(answer).to.be.undefined;
                 }, function(error){
                     expect(error).to.be.an.instanceof(Error);
-                    // TODO who is throwing the error here?
-                    // It is not a GPGME_Error!
+                    // expect(error.code).to.equal('GNUPG_ERROR');
+                    // TODO: there is a 64 MB hard limit at least in chrome at:
+                    // chromium//extensions/renderer/messaging_util.cc:
+                    // kMaxMessageLength
                     context.connection.disconnect();
                     done();
                 });
         });
     }).timeout(8000);
+
     // TODO check different valid parameter
 });

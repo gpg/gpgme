@@ -59,14 +59,27 @@ var inputvalues = {
     }
 };
 
-// (Pseudo-)Random String from a Uint8Array, given approx. size in Megabytes
-function bigString(megabytes){
-    let maxlength = 1024 * 1024 * megabytes;
-    let uint = new Uint8Array(maxlength);
-    for (let i= 0; i < maxlength; i++){
-        uint[i] = Math.random() * Math.floor(256);
+// (Pseudo-)Random String covering all of utf8.
+function bigString(length){
+    var uint = '';
+    let arr = [];
+    for (let i= 0; i < length; i++){
+        arr.push(String.fromCharCode(
+            Math.floor(Math.random() * 10174) + 1)
+        );
     }
-    return new TextDecoder('utf-8').decode(uint);
+    return arr.join('');
+}
+
+function fixedLengthString(megabytes){
+    let maxlength = 1024 * 1024 * megabytes / 2;
+    let uint = new Uint8Array(maxlength);
+    for (let i = 0; i < maxlength; i++){
+        uint[i] = Math.floor(Math.random()* 256);
+    }
+    let td = new TextDecoder('ascii');
+    let result = td.decode(uint);
+    return result;
 }
 
 // (Pseudo-)Random Uint8Array, given size in Megabytes
@@ -82,19 +95,19 @@ function bigUint8(megabytes){
 // (Pseudo-)Random string with very limited charset (ascii only, no control chars)
 function bigBoringString(megabytes){
     let maxlength = 1024 * 1024 * megabytes;
-    let string = '';
+    let string = [];
     let chars = ' 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     for (let i= 0; i < maxlength; i++){
-        string = string + chars[Math.floor(Math.random() * chars.length)];
+        string.push(chars[Math.floor(Math.random() * chars.length)]);
     }
-    return string;
+    return string.join('');
 }
 
 // Some String with simple chars, with different characteristics, but still
 // expected to occur in an averag message
 function slightlyLessBoringString(megabytes, set){
     let maxlength = 1024 * 1024 * megabytes;
-    let string = '';
+    let string = [];
     let chars = '';
     if (set ===1 ) {
         chars = '\n\"\r \'';
@@ -108,9 +121,9 @@ function slightlyLessBoringString(megabytes, set){
         chars = '*<>\n\"\r§$%&/()=?`#+-{}[] \'';
     }
     for (let i= 0; i < maxlength; i++){
-        string = string + chars[Math.floor(Math.random() * chars.length)];
+        string.push(chars[Math.floor(Math.random() * chars.length)]);
     }
-    return string;
+    return string.join('');
 }
 
 // Data encrypted with testKey
