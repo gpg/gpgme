@@ -4,9 +4,6 @@
   "description": "javascript part of a nativeMessaging gnupg integration",
   "main": "src/index.js",
   "private": true,
-  "scripts": {
-    "test": "mocha"
-  },
   "keywords": [],
   "author": "",
   "license": "",
