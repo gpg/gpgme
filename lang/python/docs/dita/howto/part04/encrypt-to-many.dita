@@ -7,7 +7,7 @@
             <p>Encrypting to multiple keys essentially just expands upon the key selection process
         and the recipients from the previous examples.</p>
       <p>The following example encrypts a message (<codeph>text</codeph>) to everyone with an email
-        address on the <codeph>gnupg.org </codeph>domain,<fn>You probably don't really want to do
+        address on the <codeph>gnupg.org</codeph> domain,<fn>You probably don't really want to do
           this. Searching the keyservers for "gnupg.org" produces over 400 results, the majority of
           which aren't actually at the gnupg.org domain, but just included a comment regarding the
           project in their key somewhere.</fn> but does <i>not</i> encrypt to a default key or other
