@@ -4,17 +4,19 @@
     <topic id="topic_nb3_hrx_5db">
         <title>Documentation Source Files</title>
         <body>
-            <p>Unlike all other documentation in the GnuPG Project, including the initial version of
-        this HOWTO, this version was <i>not</i> written in Emacs Org-Mode. Nor was it written in
-        LaTeX, Texinfo or even directly in HTML. Instead it was written using the Darwin Information
-        Typing Architecture (DITA) XML.</p>
+            <p>Unlike all other documentation in the <xref href="https://gnupg.org" format="html"
+          scope="external">GnuPG Project</xref>, including the initial version of this HOWTO, this
+        version was <i>not</i> written in Emacs Org-Mode. Nor was it written in LaTeX, Texinfo or
+        even directly in HTML. Instead it was written using the Darwin Information Typing
+        Architecture (DITA) XML.</p>
       <p>This was done for two main reasons:</p>
       <p>
         <ol id="ol_k3b_wrx_5db">
-          <li>A bug in either Org-Mode or Babel prevented the more complex examples included in the
-            HOWTO from displaying correctly.</li>
+          <li>A <xref href="https://dev.gnupg.org/T3977" format="html" scope="external">bug</xref>
+            in either Org-Mode or Babel prevented the more complex examples included in the HOWTO
+            from displaying correctly.</li>
           <li>To demonstrate some of the advantages of DITA XML over existing documentation
-            productionsoftware used in the project (particularly Texinfo and LaTeX).</li>
+            production software used in the project (particularly Texinfo and LaTeX).</li>
         </ol>
       </p>
       <p>The XML format definitely supports displaying all the more complex Python code correctly,
