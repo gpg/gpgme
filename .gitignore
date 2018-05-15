@@ -48,6 +48,11 @@ nosetests.xml
 .project
 .pydevproject
 
+# DITA XML output
+temp/
+out/
+*.bak
+
 # Assorted Apple crap
 default.profraw
 .DS_Store
